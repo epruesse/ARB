@@ -36,7 +36,7 @@ ifdef DEBUG
 		cflags = $(dflag1) $(dflags)
 		lflags = $(dflag1)
 		fflags = $(dflag1) -C
-		extended_warnings = -Wwrite-strings -Wunused -Wno-aggregate-return -Wconversion
+		extended_warnings = -Wwrite-strings -Wunused -Wno-aggregate-return
 		extended_cpp_warnings = -Wnon-virtual-dtor -Wreorder
 else
 		dflags = -DNDEBUG
@@ -330,47 +330,62 @@ $(ARCHS_COMMUNICATION:.a=.dummy) : $(ARCHS_MAKEBIN:.a=.dummy)
 
 #***********************************	arb_ntree **************************************
 NTREE = bin/arb_ntree
-ARCHS_NTREE = NAMES_COM/server.a $(ARCHS_CLIENTACC) NTREE/NTREE.a STAT/STAT.a MULTI_PROBE/MULTI_PROBE.a \
-	ARB_GDE/ARB_GDE.a PROBE_DESIGN/PROBE_DESIGN.a \
-	SERVERCNTRL/SERVERCNTRL.a MERGE/MERGE.a CAT/CAT.a $(SEERLIB) \
-	GENOM/GENOM.a PRIMER_DESIGN/PRIMER_DESIGN.a XML/XML.a ISLAND_HOPPING/ISLAND_HOPPING.a
-$(NTREE): $(ARCHS_NTREE) aw db awt awtc awti
-	$(CPP) $(lflags) -o $@ $(LIBPATH) \
-		NTREE/NTREE.a STAT/STAT.a PROBE_DESIGN/PROBE_DESIGN.a MULTI_PROBE/MULTI_PROBE.a CAT/CAT.a \
-		AWTC/AWTC.a AWTI/AWTI.a ARB_GDE/ARB_GDE.a MERGE/MERGE.a SERVERCNTRL/SERVERCNTRL.a $(SEERLIB) GENOM/GENOM.a \
-		PRIMER_DESIGN/PRIMER_DESIGN.a XML/XML.a ISLAND_HOPPING/ISLAND_HOPPING.a \
-		$(ARCHS_CLIENTACC) -lAWT $(LIBS)
+ARCHS_NTREE = \
+		$(ARCHS_CLIENTACC) \
+		$(SEERLIB) \
+		ARB_GDE/ARB_GDE.a \
+		AWTC/AWTC.a \
+		AWTI/AWTI.a \
+		CAT/CAT.a \
+		GENOM/GENOM.a \
+		ISLAND_HOPPING/ISLAND_HOPPING.a \
+		MERGE/MERGE.a \
+		MULTI_PROBE/MULTI_PROBE.a \
+		NTREE/NTREE.a \
+		PRIMER_DESIGN/PRIMER_DESIGN.a \
+		PROBE_DESIGN/PROBE_DESIGN.a \
+		SERVERCNTRL/SERVERCNTRL.a \
+		STAT/STAT.a \
+		XML/XML.a \
+
+$(NTREE): $(ARCHS_NTREE) NAMES_COM/server.a # aw db awt awtc awti
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NTREE) -lAWT $(LIBS)
+
+#		NTREE/NTREE.a STAT/STAT.a PROBE_DESIGN/PROBE_DESIGN.a MULTI_PROBE/MULTI_PROBE.a CAT/CAT.a \
+#		AWTC/AWTC.a AWTI/AWTI.a ARB_GDE/ARB_GDE.a MERGE/MERGE.a SERVERCNTRL/SERVERCNTRL.a $(SEERLIB) GENOM/GENOM.a \
+#		PRIMER_DESIGN/PRIMER_DESIGN.a XML/XML.a ISLAND_HOPPING/ISLAND_HOPPING.a \
+#		$(ARCHS_CLIENTACC) -lAWT $(LIBS)
 
 #***********************************	arb_edit **************************************
 EDIT = bin/arb_edit
-ARCHS_EDIT = EDIT/EDIT.a ARB_GDE/ARB_GDE.a STAT/STAT.a
+ARCHS_EDIT = EDIT/EDIT.a ARB_GDE/ARB_GDE.a STAT/STAT.a XML/XML.a
 $(EDIT): $(ARCHS_EDIT)
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT) -lAWT -lARBDBPP $(LIBS)
 
 #***********************************	arb_edit4 **************************************
 EDIT4 = bin/arb_edit4
 ARCHS_EDIT4 = NAMES_COM/client.a AWTC/AWTC.a EDIT4/EDIT4.a SECEDIT/SECEDIT.a \
-	SERVERCNTRL/SERVERCNTRL.a STAT/STAT.a ARB_GDE/ARB_GDE.a ISLAND_HOPPING/ISLAND_HOPPING.a
+	SERVERCNTRL/SERVERCNTRL.a STAT/STAT.a ARB_GDE/ARB_GDE.a ISLAND_HOPPING/ISLAND_HOPPING.a XML/XML.a
 $(EDIT4): $(ARCHS_EDIT4) aw db
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) -lAWT $(LIBS)
 
 #***********************************	arb_wetc **************************************
 WETC = bin/arb_wetc
-ARCHS_WETC = WETC/WETC.a
+ARCHS_WETC = WETC/WETC.a XML/XML.a
 $(WETC): $(ARCHS_WETC)
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_WETC) -lAWT $(LIBS)
 
 #***********************************	arb_dist **************************************
 DIST = bin/arb_dist
 ARCHS_DIST = DIST/DIST.a SERVERCNTRL/SERVERCNTRL.a CONSENSUS_TREE/CONSENSUS_TREE.a \
-		EISPACK/EISPACK.a
+		EISPACK/EISPACK.a  XML/XML.a
 #		FINDCORRWIN/FINDCORRWIN.a FINDCORRMATH/FINDCORRMATH.a
 $(DIST): $(ARCHS_DIST)
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT) -lAWT $(LIBS)
 
 #***********************************	arb_pars **************************************
 PARSIMONY =		bin/arb_pars
-ARCHS_PARSIMONY =	PARSIMONY/PARSIMONY.a
+ARCHS_PARSIMONY =	PARSIMONY/PARSIMONY.a  XML/XML.a
 $(PARSIMONY): $(ARCHS_PARSIMONY)
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PARSIMONY) -lAWT $(LIBS)
 
@@ -384,7 +399,7 @@ $(NALIGNER): $(ARCHS_NALIGNER)
 
 #***********************************	arb_secedit **************************************
 SECEDIT = bin/arb_secedit
-ARCHS_SECEDIT = SECEDIT/SECEDIT.a
+ARCHS_SECEDIT = SECEDIT/SECEDIT.a  XML/XML.a
 $(SECEDIT):	$(ARCHS_SECEDIT)
 	$(CPP) $(cflags) -o $@ $(LIBPATH) $(ARCHS_SECEDIT) -lAWT $(LIBS)
 
@@ -403,7 +418,7 @@ $(CHIP):	$(ARCHS_CHIP) PROBE_COM/server.a PROBE/PROBE.a
 
 #***********************************	arb_phylo **************************************
 PHYLO = bin/arb_phylo
-ARCHS_PHYLO = PHYLO/PHYLO.a
+ARCHS_PHYLO = PHYLO/PHYLO.a  XML/XML.a
 $(PHYLO): $(ARCHS_PHYLO)
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PHYLO) -lAWT $(LIBS)
 
@@ -444,7 +459,7 @@ $(ORS_CGI): $(ARCHS_ORS_CGI)
 
 
 EDITDB = tb/editDB
-ARCHS_EDITDB = EDITDB/EDITDB.a
+ARCHS_EDITDB = EDITDB/EDITDB.a  XML/XML.a
 $(EDITDB): $(ARCHS_EDITDB)
 	$(CPP) $(lflags) -o $@ $(ARCHS_EDITDB) -lARBDB -lAWT $(LIBS)
 
@@ -456,7 +471,7 @@ $(AWDEMO): $(ARCHS_AWDEMO)
 	$(CPP) $(lflags) -o $@ $(ARCHS_AWDEMO) $(LIBS)
 
 TEST = tb/dbtest
-ARCHS_TEST = TEST/TEST.a
+ARCHS_TEST = TEST/TEST.a  XML/XML.a
 $(TEST):	$(ARCHS_TEST)
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_TEST)  -lAWT $(LIBS)
 
@@ -467,10 +482,9 @@ $(ALIV3): $(ARCHS_ALIV3)
 
 
 ACORR = tb/acorr
-ARCHS_ACORR = 	DIST/DIST.a SERVERCNTRL/SERVERCNTRL.a FINDCORRASC/FINDCORRASC.a FINDCORRMATH/FINDCORRMATH.a FINDCORRWIN/FINDCORRWIN.a
+ARCHS_ACORR = 	DIST/DIST.a SERVERCNTRL/SERVERCNTRL.a FINDCORRASC/FINDCORRASC.a FINDCORRMATH/FINDCORRMATH.a FINDCORRWIN/FINDCORRWIN.a  XML/XML.a
 $(ACORR): $(ARCHS_ACORR)
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_ACORR) $(ARCHS_CLIENT) -lAWT -lARBDBPP $(LIBS)
-
 
 
 ARBDB_COMPRESS = tb/arbdb_compress
