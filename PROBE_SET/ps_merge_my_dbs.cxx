@@ -22,18 +22,20 @@ int main( int argc,  char *argv[] ) {
     const char *input_DB_name = argv[2];
     printf( "Opening 1st input-probe-set-database '%s'..\n", input_DB_name );
     PS_Database *db = new PS_Database( input_DB_name, PS_Database::READONLY );
+    db->load();
+    printf( "(enter to continue)\n" );
+    getchar();
 
     //
     // merge in other databasefiles
     //
-    db->load();
     for (int i = 3; i < argc; ++i) {
         input_DB_name = argv[i];
         printf( "Appending input-probe-set-database '%s'..\n", input_DB_name );
         db->merge( input_DB_name );
     }
     printf( "Merged databases (enter to continue)\n" );
-//     getchar();
+    getchar();
 
     //
     // write one big whole tree to file
@@ -42,9 +44,9 @@ int main( int argc,  char *argv[] ) {
     printf( "Writing output-probe-set-database '%s'..\n",output_DB_name );
     db->saveTo( output_DB_name );
     printf( "(enter to continue)\n" );
-//     getchar();
+    getchar();
 
-
+    printf( "cleaning up...\n" );
     if (db) delete db;
 //     printf( "root should be destroyed now\n" );
 //     printf( "(enter to continue)\n" );
