@@ -996,11 +996,14 @@ public:
     const char *type() const { return type_.c_str(); }
 };
 
-static AliNameAndType last_ali("ali_16s", "rna"); // last selected ali for plain import (aka non-flatfile import)
+static AliNameAndType last_ali("ali_new", "rna"); // last selected ali for plain import (aka non-flatfile import)
 
 
-void AWTC_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char *ali_type) {
-    bool switching_to_GENOM_ALIGNMENT = strcmp(ali_name, GENOM_ALIGNMENT) == 0;
+void AWTC_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char *ali_type, GBDATA *gbmain) {
+    bool           switching_to_GENOM_ALIGNMENT = strcmp(ali_name, GENOM_ALIGNMENT) == 0;
+    static GBDATA *last_valid_gbmain            = 0;
+
+    if (gbmain) last_valid_gbmain = gbmain;
 
     AW_awar *awar_name = awr->awar(AWAR_ALI);
     AW_awar *awar_type = awr->awar(AWAR_ALI_TYPE);
@@ -1018,15 +1021,29 @@ void AWTC_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char
 
     awar_name->write_string(ali_name);
     awar_type->write_string(ali_type);
+
+    if (last_valid_gbmain) { // detect default write protection for alignment
+        GB_transaction  ta(last_valid_gbmain);
+        GBDATA         *gb_ali            = GBT_get_alignment(last_valid_gbmain, ali_name);
+        int             protection_to_use = 4; // default protection
+
+        if (gb_ali) {
+            GBDATA *gb_write_security = GB_find(gb_ali,"alignment_write_security",0,down_level);
+            if (gb_write_security) {
+                protection_to_use = GB_read_int(gb_write_security);
+            }
+        }
+        awr->awar(AWAR_ALI_PROTECTION)->write_int(protection_to_use);
+    }
 }
 
 static void genom_flag_changed(AW_root *awr) {
     if (awr->awar(AWAR_READ_GENOM_DB)->read_int() == IMP_PLAIN_SEQUENCE) {
-        AWTC_import_set_ali_and_type(awr, last_ali.name(), last_ali.type());
+        AWTC_import_set_ali_and_type(awr, last_ali.name(), last_ali.type(), 0);
         awr->awar_string(AWAR_FORM"/filter",".ift");
     }
     else {
-        AWTC_import_set_ali_and_type(awr, GENOM_ALIGNMENT, "dna");
+        AWTC_import_set_ali_and_type(awr, GENOM_ALIGNMENT, "dna", 0);
         awr->awar_string(AWAR_FORM"/filter",".fit"); // *hack* to hide normal import filters
     }
 }
@@ -1044,11 +1061,12 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
     aw_create_selection_box_awars(awr, AWAR_FILE_BASE, ".", "", defname);
     aw_create_selection_box_awars(awr, AWAR_FORM, AWT_path_in_ARBHOME("lib/import"), ".ift", "*");
 
-    awr->awar_string(AWAR_ALI,"ali_16s");
-    awr->awar_string(AWAR_ALI_TYPE,"rna");
-    awr->awar_int(AWAR_ALI_PROTECTION, 4);
+    awr->awar_string(AWAR_ALI,"dummy"); // these defaults are never used
+    awr->awar_string(AWAR_ALI_TYPE,"dummy"); // they are overwritten by AWTC_import_set_ali_and_type
+    awr->awar_int(AWAR_ALI_PROTECTION, 0); // which is called via genom_flag_changed() below
 
     awr->awar(AWAR_READ_GENOM_DB)->add_callback(genom_flag_changed);
+    genom_flag_changed(awr);
 
     if (aws){
         aws->show();
