@@ -2307,3 +2307,14 @@ char *GBS_replace_tabs_by_spaces(const char *text){
     }
     return GBS_strclose(mfile,0);
 }
+
+int GBS_strscmp(const char *s1, const char *s2) {
+    int    cmp = 0;
+    size_t idx = 0;
+    while (!cmp) {
+        if (!s1[idx] || !s2[idx]) break;
+        cmp = s1[idx] - s2[idx];
+        ++idx;
+    }
+    return cmp;
+}
