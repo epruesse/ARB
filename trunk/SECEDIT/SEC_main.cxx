@@ -21,6 +21,8 @@
 #include <sec_graphic.hxx>
 #include "secedit.hxx"
 
+#define sec_assert(cond) arb_assert(cond)
+
 // to get search results from primary editor window
 #include "../EDIT4/ed4_defs.hxx"
 #include "../EDIT4/ed4_class.hxx"
