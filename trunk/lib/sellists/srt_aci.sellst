@@ -4,12 +4,13 @@ A. BBB    ! Replace first word by its first letter plus '.',        :?* *=?1. *2
 AA. BBB   ! Replace first word by its first two letters plus '.',   :??* *=?1?2. *2
 SHOW a-b  ! Show position 125 - 150,                                |mid(125,150)
 HEAD 20   ! Show position 0 - 20,                                   |head(20)
-TAIL 20   ! Show 20 last positions,					                |tail(20)
-CNT(A)    ! Count all 'A's,						                    |count(aA)
-CNT(ACGT) ! Count all 'ACGTU',						                |count("ACGTU")
+TAIL 20   ! Show 20 last positions,				    |tail(20)
+CNT(A)    ! Count all 'A's,					    |count(aA)
+CNT(ACGT) ! Count all 'ACGTU',					    |count("ACGTU")
 CNT ambi  ! Count all small letters + ambiguous codes + '.',        |len("-ACGTU")
 CNT ambi2 ! Count ambiguous c. + 'acgtu.' in pos 100 - (len-100),   |mid(100,-100)|len("-ACGTU")
 G+C       ! G+C content,                                            |count("gcGC");count("agctuAGCTU")|per_cent
 CHECKALL  ! Overall Checksum,                                       |checksum
-CHECKBAS  ! Checksum (no gaps),						                |checksum(exclude=.-n;touppper)
+CHECKBAS  ! Checksum (no gaps),					    |checksum(exclude=.-n;touppper)
 DIFFECOLI ! Difference to ecoli sequence,                           |diff(SAI=ECOLI)
+TAXONOMY  ! Taxonomy of species,                                    |taxonomy(1)
