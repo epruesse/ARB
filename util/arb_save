@@ -2,7 +2,7 @@
 #watch out for DEPOT and DEPOT2
 name=`date '+arbsrc_%d_%m_%y.tgz'`
 rm -f arbsrc_*.tgz
-(	ls -d 	load  demo.arb README arb_* ;\
+(	ls -d 	./load  ./demo.arb ./README ./arb_* ;\
 	find . 	-name DEPOT -prune -o -name DEPOT2 -prune -o 	\( \
 	   -name "Makefile" -o -name "*.makefile" \
 	-o -name "Imakefile" -o -name "*.script" \
