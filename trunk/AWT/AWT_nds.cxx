@@ -57,11 +57,12 @@ struct make_node_text_struct {
             space_left--;
         }
 
-        static const char *warning  = ".. <string too long - truncated>";
+        static const char *warning  = "..<truncated>";
         static int         warn_len = 0;
         if (!warn_len) warn_len = strlen(warning);
 
         strcpy(buf+(NDS_STRING_SIZE-warn_len-1), warning);
+        space_left = -1;
     }
 
     void append(char c) {
@@ -83,8 +84,15 @@ struct make_node_text_struct {
             bp         += length;
             space_left -= length;
         }
-        else if (space_left >= 0) {
-            insert_overflow_warning();
+        else { // space_left < length
+            if (space_left >= 0) {
+                if (space_left>0) {
+                    memcpy(bp, str, space_left);
+                    bp         += space_left;
+                    space_left  = 0;
+                }
+                insert_overflow_warning();
+            }
         }
     }
 
@@ -310,7 +318,7 @@ static void nds_restore_config(AW_window *aww, const char *stored, AW_CL, AW_CL)
     if (parsedCfg.has_entry("inherit0")) {
         aw_message("Converting stored config to new NDS format -- consider saving it again.");
         // Note: The conversion applied here is also done in create_nds_vars()
-        
+
         GB_ERROR error = 0;
 
         for (int i = 0; !error && i<NDS_COUNT; ++i) {
