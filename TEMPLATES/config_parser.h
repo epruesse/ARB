@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : config_parser.h                                        //
 //    Purpose   : reads config files                                     //
-//    Time-stamp: <Fri Feb/27/2004 17:01 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Oct/01/2004 20:27 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2003          //
@@ -28,26 +28,25 @@
 //
 
 
-#ifndef MAP
+#ifndef _CPP_MAP
 #include <map>
 #endif
-#ifndef CSTDIO
+#ifndef _CPP_CSTDIO
 #include <cstdio>
 #endif
-#ifndef STRING
+#ifndef _CPP_STRING
 #include <string>
 #endif
-
 
 #define MAXCONFIGLINESIZE 200
 
 namespace {
 
     class ConfigParser {
-        typedef map<string, string> ConfigMap;
+        typedef std::map<std::string, std::string> ConfigMap;
 
         ConfigMap entries;
-        string    filename;
+        std::string    filename;
         GB_ERROR  error;
 
         ConfigParser(const ConfigParser& other); // copying not allowed
@@ -67,7 +66,7 @@ namespace {
 
     public:
 
-        ConfigParser(const string& filename_)
+        ConfigParser(const std::string& filename_)
             : filename(filename_)
             , error(0)
         {
@@ -108,7 +107,7 @@ namespace {
 
         GB_ERROR getError() { return error; }
 
-        GB_ERROR makeError(const string& forEntry, const char *msg) {
+        GB_ERROR makeError(const std::string& forEntry, const char *msg) {
             return GBS_global_string("%s (at entry '%s' in %s)", msg, forEntry.c_str(), filename.c_str());
         }
         GB_ERROR makeError(int lineno, const char *msg) {
@@ -130,7 +129,7 @@ namespace {
             return 0;
         }
 
-        const string *getValue(const string& key, GB_ERROR& err) {
+        const std::string *getValue(const std::string& key, GB_ERROR& err) {
             ConfigMap::const_iterator found = entries.find(key);
             if (found == entries.end()) {
                 err = makeError(GBS_global_string("Entry '%s' expected", key.c_str()));
@@ -182,12 +181,12 @@ namespace {
             return 0;
         }
 
-        void parseInt(const string& key, int& value) {
-            const string *val = parser.getValue(key, error);
+        void parseInt(const std::string& key, int& value) {
+            const std::string *val = parser.getValue(key, error);
             if (val) value = atoi(val->c_str());
         }
 
-        void parseInt_checked(const string& key, int& value, int min_value, int max_value) {
+        void parseInt_checked(const std::string& key, int& value, int min_value, int max_value) {
             parseInt(key, value);
             if (!error) {
                 error            = check_int_range(value, min_value, max_value);
@@ -195,8 +194,8 @@ namespace {
             }
         }
 
-        void parseIntRange(const string& key, int& low, int& high) {
-            const string *val = parser.getValue(key, error);
+        void parseIntRange(const std::string& key, int& low, int& high) {
+            const std::string *val = parser.getValue(key, error);
             if (val) {
                 char *range = strdup(val->c_str());
                 char *lhs, *rhs;
@@ -216,7 +215,7 @@ namespace {
             }
         }
 
-        void parseIntRange_checked(const string& key, int& low, int& high, int min_value, int max_value) {
+        void parseIntRange_checked(const std::string& key, int& low, int& high, int min_value, int max_value) {
             parseIntRange(key, low, high);
             if (!error) {
                 error             = check_int_range(low, min_value, max_value);
@@ -225,7 +224,7 @@ namespace {
             }
         }
 
-        void parseBool(const string& key, bool& boolean) {
+        void parseBool(const std::string& key, bool& boolean) {
             int b;
             parseInt(key, b);
             if (!error) {
@@ -235,14 +234,14 @@ namespace {
             }
         }
 
-        void parseDouble(const string& key, double& value) {
-            const string *val = parser.getValue(key, error);
+        void parseDouble(const std::string& key, double& value) {
+            const std::string *val = parser.getValue(key, error);
             if (val) {
                 error = parse_double(val->c_str(), value);
             }
         }
 
-        void parseDouble_checked(const string& key, double& value, double min_value, double max_value) {
+        void parseDouble_checked(const std::string& key, double& value, double min_value, double max_value) {
             parseDouble(key, value);
             if (!error) {
                 error            = check_double_range(value, min_value, max_value);
@@ -250,8 +249,8 @@ namespace {
             }
         }
 
-        void parseDoubleRange(const string& key, double& low, double& high) {
-            const string *val = parser.getValue(key, error);
+        void parseDoubleRange(const std::string& key, double& low, double& high) {
+            const std::string *val = parser.getValue(key, error);
             if (val) {
                 char *range = strdup(val->c_str());
                 char *lhs, *rhs;
@@ -269,7 +268,7 @@ namespace {
             }
         }
 
-        void parseDoubleRange_checked(const string& key, double& low, double& high, double min_value, double max_value) {
+        void parseDoubleRange_checked(const std::string& key, double& low, double& high, double min_value, double max_value) {
             parseDoubleRange(key, low, high);
             if (!error) {
                 error             = check_double_range(low, min_value, max_value);
@@ -279,7 +278,7 @@ namespace {
         }
 
     public:
-        ConfigBase(const string &filename)
+        ConfigBase(const std::string &filename)
             : parser(filename)
             , error(0)
         {}
