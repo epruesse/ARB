@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Tue Oct/12/2004 18:24 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Nov/18/2004 19:32 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -518,14 +518,15 @@ void EXP_map_experiment(AW_root *aw_root, AW_CL scannerid)
 //      void EXP_create_field_items(AW_window *aws)
 //  ----------------------------------------------------
 void EXP_create_field_items(AW_window *aws) {
-    aws->insert_menu_topic("reorder_fields",    "Reorder Fields ...",    "R","spaf_reorder.hlp", AD_F_ALL,  AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&EXP_item_selector);
-    aws->insert_menu_topic("delete_field",      "Delete/Hide Field ...", "D","spaf_delete.hlp",  AD_F_ALL,  AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&EXP_item_selector);
-    aws->insert_menu_topic("create_field",      "Create Field ...",      "C","spaf_create.hlp",  AD_F_ALL,  AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&EXP_item_selector);
+    aws->insert_menu_topic("reorder_fields", "Reorder Fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&EXP_item_selector); 
+    aws->insert_menu_topic("delete_field",   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&EXP_item_selector); 
+    aws->insert_menu_topic("create_field",   "Create Field ...",      "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&EXP_item_selector); 
     aws->insert_separator();
-    //     aws->insert_menu_topic("unhide_fields",      "Scan Database for all Hidden Fields","S","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_rescan_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
-    aws->insert_menu_topic("unhide_fields",       "Show all hidden fields", "h","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
-    aws->insert_menu_topic("scan_unknown_fields", "Scan unknown fields",    "k","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_scan_unknown_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
-    aws->insert_menu_topic("del_unused_fields",   "Remove unused fields",   "u","scandb.hlp",AD_F_ALL,(AW_CB)awt_experiment_field_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER );
+    aws->insert_menu_topic("unhide_fields", "Show all hidden fields", "h", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER); 
+    aws->insert_separator();
+    aws->insert_menu_topic("scan_unknown_fields", "Scan unknown fields",   "k", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_scan_unknown_cb,  (AW_CL)gb_main, AWT_NDS_FILTER); 
+    aws->insert_menu_topic("del_unused_fields",   "Remove unused fields",  "u", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER); 
+    aws->insert_menu_topic("refresh_fields",      "Refresh fields (both)", "s", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_update_cb,        (AW_CL)gb_main, AWT_NDS_FILTER); 
 }
 
 //  ------------------------------------------------------------
