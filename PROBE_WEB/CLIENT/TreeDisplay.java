@@ -219,7 +219,7 @@ public void displayTreeGraph(Graphics g, TreeNode node, int depth)
 
             if (node.testGrouped() == false) // add the node name if node is leaf
             {
-                String info = node.getNodeInformation();
+                String info = node.getDisplayString();
                 int    x    = (int)( node.getTotalDist() * xSpreading) + 5;
                 int    y    = node.getYOffset() +3;
 
@@ -299,7 +299,7 @@ public void displayTreeGraph(Graphics g, TreeNode node, int depth)
             // draw inner node information
             // (this is done AFTER drawing childs to ensure it's on top)
             {
-                String info = node.getNodeInformation();
+                String info = node.getDisplayString();
                 if (info.length() > 0) {
                     int x = line[0]+3;
                     int y = line[1]-1;
@@ -398,17 +398,18 @@ public void handleRightMouseClick(int x, int y)
     {
         System.out.println("right mouse button clicked");
         TreeNode clickedNode = getClickedNode(x, y);
-        if(clickedNode != null)
-            {
-                System.out.println("path to clicked node: " + clickedNode.getBinaryPath());
-                System.out.println("path to clicked node: " + clickedNode.getCodedPath());
-                System.out.println("returned node information: " + myBoss.getNodeInformation(clickedNode.getCodedPath()));
-
-                boolean state = clickedNode.isMarked() != 0;
-                clickedNode.markSubtree(!state);
-                updateListOfMarked();
-                repaint();
-            }
+        if(clickedNode != null) {
+            System.out.println("path to clicked node: " + clickedNode.getBinaryPath());
+            String codedPath = clickedNode.getCodedPath();
+            System.out.println("path to clicked node: " + codedPath);            
+            myBoss.updateNodeInformation(codedPath);
+            
+//             System.out.println("returned node information: " + myBoss.getNodeInformation(clickedNode.getCodedPath()));
+//             boolean state = clickedNode.isMarked() != 0;
+//             clickedNode.markSubtree(!state);
+//             updateListOfMarked();
+//             repaint();
+        }
     }
 
 
