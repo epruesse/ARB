@@ -1,5 +1,20 @@
 #!/bin/tcsh
 
+# Generates some directories as well:
+mkdir -p INCLUDE
+
+mkdir -p NAMES_COM/GENC
+mkdir -p NAMES_COM/GENH
+mkdir -p NAMES_COM/O
+
+mkdir -p ORS_COM/GENC
+mkdir -p ORS_COM/GENH
+mkdir -p ORS_COM/O
+
+mkdir -p PROBE_COM/GENC
+mkdir -p PROBE_COM/GENH
+mkdir -p PROBE_COM/O
+
 # Liblink
 
 ln -s ../ARBDB/libARBDB.sl LIBLINK/libARBDB.sl
