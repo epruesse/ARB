@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2000
 // Ralf Westram
-// Time-stamp: <Wed Feb/27/2002 15:13 MET Coder@ReallySoft.de>
+// Time-stamp: <Fri May/31/2002 20:47 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -34,6 +34,8 @@ static const char *entities =
 //  ---------------------------------------------------------------------------------
 //      static string encodeEntities(const string& str, bool quotedText = false)
 //  ---------------------------------------------------------------------------------
+// if quotedText is true the string is encoded for usage in quotes
+// currently it makes no difference, but this might change
 static string encodeEntities(const string& str, bool quotedText = false) {
     string neu;
     neu.reserve(str.length()*4);
@@ -91,7 +93,7 @@ XML_Attribute *XML_Attribute::append_to(XML_Attribute *queue) {
 //      void XML_Attribute::print(FILE *out) const
 //  ---------------------------------------------------
 void XML_Attribute::print(FILE *out) const {
-    fprintf(out, " %s=\"%s\"", name.c_str(), content.c_str());
+    fprintf(out, " %s=\"%s\"", name.c_str(), encodeEntities(content, true).c_str());
 //     out << " " << name << "=\"" << content << "\"";
     if (next) next->print(out);
 }
