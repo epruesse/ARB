@@ -825,7 +825,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("import_seq",	"Import Sequences and Fields (ARB) ...","I","arb_import.hlp",AWM_ALL, NT_import_sequences,0,0);
             GDE_load_menu(awm,"import");
 
-            awm->insert_sub_menu(  0,"Export",		"E" );
+            awm->insert_sub_menu(  0,"Export ...",		"E" );
             {
                 AWMIMT("export_to_ARB",	"Export Seq/Tree/SAI's to New ARB Database ...","X", "arb_ntree.hlp",	AWM_ALL, (AW_CB)NT_system_cb,	(AW_CL)"arb_ntree -export &",0 );
                 AWMIMT("export_seqs",	"Export Sequences to Foreign Format ...",	 "E","arb_export.hlp",	AWM_ALL, AW_POPUP, (AW_CL)open_AWTC_export_window, (AW_CL)gb_main);
