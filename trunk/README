@@ -6,15 +6,19 @@
 ************ Hardware and System Requirements **************
 
 	As ARB is still under construction, there are only a limited number of
-	operating systems which can run ARB. 
+	operating systems which can run ARB.
+
 	Today it is available for:
 
-		SUN OS 4.1.x		(will not be supported in the far future)
-		SUN Solaris >2.4	(best)
-		Silicon Graphics >5.0	(ok)
-		Linux for PC		(best)
-		HP UX			(never worked properly and will not be supported)
-		Digital OSF		(ok)
+		SUN Solaris >2.4
+		Linux for PC
+
+    Older versions availiable for:
+
+		SUN OS 4.1.x
+		Silicon Graphics >5.0
+		HP UX			        (not working properly)
+		Digital OSF
 
 ************************* Please read ****************************
 		********************************
