@@ -1177,20 +1177,20 @@ libclean:
 	rm -f `find . -type f \( -name '*.a' ! -type l \) -print`
 
 clean:	rmbak
-	rm -f `find . -type f \( -name 'core' -o -name '*.o' -o -name '*.a' ! -type l \) -print`
-	rm -f *_COM/GENH/*.h
-	rm -f *_COM/GENH/*.aisc
-	rm -f *_COM/GENC/*.c
-	rm -f lib/ARB.pm
-	rm -f NTREE/nt_date.h
+	-rm -f `find . -type f \( -name 'core' -o -name '*.o' -o -name '*.a' ! -type l \) -print`
+	-rm -f *_COM/GENH/*.h
+	-rm -f *_COM/GENH/*.aisc
+	-rm -f *_COM/GENC/*.c
+	-rm -f lib/ARB.pm
+	-rm -f NTREE/nt_date.h
 	$(MAKE) -C HELP_SOURCE clean
 	$(MAKE) -C GDEHELP clean
-	rm *.last_gcc
+	-rm *.last_gcc
 
 realclean: clean
-	rm -f AISC/aisc
-	rm -f AISC_MKPTPS/aisc_mkpt
-	rm -f SOURCE_TOOLS/generate_all_links.stamp
+	-rm -f AISC/aisc
+	-rm -f AISC_MKPTPS/aisc_mkpt
+	-rm -f SOURCE_TOOLS/generate_all_links.stamp
 
 rebuild: realclean
 	$(MAKE) all
