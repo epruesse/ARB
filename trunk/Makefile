@@ -302,6 +302,7 @@ ARCHS = \
 			DBSERVER/DBSERVER.a NAMES/NAMES.a \
 			PROBE_DESIGN/PROBE_DESIGN.a \
 			PROBE_GROUP/PROBE_GROUP.a \
+			PROBE_SET/PROBE_SET.a \
 			CHIP/CHIP.a \
 			PRIMER_DESIGN/PRIMER_DESIGN.a \
 			AWTC/AWTC.a AWTI/AWTI.a AWDEMO/AWDEMO.a NTREE/NTREE.a \
@@ -565,19 +566,19 @@ nt:		$(ARCHS_NTREE:.a=.dummy)	$(NTREE)
 ed:		$(ARCHS_EDIT:.a=.dummy)		$(EDIT)
 
 al:		$(ARCHS_ALIGNER:.a=.dummy)	$(ALIGNER)
-nal:	$(ARCHS_NALIGNER:.a=.dummy)	$(NALIGNER)
+nal:		$(ARCHS_NALIGNER:.a=.dummy)	$(NALIGNER)
 a3:		$(ARCHS_ALIV3:.a=.dummy)	$(ALIV3)
 
 di:		$(ARCHS_DIST:.a=.dummy)		$(DIST)
 ph:		$(ARCHS_PHYLO:.a=.dummy)	$(PHYLO)
 pa:		$(ARCHS_PARSIMONY:.a=.dummy)	$(PARSIMONY)
 se:		$(ARCHS_SECEDIT:.a=.dummy)	$(SECEDIT)
-acc:	$(ARCHS_ACORR:.a=.dummy)	$(ACORR)
+acc:		$(ARCHS_ACORR:.a=.dummy)	$(ACORR)
 
 ds:		$(ARCHS_DBSERVER:.a=.dummy)	$(DBSERVER)
 pr:		$(ARCHS_PROBE:.a=.dummy)	$(PROBE)
 pg:		$(ARCHS_PROBE_GROUP:.a=.dummy)	$(PROBE_GROUP)
-chip:	$(ARCHS_CHIP:.a=.dummy)	$(CHIP)
+chip:		$(ARCHS_CHIP:.a=.dummy)	$(CHIP)
 pd:		PROBE_DESIGN/PROBE_DESIGN.dummy
 na:		$(ARCHS_NAMES:.a=.dummy)	$(NAMES)
 os:		$(ARCHS_ORS_SERVER:.a=.dummy)	$(ORS_SERVER)
@@ -586,7 +587,7 @@ oc:		$(ARCHS_ORS_CGI:.a=.dummy)	$(ORS_CGI)
 ac:		$(ARCHS_ARBDB_COMPRESS:.a=.dummy)	$(ARBDB_COMPRESS)
 
 te:		$(ARCHS_TEST:.a=.dummy)	$(TEST)
-sec:	$(ARCHS_SECEDIT:.a=.dummy)
+sec:		$(ARCHS_SECEDIT:.a=.dummy)
 de:		$(ARCHS_AWDEMO:.a=.dummy)	$(AWDEMO)
 
 e4:		$(ARCHS_EDIT4:.a=.dummy) $(EDIT4)
@@ -633,6 +634,8 @@ SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links.sh
 
 gde:		GDE/GDE.dummy
 agde: 		ARB_GDE/ARB_GDE.dummy
+#ps:		$(ARCHS_PROBE_SET:.a=.dummy) $(PROBE_SET)
+ps:		PROBE_SET/PROBE_SET.dummy
 tools:		TOOLS/TOOLS.dummy
 nf77:		NIELS_F77/NIELS_F77.dummy
 trs:		TRS/TRS.dummy
