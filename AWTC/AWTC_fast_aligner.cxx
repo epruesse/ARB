@@ -1386,7 +1386,7 @@ static GB_ERROR alignTo(GBDATA *gb_toAlign, GB_CSTR alignment,
             const char *data   = GB_read_char_pntr(gb_seq);
 
             island_hopper->set_toAlign_sequence(data);
-	    island_hopper->set_alignment_length(length);
+            island_hopper->set_alignment_length(length);
         }
     }
 
@@ -1654,13 +1654,21 @@ static GB_ERROR alignToNextRelative(int pt_server_id, int max_seq_length,
                 AWTC_CompactedSubSequence *alignToSequence = readCompactedSequence(gb_reference[0], alignment, &error, NULL, NULL, firstColumn, lastColumn);
 
                 if (island_hopper) {
-                    GBDATA *gb_seq = GBT_read_sequence(gb_toAlign, alignment);		// get sequence
-                    if (gb_seq) {
-                        long        length = GB_read_string_count(gb_seq);
-                        const char *data   = GB_read_char_pntr(gb_seq);
+                    GBDATA *gb_ref   = GBT_read_sequence(gb_reference[0], alignment); // get reference sequence
+                    GBDATA *gb_align = GBT_read_sequence(gb_toAlign, alignment); // get sequence to align
 
+                    if (gb_ref && gb_align) {
+                        long        length_ref   = GB_read_string_count(gb_ref);
+//                         long        length_align = GB_read_string_count(gb_align);
+                        const char *data;
+
+                        data = GB_read_char_pntr(gb_ref);
                         island_hopper->set_ref_sequence(data);
-			island_hopper->set_alignment_length(length);
+
+                        data = GB_read_char_pntr(gb_align);
+                        island_hopper->set_toAlign_sequence(data);
+
+                        island_hopper->set_alignment_length(length_ref);
                     }
                 }
 
@@ -1818,7 +1826,7 @@ static GB_ERROR AWTC_aligner(GB_CSTR reference,		// name of reference species
                         const char *data   = GB_read_char_pntr(gb_seq);
 
                         island_hopper->set_ref_sequence(data);
-			island_hopper->set_alignment_length(length);
+                        island_hopper->set_alignment_length(length);
                     }
                 }
 

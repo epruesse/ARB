@@ -407,7 +407,7 @@ public:
         if (showGapsMessages) {
             char *messi = (char*)malloc(100);
 
-            sprintf(messi, "'%s' needs %li gaps at offset %li.", my_master_name, gaps, offset);
+            sprintf(messi, "'%s' needs %li gaps at offset %li.", my_master_name, gaps, offset+1);
             aw_message(messi);
             free(messi);
         }
