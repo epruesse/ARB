@@ -1,13 +1,14 @@
 #!/bin/bash -x
 
-if [ -z "$5" ]; then
-    echo "Usage: arb_protpars bootstrap geneticcode viewreport randomize threshold"
+if [ -z "$6" ]; then
+    echo "Usage: arb_protpars bootstrap geneticcode viewreport randomize threshold_pars interactive"
 else
     BOOTSTRAP=$1
     CODE=$2
     REPORT=$3
     RANDOMIZE=$4
-    THRESHOLD=$5
+    THRESHOLD_PARS=$5
+    INTERACTIVE=$6
 
     FLAGS="c $CODE"
 
@@ -16,13 +17,16 @@ else
         FLAGS="$FLAGS j $RANDOMSEED 1"
     fi
 
-    if [ \! "$THRESHOLD" = "0" ]; then
-        FLAGS="$FLAGS t $THRESHOLD"
+    if [ \! "$THRESHOLD_PARS" = "0" ]; then
+        FLAGS="$FLAGS t $THRESHOLD_PARS"
     fi
 
     if [ "$BOOTSTRAP" = "0" ]; then
-        arb_echo $FLAGS y | protpars
-        #protpars
+        if [ "$INTERACTIVE" = "0" ]; then
+            arb_echo $FLAGS y | protpars
+        else
+            (arb_echo $FLAGS ; cat -) | ( protpars ; echo "Press RETURN to continue.." )
+        fi
         echo >arb_read_tree_args
         WHAT=protpars
     else
