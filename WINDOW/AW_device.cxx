@@ -384,9 +384,15 @@ void AW_gc::set_fill(int gc,AW_grey_level grey_level){
     common->gcs[gc]->set_fill(grey_level);}
 
 
-void AW_gc::set_font(int gc,AW_font font_nr, int size){
+void AW_gc::set_font(int gc,AW_font font_nr, int size, int *found_size) {
+    // if found_size != 0 -> return value for used font size 
     aw_assert(common->gcs[gc]);
-    common->gcs[gc]->set_font(font_nr,size);
+    common->gcs[gc]->set_font(font_nr, size, found_size);
+}
+
+int AW_gc::get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes) {
+    aw_assert(common->gcs[gc]);
+    return common->gcs[gc]->get_available_fontsizes(font_nr, available_sizes);
 }
 
 
