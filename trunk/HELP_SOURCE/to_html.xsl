@@ -55,7 +55,7 @@
   <!-- =============== -->
 
   <xsl:template name="error">
-    <xsl:param name="text" select="Unknown error"/>
+    <xsl:param name="text" select="'Unknown error'"/>
     <xsl:message terminate="yes"><xsl:value-of select="$text"/></xsl:message>
   </xsl:template>
 
@@ -119,10 +119,10 @@
   <!-- ============================== -->
   <!--     insert document header     -->
   <!-- ============================== -->
-  <xsl:template name="header" xml:space="preserve">
+  <xsl:template name="header">
     <xsl:param name="title" select="'Untitled'"/>
     <xsl:comment>Generated from XML with Sablotron -- Stylesheet by Ralf Westram (ralf@arb-home.de) </xsl:comment>
-    <HEAD>
+    <HEAD xml:space="preserve">
       <META NAME="Author" CONTENT="{$author}"/>
       <meta http-equiv="expires" content="86400"/>
       <TITLE>ARB help: <xsl:value-of select="$title"/></TITLE>
@@ -372,18 +372,13 @@
               <!-- Search Google -->
             </TD>
             <TD valign="top" align="right">
-              <FONT size="-2">
-                  This page was converted by <I>arb_help2xml</I> and may have a strange layout.
-                  If you think it&acute;s really bad, please send a mail to our
-                  <xsl:call-template name="insert-email-link">
-                    <xsl:with-param name="linktext">help keeper</xsl:with-param>
-                    <xsl:with-param name="address">helpfeedback</xsl:with-param>
-                    <xsl:with-param name="subject" select="concat('Helppage ',$myname,' looks weird')"/>
-                  </xsl:call-template>. More documentation can be found on the
-                  <xsl:call-template name="insert-link">
-                    <xsl:with-param name="linktext" select="'ARB website'"/>
-                    <xsl:with-param name="address" select="'http://rtfm.arb-home.de/'"/>
-                  </xsl:call-template>
+              <FONT size="-1">
+                More documentation can be found on the
+                <xsl:call-template name="insert-link">
+                  <xsl:with-param name="linktext" select="'ARB website'"/>
+                  <xsl:with-param name="address" select="'http://rtfm.arb-home.de/'"/>
+                </xsl:call-template>.<BR/>
+                Last update on <xsl:value-of select="$date"/>.
               </FONT>
             </TD>
           </TR>
