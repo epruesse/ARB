@@ -1,10 +1,22 @@
+#ifndef PROBE_H
+#define PROBE_H
 
-#include <PT_com.h>
+#ifndef __LIST__
+#include <list>
+#endif
+#ifndef __SET__
+#include <set>
+#endif
+
+#ifndef ARBDB_H
 #include <arbdb.h>
-
-#include <list.h>
-#include <set.h>
+#endif
+#ifndef PT_COM_H
+#include <PT_com.h>
+#endif
+#ifndef AISC_GEN_SERVER_INCLUDED
 #include <PT_server.h>
+#endif
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -241,12 +253,16 @@ struct ltByInternalName {
     }
 };
 
-typedef list<gene_struct>                          gene_struct_list;
-typedef set<const gene_struct *, ltByInternalName> gene_struct_index_internal;
-typedef set<const gene_struct *, ltByArbName>      gene_struct_index_arb;
+typedef std::list<gene_struct>                          gene_struct_list;
+typedef std::set<const gene_struct *, ltByInternalName> gene_struct_index_internal;
+typedef std::set<const gene_struct *, ltByArbName>      gene_struct_index_arb;
 
 extern gene_struct_list           all_gene_structs; // stores all gene_structs
 extern gene_struct_index_arb      gene_struct_arb2internal; // sorted by arb speces+gene name
 extern gene_struct_index_internal gene_struct_internal2arb; // sorted by internal name
 
 #define PT_base_string_counter_eof(str) (*(unsigned char *)(str) == 255)
+
+#else
+#error probe.h included twice
+#endif
