@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : merge.hxx                                              //
 //    Purpose   : Local header for usage inside directory MERGE          //
-//    Time-stamp: <Fri Aug/23/2002 19:22 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jul/23/2003 11:01 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Copyright Department of Microbiology (Technical University Munich)   //
@@ -24,8 +24,10 @@ AW_window * MG_merge_names_cb(AW_root *awr);
 AW_window * MG_merge_species_cb(AW_root *awr);
 AW_window * MG_merge_extendeds_cb(AW_root *awr);
 AW_window * MG_merge_trees_cb(AW_root *awr);
+AW_window * MG_merge_configs_cb(AW_root *awr);
 AW_window *create_mg_check_fields(AW_root *aw_root);
 
+void MG_create_config_awar(AW_root *aw_root, AW_default aw_def);
 void MG_create_trees_awar(AW_root *aw_root, AW_default aw_def);
 void MG_create_extendeds_var(AW_root *aw_root, AW_default aw_def);
 void MG_create_alignment_vars(AW_root *aw_root,AW_default aw_def);
