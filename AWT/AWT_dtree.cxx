@@ -36,7 +36,8 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
 
                     "#3be",
                      "CURSOR$white",
-                     "BRANCHES$green",
+                     "Branch remarks$#b6ffb6",
+                     "+-Bootstrap$#53d3ff",    "-B.(limited)$white",
                      "-GROUP_BRACKETS$#000",
                      "Marked$#ffe560",
                      "Some marked$#bb8833",
@@ -530,17 +531,44 @@ void AWT_graphic_tree::rot_show_triangle(AW_device *device)
 
 
 }
-void AWT_show_circle(AW_device *device, const char *bootstrap, double zoom_factor, double len, double x, double y, int filter, AW_CL cd1,AW_CL cd2){
-    double radius = .01 * atoi(bootstrap);     // Groesse der Bootstrap Kreise
+void AWT_show_bootstrap_circle(AW_device *device, const char *bootstrap, double zoom_factor, double max_radius, double len, double x, double y, bool elipsoid, double elip_ysize, int filter, AW_CL cd1,AW_CL cd2){
+    double radius           = .01 * atoi(bootstrap); // bootstrap values are given in % (0..100)
     if (radius < .1) radius = .1;
-    radius = 1.0 / sqrt(radius);
-    radius -= 1.0;
-    radius *= 2;
-    radius *= len * zoom_factor;
-    if (radius < 0) return;
-    //if (radius > 0.04) radius = 0.04;
-    if (radius > 0.06) radius = 0.06;
-    device->circle(AWT_GC_BRANCH_REMARK, false, x,y,radius,radius,filter,cd1 , (AW_CL) cd2 );
+    
+    radius  = 1.0 / sqrt(radius); // -> bootstrap->radius : 100% -> 1, 0% -> inf
+    radius -= 1.0;              // -> bootstrap->radius : 100% -> 0, 0% -> inf
+    radius *= 2; // diameter ? 
+    
+    if (radius < 0) return;     // skip too small circles
+
+    // Note : radius goes against infinite, if bootstrap values go against zero
+    //        For this reason we do some limitaion here:
+
+    // printf("bootstrap=%i -> radius=%f\n", atoi(bootstrap), radius);
+
+    // was 0.06 
+// #define BOOTSTRAP_RADIUS_LIMIT (len*2)
+// #define BOOTSTRAP_RADIUS_LIMIT 2.0
+#define BOOTSTRAP_RADIUS_LIMIT max_radius
+
+    int gc = AWT_GC_BOOTSTRAP;
+    
+    if (radius > BOOTSTRAP_RADIUS_LIMIT) {
+        radius = BOOTSTRAP_RADIUS_LIMIT;
+        gc     = AWT_GC_BOOTSTRAP_LIMITED;
+    }
+
+    double     radiusx = radius * len * zoom_factor; // multiply with length of branch (and zoomfactor)
+    double     radiusy;
+    if (elipsoid) {
+        radiusy = elip_ysize * zoom_factor;
+        if (radiusy > radiusx) radiusy = radiusx;
+    }
+    else {
+        radiusy = radiusx;
+    }
+
+    device->circle(gc, false, x, y, radiusx, radiusy, filter, cd1, (AW_CL)cd2);
 }
 
 double comp_rot_orientation(AW_clicked_line *cl)
@@ -2034,7 +2062,7 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
         bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->leftson->remark_branch, at->leftson->is_leaf, nx0, ny0-scale*0.1, 1, text_filter, (AW_CL)at, 0);
 
         if (show_circle && bootstrap_shown){
-            AWT_show_circle(disp_device,at->leftson->remark_branch, circle_zoom_factor,at->leftlen,nx0, ny0, text_filter, (AW_CL) at->leftson, (AW_CL) 0);
+            AWT_show_bootstrap_circle(disp_device,at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen,nx0, ny0, use_ellipse, scale, text_filter, (AW_CL) at->leftson, (AW_CL) 0);
         }
     }
 
@@ -2042,7 +2070,7 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
         bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->rightson->remark_branch, at->rightson->is_leaf, nx1, ny1-scale*0.1, 1, text_filter, (AW_CL)at, 0);
 
         if (show_circle && bootstrap_shown){
-            AWT_show_circle(disp_device,at->rightson->remark_branch,circle_zoom_factor, at->rightlen,nx1, ny1, text_filter, (AW_CL) at->rightson, (AW_CL) 0);
+            AWT_show_bootstrap_circle(disp_device,at->rightson->remark_branch,circle_zoom_factor, circle_max_size, at->rightlen,nx1, ny1, use_ellipse, scale, text_filter, (AW_CL) at->rightson, (AW_CL) 0);
         }
     }
 
@@ -2218,13 +2246,13 @@ void AWT_graphic_tree::show_tree_rek(AP_tree * at, double x_center,
         if (at->leftson->remark_branch){
             w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
             z = at->leftlen * .5;
-            AWT_show_circle(disp_device,at->leftson->remark_branch,circle_zoom_factor, at->leftlen,x_center+ z * cos(w),y_center+ z * sin(w),text_filter, (AW_CL)at,0);
+            AWT_show_bootstrap_circle(disp_device,at->leftson->remark_branch,circle_zoom_factor, circle_max_size, at->leftlen,x_center+ z * cos(w),y_center+ z * sin(w), false, 0, text_filter, (AW_CL)at,0);
         }
         if (at->rightson->remark_branch){
             /*** right branch ***/
             w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
             z = at->rightlen * .5;
-            AWT_show_circle(disp_device,at->rightson->remark_branch,circle_zoom_factor, at->rightlen,x_center+ z * cos(w),y_center+ z * sin(w),text_filter, (AW_CL)at,0);
+            AWT_show_bootstrap_circle(disp_device,at->rightson->remark_branch,circle_zoom_factor, circle_max_size, at->rightlen,x_center+ z * cos(w),y_center+ z * sin(w), false, 0, text_filter, (AW_CL)at,0);
         }
     }
 }
@@ -2419,17 +2447,24 @@ void AWT_graphic_tree::show(AW_device *device)  {
     disp_device = device;
 
     AW_font_information *fontinfo = disp_device->get_font_information(AWT_GC_SELECTED, 0);
-    scale = fontinfo->max_letter_height/ device->get_scale();
-    make_node_text_init(gb_main);
-    scale *= aw_root->awar(AWAR_DTREE_VERICAL_DIST)->read_float();
-    grey_level = aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int()*.01;
+    scale                         = fontinfo->max_letter_height/ device->get_scale();
 
-    baselinewidth = (int)aw_root->awar(AWAR_DTREE_BASELINEWIDTH)->read_int();
-    show_circle = (int)aw_root->awar(AWAR_DTREE_SHOW_CIRCLE)->read_int();
+    make_node_text_init(gb_main);
+
+    scale      *= aw_root->awar(AWAR_DTREE_VERICAL_DIST)->read_float();
+    grey_level  = aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int()*.01;
+
+    baselinewidth      = (int)aw_root->awar(AWAR_DTREE_BASELINEWIDTH)->read_int();
+    show_circle        = (int)aw_root->awar(AWAR_DTREE_SHOW_CIRCLE)->read_int();
     circle_zoom_factor = aw_root->awar(AWAR_DTREE_CIRCLE_ZOOM)->read_float();
+    circle_max_size    = aw_root->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->read_float();
+    use_ellipse        = aw_root->awar(AWAR_DTREE_USE_ELLIPSE)->read_int();
+
     free(species_name);
     species_name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
+
     x_cursor = y_cursor = 0.0;
+
     switch (tree_sort) {
         case AP_TREE_NORMAL:
             if (!tree_root_display)   return;
@@ -2484,12 +2519,16 @@ AWT_graphic *NT_generate_tree( AW_root *root,GBDATA *gb_main )
 
 void awt_create_dtree_awars(AW_root *aw_root,AW_default def)
 {
-    aw_root->awar_int(AWAR_DTREE_BASELINEWIDTH,0,def)   ->set_minmax(0,10);
-    aw_root->awar_float(AWAR_DTREE_VERICAL_DIST,1.0,def)    ->set_minmax(0.1,3);
+    aw_root->awar_int(AWAR_DTREE_BASELINEWIDTH,1,def)   ->set_minmax(1,10);
+    aw_root->awar_float(AWAR_DTREE_VERICAL_DIST,1.0,def)->set_minmax(0.01,30);
     aw_root->awar_int(AWAR_DTREE_AUTO_JUMP,1,def);
+    
     aw_root->awar_int(AWAR_DTREE_SHOW_CIRCLE,0,def);
-    aw_root->awar_float(AWAR_DTREE_CIRCLE_ZOOM,1.0,def) ->set_minmax(0.1,20);
-    aw_root->awar_int(AWAR_DTREE_GREY_LEVEL,20,def)     ->set_minmax(0,100);
+    aw_root->awar_int(AWAR_DTREE_USE_ELLIPSE, 1, def);
+    
+    aw_root->awar_float(AWAR_DTREE_CIRCLE_ZOOM,1.0,def)     ->set_minmax(0.01,20);
+    aw_root->awar_float(AWAR_DTREE_CIRCLE_MAX_SIZE,1.5,def) ->set_minmax(0.01,200);
+    aw_root->awar_int(AWAR_DTREE_GREY_LEVEL,20,def)         ->set_minmax(0,100);
 
     aw_root->awar_int(AWAR_DTREE_REFRESH,0,def);
 }
