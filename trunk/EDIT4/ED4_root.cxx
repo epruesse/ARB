@@ -1623,7 +1623,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     ____________________________SEP;
     awmm->insert_menu_topic( "props_helix_sym", "Helix Settings ","H","helixsym.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_helix_props_window, (AW_CL)new AW_cb_struct(awmm,(AW_CB)ED4_refresh_window,0,0) );
     awmm->insert_menu_topic( "props_key_map", "Key Mappings ", "K","nekey_map.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_key_map_window, 0 );
-    awmm->insert_menu_topic( "props_nds", "Display Info Options ", "D","e4_nds.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_create_nds_window, 0 );
+    awmm->insert_menu_topic( "props_nds", "Select visible info (NDS) ", "D","e4_nds.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_create_nds_window, 0 );
     ____________________________SEP;
 
     awmm->insert_menu_topic ( "save_props", "Save Properties (~/.arb_prob/edit4)", "a","Save Def", AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
