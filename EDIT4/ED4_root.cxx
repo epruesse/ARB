@@ -34,7 +34,7 @@
 #include "ed4_secedit.hxx"
 #include "ed4_visualizeSAI.hxx"
 #include "edit_naligner.hxx"
-
+#include "ed4_RNA3D.hxx"
 
 AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL );
 
@@ -1603,7 +1603,9 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic( "dcs_threshold", "Set threshold for D.c.s.", "f", "st_ml.hlp",AWM_ALL, ED4_set_col_stat_threshold, 1, 0);
     SEP________________________SEP;
     awmm->insert_menu_topic( "visulize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_createVisualizeSAI_window, 0 );
-
+#ifdef DEVEL_YADHU
+    awmm->insert_menu_topic("rna_3D", "3 Dimensional Structure of ribosomal RNA", "", 0, AWM_ALL, ED4_RNA3D_start, 0, 0);
+#endif
     // ------------------------------
     //  Block
     // ------------------------------
