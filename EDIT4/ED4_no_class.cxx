@@ -425,10 +425,11 @@ void ED4_input_cb(AW_window *aww,AW_CL /*cd1*/, AW_CL /*cd2*/)
             }
 
             if (repeatCount) {
-#ifdef DARWIN
+#if defined(DARWIN) || 1
                 // sth goes wrong with OSX -> always execute keystroke
+                // Xfree 4.3 has problems as well, so repeat counting is disabled completely
                 executeKeystroke(aww, &lastEvent, repeatCount);
-                repeatCount = 0;
+                repeatCount                       = 0;
 #else
                 AW_ProcessEventType nextEventType = ED4_ROOT->aw_root->peek_key_event(aww);
 
