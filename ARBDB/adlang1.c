@@ -49,7 +49,7 @@ static float gbl_param_float(char *str,float def, char *help_text, struct gbl_pa
 	return def;
 	}
 	*/
-	
+
 static int gbl_param_bit(const char *str,int def, const char *help_text, struct gbl_param **pp, char **vaddr) {
     struct gbl_param *_gblp = (struct gbl_param *)GB_calloc(1,sizeof(struct gbl_param));
     _gblp->next = *pp; *pp = _gblp; _gblp->help_text = help_text;
@@ -120,8 +120,8 @@ GB_ERROR trace_params(int argc, GBL *argv, struct gbl_param *ppara, char *com) {
             for (para = ppara; para; para = para->next) pcount++;
             params = (struct gbl_param **)GB_calloc(sizeof(void *),pcount);
             for (k = 0, para = ppara; para; para = para->next) params[k++] = para;
-	    
-		    
+
+
             for (pcount--; pcount>=0; pcount--) {
                 para = params[pcount];
                 GBS_strcat(str,"	");
@@ -197,9 +197,9 @@ GB_ERROR gbl_len(GBDATA *gb_species, char *com,
     char tab[256];				/* if tab[char] count 'char' */
     char result[100];
     const char *option;
-	
+
     GBUSE(gb_species);GBUSE(com);
-	
+
     if (argcparam == 0) option = "";
     else option = argvparam[0].str;
     if (argcparam>=2) return "len syntax: len[(\"characters not to count\")]";
@@ -311,7 +311,7 @@ GB_ERROR _gbl_mid(	int argcinput, GBL *argvinput,
     for (i=0;i<argcinput;i++) {		/* go through all in streams	*/
         char *p;
         int c;
-		
+
         int len;
         int nstart = start;
         int nend = end;
@@ -431,7 +431,7 @@ GB_ERROR gbl_cut(GBDATA *gb_species, char *com,
                  int *argcout, GBL **argvout)	{
     int i;
     GBUSE(gb_species);GBUSE(com);
-	
+
     GBL_CHECK_FREE_PARAM(*argcout,argcparam);
     for (i=0; i<argcparam;i++) {
         int j = atoi(argvparam[i].str)-1;
@@ -590,7 +590,7 @@ GB_ERROR gbl_calculator(GBDATA *gb_species, char *com,
     else if (!strcmp(com,"mult")) val = val1*val2;
     else if (!strcmp(com,"div")) { if (val2) val = val1/val2;else val = 0; }
     else if (!strcmp(com,"per_cent")) { if (val2) val = val1*100/val2; else val =0; }
-	
+
 
     sprintf(result,"%i",val);
     GBL_CHECK_FREE_PARAM(*argcout,1);
@@ -607,13 +607,13 @@ GB_ERROR gbl_readdb(GBDATA *gb_species, char *com,
 {
     int i;
     void *strstr = GBS_stropen(1024);
-    
+
     GBUSE(com);
     GBUSE(argcparam);
     GBUSE(argvparam);
     GBUSE(argcinput);
     GBUSE(argvinput);
-    
+
     for (i=0;i<argcparam;i++){
         GBDATA *gb = GB_search(gb_species,argvparam[i].str,GB_FIND);
         char *val;
@@ -752,7 +752,7 @@ GB_ERROR gbl_format_sequence(GBDATA *gb_species, char *com,
                 GBS_strcat(strstruct," ");
             };
             GBS_chrcat(strstruct,*(p++));
-	
+
         }
     }
     (*argvout)[(*argcout)++].str = GBS_strclose(strstruct,1);
@@ -974,7 +974,7 @@ GB_ERROR gbl_change_gc(GBDATA *gb_species, char *com,
                 *(dest++) = c;
             }
         }
-		
+
         if (c) while ( (c= *(source++)) ) {
             if ( isalpha(c) && (rand() * (100.0 / (double)0xffff)) < change){
                 c = change_to[ (rand()>>6)% ctl];
@@ -1058,7 +1058,7 @@ struct GBL_command_table gbl_command_table[] = {
     {"format_sequence", gbl_format_sequence } ,
     {"format", gbl_format_sequence } ,
     {"sequence_type", gbl_sequence_type } ,
-    {"extract_sequence", gbl_extract_sequence } ,	
+    {"extract_sequence", gbl_extract_sequence } ,
     {"checksum", gbl_check } ,
     {"gcgchecksum", gbl_gcgcheck } ,
     {"extract_words", gbl_extract_words } ,
