@@ -1,5 +1,14 @@
-all:
-	$(PP)  -IMENUS ARB_GDEmenus.source >ARB_GDEmenus
+
+TARGET = ARB_GDEmenus
+SOURCE = ARB_GDEmenus.source
+DEPEND_ON = $(wildcard MENUS/*.menu)
+
+all: $(TARGET)
+
+$(TARGET) : $(SOURCE) $(DEPEND_ON)
+	chmod a+w $(TARGET)
+	$(PP)  -IMENUS $(SOURCE) >$(TARGET)
+	chmod a+w $(TARGET)
 
 save:
 	rm -f arbgdemenus*.tar.gz
