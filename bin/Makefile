@@ -8,11 +8,13 @@ help:
 
 all:
 	rm -f dummyprg `find . -type l -print`
-ifndef DEBIAN
-	/bin/ln -s `find ../DEPOT ../SH ../PERL5/bin ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
-else
+ifdef DEBIAN
 	/bin/ln -s `find ../SH ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
+else
+	/bin/ln -s `find ../DEPOT ../SH ../PERL5/bin ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
 endif
+	/bin/ln -s `find ../SOURCE_TOOLS -name "arb_*" -perm -100 ! -type d -print` .
+
 
 realclean:
 	rm -f dummyprg `find . ! -name Makefile -print`

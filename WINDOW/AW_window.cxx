@@ -229,8 +229,8 @@ AW_select_table_struct::AW_select_table_struct( const char *displayedi, float va
     float_value = valuei;
 }
 AW_select_table_struct::~AW_select_table_struct( void ) {
-    delete displayed;
-    delete char_value;
+    free(displayed);
+    free(char_value);
 }
 
 
@@ -1087,12 +1087,12 @@ void AW_root::init(const char *programmname, AW_BOOL no_exit ) {
     GB_install_status2((gb_status_func2_type)aw_status_dummy2);
 
     p_r->toplevel_widget = XtAppInitialize(&(p_r->context), programmname, NULL, 0,
-                                           &a,   /*&argc*/
+                                           &a, /*&argc*/
                                            NULL, /*argv*/
                                            fallback_resources, NULL, 0);
-    for (i=0;i<1000;i++) {
-        if (!fallback_resources[i]) break;
-        delete fallback_resources[i];
+
+    for (i=0;i<1000 && fallback_resources[i];i++) {
+        free(fallback_resources[i]);
     }
 
     p_r->display = XtDisplay(p_r->toplevel_widget);
@@ -1248,14 +1248,12 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname)
 {
     if (!color_table_size){
         color_table_size = AW_COLOR_MAX + colnum;
-        color_table = new unsigned long[color_table_size];
-        memset((char *)color_table,-1,(size_t)(color_table_size*sizeof(long)));
+        color_table      = (unsigned long *)malloc(sizeof(unsigned long)*color_table_size);
+        memset((char *)color_table,-1,(size_t)(color_table_size*sizeof(unsigned long)));
     }else{
         if (colnum>=color_table_size) {
-            color_table = (unsigned long *)realloc(
-                                                   (char *)color_table,(8 + colnum)*sizeof(long));
-            memset( (char *)(color_table+color_table_size),-1,
-                    (int)(8 + colnum - color_table_size) * sizeof(long));
+            color_table = (unsigned long *)realloc((char *)color_table,(8 + colnum)*sizeof(long));
+            memset( (char *)(color_table+color_table_size),-1, (int)(8 + colnum - color_table_size) * sizeof(long));
             color_table_size = 8+colnum;
         }
     }
@@ -1342,7 +1340,7 @@ const char *aw_str_2_label(const char *str,AW_window *aww)
     if (str == last_pointer && !strcmp(str,last_value)){
         str = 0;
     }else{
-        delete last_value;
+        free(last_value);
         last_value = strdup(str);
         last_pointer = str;
     }
@@ -1350,7 +1348,7 @@ const char *aw_str_2_label(const char *str,AW_window *aww)
         if (var_value) return var_value;
         return &buffer[0];
     }
-    delete var_value; var_value = 0;
+    delete [] var_value; var_value = 0;
     if (str[0] == '#') {
         const char *arbhome = GB_getenvARBHOME();
         sprintf( &buffer[0], "%s/lib/pixmaps/%s", arbhome, str+1 );
@@ -1384,7 +1382,7 @@ void AW_LABEL_IN_AWAR_LIST(AW_window *aww,Widget widget,const char *str) {
             AW_ERROR("AW_LABEL_IN_AWAR_LIST:: AWAR %s not found\n",str);
             aww->update_label((int*)widget,str);
         }
-        delete var_value;
+        free(var_value);
         AW_INSERT_BUTTON_IN_AWAR_LIST( vs,0, widget, AW_WIDGET_LABEL_FIELD, aww);
     }
 }

@@ -133,7 +133,7 @@ AWT_species_set::AWT_species_set(AP_tree *nodei,AWT_species_set_root *ssr,AWT_sp
 }
 
 AWT_species_set::~AWT_species_set(){
-    delete bitstring;
+    free(bitstring);
 }
 
 AWT_species_set *AWT_species_set_root::move_tree_2_ssr(AP_tree *node){

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <memory.h>
 #include <arbdb.h>
@@ -271,7 +272,7 @@ void AW_window::unset_at_commands( void ) {
 	_callback				= NULL;
 	_d_callback				= NULL;
 
-	delete _at->label_for_inputfield;
+	free(_at->label_for_inputfield);
 	_at->label_for_inputfield = NULL;
 
 	_at->correct_for_at_string = AW_FALSE;

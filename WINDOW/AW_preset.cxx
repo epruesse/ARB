@@ -307,7 +307,7 @@ void aw_gc_color_changed_cb(AW_root *root,AW_MGC_awar_cb_struct *cbs, long mode)
     if (mode != -1)	{
         cbs->cbs->f(cbs->cbs->aw,cbs->cbs->cd1,cbs->cbs->cd2);
     }
-    delete colorname;
+    free(colorname);
 }
 
 static bool color_groups_initialized = false;

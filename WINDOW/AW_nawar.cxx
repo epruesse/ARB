@@ -413,13 +413,13 @@ void AW_awar::update(void)
                 else{
                     if (strcmp(n,str)) {
                         this->write_string(n);
-                        delete n;
-                        delete str;
+                        free(n);
+                        free(str);
                         return;
                     }
-                    delete n;
+                    free(n);
                 }
-                delete str;
+                free(str);
                 break;
             default:
                 break;

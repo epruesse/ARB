@@ -519,7 +519,7 @@ void AW_window::update_toggle(int *wgt,const char *var,AW_CL cd)
         path = strdup(GBS_global_string("%s/lib/pixmaps/%s",GB_getenvARBHOME(),bitmaps[1]+1));
     }
     XtVaSetValues( (Widget)wgt, RES_CONVERT( XmNlabelPixmap, path ), NULL );
-    delete path;
+    free(path);
 }
 
 void AW_window::create_toggle( const char *var_name,const char *no, const char *yes ) {
@@ -539,7 +539,7 @@ void AW_window::create_toggle( const char *var_name,const char *no, const char *
 
     char *var_value = vs->read_as_string();
     this->update_toggle((int*)p_w->toggle_field,var_value,(AW_CL)bitmaps);
-    delete var_value;
+    free(var_value);
 
     AW_variable_update_struct *vus;
     vus = new AW_variable_update_struct( p_w->toggle_field, AW_WIDGET_TOGGLE, vs, 0, 0, 0, cbs );
@@ -771,7 +771,7 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
                                             XmNfontList, p_global->fontlist,
                                             NULL );
 
-    delete String;
+    free(String);
 
     if (!_at->to_position_exists){
         XtVaGetValues( scrolledWindowText,	XmNheight, &height_of_last_widget,
@@ -1351,7 +1351,7 @@ void AW_window::update_selection_list( AW_selection_list * selection_list ) {
     update_selection_list_intern( selection_list );
 
     for (i=0; i<count; i++) XmStringFree(strtab[i]);
-    delete strtab;
+    delete [] strtab;
 
 }
 
@@ -1421,7 +1421,7 @@ void AW_window::update_selection_list_intern( AW_selection_list *selection_list 
     }else{
         AW_ERROR("Selection list '%s' has no default selection",selection_list->variable_name);
     }
-    delete global_var_value;
+    free(global_var_value);
 }
 
 void AW_selection_list::selectAll(){
@@ -1547,7 +1547,7 @@ void AW_window::sort_selection_list( AW_selection_list * selection_list, int bac
     selection_list->list_table = tables[0];
     selection_list->last_of_list_table = tables[i];
 
-    delete tables;
+    delete [] tables;
     return;
 }
 
@@ -1728,7 +1728,7 @@ void AW_window::create_option_menu( const char *var_name, AW_label label, const 
                                                    RES_CONVERT( XmNlabelString, help_label ),
                                                    NULL );
         }
-        delete help_label;
+        delete [] help_label;
     }else {
         optionMenu1 = XtVaCreateManagedWidget( "optionMenu1",
                                                xmRowColumnWidgetClass,
@@ -2097,7 +2097,7 @@ void AW_window::update_option_menu( int option_menu_number ) {
     }
 
 
-    delete global_var_value;
+    free(global_var_value);
 
     short length;
     short height;

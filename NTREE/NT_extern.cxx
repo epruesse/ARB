@@ -76,7 +76,7 @@ void NT_show_message(AW_root *awr)
         aw_message(mesg);
         awr->awar("tmp/message")->write_string("");
     }
-    delete mesg;
+    free(mesg);
 }
 
 void nt_test_ascii_print(AW_window *aww){
@@ -261,7 +261,7 @@ NT_save_quick_cb(AW_window *aww)
 {
 	char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
 	GB_ERROR error = GB_save_quick(gb_main,filename);
-	delete filename;
+	free(filename);
 	if (error) aw_message(error);
 	else awt_refresh_selection_box(aww->get_root(), "tmp/nt/arbdb");
 }
@@ -271,7 +271,7 @@ NT_save_quick_as_cb(AW_window *aww)
 {
 	char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
 	GB_ERROR error = GB_save_quick_as(gb_main, filename);
-	delete filename;
+	free(filename);
 	if (error) {
 		aw_message(error);
 	}else{
@@ -404,8 +404,8 @@ NT_save_as_cb(AW_window *aww)
 
     GB_ERROR error = GB_save(gb_main, filename, filetype);
 
-	delete filename;
-	delete filetype;
+	free(filename);
+	free(filetype);
 
 	if (error) {
 		aw_message(error);
@@ -783,22 +783,24 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     AW_init_color_group_defaults("arb_ntree");
 
-    nt.tree                        = (AWT_graphic_tree*)NT_generate_tree(awr,gb_main);
-    AWT_canvas *ntw                = new AWT_canvas(gb_main,(AW_window *)awm,nt.tree, aw_gc_manager,awar_tree) ;
-    char       *tree_name          = awr->awar_string(awar_tree)->read_string();
-    char       *existing_tree_name = GBT_existing_tree(gb_main,tree_name);
-    delete tree_name;
+    nt.tree         = (AWT_graphic_tree*)NT_generate_tree(awr,gb_main);
+    AWT_canvas *ntw = new AWT_canvas(gb_main,(AW_window *)awm,nt.tree, aw_gc_manager,awar_tree) ;
+    {
+        char *tree_name          = awr->awar_string(awar_tree)->read_string();
+        char *existing_tree_name = GBT_existing_tree(gb_main,tree_name);
 
-    if (existing_tree_name) {
-        awr->awar(awar_tree)->write_string(existing_tree_name);
+        if (existing_tree_name) {
+            awr->awar(awar_tree)->write_string(existing_tree_name);
+            NT_reload_tree_event(awr,ntw,GB_FALSE); // load first tree !!!!!!!
+        }else{
+            AWT_advice("Your database contains no tree.", AWT_ADVICE_TOGGLE|AWT_ADVICE_HELP, 0, "no_tree.hlp");
+        }
 
-        NT_reload_tree_event(awr,ntw,GB_FALSE); // load first tree !!!!!!!
-    }else{
-        AWT_advice("Your database contains no tree.", AWT_ADVICE_TOGGLE|AWT_ADVICE_HELP, 0, "no_tree.hlp");
+        awr->awar( awar_tree)->add_callback( (AW_RCB)NT_reload_tree_event, (AW_CL)ntw,(AW_CL)GB_FALSE);
+
+        free(existing_tree_name);
+        free(tree_name);
     }
-
-    awr->awar( awar_tree)->add_callback( (AW_RCB)NT_reload_tree_event, (AW_CL)ntw,(AW_CL)GB_FALSE);
-    delete existing_tree_name;
     awr->awar( AWAR_SPECIES_NAME)->add_callback( (AW_RCB)NT_jump_cb_auto, (AW_CL)ntw,0);
     awr->awar( AWAR_DTREE_VERICAL_DIST)->add_callback( (AW_RCB)AWT_resize_cb, (AW_CL)ntw,0);
     awr->awar( AWAR_DTREE_BASELINEWIDTH)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);

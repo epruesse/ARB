@@ -89,7 +89,7 @@ void awt_create_selection_list_on_trees_cb(GBDATA *dummy, struct adawcbstruct *c
 			char *info = GBT_tree_info_string(cbs->gb_main, *tree);
 			if (info) {
 				cbs->aws->insert_selection( cbs->id, info, *tree );
-				delete info;
+				free(info);
 			}else{
 				cbs->aws->insert_selection( cbs->id, *tree, *tree );
 			}

@@ -392,13 +392,13 @@ void GDE_load_menu(AW_window *awm,const char *menulabel,const char *menuitemlabe
 		char *manuname=GBS_string_2_key(menu[nmenu].label);
 		if (menulabel){
 			if (strcmp(menulabel,manuname)) {
-				delete manuname;
+				free(manuname);
 				continue;
 			}
 		}else{
 			awm->insert_sub_menu(0,manuname,META);
 		}
-		delete manuname;
+		free(manuname);
 		num_items=menu[nmenu].numitems;
 		for(nitem=0;nitem<num_items;nitem++)
 		{
