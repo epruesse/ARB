@@ -1842,7 +1842,11 @@ ED4_root::ED4_root()
     ecoli_ref           = NULL;
     column_stat_activated = 0;
     column_stat_initialized = 0;
+
+#if defined(DEVEL_YADHU)
     visualizeSAI_enabled = false;
+    ...  line above does an error for me -- ralf
+#endif // DEVEL_YADHU
 
     aw_initstatus();
 }
