@@ -296,7 +296,7 @@ string Desco::getSecondName(){
 
 bool isUpperCase(const string& input)
 {
-    for (int i=0;i<input.length();i++) // CC : dito i sollte unsigned sein
+    for (size_t i=0;i<input.length(); ++i)
     {
       if(input[i]<'A' || input[i]>'Z'){return false;}
     }
