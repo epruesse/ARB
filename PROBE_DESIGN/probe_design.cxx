@@ -29,9 +29,42 @@
 
 void NT_group_not_marked_cb(void *dummy, AWT_canvas *ntw); // real prototype is in awt_tree_cb.hxx
 
+// probe match awars
 
-#define AWAR_PD_MATCH_ITEM  AWAR_SPECIES_NAME
-#define AWAR_PD_MATCH_RESOLVE   "tmp/probe_design/match_resolve"
+#define AWAR_PD_MATCH_ITEM    AWAR_SPECIES_NAME
+#define AWAR_PD_MATCH_RESOLVE "tmp/probe_design/match_resolve" // for IUPAC resolution
+
+#define AWAR_PD_MATCH_SORTBY     "probe_match/sort_by" // weighted mismatches
+#define AWAR_PD_MATCH_COMPLEMENT "probe_match/complement" // check reverse complement too
+#define AWAR_PD_MATCH_MARKHITS   "probe_match/mark_hits" // mark hitten species in database
+#define AWAR_PD_MATCH_WRITE2TMP  "probe_match/write_2_tmp" // write result to field tmp
+#define AWAR_PD_MATCH_AUTOMATCH  "probe_match/auto_match" // auto match probes when target string changes
+
+#define AWAR_PD_MATCH_CLIPHITS "probe_match/clip_hits"
+#define AWAR_PD_MATCH_NHITS    "tmp/probe_match/nhits" // display the 'number of hits'
+
+// probe design awars
+
+#define AWAR_PD_DESIGN_CLIPRESULT "probe_design/CLIPRESULT" // 'length of output' (how many probes will get designed)
+#define AWAR_PD_DESIGN_MISHIT     "probe_design/MISHIT" // 'non group hits'
+#define AWAR_PD_DESIGN_MAXBOND    "probe_design/MAXBOND" // max hairpinbonds ?
+#define AWAR_PD_DESIGN_MINTARGETS "probe_design/MINTARGETS" // 'min. group hits (%)'
+
+#define AWAR_PD_DESIGN_PROBELENGTH  "probe_design/PROBELENGTH" // length of probe
+#define AWAR_PD_DESIGN_MIN_TEMP     "probe_design/MINTEMP" // temperature (min)
+#define AWAR_PD_DESIGN_MAX_TEMP     "probe_design/MAXTEMP" // temperature (max)
+#define AWAR_PD_DESIGN_MIN_GC       "probe_design/MINGC" // GC content (min)
+#define AWAR_PD_DESIGN_MAX_GC       "probe_design/MAXGC" // GC content (max)
+#define AWAR_PD_DESIGN_MIN_ECOLIPOS "probe_design/MINPOS" // ecolipos (min)
+#define AWAR_PD_DESIGN_MAX_ECOLIPOS "probe_design/MAXPOS" // ecolipos (max)
+
+// probe design/match (expert window)
+#define AWAR_PD_DESIGN_EXP_BONDS  "probe_design/bonds/pos" // prefix for bonds
+#define AWAR_PD_DESIGN_EXP_SPLIT  "probe_design/SPLIT"
+#define AWAR_PD_DESIGN_EXP_DTEDGE "probe_design/DTEDGE"
+#define AWAR_PD_DESIGN_EXP_DT     "probe_design/DT"
+
+// ----------------------------------------
 
 extern GBDATA *gb_main;     /* must exist */
 
@@ -43,14 +76,59 @@ struct gl_struct {
     AW_selection_list *pd_design_id;
 } pd_gl;
 
+struct probe_match_event_para {
+    AW_window *aww;
+    AW_CL      sel_id;
+    bool       disable;
+};
+static probe_match_event_para auto_match_cb_settings = { 0, 0, true };
+void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr); // prototype
+
+static void auto_match_cb(AW_root *root) {
+    if (!auto_match_cb_settings.disable) {
+        char *ts = root->awar(AWAR_TARGET_STRING)->read_string();
+        if (strlen(ts) > 0) {
+            probe_match_event(auto_match_cb_settings.aww, auto_match_cb_settings.sel_id, 0);
+        }
+        free(ts);
+    }
+}
+
+static void auto_match_changed(AW_root *root) {
+    static bool callback_active = false;
+    int         autoMatch       = root->awar(AWAR_PD_MATCH_AUTOMATCH)->read_int();
+
+    if (autoMatch) {
+        if (!callback_active) root->awar(AWAR_TARGET_STRING)->add_callback(auto_match_cb);
+    }
+    else {
+        if (callback_active) root->awar(AWAR_TARGET_STRING)->remove_callback(auto_match_cb);
+    }
+    callback_active = bool(autoMatch);
+}
+
+static void enable_auto_match_cb(AW_root *root, AW_window *aww, AW_CL cl_sel_id) {
+    if (cl_sel_id == 0 && // small enable (w/o selection list)
+        auto_match_cb_settings.aww != 0) return; // is only done when not enabled yet
+
+    auto_match_cb_settings.aww     = aww;
+    auto_match_cb_settings.sel_id  = cl_sel_id;
+    auto_match_cb_settings.disable = false;
+    auto_match_changed(root);
+}
+
+// --------------------------------------------------------------------------------
+
 void probe_design_create_result_window(AW_window *aww)
 {
     if (pd_gl.pd_design){
         pd_gl.pd_design->show();
         return;
     }
+    AW_root *root = aww->get_root();
+
     pd_gl.pd_design = new AW_window_simple;
-    pd_gl.pd_design->init(aww->get_root(), "PD_RESULT", "PD RESULT");
+    pd_gl.pd_design->init(root, "PD_RESULT", "PD RESULT");
     pd_gl.pd_design->load_xfig("pd_reslt.fig");
 
     pd_gl.pd_design->at("close");
@@ -60,6 +138,12 @@ void probe_design_create_result_window(AW_window *aww)
     pd_gl.pd_design->at("help");
     pd_gl.pd_design->callback(AW_POPUP_HELP, (AW_CL)"probedesignresult.hlp");
     pd_gl.pd_design->create_button("HELP", "HELP", "H");
+
+    pd_gl.pd_design->at("auto");
+    pd_gl.pd_design->label("Auto match");
+    pd_gl.pd_design->create_toggle(AWAR_PD_MATCH_AUTOMATCH );
+
+    enable_auto_match_cb(root, pd_gl.pd_design, 0);
 
     pd_gl.pd_design->at( "result" );
     pd_gl.pd_design_id = pd_gl.pd_design->create_selection_list( AWAR_TARGET_STRING, NULL, "", 40, 5 );
@@ -180,13 +264,13 @@ int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
     int i;
     char buffer[256];
     if (aisc_put(pd_gl.link, PT_PDC, pdc,
-                 PDC_DTEDGE,    (double)root->awar("probe_design/DTEDGE")->read_float()*100.0,
-                 PDC_DT,        (double)root->awar("probe_design/DT")->read_float()*100.0,
-                 PDC_SPLIT, (double)root->awar("probe_design/SPLIT")->read_float(),
-                 PDC_CLIPRESULT,    root->awar("probe_design/CLIPRESULT")->read_int(),
+                 PDC_DTEDGE,    (double)root->awar(AWAR_PD_DESIGN_EXP_DTEDGE)->read_float()*100.0,
+                 PDC_DT,        (double)root->awar(AWAR_PD_DESIGN_EXP_DT)->read_float()*100.0,
+                 PDC_SPLIT, (double)root->awar(AWAR_PD_DESIGN_EXP_SPLIT)->read_float(),
+                 PDC_CLIPRESULT,    root->awar(AWAR_PD_DESIGN_CLIPRESULT)->read_int(),
                  0)) return 1;
     for (i=0;i<16;i++) {
-        sprintf(buffer,"probe_design/bonds/pos%i",i);
+        sprintf(buffer,AWAR_PD_DESIGN_EXP_BONDS "%i",i);
         if (aisc_put(pd_gl.link,PT_PDC, pdc,
                      PT_INDEX,  i,
                      PDC_BONDVAL,   (double)root->awar(buffer)->read_float(),
@@ -273,18 +357,18 @@ void probe_design_event(AW_window *aww)
 
     aisc_create(pd_gl.link,PT_LOCS, pd_gl.locs,
                 LOCS_PROBE_DESIGN_CONFIG, PT_PDC,   &pdc,
-                PDC_PROBELENGTH,    root->awar("probe_design/PROBELENGTH")->read_int(),
-                PDC_MINTEMP,    (double)root->awar("probe_design/MINTEMP")->read_float(),
-                PDC_MAXTEMP,    (double)root->awar("probe_design/MAXTEMP")->read_float(),
-                PDC_MINGC,          (double)root->awar("probe_design/MINGC")->read_float()/100.0,
-                PDC_MAXGC,          (double)root->awar("probe_design/MAXGC")->read_float()/100.0,
-                PDC_MAXBOND,    (double)root->awar("probe_design/MAXBOND")->read_int(),
+                PDC_PROBELENGTH,    root->awar(AWAR_PD_DESIGN_PROBELENGTH)->read_int(),
+                PDC_MINTEMP,    (double)root->awar(AWAR_PD_DESIGN_MIN_TEMP)->read_float(),
+                PDC_MAXTEMP,    (double)root->awar(AWAR_PD_DESIGN_MAX_TEMP)->read_float(),
+                PDC_MINGC,          (double)root->awar(AWAR_PD_DESIGN_MIN_GC)->read_float()/100.0,
+                PDC_MAXGC,          (double)root->awar(AWAR_PD_DESIGN_MAX_GC)->read_float()/100.0,
+                PDC_MAXBOND,    (double)root->awar(AWAR_PD_DESIGN_MAXBOND)->read_int(),
                 0);
     aisc_put(pd_gl.link,PT_PDC, pdc,
-             PDC_MINPOS,    root->awar("probe_design/MINPOS")->read_int(),
-             PDC_MAXPOS,    root->awar("probe_design/MAXPOS")->read_int(),
-             PDC_MISHIT,    root->awar("probe_design/MISHIT")->read_int(),
-             PDC_MINTARGETS,    (double)root->awar("probe_design/MINTARGETS")->read_float()/100.0,
+             PDC_MINPOS,    root->awar(AWAR_PD_DESIGN_MIN_ECOLIPOS)->read_int(),
+             PDC_MAXPOS,    root->awar(AWAR_PD_DESIGN_MAX_ECOLIPOS)->read_int(),
+             PDC_MISHIT,    root->awar(AWAR_PD_DESIGN_MISHIT)->read_int(),
+             PDC_MINTARGETS,    (double)root->awar(AWAR_PD_DESIGN_MINTARGETS)->read_float()/100.0,
              0);
 
     if (probe_design_send_data(root,pdc)) {
@@ -494,8 +578,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         pd_assert(!counter);
         show_status = 1;
     }
-    else {
-        pd_assert(counter); // either selection_id or counter must be defined!
+    else if (counter) {
         extras = 0;
     }
 
@@ -535,11 +618,11 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     if (show_status) aw_status("Start Probe Match");
 
     if (aisc_nput(pd_gl.link,PT_LOCS, pd_gl.locs,
-                  LOCS_MATCH_REVERSED,      root->awar("probe_match/complement")->read_int(),
-                  LOCS_MATCH_SORT_BY,       root->awar("probe_match/sort_by")->read_int(),
+                  LOCS_MATCH_REVERSED,      root->awar(AWAR_PD_MATCH_COMPLEMENT)->read_int(),
+                  LOCS_MATCH_SORT_BY,       root->awar(AWAR_PD_MATCH_SORTBY)->read_int(),
                   LOCS_MATCH_COMPLEMENT,        0,
                   LOCS_MATCH_MAX_MISMATCHES,    root->awar(AWAR_MAX_MISMATCHES)->read_int(),
-                  LOCS_MATCH_MAX_SPECIES,       root->awar("probe_match/clip_hits")->read_int(),
+                  LOCS_MATCH_MAX_SPECIES,       root->awar(AWAR_PD_MATCH_CLIPHITS)->read_int(),
                   LOCS_SEARCHMATCH,     probe,
                   0)){
         free(probe);
@@ -554,11 +637,11 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     }
     free(probe);
 
-    mark = extras && (int)root->awar("probe_match/mark_hits")->read_int();
-    int write_2_tmp = extras && (int)root->awar("probe_match/write_2_tmp")->read_int();
+    mark = extras && (int)root->awar(AWAR_PD_MATCH_MARKHITS)->read_int();
+    int write_2_tmp = extras && (int)root->awar(AWAR_PD_MATCH_WRITE2TMP)->read_int();
 
     if (gb_main){
-        GB_begin_transaction(gb_main);
+        GB_push_transaction(gb_main);
         gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
         if (mark){
             if (show_status) aw_status("Unmark all species");
@@ -593,7 +676,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         aw_message(locs_error);
     }
     free(locs_error);
-    root->awar("tmp/probe_match/nhits")->write_int(match_list_cnt);
+    root->awar(AWAR_PD_MATCH_NHITS)->write_int(match_list_cnt);
 
     if (show_status) aw_status("Parse the Results");
 
@@ -611,42 +694,41 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         match_info = strtok(0,toksep);
         if (!match_info) break;
 
+        char flag  = 'x';
         if (gb_main){
             gb_species = GBT_find_species_rel_species_data(gb_species_data,match_name);
-            if (mark) {
-                if (gb_species) {
+
+            if (gb_species) {
+                if (mark) {
                     GB_write_flag(gb_species,1);
-                    sprintf(result, "* %s",match_info);
-                }else{
-                    sprintf(result, "? %s",match_info);
+                    flag = '*';
                 }
-            }else{
-                if (gb_species) {
-                    if (GB_read_flag(gb_species)){
-                        sprintf(result, "* %s",match_info);
-                    }else{
-                        sprintf(result, "  %s",match_info);
-                    }
-                }else{
-                    sprintf(result, "? %s",match_info);
+                else {
+                    flag = GB_read_flag(gb_species) ? '*' : ' ';
                 }
-            }
-            if ( gb_species && write_2_tmp){
-                GB_ERROR error;
-                GBDATA *gb_tmp = GB_find(gb_species,"tmp",0,down_level);
-                if (!gb_tmp) {
-                    gb_tmp = GB_search(gb_species,"tmp",GB_STRING);
-                    if (gb_tmp) {
-                        error = GB_write_string(gb_tmp,match_info);
-                        if (error) aw_message(error);
-                    }else{
-                        aw_message(GB_get_error());
+
+                if (write_2_tmp) {
+                    GBDATA *gb_tmp = GB_find(gb_species,"tmp",0,down_level);
+                    if (!gb_tmp) {
+                        gb_tmp = GB_search(gb_species,"tmp",GB_STRING);
+                        if (gb_tmp) {
+                            GB_ERROR error = GB_write_string(gb_tmp,match_info);
+                            if (error) aw_message(error);
+                        }
+                        else {
+                            aw_message(GB_get_error());
+                        }
                     }
                 }
             }
-        }else{
-            sprintf(result, ". %s",match_info);
+            else {
+                flag = '?';
+            }
         }
+        else {
+            flag = '.';
+        }
+        sprintf(result, "%c %s", flag, match_info);
 
         if (selection_id) aww->insert_selection( selection_id, result, match_name );
         mcount++;
@@ -655,7 +737,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     if (counter) *counter = mcount;
 
     delete bs.data;
-    if (gb_main) GB_commit_transaction(gb_main);
+    if (gb_main) GB_pop_transaction(gb_main);
 
     aisc_close(pd_gl.link); pd_gl.link = 0;
 
@@ -670,9 +752,11 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 }
 
 void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id) {
+    auto_match_cb_settings.disable = true;
+
     AW_selection_list *iselection_id = (AW_selection_list*)cl_iselection_id;
-    AW_root *root = aww->get_root();
-    char *target_string = root->awar(AWAR_TARGET_STRING)->read_string();
+    AW_root           *root          = aww->get_root();
+    char              *target_string = root->awar(AWAR_TARGET_STRING)->read_string();
 
     aww->init_list_entry_iterator(iselection_id); // init
     aw_openstatus("Matching all resolved strings");
@@ -703,12 +787,16 @@ void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id) {
 
     aw_closestatus();
 
-    aww->sort_selection_list(iselection_id, 1);
-    aww->update_selection_list(iselection_id);
-    root->awar(AWAR_TARGET_STRING)->write_string(target_string);
+    if (local_count) {
+        aww->sort_selection_list(iselection_id, 1);
+        aww->update_selection_list(iselection_id);
+        root->awar(AWAR_TARGET_STRING)->write_string(target_string);
+    }
+
+    auto_match_cb_settings.disable = false;
 }
 
-void resolved_probe_chosen(AW_root *root) {
+static void resolved_probe_chosen(AW_root *root) {
     char *string = root->awar(AWAR_PD_MATCH_RESOLVE)->read_string();
     root->awar(AWAR_TARGET_STRING)->write_string(string);
 }
@@ -719,8 +807,8 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     int  i;
     pd_gl.pd_design = 0;        /* design result window not created */
     root->awar_string( AWAR_PD_MATCH_ITEM, "" , db1);
-    root->awar_float( "probe_design/DTEDGE", .5  ,    db1);
-    root->awar_float( "probe_design/DT", .5  ,    db1);
+    root->awar_float( AWAR_PD_DESIGN_EXP_DTEDGE, .5  ,    db1);
+    root->awar_float( AWAR_PD_DESIGN_EXP_DT, .5  ,    db1);
 
     double default_bonds[16] = {
         0.0, 0.0, 0.5, 1.1,
@@ -730,7 +818,7 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     };
 
     for (i=0;i<16;i++) {
-        sprintf(buffer,"probe_design/bonds/pos%i",i);
+        sprintf(buffer,AWAR_PD_DESIGN_EXP_BONDS "%i",i);
         root->awar_float( buffer, default_bonds[i], db1);
         root->awar(buffer)->set_minmax(0,3.0);
     }
@@ -751,51 +839,38 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
         root->awar_float( buffer, 0.0  ,    db1);
     }
 #endif
-    root->awar_float( "probe_design/SPLIT", .5  ,    db1);
-    root->awar_float( "probe_design/DTEDGE", .5  ,    db1);
-    root->awar_float( "probe_design/DT", .5  ,    db1);
+    root->awar_float( AWAR_PD_DESIGN_EXP_SPLIT, .5  ,    db1);
+    root->awar_float( AWAR_PD_DESIGN_EXP_DTEDGE, .5  ,    db1);
+    root->awar_float( AWAR_PD_DESIGN_EXP_DT, .5  ,    db1);
 
-    root->awar_int( "probe_design/PROBELENGTH", 18  ,    db1)->set_minmax(10,100);
+    root->awar_int  (AWAR_PD_DESIGN_CLIPRESULT, 50,   db1)->set_minmax(0, 1000  );
+    root->awar_int  (AWAR_PD_DESIGN_MISHIT,     0,    db1)->set_minmax(0, 100000);
+    root->awar_int  (AWAR_PD_DESIGN_MAXBOND,    4,    db1)->set_minmax(0, 20    );
+    root->awar_float(AWAR_PD_DESIGN_MINTARGETS, 50.0, db1)->set_minmax(0, 100   );
 
-    root->awar_float( "probe_design/MINTEMP", 50.0  ,    db1);
-    root->awar("probe_design/MINTEMP")->set_minmax(0,1000);
-    root->awar_float( "probe_design/MAXTEMP", 100.0  ,    db1);
-    root->awar("probe_design/MAXTEMP")->set_minmax(0,1000);
-
-    root->awar_float( "probe_design/MINGC", 50.0  ,    db1);
-    root->awar("probe_design/MINGC")->set_minmax(0,100);
-    root->awar_float( "probe_design/MAXGC", 100.0  ,    db1);
-    root->awar("probe_design/MAXGC")->set_minmax(0,100);
-    root->awar_int( "probe_design/MAXBOND", 4  ,    db1);
-    root->awar("probe_design/MAXBOND")->set_minmax(0,20);
-
-    root->awar_int( "probe_design/MINPOS", 0  ,    db1);
-    root->awar("probe_design/MINPOS")->set_minmax(0,1000000);
-    root->awar_int( "probe_design/MAXPOS", 100000  ,    db1);
-    root->awar("probe_design/MAXPOS")->set_minmax(0,1000000);
-
-    root->awar_float( "probe_design/MINTARGETS", 50.0  ,    db1);
-    root->awar("probe_design/MINTARGETS")->set_minmax(0,100);
-    root->awar_int( "probe_design/MISHIT", 0  ,    db1);
-    root->awar("probe_design/MINTARGETS")->set_minmax(0,100000);
-
-    root->awar_int( "probe_design/CLIPRESULT", 50  ,    db1);
-    root->awar("probe_design/MINTARGETS")->set_minmax(0,1000);
+    root->awar_int  (AWAR_PD_DESIGN_PROBELENGTH,  18,     db1)->set_minmax(10, 100    );
+    root->awar_float(AWAR_PD_DESIGN_MIN_TEMP,     50.0,   db1)->set_minmax(0,  1000   );
+    root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  db1)->set_minmax(0,  1000   );
+    root->awar_float(AWAR_PD_DESIGN_MIN_GC,       50.0,   db1)->set_minmax(0,  100    );
+    root->awar_float(AWAR_PD_DESIGN_MAX_GC,       100.0,  db1)->set_minmax(0,  100    );
+    root->awar_int  (AWAR_PD_DESIGN_MIN_ECOLIPOS, 0,      db1)->set_minmax(0,  1000000);
+    root->awar_int  (AWAR_PD_DESIGN_MAX_ECOLIPOS, 100000, db1)->set_minmax(0,  1000000);
 
     root->awar_int( AWAR_PT_SERVER, 0  ,    db1);
 #ifdef DEVEL_IDP
     root->awar_int( "probe_design/gene", 0, db1);
 #endif
 
-    root->awar_int( "probe_match/mark_hits", 1, db1);
-    root->awar_int( "probe_match/sort_by", 0  ,    db1);
-    root->awar_int( "probe_match/write_2_tmp", 0  ,    db1);
-    root->awar_int( "probe_match/complement", 0  ,    db1);
-    root->awar_int( AWAR_MIN_MISMATCHES, 0  ,    global);
-    root->awar_int( AWAR_MAX_MISMATCHES, 0  ,    global);
-    root->awar_int( "probe_match/clip_hits", 1000  ,    db1);
-    root->awar_string(AWAR_TARGET_STRING, ""  ,    global);
-    root->awar_int( "tmp/probe_match/nhits", 0  ,    db1);
+    root->awar_int   (AWAR_PD_MATCH_MARKHITS,   1,    db1   );
+    root->awar_int   (AWAR_PD_MATCH_SORTBY,     0,    db1   );
+    root->awar_int   (AWAR_PD_MATCH_WRITE2TMP,  0,    db1   );
+    root->awar_int   (AWAR_PD_MATCH_COMPLEMENT, 0,    db1   );
+    root->awar_int   (AWAR_MIN_MISMATCHES,      0,    global);
+    root->awar_int   (AWAR_MAX_MISMATCHES,      0,    global);
+    root->awar_int   (AWAR_PD_MATCH_CLIPHITS,   1000, db1   );
+    root->awar_string(AWAR_TARGET_STRING,       "",   global);
+    root->awar_int   (AWAR_PD_MATCH_NHITS,      0,    db1   );
+    root->awar_int   (AWAR_PD_MATCH_AUTOMATCH,  0,    db1   )->add_callback(auto_match_changed);
 
     root->awar_string(AWAR_PD_MATCH_RESOLVE, "", db1)->add_callback(resolved_probe_chosen);
     root->awar_string(AWAR_ITARGET_STRING, "", global);
@@ -832,19 +907,19 @@ AW_window *create_probe_design_expert_window( AW_root *root)  {
     aws->create_button("HELP","HELP","C");
 
     aws->at("dt");
-    aws->create_input_field("probe_design/DT",6);
+    aws->create_input_field(AWAR_PD_DESIGN_EXP_DT,6);
 
     aws->at("dt_edge");
-    aws->create_input_field("probe_design/DTEDGE",6);
+    aws->create_input_field(AWAR_PD_DESIGN_EXP_DTEDGE,6);
 
     aws->at("split");
-    aws->create_input_field("probe_design/SPLIT",6);
+    aws->create_input_field(AWAR_PD_DESIGN_EXP_SPLIT,6);
 
 
     for (i=0;i<16;i++) {
         sprintf(buffer,"%i",i);
         aws->at(buffer);
-        sprintf(buffer,"probe_design/bonds/pos%i",i);
+        sprintf(buffer,AWAR_PD_DESIGN_EXP_BONDS "%i",i);
         aws->create_input_field(buffer,4);
     }
 
@@ -896,8 +971,7 @@ void probe_design_save_default(AW_window *aw,AW_default aw_def)
 }
 
 
-AW_window *create_probe_design_window( AW_root *root,AW_default def)  {
-    AWUSE(def);
+AW_window *create_probe_design_window( AW_root *root, AW_default)  {
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "PROBE_DESIGN","PROBE DESIGN");
 
@@ -936,34 +1010,29 @@ AW_window *create_probe_design_window( AW_root *root,AW_default def)  {
     awt_create_selection_list_on_pt_servers(aws,AWAR_PT_SERVER,AW_TRUE);
 
     aws->at("lenout");
-    aws->create_input_field( "probe_design/CLIPRESULT" , 6 );
-
+    aws->create_input_field( AWAR_PD_DESIGN_CLIPRESULT , 6 );
     aws->at("mishit");
-    aws->create_input_field( "probe_design/MISHIT" , 6);
-
-    aws->at("minhits");
-    aws->create_input_field( "probe_design/MINTARGETS" , 6);
-
+    aws->create_input_field( AWAR_PD_DESIGN_MISHIT , 6);
     aws->at("maxbonds");
-    aws->create_input_field( "probe_design/MAXBOND" , 6);
+    aws->create_input_field( AWAR_PD_DESIGN_MAXBOND , 6);
+    aws->at("minhits");
+    aws->create_input_field( AWAR_PD_DESIGN_MINTARGETS , 6);
 
     aws->at("minlen");
-    aws->create_input_field( "probe_design/PROBELENGTH" , 5);
-
+    aws->create_input_field( AWAR_PD_DESIGN_PROBELENGTH , 5);
     aws->at("mint");
-    aws->create_input_field( "probe_design/MINTEMP" , 5);
+    aws->create_input_field( AWAR_PD_DESIGN_MIN_TEMP , 5);
     aws->at("maxt");
-    aws->create_input_field( "probe_design/MAXTEMP" , 5);
-
-    aws->at("minpos");
-    aws->create_input_field( "probe_design/MINPOS" , 5);
-    aws->at("maxpos");
-    aws->create_input_field( "probe_design/MAXPOS" , 5);
-
+    aws->create_input_field( AWAR_PD_DESIGN_MAX_TEMP , 5);
     aws->at("mingc");
-    aws->create_input_field( "probe_design/MINGC" , 5);
+    aws->create_input_field( AWAR_PD_DESIGN_MIN_GC , 5);
     aws->at("maxgc");
-    aws->create_input_field( "probe_design/MAXGC" , 5);
+    aws->create_input_field( AWAR_PD_DESIGN_MAX_GC , 5);
+    aws->at("minpos");
+    aws->create_input_field( AWAR_PD_DESIGN_MIN_ECOLIPOS , 5);
+    aws->at("maxpos");
+    aws->create_input_field( AWAR_PD_DESIGN_MAX_ECOLIPOS , 5);
+
 
 #ifdef DEVEL_IDP
 
@@ -1129,8 +1198,81 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
     }
 }
 
+enum ModMode { TS_MOD_CLEAR, TS_MOD_REV_COMPL, TS_MOD_COMPL };
+
+static void modify_target_string(AW_window *aww, AW_CL cl_mod_mode) {
+    ModMode   mod_mode      = ModMode(cl_mod_mode);
+    AW_root  *root          = aww->get_root();
+    char     *target_string = root->awar(AWAR_TARGET_STRING)->read_string();
+    GB_ERROR  error         = 0;
+
+    if (mod_mode == TS_MOD_CLEAR) {
+        target_string[0] = 0;
+    }
+    else {
+        GB_transaction dummy(gb_main);
+        GB_alignment_type ali_type = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
+        if (mod_mode == TS_MOD_REV_COMPL) {
+            char T_or_U;
+            error = GBT_determine_T_or_U(ali_type, &T_or_U, "reverse-complement");
+            if (!error) GBT_reverseComplementNucSequence(target_string, strlen(target_string), T_or_U);
+        }
+        else if (mod_mode == TS_MOD_COMPL) {
+            char T_or_U;
+            error = GBT_determine_T_or_U(ali_type, &T_or_U, "complement");
+            if (!error) {
+                char *new_target_string = GBT_complementNucSequence(target_string, strlen(target_string), T_or_U);
+                free(target_string);
+                target_string           = new_target_string;
+            }
+        }
+    }
+
+    if (error) {
+        aw_message(error);
+    }
+    else {
+        root->awar(AWAR_TARGET_STRING)->write_string(target_string);
+    }
+    free(target_string);
+}
+
+AW_window *create_IUPAC_resolve_window(AW_root *root) {
+    AW_window_simple *aws = new AW_window_simple;
+    aws->init( root, "PROBE_MATCH_RESOLVE_IUPAC","Resolve IUPAC for Probe Match");
+    aws->load_xfig("pd_match_iupac.fig");
+
+    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->create_button("CLOSE","CLOSE","C");
+
+    aws->callback( AW_POPUP_HELP, (AW_CL)"pd_match_iupac.hlp");
+    aws->at("help");
+    aws->create_button("HELP","HELP","C");
+
+    AW_selection_list *iselection_id;
+    aws->at( "iresult" );
+    iselection_id = aws->create_selection_list( AWAR_PD_MATCH_RESOLVE, NULL, "", 32, 15 );
+    aws->insert_default_selection( iselection_id, "---empty---", "" );
+
+    aws->at("istring");
+    aws->create_input_field(AWAR_ITARGET_STRING,32);
+
+    // automatically resolve AWAR_ITARGET_STRING:
+    {
+        GB_transaction dummy(gb_main);
+        ali_used_for_resolvement = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
+    }
+    root->awar(AWAR_ITARGET_STRING)->add_callback(resolve_IUPAC_target_string, AW_CL(aws), AW_CL(iselection_id));
+
+    aws->callback(probe_match_all_event, (AW_CL)iselection_id);
+    aws->at("match_all");
+    aws->create_button("MATCH_ALL", "MATCH ALL", "A");
+
+    return aws;
+}
+
 AW_window *create_probe_match_window( AW_root *root,AW_default def)  {
-    GB_transaction dummy(gb_main);
     AW_window_simple *aws = new AW_window_simple;
     AWUSE(def);
     aws->init( root, "PROBE_MATCH", "PROBE MATCH");
@@ -1165,13 +1307,13 @@ AW_window *create_probe_match_window( AW_root *root,AW_default def)  {
     awt_create_selection_list_on_pt_servers(aws,AWAR_PT_SERVER,AW_TRUE);
 
     aws->at( "complement" );
-    aws->create_toggle( "probe_match/complement" );
+    aws->create_toggle( AWAR_PD_MATCH_COMPLEMENT );
 
     aws->at( "mark" );
-    aws->create_toggle( "probe_match/mark_hits" );
+    aws->create_toggle( AWAR_PD_MATCH_MARKHITS );
 
     aws->at( "sort" );
-    aws->create_toggle( "probe_match/sort_by" );
+    aws->create_toggle( AWAR_PD_MATCH_SORTBY );
 
     aws->at( "mismatches" );
     aws->create_option_menu(AWAR_MAX_MISMATCHES, NULL , "" );
@@ -1184,32 +1326,35 @@ AW_window *create_probe_match_window( AW_root *root,AW_default def)  {
     aws->update_option_menu();
 
     aws->at("tmp");
-    aws->create_toggle( "probe_match/write_2_tmp" );
+    aws->create_toggle( AWAR_PD_MATCH_WRITE2TMP );
 
     aws->at("nhits");
-    aws->create_button(0,"tmp/probe_match/nhits");
-
-    // stuff for resolution ofg iupac-codes
-
-    AW_selection_list *iselection_id;
-    aws->at( "iresult" );
-    iselection_id = aws->create_selection_list( AWAR_PD_MATCH_RESOLVE, NULL, "", 32, 15 );
-    aws->insert_default_selection( iselection_id, "---empty---", "" );
-
-    aws->at("istring");
-    aws->create_input_field(AWAR_ITARGET_STRING,32);
-
-    // automatically resolve AWAR_ITARGET_STRING:
-    ali_used_for_resolvement = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
-    root->awar(AWAR_ITARGET_STRING)->add_callback(resolve_IUPAC_target_string, AW_CL(aws), AW_CL(iselection_id));
-
-    aws->callback(probe_match_all_event, (AW_CL)iselection_id);
-    aws->at("match_all");
-    aws->create_button("MATCH_ALL", "MATCH ALL", "A");
+    aws->create_button(0,AWAR_PD_MATCH_NHITS);
 
     aws->callback(probe_match_event,(AW_CL)selection_id, (AW_CL)0);
     aws->at("match");
     aws->create_button("MATCH","MATCH","D");
+
+    aws->at("auto");
+    aws->label("Auto");
+    aws->create_toggle( AWAR_PD_MATCH_AUTOMATCH );
+    enable_auto_match_cb(root, aws, (AW_CL)selection_id);
+
+    aws->callback(modify_target_string, (AW_CL)TS_MOD_CLEAR);
+    aws->at("clear");
+    aws->create_button("CLEAR","Clear","0");
+
+    aws->callback(modify_target_string, (AW_CL)TS_MOD_REV_COMPL);
+    aws->at("revcompl");
+    aws->create_button("REVCOMPL","RevCompl","R");
+
+    aws->callback(modify_target_string, (AW_CL)TS_MOD_COMPL);
+    aws->at("compl");
+    aws->create_button("COMPL","Compl","C");
+
+    aws->callback( (AW_CB1)AW_POPUP,(AW_CL)create_IUPAC_resolve_window);
+    aws->at("iupac");
+    aws->create_button("IUPAC","IUPAC","I");
 
     return aws;
 }
@@ -1289,13 +1434,14 @@ void pd_query_pt_server(AW_window *aww)
     delete rsh;
 }
 
-void pd_export_pt_server(AW_window *aww)
+void pd_export_pt_server(AW_window *aww, AW_CL cl_server_type)
 {
-    AW_root *awr = aww->get_root();
-    char pt_server[256];
-    char *server;
-    char *file;
-    GB_ERROR error;
+    int       server_type = (int)cl_server_type;
+    AW_root  *awr = aww->get_root();
+    char      pt_server[256];
+    char     *server;
+    char     *file;
+    GB_ERROR  error;
     sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
     if (aw_message(
                    "This function will send your currently loaded data as the new data to the pt_server !!!\n"
@@ -1339,16 +1485,25 @@ void pd_export_pt_server(AW_window *aww)
 }
 
 #ifdef DEVEL_IDP
-void pd_export_gene_pt_server(AW_window *aww)
+
+#error Too much code duplicated
+// Das meint ihr aber nicht ernst, dass ihr hier mit copy&paste programmiert, oder?
+// Die Unterschiede zwischen pd_export_pt_server und pd_export_gene_pt_server sind ja marginal.
+//
+// Fasst bitte die beiden wieder zusammen - ich hab Euch ein Flag 'server_type' eingebaut,
+// anhand dessen ihr unterscheiden koennt, welcher Knopf gedrueckt wurde.
+
+void pd_export_gene_pt_server(AW_window *aww, AW_CL cl_server_type)
 {
-    AW_root *awr = aww->get_root();
-    char pt_server[256];
-    int i;
-    char *server;
-    char *file;
-    char *tempfile;
-    char command [1024];
-    GB_ERROR error;
+    int       server_type = (int)cl_server_type;
+    AW_root  *awr         = aww->get_root();
+    char      pt_server[256];
+    int       i;
+    char     *server;
+    char     *file;
+    char     *tempfile;
+    char      command [1024];
+    GB_ERROR  error;
     sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
     if (aw_message(
                    "This function will send your currently loaded data as the new data to the pt_server !!!\n"
@@ -1377,7 +1532,7 @@ void pd_export_gene_pt_server(AW_window *aww)
 	tempfile[i++] = 'r';
 	tempfile[i++] = 'b';
 	tempfile[i++] = '\0';
-
+#warning man strcpy
 
         aw_status("Exporting the database");
         error = GB_save_as(gb_main,tempfile,"bfm"); // save PT-server database with Fastload file
@@ -1444,7 +1599,7 @@ AW_window *create_probe_admin_window( AW_root *root,AW_default def)  {
     aws->create_button("START_SERVER","START SERVER");
 
     aws->at( "export" );
-    aws->callback(pd_export_pt_server);
+    aws->callback(pd_export_pt_server, 0);
     aws->create_button("UPDATE_SERVER","UPDATE SERVER");
 
     aws->at( "query" );
@@ -1457,7 +1612,7 @@ AW_window *create_probe_admin_window( AW_root *root,AW_default def)  {
 
 #ifdef DEVEL_IDP
     aws->at( "idp" );
-    aws->callback(pd_export_gene_pt_server);
+    aws->callback(pd_export_gene_pt_server, 1);
     aws->create_button("idp","IDP");
 #endif
 
