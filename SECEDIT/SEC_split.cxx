@@ -1,11 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+
+#include <iostream>
+
 #include <arbdb.h>
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 
-#include <iostream.h>
 #include"secedit.hxx"
 
 
