@@ -5,11 +5,16 @@
 #include "OPENGL/TextureMapping.hxx"
 #include "OPENGL/Renderer.hxx"
 
+// Global Class declarations 
+OpenGLGraphics *cGraphics  = new OpenGLGraphics();
+Structure3D    *cStructure = new Structure3D();
+Texture2D      *cTexture   = new Texture2D();
+GLRenderer     *cRenderer  = new GLRenderer();
+CCamera         cCamera;
 
 // Global Variables
-bool rotateStruct    = false;
-bool rotateClockwise = false;
-bool enableZoom   = false;
+bool rotateMolecule = true;
+bool enableZoom     = false;
 
 int iStructurize      = 0;
 int dispBackBone      = 1;
@@ -21,24 +26,34 @@ int dispHelixNrs      = 0;
 int dispHelixBackbone = 0;
 int showCursor        = 0;
 
+Vector3 Viewer = Vector3(0.0, 0.0, -2);
+Vector3 Center = Vector3(0.0, 0.0, 0.0);
+Vector3 Up     = Vector3(0.0, 1.0, 0.0);
+
+static Vector3 sCen;
+static bool autoRotate = false;
 static int MODE = 0;
+static float scale = 0.01f;   // scale is used to pass the value to gScalef() for scaling purpose
+static float ZOOM  = 0.0005;
 
-#define ROTATION_SPEED  0.3
-float rot_x = 0.0, rot_y = 0.0;
+/* 
+ * Window properties 
+ */
+#define SCREEN_WIDTH    800
+#define SCREEN_HEIGHT   600
+#define WINDOW_X        200
+#define WINDOW_Y        200
+#define TITLE    "3D Structure of Ribosomal RNA"
 
-float Angle = 0.0;    // Angle for rotation of structure
-float scale = 1.0f;   // scale is used to pass the value to gScalef() for scaling purpose
+/* 
+ * Perspective properties 
+ */
+#define FOV_ANGLE  90
+#define CLIP_NEAR  0.5f
+#define CLIP_FAR   10000
 
-double IdMtx[16] = { 1.0, 0.0, 0.0, 0.0,  
-                     0.0, 1.0, 0.0, 0.0,
-                     0.0, 0.0, 1.0, 0.0,
-                     0.0, 0.0, 0.0, 1.0 };// Identity matrix 
+static float ROTATION_SPEED = 0.5;
+static GLfloat rot_x = 0.0, rot_y = 0.0;
+GLfloat saved_x, saved_y;
 
-// Definitions
-
-#define SCREEN_WIDTH  1024
-#define SCREEN_HEIGHT 768
-#define TITLE  "3D Structure of rRNA !"
-
-
-
+static GLfloat rotation_matrix[16];

@@ -8,32 +8,23 @@
 void KeyBoardFunction(unsigned char key, int x, int y);
 void SpecialKey(int key, int x, int y);
 void MouseMain(int btn, int state, int x, int y);
-void CalculateTransValues(int x, int y);
 void MenuFunction(int value);
 void ReshapeMain(GLint width, GLint height);
 void MakeMenu(void);
 void RotateStructure(float x, float y);
-void RotateScene(int x, int y);
+void rotate(int x, int y);
 void IdleFunction(void);
 void DisplayMain(void);
 void Init(void);
+void CalculateRotationMatrix();
 //============================================================================
 
-//Global Class declarations 
-OpenGLGraphics *cGraphics  = new OpenGLGraphics();
-Structure3D    *cStructure = new Structure3D();
-Texture2D      *cTexture   = new Texture2D();
-GLRenderer     *cRenderer  = new GLRenderer();
-CCamera         cCamera;
-
-// void KBfunc(unsigned char key, int x, int y) {
-//     KeyBoardFunction(key, cStructure, cRenderer, cCamera);
-// }
-
-// void spKey(int key, int x, int y){
-//     SpecialKey(key, cCamera);
-// }
-
+// //Global Class declarations 
+// OpenGLGraphics *cGraphics  = new OpenGLGraphics();
+// Structure3D    *cStructure = new Structure3D();
+// Texture2D      *cTexture   = new Texture2D();
+// GLRenderer     *cRenderer  = new GLRenderer();
+// CCamera         cCamera;
 
 int main(int argc,char** argv) {
     glutInit (&argc, argv);
@@ -41,6 +32,8 @@ int main(int argc,char** argv) {
     glutMainLoop ();                // event processing loop
     return 0;
 }
+
+Vector3 sCenter;
 
 void Init(void){
     // glut initializatin commands
@@ -67,14 +60,14 @@ void Init(void){
     glutIdleFunc(IdleFunction);    // idle function
 
     //    glutPassiveMotionFunc(RotateScene);
-    glutMotionFunc(CalculateTransValues); // mouse movements when one or more buttons pressed
+    glutMotionFunc(rotate); // mouse movements when one or more buttons pressed
     glutMouseFunc(MouseMain); // mouse function
     glutKeyboardFunc(KeyBoardFunction); //keyboard function
     glutIgnoreKeyRepeat(1);  // key repeat
     glutSpecialFunc(SpecialKey);
 
     // openGL initialization 
-    cTexture->LoadGLTextures(PNG);              // Load The Texture(s) 
+    cTexture->LoadGLTextures();              // Load The Texture(s) 
     glEnable(GL_TEXTURE_2D);			    // Enable Texture Mapping
 
     glClearDepth(1.0);				        // Enables Clearing Of The Depth Buffer
@@ -94,79 +87,48 @@ void Init(void){
 
     MakeMenu(); // menu function
 
-    cStructure->ReadCoOrdinateFile();         // Reading Structure information
+    cStructure->ReadCoOrdinateFile(&sCen);         // Reading Structure information
     cStructure->PrepareStructureSkeleton();    // Preparing structure skeleton with just coordinates  
 
     cStructure->GetSecondaryStructureInfo();
     //   cStructure->PrepareSecondaryStructureInfo()
     cStructure->Combine2Dand3DstructureInfo();
     cStructure->BuildSecondaryStructureMask();
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	// Inititialization of camera position
-	cCamera.PositionCamera(0,200,0,	                                                  // Position 
-                           cStructure->xCenter, cStructure->yCenter, cStructure->zCenter, // view
+	cCamera.PositionCamera(0,0,-2,                         // Position 
+                           0,0,0,
                            0, 1, 0 );                                                      //upVector
 
-    cCamera.PositionCamera(0,-1,0,
-                           0,0,0,
-                           0,1,0);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();				// Reset The Projection Matrix
-    gluPerspective(90.0, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 1.0f, 1000);	// Calculate The Aspect Ratio Of The Window
-    glMatrixMode(GL_MODELVIEW);
 }
 
 void DisplayMain(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    cGraphics->SetBackGroundColor(BACKGROUND_CLR);
+
     glLoadIdentity();   // Reset the matrix
 
-    cCamera.Look();    // Camera position, view and Up vector
-    //    cCamera.Update();
-
-
+    gluLookAt(Viewer.x, Viewer.y, Viewer.z,
+              Center.x, Center.y, Center.z,
+              Up.x,     Up.y,     Up.z);
 
     glScalef(scale,scale,scale);
 
-	// Translate the object to view position (always be looking at the object)
-    Vector3 vView = cCamera.View();
-    glTranslatef(vView.x, 0, vView.z);
-    glMultMatrixd(IdMtx);
-    
-    cGraphics->SetBackGroundColor(BACKGROUND_CLR);
+    if(rotateMolecule || autoRotate) CalculateRotationMatrix();
 
     glPushMatrix();
-    cGraphics->DrawAxis(0,0,0, 15); // Draw Axis
-    glColor4fv(DEFAULT);
-    cGraphics->PrintString(0,0,0,"CENTRE ",GLUT_BITMAP_8_BY_13);
-    glPopMatrix();
+    glMultMatrixf(rotation_matrix); 
+
+    glTranslatef(-sCen.x, -sCen.y, -sCen.z);
 
     {  // Actual Drawing Routine
         if(dispHelices) {
             char buf[100];
             glColor4fv(DEFAULT);
             sprintf(buf, "Helices Displayed (HELIX N0.) = %d - %d", cRenderer->StartHelix, cRenderer->EndHelix);
-            cGraphics->PrintString(cStructure->xCenter,cStructure->yCenter,cStructure->zCenter,buf,GLUT_BITMAP_8_BY_13);
+            cGraphics->PrintString(sCen.x,sCen.y,sCen.z,buf,GLUT_BITMAP_8_BY_13);
         }
-
-        glPushMatrix();
-        cGraphics->DrawAxis(cStructure->xCenter,cStructure->yCenter,cStructure->zCenter, 15); // Draw Axis
-        glPopMatrix();
-
-        glPushMatrix();
-        if(iStructurize){
-            glCallList(STRUCTURE_BACKBONE_CLR);
-        }
-        else if (dispBackBone) {
-            glColor4fv(DEFAULT);
-            glCallList(STRUCTURE_BACKBONE);
-        }
-        glPopMatrix();
-
-        glLineWidth(cRenderer->ObjectSize/2);
-        glColor4fv(BLUE);
-        glBegin(GL_LINE_STRIP);
-        glCallList(STRUCTURE_SEARCH);
-        glEnd();
 
         glPushMatrix();
         cRenderer->BeginTexturizer();
@@ -181,94 +143,102 @@ void DisplayMain(void) {
         if (dispPositions)     cRenderer->DisplayPositions();
         if (dispHelixNrs)      cRenderer->DisplayHelixNumbers();
         glPopMatrix();
-    
+
+        glPushMatrix();
+        glLineWidth(cRenderer->ObjectSize/2);
+        glColor4fv(BLUE);
+        glBegin(GL_LINE_STRIP);
+        glCallList(STRUCTURE_SEARCH);
+        glEnd();
+        glPopMatrix();
+
+        glPushMatrix();
+        if(iStructurize){
+            glCallList(STRUCTURE_BACKBONE_CLR);
+        }
+        else if (dispBackBone) {
+            glColor4fv(DEFAULT);
+            glCallList(STRUCTURE_BACKBONE);
+        }
+        glPopMatrix();
+
         if (showCursor) {
             POINT click;
             cCamera.GetCursorPos(&click);
             cGraphics->DrawCursor(click.x, click.y);
         }
     }
-
+    glPopMatrix();
 
     glutSwapBuffers();
 }
 
-
 void IdleFunction(void) {
-    if(rotateStruct) {
-        RotateStructure(rot_x,rot_y);
-        rot_x += ROTATION_SPEED; 
-        rot_y += ROTATION_SPEED;
+    if(autoRotate) {
+        ROTATION_SPEED = 0.05;
+        glutPostRedisplay();
     }
-    glutPostRedisplay();
+    else {
+        ROTATION_SPEED = 0.5;
+    }
 }
 
 void ReshapeMain(GLint width, GLint height) {
-    cGraphics->screenXmax = width; cGraphics->screenYmax = height;
-
     glViewport(0, 0, width, height);  // Drawing Boundries
 
     glMatrixMode(GL_PROJECTION);  // Select The Projection Matrix
     glLoadIdentity();             // Reset The Projection Matrix
 
-    // Calculate The Aspect Ratio Of The Window
-    // The parameters are:
-    // (view angle, aspect ration of the width to the height, 
-    //  The closest distance to the camera before it clips, 
-    //  The farthest distance before it stops drawing)
-     //             FOV        // Ratio
-    gluPerspective(90.0, (float)width / height, 1.0f, 1000);
+    gluPerspective(FOV_ANGLE, (float)width / height, CLIP_NEAR, CLIP_FAR);
 
     glMatrixMode(GL_MODELVIEW); // Select The Modelview Matrix
     glLoadIdentity();           // Reset The Modelview Matrix
 }
 
-void RotateScene(int x, int y) {
-    cCamera.SetCursorPos(x, y); // setting mouse position
-}
-
-
-void RotateStructure(float x, float y){
-    static double lastX;
-    static double lastY;
-    double dx, dy;
-    dx = lastX - x; 
-    dy = lastY - y;
-
-    glLoadIdentity (); // Reset Matrix
-    if (rotateClockwise) {
-        glRotated(dx, 0.0 , 0.01, 0.0);
-        glRotated(dy, 0.01, 0.0 , 0.0);
+void rotate(int x, int y) {
+    GLfloat dx, dy;
+    dx = saved_x - x; 
+    dy = saved_y - y;
+    if (enableZoom) {
+        if (dy > 0) scale += ZOOM;
+        else        scale -= ZOOM;
+        if (scale<0.005) scale = 0.005;
     }
     else {
-        glRotated(-dx, 0.0 , 0.01, 0.0);
-        glRotated(-dy, 0.01, 0.0 , 0.0);
+        rot_y = (GLfloat)(x - saved_x) * ROTATION_SPEED;
+        rot_x = (GLfloat)(y - saved_y) * ROTATION_SPEED;
     }
+    saved_x = x;
+    saved_y = y;
 
-    glMultMatrixd(IdMtx);
-    glGetDoublev(GL_MODELVIEW_MATRIX,IdMtx);
-    lastX = x; lastY = y;
+    glutPostRedisplay();
 }
 
+void CalculateRotationMatrix(){
+    static int initialized = 0;
+    GLfloat new_rotation_matrix[16];
 
-void CalculateTransValues(int x, int y) {
-    static int lastX, lastY;
-    int dx, dy;
-    float hyp;
-
-    dx = lastX - x; 
-    dy = lastY - y;
-    hyp   = (float) sqrt((float)(dx*dx) + (dy*dy));
-    Angle = (-sin(dx/hyp))*2.0;  // ?????
-
-    // moving camera (zoom)  according to the mouse movement
-    if (enableZoom) {
-        if (dy > 0) cCamera.MoveCamera(zoomFactor); 
-        else        cCamera.MoveCamera(-zoomFactor);
+    /* calculate new rotation matrix */
+    glPushMatrix();
+    glLoadIdentity();
+    glRotatef(-rot_x, 1.0, 0.0, 0.0);
+    glRotatef(rot_y, 0.0, 1.0, 0.0);
+    glGetFloatv(GL_MODELVIEW_MATRIX, new_rotation_matrix);
+    glPopMatrix();
+    
+    /* calculate total rotation */
+    glPushMatrix();
+    glLoadIdentity();
+    glMultMatrixf(new_rotation_matrix);
+    if (initialized) {
+      glMultMatrixf(rotation_matrix);
     }
 
-    lastX = x; lastY = y;
+    glGetFloatv(GL_MODELVIEW_MATRIX, rotation_matrix);
+    initialized = 1;
+    glPopMatrix();
 }
+
 
 void KeyBoardFunction(unsigned char key, int x, int y){
     switch(key) {
@@ -286,29 +256,7 @@ void KeyBoardFunction(unsigned char key, int x, int y){
     case 't' : cRenderer->HelixWidth -= 0.5; if(cRenderer->HelixWidth<0.5) cRenderer->HelixWidth = 0.5; break;
     case 'O' : cRenderer->ObjectSize += 0.5; break;
     case 'o' : cRenderer->ObjectSize -= 0.5; break;
-    case 'r' : 
-        if(!rotateStruct) rotateStruct = true;
-        else              rotateStruct = false;
-        break;
-    case 'R' : 
-        if(!rotateClockwise) rotateClockwise = true;
-        else                 rotateClockwise = false;
-        break;
-    case 'c': 
-        cCamera.PositionCamera(0,0,-2, 
-                               cStructure->xCenter, 
-                               cStructure->yCenter, 
-                               cStructure->zCenter, 
-                               0, 1, 0 ); 
-        break;
-    case 'x': 
-        cCamera.PositionCamera(0,200,-2,
-                               cStructure->xCenter, 
-                               cStructure->yCenter, 
-                               cStructure->zCenter, 
-                               0, 1, 0 ); 
-        break;
-
+    case 'r' : autoRotate = !autoRotate;  break;
     case '1' : iStructurize      = (!iStructurize)?      TRUE : FALSE; break;
     case '2' : dispBackBone      = (!dispBackBone)?      TRUE : FALSE; break;
     case '3' : dispBases         = (!dispBases)?         TRUE : FALSE; break;

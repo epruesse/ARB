@@ -45,7 +45,7 @@ public:
     void PrepareStructureSkeleton(void);
     void DrawStructureInfo(void);
     void StoreCoordinates(float x, float y, float z, char base, unsigned int pos);
-    void ReadCoOrdinateFile(void);
+    void ReadCoOrdinateFile(Vector3 *sCen);
 
     void GetSecondaryStructureInfo(void);
     void Store2Dinfo(char *info, int pos, int helixNr);

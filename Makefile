@@ -1244,7 +1244,7 @@ arbshared: dball aw dp awt
 arbapplications: nt pa ed e4 we pt na al nal di ph ds trs
 
 # optionally things (no real harm for ARB if any of them fails):
-arbxtras: tg ps pc pst chip 3d
+arbxtras: tg ps pc pst chip 3d gl
 
 tryxtras:
 		@echo $(SEP)

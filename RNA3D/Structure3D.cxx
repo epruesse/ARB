@@ -8,6 +8,8 @@ using namespace std;
 inline float _min(float a, float b) { return (a>b)? b:a; }
 inline float _max(float a, float b) { return (a<b)? b:a; }
 
+Vector3 strCen = Vector3(0.0, 0.0, 0.0);
+
 OpenGLGraphics *GRAPHICS = new OpenGLGraphics();
 
 Structure3D::Structure3D(void) {
@@ -42,7 +44,7 @@ void Structure3D::StoreCoordinates(float x, float y, float z, char base, unsigne
     }
 }
 
-void Structure3D::ReadCoOrdinateFile(void) {
+void Structure3D::ReadCoOrdinateFile(Vector3 *sCen) {
     const char 
         DataFile[] = "data/Ecoli_1M5G_16SrRNA.pdb",
         ErrorMsg[] = "\n *** Error Opening File : ";
@@ -76,12 +78,13 @@ void Structure3D::ReadCoOrdinateFile(void) {
                 Z    = atof((line.substr(47,8)).c_str());
                 StoreCoordinates(X,Y,Z,Base,pos);
                 
-                xCenter += X; yCenter += Y; zCenter += Z;
+                strCen.x += X; strCen.y += Y; strCen.z += Z;
                 cntr++;
             }
         }
     }
-    xCenter = xCenter/cntr; yCenter = yCenter/cntr; zCenter = zCenter/cntr;
+    strCen.x = strCen.x/cntr; strCen.y = strCen.y/cntr; strCen.z = strCen.z/cntr;
+    sCen->x = strCen.x; sCen->y = strCen.y; sCen->z = strCen.z;
 
     readData.close();
 }
