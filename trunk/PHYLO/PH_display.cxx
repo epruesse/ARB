@@ -175,7 +175,7 @@ void AP_display::resized(void)
     vert_page_start  = 0; vert_last_view_start=0;
 
     device->reset();            // clip_size == device_size
-    device->clear();
+    device->clear(-1);
     device->set_right_clip_border((int)(off_dx+cell_width*horiz_page_size));
     device->reset();            // reset shift_x and shift_y
 
@@ -206,7 +206,8 @@ void AP_display::display(void)   // draw area
     switch(display_what)  // be careful: text origin is lower left
     {
         case NONE: return;
-        case species_dpy: device->shift_dy(off_dy);
+        case species_dpy:
+            device->shift_dy(off_dy);
             device->shift_dx(off_dx);
             ypos=0;
             for(y=vert_page_start;y<(vert_page_start+vert_page_size) &&
@@ -216,8 +217,12 @@ void AP_display::display(void)   // draw area
                              ypos*cell_height-cell_offset,
                              0.0,-1,0,0);                          // species names
 
-                device->text(0,GB_read_char_pntr(
-                                                 PHDATA::ROOT->hash_elements[y]->gb_species_data_ptr)+horiz_page_start,
+                GBDATA     *gb_seq_data = PHDATA::ROOT->hash_elements[y]->gb_species_data_ptr;
+                const char *seq_data    = GB_read_char_pntr(gb_seq_data);
+                long        seq_len     = GB_read_count(gb_seq_data);
+                
+                device->text(0,
+                             (horiz_page_start >=seq_len) ? "" : (seq_data+horiz_page_start),
                              0,ypos*cell_height-cell_offset,
                              0.0,-1,0,0);                          // alignment
                 ypos++;
@@ -272,10 +277,14 @@ void AP_display::display(void)   // draw area
                              ypos*cell_height-cell_offset,
                              0.0,-1,0,0);                          // species names
 
-                device->text(0,GB_read_char_pntr(
-                                                 PHDATA::ROOT->hash_elements[y]->gb_species_data_ptr)+horiz_page_start,
+                GBDATA     *gb_seq_data = PHDATA::ROOT->hash_elements[y]->gb_species_data_ptr;
+                const char *seq_data    = GB_read_char_pntr(gb_seq_data);
+                long        seq_len     = GB_read_count(gb_seq_data);
+
+                device->text(0,
+                             (horiz_page_start >=seq_len) ? "" : (seq_data+horiz_page_start),
                              0,ypos*cell_height-cell_offset,
-                             0.0,-1,0,0);                          // alignment
+                             0.0,-1,0,0); // alignment
                 ypos++;
             }
             xpos=0;
@@ -371,7 +380,7 @@ void AP_display::monitor_vertical_scroll_cb(AW_window *aww)    // draw area
         // device->line(0,0,off_dy-cell_height,50,off_dy-cell_height,-1,0,0); // target top
 
         device->clear_part(0,off_dy-cell_height+(vert_page_size-1)*cell_height+1,
-                           screen_width,cell_height);
+                           screen_width,cell_height, -1);
 
         // device->line(0,6,off_dy-cell_height+(vert_page_size-1)*cell_height+1,
         // 6,off_dy-cell_height+(vert_page_size)*cell_height,-1,0,0);
@@ -386,13 +395,13 @@ void AP_display::monitor_vertical_scroll_cb(AW_window *aww)    // draw area
         // device->line(0,0,off_dy-cell_height,50,off_dy-cell_height,-1,0,0);
         // device->line(0,0,(vert_page_size-1)*cell_height+1+(off_dy-cell_height),
         //                50,(vert_page_size-1)*cell_height+1+(off_dy-cell_height),-1,0,0);
-        device->clear_part(0,off_dy-cell_height,screen_width,cell_height);
+        device->clear_part(0,off_dy-cell_height,screen_width,cell_height, -1);
         // device->line(0,0,off_dy-cell_height,50,off_dy-cell_height,-1,0,0);
         // device->line(0,0,off_dy,50,off_dy,-1,0,0);
         device->push_clip_scale();
         device->set_bottom_clip_border((int)off_dy);
     }
-    else  device->clear();
+    else  device->clear(-1);
 
     vert_last_view_start=aww->slider_pos_vertical;
     vert_page_start=aww->slider_pos_vertical/cell_height;
@@ -419,7 +428,7 @@ void AP_display::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
         //            horiz_page_size*cell_width+off_dx+cell_width,screen_height,-1,0,0); // right border
         // device->line(0,off_dx,0,off_dx,screen_height,-1,0,0);  // target
 
-        device->clear_part(off_dx+(horiz_page_size-1)*cell_width,0,cell_width,screen_height);
+        device->clear_part(off_dx+(horiz_page_size-1)*cell_width,0,cell_width,screen_height, -1);
 
         // device->line(0,off_dx+(horiz_page_size-1)*cell_width,0,
         //             off_dx+(horiz_page_size-1)*cell_width,screen_height,-1,0,0);
@@ -433,11 +442,11 @@ void AP_display::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
     {
         device->move_region(off_dx,0,(horiz_page_size-1)*cell_width,screen_height,off_dx+cell_width,
                             0);
-        device->clear_part(off_dx,0,cell_width,screen_height);
+        device->clear_part(off_dx,0,cell_width,screen_height, -1);
         device->push_clip_scale();
         device->set_right_clip_border((int)(off_dx+cell_width));
     }
-    else device->clear();
+    else device->clear(-1);
 
     horiz_last_view_start=aww->slider_pos_horizontal;
     horiz_page_start=aww->slider_pos_horizontal/cell_width;
@@ -487,7 +496,7 @@ void AP_display_status::write(AW_pos numA)
 }
 
 void AP_display_status::clear(void){
-    device->clear();
+    device->clear(-1);
 }
 
 void display_status(AW_window *dummy,AW_CL cl_awroot,AW_CL cd2)    // bottom area
