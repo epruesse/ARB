@@ -62,8 +62,8 @@ void NT_show_message(AW_root *awr)
 {
     char *mesg = awr->awar("tmp/message")->read_string();
     if (*mesg){
-	aw_message(mesg);
-	awr->awar("tmp/message")->write_string("");
+        aw_message(mesg);
+        awr->awar("tmp/message")->write_string("");
     }
     delete mesg;
 }
@@ -87,22 +87,22 @@ void export_nds_cb(AW_window *aww,AW_CL print_flag) {
     char *name = aww->get_root()->awar(AWAR_EXPORT_NDS"/file_name")->read_string();
     out = fopen(name,"w");
     if (!out) {
-	delete name;
-	aw_message("Error: Cannot open and write to file");
-	return;
+        delete name;
+        aw_message("Error: Cannot open and write to file");
+        return;
     }
     make_node_text_init(gb_main);
 
     for (gb_species = GBT_first_marked_species(gb_main);
-	 gb_species;
-	 gb_species = GBT_next_marked_species(gb_species)){
-	buf = make_node_text_nds(gb_main, gb_species,1,0);
-	fprintf(out,"%s\n",buf);
+         gb_species;
+         gb_species = GBT_next_marked_species(gb_species)){
+        buf = make_node_text_nds(gb_main, gb_species,1,0);
+        fprintf(out,"%s\n",buf);
     }
     aww->get_root()->awar(AWAR_EXPORT_NDS"/directory")->touch();
     fclose(out);
     if (print_flag){
-	GB_textprint(name);
+        GB_textprint(name);
     }
     delete name;
 }
@@ -261,7 +261,7 @@ NT_save_quick_as_cb(AW_window *aww)
 
 
 AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name)
-	{
+{
 	static AW_window_simple *aws = 0;
 	if (aws) return (AW_window *)aws;
 
@@ -385,7 +385,7 @@ NT_save_as_cb(AW_window *aww)
 
 
 AW_window *NT_create_save_as(AW_root *aw_root,const char *base_name)
-	{
+{
 	static AW_window_simple *aws = 0;
 	if (aws) return (AW_window *)aws;
 
@@ -406,9 +406,9 @@ AW_window *NT_create_save_as(AW_root *aw_root,const char *base_name)
 	aws->at("user");
 	aws->label("Type");
 	aws->create_option_menu(AWAR_DB"type");
-		aws->insert_option("Binary","B","b");
-		aws->insert_option("Bin (with FastLoad File)","f","bm");
-		aws->insert_default_option("Ascii","A","a");
+    aws->insert_option("Binary","B","b");
+    aws->insert_option("Bin (with FastLoad File)","f","bm");
+    aws->insert_default_option("Ascii","A","a");
 	aws->update_option_menu();
 
 	aws->at("user2");
@@ -445,13 +445,13 @@ void NT_undo_cb(AW_window *, AW_CL undo_type, AW_CL ntw){
 void NT_undo_info_cb(AW_window *,AW_CL undo_type){
     char *undo_info = GB_undo_info(gb_main,(GB_UNDO_TYPE)undo_type);
     if (undo_info){
-	aw_message(undo_info);
+        aw_message(undo_info);
     }
     delete undo_info;
 }
 
 AW_window *NT_create_tree_setting(AW_root *aw_root)
-	{
+{
 	static AW_window_simple *aws = 0;
 	if (aws) return (AW_window *)aws;
 
@@ -505,20 +505,20 @@ void NT_submit_mail(AW_window *aww){
     sprintf(buffer,"/tmp/arb_bugreport_%s",GB_getenvUSER());
     FILE *mail = fopen(buffer,"w");
     if (!mail){
-	aw_message(GB_export_error("Cannot write file %s",buffer));
+        aw_message(GB_export_error("Cannot write file %s",buffer));
     }else{
-	fprintf(mail,"%s\n",text);
-	fprintf(mail,"VERSION		:" DATE "\n");
-	fprintf(mail,"SYSTEMINFO	:\n");
-	fclose(mail);
+        fprintf(mail,"%s\n",text);
+        fprintf(mail,"VERSION		:" DATE "\n");
+        fprintf(mail,"SYSTEMINFO	:\n");
+        fclose(mail);
 
-	system(GBS_global_string("uname -a >>%s",buffer));
-	system(GBS_global_string("date  >>%s",buffer));
-	const char *command = GBS_global_string("mail '%s' <%s",plainaddress,buffer);
-	system(command);
-	printf("%s\n",command);
-	GB_unlink(buffer);
-	aww->hide();
+        system(GBS_global_string("uname -a >>%s",buffer));
+        system(GBS_global_string("date  >>%s",buffer));
+        const char *command = GBS_global_string("mail '%s' <%s",plainaddress,buffer);
+        system(command);
+        printf("%s\n",command);
+        GB_unlink(buffer);
+        aww->hide();
     }
     delete text;
     delete address;
@@ -547,13 +547,13 @@ AW_window *NT_submit_bug(AW_root *aw_root, int bug_report){
 	    aw_root->awar_string("/tmp/nt/register/text","Enter your bug report here:\n");
 	}else{
 	    aw_root->awar_string("/tmp/nt/register/text",
-				 "******* Registration *******\n"
-				 "\n"
-				 "Name			:\n"
-				 "Department		:\n"
-				 "How many users	:\n"
-				 "Why do you want to use arb ?\n"
-		);
+                             "******* Registration *******\n"
+                             "\n"
+                             "Name			:\n"
+                             "Department		:\n"
+                             "How many users	:\n"
+                             "Why do you want to use arb ?\n"
+                             );
 	}
 	aws->at("box");
 	aws->create_text_field("/tmp/nt/register/text");
@@ -567,14 +567,14 @@ AW_window *NT_submit_bug(AW_root *aw_root, int bug_report){
 }
 
 void NT_focus_cb(AW_window *aww)
-	{
+{
 	AWUSE(aww);
 	GB_transaction dummy(gb_main);
 }
 
 
 void NT_modify_cb(AW_window *aww,AW_CL cd1,AW_CL cd2)
-	{
+{
 	AW_window *aws = create_species_window(aww->get_root());
 	aws->show();
 	nt_mode_event(aww,(AWT_canvas*)cd1,(AWT_COMMAND_MODE)cd2);
@@ -605,10 +605,10 @@ void NT_justify_branch_lenghs(AW_window *, AW_CL ntwcl){
     GB_transaction dummy(gb_main);
     AWT_canvas *ntw = (AWT_canvas *)ntwcl;
     if (AWT_TREE(ntw)->tree_root){
-	AWT_TREE(ntw)->tree_root->justify_branch_lenghs(gb_main);
-	AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
-	AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
-	ntw->refresh();
+        AWT_TREE(ntw)->tree_root->justify_branch_lenghs(gb_main);
+        AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+        AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+        ntw->refresh();
     }
 }
 
@@ -1190,7 +1190,7 @@ AW_window *NT_preset_tree_window( AW_root *root )  {
 
     aws->at_newline();
 
-// No Help, as we usually do not know the associated help file from within presets of AW Lib
+    // No Help, as we usually do not know the associated help file from within presets of AW Lib
 
     aws->create_option_menu( "vectorfont/active", "Data font type", "1" );
     aws->insert_option        ( "Use vectorfont",     " ", (int) 1);
@@ -1198,7 +1198,7 @@ AW_window *NT_preset_tree_window( AW_root *root )  {
     aws->update_option_menu();
     aws->at_newline();
 
-//              AW_preset_create_scale_chooser(aws,"vectorfont/userscale","VF: absolute scaling");
+    //              AW_preset_create_scale_chooser(aws,"vectorfont/userscale","VF: absolute scaling");
     aws->at_x(tabstop);
     aws->create_input_field( "vectorfont/userscale",6);
     aws->at_newline();
