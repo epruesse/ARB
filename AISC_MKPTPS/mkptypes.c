@@ -15,6 +15,7 @@
 
 #include <stddef.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #ifndef EXIT_SUCCESS
 #define EXIT_SUCCESS  0
@@ -684,28 +685,64 @@ Word *getparamlist(FILE *f){
     if (np == 0) return word_alloc("void");
 
     plist = tlist = word_alloc("");
-    for (i = 0; i < np; i++) {
-        /* If no type provided, make it an "int" */
-        {
-            Word *pn_list = pname[i];
-            int cnt = 0;
-            int is_void = 0;
 
-            while (pn_list) { /* count words */
-                if (pn_list->string[0]) {
-                    ++cnt;
-                    if (strcmp(pn_list->string, "void")==0) is_void = 1;
+    /* how to handle parameters which contain only one word ?
+     *
+     * void -> void
+     * xxx  -> int xxx        (if AUTO_INT is defined)
+     * int  -> int dummyXX    (otherwise)
+     */
+
+    /* #define AUTO_INT */
+
+    {
+#if !defined(AUTO_INT)
+        int dummy_counter = 1;
+        char dummy_name[] = "dummy_xx";
+#define DUMMY_COUNTER_POS 6
+#endif
+
+        for (i = 0; i < np; i++) {
+#if !defined(AUTO_INT)
+            int add_dummy_name = 0;
+#endif
+            {
+                Word *pn_list = pname[i];
+                int cnt = 0;
+                int is_void = 0;
+
+                while (pn_list) { /* count words */
+                    if (pn_list->string[0]) {
+                        ++cnt;
+                        if (strcmp(pn_list->string, "void")==0) is_void = 1;
+                    }
+                    pn_list = pn_list->next;
                 }
-                pn_list = pn_list->next;
+                if (cnt==1 && !is_void) { /* only name, but not void */
+                    /* no type or no parameter name */
+#ifdef AUTO_INT
+                    /* If no type provided, make it an "int" */
+                    addword(tlist, "int"); /* add int to tlist before adding pname[i] */
+#else
+                    add_dummy_name = 1; /* add a dummy name after adding pname[i] */
+#endif
+                }
             }
-            if (cnt==1 && !is_void) { /* only name, but not void */
-                addword(tlist, "int"); /* add int to tlist before adding pname[i] */
-            }
-        }
 
-        while (tlist->next) tlist = tlist->next;
-        tlist->next = pname[i];
-        if (i < np - 1) addword(tlist, ",");
+            while (tlist->next) tlist = tlist->next;
+            tlist->next               = pname[i];
+
+#if !defined(AUTO_INT)
+            if (add_dummy_name) {
+                assert(dummy_counter<100);
+                dummy_name[DUMMY_COUNTER_POS] = (dummy_counter/10)+'0';
+                dummy_name[DUMMY_COUNTER_POS] = (dummy_counter%10)+'0';
+                addword(tlist, dummy_name);
+            }
+#endif
+
+            if (i < np - 1) addword(tlist, ",");
+        }
     }
 
     /* debugging output */
