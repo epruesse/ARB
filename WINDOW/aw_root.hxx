@@ -218,6 +218,11 @@ public:
 struct AW_var_callback;
 struct AW_var_target;
 
+typedef void (*Awar_CB)(AW_root *, AW_CL, AW_CL);
+typedef void (*Awar_CB2)(AW_root *, AW_CL, AW_CL);
+typedef void (*Awar_CB1)(AW_root *, AW_CL);
+typedef void (*Awar_CB0)(AW_root *);
+
 class AW_awar {
     struct {
         struct {
@@ -253,13 +258,13 @@ public:
 
     char				*awar_name; // name of the awar
 
-    AW_awar *add_callback(void (*f)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
-    AW_awar *add_callback(void (*f)(AW_root*,AW_CL), AW_CL cd1);
-    AW_awar *add_callback(void (*f)(AW_root*));
+    AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2);
+    AW_awar *add_callback(Awar_CB1 f, AW_CL cd1);
+    AW_awar *add_callback(Awar_CB0 f);
 
-    AW_awar *remove_callback( void (*f)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 ); // remove a callback
-    AW_awar *remove_callback( void (*f)(AW_root*,AW_CL), AW_CL cd1 );
-    AW_awar *remove_callback( void (*f)(AW_root*));
+    AW_awar *remove_callback( Awar_CB2 f, AW_CL cd1, AW_CL cd2 ); // remove a callback
+    AW_awar *remove_callback( Awar_CB1 f, AW_CL cd1 );
+    AW_awar *remove_callback( Awar_CB0 f);
 
     AW_awar *add_target_var( char **ppchr);
     AW_awar *add_target_var( long *pint);
@@ -291,6 +296,42 @@ public:
     GB_ERROR	write_as(char *aw_value) { return write_as_string(aw_value);};
     GB_ERROR	toggle_toggle();	/* switches between 1/0 */
     void	touch(void);
+};
+
+// ----------------------------------
+//      class Awar_Callback_Info
+// ----------------------------------
+
+class Awar_Callback_Info {
+    // this structure is used to store all information on an awar callback
+    // and can be used to remove or remap awar callback w/o knowing anything else
+
+    AW_root *awr;
+    Awar_CB  callback;
+    AW_CL    cd1, cd2;
+    char    *awar_name;
+    char    *org_awar_name;
+
+    void init (AW_root *awr_, const char *awar_name_, Awar_CB2 callback_, AW_CL cd1_, AW_CL cd2_);
+
+public:
+    Awar_Callback_Info(AW_root *awr_, const char *awar_name_, Awar_CB2 callback_, AW_CL cd1_, AW_CL cd2_)   { init(awr_, awar_name_, callback_, cd1_, cd2_); }
+    Awar_Callback_Info(AW_root *awr_, const char *awar_name_, Awar_CB1 callback_, AW_CL cd1_)               { init(awr_, awar_name_, (Awar_CB2)callback_, cd1_, 0); }
+    Awar_Callback_Info(AW_root *awr_, const char *awar_name_, Awar_CB0 callback_)                           { init(awr_, awar_name_, (Awar_CB2)callback_, 0, 0); }
+
+    ~Awar_Callback_Info() {
+        delete awar_name;
+        delete org_awar_name;
+    }
+
+    void add_callback() { awr->awar(awar_name)->add_callback(callback, cd1, cd2); }
+    void remove_callback() { awr->awar(awar_name)->remove_callback(callback, cd1, cd2); }
+
+    void remap(const char *new_awar);
+
+    const char *get_awar_name() const { return awar_name; }
+    const char *get_org_awar_name() const { return org_awar_name; }
+    AW_root *get_root() { return awr; }
 };
 
 
