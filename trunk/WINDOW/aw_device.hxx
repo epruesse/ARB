@@ -1,10 +1,8 @@
-#ifndef aw_device_hxx_included
-#define aw_device_hxx_included
+#ifndef AW_DEVICE_HXX
+#define AW_DEVICE_HXX
 
-#define _AW_DEVICE_INCLUDED
-
-#ifndef _AW_COMMON_INCLUDED
-class AW_common { void *dummy;};
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
 #endif
 
 #if defined(DEBUG) && defined(DEBUG_GRAPHICS)
@@ -258,16 +256,18 @@ typedef enum {
 
 class AW_gc: public AW_clip {
 public:
-    void    new_gc(int gc);
-    int     new_gc(void);
-    void    set_fill(int gc,AW_grey_level grey_level);      // <0 dont fill  0.0 white 1.0 black
-    void    set_font(int gc,AW_font fontnr, int size);      //
-    void    set_line_attributes(int gc,AW_pos width,AW_linestyle style);
-    void    set_function(int gc,AW_function function);
-    void    set_foreground_color(int gc,AW_color color);    // lines ....
-    void    set_background_color(int gc,AW_color color);    // for box
-    AW_font_information     *get_font_information(int gc, unsigned char c);
-    int     get_string_size(int gc,const  char *string,long textlen);       // get the size of the string
+    void new_gc(int gc);
+    int  new_gc(void);
+    void set_fill(int gc,AW_grey_level grey_level); // <0 dont fill  0.0 white 1.0 black
+    void set_font(int gc,AW_font fontnr, int size); //
+    void set_line_attributes(int gc,AW_pos width,AW_linestyle style);
+    void set_function(int gc,AW_function function);
+    void set_foreground_color(int gc,AW_color color); // lines ....
+    void set_background_color(int gc,AW_color color); // for box
+    int  get_string_size(int gc,const  char *string,long textlen); // get the size of the string
+
+    const AW_font_information *get_font_information(int gc, unsigned char c);
+    
     AW_gc();
     virtual ~AW_gc() {};
 };
@@ -357,6 +357,6 @@ class AW_device: public AW_matrix, public AW_gc {
      virtual void    close(void);
  };
 
-
-
+#else
+#error aw_device.hxx included twice
 #endif
