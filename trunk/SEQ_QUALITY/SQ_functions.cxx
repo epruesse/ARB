@@ -258,9 +258,104 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 }
 
 
+//GB_ERROR SQ_pass1(SQ_GroupDataSeq& globalData, GBDATA *gb_main) {
+GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node) {
+
+
+    char *alignment_name;
+
+    int avg_bases           = 0;
+    int worked_on_sequences = 0;
+
+    GBDATA *read_sequence = 0;
+    GBDATA *gb_species;
+    GBDATA *gb_species_data;
+    GBDATA *gb_name;
+    GB_ERROR error = 0;
+
+
+    GB_push_transaction(gb_main);
+    gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    alignment_name = GBT_get_default_alignment(gb_main);
+    seq_assert(alignment_name);
+    gb_species = node->gb_node;
+    gb_name = GB_find(node->gb_node, "name", 0, down_level);
+
+
+    if (!gb_name) error = GB_get_error();
+
+    else {
+
+	GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
+
+	if (!gb_ali) {
+	    error = no_data_error(gb_species, alignment_name);
+	}
+	else {
+	    GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
+
+	    if (!gb_quality){
+		error = GB_get_error();
+	    }
+	    read_sequence = GB_find(gb_ali,"data",0,down_level);
+
+	    /*real calculations start here*/
+	    if (read_sequence) {
+		    int i = 0;
+		    int sequenceLength = 0;
+		    const char *rawSequence = 0;
+
+		    rawSequence    = GB_read_char_pntr(read_sequence);
+		    sequenceLength = GB_read_count(read_sequence);
+
+
+		    /*calculate physical layout of sequence*/
+		    SQ_physical_layout* ps_chan = new SQ_physical_layout();
+		    ps_chan->SQ_calc_physical_layout(rawSequence, sequenceLength, gb_quality);
+		    i = ps_chan->SQ_get_number_of_bases();
+		    avg_bases = avg_bases + i;
+		    worked_on_sequences++;
+		    delete ps_chan;
+
+		    /*get values for  ambiguities*/
+		    SQ_ambiguities* ambi_chan = new SQ_ambiguities();
+		    ambi_chan->SQ_count_ambiguities(rawSequence, sequenceLength, gb_quality);
+		    delete ambi_chan;
+
+		    /*claculate the number of strong, weak and no helixes*/
+		    SQ_helix* heli_chan = new SQ_helix(sequenceLength);
+		    heli_chan->SQ_calc_helix_layout(rawSequence, gb_main, alignment_name, gb_quality);
+		    delete heli_chan;
+
+		    /*calculate consensus sequence*/
+		    {
+                        if (!globalData->SQ_is_initialized()) {
+			    globalData->SQ_init_consensus(sequenceLength);
+                        }
+                        globalData->SQ_add_sequence(rawSequence);
+		    }
+
+
+		}
+	    }
+    }
+
+    /*calculate the average number of bases in group*/
+    if (worked_on_sequences != 0) {
+	avg_bases = avg_bases / worked_on_sequences;
+    }
+    globalData->SQ_set_avg_bases(avg_bases);
+    free(alignment_name);
+
+    if (error) GB_abort_transaction(gb_main);
+    else GB_pop_transaction(gb_main);
+
+    return error;
+}
+
 
 //GB_ERROR SQ_pass1(SQ_GroupDataSeq& globalData, GBDATA *gb_main) {
-GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
+GB_ERROR SQ_pass1_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 
 
     char *alignment_name;
@@ -366,7 +461,6 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main) {
 }
 
 
-
 GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main) {
 
 
@@ -455,52 +549,140 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main) {
 }
 
 
-
-// void SQ_applyGroupData()  {
-//   //wert für aktuelle untergruppe berechnen
-//   //sequenzen der gruppe mit aktuellem consensus vergl. und wert speichern
-//   //Gewichtung nach anzahl der söhne ->nein
-//   //SQ_testagainstconsensus();
-//   //bei höherer gruppe genauso
-// }
+GB_ERROR SQ_pass2_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 
 
-// SQ_GroupDataSeq *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main) {
+    char *alignment_name;
 
-//     if (node->is_leaf){
-// 	if (!node->gb_node) return 0;
+    GBDATA *read_sequence = 0;
+    GBDATA *gb_species;
+    GBDATA *gb_species_data;
+    GBDATA *gb_name;
+    GBDATA *(*getFirst)(GBDATA*) = 0;
+    GBDATA *(*getNext)(GBDATA*) = 0;
+    GB_ERROR error = 0;
 
-// 	SQ_GroupData *data = new SQ_GroupDataSeq();
 
-//         //  ... sq_pass1 ohne for
-// 	//alter pass1 wird ohne tree
-// 	//neuer pass1 braucht calcstate!
-// 	// SQ_add_sequence
+    GB_push_transaction(gb_main);
+    gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    alignment_name = GBT_get_default_alignment(gb_main);
+    seq_assert(alignment_name);
+    getFirst = GBT_first_species;
+    getNext  = GBT_next_species;
 
-// 	return data;
-//     }
-//     else {
-// 	SQ_GroupData *leftData  = SQ_calc_and_apply_group_data(node->leftson, gb_main);
-// 	//??   SQ_GroupData *rightData = SQ_GroupData.clone();
-// 	SQ_GroupData *rightData = SQ_calc_and_apply_group_data(node->rightson, gb_main);
 
-// 	if (!leftData)  return rightData;
-// 	if (!rightData) return leftData;
+    /*second pass operations*/
+    for (gb_species = getFirst(gb_main);
+	 gb_species && !error;
+	 gb_species = getNext(gb_species) ){
 
-// 	//ansonsten zusammenaddieren = automat. gewichtung??
-// 	SQ_GroupDataSeq *data = new SQ_GroupDataSeq;
+	gb_name = GB_find(gb_species, "name", 0, down_level);
+
+        if (!gb_name) error = GB_get_error();
+
+	else {
+
+	    GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
+
+	    if (!gb_ali) {
+		error = no_data_error(gb_species, alignment_name);
+	    }
+	    else {
+		GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
+		if (!gb_quality) error = GB_get_error();
+		read_sequence = GB_find(gb_ali,"data",0,down_level);
+
+		/*real calculations start here*/
+		if (read_sequence) {
+		    int sequenceLength      = 0;
+		    const char *rawSequence = 0;
+		    double value            = 0;
+		    int bases               = 0;
+		    int avg_bases           = 0;
+		    int diff                = 0;
+		    //int temp                = 0;
+		    int diff_percent        = 0;
+
+		    rawSequence    = GB_read_char_pntr(read_sequence);
+		    sequenceLength = GB_read_count(read_sequence);
+
+		    /*
+		      calculate the average number of bases in group, and the difference of
+		      a single seqeunce in group from it
+		    */
+		    GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
+		    GBDATA *gb_result1 = GB_search(gb_quality, "number_of_bases", GB_INT);
+		    bases = GB_read_int(gb_result1);
+		    avg_bases = globalData->SQ_get_avg_bases();
+
+		    diff = avg_bases - bases;
+		    diff_percent = (100*diff) / avg_bases;
+
+		    GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);
+		    seq_assert(gb_result2);
+		    GB_write_int(gb_result2, diff_percent);
+		    //not useful without tree -> new function has to be made
+		    value = globalData->SQ_test_against_consensus(rawSequence);
+		    //printf("Value: %f ",value);
+		}
+	    }
+	}
+    }
+    free(alignment_name);
+
+    if (error) GB_abort_transaction(gb_main);
+    else GB_pop_transaction(gb_main);
+
+    return error;
+}
+
+
+
+void SQ_applyGroupData()  {
+  //wert für aktuelle untergruppe berechnen
+  //sequenzen der gruppe mit aktuellem consensus vergl. und wert speichern
+  //Gewichtung nach anzahl der söhne ->nein
+  //SQ_testagainstconsensus();
+  //bei höherer gruppe genauso
+}
+
+
+SQ_GroupData *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main) {
+
+    if (node->is_leaf){
+	if (!node->gb_node) {
+	    return 0;
+	}
+	SQ_GroupData *data = new SQ_GroupData_RNA;
+	SQ_pass1(data, gb_main, node);
+	return data;
+    }
+
+    else {
+	SQ_GroupData *leftData  = SQ_calc_and_apply_group_data(node->leftson, gb_main);
+	//??   SQ_GroupData *rightData = SQ_GroupData.clone();
+	SQ_GroupData *rightData = SQ_calc_and_apply_group_data(node->rightson, gb_main);
+	if (!leftData) {
+	    return rightData;
+	}
+	if (!rightData) {
+	    return leftData;
+	}
+
+	//ansonsten zusammenaddieren = automat. gewichtung??
+	SQ_GroupData *data = new SQ_GroupData_RNA;
 // 	data.SQ_add(rightData);
 // 	data.SQ_add(leftData);
-// 	delete leftData;
-// 	delete rightData;
+	delete leftData;
+	delete rightData;
 
-// 	if (node->name) { //  gruppe!
-// 	    SQ_applyGroupData();
-// 	}
+	if (node->name) {  //  group identified!
+	    SQ_applyGroupData();
+	}
 
-// 	return data;
-//     }
-// }
+	return data;
+    }
+}
 
 
 
