@@ -84,7 +84,7 @@ AW_default	aw_default;
 
 	aw_root->init_variables( aw_default );
 
-	aw_root->init( "DEMO Programm" );
+	aw_root->init( "DEMO Program" );
 
 
 	create_main_window( aw_root );

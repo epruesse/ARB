@@ -122,7 +122,7 @@ BI_helix::BI_helix(void)
 BI_helix::~BI_helix(void){
 
 #ifdef _USE_AW_WINDOW
-	aw_message("Internal Programm Error: You cannot delete BI_helix !!","CONTINUE,EXIT");
+	aw_message("Internal program error: You cannot delete BI_helix !!","CONTINUE,EXIT");
 #endif
 	delete entries;
 }
