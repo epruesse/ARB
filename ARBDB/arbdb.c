@@ -972,6 +972,9 @@ GBQUARK GB_key_2_quark(GBDATA *gbd, const char *s) {
     return (GBQUARK)index;
 }
 
+GBQUARK GB_get_quark(GBDATA *gbd) {
+    return GB_KEY_QUARK(gbd);
+}
 
 GBQUARK gb_key_2_quark(GB_MAIN_TYPE *Main, const char *s) {
     register long index;
