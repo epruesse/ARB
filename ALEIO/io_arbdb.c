@@ -53,8 +53,8 @@ char           *arbdb_filename = 0;
 GBDATA         *g;
 
 enum op {
-	op_none = 1000,
-	op_put, op_get, op_choose, op_list, op_verify_index
+    op_none = 1000,
+    op_put, op_get, op_choose, op_list, op_verify_index
 };
 
 /*
@@ -62,109 +62,109 @@ enum op {
  * For use by getopt_long.
  */
 struct option   longopts[] = {
-	{"put", no_argument, 0, 'p'},
-	{"get", no_argument, 0, 'g'},
-	{"choose", optional_argument, 0, 'c'},
-	{"list", no_argument, 0, 'l'},
-	{"verify-index", no_argument, 0, op_verify_index},
+    {"put", no_argument, 0, 'p'},
+    {"get", no_argument, 0, 'g'},
+    {"choose", optional_argument, 0, 'c'},
+    {"list", no_argument, 0, 'l'},
+    {"verify-index", no_argument, 0, op_verify_index},
 
-	{"keys", required_argument, 0, 'k'},
-	{"annotations", required_argument, 0, 'a'},
-	{"sequences", required_argument, 0, 's'},
+    {"keys", required_argument, 0, 'k'},
+    {"annotations", required_argument, 0, 'a'},
+    {"sequences", required_argument, 0, 's'},
 
-	{"help", no_argument, 0, 'h'},
-	{"version", no_argument, 0, 'v'},
+    {"help", no_argument, 0, 'h'},
+    {"version", no_argument, 0, 'v'},
 
-	{0, 0, 0, 0}
+    {0, 0, 0, 0}
 };
 
 int
 main(int argc, char **argv)
 {
-	int             arg, longopts_ix;
-	enum op         op = op_none;
-	char           *choose_filename = 0;
-	char           *keys_filename = 0;
-	char           *annotations_filename = 0;
-	char           *sequences_filename = 0;
+    int             arg, longopts_ix;
+    enum op         op = op_none;
+    char           *choose_filename = 0;
+    char           *keys_filename = 0;
+    char           *annotations_filename = 0;
+    char           *sequences_filename = 0;
 
-	progname = careful_prog_name(argv[0]);
+    progname = careful_prog_name(argv[0]);
 
-	while ((arg = getopt_long(argc, argv,
-				  "pgc::lk:a:s:hv", longopts, &longopts_ix))
-	       != -1)
-		switch (arg) {
-		case 'p':
-			op = op_put;
-			break;
-		case 'g':
-			op = op_get;
-			break;
-		case 'c':
-			op = op_choose;
-			choose_filename = optarg;
-			break;
-		case 'l':
-			op = op_list;
-			break;
-		case op_verify_index:
-			op = op_verify_index;
-			break;
-		case 'k':
-			keys_filename = optarg;
-			break;
-		case 'a':
-			annotations_filename = optarg;
-			break;
-		case 's':
-			sequences_filename = optarg;
-			break;
+    while ((arg = getopt_long(argc, argv,
+                  "pgc::lk:a:s:hv", longopts, &longopts_ix))
+           != -1)
+        switch (arg) {
+        case 'p':
+            op = op_put;
+            break;
+        case 'g':
+            op = op_get;
+            break;
+        case 'c':
+            op = op_choose;
+            choose_filename = optarg;
+            break;
+        case 'l':
+            op = op_list;
+            break;
+        case op_verify_index:
+            op = op_verify_index;
+            break;
+        case 'k':
+            keys_filename = optarg;
+            break;
+        case 'a':
+            annotations_filename = optarg;
+            break;
+        case 's':
+            sequences_filename = optarg;
+            break;
 
-		case 'h':
-			give_help();
-			break;
-		case 'v':
-			give_version();
-			break;
-		default:
-			give_usage();
-			break;
-		}
+        case 'h':
+            give_help();
+            break;
+        case 'v':
+            give_version();
+            break;
+        default:
+            give_usage();
+            break;
+        }
 
-	if (optind + 1 == argc)
-		arbdb_filename = argv[optind];
+    if (optind + 1 == argc)
+        arbdb_filename = argv[optind];
 
-	if (arbdb_filename == 0) {
-		fprintf(stderr, "%s: no GDBM file specified\n", progname);
-		give_usage();
-	}
-	if (op == op_none) {
-		fprintf(stderr, "%s: no operation specified\n", progname);
-		give_usage();
-	}
+    if (arbdb_filename == 0) {
+        fprintf(stderr, "%s: no GDBM file specified\n", progname);
+        give_usage();
+    }
+    if (op == op_none) {
+        fprintf(stderr, "%s: no operation specified\n", progname);
+        give_usage();
+    }
 
-	/* Open the GDBM file.  */
-	/* g = GBT_open(arbdb_filename, "rw", "$(ARBHOME)/lib/pts/\*"); */
-	g = GBT_open(":", "rw", "$(ARBHOME)/lib/pts/*");
-	if (!g)
-		arbdb_print_and_die();
+    /* Open the GDBM file.  */
+    /* g = GBT_open(arbdb_filename, "rw", "$(ARBHOME)/lib/pts/\*"); */
+    g = GBT_open(":", "rw", "$(ARBHOME)/lib/pts/*");
+    if (!g)
+        arbdb_print_and_die();
 
 
-	if (op == op_put)
-		put(keys_filename, annotations_filename, sequences_filename);
-	else if (op == op_get)
-		get(keys_filename, annotations_filename, sequences_filename);
-	else if (op == op_choose)
-		choose(choose_filename,
-		   keys_filename, annotations_filename, sequences_filename);
-	else if (op == op_list)
-		list(keys_filename);
-	else if (op == op_verify_index)
-		verify_index();
+    if (op == op_put)
+        put(keys_filename, annotations_filename, sequences_filename);
+    else if (op == op_get)
+        get(keys_filename, annotations_filename, sequences_filename);
+    else if (op == op_choose)
+        choose(choose_filename,
+           keys_filename, annotations_filename, sequences_filename);
+    else if (op == op_list)
+        list(keys_filename);
+    else if (op == op_verify_index)
+        verify_index();
 
-	GB_close(g);
+    GB_close(g);
 
-	return 0;
+    return 0;
 }
 
 
@@ -178,50 +178,50 @@ put(char *keys_filename,
     char *annotations_filename,
     char *sequences_filename)
 {
-	FILE           *keys_file = careful_open(keys_filename, "r", stdin);
-	FILE           *annotations_file = careful_open(annotations_filename, "r", stdin);
-	FILE           *sequences_file = careful_open(sequences_filename, "r", stdin);
-	GBDATA         *gb_species_data, *gb_species, *gb_sequence;
-	char           *alignment_name;
-	GB_ERROR	error;
-	lenstring       key, annotation, sequence;
-	GB_begin_transaction(g);
-	GB_change_my_security(g, 6, 0);	/* disable all security */
-	alignment_name = GBT_get_default_alignment(g);
-	gb_species_data = GB_search(g, "species_data", GB_CREATE_CONTAINER);
-	for (;;) {
-		{
-			int             key_eof =
-			(read_delimited_lenstring(&key, "\n", keys_file) == EOF);
-			int             ann_eof =
-			(read_delimited_lenstring(&annotation, "\f", annotations_file) == EOF);
-			int             seq_eof =
-			(read_delimited_lenstring(&sequence, "\n", sequences_file) == EOF);
+    FILE           *keys_file = careful_open(keys_filename, "r", stdin);
+    FILE           *annotations_file = careful_open(annotations_filename, "r", stdin);
+    FILE           *sequences_file = careful_open(sequences_filename, "r", stdin);
+    GBDATA         *gb_species_data, *gb_species, *gb_sequence;
+    char           *alignment_name;
+    GB_ERROR    error;
+    lenstring       key, annotation, sequence;
+    GB_begin_transaction(g);
+    GB_change_my_security(g, 6, 0); /* disable all security */
+    alignment_name = GBT_get_default_alignment(g);
+    gb_species_data = GB_search(g, "species_data", GB_CREATE_CONTAINER);
+    for (;;) {
+        {
+            int             key_eof =
+            (read_delimited_lenstring(&key, "\n", keys_file) == EOF);
+            int             ann_eof =
+            (read_delimited_lenstring(&annotation, "\f", annotations_file) == EOF);
+            int             seq_eof =
+            (read_delimited_lenstring(&sequence, "\n", sequences_file) == EOF);
 
-			if (key_eof || ann_eof || seq_eof)
-				break;
-		}
-		key.text[key.len] = 0;
-		annotation.text[annotation.len] = 0;
-		sequence.text[sequence.len] = 0;
-		gb_species = GBT_find_species_rel_species_data(gb_species_data, key.text);
-		if (!gb_species) {	/* This is an new entry */
-			gb_species = GBT_create_species_rel_species_data(gb_species_data, key.text);
-		}
-		gb_sequence = GBT_add_data(gb_species, alignment_name, "data", GB_STRING);
-		error = GB_write_string(gb_sequence, sequence.text);	/* written */
-		if (error)
-			fprintf(stderr, "%s\n", error);
+            if (key_eof || ann_eof || seq_eof)
+                break;
+        }
+        key.text[key.len] = 0;
+        annotation.text[annotation.len] = 0;
+        sequence.text[sequence.len] = 0;
+        gb_species = GBT_find_species_rel_species_data(gb_species_data, key.text);
+        if (!gb_species) {  /* This is an new entry */
+            gb_species = GBT_create_species_rel_species_data(gb_species_data, key.text);
+        }
+        gb_sequence = GBT_add_data(gb_species, alignment_name, "data", GB_STRING);
+        error = GB_write_string(gb_sequence, sequence.text);    /* written */
+        if (error)
+            fprintf(stderr, "%s\n", error);
 
-		free(key.text);
-		free(annotation.text);
-		free(sequence.text);
-	}
+        free(key.text);
+        free(annotation.text);
+        free(sequence.text);
+    }
 
-	careful_close(keys_file, keys_filename);
-	careful_close(annotations_file, annotations_filename);
-	careful_close(sequences_file, sequences_filename);
-	GB_commit_transaction(g);
+    careful_close(keys_file, keys_filename);
+    careful_close(annotations_file, annotations_filename);
+    careful_close(sequences_file, sequences_filename);
+    GB_commit_transaction(g);
 }
 
 
@@ -233,38 +233,38 @@ get(char *keys_filename,
     char *annotations_filename,
     char *sequences_filename)
 {
-	FILE           *key_file = careful_open(keys_filename, "w", stdout);
-	FILE           *annotation_file = careful_open(annotations_filename, "w", stdout);
-	FILE           *sequence_file = careful_open(sequences_filename, "w", stdout);
+    FILE           *key_file = careful_open(keys_filename, "w", stdout);
+    FILE           *annotation_file = careful_open(annotations_filename, "w", stdout);
+    FILE           *sequence_file = careful_open(sequences_filename, "w", stdout);
 
-	GBDATA         *gb_species, *gb_sequence;
-	char           *alignment_name;
-	char           *error;
-	lenstring       key, annotation, sequence;
+    GBDATA    *gb_species, *gb_sequence;
+    char      *alignment_name;
+    /* char      *error; */
+    /* lenstring  key, annotation, sequence; */
 
-	GB_begin_transaction(g);
-	GB_change_my_security(g, 6, 0);	/* disable all security */
-	alignment_name = GBT_get_default_alignment(g);
-	for (gb_species = GBT_first_marked_species(g);
-	     gb_species;
-	     gb_species = GBT_next_marked_species(gb_species))
+    GB_begin_transaction(g);
+    GB_change_my_security(g, 6, 0); /* disable all security */
+    alignment_name = GBT_get_default_alignment(g);
+    for (gb_species = GBT_first_marked_species(g);
+         gb_species;
+         gb_species = GBT_next_marked_species(gb_species))
     {
-		GBDATA *gb_name = GB_search(gb_species, "name", GB_FIND);
-		if (!gb_name) continue;
+        GBDATA *gb_name = GB_search(gb_species, "name", GB_FIND);
+        if (!gb_name) continue;
 
-		gb_sequence = GBT_read_sequence(gb_species, alignment_name);
-		if (!gb_sequence) continue;
+        gb_sequence = GBT_read_sequence(gb_species, alignment_name);
+        if (!gb_sequence) continue;
 
-		fprintf(key_file, "%s\n", GB_read_char_pntr(gb_name));
-		fprintf(annotation_file, "NO ANNOTATION\f");	/* no annotations in this
+        fprintf(key_file, "%s\n", GB_read_char_pntr(gb_name));
+        fprintf(annotation_file, "NO ANNOTATION\f");    /* no annotations in this
                                                          * version */
-		fprintf(sequence_file, "%s\n", GB_read_char_pntr(gb_sequence));
-	}
-	GB_commit_transaction(g);
+        fprintf(sequence_file, "%s\n", GB_read_char_pntr(gb_sequence));
+    }
+    GB_commit_transaction(g);
 
-	careful_close(key_file, keys_filename);
-	careful_close(annotation_file, annotations_filename);
-	careful_close(sequence_file, sequences_filename);
+    careful_close(key_file, keys_filename);
+    careful_close(annotation_file, annotations_filename);
+    careful_close(sequence_file, sequences_filename);
 }
 
 /* Retrieving selected entries from the database.  */
@@ -275,71 +275,71 @@ choose(char *choose_filename,
        char *annotations_filename,
        char *sequences_filename)
 {
-	FILE           *choose_file = careful_open(choose_filename, "r", stdin);
-	FILE           *key_file = careful_open(keys_filename, "w", stdout);
-	FILE           *annotation_file = careful_open(annotations_filename, "w", stdout);
-	FILE           *sequence_file = careful_open(sequences_filename, "w", stdout);
+    FILE           *choose_file = careful_open(choose_filename, "r", stdin);
+    FILE           *key_file = careful_open(keys_filename, "w", stdout);
+    FILE           *annotation_file = careful_open(annotations_filename, "w", stdout);
+    FILE           *sequence_file = careful_open(sequences_filename, "w", stdout);
 
-	lenstring       key;
-	GBDATA         *gb_species_data, *gb_species, *gb_sequence;
-	char           *alignment_name;
-	char           *error;
-	GBDATA         *gb_name;
-	GB_begin_transaction(g);
-	GB_change_my_security(g, 6, 0);	/* disable all security */
-	alignment_name = GBT_get_default_alignment(g);
-	gb_species_data = GB_search(g, "species_data", GB_CREATE_CONTAINER);
+    lenstring       key;
+    GBDATA         *gb_species_data, *gb_species, *gb_sequence;
+    char           *alignment_name;
+    /* char           *error; */
+    GBDATA         *gb_name;
+    GB_begin_transaction(g);
+    GB_change_my_security(g, 6, 0); /* disable all security */
+    alignment_name = GBT_get_default_alignment(g);
+    gb_species_data = GB_search(g, "species_data", GB_CREATE_CONTAINER);
 
-	while (read_delimited_lenstring(&key, "\n", choose_file) != EOF) {
-		key.text[key.len] = 0;
-		gb_species = GBT_find_species_rel_species_data(gb_species_data, key.text);
-		if (!gb_species) {
-			fprintf(stderr, "Cannot find species %s\n", key.text);
-		}
-		gb_name = GB_search(gb_species, "name", GB_FIND);
-		if (!gb_name)
-			continue;
-		gb_sequence = GBT_read_sequence(gb_species, alignment_name);
-		if (!gb_sequence)
-			continue;
-		fprintf(key_file, "%s\n", GB_read_char_pntr(gb_name));
-		fprintf(annotation_file, "\f");	/* no annotations in this
-						 * version */
-		fprintf(sequence_file, "%s\n", GB_read_char_pntr(gb_sequence));
-		free(key.text);
-	}
+    while (read_delimited_lenstring(&key, "\n", choose_file) != EOF) {
+        key.text[key.len] = 0;
+        gb_species = GBT_find_species_rel_species_data(gb_species_data, key.text);
+        if (!gb_species) {
+            fprintf(stderr, "Cannot find species %s\n", key.text);
+        }
+        gb_name = GB_search(gb_species, "name", GB_FIND);
+        if (!gb_name)
+            continue;
+        gb_sequence = GBT_read_sequence(gb_species, alignment_name);
+        if (!gb_sequence)
+            continue;
+        fprintf(key_file, "%s\n", GB_read_char_pntr(gb_name));
+        fprintf(annotation_file, "\f"); /* no annotations in this
+                         * version */
+        fprintf(sequence_file, "%s\n", GB_read_char_pntr(gb_sequence));
+        free(key.text);
+    }
 
-	GB_commit_transaction(g);
+    GB_commit_transaction(g);
 
-	careful_close(choose_file, choose_filename);
-	careful_close(key_file, keys_filename);
-	careful_close(annotation_file, annotations_filename);
-	careful_close(sequence_file, sequences_filename);
+    careful_close(choose_file, choose_filename);
+    careful_close(key_file, keys_filename);
+    careful_close(annotation_file, annotations_filename);
+    careful_close(sequence_file, sequences_filename);
 }
 
 void
 list(char *keys_filename)
 {
-	FILE           *keys_file = careful_open(keys_filename, "w", stdout);
+    FILE           *keys_file = careful_open(keys_filename, "w", stdout);
 
 
-	GBDATA         *gb_species;
-	char           *error;
-	lenstring       key, annotation, sequence;
-	GB_begin_transaction(g);
-	GB_change_my_security(g, 6, 0);	/* disable all security */
+    GBDATA         *gb_species;
+    /* char           *error; */
+    /* lenstring       key, annotation, sequence; */
+    GB_begin_transaction(g);
+    GB_change_my_security(g, 6, 0); /* disable all security */
 
-	for (gb_species = GBT_first_marked_species(g);
-	     gb_species;
-	     gb_species = GBT_next_marked_species(gb_species)) {
-		GBDATA         *gb_name = GB_search(gb_species, "name", GB_FIND);
-		if (!gb_name)
-			continue;
-		fprintf(keys_file, "%s\n", GB_read_char_pntr(gb_name));
-	}
+    for (gb_species = GBT_first_marked_species(g);
+         gb_species;
+         gb_species = GBT_next_marked_species(gb_species)) {
+        GBDATA         *gb_name = GB_search(gb_species, "name", GB_FIND);
+        if (!gb_name)
+            continue;
+        fprintf(keys_file, "%s\n", GB_read_char_pntr(gb_name));
+    }
 
-	GB_commit_transaction(g);
-	careful_close(keys_file, keys_filename);
+    GB_commit_transaction(g);
+    careful_close(keys_file, keys_filename);
 }
 
 
@@ -355,7 +355,7 @@ list(char *keys_filename)
 void
 verify_index()
 {
-	return;
+    return;
 }
 
 /* Usage messages, dying, general utilities  */
@@ -363,7 +363,7 @@ verify_index()
 void
 give_usage()
 {
-	static const char usage[] = "\
+    static const char usage[] = "\
 GDBM access program for the Ale gene editor.\n\
 Usage: %s GDBM-FILE\n\
     [--put] [-p]\n\
@@ -380,14 +380,14 @@ Usage: %s GDBM-FILE\n\
     [--version] [-v]\n\
 ";
 
-	fprintf(stderr, usage, progname);
-	exit(1);
+    fprintf(stderr, usage, progname);
+    exit(1);
 }
 
 void
 give_help()
 {
-	static const char help[] = "\
+    static const char help[] = "\
 GDBM access program for the Ale gene editor.\n\
 \n\
 Usage: %s GDBM-FILE\n\
@@ -445,38 +445,38 @@ sequence.\n\
         Display the version number of this program.\n\
 ";
 
-	printf(help, progname);
-	exit(1);
+    printf(help, progname);
+    exit(1);
 }
 
 void
 give_version()
 {
-	fputs("Ale readers version " "V1.0" "\n", stderr);
-	fputs("RCS revision: $Id$\n", stderr);
+    fputs("Ale readers version " "V1.0" "\n", stderr);
+    fputs("RCS revision: $Id$\n", stderr);
 
-	exit(1);
+    exit(1);
 }
 
 void
 print_and_die(const char *message)
 {
-	fprintf(stderr, "%s: %s\n", progname, message);
+    fprintf(stderr, "%s: %s\n", progname, message);
 
-	if (g)
-		GB_close(g);
+    if (g)
+        GB_close(g);
 
-	exit(2);
+    exit(2);
 }
 
 void
 arbdb_print_and_die()
 {
-	fprintf(stderr, "%s\n", GB_get_error());
+    fprintf(stderr, "%s\n", GB_get_error());
 
 
-	if (g)
-		GB_close(g);
+    if (g)
+        GB_close(g);
 
-	exit(2);
+    exit(2);
 }
