@@ -43,12 +43,12 @@ endif
 		$(MAKE) html_index
 
 dirs:
-		(test -d $(XML_LOCATION)) || mkdir $(XML_LOCATION)
-		(test -d $(XML_LOCATION)/seer) || mkdir $(XML_LOCATION)/seer
-		(test -d $(HTML_LOCATION)) || mkdir $(HTML_LOCATION)
-		(test -d $(HTML_LOCATION)/seer) || mkdir $(HTML_LOCATION)/seer
-		(test -d $(HLP_DEST)) || mkdir $(HLP_DEST)
-		(test -d $(HLP_DEST)/seer) || mkdir $(HLP_DEST)/seer
+		mkdir -p $(XML_LOCATION)
+		mkdir -p $(XML_LOCATION)/seer
+		mkdir -p $(HTML_LOCATION)
+		mkdir -p $(HTML_LOCATION)/seer
+		mkdir -p $(HLP_DEST)
+		mkdir -p $(HLP_DEST)/seer
 		@-ln -s ../arb_help.dtd $(XML_LOCATION)
 		@-ln -s ../../arb_help.dtd $(XML_LOCATION)/seer
 
