@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string>
 #include <set>
 
@@ -43,6 +44,7 @@ struct InputParameter{
     int             pb_length;
     Treefile_Action gen_treefile;
     string          treefile;
+    string          versionumber;
 };
 
 static InputParameter para;
@@ -168,13 +170,14 @@ static PT_server_connection *my_server;
 void helpArguments(){
     fprintf(stderr,
             "\n"
-            "Usage: arb_probe_group_design <db_name> <pt_server> <db_out> <probe_length> [(-c|-x) <treefile>]\n"
+            "Usage: arb_probe_group_design <db_name> <pt_server> <db_out> <probe_length> [(-c|-x) <treefile> <versionumber>]\n"
             "\n"
             "db_name        name of ARB-database to build groups for\n"
             "pt_server      name of pt_server\n"
             "db_out         name of probe-design-database\n"
             "probe_lengh    length of the probe (15-20)\n"
             "treefile       treefile for probe_server [-c=create, -x=extend]\n"
+            "versionumber   should be current date in seconds till epoch\n"
             "\n"
             );
 }
@@ -185,17 +188,18 @@ void helpArguments(){
 GB_ERROR scanArguments(int argc,char *argv[]){
     GB_ERROR error = 0;
 
-    if (argc == 5 || argc == 7) {
+    if (argc == 5 || argc == 8) {
         para.db_name        = argv[1];
         para.pt_server_name = string("localhost: ")+argv[2];
         para.pd_db_name     = string(argv[3])+argv[4];
         para.pb_length      = atoi(argv[4]);
-        if (argc == 7) {
+        if (argc == 8) {
             if      (strcmp(argv[5], "-c") == 0) para.gen_treefile = TF_CREATE;
             else if (strcmp(argv[5], "-x") == 0) para.gen_treefile = TF_EXTEND;
             else error = GBS_global_string("'-c' or '-x' expected, '%s' found", argv[5]);
 
-            para.treefile = string(argv[6]);
+            para.treefile     = string(argv[6]);
+            para.versionumber = string(argv[7]);
         }
         else {
             para.gen_treefile = TF_NONE;
@@ -370,6 +374,135 @@ GB_ERROR probe_design_event(set<SpeciesName> *species,set<Probes> *probe_list)
     return error;
 }
 
+GB_ERROR PGD_export_tree(GBT_TREE *node, FILE *out) {
+    if (node->is_leaf) {
+        if (!node->name) return "leaf w/o name";
+        fprintf(out, "'%s'", node->name);
+        return 0;
+    }
+
+    fprintf(out, "(");
+    GB_ERROR error = PGD_export_tree(node->leftson, out);
+    fprintf(out, ":%.5f,\n", node->leftlen);
+    if (!error) {
+        error = PGD_export_tree(node->rightson, out);
+        fprintf(out, ":%.5f)", node->rightlen);
+        if (node->name) { // groupname
+            fprintf(out, "'%s'", node->name);
+        }
+    }
+    return error;
+}
+
+GB_ERROR PGD_decodeBranchNames(GBT_TREE *node) {
+    GB_ERROR error = 0;
+    if (node->is_leaf) {
+        if (!node->name) return "node w/o name";
+        char *newName = decodeTreeNode(node->name, error);
+        if (error) return error;
+
+        char *afterNum = strchr(newName, ',');
+        if (!afterNum) {
+            error = GBS_global_string("komma expected in node name '%s'", newName);
+        }
+        else {
+            const string& shortname = PM_ID2name(atoi(newName));
+            if (shortname.empty()) {
+                error = GBS_global_string("illegal id in '%s'", newName);
+            }
+            else {
+                char *fullname = afterNum+1;
+                char *acc      = strchr(fullname, ',');
+                if (!acc) {
+                    error = GBS_global_string("2nd komma expected in '%s'", newName);
+                }
+                else {
+                    *acc++ = 0;
+
+                    char *newName2 = GBS_global_string_copy("n=%s,f=%s,a=%s", shortname.c_str(), fullname, acc);
+
+                    free(newName);
+                    newName = newName2;
+                }
+            }
+        }
+
+        if (error) {
+            free(newName);
+            return error;
+        }
+
+        free(node->name);
+        node->name = newName;
+        return 0;
+    }
+
+    // not leaf:
+    if (node->remark_branch) { // if remark_branch then it is a group name
+        char *groupName = decodeTreeNode(node->remark_branch, error);
+        if (error) return error;
+
+        char *newName = GBS_global_string_copy("g=%s", groupName);
+        free(groupName);
+
+        free(node->remark_branch);
+        node->remark_branch = 0;
+
+        free(node->name);
+        node->name = newName;
+    }
+
+    error             = PGD_decodeBranchNames(node->leftson);
+    if (!error) error = PGD_decodeBranchNames(node->rightson);
+    return error;
+}
+GB_ERROR PGD_encodeBranchNames(GBT_TREE *node) {
+    if (node->is_leaf) {
+        if (!node->name) return "node w/o name";
+        char *newName = encodeTreeNode(node->name);
+        free(node->name);
+        node->name    = newName;
+        return 0;
+    }
+
+    GB_ERROR error    = PGD_encodeBranchNames(node->leftson);
+    if (!error) error = PGD_encodeBranchNames(node->rightson);
+    return error;
+}
+
+GBT_TREE *PGD_find_subtree_by_path(GBT_TREE *node, const char *path) {
+    const char *restPath = path;
+
+    while (node && !node->is_leaf) {
+        char go = restPath[0];
+
+        if (go == 'L') {
+            node = node->leftson;
+            restPath++;
+        }
+        else if (go == 'R') {
+            node = node->rightson;
+            restPath++;
+        }
+        else if (go) {
+            GB_export_error("Illegal character '%c' in path (%s)", go, path);
+            node = 0;
+        }
+        else { // end of path reached
+             break;
+        }
+    }
+
+
+    // leaf reached
+    if (node && restPath[0]) {
+        GB_export_error("Leaf reached. Cannot follow rest (%s) of path (%s)", restPath, path);
+        node = 0;
+    }
+
+    return node;
+}
+
 int main(int argc,char *argv[]) {
     printf("arb_probe_group_design v1.0 -- (C) 2001-2003 by Tina Lai & Ralf Westram\n");
 
@@ -380,6 +513,10 @@ int main(int argc,char *argv[]) {
     if (!error) {
         const char *db_name = para.db_name.c_str();
         printf("Opening ARB-database '%s'...",db_name);
+
+        // @@@ FIXME:  I think this programm should be able to run w/o the main database
+        // it only uses the db to open the pt-server connection and does
+        // some unneeded species checking..
 
         gb_main = GBT_open(db_name,"rwt",0);
         if (!gb_main) {
@@ -402,6 +539,10 @@ int main(int argc,char *argv[]) {
         else {
             error = checkDatabaseType(pd_main, pd_name, "probe_group_subtree_db", "complete");
         }
+    }
+
+    if (!error) {
+        error = PM_initSpeciesMaps(pd_main);
     }
 
     if (!error) {
@@ -494,6 +635,18 @@ int main(int argc,char *argv[]) {
                         printf(" %i%%\n", int((double(count)/subtrees)*100+0.5));
                         printf("\nMarking common probes..\n");
 
+                        GBT_TREE *tree = 0;
+                        if (para.gen_treefile != TF_NONE) { // create/extend tree ?
+                            GBDATA *pd_tree = GB_find(pd_main, "tree", 0, down_level);
+                            if (!pd_tree) {
+                                error = "'tree' missing";
+                            }
+                            else {
+                                tree = GBT_read_plain_tree(pd_main, pd_tree, sizeof(*tree));
+                                PGD_decodeBranchNames(tree);
+                            }
+                        }
+
                         // check whether probes common in probe_group and probe_group_design
                         count           = 0;
                         for (GBDATA *pd_subtree = GB_find(pd_container,"subtree",0,down_level);
@@ -506,8 +659,11 @@ int main(int argc,char *argv[]) {
 
                             GBDATA *pd_probe_group        = GB_find(pd_subtree, "probe_group", 0, down_level);
                             GBDATA *pd_probe_group_design = GB_find(pd_subtree, "probe_group_design", 0, down_level);
+                            GBDATA *pd_probe_group_common = 0;
 
                             if (pd_probe_group && pd_probe_group_design) {
+                                int probes_found = 0;
+
                                 for (GBDATA *pd_probe1 = GB_find(pd_probe_group, "probe", 0, down_level);
                                      pd_probe1; )
                                 {
@@ -516,26 +672,53 @@ int main(int argc,char *argv[]) {
                                     GBDATA     *pd_probe2      = GB_find(pd_probe_group_design, 0, probe_string, down_level);
 
                                     if (pd_probe2) { // 'probe_group_design' also contains the probe
-                                        GBDATA *pd_common1     = GB_create(pd_probe_group, "common", GB_STRING);
-                                        if (!pd_common1) error = GB_get_error();
-                                        else    error          = GB_write_string(pd_common1, probe_string);
-
-                                        if (!error) {
-                                            GBDATA *pd_common2     = GB_create(pd_probe_group_design, "common", GB_STRING);
-                                            if (!pd_common2) error = GB_get_error();
-                                            else    error          = GB_write_string(pd_common2, probe_string);
+                                        // -> put the common probe into 'probe_group_common'
+                                        if (!pd_probe_group_common) {
+                                            pd_probe_group_common = GB_search(pd_subtree, "probe_group_common", GB_CREATE_CONTAINER);
+                                            if (!pd_probe_group_common) error = GB_get_error();
                                         }
 
-                                        if (!error) error = GB_delete(pd_probe2);
-                                        if (!error) error = GB_delete(pd_probe1);
+                                        if (!error) {
+                                            GBDATA *pd_common1     = GB_create(pd_probe_group_common, "probe", GB_STRING);
+                                            if (!pd_common1) error = GB_get_error();
+                                            else    error          = GB_write_string(pd_common1, probe_string);
+
+                                            probes_found++;
+
+                                            // and delete probe from 'probe_group' and 'probe_group_design'
+                                            if (!error) error = GB_delete(pd_probe2);
+                                            if (!error) error = GB_delete(pd_probe1);
+                                        }
                                     }
 
                                     pd_probe1 = pd_next_probe1;
                                 }
+
+                                // add number of found probes to nodename
+                                if (probes_found && !error) {
+                                    GBDATA     *pd_path      = GB_find(pd_subtree, "path", 0, down_level);
+                                    const char *path         = GB_read_char_pntr(pd_path);
+                                    GBT_TREE   *current_node = PGD_find_subtree_by_path(tree, path);
+
+                                    if (!current_node) {
+                                        error = GBS_global_string("Can't find current node (%s)", path);
+                                    }
+                                    else {
+                                        if (current_node->name) {
+                                            char *newName      = GBS_global_string_copy("%s,p=%i", current_node->name, probes_found);
+                                            free(current_node->name);
+                                            current_node->name = newName;
+                                        }
+                                        else {
+                                            current_node->name = GBS_global_string_copy("p=%i", probes_found);
+                                        }
+                                    }
+                                }
                             }
                             else {
-                                GBDATA     *gb_path = GB_find(pd_subtree, "path", 0, down_level);
-                                const char *path    = GB_read_char_pntr(gb_path);
+#if defined(DEBUG)
+                                GBDATA     *pd_path = GB_find(pd_subtree, "path", 0, down_level);
+                                const char *path    = GB_read_char_pntr(pd_path);
                                 const char *error_message;
 
                                 if (pd_probe_group) {
@@ -547,11 +730,26 @@ int main(int argc,char *argv[]) {
                                 }
 
                                 fprintf(stderr, "\n%s (in subtree '%s')\n", error_message, path);
+#endif // DEBUG
                             }
                         }
 
                         if (error) fputc('\n', stdout);
                         else printf(" %i%%\n", int((double(count)/subtrees)*100+0.5));
+
+                        if (tree && !error) {
+                            PGD_encodeBranchNames(tree);
+
+                            const char *treefilename = para.treefile.c_str();
+                            FILE       *out          = fopen(treefilename, "wt");
+
+                            fprintf(out, "[version=ARB_PS_TREE_%s\n]\n", para.versionumber.c_str());
+                            error = PGD_export_tree(tree, out);
+                            fputc('\n', out);
+                            fclose(out);
+
+                            if (error) unlink(treefilename);
+                        }
                     }
                 }
 
