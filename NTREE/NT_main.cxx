@@ -263,7 +263,6 @@ int main(int argc, char **argv)
 	    nt_intro_start_merge(0,aw_root);
 	    aw_root->main_loop();
 	}
-	printf("argc=%i\n",argc);
 	if (argc>=2) {
         if (strcmp(argv[1], "--help")==0 || strcmp(argv[1], "-h")==0) {
             fprintf(stderr,
@@ -272,6 +271,7 @@ int main(int argc, char **argv)
                     "--------------------------------\n"
                     "\n"
                     "db.arb             => start ARB_NTREE with database db.arb\n"
+                    ":                  => start ARB_NTREE and connect to existing db_server\n"
                     "db1.arb db2.arb    => merge databases db1.arb and db2.arb\n"
                     "-export            => connect to existing ARB server and export database to noname.arb\n"
                     "w/o arguments      => start database browser\n"

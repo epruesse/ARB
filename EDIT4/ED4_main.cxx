@@ -397,6 +397,22 @@ int main(int argc,char **argv)
     const char *err = NULL;
     char *config_name = NULL;
 
+    if (argc > 1 && ((strcmp(argv[1],"-h") == 0) || (strcmp(argv[1],"--help") == 0))) {
+        fprintf(stderr,
+                "\n"
+                "arb_edit4 commandline reference:\n"
+                "--------------------------------\n"
+                "\n"
+                "Usage: arb_edit4 [options] database\n"
+                "\n"
+                "database           name of database or ':' to connect to arb-database-server\n"
+                "\n"
+                "Options:\n"
+                "-c config          loads configuration 'config' (dafault: 'default_configuration')\n"
+                "\n"
+                );
+    }
+
     if (argc > 1 && strcmp(argv[1],"-c") == 0) {
         config_name = new char[strlen(argv[2])+1];
         strcpy(config_name,argv[2]);
