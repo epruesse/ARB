@@ -11,27 +11,38 @@ UP	arb_edit.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Define Helix Symbols
 
-OCCURRENCE	ARB_NT/ARB_EDIT/Props/Helix Symbols
+OCCURRENCE	ARB_EDIT/Props/Helix Symbols
+                ARB_EDIT4/Properties/Helix settings
 
-DESCRIPTION	@@@@@ Eigentliche Hilfe sollte hier stehen
-			Paerchen durch ' ' getrennt
-			Reihenfolge egal
-			Gross / Kleinschrift egal
+DESCRIPTION
 
-			Falls Paerchen auftritt -> Symbol auf der rechten Seite
-			Falls nicht gefunden -> Default
-			Non_Standard 0-9
+        Different base pairs in helix regions can be indicated by user-definable symbols.
+        This window allows you to change the mapping between base pairs and displayed
+        symbols.
 
+SECTION Configuration
 
+                Show helix: Toggle display of helix symbols
 
-		Different base pairs can be indicated by user-defined symbols.
+                Pair definitions. Each line contains two textfields:
 
-		Press the 'Helix Symbols' button of the 'ARB_NT/ARB_EDIT/Props'
-			menu to display the 'HELIX_PROPERTIES' window. Type the
-			base pairs in the large subwindows and the corresponding
-			symbols in the small subwindows.
+                     The left textfield contains one or more base-pairs. Each base
+                     pair contains two characters (bases, gaps-characters, ...).
+                     Base-pairs are seperated by spaces (' '). 
 
-NOTES		Upper and lower case letters are not differentiated.	
+                     The right textfield contains the helix symbol used for each
+                     of the specified pairs.
+
+NOTES
+
+        - Pairs are not case-sensitive
+        - No check for duplicate pairs is performed
+        - If a pair is not defined in any line, the symbol given
+          behind 'Default' is used. 
+
+SECTION Missing
+
+        @@@ description of Non_Standard pairs
 
 EXAMPLES	None
 
