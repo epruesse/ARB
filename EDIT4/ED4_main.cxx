@@ -56,13 +56,6 @@ bool          last_window_reached; // needed for refreshing all windows (if TRUE
 double        status_add_count; // only needed for loading configuration
 double        status_total_count;
 bool          loading;
-//long          last_used_timestamp;
-
-
-int ED4_font_info::max_width   = 0;
-int ED4_font_info::max_height  = 0;
-int ED4_font_info::max_ascent  = 0;
-int ED4_font_info::max_descent = 0;
 
 void ED4_config_change_cb(AW_root *)
 {
