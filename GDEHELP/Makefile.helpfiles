@@ -26,29 +26,29 @@ CLUSTALW_HELP=$(CLUSTALW)/clustalw_help
 CLUSTALW_DOC=$(CLUSTALW)/clustalw.doc
 
 $(GENHELPDEST)/clustalw.help: $(CLUSTALW_HELP) $(CLUSTALW_DOC)
-	genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $?
+	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $?
 
 AXML_HELP=$(GDE)/AxML/AxML.doc
 FASTDNAML_DOC=$(GDE)/FASTDNAML/fastDNAml.doc
 
 $(GENHELPDEST)/dnaml.help: $(AXML_HELP) $(FASTDNAML_DOC)
-	genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $?
+	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $?
 
 PHYLIP_DISTANCE_HELP_NAMES=fitch kitsch neighbor dnadist protdist
 PHYLIP_DISTANCE_HELPS=$(addsuffix .doc,$(addprefix $(GENDOCDEST)/,$(PHYLIP_DISTANCE_HELP_NAMES)))
 
 $(GENHELPDEST)/phylip_distance.help: $(PHYLIP_DISTANCE_HELPS)
-	genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $?
+	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $?
 
 # all help files in ./HELP_PLAIN are automatically found
 
 $(GENHELPDEST)/%.help: $(HELP_PLAIN)/%.help $(HEADER)
-	genhelp.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $<
+	./genhelp.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $<
 
 # all help files in ./HELP_DOC_GEN are automatically found
 
 $(GENHELPDEST)/%.help: $(GENDOCDEST)/%.doc $(HEADER)
-	genhelp.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $<
+	./genhelp.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $<
 
 # ------------------------------------------------------------
 # rules to generate plain doc from provided html files
