@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : MessageDialog.java                                     // 
 //    Purpose   :                                                        // 
-//    Time-stamp: <Thu Mar/04/2004 10:35 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Fri Mar/05/2004 02:20 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -18,62 +18,83 @@ import java.awt.event.*;
 
 public class MessageDialog extends Dialog
 {
-    //     String message;
-    //     Button okButton;           // = new Button("OK");
-    //     Label  messageLabel;
-    boolean       done;
-    Button        okButton;
-    
+    boolean done;
+
     public MessageDialog(Frame frame, String title, String message)
     {
-        super(frame, title);
-//         this.message = message;
-//         messageLabel = new Label(message);
-//         okButton     = new Button("OK");
+        super(frame, title, false);
 
-        done     = false;
-        setLayout(new FlowLayout());
-        //         add(messageLabel);
-        add(new Label(message));
-        //         add(okButton);
-        okButton = new Button("OK");
-        add(okButton);
-        pack();
-        setResizable(false);
+//         Window framewin = (Window)frame;
+//         framewin.setFocusable(false);
+
+        done = false;
+
+        setLayout(new BorderLayout());
+
+        int lf = message.indexOf('\n');
+        if (lf >= 0) {
+            add(new Label(message.substring(0, lf)), BorderLayout.NORTH);
+            add(new Label(message.substring(lf+1)), BorderLayout.CENTER);
+        }
+        else {
+            add(new Label(message), BorderLayout.NORTH);
+        }
+
+        Button okButton = new Button("OK");
+        {
+            Panel buttonPanel = new Panel();
+            buttonPanel.setLayout(new FlowLayout());
+            buttonPanel.add(okButton);
+            add(buttonPanel, BorderLayout.SOUTH);
+        }
+
+//         setResizable(false);
 
         okButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
-                    dispose();
-                    done = true;
+//                     dispose();
+//                     done = true;
+                    setDone();
                 }
             });
 
         okButton.addKeyListener(new KeyAdapter() {
                 public void keyPressed(KeyEvent e) {
                     if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                        dispose();
-                        done = true;
+                        setDone();
+//                         dispose();
+//                         done = true;
                     }
                 }
             });
 
         this.addWindowListener (new WindowAdapter() {
                 public void windowClosing(WindowEvent event) {
-                    dispose();
-                    done = true;
+                    setDone();
+//                     dispose();
+//                     done = true;
                 }
             });
 
+        pack();
+
         Dimension frameSize = frame.getSize();
         Point     frameLoc  = frame.getLocationOnScreen();
+        int       width     = this.getSize().width;
+        int       height    = this.getSize().height;
 
-        int width  = this.getSize().width;
-        int height = this.getSize().height;
         setLocation(frameLoc.x+(frameSize.width-width) / 2, frameLoc.y + (frameSize.height-height) / 2);
+
         toFront();
         show();
 
-        done = false;
+        frame.setEnabled(false);
+    }
+
+    private void setDone() {
+        done = true;
+        dispose();
+
     }
 
     public boolean okClicked() {
