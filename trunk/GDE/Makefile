@@ -9,9 +9,11 @@ ARCHS_ALL = \
 # All packages using xview go here:
 
 ARCHS_XVIEW = \
-	HGL_SRC/HGL_SRC.dummy \
-	LOOPTOOL/LOOPTOOL.dummy \
 	CORE/CORE.dummy \
+
+# deprecated:
+#	HGL_SRC/HGL_SRC.dummy
+#	LOOPTOOL/LOOPTOOL.dummy
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here
