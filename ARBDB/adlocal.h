@@ -553,4 +553,40 @@ struct gb_scandir {
 #include "adtune.h"
 #include "adlmacros.h"
 
+/* command interpreter */
+
+#define GBL_MAX_ARGUMENTS 50
+
+typedef struct gbl_struct {
+    char *str;
+} GBL;
+
+typedef struct gbl_command_arguments_struct {
+    GBDATA     *gb_ref;         /* a database entry on which the command is applied (may be species, gene, experiment, group and maybe more) */
+    const char *default_tree_name; /* if we have a default tree, its name is specified here (0 otherwise) */
+    const char *command;        /* the name of the current command */
+
+    int cinput; const GBL *vinput; /* input streams */
+    int cparam; const GBL *vparam; /* parameter "streams" */
+    int *coutput; GBL **voutput; /* the output streams */
+
+} GBL_command_arguments;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    typedef GB_ERROR (*GBL_COMMAND)(GBL_command_arguments *args);
+    /* typedef GB_ERROR (*GBL_COMMAND)(GBDATA *gb_ref, char *com, GBL_client_data *cd,
+       int argcinput, GBL *argvinput, int argcparam,GBL *argvparam, int *argcout, GBL **argvout); */
+
+#ifdef __cplusplus
+}
+#endif
+
+struct GBL_command_table {
+    const char *command_identifier;
+    GBL_COMMAND function;
+};
+
 #endif
