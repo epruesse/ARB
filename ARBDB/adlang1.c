@@ -7,8 +7,7 @@
 
 #include "adlocal.h"
 #include "arbdbt.h"
-
-
+#include "adGene.h"
 
 /********************************************************************************************
 					Parameter Functions
@@ -188,18 +187,10 @@ GB_ERROR gbl_command(GBDATA *gb_species, char *com,
                      int     argcparam,GBL *argvparam,
                      int    *argcout, GBL **argvout)
 {
-    GBDATA *gb_main = gb_species;
+    GBDATA *gb_main = (GBDATA*)GB_MAIN(gb_species)->data;
     int     i;
     char   *command;
     GBUSE(com);
-
-    while (1) {
-        GBDATA *gb_father      = (GBDATA*)GB_FATHER(gb_main);
-        GBDATA *gb_grandfather = (GBDATA*)GB_FATHER(gb_father);
-        if (!gb_grandfather) break;
-
-        gb_main = gb_father;
-    }
 
     if (argcparam!=1) return "command syntax: command(\"escaped command\")";
 
@@ -214,6 +205,43 @@ GB_ERROR gbl_command(GBDATA *gb_species, char *com,
         (*argvout)[(*argcout)++].str = result;
         /* export result string */
     }
+    free(command);
+    return 0;
+}
+
+GB_ERROR gbl_origin(GBDATA *gb_species, char *com,
+                 int argcinput, GBL *argvinput,
+                 int argcparam,GBL *argvparam,
+                 int *argcout, GBL **argvout)
+{
+    int     i;
+    GBDATA *gb_origin = 0;
+    GBDATA *gb_main   = (GBDATA*)GB_MAIN(gb_species)->data;
+    char   *command;
+
+    if (argcparam!=1) return GB_export_error("syntax: %s(\"escaped command\")", com);
+    if (!GEN_is_pseudo_gene_species(gb_species)) return GB_export_error("'%s' applies to gene-species only", com);
+
+    GBL_CHECK_FREE_PARAM(*argcout,argcinput);
+
+    if (strcmp(com, "origin_organism") == 0) {
+        gb_origin = GEN_find_origin_organism(gb_species);
+    }
+    else {
+        ad_assert(strcmp(com, "origin_gene") == 0);
+        gb_origin = GEN_find_origin_gene(gb_species);
+    }
+
+    command = unEscapeString(argvparam[0].str);
+
+    for (i=0;i<argcinput;i++) {	/* go through all orig streams	*/
+        char *result = GB_command_interpreter(gb_main, argvinput[0].str, command, gb_origin);
+        if (!result) return GB_get_error();
+
+        (*argvout)[(*argcout)++].str = result; /* export result string */
+    }
+
+    free(command);
     return 0;
 }
 
@@ -712,7 +740,8 @@ GB_ERROR gbl_srt(GBDATA *gb_species, char *com,
         }
         if (source != argvinput[i].str){
             (*argvout)[(*argcout)++].str = source;
-        }else{
+        }
+        else{
             (*argvout)[(*argcout)++].str = GB_STRDUP(source);
         }
     }
@@ -1253,6 +1282,7 @@ GB_ERROR gbl_exec(GBDATA *gb_species, char *com,
 
 struct GBL_command_table gbl_command_table[] = {
     {"caps", gbl_string_convert } ,
+    {"caps", gbl_string_convert } ,
     {"change", gbl_change_gc },
     {"checksum", gbl_check } ,
     {"command", gbl_command } ,
@@ -1291,6 +1321,8 @@ struct GBL_command_table gbl_command_table[] = {
     {"tab", gbl_tab } ,
     {"tail", gbl_tail } ,
     {"upper", gbl_string_convert } ,
+    {"origin_organism", gbl_origin } ,
+    {"origin_gene", gbl_origin } ,
     {0,0}
 
 };
