@@ -38,7 +38,8 @@ BEGIN {
   $header_printed = 0;
   $q              = new CGI;
   %params         = $q->Vars();
-  $requestdir     = '/home/westram/ARB/PROBE_SERVER/ps_workerdir';
+#  $requestdir     = '/home/westram/ARB/PROBE_SERVER/ps_workerdir';
+  $requestdir     = '/trance1/ARB/source/ARB/PROBE_SERVER/ps_workerdir';
   set_message(\&handle_errors);
 }
 
