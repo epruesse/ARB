@@ -394,8 +394,10 @@ void AW_init_color_group_defaults(const char *for_program) {
     }
 
     if (!color_group_gc_defaults) {
-        if (!for_program) { // unknown program ?
+        if (for_program) { // unknown program ?
+#if defined(DEBUG)
             fprintf(stderr, "No specific defaults for color groups defined (using those from ARB_NTREE)\n");
+#endif // DEBUG
         }
         color_group_gc_defaults = ARB_NTREE_color_group;
     }
