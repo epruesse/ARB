@@ -1,3 +1,4 @@
+#define OWTOOLKIT_WARNING_DISABLED
 #include <xview/cms.h>
 int DataType;
 int FileFormat,first_select = FALSE;
@@ -36,7 +37,7 @@ int Default_RNA_Trans[128] =
 '-','A','C','M','G','R','S','V','U','W','Y','H','K','D','B','N',/*extended*/
 '~','a','c','m','g','r','s','v','u','w','y','h','k','d','b','n',/*extended*/
 };
- 
+
 int Default_DNA_Trans[128]={
 '-','A','C','M','G','R','S','V','T','W','Y','H','K','D','B','N',/*Upper*/
 '.','a','c','m','g','r','s','v','t','w','y','h','k','d','b','n',/*lower*/
@@ -47,7 +48,7 @@ int Default_DNA_Trans[128]={
 '-','A','C','M','G','R','S','V','T','W','Y','H','K','D','B','N',/*extended*/
 '~','a','c','m','g','r','s','v','t','w','y','h','k','d','b','n',/*extended*/
 };
- 
+
 int Default_NA_RTrans[128]={
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -88,7 +89,7 @@ Xv_singlecolor Default_Colors[16]= {
 *	Character->color lookup table
 */
 
-int Default_NAColor_LKUP[128] = 
+int Default_NAColor_LKUP[128] =
 {
 13,3,6,13,8,13,13,13,5,13,13,13,13,13,13,13,
 13,3,6,13,8,13,13,13,5,13,13,13,13,13,13,13,
@@ -100,7 +101,7 @@ int Default_NAColor_LKUP[128] =
 13,3,6,13,8,13,13,13,5,13,13,13,13,13,13,13
 };
 
-int Default_PROColor_LKUP[128] = 
+int Default_PROColor_LKUP[128] =
 {
 12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,
 12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,

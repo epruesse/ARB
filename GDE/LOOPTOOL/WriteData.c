@@ -1,4 +1,5 @@
 
+#define OWTOOLKIT_WARNING_DISABLED
 #include <xview/xview.h>
 #include <xview/canvas.h>
 #include <stdio.h>

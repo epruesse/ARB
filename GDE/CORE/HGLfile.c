@@ -1,6 +1,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 /* #include <malloc.h> */
+#define OWTOOLKIT_WARNING_DISABLED
 #include <xview/xview.h>
 #include <xview/panel.h>
 #include "menudefs.h"

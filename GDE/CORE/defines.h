@@ -8,6 +8,7 @@ All rights reserved.
 	typedef int *GBDATA;
 #endif
 
+#define OWTOOLKIT_WARNING_DISABLED
 #include <xview/font.h>
 #include <xview/scrollbar.h>
 #include <xview/xview.h>

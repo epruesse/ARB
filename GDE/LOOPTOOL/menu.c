@@ -1,3 +1,4 @@
+#define OWTOOLKIT_WARNING_DISABLED
 #include <xview/xview.h>
 #include <xview/canvas.h>
 #include <xview/panel.h>
@@ -41,7 +42,7 @@ Menu_item menu_item;
 	    WINDOW_SIZE = Min(xv_get(canvas_paint_window(pagecan),XV_HEIGHT),
             xv_get(canvas_paint_window(pagecan),XV_WIDTH));
 /*
-*       Clear the page.. 
+*       Clear the page..
 */
 		if(COLOR)
 	                pw_writebackground(canvas_paint_window(pagecan),0,0,
@@ -78,8 +79,8 @@ Menu_item menu_item;
             {
                 start=Min(nuc_sel1,nuc_sel2);
                 endd=Max(nuc_sel1,nuc_sel2);
-                StackHel(start,endd); 
-            } 
+                StackHel(start,endd);
+            }
 	}
 
     if(modified)
@@ -220,7 +221,7 @@ Event *event;
     WINDOW_SIZE = Min(xv_get(canvas_paint_window(pagecan),XV_HEIGHT),
     xv_get(canvas_paint_window(pagecan),XV_WIDTH));
 /*
-*       Clear the page.. 
+*       Clear the page..
 */
 		if(COLOR)
 	                pw_writebackground(canvas_paint_window(pagecan),0,0,
@@ -260,12 +261,12 @@ FILE *lpr;
         fprintf(stderr,"%d  ",j);
         dx = (b2.x - b1.x)*xscale;
         dy = (b1.y - b2.y)*yscale;
-    
+
         b2 = baselist[baselist[j].pair];
         dx = (b2.x - b1.x)*xscale;
         dy = (b1.y - b2.y)*yscale;
         fprintf(lpr,
-        "%6.1f %6.1f %6.1f %6.1f moveto lineto\n",             
+        "%6.1f %6.1f %6.1f %6.1f moveto lineto\n",
         x+.35*dx,y+.35*dy,x+.65*dx,y+.65*dy);
     }
     return;

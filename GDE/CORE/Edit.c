@@ -1,4 +1,5 @@
 #include <string.h>
+#define OWTOOLKIT_WARNING_DISABLED
 #include <xview/xview.h>
 #include <xview/panel.h>
 #include <xview/scrollbar.h>
@@ -257,7 +258,7 @@ Notify_arg arg;
 			/*
 				The FETCH key grabs the nearest repeat_cnt bases to the right
 				or left and moves them to where the cursor is without shifting
-				the other parts of the alignment 
+				the other parts of the alignment
 
 				eventid = 11 (CNTRL 'k') means Fetch from the right
 				eventid = 12 (CNTRL 'l') means Fetch from the left
@@ -274,7 +275,7 @@ Notify_arg arg;
 
 			UnsetNACursor(ddata,EditCan,win,xwin,dpy,gc);
 			if (success)
-				if (eventid == 12) 
+				if (eventid == 12)
 					ddata->cursor_x += repeat_cnt;
 				else
 					ddata->cursor_x -= repeat_cnt;
@@ -314,7 +315,7 @@ Notify_arg arg;
 			for(this_seq = &(aln->element[cursory]);
 			    this_seq->groupb != NULL;
 			    this_seq = this_seq->groupb)
-				protection_violation |= 
+				protection_violation |=
 				    InsertViolate(aln,this_seq,buf,cursorx,
 				    repeat_cnt);
 
@@ -676,7 +677,7 @@ FetchNA(seq,dir,len,pos)
 *	return Success
 */
 NA_Sequence *seq;
-unsigned int dir; 
+unsigned int dir;
 int len,pos;
 {
 	int i,j,snum,x = pos+100;
@@ -767,7 +768,7 @@ int len,pos;
 	}
 
 	tgap = getelem(seq,pos);
-	if (seq->cmask) 
+	if (seq->cmask)
 		tcmask = getcmask(seq,pos);
 	for(j=0;j<len;j++)
 	{
@@ -786,7 +787,7 @@ int len,pos;
 	for (j=0;j<len;j++)
 	{
 		putelem(seq,pos+j*incr,scratch[j]);
-		if(seq->cmask) 
+		if(seq->cmask)
 			putcmask(seq,pos+j*incr,cscratch[j]);
 	}
 
@@ -795,13 +796,13 @@ int len,pos;
 	if (nearest != 0) {
 		for (j=0;j<seq->seqlen-nearest;j++) {
 			putelem(seq,seq->offset+j,getelem(seq,seq->offset+nearest+j));
-			if(seq->cmask) 
+			if(seq->cmask)
 				putcmask(seq,seq->offset+j,
 					getcmask(seq,seq->offset+nearest+j));
 		}
 		for (j=0;j<nearest;j++) {
 			putelem(seq,seq->offset+seq->seqlen-nearest+j,tgap);
-			if(seq->cmask) 
+			if(seq->cmask)
 				putcmask(seq,seq->offset+j,tcmask);
 		}
 		seq->seqlen -= nearest;
