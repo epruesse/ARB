@@ -1664,6 +1664,10 @@ GBDATA *GBT_gen_accession_number(GBDATA *gb_species,const char *ali_name){
 /********************************************************************************************
 					some simple find procedures
 ********************************************************************************************/
+GBDATA *GBT_get_species_data(GBDATA *gb_main) {
+    return GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+}
+
 GBDATA *GBT_first_marked_species_rel_species_data(GBDATA *gb_species_data)
 {
     return GB_first_marked(gb_species_data,"species");
@@ -1671,8 +1675,7 @@ GBDATA *GBT_first_marked_species_rel_species_data(GBDATA *gb_species_data)
 
 GBDATA *GBT_first_marked_species(GBDATA *gb_main)
 {
-    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-    return GB_first_marked(gb_species_data,"species");
+    return GB_first_marked(GBT_get_species_data(gb_main), "species");
 }
 
 GBDATA *GBT_next_marked_species(GBDATA *gb_species)
@@ -1688,10 +1691,7 @@ GBDATA *GBT_first_species_rel_species_data(GBDATA *gb_species_data)
 }
 GBDATA *GBT_first_species(GBDATA *gb_main)
 {
-    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_species;
-    gb_species = GB_find(gb_species_data,"species",0,down_level);
-    return gb_species;
+    return GB_find(GBT_get_species_data(gb_main),"species",0,down_level);;
 }
 
 GBDATA *GBT_next_species(GBDATA *gb_species)
@@ -2117,7 +2117,7 @@ char	**GBT_scan_db(GBDATA *gbd){
     gbs_scan_db_data.hash_table = GBS_create_hash(1024,0);
     gbs_scan_db_data.buffer = (char *)malloc(GBT_SUM_LEN);
     strcpy(gbs_scan_db_data.buffer,"");
-    gbt_scan_db_rek(gbd,gbs_scan_db_data.buffer,0);
+    gbt_scan_db_rek(gbd, gbs_scan_db_data.buffer,0);
 
     gbs_scan_db_data.count = 0;
     GBS_hash_do_loop(gbs_scan_db_data.hash_table,gbs_scan_db_count);
@@ -2135,7 +2135,6 @@ char	**GBT_scan_db(GBDATA *gbd){
     free(gbs_scan_db_data.buffer);
     return gbs_scan_db_data.result;
 }
-
 
 /********************************************************************************************
 				send a message to the db server to tmp/message

@@ -15,6 +15,8 @@
 #include "awt.hxx"
 #include "awtlocal.hxx"
 
+#include "GEN.hxx"
+
 /***************** Create the database query box and functions *************************/
 
 
@@ -52,21 +54,22 @@ long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs)
 
 	cbs->aws->clear_selection_list(cbs->result_id);
 	count = 0;
-	GBDATA *gb_species;
-	for (		gb_species = GBT_first_species(cbs->gb_main);
-                gb_species;
-                gb_species = GBT_next_species(gb_species)){
 
-		if (IS_QUERIED(gb_species,cbs)) {
+    GBDATA *gb_item_container = cbs->get_item_container(cbs->gb_main, cbs->aws->get_root());
+	GBDATA *gb_item;
+	for (gb_item = cbs->get_first_item(gb_item_container);
+         gb_item;
+         gb_item = cbs->get_next_item(gb_item))
+    {
+		if (IS_QUERIED(gb_item,cbs)) {
 			if (count < AWT_MAX_QUERY_LIST_LEN ){
-				GBDATA *gb_name = GB_find(gb_species,"name",0,down_level);
+				GBDATA *gb_name = GB_find(gb_item,"name",0,down_level);
 				if (!gb_name) continue;		// a guy with no name
 				char flag = ' ';
-				if (GB_read_flag(gb_species)) flag = '*';
-				sprintf(buffer,"%c %-12.12s ",
-                        flag, GB_read_char_pntr(gb_name));
+				if (GB_read_flag(gb_item)) flag = '*';
+				sprintf(buffer,"%c %-12.12s ", flag, GB_read_char_pntr(gb_name));
 				p = buffer + strlen(buffer);
-				GBDATA *gb_key = GB_search(gb_species,key,GB_FIND);
+				GBDATA *gb_key = GB_search(gb_item,key,GB_FIND);
 				if (gb_key) {
 					char *data = GB_read_as_string(gb_key);
 					if (data){
@@ -74,9 +77,9 @@ long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs)
 						free(data);
 					}
 				}
-				cbs->aws->insert_selection( cbs->result_id, buffer,
-                                            GB_read_char_pntr(gb_name) );
-			}else if (count == AWT_MAX_QUERY_LIST_LEN){
+				cbs->aws->insert_selection( cbs->result_id, buffer, GB_read_char_pntr(gb_name) );
+			}
+            else if (count == AWT_MAX_QUERY_LIST_LEN) {
 				cbs->aws->insert_selection( cbs->result_id,
                                             "********* List truncated *********","" );
 			}
@@ -205,24 +208,35 @@ GB_HASH *awt_generate_species_hash(GBDATA *gb_main, char *key,int split)
 void awt_do_query(void *dummy, struct adaqbsstruct *cbs,AW_CL ext_query)
 {
 	AWUSE(dummy);
-	char	*key = cbs->aws->get_root()->awar(cbs->awar_key)->read_string();
+    AW_root *aw_root = cbs->aws->get_root();
+	char    *key     = aw_root->awar(cbs->awar_key)->read_string();
+
 	if (!strlen(key)) {
-		delete key;
+        free(key);
 		aw_message("ERROR: To perfom a query you have to select a field and enter a search string");
 		return;
 	}
 
-
 	GB_push_transaction(cbs->gb_main);
-	char	*query = cbs->aws->get_root()->awar(cbs->awar_query)->read_string();
+	char	*query = aw_root->awar(cbs->awar_query)->read_string();
 	if (cbs->gb_ref && !strlen(query)){
 	    if (!ext_query) ext_query = AWT_EXT_QUERY_COMPARE_LINES;
 	}
 
-	AWT_QUERY_MODES	mode = (AWT_QUERY_MODES)cbs->aws->get_root()->awar(cbs->awar_ere)->read_int();
-	AWT_QUERY_TYPES	type = (AWT_QUERY_TYPES)cbs->aws->get_root()->awar(cbs->awar_by)->read_int();
-	int	hit;
-	GBDATA *gb_key;
+    GBDATA *gb_item_container = cbs->get_item_container(cbs->gb_main, aw_root);
+    GBDATA *gb_item           = 0;
+
+    if (!gb_item_container && cbs->query_genes) {
+        free(key);
+        aw_message("ERROR: First you have to select a species.");
+        return;
+    }
+
+	AWT_QUERY_MODES	mode = (AWT_QUERY_MODES)aw_root->awar(cbs->awar_ere)->read_int();
+	AWT_QUERY_TYPES	type = (AWT_QUERY_TYPES)aw_root->awar(cbs->awar_by)->read_int();
+
+	int	     hit;
+	GBDATA  *gb_key;
 	GB_HASH *ref_hash = 0;
 
 	if (cbs->gb_ref && ( ext_query == AWT_EXT_QUERY_COMPARE_LINES || ext_query == AWT_EXT_QUERY_COMPARE_WORDS)) {
@@ -230,37 +244,37 @@ void awt_do_query(void *dummy, struct adaqbsstruct *cbs,AW_CL ext_query)
 		ref_hash = awt_generate_species_hash(cbs->gb_ref,key, ext_query == AWT_EXT_QUERY_COMPARE_WORDS);
 	}
 
-	GBDATA *gb_species_data = GB_search(cbs->gb_main,	"species_data",GB_CREATE_CONTAINER);
-	GBDATA *gb_species;
-	int rek = 0;
+	int     rek      = 0;
 	GBQUARK keyquark = -1;
+
 	if (GB_first_non_key_char(key)) {
 		rek = 1;
 	}else{
-		keyquark = GB_key_2_quark(gb_species_data,key);
+		keyquark = GB_key_2_quark(gb_item_container,key);
 	}
 
-	for (gb_species = GBT_first_species_rel_species_data(gb_species_data);
-	     gb_species;
-	     gb_species = GBT_next_species(gb_species)){
+	for (gb_item = cbs->get_first_item(gb_item_container);
+	     gb_item;
+	     gb_item = cbs->get_next_item(gb_item))
+    {
 		switch(mode) {
-            case	AWT_QUERY_GENERATE:	CLEAR_QUERIED(gb_species,cbs); break;
-            case	AWT_QUERY_ENLARGE:	if (IS_QUERIED(gb_species,cbs)) goto awt_do_que_cont;
+            case	AWT_QUERY_GENERATE:	CLEAR_QUERIED(gb_item,cbs); break;
+            case	AWT_QUERY_ENLARGE:	if (IS_QUERIED(gb_item,cbs)) goto awt_do_que_cont;
                 break;	// already marked;
-            case	AWT_QUERY_REDUCE:	if (!IS_QUERIED(gb_species,cbs))goto awt_do_que_cont;
+            case	AWT_QUERY_REDUCE:	if (!IS_QUERIED(gb_item,cbs))goto awt_do_que_cont;
                 break;	// already unmarked;
 		}
 		hit = 0;
 		switch(type) {
 			case AWT_QUERY_MARKED:
-				hit = GB_read_flag(gb_species);
+				hit = GB_read_flag(gb_item);
 				break;
 			case AWT_QUERY_MATCH:
 			case AWT_QUERY_DOAWT_MATCH:
 				if (rek) {
-					gb_key = GB_search(gb_species,key,GB_FIND);
+					gb_key = GB_search(gb_item,key,GB_FIND);
 				}else{
-					gb_key = GB_find_sub_by_quark(gb_species,keyquark,0,0);
+					gb_key = GB_find_sub_by_quark(gb_item,keyquark,0,0);
 				}
 				switch(ext_query){
                     case AWT_EXT_QUERY_NONE:
@@ -328,8 +342,8 @@ void awt_do_query(void *dummy, struct adaqbsstruct *cbs,AW_CL ext_query)
 				if (type == AWT_QUERY_DOAWT_MATCH) hit = 1-hit;
 				break;
 		}
-		if (hit) SET_QUERIED(gb_species,cbs);
-		else 	CLEAR_QUERIED(gb_species,cbs);
+		if (hit) SET_QUERIED(gb_item,cbs);
+		else 	CLEAR_QUERIED(gb_item,cbs);
 
     awt_do_que_cont:;
 	}
@@ -847,10 +861,15 @@ void awt_toggle_flag(AW_window *aww, struct adaqbsstruct *cbs) {
 	awt_query_update_list(aww,cbs);
 }
 
+static GBDATA *awt_get_species_data(GBDATA *gb_main, AW_root *aw_root) {
+    AWUSE(aw_root);
+    return GBT_get_species_data(gb_main);
+}
+
 /***************** Create the database query box and functions *************************/
-struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs)	// create the query box
+struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs) // create the query box
 {
-	static int query_id = awtqs->query_genes ? 1 : 0;
+	static int query_id = 0;
 
 	char                 buffer[256];
 	AW_root             *aw_root = aws->get_root();
@@ -863,6 +882,20 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 	cbs->look_in_ref_list = awtqs->look_in_ref_list;
 	cbs->select_bit	      = awtqs->select_bit;
 	cbs->species_name	  = strdup(awtqs->species_name);
+	cbs->gene_name	      = awtqs->gene_name ? strdup(awtqs->gene_name) : 0;
+    cbs->query_genes      = awtqs->query_genes;
+
+    if (cbs->query_genes) {
+        cbs->get_item_container = GEN_get_current_gene_data;
+        cbs->get_first_item     = GEN_first_gene_rel_gene_data;
+        cbs->get_next_item      = GEN_next_gene;
+    }
+    else {
+        cbs->get_item_container = awt_get_species_data;
+        cbs->get_first_item     = GBT_first_species_rel_species_data;
+        cbs->get_next_item      = GBT_next_species;
+    }
+
 
 	GB_push_transaction(gb_main);
     /*************** Create local AWARS *******************/
@@ -932,7 +965,12 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 			aws->callback(AW_POPUP,awtqs->create_view_window,0);
 		}
 		aws->d_callback((AW_CB1)awt_toggle_flag,(AW_CL)cbs);
-		cbs->result_id = aws->create_selection_list(cbs->species_name,"","",5,5);
+        if (cbs->query_genes) {
+            cbs->result_id = aws->create_selection_list(cbs->gene_name,"","",5,5);
+        }
+        else {
+            cbs->result_id = aws->create_selection_list(cbs->species_name,"","",5,5);
+        }
 		aws->insert_default_selection( cbs->result_id, "end of list", "" );
 		aws->update_selection_list( cbs->result_id );
 	}

@@ -50,7 +50,7 @@ GB_ERROR MG_remap::set(const char *in_reference, const char *out_reference){
 	GB_internal_error("Cannot set remap structure after being compiled");
 	return 0;
     }
-    
+
     if (!remap_tab){
 	in_length = strlen(in_reference);
 	out_length = strlen(out_reference);
@@ -154,10 +154,10 @@ GB_ERROR MG_remap::compile(){
     for (in_pos=0;in_pos<in_length;in_pos++){
 	soft_remap_tab[in_pos] = -1;
     }
-    
+
     for (in_pos=0;in_pos<in_length;in_pos++){
 	int new_dest;
-	
+
 	if ((new_dest = remap_tab[in_pos]) <0){
 	    continue;
 	}
@@ -166,7 +166,7 @@ GB_ERROR MG_remap::compile(){
 	    int dest;
 	    int dsource = in_pos - last_mapped_position_source;
 	    int ddest = new_dest - last_mapped_position_dest;
-	    
+
 	    for (source = last_mapped_position_source, dest = last_mapped_position_dest;
 		     source <= last_mapped_position_source + (dsource>1) &&
 		     dest <= last_mapped_position_dest + (ddest>1);
@@ -199,7 +199,7 @@ char *MG_remap::remap(const char *sequence){
     int lastposread = 0;	// last position that is read and written
     int skippedgaps = 0;	// number of gaps not written
     int skippedchar = '.';	// last gap character not written
-    
+
     GB_BOOL within_sequence = GB_FALSE;
     int i;
     for (i=0;i<len;i++){
@@ -215,7 +215,7 @@ char *MG_remap::remap(const char *sequence){
 	    new_pos = soft_remap_tab[i];
 	}
 	if (new_pos >=0){	// if found a map than force map
-	    while (lastposset < new_pos){ // insert gaps 
+	    while (lastposset < new_pos){ // insert gaps
 		if (within_sequence){
 		    GBS_chrcat(outs,'-');
 		}else{
@@ -225,7 +225,7 @@ char *MG_remap::remap(const char *sequence){
 	    }
 	}else{			// insert not written gaps
 	    while(skippedgaps>0){
-		GBS_chrcat(outs,skippedchar);    
+		GBS_chrcat(outs,skippedchar);
 		lastposset ++;
 		skippedgaps--;
 	    }
@@ -266,7 +266,7 @@ void AD_map_species1(AW_root *aw_root)
 	char *source = 			aw_root->awar(AWAR_SPECIES1)->read_string();
 	GBDATA *gb_species =		GBT_find_species(gb_merge,source);
 
-	if (gb_species) awt_map_arbdb_scanner(ad_global_scannerid1,gb_species,0);
+	if (gb_species) awt_map_arbdb_scanner(ad_global_scannerid1,gb_species,0, CHANGE_KEY_PATH);
 	GB_pop_transaction(gb_merge);
 	delete source;
 }
@@ -277,7 +277,7 @@ void AD_map_species2(AW_root *aw_root)
 	GB_push_transaction(gb_dest);
 	GBDATA *gb_species = GBT_find_species(gb_dest,source);
 	if (gb_species) {
-		awt_map_arbdb_scanner(ad_global_scannerid2,gb_species,0);
+		awt_map_arbdb_scanner(ad_global_scannerid2,gb_species,0, CHANGE_KEY_PATH);
 	}
 	GB_pop_transaction(gb_dest);
 	delete source;
@@ -348,7 +348,7 @@ MG_remaps::MG_remaps(GBDATA *gb_left,GBDATA *gb_right,AW_root *awr){
     memset((char *)this,0,sizeof(*this));
     int ref_enable = awr->awar(AWAR_REMAP_ENABLE)->read_int();
     if (!ref_enable) return;
-    
+
     char *reference_species_names = awr->awar(AWAR_REMAP_SPECIES_LIST)->read_string();
     this->alignment_names = GBT_get_alignment_names(gb_left);
     for (n_remaps = 0;alignment_names[n_remaps];n_remaps++);
@@ -371,7 +371,7 @@ MG_remaps::~MG_remaps(){
 }
 
 GB_ERROR MG_transfer_sequence(MG_remap *remap, GBDATA *source_species, GBDATA *destination_species,const char *alignment_name){ // align sequence after copy !!!
-    if (!remap) return 0;	// no remap 
+    if (!remap) return 0;	// no remap
     GBDATA *gb_seq_left = GBT_read_sequence(source_species,alignment_name);
     GBDATA *gb_seq_right = GBT_read_sequence(destination_species,alignment_name);
     if (!gb_seq_right || !gb_seq_left) return 0; // one has no sequence -> not copied;
@@ -426,7 +426,7 @@ void MG_transfer_selected_species(AW_window *aww)
 
 	GBDATA *gb_species_data1 = GB_search(gb_merge,"species_data",GB_CREATE_CONTAINER);
 	GBDATA *gb_species_data2 = GB_search(gb_dest,"species_data",GB_CREATE_CONTAINER);
-	
+
 	char *source = aww->get_root()->awar(AWAR_SPECIES1)->read_string();
 
 	GBDATA *gb_species1 = GBT_find_species_rel_species_data(gb_species_data1,source);
@@ -487,7 +487,7 @@ void MG_transfer_species_list(AW_window *aww)
 			if (!gb_name1) continue;	// no name what happend ???
 			gb_species2 = GB_find(gb_species_data2,"name",
 				GB_read_char_pntr(gb_name1),down_2_level);
-			
+
 			if (gb_species2) error = GB_delete(GB_get_father(gb_species2));
 			if (!error) gb_species2 = GB_create_container(gb_species_data2,"species");
 			if (!error) error = GB_copy(gb_species2,gb_species1);
@@ -552,7 +552,7 @@ void MG_transfer_fields_cb(AW_window *aww){
 	    if (!gb_name1) continue;	// no name what happend ???
 	    gb_species2 = GB_find(gb_species_data2,"name",
 				  GB_read_char_pntr(gb_name1),down_2_level);
-			
+
 	    if (!gb_species2) {
 		gb_species2 = GB_create_container(gb_species_data2,"species");
 		if (!gb_species2) {
@@ -589,7 +589,7 @@ void MG_transfer_fields_cb(AW_window *aww){
 			    delete s;
 			    GB_write_flag(gb_species2,1);
 			}
-					
+
 			delete s1;
 			delete s2;
 		    }else{
@@ -646,15 +646,15 @@ AW_window *MG_transfer_fields(AW_root *aw_root)
 
 	aws->callback( AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("go");
 	aws->callback(MG_transfer_fields_cb);
-	aws->create_button("GO","GO");			   
+	aws->create_button("GO","GO");
 
 	aws->at("help");
 	aws->callback(AW_POPUP_HELP,(AW_CL)"mg_spec_sel_field.hlp");
-	aws->create_button("HELP","HELP");			   
+	aws->create_button("HELP","HELP");
 
 	aws->at("append");
 	aws->create_toggle(AWAR_APPEND);
@@ -704,13 +704,13 @@ void MG_move_field_cb(AW_window *aww){
 	    aw_message("Please select a species in right hitlist");
 	    return;
 	}
-	
+
 	GBDATA *gb_field1;
 	GBDATA *gb_field2;
 	int	type1;
 	int	type2;
 	GB_ERROR error = 0;
-	
+
 	gb_field1 = GB_search(gb_species1,field,GB_FIND);
 	if (!gb_field1) {
 	    error = GB_export_error("Species 1 has no field '%s'",field);
@@ -736,7 +736,7 @@ void MG_move_field_cb(AW_window *aww){
 	    if (!error) error = GB_copy(gb_field2,gb_field1);
 	    break;
 	}
-	
+
 
 	if (error){
 	    GB_abort_transaction(gb_merge);
@@ -763,15 +763,15 @@ AW_window *create_mg_move_fields(AW_root *aw_root)
 
 	aws->callback( AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("go");
 	aws->callback(MG_move_field_cb);
-	aws->create_button("GO","GO");			   
+	aws->create_button("GO","GO");
 
 	aws->at("help");
 	aws->callback(AW_POPUP_HELP,(AW_CL)"movefield.hlp");
-	aws->create_button("HELP","HELP");			   
+	aws->create_button("HELP","HELP");
 
 
 	awt_create_selection_list_on_scandb(gb_merge,
@@ -793,7 +793,7 @@ void MG_merge_tagged_field_cb(AW_window *aww){
     char *tag2= awr->awar(AWAR_TAG2)->read_string();
 
     char *tag_del1= awr->awar(AWAR_TAG_DEL1)->read_string();
-   
+
 
     GBDATA *gb_species_data2 = GB_search(gb_dest,"species_data",GB_CREATE_CONTAINER);
 
@@ -814,12 +814,12 @@ void MG_merge_tagged_field_cb(AW_window *aww){
 	    delete name;
 	    name = GB_read_string(gb_name1);
 	    gb_species2 = GBT_create_species_rel_species_data(gb_species_data2,name);
-			
+
 	    if (!gb_species2) {
 		error = GB_get_error();
 		break;
 	    }
-			
+
 	    char *s1;
 	    char *s2;
 
@@ -834,7 +834,7 @@ void MG_merge_tagged_field_cb(AW_window *aww){
 	    }else{
 		s1 = strdup("");
 	    }
-		
+
 	    gb_field2 = GBT_search_string(gb_species2,f2,"");
 	    if (gb_field2) {
 		type2 = GB_read_type(gb_field2);
@@ -850,7 +850,7 @@ void MG_merge_tagged_field_cb(AW_window *aww){
 
 	    char *sum = GBS_merge_tagged_strings(s1,tag1,tag_del1,s2,tag2,tag_del1);
 	    if (!sum) error = GB_get_error();
-		
+
 	    if (!error)	error = GB_write_string	(gb_field2,sum);
 	    delete sum;
 	    delete s1;
@@ -866,7 +866,7 @@ void MG_merge_tagged_field_cb(AW_window *aww){
     delete	tag1;
     delete	f2;
     delete	f1;
-    
+
     if (error) {
 	aw_message(error);
 	GB_abort_transaction(gb_dest);
@@ -879,7 +879,7 @@ AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
 {
     static AW_window_simple *aws = 0;
     if (aws) return aws;
-    
+
     GB_transaction dummy(gb_merge);
 
     aw_root->awar_string( AWAR_FIELD1,"full_name");
@@ -887,7 +887,7 @@ AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
 
     aw_root->awar_string( AWAR_TAG1,"S");
     aw_root->awar_string( AWAR_TAG2,"D");
-	
+
     aw_root->awar_string( AWAR_TAG_DEL1,"S*");
 
     aws = new AW_window_simple;
@@ -897,21 +897,21 @@ AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
 
     aws->callback( AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");		       
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("go");
     aws->callback(MG_merge_tagged_field_cb);
-    aws->create_button("GO","GO");		       
+    aws->create_button("GO","GO");
 
     aws->at("help");
     aws->callback(AW_POPUP_HELP,(AW_CL)"mergetaggedfield.hlp");
-    aws->create_button("HELP","HELP");		       
+    aws->create_button("HELP","HELP");
 
     aws->at("tag1");    aws->create_input_field(AWAR_TAG1,5);
     aws->at("tag2");    aws->create_input_field(AWAR_TAG2,5);
-    
+
     aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL1,5);
-    
+
     awt_create_selection_list_on_scandb(gb_merge, (AW_window*)aws,AWAR_FIELD1,AWT_NDS_FILTER,"fields1",0);
     awt_create_selection_list_on_scandb(gb_dest, (AW_window*)aws,AWAR_FIELD2,AWT_NDS_FILTER,"fields2",0);
 
@@ -1011,7 +1011,7 @@ GB_ERROR MG_simple_merge(AW_root *awr){
 
     error = MG_equal_alignments();
     if (error) goto end;
-	
+
     M_species_data = GB_search(gb_merge,"species_data",GB_CREATE_CONTAINER);
     D_species_data = GB_search(gb_dest,"species_data",GB_CREATE_CONTAINER);
 
@@ -1088,7 +1088,7 @@ end:
 AW_window *MG_merge_species_cb(AW_root *awr){
     static AW_window_simple_menu *aws = 0;
     if (aws) return (AW_window *)aws;
-	
+
     awr->awar_string(AWAR_REMAP_SPECIES_LIST, "ecoli",gb_dest);
     awr->awar_int(AWAR_REMAP_ENABLE, 1, gb_dest);
 
@@ -1097,76 +1097,76 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     aws->load_xfig("merge/species.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");		       
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("help");
     aws->callback(AW_POPUP_HELP,(AW_CL)"mg_species.hlp");
-    aws->create_button("HELP","HELP","H");		       
+    aws->create_button("HELP","HELP","H");
 
     aws->at("preserve");
     aws->create_toggle(AWAR_REMAP_ENABLE);
-    
+
     aws->at("reference");
     aws->create_text_field(AWAR_REMAP_SPECIES_LIST);
-	
+
     awt_query_struct awtqs;
     aws->create_menu(0,"DB_I_Expert","D");
 
-    awtqs.gb_main		= gb_merge;
-    awtqs.gb_ref		= gb_dest;
-    awtqs.look_in_ref_list	= AW_FALSE;
-    awtqs.species_name	= AWAR_SPECIES1;
-    awtqs.select_bit	= 1;
-    awtqs.ere_pos_fig	= "ere1";
-    awtqs.by_pos_fig	= "by1";
-    awtqs.qbox_pos_fig	= "qbox1";
-    awtqs.rescan_pos_fig	= 0;
-    awtqs.key_pos_fig	= 0;
-    awtqs.query_pos_fig	= "content1";
-    awtqs.result_pos_fig	= "result1";
-    awtqs.count_pos_fig	= "count1";
-    awtqs.do_query_pos_fig	= "doquery1";
-    awtqs.do_mark_pos_fig	= 0;
-    awtqs.do_unmark_pos_fig	= 0;
-    awtqs.do_delete_pos_fig	= "dodelete1";
-    awtqs.do_set_pos_fig	= "doset1";
-    awtqs.do_refresh_pos_fig= "dorefresh1";
-    awtqs.open_parser_pos_fig= "openparser1";
-    awtqs.use_menu		= 1;
+    awtqs.gb_main		      = gb_merge;
+    awtqs.gb_ref		      = gb_dest;
+    awtqs.look_in_ref_list	  = AW_FALSE;
+    awtqs.species_name	      = AWAR_SPECIES1;
+    awtqs.select_bit	      = 1;
+    awtqs.ere_pos_fig	      = "ere1";
+    awtqs.by_pos_fig	      = "by1";
+    awtqs.qbox_pos_fig	      = "qbox1";
+    awtqs.rescan_pos_fig	  = 0;
+    awtqs.key_pos_fig	      = 0;
+    awtqs.query_pos_fig	      = "content1";
+    awtqs.result_pos_fig	  = "result1";
+    awtqs.count_pos_fig	      = "count1";
+    awtqs.do_query_pos_fig	  = "doquery1";
+    awtqs.do_mark_pos_fig	  = 0;
+    awtqs.do_unmark_pos_fig	  = 0;
+    awtqs.do_delete_pos_fig	  = "dodelete1";
+    awtqs.do_set_pos_fig	  = "doset1";
+    awtqs.do_refresh_pos_fig  = "dorefresh1";
+    awtqs.open_parser_pos_fig = "openparser1";
+    awtqs.use_menu		      = 1;
+
     awt_create_query_box((AW_window*)aws,&awtqs);
 
-    AW_CL scannerid=awt_create_arbdb_scanner(gb_merge, aws,
-					     "box1",0,0,0,AWT_SCANNER,0,0,AWT_NDS_FILTER);
+    AW_CL scannerid=awt_create_arbdb_scanner(gb_merge, aws, "box1",0,0,0,AWT_SCANNER,0,0,AWT_NDS_FILTER, CHANGE_KEY_PATH);
     ad_global_scannerid1 = scannerid;
     aws->get_root()->awar(AWAR_SPECIES1)->add_callback(AD_map_species1);
 
     aws->create_menu(0,"DB_II_Expert","B");
-	
-    awtqs.gb_main		= gb_dest;
-    awtqs.gb_ref		= gb_merge;
-    awtqs.look_in_ref_list	= AW_TRUE;
-    awtqs.species_name	= AWAR_SPECIES2;
-    awtqs.select_bit	= 1;
-    awtqs.ere_pos_fig	= "ere2";
-    awtqs.by_pos_fig	= "by2";
-    awtqs.qbox_pos_fig	= "qbox2";
-    awtqs.rescan_pos_fig	= 0;
-    awtqs.key_pos_fig	= 0;
-    awtqs.query_pos_fig	= "content2";
-    awtqs.result_pos_fig	= "result2";
-    awtqs.count_pos_fig	= "count2";
-    awtqs.do_query_pos_fig	= "doquery2";
-    awtqs.do_mark_pos_fig	= 0;
-    awtqs.do_unmark_pos_fig	= 0;
-    awtqs.do_delete_pos_fig	= "dodelete2";
-    awtqs.do_set_pos_fig	= "doset2";
-    awtqs.do_refresh_pos_fig= "dorefresh2";
-    awtqs.open_parser_pos_fig= "openparser2";
+
+    awtqs.gb_main		      = gb_dest;
+    awtqs.gb_ref		      = gb_merge;
+    awtqs.look_in_ref_list	  = AW_TRUE;
+    awtqs.species_name	      = AWAR_SPECIES2;
+    awtqs.select_bit	      = 1;
+    awtqs.ere_pos_fig	      = "ere2";
+    awtqs.by_pos_fig	      = "by2";
+    awtqs.qbox_pos_fig	      = "qbox2";
+    awtqs.rescan_pos_fig	  = 0;
+    awtqs.key_pos_fig	      = 0;
+    awtqs.query_pos_fig	      = "content2";
+    awtqs.result_pos_fig	  = "result2";
+    awtqs.count_pos_fig	      = "count2";
+    awtqs.do_query_pos_fig	  = "doquery2";
+    awtqs.do_mark_pos_fig	  = 0;
+    awtqs.do_unmark_pos_fig	  = 0;
+    awtqs.do_delete_pos_fig	  = "dodelete2";
+    awtqs.do_set_pos_fig	  = "doset2";
+    awtqs.do_refresh_pos_fig  = "dorefresh2";
+    awtqs.open_parser_pos_fig = "openparser2";
+
     awt_create_query_box((AW_window*)aws,&awtqs);
 
 
-    scannerid=awt_create_arbdb_scanner(gb_dest, aws,
-				       "box2",0,0,0,AWT_SCANNER,0,0,AWT_NDS_FILTER);
+    scannerid=awt_create_arbdb_scanner(gb_dest, aws, "box2",0,0,0,AWT_SCANNER,0,0,AWT_NDS_FILTER, CHANGE_KEY_PATH);
     ad_global_scannerid2 = scannerid;
     aws->get_root()->awar(AWAR_SPECIES2)->add_callback(AD_map_species2);
 
@@ -1187,7 +1187,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     aws->callback(AW_POPUP,(AW_CL)MG_transfer_fields,0);
     aws->create_button("TRANSFER_FIELD_OF_LISTED_DELETE_DUPLI",
 		       "TRANSFER\nFIELD\nOF LISTED\nIN SPECIES\n\nDELETE\nDUPLICATES\nIN DB II","T");
-	
+
     aws->button_length(0);
     aws->shadow_width(1);
     aws->at("icon");

@@ -11,8 +11,6 @@
 #include "GEN.hxx"
 #endif
 
-#define AWAR_GENE_DEST "tmp/edit/gene_name_dest"
-
 
 #else
 #error GEN_local.hxx included twice

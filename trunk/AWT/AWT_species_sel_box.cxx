@@ -39,17 +39,18 @@ void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstruct *
     cbs->aws->update_selection_list( cbs->id );
 }
 
-GB_ERROR awt_add_new_changekey(GBDATA *gb_main,const char *name, int type)
+GB_ERROR awt_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name, int type, const char *keypath)
 {
     GBDATA *gb_key;
     GBDATA *key_name;
     GB_ERROR error = 0;
     GBDATA *gb_key_data;
-    gb_key_data = GB_search(gb_main,CHANGE_KEY_PATH,GB_CREATE_CONTAINER);
+    gb_key_data = GB_search(gb_main,keypath,GB_CREATE_CONTAINER);
 
     for (	gb_key = GB_find(gb_key_data,CHANGEKEY,0,down_level);
             gb_key;
-            gb_key = GB_find(gb_key,CHANGEKEY,0,this_level|search_next)){
+            gb_key = GB_find(gb_key,CHANGEKEY,0,this_level|search_next))
+	{
         key_name = GB_search(gb_key,CHANGEKEY_NAME,GB_STRING);
         if (!strcmp(GB_read_char_pntr(key_name),name)) break;
     }
@@ -85,13 +86,24 @@ GB_ERROR awt_add_new_changekey(GBDATA *gb_main,const char *name, int type)
     return 0;
 }
 
+GB_ERROR awt_add_new_changekey(GBDATA *gb_main,const char *name, int type) {
+	return awt_add_new_changekey_to_keypath(gb_main, name, type, CHANGE_KEY_PATH);
+}
+GB_ERROR awt_add_new_gene_changekey(GBDATA *gb_main,const char *name, int type) {
+	return awt_add_new_changekey_to_keypath(gb_main, name, type, CHANGE_KEY_PATH_GENES);
+}
+
+#define GENE_DATA_PATH 			"gene_data/gene/"
+#define GENE_DATA_PATH_LEN 		15
+
 void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter){
     GB_push_transaction(gb_main);
-    char **names;
-    char **name;
-    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    char 		**names;
+    char 		**name;
+    GBDATA 		 *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
 
     names = GBT_scan_db(gb_species_data);
+
     awt_add_new_changekey(gb_main,"name",GB_STRING);
     awt_add_new_changekey(gb_main,"acc",GB_STRING);
     awt_add_new_changekey(gb_main,"full_name",GB_STRING);
@@ -99,7 +111,32 @@ void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter){
     awt_add_new_changekey(gb_main,"tmp",GB_STRING);
     for (name = names; *name; name++) {
         if ( (1<<(**name)) & bitfilter ) {	// look if already exists
-            awt_add_new_changekey(gb_main,(*name)+1,(int)*name[0]);
+			if (strncmp((*name)+1, GENE_DATA_PATH, GENE_DATA_PATH_LEN) != 0) { // ignore gene entries
+				awt_add_new_changekey(gb_main,(*name)+1,(int)*name[0]);
+			}
+        }
+    }
+
+    GBT_free_names(names);
+    GB_pop_transaction(gb_main);
+}
+
+void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter){
+    GB_push_transaction(gb_main);
+    char **names;
+    char **name;
+    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+
+    names = GBT_scan_db(gb_species_data);
+    awt_add_new_gene_changekey(gb_main,"name",GB_STRING);
+    awt_add_new_gene_changekey(gb_main,"pos_begin",GB_STRING);
+    awt_add_new_gene_changekey(gb_main,"pos_end",GB_STRING);
+
+    for (name = names; *name; name++) {
+        if ( (1<<(**name)) & bitfilter ) {		// look if already exists
+			if (strncmp((*name)+1, GENE_DATA_PATH, GENE_DATA_PATH_LEN) == 0) {
+				awt_add_new_gene_changekey(gb_main,(*name)+1+GENE_DATA_PATH_LEN,(int)*name[0]);
+			}
         }
     }
 
@@ -114,7 +151,9 @@ void awt_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_main, long bitfilt
     awt_selection_list_rescan(gb_main,bitfilter);
 }
 
-AW_CL awt_create_selection_list_on_scandb(GBDATA *gb_main,AW_window *aws, const char *varname, long type_filter, const char *scan_xfig_label, const char *rescan_xfig_label, const char *change_key_path)
+AW_CL awt_create_selection_list_on_scandb(GBDATA *gb_main,AW_window *aws, const char *varname, long type_filter,
+										  const char *scan_xfig_label, const char *rescan_xfig_label,
+										  const char *change_key_path)
 {
     AW_selection_list*	id;
     GBDATA	*gb_key_data;
@@ -128,7 +167,7 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA *gb_main,AW_window *aws, const 
     cbs->gb_main         = gb_main;
     cbs->id              = id;
     cbs->def_filter      = (char *)type_filter;
-    cbs->change_key_path = change_key_path ? change_key_path : CHANGE_KEY_PATH;
+    cbs->change_key_path = strdup(change_key_path ? change_key_path : CHANGE_KEY_PATH);
 
     if (rescan_xfig_label) {
         aws->at(rescan_xfig_label);
@@ -345,13 +384,15 @@ AW_CL awt_create_arbdb_scanner(GBDATA *gb_main, AW_window *aws,
                                AWT_SCANNERMODE scannermode,
                                const char *rescan_pos_fig,	// AWT_VIEWER
                                const char *mark_pos_fig,
-                               long type_filter)
+                               long type_filter,
+                               const char *change_key_path)
 {
-    static int scanner_id = 0;
+    static int           scanner_id = 0;
     struct adawcbstruct *cbs;
-    cbs = new adawcbstruct;
-    char buffer[256];
-    AW_root *aw_root = aws->get_root();
+    cbs                             = new adawcbstruct;
+    char                 buffer[256];
+    AW_root             *aw_root    = aws->get_root();
+
     GB_push_transaction(gb_main);
     /*************** Create local AWARS *******************/
     sprintf(buffer,"tmp/arbdb_scanner_%i/list",scanner_id);
@@ -371,12 +412,15 @@ AW_CL awt_create_arbdb_scanner(GBDATA *gb_main, AW_window *aws,
     aw_root->awar_int( cbs->def_dir,GB_TRUE, AW_ROOT_DEFAULT);
 
     aws->at(box_pos_fig);
-    cbs->id = aws->create_selection_list(cbs->def_gbd,0,"",20,10);
-    cbs->aws = aws;
-    cbs->gb_main = gb_main;
-    cbs->gb_user = 0;
-    cbs->gb_edit = 0;
+
+    cbs->id          = aws->create_selection_list(cbs->def_gbd,0,"",20,10);
+    cbs->aws         = aws;
+    cbs->gb_main     = gb_main;
+    cbs->gb_user     = 0;
+    cbs->gb_edit     = 0;
     cbs->scannermode = (char) scannermode;
+    cbs->change_key_path = strdup(change_key_path ? change_key_path : CHANGE_KEY_PATH);
+
     /*************** Create the delete button ****************/
     if (delete_pos_fig) {
         aws->at(delete_pos_fig);
@@ -399,18 +443,17 @@ AW_CL awt_create_arbdb_scanner(GBDATA *gb_main, AW_window *aws,
 
     cbs->def_dest = 0;
     if (edit_pos_fig) {
-        aw_root->awar(cbs->def_gbd)->add_callback(
-                                                  (AW_RCB1)awt_map_arbdb_edit_box,(AW_CL)cbs);
-        if (edit_enable_pos_fig) aw_root->awar(cbs->def_filter)->add_callback(
-                                                                              (AW_RCB1)awt_map_arbdb_edit_box,(AW_CL)cbs);
+        aw_root->awar(cbs->def_gbd)->add_callback((AW_RCB1)awt_map_arbdb_edit_box,(AW_CL)cbs);
+        if (edit_enable_pos_fig) {
+            aw_root->awar(cbs->def_filter)->add_callback((AW_RCB1)awt_map_arbdb_edit_box,(AW_CL)cbs);
+        }
         sprintf(buffer,"tmp/arbdb_scanner_%i/edit",scanner_id);
         cbs->def_dest = strdup(buffer);
         aw_root->awar_string( cbs->def_dest,"", AW_ROOT_DEFAULT);
 
         aws->at(edit_pos_fig);
-        aws->callback(
-                      (AW_CB1)awt_arbdb_scanner_value_change,(AW_CL)cbs);
-        aws->create_text_field(cbs->def_dest,20,5);
+        aws->callback((AW_CB1)awt_arbdb_scanner_value_change,(AW_CL)cbs);
+        aws->create_text_field(cbs->def_dest,20,10);
     }
 
     /*************** Create the rescan button ****************/
@@ -523,7 +566,7 @@ void awt_scanner_scan_list(GBDATA *dummy, struct adawcbstruct *cbs)
     int rest = 255;
     char *p;
     GBDATA *gb_key_data;
-    gb_key_data = GB_search(cbs->gb_main,CHANGE_KEY_PATH,GB_CREATE_CONTAINER);
+    gb_key_data = GB_search(cbs->gb_main, cbs->change_key_path, GB_CREATE_CONTAINER);
     AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
     GBDATA *gb_key;
@@ -531,7 +574,8 @@ void awt_scanner_scan_list(GBDATA *dummy, struct adawcbstruct *cbs)
     GBDATA *gb_key_type;
     for (	gb_key = GB_find(gb_key_data,CHANGEKEY,0,down_level);
             gb_key;
-            gb_key = GB_find(gb_key,CHANGEKEY,0,this_level|search_next)){
+            gb_key = GB_find(gb_key,CHANGEKEY,0,this_level|search_next))
+    {
         gb_key_name = GB_find(gb_key,CHANGEKEY_NAME,0,down_level);
         gb_key_type = GB_find(gb_key,CHANGEKEY_TYPE,0,down_level);
         if (!gb_key_name) continue;
@@ -607,29 +651,29 @@ void awt_scanner_changed_cb2(GBDATA *dummy, struct adawcbstruct *cbs, GB_CB_TYPE
     awt_scanner_changed_cb(dummy,cbs,gbtype);
 }
 
-void awt_map_arbdb_scanner(AW_CL arbdb_scanid, GBDATA *gb_pntr, int show_only_marked_flag)
+void awt_map_arbdb_scanner(AW_CL arbdb_scanid, GBDATA *gb_pntr, int show_only_marked_flag, const char *key_path)
 {
-    struct adawcbstruct *cbs = (struct adawcbstruct *)arbdb_scanid;
+    struct adawcbstruct *cbs         = (struct adawcbstruct *)arbdb_scanid;
     GB_push_transaction(cbs->gb_main);
-    GBDATA *gb_key_data = GB_search(cbs->gb_main,CHANGE_KEY_PATH,GB_CREATE_CONTAINER);
+    GBDATA              *gb_key_data = GB_search(cbs->gb_main,key_path,GB_CREATE_CONTAINER);
+
     if (cbs->gb_user) {
-        GB_remove_callback(cbs->gb_user,(GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE),
-                           (GB_CB)awt_scanner_changed_cb, (int *)cbs);
+        GB_remove_callback(cbs->gb_user,(GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), (GB_CB)awt_scanner_changed_cb, (int *)cbs);
         if (cbs->scannermode == AWT_VIEWER) {
-            GB_remove_callback(gb_key_data,(GB_CB_TYPE)(GB_CB_CHANGED),
-                               (GB_CB)awt_scanner_changed_cb2, (int *)cbs);
+            GB_remove_callback(gb_key_data,(GB_CB_TYPE)(GB_CB_CHANGED), (GB_CB)awt_scanner_changed_cb2, (int *)cbs);
         }
     }
+
     cbs->show_only_marked = show_only_marked_flag;
-    cbs->gb_user = gb_pntr;
+    cbs->gb_user          = gb_pntr;
+
     if (gb_pntr) {
-        GB_add_callback(gb_pntr,(GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE),
-                        (GB_CB)awt_scanner_changed_cb, (int *)cbs);
+        GB_add_callback(gb_pntr,(GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), (GB_CB)awt_scanner_changed_cb, (int *)cbs);
         if (cbs->scannermode == AWT_VIEWER) {
-            GB_add_callback(gb_key_data,(GB_CB_TYPE)(GB_CB_CHANGED),
-                            (GB_CB)awt_scanner_changed_cb2, (int *)cbs);
+            GB_add_callback(gb_key_data,(GB_CB_TYPE)(GB_CB_CHANGED), (GB_CB)awt_scanner_changed_cb2, (int *)cbs);
         }
     }
+
     cbs->aws->get_root()->awar(cbs->def_gbd)->write_int((long)0);
     awt_scanner_changed_cb(gb_pntr,cbs,GB_CB_CHANGED);
 
