@@ -24,7 +24,7 @@
 #include <set>
 
 #if defined(DEBUG)
-// #define TRACE_FILEBOX
+ #define TRACE_FILEBOX
 #endif // DEBUG
 
 using namespace std;
@@ -541,10 +541,11 @@ static void awt_selection_box_changed_filename(void *, struct adawcbstruct *cbs)
                 if (strcmp(newName, fname) != 0) {
                     aw_root->awar(cbs->def_name)->write_string(newName); // loops back if changed !!!
                 }
+                
+                free(cbs->previous_filename);
+                cbs->previous_filename = newName; // this releases newName
             }
         }
-        free(cbs->previous_filename);
-        cbs->previous_filename = newName; // this releases newName
         free(dir);
 
         if (strchr(fname, '*')) { // wildcard -> search for suffix
