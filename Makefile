@@ -512,6 +512,7 @@ aw:		WINDOW/libAW.dummy
 awt:	AWT/libAWT.dummy
 
 mp: 	MULTI_PROBE/MULTI_PROBE.dummy
+ge: 	GENOM/GENOM.dummy
 
 nt:		$(ARCHS_NTREE:.a=.dummy)	$(NTREE)
 ed:		$(ARCHS_EDIT:.a=.dummy)		$(EDIT)
