@@ -238,6 +238,10 @@ GB_ERROR AWTI_export_format(AW_root *aw_root, GBDATA *gb_main, char *formname, c
                 }
             }
 
+            int marked   = GBT_count_marked_species(gb_main);
+            int stat_mod = marked/1000;            
+            if (stat_mod == 0) stat_mod = 1;
+
             for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
                  !error && gb_species;
                  gb_species = GBT_next_marked_species(gb_species))
@@ -258,10 +262,11 @@ GB_ERROR AWTI_export_format(AW_root *aw_root, GBDATA *gb_main, char *formname, c
 
                 switch (cmd) {
                     case AWTI_EXPORT_BY_FORM: {
-                        if (count % 10 == 0) {
+                        if (count % stat_mod == 0) {
                             char *name = GBT_read_name(gb_species);
                             sprintf(buffer,"%s: %i",name, count);
                             if (aw_status(buffer)) break;
+                            if (aw_status(count/double(marked))) break;
                             free(name);
                         }
                         char *pars = GBS_string_eval(" ",form,gb_species);
@@ -374,7 +379,7 @@ AW_window *open_AWTC_export_window(AW_root *awr,GBDATA *gb_main)
 
     aw_create_selection_box_awars(awr, AWAR_EXPORT_FORM, AWT_path_in_ARBHOME("lib/export"), ".eft", "*");
     aw_create_selection_box_awars(awr, AWAR_EXPORT_FILE, "", "", "noname");
-    
+
     awr->awar_string(AWAR_EXPORT_ALI,"16s",AW_ROOT_DEFAULT);
     awr->awar_int(AWAR_EXPORT_MULTIPLE_FILES,0,AW_ROOT_DEFAULT);
 
