@@ -21,7 +21,7 @@
 extern GBDATA *gb_main;
 
 int awt_pro_a_nucs_convert(char *data, long size, int pos)
-	{
+{
 	char *p,c;
 	int	C;
 	char *dest;
@@ -54,86 +54,177 @@ int awt_pro_a_nucs_convert(char *data, long size, int pos)
 	return stops;
 }
 
-GB_ERROR arb_r2a(GBDATA *gbmain, int startpos, char *ali_source, char *ali_dest)
+GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, int startpos, const char *ali_source, const char *ali_dest)
 {
-    GBDATA *gb_source;
-    GBDATA *gb_dest;
-    GBDATA	*gb_species;
-    GBDATA	*gb_source_data;
-    GBDATA	*gb_dest_data;
-    GB_ERROR error = 0;
-    char	*data;
-    int	count = 0;
-    int	stops = 0;
+    // if use_entries == true -> use fields 'codon_start' and 'transl_table' for translation
+    // (in that case startpos and AWAR_PROTEIN_TYPE are ignored)
+
+    nt_assert(startpos >= 0 && startpos < 3);
+
+    GBDATA   *gb_source;
+    GBDATA   *gb_dest;
+    GBDATA	 *gb_species;
+    GBDATA	 *gb_source_data;
+    GBDATA	 *gb_dest_data;
+    GB_ERROR  error = 0;
+    char	 *data;
+    int	      count = 0;
+    int	      stops = 0;
 
     gb_source = GBT_get_alignment(gbmain,ali_source);
     if (!gb_source) return "Please select a valid source alignment";
     gb_dest = GBT_get_alignment(gbmain,ali_dest);
     if (!gb_dest) {
-	char *msg = strdup(GBS_global_string(
-	    "You have not selected a destination alingment\n"
-	    "May I create one ('%s_pro') for you",ali_source));
-	if (aw_message(msg,"CREATE,CANCEL")){
-	    delete msg;
-	    return "Cancelled";
-	}
-	long slen = GBT_get_alignment_len(gbmain,ali_source);
-	delete msg;
-	ali_dest = strdup(GBS_global_string("%s_pro",ali_source));
-	gb_dest = GBT_create_alignment(gbmain,ali_dest,slen/3+1,0,1,"ami");
-	{
-	    char *fname = strdup(GBS_global_string("%s/data",ali_dest));
-	    awt_add_new_changekey( 	gbmain,fname,GB_STRING);
-	    delete fname;
-	}
+        char *msg = strdup(GBS_global_string("You have not selected a destination alingment\n"
+                                             "May I create one ('%s_pro') for you?",ali_source));
+        if (aw_message(msg,"CREATE,CANCEL")){
+            delete msg;
+            return "Cancelled";
+        }
+        long slen = GBT_get_alignment_len(gbmain,ali_source);
+        delete msg;
+        ali_dest = strdup(GBS_global_string("%s_pro",ali_source));
+        gb_dest = GBT_create_alignment(gbmain,ali_dest,slen/3+1,0,1,"ami");
+        {
+            char *fname = strdup(GBS_global_string("%s/data",ali_dest));
+            awt_add_new_changekey( 	gbmain,fname,GB_STRING);
+            delete fname;
+        }
 
-	if (!gb_dest){
-	    aw_closestatus();
-	    return GB_get_error();
-	}
+        if (!gb_dest){
+            aw_closestatus();
+            return GB_get_error();
+        }
     }
 
     aw_openstatus("Translating");
-    int spec_count = GBT_count_species(gbmain);
-    int spec_i = 0;
 
-    for (	gb_species = GBT_first_marked_species(gbmain);
-		gb_species;
-		gb_species = GBT_next_marked_species(gb_species) ){
-	if (aw_status(double(spec_i++)/double(spec_count))){
-	    error = "Aborted";
-	    break;
-	}
-	gb_source = GB_find(gb_species,ali_source,0,down_level);
-	if (!gb_source) continue;
-	gb_source_data = GB_find(gb_source,"data",0,down_level);
-	if (!gb_source_data) continue;
-	data = GB_read_string(gb_source_data);
-	if (!data) {
-	    GB_print_error();
-	    continue;
-	}
-	stops += awt_pro_a_nucs_convert(
-	    data,
-	    GB_read_string_count(gb_source_data),
-	    startpos);
-	count ++;
-	gb_dest_data = GBT_add_data(gb_species,ali_dest,"data", GB_STRING);
-	if (!gb_dest_data) return GB_get_error();
-	error = GB_write_string(gb_dest_data,data);
-	free(data);
-	if (error) break;
+    int spec_count           = GBT_count_species(gbmain);
+    int spec_i               = 0;
+    int spec_no_transl_table = 0;
+    int spec_no_codon_start  = 0;
+
+    bool table_used[AWT_CODON_TABLES];
+    memset(table_used, 0, sizeof(table_used));
+    int  old_code_nr = GBT_read_int(gb_main,AWAR_PROTEIN_TYPE); // read selected table
+
+    if (use_entries) {
+        for (gb_species = GBT_first_marked_species(gbmain);
+             gb_species && !error;
+             gb_species = GBT_next_marked_species(gb_species) )
+        {
+            GBDATA *gb_transl_table = GB_find(gb_species, "transl_table", 0, down_level);
+            int     arb_table           = 0; // use 'Standard Code' if no 'transl_table' entry was found
+
+            if (gb_transl_table) {
+                int embl_table = atoi(GB_read_char_pntr(gb_transl_table));
+                arb_table  = AWT_embl_transl_table_2_arb_code_nr(embl_table);
+
+                if (arb_table == -1) {
+                    GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+                    return GB_export_error("Illegal (or unsupported) value for 'transl_table' in '%s'", GB_read_char_pntr(gb_name));
+                }
+            }
+
+            table_used[arb_table] = true;
+        }
     }
+    else {
+        table_used[old_code_nr] = true; // and mark it used
+    }
+
+    for (int table = 0; table<AWT_CODON_TABLES && !error; ++table) {
+        if (!table_used[table]) continue;
+
+        GBT_write_int(gb_main, AWAR_PROTEIN_TYPE, table); // set wanted protein table
+        awt_pro_a_nucs_convert_init(gb_main); // (re-)initialize codon tables for current translation table
+
+        for (	gb_species = GBT_first_marked_species(gbmain);
+                gb_species && !error;
+                gb_species = GBT_next_marked_species(gb_species) )
+        {
+            if (use_entries) { // if entries are used, test if field 'transl_table' matches current table
+                GBDATA *gb_transl_table = GB_find(gb_species, "transl_table", 0, down_level);
+                int     sp_arb_table    = 0; // use 'Standard Code' as default (if 'transl_table' missing)
+
+                if (gb_transl_table) {
+                    int sp_embl_table = atoi(GB_read_char_pntr(gb_transl_table));
+                    sp_arb_table      = AWT_embl_transl_table_2_arb_code_nr(sp_embl_table);
+
+                    nt_assert(sp_arb_table != -1); // sp_arb_table must be a valid code (or error should occur above)
+                }
+
+                if (sp_arb_table != table) continue; // species has not current transl_table
+
+                if (!gb_transl_table) ++spec_no_transl_table; // count species w/o transl_table entry
+
+                GBDATA *gb_codon_start = GB_find(gb_species, "codon_start", 0, down_level);
+                int     sp_codon_start = 1; // default codon startpos (if 'codon_start' field is missing)
+
+                if (gb_codon_start) {
+                    sp_codon_start = atoi(GB_read_char_pntr(gb_codon_start));
+                    if (sp_codon_start<1 || sp_codon_start>3) {
+                        GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+                        error = GB_export_error("'%s' has invalid codon_start entry %i (allowed: 1..3)",
+                                                GB_read_char_pntr(gb_name), sp_codon_start);
+                        break;
+                    }
+                }
+                else {
+                    ++spec_no_codon_start;
+                }
+                startpos = sp_codon_start-1; // internal value is 0..2
+            }
+
+            if (aw_status(double(spec_i++)/double(spec_count))) {
+                error = "Aborted";
+                break;
+            }
+            gb_source = GB_find(gb_species,ali_source,0,down_level);
+            if (!gb_source) continue;
+            gb_source_data = GB_find(gb_source,"data",0,down_level);
+            if (!gb_source_data) continue;
+            data = GB_read_string(gb_source_data);
+            if (!data) {
+                GB_print_error(); // cannot read data (ignore species)
+                continue;
+            }
+
+            stops += awt_pro_a_nucs_convert(data, GB_read_string_count(gb_source_data), startpos); // do the translation
+
+            count ++;
+            gb_dest_data = GBT_add_data(gb_species,ali_dest,"data", GB_STRING);
+            if (!gb_dest_data) return GB_get_error();
+            error = GB_write_string(gb_dest_data,data);
+            free(data);
+        }
+    }
+
+    GBT_write_int(gb_main, AWAR_PROTEIN_TYPE, old_code_nr); // restore old value
+
     aw_closestatus();
     if (!error){
-	char	msg[256];
-	sprintf(msg,
-		"%i taxa converted\n"
-		"	%f stops per sequence found",count,(double)stops/(double)count);
-	aw_message(msg);
+        if (spec_no_transl_table) {
+            aw_message(GBS_global_string("%i taxa had no 'transl_table' field (defaulted to 1)", spec_no_transl_table));
+        }
+        if (spec_no_codon_start) {
+            aw_message(GBS_global_string("%i taxa had no 'codon_start' field (defaulted to 1)", spec_no_codon_start));
+        }
+        if ((spec_no_codon_start+spec_no_transl_table) == 0) { // all entries were present
+            aw_message("codon_start and transl_table entries found for all taxa");
+        }
+
+        aw_message(GBS_global_string("%i taxa converted\n  %f stops per sequence found",
+                                     count, (double)stops/(double)count));
     }
     return error;
 }
+
+#define AWAR_TRANSPRO_PREFIX "transpro/"
+#define AWAR_TRANSPRO_SOURCE AWAR_TRANSPRO_PREFIX "source"
+#define AWAR_TRANSPRO_DEST   AWAR_TRANSPRO_PREFIX "dest"
+#define AWAR_TRANSPRO_POS    AWAR_TRANSPRO_PREFIX "pos"
+#define AWAR_TRANSPRO_MODE   AWAR_TRANSPRO_PREFIX "mode"
 
 void transpro_event(AW_window *aww){
     AW_root *aw_root = aww->get_root();
@@ -144,17 +235,19 @@ void transpro_event(AW_window *aww){
     test_AWT_get_codons();
 #endif
     awt_pro_a_nucs_convert_init(gb_main);
-    char *ali_source = aw_root->awar("transpro/source")->read_string();
-    char *ali_dest = aw_root->awar("transpro/dest")->read_string();
-    int startpos = (int)aw_root->awar("transpro/pos")->read_int();
 
-    error = arb_r2a(gb_main, startpos,ali_source,ali_dest);
+    const char *ali_source = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
+    const char *ali_dest   = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
+    const char *mode       = aw_root->awar(AWAR_TRANSPRO_MODE)->read_string();
+    int         startpos   = (int)aw_root->awar(AWAR_TRANSPRO_POS)->read_int();
+
+    error = arb_r2a(gb_main, strcmp(mode, "fields") == 0, startpos, ali_source, ali_dest);
     if (error) {
-	GB_abort_transaction(gb_main);
-	aw_message(error);
+        GB_abort_transaction(gb_main);
+        aw_message(error);
     }else{
-	GBT_check_data(gb_main,0);
-	GB_commit_transaction(gb_main);
+        GBT_check_data(gb_main,0);
+        GB_commit_transaction(gb_main);
     }
 
     delete ali_source;
@@ -164,7 +257,7 @@ void transpro_event(AW_window *aww){
 void nt_trans_cursorpos_changed(AW_root *awr) {
     int pos = awr->awar(AWAR_CURSOR_POSITION)->read_int()-1;
     pos = pos %3;
-    awr->awar("transpro/pos")->write_int(pos);
+    awr->awar(AWAR_TRANSPRO_POS)->write_int(pos);
 }
 
 AW_window *create_dna_2_pro_window(AW_root *root) {
@@ -173,6 +266,8 @@ AW_window *create_dna_2_pro_window(AW_root *root) {
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "TRANSLATE_DNA_TO_PRO", "TRANSLATE DNA TO PRO", 10, 10 );
+
+//     aws->auto_off();
 
     aws->load_xfig("transpro.fig");
 
@@ -185,32 +280,27 @@ AW_window *create_dna_2_pro_window(AW_root *root) {
     aws->create_button("HELP","HELP","H");
 
     aws->at("source");
-    awt_create_selection_list_on_ad(gb_main,(AW_window *)aws,
-				    "transpro/source","dna=:rna=");
+    awt_create_selection_list_on_ad(gb_main,(AW_window *)aws, AWAR_TRANSPRO_SOURCE,"dna=:rna=");
 
     aws->at("dest");
-    awt_create_selection_list_on_ad(gb_main,(AW_window *)aws,
-				    "transpro/dest","pro=:ami=");
+    awt_create_selection_list_on_ad(gb_main,(AW_window *)aws, AWAR_TRANSPRO_DEST,"pro=:ami=");
 
-    root->awar_int(AP_PRO_TYPE_AWAR, 0, gb_main);
+    root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, gb_main);
     aws->at("table");
-    aws->create_option_menu(AP_PRO_TYPE_AWAR);
-    for (int code_nr=0; code_nr<AWT_CODON_CODES; code_nr++) {
-	aws->insert_option(AWT_get_codon_code_name(code_nr), "", code_nr);
+    aws->create_option_menu(AWAR_PROTEIN_TYPE);
+    for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
+        aws->insert_option(AWT_get_codon_code_name(code_nr), "", code_nr);
     }
     aws->update_option_menu();
 
-//     {
-// 	aws->insert_option("Universal","U",AP_UNIVERSAL);
-// 	aws->insert_option("Mito","M",AP_MITO);
-// 	aws->insert_option("Vert-Mito","V",AP_VERTMITO);
-// 	aws->insert_option("Fly-Mito","F",AP_FLYMITO);
-// 	aws->insert_option("Yeast-Mito","Y",AP_YEASTMITO);
-// 	aws->update_option_menu();
-//     }
+    aws->at("mode");
+    aws->create_toggle_field(AWAR_TRANSPRO_MODE,0,"");
+    aws->insert_toggle( "from fields 'codon_start' and 'transl_table'", "", "fields" );
+    aws->insert_default_toggle( "use settings below (same for all species):", "", "settings" );
+	aws->update_toggle_field();
 
     aws->at("pos");
-    aws->create_option_menu("transpro/pos",0,"");
+    aws->create_option_menu(AWAR_TRANSPRO_POS,0,"");
     aws->insert_option( "1", "1", 0 );
     aws->insert_option( "2", "2", 1 );
     aws->insert_option( "3", "3", 2 );
@@ -223,6 +313,8 @@ AW_window *create_dna_2_pro_window(AW_root *root) {
     aws->highlight();
     aws->create_button("TRANSLATE","TRANSLATE","T");
 
+    aws->window_fit();
+
     return (AW_window *)aws;
 }
 
@@ -231,26 +323,26 @@ AW_window *create_dna_2_pro_window(AW_root *root) {
 #if 1
 
 static int synchronizeCodons(const char *proteins, const char *dna, int minCatchUp, int maxCatchUp, int *foundCatchUp,
-			     const AWT_allowedCode& initially_allowed_code, AWT_allowedCode& allowed_code_left) {
+                             const AWT_allowedCode& initially_allowed_code, AWT_allowedCode& allowed_code_left) {
 
     for (int catchUp=minCatchUp; catchUp<=maxCatchUp; catchUp++) {
-	const char *dna_start = dna+catchUp;
-	AWT_allowedCode allowed_code;
-	allowed_code = initially_allowed_code;
+        const char *dna_start = dna+catchUp;
+        AWT_allowedCode allowed_code;
+        allowed_code = initially_allowed_code;
 
-	for (int p=0; ; p++) {
-	    char prot = proteins[p];
+        for (int p=0; ; p++) {
+            char prot = proteins[p];
 
-	    if (!prot) { // all proteins were synchronized
-		*foundCatchUp = catchUp;
-		return 1;
-	    }
+            if (!prot) { // all proteins were synchronized
+                *foundCatchUp = catchUp;
+                return 1;
+            }
 
-	    if (!AWT_is_codon(prot, dna_start, allowed_code, allowed_code_left)) break;
+            if (!AWT_is_codon(prot, dna_start, allowed_code, allowed_code_left)) break;
 
-	    allowed_code = allowed_code_left; // if synchronized: use left codes as allowed codes!
-	    dna_start += 3;
-	}
+            allowed_code = allowed_code_left; // if synchronized: use left codes as allowed codes!
+            dna_start += 3;
+        }
     }
 
     return 0;
@@ -604,80 +696,80 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
     long dest_len = GBT_get_alignment_len(gbmain,ali_dest);
 
     for (gb_species = GBT_first_marked_species(gbmain);
-	 gb_species;
-	 gb_species = GBT_next_marked_species(gb_species) ){
+         gb_species;
+         gb_species = GBT_next_marked_species(gb_species) ){
 
-	gb_source = GB_find(gb_species,ali_source,0,down_level);	if (!gb_source) continue;
-	gb_source_data = GB_find(gb_source,"data",0,down_level); 	if (!gb_source_data) continue;
-	gb_dest = GB_find(gb_species,ali_dest,0,down_level); 		if (!gb_dest) continue;
-	gb_dest_data = GB_find(gb_dest,"data",0,down_level); 		if (!gb_dest_data) continue;
+        gb_source = GB_find(gb_species,ali_source,0,down_level);	if (!gb_source) continue;
+        gb_source_data = GB_find(gb_source,"data",0,down_level); 	if (!gb_source_data) continue;
+        gb_dest = GB_find(gb_species,ali_dest,0,down_level); 		if (!gb_dest) continue;
+        gb_dest_data = GB_find(gb_dest,"data",0,down_level); 		if (!gb_dest_data) continue;
 
-	source = GB_read_string(gb_source_data);  			if (!source) { GB_print_error(); continue; }
-	dest = GB_read_string(gb_dest_data); 				if (!dest) { GB_print_error(); continue; }
+        source = GB_read_string(gb_source_data);  			if (!source) { GB_print_error(); continue; }
+        dest = GB_read_string(gb_dest_data); 				if (!dest) { GB_print_error(); continue; }
 
-	buffer = (char *)calloc(sizeof(char), (size_t)(GB_read_string_count(gb_source_data)*3 + GB_read_string_count(gb_dest_data) + dest_len ) );
+        buffer = (char *)calloc(sizeof(char), (size_t)(GB_read_string_count(gb_source_data)*3 + GB_read_string_count(gb_dest_data) + dest_len ) );
 
-	char *p = buffer;
-	char *s = source;
-	char *d = dest;
+        char *p = buffer;
+        char *s = source;
+        char *d = dest;
 
-	char *lastDNA = 0; // pointer to buffer
+        char *lastDNA = 0; // pointer to buffer
 
-	for (; *s; s++){		/* source is pro */
-	    /* insert triple '.' for every '.'
-	       insert triple '-' for every -
-	       insert triple for rest */
-	    switch (*s){
-		case '.':
-		case '-':
-		    p[0] = p[1] = p[2] = s[0];
-		    p += 3;
-		    break;
+        for (; *s; s++){		/* source is pro */
+            /* insert triple '.' for every '.'
+               insert triple '-' for every -
+               insert triple for rest */
+            switch (*s){
+                case '.':
+                case '-':
+                    p[0] = p[1] = p[2] = s[0];
+                    p += 3;
+                    break;
 
-		default:
-		    while (*d && (*d=='.' || *d =='-')) d++;
-		    if(!*d) break;
+                default:
+                    while (*d && (*d=='.' || *d =='-')) d++;
+                    if(!*d) break;
 
-		    lastDNA = p;
-		    *(p++) = *(d++);	/* copy dna to dna */
+                    lastDNA = p;
+                    *(p++) = *(d++);	/* copy dna to dna */
 
-		    while (*d && (*d=='.' || *d =='-')) d++;
-		    if(!*d) break;
+                    while (*d && (*d=='.' || *d =='-')) d++;
+                    if(!*d) break;
 
-		    lastDNA = p;
-		    *(p++) = *(d++);	/* copy dna to dna */
+                    lastDNA = p;
+                    *(p++) = *(d++);	/* copy dna to dna */
 
-		    while (*d && (*d=='.' || *d =='-')) d++;
-		    if(!*d) break;
+                    while (*d && (*d=='.' || *d =='-')) d++;
+                    if(!*d) break;
 
-		    lastDNA = p;
-		    *(p++) = *(d++);	/* copy dna to dna */
+                    lastDNA = p;
+                    *(p++) = *(d++);	/* copy dna to dna */
 
-		    break;
-	    }
-	}
+                    break;
+            }
+        }
 
-	p = lastDNA+1;
-	while (*d) {
-	    if (*d == '.' || *d == '-') {
-		d++;
-	    }else{
-		*(p++) = *(d++);	// append rest characters
-	    }
-	}
+        p = lastDNA+1;
+        while (*d) {
+            if (*d == '.' || *d == '-') {
+                d++;
+            }else{
+                *(p++) = *(d++);	// append rest characters
+            }
+        }
 
-	while ((p-buffer)<dest_len) *(p++) = '.';	// append .
-	*p = 0;
+        while ((p-buffer)<dest_len) *(p++) = '.';	// append .
+        *p = 0;
 
-	nt_assert(strlen(buffer)==dest_len);
+        nt_assert(strlen(buffer)==dest_len);
 
-	error = GB_write_string(gb_dest_data,buffer);
+        error = GB_write_string(gb_dest_data,buffer);
 
-	free(source);
-	free(dest);
-	free(buffer);
+        free(source);
+        free(dest);
+        free(buffer);
 
-	if (error) return error;
+        if (error) return error;
     }
 
     GBT_check_data(gbmain,ali_dest);
@@ -689,12 +781,12 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest)
 
 
 void transdna_event(AW_window *aww)
-	{
+{
 	AW_root *aw_root = aww->get_root();
 	GB_ERROR error;
 
-	char *ali_source = aw_root->awar("transpro/dest")->read_string();
-	char *ali_dest = aw_root->awar("transpro/source")->read_string();
+	char *ali_source = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
+	char *ali_dest = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
 	GB_begin_transaction(gb_main);
 	error = arb_transdna(gb_main,ali_source,ali_dest);
 	if (error) {
@@ -710,7 +802,7 @@ void transdna_event(AW_window *aww)
 }
 
 AW_window *create_realign_dna_window(AW_root *root)
-	{
+{
 	AWUSE(root);
 
 	AW_window_simple *aws = new AW_window_simple;
@@ -727,11 +819,9 @@ AW_window *create_realign_dna_window(AW_root *root)
 	aws->create_button("HELP","HELP","H");
 
 	aws->at("source");
-	awt_create_selection_list_on_ad(gb_main,(AW_window *)aws,
-			"transpro/source","dna=:rna=");
+	awt_create_selection_list_on_ad(gb_main,(AW_window *)aws, AWAR_TRANSPRO_SOURCE,"dna=:rna=");
 	aws->at("dest");
-	awt_create_selection_list_on_ad(gb_main,(AW_window *)aws,
-			"transpro/dest","pro=:ami=");
+	awt_create_selection_list_on_ad(gb_main,(AW_window *)aws, AWAR_TRANSPRO_DEST,"pro=:ami=");
 
 	aws->at("realign");
 	aws->callback(transdna_event);
@@ -750,7 +840,8 @@ void create_transpro_menus(AW_window *awmm)
 
 void create_transpro_variables(AW_root *root,AW_default db1)
 {
-    root->awar_string( "transpro/source", ""  ,	db1);
-    root->awar_string( "transpro/dest", ""  ,	db1);
-    root->awar_int( "transpro/pos", 0  , 	db1);
+    root->awar_string( AWAR_TRANSPRO_SOURCE, ""  ,	db1);
+    root->awar_string( AWAR_TRANSPRO_DEST, ""  ,	db1);
+    root->awar_int( AWAR_TRANSPRO_POS, 0  , 	db1);
+    root->awar_string( AWAR_TRANSPRO_MODE, "settings", db1);
 }
