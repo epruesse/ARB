@@ -20,9 +20,11 @@ print "ok 1\n";
 # (correspondingly "not ok 13") depending on the success of chunk 13
 # of the test code):
 
-$gb_main = &ARB::open(":");
+print"This test script needs a running arb server\n";
+$gb_main = &ARB::open(":",rw);
+#$gb_main = &ARB::open("newdb.arb","wc");
 &ARB::begin_transaction($gb_main);
-$gb_alignment_name = &ARB::search($gb_main,"presets/use");
+$gb_alignment_name = &ARB::search($gb_main,"presets/use","none");
 $name = &ARB::read_string($gb_alignment_name);
 &ARB::commit_transaction($gb_main);
 print "alignment name is $name\n";
