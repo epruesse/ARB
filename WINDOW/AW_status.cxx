@@ -169,7 +169,8 @@ int aw_status_read_int(int fd, int poll_flag) {
 int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugePtr = 0)
 {
     char buffer[1024];
-    int cmd = aw_status_read_byte(fd,poll_flag);
+    int  cmd = aw_status_read_byte(fd,poll_flag);
+
     if (    cmd == AW_STATUS_CMD_TEXT ||
             cmd == AW_STATUS_CMD_OPEN ||
             cmd == AW_STATUS_CMD_MESSAGE ) {
@@ -383,10 +384,10 @@ void aw_status_append_to_log(const char* str)
 
 void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
 {
-    static int  delay = AW_STATUS_LISTEN_DELAY;
+    static int  delay      = AW_STATUS_LISTEN_DELAY;
     int         cmd;
-    char       *str   = 0;
-    int         gaugeValue;
+    char       *str        = 0;
+    int         gaugeValue = 0;
 
     cmd = aw_status_read_command( aw_stg.fd_to[0], 1, str, &gaugeValue);
     if (cmd == EOF){
