@@ -20,17 +20,17 @@ typedef struct {
 
 typedef SmartPtr<PS_Probe> PS_ProbePtr;
 
-void PS_printProbe( PS_Probe *p ) {
+inline void PS_printProbe( PS_Probe *p ) {
   printf("%u_%u_%u",p->quality,p->length,p->GC_content);
 }
 
-void PS_printProbe( PS_ProbePtr p ) {
+inline void PS_printProbe( PS_ProbePtr p ) {
   printf("%u_%u_%u",p->quality,p->length,p->GC_content);
 }
 
 struct lt_probe
 {
-  bool operator()(PS_ProbePtr p1, PS_ProbePtr p2) const
+  bool operator()(const PS_ProbePtr& p1, const PS_ProbePtr& p2) const
   {
     //printf("\t");PS_printProbe(p1);printf(" < ");PS_printProbe(p2);printf(" ?\n");
     if (p1->quality == p2->quality) {
@@ -72,36 +72,36 @@ private:
   PS_ProbeSetPtr probes;
 
 public:
-  
+
   //
   // *** num ***
   //
   void      setNum( SpeciesID id ) { num = id;   }
   SpeciesID getNum() const         { return num; }
-  
+
   //
   // *** children ***
   //
-  bool addChild( PS_NodePtr& child ) {
-    //printf("addChild[%d]\n",child->getNum());
-    PS_NodeMapIterator it = children.find(child->getNum()); 
-    if (it != children.end()) {
-      children[child->getNum()] = child;
-      return true;
-    } else {
-      //printf( "child[#%u] already exists\n",child->getNum() );
-      return false;
+    bool addChild( PS_NodePtr& child ) {
+        //printf("addChild[%d]\n",child->getNum());
+        PS_NodeMapIterator it = children.find(child->getNum());
+        if (it == children.end()) {
+            children[child->getNum()] = child;
+            return true;
+        } else {
+            printf( "child[#%u] already exists\n",child->getNum() );
+            return false;
+        }
     }
-  }
 
-  PS_NodePtr getChild( SpeciesID id ) { 
-    PS_NodeMapIterator it = children.find(id); 
+  PS_NodePtr getChild( SpeciesID id ) {
+    PS_NodeMapIterator it = children.find(id);
     if (it!=children.end()) return it->second;
     return 0;
   }
 
-  const PS_NodePtr getChild( SpeciesID id ) const { 
-    PS_NodeMapConstIterator it = children.find(id); 
+  const PS_NodePtr getChild( SpeciesID id ) const {
+    PS_NodeMapConstIterator it = children.find(id);
     if (it!=children.end()) return it->second;
     return 0;
   }
@@ -125,9 +125,13 @@ public:
       probes->insert(probe);
       return true;
     } else {
-      pair<PS_ProbeSetIterator,bool> p = probes->insert(probe);
-      //if (!p.second) { printf( "probe " ); PS_printProbe(probe); printf( " already exists\n" ); }
-      return p.second;
+        pair<PS_ProbeSetIterator,bool> p = probes->insert(probe);
+        if (!p.second) {
+            printf( "probe " ); PS_printProbe(probe);
+            printf( " already exists\n" );
+        }
+
+        return p.second;
     }
   }
 
@@ -199,46 +203,10 @@ public:
     return true;
   }
 
-  //
-  // *** disk input **
-  //
-  bool load( int fd ) {
-    unsigned int size;
-    ssize_t readen;
     //
-    // read num
+    // *** disk input **
     //
-    readen = read( fd, &num, sizeof(num) );
-    if (readen != sizeof(num)) return false;
-    //
-    // read probes
-    //
-    readen = read( fd, &size, sizeof(size) );
-    if (readen != sizeof(size)) return false;
-    if (size) {                                               // does node have probes ?
-      probes = new PS_ProbeSet;                               // make new probeset
-      for (unsigned int i=0; i<size; ++i) {
-	PS_ProbePtr new_probe(new PS_Probe);                  // make new probe
-	readen = read( fd, &(*new_probe), sizeof(PS_Probe) ); // read new probe
-	if (readen != sizeof(PS_Probe)) return false;         // check for read error
-	probes->insert( new_probe );                          // append new probe to probeset
-      }
-    } else {
-      probes = 0;                                             // unset probeset
-    }
-    //
-    // read children
-    //
-    readen = read( fd, &size, sizeof(size) );
-    if (readen != sizeof(size)) return false;
-    for (unsigned int i=0; i<size; ++i) {
-      PS_NodePtr new_child(new PS_Node(-1));                  // make new child
-      if (!new_child->load( fd )) return false;               // read new child
-      children[new_child->getNum()] = new_child;              // insert new child to childmap
-    }
-    // return true to signal success
-    return true;
-  }
+    bool load( int fd );
 
   //
   // *** constructors ***
@@ -251,7 +219,7 @@ public:
   ~PS_Node() {
     //printf("destroying node #%d\n",num);
     if (probes) delete probes;
-    children.clear(); 
+    children.clear();
   }
 
 private:
