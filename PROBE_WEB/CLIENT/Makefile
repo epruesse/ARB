@@ -67,9 +67,17 @@ clean:
 	@-rm		*.class \
 				$(JAR) \
 				probetree.gz \
+				.depends \
 
-# the client uses all code:
-Client.class : $(JAVAS)
+# dependencies
 
-# all code uses the Toolkit
-$(CLASSES) : Toolkit.java
+include .depends
+
+.depends :
+		$(ARBHOME)/SOURCE_TOOLS/make_java_dependencies.sh > .depends
+
+depends:
+		rm .depends
+		$(MAKE) .depends
+
+
