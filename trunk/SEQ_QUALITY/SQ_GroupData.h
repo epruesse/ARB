@@ -19,6 +19,8 @@
 #include <cstddef>
 #endif
 
+struct Int7 { int i[7]; };
+
 class SQ_GroupData {
 
 public:
@@ -29,7 +31,7 @@ public:
     void SQ_set_avg_bases(int bases);
     void SQ_init_consensus(int size);
     void SQ_add_consensus(int value, int row, int col);
-    int  **SQ_get_consensus();
+    Int7 *SQ_get_consensus();
     int  SQ_print_on_screen();
     bool SQ_is_initialised();
     double SQ_test_against_consensus(const char *sequence);
@@ -37,7 +39,7 @@ public:
 private: // !
     int    size;
     int    avg_bases;
-    int    **consensus;
+    Int7   *consensus;
     bool   initialised;
 };
 
