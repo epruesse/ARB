@@ -57,12 +57,12 @@ void NT_import_sequences(AW_window *aww,AW_CL,AW_CL){
     awr->awar(AWAR_READ_GENOM_DB)->write_int(gb_main_is_genom_db ? IMP_GENOME_GENEBANK : IMP_PLAIN_SEQUENCE);
 #endif // DEVEL_ARTEM
 
-    if (!gb_main_is_genom_db) { // normal database -> set default to current alignment
+    {
         GB_transaction dummy(gb_main);
         char *ali_name = GBT_get_default_alignment(gb_main);
         char *ali_type = GBT_get_alignment_type_string(gb_main, ali_name);
 
-        AWTC_import_set_ali_and_type(awr, ali_name, ali_type);
+        AWTC_import_set_ali_and_type(awr, ali_name, ali_type, gb_main);
 
         free(ali_type);
         free(ali_name);
