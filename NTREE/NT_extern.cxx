@@ -58,7 +58,7 @@
 #endif
 #define nt_assert(bed) arb_assert(bed)
 
-void create_probe_design_variables(AW_root *aw_root,AW_default def,AW_default global);
+void create_probe_DESIGN_variables(AW_root *aw_root,AW_default def,AW_default global);
 void create_cprofile_var(AW_root *aw_root, AW_default aw_def);
 
 void create_insertchar_variables(AW_root *root,AW_default db1);
