@@ -59,10 +59,12 @@ if (scalar(@ARGV) == 0)
   {print OUTPUT $errordocument;
    die("no search items given ! Give at least one item!");}
 ##print length(@ARGV)."\n";
-my $item1 = shift();
+my $item1 = shift() || "";
 ##print $item1."\n";
-my $item2 = shift();
+my $item2 = shift() || "";
 
+print STDERR "Searching for '$item1'\n";
+print STDERR "Searching for '$item2'\n";
 
 #--------------------------------------------------------------------------------
 # begin of post-method emulations
@@ -109,6 +111,7 @@ $htmlcontent =~ s{HREF=[^"]}{HREF=http://www.dsmz.de/}igm; ##"
 
 print OUTPUT $htmlcontent ;
 
-exec ('netscape', '/tmp/arbdsmz.html');
+#exec ('netscape', '/tmp/arbdsmz.html');
+print "file:///tmp/arbdsmz.html";
 
 ##print "$htmlcontent\n";
