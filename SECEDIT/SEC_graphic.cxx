@@ -99,9 +99,10 @@ AW_gc_manager SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                      "+-RANGE 9$#303030",    "+-CURSOR$#ff0000",     "-MISMATCHES$#FF9AFF",
 
                      // colors used to Paint search patterns
-                     "+-USER1$#B8E2F8",          "+-USER2$#B8E2F8",         "-PROBE$#B8E2F8",
-                     "+-PRIMER(l)$#A9FE54",      "+-PRIMER(r)$#A9FE54",     "-PRIMER(g)$#A9FE54",
-                     "+-SIGNATURE(l)$#DBB0FF",   "+-SIGNATURE(r)$#DBB0FF",  "-SIGNATURE(g)$#DBB0FF",
+                     // (do not change the names of these gcs)
+                     "+-User1$#B8E2F8",          "+-User2$#B8E2F8",         "-Probe$#B8E2F8",
+                     "+-Primer(l)$#A9FE54",      "+-Primer(r)$#A9FE54",     "-Primer(g)$#A9FE54",
+                     "+-Sig(l)$#DBB0FF",         "+-Sig(r)$#DBB0FF",        "-Sig(g)$#DBB0FF",
 
                      //colors used to paint the skeleton of the structure
                      "+-SKELETON HELIX$#B8E2F8", "+-SKELETON LOOP$#DBB0FF", "-SKELETON NONHELIX$#A9FE54",
