@@ -240,7 +240,7 @@ void ParseMenu()
             else if(strcmp(temp,"weights")     == 0) thisarg->type=CHOICE_WEIGHTS;
             else if(strcmp(temp,"slider")      == 0) thisarg->type=SLIDER;
             else{
-                sprintf(head,"Unknown argtype %s",temp);
+                sprintf(head,"Unknown argtype '%s'",temp);
                 Error(head);
             }
         }
@@ -486,7 +486,9 @@ int Find2(const char *target,const char *key)
 
 void Error(const char *msg)
 {
-    (void)fprintf(stderr,"%s\n",msg);
+    (void)fprintf(stderr,"Error in ARB_GDE: %s\n",msg);
+    fflush(stderr);
+    gde_assert(0);
     exit(1);
 }
 
