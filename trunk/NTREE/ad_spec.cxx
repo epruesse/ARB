@@ -856,10 +856,21 @@ AW_window *ad_spec_next_neighbours_create(AW_root *aw_root,AW_CL cbs){
 // -----------------------------------------------------------------------------------------------------------------
 //      void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_Awar_Callback_Info)
 // -----------------------------------------------------------------------------------------------------------------
-void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_Awar_Callback_Info) {
+
+struct Detach_Information {
+    Awar_Callback_Info *cb_info;
+    Widget              detach_button;
+
+    Detach_Information(Awar_Callback_Info *cb_info_)
+        : cb_info(cb_info_), detach_button(0)
+    {}
+};
+
+void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_Detach_Information) {
     AW_window **aww_pointer = (AW_window**)cl_pointer_to_aww;
 
-    Awar_Callback_Info *cb_info      = (Awar_Callback_Info*)cl_Awar_Callback_Info;
+    Detach_Information *di           = (Detach_Information*)cl_Detach_Information;
+    Awar_Callback_Info *cb_info      = di->cb_info;
     AW_root            *awr          = cb_info->get_root();
     char               *curr_species = awr->awar(cb_info->get_org_awar_name())->read_string();
 
@@ -871,6 +882,10 @@ void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL
         awr->awar_string(new_awar, "", AW_ROOT_DEFAULT);
 
         cb_info->remap(new_awar); // remap the callback from old awar to new unique awar
+
+        if (di->detach_button) {
+            aww->update_label((int*)di->detach_button, "GET");
+        }
 
         *aww_pointer = 0;       // caller window will be recreated on next open after clearing this pointer
         // [Note : the aww_pointer points to the static window pointer]
@@ -934,9 +949,13 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     Awar_Callback_Info *cb_info   = new Awar_Callback_Info(awr, awar_name, AD_map_species, scannerid, (AW_CL)organismWindow); // do not delete!
     cb_info->add_callback();
 
+    Detach_Information *detach_info = new Detach_Information(cb_info);
+
     aws->at("detach");
-    aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)cb_info);
+    aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
     aws->create_button("DETACH", "DETACH", "D");
+
+    detach_info->detach_button = aws->get_last_button_widget();
 
     aws->show();
     AD_map_species(aws->get_root(),scannerid, (AW_CL)organismWindow);
