@@ -2495,7 +2495,7 @@ void AW_window::update_toggle_field( int toggle_field_number ) {
                 // printf("update auf default \n");
                 XmToggleButtonSetState( toggle_field_list->default_toggle->toggle_widget, True, False );
             }else {
-                GB_export_error("toggle field %i does not have value (s:%s) or (i:%i) or (f:%f)\n",
+                GB_export_error("toggle field %i does not have value (s:%s) or (i:%li) or (f:%f)\n",
                                 toggle_field_number,
                                 global_var_value, global_var_int_value, global_var_float_value );
                 GB_print_error();
