@@ -3,7 +3,6 @@
 
 # To setup your computer, change file config.makefile first
 
-
 #	set ARBHOME to this directory
 # ARBHOME = `pwd`
 
