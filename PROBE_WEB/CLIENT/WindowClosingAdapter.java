@@ -1,4 +1,4 @@
-//package de.arbhome.allProbes;
+//package de.arbhome.arb_probe_library;
 
 import java.awt.*;
 import java.awt.event.*;

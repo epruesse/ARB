@@ -4,7 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 
-public class ProbesGUIActionListener implements ActionListener 
+public class ProbesGUIActionListener implements ActionListener
 {
 private ProbesGUI gui;
 private TreeDisplay td;
@@ -13,20 +13,16 @@ public ProbesGUIActionListener(ProbesGUI g)
 
     {
 
-        if (g == null)
-            {
-                System.out.println("ProbesGUIActionListener: no gui obtained");
-                System.exit(25);
-            }
+        if (g == null) {
+            Toolkit.InternalError("ProbesGUIActionListener: no gui obtained");
+        }
 
         gui = g;
-       
+
         td = gui.getTreeDisplay();
-        if (td == null)
-            {
-                System.out.println("ProbesGUIActionListener: no display obtained");
-                System.exit(25);
-            }
+        if (td == null) {
+            Toolkit.InternalError("ProbesGUIActionListener: no display obtained");
+        }
 
     }
 
@@ -48,21 +44,21 @@ public void actionPerformed(ActionEvent e)
             {
                 if (cmdName.equals("Quit"))
                     {
-                        System.exit(0);     
+                        System.exit(0);
                     }
-                
+
                 if (cmdName.equals("Dump Tree"))
                     {
                         System.out.println("Not implemented yet: " + menuName + "/" + cmdName);
                     }
-                
+
                 if (cmdName.equals("Save"))
                     {
-                        System.out.println("Not implemented yet: " + menuName + "/" + cmdName);                        
+                        System.out.println("Not implemented yet: " + menuName + "/" + cmdName);
                     }
-                
+
             }
-        
+
         if (menuName.equals("Tree"))
             {
                 if (cmdName.equals("Unmark Nodes"))
@@ -117,12 +113,12 @@ public void actionPerformed(ActionEvent e)
                     }
                 if (cmdName.equals("Find Probes"))
                     {
-                        System.out.println("Not implemented yet: " + menuName + "/" + cmdName);                        
+                        System.out.println("Not implemented yet: " + menuName + "/" + cmdName);
                     }
 
                 if (cmdName.equals("Keywords"))
                     {
-                        System.out.println("Not implemented yet: " + menuName + "/" + cmdName);                        
+                        System.out.println("Not implemented yet: " + menuName + "/" + cmdName);
                     }
 
             }
@@ -131,26 +127,26 @@ public void actionPerformed(ActionEvent e)
             {
                 if (cmdName.equals("Adjust Displayed Levels"))
                     {
-                        System.out.println("Not implemented yet: " + menuName + "/" + cmdName);                        
+                        System.out.println("Not implemented yet: " + menuName + "/" + cmdName);
                     }
                 if (cmdName.equals("Change Marked Color"))
                     {
-                        System.out.println("Not implemented yet: " + menuName + "/" + cmdName);                        
+                        System.out.println("Not implemented yet: " + menuName + "/" + cmdName);
                     }
                 if (cmdName.equals("Change Source URL"))
                     {
-                        System.out.println("Not implemented yet: " + menuName + "/" + cmdName);                        
+                        System.out.println("Not implemented yet: " + menuName + "/" + cmdName);
                     }
                 if (cmdName.equals("Change Debugging behaviour"))
                     {
-                        System.out.println("Not implemented yet: " + menuName + "/" + cmdName);                        
+                        System.out.println("Not implemented yet: " + menuName + "/" + cmdName);
                     }
 
             }
-        
-            
-        
-        
+
+
+
+
     }
 
 }

@@ -1,7 +1,7 @@
-//package de.arbhome.allProbes;
+//package de.arbhome.arb_probe_library;
 
 import java.util.*;
-//import de.arbhome.allProbes.*;
+//import de.arbhome.arb_probe_library.*;
 public class NodeError
 {
 public NodeError(TreeNode tn)
