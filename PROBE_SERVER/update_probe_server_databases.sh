@@ -73,6 +73,7 @@ rm $DEST_DIR/$DB_BASENAME*
 create_group_db() {
     echo "------------------------------------------------------------"
     echo "Generating probe_groups for length=$1"
+    echo "./bin/arb_probe_group $DB $TREE $PT_SERVER.arb $OUT $1"
     ./bin/arb_probe_group $DB $TREE $PT_SERVER.arb $OUT $1
 }
 
@@ -89,6 +90,7 @@ TREEVERSION=`./getFiletime.pl $TREEVERSIONFILE`
 create_group_design_db() {
     echo "------------------------------------------------------------"
     echo "Designing probes for length=$1"
+    echo "./bin/arb_probe_group_design $DB $PT_SERVER.arb $OUT $1 $TREEFLAG $TREENAME $TREEVERSION"
     ./bin/arb_probe_group_design $DB $PT_SERVER.arb $OUT $1 $TREEFLAG $TREENAME $TREEVERSION
     TREEFLAG=-x # from 2nd -> expand
 }
