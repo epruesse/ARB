@@ -1,0 +1,64 @@
+--------------------------------------------------------------------------------
+This document describes the structure of input masks (*.mask files)
+--------------------------------------------------------------------------------
+
+<mask-file>         ::= <id-line>
+                        [<parameter-line>]+
+                        '@MASK_BEGIN'
+                        [<mask-layout-line>]+
+                        '@MASK_END'
+
+<id-line>           ::= 'ARB-Input-Mask'<cr>
+
+<parameter-line>    ::= '@'<parameter-name>'='<value><cr>
+<parameter-name>    ::= name of the parameter (i.e. 'ITEMTYPE')
+<value>             ::= the value of the parameter (depends on parameter)
+
+<mask-layout-line>  ::= <widget>[','<widget>]*
+<widget>            ::= <widget-name>'('<widget-parameters>')'
+<widget-name>       ::= name of the widget (i.e. 'EDIT')
+<widget-parameters> ::= <widget-parameter>[','<widget-parameter>]*
+
+<cr>                ::= a newline character
+
+
+------------------------------------------------------------------------------------------------------------------------
+Parameter lines:
+------------------------------------------------------------------------------------------------------------------------
+    <parameter-name>        mandatory?  allowed <value>s
+------------------------------------------------------------------------------------------------------------------------
+    ITEMTYPE                yes         'Species', 'Organism', 'Gene' or 'Experiment'
+
+    TITLE                   no          the title of the window
+
+    X_SPACING               no          x-spacing between mask elements (default: 5)
+    Y_SPACING               no          y-spacing --------- " --------- (default: 3)
+
+------------------------------------------------------------------------------------------------------------------------
+Known Widgets:
+------------------------------------------------------------------------------------------------------------------------
+    <widget-name>           <widget-parameters>     mandatory?      allowed values
+------------------------------------------------------------------------------------------------------------------------
+    TEXTFIELD               <label>                 yes             Label appearing in front of input-field
+                            <field-path>            yes             path-name of the database entry
+                                                                    (i.e. 'full_name' or 'ali_23s/data')
+                            <width>                 yes             width of input field (1..n)
+
+    TEXT                    <text>                  yes             Text appearing
+
+    CHECKBOX                <label>                 yes             <like above>
+                            <field-path>            yes             <like above>
+                            <checked>               yes             if box is checked by default ('1' or '0')
+
+
+Examples for Widgets:
+
+    TEXTFIELD(   "Name   ",  "full_name" , 50  )
+    TEXT("Publication:")
+    TEXTFIELD(   "Author ",  "author" ,  40  )
+    TEXTFIELD(   "Title  ",  "title" ,  40  )
+    TEXTFIELD(   "Journal",  "journal" ,  30  )
+
+    TEXTFIELD(   "Remark ",  "remark2" ,  50  )
+
+    CHECKBOX(   "Checked ",  "checked" ,  0  ) TEXTFIELD("by","checked_by",8)
