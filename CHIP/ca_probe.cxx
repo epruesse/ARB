@@ -6,6 +6,7 @@
 
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <aw_root.hxx>
 #include <PT_com.h>
 #include <client.h>
 #include <servercntrl.h>
@@ -114,7 +115,7 @@ double max_branchlength(GBT_TREE *node) {
 int main(int argc,char **argv)
 {   
   GB_ERROR error;
-  error = 0;
+   error = 0;
   int args_err= 0;
   int args_help= 0;
   char *arg_input_file;
@@ -164,7 +165,7 @@ int main(int argc,char **argv)
     }
 
 
-
+  printf("vor einlesen\n");
   // Einlesen des input-probefiles
      error = read_input_file(arg_input_file); 
          if (error)
@@ -173,12 +174,15 @@ int main(int argc,char **argv)
 	     return -1;
 	   }
 
+	 printf("nach einlesen \n");
   // Ist ein pt-server gestartet?
 	GBDATA *gb_main = GB_open(":","r");
+printf("nach GB_open\n");
 	if (!gb_main){
 		printf("%s: Error: you have to start an arbdb server first\n", argv[0]);
 		return -1;
 	}
+	
 
  // Versuche, den pt-server zu initialisieren
       error =  PG_init_pt_server(gb_main, arg_ptserver);
@@ -187,7 +191,7 @@ int main(int argc,char **argv)
 	     printf("%s\n", error);
 	     return -1;
 	   }
-
+	 printf("nach init_pt_server \n");
       GBT_message(gb_main, "Reading tree...");
 
 	GB_begin_transaction(gb_main);
@@ -219,11 +223,13 @@ int main(int argc,char **argv)
 	}
 
 	// Testdaten !!
-	probe_data my_pd;
+	/*
+	  probe_data my_pd;
 	strcpy(my_pd.name, "WtzKmRs");
 	strcpy(my_pd.longname, "Staffilokokkus Minimus");
 	strcpy(my_pd.sequence, "acggcgca");
 	error =  PG_probe_match(my_pd , my_para, arg_result_file);
+	*/
 	// Ende Testdaten
 
 	if (error)
@@ -247,7 +253,7 @@ int main(int argc,char **argv)
 GB_ERROR read_input_file(char *fn)
 {
     GB_ERROR 	error = 0;
-
+    
     char line[256];
     line[255]= 0; // no segfault
 
@@ -642,11 +648,12 @@ GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *
     struct gl_struct& 	 pd_gl = my_server->get_pd_gl();
 
     // @@@ soll eigentlich auch reverse-complement gesucht werden??
-
+    
+    printf("sequenz: %s\n", pD.sequence);
 
     if (aisc_nput(pd_gl.link,
 		  PT_LOCS, 			pd_gl.locs,
-                  LOCS_MATCH_REVERSED,		0,
+                  LOCS_MATCH_REVERSED,		1,
                   LOCS_MATCH_SORT_BY,		0,
                   LOCS_MATCH_COMPLEMENT, 	0,
                   LOCS_MATCH_MAX_MISMATCHES,	0, 	// no mismatches
