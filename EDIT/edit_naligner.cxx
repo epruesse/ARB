@@ -7,7 +7,7 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <awt.hxx>
-#include <iostream.h>
+#include <iostream>
 #include <string.h>
 
 extern GBDATA *gb_main;
