@@ -1,11 +1,11 @@
 import java.io.*;
 import java.net.*;
 import java.security.*;
-import java.util.jar.*;
-
+import java.util.*;
+import java.lang.*;
 
 public class HttpSubsystem {
-    
+
     private URL baseUrl;
 
     private String neededInterfaceVersion;
@@ -22,13 +22,59 @@ public class HttpSubsystem {
         catch (Exception e) {
             Toolkit.AbortWithError("Incorrect URL '"+base_url+"' ("+e.getMessage()+")");
         }
+        checkProxy(proxy_def);
+    }
+
+    private static String currentProxy() {
+        String proxySet = System.getProperty("proxySet");
+        if (proxySet != null && proxySet.equals("true")) {
+            String host = System.getProperty("proxyHost");
+            String port = System.getProperty("proxyPort");
+
+            if (port == null) port = "80";
+            if (host ==  null) return "illegal proxy setting";
+            return host+":"+port;
+        }
+        return null;
+    }
+
+    private static void setProxy(String proxy_def) {
+        int colon  = proxy_def.indexOf(':');
+        if (colon == -1) { // no port specified
+            System.setProperty("proxyHost", proxy_def);
+            System.setProperty("proxyPort", "80");
+        }
+        else {
+            System.setProperty("proxyHost", proxy_def.substring(0, colon));
+            System.setProperty("proxyPort", proxy_def.substring(colon+1));            
+        }        
+        System.setProperty("proxySet", "true");
+        Toolkit.showDebugMessage("proxy set to '"+currentProxy()+"'");        
+    }
+
+    private static void checkProxy(String proxy_def) {        
+        String curr_proxy = currentProxy();
+
+        if (proxy_def != null) {
+            if (proxy_def == "none") {
+                if (curr_proxy != null) Toolkit.showDebugMessage("disabling proxy '"+curr_proxy+"'");
+                System.setProperty("proxySet", "false");
+            }
+            else {
+                if (curr_proxy != null) Toolkit.showDebugMessage("disabling proxy '"+curr_proxy+"'");
+                setProxy(proxy_def);
+            }
+        }
+        else {
+            Toolkit.showDebugMessage("proxy status: "+(curr_proxy == null ? "no proxy" : "using proxy at "+curr_proxy));
+        }
     }
 
     public String getLastRequestError() {
         return lastRequestError;
     }
 
-    private void showUrlInfo(String where, URL url) {        
+    private void showUrlInfo(String where, URL url) {
         System.out.println("Checking URL ["+where+"]:");
         System.out.println("  url.getHost()='"+url.getHost()+"'");
         System.out.println("  url.getPort()='"+url.getPort()+"'");
@@ -46,19 +92,19 @@ public class HttpSubsystem {
 
         try {
             int readBytes = in.read(buffer);
-            System.out.println("  readBytes="+readBytes+" (first)");
-            while (readBytes != -1) { // got some bytes                
+            Toolkit.showDebugMessage("  readBytes="+readBytes+" (first)");
+            while (readBytes != -1) { // got some bytes
                 out.write(buffer, 0, readBytes);
                 streamedBytes += readBytes;
                 readBytes      = in.read(buffer);
-                System.out.println("  readBytes="+readBytes);
+                Toolkit.showDebugMessage("  readBytes="+readBytes);
             }
         }
         catch (IOException e) {
             Toolkit.AbortWithError("while streaming data: "+e.getMessage());
         }
 
-        System.out.println("streamedBytes="+streamedBytes);
+        Toolkit.showDebugMessage("streamedBytes="+streamedBytes);
         return streamedBytes;
     }
 
@@ -92,7 +138,7 @@ public class HttpSubsystem {
                 }
 
                 int content_len = request.getContentLength();
-                int bytes_read  = streamAll(request.getInputStream(), out);                
+                int bytes_read  = streamAll(request.getInputStream(), out);
                 if (bytes_read != content_len && content_len != -1) {
                     System.out.println("unexpected length: bytes_read="+bytes_read+" content_len="+content_len);
                 }
