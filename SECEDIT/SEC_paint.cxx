@@ -50,14 +50,14 @@ static inline int validSearchColor(int posColor){
 
 const char *SEC_root::getSearchResults(int startPos,int endPos){                                     // this function is defined in SEC_root
     //seqTerminal is a pointer to ED4_sequence_terminal declared in SEC_root
-
+    const char *searchColResults = 0;
     if (seqTerminal) {                                                                        //if seqTerminal is initialised and selected
-	const char *searchCols =seqTerminal->results().buildColorString(seqTerminal, startPos, endPos);
+        searchColResults =seqTerminal->results().buildColorString(seqTerminal, startPos, endPos);
 
 	//  results() is the member function of ED4_sequence_terminal and the buildColorString is the sub-function
 	// buildColorString builds the background color of each base
 
-	return searchCols;                                                                       // returning the color strings
+	return searchColResults;                                                                       // returning the color strings
     }
     return 0;                                                                                   //if not return 0
 }
@@ -532,7 +532,7 @@ void SEC_loop::update_caller(double &gamma, double &strand_angle, SEC_helix *hel
 
     //root loop's caller has to point to root loop, as all callers do
     helix_info->set_delta(strand_angle + M_PI);
-    //    root->setRootAngle(strand_angle + M_PI); //letsplay
+    root->setRootAngle(gamma + M_PI); //letsplay
 }
 
 
@@ -552,13 +552,13 @@ void SEC_loop::update(SEC_helix_strand *caller, double angle_difference) {
 
     SEC_helix *helix_info = caller->get_helix_info();  //getting info from SEC_helix
 	
-    double gamma = helix_info->get_delta(); //getting delta from SEC_helix class
-         
+    double gamma       = helix_info->get_delta(); //getting delta from SEC_helix class
+    if(is_root) gamma  = root->getRootAngle();
+
     double delta_direction;
     //turn around gamma, the caller is pointing to this loop, not away from it
     gamma += M_PI;   // opposite direction of delta
 
-    //    root->setRootAngle(gamma);
 
     double dbs = root->get_distance_between_strands();
     double angle_between_strands = ( dbs / umfang) * (2*M_PI);  //angle between two strands
@@ -604,7 +604,7 @@ void SEC_loop::update(SEC_helix_strand *caller, double angle_difference) {
         strand_angle = helix_info->get_delta() + angle_difference;
 
         //now we will test, if delta points away from the current loop, or to it. If it points to this loop, then it will be mirrored
-      /* if(is_root)*/  test_angle(strand_angle, gamma, helix_info, angle_difference);
+        test_angle(strand_angle, gamma, helix_info, angle_difference);
 
         strand_pointer->update(next_x, next_y, angle_difference);
 
@@ -1070,10 +1070,23 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
 	    thisBgColor=0;
 	}
     }
-    otherBgColor = root->getSearchResults(otherSeqStart, otherSeqEnd);
+
+    char otherBgColor_buf[otherSeqEnd-otherSeqStart+1];
+    {
+	const char *otherBgColor_tmp = root->getSearchResults(otherSeqStart, otherSeqEnd);
+	if (otherBgColor_tmp) {
+	    memcpy(otherBgColor_buf,otherBgColor_tmp+otherSeqStart,otherSeqEnd-otherSeqStart+1);
+	    otherBgColor=otherBgColor_buf-otherSeqStart;
+	}
+	else {
+	    otherBgColor=0;
+	}
+    }
 
     thisBase[1] = otherBase[1] = 0;
     int paintLastBase = 0;
+
+    thisLastAbsPos = otherLastAbsPos = 0;
 
     for (int i=0,j=(max_base_count-1); i<max_base_count; i++,j--) {
         int this_abs_pos;
@@ -1141,9 +1154,11 @@ void SEC_helix_strand::paint_strands(AW_device *device, double *v, double &lengt
                                other_x, other_y, other_abs_pos, font_height2,otherBgColor,0);
 	    }
         else {
-            if(i>0) root->paintSearchBackground(device, otherBgColor, otherLastAbsPos,otherLast_x, otherLast_y, other_x, other_y, radius,lineWidth,1);
+            if((i>0) && (otherLastAbsPos<other_abs_pos && otherLastAbsPos>0)){
+                root->paintSearchBackground(device, otherBgColor, otherLastAbsPos,otherLast_x, otherLast_y, other_x, other_y, radius,lineWidth,1);
+            }
             device->text(otherBaseColor, otherBase, otherLast_x, otherLast_y, 0.5, root->helix_filter, (AW_CL)((SEC_Base *)this), otherLastAbsPos,0 );
-            otherBaseColor = SEC_GC_HELIX;otherLast_x=other_x;otherLast_y=other_y; otherBase[0]=other_buffer[0];otherLastAbsPos=other_abs_pos;
+            otherBaseColor = SEC_GC_HELIX; otherLast_x=other_x; otherLast_y=other_y; otherBase[0]=other_buffer[0]; otherLastAbsPos=other_abs_pos;
             root->announce_base_position(other_abs_pos, other_x, other_y-font_height2);
         }
     }
@@ -1425,6 +1440,7 @@ void SEC_root::set_root(SEC_Base *base) {
             strand_pointer->get_helix_info()->set_delta(delta  + M_PI);
 	    }
 	}
+    setRootAngle(delta);
 	loop->set_segment(segment_pointer);
 }
 

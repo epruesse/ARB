@@ -187,11 +187,11 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
     }
 
     switch (cmd) {
-        /* ******************************************************** */
+    /* ******************************************************** */
     case AWT_MODE_ZOOM: {
             break;
         }
-        /* ******************************************************** */
+    /* ******************************************************** */
     case AWT_MODE_STRETCH: {
 	if(button==AWT_M_MIDDLE) {
 	    break;
@@ -269,167 +269,144 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 
 	//***************************************************************************
 
-//  case AWT_MODE_STRETCH: {
-// 	if(button==AWT_M_MIDDLE) {
-// 	    break;
-//     }
-//     SEC_Base *base;
-//     SEC_helix_strand *strand;
-//     SEC_helix *helix_info;
-//     SEC_segment *segment;
-//     SEC_loop *loop;
-    
-//     if(button==AWT_M_LEFT) {
-// 		if(type == AW_Mouse_Press){
-// 		    base = (SEC_Base*)ct->client_data1;
-// 		    if (base) {
-//                 if(base->getType()==SEC_HELIX_STRAND) {
-//                     strand = (SEC_helix_strand*)base;
-//                     helix_info = strand->get_helix_info();
-//                     helix_info->get_min_length_ref() = helix_info->get_length();
-//                 }
-// 		    }
-// 		}
-// 	}
-//     }
-// 	//***************************************************************************
-
-        case AWT_MODE_PROINFO: {
-            if(button==AWT_M_MIDDLE) {
-                break;
+    case AWT_MODE_PROINFO: {
+        if(button==AWT_M_MIDDLE) {
+            break;
             }
 	    if (button==AWT_M_LEFT) { // should paint the pattern which user selects
-                if (type==AW_Mouse_Press) {
-                    SEC_Base *base  = (SEC_Base*)ct->client_data1;
+            if (type==AW_Mouse_Press) {
+                SEC_Base *base  = (SEC_Base*)ct->client_data1;
                     int clicked_pos = ct->client_data2;
                     if (base) 
-			sec_root->paintSearchPatternStrings(device, clicked_pos, world_x+1, world_y);
+                        sec_root->paintSearchPatternStrings(device, clicked_pos, world_x+1, world_y);
 		}
 	    }
-            if(button==AWT_M_RIGHT) {
+        if(button==AWT_M_RIGHT) {
 		exports.refresh = 1;
 		sec_root->update(0);
 		//awmm->callback(AW_POPUP, (AW_CL)ED4_create_search_window, (AW_CL)probe);
                 break; // should popup probe search pattern window 
-            }
+        }
 	    break;
 	}
+
 	//***************************************************************************
-        case AWT_MODE_MOVE: { // helix<->loop-exchange-modus
-            if(button==AWT_M_MIDDLE) {
-                break;
-            }
-            if (button==AWT_M_LEFT) {
-                switch(type) {
-                    case AW_Mouse_Press: {
-                        if (!(ct && ct->exists)) {
+
+    case AWT_MODE_MOVE: { // helix<->loop-exchange-modus
+        if(button==AWT_M_MIDDLE) {
+            break;
+        }
+        if (button==AWT_M_LEFT) {
+            switch(type) {
+            case AW_Mouse_Press: {
+                if (!(ct && ct->exists)) {
+                    break;
+                }
+                
+                {
+                    //check security level @@@
+                    SEC_Base *base = (SEC_Base *)ct->client_data1;
+                    if (base) {
+#if defined(DEBUG) && 1
+                        const char *whatAmI;
+                        SEC_region *reg = 0;
+
+                        switch (base->getType()) {
+                        case SEC_SEGMENT: {
+                            whatAmI = "Segment";
+                            SEC_segment *segment = (SEC_segment*)base;
+                            reg = segment->get_region();
                             break;
                         }
-
-                        {
-                            //check security level @@@
-                            SEC_Base *base = (SEC_Base *)ct->client_data1;
-                            if (base) {
-#if defined(DEBUG) && 1
-                                const char *whatAmI;
-                                SEC_region *reg = 0;
-
-                                switch (base->getType()) {
-                                    case SEC_SEGMENT: {
-                                        whatAmI = "Segment";
-                                        SEC_segment *segment = (SEC_segment*)base;
-                                        reg = segment->get_region();
-                                        break;
-                                    }
-                                    case SEC_HELIX_STRAND: {
-                                        whatAmI = "Strand";
-                                        SEC_helix_strand *strand = (SEC_helix_strand*)base;
-                                        reg = strand->get_region();
-                                        break;
-                                    }
-                                    case SEC_LOOP: {
-                                        whatAmI = "Loop";
-                                        break;
-                                    }
-                                    default: {
-                                        whatAmI = "unknown";
-                                        break;
-                                    }
-                                }
-
-                                GB_CSTR msg;
-                                if (reg) {
-                                    msg = GBS_global_string("Clicked on %s : positions[%i, %i]", (char*)whatAmI, reg->get_sequence_start(), reg->get_sequence_end());
-                                }
-                                else {
-                                    msg = GBS_global_string("Clicked on %s - should not happen!?!", (char*)whatAmI);
-                                }
-                                aw_message(msg);
-#endif
-                                if (base->getType() == SEC_SEGMENT) {
-                                    int clicked_pos = ct->client_data2;
-                                    if (clicked_pos > int(sec_root->helix->size)) {
-                                        aw_message("Index of clicked Base is out of range");
-                                        break;
-                                    }
-				    if (sec_root->helix->entries[clicked_pos].pair_type == HELIX_NONE) {
-                                        aw_message("Selected Base is not suitable to split");
-                                        break;
-				    }
-
-                                    char *clicked_helix_nr = sec_root->helix->entries[clicked_pos].helix_nr;
-                                    char *helix_nr;
-                                    int i, min_index=(-1), max_index=(-1);
-                                    for (i=0; i<int(sec_root->helix->size); i++) {
-                                        helix_nr = sec_root->helix->entries[i].helix_nr;
-                                        if ( (helix_nr != NULL) && (clicked_helix_nr != NULL) ) {
-                                            if(!strcmp(helix_nr, clicked_helix_nr)) {
-                                                if (min_index<0) {
-                                                    min_index = i;
-                                                }
-                                                max_index = i;
-                                            }
-                                        }
-                                    }
-                                    int min_index_partner = sec_root->helix->entries[min_index].pair_pos;
-                                    int max_index_partner = sec_root->helix->entries[max_index].pair_pos;
-
-                                    //prevent "going backwards through the sequence"
-                                    if (min_index > max_index_partner) {
-                                        sec_root->split_loop(max_index_partner, min_index_partner+1, min_index, max_index+1);
-                                    }
-                                    else {
-                                        sec_root->split_loop(min_index, max_index+1, max_index_partner, min_index_partner+1);
-                                    }
-
-                                    exports.refresh = 1;
-                                    exports.save = 1;
-                                    exports.resize = 1;
-                                }else{
-                                    aw_message("You can only split loops");
-                                }
-                                this->rot_ct = *ct;
-                            }
+                        case SEC_HELIX_STRAND: {
+                            whatAmI = "Strand";
+                            SEC_helix_strand *strand = (SEC_helix_strand*)base;
+                            reg = strand->get_region();
+                            break;
                         }
-                        break;
-                    }
-                    default: {
-                        break;
+                        case SEC_LOOP: {
+                            whatAmI = "Loop";
+                            break;
+                                    }
+                        default: {
+                            whatAmI = "unknown";
+                            break;
+                        }
+                        }
+                        
+                        GB_CSTR msg;
+                        if (reg) {
+                            msg = GBS_global_string("Clicked on %s : positions[%i, %i]", (char*)whatAmI, reg->get_sequence_start(), reg->get_sequence_end());
+                        }
+                        else {
+                            msg = GBS_global_string("Clicked on %s - should not happen!?!", (char*)whatAmI);
+                        }
+                        aw_message(msg);
+#endif
+                        if (base->getType() == SEC_SEGMENT) {
+                            int clicked_pos = ct->client_data2;
+                            if (clicked_pos > int(sec_root->helix->size)) {
+                                aw_message("Index of clicked Base is out of range");
+                                break;
+                            }
+                            if (sec_root->helix->entries[clicked_pos].pair_type == HELIX_NONE) {
+                                aw_message("Selected Base is not suitable to split");
+                                break;
+                            }
+                            
+                            char *clicked_helix_nr = sec_root->helix->entries[clicked_pos].helix_nr;
+                            char *helix_nr;
+                            int i, min_index=(-1), max_index=(-1);
+                            for (i=0; i<int(sec_root->helix->size); i++) {
+                                helix_nr = sec_root->helix->entries[i].helix_nr;
+                                if ( (helix_nr != NULL) && (clicked_helix_nr != NULL) ) {
+                                    if(!strcmp(helix_nr, clicked_helix_nr)) {
+                                        if (min_index<0) {
+                                            min_index = i;
+                                        }
+                                        max_index = i;
+                                    }
+                                }
+                            }
+                            int min_index_partner = sec_root->helix->entries[min_index].pair_pos;
+                            int max_index_partner = sec_root->helix->entries[max_index].pair_pos;
+                            
+                            //prevent "going backwards through the sequence"
+                            if (min_index > max_index_partner) {
+                                sec_root->split_loop(max_index_partner, min_index_partner+1, min_index, max_index+1);
+                            }
+                            else {
+                                sec_root->split_loop(min_index, max_index+1, max_index_partner, min_index_partner+1);
+                            }
+                            
+                            exports.refresh = 1;
+                            exports.save = 1;
+                            exports.resize = 1;
+                        }else{
+                            aw_message("You can only split loops");
+                        }
+                        this->rot_ct = *ct;
                     }
                 }
+                break;
             }
-            else if (button==AWT_M_RIGHT) {
-                switch(type) {
-                    case AW_Mouse_Press: {
-                        if( !(ct && ct->exists) ) {
-                            break;
-                        }
-
-                        /*** check security level @@@ ***/
-                        SEC_Base *base = (SEC_Base *)ct->client_data1;
-                        if (base) {
-                            if (base->getType() == SEC_HELIX_STRAND) {
-                                sec_root->unsplit_loop((SEC_helix_strand *) base);
+            default: {
+                break;
+            }
+            }
+        }
+        else if (button==AWT_M_RIGHT) {
+            switch(type) {
+            case AW_Mouse_Press: {
+                if( !(ct && ct->exists) ) {
+                    break;
+                }
+                
+                /*** check security level @@@ ***/
+                              SEC_Base *base = (SEC_Base *)ct->client_data1;
+                               if (base) {
+                                   if (base->getType() == SEC_HELIX_STRAND) {
+                                       sec_root->unsplit_loop((SEC_helix_strand *) base);
 
 #if defined(DEBUG) && 0
                                 ofstream fout("unsplit_test", ios::out);
@@ -513,7 +490,6 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
                                 //turn around root_loop caller's angle  -- warum??
                                 helix_info = strand_pointer->get_helix_info();
                                 double tmp_delta = helix_info->get_delta();
-                                //                                sec_root->setRootAngle(tmp_delta+M_PI); //letsplay
                                 helix_info->set_delta(tmp_delta + M_PI); 
                             }
                            
@@ -541,7 +517,6 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
                             dif_angle = end_angle - strand_pointer->start_angle;
 
                             if (sec_root->drag_recursive) {
-                                //				SEC_helix_strand *other_strand = strand_pointer->get_other_strand();
                                 strand_pointer->update(fixpoint_x, fixpoint_y, dif_angle);
                                 helix_info = strand_pointer->get_helix_info();
                                 strand_pointer->compute_attachment_points(helix_info->get_delta());
@@ -550,7 +525,6 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
                             else {
                                 delta = strand_pointer->old_delta;
                                 delta = delta + dif_angle + (2*M_PI);  //adding 2 PI converts negative angles into positive ones
-
                                 helix_info = strand_pointer->get_helix_info();
                                 helix_info->set_delta(delta);
                                 strand_pointer->compute_attachment_points(delta);
@@ -581,10 +555,8 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
                             if (strand_pointer == root_loop->get_segment()->get_next_helix()) {
                                 helix_info = strand_pointer->get_helix_info();
                                 double tmp_delta = helix_info->get_delta();
-                                //                                helix_info->set_delta(tmp_delta + M_PI ); //letsplay
-                                sec_root->setRootAngle(tmp_delta + M_PI);
+                                helix_info->set_delta(tmp_delta + M_PI ); 
                             }
-                            //      sec_root->update(0);
                         }
                     }
                     sec_root->update(0);

@@ -285,6 +285,14 @@ SEC_helix_strand::SEC_helix_strand(SEC_root *root_, SEC_loop *loop_, SEC_helix_s
     attachp2_y = 0;
     start_angle = 0;
     old_delta = 0;
+    thisBaseColor   = 0;
+    otherBaseColor  = 0;
+    thisLastAbsPos  = 0;
+    otherLastAbsPos = 0;
+    thisLast_x  = 0;
+    thisLast_y  = 0;
+    otherLast_x = 0;
+    otherLast_y = 0;
 }
 
 
