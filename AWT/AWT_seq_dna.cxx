@@ -81,7 +81,7 @@ void AP_sequence_parsimony::set(char *isequence)
         for (int i = 0; i<sequence_len; ++i) {
             int pos = root->filter->bootstrap[i]; // enthaelt zufallsfolge
 
-            printf("i=%i pos=%i sequence_len=%i iseqlen=%i\n", i, pos, sequence_len, iseqlen);
+            printf("i=%i pos=%i sequence_len=%li iseqlen=%i\n", i, pos, sequence_len, iseqlen);
 
             awt_assert(pos >= 0);
             awt_assert(pos<iseqlen);
