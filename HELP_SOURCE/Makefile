@@ -135,14 +135,16 @@ HELP=$(HELP_TMP:$(XML_LOCATION)/%=$(HLP_DEST)/%)
 delzerohtml:
 		-find $(HTML_LOCATION) -name "*.html" -size -1 -exec rm {} \;
 
-date:
-		-rm date.xsl
-		$(MAKE) date.xsl
+date :
+	$(MAKE) date.xsl.tmp
+	../SOURCE_TOOLS/mv_if_diff date.xsl.tmp date.xsl
 
-date.xsl :
+date.xsl.tmp :
 		cat date.xsl.head >$@
-		date '+%d.%b %Y' >>$@
+		(export LC_TIME=c;date '+%d.%b %Y') >>$@
 		cat date.xsl.foot >>$@
+
+date.xsl : date
 
 # --------------------------------------------------------------------------------
 
