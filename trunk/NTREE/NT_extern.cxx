@@ -1039,10 +1039,10 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             awm->insert_sub_menu(0, "Valid Names ...",     "");
             {
-                AWMIMT("imp_names", "Import Names from File", "","imp_val_nam.hlp",   AWM_EXP,NT_importValidNames,        0,              0 );
-                AWMIMT("del_names", "Delete Names from DB"  , "","delete_names.hlp",  AWM_EXP,NT_deleteValidNames ,       0,              0 );
-                AWMIMT("sug_names", "Suggest Valid Names"   , "","suggest_names.hlp", AWM_EXP,NT_suggestValidNames ,      0,              0 );
-                AWMIMT("search_names", "Search manually"    , "","search_names.hlp",  AWM_ALL,  AW_POPUP, (AW_CL)NT_searchManuallyNames , 0 );
+                AWMIMT("imp_names", "Import Names from File", "","vn_import.hlp",   AWM_EXP,NT_importValidNames,        0,              0 );
+                AWMIMT("del_names", "Delete Names from DB"  , "","vn_delete.hlp",  AWM_EXP,NT_deleteValidNames ,       0,              0 );
+                AWMIMT("sug_names", "Suggest Valid Names"   , "","vn_suggest.hlp", AWM_EXP,NT_suggestValidNames ,      0,              0 );
+                AWMIMT("search_names", "Search manually"    , "","vn_search.hlp",  AWM_ALL,  AW_POPUP, (AW_CL)NT_searchManuallyNames , 0 );
            }
             awm->close_sub_menu();
         }
