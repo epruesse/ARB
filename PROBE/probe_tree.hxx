@@ -312,11 +312,12 @@ GB_INLINE char *PT_WRITE_CHAIN_ENTRY(const char * const ptr,const int mainapos,i
     if (apos == mainapos) isapos = 0; else isapos = 0x80;
 
     /* tell about old decompression error */
-#if defined(DEBUG)
+
+    /* #if defined(DEBUG)
     if (rpos < 0x7fff && rpos > 0x3fff) {
 	printf("REMARK: Was wrong data (name = %d, apos = %d, rpos = %d)\n", name, apos, rpos);
     }
-#endif // DEBUG
+    #endif */
 
     if (rpos < 0x3fff) {		/* write the rpos */
 	       /*0x7fff, mit der rpos vorher verglichen wurde war zu groß*/
