@@ -244,13 +244,13 @@ void primer_design_event_go(AW_window *aww) {
 //
 //
 void primer_design_event_check_temp_factor( AW_window *aww ) {
-  AW_root *root = aww->get_root();
+    AW_root *root = aww->get_root();
 
-  int temp = root->awar( AWAR_PRIMER_DESIGN_TEMP_FACTOR )->read_int();
-  if ( temp > 100 ) temp = 100;
-  if ( temp <   0 ) temp =   0;
-  root->awar( AWAR_PRIMER_DESIGN_TEMP_FACTOR )->write_int( temp );
-  root->awar( AWAR_PRIMER_DESIGN_GC_FACTOR )->write_int( 100-temp );
+    int temp = root->awar( AWAR_PRIMER_DESIGN_TEMP_FACTOR )->read_int();
+    if ( temp > 100 ) temp = 100;
+    if ( temp <   0 ) temp =   0;
+    root->awar( AWAR_PRIMER_DESIGN_TEMP_FACTOR )->write_int( temp );
+    root->awar( AWAR_PRIMER_DESIGN_GC_FACTOR )->write_int( 100-temp );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////// primer_design_event_check_gc_factor

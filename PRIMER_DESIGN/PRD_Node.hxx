@@ -6,10 +6,26 @@
 #include "PRD_Globals.hxx"
 #endif
 
-#define ILLEGAL_CHILD ((Node*)-1)
+#ifndef NDEBUG
+# define prd_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
+# ifndef DEBUG
+#  error DEBUG is NOT defined - but it has to!
+# endif
+#else
+# ifdef DEBUG
+#  error DEBUG is defined - but it should not!
+# endif
+# define prd_assert(bed)
+#endif /* NDEBUG */
+
 
 class Node {
 private:
+
+    static class NodeMemory *noMem;
+
+    static void *allocNode();
+    static void freeNode(void*);
 
     void init( Node* parent_, char base_, PRD_Sequence_Pos last_index_, PRD_Sequence_Pos offset_ );
 
@@ -27,6 +43,9 @@ public:
     Node ( Node* parent_, char base_ );
     Node ();
     ~Node ();
+
+    void *operator new(size_t s) { prd_assert(s == sizeof(Node)); return allocNode(); }
+    void operator  delete(void *node) { freeNode(node); }
 
     Node             *childByBase ( char base_ ); // return pointer to child if exist
     bool              isValidPrimer (); // last_base_index  > 0 ?
