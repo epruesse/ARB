@@ -849,7 +849,11 @@ string gellisary::GAGenomUtilities::generateGeneID(string * source_str, string *
     std::string tstring2 = *gene_type;
     std::string tstring3 = *product_name;
     std::string tstring4 = *gene_name;
+    std::string sssr(" ");
+    std::string sssr1("_");
+    replaceByString(&tstring3,&sssr,&sssr1);
     std::string sss;
+    std::string sss1;
     bool drin = false;
     sout << tstring2;
     sout << '_';
@@ -885,11 +889,14 @@ string gellisary::GAGenomUtilities::generateGeneID(string * source_str, string *
         }
     }
     sss = sout1.str();
+    sss1 = sout.str();
     
-  	int rest = 30 - (int)sout.str().size() - (int) sss.size() - 1;
+  	int rest = 29 - (int)sss1.size() - (int) sss.size();
+  	cout << "gross_1 : " << rest << endl;
+  	cout << "gross_2 : " << tstring3.size() << endl;
    	if(tstring3 != "nix")
    	{
-   		if(rest > (int)tstring3.size())
+   		if(rest < (int)tstring3.size())
 	   	{
 	   		tstring3.resize(rest);
 	   		sout << tstring3;
@@ -903,7 +910,6 @@ string gellisary::GAGenomUtilities::generateGeneID(string * source_str, string *
    	}
 
    	sout << sss;
-    
     target_str = sout.str();
     return target_str;
 }
