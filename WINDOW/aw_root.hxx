@@ -49,7 +49,8 @@ typedef enum { AW_FALSE=0, AW_TRUE } AW_BOOL;
 
 extern AW_default aw_main_root_default;
 
-#define AWUSE(variable) variable=variable
+// #define AWUSE(variable) variable=variable
+#define AWUSE(variable) (void)variable
 
 typedef enum {
     AW_NONE             = 0,
