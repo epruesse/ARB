@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : awt_advice.cpp                                         //
 //    Purpose   :                                                        //
-//    Time-stamp: <Tue Dec/03/2002 03:10 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Feb/05/2003 17:44 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2002              //
@@ -116,7 +116,7 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
     awt_assert(initialized);
     size_t  message_len = strlen(message); awt_assert(message_len>0);
     long    crc32       = GB_checksum(message, message_len, true, " .,-!"); // checksum is used to test if advice was shown
-    char   *advice_id   = GB_strdup(GBS_global_string("%x", crc32));
+    char   *advice_id   = GB_strdup(GBS_global_string("%lx", crc32));
 
     bool show_advice = !advice_disabled(advice_id);
 
