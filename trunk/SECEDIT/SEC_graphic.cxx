@@ -1,9 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <fstream.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <cstring>
 
-#include <math.h>
-#include <string.h>
+#include <fstream>
+
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>
@@ -15,8 +16,8 @@
 #include <aw_preset.hxx>
 #include <awt.hxx>
 #include <BI_helix.hxx>
-#include "sec_graphic.hxx"
 
+#include "sec_graphic.hxx"
 #include "secedit.hxx"
 
 void SEC_create_awars(AW_root *aw_root,AW_default def)

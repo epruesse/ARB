@@ -1,15 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <memory.h>
-// #include <malloc.h>
-#include <string.h>
-#include <iostream.h>
-#include <math.h>
-#include <ctype.h>
+#include <cstring>
+#include <cmath>
+#include <cctype>
+
+#include <iostream>
 
 #include <arbdb.h>
 #include <arbdbt.h>
-
 
 #include <aw_root.hxx>
 #include <aw_window.hxx>

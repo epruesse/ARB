@@ -7,9 +7,13 @@
 *     2003 TU Munich
 *****************************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+#include <iostream>
+#include <fstream>
+
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_window.hxx>
@@ -17,9 +21,7 @@
 #include <PT_com.h>
 #include <client.h>
 #include <servercntrl.h>
-#include <iostream>
-#include <iostream.h>
-#include <fstream.h>
+
 #include "ca_mark.hxx"
 
 using namespace std;

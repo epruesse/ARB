@@ -1,27 +1,25 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <cstring>
 
-#include <math.h>
-#include <string.h>
+#include <iostream>
+
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_keysym.hxx>
 #include <aw_window.hxx>
-#include <iostream.h>
-
 #include <awt.hxx>
 #include <awt_canvas.hxx>
 #include <awt_nds.hxx>
-#include "awt_tree.hxx"
-#include "awt_dtree.hxx"
-#include "awt_attributes.hxx"
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
 
-
-
+#include "awt_tree.hxx"
+#include "awt_dtree.hxx"
+#include "awt_attributes.hxx"
 
 /***************************
       class AP_tree
@@ -534,11 +532,11 @@ void AWT_graphic_tree::rot_show_triangle(AW_device *device)
 void AWT_show_bootstrap_circle(AW_device *device, const char *bootstrap, double zoom_factor, double max_radius, double len, double x, double y, bool elipsoid, double elip_ysize, int filter, AW_CL cd1,AW_CL cd2){
     double radius           = .01 * atoi(bootstrap); // bootstrap values are given in % (0..100)
     if (radius < .1) radius = .1;
-    
+
     radius  = 1.0 / sqrt(radius); // -> bootstrap->radius : 100% -> 1, 0% -> inf
     radius -= 1.0;              // -> bootstrap->radius : 100% -> 0, 0% -> inf
-    radius *= 2; // diameter ? 
-    
+    radius *= 2; // diameter ?
+
     if (radius < 0) return;     // skip too small circles
 
     // Note : radius goes against infinite, if bootstrap values go against zero
@@ -546,13 +544,13 @@ void AWT_show_bootstrap_circle(AW_device *device, const char *bootstrap, double 
 
     // printf("bootstrap=%i -> radius=%f\n", atoi(bootstrap), radius);
 
-    // was 0.06 
+    // was 0.06
 // #define BOOTSTRAP_RADIUS_LIMIT (len*2)
 // #define BOOTSTRAP_RADIUS_LIMIT 2.0
 #define BOOTSTRAP_RADIUS_LIMIT max_radius
 
     int gc = AWT_GC_BOOTSTRAP;
-    
+
     if (radius > BOOTSTRAP_RADIUS_LIMIT) {
         radius = BOOTSTRAP_RADIUS_LIMIT;
         gc     = AWT_GC_BOOTSTRAP_LIMITED;
@@ -2522,10 +2520,10 @@ void awt_create_dtree_awars(AW_root *aw_root,AW_default def)
     aw_root->awar_int(AWAR_DTREE_BASELINEWIDTH,1,def)   ->set_minmax(1,10);
     aw_root->awar_float(AWAR_DTREE_VERICAL_DIST,1.0,def)->set_minmax(0.01,30);
     aw_root->awar_int(AWAR_DTREE_AUTO_JUMP,1,def);
-    
+
     aw_root->awar_int(AWAR_DTREE_SHOW_CIRCLE,0,def);
     aw_root->awar_int(AWAR_DTREE_USE_ELLIPSE, 1, def);
-    
+
     aw_root->awar_float(AWAR_DTREE_CIRCLE_ZOOM,1.0,def)     ->set_minmax(0.01,20);
     aw_root->awar_float(AWAR_DTREE_CIRCLE_MAX_SIZE,1.5,def) ->set_minmax(0.01,200);
     aw_root->awar_int(AWAR_DTREE_GREY_LEVEL,20,def)         ->set_minmax(0,100);

@@ -1,21 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+
 #include <arbdb.h>
 #include <arbdbt.h>
-
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <PT_com.h>
 #include <client.h>
 #include <servercntrl.h>
-
-#include <iostream>
-#include <iostream.h>
-#include <fstream.h>
-
-#include <vector.h>
 
 #include "ca_probe.hxx"
 
