@@ -425,9 +425,6 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 
     char *alignment_name;
 
-    int avg_bases           = 0;
-    int worked_on_sequences = 0;
-
     GBDATA *read_sequence = 0;
     GBDATA *gb_species;
     GBDATA *gb_species_data;
@@ -435,7 +432,6 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
     GBDATA *(*getFirst)(GBDATA*) = 0;
     GBDATA *(*getNext)(GBDATA*)  = 0;
     GB_ERROR error = 0;
-
 
 
     GB_push_transaction(gb_main);
@@ -473,7 +469,6 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 
 		/*real calculations start here*/
 		if (read_sequence) {
-		    int i = 0;
 		    int sequenceLength = 0;
 		    const char *rawSequence = 0;
 
@@ -484,12 +479,14 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 		    /*calculate physical layout of sequence*/
 		    SQ_physical_layout* ps_chan = new SQ_physical_layout();
 		    ps_chan->SQ_calc_physical_layout(rawSequence, sequenceLength, gb_quality);
-		    i = ps_chan->SQ_get_number_of_bases();
-		    avg_bases = avg_bases + i;
-		    worked_on_sequences++;
+
+		    /*calculate the average number of bases in group*/
+		    globalData->SQ_count_sequences();
+		    globalData->SQ_set_avg_bases(ps_chan->SQ_get_number_of_bases());
+		    globalData->SQ_set_avg_gc(ps_chan->SQ_get_gc_proportion());
 		    delete ps_chan;
 
-		    /*get values for  ambiguities*/
+		    /*get values for ambiguities*/
 		    SQ_ambiguities* ambi_chan = new SQ_ambiguities();
 		    ambi_chan->SQ_count_ambiguities(rawSequence, sequenceLength, gb_quality);
 		    delete ambi_chan;
@@ -513,11 +510,7 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 	    }
 	}
     }
-    /*calculate the average number of bases in group*/
-    if (worked_on_sequences != 0) {
-	avg_bases = avg_bases / worked_on_sequences;
-    }
-    globalData->SQ_set_avg_bases(avg_bases);
+
     free(alignment_name);
 
     if (error) GB_abort_transaction(gb_main);
@@ -739,13 +732,21 @@ GB_ERROR SQ_pass2_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 
 		/*real calculations start here*/
 		if (read_sequence) {
-		    int sequenceLength      = 0;
-		    const char *rawSequence = 0;
-		    double value            = 0;
-		    int bases               = 0;
-		    int avg_bases           = 0;
-		    int diff                = 0;
-		    int diff_percent        = 0;
+		    const char *rawSequence    = 0;
+		    int         sequenceLength = 0;
+                    string      cons_dev       = "<dev>";
+                    string      cons_conf      = "<conf>";
+		    double      value1         = 0;
+		    double      value2         = 0;
+		    double      eval           = 0;
+		    int         value3         = 0;
+		    int         evaluation     = 0;
+		    int         bases          = 0;
+		    int         avg_bases      = 0;
+		    double      diff           = 0;
+		    int         diff_percent   = 0;
+		    double      avg_gc         = 0;
+		    double      gcp            = 0;
 
 		    rawSequence    = GB_read_char_pntr(read_sequence);
 		    sequenceLength = GB_read_count(read_sequence);
@@ -759,18 +760,89 @@ GB_ERROR SQ_pass2_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 		    bases = GB_read_int(gb_result1);
 		    avg_bases = globalData->SQ_get_avg_bases();
 
-		    if (avg_bases != 0) {
-			diff = avg_bases - bases;
-			diff_percent = (100*diff) / avg_bases;
+		    if (avg_bases !=0) {
+			diff = bases - avg_bases;
+			diff = (100*diff) / avg_bases;
+			diff_percent = round(diff);
 		    }
 
-		    GBDATA *gb_result2 = GB_search(gb_quality, "diff_from_average", GB_INT);
+		    GBDATA *gb_result2 = GB_search(gb_quality, "percent_base_deviation", GB_INT);
 		    seq_assert(gb_result2);
 		    GB_write_int(gb_result2, diff_percent);
-		    //not useful without tree -> new function has to be made
-		    value = globalData->SQ_calc_consensus_deviation(rawSequence);
+
+		    /*
+		      calculate the average gc proportion in group, and the difference of
+		      a single seqeunce in group from it
+		    */
+		    GBDATA *gb_result6 = GB_search(gb_quality, "GC_proportion", GB_FLOAT);
+		    gcp = GB_read_float(gb_result6);
+		    avg_gc = globalData->SQ_get_avg_gc();
+
+		    if (avg_gc !=0) {
+			diff = gcp - avg_gc;
+			diff = (100*diff) / avg_gc;
+			diff_percent = round(diff);
+		    }
+
+		    GBDATA *gb_result7 = GB_search(gb_quality, "percent_GC_difference", GB_INT);
+		    seq_assert(gb_result7);
+		    GB_write_int(gb_result7, diff_percent);
+
+		    /*
+		       get groupnames of visited groups
+		       search for name in group dictionary
+		       evaluate sequence with group consensus
+		    */
+
+		    value1 = globalData->SQ_calc_consensus_conformity(rawSequence);
+		    value2 = globalData->SQ_calc_consensus_deviation(rawSequence);
+		    value3 = globalData->SQ_get_nr_sequences();
+
+
+		    //format: <Groupname:value:numberofspecies>
+		    const char *entry = GBS_global_string("<%s:%f:%i>", "one global consensus", value1, value3);
+		    cons_conf += entry;
+		    entry = GBS_global_string("<%s:%f:%i>", "one global consensus", value2, value3);
+		    cons_dev += entry;
+
+
+		    //if you parse the upper two values in the evaluate() function cut the following out
+		    //for time reasons i do the evaluation here, as i still have the upper two values
+		    //-------------cut this-----------------
+		    if (value1 > 0.95) eval += 2;
+		    else {
+			if (value1 > 0.5) eval += 1;
+			else { eval += 0;}
+		    }
+		    if (value2 > 0.6) eval += 0;
+		    else {
+			if (value2 > 0.4) eval += 1;
+			else { eval += 2;}
+		    }
+		    //---------to this and scroll down--------
+
+		    cons_conf += "</conf>";
+		    cons_dev  += "</dev>";
+	
+		    GBDATA *gb_result3 = GB_search(gb_quality, "consensus_conformity", GB_STRING);
+		    seq_assert(gb_result3);
+		    GB_write_string(gb_result3, cons_conf.c_str());
+		    GBDATA *gb_result4 = GB_search(gb_quality, "consensus_deviation", GB_STRING);
+		    seq_assert(gb_result4);
+		    GB_write_string(gb_result4, cons_dev.c_str());
+	
+		    //--------also cut this------
+		    if (eval != 0) {
+			eval = eval / 2;
+			evaluation = round(eval);
+		    }
+		    GBDATA *gb_result5 = GB_search(gb_quality, "consensus_evaluated", GB_INT);
+		    seq_assert(gb_result5);
+		    GB_write_int(gb_result5, evaluation);
+		    //--------end cut this-------
 		    pass2_counter_notree++;
 		    aw_status(double(globalcounter_notree)/pass2_counter_notree);
+
 		}
 	    }
 	}
