@@ -261,64 +261,64 @@ void init_system3_tab()
 
 
     //** hamming_tab
-    if (hamming_tab)
-        delete [] hamming_tab;
+        if (hamming_tab)
+            delete [] hamming_tab;
 
-    size_hamming_tab = (int)pow(3.0, (double) mp_gl_awars.no_of_probes);
-    hamming_tab = new unsigned char*[size_hamming_tab];
-    dummy_int = new int*[size_hamming_tab];
+        size_hamming_tab = (int)pow(3.0, (double) mp_gl_awars.no_of_probes);
+        hamming_tab = new unsigned char*[size_hamming_tab];
+        dummy_int = new int*[size_hamming_tab];
 
-    for (i=0; i<size_hamming_tab; i++)
-    {
-        hamming_tab[i] = new unsigned char[size_hamming_tab];
-        memset(hamming_tab[i], 0, sizeof(unsigned char) * size_hamming_tab );
-
-        dummy_int[i] = new int[mp_gl_awars.no_of_probes];
-        memset(dummy_int[i], 0, sizeof(int) * mp_gl_awars.no_of_probes);
-    }
-
-    counter = 1;
-    for (i=0; i< mp_gl_awars.no_of_probes; i++)
-    {
-        for (j=0; j<size_hamming_tab; j++)
+        for (i=0; i<size_hamming_tab; i++)
         {
-            for (wert = 0; wert < 3; wert++)
+            hamming_tab[i] = new unsigned char[size_hamming_tab];
+            memset(hamming_tab[i], 0, sizeof(unsigned char) * size_hamming_tab );
+
+            dummy_int[i] = new int[mp_gl_awars.no_of_probes];
+            memset(dummy_int[i], 0, sizeof(int) * mp_gl_awars.no_of_probes);
+        }
+
+        counter = 1;
+        for (i=0; i< mp_gl_awars.no_of_probes; i++)
+        {
+            for (j=0; j<size_hamming_tab; j++)
             {
-                for (k=0; k<counter; k++)
+                for (wert = 0; wert < 3; wert++)
                 {
-                    dummy_int[j++][i] = wert;
+                    for (k=0; k<counter; k++)
+                    {
+                        dummy_int[j++][i] = wert;
+                    }
                 }
+                j--;
             }
-            j--;
+            counter *= 3;
         }
-        counter *= 3;
-    }
 
-    for (i=0; i<size_hamming_tab; i++)
-    {
-        for (j=0; j<size_hamming_tab; j++)
+        for (i=0; i<size_hamming_tab; i++)
         {
-            hamm_dist = 0;
-            for (k=0; k<mp_gl_awars.no_of_probes; k++)
+            for (j=0; j<size_hamming_tab; j++)
             {
-                if ((dummy_int[i][k] == 2 && dummy_int[j][k] == 0) ||
-                    (dummy_int[i][k] == 0 && dummy_int[j][k] == 2))
-                    hamm_dist++;
+                hamm_dist = 0;
+                for (k=0; k<mp_gl_awars.no_of_probes; k++)
+                {
+                    if ((dummy_int[i][k] == 2 && dummy_int[j][k] == 0) ||
+                        (dummy_int[i][k] == 0 && dummy_int[j][k] == 2))
+                        hamm_dist++;
+                }
+                hamming_tab[i][j] = hamm_dist;
             }
-            hamming_tab[i][j] = hamm_dist;
         }
-    }
-    /*
-         for (i=0; i<size_hamming_tab; i++)
-         {
-         for (j=0; j<size_hamming_tab; j++)
-         {
-         printf("%d ", hamming_tab[i][j]);
-         }
-         printf("\n");
+        /*
+          for (i=0; i<size_hamming_tab; i++)
+          {
+          for (j=0; j<size_hamming_tab; j++)
+          {
+          printf("%d ", hamming_tab[i][j]);
+          }
+          printf("\n");
 
-         }
-     */
+          }
+        */
 
         for (i=0; i<size_hamming_tab; i++)
         {
@@ -446,7 +446,7 @@ void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_res
     bool               backward           = bool(cl_backward);
     AW_selection_list *result_probes_list = (AW_selection_list*)cl_result_probes_list;
 
-//     aw_message(GBS_global_string("backward='%i'", int(backward)));
+    //     aw_message(GBS_global_string("backward='%i'", int(backward)));
 
     aww->move_selection(result_probes_list, mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES), backward ? -1 : 1);
 
