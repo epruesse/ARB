@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2000
 // Ralf Westram
-// Time-stamp: <Sun Nov/25/2001 13:12 MET Coder@ReallySoft.de>
+// Time-stamp: <Wed Feb/27/2002 15:13 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -56,7 +56,7 @@ static string encodeEntities(const string& str, bool quotedText = false) {
             neu.append(1, replace);
         }
         else {
-            assert(entity);
+            xml_assert(entity);
             neu.append(1, '&');
             neu.append(entity);
             neu.append(1, ';');

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
-//    Time-stamp: <Thu Nov/29/2001 13:49 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Feb/27/2002 15:16 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
@@ -17,7 +17,7 @@
 
 #define h2x_assert(bed) do { if (!(bed)) *((char*)0) = 0; } while (0)
 
-#include <cstdio>
+#include <stdio.h>
 #include <list>
 #include <set>
 #include <string>
@@ -27,9 +27,10 @@
 
 #include <xml.hxx>
 
+
 // #define DUMP_DATA // use this to see internal data (class Helpfile)
-#define MAX_LINE_LENGTH 500 // maximum length of lines in input stream
-#define TABSIZE 8
+#define MAX_LINE_LENGTH 500     // maximum length of lines in input stream
+#define TABSIZE         8
 
 
 static const char *knownSections[] = { "OCCURRENCE", "DESCRIPTION", "NOTES", "EXAMPLES", "WARNINGS", "BUGS",
@@ -1062,7 +1063,7 @@ int main(int argc, char *argv[]) {
         help.checkConsistency();
 
         {
-            FILE *out = fopen(xml_output.c_str(), "wt");
+            FILE *out = std::fopen(xml_output.c_str(), "wt");
             if (!out) throw string("Can't open '")+xml_output+'\'';
 
             try {
