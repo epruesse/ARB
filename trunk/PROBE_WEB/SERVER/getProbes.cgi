@@ -1,49 +1,42 @@
 #!/usr/bin/perl -w
 
-## next line mandatory
-## maybe sometimes other type like gzip or similar useful
-
-#use CGI qw(:standard);
+use probe_server;
 use strict;
 
-my $now = localtime(time());
+sub run_request() {
+  my $plength = $probe_server::params{"plength"};
+  if (not $plength) { return "Missing parameter 'plength'"; }
+  if ($plength < 15 || $plength > 20) { return "Illegal value for plength (allowed 15..20)"; }
 
-my %codes = ("0" => "0000",
-             "1" => "0001",
-             "2" => "0010",
-             "3" => "0011",
-             "4" => "0100",
-             "5" => "0101",
-             "6" => "0110",
-             "7" => "0111",
-             "8" => "1000",
-             "9" => "1001",
-             "A" => "1010",
-             "B" => "1011",
-             "C" => "1100",
-             "D" => "1101",
-             "E" => "1110",
-             "F" => "1111"
-            );
+  # generate request/result file names
 
-# print header;
-print STDOUT "Content-type: text/plain\n\n";
-my $nodePath = shift();
+  my $request_name = $probe_server::requestdir.'/'.$plength.'_'.$$.'_0';
+  my $result_name = $request_name.".res";
+  $request_name.=".req";
 
-my $hexLength = "0x".substr($nodePath, 0, 4);
-my $pathLength = hex($hexLength);
+  # write the request
+  if (not open(REQUEST,">$request_name")) { return "Can't write '$request_name'"; }
+  print REQUEST "command=getprobes\n"; # write command
+  for (keys %probe_server::params) { # forward all parameters to request file
+    print REQUEST "$_=$probe_server::params{$_}\n";
+  }
+  close REQUEST;
 
-my $codedPath = substr($nodePath, 4);
-print "Coded Path: ".$codedPath."\n";
-my $binaryPath = "";
-for (my $pos = 0; $pos < length($codedPath);$pos++)
-{
-$binaryPath.=$codes{substr($codedPath, $pos, 1)};
+  # now wait for server to answer request
+  while (not -f $result_name) { sleep 1; }
 
-
+  # send answer to client software
+  if (not open(RESULT,"<$result_name")) { return "Can't read '$result_name'"; }
+  foreach (<RESULT>) { print $_; }
+  close RESULT;
+  unlink $result_name;    # remove the result file
+  return;
 }
 
-print "number of visited nodes: ".$pathLength."\n";
-print "Decoded Path: ".substr($binaryPath, 0, $pathLength)."\n";
-# variable text output goes here:
-print  "Test Response: $nodePath\n";
+# main block:
+
+&probe_server::print_header();
+my $error = run_request();
+if ($error && length $error) {
+  print "result=cgi-error\nmessage=$error\n";
+}
