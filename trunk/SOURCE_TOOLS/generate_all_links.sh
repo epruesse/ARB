@@ -26,6 +26,10 @@ makedir PROBE_COM/GENC
 makedir PROBE_COM/GENH
 makedir PROBE_COM/O
 
+makedir LIBLINK
+makedir MAKEBIN
+makedir lib/help
+
 test -d lib/pts || makedir lib/pts
 
 # Liblink
