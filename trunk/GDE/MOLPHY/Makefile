@@ -98,77 +98,77 @@ $(INSTALLDIR)/nucdml : $(OBJML) $(OBJNDML)
 	$(ACC) -c $(cflags) $<
 
 
-Nucml.c : protml.c optimtpm.c abratio.c
-	$(CP) protml.c Nucml.c
+#Nucml.c : protml.c optimtpm.c abratio.c
+#	$(CP) protml.c Nucml.c
 Nucml.o : Nucml.c protml.h molphy.h optimtpm.c abratio.c
 	$(CC) $(CFLAGS) $(NUCLE) $(DEFINE) -c Nucml.c
-Ntranprb.c : tranprb.c
-	$(CP) tranprb.c Ntranprb.c
+#Ntranprb.c : tranprb.c
+#	$(CP) tranprb.c Ntranprb.c
 Ntranprb.o : Ntranprb.c protml.h molphy.h
 	$(CC) $(CFLAGS) $(NUCLE) $(DEFINE) -c Ntranprb.c
-Ndistan.c : distan.c
-	$(CP) distan.c Ndistan.c
+#Ndistan.c : distan.c
+#	$(CP) distan.c Ndistan.c
 Ndistan.o : Ndistan.c protml.h molphy.h
 	$(CC) $(CFLAGS) $(NUCLE) $(DEFINE) -c Ndistan.c
-Nmlklhd.c : mlklhd.c
-	$(CP) mlklhd.c Nmlklhd.c
+#Nmlklhd.c : mlklhd.c
+#	$(CP) mlklhd.c Nmlklhd.c
 Nmlklhd.o : Nmlklhd.c protml.h molphy.h
 	$(CC) $(CFLAGS) $(NUCLE) $(DEFINE) -c Nmlklhd.c
 nucproc.o : nucproc.c protml.h molphy.h
 	$(CC) $(CFLAGS) $(NUCLE) $(DEFINE) -c nucproc.c
-Nucst.c : protst.c
-	$(CP) protst.c Nucst.c
+#Nucst.c : protst.c
+#	$(CP) protst.c Nucst.c
 Nucst.o : Nucst.c protst.h molphy.h
 	$(CC) $(CFLAGS) $(NUCLE) $(DEFINE) -c Nucst.c
-Nseqstat.c : seqstat.c
-	$(CP) seqstat.c Nseqstat.c
+#Nseqstat.c : seqstat.c
+#	$(CP) seqstat.c Nseqstat.c
 Nseqstat.o : Nseqstat.c protst.h molphy.h
 	$(CC) $(CFLAGS) $(NUCLE) $(DEFINE) -c Nseqstat.c
 
 
-Njdist.c : tridist.c
-	$(CP) tridist.c Njdist.c
+#Njdist.c : tridist.c
+#	$(CP) tridist.c Njdist.c
 Njdist.o : Njdist.c tridist.h molphy.h
 	$(CC) $(CFLAGS) $(DEFINE) $(NJLE) -c Njdist.c
 sddist.o : sddist.c sddist.h molphy.h
 	$(CC) $(CFLAGS) $(DEFINE) $(SDLE) -c sddist.c
-Dpstree.c : pstree.c
-	$(CP) pstree.c Dpstree.c
+#Dpstree.c : pstree.c
+#	$(CP) pstree.c Dpstree.c
 Dpstree.o : Dpstree.c tridist.h molphy.h
 	$(CC) $(CFLAGS) $(DEFINE) $(NJLE) -c Dpstree.c
 
 
-Prottpm.c : protml.c
-	$(CP) protml.c Prottpm.c
+#Prottpm.c : protml.c
+#	$(CP) protml.c Prottpm.c
 Prottpm.o : Prottpm.c protml.h molphy.h
 	$(CC) $(CFLAGS) -DTPM $(DEFINE) -c Prottpm.c
-Nuctpm.c : protml.c
-	$(CP) protml.c Nuctpm.c
+#Nuctpm.c : protml.c
+#	$(CP) protml.c Nuctpm.c
 Nuctpm.o : Nuctpm.c protml.h molphy.h
 	$(CC) $(CFLAGS) -DTPM $(NUCLE) $(DEFINE) -c Nuctpm.c
 
 tpmproc.o : tpmproc.c protml.h molphy.h
 	$(CC) $(CFLAGS) -DTPM $(DEFINE) -c tpmproc.c
-Ntpmproc.c : tpmproc.c
-	$(CP) tpmproc.c Ntpmproc.c
+#Ntpmproc.c : tpmproc.c
+#	$(CP) tpmproc.c Ntpmproc.c
 Ntpmproc.o : Ntpmproc.c protml.h molphy.h
 	$(CC) $(CFLAGS) -DTPM $(NUCLE) $(DEFINE) -c Ntpmproc.c
 
-Trnprbt.c : tranprb.c
-	$(CP) tranprb.c Trnprbt.c
+#Trnprbt.c : tranprb.c
+#	$(CP) tranprb.c Trnprbt.c
 Trnprbt.o : Trnprbt.c protml.h molphy.h
 	$(CC) $(CFLAGS) -DTPM $(DEFINE) -c Trnprbt.c
-Ntrnprbt.c : tranprb.c
-	$(CP) tranprb.c Ntrnprbt.c
+#Ntrnprbt.c : tranprb.c
+#	$(CP) tranprb.c Ntrnprbt.c
 Ntrnprbt.o : Ntrnprbt.c protml.h molphy.h
 	$(CC) $(CFLAGS) -DTPM $(NUCLE) $(DEFINE) -c Ntrnprbt.c
 
-Nucdml.c : protdml.c
-	$(CP) protdml.c Nucdml.c
+#Nucdml.c : protdml.c
+#	$(CP) protdml.c Nucdml.c
 Nucdml.o : Nucdml.c protdml.h molphy.h optimtpm.c abratio.c
 	$(CC) $(CFLAGS) $(NUCLE) $(DEFINE) -c Nucdml.c
-Ndmlproc.c : dmlproc.c
-	$(CP) dmlproc.c Ndmlproc.c
+#Ndmlproc.c : dmlproc.c
+#	$(CP) dmlproc.c Ndmlproc.c
 Ndmlproc.o : Ndmlproc.c protdml.h molphy.h optimtpm.c abratio.c
 	$(CC) $(CFLAGS) $(NUCLE) $(DEFINE) -c Ndmlproc.c
 
@@ -177,7 +177,7 @@ Ndmlproc.o : Ndmlproc.c protdml.h molphy.h optimtpm.c abratio.c
 clean :
 	rm -f core *.o $(PRGS)
 
-DEPENDS = $(OBJECTS:.o=.depend)
+DEPENDS = $(SOURCES_TML:.c=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile
 	@rm $(DEPENDS)
@@ -189,78 +189,40 @@ depend.init:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-Dpstree.o: protml.h molphy.h matrixut.h
+getseq.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h prot_tml.h
 
-Ndistan.o: protml.h molphy.h matrixut.h
+seqproc.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
 
-Njdist.o: tridist.h molphy.h matrixut.h
+mltree.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
 
-Nmlklhd.o: protml.h molphy.h matrixut.h
+altree.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
 
-Nseqstat.o: protst.h molphy.h matrixut.h
+qltree.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
 
-Ntranprb.o: protml.h molphy.h matrixut.h
+sltree.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
 
-Nucml.o: protml.h molphy.h matrixut.h
+njtree.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h prot_tml.h
 
-Nucst.o: protst.h molphy.h matrixut.h
+njmtree.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
 
-Nuctpm.o: protml.h molphy.h matrixut.h
+prtree.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
 
-Prottpm.o: protml.h molphy.h matrixut.h
-
-altree.o: protml.h molphy.h matrixut.h
-
-distan.o: protml.h molphy.h matrixut.h
-
-distproc.o: tridist.h molphy.h matrixut.h
-
-dyhfjtt.o: protml.h molphy.h matrixut.h
-
-getseq.o: protml.h molphy.h matrixut.h prot_tml.h
+pstree.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
 
 matrixut.o: matrixut.h
 
-mlklhd.o: protml.h molphy.h matrixut.h
-
-mltree.o: protml.h molphy.h matrixut.h
-
-mtrev22.o: protml.h molphy.h matrixut.h
-
-mtrev24.o: protml.h molphy.h matrixut.h
-
 mygetopt.o: molphy.h
 
-njmtree.o: protml.h molphy.h matrixut.h
+protml.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
 
-njproc.o: tridist.h molphy.h matrixut.h
+protproc.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
 
-njtree.o: protml.h molphy.h matrixut.h
+dyhfjtt.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
 
-nucproc.o: protml.h molphy.h matrixut.h
+mtrev24.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
 
-protml.o: protml.h molphy.h matrixut.h
+tranprb.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
 
-protproc.o: protml.h molphy.h matrixut.h
+distan.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
 
-protst.o: protst.h molphy.h matrixut.h
-
-prtree.o: protml.h molphy.h matrixut.h
-
-pstree.o: protml.h molphy.h matrixut.h
-
-qltree.o: protml.h molphy.h matrixut.h
-
-seqproc.o: protml.h molphy.h matrixut.h
-
-seqstat.o: protst.h molphy.h matrixut.h
-
-sltree.o: protml.h molphy.h matrixut.h
-
-totalml.o: totalml.h molphy.h matrixut.h
-
-tranprb.o: protml.h molphy.h matrixut.h
-
-tridist.o: tridist.h molphy.h matrixut.h
-
-triproc.o: tridist.h molphy.h matrixut.h
+mlklhd.o: protml.h ../../INCLUDE/arb_assert.h molphy.h matrixut.h
