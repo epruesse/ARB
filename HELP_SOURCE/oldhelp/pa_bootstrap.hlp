@@ -11,15 +11,15 @@ DESCRIPTION	Given a large tree, traditional ways to calculate bootstrap
 		values are by magnitudes to slow. So a faster algorithm was
 		developed:
 
-                        the bootstrap values for each branch is caclualted under
+                        the bootstrap value for each branch is calculated under
                         the assumption that all other branches have a 100% value.
                         Doing this we get an upper limit for the real bootstrap values.
 
 
 NOTES		The program does not use the traditional Monte Carlo method to
-		estimate the bootstrap values but calculates them correctly
+		estimate the bootstrap values, but calculates them correctly
 		under the assumption that the tree changes only locally.
-		Try different filters and see the effekt on the tree.
+		Try different filters and see the effect on the tree.
 
 SECTION         ALGORITHM
 
