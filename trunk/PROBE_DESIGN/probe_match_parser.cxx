@@ -1,16 +1,16 @@
-//  ==================================================================== // 
-//                                                                       // 
-//    File      : probe_match_parser.cxx                                 // 
-//    Purpose   : parse the results of a probe match                     // 
-//    Time-stamp: <Tue Jun/22/2004 16:03 MET Coder@ReallySoft.de>        // 
-//                                                                       // 
-//                                                                       // 
-//  Coded by Ralf Westram (coder@reallysoft.de) in June 2004             // 
-//  Copyright Department of Microbiology (Technical University Munich)   // 
-//                                                                       // 
-//  Visit our web site at: http://www.arb-home.de/                       // 
-//                                                                       // 
-//  ==================================================================== // 
+//  ==================================================================== //
+//                                                                       //
+//    File      : probe_match_parser.cxx                                 //
+//    Purpose   : parse the results of a probe match                     //
+//    Time-stamp: <Tue Jul/06/2004 13:41 MET Coder@ReallySoft.de>        //
+//                                                                       //
+//                                                                       //
+//  Coded by Ralf Westram (coder@reallysoft.de) in June 2004             //
+//  Copyright Department of Microbiology (Technical University Munich)   //
+//                                                                       //
+//  Visit our web site at: http://www.arb-home.de/                       //
+//                                                                       //
+//  ==================================================================== //
 
 #include <cstring>
 #include <cstdlib>
@@ -18,16 +18,18 @@
 #include <cctype>
 #include <map>
 
-#include "arbdb.h"
+#include <arbdb.h>
+#include <arbdbt.h>
+
 #define pm_assert(cond) arb_assert(cond)
 
 #include "probe_match_parser.hxx"
 
 using namespace std;
 
-// --------------- 
-//      column     
-// --------------- 
+// ---------------
+//      column
+// ---------------
 
 struct column {
     const char *title;          // column title (pointer into ProbeMatch_impl::headline)
@@ -121,12 +123,19 @@ ProbeMatchParser::ProbeMatchParser(const char *probe_target, const char *headlin
 
             // find that column and
             column *target_found = pimpl->findColumn(probe_target_copy);
+            if (!target_found) {
+                char *probe_rev_compl = strdup(probe_target_copy);
+                GBT_reverseComplementNucSequence(probe_rev_compl, strlen(probe_rev_compl), 'U');
+                target_found          = pimpl->findColumn(probe_rev_compl);
+                free(probe_rev_compl);
+            }
+
             if (target_found) {
                 int probe_region_offset = target_found->start_column - 9;
                 pimpl->set_probe_region_offset(probe_region_offset);
             }
             else {
-                init_error = GBS_global_string_copy("Could not find target '%s' in headline", probe_target_copy);
+                init_error = GBS_global_string_copy("Probe match parser failed (Could not find target '%s' in headline)", probe_target_copy);
             }
             free(probe_target_copy);
         }
