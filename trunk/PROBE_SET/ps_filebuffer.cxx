@@ -185,15 +185,11 @@ void PS_FileBuffer::reinit( const char *_name, bool _readonly ) {
     }
     file_handle = open( file_name, file_flags, file_mode );
     if (file_handle == -1) {
-<<<<<<< ps_filebuffer.cxx
-        fprintf( stderr, "failed to open file %s for %s\n",file_name,(_readonly) ? "reading" : "writing" );
-=======
         if (_readonly) {
             fprintf( stderr, "failed to open file '%s' for reading\n",file_name );
         } else {
             fprintf( stderr, "failed to create file '%s' for writing\nmaybe it already exists ?\n",file_name );
         }
->>>>>>> 1.4
         *(int *)0 = 0;
     }    
 

@@ -15,11 +15,6 @@ protected:
     bool bias;
     long size;
     long capacity;
-<<<<<<< ps_bitmap.hxx
-=======
-    bool bias;
-    bool is_triangular;
->>>>>>> 1.4
 
     PS_BitMap( const PS_BitMap& );
     PS_BitMap();
@@ -31,18 +26,9 @@ protected:
 
 public:
 
-<<<<<<< ps_bitmap.hxx
     virtual bool get( const long _row, const long _col );
     virtual bool set( const long _row, const long _col, const bool _value );
     // triangle_ - functions reverse _row and _col if _row is greater than _col
-=======
-    static const bool NORMAL     = false;
-    static const bool TRIANGULAR = true;
-
-    bool get( const long _x, const long _y );
-    void set( const long _x, const long _y, const bool _value );
-    // triangle_ - functions reverse _x and _y if _x is greater than _y
->>>>>>> 1.4
     // the resulting map is only triangular
     bool triangle_get( const long _row, const long _col );
     bool triangle_set( const long _row, const long _col, const bool _value );
@@ -55,7 +41,6 @@ public:
     virtual bool save( PS_FileBuffer *_file );
     virtual bool load( PS_FileBuffer *_file );
 
-<<<<<<< ps_bitmap.hxx
     explicit PS_BitMap( const bool _bias, const long _capacity ) : bias(_bias), size(0), capacity(_capacity) {
         data = (PS_BitSet **)malloc(capacity * sizeof(PS_BitSet*));
         //fprintf( stderr, "PS_BitMap(%p) malloc(%u) = %p\n", this, sizeof(PS_BitSet*), data );
@@ -77,7 +62,8 @@ public:
         for (long i = 0; i < capacity; ++i) {
             delete data[i];
         }
-        if (data) free( data );
+        free( data );
+//         fprintf( stderr, "~PS_BitMap(%p)   free(%p(%lu))\n", this, data, capacity*sizeof(PS_BitSet*) );
     }
 };
 
@@ -102,52 +88,6 @@ public:
 
     explicit PS_BitMap_Fast( const bool _bias, const long _capacity ) : PS_BitMap(_bias,0,_capacity) {
         data = (PS_BitSet **)malloc(capacity * sizeof(PS_BitSet*));
-=======
-    void print();
-
-    explicit PS_BitMap( bool _bias, long _capacity, bool _triangular ) {
-        size          = 0;
-        capacity      = _capacity+1;
-        bias          = _bias;
-        is_triangular = _triangular;
-        // init data
-        data     = (PS_BitSet **)malloc(sizeof(PS_BitSet*)*capacity);
-        if (_triangular) {
-            //fprintf( stderr, "PS_BitMap(%p) malloc(%u) = %p\n", this, sizeof(PS_BitSet*)*8, data );
-            for (long i = 0; i < capacity; ++i) {                    // init new requested bitsets
-                data[i] = new PS_BitSet( bias,i );                   // init field
-                if (data[i] == 0) *(int *)0 = 0;                     // check success
-            }
-        } else {
-            //fprintf( stderr, "PS_BitMap(%p) malloc(%u) = %p\n", this, sizeof(PS_BitSet*)*8, data );
-            for (long i = 0; i < capacity; ++i) {                    // init new requested bitsets
-                data[i] = new PS_BitSet( bias,capacity );            // init field
-                if (data[i] == 0) *(int *)0 = 0;                     // check success
-            }
-        }
-    }
-
-    explicit PS_BitMap( bool _bias, long _capacity ) {
-        size          = 0;
-        capacity      = _capacity+1;
-        bias          = _bias;
-        is_triangular = false;
-        // init data
-        data     = (PS_BitSet **)malloc(sizeof(PS_BitSet*)*8);
-        //fprintf( stderr, "PS_BitMap(%p) malloc(%u) = %p\n", this, sizeof(PS_BitSet*)*8, data );
-        for (long i = 0; i < capacity; ++i) {                    // init new requested bitsets
-            data[i] = new PS_BitSet( bias );                     // init field
-            if (data[i] == 0) *(int *)0 = 0;                     // check success
-        }
-    }
-
-    explicit PS_BitMap( bool _bias ) {
-        size          = 0;
-        capacity      = 1;
-        bias          = _bias;
-        is_triangular = false;
-        data     = (PS_BitSet **)malloc(sizeof(PS_BitSet*));
->>>>>>> 1.4
         //fprintf( stderr, "PS_BitMap(%p) malloc(%u) = %p\n", this, sizeof(PS_BitSet*), data );
         for (long i = 0; i < capacity; ++i) {                        // init requested bitsets
             data[i] = new PS_BitSet_Fast( bias, capacity );          // init field
@@ -204,10 +144,6 @@ public:
     ~PS_BitMap_Counted() {
         if (column_counts) free( column_counts );
         if (row_counts)    free( row_counts );
-        for (long i = 0; i < capacity; ++i) {
-            delete data[i];
-        }
-        if (data) free( data );
     }
 };
 
