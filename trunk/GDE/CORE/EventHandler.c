@@ -269,7 +269,7 @@ Event *event;
 		return(ps);
 		break;
 	default:
-		Error("Menu argument type invalid");
+		Error("[HandleMenuItem] Menu argument type invalid");
 	}
 	return;
 }
