@@ -1,10 +1,9 @@
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
-#include <stdlib.h>
-#include <string.h>
-
-#include <iostream.h>
-#include <fstream.h>
+#include <iostream>
+#include <fstream>
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -479,20 +478,20 @@ void SEC_undo_cb(AW_window *aw, AWT_canvas *ntw, AW_CL undo_type)
 
 static char *encode_xstring_rel_helix(GB_CSTR x_string, int xlength, BI_helix *helix, int *no_of_helices_ptr)
 {
-    int allocated = 1000;
-    int no_of_helices = 0;
-    char *rel_helix = (char*)malloc(sizeof(*rel_helix)*allocated);
-    int pos;
-    int start_helix = -1;
+    int   allocated      = 1000;
+    int   no_of_helices  = 0;
+    char *rel_helix      = (char*)malloc(sizeof(*rel_helix)*allocated);
+    int   pos;
+    int   start_helix    = -1;
     char *start_helix_nr = 0;
-    int end_helix = -1;
+    int   end_helix      = -1;
 
     for (pos=0; ; pos++) {
         BI_helix::BI_helix_entry *entry = &(helix->entries[pos]);
-        //char *helix_nr = 0;
+        char *helix_nr = 0;
 
         if (entry->pair_type!=HELIX_NONE) {
-            char *helix_nr = entry->helix_nr;
+            helix_nr = entry->helix_nr;
 
             if (helix_nr==start_helix_nr) { // same helix_nr as last
                 end_helix = pos;
@@ -544,11 +543,11 @@ static void decode_xstring_rel_helix(GB_CSTR rel_helix, char *x_buffer, int xlen
     int rel_pos = 0;
 
     for (pos=0; ; pos++) {
-        BI_helix::BI_helix_entry *entry = &(helix->entries[pos]);
-        //char *helix_nr;
+        BI_helix::BI_helix_entry *entry    = &(helix->entries[pos]);
+        char                     *helix_nr = 0;
 
         if (entry->pair_type!=HELIX_NONE) {
-            char *helix_nr = entry->helix_nr;
+            helix_nr = entry->helix_nr;
 
             if (helix_nr==start_helix_nr) { // same helix as last
                 end_helix = pos;
