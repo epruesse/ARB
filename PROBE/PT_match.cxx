@@ -66,16 +66,16 @@ int PT_chain_print(int name, int apos, int rpos, long ilocs)
     }
 
     ml = create_PT_probematch();
-    ml->name = name;
-    ml->b_pos = apos;
-    ml->rpos = rpos;
-    ml->wmismatches = wmismatches;
-    ml->mismatches = mismatches;
+    
+    ml->name         = name;
+    ml->b_pos        = apos;
+    ml->g_pos        = -1;
+    ml->rpos         = rpos;
+    ml->wmismatches  = wmismatches;
+    ml->mismatches   = mismatches;
     ml->N_mismatches = N_mismatches;
-    ml->sequence = psg.main_probe;
-    if (psg.reversed)
-        ml->reversed = 1;
-    else	ml->reversed = 0;
+    ml->sequence     = psg.main_probe;
+    ml->reversed     = psg.reversed ? 1 : 0;
 
     aisc_link((struct_dllpublic_ext*)&(locs->ppm),(struct_dllheader_ext*)ml);
 
@@ -95,20 +95,21 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt)
     if (locs->ppm.cnt > PT_MAX_MATCHES) return 1;
     if (PT_read_type(pt) == PT_NT_LEAF) {
         name = PT_read_name(psg.ptmain,pt);
-        pos = PT_read_apos(psg.ptmain,pt);
+        pos  = PT_read_apos(psg.ptmain,pt);
         rpos = PT_read_rpos(psg.ptmain,pt);
 
         ml = create_PT_probematch();
-        ml->name = name;
-        ml->b_pos = pos;
-        ml->rpos = rpos;
-        ml->mismatches = psg.mismatches;
-        ml->wmismatches = psg.wmismatches;
+
+        ml->name         = name;
+        ml->b_pos        = pos;
+        ml->g_pos        = -1;
+        ml->rpos         = rpos;
+        ml->mismatches   = psg.mismatches;
+        ml->wmismatches  = psg.wmismatches;
         ml->N_mismatches = psg.N_mismatches;
-        ml->sequence = psg.main_probe;
-        if (psg.reversed)
-            ml->reversed = 1;
-        else	ml->reversed = 0;
+        ml->sequence     = psg.main_probe;
+        ml->reversed     = psg.reversed ? 1 : 0;
+
         aisc_link((struct_dllpublic_ext*)&(locs->ppm),(struct_dllheader_ext*)ml);
 
         return 0;
@@ -378,11 +379,14 @@ extern "C" int probe_match(PT_local * locs, aisc_string probestring)
 
 struct format_props {
     bool show_mismatches;       // whether to show 'mis' and 'N_mis'
-    bool show_ecoli;            // whether to show ecoli column
-    int  name_width;            // width of 'name' column
-    int  gene_or_full_width;    // width of 'genename' or 'fullname' column
-    int  pos_width;             // max. width of pos column
-    int  ecoli_width;           // max. width of ecoli column
+    bool show_ecoli;            // whether to show 'ecoli' column
+    bool show_gpos;             // whether to show 'gpos' column
+    
+    int name_width;             // width of 'name' column
+    int gene_or_full_width;     // width of 'genename' or 'fullname' column
+    int pos_width;              // max. width of pos column
+    int gpos_width;             // max. width of gpos column
+    int ecoli_width;            // max. width of ecoli column
 
     int rev_width() const { return 3; }
     int mis_width() const { return 3; }
@@ -397,26 +401,27 @@ inline void set_max(const char *str, int &curr_max) {
     }
 }
 
-static format_props detect_format_props(PT_local *locs) {
+static format_props detect_format_props(PT_local *locs, bool show_gpos) {
     PT_probematch *ml = locs->pm; // probe matches
     format_props   format;
 
     format.show_mismatches = (ml->N_mismatches >= 0);
     format.show_ecoli      = psg.ecoli; // display only if there is ecoli
+    format.show_gpos       = show_gpos; // display only for gene probe matches
 
     // minumum values (caused by header widths) :
     format.name_width         = gene_flag ? 8 : 4; // 'organism' or 'name'
     format.gene_or_full_width = 8; // 'genename' or 'fullname'
     format.pos_width          = 3; // 'pos'
+    format.gpos_width         = 4; // 'gpos'
     format.ecoli_width        = 5; // 'ecoli'
 
     for (PT_probematch *ml = locs->pm; ml; ml = ml->next) {
         set_max(virt_name(ml), format.name_width);
         set_max(virt_fullname(ml), format.gene_or_full_width);
         set_max(GBS_global_string("%i", ml->b_pos), format.pos_width);
-        if (format.show_ecoli) {
-            set_max(GBS_global_string("%li", PT_abs_2_rel(ml->b_pos)), format.ecoli_width);
-        }
+        if (show_gpos) set_max(GBS_global_string("%i", ml->g_pos), format.gpos_width);
+        if (format.show_ecoli) set_max(GBS_global_string("%li", PT_abs_2_rel(ml->b_pos)), format.ecoli_width);
     }
 
     return format;
@@ -523,6 +528,9 @@ static const char *get_match_info_formatted(PT_probematch  *ml, const format_pro
     }
     cat_spaced_right(memfile, GBS_global_string("%.1f", wmis), format.wmis_width());
     cat_spaced_right(memfile, GBS_global_string("%i", ml->b_pos), format.pos_width);
+    if (format.show_gpos) {
+        cat_spaced_right(memfile, GBS_global_string("%i", ml->g_pos), format.gpos_width);
+    }
     if (format.show_ecoli) {
         cat_spaced_right(memfile, GBS_global_string("%li", PT_abs_2_rel(ml->b_pos)), format.ecoli_width);
     }
@@ -553,6 +561,9 @@ static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_pro
         }
         cat_dashed_right(memfile, "wmis", format.wmis_width());
         cat_dashed_right(memfile, "pos", format.pos_width);
+        if (format.show_gpos) {
+            cat_dashed_right(memfile, "gpos", format.gpos_width);
+        }
         if (format.show_ecoli) {
             cat_dashed_right(memfile, "ecoli", format.ecoli_width);
         }
@@ -591,6 +602,7 @@ static void gene_rel_2_abs(PT_probematch *ml) {
 
         if (gb_pos) {
             long gene_pos  = GB_read_int(gb_pos);
+            ml->g_pos      = ml->b_pos; 
             ml->b_pos     += gene_pos;
         }
         else {
@@ -614,7 +626,7 @@ extern "C" bytestring *match_string(PT_local *locs) {
     if (locs->pm) {
         if (gene_flag) gene_rel_2_abs(locs->pm);
 
-        format_props format = detect_format_props(locs);
+        format_props format = detect_format_props(locs, gene_flag);
 
         GBS_strcat(memfile, get_match_hinfo_formatted(locs->pm, format));
         GBS_chrcat(memfile,(char)1);
