@@ -24,10 +24,10 @@
 #endif
 #define seq_assert(bed) arb_assert(bed)
 
-typedef struct Groupnames {
-    const char *name;
-    Groupnames *next;
-} Groupnames;
+/* typedef struct Groupnames { */
+/*     const char *name; */
+/*     Groupnames *next; */
+/* } Groupnames; */
 
 class SQ_GroupData {
     SQ_GroupData(const SQ_GroupData& other);              // copying not allowed
@@ -41,8 +41,8 @@ public:
 
     void         SQ_set_avg_bases(int bases) { avg_bases = bases; }
     int          SQ_get_avg_bases() const { return avg_bases; }
-    void         SQ_set_groupname(const char* name);
-    Groupnames * SQ_get_groupname() const { return head; }
+/*     void         SQ_set_groupname(const char* name); */
+/*     Groupnames * SQ_get_groupname() const { return head; } */
     bool         SQ_is_initialized() const { return initialized; }
 
     virtual void   SQ_init_consensus(int size)                     = 0;
@@ -55,7 +55,7 @@ protected:
     int  size;
     int  avg_bases;
     bool initialized;
-    Groupnames * head;
+    //Groupnames * head;
 };
 
 template <int I>

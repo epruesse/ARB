@@ -8,20 +8,19 @@ SQ_GroupData::SQ_GroupData() {
     size        = 0;
     avg_bases   = 0;
     initialized = false;
-    head = NULL;
-    //head->name  = NULL;
+    //head = NULL;
 }
 
 
 SQ_GroupData::~SQ_GroupData() { }
 
 
-void SQ_GroupData::SQ_set_groupname(const char* name){
-    Groupnames * curr = new Groupnames;
-    curr->name = name;
-    curr->next = head;
-    head = curr;
-}
+// void SQ_GroupData::SQ_set_groupname(const char* name){
+//     Groupnames * current = new Groupnames;
+//     current->name = name;
+//     current->next = head;
+//     head = current;
+// }
 
 
 double SQ_GroupData_RNA::SQ_test_against_consensus(const char *sequence) {

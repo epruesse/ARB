@@ -48,6 +48,8 @@ void SQ_reset_counters(GBT_TREE *root); // reset counters used by SQ_calc_and_ap
 
 void SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data);
 
+void SQ_calc_and_apply_group_data2(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data);
+
 void create_multi_level_consensus(GBT_TREE *node, const SQ_GroupData *data);
 
 int SQ_get_value_no_tree(GBDATA *gb_main, const char *option);
