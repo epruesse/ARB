@@ -120,9 +120,10 @@ NT_main.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt.hxx
-NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx ntree.hxx nt_cb.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
-NT_main.o: $(ARBHOME)/INCLUDE/seer.hxx nt_concatenate.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/seer.hxx nt_concatenate.hxx ntree.hxx
+NT_main.o: nt_cb.hxx nt_date.h
 
 NT_extern.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_assert.h
