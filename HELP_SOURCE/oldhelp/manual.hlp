@@ -1,0 +1,13 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	man_edit4.hlp
+
+TITLE           ARB Manual
+
+OCCURRENCE      General
+
+DESCRIPTION     Manual Overview
+
+
