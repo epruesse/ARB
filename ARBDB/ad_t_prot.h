@@ -137,6 +137,7 @@ GBDATA *GBT_open P_((const char *path, const char *opent, const char *disabled_p
 GB_ERROR GBT_remote_action P_((GBDATA *gb_main, const char *application, const char *action_name));
 GB_ERROR GBT_remote_awar P_((GBDATA *gb_main, const char *application, const char *awar_name, const char *value));
 const char *GBT_remote_read_awar P_((GBDATA *gb_main, const char *application, const char *awar_name));
+const char *GBT_remote_touch_awar P_((GBDATA *gb_main, const char *application, const char *awar_name));
 char *GBT_read_gene_sequence P_((GBDATA *gb_gene, GB_BOOL use_revComplement));
 
 /* adseqcompr.c */
