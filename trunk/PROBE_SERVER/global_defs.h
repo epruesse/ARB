@@ -4,7 +4,7 @@
 //    Purpose   : global definitions for PROBE_GROUP and                 //
 //                PROBE_GROUP_DESIGN                                     //
 //    Note      : include only once in each executable!!!                //
-//    Time-stamp: <Wed Oct/08/2003 20:37 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Feb/27/2004 17:01 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -35,6 +35,9 @@ struct probe_config_data {
     int    ecoli_min_pos;
     int    ecoli_max_pos;
 
+    bool   use_weighted_mismatches;
+    // rest is unused if (use_weighted_mismatches == false)
+    
     // same as in expert window of probe match/design
     double bonds[4*4];
     double split;
