@@ -588,7 +588,7 @@ void AWTC_import_go_cb(AW_window *aww)
             GB_transaction dummy(GB_MAIN);
 
             GBDATA *gb_genom_db = GB_find(GB_MAIN, GENOM_DB_TYPE, 0, down_level);
-            if (!gb_genom_db) {								//
+            if (!gb_genom_db) {
                 gb_genom_db = GB_create(GB_MAIN, GENOM_DB_TYPE, GB_INT);
                 GB_write_int(gb_genom_db, read_genom_db);
             }
@@ -660,7 +660,9 @@ void AWTC_import_go_cb(AW_window *aww)
         delete ali_type;
     }
     int toggle_value = (awr->awar(AWAR_READ_GENOM_DB)->read_int());
-    bool noautonames = false; // strange name!
+
+    bool ask_generate_names = true;
+
     if (!error) {
           if (is_genom_db) {
               char *mask   = awr->awar(AWAR_FILE)->read_string();
@@ -704,8 +706,12 @@ void AWTC_import_go_cb(AW_window *aww)
                 }
             }
 
-            noautonames = awtcig.ifo->noautonames;
-            if (awtcig.ifo2) noautonames += awtcig.ifo2->noautonames;
+            if (awtcig.ifo->noautonames || (awtcig.ifo2 && awtcig.ifo2->noautonames)) {
+                ask_generate_names = false;
+            }
+            else {
+                ask_generate_names = true;
+            }
 
             delete awtcig.ifo; awtcig.ifo = 0;
             delete awtcig.ifo2; awtcig.ifo2 = 0;
@@ -743,7 +749,7 @@ void AWTC_import_go_cb(AW_window *aww)
 
     GB_commit_transaction(GB_MAIN);
 
-    if (!noautonames) {
+    if (ask_generate_names) {
         if (aw_message("You may generate short names using the full_name and accession entry of the species",
                        "Generate new short names,use old names")==0)
         {
@@ -793,9 +799,11 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
     awr->awar_string(AWAR_FORM"/file_name","");
     awr->awar_string(AWAR_ALI,"16s");
     awr->awar_string(AWAR_ALI_TYPE,"rna");
+
     awr->awar_int(AWAR_READ_GENOM_DB, 2)->add_callback(genom_flag_changed);
-//     awr->awar_int(AWAR_READ_GENOM_DB, 0)->add_callback(genom_flag_changed);
-//     awr->awar_int(AWAR_READ_GENOM_DB, 1)->add_callback(genom_flag_changed);
+    awr->awar(AWAR_READ_GENOM_DB)->write_int(2);
+    // awr->awar_int(AWAR_READ_GENOM_DB, 0)->add_callback(genom_flag_changed);
+    // awr->awar_int(AWAR_READ_GENOM_DB, 1)->add_callback(genom_flag_changed);
 
     if (aws){
         aws->show();
