@@ -448,46 +448,58 @@ GB_ERROR PG_probe_match(PG_Group& group, const PG_probe_match_para& para, const 
 
     return 0;
 }
-void PG_find_probe_for_subtree(GBDATA *node,const deque<SpeciesID>& species, deque<string>& probe) {
-    if (!node) return;
-    GBDATA *pg_node=0;
 
-    deque<SpeciesID>::const_iterator i;
-    for (i=species.begin();i!=species.end();++i){
-        if (!node) break;
-
-        int pg_id;
-        do {
-            pg_id=atoi(PG_get_id(node).c_str());
-            if(pg_id==*i) break;
-        }
-        while ( (node = GB_find(node,"node",0,this_level|search_next)) );
-
-        if (pg_id!=*i) break;
-
-        pg_node = node;
-        node    = GB_find(node,"node",0,down_level);
+GBDATA *PG_find_probe_group_for_species(GBDATA *node, const set<SpeciesID>& species) {
+    set<SpeciesID>::const_iterator i;
+    for (i=species.begin(); i != species.end() && node; ++i) {
+        node           = GB_find(node, "num", (const char *)&*i, down_2_level);
+        if (node) node = GB_get_father(node);
     }
 
-    if (i==species.end()) {
-        GBDATA *pg_group = GB_find(pg_node,"group",0,down_level);
-        if (pg_group) {
-            for (GBDATA *pg_probe = GB_find(pg_group,"probe",0,down_level);
-                 pg_probe;
-                 pg_probe = GB_find(pg_probe,"probe",0,this_level|search_next))
-            {
-                probe.push_back(GB_read_char_pntr(pg_probe));
-            }
-        }
-    }
+    if (node) node = GB_find(node, "group", 0, down_level);
+    return node;
+}
 
-}//PG_find_probe
+// void PG_find_probe_for_subtree(GBDATA *node,const deque<SpeciesID>& species, deque<string>& probe) {
+//     if (!node) return;
+//     GBDATA *pg_node=0;
+
+//     deque<SpeciesID>::const_iterator i;
+//     for (i=species.begin();i!=species.end();++i){
+//         if (!node) break;
+
+//         SpeciesID pg_id;
+//         do {
+//             pg_id = PG_get_id(node);  // atoi(PG_get_id(node).c_str());
+//             if(pg_id==*i) break;
+//         }
+//         while ( (node = GB_find(node,"node",0,this_level|search_next)) );
+
+//         if (pg_id!=*i) break;
+
+//         pg_node = node;
+//         node    = GB_find(node,"node",0,down_level);
+//     }
+
+//     if (i==species.end()) {
+//         GBDATA *pg_group = GB_find(pg_node,"group",0,down_level);
+//         if (pg_group) {
+//             for (GBDATA *pg_probe = GB_find(pg_group,"probe",0,down_level);
+//                  pg_probe;
+//                  pg_probe = GB_find(pg_probe,"probe",0,this_level|search_next))
+//             {
+//                 probe.push_back(GB_read_char_pntr(pg_probe));
+//             }
+//         }
+//     }
+
+// }//PG_find_probe
 
 
 //return the id number stored in num under node
-string PG_get_id(GBDATA *node){
-    GBDATA *pg_node=GB_find(node,"num",0,down_level);
-    return GB_read_string(pg_node);
+SpeciesID PG_get_id(GBDATA *node){
+    GBDATA *pg_node = GB_find(node,"num",0,down_level);
+    return GB_read_int(pg_node);
 }//PG_get_id
 
 
