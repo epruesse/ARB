@@ -14,19 +14,11 @@ sub run_request() {
   my $result_name = $request_name.".res";
   $request_name.=".req";
 
-  # write the request
-  if (not open(REQUEST,">$request_name")) { return "Can't write '$request_name'"; }
-  print REQUEST "command=getmembers\n"; # write command
-  for (keys %probe_server::params) { # forward all parameters to request file
-    print REQUEST "$_=$probe_server::params{$_}\n";
+  my $error = probe_server::write_std_request($request_name, 'getmembers');
+  if (not $error) {
+    probe_server::wait_answer($result_name);
+    $error = probe_server::send_std_result($result_name);
   }
-  close REQUEST;
-
-  # now wait for server to answer request
-  probe_server::wait_answer($result_name);
-
-  # send answer to client software
-  my $error = probe_server::send_result($result_name);
   return $error;
 }
 
