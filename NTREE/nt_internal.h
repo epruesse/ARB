@@ -35,7 +35,6 @@ void NT_system_cb2(AW_window *aww, AW_CL command, AW_CL auto_help_file);
 GB_ERROR NT_format_all_alignments(GBDATA *gb_main);
 
 /* NT_extern.cxx */
-void NT_show_message(AW_root *awr);
 
 /* NT_validNames.cxx */
 void NT_deleteValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_1x);

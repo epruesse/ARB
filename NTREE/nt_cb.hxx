@@ -15,7 +15,6 @@ void NT_system_cb P_((AW_window *aww, AW_CL command, AW_CL auto_help_file));
 void NT_system_cb2 P_((AW_window *aww, AW_CL command, AW_CL auto_help_file));
 
 /* NT_extern.cxx */
-void NT_show_message P_((AW_root *awr));
 void nt_changesecurity P_((AW_root *aw_root));
 void export_nds_cb P_((AW_window *aww));
 AW_window *create_nds_export_window P_((AW_root *root));
@@ -33,4 +32,5 @@ void NT_modify_cb P_((AW_window *aww, AW_CL cd1, AW_CL cd2));
 AW_window *create_nt_main_window P_((AW_root *awr,AW_CL clone));
 AW_window *NT_preset_tree_window P_((AW_root *root));
 void NT_select_last_tree(AW_window *aww,char *awar_tree);
+
 #undef P_
