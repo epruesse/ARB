@@ -244,6 +244,7 @@ long GB_size_of_file P_((const char *path));
 long GB_mode_of_file P_((const char *path));
 long GB_mode_of_link P_((const char *path));
 int GB_is_regularfile P_((const char *path));
+int GB_is_directory P_((const char *path));
 long GB_getuid P_((void));
 long GB_getpid P_((void));
 long GB_getuid_of_file P_((char *path));
