@@ -14,9 +14,10 @@
 
 void awt_create_dtree_awars(AW_root *aw_root,AW_default def);
 
-#define NT_BOX_WIDTH      3.5   /* pixel/2 ! */
-#define NT_ROOT_WIDTH     4.5   /* pixel/2 ! */
+#define NT_BOX_WIDTH      3.5  /* pixel/2 ! */
+#define NT_ROOT_WIDTH     4.5  /* pixel/2 ! */
 #define NT_SELECTED_WIDTH 5.5
+
 #define PH_CLICK_SPREAD   0.10
 
 #define AWT_TREE(ntw) ((AWT_graphic_tree *)ntw->tree_disp)
@@ -36,6 +37,21 @@ inline bool sort_is_tree_style(AP_tree_sort sort) { return !sort_is_list_style(s
 
 class AWT_graphic_tree_group_state;
 
+struct AWT_scaled_font_limits {
+    double ascent;
+    double descent;
+    double height;
+    double width;
+
+    void init(const AW_font_limits& font_limits, double factor) {
+        ascent  = font_limits.ascent*factor;
+        descent = font_limits.descent*factor;
+        height  = font_limits.height*factor;
+        width   = font_limits.width*factor;
+    }
+};
+
+
 class AWT_graphic_tree : public AWT_graphic {
 protected:
 
@@ -45,7 +61,10 @@ protected:
     double y_pos;
     double list_tree_ruler_y;
     double irs_tree_ruler_scale_factor;
-    double scale;
+
+    AWT_scaled_font_limits scaled_font;
+    double                 scaled_branch_distance; // vertical distance between branches (may be extra-scaled in options)
+
     AW_pos  grey_level;
     // internal command exec. var.
     double rot_orientation;
@@ -70,7 +89,7 @@ protected:
                        double y_center,double tree_sprad,
                        double tree_orientation,
                        double x_root, double y_root, int linewidth);
-    void show_nds_list_rek(GBDATA * gb_main, bool use_nds);
+    void show_nds_list(GBDATA * gb_main, bool use_nds);
 
     void NT_scalebox(int gc, double x, double y, double width);
     void NT_emptybox(int gc, double x, double y, double width);
