@@ -109,6 +109,7 @@ ln -s ../AWTC/awtc_seq_search.hxx INCLUDE/awtc_seq_search.hxx
 ln -s ../AWTC/awtc_submission.hxx INCLUDE/awtc_submission.hxx
 ln -s ../AWTI/awti_export.hxx INCLUDE/awti_export.hxx
 ln -s ../AWTI/awti_import.hxx INCLUDE/awti_import.hxx
+ln -s ../BUGEX/bugex.h INCLUDE/bugex.h
 ln -s ../CAT/cat_tree.hxx INCLUDE/cat_tree.hxx
 ln -s ../CONSENSUS_TREE/CT_ctree.hxx INCLUDE/CT_ctree.hxx
 ln -s ../DIST/dist.hxx INCLUDE/dist.hxx
