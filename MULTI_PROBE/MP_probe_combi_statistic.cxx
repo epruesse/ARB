@@ -238,7 +238,7 @@ void probe_combi_statistic::crossover_Probes(probe_combi_statistic *pcombi2)  	/
         random_intervall = mp_gl_awars.no_of_probes - 1;
     probe_combi_statistic *f1, *f2;
 
-    rand_no_of_cross = get_random(1, random_intervall);
+    rand_no_of_cross = random_intervall ? get_random(1, random_intervall) : 0;
 
     for (int i = 0; i < rand_no_of_cross; i++)				//eigentliche Crossover Schleife
     {
