@@ -399,11 +399,10 @@ void AWT_graphic_tree::toggle_group(AP_tree * at)
             }
         }
     }
-    create_group(at);
-    at->gr.grouped = 1;
+    if (create_group(at)) at->gr.grouped = 1;
 }
 
-void AWT_graphic_tree::create_group(AP_tree * at)
+AW_BOOL AWT_graphic_tree::create_group(AP_tree * at)
 {
     if (!at->gb_node) {
         at->gb_node = GB_create_container(this->tree_static->gb_tree, "node");
@@ -414,12 +413,15 @@ void AWT_graphic_tree::create_group(AP_tree * at)
     }
     if (!at->name) {
         at->name = aw_input("Enter Name of Group",0);
-        if (!at->name) return;
-        GBDATA         *gb_name;
+        if (!at->name) {
+            return AW_FALSE;
+        }
+
+        GBDATA *gb_name;
         gb_name = GB_search(at->gb_node, "group_name", GB_STRING);
         GB_write_string(gb_name, "noname");
     }
-    return;
+    return AW_TRUE;
 }
 
 void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd, int button,
