@@ -4,12 +4,12 @@
 
 
 CPP_OBJECTS =   \
-	genomdat.o \
+	GEN_read.o \
 
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
 
-.cxx.o: 
+.cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
 clean:
