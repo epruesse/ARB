@@ -893,11 +893,6 @@ void AWTC_import_go_cb(AW_window *aww)
         }
     }
 
-    if (!error) {
-        GB_ERROR NT_format_all_alignments(GBDATA *gb_main);
-        error = NT_format_all_alignments(GB_MAIN);
-    }
-
     aw_closestatus();
     if (error) aw_message(error);
 
