@@ -6,7 +6,6 @@ Client.class : CommandLine.java
 Client.class : GroupCache.java
 Client.class : HttpSubsystem.java
 Client.class : IOManager.java
-Client.class : MessageDialog.java
 Client.class : NodeProbes.java
 Client.class : Probe.java
 Client.class : ProbeList.java
@@ -18,8 +17,6 @@ Client.class : TreeReader.java
 ClientException.class : ClientException.java
 CommandLine.class : CommandLine.java
 CommandLine.class : Toolkit.java
-DialogDriver.class : DialogDriver.java
-DialogDriver.class : DialogWrapper.java
 DialogWrapper.class : DialogWrapper.java
 DisplayMouseAdapter.class : DisplayMouseAdapter.java
 DisplayMouseAdapter.class : TreeDisplay.java
@@ -35,7 +32,6 @@ IOManager.class : Toolkit.java
 LineArea.class : LineArea.java
 LineAreaFactory.class : LineArea.java
 LineAreaFactory.class : LineAreaFactory.java
-MessageDialog.class : MessageDialog.java
 NodeError.class : NodeError.java
 NodeError.class : TreeNode.java
 NodeProbes.class : ClientException.java
