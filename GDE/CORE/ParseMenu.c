@@ -20,6 +20,7 @@
 
 */
 
+
 extern Gmenu menu[];
 int num_menus;
 
@@ -216,7 +217,7 @@ void ParseMenu()
             else if(strcmp(temp,"chooser")     == 0) thisarg->type = CHOOSER;
             else if(strcmp(temp,"slider")      == 0) thisarg->type = SLIDER;
             else {
-                sprintf(head,"Unknown argtype %s",temp);
+                sprintf(head,"Unknown argtype ('%s')",temp);
                 Error(head);
             }
         }
@@ -464,7 +465,9 @@ int Find2(target,key)
 void Error(msg)
      const char *msg;
 {
-    (void)fprintf(stderr,"%s\n",msg);
+    (void)fprintf(stderr,"GDE-Error: %s\n",msg);
+    fflush(stderr);
+    gde_assert(0);
     exit(1);
 }
 

@@ -165,8 +165,10 @@ void ErrorOut1(code,string)
 {
 	if (code != 0)
 	{
-		fprintf(stderr,"Error:%s\n",string);
-		exit(1);
+            fprintf(stderr,"Error:%s\n",string);
+            fflush(stderr);
+            gde_assert(0);
+            exit(1);
 	}
 	return;
 }
