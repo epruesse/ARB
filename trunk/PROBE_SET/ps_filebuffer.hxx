@@ -31,7 +31,6 @@ private:
 
     PS_FileBuffer();
 
-    void flush();                       // write buffer to file
     void refill();                      // refill buffer from file
 
 public:
@@ -140,6 +139,7 @@ public:
     bool isReadonly() {
         return is_readonly;
     }
+    void flush();                       // write buffer to file
 
     //
     // initialization-functions
