@@ -466,6 +466,11 @@ PHDATA *PHDATA::ROOT = 0;
 int
 main(int argc, char **argv)
 {
+    if (argc >= 2 || (argc == 2 && strcmp(argv[1], "--help") == 0)) {
+        fprintf(stderr, "Usage: arb_phylo [database]\n");
+        return EXIT_FAILURE;
+    }
+
 	AP_root        *apmain;
 	AW_root        *aw_root;
 	char           *error, **alignment_names;
@@ -512,7 +517,7 @@ main(int argc, char **argv)
 	GB_pop_transaction(gb_main);
 
 	aw_root->main_loop();
-	return 0;
+	return EXIT_SUCCESS;
 }
 
 

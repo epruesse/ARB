@@ -26,22 +26,31 @@ void create_matrix_variables(AW_root *aw_root, AW_default aw_def);
 GBDATA *gb_main;
 
 
-#if 0
-	awm->insert_menu_topic("base_correlation","base correlation ...","b","no help",AWM_ALL,	AW_POPUP, (AW_CL)bc_create_main_window, 0);
-#endif
+// #if 0
+// 	awm->insert_menu_topic("base_correlation","base correlation ...","b","no help",AWM_ALL,	AW_POPUP, (AW_CL)bc_create_main_window, 0);
+// #endif
 
 
 int main(int argc, char **argv)
-	{
-	AW_root *aw_root;
-	AW_default aw_default;
-	AW_window *aww;
-	AWT_graphic *awd;
-	aw_initstatus();
-	aw_root = new AW_root;
-	aw_default = aw_root->open_default(".arb_prop/dist.arb");
-	aw_root->init_variables(aw_default);
-	aw_root->init("ARB_DIST");	
+{
+    AW_root     *aw_root;
+    AW_default   aw_default;
+    AW_window   *aww;
+    AWT_graphic *awd;
+
+    if (argc >= 2 && strcmp(argv[1], "--help") == 0) {
+        fprintf(stderr,
+                "Usage: arb_dist\n"
+                "Is called from ARB.\n"
+                );
+        exit(-1);
+    }
+
+    aw_initstatus();
+    aw_root    = new AW_root;
+    aw_default = aw_root->open_default(".arb_prop/dist.arb");
+    aw_root->init_variables(aw_default);
+    aw_root->init("ARB_DIST");
 
 	struct arb_params *params;
 	params	= arb_trace_argv(&argc,argv);
@@ -61,8 +70,8 @@ int main(int argc, char **argv)
 #endif
 	awd = (AWT_graphic *)0;
 	aww = create_matrix_window(aw_root);
-	
-	
+
+
 	aww->show();
 	aw_root->main_loop();
 	return 0;
