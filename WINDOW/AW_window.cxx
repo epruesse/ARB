@@ -737,12 +737,27 @@ void AW_window::set_expose_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_
     aram->set_expose_callback(this,f,cd1,cd2);
 }
 
-void AW_window::window_fit(void){
+void AW_window::set_window_size( int width, int height ) {
+    XtVaSetValues( p_w->shell, XmNwidth, (int)width, XmNheight, (int)height, NULL );
+}
+void AW_window::get_window_size( int &width, int &height ) {
     unsigned short hoffset = 0;
-    if (p_w->menu_bar[0]){
-        XtVaGetValues(p_w->menu_bar[0],XmNheight,&hoffset,NULL);
-    }
-    set_window_size(_at->max_x_size,hoffset +  _at->max_y_size );
+    if (p_w->menu_bar[0]) XtVaGetValues(p_w->menu_bar[0],XmNheight,&hoffset,NULL);
+    width  = _at->max_x_size;
+    height = hoffset + _at->max_y_size;
+}
+
+
+void AW_window::window_fit(void){
+    int width, height;
+    get_window_size(width, height);
+    set_window_size(width, height);
+
+//     unsigned short hoffset = 0;
+//     if (p_w->menu_bar[0]){
+//         XtVaGetValues(p_w->menu_bar[0],XmNheight,&hoffset,NULL);
+//     }
+//     set_window_size(_at->max_x_size,hoffset +  _at->max_y_size );
 }
 
 
@@ -2604,11 +2619,6 @@ AW_ProcessEventType AW_root::peek_key_event(AW_window */*aww*/){
 }
 
 
-void AW_window::set_window_size( int width, int height ) {
-    XtVaSetValues( p_w->shell, XmNwidth, (int)width, XmNheight, (int)height, NULL );
-}
-
-
 void timed_window_title_cb( class AW_root* aw_root, AW_CL cd1, AW_CL cd2 ) {
     AWUSE(aw_root);
     char *title = (char *)cd1;
@@ -2673,7 +2683,12 @@ void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
 
 void AW_window::load_xfig(const char *file, AW_BOOL resize) {
 
-    xfig_data = (void*)new AW_xfig( file, this->get_root()->font_height );
+    if (file) {
+        xfig_data = (void*)new AW_xfig( file, this->get_root()->font_height );
+    }
+    else {
+        xfig_data = (void*)new AW_xfig(this->get_root()->font_height ); // create an empty xfig
+    }
     this->set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area,(AW_CL)xfig_data,0);
 
     AW_device *device = this->get_device ( AW_INFO_AREA );
@@ -2693,6 +2708,24 @@ void AW_window::load_xfig(const char *file, AW_BOOL resize) {
 }
 
 
+void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, AW_BOOL resize) {
+    AW_xfig *xfig = (AW_xfig*)xfig_data;
+    aw_assert(xfig); // forgot to call load_xfig ?
+
+    xfig->add_line(x1, y1, x2, y2, width);
+
+    class x { public :
+        static inline int max(int i1, int i2) { return i1>i2 ? i1 : i2; }
+    };
+
+    _at->max_x_size = x::max(_at->max_x_size, xfig->maxx - xfig->minx);
+    _at->max_y_size = x::max(_at->max_y_size, xfig->maxy - xfig->miny);
+
+    if (resize) {
+        recalc_size_at_show = 1;
+        set_window_size(_at->max_x_size+1000,_at->max_y_size+1000);
+    }
+}
 
 void AW_window::_set_activate_callback(void *widget)
 {
