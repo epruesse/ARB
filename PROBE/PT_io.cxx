@@ -233,10 +233,10 @@ void probe_read_alignments()
         data                     = probe_read_string_append_point(gb_data,&hsize);
         size                     = probe_compress_sequence(data);
         psg.data[count].data     = (char *)gbs_malloc_copy(data,size);
-        psg.data[count].size = size;
+        psg.data[count].size     = size;
         free(data);
         count ++;
-#if defined(DEBUG)
+
         if (count%10 == 0) {
             if (count%500) {
                 printf(".");
@@ -246,7 +246,6 @@ void probe_read_alignments()
                 printf(".%6i (%5.1f%%)\n", count, ((double)count/species_count)*100);
             }
         }
-#endif // DEBUG
     }
     psg.data_count = count;
     GB_commit_transaction(psg.gb_main);
