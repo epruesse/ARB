@@ -314,6 +314,5 @@ AW_window *create_alignment_window(AW_root *root,AW_default aw_def)
     aws->at("rem");
     aws->create_text_field("presets/alignment_rem");
 
-
     return (AW_window *)aws;
 }
