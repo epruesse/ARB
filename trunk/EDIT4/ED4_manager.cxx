@@ -302,14 +302,19 @@ ED4_returncode ED4_manager::check_bases(const ED4_base *old_base, const ED4_base
     return ED4_R_OK;
 }
 
-#define WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(COMMAND)    \
-do {                                                    \
-    while (walk_up) {                                   \
-	if (walk_up->is_group_manager()) {                  \
-	    walk_up->to_group_manager()->table().COMMAND;   \
-	}                                                   \
-	walk_up = walk_up->parent;                          \
-    }                                                   \
+// WITH_ALL_ABOVE_GROUP_MANAGER_TABLES performs a command with all groupmanager-tables
+// starting at walk_up (normally the current) until top (or until one table has an ignore flag)
+
+#define WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, COMMAND)                   \
+do {                                                                            \
+    while (walk_up) {                                                           \
+        if (walk_up->is_group_manager()) {                                      \
+            ED4_char_table& char_table = walk_up->to_group_manager()->table();  \
+            char_table.COMMAND;                                                 \
+            if (char_table.is_ignored()) break;                                 \
+        }                                                                       \
+        walk_up = walk_up->parent;                                              \
+    }                                                                           \
 } while(0)
 
 ED4_returncode ED4_manager::check_bases( const char *old_sequence, int old_len, const char *new_sequence, int new_len, int start_pos, int end_pos)
@@ -334,15 +339,15 @@ ED4_returncode ED4_manager::check_bases( const char *old_sequence, int old_len, 
             printf("check_bases(..., %i, %i)\n", start_pos, end_pos);
 #endif
 
-            WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(sub_and_add(old_sequence, new_sequence, start_pos, end_pos));
+            WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub_and_add(old_sequence, new_sequence, start_pos, end_pos));
         } else {
             e4_assert(start_pos==0 && end_pos==-1);
-            WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(sub(old_sequence, old_len));
+            WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub(old_sequence, old_len));
         }
     } else {
         if (new_sequence) {
             e4_assert(start_pos==0 && end_pos==-1);
-            WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(add(new_sequence, new_len));
+            WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, add(new_sequence, new_len));
         } else {
             return ED4_R_OK;
         }
@@ -363,15 +368,15 @@ ED4_returncode ED4_manager::check_bases(const ED4_char_table *old_table, const E
                     return ED4_R_OK;
                 }
             }
-            WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(sub_and_add(*old_table, *new_table, start_pos, end_pos));
+            WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub_and_add(*old_table, *new_table, start_pos, end_pos));
         } else {
             e4_assert(start_pos==0 && end_pos==-1);
-            WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(sub(*old_table));
+            WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub(*old_table));
         }
     } else {
         if (new_table) {
             e4_assert(start_pos==0 && end_pos==-1);
-            WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(add(*new_table));
+            WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, add(*new_table));
         } else {
             return ED4_R_OK;
         }

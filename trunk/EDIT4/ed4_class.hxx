@@ -555,9 +555,9 @@ class ED4_char_table
     int 			ignore;		// this table will be ignored when calculating tables higher in hierarchy
     // (used to suppress SAI in root_group_man tables)
 
-#ifdef TEST_CHAR_TABLE_INTEGRITY
-    static bool tables_are_valid;
-#endif
+// #ifdef TEST_CHAR_TABLE_INTEGRITY
+//     static bool tables_are_valid;
+// #endif
 
     static bool			initialized;
     static unsigned char	char_to_index_tab[MAXCHARTABLE];
@@ -587,12 +587,12 @@ class ED4_char_table
 public:
 
 #if defined(TEST_CHAR_TABLE_INTEGRITY)
-    static void set_validity(bool valid) { tables_are_valid = valid; }
+    //static void set_validity(bool valid) { tables_are_valid = valid; }
     bool empty() const;
     bool ok() const;
     void test() const; // test if table is valid (dumps core if invalid)
 #else
-    static void set_validity(bool /*valid*/) { }
+    //static void set_validity(bool /*valid*/) { }
     void test() const { }
 #endif
 
@@ -795,59 +795,61 @@ public:
 
     // use the following functions to test which derived class we have
 
-    int is_terminal() 			const { return !this || spec->static_prop & ED4_P_IS_TERMINAL; }
+    int is_terminal() 			    const { return !this || spec->static_prop & ED4_P_IS_TERMINAL; }
 
-    int is_text_terminal()		const { return !this || spec->level & (ED4_L_SPECIES_NAME|ED4_L_SEQUENCE_INFO|ED4_L_SEQUENCE_STRING|ED4_L_PURE_TEXT|ED4_L_COL_STAT); }
+    int is_text_terminal()		    const { return !this || spec->level & (ED4_L_SPECIES_NAME|ED4_L_SEQUENCE_INFO|ED4_L_SEQUENCE_STRING|ED4_L_PURE_TEXT|ED4_L_COL_STAT); }
 
     int is_species_name_terminal() 	const { return !this || spec->level & ED4_L_SPECIES_NAME; }
-    int is_sequence_info_terminal() 	const { return !this || spec->level & ED4_L_SEQUENCE_INFO; }
+    int is_sequence_info_terminal() const { return !this || spec->level & ED4_L_SEQUENCE_INFO; }
     int is_sequence_terminal() 		const { return !this || spec->level & ED4_L_SEQUENCE_STRING; }
     int is_pure_text_terminal()		const { return !this || spec->level & ED4_L_PURE_TEXT; }
     int is_columnStat_terminal()	const { return !this || spec->level & ED4_L_COL_STAT; }
 
     int is_bracket_terminal() 		const { return !this || spec->level & ED4_L_BRACKET; }
     int is_spacer_terminal() 		const { return !this || spec->level & ED4_L_SPACER; }
-    int is_line_terminal() 		const { return !this || spec->level & ED4_L_LINE; }
+    int is_line_terminal() 		    const { return !this || spec->level & ED4_L_LINE; }
 
-    int is_manager() 			const { return !this || spec->static_prop & ED4_P_IS_MANAGER; }
+    int is_manager() 			    const { return !this || spec->static_prop & ED4_P_IS_MANAGER; }
 
     int is_sequence_manager() 		const { return !this || spec->level & ED4_L_SEQUENCE; }
     int is_multi_name_manager()		const { return !this || spec->level & ED4_L_MULTI_NAME; }
-    int is_name_manager() 		const { return !this || spec->level & ED4_L_NAME_MANAGER; }
+    int is_name_manager() 		    const { return !this || spec->level & ED4_L_NAME_MANAGER; }
     int is_multi_species_manager()	const { return !this || spec->level & ED4_L_MULTI_SPECIES; }
     int is_multi_sequence_manager()	const { return !this || spec->level & ED4_L_MULTI_SEQUENCE; }
     int is_device_manager() 		const { return !this || spec->level & ED4_L_DEVICE; }
-    int is_group_manager() 		const { return !this || spec->level & ED4_L_GROUP; }
+    int is_group_manager() 		    const { return !this || spec->level & ED4_L_GROUP; }
     int is_species_manager() 		const { return !this || spec->level & ED4_L_SPECIES; }
-    int is_area_manager() 		const { return !this || spec->level & ED4_L_AREA; }
+    int is_area_manager() 		    const { return !this || spec->level & ED4_L_AREA; }
 
     // use the following functions to cast ED4_base to derived classes:
 
-    ED4_terminal		*to_terminal() const			{ e4_assert(is_terminal()); 		return (ED4_terminal *)this; }
+    ED4_base		            *to_base() const			        { e4_assert(is_terminal() || is_manager()); 		return (ED4_base *)this; }
 
-    ED4_text_terminal		*to_text_terminal() const		{ e4_assert(is_text_terminal());	return (ED4_text_terminal *)this; }
+    ED4_terminal		        *to_terminal() const			    { e4_assert(is_terminal()); 		return (ED4_terminal *)this; }
+
+    ED4_text_terminal		    *to_text_terminal() const		    { e4_assert(is_text_terminal());	return (ED4_text_terminal *)this; }
 
     ED4_species_name_terminal   *to_species_name_terminal() const	{ e4_assert(is_species_name_terminal()); return (ED4_species_name_terminal *)this; }
     ED4_sequence_info_terminal	*to_sequence_info_terminal() const	{ e4_assert(is_sequence_info_terminal()); return (ED4_sequence_info_terminal*)this; }
-    ED4_sequence_terminal	*to_sequence_terminal() const		{ e4_assert(is_sequence_terminal()); 	return (ED4_sequence_terminal*)this; }
-    ED4_pure_text_terminal 	*to_pure_text_terminal() const 		{ e4_assert(is_pure_text_terminal()); 	return (ED4_pure_text_terminal*)this; }
+    ED4_sequence_terminal	    *to_sequence_terminal() const		{ e4_assert(is_sequence_terminal()); 	return (ED4_sequence_terminal*)this; }
+    ED4_pure_text_terminal 	    *to_pure_text_terminal() const 		{ e4_assert(is_pure_text_terminal()); 	return (ED4_pure_text_terminal*)this; }
     ED4_columnStat_terminal     *to_columnStat_terminal() const		{ e4_assert(is_columnStat_terminal());	return (ED4_columnStat_terminal*)this; }
 
-    ED4_bracket_terminal 	*to_bracket_terminal() const 		{ e4_assert(is_bracket_terminal()); 	return (ED4_bracket_terminal*)this; }
-    ED4_spacer_terminal 	*to_spacer_terminal() const 		{ e4_assert(is_spacer_terminal()); 	return (ED4_spacer_terminal*)this; }
-    ED4_line_terminal 		*to_line_terminal() const 		{ e4_assert(is_line_terminal()); 	return (ED4_line_terminal*)this; }
+    ED4_bracket_terminal 	    *to_bracket_terminal() const 		{ e4_assert(is_bracket_terminal()); 	return (ED4_bracket_terminal*)this; }
+    ED4_spacer_terminal 	    *to_spacer_terminal() const 		{ e4_assert(is_spacer_terminal()); 	return (ED4_spacer_terminal*)this; }
+    ED4_line_terminal 		    *to_line_terminal() const 		    { e4_assert(is_line_terminal()); 	return (ED4_line_terminal*)this; }
 
-    ED4_manager			*to_manager() const			{ e4_assert(is_manager()); 		return (ED4_manager *)this; }
+    ED4_manager			        *to_manager() const			        { e4_assert(is_manager()); 		return (ED4_manager *)this; }
 
-    ED4_sequence_manager	*to_sequence_manager() const		{ e4_assert(is_sequence_manager()); 	return (ED4_sequence_manager*)this; }
-    ED4_multi_name_manager	*to_multi_name_manager() const		{ e4_assert(is_multi_name_manager()); 	return (ED4_multi_name_manager *)this; }
-    ED4_name_manager		*to_name_manager() const 		{ e4_assert(is_name_manager()); 	return (ED4_name_manager *)this; }
+    ED4_sequence_manager	    *to_sequence_manager() const		{ e4_assert(is_sequence_manager()); 	return (ED4_sequence_manager*)this; }
+    ED4_multi_name_manager	    *to_multi_name_manager() const		{ e4_assert(is_multi_name_manager()); 	return (ED4_multi_name_manager *)this; }
+    ED4_name_manager		    *to_name_manager() const 		    { e4_assert(is_name_manager()); 	return (ED4_name_manager *)this; }
     ED4_multi_species_manager	*to_multi_species_manager() const 	{ e4_assert(is_multi_species_manager()); return (ED4_multi_species_manager *)this; }
     ED4_multi_sequence_manager	*to_multi_sequence_manager() const 	{ e4_assert(is_multi_sequence_manager()); return (ED4_multi_sequence_manager *)this; }
-    ED4_device_manager		*to_device_manager() const		{ e4_assert(is_device_manager()); 	return (ED4_device_manager *)this; }
-    ED4_group_manager		*to_group_manager() const		{ e4_assert(is_group_manager()); 	return (ED4_group_manager *)this; }
-    ED4_species_manager		*to_species_manager() const		{ e4_assert(is_species_manager()); 	return (ED4_species_manager *)this; }
-    ED4_area_manager		*to_area_manager() const		{ e4_assert(is_area_manager()); 	return (ED4_area_manager *)this; }
+    ED4_device_manager		    *to_device_manager() const		    { e4_assert(is_device_manager()); 	return (ED4_device_manager *)this; }
+    ED4_group_manager		    *to_group_manager() const		    { e4_assert(is_group_manager()); 	return (ED4_group_manager *)this; }
+    ED4_species_manager		    *to_species_manager() const		    { e4_assert(is_species_manager()); 	return (ED4_species_manager *)this; }
+    ED4_area_manager		    *to_area_manager() const		    { e4_assert(is_area_manager()); 	return (ED4_area_manager *)this; }
 };
 
 // --------------------------------------------------------------------------------

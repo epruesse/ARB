@@ -598,7 +598,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
 //		ED4_char_table::
 // --------------------------------------------------------------------------------
 
-bool ED4_char_table::tables_are_valid = true;
+// bool ED4_char_table::tables_are_valid = true;
 bool ED4_char_table::initialized = false;
 unsigned char ED4_char_table::char_to_index_tab[MAXCHARTABLE];
 char *ED4_char_table::upper_index_chars = 0;
@@ -1097,6 +1097,7 @@ bool ED4_char_table::empty() const
 bool ED4_char_table::ok() const
 {
     if (empty()) return true;
+    if (is_ignored()) return true;
 
     if (sequences<0) {
         fprintf(stderr, "Negative # of sequences (%i) in ED4_char_table\n", sequences);
@@ -1137,11 +1138,9 @@ bool ED4_char_table::ok() const
 //      void ED4_char_table::test() const
 //  ------------------------------------------
 void ED4_char_table::test() const {
-    if (ED4_char_table::tables_are_valid) { // do not test if tables are invalid
-        if (!ok()) {
-            fprintf(stderr, "ED4_char_table::test() failed");
-            GB_CORE;
-        }
+    if (!ok()) {
+        fprintf(stderr, "ED4_char_table::test() failed");
+        GB_CORE;
     }
 }
 
