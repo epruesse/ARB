@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : Toolkit.java                                           //
 //    Purpose   : Functions uses in all classes go here                  //
-//    Time-stamp: <Fri Mar/19/2004 13:07 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Mar/19/2004 15:09 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -90,8 +90,7 @@ class Toolkit
                                 error+"\n(this seems to be a bug, please report to "+maintainer+")", 666);
     }
 
-    public static void ExpectNoError(String error) throws Exception
-    {
+    public static void ExpectNoError(String error) throws Exception {
         if (error != null) {
             InternalError("Unexpected error: "+error);
         }
@@ -100,8 +99,8 @@ class Toolkit
     // dialogs
 
     private static Frame getFrame() {
-        if (theClient == null) {
-            System.out.println("Can't get frame!");
+        if (theClient == null) {            
+            Toolkit.showError("Can't get frame.");
             return null;
         }
         return theClient.getDisplay();

@@ -298,7 +298,7 @@ public class TreeDisplay extends Canvas
 
                 Point curr_scroll_position = scrollPane.getScrollPosition();
                 if (!curr_scroll_position.equals(new_scroll_position)) {
-                    System.out.println("too bad - did not scroll to wanted position (java sucks)");
+                    Toolkit.showDebugMessage("too bad - did not scroll to wanted position (java sucks)");
                 }
 
                 lockedPositionNode = null;

@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : Probe.java                                             // 
 //    Purpose   : Object holding one probe                               // 
-//    Time-stamp: <Tue Mar/16/2004 16:13 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Fri Mar/19/2004 15:16 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -137,7 +137,7 @@ public class Probe implements Comparable
 
     private static String stripeOut(String what, int from, int len) {
         if ((from+len) > what.length()) {
-            System.out.println("Illegal parameters to stripeOut: what='"+what+"' what.length()="+what.length()+" from="+from+" len="+len);
+            Toolkit.showError("Illegal parameters to stripeOut: what='"+what+"' what.length()="+what.length()+" from="+from+" len="+len);
             return what; // no error simply dont stripe
         }
 
@@ -203,17 +203,17 @@ public class Probe implements Comparable
                     if (probe_len <= sel_probe_len) {
                         int contained = sel_probe.indexOf(probeString);
                         if (contained != -1) {
-                            System.out.println("complete match (probe is part of sel.probe)");
+                            Toolkit.showDebugMessage("complete match (probe is part of sel.probe)");
                             stripedProbeString = stripeOut(stripedProbeString, 0, probe_len);
                             overlapCount       = probe_len;
                         }
                     }
                 }
                 else {          // complete match
-                    System.out.println("complete match (sel.probe is part of probe)");
+                    Toolkit.showDebugMessage("complete match (sel.probe is part of probe)");
                     overlapCount           = sel_probe.length();
                     if (found+overlapCount > probe_len) {
-                        System.out.println("Oops - sel.probe goes past end of probe");
+                        Toolkit.showError("Oops - sel.probe goes past end of probe");
                     }
                     stripedProbeString = stripeOut(probeString, found, overlapCount);
                 }
@@ -327,7 +327,7 @@ public class Probe implements Comparable
             }
         }
 
-        System.out.println("Unknown compare mode="+mode);
+        Toolkit.showError("Unknown compare mode="+mode);
         return 0;
     }
     public int compareToByMode(Probe other, Integer imode) {

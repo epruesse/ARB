@@ -203,7 +203,7 @@ public class ProbesGUI extends Frame
         Probe overlapping = Probe.getOverlapProbe();
         Probe selected    = probe_list.getProbe(probe_list.getSelectedIndex());
 
-        System.out.println("toggleOverlap!");
+        Toolkit.showDebugMessage("toggleOverlap!");
         if (overlapping != selected) {
             // show overlaps with current probe
             probe_list.showOverlap(selected);

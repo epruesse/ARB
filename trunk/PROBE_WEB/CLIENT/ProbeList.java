@@ -73,7 +73,7 @@ class ProbeList extends java.awt.List {
             if (p != null) lastSelectedProbe = p;
         }
         else {
-            System.out.println("Details should be cleared."); // only if displaying probe details
+            Toolkit.showDebugMessage("Details should be cleared."); // only if displaying probe details
         }
     }
 
