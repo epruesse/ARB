@@ -334,17 +334,21 @@ void SQ_traverse_through_tree(GBDATA *gb_main, GBT_TREE *node, bool marked_only)
 
 
     if (node->gb_node){
-	if (node->is_leaf){
+	if (node->is_leaf==true && (!(node->gb_node==0))){
 	    parent = node->father;
-	    //gb_main = GB_find(node->gb_node,"name",0,down_level);
-	    SQ_calc_sequence_structure(gb_main, marked_only);
+	    if (parent->name){;
+		gb_main = GB_find(parent->gb_node,"name",0,down_level);
+		//SQ_calc_sequence_structure(gb_main, marked_only);
+	    }
 	}
 	else {
 	    parent = node;
-	    node = parent->rightson;
-	    SQ_traverse_through_tree(gb_main, node, marked_only);
-	    node = parent->leftson;
-	    SQ_traverse_through_tree(gb_main, node, marked_only);
+	    if(node = parent->rightson){
+		SQ_traverse_through_tree(gb_main, node, marked_only);
+	    }
+	    if(node = parent->leftson){
+		SQ_traverse_through_tree(gb_main, node, marked_only);
+	    }
 	}
     }
 }
