@@ -376,46 +376,124 @@ extern "C" int probe_match(PT_local * locs, aisc_string probestring)
     return 0;
 }
 
+struct format_props {
+    bool show_mismatches;       // whether to show 'mis' and 'N_mis'
+    bool show_ecoli;            // whether to show ecoli column
+    int  name_width;            // width of 'name' column
+    int  gene_or_full_width;    // width of 'genename' or 'fullname' column
+    int  pos_width;             // max. width of pos column
+    int  ecoli_width;           // max. width of ecoli column
 
-extern "C" char *get_match_info(PT_probematch  *ml)
+    int rev_width() const { return 3; }
+    int mis_width() const { return 3; }
+    int N_mis_width() const { return 5; }
+    int wmis_width() const { return 4; }
+};
+
+inline void set_max(const char *str, int &curr_max) {
+    if (str) {
+        int len = strlen(str);
+        if (len>curr_max) curr_max = len;
+    }
+}
+
+static format_props detect_format_props(PT_local *locs) {
+    PT_probematch *ml = locs->pm; // probe matches
+    format_props   format;
+
+    format.show_mismatches = (ml->N_mismatches >= 0);
+    format.show_ecoli      = psg.ecoli; // display only if there is ecoli
+
+    // minumum values (caused by header widths) :
+    format.name_width         = gene_flag ? 8 : 4; // 'organism' or 'name'
+    format.gene_or_full_width = 8; // 'genename' or 'fullname'
+    format.pos_width          = 3; // 'pos'
+    format.ecoli_width        = 5; // 'ecoli'
+
+    for (PT_probematch *ml = locs->pm; ml; ml = ml->next) {
+        set_max(virt_name(ml), format.name_width);
+        set_max(virt_fullname(ml), format.gene_or_full_width);
+        set_max(GBS_global_string("%i", ml->b_pos), format.pos_width);
+        if (format.show_ecoli) {
+            set_max(GBS_global_string("%li", PT_abs_2_rel(ml->b_pos)), format.ecoli_width);
+        }
+    }
+
+    return format;
+}
+
+inline void cat_internal(void *memfile, int len, const char *text, int width, char spacer, bool align_left) {
+    if (len == width) {
+        GBS_strcat(memfile, text); // text has exact len
+    }
+    else if (len > width) { // text to long
+        char buf[width+1];
+        memcpy(buf, text, width);
+        buf[width] = 0;
+        GBS_strcat(memfile, buf);
+    }
+    else {                      // text is too short -> insert spaces
+        int  spaces = width-len;
+        pt_assert(spaces>0);
+        char sp[spaces+1];
+        memset(sp, spacer, spaces);
+        sp[spaces]  = 0;
+
+        if (align_left) {
+            GBS_strcat(memfile, text);
+            GBS_strcat(memfile, sp);
+        }
+        else {
+            GBS_strcat(memfile, sp);
+            GBS_strcat(memfile, text);
+        }
+    }
+    GBS_chrcat(memfile, ' '); // one space behind each column
+}
+inline void cat_spaced_left (void *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, ' ', true); }
+inline void cat_spaced_right(void *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, ' ', false); }
+inline void cat_dashed_left (void *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', true); }
+inline void cat_dashed_right(void *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', false); }
+
+static const char *get_match_info_formatted(PT_probematch  *ml, const format_props& format)
 {
-    static char buffer[256];
-    char fullname[32];
-    char *ref;
-    int	pr_pos,al_pos;
-    int	pr_len = strlen(ml->sequence);
-    double	wmis = 0.0;
-    double	h;
-    int	a,b;
+    int    pr_pos,al_pos;
+    int    pr_len = strlen(ml->sequence);
+    double wmis   = 0.0;
+    double h;
+    int    a,b;
 
     PT_local *locs = (PT_local *)ml->mh.parent->parent;
-    PT_pdc	*pdc = locs->pdc;
-    strncpy(fullname,virt_fullname(ml),29);
-    fullname[29] = 0;
-    ref = (char *)calloc(sizeof(char),21+pr_len);
+    PT_pdc   *pdc  = locs->pdc;
+
+    char *ref    = (char *)calloc(sizeof(char),21+pr_len);
     memset(ref,'.',10);
-    for (pr_pos = 8, al_pos = ml->rpos-1;
-         pr_pos>=0 && al_pos >=0;
-         pr_pos--, al_pos--){
+    for (pr_pos  = 8, al_pos = ml->rpos-1;
+         pr_pos >= 0 && al_pos >=0;
+         pr_pos--, al_pos--)
+    {
         if (!psg.data[ml->name].data[al_pos]) break;
         ref[pr_pos] = psg.data[ml->name].data[al_pos];
     }
     ref[9] = '-';
+
     pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by,ml->sequence);
 
     for (pr_pos = 0, al_pos = ml->rpos;
          pr_pos < pr_len && al_pos < psg.data[ml->name].size;
-         pr_pos++, al_pos++){
-        if ((a=ml->sequence[pr_pos]) ==
-            (b=psg.data[ml->name].data[al_pos])){
+         pr_pos++, al_pos++)
+    {
+        if ((a=ml->sequence[pr_pos]) == (b=psg.data[ml->name].data[al_pos])) {
             ref[pr_pos+10] = '=';
-        }else{
+        }
+        else {
             ref[pr_pos+10] = b;
-            if (pdc && a >= PT_A && a <=PT_T && b>= PT_A && b<=PT_T){
+            if (pdc && a >= PT_A && a <=PT_T && b>= PT_A && b<=PT_T) {
                 h = ptnd_check_split(pdc,ml->sequence, pr_pos,b);
                 if (h<0.0) {
                     h = -h;
-                }else{
+                }
+                else {
                     ref[pr_pos+10] = " nacgu"[b];
                 }
                 wmis += psg.pos_to_weight[pr_pos] * h;
@@ -426,72 +504,107 @@ extern "C" char *get_match_info(PT_probematch  *ml)
 
     for (pr_pos = 0, al_pos = ml->rpos+pr_len;
          pr_pos < 9 && al_pos < psg.data[ml->name].size;
-         pr_pos++, al_pos++){
+         pr_pos++, al_pos++)
+    {
         ref[pr_pos+11+pr_len] = psg.data[ml->name].data[al_pos];
     }
     ref[10+pr_len] = '-';
     PT_base_2_string(ref,0);
-    if (ml->N_mismatches>=0) {
-        sprintf(buffer,"%10s %-30s %2i  %2i    %1.1f %5i %4li  %1i  %s",
-                virt_name(ml),	fullname,
-                ml->mismatches, ml->N_mismatches, wmis,
-                ml->b_pos, PT_abs_2_rel(ml->b_pos),
-                ml->reversed,ref );
-    }else{
-        sprintf(buffer,"%10s %-30s %2.2f  %2.1f %5i   %4li  %1i  %s",
-                virt_name(ml),	fullname,
-                ml->dt, wmis,
-                ml->b_pos, PT_abs_2_rel(ml->b_pos),
-                ml->reversed,ref );
+
+    void *memfile = GBS_stropen(256);
+    GBS_strcat(memfile, "  ");
+
+    cat_spaced_left(memfile, virt_name(ml), format.name_width);
+    cat_spaced_left(memfile, virt_fullname(ml), format.gene_or_full_width);
+
+    if (format.show_mismatches) {
+        cat_spaced_right(memfile, GBS_global_string("%i", ml->mismatches), format.mis_width());
+        cat_spaced_right(memfile, GBS_global_string("%i", ml->N_mismatches), format.N_mis_width());
     }
+    cat_spaced_right(memfile, GBS_global_string("%.1f", wmis), format.wmis_width());
+    cat_spaced_right(memfile, GBS_global_string("%i", ml->b_pos), format.pos_width);
+    if (format.show_ecoli) {
+        cat_spaced_right(memfile, GBS_global_string("%li", PT_abs_2_rel(ml->b_pos)), format.ecoli_width);
+    }
+    cat_spaced_left(memfile, GBS_global_string("%i", ml->reversed), format.rev_width());
+
+    GBS_strcat(memfile, ref);
+
     free(ref);
-    return buffer;
+    return GBS_strclose(memfile);
 }
 
-extern "C" char *get_match_hinfo(PT_probematch  *ml) {
-    char *seq = strdup(ml->sequence);
-    PT_base_2_string(seq,0);
-    if (!ml) return (char*)"There are no targets";
-    if (ml->N_mismatches>=0) {
-        // Set header of result
-        if (gene_flag) {
-            return (char*)GBS_global_string("    species  genename                       mis N_mis wmis  pos ecoli rev         '%s'",seq);
-        }
-        else {
-            return (char *)GBS_global_string("   name      fullname                       mis N_mis wmis  pos ecoli rev         '%s'",seq);
-
-        }
+static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_props& format) {
+    // Set header of result
+    const char *result = 0;
+    if (!ml) {
+        result = "There are no targets";
     }
     else {
-        return (char*)"name     fullname                       dt   wmis pos   ecoli  rev";
-    }
-}
+        void *memfile = GBS_stropen(500);
+        GBS_strcat(memfile, "    "); // one space more than in get_match_info_formatted()
 
-extern "C" char *c_get_match_hinfo(PT_probematch *ml) {
-    return get_match_hinfo(ml);
+        cat_dashed_left(memfile, gene_flag ? "organism" : "name", format.name_width);
+        cat_dashed_left(memfile, gene_flag ? "genename" : "fullname", format.gene_or_full_width);
+
+        if (format.show_mismatches) {
+            cat_dashed_right(memfile, "mis",   format.mis_width());
+            cat_dashed_right(memfile, "N_mis", format.N_mis_width());
+        }
+        cat_dashed_right(memfile, "wmis", format.wmis_width());
+        cat_dashed_right(memfile, "pos", format.pos_width);
+        if (format.show_ecoli) {
+            cat_dashed_right(memfile, "ecoli", format.ecoli_width);
+        }
+        cat_dashed_left(memfile, "rev", format.rev_width());
+
+        if (ml->N_mismatches >= 0) { //
+            char *seq = strdup(ml->sequence);
+            PT_base_2_string(seq,0);
+
+            GBS_strcat(memfile, "         '");
+            GBS_strcat(memfile, seq);
+            GBS_strcat(memfile, "'");
+
+            free(seq);
+        }
+
+        static char *result = 0;
+        if (result) free(result);
+        result = GBS_strclose(memfile);
+
+        return result;
+    }
+    pt_assert(result);
+    return result;
 }
 
 /* Create a big output string:	header\001name\001info\001name\001info....\000 */
-extern "C" bytestring *match_string(PT_local *locs){
+extern "C" bytestring *match_string(PT_local *locs) {
     static bytestring bs = {0,0};
-    void *memfile;
+    void          *memfile;
     PT_probematch *ml;
     delete bs.data;
+
     char empty[] = "";
-    bs.data = empty;
-    memfile = GBS_stropen(500000);
+    bs.data      = empty;
+    memfile      = GBS_stropen(50000);
+
     if (locs->pm) {
-        GBS_strcat(memfile, c_get_match_hinfo(locs->pm));
+        format_props format = detect_format_props(locs);
+
+        GBS_strcat(memfile, get_match_hinfo_formatted(locs->pm, format));
         GBS_chrcat(memfile,(char)1);
-    }
-    for (ml = locs->pm; ml ; ml = ml->next){
-        GBS_strcat(memfile, virt_name(ml));
-        GBS_chrcat(memfile,(char)1);
-        GBS_strcat(memfile, get_match_info(ml));
-        GBS_chrcat(memfile,(char)1);
+
+        for (ml = locs->pm; ml ; ml = ml->next){
+            GBS_strcat(memfile, virt_name(ml));
+            GBS_chrcat(memfile,(char)1);
+            GBS_strcat(memfile, get_match_info_formatted(ml, format));
+            GBS_chrcat(memfile,(char)1);
+        }
     }
 
-    bs.data = GBS_strclose(memfile,0);
+    bs.data = GBS_strclose(memfile);
     bs.size = strlen(bs.data)+1;
     return &bs;
 }
@@ -509,7 +622,7 @@ extern "C" bytestring *MP_match_string(PT_local *locs){
 
     delete bs.data;
     bs.data = 0;
-    memfile = GBS_stropen(500000);
+    memfile = GBS_stropen(50000);
 
     for (ml = locs->pm; ml ; ml = ml->next)
     {
@@ -522,7 +635,7 @@ extern "C" bytestring *MP_match_string(PT_local *locs){
         GBS_strcat(memfile, buffer1);
         GBS_chrcat(memfile,(char)1);
     }
-    bs.data = GBS_strclose(memfile,0);
+    bs.data = GBS_strclose(memfile);
     bs.size = strlen(bs.data)+1;
     return &bs;
 }
@@ -536,7 +649,7 @@ extern "C" bytestring *MP_all_species_string(PT_local *){
 
     delete bs.data;
     bs.data = 0;
-    memfile = GBS_stropen(100000);
+    memfile = GBS_stropen(1000);
 
     for (i = 0; i < psg.data_count; i++)
     {
@@ -544,7 +657,7 @@ extern "C" bytestring *MP_all_species_string(PT_local *){
         GBS_chrcat(memfile,(char)1);
     }
 
-    bs.data = GBS_strclose(memfile,0);
+    bs.data = GBS_strclose(memfile);
     bs.size = strlen(bs.data)+1;
     return &bs;
 }
