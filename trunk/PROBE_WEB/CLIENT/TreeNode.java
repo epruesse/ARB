@@ -47,7 +47,7 @@ public class TreeNode
     //     private Vector   childNodes;
     private TreeNode upperSon;
     private TreeNode lowerSon;
-    private int      noOfChildren   = -1; // means: not initialized yet
+    private int      noOfLeaves   = -1; // means: not initialized yet
     //     private boolean  grouped = false;
 
     // marks
@@ -258,18 +258,16 @@ public class TreeNode
         }
     }
 
-    public int getNoOfLeaves()
-    {
-        if (isLeaf()) {
-            noOfChildren = 0;
-            return 1;
+    public int getNoOfLeaves() {
+        if (noOfLeaves == -1) {            
+            if (isLeaf()) {
+                noOfLeaves = 1;
+            }
+            else {
+                noOfLeaves = upperSon().getNoOfLeaves()+lowerSon().getNoOfLeaves();
+            }
         }
-
-        if (noOfChildren == -1) {   // not calculated yet
-            noOfChildren = upperSon().getNoOfLeaves()+lowerSon().getNoOfLeaves();
-        }
-
-        return noOfChildren;
+        return noOfLeaves;
     }
 
     public boolean isLeaf() { return isLeaf; }
@@ -391,14 +389,18 @@ public class TreeNode
         return marks_changed;
     }
 
-    public int countMarked() {
+    public int countMarked() throws Exception {
         switch (markedState()) {
             case 0: return 0;
-            case 2: return noOfChildren;
-            case 1: break;
+            case 2: return noOfLeaves;
+            case 1:
+                if (isLeaf()) Toolkit.InternalError("leaf has marked state=1");
+                return upperSon().countMarked()+lowerSon().countMarked();
+            default: break;
         }
 
-        return upperSon().countMarked()+lowerSon().countMarked();
+        Toolkit.InternalError("Illegal markedState()="+markedState());
+        return -1;
     }
 
     public boolean unmarkRestOfTree()
