@@ -1,7 +1,10 @@
 
 item:ClustalW automatic
 itemmeta: W
-itemmethod:(tr '"%//' '>' <in1 >clus_in;RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align ;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); /bin/rm -f clus_in* in1)
+itemmethod:(tr '"%//' '>' <in1 >clus_in; \
+            RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align ; \
+                           cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); \
+            /bin/rm -f clus_in* in1)
 
 itemhelp:clustalw.help
 
@@ -13,7 +16,7 @@ insave:
 out:out1
 outformat:flat
 
-
+// --------------------------------------------------------------------------------
 
 item:Create ClustalW Profile 2
 itemmeta: C
@@ -25,6 +28,7 @@ in:in1
 informat:flat
 insave:
 
+// --------------------------------------------------------------------------------
 
 item:Delete ClustalW Profile 2
 itemmeta: D
@@ -32,11 +36,14 @@ itemmethod:(/bin/rm -f clus_prf)
 
 itemhelp:clustalw.help
 
-
+// --------------------------------------------------------------------------------
 
 item:ClustalW Profile Alignment
 itemmeta: P
-itemmethod:(tr '"%//' '>' <in1 >clus_in;RUN_IN_WINDOW((clustalw -output=PIR -profile1=clus_in -profile2=clus_prf -align ;cat clus_in.pir |sed "s/^>DL;/#/g"|sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); /bin/rm -f clus_in* in1)
+itemmethod:(tr '"%//' '>' <in1 >clus_in; \
+            RUN_IN_WINDOW((clustalw -output=PIR -profile1=clus_in -profile2=clus_prf -align ; \
+                           cat clus_in.pir |sed "s/^>DL;/#/g"|sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); \
+            /bin/rm -f clus_in* in1)
 
 itemhelp:clustalw.help
 
@@ -48,12 +55,16 @@ insave:
 out:out1
 outformat:flat
 
-
-
+// --------------------------------------------------------------------------------
 
 item:ClustalW DNA Alignment (experts only)
 itemmeta: N
-itemmethod:(tr '"%//' '>' <in1 >clus_in;RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align -ktuple=$KTUP_ -window=$WIN_ -topdiags=$WIN_ -gapopen=$FIXED_ -gapext=$FLOAT_ -transweight=0.5 -type=DNA -pwdnamatrix=$PWDNAMATRIX_ -dnamatrix=$DNAMATRIX_;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); /bin/rm -f clus_in* in1)
+itemmethod:(tr '"%//' '>' <in1 >clus_in ; \
+            RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align -ktuple=$KTUP_ -window=$WIN_ \
+                                    -topdiags=$WIN_ -gapopen=$FIXED_ -gapext=$FLOAT_ -transweight=0.5 -type=DNA \
+                                    -pwdnamatrix=$PWDNAMATRIX_ -dnamatrix=$DNAMATRIX_; \
+                           cat clus_in.pir | sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )) ; \
+           /bin/rm -f clus_in* in1)
 
 itemhelp:clustalw.help
 
@@ -105,10 +116,15 @@ insave:
 out:out1
 outformat:flat
 
+// --------------------------------------------------------------------------------
 
 item:ClustalW Protein Alignment (experts only)
 itemmeta: o
-itemmethod:(tr '"%//' '>' <in1 >clus_in;RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align -ktuple=$KTUP_ -window=$WIN_ -topdiags=$WIN_  -gapopen=$FIXED_ -gapext=$FLOAT_ -type=PROTEIN -pwmatrix=$PWMATRIX_ -matrix=$MATRIX_;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; ));\/bin/rm -f clus_in* in1)
+itemmethod:(tr '"%//' '>' <in1 >clus_in; \
+            RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align -ktuple=$KTUP_ -window=$WIN_ -topdiags=$WIN_ \
+                                    -gapopen=$FIXED_ -gapext=$FLOAT_ -type=PROTEIN -pwmatrix=$PWMATRIX_ -matrix=$MATRIX_; \
+                           cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); \
+            /bin/rm -f clus_in* in1)
 
 
 itemhelp:clustalw.help
@@ -157,8 +173,6 @@ argmin:.001
 argmax:1
 argvalue:.1
 
-
-
 in:in1
 informat:flat
 insave:
@@ -166,9 +180,13 @@ insave:
 out:out1
 outformat:flat
 
+// --------------------------------------------------------------------------------
+
 item:Assemble Contigs
 itemmeta: s
-itemmethod: (tr '"%//' '>' <in1 >in1.tmp;CAP2 in1.tmp $OVERLAP $PMATCH >  out1;/bin/rm -f in1.tmp)
+itemmethod: ( tr '"%//' '>' <in1 >in1.tmp; \
+              CAP2 in1.tmp $OVERLAP $PMATCH >  out1; \
+              /bin/rm -f in1.tmp )
 itemhelp:CAP2.help
 
 arg:OVERLAP
