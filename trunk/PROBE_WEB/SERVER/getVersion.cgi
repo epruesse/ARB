@@ -16,6 +16,3 @@ else {
   probe_server::print_critical_error("no such file:'$treefile'");
 }
 
-
-
-# print "CURRENTVERSION_16S_27081969";
