@@ -182,7 +182,7 @@ GB_ERROR AWT_print_tree_to_printer(AW_window *aww, AWT_canvas * ntw)
 		else {
 			fclose(out);
 // 			sprintf(sys,"fig2dev -L ps -P -m %f %s %s %s", magnification,orientation, xfig, dest);
-			sprintf(sys,"fig2dev -L ps -m %f %s %s %s", magnification, orientation, xfig, dest);
+			sprintf(sys,"fig2dev -L ps -M -m %f %s %s %s", magnification, orientation, xfig, dest);
 		}
 	}
 
