@@ -21,7 +21,7 @@ nt_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
 
     switch(mode){
         case AWT_MODE_SELECT:
-            text = "SELECT MODE    LEFT: select species";
+            text = "SELECT MODE    LEFT: select species and open/close group";
             break;
         case AWT_MODE_MARK:
             text = "MARK MODE    LEFT: mark subtree   RIGHT: unmark subtree";
