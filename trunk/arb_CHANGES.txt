@@ -2,6 +2,7 @@ ARB change log
 
 Major changes for next Beta:
 
+ - expanded sellists
  - save/load fixed for multi probes
  - Some menu rearrangements
  - Binary SAIs are editable in ARB_EDIT4
