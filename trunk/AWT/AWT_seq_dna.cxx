@@ -60,40 +60,81 @@ for wagner & fitch parsimony algorithm
 is_set_flag is used by AP_tree_nlen::parsimony_rek()
 *************************************************************************/
 
+#define SHOW_SEQ
+
 void AP_sequence_parsimony::set(char *isequence)
 {
-    register char *s,*d,*f1,c;
-    register const uchar *simplify;
+//     register char *s,*d,*f1,c;
     sequence_len = root->filter->real_len;
-    sequence = new char[sequence_len+1];
+    sequence     = new char[sequence_len+1];
     memset(sequence,AP_N,(size_t)sequence_len+1);
-    s = isequence;
-    d = sequence;
-    f1 = root->filter->filter_mask;
-    simplify = root->filter->simplify;
+//     s            = isequence;
+//     d            = sequence;
+//     f1           = root->filter->filter_mask;
+
+    const uchar *simplify = root->filter->simplify;
     if (!table) this->build_table();
-    if (root->filter->bootstrap){
+
+    if (root->filter->bootstrap) {
         int iseqlen = strlen(isequence);
-        int i;
-        for (i=root->filter->real_len-1;i>=0;i--){
+
+        for (int i = 0; i<sequence_len; ++i) {
             int pos = root->filter->bootstrap[i]; // enthaelt zufallsfolge
+
+            awt_assert(pos<iseqlen);
             if (pos >= iseqlen) continue;
-            c = s[pos];         // @@@ muss ueber mapping tabelle aufgefaltet werden 10/99
-            d[i] = table[simplify[c]];
+
+            char c = isequence[pos];   // @@@ muss ueber mapping tabelle aufgefaltet werden 10/99
+
+#if defined(SHOW_SEQ)
+            fputc(simplify[c], stdout);
+#endif // SHOW_SEQ
+
+            sequence[i] = table[simplify[c]];
+
         }
-    }else{
-        register char *f = root->filter->filter_mask;
-        register int i = root->filter->filter_len;
-        while ( (c = (*s++)) ) {
-            if (!i) break;
-            i--;
-            if (*(f++)) {
-                *(d++) = table[simplify[c]];
+
+//         int i;
+//         for (i=root->filter->real_len-1;i>=0;i--){
+//             int pos = root->filter->bootstrap[i]; // enthaelt zufallsfolge
+//             if (pos >= iseqlen) continue;
+//             c = s[pos];
+//             d[i] = table[simplify[c]];
+//         }
+
+    }
+    else {
+        char *filt       = root->filter->filter_mask;
+        int   left_bases = sequence_len;
+        int   filter_len = root->filter->filter_len;
+        int   oidx       = 0; // for output sequence
+
+        for (int idx = 0; idx<filter_len && left_bases; ++idx) {
+            if (filt[idx]) {
+                char c           = isequence[idx];
+                sequence[oidx++] = table[simplify[c]];
+                --left_bases;
+#if defined(SHOW_SEQ)
+                fputc(simplify[c], stdout);
+#endif                          // SHOW_SEQ
             }
         }
+
+//         while ( (c = (*s++)) ) {
+//             if (!i) break;
+//             if (*(f++)) { // use current position ?
+//                 i--;            // decrement leftover positions
+//                 *(d++) = table[simplify[c]];
+//             }
+//         }
     }
-    update = AP_timer();
-    is_set_flag = AP_TRUE;
+
+#if defined(SHOW_SEQ)
+    fputc('\n', stdout);
+#endif // SHOW_SEQ
+
+    update          = AP_timer();
+    is_set_flag     = AP_TRUE;
     cashed_real_len = -1.0;
 }
 
