@@ -4,6 +4,11 @@ Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
 All rights reserved.
 */
 #define USE_ARB
+
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
+
 // #ifndef GB_INCLUDED
 // typedef int *GBDATA;
 // #endif
