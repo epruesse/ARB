@@ -184,9 +184,10 @@ public:
     AW_awar *awar_int( const char *var_name, long default_value = 0 , AW_default default_file = AW_ROOT_DEFAULT);
     AW_awar *awar_float( const char *var_name, float default_value = 0.0, AW_default default_file = AW_ROOT_DEFAULT );
 
-    AW_default  open_default(const char *default_name);
-    AW_error    *save_default( const char *awar_name );
-    AW_error    *save_default(AW_default aw_default,const char *file_name);
+    AW_default  open_default(const char *default_name, bool create_if_missing = true);
+    AW_error   *save_default( const char *awar_name );
+    AW_error   *save_default( const char *awar_name, const char *file_name );
+    AW_error   *save_default(AW_default aw_default, const char *file_name);
     AW_default  get_default(const char *varname);
     AW_default  get_gbdata(const char *varname);
 
