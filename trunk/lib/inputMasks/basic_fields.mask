@@ -21,6 +21,12 @@ ARB-Input-Mask
 
     TEXTFIELD(   "Name (Fullname)",  "full_name" ,63  )
     TEXTFIELD(   "Remark  ",  "remark2" ,  70  )
+    TEXTFIELD(   "Remark3 ",  "remark3" ,  70  )
+
+    RADIO(       "Species class: ", "class2", 3, y,        \
+                "other", "other-value", \
+                "artificial",       "artificial-value",       \
+                "real",             Allow_Edit,  15,  "real-value" )
 
     TEXT("Publications2:")
 
