@@ -126,7 +126,7 @@ class Client
         }
     }
 
-    public void updateNodeInformation(TreeNode clickedNode) throws Exception
+    public void updateNodeInformation(TreeNode clickedNode, String preferredProbe) throws Exception
     {
         ProbeList list = display.getProbeList();
         list.removeAll();
@@ -143,7 +143,7 @@ class Client
 
             // Toolkit.clickOK("Nachricht", "Die Sonden wurden geholt");
 
-            list.setContents(probes);
+            list.setContents(probes, preferredProbe);
 
             if (list.length() == 0) {
                 root.unmarkSubtree();
@@ -429,7 +429,11 @@ class Client
                 needRefresh = true;
             }
             if (config.hasKey("LastMatchedSubtree")) { // restore last matched subtree
-                td.setMatchedNode(td.findNodeByCodedPath(config.getValue("LastMatchedSubtree")));
+                String preferredProbe = null;
+                if (config.hasKey("SelectedProbe")) {
+                    preferredProbe = config.getValue("SelectedProbe");
+                }
+                td.setMatchedNode(td.findNodeByCodedPath(config.getValue("LastMatchedSubtree")), preferredProbe);
                 needRefresh = true;
             }
 
@@ -505,6 +509,12 @@ class Client
         TreeNode lastMatched = tree_display.getLastMatchedNode();
         if (lastMatched != null) {
             configBuf.append("LastMatchedSubtree="+lastMatched.getCodedPath()+"\n");
+        }
+
+        ProbeList pl            = display.getProbeList();
+        Probe     selectedProbe = pl.getSelectedProbe();
+        if (selectedProbe != null) {
+            configBuf.append("SelectedProbe="+selectedProbe.sequence());
         }
 
         String configuration = configBuf.toString();
