@@ -24,6 +24,7 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 probe_design.o: probe_design.hxx
+probe_design.o: probe_match_parser.hxx
 probe_design.o: SaiProbeVisualization.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -31,6 +32,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/adGene.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_design.o: $(ARBHOME)/INCLUDE/arbdb.h
 probe_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
+probe_design.o: $(ARBHOME)/INCLUDE/arbtools.h
 probe_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device.hxx
