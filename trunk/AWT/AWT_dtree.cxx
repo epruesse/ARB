@@ -74,6 +74,7 @@ AP_tree *AWT_graphic_tree::search(AP_tree *root, const char *name)
 void AWT_graphic_tree::jump(AP_tree *at, const char *name)
 {
     if (this->tree_sort == AP_NDS_TREE) return;
+    if (this->tree_sort == AP_NO_NDS) return;
 
     at = this->search(at,name);
     if(!at) return;
@@ -1589,8 +1590,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
 
 void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
 {
-    if (type == AP_NDS_TREE) {
-        if (tree_sort == AP_NDS_TREE) { // we are already in NDS view
+    if (type == AP_NDS_TREE || type == AP_NO_NDS) {
+        if (tree_sort == type) { // we are already in wanted view
             nds_show_all = !nds_show_all; // -> toggle between 'marked' and 'all'
         }
         else {
@@ -1610,6 +1611,7 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
             exports.dont_scroll     = 0;
             break;
 
+        case AP_NO_NDS:
         case AP_NDS_TREE:
             exports.dont_fit_x      = 1;
             exports.dont_fit_y      = 1;
@@ -1659,6 +1661,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_rooti, GBDATA *gb_maini):AWT_grap
     y_pos             = 0;
     tree_proto        = 0;
     tree_static       = 0;
+    tree_name         = 0;
     baselinewidth     = 0;
     species_name      = 0;
     this->aw_root     = aw_rooti;
@@ -1673,6 +1676,7 @@ AWT_graphic_tree::~AWT_graphic_tree(void)
     delete this->tree_proto;
     delete this->tree_root;
     delete this->tree_static;
+    free(tree_name);
 }
 
 void AWT_graphic_tree::init(AP_tree * tree_prot)
@@ -1686,10 +1690,12 @@ void AWT_graphic_tree::unload(void)
 
     delete this->tree_root;
     delete this->tree_static;
+    free(tree_name);
 
-    this->tree_root = 0;
-    this->tree_static = 0;
+    this->tree_root         = 0;
+    this->tree_static       = 0;
     this->tree_root_display = 0;
+    this->tree_name         = 0;
 }
 
 GB_ERROR AWT_graphic_tree::load(GBDATA *dummy, const char *name,AW_CL link_to_database, AW_CL insert_delete_cbs)
@@ -1710,15 +1716,16 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *dummy, const char *name,AW_CL link_to_da
         olderror = error;
         return error;
     }
-    olderror = 0;
-    this->tree_root = apt;
-    this->tree_static = tr;
+    olderror                = 0;
+    this->tree_root         = apt;
+    this->tree_static       = tr;
     this->tree_root_display = this->tree_root;
     this->tree_root->compute_tree(gb_main);
-    tr->root_changed_cd = (void*)this;
-    tr->root_changed = AWT_graphic_tree_root_changed;
-    tr->node_deleted_cd = (void*)this;
-    tr->node_deleted = AWT_graphic_tree_node_deleted;
+    this->tree_name         = strdup(name);
+    tr->root_changed_cd     = (void*)this;
+    tr->root_changed        = AWT_graphic_tree_root_changed;
+    tr->node_deleted_cd     = (void*)this;
+    tr->node_deleted        = AWT_graphic_tree_node_deleted;
     return 0;
 }
 
@@ -1772,25 +1779,30 @@ void AWT_graphic_tree::update(GBDATA *gbdummy){
     this->tree_root->update();
 }
 
-void AWT_graphic_tree::NT_scalebox(int gc, double u, double v, int width)
+void AWT_graphic_tree::NT_scalebox(int gc, double u, double v, double width)
 {
-    double diam = (double)width/disp_device->get_scale();
+    double diam = width/disp_device->get_scale();
     disp_device->set_fill(gc, this->grey_level);
-    disp_device->box(gc,-diam+u,-diam+v, diam+diam,diam+diam,mark_filter,0,0);
+    disp_device->box(gc,u-diam,v-diam, diam+diam,diam+diam,mark_filter,0,0);
 }
 
-void AWT_graphic_tree::NT_emptybox(int gc, double u, double v, int width)
+void AWT_graphic_tree::NT_emptybox(int gc, double u, double v, double width)
 {
-    double diam = (double)width/disp_device->get_scale();
-    disp_device->line(gc,u-diam,v-diam, u-diam,v+diam,mark_filter,0,0);
-    disp_device->line(gc,u-diam,v-diam, u+diam,v-diam,mark_filter,0,0);
-    disp_device->line(gc,u+diam,v+diam, u-diam,v+diam,mark_filter,0,0);
-    disp_device->line(gc,u+diam,v+diam, u+diam,v-diam,mark_filter,0,0);
+    double diam = width/disp_device->get_scale();
+    double u1   = u-diam;
+    double u2   = u+diam;
+    double v1   = v-diam;
+    double v2   = v+diam;
+
+    disp_device->line(gc,u1,v1,u1,v2,mark_filter,0,0);
+    disp_device->line(gc,u1,v1,u2,v1,mark_filter,0,0);
+    disp_device->line(gc,u2,v2,u1,v2,mark_filter,0,0);
+    disp_device->line(gc,u2,v2,u2,v1,mark_filter,0,0);
 }
 
-void AWT_graphic_tree::NT_rotbox(int gc, double u, double v, int width)
+void AWT_graphic_tree::NT_rotbox(int gc, double u, double v, double width) // box with one corner down
 {
-    double diam = (double)width/disp_device->get_scale();
+    double diam = width/disp_device->get_scale();
     disp_device->line(gc,u,v-diam, u-diam,v,mark_filter,0,0);
     disp_device->line(gc,u,v-diam, u+diam,v,mark_filter,0,0);
     disp_device->line(gc,u+diam,v, u,v+diam,mark_filter,0,0);
@@ -1863,7 +1875,7 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
     if (at->is_leaf) {
         /* draw mark box */
         if (at->gb_node && GB_read_flag(at->gb_node)){
-            NT_scalebox(at->gr.gc,x_son, ny0, (int)NT_BOX_WIDTH);
+            NT_scalebox(at->gr.gc,x_son, ny0, NT_BOX_WIDTH);
         }
         if (at->name && at->name[0] == this->species_name[0] &&
             !strcmp(at->name,this->species_name)) {
@@ -1871,7 +1883,7 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
         }
         if (at->name && (disp_device->filter & text_filter) ){
             // text darstellen
-            const char *data = make_node_text_nds(this->gb_main, at->gb_node,0,at->get_gbt_tree());
+            const char *data = make_node_text_nds(this->gb_main, at->gb_node,0,at->get_gbt_tree(), tree_name);
 
             //             offset = scale*0.4;
 
@@ -1929,7 +1941,7 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
         xoffset = text_ascent*.5;
 
         if (at->gb_node && (disp_device->filter & text_filter)){
-            const char *data = make_node_text_nds(this->gb_main, at->gb_node,0,at->get_gbt_tree());
+            const char *data = make_node_text_nds(this->gb_main, at->gb_node,0,at->get_gbt_tree(), tree_name);
 
             disp_device->text(at->gr.gc,data ,
                               (AW_pos) nx0+xoffset,(AW_pos) ny0+yoffset,
@@ -1952,7 +1964,7 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
     ny1 = (double) show_list_tree_rek(at->rightson,x_son, nx1);
 
     if (at->name) {
-        NT_rotbox(at->gr.gc,x_son, ry, (int)NT_BOX_WIDTH<<1);
+        NT_rotbox(at->gr.gc,x_son, ry, NT_BOX_WIDTH*2);
     }
 
     if (at->leftson->remark_branch ) {
@@ -2022,7 +2034,7 @@ void AWT_graphic_tree::show_tree_rek(AP_tree * at, double x_center,
 
     // draw mark box
     if (at->gb_node && GB_read_flag(at->gb_node)) {
-        NT_scalebox(at->gr.gc, x_center, y_center, (int)NT_BOX_WIDTH);
+        NT_scalebox(at->gr.gc, x_center, y_center, NT_BOX_WIDTH);
     }
 
     if( at->is_leaf){
@@ -2032,7 +2044,7 @@ void AWT_graphic_tree::show_tree_rek(AP_tree * at, double x_center,
                 x_cursor = x_center; y_cursor = y_center;
             }
             scale_text_koordinaten(disp_device,at->gr.gc, x_center,y_center,tree_orientation,0);
-            const char *data =  make_node_text_nds(this->gb_main,at->gb_node,0,at->get_gbt_tree());
+            const char *data =  make_node_text_nds(this->gb_main,at->gb_node,0,at->get_gbt_tree(), tree_name);
             // PJ vectorfont - example for calling
             //                      disp_device->zoomtext(at->gr.gc,data,
             //                              (AW_pos)x_center,(AW_pos) y_center,
@@ -2073,7 +2085,7 @@ void AWT_graphic_tree::show_tree_rek(AP_tree * at, double x_center,
             scale_text_koordinaten(disp_device,at->gr.gc,x_center,y_center,w,0);
 
             /* insert text (e.g. name of group) */
-            const char *data = make_node_text_nds(this->gb_main, at->gb_node,0,at->get_gbt_tree());
+            const char *data = make_node_text_nds(this->gb_main, at->gb_node,0,at->get_gbt_tree(), tree_name);
             //PJ vectorfont - possibly groups should be rendered bigger than species
             //                        disp_device->zoomtext(at->gr.gc ,data,
             //                                (AW_pos)x_center,(AW_pos) y_center, 0.01,
@@ -2180,6 +2192,9 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
         case AP_NDS_TREE:
             tree_awar = "NDS";
             break;
+        case AP_NO_NDS:
+            tree_awar = "NONE";
+            break;
         case AP_IRS_TREE:
             tree_awar = "IRS";
             break;
@@ -2238,42 +2253,44 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
     return tree_awar;
 }
 
-
-void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy)
+void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy, bool use_nds)
 {
     AWUSE(dummy);
-    GBDATA      *gb_species;
-    GBDATA      *gb_name;
-    AW_pos       y_position = scale;
-    AW_pos       offset;
-    long         max_strlen = 0;
+    AW_pos y_position = scale;
+    long   max_strlen = 0;
 
     disp_device->text(nds_show_all ? AWT_GC_CURSOR : AWT_GC_SELECTED,
-                      nds_show_all ? "NDS List of all species:" : "NDS List of marked species:",
+                      GBS_global_string("%s of %s species", use_nds ? "NDS List" : "Simple list", nds_show_all ? "all" : "marked"),
                       (AW_pos) scale * 2, (AW_pos) 0,
                       (AW_pos) 0, text_filter,
                       (AW_CL) 0, (AW_CL) 0);
 
-    for (gb_species = nds_show_all ? GBT_first_species(gb_main) : GBT_first_marked_species(gb_main);
+    for (GBDATA *gb_species = nds_show_all ? GBT_first_species(gb_main) : GBT_first_marked_species(gb_main);
          gb_species;
-         gb_species = nds_show_all ? GBT_next_species(gb_species) : GBT_next_marked_species(gb_species)) {
-
+         gb_species = nds_show_all ? GBT_next_species(gb_species) : GBT_next_marked_species(gb_species))
+    {
         y_position += scale;
-        gb_name = GB_find(gb_species, "name", 0, down_level);
-        if (gb_name && !strcmp(GB_read_char_pntr(gb_name), this->species_name)) {
-            x_cursor = scale;
-            y_cursor = y_position + NT_SELECTED_WIDTH;
+
+        GBDATA     *gb_name = GB_find(gb_species, "name", 0, down_level);
+        const char *name    = 0;
+
+        if (gb_name) {
+            name = GB_read_char_pntr(gb_name);
+            if (strcmp(name, this->species_name) == 0) {
+                x_cursor = scale;
+                y_cursor = y_position + NT_SELECTED_WIDTH;
+            }
         }
 
         bool is_marked = GB_read_flag(gb_species);
         if (is_marked) {
-            NT_scalebox(AWT_GC_SELECTED,scale, y_position+NT_SELECTED_WIDTH, (int)NT_BOX_WIDTH);
+            NT_scalebox(AWT_GC_SELECTED,scale, y_position+NT_SELECTED_WIDTH, NT_BOX_WIDTH);
         }
 
         {
             AW_pos xs = 0;
             AW_pos X,Y;
-            max_strlen = 1000;
+            // max_strlen = 1000;
             disp_device->transform(xs,y_position + scale * 2,X,Y);
             if ( Y  < disp_device->clip_rect.t) continue;
             disp_device->transform(xs,y_position - scale * 2,X,Y);
@@ -2281,15 +2298,23 @@ void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy)
         }
 
         if (disp_device->type() != AW_DEVICE_SIZE){ // tree below cliprect bottom can be cut
-            const char *data = make_node_text_nds(gb_main, gb_species, 1, 0);
-            long        slen = strlen(data);
-            offset           = scale * 0.5;
+            const char *data;
+            if (use_nds) {
+                data   = make_node_text_nds(gb_main, gb_species, 1, 0, tree_name);
+            }
+            else {
+                data            = name;
+                if (!data) data = "<error: species w/o name>";
+            }
+            long   slen   = strlen(data);
+            AW_pos offset = scale * 0.5;
+            int    gc     = AWT_GC_NSELECTED;
 
-            int gc = AWT_GC_NSELECTED;
-            if (nds_show_all && is_marked) gc = AWT_GC_SELECTED;
+            if (nds_show_all && is_marked) {
+                gc = AWT_GC_SELECTED;
+            }
             else {
                 int color_group     = AWT_species_get_dominant_color(gb_species);
-                // int color_group     = AW_find_color_group(gb_species);
                 if (color_group) gc = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
             }
 
@@ -2297,6 +2322,7 @@ void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy)
                               (AW_pos) scale * 2, (AW_pos) y_position + offset,
                               (AW_pos) 0, text_filter,
                               (AW_CL) gb_species, (AW_CL) "species", slen);
+
             if (slen> max_strlen) max_strlen = slen;
         }
     }
@@ -2310,7 +2336,9 @@ void AWT_graphic_tree::show(AW_device *device)  {
         this->check_update(this->gb_main);
     }
     if (!this->tree_root_display){
-        nsort = AP_NDS_TREE;
+        if (nsort != AP_NO_NDS && nsort != AP_NDS_TREE) {
+            nsort = AP_NDS_TREE;  // skip display
+        }
     }
 
     this->disp_device = device;
@@ -2336,8 +2364,7 @@ void AWT_graphic_tree::show(AW_device *device)  {
             break;
         case AP_RADIAL_TREE:
             if (!this->tree_root_display)   return;
-            NT_emptybox(this->tree_root_display->gr.gc,
-                        0, 0, (int)NT_ROOT_WIDTH);
+            NT_emptybox(this->tree_root_display->gr.gc, 0, 0, NT_ROOT_WIDTH);
             show_tree_rek(this->tree_root_display, 0,0,2*M_PI,
                           0.0,0, 0, this->tree_root_display->gr.left_linewidth);
             break;
@@ -2345,14 +2372,16 @@ void AWT_graphic_tree::show(AW_device *device)  {
             show_irs(this->tree_root_display,disp_device,fontinfo->max_letter_height);
             break;
         case AP_NDS_TREE: // this is the list all/marked species mode (no tree)
-            show_nds_list_rek(this->gb_main);
+            show_nds_list_rek(this->gb_main, true);
+            break;
+        case AP_NO_NDS: // simple list of names (used at startup only)
+            show_nds_list_rek(this->gb_main, false);
             break;
     }
     if (x_cursor != 0.0 || y_cursor != 0.0) {
-        NT_emptybox(AWT_GC_CURSOR,
-                    x_cursor, y_cursor, (int)NT_SELECTED_WIDTH);
+        NT_emptybox(AWT_GC_CURSOR, x_cursor, y_cursor, NT_SELECTED_WIDTH);
     }
-    if (nsort != AP_NDS_TREE && nsort != AP_IRS_TREE) {
+    if (nsort != AP_NDS_TREE && nsort != AP_NO_NDS && nsort != AP_IRS_TREE) {
         show_ruler(device, AWT_GC_CURSOR);
     }
 }
