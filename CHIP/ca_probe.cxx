@@ -209,8 +209,8 @@ int main(int argc,char **argv)
 
   if (args_help && !args_err)
     {
-      printf("Usage: %s input_probefile result_probefile pt-servername [numberOfMismatches] [Options]\n\n", argv[0]);
-      printf("Example: %s probelist_input.txt probelist_result.txt 'localhost: user7.arb 0' -w 0.3\n\n", argv[0]);
+      printf("Usage: %s input.c_p result.c_p 'pt-path pt-server' [numberOfMismatches] [Options]\n\n", argv[0]);
+      printf("Example: %s probelist_input.txt probelist_result.txt 'localhost: user7.arb' 0 -w 0.3\n\n", argv[0]);
       printf("The default for numberOfMismatches is 0.\n");
       printf("-w #\tuse weighted mismatches for the probematch (# = upper limit, if set).\n");
       printf("-h\tprint this help and exit.\n\n");
@@ -704,6 +704,14 @@ char *skipToNextWord(char *ptr)
 }
 
 
+void cleanEndingSpaces(char *ptr)
+{
+	while(*ptr)ptr++;
+	while(*(--ptr) == ' ');
+	*(++ptr)= 0;
+}
+
+
 //  -----------------------------------------------------------------------------------------------------
 //      GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  char *fn, int numMismatches)
 //  -----------------------------------------------------------------------------------------------------
@@ -831,60 +839,60 @@ GB_ERROR CHIP_probe_match(probe_data &pD, const CHIP_probe_match_para& para,  ch
 			while(1)
 			{
 				struct _probe_match_result pMR;
-
+				//char buf[64];
+				
+				// fetch tokens, break if unavailable
 				char *token1= strtok(NULL, toksep);
 				if(!token1) break;
-
-				// probe name
 				char *token2= strtok(NULL, toksep);
 				if(!token2) break;
-
-				char buf[64];
 				
+				// extract organism name from token
 				char *ptr= skipToNextWord(token2);
-				// name
-				strncpy(buf, ptr, 9);
-				buf[9]=0;
-				correctIllegalChars(buf);
-				strcpy(pMR.name, buf);
+
+				strncpy(tmp, ptr, 8);
+				tmp[8]=0;
+				correctIllegalChars(tmp);
+				cleanEndingSpaces(tmp);
+				strcpy(pMR.name, tmp);
 				
-				// fullname
-				ptr= skipToNextWord(ptr);
-				strncpy(buf, ptr, 40);
-				buf[40]=0;
-				correctIllegalChars(buf);
-				strcpy(pMR.fullname, buf);
+				// calc length of fullname in the hinfo string
+				char *hinfo_ptr= skipToNextWord(hinfo);
+				hinfo_ptr= skipToNextWord(hinfo_ptr);
+				int fullnamelength= (int)(skipToNextWord(hinfo_ptr) - hinfo_ptr);
 				
-				// nmis
-				ptr= skipToNextWord(ptr+56);
+				// extract organism fullname from token
 				ptr= skipToNextWord(ptr);
-				strncpy(buf, ptr, 2);
-				buf[2]=0;
-				pMR.nmis= atoi(buf);
+				strncpy(tmp, ptr, fullnamelength);
+				tmp[fullnamelength]= 0;
+				correctIllegalChars(tmp);
+				cleanEndingSpaces(tmp);
+				strcpy(pMR.fullname, tmp);
 				
 				// wmis
+				ptr= skipToNextWord(ptr + fullnamelength);
 				ptr= skipToNextWord(ptr);
-				strncpy(buf, ptr, 4);
-				buf[4]=0;
-				pMR.wmis= atof(buf);
+				ptr= skipToNextWord(ptr);
+				strncpy(tmp, ptr, 4);
+				tmp[4]=0;
+				pMR.wmis= atof(tmp);
 				
-				// other settings separated similar, but not needeed here...
+				// other settings can be separated similar, but not needed here...
 				
-				//if((maxWeightedMismatches == -1) || (maxWeightedMismatches > pMR.wmis))
-				//if(numMismatches > pMR.nmis)
-				//{
-					strcpy(buf, "\tmatch= ");
-					strcat(buf, pMR.name);
-					strcat(buf, ", ");
-					strcat(buf, pMR.fullname);
-					strcat(buf, "\n");
-					fputs(buf, pFile);
+				// add matched organism data to probe file (output)
+				if((maxWeightedMismatches == -1) || (maxWeightedMismatches > pMR.wmis))
+				{
+					strcpy(tmp, "\tmatch= ");
+					strcat(tmp, pMR.name);
+					strcat(tmp, ", ");
+					strcat(tmp, pMR.fullname);
+					strcat(tmp, "\n");
+					fputs(tmp, pFile);
 					//
-					//printf("%s\n", token2);
-					//printf("%s \t(wmis=%f)(nmis=%d)\n", buf, pMR.wmis, pMR.nmis);
-				//}
+					// printf("<<%s>>  <<%s>>  wmis=%f\n", pMR.name, pMR.fullname, pMR.wmis);
+				}
 			}
-		} // end while(1)
+		}
 	    }
 	    else // no weighted mismatches ...
 	    {
