@@ -43,6 +43,7 @@ void NT_remove_bootstrap P_((void *dummy, AWT_canvas *ntw));
 void NT_jump_cb P_((AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups));
 void NT_jump_cb_auto P_((AW_window *dummy, AWT_canvas *ntw));
 void NT_reload_tree_event P_((AW_root *awr, AWT_canvas *ntw, GB_BOOL set_delete_cbs));
+void NT_recompute_cb P_((AW_window *, AWT_canvas *ntw, AW_CL cl2));
 void NT_remove_species_in_tree_from_hash P_((AP_tree *tree, GB_HASH *hash));
 
 #ifdef __cplusplus
