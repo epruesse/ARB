@@ -22,14 +22,16 @@ int main(int argc, char **argv)
 	*(wtypep++) = 'b';
 	*(rtypep++) = 'r';
 	*(rtypep++) = 'w';
-	if (argc <= 1) {
-		GB_export_error(	"\narb_2_bin: 	Converts a database to binary format\n"
-					"		Syntax:	   arb_2_bin [-m] [-c][tree_xxx] database [newdatabase]\n"
-					"	       	Options:	-m		create map file too\n"
-					"	       	Options:	-r		try to repair destroyed database\n"
-					"	       	Options:	-c[tree_xxx]	optimize database using tree_xxx or largest tree"
-		    );
-		GB_print_error();
+	if (argc <= 1 || strcmp(argv[1], "--help") == 0) {
+		fprintf(stderr,
+                "\n"
+                "Purpose: Converts a database to binary format\n"
+                "Syntax:  arb_2_bin [-m] [-c][tree_xxx] database [newdatabase]\n"
+                "Options: -m            create map file too\n"
+                "         -r            try to repair destroyed database\n"
+                "         -c[tree_xxx]	optimize database using tree_xxx or largest tree\n"
+                "\n"
+                );
 		return(-1);
 	}
 	while (argv[ci][0] == '-'){
@@ -43,7 +45,7 @@ int main(int argc, char **argv)
 	    }
 	    if (!strncmp(argv[ci],"-c",2)){
 		opt_tree = argv[ci]+2;
-		
+
 		ci++;
 	    }
 	    if (!strncmp(argv[ci],"-i",2)){
@@ -55,7 +57,7 @@ int main(int argc, char **argv)
 		ci++;
 	    }
 	}
-	
+
 	in = argv[ci++];
 	if (ci >= argc) {
 		out = in;
@@ -84,7 +86,7 @@ int main(int argc, char **argv)
  	if (test){
  	    GB_ralfs_test(gb_main);
  	}
-	
+
 	error = GB_save(gb_main,out,wtype);
 	if (error){
 		GB_print_error();
