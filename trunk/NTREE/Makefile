@@ -126,8 +126,9 @@ NT_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
-NT_main.o: $(ARBHOME)/INCLUDE/awt.hxx ntree.hxx nt_cb.hxx
-NT_main.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/awt.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx ntree.hxx
+NT_main.o: nt_cb.hxx $(ARBHOME)/INCLUDE/mg_merge.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/seer.hxx
 NT_extern.o:  
 NT_extern.o:  
@@ -160,9 +161,10 @@ NT_extern.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx ntree.hxx
 NT_extern.o: nt_cb.hxx etc_check_gcg.hxx nt_sort.hxx ap_consensus.hxx
-NT_extern.o: ap_csp_2_gnuplot.hxx nt_join.hxx nt_edconf.hxx
-NT_extern.o: ap_pos_var_pars.hxx ad_ali.hxx nt_import.hxx nt_date.h
-NT_extern.o: $(ARBHOME)/INCLUDE/st_window.hxx
+NT_extern.o: ap_csp_2_gnuplot.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/awti_export.hxx nt_join.hxx
+NT_extern.o: nt_edconf.hxx ap_pos_var_pars.hxx ad_ali.hxx nt_import.hxx
+NT_extern.o: nt_date.h $(ARBHOME)/INCLUDE/st_window.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 NT_ins_col.o:  
 NT_ins_col.o:  
@@ -196,8 +198,9 @@ NT_import.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_import.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+NT_import.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/mg_merge.hxx nt_import.hxx
-NT_import.o: ad_spec.hxx
+NT_import.o: ad_spec.hxx $(ARBHOME)/INCLUDE/GEN.hxx
 ad_spec.o:  
 ad_spec.o:  
 ad_spec.o:  

@@ -5,6 +5,7 @@
 
 CPP_OBJECTS =   \
 	GEN_read.o \
+	GEN_db.o \
 
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
@@ -25,3 +26,15 @@ clean:
 
 depend:
 	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_OBJECTS:.o=.cxx)
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+GEN_read.o: $(ARBHOME)/INCLUDE/arbdb.h
+GEN_read.o:
+GEN_read.o:
+GEN_read.o:
+GEN_read.o:
+GEN_read.o: $(ARBHOME)/INCLUDE/ad_prot.h
+GEN_read.o: $(ARBHOME)/INCLUDE/arbdbt.h
+GEN_read.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+GEN_read.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+GEN_read.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx GEN.hxx
