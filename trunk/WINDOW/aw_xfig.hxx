@@ -10,13 +10,17 @@
  *
  * -----------------------------------------------------------------
  */
-  
-/* 
+
+/*
  * $Header$
  *
  * $Log$
- * Revision 1.1  2000/11/23 09:41:17  westram
- * Initial revision
+ * Revision 1.2  2001/08/17 19:56:47  westram
+ * * aw_xfig.hxx: - new method AW_xfig::add_line
+ *            - new constructor (constructing empty xfig)
+ *
+ * Revision 1.1.1.1  2000/11/23 09:41:17  westram
+ * Erster Import
  *
  * Revision 1.6  1995/03/13  16:53:41  jakobi
  * *** empty log message ***
@@ -43,14 +47,15 @@ struct AW_xfig_line {
 
 struct AW_xfig_text {
 	struct AW_xfig_text *next;
-	short x,y;
-	short pix_len;
+
+	short    x,y;
+	short    pix_len;
 	char	*text;
-	AW_font font;
-	short	fontsize;
-	int	center;
-	short	color;
-	int	gc;
+	AW_font  font;
+	short	 fontsize;
+	int	     center;
+	short	 color;
+	int	     gc;
 };
 
 struct AW_xfig_pos {
@@ -59,22 +64,28 @@ struct AW_xfig_pos {
 };
 
 class AW_xfig {
-	public:
+public:
 	struct AW_xfig_text *text;
 	struct AW_xfig_line *line[MAX_LINE_WIDTH];
-	GB_HASH *hash;		// hash table for buttons
+
+	GB_HASH *hash;	            // hash table for buttons
+
 	int	minx,miny;
 	int	maxx,maxy;
-    	int	size_x,size_y;
+    int	size_x,size_y;
 	int	centerx,centery;
-    
+
 	double font_scale;
 	double dpi_scale;
 
 	AW_xfig(const char *filename, int fontsize);
+	AW_xfig(int fontsize);      // creates an empty drawing area
+
 	~AW_xfig(void);
-	void print(AW_device *device);	// you can scale it
-	void create_gcs(AW_device *device, int screen_depth);	// create the gcs
+	void print(AW_device *device); // you can scale it
+	void create_gcs(AW_device *device, int screen_depth); // create the gcs
+
+    void add_line(int x1, int y2, int x2, int y2, int width); // add a line to xfig
 };
 
 
