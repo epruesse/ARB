@@ -31,10 +31,11 @@
 #define FONT_EXAMINE_MAX   500
 #define KNOWN_ISO_VERSIONS 3
 
-// #if defined(DEBUG)
-#warning font debugging is activ
+#if !defined(DEBUG) || defined(DEVEL_RALF)
+#warning font debugging is activ in release
 #define DUMP_FONT_LOOKUP
-// #endif // DEBUG
+// #define DUMP_FONT_DETAILS
+#endif // DEBUG
 
 // --------------------------------------------------------------------------------
 
@@ -49,7 +50,9 @@ appresStruct appres = {
 };
 
 // defines the preferred xfontsel-'rgstry' values (most wanted first)
+#if defined(DEVEL_RALF)
 #warning check iso setting!
+#endif // DEVEL_RALF
 // static const char *known_iso_versions[KNOWN_ISO_VERSIONS] = { "ISO10646", "ISO8859", "*" };
 static const char *known_iso_versions[KNOWN_ISO_VERSIONS] = { "ISO8859", "ISO10646", "*" };
 
@@ -357,7 +360,7 @@ void aw_root_init_font(Display *tool_d)
     }
 }
 
-#if defined(DEBUG)
+#if defined(DUMP_FONT_DETAILS)
 static void dumpFontInformation(struct xfont *xf) {
     printf("Font information for '%s':\n", xf->fname);
     XFontStruct *xfs = xf->fstruct;
@@ -474,7 +477,7 @@ static PIX_FONT lookfont(Display *tool_d, int f, int s, int& found_size, bool ve
 
     found_size = nf->size; // report used size
 
-#if defined(DEBUG) && 0
+#if defined(DUMP_FONT_DETAILS) 
     dumpFontInformation(nf);
 #endif // DEBUG
 
