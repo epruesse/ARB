@@ -151,11 +151,11 @@ public:
 
 class AW_window {
 private:
-
+    void all_menus_created();
 protected:
-    AW_root      *root;
-    void        check_at_pos( void );
-    void        create_devices(void);
+    AW_root *root;
+    void     check_at_pos( void );
+    void     create_devices(void);
 public:
 
     // ************ This is not the public section *************
