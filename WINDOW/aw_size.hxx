@@ -1,5 +1,5 @@
-#ifndef aw_size_hxx_included
-#define aw_size_hxx_included
+#ifndef AW_SIZE_HXX
+#define AW_SIZE_HXX
 
 
 class AW_device_size: public AW_device {
@@ -17,5 +17,6 @@ class AW_device_size: public AW_device {
 		void	get_size_information(AW_world *ptr);
 };
 
-
+#else
+#error aw_size.hxx included twice
 #endif

@@ -1,5 +1,5 @@
-#ifndef aw_xfigfont_hxx_included
-#define aw_xfigfont_hxx_included
+#ifndef AW_XFIGFONT_HXX
+#define AW_XFIGFONT_HXX
 
 /* -----------------------------------------------------------------
  * Module:                        WINDOW/aw_xfigfont.hxx
@@ -15,8 +15,11 @@
  * $Header$
  *
  * $Log$
- * Revision 1.1  2000/11/23 09:41:17  westram
- * Initial revision
+ * Revision 1.2  2005/01/05 11:25:40  westram
+ * - changed include wrapper
+ *
+ * Revision 1.1.1.1  2000/11/23 09:41:17  westram
+ * Erster Import
  *
  * Revision 1.7  1995/03/13  16:53:41  jakobi
  * *** empty log message ***
@@ -44,8 +47,8 @@
  *
  */
 
-#ifndef AW_XFIGFONT_HXX
-#define AW_XFIGFONT_HXX 1
+// #ifndef AW_XFIGFONT_HXX
+// #define AW_XFIGFONT_HXX 1
 
 
 /* includes */
@@ -64,7 +67,8 @@ typedef struct AW_xfig_vectorfont{
 AW_vectorfont *aw_read_xfigfont(char *filename);
 void aw_xfig_font_deletefont(AW_root *aw_root);
 void aw_xfig_font_changefont_cb(AW_root *aw_root);
-#endif
+// #endif
 
-
+#else
+#error aw_xfigfont.hxx included twice
 #endif

@@ -1,8 +1,5 @@
-#ifndef aw_click_hxx_included
-#define aw_click_hxx_included
-
-
-
+#ifndef AW_CLICK_HXX
+#define AW_CLICK_HXX
 
 class AW_device_click: public AW_device {
 protected:
@@ -27,5 +24,6 @@ public:
     void get_clicked_text(class AW_clicked_text *ptr);
 };
 
-
+#else
+#error aw_click.hxx included twice
 #endif

@@ -1,8 +1,8 @@
-#ifndef aw_keysym_hxx_included
-#define aw_keysym_hxx_included
+#ifndef AW_KEYSYM_HXX
+#define AW_KEYSYM_HXX
 
-#ifndef _AW_KEY_CODES_INCLUDED
-#define _AW_KEY_CODES_INCLUDED
+// #ifndef _AW_KEY_CODES_INCLUDED
+// #define _AW_KEY_CODES_INCLUDED
 
 typedef enum {
 	AW_KEY_NONE,    
@@ -44,9 +44,10 @@ typedef enum {
 	AW_KEY_SHIFT = 8
 	} AW_key_mod;
 
-#endif
+// #endif
 
-
+#else
+#error aw_keysym.hxx included twice
 #endif
 
 

@@ -1,5 +1,5 @@
-#ifndef aw_xfig_hxx_included
-#define aw_xfig_hxx_included
+#ifndef AW_XFIG_HXX
+#define AW_XFIG_HXX
 
 /* -----------------------------------------------------------------
  * Module:                        WINDOW/aw_xfig.hxx
@@ -15,6 +15,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.5  2005/01/05 11:25:40  westram
+ * - changed include wrapper
+ *
  * Revision 1.4  2004/09/22 17:26:39  westram
  * - beautified
  *
@@ -109,5 +112,6 @@ x y x y 9999 9999
 
 */
 
-
+#else
+#error aw_xfig.hxx included twice
 #endif
