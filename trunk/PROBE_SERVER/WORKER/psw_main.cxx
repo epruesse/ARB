@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Thu Sep/25/2003 20:40 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sat Sep/27/2003 16:45 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -118,7 +118,8 @@ namespace {
 
         psw_assert(!error);
         psw_assert(strlen(path) == (unsigned)pathlen);
-        psw_assert(pathlen);
+
+        if (!pathlen) return "0000"; // encoding for root node
 
         static char buffer[MAXPATH+1];
         sprintf(buffer, "%04X", pathlen);
