@@ -1,6 +1,6 @@
 item:Phylip DNAPARS
 itemmeta: P
-itemmethod:(GEN_INFILE(in1);RUN_IN_WINDOW(($BOOTSTRP;$DISPLAY_FUNC));RM_LOCAL_FILES(in1) )&
+itemmethod:(GEN_INFILE(in1);RUN_IN_WINDOW(($BOOTSTRP;$DISPLAY_FUNC));RM_LOCAL_FILES(in1 arb_read_tree_args) )&
 itemhelp:dnapars.help
 
 arg:DISPLAY_FUNC
@@ -13,10 +13,10 @@ argchoice:Treetool:treetool treefile
 arg:BOOTSTRP
 arglabel:How many bootstraps ?
 argtype:chooser
-argchoice:Do not bootstrap:echo >arb_read_tree_args;arb_echo y |dnapars
-argchoice:10:   arb_bootstrap 10   1 dnapars
-argchoice:100:  arb_bootstrap 100  1 dnapars
-argchoice:1000: arb_bootstrap 1000 1 dnapars
+argchoice:Do not bootstrap:echo >arb_read_tree_args;arb_echo y | dnapars
+argchoice:10:   arb_bootstrap 10   dnapars "m 10   y"
+argchoice:100:  arb_bootstrap 100  dnapars "m 100  y"
+argchoice:1000: arb_bootstrap 1000 dnapars "m 1000 y"
 
 
 in:in1
@@ -26,7 +26,7 @@ insave:
 
 item:Phylip PROTPARS
 itemmeta: R
-itemmethod:(GEN_INFILE(in1);RUN_IN_WINDOW(($BOOTSTRP;$DISPLAY_FUNC));RM_LOCAL_FILES(in1) )&
+itemmethod:(GEN_INFILE(in1);RUN_IN_WINDOW(($BOOTSTRP;$DISPLAY_FUNC));RM_LOCAL_FILES(in1 arb_read_tree_args) )&
 itemhelp:dnapars.help
 
 arg:DISPLAY_FUNC
@@ -40,9 +40,9 @@ arg:BOOTSTRP
 arglabel:How many bootstraps ?
 argtype:chooser
 argchoice:Do not bootstrap:echo >arb_read_tree_args;arb_echo y |protpars
-argchoice:10:   arb_bootstrap 10   1 protpars
-argchoice:100:  arb_bootstrap 100  1 protpars
-argchoice:1000: arb_bootstrap 1000 1 protpars
+argchoice:10:   arb_bootstrap 10   protpars "m 10   y"
+argchoice:100:  arb_bootstrap 100  protpars "m 100  y"
+argchoice:1000: arb_bootstrap 1000 protpars "m 1000 y"
 
 
 in:in1
