@@ -1687,8 +1687,8 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     initMenuListing(windowname);
 #endif // DUMP_MENU_LIST
 
-    root = root_in; // for makro
-    window_name = strdup(windowname);
+    root                 = root_in; // for makro
+    window_name          = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
 
@@ -2927,7 +2927,7 @@ void AW_window::set_window_title( const char *title ) {
 }
 
 
-char *AW_window::get_window_title( void ) {
+const char *AW_window::get_window_title( void ) {
     char *title;
 
     XtVaGetValues( p_w->shell ,XmNtitle, &title, NULL );
