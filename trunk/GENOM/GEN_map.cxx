@@ -425,6 +425,7 @@ void GEN_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene, const
 
                         if (overwrite_answer == 1) error      = GBS_global_string("Skipped gene-species '%s' (already had data in alignment)", existing_name); // Skip
                         else if (overwrite_answer == 2) error = "Aborted."; // Abort
+                        // @@@ FIXME: overwrite data is missing
 
                         free(question2);
                     }
