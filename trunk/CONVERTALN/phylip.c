@@ -95,13 +95,18 @@ void to_phylip(inf, outf, informat,readstdin)
 		return;
 	}
 	current = 0;
-	fprintf(ofp, "%4d %4d ", maxsize, current);
+	fprintf(ofp, "%4d %4d", maxsize, current);
 	if (readstdin){
 	    int c;
+            int spaced = 0;
 	    while (1) {
 		c = getchar();
 		if (c == EOF) break; /* read all from stdin now (not only one line)*/
         /* 		if (c == EOF||c=='\n') break; */
+                if (!spaced) {
+                    fputc(' ', ofp);
+                    spaced = 1;
+                }
 		fputc(c,ofp);
 	    }
 
