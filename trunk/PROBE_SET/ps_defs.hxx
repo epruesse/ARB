@@ -41,15 +41,23 @@ typedef IDSet::iterator            IDSetIter;
 typedef IDSet::const_iterator      IDSetCIter;
 
 // ----------------------------------------------------------------
-// misc
+// SpeciesID <-> SpeciesID (as map)
+// ----------------------------------------------------------------
+typedef map<SpeciesID,SpeciesID>   ID2IDMap;
+typedef ID2IDMap::iterator         ID2IDMapIter;
+typedef ID2IDMap::const_iterator   ID2IDMapCIter;
+
+// ----------------------------------------------------------------
+// SpeciesID <-> SpeciesID (as set)
 // ----------------------------------------------------------------
 typedef pair<SpeciesID,SpeciesID>  ID2IDPair;
 typedef set<ID2IDPair>             ID2IDSet;
 typedef ID2IDSet::iterator         ID2IDSetIter;
 typedef ID2IDSet::const_iterator   ID2IDSetCIter;
-typedef map<SpeciesID,SpeciesID>   ID2IDMap;
-typedef ID2IDMap::iterator         ID2IDMapIter;
-typedef ID2IDMap::const_iterator   ID2IDMapCIter;
+
+// ----------------------------------------------------------------
+// (SpeciesID,SpeciesID) <-> set of SpeciesID (as map)
+// ----------------------------------------------------------------
 typedef map<ID2IDPair,IDSet>          IDID2IDSetMap;
 typedef IDID2IDSetMap::iterator       IDID2IDSetMapIter;
 typedef IDID2IDSetMap::const_iterator IDID2IDSetMapCIter;
