@@ -86,7 +86,7 @@ struct AW_variable_struct {
 	void	touch(void);
 };
 
-void aw_update_awar_window_geometrie(AW_root *awr);
+void aw_update_awar_window_geometry(AW_root *awr);
 
 
 #endif
