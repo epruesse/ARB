@@ -661,8 +661,9 @@ int main(int argc,char *argv[]) {
                         }
                     }
 
+
                     GBDATA *st_exact = GB_search(st_subtree, "exact", GB_INT);
-                    GB_write_int(st_exact, tt.species.size());
+                    GB_write_int(st_exact, probes.size());
                 }
             }                   // end of getNextSubTree
 
