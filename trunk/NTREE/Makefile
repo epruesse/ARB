@@ -5,6 +5,7 @@
 
 CPP_OBJECTS =  NT_edconf.o NT_join.o NT_sort.o NT_cb.o NT_main.o NT_extern.o\
 	NT_validNames.o NT_validNameParser.o \
+	NT_validManual.o\
 	NT_ins_col.o NT_import.o NT_concatenate.o\
 	ad_spec.o ad_trees.o  ad_ali.o ad_ext.o ad_transpro.o \
 	AP_consensus.o AP_cprofile.o AP_pos_var_pars.o \
@@ -151,6 +152,7 @@ NT_validNames.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_window.hxx nt_validNames.hxx
 NT_validNames.o: nt_validNameParser.hxx
 NT_validNameParser.o: nt_validNameParser.hxx
+NT_validManual.o: nt_validManual.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/ad_prot.h
