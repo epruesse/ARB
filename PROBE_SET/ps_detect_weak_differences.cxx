@@ -380,7 +380,7 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
             }
             // iterate over path IDs
             for (IDSetCIter path_id = i->second.begin(); path_id != i->second.end(); ++path_id) {
-                if (id == *path_id) continue;   // obviously an probe cant differ a species from itself
+                if (id == *path_id) continue;   // obviously a probe cant differ a species from itself
                 if (id > *path_id) {
                     preset->setTrue( id,*path_id );
                 } else {
