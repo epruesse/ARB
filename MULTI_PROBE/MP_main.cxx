@@ -66,7 +66,7 @@ ProbeValuation *MP_Main::new_probe_eval(char **field, int size, int *array, int 
 
 void MP_Main::create_awars()
 {
-        aw_root->awar_string(MP_AWAR_SEQUENZEINGABE)->add_target_var(& mp_gl_awars.manual_sequence);
+    aw_root->awar_string(MP_AWAR_SEQUENZEINGABE)->add_target_var(& mp_gl_awars.manual_sequence);
 	aw_root->awar_string(MP_AWAR_SELECTEDPROBES)->add_target_var(& mp_gl_awars.selected_probes);
 	aw_root->awar_string(MP_AWAR_PROBELIST)->add_target_var(& mp_gl_awars.probelist);
 	aw_root->awar_int(MP_AWAR_WEIGHTEDMISMATCHES)->add_target_var(& mp_gl_awars.weightedmismatches)->write_int(2);
@@ -94,24 +94,24 @@ void create_tables()
 {
     int i;
 
-//probe_tab
+    //probe_tab
     for (i=0; i<256; i++)
-	MP_probe_tab[i] = FALSE;
+        MP_probe_tab[i] = FALSE;
 
     MP_probe_tab['a'] = MP_probe_tab['A'] =
-	MP_probe_tab['t'] = MP_probe_tab['T'] =
-	MP_probe_tab['g'] = MP_probe_tab['G'] =
-	MP_probe_tab['u'] = MP_probe_tab['U'] =
-	MP_probe_tab['c'] = MP_probe_tab['C'] =
-	MP_probe_tab['n'] = MP_probe_tab['N'] = TRUE;
+        MP_probe_tab['t'] = MP_probe_tab['T'] =
+        MP_probe_tab['g'] = MP_probe_tab['G'] =
+        MP_probe_tab['u'] = MP_probe_tab['U'] =
+        MP_probe_tab['c'] = MP_probe_tab['C'] =
+        MP_probe_tab['n'] = MP_probe_tab['N'] = TRUE;
 }
 
 AW_window *MP_main(AW_root *root, AW_default def)
 {
     if (mp_main)
     {
-	mp_main->get_mp_window()->get_window()->show();
-	return (AW_window *)mp_main->get_mp_window()->get_window();
+        mp_main->get_mp_window()->get_window()->show();
+        return (AW_window *)mp_main->get_mp_window()->get_window();
     }
 
     create_tables();
@@ -120,7 +120,7 @@ AW_window *MP_main(AW_root *root, AW_default def)
 
     mp_main->get_mp_window()->get_window()->show();
 
-//    alex_main();	//normal erst spaeter aufrufen !!!
+    //    alex_main();	//normal erst spaeter aufrufen !!!
 
     return (AW_window *)mp_main->get_mp_window()->get_window();
 }

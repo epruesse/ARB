@@ -22,9 +22,9 @@ Bitvector::Bitvector(int bits)
     num_of_bits = bits;
     len =  (bits%8) ? (bits/8+1) : (bits/8);
     vector = new char[len];
-    
+
     for (i=0;i<len;i++)
-	vector[i] = vector[i] & 0;
+        vector[i] = vector[i] & 0;
 }
 
 Bitvector::~Bitvector()
@@ -38,22 +38,22 @@ int Bitvector::gen_id()
     // generiere eine int Nummer fuer die Farbe aus dem Bitvector
     long num=0;
     for (int i=0; i<num_of_bits; i++)
-	num += (int)(.5 + pow(2,i)*readbit(i));
+        num += (int)(.5 + pow(2,i)*readbit(i));
     return num;
 }
 Bitvector* Bitvector::merge(Bitvector* x)
 {
     int lthis, lx, lback;
     int i;				// Zaehler
-    
+
     lthis = num_of_bits;
     lx    = x->get_num_of_bits();
     lback = (lthis>lx) ? lthis : lx;
     Bitvector* back = new Bitvector(lback);
 
     for (i=0 ;i<lback; i++)
-	if ( this->readbit(i) || x->readbit(i) )
-	    back->setbit (i);
+        if ( this->readbit(i) || x->readbit(i) )
+            back->setbit (i);
 
     return back;
 }
@@ -61,11 +61,11 @@ Bitvector* Bitvector::merge(Bitvector* x)
 int Bitvector::subset(Bitvector* Obermenge)
 {
     char* vector2 = Obermenge->get_vector();
-    
+
     for (int i=0; i<len; i++)
     {
-	if ( (vector[i] & vector2[i]) != vector[i] )
-	    return 0;
+        if ( (vector[i] & vector2[i]) != vector[i] )
+            return 0;
     }
     //delete vector2;
     return 1;
@@ -75,18 +75,18 @@ int Bitvector::subset(Bitvector* Obermenge)
 void Bitvector::rshift()
 {
     long gemerkt=0;
-    
+
     if (readbit(num_of_bits-1))
-	gemerkt=1;
+        gemerkt=1;
 
     for (int i=len-1; i>-1 ; i--)
     {
-	vector[i] = vector[i] <<1;
-	if (readbit(8*i-1))
-	    setbit(8*i);
+        vector[i] = vector[i] <<1;
+        if (readbit(8*i-1))
+            setbit(8*i);
     }
     if (gemerkt == 1)
-	setbit(0);
+        setbit(0);
 }
 
 void Bitvector::print()
@@ -94,7 +94,7 @@ void Bitvector::print()
     int i;
     printf("Bitvektor:   (");
     for (i=0;i<num_of_bits;i++)
-	printf("%d",readbit(i));
+        printf("%d",readbit(i));
     printf(")\n");
 }
 
@@ -102,7 +102,7 @@ int Bitvector::setbit(int pos)
 {
     int byte,idx,bitcode;
     if (pos > num_of_bits)
-	return -1;
+        return -1;
     byte = pos/8;
     idx = pos - byte*8;
     bitcode = (int) pow(2,idx);
@@ -114,12 +114,12 @@ int Bitvector::delbit(int pos)
 {
     int byte,idx,bitcode;
     if (pos > num_of_bits)
-	return -1;
+        return -1;
     byte = pos/8;
     idx = pos - byte*8;
     bitcode = (int) pow(2,idx);
     if (readbit(pos))
-	vector[byte] = vector[byte] ^ bitcode;
+        vector[byte] = vector[byte] ^ bitcode;
     return 0;
 }
 
@@ -127,14 +127,14 @@ int Bitvector::readbit(int pos)
 {
     int byte,idx,bitcode;
     if (pos > num_of_bits)
-	return 0;
+        return 0;
     byte = pos/8;
     idx = pos - byte*8;
     bitcode = (int) pow(2,idx);
     if (vector[byte] & bitcode)
-	return 1;
+        return 1;
     else
-	return 0;
+        return 0;
 }
 
 
@@ -146,22 +146,22 @@ void permutation(int k,int n)
 
     c[0] = -1;
     for ( i=1; i<k+1; i++ )
-	c[i] = i;
+        c[i] = i;
 
     j = 1;
 
     while (j != 0)
     {
-	for (h=1;h<k+1;h++)
-	    printf("%d ",c[h]);
-	printf("\n");
-	
-	j = k;
-	while (c[j] == n-k+j)
-	    j = j-1;
-	c[j] = c[j]+1;
-	for (i=j+1; i< k+1;i++)
-	    c[i] = c[i-1] + 1;
+        for (h=1;h<k+1;h++)
+            printf("%d ",c[h]);
+        printf("\n");
+
+        j = k;
+        while (c[j] == n-k+j)
+            j = j-1;
+        c[j] = c[j]+1;
+        for (i=j+1; i< k+1;i++)
+            c[i] = c[i-1] + 1;
     }
 }
 
@@ -170,62 +170,62 @@ void permute (int k, int n)
     int i;
     for (i=1; i<k+1;i++)
     {
-	printf("\nPermutation k aus n, k = %d, n = %d\n",i,n);
-	permutation(i,n);
+        printf("\nPermutation k aus n, k = %d, n = %d\n",i,n);
+        permutation(i,n);
     }
 
 }
 /*
-int main(int argc, char** argv)
-{
-    int i;
-    
-    Bitvector *a = new Bitvector(10);
-    Bitvector *b = new Bitvector(15);
-    Bitvector *c ;
+  int main(int argc, char** argv)
+  {
+  int i;
 
-    a->setbit(2);
-    a->setbit(3);
-    a->setbit(4);
-    a->print();
-    
-    b->setbit(6);
-    b->setbit(7);
-    b->setbit(12);
-    b->setbit(14);
-        
-    b->print();
+  Bitvector *a = new Bitvector(10);
+  Bitvector *b = new Bitvector(15);
+  Bitvector *c ;
 
-    if (b->subset(a))
-	printf("B ist subset von a\n");
-    else
-	printf("B ist kein subset von a\n");
-    
-    c->setbit(3);
-    c->setbit(4);
-    c->setbit(5);
-    c->print();
-    if (c->subset(a))
-	printf("C ist subset von a\n");
-    else
-	printf("C ist kein subset von a\n");
+  a->setbit(2);
+  a->setbit(3);
+  a->setbit(4);
+  a->print();
 
-    printf("Rightshift von A:\n");
-    a->rshift();
-    a->print();
-    
-    if (c->subset(a))
-	printf("C ist subset von a\n");
-    else
-	printf("C ist kein subset von a\n");
+  b->setbit(6);
+  b->setbit(7);
+  b->setbit(12);
+  b->setbit(14);
 
-	
-    c = b->merge(a);
-    c->print();
-    
-    delete a;
-    delete b;
-    delete c;
-}
+  b->print();
+
+  if (b->subset(a))
+  printf("B ist subset von a\n");
+  else
+  printf("B ist kein subset von a\n");
+
+  c->setbit(3);
+  c->setbit(4);
+  c->setbit(5);
+  c->print();
+  if (c->subset(a))
+  printf("C ist subset von a\n");
+  else
+  printf("C ist kein subset von a\n");
+
+  printf("Rightshift von A:\n");
+  a->rshift();
+  a->print();
+
+  if (c->subset(a))
+  printf("C ist subset von a\n");
+  else
+  printf("C ist kein subset von a\n");
+
+
+  c = b->merge(a);
+  c->print();
+
+  delete a;
+  delete b;
+  delete c;
+  }
 
 */

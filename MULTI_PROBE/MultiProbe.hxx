@@ -54,7 +54,7 @@ class Sonde;
 #define MAXMISMATCHES	6		// von 0 bis 5 !!!!
 #define MAXRESULTSINLIST	40	//groesse der Ergebnisliste, die im Ergebnisfenster angezeigt wird
 #define FITNESSSCALEFACTOR	10	//wird benutzt um intern die hammingtabelle feiner zu granulieren
-						//siehe probe_combi_statistic::calc_fitness
+//siehe probe_combi_statistic::calc_fitness
 
 #define MULTROULETTEFACTOR	10	//macht aus z.B. 4,231 42
 #define MAXINITPOPULATION 50		// Ausgangsgroesse der Population
@@ -95,6 +95,7 @@ typedef struct
     float	max_weight;
     float	greyzone;
 }awar_vars;
+
 class AW_selection_list;
 extern BOOL	Stop_evaluation;
 extern AW_selection_list *selected_list;			//globale id's fuer
@@ -161,14 +162,14 @@ private:
 
 private:
     void		build_pt_server_list();
-    										//zeigt auf naechstes Zeichen
+    //zeigt auf naechstes Zeichen
 
 public:
     AW_window_simple	*get_window()		{ return aws; };
     AW_window_simple	*get_result_window() 	{ return result_window; };
 
     AW_window_simple *create_result_window(AW_root *aw_root);
-//     char		     *load_selection_list(  AW_window *aww, int selection_list, char *filename); //modifiziert von AW_window
+    //     char		     *load_selection_list(  AW_window *aww, int selection_list, char *filename); //modifiziert von AW_window
 
     MP_Window(AW_root *aw_root);
     ~MP_Window();
@@ -184,18 +185,18 @@ void 	MP_compute(AW_window *);
 class MP_list
 // class which implements a general purpose linked list of void*
 {
-        public:
-                MP_list_elem           *first;
-                MP_list_elem           *last;
-                long	               no_of_entries;
+public:
+    MP_list_elem           *first;
+    MP_list_elem           *last;
+    long	               no_of_entries;
 
-                void			append_elem( void *elem );
-                void			delete_elem( void *elem );
-                void			append_elem_backwards( void *elem );
-                short			is_elem( void *elem );
+    void			append_elem( void *elem );
+    void			delete_elem( void *elem );
+    void			append_elem_backwards( void *elem );
+    short			is_elem( void *elem );
 
-                MP_list();
-                ~MP_list();
+    MP_list();
+    ~MP_list();
 };
 
 
@@ -301,11 +302,11 @@ public:
     double 		check_for_min(long k, MO_Mismatch** probebacts, long laenge);
 
     MO_Mismatch** 	get_matching_species(BOOL match_kompl,
-					     int match_weight,
-					     int match_mis,
-					     char *match_seq,
-					     MO_Liste *convert,
-					     long *number_of_species);
+                                         int match_weight,
+                                         int match_mis,
+                                         char *match_seq,
+                                         MO_Liste *convert,
+                                         long *number_of_species);
     int 		gen_Hitliste(MO_Liste *Bakterienliste);
 
     Sonde(char* bezeichner, int allowed_mis, double outside_mis);
@@ -359,7 +360,7 @@ public:
     long		get_index_by_entry(char* key);
     Bakt_Info*  	get_bakt_info_by_index(long index);
     Bakt_Info**		get_mo_liste() { return mo_liste;}
-     MO_Liste();
+    MO_Liste();
     ~MO_Liste();
 };
 

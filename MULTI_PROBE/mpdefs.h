@@ -16,18 +16,18 @@
 
 #define NON_WEIGHTED 0
 
-enum 
-{
-    MP_NO_PROBE = 0,
-    MP_PROBE1 	= 1,
-    MP_PROBE2 	= 2,
-    MP_PROBE3 	= 4,
-    MP_PROBE4 	= 8,
-    MP_PROBE5 	= 16,
-    MP_PROBE6 	= 32,
-    MP_PROBE7 	= 64,
-    MP_PROBE8 	= 128
-};
+enum
+    {
+        MP_NO_PROBE = 0,
+        MP_PROBE1 	= 1,
+        MP_PROBE2 	= 2,
+        MP_PROBE3 	= 4,
+        MP_PROBE4 	= 8,
+        MP_PROBE5 	= 16,
+        MP_PROBE6 	= 32,
+        MP_PROBE7 	= 64,
+        MP_PROBE8 	= 128
+    };
 
 class Bakt_Info;
 class Hit;
@@ -38,14 +38,14 @@ class Sondentopf;
 typedef struct _baktmm
 {
     long	nummer;
-    double 	mismatch; 
+    double 	mismatch;
 } MO_Mismatch;
 
 
 struct MP_list_elem
 {
-                void                    *elem;
-                MP_list_elem           *next;
+    void                    *elem;
+    MP_list_elem           *next;
 };
 
 struct apd_sequence {
@@ -83,7 +83,7 @@ extern struct mp_gl_struct{
 	T_PT_LOCS locs;
 	T_PT_MAIN com;
 	int	pd_design_id;
-	} mp_pd_gl;
+} mp_pd_gl;
 
 
 
