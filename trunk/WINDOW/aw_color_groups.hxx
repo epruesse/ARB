@@ -2,7 +2,7 @@
 //                                                                  //
 //    File      : aw_color_groups.cxx                               //
 //    Purpose   :                                                   //
-//    Time-stamp: <Tue Dec/03/2002 00:24 MET Coder@ReallySoft.de>   //
+//    Time-stamp: <Tue Dec/21/2004 16:56 MET Coder@ReallySoft.de>   //
 //                                                                  //
 //    Coded by Ralf Westram (coder@reallysoft.de) in June 2001      //
 //    Institute of Microbiology (Technical University Munich)       //
@@ -13,7 +13,7 @@
 #ifndef AW_COLOR_GROUPS_HXX
 #define AW_COLOR_GROUPS_HXX
 
-#ifndef aw_root_hxx_included
+#ifndef AW_ROOT_HXX
 #include <aw_root.hxx>
 #endif
 

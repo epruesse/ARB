@@ -1,7 +1,7 @@
 #ifndef aw_window_hxx_included
 #define aw_window_hxx_included
 
-#ifndef aw_root_hxx_included
+#ifndef AW_ROOT_HXX
 #include <aw_root.hxx>
 #endif
 
