@@ -513,7 +513,7 @@ static char *encode_xstring_rel_helix(GB_CSTR x_string, int xlength, BI_helix *h
         }
     }
 
-    *no_of_helices_ptr = no_of_helices;
+    *no_of_helices_ptr = no_of_helices; 
     return rel_helix;
 }
 
@@ -993,15 +993,6 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->callback((AW_CB0)AW_POPDOWN);
     awm->create_button("Close", "Close");
 #endif
-    //----- Detaching existing secondary structure window and creating new window ------
-   //  const char         *awar_name = (bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
-//     Awar_Callback_Info *cb_info   = new Awar_Callback_Info(awr, awar_name, AD_map_species, scannerid, (AW_CL)organismWindow); // do not delete!
-//     cb_info->add_callback();
-
-//     //    awm->at("detach");
-//     awm->callback(ED4_detach_sec_structure_window, (AW_CL)&awm, (AW_CL)cb_info);
-//     awm->create_button("DETACH", "DETACH", "D");
-    //----------------------------------------------------------------------------------
 
     awm->callback(AW_POPUP_HELP,(AW_CL)"arb_secedit.hlp");
     awm->button_length(0);
