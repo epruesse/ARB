@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-/* #include <malloc.h> */
+#ifndef DARWIN
+#include <malloc.h>
+#endif
 #include <string.h>
 #include <limits.h>
 

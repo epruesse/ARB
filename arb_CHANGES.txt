@@ -1,13 +1,16 @@
 Major changes for next Beta:
 ----------------------------
 
- - import reads MAC file format
- - tree export to XML ( DTD is provided in ./lib/dtd )
+ - Many improvements and bugfixes to secondary structure editor
+   (i.e. highlighting of search (i.e for probes) like in EDIT4,
+   interactive constraint editing (stretch/compress), probe info)
+ - import reads Unix, DOS, and MAC linefeeds
  - NTREE/SAI/Etc/GnuPlot: calls gnuplot directly; more plotting features;basic help
  - updated fastDNAml to 1.2.1
- - fixed tree import/export problems (bootstrap values,comments,...)
- - search in all database fields possible
- - up to 10 quicksaves may exist at the same time
+ - tree export to XML ( DTD is provided in ./lib/dtd )
+ - fixed problems with phylip-tree import/export (bootstrap values,comments,...)
+ - search in all database fields possible ('[all fields]')
+ - up to 10 quicksaves are kept
  - new ACI functions: upper, lower, caps
  - variables for import filter programming
  - extract gene-species: creates acc; extraction to existing alignments
