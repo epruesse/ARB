@@ -26,20 +26,23 @@ DESCRIPTION	Finds and displays all occurrences of a given target and/or
 			selecting the number of mismatches (1 - 5) from the
 			menu.
 
-		Press the 'Use weighted mismatches' button to use or not the
-			weights defined in the 'PD SPECIAL' window (see LINK{pd_spec_param.hlp}).
+		Enable the 'Use weighted mismatches' toggle to use the
+			weights defined via 'EXPERT' button (see LINK{pd_spec_param.hlp}).
 
 		Define whether the species which contain the target or probe
 			(or similar) sequence should be marked (see LINK{mark.hlp})
-                        by pressing the 'Mark in database' button.
+                        by enabling the 'Mark in database' toggle.
 
-		Define whether probe and/or target sequence should be searched
-			by pressing the 'Check complement too' button.
+		Define if probe AND target sequence should be searched
+			by enabling the 'Check rev.compl. too' toggle.
 
 		Press the 'EXPERT' button to display the 'PD SPECIAL' window if
 			base pairings should be individually weighed (see LINK{pd_spec_param.hlp}).
 
 		Press the 'MATCH' button to perform the search.
+
+                Enabling the 'Auto (match)' toggle will automatically start a probe match
+                whenever the target string is changed [Unstable!].
 
 
 		The results will be displayed within the display area, ranked
