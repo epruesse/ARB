@@ -15,7 +15,7 @@ itemmeta: P
 #include <pretty_print.menu>
 
 lmenu:import
-item:Import sequences in foreign format (using Readseq: slow !!) ...
+item:Import sequences in foreign format (using Readseq: slow) ...
 itemmeta: R
 #include <import.menu>
 
