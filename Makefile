@@ -127,7 +127,7 @@ ifdef DARWIN
    MOTIF_LIBNAME = libXm.3.dylib
    MOTIF_LIBPATH = $(LIBDIR)/$(MOTIF_LIBNAME)
    XINCLUDES = -I/usr/X11R6/include
-   XLIBS = -L$(XHOME)/lib $(SYSLIBS) -lXm -lXt -lX11 -lXext -lXp  -lc
+   XLIBS = -L$(XHOME)/lib -lXm -lXt -lX11 -lXext -lXp  -lc
 
    PERLBIN = /usr/bin
    PERLLIB = /usr/lib
@@ -165,13 +165,13 @@ endif
 
 ifeq ($X11R6,1)
    XINCLUDES = -I/usr/X11R6/include
-   XLIBS = -L/usr/X11R6/lib -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib $(SYSLIBS) -lc
+   XLIBS = -L/usr/X11R6/lib -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc
 else
    XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I/usr/openwin/include
-   XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib $(SYSLIBS) -lc
+   XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc
 endif
 
-   OWLIBS =  -L${OPENWINHOME}/lib -lxview -lolgx -L$(XHOME)/lib -lX11 $(SYSLIBS) -lc
+   OWLIBS =  -L${OPENWINHOME}/lib -lxview -lolgx -L$(XHOME)/lib -lX11  -lc
    PERLBIN = /usr/bin
    PERLLIB = /usr/lib
    CRYPTLIB = -L/usr/lib -lcrypt
@@ -199,8 +199,8 @@ ifdef SUN4
    DYNAMIC = -Bdynamic
    MOTIFLIB =  -lXm
    SYSLIBS = -lm
-   XLIBS =  -L$(XHOME)/lib $(MOTIFLIB) -lXt -lX11 $(SYSLIBS) $(CCPLIBS)
-   OWLIBS =  -L$(OPENWINHOME)/lib -lxview -lolgx -lX11 $(SYSLIBS)
+   XLIBS =  -L$(XHOME)/lib $(MOTIFLIB) -lXt -lX11 $(CCPLIBS)
+   OWLIBS =  -L$(OPENWINHOME)/lib -lxview -lolgx -lX11
 
 endif
 
@@ -225,7 +225,8 @@ ifdef ECGS
 
    XAR = $(AR)# 			# Linker for archives containing templates
 
-   XLIBS =  -L$(OPENWINHOME)/lib -L$(XHOME)/lib -lXm -lXt -lX11 $(SYSLIBS)
+   SYSLIBS = -lsocket # -lm -lnsl -lgen -lposix4
+   XLIBS =  -L$(OPENWINHOME)/lib -L$(XHOME)/lib -lXm -lXt -lX11
 
 else
    # sun workshop specific
@@ -267,8 +268,8 @@ endif
    DYNAMIC = -Bdynamic
 
    SYSLIBS = -lm -lsocket -lnsl -lgen -lposix4
-   XLIBS =  -L$(OPENWINHOME)/lib -L$(XHOME)/lib -lXm -lXt -lX11 $(SYSLIBS)
-   OWLIBS =  -L$(OPENWINHOME)/lib -lxview -lolgx -lX11 -L/usr/ucblib -lucb $(SYSLIBS)
+   XLIBS =  -L$(OPENWINHOME)/lib -L$(XHOME)/lib -lXm -lXt -lX11
+   OWLIBS =  -L$(OPENWINHOME)/lib -lxview -lolgx -lX11 -L/usr/ucblib -lucb
    CTAGS = etags
    CLEAN_BEFORE_MAKE = $(MAKE) clean# rebuild templates! (needed because of bug in Sun CC)
 
@@ -297,7 +298,7 @@ ifdef HPCC
    SHARED_LIB_SUFFIX = sl
 
    XINCLUDES = -I/usr/include/X11R5 -I/usr/include/Motif1.2
-   XLIBS = -L/usr/lib/X11R5 -L/usr/lib/Motif1.2  -lXm -lXt -lX11 $(SYSLIBS)
+   XLIBS = -L/usr/lib/X11R5 -L/usr/lib/Motif1.2  -lXm -lXt -lX11
 endif
 
 #********************* HP and CC/cc enviroments (dynamic) *****************
@@ -319,7 +320,7 @@ ifdef DIGITAL
 
    XINCLUDES =
    SYSLIBS = -lm
-   XLIBS =  -lXm -lXt -lX11 $(SYSLIBS)
+   XLIBS =  -lXm -lXt -lX11
 endif
 
 #********************* SGI and CC/cc enviroments (dynamic) *****************
@@ -334,7 +335,7 @@ ifdef SGI
    CCLIB = $(ACC)
    XINCLUDES =
    SYSLIBS = -lm
-   XLIBS = -lXm -lXt -lX11 $(SYSLIBS)
+   XLIBS = -lXm -lXt -lX11
 endif
 
 
@@ -488,7 +489,7 @@ checks: check_ENVIRONMENT check_DEBUG check_DEVELOPER check_GCC_VERSION
 # end test section ------------------------------
 
 DIR = $(ARBHOME)
-LIBS = -lARBDB
+LIBS = -lARBDB $(SYSLIBS)
 GUI_LIBS = $(LIBS) -lAW -lAWT $(RTC) $(XLIBS)
 LIBPATH = -L$(ARBHOME)/LIBLINK
 
@@ -704,7 +705,7 @@ ARCHS_GENE_PROBE = \
 
 $(GENE_PROBE): $(ARCHS_GENE_PROBE:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_GENE_PROBE) $(LIBS)
+	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_GENE_PROBE) $(LIBS) $(SYSLIBS)
 
 #***********************************	arb_phylo **************************************
 PHYLO = bin/arb_phylo
