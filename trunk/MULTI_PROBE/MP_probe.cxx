@@ -8,8 +8,8 @@
 #include <string.h>
 #include "SoTl.hxx"
 
-extern BOOL	check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit);
-extern char 	*MP_get_comment(int which, char *str);
+extern BOOL check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit);
+extern char     *MP_get_comment(int which, char *str);
 
 void ProbeValuation::evolution()
 {
@@ -17,7 +17,7 @@ void ProbeValuation::evolution()
     long moeglichkeiten;
     double avg_fit = 0;
 
-    for (int i=0; i<size_sonden_array; i++) 			// Mismatche (=duplikate) aufsummieren, um Groesse von Pool zu bestimmen.
+    for (int i=0; i<size_sonden_array; i++)             // Mismatche (=duplikate) aufsummieren, um Groesse von Pool zu bestimmen.
         n += mismatch_array[i]+1;
 
     moeglichkeiten = k_aus_n(mp_gl_awars.no_of_probes, n);
@@ -36,7 +36,7 @@ void ProbeValuation::evolution()
     // hier beginnt der genetische Algorithmus
     do
     {
-        act_generation->calc_fitness(0, avg_fit);		// hier wird auch init_roulette_wheel gemacht
+        act_generation->calc_fitness(0, avg_fit);       // hier wird auch init_roulette_wheel gemacht
         avg_fit = act_generation->get_avg_fit();
 
         if (avg_fit == 0 && !Stop_evaluation)
@@ -45,7 +45,7 @@ void ProbeValuation::evolution()
             return;
         }
 
-        if (Stop_evaluation)			//Abgebrochen durch Benutzer
+        if (Stop_evaluation)            //Abgebrochen durch Benutzer
         {
             Stop_evaluation = FALSE;
             act_generation->check_for_results();
@@ -59,34 +59,37 @@ void ProbeValuation::evolution()
 
         child_generation->check_for_results();
 
-        act_generation = child_generation;	// zum testen hier nur generierung einer Generation
-    }while (moeglichkeiten/3 > act_generation->get_generation() * MAXPOPULATION);				//hier abbruchbedingung
+        act_generation = child_generation;  // zum testen hier nur generierung einer Generation
+    }
+    while (moeglichkeiten/3 > act_generation->get_generation() * MAXPOPULATION); //hier abbruchbedingung
+
     //Abbruchbedingung deshalb, weil der genetische Alg. keinesfalls mehr Versuche
     // benoetigt als sequentielles probieren. Hier: Annahme, dass er max.
     // ein drittel der Versuche benoetigt
+
     if (act_generation)
         act_generation->check_for_results();
 }
 
-void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)		//pcs darf nur eingetragen werden, wenn es nicht schon
-{										// vorhanden ist
-    char 	*new_list_string,
-		*misms,
+void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)      //pcs darf nur eingetragen werden, wenn es nicht schon vorhanden ist
+{
+    char    *new_list_string,
+        *misms,
         *probe_string,
-		temp_misms[3];
-    int 	probe_len = 0;
+        temp_misms[3];
+    int     probe_len = 0;
     char      buf[25];
-    char 	ecoli_pos[40],temp_ecol[10];
-    int	buf_len, i;
+    char    ecoli_pos[40],temp_ecol[10];
+    int buf_len, i;
     result_struct *rs = new result_struct,
         *elem;
-    AW_window	*aww = mp_main->get_mp_window()->get_result_window();
+    AW_window   *aww = mp_main->get_mp_window()->get_result_window();
 
     memset(rs, 0, sizeof(result_struct));
     memset(ecoli_pos,0, 40);
 
     for (i=0; i<mp_gl_awars.no_of_probes; i++)
-        probe_len += strlen(sondenarray[pcs->get_probe_combi(i)->probe_index]) + 1;	//1 fuer space bzw. 0-Zeichen
+        probe_len += strlen(sondenarray[pcs->get_probe_combi(i)->probe_index]) + 1; //1 fuer space bzw. 0-Zeichen
 
     misms = new char[2*mp_gl_awars.no_of_probes+1];
     probe_string = new char[probe_len+1];
@@ -114,7 +117,7 @@ void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)		//pcs da
                                probe_len+
                                2*mp_gl_awars.no_of_probes+2+
                                2*strlen(SEPARATOR)+ strlen(ecoli_pos)+
-                               1];	//1 fuer 0-Zeichen
+                               1];  //1 fuer 0-Zeichen
 
     sprintf(buf,"%f",pcs->get_fitness());
     buf_len= strlen(buf);
@@ -122,8 +125,8 @@ void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)		//pcs da
         strcat(buf," ");
 
     sprintf(new_list_string,"%20s%s%s%s%s%s%s",buf,SEPARATOR,misms,SEPARATOR,ecoli_pos,SEPARATOR,probe_string);
-    delete misms;
-    delete probe_string;
+    delete [] misms;
+    delete [] probe_string;
 
     rs->ps = pcs->duplicate();
     rs->view_string = new_list_string;
@@ -132,7 +135,7 @@ void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)		//pcs da
         computation_result_list->insert_as_first(rs);
     else
     {
-        while (elem)					//Liste ist sortiert von groesster Fitness bis kleinster Fitness
+        while (elem)                    //Liste ist sortiert von groesster Fitness bis kleinster Fitness
         {
             if (strcmp(elem->view_string, new_list_string) == 0)
             {
@@ -172,11 +175,11 @@ void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)		//pcs da
 
 void ProbeValuation::init_valuation()
 {
-    int 		i, j, k, counter=0;
-    probe		*temp_probe;
-    ST_Container 	*stc;
-    AW_window		*aww;
-    char 		*ptr, *ptr2;
+    int         i, j, k, counter=0;
+    probe       *temp_probe;
+    ST_Container    *stc;
+    AW_window       *aww;
+    char        *ptr, *ptr2;
 
     if (new_pt_server)
     {
@@ -202,18 +205,18 @@ void ProbeValuation::init_valuation()
 
     if (max_init_pop_combis < MAXINITPOPULATION)
     {
-        for (i=0; i<size_sonden_array; i++)			// generierung eines pools, in dem jede Sonde nur einmal pro Mismatch
-        {							// vorkommt, damit alle moeglichen Kombinationen deterministisch
+        for (i=0; i<size_sonden_array; i++)         // generierung eines pools, in dem jede Sonde nur einmal pro Mismatch
+        {                           // vorkommt, damit alle moeglichen Kombinationen deterministisch
             ptr2 = (char *)aww->get_list_entry_char_value();
             aww->iterate_list_entry(1);
 
-            for(j=0; j<=mismatch_array[i]; j++)			// generiert werden koennen.
+            for(j=0; j<=mismatch_array[i]; j++)         // generiert werden koennen.
             {
                 temp_probe = new probe;
                 temp_probe->probe_index = i;
                 temp_probe->allowed_mismatches = j;
                 temp_probe->e_coli_pos = atoi(ptr = MP_get_comment(3,ptr2));
-                delete ptr;
+                free(ptr);
 
                 probe_pool[counter++] = temp_probe;
             }
@@ -229,12 +232,12 @@ void ProbeValuation::init_valuation()
     }
 
     for (i=0; i<size_sonden_array; i++)
-    {								// Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
+    {                               // Generierung eines Pools, in dem die Wahrscheinlichkeiten fuer die Erfassung
         ptr2 = (char *)aww->get_list_entry_char_value();
         aww->iterate_list_entry(1);
 
-        for(j=0; j<=mismatch_array[i]; j++)			// der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jedE
-        {							// einzelne Sonde bestimmt
+        for(j=0; j<=mismatch_array[i]; j++)         // der Sonden schon eingearbeitet sind. DIe WS werden vom Benutzer fuer jedE
+        {                           // einzelne Sonde bestimmt
             for (k=0; k < bewertungarray[i]; k++)
             {
                 temp_probe = new probe;
@@ -263,14 +266,14 @@ ProbeValuation::ProbeValuation(char **sonden_array, int no_of_sonden, int *bewer
 
     memset(this, 0, sizeof(ProbeValuation));
 
-    sondenarray 	= sonden_array;
-    bewertungarray	= bewertung;
-    size_sonden_array 	= no_of_sonden;
-    mismatch_array	= mismatch;
+    sondenarray     = sonden_array;
+    bewertungarray  = bewertung;
+    size_sonden_array   = no_of_sonden;
+    mismatch_array  = mismatch;
 
     computation_result_list = new List<result_struct>;
 
-    for (int i=0; i<size_sonden_array; i++) 			// Mismatche (=duplikate) aufsummieren, um Groesse von Pool zu bestimmen.
+    for (int i=0; i<size_sonden_array; i++)             // Mismatche (=duplikate) aufsummieren, um Groesse von Pool zu bestimmen.
     {
         max_init_pop_combis += mismatch[i]+1;
         pool_length += (mismatch_array[i]+1) * bewertungarray[i];
@@ -278,11 +281,11 @@ ProbeValuation::ProbeValuation(char **sonden_array, int no_of_sonden, int *bewer
 
     max_init_pop_combis = k_aus_n(mp_gl_awars.no_of_probes, max_init_pop_combis);
 
-    if (max_init_pop_combis > MAXINITPOPULATION)		// Ausgangspopulationsgroesse ist limitiert
-	    max_init_pop_combis = MAXINITPOPULATION;
+    if (max_init_pop_combis > MAXINITPOPULATION)        // Ausgangspopulationsgroesse ist limitiert
+        max_init_pop_combis = MAXINITPOPULATION;
 
     probe_pool = new probe*[pool_length];
-    memset(probe_pool, 0, pool_length * sizeof(probe*));	// Struktur mit 0 initialisieren.
+    memset(probe_pool, 0, pool_length * sizeof(probe*));    // Struktur mit 0 initialisieren.
 
 }
 
@@ -293,18 +296,16 @@ ProbeValuation::~ProbeValuation()
     result_struct *elem;
 
     for (i=0; i<size_sonden_array; i++)
-        delete sondenarray[i];
-
+        free(sondenarray[i]);
 
     for (i=0; i<pool_length; i++)
         delete probe_pool[i];
-
 
     elem = computation_result_list->get_first();
     while (elem)
     {
         computation_result_list->remove_first();
-        delete elem->view_string;
+        delete [] elem->view_string;
         delete elem;
         elem = computation_result_list->get_first();
     }
@@ -319,9 +320,9 @@ ProbeValuation::~ProbeValuation()
         delete child_generation;
     }
 
-    delete sondenarray;
-    delete bewertungarray;
-    delete mismatch_array;
-    delete probe_pool;
+    delete [] sondenarray;
+    delete [] bewertungarray;
+    delete [] mismatch_array;
+    delete [] probe_pool;
 }
 

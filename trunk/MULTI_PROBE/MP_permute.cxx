@@ -29,7 +29,7 @@ Bitvector::Bitvector(int bits)
 
 Bitvector::~Bitvector()
 {
-    delete  vector;
+    delete [] vector;
 }
 
 
