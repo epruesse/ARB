@@ -432,6 +432,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd, int butt
     AP_tree *at;
     // clicked on a species list !!!!
     if ( ct->exists && ct->client_data2 && !strcmp((char *) ct->client_data2, "species")){
+        // @@@ FIXME: einige Modes sollten auch in species list funktionieren!
         GBDATA *gbd = (GBDATA *)ct->client_data1;
         if (type == AW_Mouse_Press) {
             AD_map_viewer(gbd);
@@ -440,8 +441,6 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd, int butt
     }
 
     if (!this->tree_static) return;		// no tree -> no commands
-
-
 
     if ( (rot_ct.exists && (rot_ct.distance == 0) && (!rot_ct.client_data1) &&
           rot_ct.client_data2 && !strcmp((char *) rot_ct.client_data2, "ruler") ) ||
@@ -919,6 +918,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd, int butt
             } /* if type */
             break;
 
+    act_like_group:
         case AWT_MODE_GROUP:
             if(type==AW_Mouse_Press){
                 if(cl->exists){
@@ -1012,11 +1012,28 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd, int butt
                         this->mark_tree(at, 0);
                         break;
                 }
-                this->exports.refresh = 1;
-                this->tree_static->update_timers();		// do not reload the tree
+                this->exports.refresh                                        = 1;
+                this->tree_static->update_timers(); // do not reload the tree
                 this->tree_root->calc_color();
-            } /* if type */
+            }                   /* if type */
             break;
+        case AWT_MODE_NONE:
+        case AWT_MODE_SELECT:
+            if(type==AW_Mouse_Press && (cl->exists || ct->exists) && button != AWT_M_MIDDLE){
+                GB_transaction dummy(this->tree_static->gb_species_data);
+                if (cl->exists) {
+                    at = (AP_tree *)cl->client_data1;
+                }else{
+                    at = (AP_tree *)ct->client_data1;
+                }
+                if (!at) break;
+
+                //this->exports.refresh = 1;		// No refresh needed !! AD_map_viewer will do the refresh
+                AD_map_viewer(at->gb_node, ADMVT_SELECT);
+                goto act_like_group; // now do the same like in AWT_MODE_GROUP
+            }
+            break;
+
         case AWT_MODE_MOD:
             if(type==AW_Mouse_Press && (cl->exists || ct->exists) ){
                 GB_transaction dummy(this->tree_static->gb_species_data);
@@ -1026,12 +1043,12 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd, int butt
                     at = (AP_tree *)ct->client_data1;
                 }
                 if (!at) break;
-//                 if (button == AWT_M_RIGHT) {
-//                     if (this->tree_static->gb_tree) {
-//                         this->create_group(at);
-//                     }
-//                     this->exports.refresh = 1;
-//                 }
+                //                 if (button == AWT_M_RIGHT) {
+                //                     if (this->tree_static->gb_tree) {
+                //                         this->create_group(at);
+                //                     }
+                //                     this->exports.refresh = 1;
+                //                 }
                 //this->exports.refresh = 1;		// No refresh needed !! AD_map_viewer will do the refresh
                 AD_map_viewer(at->gb_node,ADMVT_INFO);
             }

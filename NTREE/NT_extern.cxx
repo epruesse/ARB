@@ -1015,6 +1015,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->insert_help_topic("help_arb_nt",	"ARB_NT Help",			"N","arb_ntree.hlp",		AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_ntree.hlp", 0);
 
 
+    awm->create_mode( 0, "select.bitmap", "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_SELECT);
     awm->create_mode( 0, "mark.bitmap", "mode_mark.hlp", AWM_ALL, (AW_CB)nt_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_MARK);
     awm->create_mode( 0, "group.bitmap", "mode_group.hlp", AWM_ALL, (AW_CB)nt_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_GROUP);
     awm->create_mode( 0, "zoom.bitmap", "mode_pzoom.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw,(AW_CL)AWT_MODE_ZOOM);
@@ -1053,10 +1054,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->create_mode( 0, "reset.bitmap", "mode_reset.hlp", AWM_TREE, (AW_CB)nt_mode_event,
                       (AW_CL)ntw,
                       (AW_CL)AWT_MODE_RESET
-                      );
-    awm->create_mode( 0, "jm1.bitmap", "mad.hlp", AWM_ALL, (AW_CB)nt_mode_event,
-                      (AW_CL)ntw,
-                      (AW_CL)AWT_MODE_JUMP
                       );
 
     awm->set_info_area_height( 250 );

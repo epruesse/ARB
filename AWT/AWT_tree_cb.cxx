@@ -18,98 +18,62 @@ nt_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
 {
     AWUSE(aws);
     const char *text;
-    static int story = 0;
 
     switch(mode){
+        case AWT_MODE_SELECT:
+            text = "SELECT MODE    LEFT: select species";
+            break;
         case AWT_MODE_MARK:
-            text="MARK MODE    LEFT: mark subtree   RIGHT: unmark subtree";
+            text = "MARK MODE    LEFT: mark subtree   RIGHT: unmark subtree";
             break;
         case AWT_MODE_GROUP:
-            text="GROUP MODE   LEFT: group/ungroup group  RIGHT: create/destroy group";
+            text = "GROUP MODE   LEFT: group/ungroup group  RIGHT: create/destroy group";
             break;
         case AWT_MODE_ZOOM:
-            text="ZOOM MODE    LEFT: press and drag to zoom   RIGHT: zoom out one step";
+            text = "ZOOM MODE    LEFT: press and drag to zoom   RIGHT: zoom out one step";
             break;
         case AWT_MODE_LZOOM:
-            text="LOGICAL ZOOM MODE   LEFT: show subtree  RIGHT: go up one step";
+            text = "LOGICAL ZOOM MODE   LEFT: show subtree  RIGHT: go up one step";
             break;
         case AWT_MODE_MOD:
-            text="MODIFY MODE   LEFT: select node M: assign info to internal node";
+            text = "MODIFY MODE   LEFT: select node M: assign info to internal node";
             break;
         case AWT_MODE_WWW:
-            text="CLICK NODE TO SEARCH WEB (See <PROPS/WWW...> also";
+            text = "CLICK NODE TO SEARCH WEB (See <PROPS/WWW...> also";
             break;
         case AWT_MODE_LINE:
-            text="LINE MODE    LEFT: reduce linewidth  RIGHT: increase linewidth";
+            text = "LINE MODE    LEFT: reduce linewidth  RIGHT: increase linewidth";
             break;
         case AWT_MODE_ROT:
-            text="ROTATE MODE   LEFT: Select branch and drag to rotate";
+            text = "ROTATE MODE   LEFT: Select branch and drag to rotate";
             break;
         case AWT_MODE_SPREAD:
-            text="SPREAD MODE   LEFT: decrease angles  RIGHT: increase angles";
+            text = "SPREAD MODE   LEFT: decrease angles  RIGHT: increase angles";
             break;
         case AWT_MODE_SWAP:
-            text="SWAP MODE    LEFT: swap branches";
+            text = "SWAP MODE    LEFT: swap branches";
             break;
         case AWT_MODE_LENGTH:
-            text="BRANCH LENGTH MODE   LEFT: Select branch and drag to change length  RIGHT: -";
+            text = "BRANCH LENGTH MODE   LEFT: Select branch and drag to change length  RIGHT: -";
             break;
         case AWT_MODE_MOVE:
-            text="MOVE MODE   LEFT: move subtree and drag to new destination RIGHT: move group info only";
+            text = "MOVE MODE   LEFT: move subtree and drag to new destination RIGHT: move group info only";
             break;
         case AWT_MODE_NNI:
-            text="NEAREST NEIGHBOUR INTERCHANGE OPTIMIZER  L: select subtree R: whole tree";
+            text = "NEAREST NEIGHBOUR INTERCHANGE OPTIMIZER  L: select subtree R: whole tree";
             break;
         case AWT_MODE_KERNINGHAN:
-            text="KERNIGHAN LIN OPTIMIZER   L: select subtree R: whole tree";
+            text = "KERNIGHAN LIN OPTIMIZER   L: select subtree R: whole tree";
             break;
         case AWT_MODE_OPTIMIZE:
-            text="NNI & KL OPTIMIZER   L: select subtree R: whole tree";
+            text = "NNI & KL OPTIMIZER   L: select subtree R: whole tree";
             break;
         case AWT_MODE_SETROOT:
-            text="SET ROOT MODE   LEFT: set root";
+            text = "SET ROOT MODE   LEFT: set root";
             break;
         case AWT_MODE_RESET:
-            text="RESET MODE   LEFT: reset rotation  MIDDLE: reset angles  RIGHT: reset linewidth";
+            text = "RESET MODE   LEFT: reset rotation  MIDDLE: reset angles  RIGHT: reset linewidth";
             break;
-        case AWT_MODE_JUMP:
-            story++;
-            if(story>9){
-                story = 1;
-            }
-            switch(story){
-                case 1:
-                    text="STORY MODE:   Allow a few seconds please: This is a short story about";
-                    break;
-                case 2:
-                    text="STORY MODE:   The Making of ARB...";
-                    break;
-                case 3:
-                    text="STORY MODE:   In the first day there was the idea.";
-                    break;
-                case 4:
-                    text="STORY MODE:   In the second day there was the wild discussion.";
-                    break;
-                case 5:
-                    text="STORY MODE:   In the forth day there was an almost working version!";
-                    break;
-                case 6:
-                    text="STORY MODE:   In the fifth day there was an almost working version!!";
-                    break;
-                case 7:
-                    text="STORY MODE:   In the sixth day there was an almost working version!!!";
-                    break;
-                case 8:
-                    text="STORY MODE:   In the seventh day there finally was    >>>> ARB NTREE <<<<";
-                    break;
-                case 9:
-                    text="STORY MODE:   Yeahh, that was it how it was :)";
-                    break;
-
-                default:
-                    text="STORY MODE:   uuups, what's this ???";
-                    break;
-            }
 
         default:
             text="No help for this mode available";

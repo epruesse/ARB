@@ -619,6 +619,118 @@ void gene_extract_cb(AW_window *aww, AW_CL cl_pmode){
     free(ali);
 }
 
+//  ----------------------------------------------------------------------
+//      GBDATA *GEN_find_pseudo(GBDATA *gb_organism, GBDATA *gb_gene)
+//  ----------------------------------------------------------------------
+GBDATA *GEN_find_pseudo(GBDATA *gb_organism, GBDATA *gb_gene) {
+    GBDATA *gb_species_data = GB_get_father(gb_organism);
+    GBDATA *gb_name         = GB_find(gb_organism, "name", 0, down_level);
+    char   *organism_name   = GB_read_string(gb_name);
+    gb_name                 = GB_find(gb_gene, "name", 0, down_level);
+    char   *gene_name       = GB_read_string(gb_name);
+    GBDATA *gb_pseudo       = 0;
+
+    for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data);
+         gb_species;
+         gb_species = GBT_next_species(gb_species))
+    {
+        const char *this_organism_name = GEN_origin_organism(gb_species);
+
+        if (this_organism_name && strcmp(this_organism_name, organism_name) == 0)
+        {
+            if (strcmp(GEN_origin_gene(gb_species), gene_name) == 0)
+            {
+                gb_pseudo = gb_species;
+                break;
+            }
+        }
+    }
+
+    return gb_pseudo;
+}
+
+//  -------------------------------------------------------------------------
+//      static void mark_organisms(AW_window *aww, AW_CL cl_mark, AW_CL)
+//  -------------------------------------------------------------------------
+// cl_mark == 0 -> unmark
+// cl_mark == 1 -> mark
+// cl_mark == 2 -> invert mark
+static void mark_organisms(AW_window *aww, AW_CL cl_mark, AW_CL) {
+    GB_transaction dummy(gb_main);
+    int            mark = (int)cl_mark;
+
+    for (GBDATA *gb_org = GEN_first_organism(gb_main);
+         gb_org;
+         gb_org = GEN_next_organism(gb_org))
+    {
+        if (mark == 2) {
+            GB_write_flag(gb_org, !GB_read_flag(gb_org)); // invert mark of organism
+        }
+        else {
+            GB_write_flag(gb_org, mark); // mark/unmark organism
+        }
+    }
+}
+//  ----------------------------------------------------------------------------
+//      static void mark_gene_species(AW_window *aww, AW_CL cl_mark, AW_CL)
+//  ----------------------------------------------------------------------------
+// cl_mark == 0 -> unmark
+// cl_mark == 1 -> mark
+// cl_mark == 2 -> invert mark
+static void mark_gene_species(AW_window *aww, AW_CL cl_mark, AW_CL) {
+    GB_transaction dummy(gb_main);
+    int            mark = (int)cl_mark;
+
+    for (GBDATA *gb_pseudo = GEN_first_pseudo_species(gb_main);
+         gb_pseudo;
+         gb_pseudo = GEN_next_pseudo_species(gb_pseudo))
+    {
+        if (mark == 2) {
+            GB_write_flag(gb_pseudo, !GB_read_flag(gb_pseudo)); // invert mark of pseudo-species
+        }
+        else {
+            GB_write_flag(gb_pseudo, mark); // mark/unmark gene-species
+        }
+    }
+}
+//  ------------------------------------------------------------------------------------
+//      static void mark_gene_species_of_marked_genes(AW_window *aww, AW_CL, AW_CL)
+//  ------------------------------------------------------------------------------------
+static void mark_gene_species_of_marked_genes(AW_window *aww, AW_CL, AW_CL) {
+    GB_transaction dummy(gb_main);
+
+    for (GBDATA *gb_species = GBT_first_species(gb_main);
+         gb_species;
+         gb_species = GBT_next_species(gb_species))
+    {
+        for (GBDATA *gb_gene = GEN_first_gene(gb_species);
+             gb_gene;
+             gb_gene = GEN_next_gene(gb_gene))
+        {
+            if (GB_read_flag(gb_gene)) {
+                GBDATA *gb_pseudo = GEN_find_pseudo(gb_species, gb_gene);
+                if (gb_pseudo) GB_write_flag(gb_pseudo, 1);
+            }
+        }
+    }
+}
+//  ------------------------------------------------------------------------------------
+//      static void mark_genes_of_marked_gene_species(AW_window *aww, AW_CL, AW_CL)
+//  ------------------------------------------------------------------------------------
+static void mark_genes_of_marked_gene_species(AW_window *aww, AW_CL, AW_CL) {
+    GB_transaction dummy(gb_main);
+
+    for (GBDATA *gb_pseudo = GEN_first_pseudo_species(gb_main);
+         gb_pseudo;
+         gb_pseudo = GEN_next_pseudo_species(gb_pseudo))
+    {
+        if (GB_read_flag(gb_pseudo)) {
+            GBDATA *gb_gene = GEN_find_origin_gene(gb_pseudo);
+            GB_write_flag(gb_gene, 1); // mark gene
+        }
+    }
+}
+
 //  ----------------------------------------------------------------------------
 //      AW_window *create_gene_extract_window(AW_root *root, AW_CL cl_pmode)
 //  ----------------------------------------------------------------------------
@@ -749,14 +861,14 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE) {
 
         awm->insert_separator();
 
-        AWMIMT( "organism_info", 	"Organism Info ...", 	"",	"organism_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)NT_create_organism_window,	0 );
-
-        awm->insert_separator();
-
         GEN_insert_mark_submenu(awm, "gene_mark_all", "Mark all genes", "M", "gene_mark.hlp",  GEN_MARK);
         GEN_insert_mark_submenu(awm, "gene_unmark_all", "Unmark all genes", "U", "gene_mark.hlp", GEN_UNMARK);
         GEN_insert_mark_submenu(awm, "gene_invert_marked", "Invert marked genes", "I", "gene_mark.hlp", GEN_INVERT_MARKED);
         GEN_insert_mark_submenu(awm, "gene_count_marked", "Count marked genes", "I", "gene_mark.hlp", GEN_COUNT_MARKED);
+
+        awm->insert_separator();
+
+        AWMIMT("mark_genes_of_marked_gene_species", "Mark genes of marked gene-species", "G", "gene_mark.hlp", AWM_ALL, mark_genes_of_marked_gene_species, 0, 0);
 
         awm->insert_separator();
 
@@ -774,82 +886,32 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE) {
     }
 }
 
-//  ----------------------------------------------------------------------
-//      GBDATA *GEN_find_pseudo(GBDATA *gb_organism, GBDATA *gb_gene)
-//  ----------------------------------------------------------------------
-GBDATA *GEN_find_pseudo(GBDATA *gb_organism, GBDATA *gb_gene) {
-    GBDATA *gb_species_data = GB_get_father(gb_organism);
-    GBDATA *gb_name         = GB_find(gb_organism, "name", 0, down_level);
-    char   *organism_name   = GB_read_string(gb_name);
-    gb_name                 = GB_find(gb_gene, "name", 0, down_level);
-    char   *gene_name       = GB_read_string(gb_name);
-    GBDATA *gb_pseudo       = 0;
 
-    for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data);
-         gb_species;
-         gb_species = GBT_next_species(gb_species))
+//  ----------------------------------------------------------------------------------------
+//      void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE)
+//  ----------------------------------------------------------------------------------------
+void GEN_create_organism_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE) {
+    awm->create_menu(0,"Organisms","O","no.hlp",	AWM_ALL);
     {
-        const char *this_organism_name = GEN_origin_organism(gb_species);
+        AWMIMT( "organism_info", 	"Organism Info ...", 	"",	"organism_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)NT_create_organism_window,	0 );
 
-        if (this_organism_name && strcmp(this_organism_name, organism_name) == 0)
-        {
-            if (strcmp(GEN_origin_gene(gb_species), gene_name) == 0)
-            {
-                gb_pseudo = gb_species;
-                break;
-            }
-        }
-    }
+        awm->insert_separator();
 
-    return gb_pseudo;
-}
-
-//  ------------------------------------------------------------------------------------
-//      static void mark_gene_species_of_marked_genes(AW_window *aww, AW_CL, AW_CL)
-//  ------------------------------------------------------------------------------------
-static void mark_gene_species_of_marked_genes(AW_window *aww, AW_CL, AW_CL) {
-    GB_transaction dummy(gb_main);
-
-    for (GBDATA *gb_species = GBT_first_species(gb_main);
-         gb_species;
-         gb_species = GBT_next_species(gb_species))
-    {
-        for (GBDATA *gb_gene = GEN_first_gene(gb_species);
-             gb_gene;
-             gb_gene = GEN_next_gene(gb_gene))
-        {
-            if (GB_read_flag(gb_gene)) {
-                GBDATA *gb_pseudo = GEN_find_pseudo(gb_species, gb_gene);
-                if (gb_pseudo) GB_write_flag(gb_pseudo, 1);
-            }
-        }
+        AWMIMT("mark_organisms", "Mark all organisms", "A", "gene_mark.hlp", AWM_ALL, mark_organisms, 1, 0);
+        AWMIMT("unmark_organisms", "Unmark all organisms", "U", "gene_mark.hlp", AWM_ALL, mark_organisms, 0, 0);
+        AWMIMT("invmark_organisms", "Invert marks of all organisms", "I", "gene_mark.hlp", AWM_ALL, mark_organisms, 2, 0);
     }
 }
-//  ------------------------------------------------------------------------------------
-//      static void mark_genes_of_marked_gene_species(AW_window *aww, AW_CL, AW_CL)
-//  ------------------------------------------------------------------------------------
-static void mark_genes_of_marked_gene_species(AW_window *aww, AW_CL, AW_CL) {
-    GB_transaction dummy(gb_main);
-
-    for (GBDATA *gb_pseudo = GEN_first_pseudo_species(gb_main);
-         gb_pseudo;
-         gb_pseudo = GEN_next_pseudo_species(gb_pseudo))
-    {
-        if (GB_read_flag(gb_pseudo)) {
-            GBDATA *gb_gene = GEN_find_origin_gene(gb_pseudo);
-            GB_write_flag(gb_gene, 1); // mark gene
-        }
-    }
-}
-
-
 //  --------------------------------------------------------------------------------------------
 //      void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE)
 //  --------------------------------------------------------------------------------------------
 void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE) {
     awm->create_menu(0,"Gene-Species","E","no.hlp",	AWM_ALL);
     {
-        AWMIMT("mark_genes_of_marked_gene_species", "Mark genes of marked gene-species", "G", "gene_mark.hlp", AWM_ALL, mark_genes_of_marked_gene_species, 0, 0);
+        AWMIMT("mark_gene_species", "Mark all gene-species", "A", "gene_mark.hlp", AWM_ALL, mark_gene_species, 1, 0);
+        AWMIMT("unmark_gene_species", "Unmark all gene-species", "U", "gene_mark.hlp", AWM_ALL, mark_gene_species, 0, 0);
+        AWMIMT("invmark_gene_species", "Invert marks of all gene-species", "U", "gene_mark.hlp", AWM_ALL, mark_gene_species, 2, 0);
+        awm->insert_separator();
         AWMIMT("mark_gene_species_of_marked_genes", "Mark gene-species of marked genes", "S", "gene_mark.hlp", AWM_ALL, mark_gene_species_of_marked_genes, 0, 0);
     }
 }
@@ -911,6 +973,9 @@ AW_window *GEN_map_create_main_window(AW_root *awr) {
 
     // Gene-species
     GEN_create_gene_species_submenu(awm, false);
+
+    // Organisms
+    GEN_create_organism_submenu(awm, false);
 
     // Hide Menu
     GEN_create_hide_submenu(awm);
