@@ -1,15 +1,19 @@
 .SUFFIXES: .o .cxx .depend
-OBJECTS = PT_new_design.o PT_family.o PT_prefixtree.o PT_main.o PT_io.o \
-	PT_etc.o PT_secundaer.o \
-	PT_buildtree.o PT_match.o PT_findEx.o
-AOBJECTS = BI_helix.o
 
-$(MAIN): $(OBJECTS) $(AOBJECTS)
-	$(AR) $(MAIN) $(OBJECTS) $(AOBJECTS)
+CPP_OBJECTS =	PT_new_design.o PT_family.o PT_prefixtree.o PT_main.o PT_io.o \
+		PT_etc.o PT_secundaer.o PT_buildtree.o PT_match.o PT_findEx.o
+C_OBJECTS = # BI_helix.o
+OBJECTS = $(CPP_OBJECTS) $(C_OBJECTS)
+
+$(MAIN): $(OBJECTS) 
+	$(AR) $(MAIN) $(OBJECTS)
+
 .c.o:
 	$(ACC) $(cflags) -c $< $(AINCLUDES)  -I./../probe_bank/COM
+
 .cxx.o:
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) -I./../probe_bank/COM
+
 proto:
 	rm -f pt_prototypes.h
 	../MAKEBIN/aisc_mkpt -E $(OBJECTS:.o=.cxx) probe_tree.hxx >pt_prototypes.h
@@ -74,13 +78,13 @@ PT_findEx.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 
-PT_io.o: BI_helix.hxx
 PT_io.o: probe.h
 PT_io.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_io.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_io.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_io.o: $(ARBHOME)/INCLUDE/arbdbt.h
+PT_io.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 PT_io.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_io.o: $(ARBHOME)/INCLUDE/PT_server.h
 

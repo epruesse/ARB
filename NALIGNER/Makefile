@@ -14,12 +14,11 @@ CFLAGS = $(cflags)
 CPP_OBJECTS = ali_prealigner.o ali_aligner.o \
 				  ali_arbdb.o ali_sequence.o ali_solution.o \
 				  ali_pt.o ali_global.o ali_profile.o ali_pathmap.o \
-				  ali_main.o BI_helix.o
+				  ali_main.o
 
 
 $(MAIN): $(CPP_OBJECTS)
-	$(CPP) -o $(MAIN:.a=.com) $(CPP_OBJECTS) $(CPPINCLUDES) $(LIBPATH) ../PROBE_COM/client.a ../SERVERCNTRL/SERVERCNTRL.a -lARBDB $(SYSLIBS) $(CCPLIBS)
-	touch $(MAIN);
+	$(AR) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
 	$(CPP) $(CFLAGS) -c -o $@ $< $(CPPINCLUDES)
@@ -164,13 +163,13 @@ ali_profile.o: ali_pt.hxx
 ali_profile.o: ali_sequence.hxx
 ali_profile.o: ali_solution.hxx
 ali_profile.o: ali_tlist.hxx
-ali_profile.o: BI_helix.hxx
 ali_profile.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_profile.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_profile.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_profile.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ali_profile.o: $(ARBHOME)/INCLUDE/client.h
 ali_profile.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_profile.o: $(ARBHOME)/INCLUDE/server.h
@@ -213,10 +212,3 @@ ali_solution.o: $(ARBHOME)/INCLUDE/client.h
 ali_solution.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_solution.o: $(ARBHOME)/INCLUDE/server.h
 ali_solution.o: $(ARBHOME)/INCLUDE/servercntrl.h
-
-BI_helix.o: BI_helix.hxx
-BI_helix.o: $(ARBHOME)/INCLUDE/ad_prot.h
-BI_helix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-BI_helix.o: $(ARBHOME)/INCLUDE/arb_assert.h
-BI_helix.o: $(ARBHOME)/INCLUDE/arbdb.h
-BI_helix.o: $(ARBHOME)/INCLUDE/arbdbt.h
