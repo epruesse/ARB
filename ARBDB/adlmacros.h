@@ -574,11 +574,11 @@ do {                                                            \
     if ((Main)->undo_type) gb_check_in_undo_modify(Main,gbd);   \
 } while(0)
 
-#define STATIC_BUFFER(strvar,minlen)                                                    \
-do {                                                                                    \
-    int len = (minlen);                                                                 \
-    if ((strvar) && (long)strlen(strvar) < (len-1)) { free(strvar); (strvar)=NULL; }    \
-    if (!(strvar)) (strvar)=(char*)GB_calloc(len,1);                                    \
+#define STATIC_BUFFER(strvar,static_buffer_minlen)                                                  \
+do {                                                                                                \
+    int static_buffer_len = (static_buffer_minlen);                                                 \
+    if ((strvar) && (long)strlen(strvar) < (static_buffer_len-1)) { free(strvar); (strvar)=NULL; }  \
+    if (!(strvar)) (strvar)=(char*)GB_calloc(static_buffer_len,1);                                  \
 } while(0)
 
 #endif
