@@ -13,6 +13,7 @@
 #include <arbdbt.h>
 #include <awt.hxx>
 
+#include "awt_config_manager.hxx"
 
 #define WWW_COUNT 10
 #define AWAR_WWW_BROWSER "www/browser"
@@ -104,6 +105,25 @@ void awt_www_select_change(AW_window *aww,AW_CL selected){
     aw_root->awar(AWAR_WWW_SELECT)->write_int(selected);
 }
 
+static void www_init_config(AW_window *aww) {
+    AWT_reset_configDefinition(aww->get_root());
+    for (int i=0;i<WWW_COUNT; i++) {
+        char buf[256];
+        sprintf(buf,AWAR_WWW_SELECT_TEMPLATE,i); AWT_add_configDefinition(buf, "active", i);
+        sprintf(buf,AWAR_WWW_DESC_TEMPLATE,i); AWT_add_configDefinition(buf, "desciption", i);
+        sprintf(buf,AWAR_WWW_TEMPLATE,i); AWT_add_configDefinition(buf, "template", i);
+    }
+}
+
+static char *www_store_config(AW_window *aww, AW_CL cl1, AW_CL cl2) {
+    www_init_config(aww);
+    return AWT_store_configDefinition();
+}
+static void www_restore_config(AW_window *aww, const char *stored_string, AW_CL cl1, AW_CL cl2) {
+    www_init_config(aww);
+    AWT_restore_configDefinition(stored_string);
+}
+
 AW_window *AWT_open_www_window(AW_root *aw_root,AW_CL cgb_main){
 
     AW_window_simple *aws = new AW_window_simple;
@@ -171,6 +191,9 @@ AW_window *AWT_open_www_window(AW_root *aw_root,AW_CL cgb_main){
 
     aws->at_x(srtx);
     aws->create_button(0,"URL");
+
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "www", www_store_config, www_restore_config, 0, 0);
 
     awt_www_select_change(aws,aw_root->awar(AWAR_WWW_SELECT)->read_int());
     return (AW_window *)aws;
