@@ -13,17 +13,15 @@ COMPILER = $(CPP) $(cflags)
 CLIENTCOMPILER = $(CPP) $(cflags)
 
 # DONT CHANGE THE NEXT LINES
-server.a:	$(MAIN_SOURCE)	$(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES)
-		$(MAKE) -r $(makeflags) -f AISC/Makefile \
+server.a: $(MAIN_SOURCE) $(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES)
+	$(MAKE) -r $(makeflags) -f AISC/Makefile \
 				"MAIN_SOURCE=$(MAIN_SOURCE)" \
 				"PRIVATE_SERVER_OBJECTS = $(PRIVATE_SERVER_OBJECTS)" \
 				"AISC_SAVE = $(AISC_SAVE)" "COMPILER = $(COMPILER)" \
 				"CLIENTCOMPILER = $(CLIENTCOMPILER)" "AR = $(AR)"
 
 depends:
-		$(MAKE) -r -f AISC/Makefile depends
-
-#	@echo "no automatic dependencies for NAMES_COM - skipped"
+	$(MAKE) -r -f AISC/Makefile depends
 
 clean:
 	$(MAKE) $(makeflags) -f AISC/Makefile clean
