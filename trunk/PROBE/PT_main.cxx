@@ -83,7 +83,10 @@ int main(int argc, char **argv)
     aisc_core_on_error = 0;
     physical_memory = GB_get_physical_memory();
     /***** try to open com with any other pb server ******/
-    if ((argc>2) || ((argc<2)&&!params->db_server)) {
+    if ((argc>2) ||
+        ((argc<2) && !params->db_server) ||
+        (argc >= 2 && strcmp(argv[1], "--help") == 0))
+    {
         printf("Syntax: %s [-look/-build/-kill/-QUERY] -Dfile.arb -TSocketid\n",argv[0]);
         exit (-1);
     }
