@@ -9,7 +9,7 @@
  * notice and this permission notice appear in supporting documentation.
  * No representations are made about the suitability of this software for
  * any purpose.  It is provided "as is" without express or implied warranty."
- * 
+ *
  * This software has been widely modified for usage inside ARB.
  */
 
@@ -62,7 +62,7 @@ struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
     {"-schumacher-clean-bold-r-*--",               (struct xfont*) NULL}, // #6
     {"-schumacher-clean-bold-i-*--",               (struct xfont*) NULL}, // #7
     {"-adobe-times-medium-r-*--",                  (struct xfont*) NULL},	/* closest to Bookman */
-    {"-adobe-times-medium-i-*--",                  (struct xfont*) NULL}, // #9 
+    {"-adobe-times-medium-i-*--",                  (struct xfont*) NULL}, // #9
     {"-adobe-times-bold-r-*--",                    (struct xfont*) NULL}, // #10
     {"-adobe-times-bold-i-*--",                    (struct xfont*) NULL}, // #11
     {"-adobe-courier-medium-r-*--",                (struct xfont*) NULL}, // #12
@@ -109,7 +109,7 @@ struct _fstruct ps_fontinfo[AW_NUM_FONTS + 1] = {
                                 // map window fonts to postscript fonts
                                 // negative values indicate monospaced fonts
     {"Default",                         -1},
-    {"Times-Roman",                     0}, 
+    {"Times-Roman",                     0},
     {"Times-Italic",                    1},
     {"Times-Bold",                      2},
     {"Times-BoldItalic",                3},
@@ -182,7 +182,7 @@ static char *getParsedFontPart(const char *fontname, int *minus_position, int id
     int   endpos   = (idx == (FONT_STRING_PARTS-1) ? strlen(fontname) : minus_position[idx+1])-1;
     int   length   = endpos-startpos+1;
     char *result   = new char[length+1];
-    
+
     memcpy(result, fontname+startpos, length);
     result[length] = 0;
 
@@ -236,19 +236,33 @@ void aw_root_init_font(Display *tool_d)
         char **fontlist;
         int    count;
 
+#if defined(DUMP_FONT_LOOKUP)
+	printf("Searching for SCALABLEFONTS\n");
+#endif // DUMP_FONT_LOOKUP
+
         /* first look for OpenWindow style font names (e.g. times-roman) */
         if ((fontlist = XListFonts(tool_d, ps_fontinfo[1].name, 1, &count))!=0) {
             openwinfonts = AW_TRUE;        /* yes, use them */
-            for (int f=0; f<AW_NUM_FONTS; f++)      /* copy the OpenWindow font names */
+            for (int f=0; f<AW_NUM_FONTS; f++) {     /* copy the OpenWindow font names */
                 x_fontinfo[f].templat = ps_fontinfo[f+1].name;
+#if defined(DUMP_FONT_LOOKUP)
+                printf("ps_fontinfo[f+1].name='%s'\n",ps_fontinfo[f+1].name);
+#endif // DUMP_FONT_LOOKUP
+            }
             XFreeFontNames(fontlist);
         } else {
             char templat[200];
             strcpy(templat,x_fontinfo[0].templat); /* nope, check for font size 0 */
             strcat(templat,"0-0-*-*-*-*-*-*");
             if ((fontlist = XListFonts(tool_d, templat, 1, &count))!=0){
+#if defined(DUMP_FONT_LOOKUP)
+        	printf("Using SCALABLEFONTS!\n");
+#endif // DUMP_FONT_LOOKUP
                 XFreeFontNames(fontlist);
             }else{
+#if defined(DUMP_FONT_LOOKUP)
+                printf("Not using SCALABLEFONTS!\n");
+#endif // DUMP_FONT_LOOKUP
                 appres.SCALABLEFONTS = AW_FALSE;   /* none, turn off request for them */
             }
         }
@@ -306,8 +320,8 @@ void aw_root_init_font(Display *tool_d)
                     (nf ? nf->next : x_fontinfo[f].xfontlist) = newfont;
                     nf                                        = newfont;
 
-                    // store size and actual fontname : 
-                    nf->size    = size; 
+                    // store size and actual fontname :
+                    nf->size    = size;
                     nf->fname   = strdup(flist[i].fn);
                     nf->fstruct = NULL;
                     nf->next    = NULL;
@@ -412,7 +426,7 @@ PIX_FONT lookfont(Display *tool_d, int f, int s)
     else { /* SCALABLE; none yet of that size, alloc one and put it in the list */
         newfont = (struct xfont *) malloc(sizeof(struct xfont));
         /* add it on to the end of the list */
-        
+
         if (x_fontinfo[f].xfontlist == NULL) x_fontinfo[f].xfontlist = newfont;
         else oldnf->next                                             = newfont;
 
@@ -438,7 +452,7 @@ PIX_FONT lookfont(Display *tool_d, int f, int s)
         /* allocate space for the name and put it in the structure */
         nf->fname = strdup(fn);
     } /* scalable */
-    
+
     if (nf->fstruct == NULL) {
         if (appres.debug) fprintf(stderr, "Loading font %s\n", fn);
         fontst = XLoadQueryFont(tool_d, fn);
@@ -505,7 +519,7 @@ const char *AW_root::font_2_ascii(AW_font font_nr)
 
                 readable_fontname = GBS_global_string("%s %s %s,%s,%s",
                                                       fndry, fmly,
-                                                      wght, slant, 
+                                                      wght, slant,
                                                       rgstry);
                 delete [] rgstry;
                 delete [] slant;
@@ -603,7 +617,7 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size)
     xfs     = lookfont(common->display, font_nr, size);
     XSetFont(common->display, gc, xfs->fid);
     curfont = *xfs;
-    
+
     register XCharStruct *cs;
     XCharStruct          *def;  /* info about default char */
     Bool                  singlerow = (xfs->max_byte1 == 0); /* optimization */
@@ -632,9 +646,9 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size)
             descent_of_chars[i] = cs->descent;
             width_of_chars[i]   = cs->width;
 
-            if (cs->ascent >fontinfo.max_letter_ascent ) fontinfo.max_letter_ascent  = cs->ascent;    
-            if (cs->descent>fontinfo.max_letter_descent) fontinfo.max_letter_descent = cs->descent; 
-            if (cs->width  >fontinfo.max_letter_width  ) fontinfo.max_letter_width   = cs->width;     
+            if (cs->ascent >fontinfo.max_letter_ascent ) fontinfo.max_letter_ascent  = cs->ascent;
+            if (cs->descent>fontinfo.max_letter_descent) fontinfo.max_letter_descent = cs->descent;
+            if (cs->width  >fontinfo.max_letter_width  ) fontinfo.max_letter_width   = cs->width;
         }
         else {
             width_of_chars[i]   = 0;
@@ -644,7 +658,7 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size)
     }
 
 #if defined(DEBUG) && 0
-#define INCREASE 0    
+#define INCREASE 0
 #warning increasing font size for testing
     fontinfo.max_letter_width   += INCREASE;
     fontinfo.max_letter_ascent  += INCREASE;
