@@ -1424,8 +1424,8 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
         else {
             /* #if defined(DEBUG) */
             /* printf("Skipped tree refresh by touching AWAR_TREE_REFRESH\n"); */
-            /* #endif */ /* DEBUG */ 
-            GB_touch(gb_tree_refresh); /* Note : force tree update */ 
+            /* #endif */ /* DEBUG */
+            GB_touch(gb_tree_refresh); /* Note : force tree update */
         }
     }
 
@@ -1674,7 +1674,7 @@ static GB_ERROR gbl_taxonomy(GBL_command_arguments *args)
     }
     else {
         int   is_current_tree = 0;
-        int   count;
+        int   count           = -1;
         char *result          = 0;
 
         if (args->cparam == 1) {   /* only 'count' */

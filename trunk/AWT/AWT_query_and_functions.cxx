@@ -1097,9 +1097,10 @@ static void update_colorset_selection_list(const color_save_data *csd) {
 }
 
 static void colorset_changed_cb(GBDATA*, int *cl_csd, GB_CB_TYPE cbt) {
-    awt_assert(cbt&GB_CB_CHANGED);
-    const color_save_data *csd = (const color_save_data*)cl_csd;
-    update_colorset_selection_list(csd);
+    if (cbt&GB_CB_CHANGED) {
+        const color_save_data *csd = (const color_save_data*)cl_csd;
+        update_colorset_selection_list(csd);
+    }
 }
 
 static char *create_colorset_representation(const color_save_data *csd, GB_ERROR& error) {
