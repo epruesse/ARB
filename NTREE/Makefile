@@ -5,7 +5,7 @@
 
 CPP_OBJECTS =  NT_edconf.o NT_join.o NT_sort.o NT_cb.o NT_main.o NT_extern.o\
 	NT_validNames.o NT_validNameParser.o \
-	NT_validManual.o \
+	NT_validManual.o  NT_MAUS.o \
 	NT_ins_col.o NT_import.o NT_concatenate.o\
 	ad_spec.o ad_trees.o  ad_ali.o ad_ext.o ad_transpro.o \
 	AP_consensus.o AP_cprofile.o AP_pos_var_pars.o \

@@ -87,7 +87,7 @@ void NT_show_message(AW_root *awr)
                 last_nl[0] = 0;
             }
         }
-        // awr->awar(AWAR_ERROR_MESSAGES)->write_string("");    
+        // awr->awar(AWAR_ERROR_MESSAGES)->write_string("");
     }
     free(msg);
 }
@@ -245,8 +245,9 @@ void create_all_awars(AW_root *awr, AW_default def)
 
     ARB_init_global_awars(awr, def, gb_main);
     awt_create_aww_vars(awr,def);
+    NT_create_MAUS_awars(awr, def, gb_main);
 
-    if (GB_read_clients(gb_main) >=0) { // no i am the server
+    if (GB_read_clients(gb_main) >= 0) { // no i am the server
         awr->awar(AWAR_ERROR_MESSAGES)->add_callback( NT_show_message);
     }
 }
@@ -1106,6 +1107,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             {
                 AWMIMT("import_seq",    "Import sequences and fields (ARB)","I","arb_import.hlp",AWM_ALL, NT_import_sequences,0,0);
                 GDE_load_menu(awm,"import");
+#if defined(DEVEL_LOTHAR) || defined(DEVEL_RALF)
+                AWMIMT("MAUS", "Filter through MAUS..", "M", "MAUS.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_MAUS_window, 0);
+#endif // DEVEL_LOTHAR
             }
             awm->close_sub_menu();
 
