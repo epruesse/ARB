@@ -55,9 +55,12 @@ class AW_common {
 
 // #define AW_MAP_GC(gc) (aw_assert(gc<common->ngcs), common->gcs[gc])
 
+inline bool AW_GC_MAPABLE(AW_common *common, int gc) {
+    return gc<common->ngcs && common->gcs[gc] != 0;
+}
+
 inline AW_GC_Xm *AW_MAP_GC_tested(AW_common *common, int gc) {
-    aw_assert(gc < common->ngcs);
-    aw_assert(common->gcs[gc]);
+    aw_assert(AW_GC_MAPABLE(common, gc));
     return common->gcs[gc];
 }
 #define AW_MAP_GC(gc) AW_MAP_GC_tested(common, gc)
