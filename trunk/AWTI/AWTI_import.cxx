@@ -741,7 +741,7 @@ GB_ERROR awtc_read_data(char *ali_name)
     return 0;
 }
 
-void AWTC_import_go_cb(AW_window *aww)		//Erzeugen von Gen- oder Genom-Sequenzdatenbanken + Aufruf der Importfunktion für  Gen/Genom Sequenzdateien
+void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-Sequenzdatenbanken + Aufruf der Importfunktion für  Gen/Genom Sequenzdateien
 {
     char     buffer[1024];
     AW_root *awr         = aww->get_root();
@@ -793,7 +793,7 @@ void AWTC_import_go_cb(AW_window *aww)		//Erzeugen von Gen- oder Genom-Sequenzda
     }
 
     GB_change_my_security(GB_MAIN,6,"");
-    GB_begin_transaction(GB_MAIN);			//first transaction start
+    GB_begin_transaction(GB_MAIN);                      //first transaction start
     char *ali_name;
     {
         char *ali = awr->awar(AWAR_ALI)->read_string();
@@ -815,16 +815,17 @@ void AWTC_import_go_cb(AW_window *aww)		//Erzeugen von Gen- oder Genom-Sequenzda
         }
         free(ali_type);
     }
-    int toggle_value = (awr->awar(AWAR_READ_GENOM_DB)->read_int());
+    
+    int toggle_value = (awr->awar(AWAR_READ_GENOM_DB)->read_int()); // Note: toggle is obsolete for Artems new importer
 
     bool ask_generate_names = true;
     GB_commit_transaction(GB_MAIN);                            //harald
 
 
-    if (!error) {				//Falls Formatchecks erfolgreich
-        if (is_genom_db) {			//Falls Genomdatenbank
-	  
-	    GB_begin_transaction(GB_MAIN);				//harald
+    if (!error) {                               //Falls Formatchecks erfolgreich
+        if (is_genom_db) {                      //Falls Genomdatenbank
+
+            GB_begin_transaction(GB_MAIN);                              //harald
             char *mask   = awr->awar(AWAR_FILE)->read_string();
             char **fnames = GBS_read_dir(mask, 0);
 
@@ -832,104 +833,70 @@ void AWTC_import_go_cb(AW_window *aww)		//Erzeugen von Gen- oder Genom-Sequenzda
                 error = GB_export_error("Cannot find selected file");
             }
             else {
+                int successfull_imports = 0;
+                int failed_imports      = 0;
 
                 aw_openstatus("Reading input files");
-		GB_commit_transaction(GB_MAIN);				//harald
+                GB_commit_transaction(GB_MAIN);                         //harald
                 for (int count = 0; !error && fnames[count]; ++count) {
+                    GB_ERROR error_this_file =  0;
 
-		  GB_begin_transaction(GB_MAIN);				//harald
-		  aw_status(GBS_global_string("Reading %s", fnames[count]));
-		  GB_warning("Trying to import: '%s' ", fnames[count]);
+                    GB_begin_transaction(GB_MAIN); //harald
+                    aw_status(GBS_global_string("Reading %s", fnames[count]));
+                    GB_warning("Trying to import: '%s' ", fnames[count]);
 #if defined(DEBUG)
-		  printf("Reading '%s' ...\n", fnames[count]);
+                    printf("Reading '%s' ...\n", fnames[count]);
 #endif // DEBUG
 
-		  try {					//Importfunktionen je nach Togglestellung aufrufen
-		    
-		    if (toggle_value==0) {
-		      error = GEN_read_genbank(GB_MAIN, fnames[count], ali_name);
-		    }
-		    else if (toggle_value==1) {
-		      //error = GEN_read_embl(GB_MAIN, fnames[count], ali_name);
-		      error = Genom_read_embl_universal(GB_MAIN, fnames[count], ali_name);
-		    }
-		  
-		  }
-		  catch (...) {				// Beim Import einer Datei aufgetretenen Fehler auffangen
-		    error = GB_export_error("Error: %s not imported", fnames[count]);
-		  }
+                    try {
+#ifdef DEVEL_ARTEM
+                        printf("Ignoring EMBL/Genebank selection and using Genom_read_embl_universal() to import file\n");
+                        error_this_file = Genom_read_embl_universal(GB_MAIN, fnames[count], ali_name);
+#else
+                        // Importfunktionen je nach Togglestellung aufrufen
+                        if (toggle_value==0) {
+                            error_this_file = GEN_read_genbank(GB_MAIN, fnames[count], ali_name);
+                        }
+                        else if (toggle_value==1) {
+                            error_this_file = GEN_read_embl(GB_MAIN, fnames[count], ali_name);
+                        }
+#endif
 
+                    }
+                    catch (...) {                               // Beim Import einer Datei aufgetretenen Fehler auffangen
+                        error_this_file = GB_export_error("Error: %s not imported", fnames[count]);
+                    }
 
-		  if (!error) {
-		    GB_commit_transaction(GB_MAIN);				//harald
-		    GB_warning("File '%s' successfully imported", fnames[count]);
-		  }
+                    if (!error_this_file) {
+                        GB_commit_transaction(GB_MAIN); //harald
+                        GB_warning("File '%s' successfully imported", fnames[count]);
+                        successfull_imports++;
+                    }
+                    else {                              //Wird bei Fehler der Importfunktionen durchgeführt
+                        error_this_file = GBS_global_string("'%s' not imported (Reason: %s)", fnames[count], error_this_file);
+                        // GB_warning("Import Error: File '%s' not imported (Reason: %s)", fnames[count], error);
+                        GB_warning("Import error: %s", error_this_file);
+                        GB_abort_transaction(GB_MAIN); //harald
+                        failed_imports++;
+                    }
+                }
 
-		  else {				//Wird bei Fehler der Importfunktionen durchgeführt
+                if (!successfull_imports) {
+                    error = "Nothing has been imported";
+                }
+                else {
+                    GB_warning("%i of %i files were imported with success", successfull_imports, (successfull_imports+failed_imports));
+                }
 
-		    error = GB_export_error("Error: %s not imported", fnames[count]);
-		    GB_warning("Import Error: File '%s' not imported", fnames[count]);
-		    GB_abort_transaction(GB_MAIN);				//harald
-		    
-		    //-------------------------------------------------------------------------------------
-		    aw_closestatus();
-		    GB_begin_transaction(GB_MAIN);		
-		    GBT_free_names(fnames);
-		    free(mask);
-		    free(ali_name);
-
-		    aww->hide();
-
-		    aw_openstatus("Checking and Scanning database");
-		    aw_status("Pass 1: Check entries");
-
-		    // scan for hidden/unknown fields :
-		    awt_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER, AWT_RS_UPDATE_FIELDS);
-		    if (is_genom_db) awt_gene_field_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER, AWT_RS_UPDATE_FIELDS);
-
-		    GBT_mark_all(GB_MAIN,1);
-		    sleep(1);
-		    aw_status("Pass 2: Check sequence lengths");
-		    GBT_check_data(GB_MAIN,0);
-		    sleep(1);
-
-		    GB_commit_transaction(GB_MAIN);
-
-		    if (ask_generate_names) {
-		      if (aw_message("You may generate short names using the full_name and accession entry of the species",
-				     "Generate new short names,use old names")==0)
-		      {
-			aw_status("Pass 3: Generate unique names");
-			error = AWTC_pars_names(GB_MAIN,1);
-		      }
-		    }
-
-		    aw_closestatus();
-		    //		    if (error) aw_message(error);
-
-		    GB_begin_transaction(GB_MAIN);
-		    GB_change_my_security(GB_MAIN,0,"");
-		    GB_commit_transaction(GB_MAIN);
-
-		    awtcig.func(awr, awtcig.cd1,awtcig.cd2);
-		    //------------------------------------------------------------------------------------
-		    return;
-		  }
-
-		}
-		GB_begin_transaction(GB_MAIN);				//harald		
-		aw_closestatus();
-
+                GB_begin_transaction(GB_MAIN); //harald
+                aw_closestatus();
             }
 
             GBT_free_names(fnames);
             free(mask);
-	}
-
-
-        else {
-
-            char *f = awr->awar(AWAR_FILE)->read_string();
+        }
+        else {                  // import to non-genome DB
+            char *f          = awr->awar(AWAR_FILE)->read_string();
             awtcig.filenames = GBS_read_dir(f,0);
             free(f);
 
