@@ -50,7 +50,7 @@ typedef uli *ulivector, **ulimatrix, ***ulicube;
  * prototypes of functions defined in util.c
  */
 
-void maerror(char *message);
+void maerror(const char *message);
 
 dvector new_dvector(int n);
 dmatrix new_dmatrix(int nrow, int ncol);

@@ -1,3 +1,6 @@
+2003-09-19  Ralf Westram  <Coder@ReallySoft.de>
+
+	* src/util.c: - const fix
 
 Version  date		what has been changed
 
