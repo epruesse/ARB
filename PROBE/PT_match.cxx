@@ -308,7 +308,7 @@ void complement_probe(char *probe, int probe_length)
 
 double calc_position_wmis(int pos, int seq_len, double y1, double y2)
 {
-    return (double)(((double)(pos * (seq_len - pos)) / (double)(seq_len * seq_len))* (double)(y2*4.0) + y1);
+    return (double)(((double)(pos * (seq_len - 1 - pos)) / (double)((seq_len - 1) * (seq_len - 1)))* (double)(y2*4.0) + y1);
 }
 
 void pt_build_pos_to_weight(PT_MATCH_TYPE type, const char *sequence){
