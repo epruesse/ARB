@@ -33,7 +33,7 @@ public:
     int iColorise, iBackBone;
     int iDispPos;
     int iMapSpecies, iMapSpeciesBase, iMapSpeciesPos;
-    int iMapSpeciesDels, iMapSpeciesMiss;
+    int iMapSpeciesDels, iMapSpeciesMiss, iMapSpeciesIns, iMapSpeciesInsInfo;
     int iDispCursorPos;
 
     GLRenderer(void);
@@ -47,6 +47,7 @@ public:
     void DisplayHelixNumbers(void);
     void DisplayBasePositions(void);
     void DisplayMappedSpBasePositions(void);
+    void DisplayMappedSpInsertions(void);
     void DisplayHelixMidPoints(Texture2D *cImages);
 
     void BeginTexturizer();

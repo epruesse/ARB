@@ -27,6 +27,7 @@ GLRenderer::GLRenderer(void){
     iDispCursorPos = 0;
     iMapSpecies = iMapSpeciesBase = iMapSpeciesPos = 0;
     iMapSpeciesDels = iMapSpeciesMiss = 0;
+    iMapSpeciesIns = iMapSpeciesInsInfo = 0;
 } 
 
 GLRenderer::~GLRenderer(void){
@@ -62,6 +63,15 @@ void GLRenderer::DisplayBasePositions(void){
 
 }
 
+void GLRenderer::DisplayMappedSpInsertions(void){
+
+    G->SetColor(RNA3D_GC_INSERTION);
+    glCallList(MAP_SPECIES_INSERTION_BASES_ANCHOR);
+
+    G->SetColor(RNA3D_GC_INSERTION);
+    glCallList(MAP_SPECIES_INSERTION_BASES);
+}
+
 void GLRenderer::DisplayMappedSpBasePositions(void){
     
     G->SetColor(RNA3D_GC_MOL_BACKBONE);
@@ -95,6 +105,7 @@ void GLRenderer::DoHelixMapping(void) {
     }
     // Displaying Tertiary Interactions of E.coli 16S ribosomal RNA 
     if(iDispTerInt) {
+        glLineWidth(fHelixSize + 1); // Thicker than the normal Helix Strands
         G->SetColor(RNA3D_GC_PSEUDOKNOT);
         glCallList(ECOLI_TERTIARY_INTRACTION_PSEUDOKNOTS);
         G->SetColor(RNA3D_GC_TRIPLE_BASE);
@@ -173,8 +184,13 @@ void GLRenderer::DisplayMolecule(Structure3D *cStr) {
             glLineWidth(ObjectSize/3);
             glCallList(MAP_SEARCH_STRINGS_BACKBONE);
         }
-        if(iMapSpecies && iMapSpeciesPos) {
-            DisplayMappedSpBasePositions();
+        if(iMapSpecies) {
+            if (iMapSpeciesIns && iMapSpeciesInsInfo) {
+                DisplayMappedSpInsertions();
+            }
+            if(iMapSpeciesPos) {
+                DisplayMappedSpBasePositions();
+            }
         }
     }
 }
@@ -354,6 +370,13 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages) {
             G->SetColor(RNA3D_GC_FOREGROUND);
             glBindTexture(GL_TEXTURE_2D, cImages->texture[DANGER]);  
             glCallList(MAP_SPECIES_DELETION);
+        }
+
+        if(iMapSpeciesIns) {
+            glPointSize(ObjectSize*3);
+            G->SetColor(RNA3D_GC_INSERTION);
+            glBindTexture(GL_TEXTURE_2D, cImages->texture[CONE_DOWN]);  
+            glCallList(MAP_SPECIES_INSERTION_POINTS);
         }
     }
 }

@@ -129,7 +129,7 @@ fi
 ARB_LIBRARY_PATH="${LD_LIBRARY_PATH}"
 export ARB_LIBRARY_PATH
 
-echo "Program ARB will be startet in the background, please wait"
+echo "Please wait while the program ARB is starting ....."
 (arb_ntree $args;arb_clean >/dev/null 2>&1;echo ARB done) &
 
 
