@@ -2558,8 +2558,7 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
         }
 
 #if 0
-        printf("    overall unc
-ompressed size = %li b\n"
+        printf("    overall uncompressed size = %li b\n"
                "    overall compressed size = %li b (Ratio=%li%%)\n",
                uncompressed_sum, compressed_sum,
                (compressed_sum*100)/uncompressed_sum);
