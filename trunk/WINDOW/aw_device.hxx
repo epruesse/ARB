@@ -259,7 +259,7 @@ public:
     void new_gc(int gc);
     int  new_gc(void);
     void set_fill(int gc,AW_grey_level grey_level); // <0 dont fill  0.0 white 1.0 black
-    void set_font(int gc,AW_font fontnr, int size); //
+    void set_font(int gc,AW_font fontnr, int size, int *found_size); 
     void set_line_attributes(int gc,AW_pos width,AW_linestyle style);
     void set_function(int gc,AW_function function);
     void set_foreground_color(int gc,AW_color color); // lines ....
@@ -267,6 +267,7 @@ public:
     int  get_string_size(int gc,const  char *string,long textlen); // get the size of the string
 
     const AW_font_information *get_font_information(int gc, unsigned char c);
+    int get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes);
     
     AW_gc();
     virtual ~AW_gc() {};
