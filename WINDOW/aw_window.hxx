@@ -33,6 +33,24 @@ typedef AW_window *(*AW_Window_Creator)(AW_root*,AW_CL);
 	class AW_at;
 #endif
 
+class AW_at_size {
+
+    int		to_offset_x; // here we use offsets (not positions like in AW_at)
+    int		to_offset_y;
+    AW_BOOL	to_position_exists;
+
+    AW_BOOL	attach_x;           // attach right side to right form
+    AW_BOOL	attach_y;
+    AW_BOOL	attach_lx;          // attach left side to right form
+    AW_BOOL	attach_ly;
+    AW_BOOL	attach_any;
+
+
+public:
+    void store(const AW_at *at);
+    void restore(AW_at *at) const;
+};
+
 typedef enum {
 	AW_Keyboard_Press	= 1,
 	AW_Keyboard_Release	= 2,
@@ -189,7 +207,7 @@ public:
     void increment_at_commands( int width, int height );
 
 
-    AW_color  AW_window::alloc_named_data_color(int colnum, char *colorname);
+    AW_color  alloc_named_data_color(int colnum, char *colorname);
     void      _get_area_size(AW_area area, AW_rectangle *square);
     int       label_widget( void *wgt, AW_label str, char *mnemonic=0 , int width =0 , int alignment =0 );
     //***************************** *********************** ***********************************
@@ -302,30 +320,34 @@ public:
 	void shadow_width (int shadow_thickness);		// set the shadow_thickness of buttons
 
     // *** local modifiers: ********
-	void at( int x, int y );			// abs pos of a button (>10,10)
-	void at_x( int x );				// abs x pos
-	void at_y( int y );				// abs y pos
-	void at_shift( int x, int y );			// rel pos of a button
-	void at_newline( void );			// in auto_space mode only: newline
-	void at( const char *id );				// place the button at the position set in the .fig
+	void    at( int x, int y );	// abs pos of a button (>10,10)
+	void    at_x( int x );		// abs x pos
+	void    at_y( int y );		// abs y pos
+	void    at_shift( int x, int y ); // rel pos of a button
+	void    at_newline( void );	// in auto_space mode only: newline
+	void    at( const char *id ); // place the button at the position set in the .fig
     // file (loaded with load_xfig) by the string $id
-	AW_BOOL at_ifdef(const  char *id);			// check whether 'id' is an element if the .fig file
-	void label( const char *label );			// Create a label before the button
+	AW_BOOL at_ifdef(const  char *id); // check whether 'id' is an element if the .fig file
+	void    label( const char *label ); // Create a label before the button
+
 	void get_at_position( int *x, int *y );
     void dump_at_position(const char *debug_label) const; // for debugging (uses printf)
 
-	void id( const char *id );				// Set the id of the button (for set_sensitive)
-	void mask( AW_active mask );			// Set the mask used for set_sensitive
-	void help_text(const char *id );			// Set the help text of a button
-	void callback( void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 );	// normal callbacks
+	void store_at_size_and_attach( AW_at_size *at_size ); // get size of at-element
+	void restore_at_size_and_attach( const AW_at_size *at_size ); // set size of a at-element
+
+	void id( const char *id );	// Set the id of the button (for set_sensitive)
+	void mask( AW_active mask ); // Set the mask used for set_sensitive
+	void help_text(const char *id ); // Set the help text of a button
+	void callback( void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 ); // normal callbacks
 	void callback( void (*f)(AW_window*,AW_CL), AW_CL cd1);
 	void callback( void (*f)(AW_window*));
-	void callback( AW_cb_struct * /*owner*/awcbs);	// Calls f with
+	void callback( AW_cb_struct * /*owner*/awcbs); // Calls f with
     // aww in awcbs
-	void d_callback( void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 );	// double click callbacks
-	void d_callback( void (*f)(AW_window*,AW_CL), AW_CL cd1);			// selection lists only !!
+	void d_callback( void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 ); // double click callbacks
+	void d_callback( void (*f)(AW_window*,AW_CL), AW_CL cd1); // selection lists only !!
 	void d_callback( void (*f)(AW_window*));
-	void d_callback( AW_cb_struct * /*owner*/awcbs);	// Calls f with
+	void d_callback( AW_cb_struct * /*owner*/awcbs); // Calls f with
     void set_background(const char *colorname);
     // *** create the buttons ********
 
