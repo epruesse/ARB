@@ -90,28 +90,22 @@ AN_shorts *an_find_shrt(AN_shorts *sin,char *search)
     return 0;
 }
 
-/*	searches for an already defined short,
-	if found then return found
-	else if fullname == 0 return advice
-	else if |advice| >=3 try advice first
-	else try first 3 characters of full
-	else try
-*/
 char *nas_string_2_key(const char *str)	/* converts any string to a valid key */
 {
 #if defined(DUMP_NAME_CREATION)
-    const char *org_str = str;
+    const char *org_str          = str;
 #endif // DUMP_NAME_CREATION
     char buf[GB_KEY_LEN_MAX+1];
     int i;
     int c;
     for (i=0;i<GB_KEY_LEN_MAX;) {
-        c= *(str++);
+        c                        = *(str++);
         if (!c) break;
         if (isalpha(c)) buf[i++] = c;
-        else if (c==' ' || c=='_') buf[i++] = '_';
+        // name should not contain _'s (not compatible with FastDNAml)
+        //else if (c==' ' || c=='_') buf[i++] = '_';
     }
-    for (;i<GB_KEY_LEN_MIN;i++) buf[i] = '_';
+    for (;i<GB_KEY_LEN_MIN;i++) buf[i] = '0';
     buf[i] = 0;
 #if defined(DUMP_NAME_CREATION)
     printf("nas_string_2_key('%s') = '%s'\n", org_str, buf);
@@ -134,7 +128,7 @@ char *nas_remove_small_vocals(const char *str) {
             buf[i++] = c;
         }
     }
-    for (; i<GB_KEY_LEN_MIN; i++) buf[i] = '_';
+    for (; i<GB_KEY_LEN_MIN; i++) buf[i] = '0';
     buf[i] = 0;
 #if defined(DUMP_NAME_CREATION)
     printf("nas_remove_small_vocals('%s') = '%s'\n", org_str, buf);
@@ -153,7 +147,7 @@ void an_complete_shrt(char *shrt, const char *rest_of_full) {
     }
 
     while (len<GB_KEY_LEN_MIN) {
-        shrt[len++] = '_';
+        shrt[len++] = '0';
     }
 
     shrt[len] = 0;
@@ -350,8 +344,8 @@ extern "C" aisc_string get_short(AN_local *locs)
     if(shrt) free(shrt);
     shrt = 0;
 
-#define ILLEGAL_NAME_CHARS              " \t#;,@"
-#define REPLACE_ILLEGAL_NAME_CHARS      " =:\t=:#=:;=:,=:@="
+#define ILLEGAL_NAME_CHARS              " \t#;,@_"
+#define REPLACE_ILLEGAL_NAME_CHARS      " =:\t=:#=:;=:,=:@=:_="
 
     parsed_name = GBS_string_eval(locs->full_name, "\t= :\"=:'=:* * *=*1 *2:sp.=species:spec.=species:.=",0);
     /* delete ' " \t and more than two words */
@@ -410,11 +404,6 @@ extern "C" aisc_string get_short(AN_local *locs)
         char *first_short;
 
         if (strlen(first)) {
-#if defined(DEBUG)
-            if (strcmp(first, "Phycus")==0) {
-                printf("Phycus\n");
-            }
-#endif // DEBUG
             first_short = an_get_short(	aisc_main->shorts1, &(aisc_main->pshorts1),first);
         }else{
             first_short = strdup(first_advice);
