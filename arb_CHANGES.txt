@@ -1,8 +1,11 @@
 Major changes for next Beta:
 ----------------------------
 
+ - new ACI functions: upper, lower, caps
+ - variables for import filter programming
  - extract gene-species: creates acc; extraction to existing alignments
- - sequence of selected gene will be pasted into ARB_EDIT4 (local signature)
+ - sequence of selected gene is mirrored in ARB_EDIT4/local_signature
+   (=> selected gene can be highlighted in primary editor)
  - PCR primer-design for single genes
  - when selecting a gene, the corresponding gene-species is selected (if found)
  - save configuration for several windows (i.e. Search&Query, WWW, NDS, ...)

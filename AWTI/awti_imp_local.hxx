@@ -14,6 +14,7 @@ struct input_format_per_line {
     char	*tag;
     char	*append;
     char	*write;
+    char	*setvar;
 
     struct input_format_per_line *next;
 };

@@ -65,7 +65,7 @@ long GBT_count_marked_species P_((GBDATA *gb_main));
 long GBT_count_species P_((GBDATA *gb_main));
 long GBT_recount_species P_((GBDATA *gb_main));
 char *GBT_store_marked_species P_((GBDATA *gb_main, int unmark_all));
-GB_ERROR GBT_with_stored_species P_((GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata));
+NOT4PERL GB_ERROR GBT_with_stored_species P_((GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata));
 GB_ERROR GBT_restore_marked_species P_((GBDATA *gb_main, const char *stored_marked));
 GBDATA *GBT_read_sequence P_((GBDATA *gb_species, const char *use));
 char *GBT_read_name P_((GBDATA *gb_species));
@@ -110,7 +110,7 @@ GB_ERROR GBT_remote_awar P_((GBDATA *gb_main, const char *application, const cha
 char *GBT_read_gene_sequence P_((GBDATA *gb_gene, GB_BOOL use_revComplement));
 
 /* adseqcompr.c */
-GB_ERROR GBT_compress_sequence_tree P_((GBDATA *gb_main, GB_CTREE *tree, const char *ali_name));
+NOT4PERL GB_ERROR GBT_compress_sequence_tree P_((GBDATA *gb_main, GB_CTREE *tree, const char *ali_name));
 GB_ERROR GBT_compress_sequence_tree2 P_((GBDATA *gb_main, const char *tree_name, const char *ali_name));
 void GBT_compression_test P_((void *dummy, GBDATA *gb_main));
 
