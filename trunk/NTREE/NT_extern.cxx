@@ -603,7 +603,7 @@ void NT_modify_cb(AW_window *aww,AW_CL cd1,AW_CL cd2)
 }
 
 void NT_primer_cb(void) {
-	GB_xcmd("arb_primer",1);
+	GB_xcmd("arb_primer",GB_TRUE, GB_FALSE);
 }
 
 

@@ -1,8 +1,9 @@
 Major changes for next Beta:
 ----------------------------
 
+ - NTREE/SAI/Etc/GnuPlot: calls gnuplot directly; more plotting features;basic help
  - updated fastDNAml to 1.2.1
- - fixed tree export problems (bootstrap values,comments,...)
+ - fixed tree import/export problems (bootstrap values,comments,...)
  - search in all database fields possible
  - up to 10 quicksaves may exist at the same time
  - new ACI functions: upper, lower, caps

@@ -63,5 +63,5 @@ AW_window *AP_open_pos_var_pars_window(AW_root *root);
 /* ETC_check_gcg.cxx */
 
 /* AP_csp_2_gnuplot.cxx */
-void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd);
+void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_runGnuplot);
 AW_window *AP_open_csp_2_gnuplot_window(AW_root *root);

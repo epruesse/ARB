@@ -1,13 +1,20 @@
 
-Other software needed to run ARB:
----------------------------------
+Software that is needed to run ARB:
+------------------------------------
 
 - xview
 - motif
 
 
-Other software needed to compile ARB:
--------------------------------------
+Software that is useful together with ARB:
+------------------------------------------
+
+- gnuplot
+- xfig
+
+
+Software that is needed to compile ARB:
+---------------------------------------
 
 - rxp
 - sablotron

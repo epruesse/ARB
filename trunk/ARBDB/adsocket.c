@@ -752,21 +752,32 @@ void GB_xterm(void){
     system(buffer);
 }
 
-void GB_xcmd(const char *cmd, GB_BOOL background){
-    void *strstruct = GBS_stropen(1024);
-    const char *xt = GB_getenv("ARB_XCMD"); // doc in arb_envar.hlp
-    char *sys;
-    if (!xt) xt = "xterm -sl 1000 -sb -geometry 140x30 -e";
+void GB_xcmd(const char *cmd, GB_BOOL background, GB_BOOL wait_only_if_error) {
+    // runs a command in an xterm
+    // if 'background' is true -> run asyncronous
+    // if 'wait_only_if_error' is true -> asyncronous does wait for keypress only if cmd fails
+
+    void       *strstruct = GBS_stropen(1024);
+    const char *xt        = GB_getenv("ARB_XCMD"); // doc in arb_envar.hlp
+    char       *sys;
+    if (!xt) xt           = "xterm -sl 1000 -sb -geometry 140x30 -e";
     GBS_strcat(strstruct, "(");
     GBS_strcat(strstruct, xt);
     GBS_strcat(strstruct, " sh -c 'LD_LIBRARY_PATH=\"");
     GBS_strcat(strstruct,GB_getenv("LD_LIBRARY_PATH"));
-    GBS_strcat(strstruct,"\";export LD_LIBRARY_PATH;");
+    GBS_strcat(strstruct,"\";export LD_LIBRARY_PATH; (");
     GBS_strcat(strstruct, cmd);
     if (background) {
-        GBS_strcat(strstruct, "; echo; echo Press RETURN to close Window; read a ') &");
-    }else{
-        GBS_strcat(strstruct, " ') ");
+        if (wait_only_if_error) {
+            GBS_strcat(strstruct, ") || (echo; echo Press RETURN to close Window; read a)' ) &");
+        }
+        else {
+            GBS_strcat(strstruct, "; echo; echo Press RETURN to close Window; read a)' ) &");
+        }
+    }
+    else {
+        gb_assert(!wait_only_if_error); // makes no sense if background == false
+        GBS_strcat(strstruct, " )' ) ");
     }
     sys = GBS_strclose(strstruct,0);
     system(sys);
@@ -857,6 +868,7 @@ GB_CSTR GB_getenv(const char *env){
     }
     else {
         if (strcmp(env, "HOME") == 0) return GB_getenvHOME();
+        if (strcmp(env, "USER") == 0) return GB_getenvUSER();
     }
 
     return getenv(env);

@@ -1272,7 +1272,7 @@ void pd_query_pt_server(AW_window *aww)
     GBS_strcat(strstruct,rsh);
     GBS_strcat(strstruct,"$ARBHOME/bin/arb_who");
     char *sys = GBS_strclose(strstruct,0);
-    GB_xcmd(sys,1);
+    GB_xcmd(sys,GB_TRUE, GB_FALSE);
     delete sys;
     delete rsh;
 }
