@@ -56,12 +56,19 @@ update:
 	jar -uf $(JAR) *.class
 
 test: all
-	( mkdir -p $(TESTDIR); cd $(TESTDIR); java -jar $(BASE)/$(JAR); ls -al -rt )
+	(   mkdir -p $(TESTDIR) ;\
+        cd $(TESTDIR) ;\
+		echo "----------------------------------------" ;\
+        java -jar $(BASE)/$(JAR) ;\
+		echo "----------------------------------------" ;\
+        ls -al -rt )
 
 test_rs: all
 	(	mkdir -p $(TESTDIR) ;\
 		cd $(TESTDIR) ;\
+		echo "----------------------------------------" ;\
 		java -jar $(BASE)/$(JAR) server=http://hi.er/probeserver/ ;\
+		echo "----------------------------------------" ;\
 		ls -al -rt )
 
 clean:
