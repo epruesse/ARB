@@ -25,8 +25,8 @@
 
 ARB_DB_SERVER		:/tmp/arb_db_$(USER)_$(ARB_PID)
 
-# If you want to run programs on a workstation cluster, you have to assign your arbdb server
-# and one ip-id for each user. To choose an ip_id choose any number between 1000 and 4000 and
+# If you want to run programms on a workstation cluster, you have to assign your arbdb server
+# and one ip-id for each user. To choose an ip_id choose any number between 1000 and 4000 and 
 # examine /etc/services whether this ip-id has not yet been allocated by another programm
 #	smith:ARB_DB_SERVER 	myhost:4011		// socket for smith ('arb' have to be started on 'myhost')
 #	ludwig:ARB_DB_SERVER 	myhost:4012		// socket for ludwig
@@ -41,13 +41,14 @@ ARB_NAME_SERVER		localhost:3029		arb_name_server	-d$(ARBHOME)/lib/nas/names.dat
 #***********	PT_SERVERS The server should run on the nfs server ******************
 #*******     You may add new pt_servers here: (numbers must be continues)   *********
 
-ARB_PT_SERVER0		localhost:3030		arb_pt_server	-D$(ARBHOME)/lib/pts/LSU_rRNA.arb
-ARB_PT_SERVER1		localhost:3031		arb_pt_server	-D$(ARBHOME)/lib/pts/SSU_rRNA.arb
-ARB_PT_SERVER2		localhost:3032		arb_pt_server	-D$(ARBHOME)/lib/pts/user1.arb
-ARB_PT_SERVER3		localhost:3033		arb_pt_server	-D$(ARBHOME)/lib/pts/user2.arb
-ARB_PT_SERVER4		localhost:3034		arb_pt_server	-D$(ARBHOME)/lib/pts/user3.arb
-ARB_PT_SERVER5		localhost:3035		arb_pt_server	-D$(ARBHOME)/lib/pts/user4.arb
-ARB_PT_SERVER6		localhost:3036		arb_pt_server	-D$(ARBHOME)/lib/pts/user5.arb
-ARB_PT_SERVER7		localhost:3037		arb_pt_server	-D$(ARBHOME)/lib/pts/user6.arb
-ARB_PT_SERVER8		localhost:3038		arb_pt_server	-D$(ARBHOME)/lib/pts/user7.arb
-ARB_PT_SERVER9		localhost:3039		arb_pt_server	-D$(ARBHOME)/lib/pts/user8.arb
+ARB_PT_SERVER		localhost:3030		arb_pt_server	-D$(ARBHOME)/lib/pts/16s_rrna_aligned.arb
+ARB_PT_SERVER0		localhost:3030		arb_pt_server	-D$(ARBHOME)/lib/pts/23s_rrna_aligned.arb
+ARB_PT_SERVER1		localhost:3031		arb_pt_server	-D$(ARBHOME)/lib/pts/LSU_rRNA.arb
+ARB_PT_SERVER2		localhost:3032		arb_pt_server	-D$(ARBHOME)/lib/pts/SSU_rRNA.arb
+ARB_PT_SERVER3		localhost:3033		arb_pt_server	-D$(ARBHOME)/lib/pts/5S_rRNA.arb
+ARB_PT_SERVER4		localhost:3034		arb_pt_server	-D$(ARBHOME)/lib/pts/ITS.arb
+ARB_PT_SERVER5		localhost:3035		arb_pt_server	-D$(ARBHOME)/lib/pts/atp.arb
+ARB_PT_SERVER6		localhost:3036		arb_pt_server	-D$(ARBHOME)/lib/pts/rrna.arb
+ARB_PT_SERVER7		localhost:3037		arb_pt_server	-D$(ARBHOME)/lib/pts/SSU_WL.arb
+ARB_PT_SERVER8		localhost:3038		arb_pt_server	-D$(ARBHOME)/lib/pts/user.arb
+ARB_PT_SERVER9		localhost:3038		arb_pt_server	-D$(ARBHOME)/lib/pts/snaidr.arb
