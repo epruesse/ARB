@@ -4,47 +4,46 @@ import java.awt.*;
 class ProbeList
 extends java.awt.List
 {
-
-
-
 private int              count;
 private java.util.Vector info;
 private String           error;
-private int preferredHeight;
-private int preferredWidth;
+private int              preferredHeight;
+private int              preferredWidth;
 
 public ProbeList(int width, int height)
     {
-
         preferredHeight = height;
-        preferredWidth = width;
-        count = 0;
-        error = null;
+        preferredWidth  = width;
+        count           = 0;
+        error           = null;
         setVisible(true);
     }
 
-public String getProbeInfo(int index) {
+public String getProbeInfo(int index)
+    {
         if (index<0 || index >= count) return null;
         return (String)info.elementAt(index);
     }
 
 private void rebuildList()
     {
-//         setVisible(false);
-//        clear();
         removeAll();
         if (count>0) {
             for (int i = 0; i<count; i++) {
-                add(getProbeInfo(i));
+                String pinfo = getProbeInfo(i);
+                int    komma = pinfo.indexOf(',');
+
+                if (komma != -1) add(pinfo.substring(0, komma));
+                else add(pinfo);
             }
         }
         else {
-            add("None found.");
+            add("No probe found.");
         }
-//         setVisible(true);
     }
 
-public void setContents(ServerAnswer parsed) {
+public void setContents(ServerAnswer parsed)
+    {
         if (parsed.hasError()) {
             error = parsed.getError();
         }
@@ -57,7 +56,7 @@ public void setContents(ServerAnswer parsed) {
 
             for (int i = 0; i<count; i++) {
                 String probe = parsed.getValue("probe"+i);
-                System.out.println("probe='"+probe+"' index="+i);
+                // System.out.println("probe='"+probe+"' index="+i);
                 info.addElement(probe);
             }
         }
@@ -75,16 +74,10 @@ public String getError()
         return error;
     }
 
-// public void paint()
-//     {
-//     }
-
-
 // overloading of java.awt.component method, is called from layout manager to determine optimal size of widget
 public Dimension getPreferredSize()
     {
         return new Dimension(preferredWidth, preferredHeight);
-
     }
 
 
