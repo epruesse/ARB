@@ -415,11 +415,63 @@ static void jump_to_species(ED4_species_name_terminal *name_term, int position, 
     if (!jumped) cursor->HideCursor();
 }
 
-static int ignore_selected_species_changes_cb = 0;
+static bool ignore_selected_species_changes_cb = false;
+static bool ignore_selected_SAI_changes_cb     = false;
+
+void ED4_select_named_sequence_terminal(const char *name, int mode) {
+    // mode == 1 -> only select species
+    // mode == 2 -> only select SAI
+
+    ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(name);
+    if (name_term) {
+        // lookup current name term
+        ED4_species_name_terminal *cursor_name_term = 0;
+        {
+            ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+            if (cursor) {
+                ED4_sequence_terminal *cursor_seq_term = cursor->owner_of_cursor->to_sequence_terminal();
+                if (cursor_seq_term) {
+                    cursor_name_term = cursor_seq_term->corresponding_species_name_terminal();
+                }
+            }
+        }
+        if (name_term!=cursor_name_term) { // do not change if already there!
+#if defined(DEBUG) && 1
+            printf("Selected species/SAI changed to '%s'\n", name);
+#endif
+            jump_to_species(name_term, -1, 0);
+        }
+        else {
+#if defined(DEBUG) && 1
+            printf("Change ignored because same name term!\n");
+#endif
+        }
+    }
+}
+
+void ED4_selected_SAI_changed_cb(AW_root */*aw_root*/)
+{
+    ED4_update_global_cursor_awars_allowed = false;
+
+    if (!ignore_selected_SAI_changes_cb) {
+        char *name = GBT_read_string(gb_main,AWAR_SAI_NAME);
+
+        if (name && name[0]) {
+#if defined(DEBUG)
+            printf("Selected SAI is '%s'\n", name);
+#endif // DEBUG
+
+            ED4_select_named_sequence_terminal(name, 2);
+            free(name);
+        }
+    }
+    ignore_selected_SAI_changes_cb = false;
+    ED4_update_global_cursor_awars_allowed = true;
+}
 
 void ED4_selected_species_changed_cb(AW_root */*aw_root*/)
 {
-    ED4_update_global_cursor_awars_allowed = 0;
+    ED4_update_global_cursor_awars_allowed = false;
 
     if (!ignore_selected_species_changes_cb) {
         char *name = GBT_read_string(gb_main,AWAR_SPECIES_NAME);
@@ -427,32 +479,7 @@ void ED4_selected_species_changed_cb(AW_root */*aw_root*/)
 #if defined(DEBUG) && 1
             printf("Selected species is '%s'\n", name);
 #endif
-            ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(name);
-            if (name_term) {
-                // lookup current name term
-                ED4_species_name_terminal *cursor_name_term = 0;
-                {
-                    ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
-                    if (cursor) {
-                        ED4_sequence_terminal *cursor_seq_term = cursor->owner_of_cursor->to_sequence_terminal();
-                        if (cursor_seq_term) {
-                            cursor_name_term = cursor_seq_term->corresponding_species_name_terminal();
-                        }
-                    }
-                }
-                if (name_term!=cursor_name_term) { // do not change if already there!
-#if defined(DEBUG) && 1
-                    printf("Selected species changed to '%s'\n", name);
-#endif
-                    jump_to_species(name_term, -1, 0);
-                }
-                else {
-#if defined(DEBUG) && 1
-                    printf("Change ignored because same name term!\n");
-#endif
-                }
-            }
-
+            ED4_select_named_sequence_terminal(name, 1);
             free(name);
         }
     }
@@ -461,8 +488,8 @@ void ED4_selected_species_changed_cb(AW_root */*aw_root*/)
         printf("Change ignored because ignore_selected_species_changes_cb!\n");
 #endif
     }
-    ignore_selected_species_changes_cb = 0;
-    ED4_update_global_cursor_awars_allowed = 1;
+    ignore_selected_species_changes_cb = false;
+    ED4_update_global_cursor_awars_allowed = true;
 }
 
 void ED4_jump_to_current_species(AW_window */*aw*/, AW_CL)
@@ -721,7 +748,7 @@ void ED4_cursor::changeType(ED4_CursorType typ)
     }
 }
 
-int ED4_update_global_cursor_awars_allowed = 1;
+int ED4_update_global_cursor_awars_allowed = true;
 
 void ED4_cursor::updateAwars()
 {
@@ -731,10 +758,46 @@ void ED4_cursor::updateAwars()
 
     if (ED4_update_global_cursor_awars_allowed) {
         if (owner_of_cursor) {
-            char *species_name  = owner_of_cursor->get_name_of_species();
+            ED4_terminal *cursor_terminal = owner_of_cursor->to_terminal();
+            char         *species_name    = cursor_terminal->get_name_of_species();
+
             if (species_name) {
-                ignore_selected_species_changes_cb = 1;
-                GBT_write_string(gb_main, AWAR_SPECIES_NAME, species_name);
+                ED4_manager *cursor_manager = cursor_terminal->parent->parent->to_manager();
+
+                if (cursor_manager->parent->flag.is_SAI) {
+                    static char *last_set_SAI = 0;
+
+                    if (last_set_SAI && strcmp(last_set_SAI, species_name) == 0) {
+#if defined(DEBUG)
+                        printf("Avoiding to write same species_name to AWAR_SAI_NAME twice ('%s')\n", species_name);
+#endif // DEBUG
+                    }
+                    else {
+                        free(last_set_SAI);
+                        last_set_SAI = strdup(species_name);
+
+                        ignore_selected_SAI_changes_cb = true;
+                        GBT_write_string(gb_main, AWAR_SAI_NAME, species_name);
+                        ignore_selected_SAI_changes_cb = false;
+                    }
+                }
+                else {
+                    static char *last_set_species = 0;
+
+                    if (last_set_species && strcmp(last_set_species, species_name) == 0) {
+#if defined(DEBUG)
+                        printf("Avoiding to write same species_name to AWAR_SPECIES_NAME twice ('%s')\n", species_name);
+#endif // DEBUG
+                    }
+                    else {
+                        free(last_set_species);
+                        last_set_species = strdup(species_name);
+
+                        ignore_selected_species_changes_cb = true;
+                        GBT_write_string(gb_main, AWAR_SPECIES_NAME, species_name);
+                        ignore_selected_species_changes_cb = false;
+                    }
+                }
             }
         }
     }
