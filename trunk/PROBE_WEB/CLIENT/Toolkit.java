@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : Toolkit.java                                           //
 //    Purpose   : Functions uses in all classes go here                  //
-//    Time-stamp: <Wed Mar/10/2004 13:05 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Mar/11/2004 10:05 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -15,11 +15,14 @@
 
 class Toolkit 
 {
-    public static String clientName    = "arb_probe_client";
-    public static String clientVersion = "1.0"; // CLIENT_SERVER_VERSION -- this has to match the version in ../SERVER/getVersion.cgi
+    public static String clientName = "arb_probe_client";
+
+    // search globally for 'CLIENT_SERVER_VERSIONS' (other occurance is in ../SERVER/getVersion.cgi)
+    public static String client_version    = "1.0"; // if client_version does not match, a notice is printed
+    public static String interface_version = "1.0"; // if interface_version does not match, client terminates! 
 
     private static String maintainer = "probeadmin@arb-home.de";
-    
+
     private static Client theClient = null;
     public static void registerClient(Client c) { theClient = c; }
     public static void unregisterClient() { theClient = null; }
@@ -53,7 +56,7 @@ class Toolkit
     }
 
     public static void InternalError(String error) throws Exception {
-        AbortWithError_Internal("Internal error in "+clientName+" v"+clientVersion,
+        AbortWithError_Internal("Internal error in "+clientName+" v"+client_version,
                                 error+"\n(this seems to be a bug, please report to "+maintainer+")", 666);
     }
 
