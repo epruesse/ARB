@@ -9,7 +9,8 @@
 #define maxtrees        945   /* maximum number of tied trees stored     */
 #define maxuser         8   /* maximum number of user-defined trees */
 #define ibmpc0          false
-#define ansi0           true
+#define ansi0           false /* avoid clearing of screen */
+/* #define ansi0           true */
 #define vt520           false
 #define down            2
 
@@ -271,7 +272,7 @@ Local Void getoptions()
       break;
     if (strchr("JOTUMI1234560",ch) != NULL){
       switch (ch) {
-	
+
       case 'J':
 	jumble = !jumble;
 	if (jumble) {
@@ -293,7 +294,7 @@ Local Void getoptions()
 	}
 	else njumble = 1;
 	break;
-	
+
       case 'O':
 	outgropt = !outgropt;
 	if (outgropt) {
@@ -310,7 +311,7 @@ Local Void getoptions()
 	  } while (done1 != true);
 	}
 	break;
-	
+
       case 'T':
 	thresh = !thresh;
 	if (thresh) {
@@ -327,7 +328,7 @@ Local Void getoptions()
 	  } while (done1 != true);
 	}
 	break;
-	
+
       case 'M':
 	mulsets = !mulsets;
 	if (mulsets) {
@@ -342,15 +343,15 @@ Local Void getoptions()
 	  } while (done1 != true);
 	}
 	break;
-	
+
       case 'U':
 	usertree = !usertree;
 	break;
-	
+
       case 'I':
 	interleaved = !interleaved;
 	break;
-	
+
       case '0':
 	if (ibmpc) {
 	  ibmpc = false;
@@ -365,27 +366,27 @@ Local Void getoptions()
               ibmpc = true;
 	}
 	break;
-	
+
       case '1':
 	printdata = !printdata;
 	break;
-	
+
       case '2':
 	progress = !progress;
 	break;
-	
+
       case '3':
 	treeprint = !treeprint;
 	break;
-	
+
       case '4':
 	stepbox = !stepbox;
 	break;
-	
+
       case '5':
 	ancseq = !ancseq;
 	break;
-	
+
       case '6':
 	trout = !trout;
 	break;

@@ -9,7 +9,8 @@
 #define nmlngth         20     /* max. no. of characters in species name  */
 
 #define ibmpc0          false
-#define ansi0           true
+#define ansi0           false /* avoid clearing of screen */
+/* #define ansi0           true */
 #define vt520           false
 
 /* nodes will form a binary tree */
@@ -251,7 +252,7 @@ Static Void getoptions()
         case '2':
 	  progress = !progress;
           break;
-	
+
 	case '3':
 	  treeprint = !treeprint;
 	  break;
@@ -491,7 +492,7 @@ Static Void treeread()
   if (eof(infile)) {
     goteof = true;
     return;
-  } 
+  }
   addelement(&root, NULL, &ch, &parens, &nextnode);
     fscanf(infile, "%*[^\n]");
   getc(infile);
@@ -889,7 +890,7 @@ short n;
     }
     if (max) {
       for (j = 0; j < setsz; j ++)
-        if ((su[j] & ~grouping[i][j]) != 0)	 
+        if ((su[j] & ~grouping[i][j]) != 0)
           max = false;
       if (max) {
         same = true;
@@ -1276,7 +1277,7 @@ short tipy;
 main(argc, argv)
 int argc;
 Char *argv[];
-{  
+{
 char infilename[100], outfilename[100], trfilename[100];
 #ifdef MAC
   macsetup("Consense", "");
@@ -1294,7 +1295,7 @@ char infilename[100], outfilename[100], trfilename[100];
   garbage = NULL;
   col = 0;
   getoptions();
-  if (trout) 
+  if (trout)
     openfile(&treefile, TREEFILE, "w", argv[0], trfilename);
   if (prntsets)
     fprintf(outfile, "Species in order: \n\n");
@@ -1316,7 +1317,7 @@ char infilename[100], outfilename[100], trfilename[100];
       for (j = 0; j < setsz; j++)
         fullset[j] = 0L;
       for (j = 0; j < setsz; j++) {
-        if (spp + 1 < (j+1)*SETBITS) 
+        if (spp + 1 < (j+1)*SETBITS)
             fullset[j] = (1L << ((spp + 1) - j*SETBITS)) - 1;
         else
             fullset[j] = ~0L;
@@ -1359,7 +1360,7 @@ FILE *f;
     if (feof(f))
 	return 1;
     if (f == stdin)
-	return 0;  
+	return 0;
     ch = getc(f);
     if (ch == EOF)
 	return 1;
