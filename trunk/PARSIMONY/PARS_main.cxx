@@ -49,7 +49,7 @@ void PARS_export_tree(void){
 void PARS_export_cb(AW_window *aww, AWT_canvas *ntw, AW_CL mode ){
     AWUSE(aww);
     AWUSE(ntw);
-    if (mode &1){		// export tree
+    if (mode &1){       // export tree
         PARS_export_tree();
     }
     if (mode &2) {
@@ -88,7 +88,7 @@ void AP_user_pop_cb(AW_window *aww,AWT_canvas *ntw)
 static void remove_species_in_tree_from_hash(AP_tree *tree,GB_HASH *hash) {
     if (!tree) return;
     if (tree->is_leaf && tree->name) {
-        GBS_write_hash(hash,tree->name,0);	// delete species in tree in hash tabl
+        GBS_write_hash(hash,tree->name,0);  // delete species in tree in hash tabl
     }else{
         remove_species_in_tree_from_hash(tree->leftson,hash);
         remove_species_in_tree_from_hash(tree->rightson,hash);
@@ -98,8 +98,8 @@ static void remove_species_in_tree_from_hash(AP_tree *tree,GB_HASH *hash) {
 static struct {
     AP_BOOL quick_add_flag;
     int abort_flag;
-    long	maxspecies;
-    long	currentspecies;
+    long    maxspecies;
+    long    currentspecies;
 } isits;
 
 extern long global_combineCount;
@@ -191,10 +191,10 @@ extern "C" {
         AP_tree **blist;
         AP_tree_nlen *bl,*blf;
         GB_ERROR error = 0;
-        long	bsum = 0;
-        long	counter = 0;
+        long    bsum = 0;
+        long    counter = 0;
 
-        error = tree->buildBranchList(blist,bsum,AP_TRUE,-1);	// get all branches
+        error = tree->buildBranchList(blist,bsum,AP_TRUE,-1);   // get all branches
         global_combineCount = 0;
 
         AP_tree *bestposl = tree->leftson;
@@ -218,11 +218,11 @@ extern "C" {
                 blf = (AP_tree_nlen *)blist[counter];
             }
 
-            //		if (blf->father) {	//->father
-            //			blf->set_root();
-            //		}
+            //      if (blf->father) {  //->father
+            //          blf->set_root();
+            //      }
 
-            if (bl->father)		//->father
+            if (bl->father)     //->father
             {
                 bl->set_root();
             }
@@ -278,7 +278,7 @@ extern "C" {
                     }
                 }
 
-                //	    cout << "Anzahl geaenderte Basen: " << baseDiff << '\n';
+                //      cout << "Anzahl geaenderte Basen: " << baseDiff << '\n';
             }
             else
             {
@@ -357,7 +357,7 @@ static AP_tree *insert_species_in_tree(const char *key,AP_tree *leaf)
 
     if (leaf->sequence->real_len() < MIN_SEQUENCE_LENGTH) {
         sprintf(AW_ERROR_BUFFER,"Species %s has too short sequence (%i, minimum is %i)",
-                key, 	(int)leaf->sequence->real_len(), 	MIN_SEQUENCE_LENGTH);
+                key,    (int)leaf->sequence->real_len(),    MIN_SEQUENCE_LENGTH);
         aw_message();
         delete leaf;
         return 0;
@@ -371,10 +371,10 @@ static AP_tree *insert_species_in_tree(const char *key,AP_tree *leaf)
     AP_tree **blist;
     AP_tree_nlen *bl,*blf;
     GB_ERROR error = 0;
-    long	bsum = 0;
-    long	counter = 0;
+    long    bsum = 0;
+    long    counter = 0;
 
-    error = tree->buildBranchList(blist,bsum,AP_TRUE,-1);		// get all branches
+    error = tree->buildBranchList(blist,bsum,AP_TRUE,-1);       // get all branches
     global_combineCount = 0;
 
     AP_tree *bestposl = tree->leftson;
@@ -394,13 +394,13 @@ static AP_tree *insert_species_in_tree(const char *key,AP_tree *leaf)
             blf = (AP_tree_nlen *)blist[counter];
         }
 
-        if (bl->father) {	//->father
+        if (bl->father) {   //->father
             bl->set_root();
         }
 
         leaf->move(bl,0.5);
         akt_parsimony = (*ap_main->tree_root)->costs();
-        if (akt_parsimony <	best_parsimony) {
+        if (akt_parsimony < best_parsimony) {
             best_parsimony = akt_parsimony;
             bestposl = bl;
             bestposr = blf;
@@ -413,7 +413,7 @@ static AP_tree *insert_species_in_tree(const char *key,AP_tree *leaf)
     }
     leaf->move(bestposl,0.5);
 
-    if (	!isits.quick_add_flag ) {
+    if (    !isits.quick_add_flag ) {
         int deep = 5;
         if ( (isits.currentspecies & 0xf ) == 0)  deep = -1;
         aw_status("optimization");
@@ -421,18 +421,18 @@ static AP_tree *insert_species_in_tree(const char *key,AP_tree *leaf)
             nn_interchange_rek(AP_FALSE,isits.abort_flag,deep,AP_BL_NNI_ONLY, GB_TRUE);
     }
     AP_tree *brother = leaf->brother();
-    if (	brother->is_leaf &&		// brother is a short sequence
+    if (    brother->is_leaf &&     // brother is a short sequence
             brother->sequence->real_len() *2  < leaf->sequence->real_len() &&
-            leaf->father->father){		// There are more than two species
+            leaf->father->father){      // There are more than two species
         brother->remove();
         leaf->remove();
         isits.currentspecies--;
         char *label = GBS_global_string_copy("2:%s",leaf->name);
-        insert_species_in_tree(label,leaf);	// reinsert species
+        insert_species_in_tree(label,leaf); // reinsert species
         delete label;
         isits.currentspecies--;
         label = GBS_global_string_copy("shortseq:%s",brother->name);
-        insert_species_in_tree(label,brother);	// reinsert short sequence
+        insert_species_in_tree(label,brother);  // reinsert short sequence
         delete label;
     }
 
@@ -488,8 +488,8 @@ static void nt_add(AW_window * aww, AWT_canvas *ntw, int what, AP_BOOL quick, in
         else
         {
             error= "Please select an species"
-                "	to select an species:	1. arb_edit: enable global cursor and select sequence"
-                "				2. arb_ntree: species/search and select species";
+                "   to select an species:   1. arb_edit: enable global cursor and select sequence"
+                "               2. arb_ntree: species/search and select species";
         }
     }
     else
@@ -529,7 +529,7 @@ static void nt_add(AW_window * aww, AWT_canvas *ntw, int what, AP_BOOL quick, in
         rootNode()->compute_tree(gb_main);
 
         if (oldrootleft->father == oldrootright) oldrootleft->set_root();
-        else 					 oldrootright->set_root();
+        else                     oldrootright->set_root();
 
         aw_closestatus();
     }
@@ -539,7 +539,7 @@ static void nt_add(AW_window * aww, AWT_canvas *ntw, int what, AP_BOOL quick, in
 
     AWT_TREE(ntw)->resort_tree(0);
     ntw->zoom_reset();
-    if (!error)	PARS_export_tree();
+    if (!error) PARS_export_tree();
 }
 
 // -----------------------------
@@ -745,7 +745,7 @@ static void PA_focus_cb(AW_window *aww,GBDATA *gb_main_par)
 }
 
 /******************************************************
-	Test-Funktionen
+    Test-Funktionen
 ******************************************************/
 
 static void refreshTree(AWT_canvas *ntw)
@@ -762,7 +762,7 @@ static void testTree(AP_tree_nlen *tree,int *nodeCount, int *edgeCount)
     tree->test();
     (*nodeCount)++;
 
-    if (tree->father)	// we do only test edges if were not at root
+    if (tree->father)   // we do only test edges if were not at root
     {
         AP_tree_edge *e =0;
         int skipTest=0;
@@ -771,9 +771,9 @@ static void testTree(AP_tree_nlen *tree,int *nodeCount, int *edgeCount)
         {
             e = tree->edgeTo(tree->Father());
         }
-        else		// son of root!
+        else        // son of root!
         {
-            if (tree->father->leftson==(AP_tree*)tree)	// to not test twice
+            if (tree->father->leftson==(AP_tree*)tree)  // to not test twice
             {
                 e = tree->edgeTo(tree->Brother());
             }
@@ -817,7 +817,7 @@ static void TEST_testWholeTree(AW_window * aww,AWT_canvas *ntw)
 {
     AP_tree_nlen *root = (AP_tree_nlen*)*ap_main->tree_root;
     int nodes = 0,
-    	edges = 0;
+        edges = 0;
 
     AWUSE(aww);
     AWUSE(ntw);
@@ -853,7 +853,7 @@ static int dumpNodes(AP_tree_nlen *node)
     int cnt = 1;
 
     cout << *node
-    	 << "(llen=" << node->leftlen
+         << "(llen=" << node->leftlen
          << ",rlen=" << node->rightlen << ")\n";
 
     if (!node->is_leaf)
@@ -903,7 +903,7 @@ static AP_tree_nlen *getRandomSonOf(AP_tree_nlen *daddy, int innerNodeAllowed,in
     int r = rand() % (innerNodeAllowed && rootAllowed ? 3 : 2);
     if (r==2) return daddy;
     return getRandomSonOf(r ? daddy->Leftson() : daddy->Rightson(),
-			  innerNodeAllowed, 1);
+              innerNodeAllowed, 1);
 }
 static void TEST_performRandomMoves(AW_window *aww,AWT_canvas *ntw)
 {
@@ -913,27 +913,27 @@ static void TEST_performRandomMoves(AW_window *aww,AWT_canvas *ntw)
 
     while(cnt)
     {
-	AP_tree_nlen *root = (AP_tree_nlen*)*ap_main->tree_root;
-	AP_tree_nlen *source = getRandomSonOf(root,1,0);
-	AP_tree_nlen *dest = getRandomSonOf(root,1,0);
+    AP_tree_nlen *root = (AP_tree_nlen*)*ap_main->tree_root;
+    AP_tree_nlen *source = getRandomSonOf(root,1,0);
+    AP_tree_nlen *dest = getRandomSonOf(root,1,0);
 
-	if (source!=dest && !dest->is_son(source))
-	{
-	    root->setBranchlen(1.0,1.0);
-	    source->setBranchlen(1.0,1.0);
-	    dest->setBranchlen(1.0,1.0);
+    if (source!=dest && !dest->is_son(source))
+    {
+        root->setBranchlen(1.0,1.0);
+        source->setBranchlen(1.0,1.0);
+        dest->setBranchlen(1.0,1.0);
 
-	    char *error = source->move(dest,0.5);
+        char *error = source->move(dest,0.5);
 
-	    if (error)
-	    {
-		cout << error << '\n';
-		break;
-	    }
+        if (error)
+        {
+        cout << error << '\n';
+        break;
+        }
 
-	    cnt--;
-//	    cout << "Moves left: " << cnt << '\n';
-	}
+        cnt--;
+//      cout << "Moves left: " << cnt << '\n';
+    }
     }
 
     cout << "Testing tree\n";
@@ -991,20 +991,20 @@ static void init_TEST_menu(AW_window_menu_modes *awm,AWT_canvas *ntw)
 {
     awm->create_menu( 0,   "Test", "T", "",  AWM_ALL );
 
-    awm->insert_menu_topic(0, "Test edges",	 		"T","",			AWM_ALL,		(AW_CB)TEST_testWholeTree,	(AW_CL)ntw,	0 );
-    awm->insert_menu_topic(0, "Mix Tree", 			"M","",			AWM_ALL,		(AW_CB)TEST_mixTree,	(AW_CL)ntw,	0 );
-    awm->insert_menu_topic(0, "Dump nodes",	 		"D","",			AWM_ALL,		(AW_CB)TEST_dumpNodes,		(AW_CL)ntw,	0 );
-    awm->insert_menu_topic(0, "Set branchlens",	 		"b","",			AWM_ALL,		(AW_CB)TEST_setBranchlen,		(AW_CL)ntw,	0 );
-    awm->insert_menu_topic(0, "Sort tree by name", 		"S","",			AWM_ALL,		(AW_CB)TEST_sortTreeByName,		(AW_CL)ntw,	0 );
-    awm->insert_menu_topic(0, "Build & dump chain", 		"c","",			AWM_ALL,		(AW_CB)TEST_buildAndDumpChain,		(AW_CL)ntw,	0 );
+    awm->insert_menu_topic(0, "Test edges",         "T","",         AWM_ALL,        (AW_CB)TEST_testWholeTree,  (AW_CL)ntw, 0 );
+    awm->insert_menu_topic(0, "Mix Tree",           "M","",         AWM_ALL,        (AW_CB)TEST_mixTree,    (AW_CL)ntw, 0 );
+    awm->insert_menu_topic(0, "Dump nodes",         "D","",         AWM_ALL,        (AW_CB)TEST_dumpNodes,      (AW_CL)ntw, 0 );
+    awm->insert_menu_topic(0, "Set branchlens",         "b","",         AWM_ALL,        (AW_CB)TEST_setBranchlen,       (AW_CL)ntw, 0 );
+    awm->insert_menu_topic(0, "Sort tree by name",      "S","",         AWM_ALL,        (AW_CB)TEST_sortTreeByName,     (AW_CL)ntw, 0 );
+    awm->insert_menu_topic(0, "Build & dump chain",         "c","",         AWM_ALL,        (AW_CB)TEST_buildAndDumpChain,      (AW_CL)ntw, 0 );
     awm->insert_separator();
-    awm->insert_menu_topic(0, "Add Marked Species",		"A","pa_quick.hlp",	AWM_ALL, 	(AW_CB)NT_quick_add_test, 	(AW_CL)ntw, 0 );
-    awm->insert_menu_topic(0, "Add Marked Species + NNI",	"i","pa_add.hlp",	AWM_ALL, 	(AW_CB)NT_add_test, 		(AW_CL)ntw, 0 );
-    awm->insert_menu_topic(0, "Remove & Add Marked Species","o","pa_add.hlp",	AWM_ALL, 	(AW_CB)NT_rquick_add_test, 	(AW_CL)ntw, 0 );
-    awm->insert_menu_topic(0, "Remove & Add Marked + NNI",	"v","pa_add.hlp",	AWM_ALL, 	(AW_CB)NT_radd_test, 		(AW_CL)ntw, 0 );
+    awm->insert_menu_topic(0, "Add Marked Species",     "A","pa_quick.hlp", AWM_ALL,    (AW_CB)NT_quick_add_test,   (AW_CL)ntw, 0 );
+    awm->insert_menu_topic(0, "Add Marked Species + NNI",   "i","pa_add.hlp",   AWM_ALL,    (AW_CB)NT_add_test,         (AW_CL)ntw, 0 );
+    awm->insert_menu_topic(0, "Remove & Add Marked Species","o","pa_add.hlp",   AWM_ALL,    (AW_CB)NT_rquick_add_test,  (AW_CL)ntw, 0 );
+    awm->insert_menu_topic(0, "Remove & Add Marked + NNI",  "v","pa_add.hlp",   AWM_ALL,    (AW_CB)NT_radd_test,        (AW_CL)ntw, 0 );
     awm->insert_separator();
-    awm->insert_menu_topic(0, "Add Selected Species",	"","pa_quick_sel.hlp",	AWM_ALL, 	(AW_CB)NT_quick_add_test, 	(AW_CL)ntw, 1 );
-    awm->insert_menu_topic(0, "Add Selected Species + NNI",	"","pa_add_sel.hlp",	AWM_ALL, 	(AW_CB)NT_add_test, 		(AW_CL)ntw, 1 );
+    awm->insert_menu_topic(0, "Add Selected Species",   "","pa_quick_sel.hlp",  AWM_ALL,    (AW_CB)NT_quick_add_test,   (AW_CL)ntw, 1 );
+    awm->insert_menu_topic(0, "Add Selected Species + NNI", "","pa_add_sel.hlp",    AWM_ALL,    (AW_CB)NT_add_test,         (AW_CL)ntw, 1 );
 }
 
 
@@ -1059,7 +1059,7 @@ static void pars_start_cb(AW_window *aww)
         if (error){
             if (aw_message("This program will need a lot of computer memory\n"
                            "Do you want to continue ?\n"
-                           "	(Hint: the use of a filter often helps)",
+                           "    (Hint: the use of a filter often helps)",
                            "Continue,Abort")){
                 GB_commit_transaction(gb_main);
                 return;
@@ -1077,7 +1077,7 @@ static void pars_start_cb(AW_window *aww)
     AWT_canvas *ntw = new AWT_canvas(gb_main,(AW_window *)awm,nt->tree, aw_gc_manager,AWAR_TREE) ;
     {
         aw_openstatus("load tree");
-        NT_reload_tree_event(awr,ntw,GB_TRUE);			// load first tree and set delete callbacks
+        NT_reload_tree_event(awr,ntw,GB_TRUE);          // load first tree and set delete callbacks
         if (!nt->tree->tree_root)
         {
             aw_message("I cannot load your selected tree","OK");
@@ -1085,7 +1085,7 @@ static void pars_start_cb(AW_window *aww)
             exit(1);
         }
 
-        AP_tree_edge::initialize((AP_tree_nlen*)*ap_main->tree_root);	// builds edges
+        AP_tree_edge::initialize((AP_tree_nlen*)*ap_main->tree_root);   // builds edges
         GB_ERROR error = nt->tree->tree_root->remove_leafs(ntw->gb_main, AWT_REMOVE_DELETED);
 
         if (!error){
@@ -1117,7 +1117,7 @@ static void pars_start_cb(AW_window *aww)
     }
     if (ap_main->commands.quit){
         GB_exit(gb_main);
-        GB_usleep(3000000);	// wait three seconds, there might be error messages !!!!
+        GB_usleep(3000000); // wait three seconds, there might be error messages !!!!
         exit(0);
     }
 
@@ -1129,8 +1129,8 @@ static void pars_start_cb(AW_window *aww)
 
     awm->create_menu(       0,   "File",     "F", "pars_file.hlp",  AWM_ALL );
     {
-        awm->insert_menu_topic("print_tree", "Print Tree ...",			"P","tree2prt.hlp",	AWM_ALL,	(AW_CB)AWT_create_print_window, (AW_CL)ntw,	0 );
-        awm->insert_menu_topic( "quit",		"Quit",				"Q","quit.hlp",		AWM_ALL, (AW_CB)PARS_export_cb, (AW_CL)ntw,2);
+        awm->insert_menu_topic("print_tree", "Print Tree ...",          "P","tree2prt.hlp", AWM_ALL,    (AW_CB)AWT_create_print_window, (AW_CL)ntw, 0 );
+        awm->insert_menu_topic( "quit",     "Quit",             "Q","quit.hlp",     AWM_ALL, (AW_CB)PARS_export_cb, (AW_CL)ntw,2);
     }
 
     awm->create_menu( 0,   "Species", "S", "nt_tree.hlp",  AWM_ALL );
@@ -1141,55 +1141,55 @@ static void pars_start_cb(AW_window *aww)
     awm->create_menu( 0,   "Tree", "T", "nt_tree.hlp",  AWM_ALL );
     {
 
-        awm->insert_menu_topic(	"nds",		"NDS ( Select Node Information ) ...",		"N","props_nds.hlp",	AWM_ALL, AW_POPUP, (AW_CL)AWT_open_nds_window, (AW_CL)gb_main );
+        awm->insert_menu_topic( "nds",      "NDS ( Select Node Information ) ...",      "N","props_nds.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AWT_open_nds_window, (AW_CL)gb_main );
 
         awm->insert_separator();
-        awm->insert_menu_topic("tree_2_xfig",	"Edit Tree View using XFIG ...",		"E","tree2file.hlp",	AWM_ALL,	AW_POPUP, (AW_CL)AWT_create_export_window,	(AW_CL)ntw );
-        awm->insert_menu_topic("tree_print",	"Print Tree View to Printer ...",		"P","tree2prt.hlp",	AWM_ALL,	(AW_CB)AWT_create_print_window, (AW_CL)ntw,	0 );
+        awm->insert_menu_topic("tree_2_xfig",   "Edit Tree View using XFIG ...",        "E","tree2file.hlp",    AWM_ALL,    AW_POPUP, (AW_CL)AWT_create_export_window,  (AW_CL)ntw );
+        awm->insert_menu_topic("tree_print",    "Print Tree View to Printer ...",       "P","tree2prt.hlp", AWM_ALL,    (AW_CB)AWT_create_print_window, (AW_CL)ntw, 0 );
         awm->insert_separator();
-        awm->insert_sub_menu(0, "Collapse/Expand Tree",			"G");
+        awm->insert_sub_menu(0, "Collapse/Expand Tree",         "C");
         {
-            awm->insert_menu_topic("tree_group_all", 		"Group All",			"A","tgroupall.hlp",	AWM_ALL, 	(AW_CB)NT_group_tree_cb, 	(AW_CL)ntw, 0 );
-            awm->insert_menu_topic("tree_group_not_marked", 	"Group All Except Marked",	"M","tgroupnmrkd.hlp",	AWM_ALL, 	(AW_CB)NT_group_not_marked_cb,	(AW_CL)ntw, 0 );
-            awm->insert_menu_topic("tree_ungroup_all",		"Ungroup All",			"U","tungroupall.hlp",	AWM_ALL,	(AW_CB)NT_ungroup_all_cb,	(AW_CL)ntw, 0 );
+            awm->insert_menu_topic("tree_group_all",        "Group All",            "A","tgroupall.hlp",    AWM_ALL,    (AW_CB)NT_group_tree_cb,    (AW_CL)ntw, 0 );
+            awm->insert_menu_topic("tree_group_not_marked", "Group All Except Marked",  "M","tgroupnmrkd.hlp",  AWM_ALL,    (AW_CB)NT_group_not_marked_cb,  (AW_CL)ntw, 0 );
+            awm->insert_menu_topic("tree_ungroup_all",      "Ungroup All",          "U","tungroupall.hlp",  AWM_ALL,    (AW_CB)NT_ungroup_all_cb,   (AW_CL)ntw, 0 );
             awm->insert_separator();
             NT_insert_color_collapse_submenu(awm, ntw);
         }
         awm->close_sub_menu();
         awm->insert_separator();
-        awm->insert_sub_menu(0, "Remove Species from Tree",		"R");
+        awm->insert_sub_menu(0, "Remove Species from Tree",     "R");
         {
-            awm->insert_menu_topic("tree_remove_deleted",	"Remove Zombies",		"Z","trm_del.hlp",	AWM_TREE, 	(AW_CB)NT_remove_leafs, 	(AW_CL)ntw, AWT_REMOVE_DELETED|AWT_REMOVE_BUT_DONT_FREE );
-            awm->insert_menu_topic("tree_remove_marked", 	"Remove Marked",		"M","trm_mrkd.hlp",	AWM_TREE, 	(AW_CB)NT_remove_leafs, 	(AW_CL)ntw, AWT_REMOVE_MARKED|AWT_REMOVE_BUT_DONT_FREE );
-            awm->insert_menu_topic("tree_keep_marked",	"Keep Marked",			"K","tkeep_mrkd.hlp",	AWM_TREE, 	(AW_CB)NT_remove_leafs, 	(AW_CL)ntw, AWT_REMOVE_NOT_MARKED|AWT_REMOVE_DELETED|AWT_REMOVE_BUT_DONT_FREE );
+            awm->insert_menu_topic("tree_remove_deleted", "Remove Zombies",       "Z","trm_del.hlp",  AWM_TREE,   (AW_CB)NT_remove_leafs,     (AW_CL)ntw, AWT_REMOVE_DELETED|AWT_REMOVE_BUT_DONT_FREE );
+            awm->insert_menu_topic("tree_remove_marked",  "Remove Marked",        "M","trm_mrkd.hlp", AWM_TREE,   (AW_CB)NT_remove_leafs,     (AW_CL)ntw, AWT_REMOVE_MARKED|AWT_REMOVE_BUT_DONT_FREE );
+            awm->insert_menu_topic("tree_keep_marked",    "Keep Marked",          "K","tkeep_mrkd.hlp",   AWM_TREE,   (AW_CB)NT_remove_leafs,     (AW_CL)ntw, AWT_REMOVE_NOT_MARKED|AWT_REMOVE_DELETED|AWT_REMOVE_BUT_DONT_FREE );
         }
         awm->close_sub_menu();
-        awm->insert_sub_menu(0, "Add Species to Tree",		"A");
+        awm->insert_sub_menu(0, "Add Species to Tree",      "A");
         {
-            awm->insert_menu_topic("add_marked", 		"Add Marked Species",					"M","pa_quick.hlp",	AWM_ALL, 	(AW_CB)NT_quick_add, 	(AW_CL)ntw, 0 );
-            awm->insert_menu_topic("add_marked_nni",	"Add Marked Species + Local Optimization (NNI)",	"N","pa_add.hlp",	AWM_ALL, 	(AW_CB)NT_add, 		(AW_CL)ntw, 0 );
-            awm->insert_menu_topic("rm_add_marked",		"Remove & Add Marked Species",				"R","pa_add.hlp",	AWM_ALL, 	(AW_CB)NT_rquick_add, 	(AW_CL)ntw, 0 );
-            awm->insert_menu_topic("rm_add_marked_nni|",	"Remove & Add Marked + Local Optimization (NNI)",	"L","pa_add.hlp",	AWM_ALL, 	(AW_CB)NT_radd, 	(AW_CL)ntw, 0 );
+            awm->insert_menu_topic("add_marked",         "Add Marked Species",                   "M","pa_quick.hlp", AWM_ALL,    (AW_CB)NT_quick_add,    (AW_CL)ntw, 0 );
+            awm->insert_menu_topic("add_marked_nni",     "Add Marked Species + Local Optimization (NNI)",    "N","pa_add.hlp",   AWM_ALL,    (AW_CB)NT_add,      (AW_CL)ntw, 0 );
+            awm->insert_menu_topic("rm_add_marked",      "Remove & Add Marked Species",              "R","pa_add.hlp",   AWM_ALL,    (AW_CB)NT_rquick_add,   (AW_CL)ntw, 0 );
+            awm->insert_menu_topic("rm_add_marked_nni|", "Remove & Add Marked + Local Optimization (NNI)",   "L","pa_add.hlp",   AWM_ALL,    (AW_CB)NT_radd,     (AW_CL)ntw, 0 );
             awm->insert_separator();
-            awm->insert_menu_topic("add_selected", 		"Add Selected Species",					"S","pa_quick_sel.hlp",	AWM_ALL, 	(AW_CB)NT_quick_add, 	(AW_CL)ntw, 1 );
-            awm->insert_menu_topic("add_selected_nni",	        "Add Selected Species + Local Optimization (NNI)",	"O","pa_add_sel.hlp",	AWM_ALL, 	(AW_CB)NT_add, 		(AW_CL)ntw, 1 );
+            awm->insert_menu_topic("add_selected",      "Add Selected Species",                 "S","pa_quick_sel.hlp", AWM_ALL,    (AW_CB)NT_quick_add,    (AW_CL)ntw, 1 );
+            awm->insert_menu_topic("add_selected_nni",  "Add Selected Species + Local Optimization (NNI)",  "O","pa_add_sel.hlp",   AWM_ALL,    (AW_CB)NT_add,      (AW_CL)ntw, 1 );
         }
         awm->close_sub_menu();
         awm->insert_separator();
-        awm->insert_sub_menu(0, "Tree Optimization",		"O");
+        awm->insert_sub_menu(0, "Tree Optimization",        "O");
         {
-            awm->insert_menu_topic("nni", 			"Local Optimization (NNI) of Marked Visible Nodes",	"L","",			AWM_ALL, 	(AW_CB)NT_recursiveNNI,	(AW_CL)ntw, 0 );
-            awm->insert_menu_topic("kl_optimization",	"Global Optimization of Marked Visible Nodes",		"G","pa_optimizer.hlp",	AWM_ALL, 	(AW_CB)NT_optimize,	(AW_CL)ntw, 0 );
+            awm->insert_menu_topic("nni",           "Local Optimization (NNI) of Marked Visible Nodes", "L","",         AWM_ALL,    (AW_CB)NT_recursiveNNI, (AW_CL)ntw, 0 );
+            awm->insert_menu_topic("kl_optimization",   "Global Optimization of Marked Visible Nodes",      "G","pa_optimizer.hlp", AWM_ALL,    (AW_CB)NT_optimize, (AW_CL)ntw, 0 );
         }
         awm->close_sub_menu();
-        awm->insert_menu_topic("reset", "Reset optimal parsimony", "P", "", AWM_ALL, (AW_CB)pars_reset_optimal_parsimony, (AW_CL)ntw, 0);
+        awm->insert_menu_topic("reset", "Reset optimal parsimony", "s", "", AWM_ALL, (AW_CB)pars_reset_optimal_parsimony, (AW_CL)ntw, 0);
         awm->insert_separator();
-        awm->insert_menu_topic("beautify_tree",		"Beautify Tree",		"B","resorttree.hlp",	AWM_TREE, 	(AW_CB)NT_resort_tree_cb,	(AW_CL)ntw, 0 );
-        awm->insert_menu_topic("calc_branch_lenths",		"Calculate Branch Lengths",				"L","pa_branchlengths.hlp",AWM_ALL, 	(AW_CB)NT_branch_lengths,(AW_CL)ntw, 0 );
+        awm->insert_menu_topic("beautify_tree",               "Beautify Tree",        "B","resorttree.hlp",   AWM_TREE,   (AW_CB)NT_resort_tree_cb,   (AW_CL)ntw, 0 );
+        awm->insert_menu_topic("calc_branch_lenths",          "Calculate Branch Lengths",             "L","pa_branchlengths.hlp",AWM_ALL,     (AW_CB)NT_branch_lengths,(AW_CL)ntw, 0 );
         awm->insert_separator();
-        awm->insert_menu_topic("calc_upper_bootstrap_indep",	"Calculate Upper Bootstrap Limit (dependend NNI)",	"O","pa_bootstrap.hlp",	AWM_ALL, 	(AW_CB)NT_bootstrap,(AW_CL)ntw, 0 );
-        awm->insert_menu_topic("calc_upper_bootstrap_dep",	"Calculate Upper Bootstrap Limit (independend NNI)",	"E","pa_bootstrap.hlp",	AWM_ALL, 	(AW_CB)NT_bootstrap,(AW_CL)ntw, 1 );
-        awm->insert_menu_topic("tree_remove_remark",	"Remove Bootstrap Values",	"V","trm_boot.hlp",	AWM_TREE, 	(AW_CB)NT_remove_bootstrap, 	(AW_CL)ntw, 0 );
+        awm->insert_menu_topic("calc_upper_bootstrap_indep",  "Calculate Upper Bootstrap Limit (dependend NNI)",   "d","pa_bootstrap.hlp", AWM_ALL,    (AW_CB)NT_bootstrap,(AW_CL)ntw, 0 );
+        awm->insert_menu_topic("calc_upper_bootstrap_dep",    "Calculate Upper Bootstrap Limit (independend NNI)", "i","pa_bootstrap.hlp", AWM_ALL,    (AW_CB)NT_bootstrap,(AW_CL)ntw, 1 );
+        awm->insert_menu_topic("tree_remove_remark",          "Remove Bootstrap Values",  "V","trm_boot.hlp", AWM_TREE,   (AW_CB)NT_remove_bootstrap,     (AW_CL)ntw, 0 );
     }
 
     if (GBS_do_core()) {
@@ -1198,23 +1198,23 @@ static void pars_start_cb(AW_window *aww)
 
     awm->create_menu("props","Properties","r","properties.hlp", AWM_ALL);
     {
-        awm->insert_menu_topic("props_menu",	"Menu: Colors and Fonts ...",	"M","props_frame.hlp",	AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
-        awm->insert_menu_topic("props_tree",	"Tree: Colors and Fonts ...",	"D","pars_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
-        awm->insert_menu_topic("props_tree2",	"Tree: Settings ...",		"T","nt_tree_settings.hlp",AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw );
-        awm->insert_menu_topic("props_kl",	"KERN. LIN ...",		"K","kernlin.hlp",	AWM_ALL, AW_POPUP, (AW_CL)create_kernighan_window, 0 );
-        awm->insert_menu_topic("save_props",	"Save Defaults (in ~/.arb_prop/pars.arb)",	"D","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
+        awm->insert_menu_topic("props_menu",    "Menu: Colors and Fonts ...",   "M","props_frame.hlp",  AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
+        awm->insert_menu_topic("props_tree",    "Tree: Colors and Fonts ...",   "C","pars_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
+        awm->insert_menu_topic("props_tree2",   "Tree: Settings ...",       "T","nt_tree_settings.hlp",AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw );
+        awm->insert_menu_topic("props_kl",  "KERN. LIN ...",        "K","kernlin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_kernighan_window, 0 );
+        awm->insert_menu_topic("save_props",    "Save Defaults (in ~/.arb_prop/pars.arb)",  "D","savedef.hlp",  AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
     }
     awm->button_length(5);
 
     awm->create_menu(0,"ETC","E","nt_etc.hlp", AWM_ALL);
     {
-        awm->insert_menu_topic("reset_logical_zoom",	"Reset Logical Zoom",	"L","rst_log_zoom.hlp",	AWM_ALL, (AW_CB)NT_reset_lzoom_cb, (AW_CL)ntw, 0 );
-        awm->insert_menu_topic("reset_physical_zoom",	"Reset Physical Zoom",	"P","rst_phys_zoom.hlp",AWM_ALL, (AW_CB)NT_reset_pzoom_cb, (AW_CL)ntw, 0 );
+        awm->insert_menu_topic("reset_logical_zoom",    "Reset Logical Zoom",   "L","rst_log_zoom.hlp", AWM_ALL, (AW_CB)NT_reset_lzoom_cb, (AW_CL)ntw, 0 );
+        awm->insert_menu_topic("reset_physical_zoom",   "Reset Physical Zoom",  "P","rst_phys_zoom.hlp",AWM_ALL, (AW_CB)NT_reset_pzoom_cb, (AW_CL)ntw, 0 );
     }
 
-    awm->insert_help_topic("help_how",		"How to use Help",		"H","help.hlp",		AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp", 0);
-    awm->insert_help_topic("help_arb",		"ARB Help",			"A","arb.hlp",		AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp", 0);
-    awm->insert_help_topic("help_arb_pars",		"ARB PARSIMONY Help",		"N","arb_pars.hlp",	AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_pars.hlp", 0);
+    awm->insert_help_topic("help_how",      "How to use Help",      "H","help.hlp",     AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"help.hlp", 0);
+    awm->insert_help_topic("help_arb",      "ARB Help",         "A","arb.hlp",      AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb.hlp", 0);
+    awm->insert_help_topic("help_arb_pars",     "ARB PARSIMONY Help",       "N","arb_pars.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"arb_pars.hlp", 0);
 
     awm->create_mode( 0, "select.bitmap", "mode_select.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_SELECT);
     awm->create_mode( 0, "mark.bitmap", "mode_mark.hlp", AWM_ALL, (AW_CB)nt_mode_event, (AW_CL)ntw, (AW_CL)AWT_MODE_MARK);
@@ -1498,11 +1498,11 @@ int main(int argc, char **argv)
         GB_export_error("Unknown option '%s'",argv[0]);
         GB_print_error();
         printf("Options:\n"
-               "	-add_marked	:	add marked species without changing topologie\n"
-               "	-add_selected	:	add selected species, no old topologie changes\n"
-               "	-calc_branchlengths:	calculat branch lenghts only\n"
-               "	-calc_bootstrap:	estimate bootstrap values\n"
-               "	-quit		:	quit after performing operations\n"
+               "    -add_marked :   add marked species without changing topologie\n"
+               "    -add_selected   :   add selected species, no old topologie changes\n"
+               "    -calc_branchlengths:    calculat branch lenghts only\n"
+               "    -calc_bootstrap:    estimate bootstrap values\n"
+               "    -quit       :   quit after performing operations\n"
                );
         exit(-1);
     }
