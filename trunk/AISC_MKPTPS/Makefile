@@ -18,18 +18,13 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-
 mkptypes.o:  
 mkptypes.o:  
 mkptypes.o:  
 mkptypes.o:  
 mkptypes.o:  
 mkptypes.o:  
-mkptypes.o:   
 mkptypes.o:  
 mkptypes.o:  
 mkptypes.o:  
-mkptypes.o:  
-mkptypes.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-mkptypes.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-mkptypes.o: mkptypes.h patchlev.h
+mkptypes.o:   mkptypes.h patchlev.h
