@@ -3,6 +3,10 @@
 #include <string.h>
 #include <arbdb.h>
 
+#if defined(DEBUG)
+// #define DUMP
+#endif // DEBUG
+
 static char *filename = 0;
 
 static void error(const char *msg) {
@@ -38,7 +42,7 @@ int main(int argc, char **argv)
                  ||  !strncmp(tok,"P2AT_",5)){  /* looks like the if-branch is entered for every token*/
                 char *fn = GBS_string_eval(tok,"(*=",0);
                 GBS_write_hash(exclude_hash,fn,1);
-                delete fn;
+                free(fn);
             }
         }
     }
@@ -62,8 +66,11 @@ int main(int argc, char **argv)
     void *gb_out    = GBS_stropen(100000);
     void *gbt_out   = GBS_stropen(100000);
     bool  inComment = false;
+    char *type      = 0;
 
-    for (tok = strtok(data,";\n");tok;tok= strtok(0,";\n")) {
+    for (tok = strtok(data,";\n");tok;tok = strtok(0,";\n")) {
+        if (type) { free(type); type = 0; }
+
 #if defined(DEBUG)
 //         fprintf(stderr,"tok='%s'\n",tok);
 #endif // DEBUG
@@ -127,69 +134,135 @@ int main(int argc, char **argv)
         if (strstr(tok,"float *")) continue;
         if (strstr(tok,"**")) continue;
         if (!GBS_string_cmp(tok,"*(*(*)(*",0)) continue; // no function parameters
-        if (strstr(tok,"GB_CB")) continue; // this is a function parameters as well
+        if (strstr(tok,"GB_CB")) continue; // this is a function parameter as well
 
-        //  fprintf(stderr,"Good='%s'\n",tok);
+#if defined(DUMP)
+        fprintf(stderr,"Good='%s'\n",tok);
+#endif // DUMP
 
         /* extract function type */
         char *sp = strchr(tok,' ');
-        const char *type = 0;
+        arb_assert(type == 0);
         {
-            // is the expected declaration format "type name(..)" ??
+            // is the expected declaration format "type name(..)" or "type name P_((..))" ??
             if (!sp) error(GBS_global_string("Space expected in '%s'",tok));
-            if (sp[1] == '*') sp++; // function type
-            int c = sp[1];      // what the hell is this for ??????
+            while (sp[1] == '*' || sp[1] == ' ') sp++; // function type
+
+            // create a copy of the return type
+            int c = sp[1];
             sp[1] = 0;
             type  = strdup(tok);
             sp[1] = c;
+
+            // remove spaces from return type
+            char *t = type;
+            char *f = type;
+
+            while (*f) {
+                if (*f != ' ') *t++ = *f;
+                ++f;
+            }
+            t[0] = 0;
         }
 
         /* check type */
         GB_BOOL const_char = GB_FALSE;
         GB_BOOL free_flag = GB_FALSE;
-        if (!strcmp(type,"char *"))     const_char = GB_TRUE;
+        if (!strcmp(type,"char*"))     const_char = GB_TRUE;
         if (!strncmp(type,"schar",5)){
-            free_flag = GB_TRUE;
-            type++;
+            free_flag     = GB_TRUE;
+            char *newtype = strdup(type+1);
+            free(type);
+            type          = newtype;
         }
 
-        if (!strcmp(type,"float"))      type = "double";
-        if (!strcmp(type,"GB_alignment_type"))      type = "double";
+        if (!strcmp(type,"float")) {
+            free(type);
+            type = strdup("double");
+        }
+        if (!strcmp(type,"GB_alignment_type")) {
+            free(type);
+            type = strdup("double");
+        }
 
+        tok = sp;
+        while (tok[0] == ' ' || tok[0] == '*') ++tok;
 
-        tok = sp+1;
-        sp = strchr(tok,' ');
-        if (!sp) error(GBS_global_string("Space expected in '%s'",tok));
-        *(sp++) = 0;
+        char *func_name = 0;
+        char *arguments = 0;
+
+        char *P_wrapped = strstr(tok, " P_(");
+        if (P_wrapped) {
+            sp = strchr(tok, ' ');
+            if (!sp) error(GBS_global_string("Space expected in '%s'", tok));
+
+            sp[0]     = 0;      // end function name
+            func_name = tok;
+            arguments = P_wrapped+5;
+
+            char *last_paren = strrchr(arguments, ')');
+            if (!last_paren) error(GBS_global_string("')' expected in '%s'", arguments));
+
+            if (last_paren[-1] == ')') {
+                last_paren[-1] = 0; // end arguments
+            }
+            else {
+                error(GBS_global_string("'))' expected in '%s'", P_wrapped));
+            }
+        }
+        else {
+            char *open_paren = strchr(tok, '(');
+            if (!open_paren) error(GBS_global_string("'(' expected in '%s'", tok));
+
+            open_paren[0] = 0;
+            func_name     = tok;
+            arguments     = open_paren+1;
+
+            char *last_paren = strrchr(arguments, ')');
+            if (!last_paren) error(GBS_global_string("')' expected in '%s'", arguments));
+
+            last_paren[0] = 0;
+        }
+
+        arb_assert(func_name);
+        arb_assert(arguments);
+
+#if defined(DUMP)
+        fprintf(stderr, "type='%s'  func_name='%s'  arguments='%s'\n", type, func_name, arguments);
+#endif // DUMP
 
         /* exclude some funtions */
 
-        char *func_name = tok;
         if (!strcmp(func_name,"GBT_add_data")) continue;
+
+        // translate prefixes
 
         void *out = 0;
         if (!strncmp(func_name,"GB_",3)) out = gb_out;
         if (!strncmp(func_name,"GBT_",4)) out = gbt_out;
+        if (!strncmp(func_name,"GEN_",4)) out = gbt_out;
         if (!out) continue;
 
-        char *perl_func_name = GBS_string_eval(func_name,"GBT_=P2AT_:GB_=P2A_",0);
+        char *perl_func_name = GBS_string_eval(func_name,"GBT_=P2AT_:GB_=P2A_:GEN_=P2AT_",0);
         if (GBS_read_hash(exclude_hash,perl_func_name)) continue;
         GBS_write_hash(exclude_hash,perl_func_name,1); // don't list functions twice
 
+#if defined(DUMP)
+        fprintf(stderr, "-> accepted!\n");
+#endif // DUMP
 
-        char *line = GBS_string_eval(sp,"P_(=:(=:)=",0);
         char *p;
         void *params = GBS_stropen(1000);
-        void *args = GBS_stropen(1000);
-        for (p=line; line; line=p ){
-            p = strchr(line,',');
+        void *args   = GBS_stropen(1000);
+        for (p=arguments; arguments; arguments=p ){
+            p = strchr(arguments,',');
             if (p) *(p++) = 0;
             if (p && *p == ' ') p++;
-            if (strcmp(line,"void")){
+            if (strcmp(arguments,"void")){
                 GBS_strcat(params," ");
-                GBS_strcat(params,line);
+                GBS_strcat(params,arguments);
                 GBS_strcat(params,"\n");
-                char *arp = strrchr(line,' ');
+                char *arp = strrchr(arguments,' ');
                 if (arp) {
                     arp++;
                     if (arp[0] == '*') arp++;
