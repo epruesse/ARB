@@ -1894,32 +1894,41 @@ void AWT_graphic_tree::update(GBDATA *gbdummy){
 
 void AWT_graphic_tree::NT_scalebox(int gc, double u, double v, double width)
 {
-    double diam = width/disp_device->get_scale();
+    double diam  = width/disp_device->get_scale();
+    double diam2 = diam+diam;
     disp_device->set_fill(gc, this->grey_level);
-    disp_device->box(gc,u-diam,v-diam, diam+diam,diam+diam,mark_filter,0,0);
+    disp_device->box(gc, u-diam, v-diam, diam2, diam2, mark_filter, 0, 0);
 }
 
-void AWT_graphic_tree::NT_emptybox(int gc, double u, double v, double width)
+void AWT_graphic_tree::NT_emptybox(int gc, double x, double y, double width)
 {
-    double diam = width/disp_device->get_scale();
-    double u1   = u-diam;
-    double u2   = u+diam;
-    double v1   = v-diam;
-    double v2   = v+diam;
+    double scale_div = 1/disp_device->get_scale();
+    double diam  = width * scale_div;
+    double x1    = x-diam;
+    double x2    = x+diam;
+    double y1    = y-diam;
+    double y2    = y+diam;
 
-    disp_device->line(gc,u1,v1,u1,v2,mark_filter,0,0);
-    disp_device->line(gc,u1,v1,u2,v1,mark_filter,0,0);
-    disp_device->line(gc,u2,v2,u1,v2,mark_filter,0,0);
-    disp_device->line(gc,u2,v2,u2,v1,mark_filter,0,0);
+    disp_device->set_line_attributes(gc, 0.0, AW_SOLID); 
+    
+    disp_device->line(gc, x1, y1, x1, y2, mark_filter, 0, 0);
+    disp_device->line(gc, x2, y1, x2, y2, mark_filter, 0, 0);
+    disp_device->line(gc, x1, y1, x2, y1, mark_filter, 0, 0);
+    disp_device->line(gc, x1, y2, x2, y2, mark_filter, 0, 0);
 }
 
-void AWT_graphic_tree::NT_rotbox(int gc, double u, double v, double width) // box with one corner down
+void AWT_graphic_tree::NT_rotbox(int gc, double x, double y, double width) // box with one corner down
 {
-    double diam = width/disp_device->get_scale();
-    disp_device->line(gc,u,v-diam, u-diam,v,mark_filter,0,0);
-    disp_device->line(gc,u,v-diam, u+diam,v,mark_filter,0,0);
-    disp_device->line(gc,u+diam,v, u,v+diam,mark_filter,0,0);
-    disp_device->line(gc,u-diam,v, u,v+diam,mark_filter,0,0);
+    double diam = width / disp_device->get_scale();
+    double x1   = x-diam;
+    double x2   = x+diam;
+    double y1   = y-diam;
+    double y2   = y+diam;
+
+    disp_device->line(gc, x1, y, x, y1, mark_filter, 0, 0);
+    disp_device->line(gc, x2, y, x, y1, mark_filter, 0, 0);
+    disp_device->line(gc, x1, y, x, y2, mark_filter, 0, 0);
+    disp_device->line(gc, x2, y, x, y2, mark_filter, 0, 0);
 }
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //      AW_BOOL AWT_show_remark_branch(AW_device *device, const char *remark_branch, AW_BOOL is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
@@ -1966,21 +1975,20 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
     AWUSE(x_father);
     ny0 = y_pos;
 
-
     if (disp_device->type() != AW_DEVICE_SIZE){ // tree below cliprect bottom can be cut
         AW_pos xs = 0;
-        AW_pos ys = y_pos - scale *2.0;
+        AW_pos ys = y_pos - scaled_branch_distance *2.0;
         AW_pos X,Y;
         disp_device->transform(xs,ys,X,Y);
         if ( Y > disp_device->clip_rect.b){
-            y_pos += scale;
+            y_pos += scaled_branch_distance;
             return ny0;
         }
-        ys = y_pos + scale * (at->gr.view_sum+2);
+        ys = y_pos + scaled_branch_distance * (at->gr.view_sum+2);
         disp_device->transform(xs,ys,X,Y);
 
         if ( Y  < disp_device->clip_rect.t){
-            y_pos += scale*at->gr.view_sum;
+            y_pos += scaled_branch_distance*at->gr.view_sum;
             return ny0;
         }
     }
@@ -1988,12 +1996,16 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
     if (at->is_leaf) {
         /* draw mark box */
         if (at->gb_node && GB_read_flag(at->gb_node)){
-            NT_scalebox(at->gr.gc,x_son, ny0, NT_BOX_WIDTH);
+            NT_scalebox(at->gr.gc, x_son, ny0, NT_BOX_WIDTH);
         }
-        if (at->name && at->name[0] == this->species_name[0] &&
-            !strcmp(at->name,this->species_name)) {
-            x_cursor = x_son; y_cursor = ny0;
+        if (at->name &&
+            at->name[0] == this->species_name[0] &&
+            strcmp(at->name,this->species_name) == 0)
+        {
+            x_cursor = x_son;
+            y_cursor = ny0;
         }
+
         if (at->name && (disp_device->filter & text_filter) ){
             // text darstellen
             const char *data = make_node_text_nds(this->gb_main, at->gb_node,0,at->get_gbt_tree(), tree_name);
@@ -2003,24 +2015,28 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
 
             const AW_font_information *fontinfo = disp_device->get_font_information(at->gr.gc,'A');
 
-#if defined(DEBUG) && 0            
+#if defined(DEBUG) && 0
             static bool dumped = false;
             if (!dumped) {
                 for (int c = 32; c <= 255; c++) {
-                    AW_font_information *fi = disp_device->get_font_information(at->gr.gc,(char)c);
+                    const AW_font_information *fi = disp_device->get_font_information(at->gr.gc,(char)c);
                     printf("fontinfo: %3i '%c' ascent=%2i descent=%2i width=%2i\n",
                            c, (char)c,
-                           fi->this_letter_ascent,
-                           fi->this_letter_descent,
-                           fi->this_letter_width
+                           fi->this_letter.ascent,
+                           fi->this_letter.descent,
+                           fi->this_letter.width
                            );
                     if (c == 255) {
-                        printf("fontinfo (maximas): ascent=%2i descent=%2i width=%2i\n",
-                               fi->max_letter_ascent,
-                               fi->max_letter_descent,
-                               fi->max_letter_width
+                        printf("fontinfo (all-maximas): ascent=%2i descent=%2i width=%2i\n",
+                               fi->max_all_letter.ascent,
+                               fi->max_all_letter.descent,
+                               fi->max_all_letter.width
                                );
-                        
+                        printf("fontinfo (ascii-maximas): ascent=%2i descent=%2i width=%2i\n",
+                               fi->max_letter.ascent,
+                               fi->max_letter.descent,
+                               fi->max_letter.width
+                               );
                     }
                 }
 
@@ -2030,9 +2046,8 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
 
 
             double unscale = 1.0/disp_device->get_scale();
-
-            yoffset = fontinfo->max_letter_ascent * 0.5 * unscale;
-            xoffset = ((fontinfo->max_letter_width * 0.5) + NT_BOX_WIDTH) * unscale;
+            yoffset = scaled_font.ascent*.5;
+            xoffset = ((fontinfo->max_letter.width * 0.5) + NT_BOX_WIDTH) * unscale;
 
             disp_device->text(at->gr.gc,data ,
                               (AW_pos) x_son+xoffset,(AW_pos) ny0+yoffset,
@@ -2041,14 +2056,14 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
         }
 
 
-        y_pos += scale;
+        y_pos += scaled_branch_distance;
         return ny0;
     }
 
     if (at->gr.grouped) {
         l_min = at->gr.min_tree_depth;
         l_max = at->gr.tree_depth;
-        ny1 = y_pos += scale*(at->gr.view_sum-1);
+        ny1 = y_pos += scaled_branch_distance*(at->gr.view_sum-1);
         nx0 = x_son + l_max;
         nx1 = x_son + l_min;
 
@@ -2075,7 +2090,7 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
         // double add_y_offset = scale*0.3;
 
         const AW_font_information *fontinfo    = disp_device->get_font_information(at->gr.gc,'A');
-        double                     text_ascent = fontinfo->max_letter_ascent/ disp_device->get_scale() ;
+        double                     text_ascent = fontinfo->max_letter.ascent/ disp_device->get_scale() ;
 
         yoffset = (ny1-ny0+text_ascent)*.5;
         xoffset = text_ascent*.5;
@@ -2092,15 +2107,14 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
                           x_son+xoffset, ny0+yoffset,
                           0,text_filter,(AW_CL)at,0);
 
-        y_pos += scale;
-
+        y_pos += scaled_branch_distance;
 
         return (ny0+ny1)*.5;
     }
     nx0 = (x_son +  at->leftlen) ;
     nx1 = (x_son +  at->rightlen) ;
     ny0 = show_list_tree_rek(at->leftson,x_son, nx0);
-    ry  = (double) y_pos-.5*scale;
+    ry  = (double) y_pos - .5*scaled_branch_distance;
     ny1 = (double) show_list_tree_rek(at->rightson,x_son, nx1);
 
     if (at->name) {
@@ -2108,18 +2122,18 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
     }
 
     if (at->leftson->remark_branch ) {
-        bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->leftson->remark_branch, at->leftson->is_leaf, nx0, ny0-scale*0.1, 1, text_filter, (AW_CL)at, 0);
+        bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->leftson->remark_branch, at->leftson->is_leaf, nx0, ny0-scaled_font.ascent*0.1, 1, text_filter, (AW_CL)at, 0);
 
         if (show_circle && bootstrap_shown){
-            AWT_show_bootstrap_circle(disp_device,at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen,nx0, ny0, use_ellipse, scale, text_filter, (AW_CL) at->leftson, (AW_CL) 0);
+            AWT_show_bootstrap_circle(disp_device,at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen,nx0, ny0, use_ellipse, scaled_branch_distance, text_filter, (AW_CL) at->leftson, (AW_CL) 0);
         }
     }
 
     if (at->rightson->remark_branch ) {
-        bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->rightson->remark_branch, at->rightson->is_leaf, nx1, ny1-scale*0.1, 1, text_filter, (AW_CL)at, 0);
+        bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->rightson->remark_branch, at->rightson->is_leaf, nx1, ny1-scaled_font.ascent*0.1, 1, text_filter, (AW_CL)at, 0);
 
         if (show_circle && bootstrap_shown){
-            AWT_show_bootstrap_circle(disp_device,at->rightson->remark_branch,circle_zoom_factor, circle_max_size, at->rightlen,nx1, ny1, use_ellipse, scale, text_filter, (AW_CL) at->rightson, (AW_CL) 0);
+            AWT_show_bootstrap_circle(disp_device,at->rightson->remark_branch,circle_zoom_factor, circle_max_size, at->rightlen,nx1, ny1, use_ellipse, scaled_branch_distance, text_filter, (AW_CL) at->rightson, (AW_CL) 0);
         }
     }
 
@@ -2151,8 +2165,8 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
 void AWT_graphic_tree::scale_text_koordinaten(AW_device *device, int gc,double& x,double& y,double orientation,int flag)
 {
     const AW_font_information *fontinfo    = device->get_font_information(gc,'A');
-    double                     text_height = fontinfo->max_letter_height/ disp_device->get_scale() ;
-    double                     dist        = fontinfo->max_letter_height/ disp_device->get_scale();
+    double                     text_height = fontinfo->max_letter.height/ disp_device->get_scale() ;
+    double                     dist        = fontinfo->max_letter.height/ disp_device->get_scale();
     
     if (flag==1) {
         dist += 1;
@@ -2409,15 +2423,16 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
     return tree_awar;
 }
 
-void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy, bool use_nds)
+void AWT_graphic_tree::show_nds_list(GBDATA * dummy, bool use_nds)
 {
     AWUSE(dummy);
-    AW_pos y_position = scale;
+    AW_pos y_position = scaled_branch_distance;
+    AW_pos x_position = 2*NT_SELECTED_WIDTH / disp_device->get_scale();
     long   max_strlen = 0;
 
     disp_device->text(nds_show_all ? AWT_GC_CURSOR : AWT_GC_SELECTED,
                       GBS_global_string("%s of %s species", use_nds ? "NDS List" : "Simple list", nds_show_all ? "all" : "marked"),
-                      (AW_pos) scale * 2, (AW_pos) 0,
+                      (AW_pos) x_position, (AW_pos) 0,
                       (AW_pos) 0, text_filter,
                       (AW_CL) 0, (AW_CL) 0);
 
@@ -2425,7 +2440,7 @@ void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy, bool use_nds)
          gb_species;
          gb_species = nds_show_all ? GBT_next_species(gb_species) : GBT_next_marked_species(gb_species))
     {
-        y_position += scale;
+        y_position += scaled_branch_distance;
 
         GBDATA     *gb_name = GB_find(gb_species, "name", 0, down_level);
         const char *name    = 0;
@@ -2433,38 +2448,35 @@ void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy, bool use_nds)
         if (gb_name) {
             name = GB_read_char_pntr(gb_name);
             if (strcmp(name, this->species_name) == 0) {
-                x_cursor = scale;
-                y_cursor = y_position + NT_SELECTED_WIDTH;
+                x_cursor = 0;
+                y_cursor = y_position;
             }
         }
 
         bool is_marked = GB_read_flag(gb_species);
-        if (is_marked) {
-            NT_scalebox(AWT_GC_SELECTED,scale, y_position+NT_SELECTED_WIDTH, NT_BOX_WIDTH);
-        }
+        if (is_marked) NT_scalebox(AWT_GC_SELECTED, 0, y_position, NT_BOX_WIDTH);
 
         {
             AW_pos xs = 0;
             AW_pos X,Y;
-            // max_strlen = 1000;
-            disp_device->transform(xs,y_position + scale * 2,X,Y);
+            disp_device->transform(xs, y_position+scaled_branch_distance, X, Y);
             if ( Y  < disp_device->clip_rect.t) continue;
-            disp_device->transform(xs,y_position - scale * 2,X,Y);
+            disp_device->transform(xs, y_position-scaled_branch_distance, X, Y);
             if ( Y > disp_device->clip_rect.b) continue;
         }
 
         if (disp_device->type() != AW_DEVICE_SIZE){ // tree below cliprect bottom can be cut
             const char *data;
             if (use_nds) {
-                data   = make_node_text_nds(gb_main, gb_species, 1, 0, tree_name);
+                data = make_node_text_nds(gb_main, gb_species, 1, 0, tree_name);
             }
             else {
                 data            = name;
                 if (!data) data = "<error: species w/o name>";
             }
-            long   slen   = strlen(data);
-            AW_pos offset = scale * 0.5;
-            int    gc     = AWT_GC_NSELECTED;
+
+            long slen = strlen(data);
+            int  gc   = AWT_GC_NSELECTED;
 
             if (nds_show_all && is_marked) {
                 gc = AWT_GC_SELECTED;
@@ -2475,15 +2487,16 @@ void AWT_graphic_tree::show_nds_list_rek(GBDATA * dummy, bool use_nds)
             }
 
             disp_device->text(gc, data,
-                              (AW_pos) scale * 2, (AW_pos) y_position + offset,
+                              (AW_pos) x_position, (AW_pos) y_position + scaled_font.ascent*.5,
                               (AW_pos) 0, text_filter,
                               (AW_CL) gb_species, (AW_CL) "species", slen);
 
             if (slen> max_strlen) max_strlen = slen;
         }
     }
-    disp_device->invisible(AWT_GC_CURSOR,0,0,-1,0,0);
-    disp_device->invisible(AWT_GC_CURSOR,max_strlen*scale,y_position,-1,0,0);
+
+    disp_device->invisible(AWT_GC_CURSOR, 0, 0, -1, 0, 0);
+    disp_device->invisible(AWT_GC_CURSOR, max_strlen*scaled_font.width, y_position+scaled_branch_distance, -1, 0, 0);
 }
 
 void AWT_graphic_tree::show(AW_device *device)  {
@@ -2498,14 +2511,14 @@ void AWT_graphic_tree::show(AW_device *device)  {
 
     disp_device = device;
 
-    const AW_font_information *fontinfo = disp_device->get_font_information(AWT_GC_SELECTED, 0);    
-    scale = fontinfo->max_letter_height/ device->get_scale();
+    const AW_font_information *fontinfo = disp_device->get_font_information(AWT_GC_SELECTED, 0);
+
+    scaled_font.init(fontinfo->max_letter, 1/device->get_scale());
+    scaled_branch_distance = scaled_font.height * aw_root->awar(AWAR_DTREE_VERICAL_DIST)->read_float();
 
     make_node_text_init(gb_main);
 
-    scale      *= aw_root->awar(AWAR_DTREE_VERICAL_DIST)->read_float();
-    grey_level  = aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int()*.01;
-
+    grey_level         = aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int()*.01;
     baselinewidth      = (int)aw_root->awar(AWAR_DTREE_BASELINEWIDTH)->read_int();
     show_circle        = (int)aw_root->awar(AWAR_DTREE_SHOW_CIRCLE)->read_int();
     circle_zoom_factor = aw_root->awar(AWAR_DTREE_CIRCLE_ZOOM)->read_float();
@@ -2519,27 +2532,30 @@ void AWT_graphic_tree::show(AW_device *device)  {
 
     switch (tree_sort) {
         case AP_TREE_NORMAL:
-            if (!tree_root_display)   return;
+            if (!tree_root_display) return;
             y_pos = 0.05;
             show_list_tree_rek(tree_root_display, 0, 0);
-            list_tree_ruler_y = y_pos + 2.0 * scale;
+            list_tree_ruler_y = y_pos + 2.0 * scaled_branch_distance;
             break;
+
         case AP_TREE_RADIAL:
             if (!tree_root_display)   return;
             NT_emptybox(tree_root_display->gr.gc, 0, 0, NT_ROOT_WIDTH);
-            show_tree_rek(tree_root_display, 0,0,2*M_PI,
-                          0.0,0, 0, tree_root_display->gr.left_linewidth);
+            show_tree_rek(tree_root_display, 0,0,2*M_PI, 0.0,0, 0, tree_root_display->gr.left_linewidth);
             break;
+
         case AP_TREE_IRS:
-            show_irs(tree_root_display,disp_device,fontinfo->max_letter_height);
+            show_irs(tree_root_display,disp_device,fontinfo->max_letter.height);
             list_tree_ruler_y = y_pos;
             break;
-        case AP_LIST_NDS: // this is the list all/marked species mode (no tree)
-            show_nds_list_rek(gb_main, true);
+
+        case AP_LIST_NDS:       // this is the list all/marked species mode (no tree)
+            show_nds_list(gb_main, true);
             break;
-        case AP_LIST_SIMPLE: // simple list of names (used at startup only)
-            show_nds_list_rek(gb_main, false);
-            break;
+
+        case AP_LIST_SIMPLE:    // simple list of names (used at startup only)
+            show_nds_list(gb_main, false);
+            break;            
     }
     if (x_cursor != 0.0 || y_cursor != 0.0) {
         NT_emptybox(AWT_GC_CURSOR, x_cursor, y_cursor, NT_SELECTED_WIDTH);
