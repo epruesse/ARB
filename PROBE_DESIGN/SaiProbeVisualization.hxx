@@ -1,4 +1,9 @@
-#include <vector.h>
+#ifndef SAIPROBEVISUALIZATION_HXX
+#define SAIPROBEVISUALIZATION_HXX
+
+#ifndef __VECTOR__
+#include <vector>
+#endif
 
 #define MAX(x,y)  (((x)>(y)) ?  (x) : (y))
 #define sai_assert(cond) arb_assert(cond)
@@ -98,3 +103,8 @@ public:
 
 AW_window *createSaiProbeMatchWindow(AW_root *awr);
 void transferProbeData(struct saiProbeData *spd);
+
+#else
+#error SaiProbeVisualization.hxx included twice
+#endif
+
