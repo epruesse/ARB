@@ -65,7 +65,7 @@ GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main) {
             }
         }
     }
-    delete alignment_name;
+    free(alignment_name);
 
     if (error) GB_abort_transaction(gb_main);
     else GB_pop_transaction(gb_main);
@@ -244,7 +244,7 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 	    }
 	}
     }
-    delete alignment_name;
+    free(alignment_name);
 
     if (error) GB_abort_transaction(gb_main);
     else GB_pop_transaction(gb_main);
@@ -298,7 +298,7 @@ int SQ_get_value(GBDATA *gb_main, const char *option){
 	    }
 	}
     }
-    delete alignment_name;
+    free(alignment_name);
 
     GB_pop_transaction(gb_main);
     return result;
@@ -345,7 +345,7 @@ int SQ_get_value_no_tree(GBDATA *gb_main, const char *option){
 	    }
 	}
     }
-    delete alignment_name;
+    free(alignment_name);
 
 
     GB_pop_transaction(gb_main);
@@ -435,7 +435,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 	    }
 	}
     }
-    delete alignment_name;
+    free(alignment_name);
 
     if (error) GB_abort_transaction(gb_main);
     else GB_pop_transaction(gb_main);
@@ -565,7 +565,7 @@ GB_ERROR SQ_pass1(SQ_GroupData& globalData, GBDATA *gb_main) {
 
 
 #warning read note please
-    delete alignment_name;      // alignment_name wurde mit malloc allociert -> bitte mit free() freigeben
+    free(alignment_name);      // alignment_name wurde mit malloc allociert -> bitte mit free() freigeben
     // valgrind sollte dies melden
 
 
@@ -666,7 +666,7 @@ GB_ERROR SQ_pass2(SQ_GroupData& globalData, GBDATA *gb_main, bool marked_only) {
 	    }
 	}
     }
-    delete alignment_name;
+    free(alignment_name);
 
     if (error) GB_abort_transaction(gb_main);
     else GB_pop_transaction(gb_main);
