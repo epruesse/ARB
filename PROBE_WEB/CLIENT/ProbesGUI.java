@@ -85,17 +85,17 @@ public class ProbesGUI extends Frame
                     public Dimension getPreferredSize() {
                         Dimension result = null;
                         if (fakeScrollPaneSize == false) {
-                            System.out.println("Returning real size:");
+                            // System.out.println("Returning real size:");
                             result = getSize(); // ignores size of contained canvas!
                         }
                         else {
                             result = estimatedScrollPaneSize;
                             if (wantedScrollPaneSize != null) {
                                 result = wantedScrollPaneSize;
-                                System.out.println("I know the exact size:");
+                                // System.out.println("I know the exact size:");
                             }
                         }
-                        System.out.println("ScrollPane::getPreferredSize returns "+result.width+"/"+result.height);
+                        // System.out.println("ScrollPane::getPreferredSize returns "+result.width+"/"+result.height);
                         return result;
                     }
                 };
@@ -112,12 +112,12 @@ public class ProbesGUI extends Frame
 
             Dimension ttbdim                = ttb.getPreferredSize();
             estimatedScrollPaneSize.height -= ttbdim.height;
-            System.out.println("ttbdim="+ttbdim.width+"/"+ttbdim.height+"");
+            // System.out.println("ttbdim="+ttbdim.width+"/"+ttbdim.height+"");
 
 
             estimatedScrollPaneSize.height -= 40+50; // for menubar
 
-            // sc.setSize(sc.getPreferredSize());
+            sc.setSize(sc.getPreferredSize());
             // sc.setSize(estimatedPaneSize);
         }
 
@@ -129,10 +129,10 @@ public class ProbesGUI extends Frame
         // System.out.println("call invalidate");
         // invalidate();
 
-        System.out.println("call pack");
+        // System.out.println("call pack");
         validate();
         pack();
-        System.out.println("call pack done");
+        // System.out.println("call pack done");
         fakeScrollPaneSize = false;
         setVisible(true);
         // setBounds(frame_bounds);
