@@ -207,6 +207,11 @@ public:
 	ps_assert(probes);
 	return probes->end();
     }
+    
+    void   removeProbes() {
+        if (probes) delete probes;
+        probes = 0;
+    }
 
     //
     // *** output **
