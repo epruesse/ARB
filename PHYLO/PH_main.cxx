@@ -411,6 +411,10 @@ AW_window *create_phyl_main_window(AW_root *aw_root,AP_root *ap_root,AWT_graphic
 
     // File menu
     awm->create_menu(0,"File","F");
+#if defined(DEBUG)
+    awm->insert_menu_topic("db_browser", "Browse loaded database(s)", "", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_db_browser, 0);
+    awm->insert_separator();
+#endif // DEBUG
     awm->insert_menu_topic("export_filter","Export Filter", "E",    "ph_export_markerline.hlp",AWM_ALL, (AW_CB)AW_POPUP,(AW_CL) PH_save_markerline, 0 );
     awm->insert_menu_topic("export_freq","Export Frequencies",  "F",    "ph_export_markerline.hlp",AWM_ALL, (AW_CB)AW_POPUP,(AW_CL) PH_save_markerline, 1 );
     awm->insert_menu_topic("quit","QUIT",       "q",    "quit.hlp", AWM_ALL,        (AW_CB)ap_exit ,(AW_CL)ap_root,0);
@@ -513,7 +517,7 @@ main(int argc, char **argv)
         db_server = argv[1];
     }
     apmain = new AP_root;
-    if ((error = apmain->open(db_server))) {
+    if ((error = apmain->open(db_server))) { // initializes global 'gb_main'
         aw_message(error);
         exit(-1);
     }
@@ -522,6 +526,9 @@ main(int argc, char **argv)
     create_filter_variables(aw_root, aw_default);
     create_matrix_variables(aw_root, aw_default);
     ARB_init_global_awars(aw_root, aw_default, gb_main);
+    AWT_create_db_browser_awars(aw_root, aw_default);
+
+    AWT_announce_db_to_browser(gb_main, GBS_global_string("ARB-database (%s)", db_server));
 
     create_filter_text();
 

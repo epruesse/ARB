@@ -1489,6 +1489,10 @@ static void pars_start_cb(AW_window *aww)
 
     awm->create_menu(       0,   "File",     "F", "pars_file.hlp",  AWM_ALL );
     {
+#if defined(DEBUG)
+        awm->insert_menu_topic("db_browser", "Browse loaded database(s)", "", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_db_browser, 0);
+        awm->insert_separator();
+#endif // DEBUG
         awm->insert_menu_topic("print_tree", "Print Tree ...",          "P","tree2prt.hlp", AWM_ALL,    (AW_CB)AWT_create_print_window, (AW_CL)ntw, 0 );
         awm->insert_menu_topic( "quit",     "Quit",             "Q","quit.hlp",     AWM_ALL, (AW_CB)PARS_export_cb, (AW_CL)ntw,2);
     }
@@ -1817,6 +1821,7 @@ static void create_all_awars(AW_root *awr, AW_default aw_def)
     create_nds_vars(awr,aw_def,gb_main);
 
     ARB_init_global_awars(awr, aw_def, gb_main);
+    AWT_create_db_browser_awars(awr, aw_def);
 
     free(dali);
 }
@@ -1889,6 +1894,7 @@ int main(int argc, char **argv)
         aw_message(GB_get_error(),"OK");
         exit(EXIT_FAILURE);
     }
+    AWT_announce_db_to_browser(gb_main, GBS_global_string("ARB-database (%s)", db_server));
 
     create_all_awars(aw_root,aw_default);
 
