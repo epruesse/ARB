@@ -780,17 +780,24 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
 
                 // 	    Tastaturbelegung:
                 //
-                // 		- CTRL-A	Align					ok
-                // 		- CTRL-E	Edit/Align umschalten			ok
-                // 		- CTRL-I	Insert/Replace umschalten		ok
+                // 		- CTRL-A	Align					            ok
+                // 		- CTRL-E	Edit/Align umschalten			    ok
+                // 		- CTRL-I	Insert/Replace umschalten		    ok
                 // 		- CTRL-J	Jump opposite helix position		ok
-                // 		- CTRL-L	Refresh					ok
-                // 		- CTRL-S	Repeat last search			ok
-                // 		- CTRL-U	Undo					absturz!?!
+                // 		- CTRL-L	Refresh					            ok
+                // 		- CTRL-R	set aligner reference species       ok
+                // 		- CTRL-S	Repeat last search			        ok
+                // 		- CTRL-U	Undo					            @@@ absturz!!!
 
 
                 if (key >0 && key<=26) { // CTRL-Keys
                     switch (key+'A'-1) {
+                        case 'R':  { // CTRL-R = set aligner refernce species
+                            if (is_consensus) { cannot_handle = 1; return 0; };
+
+                            AWTC_set_reference_species_name(0, (AW_CL)ED4_ROOT->aw_root);
+                            break;
+                        }
                         case 'A': { // CTRL-A = Start Fast-Aligner
                             AW_window *aw_tmp = ED4_ROOT->temp_aww;
                             if (is_consensus) { cannot_handle = 1; return 0; };
@@ -801,7 +808,7 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
 
                             ED4_init_faligner_data(&faligner_client_data);
 
-                            AWTC_awar_set_actual_sequence(ED4_ROOT->aw_root, ED4_ROOT->db);
+                            AWTC_awar_set_current_sequence(ED4_ROOT->aw_root, ED4_ROOT->db);
                             AW_clock_cursor(ED4_ROOT->aw_root);
                             AWTC_start_faligning(aw_tmp, (AW_CL)&faligner_client_data);
                             AW_normal_cursor(ED4_ROOT->aw_root);
