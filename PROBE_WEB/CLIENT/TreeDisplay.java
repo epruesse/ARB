@@ -10,12 +10,12 @@ import java.awt.event.*;
 
 public class TreeDisplay extends Canvas
 {
-    private long     displayCounter;
-    private String   treeString;
+    private long   displayCounter;
+    private String treeString;
+    
     private TreeNode root;
-    private TreeNode visibleSubtree;        // visible subtree
-    // private TreeNode prevNode;
-    private TreeNode lastFoldedNode; // last node folded/unfolded by hand 
+    private TreeNode visibleSubtree; // visible subtree
+    private TreeNode lastFoldedNode; // last node folded/unfolded by hand
     private TreeNode lastMatchedNode; // last node probe has been ran for
 
     // if lockedPositionNode is set to a node
@@ -23,7 +23,7 @@ public class TreeDisplay extends Canvas
     // if moveToPositionNode is set to a diff. node
     // -> next repaint tries to set that node at the position where lockedPositionNode was
     private TreeNode lockedPositionNode = null;
-    private TreeNode moveToPositionNode = null; 
+    private TreeNode moveToPositionNode = null;
 
     private Stack   history;
 
@@ -179,6 +179,18 @@ public class TreeDisplay extends Canvas
         }
     }
 
+    public void myRepaint() {
+        repaint(100);
+    }
+
+    public void refresh() {
+        newLayout = true;
+        myRepaint();
+    }
+
+    public TreeNode getLastMatchedNode() { return lastMatchedNode; }
+    public TreeNode getVisibleSubtree() { return visibleSubtree; }
+
     public void setVisibleSubtree(TreeNode vis) {
         lockedPositionNode = visibleSubtree;
 
@@ -189,14 +201,6 @@ public class TreeDisplay extends Canvas
         if (visibleSubtree != null) {
             AutofoldCandidate.annouce_POI(visibleSubtree);
             if (lockedPositionNode != null) {
-                //                 System.out.println("visibleSubtree="+visibleSubtree);
-                //                 try {
-                //                     Toolkit.AbortWithError("Test");
-                //                 }
-                //                 catch (Exception e) {
-                //                     Toolkit.showError(e.getMessage());
-                //                     e.printStackTrace();
-                //                 }
                 visibleSubtree.autounfold();
             }
         }
@@ -215,7 +219,7 @@ public class TreeDisplay extends Canvas
         //         recalcLayout(); // done inside repaint
 
         addMouseListener(new DisplayMouseAdapter(this));
-        repaint();
+        myRepaint();
     }
 
 
@@ -484,15 +488,15 @@ public class TreeDisplay extends Canvas
 
         // lastFoldedNode indicator
         if (node == lastFoldedNode) {
-            int box_size = group_box_size; // same size ok, because it always is a group 
-            
+            int box_size = group_box_size; // same size ok, because it always is a group
+
             line[0] = (int)((node.getTotalDist() - node.getDistance())* xSpreading);
             line[1] = node.getYOffset();
 
             g.setColor(lfnc);
             g.fillRect(line[0]-box_size, line[1]-box_size, 2*box_size+1, 2*box_size+1);
         }
-        
+
         // lastMatchedNode indicator
         if (node == lastMatchedNode) {
             int box_size = group_box_size-(node.isGroup() ? 1 : 0);
@@ -566,18 +570,21 @@ public class TreeDisplay extends Canvas
             }
 
             newLayout = true;
-            repaint();
+            myRepaint();
         }
     }
 
+    public void setMatchedNode(TreeNode clickedNode) throws Exception {
+        AutofoldCandidate.annouce_POI(clickedNode);
+        myClient.updateNodeInformation(clickedNode);
+        lastMatchedNode = clickedNode;        
+    }
 
     public void handleRightMouseClick(int x, int y) {
         TreeNode clickedNode = getClickedNode(x, y);
         if(clickedNode != null) {
             try {
-                AutofoldCandidate.annouce_POI(clickedNode);
-                myClient.updateNodeInformation(clickedNode);
-                lastMatchedNode = clickedNode;
+                setMatchedNode(clickedNode);
             }
             catch (ClientException e) {
                 Toolkit.showError(e.getMessage());
@@ -599,7 +606,7 @@ public class TreeDisplay extends Canvas
             if (visibleSubtree != null) history.push(visibleSubtree);
             setVisibleSubtree(dest);
             if (dest.isFoldedGroup()) dest.unfold();
-            repaint();
+            myRepaint();
         }
     }
 
@@ -622,14 +629,14 @@ public class TreeDisplay extends Canvas
         if (visibleSubtree != root) {
             history.push(visibleSubtree);
             setVisibleSubtree(root);
-            repaint();
+            myRepaint();
         }
     }
 
     public void previousRoot() {
         if (!history.empty()) {
             setVisibleSubtree((TreeNode)history.pop());
-            repaint();
+            myRepaint();
         }
         else {
             Toolkit.showMessage("History is empty");
@@ -641,7 +648,7 @@ public class TreeDisplay extends Canvas
     public void unmarkNodes() {
         if (root != null) {
             root.unmarkSubtree();
-            repaint();
+            myRepaint();
         }
     }
 
@@ -651,7 +658,7 @@ public class TreeDisplay extends Canvas
             if (root_of_marked != null) {
                 history.push(visibleSubtree);
                 setVisibleSubtree(root_of_marked);
-                repaint();
+                myRepaint();
             }
             else {
                 Toolkit.showError("Nothing marked.");
@@ -673,7 +680,7 @@ public class TreeDisplay extends Canvas
                     root.searchAndMark(text, false); // case-sensitive
                 }
             }
-            repaint();
+            myRepaint();
         }
     }
 
@@ -695,34 +702,33 @@ public class TreeDisplay extends Canvas
 
     // 3. folding
 
-    public void unfoldAll            (){ visibleSubtree.unfoldAll            (true); newLayout = true; repaint(); }
-    public void unfoldUnmarked       (){ visibleSubtree.unfoldUnmarked       (true); newLayout = true; repaint(); }
-    public void unfoldCompleteMarked (){ visibleSubtree.unfoldCompleteMarked (true); newLayout = true; repaint(); }
-    public void unfoldPartiallyMarked(){ visibleSubtree.unfoldPartiallyMarked(true); newLayout = true; repaint(); }
+    public void unfoldAll            (){ visibleSubtree.unfoldAll            (true); newLayout = true; myRepaint(); }
+    public void unfoldUnmarked       (){ visibleSubtree.unfoldUnmarked       (true); newLayout = true; myRepaint(); }
+    public void unfoldCompleteMarked (){ visibleSubtree.unfoldCompleteMarked (true); newLayout = true; myRepaint(); }
+    public void unfoldPartiallyMarked(){ visibleSubtree.unfoldPartiallyMarked(true); newLayout = true; myRepaint(); }
 
-    public void foldAll              (){ visibleSubtree.foldAll              (true); newLayout = true; repaint(); }
-    public void foldUnmarked         (){ visibleSubtree.foldUnmarked         (true); newLayout = true; repaint(); }
-    public void foldCompleteMarked   (){ visibleSubtree.foldCompleteMarked   (true); newLayout = true; repaint(); }
-    public void foldPartiallyMarked  (){ visibleSubtree.foldPartiallyMarked  (true); newLayout = true; repaint(); }
+    public void foldAll              (){ visibleSubtree.foldAll              (true); newLayout = true; myRepaint(); }
+    public void foldUnmarked         (){ visibleSubtree.foldUnmarked         (true); newLayout = true; myRepaint(); }
+    public void foldCompleteMarked   (){ visibleSubtree.foldCompleteMarked   (true); newLayout = true; myRepaint(); }
+    public void foldPartiallyMarked  (){ visibleSubtree.foldPartiallyMarked  (true); newLayout = true; myRepaint(); }
 
-    public void smartUnfold(){ visibleSubtree.smartUnfold(); newLayout = true; repaint(); }
-    public void smartFold  (){ visibleSubtree.smartFold  (); newLayout = true; repaint(); }
+    public void smartUnfold(){ visibleSubtree.smartUnfold(); newLayout = true; myRepaint(); }
+    public void smartFold  (){ visibleSubtree.smartFold  (); newLayout = true; myRepaint(); }
 
     public boolean unfoldMarkedFoldRest() {
         boolean unfolded = visibleSubtree.unfoldPartiallyMarked(true) || visibleSubtree.unfoldCompleteMarked(true);
         boolean folded   = visibleSubtree.foldUnmarked(true);
         if (unfolded || folded) {
             newLayout = true;
-            repaint();
+            myRepaint();
             return true;
         }
         return false;
     }
 
-    // transform coordinates -> TreeNode
+    private TreeNode getClickedNode(int x, int y) {
+        // transform (click) coordinates -> TreeNode
 
-    private TreeNode getClickedNode(int x, int y)
-    {
         for (Iterator it = rootSet.iterator(); it.hasNext();) {
             LineArea la = (LineArea) it.next();
             if (la.isInside(x,y, clickTolerance)) {
@@ -745,6 +751,9 @@ public class TreeDisplay extends Canvas
     }
 
     private TreeNode getBoxClickedNode(int x, int y) {
+        // if the click (x/y) occurred on one of the small squares
+        // the corresponding TreeNode is returned (null otherwise)
+
         for (Iterator it = rootSet.iterator(); it.hasNext();) {
             LineArea la = (LineArea) it.next();
             if (la.isAtLeft(x,y, group_box_size+2)) {
@@ -761,4 +770,23 @@ public class TreeDisplay extends Canvas
         unmarkNodes();
     }
 
+    public String getFolding() {
+        StringBuffer folding = new StringBuffer(500);
+        root.storeFolding(folding);
+        return Toolkit.compressString(folding.toString());
+    }
+    public void setFolding(String folding) throws Exception {
+        String uncompressed = Toolkit.uncompressString(folding);
+        // System.out.println("uncompressed='"+uncompressed+"'");
+        root.restoreFolding(uncompressed, 0);
+    }
+
+    public TreeNode findNodeByBinaryPath(String binaryPath) {
+        return root.findNodeByBinaryPath(binaryPath, 0);
+    }
+
+    public TreeNode findNodeByCodedPath(String codedPath) throws Exception {
+        String binaryPath = Toolkit.decodePath(codedPath);
+        return findNodeByBinaryPath(binaryPath);
+    }
 }
