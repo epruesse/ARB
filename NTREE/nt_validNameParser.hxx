@@ -12,75 +12,57 @@
 
 namespace validNames {
   
-  typedef list<string> LineSet;
-  typedef LineSet* LineSetPtr;
+    typedef list<string> LineSet;
+    typedef LineSet* LineSetPtr;
 
-  typedef vector<string> TokL;
-  typedef TokL *TokLPtr;
+    typedef vector<string> TokL;
+    typedef TokL *TokLPtr;
 
+    typedef enum {
+        VALGEN, HETGEN, HOMGEN, RENGEN, CORGEN, 
+        VALSPEC, HETSPEC, HOMSPEC, RENSPEC, CORSPEC,
+        NOTYPE, VAL, HET, HOM, REN, COR
+    } DESCT;
 
-  typedef enum{
-    VALGEN, HETGEN, HOMGEN, RENGEN, CORGEN, 
-    VALSPEC, HETSPEC, HOMSPEC, RENSPEC, CORSPEC,
-    NOTYPE, VAL, HET, HOM, REN, COR
-    }DESCT;
-
-//   const char* typeNames[]= {"VALGEN", "HETGEN", "HOMGEN", "RENGEN", "CORGEN", 
-// 			    "VALSPEC", "HETSPEC", "HOMSPEC", "RENSPEC", "CORSPEC",
-// 			    "NOTYPE", "VAL", "HET", "HOM", "REN", "COR"};
-
-
-
-  class Desco{
-  private:
-    DESCT type;
-    bool isCorrected;
-    string firstgen;
-    string firstspec;
-    string firstsub;
-    string secondgen;
-    string secondspec;
-    string secondsub;
+    class Desco {
+    private:
+        DESCT type;
+        bool isCorrected;
+        string firstgen;
+        string firstspec;
+        string firstsub;
+        string secondgen;
+        string secondspec;
+        string secondsub;
     
-    //string nameParts[6];
+    public:
+        inline  Desco(DESCT type_ , bool isCorrected_, string firstgen_,string firstspec_,string firstsub_, 
+                      string secondgen_ ,string secondspec_, string secondsub_){
+            type = type_;
+            isCorrected = isCorrected_;
+            firstgen = firstgen_;
+            firstspec = firstspec_;
+            firstsub = firstsub_;
+            secondgen = secondgen_;
+            secondspec = secondspec_;
+            secondsub = secondsub_;
+        };
 
-  public:
-    /*  Desco(DESCT type_, const string& gen) 
-      : type(type_)
-      , firstgen(gen)
-    {
-      assert(type == VALGEN);
-    }
-    */
-     inline  Desco(DESCT type_ , bool isCorrected_, string firstgen_,string firstspec_,string firstsub_, 
-		   string secondgen_ ,string secondspec_, string secondsub_){
-       type = type_;
-       isCorrected = isCorrected_;
-       firstgen = firstgen_;
-       firstspec = firstspec_;
-       firstsub = firstsub_;
-       secondgen = secondgen_;
-       secondspec = secondspec_;
-       secondsub = secondsub_;
-     };
-    //    inline Desco(DESCT type_,  string names_[6] ) 
-    //    {type =type_; nameParts = names_ }
-
-    string getFirstName();
-    string getSecondName();
-    inline DESCT getType(){return type;}
-  };
+        string getFirstName();
+        string getSecondName();
+        inline DESCT getType(){return type;}
+    };
   
 
 
 
-  LineSet* readFromFile(const char* infile, LineSet* listOfLines);
+    LineSet* readFromFile(const char* infile, LineSet* listOfLines);
 
-  TokLPtr tokenize(const string& description, TokLPtr tokenLP);
+    TokLPtr tokenize(const string& description, TokLPtr tokenLP);
 
-  Desco determineType(const string& descriptionString);
+    Desco determineType(const string& descriptionString);
 
-  bool isUpperCase(const string& input);
+    bool isUpperCase(const string& input);
 }; /* end namespace */
 
 #endif
