@@ -51,6 +51,8 @@ void SQ_create_awars(AW_root *aw_root, AW_default aw_def) {
 
 static void sq_calc_seq_quality_cb(AW_window *aww) {
 
+    bool no_tree = false;
+
     AW_root  *aw_root = aww->get_root();
     GB_ERROR  error   = 0;
     GBT_TREE *tree    = 0;
@@ -60,8 +62,13 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
         if (treename && strcmp(treename, "????") != 0) {
             GB_push_transaction(gb_main);
             tree = GBT_read_tree(gb_main, treename, sizeof(GBT_TREE));
-            if (tree) error = GBT_link_tree(tree,gb_main,GB_FALSE);
-            else      aw_message(GBS_global_string("Cannot read tree '%s' -- group specific calculations skipped", treename));
+            if (tree){
+		error = GBT_link_tree(tree,gb_main,GB_FALSE);
+	    }
+            else{
+		aw_message(GBS_global_string("Cannot read tree '%s' -- group specific calculations skipped.\n   Treating all available sequences as one group!", treename));
+		no_tree = true;
+	    }
             GB_pop_transaction(gb_main);
         }
         else aw_message("No tree selected -- group specific calculations skipped.");
@@ -115,24 +122,17 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 
         //SQ_traverse_through_tree(gb_main, tree, marked_only);
 
+	if(no_tree){
 
-
-	//TEST!!!
-
-	SQ_GroupData globalData;
-	//SQ_calc_sequence_structure(globalData, gb_main, marked_only);
-	SQ_pass1(globalData, gb_main);
-	SQ_pass2(globalData, gb_main, marked_only);
-	//SQ_reset_quality_calcstate(gb_main);
-	//globalData.SQ_print_on_screen();
-
-	//END TEST
-
-
-        SQ_evaluate(gb_main, weight_bases, weight_diff_from_average, weight_helix, weight_consensus, weight_iupac);
- 	int value = SQ_get_value(gb_main, option);
-        aw_message(GBS_global_string("Value in container %s : %i",option, value));
-	//SQ_reset_quality_calcstate(gb_main);
+	}
+	else {
+	    SQ_GroupData globalData;
+	    SQ_pass1(globalData, gb_main);
+	    SQ_pass2(globalData, gb_main, marked_only);
+	    SQ_evaluate(gb_main, weight_bases, weight_diff_from_average, weight_helix, weight_consensus, weight_iupac);
+	    int value = SQ_get_value(gb_main, option);
+	    aw_message(GBS_global_string("Value in container %s : %i",option, value));
+	}
 
     }
 

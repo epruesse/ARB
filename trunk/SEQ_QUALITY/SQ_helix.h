@@ -63,39 +63,47 @@ void SQ_helix::SQ_calc_helix_layout(const char *sequence, GBDATA *gb_main, char 
     // @@@ Dadurch kann die Original sequence nie mehr freigegeben werden.
     // @@@ Wahrscheinlich willst Du den String kopieren (-> man strcpy)
 
-    int  j    = 0;
-    int  temp = 0;
+    int  j     = 0;
+    int  temp  = 0;
+    //int  check = 0;
     char left;
     char right;
 
     BI_PAIR_TYPE pair_type = HELIX_PAIR;
     BI_helix my_helix;
     my_helix.init(gb_main, alignment_name);
+    
 
+    if(my_helix.entries==0){
+	count_strong_helix=1;
+	count_weak_helix=1;
+	count_no_helix=1;
+    }
 
+    else{
     /*claculate the number of strong, weak and no helixes*/
-    for (int i = 0; i < size; i++) {
-	pair_type = my_helix.entries[i].pair_type;
-	if (pair_type == HELIX_PAIR) {
-	    left = sequence[i];
-	    j = my_helix.entries[i].pair_pos;
-	    right = sequence[j];
-	    temp = my_helix.check_pair(left, right, pair_type);
+	for (int i = 0; i < size; i++) {
+	    pair_type = my_helix.entries[i].pair_type;
+	    if (pair_type == HELIX_PAIR) {
+		left = sequence[i];
+		j = my_helix.entries[i].pair_pos;
+		right = sequence[j];
+		temp = my_helix.check_pair(left, right, pair_type);
 
-	    switch(temp){
-		case 2:
-		    count_strong_helix++;
-		    break;
-		case 1:
-		    count_weak_helix++;
-		    break;
-		case 0:
-		    count_no_helix++;
-		    break;
+		switch(temp){
+		    case 2:
+			count_strong_helix++;
+			break;
+		    case 1:
+			count_weak_helix++;
+			break;
+		    case 0:
+			count_no_helix++;
+			break;
+		}
 	    }
 	}
     }
-
     GBDATA *gb_result1 = GB_search(gb_quality, "number_of_no_helix", GB_INT);
     seq_assert(gb_result1);
     GB_write_int(gb_result1, count_no_helix);

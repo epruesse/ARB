@@ -476,33 +476,36 @@ GB_ERROR SQ_pass1(SQ_GroupData& globalData, GBDATA *gb_main) {
 		    heli_chan.SQ_calc_helix_layout(rawSequence, gb_main, alignment_name, gb_quality);
 
 		    /*calculate consensus sequence*/
-// 		    {
-// 			bool init;
-// 			int **consensus;
-// 			init = globalData.SQ_is_initialised();
-// 			if (init==false){
-// 			    globalData.SQ_init_consensus(sequenceLength);
-// 			}
-// 			SQ_consensus consens(sequenceLength);
-// 			consens.SQ_calc_consensus(rawSequence);
+		    {
+			bool init;
+			//int **consensus;
+			init = globalData.SQ_is_initialised();
+			if (init==false){
+			    globalData.SQ_init_consensus(sequenceLength);
+			}
+			SQ_consensus consens(sequenceLength);
+			consens.SQ_calc_consensus(rawSequence);
 // 			consensus = new int *[sequenceLength];
 // 			for (int i=0; i < sequenceLength; i++ ){
 // 			    consensus[i] = new int [7];
 // 			}
-//  			int *pp;
+ 			int *pp;
 // 			for(int i = 0; i < sequenceLength; i++) {
 // 			    for(int j = 0; j < 7; j++) {
 // 				pp = consens.SQ_get_consensus(i,j);
 // 				consensus[i][j] = *pp;
 // 			    }
 // 			}
-// 			for(int i = 0; i < sequenceLength; i++) {
-// 			    for(int j = 0; j < 7; j++) {
-// 				globalData.SQ_add_consensus(consensus[i][j],i,j);
-// 			    }
-// 			}
-// 			delete [] consensus;
-// 		    }
+			int p;
+			for(int i = 0; i < sequenceLength; i++) {
+			    for(int j = 0; j < 7; j++) {
+ 				pp = consens.SQ_get_consensus(i,j);
+ 				p = *pp;
+				globalData.SQ_add_consensus(p,i,j);
+			    }
+			}
+			//delete [] consensus;
+		    }
 		}
 	    }
 	}
