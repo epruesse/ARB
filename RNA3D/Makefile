@@ -28,6 +28,7 @@ depend.init:
 Camera.o: Camera.hxx
 Camera.o: GlobalHeader.hxx
 Camera.o: Structure3D.hxx
+Camera.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
 Main.o: Camera.hxx
 Main.o: GlobalHeader.hxx
@@ -39,14 +40,18 @@ Main.o: OPENGL/OpenGLGraphics.hxx
 Main.o: OPENGL/Renderer.hxx
 Main.o: OPENGL/TextureMapping.hxx
 Main.o: Structure3D.hxx
+Main.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
 Menu.o: GlobalHeader.hxx
 Menu.o: Menu.hxx
+Menu.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
 Mouse.o: GlobalHeader.hxx
 Mouse.o: Mouse.hxx
+Mouse.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 
 Structure3D.o: GlobalHeader.hxx
 Structure3D.o: Globals.hxx
 Structure3D.o: OPENGL/OpenGLGraphics.hxx
 Structure3D.o: Structure3D.hxx
+Structure3D.o: $(ARBHOME)/INCLUDE/GL/glpng.h
