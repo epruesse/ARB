@@ -1945,15 +1945,15 @@ static void aed_timer( AW_root *ar, AW_CL cd1, AW_CL cd2 ) {
 void aed_initialize_device(AW_device *device) {
     device->new_gc( 0 );
     device->set_line_attributes( 0, 0.3, AW_SOLID );
-    device->set_font( 0, AW_LUCIDA_SANS_BOLD, 12 );
+    device->set_font( 0, AW_DEFAULT_BOLD_FONT/*AW_LUCIDA_SANS_BOLD*/, 12 );
     device->set_foreground_color( 0, AW_WINDOW_FG );
 
     device->new_gc( 1 );
-    device->set_font( 1, AW_LUCIDA_SANS_BOLD, 12 );
+    device->set_font( 1, AW_DEFAULT_BOLD_FONT/*AW_LUCIDA_SANS_BOLD*/, 12 );
     device->set_foreground_color( 1, AW_WINDOW_FG );
 
     device->new_gc( 2 );
-    device->set_font( 2, AW_LUCIDA_SANS_BOLD, 12 );
+    device->set_font( 2, AW_DEFAULT_BOLD_FONT/*AW_LUCIDA_SANS_BOLD*/, 12 );
     device->set_foreground_color( 2,AW_WINDOW_DRAG );
     device->set_function( 2, AW_XOR );
 
@@ -2368,10 +2368,23 @@ AED_root aed_root;
 int main(int argc,char **argv) {
     const char *path;
     aw_initstatus();
+
+    if (argc > 2 || (argc == 2 && strcmp(argv[1], "--help") == 0)) {
+        fprintf(stderr,
+                "\n"
+                "Purpose: Start the old editor.\n"
+                "Usage:   arb_edit [database]\n"
+                "\n"
+                );
+        return EXIT_FAILURE;
+    }
+
     if (argc == 1) path = ":";
-    else path = argv[1];
-    if (aed_adopen(path,aed_root.ad_main)){	// Database is opened
-	exit (-1);
+    else path           = argv[1];
+
+    if (aed_adopen(path,aed_root.ad_main)){ // Database is opened
+        fprintf(stderr, "arb_edit: could not open database '%s'\n", path);
+        return EXIT_FAILURE;
     }
     ad_main = aed_root.ad_main;
     gb_main = ad_main->get_GBDATA();
@@ -2381,7 +2394,9 @@ int main(int argc,char **argv) {
     aed_root.aw_root->init_variables( aed_root.db );
     aed_root.aw_root->init( "ARB_EDITOR" );		// window-system is initialized
 
-    aed_create_window(&aed_root);		// creates editor window and inserts callbacks
-    aed_root.aw_root->main_loop();		// let's enter main-loop
+    aed_create_window(&aed_root); // creates editor window and inserts callbacks
+    aed_root.aw_root->main_loop(); // let's enter main-loop
+
+    return EXIT_SUCCESS;
 }
 
