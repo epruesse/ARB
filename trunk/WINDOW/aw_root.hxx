@@ -77,7 +77,7 @@ typedef struct {
 
 typedef char *AW_error;
 
-int         aw_message( const char *msg, const char *buttons, bool fixedSizeButtons = true);
+int         aw_message( const char *msg, const char *buttons, bool fixedSizeButtons = true, const char *helpfile = 0);
 void        aw_set_local_message(); // no message window, AWAR tmp/Message instead
 // interactive message: buttons = "OK,CANCEL,...."
 void        aw_message(const char *msg);
