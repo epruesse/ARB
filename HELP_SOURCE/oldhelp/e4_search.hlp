@@ -25,11 +25,11 @@ DESCRIPTION	Search
 
 				Text written behind # will not be used for search.
 				Instead this text will be displayed in the message
-				window when you position your cursor on a found 
+				window when you position your cursor on a found
 				pattern.
 
 		Last/Next
-		
+
 			Jumps to the last/next occurance of any of the given patterns.
 			You can repeat your last search by pressing CTRL-S.
 
@@ -44,7 +44,7 @@ DESCRIPTION	Search
 				User (shown above all others)
 				Probe
 				Primer (shown below all other)
-	
+
 		Open folded?
 
 			If checked, the Last/Next-Button will open folded groups,
@@ -53,8 +53,8 @@ DESCRIPTION	Search
 
 		Auto jump?
 
-			If checked, the cursor will automatically jump to the 
-			nearest occurance, if you change the search pattern or 
+			If checked, the cursor will automatically jump to the
+			nearest occurance, if you change the search pattern or
 			other search parameters.
 
 		Ignore gaps in sequence?
@@ -74,7 +74,7 @@ DESCRIPTION	Search
 
 		Ignore case?
 
-			If checked, a and A, c and C, ... are treated as 
+			If checked, a and A, c and C, ... are treated as
 			equal (aCGu will find ACGU, AcgU, acgu, ...)
 
 		Search for complement?
@@ -93,14 +93,14 @@ DESCRIPTION	Search
 
 			Example: If 'Exact', 'complement' and 'reverse' are checked,
 				 search will go only for complemented AND reversed
-				 patterns. 
+				 patterns.
 
 		Allowed mismatches
 
-			Defines the minimum and maximum allowed number of 
+			Defines the minimum and maximum allowed number of
 			non-matching base characters.
 
-NOTES		Found patterns hide possibly activated column statistics.			
+NOTES		Found patterns hide possibly activated column statistics.
 
 EXAMPLES	None
 
