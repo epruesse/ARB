@@ -1,5 +1,5 @@
 
-#include <malloc.h>
+// #include <malloc.h>
 
 #include "ali_misc.hxx"
 #include "ali_tlist.hxx"
@@ -14,13 +14,13 @@
  *****************************************************************************/
 
 
-ALI_POSTREE_NODE::ALI_POSTREE_NODE(ALI_POSTREE_NODE_TYPE t, 
-				                       unsigned long nochild_position) 
+ALI_POSTREE_NODE::ALI_POSTREE_NODE(ALI_POSTREE_NODE_TYPE t,
+				                       unsigned long nochild_position)
 {
 	typ = t;
 	if (typ == Node) {
 		node.number_of_children = nochild_position;
-		node.children = (ALI_POSTREE_NODE *(*) []) 
+		node.children = (ALI_POSTREE_NODE *(*) [])
 							  CALLOC((unsigned int) nochild_position,
 										sizeof(ALI_POSTREE_NODE *));
 		if (node.children == 0)
@@ -32,7 +32,7 @@ ALI_POSTREE_NODE::ALI_POSTREE_NODE(ALI_POSTREE_NODE_TYPE t,
 	}
 }
 
-ALI_POSTREE_NODE::~ALI_POSTREE_NODE(void) 
+ALI_POSTREE_NODE::~ALI_POSTREE_NODE(void)
 {
 	if (typ == Node) {
 		while (node.number_of_children-- > 0) {
@@ -43,13 +43,13 @@ ALI_POSTREE_NODE::~ALI_POSTREE_NODE(void)
 	}
 }
 
-ALI_POSTREE_NODE *ALI_POSTREE_NODE::leftmost_leaf(void) 
+ALI_POSTREE_NODE *ALI_POSTREE_NODE::leftmost_leaf(void)
 {
 	ALI_POSTREE_NODE *n = this;
 	long i;
 
 	while (n->typ == Node) {
-		for (i = 0; 
+		for (i = 0;
 			  i < n->node.number_of_children && !(*n->node.children)[i]; i++);
 		if (i < n->node.number_of_children)
 			n = (*n->node.children)[i];
@@ -60,13 +60,13 @@ ALI_POSTREE_NODE *ALI_POSTREE_NODE::leftmost_leaf(void)
 	return n;
 }
 
-ALI_POSTREE_NODE *ALI_POSTREE_NODE::rightmost_leaf(void) 
+ALI_POSTREE_NODE *ALI_POSTREE_NODE::rightmost_leaf(void)
 {
 	ALI_POSTREE_NODE *n = this;
 	long i;
 
 	while (n->typ == Node) {
-		for (i = (long) n->node.number_of_children - 1; 
+		for (i = (long) n->node.number_of_children - 1;
 			  i >= 0 && !(*n->node.children)[i]; i--);
 		if (i >= 0)
 			n = (*n->node.children)[i];
@@ -77,7 +77,7 @@ ALI_POSTREE_NODE *ALI_POSTREE_NODE::rightmost_leaf(void)
 	return n;
 }
 
-ALI_POSTREE_NODE *ALI_POSTREE_NODE::link_leafs(ALI_POSTREE_NODE *last) 
+ALI_POSTREE_NODE *ALI_POSTREE_NODE::link_leafs(ALI_POSTREE_NODE *last)
 {
    long i;
 
@@ -148,7 +148,7 @@ void ALI_POSTREE::insert(unsigned char *seq, unsigned char terminal)
    unsigned char *akt, *pos = seq;
 	unsigned long position;
 
-   for (position = 0; *pos != terminal && *pos < number_of_branches; 
+   for (position = 0; *pos != terminal && *pos < number_of_branches;
 		  position++, pos++) {
       akt = pos;
       v = root;
@@ -160,12 +160,12 @@ void ALI_POSTREE::insert(unsigned char *seq, unsigned char terminal)
       /*
        * Make a unique leaf for the new prefix
        */
-      if (!(*v->node.children)[*akt]) 
+      if (!(*v->node.children)[*akt])
          (*v->node.children)[*akt] = new ALI_POSTREE_NODE(Leaf,position);
       else {
          ALI_POSTREE_NODE *old_leaf = (*v->node.children)[*akt];
-         unsigned char *akt2 = (unsigned char *) 
-                               ((int) seq + (int) old_leaf->leaf.position + 
+         unsigned char *akt2 = (unsigned char *)
+                               ((int) seq + (int) old_leaf->leaf.position +
                                 (int) akt - (int) pos);
          /*
           * Expande equal part of path in prefix tree
@@ -178,7 +178,7 @@ void ALI_POSTREE::insert(unsigned char *seq, unsigned char terminal)
             akt2++;
          }
          (*v->node.children)[*akt2] = old_leaf;
-         (*v->node.children)[*akt] = new ALI_POSTREE_NODE(Leaf,position);  
+         (*v->node.children)[*akt] = new ALI_POSTREE_NODE(Leaf,position);
       }
    }
 
@@ -245,7 +245,7 @@ ali_postree_sol *ALI_POSTREE::make_postree_solution(
 }
 
 
-unsigned long ALI_POSTREE::maximal_position(ALI_POSTREE_NODE *first, 
+unsigned long ALI_POSTREE::maximal_position(ALI_POSTREE_NODE *first,
 														  ALI_POSTREE_NODE *last)
 {
 	unsigned long maximum;
@@ -384,7 +384,7 @@ void ALI_POSTREE::finder(ALI_POSTREE_NODE *n,
 						if (i != seq[seq_pos]) {
 							stack->push(ALI_POSTREE_STACK_SUB);
 						   finder((*n->node.children)[i],seq,seq_len,seq_pos + 1,
-						   		 im_seq_len + 1, min_pos, max_pos, errors - 1, 
+						   		 im_seq_len + 1, min_pos, max_pos, errors - 1,
 									 stack, sol_list);
 							stack->pop();
 						}
@@ -394,10 +394,10 @@ void ALI_POSTREE::finder(ALI_POSTREE_NODE *n,
 		}
 	}
 }
-		
 
 
-		
+
+
 
 /*****************************************************************************
  *
@@ -409,7 +409,7 @@ void ALI_POSTREE::finder(ALI_POSTREE_NODE *n,
 
 ALI_POSTREE::ALI_POSTREE(unsigned long branches,
 								 unsigned char *seq, unsigned long seq_len,
-								 unsigned char terminal)  
+								 unsigned char terminal)
 {
 	unsigned char *seq_buffer;
 
@@ -503,7 +503,7 @@ void print_sol(ALI_TLIST<ali_postree_sol *> *sol_list)
 			while (pos_list->is_next())
 				printf(", %d",pos_list->next());
 		}
-		else 
+		else
 			printf("%2d : empty",i);
 		printf("\n");
 		delete solution;

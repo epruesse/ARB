@@ -53,6 +53,8 @@ ifeq ($(DEBUG),0)
 endif
 endif
 
+   PREFIX =
+   LIBDIR = /usr/lib
    XHOME = /usr/X11
 
    GMAKE = gmake -r
@@ -78,6 +80,37 @@ else
     SEERLIB =
 endif
 
+#********************* Darwin gcc enviroments *****************
+ifdef DARWIN
+
+   XHOME = /usr/X11R6
+   havebool = -DHAVE_BOOL
+   lflags = $(LDFLAGS) -force_flat_namespace
+   DARWIN_SPECIALS = -DNO_REGEXPR  -no-cpp-precomp -DHAVE_BOOL
+   CPP = cc -D$(MACH) $(DARWIN_SPECIALS)
+   ACC = cc -D$(MACH) $(DARWIN_SPECIALS)
+   CCLIB = cc -fno-common -D$(MACH) $(DARWIN_SPECIALS)
+   CCPLIB = cc -fno-common -D$(MACH) $(DARWIN_SPECIALS)
+   AR = ld -r $(lflags) -o#			# Archive Linker
+   ARLIB = ld -r $(lflags)  -o#			# Archive Linker shared libs.
+#  ARLIB = cc -bundle -flat_namespace -undefined suppress -o
+   SHARED_LIB_SUFFIX = a#
+# .. Just building shared libraries static, i was having problems otherwise
+
+   GMAKE = make -j 3 -r
+   SYSLIBS = -lstdc++
+
+   MOTIF_LIBNAME = libXm.3.dylib
+   MOTIF_LIBPATH = $(LIBDIR)/$(MOTIF_LIBNAME)
+   XINCLUDES = -I/usr/X11R6/include
+   XLIBS = -L$(XHOME)/lib $(SYSLIBS) -lXm -lXt -lX11 -lXext -lXp  -lc
+
+   PERLBIN = /usr/bin
+   PERLLIB = /usr/lib
+   CRYPTLIB = -L/usr/lib -lcrypt
+
+endif
+
 #********************* Linux and gcc enviroments *****************
 ifdef LINUX
 
@@ -94,7 +127,6 @@ ifdef LINUX
    ARLIB = gcc -Wall -shared $(LINUX_SPECIALS) -o
    GMAKE = make -j 3 -r
    SYSLIBS = -lm
-
 ifndef DEBIAN
    XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I/usr/openwin/include
    XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib $(SYSLIBS) -lc
@@ -710,13 +742,24 @@ all: tests arb libs gde tools readseq convert openwinprogs aleio binlink $(SITE_
 		echo 'make all' has been done successful
 #	(cd LIBLINK; for i in *.s*; do if test -r $$i; then cp $$i  ../lib; fi; done )
 
+# the following lib is not provided with the source
+# you need to install Motif (NOT lesstif) and correct
+# MOTIF_LIBPATH
+
+ifndef MOTIF_LIBNAME
+MOTIF_LIBNAME=libXm.so.2
+endif
+ifndef MOTIF_LIBPATH
+MOTIF_LIBPATH=Motif/$(MOTIF_LIBNAME)
+endif
+
 ifndef DEBIAN
 libs:	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
 	lib/libARBDBPP.$(SHARED_LIB_SUFFIX) \
 	lib/libARBDO.$(SHARED_LIB_SUFFIX) \
 	lib/libAW.$(SHARED_LIB_SUFFIX) \
 	lib/libAWT.$(SHARED_LIB_SUFFIX) \
-	lib/libXm.so.2
+	lib/$(MOTIF_LIBNAME)
 else
 libs:	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
 	lib/libARBDBPP.$(SHARED_LIB_SUFFIX) \
@@ -728,14 +771,7 @@ endif
 lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
 	cp $< $@
 
-# the following lib is not provided with the source
-# you need to install Motif (NOT lesstif) and correct
-# MOTIF_LIBPATH
-
-MOTIF_LIBPATH=LIBLINK/libXm.so.2
-#MOTIF_LIBPATH=/usr/X11R6/lib/libXm.so.2
-
-lib/libXm.so.2:  $(MOTIF_LIBPATH)
+lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 	cp $< $@
 
 bin/arb_%:	DEPOT2/%

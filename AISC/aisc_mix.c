@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 
 #include "aisc.h"
 #include "aisc_proto.h"
@@ -65,7 +65,7 @@ aisc_calc_blocks(CL * co, CL * afor, CL * aif, int up)
                     co->command = ELSE;
                     co ->next = cod;
                     co->str = NULL;
-                    co->path = strdup(co->path);			
+                    co->path = strdup(co->path);
                     aif->ELSE=co;
                     aelse = co;
                     co = aisc_calc_blocks(cod,afor,aif,1);
@@ -129,7 +129,7 @@ aisc_calc_blocks(CL * co, CL * afor, CL * aif, int up)
                 break;
             default:
                 break;
-			
+
         }
         co = co->next;
     }
@@ -245,7 +245,7 @@ int hash_index(const char *key, int size)
     register int x;
     register const char *p;
     register char c;
-    
+
     p = key;
     x = 1;
     while ( (c=*(p++))){
@@ -314,7 +314,7 @@ char *write_hash(struct hash_struct *hs,const char *key,const char *val)
             else {
                 e->val = 0;
             }
-	    
+
             return str2;
         }
     }

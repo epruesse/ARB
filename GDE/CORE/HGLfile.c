@@ -1,6 +1,6 @@
 #include <sys/time.h>
 #include <stdio.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <xview/xview.h>
 #include <xview/panel.h>
 #include "menudefs.h"
@@ -233,7 +233,7 @@ int type;
 					}
 					if(line[j] == '"') done = TRUE;
 
-					else 
+					else
 						buffer[len++] = line[j];
 				}
 				/*
@@ -463,7 +463,7 @@ int method,maskable;
 *	If selecting a region, the offset should be moved to the first
 *	non-'0' space in the mask.
 */
-					for(k=this_elem->offset;k<aln->selection_mask_len && 
+					for(k=this_elem->offset;k<aln->selection_mask_len &&
 					aln->selection_mask[k] == '0';k++);
 					fprintf(file,"offset        %d\n", aln->rel_offset+k);
 			}
@@ -535,9 +535,9 @@ int method,maskable;
 					{
 						if(k%60 == 0)
 							putc('\n',file);
-						if(method == SELECT_REGION) 
+						if(method == SELECT_REGION)
 						{
-                            if(aln->selection_mask[k] == '1') 
+                            if(aln->selection_mask[k] == '1')
 								putc(this_elem->tmatrix[getelem(this_elem,k)],
 						    file);
 						}
@@ -570,9 +570,9 @@ int method,maskable;
 					{
 						if(k%60 == 0)
 							putc('\n',file);
-						if(method == SELECT_REGION) 
+						if(method == SELECT_REGION)
 						{
-                            if(aln->selection_mask[k] == '1') 
+                            if(aln->selection_mask[k] == '1')
                                 putc(getelem(this_elem,k),file);
 						}
 						else
@@ -753,7 +753,7 @@ NA_Alignment *aln;
 			that->baggage_len += this->baggage_len;
 			that->baggage_maxlen += this->baggage_maxlen;
 			if(that->baggage)
-				that->baggage = 
+				that->baggage =
 				Realloc(that->baggage,that->baggage_maxlen*sizeof(char));
 			else
 				that->baggage = Calloc(that->baggage_maxlen,sizeof(char));
@@ -764,7 +764,7 @@ NA_Alignment *aln;
 			that->comments_len += this->comments_len;
 			that->comments_maxlen += this->comments_maxlen;
 			if(that->comments)
-				that->comments = 
+				that->comments =
 				Realloc(that->comments,that->comments_maxlen*sizeof(char));
 			else
 				that->comments = Calloc(that->comments_maxlen,sizeof(char));

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <xview/xview.h>
 #include <xview/panel.h>
 #include "menudefs.h"
@@ -95,7 +95,7 @@ ParseMenu()
 			{
 				curmenu = num_menus++;
 				thismenu = &menu[curmenu];
-				thismenu->label = 
+				thismenu->label =
 				(char*)calloc(strlen(temp)+1,sizeof(char));
 
 			       	if(thismenu->label == NULL)
@@ -152,7 +152,7 @@ ParseMenu()
 		else if(Find(Inline,"itemmethod:"))
 		{
 			crop(Inline,head,temp);
-			thisitem->method = 
+			thisitem->method =
 			(char*)calloc(strlen(temp)+1,sizeof(char));
 			if(thisitem->method == NULL)
 				Error("Calloc");
@@ -176,7 +176,7 @@ ParseMenu()
 		else if(Find(Inline,"itemmeta:"))
 		{
 			crop(Inline,head,temp);
-			thisitem->meta = temp[0]; 
+			thisitem->meta = temp[0];
 		}
 /*
 *	arg: defines the symbol for a command line arguement.
@@ -193,7 +193,7 @@ ParseMenu()
 			else
 				resize = realloc(thisitem->arg,
 				thisitem->numargs*sizeof(GmenuItemArg) );
-				
+
 
 			if(resize == NULL)
 				Error("arg: Realloc");
@@ -391,7 +391,7 @@ ParseMenu()
 			thisoutput = &(thisitem->output)[curoutput];
 			thisitem->output = (GfileFormat*)resize;
 			thisoutput = &(thisitem->output)[curoutput];
-			thisoutput->save = FALSE; 
+			thisoutput->save = FALSE;
 			thisoutput->overwrite = FALSE;
 			thisoutput->format = 0;
 			thisoutput->symbol= String(temp);
@@ -445,9 +445,9 @@ ParseMenu()
 		{
 			if(thisoutput == NULL)
 				Error("Problem with GDEmenus");
-			crop(Inline,head,tail); 
-			if(Find(tail,"genbank")) 
-				thisoutput->format = GENBANK; 
+			crop(Inline,head,tail);
+			if(Find(tail,"genbank"))
+				thisoutput->format = GENBANK;
 			else if(Find(tail,"gde"))
 				thisoutput->format = GDE;
 			else if(Find(tail,"na_flat"))
@@ -546,7 +546,7 @@ char string[];
 /*
 Crop():
 	Split "this:that[:the_other]"
-	into: "this" and "that[:the_other]" 
+	into: "this" and "that[:the_other]"
 */
 
 crop(input,head,tail)

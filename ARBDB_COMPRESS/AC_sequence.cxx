@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -76,7 +76,7 @@ AC_SEQUENCE_ALIGNED::~AC_SEQUENCE_ALIGNED()  {
 //*********************************************************************
 //	class AC_SEQUENCE_ALIGNED::get_distance()
 //
-//		liefert die Distanz zwischen der aktuellen Sequenz und 
+//		liefert die Distanz zwischen der aktuellen Sequenz und
 //		der Referenzsequenz.
 //		Es muessen zwei vergleichbare Zeichen (= Buchstaben)
 //		aufeinandertreffen. Sind die Zeichen unterschiedlich,
@@ -84,7 +84,7 @@ AC_SEQUENCE_ALIGNED::~AC_SEQUENCE_ALIGNED()  {
 //
 //*********************************************************************
 double AC_SEQUENCE_ALIGNED::get_distance(AC_SEQUENCE *that)  {
-	
+
 	register long	distance, equals;
 	register char	*revptr, *seqptr;
 
@@ -104,7 +104,7 @@ double AC_SEQUENCE_ALIGNED::get_distance(AC_SEQUENCE *that)  {
 			distance++;
 		} // endif
 	} // endfor
-	
+
 	return distance/(distance + equals + 1.0);
 
 } // end AC_SEQUENCE_ALIGNED::get_distance()

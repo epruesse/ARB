@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 
@@ -62,7 +62,7 @@ int	AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
     if (drawflag) {
 	//stimmen die Kreise um die Punkte ?
 
-		
+
 
 	// distance to the second point of the line
 	dx = mouse_x - X1;
@@ -148,7 +148,7 @@ int AW_device_click::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos al
 			if (Yt < this->clip_rect.t) return 0;
 		}
 
-		if(this->clip_rect.b == common->screen.b) { 
+		if(this->clip_rect.b == common->screen.b) {
 			if (Yt > this->clip_rect.b) return 0;
 		}else {
 			if (Yb > this->clip_rect.b) return 0;
@@ -173,10 +173,10 @@ int AW_device_click::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos al
 		}else	if (mouse_y < (Yt) ) {
 			if(mouse_y < Yt - max_distance_text ){
 				return 0;
-			} else {				
+			} else {
 				not_optimal = AW_TRUE;
 				best_dist = Yt - mouse_y;
-			} 
+			}
 		}
 
 
@@ -186,12 +186,12 @@ int AW_device_click::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos al
 		else len = strlen(str);
 		text_width = (int)get_string_size(gc,str,len);
 		X0 = common->x_alignment(X0,text_width,alignment);
-		text_width += xfs->max_bounds.width*2;	
+		text_width += xfs->max_bounds.width*2;
 
 			/**************** check against left right clipping areas *********/
 		if (X0 + text_width< this->clip_rect.l) return 0;
 		if (X0 > this->clip_rect.r + xfs->max_bounds.width) return 0;
-		
+
 			/***************** left of text  ***************************/
 		if(mouse_x < (X0 - (xfs->max_bounds.width)) ) {
 			return 0;

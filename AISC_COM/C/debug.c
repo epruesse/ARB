@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <ad_varargs.h>
 #include <aisc_com.h>
 #include "client.h"
@@ -31,7 +31,7 @@ const char *aisc_debug_local(aisc_com *link, int key, long object, char *str, ..
     static long gint,father;
     static bytestring gbs;
     bptr = &buf[0];
-    va_start(parg,str);	
+    va_start(parg,str);
     sm = sc = strdup(str);
     if (aisc_get(link,AISC_COMMON,object,
 		 COMMON_KEYSTRING, &keystr,
@@ -56,7 +56,7 @@ const char *aisc_debug_local(aisc_com *link, int key, long object, char *str, ..
 	*sp = 0;
 	sprintf(bptr,"%30s,",sc);
 	bptr += strlen(bptr);
-	sc += strlen(sc)+1;	
+	sc += strlen(sc)+1;
 	type = code & 0xff000000;
 	er = (long *)aisc_debug_info(link,key,object,(int)code);
 	if (!er)return"connection problems";
@@ -106,7 +106,7 @@ const char *aisc_debug_local(aisc_com *link, int key, long object, char *str, ..
 			 COMMON_KEYSTRING, &keystr,
 			 COMMON_CNT, &anz,
 			 NULL)) return "connection problems";
-	    sprintf(bptr,"  %s (%li) */\n",keystr,anz);			
+	    sprintf(bptr,"  %s (%li) */\n",keystr,anz);
 	    bptr += strlen(bptr);
 	}else{
 	    sprintf(bptr, "*/\n");

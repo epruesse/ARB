@@ -6,7 +6,7 @@
 #include <xview/scrollbar.h>
 #include <xview/panel.h>
 #include <string.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <math.h>
 #include "loop.h"
 #include "globals.h"
@@ -60,7 +60,7 @@ WindowSetup()
 /*
 *	Open font for screen operations.
 */
-	page=xv_create(NULL,FRAME,	
+	page=xv_create(NULL,FRAME,
 		FRAME_LABEL,    "LoopTool",
 		WIN_INHERIT_COLORS,TRUE,
 		0);
@@ -86,7 +86,7 @@ WindowSetup()
         xv_create(fdlg,PANEL_TEXT,
 		PANEL_LABEL_STRING,"Data File:",
 		PANEL_VALUE,"",
-                PANEL_NOTIFY_PROC,SetFile, 
+                PANEL_NOTIFY_PROC,SetFile,
                 0);
 
 
@@ -149,7 +149,7 @@ WindowSetup()
 
 /*
 *	Pagecan is the canvas used for the primary display.
-*/	
+*/
 	pagecan=xv_create(page,CANVAS,
 		WIN_INHERIT_COLORS,TRUE,
 		WIN_DYNAMIC_VISUAL,TRUE,
@@ -200,7 +200,7 @@ WindowSetup()
                         CMS_NAME,"GDE Palette",
                         XV_AUTO_CREATE,FALSE,
                         0);
-                          
+
 
  	       if(colmap == NULL)
         	        colmap = (Cms)xv_create(NULL,CMS,
@@ -212,7 +212,7 @@ WindowSetup()
  	       xv_set(canvas_paint_window(pagecan),
         	WIN_CMS_NAME,"GDE Palette",
  	        WIN_CMS, colmap,
-       		WIN_FOREGROUND_COLOR,8,  
+       		WIN_FOREGROUND_COLOR,8,
  	        WIN_BACKGROUND_COLOR,15,
  	        WIN_INHERIT_COLORS,FALSE,
  	        0);
@@ -223,16 +223,16 @@ WindowSetup()
 
 	window_fit_width(page);
 
-	fdlg=xv_create(file_dialog,PANEL, 
+	fdlg=xv_create(file_dialog,PANEL,
                 XV_WIDTH,300,
                 XV_HEIGHT,200,
                 PANEL_LAYOUT,PANEL_HORIZONTAL,
                 0);
 
-	pdlg=xv_create(print_dialog,PANEL, 
-                XV_WIDTH,300, 
+	pdlg=xv_create(print_dialog,PANEL,
+                XV_WIDTH,300,
                 XV_HEIGHT,200,
-                PANEL_LAYOUT,PANEL_HORIZONTAL, 
+                PANEL_LAYOUT,PANEL_HORIZONTAL,
                 0);
 
         window_main_loop(page);
@@ -336,7 +336,7 @@ void ReDraw(canvas,pw,repaint_area)
 		ymax = -99999.99;
 		xmin = 99999.99;
 		ymin = 99999.99;
-		
+
 		for(nucpos=0;nucpos<seqlen;nucpos++)
 		{
 			xmax=Max(xmax,baselist[nucpos].x);
@@ -391,7 +391,7 @@ void ReDraw(canvas,pw,repaint_area)
 			if(baselist[nucpos].label != NULL)
 				PlaceLabel(baselist[nucpos].label,nucpos,pw);
 		}
-		
+
 	}
 	if(sho_con)
 		ShoCon();
@@ -408,7 +408,7 @@ int *seqnum;
 }
 
 
-/* 
+/*
 *	BuildLoopStack:  Build a stack of bases that make a subloop of
 *	the structure.  Unknown bases are pushed on the stack until a known
 *	base is encountered.  Base to base distances are also pushed upon
@@ -429,7 +429,7 @@ int *ccw;
 */
 	stk[stkp=0].nucnum=nuc;
 	stk[stkp++].dist=0.0;
-	
+
 
 	current=NextBase(nuc,blist,&dist);
 	for(;blist[current].known == FALSE;
@@ -506,17 +506,17 @@ double *dist;
 		}
 		else
 		{
-			if(pair<=forw) 
-                        {       
-                                next = pair; 
-                                *dist=Spacing(here.nuc,blist[next].nuc); 
-                        } 
-                        else 
-                        {       
+			if(pair<=forw)
+                        {
+                                next = pair;
+                                *dist=Spacing(here.nuc,blist[next].nuc);
+                        }
+                        else
+                        {
                                 next = forw;
-                                *dist = here.dforw.dist; 
-                        } 
-                } 
+                                *dist = here.dforw.dist;
+                        }
+                }
 	}
 
 	else if(forw != -1)
@@ -688,7 +688,7 @@ int ccw;
 			blist[stk[i].nucnum].known=TRUE;
 			if(blist[stk[i].nucnum].posnum != -1)
 				PosConFix(blist[stk[i].nucnum]);
-		}	
+		}
 	}
 }
 

@@ -1,7 +1,7 @@
-#include <malloc.h>
+// #include <malloc.h>
 #include <memory.h>
 #include <string.h>
-#include <stdio.h>
+// #include <stdio.h>
 
 #include <arbdb.h>
 #include "arbdb++.hxx"
@@ -21,7 +21,7 @@ void ADT_SEQUENCE::init(ADT_ALI *adtali,AD_CONT * adcont) {
  	adt_ali =  adtali;
 	AD_SEQ::init(adcont);
 	show_timestamp = timestamp;
-	
+
 }
 
 char *ADT_SEQUENCE::show_get() {
@@ -38,7 +38,7 @@ char *ADT_SEQUENCE::show_get() {
 void ADT_SEQUENCE::show_update() {
 	;
 }
-	
+
 int ADT_SEQUENCE::show_len() {
 	return seq_len;
 }

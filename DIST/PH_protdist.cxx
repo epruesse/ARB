@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 
 #include <math.h>
@@ -790,7 +790,7 @@ ph_protdist::ph_protdist(ph_codetype codei, ph_cattype cati, long nentries, PHEN
 		case pam:
 			code();
 			pameigen();
-			break;			
+			break;
 		default:
 			code();
 			maketrans();

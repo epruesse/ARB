@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 #include <ctype.h>
 #include <arbdb.h>
@@ -17,13 +17,13 @@ int main(int argc, char **argv){
     int is_amino = 0;
 
     printf("Counting the number of different chars of all marked sequences\n");
-    
+
     GBDATA *gb_main	= GB_open(":","rw");	// open database
     if (!gb_main){
 	GB_print_error();
 	return -1;
     }
-    
+
     GB_begin_transaction(gb_main); // open transaction
 
     char *alignment_name = GBT_get_default_alignment(gb_main);	// info about sequences
@@ -57,7 +57,7 @@ int main(int argc, char **argv){
 				// loop over all marked species
     int slider = 0;
     int all_marked = GBT_count_marked_species(gb_main);
-    
+
     for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
 	 gb_species;
 	 gb_species = GBT_next_marked_species(gb_species)){
@@ -93,7 +93,7 @@ int main(int argc, char **argv){
 	    result_high[i] = '0' + (sum / 10);
 	}
     }
-    
+
     {				// save result as SAI  counted_chars
 	    GBDATA *gb_sai = GBT_create_SAI(gb_main,RESULTNAME);
 	    if (!gb_sai) {
@@ -109,5 +109,5 @@ int main(int argc, char **argv){
     GB_commit_transaction(gb_main); // commit it
     GB_close(gb_main);		// politely disconnect from server
     return 0;
-	    
+
 }

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 
 #include <arbdb.h>
@@ -41,7 +41,7 @@ char *AC_SEQUENCE_LIST::load_all(GBDATA *gb_main, AC_DBDATA_STATE ac_dbdata_stat
 	AC_SEQUENCE		*ac_sequence, *sequence_work;
 	AC_SEQUENCE_INFO	*new_ac_seq_info;
 	int count = 0;
-	
+
 #ifdef COMMENT
 	printf("\nStart reading DB : \n\n");
 #endif
@@ -62,7 +62,7 @@ char *AC_SEQUENCE_LIST::load_all(GBDATA *gb_main, AC_DBDATA_STATE ac_dbdata_stat
 		}else{
 			ac_sequence = new AC_SEQUENCE_UNALIGNED(gb_data);// gbdata !!!!!!!
 		}
-		new_ac_seq_info = (AC_SEQUENCE_INFO *) 
+		new_ac_seq_info = (AC_SEQUENCE_INFO *)
 							calloc(sizeof(AC_SEQUENCE_INFO),1);
 		new_ac_seq_info->gb_species = gb_species;
 		new_ac_seq_info->seq = ac_sequence;
@@ -70,11 +70,11 @@ char *AC_SEQUENCE_LIST::load_all(GBDATA *gb_main, AC_DBDATA_STATE ac_dbdata_stat
 		new_ac_seq_info->number = ++count;
 		//--------------------------------------------------------
 		sequence_work = new_ac_seq_info->seq;		// Pointer auf Class AC_SEQUENCE
-		sequence_work->quality = sequence_work->get_quality();		
+		sequence_work->quality = sequence_work->get_quality();
 		//--------------------------------------------------------
 		this->insert(new_ac_seq_info);
 		//--------------------------------------------------------
-		
+
 #ifdef COMMENT
 		if (count % 100 == 0) {
 			printf("%i ...\n",count);
@@ -111,7 +111,7 @@ int main(int argc, char **argv){
 #ifdef COMMENT
 	printf("\f");
 #endif
-	
+
 	AC_DBDATA_STATE ac_dbdata_state = ALIGNED_SEQUENCES;
 
 #ifdef COMMENT
@@ -140,15 +140,15 @@ int main(int argc, char **argv){
 
 #ifdef PRINT_TREE
 		printf("\n");
-	root->print_tree(); 	
+	root->print_tree();
 		printf("\n");
 #endif
 #ifdef PRINT_FORMATED_DBTREE
 		printf("\n");
-	root->print_formated_dbtree(); 	
+	root->print_formated_dbtree();
 		printf("\n");
 #endif
-	
+
 
 
 

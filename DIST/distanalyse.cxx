@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 
 #include <math.h>
@@ -102,6 +102,6 @@ char *PHMATRIX::analyse(AW_root *awrdummy)
 	return NULL;
 
 }
-	
-	
-		
+
+
+

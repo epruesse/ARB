@@ -3,7 +3,7 @@
 #ifndef _ALI_ALIGNER_INC_
 #define _ALI_ALIGNER_INC_
 
-#include <malloc.h>
+// #include <malloc.h>
 
 #include "ali_solution.hxx"
 #include "ali_tstack.hxx"
@@ -27,7 +27,7 @@ struct ALI_ALIGNER_CONTEXT {
 struct ali_aligner_cell {
    float d1, d2, d3;
    ALI_TARRAY<ali_pathmap_up_pointer> *starts;
-   
+
 	ali_aligner_cell(void) {
 		d1 = d2 = d3 = 0.0;
 		starts = 0;
@@ -77,7 +77,7 @@ struct ali_aligner_dellist_elem {
    float costs;
 	unsigned char operation;
 
-   ali_aligner_dellist_elem(unsigned long s = 0, float c = 0.0, 
+   ali_aligner_dellist_elem(unsigned long s = 0, float c = 0.0,
 									 unsigned char op = 0) {
       start = s;
       costs = c;
@@ -157,9 +157,9 @@ struct ali_aligner_dellist {
       list_of_dels.append_end(new_elem);
 	}
 	float update(unsigned long position);
-	ALI_TARRAY<ali_pathmap_up_pointer> *starts(float costs, 
+	ALI_TARRAY<ali_pathmap_up_pointer> *starts(float costs,
 															 unsigned long y_offset);
-	void optimize(unsigned long position); 
+	void optimize(unsigned long position);
 };
 
 
@@ -212,7 +212,7 @@ struct ali_aligner_last_cell {
 		insert_left(0, ALI_UP, cost);
       insert_up(0, ALI_LEFT, cost);
 	}
-	void update_left(ali_aligner_cell *akt_cell, unsigned long akt_pos, 
+	void update_left(ali_aligner_cell *akt_cell, unsigned long akt_pos,
 					unsigned long start_x, unsigned long end_x) {
 		float min;
 		unsigned char operation = 0;
@@ -226,7 +226,7 @@ struct ali_aligner_last_cell {
 		insert_left(akt_pos, operation,
 						min + profile->w_ins_multi_cheap(start_x + akt_pos, end_x));
 	}
-	void update_up(ali_aligner_cell *akt_cell, unsigned long akt_pos, 
+	void update_up(ali_aligner_cell *akt_cell, unsigned long akt_pos,
 				 unsigned long start_y, unsigned long end_y) {
 		float min;
 		unsigned char operation = 0;
@@ -399,7 +399,7 @@ class ALI_ALIGNER {
    unsigned long number_of_solutions();
 
 public:
-	ALI_ALIGNER(ALI_ALIGNER_CONTEXT *context, ALI_PROFILE *profile, 
+	ALI_ALIGNER(ALI_ALIGNER_CONTEXT *context, ALI_PROFILE *profile,
 					unsigned long start_x, unsigned long end_x,
 					unsigned long start_y, unsigned long end_y);
 	ALI_TLIST<ALI_MAP *> *solutions(void) {
@@ -408,7 +408,7 @@ public:
 		return ret;
 	}
 };
-							
+
 
 
 #endif

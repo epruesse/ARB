@@ -2,8 +2,8 @@
  * Module:                        TESTBED/TB_main.cxx
  *
  * Description: demonstration of the use of AWT and WINDOW libraries, as
- *              a testbed for the vectorfont functions 
- * 
+ *              a testbed for the vectorfont functions
+ *
  * Integration Notes: use the callback in TB_extern.cxx for your own stuff
  *
  * -----------------------------------------------------------------
@@ -13,8 +13,11 @@
  * $Header$
  *
  * $Log$
- * Revision 1.1  2000/11/23 09:41:16  westram
- * Initial revision
+ * Revision 1.2  2002/06/20 14:08:06  westram
+ * Mac OSX patches from Ben Hines
+ *
+ * Revision 1.1.1.1  2000/11/23 09:41:16  westram
+ * Erster Import
  *
  * Revision 1.2  1995/03/13  16:53:19  jakobi
  * *** empty log message ***
@@ -25,7 +28,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+// #include <malloc.h>
 
 
 #include <arbdb.h>
@@ -44,7 +47,7 @@
 #include <awt_dtree.hxx>
 
 // my own stuff
-#define EXTERNAL 
+#define EXTERNAL
 #include "tb_extern.hxx"
 
 // necessary black magic for X
@@ -53,7 +56,7 @@
 AW_HEADER_MAIN;
 
 // required dummy for AWT, even if you don't use trees...
-void AD_map_viewer(gb_data_base_type *dummy) 
+void AD_map_viewer(gb_data_base_type *dummy)
 {
      AWUSE(dummy);
 }
@@ -66,7 +69,7 @@ int main(int argc, char **argv)
 	AW_root *aw_root;
 	AW_default aw_default;
 	AW_window *aww;
-	
+
 	// db is *not* used, so we don't care about transactions
 	// for getting an non-empty db for getting an empty tree for getting the canvas ...
 /*
@@ -108,8 +111,8 @@ int main(int argc, char **argv)
 	aw_root->create_float("tbd_alignmentx",&tbd_alignmentx,aw_default,0.0);
 	aw_root->create_float("tbd_alignmenty",&tbd_alignmenty,aw_default,0.0);
 	aw_root->create_float("tbd_rotation",&tbd_rotation,aw_default,0.0);
-	
-	// open the main window	
+
+	// open the main window
 	aww = create_tb_main_window(aw_root);
 	aww->show();
 

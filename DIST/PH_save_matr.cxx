@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <memory.h>
 #include <string.h>
 #include <arbdb.h>
@@ -58,7 +58,7 @@ const char *PHMATRIX::save(char *filename,enum PH_SAVE_TYPE type)
 		double min = matrix->get(1,0) * 100.0;
 		double max = min;
 		double sum = 0.0;
-			
+
 		make_node_text_init(gb_main);
 		for (row = 0; row<nentries;row++){
 		    buf = entries[row]->name;

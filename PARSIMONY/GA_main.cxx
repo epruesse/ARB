@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <iostream.h>
 #include "AP_buffer.hxx"
 #include "parsimony.hxx"
@@ -35,7 +35,7 @@ AP_tree * buildRandomTree(AP_tree *root) {
 	// function returns a random constructed tree
 	// root is tree with species (needed to build a list of species)
 	AP_tree **list;
-	
+
 	if (root->sequence_proto == 0) tree_init(root);
 
 	AP_tree_nlen *ntree;
@@ -46,7 +46,7 @@ AP_tree * buildRandomTree(AP_tree *root) {
 	root->arb_tree_leafsum();
 
 	list = (AP_tree **)calloc(root->gr.leave_sum +1,sizeof(AP_tree *));
-	
+
 	buildRandomTreeRek(root,list,&count);
 	count--;
 	while (count >1) {
@@ -92,10 +92,10 @@ AP_tree_nlen *crossover(AP_tree_nlen *tree0,AP_tree_nlen *tree1) {
 	}
 	list0 = tree0->createList(&size0);
 	list1 = tree1->createList(&size1);
-	
+
 	fprintf(GAgenetic->fout,"\ncrossover tree %d %d size %d %d",
 		tree0,tree1,size0,size1);
-	
+
 	// ruft crossover auf
 	return tree0;
 }
@@ -121,7 +121,7 @@ AP_ERR * make_start_population(GBDATA *gbmain,AP_tree *tree) {
 		GAgenetic = new GA_genetic;
 		GAgenetic->init(gbmain);
 	}
-	
+
 	maxcluster = GAgenetic->getMaxCluster();
 	while (i<maxcluster) {
 		rtree = (AP_tree_nlen *)buildRandomTree(tree);
@@ -142,17 +142,17 @@ AP_ERR * make_start_population(GBDATA *gbmain,AP_tree *tree) {
 void quit_genetic() {
 	fclose(GAgenetic->fout);
 }
- 
+
 void start_genetic(GBDATA *gbmain) {
-	// 
+	//
 	// the genetic algorithm is implemented here
 	//
-	
+
 	GA_tree * starttree;
 	GA_job *job;
 	int cluster;
 
-	
+
 	if (GAgenetic == 0) {
 		GAgenetic = new GA_genetic;
 		GAgenetic->init(gbmain);
@@ -167,7 +167,7 @@ void start_genetic(GBDATA *gbmain) {
 	int i = 0;
 
 	while (i<GAgenetic->getMaxCluster()) {
-		cluster = i;	
+		cluster = i;
 		while ((starttree = GAgenetic->get_start_tree(cluster)) != 0){
 			if (starttree != 0) {
 				kernighan_lin(starttree->tree);
@@ -195,7 +195,7 @@ void start_genetic(GBDATA *gbmain) {
 			case GA_CROSSOVER: {
 				GA_tree * gaTree = new GA_tree;
 				gaTree->tree = crossover(job->tree0->tree,job->tree1->tree);
-				
+
 				GB_push_transaction(gb_main);
 				char *use =GBT_get_default_alignment(gb_main);
 				gaTree->tree->load_sequences_rek(0,use);
@@ -228,7 +228,7 @@ void start_genetic(GBDATA *gbmain) {
 		}
 	}
 }
-		
+
 
 
 

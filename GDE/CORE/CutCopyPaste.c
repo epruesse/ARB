@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <string.h>
 #include <xview/xview.h>
 #include <xview/scrollbar.h>
@@ -10,7 +10,7 @@
 #include "menudefs.h"
 #include "defines.h"
     extern Canvas EditCan,EditNameCan;
-    extern Panel_item left_foot,right_foot; 
+    extern Panel_item left_foot,right_foot;
 	extern Frame frame;
 	extern NA_Alignment *DataSet,*Clipboard;
 
@@ -47,7 +47,7 @@ Event *event;
 				(Clipboard->element,
 				Clipboard->maxnumelements*sizeof(NA_Sequence));
 			}
-			Clipboard->element[(Clipboard->numelements)] = 	
+			Clipboard->element[(Clipboard->numelements)] =
 			DataSet->element[j];
 /*
 *	Map sequences back into their global positions, as we will
@@ -126,17 +126,17 @@ Event *event;
 				Clipboard->element[this].comments = (char*)
 				strdup(DataSet->element[j].comments);
 				Clipboard->element[this].comments_maxlen =
-				Clipboard->element[this].comments_len; 
+				Clipboard->element[this].comments_len;
 			}
 /*
 *	And baggage
 */
 			if(DataSet->element[j].baggage)
 			{
-				Clipboard->element[this].baggage = (char*) 
+				Clipboard->element[this].baggage = (char*)
 				strdup(DataSet->element[j].baggage);
 				Clipboard->element[this].baggage_maxlen =
-				Clipboard->element[this].baggage_len; 
+				Clipboard->element[this].baggage_len;
 			}
 
 			Clipboard->element[this].cmask = NULL;
@@ -173,7 +173,7 @@ EditPaste(item,event)
 Panel_item item;
 Event *event;
 {
-	
+
 	extern Frame frame;
 	extern Canvas EditCan,EditNameCan;
 	extern NA_Alignment *DataSet,*Clipboard;
@@ -208,12 +208,12 @@ Event *event;
 	}
 
 	for(j=DataSet->numelements-1;j>=last+1;j--)
-	DataSet->element[j+Clipboard->numelements] = 
+	DataSet->element[j+Clipboard->numelements] =
 	DataSet->element[j];
 
 	for(j=0;j<Clipboard->numelements;j++)
 	{
-		DataSet->element[last+1+j] = Clipboard->element[j]; 
+		DataSet->element[last+1+j] = Clipboard->element[j];
 /*
 *	be sure to bring them back into alignment with the rest
 */
@@ -254,7 +254,7 @@ NA_Alignment *alignment;
 		alignment->element[j].groupf = NULL;
 		alignment->element[j].groupb = NULL;
 	}
-	
+
 	for(group = 1;group <= alignment->numgroups;group++)
 	{
 		last = -1;
@@ -263,9 +263,9 @@ NA_Alignment *alignment;
 			{
 				if(last != -1)
 				{
-					alignment->element[j].groupb = 
+					alignment->element[j].groupb =
 					&(alignment->element[last]);
-					alignment->element[last].groupf = 
+					alignment->element[last].groupf =
 					&(alignment->element[j]);
 				}
 				last = j;
@@ -336,11 +336,11 @@ Event *event;
 /*
 *	Need to check protections
 */
-			
+
 			for(i=0,blank_space = 0;i<this_elem->offset;i++)
 				if(DataSet->selection_mask[i] == '1')
 					TextClip[numselected][blank_space++] =
-						(char)getelem(this_elem,i); 
+						(char)getelem(this_elem,i);
 
 
 			for(i=0,k=0;i<this_elem->seqlen;i++)
@@ -361,11 +361,11 @@ Event *event;
 
 				if((k!=0) && (i<this_elem->seqlen-1))
 				{
-					this_elem->sequence[1+i-k] = 
+					this_elem->sequence[1+i-k] =
 					this_elem->sequence[1+i];
 					if(this_elem->cmask)
 					{
-						this_elem->cmask[1+i-k] = 
+						this_elem->cmask[1+i-k] =
 						this_elem->cmask[1+i];
 					}
 				}
@@ -416,7 +416,7 @@ SubCutViolate()
 			for(i=0;i<DataSet->maxlen;i++)
 			    if(DataSet->selection_mask[i] == '1')
 			    {
-				base = (char)getelem(this_elem,i); 
+				base = (char)getelem(this_elem,i);
 				if(this_elem->tmatrix)
 					tbase = (this_elem->tmatrix[base])|32;
 				switch(this_elem->elementtype)
@@ -445,7 +445,7 @@ SubCutViolate()
 						if(base == '0')
 							GAP = TRUE;
 						else
-							UNAMB = TRUE;	
+							UNAMB = TRUE;
 						break;
 					default:
 						break;
@@ -495,7 +495,7 @@ Event *event;
 		Warning("Can't paste a block there.");
 		return(XV_OK);
 	}
-	
+
 	for(j=0;j<TextClipSize;j++)
 	{
 		this_elem = &(DataSet->element[j+cursory]);
@@ -510,7 +510,7 @@ Event *event;
 			InsertNA(this_elem,TextClip[j],TextClipLength,cursorx);
 		}
 	}
-	
+
 	RepaintAll(TRUE);
 	sprintf(buffer,"%d bytes in Text Clipboard",TextClipLength *
 			TextClipSize);
@@ -577,11 +577,11 @@ Event *event;
 /*
 *	Need to check protections
 */
-			
+
 			for(i=0,blank_space = 0;i<this_elem->offset;i++)
 				if(DataSet->selection_mask[i] == '1')
 					TextClip[numselected][blank_space++] =
-						(char)getelem(this_elem,i); 
+						(char)getelem(this_elem,i);
 
 
 			for(i=0,k=0;i<this_elem->seqlen;i++)

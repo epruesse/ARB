@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <names_client.h>
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -77,7 +77,7 @@ GB_ERROR pars_names(GBDATA *gb_main, int use_advice, int save_data)
     err = GBT_begin_rename_session(gb_main,1);
     if (err) return err;
 
-	
+
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
 
     hash = GBS_create_hash(1024);

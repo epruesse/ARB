@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <errno.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <string.h>
 #include <memory.h>
 

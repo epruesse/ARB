@@ -2,7 +2,7 @@
 #include <xview/canvas.h>
 #include <stdio.h>
 #include <string.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include "loop.h"
 #include "globals.h"
 
@@ -129,7 +129,7 @@ int seqnum,*seqlen;
 	(*blist)[pos-1].x=3.0;
 	(*blist)[pos-1].y=0.0;
 	(*blist)[pos-1].known=TRUE;
-	
+
 	*seqlen=pos;
 	for(j=19;j<pos;j+=20)
 	{

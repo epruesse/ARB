@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <ctype.h>
 #include <sys/stat.h>
 #include <time.h>

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <string.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <time.h>
 
 #define const                /* const is not defined in non-ansi C,
@@ -71,7 +71,7 @@ typedef struct
 
 
 /***
- ***  Elements in at[] and e_tags should be IN THE SAME ORDER. 
+ ***  Elements in at[] and e_tags should be IN THE SAME ORDER.
  ***/
 
 static char *at[NUM_OF_FIELDS] = {
@@ -93,7 +93,7 @@ static char *at[NUM_OF_FIELDS] = {
   "comments" ,
   "baggage",
   "group-number",
-  "barcode", 
+  "barcode",
   "orig_direction",
   "orig_strand",
   "probing-date",

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <string.h>
 #include "global_defs.h"
 
@@ -226,7 +226,7 @@ int r_frame,min_frame,letter_code, sep;
 	fptr = 0;
 
 	/* save_name = malloc(80); */
-	
+
 	strncpy(save_name, seq->name, 80);
 	temp=(char*)Calloc(seq->seqlen+1,sizeof(char));
 	if (!temp) exit(-1);
@@ -249,8 +249,8 @@ int r_frame,min_frame,letter_code, sep;
 		strcpy(seq->type , "PROT");
 	}
 
-/* 
-*       Skip over r_frame valid characters (skip ' ','-','~') 
+/*
+*       Skip over r_frame valid characters (skip ' ','-','~')
 */
 	for(true_start=0,i=0; i<r_frame&&true_start<
 	    seq->seqlen;true_start++)
@@ -298,7 +298,7 @@ int r_frame,min_frame,letter_code, sep;
 					}
 				fptr = 0;
 /*
-*	Check to see if it is a valid ORF 
+*	Check to see if it is a valid ORF
 */
 				if((strncmp("Ter",&(temp[start]),3) == 0) ||
 				   (temp[start] == '*'))
@@ -317,7 +317,7 @@ int r_frame,min_frame,letter_code, sep;
 /*
 *	If reading from stop to stop, leave the elading stop codon
 */
-					    if(temp[last_start]=='*' || 
+					    if(temp[last_start]=='*' ||
 					       strncmp("Ter",&(temp[last_start]),3) == 0)
 					      for(i=last_start+3;i<start+3;i++)
 						temp[i] = '-';
@@ -342,7 +342,7 @@ int r_frame,min_frame,letter_code, sep;
 					    strncat(seq->name, strtmp, 20);
 					    save_c_elem = seq->c_elem;
 					    seq->c_elem = temp;
-					    WriteRecord(stdout,seq,NULL,0); 
+					    WriteRecord(stdout,seq,NULL,0);
 					    strncpy(seq->name, save_name, 80);
 					    seq->c_elem = save_c_elem;
 					    for(i=0;i<seq->seqlen;i++)
@@ -367,7 +367,7 @@ int r_frame,min_frame,letter_code, sep;
 	if (!sep)
 	{
 	  seq->c_elem = temp;
-	  WriteRecord(stdout,seq,NULL,0); 
+	  WriteRecord(stdout,seq,NULL,0);
 	}
 	Cfree(temp);
 	return;

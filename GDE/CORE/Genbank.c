@@ -1,6 +1,6 @@
 #include <sys/time.h>
 #include <stdio.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <time.h>
 #include <xview/xview.h>
 #include <xview/panel.h>

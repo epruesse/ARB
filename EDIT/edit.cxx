@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h> // wegen exit();
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 
 #include <aw_root.hxx>

@@ -1,7 +1,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 #include <stdio.h>
 #include <limits.h>
@@ -40,7 +40,7 @@
 #define MAXN_2(xxx)		xxx
 #define MAXN_2_assert(xxx) 	awtc_assert(xxx)
 #else
-#define MAXN_2(xxx)		
+#define MAXN_2(xxx)
 #define MAXN_2_assert(xxx)
 #endif
 
@@ -63,14 +63,14 @@ static int pam[21][21];
 
 static int pos1;
 static int pos2;
-static int **naa1;		// naa1[basetype][position]   	counts bases for each position of all sequences in group1	
+static int **naa1;		// naa1[basetype][position]   	counts bases for each position of all sequences in group1
 static int **naa2;		// naa2[basetype][position]   	same for group2
-static int **naas;		// 
+static int **naas;		//
 static int seqlen_array[MAXN+1];// length of all sequences
 static char *seq_array[MAXN+1]; // the sequences
-static int group[MAXN+1];    	// group of sequence 
+static int group[MAXN+1];    	// group of sequence
 static int alist[MAXN+1];	// indices of sequences to be aligned
-static int fst_list[MAXN+1];	
+static int fst_list[MAXN+1];
 static int snd_list[MAXN+1];
 static int nseqs;		// # of sequences
 static int weights[21][21];	// weights[b1][b2] : penalty for mutation from base 'b1' to base 'b2'
@@ -101,23 +101,23 @@ static int horizontalOpen	[DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
 
 static inline int master_gap_open(int beforePosition)
 {
-#ifdef DYNAMIC_PENALTIES    
+#ifdef DYNAMIC_PENALTIES
     long gaps = gapsBeforePosition[beforePosition-1];
-   return (gaps)? MASTER_GAP_OPEN - MAX_GAP_OPEN_DISCOUNT : MASTER_GAP_OPEN; 
-    
+   return (gaps)? MASTER_GAP_OPEN - MAX_GAP_OPEN_DISCOUNT : MASTER_GAP_OPEN;
+
 /*    return
 	gaps >= MAX_GAP_OPEN_DISCOUNT
 	? DEFAULT_GAP_OPEN-MAX_GAP_OPEN_DISCOUNT
 	: DEFAULT_GAP_OPEN-gaps;*/
 #else
     return DEFAULT_GAP_OPEN;
-#endif    
+#endif
 }
 static inline int master_gap_extend(int beforePosition)
 {
-#ifdef DYNAMIC_PENALTIES    
+#ifdef DYNAMIC_PENALTIES
     long gaps = gapsBeforePosition[beforePosition-1];
-    
+
  return (gaps)? MASTER_GAP_EXTEND - MAX_GAP_EXTEND_DISCOUNT : MASTER_GAP_EXTEND;
 /*    return
 	gaps >= MAX_GAP_EXTEND_DISCOUNT
@@ -125,21 +125,21 @@ static inline int master_gap_extend(int beforePosition)
 	: DEFAULT_GAP_EXTEND-gaps;*/
 #else
     return DEFAULT_GAP_EXTEND;
-#endif    
+#endif
 }
 
 static inline int master_gapAtWithOpenPenalty(int atPosition, int length, int penalty)
 {
     if (length<=0)
 	return 0;
-    
+
     int beforePosition = atPosition,
 	afterPosition = atPosition-1;
 
     while (length--)
     {
 	int p1,p2;
-	
+
 	if ((p1=master_gap_extend(beforePosition)) < (p2=master_gap_extend(afterPosition+1)) &&
 	    beforePosition>1)
 	{
@@ -206,7 +206,7 @@ static int baseCmp(char c1, char c2)	// c1,c2 == 1=A,2=C (==index of character i
 //		2 for improbably mutations
 {
 #define COMPARABLE_BASES 5
-    
+
     if (c1==c2) return 0;
 
     if (c2<c1)		// swap
@@ -216,8 +216,8 @@ static int baseCmp(char c1, char c2)	// c1,c2 == 1=A,2=C (==index of character i
 	c1 = c2;
 	c2 = c3;
     }
-    
-    if (c2<=COMPARABLE_BASES) 
+
+    if (c2<=COMPARABLE_BASES)
     {
 	awtc_assert(c1<=COMPARABLE_BASES);
 
@@ -236,7 +236,7 @@ static int baseCmp(char c1, char c2)	// c1,c2 == 1=A,2=C (==index of character i
 
     int i;
     int bestMatch = 3;
-    
+
     if (c1<=COMPARABLE_BASES)
     {
 	for (i=1; i<=COMPARABLE_BASES; i++)
@@ -292,7 +292,7 @@ static int getPenalty(char c1, char c2) /* c1,c2 = A=0,C=1,... s.o. */
 
     return 0;
 }
-    
+
 static char *result[3];		// result buffers
 
 static char pam250mt[]={
@@ -371,7 +371,7 @@ static char *matptr = pam250mt;
 static GB_ERROR p_decode(const char *naseq, char *seq, int l)
 {
     int len = strlen(amino_acid_order);
-    
+
     for (int i=1; i<=l && naseq[i]; i++)
     {
 	awtc_assert(naseq[i]<len);
@@ -384,7 +384,7 @@ static GB_ERROR p_decode(const char *naseq, char *seq, int l)
 static GB_ERROR n_decode(const char *naseq, char *seq, int l)
 {
     int len = strlen(nucleic_acid_order);
-    
+
     for (int i=1; i<=l && naseq[i]; i++)
     {
 	awtc_assert(naseq[i]<len);
@@ -413,15 +413,15 @@ static void init_myers(long max_seq_length)
     int i;
 
     if (error) return;
-	
+
     naa1 = (int **)ckalloc(21 * sizeof (int *) );
     for(i=0;i<21;i++) naa1[i]=(int *)ckalloc( (max_seq_length+1)*sizeof (int));
     if (error) return;
-    
+
     naa2 = (int **)ckalloc(21 * sizeof (int *) );
     for(i=0;i<21;i++) naa2[i]=(int *)ckalloc( (max_seq_length+1)*sizeof (int));
     if (error) return;
-    
+
     naas = (int **)ckalloc(21 * sizeof (int *) );
     for(i=0;i<21;i++) naas[i]=(int *)ckalloc( (max_seq_length+1)*sizeof (int));
     if (error) return;
@@ -430,7 +430,7 @@ static void init_myers(long max_seq_length)
 static void make_pamo(int nv)
 {
     register int i,c;
-	
+
     little_pam=big_pam=matptr[0];
     for(i=0;i<210;++i) {
 	c=matptr[i];
@@ -451,17 +451,17 @@ static void make_pamo(int nv)
 static void fill_pam()
 {
     register int i,j,pos;
-	
+
     pos=0;
-	
+
     for(i=0;i<20;++i)
 	for(j=0;j<=i;++j)
 	    pam[i][j]=pamo[pos++];
-	
+
     for(i=0;i<20;++i)
 	for(j=0;j<=i;++j)
 	    pam[j][i]=pam[i][j];
-	
+
     if(dnaflag)
     {
 	xover=4;
@@ -519,7 +519,7 @@ static inline void add(int v)		// insert 'v' gaps into master ???
 	displ[print_ptr-1] = v;
 	displ[print_ptr++] = last_print;
     }
-    else { 
+    else {
 	last_print = displ[print_ptr++] = v;
     }
 }
@@ -530,13 +530,13 @@ static MAXN_2(inline) int calc_weight(int iat,int jat,int v1,int v2)
     awtc_assert(pos1==1 && pos2==1);
     int j = seq_array[alist[1]][v2+jat-1];
     return j>0 ? naas[j][v1+iat-1] : 0;
-#else    
+#else
     int sum,i,j,lookn,ret;
     int ipos,jpos;
-	
+
     ipos = v1 + iat -1;
     jpos = v2 + jat -1;
-    
+
     ret = 0;
     sum = lookn = 0;
 
@@ -550,7 +550,7 @@ static MAXN_2(inline) int calc_weight(int iat,int jat,int v1,int v2)
 		sum += naas[j][ipos];
 		++lookn;
 	    }
-	}	
+	}
     }
     else
     {
@@ -566,7 +566,7 @@ static MAXN_2(inline) int calc_weight(int iat,int jat,int v1,int v2)
     }
     if (sum>0) ret = sum/lookn;
     return ret;
-#endif	
+#endif
 }
 
 #ifdef MATRIX_DUMP
@@ -630,22 +630,22 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
 	flag;
 
 #ifdef DEBUG
-# ifdef MATRIX_DUMP    
+# ifdef MATRIX_DUMP
     int display_matrix = 0;
-    
+
     awtc_assert(v3<=(DISPLAY_MATRIX_SIZE+2));	// width
     awtc_assert(v4<=(DISPLAY_MATRIX_SIZE));		// height
 
 # define DISPLAY_MATRIX_ELEMENTS ((DISPLAY_MATRIX_SIZE+2)*(DISPLAY_MATRIX_SIZE+2))
-    
+
     memset(vertical, -1, DISPLAY_MATRIX_ELEMENTS*sizeof(int));
     memset(verticalOpen, -1, DISPLAY_MATRIX_ELEMENTS*sizeof(int));
     memset(diagonal, -1, DISPLAY_MATRIX_ELEMENTS*sizeof(int));
     memset(horizontal, -1, DISPLAY_MATRIX_ELEMENTS*sizeof(int));
     memset(horizontalOpen, -1, DISPLAY_MATRIX_ELEMENTS*sizeof(int));
-    
+
 # endif
-#endif    
+#endif
     static int deep;
     deep++;
 
@@ -664,25 +664,25 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
 	for (cnt=0; cnt<deep; cnt++) putchar(' ');
 	printf("slave  = '%s'\n", d);
     }
-#endif    
+#endif
 
     // q  = gap_open + gap_extend;		// q is replaced for local positions
-    
+
     if(v4<=0) {							// if slave sequence is empty
 	if(v3>0) {
 	    if(last_print<0 ) {
 		last_print = displ[print_ptr-1] -= v3;		// add ..
 	    }
 	    else {
-		last_print = displ[print_ptr++] = -(v3);	// .. or insert gap of length 'v3' into slave 
+		last_print = displ[print_ptr++] = -(v3);	// .. or insert gap of length 'v3' into slave
 	    }
 	}
 
 	deep--;
-	return master_gapAt(v1,v3); 
+	return master_gapAt(v1,v3);
     }
-    
-    if(v3<=1) {			
+
+    if(v3<=1) {
 	if(v3<=0) {						// if master sequence is empty
 	    add(v4);						// ??? insert gap length 'v4' into master ???
 	    deep--;
@@ -701,7 +701,7 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
 
 	    ctrc = slave_gapAtWithOpenPenalty(v2,v4,st);
 	    ctrj = 0;
-	
+
 	    for(j=1;j<=v4;++j)
 	    {
 		k = slave_gapAt(v2, j-1) + calc_weight(1,j,v1,v2) + slave_gapAt(v2+j,v4-j);
@@ -731,7 +731,7 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
     }
 
     awtc_assert(v3>=1 && v4>=1);
-    
+
     // slave length  >= 1
     // master length >= 1
 
@@ -741,7 +741,7 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
     IF_MATRIX_DUMP(vertical[0][0]=)
 	zza[0] = 0;
     p = master_gap_open(v1);
-    for(j=1; j<=v4; j++)		
+    for(j=1; j<=v4; j++)
     {
 	p += master_gap_extend(v1);
 	IF_MATRIX_DUMP(vertical[0][j]=)
@@ -749,11 +749,11 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
 	IF_MATRIX_DUMP(verticalOpen[0][j]=)
 	    zzb[j] = p + master_gap_open(v1);
     }
-    
+
     // left half of the matrix
     p = st;
-    ctri = v3 / 2; 
-    for(i=1; i<=ctri; i++)	
+    ctri = v3 / 2;
+    for(i=1; i<=ctri; i++)
     {
 	n = zza[0];
 	p += master_gap_extend(v1+i+AF);
@@ -761,7 +761,7 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
 	IF_MATRIX_DUMP(vertical[i][0]=)
 	    zza[0] = k;
 	l = p + master_gap_open(v1+i+AF);
-	
+
 	for(j=1; j<=v4; j++)
 	{
 	    // from above (gap in master (behind position i))
@@ -776,9 +776,9 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
 
 	    // diagonal (no gaps)
 	    IF_MATRIX_DUMP(diagonal[i][j]=) 		k = n + calc_weight(i,j,v1,v2);					// (5)
-	    if(l<k) k = l;	
+	    if(l<k) k = l;
 	    if(m<k) k = m;	// k = minimum of all paths
-	    
+
 	    n = zza[j];		// minimum of same row; one column to the left
 	    zza[j] = k;		// minimum of all paths to this matrix position
 	    zzb[j] = m;		// minimum of those two paths, where gap was inserted into slave
@@ -787,9 +787,9 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
 
 # define MHO 1	// X-Offset for second half of matrix-arrays (only used to insert MID-column into dumpMatrix())
 # define BO  1	// Offset for second half of matrix (cause now the indices i and j are smaller as above)
-    
+
     // last column of matrix:
-    
+
     zzb[0]=zza[0];
     IF_MATRIX_DUMP(vertical[v3+1+MHO][v4+1]=)
 	zzc[v4]=0;
@@ -802,10 +802,10 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
 	IF_MATRIX_DUMP(verticalOpen[v3+1+MHO][j+BO]=)
 	    zzd[j] = p+master_gap_open(v1+v3);
     }
-    
+
     // right half of matrix (backwards):
     p = en;
-    for(i=v3-1;i>=ctri;i--)	
+    for(i=v3-1;i>=ctri;i--)
     {
 	n = zzc[v4];
 	p += master_gap_extend(v1+i);
@@ -813,7 +813,7 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
 	IF_MATRIX_DUMP(vertical[i+BO+MHO][v4+1]=)
 	    zzc[v4] = k;
 	l = p+master_gap_open(v1+i);
-	
+
 	for(j=v4-1; j>=0; j--)
 	{
 	    // from below (gap in master (in front of position (i+BO)))
@@ -830,7 +830,7 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
 	    IF_MATRIX_DUMP(diagonal[i+BO+MHO][j+BO]=) 		k = n + calc_weight(i+BO,j+BO,v1,v2);			// (5)
 	    if(l<k) k = l;
 	    if(m<k) k = m;	// k = minimum of all paths
-	    
+
 	    n = zzc[j];		// minimum of same row; one column to the right
 	    zzc[j] = k;		// minimum of all paths to this matrix position
 	    zzd[j] = m;		// minimum of those two paths, where gap was inserted into slave
@@ -838,20 +838,20 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
     }
 
 #undef BO
-    
+
     // connect rightmost column of first half (column ctri)
     // with leftmost column of second half (column ctri+1)
-        
+
     zzd[v4] = zzc[v4];
 
     ctrc = INT_MAX;
     flag = 0;
-    
+
     for(j=(ctri?0:1);j<=v4;j++)	// was j=0;...	(this was erroneous cause it splitted zero-length subsequences)
     {
 	IF_MATRIX_DUMP(vertical[ctri+MHO][j]=)
 	    k = zza[j] + zzc[j];		// sum up both calculations (=diagonal=no gaps)
-	
+
 	if (k<ctrc || ((k==ctrc) && (zza[j]!=zzb[j]) && (zzc[j]==zzd[j])))
 	{
 	    ctrc = k;
@@ -860,12 +860,12 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
 	}
     }
 
-    for(j=v4;j>=(ctri?0:1);j--)	
+    for(j=v4;j>=(ctri?0:1);j--)
     {
 	IF_MATRIX_DUMP(verticalOpen[ctri+MHO][j]=)
 	    k = zzb[j] + zzd[j]			// paths where gaps were inserted into slave (left and right side!)
 	    - slave_gap_open(j);		// subtract gap_open-penalty which was added twice (at left and right end of gap)
-	
+
 	if(k<ctrc)
 	{
 	    ctrc = k;
@@ -876,30 +876,30 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
 
     awtc_assert(flag>=1 && flag<=2);
 
-#undef MHO    
-    
-#ifdef MATRIX_DUMP    
+#undef MHO
+
+#ifdef MATRIX_DUMP
     if (display_matrix)
 	dumpMatrix(v1,v2,v3,v4,ctri);
 #endif
-    
+
     /* Conquer recursively around midpoint  */
 
     if(flag==1)		        /* Type 1 gaps  */
-    {     
+    {
 	diff(v1,v2,ctri,ctrj,st,master_gap_open(v1+ctri));			// includes midpoint ctri and ctrj
 	diff(v1+ctri,v2+ctrj,v3-ctri,v4-ctrj,master_gap_open(v1+ctri),en);
     }
     else
     {
 	diff(v1,v2,ctri-1,ctrj,st,0);						// includes midpoint ctrj
-	
+
 	if(last_print<0)                         /* Delete 2 */
 	    last_print = displ[print_ptr-1] -= 2;
 	else
 	    last_print = displ[print_ptr++] = -2;
-	
-	diff(v1+ctri+1,v2+ctrj,v3-ctri-1,v4-ctrj,0,en);	
+
+	diff(v1+ctri+1,v2+ctrj,v3-ctri-1,v4-ctrj,0,en);
     }
 
     deep--;
@@ -915,7 +915,7 @@ static void do_align( /*int v1,*/ int *score, long act_seq_length)
 
     // clear statistics
 
-    for(i=1;i<=act_seq_length;++i)		
+    for(i=1;i<=act_seq_length;++i)
     {
 	for(j=0;j<21;++j) naa1[j][i]=naa2[j][i]=0;
 	for(j=1;j<21;++j) naas[j][i]=0;
@@ -923,7 +923,7 @@ static void do_align( /*int v1,*/ int *score, long act_seq_length)
 
     // create position statistics for each group
     // [here every group contains only one seq]
-    
+
     for(i=1;i<=nseqs;++i)
     {
 	if(group[i]==1)
@@ -932,7 +932,7 @@ static void do_align( /*int v1,*/ int *score, long act_seq_length)
 	    for(j=1;j<=seqlen_array[i];++j)
 		if(seq_array[i][j]>0)
 		{
-		    ++naa1[seq_array[i][j]][j];		
+		    ++naa1[seq_array[i][j]][j];
 		    ++naa1[0][j];
 		}
 	    if(seqlen_array[i]>l1) l1=seqlen_array[i];
@@ -983,7 +983,7 @@ static void do_align( /*int v1,*/ int *score, long act_seq_length)
 		for(i=1;i<21;++i)
 		    naas[i][n]=t_arr[i]/k;
 	}
-#endif	
+#endif
     }
 
     *score=diff(1,1,l1,l2,master_gap_open(1),master_gap_open(l1+1)/*v1,v1*/);	/* Myers and Miller alignment now */
@@ -993,7 +993,7 @@ static void do_align( /*int v1,*/ int *score, long act_seq_length)
 static void group_gap(int len,int sclass,char *seq)
 {
     int i,j,k,xtra;
-	
+
     for(i=1;i<=nseqs;++i)
 	if(group[i] == sclass)
 	{
@@ -1015,11 +1015,11 @@ static void group_gap(int len,int sclass,char *seq)
 static int add_ggaps(long /*max_seq_length*/)
 {
     int i,j,k,pos,to_do;
-    
+
     pos=1;
     to_do=print_ptr;
-	
-    for(i=0;i<to_do;++i)	// was: 1 .. <=to_do 
+
+    for(i=0;i<to_do;++i)	// was: 1 .. <=to_do
     {
 	if(displ[i]==0)
 	{
@@ -1050,11 +1050,11 @@ static int add_ggaps(long /*max_seq_length*/)
 	}
     }
 
-#ifdef DEBUG    
+#ifdef DEBUG
     result[1][pos] = 0;
     result[2][pos] = 0;
-#endif    
-	
+#endif
+
     return pos-1;
 }
 
@@ -1077,18 +1077,18 @@ static GB_ERROR p_encode(const char *seq, char *naseq, int l)
     for(i=1; i<=l; i++)
     {
 	int c = res_index(amino_acid_order,seq[i]);
-	
+
 	if (!c)
 	{
 	    if (seq[i]!='?') { // consensus contains ???
 		char buf[100];
-		sprintf(buf, "Illegal character '%c' in sequence data", seq[i]);	
+		sprintf(buf, "Illegal character '%c' in sequence data", seq[i]);
 		aw_message(buf);
 	    }
-	    
-	    c = res_index(amino_acid_order, 'X');	
+
+	    c = res_index(amino_acid_order, 'X');
 	}
-	
+
 	awtc_assert(c>0);
 	naseq[i] = c;
     }
@@ -1096,12 +1096,12 @@ static GB_ERROR p_encode(const char *seq, char *naseq, int l)
     return 0;
 }
 
-static GB_ERROR n_encode(const char *seq,char *naseq,int l)		
+static GB_ERROR n_encode(const char *seq,char *naseq,int l)
 {					/* code seq as ints .. use -2 for gap */
     int i;
 /*	static char *nucs="ACGTU";	*/
     int warned = 0;
-	
+
     for(i=1; i<=l; i++)
     {
 	int c = res_index(nucleic_acid_order,seq[i]);
@@ -1111,14 +1111,14 @@ static GB_ERROR n_encode(const char *seq,char *naseq,int l)
 	    if (seq[i]!='?') { // consensus contains ???
 		if (!warned) {
 		    char buf[100];
-		    sprintf(buf, "Illegal character '%c' in sequence data", seq[i]);	
+		    sprintf(buf, "Illegal character '%c' in sequence data", seq[i]);
 		    aw_message(buf);
 		    warned = 1;
 		}
 	    }
 	    c = res_index(nucleic_acid_order, 'N');
 	}
-	
+
 	awtc_assert(c>0);
 	naseq[i] = c;
     }
@@ -1131,24 +1131,24 @@ GB_ERROR AWTC_ClustalV_align(int is_dna, int weighted,
 			     const char *seq2, int length2,
 			     const int *gapsBefore1,
 			     int max_seq_length,
-			     char **resultPtr1, 
+			     char **resultPtr1,
 			     char **resultPtr2,
 			     int *resLengthPtr,
 			     int *score)
 {
     error = 0;
     gapsBeforePosition = gapsBefore1;
-    
+
     if (!module_initialized)		// initialize only once
     {
 	dnaflag = is_dna;
 	is_weight = weighted;
-	
+
 	init_myers(max_seq_length);
 	init_show_pair(max_seq_length);
 	make_pamo(0);
 	fill_pam();
-	
+
 	for (int i=1; i<=2; i++)
 	{
 	    seq_array[i] = (char*)ckalloc((max_seq_length+2)*sizeof(char));
@@ -1157,7 +1157,7 @@ GB_ERROR AWTC_ClustalV_align(int is_dna, int weighted,
 	}
 
 	if (error) goto ende;
-	
+
 	module_initialized = 1;
     }
     else
@@ -1177,9 +1177,9 @@ GB_ERROR AWTC_ClustalV_align(int is_dna, int weighted,
     memset(&seq_array[1][1], 0, max_seq_length*sizeof(seq_array[1][1]));
     memset(&seq_array[2][1], 0, max_seq_length*sizeof(seq_array[2][1]));
     memset(&displ[1], 0xff, max_seq_length*sizeof(displ[1]));
-    seq_array[1][0] = '_';	
+    seq_array[1][0] = '_';
     seq_array[2][0] = '_';
-#endif    
+#endif
 
     {
 	GB_ERROR (*encode)(const char*,char*,int) = dnaflag ? n_encode : p_encode;
@@ -1187,7 +1187,7 @@ GB_ERROR AWTC_ClustalV_align(int is_dna, int weighted,
 	error = encode(seq1-1, seq_array[1], length1);
 	if (error) goto ende;
 	seqlen_array[1] = length1;
-    
+
 	error = encode(seq2-1, seq_array[2], length2);
 	if (error) goto ende;
 	seqlen_array[2] = length2;
@@ -1201,7 +1201,7 @@ GB_ERROR AWTC_ClustalV_align(int is_dna, int weighted,
 	*resLengthPtr = alignedLength;
     }
 
-ende:    
+ende:
 
     return error;
 }

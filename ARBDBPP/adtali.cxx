@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <arbdb.h>
 #include "adtools.hxx"
 
@@ -25,12 +25,12 @@ void ADT_ALI::init(AD_MAIN *ad_maini)
 	gaprealoffset = (int *) calloc(len,sizeof(int));
 	// testversion leerer gap
 	for (int i = 0; i < len; i++) {
-		gapsequence[i] = NOGAP_SYMBOL; 
+		gapsequence[i] = NOGAP_SYMBOL;
 		gapshowoffset[i] = 0;
 		gaprealoffset[i] = 0;
 		}
 	gapshowoffset_len = len;
-	inited = 1;	
+	inited = 1;
 }
 
 
@@ -40,17 +40,17 @@ void ADT_ALI::init(AD_MAIN *ad_maini)
 AD_ERR *  ADT_ALI::gap_make(int position,int length)	{
 int offset_sum = 1;
 int i,counter = 0;
-	if (!((position+length > AD_ALI::len()) || gap_inside(position,position + length))) {  
-		for (i = position;i<position +length;i++) {	// gapsequence 
+	if (!((position+length > AD_ALI::len()) || gap_inside(position,position + length))) {
+		for (i = position;i<position +length;i++) {	// gapsequence
 			gapsequence[i]	= GAP_SYMBOL;
 			}
 		if (position == 0) {		// luecke am anfang
 			offset_sum = -length-1;
 			}
-		for (i = 0; i<AD_ALI::len(); i++) {		// gaprealoffset			 
+		for (i = 0; i<AD_ALI::len(); i++) {		// gaprealoffset
 			if (gapsequence[i] == GAP_SYMBOL) {
-				offset_sum ++;	}		
-			gaprealoffset[i] = offset_sum;	
+				offset_sum ++;	}
+			gaprealoffset[i] = offset_sum;
 		}
 
 		offset_sum = 0;					// gapshowoffset
@@ -60,17 +60,17 @@ int i,counter = 0;
 				counter ++;
 			} else {
 				offset_sum ++;
-			}			
+			}
 		}
 		gapshowoffset_len = counter-1;
 		printf("gap maked % d of len %d\n",position,length);
 		return 0;
 	} else {
-		return new AD_ERR("ADT_ALI::gap_make(int position,int length) ungueltige parameter");	
-	}	
+		return new AD_ERR("ADT_ALI::gap_make(int position,int length) ungueltige parameter");
+	}
 }
-		
-		
+
+
 AD_ERR  * ADT_ALI::gap_delete(int showposition) {
 	// showposition zeigt auf die position vor dem gap
 	int i,counter=0,offset_sum = 0;
@@ -80,10 +80,10 @@ AD_ERR  * ADT_ALI::gap_delete(int showposition) {
 	for (i=startpos;i<endpos;i++) {
 		gapsequence[i] = NOGAP_SYMBOL;
 		}
-	for (i = 0; i<AD_ALI::len(); i++) {		// gaprealoffset			 
+	for (i = 0; i<AD_ALI::len(); i++) {		// gaprealoffset
 			if (gapsequence[i] == GAP_SYMBOL) {
-				offset_sum ++;	}		
-			gaprealoffset[i] = offset_sum;	
+				offset_sum ++;	}
+			gaprealoffset[i] = offset_sum;
 		}
 
 	offset_sum = 0;					// gapshowoffset
@@ -93,11 +93,11 @@ AD_ERR  * ADT_ALI::gap_delete(int showposition) {
 			counter ++;
 		} else {
 			offset_sum ++;
-		}			
+		}
 	}
-	
+
 	gapshowoffset_len = gapshowoffset_len + endpos-startpos;
-	return 0;			
+	return 0;
 }
 
 AD_ERR * ADT_ALI::gap_update(char *oldseq,char *newseq) {
@@ -105,10 +105,10 @@ AD_ERR * ADT_ALI::gap_update(char *oldseq,char *newseq) {
 	// realsequenz wurde in DAtenbank geaendert -> gap sequenz muss erneuert werden
 	return 0;
 }
-	
+
 char * ADT_ALI::gap_make_real_sequence(char *realseq,const char *showseq) {
 	realseq=realseq;showseq=showseq;
-	return 0;	
+	return 0;
 }
 
 char * ADT_ALI::gap_make_show_sequence(const char *realseq,char *showseq) {
@@ -125,7 +125,7 @@ int ADT_ALI::gap_inside(int realposition) {
 }
 
 int ADT_ALI::gap_inside(int showposition1,int showposition2) {
-//	if (gapshowoffset[showposition1] != gapshowoffset[showposition2])	
+//	if (gapshowoffset[showposition1] != gapshowoffset[showposition2])
 //		return 1;
     GBUSE(showposition1);GBUSE(showposition2);
 	return 0;
@@ -138,7 +138,7 @@ int ADT_ALI::gap_behind(int showposition) {	/* returns 1 if
 //		return 1; }
     GBUSE(showposition);
 	return 0;
-}		
+}
 
 int ADT_ALI::gap_realpos(int showposition) {
 	return showposition;
@@ -149,7 +149,7 @@ int ADT_ALI::gap_showpos(int realposition) {
 	return realposition;
 //	return (realposition - gaprealoffset[realposition]);
 }
-			
+
 #if 0
 void ADT_ALI::operator = (ADT_ALI &adtali)
 {

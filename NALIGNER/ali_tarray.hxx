@@ -3,7 +3,7 @@
 #ifndef _ALI_TARRAY_INC_
 #define _ALI_TARRAY_INC_
 
-#include <malloc.h>
+// #include <malloc.h>
 
 #include "ali_misc.hxx"
 #include "ali_tlist.hxx"

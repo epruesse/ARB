@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+// #include <malloc.h>
 
 char *TRS_map_file(const char *path,int writeable);
 #define GB_map_file TRS_map_file
@@ -29,8 +29,8 @@ char *get_indata(int argc, char **argv) {
 			indata=strdup(getenv("QUERY_STRING"));
 		} else if (!strcmp(request_method,"POST")) {
 			char *temp;
-			if(!(temp=getenv("CONTENT_LENGTH"))) 
-				quit_with_error(TRS_export_error("CONTENT_LENGTH not set")); 		
+			if(!(temp=getenv("CONTENT_LENGTH")))
+				quit_with_error(TRS_export_error("CONTENT_LENGTH not set"));
 			int len=atoi(temp);
 			indata=new char[len+1];
 			indata[len]=0;
@@ -194,7 +194,7 @@ int main(int argc, char **argv){
 			error = TRS_export_error("Sorry: invalid toOTF Value:\n"
 			"	only name,fullname,accession is allowed");
 			goto end;
-		}	
+		}
 		char *dat = TRS_read_file("-");
 		struct T2J_transfer_struct *transfer = T2J_read_query_result_from_data(dat,catfield);
 		if (!transfer){
@@ -215,7 +215,7 @@ int main(int argc, char **argv){
 		error = T2J_send_newick_tree(tree_path,toNewick,prune,stripNewick,stdout);
 	    }
 	}
-		
+
 end:
 	if (error) {
 		quit_with_error(error);

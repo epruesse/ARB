@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <string.h>
 #include "PT_server.h"
 #include "C/server.h"
@@ -10,7 +10,15 @@
 
 // this source is compiled as C++ !!!
 
-extern "C" int pt_init_bond_matrix(PT_pdc *THIS);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    int pt_init_bond_matrix(PT_pdc *THIS);
+
+#ifdef __cplusplus
+}
+#endif
 
 int init_bond_matrix(PT_pdc *THIS) {
     pt_init_bond_matrix(THIS);
@@ -20,22 +28,22 @@ int init_bond_matrix(PT_pdc *THIS) {
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
+
     //    aisc_callback_func_proto(destroy_PT_local); /* prototyp */
 
     void pt_destroy_locs(PT_local *THIS) {
         destroy_PT_local(THIS);
     }
-    
+
 #ifdef __cplusplus
 }
 #endif
-    
+
 int pt_init_socket(PT_local *THIS) {
     return aisc_add_destroy_callback((aisc_callback_func)pt_destroy_locs,(long)THIS);
 }
 
-void  pt_destroy_socket(PT_local *THIS){	
+void  pt_destroy_socket(PT_local *THIS){
     THIS = THIS;
     aisc_remove_destroy_callback();
 }

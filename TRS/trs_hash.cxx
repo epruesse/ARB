@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -215,7 +215,7 @@ long TRS_incr_hash(long hash,const char *key)
 	return 1;
 }
 
-long 
+long
 TRS_free_hash_entries(long hash)
 {
 	struct trs_hash_struct *hs = (struct trs_hash_struct *) hash;
@@ -234,7 +234,7 @@ TRS_free_hash_entries(long hash)
 	return 0;
 }
 
-long 
+long
 TRS_free_hash(long hash)
 {
 	struct trs_hash_struct *hs = (struct trs_hash_struct *) hash;
@@ -243,7 +243,7 @@ TRS_free_hash(long hash)
 	free((char *)hs);
 	return 0;
 }
-long 
+long
 TRS_free_hash_entries_free_pointer(long hash)
 {
 	struct trs_hash_struct *hs = (struct trs_hash_struct *) hash;
@@ -262,7 +262,7 @@ TRS_free_hash_entries_free_pointer(long hash)
 	}
 	return 0;
 }
-long 
+long
 TRS_free_hash_free_pointer(long hash)
 {
 	struct trs_hash_struct *hs = (struct trs_hash_struct *) hash;

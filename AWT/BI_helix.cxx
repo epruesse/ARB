@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <arbdb.h>
 #include <arbdbt.h>
 
@@ -25,7 +25,7 @@ struct helix_stack {
     struct helix_stack *next;
     long	pos;
     BI_PAIR_TYPE type;
-    char	c;	
+    char	c;
 };
 
 struct {
@@ -63,7 +63,7 @@ void BI_helix::_init(void)
 
     entries = 0;
     size = 0;
-	
+
     pairs[HELIX_NONE]=strdup("");
     char_bind[HELIX_NONE] = strdup(" ");
 
@@ -174,7 +174,7 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
     char ident[256];
     char *sident;
     struct helix_stack *laststack = 0,*stack;
-	
+
     size = sizei;
 
     {
@@ -219,7 +219,7 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
             }
         }
         c = helix[pos];
-        if (strchr(LEFT_HELIX,c) || strchr(LEFT_NONS,c)  ){	// push 
+        if (strchr(LEFT_HELIX,c) || strchr(LEFT_NONS,c)  ){	// push
             laststack = (struct helix_stack *)GBS_read_hash(hash,ident);
             stack = new helix_stack;
             stack->next = laststack;
@@ -227,7 +227,7 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
             stack->c = c;
             GBS_write_hash(hash,ident,(long)stack);
         }
-        else if (strchr(RIGHT_HELIX,c) || strchr(RIGHT_NONS,c) ){	// pop 
+        else if (strchr(RIGHT_HELIX,c) || strchr(RIGHT_NONS,c) ){	// pop
             stack = (struct helix_stack *)GBS_read_hash(hash,ident);
             if (!stack) {
                 sprintf(error,"Too many '%c' in Helix '%s' pos %i",c,ident,pos);
@@ -309,10 +309,10 @@ const char *BI_helix::init(GBDATA *gb_main, const char *alignment_name, const ch
         GBDATA *gb_helix_con = GBT_find_SAI_rel_exdata(gb_extended_data, helix_name);
         GBDATA *gb_helix = 0;
         GBDATA *gb_helix_nr = 0;
-        
+
         if (gb_helix_nr_con)    gb_helix_nr = GBT_read_sequence(gb_helix_nr_con,alignment_name);
         if (gb_helix_con)       gb_helix = GBT_read_sequence(gb_helix_con,alignment_name);
-        
+
         err = init(gb_helix_nr, gb_helix, size2);
     }
     GB_pop_transaction(gb_main);
@@ -422,7 +422,7 @@ int BI_show_helix_on_device(AW_device *device, int gc, const char *opt_string, s
     BI_helix *THIS = (BI_helix *)cduser;
     char *buffer = GB_give_buffer(size+1);
     register unsigned long i,j,k;
-	
+
     for (k=0; k<size; k++) {
         i = k+start;
         if ( i<THIS->size && THIS->entries[i].pair_type) {
@@ -464,14 +464,14 @@ AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct * /*owner*/awcbs
     aws->create_button( "CLOSE", "CLOSE", "C" );
     aws->at_newline();
 
-    aws->label_length( 18 );	
+    aws->label_length( 18 );
     int i;
     int j;
     int ex= 0,ey = 0;
     char awar[256];
     for (j=0; helix_awars[j].awar; j++){
 
-        aws->label_length( 25 );	
+        aws->label_length( 25 );
         i = helix_awars[j].pair_type;
 
         if (i != HELIX_DEFAULT && i!= HELIX_NO_MATCH ) {

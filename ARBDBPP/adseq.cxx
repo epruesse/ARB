@@ -7,7 +7,7 @@ enthaelt code fuer 	AD_CONT
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 #include <ctype.h>
 #include <arbdb.h>
@@ -97,9 +97,9 @@ AD_ERR * AD_STAT::exit()
     gb_mark = 0;
     gb_markdata = 0;
     inited_object = 0;
-    return 0; 
+    return 0;
 }
-	
+
 AD_ERR * AD_STAT::initpntr() {
     if (gb_markdata == 0) {
 	release();
@@ -151,7 +151,7 @@ AD_ERR * AD_STAT::initpntr() {
 
     }
     return 0;
-}	
+}
 
 AD_ERR * AD_STAT::first() {
     char *key = 0;
@@ -241,7 +241,7 @@ AD_ERR * AD_STAT::next(AD_TYPES typus) {
 int AD_STAT_updatecall(GBDATA *gb_char_mark,AD_STAT *ad_mark)
     // behandelt ein update der Markierung in der Datenbank
     // problem -> wenn editiert wird ni
-    // 
+    //
     //
 {
     if ((gb_char_mark != ad_mark->GB_INT_mark) &&(gb_char_mark != ad_mark->gb_char_mark) && (gb_char_mark != ad_mark->GB_FLOAT_mark)) {
@@ -250,7 +250,7 @@ int AD_STAT_updatecall(GBDATA *gb_char_mark,AD_STAT *ad_mark)
     if (gb_char_mark == ad_mark->gb_char_mark) {
 	ad_mark->gb_markdata = gb_char_mark;
 	ad_mark->initpntr();
-	
+
     }
     if (gb_char_mark == ad_mark->GB_FLOAT_mark) {
 	ad_mark->gb_markdata = gb_char_mark;
@@ -260,12 +260,12 @@ int AD_STAT_updatecall(GBDATA *gb_char_mark,AD_STAT *ad_mark)
 	ad_mark->gb_markdata = gb_char_mark;
 	ad_mark->initpntr();
     }
-	
+
     ad_mark->updated = 1;	// flag setzen
     return 0;
 }
 
-	
+
 char * AD_STAT::getbits() {
     if (marktype != ad_bits) {
 	new AD_ERR("AD_STAT::getbits()  Wrong Type !");
@@ -293,8 +293,8 @@ GB_UINT4 * AD_STAT::getint() {
 
 AD_ERR *AD_STAT::put() {
     char *error;
-    if (gb_char_mark == 0 && GB_FLOAT_mark == 0 && GB_INT_mark == 0) 
-	return new AD_ERR("AD_SEQ::write not possible!");	
+    if (gb_char_mark == 0 && GB_FLOAT_mark == 0 && GB_INT_mark == 0)
+	return new AD_ERR("AD_SEQ::write not possible!");
     if (GB_FLOAT_mark != 0) {
 	error = (char *)GB_write_floats(GB_FLOAT_mark,markdatafloat,nmark);
 	if (error != 0) {
@@ -305,14 +305,14 @@ AD_ERR *AD_STAT::put() {
 	error = (char *)GB_write_bits(gb_char_mark,markdata,nmark,c_0);
 	if (error != 0) {
 	    return new AD_ERR(error);
-	}	
+	}
     }
     if  (GB_INT_mark != 0) {
 	error = (char *)GB_write_ints(GB_INT_mark,markdataint,nmark);
 	if (error != 0) {
 	    return new AD_ERR(error);
-	}	
-    }		
+	}
+    }
     return 0;
 }
 
@@ -345,11 +345,11 @@ AD_ERR *AD_STAT::put(float *markings, int len) {
     put();
     return 0;
 }
-	
+
 AD_ERR *AD_STAT::put(GB_UINT4 *markings, int len) {
     if (marktype != ad_ints) {
 	return new AD_ERR("*AD_STAT::put(int * ... WRONG TYPE",CORE);
-    }	
+    }
     markdataint = markings;
     nmark = len;
     put();
@@ -358,10 +358,10 @@ AD_ERR *AD_STAT::put(GB_UINT4 *markings, int len) {
 
 AD_TYPES AD_STAT::type() {
     return marktype;
-}	
+}
 
 
-	
+
 
 /*********************
 AD_SEQ
@@ -376,11 +376,11 @@ void AD_SEQ_delcall(GBDATA *gb_seq,AD_SEQ *ad_seq)
 int AD_SEQ_updatecall(GBDATA *gb_seq,AD_SEQ *ad_seq)
     // behandelt ein update der sequenz in der Datenbank
     // problem -> wenn editiert wird ni
-    // 
+    //
     //
 {
     long new_time_stamp;
-    if (gb_seq != ad_seq->gb_seq) 
+    if (gb_seq != ad_seq->gb_seq)
 	new AD_ERR("AD_SEQ: WRONG update callback",CORE);
     new_time_stamp = GB_read_clock(gb_seq);
     if (ad_seq->timestamp != new_time_stamp) {
@@ -400,7 +400,7 @@ int AD_SEQ_updatecall(GBDATA *gb_seq,AD_SEQ *ad_seq)
 
 AD_SEQ::AD_SEQ()
 {
-    memset(this,0,sizeof(AD_SEQ));	// no virtual members !!! 
+    memset(this,0,sizeof(AD_SEQ));	// no virtual members !!!
 }
 
 AD_SEQ::~AD_SEQ()
@@ -410,7 +410,7 @@ AD_SEQ::~AD_SEQ()
 	new AD_ERR("AD_SEQ: no exit() !!");
 	delete seq;
 	seq = 0;
-    }	
+    }
 }
 
 
@@ -446,8 +446,8 @@ AD_ERR * AD_SEQ::exit()
 	gb_seq = 0;
 	gbdataptr = gb_seq;
 	return 0;
-    } else	
-	return new	AD_ERR("AD_SEQ: exit() without init()");	
+    } else
+	return new	AD_ERR("AD_SEQ: exit() without init()");
 }
 
 
@@ -468,7 +468,7 @@ AD_ERR * AD_SEQ::update()
 	if (gb_seq && GB_read_type(gb_seq) == GB_BITS) nseq_but_filter = 1;
 	else	gb_seq = 0;
     }
-	
+
     if (gb_seq) {
 	if (!nseq_but_filter) {
 	    sequenz = GB_read_char_pntr(gb_seq);
@@ -511,7 +511,7 @@ AD_ERR * AD_SEQ::update()
     if (laenge>seq_len) seq_len = laenge;			/* overlong sequence */
     delete seq;
     seq = (char *)malloc((size_t)seq_len + 1);
-    strncpy(seq,sequenz,(int)seq_len);	
+    strncpy(seq,sequenz,(int)seq_len);
     for ( i = laenge; i < seq_len; i++) {
 	seq[i] = SEQ_POINT;
     }
@@ -520,7 +520,7 @@ AD_ERR * AD_SEQ::update()
 
     return 0;
 }
-	
+
 char * AD_SEQ::get()
 {
     return seq;
@@ -534,7 +534,7 @@ int AD_SEQ::len()
 AD_ERR * AD_SEQ::put()
 {
     char *error;
-    if (gb_seq == 0) 
+    if (gb_seq == 0)
 	return new AD_ERR("AD_SEQ::write not possible!");
     if (nseq_but_filter) {
 	error = (char *)GB_write_bits(gb_seq,seq,seq_len, '.');
@@ -579,14 +579,14 @@ AD_ERR * AD_SEQ::insert(char *text,long position, int direction) {
 	    return new AD_ERR("AD_SEQ::You cannot insert that many characters after cursor !");
 	}
 	for (i = seq_len - text_len; i<seq_len; i++) {
-	    if (!ADPP_IS_ALIGN_CHARACTER(seq[i])) { 
+	    if (!ADPP_IS_ALIGN_CHARACTER(seq[i])) {
 		return new AD_ERR("AD_SEQ::insert: end of alignment reached !");
 	    }
 	}
 	for (i= seq_len-text_len-1; i>=position;i--) {
 	    seq[i+text_len] = seq[i];
 	}
-	
+
 	for (i = 0 ;i<text_len;i++) {
 	    seq[position + i] = text[i];
 	}
@@ -595,21 +595,21 @@ AD_ERR * AD_SEQ::insert(char *text,long position, int direction) {
 	    return new AD_ERR("AD_SEQ::You cannot insert that many characters before cursor !");
 	}
 	for (i = 0; i<text_len; i++) {
-	    if (!ADPP_IS_ALIGN_CHARACTER(seq[i])) { 
+	    if (!ADPP_IS_ALIGN_CHARACTER(seq[i])) {
 		return new AD_ERR("AD_SEQ::insert: start of alignment reached !");
 	    }
 	}
 	for (i= 0; i<position-text_len;i++) {
 	    seq[i] = seq[i+text_len];
 	}
-	
+
 	for (i = 0 ;i<text_len;i++) {
 	    seq[position - i -1] = text[i];
 	}
     }
     return 0;
-}	
- 
+}
+
 AD_ERR  * AD_SEQ::remove(int len,long position, int direction) {
     long new_len;
     long i;
@@ -639,7 +639,7 @@ AD_ERR  * AD_SEQ::remove(int len,long position, int direction) {
     seq[seq_len] = '\0';
     return 0;
 }
-	
+
 
 AD_ERR * AD_SEQ::replace(char *text,long position, int direction) {
     int text_len = strlen(text);
@@ -932,7 +932,7 @@ AD_ERR	*AD_SEQ::command( AW_key_mod keymod, AW_key_code keycode, char key, int d
 		if (!ad_err) {
 		    changed_flag = 1;
 		    cursorpos += direction;
-		}					
+		}
 	    }else{
 		if (ADPP_IS_ALIGN_CHARACTER(seq[cursorpos+offset])){
 		    cursorpos = get_next_base(cursorpos,direction);
@@ -943,7 +943,7 @@ AD_ERR	*AD_SEQ::command( AW_key_mod keymod, AW_key_code keycode, char key, int d
 	    break;
 	default:
 	    break;
-				
+
     }
     if (ad_err) cursorpos = oldcursorpos;
     if (cursorpos < 0 ) cursorpos = 0;
@@ -962,13 +962,13 @@ AD_ERR * AD_SEQ::changemode(AD_EDITMODI mod) {
 AD_EDITMODI AD_SEQ::mode() {
     return this->get_ad_main()->mode;
 }
-	
+
 
 
 
 
 /***************************
-AD_CONT 
+AD_CONT
 container wird mit spezies,alignment initialisiert
 entspricht ungefaehr dem ali_xxx container der ARB DB
 ********************/
@@ -992,7 +992,7 @@ AD_CONT::~AD_CONT()
 AD_ERR * AD_CONT::init(AD_SPECIES * adptr1,AD_ALI * adptr2)
 {
     if (!con_insert(adptr1,adptr2)) // test ob container schoneinmal initialisiert
-	return new AD_ERR("AD_CONT::init  ONLY ONE AD_CONT PER SPECIES/ALIGN");	
+	return new AD_ERR("AD_CONT::init  ONLY ONE AD_CONT PER SPECIES/ALIGN");
     ad_species = adptr1;
     ad_ali	= adptr2;
     gb_species = ad_species->gb_species;

@@ -1,4 +1,3 @@
-/*#include "/us1/user/julie/dmalloc/malloc.h"*/
 /*********************CLUSTALW.H*********************************************/
 /****************************************************************************/
 
@@ -13,7 +12,7 @@
 
 /*#define MSDOS 1               Turbo C for PC's */
 
-#define UNIX 1                /*Ultrix/Decstation, Gnu C for 
+#define UNIX 1                /*Ultrix/Decstation, Gnu C for
                                 Sun, IRIX/SGI, OSF1/ALPHA */
 
 /***************************************************************************/
@@ -25,7 +24,7 @@
 #define MAXNAMES		30	/* Max chars read for seq. names */
 #define MAXTITLES		60      /* Title length */
 #define FILENAMELEN 	256             /* Max. file name length */
-	
+
 #define UNKNOWN   0
 #define EMBLSWISS 1
 #define PIR 	  2
@@ -56,7 +55,7 @@
 
 #ifdef VMS						/* Defaults for VAX VMS */
 #define COMMANDSEP '/'
-#define DIRDELIM ']'		/* Last character before file name in full file 
+#define DIRDELIM ']'		/* Last character before file name in full file
 							   specs */
 #define INT_SCALE_FACTOR 1000 /* Scaling factor to convert float to integer for profile scores */
 
@@ -113,7 +112,7 @@ typedef struct {
 #define MAXMAT 10
 
 typedef struct {
-	int llimit;	
+	int llimit;
 	int ulimit;
 	short *matptr;
 	short *aa_xref;
@@ -123,7 +122,7 @@ typedef struct {
 	int nmat;
 	SeriesMat mat[MAXMAT];
 } UserMatSeries;
-	
+
 
 /*
    Prototypes
@@ -165,7 +164,7 @@ void calc_gap_coeff(char **alignment, sint *gaps, sint **profile, Boolean struct
                    char *gap_penalty_mask, sint first_seq, sint last_seq,
                    sint prf_length, sint gapcoef, sint lencoef);
 /* calcprf1.c */
-void calc_prf1(sint **profile, char **alignment, sint *gaps, sint matrix[NUMRES ][NUMRES ], 
+void calc_prf1(sint **profile, char **alignment, sint *gaps, sint matrix[NUMRES ][NUMRES ],
                sint *seq_weight, sint prf_length, sint first_seq, sint last_seq);
 /* calcprf2.c */
 void calc_prf2(sint **profile, char **alignment, sint *seq_weight, sint prf_length,

@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 #include <string.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <memory.h>
 int aisc_make_sets(long *obj);	/* sets in a create request */
 int aisc_talking_get_index (int u, int o);

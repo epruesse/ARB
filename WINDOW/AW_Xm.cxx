@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <math.h>
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -54,9 +54,9 @@ int	drawflag = 0;
 				gcm->gc,(int)CX0,(int)CY0,(int)CX1,(int)CY1);
 		}
 	}
-    
+
     AUTO_FLUSH(this);
-    
+
 	return drawflag;
 }
 
@@ -70,9 +70,9 @@ int AW_draw_string_on_screen(AW_device *device, int gc,const  char *str, size_t 
     aw_assert(size <= strlen(str));
 	XDrawString(device->common->display, device->common->window_id, device->common->gcs[gc]->gc,
                 AW_INT(X), AW_INT(Y), str + start , (int)size);
-    
+
     AUTO_FLUSH(device);
-    
+
 	return 1;
 }
 
@@ -80,7 +80,7 @@ int AW_draw_string_on_screen(AW_device *device, int gc,const  char *str, size_t 
 int AW_device_Xm::text(int gc, const char *str,AW_pos x,AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2,long opt_strlen) {
 	return text_overlay(gc,str,opt_strlen,x,y,alignment,filteri,(AW_CL)this, cd1,cd2,0.0,0.0,AW_draw_string_on_screen);
 }
- 
+
 int AW_device_Xm::box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
 	AWUSE(cd1);AWUSE(cd2);
 	register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
@@ -106,9 +106,9 @@ int AW_device_Xm::box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW
 			((int)CX1)-((int)CX0), ((int)CY1)-((int)CY0) );
 		}
 	}
-    
+
     AUTO_FLUSH(this);
-    
+
 	return 0;
 }
 
@@ -147,15 +147,15 @@ int AW_device_Xm::circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos widt
             }
 		}
 	}
-    
+
     AUTO_FLUSH(this);
-    
+
 	return 0;
 }
 
 void AW_device_Xm::clear() {
 	XClearWindow(common->display,common->window_id);
-    
+
     AUTO_FLUSH(this);
 }
 
@@ -182,8 +182,8 @@ AW_pos X,Y;									// Transformed pos
 	if ( width <= 0 || height <= 0 ) return;
 
 	XClearArea(common->display,common->window_id,(int)X,(int)Y,(int)width,(int)height,False);
-    
-    AUTO_FLUSH(this);    
+
+    AUTO_FLUSH(this);
 }
 
 
@@ -215,7 +215,7 @@ void AW_device_Xm::clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW
 
 	XClearArea(common->display, common->window_id,
                (int)X,(int)Y-(int)xfs->max_bounds.ascent,(int)width,(int)height,False);
-    
+
     AUTO_FLUSH(this);
 }
 

@@ -1,4 +1,4 @@
-/* 
+/*
 #######################################
 #                                     #
 #    ORS_CLIENT:  JAVA                #
@@ -10,7 +10,7 @@ const int MAXIMUM_LINE_LENGTH = 1024;
 #include <stdlib.h>
 #include <string.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
@@ -39,7 +39,7 @@ char *TRS_export_error(const char *templat, ...)
     va_list	parg;
     sprintf (buffer,"ARB ERROR: ");
     p += strlen(p);
-    va_start(parg,templat);	
+    va_start(parg,templat);
 
     vsprintf(p,templat,parg);
 
@@ -158,7 +158,7 @@ char *TRS_mergesort(void **array,long start, long end, long (*compare)(void *,vo
 /********************************************************************************************
 					read a file to memory
 ********************************************************************************************/
-char *TRS_read_file(const char *path) 
+char *TRS_read_file(const char *path)
 {
     FILE *input;
     long data_size;
@@ -266,7 +266,7 @@ GB_INLINE void t2j_flush_nibble(void){
 	int o = t2j_last_nibble<<4 | 15;
 	fputc(o,t2j_out);
 	t2j_last_nibble = -1;
-    }	
+    }
 }
 
 int t2j_last_bit_string = 0;
@@ -570,7 +570,7 @@ char *T2J_send_bit_coded_tree(char *path_of_tree, FILE *out){
     return 0;
 }
 /***********************************************************************
-	Send the tree.   level numbering !!! branch lengths from 0-15 
+	Send the tree.   level numbering !!! branch lengths from 0-15
 	Sideeffects: writes to out
 ***********************************************************************/
 CAT_node_id *t2j_mcreate_level_indexing(void){
@@ -606,7 +606,7 @@ char *T2J_send_branch_lengths(char *path_of_tree, FILE *out){
 	if node is grouped -> subtree is not exported
 	if node.color == 0 -> prune node
 	add addbl to branch length
-	
+
 ***********************************************************************/
 #define SEPERATOR '\''
 
@@ -634,10 +634,10 @@ void t2j_send_newick_rek(CAT_node *node, double addbl, FILE *out){
 	    name = & cat_tree->data[n_offset];
 	}
     }
-    
+
     CAT_node *ln = &cat_tree->nodes[node->leftson];
     CAT_node *rn = &cat_tree->nodes[node->rightson];
-    
+
     if ( (ln->color & rn->color ) == 0){	// prune tree, descend into only one branch
 	if (ln->color != 0){
 	    t2j_send_newick_rek(ln,addbl + node->branch_length_float ,out);
@@ -646,7 +646,7 @@ void t2j_send_newick_rek(CAT_node *node, double addbl, FILE *out){
 	}
 	return;
     }
-    
+
     if (!node->is_grouped){
 	fprintf(out,"(");
 	t2j_send_newick_rek(ln,0,out);
@@ -732,7 +732,7 @@ const char *t2j_group_tree(CAT_node_id *levelindex,const char *grouped){
     return 0;
 }
 
-	    
+
 char *T2J_send_newick_tree(const char *path_of_tree,
 			   char *changedNodes,
 			   char *selectedNodes,
@@ -749,9 +749,9 @@ char *T2J_send_newick_tree(const char *path_of_tree,
 	    return 0;
 	}
     }
-    
+
     T2J_set_color_of_selection(selectedNodes);
-    
+
     {
 	int i;
 	for (i=0;i<cat_tree->nnodes;i++){
@@ -919,12 +919,12 @@ char *T2J_transfer_group_names(char *path_of_tree,FILE *out) {
 	if (node->field_offsets[CAT_FIELD_GROUP_NAME]) {
 	    node->user_data = cat_tree->data + node->field_offsets[CAT_FIELD_GROUP_NAME];
 	}
-		
+
     }
     return T2J_send_tree(0);
 }
 
-long	t2j_get_deepest_node_that_contains_all_selected(CAT_node_id nn, 
+long	t2j_get_deepest_node_that_contains_all_selected(CAT_node_id nn,
 							char *selected_ids,long nselected, CAT_node_id *focusout){
     CAT_node *node = & cat_tree->nodes[nn];
     long sum = 0;
@@ -966,7 +966,7 @@ void T2J_convert_colors_into_selection(){
 	}
 	if (sel == cat_tree->nnodes) break;	// no more selections
 	// search a non selected terminal
-	
+
 	int nsel;
 	for (nsel = sel; nsel < cat_tree->nnodes; nsel++){
 	    if ( cat_tree->nodes[nsel].leftson != 0) continue; // inner node
@@ -976,14 +976,14 @@ void T2J_convert_colors_into_selection(){
 	int first = cat_tree->nodes[sel].numbering[CAT_NUMBERING_LEVELS];		// convert to level numbering
 	int last = nsel;
 	if (nsel < cat_tree->nnodes) last = cat_tree->nodes[nsel].numbering[CAT_NUMBERING_LEVELS];
-	
+
 	int h = lastWritten;
 	lastWritten = last;
 	last -= first;	// calculate delta values
 	first -= h;
 
 	t2j_out_number( first,'A' );
-	t2j_out_number( last,'a' );	
+	t2j_out_number( last,'a' );
     }
     printf("\n");
 }
@@ -996,7 +996,7 @@ void T2J_convert_colors_into_selection(){
 	sel			what is send from the java as a selection
 	varname			a string that is prepended to the output
 	all_nodes		output = all nodes or just ranges
-	field_name		which field should be placed in the output CAT_FIELD_NAME/CAT_FIELD_FULL_NAME ... 
+	field_name		which field should be placed in the output CAT_FIELD_NAME/CAT_FIELD_FULL_NAME ...
 
 	if all_nodes >0 then the programm calculates:
 	focusout		the internal id that contains all selected nodes
@@ -1009,7 +1009,7 @@ char *T2J_get_selection(char *path_of_tree, char *sel, const char *varname, int 
     if (!cat_tree)	cat_tree = load_CAT_tree(path_of_tree);
     if (!cat_tree) return 0;
     CAT_node_id *levelindex = t2j_mcreate_level_indexing();
-	
+
     char *readp = sel;
     int nselected = 0;
     char *selected_ids = (char *)calloc(sizeof(char), cat_tree->nnodes);
@@ -1019,7 +1019,7 @@ char *T2J_get_selection(char *path_of_tree, char *sel, const char *varname, int 
     int fac;
     TRS_strcat(memfile,varname);
     readp = sel;
-    c = *(readp++); 
+    c = *(readp++);
     int last = 0;
     for (; c >='A' && c <='Z'; ){
 	fac = 1;s = last;
@@ -1039,7 +1039,7 @@ char *T2J_get_selection(char *path_of_tree, char *sel, const char *varname, int 
 	if (e > cat_tree->nnodes) e = cat_tree->nnodes;
 	if (s >= cat_tree->nnodes) e = cat_tree->nnodes-1;
 	last = e;
-		
+
 	if (all_nodes) {
 	    for (;s<e;s++) {
 		TRS_strcat(memfile,	cat_tree->data +
@@ -1050,7 +1050,7 @@ char *T2J_get_selection(char *path_of_tree, char *sel, const char *varname, int 
 		TRS_chrcat(memfile,'#');
 	    }
 	}else{
-	    TRS_strcat(memfile,cat_tree->data + 
+	    TRS_strcat(memfile,cat_tree->data +
 		       cat_tree->nodes[levelindex[s]].field_offsets[field_name]);
 	    // thats one of my favourite statements
 	    TRS_chrcat(memfile,'#');
@@ -1067,7 +1067,7 @@ char *T2J_get_selection(char *path_of_tree, char *sel, const char *varname, int 
 	if (nselected == 1) {
 	    t2j_get_deepest_node_that_contains_all_selected(
 							    0,selected_ids,nselected,focusout);
-	    if (maxnodeout ) *maxnodeout = cat_tree->data + 
+	    if (maxnodeout ) *maxnodeout = cat_tree->data +
 				 cat_tree->nodes[*focusout].
 				 field_offsets[CAT_FIELD_NAME];
 	    if (maxnodehits) *maxnodehits = 1.0;
@@ -1076,13 +1076,13 @@ char *T2J_get_selection(char *path_of_tree, char *sel, const char *varname, int 
 							    0,selected_ids,nselected,focusout);
 	    CAT_node_id nextuppderlabeldnode = *focusout;
 
-	    while ( nextuppderlabeldnode > 0 
+	    while ( nextuppderlabeldnode > 0
 		    && cat_tree->nodes[nextuppderlabeldnode].
 		    field_offsets[CAT_FIELD_GROUP_NAME] == 0 ) {
 		nextuppderlabeldnode = cat_tree->nodes[nextuppderlabeldnode].father;
 	    }
 	    if (nextuppderlabeldnode) {	// get the name of the node
-		if (maxnodeout ) *maxnodeout = cat_tree->data + 
+		if (maxnodeout ) *maxnodeout = cat_tree->data +
 				     cat_tree->nodes[nextuppderlabeldnode].
 				     field_offsets[CAT_FIELD_GROUP_NAME];
 		if (maxnodehits) *maxnodehits = (double)nselected/
@@ -1139,8 +1139,8 @@ void T2J_set_color_of_selection(char *sel ){
 	cat_tree->nodes[s].color = 0;
     }
 
-		  
-    c = *(readp++); 
+
+    c = *(readp++);
     for (; c >='A' && c <='Z'; ){
 	fac = 1;s = last;
 	while ( c >='A' && c <='Z' ) {		// Read the start of the selection
@@ -1159,7 +1159,7 @@ void T2J_set_color_of_selection(char *sel ){
 	if (e > cat_tree->nnodes) e = cat_tree->nnodes;
 	if (s >= cat_tree->nnodes) e = cat_tree->nnodes-1;
 	last = e;
-		
+
 	for (;s<e;s++) {
 	    cat_tree->nodes[levelindex[s]].color = 1;
 	}

@@ -1,6 +1,6 @@
 
 
-#include <malloc.h>
+// #include <malloc.h>
 #include <stdlib.h>
 #include "ali_misc.hxx"
 #include "ali_solution.hxx"
@@ -72,7 +72,7 @@ int ALI_MAP::is_konsistent(void)
 	for (i = 1; i <= last_seq_base - first_seq_base; i++)
 		if ((*mapping)[i-1] >= (*mapping)[i])
 			return 0;
-	
+
 	return 1;
 }
 
@@ -84,8 +84,8 @@ ALI_SEQUENCE *ALI_MAP::sequence(ALI_NORM_SEQUENCE *ref_seq)
    ALI_SEQUENCE *sequence;
    unsigned char *seq, *seq_buffer;
 
-	seq_buffer = (unsigned char *) CALLOC((unsigned int) 
-	               (last_ref_base - first_ref_base + insert_counter + 1), 
+	seq_buffer = (unsigned char *) CALLOC((unsigned int)
+	               (last_ref_base - first_ref_base + insert_counter + 1),
 						sizeof(unsigned char));
 
 	if (seq_buffer == 0)
@@ -137,7 +137,7 @@ ALI_SEQUENCE *ALI_MAP::sequence_without_inserts(ALI_NORM_SEQUENCE *ref_seq)
    ALI_SEQUENCE *sequence;
    unsigned char *seq, *seq_buffer;
 
-	seq_buffer = (unsigned char *) CALLOC((unsigned int) 
+	seq_buffer = (unsigned char *) CALLOC((unsigned int)
 	               (last_ref_base - first_ref_base + 1), sizeof(unsigned char));
 	if (seq_buffer == 0)
 		ali_fatal_error("Out of memory");
@@ -182,8 +182,8 @@ ALI_MAP *ALI_MAP::inverse_without_inserts(void)
 {
    unsigned long map_pos;
 	ALI_MAP *inv_map;
- 
-   inv_map = new ALI_MAP(first_ref_base, last_ref_base, 
+
+   inv_map = new ALI_MAP(first_ref_base, last_ref_base,
 							    first_seq_base, last_seq_base);
 
    for (map_pos = 0; map_pos <= last_seq_base - first_seq_base; map_pos++) {
@@ -193,7 +193,7 @@ ALI_MAP *ALI_MAP::inverse_without_inserts(void)
 							 map_pos);
       }
    }
- 
+
    return inv_map;
 }
 
@@ -203,7 +203,7 @@ char *ALI_MAP::insert_marker(void)
    unsigned long map_pos, seq_pos;
    char *seq, *seq_buffer;
 
-	seq_buffer = (char *) CALLOC( (last_ref_base - first_ref_base + insert_counter + 2), 
+	seq_buffer = (char *) CALLOC( (last_ref_base - first_ref_base + insert_counter + 2),
 						sizeof(char));
 
    seq = seq_buffer;
@@ -335,7 +335,7 @@ int ALI_SUB_SOLUTION::free_area(
 	return 0;
 }
 
-unsigned long ALI_SUB_SOLUTION::number_of_free_areas(void) 
+unsigned long ALI_SUB_SOLUTION::number_of_free_areas(void)
 {
    ALI_MAP *map;
 	unsigned long last_of_prev;
@@ -346,7 +346,7 @@ unsigned long ALI_SUB_SOLUTION::number_of_free_areas(void)
 
 	counter = 0;
 	map = map_list.first();
-	if (map->first_base() > 0 && map->first_reference_base() > 0) 
+	if (map->first_base() > 0 && map->first_reference_base() > 0)
 		counter++;
 
    last_of_prev = map->last_base();
@@ -364,7 +364,7 @@ unsigned long ALI_SUB_SOLUTION::number_of_free_areas(void)
 }
 
 
-int ALI_SUB_SOLUTION::is_konsistent(ALI_MAP *in_map) 
+int ALI_SUB_SOLUTION::is_konsistent(ALI_MAP *in_map)
 {
 	ALI_MAP *map;
 	unsigned long last_of_prev, last_of_prev_ref;
@@ -386,7 +386,7 @@ int ALI_SUB_SOLUTION::is_konsistent(ALI_MAP *in_map)
 	last_of_prev_ref = map->last_reference_base();
 	while (map_list.is_next()) {
 		map = map_list.next();
-		if (last_of_prev < in_map->first_base() && 
+		if (last_of_prev < in_map->first_base() &&
 			 in_map->last_base() < map->first_base() &&
 			 last_of_prev_ref < in_map->first_reference_base() &&
 			 in_map->last_reference_base() < map->first_reference_base()) {
@@ -509,7 +509,7 @@ ALI_MAP *ALI_SUB_SOLUTION::make_one_map(void)
 
    new_map = new ALI_MAP(first_base_of_first,last_base_of_last,
 								 first_reference_of_first,last_reference_of_last);
-	
+
 	map = map_list.first();
 	do {
 	   last_pos = 0;
@@ -523,10 +523,10 @@ ALI_MAP *ALI_SUB_SOLUTION::make_one_map(void)
 			last_pos = map->position(i);
 
 			if (map->is_inserted(i))
-            new_map->set(i,map->first_reference_base() + 
+            new_map->set(i,map->first_reference_base() +
 									map->position(i) - first_reference_of_first,1);
 			else
-				new_map->set(i,map->first_reference_base() + 
+				new_map->set(i,map->first_reference_base() +
 									map->position(i) - first_reference_of_first,0);
 		}
 
@@ -559,9 +559,9 @@ void ALI_SUB_SOLUTION::print(void)
 }
 
 
-		
 
 
- 
-		
+
+
+
 

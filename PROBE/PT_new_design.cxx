@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+// #include <malloc.h>
 
 #include <PT_server.h>
 #include <PT_server_prototypes.h>
@@ -48,16 +48,16 @@ struct ptnd_loop_com {
 extern "C" long ptnd_compare_quality(void *PT_tprobes_ptr1, void *PT_tprobes_ptr2, char*) {
     PT_tprobes *tprobe1 = (PT_tprobes*)PT_tprobes_ptr1;
     PT_tprobes *tprobe2 = (PT_tprobes*)PT_tprobes_ptr2;
-	
+
     if (tprobe1->quality < tprobe2->quality) return 1;
     return -1;
 }
 extern "C" long ptnd_compare_sequence(void *PT_tprobes_ptr1, void *PT_tprobes_ptr2, char*) {
     PT_tprobes *tprobe1 = (PT_tprobes*)PT_tprobes_ptr1;
     PT_tprobes *tprobe2 = (PT_tprobes*)PT_tprobes_ptr2;
-	
+
     return strcmp(tprobe1->sequence,tprobe2->sequence);
-}    
+}
 
 void ptnd_sort_probes_by(PT_pdc *pdc, int mode)	/* mode 0 quality
                                                    mode 1	sequence */
@@ -83,7 +83,7 @@ void ptnd_sort_probes_by(PT_pdc *pdc, int mode)	/* mode 0 quality
             GB_mergesort((void **)my_list,0,list_len,ptnd_compare_sequence,0);
             break;
     }
-			
+
     for (i=0;i<list_len;i++) {
         aisc_unlink((struct_dllheader_ext*)my_list[i]);
         aisc_link((struct_dllpublic_ext*)&(pdc->ptprobes),(struct_dllheader_ext*)my_list[i]);
@@ -173,7 +173,7 @@ double ptnd_check_split(PT_pdc *pdc, char *probe, int pos, char ref)
 			primary search for probes
 ***********************************************************************/
 /* count all mishits for a probe */
-	
+
 int ptnd_chain_count_mishits(int name, int apos, int rpos, long dummy)
 {
     char *probe = psg.probe;
@@ -191,21 +191,21 @@ int ptnd_chain_count_mishits(int name, int apos, int rpos, long dummy)
     dummy = dummy;
     return 0;
 }
-	
+
 /* go down the tree to chains and leafs; count the species that are in the non member group */
 int ptnd_count_mishits2(POS_TREE *pt)
 {
     int	base;
     int	name;
     int	mishits = 0;
-	
+
     if (pt == NULL)
         return 0;
     if (PT_read_type(pt) == PT_NT_LEAF) {
         name = PT_read_name(psg.ptmain,pt);
         int apos = PT_read_apos(psg.ptmain,pt);
         if (apos>psg.apos) psg.apos = apos;
-        if (!psg.data[name].is_group) 	return 1;	
+        if (!psg.data[name].is_group) 	return 1;
         return 0;
     }else if (PT_read_type(pt) == PT_NT_CHAIN) {
         psg.probe = 0;
@@ -215,7 +215,7 @@ int ptnd_count_mishits2(POS_TREE *pt)
     }else{
         for (base = PT_QU; base< PT_B_MAX; base++) {
             mishits += ptnd_count_mishits2(PT_read_son(psg.ptmain,pt,(PT_BASES)base));
-        }		
+        }
         return mishits;
     }
 }
@@ -307,7 +307,7 @@ extern "C" char *get_design_hinfo(PT_tprobes  *tprobe) {
     sprintf(s,sprint,"Target");
     s += strlen(s);
 
-    sprintf(s,"%2s %4s   %4s ","le","apos","ecol"); 
+    sprintf(s,"%2s %4s   %4s ","le","apos","ecol");
     s += strlen(s);
 
     sprintf(s,"%4s ","grps");		// groupsize
@@ -324,7 +324,7 @@ extern "C" char *get_design_hinfo(PT_tprobes  *tprobe) {
     s += strlen(s);
 
     return buffer;
-}    
+}
 
 /* search down the tree to find matching species for the given probe */
 int ptnd_count_mishits(char	*probe, POS_TREE	*pt,int  height)
@@ -345,12 +345,12 @@ int ptnd_count_mishits(char	*probe, POS_TREE	*pt,int  height)
         return mishits;
     }
     if (*probe) {
-        if (PT_read_type(pt) == PT_NT_LEAF) { 
+        if (PT_read_type(pt) == PT_NT_LEAF) {
             pos = PT_read_rpos(psg.ptmain,pt) + height;
             name = PT_read_name(psg.ptmain,pt);
             if (pos + (int)(strlen(probe)) >= psg.data[name].size)		/* after end */
                 return 0;
-			
+
             while (*probe) {
                 if (psg.data[name].data[pos++] != *(probe++))
                     return 0;
@@ -361,9 +361,9 @@ int ptnd_count_mishits(char	*probe, POS_TREE	*pt,int  height)
             ptnd.mishits = 0;
             PT_read_chain(psg.ptmain,pt, ptnd_chain_count_mishits, 0);
             return ptnd.mishits;
-        }	
+        }
     }
-    return ptnd_count_mishits2(pt);	
+    return ptnd_count_mishits2(pt);
 }
 
 void ptnd_first_check(PT_pdc *pdc)	/* checks the direkt mishits */
@@ -469,7 +469,7 @@ void ptnd_duplikate_probepart_rek(PT_pdc *pdc, char *insequence, int deep, doubl
     max_bind = ptnd_check_max_bond(pdc, base);
     for (i = PT_A; i <=PT_T; i++) {
         sequence[deep] = i;
-        if ( (split = ptnd_check_split(pdc, insequence, deep, i)) < 0.0) continue; 
+        if ( (split = ptnd_check_split(pdc, insequence, deep, i)) < 0.0) continue;
         /* this mismatch splits the probe in several domains */
         ndt = split + dt;
         nsum_bonds = sum_bonds+max_bind-split;
@@ -485,7 +485,7 @@ void ptnd_duplikate_probepart(PT_pdc *pdc)
 
     while (( parts = pdc->parts ))
         destroy_PT_probeparts(parts);	/* delete the source */
-	
+
     while (( parts = pdc->dparts ))
     {
         aisc_unlink((struct_dllheader_ext*)parts);
@@ -499,7 +499,7 @@ void ptnd_duplikate_probepart(PT_pdc *pdc)
 extern "C" long ptnd_compare_parts(void *PT_probeparts_ptr1, void *PT_probeparts_ptr2, char*) {
     PT_probeparts *tprobe1 = (PT_probeparts*)PT_probeparts_ptr1;
     PT_probeparts *tprobe2 = (PT_probeparts*)PT_probeparts_ptr2;
-	
+
     return strcmp(tprobe1->sequence,tprobe2->sequence);
 }
 
@@ -519,7 +519,7 @@ void ptnd_sort_parts(PT_pdc *pdc)
         my_list[i] = tprobe;
     }
     GB_mergesort((void **)my_list,0,list_len,ptnd_compare_parts,0);
-			
+
     for (i=0;i<list_len;i++) {
         aisc_unlink((struct_dllheader_ext*)my_list[i]);
         aisc_link((struct_dllpublic_ext*)&(pdc->pparts),(struct_dllheader_ext*)my_list[i]);
@@ -559,7 +559,7 @@ void ptnd_check_part_inc_dt(PT_pdc *pdc ,PT_probeparts *parts,
     double	h;
     char	*probe;
     int	split;
-	
+
     if (( start = parts->start )) {		/* look backwards */
         probe = parts->source->sequence;
         pos = rpos-1;
@@ -575,7 +575,7 @@ void ptnd_check_part_inc_dt(PT_pdc *pdc ,PT_probeparts *parts,
             split = 1;
         }
     }
-    ndt = 	(	dt * pdc->dt + 
+    ndt = 	(	dt * pdc->dt +
                 (tprobe->sum_bonds - sum_bonds)*pdc->dte	)
         /tprobe->seq_len;
     pos = (int)ndt;
@@ -606,14 +606,14 @@ void ptnd_check_part_inc_dt(PT_pdc *pdc ,PT_probeparts *parts,
 int	ptnd_check_inc_mode(PT_pdc *pdc ,PT_probeparts *parts,double dt,double sum_bonds)
 {
     PT_tprobes *tprobe = parts->source;
-    double ndt = 	(	dt * pdc->dt + 
+    double ndt = 	(	dt * pdc->dt +
                         (tprobe->sum_bonds - sum_bonds)*pdc->dte	)
         /tprobe->seq_len;
     int	pos = (int)ndt;
     if (pos >= PERC_SIZE) return 1;		/* out of observation */
     return 0;
 }
-	
+
 int ptnd_chain_check_part(int name, int apos, int rpos, long split)
 {
     char *probe = psg.probe;
@@ -626,7 +626,7 @@ int ptnd_chain_check_part(int name, int apos, int rpos, long split)
     if (!ptnd.new_match && psg.data[name].is_group) return 0;		/* dont count group or neverminds */
     if (probe) {
         pos = rpos+psg.height;
-        while (probe[height] && (base = psg.data[name].data[pos])) {	
+        while (probe[height] && (base = psg.data[name].data[pos])) {
             if (!split && (h = ptnd_check_split(ptnd.pdc, probe, height,
                                                 base) < 0.0) ){
                 dt -= h;
@@ -641,13 +641,13 @@ int ptnd_chain_check_part(int name, int apos, int rpos, long split)
     ptnd_check_part_inc_dt(ptnd.pdc,ptnd.parts,name,apos,rpos,dt,sbond);
     return 0;
 }
-	
+
 /* go down the tree to chains and leafs; check all  */
 void ptnd_check_part_all(POS_TREE *pt, double dt, double sum_bonds)
 {
     int base;
     int	name, apos, rpos;
-	
+
     if (pt == NULL)
         return;
     if (PT_read_type(pt) == PT_NT_LEAF) {
@@ -665,7 +665,7 @@ void ptnd_check_part_all(POS_TREE *pt, double dt, double sum_bonds)
     }else{
         for (base = PT_QU; base< PT_B_MAX; base++) {
             ptnd_check_part_all(PT_read_son(psg.ptmain,pt,(PT_BASES)base),dt,sum_bonds);
-        }		
+        }
     }
 }
 /* search down the tree to find matching species for the given probe */
@@ -679,7 +679,7 @@ void ptnd_check_part(char *probe, POS_TREE *pt,int  height, double dt, double su
     int	nsplit;
     int	ref;
     if (!pt) return;
-    if (dt/ptnd.parts->source->seq_len > PERC_SIZE) return;	/* out of scope */ 
+    if (dt/ptnd.parts->source->seq_len > PERC_SIZE) return;	/* out of scope */
     if (PT_read_type(pt) == PT_NT_NODE && probe[height]) {
         if (split && ptnd_check_inc_mode(ptnd.pdc ,ptnd.parts, dt, sum_bonds)) return;
         for (i=PT_A; i<PT_B_MAX; i++) {
@@ -699,8 +699,8 @@ void ptnd_check_part(char *probe, POS_TREE *pt,int  height, double dt, double su
                         nsplit = 1;
                     }else{
                         ndt = dt + h;
-                        nsum_bonds += 
-                            ptnd_check_max_bond(ptnd.pdc,probe[height]) - h;	
+                        nsum_bonds +=
+                            ptnd_check_max_bond(ptnd.pdc,probe[height]) - h;
                     }
                 }
                 if (nsplit && height <= DOMAIN_MIN_LENGTH) continue;
@@ -710,7 +710,7 @@ void ptnd_check_part(char *probe, POS_TREE *pt,int  height, double dt, double su
         return;
     }
     if (probe[height]) {
-        if (PT_read_type(pt) == PT_NT_LEAF) { 
+        if (PT_read_type(pt) == PT_NT_LEAF) {
             name = PT_read_name(psg.ptmain,pt);
             if (!ptnd.new_match && psg.data[name].is_group) 	return;
             rpos = PT_read_rpos(psg.ptmain,pt);
@@ -742,9 +742,9 @@ void ptnd_check_part(char *probe, POS_TREE *pt,int  height, double dt, double su
             ptnd.sum_bonds = sum_bonds;
             PT_read_chain(psg.ptmain,pt, ptnd_chain_check_part, split);
             return;
-        }	
+        }
     }
-    ptnd_check_part_all(pt,dt,sum_bonds);	
+    ptnd_check_part_all(pt,dt,sum_bonds);
 }
 void ptnd_check_probepart(PT_pdc *pdc)
 {
@@ -801,7 +801,7 @@ extern "C" {
     }
 }
 
-void ptnd_add_sequence_to_hash(PT_pdc *pdc, GB_HASH *hash, register char *sequence, int seq_len, register int probe_len, char *prefix, int prefix_len){ 
+void ptnd_add_sequence_to_hash(PT_pdc *pdc, GB_HASH *hash, register char *sequence, int seq_len, register int probe_len, char *prefix, int prefix_len){
     register int pos;
     register int c;
     //printf ("Size of sequence %i\n",seq_len);
@@ -846,11 +846,11 @@ void ptnd_build_tprobes(PT_pdc *pdc) {
 
     PT_init_base_string_counter(partstring,PT_A,partsize);
     while (!PT_base_string_counter_eof(partstring)) {
-        hash = GBS_create_hash(defhash,0); // count in how many groups/sequences the tprobe occurs 
-        
+        hash = GBS_create_hash(defhash,0); // count in how many groups/sequences the tprobe occurs
+
         for (name = 0; name < psg.data_count; name++) {
             if(psg.data[name].is_group<=0) continue;
-            
+
             GB_HASH *hash_one = GBS_create_hash(defhash,0); // count tprobe occurances for one group/sequence
             ptnd_add_sequence_to_hash(pdc, hash_one, psg.data[name].data, psg.data[name].size, pdc->probelen, partstring, partsize);
             GBS_hash_do_loop2(hash_one, ptnd_collect_hash, hash); // merge hash_one into hash
@@ -924,9 +924,9 @@ extern "C" int PT_start_design(PT_pdc *pdc, int /*dummy*/) {
     ptnd_sort_probes_by(pdc,0);
     ptnd_probe_delete_all_but(pdc,pdc->clipresult);
     /* ptnd_print_probes(pdc); */
-    
+
     return 0;
-}    
+}
 
 void ptnd_new_match(PT_local * locs, char *probestring)
 {

@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 #include <arbdb.h>
 
@@ -67,7 +67,7 @@ void OC_write_log_message(char *comment) {
 
 	if (comment) fprintf(fd,"\t%s",comment);
 	fprintf(fd,"\n");
-	
+
 	fclose(fd);
 	return;
 }
@@ -116,7 +116,7 @@ void init_server_communication(void)
 	char *servername;
 
 	if( !(servername=(char *)ORS_look_for_server()) ){
-		quit_with_error(ORS_export_error("Cannot find server")); 		
+		quit_with_error(ORS_export_error("Cannot find server"));
 	}
 
 	ors_gl.link = (aisc_com *)aisc_open(servername, &ors_gl.com,AISC_MAGIC_NUMBER);
@@ -125,12 +125,12 @@ void init_server_communication(void)
 	if (!ors_gl.link) {
 		// system("tb/bla -b -d &");
 		// sleep(3);
-		// quit_with_error(ORS_export_error("Link to server failed. Restarting server... try reloading this page.")); 		
-		quit_with_error(ORS_export_error("Link to server failed. Server will be restarted later.")); 		
+		// quit_with_error(ORS_export_error("Link to server failed. Restarting server... try reloading this page."));
+		quit_with_error(ORS_export_error("Link to server failed. Server will be restarted later."));
 
 	}
 	if (init_local_com_struct() ) {
-		quit_with_error(ORS_export_error("Local comm struct failed")); 		
+		quit_with_error(ORS_export_error("Local comm struct failed"));
 	}
 
 	return;
@@ -186,14 +186,14 @@ void OC_normalize_seq(char *seq, char *allowed_bases) {
 	if (!seq || !*seq) return;
 	while (*pos) {
 		if (*pos >= 'a' && *pos <= 'z') *pos = *pos - 'a' + 'A';
-		if (!strchr(allowed_bases, *pos)) 
+		if (!strchr(allowed_bases, *pos))
 			quit_with_error(ORS_export_error("Base '%c' at position %i is not allowed! Allowed are: '%s' (norm)", *pos, (int)(pos-seq)+1, allowed_bases));
 		pos++;
 	}
 }
 
 /******************************************************
-  CALC SEQ & TARGET: 
+  CALC SEQ & TARGET:
 			deletes and mallocs target
 			quit_with_error on error
 *******************************************************/
@@ -212,7 +212,7 @@ void OC_calculate_seq_and_target_seq(char **seq1, char **seq2, char *allowed_bas
 	// empty one is target
 	if (!*seq1 || !**seq1) { tar = *seq1; seq = *seq2; direction=1; }
 	                  else { tar = *seq2; seq = *seq1; direction=2; }
-	
+
 	delete tar;
 	tar = (char *)calloc(sizeof(char), strlen(seq) + 1);
 
@@ -238,7 +238,7 @@ void OC_calculate_seq_and_target_seq(char **seq1, char **seq2, char *allowed_bas
 			case 'X': *tpos = 'X'; break;
 			case 'N': *tpos = 'X'; break;
 			case '.': *tpos = '.'; break;
-			default: 
+			default:
 			quit_with_error(ORS_export_error(
 				"Base '%c' at position %i is not allowed! Allowed are: '%s' (calc_seq)", *spos, (int)(spos-seq)+1, allowed_bases));
 		}

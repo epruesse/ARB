@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <malloc.h>
+// #include <malloc.h>
 
 #include "a3_bihelix.hxx"
 
@@ -31,7 +31,7 @@ struct helix_stack
 	struct helix_stack *next;
 	long				pos;
 	BI_PAIR_TYPE		type;
-	char				c;	
+	char				c;
 }
 #ifdef LINUX
 Helix_Stack
@@ -90,7 +90,7 @@ struct
 
 	pairs[HELIX_PAIR]	  = strdup("AU GU");
 	char_bind[HELIX_PAIR] = strdup("-");
- 
+
 	pairs[HELIX_WEAK_PAIR]	   = strdup("GA GT");
 	char_bind[HELIX_WEAK_PAIR] = strdup(".");
 
@@ -163,7 +163,7 @@ struct
 
 	return 0;
 }
- 
+
 // -----------------------------------------------------------------------------
 	char *A3_BI_Helix::init ( char *helix_nr,
 							  char *helix,
@@ -216,12 +216,12 @@ struct
 
 						if (isdigit(c)) continue;
 					}
-					
+
 					break;
 				}
 			}
 		}
-		
+
 		c = helix[pos];
 
 		if (strchr(LEFT_HELIX,c) || strchr(LEFT_NONS,c))
@@ -291,7 +291,7 @@ struct
 				sprintf(sident,"-%s",ident);
 			}
 
-			entries[pos].helix_nr		 = sident+1;			
+			entries[pos].helix_nr		 = sident+1;
 			entries[stack->pos].helix_nr = sident;
 		}
 	}

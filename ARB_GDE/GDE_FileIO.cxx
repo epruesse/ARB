@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 
 #include <arbdb.h>
@@ -38,7 +38,7 @@ void Regroup(NA_Alignment *alignment)
 	alignment->element[j].groupf = NULL;
 	alignment->element[j].groupb = NULL;
     }
-	
+
     for (group = 1;group <= alignment->numgroups;group++)
     {
 	last = -1;
@@ -47,9 +47,9 @@ void Regroup(NA_Alignment *alignment)
 	    {
 		if(last != -1)
 		{
-		    alignment->element[j].groupb = 
+		    alignment->element[j].groupb =
 			&(alignment->element[last]);
-		    alignment->element[last].groupf = 
+		    alignment->element[last].groupf =
 			&(alignment->element[j]);
 		}
 		last = j;
@@ -134,7 +134,7 @@ char *String(char *str)
 
 
 /*
-LoadData(): 
+LoadData():
 	Load a data set from the command line argument.
 
 Copyright (c) 1989, University of Illinois board of trustees.  All rights
@@ -268,7 +268,7 @@ int FindType(char *name,int *dtype,int *ftype)
 {
 	FILE *file;
 	char in_line[GBUFSIZ];
-	
+
 	file = fopen(name,"r");
 	*dtype=0;
 	*ftype=0;
@@ -395,7 +395,7 @@ int WriteNA_Flat(NA_Alignment *aln,char *filename,int method,int maskable)
 	if(maskable && (method != SELECT_REGION))
 	{
 		for(j=0;j<aln->numelements;j++)
-			if(seqs[j].elementtype == MASK && 
+			if(seqs[j].elementtype == MASK &&
 			    seqs[j].selected)
 				mask = j;
 	}
@@ -419,8 +419,8 @@ int WriteNA_Flat(NA_Alignment *aln,char *filename,int method,int maskable)
 			sprintf(offset_str,"(%d)",offset+aln->rel_offset);
 		else
 			offset_str[0] = '\0';
-		
-		if((((int)j!=mask) && (seqs[j].selected) && method != SELECT_REGION) 
+
+		if((((int)j!=mask) && (seqs[j].selected) && method != SELECT_REGION)
 		|| (method == SELECT_REGION && seqs[j].subselected)
 		|| method == ALL)
 		{
@@ -712,7 +712,7 @@ void ReadCMask(const char *filename)
 
 	    if(IGNORE_DASH && (indx != -1))
 	    {
-		for(jj=0,j=0;(j<curlen) && 
+		for(jj=0,j=0;(j<curlen) &&
 			(jj<aln->element[indx].seqlen);j++,jj++)
 		{
 		    offset = aln->element[indx].offset;
@@ -728,7 +728,7 @@ void ReadCMask(const char *filename)
  *	to the sequence, not the alignment.
  *
  *	The allocated space is equal the seqlen of the matched sequence.
- *	
+ *
  */
 		    if(aln->element[indx].tmatrix)
 			for(;(getelem(&(aln->element[indx]),jj
@@ -882,11 +882,11 @@ int WriteStatus(NA_Alignment *aln,char *filename,int method)
 	if(DataSet == NULL)
 		return(1);
 
-/*	
+/*
 	NAdd = (NA_DisplayData*)((NA_Alignment*)DataSet)->na_ddata;
 	if(NAdd == NULL)
 		return(1);
-*/		
+*/
 
 	file = fopen(filename,"w");
 	if (file == NULL)
@@ -944,7 +944,7 @@ void ReadStatus(char *filename)
 	int i,j;
 	FILE *file;
 	filename=0;
-	
+
 	char in_line[GBUFSIZ],head[GBUFSIZ];
 	file = fopen(filename,"r");
 	for(;!DONE;)
@@ -965,7 +965,7 @@ void ReadStatus(char *filename)
 			}
 		}
 	}
-	
+
 */
 }
 
@@ -1020,7 +1020,7 @@ int WriteCMask(NA_Alignment *aln,char *filename,int method,int maskable)
     if(maskable && (method != SELECT_REGION))
     {
 	for(j=0;j<aln->numelements;j++)
-	    if(seqs[j].elementtype == MASK && 
+	    if(seqs[j].elementtype == MASK &&
 	       seqs[j].selected)
 		mask = j;
     }
@@ -1042,8 +1042,8 @@ int WriteCMask(NA_Alignment *aln,char *filename,int method,int maskable)
 	    sprintf(offset_str,"(%d)",offset+aln->rel_offset);
 	else
 	    offset_str[0] = '\0';
-		
-	if((((int)j!=mask) && (seqs[j].selected) && method != SELECT_REGION) 
+
+	if((((int)j!=mask) && (seqs[j].selected) && method != SELECT_REGION)
 	   || (method == SELECT_REGION && seqs[j].subselected)
 	   || method == ALL)
 	{

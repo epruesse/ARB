@@ -4,7 +4,7 @@
 #include <xview/cursor.h>
 #include <xview/panel.h>
 #include <string.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include "loop.h"
 #include "globals.h"
 
@@ -204,11 +204,11 @@ void EventHandler(window,event,arg)
 					    case POSITIONAL:
 						SetPos(nuc_sel1,nuc_sel2,x,y);
 						break;
-	
+
 					    case ANGULAR:
 						SetAng(nuc_sel1,nuc_sel2,x,y);
 						break;
-	
+
 					    case DISTANCE:
 						SetDist(nuc_sel1,nuc_sel2,x,y);
 						break;
@@ -222,7 +222,7 @@ void EventHandler(window,event,arg)
 				UnHiLite(nuc_sel1);
                                 UnHiLite(nuc_sel2);
                                 select_state=0;
-                                nuc_sel1= -1; 
+                                nuc_sel1= -1;
                                 nuc_sel2= -1;
 				select_state=0;
                                 break;
@@ -245,9 +245,9 @@ int nuc;
 	return;
 }
 
-UnHiLite(nuc) 
-int nuc; 
-{ 
+UnHiLite(nuc)
+int nuc;
+{
 	if(nuc == -1) return;
 	baselist[nuc].attr &= ~HILITE;
 	if(baselist[nuc].depth<ddepth)
@@ -307,9 +307,9 @@ double x,y;
 
 
 SetPos(nuc1,nuc2,x,y)
-int nuc1,nuc2; 
-double x,y; 
-{ 
+int nuc1,nuc2;
+double x,y;
+{
 	int i,nuc,pair;
 	double dx,dy,sqrt();
 
@@ -343,9 +343,9 @@ double x,y;
 
 
 SetAng(nuc1,nuc2,x,y)
-int nuc1,nuc2; 
-double x,y; 
-{ 
+int nuc1,nuc2;
+double x,y;
+{
 	int i,j;
 	double dist,theta;
 	double sqrt(),sin(),cos(),atan2();
@@ -542,7 +542,7 @@ PlaceLabel(label,nucnum,pw)
 Label *label;
 int nucnum;
 Pixwin *pw;
-{	
+{
 	Base *b;
 	int j;
 	double x,y,theta,xc,yc,sin(),cos(),atan2();
@@ -576,7 +576,7 @@ Pixwin *pw;
 		}
 
 		x = b->x+label->dist*cos(theta)-xc;
-		y = b->y+label->dist*sin(theta)-yc; 
+		y = b->y+label->dist*sin(theta)-yc;
 	}
 	label -> x=x;
 	label -> y=y;
@@ -593,7 +593,7 @@ Pixwin *pw;
 */
 	return;
 }
-	
+
 
 IsLoop(n1,n2)
 int n1,n2;

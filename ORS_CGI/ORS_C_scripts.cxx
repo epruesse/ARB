@@ -1,7 +1,7 @@
 #include <stdio.h>
 # include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
@@ -33,7 +33,7 @@ char *ors_remove_leading_spaces(char *data){
 }
 
 FILE *ors_tcp_open(char *mach_name, int socket_id) {
-	
+
 	int      so;
 	struct in_addr  addr;	/* union -> u_long  */
 	struct		hostent *he;
@@ -108,10 +108,10 @@ GB_ERROR ORS_file_2_java(char *command, char *tree, FILE *fd){
 	memfile = GBS_stropen(100000);	// start with 0.1 meg of memory
 	int i;
 	register int c;
-	while ( (c = getc(fd)) != EOF) GBS_chrcat(memfile,c);	
+	while ( (c = getc(fd)) != EOF) GBS_chrcat(memfile,c);
 	int size = GBS_memoffset(memfile);		// sizeof data
 	char *data = GBS_strclose(memfile,0);
-	// ** Now I would like to use perl, instead I have to use this ugly C 
+	// ** Now I would like to use perl, instead I have to use this ugly C
 	// Lets check the content type first
 	char *nl = strchr(data,'\n');
 	if (!nl) return ORS_export_error("Your script '%s' has no output (%s)!!!",command,data);
@@ -126,16 +126,16 @@ GB_ERROR ORS_file_2_java(char *command, char *tree, FILE *fd){
 	data = ors_remove_leading_spaces(strchr(data,':')+1);
 	if ( !ORS_strncasecmp(data,"ascii")){
 		if (!source_is_java) 	printf("Content-type: text/plain\n\n%s",nl);
-		else			printf("A%s",nl);		// write ASCII-TAG + DATA 
+		else			printf("A%s",nl);		// write ASCII-TAG + DATA
 		return 0;
 	}else 	if ( !ORS_strncasecmp(data,"error")){
 		if (!source_is_java) 	printf("Content-type: text/plain\n\n%s",nl);
-		else			printf("E%s",nl);		// write ASCII-TAG + DATA 	
+		else			printf("E%s",nl);		// write ASCII-TAG + DATA
 		return 0;
 	}else 	if ( !ORS_strncasecmp(data,"form")){
 		return ors_form_2_java(nl);	// parse the form that means removing all spaces!!
 	}else 	if ( !ORS_strncasecmp(data,"link")){
-		printf("l%s",nl);		// write ASCII-TAG + DATA 
+		printf("l%s",nl);		// write ASCII-TAG + DATA
 		return 0;
 	}else 	if ( !ORS_strncasecmp(data,"ovp/")){
 		if (source_is_java) {				// from java to java
@@ -162,7 +162,7 @@ GB_ERROR ORS_file_2_java(char *command, char *tree, FILE *fd){
 					return ORS_export_error("Cannot write to tmp file '%s'",tmpfile);
 				}
 				ors_ovp_2_java(data+4,nl,tree,out);
-				fclose(out);				
+				fclose(out);
 				printf("Goto the java window and press 'Get last netscape query'\n");
 			}else{
 				FILE *out = ors_tcp_open(server_name,port);
@@ -220,7 +220,7 @@ void ors_client_error(char *error) {
 	printf("Content-type:  error=\n\n%s\n", error);
 }
 
-GB_ERROR 
+GB_ERROR
 ORS_C_exec_script(char *tree, char *command)
 {
 	FILE           *tfp;

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 
 #include <adlocal.h>
 #include <arbdb.h>
@@ -17,7 +17,7 @@ GB_Consensus *g_b_new_Consensus(long len){
     int i;
     unsigned char *data = (unsigned char *)GB_calloc(sizeof(char)*256,len);
     gcon->len = len;
-    
+
     for (i=0;i<256;i++){
         gcon->con[i] = data + len*i;
     }
@@ -85,7 +85,7 @@ char *g_b_Consensus_get_sequence(GB_Consensus *gcon){
     char *seq = (char *)GB_calloc(sizeof(char),gcon->len+1);
 
     memset(seq,'@',gcon->len);
-    
+
     for (c = 1; c<256;c++){	/* Find maximum frequency of non run */
         if (!gcon->used[c]) continue;
         s = gcon->con[c];
@@ -257,12 +257,12 @@ char *gb_compress_seq_by_master(const char *master,int master_len,int master_ind
     int last;
     long len = seq_len;
     d = buffer = (unsigned char *)GB_give_other_buffer(seq,seq_len);
- 
+
     if (seq_len > master_len){
         rest = seq_len - master_len;
         len = master_len;
     }
-    
+
     last = -1000;		/* Convert Sequence relative to Master */
     for( i = len; i>0; i--){
         cm = *(master++);
@@ -287,9 +287,9 @@ char *gb_compress_seq_by_master(const char *master,int master_len,int master_ind
 
         g_b_put_number2(master_index,&dest2); /* Tags */
         g_b_put_number2(q,&dest2);
-	
+
         gb_compress_equal_bytes_2((char *)buffer,seq_len,memsize,(char *)dest2); /* append runlength compressed sequences to tags */
-	
+
         *memsize = *memsize + (dest2-buffer2);
         return (char *)buffer2;
     }
@@ -319,7 +319,7 @@ NOT4PERL GB_ERROR GBT_compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, co
     int q;
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     q = gb_key_2_quark(Main,ali_name);
-    
+
     do {
         long seq_len = GBT_get_alignment_len(gb_main,(char *)ali_name);
         main_clock = GB_read_clock(gb_main);
@@ -329,7 +329,7 @@ NOT4PERL GB_ERROR GBT_compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, co
         }
         leafcount = g_b_count_leafs(tree);
         if (!leafcount) return 0;
-	
+
         g_b_number_of_sequences_to_compress = (1 + leafcount) * (2.0 + 1.0 / MAX_SEQUENCE_PER_MASTER);
         g_b_counter_of_sequences_to_compress = 0;
         seqs = (GB_Sequence *)GB_calloc(sizeof(GB_Sequence),leafcount);
@@ -352,7 +352,7 @@ NOT4PERL GB_ERROR GBT_compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, co
         g_b_set_masters_and_set_leafs(tree,seqs,&seqcount,masters,&mastercount,(char *)ali_name,gb_master_ali);
         g_b_create_master(tree,seqs,masters,-1,ali_name,seq_len);
     } while(0);
-    
+
     /* Now compress everything !!! */
     {
         long sizes =0 ;
@@ -370,7 +370,7 @@ NOT4PERL GB_ERROR GBT_compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, co
             int	mi = seqs[si].master;
             GB_Master *master = masters[mi];
             GBDATA *gbd = seqs[si].gbd;
-	    
+
             char *seqm = GB_read_string(master->gbd);
             int master_len = GB_read_string_count(master->gbd);
             if (GB_read_clock(gbd) >= main_clock){
@@ -384,7 +384,7 @@ NOT4PERL GB_ERROR GBT_compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, co
 
             ss = gb_compress_sequence_by_master(gbd,seqm,master_len,mi,q,seq,seq_len,&sizes);
             gb_write_compressed_pntr(gbd,ss,sizes,seq_len);
-	    
+
             GB_status( (++g_b_counter_of_sequences_to_compress) / g_b_number_of_sequences_to_compress);
 
             sumorg += seq_len;
@@ -437,10 +437,10 @@ NOT4PERL GB_ERROR GBT_compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, co
                 sizen = GB_read_memuse(gbd);
                 ss = gb_compress_sequence_by_master(gbd,seqm,master_len,mi,q,seq,seq_len,&sizes);
                 gb_write_compressed_pntr(gbd,ss,sizes,seq_len);
-	    
+
                 g_b_counter_of_sequences_to_compress++;
                 GB_status(g_b_counter_of_sequences_to_compress / g_b_number_of_sequences_to_compress);
-	    
+
                 sumnew+= sizes;
                 free(seqm);
                 free(seq);
@@ -470,7 +470,7 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, con
     char *to_free = 0;
     if (Main->transaction>0){
         GB_internal_error("Internal Error: Compress Sequences called during a running transacton");
-        return GB_export_error("Internal Error: Compress Sequences called during a running transacton"); 
+        return GB_export_error("Internal Error: Compress Sequences called during a running transacton");
     }
     GB_request_undo_type(gb_main,GB_UNDO_KILL);
     GB_begin_transaction(gb_main);
@@ -603,7 +603,7 @@ char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master
 }
 
 char *gb_uncompress_by_sequence(GBDATA *gbd, const char *s,long size, GB_ERROR *error){
-    register char *dest;    
+    register char *dest;
     GB_MAIN_TYPE *Main;
     GBDATA *gb_main;
     GBDATA *gb_master;
@@ -612,22 +612,22 @@ char *gb_uncompress_by_sequence(GBDATA *gbd, const char *s,long size, GB_ERROR *
     int index;
     long master_size;
     char *to_free;
-    
+
     *error = 0;
-    
+
     if (!GB_FATHER(gbd)) {
         *error = "Cannot uncompress this sequence: Sequence has no father";
         return 0;
     }
-    
+
     Main = GB_MAIN(gbd);
     gb_main = (GBDATA *)Main->data;
 
     to_free = gb_check_out_buffer(s); /* Get our own buffer, maybe load_single_key_data will destroy it */
-	
+
     index = g_b_read_number2((unsigned char **)&s);
     quark = g_b_read_number2((unsigned char **)&s);
-	
+
     if (!Main->keys[quark].gb_master_ali){
         gb_load_single_key_data(gb_main,quark);
     }
@@ -635,7 +635,7 @@ char *gb_uncompress_by_sequence(GBDATA *gbd, const char *s,long size, GB_ERROR *
         *error = "Cannot uncompress this sequence: Cannot find a master sequence";
         return 0;
     }
-	
+
     gb_master = gb_find_by_nr(Main->keys[quark].gb_master_ali,index);
     if (!gb_master){
         return (char *)GB_get_error();

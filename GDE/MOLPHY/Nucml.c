@@ -622,7 +622,7 @@ FILE *ofp;
 	if (Debug_optn) prsequence(ofp, Identif, Seqchar, Maxspc, Maxsite);
 	getfreqepm(Seqchar, Freqemp, Maxspc, Maxsite);
 	alias = new_ivector(Maxsite);
-	radixsort(Seqchar, alias, Maxspc, Maxsite, &Numptrn);
+	a_radixsort(Seqchar, alias, Maxspc, Maxsite, &Numptrn);
 	Seqconint = new_imatrix(Maxspc, Numptrn);
 	Weight = new_ivector(Numptrn);
 	condenceseq(Seqchar, alias, Seqconint, Weight, Maxspc, Maxsite, Numptrn);
@@ -1200,7 +1200,7 @@ FILE *ofp;
 		Qhead->residual = 0.0;
 		for (Cnotree = 0; Cnotree < Numqltree; Cnotree++) {
 			Alklptrn = Lklptrn[Cnotree];
-			if (Cnotree == 0) 
+			if (Cnotree == 0)
 				initturn(Ctree);
 			else
 				randturn(Ctree);

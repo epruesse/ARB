@@ -202,7 +202,7 @@ FILE *ofp;
 
 	getfreqepm(Seqchar, Freqemp, Maxspc, Maxsite);
 	alias = new_ivector(Maxsite);
-	radixsort(Seqchar, alias, Maxspc, Maxsite, &Numptrn);
+	a_radixsort(Seqchar, alias, Maxspc, Maxsite, &Numptrn);
 	Seqconint = new_imatrix(Maxspc, Numptrn);
 	Weight = new_ivector(Numptrn);
 	condenceseq(Seqchar, alias, Seqconint, Weight, Maxspc, Maxsite, Numptrn);

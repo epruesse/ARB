@@ -1,4 +1,4 @@
-/* 
+/*
 #################################
 #                               #
 #    ORS_SERVER:  PROBEDB       #
@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <memory.h>
 
-#include <malloc.h>
+// #include <malloc.h>
 #include <math.h>
 
 #include <ors_lib.h>
@@ -111,9 +111,9 @@ void OS_read_probedb_fields_into_pdb_list(ORS_main *ors_main) {
 /*************************************************************************************
   open the probe database
 *************************************************************************************/
-GB_ERROR OS_open_probedb(void){	
+GB_ERROR OS_open_probedb(void){
 
-	char *name = ORS_read_a_line_in_a_file(ORS_LIB_PATH "CONFIG","PROBE_DB");  
+	char *name = ORS_read_a_line_in_a_file(ORS_LIB_PATH "CONFIG","PROBE_DB");
 	if (!name) ORS_export_error("Missing 'PROBE_DB' in '" ORS_LIB_PATH "CONFIG'");
 
 	gb_probedb = GB_open(name,"rwc");
@@ -272,7 +272,7 @@ char * OS_read_probe_info(char *probe_id, char *fieldname ){
 /*************************************************************************************
   WRITE PROBE FIELD INFORMATION into user database WITH EXISTING GB_PROBE
 	a non existing field is being created (if content is not empty)
-							return error message or NULL 
+							return error message or NULL
 							no authorisation here!
 *************************************************************************************/
 GB_ERROR OS_write_gb_probe_info_string(GBDATA *gb_probe, char *fieldname, char *content){
@@ -289,7 +289,7 @@ GB_ERROR OS_write_gb_probe_info_string(GBDATA *gb_probe, char *fieldname, char *
 
 /*************************************************************************************
   READ PROBE FIELD INFORMATION from user database WITH EXISTING GB_PROBE
-							return value or NULL 
+							return value or NULL
 							no authorisation here!
 *************************************************************************************/
 char * OS_read_gb_probe_info_string(GBDATA *gb_probe, char *fieldname){
@@ -332,12 +332,12 @@ char *OS_create_new_probe_id(char *userpath) {
 
 	static char buffer[20];
 	int next_probe_id;
-	
+
 	GBDATA *gb_id = GB_search(gb_probedb, "next_probe_id", GB_INT);		// creates field if not available
-	next_probe_id = GB_read_int(gb_id);	
+	next_probe_id = GB_read_int(gb_id);
 	GB_write_int(gb_id, ++next_probe_id);
 	sprintf(buffer,"%i", next_probe_id);
-	
+
 	return strdup(buffer);
 }
 
@@ -411,26 +411,26 @@ bytestring *OS_list_of_probes(ORS_local *locs, char *userpath, int list_type, in
 			gb_probe_field = GB_find(gb_probe, "p_author", userpath, down_level | search_next) ) { // search 1 level down but parallel
 
 			gb_probe = GB_get_father(gb_probe_field);
-	
+
 			// allowed to see existance?
 			gb_field = GB_find(gb_probe,"p_pub_exist",0,down_level);
 			delete read_data;
 			read_data = GB_read_string(gb_field);
 			if (!OS_read_access_allowed(locs->userpath, read_data)) continue;
-	
+
 			struct OS_probe *probe_struct = (struct OS_probe *)calloc(sizeof(struct OS_probe), 1);
 			probes[num_probes++] = probe_struct;
-	
+
 			gb_field = GB_find(gb_probe,"probe_id",0,down_level);
 			if (gb_field) probe_struct->probe_id 		= GB_read_string(gb_field);
-	
+
 			gb_field = GB_find(gb_probe,"p_author_date",0,down_level);		//! creation date of this probe
 			if (gb_field) probe_struct->author_date 	= GB_read_string(gb_field);
-	
+
 			gb_field = GB_find(gb_probe,"p_probe_name",0,down_level);		//! name of this probe
 			if (gb_field) probe_struct->probe_name 	= GB_read_string(gb_field);
-	
-			gb_field = GB_find(gb_probe,"p_probe_info",0,down_level);		//! short description of probe		
+
+			gb_field = GB_find(gb_probe,"p_probe_info",0,down_level);		//! short description of probe
 			if (gb_field) probe_struct->probe_info 	= GB_read_string(gb_field);
 
 			if (num_probes > MAX_SORT) break;
@@ -469,26 +469,26 @@ bytestring *OS_list_of_probes(ORS_local *locs, char *userpath, int list_type, in
 			gb_probe_field = GB_find(gb_probe, "p_author", "*", down_level | search_next) ) { // search 1 level down but parallel
 
 			gb_probe = GB_get_father(gb_probe_field);
-	
+
 			// allowed to see existance?
 			gb_field = GB_find(gb_probe,"p_pub_exist",0,down_level);
 			delete read_data;
 			read_data = GB_read_string(gb_field);
 			if (!OS_read_access_allowed(locs->userpath, read_data)) continue;
-	
+
 			struct OS_probe *probe_struct = (struct OS_probe *)calloc(sizeof(struct OS_probe), 1);
 			probes[num_probes++] = probe_struct;
 
 			gb_field = GB_find(gb_probe,"probe_id",0,down_level);
 			if (gb_field) probe_struct->probe_id 		= GB_read_string(gb_field);
-	
+
 			gb_field = GB_find(gb_probe,"p_author",0,down_level);			//! author of this probe
 			if (gb_field) probe_struct->author 		= GB_read_string(gb_field);
-	
+
 			gb_field = GB_find(gb_probe,"p_probe_name",0,down_level);
 			if (gb_field) probe_struct->probe_name 	= GB_read_string(gb_field);
-	
-			gb_field = GB_find(gb_probe,"p_probe_info",0,down_level);		
+
+			gb_field = GB_find(gb_probe,"p_probe_info",0,down_level);
 			if (gb_field) probe_struct->probe_info 	= GB_read_string(gb_field);
 
 			if (num_probes > MAX_SORT) break;
@@ -543,12 +543,12 @@ bytestring *OS_list_of_probes(ORS_local *locs, char *userpath, int list_type, in
 		for (	gb_probe = GB_find(gb_probedb, "probe", 0, down_level);
 			gb_probe;
 			gb_probe = GB_find(gb_probe, "probe", 0, this_level | search_next) ) { // search 1 level down but parallel
-	
+
 			gb_field = GB_find(gb_probe,"p_pub_exist",0,down_level);
 			delete read_data;
 			read_data = GB_read_string(gb_field);
 			if (!OS_read_access_allowed(locs->userpath, read_data)) continue;
-	
+
 			if (search_any_only) {
 				found_any=0;
 				if (locs->search_any_field && *locs->search_any_field)
@@ -579,21 +579,21 @@ bytestring *OS_list_of_probes(ORS_local *locs, char *userpath, int list_type, in
 				if (!found) continue;
 				if (locs->search_any_field && *locs->search_any_field && !found_any) continue;
 			}
-	
-	
+
+
 			struct OS_probe *probe_struct = (struct OS_probe *)calloc(sizeof(struct OS_probe), 1);
 			probes[num_probes++] = probe_struct;
-	
+
 			gb_field = GB_find(gb_probe,"probe_id",0,down_level);
 			if (gb_field) probe_struct->probe_id 		= GB_read_string(gb_field);
-	
+
 			gb_field = GB_find(gb_probe,"p_author",0,down_level);			//! author of this probe
 			if (gb_field) probe_struct->author 		= GB_read_string(gb_field);
-	
+
 			gb_field = GB_find(gb_probe,"p_probe_name",0,down_level);
 			if (gb_field) probe_struct->probe_name 	= GB_read_string(gb_field);
-	
-			gb_field = GB_find(gb_probe,"p_probe_info",0,down_level);		
+
+			gb_field = GB_find(gb_probe,"p_probe_info",0,down_level);
 			if (gb_field) probe_struct->probe_info 	= GB_read_string(gb_field);
 
 			if (num_probes > MAX_SORT) break;
@@ -642,7 +642,7 @@ bytestring *OS_list_of_probes(ORS_local *locs, char *userpath, int list_type, in
 		all probes of this user have to be changed
 *****************************************************************************/
 //void OS_probe_change_of_userpath(char *old_userpath, char *new_userpath) {
-	// TODO: funktion wird gebraucht!	
+	// TODO: funktion wird gebraucht!
 //}
 
 /*****************************************************************************
@@ -677,7 +677,7 @@ int OS_owners_of_pdb_list_allowed(ORS_local *locs, char *mode) {
 		if (!gb_probe_id) return 0;
 		gb_probe = GB_get_father(gb_probe_id);
 	}
-	
+
 	for (pdb_elem = ors_main->pdb_list; pdb_elem; pdb_elem = OS_next_pdb_list_elem(ors_main->pdb_list, pdb_elem)) {
 		if (!pdb_elem->content) continue;
 		if (ORS_strcmp(pdb_elem->name, "p_owner")) continue;	// only test owner fields
@@ -715,7 +715,7 @@ int OS_owner_of_probe(ORS_local *locs) {
 
 	GBDATA *gb_probe_id = GB_find(gb_probedb,"probe_id",locs->probe_id,down_2_level);
 	if (!gb_probe_id) return 0;
-	
+
 	GBDATA *gb_probe = GB_get_father(gb_probe_id);
 	//GBDATA *gb_field;
 	int is_superuser = OS_read_user_info_int(locs->userpath, "is_superuser");
@@ -757,7 +757,7 @@ int OS_count_probes_of_author(char *userpath) {
 	}
 	return total;
 }
-	
+
 /************************************************************
   TRANSFER PROBES of one user to another
 			or only one probe if probe_id is set
@@ -778,7 +778,7 @@ void OS_probe_user_transfer(ORS_local *locs, char *from_userpath, char *to_userp
 		for (	gb_probe_field = GB_find(gb_probedb, "p_author", from_userpath, down_2_level);
 			gb_probe_field;
 			gb_probe_field = GB_find(gb_probe, "p_author", from_userpath, down_level | search_next) ) { // search 1 level down but parallel
-	
+
 			gb_probe = GB_get_father(gb_probe_field);
 			OS_write_gb_probe_info_string(gb_probe, "p_author", to_userpath);
 		}

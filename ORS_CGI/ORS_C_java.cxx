@@ -1,4 +1,4 @@
-/* 
+/*
 #######################################
 #                                     #
 #    ORS_CLIENT:  JAVA                #
@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <arbdb.h>
 #include <arbdbt.h>
 
@@ -52,7 +52,7 @@ GB_INLINE void t2j_flush_nibble(void){
 		int o = t2j_last_nibble<<4 | 15;
 		fputc(o,t2j_out);
 		t2j_last_nibble = -1;
-	}	
+	}
 }
 
 int t2j_last_bit_string = 0;
@@ -307,8 +307,8 @@ GB_ERROR T2J_send_tree(CAT_node_id focus, char *modifier_string){
 	Transform any query list to OTF
 	Sideeffects: no !!!!
 ***********************************************************************/
-GB_ERROR T2J_transform(char *path_of_tree, char *modifier_string, 
-		struct T2J_transfer_struct *data, 
+GB_ERROR T2J_transform(char *path_of_tree, char *modifier_string,
+		struct T2J_transfer_struct *data,
 		CAT_node_id focus, FILE *out){
 	if (!cat_tree)	cat_tree = load_CAT_tree(path_of_tree);
 	if (!cat_tree) return GB_get_error();
@@ -384,7 +384,7 @@ void t2j_send_newick_rek(CAT_node *node, FILE *out){
 	fprintf(out,"):%i",ode->branch_length);
     }
 }
-    
+
 GB_ERROR T2J_send_newick_tree(char *path_of_tree, FILE *out){
     if (!cat_tree)	cat_tree = load_CAT_tree(path_of_tree);	// 3 lines that should never be deleted
     if (!cat_tree) return GB_get_error();
@@ -395,9 +395,9 @@ GB_ERROR T2J_send_newick_tree(char *path_of_tree, FILE *out){
     return 0;
 }
 
-    
+
 /***********************************************************************
-	Send the tree.   level numbering !!! branch lengths from 0-15 
+	Send the tree.   level numbering !!! branch lengths from 0-15
 	Sideeffects: writes to out
 ***********************************************************************/
 CAT_node_id *t2j_mcreate_level_indexing(void){
@@ -570,12 +570,12 @@ GB_ERROR T2J_transfer_group_names(char *path_of_tree,FILE *out) {
 		if (node->field_offsets[CAT_FIELD_GROUP_NAME]) {
 			node->user_data = cat_tree->data + node->field_offsets[CAT_FIELD_GROUP_NAME];
 		}
-		
+
 	}
 	return T2J_send_tree(0,0);
 }
 
-long	t2j_get_deepest_node_that_contains_all_selected(CAT_node_id nn, 
+long	t2j_get_deepest_node_that_contains_all_selected(CAT_node_id nn,
 			char *selected_ids,long nselected, CAT_node_id *focusout){
 	CAT_node *node = & cat_tree->nodes[nn];
 	long sum = 0;
@@ -614,7 +614,7 @@ char *T2J_get_selection(char *path_of_tree, char *sel, const char *varname, int 
 	if (!cat_tree)	cat_tree = load_CAT_tree(path_of_tree);
 	if (!cat_tree) return 0;
 	CAT_node_id *levelindex = t2j_mcreate_level_indexing();
-	
+
 	char *readp = sel;
 	int nselected = 0;
 	char *selected_ids = (char *)calloc(sizeof(char), cat_tree->nnodes);
@@ -624,7 +624,7 @@ char *T2J_get_selection(char *path_of_tree, char *sel, const char *varname, int 
 	int fac;
 	GBS_strcat(memfile,varname);
 	readp = sel;
-	c = *(readp++); 
+	c = *(readp++);
 	int last = 0;
 	for (; c >='A' && c <='Z'; ){
 		fac = 1;s = last;
@@ -644,7 +644,7 @@ char *T2J_get_selection(char *path_of_tree, char *sel, const char *varname, int 
 		if (e > cat_tree->nnodes) e = cat_tree->nnodes;
 		if (s >= cat_tree->nnodes) e = cat_tree->nnodes-1;
 		last = e;
-		
+
 		if (all_nodes) {
 			for (;s<e;s++) {
 				GBS_strcat(memfile,	cat_tree->data +
@@ -655,7 +655,7 @@ char *T2J_get_selection(char *path_of_tree, char *sel, const char *varname, int 
 				GBS_chrcat(memfile,'#');
 			}
 		}else{
-			GBS_strcat(memfile,cat_tree->data + 
+			GBS_strcat(memfile,cat_tree->data +
 				cat_tree->nodes[levelindex[s]].field_offsets[CAT_FIELD_NAME]);
 					// thats one of my favourites statements
 			GBS_chrcat(memfile,'#');
@@ -672,7 +672,7 @@ char *T2J_get_selection(char *path_of_tree, char *sel, const char *varname, int 
 		if (nselected == 1) {
 			t2j_get_deepest_node_that_contains_all_selected(
 						0,selected_ids,nselected,focusout);
-				if (maxnodeout ) *maxnodeout = cat_tree->data + 
+				if (maxnodeout ) *maxnodeout = cat_tree->data +
 					cat_tree->nodes[*focusout].
 					field_offsets[CAT_FIELD_NAME];
 				if (maxnodehits) *maxnodehits = 1.0;
@@ -681,13 +681,13 @@ char *T2J_get_selection(char *path_of_tree, char *sel, const char *varname, int 
 						0,selected_ids,nselected,focusout);
 			CAT_node_id nextuppderlabeldnode = *focusout;
 
-			while ( nextuppderlabeldnode > 0 
+			while ( nextuppderlabeldnode > 0
 					&& cat_tree->nodes[nextuppderlabeldnode].
 						field_offsets[CAT_FIELD_GROUP_NAME] == 0 ) {
 				nextuppderlabeldnode = cat_tree->nodes[nextuppderlabeldnode].father;
 			}
 			if (nextuppderlabeldnode) {	// get the name of the node
-				if (maxnodeout ) *maxnodeout = cat_tree->data + 
+				if (maxnodeout ) *maxnodeout = cat_tree->data +
 					cat_tree->nodes[nextuppderlabeldnode].
 					field_offsets[CAT_FIELD_GROUP_NAME];
 				if (maxnodehits) *maxnodehits = (double)nselected/
@@ -702,7 +702,7 @@ char *T2J_get_selection(char *path_of_tree, char *sel, const char *varname, int 
 /***********************************************************************
 	TEST TEST TEST ...
 ***********************************************************************/
-#if 0 
+#if 0
 int main(int argc, char **argv) {
 	if (argc != 3) {
 		fprintf(stderr,"Syntax: %s treefilename datafile > outfile\n",argv[0]);

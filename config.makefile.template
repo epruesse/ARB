@@ -15,6 +15,11 @@ ECGS = 1# for newer Linux-versions
 
 # export DEBIAN = 1
 
+#********* Mac OSX ********
+
+# MACH   = DARWIN#
+# DARWIN = 1
+
 #********* SUN4 / acc CC / dynamic ********
 
 # MACH = SUN4#

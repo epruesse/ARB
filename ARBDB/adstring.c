@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 
 #include "adlocal.h"
 #include "arbdbt.h"

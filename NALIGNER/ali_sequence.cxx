@@ -2,7 +2,7 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <malloc.h>
+// #include <malloc.h>
 
 #include "ali_misc.hxx"
 #include "ali_sequence.hxx"
@@ -94,14 +94,14 @@ ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(char *name, char *string)
 	}
 }
 
-ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(ALI_SEQUENCE *sequence) 
+ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(ALI_SEQUENCE *sequence)
 {
    unsigned long counter, pos;
 	unsigned char *s;
 	int dot_flag;
 	unsigned char *str;
 
-	for (counter = pos = 0, str = sequence->sequence(); 
+	for (counter = pos = 0, str = sequence->sequence();
 		  pos < sequence->length(); pos++, str++)
 		if (ali_is_base(*str))
 			counter++;
@@ -117,7 +117,7 @@ ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(ALI_SEQUENCE *sequence)
 
    dot_flag = 0;
 	(*dots)[0] |= (unsigned char) (1<<7);
-	for (counter = pos = 0, str = sequence->sequence(), s = seq; 
+	for (counter = pos = 0, str = sequence->sequence(), s = seq;
 		  pos < sequence->length(); str++, pos++) {
 		if (ali_is_base(*str)) {
 			*s++ = *str;

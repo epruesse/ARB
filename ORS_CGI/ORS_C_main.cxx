@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <malloc.h>
+// #include <malloc.h>
 #include <string.h>
 #include <arbdb.h>
 
@@ -34,10 +34,10 @@ void get_indata(void) {
 	char *indata;
 
 	ors_gl.remote_host = getenv("REMOTE_HOST");
-	if (!ors_gl.remote_host) quit_with_error(ORS_export_error("REMOTE_HOST not set")); 		
+	if (!ors_gl.remote_host) quit_with_error(ORS_export_error("REMOTE_HOST not set"));
 
 	ors_gl.remote_user = getenv("REMOTE_USER");
-	if (ors_gl.remote_user == NULL) ors_gl.remote_user = "unknown"; 
+	if (ors_gl.remote_user == NULL) ors_gl.remote_user = "unknown";
 
 	ors_gl.path_info   = getenv("PATH_INFO");
 	if (ors_gl.path_info == NULL) ors_gl.path_info = "";
@@ -50,17 +50,17 @@ void get_indata(void) {
 	// POST means: read contents from stdin
 	else if (!strcmp(request_method,"POST")) {
 		char *temp;
-		if(!(temp=getenv("CONTENT_LENGTH"))) 
-			quit_with_error(ORS_export_error("CONTENT_LENGTH not set")); 		
+		if(!(temp=getenv("CONTENT_LENGTH")))
+			quit_with_error(ORS_export_error("CONTENT_LENGTH not set"));
 		int len=atoi(temp);
 		indata=new char[len+1];
 		indata[len]=0;
 		fread(indata,len,1,stdin);
-	} 
-	else quit_with_error(ORS_export_error("Unknown REQUEST_METHOD: %s",request_method)); 		
+	}
+	else quit_with_error(ORS_export_error("Unknown REQUEST_METHOD: %s",request_method));
 
 	char *pos1, *pos2;
-	int i; 
+	int i;
 
 	int ands    = ORS_str_char_count(indata, '&'); // number of '&'
 	int slashes = ORS_str_char_count(ors_gl.path_info,'/');
@@ -73,9 +73,9 @@ void get_indata(void) {
 		if (pos2) 	*(pos2++) = 0;
 		ors_gl.cgi_vars[i] = pos1;
 	}
-	
-	// transform path_info into cgi string array (appending) 
-	// take only: /taken/taken/dismissed 
+
+	// transform path_info into cgi string array (appending)
+	// take only: /taken/taken/dismissed
 	for (pos1 = ors_gl.path_info + 1; pos1; pos1=pos2, i++) {
 		pos2 = strchr(pos1,'/');
 		if (pos2) {
@@ -95,7 +95,7 @@ void get_indata(void) {
 		while (1) {
 			switch(*pos1) {
 				case '+': c=' '; pos1++; break;
-				case '%': hex[2]=*(pos1+1); hex[3]=*(pos1+2); hex[4]=0; 
+				case '%': hex[2]=*(pos1+1); hex[3]=*(pos1+2); hex[4]=0;
 			        	  pos1+=3;
 				          sscanf(hex, "%i", &h);
 				          c=(char) h;
@@ -125,7 +125,7 @@ char * cgi_var(char *name) {
 		pos2 = strchr(pos+1,'|');
 		len=strlen(name);
 		if (!pos2) pos2 = name + len;
-	
+
 		for (i=0; ors_gl.cgi_vars[i]; i++) {
 			if (!strncasecmp(ors_gl.cgi_vars[i],pos,pos2-pos) && ors_gl.cgi_vars[i][pos2-pos] == '='
 									  && ors_gl.cgi_vars[i][pos2-pos+1])
@@ -153,7 +153,7 @@ char * cgi_var_or_nil(char *name) {
 		pos2 = strchr(pos+1,'|');
 		len=strlen(name);
 		if (!pos2) pos2 = name + len;
-	
+
 		for (i=0; ors_gl.cgi_vars[i]; i++) {
 			if (!strncasecmp(ors_gl.cgi_vars[i],pos,pos2-pos) && ors_gl.cgi_vars[i][pos2-pos] == '=') {
 				if (ors_gl.cgi_vars[i][pos2-pos+1]) return &ors_gl.cgi_vars[i][pos2-pos+1];
@@ -261,7 +261,7 @@ void save_environment_for_debugger(void) {
   #####################################*/
 
 int main(int /*argc*/, char **/*argv*/) {
-  
+
 	char *debug_command;
 	char *html_new;
 	memset((char*)&ors_gl,0,sizeof(struct gl_struct));
@@ -286,7 +286,7 @@ int main(int /*argc*/, char **/*argv*/) {
 
 
 	init_server_communication();
-	
+
 	if (!JAVA) { // Debug-Mode: Output Variables
 		if (ors_gl.debug) {print_content_lines("ANFANG"); }
 	}
@@ -304,7 +304,7 @@ int main(int /*argc*/, char **/*argv*/) {
 	}
 	else OC_dailypw_2_userpath();
 
-	if (ors_gl.userpath == NULL || *(ors_gl.userpath) == 0 || 
+	if (ors_gl.userpath == NULL || *(ors_gl.userpath) == 0 ||
             ors_gl.dailypw  == NULL || *(ors_gl.dailypw)  == 0) {
 		ors_gl.userpath="";  // no admin functionality in html output!
 		OC_output_html_page("unauth");		//! user authorisation failed
@@ -371,10 +371,10 @@ int main(int /*argc*/, char **/*argv*/) {
 		char *password2;
 		ors_gl.password 	= cgi_var("password");		//! password, entered by user (login, preferences)
 		password2 		= cgi_var("password2");		//! reentered password (must be equal)
-		if (	 (!*(ors_gl.password) || !*(password2) ) 
-		     && !(!*(ors_gl.password) && !*(password2) ) ) 
+		if (	 (!*(ors_gl.password) || !*(password2) )
+		     && !(!*(ors_gl.password) && !*(password2) ) )
 					quit_with_error(ORS_export_error("You have to enter password two times!"));
-		if (ORS_strcmp(ors_gl.password,password2)) 
+		if (ORS_strcmp(ors_gl.password,password2))
 					quit_with_error(ORS_export_error("Reentered password differs!"));
 		work_on_user();
 		exit (0); // never reached
@@ -400,7 +400,7 @@ int main(int /*argc*/, char **/*argv*/) {
 		char *password2;
 		ors_gl.sel_password = cgi_var("sel_password");			//! password, entered for sel_user (create/modify sel_user)
 		password2           = cgi_var("sel_password2");			//! reentered password (must be equal to password)
-		if (*(ors_gl.sel_password) && *(password2) && strcmp(ors_gl.sel_password,password2)) 
+		if (*(ors_gl.sel_password) && *(password2) && strcmp(ors_gl.sel_password,password2))
 			quit_with_error(ORS_export_error("Reentered password differs!"));
 
 		if (!strcasecmp(ors_gl.action,"USER_CREATE")) {
@@ -439,7 +439,7 @@ int main(int /*argc*/, char **/*argv*/) {
 		if (*ors_gl.sequence == 0 && *ors_gl.target_seq == 0) 	quit_with_error("Please enter either sequence or target sequence.");
 		if (*ors_gl.sequence) 	OC_normalize_seq(ors_gl.sequence, ors_gl.allowed_bases);
 		if (*ors_gl.target_seq)	OC_normalize_seq(ors_gl.target_seq, ors_gl.allowed_bases);
-		if (*ors_gl.sequence && *ors_gl.target_seq && !ORS_seq_matches_target_seq(ors_gl.sequence, ors_gl.target_seq, 1)) 
+		if (*ors_gl.sequence && *ors_gl.target_seq && !ORS_seq_matches_target_seq(ors_gl.sequence, ors_gl.target_seq, 1))
 			quit_with_error("Sequence and target sequence do not match! Just enter one field, the other is being calculated.");
 
 		OC_calculate_seq_and_target_seq(&ors_gl.sequence, &ors_gl.target_seq, ors_gl.allowed_bases);
@@ -450,7 +450,7 @@ int main(int /*argc*/, char **/*argv*/) {
 			OC_get_pdb_fields_from_cgi_vars("all");		// get values from html page (here: only sequence)
 			OC_send_pdb_fields_to_server("entered");	// send the sequence to probedb server
 			ors_gl.list_of_probes = OC_probe_query(100);	// and look for equal seqs
-	
+
 			if (ors_gl.list_of_probes && *ors_gl.list_of_probes) {
 				OC_output_html_page("probe_seq_exists");	//! show probes with equal sequence information
 				exit(0);
@@ -629,7 +629,7 @@ int main(int /*argc*/, char **/*argv*/) {
 		char *subject, *body;
 		subject = cgi_var("subject");		//! subject of mail message
 		body    = cgi_var("body");		//! body of mail message
-		
+
 		// TODO: mail verschicken
 
 		OC_output_html_page("mail_sent");		//! status message: mail was sent

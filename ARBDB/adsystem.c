@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 
 #include <sys/types.h>
 #include <netinet/in.h>		/* hton ntoh */
@@ -23,14 +23,14 @@ GB_DICTIONARY *gb_create_dict(GBDATA *gb_dict){
     }
     size = GB_read_bytes_count(gb_dict);
     GB_write_security_write(gb_dict,7);
-    
+
     idata = (GB_NINT *)data;
-    dict->words = ntohl(*idata++);			
+    dict->words = ntohl(*idata++);
     dict->textlen = (int)(size - sizeof(GB_NINT)*(1+dict->words*2));
-    
-    dict->offsets = idata;	
+
+    dict->offsets = idata;
     dict->resort =  idata+dict->words;
-    dict->text = (unsigned char*)(idata+2*dict->words);	
+    dict->text = (unsigned char*)(idata+2*dict->words);
 
     return dict;
 }
@@ -47,7 +47,7 @@ void gb_system_key_changed_cb(GBDATA *gbd,int *cl, GB_CB_TYPE type){
         delete_gb_dictionary(Main->keys[q].dictionary);
         Main->keys[q].dictionary = 0;
         Main->keys[q].gb_key = 0;
-    }else{ 
+    }else{
         gb_load_single_key_data(gbd,q);
     }
 }
@@ -70,7 +70,7 @@ void gb_load_single_key_data(GBDATA *gb_main,GBQUARK	q){
         ks->compression_mask = -1;
         return;
     }
-    
+
     gb_main = (GBDATA *)Main->data;
     if (key[0] == '@'){
         ks->compression_mask = 0;
@@ -84,14 +84,14 @@ void gb_load_single_key_data(GBDATA *gb_main,GBQUARK	q){
         gb_name = GB_find(gb_key_data,"@name",key,down_2_level);
         if (gb_name){
             gb_key= GB_get_father(gb_name);
-        }else{	
+        }else{
             gb_key = gb_create_container(gb_key_data,"@key");
             gb_name = gb_create(gb_key,"@name",GB_STRING);
             GB_write_string(gb_name,key);
         }
-	
+
         GB_ensure_callback(gb_key,(GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE),gb_system_key_changed_cb,(int *)q);
-	
+
         ks->compression_mask = (int)GBT_read_int2(gb_key,"compression_mask",-1);
         gb_dict = GB_find(gb_key,"@dictionary",0,down_level);
         if (gb_dict){
@@ -133,12 +133,12 @@ GB_ERROR gb_save_dictionary(GBDATA *gb_main,const char *key,const char *dict, in
         gb_name = GB_find(gb_key_data,"@name",key,down_2_level);
         if (gb_name){
             gb_key= GB_get_father(gb_name);
-        }else{	
+        }else{
             gb_key = gb_create_container(gb_key_data,"@key");
             gb_name = gb_create(gb_key,"@name",GB_STRING);
             GB_write_string(gb_name,key);
         }
-        gb_dict = gb_search(gb_key,"@dictionary",GB_BYTES,1); 
+        gb_dict = gb_search(gb_key,"@dictionary",GB_BYTES,1);
         error = GB_write_bytes(gb_dict,dict,size);
         GB_pop_my_security(gb_main);
     }
@@ -154,7 +154,7 @@ GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main){
     GBDATA *gb_key_data = gb_search(gb_main,GB_SYSTEM_FOLDER "/" GB_SYSTEM_KEY_DATA, GB_CREATE_CONTAINER,1);
     GBDATA *gb_key,*gb_next_key=0;
     int	key;
-    
+
     Main->gb_key_data = gb_key_data;
     if (!Main->local_mode) return 0;	/* do not create anything at the client side */
 
@@ -180,13 +180,13 @@ GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main){
     gb_key_2_quark(Main,"@key");
     gb_key_2_quark(Main,"@dictionary");
     gb_key_2_quark(Main,"compression_mask");
-    
+
     for (key=1;key<Main->sizeofkeys;key++){
         char *k = Main->keys[key].key;
         if (!k) continue;
         gb_load_single_key_data(gb_main,key);
     }
-    
+
 
     GB_pop_my_security(gb_main);
     return 0;

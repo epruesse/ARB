@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <malloc.h>
+/* #include <malloc.h> */
 #include <string.h>
 #include <xview/xview.h>
 #include <xview/panel.h>
@@ -124,7 +124,7 @@ Menu_item mi;
 			    PANEL_CHOICE,
 			    PANEL_LAYOUT,PANEL_HORIZONTAL,
 			    PANEL_LABEL_STRING,thisitem->arg[j].label,
-			    PANEL_NOTIFY_PROC, HandleMenuItem, 
+			    PANEL_NOTIFY_PROC, HandleMenuItem,
 				PANEL_CHOICE_STRING,
 			    0,thisitem->arg[j].choice[0].label,
 			    0);
@@ -176,7 +176,7 @@ Menu_item mi;
 			break;
 
 
-		default: 
+		default:
 			break;
 		};
 	}
@@ -212,7 +212,7 @@ HandleMenuItem():
 	Callback routine for buttons etc. in the dialog box.  Store the
 values returned from the dialog box so that they can be used for calling
 the external function.
-	
+
 Copyright (c) 1989-1990, University of Illinois board of trustees.  All
 rights reserved.  Written by Steven Smith at the Center for Prokaryote Genome
 Analysis.  Design and implementation guidance by Dr. Gary Olsen and Dr.
@@ -311,7 +311,7 @@ DO()
 	if(flag && DataSet)
 		select_mode = TestSelection();
 
-/*	
+/*
 	Make sure that we are still in a writeable directory
 */
 	(void)chdir(current_dir);
@@ -518,10 +518,10 @@ GmenuItemArg arg;
 	/*
 *	The basic idea is to replace all of the symbols in the method
 *	string with the values picked in the dialog box.  The method
-*	is the general command line structure.  All arguements have three 
+*	is the general command line structure.  All arguements have three
 *	parts, a label, a method, and a value.  The method never changes, and
-*	is used to represent '-flag's for a given function.  Values are the 
-*	associated arguements that some flags require.  All symbols that 
+*	is used to represent '-flag's for a given function.  Values are the
+*	associated arguements that some flags require.  All symbols that
 *	require argvalue replacement should have a '$' infront of the symbol
 *	name in the itemmethod definition.  All symbols without the '$' will
 *	be replaced by their argmethod.  There is currently no way to do a label
@@ -550,7 +550,7 @@ GmenuItemArg arg;
 *
 *		argchoice:Argument_label:Argument_method
 *
-*	
+*
 */
 	char *symbol,*method,*textvalue,buf1[GBUFSIZ],buf2[GBUFSIZ],*temp;
 	int i,j,newlen,type;
@@ -871,7 +871,7 @@ int curitem,curmenu;
 			    PANEL_CHOICE,
 			    PANEL_LAYOUT,PANEL_HORIZONTAL,
 			    PANEL_LABEL_STRING,thisitem->arg[j].label,
-			    PANEL_NOTIFY_PROC, HandleMenuItem, 
+			    PANEL_NOTIFY_PROC, HandleMenuItem,
 			    PANEL_CHOICE_STRING,
 			    0,thisitem->arg[j].choice[0].label,
 			    0);
@@ -904,7 +904,7 @@ int curitem,curmenu;
 			break;
 
 
-		default: 
+		default:
 			break;
 		};
 	}

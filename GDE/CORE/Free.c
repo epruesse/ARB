@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <xview/defaults.h>
 #include <xview/xview.h>
-#include <xview/panel.h>                         
-#include <xview/window.h>                         
-#include <xview/icon.h>                         
-#include <pixrect/pixrect.h>                         
-#include <malloc.h>
+#include <xview/panel.h>
+#include <xview/window.h>
+#include <xview/icon.h>
+#include <pixrect/pixrect.h>
+/* #include <malloc.h> */
 #include "menudefs.h"
 #include "defines.h"
 
