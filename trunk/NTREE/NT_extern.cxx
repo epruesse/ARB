@@ -1139,10 +1139,21 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("arb_dist",  "Compare sequences using Distance Matrix", "D", "dist.hlp",                AWM_SEQ, (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0);
             SEP________________________SEP();
 
+#if defined(DEBUG)
+#if defined(DEVEL_RALF)
+#warning sequence quality check for big databases needs to be fixed
+#endif // DEVEL_RALF
             AWMIMT("seq_quality", "Check Sequence Quality",    "",  "seq_quality.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)SQ_create_seq_quality_window, 0);
+#endif // DEBUG
+            
+#if defined(DEBUG)
+#if defined(DEVEL_RALF)
+#warning chimere check needs to be fixed
+#endif // DEVEL_RALF
             AWMIMT("seq_quality", "Chimere Check [broken!]",   "m", "check_quality.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)st_create_quality_check_window, (AW_CL)gb_main);
 
             SEP________________________SEP();
+#endif // DEBUG
 
             GDE_load_menu(awm,"pretty_print");
         }
@@ -1226,15 +1237,15 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 AWMIMT( "arb_dist",     "ARB Neighbor Joining",     "J", "dist.hlp",    AWM_TREE,   (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0 );
                 GDE_load_menu(awm,"Phylogeny_DistMatrix");
                 awm->close_sub_menu();
-                
+
                 awm->insert_sub_menu(0, "Maximum parisimony methods", "p");
                 GDE_load_menu(awm,"Phylogeny_MaxParsimony");
                 awm->close_sub_menu();
-                
+
                 awm->insert_sub_menu(0, "Maximum likelyhood methods", "l");
                 GDE_load_menu(awm,"Phylogeny_MaxLikelyhood");
                 awm->close_sub_menu();
-                
+
                 awm->insert_sub_menu(0, "Other methods", "O");
                 GDE_load_menu(awm,"Phylogeny_Other");
                 awm->close_sub_menu();
@@ -1269,20 +1280,20 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("beautifyb_tree", "#beautifyb.bitmap", "", "resorttree.hlp", AWM_TREE, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 2);
         }
         awm->close_sub_menu();
-        awm->insert_sub_menu(0, "Modify branches", "b");
+        awm->insert_sub_menu(0, "Modify branches", "M");
         {
-            AWMIMT("tree_remove_remark",     "Remove bootstraps",       "b", "trm_boot.hlp",      AWM_TREE, NT_remove_bootstrap,      (AW_CL)ntw, 0);            
+            AWMIMT("tree_remove_remark",     "Remove bootstraps",       "b", "trm_boot.hlp",      AWM_TREE, NT_remove_bootstrap,      (AW_CL)ntw, 0);
             SEP________________________SEP();
-            AWMIMT("tree_reset_lengths",     "Reset branchlengths",    "R", "tbl_reset.hlp",   AWM_TREE, NT_reset_branchlengths,   (AW_CL)ntw, 0); 
-            AWMIMT("justify_branch_lengths", "Justify branchlengths",  "J", "tbl_justify.hlp", AWM_TREE, NT_justify_branch_lenghs, (AW_CL)ntw, 0); 
-            AWMIMT("tree_scale_lengths",     "Scale Branchlengths",    "S", "tbl_scale.hlp",   AWM_TREE, NT_scale_tree,            (AW_CL)ntw, 0); 
+            AWMIMT("tree_reset_lengths",     "Reset branchlengths",    "R", "tbl_reset.hlp",   AWM_TREE, NT_reset_branchlengths,   (AW_CL)ntw, 0);
+            AWMIMT("justify_branch_lengths", "Justify branchlengths",  "J", "tbl_justify.hlp", AWM_TREE, NT_justify_branch_lenghs, (AW_CL)ntw, 0);
+            AWMIMT("tree_scale_lengths",     "Scale Branchlengths",    "S", "tbl_scale.hlp",   AWM_TREE, NT_scale_tree,            (AW_CL)ntw, 0);
             SEP________________________SEP();
             AWMIMT("tree_boot2len",      "Bootstraps -> Branchlengths", "", "tbl_boot2len.hlp", AWM_TREE, NT_move_boot_branch, (AW_CL)ntw, 0);
             AWMIMT("tree_len2boot",      "Bootstraps <- Branchlengths", "", "tbl_boot2len.hlp", AWM_TREE, NT_move_boot_branch, (AW_CL)ntw, 1);
 
         }
         awm->close_sub_menu();
-        AWMIMT("mark_long_branches", "Mark long branches", "l", "mark_long_branches.hlp", AWM_EXP, (AW_CB)NT_mark_long_branches, (AW_CL)ntw, 0); 
+        AWMIMT("mark_long_branches", "Mark long branches", "k", "mark_long_branches.hlp", AWM_EXP, (AW_CB)NT_mark_long_branches, (AW_CL)ntw, 0); 
 
         SEP________________________SEP();
 
