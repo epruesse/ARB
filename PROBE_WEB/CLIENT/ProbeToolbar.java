@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : ProbeToolbar.java                                      // 
 //    Purpose   : Toolbar for application                                // 
-//    Time-stamp: <Sun Mar/14/2004 22:29 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Tue Mar/16/2004 15:13 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -17,6 +17,7 @@ import java.awt.event.*;
 
 class ProbeToolbar extends Panel {
     private ProbesGUI gui;
+    private Button    OL_button;
 
     public ProbesGUI gui() { return gui; }
     public Client client() { return gui.getClient(); }
@@ -40,7 +41,7 @@ class ProbeToolbar extends Panel {
                         else if (cmd.equals("Save"))            client().saveProbes(true);
                         else if (cmd.equals("Overlap"))         gui().toggleOverlap();
                         else if (cmd.equals("Cache"))           tree_display().getLastMatchedNode().cacheAllHits();
-                        
+
                         else if (cmd.equals("ABC"))             probe_list().setSort(Probe.SORT_BY_SEQUENCE);
                         else if (cmd.equals("Len"))             probe_list().setSort(Probe.SORT_BY_LENGTH);
                         else if (cmd.equals("Temp"))            probe_list().setSort(Probe.SORT_BY_TEMPERATURE);
@@ -64,7 +65,7 @@ class ProbeToolbar extends Panel {
         Button toAdd;
         toAdd = new Button("Clear");    toAdd.addActionListener(buttonListener); row.add(toAdd);
         toAdd = new Button("Save");     toAdd.addActionListener(buttonListener); row.add(toAdd);
-        toAdd = new Button("Overlap");  toAdd.addActionListener(buttonListener); row.add(toAdd);
+        toAdd = new Button("Overlap");  toAdd.addActionListener(buttonListener); row.add(toAdd); 
         toAdd = new Button("Cache");    toAdd.addActionListener(buttonListener); row.add(toAdd);
 
         add(row, BorderLayout.NORTH);
@@ -77,8 +78,16 @@ class ProbeToolbar extends Panel {
         toAdd = new Button("Temp");     toAdd.addActionListener(buttonListener); row.add(toAdd);
         toAdd = new Button("GC");       toAdd.addActionListener(buttonListener); row.add(toAdd);
         toAdd = new Button("OL");       toAdd.addActionListener(buttonListener); row.add(toAdd);
+        
+        OL_button = toAdd;
+        set_OL_enabled(false);
+
         toAdd = new Button("Hits");     toAdd.addActionListener(buttonListener); row.add(toAdd);
 
         add(row, BorderLayout.SOUTH);
+    }
+
+    public void set_OL_enabled(boolean enable) {
+        OL_button.setEnabled(enable);
     }
 }
