@@ -253,14 +253,11 @@ void DrawStructure(){
 
     if(!bPointSpritesSupported)
         {
-            glDisable(GL_CULL_FACE);
-            glDisable(GL_LIGHTING);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glEnable(GL_TEXTURE_2D);
-            glPushMatrix();
+            cRenderer->BeginTexturizer();
             
             glBindTexture(GL_TEXTURE_2D, cTexture->texture[STAR]); 
+            glColor4f(0,0,1,1);
+            glCallList(STRUCTURE_BACKBONE_POINTS);
 
             glColor4f(1,0,0,1);
             glBegin(GL_QUADS);
@@ -274,9 +271,7 @@ void DrawStructure(){
             glVertex3f(sCen.x, sCen.y + 2, sCen.z);
             glEnd();
 
-            glPopMatrix();
-            glDisable(GL_TEXTURE_2D);
-            glDisable(GL_BLEND);
+            cRenderer->EndTexturizer();
         }
 	
 //     glPushMatrix();
