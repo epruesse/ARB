@@ -121,6 +121,7 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 
 	SQ_GroupData globalData;
 	SQ_calc_sequence_structure(globalData, gb_main, marked_only);
+	SQ_pass3(globalData, gb_main, marked_only);
 	SQ_reset_quality_calcstate(gb_main);
 	//globalData.SQ_print_on_screen();
 
