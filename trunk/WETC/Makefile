@@ -16,10 +16,16 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-WETC_main.o: 
 WETC_main.o:  
 WETC_main.o:  
-WETC_main.o: $(ARBHOME)/INCLUDE/arbdb.h
+WETC_main.o:  
+WETC_main.o:  
+WETC_main.o:  
+WETC_main.o:  
+WETC_main.o:  
+WETC_main.o:  
+WETC_main.o:  
+WETC_main.o:  $(ARBHOME)/INCLUDE/arbdb.h
 WETC_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx

@@ -13,7 +13,15 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-fastdnaml.o: 
+fastdnaml.o:  
+fastdnaml.o:  
+fastdnaml.o:  
+fastdnaml.o:  
+fastdnaml.o:  
+fastdnaml.o:  
+fastdnaml.o:  
+fastdnaml.o:  
+fastdnaml.o:  
 fastdnaml.o:  
 fastdnaml.o:  
 fastdnaml.o:  fastDNAml_1_0.h

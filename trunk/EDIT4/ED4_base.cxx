@@ -105,9 +105,9 @@ void ED4_terminal::changed_by_database(void)
                     ED4_species_manager *spman = get_parent(ED4_L_SPECIES)->to_species_manager();
 
                     multiman->check_bases_and_rebuild_consensi(dup_data, data_len, spman, ED4_U_UP);
-                    set_refresh(1);
-                    parent->refresh_requested_by_child();
-                    ED4_ROOT->main_manager->Show();
+//                     set_refresh(1);
+//                     parent->refresh_requested_by_child();
+//                     ED4_ROOT->main_manager->Show();
                 }
 
                 delete dup_data;

@@ -541,7 +541,9 @@ public:
 
 typedef ED4_bases_table *ED4_bases_table_ptr;
 
-#define TEST_CHAR_TABLE_INTEGRITY // uncomment to remove tests for ED4_char_table
+#if defined(DEBUG)
+# define TEST_CHAR_TABLE_INTEGRITY // uncomment to remove tests for ED4_char_table
+#endif // DEBUG
 
 // --------------------------------------------------------------------------------
 //     class ED4_char_table
@@ -1263,6 +1265,8 @@ public:
 
     ED4_bases_table& 		table(unsigned char c) {return table().table(c);}
     const ED4_bases_table& 	table(unsigned char c) const {return table().table(c);}
+
+    void reinit_char_table();
 };
 
 typedef enum

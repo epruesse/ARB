@@ -17,7 +17,13 @@ depend:
 
 readseq.o:  
 readseq.o:  
+readseq.o:  
+readseq.o:  
+readseq.o:   
 readseq.o:  ureadseq.h
 ureadseq.o:  
 ureadseq.o:  
+ureadseq.o:  
+ureadseq.o:  
+ureadseq.o:   
 ureadseq.o:  ureadseq.h

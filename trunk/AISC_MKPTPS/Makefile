@@ -18,8 +18,13 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-mkptypes.o: 
-mkptypes.o: 
 mkptypes.o:  
 mkptypes.o:  
-mkptypes.o:  mkptypes.h patchlev.h
+mkptypes.o:  
+mkptypes.o:  
+mkptypes.o:  
+mkptypes.o:  
+mkptypes.o:  
+mkptypes.o:  
+mkptypes.o:  
+mkptypes.o:   mkptypes.h patchlev.h

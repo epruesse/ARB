@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h> 
+#include <string.h>
 #include <memory.h>
 #include <malloc.h>
 #include <assert.h>
@@ -81,7 +81,7 @@ ED4_object_specification sequence_terminal_spec =
 ED4_object_specification pure_text_terminal_spec =
 {
     ED4_P_IS_TERMINAL,     // static props
-    ED4_L_PURE_TEXT,	   // level 
+    ED4_L_PURE_TEXT,	   // level
     ED4_L_NO_LEVEL,        // allowed children level
     ED4_L_NO_LEVEL,        // handled object
     ED4_L_NO_LEVEL,        // restriction level
@@ -108,7 +108,7 @@ ED4_object_specification line_terminal_spec =
     0                      // justification value --no meaning for a terminal
 };
 
-ED4_object_specification column_stat_terminal_spec = 
+ED4_object_specification column_stat_terminal_spec =
 {
     ED4_P_IS_TERMINAL,     // static props
     ED4_L_COL_STAT,        // level
@@ -187,34 +187,39 @@ ED4_ERROR *ED4_terminal::write_sequence(const char *seq, int seq_len)
     ED4_ERROR *err = 0;
     GBDATA *gbd = get_species_pointer();
     e4_assert(gbd);	// we must have a link to the database!
-    
+
     GB_push_transaction(gb_main);
-    
+
+    GB_CPNTR old_seq = 0;
+
     GB_TYPES gb_type = GB_read_type(gbd);
-    switch(gb_type)
-    {
-        case GB_STRING:
-            {
-                err = GB_write_string(gbd, seq);
-                break;
-            }
-        default:
-            {
-                e4_assert(0);
-                break;
-            }
+    switch(gb_type) {
+        case GB_STRING: {
+            old_seq = GB_read_char_pntr(gbd);
+            err = GB_write_string(gbd, seq);
+            break;
+        }
+        default: {
+            e4_assert(0);
+            break;
+        }
     }
-    
+
     GB_pop_transaction(gb_main);
-    
+
     if (!err && dynamic_prop&ED4_P_CONSENSUS_RELEVANT) {
-        get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager()
-            ->check_bases_and_rebuild_consensi(seq, seq_len, get_parent(ED4_L_SPECIES)->to_species_manager(), ED4_U_UP);
-	
+        if (old_seq) {
+            get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager()
+                ->check_bases_and_rebuild_consensi(old_seq, strlen(old_seq), get_parent(ED4_L_SPECIES)->to_species_manager(), ED4_U_UP);
+        }
+        else {
+            aw_message("Couldn't read old sequence data");
+        }
+
         set_refresh();
         parent->refresh_requested_by_child();
     }
-    
+
     return err;
 }
 
@@ -225,11 +230,11 @@ ED4_returncode ED4_terminal::remove_callbacks()						//removes callbacks and gb_
         set_species_pointer(0);
         flag.deleted = 1;
         dynamic_prop = (ED4_properties) (dynamic_prop & ~ED4_P_CURSOR_ALLOWED);
-	
-        set_refresh();	
+
+        set_refresh();
         parent->refresh_requested_by_child();
     }
-    return ED4_R_OK; 
+    return ED4_R_OK;
 }
 
 ED4_returncode ED4_terminal::kill_object()
@@ -248,7 +253,7 @@ ED4_returncode ED4_terminal::kill_object()
             aw_message("You cannot delete this group");
             return ED4_R_IMPOSSIBLE;
         }
-	
+
         group_manager = species_manager;
         while (!group_manager->is_group_manager()) {
             group_manager = group_manager->parent;
@@ -276,10 +281,10 @@ ED4_returncode ED4_terminal::kill_object()
     ED4_device_manager *device_manager = ED4_ROOT->main_manager
         ->get_defined_level(ED4_L_GROUP)->to_group_manager()
         ->get_defined_level(ED4_L_DEVICE)->to_device_manager();
-	
+
     for (i=0; i<device_manager->children->members(); i++) { // when killing species numbers have to be recalculated
         ED4_base *member = device_manager->children->member(i);
-	    
+
         if (member->is_area_manager()) {
             member->to_area_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->generate_id_for_groups();
         }
@@ -315,7 +320,7 @@ ED4_returncode	ED4_terminal::move_requested_by_child(ED4_move_info */*moveinfo*/
     e4_assert(0);
     return ED4_R_IMPOSSIBLE;
 }
-	
+
 
 ED4_base *ED4_terminal::get_competent_child( AW_pos /*x*/, AW_pos /*y*/, ED4_properties /*relevant_prop*/)
 {
@@ -343,7 +348,7 @@ ED4_returncode ED4_terminal::draw_drag_box( AW_pos x, AW_pos y, GB_CSTR text, in
     height = extension.size[HEIGHT] - 1;
 
     if (cursor_y!=-1)
-    { 
+    {
         ED4_device_manager *device_manager = ED4_ROOT->main_manager->search_spec_child_rek(ED4_L_DEVICE)->to_device_manager();
         drag_x = 0;
         drag_y = (AW_pos)cursor_y; // cursor_y is already in world coordinates!
@@ -369,7 +374,7 @@ ED4_returncode ED4_terminal::draw_drag_box( AW_pos x, AW_pos y, GB_CSTR text, in
 
             drag_line_x0[2] = drag_line_x0[0] -ARROW_LENGTH;								// arrow
             drag_line_y0[2] = drag_line_y0[0] +ARROW_LENGTH;
-            drag_line_x1[2] = drag_line_x0[0] ; 
+            drag_line_x1[2] = drag_line_x0[0] ;
             drag_line_y1[2] = drag_line_y0[0];
 #undef ARROW_LENGTH
             for( i = 0; i <= 2; i++ ) {
@@ -388,7 +393,7 @@ ED4_returncode ED4_terminal::draw_drag_box( AW_pos x, AW_pos y, GB_CSTR text, in
 ED4_returncode	ED4_terminal::move_requested_by_parent(ED4_move_info *) { // handles a move request coming from parent
     e4_assert(0);
     return ( ED4_R_IMPOSSIBLE );
-} 
+}
 
 #if defined(DEBUG) && 1
 static inline void dumpEvent(const char *where, AW_event *event) {
@@ -405,7 +410,7 @@ ED4_returncode	ED4_terminal::event_sent_by_parent( AW_event *event, AW_window *a
     static bool     			pressed_left_button = 0;
     static int 				other_x, other_y; // coordinates of last event
     static bool     			right_button_started_on_sequence_term = 0;
-    
+
     switch ( event->type ) {
         case AW_Mouse_Press: {
             switch ( event->button ) {
@@ -426,7 +431,7 @@ ED4_returncode	ED4_terminal::event_sent_by_parent( AW_event *event, AW_window *a
                                 pressed_left_button = 1;
                                 other_x = event->x;
                                 other_y = event->y;
-			
+
                                 if (!flag.selected) {
                                     ED4_ROOT->add_to_selected(dragged_name_terminal);
                                     dragged_was_selected = 0;
@@ -440,12 +445,12 @@ ED4_returncode	ED4_terminal::event_sent_by_parent( AW_event *event, AW_window *a
                             case ED4_SM_MARK: {
                                 ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
                                 GBDATA *gbd = species_man->get_species_pointer();
-				
+
                                 if (gbd) {
                                     GB_write_flag(gbd, !GB_read_flag(gbd));
                                     set_refresh();
                                     parent->refresh_requested_by_child();
-                                }   
+                                }
                                 break;
                             }
                             default: {
@@ -455,7 +460,7 @@ ED4_returncode	ED4_terminal::event_sent_by_parent( AW_event *event, AW_window *a
                         }
                     }
                     else if (is_bracket_terminal()) { // fold/unfold group
-                        if (dynamic_prop & ED4_P_IS_FOLDED) {	
+                        if (dynamic_prop & ED4_P_IS_FOLDED) {
                             ED4_ROOT->main_manager->unfold_group(id);
                         }
                         else {
@@ -479,17 +484,17 @@ ED4_returncode	ED4_terminal::event_sent_by_parent( AW_event *event, AW_window *a
                             ED4_multi_species_manager *multi_man = group->to_group_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
                             multi_man->deselect_all_species();
                             ED4_correctBlocktypeAfterSelection();
-                            ED4_ROOT->refresh_all_windows(0);			
+                            ED4_ROOT->refresh_all_windows(0);
                         }
                     }
                     else if (is_species_name_terminal()) {
                         ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
-			
-                        if (parent->flag.is_consensus) { // click on consensus-name 
+
+                        if (parent->flag.is_consensus) { // click on consensus-name
                             ED4_multi_species_manager *multi_man = parent->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
                             int species = multi_man->get_no_of_species();
                             int selected = multi_man->get_no_of_selected_species();
-				
+
                             if (selected==species) { // all species selected => deselect all
                                 multi_man->deselect_all_species();
                             }
@@ -498,8 +503,8 @@ ED4_returncode	ED4_terminal::event_sent_by_parent( AW_event *event, AW_window *a
                             }
 
                             ED4_correctBlocktypeAfterSelection();
-                            ED4_ROOT->refresh_all_windows(0);			
-                            return ( ED4_R_BREAK ); 
+                            ED4_ROOT->refresh_all_windows(0);
+                            return ( ED4_R_BREAK );
                         }
                         else if (species_man->flag.is_SAI) {
                             ; // don't mark SAIs
@@ -516,111 +521,111 @@ ED4_returncode	ED4_terminal::event_sent_by_parent( AW_event *event, AW_window *a
                                 ED4_correctBlocktypeAfterSelection();
                                 ED4_ROOT->refresh_all_windows(0);
                                 return ( ED4_R_BREAK ); // in case we were called by event_to selected()
-                            } 
+                            }
                         }
                     }
                     else if (is_sequence_terminal()) {
                         dumpEvent("Press", event);
-			
-                        ED4_no_dangerous_modes();	
+
+                        ED4_no_dangerous_modes();
                         ED4_setColumnblockCorner(event, to_sequence_terminal()); // mark columnblock
                         right_button_started_on_sequence_term = 1;
                         ED4_ROOT->refresh_all_windows(0);
                     }
                     break;
-                } 
+                }
                 case ED4_B_MIDDLE_BUTTON: {
                     break;
                 }
-            } 
+            }
             break;
-        } 
+        }
         case AW_Mouse_Drag: {
             switch ( event->button ) {
-                case ED4_B_LEFT_BUTTON: { 
+                case ED4_B_LEFT_BUTTON: {
                     if (dragged_name_terminal) {
                         ED4_selection_entry *sel_info = dragged_name_terminal->selection_info;
-			
-                        if (pressed_left_button) { 
+
+                        if (pressed_left_button) {
                             AW_pos world_x, world_y;
-			    
+
                             dragged_name_terminal->calc_world_coords(&world_x, &world_y);
                             ED4_ROOT->world_to_win_coords(aww, &world_x, &world_y);
-			    
+
                             sel_info->drag_old_x = world_x;
                             sel_info->drag_old_y = world_y;
                             sel_info->drag_off_x = world_x-other_x;
                             sel_info->drag_off_y = world_y-other_y;
                             sel_info->old_event_y = -1;
-			    
+
                             pressed_left_button = 0;
                         }
-			
+
                         // 			ED4_species_manager *species_man = dragged_name_terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-                        // 			char *text = ED4_get_NDS_text(species_man); 
+                        // 			char *text = ED4_get_NDS_text(species_man);
                         GB_CSTR text = dragged_name_terminal->get_displayed_text();
-			
+
                         if (dragged_name_terminal->flag.dragged) {
-                            dragged_name_terminal->draw_drag_box(sel_info->drag_old_x, sel_info->drag_old_y, text, sel_info->old_event_y); 
+                            dragged_name_terminal->draw_drag_box(sel_info->drag_old_x, sel_info->drag_old_y, text, sel_info->old_event_y);
                         }
-			
+
                         AW_pos new_x = sel_info->drag_off_x + event->x;
                         AW_pos new_y = sel_info->drag_off_y + event->y;
-			
+
                         dragged_name_terminal->draw_drag_box(new_x, new_y, text, event->y); // @@@ event->y ist falsch, falls vertikal gescrollt ist!
-			
+
                         sel_info->drag_old_x = new_x;
                         sel_info->drag_old_y = new_y;
                         sel_info->old_event_y = event->y;
-			
+
                         dragged_name_terminal->flag.dragged = 1;
                     }
-		    
-                    break;		    
-                } 
+
+                    break;
+                }
                 case ED4_B_RIGHT_BUTTON: {
-                    if (is_sequence_terminal() && right_button_started_on_sequence_term) { 
+                    if (is_sequence_terminal() && right_button_started_on_sequence_term) {
                         ED4_no_dangerous_modes();
                         ED4_setColumnblockCorner(event, to_sequence_terminal()); // mark columnblock
                         ED4_ROOT->refresh_all_windows(0);
                     }
                     break;
                 }
-            } 
+            }
             break;
         }
         case AW_Mouse_Release: {
             switch ( event->button ) {
-                case ED4_B_LEFT_BUTTON: { 
+                case ED4_B_LEFT_BUTTON: {
                     if (dragged_name_terminal) {
                         if (dragged_name_terminal->flag.dragged) {
                             {
                                 char *db_pointer = dragged_name_terminal->resolve_pointer_to_string();
                                 ED4_selection_entry *sel_info = dragged_name_terminal->selection_info;
-			    
+
                                 dragged_name_terminal->draw_drag_box(sel_info->drag_old_x, sel_info->drag_old_y, db_pointer, sel_info->old_event_y);
                                 dragged_name_terminal->flag.dragged = 0;
                             }
                             {
                                 ED4_move_info mi;
-				
+
                                 mi.object = dragged_name_terminal;
                                 mi.end_x = event->x;
                                 mi.end_y = event->y;
                                 mi.mode = ED4_M_FREE;
                                 mi.preferred_parent = ED4_L_NO_LEVEL;
-			    
+
                                 dragged_name_terminal->parent->move_requested_by_child(&mi);
                             }
                             {
                                 ED4_device_manager *device_manager = ED4_ROOT->main_manager
                                     ->get_defined_level(ED4_L_GROUP)->to_group_manager()
                                     ->get_defined_level(ED4_L_DEVICE)->to_device_manager();
-				
+
                                 int i;
                                 for (i=0; i<device_manager->children->members(); i++) { // when moving species numbers have to be recalculated
                                     ED4_base *member = device_manager->children->member(i);
-				
+
                                     if (member->is_area_manager()) {
                                         member->to_area_manager()->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->generate_id_for_groups();
                                     }
@@ -630,34 +635,34 @@ ED4_returncode	ED4_terminal::event_sent_by_parent( AW_event *event, AW_window *a
                         if (!dragged_was_selected) {
                             ED4_ROOT->remove_from_selected(dragged_name_terminal);
                         }
-			
+
                         ED4_expose_cb(ED4_ROOT->temp_aww, 0, 0);
                         //			ED4_ROOT->refresh_all_windows(0);
-			
+
                         pressed_left_button = 0;
                         dragged_name_terminal = 0;
                     }
                     break;
-                } 
+                }
 
                 case ED4_B_RIGHT_BUTTON: {
-                    if (is_sequence_terminal() && right_button_started_on_sequence_term) { 
-                        dumpEvent("Relea", event);			
+                    if (is_sequence_terminal() && right_button_started_on_sequence_term) {
+                        dumpEvent("Relea", event);
                         ED4_no_dangerous_modes();
                         ED4_setColumnblockCorner(event, to_sequence_terminal()); // mark columnblock
                         ED4_ROOT->refresh_all_windows(0);
                     }
                     break;
                 }
-            } 
+            }
             break;
         }
         default:
             assert(0);
             break;
-    } 
-    return ( ED4_R_OK );    
-} 
+    }
+    return ( ED4_R_OK );
+}
 
 
 ED4_returncode	ED4_terminal::calc_size_requested_by_parent( void )
@@ -670,7 +675,7 @@ short ED4_terminal::calc_bounding_box( void )
     short            bb_changed = 0;
     ED4_list_elem   *current_list_elem;
     ED4_base        *object;
-    
+
     if (width_link) {
         if ( extension.size[WIDTH] != width_link->extension.size[WIDTH] ) { //all bounding Boxes have the same size !!!
             extension.size[WIDTH] = width_link->extension.size[WIDTH];
@@ -684,25 +689,25 @@ short ED4_terminal::calc_bounding_box( void )
             bb_changed = 1;
         }
     }
-	
+
 
     if ( bb_changed ) {
         //	printf("calc_bounding_box changed by terminal\n");
         //	dump();
-	
+
         current_list_elem = linked_objects.first();
         while ( current_list_elem ) {
             object = ( ED4_base *) current_list_elem->elem();
-			
+
             if ( object != NULL ) {
                 object->link_changed( this );
             }
-		    
+
             current_list_elem = current_list_elem->next();
         }
 
         clear_background();
-		
+
         set_refresh();
         parent->refresh_requested_by_child();
     }
@@ -726,17 +731,17 @@ ED4_returncode ED4_terminal::draw(int /*only_text*/)
 
 ED4_returncode ED4_terminal::resize_requested_by_parent( void )
 {
-    // #ifndef NDEBUG    
+    // #ifndef NDEBUG
     //     ED4_base *base = (ED4_base*)this;
     //     e4_assert(!base->flag.hidden);
     // #endif
-    
+
     if (update_info.resize) { // likes to resize?
         if (calc_bounding_box()) { // size changed?
             parent->resize_requested_by_child(); // tell parent!
         }
     }
-    
+
     return ED4_R_OK;
 }
 
@@ -766,15 +771,15 @@ ED4_returncode ED4_terminal::adjust_clipping_rectangle( void )					//set scrolli
 
     calc_world_coords( &x, &y );
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
-    
+
     //     AW_rectangle rect;
     //     rect.t = y;
     //     rect.b = y+extension.size[HEIGHT]-1;
     //     rect.l = x;
     //     rect.r = x+extension.size[WIDTH]-1;
-    
+
     ED4_ROOT->temp_device->reduceClipBorders(int(y), int(y+extension.size[HEIGHT]-1), int(x), int(x+extension.size[WIDTH]-1));
-	
+
     //	width  = extension.size[WIDTH]  - 1;
     //	height = extension.size[HEIGHT] - 1;
 
@@ -782,8 +787,8 @@ ED4_returncode ED4_terminal::adjust_clipping_rectangle( void )					//set scrolli
     // 	ED4_ROOT->temp_device->reduce_bottom_clip_border(y+height);
     // 	ED4_ROOT->temp_device->reduce_left_clip_border(x);
     // 	ED4_ROOT->temp_device->reduce_right_clip_border(x+width);
-	
-	
+
+
     // 	if ( update_info.refresh_vertical_scrolling )
     // 	{
     // 		ED4_ROOT->temp_device->set_top_clip_border( (int) ED4_ROOT->temp_ed4w-> scrolled_rect.scroll_top-> window_pos[Y_POS] );
@@ -821,7 +826,7 @@ ED4_terminal::ED4_terminal(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW
     //    selected 	= 0;
     //    dragged 	= 0;
     //    deleted	= 0;
-    selection_info = 0; 
+    selection_info = 0;
     actual_timestamp = 0;
 }
 
@@ -861,7 +866,7 @@ ED4_returncode ED4_tree_terminal::Show(int refresh_all, int is_cleared)
     if (update_info.clear_at_refresh && !is_cleared) {
         clear_background();
     }
-    draw();					
+    draw();
     ED4_ROOT->temp_device->pop_clip_scale();
 
     return ( ED4_R_OK );
@@ -886,12 +891,12 @@ ED4_returncode ED4_tree_terminal::draw( int /*only_text*/ )					// draws boundin
       AW_pos		line_x0[4], line_y0[4];
       AW_pos		line_x1[4], line_y1[4];
       line_x0[0] = x + margin;
-      line_y0[0] = y + margin; 
+      line_y0[0] = y + margin;
       line_x1[0] = x + width - margin;
       line_y1[0] = y + margin;
 
       line_x0[1] = x + width - margin;
-      line_y0[1] = y + margin; 
+      line_y0[1] = y + margin;
       line_x1[1] = x + width - margin;
       line_y1[1] = y + height - margin;
 
@@ -905,7 +910,7 @@ ED4_returncode ED4_tree_terminal::draw( int /*only_text*/ )					// draws boundin
       line_x1[3] = x + margin;
       line_y1[3] = y + margin;
     */
-    text_x = x + CHARACTEROFFSET;							// don't change 
+    text_x = x + CHARACTEROFFSET;							// don't change
     text_y = y + height - MAXLETTERDESCENT;
 
     //		for( i = 0; i <= 3; i++ )
@@ -935,9 +940,9 @@ ED4_returncode ED4_bracket_terminal::Show(int refresh_all, int is_cleared)
     if (update_info.clear_at_refresh && !is_cleared) {
         clear_background();
     }
-    draw();					
+    draw();
     ED4_ROOT->temp_device->pop_clip_scale();
-    
+
     return ED4_R_OK;
 }
 
@@ -959,7 +964,7 @@ ED4_returncode ED4_bracket_terminal::draw( int /*only_text*/ )					// draws boun
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
 
     line_x0[0] = x + margin + 2;
-    line_y0[0] = y + margin + 2; 
+    line_y0[0] = y + margin + 2;
     line_x1[0] = x + width - margin + 2;
     line_y1[0] = y + margin + 2;
 
@@ -972,7 +977,7 @@ ED4_returncode ED4_bracket_terminal::draw( int /*only_text*/ )					// draws boun
     line_y0[2] = y + height - margin - 2;
     line_x1[2] = x + margin + 2;
     line_y1[2] = y + margin + 2;
-    
+
     ED4_group_manager *group_man = get_parent(ED4_L_GROUP)->to_group_manager();
     ED4_multi_species_manager *multi_man = group_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
     if (multi_man->get_no_of_selected_species()) {	// if multi_species_manager contains selected species
@@ -1049,7 +1054,7 @@ ED4_returncode ED4_bracket_terminal::draw( int /*only_text*/ )					// draws boun
             ED4_ROOT->temp_device->line( ED4_G_STANDARD, arrow_x0[i], arrow_y0[i], arrow_x1[i], arrow_y1[i], 1, 0, 0 );
         }
     }
-    
+
     for( i = 0; i <= 2; i++ ) {
         ED4_ROOT->temp_device->line( ED4_G_STANDARD, line_x0[i], line_y0[i], line_x1[i], line_y1[i], 1, 0, 0 );
     }
@@ -1078,32 +1083,32 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
 {
     static char *real_name;
     static int allocatedSize;
-    
+
     if (!real_name || allocatedSize<(BUFFERSIZE+1)) {
         free(real_name);
         allocatedSize = BUFFERSIZE+1;
         real_name = (char*)malloc(allocatedSize);
     }
     memset(real_name, 0, allocatedSize);
-	
+
     if (parent->flag.is_consensus) {
         char *db_pointer = resolve_pointer_to_string();
         char *bracket = strchr(db_pointer, '(');
-	    
+
         if (bracket) {
             int bracket_len = strlen(bracket);
             int name_len = bracket-db_pointer;
-		
+
             if (bracket[-1]==' ') {
                 name_len--;
             }
-		
+
             if ((name_len+1+bracket_len)<=MAXNAMELEN) {
                 strcpy(real_name, db_pointer);
             }
             else {
                 int short_name_len = MAXNAMELEN-bracket_len-1;
-		    
+
                 memcpy(real_name, db_pointer, short_name_len);
                 real_name[short_name_len] = ' ';
                 strcpy(real_name+short_name_len+1, bracket);
@@ -1114,24 +1119,24 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
         }
     } else if (parent->parent->parent->flag.is_SAI) { // whether species_manager has is_SAI flag
         char *db_pointer = resolve_pointer_to_string();
-	    
+
         strcpy(real_name, "SAI: ");
         if (strcmp(db_pointer, "ECOLI")==0) {
             char *name_for_ecoli = ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_ECOLI_NAME)->read_string();
             if (name_for_ecoli[0]==0) name_for_ecoli = db_pointer;
-            strncpy(real_name+5, name_for_ecoli, BUFFERSIZE-5); 
+            strncpy(real_name+5, name_for_ecoli, BUFFERSIZE-5);
         }
         else {
             strncpy(real_name+5, db_pointer, BUFFERSIZE-5);
         }
     } else { // normal species
         ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
-        char *result = ED4_get_NDS_text(species_man); 
-	    
+        char *result = ED4_get_NDS_text(species_man);
+
         strncpy(real_name, result, BUFFERSIZE);
         free(result);
     }
-    
+
     return real_name;
 }
 #undef MAXNAMELEN
@@ -1186,7 +1191,7 @@ ED4_pure_text_terminal::~ED4_pure_text_terminal()
 
 
 ED4_returncode ED4_spacer_terminal::Show(int /*refresh_all*/, int is_cleared) // a spacer terminal doesn't show anything - it's just a dummy terminal
-{							
+{
     if (update_info.clear_at_refresh && !is_cleared) {
         clear_background();
     }
@@ -1205,9 +1210,9 @@ ED4_returncode ED4_spacer_terminal::draw( int /*only_text*/ )					// draws bound
     calc_world_coords( &x, &y );
     ED4_ROOT->world_to_win_coords(ED4_ROOT->temp_aww, &x, &y);
 
-    text_x = x + CHARACTEROFFSET;							// don't change 
+    text_x = x + CHARACTEROFFSET;							// don't change
     text_y = y + height - MAXLETTERDESCENT;
-	
+
     ED4_ROOT->temp_device->text( ED4_G_STANDARD, "", text_x, text_y, 0, 1, 0, 0);
 
     return ( ED4_R_OK );
@@ -1236,7 +1241,7 @@ ED4_spacer_terminal::~ED4_spacer_terminal()
 // 						      ED4_properties /*scroll_prop*/)
 // // sets refresh flag of current object
 // // if object is (even partly) within given rectangle
-// {												
+// {
 //     update_info.refresh_horizontal_scrolling = 1;	// line terminals always have to be refreshed
 //     return ( ED4_R_OK );
 // }
@@ -1257,12 +1262,12 @@ ED4_returncode ED4_line_terminal::draw( int /*only_text*/ )		// draws bounding b
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
 
     line_x0[0] = x + margin;
-    line_y0[0] = y + margin; 
+    line_y0[0] = y + margin;
     line_x1[0] = x + margin + width;
     line_y1[0] = y + margin;
 
     line_x0[1] = x + margin;
-    line_y0[1] = y + margin + height; 
+    line_y0[1] = y + margin + height;
     line_x1[1] = x + margin + width;
     line_y1[1] = y + margin + height;
 
@@ -1279,7 +1284,7 @@ ED4_returncode ED4_line_terminal::Show(int /*refresh_all*/, int is_cleared)
         clear_background();
     }
     draw();
-    return ED4_R_OK;	
+    return ED4_R_OK;
 }
 
 
@@ -1307,7 +1312,7 @@ ED4_returncode ED4_columnStat_terminal::Show(int refresh_all, int is_cleared)
     }
     draw();
     ED4_ROOT->temp_device->pop_clip_scale();
-    
+
     return ED4_R_OK;
 }
 
@@ -1320,7 +1325,7 @@ inline char stat2display(int val, bool is_upper_digit) {
     if (val==100) return '^'; // we have only 2 characters to display likelihood (100 cannot be displayed)
 
     e4_assert(val>=0 && val<100);
-    
+
     return '0' + (is_upper_digit ? (val/10) : (val%10));
 }
 
@@ -1328,16 +1333,16 @@ inline int find_significant_positions(int sig, int like_A, int like_C, int like_
     // result == 0 		-> no base-char has a significant likelihood (>=sig)
     // result == 1, 2, 4, 8 	-> A, C, G, T/U has a significant likelihood
     // else		        -> the sum two of the likelihoods >= sig (bit-or-ed as in line above)
-    
+
     int like[4];
     like[0] = like_A;
     like[1] = like_C;
     like[2] = like_G;
     like[3] = like_TU;
-    
+
     int bestSum = 0;
     int bestResult = 0;
-    
+
     int b, c;
     for (b=0; b<4; b++) {
         int sum = like[b];
@@ -1346,7 +1351,7 @@ inline int find_significant_positions(int sig, int like_A, int like_C, int like_
             bestResult = 1<<b;
         }
     }
-    
+
     if (!bestResult) {
         for (b=0; b<4; b++) {
             for (c=b+1; c<4; c++) {
@@ -1356,14 +1361,14 @@ inline int find_significant_positions(int sig, int like_A, int like_C, int like_
                     bestResult = (1<<b)|(1<<c);
                 }
             }
-        } 
+        }
     }
-    
+
     if (bestResult) {
         if (sumPtr) *sumPtr = bestSum;
         return bestResult;
     }
-    
+
     return 0;
 }
 
@@ -1376,16 +1381,16 @@ GB_CSTR ED4_columnStat_terminal::build_probe_match_string(int start_pos, int end
     int significance = int(get_threshold());
     ED4_sequence_terminal *seq_term = corresponding_sequence_terminal()->to_sequence_terminal();
     char *seq = seq_term->resolve_pointer_to_string();
-	
+
     for (int pos=start_pos; pos<=end_pos; pos++) {
         int found = find_significant_positions(significance, likelihood[0][pos], likelihood[1][pos], likelihood[2][pos], likelihood[3][pos], 0);
-	    
+
         if (found || strchr("-=.", seq[pos])==0) {
             // '?' is inserted at every base position without significant bases (not at gaps!)
-	    
+
             *r++ = "NACMGRSVUWYHKDBN"[found]; // this creates a string containing the full IUPAC code
             //*r++ = "NACNGNNNUNNNNNNN"[found]; // this creates a string containing only ACGU + N
-	    
+
             if (max_insert--==0) {
                 r--;
                 break;
@@ -1408,48 +1413,48 @@ ED4_returncode ED4_columnStat_terminal::draw(int /*only_text*/)
         aw_message("Can't calculate likelihood.", "OK");
         return ED4_R_IMPOSSIBLE;
     }
-    
-    AW_pos x, y;    
+
+    AW_pos x, y;
     calc_world_coords(&x, &y);
     ED4_ROOT->world_to_win_coords(ED4_ROOT->temp_aww, &x, &y);
-    
+
     AW_pos term_height = extension.size[HEIGHT];
     AW_pos font_height = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_ascent();
     AW_pos font_width = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width();
-    
+
     AW_pos text_x = x + CHARACTEROFFSET;
     AW_pos text_y = y + term_height - (font_height /*+ ED4_ROOT->font_info[ED4_G_SEQUENCES].get_descent()*/ );
-    
+
     AW_device *device = ED4_ROOT->temp_device;
-    ED4_sequence_terminal *seq_term = corresponding_sequence_terminal();    
+    ED4_sequence_terminal *seq_term = corresponding_sequence_terminal();
     const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
     long left,right;
     seq_term->calc_update_intervall(&left, &right );
     rm->clip_screen_range(&left, &right);
-    
+
     {
         int max_seq_len = seq_term->get_length();
         int max_seq_pos = rm->sequence_to_screen_clipped(max_seq_len);
-	
+
         if (right>max_seq_len) right = max_seq_pos;
-        if (left>right) return ED4_R_OK; 
+        if (left>right) return ED4_R_OK;
     }
-    
+
     //int seq_start = rm->screen_to_sequence(left); // real start of sequence
     char *sbuffer = new char[right+1];	// used to build displayed terminal content  (values = '0'-'9')
     memset(sbuffer, ' ', right);
     sbuffer[right] = 0; // eos
-    
+
     AW_pos y2;
     int r;
-    
+
     // Set background:
     {
         int significance = int(get_threshold());
         // normal columns are colored in ED4_G_STANDARD
         // all columns with one (or sum of two) probability above 'significance' are back-colored in ED4_G_CBACK_0
         // the responsible probabilities (one or two) are back-colored in ED4_G_CBACK_1..ED4_G_CBACK_9
-	
+
         int color = ED4_G_STANDARD;
         int old_color = ED4_G_STANDARD;
         AW_pos x2 = text_x + font_width*left + 1;
@@ -1457,18 +1462,18 @@ ED4_returncode ED4_columnStat_terminal::draw(int /*only_text*/)
         int i;
         int selection_col1, selection_col2;
         int is_selected = ED4_get_selected_range(seq_term, &selection_col1, &selection_col2);
-	
+
         for (i=left; i<=right; i++,x2+=font_width) { // colorize significant columns in ALL rows
             int p = rm->screen_to_sequence(i);
             int found = find_significant_positions(significance, likelihood[0][p], likelihood[1][p], likelihood[2][p], likelihood[3][p], 0);
-	    
+
             if (found)  color = ED4_G_CBACK_0;
             else 	color = ED4_G_STANDARD;
 
             if (is_selected && p>=selection_col1 && p<=selection_col2) {
                 color = ED4_G_SELECTED;
             }
-	    
+
             if (color!=old_color) {
                 if (x2>old_x2 && old_color!=ED4_G_STANDARD) {
                     device->box(old_color, old_x2, y, x2-old_x2, term_height, -1, 0, 0);
@@ -1480,15 +1485,15 @@ ED4_returncode ED4_columnStat_terminal::draw(int /*only_text*/)
         if (x2>old_x2 && old_color!=ED4_G_STANDARD) {
             device->box(old_color, old_x2, y, x2-old_x2, term_height, -1, 0, 0);
         }
-	
+
         color = ED4_G_STANDARD;
         x2 = text_x + font_width*left + 1;
-	
+
         for (i=left; i<=right; i++,x2+=font_width) { // colorize significant columns in SINGLE rows
             int p = rm->screen_to_sequence(i);
             int sum;
             int found = find_significant_positions(significance, likelihood[0][p], likelihood[1][p], likelihood[2][p], likelihood[3][p], &sum);
-	    
+
             if (found) {
                 e4_assert(sum>=significance && sum<=100);
                 color = ED4_G_CBACK_1+((sum-significance)*(ED4_G_CBACK_9-ED4_G_CBACK_1))/(100-significance);
@@ -1497,10 +1502,10 @@ ED4_returncode ED4_columnStat_terminal::draw(int /*only_text*/)
             else {
                 color = ED4_G_STANDARD;
             }
-	    
+
             if (color!=ED4_G_STANDARD) {
                 int bit;
-		
+
                 for (r=3,y2=text_y+1,bit=1<<3;
                      r>=0;
                      r--,y2-=COLUMN_STAT_ROW_HEIGHT(font_height),bit>>=1)
@@ -1512,21 +1517,21 @@ ED4_returncode ED4_columnStat_terminal::draw(int /*only_text*/)
             }
         }
     }
-    
+
     // Draw text:
     for (r=3, y2=text_y;
          r>=0;
          r--, y2-=COLUMN_STAT_ROW_HEIGHT(font_height)) { // 4 rows (one for T/U, G, C and A)
-	
+
         int gc = ED4_ROOT->sequence_colors->char_2_gc["ACGU"[r]];
         int i;
-        for (i=left; i<=right; i++) { 
+        for (i=left; i<=right; i++) {
             int p = rm->screen_to_sequence(i);
             int val = likelihood[r][p];
             sbuffer[i] = stat2display(val, 0); // calc lower digit
         }
         device->text(gc, sbuffer, text_x+font_width*0.2, y2, 0, 1, 0, 0, right); // draw lower-significant digit (shifted a bit to the right)
-	
+
         for (i=left; i<=right; i++) {
             int p = rm->screen_to_sequence(i);
             int val = likelihood[r][p];
@@ -1534,14 +1539,14 @@ ED4_returncode ED4_columnStat_terminal::draw(int /*only_text*/)
         }
         device->text(gc, sbuffer, text_x, y2-font_height, 0, 1, 0, 0, right); // draw higher-significant digit
     }
-    
+
     free(sbuffer);
     return ED4_R_OK;
 }
 
 int ED4_columnStat_terminal::update_likelihood() {
     ED4_sequence_terminal *seq_term = corresponding_sequence_terminal();
-    
+
     return st_ml_update_ml_likelihood(ED4_ROOT->st_ml, likelihood, &latest_update, 0, seq_term->st_ml_node);
 }
 
@@ -1564,7 +1569,7 @@ ED4_columnStat_terminal::~ED4_columnStat_terminal()
 
 void ED4_reference_terminals::clear()
 {
-    delete ref_sequence_info; 
+    delete ref_sequence_info;
     delete ref_sequence;
     delete ref_column_stat;
     delete ref_column_stat_info;

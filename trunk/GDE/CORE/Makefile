@@ -32,173 +32,102 @@ ParseMenu.o:
 ParseMenu.o:  
 ParseMenu.o:  
 ParseMenu.o:  
-ParseMenu.o:  
-ParseMenu.o: 
-ParseMenu.o:  menudefs.h defines.h
-ParseMenu.o: 
-ParseMenu.o:  functions.h
-main.o: 
-main.o: 
-main.o: 
-main.o: 
-main.o: 
-main.o: 
+ParseMenu.o:  menudefs.h defines.h functions.h
+main.o:   
 main.o:  
 main.o:  
-main.o:  
-main.o:  
-main.o:   menudefs.h defines.h
-main.o: 
-main.o:  functions.h globals.h
-main.o:  icon_gde.bitmap
+main.o:   menudefs.h
+main.o: defines.h functions.h globals.h icon_gde.bitmap
 BasicDisplay.o:  
 BasicDisplay.o:  
 BasicDisplay.o:  
 BasicDisplay.o:  
 BasicDisplay.o:  
-BasicDisplay.o: 
-BasicDisplay.o: 
-BasicDisplay.o: 
-BasicDisplay.o: 
-BasicDisplay.o: 
-BasicDisplay.o: 
-BasicDisplay.o: 
-BasicDisplay.o:  menudefs.h
-BasicDisplay.o: defines.h functions.h
+BasicDisplay.o:  
+BasicDisplay.o:  
+BasicDisplay.o:  
+BasicDisplay.o:  menudefs.h defines.h functions.h
 EventHandler.o:  
 EventHandler.o:  
 EventHandler.o:  
 EventHandler.o:  
-EventHandler.o:  
-EventHandler.o: 
-EventHandler.o: 
-EventHandler.o: 
-EventHandler.o: 
-EventHandler.o:  menudefs.h
-EventHandler.o: defines.h 
-EventHandler.o:  functions.h
+EventHandler.o:   menudefs.h
+EventHandler.o: defines.h functions.h
 FileIO.o:  
 FileIO.o:  
 FileIO.o:  
 FileIO.o:  
-FileIO.o:  
-FileIO.o: 
-FileIO.o: 
-FileIO.o:  menudefs.h defines.h
-FileIO.o: 
-FileIO.o:  functions.h
+FileIO.o:  menudefs.h defines.h functions.h
+DrawNA.o:   
+DrawNA.o:  
+DrawNA.o:  
+DrawNA.o:   
 DrawNA.o:  
 DrawNA.o:  
 DrawNA.o:  
-DrawNA.o:  
-DrawNA.o:  
-DrawNA.o: 
-DrawNA.o: 
-DrawNA.o: 
-DrawNA.o: 
-DrawNA.o: 
-DrawNA.o:  menudefs.h defines.h
-DrawNA.o:  functions.h
-Free.o: 
-Free.o: 
-Free.o: 
-Free.o: 
-Free.o: 
-Free.o: 
+DrawNA.o:  menudefs.h defines.h functions.h
+Free.o:   
 Free.o:  
 Free.o:  
-Free.o:  
-Free.o:  
-Free.o:   menudefs.h defines.h
-Free.o: 
-Free.o:  functions.h
+Free.o:   menudefs.h
+Free.o: defines.h functions.h
 BuiltIn.o:  
 BuiltIn.o:  
 BuiltIn.o:  
 BuiltIn.o:  
-BuiltIn.o:  
-BuiltIn.o:  
-BuiltIn.o: 
-BuiltIn.o: 
-BuiltIn.o: 
-BuiltIn.o: 
-BuiltIn.o:  menudefs.h defines.h
-BuiltIn.o:  functions.h
+BuiltIn.o:   menudefs.h defines.h
+BuiltIn.o: functions.h
 Edit.o:  
-Edit.o: 
-Edit.o: 
-Edit.o: 
-Edit.o: 
-Edit.o: 
-Edit.o:  menudefs.h defines.h
-Edit.o:  functions.h
+Edit.o:   menudefs.h
+Edit.o: defines.h functions.h
 Genbank.o:  
 Genbank.o:  
 Genbank.o:  
 Genbank.o:  
 Genbank.o:  
-Genbank.o: 
-Genbank.o:  menudefs.h defines.h
-Genbank.o: 
-Genbank.o:  functions.h
+Genbank.o:   
+Genbank.o:   menudefs.h
+Genbank.o: defines.h functions.h
+Scroll.o:   
+Scroll.o:  
+Scroll.o:  
+Scroll.o:   
 Scroll.o:  
 Scroll.o:  
 Scroll.o:  
-Scroll.o:  
-Scroll.o:  
-Scroll.o: 
-Scroll.o: 
-Scroll.o: 
-Scroll.o: 
-Scroll.o: 
-Scroll.o: 
-Scroll.o:  menudefs.h defines.h
-Scroll.o: functions.h
+Scroll.o:  menudefs.h defines.h functions.h
+ChooseFile.o:  
+ChooseFile.o:  
+ChooseFile.o:  
+ChooseFile.o:  
+ChooseFile.o:  
+ChooseFile.o:  
 ChooseFile.o:  
 ChooseFile.o:  
 ChooseFile.o:  
 ChooseFile.o:  
 ChooseFile.o:  
 ChooseFile.o: 
-ChooseFile.o: 
-ChooseFile.o: 
-ChooseFile.o: 
-ChooseFile.o: 
-ChooseFile.o: 
-ChooseFile.o: 
-ChooseFile.o: 
-ChooseFile.o: 
-ChooseFile.o:  
 CutCopyPaste.o:  
 CutCopyPaste.o:  
 CutCopyPaste.o:  
 CutCopyPaste.o:  
-CutCopyPaste.o:  
-CutCopyPaste.o: 
-CutCopyPaste.o: 
-CutCopyPaste.o: 
-CutCopyPaste.o: 
-CutCopyPaste.o: 
-CutCopyPaste.o: 
-CutCopyPaste.o:  menudefs.h
-CutCopyPaste.o: defines.h 
-CutCopyPaste.o: functions.h
+CutCopyPaste.o:   menudefs.h
+CutCopyPaste.o: defines.h functions.h
 HGLfile.o:  
 HGLfile.o:  
 HGLfile.o:  
 HGLfile.o:  
 HGLfile.o:  
-HGLfile.o: 
-HGLfile.o:  menudefs.h defines.h
-HGLfile.o: 
-HGLfile.o:  functions.h
-arbdb_io.o: 
-arbdb_io.o: 
-arbdb_io.o: 
-arbdb_io.o: 
+HGLfile.o:   
+HGLfile.o:   menudefs.h
+HGLfile.o: defines.h functions.h
+arbdb_io.o:  
+arbdb_io.o:  
+arbdb_io.o:  
+arbdb_io.o:  
 arbdb_io.o: $(ARBHOME)/INCLUDE/arbdb.h
 arbdb_io.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arbdb_io.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arbdb_io.o: $(ARBHOME)/INCLUDE/ad_t_prot.h menudefs.h defines.h
-arbdb_io.o: 
-arbdb_io.o:  functions.h
+arbdb_io.o: functions.h
