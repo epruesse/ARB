@@ -1790,6 +1790,48 @@ GBDATA *GBT_gen_accession_number(GBDATA *gb_species,const char *ali_name){
     GB_write_string(gb_acc,buf);
     return gb_acc;
 }
+
+
+int GBT_is_partial(GBDATA *gb_species, int default_value, int define_if_undef) {
+    // checks whether a species has a partial or full sequence
+    //
+    // Note: partial sequences should not be used for tree calculations
+    //
+    // returns: 0 if sequence is full
+    //          1 if sequence is partial
+    //          -1 in case of error
+    //
+    // if the sequence has no 'ARB_partial' entry it returns 'default_value'
+    // if 'define_if_undef' is true then create an 'ARB_partial'-entry with the default value
+
+    int       result     = -1;
+    GB_ERROR  error      = 0;
+    GBDATA   *gb_partial = GB_find(gb_species, "ARB_partial", 0, down_level);
+
+    if (gb_partial) {
+        result = GB_read_int(gb_partial);
+        if (result != 0 && result != 1) {
+            error = "Illegal value for 'ARB_partial' (only 1 or 0 allowed)";
+        }
+    }
+    else {
+        if (define_if_undef) {
+            gb_partial = GB_create(gb_species, "ARB_partial", GB_INT);
+            if (gb_partial) error = GB_write_int(gb_partial, default_value);
+            else error = GB_get_error();
+        }
+
+        result = default_value;
+    }
+
+    if (error) {
+        GB_export_error(error);
+        return -1;
+    }
+    return result;
+}
+
+
 /********************************************************************************************
                     some simple find procedures
 ********************************************************************************************/
@@ -1962,6 +2004,36 @@ void GBT_mark_all(GBDATA *gb_main, int flag)
              gb_species = GBT_next_species(gb_species) )
         {
             GB_write_flag(gb_species,flag);
+        }
+    }
+    GB_pop_transaction(gb_main);
+}
+void GBT_mark_all_that(GBDATA *gb_main, int flag, int (*condition)(GBDATA*, void*), void *cd)
+{
+    GBDATA *gb_species;
+    GB_push_transaction(gb_main);
+
+    if (flag == 2) {
+        for (gb_species = GBT_first_species(gb_main);
+             gb_species;
+             gb_species = GBT_next_species(gb_species) )
+        {
+            if (condition(gb_species, cd)) {
+                GB_write_flag(gb_species,!GB_read_flag(gb_species));
+            }
+        }
+    }
+    else {
+        gb_assert(flag == 0 || flag == 1);
+
+        for (gb_species = GBT_first_species(gb_main);
+             gb_species;
+             gb_species = GBT_next_species(gb_species) )
+        {
+            int curr_flag = GB_read_flag(gb_species);
+            if (curr_flag != flag && condition(gb_species, cd)) {
+                GB_write_flag(gb_species,flag);
+            }
         }
     }
     GB_pop_transaction(gb_main);
