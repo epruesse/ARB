@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(ARCPPLIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
 	touch $@
 .c.o:
-	$(CCPLIB) $(cflags) -c $< $(AINCLUDES)
+	$(CCLIB) $(cflags) -c $< $(AINCLUDES)
 .cxx.o:
 	$(CCPLIB) $(cflags) -c $< $(AINCLUDES)
 
