@@ -5,36 +5,6 @@ public:
 };
 
 // This is our basic 3D point/vector struct
-struct Vector3 {
-public:
-    float x, y, z;						
-
-	Vector3() {}  	// A default constructor
-
-	Vector3(float X, float Y, float Z) { x = X; y = Y; z = Z; }
-
-	// Overloading Operator(+,-,*,/) functions
-    
-	Vector3 operator+(Vector3 vVector)  // adding 2 vectors
-    {
-		return Vector3(vVector.x + x, vVector.y + y, vVector.z + z);
-	}
-
-	Vector3 operator-(Vector3 vVector)  // substracting 2 vectors
-	{
-		return Vector3(x - vVector.x, y - vVector.y, z - vVector.z);
-	}
-	
-	Vector3 operator*(float num)   //multiply by scalars
-	{
-		return Vector3(x * num, y * num, z * num);
-	}
-
-	Vector3 operator/(float num)  // divide by scalars
-	{
-		return Vector3(x / num, y / num, z / num);
-	}
-};
 
 class CCamera {
 

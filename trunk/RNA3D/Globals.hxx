@@ -1,9 +1,8 @@
-
 // GLOBAL DEFINITIONS
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
-#include "math.h"
-
-#define PI          M_PI
 #define kSpeed	    0.1f	      // speed of the camera movement
 #define zoomFactor	1.0f	      // scaling factor in z-axis (ZOOM)
 
@@ -11,8 +10,6 @@
 #define FALSE       0
 
 #define SKELETON_SIZE 1.0f
-#define PNG 0
-#define BMP 1
 
 // GLOBAL VARIABLES
 
