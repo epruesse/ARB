@@ -9,11 +9,17 @@ SQ_GroupData::SQ_GroupData(){
     initialised=false;
 }
 
+
+SQ_GroupData::~SQ_GroupData(){
+    delete [] consensus;
+}
+
+
 void SQ_GroupData::SQ_init_consensus(int size){
     this->size = size;
 
     // two dimensional array
-    consensus = new int *[size]; // @@@ wird nie freigegeben
+    consensus = new int *[size];
     for (int i=0; i < size; i++ ){
 	consensus[i] = new int [7];
     }
@@ -53,4 +59,62 @@ int SQ_GroupData::SQ_print_on_screen() {
 	}
     }
     return (0);
+}
+
+double SQ_GroupData::SQ_test_against_consensus(const char *sequence) {
+    char c;
+    bool sema = false;
+    double result    = 0;
+    double div       = 0;
+    int temp         = 1;
+    int base_counter = 0;
+    int current      = 0;
+
+    for (int i = 0; i < size; i++ ){
+	c = sequence[i];
+        switch(c) {
+            case 'A':
+                current = consensus[i][0];
+		sema=true;
+		base_counter++;
+                break;
+            case 'T':
+                current = consensus[i][1];
+		sema=true;
+		base_counter++;
+                break;
+            case 'C':
+                current = consensus[i][2];
+		sema=true;
+		base_counter++;
+                break;
+            case 'G':
+                current = consensus[i][3];
+		sema=true;
+		base_counter++;
+                break;
+            case 'U':
+                current = consensus[i][4];
+		sema=true;
+		base_counter++;
+                break;
+        }
+	if (sema==true){
+	    temp=0;
+	    for (int j = 0; j < 5; j++) {
+		temp = temp + consensus[i][j];
+	    }
+	    div = current / temp;
+	    current = 0;
+	    sema = false;
+	}
+
+	result = result + div;
+	//printf(" %f",result);
+	div = 0;
+    }
+
+    result = result / base_counter;
+    //printf(" %i",base_counter);
+    return result;
 }

@@ -24,6 +24,8 @@ GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main);
 
 GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, bool marked_only);
 
+GB_ERROR SQ_pass3(SQ_GroupData& globalData, GBDATA *gb_main, bool marked_only);
+
 void SQ_traverse_through_tree(GBDATA *gb_main, GBT_TREE *tree, bool marked_only);
 
 int SQ_get_value(GBDATA *gb_main, const char *option);

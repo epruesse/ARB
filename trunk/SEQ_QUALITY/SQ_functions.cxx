@@ -11,7 +11,7 @@
 //  Visit our web site at: http://www.arb-home.de/                       //
 //                                                                       //
 //  ==================================================================== //
-
+#include <math.h>
 
 #include "arbdb.h"
 #include "arbdbt.h"
@@ -44,7 +44,7 @@ GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main) {
     GB_push_transaction(gb_main);
 
     GB_ERROR  error          = 0;
-    char     *alignment_name = GBT_get_default_alignment(gb_main); // @@@ wird nie freigegeben
+    char     *alignment_name = GBT_get_default_alignment(gb_main);
 
     for (GBDATA *gb_species = GBT_first_species(gb_main);
          gb_species && !error;
@@ -66,6 +66,7 @@ GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main) {
             }
         }
     }
+    delete alignment_name;
 
     if (error) GB_abort_transaction(gb_main);
     else GB_pop_transaction(gb_main);
@@ -94,7 +95,7 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 
     GB_push_transaction(gb_main);
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-    alignment_name = GBT_get_default_alignment(gb_main); // @@@ wird nie freigegeben
+    alignment_name = GBT_get_default_alignment(gb_main);
     seq_assert(alignment_name);
 
 
@@ -170,13 +171,17 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 		    /*calculate consensus sequence*/
 		    {
 			bool init;
+			int **consensus;
 			init = globalData.SQ_is_initialised();
 			if (init==false){
 			    globalData.SQ_init_consensus(sequenceLength);
 			}
 			SQ_consensus consens(sequenceLength);
 			consens.SQ_calc_consensus(rawSequence);
- 			int consensus[sequenceLength][7];
+			consensus = new int *[sequenceLength];
+			for (int i=0; i < sequenceLength; i++ ){
+			    consensus[i] = new int [7];
+			}
  			int *pp;
 			for(int i = 0; i < sequenceLength; i++) {
 			    for(int j = 0; j < 7; j++) {
@@ -184,13 +189,12 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 				consensus[i][j] = *pp;
 			    }
 			}
-			//globalData.SQ_init_consensus(sequenceLength);
 			for(int i = 0; i < sequenceLength; i++) {
 			    for(int j = 0; j < 7; j++) {
 				globalData.SQ_add_consensus(consensus[i][j],i,j);
 			    }
 			}
-			free(consensus); // @@@ consensus liegt auf dem Stack (free bewirkt undefiniertes Verhalten!)
+			delete [] consensus;
 		    }
 
 
@@ -285,6 +289,7 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 	    }
 	}
     }
+    delete alignment_name;
 
     if (error) GB_abort_transaction(gb_main);
     else GB_pop_transaction(gb_main);
@@ -311,7 +316,7 @@ int SQ_get_value(GBDATA *gb_main, const char *option){
 
     GB_push_transaction(gb_main);
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-    alignment_name = GBT_get_default_alignment(gb_main); // @@@ wird nie freigegeben
+    alignment_name = GBT_get_default_alignment(gb_main);
     seq_assert(alignment_name);
 
     if (true /*marked_only*/) {
@@ -338,6 +343,7 @@ int SQ_get_value(GBDATA *gb_main, const char *option){
 	    }
 	}
     }
+    delete alignment_name;
 
     GB_pop_transaction(gb_main);
     return result;
@@ -361,7 +367,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 
     GB_push_transaction(gb_main);
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-    alignment_name = GBT_get_default_alignment(gb_main); // @@@ wird nie freigegeben
+    alignment_name = GBT_get_default_alignment(gb_main);
     seq_assert(alignment_name);
 
     if (true /*marked_only*/) {
@@ -417,7 +423,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 		//printf("\n debug info:%i %i %i %e \n", bases, dfa, noh, gcprop );
 
 		result = (weight_bases * bases) - (weight_diff_from_average * dfa) - (weight_helix * noh) + (weight_consensus * coc) + (weight_iupac * iupv);
-		result = result * gc_proportion; // @@@ runden ?
+		//result = round(result * gc_proportion); // @@@ runden ?
 
 		/*write the final value of the evaluation*/
 		GBDATA *gb_result7 = GB_search(gb_quality, "value_of_evaluation", GB_INT);
@@ -427,12 +433,99 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 	    }
 	}
     }
+    delete alignment_name;
 
     if (error) GB_abort_transaction(gb_main);
     else GB_pop_transaction(gb_main);
 
     return error;
 }
+
+
+
+GB_ERROR SQ_pass3(SQ_GroupData& globalData, GBDATA *gb_main, bool marked_only) {
+
+
+    char *alignment_name;
+
+    GBDATA *read_sequence = 0;
+    GBDATA *gb_species;
+    GBDATA *gb_species_data;
+    GBDATA *gb_name;
+    GBDATA *(*getFirst)(GBDATA*) = 0;
+    GBDATA *(*getNext)(GBDATA*) = 0;
+    GB_ERROR error = 0;
+
+
+
+    GB_push_transaction(gb_main);
+    gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    alignment_name = GBT_get_default_alignment(gb_main);
+    seq_assert(alignment_name);
+
+
+    if (marked_only) {
+	getFirst = GBT_first_marked_species;
+	getNext  = GBT_next_marked_species;
+    }
+    else {
+	getFirst = GBT_first_species;
+	getNext  = GBT_next_species;
+    }
+
+
+    /*third pass operations*/
+    for (gb_species = getFirst(gb_main);
+	 gb_species && !error;
+	 gb_species = getNext(gb_species) ){
+
+	gb_name = GB_find(gb_species, "name", 0, down_level);
+
+        if (!gb_name) error = GB_get_error();
+
+	else {
+
+	    GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
+
+	    if (!gb_ali) {
+		error = no_data_error(gb_species, alignment_name);
+	    }
+	    else {
+		GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
+		if (!gb_quality) error = GB_get_error();
+		read_sequence = GB_find(gb_ali,"data",0,down_level);
+
+		/*real calculations start here*/
+		if (read_sequence) {
+		    int sequenceLength      = 0;
+		    const char *rawSequence = 0;
+		    double value            = 0;
+
+		    rawSequence    = GB_read_char_pntr(read_sequence);
+		    sequenceLength = GB_read_count(read_sequence);
+
+		    value = globalData.SQ_test_against_consensus(rawSequence);
+		    printf("     %f    ",value);
+		}
+	    }
+	}
+    }
+    delete alignment_name;
+
+    if (error) GB_abort_transaction(gb_main);
+    else GB_pop_transaction(gb_main);
+
+    return error;
+}
+
+
+
+
+
+
+
+
+
 
 
 
