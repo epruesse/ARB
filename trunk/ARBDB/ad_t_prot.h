@@ -66,11 +66,9 @@ int GBT_is_partial P_((GBDATA *gb_species, int default_value, int define_if_unde
 GBDATA *GBT_get_species_data P_((GBDATA *gb_main));
 GBDATA *GBT_first_marked_species_rel_species_data P_((GBDATA *gb_species_data));
 GBDATA *GBT_first_marked_species P_((GBDATA *gb_main));
-#ifdef DEVEL_IDP
+GBDATA *GBT_get_gene_data P_((GBDATA *gb_main));
 GBDATA *GBT_first_marked_gene P_((GBDATA *gb_main));
 GBDATA *GBT_next_marked_gene P_((GBDATA *gb_species));
-GBDATA *GBT_get_gene_data P_((GBDATA *gb_main));
-#endif
 GBDATA *GBT_next_marked_species P_((GBDATA *gb_species));
 GBDATA *GBT_first_species_rel_species_data P_((GBDATA *gb_species_data));
 GBDATA *GBT_first_species P_((GBDATA *gb_main));
@@ -168,7 +166,8 @@ GBDATA *GBT_open_table_field P_((GBDATA *gb_table, const char *fieldname, GB_TYP
 char GBT_complementNucleotide P_((char c, char T_or_U));
 char *GBT_reverseNucSequence P_((const char *s, int len));
 char *GBT_complementNucSequence P_((const char *s, int len, char T_or_U));
-GB_ERROR GBT_reverseComplementNucSequence P_((char *seq, long length, GB_alignment_type alignment_type));
+GB_ERROR GBT_determine_T_or_U P_((GB_alignment_type alignment_type, char *T_or_U, const char *supposed_target));
+void GBT_reverseComplementNucSequence P_((char *seq, long length, char T_or_U));
 
 #ifdef __cplusplus
 }
