@@ -1,0 +1,142 @@
+AUTODETECT	"LOCUS       *\nORIGIN*"
+	#Global settings:
+KEYWIDTH	12
+FILETAG		"RDP"
+
+BEGIN	"LOCUS*"
+
+MATCH	"LOCUS *"
+	SRT "* *=*1"
+	WRITE "name"
+
+MATCH	"LOCUS *"
+	SRT "* *=*1"
+	TAG	"RDP"
+	WRITE "id"
+
+MATCH	"LOCUS *"
+	SRT "* RNA*RNA *=*3"
+	TAG	"RDP"
+	WRITE "date"
+
+MATCH	"ACCESSION *"
+	SRT "\"*\"=*1:;=:No information="
+	ACI "extract_words("0123456789",4.0)"
+	WRITE "acc"
+
+MATCH	"COMMENT*Corresponding GenBank entry*"
+	SRT	"*Corresponding GenBank entry\: *=*2:|*=:(*=:;=:not submitted="
+	ACI "extract_words("0123456789",4.0)"
+	WRITE	"acc"
+
+MATCH	"SOURCE *"
+	TAG	"RDP"
+	APPEND "source"
+
+MATCH	"DEFINITION *"
+	SRT 	" str. *=:biovar*=:.="
+	WRITE "full_name"
+
+MATCH	"DEFINITION *"
+	SRT 	" str. *=:biovar*=:.="
+	TAG	"RDP"
+	WRITE "db_name"
+
+MATCH	"  ORGANISM *"
+	SRT "*|*=*1"
+	WRITE "full_name"
+
+MATCH	"  ORGANISM *"
+	SRT "*|*=*1"
+	TAG	"RDP"
+	WRITE "db_name"
+
+MATCH	"  AUTHORS *"
+	SRT	"No information*=:?*=?1*1"
+	TAG	"RDP"
+	APPEND "author"
+
+MATCH	"COMMENT*auth line 2:*"
+	SRT	"*auth line 2\:*=*2:|*="
+	TAG	"RDP"
+	APPEND	"author"
+
+MATCH	"COMMENT*auth line 3:*"
+	SRT	"*auth line 3\:*=*2:|*="
+	TAG	"RDP"
+	APPEND	"author"
+
+MATCH	"COMMENT*auth line 4:*"
+	SRT	"*auth line 4\:*=*2:|*="
+	TAG	"RDP"
+	APPEND	"author"
+
+MATCH	"  TITLE *"
+	SRT	"No information*=:?*=?1*1"
+	TAG	"RDP"
+	APPEND	"title"
+
+MATCH	"COMMENT*title line 2:*"
+	SRT	"*title line 2\:*=*2:|*="
+	TAG	"RDP"
+	APPEND	"title"
+
+MATCH	"COMMENT*title line 3:*"
+	SRT	"*title line 3\:*=*2:|*="
+	TAG	"RDP"
+	APPEND	"title"
+
+MATCH	"COMMENT*title line 4:*"
+	SRT	"*title line 4\:*=*2:|*="
+	TAG	"RDP"
+	APPEND	"title"
+
+MATCH	"  JOURNAL *"
+	SRT	"No information*=:Unpublished*=:?*=?1*1"
+	TAG	"RDP"
+	APPEND	"journal"
+
+MATCH	"DEFINITION* str. *"
+	SRT 	"*str. *=*2"
+	TAG	"RDP"
+	APPEND "strain"
+
+MATCH	"COMMENT*Culture collection\: *"
+	SRT	"*Culture collection\: *=*2:|*="
+	TAG	"RDP"
+	APPEND	"strain"
+
+MATCH	"COMMENT *strain=*"
+	SRT	"*strain\=\"*\"*=*2"
+	TAG	"RDP"
+	APPEND	"strain"
+
+MATCH	"COMMENT *ref 2 =*"
+	SRT	"*ref 2*=ref 2*2"
+	TAG	"RDP"
+	APPEND	"reference"
+
+MATCH	"COMMENT*biovar:*"
+	SRT	"*biovar\:*=*2:|*="
+	TAG	"RDP"
+	APPEND	"source"
+
+MATCH	"DEFINITION * biovar *"
+	SRT 	"* biovar *=*2"
+	TAG	"RDP"
+	APPEND "source"
+
+MATCH	"COMMENT*IDENT:*"
+	SRT	"*IDENT\:*=*2:|*="
+	TAG	"RDP"
+	APPEND	"id"
+
+
+SEQUENCEAFTER	"ORIGIN*"
+SEQUENCESRT	" =:~=.:*Check*..="
+SEQUENCEACI	"remove("0123456789 ")"
+# SEQUENCECOLUMN	10
+SEQUENCEEND	"//"
+CREATE_ACC_FROM_SEQUENCE
+
+END	"//"
