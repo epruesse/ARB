@@ -36,13 +36,13 @@ argchoice:Quick add:-q
 
 arg:CALCLENGTH
 argtype:choice_menu
-arglabel:Calc branchlens
+arglabel:Calc branchlengths?
 argchoice:Yes:1
 argchoice:No:0
 
 arg:REARRANGE
 argtype:choice_menu
-arglabel:Rearrange
+arglabel:Rearrangement
 argchoice:None:0
 argchoice:local Rearrangement search:-R
 argchoice:LBP only:-RX
