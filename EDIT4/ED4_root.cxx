@@ -1400,11 +1400,11 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
     if (ED4_window::no_of_windows == MAXWINDOWS)                            // no more then 5 windows allowed
     {
-        aw_message("Restricted to 5 windows", 0);
+        aw_message(GBS_global_string("Restricted to %i windows", MAXWINDOWS), 0);
         return ED4_R_BREAK;
     }
 
-    sprintf(buf,"ARB_EDIT4 *%d*", ED4_window::no_of_windows+1 );
+    sprintf(buf,"ARB_EDIT4 *%d* [%s]", ED4_window::no_of_windows+1, alignment_name);
 
     awmm = new AW_window_menu_modes;
     awmm->init( aw_root, buf,buf, 800,600,20, 20 );                 //create window
