@@ -43,7 +43,7 @@ char *PTM_get_mem(int size)
     char           *erg;
     nsize = (size + (PTM_ALIGNED - 1)) & (-PTM_ALIGNED);
     if (nsize > PTM_MAX_SIZE) {
-	return (char *) calloc(1, size);
+        return (char *) calloc(1, size);
     }
     pos = nsize >> PTM_LD_ALIGNED;
 
@@ -52,20 +52,20 @@ char *PTM_get_mem(int size)
 #endif
 
     if ( (erg = PTM.tables[pos]) ) {
-	PT_READ_PNTR( ((char *)PTM.tables[pos]),i);
-	PTM.tables[pos] = (char *)i;
+        PT_READ_PNTR( ((char *)PTM.tables[pos]),i);
+        PTM.tables[pos] = (char *)i;
     } else {
-	if (PTM.size < nsize) {
-	    PTM.data = (char *) calloc(1, PTM_TABLE_SIZE);
-	    PTM.size = PTM_TABLE_SIZE;
-	    PTM.allsize += PTM_TABLE_SIZE;
+        if (PTM.size < nsize) {
+            PTM.data = (char *) calloc(1, PTM_TABLE_SIZE);
+            PTM.size = PTM_TABLE_SIZE;
+            PTM.allsize += PTM_TABLE_SIZE;
 #ifdef PTM_DEBUG
-	    printf("Memory usage: %i\n",PTM.allsize);
+            printf("Memory usage: %i\n",PTM.allsize);
 #endif
-	}
-	erg = PTM.data;
-	PTM.data += nsize;
-	PTM.size -= nsize;
+        }
+        erg = PTM.data;
+        PTM.data += nsize;
+        PTM.size -= nsize;
     }
     memset(erg, 0, nsize);
     return erg;
