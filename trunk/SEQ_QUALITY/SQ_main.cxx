@@ -99,7 +99,7 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 
         bool marked_only = aw_root->awar(AWAR_SQ_MARKED)->read_int(); // whether to analyse marked or all species
 
-        SQ_calc_sequence_structure(gb_main, marked_only);
+        SQ_traverse_through_tree(gb_main, tree, marked_only);
         SQ_evaluate(gb_main, weight_bases, weight_diff_from_average);
 
         int value = SQ_get_value(gb_main, option);

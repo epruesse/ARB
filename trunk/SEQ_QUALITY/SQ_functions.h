@@ -1,6 +1,6 @@
 void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only);
 
-void SQ_calc_average_structure(GBDATA *gb_main);
+void SQ_traverse_through_tree(GBDATA *gb_main, GBT_TREE *tree, bool marked_only);
 
 int SQ_get_value(GBDATA *gb_main, const char *option);
     /*
@@ -27,5 +27,3 @@ void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average
       So, with the "weight_..."  -values one can customise how important a value stored in a contaier becomes
       for the final result.
     */
-
-void SQ_calc_helix_conformance(GBDATA *gb_main);
