@@ -2,10 +2,11 @@
 #define awt_seq_colors_hxx_included
 
 #define AWAR_SEQ_NAME_STRINGS_TEMPLATE "awt/seq_colors/strings/elem_%i"
-#define AWAR_SEQ_NAME_TEMPLATE "awt/seq_colors/set_%i/elem_%i"
-#define AWT_SEQ_COLORS_MAX_SET 5
+#define AWAR_SEQ_NAME_TEMPLATE         "awt/seq_colors/set_%i/elem_%i"
+#define AWAR_SEQ_NAME_SELECTOR         "awt/seq_colors/select"
+
+#define AWT_SEQ_COLORS_MAX_SET   5
 #define AWT_SEQ_COLORS_MAX_ELEMS 26 // has to be a even number!
-#define AWAR_SEQ_NAME_SELECTOR "awt/seq_colors/select"
 
 class AWT_seq_colors {
     int base_gc;
