@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Tue Oct/07/2003 14:07 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Oct/07/2003 18:05 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2003     //
@@ -1091,7 +1091,7 @@ static string add_or_find_subtree_independent_group(GBDATA *pb_group, GBDATA *pb
     return new_group_name;
 }
 
-static GB_ERROR searchBetterCoverage(GBT_TREE *tree, GBDATA *pb_main, GBDATA *pba_main, int max_comb) {
+static GB_ERROR searchBetterCoverage(GBT_TREE *tree, GBDATA *pb_main, GBDATA *pba_main, int max_comb, int& min_non_searched_comb) {
     TreeTraversal tt(tree, TS_LINKED_TO_SUBTREES);
     GB_ERROR      error = 0;
 
@@ -1137,6 +1137,9 @@ static GB_ERROR searchBetterCoverage(GBT_TREE *tree, GBDATA *pb_main, GBDATA *pb
                         }
                     }
                     else {
+                        if (comb<min_non_searched_comb) {
+                            min_non_searched_comb = comb; // remember for next pass
+                        }
                         out.put("skipping subtree (%i > %i)", comb, max_comb);
                     }
                 }
@@ -1147,6 +1150,30 @@ static GB_ERROR searchBetterCoverage(GBT_TREE *tree, GBDATA *pb_main, GBDATA *pb
     return error;
 }
 
+static GB_ERROR searchBetterCoverage_repeated(GBT_TREE *tree, GBDATA *pb_main, GBDATA *pba_main) {
+    const int comb_offset = 100;
+    int       min_non_searched_comb;
+    int       max_comb    = comb_offset;
+    bool      done        = false;
+    GB_ERROR  error       = 0;
+
+    while (!done && !error) {
+        min_non_searched_comb = INT_MAX;
+        error                 = searchBetterCoverage(tree, pb_main, pba_main, max_comb, min_non_searched_comb);
+
+        if (!error) {
+            if (min_non_searched_comb == INT_MAX) {
+                done = true;
+            }
+            else {
+                max_comb = min_non_searched_comb+comb_offset;
+                out.put("Re-starting coverage search with max_comb=%i", max_comb);
+            }
+        }
+    }
+
+    return error;
+}
 
 int main(int argc,char *argv[]) {
     out.put("arb_probe_group v2.0 -- (C) 2001-2003 by Tina Lai & Ralf Westram");
@@ -1217,7 +1244,7 @@ int main(int argc,char *argv[]) {
                 }
 
                 if (!error) {
-                    error = searchBetterCoverage(gbt_tree, pb_main, pba_main, 100);
+                    error = searchBetterCoverage_repeated(gbt_tree, pb_main, pba_main);
                 }
             }
 
