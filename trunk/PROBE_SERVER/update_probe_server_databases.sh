@@ -77,10 +77,11 @@ create_group_db() {
     ./bin/arb_probe_group $DB $TREE $PT_SERVER.arb $OUT $1
 }
 
-TREEFLAG=-c # 1st: create (see below)
 TREENAME=$DEST_DIR/current.tree
 TREEVERSIONFILE=$DEST_DIR/current.tree.version
 ZIPPEDTREENAME=${TREENAME}.gz
+
+rm $TREENAME
 
 # generate the tree version
 touch $TREEVERSIONFILE
@@ -90,9 +91,11 @@ TREEVERSION=`./getFiletime.pl $TREEVERSIONFILE`
 create_group_design_db() {
     echo "------------------------------------------------------------"
     echo "Designing probes for length=$1"
-    echo "./bin/arb_probe_group_design $DB $PT_SERVER.arb $OUT $1 $TREEFLAG $TREENAME $TREEVERSION"
-    ./bin/arb_probe_group_design $DB $PT_SERVER.arb $OUT $1 $TREEFLAG $TREENAME $TREEVERSION
-    TREEFLAG=-x # from 2nd -> expand
+    if [ -f $TREENAME.$1 ]; then
+        rm $TREENAME.$1
+    fi
+    echo "./bin/arb_probe_group_design $DB $PT_SERVER.arb $OUT $1 $TREENAME.$1 $TREEVERSION"
+    ./bin/arb_probe_group_design $DB $PT_SERVER.arb $OUT $1 $TREENAME.$1 $TREEVERSION
 }
 
 create_db() {
@@ -101,16 +104,37 @@ create_db() {
         mv $OUT$1_design.arb $DEST_DIR
 }
 
-if [ -f $TREENAME ]; then
-    rm $TREENAME
-fi
+create_dbs() {
+    while [ \! -z "$1" ]; do
+        create_db $1
+        shift
+    done
+}
 
-create_db 15
-# create_db 16
-# create_db 17
-# create_db 18
-# create_db 19
-# create_db 20
+treenames() {
+    BASENAME=$1
+    shift
+    TREENAMES=
+    while [ \! -z "$1" ]; do
+        TREENAMES="$TREENAMES $BASENAME.$1"
+        shift
+    done
+    echo $TREENAMES
+}
+
+# --------------------------------------------------------------------------------
+
+# which probelengths shall be generated
+CREATE="15 16"
+# CREATE=15 16 17 18 19 20
+
+# create databases
+create_dbs $CREATE
+
+# merge trees
+echo "------------------------------------------------------------"
+SAVED_TREES=`treenames $TREENAME $CREATE`
+./bin/pgd_tree_merge $SAVED_TREES $TREENAME
 
 # prepare zipped tree
 if [ -f $TREENAME ]; then
