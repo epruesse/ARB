@@ -984,8 +984,7 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
 
     aws->at("auto");
     aws->callback(awtc_check_input_format);
-    aws->create_button("AUTO_DETECT", "AUTO DETECT","A");
-
+    aws->create_autosize_button("AUTO_DETECT", "AUTO DETECT","A");
 
     aws->at("ali");
     aws->create_input_field(AWAR_ALI,4);
@@ -1002,7 +1001,7 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
     aws->create_toggle_field(AWAR_READ_GENOM_DB);
     aws->insert_toggle("Import genom data in GENBANK format","g",0);
     aws->insert_toggle("Import genom data in EMBL format","e",1);
-    aws->insert_toggle("Import foreign data format (or press AUTO DETECT)","f",2);
+    aws->insert_toggle("Import selected format","f",2);
     aws->update_toggle_field();
 
     aws->at("go");
