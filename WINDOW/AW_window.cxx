@@ -53,37 +53,37 @@
 AW_root *AW_root::THIS = NULL;
 
 AW_cb_struct::AW_cb_struct( AW_window *awi, void (*g)(AW_window*,AW_CL,AW_CL), AW_CL cd1i, AW_CL cd2i, const char *help_texti, class AW_cb_struct *nexti ) {
-    aw = awi;
-    f = g;
-    cd1 = cd1i;
-    cd2 = cd2i;
-    help_text = help_texti;
+    aw            = awi;
+    f             = g;
+    cd1           = cd1i;
+    cd2           = cd2i;
+    help_text     = help_texti;
     pop_up_window = NULL;
-    this->next = nexti;
+    this->next    = nexti;
 }
 
 
 
 AW_variable_update_struct::AW_variable_update_struct( Widget widgeti, AW_widget_type widget_typei, AW_awar *awari, const char *var_s_i, int var_i_i, float var_f_i, AW_cb_struct *cbsi ) {
 
-    widget			= widgeti;
-    widget_type		= widget_typei;
-    awar			= awari;
+    widget		= widgeti;
+    widget_type	= widget_typei;
+    awar		= awari;
     if (var_s_i){
-        variable_value 		= strdup( var_s_i );
+        variable_value = strdup( var_s_i );
     }else{
-        variable_value		= 0;
+        variable_value = 0;
     }
-    variable_int_value	= var_i_i;		// used for toggles and selection menus
-    variable_float_value	= var_f_i;
-    cbs			= cbsi;
+    variable_int_value	 = var_i_i; // used for toggles and selection menus
+    variable_float_value = var_f_i;
+    cbs			         = cbsi;
 
 }
 
 
 AW_timer_cb_struct::AW_timer_cb_struct(AW_root *ari, void (*g)(AW_root*,AW_CL,AW_CL), AW_CL cd1i, AW_CL cd2i) {
-    ar = ari;
-    f = g;
+    ar  = ari;
+    f   = g;
     cd1 = cd1i;
     cd2 = cd2i;
 }
@@ -97,9 +97,9 @@ AW_buttons_struct::AW_buttons_struct(AW_root *root, const char *idi, AW_active m
     }else{
         id = NULL;
     }
-    mask = maski;
+    mask   = maski;
     button = w;
-    next = 0;
+    next   = 0;
 
     if (p_global->button_list) {
         p_global->last_button->next = this;
@@ -111,12 +111,12 @@ AW_buttons_struct::AW_buttons_struct(AW_root *root, const char *idi, AW_active m
 
 
 AW_config_struct::AW_config_struct( const char *idi, AW_active maski, Widget w, const char *variable_namei, const char *variable_valuei, AW_config_struct *nexti ) {
-    id = strdup(idi);
-    mask = maski;
-    widget = w;
-    variable_name = strdup(variable_namei);
+    id             = strdup(idi);
+    mask           = maski;
+    widget         = w;
+    variable_name  = strdup(variable_namei);
     variable_value = strdup(variable_valuei);
-    next = nexti;
+    next           = nexti;
 }
 
 
@@ -126,78 +126,79 @@ AW_config_struct::AW_config_struct( const char *idi, AW_active maski, Widget w, 
 
 AW_option_struct::AW_option_struct( const char *variable_valuei, Widget choice_widgeti ) {
 
-    variable_value	= strdup( variable_valuei );
-    choice_widget	= choice_widgeti;
-    next		= NULL;
+    variable_value = strdup( variable_valuei );
+    choice_widget  = choice_widgeti;
+    next		   = NULL;
 
 }
 AW_option_struct::AW_option_struct( int variable_valuei, Widget choice_widgeti ) {
 
-    variable_int_value		= variable_valuei;
-    choice_widget			= choice_widgeti;
-    next				= NULL;
+    variable_int_value = variable_valuei;
+    choice_widget	   = choice_widgeti;
+    next			   = NULL;
 
 }
 AW_option_struct::AW_option_struct( float variable_valuei, Widget choice_widgeti ) {
 
-    variable_float_value	= variable_valuei;
-    choice_widget			= choice_widgeti;
-    next						= NULL;
+    variable_float_value = variable_valuei;
+    choice_widget		 = choice_widgeti;
+    next				 = NULL;
 
 }
 
-AW_option_menu_struct::AW_option_menu_struct( int numberi, const char *unique_option_menu_namei, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti, AW_pos xi, AW_pos yi ) {
-    option_menu_number		= numberi;
+AW_option_menu_struct::AW_option_menu_struct( int numberi, const char *unique_option_menu_namei, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti, AW_pos xi, AW_pos yi, int correct) {
+    option_menu_number = numberi;
     if (unique_option_menu_namei) {
         unique_option_menu_name	= strdup( unique_option_menu_namei );
     }else{
         unique_option_menu_name = 0;
     }
-    variable_name				= strdup( variable_namei );
-    variable_type				= variable_typei;
-    label_widget				= label_widgeti;
-    first_choice				= NULL;
-    last_choice				= NULL;
-    default_choice				= NULL;
-    next					= NULL;
-    x = xi;
-    y = yi;
+    variable_name                = strdup( variable_namei );
+    variable_type                = variable_typei;
+    label_widget                 = label_widgeti;
+    first_choice                 = NULL;
+    last_choice	                 = NULL;
+    default_choice               = NULL;
+    next		                 = NULL;
+    x                            = xi;
+    y                            = yi;
+    correct_for_at_center_intern = correct;
 }
 
 
 
 
-AW_toggle_field_struct::AW_toggle_field_struct( int toggle_field_numberi, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti ) {
+AW_toggle_field_struct::AW_toggle_field_struct( int toggle_field_numberi, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti, int correct) {
 
-    toggle_field_number			= toggle_field_numberi;
-    variable_name					= strdup( variable_namei );
-    variable_type					= variable_typei;
-    label_widget					= label_widgeti;
-    first_toggle					= NULL;
-    last_toggle					= NULL;
-    default_toggle					= NULL;
-    next						= NULL;
-
+    toggle_field_number	         = toggle_field_numberi;
+    variable_name		         = strdup( variable_namei );
+    variable_type		         = variable_typei;
+    label_widget		         = label_widgeti;
+    first_toggle		         = NULL;
+    last_toggle			         = NULL;
+    default_toggle		         = NULL;
+    next				         = NULL;
+    correct_for_at_center_intern = correct;
 }
 AW_toggle_struct::AW_toggle_struct( const char *variable_valuei, Widget toggle_widgeti ) {
 
-    variable_value	= strdup( variable_valuei );
-    toggle_widget	= toggle_widgeti;
-    next				= NULL;
+    variable_value = strdup( variable_valuei );
+    toggle_widget  = toggle_widgeti;
+    next		   = NULL;
 
 }
 AW_toggle_struct::AW_toggle_struct( int variable_valuei, Widget toggle_widgeti ) {
 
-    variable_int_value	= variable_valuei;
-    toggle_widget			= toggle_widgeti;
-    next						= NULL;
+    variable_int_value = variable_valuei;
+    toggle_widget	   = toggle_widgeti;
+    next			   = NULL;
 
 }
 AW_toggle_struct::AW_toggle_struct( float variable_valuei, Widget toggle_widgeti ) {
 
-    variable_float_value	= variable_valuei;
-    toggle_widget			= toggle_widgeti;
-    next						= NULL;
+    variable_float_value = variable_valuei;
+    toggle_widget		 = toggle_widgeti;
+    next				 = NULL;
 
 }
 char *AW_select_table_struct::copy_string(const char *str)
