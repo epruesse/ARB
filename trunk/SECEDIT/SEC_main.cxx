@@ -836,6 +836,34 @@ static void SEC_new_structure(AW_window *, AW_CL cl_ntw, AW_CL) {
     }
 }
 
+static void SEC_sync_colors(AW_window *aww, AW_CL cl_mode, AW_CL) {
+    // overwrites color settings with those from EDIT4
+
+    int mode = (int)cl_mode;
+
+    if (mode & 1) { // search string colors
+        AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT", false,
+                    "User1",   "User2",   "Probe",
+                    "Primerl", "Primerr", "Primerg",
+                    "Sigl",    "Sigr",    "Sigg",
+                    "MISMATCHES",
+                    0);
+    }
+    if (mode & 2) { // range colors
+        AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT", false,
+                    "RANGE_0", "RANGE_1", "RANGE_2",
+                    "RANGE_3", "RANGE_4", "RANGE_5",
+                    "RANGE_6", "RANGE_7", "RANGE_8",
+                    "RANGE_9",
+                    0);
+    }
+    if (mode & 4) { // other colors
+        AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT", false,
+                    "CURSOR",
+                    0);
+    }
+}
+
 AW_window *SEC_create_layout_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
 
@@ -968,12 +996,12 @@ AW_window *SEC_create_main_window(AW_root *awr){
 
     awm->create_menu( 0, "File", "F", "secedit_file.hlp",  AWM_ALL );
 
-    awm->insert_menu_topic("secedit_new", "New Structure", "N", 0, AWM_ALL, (AW_CB)SEC_new_structure, (AW_CL)ntw, 0);
-    awm->insert_menu_topic("secedit_import", "Load Structure ", "L", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_import, (AW_CL)ntw);
-    awm->insert_menu_topic("secedit_export", "Save Structure ", "S", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)ntw);
+    awm->insert_menu_topic("secedit_new", "New Structure", "N", 0, AWM_ALL, SEC_new_structure, (AW_CL)ntw, 0);
+    awm->insert_menu_topic("secedit_import", "Load Structure", "L", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_import, (AW_CL)ntw);
+    awm->insert_menu_topic("secedit_export", "Save Structure", "S", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)ntw);
     awm->insert_separator();
-    awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG ", "X", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_sec_export_window, (AW_CL)ntw);
-    awm->insert_menu_topic("print_secedit", "Print Structure ", "P","secedit2prt.hlp",  AWM_ALL,    (AW_CB)AWT_create_print_window, (AW_CL)ntw, 0 );
+    awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG", "X", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_sec_export_window, (AW_CL)ntw);
+    awm->insert_menu_topic("print_secedit", "Print Structure", "P","secedit2prt.hlp",  AWM_ALL,    (AW_CB)AWT_create_print_window, (AW_CL)ntw, 0 );
     awm->insert_separator();
 
 #if defined(FREESTANDING)
@@ -983,8 +1011,12 @@ AW_window *SEC_create_main_window(AW_root *awr){
 #endif
 
     awm->create_menu("props","Properties","P","properties.hlp", AWM_ALL);
-    //    awm->insert_menu_topic("props_menu",  "Menu: Colors and Fonts ...",   "M","props_frame.hlp",  AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
-    awm->insert_menu_topic("props_secedit", "Change Colors and Fonts ","C","secedit_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
+    awm->insert_menu_topic("props_secedit", "Change Colors and Fonts","C","secedit_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
+    awm->insert_menu_topic("sync_search_colors", "Sync search colors with EDIT4", "s", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)1, 0);
+    awm->insert_menu_topic("sync_range_colors",  "Sync range colors with EDIT4",  "r", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)2, 0);
+    awm->insert_menu_topic("sync_other_colors",  "Sync other colors with EDIT4",  "o", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)4, 0);
+    awm->insert_menu_topic("sync_all_colors",    "Sync all colors with EDIT4",    "a", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)(1|2|4), 0);
+    awm->insert_separator();
     awm->insert_menu_topic("sec_layout", "Layout Settings", "L", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_layout_window, 0);
     awm->insert_menu_topic("display", "Change Display", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
     awm->insert_separator();
