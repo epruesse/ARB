@@ -1628,7 +1628,7 @@ AW_window *ED4_create_level_1_options_window(AW_root *root){
     aws->at("percent");
     aws->create_input_field(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT);
 
-    aws->at("leftcol");
+//     aws->at("leftcol");
 //     aws->create_input_field(ED4_AWAR_COMPRESS_LEFT_COLUMN);
 
     aws->at("repeat");
