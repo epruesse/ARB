@@ -19,6 +19,7 @@ BEGIN {
                    &print_special_header
                    &print_download_header
                    &wait_answer
+                   &get_std_result
                    &send_std_result
                    &write_std_request
                    &print_error
@@ -26,6 +27,7 @@ BEGIN {
                    &generate_filenames
                    &treefilename
                    &clientfilename
+                   &available_servers
                  );
   @EXPORT_OK = qw( $q
                    %params
@@ -116,6 +118,41 @@ sub wait_answer($) {
   while (not -f $result_name) { sleep 1; }
 }
 
+sub get_std_result($) {
+  my ($result_name) = @_;
+  my %result;
+  my $error;
+
+  if (not open(RESULT,"<$result_name")) { $error= "Can't read '$result_name'"; }
+  else {
+  LOOP: foreach (<RESULT>) {
+      chomp;
+      if (/=/ig) {
+        $result{$`}=$';
+      }
+      else {
+        $error = "'=' expected in server result '$''";
+        last LOOP;
+      }
+    }
+  }
+  close RESULT;
+#   unlink $result_name;    # remove the result file
+
+  if (not exists $result{'result'}) {
+    $error = "got empty or damaged resultfile from worker";
+  }
+
+  if ($error) {
+    my %err_result;
+    $err_result{'result'}='error';
+    $err_result{'message'}=$error;
+    return %err_result;
+  }
+
+  return %result;
+}
+
 sub send_std_result($) {
   my ($result_name) = @_;
   my $count         = 0;
@@ -131,6 +168,11 @@ sub send_std_result($) {
 sub treefilename() { return $datadir.'/current.tree.gz'; }
 sub clientbasename() { return 'arb_probe_library.jar.gz'; }
 sub clientfilename() { return $datadir.'/'.&clientbasename(); }
+
+sub available_servers() { # needed for testing only to reduce # of available_servers
+  return (15,16);
+#   return (15,16,17,18,19,20);
+}
 
 END { }                         # module clean-up code here (global destructor)
 1;                              # don't forget to return a true value from the file
