@@ -1,11 +1,14 @@
 #!/bin/sh
-# Syntax arb_export [/experimental]
-dest=strunk@ftp.mikro.biologie.tu-muenchen.de:/usr2/ftp/pub/ARB$1
+# Syntax arb_export [/beta]
+
+# dest=strunk@ftp.mikro.biologie.tu-muenchen.de:/usr2/ftp/pub/ARB$1
+
+dest=/trance1/ARB_download/ARB$1
 destmach=$dest/$HOSTTYPE
 
 FILES="arb_install.sh arb.tgz zcat arb_ale.tgz"
 echo "\n\n*************"
-echo "exporting $FILES to the ftp server:"
+echo "exporting $FILES to the homepage:"
 echo " ******* $destmach  ******"
 echo " Is this OK ??? [y]/n"
 read ok
@@ -16,10 +19,10 @@ if [ "X$ok" != 'Xn' ]; then
 	done
 fi
 
-SOURCE=`echo arbsrc*.tgz arb_src_install`
-README="arb_README.txt README arb_TROUBLES.txt"
+SOURCE=`echo arbsrc*.tgz`
+README="arb_README.txt README arb_CHANGES.txt"
 echo "\n\n*************"
-echo "exporting $SOURCE $README to the ftp server:"
+echo "exporting $SOURCE $README to the homepage:"
 echo " ******* $dest  ******"
 echo " Is this OK ??? y/[n]"
 read ok
