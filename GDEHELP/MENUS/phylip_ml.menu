@@ -1,6 +1,6 @@
 
 item:Phylip PROML
-itemmeta: M
+itemmeta: O
 itemmethod:(GEN_INFILE(in1);\
             RUN_IN_WINDOW((arb_proml $BOOTSTRAP $MODEL $VIEWOUT $ANALYSIS $RANDOM $REARRANGE; $DISPLAY_FUNC));\
             RM_LOCAL_FILES(in1) )&
