@@ -1,0 +1,186 @@
+
+item:ClustalW automatic
+itemmethod:(tr '"%//' '>' <in1 >clus_in;RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align ;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); /bin/rm -f clus_in* in1)
+
+itemhelp:clustalw.help
+
+
+in:in1
+informat:flat
+insave:
+
+out:out1
+outformat:flat
+
+
+
+item:Create ClustalW Profile 2
+itemmethod:(tr '"%//' '>' <in1 > clus_prf)
+
+itemhelp:clustalw.help
+
+in:in1
+informat:flat
+insave:
+
+
+item:Delete ClustalW Profile 2
+itemmethod:(/bin/rm -f clus_prf)
+
+itemhelp:clustalw.help
+
+
+
+item:ClustalW Profile Alignment
+itemmethod:(tr '"%//' '>' <in1 >clus_in;RUN_IN_WINDOW((clustalw -output=PIR -profile1=clus_in -profile2=clus_prf -align ;cat clus_in.pir |sed "s/^>DL;/#/g"|sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); /bin/rm -f clus_in* in1)
+
+itemhelp:clustalw.help
+
+
+in:in1
+informat:flat
+insave:
+
+out:out1
+outformat:flat
+
+
+
+
+item:ClustalW DNA Alignment (experts only)
+itemmethod:(tr '"%//' '>' <in1 >clus_in;RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align -ktuple=$KTUP_ -window=$WIN_ -topdiags=$WIN_ -gapopen=$FIXED_ -gapext=$FLOAT_ -transweight=0.5 -type=DNA -pwdnamatrix=$PWDNAMATRIX_ -dnamatrix=$DNAMATRIX_;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; )); /bin/rm -f clus_in* in1)
+
+itemhelp:clustalw.help
+
+arg:KTUP
+argtype:slider
+arglabel:K-tuple size for fast pairwise search
+argmin:1
+argmax:10
+argvalue:2
+
+arg:WIN
+argtype:slider
+arglabel:Window size for fast pairwise search
+argmin:1
+argmax:10
+argvalue:4
+
+arg:PWDNAMATRIX_
+argtype:chooser
+arglabel:Weighting matrix (pairwise)
+argchoice:CLUSTALW:CLUSTALW
+argchoice:IUB:IUB
+
+arg:DNAMATRIX_
+argtype:chooser
+arglabel:Weighting matrix (multiple)
+argchoice:CLUSTALW:CLUSTALW
+argchoice:IUB:IUB
+
+arg:FIXED_
+argtype:slider
+arglabel:Gap Open Penalty
+argmin:1
+argmax:100
+argvalue:8.7
+ 
+arg:FLOAT_
+arglabel:Gap Extend Penalty
+argtype:slider
+argmin:.001
+argmax:1
+argvalue:.1
+
+
+in:in1
+informat:flat
+insave:
+
+out:out1
+outformat:flat
+
+
+item:ClustalW Protein Alignment (experts only)
+itemmethod:(tr '"%//' '>' <in1 >clus_in;RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align -ktuple=$KTUP_ -window=$WIN_ -topdiags=$WIN_  -gapopen=$FIXED_ -gapext=$FLOAT_ -type=PROTEIN -pwmatrix=$PWMATRIX_ -matrix=$MATRIX_;cat clus_in.pir |sed "s/^>DL;/#/g" |sed "s/^>P1;/%/g" |sed "s/^\*$//g" >out1; ));\/bin/rm -f clus_in* in1)
+
+
+itemhelp:clustalw.help
+
+arg:KTUP_
+argtype:slider
+arglabel:K-tuple size for fast pairwise search
+argmin:1
+argmax:10
+argvalue:2
+
+arg:WIN_
+argtype:slider
+arglabel:Window size and top diagonals for fast alignment
+argmin:1
+argmax:10
+argvalue:4
+
+arg:PWMATRIX_
+argtype:chooser
+arglabel:Weighting matrix (pairwise)
+argchoice:BLOSUM:BLOSUM
+argchoice:PAM:PAM
+argchoice:GONNET:GONNET
+argchoice:ID:ID
+
+arg:MATRIX_
+argtype:chooser
+arglabel:Weighting matrix (multiple)
+argchoice:BLOSUM:BLOSUM
+argchoice:PAM:PAM
+argchoice:GONNET:GONNET
+argchoice:ID:ID
+
+arg:FIXED_
+argtype:slider
+arglabel:Gap Open Penalty
+argmin:1
+argmax:100
+argvalue:8.7
+ 
+arg:FLOAT_
+arglabel:Gap Extend Penalty
+argtype:slider
+argmin:.001
+argmax:1
+argvalue:.1
+
+
+ 
+in:in1
+informat:flat
+insave:
+
+out:out1
+outformat:flat
+
+item:Assemble Contigs
+itemmethod: (tr '"%//' '>' <in1 >in1.tmp;CAP2 in1.tmp $OVERLAP $PMATCH >  out1;/bin/rm -f in1.tmp)
+itemhelp:CAP2.help
+
+arg:OVERLAP
+argtype:slider
+arglabel:Minimum overlap?
+argmin:5
+argmax:100
+argvalue:20
+
+arg:PMATCH
+argtype:slider
+arglabel:Percent match required within overlap
+argmin:25
+argmax:100
+argvalue:90
+
+in:in1
+informat:flat
+
+out:out1
+outformat:gde
+

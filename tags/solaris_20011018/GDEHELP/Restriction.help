@@ -1,0 +1,15 @@
+Restriction sites will accept a file of restriction enzymes, and will locate
+all occurences in the selected sequences.  The format of the file is single
+line entries with the recognition site followed by the enzyme name.  For
+example:
+
+TTCGAA	AcpI
+WCCGGW	BcaI
+TCCGGA	BspEI
+
+
+For the most complete set of current restriction enzymes, Dr. Richard J.
+Roberts' REBASE database is available via anonymous ftp from rna.cshl.org.
+This list is updated frequently, and includes information about methylation
+sites, isoschizomers, references, and commercial sources.
+

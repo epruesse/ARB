@@ -1,0 +1,36 @@
+#!/bin/sh
+# Syntax arb_export [/experimental]
+dest=strunk@ftp.mikro.biologie.tu-muenchen.de:/usr2/ftp/pub/ARB$1
+destmach=$dest/$HOSTTYPE
+
+FILES="arb_install.sh arb.tgz zcat arb_ale.tgz"
+echo "\n\n*************"
+echo "exporting $FILES to the ftp server:"
+echo " ******* $destmach  ******"
+echo " Is this OK ??? [y]/n"
+read ok
+if [ "X$ok" != 'Xn' ]; then
+	for i in $FILES; do
+		echo rcp $i $destmach
+		rcp $i $destmach
+	done
+fi
+
+SOURCE=`echo arbsrc*.tgz arb_src_install`
+README="arb_README.txt README arb_TROUBLES.txt"
+echo "\n\n*************"
+echo "exporting $SOURCE $README to the ftp server:"
+echo " ******* $dest  ******"
+echo " Is this OK ??? y/[n]"
+read ok
+if [ "X$ok" = 'Xy' ]; then
+	for i in $SOURCE; do
+		echo rcp $i $dest/src
+		rcp $i $dest/src
+	done
+	for i in $README; do
+		echo rcp $i $dest
+		rcp $i $dest
+	done
+fi
+

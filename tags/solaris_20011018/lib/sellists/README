@@ -1,0 +1,11 @@
+This directory contain different selection lists
+
+To create new choices do not modify the files in this directory,
+(for it will be destroyed when you install a new version of arb)
+but:
+
+create a new file with a privat extension to the basename of the original file.
+
+example:	original file	mod_fields.sellst
+		your file	mod_fields_wolfgang_ludwig.sellst
+		or		mod_fields_oliver_strunk.sellst

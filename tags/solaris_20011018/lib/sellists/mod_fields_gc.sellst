@@ -1,0 +1,8 @@
+count nucleotides,					nuc#|sequence|count("agctuAGCTU")
+count nucleotides gene,        				nuc_term#|sequence|filter(SAI=termini,include=x)|count("ACGTU")
+start gene,						start#|sequence|filter(SAI=5_prime,exclude=x)|count("ACGTUMRWSYKVHDBNacgtumrwsykvhdbn")
+end gene,						end#|sequence|filter(SAI=3_prime,exclude=x)|count("ACGTUMRWSYKVHDBNacgtumrwsykvhdbn")
+calculate G+C content,					GC#|sequence|count("gcGC");count("agctuAGCTU")|"G+C:";per_cent
+calculate G+C content helical parts only,		GCH#|sequence|filter(SAI=HELIX;exclude=.-)|count("gcGC");count("agctuAGCTU")|"GCH=";per_cent;"(";cut(2);")"
+calculate G+C content non helical parts only,		GCN#|sequence|filter(SAI=HELIX;include=.-)|count("gcGC");count("agctuAGCTU")|"GCN=";per_cent;"(";cut(2);")"
+

@@ -1,0 +1,31 @@
+item:Phylip Distance Methods ( Original Phylip, Interactiv )
+itemmethod:(	GEN_INFILE(in1);RUN_IN_WINDOW(( $DPGM;mv -f outfile infile;$PROGRAM;$DISPLAY_FUNC ));	RM_LOCAL_FILES(in1)	)&
+ 
+arg:DISPLAY_FUNC
+argtype:chooser
+arglabel:What to do with the tree:?
+argchoice:ARB ('tree_ph_xxx'):(arb_read_tree tree_ph_$$ treefile "FILTER=$FILTER PKG=phylip")
+argchoice:TextEdit:${ARB_TEXTEDIT:-textedit} outfile
+argchoice:Treetool:treetool treefile
+
+arg:PROGRAM
+arglabel:Which method?
+argtype:chooser
+argchoice:DNADIST:mv -f infile outfile
+argchoice:Fitch:${ARB_XCMD:-cmdtool} fitch
+argchoice:Kitsch:${ARB_XCMD:-cmdtool} kitsch
+argchoice:Neighbor:${ARB_XCMD:-cmdtool} neighbor
+
+arg:DPGM
+arglabel:Treat data as..
+argtype:chooser
+argchoice:DNA:dnadist
+argchoice:RNA:dnadist
+argchoice:AA:protdist
+
+
+in:in1
+informat:genbank
+inmask:sdfgdfg
+insave:
+
