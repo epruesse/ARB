@@ -29,6 +29,7 @@ public:
     void triangle_set( const long _x, const long _y, const bool _value );
 
     bool reserve( const long _capacity );
+    void invert();
 
     void print();
 
@@ -75,13 +76,13 @@ bool PS_BitMap::get( const long _x, const long _y ) {
 // ************************************************************
 void PS_BitMap::triangle_set( const long _x, const long _y, const bool _value ) {
     if (_x > _y) {
-        reserve( _y+1 );
-        data[_y]->set(_x,_value);
-        if (_y > size) size = _y;
-    } else {
         reserve( _x+1 );
         data[_x]->set(_y,_value);
         if (_x > size) size = _x;
+    } else {
+        reserve( _y+1 );
+        data[_y]->set(_x,_value);
+        if (_y > size) size = _y;
     }
 }
 
@@ -91,11 +92,11 @@ void PS_BitMap::triangle_set( const long _x, const long _y, const bool _value ) 
 // ************************************************************
 bool PS_BitMap::triangle_get( const long _x, const long _y ) {
     if (_x > _y) {
-        reserve( _y+1 );
-        return data[_y]->get(_x);
-    } else {
         reserve( _x+1 );
         return data[_x]->get(_y);
+    } else {
+        reserve( _y+1 );
+        return data[_y]->get(_x);
     }
 }
 
@@ -121,6 +122,17 @@ bool PS_BitMap::reserve( const long _capacity ) {
     }
     capacity = _capacity;                                        // store new capacity
     return true;
+}
+
+
+// ************************************************************
+// * invert()
+// ************************************************************
+void PS_BitMap::invert() {
+    bias = (bias == false);
+    for (long i = 0; i <= size; ++i) {
+        data[i]->invert();
+    }
 }
 
 

@@ -133,15 +133,15 @@ void PS_detect_weak_differences( const PS_NodePtr ps_root_node ) {
         }
     }
     printf( "max ID = %i\n(enter to continue)",maxID );
-    getchar();
+    //getchar();
 
     theMap->print();
     printf( "(enter to continue)\n" );
-    getchar();
+    //getchar();
 
     delete theMap;
     printf( "(enter to continue)\n" );
-    getchar();
+    //getchar();
 }
 
 
@@ -153,7 +153,7 @@ int main( int argc,  char *argv[] ) {
     GB_ERROR error;
 
     printf( "(enter to continue)\n" );
-    getchar();
+    //getchar();
 
     // open probe-set-database
     if (argc < 2) {
@@ -175,7 +175,7 @@ int main( int argc,  char *argv[] ) {
         exit(2);
     }
     printf( "loaded database (enter to continue)\n" );
-    getchar();
+    //getchar();
 
 
     if (argc < 3) { // no output filename specified => making statistics
@@ -202,14 +202,14 @@ int main( int argc,  char *argv[] ) {
         PS_detect_weak_differences( root );
         printf( "T O D O\n" );
         printf( "(enter to continue)\n" );
-        getchar();
+        //getchar();
     }
 
 
     root.SetNull();
     printf( "root should be destroyed now\n" );
     printf( "(enter to continue)\n" );
-    getchar();
+    //getchar();
 
     nodes_per_depth.clear();
     probes_per_depth.clear();
