@@ -318,11 +318,13 @@ void PS_eval_node_paths( PS_Candidate2NodeSetPairByLengthMap &_paths,
 
 
 //  ----------------------------------------------------
-//      void PS_remove_bad_probes( PS_NodeSet  &_nodes,
-//                                 float        _average )
+//      void PS_remove_bad_probes( PS_NodeSet        &_nodes,
+//                                 float              _average,
+//                                 set<unsigned int> &_probe_lengths )
 //  ----------------------------------------------------
-void PS_remove_bad_probes( PS_NodeSet  &_nodes,
-                           float        _average ) {
+void PS_remove_bad_probes( PS_NodeSet        &_nodes,
+                           float              _average,
+                           set<unsigned int> &_probe_lengths ) {
     for ( PS_NodeSet::const_iterator node_iter = _nodes.begin();
           node_iter != _nodes.end();
           ++node_iter ) {
@@ -399,6 +401,7 @@ void PS_remove_bad_probes( PS_NodeSet  &_nodes,
                 to_delete = node->getProbesEnd();
             }
         }
+        _probe_lengths.insert( (*node->getProbesBegin())->length );
     }
 }
 
@@ -478,14 +481,15 @@ int main( int   argc,
     float min_sum_of_square_distances_to_average;
     float average;
     PS_eval_node_paths( node_paths, min_sum_of_square_distances_to_average, average  );
-    printf( "best candidate : average (%f)  sum of square distances to average (%f)\n", average, min_sum_of_square_distances_to_average );
+    printf( "   best candidate : average (%f)  sum of square distances to average (%f)\n   ", average, min_sum_of_square_distances_to_average );
     node_paths.begin()->second.first->print();
 
     //
     // remove probes with unwanted distance or length
     //
     printf( "\nremoving unwanted probes from best candidate..\n" );
-    PS_remove_bad_probes( node_paths.begin()->second.second, average );
+    set<unsigned int> probe_lengths;
+    PS_remove_bad_probes( node_paths.begin()->second.second, average, probe_lengths );
 
     //
     // write out paths to probes
@@ -498,6 +502,19 @@ int main( int   argc,
     PS_CandidatePtr c = node_paths.begin()->second.first;
     unsigned long min_temp = PS_calc_temp( *c->node->getProbesBegin() );
     unsigned long max_temp = min_temp;
+    // write count of paths
+    final_candidates_paths_file->put_ulong( c->depth );
+    // write used probe lengths (informal)
+    final_candidates_paths_file->put_uint( probe_lengths.size() );
+    printf( "   probe lengths :" );
+    for ( set<unsigned int>::iterator length = probe_lengths.begin();
+          length != probe_lengths.end();
+          ++length ) {
+        final_candidates_paths_file->put_uint( *length );
+        printf( " %u", *length );
+    }
+    printf( "\n" );
+    // write paths
     while (c && !c->node.Null()) {
         PS_ProbeSetCIter probe = c->node->getProbesBegin();
         unsigned long temp = PS_calc_temp( *probe );
@@ -515,17 +532,49 @@ int main( int   argc,
         final_candidates_paths_file->put_uint( (*probe)->length );
         // write probe GC-content
         final_candidates_paths_file->put_uint( (*probe)->GC_content );
-        // write path length
-        final_candidates_paths_file->put_uint( c->path.size() );
-        // write path
-        for ( IDSetCIter id = c->path.begin();
-              id != c->path.end();
-              ++id ) {
-            final_candidates_paths_file->put_uint( *id );
+
+        if ((*probe)->quality >= 0) {
+            // write path length
+            final_candidates_paths_file->put_uint( c->path.size() );
+            // write path
+            for ( IDSetCIter id = c->path.begin();
+                  id != c->path.end();
+                  ++id ) {
+                final_candidates_paths_file->put_int( *id );
+            }
+        } else {
+            // write inverse path length
+            final_candidates_paths_file->put_uint( db->getSpeciesCount() - c->path.size() );
+            // write inverse path
+            IDSetCIter path_it = c->path.begin();
+            SpeciesID  path_id = *path_it;
+            for ( SpeciesID id = db->getMinID();
+                  id <= db->getMaxID();
+                  ++id ) {
+                if (id == path_id) {
+                    ++path_it;
+                    path_id = (path_it == c->path.end()) ? -1 : *path_it;
+                    continue;
+                }
+                final_candidates_paths_file->put_int( id );
+            }
+        }
+        // write dummy probe data
+        for ( unsigned int i = 0; i < (*probe)->length; ++i ) {
+            final_candidates_paths_file->put_char( '\x00' );
         }
         c = c->parent;
     }
-    printf( "temperature range %lu..%lu\n", min_temp, max_temp );
+    // write probe lengths again
+    // this set is used store remaining 'todo probe-lengths'
+    final_candidates_paths_file->put_uint( probe_lengths.size() );
+    for ( set<unsigned int>::iterator length = probe_lengths.begin();
+          length != probe_lengths.end();
+          ++length ) {
+        final_candidates_paths_file->put_uint( *length );
+    }
+
+    printf( "   temperature range %lu..%lu\n", min_temp, max_temp );
     free( final_candidates_paths_filename );
     delete final_candidates_paths_file;
 
