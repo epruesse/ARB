@@ -1310,7 +1310,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                     AWMIMT("count_different_chars", "Count different chars/column",                 "C", "count_chars.hlp",    AWM_EXP, NT_system_cb2, (AW_CL)"arb_count_chars",                0);
                     AWMIMT("export_pos_var",        "Export Column Statistic (GNUPLOT format)",     "E", "csp_2_gnuplot.hlp",  AWM_EXP, AW_POPUP,      (AW_CL)AP_open_csp_2_gnuplot_window,     0);
 #ifdef DEVEL_YADHU
-#error forgotten?
+#warning will deal later &^%*^*!!
                     // AWMIMT("conservation_profile",  "Display Conservation Profile (Using GNUPLOT)", "D", "conser_profile.hlp", AWM_EXP, AW_POPUP,      (AW_CL)AP_openConservationProfileWindow, 0); // spelling fixed [ralf]
 #endif
                 }
