@@ -4,7 +4,7 @@
 #define AWAR_SELECT_ACISRT "tmp/acisrt/select"
 #define AWAR_SELECT_ACISRT_PRE "tmp/acisrt/select_pre"
 
-char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int format   , GBT_TREE *species  );
+const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int format, GBT_TREE *species, const char *tree_name);
 void make_node_text_init(GBDATA *gb_main);
 
 #ifndef _NO_AWT_NDS_WINDOW_FUNCTIONS
