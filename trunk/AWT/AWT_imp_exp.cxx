@@ -125,10 +125,10 @@ inline string buildNodeIdentifier(const string& parent_id, int& son_counter) {
     if (parent_id.empty()) return GBS_global_string("n_%i", son_counter);
     return GBS_global_string("%s.%i", parent_id.c_str(), son_counter);
 }
-// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//      static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, double my_length, AW_BOOL use_NDS, const string& parent_id, int& parent_son_counter)
-// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, double my_length, AW_BOOL use_NDS, const string& parent_id, int& parent_son_counter) {
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, double my_length, AW_BOOL use_NDS, AW_BOOL skip_folded, const string& parent_id, int& parent_son_counter)
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, double my_length, AW_BOOL use_NDS, AW_BOOL skip_folded, const string& parent_id, int& parent_son_counter) {
     const char *error = 0;
 
     if (tree->is_leaf) {
@@ -158,6 +158,7 @@ static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tre
                 bootstrap = GB_strdup(boot);
             }
         }
+        bool hide_this_group = false;
         if (tree->name) {
             char *buf;
 
@@ -166,10 +167,15 @@ static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tre
 
             awt_assert(buf);
             groupname = GB_strdup(buf);
+
+            GBDATA *gb_grouped = GB_find(tree->gb_node, "grouped", 0, down_level);
+            if (gb_grouped) hide_this_group = GB_read_byte(gb_grouped);
         }
 
         if (my_length || bootstrap || groupname ) {
-            XML_Tag branch_tag("BRANCH");
+            if (!skip_folded) hide_this_group = false; // hide folded groups only if skip_folded is true
+
+            XML_Tag branch_tag(hide_this_group ? "FOLDED_GROUP" : "BRANCH");
             string  my_id = buildNodeIdentifier(parent_id, parent_son_counter);
 
             branch_tag.add_attribute("name", my_id);
@@ -189,12 +195,17 @@ static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tre
             }
 
             int my_son_counter = 0;
-            if (!error) error  = awt_export_tree_node_print_xml(gb_main, tree->leftson, tree->leftlen, use_NDS, my_id, my_son_counter);
-            if (!error) error  = awt_export_tree_node_print_xml(gb_main, tree->rightson, tree->rightlen, use_NDS, my_id, my_son_counter);
+            if (hide_this_group) {
+                branch_tag.add_attribute("items_in_group", GBT_count_nodes(tree));
+            }
+            else {
+                if (!error) error  = awt_export_tree_node_print_xml(gb_main, tree->leftson, tree->leftlen, use_NDS, skip_folded, my_id, my_son_counter);
+                if (!error) error  = awt_export_tree_node_print_xml(gb_main, tree->rightson, tree->rightlen, use_NDS, skip_folded, my_id, my_son_counter);
+            }
         }
         else {
-            if (!error) error = awt_export_tree_node_print_xml(gb_main, tree->leftson, tree->leftlen, use_NDS, parent_id, parent_son_counter);
-            if (!error) error = awt_export_tree_node_print_xml(gb_main, tree->rightson, tree->rightlen, use_NDS, parent_id, parent_son_counter);
+            if (!error) error = awt_export_tree_node_print_xml(gb_main, tree->leftson, tree->leftlen, use_NDS, skip_folded, parent_id, parent_son_counter);
+            if (!error) error = awt_export_tree_node_print_xml(gb_main, tree->rightson, tree->rightlen, use_NDS, skip_folded, parent_id, parent_son_counter);
         }
     }
 
@@ -213,10 +224,10 @@ const char * AWT_date_string(void) {
     return asctime(p);
 }
 
-// --------------------------------------------------------------------------------------------------------------------------------------
-//      GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *tree_name, AW_BOOL use_NDS, const char *path)
-// --------------------------------------------------------------------------------------------------------------------------------------
-GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *tree_name, AW_BOOL use_NDS, const char *path) {
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+//      GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *tree_name, AW_BOOL use_NDS, AW_BOOL skip_folded, const char *path)
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *tree_name, AW_BOOL use_NDS, AW_BOOL skip_folded, const char *path) {
     GB_ERROR  error  = 0;
     FILE     *output = fopen(path, "w");
 
@@ -250,7 +261,7 @@ GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *t
                 }
 
                 int my_son_counter = 0;
-                error              = awt_export_tree_node_print_xml(gb_main,tree,0.0, use_NDS, "", my_son_counter);
+                error              = awt_export_tree_node_print_xml(gb_main,tree,0.0, use_NDS, skip_folded, "", my_son_counter);
             }
         }
         fclose(output);
