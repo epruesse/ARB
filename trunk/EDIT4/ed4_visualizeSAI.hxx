@@ -1,12 +1,13 @@
+#define AWAR_SAI                    "saicolors/"
+#define AWAR_SAI_ENABLE             AWAR_SAI "enable"
+#define AWAR_SAI_SELECT             AWAR_SAI "select"
 
-#define AWAR_SAI_ENABLE                "presets/sai/enable"
-#define AWAR_SAI_SELECT                "presets/sai/select"
+#define AWAR_SAI_CLR_DEF            AWAR_SAI "clr_trans_tab/"
+#define AWAR_SAI_CLR_TRANS_TAB_DEF  AWAR_SAI "clr_trans_tab_definition"
 
-#define AWAR_SAI_CLR_TRANS_TABLE       "tmp/sai/clr_trans_tab"
+#define AWAR_SAI_CLR_TRANS_TABLE       "tmp/sai/clr_trans_table"
 #define AWAR_SAI_CLR_TRANS_TAB_CREATE  "tmp/sai/clr_trans_tab_create"
 #define AWAR_SAI_CLR_TRANS_TAB_COPY    "tmp/sai/clr_trans_tab_copy"
-
-#define AWAR_SAI_CLR_TRANS_TAB_DEF     "presets/sai/clr_trans_tab_definition"
 
 #define AWAR_SAI_CLR    "tmp/sai/color_"
 #define AWAR_SAI_CLR_0  AWAR_SAI_CLR "0"
@@ -24,4 +25,4 @@
 #define COPY_CLR_TR_TABLE    0
 
 AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root/*, AW_CL cl_ntw*/);
-
+AW_window *create_editColorTranslationTable_window(AW_root *aw_root);
