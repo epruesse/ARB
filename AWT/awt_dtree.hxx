@@ -2,11 +2,13 @@
 #define awt_dtree_hxx_included
 
 #define AWAR_DTREE_BASELINEWIDTH "awt/dtree/baselinewidth"
-#define AWAR_DTREE_VERICAL_DIST "awt/dtree/verticaldist"
-#define AWAR_DTREE_AUTO_JUMP    "awt/dtree/autojump"
-#define AWAR_DTREE_SHOW_CIRCLE  "awt/dtree/show_circle"
-#define AWAR_DTREE_CIRCLE_ZOOM  "awt/dtree/circle_zoom"
-#define AWAR_DTREE_GREY_LEVEL   "awt/dtree/greylevel"
+#define AWAR_DTREE_VERICAL_DIST  "awt/dtree/verticaldist"
+#define AWAR_DTREE_AUTO_JUMP     "awt/dtree/autojump"
+#define AWAR_DTREE_SHOW_CIRCLE   "awt/dtree/show_circle"
+#define AWAR_DTREE_CIRCLE_ZOOM   "awt/dtree/circle_zoom"
+#define AWAR_DTREE_GREY_LEVEL    "awt/dtree/greylevel"
+
+#define AWAR_DTREE_REFRESH       AWAR_TREE_REFRESH // touch this awar to refresh the tree display
 
 void awt_create_dtree_awars(AW_root *aw_root,AW_default def);
 
