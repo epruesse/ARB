@@ -879,7 +879,7 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
 
 %.dummy:
-	@echo $(SEP) Making $(@F:.dummy=.a) in $(@D)
+	@echo $(SEP) Make everything in $(@D)
 	@$(GMAKE) -C $(@D) -r \
 		"GMAKE = $(GMAKE)" \
 		"ARBHOME = $(ARBHOME)" "cflags = $(cflags) -D_ARB_$(@D:/=)" "lflags = $(lflags)" \
@@ -915,8 +915,6 @@ show:
 		@echo '  tg     arb_treegen'
 		@echo '  ds     arb_dbserver'
 		@echo '  pr     arb_pt_server'
-#		@echo '  pg     arb_probe_group'
-		@echo '  psrv   ARB probe server'
 		@echo '  na     arb_name_server'
 		@echo ''
 		@echo ' libraries:'
@@ -939,6 +937,11 @@ show:
 		@echo '  test   test arbdb (needs fix)'
 		@echo '  demo   GUI demo (needs fix)'
 		@echo '  tools  make small tools used by arb'
+		@echo ''
+		@echo ' optional targets (not build by make all)'
+		@echo ''
+		@echo '  ps		ARB probe server'
+		@echo '  pc		ARB probe client (you need java)'
 		@echo ''
 		@echo ' foreign targets:'
 		@echo ''
@@ -991,7 +994,9 @@ tg:		$(TREEGEN)
 ds:		$(DBSERVER)
 pt:		$(PROBE)
 pr:		$(PROBE)
-psrv:   PROBE_SERVER/PROBE_SERVER.dummy
+ps:		PROBE_SERVER/PROBE_SERVER.dummy
+pc:		PROBE_WEB/PROBE_WEB.dummy
+pst:	PROBE_SET/PROBE_SET.dummy
 pd:		PROBE_DESIGN/PROBE_DESIGN.dummy
 na:		$(NAMES)
 os:		$(ORS_SERVER)
@@ -1048,8 +1053,6 @@ SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links.sh
 
 gde:		GDE/GDE.dummy
 agde: 		ARB_GDE/ARB_GDE.dummy
-#ps:		$(ARCHS_PROBE_SET:.a=.dummy) $(PROBE_SET)
-ps:			PROBE_SET/PROBE_SET.dummy
 tools:		shared_libs TOOLS/TOOLS.dummy
 chip:		CHIP/CHIP.dummy
 nf77:		NIELS_F77/NIELS_F77.dummy
@@ -1089,12 +1092,6 @@ export:
 
 binlink:
 	(cd bin; $(MAKE) all);
-
-all: checks arb libs convert aleio tools gde readseq openwinprogs binlink $(SITE_DEPENDEND_TARGETS)
-		@echo -----------------------------------
-		@echo 'make all' has been done successful
-		@echo to start arb enter 'arb'
-#	(cd LIBLINK; for i in *.s*; do if test -r $$i; then cp $$i  ../lib; fi; done )
 
 bin/arb_%:	DEPOT2/%
 	cp $< $@
@@ -1166,22 +1163,41 @@ rebuild:
 		$(MAKE) realclean
 		$(MAKE) all
 
-#*** basic arb libraries
-arbbasic: links
-		$(MAKE) arbbasic2
-arbbasic2: mbin menus com nas ${MAKE_RTC}
-
-arbxtras: tg psrv #chip
-
-arbshared: dball aw dp awt
-arbapplications: nt pa ed e4 we pr na al nal di ph ds trs
-
-arb: arbbasic arbshared arbapplications help arbxtras
-#arb: arbbasic db aw dp awt dbs nt pa ed e4 we pr pg na al nal di db2 ph ds trs help arbxtras
-
 save:	rmbak
 	util/arb_save
 
 savedepot: rmbak
 	util/arb_save_depot
+
+# --------------------------------------------------------------------------------
+
+# basic arb libraries
+arbbasic: links
+		$(MAKE) arbbasic2
+arbbasic2: mbin menus com nas ${MAKE_RTC}
+
+# shared arb libraries
+arbshared: dball aw dp awt
+
+# needed arb applications
+arbapplications: nt pa ed e4 we pr na al nal di ph ds trs
+
+# optionally things (no real harm for ARB if any of them fails):
+arbxtras: tg ps pc pst chip
+
+tryxtras:
+		@echo $(SEP)
+		@( $(MAKE) arbxtras || ( \
+				echo $(SEP) ;\
+				echo "If make process seems to abort here, one of the optional tools failed to build." ;\
+				echo "ARB will work nevertheless!" ) )
+
+arb: arbbasic arbshared arbapplications help
+
+all: checks arb libs convert aleio tools gde readseq openwinprogs binlink $(SITE_DEPENDEND_TARGETS)
+		-$(MAKE) tryxtras
+		@echo $(SEP)
+		@echo "'make all' has been done successful"
+		@echo "to start arb enter 'arb'"
+#	(cd LIBLINK; for i in *.s*; do if test -r $$i; then cp $$i  ../lib; fi; done )
 
