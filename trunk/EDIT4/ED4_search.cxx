@@ -1032,7 +1032,7 @@ void ED4_SearchResults::search(ED4_sequence_terminal *seq_terminal)
                     to_list();
                 }
                 first = first->remove(ED4_SearchPositionType(i));
-#ifdef TEST_SEARCH_POSITION
+#if defined TEST_SEARCH_POSITION
                 e4_assert(!first || first->ok());
 #endif
             }
@@ -1186,7 +1186,7 @@ char *ED4_SearchResults::buildColorString(ED4_sequence_terminal *seq_terminal, i
     int i;
     int st_shown = 0;
 
-    e4_assert(start<=end);
+    e4_assert(start<=end);                  //confirming the condition 
     for (i=0; i<SEARCH_PATTERNS; i++) {
         if (shown[i]) {
             st_shown = 1;
@@ -1380,7 +1380,7 @@ void ED4_search(AW_window */*aww*/, AW_CL searchDescriptor)
 
     ED4_terminal *start_terminal = terminal;
     int start_pos = pos;
-    int last_loop = 0;
+    int last_loop = 0; 
 
     while (terminal) {
         if (terminal->is_sequence_terminal()) {
@@ -1749,3 +1749,20 @@ AW_window *ED4_create_search_window(AW_root *root, AW_CL cl) {
 
     return (AW_window *)aws;
 }
+
+static int has_species_name(ED4_base *base, AW_CL cl_species_name) {
+    if (base->is_sequence_terminal()) {
+	ED4_sequence_terminal *seq_term = base->to_sequence_terminal();
+	const char *species_name = (const char *)cl_species_name;	
+	return species_name && seq_term && seq_term->species_name && strcmp(species_name, seq_term->species_name)==0;
+    }
+    return 0;
+}
+
+ED4_sequence_terminal *ED4_find_seq_terminal(const char *species_name) {  //yadhu 
+    ED4_base *base = ED4_ROOT->main_manager->find_first_that(ED4_L_SEQUENCE_STRING, has_species_name, (AW_CL)species_name);
+    ED4_sequence_terminal *seq_term = base->to_sequence_terminal();
+
+    return seq_term;
+}
+

@@ -323,6 +323,9 @@ SEC_root::SEC_root(SEC_segment *root_segment_, int max_index_, double distance_b
     cursor = 0;
     show_constraints = 0;
     fresh_sequence = 1;
+    
+    seqTerminal = 0;//seqTerminal pointer is initialised to 0 --yadhu
+
     drag_recursive = 0;
     number_found = NULL;
     x_string = NULL;

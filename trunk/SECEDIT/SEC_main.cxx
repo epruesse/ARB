@@ -21,6 +21,10 @@
 #include <sec_graphic.hxx>
 #include "secedit.hxx"
 
+// yadhus includes
+#include "../EDIT4/ed4_defs.hxx"
+#include "../EDIT4/ed4_class.hxx"
+
 #if defined(FREESTANDING)
 AW_HEADER_MAIN
 #endif
@@ -201,6 +205,9 @@ void SEC_species_name_changed_cb(AW_root *awr, AWT_canvas *ntw){
         }
         delete ali_name;
     }
+
+    sec_root->seqTerminal = ED4_find_seq_terminal(species_name); // initializing the seqTerminal to get the current terminal - yadhu
+
     SEC_sequence_changed_cb( sec_root->gb_sequence, ntw, GB_CB_CHANGED);
 
     delete species_name;
@@ -796,7 +803,7 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->insert_menu_topic("props_menu",	"Menu: Colors and Fonts ...",	"M","props_frame.hlp",	AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
     awm->insert_menu_topic("props_secedit",	"SECEDIT: Colors and Fonts ...","C","secedit_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
     awm->insert_menu_topic("sec_layout", "Layout", "L", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_layout_window, 0);
-    awm->insert_menu_topic("save_props",	"Save Defaults (in ~/.arb_prop/secedit.arb)",	"D","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
+    awm->insert_menu_topic("save_props",	"Save Defaults (in ~/.arb_prop/edit4)",	"D","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 
     awm->create_mode( 0, "zoom.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ZOOM);
     awm->create_mode( 0, "sec_modify.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_MOVE);

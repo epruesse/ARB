@@ -361,7 +361,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
      *			options:	    #	fixed fonts only
      *					        -	no fonts
      *					        =	no color selector
-     *					        +	append in same line
+     *					        +	append next in same line
      *
      *                          $color at end of string => define default color value
      */

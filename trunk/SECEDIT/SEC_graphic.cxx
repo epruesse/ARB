@@ -74,7 +74,7 @@ SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW
                      (AW_CB)AWT_resize_cb,
                      (AW_CL)ntw,
                      cd2,
-                     false, // no color groups
+		      false, // no color groups   -- yadhu set it to true
                      "#777777",
                      "Loop$#ffffaa",
                      "Helix$#5cb1ff",
@@ -83,6 +83,17 @@ SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW
                      "Bonds$#000000",
                      "EcoliPos$#ffffff",
                      "-Cursor$#ff0000",
+
+		     "+-User1$#B8E2F8",  //YADHU
+		     "+-User2$#B8E2F8",
+		     "-Probe$#B8E2F8",
+		     "+-Primer(l)$#A9FE54",
+		     "+-Primer(r)$#A9FE54", 
+		     "-Primer(g)$#A9FE54",
+		     "+-Sig(l)$#DBB0FF", 
+		     "+-Sig(r)$#DBB0FF", 
+		     "-Sig(g)$#DBB0FF",
+		     "+-MISMATCHES$#FF9AFF",
                      0 );
 
     return preset_window;

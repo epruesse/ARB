@@ -99,6 +99,10 @@ class SEC_helix_strand : public SEC_Base {
     double fixpoint_y;
     double attachp1_x, attachp1_y, attachp2_x, attachp2_y;   // 2 points where the segments meet this strand from left and right
 
+    double thisLast_x,thisLast_y,otherLast_x,otherLast_y;
+    int    thisBaseColor,otherBaseColor,thisLastAbsPos,otherLastAbsPos;
+    char   thisBase[2],otherBase[2];
+
 public:
     //data for the drag operation
     double start_angle;
@@ -121,7 +125,7 @@ public:
     int connect_segments_and_strand();
     void print_ecoli_pos(long ecoli_pos, double attachpA_x, double attachpA_y, double attachpB_x, double attachpB_y, double base_x, double base_y, AW_device *device);
     void print_lonely_bases(char *buffer, AW_device *device, double attachpA_x, double attachpA_y, double attachpB_x, double attachpB_y, double base_x, double base_y,
-			    int abs_pos, double half_font_height);
+			    int abs_pos, double half_font_height, const char *bgColor, int thisStrand);//yadhu
     void generate_x_string();
     //    void paint_this_strand(AW_device *device, double *v, double &length_of_v);
     //    void paint_other_strand(AW_device *device, double *v, double &length_of_v);
@@ -171,6 +175,10 @@ struct SEC_base_position { // stores a base position and the last position where
     AW_pos y;
 };
 
+//***********yadhu`s modification**********************************************************************//
+class ED4_sequence_terminal; //to access ED4_sequence_terminal class with in the other classes 
+
+//*********************************************************************************************************/
 class SEC_root {
 private:
 
@@ -188,7 +196,7 @@ private:
 
     int cursor_x1, cursor_x2, cursor_y1, cursor_y2;
     int fresh_sequence;  //needed to check, if the coordinates of the root-loop have to be set or not
-
+   
 public:
 
     //variables needed for the IO-procedures
@@ -213,7 +221,7 @@ public:
 
     GBDATA *gb_template;
     int template_length;		// length of template string
-    char *template_sequence;
+    char *template_sequence;    
 
     GBDATA *gb_sequence;
     int sequence_length;		// length of string
@@ -221,6 +229,13 @@ public:
 
     BI_helix *helix;
     BI_ecoli_ref *ecoli;
+
+    //******************yadhu ***************** ************************* 
+    ED4_sequence_terminal *seqTerminal;     //declaring a pointer class
+    const  char *getSearchResults(int startPos,int endPos); // defining a function to build color string 
+    void paintSearchBackground(AW_device *device, const char* searchCols, int absPos, double x, double y, double next_x, double next_y, double radius,int otherStrand);
+    //used in SEC_paint.cxx
+    //*****************************************************************
 
     SEC_root(SEC_segment *root_segment, int max_index_, double distance_between_strands);
     ~SEC_root();
@@ -442,7 +457,7 @@ private:
 
     double delta;
     double max_length, min_length; // constraints
-
+    
 public:
 
     SEC_helix(double delta=7.7, double max_length=0, double min_length=0);
