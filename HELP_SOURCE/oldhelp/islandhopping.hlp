@@ -8,16 +8,21 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Standard help file form
+TITLE		'Island Hopper'
 
-OCCURRENCE	ARB_NT
+OCCURRENCE	ARB_EDIT4/Edit/Integrated Aligners
 
-DESCRIPTION     Missing
+DESCRIPTION     The 'Island Hopper' is an integrated aligner,
+                which currently is in beta state.
+
+                [generelle Beschreibung fehlt]
+
+                [Beschreibung der Einstellmoglichkeiten im Parameter Fenster fehlt]
 
 NOTES		None
 
 EXAMPLES	None
 
-WARNINGS	None
+WARNINGS	Slow!
 
-BUGS		No bugs known
+BUGS		- block alignment does always align everything

@@ -9,14 +9,24 @@ UP	arb_edit.hlp
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Fast Align Sequence
+TITLE		The integrated aligners
 
-OCCURRENCE	ARB_NT/ARB_EDIT/EDIT/Fast Align Sequence
+OCCURRENCE	ARB_NT/ARB_EDIT/EDIT/Integrated Aligners
 
-DESCRIPTION	Aligns or re-aligns a sequence using a new and faster algorithm.
+DESCRIPTION     Choose the 'Integrated aligners' item from the 'ARB_EDIT/Edit'
+                menu to display the 'Integrated aligners' window.
 
-		Choose the 'Fast Align Sequence' item from the 'ARB_EDIT/EDIT'
-			menu to display the 'FastAligner' window.
+                Currently there are two integrated aligners:
+
+                          1. Fast Aligner
+
+                          2. Island Hopper (see Subtopic)
+
+                The following adjustments and features should apply to both aligners.
+
+                We did not test everything yet with island hopper, so some of them are broken.
+                Please mail to devel@arb-home.de if you find something.
+
 
 SECTION         ADJUSTMENTS
 
@@ -86,11 +96,11 @@ WARNINGS	None
 
 BUGS		If you select the menu entry 'remove all aligner entries' ARB_EDIT4
 		crashes in most cases.
+
 		Workaround:	1. Close all groups containing species with aligner
 				   entries, so that no aligner entries are visible.
 				2. Remove all aligner entries
 				3. Reload configuration
-
 
 
 

@@ -9,14 +9,14 @@ UP	sp_search.hlp
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Standard help file form
+TITLE		Write to fields of listed species
 
 OCCURRENCE	ARB_NT/Species/Search/WRITE TO FIELDS OF LISTED SPECIES
 
 DESCRIPTION	Sets one field in all species shown in the hitlist of
 		the species search window.
 
-EXAMPLES	All species which have no accession number should get 
+EXAMPLES	All species which have no accession number should get
 		a dummy string 'no accession':
 
 			1. Open the species search window
@@ -28,7 +28,7 @@ EXAMPLES	All species which have no accession number should get
 			3.a Select field name = 'acc'
 			3.b Field value = no accession
 			3.c Press SET ALL EMPTY FIELDS
-			
+
 
 WARNINGS	You may easily destroy valuable data.
 
