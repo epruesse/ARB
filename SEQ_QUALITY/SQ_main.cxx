@@ -119,9 +119,10 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 
 	//TEST!!!
 
-	SQ_GroupData my_object;
-	SQ_calc_sequence_structure(my_object, gb_main, marked_only);
-	//my_object.SQ_print_on_screen();
+	SQ_GroupData globalData;
+	SQ_calc_sequence_structure(globalData, gb_main, marked_only);
+	SQ_reset_quality_calcstate(gb_main);
+	//globalData.SQ_print_on_screen();
 
 	//END TEST
 

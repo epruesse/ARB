@@ -24,14 +24,16 @@ class SQ_GroupData {
 public:
     SQ_GroupData();
     //SQ_GroupData(const SQ_GroupData& g1, const SQ_GroupData& g2) {}
-    void SQ_init_consensus(size_t size);
-    void SQ_add_consensus(int **consensus_add);
+    void SQ_init_consensus(int size);
+    void SQ_add_consensus(int value, int row, int col);
     int **SQ_get_consensus();
-    void SQ_print_on_screen();
+    int SQ_print_on_screen();
+    bool SQ_is_initialised();
 
 private: // !
-    size_t   size;
+    int    size;
     int    **consensus;
+    bool   initialised;
 };
 
 #else
