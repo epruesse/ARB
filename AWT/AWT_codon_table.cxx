@@ -149,6 +149,10 @@ int AWT_embl_transl_table_2_arb_code_nr(int embl_index) {
     return arb_code_nr_table[embl_index];
 }
 
+int AWT_arb_code_nr_2_embl_transl_table(int arb_code_nr) {
+    return AWT_codon_def[arb_code_nr].embl_feature_transl_table;
+}
+
 
 static bool codon_tables_initialized = false;
 static char definite_translation[AWT_MAX_CODONS]; // contains 0 if ambiguous, otherwise it contains the definite translation
