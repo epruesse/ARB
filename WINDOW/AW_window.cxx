@@ -53,9 +53,11 @@
 
 #include "aw_global.hxx"
 
+#if defined(ARB_OPENGL)
+
 /** OpenGL header files */
 #include <GL/glew.h>
-#include <GL/GLwMDrawA.h> /** Provides a special motif widget class */
+#include <GL/GLwMDrawA.h>       /** Provides a special motif widget class */
 #define GLX_GLXEXT_PROTOTYPES
 #include <GL/glx.h>
 #include <GL/glut.h>
@@ -64,6 +66,8 @@
 
 /* defined here by Yadhu inorder to make it more General */
 bool alpha_Size_Supported = false;
+
+#endif // ARB_OPENGL
 
 
 AW_root *AW_root::THIS = NULL;
@@ -3468,6 +3472,7 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,const char *rm_ba
 }
 
 /// Extended by Daniel Koitzsch & Christian Becker 19-05-04
+#if defined(ARB_OPENGL)
 
 AW_window_menu_modes_opengl::AW_window_menu_modes_opengl( void ) {
 }
@@ -3787,3 +3792,4 @@ void AW_window_menu_modes_opengl::init( AW_root *root_in, const char *wid, const
     create_window_variables();
     set_icon(window_defaults_name);
 }
+#endif // ARB_OPENGL
