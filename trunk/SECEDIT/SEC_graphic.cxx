@@ -47,6 +47,7 @@ void SEC_create_awars(AW_root *aw_root,AW_default def)
     aw_root->awar_int(AWAR_SECEDIT_SHOW_STR_SKELETON, 0, def);
     aw_root->awar_int(AWAR_SECEDIT_HIDE_BASES, 0, def);
     aw_root->awar_int(AWAR_SECEDIT_HIDE_BONDS, 0, def);
+    aw_root->awar_int(AWAR_SECEDIT_DISPLAY_SAI, 0, def);
 
 #define DEFINE_PAIR(type, pairs, character)                             \
     aw_root->awar_string(AWAR_SECEDIT_##type##_PAIRS, pairs);           \
@@ -70,8 +71,7 @@ void AD_map_viewer(gb_data_base_type *dummy, AD_MAP_VIEWER_TYPE)
 #endif
 
 
-AW_gc_manager
-SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2)
+AW_gc_manager SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2)
 {
     AW_gc_manager preset_window =
         AW_manage_GC(aww,
@@ -91,21 +91,20 @@ SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW
                      "BONDS$#000000",
                      "ECOLI POSITION$#ffffff",
                      "HELIX NUMBERS$#ffffff",
-                     "-CURSOR$#ff0000",
 
-                     "+-USER1$#B8E2F8",  //used in secondary editor to change search pattern COLORS
-                     "+-USER2$#B8E2F8",
-                     "-PROBE$#B8E2F8",
-                     "+-PRIMER(l)$#A9FE54",
-                     "+-PRIMER(r)$#A9FE54",
-                     "-PRIMER(g)$#A9FE54",
-                     "+-SIGNATURE(l)$#DBB0FF",
-                     "+-SIGNATURE(r)$#DBB0FF",
-                     "-SIGNATURE(g)$#DBB0FF",
-                     "+-SKELETON HELIX$#B8E2F8",
-                     "+-SKELETON LOOP$#DBB0FF",
-                     "-SKELETON NONHELIX$#A9FE54",
-                     "+-MISMATCHES$#FF9AFF",
+                     // Color Ranges to paint SAIs
+                     "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#E0E0E0",    "-RANGE 2$#C0C0C0", 
+                     "+-RANGE 3$#A0A0A0",    "+-RANGE 4$#909090",    "-RANGE 5$#808080",
+                     "+-RANGE 6$#808080",    "+-RANGE 7$#505050",    "-RANGE 8$#404040",
+                     "+-RANGE 9$#303030",    "+-CURSOR$#ff0000",     "-MISMATCHES$#FF9AFF",
+
+                     // colors used to Paint search patterns 
+                     "+-USER1$#B8E2F8",          "+-USER2$#B8E2F8",         "-PROBE$#B8E2F8",     
+                     "+-PRIMER(l)$#A9FE54",      "+-PRIMER(r)$#A9FE54",     "-PRIMER(g)$#A9FE54",
+                     "+-SIGNATURE(l)$#DBB0FF",   "+-SIGNATURE(r)$#DBB0FF",  "-SIGNATURE(g)$#DBB0FF",
+
+                     //colors used to paint the skeleton of the structure
+                     "+-SKELETON HELIX$#B8E2F8", "+-SKELETON LOOP$#DBB0FF", "-SKELETON NONHELIX$#A9FE54",   
                      0 );
 
     return preset_window;
@@ -686,6 +685,7 @@ SEC_graphic::SEC_graphic(AW_root *aw_rooti, GBDATA *gb_maini):AWT_graphic() {
     sec_root->set_show_strSkeleton(aw_rooti->awar(AWAR_SECEDIT_SHOW_STR_SKELETON)->read_int());
     sec_root->set_hide_bases(aw_rooti->awar(AWAR_SECEDIT_HIDE_BASES)->read_int());
     sec_root->set_hide_bonds(aw_rooti->awar(AWAR_SECEDIT_HIDE_BONDS)->read_int());
+    sec_root->set_display_sai(aw_rooti->awar(AWAR_SECEDIT_DISPLAY_SAI)->read_int());
 }
 
 SEC_graphic::~SEC_graphic(void) {
@@ -765,7 +765,7 @@ GB_ERROR SEC_graphic::load(GBDATA *dummy, const char *,AW_CL link_to_database, A
     {
         char *reason = 0;
         if (gb_struct) {
-            gb_struct_ref = GB_search(gb_ali, NAME_OF_REF_SEQ, GB_STRING);
+            gb_struct_ref = GB_search(gb_ali , NAME_OF_REF_SEQ , GB_STRING);
             /********** Load structure **************/
             char *strct = GB_read_string(gb_struct);
             char *ref = GB_read_string(gb_struct_ref);
@@ -1094,6 +1094,7 @@ void SEC_add_awar_callbacks(AW_root *aw_root,AW_default /*def*/, AWT_canvas *ntw
     aw_root->awar(AWAR_SECEDIT_SHOW_STR_SKELETON)->add_callback(SEC_show_strSkeleton_toggled_cb, (AW_CL)ntw);
     aw_root->awar(AWAR_SECEDIT_HIDE_BASES)->add_callback(SEC_hide_bases_toggled_cb, (AW_CL)ntw);
     aw_root->awar(AWAR_SECEDIT_HIDE_BONDS)->add_callback(SEC_hide_bonds_toggled_cb, (AW_CL)ntw);
+    aw_root->awar(AWAR_SECEDIT_DISPLAY_SAI)->add_callback(SEC_display_sai_toggled_cb, (AW_CL)ntw);
 
     char *ali_name = GBT_get_default_alignment(gb_main);
     GBDATA *gb_alignment = GBT_get_alignment(gb_main,ali_name);

@@ -33,6 +33,9 @@
 #define AWAR_SECEDIT_NO_PAIR_CHAR   "secedit/layout/pairs/no_char"
 #define AWAR_SECEDIT_USER_PAIR_CHAR     "secedit/layout/pairs/user_char"
 
+// AWAR to display Sequence associated Information in the secondary structure editor
+#define AWAR_SECEDIT_DISPLAY_SAI    "tmp/secedit/display_sai"
+
 // names for database:
 #define NAME_OF_STRUCT_SEQ      "_STRUCT"
 #define NAME_OF_REF_SEQ         "REF"
@@ -45,7 +48,20 @@ enum {
     SEC_GC_BONDS,
     SEC_GC_ECOLI,       SEC_GC_LAST_FONT = SEC_GC_ECOLI,
     SEC_GC_HELIX_NO,
+
+    SEC_GC_CBACK_0,	// Ranges for SAI visualization
+    SEC_GC_CBACK_1,
+    SEC_GC_CBACK_2,
+    SEC_GC_CBACK_3,
+    SEC_GC_CBACK_4,
+    SEC_GC_CBACK_5,
+    SEC_GC_CBACK_6,
+    SEC_GC_CBACK_7,
+    SEC_GC_CBACK_8,
+    SEC_GC_CBACK_9,
+
     SEC_GC_CURSOR,
+    SEC_GC_MBACK,      //mismatches
 
     SEC_GC_SBACK_0, // User 1  // Background for search 
     SEC_GC_SBACK_1,  // User 2
@@ -56,10 +72,11 @@ enum {
     SEC_GC_SBACK_6,  // Signature (local)
     SEC_GC_SBACK_7,  // Signature (region)
     SEC_GC_SBACK_8,  // Signature (global)
+
     SEC_SKELE_HELIX,  //skeleton helix color
     SEC_SKELE_LOOP,  //skeleton loop color
     SEC_SKELE_NHELIX,  //skeleton non-pairing helix color
-    SEC_GC_MBACK,      //mismatches
+
     SEC_GC_MAX
 }; // AW_gc
 
