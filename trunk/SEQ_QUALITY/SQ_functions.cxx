@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.cxx                                       //
 //    Purpose   : Implementation of SQ_functions.h                       //
-//    Time-stamp: <Tue Feb/03/2004 14:34 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Feb/05/2004 11:30 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -29,6 +29,7 @@
 #include "SQ_ambiguities.h"
 #include "SQ_helix.h"
 #include "SQ_physical_layout.h"
+#include "SQ_functions.h"
 
 #ifndef __MAP__
 #include <map>
@@ -49,6 +50,11 @@ static int pass1_counter_notree = 0;
 static int pass2_counter_notree = 0;
 
 enum { CS_CLEAR, CS_PASS1 };
+
+void SQ_clear_group_dictionary() {
+    SQ_GroupDataDictionary tmp;
+    swap(tmp, group_dict);
+}
 
 static GB_ERROR no_data_error(GBDATA *gb_species, const char *ali_name) {
     GBDATA     *gb_name = GB_find(gb_species, "name", 0, down_level);
@@ -198,7 +204,8 @@ int SQ_get_value_no_tree(GBDATA *gb_main, const char *option){
 }
 
 
-GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average, int weight_helix, int weight_consensus, int weight_iupac, int weight_gc){
+// GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average, int weight_helix, int weight_consensus, int weight_iupac, int weight_gc){
+GB_ERROR SQ_evaluate(GBDATA *gb_main, const SQ_weights& weights) {
 
 
     char *alignment_name;
@@ -258,7 +265,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 	  	    if (bases < 8) result = 1;
 		    else { result = 2;}
 		}
-		result = result * weight_bases;
+		result = result * weights.bases;
 		value += result;
 
 		//evaluate the difference in number of bases from sequence to group
@@ -269,7 +276,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 	  	    if (abs(dfa) < 4) result = 1;
 		    else { result = 0;}
 		}
-		result = result * weight_diff_from_average;
+		result = result * weights.diff_from_average;
 		value += result;
 
 		//evaluate the number of positions where no helix can be built
@@ -280,14 +287,14 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 	  	    if (noh < 550) result = 1;
 		    else { result = 0;}
 		}
-		result = result * weight_helix;
+		result = result * weights.helix;
 		value += result;
 
 		//evaluate the consensus
  		GBDATA *gb_result4 = GB_search(gb_quality, "consensus_evaluated", GB_INT);
  		cos = GB_read_int(gb_result4);
 		result = cos;
-		result = result * weight_consensus;
+		result = result * weights.consensus;
 		value += result;
 
 		//evaluate the number of iupacs in a sequence
@@ -298,7 +305,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 	  	    if (iupv < 20) result = 1;
 		    else { result = 0;}
 		}
-		result = result * weight_iupac;
+		result = result * weights.iupac;
 		value += result;
 
 		//evaluate the difference in the GC proportion from sequence to group
@@ -309,7 +316,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 		    if (abs(gcprop) < 12) result = 1;
 		    else { result = 0;}
 		}
-		result = result * weight_gc;
+		result = result * weights.gc;
 		value += result;
 
 		/*write the final value of the evaluation*/
@@ -379,24 +386,27 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node) {
 
 
 		    /*calculate physical layout of sequence*/
-		    SQ_physical_layout* ps_chan = new SQ_physical_layout();
-		    ps_chan->SQ_calc_physical_layout(rawSequence, sequenceLength, gb_quality);
+                    {
+                        SQ_physical_layout ps_chan;
+                        ps_chan.SQ_calc_physical_layout(rawSequence, sequenceLength, gb_quality);
 
-		    /*calculate the average number of bases in group*/
-		    globalData->SQ_count_sequences();
-		    globalData->SQ_set_avg_bases(ps_chan->SQ_get_number_of_bases());
-		    globalData->SQ_set_avg_gc(ps_chan->SQ_get_gc_proportion());
-		    delete ps_chan;
+                        /*calculate the average number of bases in group*/
+                        globalData->SQ_count_sequences();
+                        globalData->SQ_set_avg_bases(ps_chan.SQ_get_number_of_bases());
+                        globalData->SQ_set_avg_gc(ps_chan.SQ_get_gc_proportion());
+                    }
 
 		    /*get values for ambiguities*/
-		    SQ_ambiguities* ambi_chan = new SQ_ambiguities();
-		    ambi_chan->SQ_count_ambiguities(rawSequence, sequenceLength, gb_quality);
-		    delete ambi_chan;
+                    {
+                        SQ_ambiguities ambi_chan;
+                        ambi_chan.SQ_count_ambiguities(rawSequence, sequenceLength, gb_quality);
+                    }
 
-		    /*claculate the number of strong, weak and no helixes*/
-		    SQ_helix* heli_chan = new SQ_helix(sequenceLength);
-		    heli_chan->SQ_calc_helix_layout(rawSequence, gb_main, alignment_name, gb_quality);
-		    delete heli_chan;
+		    /*calculate the number of strong, weak and no helixes*/
+                    {
+                        SQ_helix heli_chan(sequenceLength);
+                        heli_chan.SQ_calc_helix_layout(rawSequence, gb_main, alignment_name, gb_quality);
+                    }
 
 		    /*calculate consensus sequence*/
 		    {
@@ -520,7 +530,7 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 }
 
 
-GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
+GB_ERROR SQ_pass2(const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 
 
     char *alignment_name;
@@ -687,7 +697,7 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 }
 
 
-GB_ERROR SQ_pass2_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
+GB_ERROR SQ_pass2_no_tree(const SQ_GroupData* globalData, GBDATA *gb_main) {
 
 
     char *alignment_name;
@@ -823,14 +833,14 @@ GB_ERROR SQ_pass2_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 
 		    cons_conf += "</conf>";
 		    cons_dev  += "</dev>";
-	
+
 		    GBDATA *gb_result3 = GB_search(gb_quality, "consensus_conformity", GB_STRING);
 		    seq_assert(gb_result3);
 		    GB_write_string(gb_result3, cons_conf.c_str());
 		    GBDATA *gb_result4 = GB_search(gb_quality, "consensus_deviation", GB_STRING);
 		    seq_assert(gb_result4);
 		    GB_write_string(gb_result4, cons_dev.c_str());
-	
+
 		    //--------also cut this------
 		    if (eval != 0) {
 			eval = eval / 2;
@@ -966,7 +976,7 @@ void SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData 
 }
 
 
-void SQ_calc_and_apply_group_data2(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data) {
+void SQ_calc_and_apply_group_data2(GBT_TREE *node, GBDATA *gb_main, const SQ_GroupData *data) {
 
     if (node->is_leaf){
 	if (node->gb_node) {
