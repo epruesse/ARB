@@ -199,25 +199,27 @@ nt_exit(AW_window *aw_window){
 #endif
     AWUSE(aw_window);
     if (gb_main) {
-	if (GB_read_clients(gb_main)>=0) {
-	    if (GB_read_clock(gb_main) > GB_last_saved_clock(gb_main)){
-		long secs;
-		secs = GB_last_saved_time(gb_main);
-		if (secs) {
-		    secs = GB_time_of_day() - secs;
-		    if (secs>10){
-			sprintf(AW_ERROR_BUFFER,"You last saved your data %li:%li minutes ago\nSure to quit ?",secs/60,secs%60);
-			if (aw_message(AW_ERROR_BUFFER,
-				       "QUIT ARB,DO NOT QUIT")) return;
-		    }
-		}else{
-		    if (aw_message("You never saved any data\nSure to quit ???",
-				   "QUIT ARB,DO NOT QUIT")) return;
-		}
-	    }
-	}
-	GBCMS_shutdown(gb_main);
-	GB_exit(gb_main);
+        if (GB_read_clients(gb_main)>=0) {
+#ifndef DEBUG
+            if (GB_read_clock(gb_main) > GB_last_saved_clock(gb_main)){
+                long secs;
+                secs = GB_last_saved_time(gb_main);
+                if (secs) {
+                    secs = GB_time_of_day() - secs;
+                    if (secs>10){
+                        sprintf(AW_ERROR_BUFFER,"You last saved your data %li:%li minutes ago\nSure to quit ?",secs/60,secs%60);
+                        if (aw_message(AW_ERROR_BUFFER,
+                                       "QUIT ARB,DO NOT QUIT")) return;
+                    }
+                }else{
+                    if (aw_message("You never saved any data\nSure to quit ???",
+                                   "QUIT ARB,DO NOT QUIT")) return;
+                }
+            }
+#endif // DEBUG
+        }
+        GBCMS_shutdown(gb_main);
+        GB_exit(gb_main);
     }
     exit(0);
 }
