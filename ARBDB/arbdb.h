@@ -291,6 +291,7 @@ extern "C" {
     typedef long (*gb_hash_loop_type)(const char *key, long val);
     typedef long (*gb_hash_loop_type2)(const char *key, long val, void *parameter);
     typedef void (*gb_warning_func_type)(const char *msg);
+    typedef void (*gb_information_func_type)(const char *msg);
     typedef int (*gb_status_func_type)(double val);
     typedef int (*gb_status_func2_type)(const char *val);
     typedef void (*gb_error_handler_type)(const char *msg);

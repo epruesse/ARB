@@ -152,6 +152,7 @@ char *GB_find_latest_file(const char *dir,const char *mask){
 #define GBS_WILD ((char)4)
 
 gb_warning_func_type gb_warning_func;
+gb_information_func_type gb_information_func;
 gb_status_func_type gb_status_func;
 gb_status_func2_type gb_status_func2;
 
@@ -1583,6 +1584,25 @@ void GB_install_warning(gb_warning_func_type warn){
     gb_warning_func = warn;
 }
 
+void GB_information( const char *templat, ...) {	/* max 4000 characters */
+    va_list	parg;
+
+    if ( gb_information_func ) {
+        char buffer[4000];memset(&buffer[0],0,4000);
+        va_start(parg,templat);
+        vsprintf(buffer,templat,parg);
+        gb_information_func(buffer);
+    }else{
+        va_start(parg,templat);
+        vfprintf(stdout,templat,parg);
+        fprintf(stdout,"\n");
+    }
+}
+
+void GB_install_information(gb_information_func_type info){
+    gb_information_func = info;
+}
+
 
 int GB_status( double val) {
     if ( gb_status_func ) {
@@ -1607,11 +1627,18 @@ void GB_install_status(gb_status_func_type func){
 }
 
 
-int GB_status2( const char *val) {
+int GB_status2( const char *templat, ...) {
+    va_list	parg;
+
     if ( gb_status_func2 ) {
-        return gb_status_func2(val);
+char 	buffer[4000];memset(&buffer[0],0,4000);
+        va_start(parg,templat);
+        vsprintf(buffer,templat,parg);
+        return gb_status_func2(buffer);
     }else{
-        fprintf(stdout,"%s\n",val);
+        va_start(parg,templat);
+        vfprintf(stdout,templat,parg);
+        fprintf(stdout,"\n");
         return 0;
     }
 }
