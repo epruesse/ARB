@@ -19,6 +19,12 @@ struct input_format_per_line {
     int start_line; //  linenumber in filter where this MATCH starts
 
     struct input_format_per_line *next;
+
+    struct input_format_per_line *reverse(struct input_format_per_line *append) {
+        struct input_format_per_line *rest = next;
+        next = append;
+        return rest ? rest->reverse(this) : this;
+    }
 };
 
 
