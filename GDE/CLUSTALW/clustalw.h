@@ -1,3 +1,4 @@
+/*#include "/us1/user/julie/dmalloc/malloc.h"*/
 /*********************CLUSTALW.H*********************************************/
 /****************************************************************************/
 
@@ -12,7 +13,7 @@
 
 /*#define MSDOS 1               Turbo C for PC's */
 
-#define UNIX 1                /*Ultrix/Decstation, Gnu C for
+#define UNIX 1                /*Ultrix/Decstation, Gnu C for 
                                 Sun, IRIX/SGI, OSF1/ALPHA */
 
 /***************************************************************************/
@@ -24,7 +25,7 @@
 #define MAXNAMES		30	/* Max chars read for seq. names */
 #define MAXTITLES		60      /* Title length */
 #define FILENAMELEN 	256             /* Max. file name length */
-
+	
 #define UNKNOWN   0
 #define EMBLSWISS 1
 #define PIR 	  2
@@ -36,6 +37,7 @@
 #define USER      8	/* DES */
 #define PHYLIP    9	/* DES */
 #define NEXUS    10/* DES */
+#define FASTA    11/* Ramu */
 
 #define NONE      0
 #define SECST     1
@@ -55,7 +57,7 @@
 
 #ifdef VMS						/* Defaults for VAX VMS */
 #define COMMANDSEP '/'
-#define DIRDELIM ']'		/* Last character before file name in full file
+#define DIRDELIM ']'		/* Last character before file name in full file 
 							   specs */
 #define INT_SCALE_FACTOR 1000 /* Scaling factor to convert float to integer for profile scores */
 
@@ -112,7 +114,7 @@ typedef struct {
 #define MAXMAT 10
 
 typedef struct {
-	int llimit;
+	int llimit;	
 	int ulimit;
 	short *matptr;
 	short *aa_xref;
@@ -122,7 +124,7 @@ typedef struct {
 	int nmat;
 	SeriesMat mat[MAXMAT];
 } UserMatSeries;
-
+	
 
 /*
    Prototypes
@@ -155,6 +157,7 @@ void gcg_out(FILE *, sint, sint, sint, sint);
 void phylip_out(FILE *, sint, sint, sint, sint);
 void gde_out(FILE *, sint, sint, sint, sint);
 void nexus_out(FILE *, sint, sint, sint, sint);
+void fasta_out(FILE *, sint, sint, sint, sint);
 void print_sec_struct_mask(int prf_length,char *mask,char *struct_mask);
 void fix_gaps(void);
 
@@ -164,7 +167,7 @@ void calc_gap_coeff(char **alignment, sint *gaps, sint **profile, Boolean struct
                    char *gap_penalty_mask, sint first_seq, sint last_seq,
                    sint prf_length, sint gapcoef, sint lencoef);
 /* calcprf1.c */
-void calc_prf1(sint **profile, char **alignment, sint *gaps, sint matrix[NUMRES ][NUMRES ],
+void calc_prf1(sint **profile, char **alignment, sint *gaps, sint matrix[NUMRES ][NUMRES ], 
                sint *seq_weight, sint prf_length, sint first_seq, sint last_seq);
 /* calcprf2.c */
 void calc_prf2(sint **profile, char **alignment, sint *seq_weight, sint prf_length,
@@ -206,11 +209,13 @@ sint readseqs(sint first_seq);
 /* showpair.c */
 void show_pair(sint istart, sint iend, sint jstart, sint jend);
 /* trees.c */
-void phylogenetic_tree(char *phylip_name,char *clustal_name,char *dist_name, char *nexus_name);
+void phylogenetic_tree(char *phylip_name,char *clustal_name,char *dist_name, char *nexus_name, char *pim_name);
 void bootstrap_tree(char *phylip_name,char *clustal_name, char *nexus_name);
 sint dna_distance_matrix(FILE *tree);
 sint prot_distance_matrix(FILE *tree);
 void guide_tree(FILE *tree,int first_seq,sint nseqs);
+
+void calc_percidentity(FILE *pfile);
 
 /* util.c */
 

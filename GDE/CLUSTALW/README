@@ -1,7 +1,7 @@
 ******************************************************************************
 
                CLUSTAL W Multiple Sequence Alignment Program
-                        (version 1.81, June 2000)
+                        (version 1.83, Feb 2003)
 
 ******************************************************************************
 
@@ -27,6 +27,25 @@ authors unless they have previously taken out a licence.
 
 Clustal W is written in ANSI-C and can be run on any machine with an ANSI-C
 compiler. Executables are provided for several major platforms. 
+
+Changes since CLUSTAL X Version 1.82
+------------------------------------
+
+1. The FASTA format has been added to the list of alignment output options.
+
+2. It is now possible to save the residue ranges (appended after the sequence
+names) when saving a specified range of the alignment.
+
+3. The efficiency of  the neighour-joining algorithm has been improved. This
+work was done by Tadashi Koike at the Center for Information Biology and DNA Data
+Bank of Japan and FUJITSU Limited.
+
+Some example speedups are given below : (timings on a SPARC64 CPU)
+
+No. of sequences        original NJ     new NJ
+     200                0' 12"          0.1"
+     500                9' 19"          1.4"
+     1000               XXXX            0' 31"
 
 Changes since version 1.8 
 --------------------------

@@ -32,6 +32,10 @@ sint setquicktree = -1;
 sint settype = -1;
 sint setcase = -1;
 sint setseqno = -1;
+
+sint setseqno_range = -1;
+sint setrange = -1;
+
 sint settransweight = -1;
 sint setseed = -1;
 sint setscore = -1;
@@ -160,6 +164,7 @@ Boolean        	explicit_dnaflag = FALSE; /* Explicit setting of sequence type o
 Boolean        	lowercase = TRUE; /* Flag for GDE output - set on comm. line*/
 Boolean        	cl_seq_numbers = FALSE;
 
+Boolean        	seqRange = FALSE; /* Ramu */
 
 Boolean        	output_clustal = TRUE;
 Boolean        	output_gcg     = FALSE;
@@ -167,6 +172,8 @@ Boolean        	output_phylip  = FALSE;
 Boolean        	output_nbrf    = FALSE;
 Boolean        	output_gde     = FALSE;
 Boolean        	output_nexus   = FALSE;
+Boolean        	output_fasta   = FALSE;
+
 Boolean         showaln        = TRUE;
 Boolean         save_parameters = FALSE;
 
@@ -175,6 +182,9 @@ Boolean        	output_tree_clustal   = FALSE;
 Boolean        	output_tree_phylip    = TRUE;
 Boolean        	output_tree_distances = FALSE;
 Boolean        	output_tree_nexus = FALSE;
+Boolean        	output_pim = FALSE;
+
+
 sint		bootstrap_format      = BS_BRANCH_LABELS;
 
 /*These are all the positively scoring groups that occur in the Gonnet Pam250
@@ -236,6 +246,11 @@ static char *seqno_arg[] = {
                 "on",
 		""};
 
+static char *seqno_range_arg[] = {
+                "off",
+                "on",
+		""};
+
 static char *score_arg[] = {
                 "percent",
                 "absolute",
@@ -247,6 +262,7 @@ static char *output_arg[] = {
                 "pir",
                 "phylip",
                 "nexus",
+                "fasta",
 		""};
 
 static char *outputtree_arg[] = {
@@ -323,6 +339,7 @@ cmd_line_data cmd_line_para[] = {
      "novgap",		&setnovgap,		NOARG,	NULL,
      "hgapresidues",	&sethgapres,		STRARG,	NULL,
      "maxdiv",		&setmaxdiv,		INTARG,	NULL,
+
      "gapdist",		&setgapdist,		INTARG,	NULL,
      "pwmatrix",	&setpwmatrix,		FILARG,	NULL,
      "pwdnamatrix",	&setpwdnamatrix,	FILARG,	NULL,
@@ -345,6 +362,10 @@ cmd_line_data cmd_line_para[] = {
      "outorder",	&setoutorder,		OPTARG,	outorder_arg,
      "case",		&setcase,		OPTARG,	case_arg,
      "seqnos",		&setseqno,		OPTARG,	seqno_arg,
+
+     "seqno_range",	&setseqno_range,	OPTARG,	seqno_range_arg, /* this one should be on/off  and */
+     "range",           &setrange,             STRARG, NULL,  /* this one should be like 10:20  ,   messy option settings */
+
      "nosecstr1",   &setsecstr1,		NOARG, NULL,
      "nosecstr2",   &setsecstr2,		NOARG, NULL,
      "secstrout",   &setsecstroutput,	OPTARG,  outputsecstr_arg,

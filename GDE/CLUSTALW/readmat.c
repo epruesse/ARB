@@ -158,7 +158,6 @@ sint get_matrix(short *matptr, short *xref, sint matrix[NUMRES][NUMRES], Boolean
         if (matrix[i][j] < min) min = matrix[i][j];
         if (matrix[i][j] > max) max = matrix[i][j];
       }
-
 if (debug>1) fprintf(stdout,"maxres %d\n",(pint)max_aa);
 if (debug>1) fprintf(stdout,"average mismatch score %d\n",(pint)av3);
 if (debug>1) fprintf(stdout,"average match score %d\n",(pint)av2);

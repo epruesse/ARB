@@ -27,7 +27,8 @@ extern void main_menu(void);
 */
 double **tmat;
 
-char revision_level[] = "W (1.81)";  /* JULIE  march 2000*/
+char revision_level[] = "W (1.83)";  /* JULIE  feb 2001*/
+
 Boolean interactive=FALSE;
 
 #ifdef MSDOS
@@ -44,6 +45,8 @@ float           pw_go_penalty, pw_ge_penalty;
 FILE *tree;
 FILE *clustal_outfile, *gcg_outfile, *nbrf_outfile, *phylip_outfile,
      *gde_outfile, *nexus_outfile;
+FILE *fasta_outfile; /* Ramu */
+
 sint  *seqlen_array;
 sint max_aln_length;
 short usermat[NUMRES][NUMRES], pw_usermat[NUMRES][NUMRES];

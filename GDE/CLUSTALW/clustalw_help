@@ -1,5 +1,5 @@
 
-This is the on-line help file for CLUSTAL W ( version 1.81).   
+This is the on-line help file for CLUSTAL W ( version 1.83).   
 
 It should be named or defined as: clustalw_help 
 except with MSDOS in which case it should be named CLUSTALW.HLP
@@ -10,6 +10,36 @@ For full details of usage and algorithms, please read the CLUSTALW.DOC file.
 Toby  Gibson                         EMBL, Heidelberg, Germany.
 Des   Higgins                        UCC, Cork, Ireland.
 Julie Thompson                       IGBMC, Strasbourg, France.
+
+
+
+>>NEW <<
+
+  Fasta output
+  ===========
+
+  Write/Read sequence with range specified. The command line syntax
+   for range specification is flexible. You can use one of the following
+   syntax.
+
+       -range=n:m  
+       -range=n-m 
+       -range="n m"
+
+   where m is the starting and m is the length of the sequence.
+
+  Range and range numbers.
+  =======================
+
+  Include range numbers in the ouput.
+
+       -seqno_range=on/off
+
+  The sequence range will be appended as to the names of the sequence.
+
+
+  PIM: Percentage Identity Matrix
+  ===============================
 
 
 
@@ -105,7 +135,7 @@ with no final multiple alignment (menu item 2).
 
 
 OUTPUT FORMAT: Menu item 9 (format options) allows you to choose from 6 
-different alignment formats (CLUSTAL, GCG, NBRF-PIR, PHYLIP, GDE and NEXUS).  
+different alignment formats (CLUSTAL, GCG, NBRF-PIR, PHYLIP, GDE, NEXUS, and FASTA).  
 
 
 >>HELP 3 <<      Help for pairwise alignment parameters
@@ -273,7 +303,7 @@ alignments.  By default, the order corresponds to the order in which the
 sequences were aligned (from the guide tree-dendrogram), thus automatically
 grouping closely related sequences. This switch can be used to set the order
 to the same as the input file.
-
+
 PARAMETER OUTPUT: This option allows you to save all your parameter settings
 in a parameter file. This file can be used subsequently to rerun Clustal W
 using the same parameters.
@@ -545,7 +575,8 @@ the minimum score over the whole matrix.
 -OUTORDER=   :INPUT or ALIGNED
 -CASE        :LOWER or UPPER (for GDE output only)
 -SEQNOS=     :OFF or ON (for Clustal output only)
-
+-SEQNO_RANGE=:OFF or ON (NEW: for all output formats) 
+-RANGE=m,n   :sequence range to write starting m to m+n. 
 
 ***Fast Pairwise Alignments:***
 -KTUPLE=n    :word size

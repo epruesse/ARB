@@ -75,7 +75,11 @@ extern short 	dna_xref[], pw_dna_xref[];
 
 extern Boolean 	lowercase; /* Flag for GDE output - set on comm. line*/
 extern Boolean 	cl_seq_numbers;
+extern Boolean seqRange;  /* to append sequence range with seq names, Ranu */
+
 extern Boolean 	output_clustal, output_nbrf, output_phylip, output_gcg, output_gde, output_nexus;
+extern Boolean output_fasta; /* Ramu */
+
 extern Boolean 	output_tree_clustal, output_tree_phylip, output_tree_distances,output_tree_nexus;
 extern sint     bootstrap_format;
 extern Boolean 	tossgaps, kimura;
@@ -122,6 +126,8 @@ static char phylip_name[FILENAMELEN]="";
 static char clustal_name[FILENAMELEN]="";
 static char dist_name[FILENAMELEN]="";
 static char nexus_name[FILENAMELEN]="";
+static char fasta_name[FILENAMELEN]="";
+
 static char p1_tree_name[FILENAMELEN]="";
 static char p2_tree_name[FILENAMELEN]="";
 
@@ -134,6 +140,8 @@ static char *secstroutput_txt[] = {
 
 static char *lin1, *lin2, *lin3;
 
+static int firstres =0;	/* range of alignment for saving as ... */
+static int lastres = 0;
 
 void init_amenu(void)
 {
@@ -609,7 +617,7 @@ static void phylogenetic_tree_menu(void)
           	  	break;
       		case '3': kimura ^= TRUE;;
             		break;
-        	case '4': phylogenetic_tree(phylip_name,clustal_name,dist_name,nexus_name);
+        	case '4': phylogenetic_tree(phylip_name,clustal_name,dist_name,nexus_name,"amenu.pim");
             		break;
         	case '5': bootstrap_tree(phylip_name,clustal_name,nexus_name);
             		break;
@@ -728,6 +736,8 @@ static void format_options_menu(void)      /* format of alignment output */
 	fprintf(stdout,"\n\n\n");
 	fprintf(stdout," ********* Format of Alignment Output *********\n");
 	fprintf(stdout,"\n\n");
+	fprintf(stdout,"     F. Toggle FASTA format output       =  %s\n\n",
+					(!output_fasta) ? "OFF" : "ON");
 	fprintf(stdout,"     1. Toggle CLUSTAL format output     =  %s\n",
 					(!output_clustal) ? "OFF" : "ON");
 	fprintf(stdout,"     2. Toggle NBRF/PIR format output    =  %s\n",
@@ -742,13 +752,17 @@ static void format_options_menu(void)      /* format of alignment output */
 					(!output_gde) ? "OFF" : "ON");
 	fprintf(stdout,"     7. Toggle GDE output case           =  %s\n",
 					(!lowercase) ? "UPPER" : "LOWER");
+
 	fprintf(stdout,"     8. Toggle CLUSTALW sequence numbers =  %s\n",
 					(!cl_seq_numbers) ? "OFF" : "ON");
 	fprintf(stdout,"     9. Toggle output order              =  %s\n\n",
 					(output_order==0) ? "INPUT FILE" : "ALIGNED");
+
 	fprintf(stdout,"     0. Create alignment output file(s) now?\n\n");
 	fprintf(stdout,"     T. Toggle parameter output          = %s\n",
 					(!save_parameters) ? "OFF" : "ON");
+	fprintf(stdout,"     R. Toggle sequence range numbers =  %s\n",
+					(!seqRange) ? "OFF" : "ON");
 	fprintf(stdout,"\n");
 	fprintf(stdout,"     H. HELP\n\n\n");	
 	
@@ -784,6 +798,13 @@ static void format_options_menu(void)      /* format of alignment output */
                                 if (output_order == INPUT) output_order = ALIGNED;
               			else output_order = INPUT;
 			  	break;
+			case 'F':
+              			output_fasta ^= TRUE;
+			  	break;
+			case 'R':
+              			seqRange ^= TRUE;
+			  	break;
+
 			case '0':		/* DES */
 				if(empty) {
 					error("No sequences loaded");

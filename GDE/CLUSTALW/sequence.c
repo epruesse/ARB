@@ -915,6 +915,8 @@ static char * get_seq(char *sname,sint *len,char *tit)
 sint readseqs(sint first_seq) /*first_seq is the #no. of the first seq. to read */
 {
 	char line[FILENAMELEN+1];
+	char fileName[FILENAMELEN+1];
+
 	static char *seq1,sname1[MAXNAMES+1],title[MAXTITLES+1];
 	sint i,j;
 	sint no_seqs;
@@ -926,9 +928,13 @@ sint readseqs(sint first_seq) /*first_seq is the #no. of the first seq. to read 
 	else
 		strcpy(line,seqname);
 	if(*line == EOS) return -1;
-	
+
+	if ((sscanf(line,"file://%s",fileName) == 1 )) {
+	  strcpy(line,fileName);
+	}
+
 	if((fin=fopen(line,"r"))==NULL) {
-		error("Could not open sequence file %s",line);
+		error("Could not open sequence file (%s) ",line);
 		return -1;      /* DES -1 => file not found */
 	}
 	strcpy(seqname,line);
