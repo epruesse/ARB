@@ -1,4 +1,6 @@
-#include <stdlib.h>
+#include <cstdlib>
+#include <iostream>
+
 #include <sys/times.h>
 
 #include "ps_bitmap.hxx"
@@ -8,7 +10,7 @@
 void PS_print_times() {
     struct tms time;
     times( &time );
-    printf( "user (%.3f) system (%.3f)", (float)time.tms_utime/CLK_TCK, (float)time.tms_stime/CLK_TCK );
+    printf( "user (%.3f) system (%.3f)", (float)time.tms_utime/CLOCKS_PER_SEC, (float)time.tms_stime/CLOCKS_PER_SEC );
 }
 
 
@@ -45,7 +47,7 @@ int main( void ) {
     }
     printf( "\n" );
     delete x;
-    cout << "CLK_TCK : " << CLK_TCK << endl;
+    cout << "CLOCKS_PER_SEC : " << CLOCKS_PER_SEC << endl;
     PS_print_times(); fflush( stdout );
     for (long i = 0; i < 10000; ++i) {
         for (long j = 0; j < 10000; ++j) {
