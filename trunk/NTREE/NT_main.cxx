@@ -160,6 +160,7 @@ void nt_intro_start_import(AW_window *aws)
 	{
 	aws->hide();
 	aws->get_root()->awar_string( AWAR_DB"file_name")->write_string( "noname.arb");
+	aws->get_root()->awar_int(AWAR_READ_GENOM_DB, 2); // Default toggle  in window  "Create&import" is Non-Genom
 	gb_main = open_AWTC_import_window(aws->get_root(),"",1,(AW_RCB)main3,0,0);
 }
 
