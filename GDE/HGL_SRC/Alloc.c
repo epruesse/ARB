@@ -9,7 +9,7 @@
 *
 *       Print error message, and die
 */
-void ErrorOut(code,string)
+void ErrorOut4(code,string)
 int code;
 char *string;
 {

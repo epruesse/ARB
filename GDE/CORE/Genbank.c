@@ -69,7 +69,7 @@ int type;
 	extern int Default_NA_RTrans[];
 	extern int Default_PROColor_LKUP[],Default_NAColor_LKUP[];
 
-	ErrorOut("No such file",file = fopen(filename,"r"));
+	ErrorOut1("No such file",file = fopen(filename,"r"));
 
 	for(;fgets(Inline,GBUFSIZ,file) != 0;)
 	{

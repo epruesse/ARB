@@ -156,13 +156,13 @@ Handle the overwrite/create/merge dialog here.
 
 
 /*
- *	Print error message, and die
+ *	Print error message, and die (if code is not zero)
  */
-void ErrorOut(code,string)
-     int   code;
+void ErrorOut1(code,string)
+     int         code;
      const char *string;
 {
-	if (code == 0)
+	if (code != 0)
 	{
 		fprintf(stderr,"Error:%s\n",string);
 		exit(1);
@@ -184,7 +184,7 @@ int count,size;
 	fprintf(stderr,"Calloc %d %d\n",count*size,TotalCalloc);
 #endif
 	temp         = calloc(count,size);
-	ErrorOut(temp == 0,"Cannot allocate memory");
+	ErrorOut1(temp == 0,"Cannot allocate memory");
 	return(temp);
 }
 
@@ -199,7 +199,7 @@ int size;
 	fprintf(stderr,"Realloc %d\n",TotalRealloc);
 #endif
 	temp          = realloc(block,size);
-	ErrorOut(temp == 0,"Cannot change memory size");
+	ErrorOut1(temp == 0,"Cannot change memory size");
 	return(temp);
 }
 

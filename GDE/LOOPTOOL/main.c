@@ -41,11 +41,11 @@ char **av;
 				ErrorOut("Cannot open template file",
 				(tempfile=fopen(av[2],"r")));
 			}
-			else 
-                        { 
+			else
+                        {
                                 fprintf(stderr,
                                 "Usage: %s [-t template] datafile\n",av[0]);
-                                exit(1); 
+                                exit(1);
                         }
 			break;
 
@@ -71,7 +71,7 @@ char **av;
 }
 
 
-ErrorOut(msg,code)
+ErrorOut3(msg,code)
 char *msg;
 int code;
 {

@@ -26,7 +26,7 @@ int type;
 	extern int Default_DNA_Trans[], Default_RNA_Trans[];
 	extern int OVERWRITE,Default_NA_RTrans[], Default_PROColor_LKUP[];
 
-	ErrorOut("No such file",file = fopen(filename,"r"));
+	ErrorOut1("No such file",file = fopen(filename,"r"));
 
 	for(;fgets(Inline,GBUFSIZ,file) != 0;)
 	{
@@ -218,7 +218,7 @@ int type;
 
 			for(;line[0] != '"';line++)
 				if(line[0] == '\0')
-					ErrorOut(0,"Error in input file");
+					ErrorOut1(0,"Error in input file");
 			line++;
 			buffer = Calloc(buflen,sizeof(char));
 			for(;!done;)
@@ -261,7 +261,7 @@ int type;
 			buffer = Calloc(buflen,sizeof(char));
 			for(;line[0] != '"';line++)
 				if(line[0] == '\0')
-					ErrorOut(0,"Error in input file");
+					ErrorOut1(0,"Error in input file");
 
 			line++;
 			for(;!done;)
