@@ -13,9 +13,6 @@ SQ_GroupData::SQ_GroupData(){
 
 
 SQ_GroupData::~SQ_GroupData(){
-//     for (int i=0; i<size; i++) {
-// 	delete [] consensus[i];
-//     }
     delete [] consensus;
 }
 
@@ -62,7 +59,7 @@ bool SQ_GroupData::SQ_is_initialised() {
 int SQ_GroupData::SQ_print_on_screen() {
     for (int i=0; i < size; i++ ){
 	for (int j = 0; j<7; j++) {
-	    printf("%i",consensus[i].i[j]);
+	    printf("%i ",consensus[i].i[j]);
 	}
     }
     return (0);

@@ -101,7 +101,7 @@ void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence, int size,
 }
 
 
-inline int SQ_physical_layout::SQ_get_number_of_bases() const {
+int SQ_physical_layout::SQ_get_number_of_bases() const {
     int i;
     i = count_bases;
     return i;
