@@ -847,7 +847,7 @@ GB_CPNTR gbt_write_tree_rek_new(GBDATA *gb_tree, GBT_TREE *node, char *dest, lon
     }
 }
 
-GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_TREE *tree)
+GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_TREE *tree, int plain_only)
 {
     /* writes a tree to the database.
 
@@ -857,14 +857,18 @@ GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_T
     to copy a tree call GB_copy((GBDATA *)dest,(GBDATA *)source);
     or set recursively all tree->gb_node variables to zero (that unlinks the tree),
 
+    if 'plain_only' == 1 only the plain tree string is written
+
     */
-    GBDATA *gb_node,    *gb_tree_data;
-    GBDATA *gb_node_next;
-    GBDATA *gb_nnodes, *gbd;
-    long    size;
-    GB_ERROR error;
-    char    *ctree,*t_size;
-    GBDATA  *gb_ctree;
+    GBDATA   *gb_node,    *gb_tree_data;
+    GBDATA   *gb_node_next;
+    GBDATA   *gb_nnodes, *gbd;
+    long      size;
+    GB_ERROR  error;
+    char     *ctree,*t_size;
+    GBDATA   *gb_ctree;
+
+    gb_assert(!plain_only || (tree_name == 0)); // if plain_only == 1 -> set tree_name to 0
 
     if (!tree) return 0;
     if (gb_tree && tree_name) return GB_export_error("you cannot change tree name to %s",tree_name);
@@ -876,12 +880,15 @@ GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_T
         gb_tree_data = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
         gb_tree = GB_search(gb_tree_data,tree_name,GB_CREATE_CONTAINER);
     }
-    /* now delete all old style tree data */
-    for (   gb_node = GB_find(gb_tree,"node",0,down_level);
-            gb_node;
-            gb_node = GB_find(gb_node,"node",0,this_level|search_next))
-    {
-        GB_write_usr_private(gb_node,1);
+
+    if (!plain_only) {
+        /* now delete all old style tree data */
+        for (   gb_node = GB_find(gb_tree,"node",0,down_level);
+                gb_node;
+                gb_node = GB_find(gb_node,"node",0,this_level|search_next))
+        {
+            GB_write_usr_private(gb_node,1);
+        }
     }
 
     gb_ctree  = GB_search(gb_tree,"tree",GB_STRING);
@@ -894,29 +901,41 @@ GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_T
     error     = GB_set_compression(gb_main,-1); /* allow all types of compression */
 
     free(ctree);
-    if (!error) size = gbt_write_tree_nodes(gb_tree,tree,0);
-    if (error || (size<0)) {
-        GB_print_error();
-        return GB_get_error();
+    if (!plain_only) {
+        if (!error) size = gbt_write_tree_nodes(gb_tree,tree,0);
+        if (error || (size<0)) {
+            GB_print_error();
+            return GB_get_error();
+        }
+
+        for (   gb_node = GB_find(gb_tree,"node",0,down_level); /* delete all ghost nodes */
+                gb_node;
+                gb_node = gb_node_next)
+        {
+            gb_node_next = GB_find(gb_node,"node",0,this_level|search_next);
+            gbd = GB_find(gb_node,"id",0,down_level);
+            if (!gbd || GB_read_usr_private(gb_node)) {
+                error = GB_delete(gb_node);
+                if (error) GB_print_error();
+            }
+        }
+        gb_nnodes = GB_search(gb_tree,"nnodes",GB_INT);
+        error = GB_write_int(gb_nnodes,size);
     }
 
-    for (   gb_node = GB_find(gb_tree,"node",0,down_level); /* delete all ghost nodes */
-            gb_node;
-            gb_node = gb_node_next){
-        gb_node_next = GB_find(gb_node,"node",0,this_level|search_next);
-        gbd = GB_find(gb_node,"id",0,down_level);
-        if (!gbd || GB_read_usr_private(gb_node)) {
-            error = GB_delete(gb_node);
-            if (error) GB_print_error();
-        }
-    }
-    gb_nnodes = GB_search(gb_tree,"nnodes",GB_INT);
-    error = GB_write_int(gb_nnodes,size);
     if (error) return error;
     return 0;
 }
 
-GB_ERROR GBT_write_tree_rem(GBDATA *gb_main,const char *tree_name, const char *remark){
+GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_TREE *tree) {
+    return gbt_write_tree(gb_main, gb_tree, tree_name, tree, 0);
+}
+GB_ERROR GBT_write_plain_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_TREE *tree) {
+    return gbt_write_tree(gb_main, gb_tree, tree_name, tree, 1);
+}
+
+
+GB_ERROR GBT_write_tree_rem(GBDATA *gb_main,const char *tree_name, const char *remark) {
     GBDATA *ali_cont = GBT_get_tree(gb_main,tree_name);
     GBDATA *tree_rem =  GB_search(ali_cont,"remark",    GB_STRING);
     return GB_write_string(tree_rem,remark);
@@ -1120,6 +1139,17 @@ GB_ERROR GBT_link_tree(GBT_TREE *tree,GBDATA *gb_main,GB_BOOL show_status)
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
     error = gbt_link_tree_to_hash_rek(tree,gb_species_data,nodes,&counter);
     return error;
+}
+
+/** Unlink a given tree from the database.
+*/
+void GBT_unlink_tree(GBT_TREE *tree)
+{
+    tree->gb_node = 0;
+    if (!tree->is_leaf) {
+        GBT_unlink_tree(tree->leftson);
+        GBT_unlink_tree(tree->rightson);
+    }
 }
 
 
