@@ -22,7 +22,6 @@
 #define PH_CORRECTION_BANDELT_STRING "bandelt"
 
 #define NIL 0
-#define GROUPED_SUM	3
 
 // matrix definitions
 #define PH_TRANSFORMATION_JUKES_CANTOR_STRING "J+C"
@@ -32,7 +31,7 @@
 #define PH_TRANSFORMATION_BANDELT_STRING "B"
 #define PH_TRANSFORMATION_BANDELT_JC_STRING "B+J+C"
 #define PH_TRANSFORMATION_BANDELT2_STRING "B2"
-#define PH_TRANSFORMATION_BANDELT2_JC_STRING "B2+J+C"	
+#define PH_TRANSFORMATION_BANDELT2_JC_STRING "B2+J+C"
 
 typedef enum {
 	PH_CORRECTION_NONE,
@@ -48,7 +47,7 @@ enum {
 
 
 extern GBDATA *gb_main;
-extern class AP_root *ap_main; 
+extern class AP_root *ap_main;
 
 // make awars :
 void create_matrix_variables(AW_root *aw_root, AW_default aw_def);
@@ -59,7 +58,7 @@ AW_window *create_filter_window(AW_root *aw_root);
 
 
 
-enum display_type {NONE,species_dpy,filter_dpy,matrix_dpy,tree_dpy};  
+enum display_type {NONE,species_dpy,filter_dpy,matrix_dpy,tree_dpy};
 
 
 typedef double AP_FLOAT;
@@ -85,7 +84,7 @@ typedef enum {
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
 
-	
+
 class PH_filter {
 	public:
 	char	*filter;	// 0 1
@@ -96,11 +95,11 @@ class PH_filter {
 //	float   *markerline;       // line to create filter (according to options_vector)
 	char 	*init(char *filter, char *zerobases, long size);
 	char	*init(long size);
-	
+
 	PH_filter::PH_filter(void);
 	~PH_filter(void);
 	float *calculate_column_homology(void);
-};	
+};
 
 
 
@@ -163,7 +162,7 @@ private:
 
 	AW_root *aw_root;		// only link
 
-public:	
+public:
         GBDATA *gb_main;
 	char	*use;
 	struct PHENTRY *entries;
@@ -179,10 +178,10 @@ public:
 	char *load(char *use);  // open database and get pointers to it
 	char *unload(void);
 	GB_ERROR save(char *filename);
-	void print(void); 
+	void print(void);
 	GB_ERROR calculate_matrix(const char *cancel, double alpha, PH_TRANSFORMATION transformation);
 	long get_seq_len(void) { return seq_len; };
 	float *markerline;
 };
 
-   
+
