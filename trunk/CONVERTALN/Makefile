@@ -7,7 +7,7 @@ OBJECT=  main.o fconv.o mg.o genbank.o macke.o phylip.o paup.o \
 $(ARBHOME)/bin/arb_convert_aln: $(OBJECT)
 	$(ACC) $(cflags) -o $@ $(OBJECT)
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES)
+	$(ACC) $(cflags) -Wstrict-prototypes -c $< $(AINCLUDES)
 
 proto:
 	rm -f prototypes.h
@@ -23,7 +23,7 @@ main.o: prototypes.h
 fconv.o:  convert.h global.h prototypes.h
 mg.o:  convert.h global.h prototypes.h
 genbank.o:   convert.h
-genbank.o: global.h prototypes.h 
+genbank.o: global.h prototypes.h
 macke.o:  convert.h global.h prototypes.h
 phylip.o:  convert.h global.h prototypes.h
 paup.o:  convert.h global.h prototypes.h

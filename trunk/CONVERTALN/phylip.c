@@ -3,37 +3,35 @@
 #include "convert.h"
 #include "global.h"
 
-/* --------------------------------------------------------------- */
-/*	Function init_phylip().
-/*		Initialize genbank entry.
+/* ---------------------------------------------------------------
+*	Function init_phylip().
+*		Initialize genbank entry.
 */
-void
-init_phylip()	{
+void init_phylip()	{
 
 }
-/* --------------------------------------------------------------- */
-/*	Function to_phylip()
-/*		Convert from some format to PHYLIP format.
-*/
-void
-to_phylip(inf, outf, informat,readstdin)
-char	*inf, *outf;
-int	informat;
-int	readstdin;
+/* ---------------------------------------------------------------
+ *	Function to_phylip()
+ *		Convert from some format to PHYLIP format.
+ */
+void to_phylip(inf, outf, informat,readstdin)
+     char *inf, *outf;
+     int   informat;
+     int   readstdin;
 {
-	FILE	*ifp, *ofp, *fopen();
-	int	maxsize, current, total_seq, Lenstr();
+	FILE	*ifp, *ofp;
+	int	maxsize, current, total_seq;
 	int	out_of_memory, indi;
-	int	alma_key_word();
-	char	alma_in(), genbank_in_locus();
-	char	macke_in_name(), embl_in_id();
+/* 	int	alma_key_word(); */
+/* 	char	alma_in(), genbank_in_locus(); */
+/* 	char	macke_in_name(), embl_in_id(); */
 	char	temp[TOKENNUM], eof;
-	char	*Dupstr(), *today_date(), *today, *name;
-	void	init(), init_phylip(), init_seq_data();
-	void	init_alma(), init_genbank(), init_macke(), init_embl();
-	void	phylip_print_line(), to_phylip_1x1();
-	void	Freespace(), error(), Cpystr();
-	void	genbank_key_word(), embl_key_word();
+	char	/**today,*/ *name;
+/* 	void	init(), init_phylip(), init_seq_data(); */
+/* 	void	init_alma(), init_genbank(), init_macke(), init_embl(); */
+/* 	void	phylip_print_line(), to_phylip_1x1(); */
+/* 	void	Freespace(), error(), Cpystr(); */
+/* 	void	genbank_key_word(), embl_key_word(); */
 
 	if((ifp=fopen(inf, "r"))==NULL)	{
 		sprintf(temp, "Cannot open input file %s, exit\n", inf);
@@ -130,20 +128,20 @@ int	readstdin;
 #endif
 
 }
-/* --------------------------------------------------------------- */
-/*	Function to_phylip_1x1()
-/*		Convert from one format to PHYLIP format, one seq by one seq.
+/* ---------------------------------------------------------------
+*	Function to_phylip_1x1()
+*		Convert from one format to PHYLIP format, one seq by one seq.
 */
 void
 to_phylip_1x1(inf, outf, informat)
 char	*inf, *outf;
 int	informat;
 {
-	FILE	*ifp, *ofp, *fopen();
-	int	maxsize, current, total_seq, Lenstr();
-	int	alma_key_word();
+	FILE	*ifp, *ofp;
+	int	maxsize, current, total_seq;
+/* 	int	alma_key_word(); */
 	char	temp[TOKENNUM], eof;
-	char	*Dupstr(), *name, *today_date(), *today;
+	char	*name /*,*today*/;
 
 	if((ifp=fopen(inf, "r"))==NULL)	{
 		sprintf(temp, "Cannot open input file %s, exit\n", inf);
@@ -209,9 +207,9 @@ int	informat;
 #endif
 
 }
-/* -------------------------------------------------------------- */
-/*	Function phylip_print_line().
-/*		Print phylip line.
+/* --------------------------------------------------------------
+*	Function phylip_print_line().
+*		Print phylip line.
 */
 void
 phylip_print_line(name, sequence, index, fp)
@@ -219,7 +217,7 @@ char	*name, *sequence;
 int	index;
 FILE	*fp;
 {
-	int	indi, indj, length, bnum, Lenstr(), seq_length;
+	int	indi, indj, length, bnum, seq_length;
 
 	if(index==0)	{
 		if(Lenstr(name)>10)	{

@@ -1,36 +1,37 @@
 /* genabnk and Macke converting program */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "convert.h"
 #include "global.h"
 
 extern int	warning_out;
 
-/* -------------------------------------------------------------- */
-/*	Function init_gm_data().
-/*	Initialize data structure of genbank and Macke formats.
+/* --------------------------------------------------------------
+*	Function init_gm_data().
+*	Initialize data structure of genbank and Macke formats.
 */
 void
 init_gm_data()	{
-	void	init_macke(), init_genbank();
+/* 	void	init_macke(), init_genbank(); */
 
 	init_macke();
 	init_genbank();
 }
-/* ---------------------------------------------------------- */
-/*	Function genbank_to_macke().
-/*	Convert from Genbank format to Macke format.
+/* ----------------------------------------------------------
+*	Function genbank_to_macke().
+*	Convert from Genbank format to Macke format.
 */
 void
 genbank_to_macke(inf, outf)
 char	*inf, *outf;
 {
-	FILE	*ifp, *ofp, *fopen();
-	char	genbank_in(), temp[TOKENNUM];
-	int	Lenstr(), indi, gtom(), total_num;
-	void	init(), init_seq_data(), init_gm_data();
-	void	macke_out_header(), macke_out0(), macke_out1(), macke_out2();
-	void	error();
+	FILE	*ifp, *ofp;
+	char	temp[TOKENNUM];
+	int	indi, total_num;
+/* 	void	init(), init_seq_data(), init_gm_data(); */
+/* 	void	macke_out_header(), macke_out0(), macke_out1(), macke_out2(); */
+/* 	void	error(); */
 
 	if((ifp=fopen(inf, "r"))==NULL)	{
 		sprintf(temp, "CANNOT open input file %s, exit.\n", inf);
@@ -97,21 +98,23 @@ char	*inf, *outf;
 #endif
 
 }
-/* -------------------------------------------------------------- */
-/*	Function gtom().
-/*		Convert from Genbank format to Macke format.
+/* --------------------------------------------------------------
+*	Function gtom().
+*		Convert from Genbank format to Macke format.
 */
 int
 gtom()	{
-	void	genbank_key_word(), error(), Freespace(), Cpystr();
-	void	Append(), gtom_remarks(), replace_entry();
-	char	temp[LONGTEXT], buffer[TOKENNUM], *Catstr();
+/* 	void	genbank_key_word(), error(), Freespace(), Cpystr(); */
+/* 	void	Append(), gtom_remarks(), replace_entry(); */
+/* 	char	*Catstr(); */
+	char	temp[LONGTEXT], buffer[TOKENNUM];
 	char	genus[TOKENNUM], species[TOKENNUM];
-	char	*genbank_date(), *today_date();
-	char	*genbank_get_strain(), *genbank_get_subspecies();
-	char	*genbank_get_atcc();
-	int	Lenstr(), len, num_of_remark(), Cmpstr();
-	int 	indj, indk, remnum;
+/* 	char	*genbank_date(), *today_date(); */
+/* 	char	*genbank_get_strain(), *genbank_get_subspecies(); */
+/* 	char	*genbank_get_atcc(); */
+/* 	int	Lenstr(), num_of_remark(), Cmpstr(); */
+/* 	int	len; */
+/* 	int 	indj, indk, remnum; */
 
 	/* copy seq abbr, assume every entry in gbk must end with \n\0 */
 	/* no '\n' at the end of the string */
@@ -146,8 +149,7 @@ gtom()	{
 	} else
 		replace_entry(&(data.macke.date), data.gbk.locus+50);
 
-	/* copy genbank entry
-	/* (gbkentry has higher priority than gbk.accession)*/
+	/* copy genbank entry  (gbkentry has higher priority than gbk.accession)*/
 	if(Lenstr(data.gbk.comments.seqinf.gbkentry)>1)
 		replace_entry(&(data.macke.acs),
 			data.gbk.comments.seqinf.gbkentry);
@@ -189,45 +191,34 @@ gtom()	{
 
 	return(1);
 }
-/* -------------------------------------------------------------- */
-/* 	Function gtom_remarks().
-/*		Create Macke remarks.
+/* --------------------------------------------------------------
+* 	Function gtom_remarks().
+*		Create Macke remarks.
 */
 void
 gtom_remarks()	{
 
-	int	remnum, num_of_remark(), Lenstr(), len;
+	int	remnum, len;
 	int	indi, indj;
-	char	*Dupstr(), temp[LONGTEXT];
-	void	gtom_copy_remark();
+	char	temp[LONGTEXT];
+/* 	void	gtom_copy_remark(); */
 
 	/* remarks in Macke format */
 	remnum = num_of_remark();
-	data.macke.remarks
-		= (char**)calloc(1,(unsigned)(sizeof(char*)*remnum));
+	data.macke.remarks = (char**)calloc(1,(unsigned)(sizeof(char*)*remnum));
 	remnum=0;
 
 	/* REFERENCE the first reference */
 	if(data.gbk.numofref>0)
-		gtom_copy_remark(data.gbk.reference[0].ref,
-			"ref:", &remnum);
+		gtom_copy_remark(data.gbk.reference[0].ref, "ref:", &remnum);
 
 	/* The rest of the REFERENCES */
 	for(indi=1; indi<data.gbk.numofref; indi++)	{
-		gtom_copy_remark(data.gbk.reference[indi].ref,
-			"ref:", &remnum);
-
-		gtom_copy_remark(data.gbk.reference[indi].author,
-			"auth:", &remnum);
-
-		gtom_copy_remark(data.gbk.reference[indi].journal,
-			"jour:", &remnum);
-
-		gtom_copy_remark(data.gbk.reference[indi].title,
-			"title:", &remnum);
-
-		gtom_copy_remark(data.gbk.reference[indi].standard,
-			"standard:", &remnum);
+		gtom_copy_remark(data.gbk.reference[indi].ref, "ref:", &remnum);
+		gtom_copy_remark(data.gbk.reference[indi].author, "auth:", &remnum);
+		gtom_copy_remark(data.gbk.reference[indi].journal, "jour:", &remnum);
+		gtom_copy_remark(data.gbk.reference[indi].title, "title:", &remnum);
+		gtom_copy_remark(data.gbk.reference[indi].standard, "standard:", &remnum);
 
 	}	/* loop for copying other reference */
 
@@ -235,53 +226,39 @@ gtom_remarks()	{
 	gtom_copy_remark(data.gbk.keywords, "KEYWORDS:", &remnum);
 
 	/* copy accession as remark when genbank entry also exists. */
-	gtom_copy_remark(data.gbk.accession,
-		"GenBank ACCESSION:", &remnum);
+	gtom_copy_remark(data.gbk.accession, "GenBank ACCESSION:", &remnum);
 
 	/* copy source of strain */
-	gtom_copy_remark(data.gbk.comments.orginf.source,
-		"Source of strain:", &remnum);
+	gtom_copy_remark(data.gbk.comments.orginf.source, "Source of strain:", &remnum);
 
 	/* copy former name */
-	gtom_copy_remark(data.gbk.comments.orginf.formname,
-		"Former name:", &remnum);
+	gtom_copy_remark(data.gbk.comments.orginf.formname, "Former name:", &remnum);
 
 	/* copy alternate name */
-	gtom_copy_remark(data.gbk.comments.orginf.nickname,
-		"Alternate name:", &remnum);
+	gtom_copy_remark(data.gbk.comments.orginf.nickname, "Alternate name:", &remnum);
 
 	/* copy common name */
-	gtom_copy_remark(data.gbk.comments.orginf.commname,
-		"Common name:", &remnum);
+	gtom_copy_remark(data.gbk.comments.orginf.commname, "Common name:", &remnum);
 
 	/* copy host organism */
-	gtom_copy_remark(data.gbk.comments.orginf.hostorg,
-		"Host organism:", &remnum);
+	gtom_copy_remark(data.gbk.comments.orginf.hostorg, "Host organism:", &remnum);
 
 	/* copy RDP ID */
-	gtom_copy_remark(data.gbk.comments.seqinf.RDPid,
-		"RDP ID:", &remnum);
+	gtom_copy_remark(data.gbk.comments.seqinf.RDPid, "RDP ID:", &remnum);
 
 	/* copy methods */
-	gtom_copy_remark(data.gbk.comments.seqinf.methods,
-		"Sequencing methods:", &remnum);
+	gtom_copy_remark(data.gbk.comments.seqinf.methods, "Sequencing methods:", &remnum);
 
 	/* copy 3' end complete */
 	if(data.gbk.comments.seqinf.comp3!=' ')	{
-		if(data.gbk.comments.seqinf.comp3=='y')
-			data.macke.remarks[remnum++] =
-			 Dupstr("3' end complete:  Yes\n");
-		else data.macke.remarks[remnum++]=
-			 Dupstr("3' end complete:  No\n");
+		if(data.gbk.comments.seqinf.comp3=='y') data.macke.remarks[remnum++] = Dupstr("3' end complete:  Yes\n");
+		else data.macke.remarks[remnum++]= Dupstr("3' end complete:  No\n");
 	}
 
 	/* copy 5' end complete */
 	if(data.gbk.comments.seqinf.comp5!=' ')	{
-		if(data.gbk.comments.seqinf.comp5=='y')
-			data.macke.remarks[remnum++]=
-			 Dupstr("5' end complete:  Yes\n");
-		else data.macke.remarks[remnum++]=
-			 Dupstr("5' end complete:  No\n");
+		if(data.gbk.comments.seqinf.comp5=='y') data.macke.remarks[remnum++]= Dupstr("5' end complete:  Yes\n");
+		else data.macke.remarks[remnum++]= Dupstr("5' end complete:  No\n");
 	}
 
 	/* other comments, not RDP DataBase specially defined */
@@ -305,18 +282,18 @@ gtom_remarks()	{
 
 	data.macke.numofrem = remnum;
 }
-/* -------------------------------------------------------------------- */
-/*	Function gtom_copy_remark().
-/*		If string length > 1 then copy string with key to remark.
-*/
-void
-gtom_copy_remark(string, key, remnum)
-char	*string, *key;
-int	*remnum;
+/* --------------------------------------------------------------------
+ *	Function gtom_copy_remark().
+ *		If string length > 1 then copy string with key to remark.
+ */
+void gtom_copy_remark(string, key, remnum)
+     char *string;
+     const char *key;
+     int  *remnum;
 {
-	int	Lenstr();
-	char	*Dupstr();
-	void	Append();
+/* 	int	Lenstr(); */
+/* 	char	*Dupstr(); */
+/* 	void	Append(); */
 
 	/* copy host organism */
 	if(Lenstr(string)>1)	{
@@ -326,19 +303,18 @@ int	*remnum;
 		(*remnum)++;
 	}
 }
-/* -------------------------------------------------------------------- */
-/*	Function genbank_get_strain().
-/*		Get strain from DEFINITION, COMMENT or SOURCE line in
-/*		Genbank data file.
+/* --------------------------------------------------------------------
+*	Function genbank_get_strain().
+*		Get strain from DEFINITION, COMMENT or SOURCE line in
+*		Genbank data file.
 */
-char
-*genbank_get_strain()	{
+char *genbank_get_strain()	{
 
 	int	indj, indk;
-	int	find_pattern(), Lenstr();
-	int	Skip_white_space(), Reach_white_space();
-	char	strain[LONGTEXT], temp[LONGTEXT], buffer[LONGTEXT], *Dupstr();
-	void	get_string(), warning(), Cpystr();
+/* 	int	find_pattern(), Lenstr(); */
+/* 	int	Skip_white_space(), Reach_white_space(); */
+	char	strain[LONGTEXT], temp[LONGTEXT], buffer[LONGTEXT];
+/* 	void	get_string(), warning(), Cpystr(); */
 
 	strain[0]='\0';
 	/* get strain */
@@ -403,21 +379,21 @@ char
 
 	return(Dupstr(strain));
 }
-/* -------------------------------------------------------------------- */
-/*	Function genbank_get_subspecies().
-/*		Get subspecies information from SOURCE, DEFENITION, or
-/*		COMMENT line of Genabnk data file.
+/* --------------------------------------------------------------------
+*	Function genbank_get_subspecies().
+*		Get subspecies information from SOURCE, DEFENITION, or
+*		COMMENT line of Genabnk data file.
 */
 char
 *genbank_get_subspecies()	{
 
 	int	indj, indk;
-	int	find_pattern(), Lenstr();
-	int	Skip_white_space(), Reach_white_space();
+/* 	int	find_pattern(), Lenstr(); */
+/* 	int	Skip_white_space(), Reach_white_space(); */
 	char	subspecies[LONGTEXT], temp[LONGTEXT], buffer[LONGTEXT];
-	char	*Dupstr();
-	void	get_string(), warning(), Cpystr();
-	void	correct_subspecies();
+/* 	char	*Dupstr(); */
+/* 	void	get_string(), warning(), Cpystr(); */
+/* 	void	correct_subspecies(); */
 
 	subspecies[0]='\0';
 	/* get subspecies */
@@ -488,16 +464,16 @@ char
 
 	return(Dupstr(subspecies));
 }
-/* --------------------------------------------------------------- */
-/*	Function correct_subspecies().
-/*		Remove the strain information in subspecies which is
-/*		sometime mistakenly written into it.
+/* ---------------------------------------------------------------
+*	Function correct_subspecies().
+*		Remove the strain information in subspecies which is
+*		sometime mistakenly written into it.
 */
 void
 correct_subspecies(subspecies)
 char	*subspecies;
 {
-	int	indj, find_pattern();
+	int	indj;
 
 	if((indj=find_pattern(subspecies, "str\n"))>=0
 	||(indj=find_pattern(subspecies, "str."))>=0
@@ -506,16 +482,16 @@ char	*subspecies;
 		subspecies[indj]='\0';
 	}
 }
-/* -------------------------------------------------------------------- */
-/*	Function genbank_get_atcc().
-/*		Get atcc from SOURCE line in Genbank data file.
+/* --------------------------------------------------------------------
+*	Function genbank_get_atcc().
+*		Get atcc from SOURCE line in Genbank data file.
 */
 char
 *genbank_get_atcc()	{
 
-	int	Lenstr();
-	char	temp[LONGTEXT], *Dupstr();
-	char	*atcc, *get_atcc();
+/* 	int	Lenstr(); */
+	char	temp[LONGTEXT];
+	char	*atcc;
 
 
 	atcc = NULL;
@@ -538,15 +514,18 @@ char	*source;
 {
 
 	static int	cc_num=16;
-	static char	*CC[16] = {"ATCC", "CCM", "CDC", "CIP", "CNCTC",
+	static const char	*CC[16] = {"ATCC", "CCM", "CDC", "CIP", "CNCTC",
 			"DSM", "EPA", "JCM", "NADC", "NCDO", "NCTC", "NRCC",
 			"NRRL", "PCC", "USDA", "VPI"};
-	int	indi, indj, indk, index;
-	int	find_pattern(), Lenstr(), length;
-	int	paren_string(), Skip_white_space(), Reach_white_space();
+/* 	int	indk; */
+	int	indi, indj, index;
+	int	length;
+/* 	int	find_pattern(), Lenstr(); */
+/* 	int	paren_string(), Skip_white_space(), Reach_white_space(); */
 	char	buffer[LONGTEXT], temp[LONGTEXT], pstring[LONGTEXT];
-	char	*Catstr(), *Dupstr(), atcc[LONGTEXT];
-	void	get_atcc_string();
+	char	atcc[LONGTEXT];
+/* 	char	*Catstr(), *Dupstr(); */
+/* 	void	get_atcc_string(); */
 
 	atcc[0]='\0';
 	for(indi=0; indi<cc_num; indi++)	{
@@ -571,8 +550,8 @@ char	*source;
 	}	/* for loop */
 	/* append eoln to the atcc string */
 	length = Lenstr(atcc);
-    if (data.macke.atcc) { 
-        data.macke.atcc[length] = '\0'; 
+    if (data.macke.atcc) {
+        data.macke.atcc[length] = '\0';
     }
 	Catstr(atcc, "\n");
 	return(Dupstr(atcc));
@@ -585,7 +564,7 @@ paren_string(string, pstring, index)
 char	*string, *pstring;
 int	index;
 {
-	int	pcount=0, len, Lenstr(), indi;
+	int	pcount=0, len, indi;
 
 	for(indi=0, len=Lenstr(string); index<len; index++) {
 		if(pcount>=1)	pstring[indi++]=string[index];
@@ -596,14 +575,14 @@ int	index;
 	pstring[--indi]='\0';
 	return(index);
 }
-/* ---------------------------------------------------------------- */
-/*	Function num_of_remark().
-/*		Count num of remarks needed in order to alloc spaces.
+/* ----------------------------------------------------------------
+*	Function num_of_remark().
+*		Count num of remarks needed in order to alloc spaces.
 */
 int
 num_of_remark()	{
 
-	int	remnum, indi, indj, length;
+	int	remnum, /*indi, */indj, length;
 
 	remnum = 0;
 	/* count references to be put into remarks */
@@ -657,19 +636,19 @@ num_of_remark()	{
 	}	/* other comments */
 	return(remnum);
 }
-/* ----------------------------------------------------------------- */
-/*	Function macke_to_genbank().
-/*		Convert from macke format to genbank format.
+/* -----------------------------------------------------------------
+*	Function macke_to_genbank().
+*		Convert from macke format to genbank format.
 */
 void
 macke_to_genbank(inf, outf)
 char	*inf, *outf;
 {
-	FILE	*fopen(), *ifp1, *ifp2, *ifp3, *ofp;
-	char	temp[TOKENNUM], macke_in();
-	void	init(), init_seq_data(), init_gm_data();
-	void	error();
-	int	mtog();
+	FILE	*ifp1, *ifp2, *ifp3, *ofp;
+	char	temp[TOKENNUM];
+/* 	void	init(), init_seq_data(), init_gm_data(); */
+/* 	void	error(); */
+/* 	int	mtog(); */
 
 	if((ifp1=fopen(inf, "r"))==NULL||(ifp2=fopen(inf, "r"))==NULL||
 		(ifp3=fopen(inf, "r"))==NULL)	{
@@ -710,21 +689,22 @@ char	*inf, *outf;
 #endif
 
 }
-/* ---------------------------------------------------------------- */
-/*	Function mtog().
-/*		Convert Macke format to Genbank format.
+/* ----------------------------------------------------------------
+*	Function mtog().
+*		Convert Macke format to Genbank format.
 */
 int
 mtog() {
 	int	indi;
-	int	len, Lenstr(), Cmpstr();
-	char	temp[LONGTEXT], *today_date();
-	char	*Dupstr(), *Reallocspace(), *macke_copyrem();
-	char	*genbank_date();
-	void	Freespace(), Cpystr(), Append(), Append_char();
-	void	mtog_genbank_def_and_source();
-	void	mtog_decode_ref_and_remarks();
-	void	init_reference(), replace_entry(), warning();
+/* 	int	len, Lenstr(), Cmpstr(); */
+	char	temp[LONGTEXT];
+/* 	char	*today_date(); */
+/* 	char	*Dupstr(), *Reallocspace(), *macke_copyrem(); */
+/* 	char	*genbank_date(); */
+/* 	void	Freespace(), Cpystr(), Append(), Append_char(); */
+/* 	void	mtog_genbank_def_and_source(); */
+/* 	void	mtog_decode_ref_and_remarks(); */
+/* 	void	init_reference(), replace_entry(), warning(); */
 
 	Cpystr(temp, data.macke.seqabbr);
 
@@ -789,28 +769,26 @@ mtog() {
 
 	return(1);
 }
-/* --------------------------------------------------------------- */
-/*	Function mtog_decode_remarks().
-/*		Decode remarks of Macke to GenBank format.
+/* ---------------------------------------------------------------
+*	Function mtog_decode_remarks().
+*		Decode remarks of Macke to GenBank format.
 */
 void
 mtog_decode_ref_and_remarks()	{
 
-	int	indi, indj, macke_key_word(), Cmpstr();
+	int	indi, indj;
 	int	acount, tcount, jcount, rcount, scount;
 	char	key[TOKENNUM], temp[LONGTEXT];
-	char	*macke_copyrem(), *Reallocspace(), *Dupstr();
-	void	Append_char(), Append(), Cpystr();
-	void	mtog_copy_remark(), init_reference();
+/* 	char	*macke_copyrem(), *Reallocspace(), *Dupstr(); */
+/* 	void	Append_char(), Append(), Cpystr(); */
+/* 	void	mtog_copy_remark(), init_reference(); */
 
 	data.gbk.numofref=acount=tcount=jcount=rcount=scount=0;
 
 	if(Lenstr(data.macke.author)>1)	{
 		if((acount+1)>data.gbk.numofref)	{
 			/* new reference */
-			data.gbk.reference =
-			(Reference*)Reallocspace(data.gbk.reference,
-			sizeof(Reference)*(acount+1));
+			data.gbk.reference = (Reference*)Reallocspace(data.gbk.reference, sizeof(Reference)*(acount+1));
 			data.gbk.numofref = acount+1;
 		init_reference(&(data.gbk.reference[acount]), AUTHOR);
 		} else acount = data.gbk.numofref - 1;
@@ -993,35 +971,35 @@ mtog_decode_ref_and_remarks()	{
 		}
 	}	/* for each rem */
 }
-/* --------------------------------------------------------------- */
-/*	Function mtog_copy_remark().
-/*		Convert one remark back to GenBank format.
+/* ---------------------------------------------------------------
+*	Function mtog_copy_remark().
+*		Convert one remark back to GenBank format.
 */
 void
 mtog_copy_remark(string, indi, indj)
 char	**string;
 int	*indi, indj;
 {
-	void	Freespace();
-	char	*macke_copyrem();
+/* 	void	Freespace(); */
+/* 	char	*macke_copyrem(); */
 
 	Freespace(string);
 	(*string) = (char*)macke_copyrem(data.macke.remarks, indi,
 			data.macke.numofrem, indj);
 }
-/* ------------------------------------------------------------------ */
-/*	Function macke_copyrem().
-/*		uncode rem lines.
-*/
-char
-*macke_copyrem(strings, index, maxline, pointer)
-char	**strings;
-int	*index, maxline, pointer;
+/* ------------------------------------------------------------------
+ *	Function macke_copyrem().
+ *		uncode rem lines.
+ */
+char *macke_copyrem(strings, index, maxline, pointer)
+     char **strings;
+     int   *index, maxline, pointer;
 {
 	char	*string;
-	int	len, length, indi, macke_rem_continue_line();
-	char	*Catstr(), *Dupstr();
-	void	Append_rp_eoln();
+	int	indi;
+/* 	int	len, length, macke_rem_continue_line(); */
+/* 	char	*Catstr(), *Dupstr(); */
+/* 	void	Append_rp_eoln(); */
 
 	string = (char*)Dupstr(strings[(*index)]+pointer);
 	for(indi=(*index)+1; indi<maxline
@@ -1030,17 +1008,17 @@ int	*index, maxline, pointer;
 	(*index) = indi-1;
 	return(string);
 }
-/* ------------------------------------------------------------------ */
-/*	Function mtog_genbank_def_and_source().
-/*		Define GenBank DEFINITION and SOURCE lines the way RDP
-/*			group likes.
+/* ------------------------------------------------------------------
+*	Function mtog_genbank_def_and_source().
+*		Define GenBank DEFINITION and SOURCE lines the way RDP
+*			group likes.
 */
 void
 mtog_genbank_def_and_source()	{
 
-	int	Lenstr();
-	void	Freespace(), Append(), Append_rm_eoln(), Append_char();
-	void	replace_entry(), warning();
+/* 	int	Lenstr(); */
+/* 	void	Freespace(), Append(), Append_rm_eoln(), Append_char(); */
+/* 	void	replace_entry(), warning(); */
 
 	if(Lenstr(data.macke.name)>1)
 		replace_entry(&(data.gbk.definition),
@@ -1087,19 +1065,19 @@ mtog_genbank_def_and_source()	{
 	} else Append_rm_eoln((&data.gbk.definition), ".\n");
 
 }
-/* ------------------------------------------------------------------- */
-/*	Function get_string().
-/*		Get the rest of the string untill reaching certain
-/*			terminators, such as ';', ',', '.',...
-/*		Always append "\n" at the end of the returned string.
+/* -------------------------------------------------------------------
+*	Function get_string().
+*		Get the rest of the string untill reaching certain
+*			terminators, such as ';', ',', '.',...
+*		Always append "\n" at the end of the returned string.
 */
 void
 get_string(line, temp, index)
 char	*line, *temp;
 int	index;
 {
-	int	indk, len, Lenstr(), paren_num;
-	int	not_ending_mark();
+	int	indk, len, paren_num;
+/* 	int	not_ending_mark(); */
 
 	len = Lenstr(line);
 	paren_num=0;
@@ -1116,17 +1094,17 @@ int	index;
 	temp[indk++]='\n';
 	temp[indk]='\0';
 }
-/* ------------------------------------------------------------------- */
-/*	Function get_atcc_string().
-/*		Get the rest of the string untill reaching certain
-/*			terminators, such as ';', ',', '.',...
+/* -------------------------------------------------------------------
+*	Function get_atcc_string().
+*		Get the rest of the string untill reaching certain
+*			terminators, such as ';', ',', '.',...
 */
 void
 get_atcc_string(line, temp, index)
 char	*line, *temp;
 int	index;
 {
-	int	indk, len, Lenstr(), paren_num;
+	int	indk, len, paren_num;
 
 	len = Lenstr(line);
 	paren_num=0;

@@ -2,25 +2,25 @@
 #include "convert.h"
 #include "global.h"
 
-/* ------------------------------------------------------------------ */
-/*	Function to_gcg().
-/*		Convert from whatever to GCG format.
+/* ------------------------------------------------------------------
+*	Function to_gcg().
+*		Convert from whatever to GCG format.
 */
 void
 to_gcg(intype, inf)
 int	intype;
 char	*inf;
 {
-	FILE	*fopen(), *ifp1, *ifp2, *ifp3, *ofp;
+	FILE	*ifp1, *ifp2, *ifp3, *ofp;
 	char	temp[TOKENNUM], *eof, line[LINENUM], key[TOKENNUM];
 	char	line1[LINENUM], line2[LINENUM], line3[LINENUM], name[LINENUM];
 	char	*eof1, *eof2, *eof3;
-	char	outf[TOKENNUM], *Fgetline();
-	char 	*embl_origin(), *genbank_origin(), *macke_origin();
-	void	init_seq_data(), gcg_seq_out(), gcg_doc_out();
-	void	embl_key_word(), genbank_key_word();
-	void	gcg_output_filename();
-	int	seqdata, Lenstr(), Cmpstr(), macke_abbrev();
+	char	outf[TOKENNUM];
+/* 	char 	*embl_origin(), *genbank_origin(), *macke_origin(); */
+/* 	void	init_seq_data(), gcg_seq_out(), gcg_doc_out(); */
+/* 	void	embl_key_word(), genbank_key_word(); */
+/* 	void	gcg_output_filename(); */
+	int	seqdata;
 
 	if(intype==MACKE)	{
 		if((ifp1=fopen(inf, "r"))==NULL||(ifp2=fopen(inf, "r"))==NULL
@@ -56,7 +56,7 @@ char	*inf;
 				error(39, temp);
 			}
 			for(macke_abbrev(line2, name, 2);
-			eof2!=NULL&&line2[0]=='#'&&line2[1]==':'&&Cmpstr(name, key)==EQ; 
+			eof2!=NULL&&line2[0]=='#'&&line2[1]==':'&&Cmpstr(name, key)==EQ;
 			eof2=Fgetline(line2, LINENUM, ifp2), macke_abbrev(line2, name, 2))
 				gcg_doc_out(line2, ofp);
 			eof3 = macke_origin(key, line3, ifp3);
@@ -103,41 +103,41 @@ char	*inf;
 				init_seq_data();
 				seqdata=0;
 				fclose(ofp);
-			} else {	
+			} else {
 				gcg_doc_out(line, ofp);
 				eof = Fgetline(line, LINENUM, ifp1);
 			}
 		}
 	}
 }
-/* ---------------------------------------------------------------- */
-/*	Function gcg_seq_out().
-/*		Output sequence data in gcg format.
+/* ----------------------------------------------------------------
+*	Function gcg_seq_out().
+*		Output sequence data in gcg format.
 */
 void
 gcg_seq_out(ofp, key)
 FILE	*ofp;
 char	*key;
 {
-	int	checksum(), gcg_seq_length(), indi, indj, indk;
-	char	*today_date(), *gcg_date();
-	void	gcg_out_origin();
+    /* 	int	indi, indj, indk; */
+/* 	char	*today_date(), *gcg_date(); */
+/* 	void	gcg_out_origin(); */
 
 	fprintf(ofp, "\n%s  Length: %d  %s  Type: N  Check: %d  ..\n\n", key,
 		gcg_seq_length(), gcg_date(today_date()),
 		checksum(data.sequence, data.seq_length));
 	gcg_out_origin(ofp);
 }
-/* -------------------------------------------------------------------- */
-/*	Function gcg_doc_out().
-/*		Output non-sequence data(document) of gcg format.
+/* --------------------------------------------------------------------
+*	Function gcg_doc_out().
+*		Output non-sequence data(document) of gcg format.
 */
 void
 gcg_doc_out(line, ofp)
 char	*line;
 FILE	*ofp;
 {
-	int	indi, len, Lenstr();
+	int	indi, len;
 	int	previous_is_dot;
 
 	for(indi=0, len=Lenstr(line), previous_is_dot=0; indi<len; indi++) {
@@ -149,9 +149,9 @@ FILE	*ofp;
 		if(line[indi]=='.') previous_is_dot=1;
 	}
 }
-/* ----------------------------------------------------------------- */
-/*	Function checksum().
-/*		Calculate checksum for GCG format.
+/* -----------------------------------------------------------------
+*	Function checksum().
+*		Calculate checksum for GCG format.
 */
 int
 checksum(string, numofstr)
@@ -163,21 +163,21 @@ int	numofstr;
 	for(indi=0; indi<numofstr; indi++)	{
 		if(string[indi]=='.'||string[indi]=='-'||string[indi]=='~')
 			continue;
-		count++;	
+		count++;
 		if(string[indi]>='a'&&string[indi]<='z')
 			charnum = string[indi]-'a'+'A';
-		else charnum = string[indi];	
+		else charnum = string[indi];
 		cksum = ((cksum+count*charnum) % 10000);
 		if(count==57) count=0;
 	}
 	return(cksum);
 }
-/* -------------------------------------------------------------------- */
-/*	Fcuntion gcg_out_origin().
-/*		Output sequence data in gcg format.
+/* --------------------------------------------------------------------
+*	Fcuntion gcg_out_origin().
+*		Output sequence data in gcg format.
 */
 void
-gcg_out_origin(fp)	
+gcg_out_origin(fp)
 FILE	*fp;
 {
 
@@ -195,24 +195,24 @@ FILE	*fp;
 	}
 	if((indk % 50)!=1) fprintf(fp, " \n");
 }
-/* -------------------------------------------------------------- */
-/*	Function gcg_output_filename().
-/*		Get gcg output filename, convert all '.' to '_' and
-/*			append ".RDP" as suffix.
+/* --------------------------------------------------------------
+*	Function gcg_output_filename().
+*		Get gcg output filename, convert all '.' to '_' and
+*			append ".RDP" as suffix.
 */
 void
 gcg_output_filename(prefix, name)
 char	*prefix, *name;
 {
-	int	indi, len, Lenstr();
+	int	indi, len;
 
 	for(indi=0, len=Lenstr(prefix); indi<len; indi++)
 		if(prefix[indi]=='.') prefix[indi]='_';
 	sprintf(name, "%s.RDP", prefix);
 }
-/* ------------------------------------------------------------------ */
-/*	Function gcg_seq_length().
-/*		Calculate sequence length without gap.
+/* ------------------------------------------------------------------
+*	Function gcg_seq_length().
+*		Calculate sequence length without gap.
 */
 int
 gcg_seq_length()	{
@@ -222,6 +222,6 @@ gcg_seq_length()	{
 	for(indi=0, len=data.seq_length; indi<data.seq_length; indi++)
 		if(data.sequence[indi]=='.'||data.sequence[indi]=='-'
 		||data.sequence[indi]=='~')	len--;
-	
+
 	return(len);
 }

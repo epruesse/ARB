@@ -3,16 +3,15 @@
 #include "convert.h"
 #include "global.h"
 
-/* ------------------------------------------------------------ */
-/*	Function init_paup().
-/*		Init. paup data.
+/* ------------------------------------------------------------
+*	Function init_paup().
+*		Init. paup data.
 */
-void
-init_paup()	{
+void init_paup() {
 
 	int	indi;
-	void	Freespace();
-	
+/* 	void	Freespace(); */
+
 	for(indi=0; indi<data.paup.ntax; indi++)	{
 		Freespace(&(data.ids[indi]));
 		Freespace(&(data.seqs[indi]));
@@ -22,30 +21,30 @@ init_paup()	{
 	data.paup.ntax = 0;
 	data.paup.nchar = 0;
 }
-/* ------------------------------------------------------------- */
-/*	Function to_paup()
-/*		Convert from some format to PAUP format.
+/* -------------------------------------------------------------
+*	Function to_paup()
+*		Convert from some format to PAUP format.
 */
 void
 to_paup(inf, outf, informat)
 char	*inf, *outf;
 int	informat;
 {
-	FILE	*ifp, *ofp, *fopen();
-	int	maxsize, current, total_seq, Lenstr(), first_line;
+	FILE	*ifp, *ofp;
+	int	maxsize, current, total_seq, first_line;
 	int	out_of_memory, indi;
-	int	alma_key_word();
-	char	alma_in(), genbank_in_locus();
-	char	macke_in_name(), embl_in_id();
+/* 	int	alma_key_word(); */
+/* 	char	alma_in(), genbank_in_locus(); */
+/* 	char	macke_in_name(), embl_in_id(); */
 	char	temp[TOKENNUM], eof;
-	char	*Dupstr(), *name, *today_date(), *today;
-	void	init(), init_paup(), init_seq_data();
-	void	init_alma(), init_genbank();
-	void	init_macke(), init_embl();
-	void	paup_print_line(), to_paup_1x1();
-	void	error(), Cpystr();
-	void	genbank_key_word(), embl_key_word();
-	void	paup_verify_name(), paup_print_header();
+	char	*name, *today;
+/* 	void	init(), init_paup(), init_seq_data(); */
+/* 	void	init_alma(), init_genbank(); */
+/* 	void	init_macke(), init_embl(); */
+/* 	void	paup_print_line(), to_paup_1x1(); */
+/* 	void	error(), Cpystr(); */
+/* 	void	genbank_key_word(), embl_key_word(); */
+/* 	void	paup_verify_name(), paup_print_header(); */
 
 	if((ifp=fopen(inf, "r"))==NULL)	{
 		sprintf(temp,
@@ -59,10 +58,10 @@ int	informat;
 		error(65, temp);
 	}
 	maxsize = 1;
-	out_of_memory = 0; 
+	out_of_memory = 0;
 	name = NULL;
 	init();
-	init_paup();  
+	init_paup();
 	paup_print_header(ofp);
 	total_seq = 0;
 	do	{
@@ -101,7 +100,7 @@ int	informat;
 			{ out_of_memory=1; break; }
 		paup_verify_name(&name);
 
-		if(data.seq_length>maxsize) 
+		if(data.seq_length>maxsize)
 			maxsize = data.seq_length;
 		data.ids=(char**)Reallocspace((char *)data.ids,
 			sizeof(char*)*total_seq);
@@ -116,10 +115,10 @@ int	informat;
 		data.seqs[total_seq-1]=(char*)Dupstr(data.sequence);
 
 	} while(!out_of_memory);
-	
+
 	if(out_of_memory)	{
 		/* cannot hold all seqs into mem. */
-		fprintf(stderr, 
+		fprintf(stderr,
 	"Rerun the conversion throught one seq. by one seq. base.\n");
 
 		fclose(ifp); fclose(ofp);
@@ -134,7 +133,7 @@ int	informat;
 				first_line++;
 			paup_print_line(data.ids[indi],
 				data.seqs[indi], current,
-			 	(first_line==1), ofp);	
+			 	(first_line==1), ofp);
 
  			/* Avoid repeating */
 			if(first_line==1) first_line++;
@@ -168,21 +167,21 @@ int	informat;
 
 	fclose(ifp); fclose(ofp);
 }
-/* --------------------------------------------------------------- */
-/*	Function to_paup_1x1()
-/*		Convert from ALMA format to PAUP format,
-/*			one seq by one seq.
+/* ---------------------------------------------------------------
+*	Function to_paup_1x1()
+*		Convert from ALMA format to PAUP format,
+*			one seq by one seq.
 */
 void
 to_paup_1x1(inf, outf, informat)
 char	*inf, *outf;
 int	informat;
 {
-	FILE	*ifp, *ofp, *fopen();
-	int	maxsize, current, total_seq, Lenstr(), first_line;
-	int	alma_key_word();
+	FILE	*ifp, *ofp;
+	int	maxsize, current, total_seq, first_line;
+/* 	int	alma_key_word(); */
 	char	temp[TOKENNUM], eof;
-	char	*Dupstr(), *name, *today_date(), *today;
+	char	*name, *today;
 
 	if((ifp=fopen(inf, "r"))==NULL)	{
 		sprintf(temp,
@@ -195,7 +194,7 @@ int	informat;
 			"Cannot open output file %s, exit\n", outf);
 		error(122, temp);
 	}
-	maxsize = 1; current = 0; 
+	maxsize = 1; current = 0;
 	name = NULL;
 	paup_print_header(ofp);
 	while(maxsize>current)	{
@@ -204,7 +203,7 @@ int	informat;
 		total_seq = 0;
 		first_line = 0;
 		do	{	/* read in one sequence */
-			init_paup();  
+			init_paup();
 			if(informat==ALMA)	{
 				init_alma();
 				eof=alma_in(ifp);
@@ -233,14 +232,14 @@ int	informat;
 			} else if(informat==MACKE)	{
 				macke_key_word
 				(data.macke.name, 0, temp, TOKENNUM);
-			} else error(70, 
+			} else error(70,
 		"UNKNOW input format when converting to PAUP format.");
 
 			Freespace(&name);
 			name = Dupstr(temp);
 			paup_verify_name(&name);
 
-			if(data.seq_length>maxsize) 
+			if(data.seq_length>maxsize)
 				maxsize = data.seq_length;
 
 			if(current<data.seq_length) first_line++;
@@ -282,26 +281,26 @@ int	informat;
 
 	fclose(ifp); fclose(ofp);
 }
-/* ----------------------------------------------------------- */
-/*	Function paup_verify_name().
-/*		Verify short_id in PUAP format.
+/* -----------------------------------------------------------
+*	Function paup_verify_name().
+*		Verify short_id in PUAP format.
 */
 void
 paup_verify_name(string)
 char	**string;
 {
-	int	indi, len, Lenstr(), index;
-	char	temp[TOKENNUM], *Dupstr();
-	void	Freespace();
+	int	indi, len, index;
+	char	temp[TOKENNUM];
+/* 	void	Freespace(); */
 
 	for(indi=index=0,len=Lenstr((*string)); indi<len&&index==0;
-	indi++)	
+	indi++)
 		if((*string)[indi]=='*'||(*string)[indi]=='('
 		||(*string)[indi]==')'||(*string)[indi]=='{'
 		||(*string)[indi]=='/'||(*string)[indi]==','
 		||(*string)[indi]==';'||(*string)[indi]=='_'
 		||(*string)[indi]=='='||(*string)[indi]==':'
-		||(*string)[indi]=='\\'||(*string)[indi]=='\'')	
+		||(*string)[indi]=='\\'||(*string)[indi]=='\'')
 			index=1;
 
 	if(index==0)	return;
@@ -318,9 +317,9 @@ char	**string;
 		(*string)=(char*)Dupstr(temp);
 	}
 }
-/* -------------------------------------------------------------- */
-/*	Function paup_print_line().
-/*		print paup file.
+/* --------------------------------------------------------------
+*	Function paup_print_line().
+*		print paup file.
 */
 void
 paup_print_line(string, sequence, index, first_line, fp)
@@ -328,7 +327,7 @@ char	*string, *sequence;
 int	index, first_line;
 FILE	*fp;
 {
-	int	indi, indj, bnum, length, Lenstr(), seq_length;
+	int	indi, indj, bnum, length, seq_length;
 
 	length = SEQLINE-10;
 	fprintf(fp, "      ");
@@ -346,9 +345,9 @@ FILE	*fp;
 
 	if(index<seq_length)
 		for(indi=0; indi<bnum; indi++)
-			fprintf(fp, " "); 
+			fprintf(fp, " ");
 
-	for(indi=indj=0; indi<length; indi++)	{	
+	for(indi=indj=0; indi<length; indi++)	{
 		if((index+indi)<seq_length)	{
 
 			fprintf(fp, "%c", sequence[index+indi]);
@@ -361,20 +360,20 @@ FILE	*fp;
 		} else break;
 	}
 
-	if(first_line)	
+	if(first_line)
 		fprintf(fp, " [%d - %d]", index+1, (index+indi));
 
 	fprintf(fp, "\n");
 }
-/* ---------------------------------------------------------- */
-/*	Function paup_print_header().
-/*		Print out the header of each paup format.
+/* ----------------------------------------------------------
+*	Function paup_print_header().
+*		Print out the header of each paup format.
 */
 void
 paup_print_header(ofp)
 FILE	*ofp;
 {
-	char	*today_date(), *today;
+	char	*today;
 
 	fprintf(ofp, "#NEXUS\n");
 	today = today_date();

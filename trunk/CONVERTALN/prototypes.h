@@ -1,11 +1,16 @@
 #ifndef P_
-#if defined(__STDC__) || defined(__cplusplus)
-# define P_(s) s
+# if defined(__STDC__) || defined(__cplusplus)
+#  define P_(s) s
+# else
+#  define P_(s) ()
+# endif
 #else
-# define P_(s) ()
-#endif
+# error P_ already defined elsewhere
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* main.c */
 int main P_((int argc, char **argv));
@@ -15,7 +20,7 @@ int file_exist P_((char *file_name));
 void change_file_suffix P_((char *old_file, char *file_name, int type));
 
 /* fconv.c */
-int convert P_((char *inf, char *outf, int intype, int outype));
+void convert P_((char *inf, char *outf, int intype, int outype));
 void init P_((void));
 void init_seq_data P_((void));
 
@@ -24,7 +29,7 @@ void init_gm_data P_((void));
 void genbank_to_macke P_((char *inf, char *outf));
 int gtom P_((void));
 void gtom_remarks P_((void));
-void gtom_copy_remark P_((char *string, char *key, int *remnum));
+void gtom_copy_remark P_((char *string, const char *key, int *remnum));
 char *genbank_get_strain P_((void));
 char *genbank_get_subspecies P_((void));
 void correct_subspecies P_((char *subspecies));
@@ -52,17 +57,17 @@ char *genbank_one_entry_in P_((char **datastring, char *line, FILE *fp));
 char *genbank_one_comment_entry P_((char **datastring, char *line, int start_index, FILE *fp));
 char *genbank_source P_((char *line, FILE *fp));
 char *genbank_reference P_((char *line, FILE *fp));
-char *genbank_comments P_((char *line, FILE *fp));
+const char *genbank_comments P_((char *line, FILE *fp));
 char *genbank_origin P_((char *line, FILE *fp));
 char *genbank_skip_unidentified P_((char *line, FILE *fp, int blank_num));
 void genbank_verify_accession P_((void));
 void genbank_verify_keywords P_((void));
 char genbank_in_locus P_((FILE *fp));
 void genbank_out P_((FILE *fp));
-void genbank_out_one_entry P_((FILE *fp, char *string, char *key, int flag, char *patterns, int period));
-void genbank_out_one_comment P_((FILE *fp, char *string, char *key, int skindent, int cnindent));
-void genbank_print_lines P_((FILE *fp, char *string, int flag, char *separators));
-void genbank_print_comment P_((FILE *fp, char *key, char *string, int offset, int indent));
+void genbank_out_one_entry P_((FILE *fp, char *string, const char *key, int flag, const char *patterns, int period));
+void genbank_out_one_comment P_((FILE *fp, char *string, const char *key, int skindent, int cnindent));
+void genbank_print_lines P_((FILE *fp, char *string, int flag, const char *separators));
+void genbank_print_comment P_((FILE *fp, const char *key, char *string, int offset, int indent));
 void genbank_out_origin P_((FILE *fp));
 void genbank_to_genbank P_((char *inf, char *outf));
 void init_reference P_((Reference *ref, int flag));
@@ -70,8 +75,8 @@ void init_reference P_((Reference *ref, int flag));
 /* macke.c */
 void init_macke P_((void));
 char macke_in P_((FILE *fp1, FILE *fp2, FILE *fp3));
-char *macke_one_entry_in P_((FILE *fp, char *key, char *oldname, char **var, char *line, int index));
-char *macke_continue_line P_((char *key, char *oldname, char **var, char *line, FILE *fp));
+char *macke_one_entry_in P_((FILE *fp, const char *key, char *oldname, char **var, char *line, int index));
+char *macke_continue_line P_((const char *key, char *oldname, char **var, char *line, FILE *fp));
 char *macke_origin P_((char *key, char *line, FILE *fp));
 int macke_abbrev P_((char *line, char *key, int index));
 int macke_rem_continue_line P_((char **strings, int index));
@@ -100,28 +105,28 @@ void paup_print_line P_((char *string, char *sequence, int index, int first_line
 void paup_print_header P_((FILE *ofp));
 
 /* util.c */
-int Cmpcasestr P_((char *s1, char *s2));
-int Cmpstr P_((char *s1, char *s2));
-void Freespace P_((char **string));
-void error P_((int error_num, char *error_message));
-void warning P_((int warning_num, char *warning_message));
-char *Reallocspace P_((char *block, unsigned size));
-char *Dupstr P_((char *string));
-char *Catstr P_((char *s1, char *s2));
-int Lenstr P_((char *s1));
-void Cpystr P_((char *s1, char *s2));
+int Cmpcasestr P_((const char *s1, const char *s2));
+int Cmpstr P_((const char *s1, const char *s2));
+void Freespace P_((void *pointer));
+void error P_((int error_num, const char *error_message));
+void warning P_((int warning_num, const char *warning_message));
+char *Reallocspace P_((void *block, unsigned size));
+char *Dupstr P_((const char *string));
+char *Catstr P_((char *s1, const char *s2));
+int Lenstr P_((const char *s1));
+void Cpystr P_((char *s1, const char *s2));
 int Skip_white_space P_((char *line, int index));
 int Reach_white_space P_((char *line, int index));
 char *Fgetline P_((char *line, int linenum, FILE *fp));
 void Getstr P_((char *line, int linenum));
 void Append_char P_((char **string, int ch));
-void Append_rm_eoln P_((char **string1, char *string2));
+void Append_rm_eoln P_((char **string1, const char *string2));
 void Append_rp_eoln P_((char **string1, char *string2));
-void Append P_((char **string1, char *string2));
-int find_pattern P_((char *text, char *pattern));
+void Append P_((char **string1, const char *string2));
+int find_pattern P_((const char *text, const char *pattern));
 int not_ending_mark P_((int ch));
 int last_word P_((int ch));
-int is_separator P_((int ch, char *separators));
+int is_separator P_((int ch, const char *separators));
 int same_char P_((int ch1, int ch2));
 void Upper_case P_((char *string));
 int Blank_num P_((char *string));
@@ -155,9 +160,9 @@ int embl_comment_key P_((char *line, char *key));
 char *embl_one_comment_entry P_((FILE *fp, char **datastring, char *line, int start_index));
 char *embl_origin P_((char *line, FILE *fp));
 void embl_out P_((FILE *fp));
-void embl_print_lines P_((FILE *fp, char *key, char *data, int flag, char *separators));
+void embl_print_lines P_((FILE *fp, const char *key, char *data, int flag, const char *separators));
 void embl_out_comments P_((FILE *fp));
-void embl_print_comment P_((FILE *fp, char *key, char *string, int offset, int indent));
+void embl_print_comment P_((FILE *fp, const char *key, char *string, int offset, int indent));
 void embl_out_origin P_((FILE *fp));
 void embl_to_macke P_((char *inf, char *outf, int format));
 int etom P_((void));
@@ -215,6 +220,10 @@ void alma_out_gaps P_((FILE *fp));
 
 /* routines.c */
 void count_base P_((int *base_a, int *base_t, int *base_g, int *base_c, int *base_other));
-void replace_entry P_((char **string1, char *string2));
+void replace_entry P_((char **string1, const char *string2));
+
+#ifdef __cplusplus
+}
+#endif
 
 #undef P_
