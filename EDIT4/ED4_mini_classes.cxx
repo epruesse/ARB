@@ -1018,9 +1018,6 @@ void ED4_char_table::sub_and_add(const char *old_string, const char *new_string,
 
             }
             else if (o!=n) {
-                int correct_me; // hier offenbahrt sich ein Fehler (bei edit consensus)
-                // wahrscheinlich funktioniert beim Aufbau des Consensustabelle etwas nicht!
-
                 table(o).dec_short(i);
                 table(n).inc_short(i);
 
