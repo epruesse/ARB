@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash 
 
 # --------------------------------------------------------------------------------
 # configuration:
@@ -37,7 +37,7 @@ usage() {
     echo "Usage: update_probe_server <db> <tree>"
     echo "where.."
     echo "  <db>   = name of database (has to be in $SOURCE_DIR)"
-    echo "  <tree> = name of tree to provide"
+    echo "  <tree> = name of tree to provide ('DEFAULT' to use last selected tree)"
     echo ""
 }
 
