@@ -62,7 +62,7 @@ char *GBS_string_eval P_((const char *insource, const char *icommand, GBDATA *gb
 char *GBS_eval_env P_((const char *p));
 char *GBS_ptserver_id_to_choice P_((int i));
 char *GBS_read_arb_tcp P_((const char *env));
-char *GBS_find_lib_file P_((const char *filename, const char *libprefix));
+char *GBS_find_lib_file P_((const char *filename, const char *libprefix, int warn_when_not_found));
 char **GBS_read_dir P_((const char *dir, const char *filter));
 GB_ERROR GBS_free_names P_((char **names));
 long GBS_gcgchecksum P_((const char *seq));
@@ -71,7 +71,7 @@ long GBS_checksum P_((const char *seq, int ignore_case, const char *exclude));
 long GB_merge_sort_strcmp P_((void *v0, void *v1, char *not_used));
 char *GBS_extract_words P_((const char *source, const char *chars, float minlen, GB_BOOL sort_output));
 int GBS_do_core P_((void));
-NOT4PERL void GB_install_error_handler P_((gb_error_handler_type aw_message));
+NOT4PERL void GB_install_error_handler P_((gb_error_handler_type aw_message_handler));
 void GB_internal_error P_((const char *templat, ...)) __attribute__((format(printf, 1, 2)));
 void GB_warning P_((const char *templat, ...)) __attribute__((format(printf, 1, 2)));
 NOT4PERL void GB_install_warning P_((gb_warning_func_type warn));
