@@ -3781,6 +3781,8 @@ void AW_window_menu_modes_opengl::init( AW_root *root_in, const char *wid, const
     XtSetArg(args[n], GLwNrgba, True); n++;
     XtSetArg(args[n], GLwNallocateBackground, True); n++;
     XtSetArg(args[n], GLwNdoublebuffer, True); n++;
+    XtSetArg(args[n], GLwNdepthSize, True); n++;
+    XtSetArg(args[n], GLwNstencilSize, True); n++;
 //    XtSetArg(args[n], GLwNredSize, 4); n++; printf("***************** args\n");
 //    XtSetArg(args[n], GLwNgreenSize, 4); n++; printf("***************** args\n");
 //    XtSetArg(args[n], GLwNblueSize, 4); n++; printf("***************** args\n");
