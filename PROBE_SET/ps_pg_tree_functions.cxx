@@ -5,7 +5,7 @@
 #include "ps_defs.hxx"
 #endif
 
-#ifndef arbdb_h_included
+#ifndef ARBDB_H
 #include <arbdb.h>
 #endif
 

@@ -1,4 +1,4 @@
-#ifdef arbdb_h_included
+#ifdef ARBDB_H
 #error Please do not include "arbdb.h" yourself when also including "adlocal.h"
 #endif
 
@@ -547,7 +547,7 @@ struct gb_scandir {
 #define GBCM_SERVER_FAULT   1
 #define GBCM_SERVER_OK      0
 
-#ifndef arbdb_h_included
+#ifndef ARBDB_H
 # include "arbdb.h"
 #endif
 

@@ -1,7 +1,7 @@
 #ifndef GEN_HXX
 #define GEN_HXX
 
-#ifndef arbdb_h_included
+#ifndef ARBDB_H
 #include <arbdb.h>
 #endif
 #include <aw_window.hxx>
