@@ -853,8 +853,11 @@ static void nt_auto_count_marked_species(GBDATA*, int* cl_aww, GB_CB_TYPE ) {
 
 //--------------------------------------------------------------------------------------------------
 
-void NT_calc_sequence_quality(AW_window *, AW_CL, AW_CL) {
-    GB_ERROR error = SQ_calc_seq_quality(gb_main);
+void NT_calc_sequence_quality(AW_window *aww, AW_CL, AW_CL) {
+    //Jürgen
+    const char *treename = aww->get_root()->awar("tmp/nt/arbdb/optimize_tree_name")->read_string();
+
+    GB_ERROR error = SQ_calc_seq_quality(gb_main, treename);
     if (error) aw_message(error);
 }
 
@@ -1106,7 +1109,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("seq_quality", "Calc Sequence Quality",    "",  "seq_quality.hlp",   AWM_EXP,  NT_calc_sequence_quality,        0, 0);
 #endif //
 
-            AWMIMT("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",      AWM_EXP,  AW_POPUP, (AW_CL)create_alignment_window,        0             );
+	    AWMIMT("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",      AWM_EXP,  AW_POPUP, (AW_CL)create_alignment_window,        0             );
             AWMIMT("seq_quality", "Check Sequence Quality",   "Q", "check_quality.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)st_create_quality_check_window, (AW_CL)gb_main);
             AWMIMT("ins_del_col", "Insert/Delete Column",     "I", "insdelchar.hlp",    AWM_SEQ2, AW_POPUP, (AW_CL)create_insertchar_window,       0             );
             SEP________________________SEP();
