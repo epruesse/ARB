@@ -1565,7 +1565,7 @@ GB_ERROR AP_tree::remove_leafs(GBDATA *gb_main,int awt_remove_type)
         }
         if (error) break;
     }
-    delete list;
+    delete [] list;
 
     return error;
 }

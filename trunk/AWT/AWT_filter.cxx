@@ -52,7 +52,7 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
         gb_name = GB_find(gb_name,"name",0,this_level);
         char *name2 = GB_read_string(gb_name);
         aw_root->awar(cbs->def_name)->write_string(name2);
-        delete name2;
+        free(name2);
         char *_2filter = aw_root->awar(cbs->def_2filter)->read_string();
         long _2filter_len = strlen(_2filter);
 
@@ -108,10 +108,10 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
         aw_root->awar(cbs->def_len)   ->write_int(flen);	// export filter
         aw_root->awar(cbs->def_filter)->write_string(str);	// export filter
         aw_root->awar(cbs->def_source)->write_string(data);	// set display
-        delete _2filter;
-        delete str;
-        delete canc;
-        delete data;
+        free(_2filter);
+        free(str);
+        free(canc);
+        free(data);
     }
     free(to_free_target);
     free(use);

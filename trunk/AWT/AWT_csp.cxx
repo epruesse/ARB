@@ -154,7 +154,7 @@ no_helix:
 			wf = key[1];
 			freqi[wf] = GB_read_ints(gb_freq);
 		}
-		delete key;
+		free(key);
 	}
 
 	GB_UINT4 *minmut = 0;
@@ -212,16 +212,16 @@ no_helix:
 		if (ttratio[j] > 5.0) ttratio[j] = 5.0;
 		j++;
 	}
-					//****** normalize rates 
+					//****** normalize rates
 	double sum_rates = 0;
 	for (i=0;i<seq_len;i++) sum_rates += rates[i];
 	sum_rates/=seq_len;
 	for (i=0;i<seq_len;i++) rates[i]/= sum_rates;
 
-	delete transver;
-	delete minmut;
-	for (i=0;i<256;i++) delete freqi[i];
-	delete sai_name;
+	free(transver);
+	free(minmut);
+	for (i=0;i<256;i++) free(freqi[i]);
+	free(sai_name);
 
 	return error;
 }

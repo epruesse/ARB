@@ -168,7 +168,7 @@ void ST_sequence_ml::sequence_change(){
 }
 
 ST_sequence_ml::~ST_sequence_ml(){
-    delete sequence;
+    delete [] sequence;
     delete color_out;
     delete color_out_valid_till;
 
@@ -329,13 +329,13 @@ ST_ML::ST_ML(GBDATA *gb_maini) {
 
 ST_ML::~ST_ML(){
     delete tree_root->tree; tree_root->tree = 0;
-    delete alignment_name;
+    free(alignment_name);
     delete tree_root;
     if (hash_2_ap_tree) GBS_free_hash(hash_2_ap_tree);
     delete not_valid;
-    delete base_frequencies;
-    delete inv_base_frequencies;
-    delete rate_matrizes;
+    delete [] base_frequencies;
+    delete [] inv_base_frequencies;
+    delete [] rate_matrizes;
     if (!awt_csp){
         delete rates;
         delete ttratio;
