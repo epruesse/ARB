@@ -370,7 +370,7 @@ NT_start_editor_on_old_configuration(AW_root *awr){
 
 GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_name, int use_species_aside){
 	GBT_TREE *tree = *ptree;
-	char *to_free = 0;
+	char     *to_free = 0;
 
 	if (!conf_name) conf_name = to_free = aw_input("Enter Name of Config.",0);
 	if (!conf_name) return GB_export_error("no config name");

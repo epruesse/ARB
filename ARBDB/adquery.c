@@ -29,7 +29,7 @@ GBDATA *GB_find_sub_by_quark(GBDATA *father, int key_quark, const char *val, GBD
     if (after) index = (int)after->index+1; else index = 0;
 
     for (	; index < end; index++) {
-		if ( (key_quark<0) || ((int)header[index].flags.key_quark  == key_quark) ) 
+		if ( (key_quark<0) || ((int)header[index].flags.key_quark  == key_quark) )
 		{
 			if ( (int)header[index].flags.changed >= gb_deleted) continue;
 			if (!(gb=GB_HEADER_LIST_GBD(header[index])))
@@ -93,12 +93,12 @@ GBDATA *GB_find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_key_qu
 			return res;
 		}
     }
-    if (	val && 
-			(ifs=GBCONTAINER_IFS(gbf))!=NULL && 
-			(!strchr(val, '*')) && 
-			(!strchr(val, '?'))) 
+    if (	val &&
+			(ifs=GBCONTAINER_IFS(gbf))!=NULL &&
+			(!strchr(val, '*')) &&
+			(!strchr(val, '?')))
     {
-		for (; ifs; ifs = GB_INDEX_FILES_NEXT(ifs)) 
+		for (; ifs; ifs = GB_INDEX_FILES_NEXT(ifs))
 		{
 			if (ifs->key != sub_key_quark)
 				continue;
@@ -111,18 +111,18 @@ GBDATA *GB_find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_key_qu
     if (after) 	gb = after;
     else		gb = NULL;
 
-    for (	; index < end; index++) 
+    for (	; index < end; index++)
     {
-		if ( key_quark<0 || (int)header[index].flags.key_quark == key_quark ) 
+		if ( key_quark<0 || (int)header[index].flags.key_quark == key_quark )
 		{
 			GBDATA *gbn = GB_HEADER_LIST_GBD(header[index]);
 
 			if ( (int)header[index].flags.changed >= gb_deleted) continue;
 			if (!gbn)
 			{
-				if (!Main->local_mode) 
+				if (!Main->local_mode)
 				{
-					if (gb) 
+					if (gb)
 					{
 						res = GBCMC_find(gb,key,val,
 										 (enum gb_search_types)(down_level|search_next));
@@ -163,7 +163,7 @@ GBDATA *GB_find(GBDATA *gbd,const char *key,const char *str,long /*enum gb_searc
 			gbs &= ~search_next;
 		}
     }else{
-		if (gbs & search_next) 
+		if (gbs & search_next)
 		{
 			after = gbd;
 			gbc = GB_FATHER(gbd);
@@ -261,7 +261,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, long /*enum gb_search_enum*/ cr
        if create != 0 than create the keys
        force types if ! intern
     */
-    
+
     char            *s1, *s2;
     GBDATA          *gbp, *gbsp;
     int		len;
@@ -269,7 +269,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, long /*enum gb_search_enum*/ cr
     char	buffer[GB_PATH_MAX];
 
     /*fprintf(stderr, "gb_search(%p, %s, %li, %i)\n", gbd, str, create, internflag);*/
-    
+
     GB_TEST_TRANSACTION(gbd);
     if (!str) {
 		return GB_find(gbd,0,0,down_level);
@@ -277,7 +277,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, long /*enum gb_search_enum*/ cr
     if (*str == '/') {
 		gbd = GB_get_root(gbd);
 		str++;
-    } 
+    }
 
 	if (!gb_first_non_key_character(str)) {
 		gbsp = GB_find(gbd,str,0,down_level);
@@ -297,7 +297,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, long /*enum gb_search_enum*/ cr
 				if (create == GB_CREATE_CONTAINER) {
 					gbsp = GB_create_container(gbd,str);
 				}else{
-					gbsp = gb_create(gbd,str,(GB_TYPES)create); 
+					gbsp = gb_create(gbd,str,(GB_TYPES)create);
 				}
 			}
 			if (!gbsp) GB_print_error();
@@ -312,10 +312,10 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, long /*enum gb_search_enum*/ cr
 		}
 		GB_MEMCPY(buffer,str,len);
 	}
-	
+
 	gbp = gbd;
 	for ( s1 = buffer;s1; s1 = s2) {
-	    
+
 		s2 = gb_first_non_key_character(s1);
 		if (s2) {
 			seperator = *s2;
@@ -347,7 +347,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, long /*enum gb_search_enum*/ cr
 				if (!gbsp) return 0; /* cannot resolve link  */
 			}
 			while (gbsp && create )    {
-				if (s2){ /* non terminal */		    
+				if (s2){ /* non terminal */
 					if (GB_DB == GB_TYPE(gbsp)) break;
 				}else{	/* terminal */
 					if ( create == GB_TYPE(gbsp)) break;
@@ -381,7 +381,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, long /*enum gb_search_enum*/ cr
 					if (create == GB_STRING) {   GB_write_string(gbsp,"");}
 				}
 			}
-			
+
 			if (!gbsp) return 0;
 		}
 		gbp = gbsp;
@@ -406,8 +406,8 @@ GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex)
     int end = gbc->d.nheader;
     struct gb_header_list_struct *header = GB_DATA_LIST_HEADER(gbc->d);
 
-    for (index = firstindex; index<end; index++) 
-    {		
+    for (index = firstindex; index<end; index++)
+    {
 		GBDATA *gb;
 
 		if ( ! (userbit & header[index].flags.flags) ) continue;
@@ -428,7 +428,7 @@ GBDATA *GB_search_last_son(GBDATA *gbd){
     int index;
     int end = gbc->d.nheader;
     GBDATA *gb;
-    struct gb_header_list_struct *header = GB_DATA_LIST_HEADER(gbc->d);   
+    struct gb_header_list_struct *header = GB_DATA_LIST_HEADER(gbc->d);
     for (index = end-1; index>=0; index--){
 		if ((int)header[index].flags.changed >= gb_deleted) continue;
 		if ((gb=GB_HEADER_LIST_GBD(header[index]))==NULL)
@@ -554,11 +554,17 @@ char *gbs_search_next_seperator(const char *source,const char *seps){
 		flag = 1;
 		memset(tab,0,256);
     }
-    for (p = seps; (c=*p);p++) tab[c] = 1;	/* tab[spec[x]] = 1 */
+    for (p = seps; (c=*p);p++) tab[c] = 1; /* tab[seps[x]] = 1 */
     tab['('] = 1;				/* exclude () pairs */
     tab['"'] = 1;				/* exclude " pairs */
+    tab['\\'] = 1;				/* exclude \-escaped chars */
+
     for (;(c=*source);source++){
 		if (tab[c]) {
+			if (c=='\\') {
+                source++;
+                continue;
+            }
 			if (c=='(') {
 				source = gbs_search_second_bracket(source);
 				if (!source) break;
@@ -622,7 +628,20 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 		return GBS_string_eval(str,commands+1,gbd);
     }
     if (commands[0] == '/'){
-		return GBS_regreplace(str,commands,gbd);
+		char *result = GBS_regreplace(str,commands,gbd);
+        if (!result) {
+            GB_ERROR err = GB_get_error();
+
+            if (strstr(err, "no '/' found in regexpr") != 0) {
+                /* if GBS_regreplace didn't find a third '/' we use GBS_regmatch: */
+                char *found;
+                GB_clear_error();
+
+                found  = GBS_regmatch(str, commands);
+                result = found ? found : GB_STRDUP("");
+            }
+        }
+        return result;
     }
 
     /*********************** init ********************/
@@ -668,7 +687,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     memset( (char *)orig,0,sizeof(GBL)*GBL_MAX_ARGUMENTS);
     memset( (char *)in,0,sizeof(GBL)*GBL_MAX_ARGUMENTS);
     memset( (char *)out,0,sizeof(GBL)*GBL_MAX_ARGUMENTS);
-	
+
     if (strmalloc) {
 		orig[0].str = (char *)str;
     }else{
@@ -726,7 +745,13 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 								int len2;
 								p1++;
 								len2 = strlen(p1)-1;
-								p1[len2] = 0;
+
+                                if (p1[len2] != '\"')  {
+                                    error = "Missing '\"'";
+                                }
+                                else {
+                                    p1[len2] = 0;
+                                }
 							}
 							in[argcparam++].str = GB_STRDUP(p1);
 						}
@@ -752,7 +777,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 						error = command(gbd,s1,argcinput,orig,argcparam,in, &argcout, &out);
 					}
 				}
-	
+
 				for (i=0;i<argcparam;i++) {		/* free intermediate arguments */
 					if (in[i].str) free(in[i].str);
 				}
@@ -775,7 +800,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 				argcinput = argcout;
 				argcout = 0;
 			}
-		
+
 		}
     }
     for (i=0;i<argcinput;i++) {

@@ -55,17 +55,35 @@ GBDATA* GEN_next_gene(GBDATA *gb_gene);
 // pseudo gene-species:
 
 bool GEN_is_pseudo_gene_species(GBDATA *gb_species);
+bool GEN_is_organism(GBDATA *gb_species);
 
 const char *GEN_origin_organism(GBDATA *gb_pseudo);
 const char *GEN_origin_gene(GBDATA *gb_pseudo);
 GBDATA     *GEN_find_origin_organism(GBDATA *gb_pseudo);
 GBDATA     *GEN_find_origin_gene(GBDATA *gb_pseudo);
 
+GB_ERROR GEN_organism_not_found(GBDATA *gb_pseudo);
+
+// @@@ FIXME: missing: GEN_gene_not_found (like GEN_organism_not_found)
+
 GBDATA *GEN_find_pseudo(GBDATA *gb_organism, GBDATA *gb_gene);
 
 GBDATA* GEN_first_pseudo_species(GBDATA *gb_main);
 GBDATA* GEN_first_pseudo_species_rel_species_data(GBDATA *gb_species_data);
 GBDATA* GEN_next_pseudo_species(GBDATA *gb_species);
+
+GBDATA *GEN_first_pseudo_species(GBDATA *gb_main);
+GBDATA *GEN_first_pseudo_species_rel_species_data(GBDATA *gb_species_data);
+GBDATA *GEN_next_pseudo_species(GBDATA *gb_species);
+
+GBDATA *GEN_first_marked_pseudo_species(GBDATA *gb_main);
+GBDATA *GEN_next_marked_pseudo_species(GBDATA *gb_species);
+
+GBDATA *GEN_first_organism(GBDATA *gb_main);
+GBDATA *GEN_next_organism(GBDATA *gb_organism);
+
+GBDATA *GEN_first_marked_organism(GBDATA *gb_main);
+GBDATA *GEN_next_marked_organism(GBDATA *gb_organism);
 
 // --------------------------------------------------------------------------------
 // toolkit:

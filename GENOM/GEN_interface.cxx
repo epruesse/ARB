@@ -7,6 +7,7 @@
 #include <probe_design.hxx>
 #include <../NTREE/ad_spec.hxx>
 
+
 #ifndef GEN_LOCAL_HXX
 #include "GEN_local.hxx"
 #endif
@@ -20,6 +21,9 @@
 
 // --------------------------------------------------------------------------------
 
+//  --------------------------------------------------------------------------------------------------
+//      static void gen_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name)
+//  --------------------------------------------------------------------------------------------------
 static void gen_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name) {
     char *name  = strdup(item_name);
     char *slash = strchr(name, '/');
@@ -37,6 +41,9 @@ static void gen_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *i
     free(name);
 }
 
+//  ------------------------------------------------------------------------------------------------------
+//      static char *gen_gene_result_name(GBDATA */*gb_main*/, AW_root */*aw_root*/, GBDATA *gb_gene)
+//  ------------------------------------------------------------------------------------------------------
 static char *gen_gene_result_name(GBDATA */*gb_main*/, AW_root */*aw_root*/, GBDATA *gb_gene) {
     GBDATA *gb_name = GB_find(gb_gene, "name", 0, down_level);
     if (!gb_name) return 0;     // gene w/o name -> skip
@@ -59,20 +66,63 @@ static char *gen_gene_result_name(GBDATA */*gb_main*/, AW_root */*aw_root*/, GBD
     return result;
 }
 
+
+
+static char *old_species_marks = 0; // configuration storing marked species
+
+//  -----------------------------------------------------------------------------
+//      static GB_ERROR mark_organisms(GBDATA *gb_species, int *client_data)
+//  -----------------------------------------------------------------------------
+static GB_ERROR mark_organisms(GBDATA *gb_species, int *client_data) {
+    AWUSE(client_data);
+    GB_ERROR error = 0;
+
+    if (GEN_is_pseudo_gene_species(gb_species)) {
+        GBDATA *gb_organism = GEN_find_origin_organism(gb_species);
+        if (gb_organism) {
+            GB_write_flag(gb_organism, 1);
+        }
+        else {
+            error = GEN_organism_not_found(gb_species);
+        }
+    }
+    else if (GEN_is_organism(gb_species)) {
+        GB_write_flag(gb_species, 1);
+    }
+
+    return error;
+}
+
 //  ---------------------------------------------------------------------------------------------------------
 //      static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range)
 //  ---------------------------------------------------------------------------------------------------------
 static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range) {
-    GBDATA *gb_species = 0;
+    GBDATA   *gb_species = 0;
+    GB_ERROR  error      = 0;
+
     switch (range) {
         case AWT_QUERY_CURRENT_SPECIES: {
-            char *species_name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
+            char *species_name = aw_root->awar(AWAR_ORGANISM_NAME)->read_string();
             gb_species         = GBT_find_species(gb_main, species_name);
             free(species_name);
             break;
         }
         case AWT_QUERY_MARKED_SPECIES: {
-            gb_species = GBT_first_marked_species(gb_main);
+            GBDATA *gb_organism = GEN_first_marked_organism(gb_main);
+            GBDATA *gb_pseudo   = GEN_first_marked_pseudo_species(gb_main);
+
+            gb_assert(old_species_marks == 0); // this occurs in case of recursive calls (not possible)
+
+            if (gb_pseudo) {    // there are marked pseudo-species..
+                old_species_marks = GBT_store_marked_species(gb_main, 1); // store and unmark marked species
+
+                error                  = GBT_with_stored_species(gb_main, old_species_marks, mark_organisms, 0); // mark organisms related with stored
+                if (!error) gb_species = GEN_first_marked_organism(gb_main);
+            }
+            else {
+                gb_species = gb_organism;
+            }
+
             break;
         }
         case AWT_QUERY_ALL_SPECIES: {
@@ -85,6 +135,7 @@ static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QU
         }
     }
 
+    if (error) GB_export_error(error);
     return gb_species ? GEN_get_gene_data(gb_species) : 0;
 }
 //  -------------------------------------------------------------------------------------------
@@ -98,7 +149,14 @@ static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE rang
         }
         case AWT_QUERY_MARKED_SPECIES: {
             GBDATA *gb_last_species = GB_get_father(gb_gene_data);
-            gb_species              = GBT_next_marked_species(gb_last_species);
+            gb_species              = GEN_next_marked_organism(gb_last_species);
+
+            if (!gb_species && old_species_marks) { // got all -> clean up
+                GBT_restore_marked_species(gb_main, old_species_marks);
+                free(old_species_marks);
+                old_species_marks = 0;
+            }
+
             break;
         }
         case AWT_QUERY_ALL_SPECIES: {

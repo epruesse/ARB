@@ -1261,9 +1261,9 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
     if (awtqs->where_pos_fig) {
 		aws->at(awtqs->where_pos_fig);
 		aws->create_toggle_field(cbs->awar_where,"","");
-		aws->insert_toggle("of current species","C",(int)AWT_QUERY_CURRENT_SPECIES);
-		aws->insert_toggle("of marked species","M",(int)AWT_QUERY_MARKED_SPECIES);
-		aws->insert_toggle("of all species","A",(int)AWT_QUERY_ALL_SPECIES);
+		aws->insert_toggle("of current organism","C",(int)AWT_QUERY_CURRENT_SPECIES);
+		aws->insert_toggle("of marked organisms","M",(int)AWT_QUERY_MARKED_SPECIES);
+		aws->insert_toggle("of all organisms","A",(int)AWT_QUERY_ALL_SPECIES);
 		aws->update_toggle_field();
 
     }

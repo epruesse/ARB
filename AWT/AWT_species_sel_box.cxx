@@ -577,49 +577,72 @@ void awt_scanner_scan_rek(GBDATA *gbd,struct adawcbstruct *cbs,int deep, AW_sele
 
 void awt_scanner_scan_list(GBDATA *dummy, struct adawcbstruct *cbs)
 {
-    char buffer[256];memset(buffer,0,256);
-    int rest = 255;
-    char *p;
-    GBDATA *gb_key_data;
-    gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
+#define INFO_WIDTH 1000
+refresh_again:
+    char       buffer[INFO_WIDTH+1];
+    memset(buffer,0,INFO_WIDTH+1);
+    static int last_max_name_width;
+    int        max_name_width      = 0;
+
+    if (last_max_name_width == 0) last_max_name_width = 15;
+
     AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
-    GBDATA *gb_key;
-    GBDATA *gb_key_name;
-    GBDATA *gb_key_type;
-    for (	gb_key = GB_find(gb_key_data,CHANGEKEY,0,down_level);
-            gb_key;
-            gb_key = GB_find(gb_key,CHANGEKEY,0,this_level|search_next))
-    {
-        gb_key_name = GB_find(gb_key,CHANGEKEY_NAME,0,down_level);
-        gb_key_type = GB_find(gb_key,CHANGEKEY_TYPE,0,down_level);
-        if (!gb_key_name) continue;
-        p = &buffer[0];
-        rest = 250;
-        char *name = GB_read_char_pntr(gb_key_name);
-        sprintf(p,"%-15.30s%c",name,GB_TYPE_2_CHAR[GB_read_int(gb_key_type)]);
-        rest -= strlen(p); p+= strlen(p);
-        GBDATA *gbd = GB_search(cbs->gb_user,name,GB_FIND);
-        if (gbd) {
-            *(p++) = GB_read_security_write(gbd)+'0';
-            *(p++) = ':';
-            *(p++) = ' ';
-            *p = 0;
-            char *data = GB_read_as_string(gbd);
-            int ssize;
-            if (data){
-                ssize = strlen(data);
-                if (ssize > rest) ssize = rest;
-                memcpy(p,data,ssize);
-                p[ssize] = 0;
-                delete data;
+
+    GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
+
+    for (int existing = 1; existing >= 0; --existing) {
+        for (GBDATA *gb_key = GB_find(gb_key_data,CHANGEKEY,0,down_level);
+             gb_key;
+             gb_key = GB_find(gb_key,CHANGEKEY,0,this_level|search_next))
+        {
+            GBDATA *gb_key_name = GB_find(gb_key,CHANGEKEY_NAME,0,down_level);
+            if (!gb_key_name) continue;
+            GBDATA *gb_key_type = GB_find(gb_key,CHANGEKEY_TYPE,0,down_level);
+
+            const char *name = GB_read_char_pntr(gb_key_name);
+            GBDATA     *gbd  = GB_search(cbs->gb_user,name,GB_FIND);
+
+            if ((!existing) == (!gbd)) { // first print only existing; then non-existing entries
+                char *p      = &buffer[0];
+                int   rest   = INFO_WIDTH;
+                int   len    = sprintf(p,"%-*s %c", last_max_name_width, name, GB_TYPE_2_CHAR[GB_read_int(gb_key_type)]);
+
+                rest -= len;
+                p    += len;
+
+                int name_width = strlen(name);
+                if (name_width>max_name_width) max_name_width = name_width;
+
+                if (gbd) {      // existing entry
+                    *(p++)     = GB_read_security_write(gbd)+'0';
+                    *(p++)     = ':';
+                    *(p++)     = ' ';
+                    *p         = 0;
+                    char *data = GB_read_as_string(gbd);
+                    int   ssize;
+                    if (data){
+                        ssize = strlen(data);
+                        if (ssize > rest) ssize = rest;
+                        memcpy(p,data,ssize);
+                        p[ssize] = 0;
+                        delete data;
+                    }
+                    cbs->aws->insert_selection( cbs->id, buffer, (long)gbd );
+                }
+                else { // non-existing entry
+                    p[0]=' '; p[1] = ':'; p[2] = 0;
+                    cbs->aws->insert_selection( cbs->id, buffer, (long)gb_key );
+                }
             }
-            cbs->aws->insert_selection( cbs->id, buffer, (long)gbd );
-        }else{
-            p[0]=' '; p[1] = ':'; p[2] = 0;
-            cbs->aws->insert_selection( cbs->id, buffer, (long)gb_key );
         }
     }
+
+    if (last_max_name_width <= max_name_width) {
+        last_max_name_width = max_name_width;
+        goto refresh_again;
+    }
+#undef INFO_WIDTH
 }
 
 void awt_scanner_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_CB_TYPE gbtype)

@@ -191,6 +191,11 @@ GB_ERROR GB_get_error()
     return GB_error_buffer;
 }
 
+void GB_clear_error() {         /* clears the error buffer */
+    free(GB_error_buffer);
+    GB_error_buffer = 0;
+}
+
 /* -------------------------------------------------------------------------------- */
 
 /* GB_CSTR GB_strf(const char *templat, ...)  */
@@ -303,10 +308,8 @@ GB_ERROR GB_check_key(const char *key)
 	long	len;
 	if (!key) return GB_export_error("Empty key is not allowed");
 	len = strlen(key);
-	if (len>GB_KEY_LEN_MAX) return
-                                GB_export_error("Invalid key '%s': too long",key);
-	if (len < GB_KEY_LEN_MIN) return
-                                  GB_export_error("Invalid key '%s': too short",key);
+	if (len>GB_KEY_LEN_MAX) return GB_export_error("Invalid key '%s': too long",key);
+	if (len < GB_KEY_LEN_MIN) return GB_export_error("Invalid key '%s': too short",key);
 	for (;(c=key[0]);key++){
 		if ( (c>='a') && (c<='z')) continue;
 		if ( (c>='A') && (c<='Z')) continue;
@@ -321,13 +324,13 @@ GB_ERROR GB_check_link_name(const char *key)
      /* test whether all characters are letters or numbers */
 {
 	register char c;
-	long	len;
+	long	      len;
+
 	if (!key) return GB_export_error("Empty key is not allowed");
 	len = strlen(key);
-	if (len>GB_KEY_LEN_MAX) return
-                                GB_export_error("Invalid key '%s': too long",key);
-	if (len < 1) return
-                     GB_export_error("Invalid key '%s': too short",key);
+	if (len>GB_KEY_LEN_MAX) return GB_export_error("Invalid key '%s': too long",key);
+	if (len < 1) return GB_export_error("Invalid key '%s': too short",key);
+
 	for (;(c=key[0]);key++){
 		if ( (c>='a') && (c<='z')) continue;
 		if ( (c>='A') && (c<='Z')) continue;
@@ -621,34 +624,75 @@ char *GBS_remove_escape(char *com)	/* \ is the escape charakter
 
 struct GBS_strstruct {
     char *GBS_strcat_data;
-    long GBS_strcat_data_size;
-    long GBS_strcat_pos;
+    long  GBS_strcat_data_size;
+    long  GBS_strcat_pos;
 };
 
-void *GBS_stropen(long init_size)	{		/* opens a memory file */
+static struct GBS_strstruct *last_used = 0;
+
+void *GBS_stropen(long init_size)	{ /* opens a memory file */
     struct GBS_strstruct *strstr;
-    strstr = (struct GBS_strstruct *)malloc(sizeof(struct GBS_strstruct));
-    strstr->GBS_strcat_data_size = init_size;
-    strstr->GBS_strcat_pos = 0;
-    strstr->GBS_strcat_data = (char *)malloc((size_t)strstr->GBS_strcat_data_size);
+
+    if (last_used && last_used->GBS_strcat_data_size >= init_size) {
+        strstr    = last_used;
+        last_used = 0;
+    }
+    else {
+#if defined(DEBUG) && 0
+        printf("allocating new GBS_strstruct (size = %li)\n", init_size);
+#endif /* DEBUG */
+        strstr                       = (struct GBS_strstruct *)malloc(sizeof(struct GBS_strstruct));
+        strstr->GBS_strcat_data_size = init_size;
+        strstr->GBS_strcat_data      = (char *)malloc((size_t)strstr->GBS_strcat_data_size);
+    }
+
+    strstr->GBS_strcat_pos     = 0;
     strstr->GBS_strcat_data[0] = 0;
+
     return (void *)strstr;
 }
 
-char *GBS_strclose(void *strstruct, int optimize)	/* returns the memory file */
-     /* if optimize == 1 then dont waste memory
-				if optimize == 0 than fast */
+char *GBS_strclose(void *strstruct, int optimize) /* returns the memory file */
+     /* if optimize == 1 then dont waste memory; if optimize == 0 than fast */
+     /* Note: optimize is now ignored due to speed-optimization */
 {
-    char *str;
     struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
-    if (optimize) {
-        str = GB_STRDUP(strstr->GBS_strcat_data);
+    long                  length = strstr->GBS_strcat_pos;
+    char                 *str    = (char*)malloc(length+1);
+
+    memcpy(str, strstr->GBS_strcat_data, length+1); /* copy with 0 */
+
+    if (last_used) {
+        if (last_used->GBS_strcat_data_size < strstr->GBS_strcat_data_size) { /* last_used is smaller -> keep this */
+            struct GBS_strstruct *tmp = last_used;
+            last_used                 = strstr;
+            strstr                    = tmp;
+        }
+#if defined(DEBUG) && 0
+        printf("freeing GBS_strstruct (size = %li)\n", strstr->GBS_strcat_data_size);
+#endif /* DEBUG */
         free(strstr->GBS_strcat_data);
-    }else{
-        str = strstr->GBS_strcat_data;
+        free(strstr);
+
+        optimize = optimize; /* just use it */
     }
-    free((char *)strstr);
+    else {
+        last_used = strstr;
+    }
+
     return str;
+
+    /*     old version: */
+    /*     char                 *str; */
+    /*     struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct; */
+    /*     if (optimize) { */
+    /*         str = GB_STRDUP(strstr->GBS_strcat_data); */
+    /*         free(strstr->GBS_strcat_data); */
+    /*     }else{ */
+    /*         str = strstr->GBS_strcat_data; */
+    /*     } */
+    /*     free((char *)strstr); */
+    /*     return str; */
 }
 
 GB_CPNTR GBS_mempntr(void *strstruct)	/* returns the memory file */
@@ -672,15 +716,17 @@ void GBS_str_cut_tail(void *strstruct, int byte_count){
 }
 
 void gbs_strensure_mem(void *strstruct,long len){
-    struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
+    struct GBS_strstruct *strstr     = (struct GBS_strstruct *)strstruct;
     if (strstr->GBS_strcat_pos + len + 2 >= strstr->GBS_strcat_data_size) {
         strstr->GBS_strcat_data_size = (strstr->GBS_strcat_pos+len+2)*3/2;
-        strstr->GBS_strcat_data = (char *)realloc((MALLOC_T)strstr->GBS_strcat_data,(size_t)strstr->GBS_strcat_data_size);
+        strstr->GBS_strcat_data      = (char *)realloc((MALLOC_T)strstr->GBS_strcat_data,(size_t)strstr->GBS_strcat_data_size);
+#if defined(DEBUG) && 0
+        printf("re-allocated GBS_strstruct to size = %li\n", strstr->GBS_strcat_data_size);
+#endif /* DEBUG */
     }
 }
 
-void GBS_strcat(void *strstruct,const char *ptr)	/* this function adds many strings.
-                                                       first create a strstruct with gbs_open */
+void GBS_strcat(void *strstruct,const char *ptr)	/* this function adds many strings. first create a strstruct with gbs_open */
 {
     long	len;
     struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
@@ -691,8 +737,7 @@ void GBS_strcat(void *strstruct,const char *ptr)	/* this function adds many stri
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos] = 0;
 }
 
-void GBS_strncat(void *strstruct,const char *ptr,long len)	/* this function adds many strings.
-                                                               first create a strstruct with gbs_open */
+void GBS_strncat(void *strstruct,const char *ptr,long len)	/* this function adds many strings. first create a strstruct with gbs_open */
 {
     struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
     gbs_strensure_mem(strstruct,len+2);
@@ -736,15 +781,15 @@ void GBS_chrcat(void *strstruct,char ch)	/* this function adds many strings.
 void GBS_intcat(void *strstruct,long val)
 {
     char buffer[200];
-    sprintf(buffer,"%li",val);
-    GBS_strcat(strstruct,buffer);
+    long len = sprintf(buffer,"%li",val);
+    GBS_strncat(strstruct,buffer, len);
 }
 
 void GBS_floatcat(void *strstruct,double val)
 {
     char buffer[200];
-    sprintf(buffer,"%f",val);
-    GBS_strcat(strstruct,buffer);
+    long len = sprintf(buffer,"%f",val);
+    GBS_strncat(strstruct,buffer, len);
 }
 
 
@@ -1606,10 +1651,11 @@ void gbs_regerror(int en){
 /**	regexpr = '/regexpr/' */
 
 GB_CPNTR GBS_regsearch(const char *in, const char *regexprin){
-    static char expbuf[8000];
+    /* search the beginning first match */
+    static char  expbuf[8000];
     static char *regexpr = 0;
-    char *res;
-    int rl = strlen(regexprin)-2;
+    char        *res;
+    int          rl      = strlen(regexprin)-2;
     if (regexprin[0] != '/' || regexprin[rl+1] != '/') {
         GB_export_error("RegExprSyntax: '/searchterm/'");
         return 0;
@@ -1632,13 +1678,13 @@ GB_CPNTR GBS_regsearch(const char *in, const char *regexprin){
 }
 
 char *GBS_regreplace(const char *in, const char *regexprin, GBDATA *gb_species){
-    static char expbuf[8000];
-    char *regexpr;
-    char *subs;
-    void *out;
-    char *res;
-    const char *loc;
-    int rl = strlen(regexprin)-2;
+    static char  expbuf[8000];
+    char        *regexpr;
+    char        *subs;
+    void        *out;
+    char        *res;
+    const char  *loc;
+    int          rl = strlen(regexprin)-2;
     GBUSE(gb_species);
     if (regexprin[0] != '/' || regexprin[rl+1] != '/') {
         GB_export_error("RegExprSyntax: '/searchterm/replace/'");
@@ -1649,11 +1695,12 @@ char *GBS_regreplace(const char *in, const char *regexprin, GBDATA *gb_species){
     regexpr[rl] = 0;
 
     /* Search seperating '/' */
-    subs = strrchr(regexpr,'/');
+    subs                                                    = strrchr(regexpr,'/');
     while (subs && subs > regexpr && subs[-1] == '\\') subs = strrchr(subs,'/');
     if (!subs || subs == regexpr){
         free(regexpr);
-        GB_export_error("no '/' found in regexpr");
+        GB_export_error("no '/' found in regexpr"); /* dont change this error message (or change it in adquery/GB_command_interpreter too) */
+        return 0;
     }
     *(subs++) = 0;
     regerrno = 0;
@@ -1790,10 +1837,25 @@ char *GBS_regreplace(const char *in, const char *regexprin, GBDATA *gb_species){
 
 
 #endif
+
+char *GBS_regmatch(const char *in, const char *regexprin) {
+    /* returns the first match */
+    GB_CPNTR found = GBS_regsearch(in, regexprin);
+    if (found) {
+        int   length   = loc2-loc1;
+        char *result   = (char*)malloc(length+1);
+        memcpy(result, loc1, length);
+        result[length] = 0;
+
+        return result;
+    }
+    return 0;
+}
+
 GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char *tag, char *value,const char *rtag, const char *srt, const char *aci, GBDATA *gbd){
-    char *p;
+    char    *p;
     GB_HASH *sh;
-    char *to_free = 0;
+    char    *to_free = 0;
     if (rtag && GBS_string_cmp(tag,rtag,0) == 0){
         if (srt) {
             value = to_free = GBS_string_eval(value,srt,gbd);
