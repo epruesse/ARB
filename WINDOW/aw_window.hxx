@@ -329,7 +329,8 @@ public:
     void set_background(const char *colorname);
     // *** create the buttons ********
 
-	void create_button( const char *macro_name, AW_label label,const char *mnemonic = 0);// simple button; shadow only when callback
+	void create_button( const char *macro_name, AW_label label,const char *mnemonic = 0); // simple button; shadow only when callback
+	void create_autosize_button( const char *macro_name, AW_label label,const char *mnemonic = 0, unsigned xtraSpace = 1); // as above, but ignores button_length
 
 	void create_toggle( const char *awar_name);		// int 0/1	string yes/no	float undef
 	void create_toggle( const char *awar_name, const char *nobitmap,const char *yesbitmap);
