@@ -15,12 +15,14 @@
 #include "awt.hxx"
 #include "awtlocal.hxx"
 
-void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstruct *cbs)
+void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstruct *cbs, AW_BOOL sel_list)
 {
     GBDATA *gb_key_data;
     gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
     AWUSE(dummy);
-    cbs->aws->clear_selection_list(cbs->id);
+
+    if (sel_list) cbs->aws->clear_selection_list(cbs->id);
+
     GBDATA *gb_key;
     GBDATA *gb_key_name;
     for (	gb_key = GB_find(gb_key_data,CHANGEKEY,0,down_level);
@@ -32,11 +34,18 @@ void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstruct *
 
         gb_key_name = GB_find(gb_key,CHANGEKEY_NAME,0,down_level);
         if (!gb_key_name) continue;
-        char *name = GB_read_char_pntr(gb_key_name);
-        cbs->aws->insert_selection( cbs->id, name, name );
+        char *name  = GB_read_char_pntr(gb_key_name);
+        if (sel_list) {
+            cbs->aws->insert_selection( cbs->id, name, name );
+        }
+        else {
+            cbs->aws->insert_option(name, "", name);
+        }
     }
-    cbs->aws->insert_default_selection( cbs->id, "????", "----" );
-    cbs->aws->update_selection_list( cbs->id );
+
+    if (sel_list) {
+        cbs->aws->insert_default_selection( cbs->id, "????", "----" );
+    }
 }
 
 GB_ERROR awt_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name, int type, const char *keypath)
@@ -205,17 +214,32 @@ void awt_experiment_field_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_m
     awt_experiment_field_selection_list_rescan(gb_main,bitfilter);
 }
 
-AW_CL awt_create_selection_list_on_scandb(GBDATA *gb_main,AW_window *aws, const char *varname, long type_filter,
-										  const char *scan_xfig_label, const char *rescan_xfig_label,
-										  const ad_item_selector *selector)
+AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
+                                          AW_window              *aws,
+                                          const char             *varname,
+                                          long                    type_filter,
+                                          const char             *scan_xfig_label,
+                                          const char             *rescan_xfig_label,
+                                          const ad_item_selector *selector,
+                                          size_t                  columns,
+                                          size_t                  visible_rows,
+                                          AW_BOOL                 sel_list)
 {
-    AW_selection_list*	id;
-    GBDATA	*gb_key_data;
-    struct adawcbstruct *cbs;
+    AW_selection_list*   id = 0;
+    GBDATA	            *gb_key_data;
+
     GB_push_transaction(gb_main);
 
-    aws->at(scan_xfig_label);
-    id              = aws->create_selection_list(varname,0,"",20,10);
+    if (scan_xfig_label) aws->at(scan_xfig_label);
+
+    if (sel_list) {
+        id = aws->create_selection_list(varname,0,"",20,10);
+    }
+    else { // otherwise we build an option menu
+        aws->create_option_menu(varname, 0, "");
+    }
+
+    struct adawcbstruct *cbs;
     cbs             = new adawcbstruct;
     cbs->aws        = aws;
     cbs->gb_main    = gb_main;
@@ -229,7 +253,14 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA *gb_main,AW_window *aws, const 
         aws->create_button("RESCAN_DB", "RESCAN","R");
     }
 
-    awt_create_selection_list_on_scandb_cb(0,cbs);
+    awt_create_selection_list_on_scandb_cb(0,cbs, sel_list);
+
+    if (sel_list) {
+        aws->update_selection_list( id );
+    }
+    else {
+        aws->update_option_menu();
+    }
 
     gb_key_data = GB_search(gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
     GB_add_callback(gb_key_data, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_scandb_cb, (int *)cbs);
