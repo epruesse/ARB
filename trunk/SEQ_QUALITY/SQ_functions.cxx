@@ -623,7 +623,6 @@ GB_ERROR SQ_pass2_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 		    GB_write_int(gb_result2, diff_percent);
 		    //not useful without tree -> new function has to be made
 		    value = globalData->SQ_test_against_consensus(rawSequence);
-		    //printf("Value: %f ",value);
 		    pass2_counter_notree++;
 		    aw_status(double(globalcounter_notree)/pass2_counter_notree);
 		}
@@ -715,38 +714,35 @@ GB_ERROR SQ_count_nr_of_species(GBDATA *gb_main) {
 }
 
 
-SQ_GroupData *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main) {
+void SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data) {
 
     if (node->is_leaf){
-	if (!node->gb_node) {
-	    return 0;
+	if (node->gb_node) {
+	    SQ_pass1(data, gb_main, node);
 	}
-	SQ_GroupData *data = new SQ_GroupData_RNA;
-	SQ_pass1(data, gb_main, node);
-	return data;
     }
 
     else {
+	GBT_TREE *node1 = node->leftson;
+	GBT_TREE *node2 = node->rightson;
 
-	SQ_GroupData *leftData  = SQ_calc_and_apply_group_data(node->leftson, gb_main);
-	//??   SQ_GroupData *rightData = leftData->clone();
-	SQ_GroupData *rightData = SQ_calc_and_apply_group_data(node->rightson, gb_main);
-	if (!leftData) {
-	    return rightData;
+	if (node1) {
+	    SQ_GroupData *leftData  = data->clone();
+	    SQ_calc_and_apply_group_data(node1, gb_main, leftData);
+	    data->SQ_add(*leftData);
+	    delete leftData;
 	}
-	if (!rightData) {
-	    return leftData;
+	if (node2) {
+	    SQ_GroupData *rightData = data->clone();
+	    SQ_calc_and_apply_group_data(node2, gb_main, rightData);
+	    data->SQ_add(*rightData);
+	    delete rightData;
+
 	}
-
-	//add up consensi -> automatic weighting
-  	leftData->SQ_add(*leftData);
-	delete rightData;
-
 	if (node->name) {  //  group identified!
-	  SQ_pass2(leftData, gb_main, node); //muss wiederum rekursiv für alle unterseq. aufgerufen werden
+ 	  SQ_pass2(data, gb_main, node); //muss wiederum rekursiv für alle unterseq. aufgerufen werden
 	  globalcounter++;
 	  aw_status(double(globalcounter)/groupcounter);
 	}
-	return leftData;
     }
 }
