@@ -114,6 +114,10 @@ void NT_count_mark_all_cb(void *dummy, AW_CL cl_ntw)
     aw_message(buf);
 }
 
+static int nt_species_has_alignment(GBDATA *gb_species, void *cd_use) {
+    return GBT_read_sequence(gb_species, (const char*)cd_use) != 0;
+}
+
 static int nt_sequence_is_partial(GBDATA *gb_species, void *cd_partial) {
     int wanted  = (int)cd_partial;
     awt_assert(wanted == 0 || wanted == 1);
@@ -122,6 +126,9 @@ static int nt_sequence_is_partial(GBDATA *gb_species, void *cd_partial) {
     return partial == wanted;
 }
 
+#define MARK_MODE_LOWER_BITS (1|2)
+#define MARK_MODE_UPPER_BITS (4|8|16)
+
 void NT_mark_all_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
     // Bits 0 and 1 of mark_mode:
     //
@@ -129,10 +136,11 @@ void NT_mark_all_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
     // mark_mode&3 == 1 -> mark
     // mark_mode&3 == 2 -> toggle mark
     //
-    // Bits 2 and 3 of mark_mode:
+    // Bits 2 .. 4 of mark_mode:
     //
     // mark_mode&12 == 4 -> affect only full sequences
     // mark_mode&12 == 8 -> affect only partial sequences
+    // mark_mode&12 == 16 -> affect only species with data in current alignment
     // else -> affect all sequences
 {
     AWT_canvas *ntw       = (AWT_canvas*)cl_ntw;
@@ -140,15 +148,24 @@ void NT_mark_all_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
 
     GB_transaction gb_dummy(ntw->gb_main);
 
-    switch (mark_mode&12) {
+    switch (mark_mode&MARK_MODE_UPPER_BITS) {
+        case 0:                 // all sequences
+            GBT_mark_all(ntw->gb_main,mark_mode&MARK_MODE_LOWER_BITS);
+            break;
         case 4:                 // full sequences only
-            GBT_mark_all_that(ntw->gb_main,mark_mode&3, nt_sequence_is_partial, (void*)0);
+            GBT_mark_all_that(ntw->gb_main,mark_mode&MARK_MODE_LOWER_BITS, nt_sequence_is_partial, (void*)0);
             break;
         case 8:                 // partial sequences only
-            GBT_mark_all_that(ntw->gb_main,mark_mode&3, nt_sequence_is_partial, (void*)1);
+            GBT_mark_all_that(ntw->gb_main,mark_mode&MARK_MODE_LOWER_BITS, nt_sequence_is_partial, (void*)1);
             break;
-        default: // all sequences
-            GBT_mark_all(ntw->gb_main,mark_mode&3);
+        case 16: {               // species with data in alignment only
+            char *ali = GBT_get_default_alignment(ntw->gb_main);
+            if (ali) GBT_mark_all_that(ntw->gb_main, mark_mode&MARK_MODE_LOWER_BITS, nt_species_has_alignment, (void*)ali);
+            free(ali);
+            break;
+        }
+        default :
+            awt_assert(0); // illegal mode
             break;
     }
 
@@ -163,39 +180,61 @@ void NT_mark_tree_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
     GB_transaction    gb_dummy(ntw->gb_main);
 
     gtree->check_update(ntw->gb_main);
-    switch (mark_mode&12) {
+    switch (mark_mode&MARK_MODE_UPPER_BITS) {
+        case 0:                 // all sequences
+            gtree->mark_species_in_tree(gtree->tree_root, mark_mode&MARK_MODE_LOWER_BITS);
+            break;
         case 4:                 // full sequences only
-            gtree->mark_species_in_tree_that(gtree->tree_root, mark_mode&3, nt_sequence_is_partial, (void*)0);
+            gtree->mark_species_in_tree_that(gtree->tree_root, mark_mode&MARK_MODE_LOWER_BITS, nt_sequence_is_partial, (void*)0);
             break;
         case 8:                 // partial sequences only
-            gtree->mark_species_in_tree_that(gtree->tree_root, mark_mode&3, nt_sequence_is_partial, (void*)1);
+            gtree->mark_species_in_tree_that(gtree->tree_root, mark_mode&MARK_MODE_LOWER_BITS, nt_sequence_is_partial, (void*)1);
             break;
-        default: // all sequences
-            gtree->mark_species_in_tree(gtree->tree_root, mark_mode&3);
+        case 16: {               // species with data in alignment only
+            char *ali = GBT_get_default_alignment(ntw->gb_main);
+            if (ali) gtree->mark_species_in_tree_that(gtree->tree_root, mark_mode&MARK_MODE_LOWER_BITS, nt_species_has_alignment, (void*)ali);
+            free(ali);
+            break;
+        }
+        default :
+            awt_assert(0); // illegal mode
             break;
     }
     ntw->refresh();
 }
 
 struct mark_nontree_cb_data {
-    int      mark_mode_partial_bits;
+    int      mark_mode_upper_bits;
+    char    *ali;               // current alignment (only if mark_mode_upper_bits == 16)
     GB_HASH *hash;
 };
 
 static int mark_nontree_cb(GBDATA *gb_species, void *cb_data) {
-    struct mark_nontree_cb_data *data = (mark_nontree_cb_data*)cb_data;
-    const char                  *name = GBT_read_name(gb_species);
+    struct mark_nontree_cb_data *data    = (mark_nontree_cb_data*)cb_data;
+    const char                  *name    = GBT_read_name(gb_species);
+    bool                         mark_me = false;
 
     if (GBS_read_hash(data->hash, name) == (long)gb_species) { // species is not in tree!
-        if (data->mark_mode_partial_bits == 4) { // full seq only
-            return nt_sequence_is_partial(gb_species, (void*)0);
+        switch (data->mark_mode_upper_bits) {
+            case 0:             // all sequences
+                mark_me = true;
+                break;
+            case 4:             // full sequences only
+                mark_me = nt_sequence_is_partial(gb_species, (void*)0);
+                break;
+            case 8:             // partial sequences only
+                mark_me = nt_sequence_is_partial(gb_species, (void*)1);
+                break;
+            case 16:            // species with data in alignment only
+                mark_me = nt_species_has_alignment(gb_species, data->ali);
+                break;
+            default :
+                awt_assert(0); // illegal mode
+                break;
         }
-        if (data->mark_mode_partial_bits == 8) { // partial seq only
-            return nt_sequence_is_partial(gb_species, (void*)1);
-        }
-        return 1;
     }
-    return 0;
+
+    return mark_me;
 }
 
 void NT_mark_nontree_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
@@ -205,26 +244,23 @@ void NT_mark_nontree_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
     AWT_graphic_tree            *gtree     = AWT_TREE(ntw);
     GB_transaction               gb_dummy(ntw->gb_main);
     struct mark_nontree_cb_data  cd;
-    GB_HASH                     *hash      = 0;
 
-    if ((mark_mode&3) == 0) { // unmark is faster
-        hash = GBT_generate_marked_species_hash(ntw->gb_main);
-        NT_remove_species_in_tree_from_hash(gtree->tree_root, hash);
-
-        // now hash contains all marked species outside tree
-        cd.mark_mode_partial_bits = mark_mode&12;
-        cd.hash                   = hash;
-        GBT_mark_all_that(ntw->gb_main, mark_mode&3, mark_nontree_cb, (void*)&cd);
+    if ((mark_mode&MARK_MODE_LOWER_BITS) == 0) {   // unmark is much faster
+        cd.hash = GBT_generate_marked_species_hash(ntw->gb_main); // because it only hashes marked species
     }
     else {
-        hash = GBT_generate_species_hash(ntw->gb_main, 0);
-        NT_remove_species_in_tree_from_hash(gtree->tree_root, hash);
-
-        // now hash contains all species outside tree
-        cd.mark_mode_partial_bits = mark_mode&12;
-        cd.hash                   = hash;
-        GBT_mark_all_that(ntw->gb_main, mark_mode&3, mark_nontree_cb, (void*)&cd);
+        cd.hash = GBT_generate_species_hash(ntw->gb_main, 0); // otherwise we have to hash ALL species
     }
+
+    NT_remove_species_in_tree_from_hash(gtree->tree_root, cd.hash);
+
+    cd.mark_mode_upper_bits = mark_mode&MARK_MODE_UPPER_BITS;
+    cd.ali                  = cd.mark_mode_upper_bits == 16 ? GBT_get_default_alignment(ntw->gb_main) : 0;
+
+    GBT_mark_all_that(ntw->gb_main, mark_mode&MARK_MODE_LOWER_BITS, mark_nontree_cb, (void*)&cd);
+
+    free(cd.ali);
+
     ntw->refresh();
 }
 
@@ -317,16 +353,26 @@ static void nt_insert_mark_topic(AW_window_menu_modes *awm, const char *attrib, 
     char       *entry     = 0;
 
     if (attrib) {
+        bool append = attrib[0] == '-'; // if attrib starts with '-' then append (otherwise prepend)
+        if (append) ++attrib; // skip '-'
+
         label_tmp = GBS_global_string_copy("%s_%s", attrib, label_suffix);
         label     = label_tmp;
 
-        char *spaced_attrib = GBS_global_string_copy("%s ", attrib);
-        entry               = GBS_global_string_copy(entry_template, spaced_attrib);
-        free(spaced_attrib);
+        if (append) {
+            char *spaced_attrib = GBS_global_string_copy(" %s", attrib);
+            entry               = GBS_global_string_copy(entry_template, "", spaced_attrib);
+            free(spaced_attrib);
+        }
+        else {
+            char *spaced_attrib = GBS_global_string_copy("%s ", attrib);
+            entry               = GBS_global_string_copy(entry_template, spaced_attrib, "");
+            free(spaced_attrib);
+        }
     }
     else {
         label = label_suffix;
-        entry = GBS_global_string_copy(entry_template, "");
+        entry = GBS_global_string_copy(entry_template, "", "");
     }
 
     awm->insert_menu_topic(label, entry, hotkey, helpfile, AWM_ALL, cb, cl1, cl2);
@@ -337,19 +383,19 @@ static void nt_insert_mark_topic(AW_window_menu_modes *awm, const char *attrib, 
 
 static void nt_insert_mark_topics(AW_window_menu_modes *awm, AWT_canvas *ntw, int affect, const char *attrib)
 {
-    awt_assert(affect == (affect&12)); // only bits 2 and 3 are allowed
+    awt_assert(affect == (affect&MARK_MODE_UPPER_BITS)); // only bits 2 .. 4 are allowed
 
-    nt_insert_mark_topic(awm, attrib, "mark_all",            "Mark all %sSpecies",                    "M", "sp_mrk_all.hlp",    (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(1+affect));
-    nt_insert_mark_topic(awm, attrib, "unmark_all",          "Unmark all %sSpecies",                  "U", "sp_umrk_all.hlp",   (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(0+affect));
-    nt_insert_mark_topic(awm, attrib, "swap_marked",         "Invert marks of all %sSpecies",         "v", "sp_invert_mrk.hlp", (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(2+affect));
+    nt_insert_mark_topic(awm, attrib, "mark_all",            "Mark all %sSpecies%s",                    "M", "sp_mrk_all.hlp",    (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(1+affect));
+    nt_insert_mark_topic(awm, attrib, "unmark_all",          "Unmark all %sSpecies%s",                  "U", "sp_umrk_all.hlp",   (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(0+affect));
+    nt_insert_mark_topic(awm, attrib, "swap_marked",         "Invert marks of all %sSpecies%s",         "v", "sp_invert_mrk.hlp", (AW_CB)NT_mark_all_cb,     (AW_CL)ntw, (AW_CL)(2+affect));
     awm->insert_separator();
-    nt_insert_mark_topic(awm, attrib, "mark_tree",           "Mark %sSpecies in Tree",                "T", "sp_mrk_tree.hlp",   (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(1+affect));
-    nt_insert_mark_topic(awm, attrib, "unmark_tree",         "Unmark %sSpecies in Tree",              "n", "sp_umrk_tree.hlp",  (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(0+affect));
-    nt_insert_mark_topic(awm, attrib, "swap_marked_tree",    "Invert marks of %sSpecies in Tree",     "",  "sp_invert_mrk.hlp", (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(2+affect));
+    nt_insert_mark_topic(awm, attrib, "mark_tree",           "Mark %sSpecies%s in Tree",                "T", "sp_mrk_tree.hlp",   (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(1+affect));
+    nt_insert_mark_topic(awm, attrib, "unmark_tree",         "Unmark %sSpecies%s in Tree",              "n", "sp_umrk_tree.hlp",  (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(0+affect));
+    nt_insert_mark_topic(awm, attrib, "swap_marked_tree",    "Invert marks of %sSpecies%s in Tree",     "",  "sp_invert_mrk.hlp", (AW_CB)NT_mark_tree_cb,    (AW_CL)ntw, (AW_CL)(2+affect));
     awm->insert_separator();
-    nt_insert_mark_topic(awm, attrib, "mark_nontree",        "Mark %sSpecies NOT in Tree",            "",  "sp_mrk_tree.hlp",   (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(1+affect));
-    nt_insert_mark_topic(awm, attrib, "unmark_nontree",      "Unmark %sSpecies NOT in Tree",          "",  "sp_umrk_tree.hlp",  (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(0+affect));
-    nt_insert_mark_topic(awm, attrib, "swap_marked_nontree", "Invert marks of %sSpecies NOT in Tree", "",  "sp_invert_mrk.hlp", (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(2+affect));
+    nt_insert_mark_topic(awm, attrib, "mark_nontree",        "Mark %sSpecies%s NOT in Tree",            "",  "sp_mrk_tree.hlp",   (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(1+affect));
+    nt_insert_mark_topic(awm, attrib, "unmark_nontree",      "Unmark %sSpecies%s NOT in Tree",          "",  "sp_umrk_tree.hlp",  (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(0+affect));
+    nt_insert_mark_topic(awm, attrib, "swap_marked_nontree", "Invert marks of %sSpecies%s NOT in Tree", "",  "sp_invert_mrk.hlp", (AW_CB)NT_mark_nontree_cb, (AW_CL)ntw, (AW_CL)(2+affect));
 }
 
 void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw, int insert_as_submenu) {
@@ -369,6 +415,10 @@ void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw, int ins
 
         awm->insert_sub_menu(0, "Partial sequences", "P");
         nt_insert_mark_topics(awm, ntw, 8, "partial");
+        awm->close_sub_menu();
+
+        awm->insert_sub_menu(0, "Current Alignment", "A");
+        nt_insert_mark_topics(awm, ntw, 16, "-with data");
         awm->close_sub_menu();
     }
 
