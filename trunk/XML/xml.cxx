@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2000
 // Ralf Westram
-// Time-stamp: <Wed Jul/03/2002 13:55 MET Coder@ReallySoft.de>
+// Time-stamp: <Wed Jul/17/2002 00:37 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -50,6 +50,7 @@ static string encodeEntities(const string& str, bool quotedText = false) {
             case '>':  { entity = "gt"; break; }
             case '&':  { entity = "amp"; break; }
             case '\'':  { entity = "acute"; break; }
+            case char(0xb4):  { entity = "acute"; break; } // acute (forward)
 
             default :  { replace = *s; }
         }
