@@ -377,6 +377,7 @@ static const char *detect_bitmap_size(const char *pixmapname, int *width, int *h
             err = "size detection failed";
         }
 
+        free(name);
         fclose(in);
     }
     else {
@@ -392,6 +393,7 @@ static const char *detect_bitmap_size(const char *pixmapname, int *width, int *h
     printf("Bitmap '%s' has size %i / %i\n", pixmapname, *width, *height);
 #endif // DUMP_BUTTON_CREATION
 #endif // DEBUG
+    free(path);
     return err;
 }
 #undef MAX_LINE_LENGTH
