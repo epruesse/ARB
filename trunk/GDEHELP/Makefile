@@ -10,8 +10,10 @@ GENMENUS=$(MENUS:.menu=.genmenu)
 
 all: $(TARGET) help
 
+MENUS/%.genmenu : genmenu.header
+
 MENUS/%.genmenu : MENUS/%.menu
-		sed -e "s/^[ ]*//" < $< > $@
+		( cat genmenu.header; sed -e "s/^[ ]*//" ) < $< > $@
 
 $(TARGET) : $(SOURCE) $(GENMENUS)
 	-chmod a+w $(TARGET)
