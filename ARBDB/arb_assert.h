@@ -2,7 +2,7 @@
 
     File      : arb_assert.h
     Purpose   : Global assert macro
-    Time-stamp: <Fri Aug/23/2002 23:21 MET Coder@ReallySoft.de>
+    Time-stamp: <Wed Oct/09/2002 14:23 MET Coder@ReallySoft.de>
 
 
   Coded by Ralf Westram (coder@reallysoft.de) in August 2002
@@ -36,6 +36,10 @@
 # endif
 #endif
 
+#ifdef arb_assert
+#error arb_assert already defined
+#endif
+
 /* only use ONE of the following ASSERT_xxx defines : */
 
 #ifdef DEBUG
@@ -48,11 +52,11 @@
 #else
 
 /* no assert (recommended for final version!) */
-/* # define ASSERT_NONE */
+# define ASSERT_NONE
 /* assert as error in final version (allows basic debugging of NDEBUG version) */
 /* # define ASSERT_ERROR */
 /* assert as print in final version (allows basic debugging of NDEBUG version) */
-# define ASSERT_PRINT
+/* # define ASSERT_PRINT */
 
 #endif
 
@@ -83,6 +87,23 @@
 #undef ASSERT_ERROR
 #undef ASSERT_PRINT
 #undef ASSERT_NONE
+
+#ifndef arb_assert
+# error arb_assert has not been defined -- check ASSERT_xxx definitions
+#endif
+
+/* ------------------------------------------------------------ */
+/* use the following macros for parameters etc. only appearing in one version */
+
+#ifdef DEBUG
+# define IF_DEBUG(x) x
+# define IF_NDEBUG(x)
+#else
+# define IF_DEBUG(x)
+# define IF_NDEBUG(x) x
+#endif
+
+/* ------------------------------------------------------------ */
 
 #else
 #error arb_assert.h included twice

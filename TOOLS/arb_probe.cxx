@@ -55,10 +55,10 @@ int init_local_com_struct()
 
     /* @@@ use finger, date and whoami */
     if( aisc_create(pd_gl.link, PT_MAIN, pd_gl.com,
-		    MAIN_LOCS, PT_LOCS, &pd_gl.locs,
-		    LOCS_USER, user,
-		    NULL)){
-	return 1;
+                    MAIN_LOCS, PT_LOCS, &pd_gl.locs,
+                    LOCS_USER, user,
+                    NULL)){
+        return 1;
     }
     return 0;
 }
@@ -74,8 +74,8 @@ char *probe_pt_look_for_server()
     GB_ERROR error;
     error = arb_look_and_start_server(AISC_MAGIC_NUMBER,choice,0);
     if (error) {
-	aw_message((char *)error);
-	return 0;
+        aw_message((char *)error);
+        return 0;
     }
     return GBS_read_arb_tcp(choice);
 }
@@ -86,7 +86,7 @@ int probe_design_send_data(T_PT_PDC  pdc) {
     //    char buffer[256];
 
     if (aisc_put(pd_gl.link,PT_PDC, pdc, PDC_CLIPRESULT, P.DESIGNCPLIPOUTPUT, 0))
-	return 1;
+        return 1;
 
     return 0;
 }
@@ -196,67 +196,67 @@ void probe_design_event() {
 
 void probe_match_event()
 {
-    char	*servername;
+    char	       *servername;
     //    char	buffer[256];
     //    char	result[1024];
-    T_PT_PDC  pdc;
-    T_PT_MATCHLIST match_list;
+    T_PT_PDC        pdc;
+    T_PT_MATCHLIST  match_list;
     //    char *match_info, *match_name;
     //    int	mark;
-    char	*probe;
-    char	*locs_error;
+    char	       *probe = 0;
+    char	       *locs_error;
 
 
     if( !(servername=(char *)probe_pt_look_for_server()) ){
-	return;
+        return;
     }
 
     pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
     free (servername); servername = 0;
 
     if (!pd_gl.link) {
-	aw_message ("Cannot contact Probe bank server ");
-	return;
+        aw_message ("Cannot contact Probe bank server ");
+        return;
     }
     if (init_local_com_struct() ) {
-	aw_message ("Cannot contact Probe bank server (2)");
-	return;
+        aw_message ("Cannot contact Probe bank server (2)");
+        return;
     }
 
     aisc_create(pd_gl.link,PT_LOCS, pd_gl.locs,
-		LOCS_PROBE_DESIGN_CONFIG, PT_PDC,	&pdc,
-		0);
+                LOCS_PROBE_DESIGN_CONFIG, PT_PDC,	&pdc,
+                0);
     if (probe_design_send_data(pdc)) {
-	aw_message ("Connection to PT_SERVER lost (2)");
-	return;
+        aw_message ("Connection to PT_SERVER lost (2)");
+        return;
     }
 
 
 
     if (aisc_nput(pd_gl.link,PT_LOCS, pd_gl.locs,
-		  LOCS_MATCH_REVERSED,		P.COMPLEMENT,
-		  LOCS_MATCH_SORT_BY,		P.WEIGHTED,
-		  LOCS_MATCH_COMPLEMENT,		0,
-		  LOCS_MATCH_MAX_MISMATCHES,	P.MISMATCHES,
-		  LOCS_MATCH_MAX_SPECIES,		100000,
-		  LOCS_SEARCHMATCH,		P.SEQUENCE,
-		  0)){
-	free(probe);
-	aw_message ("Connection to PT_SERVER lost (2)");
-	return;
+                  LOCS_MATCH_REVERSED,		P.COMPLEMENT,
+                  LOCS_MATCH_SORT_BY,		P.WEIGHTED,
+                  LOCS_MATCH_COMPLEMENT,		0,
+                  LOCS_MATCH_MAX_MISMATCHES,	P.MISMATCHES,
+                  LOCS_MATCH_MAX_SPECIES,		100000,
+                  LOCS_SEARCHMATCH,		P.SEQUENCE,
+                  0)){
+        free(probe);
+        aw_message ("Connection to PT_SERVER lost (2)");
+        return;
     }
 
     long match_list_cnt;
     bytestring bs;
     bs.data = 0;
     aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
-	      LOCS_MATCH_LIST,	&match_list,
-	      LOCS_MATCH_LIST_CNT,	&match_list_cnt,
-	      LOCS_MATCH_STRING,	&bs,
-	      LOCS_ERROR,		&locs_error,
-	      0);
+              LOCS_MATCH_LIST,	&match_list,
+              LOCS_MATCH_LIST_CNT,	&match_list_cnt,
+              LOCS_MATCH_STRING,	&bs,
+              LOCS_ERROR,		&locs_error,
+              0);
     if (*locs_error) {
-	aw_message(locs_error);
+        aw_message(locs_error);
     }
     free(locs_error);
 
@@ -277,15 +277,18 @@ int helpflag;
 
 int getInt(const char *param, int val, int min, int max, const char *description){
     if (helpflag){
-	printf("	%s=%3i [%3i:%3i] %s\n",param,val,min,max,description);
-	return 0;
+        printf("	%s=%3i [%3i:%3i] %s\n",param,val,min,max,description);
+        return 0;
     }
-    int i;
-    char *s;
+    int   i;
+    char *s = 0;
+
+    arb_assert(pargc>1);        // otherwise s stays 0
+
     for (i=1;i<pargc;i++){
-	s = pargv[i];
-	if (*s == '-') s++;
-	if (!strncasecmp(s,param,strlen(param))) break;
+        s = pargv[i];
+        if (*s == '-') s++;
+        if (!strncasecmp(s,param,strlen(param))) break;
     }
     if (i==pargc) return val;
     s+= strlen(param);
@@ -294,7 +297,7 @@ int getInt(const char *param, int val, int min, int max, const char *description
     val = atoi(s);
     pargc--;		// remove parameter
     for (;i<pargc;i++){
-	pargv[i] = pargv[i+1];
+        pargv[i] = pargv[i+1];
     }
 
     if (val<min) val = min;
@@ -304,16 +307,19 @@ int getInt(const char *param, int val, int min, int max, const char *description
 
 const char *getString(const char *param, const char *val, const char *description){
     if (helpflag){
-	if (!val) val = "";
-	printf("	%s=%s   %s\n",param,val,description);
-	return 0;
+        if (!val) val = "";
+        printf("	%s=%s   %s\n",param,val,description);
+        return 0;
     }
-    int i;
-    char *s;
+    int   i;
+    char *s = 0;
+
+    arb_assert(pargc>1);        // otherwise s stays 0
+
     for (i=1;i<pargc;i++){
-	s = pargv[i];
-	if (*s == '-') s++;
-	if (!strncasecmp(s,param,strlen(param))) break;
+        s = pargv[i];
+        if (*s == '-') s++;
+        if (!strncasecmp(s,param,strlen(param))) break;
     }
     if (i==pargc) return val;
     s+= strlen(param);
@@ -321,7 +327,7 @@ const char *getString(const char *param, const char *val, const char *descriptio
     s++;
     pargc--;		// remove parameter
     for (;i<pargc;i++){
-	pargv[i] = pargv[i+1];
+        pargv[i] = pargv[i+1];
     }
     return s;
 }
@@ -337,12 +343,12 @@ int main(int argc,char ** argv){
     P.DESIGNCPLIPOUTPUT	= getInt("designmaxhits",100,10,10000,	"Maximum Number of Probe Design Suggestions");
     P.DESINGNAMES		= getString("designnames","",		"List of short names seperated by '#'");
     P.sequence = 0;
-    while  (P.DESIGNSEQUENCE = getString("designsequence",0,		"Additional Sequences, will be added to the target group")){
-	apd_sequence *s = new apd_sequence;
-	s->next = P.sequence;
-	P.sequence = s;
-	s->sequence = P.DESIGNSEQUENCE;
-	P.DESIGNSEQUENCE = 0;
+    while  ((P.DESIGNSEQUENCE = getString("designsequence",0,		"Additional Sequences, will be added to the target group"))) {
+        apd_sequence *s = new apd_sequence;
+        s->next = P.sequence;
+        P.sequence = s;
+        s->sequence = P.DESIGNSEQUENCE;
+        P.DESIGNSEQUENCE = 0;
     }
     P.DESIGNPROBELENGTH	= getInt("designprobelength",18,15,25,	"Length of probe");
     P.MINTEMP		= getInt("designmintemp",0,0,100,	"Minimum melting temperature of probe");
@@ -364,15 +370,15 @@ int main(int argc,char ** argv){
 
 
     if (pargc>1){
-	printf("Unknown Parameter %s\n", pargv[1]);
-	exit(-1);
+        printf("Unknown Parameter %s\n", pargv[1]);
+        exit(-1);
     }
     if (helpflag) return 0;
 
     if (*P.DESINGNAMES || P.sequence){
-	probe_design_event();
+        probe_design_event();
     }else{
-	probe_match_event();
+        probe_match_event();
     }
     return 0;
 }

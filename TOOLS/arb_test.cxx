@@ -5,10 +5,10 @@ int main(int argc, char **argv)
 {
     GB_ERROR error;
     char *in;
-    const char *type = "b";
+//     const char *type = "b";
     int ci = 1;
     GBDATA *gb_main;
-	
+
     if (argc <= 1)
     {
         GB_export_error(	"\narb_test: 	database test\n"
@@ -17,9 +17,9 @@ int main(int argc, char **argv)
         GB_print_error();
         return(-1);
     }
-	
+
     in = argv[ci++];
-	
+
     gb_main = GB_open(in,"rw");
     if (!gb_main)
     {
@@ -33,7 +33,7 @@ int main(int argc, char **argv)
         GB_print_error();
         return -1;
     }
-    
+
     return 0;
 }
 

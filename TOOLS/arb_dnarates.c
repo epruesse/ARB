@@ -433,8 +433,8 @@ void setuptree (tr, numsp)
      tree  *tr;
      int    numsp;
 { /* setuptree */
-    int  i, j;
-    nodeptr  p, q;
+    int     i, j;
+    nodeptr p = 0, q;
 
     for (i = 1; i <= numsp; i++) {   /*  Set-up tips */
         if ((anerror = !(p = (nodeptr) malloc((unsigned) sizeof(node))))) break;

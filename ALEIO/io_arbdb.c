@@ -225,7 +225,7 @@ put(char *keys_filename,
 }
 
 
-
+
 /* Retrieving all entries from the database.  */
 
 void
@@ -241,21 +241,23 @@ get(char *keys_filename,
 	char           *alignment_name;
 	char           *error;
 	lenstring       key, annotation, sequence;
+
 	GB_begin_transaction(g);
 	GB_change_my_security(g, 6, 0);	/* disable all security */
 	alignment_name = GBT_get_default_alignment(g);
 	for (gb_species = GBT_first_marked_species(g);
 	     gb_species;
-	     gb_species = GBT_next_marked_species(gb_species)) {
-		GBDATA         *gb_name = GB_search(gb_species, "name", GB_FIND);
-		if (!gb_name)
-			continue;
+	     gb_species = GBT_next_marked_species(gb_species))
+    {
+		GBDATA *gb_name = GB_search(gb_species, "name", GB_FIND);
+		if (!gb_name) continue;
+
 		gb_sequence = GBT_read_sequence(gb_species, alignment_name);
-		if (!gb_sequence)
-			continue;
+		if (!gb_sequence) continue;
+
 		fprintf(key_file, "%s\n", GB_read_char_pntr(gb_name));
 		fprintf(annotation_file, "NO ANNOTATION\f");	/* no annotations in this
-						 * version */
+                                                         * version */
 		fprintf(sequence_file, "%s\n", GB_read_char_pntr(gb_sequence));
 	}
 	GB_commit_transaction(g);
@@ -264,7 +266,7 @@ get(char *keys_filename,
 	careful_close(annotation_file, annotations_filename);
 	careful_close(sequence_file, sequences_filename);
 }
-
+
 /* Retrieving selected entries from the database.  */
 
 void
@@ -340,7 +342,7 @@ list(char *keys_filename)
 	careful_close(keys_file, keys_filename);
 }
 
-
+
 /*
  * Verifying that the index lists all the relevant entries in the database.
  */
@@ -355,7 +357,7 @@ verify_index()
 {
 	return;
 }
-
+
 /* Usage messages, dying, general utilities  */
 
 void

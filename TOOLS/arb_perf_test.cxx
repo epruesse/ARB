@@ -13,8 +13,8 @@ void print_speed(const char *desc, int loops){
     long usecs = tp.tv_sec - starttime.tv_sec;
     usecs *= 1000000;
     usecs += tp.tv_usec - starttime.tv_usec;
-    printf("%s time %i   loops/second %i\n", desc, usecs,(int)( loops * 1000000.0 / (double)usecs) );
-    starttime = tp; 
+    printf("%s time %li   loops/second %i\n", desc, usecs,(int)( loops * 1000000.0 / (double)usecs) );
+    starttime = tp;
 }
 
 GBDATA *gb_main;
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 	name = GB_read_string(gbd);
 	GB_commit_transaction(gb_main);
     }
-	    
+
     int i;
     GB_begin_transaction(gb_main);
     gettimeofday(&starttime,0);
@@ -66,6 +66,6 @@ int main(int argc, char **argv)
     }
     GB_commit_transaction(gb_main);
     print_speed("Transacionts",i);
-	
+
     return 0;
 }

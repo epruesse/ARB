@@ -182,7 +182,7 @@ char *ED4_terminal::resolve_pointer_to_string(int *str_len) const
     return db_pointer;
 }
 
-ED4_ERROR *ED4_terminal::write_sequence(const char *seq, int seq_len)
+ED4_ERROR *ED4_terminal::write_sequence(const char *seq, int /* seq_len */)
 {
     ED4_ERROR *err = 0;
     GBDATA *gbd = get_species_pointer();
@@ -858,7 +858,7 @@ ED4_tree_terminal::ED4_tree_terminal(const char *temp_id, AW_pos x, AW_pos y, AW
     spec = &(tree_terminal_spec);
 }
 
-ED4_returncode ED4_tree_terminal::Show(int refresh_all, int is_cleared)
+ED4_returncode ED4_tree_terminal::Show(int IF_DEBUG(refresh_all), int is_cleared)
 {
     e4_assert(update_info.refresh || refresh_all);
     ED4_ROOT->temp_device->push_clip_scale();
@@ -932,7 +932,7 @@ ED4_bracket_terminal::ED4_bracket_terminal(const char *temp_id, AW_pos x, AW_pos
     spec = &(bracket_terminal_spec);
 }
 
-ED4_returncode ED4_bracket_terminal::Show(int refresh_all, int is_cleared)
+ED4_returncode ED4_bracket_terminal::Show(int IF_DEBUG(refresh_all), int is_cleared)
 {
     e4_assert(update_info.refresh || refresh_all);
     ED4_ROOT->temp_device->push_clip_scale();
@@ -1302,7 +1302,7 @@ ED4_line_terminal::~ED4_line_terminal()
 // 	ED4_columnStat_terminal
 // --------------------------------------------------------------------------------
 
-ED4_returncode ED4_columnStat_terminal::Show(int refresh_all, int is_cleared)
+ED4_returncode ED4_columnStat_terminal::Show(int IF_DEBUG(refresh_all), int is_cleared)
 {
     e4_assert(update_info.refresh || refresh_all);
     ED4_ROOT->temp_device->push_clip_scale();
