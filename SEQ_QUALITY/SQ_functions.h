@@ -82,6 +82,8 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 
 int round(double value);
 
+int SQ_mark_species(GBDATA *gb_main, int condition);
+
 #else
 #error SQ_functions.h included twice
 #endif

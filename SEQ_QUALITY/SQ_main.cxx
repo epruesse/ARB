@@ -27,6 +27,7 @@ extern GBDATA *gb_main;
 #define AWAR_SQ_WEIGHT_CONSENSUS AWAR_SQ_PERM "weight_consensus"
 #define AWAR_SQ_WEIGHT_IUPAC     AWAR_SQ_PERM "weight_iupac"
 #define AWAR_SQ_WEIGHT_GC        AWAR_SQ_PERM "weight_gc"
+#define AWAR_SQ_MARK             AWAR_SQ_PERM "mark"
 
 
 void SQ_create_awars(AW_root *aw_root, AW_default aw_def) {
@@ -41,6 +42,7 @@ void SQ_create_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int(AWAR_SQ_WEIGHT_CONSENSUS, 50, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_IUPAC, 5, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_GC, 5, aw_def);
+    aw_root->awar_int(AWAR_SQ_MARK, 36, aw_def);
 }
 
 // --------------------------------------------------------------------------------
@@ -101,6 +103,7 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 	int weight_consensus            = aw_root->awar(AWAR_SQ_WEIGHT_CONSENSUS)->read_int();
  	int weight_iupac                = aw_root->awar(AWAR_SQ_WEIGHT_IUPAC)->read_int();
  	int weight_gc                   = aw_root->awar(AWAR_SQ_WEIGHT_GC)->read_int();
+	int mark                        = aw_root->awar(AWAR_SQ_MARK)->read_int();
 
         /*
           The "weight_..."  -values are passed to the function "SQ_evaluate()".
@@ -135,6 +138,11 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 	    aw_openstatus("Calculating pass 2 of 2...");
 	    SQ_calc_and_apply_group_data2(tree, gb_main, globalData);
 	    SQ_evaluate(gb_main, weight_bases, weight_diff_from_average, weight_helix, weight_consensus, weight_iupac, weight_gc);
+	    aw_closestatus();
+	    SQ_reset_counters(tree);
+	    aw_openstatus("Marking Sequences...");
+	    SQ_count_nr_of_species(gb_main);
+	    SQ_mark_species(gb_main, mark);
 	    aw_closestatus();
 	    delete globalData;
 	}
@@ -178,6 +186,9 @@ AW_window *SQ_create_seq_quality_window(AW_root *aw_root, AW_CL) {
 
     aws->at("gc_proportion");
     aws->create_input_field(AWAR_SQ_WEIGHT_GC, 3);
+
+    aws->at("mark");
+    aws->create_input_field(AWAR_SQ_MARK, 3);
 
     aws->at("tree");
     awt_create_selection_list_on_trees(gb_main,(AW_window *)aws, AWAR_SQ_TREE);
