@@ -207,6 +207,8 @@ void create_all_awars(AW_root *awr, AW_default def)
     awr->awar(AWAR_SPECIES_NAME)->add_callback(AWAR_SEARCH_BUTTON_TEXT_change_cb);
     awr->awar_int( AWAR_NTREE_TITLE_MODE, 1);
 
+    awr->awar_string(AWAR_SAI_COLOR_STR, "", gb_main); //sai visualization in probe match
+
     GEN_create_awars(awr, def);
     EXP_create_awars(awr, def);
 

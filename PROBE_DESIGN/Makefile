@@ -1,6 +1,6 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx .depend
-CPP_OBJECTS = probe_design.o
+CPP_OBJECTS = probe_design.o SaiProbeVisualization.o
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
@@ -43,3 +43,17 @@ probe_design.o: $(ARBHOME)/INCLUDE/client.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h probe_design.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/adGene.h
+
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdb.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdbt.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
+SaiProbeVisualization.o: SaiProbeVisualization.hxx

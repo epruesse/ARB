@@ -737,6 +737,7 @@ public:
     void            update_world_coords_cache();
     void            calc_rel_coords( AW_pos *x, AW_pos *y );
 
+
     void calc_world_coords(AW_pos *x, AW_pos *y) {
         bool cache_up_to_date = timestamp == actualTimestamp;
         if (!cache_up_to_date) {

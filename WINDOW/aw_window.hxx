@@ -434,6 +434,8 @@ public:
     // ***** selection list is a redefinable scrolled list of items
 
     AW_selection_list *create_selection_list( const char *awar_name, const char *label = 0, const char *mnemonic = 0, int columns = 4, int rows = 4 );
+    // to make a copy of the selection list
+    AW_selection_list *copySelectionList(AW_selection_list *sourceList, AW_selection_list *destinationList);
     // for string
     void insert_selection( AW_selection_list *selection_list, const char *displayed, const char *value );
     void insert_default_selection(  AW_selection_list * selection_list, const char *displayed, const char *value );

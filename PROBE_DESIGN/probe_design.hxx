@@ -15,5 +15,4 @@ AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canva
 
 #define AWAR_PROBE_ADMIN_PT_SERVER "tmp/probe_admin/pt_server"
 
-
 #endif
