@@ -401,9 +401,9 @@ public void handleRightMouseClick(int x, int y)
         if(clickedNode != null) {
             System.out.println("path to clicked node: " + clickedNode.getBinaryPath());
             String codedPath = clickedNode.getCodedPath();
-            System.out.println("path to clicked node: " + codedPath);            
+            System.out.println("path to clicked node: " + codedPath);
             myBoss.updateNodeInformation(codedPath);
-            
+
 //             System.out.println("returned node information: " + myBoss.getNodeInformation(clickedNode.getCodedPath()));
 //             boolean state = clickedNode.isMarked() != 0;
 //             clickedNode.markSubtree(!state);
@@ -417,7 +417,7 @@ public void handleRightMouseClick(int x, int y)
 
 public void unmarkNodes()
     {
-        root.markSubtree(false);
+        root.unmarkSubtree();
         repaint();
     }
 
