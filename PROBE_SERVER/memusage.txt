@@ -1,0 +1,6 @@
+
+Database                        Size             Subtrees	arb_probe_group       arb_probe_group_design  pt_server 
+                                                  		Memory                Memory                  Memory
+
+ssujun02_1000species.arb        6.7 Mb             		 127 Mb               40 Mb                    51 Mb
+ssujun02_10000species.arb      28.5 Mb           20471	 	1812 Mb                                       182 Mb
