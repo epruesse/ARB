@@ -2,6 +2,7 @@ ARB change log
 
 Major changes for next Beta:
 
+ - updated clustalw to version 1.83
  - Restore window sizes for ALL windows (too small sizes are ignored)
  - new algorithm to add partial sequences to an existing tree
  - PROT-parsimony was completely redesigned and works now most similar to DNA/RNA-parsimony
@@ -30,7 +31,7 @@ Major changes for next Beta:
  - The ARB_NTREE macro recording/execution has been fixed
  - Colorize species (see demo.arb)
  - Fixed missing-character-bug in Xfig, Print and Edit4-Info-Display
- - 'IslandHopper' -- a new integrated aligner
+ - 'IslandHopper' -- a new integrated aligner (beta)
  - Many improvements and bugfixes to secondary structure editor:
    * highlighting of search (i.e for probes) like in EDIT4
    * interactive constraint editing (stretch/compress)
@@ -44,7 +45,7 @@ Major changes for next Beta:
  - fixed problems with phylip-tree import/export (bootstrap values,comments,...)
  - search in all database fields possible ('[all fields]')
  - up to 10 quicksaves are kept
- - new ACI functions: upper, lower, caps
+ - new ACI functions: upper, lower, caps, eval
  - variables for import filter programming
  - extract gene-species: creates acc; extraction to existing alignments
  - sequence of selected gene is mirrored in ARB_EDIT4/local_signature
