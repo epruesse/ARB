@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : probe_match_parser.cxx                                 // 
 //    Purpose   : parse the results of a probe match                     // 
-//    Time-stamp: <Fri Jun/11/2004 18:46 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Tue Jun/22/2004 16:03 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in June 2004             // 
@@ -41,7 +41,13 @@ struct column {
 //      ProbeMatch_impl
 // ------------------------
 
-typedef map<const char*, column> ColumnMap;
+struct ltstr {
+    bool operator()(const char* s1, const char* s2) const {
+        return strcmp(s1, s2) < 0;
+    }
+};
+
+typedef map<const char*, column, ltstr> ColumnMap;
 
 class ProbeMatch_impl {
     char      *headline;
@@ -132,6 +138,7 @@ ProbeMatchParser::~ProbeMatchParser() {
 }
 
 bool ProbeMatchParser::getColumnRange(const char *columnName, int *startCol, int *endCol) const {
+    pm_assert(!init_error);
     column *col = pimpl->findColumn(columnName);
     if (!col) return false;
 
@@ -141,10 +148,12 @@ bool ProbeMatchParser::getColumnRange(const char *columnName, int *startCol, int
 }
 
 bool ProbeMatchParser::is_gene_result() const {
+    pm_assert(!init_error);
     return pimpl->findColumn("organism") && pimpl->findColumn("genename");
 }
 
 int ProbeMatchParser::get_probe_region_offset() const {
+    pm_assert(!init_error);
     return pimpl->get_probe_region_offset();
 }
 
@@ -177,6 +186,7 @@ inline char *strpartdup(const char *str, int c1, int c2) {
 }
 
 int ParsedProbeMatch::get_position() const {
+    pm_assert(!error);
     int c1, c2;
     if (parser.getColumnRange("pos", &c1, &c2)) {
         char *content = strpartdup(match, c1, c2);
@@ -189,6 +199,7 @@ int ParsedProbeMatch::get_position() const {
 }
 
 const char *ParsedProbeMatch::get_probe_region() const {
+    pm_assert(!error);
     int pro      = parser.pimpl->get_probe_region_offset();
     int matchlen = strlen(match);
 
@@ -201,6 +212,7 @@ const char *ParsedProbeMatch::get_probe_region() const {
 }
 
 char *ParsedProbeMatch::get_column_content(const char *columnName, bool chop_spaces) const {
+    pm_assert(!error);
     int sc, ec;
     if (parser.getColumnRange(columnName, &sc, &ec)) {
         if (chop_spaces) {
