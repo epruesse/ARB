@@ -302,14 +302,14 @@ ED4_returncode ED4_manager::check_bases(const ED4_base *old_base, const ED4_base
     return ED4_R_OK;
 }
 
-#define WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(COMMAND)		\
-do {								\
-    while (walk_up) {						\
-	if (walk_up->is_group_manager()) {			\
-	    walk_up->to_group_manager()->table().COMMAND;	\
-	}							\
-	walk_up = walk_up->parent;				\
-    }								\
+#define WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(COMMAND)    \
+do {                                                    \
+    while (walk_up) {                                   \
+	if (walk_up->is_group_manager()) {                  \
+	    walk_up->to_group_manager()->table().COMMAND;   \
+	}                                                   \
+	walk_up = walk_up->parent;                          \
+    }                                                   \
 } while(0)
 
 ED4_returncode ED4_manager::check_bases( const char *old_sequence, int old_len, const char *new_sequence, int new_len, int start_pos, int end_pos)
@@ -2106,15 +2106,19 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
 
                 table.bases_and_gaps_at(i, &bases, &gaps);
 
-                int percent = (int)((bases*100L)/table.added_sequences());
+                if (bases==0 && gaps==0)  { // special case (should occur only after inserting columns)
+                    set_sequence_to_screen(i, -j); // hide
+                }
+                else {
+                    int percent = (int)((bases*100L)/table.added_sequences());
 
-                e4_assert(percent==((bases*100)/(bases+gaps)));
+                    e4_assert(percent==((bases*100)/(bases+gaps)));
 
-                e4_assert(bases || gaps); // sth has to be at every sequence position!
-                if (bases && percent>=above_percent) {
-                    set_sequence_to_screen(i,j++);
-                }else{
-                    set_sequence_to_screen(i, -j);
+                    if (bases && percent>=above_percent) {
+                        set_sequence_to_screen(i,j++);
+                    }else{
+                        set_sequence_to_screen(i, -j);
+                    }
                 }
             }
             for (;i<sequence_table_len;i++) { // fill rest of table

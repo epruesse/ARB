@@ -175,7 +175,7 @@ void create_all_awars(AW_root *awr, AW_default def)
 	create_alignment_vars(awr,def);
 	create_nds_vars(awr,def,gb_main);
 	create_export_nds_awars(awr,def);
-	create_rename_variables(awr,def);
+	AWTC_create_rename_variables(awr,def);
 	create_check_gcg_awars(awr,def);
 	awt_create_dtree_awars(awr,gb_main);
 	awt_create_aww_vars(awr,def);
@@ -755,7 +755,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->insert_separator();
             awm->insert_sub_menu(0, "Etc",				"E");
             {
-                AWMIMT( "new_names",	"Generate New Names ...",	"G", "sp_rename.hlp",	AWM_EXP, AW_POPUP,   (AW_CL)create_rename_window, 		(AW_CL)gb_main );
+                AWMIMT( "new_names",	"Generate New Names ...",	"G", "sp_rename.hlp",	AWM_EXP, AW_POPUP,   (AW_CL)AWTC_create_rename_window, 		(AW_CL)gb_main );
             }
             awm->close_sub_menu();
 

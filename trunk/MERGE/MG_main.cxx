@@ -51,14 +51,14 @@ AW_window *MG_save_source_cb(AW_root *aw_root, char *base_name)
 	aws->load_xfig("sel_box.fig");
 
 	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("save");aws->callback(MG_save_merge_cb);
-	aws->create_button("SAVE","SAVE","S");			   
+	aws->create_button("SAVE","SAVE","S");
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("cancel");
-	aws->create_button("CLOSE","CANCEL","C");			   
+	aws->create_button("CLOSE","CANCEL","C");
 
 	awt_create_selection_box((AW_window *)aws,base_name);
 
@@ -93,7 +93,7 @@ AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
 	aws->load_xfig("sel_box.fig");
 
 	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	awt_create_selection_box((AW_window *)aws,base_name);
 
@@ -112,18 +112,18 @@ AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("cancel4");
 	aws->create_button("CLOSE","CANCEL","C");
-	
+
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("cancel4");
 	aws->create_button("CLOSE", "CANCEL","C");
 
 	aws->at("save4");aws->callback(MG_save_cb);
-	aws->create_button("SAVE","SAVE","S");			   
-	
+	aws->create_button("SAVE","SAVE","S");
+
 
 	aws->at("user3");
 	aws->create_text_field(AWAR_DB_COMMENT);
-	
+
 	return (AW_window *)aws;
 }
 
@@ -152,10 +152,10 @@ AW_window *MG_save_quick_result_cb(AW_root *aw_root, char *base_name)
 	aws->load_xfig("sel_box.fig");
 
 	aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->at("save");aws->callback(MG_save_quick_cb);
-	aws->create_button("SAVE","SAVE","S");			   
+	aws->create_button("SAVE","SAVE","S");
 
 	awt_create_selection_box((AW_window *)aws,base_name);
 
@@ -240,7 +240,7 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled)
 
 	awm->at("db2");
 	awm->create_button(0,AWAR_MAIN_DB"/file_name");
-	
+
 	awm->button_length(0);
 	awm->shadow_width(1);
 	awm->at("icon");
@@ -302,11 +302,11 @@ AW_window *create_merge_init_window(AW_root *awr)
 
 	aws->callback( (AW_CB0)exit);
 	aws->at("close");
-	aws->create_button("QUIT","QUIT","A");			   
+	aws->create_button("QUIT","QUIT","A");
 
 	aws->callback(AW_POPUP_HELP,(AW_CL)"arb_merge.hlp");
 	aws->at("help");
-	aws->create_button("HELP","HELP","H");			   
+	aws->create_button("HELP","HELP","H");
 
 	awt_create_selection_box(aws,AWAR_MERGE_DB,"");
 	aws->at("type");
@@ -325,7 +325,7 @@ AW_window *create_merge_init_window(AW_root *awr)
 	aws->callback(MG_start_cb);
 	aws->at("go");
 	aws->highlight();
-	aws->create_button("GO","GO","G");			   
+	aws->create_button("GO","GO","G");
 
 	aws->button_length(0);
 	aws->shadow_width(1);
@@ -350,7 +350,7 @@ void MG_create_all_awars(AW_root *awr, AW_default aw_def,const char *fname_one, 
 	MG_create_extendeds_var(awr,aw_def);
 	MG_create_alignment_vars(awr,aw_def);
 	MG_create_species_var(awr,aw_def);
-	create_rename_variables(awr,aw_def);
+	AWTC_create_rename_variables(awr,aw_def);
 }
 
 AW_window *
