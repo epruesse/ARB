@@ -7,6 +7,10 @@
 #ifndef _CPP_IOSFWD
 #include <iosfwd>
 #endif
+#ifndef AW_FONT_GROUP_HXX
+#include <aw_font_group.hxx>
+#endif
+
 
 class AW_window;
 class SEC_graphic;
@@ -194,6 +198,8 @@ private:
     int cursor_x1, cursor_x2, cursor_y1, cursor_y2;
     int fresh_sequence;  //needed to check, if the coordinates of the root-loop have to be set or not
 
+    AW_font_group font_group;
+
 public:
     int rotateBranchesMode;
     double skeleton_thickness;
@@ -263,19 +269,19 @@ public:
     void split_same_segment1(SEC_segment *found_start_segment1, SEC_loop *old_loop, int &start1, int &end1, int &start2, int &end2);
     void split_same_segment2(SEC_segment *found_start_segment1, SEC_loop *old_loop, int &start1, int &end1, int &start2, int &end2);
 
-    //selector methods
-    int get_max_index() 			{ return max_index; }
-    double get_distance_between_strands() 	{ return distance_between_strands; }
-    double get_skeleton_thickness() 	        { return skeleton_thickness; }
-    SEC_segment * get_root_segment () 		{ return root_segment; }
-    int get_cursor() 				{ return cursor; }
+    // selector methods
+    int get_max_index()                   const { return max_index; }
+    double get_distance_between_strands() const { return distance_between_strands; }
+    double get_skeleton_thickness()       const { return skeleton_thickness; }
+    SEC_segment * get_root_segment ()     const { return root_segment; }
+    int get_cursor()                      const { return cursor; }
 
     void announce_base_position(int base_pos, AW_pos x, AW_pos y);
     void clear_base_positions();
 
-    void set_max_index(int max_index_) 						{ max_index = max_index_; }
-    void set_root_segment(SEC_segment *root_segment_) 				{ root_segment = root_segment_; }
-    void set_distance_between_strands (double distance_between_strands_) 	{ distance_between_strands = distance_between_strands_; }
+    void set_max_index(int max_index_)                                   { max_index = max_index_; }
+    void set_root_segment(SEC_segment *root_segment_)                    { root_segment = root_segment_; }
+    void set_distance_between_strands (double distance_between_strands_) { distance_between_strands = distance_between_strands_; }
 
     void set_skeleton_thickness (double skeleton_thickness_)   { skeleton_thickness = skeleton_thickness_; }
     void set_show_debug (bool show) 	 { show_debug=show; }
@@ -285,8 +291,8 @@ public:
     void set_hide_bonds (bool hide)      { hide_bonds = hide; }
     void set_display_sai (bool show)     { display_sai = show; }
 
-    void set_cursor(int cursor_) 						{ cursor = cursor_; }
-    void set_show_constraints(int show_constraints_) 				{ show_constraints = show_constraints_; }
+    void set_cursor(int cursor_)                     { cursor = cursor_; }
+    void set_show_constraints(int show_constraints_) { show_constraints = show_constraints_; }
 
     void set_last_drawed_cursor_position(double x1, double y1, double x2, double y2) { cursor_x1 = int(x1); cursor_y1 = int(y1); cursor_x2 = int(x2); cursor_y2 = int(y2); }
     void get_last_drawed_cursor_position(double &x1, double &y1, double &x2, double &y2) const { x1 = cursor_x1; y1 = cursor_y1; x2 = cursor_x2; y2 = cursor_y2; }
@@ -298,7 +304,9 @@ public:
         }
         rootAngle = rtAngle;
     }
-    double getRootAngle()             { return rootAngle;    }
+    double getRootAngle() const { return rootAngle; }
+
+    const AW_font_group& get_font_group() const { return font_group; }
 };
 
 //////////////////////////////////////////////////////////////////////////////////
