@@ -182,7 +182,7 @@ static char *unEscapeString(const char *escapedString) {
 }
 
 
-static GB_ERROR gbl_command(GBDATA *gb_species, char *com, GBL_client_data *cd, 
+static GB_ERROR gbl_command(GBDATA *gb_species, char *com, GBL_client_data *cd,
                             int     argcinput, GBL *argvinput,
                             int     argcparam,GBL *argvparam,
                             int    *argcout, GBL **argvout)
@@ -212,7 +212,7 @@ static GB_ERROR gbl_command(GBDATA *gb_species, char *com, GBL_client_data *cd,
     return 0;
 }
 
-static GB_ERROR gbl_eval(GBDATA *gb_species, char *com, GBL_client_data *cd, 
+static GB_ERROR gbl_eval(GBDATA *gb_species, char *com, GBL_client_data *cd,
                          int     argcinput, GBL *argvinput,
                          int     argcparam,GBL *argvparam,
                          int    *argcout, GBL **argvout)
@@ -246,7 +246,7 @@ static GB_ERROR gbl_eval(GBDATA *gb_species, char *com, GBL_client_data *cd,
     return 0;
 }
 
-static GB_ERROR gbl_origin(GBDATA *gb_species, char *com, GBL_client_data *cd, 
+static GB_ERROR gbl_origin(GBDATA *gb_species, char *com, GBL_client_data *cd,
                            int        argcinput, GBL *argvinput,
                            int        argcparam,GBL *argvparam,
                            int       *argcout, GBL **argvout)
@@ -282,7 +282,7 @@ static GB_ERROR gbl_origin(GBDATA *gb_species, char *com, GBL_client_data *cd,
     return 0;
 }
 
-static GB_ERROR gbl_count(GBDATA *gb_species, char *com, GBL_client_data *cd, 
+static GB_ERROR gbl_count(GBDATA *gb_species, char *com, GBL_client_data *cd,
                           int     argcinput, GBL *argvinput,
                           int     argcparam,GBL *argvparam,
                           int    *argcout, GBL **argvout)
@@ -380,7 +380,7 @@ static GB_ERROR gbl_remove(GBDATA *gb_species, char *com, GBL_client_data *cd,
     return 0;
 }
 
-static GB_ERROR gbl_keep(GBDATA *gb_species, char *com, GBL_client_data *cd, 
+static GB_ERROR gbl_keep(GBDATA *gb_species, char *com, GBL_client_data *cd,
                          int argcinput, GBL *argvinput,
                          int argcparam,GBL *argvparam,
                          int *argcout, GBL **argvout)	{
@@ -458,7 +458,7 @@ static const char *gbl_stristr(const char *haystack, const char *needle) {
 
     if (c1 == c2) {
         hp = strchr(hp, c1);
-        while (hp) {            
+        while (hp) {
             if (gbl_strincmp(hp, needle, needle_size) == 0) return hp;
             hp = strchr(hp+1, c1);
         }
@@ -1291,7 +1291,7 @@ static char *get_taxonomy_string(GB_HASH *tax_hash, const char *group_key, int d
                 }
             }
             else {
-                result = strdup(group_key+1); // return own group name
+                result = strdup(group_key+5); // return own group name
             }
         }
     }
