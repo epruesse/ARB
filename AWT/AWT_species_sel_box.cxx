@@ -15,13 +15,13 @@
 #include "awt.hxx"
 #include "awtlocal.hxx"
 
-void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstruct *cbs, AW_BOOL sel_list)
+void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstruct *cbs)
 {
     GBDATA *gb_key_data;
     gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
     AWUSE(dummy);
 
-    if (sel_list) cbs->aws->clear_selection_list(cbs->id);
+    cbs->aws->clear_selection_list(cbs->id);
 
     GBDATA *gb_key;
     GBDATA *gb_key_name;
@@ -35,20 +35,11 @@ void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstruct *
         gb_key_name = GB_find(gb_key,CHANGEKEY_NAME,0,down_level);
         if (!gb_key_name) continue;
         char *name  = GB_read_char_pntr(gb_key_name);
-        if (sel_list) {
-            cbs->aws->insert_selection( cbs->id, name, name );
-        }
-        else {
-            cbs->aws->insert_option(name, "", name);
-        }
+        cbs->aws->insert_selection( cbs->id, name, name );
     }
 
-    if (sel_list) {
-        cbs->aws->insert_default_selection( cbs->id, "????", "----" );
-    }
-    else {
-        cbs->aws->insert_default_option("????", "", "----" );
-    }
+    cbs->aws->insert_default_selection( cbs->id, "????", "----" );
+    cbs->aws->update_selection_list( cbs->id );
 }
 
 GB_ERROR awt_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name, int type, const char *keypath)
@@ -217,6 +208,11 @@ void awt_experiment_field_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_m
     awt_experiment_field_selection_list_rescan(gb_main,bitfilter);
 }
 
+AW_window *awt_existing_window(AW_window *, AW_CL cl1, AW_CL)
+{
+    return (AW_window*)cl1;
+}
+
 AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
                                           AW_window              *aws,
                                           const char             *varname,
@@ -226,25 +222,52 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
                                           const ad_item_selector *selector,
                                           size_t                  columns,
                                           size_t                  visible_rows,
-                                          AW_BOOL                 sel_list)
+                                          AW_BOOL                 popup_list_in_window)
 {
-    AW_selection_list*   id = 0;
-    GBDATA	            *gb_key_data;
+    AW_selection_list*  id              = 0;
+    GBDATA	           *gb_key_data;
+    AW_window          *win_for_sellist = aws;
 
     GB_push_transaction(gb_main);
 
     if (scan_xfig_label) aws->at(scan_xfig_label);
 
-    if (sel_list) {
-        id = aws->create_selection_list(varname,0,"",20,10);
+    if (popup_list_in_window) {
+        {
+            AW_window_simple *aw_popup = new AW_window_simple;
+            aw_popup->init(aws->get_root(), "SELECT_LIST_ENTRY", "SELECT AN ENTRY", 100, 100);
+            //         aw_popup->load_xfig(0, AW_TRUE);
+
+            aw_popup->auto_space(10, 10);
+            aw_popup->at_newline();
+
+            aw_popup->callback((AW_CB0)AW_POPDOWN);
+            id = aw_popup->create_selection_list(varname, 0, "", columns, visible_rows);
+
+            aw_popup->at_newline();
+            aw_popup->callback((AW_CB0)AW_POPDOWN);
+            aw_popup->create_button("CLOSE", "CLOSE", "C");
+
+            aw_popup->window_fit();
+
+            win_for_sellist = aw_popup;
+        }
+
+        aws->button_length(columns);
+        aws->callback((AW_CB2)AW_POPUP,(AW_CL)awt_existing_window, (AW_CL)win_for_sellist);
+        aws->create_button("SELECTED_ITEM", varname);
+
     }
-    else { // otherwise we build an option menu
-        aws->create_option_menu(varname, 0, "");
+    else { // otherwise we build a normal selection list
+        id = aws->create_selection_list(varname,0,"",columns,visible_rows); // 20,10);
     }
+//     else { // otherwise we build an option menu
+//         aws->create_option_menu(varname, 0, "");
+//     }
 
     struct adawcbstruct *cbs;
     cbs             = new adawcbstruct;
-    cbs->aws        = aws;
+    cbs->aws        = win_for_sellist;
     cbs->gb_main    = gb_main;
     cbs->id         = id;
     cbs->def_filter = (char *)type_filter;
@@ -256,22 +279,12 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
         aws->create_button("RESCAN_DB", "RESCAN","R");
     }
 
-    awt_create_selection_list_on_scandb_cb(0,cbs, sel_list);
-
-    if (sel_list) {
-        aws->update_selection_list( id );
-    }
-    else {
-        aws->update_option_menu();
-    }
+    awt_create_selection_list_on_scandb_cb(0,cbs);
+//     win_for_sellist->update_selection_list( id );
 
     gb_key_data = GB_search(gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
 
-    if (sel_list) {
-        GB_add_callback(gb_key_data, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_scandb_cb, (int *)cbs);
-        // @@@ no automatic update for new fields
-    }
-
+    GB_add_callback(gb_key_data, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_scandb_cb, (int *)cbs);
 
     GB_pop_transaction(gb_main);
     return (AW_CL)cbs;
