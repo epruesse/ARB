@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : Probe.java                                             // 
 //    Purpose   : Object holding one probe                               // 
-//    Time-stamp: <Wed Mar/10/2004 14:10 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Sat Mar/13/2004 19:41 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -209,7 +209,7 @@ public class Probe implements Comparable
             case SORT_BY_LENGTH:        display.append(length()); break;
             case SORT_BY_TEMPERATURE:   display.append(temperature()); display.append("°C"); break;
             case SORT_BY_GC_CONTENT:    display.append((int)(gc_content()+0.5)); display.append("%"); break;
-            case SORT_BY_OVERLAP:       display.append(getOverlap()); break;
+            case SORT_BY_OVERLAP:       display.append(this == getOverlapProbe() ? length(): getOverlap()); break;
             case SORT_BY_NO_OF_HITS:    display.append(no_of_hits()); break;
         }
 
@@ -290,7 +290,7 @@ public class Probe implements Comparable
         if (mode<0) return -compareToByMode(other, -mode);
         return compareToByMode(other, mode);
     }
-    
+
     public int compareTo(Object obj) {
         Probe other = (Probe)obj;
 
