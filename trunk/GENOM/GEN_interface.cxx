@@ -734,8 +734,9 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
 
     awtqs.gb_main             = gb_main;
     awtqs.species_name        = AWAR_SPECIES_NAME;
-    //     awtqs.query_genes      = true;
-    //     awtqs.gene_name        = AWAR_GENE_NAME;
+    awtqs.tree_name           = AWAR_TREE;
+    //     awtqs.query_genes  = true;
+    //     awtqs.gene_name    = AWAR_GENE_NAME;
     awtqs.select_bit          = 1;
     awtqs.use_menu            = 1;
     awtqs.ere_pos_fig         = "ere3";
