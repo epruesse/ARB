@@ -39,7 +39,7 @@ AW_window *create_main_window(AW_root *aw_root) {
                            AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
     awm->insert_menu_topic(0, "Print View to Printer ...",  "P","print.hlp",0,(AW_CB)AWT_create_print_window, (AW_CL)ntw,   0 );
 
-    awm->create_mode( 0, "zoom.bitmap", "mode_pzoom.hlp", 0, (AW_CB)nt_mode_event,
+    awm->create_mode( 0, "pzoom.bitmap", "mode_pzoom.hlp", 0, (AW_CB)nt_mode_event,
                       (AW_CL)ntw,
                       (AW_CL)AWT_MODE_ZOOM
                       );

@@ -17,6 +17,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.4  2004/06/30 17:34:02  westram
+ * - zoom.bitmap -> pzoom.bitmap
+ *
  * Revision 1.3  2002/12/17 10:36:40  westram
  * valgrinded
  *
@@ -194,7 +197,7 @@ AW_window * create_tb_main_window(AW_root *awr) {
 	awm->insert_menu_topic(0,"TestSetup",                           "T","nt_props_tree.hlp",F_ALL, AW_POPUP, (AW_CL)tb_preset_tree_window, 0);
         awm->insert_menu_topic(0,"DataDisplay: Fonts, etc",             "D","nt_props_data.hlp",F_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
 
-	awm->create_mode( 0, "zoom.bitmap", "mode_pzoom.hlp", F_ALL, (AW_CB)nt_mode_event,
+	awm->create_mode( 0, "pzoom.bitmap", "mode_pzoom.hlp", F_ALL, (AW_CB)nt_mode_event,
                       (AW_CL)canvas,
                       (AW_CL)AWT_MODE_ZOOM
                       );
