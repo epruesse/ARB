@@ -23,7 +23,7 @@
 /* # ifndef __cplusplus */
 /* #  define SIG_PF void (*)() */
 /* # else */
-/* #  include <sysent.h>	/* c++ only for sun */ */
+/* #  include <sysent.h>	/ * c++ only for sun * / */
 /* # endif */
 /* #else */
 /* # if defined(HP) || defined(LINUX) || defined(DIGITAL) || defined(DARWIN) */
