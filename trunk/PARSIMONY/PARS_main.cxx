@@ -1043,7 +1043,9 @@ static void pars_start_cb(AW_window *aww)
             NT_tree_init(nt->tree);
             error = nt->tree->tree_root->remove_leafs(ntw->gb_main, AWT_REMOVE_DELETED | AWT_REMOVE_NO_SEQUENCE);
         }
-        if (error) aw_message(error);
+        if (error) {
+            aw_message(error, "EXIT", true);
+        }
 
         GB_commit_transaction(gb_main);
         aw_status("Calculating inner nodes");
@@ -1489,7 +1491,7 @@ int main(int argc, char **argv)
     gb_main = GBT_open(db_server,"rw",0);
     if (!gb_main) {
         aw_message(GB_get_error(),"OK");
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     create_all_awars(aw_root,aw_default);
@@ -1498,7 +1500,7 @@ int main(int argc, char **argv)
     aww->show();
 
     aw_root->main_loop();
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 
