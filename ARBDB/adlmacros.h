@@ -227,7 +227,7 @@ inline GB_BOOL GB_COMPRESSION_ENABLED(GBDATA *gbd, long size) { return (!GB_MAIN
 
 inline void GB_TEST_TRANSACTION(GBDATA *gbd) {
     if (!GB_MAIN(gbd)->transaction) {
-        GB_internal_error("no running transaction\ncall GB_begin_transaction(GBDATA *)\n");
+        GB_internal_error("no running transaction\nuse GB_transaction(gb_main)\n");
         GB_CORE;
     }
 }
@@ -240,7 +240,7 @@ inline void GB_TEST_TRANSACTION(GBDATA *gbd) {
 do {                                                                                        \
     if (!GB_MAIN(gbd)->transaction)                                                         \
     {                                                                                       \
-        GB_internal_error("no running transaction\ncall GB_begin_transaction(GBDATA *)\n"); \
+        GB_internal_error("no running transaction\ncall GB_begin_transaction(gb_main)\n");  \
         GB_CORE;                                                                            \
     }                                                                                       \
 } while(0)
