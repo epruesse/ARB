@@ -40,10 +40,7 @@ void GEN_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_nam
     free(organism);
 }
 
-//  ------------------------------------------------------------------------------------------------------
-//      static char *gen_gene_result_name(GBDATA */*gb_main*/, AW_root */*aw_root*/, GBDATA *gb_gene)
-//  ------------------------------------------------------------------------------------------------------
-static char *gen_gene_result_name(GBDATA */*gb_main*/, AW_root */*aw_root*/, GBDATA *gb_gene) {
+static char *gen_get_gene_id(GBDATA */*gb_main*/, GBDATA *gb_gene) {
     GBDATA *gb_name = GB_find(gb_gene, "name", 0, down_level);
     if (!gb_name) return 0;     // gene w/o name -> skip
 
@@ -65,6 +62,22 @@ static char *gen_gene_result_name(GBDATA */*gb_main*/, AW_root */*aw_root*/, GBD
     return result;
 }
 
+static GBDATA *gen_find_gene_by_id(GBDATA *gb_main, const char *id) {
+    char   *organism = GB_strdup(id);
+    char   *gene     = strchr(organism, '/');
+    GBDATA *result   = 0;
+
+    if (gene) {
+        *gene++ = 0;
+        GBDATA *gb_organism = GEN_find_organism(gb_main, organism);
+        if (gb_organism) {
+            result = GEN_find_gene(gb_organism, gene);
+        }
+    }
+
+    free(organism);
+    return result;
+}
 
 
 static char *old_species_marks = 0; // configuration storing marked species
@@ -178,7 +191,8 @@ static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE rang
 struct ad_item_selector GEN_item_selector         = {
     AWT_QUERY_ITEM_GENES,
     GEN_select_gene,
-    gen_gene_result_name,
+    gen_get_gene_id,
+    gen_find_gene_by_id,
     (AW_CB)awt_gene_field_selection_list_update_cb,
     25,
     CHANGE_KEY_PATH_GENES,
@@ -238,7 +252,7 @@ void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
 
     if (gb_gene) {
         char *gene_content = GBT_read_gene_sequence(gb_gene, false); // ignore complement here (to highlight gene in ARB_EDIT4)
-        
+
         awr->awar(AWAR_GENE_CONTENT)->write_string(gene_content);
         clear = false;
         free(gene_content);
@@ -271,7 +285,7 @@ void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
 
                     awr->awar(AWAR_GENE_CONTENT)->write_string(buffer);
                     clear = false;
-                    
+
                     free(buffer);
                 }
             }
@@ -694,7 +708,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
     {
         Awar_Callback_Info    *cb_info     = new Awar_Callback_Info(aws->get_root(), AWAR_GENE_NAME, GEN_map_gene, scannerid); // do not delete!
         AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
-        
+
         cb_info->add_callback();
 
         aws->at("detach");
