@@ -11,13 +11,13 @@ SUB	regexpr.hlp
 # Hypertext links in helptext can be added like this: {ref.hlp:visible_text}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Input mask syntax description
+TITLE		User mask syntax description
 
-OCCURRENCE	In all input mask files.
+OCCURRENCE	In all user mask files.
 
 DESCRIPTION
 
-        This document describes the syntax of input masks (*.mask files)
+        This document describes the syntax of user masks (*.mask files)
 
             <mask-file>         ::= <id-line>
                                     [<parameter-line>]+
