@@ -2,6 +2,8 @@ ARB change log
 
 Major changes for next Beta:
 
+ - visualization of SAIs (as background color behind Sequences)
+ - ARB_EDIT4 may save/use alignment-specific and alignment-type-specific properties
  - PT-server occupies more memory => does less passes; more diagnostic output
  - small changes to status window (unhide behavior/time estimation)
  - menus and menu-hotkeys reorganized
