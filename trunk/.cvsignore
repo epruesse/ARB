@@ -3,3 +3,6 @@ config.makefile
 do_core
 arbsrc_*.tgz
 ARB_SOURCE_DOC
+demo.a[0-9][0-9]
+demo.ARF
+arb.tgz
