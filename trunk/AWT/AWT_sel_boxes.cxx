@@ -320,17 +320,18 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
 
 void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
 {
+    printf("start awt_create_selection_list_on_extendeds_update\n"); // @@@
 	struct awt_sel_list_for_sai *cbs = (struct awt_sel_list_for_sai *)cbsid;
-	GBDATA *gb_extended_data;
-	gb_extended_data = GB_search(cbs->gb_main,"extended_data",GB_CREATE_CONTAINER);
+	GBDATA                      *gb_extended_data;
+	gb_extended_data                 = GB_search(cbs->gb_main,"extended_data",GB_CREATE_CONTAINER);
 	AWUSE(dummy);
 	cbs->aws->clear_selection_list(cbs->id);
-	GBDATA *gb_extended;
-	GBDATA *gb_name;
+	GBDATA                      *gb_extended;
+	GBDATA                      *gb_name;
 	for (	gb_extended = GBT_first_SAI(cbs->gb_main);
             gb_extended;
-            gb_extended = GBT_next_SAI(gb_extended)){
-		gb_name = GB_find(gb_extended,"name",0,down_level);
+            gb_extended              = GBT_next_SAI(gb_extended)){
+		gb_name                      = GB_find(gb_extended,"name",0,down_level);
 		if (!gb_name) continue;
 		if (cbs->filter_poc) {
 			char *res = cbs->filter_poc(gb_extended,cbs->filter_cd);
@@ -359,6 +360,7 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
 	}
 	cbs->aws->insert_default_selection( cbs->id, "- none -", "none" );
 	cbs->aws->update_selection_list( cbs->id );
+    printf("done  awt_create_selection_list_on_extendeds_update\n"); // @@@
 }
 
 void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, const char *varname,
