@@ -8,7 +8,7 @@ itemmethod:(GOTO_LOCAL_DIR ; \
             RUN_IN_WINDOW ((cat in1.ph |arb_dnarates)); \
             RM_LOCAL_FILES(in1) )&
 
-itemhelp:phylip.help
+itemhelp:DNAml_rates.help
 
 arg:TREE
 argtype:tree
