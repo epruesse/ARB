@@ -52,9 +52,13 @@ void    MP_new_sequence(AW_window *aww)
 {
     AWUSE(aww);
     mp_main->get_aw_root()->awar_string(MP_AWAR_SEQUENZEINGABE)->write_string("");
+    
     delete glob_old_seq;
     glob_old_seq = NULL;
-    aw_input("Enter target sequence",MP_AWAR_SEQUENZEINGABE);
+
+    char *res = aw_input("Enter target sequence",MP_AWAR_SEQUENZEINGABE);
+    free(res);
+
     MP_take_manual_sequence(aww);
 }
 
@@ -1000,7 +1004,7 @@ void MP_result_chosen(AW_window *aww)
 int MP_init_local_com_struct()
 {
     const char *user = GB_getenvUSER();
-    
+
     if( aisc_create(mp_pd_gl.link, PT_MAIN, mp_pd_gl.com,
                     MAIN_LOCS, PT_LOCS, &mp_pd_gl.locs,
                     LOCS_USER, user,
