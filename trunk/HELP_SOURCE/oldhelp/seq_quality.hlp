@@ -12,48 +12,67 @@ TITLE		Calculate sequence quality
 
 OCCURRENCE	ARB_NT/Sequence/Calculate sequence quality
 
-DESCRIPTION     This tool tries to evaluate the quality of the sequences and their alignment.
+DESCRIPTION     'Calculate sequence quality' tries to measure the quality of sequences and
+                the quality their alignment.
 
+                Since "quality" is 
 
-		HANDLING:
+        HANDLING:
 
-		Unmark all species. Then call the tool and fill in the values you think are appropriate.
+                Fill in the values you think are appropriate.
 		The default values are the values that worked best in the first test runs.
-		The tool generates many criteria (see below) and a final evaluation of the sequence in percent.
-		After the calculations are done the tool will mark all the sequences, that fall under
-		the threshold you specified in "Mark below".
+		Many criteria are evaluated (see 'THE VALUES' below for details).
 
-		HOW IT WORKS:
+                A final "quality-value" (percentage) for each sequence is calculated
+                and all sequences below the given threshold may get marked.
+                
+        HOW IT WORKS:
 
-		In the field "weights" you have quite a few options to fill in. These are some of the criteria the
-		tool uses to evaluate the quality of the sequence. The values represent the share of the criteria
-		in the final formula for evaluation. So a higher value means emphasation. All values represent
-		precentage, therefor all values together should sum up to 100.
+		In the section "weights" you have quite a few options to fill in.
 
-		THE VALUES:
+                These are some of the criteria used to evaluate the quality of the sequences.
+                The values represent the share of the criteria in the final evaluation-formula.
+                A higher value means emphasation.
+                All values represent percentages, therefore all values together should sum up to 100.
+
+        THE VALUES:
 
 		Base analysis:
-		This is the number of bases that are stored in the sequence. "-" and "." are
-		not counted.
+
+                        This is the number of bases that are stored in the sequence. "-" and "." are
+                        not counted.
 
 		Deviation:
-		This is the deviation of the number of bases from a sequence to the average number
-		of bases in a group.
+
+                        This is the deviation of the number of bases from a sequence to the average number
+                        of bases in a group.
 
 		No Helices:
-		This is the number of posistions in a sequence where no helix structure can be built.
+
+		        This is the number of positions in a sequence where no helix structure can be built.
 
 		Consensus:
-		A consensus is computed from sequences in one group and then from subgroups to groups.
-		So "multilevel" consensi are generated.
-		The value consists of two analyses: Every sequence is tested against every level of the consensus.
-		Conformity and deviation from the consensus are measured.
+
+                        For each named group found in the tree (selected below)
+                        a consensus sequence is calculated.
+
+                        Every species' sequence is compared against the consensus sequences
+                        of all groups of which the species is a member.
+
+                        That comparation uses conformity with and deviation from the consensus sequence.
+
+#		        A consensus is computed from sequences in one group and then from subgroups to groups.
+#                        So "multilevel" consensi are generated.
+#                        The value consists of two analyses: Every sequence is tested against every level of the consensus.
+#                        Conformity and deviation from the consensus are measured.
 
 		IUPAC:
-		This is the number of iupac-codes stored in a sequence.
+
+		        This is the number of iupac-codes stored in a sequence.
 
 		GC proportion:
-		This is the deviation in GC proportion from a sequence to group.
+
+		        This is the deviation in GC proportion from a sequence to group.
 
 NOTES		Generally speaking the consensus is the mightiest tool to evaluate the quality. So keep the
 		percentage high unless you know what you're doing or you want to evaluate with just one or
