@@ -130,13 +130,16 @@ class AW_selection_list {
     AW_select_table_struct *loop_pntr;
 public:
 	AW_selection_list( const char *variable_namei, int variable_typei, Widget select_list_widgeti );
-        char			*variable_name;
-	AW_VARIABLE_TYPE	variable_type;
-	Widget			select_list_widget;
-	AW_select_table_struct	*list_table;
-	AW_select_table_struct	*last_of_list_table;
-	AW_select_table_struct	*default_select;
-	AW_selection_list	*next;
+
+    char			 *variable_name;
+	AW_VARIABLE_TYPE  variable_type;
+	Widget			  select_list_widget;
+    bool              value_equal_display; // set true to fix load/save of some selection lists
+
+	AW_select_table_struct *list_table;
+	AW_select_table_struct *last_of_list_table;
+	AW_select_table_struct *default_select;
+	AW_selection_list	   *next;
 
     // ******************** real public ***************
     void selectAll();
@@ -405,25 +408,29 @@ public:
     void conc_list( AW_selection_list * from_list_id,  AW_selection_list * to_list_id);
 
     // --- selection list iterator:
-    void init_list_entry_iterator(AW_selection_list *selection_list);
-    void iterate_list_entry(int offset);
+    void        init_list_entry_iterator(AW_selection_list *selection_list);
+    void        iterate_list_entry(int offset);
     // --- the following functions work on the currently iterated element:
     const char *get_list_entry_char_value();
     const char *get_list_entry_displayed();
-    void set_list_entry_char_value(const char *new_char_value);
-    void set_list_entry_displayed(const char *new_displayed);
+    void        set_list_entry_char_value(const char *new_char_value);
+    void        set_list_entry_displayed(const char *new_displayed);
     // ---------------------------------------------------------
 
     void clear_selection_list(  AW_selection_list * selection_list );
     void update_selection_list(  AW_selection_list * selection_list );
-    int get_no_of_entries(  AW_selection_list * selection_list );
-    int get_index_of_element(AW_selection_list *selection_list, const char *selected_element);
+
+    int         get_no_of_entries(  AW_selection_list * selection_list );
+    int         get_index_of_element(AW_selection_list *selection_list, const char *selected_element);
     const char *get_element_of_index(AW_selection_list *selection_list, int  index);
-    char *get_selection_list_contents( AW_selection_list * selection_list, long nr_of_lines = -1);
-    void sort_selection_list(  AW_selection_list * selection_list, int backward);
-    GB_ERROR save_selection_list(  AW_selection_list * selection_list, const char *filename,long number_of_lines = 0);
-    void set_selection_list_suffix( AW_selection_list * selection_list, const char *suffix);
-    GB_ERROR load_selection_list(  AW_selection_list * selection_list, const char *filename);
+    int         move_selection(AW_selection_list *selection_list, AW_awar *list_awar, int offset);
+
+
+    char       *get_selection_list_contents( AW_selection_list * selection_list, long nr_of_lines = -1);
+    void        sort_selection_list(  AW_selection_list * selection_list, int backward);
+    GB_ERROR    save_selection_list(  AW_selection_list * selection_list, const char *filename,long number_of_lines = 0);
+    void        set_selection_list_suffix( AW_selection_list * selection_list, const char *suffix);
+    GB_ERROR    load_selection_list(  AW_selection_list * selection_list, const char *filename);
     GBDATA_SET *selection_list_to_species_set(GBDATA *gb_main,AW_selection_list *selection_list);
 
     AW_selection_list * create_multi_selection_list( const char *label = 0, const char *mnemonic = 0, int columns = 4, int rows = 4 );
