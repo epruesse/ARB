@@ -31,7 +31,9 @@ DESCRIPTION	Probe design, probe matching, and searching the nearest relatives re
 	-	When any (calling) program wants to scan a database, it
 		does not do the job itself but calls a special
 		SEARCH_PATTERNS_IN_A_BIG_DATABASE_PROGRAM.
-		We named this programm PT_SERVER (PREFIX TREE SERVER).
+
+		We named this programm PT_SERVER ('Prefix tree server' or
+                synonymously 'Positional tree server').
 		The PT_SERVER searches for patterns in special database files
 		and sends all matches back to the calling program.
 
@@ -44,18 +46,21 @@ DESCRIPTION	Probe design, probe matching, and searching the nearest relatives re
 		A PT_SERVER does not scan the database of the calling
 		program, but the database in $ARBHOME/lib/pts/*.arb.
 
-		That means:
-                !!!! If you have just entered a new sequence this sequence
-		will not be found by the the nearest-relative search. This is normally
-		very useful, as you only want to use old sequences as a
-		reference in the aligning process. For generating probes there
-		is an important exception: new sequences are added to the
-		group sequences of the pt_server.
+                  That means:
 
-            *** {Oliver:  Do you mean
-                "for generating probes, new sequences should be added to
-                 the PT_SERVER (see "PT_SERVER Administration)"?}******
+                    If you have just entered a new sequence this sequence
+                    will not be found by the the nearest-relative search.
 
+                         This is normally very useful, as you only want to use old
+                         sequences as a reference in the aligning process.
+
+                    For generating probes it isn't useful, because new sequences have to
+                    be added to the PT_SERVER before designing or matching probes.
+                    Remember: By adding 1 new sequence to the database, any previously validated
+                    probe may become invalid.
+
+                          Update your PT-server frequently and re-evaluate any probes you've made
+                          before.
 
 
 	Creating a new PT_SERVER template:
