@@ -15,9 +15,8 @@
 
 using namespace std;
 
-
 //
-// *** disk output ASCII **
+// *** disk output ASCII ***
 //
 bool PS_Node::saveASCII( PS_FileBuffer* _fb, char *buffer ) { // buffer MUST be at least 100 chars long
     unsigned int size;
@@ -63,7 +62,7 @@ bool PS_Node::saveASCII( PS_FileBuffer* _fb, char *buffer ) { // buffer MUST be 
 
 
 //
-// *** disk output **
+// *** disk output ***
 //
 bool PS_Node::save( PS_FileBuffer* _fb ) {
     unsigned int size;
@@ -99,7 +98,7 @@ bool PS_Node::save( PS_FileBuffer* _fb ) {
 
 
 //
-// *** disk input **
+// *** disk input ***
 //
 bool PS_Node::load( PS_FileBuffer* _fb ) {
     unsigned int size;
@@ -131,7 +130,7 @@ bool PS_Node::load( PS_FileBuffer* _fb ) {
             PS_NodePtr new_child(new PS_Node(-1));                // make new child
             new_child->load( _fb );                               // read new child
             children[new_child->getNum()] = new_child;            // insert new child to childmap
-            if (i % 200 == 0) printf( "loaded 1st level #%i\n",new_child->getNum() );
+            if (i % 200 == 0) printf( "loaded 1st level #%i (%i)\n", i+1, new_child->getNum() );
         }
     } else {
         for (unsigned int i=0; i<size; ++i) {
@@ -146,7 +145,7 @@ bool PS_Node::load( PS_FileBuffer* _fb ) {
 
 
 //
-// *** disk input appending **
+// *** disk input appending ***
 //
 bool PS_Node::append( PS_FileBuffer* _fb ) {
     unsigned int size;
@@ -179,7 +178,7 @@ bool PS_Node::append( PS_FileBuffer* _fb ) {
         //
         SpeciesID childNum;
         _fb->get_int( childNum );
-        if ((num == -1) && (i % 200 == 0)) printf( "appended 1st level #%i\n", childNum );
+        if ((num == -1) && (i % 200 == 0)) printf( "appended 1st level #%i (%i)\n", i+1, childNum );
         //
         // test if child already exists
         //
@@ -193,5 +192,60 @@ bool PS_Node::append( PS_FileBuffer* _fb ) {
         }
     }
     // return true to signal success
+    return true;
+}
+
+
+//
+// disk read with callback
+// children are stored as child[0] one after the other
+//
+bool PS_Node::read( PS_FileBuffer* _fb, PS_Callback *_call_destination ) {
+    unsigned int size;
+    //
+    // read num if root
+    //
+    if (num == -1) {
+        _fb->get_int( num );
+    }
+    //
+    // read probes
+    //
+    _fb->get_uint( size );
+    if (size) {               // does node have probes ?
+	if (!probes) probes = new PS_ProbeSet;                    // make new probeset
+	for (unsigned int i=0; i<size; ++i) {
+            PS_Probe *p = new PS_Probe;
+	    _fb->get( p, sizeof(PS_Probe) );                      // read new probe
+	    PS_ProbePtr new_probe(p);                             // make new probe-smartpointer
+	    probes->insert( new_probe );                          // append new probe to probeset
+	}
+    }
+    //
+    // callback
+    //
+    _call_destination->callback( this );
+    //
+    // read children
+    //
+    _fb->get_uint( size );
+    for (unsigned int i=0; i<size; ++i) {
+        //
+        // read num of child
+        //
+        SpeciesID childNum;
+        _fb->get_int( childNum );
+        if ((num == -1) && (i % 200 == 0)) printf( "read 1st level #%i (%i)\n", i+1, childNum );
+        //
+        // read children
+        //
+        PS_NodePtr child(new PS_Node(childNum));                // make child
+        children[0] = child;                                    // store child as Number Zero
+        child->read( _fb, _call_destination );                  // read child
+        children.erase( 0 );                                    // remove previous child
+    }
+    //
+    // return true to signal success
+    //
     return true;
 }

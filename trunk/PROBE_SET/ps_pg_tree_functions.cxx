@@ -1,8 +1,12 @@
 #ifndef PS_PG_TREE_FUNCTIONS_CXX
 #define PS_PG_TREE_FUNCTIONS_CXX
 
-#ifndef PG_SEARCH_HXX
-#include "../PROBE_GROUP/pg_search.hxx"
+#ifndef PS_DEFS_HXX
+#include "ps_defs.hxx"
+#endif
+
+#ifndef arbdb_h_included
+#include <arbdb.h>
 #endif
 
 using namespace std;
@@ -12,6 +16,11 @@ using namespace std;
 // --------------------------------------------------------------------------------
 // mapping shortname <-> SpeciesID
 
+<<<<<<< ps_pg_tree_functions.cxx
+static Name2IDMap __NAME2ID_MAP;
+static ID2NameMap __ID2NAME_MAP;
+static bool       __MAPS_INITIALIZED = false;
+=======
 typedef map<string, int>           String2Int;
 typedef String2Int::const_iterator String2IntIter;
 typedef String2Int::const_reverse_iterator String2IntRIter;
@@ -22,6 +31,7 @@ typedef Int2String::const_reverse_iterator Int2StringRIter;
 static String2Int species2num_map;
 static Int2String num2species_map;
 static bool       species_maps_initialized = false;
+>>>>>>> 1.2
 
 //  ----------------------------------------------------------------------
 //      GB_ERROR PG_initSpeciesMaps(GBDATA *pb_main)
@@ -30,7 +40,7 @@ GB_ERROR PG_initSpeciesMaps(GBDATA *pb_main) {
 
   GB_transaction pb_dummy(pb_main);
 
-  pg_assert(!species_maps_initialized);
+  ps_assert(!__MAPS_INITIALIZED);
 
   // look for existing mapping in pb-db:
   GBDATA *pb_mapping = GB_find(pb_main, "species_mapping", 0, down_level);
@@ -49,14 +59,14 @@ GB_ERROR PG_initSpeciesMaps(GBDATA *pb_main) {
       string idnum(komma,semicolon-komma);
       SpeciesID   id        = atoi(idnum.c_str());
 
-      species2num_map[name] = id;
-      num2species_map[id]   = name;
+      __NAME2ID_MAP[name] = id;
+      __ID2NAME_MAP[id]   = name;
 
       mapping = semicolon+1;
     }
   }
 
-  species_maps_initialized = true;
+  __MAPS_INITIALIZED = true;
   return 0;
 }
 
@@ -64,20 +74,20 @@ GB_ERROR PG_initSpeciesMaps(GBDATA *pb_main) {
 //      SpeciesID PG_SpeciesName2SpeciesID(const string& shortname)
 //  --------------------------------------------------------------------
 SpeciesID PG_SpeciesName2SpeciesID(const string& shortname) {
-  pg_assert(species_maps_initialized); // you didn't call PG_initSpeciesMaps
-  return species2num_map[shortname];
+  ps_assert(__MAPS_INITIALIZED); // you didn't call PG_initSpeciesMaps
+  return __NAME2ID_MAP[shortname];
 }
 
 //  --------------------------------------------------------------
 //      const string& PG_SpeciesID2SpeciesName(SpeciesID num)
 //  --------------------------------------------------------------
 const string& PG_SpeciesID2SpeciesName(SpeciesID num) {
-  pg_assert(species_maps_initialized); // you didn't call PG_initSpeciesMaps
-  return num2species_map[num];
+  ps_assert(__MAPS_INITIALIZED); // you didn't call PG_initSpeciesMaps
+  return __ID2NAME_MAP[num];
 }
 
 int PG_NumberSpecies(){
-    return num2species_map.size();
+    return __ID2NAME_MAP.size();
 }
 
 // db-structure of group_tree:

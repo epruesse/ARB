@@ -13,7 +13,6 @@ using namespace std;
 //***********************************************
 //* PS_FileBuffer
 //***********************************************
-#define BUFFER_SIZE 4096
 class PS_FileBuffer {
 private:
     // filehandling
@@ -36,8 +35,9 @@ private:
     void refill();                      // refill buffer from file
 
 public:
-    static const bool READONLY  = true;
-    static const bool WRITEONLY = false;
+    static const bool READONLY    = true;
+    static const bool WRITEONLY   = false;
+    static const int  BUFFER_SIZE = 4096;
 
     //
     // IO-functions
@@ -71,6 +71,15 @@ public:
             refill();
             _c       = buffer[0];
             position = 1;
+        }
+    }
+    unsigned char get_char() {
+        if (position < size) {
+            return buffer[position++];
+        } else {
+            refill();
+            position = 1;
+            return buffer[0];
         }
     }
 
@@ -126,6 +135,10 @@ public:
     void clear() {                       // 'clear' buffer
         size     = 0;
         position = 0;
+    }
+
+    bool isReadonly() {
+        return is_readonly;
     }
 
     //
