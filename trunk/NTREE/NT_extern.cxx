@@ -690,6 +690,7 @@ void NT_justify_branch_lenghs(AW_window *, AW_CL ntwcl){
     }
 }
 
+#if defined(DEBUG) && 0
 void NT_fix_database(AW_window *) {
     GB_ERROR err = 0;
 
@@ -697,6 +698,7 @@ void NT_fix_database(AW_window *) {
     err = GB_fix_database(gb_main);
     if (err) aw_message(err);
 }
+#endif // DEBUG
 
 static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_name) {
     if (ref_gb_node) {
@@ -1204,7 +1206,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------------------------------------------------------------------------
         awm->create_menu(0,"Tools ","o","nt_etc.hlp", AWM_ALL);
         {
+#if defined(DEBUG) && 0
             AWMIMT("fix_db",            "Fix database",          "", "fixdb.hlp",        AWM_EXP, (AW_CB)NT_fix_database, 0, 0);
+#endif // DEBUG
             AWMIMT("names_admin",       "Name Server Admin ",    "S","namesadmin.hlp",   AWM_EXP, AW_POPUP, (AW_CL)create_awtc_names_admin_window, 0 );
             awm->insert_sub_menu( 0,   "Network", "N");
             {
