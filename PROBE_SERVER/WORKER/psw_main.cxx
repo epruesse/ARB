@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Mon Oct/06/2003 17:16 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Oct/07/2003 14:31 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -284,14 +284,8 @@ namespace {
 
                 if (gb_member) { // leaf node
                     SpeciesID id   = GB_read_int(gb_member);
-                    string    name = PM_ID2name(id);
-
-                    if (name.length()) {
-                        members.push_back(name);
-                    }
-                    else {
-                        error = GBS_global_string("No such species '%i'", id);
-                    }
+                    string    name = PM_ID2name(id, error);
+                    if (!error) members.push_back(name);
                 }
                 else {
                     char *sonpath = GBS_global_string_copy("%sL", decoded_path);
