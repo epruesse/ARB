@@ -54,7 +54,7 @@ for wagner & fitch parsimony algorithm
 is_set_flag is used by AP_tree_nlen::parsimony_rek()
 *************************************************************************/
 
-#define SHOW_SEQ
+// #define SHOW_SEQ
 
 void AP_sequence_parsimony::set(char *isequence)
 {
