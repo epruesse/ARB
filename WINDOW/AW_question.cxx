@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : aw_question.cpp                                        //
 //    Purpose   :                                                        //
-//    Time-stamp: <Tue Dec/03/2002 15:01 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sat Aug/09/2003 14:16 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //
@@ -22,9 +22,16 @@ using namespace std;
 
 // start of implementation of class AW_repeated_question:
 
-//  ---------------------------------------------------------------------------------------------------------------------------
-//      int AW_repeated_question::get_answer(const char *question, const char *buttons, const char *to_all, bool add_abort)
-//  ---------------------------------------------------------------------------------------------------------------------------
+void AW_repeated_question::add_help(const char *help_file) {
+    if (helpfile) {
+        free(helpfile);
+        helpfile = 0;
+    }
+    if (help_file) {
+        helpfile = strdup(help_file);
+    }
+}
+
 int AW_repeated_question::get_answer(const char *question, const char *buttons, const char *to_all, bool add_abort)
 {
     if (!buttons_used) {
@@ -38,16 +45,16 @@ int AW_repeated_question::get_answer(const char *question, const char *buttons, 
 
     if (answer == -1 || dont_ask_again == false) {
 
+        char   *all             = GBS_global_string_copy(" (%s)", to_all);
+        int     all_len         = strlen(all);
         size_t  but_len         = strlen(buttons);
-        size_t  new_buttons_len = but_len*3+1+(add_abort ? 6 : 0);
+        size_t  new_buttons_len = but_len*3+1+(add_abort ? 6 : 0)+all_len*3;
         char   *new_buttons     = (char*)malloc(new_buttons_len);
         int     button_count    = 0; // number of buttons in 'buttons'
 
         { // transform "YES,NO"  ->   "YES,YES (to_all),^NO,NO (to_all)" or "YES (to_all),NO (to_all)"
             char       *w       = new_buttons;
             const char *r       = buttons;
-            char       *all     = GBS_global_string_copy(" (%s)", to_all);
-            int         all_len = strlen(all);
 
             while (1) {
                 const char *komma = strchr(r, ',');
@@ -82,7 +89,7 @@ int AW_repeated_question::get_answer(const char *question, const char *buttons, 
             free(all);
         }
 
-        int user_answer = aw_message(question, new_buttons);
+        int user_answer = aw_message(question, new_buttons, true, helpfile);
 
         if (dont_ask_again) {   // ask question as normal when called first (dont_ask_again later)
             answer = user_answer;
