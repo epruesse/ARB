@@ -16,6 +16,19 @@ using namespace gellisary;
 
 void gellisary::GAGenomUtilities::replaceByString(string * source_str, string * delimer_str, string * replacing_str)
 {
+    size_t found;
+    size_t start=0;
+    size_t replen=replacing_str->length();
+
+    while ((found = source_str->find(*delimer_str,start))!=string::npos) {
+	*source_str = source_str->replace(found, delimer_str->length(), *replacing_str);
+	start=found+replen;
+    }
+}
+
+#if 0
+void gellisary::GAGenomUtilities::replaceByString2(string * source_str, string * delimer_str, string * replacing_str)
+{
     int delimer_str_pos = 0;
     string target_str;
     string tmp_str;
@@ -57,6 +70,7 @@ void gellisary::GAGenomUtilities::replaceByString(string * source_str, string * 
     }
     *source_str = target_str;
 }
+#endif
 
 /*
  * Diese Funktionen suchen in 'source_str' nach einem 'delimer_str' und nach einem '\r' und ersetzen ihn durch ' '
