@@ -23,7 +23,7 @@
 
 #include <stdarg.h>
 #include <stdlib.h>
-
+#include <awt_canvas.hxx>
 #include "aw_preset.hxx"
 
 #ifdef _ARB_WINDOW
@@ -33,9 +33,9 @@ void AW_save_defaults( AW_window *aw ) {
 }
 
 void aw_message_reload(AW_root *){
-    aw_message(	"Sorry, to activate new colors:\n"
-                "	save properties\n"
-                "	and restart application");
+    aw_message( "Sorry, to activate new colors:\n"
+                "   save properties\n"
+                "   and restart application");
 }
 char *aw_glob_font_awar_name = 0;
 
@@ -179,8 +179,6 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name,const 
     aws->show();
 }
 
-
-
 void AW_preset_create_color_chooser(AW_window *aws, const char *awar, const char *label,bool message_reload, bool show_label)
 {
     if (message_reload) aws->get_root()->awar(awar)->add_callback(aw_message_reload);
@@ -230,7 +228,7 @@ void AW_preset_create_scale_chooser(AW_window *aws, char *awar, char *label)
 
 struct AW_MGC_awar_cb_struct;
 
-struct AW_MGC_cb_struct {	// one for each window
+struct AW_MGC_cb_struct {   // one for each window
     AW_MGC_cb_struct(AW_window *awi, void (*g)(AW_window*,AW_CL ,AW_CL), AW_CL cd1i, AW_CL cd2i);
     AW_window *aw;
     void (*f)(AW_window*,AW_CL ,AW_CL);
@@ -251,13 +249,13 @@ AW_MGC_cb_struct::AW_MGC_cb_struct( AW_window *awi,
     window_awar_name = GBS_string_2_key(awi->get_window_title());
 }
 
-struct AW_MGC_awar_cb_struct {	// one for each awar
+struct AW_MGC_awar_cb_struct {  // one for each awar
     struct AW_MGC_cb_struct *cbs;
     const char *fontbasename;
     const char *colorbasename;
-    short		gc;
-    short		gc_drag;
-    short		colorindex;
+    short       gc;
+    short       gc_drag;
+    short       colorindex;
     struct AW_MGC_awar_cb_struct *next;
 };
 
@@ -271,8 +269,8 @@ void aw_gc_changed_cb(AW_root *awr,AW_MGC_awar_cb_struct *cbs, long mode)
 {
     // mode == -1 -> no callback
     char awar_name[256];
-    int	font;
-    int	size;
+    int font;
+    int size;
 
     sprintf(awar_name,AWP_FONTNAME_TEMPLATE,cbs->cbs->window_awar_name,cbs->fontbasename);
     font = (int)awr->awar(awar_name)->read_int();
@@ -282,7 +280,7 @@ void aw_gc_changed_cb(AW_root *awr,AW_MGC_awar_cb_struct *cbs, long mode)
 
     cbs->cbs->device->set_font(cbs->gc,font,size);
     cbs->cbs->device->set_font(cbs->gc_drag,font,size);
-    if (mode != -1)	{
+    if (mode != -1) {
         cbs->cbs->f(cbs->cbs->aw,cbs->cbs->cd1,cbs->cbs->cd2);
     }
 }
@@ -305,10 +303,9 @@ void aw_gc_color_changed_cb(AW_root *root,AW_MGC_awar_cb_struct *cbs, long mode)
             cbs->cbs->device->set_foreground_color(acbs->gc_drag,(AW_color)acbs->colorindex);
         }
     }
-    if (mode != -1)	{
+    if (mode != -1) {
         cbs->cbs->f(cbs->cbs->aw,cbs->cbs->cd1,cbs->cbs->cd2);
     }
-    printf("color changed to %s \n",colorname);
     free(colorname);
 }
 
@@ -445,25 +442,25 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                            ...)
 {
     /*
-     *	Parameter:	aww:   	base window
-     *			device:	screen device
-     *			base_gc:	first gc number
-     *			base_drag:	one after last gc
-     *			area:		middle,top ...
-     *			changecb:	cb if changed
-     *			cd1,cd2:	free Parameters to changecb
-     *			define_color_groups: true -> add colors for color groups
+     *  Parameter:  aww:    base window
+     *          device: screen device
+     *          base_gc:    first gc number
+     *          base_drag:  one after last gc
+     *          area:       middle,top ...
+     *          changecb:   cb if changed
+     *          cd1,cd2:    free Parameters to changecb
+     *          define_color_groups: true -> add colors for color groups
      *
-     *			...:        NULL terminated list of \0 terminated strings:
+     *          ...:        NULL terminated list of \0 terminated strings:
      *
-     *			first GC is fixed: '-background'
+     *          first GC is fixed: '-background'
      *
-     *			optionsSTRING   name of GC and AWAR
-     *			options:	    #	fixed fonts only
-     *					        -	no fonts
-     *					        --	completely hide GC
-     *					        =	no color selector
-     *					        +	append next in same line
+     *          optionsSTRING   name of GC and AWAR
+     *          options:        #   fixed fonts only
+     *                          -   no fonts
+     *                          --  completely hide GC
+     *                          =   no color selector
+     *                          +   append next in same line
      *
      *                          $color at end of string = > define default color value
      */
@@ -473,7 +470,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
 
     AW_init_color_groups(aw_root, aw_def);
 
-    const char	         *id;
+    const char           *id;
     va_list               parg;
     va_start(parg,default_background_color);
     AW_font               def_font;
@@ -499,7 +496,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
     char background[50];
     gb_assert(default_background_color[0]);
 
-    sprintf(background, "-BACKGROUND$%s", default_background_color);
+    sprintf(background, "-background$%s", default_background_color);
 
     for (int loop = 1; loop <= 2; ++loop) {
         int color_group_counter = 0;
@@ -543,8 +540,8 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                 acbs = new AW_MGC_awar_cb_struct;
                 acbs->cbs = mcbs;
                 acbs->colorbasename = GBS_string_2_key(id_copy);
-                acbs->gc 	= base_gc;
-                acbs->gc_drag 	= base_drag;
+                acbs->gc    = base_gc;
+                acbs->gc_drag   = base_drag;
                 if (!first) {
                     acbs->next = mcbs->next_drag;
                     mcbs->next_drag = acbs;
@@ -553,11 +550,11 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                 int offset = 0;
                 while (1){
                     switch( id_copy[offset] ){
-                        case '#':	flag_fixed_fonts_only = AW_TRUE; 	    offset++; continue;
-                        case '=':	flag_no_color_selector = AW_TRUE; 	    offset++; continue;
-                        case '+':	flag_append_in_same_line = AW_TRUE; 	offset++; continue;
-                        case '-':	flag_no_fonts = AW_TRUE; 		        offset++; continue;
-                        default:	break;
+                        case '#':   flag_fixed_fonts_only = AW_TRUE;        offset++; continue;
+                        case '=':   flag_no_color_selector = AW_TRUE;       offset++; continue;
+                        case '+':   flag_append_in_same_line = AW_TRUE;     offset++; continue;
+                        case '-':   flag_no_fonts = AW_TRUE;                offset++; continue;
+                        default:    break;
                     }
                     break;
                 }
@@ -641,16 +638,16 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
 
         while (1){
             switch( id[0] ){
-                case '#':	flag_fixed_fonts_only = AW_TRUE; 	id++; continue;
-                case '=':	flag_no_color_selector = AW_TRUE; 	id++; continue;
-                case '+':	flag_append_in_same_line = AW_TRUE; 	id++; continue;
-                case '-':	{
+                case '#':   flag_fixed_fonts_only = AW_TRUE;    id++; continue;
+                case '=':   flag_no_color_selector = AW_TRUE;   id++; continue;
+                case '+':   flag_append_in_same_line = AW_TRUE;     id++; continue;
+                case '-':   {
                     if (flag_no_fonts) flag_hide_this_gc = AW_TRUE; // if gc definition contains -- the gc is completely hidden
                     else flag_no_fonts = AW_TRUE;
                     id++;
                     continue;
                 }
-                default:	break;
+                default:    break;
             }
             break;
         }
@@ -684,10 +681,10 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
             }
 
             if (!flag_no_color_selector){
-                aws->button_length(10);
+                aws->button_length(5);
                 AW_preset_create_color_chooser(aws, awar_name, id);
             }
-            //            aws->create_input_field(awar_name, 10);
+            aws->create_input_field(awar_name, 7);
 
             if (!flag_no_fonts) {
                 sprintf(awar_name, AWP_FONTNAME_TEMPLATE,window_awar_name, fontbasename);
@@ -721,7 +718,7 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
                 aws->update_option_menu();
 
             }
-            if (!flag_append_in_same_line)	aws->at_newline();
+            if (!flag_append_in_same_line)  aws->at_newline();
         }
         first = AW_FALSE;
         free(fontbasename);
@@ -914,7 +911,7 @@ AW_window *AWT_preset_window( AW_root *root )
 #endif
 {
     AW_window_simple *aws = new AW_window_simple;
-    const int	tabstop = 400;
+    const int   tabstop = 400;
     aws->init( root, "PROPS_FRAME", "WINDOW_PROPERTIES", 400, 300 );
 
     aws->label_length( 25 );

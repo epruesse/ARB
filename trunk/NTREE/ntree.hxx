@@ -33,6 +33,6 @@ AW_window *NT_create_save_as(AW_root *aw_root,const char *base_name); // basenam
 #define AWAR_NT_REMOTE_BASE            "tmp/remote/ARB_NT"
 #define AWAR_IMPORT_PROBE_GROUP_RESULT "tmp/pg_result"
 #define AWAR_MARKED_SPECIES_COUNTER    "tmp/disp_marked_species"
-
+#define AWAR_NTREE_TITLE_MODE          "tmp/title_mode"
 
 #endif

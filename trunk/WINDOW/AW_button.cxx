@@ -69,17 +69,17 @@ void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_list_for_variable *widgetli
         }
         free(var_value);
     }
-    root->value_changed = AW_FALSE;		// Maybe value changed is set because Motig calls me
+    root->value_changed = AW_FALSE;     // Maybe value changed is set because Motig calls me
 }
 
 
 AW_widget_list_for_variable::AW_widget_list_for_variable( AW_awar *vs, AW_CL cd1, int *widgeti, AW_widget_type type, AW_window *awi ) {
-    cd		    = cd1;
-    widget		= widgeti;
-    widget_type	= type;
-    awar		= vs;
-    aw		    = awi;
-    next		= 0;
+    cd          = cd1;
+    widget      = widgeti;
+    widget_type = type;
+    awar        = vs;
+    aw          = awi;
+    next        = 0;
     awar->add_callback((AW_RCB1)aw_cp_awar_2_widget_cb, (AW_CL)this);
 }
 
@@ -87,10 +87,10 @@ AW_widget_list_for_variable::AW_widget_list_for_variable( AW_awar *vs, AW_CL cd1
 void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, XtPointer call_data ) {
     AWUSE(wgt);AWUSE(call_data);
     AW_variable_update_struct *vus   = (AW_variable_update_struct *) variable_update_struct;
-    char	                  *tmp   = 0;
-    long	                   h_int;
-    float	                   h_float;
-    GB_ERROR	               error = 0;
+    char                      *tmp   = 0;
+    long                       h_int;
+    float                      h_float;
+    GB_ERROR                   error = 0;
     XmListCallbackStruct      *xml;
     AW_root                   *root  = vus->awar->root;
 
@@ -138,13 +138,13 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
 
             switch ( vus->awar->variable_type ) {
                 case AW_STRING:
-                    error =	vus->awar->write_string( vus->variable_value );
+                    error = vus->awar->write_string( vus->variable_value );
                     break;
                 case AW_INT:
-                    error =	vus->awar->write_int(vus->variable_int_value );
+                    error = vus->awar->write_int(vus->variable_int_value );
                     break;
                 case AW_FLOAT:
-                    error =	vus->awar->write_float( vus->variable_float_value );
+                    error = vus->awar->write_float( vus->variable_float_value );
                     break;
                 default: GB_warning("Unknown AWAR type");
 
@@ -249,49 +249,49 @@ void     aw_attach_widget(Widget scrolledWindowText,AW_at *_at,int default_width
 
 
     if (_at->attach_x){
-        XtVaSetValues(	scrolledWindowText,
-                        XmNrightAttachment, 		XmATTACH_FORM,
-                        XmNrightOffset,			_at->max_x_size - _at->to_position_x,
+        XtVaSetValues(  scrolledWindowText,
+                        XmNrightAttachment,         XmATTACH_FORM,
+                        XmNrightOffset,         _at->max_x_size - _at->to_position_x,
                         NULL );
     }else{
-        XtVaSetValues(	scrolledWindowText,
-                        XmNrightAttachment, 		XmATTACH_OPPOSITE_FORM,
-                        XmNrightOffset,			-_at->to_position_x,
+        XtVaSetValues(  scrolledWindowText,
+                        XmNrightAttachment,         XmATTACH_OPPOSITE_FORM,
+                        XmNrightOffset,         -_at->to_position_x,
                         NULL );
     }
     if (_at->attach_lx){
-        XtVaSetValues(	scrolledWindowText,
-                        XmNwidth,			_at->to_position_x - _at->x_for_next_button,
-                        XmNleftAttachment, 		XmATTACH_NONE,
+        XtVaSetValues(  scrolledWindowText,
+                        XmNwidth,           _at->to_position_x - _at->x_for_next_button,
+                        XmNleftAttachment,      XmATTACH_NONE,
                         NULL );
     }else{
-        XtVaSetValues(	scrolledWindowText,
-                        XmNleftAttachment, 		XmATTACH_FORM,
-                        XmNleftOffset,			_at->x_for_next_button,
+        XtVaSetValues(  scrolledWindowText,
+                        XmNleftAttachment,      XmATTACH_FORM,
+                        XmNleftOffset,          _at->x_for_next_button,
                         NULL );
     }
 
     if (_at->attach_y){
-        XtVaSetValues(	scrolledWindowText,
-                        XmNbottomAttachment, 		XmATTACH_FORM,
-                        XmNbottomOffset,		_at->max_y_size - _at->to_position_y,
+        XtVaSetValues(  scrolledWindowText,
+                        XmNbottomAttachment,        XmATTACH_FORM,
+                        XmNbottomOffset,        _at->max_y_size - _at->to_position_y,
                         NULL );
     }else{
-        XtVaSetValues(	scrolledWindowText,
-                        XmNbottomAttachment, 		XmATTACH_OPPOSITE_FORM,
-                        XmNbottomOffset,			- _at->to_position_y,
+        XtVaSetValues(  scrolledWindowText,
+                        XmNbottomAttachment,        XmATTACH_OPPOSITE_FORM,
+                        XmNbottomOffset,            - _at->to_position_y,
                         NULL );
     }
     if (_at->attach_ly){
-        XtVaSetValues(	scrolledWindowText,
-                        XmNheight,			_at->to_position_y - _at->y_for_next_button,
-                        XmNtopAttachment, 		XmATTACH_NONE,
+        XtVaSetValues(  scrolledWindowText,
+                        XmNheight,          _at->to_position_y - _at->y_for_next_button,
+                        XmNtopAttachment,       XmATTACH_NONE,
                         NULL );
 
     }else{
-        XtVaSetValues(	scrolledWindowText,
-                        XmNtopAttachment, 		XmATTACH_FORM,
-                        XmNtopOffset,			_at->y_for_next_button,
+        XtVaSetValues(  scrolledWindowText,
+                        XmNtopAttachment,       XmATTACH_FORM,
+                        XmNtopOffset,           _at->y_for_next_button,
                         NULL );
     }
 }
@@ -372,7 +372,7 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
                                                 INFO_WIDGET,
                                                 XmNx, (int) (_at->x_for_next_button + x_correcting_for_label),
                                                 XmNy, (int)(_at->y_for_next_button - 3 - _at->shadow_thickness ),
-                                                XmNmarginWidth,	3,
+                                                XmNmarginWidth, 3,
                                                 XmNmarginHeight,3,
                                                 XmNshadowType, XmSHADOW_IN,
                                                 XmNshadowThickness, _at->shadow_thickness,
@@ -455,8 +455,8 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
     }
 
     if (_at->to_position_exists){
-        if (!height)	height = _at->to_position_y - _at->y_for_next_button;
-        if (!height)	XtVaGetValues( button, XmNheight, &height, XmNwidth, &width,NULL );
+        if (!height)    height = _at->to_position_y - _at->y_for_next_button;
+        if (!height)    XtVaGetValues( button, XmNheight, &height, XmNwidth, &width,NULL );
         height_of_last_widget = height;
     }
     else {
@@ -470,8 +470,8 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
             if (_at->highlight) w = fatherwidget;
 
             switch (_at->correct_for_at_center){
-                case 1:	div = 2;		// middle centered
-                case 2:				// right justified
+                case 1: div = 2;        // middle centered
+                case 2:             // right justified
                     XtVaSetValues( w, XmNx, (
                                              (_at->x_for_next_button + x_correcting_for_label) -
                                              (int)(width_of_last_widget-1)/div), NULL );
@@ -506,7 +506,7 @@ void AW_window::update_label( int *widget, const char *var_value ) {
 }
 
 /******************************************************************************************/
-/***********************	0/1 toggle			***************************/
+/***********************    0/1 toggle          ***************************/
 /******************************************************************************************/
 
 void AW_window::update_toggle(int *wgt,const char *var,AW_CL cd)
@@ -533,9 +533,9 @@ void AW_window::create_toggle( const char *var_name,const char *no, const char *
     bitmaps[1] = GBS_string_eval(yes,"*=#*1:##=#",0);
     create_button(0,bitmaps[0],0);
 
-    _at->length_of_buttons = 	old_length_of_buttons;
+    _at->length_of_buttons =    old_length_of_buttons;
 
-    vs=	this->get_root()->awar(var_name);
+    vs= this->get_root()->awar(var_name);
 
     char *var_value = vs->read_as_string();
     this->update_toggle((int*)p_w->toggle_field,var_value,(AW_CL)bitmaps);
@@ -562,11 +562,11 @@ void AW_window::create_toggle( const char *var_name ) {
 
 
 void AW_window::create_input_field( const char *var_name,  int columns ) {
-    Widget	                   textField              = 0;
-    Widget	                   label                  = 0;
+    Widget                     textField              = 0;
+    Widget                     label                  = 0;
     AW_cb_struct              *cbs;
     AW_variable_update_struct *vus;
-    char	                  *String;
+    char                      *String;
     int                        x_correcting_for_label = 0;
     int                        width_of_input_label;
     int                        width_of_input;
@@ -739,7 +739,7 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
                                                       XmNscrollingPolicy, XmAPPLICATION_DEFINED,
                                                       XmNvisualPolicy, XmVARIABLE,
                                                       XmNscrollBarDisplayPolicy, XmSTATIC,
-                                                      XmNfontList, 			p_global->fontlist,
+                                                      XmNfontList,          p_global->fontlist,
                                                       NULL );
         aw_attach_widget(scrolledWindowText,_at);
 
@@ -774,7 +774,7 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
     free(String);
 
     if (!_at->to_position_exists){
-        XtVaGetValues( scrolledWindowText,	XmNheight, &height_of_last_widget,
+        XtVaGetValues( scrolledWindowText,  XmNheight, &height_of_last_widget,
                        XmNwidth, &width_of_last_widget, NULL);
 
         width_of_last_widget += (short)x_correcting_for_label;
@@ -840,7 +840,7 @@ AW_selection_list* AW_window::create_selection_list( const char *var_name, const
     Widget                     scrolledList;
     Widget                     l                     = 0;
     AW_variable_update_struct *vus;
-    AW_cb_struct	          *cbs;
+    AW_cb_struct              *cbs;
     int                        width_of_label        = 0;
     int                        width_of_list;
     int                        height_of_list;
@@ -890,7 +890,7 @@ AW_selection_list* AW_window::create_selection_list( const char *var_name, const
                                                       XmNvisualPolicy, XmVARIABLE,
                                                       XmNscrollBarDisplayPolicy, XmSTATIC,
                                                       XmNshadowThickness, 0,
-                                                      XmNfontList, 			p_global->fontlist,
+                                                      XmNfontList,          p_global->fontlist,
                                                       NULL );
         aw_attach_widget(scrolledWindowList,_at);
 
@@ -933,11 +933,11 @@ AW_selection_list* AW_window::create_selection_list( const char *var_name, const
         width_of_last_widget = width_of_label + width_of_list + 20;
 
         switch(_at->correct_for_at_center){
-            case 3:	break;
+            case 3: break;
             case 0: // left centered
-                XtVaSetValues(	scrolledWindowList, XmNx, (int)(_at->x_for_next_button + width_of_label), NULL );
+                XtVaSetValues(  scrolledWindowList, XmNx, (int)(_at->x_for_next_button + width_of_label), NULL );
                 if ( label ) {
-                    XtVaSetValues(	l, XmNx, (int)(_at->x_for_next_button), NULL );
+                    XtVaSetValues(  l, XmNx, (int)(_at->x_for_next_button), NULL );
                 }
                 break;
 
@@ -1068,43 +1068,43 @@ void AW_window::set_list_entry_displayed(const char *new_displayed) {
 }
 
 /*
-const char *AW_window::get_list_entry(AW_selection_list *selection_list, int val)	//val = 1 initialisiert das Ganze, val=0 holt naechsten Eintrag
+const char *AW_window::get_list_entry(AW_selection_list *selection_list, int val)   //val = 1 initialisiert das Ganze, val=0 holt naechsten Eintrag
 {
-    static int				last		= 0;
-    char 				*result;
+    static int              last        = 0;
+    char                *result;
 
     if (last == 1 && !val)
     {
-	last = 2;
-	if (!list_table)
-	    return NULL;
-	else
-	    return list_table->char_value;;
+    last = 2;
+    if (!list_table)
+        return NULL;
+    else
+        return list_table->char_value;;
     }
 
     if (last == 2 && !val)
-	return NULL;
+    return NULL;
 
     if (val)
     {
-	last = 0;
-	list_table = NULL;
-	return NULL;
+    last = 0;
+    list_table = NULL;
+    return NULL;
     }
 
     if (!list_table)
-	list_table = selection_list->list_table;
+    list_table = selection_list->list_table;
 
     if (!list_table)
     {
-	last = 2;
-	return NULL;
+    last = 2;
+    return NULL;
     }
 
     result = list_table->char_value;
     list_table = list_table->next;
     if (!list_table || list_table == selection_list->last_of_list_table)
-	last = 1;
+    last = 1;
     return result;
     }
 */
@@ -1119,9 +1119,9 @@ void AW_window::set_selection_list_suffix(AW_selection_list *selection_list, con
 int AW_window::get_no_of_entries( AW_selection_list *selection_list )
 {
     AW_select_table_struct *list_table;
-    int		count = 0;
+    int     count = 0;
     for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) count++;
-    if( selection_list->default_select ) 	count++;
+    if( selection_list->default_select )    count++;
 
     return count;
 }
@@ -1227,13 +1227,13 @@ void AW_window::delete_selection_from_list( AW_selection_list *selection_list, c
     AW_select_table_struct *list_table,
         *next = NULL,
         *prev = NULL;
-    char	*ptr;
-    int		count = 0;
+    char    *ptr;
+    int     count = 0;
 
     for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) count++;
-    if( selection_list->default_select ) 	count++;
+    if( selection_list->default_select )    count++;
 
-    if (count == 2)	{	//Letzter Eintrag + default selection
+    if (count == 2) {   //Letzter Eintrag + default selection
         clear_selection_list( selection_list );
     }
 
@@ -1334,9 +1334,9 @@ void AW_window::clear_selection_list( AW_selection_list *selection_list ) {
         delete selection_list->default_select;
     }
 
-    selection_list->list_table		= NULL;
-    selection_list->last_of_list_table	= NULL;
-    selection_list->default_select		= NULL;
+    selection_list->list_table      = NULL;
+    selection_list->last_of_list_table  = NULL;
+    selection_list->default_select      = NULL;
 
 
 }
@@ -1354,7 +1354,7 @@ void AW_window::update_selection_list( AW_selection_list * selection_list ) {
     count = 0;
     int i;
     for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) count++;
-    if( selection_list->default_select ) 	count++;
+    if( selection_list->default_select )    count++;
 
     XmString *strtab = new XmString[count];
 
@@ -1377,7 +1377,7 @@ void AW_window::update_selection_list( AW_selection_list * selection_list ) {
         count ++;
     }
 
-    XtVaSetValues(	selection_list->select_list_widget, XmNitemCount, count, XmNitems, strtab , NULL );
+    XtVaSetValues(  selection_list->select_list_widget, XmNitemCount, count, XmNitems, strtab , NULL );
 
     update_selection_list_intern( selection_list );
 
@@ -1390,16 +1390,16 @@ void AW_window::update_selection_list( AW_selection_list * selection_list ) {
 void AW_window::update_selection_list_intern( AW_selection_list *selection_list ) {
     AW_select_table_struct *list_table;
 
-    int			pos = 0;
-    char			*global_var_value = NULL;
-    long			global_var_int_value;
-    float			global_var_float_value;
+    int         pos = 0;
+    char            *global_var_value = NULL;
+    long            global_var_int_value;
+    float           global_var_float_value;
 
     if (!selection_list->variable_name) return; // not connected to awar
     AW_BOOL found = AW_FALSE;
     pos = 0;
     switch ( selection_list->variable_type ) {
-        case AW_STRING:	global_var_value = root->awar( selection_list->variable_name )->read_string();
+        case AW_STRING: global_var_value = root->awar( selection_list->variable_name )->read_string();
             for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
                 if ( strcmp( global_var_value, list_table->char_value ) == 0 ) {
                     found = AW_TRUE;
@@ -1408,7 +1408,7 @@ void AW_window::update_selection_list_intern( AW_selection_list *selection_list 
                 pos++;
             }
             break;
-        case AW_INT:	global_var_int_value = root->awar( selection_list->variable_name )->read_int();
+        case AW_INT:    global_var_int_value = root->awar( selection_list->variable_name )->read_int();
             for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
                 if ( global_var_int_value == list_table->int_value ) {
                     found = AW_TRUE;
@@ -1417,7 +1417,7 @@ void AW_window::update_selection_list_intern( AW_selection_list *selection_list 
                 pos++;
             }
             break;
-        case AW_FLOAT:	global_var_float_value = root->awar( selection_list->variable_name )->read_float();
+        case AW_FLOAT:  global_var_float_value = root->awar( selection_list->variable_name )->read_float();
             for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
                 if ( global_var_float_value == list_table->float_value ) {
                     found = AW_TRUE;
@@ -1506,7 +1506,7 @@ const char *AW_selection_list::first_selected(){
 }
 
 char *AW_window::get_selection_list_contents( AW_selection_list * selection_list, long number_of_lines) {
-    // number_of_lines == 0		-> print all
+    // number_of_lines == 0     -> print all
     AW_select_table_struct *list_table;
     void *fd;
 
@@ -1526,7 +1526,7 @@ GBDATA_SET *AW_window::selection_list_to_species_set(GBDATA *gb_main,AW_selectio
     AW_select_table_struct *list_table;
     GB_transaction dummy(gb_main);
 
-    GBDATA *gb_species_data = GB_search(gb_main,	"species_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_species_data = GB_search(gb_main,    "species_data",GB_CREATE_CONTAINER);
     int counter = 0;
     for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
         counter ++;
@@ -1583,7 +1583,7 @@ void AW_window::sort_selection_list( AW_selection_list * selection_list, int bac
 }
 
 GB_ERROR AW_window::save_selection_list( AW_selection_list * selection_list, const char *filename, long number_of_lines) {
-    // number_of_lines == 0		-> print all
+    // number_of_lines == 0     -> print all
 
     AW_select_table_struct *list_table;
     FILE                   *fd;
@@ -1675,7 +1675,7 @@ GB_ERROR AW_window::load_selection_list( AW_selection_list *selection_list, cons
 }
 
 // --------------------------------------------------------------------------------
-// 	Options-Menu
+//  Options-Menu
 // --------------------------------------------------------------------------------
 
 void AW_window::create_option_menu( const char *var_name, AW_label label, const char *mnemonic ) {
@@ -1833,8 +1833,8 @@ void *AW_window::_create_option_entry(AW_VARIABLE_TYPE type, const char *name, c
 
 // for string
 void AW_window::insert_option( AW_label option_name, const char *mnemonic, const char *var_value,const char *name_of_color ) {
-    Widget 		entry;
-    AW_cb_struct	*cbs;
+    Widget      entry;
+    AW_cb_struct    *cbs;
     if (p_w->option_menu_var_type != AW_STRING){
         AW_ERROR("insert_option(..,..,string) used for non string awar");
         return;
@@ -1869,8 +1869,8 @@ void AW_window::insert_option( AW_label option_name, const char *mnemonic, const
 
 // for string
 void AW_window::insert_default_option( AW_label option_name, const char *mnemonic, const char *var_value,const char *name_of_color ) {
-    Widget 			entry;
-    AW_cb_struct	*cbs;
+    Widget          entry;
+    AW_cb_struct    *cbs;
     if (p_w->option_menu_var_type != AW_STRING){
         AW_ERROR("insert_option(..,..,string) used for non string awar");
         return;
@@ -1898,8 +1898,8 @@ void AW_window::insert_default_option( AW_label option_name, const char *mnemoni
 
 // for int
 void AW_window::insert_option( AW_label option_name, const char *mnemonic, int var_value,const char *name_of_color ) {
-    Widget 			entry;
-    AW_cb_struct	*cbs;
+    Widget          entry;
+    AW_cb_struct    *cbs;
     if (p_w->option_menu_var_type != AW_INT){
         AW_ERROR("insert_option(..,..,string) used for non int awar");
         return;
@@ -1934,8 +1934,8 @@ void AW_window::insert_option( AW_label option_name, const char *mnemonic, int v
 
 // for int
 void AW_window::insert_default_option( AW_label option_name, const char *mnemonic, int var_value,const char *name_of_color ) {
-    Widget 			entry;
-    AW_cb_struct	*cbs;
+    Widget          entry;
+    AW_cb_struct    *cbs;
     if (p_w->option_menu_var_type != AW_INT){
         AW_ERROR("insert_option(..,..,string) used for non int awar");
         return;
@@ -1963,8 +1963,8 @@ void AW_window::insert_default_option( AW_label option_name, const char *mnemoni
 
 // for float
 void AW_window::insert_option( AW_label option_name, const char *mnemonic, float var_value, const char *name_of_color ) {
-    Widget 			entry;
-    AW_cb_struct	*cbs;
+    Widget          entry;
+    AW_cb_struct    *cbs;
     if (p_w->option_menu_var_type != AW_FLOAT){
         AW_ERROR("insert_option(..,..,string) used for non float awar");
         return;
@@ -1997,8 +1997,8 @@ void AW_window::insert_option( AW_label option_name, const char *mnemonic, float
 
 // for float
 void AW_window::insert_default_option( AW_label option_name, const char *mnemonic, float var_value, const char *name_of_color ) {
-    Widget 			entry;
-    AW_cb_struct	*cbs;
+    Widget          entry;
+    AW_cb_struct    *cbs;
 
     if (p_w->option_menu_var_type != AW_FLOAT){
         AW_ERROR("insert_option(..,..,string) used for non float awar");
@@ -2033,16 +2033,16 @@ void AW_window::update_option_menu( void ) {
 
 void AW_window::update_option_menu( int option_menu_number ) {
     AW_option_menu_struct *option_menu_list;
-    AW_option_struct	  *menu_choice_list;
-    AW_BOOL 			   cont;
-    char				  *global_var_value       = NULL;
-    long				   global_var_int_value   = 0;
-    float				   global_var_float_value = 0;
-    int	                   width_of_last_widget;
-    int	                   height_of_last_widget;
+    AW_option_struct      *menu_choice_list;
+    AW_BOOL                cont;
+    char                  *global_var_value       = NULL;
+    long                   global_var_int_value   = 0;
+    float                  global_var_float_value = 0;
+    int                    width_of_last_widget;
+    int                    height_of_last_widget;
 
 
-    for ( 	option_menu_list = p_global->option_menu_list;
+    for (   option_menu_list = p_global->option_menu_list;
             option_menu_list;
             option_menu_list = option_menu_list->next)
     {
@@ -2063,11 +2063,11 @@ void AW_window::update_option_menu( int option_menu_number ) {
     cont = AW_TRUE;
 
     switch ( option_menu_list->variable_type ) {
-        case AW_STRING:	global_var_value = root->awar( var_name )->read_string();
+        case AW_STRING: global_var_value = root->awar( var_name )->read_string();
             break;
-        case AW_INT:	global_var_int_value = root->awar( var_name )->read_int();
+        case AW_INT:    global_var_int_value = root->awar( var_name )->read_int();
             break;
-        case AW_FLOAT:	global_var_float_value = root->awar( var_name )->read_float();
+        case AW_FLOAT:  global_var_float_value = root->awar( var_name )->read_float();
             break;
         default:
             break;
@@ -2076,15 +2076,15 @@ void AW_window::update_option_menu( int option_menu_number ) {
     menu_choice_list = option_menu_list->first_choice;
     while ( menu_choice_list && cont ) {
         switch ( option_menu_list->variable_type ) {
-            case AW_STRING:	if ( (strcmp( global_var_value, menu_choice_list->variable_value ) == 0) ) {
+            case AW_STRING: if ( (strcmp( global_var_value, menu_choice_list->variable_value ) == 0) ) {
                 cont = AW_FALSE;
             }
             break;
-            case AW_INT:		if ( global_var_int_value == menu_choice_list->variable_int_value ) {
+            case AW_INT:        if ( global_var_int_value == menu_choice_list->variable_int_value ) {
                 cont = AW_FALSE;
             }
             break;
-            case AW_FLOAT:		if ( global_var_float_value == menu_choice_list->variable_float_value ) {
+            case AW_FLOAT:      if ( global_var_float_value == menu_choice_list->variable_float_value ) {
                 cont = AW_FALSE;
             }
             break;
@@ -2265,7 +2265,7 @@ Widget _aw_create_toggle_entry(AW_window *aww,Widget toggle_field,
                                AW_toggle_struct *awts, AW_BOOL default_toggle){
     AW_root *root = aww->get_root();
 
-    Widget			toggleButton;
+    Widget          toggleButton;
 
     toggleButton = XtVaCreateManagedWidget( "toggleButton",
                                             xmToggleButtonWidgetClass,
@@ -2297,7 +2297,7 @@ Widget _aw_create_toggle_entry(AW_window *aww,Widget toggle_field,
                                     aww->_at->mask_for_next_button, toggleButton );
 
     aww->unset_at_commands();
-    return	toggleButton;
+    return  toggleButton;
 }
 
 
@@ -2403,16 +2403,16 @@ void AW_window::update_toggle_field( void ) {
 
 
 void AW_window::update_toggle_field( int toggle_field_number ) {
-    AW_toggle_field_struct		*toggle_field_list = p_global->toggle_field_list;
-    AW_toggle_struct		*toggle_list;
-    Widget				help_toggle = 0;
-    AW_BOOL 			cont					= AW_TRUE;
-    AW_BOOL 			found					= AW_FALSE;
-    char				*global_var_value = NULL;
-    long				global_var_int_value = 0;
-    float				global_var_float_value = 0;
-    int	width_of_last_widget;
-    int	height_of_last_widget;
+    AW_toggle_field_struct      *toggle_field_list = p_global->toggle_field_list;
+    AW_toggle_struct        *toggle_list;
+    Widget              help_toggle = 0;
+    AW_BOOL             cont                    = AW_TRUE;
+    AW_BOOL             found                   = AW_FALSE;
+    char                *global_var_value = NULL;
+    long                global_var_int_value = 0;
+    float               global_var_float_value = 0;
+    int width_of_last_widget;
+    int height_of_last_widget;
 
     if ( 1 ) {
 
@@ -2432,11 +2432,11 @@ void AW_window::update_toggle_field( int toggle_field_number ) {
             found = AW_FALSE;
 
             switch ( toggle_field_list->variable_type ) {
-                case AW_STRING:	global_var_value = root->awar( toggle_field_list->variable_name )->read_string();
+                case AW_STRING: global_var_value = root->awar( toggle_field_list->variable_name )->read_string();
                     break;
-                case AW_INT:	global_var_int_value = root->awar( toggle_field_list->variable_name )->read_int();
+                case AW_INT:    global_var_int_value = root->awar( toggle_field_list->variable_name )->read_int();
                     break;
-                case AW_FLOAT:	global_var_float_value = root->awar( toggle_field_list->variable_name )->read_float();
+                case AW_FLOAT:  global_var_float_value = root->awar( toggle_field_list->variable_name )->read_float();
                     break;
                 default:
                     GB_warning("Unknown AWAR type");
@@ -2446,17 +2446,17 @@ void AW_window::update_toggle_field( int toggle_field_number ) {
             while ( toggle_list && cont ) {
 
                 switch ( toggle_field_list->variable_type ) {
-                    case AW_STRING:	if ( (strcmp( global_var_value, toggle_list->variable_value ) == 0) ) {
+                    case AW_STRING: if ( (strcmp( global_var_value, toggle_list->variable_value ) == 0) ) {
                         cont = AW_FALSE;
                         found = AW_TRUE;
                     }
                     break;
-                    case AW_INT:		if ( global_var_int_value == toggle_list->variable_int_value ) {
+                    case AW_INT:        if ( global_var_int_value == toggle_list->variable_int_value ) {
                         cont = AW_FALSE;
                         found = AW_TRUE;
                     }
                     break;
-                    case AW_FLOAT:		if ( global_var_float_value == toggle_list->variable_float_value ) {
+                    case AW_FLOAT:      if ( global_var_float_value == toggle_list->variable_float_value ) {
                         cont = AW_FALSE;
                         found = AW_TRUE;
                     }

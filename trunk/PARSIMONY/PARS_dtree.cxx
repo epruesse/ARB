@@ -271,10 +271,10 @@ AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *device, AWT_canva
                      "CURSOR$#FFFFFF",
                      "unused1",
                      "unused2",
-                     "Marked$#FFC671",
-                     "Some marked$#FFC671",
-                     "Not marked$#F1F1A2",
-                     "Zombies etc.$#797924",
+                     "MARKED$#FFC671",
+                     "SOME MARKED$#FFC671",
+                     "NOT MARKED$#F1F1A2",
+                     "ZOMBIES etc.$#797924",
 
                      "--unused", "--unused", // these reserve the numbers which are used for probe colors in ARB_NTREE
                      "--unused", "--unused", // (this is necessary because ARB_PARS and ARB_NTREE use the same tree painting routines)

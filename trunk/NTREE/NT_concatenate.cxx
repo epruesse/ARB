@@ -273,6 +273,50 @@ void shiftAlignment(AW_window *aws, long int direction){
     free(selected_alignment);
 }
 
+/*----------  Create SAI to display alignments that were concatenated --------------*/
+
+GB_ERROR displayAlignmentInfo(GBDATA *gb_main, GB_ERROR error, char *new_ali_name, char *alignment_separator){
+    GBDATA *gb_extended        = GBT_create_SAI(gb_main,"Alignment Information");
+    GBDATA *gb_data            = GBT_add_data(gb_extended, new_ali_name,"data", GB_STRING);
+    void *ali_str              = GBS_stropen(GBT_get_alignment_len(gb_main,new_ali_name));
+    const char *const_ali_name = con_alignment_list->first_element();
+
+    while (const_ali_name){
+        int alignment_len = GBT_get_alignment_len(gb_main,const_ali_name);
+        int ali_str_len   = strlen(const_ali_name);
+        for (int pos = 0; pos<alignment_len; pos++) {
+            if (pos<5)  GBS_strcat(ali_str,"<");
+            else if (pos >= (alignment_len-5))  GBS_strcat(ali_str,">");
+            else if (pos == (alignment_len/2 - ali_str_len/2)) { GBS_strcat(ali_str,const_ali_name); pos+=ali_str_len-1;}
+            else  GBS_strcat(ali_str,"=");
+        }
+        const_ali_name = con_alignment_list->next_element();
+        if (const_ali_name) GBS_strcat(ali_str,alignment_separator);
+    }
+    
+    char *ali_info_SAI = GBS_strclose(ali_str, 0);
+    if(!error) error   = GB_write_string(gb_data,ali_info_SAI);
+    free(ali_info_SAI);
+    return error;
+}
+
+void exitConcatenateAlignments(GBDATA *gb_main, GB_ERROR error, char *new_ali_name, char *seq_type, char *alignment_separator){
+
+    if (!error) {
+        char *nfield = GB_strdup(GBS_global_string("%s/data",new_ali_name));
+        awt_add_new_changekey( gb_main,nfield,GB_STRING);
+        free(nfield);
+        GB_pop_transaction(gb_main);
+    } else {
+        GB_abort_transaction(gb_main);
+        aw_message(error);
+    }
+
+    free(new_ali_name);
+    free(seq_type);
+    free(alignment_separator);
+}
+ 
 /*---------------------------------------- Concatenation function ----------------------------------*/
 void concatenateAlignments(AW_window *aws){
 
@@ -291,9 +335,9 @@ void concatenateAlignments(AW_window *aws){
     char *seq_type            = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
     char *alignment_separator = aw_root->awar(AWAR_CON_ALIGNMENT_SEPARATOR)->read_string();
 
-    int no_of_sel_alignments = aws->get_no_of_entries(con_alignment_list);
+    int no_of_sel_alignments = aws->get_no_of_entries(con_alignment_list); //getting number of selected alignments
     int found[no_of_sel_alignments], missing[no_of_sel_alignments];
-    for (int j = 0; j<no_of_sel_alignments; j++) { found[j] = 0; missing[j] = 0; }
+    for (int j = 0; j<no_of_sel_alignments; j++) { found[j] = 0; missing[j] = 0; }  //initialising found and missing alis
 
     const char *const_ali_name = con_alignment_list->first_element();
     long new_alignment_len     = 0;
@@ -302,36 +346,29 @@ void concatenateAlignments(AW_window *aws){
         new_alignment_len += GBT_get_alignment_len(gb_main, const_ali_name);
         const_ali_name     = con_alignment_list->next_element();
     }
-
+    
     error = GBT_check_alignment_name(new_ali_name);
-    if(error) goto ERROR;
+    if (error) exitConcatenateAlignments(gb_main,error,new_ali_name,seq_type, alignment_separator);
 
     gb_presets          = GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
     gb_alignment_exists = GB_find(gb_presets, "alignment_name", new_ali_name, down_2_level);
 
     if (gb_alignment_exists) {    // check wheather new alignment exists or not, if yes prompt user to overwrite the existing alignment; if no create an empty alignment
         int ans = aw_message(GBS_global_string("Do you want to overwrite the existing data in alignment \" %s \"", new_ali_name), "YES,NO", false);
-        if (ans) {
-            goto ERROR;
-        }
+        if (ans) exitConcatenateAlignments(gb_main,error,new_ali_name,seq_type, alignment_separator);
         else {
             gb_new_alignment = GBT_get_alignment(gb_main,new_ali_name);
             if (!gb_new_alignment) error = GB_get_error();
         }
-    }
-    else {
+    } else {
         gb_new_alignment = GBT_create_alignment(gb_main,new_ali_name,new_alignment_len,0,0,seq_type);
         if (!gb_new_alignment) error = GB_get_error();
     }
 
-    if (!con_alignment_list->first_element()) {
-        aw_message("No alignments were selected to concatenate!");
-        goto ERROR;
-    }
-    else if (!con_alignment_list->next_element()) {
-        aw_message("Select more than 1 alignment to concatenate!");
-        goto ERROR;
-    }
+    if (!error && !con_alignment_list->first_element())     error = "No alignments were selected to concatenate!";
+    else if (!error && !con_alignment_list->next_element()) error ="Select more than 1 alignment to concatenate!";
+
+    if (error) exitConcatenateAlignments(gb_main,error,new_ali_name,seq_type, alignment_separator);    
 
     for (gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)){
         void *str_seq = GBS_stropen(new_alignment_len+1000);            /* create output stream */
@@ -368,53 +405,17 @@ void concatenateAlignments(AW_window *aws){
         free(concatenated_ali_seq_data);
     }
 
-    {
-        aw_message(GBS_global_string("Concatenation of Alignments was performed for\"%d\" species.",GBT_count_marked_species(gb_main)));
-        const_ali_name = con_alignment_list->first_element(); int i = 0;
-        while (const_ali_name) {
-            aw_message(GBS_global_string("%s : Found in \"%d\" species & Missing in \"%d\" species.",const_ali_name,found[i],missing[i]));
-            const_ali_name = con_alignment_list->next_element();
-            i++;
-        }
+    // print missing alignments 
+    aw_message(GBS_global_string("Concatenation of Alignments was performed for\"%d\" species.",GBT_count_marked_species(gb_main)));
+    const_ali_name = con_alignment_list->first_element(); int i = 0;
+    while (const_ali_name) {
+        aw_message(GBS_global_string("%s : Found in \"%d\" species & Missing in \"%d\" species.",const_ali_name,found[i],missing[i]));
+        const_ali_name = con_alignment_list->next_element();
+        i++;
     }
 
-    {
-        GBDATA *gb_extended = GBT_create_SAI(gb_main,"Alignment Information");
-        GBDATA *gb_data     = GBT_add_data(gb_extended, new_ali_name,"data", GB_STRING);
-        void *ali_str       = GBS_stropen(GBT_get_alignment_len(gb_main,new_ali_name));
-        const_ali_name            = con_alignment_list->first_element();
-
-        while (const_ali_name){
-            int alignment_len = GBT_get_alignment_len(gb_main,const_ali_name);
-            int ali_str_len   = strlen(const_ali_name);
-            for (int pos = 0; pos<alignment_len; pos++) {
-                if (pos<5)  GBS_strcat(ali_str,"<");
-                else if (pos >= (alignment_len-5))  GBS_strcat(ali_str,">");
-                else if (pos == (alignment_len/2 - ali_str_len/2)) { GBS_strcat(ali_str,const_ali_name); pos+=ali_str_len-1;}
-                else  GBS_strcat(ali_str,"=");
-            }
-            const_ali_name = con_alignment_list->next_element();
-            if (const_ali_name) GBS_strcat(ali_str,alignment_separator);
-        }
-        char *ali_info_SAI = GBS_strclose(ali_str, 0);
-        error              = GB_write_string(gb_data,ali_info_SAI);
-        free(ali_info_SAI);
-    }
-
-    if (!error) {
-        char *nfield = GB_strdup(GBS_global_string("%s/data",new_ali_name));
-        awt_add_new_changekey( gb_main,nfield,GB_STRING);
-        free(nfield);
-        GB_pop_transaction(gb_main);
-    } else {
-        ERROR :
-            GB_abort_transaction(gb_main);
-    }
-    if (error) aw_message(error);
-
-    free(new_ali_name);
-    free(seq_type);
-    free(alignment_separator);
+    error = displayAlignmentInfo(gb_main,error,new_ali_name,alignment_separator);
+    exitConcatenateAlignments(gb_main,error,new_ali_name,seq_type, alignment_separator);
 }
 
 static void addSpeciesToConcatenateList(void **speciesConcatenateListPtr,GB_CSTR species_name){
@@ -439,6 +440,169 @@ static void freeSpeciesConcatenateList(speciesConcatenateList scl){
         delete scl;
         scl = next;
     }
+}
+
+GB_ERROR checkAndMergeFields( GBDATA *gb_new_species, GB_ERROR error, speciesConcatenateList scl) {
+
+    char *doneFields = strdup(";name;"); // all fields which are already merged
+    int   doneLen    = strlen(doneFields);
+    speciesConcatenateList sl = scl;
+    int  sl_length = 0; while (scl) { sl_length++; scl=scl->next; } //counting no. of similar species stored in the list
+    int *fieldStat = new int[sl_length]; // 0 = not used yet ; -1 = doesn't have field ; 1..n = field content (same number means same content)
+
+    while (sl && !error) { // with all species do..
+        char *newFields  = GB_get_subfields(sl->species);
+        char *fieldStart = newFields; // points to ; before next field
+
+        while (fieldStart[1] && !error) { // with all subfields of the species do..
+            char *fieldEnd = strchr(fieldStart+1, ';');
+            gb_assert(fieldEnd);
+            char behind = fieldEnd[1]; fieldEnd[1] = 0;
+
+            if (strstr(doneFields, fieldStart)==0) { // field is not merged yet
+                char *fieldName = fieldStart+1;
+                int   fieldLen  = int(fieldEnd-fieldName);
+
+                gb_assert(fieldEnd[0]==';');
+                fieldEnd[0] = 0;
+
+                GBDATA *gb_field = GB_search(sl->species, fieldName, GB_FIND);
+                gb_assert(gb_field); // field has to exist, cause it was found before
+                int type = gb_field->flags.type; //GB_TYPE(gb_field);
+
+                if (type==GB_STRING) { // we only merge string fields
+                    int i; int doneSpecies = 0; int nextStat = 1;
+
+                    for (i=0; i<sl_length; i++) { fieldStat[i] = 0;} // clear field status
+
+                    while (doneSpecies<sl_length) { // since all species in list were handled
+                        speciesConcatenateList sl2 = sl; i = 0;
+
+                        while (sl2) {
+                            if (fieldStat[i]==0) {
+                                gb_field = GB_search(sl2->species, fieldName, GB_FIND);
+                                if (gb_field) {
+                                    char *content = GB_read_as_string(gb_field);
+                                    speciesConcatenateList sl3 = sl2->next;
+                                    fieldStat[i] = nextStat;
+                                    int j = i+1; doneSpecies++;
+
+                                    while (sl3) {
+                                        if (fieldStat[j]==0) {
+                                            gb_field = GB_search(sl3->species, fieldName, GB_FIND);
+                                            if (gb_field) {
+                                                char *content2 = GB_read_as_string(gb_field);
+                                                if (strcmp(content, content2)==0) { // if contents are the same, they get the same status
+                                                    fieldStat[j] = nextStat;
+                                                    doneSpecies++;
+                                                }
+                                                free(content2);
+                                            } else {
+                                                fieldStat[j] = -1;
+                                                doneSpecies++;
+                                            }
+                                        }
+                                        sl3 = sl3->next; j++;
+                                    }
+                                    free(content); nextStat++;
+                                } else {
+                                    fieldStat[i] = -1; // field does not exist here
+                                    doneSpecies++;
+                                }
+                            }
+                            sl2 = sl2->next; i++;
+                        }
+                        if (!sl2) break;
+                    }
+                    gb_assert(nextStat!=1); // this would mean that none of the species contained the field
+                    {
+                        char *new_content     = 0;
+                        int   new_content_len = 0;
+
+                        if (nextStat==2) { // all species contain same field content or do not have the field
+                            speciesConcatenateList sl2 = sl;
+                            while (sl2) {
+                                gb_field = GB_search(sl2->species, fieldName, GB_FIND);
+                                if (gb_field) {
+                                    new_content = GB_read_as_string(gb_field);
+                                    new_content_len = strlen(new_content);
+                                    break;
+                                }
+                                sl2 = sl2->next;
+                            }
+                        }
+                        else { // different field contents
+                            int actualStat;
+                            for (actualStat=1; actualStat<nextStat; actualStat++) {
+                                int names_len = 1; // open bracket
+                                speciesConcatenateList sl2 = sl;
+                                char *content = 0; i = 0;
+
+                                while (sl2) {
+                                    if (fieldStat[i]==actualStat) {
+                                        names_len += strlen(sl2->species_name)+1;
+                                        if (!content) {
+                                            gb_field = GB_search(sl2->species, fieldName, GB_FIND);
+                                            gb_assert(gb_field);
+                                            content = GB_read_as_string(gb_field);
+                                        }
+                                    }
+                                    sl2 = sl2->next; i++;
+                                }
+                                gb_assert(content);
+                                int add_len = names_len+1+strlen(content);
+                                char *whole = (char*)malloc(new_content_len+1+add_len+1);
+                                gb_assert(whole);
+                                char *add = new_content ? whole+sprintf(whole, "%s ", new_content) : whole;
+                                sl2 = sl; i = 0;
+                                int first = 1;
+                                while (sl2) {
+                                    if (fieldStat[i]==actualStat) {
+                                        add += sprintf(add, "%c%s", first ? '{' : ';', sl2->species_name);
+                                        first = 0;
+                                    }
+                                    sl2 = sl2->next; i++;
+                                }
+                                add += sprintf(add, "} %s", content);
+
+                                free(content);
+                                free(new_content);
+                                new_content = whole;
+                                new_content_len = strlen(new_content);
+                            }
+                        }
+
+                        if (new_content) {
+                            GBDATA *gb_new_field = GB_search(gb_new_species, fieldName, GB_STRING);
+                            if (gb_new_field) {
+                                error = GB_write_string(gb_new_field, new_content);
+                            }
+                            else {
+                                error = GB_export_error("Can't create field '%s'", fieldName);
+                            }
+                            free(new_content);
+                        }
+                    }
+                }
+
+                // mark field as done:
+                char *new_doneFields = (char*)malloc(doneLen+fieldLen+1+1);
+                sprintf(new_doneFields, "%s%s;", doneFields, fieldName);
+                doneLen += fieldLen+1;
+                free(doneFields);
+                doneFields = new_doneFields;
+                fieldEnd[0] = ';';
+            }
+            fieldEnd[1] = behind;
+            fieldStart = fieldEnd;
+        }
+        free(newFields);
+        sl = sl->next;
+    }
+    free(doneFields);
+    delete [] fieldStat;
+
+    return error;
 }
 
 GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speciesConcatenateList scl){
@@ -504,167 +668,8 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
         GBT_free_names(ali_names);
     }
 
-    if (!error) {
-        char *doneFields = strdup(";name;"); // all fields which are already merged
-        int   doneLen    = strlen(doneFields);
-        speciesConcatenateList sl = scl;
-        int  sl_length = 0; while (scl) { sl_length++; scl=scl->next; } //counting no. of similar species stored in the list
-        int *fieldStat = new int[sl_length]; // 0 = not used yet ; -1 = doesn't have field ; 1..n = field content (same number means same content)
+    if(!error) error = checkAndMergeFields(gb_new_species, error, scl);
 
-        while (sl && !error) { // with all species do..
-            char *newFields  = GB_get_subfields(sl->species);
-            char *fieldStart = newFields; // points to ; before next field
-
-            while (fieldStart[1] && !error) { // with all subfields of the species do..
-                char *fieldEnd = strchr(fieldStart+1, ';');
-                gb_assert(fieldEnd);
-                char behind = fieldEnd[1]; fieldEnd[1] = 0;
-
-                if (strstr(doneFields, fieldStart)==0) { // field is not merged yet
-                    char *fieldName = fieldStart+1;
-                    int   fieldLen  = int(fieldEnd-fieldName);
-
-                    gb_assert(fieldEnd[0]==';');
-                    fieldEnd[0] = 0;
-
-                    GBDATA *gb_field = GB_search(sl->species, fieldName, GB_FIND);
-                    gb_assert(gb_field); // field has to exist, cause it was found before
-                    int type = gb_field->flags.type; //GB_TYPE(gb_field);
-
-                    if (type==GB_STRING) { // we only merge string fields
-                        int i; int doneSpecies = 0; int nextStat = 1;
-
-                        for (i=0; i<sl_length; i++) { fieldStat[i] = 0;} // clear field status
-
-                        while (doneSpecies<sl_length) { // since all species in list were handled
-                            speciesConcatenateList sl2 = sl; i = 0;
-
-                            while (sl2) {
-                                if (fieldStat[i]==0) {
-                                    gb_field = GB_search(sl2->species, fieldName, GB_FIND);
-                                    if (gb_field) {
-                                        char *content = GB_read_as_string(gb_field);
-                                        speciesConcatenateList sl3 = sl2->next;
-                                        fieldStat[i] = nextStat;
-                                        int j = i+1; doneSpecies++;
-
-                                        while (sl3) {
-                                            if (fieldStat[j]==0) {
-                                                gb_field = GB_search(sl3->species, fieldName, GB_FIND);
-                                                if (gb_field) {
-                                                    char *content2 = GB_read_as_string(gb_field);
-                                                    if (strcmp(content, content2)==0) { // if contents are the same, they get the same status
-                                                        fieldStat[j] = nextStat;
-                                                        doneSpecies++;
-                                                    }
-                                                    free(content2);
-                                                } else {
-                                                    fieldStat[j] = -1;
-                                                    doneSpecies++;
-                                                }
-                                            }
-                                            sl3 = sl3->next; j++;
-                                        }
-                                        free(content); nextStat++;
-                                    } else {
-                                        fieldStat[i] = -1; // field does not exist here
-                                        doneSpecies++;
-                                    }
-                                }
-                                sl2 = sl2->next; i++;
-                            }
-                            if (!sl2) break;
-                        }
-                        gb_assert(nextStat!=1); // this would mean that none of the species contained the field
-                        {
-                            char *new_content     = 0;
-                            int   new_content_len = 0;
-
-                            if (nextStat==2) { // all species contain same field content or do not have the field
-                                speciesConcatenateList sl2 = sl;
-                                while (sl2) {
-                                    gb_field = GB_search(sl2->species, fieldName, GB_FIND);
-                                    if (gb_field) {
-                                        new_content = GB_read_as_string(gb_field);
-                                        new_content_len = strlen(new_content);
-                                        break;
-                                    }
-                                    sl2 = sl2->next;
-                                }
-                            }
-                            else { // different field contents
-                                int actualStat;
-                                for (actualStat=1; actualStat<nextStat; actualStat++) {
-                                    int names_len = 1; // open bracket
-                                    speciesConcatenateList sl2 = sl;
-                                    char *content = 0; i = 0;
-
-                                    while (sl2) {
-                                        if (fieldStat[i]==actualStat) {
-                                            names_len += strlen(sl2->species_name)+1;
-                                            if (!content) {
-                                                gb_field = GB_search(sl2->species, fieldName, GB_FIND);
-                                                gb_assert(gb_field);
-                                                content = GB_read_as_string(gb_field);
-                                            }
-                                        }
-                                        sl2 = sl2->next; i++;
-                                    }
-                                    gb_assert(content);
-                                    int add_len = names_len+1+strlen(content);
-                                    char *whole = (char*)malloc(new_content_len+1+add_len+1);
-                                    gb_assert(whole);
-                                    char *add = new_content ? whole+sprintf(whole, "%s ", new_content) : whole;
-                                    sl2 = sl; i = 0;
-                                    int first = 1;
-                                    while (sl2) {
-                                        if (fieldStat[i]==actualStat) {
-                                            add += sprintf(add, "%c%s", first ? '{' : ';', sl2->species_name);
-                                            first = 0;
-                                        }
-                                        sl2 = sl2->next; i++;
-                                    }
-                                    add += sprintf(add, "} %s", content);
-
-                                    free(content);
-                                    free(new_content);
-                                    new_content = whole;
-                                    new_content_len = strlen(new_content);
-                                }
-                            }
-
-                            if (new_content) {
-                                GBDATA *gb_new_field = GB_search(gb_new_species, fieldName, GB_STRING);
-                                if (gb_new_field) {
-                                    error = GB_write_string(gb_new_field, new_content);
-                                }
-                                else {
-                                    error = GB_export_error("Can't create field '%s'", fieldName);
-                                }
-                                free(new_content);
-                            }
-                        }
-                    }
-
-                    // mark field as done:
-                    char *new_doneFields = (char*)malloc(doneLen+fieldLen+1+1);
-                    sprintf(new_doneFields, "%s%s;", doneFields, fieldName);
-                    doneLen += fieldLen+1;
-                    free(doneFields);
-                    doneFields = new_doneFields;
-                    fieldEnd[0] = ';';
-                }
-                fieldEnd[1] = behind;
-                fieldStart = fieldEnd;
-            }
-            free(newFields);
-            sl = sl->next;
-        }
-        free(doneFields);
-        delete [] fieldStat;
-    }
-
-    GB_write_flag(gb_new_species, 1);    //marking the new species created
     GBDATA *gb_acc = GB_search(gb_new_species,"acc",GB_STRING);
     GB_write_string(gb_acc,buffer); //inserting new accession number
 
@@ -675,7 +680,40 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
     free(new_species_name);
     free(str_full_name);
     return gb_new_species;
+}
 
+void exitMergeSimilarSpecies(GBDATA *gb_main, GB_ERROR error, char *merge_field_name, char *new_field_name ){
+    free(merge_field_name);
+    free(new_field_name);
+
+    if (!error)  GB_commit_transaction(gb_main);
+    else {
+        GB_abort_transaction(gb_main);
+        aw_message(error);
+    }
+}
+
+GB_ERROR checkAndCreateNewField(GBDATA *gb_main, char *new_field_name){
+    GB_ERROR error    = GB_check_key(new_field_name);
+
+    if (error) return error;
+    else {
+        error = awt_add_new_changekey(gb_main,new_field_name,GB_STRING);
+        if (error) {
+            int answer = aw_message(GBS_global_string("\"%s\" field found! Do you want to overwrite to the existing field?",new_field_name),"YES,NO",false);
+            if (answer)  return error;
+        }
+    }
+    return 0;
+}
+
+void excludeSpecies(GBDATA *species){
+    GBDATA *gb_species_name = GB_find(species, "name", 0, down_level);
+    char   *species_name    = GB_read_string(gb_species_name); 
+
+    aw_message("\"%s\" species doesn`t contain any data in the selected ENTRY! and is EXCLUDED from merging similar species!!");
+    GB_write_flag(species, 0);
+    free(species_name);
 }
 
 void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignments, AW_CL cl_ntw) {
@@ -684,93 +722,90 @@ void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignme
     GBDATA *gb_species          = 0;
     GBDATA *new_species_created = 0;
     bool similarSpeciesFound    = false;
-    speciesConcatenateList scl  = 0; //to build list of similar species
     char *merge_field_name      = aw_root->awar(AWAR_CON_MERGE_FIELD)->read_string();
     char *new_field_name        = aw_root->awar(AWAR_CON_STORE_SIM_SP_NO)->read_string();
-    GB_ERROR    error2          = GB_check_key(new_field_name);
-
-    error = NT_resort_data_base(0,merge_field_name,0,0); // sorting the database entries
-    if (error) goto ERROR2;
+    speciesConcatenateList scl  = 0; //to build list of similar species
+    speciesConcatenateList newSpeciesList = 0;//new SPECIES_ConcatenateList;
 
     GB_begin_transaction(gb_main);  //open database for transaction
 
-    if (!error2) error2 = awt_add_new_changekey(gb_main,new_field_name,GB_STRING);
-    if (error2) {
-        int answer = aw_message(GBS_global_string("\"%s\" field found! Do you want to overwrite to the existing field?",new_field_name),"YES,NO",false);
-        if (answer)  goto ERROR1;
+    error = checkAndCreateNewField(gb_main,new_field_name);
+    if (error){
+        exitMergeSimilarSpecies(gb_main,error,merge_field_name,new_field_name);
+        return;
     }
 
     for (gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)){
-        GBDATA  *gb_species_field         = GB_find(gb_species, merge_field_name, 0, down_level);
-        if (!gb_species_field) {
-            aw_message("Selected ENTRY doesnt contain any data!. Please select a VALID DATABASE FIELD ENTRY!");
-            goto ERROR1;
-        }
-        char *gb_species_field_content = GB_read_string(gb_species_field);
-        int   similar_species          = 0;
+        GBDATA  *gb_species_field = GB_find(gb_species, merge_field_name, 0, down_level);
+        if (gb_species_field) {
+            char *gb_species_field_content = GB_read_string(gb_species_field);
+            int   similar_species          = 0;
 
-        for (GBDATA *gb_species_next =  GBT_next_marked_species(gb_species);
-             gb_species_next;
-             gb_species_next = GBT_next_marked_species(gb_species_next))
-        {
-            GBDATA *gb_next_species_field         = GB_find(gb_species_next, merge_field_name, 0, down_level);
-            char   *gb_next_species_field_content = GB_read_string(gb_next_species_field); 
+            for (GBDATA *gb_species_next =  GBT_next_marked_species(gb_species);
+                 gb_species_next;
+                 gb_species_next = GBT_next_marked_species(gb_species_next))
+                {
+                    GBDATA *gb_next_species_field = GB_find(gb_species_next, merge_field_name, 0, down_level);
+                    if (gb_next_species_field) {
+                        char *gb_next_species_field_content = GB_read_string(gb_next_species_field); 
+                        
+                        if (strcmp(gb_species_field_content,gb_next_species_field_content) == 0) {
+                            GBDATA *gb_species_name = GB_find(gb_species_next, "name", 0, down_level);
+                            char   *species_name    = GB_read_string(gb_species_name); 
+                            addSpeciesToConcatenateList((void**)&scl,species_name);
+                            GB_write_flag(gb_species_next, 0);
+                            ++similar_species;
+                            similarSpeciesFound = true;
+                            free(species_name);
+                        }
+                        free(gb_next_species_field_content);
+                    }
+                    else excludeSpecies(gb_species_next); //exclude species which doesnt have any data in the selected field
+                }
 
-            if (strcmp(gb_species_field_content,gb_next_species_field_content) == 0){
-                GBDATA *gb_species_name = GB_find(gb_species_next, "name", 0, down_level);
+            if (similarSpeciesFound) {
+                GBDATA *gb_species_name = GB_find(gb_species, "name", 0, down_level);
                 char   *species_name    = GB_read_string(gb_species_name); 
-                addSpeciesToConcatenateList((void**)&scl,species_name);
-                GB_write_flag(gb_species_next, 0);
-                ++similar_species;
-                similarSpeciesFound = true;
+
+                addSpeciesToConcatenateList((void**)&scl, species_name);
+                GB_write_flag(gb_species, 0);
+                new_species_created = concatenateFieldsCreateNewSpecies(aws,gb_species,scl);
+                if(new_species_created) {  // create a list of newly created species
+                    char *new_species_name = GB_read_string(GB_find(new_species_created, "name", 0, down_level)); 
+                    addSpeciesToConcatenateList((void**)&newSpeciesList, new_species_name);
+                    free(new_species_name);
+                }
+
+                GBDATA *merged_species_field    = GB_search(new_species_created, new_field_name, GB_STRING);
+                char *similar_species_no        = GB_strdup(GBS_global_string("%d species",++similar_species));
+                if (merged_species_field) error = GB_write_string(merged_species_field, similar_species_no);
+                similarSpeciesFound = false;
+                freeSpeciesConcatenateList(scl); scl = 0;
+                free(similar_species_no);
                 free(species_name);
             }
-            free(gb_next_species_field_content);
+            similar_species = 0;
+            free(gb_species_field_content);
         }
-
-        if(similarSpeciesFound){
-            GBDATA *gb_species_name = GB_find(gb_species, "name", 0, down_level);
-            char   *species_name    = GB_read_string(gb_species_name); 
-
-            addSpeciesToConcatenateList((void**)&scl, species_name);
-            GB_write_flag(gb_species, 0);
-            new_species_created = concatenateFieldsCreateNewSpecies(aws,gb_species,scl);
-            gb_assert(new_species_created);
-
-            GBDATA *merged_species_field    = GB_search(new_species_created, new_field_name, GB_STRING);
-            char *similar_species_no        = GB_strdup(GBS_global_string("%d species",++similar_species));
-            if (merged_species_field) error = GB_write_string(merged_species_field, similar_species_no);
-            similarSpeciesFound = false;
-            freeSpeciesConcatenateList(scl); scl = 0;
-            free(similar_species_no);
-            free(species_name);
-        }
-        similar_species = 0;
-        free(gb_species_field_content);
+        else excludeSpecies(gb_species);  //exclude species which doesnt have any data in the selected field
     }
-
-    for (gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)){
-        GBDATA  *gb_new_merged_species = GB_find(gb_species, new_field_name, 0, down_level);
-        if (gb_new_merged_species)  GB_write_flag(gb_species, 1);
-        else                        GB_write_flag(gb_species, 0);
+    
+    GBT_mark_all(gb_main,0); //unmark all species in the database
+    int newSpeciesCount = 0;
+    for (; newSpeciesList; newSpeciesList = newSpeciesList->next) {    //mark only newly created species
+        GB_write_flag(newSpeciesList->species, 1);
+        newSpeciesCount++;
     }
+    aw_message(GBS_global_string("%i new species were created by taking \"%s\" as a criterion!", newSpeciesCount, merge_field_name));
+    freeSpeciesConcatenateList(newSpeciesList);
 
-    aw_message(GBS_global_string("%i new species created by taking \"%s\" as a criterion!",
-                                 GBT_count_marked_species(gb_main),merge_field_name));
+    exitMergeSimilarSpecies(gb_main,error,merge_field_name,new_field_name);
 
- ERROR1:
-    if (!error)  GB_commit_transaction(gb_main);
-    else         GB_abort_transaction(gb_main);
-
- ERROR2:
-    free(merge_field_name);
-    free(new_field_name);
-    if (error) aw_message(error);
-
+    // refresh the screen display
     AWT_canvas     *ntw = (AWT_canvas *)cl_ntw;
-    ntw->refresh(); // refresh display
+    ntw->refresh(); 
 
-    // Concatenating alignments of the merged species if cl_mergeSimilarConcatenateAlignments is set to MERGE_SIMILAR_CONCATENATE_ALIGNMENTS
+    // Concatenate alignments of the merged species if cl_mergeSimilarConcatenateAlignments = MERGE_SIMILAR_CONCATENATE_ALIGNMENTS
     if (int(cl_mergeSimilarConcatenateAlignments) && !error) concatenateAlignments(aws);
 }
 

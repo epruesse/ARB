@@ -20,12 +20,12 @@ else
 	if [ $1 = 'iamsure' ] ; then
 		echo 'Fixing bugs'
 		( cd $ARBHOME; \
-			(cd NAMES_COM ; mkdir O ); \
+			(cd NAMES_COM ; mkdir O; mkdir GENH; mkdir GENC ); \
 			mkdir INCLUDE; \
 			mkdir LIBLINK; \
 			mkdir MAKEBIN; \
-			(cd PROBE_COM ; mkdir GENC; mkdir O ); \
-			(cd ORS_COM ; mkdir GENC; mkdir O ); \
+			(cd PROBE_COM ; mkdir GENH; mkdir GENC; mkdir O ); \
+			(cd ORS_COM ; mkdir GENH; mkdir GENC; mkdir O ); \
 		)
 		echo ok
 	else
