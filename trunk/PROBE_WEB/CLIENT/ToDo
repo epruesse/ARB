@@ -3,24 +3,16 @@ ToDo for arb_probe_library CLIENT:
 ==================================
 
 - list of probes:
-        ** sort by different criteria
         ** restrict to probes in specified temperature- and/or gccontent-range
-        ** colorize partial equally probes according to selected probe
-           (or use '=' if color impossible)
-        ** disable refresh during print
 
-- allow search for species by name and by acc
-        ** implementation:
-        *** mark by name and by acc
-        *** jump to "root-of marked"
+- list of selected probes:
+        ** 'Add' button to add current selected probe from normal probe list
+        ** 'Del' button
+        ** 'Match all' -> mark species hit by ANY probe 
 
 - tree display:
-        ** change folding (use groups, autofold if display will get to high)
-        ** show group names? (at least if group is folded; if open -> display left of branch)
-        ** if (display width != tree width) => stretch branches
-        ** hotkey to jump to "root of marked"
-        ** add virtual button left-upwards of root-branch: UP, [GROUP,]* ROOT
-        ** add scale bar
+        ** show group names left of unfolded branch?
+        ** autofold if tree height > 32000
 
 - details:
         ** missing information:
