@@ -4,12 +4,6 @@
 #include <arbdb.h>
 #include <arbdbt.h>
 
-void abort_with_usage(GBDATA *gb_main){
-    printf("syntax: arb_read_tree [-consense #ofTrees] tree_name treefile [comment]\n"); // arb_read_tree (hit grep!)
-    GBT_message(gb_main, "Error running arb_read_tree (see console)");
-    exit(-1);
-}
-
 void show_error(GBDATA *gb_main) {
     GBT_message(gb_main, GB_get_error());
     GB_print_error();
@@ -51,35 +45,67 @@ void add_bootstrap(GBT_TREE *node, double hundred) {
     add_bootstrap(node->rightson, hundred);
 }
 
-// ---------------------------------------
-//      int main(int argc,char **argv)
-// ---------------------------------------
+void abort_with_usage(GBDATA *gb_main, const char *error) {
+    printf("Usage: arb_read_tree [-scale factor] [-consense #ofTrees] tree_name treefile [comment]\n"); 
+    if (error) {
+        printf("Error: %s\n", error);
+        GBT_message(gb_main, GBS_global_string("Error running arb_read_tree (%s)", error));
+    }
+    exit(-1);
+}
+
 int main(int argc,char **argv)
 {
-    int arg              = 1;
-    int consense         = 0;
-    int calculated_trees = 0;
-
     GBDATA *gb_main = GB_open(":","r");
     if (!gb_main){
         printf("arb_read_tree: Error: you have to start an arbdb server first\n");
         return -1;
     }
 
-    if (argc == 1) abort_with_usage(gb_main);
+#define SHIFT_ARGS(off) do { argc -= off; argv += off; } while(0)
 
-    if (!strcmp("-consense",argv[arg])){
-        consense = 1;
-        arg++;
-        calculated_trees = atoi(argv[arg++]);
+    int args = argc-1; argv++; // position onto first argument
+
+    bool   scale        = false;
+    double scale_factor = 0.0;
+
+    if (args>0 && strcmp("-scale",argv[0]) == 0) {
+        scale = 1;
+        if (args<2) abort_with_usage(gb_main, "-scale expects a 2nd argument (scale factor)");
+        scale_factor = atof(argv[1]);
+        SHIFT_ARGS(2);
     }
 
-    if (argc!= arg+2 && argc!= arg+3) abort_with_usage(gb_main);
+    bool consense         = false;
+    int  calculated_trees = 0;
 
-    const char *filename              = argv[arg+1];
-    const char *comment               = 0;
-    if (argc==arg+3) comment          = argv[arg+2];
-    char       *comment_from_treefile = 0;
+    if (args>0 && strcmp("-consense",argv[0]) == 0) {
+        consense = true;
+        if (args<2) abort_with_usage(gb_main, "-consense expects a 2nd argument (number of trees)");
+
+        calculated_trees = atoi(argv[1]);
+        if (calculated_trees < 1) {
+            abort_with_usage(gb_main, GBS_global_string("Illegal # of trees (%i) for -consense", calculated_trees));
+        }
+
+        SHIFT_ARGS(2);
+    }
+
+    if (!args) abort_with_usage(gb_main, "Missing argument 'tree_name'");
+    const char *tree_name = argv[0];
+    SHIFT_ARGS(1);
+
+    if (!args) abort_with_usage(gb_main, "Missing argument 'treefile'");
+    const char *filename = argv[0];
+    SHIFT_ARGS(1);
+
+    const char *comment = 0;
+    if (args>0) {
+        comment = argv[0];
+        SHIFT_ARGS(1);
+    }
+
+    char *comment_from_treefile = 0;
 
     GBT_message(gb_main, GBS_global_string("Reading tree from '%s' ..", filename));
 
@@ -87,6 +113,11 @@ int main(int argc,char **argv)
     if (!tree) {
         show_error(gb_main);
         return -1;
+    }
+
+    if (scale) {
+        GBT_message(gb_main, GBS_global_string("Scaling branch lengths by factor %f.", scale_factor));
+        GBT_scale_tree(tree, scale_factor, 1.0);
     }
 
     if (consense) {
@@ -111,7 +142,6 @@ int main(int argc,char **argv)
         return -1;
     }
 
-    char *tree_name = argv[arg];
     GB_ERROR error = GBT_write_tree(gb_main,0,tree_name,tree);
     if (error) {
         GB_export_error(error);
