@@ -17,5 +17,6 @@ depend:
 	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_OBJECTS:.o=.cxx)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-eispack.o: f2c.h
-d_sign.o: f2c.h
+
+d_sign.c.o: f2c.h
+eispack.c.o: f2c.h

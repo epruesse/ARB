@@ -43,386 +43,489 @@ clean:
 	@rm $(PROGS) *.o
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-../../bin/clique.o: phylip.h  
-../../bin/clique.o:  
-../../bin/clique.o:  
-../../bin/clique.o:  
-../../bin/clique.o:  
-../../bin/clique.o:  
-../../bin/clique.o:  
-../../bin/clique.o:  
-../../bin/clique.o:  
-../../bin/clique.o:  
-../../bin/clique.o:  
-../../bin/clique.o:  
-../../bin/coallike.o: phylip.h  
-../../bin/coallike.o:  
-../../bin/coallike.o:  
-../../bin/coallike.o:  
-../../bin/coallike.o:  
-../../bin/coallike.o:  
-../../bin/coallike.o:  
-../../bin/coallike.o:  
-../../bin/coallike.o:  
-../../bin/coallike.o:  
-../../bin/coallike.o: 
-../../bin/coallike.o: 
-../../bin/coallike.o:  
-../../bin/consense.o: phylip.h  
-../../bin/consense.o:  
-../../bin/consense.o:  
-../../bin/consense.o:  
-../../bin/consense.o:  
-../../bin/consense.o:  
-../../bin/consense.o:  
-../../bin/consense.o:  
-../../bin/consense.o:  
-../../bin/consense.o:  
-../../bin/consense.o: 
-../../bin/consense.o: 
-../../bin/consense.o:  
-../../bin/contml.o: phylip.h  
-../../bin/contml.o:  
-../../bin/contml.o:  
-../../bin/contml.o:  
-../../bin/contml.o:  
-../../bin/contml.o:  
-../../bin/contml.o:  
-../../bin/contml.o:  
-../../bin/contml.o:  
-../../bin/contml.o:  
-../../bin/contml.o:  
-../../bin/contml.o:  
-../../bin/contrast.o: phylip.h  
-../../bin/contrast.o:  
-../../bin/contrast.o:  
-../../bin/contrast.o:  
-../../bin/contrast.o:  
-../../bin/contrast.o:  
-../../bin/contrast.o:  
-../../bin/contrast.o:  
-../../bin/contrast.o:  
-../../bin/contrast.o:  
-../../bin/contrast.o: 
-../../bin/contrast.o: 
-../../bin/contrast.o:  
-../../bin/dnacomp.o: phylip.h  
-../../bin/dnacomp.o:  
-../../bin/dnacomp.o:  
-../../bin/dnacomp.o:  
-../../bin/dnacomp.o:  
-../../bin/dnacomp.o:  
-../../bin/dnacomp.o:  
-../../bin/dnacomp.o:  
-../../bin/dnacomp.o:  
-../../bin/dnacomp.o:  
-../../bin/dnacomp.o:  
-../../bin/dnacomp.o:  
-../../bin/dnadist.o: phylip.h  
-../../bin/dnadist.o:  
-../../bin/dnadist.o:  
-../../bin/dnadist.o:  
-../../bin/dnadist.o:  
-../../bin/dnadist.o:  
-../../bin/dnadist.o:  
-../../bin/dnadist.o:  
-../../bin/dnadist.o:  
-../../bin/dnadist.o:  
-../../bin/dnadist.o:  
-../../bin/dnadist.o:  
-../../bin/dnainvar.o: phylip.h  
-../../bin/dnainvar.o:  
-../../bin/dnainvar.o:  
-../../bin/dnainvar.o:  
-../../bin/dnainvar.o:  
-../../bin/dnainvar.o:  
-../../bin/dnainvar.o:  
-../../bin/dnainvar.o:  
-../../bin/dnainvar.o:  
-../../bin/dnainvar.o:  
-../../bin/dnainvar.o: 
-../../bin/dnainvar.o: 
-../../bin/dnainvar.o:  
-../../bin/dnaml.o: phylip.h  
-../../bin/dnaml.o:  
-../../bin/dnaml.o:  
-../../bin/dnaml.o:  
-../../bin/dnaml.o:  
-../../bin/dnaml.o:  
-../../bin/dnaml.o:  
-../../bin/dnaml.o:  
-../../bin/dnaml.o:  
-../../bin/dnaml.o:  
-../../bin/dnaml.o:  
-../../bin/dnaml.o:  
-../../bin/dnamlk.o: phylip.h  
-../../bin/dnamlk.o:  
-../../bin/dnamlk.o:  
-../../bin/dnamlk.o:  
-../../bin/dnamlk.o:  
-../../bin/dnamlk.o:  
-../../bin/dnamlk.o:  
-../../bin/dnamlk.o:  
-../../bin/dnamlk.o:  
-../../bin/dnamlk.o:  
-../../bin/dnamlk.o:  
-../../bin/dnamlk.o:  
-../../bin/dnamove.o: phylip.h  
-../../bin/dnamove.o:  
-../../bin/dnamove.o:  
-../../bin/dnamove.o:  
-../../bin/dnamove.o:  
-../../bin/dnamove.o:  
-../../bin/dnamove.o:  
-../../bin/dnamove.o:  
-../../bin/dnamove.o:  
-../../bin/dnamove.o:  
-../../bin/dnamove.o:  
-../../bin/dnamove.o:  
-../../bin/dnapars.o: phylip.h  
-../../bin/dnapars.o:  
-../../bin/dnapars.o:  
-../../bin/dnapars.o:  
-../../bin/dnapars.o:  
-../../bin/dnapars.o:  
-../../bin/dnapars.o:  
-../../bin/dnapars.o:  
-../../bin/dnapars.o:  
-../../bin/dnapars.o:  
-../../bin/dnapars.o:  
-../../bin/dnapars.o:  
-../../bin/dnapenny.o: phylip.h  
-../../bin/dnapenny.o:  
-../../bin/dnapenny.o:  
-../../bin/dnapenny.o:  
-../../bin/dnapenny.o:  
-../../bin/dnapenny.o:  
-../../bin/dnapenny.o:  
-../../bin/dnapenny.o:  
-../../bin/dnapenny.o:  
-../../bin/dnapenny.o:  
-../../bin/dnapenny.o: 
-../../bin/dnapenny.o: 
-../../bin/dnapenny.o:  
-../../bin/dolmove.o: phylip.h  
-../../bin/dolmove.o:  
-../../bin/dolmove.o:  
-../../bin/dolmove.o:  
-../../bin/dolmove.o:  
-../../bin/dolmove.o:  
-../../bin/dolmove.o:  
-../../bin/dolmove.o:  
-../../bin/dolmove.o:  
-../../bin/dolmove.o:  
-../../bin/dolmove.o:  
-../../bin/dolmove.o:  
-../../bin/dollop.o: phylip.h  
-../../bin/dollop.o:  
-../../bin/dollop.o:  
-../../bin/dollop.o:  
-../../bin/dollop.o:  
-../../bin/dollop.o:  
-../../bin/dollop.o:  
-../../bin/dollop.o:  
-../../bin/dollop.o:  
-../../bin/dollop.o:  
-../../bin/dollop.o:  
-../../bin/dollop.o:  
-../../bin/dolpenny.o: phylip.h  
-../../bin/dolpenny.o:  
-../../bin/dolpenny.o:  
-../../bin/dolpenny.o:  
-../../bin/dolpenny.o:  
-../../bin/dolpenny.o:  
-../../bin/dolpenny.o:  
-../../bin/dolpenny.o:  
-../../bin/dolpenny.o:  
-../../bin/dolpenny.o:  
-../../bin/dolpenny.o: 
-../../bin/dolpenny.o: 
-../../bin/dolpenny.o:  
-../../bin/drawgram.o: drawgraphics.h phylip.h 
-../../bin/drawgram.o:  
-../../bin/drawgram.o:  
-../../bin/drawgram.o:  
-../../bin/drawgram.o:  
-../../bin/drawgram.o:  
-../../bin/drawgram.o:  
-../../bin/drawgram.o:  
-../../bin/drawgram.o:  
-../../bin/drawgram.o:  
-../../bin/drawgram.o:  
-../../bin/drawgram.o: 
-../../bin/drawgram.o:  
-../../bin/drawtree.o: drawgraphics.h phylip.h 
-../../bin/drawtree.o:  
-../../bin/drawtree.o:  
-../../bin/drawtree.o:  
-../../bin/drawtree.o:  
-../../bin/drawtree.o:  
-../../bin/drawtree.o:  
-../../bin/drawtree.o:  
-../../bin/drawtree.o:  
-../../bin/drawtree.o:  
-../../bin/drawtree.o:  
-../../bin/drawtree.o: 
-../../bin/drawtree.o:  
-../../bin/factor.o: phylip.h  
-../../bin/factor.o:  
-../../bin/factor.o:  
-../../bin/factor.o:  
-../../bin/factor.o:  
-../../bin/factor.o:  
-../../bin/factor.o:  
-../../bin/factor.o:  
-../../bin/factor.o:  
-../../bin/factor.o:  
-../../bin/factor.o:  
-../../bin/factor.o:  
-../../bin/fitch.o: phylip.h  
-../../bin/fitch.o:  
-../../bin/fitch.o:  
-../../bin/fitch.o:  
-../../bin/fitch.o:  
-../../bin/fitch.o:  
-../../bin/fitch.o:  
-../../bin/fitch.o:  
-../../bin/fitch.o:  
-../../bin/fitch.o:  
-../../bin/fitch.o:  
-../../bin/fitch.o:  
-../../bin/gendist.o: phylip.h  
-../../bin/gendist.o:  
-../../bin/gendist.o:  
-../../bin/gendist.o:  
-../../bin/gendist.o:  
-../../bin/gendist.o:  
-../../bin/gendist.o:  
-../../bin/gendist.o:  
-../../bin/gendist.o:  
-../../bin/gendist.o:  
-../../bin/gendist.o:  
-../../bin/gendist.o:  
-../../bin/kitsch.o: phylip.h  
-../../bin/kitsch.o:  
-../../bin/kitsch.o:  
-../../bin/kitsch.o:  
-../../bin/kitsch.o:  
-../../bin/kitsch.o:  
-../../bin/kitsch.o:  
-../../bin/kitsch.o:  
-../../bin/kitsch.o:  
-../../bin/kitsch.o:  
-../../bin/kitsch.o:  
-../../bin/kitsch.o:  
-../../bin/mix.o: phylip.h  
-../../bin/mix.o:  
-../../bin/mix.o:  
-../../bin/mix.o:  
-../../bin/mix.o:  
-../../bin/mix.o:  
-../../bin/mix.o:  
-../../bin/mix.o:  
-../../bin/mix.o:  
-../../bin/mix.o:  
-../../bin/mix.o:  
-../../bin/mix.o:  
-../../bin/move.o: phylip.h  
-../../bin/move.o:  
-../../bin/move.o:  
-../../bin/move.o:  
-../../bin/move.o:  
-../../bin/move.o:  
-../../bin/move.o:  
-../../bin/move.o:  
-../../bin/move.o:  
-../../bin/move.o:  
-../../bin/move.o:  
-../../bin/move.o:  
-../../bin/neighbor.o: phylip.h  
-../../bin/neighbor.o:  
-../../bin/neighbor.o:  
-../../bin/neighbor.o:  
-../../bin/neighbor.o:  
-../../bin/neighbor.o:  
-../../bin/neighbor.o:  
-../../bin/neighbor.o:  
-../../bin/neighbor.o:  
-../../bin/neighbor.o:  
-../../bin/neighbor.o: 
-../../bin/neighbor.o: 
-../../bin/neighbor.o:  
-../../bin/penny.o: phylip.h  
-../../bin/penny.o:  
-../../bin/penny.o:  
-../../bin/penny.o:  
-../../bin/penny.o:  
-../../bin/penny.o:  
-../../bin/penny.o:  
-../../bin/penny.o:  
-../../bin/penny.o:  
-../../bin/penny.o:  
-../../bin/penny.o:  
-../../bin/penny.o:  
-../../bin/protdist.o: phylip.h  
-../../bin/protdist.o:  
-../../bin/protdist.o:  
-../../bin/protdist.o:  
-../../bin/protdist.o:  
-../../bin/protdist.o:  
-../../bin/protdist.o:  
-../../bin/protdist.o:  
-../../bin/protdist.o:  
-../../bin/protdist.o:  
-../../bin/protdist.o: 
-../../bin/protdist.o: 
-../../bin/protdist.o:  
-../../bin/protpars.o: phylip.h  
-../../bin/protpars.o:  
-../../bin/protpars.o:  
-../../bin/protpars.o:  
-../../bin/protpars.o:  
-../../bin/protpars.o:  
-../../bin/protpars.o:  
-../../bin/protpars.o:  
-../../bin/protpars.o:  
-../../bin/protpars.o:  
-../../bin/protpars.o: 
-../../bin/protpars.o: 
-../../bin/protpars.o:  
-../../bin/restml.o: phylip.h  
-../../bin/restml.o:  
-../../bin/restml.o:  
-../../bin/restml.o:  
-../../bin/restml.o:  
-../../bin/restml.o:  
-../../bin/restml.o:  
-../../bin/restml.o:  
-../../bin/restml.o:  
-../../bin/restml.o:  
-../../bin/restml.o:  
-../../bin/restml.o:  
-../../bin/retree.o: phylip.h  
-../../bin/retree.o:  
-../../bin/retree.o:  
-../../bin/retree.o:  
-../../bin/retree.o:  
-../../bin/retree.o:  
-../../bin/retree.o:  
-../../bin/retree.o:  
-../../bin/retree.o:  
-../../bin/retree.o:  
-../../bin/retree.o:  
-../../bin/retree.o:  
-../../bin/seqboot.o: phylip.h  
-../../bin/seqboot.o:  
-../../bin/seqboot.o:  
-../../bin/seqboot.o:  
-../../bin/seqboot.o:  
-../../bin/seqboot.o:  
-../../bin/seqboot.o:  
-../../bin/seqboot.o:  
-../../bin/seqboot.o:  
-../../bin/seqboot.o:  
-../../bin/seqboot.o:  
-../../bin/seqboot.o:  
+
+clique.o:  
+clique.o:  
+clique.o:  
+clique.o:  
+clique.o:  
+clique.o:  
+clique.o:   
+clique.o:  
+clique.o:   
+clique.o:   
+clique.o:  
+clique.o:   
+clique.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+clique.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+clique.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+coallike.o:  
+coallike.o:  
+coallike.o:  
+coallike.o:  
+coallike.o:  
+coallike.o:  
+coallike.o:  
+coallike.o:  
+coallike.o:   
+coallike.o:   
+coallike.o:  
+coallike.o:  
+coallike.o:  
+coallike.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+coallike.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+coallike.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+consense.o:  
+consense.o:  
+consense.o:  
+consense.o:  
+consense.o:  
+consense.o:  
+consense.o:  
+consense.o:  
+consense.o:   
+consense.o:   
+consense.o:  
+consense.o:  
+consense.o:  
+consense.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+consense.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+consense.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+contml.o:  
+contml.o:  
+contml.o:  
+contml.o:  
+contml.o:  
+contml.o:  
+contml.o:   
+contml.o:  
+contml.o:   
+contml.o:   
+contml.o:  
+contml.o:   
+contml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+contml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+contml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+contrast.o:  
+contrast.o:  
+contrast.o:  
+contrast.o:  
+contrast.o:  
+contrast.o:  
+contrast.o:  
+contrast.o:  
+contrast.o:   
+contrast.o:   
+contrast.o:  
+contrast.o:  
+contrast.o:  
+contrast.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+contrast.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+contrast.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+dnacomp.o:  
+dnacomp.o:  
+dnacomp.o:  
+dnacomp.o:  
+dnacomp.o:  
+dnacomp.o:  
+dnacomp.o:  
+dnacomp.o:  
+dnacomp.o:   
+dnacomp.o:   
+dnacomp.o:  
+dnacomp.o:  
+dnacomp.o:  
+dnacomp.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+dnacomp.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+dnacomp.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+dnadist.o:  
+dnadist.o:  
+dnadist.o:  
+dnadist.o:  
+dnadist.o:  
+dnadist.o:  
+dnadist.o:  
+dnadist.o:  
+dnadist.o:   
+dnadist.o:   
+dnadist.o:  
+dnadist.o:  
+dnadist.o:  
+dnadist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+dnadist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+dnadist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+dnainvar.o:  
+dnainvar.o:  
+dnainvar.o:  
+dnainvar.o:  
+dnainvar.o:  
+dnainvar.o:  
+dnainvar.o:  
+dnainvar.o:  
+dnainvar.o:   
+dnainvar.o:   
+dnainvar.o:  
+dnainvar.o:  
+dnainvar.o:  
+dnainvar.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+dnainvar.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+dnainvar.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+dnaml.o:  
+dnaml.o:  
+dnaml.o:  
+dnaml.o:  
+dnaml.o:  
+dnaml.o:  
+dnaml.o:   
+dnaml.o:   
+dnaml.o:   
+dnaml.o:  
+dnaml.o:  
+dnaml.o:   
+dnaml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+dnaml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+dnaml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+dnamlk.o:  
+dnamlk.o:  
+dnamlk.o:  
+dnamlk.o:  
+dnamlk.o:  
+dnamlk.o:  
+dnamlk.o:   
+dnamlk.o:  
+dnamlk.o:   
+dnamlk.o:   
+dnamlk.o:  
+dnamlk.o:   
+dnamlk.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+dnamlk.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+dnamlk.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+dnamove.o:  
+dnamove.o:  
+dnamove.o:  
+dnamove.o:  
+dnamove.o:  
+dnamove.o:  
+dnamove.o:  
+dnamove.o:  
+dnamove.o:   
+dnamove.o:   
+dnamove.o:  
+dnamove.o:  
+dnamove.o:  
+dnamove.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+dnamove.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+dnamove.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+dnapars.o:  
+dnapars.o:  
+dnapars.o:  
+dnapars.o:  
+dnapars.o:  
+dnapars.o:  
+dnapars.o:  
+dnapars.o:  
+dnapars.o:   
+dnapars.o:   
+dnapars.o:  
+dnapars.o:  
+dnapars.o:  
+dnapars.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+dnapars.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+dnapars.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+dnapenny.o:  
+dnapenny.o:  
+dnapenny.o:  
+dnapenny.o:  
+dnapenny.o:  
+dnapenny.o:  
+dnapenny.o:  
+dnapenny.o:  
+dnapenny.o:   
+dnapenny.o:   
+dnapenny.o:  
+dnapenny.o:  
+dnapenny.o:  
+dnapenny.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+dnapenny.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+dnapenny.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+dollop.o:  
+dollop.o:  
+dollop.o:  
+dollop.o:  
+dollop.o:  
+dollop.o:  
+dollop.o:   
+dollop.o:  
+dollop.o:   
+dollop.o:   
+dollop.o:  
+dollop.o:   
+dollop.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+dollop.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+dollop.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+dolmove.o:  
+dolmove.o:  
+dolmove.o:  
+dolmove.o:  
+dolmove.o:  
+dolmove.o:  
+dolmove.o:  
+dolmove.o:  
+dolmove.o:   
+dolmove.o:   
+dolmove.o:  
+dolmove.o:  
+dolmove.o:  
+dolmove.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+dolmove.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+dolmove.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+dolpenny.o:  
+dolpenny.o:  
+dolpenny.o:  
+dolpenny.o:  
+dolpenny.o:  
+dolpenny.o:  
+dolpenny.o:  
+dolpenny.o:  
+dolpenny.o:   
+dolpenny.o:   
+dolpenny.o:  
+dolpenny.o:  
+dolpenny.o:  
+dolpenny.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+dolpenny.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+dolpenny.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+drawgram.o:  
+drawgram.o:  
+drawgram.o:  
+drawgram.o:  
+drawgram.o:  
+drawgram.o:  
+drawgram.o:  
+drawgram.o:  
+drawgram.o:   
+drawgram.o:   
+drawgram.o:  
+drawgram.o:  
+drawgram.o:  
+drawgram.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+drawgram.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+drawgram.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+drawgram.o: drawgraphics.h phylip.h
+drawtree.o:  
+drawtree.o:  
+drawtree.o:  
+drawtree.o:  
+drawtree.o:  
+drawtree.o:  
+drawtree.o:  
+drawtree.o:  
+drawtree.o:   
+drawtree.o:   
+drawtree.o:  
+drawtree.o:  
+drawtree.o:  
+drawtree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+drawtree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+drawtree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+drawtree.o: drawgraphics.h phylip.h
+factor.o:  
+factor.o:  
+factor.o:  
+factor.o:  
+factor.o:  
+factor.o:  
+factor.o:   
+factor.o:  
+factor.o:   
+factor.o:   
+factor.o:  
+factor.o:   
+factor.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+factor.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+factor.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+fitch.o:  
+fitch.o:  
+fitch.o:  
+fitch.o:  
+fitch.o:  
+fitch.o:  
+fitch.o:   
+fitch.o:   
+fitch.o:   
+fitch.o:  
+fitch.o:  
+fitch.o:   
+fitch.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+fitch.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+fitch.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+gendist.o:  
+gendist.o:  
+gendist.o:  
+gendist.o:  
+gendist.o:  
+gendist.o:  
+gendist.o:  
+gendist.o:  
+gendist.o:   
+gendist.o:   
+gendist.o:  
+gendist.o:  
+gendist.o:  
+gendist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+gendist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+gendist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+kitsch.o:  
+kitsch.o:  
+kitsch.o:  
+kitsch.o:  
+kitsch.o:  
+kitsch.o:  
+kitsch.o:   
+kitsch.o:  
+kitsch.o:   
+kitsch.o:   
+kitsch.o:  
+kitsch.o:   
+kitsch.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+kitsch.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+kitsch.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+mix.o:  
+mix.o:  
+mix.o:  
+mix.o:  
+mix.o:  
+mix.o:  
+mix.o:   
+mix.o:   
+mix.o:   
+mix.o:  
+mix.o:  
+mix.o:   
+mix.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+mix.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+mix.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+move.o:  
+move.o:  
+move.o:  
+move.o:  
+move.o:  
+move.o:  
+move.o:   
+move.o:   
+move.o:   
+move.o:  
+move.o:  
+move.o:   
+move.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+move.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+move.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+neighbor.o:  
+neighbor.o:  
+neighbor.o:  
+neighbor.o:  
+neighbor.o:  
+neighbor.o:  
+neighbor.o:  
+neighbor.o:  
+neighbor.o:   
+neighbor.o:   
+neighbor.o:  
+neighbor.o:  
+neighbor.o:  
+neighbor.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+neighbor.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+neighbor.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+penny.o:  
+penny.o:  
+penny.o:  
+penny.o:  
+penny.o:  
+penny.o:  
+penny.o:   
+penny.o:   
+penny.o:   
+penny.o:  
+penny.o:  
+penny.o:   
+penny.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+penny.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+penny.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+protdist.o:  
+protdist.o:  
+protdist.o:  
+protdist.o:  
+protdist.o:  
+protdist.o:  
+protdist.o:  
+protdist.o:  
+protdist.o:   
+protdist.o:   
+protdist.o:  
+protdist.o:  
+protdist.o:  
+protdist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+protdist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+protdist.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+protpars.o:  
+protpars.o:  
+protpars.o:  
+protpars.o:  
+protpars.o:  
+protpars.o:  
+protpars.o:  
+protpars.o:  
+protpars.o:   
+protpars.o:   
+protpars.o:  
+protpars.o:  
+protpars.o:  
+protpars.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+protpars.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+protpars.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+restml.o:  
+restml.o:  
+restml.o:  
+restml.o:  
+restml.o:  
+restml.o:  
+restml.o:   
+restml.o:  
+restml.o:   
+restml.o:   
+restml.o:  
+restml.o:   
+restml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+restml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+restml.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+retree.o:  
+retree.o:  
+retree.o:  
+retree.o:  
+retree.o:  
+retree.o:  
+retree.o:   
+retree.o:  
+retree.o:   
+retree.o:   
+retree.o:  
+retree.o:   
+retree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+retree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+retree.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h
+seqboot.o:  
+seqboot.o:  
+seqboot.o:  
+seqboot.o:  
+seqboot.o:  
+seqboot.o:  
+seqboot.o:  
+seqboot.o:  
+seqboot.o:   
+seqboot.o:   
+seqboot.o:  
+seqboot.o:  
+seqboot.o:  
+seqboot.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+seqboot.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+seqboot.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h phylip.h

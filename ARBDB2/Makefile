@@ -18,67 +18,23 @@ links:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-adsort.o:  
-adsort.o:  
-adsort.o:  
-adsort.o:  
-adsort.o:   
-adsort.o:  
-adsort.o:  
-adsort.o:  
-adsort.o:   
-adsort.o:  arbdb.h ./ad_prot.h arbdbt.h ./ad_t_prot.h
-adlang1.o:  
-adlang1.o:  
-adlang1.o:  
-adlang1.o:  
-adlang1.o:   
-adlang1.o:  
-adlang1.o:  
-adlang1.o:  
-adlang1.o:  
-adlang1.o:  
-adlang1.o:   
-adlang1.o:  adlocal.h arbdb.h ./ad_prot.h adtune.h
-adlang1.o: adlmacros.h arbdbt.h ./ad_t_prot.h
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o:   
-adstring.o: adlocal.h arbdb.h ./ad_prot.h adtune.h adlmacros.h arbdbt.h
-adstring.o: ./ad_t_prot.h  
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o: 
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:   
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:   
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  adlocal.h arbdb.h ./ad_prot.h adtune.h
-arbdb.o: adlmacros.h
+
+adTest.o:  
+adTest.o:  
+adTest.o:  
+adTest.o:  
+adTest.o:  
+adTest.o:  
+adTest.o:   
+adTest.o:   
+adTest.o:  
+adTest.o:  
+adTest.o:  
+adTest.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adTest.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h ad_lpro.h
+adTest.o: ad_prot.h adlmacros.h adlocal.h admap.h adtune.h arbdb.h
+ad_core.o:  
+ad_core.o:  
 ad_core.o:  
 ad_core.o:  
 ad_core.o:  
@@ -87,8 +43,212 @@ ad_core.o:
 ad_core.o:  
 ad_core.o:  
 ad_core.o:  
-ad_core.o:   
-ad_core.o: adlocal.h arbdb.h ./ad_prot.h adtune.h adlmacros.h
+ad_core.o:  
+ad_core.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+ad_core.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h ad_lpro.h
+ad_core.o: ad_prot.h adlmacros.h adlocal.h adtune.h arbdb.h
+ad_load.o:  
+ad_load.o:  
+ad_load.o:  
+ad_load.o:  
+ad_load.o:  
+ad_load.o:  
+ad_load.o:  
+ad_load.o:  
+ad_load.o:  
+ad_load.o:  
+ad_load.o:  
+ad_load.o:  
+ad_load.o:   
+ad_load.o:  
+ad_load.o:  
+ad_load.o:  
+ad_load.o:  
+ad_load.o:   
+ad_load.o:  
+ad_load.o:  
+ad_load.o:  
+ad_load.o:  
+ad_load.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/limits.h
+ad_load.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+ad_load.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+ad_load.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/syslimits.h
+ad_load.o: ad_lpro.h ad_prot.h adlmacros.h adlocal.h admap.h adtune.h arbdb.h
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o: 
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o:  
+ad_save_load.o: 
+ad_save_load.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/limits.h
+ad_save_load.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+ad_save_load.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+ad_save_load.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/syslimits.h
+ad_save_load.o: ad_lpro.h ad_prot.h adlmacros.h adlocal.h admap.h adtune.h
+ad_save_load.o: arbdb.h
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:   
+adcomm.o:   
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:   
+adcomm.o:   
+adcomm.o:  
+adcomm.o:  
+adcomm.o:  
+adcomm.o:   
+adcomm.o:   
+adcomm.o: 
+adcomm.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/limits.h
+adcomm.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adcomm.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+adcomm.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/syslimits.h
+adcomm.o: ad_lpro.h ad_prot.h adlmacros.h adlocal.h adtune.h arbdb.h
+adcompr.o:  
+adcompr.o:  
+adcompr.o:  
+adcompr.o:  
+adcompr.o:  
+adcompr.o:  
+adcompr.o:   
+adcompr.o:   
+adcompr.o:  
+adcompr.o:  
+adcompr.o:  
+adcompr.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adcompr.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h ad_lpro.h
+adcompr.o: ad_prot.h ad_t_lpro.h ad_t_prot.h adlmacros.h adlocal.h adtune.h
+adcompr.o: arbdb.h arbdbt.h
+adhash.o:  
+adhash.o:  
+adhash.o:  
+adhash.o:  
+adhash.o:   
+adhash.o:  
+adhash.o:   
+adhash.o:   
+adhash.o:  
+adhash.o:   
+adhash.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adhash.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h ad_lpro.h
+adhash.o: ad_prot.h adlmacros.h adlocal.h adtune.h arbdb.h
+adindex.o:  
+adindex.o:  
+adindex.o:  
+adindex.o:  
+adindex.o:  
+adindex.o:  
+adindex.o:   
+adindex.o:  
+adindex.o:  
+adindex.o:  
+adindex.o:  
+adindex.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adindex.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h ad_lpro.h
+adindex.o: ad_prot.h adlmacros.h adlocal.h adlundo.h adtune.h arbdb.h
+adlang1.o:  
+adlang1.o:  
+adlang1.o:  
+adlang1.o:  
+adlang1.o:  
+adlang1.o:  
+adlang1.o:  
+adlang1.o:   
+adlang1.o:   
+adlang1.o:   
+adlang1.o:  
+adlang1.o:  
+adlang1.o:   
+adlang1.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adlang1.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h ad_lpro.h
+adlang1.o: ad_prot.h ad_t_lpro.h ad_t_prot.h adlmacros.h adlocal.h adtune.h
+adlang1.o: arbdb.h arbdbt.h
+adlink.o:  
+adlink.o:  
+adlink.o:  
+adlink.o:  
+adlink.o:  
+adlink.o:  
+adlink.o:   
+adlink.o:  
+adlink.o:  
+adlink.o:   
+adlink.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adlink.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h ad_lpro.h
+adlink.o: ad_prot.h adlmacros.h adlocal.h adtune.h arbdb.h
+admalloc.o:  
+admalloc.o:  
+admalloc.o:  
+admalloc.o:  
+admalloc.o:  
+admalloc.o:  
+admalloc.o:  
+admalloc.o:  
+admalloc.o:  
+admalloc.o:  
+admalloc.o:  
+admalloc.o:  
+admalloc.o:   
+admalloc.o:  
+admalloc.o:  
+admalloc.o:   
+admalloc.o: 
+admalloc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/limits.h
+admalloc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+admalloc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+admalloc.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/syslimits.h
+admalloc.o: ad_lpro.h ad_prot.h adlmacros.h adlocal.h adtune.h arbdb.h
+admap.o:  
+admap.o:  
+admap.o:  
+admap.o:  
+admap.o:  
+admap.o:   
+admap.o:   
+admap.o:  
+admap.o:  
+admap.o:  
+admap.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+admap.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h ad_lpro.h
+admap.o: ad_prot.h adlmacros.h adlocal.h admap.h adtune.h arbdb.h
+admath.o:  
 admath.o:  
 admath.o:  
 admath.o:  
@@ -97,11 +257,14 @@ admath.o:
 admath.o:  
 admath.o:  
 admath.o:   
+admath.o:   
 admath.o:  
 admath.o:  
 admath.o:  
-admath.o:  adlocal.h arbdb.h ./ad_prot.h
-admath.o: adtune.h adlmacros.h
+admath.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+admath.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+admath.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h ad_lpro.h
+admath.o: ad_prot.h adlmacros.h adlocal.h adtune.h arbdb.h
 adoptimize.o:  
 adoptimize.o:  
 adoptimize.o:  
@@ -116,38 +279,16 @@ adoptimize.o:
 adoptimize.o:  
 adoptimize.o:  
 adoptimize.o:  
+adoptimize.o:   
 adoptimize.o:  
 adoptimize.o:  
-adoptimize.o:  adlocal.h arbdb.h ./ad_prot.h
-adoptimize.o: adtune.h adlmacros.h
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:   adlocal.h
-adsystem.o: arbdb.h ./ad_prot.h adtune.h adlmacros.h arbdbt.h ./ad_t_prot.h
-adindex.o:  
-adindex.o:  
-adindex.o:  
-adindex.o:  
-adindex.o:   
-adindex.o:  
-adindex.o:  
-adindex.o:  
-adindex.o:   
-adindex.o: adlocal.h arbdb.h ./ad_prot.h adtune.h adlmacros.h adlundo.h
+adoptimize.o:  
+adoptimize.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/limits.h
+adoptimize.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adoptimize.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+adoptimize.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/syslimits.h
+adoptimize.o: ad_lpro.h ad_prot.h adlmacros.h adlocal.h adtune.h arbdb.h
+adperl.o:  
 adperl.o:  
 adperl.o:  
 adperl.o:  
@@ -156,18 +297,42 @@ adperl.o:
 adperl.o:   
 adperl.o:  
 adperl.o:  
-adperl.o:   arbdb.h
-adperl.o: ./ad_prot.h
-adlink.o:  
-adlink.o:  
-adlink.o:  
-adlink.o:  
-adlink.o:   
-adlink.o:  
-adlink.o:  
-adlink.o:  
-adlink.o:   adlocal.h arbdb.h
-adlink.o: ./ad_prot.h adtune.h adlmacros.h
+adperl.o:   
+adperl.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adperl.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h ad_prot.h
+adperl.o: arbdb.h
+adquery.o:  
+adquery.o:  
+adquery.o:  
+adquery.o:  
+adquery.o:  
+adquery.o:  
+adquery.o:   
+adquery.o:   
+adquery.o:  
+adquery.o:  
+adquery.o:  
+adquery.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adquery.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h ad_lpro.h
+adquery.o: ad_prot.h adlmacros.h adlocal.h adtune.h arbdb.h
+adseqcompr.o:  
+adseqcompr.o:  
+adseqcompr.o:  
+adseqcompr.o:  
+adseqcompr.o:  
+adseqcompr.o:  
+adseqcompr.o:   
+adseqcompr.o:  
+adseqcompr.o:  
+adseqcompr.o:  
+adseqcompr.o:  
+adseqcompr.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adseqcompr.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+adseqcompr.o: ad_lpro.h ad_prot.h ad_t_lpro.h ad_t_prot.h adlmacros.h
+adseqcompr.o: adlocal.h adseqcompr.h adtune.h arbdb.h arbdbt.h
+adsocket.o:  
+adsocket.o:  
+adsocket.o:  
 adsocket.o:  
 adsocket.o:  
 adsocket.o:  
@@ -191,189 +356,139 @@ adsocket.o:
 adsocket.o:  
 adsocket.o:  
 adsocket.o:  
+adsocket.o:   
 adsocket.o:  
 adsocket.o:  
 adsocket.o:  
 adsocket.o:  
 adsocket.o:  
+adsocket.o:   
 adsocket.o:  
-adsocket.o: adlocal.h arbdb.h ./ad_prot.h adtune.h adlmacros.h
-adsocket.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:   
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:   
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  adlocal.h arbdb.h ./ad_prot.h adtune.h
-adcomm.o: adlmacros.h  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:   
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adhash.o:  
-adhash.o:  
-adhash.o:  
-adhash.o:  
-adhash.o:   
-adhash.o:  
-adhash.o:  
-adhash.o:  
-adhash.o:   
-adhash.o:  adlocal.h arbdb.h ./ad_prot.h adtune.h
-adhash.o: adlmacros.h
-adquery.o:  
-adquery.o:  
-adquery.o:  
-adquery.o:  
-adquery.o:   
-adquery.o:  
-adquery.o:  
-adquery.o:  
-adquery.o:   
-adquery.o:  adlocal.h arbdb.h ./ad_prot.h adtune.h
-adquery.o: adlmacros.h
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:   adlocal.h
-ad_save_load.o: arbdb.h ./ad_prot.h adtune.h adlmacros.h admap.h
-adcompr.o:  
-adcompr.o:  
-adcompr.o:  
-adcompr.o:  
-adcompr.o:   
-adcompr.o:  
-adcompr.o:  
-adcompr.o:  
-adcompr.o:   
-adcompr.o:  adlocal.h arbdb.h ./ad_prot.h adtune.h
-adcompr.o: adlmacros.h arbdbt.h ./ad_t_prot.h
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:   
-admalloc.o:  
-admalloc.o:  
-admalloc.o: adlocal.h arbdb.h ./ad_prot.h adtune.h adlmacros.h
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:   
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:   
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  adlocal.h arbdb.h ./ad_prot.h
-ad_load.o: adtune.h adlmacros.h admap.h
-admap.o:  
-admap.o:  
-admap.o:  
-admap.o:  
-admap.o:   
-admap.o:  
-admap.o:  
-admap.o:  
-admap.o:   adlocal.h arbdb.h
-admap.o: ./ad_prot.h adtune.h adlmacros.h admap.h
-adTest.o:  
-adTest.o:  
-adTest.o:  
-adTest.o:  
-adTest.o:   
-adTest.o:  
-adTest.o:  
-adTest.o:  
-adTest.o:   
-adTest.o:  adlocal.h arbdb.h ./ad_prot.h adtune.h
-adTest.o: adlmacros.h admap.h
+adsocket.o: 
+adsocket.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/limits.h
+adsocket.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adsocket.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+adsocket.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/syslimits.h
+adsocket.o: ad_lpro.h ad_prot.h adlmacros.h adlocal.h adtune.h arbdb.h
+adsort.o:  
+adsort.o:  
+adsort.o:  
+adsort.o:  
+adsort.o:  
+adsort.o:  
+adsort.o:   
+adsort.o:   
+adsort.o:  
+adsort.o:  
+adsort.o:  
+adsort.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adsort.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h ad_prot.h
+adsort.o: ad_t_prot.h arbdb.h arbdbt.h
+adstring.o:  
+adstring.o:  
+adstring.o:  
+adstring.o:  
+adstring.o:  
+adstring.o:  
+adstring.o:  
+adstring.o:  
+adstring.o:  
+adstring.o:  
+adstring.o:  
+adstring.o:  
+adstring.o:  
+adstring.o:   
+adstring.o:  
+adstring.o:  
+adstring.o:   
+adstring.o: 
+adstring.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adstring.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h ad_lpro.h
+adstring.o: ad_prot.h ad_t_lpro.h ad_t_prot.h adlmacros.h adlocal.h adtune.h
+adstring.o: arbdb.h arbdbt.h
+adsystem.o:  
+adsystem.o:  
+adsystem.o:  
+adsystem.o:  
+adsystem.o:  
+adsystem.o:  
+adsystem.o:  
+adsystem.o:  
+adsystem.o:  
+adsystem.o:  
+adsystem.o:  
+adsystem.o:  
+adsystem.o:  
+adsystem.o:  
+adsystem.o:   
+adsystem.o:  
+adsystem.o:  
+adsystem.o:  
+adsystem.o: 
+adsystem.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/limits.h
+adsystem.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adsystem.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+adsystem.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/syslimits.h
+adsystem.o: ad_lpro.h ad_prot.h ad_t_lpro.h ad_t_prot.h adlmacros.h adlocal.h
+adsystem.o: adtune.h arbdb.h arbdbt.h
+adtables.o:  
+adtables.o:  
+adtables.o:  
+adtables.o:  
+adtables.o:  
+adtables.o:  
+adtables.o:   
+adtables.o:  
+adtables.o:  
+adtables.o:  
+adtables.o: 
+adtables.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adtables.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h ad_lpro.h
+adtables.o: ad_prot.h ad_t_lpro.h ad_t_prot.h adlmacros.h adlocal.h adtune.h
+adtables.o: arbdb.h arbdbt.h
+adtools.o:  
+adtools.o:  
+adtools.o:  
+adtools.o:  
+adtools.o:  
+adtools.o:  
+adtools.o:  
+adtools.o:   
+adtools.o:   
+adtools.o:   
+adtools.o:  
+adtools.o:  
+adtools.o:  
+adtools.o:  
+adtools.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
+adtools.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+adtools.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h ad_lpro.h
+adtools.o: ad_prot.h ad_t_lpro.h ad_t_prot.h adlmacros.h adlocal.h adtune.h
+adtools.o: arbdb.h arbdbt.h
 adtune.o: adtune.h
-adtools.o:  
-adtools.o:  
-adtools.o:  
-adtools.o:  
-adtools.o:   
-adtools.o:  
-adtools.o:  
-adtools.o:  
-adtools.o:   
-adtools.o:  
-adtools.o:  
-adtools.o:  
-adtools.o:  adlocal.h arbdb.h ./ad_prot.h adtune.h
-adtools.o: adlmacros.h arbdbt.h ./ad_t_prot.h
-adseqcompr.o:  
-adseqcompr.o:  
-adseqcompr.o:  
-adseqcompr.o:  
-adseqcompr.o:  
-adseqcompr.o:  
-adseqcompr.o:  
-adseqcompr.o:  
-adseqcompr.o:  
-adseqcompr.o:   adlocal.h arbdb.h
-adseqcompr.o: ./ad_prot.h adtune.h adlmacros.h arbdbt.h ./ad_t_prot.h
-adseqcompr.o: adseqcompr.h
-adtables.o:  
-adtables.o:  
-adtables.o:  
-adtables.o:  
-adtables.o:  
-adtables.o:  
-adtables.o:  
-adtables.o:  
-adtables.o:  
-adtables.o:  adlocal.h arbdb.h ./ad_prot.h adtune.h
-adtables.o: adlmacros.h arbdbt.h ./ad_t_prot.h
+arbdb.o:  
+arbdb.o:  
+arbdb.o:  
+arbdb.o:  
+arbdb.o:  
+arbdb.o:  
+arbdb.o:  
+arbdb.o:  
+arbdb.o:  
+arbdb.o:  
+arbdb.o:  
+arbdb.o:  
+arbdb.o:   
+arbdb.o:  
+arbdb.o:  
+arbdb.o:   
+arbdb.o:   
+arbdb.o:  
+arbdb.o:  
+arbdb.o:   
+arbdb.o: 
+arbdb.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/limits.h
+arbdb.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
+arbdb.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+arbdb.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/syslimits.h ad_lpro.h
+arbdb.o: ad_prot.h adlmacros.h adlocal.h adtune.h arbdb.h
