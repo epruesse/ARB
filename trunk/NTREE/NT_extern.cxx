@@ -1094,6 +1094,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         nt.tree->set_tree_type(AP_LIST_SIMPLE); // avoid NDS warnings during startup
         ntw = new AWT_canvas(gb_main,(AW_window *)awm,nt.tree, aw_gc_manager,awar_tree) ;
         nt.tree->set_tree_type(old_sort_type);
+        ntw->set_mode(AWT_MODE_SELECT);
     }
 
     {
@@ -1762,7 +1763,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     // NT_test_AWT(awm);
     // NT_test_input_mask(awm->get_root());
-    if (is_genome_db) GEN_map_first(awr)->show();
+    // if (is_genome_db) GEN_map_first(awr)->show();
 
 #endif // DEVEL_RALF
 
