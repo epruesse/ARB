@@ -26,6 +26,9 @@
 #include <probe_design.hxx>
 
 #include <awt_canvas.hxx>
+#ifdef DEVEL_IDP
+#include <GEN.hxx>
+#endif
 
 void NT_group_not_marked_cb(void *dummy, AWT_canvas *ntw); // real prototype is in awt_tree_cb.hxx
 
@@ -229,6 +232,7 @@ char *pd_get_the_names(bytestring &bs, bytestring &checksum){
 #ifdef DEVEL_IDP
 char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
     GBDATA *gb_species;
+    GBDATA *gb_gene;
     GBDATA *gb_name;
     GBDATA  *gb_data;
     long    len;
@@ -240,14 +244,14 @@ char *pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
     char *use = GBT_get_default_alignment(gb_main);
 
     len = 0;
-    for (gb_species = GBT_first_marked_gene(gb_main);
-         gb_species;
-         gb_species = GBT_next_marked_gene(gb_species) ){
-        gb_name = GB_find(gb_species, "name", 0, down_level);
-        if (!gb_name) continue;
+    for (gb_species = GEN_first_organism(gb_main); gb_species; gb_species = GEN_next_organism(gb_species) ){
+      for (gb_gene = GBT_first_marked_gene(gb_species); gb_gene; gb_gene = GBT_next_marked_gene(gb_gene)) {
+	gb_name = GB_find(gb_gene, "name", 0, down_level);
+	if (!gb_name) continue;
 	GBS_strcat(names, GB_read_char_pntr(gb_name));
-        GBS_chrcat(checksums, '#');
-        GBS_chrcat(names, '#');
+	GBS_chrcat(checksums, '#');
+	GBS_chrcat(names, '#');
+      }
     }
     bs.data = GBS_strclose(names, 0);
     bs.size = strlen(bs.data)+1;
@@ -707,6 +711,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     }
 
     while (hinfo && (match_name = strtok(0,toksep)) ) {
+      //!!.:IDP:.Sollte die Reihenfolge nicht Spezies..Gen sein hier ändern!.:IDP:.!!
         match_info = strtok(0,toksep);
 	if (!match_info) break;
 #ifdef DEVEL_IDP
@@ -840,6 +845,8 @@ static void selected_match_changed_cb(AW_root *root) {
     }
     else {
         root->awar(AWAR_SPECIES_NAME)->write_string(selected_match);
+#ifdef DEVEL_IDP
+#endif
     }
 
     free(selected_match);
@@ -1654,9 +1661,6 @@ static void pg_result_selected(AW_window */*aww*/) {
         GBDATA *pg_group = GB_search(pg_global.pg_main, "probe_groups/group", GB_FIND);
         long count = 0;
         long marked = 0;
-#ifdef DEVEL_IDP
-	printf("\n\n!!!!!PG_RESULT_SELECTED!!!\n\n");
-#endif
         for (; pg_group;pg_group=GB_find(pg_group, 0, 0, this_level+search_next), ++i) {
             if (i==position) {
                 GBDATA *pg_species = GB_search(pg_group, "species/name", GB_FIND);
@@ -1669,9 +1673,6 @@ static void pg_result_selected(AW_window */*aww*/) {
                         GB_write_flag(gb_species, 1); // mark species
                         if (!marked) { // select first species
                             aw_root->awar(AWAR_SPECIES_NAME)->write_string(name);
-#ifdef DEVEL_IDP
-			    //			    aw_root->awar(AWAR_GENE_NAME)->write_string(
-#endif
                         }
                         marked++;
                     }
