@@ -18,14 +18,15 @@
 void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstruct *cbs)
 {
     GBDATA *gb_key_data;
-    gb_key_data = GB_search(cbs->gb_main,CHANGE_KEY_PATH,GB_CREATE_CONTAINER);
+    gb_key_data = GB_search(cbs->gb_main, cbs->change_key_path, GB_CREATE_CONTAINER);
     AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
     GBDATA *gb_key;
     GBDATA *gb_key_name;
     for (	gb_key = GB_find(gb_key_data,CHANGEKEY,0,down_level);
             gb_key;
-            gb_key = GB_find(gb_key,CHANGEKEY,0,this_level|search_next)){
+            gb_key = GB_find(gb_key,CHANGEKEY,0,this_level|search_next))
+    {
         GBDATA *key_type = GB_find(gb_key,CHANGEKEY_TYPE,0,down_level);
         if ( !( ((long)cbs->def_filter) & (1<<GB_read_int(key_type)))) continue;
 
@@ -113,7 +114,7 @@ void awt_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_main, long bitfilt
     awt_selection_list_rescan(gb_main,bitfilter);
 }
 
-AW_CL awt_create_selection_list_on_scandb(GBDATA *gb_main,AW_window *aws, const char *varname, long type_filter, const char *scan_xfig_label, const char *rescan_xfig_label)
+AW_CL awt_create_selection_list_on_scandb(GBDATA *gb_main,AW_window *aws, const char *varname, long type_filter, const char *scan_xfig_label, const char *rescan_xfig_label, const char *change_key_path)
 {
     AW_selection_list*	id;
     GBDATA	*gb_key_data;
@@ -121,25 +122,24 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA *gb_main,AW_window *aws, const 
     GB_push_transaction(gb_main);
 
     aws->at(scan_xfig_label);
-    id = aws->create_selection_list(varname,0,"",20,10);
-    cbs = new adawcbstruct;
-    cbs->aws = aws;
-    cbs->gb_main = gb_main;
-    cbs->id = id;
-    cbs->def_filter = (char *)type_filter;
+    id                   = aws->create_selection_list(varname,0,"",20,10);
+    cbs                  = new adawcbstruct;
+    cbs->aws             = aws;
+    cbs->gb_main         = gb_main;
+    cbs->id              = id;
+    cbs->def_filter      = (char *)type_filter;
+    cbs->change_key_path = change_key_path ? change_key_path : CHANGE_KEY_PATH;
 
     if (rescan_xfig_label) {
         aws->at(rescan_xfig_label);
-        aws->callback((AW_CB)awt_selection_list_rescan_cb,
-                      (AW_CL)cbs->gb_main,(AW_CL)-1);
+        aws->callback((AW_CB)awt_selection_list_rescan_cb, (AW_CL)cbs->gb_main,(AW_CL)-1);
         aws->create_button("RESCAN_DB", "RESCAN","R");
     }
 
     awt_create_selection_list_on_scandb_cb(0,cbs);
 
-    gb_key_data = GB_search(gb_main,CHANGE_KEY_PATH,GB_CREATE_CONTAINER);
-    GB_add_callback(gb_key_data,GB_CB_CHANGED,
-                    (GB_CB)awt_create_selection_list_on_scandb_cb, (int *)cbs);
+    gb_key_data = GB_search(gb_main, cbs->change_key_path/*CHANGE_KEY_PATH*/, GB_CREATE_CONTAINER);
+    GB_add_callback(gb_key_data, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_scandb_cb, (int *)cbs);
     GB_pop_transaction(gb_main);
     return (AW_CL)cbs;
 }
@@ -148,7 +148,7 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA *gb_main,AW_window *aws, const 
 /**************************************************************************
 	create a database scanner
 		the scanned database is displayed in a selection list
-		the gbdata pointer can be read 
+		the gbdata pointer can be read
 ***************************************************************************/
 
 
@@ -190,7 +190,7 @@ void awt_arbdb_scanner_delete(void *dummy, struct adawcbstruct *cbs)
     }else{
         GB_ERROR error = GB_delete(gbd);
         if (error) aw_message((char *)error);
-    }	
+    }
     GB_commit_transaction(cbs->gb_main);
 }
 void awt_edit_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_CB_TYPE gbtype)
@@ -198,7 +198,7 @@ void awt_edit_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_CB_TYPE gbt
     AWUSE(dummy);
     AW_window *aws = cbs->aws;
     cbs->may_be_an_error = 1;
-	
+
     if (gbtype == GB_CB_DELETE) {
         cbs->gb_edit = 0;
     }
@@ -236,7 +236,7 @@ void awt_arbdb_scanner_value_change(void *dummy, struct adawcbstruct *cbs)
         if (strlen(value)){
             aw_message("Write disabled");
             cbs->aws->get_root()->awar(cbs->def_dest)->write_string("");
-        }	
+        }
     }else{
         GBDATA *gb_key_name;
         char *key_name = 0;
@@ -323,7 +323,7 @@ GB_TYPES awt_get_type_of_changekey(GBDATA *gb_main,char *field_name){
 void awt_mark_changed_cb(AW_window *aws, struct adawcbstruct *cbs, char *awar_name)
 {
     cbs->may_be_an_error = 0;
-    long flag = aws->get_root()->awar(awar_name)->read_int();	
+    long flag = aws->get_root()->awar(awar_name)->read_int();
     GB_push_transaction(cbs->gb_main);
     if (	(!cbs->gb_user) ||
             cbs->may_be_an_error) {		// something changed in the database
@@ -355,11 +355,11 @@ AW_CL awt_create_arbdb_scanner(GBDATA *gb_main, AW_window *aws,
     GB_push_transaction(gb_main);
     /*************** Create local AWARS *******************/
     sprintf(buffer,"tmp/arbdb_scanner_%i/list",scanner_id);
-    cbs->def_gbd = strdup(buffer);	
+    cbs->def_gbd = strdup(buffer);
     aw_root->awar_int( cbs->def_gbd, 0, AW_ROOT_DEFAULT);
 
     sprintf(buffer,"tmp/arbdb_scanner_%i/find",scanner_id);
-    cbs->def_source = strdup(buffer);	
+    cbs->def_source = strdup(buffer);
     aw_root->awar_string( cbs->def_source,"", AW_ROOT_DEFAULT);
 
     sprintf(buffer,"tmp/arbdb_scanner_%i/edit_enable",scanner_id);
@@ -404,7 +404,7 @@ AW_CL awt_create_arbdb_scanner(GBDATA *gb_main, AW_window *aws,
         if (edit_enable_pos_fig) aw_root->awar(cbs->def_filter)->add_callback(
                                                                               (AW_RCB1)awt_map_arbdb_edit_box,(AW_CL)cbs);
         sprintf(buffer,"tmp/arbdb_scanner_%i/edit",scanner_id);
-        cbs->def_dest = strdup(buffer);	
+        cbs->def_dest = strdup(buffer);
         aw_root->awar_string( cbs->def_dest,"", AW_ROOT_DEFAULT);
 
         aws->at(edit_pos_fig);
@@ -570,7 +570,7 @@ void awt_scanner_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_CB_TYPE 
     GB_transaction dummy2(cbs->gb_main);
 
     cbs->may_be_an_error = 1;
-	
+
     if (gbtype == GB_CB_DELETE) {
         cbs->gb_user = 0;
     }

@@ -2,27 +2,26 @@
 #define awtlocal_hxx_included
 
 struct adawcbstruct {
-	AW_window *aws;
-	AW_root *awr;
-	GBDATA *gb_main;
-	GBDATA *gb_user;
-	GBDATA *gb_edit;
-	AW_selection_list	*id;
-	char	*comm;
-
-	char	*def_name;
-	char	*def_gbd;
-	char	*def_alignment;
-	char	*def_source;
-	char	*def_dest;
-	char	*def_filter;
-	char	*pwd;
-	AW_BOOL	show_dir;
-	char	may_be_an_error;
-	char	show_only_marked;
-	char	scannermode;
-	char	*def_dir;
-
+	AW_window         *aws;
+	AW_root           *awr;
+	GBDATA            *gb_main;
+	GBDATA            *gb_user;
+	GBDATA            *gb_edit;
+	AW_selection_list *id;
+	char	          *comm;
+	char	          *def_name;
+	char	          *def_gbd;
+	char	          *def_alignment;
+	char	          *def_source;
+	char	          *def_dest;
+	char	          *def_filter;
+	char	          *pwd;
+	AW_BOOL	           show_dir;
+	char	           may_be_an_error;
+	char	           show_only_marked;
+	char	           scannermode;
+	char	          *def_dir;
+    const char        *change_key_path;
 };
 
 struct awt_sel_list_for_tables {
