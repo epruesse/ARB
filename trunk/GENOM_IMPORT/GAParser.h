@@ -1,11 +1,15 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAPARSER_H
 #define GAPARSER_H
 
-#ifndef _GLIBCXX_STRING
+#ifndef _CPP_STRING
 #include <string>
 #endif
 
-#ifndef _GLIBCXX_VECTOR
+#ifndef _CPP_VECTOR
 #include <vector>
 #endif
 

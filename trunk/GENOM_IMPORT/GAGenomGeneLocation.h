@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAGENOMGENELOCATION_H
 #define GAGENOMGENELOCATION_H
 
@@ -20,10 +24,12 @@ protected:
 	bool bigger_begin;		//	>x
 	bool bigger_end;		//	x>
 	int value;
+	std::string location_as_string;
 		
 public:
 
-	GAGenomGeneLocation();
+	GAGenomGeneLocation(std::string *);
+	GAGenomGeneLocation(){}
 	virtual ~GAGenomGeneLocation(){}
 	virtual void parse() = 0;
 	bool isSingleValue();

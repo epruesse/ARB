@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAGENOMGENE_H
 #define GAGENOMGENE_H
 
@@ -31,9 +35,10 @@ protected:
 	std::string location_as_string;
 	std::string name_of_gene;
 	std::string tmp_key;
+	std::string tmp_value;
 	
 public:
-//	GAGenomGene();
+	GAGenomGene(){}
 	virtual ~GAGenomGene(){}
 	virtual void parse() = 0;
 	std::string * getGeneType();
@@ -46,6 +51,7 @@ public:
 	std::string * getLocationAsString();
 	std::string * getNameOfGene();
 	void setNameOfGene(std::string *);
+	void setIterator();
 };
 
 };

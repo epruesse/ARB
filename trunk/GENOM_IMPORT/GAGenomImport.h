@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAGENOMIMPORT_H
 #define GAGENOMIMPORT_H
 

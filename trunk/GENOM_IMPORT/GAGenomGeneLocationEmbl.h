@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAGENOMGENELOCATIONEMBL_H
 #define GAGENOMGENELOCATIONEMBL_H
 
@@ -12,18 +16,20 @@ private:
 	std::vector<GAGenomGeneLocationEmbl> locations;
 	int current_value;
 	std::vector<std::string> getParts(std::string *, int *);
+//	GAGenomGeneLocationEmbl tmp_loc;
 
 public:
 
-	GAGenomGeneLocationEmbl();
+	GAGenomGeneLocationEmbl(std::string *);
+	GAGenomGeneLocationEmbl(){}
 	virtual ~GAGenomGeneLocationEmbl(){}
-	virtual void parse(std::string *);
 	virtual void parse();
 	bool isReference();
 	void setReference(std::string *);
 	std::string * getReference();
 	bool hasMoreValues();
-	GAGenomGeneLocationEmbl * getNextValue();
+//	GAGenomGeneLocationEmbl * getNextValue();
+	std::vector<GAGenomGeneLocationEmbl> * getLocations();
 	void setValue(GAGenomGeneLocationEmbl *);
 };
 

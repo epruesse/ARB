@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAGENOMEMBL_H
 #define GAGENOMEMBL_H
 

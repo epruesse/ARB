@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAGENOMUTILITIES_H
 #define GAGENOMUTILITIES_H
 
@@ -23,6 +27,8 @@ public:
 	static std::vector<std::string> findAndSeparateWordsByChar(std::string *, char, bool);
 	static void trimString(std::string *);
 	static void trimStringByChar(std::string *, char);
+	static void trimString2(std::string *);
+	static void trimStringByChar2(std::string *, char);
 	static int stringToInteger(std::string *);
 	static std::string integerToString(int);
 	static std::vector<int> parseSourceLocation(std::string *);

@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #ifndef GAGENOMGENELOCATIONGENBANK_H
 #define GAGENOMGENELOCATIONGENBANK_H
 
@@ -12,19 +16,21 @@ private:
 	std::vector<GAGenomGeneLocationGenBank> locations;
 	int current_value;
 	std::vector<std::string> getParts(std::string *, int *);
+	//gellisary::GAGenomGeneLocationGenBank tmp_loc;
 	
 public:
 
-	GAGenomGeneLocationGenBank();
+	GAGenomGeneLocationGenBank(std::string *);
+	GAGenomGeneLocationGenBank(){}
 	virtual ~GAGenomGeneLocationGenBank(){}
-	virtual void parse(std::string *);
 	virtual void parse();
 	bool isReference();
 	void setReference(std::string *);
 	std::string * getReference();
 	bool hasMoreValues();
-	GAGenomGeneLocationGenBank * getNextValue();
+//	GAGenomGeneLocationGenBank * getNextValue();
 	void setValue(GAGenomGeneLocationGenBank *);
+	std::vector<GAGenomGeneLocationGenBank> * getLocations();
 };
 
 };

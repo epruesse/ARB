@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #include "GAGenomFeatureTableGenBank.h"
 #include "GAGenomUtilities.h"
 
@@ -99,15 +103,17 @@ void gellisary::GAGenomFeatureTableGenBank::parse()
 	bool gene_open = false;
 	int tmp_num = 0;
 	GAGenomGeneGenBank *tmp_gene;
+	number_of_genes = 0;
 	for(int i = 0; i < (int) row_lines.size();i++)
 	{
+		
 		tmp_str = row_lines[i];
 		newgene = GAGenomUtilities::isNewGene(&tmp_str);
 		if(newgene)
 		{
 			if(gene_open)
 			{
-				tmp_gene->setGeneNumber(number_of_genes++);
+				tmp_gene->setGeneNumber(number_of_genes);
 				tmp_gene->parse();
 				tmp_num = nameToNumberOfFeature(tmp_gene->getGeneType());
 				if(tmp_num != -1)
@@ -116,29 +122,31 @@ void gellisary::GAGenomFeatureTableGenBank::parse()
 					tmp_gene->setNameOfGene(&t_str);
 					number_of_features[tmp_num]++;
 					tmp_gene->setGeneTypeNumber(number_of_features[tmp_num]);
-					genes[*(tmp_gene->getNameOfGene())] = *tmp_gene;
+					string t3_str = *(tmp_gene->getNameOfGene());
+					genes[t3_str] = *tmp_gene;
 					delete(tmp_gene);
 				}
 				gene_open = false;
+				source_open = false;
 			}
 			if(source_open)
 			{
+				source.parse();
 				source_open = false;
 			}
 			if(GAGenomUtilities::isSource(&tmp_str))
 			{
 				source.update(&tmp_str);
-				source.parse();
 				source_open = true;
 				gene_open = false;
 			}
 			else
 			{
 				tmp_gene = new GAGenomGeneGenBank;
+				number_of_genes++;
 				tmp_gene->update(&tmp_str);
 				source_open = false;
 				gene_open = true;
-				number_of_genes++;
 			}
 		}
 		else
@@ -160,9 +168,12 @@ void gellisary::GAGenomFeatureTableGenBank::parse()
 		tmp_num = nameToNumberOfFeature(tmp_gene->getGeneType());
 		if(tmp_num != -1)
 		{
+			t_str = GAGenomUtilities::generateGeneID(tmp_gene->getLocationAsString(),tmp_num);
+			tmp_gene->setNameOfGene(&t_str);
 			number_of_features[tmp_num]++;
 			tmp_gene->setGeneTypeNumber(number_of_features[tmp_num]);
-			genes[*(tmp_gene->getNameOfGene())] = *tmp_gene;
+			string t3_str = *(tmp_gene->getNameOfGene());
+			genes[t3_str] = *tmp_gene;
 			gene_open = false;
 			delete(tmp_gene);
 		}
@@ -195,6 +206,11 @@ string * gellisary::GAGenomFeatureTableGenBank::getGeneName()
 	{
 		return NULL;
 	}
+}
+
+void gellisary::GAGenomFeatureTableGenBank::setIterator()
+{
+	iter = genes.begin();
 }
 
 GAGenomGeneGenBank * gellisary::GAGenomFeatureTableGenBank::getGeneByName(std::string * source_str)

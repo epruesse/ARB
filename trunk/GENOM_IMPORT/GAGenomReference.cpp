@@ -1,6 +1,12 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #include "GAGenomReference.h"
+#include "GAGenomUtilities.h"
 
 using namespace std;
+using namespace gellisary;
 
 gellisary::GAGenomReference::GAGenomReference()
 {
@@ -77,5 +83,6 @@ string * gellisary::GAGenomReference::getAuthorsAsString()
 	{
 		parse();
 	}
+	reference_authors_as_string = GAGenomUtilities::toOneString(&reference_authors,true);
 	return &reference_authors_as_string;
 }

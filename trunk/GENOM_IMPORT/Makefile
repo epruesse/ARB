@@ -89,6 +89,7 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 GAGenom.o: GAGenom.h
+GAGenom.o: GAGenomUtilities.h
 
 GAGenomDDBJ.o: GAGenom.h
 GAGenomDDBJ.o: GAGenomDDBJ.h
@@ -232,18 +233,18 @@ GAGenomGeneLocationGenBank.o: GAGenomUtilities.h
 GAGenomGeneLocationGenBank.o: GAParser.h
 
 GAGenomImport.o: GAGenom.h
-GAGenomImport.o: GAGenomEmbl.h
 GAGenomImport.o: GAGenomFeatureTable.h
-GAGenomImport.o: GAGenomFeatureTableEmbl.h
+GAGenomImport.o: GAGenomFeatureTableGenBank.h
 GAGenomImport.o: GAGenomFeatureTableSource.h
-GAGenomImport.o: GAGenomFeatureTableSourceEmbl.h
+GAGenomImport.o: GAGenomFeatureTableSourceGenBank.h
+GAGenomImport.o: GAGenomGenBank.h
 GAGenomImport.o: GAGenomGene.h
-GAGenomImport.o: GAGenomGeneEmbl.h
+GAGenomImport.o: GAGenomGeneGenBank.h
 GAGenomImport.o: GAGenomGeneLocation.h
-GAGenomImport.o: GAGenomGeneLocationEmbl.h
+GAGenomImport.o: GAGenomGeneLocationGenBank.h
 GAGenomImport.o: GAGenomImport.h
 GAGenomImport.o: GAGenomReference.h
-GAGenomImport.o: GAGenomReferenceEmbl.h
+GAGenomImport.o: GAGenomReferenceGenBank.h
 GAGenomImport.o: GAGenomUtilities.h
 GAGenomImport.o: GAParser.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -259,6 +260,7 @@ GAGenomImport.o: $(ARBHOME)/INCLUDE/awt.hxx
 GAGenomImport.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx
 
 GAGenomReference.o: GAGenomReference.h
+GAGenomReference.o: GAGenomUtilities.h
 GAGenomReference.o: GAParser.h
 
 GAGenomReferenceDDBJ.o: GAGenomReference.h

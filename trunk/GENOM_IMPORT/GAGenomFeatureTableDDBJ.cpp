@@ -1,3 +1,7 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #include "GAGenomFeatureTableDDBJ.h"
 #include "GAGenomUtilities.h"
 
@@ -195,6 +199,11 @@ string * gellisary::GAGenomFeatureTableDDBJ::getGeneName()
 	{
 		return NULL;
 	}
+}
+
+void gellisary::GAGenomFeatureTableDDBJ::setIterator()
+{
+	iter = genes.begin();
 }
 
 GAGenomGeneDDBJ * gellisary::GAGenomFeatureTableDDBJ::getGeneByName(std::string * source_str)

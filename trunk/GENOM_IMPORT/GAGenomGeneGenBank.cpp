@@ -1,5 +1,8 @@
+/*
+ * Author : Artem Artemov
+ * Mail : hagilis@web.de
+ */
 #include "GAGenomGeneGenBank.h"
-
 #include "GAGenomUtilities.h"
 
 using namespace std;
@@ -24,55 +27,92 @@ void gellisary::GAGenomGeneGenBank::parse()
 	GAGenomUtilities::onlyOneDelimerChar(&source_str,' ');
 	tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&source_str,' ',true);
 	tmp_str = tmp_vector[0];
-	GAGenomUtilities::trimString(&tmp_str);
+	if(tmp_str[0] == ' ')
+	{
+		GAGenomUtilities::trimString(&tmp_str);
+	}
+	else
+	{
+		GAGenomUtilities::trimString2(&tmp_str);
+	}
 	gene_type = tmp_str;
 	tmp_str = tmp_vector[1];
-	GAGenomUtilities::trimString(&tmp_str);
+	if(tmp_str[0] == ' ')
+	{
+		GAGenomUtilities::trimString(&tmp_str);
+	}
+	else
+	{
+		GAGenomUtilities::trimString2(&tmp_str);
+	}
 	location_as_string = tmp_str;
 	GAGenomGeneLocationGenBank * new_location;
-	new_location = new GAGenomGeneLocationGenBank();
-	new_location->parse(&tmp_str);
+	new_location = new GAGenomGeneLocationGenBank(&tmp_str);
+	new_location->parse();
 	location = *new_location;
 	delete(new_location);
 	
 	for(int i = 2; i < (int) tmp_vector.size(); i++)
 	{
 		tmp_str = tmp_vector[i];
-		GAGenomUtilities::trimString(&tmp_str);
-		if(tmp_str[0] == '/')
+		if(t_str[0] == ' ')
 		{
-			if(qual)
-			{
-				qualifiers[t_str] = "none";
-				t_str = tmp_str;
-				del_str = "/";
-				rep_str = " ";
-				GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-				GAGenomUtilities::trimString(&t_str);
-			}
-			else
-			{
-				qual = true;
-				t_str = tmp_str;
-				del_str = "/";
-				rep_str = " ";
-				GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-				GAGenomUtilities::trimString(&t_str);
-			}
+			GAGenomUtilities::trimString(&tmp_str);
 		}
 		else
 		{
-			if(!t_str.empty())
+			GAGenomUtilities::trimString2(&tmp_str);
+		}
+		if(!tmp_str.empty())
+		{
+			if(tmp_str[0] == '/')
 			{
-				del_str = "\"";
-				rep_str = " ";
-				GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
-				GAGenomUtilities::trimString(&tmp_str);
-				qualifiers[t_str] = tmp_str;
+				if(qual)
+				{
+					t_str = tmp_str;
+					del_str = "/";
+					rep_str = " ";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					if(t_str[0] == ' ')
+					{
+						GAGenomUtilities::trimString(&t_str);
+					}
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
+					qualifiers[t_str] = "yes";
+				}
+				else
+				{
+					qual = true;
+					t_str = tmp_str;
+					del_str = "/";
+					rep_str = " ";
+					GAGenomUtilities::replaceByString(&t_str,&del_str,&rep_str);
+					if(t_str[0] == ' ')
+					{
+						GAGenomUtilities::trimString(&t_str);
+					}
+					else
+					{
+						GAGenomUtilities::trimString2(&t_str);
+					}
+				}
+			}
+			else
+			{
+				if(!t_str.empty())
+				{
+					del_str = "\"";
+					rep_str = " ";
+					GAGenomUtilities::replaceByString(&tmp_str,&del_str,&rep_str);
+					qualifiers[t_str] = tmp_str;
+				}
+				qual = false;
 			}
 		}
 	}
-	iter = qualifiers.begin();
 	prepared = true;
 }
 
