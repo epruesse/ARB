@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : TreeToolbar.java                                       // 
 //    Purpose   : Toolbar for tree display                               // 
-//    Time-stamp: <Wed Mar/10/2004 13:04 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Fri Mar/12/2004 11:01 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -48,9 +48,11 @@ class TreeToolbar extends Panel {
         toAdd = new Button("Back");         toAdd.addActionListener(buttonListener); add(toAdd);
         toAdd = new Button("Root");         toAdd.addActionListener(buttonListener); add(toAdd);
         toAdd = new Button("Up");           toAdd.addActionListener(buttonListener); add(toAdd);
+        toAdd = new Button("Expand");       toAdd.addActionListener(buttonListener); add(toAdd);
+        toAdd = new Button("Collapse");     toAdd.addActionListener(buttonListener); add(toAdd);
 
         add(new Label("Search:"));
-        searchText = new TextField("", 20);
+        searchText = new TextField("", 10);
         searchText.addTextListener(new TextListener(){
                 public void textValueChanged(TextEvent e) {
                     // System.out.println("textValueChanged getText="+searchText.getText());
@@ -62,7 +64,24 @@ class TreeToolbar extends Panel {
         toAdd = new Button("Show");         toAdd.addActionListener(buttonListener); add(toAdd);
         toAdd = new Button("Jump");         toAdd.addActionListener(buttonListener); add(toAdd);
 
-        toAdd = new Button("Expand");       toAdd.addActionListener(buttonListener); add(toAdd);
-        toAdd = new Button("Collapse");     toAdd.addActionListener(buttonListener); add(toAdd);
+    }
+
+    public Dimension getMaximumSize() {
+        Dimension scdim = gui.getScrollPaneSize();
+        return new Dimension(scdim.width-10, 500);
+    }
+    public Dimension getPreferredSize() {
+        Dimension scdim  = gui.getScrollPaneSize();
+        Dimension mypdim = super.getPreferredSize();
+
+        System.out.println("in TreeToolbar::getPreferredSize:");
+        System.out.println("scdim = "+scdim.width+"/"+scdim.height);
+        System.out.println("mypdim = "+mypdim.width+"/"+mypdim.height);
+
+        if (mypdim.width > scdim.width) {
+            return new Dimension(scdim.width-5, mypdim.height*2+5);
+        }
+
+        return mypdim;
     }
 }
