@@ -14,18 +14,19 @@
 #include <awt_dtree.hxx>
 #include <awt_tree_cb.hxx>
 
-
-
-
 BOOL 		MP_is_probe(char *seq);
 extern AW_selection_list*	result_probes_list;
 int		get_random(int min, int max);		//gibt eine Zufallszahl x mit der Eigenschaft : min <= x <= max
-char		*glob_old_seq = NULL;
-int 		**system3_tab = NULL;
-void 		init_system3_tab();
-unsigned char 	**hamming_tab = NULL;
-BOOL		new_pt_server = TRUE;
-struct Params P;
+
+char *glob_old_seq = NULL;
+
+int 	   **system3_tab      = NULL;
+static int   system3_tab_size = 0;
+void init_system3_tab();
+
+unsigned char **hamming_tab   = NULL;
+BOOL		    new_pt_server = TRUE;
+struct Params   P;
 
 long k_aus_n(int k, int n)
 {
@@ -39,7 +40,8 @@ long k_aus_n(int k, int n)
 int get_random(int min,int max)
 {
     int ret;
-    ret=rand();
+    mp_assert(min <= max);
+    ret = rand();
     return ((ret % ((max-min)+1)) + min);
 }
 
@@ -234,14 +236,14 @@ void init_system3_tab()
     int **dummy_int;
     int counter, wert;
 
-    if (system3_tab)
-    {
-        for (j=0; j< 3; j++)
+    if (system3_tab) {
+        for (j=0; j< system3_tab_size; j++)
             delete system3_tab[j];
 
         delete system3_tab;
     }
-    system3_tab = new int*[mp_gl_awars.no_of_probes];
+    system3_tab      = new int*[mp_gl_awars.no_of_probes];
+    system3_tab_size = mp_gl_awars.no_of_probes;
     for (j=0; j<mp_gl_awars.no_of_probes; j++)
     {
         system3_tab[j] = new int[3];
@@ -252,10 +254,8 @@ void init_system3_tab()
     {
         for (k=0; k<3; k++)
         {
-            if (!j)
-                system3_tab[j][k] = k;
-            else
-                system3_tab[j][k] = system3_tab[j-1][k] * 3;
+            if (!j) system3_tab[j][k] = k;
+            else    system3_tab[j][k] = system3_tab[j-1][k] * 3;
         }
     }
 
