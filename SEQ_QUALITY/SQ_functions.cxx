@@ -5,18 +5,19 @@
 //    Time-stamp: <Tue Dec/16/2003 09:18 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
-//  Coded by Juergen Huber in July - October 2003                        //
+//  Coded by Juergen Huber in July - January 2003                        //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
 //                                                                       //
 //  ==================================================================== //
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+
 #include "arbdb.h"
 #include "arbdbt.h"
-#include "stdio.h"
-#include "stdlib.h"
-
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
@@ -28,6 +29,18 @@
 #include "SQ_helix.h"
 #include "SQ_physical_layout.h"
 
+#ifndef __MAP__
+#include <map>
+#endif
+
+#ifndef SMARTPTR_H
+#include <smartptr.h>
+#endif
+
+typedef SmartPtr<SQ_GroupData> SQ_GroupDataPtr;
+typedef map<string, SQ_GroupDataPtr> SQ_GroupDataDictionary;
+
+static SQ_GroupDataDictionary group_dict;
 static int globalcounter  = -1;
 static int groupcounter   = -1;
 static int globalcounter_notree = 0;
@@ -714,6 +727,13 @@ void SQ_reset_counters(GBT_TREE *root) {
     groupcounter  = SQ_count_nr_of_groups(root);
 }
 
+
+void create_multi_level_consensus(GBT_TREE *node, const SQ_GroupData *data) {
+    SQ_GroupData *newData  = data->clone();  //save actual consensus
+    group_dict[node->name] = newData;        //and link it with an name
+}
+
+
 void SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data) {
 
     if (node->is_leaf){
@@ -740,9 +760,10 @@ void SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData 
 
 	}
 	if (node->name) {  //  group identified!
- 	  SQ_pass2(data, gb_main, node); //muss wiederum rekursiv für alle unterseq. aufgerufen werden
-	  globalcounter++;
-	  aw_status(double(globalcounter)/groupcounter);
+	    create_multi_level_consensus(node, data);
+	    //SQ_pass2(data, gb_main, node); //muss wiederum rekursiv für alle unterseq. aufgerufen werden
+	    globalcounter++;
+	    aw_status(double(globalcounter)/groupcounter);
 	}
     }
 }
