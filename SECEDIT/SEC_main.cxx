@@ -149,7 +149,7 @@ void SEC_sequence_changed_cb(GBDATA *gb_seq, AWT_canvas *ntw, GB_CB_TYPE type){
     SEC_root * sec_root = SEC_GRAPHIC->sec_root;
     GB_transaction tscope(gb_main);
 
-    delete sec_root->sequence;
+    free(sec_root->sequence);
     sec_root->sequence = 0;
     sec_root->sequence_length = -1;
 
@@ -282,14 +282,14 @@ void SEC_species_name_changed_cb(AW_root *awr, AWT_canvas *ntw){
         if (sec_root->gb_sequence){
             GB_add_callback(sec_root->gb_sequence,(GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED),(GB_CB)SEC_sequence_changed_cb, (int *)ntw);
         }
-        delete ali_name;
+        free(ali_name);
     }
 
     sec_root->seqTerminal = ED4_find_seq_terminal(species_name); // initializing the seqTerminal to get the current terminal
 
     SEC_sequence_changed_cb( sec_root->gb_sequence, ntw, GB_CB_CHANGED);
 
-    delete species_name;
+    free(species_name);
 }
 
 void SEC_root::init_sequences(AW_root *awr, AWT_canvas *ntw){
@@ -303,7 +303,7 @@ void SEC_root::init_sequences(AW_root *awr, AWT_canvas *ntw){
         if (gb_template){
             GB_add_callback(gb_template,(GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED),(GB_CB)SEC_template_changed_cb, (int *)ntw);
         }
-        delete ali_name;
+        free(ali_name);
     }else{
         aw_message("ECOLI SAI not found");
     }
@@ -592,7 +592,7 @@ static void export_structure_to_file(AW_window *, AW_CL /*cl_ntw*/)
 
         char *strct = sec_root->write_data();
         fputs(strct, out);
-        free(strct);
+        delete [] strct;
 
         fputs(ASS_EOS, out);
 
@@ -677,7 +677,7 @@ static void import_structure_from_file(AW_window *, AW_CL cl_ntw)
                         salloc += 1000;
                         char *new_strct = new char[salloc];
                         memcpy(new_strct, strct, slen);
-                        delete strct;
+                        delete [] strct;
                         strct = new_strct;
                     }
 
@@ -742,8 +742,8 @@ static void import_structure_from_file(AW_window *, AW_CL cl_ntw)
             ntw->refresh();
         }
 
-        delete strct;
-        delete x_string;
+        delete [] strct;
+        delete [] x_string;
     }
 
     if (in) {
@@ -951,7 +951,13 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->insert_menu_topic("secedit_import", "Import Structure ...", "I", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_import, (AW_CL)ntw);
     awm->insert_menu_topic("secedit_export", "Export Structure ...", "E", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)ntw);
 
+    awm->insert_separator();
+
+    awm->insert_menu_topic("secStruct2xfig", "Export Secondary structure to XFIG ", "X", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_sec_export_window, (AW_CL)ntw);
     awm->insert_menu_topic("print_secedit", "Print Structure ...", "P","secedit2prt.hlp",	AWM_ALL,	(AW_CB)AWT_create_print_window, (AW_CL)ntw, 0 );
+
+    awm->insert_separator();
+
 #if defined(FREESTANDING)
     awm->insert_menu_topic( "quit", "Quit",  "Q","quit.hlp", AWM_ALL, (AW_CB)SEC_quit_cb, 0,0);
 #else
@@ -963,7 +969,6 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->insert_menu_topic("props_secedit",	"Change Colors and Fonts ...","C","secedit_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
     awm->insert_menu_topic("sec_layout", "Layout", "L", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_layout_window, 0);
     awm->insert_menu_topic("display", "Change Display", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
-    awm->insert_menu_topic("secStruct2xfig", "Edit Secondary structure using XFIG ", "X", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_sec_export_window, (AW_CL)ntw);
     awm->insert_menu_topic("save_props",	"Save Options (~/.arb_prop/secedit)",	"O","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 
     awm->create_mode( 0, "zoom.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ZOOM);
@@ -1007,7 +1012,7 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->create_button("HELP", "HELP","H");
 
     awm->callback( AW_help_entry_pressed );
-    awm->create_button(0,"What`s this?");
+    awm->create_button(0,"?");
 
     awm->callback((AW_CB)SEC_undo_cb,(AW_CL)ntw,(AW_CL)GB_UNDO_UNDO);
     awm->help_text("undo.hlp");
