@@ -1078,7 +1078,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             }
             awm->close_sub_menu();
 
-            awm->insert_sub_menu(0, "Other Sequence Editors","E");
+            awm->insert_sub_menu(0, "Other Sequence Editors","O");
             {
                 AWMIMT( "arb_edit", "ARB Editor (old)",  "A", "arb_edit.hlp",    AWM_SEQ2,   (AW_CB)NT_system_cb,    (AW_CL)"arb_edit &",    0 );
                 AWMIMT( "arb_ale",  "ALE Editor",  "L", "ale.hlp",     AWM_SEQ2,   (AW_CB)NT_system_cb,    (AW_CL)"arb_ale : &", (AW_CL)"ale.hlp" );
