@@ -8,12 +8,7 @@ sub run_request() {
   if (not $plength) { return "Missing parameter 'plength'"; }
   if ($plength < 15 || $plength > 20) { return "Illegal value for plength (allowed 15..20)"; }
 
-  # generate request/result file names
-
-  my $request_name = $probe_server::requestdir.'/'.$plength.'_'.$$.'_0';
-  my $result_name = $request_name.".res";
-  $request_name.=".req";
-
+  my ($request_name,$result_name) = probe_server::generate_filenames($plength,0);
   my $error = probe_server::write_std_request($request_name, 'getmembers');
   if (not $error) {
     probe_server::wait_answer($result_name);
@@ -27,5 +22,5 @@ sub run_request() {
 &probe_server::print_header();
 my $error = run_request();
 if ($error && length $error) {
-  print "result=cgi-error\nmessage=$error\n";
+  probe_server::print_error($error);
 }
