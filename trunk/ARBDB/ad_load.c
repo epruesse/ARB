@@ -1021,8 +1021,9 @@ GB_ERROR 	gb_login_remote(struct gb_main_type *gb_main,const char *path,const ch
 
 GBDATA *GB_login(const char *path,const char *opent,const char *user)
      /* opent	char	'r'	read
-					'w'	write
-					'c'	create
+					'w'	write (w/o 'r' it overwrites existing database)
+					'c'	create (if not found)
+					's'     read only ???
 					'd'	look for default (if create)
 						in $ARBHOME/lib
 							(any leading '.' is removed )
