@@ -45,7 +45,11 @@ endif
 ifeq ($(DEVELOPER),ANY) # default setting (skip all developer specific code)
 DEVEL_DEF=
 else
+ifeq ($(DEVELOPER),RALF) # special settings for RALF
+DEVEL_DEF=-DDEVEL_$(DEVELOPER) -DDEVEL_IDP -DDEVEL_JUERGEN -DDEVEL_MARKUS
+else
 DEVEL_DEF=-DDEVEL_$(DEVELOPER)
+endif
 endif
 
 #----------------------
@@ -575,7 +579,7 @@ ARCHS_NTREE = \
 		STAT/STAT.a \
 		XML/XML.a \
 
-$(NTREE): $(ARCHS_NTREE:.a=.dummy) NAMES_COM/server.dummy shared_libs #aw db awt
+$(NTREE): $(ARCHS_NTREE:.a=.dummy) NAMES_COM/server.dummy shared_libs
 	@echo $(SEP) Link $@
 	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS)
 
@@ -832,7 +836,7 @@ ifndef MOTIF_LIBPATH
 MOTIF_LIBPATH=Motif/$(MOTIF_LIBNAME)
 endif
 
-shared_libs: db aw awt
+shared_libs: dball aw awt
 		@echo -------------------- Updating shared libraries
 		$(MAKE) libs
 
@@ -895,6 +899,26 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
 		"CLEAN_BEFORE_MAKE  = $(CLEAN_BEFORE_MAKE)" \
 		"MAIN = $(@F:.dummy=.a)"
+
+
+# Additional dependencies for subtargets:
+
+comtools: $(ARCHS_MAKEBIN:.a=.dummy)
+
+TOOLS/TOOLS.dummy : shared_libs SERVERCNTRL/SERVERCNTRL.dummy CAT/CAT.dummy PROBE_COM/PROBE_COM.dummy
+AWTC/AWTC.dummy : NAMES_COM/NAMES_COM.dummy PROBE_COM/PROBE_COM.dummy
+
+PROBE_COM/PROBE_COM.dummy : comtools
+PROBE_COM/server.dummy : comtools
+PROBE_COM/client.dummy : comtools
+
+NAMES_COM/NAMES_COM.dummy : comtools
+NAMES_COM/server.dummy : comtools
+NAMES_COM/client.dummy : comtools
+
+ORS_COM/ORS_COM.dummy : comtools
+ORS_COM/server.dummy : comtools
+ORS_COM/client.dummy : comtools
 
 
 #***************************************************************************************
@@ -962,22 +986,22 @@ com:	$(ARCHS_COMMUNICATION:.a=.dummy)
 help:   xml HELP_SOURCE/dummy.dummy
 
 dball:	db dbs db2
-db:		ARBDB/libARBDB.dummy
+db:	ARBDB/libARBDB.dummy
 dbs:	ARBDBS/libARBDB.dummy
 db2:	ARBDB2/libARBDB.dummy
-dp:		ARBDBPP/libARBDBPP.dummy
-aw:		WINDOW/libAW.dummy
+dp:	ARBDBPP/libARBDBPP.dummy
+aw:	WINDOW/libAW.dummy
 awt:	AWT/libAWT.dummy
 awtc:	AWTC/AWTC.dummy
 awti:	AWTI/AWTI.dummy
 
-ih:		ISLAND_HOPPING/ISLAND_HOPPING.dummy
+ih:	ISLAND_HOPPING/ISLAND_HOPPING.dummy
 
 mp: 	MULTI_PROBE/MULTI_PROBE.dummy
 ge: 	GENOM/GENOM.dummy
 prd: 	PRIMER_DESIGN/PRIMER_DESIGN.dummy
 
-nt:		$(NTREE)
+nt:		menus $(NTREE)
 ed:		$(EDIT)
 
 al:		$(ALIGNER)
@@ -1051,9 +1075,9 @@ SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links.sh
 	touch SOURCE_TOOLS/generate_all_links.stamp
 
 gde:		GDE/GDE.dummy
-GDE:        gde
+GDE:		gde
 agde: 		ARB_GDE/ARB_GDE.dummy
-tools:		shared_libs TOOLS/TOOLS.dummy
+tools:		TOOLS/TOOLS.dummy
 chip:		CHIP/CHIP.dummy
 nf77:		NIELS_F77/NIELS_F77.dummy
 trs:		TRS/TRS.dummy
@@ -1068,7 +1092,8 @@ rtc_patch:
 	rtc_patch_area -so LIBLINK/libRTC8M.so
 
 menus: binlink
-	$(GMAKE) -C GDEHELP -r "PP=$(PP)" all
+	@echo $(SEP) Make everything in GDEHELP
+	$(MAKE) -C GDEHELP -r "PP=$(PP)" all
 
 tarfile:	rebuild
 	util/arb_compress
@@ -1108,7 +1133,7 @@ endif
 nas:
 		(cd lib;$(MAKE) nameserver)
 
-perl:	lib/ARB.pm
+perl: tools lib/ARB.pm
 
 PERLDEPS= \
 	ARBDB/ad_prot.h \
@@ -1180,6 +1205,8 @@ clean:	rmbak
 	rm -f *_COM/GENC/*.c
 	rm -f lib/ARB.pm
 	rm -f NTREE/nt_date.h
+	$(MAKE) -C HELP_SOURCE clean
+	$(MAKE) -C GDEHELP clean
 
 realclean: clean
 	rm -f `find bin -type f -perm -001 -print`
@@ -1202,7 +1229,7 @@ savedepot: rmbak
 # basic arb libraries
 arbbasic: links
 		$(MAKE) arbbasic2
-arbbasic2: mbin menus com nas ${MAKE_RTC}
+arbbasic2: mbin com nas ${MAKE_RTC}
 
 # shared arb libraries
 arbshared: dball aw dp awt
