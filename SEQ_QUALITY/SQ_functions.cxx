@@ -17,10 +17,18 @@
 #include "stdio.h"
 #include "stdlib.h"
 
+#include <aw_root.hxx>
+#include <aw_device.hxx>
+#include <aw_window.hxx>
+#include <aw_preset.hxx>
+#include <awt.hxx>
+
 #include "SQ_GroupData.h"
 #include "SQ_ambiguities.h"
 #include "SQ_helix.h"
 #include "SQ_physical_layout.h"
+
+static int globalcounter = 0;
 
 enum { CS_CLEAR, CS_PASS1 };
 
@@ -258,7 +266,6 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 }
 
 
-//GB_ERROR SQ_pass1(SQ_GroupDataSeq& globalData, GBDATA *gb_main) {
 GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node) {
 
 
@@ -279,7 +286,7 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node) {
     alignment_name = GBT_get_default_alignment(gb_main);
     seq_assert(alignment_name);
     gb_species = node->gb_node;
-    gb_name = GB_find(node->gb_node, "name", 0, down_level);
+    gb_name = GB_find(gb_species, "name", 0, down_level);
 
 
     if (!gb_name) error = GB_get_error();
@@ -354,7 +361,6 @@ GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node) {
 }
 
 
-//GB_ERROR SQ_pass1(SQ_GroupDataSeq& globalData, GBDATA *gb_main) {
 GB_ERROR SQ_pass1_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 
 
@@ -461,7 +467,7 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 }
 
 
-GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main) {
+GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 
 
     char *alignment_name;
@@ -470,8 +476,6 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main) {
     GBDATA *gb_species;
     GBDATA *gb_species_data;
     GBDATA *gb_name;
-    GBDATA *(*getFirst)(GBDATA*) = 0;
-    GBDATA *(*getNext)(GBDATA*) = 0;
     GB_ERROR error = 0;
 
 
@@ -479,20 +483,12 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main) {
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
     alignment_name = GBT_get_default_alignment(gb_main);
     seq_assert(alignment_name);
-    getFirst = GBT_first_species;
-    getNext  = GBT_next_species;
+    gb_species = node->gb_node;
+    gb_name = GB_find(gb_species, "name", 0, down_level);
 
+    if (!gb_name) error = GB_get_error();
 
-    /*second pass operations*/
-    for (gb_species = getFirst(gb_main);
-	 gb_species && !error;
-	 gb_species = getNext(gb_species) ){
-
-	gb_name = GB_find(gb_species, "name", 0, down_level);
-
-        if (!gb_name) error = GB_get_error();
-
-	else {
+    else {
 
 	    GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
 
@@ -512,7 +508,6 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main) {
 		    int bases               = 0;
 		    int avg_bases           = 0;
 		    int diff                = 0;
-		    //int temp                = 0;
 		    int diff_percent        = 0;
 
 		    rawSequence    = GB_read_char_pntr(read_sequence);
@@ -538,8 +533,8 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main) {
 		    //printf("Value: %f ",value);
 		}
 	    }
-	}
     }
+
     free(alignment_name);
 
     if (error) GB_abort_transaction(gb_main);
@@ -637,16 +632,6 @@ GB_ERROR SQ_pass2_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 }
 
 
-
-void SQ_applyGroupData()  {
-  //wert für aktuelle untergruppe berechnen
-  //sequenzen der gruppe mit aktuellem consensus vergl. und wert speichern
-  //Gewichtung nach anzahl der söhne ->nein
-  //SQ_testagainstconsensus();
-  //bei höherer gruppe genauso
-}
-
-
 SQ_GroupData *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main) {
 
     if (node->is_leaf){
@@ -655,12 +640,15 @@ SQ_GroupData *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main) {
 	}
 	SQ_GroupData *data = new SQ_GroupData_RNA;
 	SQ_pass1(data, gb_main, node);
+	globalcounter++;
+	aw_status(GBS_global_string("%i Sequence(s) finished", globalcounter));
 	return data;
     }
 
     else {
+
 	SQ_GroupData *leftData  = SQ_calc_and_apply_group_data(node->leftson, gb_main);
-	//??   SQ_GroupData *rightData = SQ_GroupData.clone();
+	//??   SQ_GroupData *rightData = leftData->clone();
 	SQ_GroupData *rightData = SQ_calc_and_apply_group_data(node->rightson, gb_main);
 	if (!leftData) {
 	    return rightData;
@@ -669,57 +657,16 @@ SQ_GroupData *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main) {
 	    return leftData;
 	}
 
-	//ansonsten zusammenaddieren = automat. gewichtung??
+	//add up consensi -> automatic weighting
 	SQ_GroupData *data = new SQ_GroupData_RNA;
-// 	data.SQ_add(rightData);
-// 	data.SQ_add(leftData);
+//  	data->SQ_add(leftData);
+//  	data->SQ_add(rightData);
 	delete leftData;
 	delete rightData;
 
 	if (node->name) {  //  group identified!
-	    SQ_applyGroupData();
+	  SQ_pass2(data, gb_main, node); //muss wiederum rekursiv für alle unterseq. aufgerufen werden
 	}
-
 	return data;
     }
 }
-
-
-
-
-
-// void SQ_applyGroupData()  {
-
-// }
-
-
-// SQ_GroupDataSeq *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main) {
-
-//     if (node->is_leaf){
-// 	if (!node->gb_node) return 0;
-
-// 	SQ_GroupDataSeq *data = new SQ_GroupDataSeq();
-
-//         //  ...
-
-// 	return data;
-//     }
-//     else {
-// 	SQ_GroupDataSeq *leftData  = SQ_calc_and_apply_group_data(node->leftson, gb_main);
-// 	SQ_GroupDataSeq *rightData = SQ_calc_and_apply_group_data(node->rightson, gb_main);
-
-// 	if (!leftData)  return rightData;
-// 	if (!rightData) return leftData;
-
-
-// 	SQ_GroupDataSeq *data = new SQ_GroupDataSeq(*leftData, *rightData);
-// 	delete leftData;
-// 	delete rightData;
-
-// 	if (node->name) { //  gruppe!
-// 	    SQ_applyGroupData();
-// 	}
-
-// 	return data;
-//     }
-// }
