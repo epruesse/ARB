@@ -27,10 +27,7 @@ public ProbesGUIActionListener(ProbesGUI g)
     }
 
 public void actionPerformed(ActionEvent e)
-
     {
-
-
         System.out.println("Action Source: " + ((MenuItem)e.getSource()).getLabel());
         System.out.println("Action ID: " + e.getID());
         System.out.println("Action command: " + e.getActionCommand());
@@ -44,6 +41,7 @@ public void actionPerformed(ActionEvent e)
             {
                 if (cmdName.equals("Quit"))
                     {
+                        gui.getClient().saveConfig();
                         System.exit(0);
                     }
 
