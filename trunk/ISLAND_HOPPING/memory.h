@@ -6,8 +6,6 @@ void     freeBlock(void **v);
 void   **newMatrix(size_t nrow,size_t ncol,size_t s);
 void     freeMatrix(void ***m);
 
-void test_mem();
-
 #define newVector(n,s) newBlock((n)*(s))
 
 #define freeBlock(v) freeBlock((void **)(v))

@@ -13,7 +13,6 @@
 #define S    align_S
 #define E    align_E
 
-
 #define U    align_U
 
 #define MSIZE          512
@@ -26,6 +25,8 @@
 
 #define MAXGAP         16
 #define NOWHERE        (MAXGAP+1)
+
+#define MINLENGTH      5
 
 typedef struct score {
  double score;
@@ -47,9 +48,9 @@ typedef struct island {
 } Island;
 
 double **P,**S;
-
-/*#define TEST   */
-
+ /*
+ #define TEST
+ */
 #ifdef TEST
 
 #define TELEN 193
@@ -57,15 +58,11 @@ double TE[TELEN][TELEN];
 
 int te=TRUE;
 
-
 #endif
-
 
 Score **U;
 
-
-double Thres,LogThres,Supp,Gap,expectedScore,**E;
-
+double Thres,LogThres,Supp,GapA,GapB,GapC,expectedScore,**E;
 
 Island *Z,**ZB,**ZE;
 
@@ -324,7 +321,7 @@ Island *newIsland(char *X,char *Y,int i,int j,int d) {
  if(d>0) {
   ff=&L;
   for(;;) {
-   s+=S[X[ii]][Y[jj]];
+   s+=S[(int)X[ii]][(int)Y[jj]];
    if(++l==1) {iii=ii; jjj=jj;}
    k=U[ii][jj].up;
    if(k) {
@@ -341,7 +338,7 @@ Island *newIsland(char *X,char *Y,int i,int j,int d) {
  } else {
   L=NULL;
   for(;;) {
-   s+=S[X[ii]][Y[jj]];
+   s+=S[(int)X[ii]][(int)Y[jj]];
    if(++l==1) {iii=ii; jjj=jj;}
    k=U[ii][jj].down;
    if(k) {
@@ -358,7 +355,7 @@ Island *newIsland(char *X,char *Y,int i,int j,int d) {
 
  p->fragments=L;
 
- p->score=s;
+ p->score=s+GapC*expectedScore;
 
  return(p);
 }
@@ -470,6 +467,8 @@ int isSignificant(Island *f) {
 
  l=0; for(q=f->fragments;q;q=q->next) l+=q->length;
 
+ if(l<MINLENGTH) return(FALSE);
+
  if(getEntropy(E,f->score/l,l)<=LogThres) return(TRUE);
 
  return(FALSE);
@@ -556,11 +555,11 @@ void drawIsland(Island *f) {
 double secS(int i,int j,char X[],int secX[],char Y[],int secY[]) {
 
  if(secX[i]||secY[j]) {
-  if(secX[i]&&secY[j]) return(S[X[i]][Y[j]]-Supp*expectedScore);
+  if(secX[i]&&secY[j]) return(S[(int)X[i]][(int)Y[j]]-Supp*expectedScore);
   return(-1.e34);
  }
 
- return(S[X[i]][Y[j]]);
+ return(S[(int)X[i]][(int)Y[j]]);
 }
 
 /*============================================================================*/
@@ -584,10 +583,10 @@ void AlignTwo(
    if(i>startx&&j>starty) {
     ss=U[ii][jj].score; if(ss>s) {s=ss; r=0;}
     for(k=1;k<=MAXGAP&&ii-k>=0;k++) {
-     ss=U[ii-k][jj].score+k*Gap*expectedScore; if(ss>s) {s=ss; r= k;}
+     ss=U[ii-k][jj].score+(GapA+k*GapB)*expectedScore; if(ss>s) {s=ss; r= k;}
     }
     for(k=1;k<=MAXGAP&&jj-k>=0;k++) {
-     ss=U[ii][jj-k].score+k*Gap*expectedScore; if(ss>s) {s=ss; r=-k;}
+     ss=U[ii][jj-k].score+(GapA+k*GapB)*expectedScore; if(ss>s) {s=ss; r=-k;}
     }
    }
    s+=secS(i,j,X,secX,Y,secY); if(s<0.) {s=0.; r=NOWHERE;}
@@ -632,10 +631,10 @@ void AlignTwo(
    if(i<startx&&j<starty) {
     ss=U[ii][jj].score; if(ss>s) {s=ss; r=0;}
     for(k=1;k<=MAXGAP&&ii+k<nX;k++) {
-     ss=U[ii+k][jj].score+k*Gap*expectedScore; if(ss>s) {s=ss; r= k;}
+     ss=U[ii+k][jj].score+(GapA+k*GapB)*expectedScore; if(ss>s) {s=ss; r= k;}
     }
     for(k=1;k<=MAXGAP&&jj+k<nY;k++) {
-     ss=U[ii][jj+k].score+k*Gap*expectedScore; if(ss>s) {s=ss; r=-k;}
+     ss=U[ii][jj+k].score+(GapA+k*GapB)*expectedScore; if(ss>s) {s=ss; r=-k;}
     }
    }
    s+=secS(i,j,X,secX,Y,secY); if(s<0.) {s=0.; r=NOWHERE;}
@@ -791,25 +790,25 @@ void AlignTwo(
 void Align(
  int nX,char X[],int secX[],char **XX,int nY,char Y[],int secY[],char **YY,
  int freqs,double fT,double fC,double fA,double fG,
- int rates,double rTC,double rTA,double rTG,double rCA,double rCG,double rAG,
- double dist,double supp,double gap,double thres
+double rTC,double rTA,double rTG,double rCA,double rCG,double rAG,
+ double dist,double supp,double gapA,double gapB,double gapC,double thres
 ) {
  double F[N],R[6];
  char *s;
  int i,j,maxlen;
 
- test_mem();
-
  *XX = newBlock((nX+nY+1)*sizeof(char));
  *YY = newBlock((nX+nY+1)*sizeof(char));
 
  Supp=supp;
- Gap=gap;
+ GapA=gapA;
+ GapB=gapB;
+ GapC=gapC;
  Thres=thres;
 
  if(dist>MAXDIST||dist<MINDIST) {Error="Bad argument"; return;}
 
- if(Gap<0.) {Error="Bad argument"; return;}
+ if(GapA<0.||GapB<0.) {Error="Bad argument"; return;}
 
  if(Thres>1.||Thres<=0.) {Error="Bad argument"; return;}
  LogThres=log(Thres);
@@ -834,11 +833,7 @@ void Align(
   }
  }
 
- if(rates) {
-  if(rTC<=0.||rTA<=0.||rTG<=0.||rCA<=0.||rCG<=0.||rAG<=0.) {Error="Bad argument"; return;}
- } else {
-  rTC=4.0; rTA=1.0; rTG=1.0; rCA=1.0; rCG=1.0; rAG=4.0;
- }
+ if(rTC<=0.||rTA<=0.||rTG<=0.||rCA<=0.||rCG<=0.||rAG<=0.) {Error="Bad argument"; return;}
 
  normalizeBaseFreqs(F,fT,fC,fA,fG);
  normalizeRateParams(R,rTC,rTA,rTG,rCA,rCG,rAG);

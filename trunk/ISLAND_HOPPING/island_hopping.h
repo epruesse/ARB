@@ -8,13 +8,12 @@ class IslandHopping;
 
 class IslandHoppingParameter {
 private:
-    int    freqs;
+    int    use_user_freqs;
     double fT;
     double fC;
     double fA;
     double fG;
 
-    int rates;
     double rTC;
     double rTA;
     double rTG;
@@ -24,21 +23,24 @@ private:
 
     double dist;
     double supp;
-    double gap;
+    double gapA;
+    double gapB;
+    double gapC;
     double thres;
 
     friend class IslandHopping;
 
 public:
-    IslandHoppingParameter(int    freqs_,
+    IslandHoppingParameter(bool use_user_freqs_,
                            double fT_, double fC_, double fA_, double fG_,
-                           int    rates_,
                            double rTC_, double rTA_, double rTG_, double rCA_, double rCG_, double rAG_,
-                           double dist_, double supp_, double gap_, double thres_);
+                           double dist_, double supp_, double gapA_, double gapB_, double gapC_, double thres_);
 
     virtual ~IslandHoppingParameter();
 
 };
+
+
 
 
 class IslandHopping {
@@ -55,7 +57,8 @@ private:
 
     const char *toAlign_sequence; // with gaps
 
-    const char *helix; // with gaps
+    const char *ref_helix; // with gaps
+    const char *toAlign_helix; // with gaps
 
     char *aligned_ref_sequence; //aligned (ref_sequence)
     char *output_sequence;      // aligned (toAlign_sequence)
@@ -76,21 +79,21 @@ public:
 
         toAlign_sequence = 0;
 
-        helix = 0;
+        ref_helix = 0;
+        toAlign_helix = 0;
 
         output_sequence         = 0;
         aligned_ref_sequence    = 0;
         output_alignment_length = 0;
     }
 
-    void set_parameters(int    freqs,
+    void set_parameters(bool use_user_freqs,
                         double fT, double fC, double fA, double fG,
-                        int    rates,
                         double rTC, double rTA, double rTG, double rCA, double rCG, double rAG,
-                        double dist, double supp, double gap, double thres)
+                        double dist, double supp, double gapA, double gapB, double gapC, double thres)
     {
         delete para;
-        para = new IslandHoppingParameter(freqs, fT, fC , fA, fG, rates, rTC, rTA, rTG, rCA, rCG, rAG , dist, supp, gap, thres);
+        para = new IslandHoppingParameter(use_user_freqs, fT, fC , fA, fG, rTC, rTA, rTG, rCA, rCG, rAG , dist, supp, gapA, gapB, gapC, thres);
     }
 
     virtual ~IslandHopping() {
@@ -104,7 +107,10 @@ public:
 
     void set_toAlign_sequence(const char *toAlign_seq) { toAlign_sequence = toAlign_seq; }
 
-    void set_helix(const char *hel) { helix = hel; }
+    void set_helix(const char *hel) {
+        ref_helix     = hel;
+        toAlign_helix = hel;
+    }
 
     void set_range(int first_col,int last_col) {
         firstColumn=first_col;
