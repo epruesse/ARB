@@ -2521,6 +2521,11 @@ inline char oppositeCase(char c) {
     return isupper(c) ? tolower(c) : toupper(c);
 }
 
+static void strcpy_overlapping(char *dest, char *src) {
+    int src_len = strlen(src);
+    memmove(dest, src, src_len+1);
+}
+
 static const char *possible_mnemonics(int menu_deep, const char *topic_name) {
     int          t;
     static char *unused;
@@ -2547,7 +2552,7 @@ static const char *possible_mnemonics(int menu_deep, const char *topic_name) {
             }
         }
         if (remove) {
-            strcpy(unused+t, unused+t+1);
+            strcpy_overlapping(unused+t, unused+t+1);
             --t;
         }
     }
@@ -2556,9 +2561,9 @@ static const char *possible_mnemonics(int menu_deep, const char *topic_name) {
     for (t = 0; t<topics; ++t) {
         char  c = TD_mnemonics[menu_deep][t]; // upper case!
         char *u = strchr(unused, c);
-        if (u) strcpy(u, u+1); // remove char
+        if (u) strcpy_overlapping(u, u+1); // remove char
         u       = strchr(unused, tolower(c));
-        if (u) strcpy(u, u+1); // remove char
+        if (u) strcpy_overlapping(u, u+1); // remove char
     }
 
     return unused;
