@@ -1,12 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <iostream>
-
-#include <GL/glew.h>
-#include <GL/glpng.h>
-
+#include "RNA3D_GlobalHeader.hxx"
 #include "RNA3D_Global.hxx"
 #include "RNA3D_Textures.hxx"
 
@@ -19,7 +11,7 @@ Texture2D::~Texture2D(void){
 }
 
 char* Texture2D::GetImageFile(int ImageId){
-    char Path[10] = "images";
+    char Path[10] = "images"; //@@FIX PATH ??? - yadhuGL
     char ImageFileName[50];
 
     switch (ImageId)

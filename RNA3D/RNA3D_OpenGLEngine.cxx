@@ -1,37 +1,19 @@
-#include <cstdio>
-#include <climits>
-#include <cstdlib>
-#include <cmath>
-#include <iostream>
-#include <sstream>
-#include <fstream>
-#include <string>
-
-#include <X11/keysym.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xlib.h>
-#include <X11/StringDefs.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <awt_nds.hxx>
-#include <aw_preset.hxx>
-#include <awt.hxx>
-#include <awt_canvas.hxx>
-#include <awt_tree.hxx>
-#include <awt_dtree.hxx>
-#include <awt_tree_cb.hxx>
-
-#include <GL/glew.h>
-#include <GL/GLwMDrawA.h>
-
-#include "RNA3D_OpenGLEngine.hxx"
+#include "RNA3D_GlobalHeader.hxx"
 #include "RNA3D_Global.hxx"
+#include "RNA3D_OpenGLEngine.hxx"
+#include "RNA3D_OpenGLGraphics.hxx"
+#include "RNA3D_StructureData.hxx"
+#include "RNA3D_Textures.hxx"
+#include "RNA3D_Renderer.hxx"
+#include "RNA3D_Graphics.hxx"
+#include "RNA3D_Interface.hxx"
+
+OpenGLGraphics *cGraphics  = new OpenGLGraphics();
+Structure3D    *cStructure = new Structure3D();
+Texture2D      *cTexture   = new Texture2D();
+GLRenderer *cRenderer = new GLRenderer();
+
+Vector3 sCen;
 
 float fAspectRatio;
 float fViewAngle = 90.0;
@@ -64,9 +46,7 @@ Vector3 Up     = Vector3(0.0, 1.0, 0.0);
 bool rotateMolecule = false;
 bool autoRotate     = false;
 bool enableZoom     = true;
-float scale = 1.0;
-
-#define ZOOM 0.5
+float scale = 0.01;
 
 using namespace std;
 
@@ -102,10 +82,42 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
     }
     fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 
-    ReshapeOpenGLWindow(width,height);
-}
+    // Prepare the structure Data 
 
-void DrawCube(float x, float y, float z, float radius);
+    cStructure->ReadCoOrdinateFile(&sCen);    // Reading Structure information
+    cStructure->PrepareStructureSkeleton();    // Preparing structure skeleton with just coordinates  
+    cStructure->GetSecondaryStructureInfo();
+    cStructure->Combine2Dand3DstructureInfo();
+    cStructure->BuildSecondaryStructureMask();
+
+    // Generate Textures
+    cTexture->LoadGLTextures();  // Load The Texture(s) 
+
+    // Generate Display Lists  
+
+    glEnable(GL_TEXTURE_2D);			    // Enable Texture Mapping
+
+    glClearDepth(1.0);				        // Enables Clearing Of The Depth Buffer
+    glDepthFunc(GL_LESS);			         // The Type Of Depth Test To Do
+    glEnable(GL_DEPTH_TEST);		    	 // Enables Depth Testing
+    glShadeModel(GL_FLAT);			 
+
+    glPointSize(1.0);
+    if (!glIsEnabled(GL_POINT_SMOOTH)) {
+        glEnable(GL_POINT_SMOOTH);
+    }
+
+    glLineWidth(1.0);
+    if(!glIsEnabled(GL_LINE_SMOOTH)) {
+        glEnable(GL_LINE_SMOOTH);
+    }
+
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+    ReshapeOpenGLWindow(width,height);
+
+    CalculateRotationMatrix();
+}
 
 void PrintString(float x, float y, float z, char *s) {
     glRasterPos3d(x, y, z);
@@ -114,30 +126,14 @@ void PrintString(float x, float y, float z, char *s) {
     }
 }
 
-void drawObjects(){
-
-    DrawCube(-0.5,-0.5,-0.5,1);
-
-    PrintString(0,0,0,"Center");
-    PrintString(-0.5,0,0,"Center");
-}
-
-void rotate(int x, int y) {
+void RotateMolecule(int x, int y) {
     GLfloat dx, dy;
     dx = saved_x - x; 
     dy = saved_y - y;
-    if (enableZoom) {
-        if (dy > 0) scale += ZOOM;
-        else        scale -= ZOOM;
-        if (scale<0.005) scale = 0.005;
-    }
-    else {
-        rot_y = (GLfloat)(x - saved_x) * ROTATION_SPEED;
-        rot_x = (GLfloat)(y - saved_y) * ROTATION_SPEED;
-    }
+    rot_y = (GLfloat)(x - saved_x) * ROTATION_SPEED;
+    rot_x = (GLfloat)(y - saved_y) * ROTATION_SPEED;
     saved_x = x;
     saved_y = y;
-
 }
 
 void CalculateRotationMatrix(){
@@ -165,9 +161,68 @@ void CalculateRotationMatrix(){
     glPopMatrix();
 }
 
+void DrawStructure(){
+    if(dispHelices) {
+        char buf[100];
+        glColor4fv(DEFAULT);
+        sprintf(buf, "Helices Displayed (HELIX N0.) = %d - %d", cRenderer->StartHelix, cRenderer->EndHelix);
+        cGraphics->PrintString(sCen.x,sCen.y,sCen.z,buf,GLUT_BITMAP_8_BY_13);
+    }
+
+    glPushMatrix();
+    cRenderer->BeginTexturizer();
+    if (dispBases)         cRenderer->TexturizeStructure(MODE, cTexture, cGraphics);
+    if (dispNonHelixBases) cRenderer->TexturizeStructure(HELIX_MASK, cTexture, cGraphics);
+    cRenderer->EndTexturizer();
+    glPopMatrix();
+
+    glPushMatrix();
+    if (dispHelices)       cRenderer->DisplayHelices();
+    if (dispHelixBackbone) cRenderer->DisplayHelixBackBone();
+    if (dispPositions)     cRenderer->DisplayPositions();
+    if (dispHelixNrs)      cRenderer->DisplayHelixNumbers();
+    glPopMatrix();
+
+    glPushMatrix();
+    glLineWidth(cRenderer->ObjectSize/2);
+    glColor4fv(BLUE);
+    glBegin(GL_LINE_STRIP);
+    glCallList(STRUCTURE_SEARCH);
+    glEnd();
+    glPopMatrix();
+
+    glPushMatrix();
+    if(iStructurize){
+        glCallList(STRUCTURE_BACKBONE_CLR);
+    }
+    else if (dispBackBone) {
+        glColor4fv(DEFAULT);
+        glCallList(STRUCTURE_BACKBONE);
+    }
+    glPopMatrix();
+}
+
+
+void ConvertGCtoRGB(AW_window *aww){
+    //    for (int gc = int(RNA3D_GC_BACKGROUND); gc <= RNA3D_GC_MAX;  ++gc) {
+
+    int gc = int(RNA3D_GC_BACKGROUND);
+    float r, g, b;
+    const char *error = aww->GC_to_RGB_float(aww->get_device(AW_MIDDLE_AREA), gc, r, g, b);
+    if (error) {
+        printf("Error retrieving RGB values for GC #%i: %s\n", gc, error);
+        glClearColor(0,0,0,0);
+    }
+    else {
+        printf("GC #%i RGB values: r=%.1f g=%.1f b=%.1f\n", gc, r, g, b);
+        //        glClearColor(r,g,b,0);
+    }
+        //    }
+}
+
 void RenderOpenGLScene(Widget w){
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
- 	glClearColor(0,0,0,0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+    SetOpenGLBackGroundColor();  // setting the BackGround Color of the OpenGL Scene
     glLoadIdentity();
 
     gluLookAt(Viewer.x, Viewer.y, Viewer.z,
@@ -180,7 +235,10 @@ void RenderOpenGLScene(Widget w){
 
     glPushMatrix();
     glMultMatrixf(rotation_matrix); 
-	drawObjects();
+
+    glTranslatef(-sCen.x, -sCen.y, -sCen.z);
+
+    DrawStructure();
     glPopMatrix();
 
 	glFlush();
@@ -232,48 +290,3 @@ void InitializeOpenGLWindow( Widget w ) {
 	}
 }
 
-void DrawCube(float x, float y, float z, float radius)
-{
-	// Here we create 6 QUADS (Rectangles) to form a cube
-	// With the passed in radius, we determine the width and height of the cube
-
-	glBegin(GL_QUADS);		
-    glColor4f(1,1,1,1);		
-		// These vertices create the Back Side
-		glVertex3f(x, y, z);
-		glVertex3f(x, y + radius, z);
-		glVertex3f(x + radius, y + radius, z); 
-		glVertex3f(x + radius, y, z);
-    glColor4f(1,0,0,1);		
-		// These vertices create the Front Side
-		glVertex3f(x, y, z + radius);
-		glVertex3f(x, y + radius, z + radius);
-		glVertex3f(x + radius, y + radius, z + radius); 
-		glVertex3f(x + radius, y, z + radius);
-    glColor4f(0,1,1,1);		
-		// These vertices create the Bottom Face
-		glVertex3f(x, y, z);
-		glVertex3f(x, y, z + radius);
-		glVertex3f(x + radius, y, z + radius); 
-		glVertex3f(x + radius, y, z);
-    glColor4f(1,1,0,1);		
-		// These vertices create the Top Face
-		glVertex3f(x, y + radius, z);
-		glVertex3f(x, y + radius, z + radius);
-		glVertex3f(x + radius, y + radius, z + radius); 
-		glVertex3f(x + radius, y + radius, z);
-    glColor4f(0,0,1,1);		
-		// These vertices create the Left Face
-		glVertex3f(x, y, z);
-		glVertex3f(x, y, z + radius);
-		glVertex3f(x, y + radius, z + radius); 
-		glVertex3f(x, y + radius, z);
-    glColor4f(1,0,1,1);		
-		// These vertices create the Right Face
-		glVertex3f(x + radius, y, z);
-		glVertex3f(x + radius, y, z + radius);
-		glVertex3f(x + radius, y + radius, z + radius); 
-		glVertex3f(x + radius, y + radius, z);
-
-	glEnd();
-}

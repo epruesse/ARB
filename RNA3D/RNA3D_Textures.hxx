@@ -1,4 +1,22 @@
 
+enum {
+    CIRCLE,  
+    RECTANGLE, 
+    RECTANGLE_ROUND, 
+    POLYGON,
+    STAR,
+    STAR_SMOOTH, 
+    DIAMOND,
+    CONE_UP,
+    CONE_DOWN,
+    FREEFORM_1,
+    LETTER_A,
+    LETTER_G,
+    LETTER_C,
+    LETTER_U,
+    SHAPE_MAX
+};
+
 class Texture2D {
 public:
     GLuint texture[SHAPE_MAX];  
