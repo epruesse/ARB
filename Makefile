@@ -471,8 +471,7 @@ $(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS)
 		"MAKEDEPEND=$(MAKEDEPEND)" depend;
 	@grep "DO NOT DELETE THIS LINE" $(@D)/Makefile >/dev/null && cat $(@D)/Makefile \
 		| sed	-e "s/\/[^ 	]*\/DUMMYINC\/[^ 	]*\.h//g" \
-			-e "s/\/usr\/include\/[^ 	]*\.h//g" \
-			-e "s/\/usr\/lib\/[^ 	]*\.h//g" \
+			-e "s/\/usr\/[^ 	]*\.h//g" \
 			-e "s/\/[^ 	]*\/INCLUDE/\\\$$(ARBHOME)\/INCLUDE/g" \
 		>$(@D)/Makefile.2 && \
 		mv $(@D)/Makefile.2 $(@D)/Makefile || echo nop

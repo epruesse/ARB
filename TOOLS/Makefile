@@ -35,294 +35,397 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-
-arb_2_ascii.c: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_2_ascii.c: $(ARBHOME)/INCLUDE/arbdb.h
-arb_2_ascii.c:  
-arb_2_ascii.c:  
-arb_2_ascii.c:  
-arb_2_ascii.c:  
-arb_2_ascii.c:  
-arb_2_ascii.c:  
-arb_2_ascii.c:   
-arb_2_ascii.c:  
-arb_2_ascii.c:  
-arb_2_ascii.c:  
-arb_2_ascii.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_2_ascii.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-arb_2_bin.c: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_2_bin.c: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_2_bin.c: $(ARBHOME)/INCLUDE/arbdb.h
-arb_2_bin.c: $(ARBHOME)/INCLUDE/arbdbt.h
-arb_2_bin.c:  
-arb_2_bin.c:  
-arb_2_bin.c:  
-arb_2_bin.c:  
-arb_2_bin.c:  
-arb_2_bin.c:  
-arb_2_bin.c:   
-arb_2_bin.c:  
-arb_2_bin.c:  
-arb_2_bin.c:  
-arb_2_bin.c: 
-arb_2_bin.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_2_bin.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-arb_a2ps:  
-arb_a2ps:  
-arb_a2ps:  
-arb_a2ps:  
-arb_a2ps:  
-arb_a2ps:  
-arb_a2ps:  
-arb_a2ps:  
-arb_a2ps:   
-arb_a2ps:   
-arb_a2ps:  
-arb_a2ps:  
-arb_a2ps:  
-arb_a2ps:   
-arb_a2ps:  
-arb_a2ps: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_a2ps: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-arb_count_chars.c: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_count_chars.c: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_count_chars.c: $(ARBHOME)/INCLUDE/arbdb.h
-arb_count_chars.c: $(ARBHOME)/INCLUDE/arbdbt.h
-arb_count_chars.c:  
-arb_count_chars.c:  
-arb_count_chars.c:  
-arb_count_chars.c:  
-arb_count_chars.c:  
-arb_count_chars.c:  
-arb_count_chars.c:  
-arb_count_chars.c:  
-arb_count_chars.c:  
-arb_count_chars.c:  
-arb_count_chars.c:  
-arb_count_chars.c:  
-arb_count_chars.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_count_chars.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-arb_dnarates: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_dnarates: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_dnarates: $(ARBHOME)/INCLUDE/arbdb.h
-arb_dnarates: $(ARBHOME)/INCLUDE/arbdbt.h
-arb_dnarates: $(ARBHOME)/INCLUDE/aw_awars.hxx
-arb_dnarates:  
-arb_dnarates:  
-arb_dnarates:  
-arb_dnarates:  
-arb_dnarates:  
-arb_dnarates:  
-arb_dnarates:  
-arb_dnarates:  
-arb_dnarates:  
-arb_dnarates:  
-arb_dnarates:  
-arb_dnarates:   
-arb_dnarates:  
-arb_dnarates:  
-arb_dnarates:  
-arb_dnarates:   
-arb_dnarates: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/float.h
-arb_dnarates: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_dnarates: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-arb_dnarates: DNAml_rates_1_0.h
-arb_export_rates.c: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_export_rates.c: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_export_rates.c: $(ARBHOME)/INCLUDE/arbdb.h
-arb_export_rates.c: $(ARBHOME)/INCLUDE/arbdbt.h
-arb_export_rates.c: $(ARBHOME)/INCLUDE/aw_awars.hxx
-arb_export_rates.c:  
-arb_export_rates.c: 
-arb_export_rates.c:  
-arb_export_rates.c:  
-arb_export_rates.c:  
-arb_export_rates.c:  
-arb_export_rates.c:  
-arb_export_rates.c:  
-arb_export_rates.c:  
-arb_export_rates.c:  
-arb_export_rates.c:  
-arb_export_rates.c: 
-arb_export_rates.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_export_rates.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-arb_export_tree.c: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_export_tree.c: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_export_tree.c: $(ARBHOME)/INCLUDE/arbdb.h
-arb_export_tree.c: $(ARBHOME)/INCLUDE/arbdbt.h
-arb_export_tree.c:  
-arb_export_tree.c:  
-arb_export_tree.c:  
-arb_export_tree.c:  
-arb_export_tree.c:  
-arb_export_tree.c:  
-arb_export_tree.c:  
-arb_export_tree.c:  
-arb_export_tree.c:  
-arb_export_tree.c:  
-arb_export_tree.c:  
-arb_export_tree.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_export_tree.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-arb_jim.c: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_jim.c: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_jim.c: $(ARBHOME)/INCLUDE/arbdb.h
-arb_jim.c: $(ARBHOME)/INCLUDE/arbdbt.h
-arb_jim.c:  
-arb_jim.c:  
-arb_jim.c:  
-arb_jim.c:  
-arb_jim.c:  
-arb_jim.c:  
-arb_jim.c:   
-arb_jim.c:  
-arb_jim.c:  
-arb_jim.c:  
-arb_jim.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_jim.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-arb_newick_2_otb.c: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_newick_2_otb.c: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_newick_2_otb.c: $(ARBHOME)/INCLUDE/arbdb.h
-arb_newick_2_otb.c: $(ARBHOME)/INCLUDE/arbdbt.h
-arb_newick_2_otb.c: $(ARBHOME)/INCLUDE/cat_tree.hxx
-arb_newick_2_otb.c:  
-arb_newick_2_otb.c: 
-arb_newick_2_otb.c:  
-arb_newick_2_otb.c:  
-arb_newick_2_otb.c:  
-arb_newick_2_otb.c:  
-arb_newick_2_otb.c:  
-arb_newick_2_otb.c:  
-arb_newick_2_otb.c:  
-arb_newick_2_otb.c:  
-arb_newick_2_otb.c:  
-arb_newick_2_otb.c: 
-arb_newick_2_otb.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_newick_2_otb.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-arb_perf_test.c: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_perf_test.c: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_perf_test.c: $(ARBHOME)/INCLUDE/arbdb.h
-arb_perf_test.c: $(ARBHOME)/INCLUDE/arbdbt.h
-arb_perf_test.c:  
-arb_perf_test.c:  
-arb_perf_test.c:  
-arb_perf_test.c:  
-arb_perf_test.c:  
-arb_perf_test.c:  
-arb_perf_test.c:  
-arb_perf_test.c:  
-arb_perf_test.c:  
-arb_perf_test.c:  
-arb_perf_test.c:  
-arb_perf_test.c: 
-arb_perf_test.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_perf_test.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-arb_primer.c: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_primer.c: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_primer.c: $(ARBHOME)/INCLUDE/arbdb.h
-arb_primer.c: $(ARBHOME)/INCLUDE/arbdbt.h
-arb_primer.c:  
-arb_primer.c:  
-arb_primer.c:  
-arb_primer.c:  
-arb_primer.c:  
-arb_primer.c:  
-arb_primer.c:   
-arb_primer.c:  
-arb_primer.c:  
-arb_primer.c:  
-arb_primer.c:  
-arb_primer.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_primer.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-arb_probe.c: $(ARBHOME)/INCLUDE/PT_com.h
-arb_probe.c: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_probe.c: $(ARBHOME)/INCLUDE/arbdb.h
-arb_probe.c: $(ARBHOME)/INCLUDE/client.h
-arb_probe.c: $(ARBHOME)/INCLUDE/servercntrl.h
-arb_probe.c:  
-arb_probe.c:  
-arb_probe.c:  
-arb_probe.c:  
-arb_probe.c:  
-arb_probe.c:  
-arb_probe.c:   
-arb_probe.c:   
-arb_probe.c:  
-arb_probe.c:  
-arb_probe.c:  
-arb_probe.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_probe.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-arb_proto_2_xsub.c: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_proto_2_xsub.c: $(ARBHOME)/INCLUDE/arbdb.h
-arb_proto_2_xsub.c:  
-arb_proto_2_xsub.c: 
-arb_proto_2_xsub.c:  
-arb_proto_2_xsub.c:  
-arb_proto_2_xsub.c:  
-arb_proto_2_xsub.c:  
-arb_proto_2_xsub.c:  
-arb_proto_2_xsub.c:  
-arb_proto_2_xsub.c:  
-arb_proto_2_xsub.c:  
-arb_proto_2_xsub.c:  
-arb_proto_2_xsub.c: 
-arb_proto_2_xsub.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_proto_2_xsub.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-arb_read_tree.c: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_read_tree.c: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_read_tree.c: $(ARBHOME)/INCLUDE/arbdb.h
-arb_read_tree.c: $(ARBHOME)/INCLUDE/arbdbt.h
-arb_read_tree.c:  
-arb_read_tree.c:  
-arb_read_tree.c:  
-arb_read_tree.c:  
-arb_read_tree.c:  
-arb_read_tree.c:  
-arb_read_tree.c:  
-arb_read_tree.c:  
-arb_read_tree.c:  
-arb_read_tree.c:  
-arb_read_tree.c:  
-arb_read_tree.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_read_tree.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-arb_replace.c: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_replace.c: $(ARBHOME)/INCLUDE/arbdb.h
-arb_replace.c:  
-arb_replace.c:  
-arb_replace.c:  
-arb_replace.c:  
-arb_replace.c:  
-arb_replace.c:  
-arb_replace.c:   
-arb_replace.c:  
-arb_replace.c:  
-arb_replace.c:  
-arb_replace.c: 
-arb_replace.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_replace.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-arb_swap_rnastr.c: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_swap_rnastr.c: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_swap_rnastr.c: $(ARBHOME)/INCLUDE/arbdb.h
-arb_swap_rnastr.c: $(ARBHOME)/INCLUDE/arbdbt.h
-arb_swap_rnastr.c:  
-arb_swap_rnastr.c:  
-arb_swap_rnastr.c:  
-arb_swap_rnastr.c:  
-arb_swap_rnastr.c:  
-arb_swap_rnastr.c:  
-arb_swap_rnastr.c:  
-arb_swap_rnastr.c:  
-arb_swap_rnastr.c:  
-arb_swap_rnastr.c:  
-arb_swap_rnastr.c:  
-arb_swap_rnastr.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_swap_rnastr.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
-arb_test.c: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_test.c: $(ARBHOME)/INCLUDE/arbdb.h
-arb_test.c:  
-arb_test.c:  
-arb_test.c:  
-arb_test.c:   
-arb_test.c:  
-arb_test.c: 
-arb_test.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-arb_test.c: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_a2ps: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: $(ARBHOME)/INCLUDE/arbdb.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: $(ARBHOME)/INCLUDE/ad_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: $(ARBHOME)/INCLUDE/arbdbt.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_primer: $(ARBHOME)/INCLUDE/ad_t_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: $(ARBHOME)/INCLUDE/arbdb.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: $(ARBHOME)/INCLUDE/ad_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: $(ARBHOME)/INCLUDE/arbdbt.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_swap_rnastr: $(ARBHOME)/INCLUDE/ad_t_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: $(ARBHOME)/INCLUDE/arbdb.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_ascii: $(ARBHOME)/INCLUDE/ad_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: $(ARBHOME)/INCLUDE/arbdb.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: $(ARBHOME)/INCLUDE/ad_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: $(ARBHOME)/INCLUDE/arbdbt.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: $(ARBHOME)/INCLUDE/ad_t_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_newick_2_otb: $(ARBHOME)/INCLUDE/cat_tree.hxx
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: $(ARBHOME)/INCLUDE/arbdb.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: $(ARBHOME)/INCLUDE/ad_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: $(ARBHOME)/INCLUDE/arbdbt.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_jim: $(ARBHOME)/INCLUDE/ad_t_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: DNAml_rates_1_0.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: $(ARBHOME)/INCLUDE/aw_awars.hxx
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: $(ARBHOME)/INCLUDE/arbdb.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: $(ARBHOME)/INCLUDE/ad_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: $(ARBHOME)/INCLUDE/arbdbt.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_dnarates: $(ARBHOME)/INCLUDE/ad_t_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: $(ARBHOME)/INCLUDE/arbdb.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: $(ARBHOME)/INCLUDE/ad_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: $(ARBHOME)/INCLUDE/arbdbt.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: $(ARBHOME)/INCLUDE/ad_t_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_2_bin: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: $(ARBHOME)/INCLUDE/arbdb.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_replace: $(ARBHOME)/INCLUDE/ad_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: $(ARBHOME)/INCLUDE/arbdb.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: $(ARBHOME)/INCLUDE/ad_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: $(ARBHOME)/INCLUDE/arbdbt.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_read_tree: $(ARBHOME)/INCLUDE/ad_t_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: $(ARBHOME)/INCLUDE/arbdb.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_proto_2_xsub: $(ARBHOME)/INCLUDE/ad_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: $(ARBHOME)/INCLUDE/PT_com.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: $(ARBHOME)/INCLUDE/client.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: $(ARBHOME)/INCLUDE/arbdb.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: $(ARBHOME)/INCLUDE/ad_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_probe: $(ARBHOME)/INCLUDE/servercntrl.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_test: $(ARBHOME)/INCLUDE/arbdb.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_test: $(ARBHOME)/INCLUDE/ad_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: $(ARBHOME)/INCLUDE/arbdb.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: $(ARBHOME)/INCLUDE/ad_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: $(ARBHOME)/INCLUDE/arbdbt.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: $(ARBHOME)/INCLUDE/ad_t_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_rates: $(ARBHOME)/INCLUDE/aw_awars.hxx
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: $(ARBHOME)/INCLUDE/arbdb.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: $(ARBHOME)/INCLUDE/ad_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: $(ARBHOME)/INCLUDE/arbdbt.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_export_tree: $(ARBHOME)/INCLUDE/ad_t_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: $(ARBHOME)/INCLUDE/arbdb.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: $(ARBHOME)/INCLUDE/ad_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: $(ARBHOME)/INCLUDE/arbdbt.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_count_chars: $(ARBHOME)/INCLUDE/ad_t_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: 
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: $(ARBHOME)/INCLUDE/arbdb.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: $(ARBHOME)/INCLUDE/ad_prot.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: $(ARBHOME)/INCLUDE/arbdbt.h
+/trance1/ARB/source/ARB/TOOLS/bin/arb_perf_test: $(ARBHOME)/INCLUDE/ad_t_prot.h

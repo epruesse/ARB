@@ -14,15 +14,10 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-
-db_server.c.o: $(ARBHOME)/INCLUDE/ad_prot.h
-db_server.c.o: $(ARBHOME)/INCLUDE/arbdb.h
-db_server.c.o: $(ARBHOME)/INCLUDE/servercntrl.h
-db_server.c.o:  
-db_server.c.o:  
-db_server.c.o:  
-db_server.c.o:  
-db_server.c.o:  
-db_server.c.o:  
-db_server.c.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stdarg.h
-db_server.c.o: /usr/lib/gcc-lib/i486-suse-linux/2.95.2/include/stddef.h
+db_server.o:  
+db_server.o:  
+db_server.o:  
+db_server.o:  
+db_server.o:  $(ARBHOME)/INCLUDE/arbdb.h
+db_server.o: $(ARBHOME)/INCLUDE/ad_prot.h
+db_server.o: $(ARBHOME)/INCLUDE/servercntrl.h
