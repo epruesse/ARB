@@ -871,7 +871,7 @@ GB_CPNTR gbt_write_tree_rek_new(GBDATA *gb_tree, GBT_TREE *node, char *dest, lon
     }
 }
 
-GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_TREE *tree, int plain_only)
+GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree, int plain_only)
 {
     /* writes a tree to the database.
 
@@ -951,7 +951,7 @@ GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_T
     return 0;
 }
 
-GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_TREE *tree) {
+GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree) {
     return gbt_write_tree(gb_main, gb_tree, tree_name, tree, 0);
 }
 GB_ERROR GBT_write_plain_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_TREE *tree) {
