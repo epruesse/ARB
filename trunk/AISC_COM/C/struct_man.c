@@ -6,9 +6,11 @@
 
 #include "struct_man.h"
 
+/* AISC_MKPT_PROMOTE:struct aisc_hash_node; */
+
 /********************************* HASH TABLES ****************************/
 #define CORE
-#define HASH_SIZE 256
+#define               HASH_SIZE 256
 #define TRF_HASH_SIZE 1024
 
 struct aisc_hash_node {
