@@ -13,7 +13,7 @@
 
 
 find_deps_for() {
-    grep -w $1 *.java | sed -e 's/^\([^:]*\)\.java:.*$/\1.class/ig' | sort | uniq
+    grep -w -H $1 *.java | sed -e 's/^\([^:]*\)\.java:.*$/\1.class/ig' | sort | uniq
 }
 
 append_dep() {
