@@ -42,24 +42,25 @@ havebool =
 endif
 
 #---------------------- developer specific settings
+OPENGL_DEF=
+ifeq ($(OPENGL),1) # activate OPENGL code
+OPENGL_DEF=-DARB_OPENGL
+endif
 
-DEVEL_DEF=-DDEVEL_$(DEVELOPER)
+DEVEL_DEF=-DDEVEL_$(DEVELOPER) $(OPENGL_DEF)
 
 ifeq ($(DEVELOPER),ANY) # default setting (skip all developer specific code)
-DEVEL_DEF=
+DEVEL_DEF= 
 endif
 
 ifeq ($(DEVELOPER),RALFX) # special settings for RALFX
-DEVEL_DEF=-DDEVEL_RALF -DDEVEL_IDP -DDEVEL_JUERGEN -DDEVEL_MARKUS -DDEVEL_ARTEM
+DEVEL_DEF=-DDEVEL_RALF -DDEVEL_IDP -DDEVEL_JUERGEN -DDEVEL_MARKUS -DDEVEL_ARTEM $(OPENGL_DEF)
 endif
 
 ifeq ($(DEVELOPER),HARALDX) # special settings for HARALDX
-DEVEL_DEF=-DDEVEL_HARALD -DDEVEL_ARTEM
+DEVEL_DEF=-DDEVEL_HARALD -DDEVEL_ARTEM $(OPENGL_DEF)
 endif
 
-ifeq ($(OPENGL),1) # activate OPENGL code
-DEVEL_DEF=$(DEVEL_DEF) -DARB_OPENGL
-endif
 
 #----------------------
 
@@ -589,7 +590,7 @@ ifeq ($(OPENGL),0)
 ARCHS_EDIT4 = $(ARCHS_EDIT4_GENERAL)
 LIBS_EDIT4 =
 else
-ARCHS_EDIT4 = $(ARCHS_EDIT4_GENERAL) \
+ARCHS_EDIT4 = $(ARCHS_EDIT4_GENERAL)
 		RNA3D/RNA3D.a \
 		RNA3D/OPENGL/OPENGL.a \
 LIBS_EDIT4 = $(GLLIBS)
