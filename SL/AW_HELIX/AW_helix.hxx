@@ -2,7 +2,7 @@
 //                                                                      //
 //   File      : AW_helix.hxx                                           //
 //   Purpose   : Wrapper for BI_helix + AW-specific functions           //
-//   Time-stamp: <Tue Dec/21/2004 16:56 MET Coder@ReallySoft.de>        //
+//   Time-stamp: <Fri Mar/04/2005 16:50 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in December 2004         //
@@ -24,6 +24,7 @@
 class AW_cb_struct;
 
 class AW_helix: public BI_helix {
+    long enabled; // draw or not
 
 public:
     AW_helix(AW_root *awroot);
@@ -34,6 +35,8 @@ public:
                     AW_pos x, AW_pos y,
                     AW_bitset filter,
                     AW_CL cd1, AW_CL cd2);
+
+    bool is_enabled() const { return (enabled != 0) && (size>0); }
 };
 
 AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct * /*owner*/awcbs);
