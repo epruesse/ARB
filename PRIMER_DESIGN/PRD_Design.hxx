@@ -11,7 +11,7 @@
 
 #include <deque>
 
-#ifndef arbdb_h_included
+#ifndef ARBDB_H
 #include <arbdb.h>
 #endif
 
@@ -141,7 +141,7 @@ private:
     void             init               ( const char *sequence_, long int seqLength_, Range pos1_, Range pos2_, Range length_, Range distance_, Range ratio_, Range temperature_, int min_dist_to_next_, bool expand_IUPAC_Codes_, int max_count_primerpairs_, double GC_factor_, double temp_factor_ );
     PRD_Sequence_Pos followUp           ( Node *node_, std::deque<char> *primer_, int direction_ );
     void             findNextPrimer     ( Node *start_at_, int depth_, int *counter_, int delivered_ );
-    int              insertNode         ( Node *current_, char base_, PRD_Sequence_Pos pos_, int delivered_, int offset_, int left_, int right_ );
+    int              insertNode         ( Node *current_, unsigned char base_, PRD_Sequence_Pos pos_, int delivered_, int offset_, int left_, int right_ );
     void             clearTree          ( Node *start, int left_, int right_ );
     bool             treeContainsPrimer ( Node *start );
     void             calcGCandAT        ( int &GC_, int &AT_, Node *start_at_ );
