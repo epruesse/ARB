@@ -18,6 +18,7 @@
 #include <aw_global.hxx>
 #include <awt_preset.hxx>
 #include <awt_advice.hxx>
+#include <awt_config_manager.hxx>
 
 #include <awtc_rename.hxx>
 #include <awtc_submission.hxx>
@@ -500,6 +501,27 @@ void NT_undo_info_cb(AW_window *,AW_CL undo_type){
     delete undo_info;
 }
 
+static AWT_config_mapping_def tree_setting_config_mapping[] = {
+    { AWAR_DTREE_BASELINEWIDTH,   "line_width" },      
+    { AWAR_DTREE_VERICAL_DIST,    "vert_dist" },       
+    { AWAR_DTREE_AUTO_JUMP,       "auto_jump" },       
+    { AWAR_DTREE_SHOW_CIRCLE,     "show_circle" },     
+    { AWAR_DTREE_USE_ELLIPSE,     "use_ellipse" },     
+    { AWAR_DTREE_CIRCLE_ZOOM,     "circle_zoom" },     
+    { AWAR_DTREE_CIRCLE_MAX_SIZE, "circle_max_size" }, 
+    { AWAR_DTREE_GREY_LEVEL,      "grey_level" },      
+    { 0, 0 }
+};
+
+static char *tree_setting_store_config(AW_window *aww, AW_CL , AW_CL ) {
+    AWT_config_definition cdef(aww->get_root(), tree_setting_config_mapping);
+    return cdef.read();
+}
+static void tree_setting_restore_config(AW_window *aww, const char *stored_string, AW_CL , AW_CL ) {
+    AWT_config_definition cdef(aww->get_root(), tree_setting_config_mapping);
+    cdef.write(stored_string);
+}
+
 AW_window *NT_create_tree_setting(AW_root *aw_root)
 {
     static AW_window_simple *aws = 0;
@@ -509,25 +531,27 @@ AW_window *NT_create_tree_setting(AW_root *aw_root)
     aws->init( aw_root, "TREE_PROPS", "TREE SETTINGS");
     aws->load_xfig("awt/tree_settings.fig");
 
-    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE","CLOSE","C");
 
-    aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"nt_tree_settings.hlp");
+    aws->at("help");
+    aws->callback(AW_POPUP_HELP,(AW_CL)"nt_tree_settings.hlp");
     aws->create_button("HELP","HELP","H");
 
     aws->at("button");
     aws->auto_space(10,10);
     aws->label_length(30);
 
-    aws->label("Base Line Width");
+    aws->label("Base line width");
     aws->create_input_field(AWAR_DTREE_BASELINEWIDTH,4);
     aws->at_newline();
 
-    aws->label("Relativ vert. Dist");
+    aws->label("Relative vertical distance");
     aws->create_input_field(AWAR_DTREE_VERICAL_DIST,4);
     aws->at_newline();
 
-    aws->label("Auto Jump (list tree)");
+    aws->label("Auto Jump");
     aws->create_toggle(AWAR_DTREE_AUTO_JUMP);
     aws->at_newline();
 
@@ -535,13 +559,24 @@ AW_window *NT_create_tree_setting(AW_root *aw_root)
     aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
     aws->at_newline();
 
+    aws->label("Use ellipses");
+    aws->create_toggle(AWAR_DTREE_USE_ELLIPSE);
+    aws->at_newline();
+
     aws->label("Bootstrap circle zoom factor");
-    aws->create_input_field(AWAR_DTREE_CIRCLE_ZOOM,4);
+    aws->create_input_field(AWAR_DTREE_CIRCLE_ZOOM, 4);
+    aws->at_newline();
+
+    aws->label("Boostrap radius limit");
+    aws->create_input_field(AWAR_DTREE_CIRCLE_MAX_SIZE, 4);
     aws->at_newline();
 
     aws->label("Grey Level of Groups%");
     aws->create_input_field(AWAR_DTREE_GREY_LEVEL,4);
     aws->at_newline();
+
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "tree_settings", tree_setting_store_config, tree_setting_restore_config, 0, 0);
 
     return (AW_window *)aws;
 
@@ -1083,6 +1118,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awr->awar( AWAR_DTREE_BASELINEWIDTH)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
     awr->awar( AWAR_DTREE_SHOW_CIRCLE)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
     awr->awar( AWAR_DTREE_CIRCLE_ZOOM)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
+    awr->awar( AWAR_DTREE_CIRCLE_MAX_SIZE)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
+    awr->awar( AWAR_DTREE_USE_ELLIPSE)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
     awr->awar( AWAR_DTREE_REFRESH)->add_callback( (AW_RCB)AWT_expose_cb, (AW_CL)ntw,0);
     awr->awar( AWAR_COLOR_GROUPS_USE)->add_callback( (AW_RCB)NT_recompute_cb, (AW_CL)ntw,0);
 
