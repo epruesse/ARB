@@ -474,7 +474,7 @@ public:
 
 
     char       *get_selection_list_contents( AW_selection_list * selection_list, long nr_of_lines = -1);
-    void        sort_selection_list(  AW_selection_list * selection_list, int backward);
+    void        sort_selection_list(  AW_selection_list * selection_list, int backward, int case_sensitive);
     GB_ERROR    save_selection_list(  AW_selection_list * selection_list, const char *filename,long number_of_lines = 0);
     void        set_selection_list_suffix( AW_selection_list * selection_list, const char *suffix);
     GB_ERROR    load_selection_list(  AW_selection_list * selection_list, const char *filename);
