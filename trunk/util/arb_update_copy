@@ -81,7 +81,7 @@ while test $# -ne 0; do
 	else
 		DEST="$1"
 		echo '---------------- [2] Current Destination $DEST (Target=$TARGET)'
-		cat /tmp/arb_update |  rsh -l arb $TARGET "(cd $DEST;tar xfv -)"
+		cat /tmp/arb_update |  ssh arb@$TARGET "(cd $DEST;tar xfv -)"
 	fi
 	shift
 done

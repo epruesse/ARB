@@ -292,7 +292,7 @@ echo '	To get the best results this host "H" should:'
 echo '			1.	be fast,'
 echo '			2.	have a lot of real memory (>=64 meg),'
 echo '			3.	have a lot of swap space (>=400 meg),'
-echo '			4.	allow all users to run "rsh H ...",'
+echo '			4.	allow all users to run "ssh H ...",'
 echo '			5.	contain the discs with the PT_SERVER files.'
 
 echo '	n	You want to assign a special Network host'
@@ -318,10 +318,10 @@ case "$var" in
      echo "Enter the name of your host for the pt_server"
        read host
        echo "Checking connection to $host"
-       if rsh $host ls >/dev/zero; then
-	 echo ">>> rsh $host ok"
+       if ssh $host ls >/dev/zero; then
+	 echo ">>> ssh $host ok"
        else
-	 err ">>> cannot run 'rsh $host'";
+	 err ">>> cannot run 'ssh $host'";
        fi
        rm -f lib/arb_tcp.dat;
        cat lib/arb_tcp_org.dat |sed -e "/localhost\:/$host\:/g" >lib/arb_tcp.dat

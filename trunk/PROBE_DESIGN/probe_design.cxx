@@ -1777,13 +1777,13 @@ void pd_query_pt_server(AW_window *aww)
     char pt_server[256];
     sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
     server = GBS_read_arb_tcp(pt_server);
-    char *rsh = 0;
+    char *ssh = 0;
     if ( server[0] && strchr(server+1,':') ) {
         strchr(server+1,':') [0] = 0;
-        rsh = (char *)calloc(1, strlen("rsh ")+ 10 + strlen(server) );
-        sprintf(rsh,"rsh %s ",server);
+        ssh = (char *)calloc(1, 4+10+strlen(server) );
+        sprintf(ssh,"ssh %s ",server);
     }else{
-        rsh = strdup("");
+        ssh = strdup("");
     }
     void *strstruct = GBS_stropen(1024);
     GBS_strcat(strstruct,   "echo Contents of directory ARBHOME/lib/pts:;echo;"
@@ -1791,12 +1791,12 @@ void pd_query_pt_server(AW_window *aww)
                "echo; echo Disk Space for PT_server files:; echo;"
                "df $ARBHOME/lib/pts;");
     GBS_strcat(strstruct,"echo;echo Running ARB Programms:;");
-    GBS_strcat(strstruct,rsh);
+    GBS_strcat(strstruct,ssh);
     GBS_strcat(strstruct,"$ARBHOME/bin/arb_who");
     char *sys = GBS_strclose(strstruct);
     GB_xcmd(sys,GB_TRUE, GB_FALSE);
-    delete sys;
-    delete rsh;
+    free(sys);
+    free(ssh);
 }
 
 void pd_export_pt_server(AW_window *aww)
