@@ -196,10 +196,12 @@ private:
 
     int cursor_x1, cursor_x2, cursor_y1, cursor_y2;
     int fresh_sequence;  //needed to check, if the coordinates of the root-loop have to be set or not
-   
+
 public:
 
     bool show_debug; // show debug info in structure display (todo)
+
+    double rootAngle; // to store root angle
 
     //variables needed for the IO-procedures
     int number;
@@ -217,7 +219,6 @@ public:
     //indicator variables
     int show_constraints;
     int drag_recursive;   //indicates, if a drag will recursively alter the angles of the following strands
-
 
     /* ******* Sequences */
 
@@ -278,6 +279,9 @@ public:
     void set_last_drawed_cursor_position(double x1, double y1, double x2, double y2) { cursor_x1 = int(x1); cursor_y1 = int(y1); cursor_x2 = int(x2); cursor_y2 = int(y2); }
     void get_last_drawed_cursor_position(double &x1, double &y1, double &x2, double &y2) const { x1 = cursor_x1; y1 = cursor_y1; x2 = cursor_x2; y2 = cursor_y2; }
     void clear_last_drawed_cursor_position() { set_last_drawed_cursor_position(0, 0, 0, 0); }
+
+    void setRootAngle(double rtAngle) { rootAngle = rtAngle; }
+    double getRootAngle()             { return rootAngle;    }
 };
 
 //////////////////////////////////////////////////////////////////////////////////
