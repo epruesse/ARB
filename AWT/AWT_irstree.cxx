@@ -197,7 +197,7 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
     if (left_y > irs_gl.min_y){
         if (left_y < irs_gl.max_y){ // clip y on top border
             if (node->leftson->remark_branch ) {
-                AWT_show_remark_branch(disp_device, node->leftson->remark_branch, left_x, left_y, 1, text_filter, (AW_CL)node->leftson, 0);
+                AWT_show_remark_branch(disp_device, node->leftson->remark_branch, node->leftson->is_leaf, left_x, left_y, 1, text_filter, (AW_CL)node->leftson, 0);
 
                 //                 disp_device->text(AWT_GC_BRANCH_REMARK, node->leftson->remark_branch , // @@@ print bootstrap
                 //                                   (AW_pos) left_x,(AW_pos) left_y,
@@ -213,7 +213,7 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
     y_center = (left_y + right_y) / 2; // clip conter on bottom border
     if (right_y > irs_gl.min_y && right_y < irs_gl.max_y) {
         if (node->rightson->remark_branch ) {
-            AWT_show_remark_branch(disp_device, node->rightson->remark_branch, right_x, right_y, 1, text_filter, (AW_CL)node->rightson, 0);
+            AWT_show_remark_branch(disp_device, node->rightson->remark_branch, node->rightson->is_leaf, right_x, right_y, 1, text_filter, (AW_CL)node->rightson, 0);
             //             disp_device->text(AWT_GC_BRANCH_REMARK, node->rightson->remark_branch , // @@@ print bootstrap
             //                               (AW_pos) right_x,(AW_pos) right_y,
             //                               (AW_pos) 1 , text_filter,

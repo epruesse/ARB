@@ -1313,12 +1313,12 @@ void AWT_graphic_tree::NT_rotbox(int gc, double u, double v, int width)
     disp_device->line(gc,u+diam,v, u,v+diam,mark_filter,0,0);
     disp_device->line(gc,u-diam,v, u,v+diam,mark_filter,0,0);
 }
-// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//      AW_BOOL AWT_show_remark_branch(AW_device *device, const char *remark_branch, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
-// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      AW_BOOL AWT_show_remark_branch(AW_device *device, const char *remark_branch, AW_BOOL is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // returns true if a bootstrap was DISPLAYED
 
-AW_BOOL AWT_show_remark_branch(AW_device *device, const char *remark_branch, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+AW_BOOL AWT_show_remark_branch(AW_device *device, const char *remark_branch, AW_BOOL is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     const char *end          = 0;
     int         bootstrap    = int(strtol(remark_branch, &(char*)end, 10));
     bool        is_bootstrap = end[0] == '%' && end[1] == 0;
@@ -1327,7 +1327,8 @@ AW_BOOL AWT_show_remark_branch(AW_device *device, const char *remark_branch, AW_
 
     if (is_bootstrap) {
         if (bootstrap == 100) {
-            show = false; // do not show 100% bootstraps
+            show           = !is_leaf; // do not show 100% bootstraps at leafs
+            if (show) text = "100%";
         }
         else {
             if (bootstrap == 0) {
@@ -1456,7 +1457,7 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
     }
 
     if (at->leftson->remark_branch ) {
-        bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->leftson->remark_branch, nx0, ny0-scale*0.1, 1, text_filter, (AW_CL)at, 0);
+        bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->leftson->remark_branch, at->leftson->is_leaf, nx0, ny0-scale*0.1, 1, text_filter, (AW_CL)at, 0);
 
         //         disp_device->text(AWT_GC_BRANCH_REMARK, at->leftson->remark_branch ,
         //                           (AW_pos) nx0,(AW_pos) ny0-scale*.1,
@@ -1470,7 +1471,7 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
     }
 
     if (at->rightson->remark_branch ) {
-        bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->rightson->remark_branch, nx1, ny1-scale*0.1, 1, text_filter, (AW_CL)at, 0);
+        bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->rightson->remark_branch, at->rightson->is_leaf, nx1, ny1-scale*0.1, 1, text_filter, (AW_CL)at, 0);
 
         //         disp_device->text(AWT_GC_BRANCH_REMARK,at->rightson->remark_branch ,
         //                           (AW_pos) nx1,(AW_pos) ny1-scale*.1,
