@@ -39,7 +39,7 @@ public:
     int	biggest_height_of_buttons;
 
     short saved_x_correction_for_label;
-    short correct_for_at_center_intern;
+//     short correct_for_at_center_intern;
 
     short	saved_x;
     AW_BOOL	correct_for_at_string;
