@@ -948,14 +948,11 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->create_menu( 0, "File", "F", "secedit_file.hlp",  AWM_ALL );
 
     awm->insert_menu_topic("secedit_new", "New Structure", "N", 0, AWM_ALL, (AW_CB)SEC_new_structure, (AW_CL)ntw, 0);
-    awm->insert_menu_topic("secedit_import", "Import Structure ...", "I", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_import, (AW_CL)ntw);
-    awm->insert_menu_topic("secedit_export", "Export Structure ...", "E", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)ntw);
-
+    awm->insert_menu_topic("secedit_import", "Load Structure ", "I", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_import, (AW_CL)ntw);
+    awm->insert_menu_topic("secedit_export", "Save Structure ", "E", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)ntw);
     awm->insert_separator();
-
-    awm->insert_menu_topic("secStruct2xfig", "Export Secondary structure to XFIG ", "X", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_sec_export_window, (AW_CL)ntw);
-    awm->insert_menu_topic("print_secedit", "Print Structure ...", "P","secedit2prt.hlp",	AWM_ALL,	(AW_CB)AWT_create_print_window, (AW_CL)ntw, 0 );
-
+    awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG ", "X", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_sec_export_window, (AW_CL)ntw);
+    awm->insert_menu_topic("print_secedit", "Print Structure ", "P","secedit2prt.hlp",	AWM_ALL,	(AW_CB)AWT_create_print_window, (AW_CL)ntw, 0 );
     awm->insert_separator();
 
 #if defined(FREESTANDING)
@@ -964,12 +961,12 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 1,0);
 #endif
 
-    awm->create_menu("props","Options","O","properties.hlp", AWM_ALL);
+    awm->create_menu("props","Properties","P","properties.hlp", AWM_ALL);
     //    awm->insert_menu_topic("props_menu",	"Menu: Colors and Fonts ...",	"M","props_frame.hlp",	AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
-    awm->insert_menu_topic("props_secedit",	"Change Colors and Fonts ...","C","secedit_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
-    awm->insert_menu_topic("sec_layout", "Layout", "L", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_layout_window, 0);
+    awm->insert_menu_topic("props_secedit",	"Change Colors and Fonts ","C","secedit_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
+    awm->insert_menu_topic("sec_layout", "Layout Settings", "L", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_layout_window, 0);
     awm->insert_menu_topic("display", "Change Display", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
-    awm->insert_menu_topic("save_props",	"Save Options (~/.arb_prop/secedit)",	"O","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
+    awm->insert_menu_topic("save_props",	"Save Properties (~/.arb_prop/secedit)",	"O","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 
     awm->create_mode( 0, "zoom.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ZOOM);
     awm->create_mode( 0, "sec_modify.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_MOVE);
