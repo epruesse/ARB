@@ -88,7 +88,7 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
         long min = aw_root->awar(cbs->def_min)->read_int()-1;
         long max = aw_root->awar(cbs->def_max)->read_int()-1;
         long flen = 0;
-        for (i=0,s=str; *s; *s++,i++){		// transform the filter
+        for (i=0,s=str; *s; ++s,++i){		// transform the filter
             if (strchr(canc,*s) || (i<min) || (max>0 && i > max) )
             {
                 *s = '0';
