@@ -18,7 +18,6 @@
 
 #include <GL/glew.h>
 #include <GL/GLwMDrawA.h>
-//#include <GL/glx.h>
 
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
@@ -31,9 +30,8 @@
 #define _AW_COMMON_INCLUDED
 #include <aw_root.hxx>
 #include <aw_device.hxx>
-//#include "../WINDOW/aw_commn.hxx"
-#include "../WINDOW/aw_at.hxx"
 #include <aw_window.hxx>
+#include "../WINDOW/aw_at.hxx"
 #include "../WINDOW/aw_awar.hxx"
 #include "../WINDOW/aw_xfig.hxx"
 #include "../WINDOW/aw_xfigfont.hxx"
@@ -53,7 +51,37 @@ using namespace std;
 extern GBDATA *gb_main;
 Widget OpenGLParentWidget;
 
-void resize( Widget w, XtPointer client_data, XEvent *event, char* x ) {
+XtAppContext appContext;
+XtWorkProcId workId   = 0;
+GLboolean    Spinning = GL_FALSE;
+
+Boolean SpinMolecule(XtPointer clientData) {
+    extern float ROTATION_SPEED;
+    extern bool autoRotate;
+    if(autoRotate) {
+        ROTATION_SPEED = 0.05;
+    }
+    else {
+        ROTATION_SPEED = 0.5;
+    }
+    refreshOpenGLDisplay();
+    return false; /* leave work proc active */
+}
+
+void MapStateChanged(XEvent * event) {
+    switch (event->type) {
+    case MapNotify:
+        if (Spinning && workId != 0) 
+            workId = XtAppAddWorkProc(appContext, SpinMolecule, NULL);
+        break;
+    case UnmapNotify:
+        if (Spinning) 
+            XtRemoveWorkProc(workId);
+        break;
+    }
+}
+
+void ResizeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x ) {
 	XConfigureEvent *evt;
 	evt = (XConfigureEvent*) event;
 	
@@ -64,69 +92,99 @@ void resize( Widget w, XtPointer client_data, XEvent *event, char* x ) {
 	}
 	
 	ReshapeOpenGLWindow( (GLint) evt->width, (GLint) evt->height );
-	
-    //	gmw->refresh();
+
+	MapStateChanged(event);
+
+    refreshOpenGLDisplay();
 }
 
 
-void keyboard( Widget w, XtPointer client_data, XEvent *event, char* x ) {
+void KeyBoardEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x ) {
 	XKeyEvent *evt;
-	evt = (XKeyEvent*) event;
-	
-	//printf( "Key = %d\n", evt->keycode );
-	
-	if ( evt->keycode == 100 ) { /** Left */
-        //		opengl_move_x += step;
-	}
-	else if ( evt->keycode == 102 ) { /** Right */
-        //		opengl_move_x -= step;
-	}
-	else if ( evt->keycode == 98 ) { /** Up */
-        //		opengl_move_y -= step;
-	}
-	else if ( evt->keycode == 104 ) { /** Down */
-        //		opengl_move_y += step;
-	}
-	else if ( evt->keycode == 65 ) { /** Space */
-        //		toggle_information_quad = !toggle_information_quad;
-	}
-	else if ( evt->keycode == 97 ) { /** Home */
+    evt = (XKeyEvent*) event;
+
+    char   buffer[1];
+    KeySym keysym;
+  	int    count;
+    extern bool autoRotate;
+
+    // Converting keycode to keysym
+    count = XLookupString((XKeyEvent *) event, buffer, 1, &keysym, NULL);
+
+    switch(keysym) {
+    case XK_space:
+        if(Spinning) {
+            XtRemoveWorkProc(workId);
+            Spinning = GL_FALSE; autoRotate = false;
+        } else {
+            workId = XtAppAddWorkProc(appContext, SpinMolecule, NULL);
+            Spinning = GL_TRUE; autoRotate = true;
+        }
+        break;
+    case XK_Escape:
+        exit(0); 
+        break;
     }
-    cout<<"keyboard event occured"<<endl;
-    //    refreshOpenGLDisplay();
-    //    gl_Canvas->refresh();
+
+    refreshOpenGLDisplay();
 }
 
-void button_release_event_handler( Widget w, XtPointer client_data, XEvent *event, char* x ) {
+void ButtonReleaseEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x ) {
+	XButtonEvent *xr;
+	xr = (XButtonEvent*) event;
+
+    extern bool rotateMolecule;
+    extern bool enableZoom;
+
+    switch(xr->button) {
+    case LEFT_BUTTON:
+        rotateMolecule = false;   
+        break;
+    case MIDDLE_BUTTON:
+        enableZoom = false;
+        break;
+    case RIGHT_BUTTON:
+        cout<<"Right Button REleased !!!"<<endl;
+        break;
+    }
+
+    refreshOpenGLDisplay();
 }
 
-/// Deals with ButtonPress events.
-void button_press_event_handler( Widget w, XtPointer client_data, XEvent *event, char* x ) {
+
+void ButtonPressEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x ) {
 
 	XButtonEvent *xp;
 	xp = (XButtonEvent*) event;
-	
-	if ( xp->button == 1 ) { // left
-        //		if ( gl_Canvas->mode == AWT_MODE_MOD ) {
-        //		}
-    //		else if ( gl_Canvas->mode == AWT_MODE_ZOOM ) {
-        //		}
-	}
-	else if ( xp->button == 3 ) { // right
-	}
-	else if ( xp->button == 4 ) { // scroll up ( mouse-wheel )
-	}
-	else if ( xp->button == 5 ) { // scroll down ( mouse-wheel )
-	}
+	extern GLfloat saved_x, saved_y;
+    extern bool rotateMolecule;
+    extern bool enableZoom;
 
-    cout<<"Mouse event occured"<<endl;
-
+    switch(xp->button) {
+    case LEFT_BUTTON:
+        rotateMolecule = true;   
+        saved_x = xp->x;
+        saved_y = xp->y;
+        break;
+    case MIDDLE_BUTTON:
+        enableZoom = true;
+        cout<<"Middle Button pressed !!!"<<endl;
+        break;
+    case RIGHT_BUTTON:
+        cout<<"Right Button PRESSed !!!"<<endl;
+        break;
+    case WHEEL_UP:
+        cout<<"Wheel Up !!!"<<endl;
+        break;
+    case WHEEL_DOWN:
+        cout<<"Wheel Down !!!"<<endl;
+        break;
+	}
+    
     refreshOpenGLDisplay();
-
-    //    gl_Canvas->refresh();
 }
 
-void mouse_move_event_handler( Widget w, XtPointer client_data, XEvent *event, char* x ) {
+void MouseMoveEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x ) {
 	
 	XMotionEvent *xp;
 	xp = (XMotionEvent*) event;
@@ -136,14 +194,14 @@ void mouse_move_event_handler( Widget w, XtPointer client_data, XEvent *event, c
 	else if ( xp->state & Button3Mask ) {
 		/* do nothing*/
 	}
-
-    cout<<"Mouse move occured"<<endl;
+    extern bool rotateMolecule;
+    if(rotateMolecule)
+    rotate(xp->x, xp->y);
 
     refreshOpenGLDisplay();
-   	//gl_Canvas->refresh();
 }
 
-void expose( Widget w, XtPointer client_data, XEvent *event, char* x ) {
+void ExposeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x ) {
 	
 	extern int OpenGLEngineState;  
 	
@@ -160,14 +218,8 @@ void expose( Widget w, XtPointer client_data, XEvent *event, char* x ) {
 		
 		ReshapeOpenGLWindow( (GLint) evt->width, (GLint) evt->height );
 	}
-	
-    refreshOpenGLDisplay();
-    //gl_Canvas->refresh();
-}
 
-void init( Widget w, XtPointer client_data, XtPointer call_data ) {
-	InitializeOpenGLWindow( w );
-    cout<<"OpenGl window initialized"<<endl;
+    refreshOpenGLDisplay();
 }
 
 void refreshOpenGLDisplay() {
@@ -227,7 +279,7 @@ AW_window *createRNA3DMainWindow(AW_root *awr){
 
     gl_Canvas->recalc_size();
     gl_Canvas->refresh();
-    gl_Canvas->set_mode(AWT_MODE_ZOOM); // Default-Mode
+    //    gl_Canvas->set_mode(AWT_MODE_ZOOM); // Default-Mode
 
     awm->insert_help_topic("rna3D_help_how", "How to Visualize 3D structure of rRNA ?", "H", "rna3DHelp.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"rna3DHelp.hlp", 0);
     awm->create_menu( 0, "File", "F", 0,  AWM_ALL );
@@ -236,7 +288,32 @@ AW_window *createRNA3DMainWindow(AW_root *awr){
     awm->insert_menu_topic( "selectSAI", "Select SAI", "S","selectSai.hlp", AWM_ALL,AW_POPUP, (AW_CL)createSelectSAI_window, (AW_CL)0);
     awm->insert_menu_topic( "SetColors", "Set Colors and Fonts", "t","setColors.hlp", AWM_ALL,AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager);
 
+    {
+        awm->at(11,2);
+        awm->auto_space(5,0);
+        awm->shadow_width(1);
+
+        int cur_x, cur_y, start_x, first_line_y, second_line_y, third_line_y;
+        awm->get_at_position( &start_x,&first_line_y);
+        awm->button_length(10);
+        awm->callback( (AW_CB0)AW_POPDOWN );
+        awm->create_button("Close", "Close");
+    
+        awm->get_at_position( &cur_x,&cur_y );
+        awm->button_length(15);
+        awm->callback( (AW_CB0)AW_POPDOWN );
+        awm->create_button("bla1", "Cloooose");
+
+        awm->at_newline();
+        awm->get_at_position( &start_x,&second_line_y);
+        awm->button_length(15);
+        awm->callback( (AW_CB0)AW_POPDOWN );
+        awm->create_button("sai", "Select SAI");
+    }
+
     addCallBacks(awr, gl_Canvas);
+
+    appContext = awr->prvt->context;
 
     extern int OpenGLEngineState; // defined globally in OpenGLEngine.cxx
     OpenGLEngineState = NOT_CREATED;
@@ -244,25 +321,32 @@ AW_window *createRNA3DMainWindow(AW_root *awr){
     /** Add event handlers */
 		
     XtAddEventHandler( gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
-                       StructureNotifyMask , 0, (XtEventHandler) resize, (XtPointer) 0 );
+                       StructureNotifyMask , 0, (XtEventHandler) ResizeOpenGLWindow, (XtPointer) 0 );
 		
     XtAddEventHandler( gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
-                       ExposureMask, 0, (XtEventHandler) expose, (XtPointer) 0 );
+                       ExposureMask, 0, (XtEventHandler) ExposeOpenGLWindow, (XtPointer) 0 );
 		
     XtAddEventHandler( gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
-                       KeyPressMask, 0, (XtEventHandler) keyboard, (XtPointer) 0 );
+                       KeyPressMask, 0, (XtEventHandler) KeyBoardEventHandler, (XtPointer) 0 );
 		
     XtAddEventHandler( gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
-                       ButtonPressMask, 0, (XtEventHandler) button_press_event_handler, (XtPointer) 0 );
+                       ButtonPressMask, 0, (XtEventHandler) ButtonPressEventHandler, (XtPointer) 0 );
 		
     XtAddEventHandler( gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
-                       ButtonReleaseMask, 0, (XtEventHandler) button_release_event_handler, (XtPointer) 0 );
+                       ButtonReleaseMask, 0, (XtEventHandler) ButtonReleaseEventHandler, (XtPointer) 0 );
 		
     XtAddEventHandler( gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
-                       PointerMotionMask, 0, (XtEventHandler) mouse_move_event_handler, (XtPointer) 0 );
+                       PointerMotionMask, 0, (XtEventHandler) MouseMoveEventHandler, (XtPointer) 0 );
+
+//     XtAddEventHandler( gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
+//                       VisibilityChangeMask, 0, (XtEventHandler) RotateMolecule, (XtPointer) 0 );
 		
     extern Widget OpenGLParentWidget;
     OpenGLParentWidget = awm->p_w->frame;
-    cout<<"openglwindow created"<<endl;
+
+#ifdef DEBUG
+    cout<<"Openglwindow created!!"<<endl;
+#endif
+
     return awm;
 }

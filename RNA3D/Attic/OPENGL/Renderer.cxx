@@ -81,7 +81,7 @@ void GLRenderer::TexturizeStructure(int mode, Texture2D *cImages, OpenGLGraphics
             
             glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_G]);
             glColor4fv(BLUE);        
-            glCallList(STRUCTURE_BACKBONE_POINTS_G);
+            glCallList(STRUCTURE_BACKBONE_POINTS_G); 
             
             glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_C]);
             glColor4fv(BLUE);        

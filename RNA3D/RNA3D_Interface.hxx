@@ -7,13 +7,18 @@
 
 AW_window *createRNA3DMainWindow(AW_root *awr);
 
-void resize( Widget w, XtPointer client_data, XEvent *event, char* x );
-void expose( Widget w, XtPointer client_data, XEvent *event, char* x );
-void init( Widget w, XtPointer client_data, XtPointer call_data );
-void keyboard( Widget w, XtPointer client_data, XEvent *event, char* x );
-void button_press_event_handler( Widget w, XtPointer client_data, XEvent *event, char* x );
-void button_release_event_handler( Widget w, XtPointer client_data, XEvent *event, char* x );
-void mouse_move_event_handler( Widget w, XtPointer client_data, XEvent *event, char* x );
+void ResizeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x );
+void ExposeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x );
+void KeyBoardEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x );
+void ButtonPressEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x );
+void ButtonReleaseEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x );
+void MouseMoveEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x );
 void refreshOpenGLDisplay();
 
-
+enum {
+    LEFT_BUTTON = 1,
+    MIDDLE_BUTTON,
+    RIGHT_BUTTON,
+    WHEEL_UP,
+    WHEEL_DOWN
+};
