@@ -95,7 +95,7 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
                                    "	To create such a database and it's index file:\n"
                                    "	1. Start ARB on the whole database you want to use for\n"
                                    "		probe match / design\n"
-                                   "	2. Go to ARB_NT/etc/Probe_Functions/PT_SERVER Admin\n"
+                                   "	2. Go to ARB_NT/Probes/PT_SERVER Admin\n"
                                    "	3. Select '%s' and press UPDATE SERVER\n"
                                    "	4. Wait ( few hours )\n"
                                    "	5. Meanwhile read the help file: PT_SERVER: What Why and How",
@@ -123,7 +123,7 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
     return GB_export_error("I got some problems to start your server:\n"
                            "	Possible Reasons:\n"
                            "	- there is no database in $ARBHOME/lib/pts/*\n"
-                           "		update server <ARB_NT/ETC/PT_SERVER Admin/UPDATE SERVER>\n"
+                           "		update server <ARB_NT/Probes/PT_SERVER Admin/UPDATE SERVER>\n"
                            "	- you are not allowed to run 'rsh host pt_server ....&'\n"
                            "		check file '/etc/hosts.equiv' (read man pages for help)\n"
                            "	- the permissions of $ARBHOME/lib/pts/* do not allow read access\n"
