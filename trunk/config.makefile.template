@@ -12,7 +12,7 @@ MACH = LINUX# Linus g++  and gcc
 LINUX = 1
 ECGS = 1# for newer Linux-versions
 
-export DEBIAN = 1
+# export DEBIAN = 1
 
 #********* SUN4 / acc CC / dynamic ********
 
