@@ -49,7 +49,7 @@ int AW_device_Xm::line(int gc, AW_pos x0,AW_pos y0, AW_pos x1,AW_pos y1, AW_bits
             AWUSE(cd2);
 
             XDrawLine(common->display, common->window_id,
-                      gcm->gc,(int)CX0,(int)CY0,(int)CX1,(int)CY1);
+                      gcm->gc, AW_INT(CX0), AW_INT(CY0), AW_INT(CX1), AW_INT(CY1));
         }
     }
 
@@ -99,9 +99,13 @@ int AW_device_Xm::box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW
             AWUSE(cd1);
             AWUSE(cd2);
 
+            int cx0 = AW_INT(CX0);
+            int cx1 = AW_INT(CX1);
+            int cy0 = AW_INT(CY0);
+            int cy1 = AW_INT(CY1);
+
             XFillRectangle(common->display, common->window_id, gcm->gc,
-                           (int)CX0, (int)CY0,
-                           ((int)CX1)-((int)CX0), ((int)CY1)-((int)CY0) );
+                           cx0, cy0, cx1-cx0+1, cy1-cy0+1);
         }
     }
 
@@ -138,10 +142,10 @@ int AW_device_Xm::circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos widt
             width  *= 2.0 * this->get_scale();
             height *= 2.0 * this->get_scale();
             if (!filled) {
-                XDrawArc(common->display, common->window_id, gcm->gc, (int)XL,(int)YL, (int)width, (int)height,0,64*360 );
+                XDrawArc(common->display, common->window_id, gcm->gc, AW_INT(XL), AW_INT(YL), AW_INT(width), AW_INT(height), 0, 64*360);
             }
              else {
-                XFillArc(common->display, common->window_id, gcm->gc, (int)XL,(int)YL, (int)width, (int)height,0,64*360 );
+                XFillArc(common->display, common->window_id, gcm->gc, AW_INT(XL), AW_INT(YL), AW_INT(width), AW_INT(height), 0, 64*360);
             }
         }
     }
@@ -179,7 +183,7 @@ AW_pos X,Y;                                 // Transformed pos
     if ( Y > this->clip_rect.b ) return;
     if ( width <= 0 || height <= 0 ) return;
 
-    XClearArea(common->display,common->window_id,(int)X,(int)Y,(int)width,(int)height,False);
+    XClearArea(common->display,common->window_id, AW_INT(X), AW_INT(Y), AW_INT(width), AW_INT(height), False);
 
     AUTO_FLUSH(this);
 }
@@ -212,7 +216,7 @@ void AW_device_Xm::clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW
     if ( width <= 0 || height <= 0 ) return;
 
     XClearArea(common->display, common->window_id,
-               (int)X,(int)Y-(int)xfs->max_bounds.ascent,(int)width,(int)height,False);
+               AW_INT(X), AW_INT(Y)-AW_INT(xfs->max_bounds.ascent), AW_INT(width), AW_INT(height), False);
 
     AUTO_FLUSH(this);
 }
@@ -237,8 +241,9 @@ void AW_device_Xm::flush(void) {
 void AW_device_Xm::move_region( AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y ) {
     int             gc  = 0;
     class AW_GC_Xm *gcm = AW_MAP_GC(gc);
-    XCopyArea( common->display, common->window_id, common->window_id,    gcm->gc,
-               (int)src_x, (int)src_y, (int)width, (int)height,
-               (int)dest_x, (int)dest_y );
+
+    XCopyArea( common->display, common->window_id, common->window_id, gcm->gc,
+               AW_INT(src_x), AW_INT(src_y), AW_INT(width), AW_INT(height),
+               AW_INT(dest_x), AW_INT(dest_y) );
     AUTO_FLUSH(this);
 }
