@@ -743,6 +743,12 @@ static void NT_create_mask_submenu(AW_window_menu_modes *awm) {
 void NT_test_input_mask(AW_root *root) {
     AWT_initialize_input_mask(root, gb_main, &item_type_species, "test.mask", true);
 }
+// -------------------------------------------------------------------------------
+//      static AW_window *NT_create_species_colorize_window(AW_root *aw_root)
+// -------------------------------------------------------------------------------
+static AW_window *NT_create_species_colorize_window(AW_root *aw_root) {
+    return awt_create_item_colorizer(aw_root, gb_main, &AWT_species_selector);
+}
 // ##########################################
 // ##########################################
 // ###                                    ###
@@ -781,9 +787,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     char       *tree_name          = awr->awar_string(awar_tree)->read_string();
     char       *existing_tree_name = GBT_existing_tree(gb_main,tree_name);
     delete tree_name;
-// #if defined(DEBUG)
-//     existing_tree_name             = 0;
-// #endif                          // DEBUG
+
     if (existing_tree_name) {
         awr->awar(awar_tree)->write_string(existing_tree_name);
 
@@ -804,11 +808,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     GB_add_callback(gb_arb_presets,GB_CB_CHANGED,(GB_CB)AWT_expose_cb, (int *)ntw);
 
     bool is_genom_db = GEN_is_genom_db(gb_main, 0); //  is this a genome database ? (default = 0 = not a genom db)
-//     {
-//         GB_transaction  dummy(gb_main);
-//         GBDATA         *gb_main_genom_db  = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
-//         if (gb_main_genom_db) is_genom_db = GB_read_int(gb_main_genom_db) != 0;
-//     }
 
     // --------------------------------------------------------------------------------
     //     File
@@ -884,24 +883,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             NT_insert_mark_submenus(awm, ntw);
             awm->insert_separator();
+            AWMIMT( "gene_colors",	"Colors ...",			"C",	"mark_colors.hlp", AWM_ALL,AW_POPUP,   (AW_CL)NT_create_species_colorize_window, 0);
             AWMIMT( "selection_admin","Selections ...", "S", "configuration.hlp",AWM_SEQ2, NT_configuration_admin, (AW_CL)&(nt.tree->tree_root), (AW_CL)0);
-            //             AWMIMT( "create_config","Create Selection from Marked Species ...", "r", "configuration.hlp",AWM_SEQ2,	(AW_CB2)NT_create_configuration_cb, (AW_CL)&(nt.tree->tree_root), (AW_CL)0);
-            //             AWMIMT( "read_config",	"Extract Marked Species from Selection ...","x", "configuration.hlp",AWM_SEQ2,	(AW_CB)AW_POPUP, (AW_CL)NT_extract_configuration, 0 );
-
-            // AWMIMT( "del_config",	"Delete Selection ...",			    "D", "configuration.hlp",AWM_SEQ2,	(AW_CB)AW_POPUP, (AW_CL)NT_extract_configuration, 0 );
-
-            //             AWMIMT("count_marked",	"Count Marked Species",		"C","sp_count_mrk.hlp",	AWM_ALL, (AW_CB)NT_count_mark_all_cb,		(AW_CL)ntw, 0 );
-            //             awm->insert_separator();
-            //             AWMIMT("mark_all",	"Mark all Species",		"M","sp_mrk_all.hlp",	AWM_ALL, (AW_CB)NT_mark_all_cb,			(AW_CL)ntw, 0 );
-            //             AWMIMT("mark_tree",	"Mark Species in Tree",		"T","sp_mrk_tree.hlp",	AWM_EXP, (AW_CB)NT_mark_tree_cb,		(AW_CL)ntw, 0 );
-            //             awm->insert_separator();
-            //             AWMIMT("unmark_all",	"Unmark all Species",		"U","sp_umrk_all.hlp",	AWM_ALL, (AW_CB)NT_unmark_all_cb,		(AW_CL)ntw, 0 );
-            //             AWMIMT("unmark_tree",	"Unmark Species in Tree",	"n","sp_umrk_tree.hlp",	AWM_EXP, (AW_CB)NT_unmark_all_tree_cb,		(AW_CL)ntw, 0 );
-            //             awm->insert_separator();
-            //             AWMIMT("swap_marked",	"Swap Marked Species",		"w","sp_invert_mrk.hlp",AWM_ALL, (AW_CB)NT_invert_mark_all_cb,		(AW_CL)ntw, 0 );
-            //             awm->insert_separator();
-            //             AWMIMT( "create_config","Create Selection from Marked Species ...", "r", "configuration.hlp",AWM_SEQ2,	(AW_CB)NT_create_configuration_cb, (AW_CL)&(nt.tree->tree_root), 0);
-            //             AWMIMT( "read_config",	"Extract Marked Species from Selection ...","x", "configuration.hlp",AWM_SEQ2,	(AW_CB)AW_POPUP, (AW_CL)NT_extract_configuration, 0 );
 
             awm->insert_separator();
             awm->insert_sub_menu(0, "Destroy Species",		"y");
