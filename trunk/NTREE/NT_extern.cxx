@@ -718,7 +718,7 @@ static void NT_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
     int                              id         = int(cl_id);
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
     gb_assert(descriptor);
-    if (descriptor) AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_species, descriptor->get_maskname());
+    if (descriptor) AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_species, descriptor->get_internal_maskname(), descriptor->is_local_mask());
 }
 
 //  ----------------------------------------------------------------------
@@ -731,7 +731,7 @@ static void NT_create_mask_submenu(AW_window_menu_modes *awm) {
 //      void NT_test_input_mask(AW_root *root)
 //  -----------------------------------------------
 void NT_test_input_mask(AW_root *root) {
-    AWT_initialize_input_mask(root, gb_main, &item_type_species, "test.mask");
+    AWT_initialize_input_mask(root, gb_main, &item_type_species, "test.mask", true);
 }
 
 // ##########################################
