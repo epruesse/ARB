@@ -16,7 +16,7 @@
 extern GBDATA *gb_main;
 
 void create_extendeds_var(AW_root *aw_root, AW_default aw_def)
-    {
+{
     aw_root->awar_string( AWAR_EX_NAME, "" ,    aw_def);
     aw_root->awar_string( AWAR_EX_DEST, "" ,    aw_def);
 }
@@ -41,8 +41,8 @@ void extended_rename_cb(AW_window *aww){
     if (!error) GB_commit_transaction(gb_main);
     else    GB_abort_transaction(gb_main);
     if (error) aw_message(error);
-    delete source;
-    delete dest;
+    free(source);
+    free(dest);
 }
 
 void extended_copy_cb(AW_window *aww){
@@ -60,7 +60,7 @@ void extended_copy_cb(AW_window *aww){
         error = GB_copy(gb_dest,gb_extended);
         if (!error) {
             GBDATA *gb_name =
-            GB_search(gb_dest,"name",GB_STRING);
+                GB_search(gb_dest,"name",GB_STRING);
             error = GB_write_string(gb_name,dest);
         }
 
@@ -70,35 +70,42 @@ void extended_copy_cb(AW_window *aww){
     if (!error) GB_commit_transaction(gb_main);
     else    GB_abort_transaction(gb_main);
     if (error) aw_message(error);
-    delete source;
-    delete dest;
+    free(source);
+    free(dest);
 }
 void move_to_sepcies(AW_window *aww)
-    {
+{
     GB_ERROR error = 0;
     char *source = aww->get_root()->awar(AWAR_EX_NAME)->read_string();
     GB_begin_transaction(gb_main);
 
-    GBDATA *gb_species_data =   GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_dest =       GBT_find_species_rel_species_data(gb_species_data,source);
-    GBDATA *gb_extended =       GBT_find_SAI(gb_main,source);
+    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_dest         = GBT_find_species_rel_species_data(gb_species_data,source);
+    GBDATA *gb_extended     = GBT_find_SAI(gb_main,source);
+
     if (gb_dest) {
         error = "Sorry: species already exists";
-    }else   if (gb_extended) {
+    }
+    else if (gb_extended) {
         gb_dest = GB_create_container(gb_species_data,"species");
         error = GB_copy(gb_dest,gb_extended);
-    }else{
+    }
+    else {
         error = "Please select a SAI first";
     }
 
-    if (!error) GB_commit_transaction(gb_main);
-    else    GB_abort_transaction(gb_main);
-    if (error) aw_message(error);
-    delete source;
+    if (!error) {
+        GB_commit_transaction(gb_main);
+    }
+    else {
+        GB_abort_transaction(gb_main);
+        aw_message(error);
+    }
+    free(source);
 }
 
 AW_window *create_extended_rename_window(AW_root *root)
-    {
+{
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "RENAME_SAI", "SAI RENAME", 100, 100 );
     aws->load_xfig("ad_al_si.fig");
@@ -121,7 +128,7 @@ AW_window *create_extended_rename_window(AW_root *root)
 }
 
 AW_window *create_extended_copy_window(AW_root *root)
-    {
+{
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "COPY_SAI", "SAI COPY", 100, 100 );
     aws->load_xfig("ad_al_si.fig");
@@ -144,21 +151,27 @@ AW_window *create_extended_copy_window(AW_root *root)
 }
 
 void ad_extended_delete_cb(AW_window *aww){
-    GB_ERROR error = 0;
-    char *source = aww->get_root()->awar(AWAR_EX_NAME)->read_string();
+    GB_ERROR  error       = 0;
+    char     *source      = aww->get_root()->awar(AWAR_EX_NAME)->read_string();
     GB_begin_transaction(gb_main);
-    GBDATA *gb_extended =       GBT_find_SAI(gb_main,source);
+    GBDATA   *gb_extended = GBT_find_SAI(gb_main,source);
+
     if (gb_extended) {
-            error = GB_delete(gb_extended);
-    }else{
-            error = "Please select a SAI first";
+        error = GB_delete(gb_extended);
+    }
+    else {
+        error = "Please select a SAI first";
     }
 
-    if (!error) GB_commit_transaction(gb_main);
-    else    GB_abort_transaction(gb_main);
+    if (!error) {
+        GB_commit_transaction(gb_main);
+    }
+    else {
+        GB_abort_transaction(gb_main);
+        aw_message(error);
+    }
 
-    if (error) aw_message(error);
-    delete source;
+    free(source);
 }
 
 void AD_map_extended(AW_root *aw_root, AW_CL scannerid)
@@ -182,17 +195,16 @@ void ad_ad_remark(AW_window *aww){
         if (gb_ali){
             GBDATA *typ = GB_search(gb_ali,"_TYPE",GB_STRING);
             awr->awar_string("/tmp/ntree/sai/add_remark")->map(typ);
-            char *error = aw_input("Change SAI description",
-                    "/tmp/ntree/sai/add_remark");
-            delete error;
+            char *error = aw_input("Change SAI description", "/tmp/ntree/sai/add_remark");
+            free(error);
         }else{
             aw_message("Please select an alignment which is valid for the selected SAI");
         }
-        delete use;
+        free(use);
     }else{
         aw_message("Please select a SAI first");
     }
-    delete source;
+    free(source);
 }
 
 void ad_ad_group(AW_window *aww){
@@ -201,22 +213,22 @@ void ad_ad_group(AW_window *aww){
     char *source = awr->awar(AWAR_EX_NAME)->read_string();
     GBDATA *gb_sai = GBT_find_SAI(gb_main,source);
     if (gb_sai){
-        delete GBT_read_string2(gb_sai,"sai_group","default_group");
+        free(GBT_read_string2(gb_sai,"sai_group","default_group"));
         GBDATA *gb_gn = GB_search(gb_sai,"sai_group",GB_STRING);
         awr->awar_string("/tmp/ntree/sai/add_group")->map(gb_gn);
         char *res = aw_input("Assign Group to  SAI","/tmp/ntree/sai/add_group");
         if (!res || !strlen(res)){
-        GB_delete(gb_gn);
+            GB_delete(gb_gn);
         }
-        delete res;
+        free(res);
     }else{
         aw_message("Please select a SAI first");
     }
-    delete source;
+    free(source);
 }
 
 AW_window *create_extendeds_window(AW_root *aw_root)
-    {
+{
     AW_window_simple *aws = new AW_window_simple;
     aws->init( aw_root, "INFO_OF_SAI", "SAI INFORMATION", 200, 0 );
     aws->load_xfig("ad_ext.fig");
