@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : AWT_db_browser.cxx                                     // 
 //    Purpose   : Simple database viewer                                 // 
-//    Time-stamp: <Wed May/19/2004 15:16 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Fri Aug/27/2004 23:21 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2004              // 
@@ -560,6 +560,10 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
             }
             else {
                 content = GB_read_as_string(entry.gbd);
+                if (!content) {
+                    long size = GB_read_count(entry.gbd);
+                    content = GBS_global_string_copy("<%li bytes binary data>", size);
+                }
             }
 
             if (strlen(content)>(ENTRY_MAX_LENGTH+15)) {
@@ -641,8 +645,8 @@ static void child_changed_cb(AW_root *aw_root) {
             GBDATA         *gb_selected_node = GB_search_numbered(gb_main, fullpath, GB_FIND);
 
             string info;
-            info += GBS_global_string("child='%s'\n", child);
-            info += GBS_global_string("path='%s'\n", path);
+            // info += GBS_global_string("child='%s'\n", child);
+            // info += GBS_global_string("path='%s'\n", path);
             info += GBS_global_string("fullpath='%s'\n", fullpath);
 
             if (gb_selected_node == 0) {
@@ -656,6 +660,11 @@ static void child_changed_cb(AW_root *aw_root) {
 
                     aw_root->awar(AWAR_DBB_BROWSE)->write_string("");
                     aw_root->awar(AWAR_DBB_PATH)->write_string(fullpath);
+                }
+
+                char *callback_info = GB_get_callback_info(gb_selected_node);
+                if (callback_info) {
+                    info = info+"Callbacks:\n"+callback_info+'\n';
                 }
             }
 
