@@ -435,7 +435,7 @@ void create_primer_design_result_window( AW_window *aww )
 {
     if ( !pdrw ) {
         pdrw = new AW_window_simple;
-        pdrw->init( aww->get_root(), "PRD_RESULT", "Primer Design RESULT", 0, 400 );
+        pdrw->init( aww->get_root(), "PRD_RESULT", "Primer Design RESULT");
         pdrw->load_xfig( "pd_reslt.fig" );
 
         pdrw->at( "close" );
@@ -528,7 +528,7 @@ AW_window *create_primer_design_window( AW_root *root,AW_default def )
 
     AWUSE( def );
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "PRIMER_DESIGN","PRIMER DESIGN", 10, 10 );
+    aws->init( root, "PRIMER_DESIGN","PRIMER DESIGN");
 
     aws->load_xfig("prd_main.fig" );
 

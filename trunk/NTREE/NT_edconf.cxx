@@ -365,7 +365,7 @@ AW_window *NT_start_editor_on_old_configuration(AW_root *awr){
     if (aws) return (AW_window *)aws;
     awr->awar_string(AWAR_CONFIGURATION,"default_configuration",gb_main);
     aws = new AW_window_simple;
-    aws->init( awr, "SELECT_CONFIFURATION", "SELECT A CONFIGURATION", 400, 200 );
+    aws->init( awr, "SELECT_CONFIFURATION", "SELECT A CONFIGURATION");
     aws->at(10,10);
     aws->auto_space(0,0);
     awt_create_selection_list_on_configurations(gb_main,(AW_window *)aws,AWAR_CONFIGURATION);
@@ -608,7 +608,7 @@ AW_window *create_configuration_admin_window(AW_root *root, GBT_TREE **ptree) {
     init_config_awars(root);
 
     aws = new AW_window_simple;
-    aws->init(root, "SPECIES_SELECTIONS", "Species Selections", 0, 0);
+    aws->init(root, "SPECIES_SELECTIONS", "Species Selections");
     aws->load_xfig("nt_selection.fig");
 
     aws->at("close");

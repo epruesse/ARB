@@ -965,7 +965,7 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
 
     aws = new AW_window_simple;
 
-    aws->init( awr, "ARB_IMPORT","ARB IMPORT", 400, 100 );
+    aws->init( awr, "ARB_IMPORT","ARB IMPORT");
     aws->load_xfig("awt/import_db.fig");
 
     aws->at("close");

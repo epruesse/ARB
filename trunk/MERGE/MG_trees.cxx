@@ -65,7 +65,7 @@ void MG_tree_rename_cb(AW_window *aww,GBDATA *gbd, int tree_nr){
 AW_window *MG_create_tree_rename_window1(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "MERGE_RENAME_TREE_1", "TREE RENAME 1", 100, 100 );
+    aws->init( root, "MERGE_RENAME_TREE_1", "TREE RENAME 1");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -88,7 +88,7 @@ AW_window *MG_create_tree_rename_window1(AW_root *root)
 AW_window *MG_create_tree_rename_window2(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "MERGE_RENAME_TREE_2", "TREE RENAME 2", 100, 100 );
+    aws->init( root, "MERGE_RENAME_TREE_2", "TREE RENAME 2");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -167,7 +167,7 @@ AW_window *MG_merge_trees_cb(AW_root *awr){
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( awr, "MERGE_TREES", "MERGE TREES", 10, 10 );
+    aws->init( awr, "MERGE_TREES", "MERGE TREES");
     aws->load_xfig("merge/trees.fig");
 
     aws->button_length(20);

@@ -175,7 +175,7 @@ static void update_ptserver_button(AW_root *aw_root, AW_CL cl_varname) {
 AW_window *awt_popup_selection_list_on_pt_servers(AW_root *aw_root, const char *varname) {
     AW_window_simple *aw_popup = new AW_window_simple;
 
-    aw_popup->init(aw_root, "SELECT_PT_SERVER", "Select a PT-Server", 100, 100);
+    aw_popup->init(aw_root, "SELECT_PT_SERVER", "Select a PT-Server");
     aw_popup->auto_space(10, 10);
 
     aw_popup->at_newline();
@@ -557,7 +557,7 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid)
 
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SAVE_SELECTCION_BOX", "SAVE BOX", 10, 10 );
+    aws->init( aw_root, "SAVE_SELECTCION_BOX", "SAVE BOX");
     aws->load_xfig("sl_s_box.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -624,7 +624,7 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
     aw_root->awar_string( filter, "list");
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "LOAD_SELECTION_BOX", "Load box", 10, 10 );
+    aws->init( aw_root, "LOAD_SELECTION_BOX", "Load box");
     aws->load_xfig("sl_l_box.fig");
 
     aws->at("close");
@@ -682,7 +682,7 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
     {
         char title[100];
         sprintf(title, "Load %s", load_what);
-        aws->init( aw_root, title, title, 600, 600);
+        aws->init( aw_root, title, title);
         aws->load_xfig("load_box.fig");
     }
 
@@ -833,7 +833,7 @@ AW_window *awt_open_macro_window(AW_root *aw_root,const char *application_id){
     static AW_window_simple *aws = 0;
     if (aws) return aws;
     aws = new AW_window_simple;
-    aws->init( aw_root, "MACROS", "MACROS", 10, 10 );
+    aws->init( aw_root, "MACROS", "MACROS");
     aws->load_xfig("macro_select.fig");
 
     aw_root->awar_string(AWAR_MACRO_FILENAME,"");

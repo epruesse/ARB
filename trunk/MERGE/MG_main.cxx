@@ -46,7 +46,7 @@ AW_window *MG_save_source_cb(AW_root *aw_root, char *base_name)
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "MERGE_SAVE_DB_I", "SAVE ARB DB I", 10, 10 );
+    aws->init( aw_root, "MERGE_SAVE_DB_I", "SAVE ARB DB I");
     aws->load_xfig("sel_box.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -87,7 +87,7 @@ AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
     aw_root->awar_string( AWAR_DB_COMMENT, "<no description>", gb_dest);
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "MERGE_SAVE_WHOLE_DB", "SAVE WHOLE DATABASE", 10, 10 );
+    aws->init( aw_root, "MERGE_SAVE_WHOLE_DB", "SAVE WHOLE DATABASE");
     aws->load_xfig("sel_box.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -146,7 +146,7 @@ AW_window *MG_save_quick_result_cb(AW_root *aw_root, char *base_name)
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "SAVE_CHANGES_OF_DB_II_AS", "SAVE CHANGES TO DB2 AS", 10, 10 );
+    aws->init( aw_root, "SAVE_CHANGES_OF_DB_II_AS", "SAVE CHANGES TO DB2 AS");
     aws->load_xfig("sel_box.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -180,7 +180,7 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled)
     if (aww) aww->hide();
 
     AW_window_simple_menu *awm = new AW_window_simple_menu();
-    awm->init(aw_root,"ARB_MERGE", "ARB_MERGE", 0,0,400,100);
+    awm->init(aw_root,"ARB_MERGE", "ARB_MERGE");
     awm->load_xfig("merge/main.fig");
 
     awm->create_menu(       0,   "File",     "F", "merge_file.hlp",  AWM_ALL );
@@ -296,7 +296,7 @@ void MG_start_cb(AW_window *aww)
 AW_window *create_merge_init_window(AW_root *awr)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( awr, "MERGE_SELECT_DATABASES", "MERGE SELECT TWO DATABASES", 100, 100 );
+    aws->init( awr, "MERGE_SELECT_DATABASES", "MERGE SELECT TWO DATABASES");
     aws->load_xfig("merge/startup.fig");
 
     aws->button_length( 10 );

@@ -48,7 +48,7 @@ NT_open_select_tree_window(AW_root *awr,char *awar_tree)
     AW_window_simple *aws;
 
     aws = new AW_window_simple;
-    aws->init( awr, "SELECT_TREE", "SELECT A TREE", 400, 200 );
+    aws->init( awr, "SELECT_TREE", "SELECT A TREE");
     aws->load_xfig("select_simple.fig");
 
     aws->at("selection");
@@ -85,7 +85,7 @@ NT_open_select_alignment_window(AW_root *awr)
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( awr, "SELECT_ALIGNMENT", "SELECT AN ALIGNMENT", 400, 200 );
+    aws->init( awr, "SELECT_ALIGNMENT", "SELECT AN ALIGNMENT");
     aws->load_xfig("select_simple.fig");
 
     aws->at("selection");

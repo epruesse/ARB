@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : awt_advice.cpp                                         //
 //    Purpose   :                                                        //
-//    Time-stamp: <Wed Feb/05/2003 17:44 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Aug/14/2003 15:47 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2002              //
@@ -130,7 +130,7 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
         AW_window_simple *aws = new AW_window_simple; // do not delete (ARB will crash)
 
         if (!title) title = "Please read carefully";
-        aws->init(advice_root, "Advice", GBS_global_string("ARB: %s", title), 0, 0);
+        aws->init(advice_root, "Advice", GBS_global_string("ARB: %s", title));
         aws->load_xfig("awt/advice.fig");
 
         bool has_help     = type & AWT_ADVICE_HELP;

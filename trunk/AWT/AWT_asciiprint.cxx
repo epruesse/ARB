@@ -308,7 +308,7 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print,const
         return;
     }
     aws = new AW_window_simple();
-    aws->init(awr,"PRINT","PRINT",20,30);
+    aws->init(awr,"PRINT","PRINT");
     aws->load_xfig("awt/ascii_print.fig");
     awr->awar_string(AWAR_APRINT_TITLE);
     awr->awar_string(AWAR_APRINT_TEXT)					->add_callback(awt_aps_text_changed);

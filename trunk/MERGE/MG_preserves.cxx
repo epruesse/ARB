@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_preserves.cxx                                       //
 //    Purpose   : find candidates for alignment preservation             //
-//    Time-stamp: <Fri Aug/01/2003 12:41 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Aug/14/2003 15:33 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -396,7 +396,7 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
 
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(aw_root, "SELECT_PRESERVES", "SELECT PRESERVES", 10, 10);
+    aws->init(aw_root, "SELECT_PRESERVES", "SELECT PRESERVES");
     aws->load_xfig("merge/preserves.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);

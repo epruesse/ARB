@@ -145,7 +145,7 @@ void AWT_create_select_nds_window(AW_window *aww,char *key_text,AW_CL cgb_main)
     aw_root->awar("tmp/viewkey/key_text")->map(key_text);
     if (!win) {
         AW_window_simple *aws = new AW_window_simple;
-        aws->init( aw_root, "NDS", "NDS_SELECT", 200, 0 );
+        aws->init( aw_root, "NDS", "NDS_SELECT");
         aws->load_xfig("awt/nds_sel.fig");
         aws->button_length(13);
 
@@ -185,7 +185,7 @@ void AWT_create_select_srtaci_window(AW_window *aww,AW_CL awar_acisrt,AW_CL awar
     if (!win) {
         aw_root->awar_string(AWAR_SELECT_ACISRT_PRE);
         AW_window_simple *aws = new AW_window_simple;
-        aws->init( aw_root, "SRT_ACI_SELECT", "SRT_ACI_SELECT", 200, 0 );
+        aws->init( aw_root, "SRT_ACI_SELECT", "SRT_ACI_SELECT");
         aws->load_xfig("awt/srt_select.fig");
         aws->button_length(13);
 
@@ -239,7 +239,7 @@ static void nds_restore_config(AW_window *aww, const char *stored, AW_CL, AW_CL)
 AW_window *AWT_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "NDS_PROPS", "NDS", 200, 0 );
+    aws->init( aw_root, "NDS_PROPS", "NDS");
     aws->load_xfig("awt/nds.fig");
     aws->auto_space(10,5);
 

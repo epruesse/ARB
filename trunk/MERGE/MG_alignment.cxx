@@ -202,7 +202,7 @@ AW_window *create_alignment_copy_window(AW_root *root,AW_CL db_nr)
     AW_window_simple *aws = new AW_window_simple;
     char header[80];
     sprintf(header,"ALIGNMENT COPY %li",db_nr);
-    aws->init( root, header, header, 10,10 );
+    aws->init( root, header, header);
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -228,7 +228,7 @@ AW_window *MG_create_alignment_rename_window(AW_root *root,AW_CL db_nr)
     AW_window_simple *aws = new AW_window_simple;
     char header[80];
     sprintf(header,"ALIGNMENT RENAME %li",db_nr);
-    aws->init( root, header,header, 10,10 );
+    aws->init( root, header,header);
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -277,7 +277,7 @@ AW_window *MG_create_alignment_create_window(AW_root *root,AW_CL db_nr)
     AW_window_simple *aws = new AW_window_simple;
     char header[80];
     sprintf(header,"ALIGNMENT CREATE %li",db_nr);
-    aws->init( root, header,header, 10,10 );
+    aws->init( root, header,header);
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -312,7 +312,7 @@ AW_window *MG_create_alignment_window(AW_root *root,AW_CL db_nr)
     AW_window_simple *aws = new AW_window_simple;
     char header[80];
     sprintf(header,"ALIGNMENT CONTROL %li",db_nr);
-    aws->init( root, header, header, 10,10 );
+    aws->init( root, header, header);
     aws->load_xfig("merge/ad_align.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -393,7 +393,7 @@ AW_window *MG_merge_alignment_cb(AW_root *awr){
     awr->awar(AWAR_ALI2)->add_callback( (AW_RCB)MG_alignment_vars_callback,(AW_CL)gb_dest,2);
 
     aws = new AW_window_simple;
-    aws->init( awr, "MERGE_ALIGNMENTS", "MERGE ALIGNMENTS", 10,10 );
+    aws->init( awr, "MERGE_ALIGNMENTS", "MERGE ALIGNMENTS");
     aws->load_xfig("merge/alignment.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);

@@ -231,7 +231,7 @@ AW_window *NT_searchManuallyNames(AW_root *aw_root /*, AW_CL*/ )
 {
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SEARCH_VALID_NAMES_MANUALLY", "Search Names Manually", 50,10 );
+    aws->init( aw_root, "SEARCH_VALID_NAMES_MANUALLY", "Search Names Manually");
     aws->load_xfig("ad_selManNam.fig");
 
     aws->at("close");

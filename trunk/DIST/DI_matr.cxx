@@ -46,7 +46,7 @@ void delete_matrix_cb(AW_root *dummy)
 AW_window *create_dna_matrix_window(AW_root *aw_root){
     AW_window_simple *aws = 0;
     aws = new AW_window_simple();
-    aws->init( aw_root, "SET_DNA_MATRIX","SET MATRIX", 10, 10 );
+    aws->init( aw_root, "SET_DNA_MATRIX","SET MATRIX");
     aws->auto_increment(50,50);
     aws->button_length(10);
     aws->callback(AW_POPDOWN);
@@ -939,7 +939,7 @@ AW_window *create_save_matrix_window(AW_root *aw_root, char *base_name)
     static AW_window_simple *aws = 0;
     if (aws) return aws;
     aws = new AW_window_simple;
-    aws->init( aw_root, "SAVE_MATRIX", "Save Matrix", 10, 10 );
+    aws->init( aw_root, "SAVE_MATRIX", "Save Matrix");
     aws->load_xfig("sel_box.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -971,7 +971,7 @@ AW_window *create_save_matrix_window(AW_root *aw_root, char *base_name)
 AW_window *awt_create_select_cancel_window(AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "SELECT_CHARS_TO_CANCEL_COLOUM", "CANCEL SELECT", 10, 10 );
+    aws->init( aw_root, "SELECT_CHARS_TO_CANCEL_COLOUM", "CANCEL SELECT");
     aws->load_xfig("ph_cancel.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -1295,7 +1295,7 @@ static void ph_define_save_tree_name_cb(AW_window *aww) {
 
 AW_window *create_matrix_window(AW_root *aw_root) {
     AW_window_simple_menu *aws = new AW_window_simple_menu;
-    aws->init( aw_root, "NEIGHBOR JOINING", "NEIGHBOR JOINING", 900,900,10, 10 );
+    aws->init( aw_root, "NEIGHBOR JOINING", "NEIGHBOR JOINING");
     aws->load_xfig("ph_ge_ma.fig");
     aws->button_length( 10 );
 

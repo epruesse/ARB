@@ -274,7 +274,7 @@ void nt_intro_start_import(AW_window *aws)
 AW_window *nt_create_intro_window(AW_root *awr)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( awr, "ARB_INTRO", "ARB INTRO", 400, 100 );
+    aws->init( awr, "ARB_INTRO", "ARB INTRO");
     aws->load_xfig("arb_intro.fig");
 
     aws->callback( (AW_CB0)exit);

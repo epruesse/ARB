@@ -174,7 +174,7 @@ AW_window *create_species_join_window(AW_root *root)
     root->awar_string(AWAR_SPECIES_JOIN_SEP2,"#",AW_ROOT_DEFAULT);
 
     aws = new AW_window_simple;
-    aws->init( root, "JOIN_SPECIES", "JOIN SPECIES", 600, 200 );
+    aws->init( root, "JOIN_SPECIES", "JOIN SPECIES");
     aws->load_xfig("join_species.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_configs.cxx                                         //
 //    Purpose   : Merge editor configurations                            //
-//    Time-stamp: <Wed Jul/23/2003 11:46 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Aug/14/2003 15:33 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -74,7 +74,7 @@ void MG_config_rename_cb(AW_window *aww, GBDATA *gbd, int config_nr) {
 
 AW_window *MG_create_config_rename_window1(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "MERGE_RENAME_CONFIG_1", "CONFIGURATION RENAME 1", 100, 100 );
+    aws->init( root, "MERGE_RENAME_CONFIG_1", "CONFIGURATION RENAME 1");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -96,7 +96,7 @@ AW_window *MG_create_config_rename_window1(AW_root *root) {
 
 AW_window *MG_create_config_rename_window2(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "MERGE_RENAME_CONFIG_2", "CONFIGURATION RENAME 2", 100, 100 );
+    aws->init( root, "MERGE_RENAME_CONFIG_2", "CONFIGURATION RENAME 2");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -183,7 +183,7 @@ AW_window *MG_merge_configs_cb(AW_root *awr) {
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( awr, "MERGE_CONFIGS", "MERGE CONFIGS", 10, 10 );
+    aws->init( awr, "MERGE_CONFIGS", "MERGE CONFIGS");
     aws->load_xfig("merge/configs.fig");
 
     aws->button_length(20);

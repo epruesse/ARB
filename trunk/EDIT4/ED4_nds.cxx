@@ -138,7 +138,7 @@ AW_window *ED4_create_nds_window(AW_root *root)
     //int y[NDS_COUNT];
     //int toggle_y, data_x;
 
-    aws->init(root, "NDS_PROPS", "NDS", 100, 100);
+    aws->init(root, "NDS_PROPS", "NDS");
     aws->load_xfig("edit4/nds.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);

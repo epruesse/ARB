@@ -150,7 +150,7 @@ static void www_restore_config(AW_window *aww, const char *stored_string, AW_CL 
 AW_window *AWT_open_www_window(AW_root *aw_root,AW_CL cgb_main){
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "WWW_PROPS", "WWW", 200, 0 );
+    aws->init( aw_root, "WWW_PROPS", "WWW");
     aws->load_xfig("awt/nds.fig");
     aws->auto_space(10,5);
 

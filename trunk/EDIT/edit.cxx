@@ -503,7 +503,7 @@ static void create_new_sequence(AW_window *aww,AED_window *aedw, int do_what)   
 static AW_window *create_new_seq_window(AW_root *root, AED_window *aedw)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "CREATE_SEQUENCE","CREATE SEQUENCE", 100, 100 );
+    aws->init( root, "CREATE_SEQUENCE","CREATE SEQUENCE");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -526,7 +526,7 @@ static AW_window *create_new_seq_window(AW_root *root, AED_window *aedw)
 static AW_window *create_old_seq_window(AW_root *root, AED_window *aedw)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "OPEN_SEQUENCE", "OPEN SEQUENCE", 100, 100 );
+    aws->init( root, "OPEN_SEQUENCE", "OPEN SEQUENCE");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -549,7 +549,7 @@ static AW_window *create_old_seq_window(AW_root *root, AED_window *aedw)
 static AW_window *create_new_copy_window(AW_root *root, AED_window *aedw)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "COPY_SELECTED_SEQUENCE", "COPY SELECTED SEQUENCE", 100, 100 );
+    aws->init( root, "COPY_SELECTED_SEQUENCE", "COPY SELECTED SEQUENCE");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -2071,7 +2071,7 @@ static void create_edit_variables(AW_root *root, AW_default awr, AED_window *aed
 
 static AW_window *create_edit_preset_window(AW_root *awr){
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( awr, "EDIT_PROPS", "EDIT_PROPERTIES", 400, 300 );
+    aws->init( awr, "EDIT_PROPS", "EDIT_PROPERTIES");
     aws->label_length( 25 );
     aws->button_length( 20 );
 
@@ -2119,7 +2119,7 @@ void aed_create_window(AED_root *aedr) {
     aed_window->init(aedr);
 
     aed_window->aww = awmm = new AW_window_menu;
-    awmm->init(aedr->aw_root,"ARB_EDIT", "ARB_EDIT",800,600,10,10);
+    awmm->init(aedr->aw_root,"ARB_EDIT", "ARB_EDIT",800,600);
 
     create_edit_variables(awmm->get_root(),aed_window->root->db,aed_window);
 

@@ -1143,7 +1143,7 @@ AW_window *ED4_zoom_message_window(AW_root *root, AW_CL)
 {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(root, "ZOOM_ERR_MSG", "Errors and warnings", 100, 100);
+    aws->init(root, "ZOOM_ERR_MSG", "Errors and warnings");
     aws->load_xfig("edit4/message.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -1413,7 +1413,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
         int   len = strlen(alignment_name)+35;
         char *buf = GB_give_buffer(len);
         snprintf(buf, len-1, "ARB_EDIT4 *%d* [%s]", ED4_window::no_of_windows+1, alignment_name);
-        awmm->init( aw_root, "ARB_EDIT4", buf, 800,600,20, 20 ); //create window
+        awmm->init( aw_root, "ARB_EDIT4", buf, 800,450);
     }
 
     *device     = awmm->get_device(AW_MIDDLE_AREA); //Points to Middle Area device

@@ -65,7 +65,7 @@ void AP_conservProfile2Gnuplot_callback(AW_window *aww) {
     if(!error){
         if (minX>0 || maxX>0)   fprintf(cmdFile, "set xrange [%i:%i]\n",minX,maxX);
         if (minY>0 || maxY>0)   fprintf(cmdFile, "set yrange [%i:%i]\n",minY,maxY);
-         
+
         fprintf(cmdFile, "plot \"%s\" %s title \"%s\"\n", fname, smooth, legend);
 
         if(dispPos)  fprintf(cmdFile, "replot \"%s\" title \"Base Positions\"\n", fname);
@@ -73,12 +73,12 @@ void AP_conservProfile2Gnuplot_callback(AW_window *aww) {
         fprintf(cmdFile, "pause -1 \"Press RETURN to close gnuplot\"\n");
     }
     fclose(cmdFile);
-    
+
     printf("command_file='%s'\n", command_file);
     char *script = GB_strdup(GBS_global_string("gnuplot %s && rm -f %s", command_file, command_file));
     GB_xcmd(script, true, true);          // execute GNUPLOT using command_file
 
-    free(script);  
+    free(script);
     free(smooth);
     free(fname);
 
@@ -90,7 +90,7 @@ AW_window *AP_openConservationPorfileWindow( AW_root *root ){
 
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init( root, "DISP_CONSERV_PROFILE_GNUPLOT", "Conservation Profile Using Base Frequency Filter", 10,10);
+    aws->init( root, "DISP_CONSERV_PROFILE_GNUPLOT", "Conservation Profile Using Base Frequency Filter");
     aws->load_xfig("conservProfile2Gnuplot.fig");
 
     root->awar_string(AP_AWAR_CONSPRO_SMOOTH_GNUPLOT);
@@ -145,7 +145,7 @@ AW_window *AP_openConservationPorfileWindow( AW_root *root ){
     aws->at("dispPos");
     aws->create_toggle(AP_AWAR_CONSPRO_GNUPLOT_DISP_POS);
 
-    aws->at("dispProfile"); 
+    aws->at("dispProfile");
     aws->callback(AP_conservProfile2Gnuplot_callback);
     aws->create_button("DISPLAY_PROFILE","SAVE & DISPLAY CONSERVATION PROFILE");
 

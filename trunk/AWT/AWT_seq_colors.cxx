@@ -21,32 +21,32 @@ void awt_awar_changed_cb(GBDATA *, int *cl, GB_CB_TYPE){
 
 AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc){
     char buf[256];
-	static AW_window_simple *aws = 0;
+    static AW_window_simple *aws = 0;
     if (aws) return aws;
-	aws = new AW_window_simple;
-	aws->init( awr, "SEQUENCE_COLOR_MAPPING", "SEQUENCE COLORS",  100, 100 );
+    aws = new AW_window_simple;
+    aws->init( awr, "SEQUENCE_COLOR_MAPPING", "SEQUENCE COLORS");
 
-	aws->at           ( 10,10 );
-	aws->auto_space(0,3);
+    aws->at           ( 10,10 );
+    aws->auto_space(0,3);
 
-	aws->callback     ( AW_POPDOWN );aws->create_button( "CLOSE", "CLOSE", "C" );
-	aws->callback     ( AW_POPUP_HELP,(AW_CL)"sequence_colors.hlp" );aws->create_button( "HELP", "HELP" );
-	aws->at_newline();
+    aws->callback     ( AW_POPDOWN );aws->create_button( "CLOSE", "CLOSE", "C" );
+    aws->callback     ( AW_POPUP_HELP,(AW_CL)"sequence_colors.hlp" );aws->create_button( "HELP", "HELP" );
+    aws->at_newline();
 
-	aws->label_length( 6 );
-	aws->button_length( 6 );
-	int set;
-	int elem;
+    aws->label_length( 6 );
+    aws->button_length( 6 );
+    int set;
+    int elem;
 
-	awr->awar_int(AWAR_SEQ_NAME_SELECTOR)->add_callback((AW_RCB)awt_awar_changed_cb,(AW_CL)asc,0);
-	aws->label("Select");
-	aws->create_toggle_field(AWAR_SEQ_NAME_SELECTOR,1);
-	for (set = 0; set < AWT_SEQ_COLORS_MAX_SET;set++){
-	    sprintf(buf,"S_%i",set);
-	    aws->insert_toggle( buf," ",set );
-	}
-	aws->update_toggle_field();
-	aws->at_newline();
+    awr->awar_int(AWAR_SEQ_NAME_SELECTOR)->add_callback((AW_RCB)awt_awar_changed_cb,(AW_CL)asc,0);
+    aws->label("Select");
+    aws->create_toggle_field(AWAR_SEQ_NAME_SELECTOR,1);
+    for (set = 0; set < AWT_SEQ_COLORS_MAX_SET;set++){
+        sprintf(buf,"S_%i",set);
+        aws->insert_toggle( buf," ",set );
+    }
+    aws->update_toggle_field();
+    aws->at_newline();
 
     for (int big_columns = 0; big_columns <= 1; ++big_columns) {
         aws->create_button(0,"Char");
@@ -57,10 +57,10 @@ AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc){
 
         buf[0] = 0; aws->create_button(0,buf); // empty
     }
-	aws->at_newline();
-	aws->auto_space(2,2);
+    aws->at_newline();
+    aws->auto_space(2,2);
 
-	for (elem = 0; elem < (AWT_SEQ_COLORS_MAX_ELEMS/2); elem++){
+    for (elem = 0; elem < (AWT_SEQ_COLORS_MAX_ELEMS/2); elem++){
         for (int big_columns = 0; big_columns <= 1; ++big_columns) {
             int my_elem = elem+big_columns*AWT_SEQ_COLORS_MAX_ELEMS/2;
 
@@ -76,11 +76,11 @@ AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc){
                 buf[0] = 0; aws->create_button(0,buf); // empty
             }
         }
-	    aws->at_newline();
-	}
+        aws->at_newline();
+    }
 
-	aws->window_fit();
-	return (AW_window *)aws;
+    aws->window_fit();
+    return (AW_window *)aws;
 }
 
 
@@ -135,7 +135,7 @@ void AWT_seq_colors::reload(){
 }
 
 AWT_seq_colors::AWT_seq_colors(GBDATA *gb_default, int _base_gc,
-			       AW_CB _cb,AW_CL _cd1,AW_CL _cd2){
+                               AW_CB _cb,AW_CL _cd1,AW_CL _cd2){
     aww = 0;
     cd1 = _cd1;
     cd2 = _cd2;
@@ -184,14 +184,14 @@ void AWT_reference::init(const char *species_name, const char *alignment_name) {
 
     init();
     if (gb_species){
-	GBDATA *gb_data = GBT_read_sequence(gb_species,alignment_name);
-	if (gb_data){
-	    reference = GB_read_as_string(gb_data);
-	    if (reference) {
-		ref_len = strlen(reference);
-		init_species_name = strdup(species_name);
-	    }
-	}
+        GBDATA *gb_data = GBT_read_sequence(gb_species,alignment_name);
+        if (gb_data){
+            reference = GB_read_as_string(gb_data);
+            if (reference) {
+                ref_len = strlen(reference);
+                init_species_name = strdup(species_name);
+            }
+        }
     }
 }
 

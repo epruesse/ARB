@@ -144,7 +144,7 @@ void species_create_cb(AW_window *aww){
 AW_window *create_species_rename_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "RENAME_SPECIES", "SPECIES RENAME", 100, 100 );
+    aws->init( root, "RENAME_SPECIES", "SPECIES RENAME");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -167,7 +167,7 @@ AW_window *create_species_rename_window(AW_root *root)
 AW_window *create_species_copy_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "COPY_SPECIES", "SPECIES COPY", 100, 100 );
+    aws->init( root, "COPY_SPECIES", "SPECIES COPY");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -190,7 +190,7 @@ AW_window *create_species_copy_window(AW_root *root)
 AW_window *create_species_create_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "CREATE_SPECIES","SPECIES CREATE", 100, 100 );
+    aws->init( root, "CREATE_SPECIES","SPECIES CREATE");
     aws->load_xfig("ad_al_si.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -370,7 +370,7 @@ AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector)
     AW_window_simple *aws = new AW_window_simple;
     awsa[selector->type]  = aws;
 
-    aws->init( root, "REORDER_FIELDS", "REORDER FIELDS",600, 200 );
+    aws->init( root, "REORDER_FIELDS", "REORDER FIELDS");
     aws->load_xfig("ad_kreo.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -476,7 +476,7 @@ AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector)
     awsa[selector->type]  = aws;
 
     aws = new AW_window_simple;
-    aws->init( root, "DELETE_FIELD", "DELETE FIELD", 600, 200 );
+    aws->init( root, "DELETE_FIELD", "DELETE FIELD");
     aws->load_xfig("ad_delof.fig");
     aws->button_length(6);
 
@@ -546,7 +546,7 @@ AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector)
     AW_window_simple *aws = new AW_window_simple;
     awsa[selector->type]  = aws;
 
-    aws->init( root, "CREATE_FIELD","CREATE A NEW FIELD", 400, 100 );
+    aws->init( root, "CREATE_FIELD","CREATE A NEW FIELD");
     aws->load_xfig("ad_fcrea.fig");
 
     aws->callback( (AW_CB0)AW_POPDOWN);
@@ -717,7 +717,7 @@ AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root,AW_CL cbs){
     aw_root->awar_string("next_neighbours/dest_field","tmp");
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "SEARCH_NEXT_RELATIVES_OF_LISTED", "Search Next Neighbours of Listed", 600, 0 );
+    aws->init( aw_root, "SEARCH_NEXT_RELATIVES_OF_LISTED", "Search Next Neighbours of Listed");
     aws->load_xfig("ad_spec_nnm.fig");
 
     aws->at("close");
@@ -752,7 +752,7 @@ AW_window *ad_spec_next_neighbours_create(AW_root *aw_root,AW_CL cbs){
     aw_root->awar_int("next_neighbours/max_hits",20);
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "SEARCH_NEXT_RELATIVE_OF_SELECTED", "Search Next Neighbours", 600, 0 );
+    aws->init( aw_root, "SEARCH_NEXT_RELATIVE_OF_SELECTED", "Search Next Neighbours");
     aws->load_xfig("ad_spec_nn.fig");
 
     aws->at("close");
@@ -789,10 +789,11 @@ AW_window *ad_spec_next_neighbours_create(AW_root *aw_root,AW_CL cbs){
 //      void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_Awar_Callback_Info)
 // -----------------------------------------------------------------------------------------------------------------
 void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_Awar_Callback_Info) {
-    AW_window          **aww_pointer  = (AW_window**)cl_pointer_to_aww;
-    Awar_Callback_Info  *cb_info      = (Awar_Callback_Info*)cl_Awar_Callback_Info;
-    AW_root             *awr          = cb_info->get_root();
-    char                *curr_species = awr->awar(cb_info->get_org_awar_name())->read_string();
+    AW_window **aww_pointer = (AW_window**)cl_pointer_to_aww;
+
+    Awar_Callback_Info *cb_info      = (Awar_Callback_Info*)cl_Awar_Callback_Info;
+    AW_root            *awr          = cb_info->get_root();
+    char               *curr_species = awr->awar(cb_info->get_org_awar_name())->read_string();
 
     if (*aww_pointer == aww) {  // first click on detach-button
         // create unique awar :
@@ -824,8 +825,8 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     AW_window_simple_menu *& aws = AWS[windowIdx];
 
     aws = new AW_window_simple_menu;
-    if (organismWindow) aws->init( aw_root, "ORGANISM_INFORMATION", "ORGANISM INFORMATION", 0,0,800, 0 );
-    else                aws->init( aw_root, "SPECIES_INFORMATION", "SPECIES INFORMATION", 0,0,800, 0 );
+    if (organismWindow) aws->init( aw_root, "ORGANISM_INFORMATION", "ORGANISM INFORMATION");
+    else                aws->init( aw_root, "SPECIES_INFORMATION", "SPECIES INFORMATION");
     aws->load_xfig("ad_spec.fig");
 
     aws->button_length(8);
@@ -881,7 +882,6 @@ AW_window *NT_create_organism_window(AW_root *aw_root) {
     return create_speciesOrganismWindow(aw_root, true);
 }
 
-
 AW_CL ad_query_global_cbs = 0;
 
 void ad_unquery_all(){
@@ -899,7 +899,7 @@ AW_window *ad_create_query_window(AW_root *aw_root)
         return (AW_window *)aws;
     }
     aws = new AW_window_simple_menu;
-    aws->init( aw_root, "SPECIES_QUERY", "SEARCH and QUERY", 0,0,500, 0 );
+    aws->init( aw_root, "SPECIES_QUERY", "SEARCH and QUERY");
     aws->create_menu(0,"More functions","f");
     aws->load_xfig("ad_query.fig");
 
