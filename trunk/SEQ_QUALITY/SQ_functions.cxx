@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.cxx                                       //
 //    Purpose   : Implementation of SQ_functions.h                       //
-//    Time-stamp: <Sun Nov/23/2003 12:35 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Dec/16/2003 09:18 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July - October 2003                        //
@@ -28,8 +28,8 @@
 #include "SQ_helix.h"
 #include "SQ_physical_layout.h"
 
-static int globalcounter  = 0;
-static int groupcounter   = 0;
+static int globalcounter  = -1;
+static int groupcounter   = -1;
 static int globalcounter_notree = 0;
 static int pass1_counter_notree = 0;
 static int pass2_counter_notree = 0;
@@ -638,21 +638,15 @@ GB_ERROR SQ_pass2_no_tree(SQ_GroupData* globalData, GBDATA *gb_main) {
 }
 
 
-int SQ_count_nr_of_groups(GBT_TREE *node, GBDATA *gb_main) {
+int SQ_count_nr_of_groups(GBT_TREE *node) {
+    // counts number of named groups in subtree
 
-    if (node->is_leaf){
-	return groupcounter;
-    }
+    if (node->is_leaf) return 0;
 
-    else {
-        int i = SQ_count_nr_of_groups(node->leftson, gb_main);
-	int j = SQ_count_nr_of_groups(node->rightson, gb_main);
-
-	if (node->name) {  //  group identified!
-	    groupcounter++;
-	}
-	return groupcounter;
-    }
+    return
+        (node->name != 0) +
+        SQ_count_nr_of_groups(node->leftson) +
+        SQ_count_nr_of_groups(node->rightson);
 }
 
 
@@ -713,6 +707,12 @@ GB_ERROR SQ_count_nr_of_species(GBDATA *gb_main) {
     return error;
 }
 
+
+
+void SQ_reset_counters(GBT_TREE *root) {
+    globalcounter = 0;
+    groupcounter  = SQ_count_nr_of_groups(root);
+}
 
 void SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data) {
 
