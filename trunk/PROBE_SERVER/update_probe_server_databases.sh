@@ -201,7 +201,7 @@ CLIENTDEST=$DEST_DIR/$CLIENTNAME
 
 if [ -f $CLIENTSOURCE ]; then
     echo Preparing client for download..
-    cp -p $CLIENTSOURCE > $CLIENTDEST
+    cp -p $CLIENTSOURCE $CLIENTDEST
 else
     echo "Could not update client version (file not found '$CLIENTSOURCE')"
     exit 1
