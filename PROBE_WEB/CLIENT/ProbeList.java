@@ -10,7 +10,7 @@ class ProbeList extends java.awt.List {
     private Probe      lastSelectedProbe;
     // private Probe      lastSelectedIndex = -1;
 
-    public ProbeList(ProbesGUI gui, Color back_color) {
+    public ProbeList(ProbesGUI gui, Color back_color, Font f) {
         this.gui = gui;
         setBackground(back_color);
         setVisible(true);
@@ -42,7 +42,7 @@ class ProbeList extends java.awt.List {
 
 //     public int getSelectedIndex() { return getSelectedIndex(); }
     public Probe getProbe(int index) { return probes == null ? null : probes.getProbe(index); }
-    
+
     public int getSortedIndexOf(Probe p) { return probes == null ? -1 : probes.getSortedIndexOf(p); }
     public int getSortedIndexOf(String probeSeq) { return probes == null ? -1 : probes.getSortedIndexOf(probeSeq); }
 
@@ -64,7 +64,7 @@ class ProbeList extends java.awt.List {
 
     public void selectProbe(int index) throws Exception {
         if (index != -1) {
-            System.out.println("selectProbe index="+index);
+            // System.out.println("selectProbe index="+index);
             select(index);
 
             Probe p = getProbe(index);
@@ -85,15 +85,14 @@ class ProbeList extends java.awt.List {
                     new_index = 0; // select first
                 }
             }
-            System.out.println("selectLastSelectedProbe (new_index="+new_index+")");
+            // System.out.println("selectLastSelectedProbe (new_index="+new_index+")");
             selectProbe(new_index);
         }
         else {
-            System.out.println("selectLastSelectedProbe selects first element)");
+            // System.out.println("selectLastSelectedProbe selects first element)");
             selectProbe(0);
         }
     }
-    // public Probe getLastSelectedProbe() { return lastSelectedProbe; }
 
     public void deselectCurrent() {
         int sel_idx = getSelectedIndex();
