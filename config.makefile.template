@@ -19,6 +19,9 @@ ECGS = 1# for newer Linux-versions
 
 # export DEBIAN = 1
 
+# uncomment next line for REDHAT systems
+# REDHAT = 1
+
 #********* Mac OSX ********
 
 # MACH   = DARWIN#
