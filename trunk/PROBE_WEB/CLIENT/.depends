@@ -10,6 +10,7 @@ Client.class : NodeProbes.java
 Client.class : Probe.java
 Client.class : ProbeList.java
 Client.class : ProbesGUI.java
+Client.class : ServerAnswer.java
 Client.class : Toolkit.java
 Client.class : TreeNode.java
 Client.class : TreeParser.java
@@ -108,4 +109,5 @@ TreeToolbar.class : Toolkit.java
 TreeToolbar.class : TreeDisplay.java
 TreeToolbar.class : TreeToolbar.java
 WindowClosingAdapter.class : ProbesGUI.java
+WindowClosingAdapter.class : Toolkit.java
 WindowClosingAdapter.class : WindowClosingAdapter.java
