@@ -701,9 +701,9 @@ void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl){
     delete val;
     ntw->refresh();
 }
-void NT_justify_branch_lenghs(AW_window *, AW_CL ntwcl){
+void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL){
     GB_transaction dummy(gb_main);
-    AWT_canvas *ntw = (AWT_canvas *)ntwcl;
+    AWT_canvas *ntw = (AWT_canvas *)cl_ntw;
     if (AWT_TREE(ntw)->tree_root){
         AWT_TREE(ntw)->tree_root->justify_branch_lenghs(gb_main);
         AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
@@ -1204,8 +1204,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         if (!clone) {
             awm->insert_sub_menu(0, "Add Species to Existing Tree", "A");
             {
-                AWMIMT( "arb_pars_quick",  "Parsimony (Quick add marked)", "Q", "pars.hlp",    AWM_TREE,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars -add_marked -quit &",0 );
-                AWMIMT( "arb_pars",        "Parsimony interactive",        "i", "pars.hlp",    AWM_TREE,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars &",    0 );
+                AWMIMT( "arb_pars_quick",  "ARB Parsimony (Quick add marked)", "Q", "pars.hlp",    AWM_TREE,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars -add_marked -quit &",0 );
+                AWMIMT( "arb_pars",        "ARB Parsimony interactive",        "i", "pars.hlp",    AWM_TREE,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars &",    0 );
                 GDE_load_menu(awm,"Incremental_Phylogeny");
             }
             awm->close_sub_menu();
@@ -1222,8 +1222,22 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         if (!clone) {
             awm->insert_sub_menu(0, "Build tree from sequence data",    "B");
             {
-                AWMIMT( "arb_dist",     "Neighbor Joining",     "J", "dist.hlp",    AWM_TREE,   (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0 );
-                GDE_load_menu(awm,"Phylogeny");
+                awm->insert_sub_menu(0, "Distance matrix methods", "D");
+                AWMIMT( "arb_dist",     "ARB Neighbor Joining",     "J", "dist.hlp",    AWM_TREE,   (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0 );
+                GDE_load_menu(awm,"Phylogeny_DistMatrix");
+                awm->close_sub_menu();
+                
+                awm->insert_sub_menu(0, "Maximum parisimony methods", "p");
+                GDE_load_menu(awm,"Phylogeny_MaxParsimony");
+                awm->close_sub_menu();
+                
+                awm->insert_sub_menu(0, "Maximum likelyhood methods", "l");
+                GDE_load_menu(awm,"Phylogeny_MaxLikelyhood");
+                awm->close_sub_menu();
+                
+                awm->insert_sub_menu(0, "Other methods", "O");
+                GDE_load_menu(awm,"Phylogeny_Other");
+                awm->close_sub_menu();
             }
             awm->close_sub_menu();
         }
@@ -1255,6 +1269,20 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("beautifyb_tree", "#beautifyb.bitmap", "", "resorttree.hlp", AWM_TREE, (AW_CB)NT_resort_tree_cb, (AW_CL)ntw, 2);
         }
         awm->close_sub_menu();
+        awm->insert_sub_menu(0, "Modify branches", "b");
+        {
+            AWMIMT("tree_remove_remark",     "Remove bootstraps",       "b", "trm_boot.hlp",      AWM_TREE, NT_remove_bootstrap,      (AW_CL)ntw, 0);            
+            SEP________________________SEP();
+            AWMIMT("tree_reset_lengths",     "Reset branchlengths",    "R", "tbl_reset.hlp",   AWM_TREE, NT_reset_branchlengths,   (AW_CL)ntw, 0); 
+            AWMIMT("justify_branch_lengths", "Justify branchlengths",  "J", "tbl_justify.hlp", AWM_TREE, NT_justify_branch_lenghs, (AW_CL)ntw, 0); 
+            AWMIMT("tree_scale_lengths",     "Scale Branchlengths",    "S", "tbl_scale.hlp",   AWM_TREE, NT_scale_tree,            (AW_CL)ntw, 0); 
+            SEP________________________SEP();
+            AWMIMT("tree_boot2len",      "Bootstraps -> Branchlengths", "", "tbl_boot2len.hlp", AWM_TREE, NT_move_boot_branch, (AW_CL)ntw, 0);
+            AWMIMT("tree_len2boot",      "Bootstraps <- Branchlengths", "", "tbl_boot2len.hlp", AWM_TREE, NT_move_boot_branch, (AW_CL)ntw, 1);
+
+        }
+        awm->close_sub_menu();
+        AWMIMT("mark_long_branches", "Mark long branches", "l", "mark_long_branches.hlp", AWM_EXP, (AW_CB)NT_mark_long_branches, (AW_CL)ntw, 0); 
 
         SEP________________________SEP();
 
@@ -1269,7 +1297,6 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         }
         SEP________________________SEP();
 
-        AWMIMT("tree_remove_remark", "Remove bootstrap values", "v", "trm_boot.hlp",   AWM_TREE, (AW_CB)NT_remove_bootstrap, (AW_CL)ntw,              0);
         AWMIMT("transversion",       "Transversion analysis",   "y", "trans_anal.hlp", AWM_TREE, (AW_CB)AW_POPUP_HELP,       (AW_CL)"trans_anal.hlp", 0);
 
         SEP________________________SEP();
@@ -1280,10 +1307,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             SEP________________________SEP();
         }
 
-        awm->insert_sub_menu(0, "Options",  "O");
+        awm->insert_sub_menu(0, "Other..",  "O");
         {
-            AWMIMT("mark_long_branches",              "Mark long branches",                         "l", "mark_long_branches.hlp", AWM_EXP, (AW_CB)NT_mark_long_branches,         (AW_CL)ntw, 0);
-            AWMIMT("justify_branch_lengths",          "Beautify branch lengths",                    "B", "beautify_bl.hlp",        AWM_EXP, (AW_CB)NT_justify_branch_lenghs,      (AW_CL)ntw, 0);
             AWMIMT("tree_pseudo_species_to_organism", "Change pseudo species to organisms in tree", "p", "tree_pseudo.hlp",        AWM_EXP, (AW_CB)NT_pseudo_species_to_organism, (AW_CL)ntw, 0);
         }
         awm->close_sub_menu();
