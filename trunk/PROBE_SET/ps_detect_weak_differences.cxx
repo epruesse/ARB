@@ -70,7 +70,7 @@ void PS_detect_weak_differences( const PS_NodePtr ps_root_node ) {
     IDvector   upperNodes;
     
     for (PS_NodeMapConstIterator i = ps_root_node->getChildrenBegin(); i != ps_root_node->getChildrenEnd(); ++i ) {
-        printf( "PS_detect_weak_differences_stepdown( %i, theMap, upperNodes, %i )\n",i->first,maxID );
+        if (i->first % 10 == 0) printf( "PS_detect_weak_differences_stepdown( %i, theMap, upperNodes, %i )\n",i->first,maxID );
         PS_detect_weak_differences_stepdown( i->second, theMap, upperNodes, maxID );
         if (!upperNodes.empty()) {
             printf( "unclean ids :" );
@@ -100,7 +100,7 @@ void PS_detect_weak_differences( const PS_NodePtr ps_root_node ) {
 int main( int argc,  char *argv[] ) {
 
     // open probe-set-database
-    if (argc < 1) {
+    if (argc < 2) {
         printf("Missing arguments\n Usage %s <database name>\n",argv[0]);
         exit(1);
     }
