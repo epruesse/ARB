@@ -1,6 +1,18 @@
-	mv lib/pts lib/pts.old
 	rm -f arb.tgz
-	tar cfvo -	demo.arb arb_install.sh arb_README.txt bin PERL5 PERL_SCRIPTS SH GDEHELP DEPOT Xlib \
-			`find lib/* ! -name '*.a' -print -type d -prune` \
-	|gzip >arb.tgz
-	mv lib/pts.old lib/pts
+    tar cfvo - demo.arb arb_install.sh arb_README.txt \
+        `(  find bin ! -type d; \
+            find PERL5 ! -type d; \
+            find PERL_SCRIPTS ! -type d; \
+            find SH ! -type d; \
+            find GDEHELP ! -type d; \
+            find DEPOT ! -type d; \
+            find Xlib ! -type d; \
+            find lib ! -type d | grep -v "/pts/") \
+        | grep -v "/CVS/"` \
+    |gzip >arb.tgz
+
+#	mv lib/pts lib/pts.old
+#	tar cfvo -	demo.arb arb_install.sh arb_README.txt bin PERL5 PERL_SCRIPTS SH GDEHELP DEPOT Xlib \
+#			`find lib/* ! -name '*.a' -print -type d -prune` \
+#	|gzip >arb.tgz
+#	mv lib/pts.old lib/pts
