@@ -176,6 +176,8 @@ void AWT_resize_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL cl2);
 
 AW_window *AWT_create_export_window(AW_root *root, AWT_canvas *ntw);
 
+AW_window *AWT_create_sec_export_window(AW_root *root, AWT_canvas *ntw);
+
 void AWT_create_print_window(AW_window *parent_win, AWT_canvas *ntw);
 
 
