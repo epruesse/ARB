@@ -50,7 +50,46 @@ void SEC_show_debug_toggled_cb(AW_root *awr, AW_CL cl_ntw)
     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
 
     root->set_show_debug(show_debug);
-    //    root->update(0);
+    ntw->refresh();
+}
+
+void SEC_show_helixNrs_toggled_cb(AW_root *awr, AW_CL cl_ntw)
+{
+    SEC_root *root = SEC_GRAPHIC->sec_root;
+    bool show_helix_numbers = awr->awar(AWAR_SECEDIT_SHOW_HELIX_NRS)->read_int();
+    AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
+
+    root->set_show_helixNrs(show_helix_numbers);
+    ntw->refresh();
+}
+
+void SEC_show_strSkeleton_toggled_cb(AW_root *awr, AW_CL cl_ntw)
+{
+    SEC_root *root = SEC_GRAPHIC->sec_root;
+    bool show_structure_skeleton = awr->awar(AWAR_SECEDIT_SHOW_STR_SKELETON)->read_int();
+    AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
+
+    root->set_show_strSkeleton(show_structure_skeleton);
+    ntw->refresh();
+}
+
+void SEC_hide_bonds_toggled_cb(AW_root *awr, AW_CL cl_ntw)
+{
+    SEC_root *root = SEC_GRAPHIC->sec_root;
+    bool hide_bonds = awr->awar(AWAR_SECEDIT_HIDE_BONDS)->read_int();
+    AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
+
+    root->set_hide_bonds(hide_bonds);
+    ntw->refresh();
+}
+
+void SEC_hide_bases_toggled_cb(AW_root *awr, AW_CL cl_ntw)
+{
+    SEC_root *root = SEC_GRAPHIC->sec_root;
+    bool hide_bases = awr->awar(AWAR_SECEDIT_HIDE_BASES)->read_int();
+    AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
+
+    root->set_hide_bases(hide_bases);
     ntw->refresh();
 }
 
@@ -199,6 +238,23 @@ void SEC_center_cb(AW_window *aw, AWT_canvas *ntw, AW_CL)
     }
 }
 
+/* TO FIT THE STRUCTURE IN TO WINDOW SIZE */
+
+void SEC_fit_window_cb(AW_window *aw, AWT_canvas *ntw, AW_CL){
+
+//     AW_device *device = aw->get_device(AW_MIDDLE_AREA);
+//     AW_rectangle screen;
+//     device->get_area_size(&screen);
+
+//     double windowWidth  = screen.b; 
+//     double windowHeight = screen.r;
+    
+//     ntw->tree_zoom(device, 0, 0,windowWidth,windowHeight);
+    ntw->zoom_reset();
+    ntw->refresh();
+    //    SEC_center_cb(aw,ntw,0);
+}
+
 
 void SEC_species_name_changed_cb(AW_root *awr, AWT_canvas *ntw){
     SEC_root * sec_root = SEC_GRAPHIC->sec_root;
@@ -218,7 +274,7 @@ void SEC_species_name_changed_cb(AW_root *awr, AWT_canvas *ntw){
         delete ali_name;
     }
 
-    sec_root->seqTerminal = ED4_find_seq_terminal(species_name); // initializing the seqTerminal to get the current terminal - yadhu
+    sec_root->seqTerminal = ED4_find_seq_terminal(species_name); // initializing the seqTerminal to get the current terminal 
 
     SEC_sequence_changed_cb( sec_root->gb_sequence, ntw, GB_CB_CHANGED);
 
@@ -425,8 +481,8 @@ static char *encode_xstring_rel_helix(GB_CSTR x_string, int xlength, BI_helix *h
 
                     if (no_of_helices==allocated) {
                         allocated += 100;
-                        rel_helix = (char*)realloc(rel_helix, sizeof(*rel_helix)*allocated);
-                    }
+			rel_helix = (char*)realloc(rel_helix, sizeof(*rel_helix)*allocated);
+		    }
                     rel_helix[no_of_helices++] = '0'+is_used_in_secondary_structure;
                     rel_helix[no_of_helices] = 0;
                     if (pos==(xlength-1)) {
@@ -536,7 +592,7 @@ static void export_structure_to_file(AW_window *, AW_CL /*cl_ntw*/)
 
         fprintf(out, "no of helices=%i\nlength of xstring=%i\nxstring_rel_helix=%s\n", no_of_helices, xlength, xstring_rel_helix);
         free(xstring_rel_helix);
-
+	
         fputs(ASS_EOF, out);
         fclose(out);
     }
@@ -766,13 +822,13 @@ AW_window *SEC_create_layout_window(AW_root *awr) {
     aws->at("help");
     aws->create_button("HELP","HELP","H");
 
-    aws->at("strand_dist");
-    aws->label("Distance between strands:");
-    aws->create_input_field(AWAR_SECEDIT_DIST_BETW_STRANDS);
+     aws->at("strand_dist");
+     aws->label("Distance between strands:");
+     aws->create_input_field(AWAR_SECEDIT_DIST_BETW_STRANDS);
 
 #ifdef DEBUG
     aws->at("debug");
-    aws->label("Show debugging info:");
+    aws->label("Show debugging info        :");
     aws->create_toggle(AWAR_SECEDIT_SHOW_DEBUG);
 #endif
 
@@ -797,11 +853,43 @@ AW_window *SEC_create_layout_window(AW_root *awr) {
     return aws;
 }
 
+/* TO CHANGE THE DISPLAY PROPERITIES IN THE SECENDORY EDITOR WINDOW - BASES, SKELETON, HELIX NUMBERS........ */
+
+AW_window *SEC_create_display_window(AW_root *awr) {
+    AW_window_simple *aws = new AW_window_simple;
+
+    aws->init(awr, "SEC_DISPLAY", "DISPLAY OPTIONS", 100, 50);
+    aws->load_xfig("sec_display.fig");
+
+    aws->at("helixNrs");
+    aws->label("Show Helix Numbers         :");
+    aws->create_toggle(AWAR_SECEDIT_SHOW_HELIX_NRS);
+
+    aws->at("strSkeleton");
+    aws->label("Display Structure Skeleton :");
+    aws->create_toggle(AWAR_SECEDIT_SHOW_STR_SKELETON);
+
+    aws->at("bases");
+    aws->label("Hide Bases                 :");
+    aws->create_toggle(AWAR_SECEDIT_HIDE_BASES);
+
+    aws->at("bonds");
+    aws->label("Hide Bonds                 :");
+    aws->create_toggle(AWAR_SECEDIT_HIDE_BONDS);
+
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    return aws;
+}
+
+
 AW_window *SEC_create_main_window(AW_root *awr){
     GB_transaction tscope(gb_main);
 
     AW_window_menu_modes *awm = new AW_window_menu_modes();
-    awm->init(awr,"ARB_SECEDIT", "ARB_SECEDIT", 800,600,10,10);
+    awm->init(awr,"ARB_SECEDIT", "ARB: SECONDARY STRUCTURE EDITOR WINDOW", 800,600,10,10);
 
     SEC_create_awars(awr, AW_ROOT_DEFAULT);
 
@@ -831,12 +919,13 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 1,0);
 #endif
 
-    awm->create_menu("props","Properties","r","properties.hlp", AWM_ALL);
-    awm->insert_menu_topic("props_menu",	"Menu: Colors and Fonts ...",	"M","props_frame.hlp",	AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
-    awm->insert_menu_topic("props_secedit",	"SECEDIT: Colors and Fonts ...","C","secedit_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
+    awm->create_menu("props","Options","O","properties.hlp", AWM_ALL);
+    //    awm->insert_menu_topic("props_menu",	"Menu: Colors and Fonts ...",	"M","props_frame.hlp",	AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
+    awm->insert_menu_topic("props_secedit",	"Change Colors and Fonts ...","C","secedit_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
     awm->insert_menu_topic("sec_layout", "Layout", "L", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_layout_window, 0);
+    awm->insert_menu_topic("display", "Change Display", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
     //    awm->insert_menu_topic("secStruct2xfig", "Edit view using XFIG", "X", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_export_window, 0);
-    awm->insert_menu_topic("save_props",	"Save Defaults (in ~/.arb_prop/secedit)",	"D","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
+    awm->insert_menu_topic("save_props",	"Save Options (~/.arb_prop/secedit)",	"O","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 
     awm->create_mode( 0, "zoom.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ZOOM);
     awm->create_mode( 0, "sec_modify.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_MOVE);
@@ -870,7 +959,7 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->create_button("HELP", "HELP","H");
 
     awm->callback( AW_help_entry_pressed );
-    awm->create_button(0,"?");
+    awm->create_button(0,"What`s this?");
 
     awm->callback((AW_CB)SEC_undo_cb,(AW_CL)ntw,(AW_CL)GB_UNDO_UNDO);
     awm->help_text("undo.hlp");
@@ -883,6 +972,9 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->callback((AW_CB)SEC_center_cb,(AW_CL)ntw,(AW_CL)0);
     awm->help_text("center.hlp");
     awm->create_button("Center", "Center");
+
+    awm->callback((AW_CB)SEC_fit_window_cb,(AW_CL)ntw,(AW_CL)0);
+    awm->create_button("fitWindow", "Fit To Window");
 
     awm->button_length(100);
     awm->at_newline();
@@ -904,7 +996,7 @@ main(int argc, char **argv){
     AW_default aw_default;
     aw_initstatus();
     aw_root = new AW_root;
-    aw_default = aw_root->open_default(".arb_prop/secedit.arb");
+    aw_default = aw_root->open_default("~/.arb_prop/secedit.arb");
     aw_root->init_variables(aw_default);
     aw_root->init("ARB_SECEDIT");
     gb_main = NULL;

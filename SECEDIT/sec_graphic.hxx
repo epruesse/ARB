@@ -14,7 +14,11 @@
 #define AWAR_SECEDIT_IMEXPORT_BASE 	"secedit/imexportbase"
 
 #define AWAR_SECEDIT_DIST_BETW_STRANDS 	"secedit/layout/dist_betw_strands"
-#define AWAR_SECEDIT_SHOW_DEBUG 	"secedit/layout/show_debug_info_for_yadhus_pleasure"
+#define AWAR_SECEDIT_SHOW_DEBUG 	"secedit/layout/show_debug_info"
+#define AWAR_SECEDIT_SHOW_HELIX_NRS 	"secedit/layout/show_helix_numbers"
+#define AWAR_SECEDIT_SHOW_STR_SKELETON 	"secedit/layout/show_structure_skeleton"
+#define AWAR_SECEDIT_HIDE_BASES 	"secedit/layout/hide_bases"
+#define AWAR_SECEDIT_HIDE_BONDS 	"secedit/layout/hide_bonds"
 
 #define AWAR_SECEDIT_STRONG_PAIRS 	"secedit/layout/pairs/strong" 		// Bonds
 #define AWAR_SECEDIT_NORMAL_PAIRS 	"secedit/layout/pairs/normal"
