@@ -96,6 +96,8 @@ char *pt_init_main_struct P_((PT_main *main, char *filename));
 extern "C" int server_shutdown P_((PT_main *pm, aisc_string passwd));
 extern "C" int broadcast P_((PT_main *main, int dummy));
 void PT_init_psg P_((void));
+void PT_get_names P_((const char **fullstring, char *first, char *second, char *third));
+void PT_init_map P_((void));
 int main P_((int argc, char **argv));
 
 /* PT_io.cxx */
@@ -113,11 +115,12 @@ long PT_rel_2_abs P_((long pos));
 /* PT_etc.cxx */
 void set_table_for_PT_N_mis P_((void));
 void pt_export_error P_((PT_local *locs, const char *error));
-extern "C" char *virt_name P_((PT_probematch *ml));
-extern "C" char *virt_fullname P_((PT_probematch *ml));
+extern "C" const char *virt_name P_((PT_probematch *ml));
+extern "C" const char *virt_fullname P_((PT_probematch *ml));
 int *table_copy P_((int *mis_table, int length));
 void table_add P_((int *mis_tabled, int *mis_tables, int length));
-char *ptpd_read_names P_((PT_local *locs, char *names_listi, char *checksumsi));
+char *ptpd_read_names P_((PT_local *locs, const char *names_list, const char *checksums));
+char *ptpd_read_names_old P_((PT_local *locs, char *names_listi, char *checksumsi));
 extern "C" bytestring *PT_unknown_names P_((struct_PT_pdc *pdc));
 int get_clip_max_from_length P_((int length));
 void PT_init_base_string_counter P_((char *str, char initval, int size));
