@@ -1028,13 +1028,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             AWMIMT( "new_names",    "Generate New Names",   "G", "sp_rename.hlp",   AWM_EXP, AW_POPUP,   (AW_CL)AWTC_create_rename_window,      (AW_CL)gb_main );
 
-#ifdef DEBUG
-
-            // AWMIMT("validNames",    "Import Valid Names",       "v","import_valid_names.hlp",   AWM_EXP, NT_importValidNames,   0, 0 );
-            // awm->insert_separator();
-            // AWMIMT("validNames",    "Valid names only",     "v","valid_names.hlp",  AWM_EXP, NT_insertValidNames,   0, 0 );
-            // awm->insert_separator();
-            // AWMIMT("validNames",    "Delete Valid Names",       "v","delet_valid_names.hlp",    AWM_EXP, NT_deleteValidNames,   0, 0 );
+#ifdef DEVEL_LOTHAR
 
             awm->insert_sub_menu(0, "Valid Names ... (lothar working)",     "");
             {
