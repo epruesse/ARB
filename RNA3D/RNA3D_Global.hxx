@@ -77,6 +77,11 @@ public:
 
 // Class to store all the GLOBAL variables that are used in the application
 
+class OpenGLGraphics;
+class Structure3D;
+class Texture2D;
+class GLRenderer;
+
 class RNA3D_Global {
 public:
     Widget      glw;
@@ -94,25 +99,22 @@ public:
     bool bMapSaiDispListCreated;
 
     float ROTATION_SPEED;
-	float saved_x, saved_y;
+    float saved_x, saved_y;
     float scale;
 
-    RNA3D_Global(){
-        OpenGLEngineState = -1;
-        iRotateMolecule   = 0;
-        bPointSpritesSupported           = false;
-        bEColiRefInitialised             = false;
-        bMapSaiDispListCreated           = false;
-        bAutoRotate                      = false;
-        bRotateMolecule                  = false;
-        bMapSearchStringsDispListCreated = false;
+    OpenGLGraphics *cGraphics;
+    Structure3D    *cStructure;
+    Texture2D      *cTexture;
+    GLRenderer     *cRenderer;
 
-        ROTATION_SPEED = 0.5;
-        scale = 0.01;
-    }
-    
-    ~RNA3D_Global(){
-    }
+    RNA3D_Global();
+    ~RNA3D_Global();
 };
 
-extern RNA3D_Global *GLOBAL;
+// global variables
+
+extern RNA3D_Global *RNA3D;
+extern GBDATA       *gb_main;
+
+void RNA3D_init_global_data();
+
