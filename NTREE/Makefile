@@ -283,8 +283,6 @@ NT_extern.o: nt_import.hxx
 NT_extern.o: nt_internal.h
 NT_extern.o: nt_join.hxx
 NT_extern.o: nt_sort.hxx
-NT_extern.o: nt_validManual.hxx
-NT_extern.o: nt_validNames.hxx
 NT_extern.o: ntree.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -401,7 +399,6 @@ NT_sort.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/awt.hxx
 
-NT_validManual.o: nt_validManual.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -416,7 +413,6 @@ NT_validManual.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_validNameParser.o: nt_validNameParser.hxx
 
 NT_validNames.o: nt_validNameParser.hxx
-NT_validNames.o: nt_validNames.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/arb_assert.h
