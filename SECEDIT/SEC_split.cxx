@@ -21,6 +21,7 @@ void SEC_loop::find(int pos, SEC_helix_strand *caller, SEC_segment **found_segme
         is_root = 1;
         caller = segment->get_next_helix();
     }
+    /* hello */
 
     segment_pointer = caller->get_next_segment();
 
