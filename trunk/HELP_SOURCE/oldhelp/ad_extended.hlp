@@ -12,15 +12,16 @@ TITLE		SAI Administration
 
 OCCURRENCE	ARB_NT/SAI/Admin
 
-DESCRIPTION	This tool allows to delete, rename, copy 'SAI' (see LINK{glossary.hlp})
-                entries of sequence associated information. 'SAI'
-		entries can be converted to species entries pressing the
-		<CONVERT TO SPECIES> button.
-
-		Select 'SAI' entry from the 'Sequence Associated Information'
+DESCRIPTION     Select 'SAI' entry from the 'Sequence Associated Information'
 		subwindow.
 
-		Press the corresponding buttons.
+                This tool allows to delete, rename and  copy 'SAI' (see LINK{glossary.hlp})
+                entries of sequence associated information.
+
+                Each SAI belongs to a group of SAIs. These groups occur in ARB_EDIT4.
+
+                'SAI' entries can be converted to species entries pressing the
+		<COPY TO SPECIES> button.
 
 		The entries and descriptive information are displayed in the
 		'Info Box' subwindow.
