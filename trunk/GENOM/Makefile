@@ -3,7 +3,6 @@
 .SUFFIXES: .o .cxx .c .depend
 
 CPP_OBJECTS =   \
-	GEN_read.o \
 	GEN_interface.o \
 	GEN_map.o \
 	GEN_graphic.o \
@@ -203,21 +202,6 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
-
-GEN_read.o: GEN.hxx
-GEN_read.o: GEN_local.hxx
-GEN_read.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GEN_read.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-GEN_read.o: $(ARBHOME)/INCLUDE/adGene.h
-GEN_read.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GEN_read.o: $(ARBHOME)/INCLUDE/arbdb.h
-GEN_read.o: $(ARBHOME)/INCLUDE/arbdbt.h
-GEN_read.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GEN_read.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GEN_read.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GEN_read.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GEN_read.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx
-GEN_read.o: $(ARBHOME)/INCLUDE/inline.h
 
 GEN_tools.o: GEN.hxx
 GEN_tools.o: GEN_local.hxx
