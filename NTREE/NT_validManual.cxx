@@ -18,7 +18,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "nt_validManual.hxx"
+// #include "nt_validManual.hxx"
 //#include "nt_validNameParser.hxx"
 
 #ifndef ARB_ASSERT_H
@@ -26,28 +26,31 @@
 #endif
 #define nt_assert(bed) arb_assert(bed)
 
+#define AWAR_SELECTED_VALNAME "tmp/validNames/selectedName"
+#define AWAR_INPUT_INITIALS   "tmp/validNames/inputInitials"
 
-extern GBDATA* gb_main;
-//extern GBDATA* GB_selected_species;
-// static AW_selection_list    *validNamesList;
+extern GBDATA *gb_main;
+
+struct selectValidNameStruct{
+    GBDATA            *gb_main;
+    AW_window         *aws;
+    AW_root           *awr;
+    AW_selection_list *validNamesList;
+    const char        *initials;
+};
 
 /*--------------------------creating and initializing AWARS----------------------------------------*/
 void NT_createValidNamesAwars(AW_root *aw_root, AW_default aw_def) {
-    aw_root->awar_string( AWAR_SELECTED_VALNAME,      "????" ,                        aw_def);
-    aw_root->awar_string( AWAR_INPUT_INITIALS,      "" ,                        aw_def);
+    aw_root->awar_string( AWAR_SELECTED_VALNAME, "????" , aw_def);
+    aw_root->awar_string( AWAR_INPUT_INITIALS,   "" ,     aw_def);
 }
 
-
-//struct selectValidNameStruct*
-void fillSelNamList(struct selectValidNameStruct* svnp){
-
-
+void fillSelNamList(struct selectValidNameStruct* svnp) {
     const char* searchstr = svnp -> initials;
     size_t length = strlen(searchstr);
     svnp-> aws-> clear_selection_list(svnp->validNamesList);
 
     GB_begin_transaction(gb_main);
-
 
     GBDATA* GB_validNamesCont = GB_find(gb_main, "VALID_NAMES", 0, down_level);
     if (!GB_validNamesCont){std::cout << "validNames Container not found" << std:: cout; }
@@ -59,23 +62,20 @@ void fillSelNamList(struct selectValidNameStruct* svnp){
     for (GBDATA *GB_validNamePair = GB_find(GB_validNamesCont, "pair", 0, down_level);
          GB_validNamePair && !err;
          GB_validNamePair = GB_find(GB_validNamePair,"pair" ,0,this_level|search_next)) {
-        //    if (!GB_validNamePair){std::cout << "GB_validNamePair not found" << std:: cout; return; }
+        
         // retrieve list of all species names
-
         GBDATA* actDesc = GB_find(GB_validNamePair, "DESCTYPE", 0, down_level);
         char* typeString = GB_read_string(actDesc);
         if (strcmp(typeString, "NOTYPE") != 0){
             GBDATA* newName = GB_find(GB_validNamePair, "NEWNAME", 0, down_level);
             char* validName = newName ? GB_read_string(newName) : 0;
-            //if (!validName){std::cout << "validName not found" << std:: cout; return; } // string
-
 
             if (!validName) {
                 err = GBS_global_string("Invalid names entry");
             }
 
             // comparison with searchstr goes here
-            //                         ptr to list, item to display, item value (here: equal)
+            // ptr to list, item to display, item value (here: equal)
 
             if (strncmp (validName, searchstr, length) == 0){
                 svnp->aws->insert_selection(svnp->validNamesList,validName, validName);
@@ -83,12 +83,8 @@ void fillSelNamList(struct selectValidNameStruct* svnp){
 
             free (validName);
         }
-
         free (typeString);
     }
-
-
-
 
     if (err) {
         GB_abort_transaction(gb_main);
@@ -104,18 +100,6 @@ void fillSelNamList(struct selectValidNameStruct* svnp){
 
 }
 
-
-
-//void awarTestFunction(AW_CL vns){
-// void awarTestFunction(AW_root *awr){
-
-//     //    const char* selectedName = ((struct selectValidNameStruct *)vns)->awr->awar(AWAR_INPUT_INITIALS)->read_string();
-//     const char* selectedName = awr->awar(AWAR_INPUT_INITIALS)->read_string();
-
-//     aw_message(GBS_global_string("now selected: %s\n",selectedName));
-
-// }
-
 void updateValNameList(AW_root *awr, AW_CL cl_svnp) {
     selectValidNameStruct *svnp = reinterpret_cast<selectValidNameStruct*>(cl_svnp);
     const char* selectedName = awr->awar(AWAR_INPUT_INITIALS)->read_string();
@@ -130,14 +114,10 @@ void updateValNameList(AW_root *awr, AW_CL cl_svnp) {
 #endif
 }
 
-
-
 struct selectValidNameStruct* createValNameList(GBDATA *gb_main,AW_window *aws, const char *awarName){
 #if defined(DUMP)
     aw_message("ValidNameSelectionList was created");
 #endif // DUMP
-    //     GBDATA *gb_presets;
-    //     AW_root *aw_root  = aws->get_root();
 
     static struct selectValidNameStruct* svnp = new struct selectValidNameStruct; // declared static
 
@@ -148,9 +128,6 @@ struct selectValidNameStruct* createValNameList(GBDATA *gb_main,AW_window *aws, 
 
     fillSelNamList(svnp);
     return svnp;
-
-
-
 }
 
 // this function transfer a the selected valid name upon mouse click on select button to selected species
@@ -160,9 +137,6 @@ void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
     char *selectedValName     = selManWindowRoot->get_root()->awar(AWAR_SELECTED_VALNAME)->read_string();
     char *selectedSpeciesName = selManWindowRoot->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
 
-    //    aw_message(GBS_global_string("actual marked species is %s", selectedSpeciesName));
-
-//     if (strncmp(selectedSpeciesName,"",strlen(selectedSpeciesName))==0) {
     if (strcmp(selectedSpeciesName,"")==0) {
         aw_message("No species selected!");
     }
@@ -173,7 +147,6 @@ void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
 
         GB_begin_transaction(gb_main);
         GB_ERROR err = 0;
-
 
         // begin own code
         GBDATA* GB_selectedSpecies = GBT_find_species(gb_main, selectedSpeciesName);
@@ -223,8 +196,6 @@ void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
     free(selectedSpeciesName);
     free(selectedValName);
 }
-
-
 
 // create the manual selsection window
 AW_window *NT_searchManuallyNames(AW_root *aw_root /*, AW_CL*/ )
