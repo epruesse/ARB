@@ -61,7 +61,7 @@ item:ClustalW DNA Alignment (fast)
 itemmeta: N
 itemmethod:(tr '"%//' '>' <in1 >clus_in ; \
             RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align \
-                                    -quicktree \
+                                    -quicktree $INTERACTIVE \
                                     -ktuple=$KTUPLE -topdiags=$TOPDIAGS \
                                     -window=$WINDOW -pairgap=$PAIRGAP \
                                     -score=$SCORE \
@@ -139,6 +139,12 @@ argmin:0.0
 argmax:1.0
 argvalue:0.5
 
+arg:INTERACTIVE
+arglabel:Interactive
+argtype:choice_menu
+argchoice:No:
+argchoice:Yes:-interactive
+
 in:in1
 informat:flat
 insave:
@@ -152,6 +158,7 @@ item:ClustalW DNA Alignment (slow & accurate)
 itemmeta: N
 itemmethod:(tr '"%//' '>' <in1 >clus_in ; \
             RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align \
+                                     $INTERACTIVE \
                                     -pwdnamatrix=$PWDNAMATRIX \
                                     -pwgapopen=$PWGOP -pwgapext=$PWGEP \
                                     -type=DNA -transweight=$TRANSWEIGHT \
@@ -220,6 +227,11 @@ argmin:0.0
 argmax:1.0
 argvalue:0.5
 
+arg:INTERACTIVE
+arglabel:Interactive
+argtype:choice_menu
+argchoice:No:
+argchoice:Yes:-interactive
 
 in:in1
 informat:flat
@@ -234,13 +246,13 @@ item:ClustalW Protein Alignment (fast)
 itemmeta: N
 itemmethod:(tr '"%//' '>' <in1 >clus_in ; \
             RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align \
-                                    -quicktree \
+                                    -quicktree  $INTERACTIVE \
                                     -ktuple=$KTUPLE -topdiags=$TOPDIAGS \
                                     -window=$WINDOW -pairgap=$PAIRGAP \
                                     -score=$SCORE \
                                     -type=PROTEIN -transweight=$TRANSWEIGHT \
                                     -gapopen=$GOP -gapext=$GEP -maxdiv=$MAXDIV \
-                                    -matrix=$MATRIX; \
+                                    -matrix=$MATRIX $NEGMATRIX; \
                            cat clus_in.pir | sed "s/^>DL;/#/g" | sed "s/^>P1;/%/g" | sed "s/^\*$//g" >out1; )) ; \
            /bin/rm -f clus_in* in1)
 
@@ -314,6 +326,17 @@ argmin:0.0
 argmax:1.0
 argvalue:0.5
 
+arg:NEGMATRIX
+arglabel:Use negative matrix
+argtype:choice_menu
+argchoice:No:
+argchoice:Yes:-negative
+
+arg:INTERACTIVE
+arglabel:Interactive
+argtype:choice_menu
+argchoice:No:
+argchoice:Yes:-interactive
 
 in:in1
 informat:flat
@@ -328,6 +351,7 @@ item:ClustalW Protein Alignment (slow & accurate)
 itemmeta: N
 itemmethod:(tr '"%//' '>' <in1 >clus_in ; \
             RUN_IN_WINDOW((clustalw -output=PIR -infile=clus_in -align \
+                                     $INTERACTIVE \
                                     -pwmatrix=$PWMATRIX \
                                     -pwgapopen=$PWGOP -pwgapext=$PWGEP \
                                     -type=PROTEIN -transweight=$TRANSWEIGHT \
@@ -406,6 +430,11 @@ argtype:choice_menu
 argchoice:No:
 argchoice:Yes:-negative
 
+arg:INTERACTIVE
+arglabel:Interactive
+argtype:choice_menu
+argchoice:No:
+argchoice:Yes:-interactive
 
 in:in1
 informat:flat
