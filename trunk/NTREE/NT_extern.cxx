@@ -776,22 +776,15 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         //      Genes
         //  -------------
 
-        int is_genom_db = 0;
+        bool is_genom_db = false;
         {
-            GB_transaction dummy(gb_main);
-            GBDATA *gb_main_genom_db = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
-            if (gb_main_genom_db) is_genom_db = GB_read_int(gb_main_genom_db);
+            GB_transaction  dummy(gb_main);
+            GBDATA         *gb_main_genom_db  = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
+            if (gb_main_genom_db) is_genom_db = GB_read_int(gb_main_genom_db) != 0;
         }
 
-        if (is_genom_db) {
-            awm->create_menu(0,"Genes","G","genes.hlp",	AWM_ALL);
-            {
-                AWMIMT( "gene_info", 	"Info (Copy Delete Rename Modify) ...", 	"",	"gene_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_window,	0 );
-                AWMIMT( "gene_search",	"Search and Query",			"",	"gene_search.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_query_window, 0 );
-                awm->insert_separator();
-                AWMIMT( "gene_map",	"Gene Map", "",	"gene_map.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_map, 0 );
-            }
-        }
+        if (is_genom_db) GEN_create_genes_submenu(awm, true);
+
         // --------------------------------------------------------------------------------
         //     Sequence
         // --------------------------------------------------------------------------------

@@ -1315,18 +1315,19 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 	}
 	if (awtqs->do_mark_pos_fig){
 		aws->at(awtqs->do_mark_pos_fig);
-		aws->help_text("mark.hlp");
+		aws->help_text("mark_list.hlp");
 		aws->callback((AW_CB)awt_do_mark_list,(AW_CL)cbs,1);
 		aws->create_button("MARK_LISTED_UNMARK_REST", "MARK LISTED\nUNMARK REST","M");
 	}
 	if (awtqs->do_unmark_pos_fig){
 		aws->at(awtqs->do_unmark_pos_fig);
-		aws->help_text("mark.hlp");
+		aws->help_text("unmark_list.hlp");
 		aws->callback((AW_CB)awt_do_mark_list,(AW_CL)cbs,0);
 		aws->create_button("UNMARK_LISTED_MARK_REST","UNMARK LISTED\nMARK REST","U");
 	}
 	if (awtqs->do_delete_pos_fig){
 		aws->at(awtqs->do_delete_pos_fig);
+		aws->help_text("del_list.hlp");
 		aws->callback((AW_CB)awt_delete_species_in_list,(AW_CL)cbs,0);
 		aws->create_button("DELETE_LISTED","DELETE LISTED","D");
 	}
@@ -1344,6 +1345,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 		aw_root->awar_string( cbs->awar_setvalue);
 
 		aws->at(awtqs->do_set_pos_fig);
+		aws->help_text("mod_field_list.hlp");
 		aws->callback(AW_POPUP,(AW_CL)create_awt_do_set_list,(AW_CL)cbs);
 		aws->create_button("WRITE_TO_FIELDS_OF_LISTED", "WRITE TO FIELDS\nOF LISTED","S");
 	}
@@ -1361,7 +1363,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 		sprintf(buffer,"tmp/arbdb_query_%i/awar_parspredefined",query_id);cbs->awar_parspredefined = strdup(buffer);aw_root->awar_string( cbs->awar_parspredefined);
 
 		if (awtqs->use_menu){
-		    aws->insert_menu_topic("mod_fields_of_listed","Modify Fields of Listed","F","mod_field_list.hlp",-1,AW_POPUP,(AW_CL)create_awt_open_parser,(AW_CL)cbs);
+		    sprintf(buffer, "Modify Fields of Listed %s", Items); aws->insert_menu_topic("mod_fields_of_listed",buffer,"F","mod_field_list.hlp",-1,AW_POPUP,(AW_CL)create_awt_open_parser,(AW_CL)cbs);
 		}else{
 		    aws->at(awtqs->open_parser_pos_fig);
 		    aws->callback(AW_POPUP,(AW_CL)create_awt_open_parser,(AW_CL)cbs);

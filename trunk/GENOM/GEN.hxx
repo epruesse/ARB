@@ -12,19 +12,27 @@
 #define GENOM_DB_TYPE  "genom_db" // main flag (true=genom db, false/missing=normal db)
 
 // --------------------------------------------------------------------------------
+// awars:
 
 #define AWAR_GENE_NAME "tmp/gene/name"
 
 void GEN_create_awars(AW_root *aw_root, AW_default aw_def);
 
 // --------------------------------------------------------------------------------
+// import:
 
 GB_ERROR GEN_read(GBDATA *gb_main, const char *filename, const char *ali_name);
+
+// --------------------------------------------------------------------------------
+// windows/menus:
 
 AW_window *GEN_create_gene_window(AW_root *aw_root);
 AW_window *GEN_create_gene_query_window(AW_root *aw_root);
 AW_window *GEN_map(AW_root *aw_root);
 
+void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE);
+    
+// --------------------------------------------------------------------------------
 // genes:
 
 inline GBDATA* GEN_get_gene_data(GBDATA *gb_species) { return GB_search(gb_species, "gene_data", GB_CREATE_CONTAINER); }
@@ -43,6 +51,7 @@ GBDATA* GEN_first_gene(GBDATA *gb_species);
 GBDATA* GEN_first_gene_rel_gene_data(GBDATA *gb_gene_data);
 GBDATA* GEN_next_gene(GBDATA *gb_gene);
 
+// --------------------------------------------------------------------------------
 // annotations:
 
 GBDATA* GEN_find_annotation(GBDATA *gb_gene, const char *name); // find existing annotation

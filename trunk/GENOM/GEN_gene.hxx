@@ -43,6 +43,7 @@ public:
     int Level() const { return level; }
     const string& Name() const { return name; }
     const GBDATA *GbGene() const { return gb_gene; }
+    GEN_root *Root() { return root; }
 };
 
 typedef set<GEN_gene> GEN_gene_set;
@@ -59,14 +60,16 @@ private:
     GEN_gene_set  gene_set;
     string        error_reason; // reason why we can't display gene_map
     long          length;       // length of organism sequence
-    long          bp_per_line;  // base positions per line
+//     long          bp_per_line;  // base positions per line
 
 public:
-    GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb_main_, const char *genom_alignment, int lines);
+    GEN_root(const char *species_name_, const char *gene_name_, GBDATA *gb_main_, const char *genom_alignment);
     virtual ~GEN_root();
 
     const string& GeneName() const { return gene_name; }
     const string& SpeciesName() const { return species_name; }
+
+    GBDATA *GbMain() { return gb_main; }
 
     void set_GeneName(const string& gene_name_) { gene_name = gene_name_; }
 

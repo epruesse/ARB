@@ -19,7 +19,7 @@
 #include <awt_canvas.hxx>
 #include <awt.hxx>
 
-#include "GEN.hxx"
+#include "GEN_local.hxx"
 #include "GEN_gene.hxx"
 #include "GEN_graphic.hxx"
 
@@ -108,20 +108,42 @@ void GEN_graphic::info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *c
     AWUSE(ct);
 }
 
-//  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-//      void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct)
-//  -------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) {
+//  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//      void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type, AW_pos screen_x, AW_pos screen_y, AW_clicked_line *cl, AW_clicked_text *ct)
+//  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type, AW_pos screen_x, AW_pos screen_y, AW_clicked_line *cl, AW_clicked_text *ct) {
+    AW_pos world_x;
+    AW_pos world_y;
+    device->rtransform(screen_x, screen_y, world_x, world_y);
+
+    switch (cmd) {
+        case AWT_MODE_ZOOM: {
+            break;
+        }
+        case AWT_MODE_MOD: {
+            if(button==AWT_M_LEFT) {
+                GEN_gene *gene = 0;
+                if (ct) gene   = (GEN_gene*)ct->client_data1;
+                if (cl) gene   = (GEN_gene*)cl->client_data1;
+
+                if (gene) {
+                    GB_transaction dummy(gb_main);
+                    aw_root->awar(AWAR_GENE_NAME)->write_string(gene->Name().c_str());
+                }
+            }
+            break;
+        }
+        default: {
+            gen_assert(0);
+            break;
+        }
+    }
 }
 
-#define GEN_LEVEL_HEIGHT_DRAW    60
-#define GEN_LEVEL_HEIGHT_SPACING 5
-#define GEN_LEVEL_HEIGHT         (GEN_LEVEL_HEIGHT_DRAW+GEN_LEVEL_HEIGHT_SPACING)
-#define GEN_ESTIMATED_MAXLEVEL   1
-#define GEN_WANTED_LINES         (70/GEN_ESTIMATED_MAXLEVEL)
-#define GEN_DISPLAY_WIDTH        (GEN_WANTED_LINES*GEN_LEVEL_HEIGHT*(GEN_ESTIMATED_MAXLEVEL+1)/2)
-#define GEN_TEXT_X_OFFSET        2
-#define GEN_TEXT_Y_OFFSET        -2
+// #define GEN_LEVEL_HEIGHT_DRAW    60
+// #define GEN_LEVEL_HEIGHT_SPACING 5
+// #define GEN_WANTED_LINES         (70/GEN_ESTIMATED_MAXLEVEL)
+// #define GEN_DISPLAY_WIDTH        (GEN_WANTED_LINES*GEN_LEVEL_HEIGHT*(GEN_ESTIMATED_MAXLEVEL+1)/2)
 
 //  ------------------------------------------------
 //      void GEN_root::paint(AW_device *device)
@@ -129,6 +151,20 @@ void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 void GEN_root::paint(AW_device *device) {
     int x = 0;
     int y = 0;
+
+    AW_root *aw_root = GEN_GRAPHIC->aw_root;
+
+    int display_width = aw_root->awar(AWAR_GENMAP_BASES_PER_LINE)->read_int();
+    int line_height   = aw_root->awar(AWAR_GENMAP_LINE_HEIGHT)->read_int();
+    int line_space    = aw_root->awar(AWAR_GENMAP_LINE_SPACE)->read_int();
+
+#define GEN_DISPLAY_WIDTH        display_width
+#define GEN_LEVEL_HEIGHT_DRAW    line_height
+#define GEN_LEVEL_HEIGHT_SPACING line_space
+#define GEN_LEVEL_HEIGHT         (GEN_LEVEL_HEIGHT_DRAW+GEN_LEVEL_HEIGHT_SPACING)
+#define GEN_ESTIMATED_MAXLEVEL   1
+#define GEN_TEXT_X_OFFSET        2
+#define GEN_TEXT_Y_OFFSET        -2
 
     if (error_reason.length()) {
         device->text(GEN_GC_DEFAULT, error_reason.c_str(), x, y, 0.0, -1, 0, 0, 0);
@@ -144,7 +180,7 @@ void GEN_root::paint(AW_device *device) {
     y += height_of_line;
 
     while (curr != gene_set.end()) { // for each line
-        long         next_line_first_pos = this_line_first_pos+bp_per_line;
+        long         next_line_first_pos = this_line_first_pos+GEN_DISPLAY_WIDTH;
         GEN_iterator first_on_next_line  = gene_set.end();
 
         for (; curr != gene_set.end() && curr->EndPos()<this_line_first_pos; ++curr) ;
@@ -165,12 +201,12 @@ void GEN_root::paint(AW_device *device) {
 
             if (curr->StartPos() >= this_line_first_pos) {
                 draw_left         = true;
-                this_x1           = (GEN_DISPLAY_WIDTH * (curr->StartPos()-this_line_first_pos)) / bp_per_line;
+                this_x1           = curr->StartPos()-this_line_first_pos;
             }
 
             if (curr->EndPos() < next_line_first_pos) {
                 draw_right = true;
-                this_x2    = (GEN_DISPLAY_WIDTH * (curr->EndPos()-this_line_first_pos)) / bp_per_line;
+                this_x2    = curr->EndPos()-this_line_first_pos;
             }
 
             int  line_gc    = GEN_GC_GENE;
@@ -181,12 +217,12 @@ void GEN_root::paint(AW_device *device) {
             if (is_marked) line_gc = text_gc = GEN_GC_MARKED;
             if (is_current) line_gc = text_gc = GEN_GC_CURSOR;
 
-            if (draw_left) device->line(line_gc, this_x1, this_y1, this_x1, this_y2, -1, 0, 0);
-            if (draw_right) device->line(line_gc, this_x2, this_y1, this_x2, this_y2, -1, 0, 0);
-            device->line(line_gc, this_x1, this_y1, this_x2, this_y1, -1, 0, 0);
-            device->line(line_gc, this_x1, this_y2, this_x2, this_y2, -1, 0, 0);
+            if (draw_left) device->line(line_gc, this_x1, this_y1, this_x1, this_y2, -1, (AW_CL)(&*curr), 0);
+            if (draw_right) device->line(line_gc, this_x2, this_y1, this_x2, this_y2, -1, (AW_CL)(&*curr), 0);
+            device->line(line_gc, this_x1, this_y1, this_x2, this_y1, -1, (AW_CL)(&*curr), 0);
+            device->line(line_gc, this_x1, this_y2, this_x2, this_y2, -1, (AW_CL)(&*curr), 0);
 
-            device->text(text_gc, curr->Name().c_str(), this_x1+GEN_TEXT_X_OFFSET, this_y2+GEN_TEXT_Y_OFFSET, 0.0, -1, (AW_CL)curr->GbGene(), 0, 0);
+            device->text(text_gc, curr->Name().c_str(), this_x1+GEN_TEXT_X_OFFSET, this_y2+GEN_TEXT_Y_OFFSET, 0.0, -1, (AW_CL)(&*curr), 0, 0);
         }
 
         if (first_on_next_line != gene_set.end()) curr = first_on_next_line;
@@ -213,7 +249,7 @@ void GEN_graphic::reinit_gen_root() {
     }
 
     if (!gen_root) {
-        gen_root = new GEN_root(species_name, gene_name, gb_main, "ali_genom", GEN_WANTED_LINES);
+        gen_root = new GEN_root(species_name, gene_name, gb_main, "ali_genom");
     }
 
     free(species_name);
