@@ -1573,6 +1573,53 @@ void AP_tree::remove_bootstrap(GBDATA *gb_main){
     this->leftson->remove_bootstrap(gb_main);
     this->rightson->remove_bootstrap(gb_main);
 }
+void AP_tree::reset_branchlengths(GBDATA *gb_main){
+    if (is_leaf) return;
+
+    leftlen = rightlen = 0.1;
+
+    leftson->reset_branchlengths(gb_main);
+    rightson->reset_branchlengths(gb_main);
+}
+
+void AP_tree::scale_branchlengths(GBDATA *gb_main, double factor) {
+    if (is_leaf) return;
+
+    leftlen  *= factor;
+    rightlen *= factor;
+
+    leftson->scale_branchlengths(gb_main, factor);
+    rightson->scale_branchlengths(gb_main, factor);
+}
+
+void AP_tree::bootstrap2branchlen(GBDATA *gb_main) { // copy bootstraps to branchlengths
+    if (is_leaf) {
+        set_branchlength(0.1);
+    }
+    else {
+        if (remark_branch && father) {
+            int    bootstrap = atoi(remark_branch);
+            double len       = (100-bootstrap)/100.0;
+            set_branchlength(len);
+        }
+        leftson->bootstrap2branchlen(gb_main);
+        rightson->bootstrap2branchlen(gb_main);
+    }
+}
+
+void AP_tree::branchlen2bootstrap(GBDATA *gb_main) { // copy branchlengths to bootstraps
+    if (remark_branch) {
+        delete remark_branch;
+        remark_branch = 0;
+    }
+    if (!is_leaf) {
+        remark_branch = GBS_global_string_copy("%i%%", 100-int(get_branchlength()*100.0));
+        
+        leftson->branchlen2bootstrap(gb_main);
+        rightson->branchlen2bootstrap(gb_main);
+    }
+}
+
 
 AP_tree ** AP_tree::getRandomNodes(int anzahl) {
     // function returns a random constructed tree
