@@ -951,6 +951,7 @@ AW_window *create_save_matrix_window(AW_root *aw_root, char *base_name)
     aws->create_option_menu("tmp/dist/save_matrix/type");
     aws->insert_default_option("Phylip Format (Lower Triangular Matrix)","P",PH_SAVE_PHYLIP_COMP);
     aws->insert_option("Readable (using NDS)","R",PH_SAVE_READABLE);
+    aws->insert_option("Tabbed (using NDS)","R",PH_SAVE_TABBED);
     aws->update_option_menu();
 
     awt_create_selection_box((AW_window *)aws,base_name);
