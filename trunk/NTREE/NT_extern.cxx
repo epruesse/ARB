@@ -71,28 +71,6 @@ AW_window *create_tree_window(AW_root *aw_root,AWT_graphic *awd);
 
 #define F_ALL ((AW_active)-1)
 
-void NT_show_message(AW_root *awr)
-{
-    GB_transaction dummy(gb_main); // lock database to avoid insertion of new messages
-
-    char *msg = awr->awar(AWAR_ERROR_MESSAGES)->read_string();
-    if (msg[0]) {
-        while (msg[0]){
-            char *last_nl = strrchr(msg, '\n');
-            if (!last_nl) {
-                aw_message(msg);
-                msg[0] = 0;
-            }
-            else {
-                if (last_nl[1]) aw_message(last_nl+1);
-                last_nl[0] = 0;
-            }
-        }
-        // awr->awar(AWAR_ERROR_MESSAGES)->write_string("");
-    }
-    free(msg);
-}
-
 void nt_test_ascii_print(AW_window *aww){
     AWT_create_ascii_print_window(aww->get_root(),"hello world","Just a test");
 }
@@ -249,10 +227,6 @@ void create_all_awars(AW_root *awr, AW_default def)
     ARB_init_global_awars(awr, def, gb_main);
     awt_create_aww_vars(awr,def);
     NT_create_MAUS_awars(awr, def, gb_main);
-
-    if (GB_read_clients(gb_main) >= 0) { // no i am the server
-        awr->awar(AWAR_ERROR_MESSAGES)->add_callback( NT_show_message);
-    }
 }
 
 
