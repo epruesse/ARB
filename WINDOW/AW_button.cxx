@@ -1125,6 +1125,41 @@ int AW_window::get_no_of_entries( AW_selection_list *selection_list )
 
     return count;
 }
+/*-------------------- function to get index of an entry in the selection lists -------------------- */
+int AW_window::get_index_of_element(AW_selection_list *selection_list, const char *selected_element){
+    int no_of_elements = get_no_of_entries(selection_list);
+    int element_index = 0;
+ 
+    const char *listEntry = selection_list->first_element(); 
+    if(!listEntry || !listEntry[0] || listEntry == NULL) return element_index = -1;
+
+    for (int i=1;i<no_of_elements;i++){
+        if (GBS_strscmp(listEntry,selected_element) == 0){
+            element_index = i;
+            return element_index;
+        }
+        listEntry = selection_list->next_element();             
+    }
+    return element_index = -1;
+}
+
+/*-------------------- function to get entry in the selection list for the index passed  -------------------- */
+const char *AW_window::get_element_of_index(AW_selection_list *selection_list, int index){
+    int no_of_elements = get_no_of_entries(selection_list);
+    const char *element = 0;
+ 
+    const char *listEntry = selection_list->first_element(); 
+    if(!listEntry || !listEntry[0] || listEntry == NULL) return element = NULL;
+
+    for (int i=1;i<no_of_elements;i++){
+        if (index == i){
+            element = strdup(listEntry);
+            return element;
+        }
+        listEntry = selection_list->next_element();             
+    }
+    return element= NULL;
+}
 
 void AW_window::delete_selection_from_list( AW_selection_list *selection_list, const char *disp_string )
 {
@@ -1415,6 +1450,7 @@ const char *AW_selection_list::first_selected(){
     if (!loop_pntr) return 0;
     return loop_pntr->char_value;
 }
+
 
 GB_ERROR AW_window::save_selection_list( AW_selection_list * selection_list, const char *filename, long number_of_lines) {
     // number_of_lines == 0		-> print all
