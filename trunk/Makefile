@@ -198,7 +198,7 @@ GLLIBS=
 ifeq ($(OPENGL),1)
 GL=gl# this is the name of the OPENGL base target
 GL_LIB:=-lGL
-GL_PNGLIBS: = -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
+GL_PNGLIBS:= -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
 GLLIBS:=-L$(XHOME)/lib -lGLEW -lGLw $(GL_LIB) -lglut $(GL_PNGLIBS)
 endif
 
@@ -552,17 +552,10 @@ $(NTREE): $(ARCHS_NTREE:.a=.dummy) NAMES_COM/server.dummy shared_libs
 RNA3D = bin/arb_rna3d
 ARCHS_RNA3D = \
 		RNA3D/RNA3D.a \
-#		RNA3D/OPENGL/OPENGL.a \
 
 $(RNA3D): $(ARCHS_RNA3D:.a=.dummy) shared_libs
 	@echo $@ currently does not work as standalone application
 	false
-
-#	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNA3D) || ( \
-#		echo Link $@ ; \
-#		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_RNA3D) $(GLLIBS) ; \
-#		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_RNA3D) $(GLLIBS) \
-#		)
 
 #***********************************	arb_edit **************************************
 EDIT = bin/arb_edit
