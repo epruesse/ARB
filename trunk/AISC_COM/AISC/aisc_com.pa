@@ -227,7 +227,7 @@ FUNCTION struct_attr,a,s,c
  					P $(my_attribute[$(TYPE)])$\
 					P $6($(OBJECT_KEY)_$(skey),$8$(+ $(a)+$(KEYC))),$9$(com) */
 				ELSE
-					PP WARNING TYPE $(TYPE) unknown, no key build
+					ERROR TYPE $(TYPE) unknown, no key build
 				ENDIF
 				IF $(REF) ~ d
 					P $(s)$(KEY)_CNT$4= $\
