@@ -32,8 +32,8 @@
 #define KNOWN_ISO_VERSIONS 3
 
 #if !defined(DEBUG) || defined(DEVEL_RALF)
-#warning font debugging is activ in release
-#define DUMP_FONT_LOOKUP
+// #warning font debugging is activ in release
+// #define DUMP_FONT_LOOKUP
 // #define DUMP_FONT_DETAILS
 #endif // DEBUG
 
@@ -50,11 +50,22 @@ appresStruct appres = {
 };
 
 // defines the preferred xfontsel-'rgstry' values (most wanted first)
+
+#define PREFER_ISO10646
+
 #if defined(DEVEL_RALF)
-#warning check iso setting!
+#if defined(PREFER_ISO10646)
+#warning current iso setting: prefer ISO10646
+#else
+#warning current iso setting: prefer ISO8859
+#endif // PREFER_ISO10646
 #endif // DEVEL_RALF
-// static const char *known_iso_versions[KNOWN_ISO_VERSIONS] = { "ISO10646", "ISO8859", "*" };
+
+#if defined(PREFER_ISO10646)
+static const char *known_iso_versions[KNOWN_ISO_VERSIONS] = { "ISO10646", "ISO8859", "*" };
+#else
 static const char *known_iso_versions[KNOWN_ISO_VERSIONS] = { "ISO8859", "ISO10646", "*" };
+#endif
 
 struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
     {"-adobe-times-medium-r-*--",                  (struct xfont*) NULL}, // #0
@@ -93,21 +104,18 @@ struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
     {"-*-zapfchancery-medium-i-*--",               (struct xfont*) NULL}, // #33
     {"-*-zapfdingbats-*-*-*--",                    (struct xfont*) NULL}, // #34
     // non xfig fonts, will be mapped to xfig fonts on export
-    {"-*-lucida-medium-r-*-*-",                    (struct xfont*) NULL},
-    {"-*-lucida-medium-i-*-*-",                    (struct xfont*) NULL},
-    {"-*-lucida-bold-r-*-*-",                      (struct xfont*) NULL},
-    {"-*-lucida-bold-i-*-*-",                      (struct xfont*) NULL},
-    {"-*-lucidatypewriter-medium-r-*-*-",          (struct xfont*) NULL},
-    {"-*-lucidatypewriter-bold-r-*-*-",            (struct xfont*) NULL},
-    {"-*-screen-medium-r-*-*-",                    (struct xfont*) NULL},
-    {"-*-screen-bold-r-*-*-",                      (struct xfont*) NULL},
-    {"-*-clean-medium-r-*-*-",                     (struct xfont*) NULL},
-    {"-*-clean-bold-r-*-*-",                       (struct xfont*) NULL},
-#warning biwidth font is only here for testing - remove for release!    
-    {"-*-biwidth-medium-r-*-*-",                   (struct xfont*) NULL},
-    {"-*-biwidth-bold-r-*-*-",                     (struct xfont*) NULL},
-    {"-*-terminal-medium-r-*-*-",                  (struct xfont*) NULL},
-    {"-*-terminal-bold-r-*-*-",                    (struct xfont*) NULL},
+    {"-*-lucida-medium-r-*-*-",                    (struct xfont*) NULL}, // #35
+    {"-*-lucida-medium-i-*-*-",                    (struct xfont*) NULL}, // #36
+    {"-*-lucida-bold-r-*-*-",                      (struct xfont*) NULL}, // #37
+    {"-*-lucida-bold-i-*-*-",                      (struct xfont*) NULL}, // #38
+    {"-*-lucidatypewriter-medium-r-*-*-",          (struct xfont*) NULL}, // #39
+    {"-*-lucidatypewriter-bold-r-*-*-",            (struct xfont*) NULL}, // #40
+    {"-*-screen-medium-r-*-*-",                    (struct xfont*) NULL}, // #41
+    {"-*-screen-bold-r-*-*-",                      (struct xfont*) NULL}, // #42
+    {"-*-clean-medium-r-*-*-",                     (struct xfont*) NULL}, // #43
+    {"-*-clean-bold-r-*-*-",                       (struct xfont*) NULL}, // #44
+    {"-*-terminal-medium-r-*-*-",                  (struct xfont*) NULL}, // #45
+    {"-*-terminal-bold-r-*-*-",                    (struct xfont*) NULL}, // #46
 };
 
 struct _fstruct ps_fontinfo[AW_NUM_FONTS + 1] = {
@@ -159,8 +167,6 @@ struct _fstruct ps_fontinfo[AW_NUM_FONTS + 1] = {
     {"Screen-Bold",                     -18},
     {"Clean",                           -12},
     {"Clean-Bold",                      -14},
-    {"Biwidth",                         -12},
-    {"Biwidth-Bold",                    -14},
     {"Terminal",                        -12},
     {"Terminal-Bold",                   -14},
 };
@@ -583,77 +589,83 @@ int AW_root::font_2_xfig(AW_font font_nr)
     return (ps_fontinfo[font_nr+1].xfontnum);
 }
 
-#define CI_NONEXISTCHAR(cs) (((cs)->width == 0) && \
-			     (((cs)->rbearing|(cs)->lbearing| \
-			       (cs)->ascent|(cs)->descent) == 0))
-
-#define CI_GET_CHAR_INFO_1D(fs,col,def,cs)				\
-{									\
-    cs = def;								\
-    if (col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) {	\
-	if (fs->per_char == NULL) {					\
-	    cs = &fs->min_bounds;					\
-	} else {							\
-	    cs = &fs->per_char[(col - fs->min_char_or_byte2)];		\
-	    if (CI_NONEXISTCHAR(cs)) cs = def;				\
-	}								\
-    }									\
+inline bool CI_NonExistChar(const XCharStruct *cs) {
+    return
+        cs->width                                          == 0 &&
+        (cs->rbearing|cs->lbearing|cs->ascent|cs->descent) == 0;
 }
 
-#define CI_GET_DEFAULT_INFO_1D(fs,cs) \
-  CI_GET_CHAR_INFO_1D (fs, fs->default_char, NULL, cs)
+inline void CI_GetCharInfo_1D(const XFontStruct *fs, unsigned col, const XCharStruct *def, const XCharStruct*& cs)
+{
+    cs = def;
+    aw_assert(fs->min_byte1 == 0 && fs->max_byte1 == 0); // otherwise CI_GetCharInfo_1D is not the appropriate function
+    if (col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) {
+        if (fs->per_char == NULL) {
+            cs = &fs->min_bounds;
+        } else {
+            cs = &fs->per_char[col - fs->min_char_or_byte2];
+            if (CI_NonExistChar(cs)) cs = def;
+        }
+    }
+}
+
+inline void CI_GetDefaultInfo_1D(const XFontStruct *fs, const XCharStruct*& cs) {
+    CI_GetCharInfo_1D(fs, fs->default_char, NULL, cs);
+}
 
 /*
  * CI_GET_CHAR_INFO_2D - return the charinfo struct for the indicated row and
  * column.  This is used for fonts that have more than row zero.
  */
-#define CI_GET_CHAR_INFO_2D(fs,row,col,def,cs) \
-{ \
-    cs = def; \
-    if (row >= fs->min_byte1 && row <= fs->max_byte1 && \
-	col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) { \
-	if (fs->per_char == NULL) { \
-	    cs = &fs->min_bounds; \
-	} else { \
-	    cs = &fs->per_char[((row - fs->min_byte1) * \
-			        (fs->max_char_or_byte2 - \
-				 fs->min_char_or_byte2 + 1)) + \
-			       (col - fs->min_char_or_byte2)]; \
-	    if (CI_NONEXISTCHAR(cs)) cs = def; \
-        } \
-    } \
+
+inline void CI_GetCharInfo_2D(const XFontStruct *fs, unsigned row, unsigned col, const XCharStruct *def, const XCharStruct*& cs)
+{
+    cs = def;
+    if (row >= fs->min_byte1 && row <= fs->max_byte1 &&
+        col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2)
+    {
+        if (fs->per_char == NULL) {
+            cs = &fs->min_bounds;
+        }
+        else {
+            cs = &fs->per_char[((row - fs->min_byte1) *
+                                (fs->max_char_or_byte2 -
+                                 fs->min_char_or_byte2 + 1)) +
+                               (col - fs->min_char_or_byte2)];
+            if (CI_NonExistChar(cs)) cs = def;
+        }
+    }
 }
 
-#define CI_GET_DEFAULT_INFO_2D(fs,cs) \
-{ \
-    unsigned int r = (fs->default_char >> 8); \
-    unsigned int c = (fs->default_char & 0xff); \
-    CI_GET_CHAR_INFO_2D (fs, r, c, NULL, cs); \
+inline void CI_GetDefaultInfo_2D(const XFontStruct *fs, const XCharStruct*& cs)
+{
+    unsigned int r = (fs->default_char >> 8);
+    unsigned int c = (fs->default_char & 0xff);
+    CI_GetCharInfo_2D (fs, r, c, NULL, cs);
 }
 
 /*
- * CI_GET_ROWZERO_CHAR_INFO_2D - do the same thing as CI_GET_CHAR_INFO_1D,
+ * CI_GetRowzeroCharInfo_2D - do the same thing as CI_GetCharInfo_1D,
  * except that the font has more than one row.  This is special case of more
  * general version used in XTextExt16.c since row == 0.  This is used when
  * max_byte2 is not zero.  A further optimization would do the check for
  * min_byte1 being zero ahead of time.
  */
 
-#if 0	// X11R6!!!
-#define CI_GET_ROWZERO_CHAR_INFO_2D(fs,col,def,cs) \
-{ \
-    cs = def; \
-    if (fs->min_byte1 == 0 && \
-	col >= fs->min_byte2 && col <= fs->max_byte2) { \
-	if (fs->per_char == NULL) { \
-	    cs = &fs->min_bounds; \
-	} else { \
-	    cs = &fs->per_char[(col - fs->min_byte2)]; \
-	    if (CI_NONEXISTCHAR(cs)) cs = def; \
-	} \
-    } \
+inline void CI_GetRowzeroCharInfo_2D(const XFontStruct *fs, unsigned col, const XCharStruct *def, const XCharStruct*& cs)
+{
+    cs = def;
+    if (fs->min_byte1 == 0 &&
+        col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) {
+        if (fs->per_char == NULL) {
+            cs = &fs->min_bounds;
+        } else {
+            cs = &fs->per_char[(col - fs->min_char_or_byte2)];
+            if (CI_NonExistChar(cs)) cs = def;
+        }
+    }
 }
-#endif
+
 
 void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
 // if found_size != 0 -> return value for used font size
@@ -668,15 +680,15 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
     XSetFont(common->display, gc, xfs->fid);
     curfont = *xfs;
 
-    register XCharStruct *cs;
-    XCharStruct          *def;  /* info about default char */
-    Bool                  singlerow = (xfs->max_byte1 == 0); /* optimization */
+    const XCharStruct *cs;
+    const XCharStruct *def;           /* info about default char */
+    Bool         singlerow = (xfs->max_byte1 == 0); /* optimization */
 
     if (singlerow) {    /* optimization */
-        CI_GET_DEFAULT_INFO_1D(xfs, def);
+        CI_GetDefaultInfo_1D(xfs, def);
     }
     else {
-        CI_GET_DEFAULT_INFO_2D(xfs, def);
+        CI_GetDefaultInfo_2D(xfs, def);
     }
 
     fontinfo.max_letter.reset();
@@ -689,10 +701,10 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
     unsigned int i;
     for (i = AW_FONTINFO_CHAR_MIN; i <= AW_FONTINFO_CHAR_MAX; i++) {
         if (singlerow) {/* optimization */
-            CI_GET_CHAR_INFO_1D(xfs, i, def, cs);
+            CI_GetCharInfo_1D(xfs, i, def, cs);
         } else {
-            cs = def;   // X11R4
-            //CI_GET_ROWZERO_CHAR_INFO_2D(xfs, i, def, cs);
+            // cs = def;   // X11R4
+            CI_GetRowzeroCharInfo_2D(xfs, i, def, cs);
         }
         if (cs) {
             ascent_of_chars[i]  = cs->ascent;
