@@ -523,9 +523,8 @@ ARCHS = \
 			PROBE/PROBE.a \
 			PROBE_COM/server.a \
 			PROBE_DESIGN/PROBE_DESIGN.a \
-			PROBE_GROUP/PROBE_GROUP.a \
-			PROBE_GROUP_DESIGN/PROBE_GROUP_DESIGN.a \
 			PROBE_SET/PROBE_SET.a \
+			PROBE_SERVER/PROBE_SERVER.a \
 			READSEQ/READSEQ.a \
 			SECEDIT/SECEDIT.a \
 			SEER/SEER.a \
@@ -538,7 +537,6 @@ ARCHS = \
 			WETC/WETC.a \
 			WINDOW/libAW.a \
 			XML/XML.a \
-
 
 ARCHS_CLIENTACC = PROBE_COM/client.a
 ARCHS_CLIENTCPP = NAMES_COM/client.a
@@ -678,26 +676,6 @@ $(SECEDIT):	$(ARCHS_SECEDIT:.a=.dummy) shared_libs
 
 
 ARCHS_PROBE_COMM = PROBE_COM/server.a PROBE/PROBE.a
-#***********************************	arb_probe_group **************************************
-PROBE_GROUP = bin/arb_probe_group
-ARCHS_PROBE_GROUP = \
-		SERVERCNTRL/SERVERCNTRL.a \
-		$(ARCHS_CLIENTACC) \
-		PROBE_GROUP/PROBE_GROUP.a \
-
-$(PROBE_GROUP):	$(ARCHS_PROBE_GROUP:.a=.dummy) $(ARCHS_PROBE_COMM:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS)
-
-#***********************************	arb_probe_group_design    **************************************
-PROBE_GROUP_DESIGN = bin/arb_probe_group_design
-ARCHS_PROBE_GROUP_DESIGN = \
-		SERVERCNTRL/SERVERCNTRL.a \
-		$(ARCHS_CLIENTACC) \
-		PROBE_GROUP_DESIGN/PROBE_GROUP_DESIGN.a \
-
-$(PROBE_GROUP_DESIGN):	$(ARCHS_PROBE_GROUP_DESIGN:.a=.dummy) $(ARCHS_PROBE_COMM:.a=.dummy) shared_libs
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP_DESIGN) $(LIBS)
 
 #*********************************** gene_probe **************************************
 GENE_PROBE = bin/gene_probe
@@ -937,7 +915,8 @@ show:
 		@echo '  tg     arb_treegen'
 		@echo '  ds     arb_dbserver'
 		@echo '  pr     arb_pt_server'
-		@echo '  pg     arb_probe_group'
+#		@echo '  pg     arb_probe_group'
+		@echo '  psrv   ARB probe server'
 		@echo '  na     arb_name_server'
 		@echo ''
 		@echo ' libraries:'
@@ -1012,7 +991,7 @@ tg:		$(TREEGEN)
 ds:		$(DBSERVER)
 pt:		$(PROBE)
 pr:		$(PROBE)
-pg:		$(PROBE_GROUP) $(PROBE_GROUP_DESIGN)
+psrv:   PROBE_SERVER/PROBE_SERVER.dummy
 pd:		PROBE_DESIGN/PROBE_DESIGN.dummy
 na:		$(NAMES)
 os:		$(ORS_SERVER)
@@ -1192,10 +1171,10 @@ arbbasic: links
 		$(MAKE) arbbasic2
 arbbasic2: mbin menus com nas ${MAKE_RTC}
 
-arbxtras: tg #chip
+arbxtras: tg psrv #chip
 
 arbshared: dball aw dp awt
-arbapplications: nt pa ed e4 we pr pg na al nal di ph ds trs
+arbapplications: nt pa ed e4 we pr na al nal di ph ds trs
 
 arb: arbbasic arbshared arbapplications help arbxtras
 #arb: arbbasic db aw dp awt dbs nt pa ed e4 we pr pg na al nal di db2 ph ds trs help arbxtras
