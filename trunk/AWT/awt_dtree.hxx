@@ -12,10 +12,10 @@
 
 void awt_create_dtree_awars(AW_root *aw_root,AW_default def);
 
-#define NT_BOX_WIDTH 3.5 /* pixel/2 ! */
-#define NT_ROOT_WIDTH 4.5 /* pixel/2 ! */
+#define NT_BOX_WIDTH      3.5   /* pixel/2 ! */
+#define NT_ROOT_WIDTH     4.5   /* pixel/2 ! */
 #define NT_SELECTED_WIDTH 5.5
-#define PH_CLICK_SPREAD 0.10
+#define PH_CLICK_SPREAD   0.10
 
 #define AWT_TREE(ntw) ((AWT_graphic_tree *)ntw->tree_disp)
 
@@ -24,7 +24,8 @@ typedef enum {
     AP_LIST_TREE,
     AP_RADIAL_TREE,
     AP_IRS_TREE,
-    AP_NDS_TREE
+    AP_NDS_TREE,
+    AP_NO_NDS // simple display only showing name (used at startup to avoid NDS error messages)
 } AP_tree_sort;
 
 
@@ -63,11 +64,11 @@ protected:
                        double y_center,double tree_sprad,
                        double tree_orientation,
                        double x_root, double y_root, int linewidth);
-    void show_nds_list_rek(GBDATA * gb_main);
+    void show_nds_list_rek(GBDATA * gb_main, bool use_nds);
 
-    void NT_scalebox(int gc, double x, double y, int width);
-    void NT_emptybox(int gc, double x, double y, int width);
-    void NT_rotbox(int gc, double x, double y, int width);
+    void NT_scalebox(int gc, double x, double y, double width);
+    void NT_emptybox(int gc, double x, double y, double width);
+    void NT_rotbox(int gc, double x, double y, double width);
     const char *show_ruler(AW_device *device, int gc);
     void rot_show_triangle( AW_device *device);
     void rot_show_line( AW_device *device );
@@ -76,19 +77,20 @@ protected:
     int draw_slot(int x_offset, GB_BOOL draw_at_tips); // return max_x
     int paint_sub_tree(AP_tree *node, int x_offset, int type); // returns y pos
 
-    void unload();
-    char        *species_name;
-    int     baselinewidth;
-    int     show_circle;
-    float circle_zoom_factor;
+    void          unload();
+    char         *species_name;
+    int           baselinewidth;
+    int           show_circle;
+    float         circle_zoom_factor;
 public:
     // *********** read only variables !!!
-    AW_root *aw_root;
-    AP_tree_sort tree_sort;
-    AP_tree * tree_root;
-    AP_tree * tree_root_display;
+    AW_root      *aw_root;
+    AP_tree_sort  tree_sort;
+    AP_tree *     tree_root;
+    AP_tree *     tree_root_display;
     AP_tree_root *tree_static;
-    GBDATA  *gb_main;
+    GBDATA       *gb_main;
+    char         *tree_name;
 
     AP_FLOAT x_cursor,y_cursor;
     // *********** public section
