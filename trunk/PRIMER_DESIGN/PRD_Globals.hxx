@@ -62,17 +62,17 @@ public:
     INDEX['T'] = 3;
     INDEX['U'] = 3;
 
-    INDEX['Y'] = 4;
-    INDEX['K'] = 4;
-    INDEX['S'] = 4;
-    INDEX['R'] = 4;
-    INDEX['M'] = 4;
-    INDEX['W'] = 4;
-    INDEX['B'] = 4;
-    INDEX['V'] = 4;
-    INDEX['H'] = 4;
-    INDEX['D'] = 4;
-    INDEX['N'] = 4;
+//     INDEX['Y'] = -1;
+//     INDEX['K'] = -1;
+//     INDEX['S'] = -1;
+//     INDEX['R'] = -1;
+//     INDEX['M'] = -1;
+//     INDEX['W'] = -1;
+//     INDEX['B'] = -1;
+//     INDEX['V'] = -1;
+//     INDEX['H'] = -1;
+//     INDEX['D'] = -1;
+//     INDEX['N'] = -1;
   }
 };
 
