@@ -1,55 +1,62 @@
 #!/bin/sh
-#watch out for DEPOT and DEPOT2
+#watch out for DEPOT and DEPOT2 [they are no longer in use]
 name=`date '+arbsrc_%Y_%m_%d.tgz'`
-#rm -f arbsrc_*.tgz
-(	ls -d 	./load  ./demo.arb ./README ./arb_* ;\
-	find . \
+
+(   ls -d   ./load  ./demo.arb ./README ./arb_* ;\
+    find . \
     -name DEPOT -prune \
     -o -name DEPOT2 -prune \
-    -o 	\( \
+    -o  \( \
         -name "Makefile" -o -name "config.makefile.template" \
             -o -name "Imakefile" -o -name "*.script" \
             -o -name "*.[chf]" -o -name "*.[ch]xx" -o -name "*.[ch]pp" \
-            -o -name "*.inc" -o -name "*.askjdfhajh" \
+            -o -name "*.inc" \
             -o -name "*.bitmap" -o -name "*.icon" \
             -o -name "*.aisc" -o -name "*.header" \
-            -o -name "*.pa" -o -name "*.README" -o -name "*.txt" -o -name "*.doc" \
+            -o -name "*.pa" \
+            -o -name "*.README" -o -name "Readme" -o -name "README" \
+            -o -name "*.txt" -o -name "*.doc" \
             -o -name "*.pl" -o -name "*.PL" \
             -o -name "*.sh" -o -name "*.dat" \
             -o -name "*.pod" -o -name "*.POD" \
             -o -name "*.xs" -o -name "*.pm" \
             -o -name "*.html" -o -name "*.gif" \
             -o -name "*.dtd" -o -name "*.xsl" \
+            -o -name "*.footer" -o -name "*.header" \
             -o -name "typemap" \
-	\) \! -type l -print; \
-	find \
-		./lib/*.dat \
+    \) \! -type l -print; \
+    find \
+        ./lib/*.dat \
         ./lib/arb_default \
         ./lib/config.* \
         ./lib/export \
-		./lib/import \
-		./lib/inputMasks \
-		./lib/macro.head \
+        ./lib/import \
+        ./lib/inputMasks \
+        ./lib/macro.head \
         ./lib/macros \
         ./lib/nas/names.dat.template \
         ./lib/pictures \
         ./lib/pixmaps \
         ./lib/sellists \
-		./lib/submit \
+        ./lib/submit \
         ./lib/Makefile \
         ./*/LIBLINK \
         ./GDEHELP \
+        ./GDE/CLUSTALW/clustalw_help \
         ./HELP_SOURCE/oldhelp \
         ./SOURCE_TOOLS/arb_valgrind \
         ./SOURCE_TOOLS/valgrind2grep \
+        ./SOURCE_TOOLS/mv_if_diff \
         ./PERL2ARB/ARB.xs.default \
+        ./READSEQ/Formats \
+        ./READSEQ/*.help \
         ./LIBLINK \
         ./MAKEBIN \
         ./SH \
         ./etc \
         ./util \
         \! -type l -print; \
-	) \
+    ) \
     |grep -v '/CVS/' \
     |grep -v '/CVS$' \
     |grep -v '/ARB_SOURCE_DOC/' \
