@@ -12,6 +12,8 @@
 
 #include "nt_sort.hxx"
 
+// test
+
 struct customsort_struct {
 	char *key1;
 	char *key2;
