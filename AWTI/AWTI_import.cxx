@@ -752,10 +752,10 @@ void AWTC_import_go_cb(AW_window *aww)
 
         if (read_genom_db!=is_genom_db) {
             if (is_genom_db) {
-                aw_message("You can only import whole genom sequences (GENBANK/EMBL-format) into a genom database.");
+                aw_message("Only genom flatfiles (GENBANK/EMBL-format) are imported into an ARB Genom Database.");
             }
             else {
-                aw_message("You can't import whole genom sequences (GENBANK/EMBL-format) into a non-genom ARB database.");
+                aw_message("Does not import whole genom sequences (GENBANK/EMBL-format) into a ARB Gen-Database format.");
             }
             return;
         }
@@ -830,7 +830,7 @@ void AWTC_import_go_cb(AW_window *aww)
                 aw_openstatus("Reading input files");
                 for (int count = 0; !error && fnames[count]; ++count) {
                     aw_status(GBS_global_string("Reading %s", fnames[count]));
-                    GB_warning("Trying to import: '%s' ", fnames[count]);
+                    GB_warning("Start import of '%s' ", fnames[count]);
 #if defined(DEBUG)
                     printf("Reading '%s' ...\n", fnames[count]);
 #endif // DEBUG
@@ -892,6 +892,7 @@ void AWTC_import_go_cb(AW_window *aww)
             aw_closestatus();
         }
     }
+
     free(ali_name);
 
     if (error) {
