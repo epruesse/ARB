@@ -10,7 +10,7 @@
 #include "adlocal.h"
 /* #include "arbdb.h" */
 #include "arbdbt.h"
-#include "bugex.h"
+/* #include "bugex.h" */
 #include "aw_awars.hxx"
 
 #define GBT_GET_SIZE 0
