@@ -838,9 +838,8 @@ void *GBS_stropen(long init_size)   { /* opens a memory file */
     return (void *)strstr;
 }
 
-char *GBS_strclose(void *strstruct, int optimize) /* returns the memory file */
-     /* if optimize == 1 then dont waste memory; if optimize == 0 then fast */
-     /* Note: optimize is now ignored due to speed-optimization */
+char *GBS_strclose(void *strstruct)
+     /* returns a char* copy of the memory file */
 {
     struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
     long                  length = strstr->GBS_strcat_pos;
@@ -859,8 +858,6 @@ char *GBS_strclose(void *strstruct, int optimize) /* returns the memory file */
 #endif /* DEBUG */
         free(strstr->GBS_strcat_data);
         free(strstr);
-
-        optimize = optimize; /* just use it */
     }
     else {
         last_used = strstr;
@@ -1295,7 +1292,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
             max_wildcard = 0; max_mwildcard = 0;
 
             if (error) {
-                free(GBS_strclose(strstruct,0));
+                free(GBS_strclose(strstruct));
                 free(command);
                 free(in);
                 GB_export_error("%s",error);
@@ -1311,7 +1308,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
         }
         max_wildcard = 0; max_mwildcard = 0;
 
-        p = GBS_strclose(strstruct,0);
+        p = GBS_strclose(strstruct);
         if (!strcmp(p,in)){ /* nothing changed */
             free(p);
         }else{
@@ -1750,7 +1747,7 @@ char *GBS_extract_words( const char *source,const char *chars, float minlen, GB_
 
     free((char *)ps);
     free(s);
-    return GBS_strclose(strstruct,1);
+    return GBS_strclose(strstruct);
 }
 
 int GBS_do_core(void)
@@ -2010,7 +2007,7 @@ char *GBS_regreplace(const char *in, const char *regexprin, GBDATA *gb_species){
     }
     GBS_strcat(out,loc);        /* copy rest */
     free ( regexpr);
-    return GBS_strclose(out,1);
+    return GBS_strclose(out);
 }
 #else
 
@@ -2109,7 +2106,7 @@ char *GBS_regreplace(const char *in, const char *regexprin, GBDATA *gb_species){
         loc = loc2;
     }
     GBS_strcat(out,loc);        /* copy rest */
-    return GBS_strclose(out,1);
+    return GBS_strclose(out);
 }
 
 
@@ -2226,7 +2223,7 @@ extern "C" {
         GBS_free_hash((GB_HASH *)subhash); /* array of tags */
         GBS_intcat(g_bs_merge_sub_result,counter++); /* create a unique number */
 
-        str = GBS_strclose(g_bs_merge_sub_result,0);
+        str = GBS_strclose(g_bs_merge_sub_result);
         GBS_write_hash(g_bs_collect_tags_hash,str,(long)strdup(value)); /* send output to new hash for sorting */
 
         free(str);
@@ -2258,7 +2255,7 @@ static char *g_bs_get_string_of_tag_hash(GB_HASH *tag_hash){
     GBS_hash_do_sorted_loop(g_bs_collect_tags_hash,g_bs_read_final_hash,g_bs_sort_fields_of_hash);
 
     GBS_free_hash_free_pointer(g_bs_collect_tags_hash);
-    return GBS_strclose(g_bs_merge_result,0);
+    return GBS_strclose(g_bs_merge_result);
 }
 
 /* Create a tagged string from two tagged strings:
@@ -2422,13 +2419,12 @@ GB_ERROR GBS_fwrite_string(const char *strngi,FILE *out){
 
 /*  Read a string from a file written by GBS_fwrite_string,
  *  Searches first '"'
- *  if optimize == 0 than much more memory than needed is allocated, but faster
  *
  *  WARNING : changing this function affects perl-macro execution (read warnings for GBS_fwrite_string)
  *  any changes should be done in GBS_fconvert_string too.
  */
 
-char *GBS_fread_string(FILE *in,int optimize){
+char *GBS_fread_string(FILE *in) {
     void         *strstr = GBS_stropen(1024);
     register int  x;
 
@@ -2460,7 +2456,7 @@ char *GBS_fread_string(FILE *in,int optimize){
             GBS_chrcat(strstr,x);
         }
     }
-    return GBS_strclose(strstr,optimize);
+    return GBS_strclose(strstr);
 }
 
 /* does similiar decoding as GBS_fread_string but works directly on an existing buffer
@@ -2533,7 +2529,7 @@ char *GBS_replace_tabs_by_spaces(const char *text){
         }
         GBS_chrcat(mfile,c);
     }
-    return GBS_strclose(mfile,0);
+    return GBS_strclose(mfile);
 }
 
 int GBS_strscmp(const char *s1, const char *s2) {
