@@ -150,6 +150,9 @@ static void update_min_mutations() {
 // -------------------------------------------------------
 //      void AP_sequence_protein::set(char *isequence)
 // -------------------------------------------------------
+
+#define SHOW_SEQ
+
 void AP_sequence_protein::set(char *isequence)
 {
 	if (!awt_pro_a_nucs) awt_pro_a_nucs_gen_dist(this->root->gb_main);
@@ -158,27 +161,70 @@ void AP_sequence_protein::set(char *isequence)
 	sequence_len = root->filter->real_len;
 	sequence     = new AP_PROTEINS[sequence_len+1];
 
-    for (int idx = 0; idx<sequence_len; ++idx) {
-        char        c = toupper(isequence[idx]);
-        AP_PROTEINS p = APP_ILLEGAL;
+    awt_assert(root->filter->bootstrap == 0); // bootstrapping not implemented for protein parsimony
 
-        if (c >= 'A' && c <= 'Z')       p = prot2AP_PROTEIN[c-'A'];
-        else if (c == '-' || c == '.')  p = APP_GAP;
-        else if (c == '*')              p = APP_STAR;
+    const uchar *simplify   = root->filter->simplify;
+    char        *filt       = root->filter->filter_mask;
+    int          left_bases = sequence_len;
+    long         filter_len = root->filter->filter_len;
 
-        if (p == APP_ILLEGAL) {
-            awt_assert(0);
-            p = APP_GAP;
+    awt_assert(filt);
+
+    int oidx = 0;               // index for output sequence
+
+    for (int idx = 0; idx<filter_len && left_bases; ++idx) {
+        if (filt[idx]) {
+            char        c = toupper(simplify[isequence[idx]]);
+            AP_PROTEINS p = APP_ILLEGAL;
+
+#if defined(SHOW_SEQ)
+            fputc(c, stdout);
+#endif // SHOW_SEQ
+
+
+            if (c >= 'A' && c <= 'Z')       p = prot2AP_PROTEIN[c-'A'];
+            else if (c == '-' || c == '.')  p = APP_GAP;
+            else if (c == '*')              p = APP_STAR;
+
+            if (p == APP_ILLEGAL) {
+                awt_assert(0);
+                p = APP_GAP;
+            }
+
+            sequence[oidx++] = p;
+            --left_bases;
         }
-
-        sequence[idx] = p;
     }
+
+    awt_assert(oidx == sequence_len);
     sequence[sequence_len] = APP_ILLEGAL;
+
+#if defined(SHOW_SEQ)
+    fputc('\n', stdout);
+#endif // SHOW_SEQ
 
 	update          = AP_timer();
 	is_set_flag     = AP_TRUE;
 	cashed_real_len = -1.0;
 }
+
+//     for (int idx = 0; idx<sequence_len; ++idx) {
+//         char        c = toupper(isequence[idx]);
+//         AP_PROTEINS p = APP_ILLEGAL;
+
+//         if (c >= 'A' && c <= 'Z')       p = prot2AP_PROTEIN[c-'A'];
+//         else if (c == '-' || c == '.')  p = APP_GAP;
+//         else if (c == '*')              p = APP_STAR;
+
+//         if (p == APP_ILLEGAL) {
+//             awt_assert(0);
+//             p = APP_GAP;
+//         }
+
+//         sequence[idx] = p;
+//     }
+
+
 
 // ------------------------------------------------------------------------------------------------------
 //      AP_FLOAT AP_sequence_protein::combine(	const AP_sequence * lefts, const	AP_sequence *rights)
