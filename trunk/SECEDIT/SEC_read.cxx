@@ -124,13 +124,20 @@ void SEC_helix::read(istream & in) {
         SEC_make_numbers(&delta, NULL, string_buffer);   //read out DELTA
 
         string_buffer = SEC_read_line(in);
-        if(strncmp(string_buffer, "LENGTH=", 7)) {
-            cout << "Unknown data format! \"STRAND\" must contain \"max_length\" and \"min_lenth\" !\n";
-        }
-        SEC_make_numbers(&min_length, &max_length, string_buffer);    //read out LENGTH-information
+	if(strncmp(string_buffer, "DELTA_IN=", 9)) {
+	    cout << "Unknown data format! \"STRAND\" must contain angle-information !\n";
+	}
+	else {
+ 	    SEC_make_numbers(&deltaIn, NULL, string_buffer);   //read out DELTA_IN
+	    
+	    string_buffer = SEC_read_line(in);
+	    if(strncmp(string_buffer, "LENGTH=", 7)) {
+		cout << "Unknown data format! \"STRAND\" must contain \"max_length\" and \"min_lenth\" !\n";
+	    }
+	    SEC_make_numbers(&min_length, &max_length, string_buffer);    //read out LENGTH-information
+	}
     }
 }
-
 
 void SEC_loop::read(SEC_helix_strand *other_strand, istream & in) {
 
@@ -236,7 +243,7 @@ GB_ERROR SEC_root::read_data(char *input_string, char *x_string_in, long current
             if (x_string_in[i] == 'x') n++;
         }
         ap = new int[n];
-        ap_length = n;
+        ap_length = n; 
         int j=0;
         int x_string_in_len = strlen(x_string_in);
         for (i=0; i<x_string_in_len; i++) {				// create x to absposition table
@@ -249,16 +256,24 @@ GB_ERROR SEC_root::read_data(char *input_string, char *x_string_in, long current
 
     char *string_buffer = SEC_read_line(in);
     if(strncmp(string_buffer, "MAX_INDEX=", 10)) {
-        return GB_export_error("Unknown data format! \"max_index\" must be defined!");
+        return GB_export_error("Unknown data format! \"MAX_INDEX\" must be defined!");
     }
     double tmp_max_index;
     SEC_make_numbers(&tmp_max_index, NULL, string_buffer);
     max_index = (int) tmp_max_index;
     if (max_index < current_ali_len) {
 	max_index = current_ali_len;
-    }
+    }    
 
     string_buffer = SEC_read_line(in);
+    if(strncmp(string_buffer, "ROOT_ANGLE=", 11)==0) {
+	rootAngle = strtod(string_buffer+11,0);
+	string_buffer = SEC_read_line(in);
+    }
+    else {
+	rootAngle = 0.0;
+    }
+
     if(strncmp(string_buffer, "LOOP={", 6)) {
         return GB_export_error("Unknown data format! String must define \"Root-Loop\"!");
     }

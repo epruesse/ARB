@@ -129,6 +129,7 @@ char * SEC_root::write_data(void) {
 
     ostrstream out;
     out << "MAX_INDEX=" << max_index << "\n";
+    out << "ROOT_ANGLE=" << rootAngle << "\n";
     SEC_loop *root_loop = root_segment->get_loop();
     root_loop->save(out, NULL, 0);
 
@@ -183,12 +184,7 @@ void SEC_loop::save(ostream & out, SEC_helix_strand *caller, int indent) {
         out << "\t";
     }
     out << "RADIUS=" << min_radius << ":" << max_radius << "\n";
-    /*
-    for (i=0; i<indent; i++) {
-        out << "\t";
-    }
-    out << "ROOT_ANGLE = " << root->rootAngle <<"\n";  //stores rootAngle to the file
-    */
+    
     SEC_segment *next_segment;
     SEC_helix_strand *next_strand;
     next_segment = caller->get_next_segment();
@@ -219,6 +215,13 @@ void SEC_helix::save(ostream & out, int indent) {
         out << "\t";
     }
     out << "DELTA=" << delta << "\n";
+
+    //writing to export file 
+     for (i=0; i<indent; i++) {
+         out << "\t";
+     }
+     out << "DELTA_IN=" << deltaIn << "\n";
+
     for (i=0; i<indent; i++) {
         out << "\t";
     }
@@ -332,15 +335,20 @@ SEC_root::SEC_root(SEC_segment *root_segment_, int max_index_, double distance_b
     root_segment = root_segment_;
     set_distance_between_strands(distance_between_strands_);
     set_show_debug(false);
+    set_show_helixNrs(true);
+    set_show_strSkeleton(true);
+    set_hide_bases(false);
+    set_hide_bonds(false);
     helix_filter = (-1);
     segment_filter = (-1);
     loop_filter = (-1);
     cursor = 0;
     show_constraints = 0;
     fresh_sequence = 1;
-
+    
+    rotateBranchesMode = 0;
     rootAngle = 0;
-    seqTerminal = 0;//seqTerminal pointer is initialised to 0 --yadhu
+    seqTerminal = 0;
 
     drag_recursive = 0;
     number_found = NULL;
