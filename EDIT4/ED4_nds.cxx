@@ -21,7 +21,7 @@ char *ED4_get_NDS_text(ED4_species_manager *species_man) {
     e4_assert(gbd);
 
     e4_assert(NDS_command);
-    char *result = GB_command_interpreter(gb_main, "", NDS_command, gbd);
+    char *result = GB_command_interpreter(gb_main, "", NDS_command, gbd, 0);
     if (!result) {
         result = strdup("<error>");
     }

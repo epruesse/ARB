@@ -3,7 +3,7 @@
 //    File      : MG_gene_species.cxx                                    //
 //    Purpose   : Transfer fields from organism and gene when            //
 //                tranferring gene species                               //
-//    Time-stamp: <Thu Mar/11/2004 13:43 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Aug/10/2004 12:08 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2002             //
@@ -169,12 +169,12 @@ static char *MG_create_field_content(GBDATA *gb_species, int method, const char 
 
         if (method == MG_CREATE_USING_ACI_ONLY) {
             mg_assert(!result);
-            aci_result             = GB_command_interpreter(gb_merge, "", aci, gb_species);
+            aci_result             = GB_command_interpreter(gb_merge, "", aci, gb_species, 0);
             if (!aci_result) error = GB_get_error();
         }
         else {
             if (aci && aci[0]) {
-                aci_result = GB_command_interpreter(gb_merge, result ? result : "", aci, gb_origin);
+                aci_result = GB_command_interpreter(gb_merge, result ? result : "", aci, gb_origin, 0);
                 if (!aci_result) error = GB_get_error();
             }
         }

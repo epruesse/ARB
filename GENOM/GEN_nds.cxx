@@ -160,7 +160,7 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
                         char *pars = 0;
                         if (gen_nds_ms->parsing[i]) {
                             p = GB_read_string(gbe);
-                            pars = GB_command_interpreter(gb_main,p, gen_nds_ms->parsing[i],gbd);
+                            pars = GB_command_interpreter(gb_main,p, gen_nds_ms->parsing[i],gbd, 0);
                             free(p);
                             if (!pars){
                                 pars = strdup("<error>");
