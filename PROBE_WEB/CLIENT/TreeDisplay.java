@@ -16,7 +16,7 @@ private String treeString;
 private TreeNode root;
 private TreeNode vs; // visible subtree
 private TreeNode prevNode;
-
+private Stack history;
 // private int xSize = 800;
 // private int ySize = 1000;
 private int xSize = 0;
@@ -58,6 +58,7 @@ public TreeDisplay(TreeNode root, int treeLevels)
         branchLines = new HashMap();
         rootSet = new HashSet();
         branchSet = new HashSet();
+        history = new Stack();
         laf = new LineAreaFactory(3);
 
         this.treeLevels = treeLevels;
@@ -379,8 +380,8 @@ public void handleLeftMouseClick(int x, int y)
         TreeNode clickedNode = getClickedNode(x, y);
         if ( clickedNode != null)
             {
-                prevNode = vs;
-
+                //                prevNode = vs;
+                history.push(vs);
                 if(clickedNode.equals(vs))
                     {
                         vs = clickedNode.getFather();
@@ -418,7 +419,9 @@ public void unmarkNodes()
 
 public void goDown()
     {
-        prevNode = vs;
+        //        prevNode = vs;
+        history.push(vs);
+
 //         System.out.println("TreeDisplay/goDown() was called");
 //         System.out.println("current node: " + vs);
 //         System.out.println("father node: " + vs.getFather());
@@ -432,7 +435,8 @@ public void enterUBr()
     {
         if (!vs.testLeaf())
             {
-                prevNode = vs;
+                //           prevNode = vs;
+                history.push(vs);
                 vs = (TreeNode)vs.getChilds().elementAt(0);
                 newLayout = true;
                 repaint();
@@ -445,7 +449,8 @@ public void enterLBr()
     {
         if (!vs.testLeaf())
             {
-                prevNode = vs;
+                //                prevNode = vs;
+                history.push(vs);
                 vs = (TreeNode)vs.getChilds().elementAt(1);
                 newLayout = true;
                 repaint();
@@ -455,7 +460,8 @@ public void enterLBr()
 
 public void resetRoot()
     {
-        prevNode = vs;
+        //        prevNode = vs;
+        history.push(vs);
         vs = root;
         newLayout = true;
         repaint();
@@ -464,13 +470,16 @@ public void resetRoot()
 
 public void previousRoot()
     {
-        vs = prevNode;
+        if(!history.empty())
+            {
+                vs = (TreeNode)history.pop();
 //         System.out.println("TreeDisplay/goDown() was called");
 //         System.out.println("current node: " + vs);
 //         System.out.println("father node: " + vs.getFather());
 
-        newLayout = true;
-        repaint();
+                newLayout = true;
+                repaint();
+            }
     }
 
 
