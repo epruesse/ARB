@@ -179,7 +179,7 @@ int main(int argc,char **argv)
     }
 
 
-  printf("vor einlesen\n");
+  //  printf("vor einlesen\n");
   // Einlesen des input-probefiles
      error = read_input_file(arg_input_file);
          if (error)
@@ -188,10 +188,10 @@ int main(int argc,char **argv)
 	     return -1;
 	   }
 
-	 printf("nach einlesen \n");
+	 //	 printf("nach einlesen \n");
   // Ist ein pt-server gestartet?
 	GBDATA *gb_main = GB_open(":","r");
-printf("nach GB_open\n");
+	//printf("nach GB_open\n");
 	if (!gb_main){
 		printf("%s: Error: you have to start an arbdb server first\n", argv[0]);
 		return -1;
@@ -205,7 +205,7 @@ printf("nach GB_open\n");
 	     printf("%s\n", error);
 	     return -1;
 	   }
-	 printf("nach init_pt_server \n");
+	 // printf("nach init_pt_server \n");
       GBT_message(gb_main, "Reading tree...");
 
 	GB_begin_transaction(gb_main);
@@ -275,31 +275,25 @@ GB_ERROR read_input_file(char *fn)
     char tmplongname[255];
     char tmpsequence[255];
     ifstream iS;
-
+    bool gotProbe = false;
+  
     iS.open(fn);
     if(iS)
     {
        while(iS.getline(line, 255))
        {
-	if(!line[0])
-	  iS.getline(line, 255); //Zeile++
 
-        if(strstr(line,"probe")) {
-	   if(strlen(tmpname)>0 ){
-	     probe_data pD;
-	     strcpy(pD.name, tmpname);
-	     strcpy(pD.longname, tmplongname);
-	     strcpy(pD.sequence, tmpsequence);
-	     probeData.push_back(pD);
-	  }
-	  iS.getline(line, 255); // Zeile++
+        if(strstr(line,"probe")  && !strstr(line, "name")) {
+	     tmpname[0] = 0;
+	     tmplongname[0] = 0;
+	     tmpsequence[0] = 0;
+	     gotProbe = true;
+
 	}
 
-
-
-	if(strstr(line, "name") && !strstr(line, "longname"))
+	else if(strstr(line, "name") && !strstr(line, "longname"))
 	{
-	  char *tmpstr = strstr(line,"name");
+       	  char *tmpstr = strstr(line,"name");
 	  int i = 0;
 	  int buf_count = 0;
 	  char buf[255];
@@ -345,13 +339,14 @@ GB_ERROR read_input_file(char *fn)
 	  }
 	} // end name
 
-	else if(char *tmpstr = strstr(line, "longname"))
+	else if(strstr(line, "longname"))
 	{
 	  int i = 0;
 	  int buf_count = 0;
 	  char buf[255];
 	  bool useIt = 0;
 	  bool gotWord = 0;
+	  char *tmpstr = strstr(line, "longname");
 	  while(tmpstr[i] && i<255)
 	  {
 	    if (!useIt && tmpstr[i] =='=')
@@ -387,7 +382,7 @@ GB_ERROR read_input_file(char *fn)
 	    }
 
 	  }
-          buf[buf_count]=0;
+	     buf[buf_count]=0;
 	  if (strlen(buf)>0)
 	    strcpy(tmplongname, buf);
 	} // end longname
@@ -439,26 +434,72 @@ GB_ERROR read_input_file(char *fn)
 
 	} // end sequence
 
+	else if(!line[0])
+	  {	    
+	    if(gotProbe)
+	    {
+	      probe_data pD;
+	      strcpy(pD.name, tmpname);
+	      strcpy(pD.longname, tmplongname);
+	      strcpy(pD.sequence, tmpsequence);
+	      probeData.push_back(pD);
+	      gotProbe = false;
+	    }
+   	  }
 
         } // end while(!eof)
 
-       // push back the last record:
-       if (strlen(tmpname)>0)
-	 {
-	   probe_data pD;
-	   strcpy(pD.name, tmpname);
-	   strcpy(pD.longname, tmplongname);
-	   strcpy(pD.sequence, tmpsequence);
-	   probeData.push_back(pD);
-	 }
+       // last entry:
+       if(gotProbe)
+       {
+         probe_data pD;
+         strcpy(pD.name, tmpname);
+         strcpy(pD.longname, tmplongname);
+         strcpy(pD.sequence, tmpsequence);
+         probeData.push_back(pD);
+       }
+
+
 
       iS.close();
     }
     else
       error = ("Could not open input-file.\n");
-
-
+ 
+   
     return error;
+}
+
+
+
+//  ---------------------------------------------
+//      static char *pd_ptid_to_choice(int i)
+//  ---------------------------------------------
+static char *pd_ptid_to_choice(int i){
+    char search_for[256];
+    char choice[256];
+    char	*fr;
+    char *file;
+    char *server;
+    char empty[] = "";
+    sprintf(search_for,"ARB_PT_SERVER%i",i);
+
+    server = GBS_read_arb_tcp(search_for);
+    if (!server) return 0;
+    fr = server;
+    file = server;				/* i got the machine name of the server */
+    if (*file) file += strlen(file)+1;	/* now i got the command string */
+    if (*file) file += strlen(file)+1;	/* now i got the file */
+    if (strrchr(file,'/')) file = strrchr(file,'/')-1;
+    if (!(server = strtok(server,":"))) server = empty;
+    sprintf(choice,"%-8s: %s",server,file+2);
+    delete fr;
+
+
+    return strdup(choice);
+
+    //    return error;
+
 }
 
 //  --------------------------------------------------------------------------------------
@@ -469,7 +510,10 @@ static char *probe_pt_look_for_server(GBDATA *gb_main, const char *servername, G
     int serverid = -1;
 
     for (int i=0;i<1000; ++i) {
-        char *aServer = GBS_ptserver_id_to_choice(i);
+      // Folgende Zeile gibt beim Kompilieren (auf der Trance) Fehlermeldung
+      //  char *aServer = GBS_ptserver_id_to_choice(i);
+      // deshalb wird weiterhin alte Fassung verwendet:
+        char *aServer = pd_ptid_to_choice(i);
         if (aServer) {
 	  //printf("server='%s'\n",aServer);
             if (strcmp(aServer, servername)==0) {
@@ -635,8 +679,7 @@ GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *
     struct gl_struct& 	 pd_gl = my_server->get_pd_gl();
 
     // @@@ soll eigentlich auch reverse-complement gesucht werden??
-
-    printf("sequenz: %s\n", pD.sequence);
+    // printf("sequenz: %s\n", pD.sequence);
 
     if (aisc_nput(pd_gl.link,
 		  PT_LOCS, 			pd_gl.locs,
@@ -681,10 +724,12 @@ GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *
 	  // Oeffne result-probefile im append-modus
 	   pFile = fopen(fn, "a");
 	 if (pFile!=NULL)
-	  {
+
+	  { 
 	    char tmp[256];
 
 	    fputs("\nprobe\n", pFile);
+
 	    char probe_name[255];
 	    strcpy(probe_name, "\tname= ");
 	    strcpy(tmp, pD.name);
@@ -720,8 +765,10 @@ GB_ERROR PG_probe_match(probe_data &pD, const PG_probe_match_para& para,  char *
 		    strcpy(probe_match, "\tmatch= ");
 		    correctIllegalChars(match_name);
 		    strcat(probe_match, match_name);
-		    strcat(probe_match, ", ");
+
+		    strcat(probe_match, ", ");  
 		    correctIllegalChars(match_longname);
+
 		    strcat(probe_match, match_longname);
 		    strcat(probe_match, "\n");
 		    fputs(probe_match, pFile);
