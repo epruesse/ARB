@@ -5,10 +5,10 @@
 
 
 #	set ARBHOME to this directory
-( export ARBHOME = `pwd` )
+# ARBHOME = `pwd`
 
 #	disable all lib dirs
-LD_LIBRARY_PATH = ${SYSTEM_LD_LIBRARY_PATH}:$(ARBHOME)/LIBLINK:$(ARBHOME)/lib
+# LD_LIBRARY_PATH = ${SYSTEM_LD_LIBRARY_PATH}:$(ARBHOME)/LIBLINK:$(ARBHOME)/lib
 
 # get the machine type
 include config.makefile
@@ -346,8 +346,8 @@ first_target:
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE (BROKEN!)'
 		@echo ' savedepot   - save all extended ARB source (DEPOT2 subdir) into arbdepot_DATE.cpio.gz'
 		@echo ' rtc_patch   - create LIBLINK/libRTC8M.so (SOLARIS ONLY)'
-		@echo ' doc         - create doxygen documentation
-ifeq ($(DEVELOPER),'RALF')
+		@echo ' doc         - create doxygen documentation'
+ifeq ($(DEVELOPER), "RALF")
 		@echo ' export      - make tarfile and export to homepage'
 endif
 		@echo ''
@@ -368,7 +368,35 @@ ifndef dflags
 		@false
 endif
 
-checks: check_DEBUG check_DEVELOPER
+# ---------------------------------------- check gcc version
+
+ifdef LINUX
+gcc.version:
+		@echo Generating gcc.version
+		@echo GCC_VERSION=`gcc --version | head -1` >gcc.version
+
+include gcc.version
+endif
+
+check_GCC_VERSION:
+ifdef LINUX
+		@rm gcc.version
+ifeq ('2.95.3','$(GCC_VERSION)')
+		@echo "gcc version $(GCC_VERSION) used -- fine!"
+		@echo ''
+else
+		@echo ''
+		@echo "You'll need gcc 2.95.3 to compile ARB [your gcc version is '$(GCC_VERSION)']"
+		@echo ''
+		@/bin/false
+endif
+
+
+else
+		@echo "gcc version check skipped (should be gcc 2.95.3)"
+endif
+
+checks: check_DEBUG check_DEVELOPER check_GCC_VERSION
 		@echo Your setup seems to be ok.
 
 # end test section
