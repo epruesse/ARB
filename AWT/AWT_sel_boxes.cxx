@@ -862,7 +862,7 @@ AW_window *awt_open_macro_window(AW_root *aw_root,const char *application_id){
     aws->at("exec");aws->callback(awt_exec_macro_cb);
     aws->create_button("EXECUTE", "EXECUTE");
 
-    awt_create_selection_box((AW_window *)aws,AWAR_MACRO_BASE,"","ARBMACROHOME");
+    awt_create_selection_box((AW_window *)aws,AWAR_MACRO_BASE,"","ARBMACROHOME^ARBMACRO");
 
     return (AW_window *)aws;
 }
