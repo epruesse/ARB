@@ -24,7 +24,7 @@ write_help() {
     echo "$TITLE"
     echo ""
     cat $HEADER
-    sed -e 's/^/    /ig' < $INPUTTEXT
+    sed -e 's/^/    /' < $INPUTTEXT
 }
 
 write_help > $OUTPUTFILE
