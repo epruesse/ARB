@@ -6,8 +6,11 @@
 #define  p_global   (root->prvt)
 #define  p_aww(aww) (aww->p_w)
 
-#define AW_INSERT_BUTTON_IN_SENS_LIST(root,id,mask,widget) { AW_buttons_struct *awibsldummy = \
-    new AW_buttons_struct(root,id,mask,widget);awibsldummy = awibsldummy;};
+#define AW_INSERT_BUTTON_IN_SENS_LIST(root,id,mask,widget)              \
+    do { new AW_buttons_struct(root,id,mask,widget); } while (0)
+
+bool AW_remove_button_from_sens_list(AW_root *aw_root, Widget w);
+
 #define MAP_ARAM(ar) p_w->areas[ar]
 
 #define INFO_WIDGET p_w->areas[AW_INFO_AREA]->area
@@ -75,6 +78,8 @@ struct AW_variable_update_struct {
 /************************************************************************/
 struct AW_buttons_struct {
     AW_buttons_struct(AW_root *rooti, const char *idi, AW_active maski, Widget w);
+    ~AW_buttons_struct();
+
     char              *id;
     AW_active          mask;
     Widget             button;
@@ -99,23 +104,24 @@ struct AW_option_struct {
     AW_option_struct( const char *variable_valuei, Widget choice_widgeti );
     AW_option_struct( int variable_valuei, Widget choice_widgeti );
     AW_option_struct( float variable_valuei, Widget choice_widgeti );
+    ~AW_option_struct();
 
     char             *variable_value;
     int               variable_int_value;
     float             variable_float_value;
     Widget            choice_widget;
     AW_option_struct *next;
-
 };
 
 struct AW_option_menu_struct {
-    AW_option_menu_struct( int numberi, const char *unique_option_menu_namei, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti, AW_pos xi, AW_pos yi, int correct);
+    AW_option_menu_struct( int numberi, const char *unique_option_menu_namei, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti, Widget menu_widgeti, AW_pos xi, AW_pos yi, int correct);
 
     int               option_menu_number;
     char             *unique_option_menu_name;
     char             *variable_name;
     AW_VARIABLE_TYPE  variable_type;
     Widget            label_widget;
+    Widget            menu_widget;
     AW_option_struct *first_choice;
     AW_option_struct *last_choice;
     AW_option_struct *default_choice;
@@ -246,6 +252,7 @@ public:
 
     AW_option_menu_struct *option_menu_list;
     AW_option_menu_struct *last_option_menu;
+    AW_option_menu_struct *current_option_menu;
 
     AW_toggle_field_struct *toggle_field_list;
     AW_toggle_field_struct *last_toggle_field;
@@ -305,10 +312,6 @@ public:
     AW_cb_struct  *popup_cb;
     Widget         frame;
 
-    Widget            option_menu;
-    char             *option_menu_var_name;
-    AW_VARIABLE_TYPE  option_menu_var_type;
-
     Widget            toggle_field;
     Widget            toggle_label;
     char             *toggle_field_var_name;
@@ -326,7 +329,7 @@ public:
 
 void        aw_root_init_font(Display *tool_d);
 const char *aw_str_2_label(const char *str,AW_window *aww);
-void        AW_LABEL_IN_AWAR_LIST(AW_window *aww,Widget widget,const char *str);
+void        AW_label_in_awar_list(AW_window *aww,Widget widget,const char *str);
 void        AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data);
 void        aw_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2);
 void        message_cb( AW_window *aw, AW_CL cd1 );
