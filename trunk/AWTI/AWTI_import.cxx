@@ -817,16 +817,11 @@ void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-S
     }
     
     int toggle_value = (awr->awar(AWAR_READ_GENOM_DB)->read_int()); // Note: toggle is obsolete for Artems new importer
-
     bool ask_generate_names = true;
-    GB_commit_transaction(GB_MAIN);                            //harald
-
 
     if (!error) {                               //Falls Formatchecks erfolgreich
-        if (is_genom_db) {                      //Falls Genomdatenbank
-
-            GB_begin_transaction(GB_MAIN);                              //harald
-            char *mask   = awr->awar(AWAR_FILE)->read_string();
+        if (is_genom_db) {      //Falls Genomdatenbank
+            char  *mask   = awr->awar(AWAR_FILE)->read_string();
             char **fnames = GBS_read_dir(mask, 0);
 
             if (fnames[0] == 0) {
@@ -836,12 +831,16 @@ void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-S
                 int successfull_imports = 0;
                 int failed_imports      = 0;
 
+                // close the above transaction and do each importfile in separate transaction
+                // to avoid that all imports are undone by transaction abort in case of error
+                GB_commit_transaction(GB_MAIN);
+
                 aw_openstatus("Reading input files");
-                GB_commit_transaction(GB_MAIN);                         //harald
+                
                 for (int count = 0; !error && fnames[count]; ++count) {
                     GB_ERROR error_this_file =  0;
 
-                    GB_begin_transaction(GB_MAIN); //harald
+                    GB_begin_transaction(GB_MAIN); 
                     aw_status(GBS_global_string("Reading %s", fnames[count]));
                     GB_warning("Trying to import: '%s' ", fnames[count]);
 #if defined(DEBUG)
@@ -868,15 +867,14 @@ void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-S
                     }
 
                     if (!error_this_file) {
-                        GB_commit_transaction(GB_MAIN); //harald
+                        GB_commit_transaction(GB_MAIN); 
                         GB_warning("File '%s' successfully imported", fnames[count]);
                         successfull_imports++;
                     }
                     else {                              //Wird bei Fehler der Importfunktionen durchgeführt
                         error_this_file = GBS_global_string("'%s' not imported (Reason: %s)", fnames[count], error_this_file);
-                        // GB_warning("Import Error: File '%s' not imported (Reason: %s)", fnames[count], error);
                         GB_warning("Import error: %s", error_this_file);
-                        GB_abort_transaction(GB_MAIN); //harald
+                        GB_abort_transaction(GB_MAIN); 
                         failed_imports++;
                     }
                 }
@@ -888,8 +886,10 @@ void AWTC_import_go_cb(AW_window *aww)          //Erzeugen von Gen- oder Genom-S
                     GB_warning("%i of %i files were imported with success", successfull_imports, (successfull_imports+failed_imports));
                 }
 
-                GB_begin_transaction(GB_MAIN); //harald
                 aw_closestatus();
+                
+                // now open another transaction to "undo" the transaction close above
+                GB_begin_transaction(GB_MAIN);
             }
 
             GBT_free_names(fnames);
