@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
-//    Time-stamp: <Fri Oct/01/2004 20:08 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Dec/03/2004 12:36 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
@@ -1089,6 +1089,11 @@ void Helpfile::writeXML(FILE *out, const string& page_name, const string& path1,
     xml.skip_empty_tags       = true;
     xml.indentation_per_level = 2;
     xml.getRoot().add_attribute("name", page_name);
+#if defined(DEBUG)
+    xml.getRoot().add_attribute("edit_warning", "devel"); // inserts a edit warning into development version
+#else
+    xml.getRoot().add_attribute("edit_warning", "release"); // inserts a different edit warning into release version
+#endif // DEBUG
 
     for (Strings::const_iterator s = uplinks.begin(); s != uplinks.end(); ++s) {
         XML_Tag uplink("UP");
