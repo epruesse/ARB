@@ -1066,7 +1066,7 @@ static AW_window *NT_create_tree_setting(AW_root *aw_root)
     if (aws) return (AW_window *)aws;
 
     aws = new AW_window_simple;
-    aws->init( aw_root, "SAVE_DB","SAVE ARB DB", 10, 10 );
+    aws->init( aw_root, "SAVE_DB","SAVE ARB DB");
     aws->load_xfig("awt/tree_settings.fig");
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
@@ -1427,7 +1427,7 @@ static void pars_start_cb(AW_window *aww)
 
 
     AW_window_menu_modes *awm = new AW_window_menu_modes();
-    awm->init(awr,"ARB_PARRSIMONY", "ARB_PARSIMONY", 800,600,10,10);
+    awm->init(awr,"ARB_PARSIMONY", "ARB_PARSIMONY", 400,200);
 
     AW_gc_manager aw_gc_manager = 0;
     nt->tree                    = (AWT_graphic_tree*)PARS_generate_tree(awr);
@@ -1666,9 +1666,19 @@ static void pars_start_cb(AW_window *aww)
 
     awm->at_newline();
 
-    awm->button_length(100);
-    awm->create_button(0,"tmp/LeftFooter");
-    awm->at_newline();
+    {
+        AW_at_maxsize maxSize; // store size (so AWAR_FOOTER does not affect min. window size)
+        maxSize.store(awm->_at);
+        awm->button_length(AWAR_FOOTER_MAX_LEN);
+        awm->create_button(0,AWAR_FOOTER);
+        awm->at_newline();
+        maxSize.restore(awm->_at);
+    }
+
+//     awm->button_length(AWAR_FOOTER_MAX_LEN);
+//     awm->create_button(0,AWAR_FOOTER);
+
+//     awm->at_newline();
     awm->get_at_position( &db_treex,&db_treey );
     awm->set_info_area_height( db_treey+6 );
 
@@ -1684,7 +1694,7 @@ static void pars_start_cb(AW_window *aww)
 static AW_window *create_pars_init_window(AW_root *awr)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( awr, "PARS_PROPS", "SET PARSIMONY OPTIONS", 100, 100 );
+    aws->init( awr, "PARS_PROPS", "SET PARSIMONY OPTIONS");
     aws->load_xfig("pars/init.fig");
 
     aws->button_length( 10 );
