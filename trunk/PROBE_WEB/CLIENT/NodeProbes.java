@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : NodeProbes.java                                        // 
 //    Purpose   : Contains probes for one node                           // 
-//    Time-stamp: <Sat Mar/13/2004 19:49 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Sun Mar/14/2004 22:17 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -70,7 +70,8 @@ public class NodeProbes
         return sorted_probes.indexOf(p);
     }
     int getSortedIndexOf(String probeString) {
-        for (int i = 0; i<sorted_probes.size(); ++i) {
+        int size = sorted_probes.size();
+        for (int i = 0; i<size; ++i) {
             Probe p = (Probe)sorted_probes.get(i);
             if (p.sequence().equals(probeString)) {
                 return i;
@@ -81,5 +82,14 @@ public class NodeProbes
 
     int size() {
         return sorted_probes.size();
+    }
+
+    public void cacheAllHits() throws Exception {
+        Toolkit.showMessage("Caching hits for all listed probes:");
+        int size = probes.size();
+        for (int i = 0; i<size; ++i) {
+            int dummy = ((Probe)probes.get(i)).no_of_hits();
+        }
+        Toolkit.showMessage("Ready.");
     }
 }
