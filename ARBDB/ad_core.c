@@ -21,7 +21,7 @@ void gb_touch_entry(GBDATA * gbd, GB_CHANGED val) {
     register GBCONTAINER *gbc_father;
 
     gbd->flags2.update_in_server = 0;
-    if ( val > (int)GB_ARRAY_FLAGS(gbd).changed) {
+    if ( val > (GB_CHANGED)(int)GB_ARRAY_FLAGS(gbd).changed) {
         GB_ARRAY_FLAGS(gbd).changed = val;
         GB_ARRAY_FLAGS(gbd).ever_changed = 1;
     }
@@ -267,6 +267,24 @@ GBDATA   *gb_make_pre_defined_entry(    GBCONTAINER * father, GBDATA *gbd,
 
     return gbd;
 }
+
+void
+gb_rename_entry(GBCONTAINER *gbc, const char *new_key) {
+    GBCONTAINER  *gb_father = GB_FATHER(gbc);
+    GB_MAIN_TYPE *Main      = GBCONTAINER_MAIN(gb_father);
+    GBQUARK       new_keyq;
+    long          new_gbm_index;
+
+    gb_unlink_entry((GBDATA*)gbc);
+
+    new_keyq          = gb_key_2_quark(Main, new_key);
+    new_gbm_index     = GB_QUARK_2_GBMINDEX(Main, new_keyq);
+    GB_GBM_INDEX(gbc) = new_gbm_index;
+
+    gb_link_entry(gb_father, (GBDATA*)gbc, -1);
+    gb_write_key((GBDATA*)gbc, new_key);
+}
+
 
 /* creates a terminal database object */
 GBDATA         *
