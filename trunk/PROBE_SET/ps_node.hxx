@@ -50,18 +50,13 @@ struct lt_probe
 };
 
 
-
 //***********************************************
 //* PS_ProbeSet
 //***********************************************
 typedef set<PS_ProbePtr,lt_probe>   PS_ProbeSet;
 typedef PS_ProbeSet*                PS_ProbeSetPtr;
-typedef PS_ProbeSet::const_iterator PS_ProbeSetIterator;
-
-
-//***********************************************
-//* PS_Node
-//***********************************************
+typedef PS_ProbeSet::iterator       PS_ProbeSetIter;
+typedef PS_ProbeSet::const_iterator PS_ProbeSetCIter;
 class PS_Node;
 typedef SmartPtr<PS_Node>         PS_NodePtr;
 typedef map<SpeciesID,PS_NodePtr> PS_NodeMap;
@@ -144,7 +139,7 @@ public:
 	    probes->insert(probe);
 	    return true;
 	} else {
-	    pair<PS_ProbeSetIterator,bool> p = probes->insert(probe);
+	    pair<PS_ProbeSetCIter,bool> p = probes->insert(probe);
 // 	    if (!p.second) {
 // 		printf( "probe " ); PS_printProbe(probe);
 // 		printf( " already exists\n" );
@@ -154,23 +149,23 @@ public:
 	}
     }
 
-    void addProbes( PS_ProbeSetIterator _begin, PS_ProbeSetIterator _end ) {
+    void addProbes( PS_ProbeSetCIter _begin, PS_ProbeSetCIter _end ) {
         //printf( "check for probes...\n" );
         if (_begin == _end) return;
         //printf( "check for probeset...\n" );
         if (!probes) probes = new PS_ProbeSet;
-	for (PS_ProbeSetIterator probe = _begin; probe != _end; ++probe) {
+	for (PS_ProbeSetCIter probe = _begin; probe != _end; ++probe) {
             //printf( "inserting new probe...\n" );
             probes->insert( *probe );
         }
     }
 
-    void addProbesInverted( PS_ProbeSetIterator _begin, PS_ProbeSetIterator _end ) {
+    void addProbesInverted( PS_ProbeSetCIter _begin, PS_ProbeSetCIter _end ) {
         //printf( "check for probes...\n" );
         if (_begin == _end) return;
         //printf( "check for probeset...\n" );
         if (!probes) probes = new PS_ProbeSet;
-	for (PS_ProbeSetIterator probe = _begin; probe != _end; ++probe) {
+	for (PS_ProbeSetCIter probe = _begin; probe != _end; ++probe) {
             //printf( "making new probe...\n" );
             PS_ProbePtr new_probe(new PS_Probe);
             new_probe->length     = (*probe)->length;
@@ -185,7 +180,7 @@ public:
     bool   hasProbes()   const { return (probes != 0); }
     bool   hasPositiveProbes() const {
         if (!probes) return false;
-        for (PS_ProbeSetIterator i=probes->begin(); i!=probes->end(); ++i) {
+        for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
             if ((*i)->quality >= 0) return true;
         }
         return false;
@@ -193,21 +188,25 @@ public:
 
     bool   hasInverseProbes() const {
         if (!probes) return false;
-        for (PS_ProbeSetIterator i=probes->begin(); i!=probes->end(); ++i) {
+        for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
             if ((*i)->quality < 0) return true;
         }
         return false;
     }
 
-    PS_ProbeSetIterator getProbesBegin() {
+    PS_ProbeSetCIter getProbesBegin() const {
 	ps_assert(probes);
 	return probes->begin();
     }
-    PS_ProbeSetIterator getProbesEnd() {
+    PS_ProbeSetCIter getProbesEnd() const {
 	ps_assert(probes);
 	return probes->end();
     }
     
+    void   removeProbe( PS_ProbeSetCIter it ) {
+        ps_assert(probes);
+        probes->erase( it );
+    }
     void   removeProbes() {
         if (probes) delete probes;
         probes = 0;
@@ -219,7 +218,7 @@ public:
     void print() {
 	printf( "\nN[%d] P[ ", num );
 	if (probes) {
-	    for (PS_ProbeSetIterator i=probes->begin(); i!=probes->end(); ++i) {
+	    for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
 		PS_printProbe(*i);
 		printf(" ");
 	    }
@@ -234,7 +233,7 @@ public:
     void printOnlyMe() const {
 	printf( "N[%d] P[ ", num );
 	if (probes) {
-	    for (PS_ProbeSetIterator i=probes->begin(); i!=probes->end(); ++i) {
+	    for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
 		PS_printProbe(*i);
 		printf(" ");
 	    }

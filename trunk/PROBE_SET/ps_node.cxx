@@ -21,7 +21,7 @@ bool PS_Node::saveASCII( PS_FileBuffer* _fb, char *buffer ) { // buffer MUST be 
     if (size) {
         count = sprintf( buffer, " P{%i", size );
         _fb->put( buffer, count );
-	for (PS_ProbeSetIterator i=probes->begin(); i!=probes->end(); ++i) {
+	for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
             count = sprintf( buffer, " (%i_%i_%i)", (*i)->quality, (*i)->length, (*i)->GC_content );
 	    _fb->put( buffer, count );
 	}
@@ -65,7 +65,7 @@ bool PS_Node::save( PS_FileBuffer* _fb ) {
     _fb->put_uint( size );
     if (size) {
         PS_Probe p;
-	for (PS_ProbeSetIterator i=probes->begin(); i!=probes->end(); ++i) {
+	for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
             p = **i;
 	    _fb->put( &p, sizeof(PS_Probe) );
 	}
