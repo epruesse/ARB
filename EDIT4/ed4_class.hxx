@@ -729,9 +729,13 @@ public:
     void 			calc_rel_coords( AW_pos *x, AW_pos *y );
 
     void calc_world_coords(AW_pos *x, AW_pos *y) {
-        if (timestamp!=actualTimestamp) {
+        bool cache_up_to_date = timestamp == actualTimestamp;
+        if (!cache_up_to_date) {
             update_world_coords_cache();
         }
+#if defined(DEBUG)
+        printf("this=%p x=%f y=%f %s\n", this, lastXpos, lastYpos, cache_up_to_date ? "" : "(cache updated)");
+#endif // DEBUG
         *x = lastXpos;
         *y = lastYpos;
     }
@@ -1183,7 +1187,7 @@ public:
     ED4_main_manager( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0 );
      ~ED4_main_manager();
 
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0);
+    virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode resize_requested_by_parent(void);
 };
 
@@ -1452,8 +1456,8 @@ class ED4_tree_terminal : public ED4_terminal
 {
     ED4_tree_terminal(const ED4_tree_terminal&); // copy-constructor not allowed
 public:
-    ED4_returncode	draw(int only_text=0);
-    ED4_returncode 	Show(int refresh_all=0, int is_cleared=0);
+    virtual ED4_returncode	draw(int only_text=0);
+    virtual ED4_returncode 	Show(int refresh_all=0, int is_cleared=0);
 
     ED4_tree_terminal( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
     ~ED4_tree_terminal();
@@ -1466,8 +1470,8 @@ class ED4_bracket_terminal : public ED4_terminal
 {
     ED4_bracket_terminal(const ED4_bracket_terminal&); // copy-constructor not allowed
 public:
-    ED4_returncode	draw( int only_text = 0 );
-    ED4_returncode 	Show(int refresh_all=0, int is_cleared=0);
+    virtual ED4_returncode	draw( int only_text = 0 );
+    virtual ED4_returncode 	Show(int refresh_all=0, int is_cleared=0);
 
     ED4_bracket_terminal( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
     ~ED4_bracket_terminal();
@@ -1604,7 +1608,7 @@ public:
     ED4_sequence_info_terminal( const char *id, GBDATA *gbd, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
     ~ED4_sequence_info_terminal();
 
-    ED4_returncode draw( int only_text );
+    virtual ED4_returncode draw( int only_text = 0);
 
     GBDATA *data() { return gbdata; }
     const GBDATA *data() const { return gbdata; }
@@ -1647,9 +1651,9 @@ class ED4_spacer_terminal : public ED4_terminal
 {
     ED4_spacer_terminal(const ED4_spacer_terminal&); // copy-constructor not allowed
 public:
-    ED4_returncode      Show(int refresh_all=0, int is_cleared=0);
+    virtual ED4_returncode      Show(int refresh_all=0, int is_cleared=0);
 //    ED4_returncode      show_scrolled(ED4_properties scroll_prop, int only_text = 0 );
-    ED4_returncode      draw(int only_text = 0);
+    virtual ED4_returncode      draw(int only_text = 0);
 
     ED4_spacer_terminal( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
     ~ED4_spacer_terminal();
@@ -1662,8 +1666,8 @@ class ED4_line_terminal : public ED4_terminal
 {
     ED4_line_terminal(const ED4_line_terminal&); // copy-constructor not allowed
 public:
-    ED4_returncode      Show(int refresh_all=0, int is_cleared=0);
-    ED4_returncode	draw(int only_text = 0);
+    virtual ED4_returncode      Show(int refresh_all=0, int is_cleared=0);
+    virtual ED4_returncode	draw(int only_text = 0);
 //    virtual ED4_returncode set_scroll_refresh(AW_pos world_x, AW_pos world_y, AW_pos width, AW_pos height, ED4_properties scroll_prop ); // (***)
 
     ED4_line_terminal( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
