@@ -27,13 +27,18 @@
 
 AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2)
 {
-    AW_gc_manager preset_window =
+    AW_gc_manager preset_window = 
         AW_manage_GC(aww,device,AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
                      (AW_CB)AWT_resize_cb, (AW_CL)ntw, cd2,
                      true,      // define color groups
+                     "#3be",
 
-                    "#3be",
-                     "CURSOR$white",
+                     // Important note :
+                     // Many gc indices are shared between ABR_NTREE and ARB_PARSIMONY
+                     // e.g. the tree drawing routines use same gc's for drawing both trees
+                     // (check PARS_dtree.cxx AWT_graphic_parsimony::init_devices)
+
+                     "Cursor$white",
                      "Branch remarks$#b6ffb6",
                      "+-Bootstrap$#53d3ff",    "-B.(limited)$white",
                      "-GROUP_BRACKETS$#000",
@@ -1433,7 +1438,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if(cl->exists){
                             at = (AP_tree *)cl->client_data1;
                             if (!at) break;
-                            
+
                             reset_line_width(at);
                             if (at->father) { // reset clicked branch
                                 if (at->father->leftson == at) at->father->gr.left_linewidth = 0;
@@ -1467,7 +1472,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                                 this->exports.save = 1;
                                 this->exports.refresh = 1;
                             }
-                            
+
                         }
                         break;
                     case AWT_M_RIGHT:
@@ -1802,7 +1807,7 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name,AW_CL link_to_databas
     else {
         AP_tree      *apt = this->tree_proto->dup();
         AP_tree_root *tr  = new AP_tree_root(gb_main,apt,name);
-        
+
         error = apt->load(tr,(int)link_to_database,(GB_BOOL)insert_delete_cbs, GB_TRUE); // show status
         this->unload();
 
@@ -1814,9 +1819,9 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name,AW_CL link_to_databas
             this->tree_root         = apt;
             this->tree_static       = tr;
             this->tree_root_display = this->tree_root;
-            
+
             this->tree_root->compute_tree(gb_main);
-            
+
             this->tree_name     = strdup(name);
             tr->root_changed_cd = (void*)this;
             tr->root_changed    = AWT_graphic_tree_root_changed;
