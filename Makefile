@@ -374,6 +374,7 @@ first_target:
 		@echo ' clean       - remove intermediate files (objs,libs,etc.)'
 		@echo ' realclean   - remove ALL generated files'
 		@echo ' rebuild     - realclean + all'
+		@echo ' relink      - remove all binaries and relink them from objects'
 		@echo ''
 		@echo 'Some often used sub targets (make all makes them all):'
 		@echo ''
@@ -1308,13 +1309,15 @@ rmbak:
 		-o -name 'infile' -o -name treefile -o -name outfile \
 		-o -name 'gde*_?' -o -name '*~' \) \
 	-print -exec rm {} \;
-	rm -f -r .test.?.er
-	rm -f checkpoint*
-	rm -f test.?.er
 
-bclean:		#binary clean
-	rm -f bin/arb_*
+bclean:
+	@echo Cleaning bin directory 
+	find bin -type l -exec rm {} \;
+	find bin -type f \! \( -name ".cvsignore" -o -name "Makefile" -o -path "bin/CVS*" \) -exec rm {} \;
 	cd bin;make all
+
+libclean:
+	rm -f `find . -type f \( -name '*.a' ! -type l \) -print`
 
 clean:	rmbak
 	rm -f `find . -type f \( -name 'core' -o -name '*.o' -o -name '*.a' ! -type l \) -print`
@@ -1326,14 +1329,15 @@ clean:	rmbak
 	$(MAKE) -C GDEHELP clean
 
 realclean: clean
-	rm -f `find bin -type f -perm -001 -print`
 	rm -f AISC/aisc
 	rm -f AISC_MKPTPS/aisc_mkpt
 	rm -f SOURCE_TOOLS/generate_all_links.stamp
 
-rebuild:
-		$(MAKE) realclean
-		$(MAKE) all
+rebuild: realclean
+	$(MAKE) all
+
+relink: bclean libclean
+	$(MAKE) all
 
 save:	rmbak
 	util/arb_save
