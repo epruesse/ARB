@@ -436,20 +436,27 @@ void AWT_graphic_tree::toggle_group(AP_tree * at)
         if (gb_name) {
             gname = GB_read_string(gb_name);
 
-            const char *msg = GBS_global_string("Do You really want to delete group '%s'",gname);
+            const char *msg = GBS_global_string("What to do with group '%s'?",gname);
             delete gname;
-            switch (aw_message(msg,"Hide Only,Destroy,Cancel")){
-                case 0:
-                    at->gr.grouped = 0;
+            switch (aw_message(msg,"Rename,Destroy,Cancel")){
+                case 0: {
+                    char *new_gname = aw_input("Rename group", 0, at->name);
+                    if (new_gname) {
+                        free(at->name);
+                        at->name = new_gname;
+                    }
                     return;
-                case 1:
+                }
+                case 1: {
                     at->gr.grouped = 0;
-                    at->name = 0;
+                    at->name       = 0;
                     GB_delete(at->gb_node);
-                    at->gb_node = 0;
+                    at->gb_node    = 0;
                     return;
-                case 2:
+                }
+                case 2: {
                     return;
+                }
             }
         }
     }
