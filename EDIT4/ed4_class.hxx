@@ -452,7 +452,7 @@ public:
 };
 
 #ifdef DEBUG
-# define TEST_BASES_TABLE
+// # define TEST_BASES_TABLE
 #endif
 
 #define SHORT_TABLE_ELEM_SIZE 1
