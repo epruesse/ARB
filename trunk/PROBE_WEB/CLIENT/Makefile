@@ -1,16 +1,75 @@
 # Makefile for generation of jar archive from probe client classes
 
-jar:
-	javac *.java
-	jar -cmf mymanifest allProbes.jar *.class  
-##demo.newick
+.SUFFIXES = .java .class .jar
+
+BASE=$(ARBHOME)/PROBE_WEB/CLIENT
+JAR=arb_probe_library.jar
+TESTDIR=$(BASE)/testdir
+
+ifeq ('$(MAIN)','CLIENT.a')
+		TARGET=all
+else
+		TARGET=help_local
+endif
+
+main_target : $(TARGET)
+
+help_local: help
+		@echo "also built by 'make pc' in main ARB makefile"
+		@echo ""
+
+help:
+	@echo "TARGET=$(TARGET)"
+	@echo "MAIN=$(MAIN)"
+	@echo ""
+	@echo "    target      description"
+	@echo "   ----------------------------------------------------------------------"
+	@echo "    all         Build $(JAR)"
+	@echo "    test        Run $(JAR)"
+	@echo "    clean       remove made files"
+	@echo ""
+
+JAVAS=$(wildcard *.java)
+CLASSES=$(JAVAS:.java=.class)
+BUILDLIST=build.lst
+
+all: $(JAR)
+
+#.java.class:
+%.class : %.java
+		@-((test -f $@ && rm $@) || true)
+		@echo "$<" >>$(BUILDLIST)
+
+#		javac $(JAVAS)
+
+compile:
+		@echo javac `cat $(BUILDLIST)`
+		@javac `cat $(BUILDLIST)`
+
+$(JAR) : $(CLASSES) $(JAVAS)
+		-(test -f $(BUILDLIST) && ($(MAKE) compile || rm $(BUILDLIST)))
+		-@rm $(BUILDLIST)
+		jar -cmf mymanifest $(JAR) $(CLASSES)
 
 update:
-	jar -uf allProbes.jar *.class
+	jar -uf $(JAR) *.class
 
-test:
-	( mkdir -p testdir; cd testdir; java -jar ../allProbes.jar; ls -al -rt )
+test: all
+	( mkdir -p $(TESTDIR); cd $(TESTDIR); java -jar $(BASE)/$(JAR); ls -al -rt )
+
+test_rs: all
+	(	mkdir -p $(TESTDIR) ;\
+		cd $(TESTDIR) ;\
+		java -jar $(BASE)/$(JAR) server=http://hi.er/probeserver/ ;\
+		ls -al -rt )
 
 clean:
-	rm *.class
-	rm allProbes.jar
+	@-rm		*.class \
+				$(JAR) \
+				probetree.gz \
+
+# the client uses all code:
+Client.class : $(JAVAS)
+
+# all code uses the Toolkit
+$(CLASSES) : Toolkit.java
