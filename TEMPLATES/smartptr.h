@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2000
+// Copyright (C) 2000-2003
 // Ralf Westram
 // (Coded@ReallySoft.de)
 //
@@ -20,6 +20,10 @@
 #ifndef SMARTPTR_H
 #define SMARTPTR_H
 
+// #ifndef _CPP_MEMORY
+// #include <memory>
+// #endif
+
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
@@ -28,57 +32,145 @@
 // --------------------------------------------------------------------------------
 //     SmartPointers
 // --------------------------------------------------------------------------------
+//
+//  provides:
+//
+//  SmartPtr<type>                                                   uses delete
+//  SmartPtr<type, Counted<type, auto_delete_array_ptr<type> > >     uses delete []
+//  SmartPtr<type, Counted<type, auto_free_ptr<type> > >             uses free
+//
+// --------------------------------------------------------------------------------
+// two macros for convinience:
 
-template <class T> class SmartPtr;
+#define SmartArrayPtr(type)  SmartPtr<type, Counted<type, auto_delete_array_ptr<type> > >
+#define SmartMallocPtr(type) SmartPtr<type, Counted<type, auto_free_ptr<type> > >
+
+// --------------------------------------------------------------------------------
+
+
+#ifdef NDEBUG
+#ifdef DUMP_SMART_PTRS
+#error Please do not define DUMP_SMART_PTRS in NDEBUG mode!
+#endif
+#endif
+
+#ifdef DUMP_SMART_PTRS
+#define DUMP_SMART_PTRS_DO(cmd) do { (cmd); } while(0)
+#else
+#define DUMP_SMART_PTRS_DO(cmd)
+#endif
+
+// -----------------------------------------------------------------
+//      helper pointer classes
+//
+// used by Counted<> to use correct method to destroy the contents
+// -----------------------------------------------------------------
 
 template <class T>
-// --------------------------------------------------------------------------------
-//     class Counted
-// --------------------------------------------------------------------------------
-class Counted {
+class auto_free_ptr {
+    T *const thePointer;
 public:
-#ifdef TEST_SMART_COUNTERS
-    static long smartPtrCounter;
-#endif
-private:
-    unsigned    counter;
-    T *const    pointer;
-
-
-    Counted(T *p) : counter(0), pointer(p) { tpl_assert(p); }
-    ~Counted() { tpl_assert(counter==0); delete pointer; }
-
-    unsigned new_reference() {
-        //cout << "new reference to pointer" << int(pointer) << " (now there are " << counter+1 << " references)" << "\n";
-#if defined(TEST_SMART_COUNTERS)
-        ++smartPtrCounter;
-#endif // TEST_SMART_COUNTERS
-        return ++counter;
+    auto_free_ptr(T *p) : thePointer(p) {
+        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p now controlled by auto_free_ptr\n", thePointer));
     }
-    unsigned free_reference() {
-        //cout << "removing reference to pointer " << int(pointer) << " (now there are " << counter-1 << " references)\n";
-        tpl_assert(counter!=0);
-#if defined(TEST_SMART_COUNTERS)
-        --smartPtrCounter;
-#endif // TEST_SMART_COUNTERS
-        return --counter;
+    ~auto_free_ptr() {
+        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p gets destroyed by auto_free_ptr\n", thePointer));
+        free(thePointer);
     }
 
-    friend class SmartPtr<T>;
+    const T* getPointer() const { return thePointer; }
+    T* getPointer() { return thePointer; }
 };
 
 template <class T>
+class auto_delete_ptr {
+    T *const thePointer;
+public:
+    auto_delete_ptr(T *p) : thePointer(p) {
+        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p now controlled by auto_delete_ptr\n", thePointer));
+    }
+    ~auto_delete_ptr() {
+        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p gets destroyed by auto_delete_ptr\n", thePointer));
+        delete thePointer;
+    }
+
+    const T* getPointer() const { return thePointer; }
+    T* getPointer() { return thePointer; }
+};
+
+template <class T>
+class auto_delete_array_ptr {
+    T *const thePointer;
+public:
+    auto_delete_array_ptr(T *p) : thePointer(p) {
+        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p now controlled by auto_delete_array_ptr\n", thePointer));
+    }
+    ~auto_delete_array_ptr() {
+        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p gets destroyed by auto_delete_array_ptr\n", thePointer));
+        delete [] thePointer;
+    }
+
+    const T* getPointer() const { return thePointer; }
+    T* getPointer() { return thePointer; }
+};
+
+// -----------------------
+//      class Counted
+// -----------------------
+
+template <class T, class C> class SmartPtr;
+
+template <class T, class AP>
+class Counted {
+    unsigned counter;
+    AP       pointer;
+
+public:
+
+    Counted(T *p) : counter(0), pointer(p) {
+        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p now controlled by Counted\n", (T*)pointer));
+        tpl_assert(p);
+    }
+#ifdef DEBUG
+    ~Counted() {
+        tpl_assert(counter==0);
+        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p gets destroyed by Counted\n", (T*)pointer));
+    }
+#endif
+
+    unsigned new_reference() {
+        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p gets new reference (now there are %i references)\n", (T*)pointer, counter+1));
+        return ++counter;
+    }
+    unsigned free_reference() {
+        DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p looses a reference (now there are %i references)\n", (T*)pointer, counter-1));
+        tpl_assert(counter!=0);
+        return --counter;
+    }
+
+    const T* getPointer() const { return pointer.getPointer(); }
+    T* getPointer() { return pointer.getPointer(); }
+
+    friend class SmartPtr<T, Counted<T, AP> >;
+};
+
+
 // --------------------------------------------------------------------------------
 //     class SmartPtr
 // --------------------------------------------------------------------------------
 /** @memo Smart pointer class
      */
+
+template <class T, class C = Counted<T, auto_delete_ptr<T> > >
 class SmartPtr {
 private:
-    Counted<T> *object;
+    C *object;
 
     void Unbind() {
-        if (object && object->free_reference()==0) delete object;
+        if (object && object->free_reference()==0) {
+            DUMP_SMART_PTRS_DO(fprintf(stderr, "Unbind() deletes Counted object %p (which hold pointer %p)\n", object, (T*)object->getPointer()));
+            delete object;
+        }
         object = 0;
     }
 public:
@@ -94,7 +186,7 @@ public:
         @param p Pointer to any dynamically allocated object
     */
     SmartPtr(T *p) {
-        object = new Counted<T>(p);
+        object = new C(p);
         object->new_reference();
     }
 
@@ -102,24 +194,24 @@ public:
 
         object will not be destroyed as long as any other SmartPtr points to it
     */
-    ~SmartPtr() {Unbind(); }
+    ~SmartPtr() { Unbind(); }
 
-    SmartPtr(const SmartPtr<T>& other) {
+    SmartPtr(const SmartPtr<T, C>& other) {
         object = other.object;
         if (object) object->new_reference();
     }
-    SmartPtr<T>& operator=(const SmartPtr<T>& other) {
+    SmartPtr<T, C>& operator=(const SmartPtr<T, C>& other) {
         if (other.object) other.object->new_reference();
         Unbind();
         object = other.object;
         return *this;
     }
 
-    T *operator->() { tpl_assert(object); return object->pointer; }
-    const T *operator->() const { tpl_assert(object); return object->pointer; }
+    const T *operator->() const { tpl_assert(object); return object->getPointer(); }
+    T *operator->() { tpl_assert(object); return object->getPointer(); }
 
-    T& operator*() { tpl_assert(object); return *(object->pointer); }
-    const T& operator*() const { tpl_assert(object); return *(object->pointer); }
+    const T& operator*() const { tpl_assert(object); return *(object->getPointer()); }
+    T& operator*() { tpl_assert(object); return *(object->getPointer()); }
 
     /** test if SmartPtr is 0 */
     bool Null() const { return object==0; }
@@ -133,7 +225,7 @@ public:
 
         @return SmartPtr to the new copy.
     */
-    SmartPtr<T> deep_copy() const { return SmartPtr<T>(new T(**this)); }
+    SmartPtr<T, C> deep_copy() const { return SmartPtr<T, C>(new T(**this)); }
 
     /** test if two SmartPtrs point to the same object
         (this is used for operators == and !=).
@@ -143,21 +235,20 @@ public:
 
         @return true if the SmartPtrs point to the same object
     */
-    bool sameObject(const SmartPtr<T>& other) const {
+    bool sameObject(const SmartPtr<T, C>& other) const {
         tpl_assert(object);
         tpl_assert(other.object);
         return object==other.object;
     }
 };
 
-template <class T> bool operator==(const SmartPtr<T>& s1, const SmartPtr<T>& s2) {
+template <class T, class C> bool operator==(const SmartPtr<T, C>& s1, const SmartPtr<T, C>& s2) {
     return s1.sameObject(s2);
 }
 
-template <class T> bool operator!=(const SmartPtr<T>& s1, const SmartPtr<T>& s2) {
+template <class T, class C> bool operator!=(const SmartPtr<T, C>& s1, const SmartPtr<T, C>& s2) {
     return !s1.sameObject(s2);
 }
-
 
 #else
 #error smartptr.h included twice
