@@ -1,7 +1,7 @@
 #!/bin/bash -x
 
-if [ -z "$6" ]; then
-    echo "Usage: arb_proml bootstrap aachangemodel viewreport analysis randomize rearrange"
+if [ -z "$8" ]; then
+    echo "Usage: arb_proml bootstrap aachangemodel viewreport analysis randomize rearrange rate_variation interactive"
 else
     BOOTSTRAP=$1
     MODEL=$2
@@ -9,6 +9,8 @@ else
     ANALYSIS=$4
     RANDOMIZE=$5
     REARRANGE=$6
+    RATE_VARIATION=$7
+    INTERACTIVE=$8
 
     FLAGS=""
 
@@ -26,12 +28,19 @@ else
         FLAGS="$FLAGS g"
     fi
 
-#     if [ \! "$THRESHOLD" = "0" ]; then
-#         FLAGS="$FLAGS t $THRESHOLD"
-#     fi
+    case $RATE_VARIATION in
+        0) ;;
+        1) FLAGS="$FLAGS r" ;;
+        2) FLAGS="$FLAGS r r" ;;
+        *)  echo "Illegal value for 'rate_variation'"; exit 1 ;;
+    esac
 
     if [ "$BOOTSTRAP" = "0" ]; then
-        arb_echo $FLAGS y | proml
+        if [ "$INTERACTIVE" = "0" ]; then
+            arb_echo $FLAGS y | proml
+        else
+            (arb_echo $FLAGS ; cat - ) | ( proml ; echo "Press RETURN to continue.." )
+        fi
         #proml
         echo >arb_read_tree_args
         WHAT=proml
