@@ -13,6 +13,8 @@
         ` \
     |gzip >arb.tgz
 
+    ls -al arb.tgz
+
 #	mv lib/pts lib/pts.old
 #	tar cfvo -	demo.arb arb_install.sh arb_README.txt bin PERL5 PERL_SCRIPTS SH GDEHELP DEPOT Xlib \
 #			`find lib/* ! -name '*.a' -print -type d -prune` \
