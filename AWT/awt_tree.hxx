@@ -20,6 +20,8 @@ typedef unsigned char uchar;
 enum {
     AWT_GC_CURSOR=0,
     AWT_GC_BRANCH_REMARK,
+    AWT_GC_BOOTSTRAP,
+    AWT_GC_BOOTSTRAP_LIMITED,
     AWT_GC_GROUPS,
     AWT_GC_SELECTED,        // == zero mismatches
     AWT_GC_UNDIFF,
