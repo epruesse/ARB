@@ -1181,6 +1181,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     awtqs.result_pos_fig	  = "result1";
     awtqs.count_pos_fig	      = "count1";
     awtqs.do_query_pos_fig	  = "doquery1";
+    awtqs.config_pos_fig	  = "doconfig1";
     awtqs.do_mark_pos_fig	  = 0;
     awtqs.do_unmark_pos_fig	  = 0;
     awtqs.do_delete_pos_fig	  = "dodelete1";
@@ -1214,6 +1215,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
     awtqs.result_pos_fig	  = "result2";
     awtqs.count_pos_fig	      = "count2";
     awtqs.do_query_pos_fig	  = "doquery2";
+    awtqs.config_pos_fig	  = "doconfig2";
     awtqs.do_mark_pos_fig	  = 0;
     awtqs.do_unmark_pos_fig	  = 0;
     awtqs.do_delete_pos_fig	  = "dodelete2";

@@ -96,3 +96,5 @@ Single
 4 0 -1 0 0 16 12 0.0000 4 180 4020 8685 4410 ( empty field means search for fields that exist in\001
 4 0 -1 0 0 16 12 0.0000 4 180 4290 8685 4635 db 1 and db2 and are displayed in the hitlist of db1\001
 4 0 -1 0 0 16 12 0.0000 4 180 1980 13095 4410 (? and * are wild cards)\001
+4 0 -1 0 0 18 13 0.0000 4 210 1155 855 7695 $doconfig1\001
+4 0 -1 0 0 18 13 0.0000 4 210 1155 9225 7695 $doconfig2\001

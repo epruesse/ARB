@@ -290,6 +290,7 @@ public:
     const char *count_pos_fig;
 
     const char *do_query_pos_fig;
+    const char *config_pos_fig;
     const char *do_mark_pos_fig;
     const char *do_unmark_pos_fig;
     const char *do_delete_pos_fig;
