@@ -12,6 +12,7 @@
 
 #include "../global_defs.h"
 #include "../common.h"
+#include "../mapping.h"
 
 #define MINTEMPERATURE 30.0
 #define MAXTEMPERATURE 100.0
@@ -30,14 +31,18 @@
 typedef string SpeciesName;
 typedef string Probes;
 
-GBDATA *gb_main=0; //ARB-database
-GBDATA *pd_main=0; //probe-design-database
+GBDATA *gb_main = 0;            //ARB-database
+GBDATA *pd_main = 0;            //probe-design-database
+
+typedef enum { TF_NONE, TF_CREATE, TF_EXTEND } Treefile_Action;
 
 struct InputParameter{
-    string db_name;
-    string pt_server_name;
-    string pd_db_name;
-    int    pb_length;
+    string          db_name;
+    string          pt_server_name;
+    string          pd_db_name;
+    int             pb_length;
+    Treefile_Action gen_treefile;
+    string          treefile;
 };
 
 static InputParameter para;
@@ -163,12 +168,13 @@ static PT_server_connection *my_server;
 void helpArguments(){
     fprintf(stderr,
             "\n"
-            "Usage: arb_probe_group_design <db_name> <pt_server> <db_out> <probe_length>\n"
+            "Usage: arb_probe_group_design <db_name> <pt_server> <db_out> <probe_length> [(-c|-x) <treefile>]\n"
             "\n"
             "db_name        name of ARB-database to build groups for\n"
             "pt_server      name of pt_server\n"
             "db_out         name of probe-design-database\n"
             "probe_lengh    length of the probe (15-20)\n"
+            "treefile       treefile for probe_server [-c=create, -x=extend]\n"
             "\n"
             );
 }
@@ -179,11 +185,21 @@ void helpArguments(){
 GB_ERROR scanArguments(int argc,char *argv[]){
     GB_ERROR error = 0;
 
-    if (argc == 5) {
+    if (argc == 5 || argc == 7) {
         para.db_name        = argv[1];
         para.pt_server_name = string("localhost: ")+argv[2];
         para.pd_db_name     = string(argv[3])+argv[4];
         para.pb_length      = atoi(argv[4]);
+        if (argc == 7) {
+            if      (strcmp(argv[5], "-c") == 0) para.gen_treefile = TF_CREATE;
+            else if (strcmp(argv[5], "-x") == 0) para.gen_treefile = TF_EXTEND;
+            else error = GBS_global_string("'-c' or '-x' expected, '%s' found", argv[5]);
+
+            para.treefile = string(argv[6]);
+        }
+        else {
+            para.gen_treefile = TF_NONE;
+        }
     }
     else {
         helpArguments();
