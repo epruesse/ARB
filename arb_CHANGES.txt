@@ -2,7 +2,10 @@ ARB change log
 
 Major changes for next Beta:
 
+ - PT-server occupies more memory => does less passes; more diagnostic output
+ - small changes to status window (unhide behavior/time estimation)
  - menus and menu-hotkeys reorganized
+ - colored buttons in color config windows
  - alignment concatenation (i.e. several different genes)
  - merging data of similar species (according selected database field)
  - keyboard commands for ARB_NTREE (mark/unmark/invert, collapse/expand)

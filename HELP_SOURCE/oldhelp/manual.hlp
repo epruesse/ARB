@@ -2,12 +2,13 @@
 UP	arb.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
+SUB	arb.ps
 SUB	man_arb_edit4.hlp
 
-TITLE           ARB Manual
+TITLE           ARB Manuals
 
-OCCURRENCE      General
+DESCRIPTION
 
-DESCRIPTION     Manual Overview
-
+                Several resources concerning ARB can be found on our Website
+                at LINK{http://rtfm.arb-home.de/}
 
