@@ -2,6 +2,7 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.lang.*;
 
 
 /**
@@ -13,7 +14,7 @@ class Client
     private ProbesGUI     display    = null;
     private TreeNode      root       = null;
     private String        treeString = null;
-    private String        baseurl    = null;
+    // private String        baseurl    = null;
     private HttpSubsystem webAccess  = null;
     private IOManager     iom        = null;    
 
@@ -33,12 +34,14 @@ class Client
     }
 
     public HttpSubsystem webAccess() { return webAccess; }
+    public ProbesGUI getDisplay() { return display; }
 
     private HashMap knownOptions() {
         // declares the known options 
         HashMap hm = new HashMap();
         hm.put("server", "=URL        Specify server URL manually");
         hm.put("tree",   "=reload       Force tree reload");
+        hm.put("proxy",  "=host:port   Specify proxy");
         return hm;
     }
 
@@ -92,8 +95,6 @@ class Client
         return tr.getTreeString();
     }
 
-
-    public ProbesGUI getDisplay() { return display; }
 
     public void matchProbes(Probe probe) throws Exception {
         boolean needUpdate = false;
@@ -362,21 +363,33 @@ class Client
     }
 
     private void initialize(CommandLine cmdline) throws Exception {
-        if (cmdline.getOption("server")) {
-            baseurl = cmdline.getOptionValue("server");
-        }
-        else {
-            baseurl = new String("http://probeserver.mikro.biologie.tu-muenchen.de/probe_library/"); // final server URL
-            // cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/"); // URL for debugging (curr. not working)
-        }
-        if (baseurl.charAt(baseurl.length()-1) != '/') baseurl += '/'; // force trailing slash
 
         loadConfig();
         createProbesGUI(); // creates 'display'
         iom = new IOManager(display);
 
         try {
-            NodeProbes.webAccess = webAccess = new HttpSubsystem(baseurl);
+            String baseurl = null;
+            
+            if (cmdline.getOption("server")) {
+                baseurl = cmdline.getOptionValue("server");
+            }
+            else {
+                baseurl = new String("http://probeserver.mikro.biologie.tu-muenchen.de/probe_library/"); // final server URL
+                // cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/"); // URL for debugging (curr. not working)
+            }
+            if (baseurl.charAt(baseurl.length()-1) != '/') baseurl += '/'; // force trailing slash
+
+            String proxy = null;
+            if (cmdline.getOption("proxy")) {
+                proxy = cmdline.getOptionValue("proxy");
+                Toolkit.InternalError("parameter 'proxy' not implemented yet");
+            }
+            else {
+                // Properties p = System.getProperties();
+            }
+
+            NodeProbes.webAccess = webAccess = new HttpSubsystem(baseurl, proxy);
 
             // ask server for version info
             Toolkit.showMessage("Contacting probe server ..");
