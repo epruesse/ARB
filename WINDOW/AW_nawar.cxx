@@ -543,6 +543,12 @@ AW_default AW_root::open_default(const char *default_name, bool create_if_missin
     }
     else {
         GB_print_error();
+        
+        const char *shown_name      = strrchr(default_name, '/');
+        if (!shown_name) shown_name = default_name;
+        fprintf(stderr, "Error loading properties '%s'\n", shown_name);
+        
+        exit(EXIT_FAILURE);
     }
     return (AW_default) gb_default;
 }
