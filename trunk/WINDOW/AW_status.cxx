@@ -919,21 +919,40 @@ struct {
 //      static char *get_full_qualified_help_file_name(const char *helpfile, bool path_for_edit = false)
 //  ---------------------------------------------------------------------------------------------------------
 static char *get_full_qualified_help_file_name(const char *helpfile, bool path_for_edit = false) {
-    GB_CSTR result = 0;
+    GB_CSTR  result             = 0;
+    char    *user_doc_path      = strdup(GB_getenvDOCPATH());
+    char    *devel_doc_path     = strdup(GBS_global_string("%s/HELP_SOURCE/oldhelp", GB_getenvARBHOME()));
+    size_t   user_doc_path_len  = strlen(user_doc_path);
+    size_t   devel_doc_path_len = strlen(devel_doc_path);
 
-    if (helpfile[0]=='/') {
+    const char *rel_path = 0;
+    if (strncmp(helpfile, user_doc_path, user_doc_path_len) == 0 && helpfile[user_doc_path_len] == '/') {
+        rel_path = helpfile+user_doc_path_len+1;
+    }
+    else if (strncmp(helpfile, devel_doc_path, devel_doc_path_len) == 0 && helpfile[devel_doc_path_len] == '/') {
+        rel_path = helpfile+devel_doc_path_len+1;
+    }
+
+    if (helpfile[0]=='/' && !rel_path) {
         result = GBS_global_string("%s", helpfile);
     }
     else {
+        if (!rel_path) rel_path = helpfile;
+
         if (path_for_edit) {
-            result = GBS_global_string("%s/HELP_SOURCE/oldhelp/%s", GB_getenvARBHOME(), helpfile);
+            result = GBS_global_string("%s/HELP_SOURCE/oldhelp/%s", GB_getenvARBHOME(), rel_path);
         }
         else {
-            result = GBS_global_string("%s/%s", GB_getenvDOCPATH(), helpfile);
+            result = GBS_global_string("%s/%s", GB_getenvDOCPATH(), rel_path);
         }
     }
 
-    //printf("Helpfile='%s'\n", result);
+#if defined(DEBUG)
+    printf("Helpfile='%s'\n", result);
+#endif // DEBUG
+
+    free(devel_doc_path);
+    free(user_doc_path);
 
     return strdup(result);
 }
