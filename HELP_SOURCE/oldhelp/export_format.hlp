@@ -19,6 +19,7 @@ DESCRIPTION	The export format description file (*.eft) describes
 		It contains different sections:
 
 	SECTIONS
+
 		SUFFIX		suffix		;The suggested file suffix
 		#		headerinfo	;Header information
 		BEGIN ...			;the main section
@@ -35,12 +36,13 @@ DESCRIPTION	The export format description file (*.eft) describes
 				'$$DELETE_LINE$$' are deleted.
 
 	SPECIAL	SECTIONS
-		PRE_FORMAT 	xxx.eft		
-		SYSTEM		"command"	
-	
+
+		PRE_FORMAT 	xxx.eft
+		SYSTEM		"command"
+
 				First a output is created using
 				xxx.eft. Then command is used to convert the
-				result into the wanted result. 
+				result into the wanted result.
 				In command use
 					$< as input-filename
 					$> as output-filename
@@ -62,7 +64,7 @@ EXAMPLES	Edit the files in '$ARBHOME/lib/export'
 WARNINGS	Don't change an '*.eft' file, if you don't understand how
 		it works.
 		Be careful when using ':' or '"' symbols.
-		Escape them if those symbols don't have a meaning.	
+		Escape them if those symbols don't have a meaning.
 
 BUGS		No bugs known
 

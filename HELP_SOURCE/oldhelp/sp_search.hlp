@@ -49,32 +49,37 @@ NOTES		None
 
 EXAMPLES	1. Search for a species called 'Pseudomonas tolaasii'
 
-			Select: - List all species that
-				- match the query
-			Select search field:	'full_name'
-			Type search string:	'pseu*tol*'
+			Select: List all species that match the query
+
+			Select search field: 'full_name'
+
+			Type search string: 'pseu*tol*'
+
 				* and ? are wild cards for multiple and
 				single characters, respectively
-			Press:	'SEARCH'	to start the operation
+
+			Press 'SEARCH' to start the operation
 
 		2. Search for all species that are marked:
 
-			Select: - List all species that
-				- are marked
-			Press:	'SEARCH'	to start the operation
+			Select: List all species that are marked
+
+			Press: 'SEARCH'	to start the operation
 
 		3. Search for all species that are marked and for which
                 an entry is present in the field 'reference'
 
-			Select: - List all species that
-				- are marked
-			Press:	'SEARCH'	to start the operation 1
+			Select: List all species that are marked
 
-			Select: - Keep species that
-				- match the query
-			Select search field:	'reference'
-			Type search string:	'?*' (More than one character)
-			Press:	'SEARCH'	to start the operation 2
+			Press: 'SEARCH'	to start the operation 1
+
+			Select: Keep species that match the query
+
+			Select search field: 'reference'
+
+			Type search string: '?*' (More than one character)
+
+			Press: 'SEARCH' to start the 2nd operation
 
 
 

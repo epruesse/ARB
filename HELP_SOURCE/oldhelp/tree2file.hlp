@@ -23,32 +23,45 @@ DESCRIPTION	Exports a ONE page screenshot of the displayed tree to a
 		file. Different file formates can be written.
 
 		Select:
+
 			- Language:
+
 				Press the button after the 'Language' prompt
 				and select from the submenu.
+
 			- Orientation:
+
 				Press the button after the 'Orientation' prompt
 				and select from the submenu.
-			- Magnification (%) (Postrscript only):
+
+			- Magnification (%) (Postscript only):
+
 				Type number to the 'Magnification' subwindow
+
 			- Print What:
+
 				Press the button after the 'Orientation' prompt
 				and select from the submenu.
+
 					Screen = Tree or section of the tree
-						shown in the tree display window
+                                        shown in the tree display window
+
 					Total Tree = Full tree
 
 		Select a file name from the 'Directories and Files' subwindow
 			or type it to the 'File Name' subwindow.
 
 		Save and/or edit the data:
-			Press one of the buttons in the last line of the 
+
+			Press one of the buttons in the last line of the
 			'Export TREE TO FILE' window
 
 				- SAVE:		exports the data
+
 				- S & XFIG 	Writes the data to the speci-
 						fied file and edits the file.
 						(xfig language has to selected)
+
 				- S & GHOST	Writes the data to the speci-
 						fied file and displays the
 						preview. (postscript language
@@ -58,7 +71,7 @@ DESCRIPTION	Exports a ONE page screenshot of the displayed tree to a
 
 NOTES		The suffix shown or typed in the 'Suffix' subwindow is used as a
 		filter for the displayed file names and is automatically
-		appended to the file name in the 'File Name' subwindow.	
+		appended to the file name in the 'File Name' subwindow.
 
 		Ghostview and xfig are public domain software.
 

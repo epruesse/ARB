@@ -50,3 +50,6 @@ QUESTION When I try to start the aligner V1.0 or V2.0 I get a message:
 ANSWER  You are probably using the LINUX operating system and have not
 	installed arb under root account. Please login as root and run
 	the arb_install program again, but don't update the old package.
+
+NOTE            Please also take a look at our Web-FAQ at http://www.arb-home.de/
+

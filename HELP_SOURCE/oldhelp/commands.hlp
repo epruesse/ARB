@@ -24,32 +24,38 @@ DESCRIPTION	The command interpreter is a simple interpreter.
 		(which may be the input of the next command). The first
 		input stream is normally the value of a database field
 		(see NDS for more information).
-		e.g. count("a") counts every 'a' in each input stream and
-		generates an output stream (== the sum of 'a') for every
-		input.
+
+                     e.g. count("a") counts every 'a' in each input stream and
+                     generates an output stream (== the sum of 'a') for every
+                     input.
+
 		Many commands have command modifiers which are appended to
 		the command.
 
-		different commands can be separated by:
+		Different commands can be separated by:
 
-		';'	all !!! commands take all !!!  the input streams and
-			each command generates its own output streams
-		'|'	the output of the left commands are used as the input
-			of the right.
+                	';'	all !!! commands take all !!!  the input streams and
+                        	each command generates its own output streams
+        		'|'	the output of the left commands are used as the input
+                		of the right.
 
 		e.g.
-		count("A");count("AG")		creates two streams:
-						1. how many A's
-						2. and how many A's and G's
-		count("A");count("G")|per_cent	div is a command that divides
-						two numbers ->
-						number of 'A's / number of 'G's
 
-		finally all output streams are concatenated and
-			NDS:			printed at the tips of the tree
-			MODIFY DATABASE FIELD:	stored in the destination field
+                        count("A");count("AG")
 
+                                creates two streams: 1. how many A's
+                                                     2. and how many A's and G's
 
+                        count("A");count("G")|per_cent
+
+                                per_cent is a command that divides two numbers
+                                (number of 'A's / number of 'G's) and returns the result
+                                as percent.
+
+		Finally all output streams are concatenated and
+
+			- NDS:                     printed at the tips of the tree.
+			- MODIFY DATABASE FIELD:   stored in the destination field.
 
 DESCRIPTION
 
@@ -70,6 +76,7 @@ SECTION COMMANDLIST
 		output stream for each input stream ;
 
 	BASIC
+
 		echo(x1;x2;x3...)	creates an output stream for each
 					parameter 'x' and writes 'x' onto it.
 
@@ -78,6 +85,7 @@ SECTION COMMANDLIST
 		dd			copies input to output
 
 	STRING
+
 		head(n)			the first n characters
 
 		tail(n)			the last n characters
@@ -125,92 +133,100 @@ SECTION COMMANDLIST
 
 	SPECIALS
 
-		format(options) takes a long string  and
-					breaks it into several lines
+		format(options)
 
-			option (default)
+                    takes a long string and breaks it into several lines
 
-			width=#	   (50)	line width
-			firsttab=# (10)	first line left indent
-			tab=#	   (10)	left indent (not first line)
-			"nl=chrs" (" ")	list of characters that specify
-					the point of a line break;
-					This character is deleted !
+			option       (default)     description
 
-		extract_words("chars",val) Search for all words (seperated
-					by ',' ';' ':' ' ' or 'tab') that
-					contain more characters of type
-					chars than val, sort them alpha-
-					betically and write them
-					seperated by ' ' to the output
+			width=#      (50)          line width
+			firsttab=#   (10)          first line left indent
+			tab=#        (10)          left indent (not first line)
+			"nl=chrs"    (" ")         list of characters that specify
+                                                   the point of a line break;
+                                                   This character is deleted !
 
+		extract_words("chars",val)
 
-		exec(command,var1,...)	Execute external (unix) command
-					WARNING !!!!!!
-					You should not use this command for NDS !!!
-					because any slow command will disable
-					all editing -> You never can remove this
-					command from the NDS. Even arb_panic
-					will not easily help you.
+                    Search for all words (seperated by ',' ';' ':' ' ' or 'tab') that
+                    contain more characters of type chars than val, sort them
+                    alphabetically and write them seperated by ' ' to the output
 
-		command(escapedCommand) executes escapedCommand with ACI, SRT
-					(if starts with ':') or as REG (if
-					starts with '/'). In escapedCommand
-					you have to escape '\' and '"' by
-					preceeding a '\'. If you nest calls
-					you have to use multiple escapes.
+		exec(command,var1,...)
+
+                    Execute external (unix) command
+
+                        WARNING !!!!!! You should not use this command for NDS !!!
+                        because any slow command will disable all editing -> You never
+                        can remove this command from the NDS. Even arb_panic will not
+                        easily help you.
+
+		command(escapedCommand)
+
+                        executes escapedCommand with
+
+                                 - ACI,
+                                 - SRT (if starts with ':') or
+                                 - as REG (if starts with '/').
+
+                        In escapedCommand you have to escape '\' and '"' by
+                        preceeding a '\'. If you nest calls you have to use multiple escapes.
 
 	CALCULATOR
+
 		plus			takes exactly the first two input
-					numbers and
-					creates one output with the sum
+					numbers and creates one output with the sum
 		minus			"			difference
 		mult			"			product
 		div			"			quotient
-		per_cent		"		quotient * 100
+		per_cent		"                       quotient * 100
 
 	SEQUENCE SPECIALS
+
 		sequence		the default sequence
 					(in case of genes this is only the
 					 corresponding part of the sequence)
 	 	sequence_type 		the default sequence's type(rna/dna..)
 		sequence_name		the default sequence name(ali_16s,..)
 
-		format_sequence(options) takes a long string ( sequence ) and
-					breaks it into several lines
+		format_sequence(options)
 
-			option (default)
+                        takes a long string ( sequence ) and breaks it into several lines
 
-			width=#	   (50)	sequence line width
-			firsttab=# (10)	first line left indent
-			tab=#	   (10)	left indent (not first line)
-			numleft    (NO)	numbers on the left side
-			gap=#	   (10)	insert a gap every # seq. characters.
+			option       (default)  description
 
-		statistic		creates a character statistic of the
-					sequence
-					(not implemented yet)
+			width=#      (50)       sequence line width
+			firsttab=#   (10)       first line left indent
+			tab=#        (10)       left indent (not first line)
+			numleft      (NO)       numbers on the left side
+			gap=#        (10)       insert a gap every # seq. characters.
+
+		statistic
+
+                        creates a character statistic of the sequence
+                        (not implemented yet)
 
 		filter(options)
-			exclude=#   	characters in filter sequence which
-					exclude the coloumn
-		or	include=# 	vice versa
-			SAI=#	   	SAI of filter sequence
-		or	species=   	species of filter sequence
 
-		diff(options)		show differences to default alignment
-					of another species
-			SAI=#
-			species=#
-			[equal=.]
+			exclude=#   	characters in filter sequence which exclude the coloumn or
+			include=# 	vice versa
+
+			SAI=#	   	SAI of filter sequence or
+			species=   	species of filter sequence
+
+		diff(options)
+
+                        show differences to default alignment of another species
+
+                             SAI=#
+                             species=#
+                             [equal=.]
 
 		extract_sequence("chars",rel_len)
-					like extract_words, but do not sort
-					words, but rel_len is the minimum
-					percantage of characters of a word
-					that mach a character in 'chars'
-			 		before word is taken. All words will be
-					seperated by white space.
+
+                        like extract_words, but do not sort words, but rel_len is the minimum
+                        percantage of characters of a word that mach a character in 'chars'
+                        before word is taken. All words will be seperated by white space.
 
 EXAMPLES	sequence|format_sequence(firsttab=0;tab=10)|"SEQUENCE  ";dd
 
@@ -218,12 +234,12 @@ EXAMPLES	sequence|format_sequence(firsttab=0;tab=10)|"SEQUENCE  ";dd
 				and prepends 'SEQUENCE  '.
 
 		sequence|remove(".-")|format_sequence
+
 				get the default sequence, remove all '.-' and
 				format it
 
 		sequence|remove(".-")|len
 
-				the number of non '.-' symbols (
-					sequence length )
+				the number of non '.-' symbols (sequence length )
 
 		sequence|statistic
