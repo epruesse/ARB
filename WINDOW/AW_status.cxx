@@ -1380,6 +1380,7 @@ static char *get_full_qualified_help_file_name(const char *helpfile, bool path_f
         if (!rel_path) rel_path = helpfile;
 
         if (path_for_edit) {
+#if defined(DEBUG)
             char *gen_doc_path = GBS_global_string_copy("%s/HELP_SOURCE/genhelp", GB_getenvARBHOME());
 
             char *devel_source = GBS_global_string_copy("%s/%s", devel_doc_path, rel_path);
@@ -1400,6 +1401,9 @@ static char *get_full_qualified_help_file_name(const char *helpfile, bool path_f
             free(gen_source);
             free(devel_source);
             free(gen_doc_path);
+#else            
+            result = GBS_global_string("%s/%s", GB_getenvDOCPATH(), rel_path); // use real help file in RELEASE
+#endif // DEBUG
         }
         else {
             result = GBS_global_string("%s/%s", GB_getenvDOCPATH(), rel_path);
@@ -1461,7 +1465,11 @@ static void aw_help_edit_help(AW_window *aww) {
     char *helpfile = get_full_qualified_help_file_name(aww->get_root(), true);
 
     if (GB_size_of_file(helpfile)<=0){
+#if defined(DEBUG)
         sprintf(buffer,"cp %s/HELP_SOURCE/oldhelp/FORM.hlp %s", GB_getenvARBHOME(), helpfile);
+#else        
+        sprintf(buffer,"cp %s/lib/help/FORM.hlp %s", GB_getenvARBHOME(), helpfile);
+#endif // DEBUG
         printf("%s\n",buffer);
         system(buffer);
     }
