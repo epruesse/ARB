@@ -35,7 +35,7 @@
  * memory allocation error handler
  */
 
-void maerror(char *message)
+void maerror(const char *message)
 {
 	FPRINTF(STDOUTFILE "\n\n\nUnable to proceed (lack of memory: %s)\n\n", message);
 	FPRINTF(STDOUTFILE "Hint for Macintosh users:\n");
@@ -243,7 +243,7 @@ icube new_icube(int ntri, int nrow, int ncol)
 		c[i][0] = c[i-1][0] + nrow * ncol;
 		for (j = 1; j < nrow; j++) c[i][j] = c[i][j-1] + ncol;
 	}
-	
+
 	return c;
 }
 
@@ -317,7 +317,7 @@ ulicube new_ulicube(int ntri, int nrow, int ncol)
 		c[i][0] = c[i-1][0] + nrow * ncol;
 		for (j = 1; j < nrow; j++) c[i][j] = c[i][j-1] + ncol;
 	}
-	
+
 	return c;
 }
 
@@ -431,7 +431,7 @@ double randomunitintervall()
 int initrandom(int seed)
 {
    srand((unsigned) time(NULL));
-   if (seed < 0) 
+   if (seed < 0)
 	seed = rand();
    idum=-(long) seed;
 #  ifdef PARALLEL
@@ -449,7 +449,7 @@ int initrandom(int seed)
 #       endif
 #  endif
    return (seed);
-}  /* initrandom */ 
+}  /* initrandom */
 
 
 /* returns a random integer in the range [0; n - 1] */
@@ -489,7 +489,7 @@ void chooser(int t, int s, ivector slist)
 		l = -1;
 		do {
 			k++;
-			if (isfree[k] == TRUE) l++; 
+			if (isfree[k] == TRUE) l++;
 		} while ( l != j);
 		slist[i] = k;
 		isfree[k] = FALSE;
@@ -497,7 +497,7 @@ void chooser(int t, int s, ivector slist)
 	free_ivector(isfree);
 }
 
-/* a realloc function that works also on non-ANSI compilers */ 
+/* a realloc function that works also on non-ANSI compilers */
 void *myrealloc(void *p, size_t s)
 {
 	if (p == NULL) return malloc(s);
@@ -514,7 +514,7 @@ cvector mygets()
 	cvector str;
 
 	str = new_cvector(100);
-	
+
 	n = 0;
 	c = getchar();
 	while (c != '\n' && c != '\r' && n < 99 && c != EOF && !ferror(stdin))
@@ -531,7 +531,7 @@ cvector mygets()
 	{
 		str[n] = '\0';
 	}
-	
+
 	return str;
 }
 
@@ -575,7 +575,7 @@ double brent(double ax, double bx, double cx, double (*f)(double), double tol,
 		w=cx;
 		fw=fcx;
 		v=ax;
-		fv=fax;	
+		fv=fax;
 	}
 	for (iter=1;iter<=ITMAX;iter++) {
 		xm=0.5*(a+b);
@@ -655,7 +655,7 @@ double onedimenmin(double xmin, double xguess, double xmax, double (*f)(double),
 	double tol, double *fx, double *f2x)
 {
 	double eps, optx, ax, bx, cx, fa, fb, fc;
-		
+
 	/* first attempt to bracketize minimum */
 	eps = xguess*tol*50.0;
 	ax = xguess - eps;
@@ -663,7 +663,7 @@ double onedimenmin(double xmin, double xguess, double xmax, double (*f)(double),
 	bx = xguess;
 	cx = xguess + eps;
 	if (cx > xmax) cx = xmax;
-	
+
 	/* check if this works */
 	fa = (*f)(ax);
 	fb = (*f)(bx);
@@ -712,7 +712,7 @@ void twodimenmin(double tol,
 			if ((*x1) > max1) (*x1) = max1;
 			/* same tolerance as 1D minimization */
 			if (fabs((*x1) - x1old) > 3.3*tol) change = TRUE;
-			
+
 			/* standard error */
 			f2x = fabs(f2x);
 			if (1.0/(max1*max1) < f2x) (*err1) = sqrt(1.0/f2x);
@@ -731,7 +731,7 @@ void twodimenmin(double tol,
 			if ((*x2) > max2) (*x2) = max2;
 			/* same tolerance as 1D minimization */
 			if (fabs((*x2) - x2old) > 3.3*tol) change = TRUE;
-			
+
 			/* standard error */
 			f2x = fabs(f2x);
 			if (1.0/(max2*max2) < f2x) (*err2) = sqrt(1.0/f2x);
@@ -740,7 +740,7 @@ void twodimenmin(double tol,
 		}
 
 		if (nump == 1) return;
-		
+
 	} while (it != MAXITS && change);
 
 	return;
