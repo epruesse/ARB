@@ -592,6 +592,9 @@ char *GB_read_as_string(GBDATA *gbd)
         case GB_INT:    sprintf(buffer,"%li",GB_read_int(gbd)); return GB_STRDUP(buffer);
         case GB_FLOAT:  sprintf(buffer,"%.4g",GB_read_float(gbd)); return GB_STRDUP(buffer);
         case GB_BITS:   return GB_read_bits(gbd,'0','1');
+            /* Be careful : When adding new types here, you have to make sure that
+             * GB_write_as_string is able to write them back and that this makes sense.
+             */
         default:    return 0;
     }
 }
@@ -1809,9 +1812,33 @@ long GB_read_old_size(){
                     CALLBACKS
 ********************************************************************************************/
 
+char *GB_get_callback_info(GBDATA *gbd) {
+    /* returns human-readable information about callbacks of 'gbd' or 0 */
+    char *result = 0;
+    if (gbd->ext) {
+        struct gb_callback *cb = gbd->ext->callback;
+        while (cb) {
+            char *cb_info = GBS_global_string_copy("func=%p type=%i clientdata=%p priority=%i",
+                                                   (void*)cb->func, cb->type, cb->clientdata, cb->priority);
+            if (result) {
+                char *new_result = GBS_global_string_copy("%s\n%s", result, cb_info);
+                free(result);
+                free(cb_info);
+                result = new_result;
+            }
+            else {
+                result = cb_info;
+            }
+            cb = cb->next;
+        }
+    }
+
+    return result;
+}
+
 GB_ERROR GB_add_priority_callback(GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata, int priority) {
-    /* smaller priority values get executed before bigger priority values */  
-    
+    /* smaller priority values get executed before bigger priority values */
+
     struct gb_callback *cb;
 
     GB_TEST_TRANSACTION(gbd);
@@ -1843,7 +1870,7 @@ GB_ERROR GB_add_priority_callback(GBDATA *gbd, enum gb_call_back_type type, GB_C
 
     /* cb->next = gbd->ext->callback; */
     /* gbd->ext->callback = cb; */
-    
+
     cb->type       = type;
     cb->clientdata = clientdata;
     cb->func       = func;
