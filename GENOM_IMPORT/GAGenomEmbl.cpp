@@ -17,6 +17,8 @@
 #include <fstream>
 #endif
 
+#include <perf_timer.h>
+
 using namespace std;
 using namespace gellisary;
 
@@ -50,21 +52,26 @@ void gellisary::GAGenomEmbl::parseFlatFile()
 
     char tmp_line[128];
 
-    system("echo before plain read;date");
 
+#if defined(DEBUG)
     {
-    ifstream flatfile2(file_name.c_str());
-    while(!flatfile2.eof())
-    {
-        flatfile2.getline(tmp_line,128);
+        PerfTimer flatFileReadTime("plain-reading complete flatfile");
+        ifstream flatfile2(file_name.c_str());
+        while(!flatfile2.eof())
+        {
+            flatfile2.getline(tmp_line,128);
+        }
     }
-    }
-    system("echo after plain read;date");
-
+    
+    PerfTimer flatFileParse("parse flatfile");
+#endif // DEBUG
 
     ifstream flatfile(file_name.c_str());
     while(!flatfile.eof())
     {
+#if defined(DEBUG)
+        flatFileParse.announceLoop();
+#endif // DEBUG
         flatfile.getline(tmp_line,128);
         tmp_str = tmp_line;
         switch(tmp_str[0])
@@ -302,7 +309,7 @@ void gellisary::GAGenomEmbl::parseFlatFile()
                 }
                 break;
             case '/':
-            	if(seq_len == (int) sequence.size()) 
+            	if(seq_len == (int) sequence.size())
             	{
             		complete_file = true;
             		error_number = 0;
@@ -431,8 +438,6 @@ void gellisary::GAGenomEmbl::parseFlatFile()
                 break;
         }
     }
-
-    system("echo after parse;date");
 
     prepared = true;
 }
