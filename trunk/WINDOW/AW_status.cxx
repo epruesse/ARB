@@ -8,6 +8,7 @@
 #include <time.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <arbdb.h>
 #include <stdarg.h>
 #include <aw_root.hxx>
@@ -360,6 +361,18 @@ inline const char *sec2disp(long seconds) {
     return buffer;
 }
 
+void aw_status_append_to_log(const char* str)
+{
+    int fd = open("arb.log", O_WRONLY|O_APPEND);
+    if (fd == -1)
+	fd = open("arb.log",  O_CREAT|O_WRONLY|O_APPEND, S_IWUSR | S_IRUSR);
+    if (fd == -1) return;
+
+    write(fd, str, strlen(str));
+    write(fd, "\n", 1);
+    close(fd);
+}
+
 void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
 {
     static int  delay = AW_STATUS_LISTEN_DELAY;
@@ -384,6 +397,7 @@ void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                 aw_stg.hide       = 0;
                 aw_stg.hide_delay = AW_STATUS_HIDE_DELAY;
 
+		aw_status_append_to_log("----------------------------");
                 awr->awar(AWAR_STATUS_TITLE)->write_string(str);
                 awr->awar(AWAR_STATUS_GAUGE)->write_string("----------------------------");
                 awr->awar(AWAR_STATUS_TEXT)->write_string("");
@@ -398,7 +412,8 @@ void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                 break;
 
             case AW_STATUS_CMD_TEXT:
-                awr->awar(AWAR_STATUS_TEXT)->write_string(str);
+		aw_status_append_to_log(str);
+                awr->awar(AWAR_STATUS_TEXT)->write_string(str);		
                 break;
 
             case AW_STATUS_CMD_GAUGE: {
@@ -419,6 +434,7 @@ void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                 break;
             }
             case AW_STATUS_CMD_MESSAGE:
+		aw_status_append_to_log(str);
                 aw_stg.awm->show();
                 aw_insert_message_in_tmp_message(awr,str);
                 break;
