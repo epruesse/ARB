@@ -3,40 +3,61 @@
 name=`date '+arbsrc_%Y_%m_%d.tgz'`
 #rm -f arbsrc_*.tgz
 (	ls -d 	./load  ./demo.arb ./README ./arb_* ;\
-	find . 	-name DEPOT -prune -o -name DEPOT2 -prune -o 	\( \
-	   -name "Makefile" -o -name "*.makefile" \
-	-o -name "Imakefile" -o -name "*.script" \
-	-o -name "*.[chf]" -o -name "*.[ch]xx" \
-	-o -name "*.inc" -o -name "*.askjdfhajh" \
-	-o -name "*.bitmap" -o -name "*.icon" \
-	-o -name "*.aisc" -o -name "*.header" \
-	-o -name "*.pa" -o -name "*.README" -o -name "*.txt" \
-	-o -name "*.pl" -o -name "*.PL" \
-	-o -name "*.sh" -o -name "*.dat" \
-	-o -name "*.pod" -o -name "*.POD" \
-	-o -name "*.xs" -o -name "*.pm" \
-    -o -name "*.html" \
-    -o -name "*.dtd" -o -name "*.xsl" \
-	-o -name "typemap" \
- 	-o \(	-name "C" -type l \) \
-	-o \(	-name "AISC" -type l \) \
-	\) -print; \
-	find MAKEBIN LIBLINK */LIBLINK etc SH \
-		./lib/*.dat ./lib/pictures ./lib/pixmaps ./lib/config.* \
-		./lib/submit ./lib/Makefile ./lib/macros \
-		./lib/import ./lib/export ./lib/sellists ./lib/arb_default \
+	find . \
+    -name DEPOT -prune \
+    -o -name DEPOT2 -prune \
+    -o 	\( \
+        -name "Makefile" -o -name "config.makefile.template" \
+            -o -name "Imakefile" -o -name "*.script" \
+            -o -name "*.[chf]" -o -name "*.[ch]xx" -o -name "*.[ch]pp" \
+            -o -name "*.inc" -o -name "*.askjdfhajh" \
+            -o -name "*.bitmap" -o -name "*.icon" \
+            -o -name "*.aisc" -o -name "*.header" \
+            -o -name "*.pa" -o -name "*.README" -o -name "*.txt" -o -name "*.doc" \
+            -o -name "*.pl" -o -name "*.PL" \
+            -o -name "*.sh" -o -name "*.dat" \
+            -o -name "*.pod" -o -name "*.POD" \
+            -o -name "*.xs" -o -name "*.pm" \
+            -o -name "*.html" -o -name "*.gif" \
+            -o -name "*.dtd" -o -name "*.xsl" \
+            -o -name "typemap" \
+	\) \! -type l -print; \
+	find \
+		./lib/*.dat \
+        ./lib/arb_default \
+        ./lib/config.* \
+        ./lib/export \
+		./lib/import \
 		./lib/inputMasks \
-		./lib/macro.head ./util ./GDEHELP \
+		./lib/macro.head \
+        ./lib/macros \
+        ./lib/nas/names.dat.template \
+        ./lib/pictures \
+        ./lib/pixmaps \
+        ./lib/sellists \
+		./lib/submit \
+        ./lib/Makefile \
+        ./*/LIBLINK \
+        ./GDEHELP \
         ./HELP_SOURCE/oldhelp \
-        -print; \
+        ./SOURCE_TOOLS/arb_valgrind \
+        ./SOURCE_TOOLS/valgrind2grep \
+        ./PERL2ARB/ARB.xs.default \
+        ./LIBLINK \
+        ./MAKEBIN \
+        ./SH \
+        ./etc \
+        ./util \
+        \! -type l -print; \
 	) \
     |grep -v '/CVS/' \
     |grep -v '/CVS$' \
     |grep -v '/ARB_SOURCE_DOC/' \
     |grep -v '/GEN[CH]/' \
-    |grep -v '/lib/help_html/' \
+    |grep -v '/PERL5/' \
     |grep -v '/lib/help_html/' \
     |grep -v '/lib/help/' \
+    |grep -v '/lib/nas/names.dat$' \
     |grep -v '\.xvpics' \
     |sort|uniq \
     |cpio -oH tar |gzip - >$name
