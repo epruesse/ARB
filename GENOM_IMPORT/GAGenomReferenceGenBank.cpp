@@ -24,7 +24,7 @@ void gellisary::GAGenomReferenceGenBank::parse()
     bool rx = false;
     bool rl = false;
     bool rc = false;
-    bool cs = false;
+    // bool cs = false;
     for(int i = 0; i < (int) row_lines.size(); i++)
     {
         tmp_str = row_lines[i];
