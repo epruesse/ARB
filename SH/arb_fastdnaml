@@ -5,6 +5,7 @@ nice -19 fastdnaml < $tmp &
 sig=$!
 /bin/echo "$sig $$ \c" >>/tmp/arb_pids_${USER}_${ARB_PID}
 wait
+# echo $tmp not deleted for debugging purposes
 rm -f $tmp
 rm -f checkpoint.$sig
 mv treefile.$sig treefile

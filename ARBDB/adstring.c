@@ -121,28 +121,67 @@ GB_ERROR gb_scan_directory(char *basename, struct gb_scandir *sd){
 }
 
 
-char *GB_find_latest_file(const char *dir,const char *mask){
-    DIR *dirp;
+char *GB_find_all_files(const char *dir,const char *mask, GB_BOOL filename_only) {
+    /* Returns a string containing the filenames of all files matching mask.
+       The single filenames are seperated by '*'.
+       if 'filename_only' is true -> string contains only filenames w/o path
+       returns 0 if no files found (or directory not found)
+    */
+
+    DIR           *dirp;
     struct dirent *dp;
-    char	buffer[GB_PATH_MAX];
-    struct stat st;
-    GB_ULONG newest = 0;
-    char *result = 0;
+    struct stat    st;
+    char          *result = 0;
+    char	       buffer[GB_PATH_MAX];
+
     dirp = opendir(dir);
-    if (!dirp) return 0;
-    for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)){
-        if (!GBS_string_scmp(dp->d_name,mask,0)){
-            sprintf(buffer,"%s/%s",dir,dp->d_name);
-            if (!stat(buffer,&st)){
-                if ((GB_ULONG)st.st_mtime > newest){
-                    newest = st.st_mtime;
-                    if (result) free(result);
-                    result = GB_STRDUP(&dp->d_name[0]);
+    if (dirp) {
+        for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
+            if (!GBS_string_scmp(dp->d_name,mask,0)) {
+                sprintf(buffer,"%s/%s",dir,dp->d_name);
+                if (stat(buffer,&st) == 0  && S_ISREG(st.st_mode)) { // regular file ?
+                    if (filename_only) strcpy(buffer, dp->d_name);
+                    if (result) {
+                        char *neu = GB_strdup(GBS_global_string("%s*%s", result, buffer));
+                        free(result);
+                        result    = neu;
+                    }
+                    else {
+                        result = GB_strdup(buffer);
+                    }
                 }
             }
         }
+        closedir(dirp);
     }
-    closedir(dirp);
+
+    return result;
+}
+
+char *GB_find_latest_file(const char *dir,const char *mask){
+    DIR           *dirp;
+    struct dirent *dp;
+    char	       buffer[GB_PATH_MAX];
+    struct stat    st;
+    GB_ULONG       newest = 0;
+    char          *result = 0;
+
+    dirp = opendir(dir);
+    if (dirp) {
+        for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)){
+            if (!GBS_string_scmp(dp->d_name,mask,0)){
+                sprintf(buffer,"%s/%s",dir,dp->d_name);
+                if (stat(buffer,&st) == 0){
+                    if ((GB_ULONG)st.st_mtime > newest){
+                        newest = st.st_mtime;
+                        if (result) free(result);
+                        result = GB_STRDUP(&dp->d_name[0]);
+                    }
+                }
+            }
+        }
+        closedir(dirp);
+    }
     return result;
 }
 

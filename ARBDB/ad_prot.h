@@ -13,6 +13,7 @@ char *GB_mergesort P_((void **array, long start, long end, gb_compare_two_items_
 /* adlang1.c */
 
 /* adstring.c */
+char *GB_find_all_files P_((const char *dir, const char *mask, GB_BOOL filename_only));
 char *GB_find_latest_file P_((const char *dir, const char *mask));
 GB_ERROR GB_export_error P_((const char *templat, ...));
 GB_ERROR GB_print_error P_((void));
@@ -241,7 +242,7 @@ void GB_edit P_((const char *path));
 void GB_textprint P_((const char *path));
 GB_CSTR GB_getcwd P_((void));
 void GB_xterm P_((void));
-void GB_xcmd P_((const char *cmd, GB_BOOL background));
+void GB_xcmd P_((const char *cmd, GB_BOOL background, GB_BOOL wait_only_if_error));
 GB_CSTR GB_getenvUSER P_((void));
 GB_CSTR GB_getenvHOME P_((void));
 GB_CSTR GB_getenvARBHOME P_((void));
