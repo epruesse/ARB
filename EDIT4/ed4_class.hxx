@@ -281,10 +281,16 @@ public:
 
 };
 
+class ED4_CursorShape;
+
+
 typedef enum
     {
         ED4_RIGHT_ORIENTED_CURSOR,
+        ED4_RIGHT_ORIENTED_CURSOR_THIN,
         ED4_TRADITIONAL_CURSOR,
+        ED4_TRADITIONAL_CURSOR_BOTTOM,
+        ED4_TRADITIONAL_CURSOR_CONNECTED,
         ED4_FUCKING_BIG_CURSOR,
 
         ED4_CURSOR_TYPES
@@ -296,13 +302,15 @@ extern int ED4_update_global_cursor_awars_allowed;
 // --------------------------------------------------------------------------------
 //     class ED4_cursor
 // --------------------------------------------------------------------------------
+
 class ED4_cursor
 {
-    ED4_index         abs_x;    // absolute (to terminal) x-position of cursor (absolute world coordinate of edit window)
-    int               screen_position; // number of displayed characters leading the cursor
-    int               last_seq_position; // last sequence position, cursor was set to (or -1)
-    ED4_base_position base_position; // # of bases left of cursor
-    ED4_CursorType    ctype;
+    ED4_index          cursor_abs_x; // absolute (to terminal) x-position of cursor (absolute world coordinate of edit window)
+    int                screen_position; // number of displayed characters leading the cursor
+    int                last_seq_position; // last sequence position, cursor was set to (or -1)
+    ED4_base_position  base_position; // # of bases left of cursor
+    ED4_CursorType     ctype;
+    ED4_CursorShape   *cursor_shape;
 
     ED4_returncode  draw_cursor( AW_pos x, AW_pos y, /*ED4_gc gc,*/ ED4_base *target_terminal );
     ED4_returncode  delete_cursor( AW_pos del_mark , ED4_base *target_terminal);
@@ -319,9 +327,12 @@ public:
     bool      allowed_to_draw;  //needed for cursor handling
     ED4_base *owner_of_cursor;
 
-    bool        is_visible() const;
+    bool is_partly_visible() const;
+
     void changeType(ED4_CursorType typ);
     ED4_CursorType  getType() const { return ctype; }
+
+    void redraw() { changeType(getType()); }
 
     ED4_returncode HideCursor(); // deletes cursor and does refresh
     ED4_returncode move_cursor( AW_event *event );
@@ -336,7 +347,7 @@ public:
     void set_to_sequence_position(int seq_pos);
     ED4_returncode set_to_terminal(AW_window *aww, ED4_terminal *terminal, int seq_pos);
 
-    long get_abs_x() const   { return abs_x; }
+    long get_abs_x() const   { return cursor_abs_x; }
     void set_abs_x();
 
     int base2sequence_position(int pos) { return base_position.get_sequence_position(owner_of_cursor, pos); }
@@ -720,36 +731,34 @@ public:
     virtual bool remove_deleted_childs();
 
     // functions concerned with graphic output
-    virtual ED4_returncode  adjust_clipping_rectangle(void); //sets scrolling area in AW_MIDDLE_AREA
-    virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0)                               = 0;
-    virtual ED4_returncode  Resize()                                                                = 0;
+    virtual int adjust_clipping_rectangle(void); //sets scrolling area in AW_MIDDLE_AREA
+    virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0) = 0;
+    virtual ED4_returncode  Resize()                                  = 0;
     virtual ED4_returncode  clear_background(int color=0);
-    virtual short       calc_bounding_box(void)                                                     = 0;
+    virtual short calc_bounding_box(void)                             = 0;
+
     //    virtual ED4_returncode      show_scrolled(ED4_properties scroll_prop, int only_text = 0 ) = 0;
-    ED4_returncode      clear_whole_background( void ); // clear AW_MIDDLE_AREA
+    ED4_returncode clear_whole_background( void ); // clear AW_MIDDLE_AREA
     bool is_visible(AW_pos x, AW_pos y, ED4_direction direction);
+    bool is_visible(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction direction);
 
     //functions concerned with links in the hierarchy
-    virtual ED4_returncode  set_links   (ED4_base *width_link, ED4_base *height_link);
-    virtual ED4_returncode  link_changed    (ED4_base *link);
+    virtual ED4_returncode  set_links(ED4_base *width_link, ED4_base *height_link);
+    virtual ED4_returncode  link_changed(ED4_base *link);
 
     //functions concerned with special initialisation
-    virtual void        set_properties  (ED4_properties prop);
+    virtual void set_properties  (ED4_properties prop);
 
     //functions concerned with coordinate transformation
 
-    void            update_world_coords_cache();
-    void            calc_rel_coords( AW_pos *x, AW_pos *y );
-
+    void update_world_coords_cache();
+    void calc_rel_coords( AW_pos *x, AW_pos *y );
 
     void calc_world_coords(AW_pos *x, AW_pos *y) {
         bool cache_up_to_date = timestamp == actualTimestamp;
         if (!cache_up_to_date) {
             update_world_coords_cache();
         }
-        // #if defined(DEBUG)
-        // printf("this=%p x=%f y=%f %s\n", this, lastXpos, lastYpos, cache_up_to_date ? "" : "(cache updated)");
-        // #endif // DEBUG
         *x = lastXpos;
         *y = lastYpos;
     }
@@ -993,12 +1002,14 @@ public:
     virtual bool  remove_deleted_childs();
 
     //functions concerning graphic output
-    virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0)=0;
-    virtual ED4_returncode  Resize();
-    virtual ED4_returncode      draw( int only_text = 0 )=0;
-    virtual ED4_returncode      adjust_clipping_rectangle(void);
-    virtual short       calc_bounding_box(void);
+    virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0) = 0;
+    virtual ED4_returncode Resize();
+    virtual ED4_returncode draw( int only_text = 0 )                 = 0;
+
+    virtual int   adjust_clipping_rectangle(void);
+    virtual short calc_bounding_box(void);
     virtual ED4_returncode  calc_size_requested_by_parent( void );
+
     //    virtual ED4_returncode    show_selected( void );
     virtual ED4_returncode      draw_drag_box( AW_pos x, AW_pos y, GB_CSTR text = NULL, int cursor_y=-1 );
     //    virtual ED4_returncode    show_scrolled(ED4_properties scroll_prop, int only_text = 0 );
@@ -1076,7 +1087,7 @@ public:
     AW_default               db; // Default Properties database
     const char              *db_name; // name of Default Properties database
     ED4_window              *first_window; // Points to List of Main Windows of ED4
-    ED4_manager             *main_manager; // Points to Main manager of ED4
+    ED4_main_manager        *main_manager; // Points to Main manager of ED4
     ED4_area_manager        *middle_area_man; // Points to middle area
     ED4_area_manager        *top_area_man;
     ED4_root_group_manager  *root_group_man;
@@ -1095,7 +1106,9 @@ public:
     AWT_seq_colors          *sequence_colors;
     ST_ML                   *st_ml;
     AW_helix                *helix;
-    long                     helix_spacing;
+    int                      helix_spacing;
+    long                     helix_add_spacing;
+    long                     terminal_add_spacing;
     char                    *protstruct; // protein structure summary
     long                     protstruct_len; // protein structure summary
     ed_key                  *edk;
@@ -1113,8 +1126,10 @@ public:
     AW_font_group  font_group;
 
     //Initializing functions
-    ED4_returncode  create_hierarchy(char *area_string_middle, char *area_string_top);      // flag only needed for loading a new configuration
+    ED4_returncode  create_hierarchy(char *area_string_middle, char *area_string_top); // flag only needed for loading a new configuration
     ED4_returncode  init_alignment();
+    void recalc_font_group();
+
     AW_window       *create_new_window(void);
     ED4_returncode  generate_window( AW_device **device, ED4_window **new_window);
     void        copy_window_struct( ED4_window *source , ED4_window *destination );
@@ -1156,14 +1171,24 @@ public:
 
 // --------------------------------------------------------------------------------
 //     class ED4_main_manager : public ED4_manager
-// --------------------------------------------------------------------------------
-class ED4_main_manager : public ED4_manager
-//first in hierarchy
+  // --------------------------------------------------------------------------------
+class ED4_main_manager : public ED4_manager // first in hierarchy
 {
+    // these terminals are redrawn after refresh (with increase clipping area)
+    // to revert text from middle area drawn into top area: 
+    ED4_terminal *top_middle_line;
+    ED4_terminal *top_middle_spacer;
+
     ED4_main_manager(const ED4_main_manager&); // copy-constructor not allowed
 public:
     ED4_main_manager( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0 );
     ~ED4_main_manager();
+
+    void set_top_middle_spacer_terminal(ED4_terminal *top_middle_spacer_) { top_middle_spacer = top_middle_spacer_; }
+    void set_top_middle_line_terminal(ED4_terminal *top_middle_line_) { top_middle_line = top_middle_line_; }
+    
+    ED4_terminal *get_top_middle_spacer_terminal() const { return top_middle_spacer; }
+    ED4_terminal *get_top_middle_line_terminal() const { return top_middle_line; }
 
 #if defined(IMPLEMENT_DUMP)
     virtual void dump(size_t indent) const;
@@ -1649,6 +1674,10 @@ public:
     ED4_sequence_info_terminal( const char *id, /*GBDATA *gbd,*/ AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
     virtual ~ED4_sequence_info_terminal();
 
+    ED4_species_name_terminal *corresponding_species_name_terminal() const {
+        return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
+    }
+    
     virtual ED4_returncode draw( int only_text = 0);
 
     // GBDATA *data() { return gbdata; }
