@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_preserves.cxx                                       //
 //    Purpose   : find candidates for alignment preservation             //
-//    Time-stamp: <Fri Aug/06/2004 13:12 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Oct/01/2004 17:56 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -28,6 +28,7 @@
 #include <set>
 #include <string>
 #include <smartptr.h>
+#include <cassert>
 
 using namespace std;
 
