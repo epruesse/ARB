@@ -1,0 +1,7 @@
+
+ - printing of multi-page-trees works again
+ - implemented user defineable masks to access database fields
+ - fixed bugs in pt-server (lockup, unknown species just after building pt-server)
+ - improved performance during pt-server-build
+ - several programs coming along with ARB where updated (PHYLIP,...)
+
