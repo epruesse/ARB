@@ -17,6 +17,7 @@
 #include <awt.hxx>
 #include <awt_advice.hxx>
 #include <GEN.hxx>
+#include <GenomImport.h>
 #include "awti_import.hxx"
 #include "awtc_rename.hxx"
 #include "awti_imp_local.hxx"
@@ -849,7 +850,8 @@ void AWTC_import_go_cb(AW_window *aww)		//Erzeugen von Gen- oder Genom-Sequenzda
 		      error = GEN_read_genbank(GB_MAIN, fnames[count], ali_name);
 		    }
 		    else if (toggle_value==1) {
-		      error = GEN_read_embl(GB_MAIN, fnames[count], ali_name);
+		      //error = GEN_read_embl(GB_MAIN, fnames[count], ali_name);
+		      error = Genom_read_embl_universal(GB_MAIN, fnames[count], ali_name);
 		    }
 		  
 		  }
