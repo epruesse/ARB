@@ -60,38 +60,38 @@ private:
     GBT_TREE *currentSubTree;
 
 public:
-    string path;
+    string              path;
     std::set<SpeciesID> species;
+
     TreeTraversal(GBT_TREE *rootnode) {
         currentSubTree = rootnode;
     }
     virtual ~TreeTraversal() {}
 
     GBT_TREE *getNextSubTree() {
-        if(!currentSubTree->is_leaf) {
-            currentSubTree=currentSubTree->leftson;
-            path+="L";
+        if (!currentSubTree->is_leaf) {
+            currentSubTree  = currentSubTree->leftson;
+            path           += "L";
         }
-        else{
-            while(currentSubTree==currentSubTree->father->rightson){
-                currentSubTree=currentSubTree->father;
+        else { // leaf -> go up
+            while (currentSubTree==currentSubTree->father->rightson){
+                currentSubTree = currentSubTree->father;
                 path.erase(path.length()-1);
-                if(!currentSubTree->father) return 0; //back to root position
+                if (!currentSubTree->father) return 0; // back to root position
             }
-            currentSubTree=currentSubTree->father->rightson;
-            path[path.length()-1]='R';
+            currentSubTree        = currentSubTree->father->rightson;
+            path[path.length()-1] = 'R';
         }
-        //    if(currentSubTree->is_leaf) return getNextSubTree();
         return currentSubTree;
 
     }
 
     void getSpeciesNumber(GBT_TREE *tree){ //this function will return all the species number under tree
-        if(!tree->is_leaf){
+        if (!tree->is_leaf){
             getSpeciesNumber(tree->leftson);
             getSpeciesNumber(tree->rightson);
         }
-        else{
+        else {
             species.insert(PG_SpeciesName2SpeciesID(tree->name));
         }
     }
@@ -592,21 +592,25 @@ int main(int argc,char *argv[]) {
             int       count               = 1;
             int       subtreeCounter      = 0;
             int       probeSubtreeCounter = 0;
+            int       probeGroupCounter   = 0;
             unsigned  depth               = 0;
 
             GB_begin_transaction(pba_main);
             GB_begin_transaction(pbb_main);
 
-            GBDATA *st_main = GB_search(pba_main,"subtree_with_probe",GB_CREATE_CONTAINER);
-            GBDATA *pm_main = GB_search(pbb_main,"path_mapping",GB_CREATE_CONTAINER);
+            GBDATA *subtree_cont     = GB_search(pba_main,"subtrees",GB_CREATE_CONTAINER);
+            GBDATA *probe_group_cont = GB_search(pba_main,"probe_groups",GB_CREATE_CONTAINER);
+            GBDATA *pm_main          = GB_search(pbb_main,"path_mapping",GB_CREATE_CONTAINER);
 
-            while((current=tt.getNextSubTree())&&!error) {
+            while ((current=tt.getNextSubTree()) && !error) {
                 subtreeCounter++;
                 //                 out.put("%i %s %s",count,tt.path.c_str(),current->name);
                 count++;
                 tt.species.erase(tt.species.begin(),tt.species.end());
                 tt.getSpeciesNumber(current);
-                if(current->is_leaf) { //leaf
+
+                if (current->is_leaf) { // leaf
+                    // path mapping stuff:
                     GBDATA *pm_species = GB_create_container(pm_main,"species");
                     GBDATA *pm_name    = GB_create(pm_species,"name",GB_STRING);
                     error              = GB_write_string(pm_name,PG_SpeciesID2SpeciesName(*tt.species.begin()).c_str());
@@ -619,33 +623,50 @@ int main(int argc,char *argv[]) {
                     if(error) GB_abort_transaction(pbb_main);
                     if(tt.path.length()>depth) depth = tt.path.length();
                 }
+
                 std::set<string> probes;
                 {
-                    GB_transaction dummy(pb_main);
-                    GBDATA *pbtree=GB_search(pb_main,"group_tree",GB_FIND);
-                    GBDATA *pbnode=GB_find(pbtree,"node",0,down_level);
+                    GB_transaction  dummy(pb_main);
+                    GBDATA         *pbtree = GB_search(pb_main,"group_tree",GB_FIND);
+                    GBDATA         *pbnode = GB_find(pbtree,"node",0,down_level);
                     PG_find_probe_for_subtree(pbnode,tt.species,&probes);
                 }
-                if(!probes.empty()){
-                    statistic[tt.species.size()-1]++;
-                    probeSubtreeCounter++;
-                    GBDATA *st_subtree=GB_create_container(st_main,"subtree");
-                    GBDATA *st_path=GB_search(st_subtree,"path",GB_STRING);
-                    error=GB_write_string(st_path,tt.path.c_str());
-                    GBDATA *st_species=GB_search(st_subtree,"species",GB_CREATE_CONTAINER);
-                    for(set<SpeciesID>::const_iterator i=tt.species.begin();i!=tt.species.end();++i){
-                        GBDATA *st_name=GB_create(st_species,"name",GB_STRING);
-                        error=GB_write_string(st_name,PG_SpeciesID2SpeciesName(*i).c_str());
-                    }
 
-                    GBDATA *st_group=GB_search(st_subtree,"probe_group",GB_CREATE_CONTAINER);
-                    for(set<string>::const_iterator j=probes.begin();j!=probes.end();++j){
-                        GBDATA *st_probe=GB_create(st_group,"probe",GB_STRING);
-                        error=GB_write_string(st_probe,(*j).c_str());
-                    }
+                // create 'subtree' for all nodes
+                GBDATA *st_subtree = GB_create_container(subtree_cont,"subtree");
+                GBDATA *st_path    = GB_search(st_subtree,"path",GB_STRING);
+                error              = GB_write_string(st_path,tt.path.c_str());
+
+                if (current->is_leaf) {
+                    GBDATA *st_member = GB_search(st_subtree, "member", GB_INT);
+                    error             = GB_write_int(st_member, *tt.species.begin());
                 }
-            }
 
+                if (!error && !probes.empty()) {
+                    statistic[tt.species.size()-1]++;
+
+                    probeSubtreeCounter++;
+                    probeGroupCounter++;
+
+                    // create a probe group for the subtree
+                    GBDATA *st_group   = GB_create_container(probe_group_cont, "probe_group");
+                    GBDATA *st_members = GB_search(st_group, "subtreepath", GB_STRING);
+
+                    error = GB_write_string(st_members, tt.path.c_str());
+                    if (!error) {
+                        GBDATA *st_matches = GB_search(st_group,"probe_matches",GB_CREATE_CONTAINER);
+                        for (set<string>::const_iterator j = probes.begin(); j != probes.end() && !error; ++j) {
+                            GBDATA *st_probe = GB_create(st_matches,"probe",GB_STRING);
+                            error            = GB_write_string(st_probe,(*j).c_str());
+                        }
+                    }
+
+                    GBDATA *st_exact = GB_search(st_subtree, "exact", GB_INT);
+                    GB_write_int(st_exact, tt.species.size());
+                }
+            }                   // end of getNextSubTree
+
+            // globals for path mapping db:
             if (!error) {
                 GBDATA *pm_num    = GB_create(pm_main,"species_number",GB_INT);
                 if (pm_num) error = GB_write_int(pm_num,PG_NumberSpecies());
@@ -661,57 +682,66 @@ int main(int argc,char *argv[]) {
             if (error) GB_abort_transaction(pbb_main);
             else GB_commit_transaction(pbb_main);
 
+            // globals for probe database:
             if (!error) {
                 GBDATA *stCounter    = GB_create(pba_main,"subtree_counter",GB_INT);
                 if (stCounter) error = GB_write_int(stCounter,subtreeCounter);
                 else    error        = GB_get_error();
+            }
 
-                if (!error) {
-                    GBDATA *stProbeCounter    = GB_create(pba_main,"subtree_with_probe_counter",GB_INT);
-                    if (stProbeCounter) error = GB_write_int(stProbeCounter,probeSubtreeCounter);
-                    else    error             = GB_get_error();
-                }
+            if (!error) {
+                GBDATA *stCounter    = GB_create(pba_main,"probe_group_counter",GB_INT);
+                if (stCounter) error = GB_write_int(stCounter,probeGroupCounter);
+                else    error        = GB_get_error();
+            }
 
-                if (!error) {
-                    GBDATA *stat = GB_create(pba_main,"probe_group_vs_species",GB_STRING);
-                    string  data;
-                    for(int i=0; i<PG_NumberSpecies(); i++){
+            if (!error) {
+                GBDATA *stProbeCounter    = GB_create(pba_main,"subtree_with_probe_counter",GB_INT);
+                if (stProbeCounter) error = GB_write_int(stProbeCounter,probeSubtreeCounter);
+                else    error             = GB_get_error();
+            }
+
+            if (!error) {
+                GBDATA *stat = GB_create(pba_main,"probe_group_vs_species",GB_STRING);
+                string  data;
+                for(int i=0; i<PG_NumberSpecies(); i++){
+                    if (statistic[i]) {
                         char buffer[20];
                         sprintf(buffer,"%i,%i;",i+1,statistic[i]);
                         data += buffer;
                     }
-                    error = GB_write_string(stat,data.c_str());
+                }
+                error = GB_write_string(stat,data.c_str());
+            }
+
+            if (!error) {
+                GB_push_transaction(gb_main);
+                error = PG_tree_change_node_info(gbt_tree); // exchange species-names against species ids in tree
+                GB_pop_transaction(gb_main);
+
+                if (!error) {
+                    error = GBT_write_plain_tree(pba_main, pba_main, 0, gbt_tree);
                 }
 
                 if (!error) {
-                    GB_push_transaction(gb_main);
-                    error = PG_tree_change_node_info(gbt_tree); // exchange species-names against species ids in tree
-                    GB_pop_transaction(gb_main);
-
-                    if (!error) {
-                        error = GBT_write_plain_tree(pba_main, pba_main, 0, gbt_tree);
-                    }
-
-                    if (!error) {
-                        error = PG_transfer_root_string_field(pb_main, pba_main, "species_mapping"); // copy species_mapping
-                    }
+                    error = PG_transfer_root_string_field(pb_main, pba_main, "species_mapping"); // copy species_mapping
                 }
+            }
 
-                if (!error) {
-                    error = setDatabaseState(pba_main, 0, "complete"); // set the state of the database
-                    error = setDatabaseState(pbb_main, 0, "complete"); // set the state of the database
-                }
+            if (!error) {
+                error = setDatabaseState(pba_main, 0, "complete"); // set the state of the database
+                error = setDatabaseState(pbb_main, 0, "complete"); // set the state of the database
+            }
 
-                if (error) GB_abort_transaction(pba_main);
-                else GB_commit_transaction(pba_main);
+            if (error) GB_abort_transaction(pba_main);
+            else GB_commit_transaction(pba_main);
 
-                if (!error) {
-                    out.put("Saving %s ...",para.db_out_alt_name.c_str());
-                    error = GB_save(pba_main,para.db_out_alt_name.c_str(), SAVE_MODE); // was "a"
+            if (!error) {
+                out.put("Saving %s ...",para.db_out_alt_name.c_str());
+                error = GB_save(pba_main,para.db_out_alt_name.c_str(), SAVE_MODE); // was "a"
 
-                    out.put("Saving %s ...",para.db_out_alt_name2.c_str());
-                    error = GB_save(pbb_main,para.db_out_alt_name2.c_str(), SAVE_MODE); // was "a"
-                }
+                out.put("Saving %s ...",para.db_out_alt_name2.c_str());
+                error = GB_save(pbb_main,para.db_out_alt_name2.c_str(), SAVE_MODE); // was "a"
             }
         }
         if (gb_hash) GBS_free_hash(gb_hash);
