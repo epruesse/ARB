@@ -1464,8 +1464,8 @@ ED4_returncode ED4_columnStat_terminal::draw(int /*only_text*/)
     ED4_ROOT->world_to_win_coords(ED4_ROOT->temp_aww, &x, &y);
 
     AW_pos term_height = extension.size[HEIGHT];
-    AW_pos font_height = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_ascent();
-    AW_pos font_width = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width();
+    AW_pos font_height = ED4_ROOT->font_group.get_height(ED4_G_SEQUENCES);
+    AW_pos font_width  = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
 
     AW_pos text_x = x + CHARACTEROFFSET;
     AW_pos text_y = y + term_height - (font_height /*+ ED4_ROOT->font_info[ED4_G_SEQUENCES].get_descent()*/ );
