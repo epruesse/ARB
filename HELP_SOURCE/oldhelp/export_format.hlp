@@ -55,7 +55,7 @@ DESCRIPTION	The export format description file (*.eft) describes
 				xml_write	Writes all none-hidden fields
 						to XML.
 
-NOTES		The best way to design new formats is:
+NOTES		The best ways to design new formats are:
 			1. Copy an existing format and modify it step by step.
 			2. Design a simple format and modify it step by step.
 

@@ -1,16 +1,15 @@
 SUFFIX		GB
-# *(|sequence|remove(".-")|format_sequence(firsttab=12;tab=12;width=60;numleft;gap=10))
 BEGIN
-LOCUS       *(name)	*(|sequence|len(.-)) bp *(|sequence_type) *(|sequence_type) *(date:* *=*1)
+LOCUS       *(name|tab(10))*(|sequence|len(.-)|crop(" ")|pretab(7)) bp ss-*(|sequence_type|upper|tab(5))           *(|sequence_type|upper) *(date:* *=*1)
 DEFINITION  *(full_name)
 ACCESSION   *(acc|extract_words("0123456789",4.0))
-SOURCE      *(source)
+SOURCE      *(source|crop(" "))
   ORGANISM  *(full_name)
 REFERENCE   1
-  AUTHORS   *(author|format(firsttab=0;tab=12;width=70;"nl=|"))
-  TITLE     *(title|format(firsttab=0;tab=12;width=70;"nl=|"))
-  JOURNAL   *(journal|format(firsttab=0;tab=12;width=70;"nl=|")) 
-COMMENT     strain="*(strain#$$DELETE_LINE$$)";
+  AUTHORS   *(author|crop(" ")|format(firsttab=0;tab=12;width=70;"nl=|"))
+  TITLE     *(title|crop(" ")|format(firsttab=0;tab=12;width=70;"nl=|"))
+  JOURNAL   *(journal|crop(" ")|format(firsttab=0;tab=12;width=70;"nl=|"))
+COMMENT     *(strain|crop(" ")|format(firsttab=0;tab=12;width=70;"nl=|"))
 ORIGIN
 *(|sequence|format_sequence(firsttab=12;tab=12;width=60;numleft;gap=10))
 //
