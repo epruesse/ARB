@@ -168,7 +168,7 @@ char to_position[100];memset(to_position,0,sizeof(to_position));
 	_at->attach_ly = _at->attach_lx = AW_FALSE;
 	_at->attach_any = AW_FALSE;
 	_at->correct_for_at_string = AW_TRUE;
-	
+
 	if ( !xfig_data ) {
 		AW_ERROR( "no xfig file loaded " );
 		return;
@@ -189,7 +189,7 @@ char to_position[100];memset(to_position,0,sizeof(to_position));
 	if (!pos){
 	    sprintf( to_position, "XY:%s", id );	pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
 	    if (pos) _at->attach_any = _at->attach_lx = _at->attach_ly = AW_TRUE;
-	}	
+	}
 	if( !pos ) {
 		AW_ERROR(" ID '%s' does not exist in xfig file", id);
 		return;
@@ -200,7 +200,7 @@ char to_position[100];memset(to_position,0,sizeof(to_position));
 	if ( pos->center ) {
 		_at->correct_for_at_center = pos->center;
 	}
-	
+
 
 	if (1){
 	    sprintf( to_position, "to:%s", id );	pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
@@ -212,12 +212,12 @@ char to_position[100];memset(to_position,0,sizeof(to_position));
 	if (!pos) {
 	    sprintf( to_position, "to:Y:%s", id );	pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
 	    if (pos) _at->attach_any = _at->attach_y = AW_TRUE;
-	}	    
+	}
 	if (!pos) {
 	    sprintf( to_position, "to:XY:%s", id );	pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
 	    if (pos) _at->attach_any = _at->attach_x = _at->attach_y = AW_TRUE;
 	}
-	
+
 	if( pos ) {
 		_at->to_position_exists = AW_TRUE;
 		_at->to_position_x = (pos->x - xfig->minx);
@@ -236,7 +236,7 @@ AW_BOOL AW_window::at_ifdef(const  char *id) {
 	sprintf(buffer,"X:%s",id);	if (GBS_read_hash(xfig->hash,buffer))	return AW_TRUE;
 	sprintf(buffer,"Y:%s",id);	if (GBS_read_hash(xfig->hash,buffer))	return AW_TRUE;
 	sprintf(buffer,"XY:%s",id);	if (GBS_read_hash(xfig->hash,buffer))	return AW_TRUE;
-	return AW_FALSE;	
+	return AW_FALSE;
 }
 
 void AW_window::check_at_pos( void ) {
@@ -276,10 +276,10 @@ void AW_window::unset_at_commands( void ) {
 	_at->background_colorname = 0;
 }
 
-
 void AW_window::increment_at_commands( int width, int height ) {
+
 	at_shift(width,0);
-	at_shift(-width,0);		// set bounding box
+    at_shift(-width,0);		    // set bounding box
 
 	if ( _at->do_auto_increment ) {
 		at_shift(_at->auto_increment_x,0);
@@ -292,14 +292,13 @@ void AW_window::increment_at_commands( int width, int height ) {
 		_at->biggest_height_of_buttons = height;
 	}
 
-	if ( _at->max_y_size < _at->y_for_next_button +_at->biggest_height_of_buttons +3.0) {
+	if ( _at->max_y_size < (_at->y_for_next_button +_at->biggest_height_of_buttons +3.0)) {
 		_at->max_y_size = _at->y_for_next_button +_at->biggest_height_of_buttons +3;
 	}
 
-	if ( _at->max_x_size < _at->x_for_next_button + this->get_root()->font_width) {
+	if ( _at->max_x_size < (_at->x_for_next_button + this->get_root()->font_width)) {
 		_at->max_x_size = _at->x_for_next_button + this->get_root()->font_width;
 	}
-
 }
 
 /*******************************************************************************************************/

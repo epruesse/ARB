@@ -53,7 +53,7 @@ void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_list_for_variable *widgetli
                                                   widgetlist->widget, var_value );
                 break;
             case AW_WIDGET_TOGGLE:
-                widgetlist->aw->update_toggle( 
+                widgetlist->aw->update_toggle(
                                               widgetlist->widget, var_value, widgetlist->cd );
                 break;
             case AW_WIDGET_LABEL_FIELD:
@@ -107,7 +107,7 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
         case AW_WIDGET_TEXT_FIELD:
             if (!root->value_changed) return;
             tmp = XmTextGetString( (vus->widget) );
-	
+
             switch ( vus->awar->variable_type ) {
                 case AW_STRING:
                     error = vus->awar->write_string( tmp );
@@ -150,7 +150,7 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
                     error =	vus->awar->write_float( vus->variable_float_value );
                     break;
                 default: GB_warning("Unknown AWAR type");
-		  
+
             }
             break;
 
@@ -186,16 +186,16 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
                 case AW_STRING:
                     error = vus->awar->write_string( list_table->char_value );
                     break;
-                case AW_INT:		
+                case AW_INT:
                     error = vus->awar->write_int( list_table->int_value );
                     break;
-                case AW_FLOAT:		
+                case AW_FLOAT:
                     error = vus->awar->write_float( list_table->float_value );
                     break;
                 default:
                     error = GB_export_error("Unknown AWAR type");
                     break;
-            }	
+            }
             XtFree( tmp );
             break;
         case AW_WIDGET_LABEL_FIELD:
@@ -218,7 +218,7 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
             GBS_fwrite_string(value,root->prvt->recording_macro_file);
             delete value;
             fprintf(root->prvt->recording_macro_file,");\n");
-        }	    
+        }
         if (vus->cbs) vus->cbs->run_callback();
         root->value_changed = AW_FALSE;
     }
@@ -248,7 +248,7 @@ void     aw_attach_widget(Widget scrolledWindowText,AW_at *_at,int default_width
         _at->attach_y = _at->attach_ly;
     }
 
-    
+
     if (_at->attach_x){
         XtVaSetValues(	scrolledWindowText,
                         XmNrightAttachment, 		XmATTACH_FORM,
@@ -271,7 +271,7 @@ void     aw_attach_widget(Widget scrolledWindowText,AW_at *_at,int default_width
                         XmNleftOffset,			_at->x_for_next_button,
                         NULL );
     }
-    
+
     if (_at->attach_y){
         XtVaSetValues(	scrolledWindowText,
                         XmNbottomAttachment, 		XmATTACH_FORM,
@@ -301,15 +301,19 @@ void     aw_attach_widget(Widget scrolledWindowText,AW_at *_at,int default_width
 
 void AW_window::create_button( const char *macro_name, AW_label buttonlabel,const  char *mnemonic) {
     AWUSE(mnemonic);
-    Widget button = 0;
-    Widget label = 0;
-    int x_correcting_for_label;
-    int width_of_button;
-    int width_of_label;
-    int width_of_last_widget = 0;
-    int height_of_last_widget = 0;
+    Widget button                = 0;
+    Widget label                 = 0;
+    int    x_correcting_for_label;
+    int    width_of_button;
+    int    width_of_label;
+    int    width_of_last_widget  = 0;
+    int    height_of_last_widget = 0;
+
+    dump_at_position("create_button[0]");
 
     check_at_pos();
+
+    dump_at_position("create_button[1]");
 
     if (_callback && ((long)_callback!= 1) )
     {
@@ -320,39 +324,39 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
             _callback->id = 0;
         }
     }
-	
+
     width_of_label = this->calculate_string_width( calculate_label_length() );
     width_of_button = this->calculate_string_width( _at->length_of_buttons );
 
     if ( _at->label_for_inputfield ) {
         label = XtVaCreateManagedWidget( "label",
                                          xmLabelWidgetClass,
-                                         (_at->attach_any)?INFO_FORM:INFO_WIDGET, 
-                                         XmNwidth, (int)(width_of_label + 2), 
+                                         (_at->attach_any)?INFO_FORM:INFO_WIDGET,
+                                         XmNwidth, (int)(width_of_label + 2),
                                          RES_LABEL_CONVERT(_at->label_for_inputfield),
                                          XmNrecomputeSize, AW_FALSE,
                                          XmNalignment, XmALIGNMENT_BEGINNING,
-                                         XmNfontList, p_global->fontlist, 
-                                         (_at->attach_any) ? NULL:XmNx,(int)_at->x_for_next_button, 
-                                         XmNy, (int)(_at->y_for_next_button), 
+                                         XmNfontList, p_global->fontlist,
+                                         (_at->attach_any) ? NULL:XmNx,(int)_at->x_for_next_button,
+                                         XmNy, (int)(_at->y_for_next_button),
                                          NULL );
-        
+
         if (_at->attach_any){ // +
             aw_attach_widget(label,_at);
         }
-        /*        
+        /*
         label = XtVaCreateManagedWidget( "label",
                                          xmLabelWidgetClass,
-                                         INFO_WIDGET,                           
+                                         INFO_WIDGET,
                                          XmNx, _at->x_for_next_button,
                                          XmNy, _at->y_for_next_button + 4,
                                          XmNrecomputeSize, AW_FALSE,
                                          RES_LABEL_CONVERT(_at->label_for_inputfield),
                                          XmNalignment, XmALIGNMENT_BEGINNING,
-                                         XmNfontList, p_global->fontlist, 
+                                         XmNfontList, p_global->fontlist,
                                          NULL );
         */
-        
+
         AW_LABEL_IN_AWAR_LIST(this,label,_at->label_for_inputfield);
         x_correcting_for_label =width_of_label+10;
     }else{
@@ -383,7 +387,7 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
     }
     const char *color_switch = 0;
     Pixel bg_color = 0;
-    
+
     if (_at->background_colorname){
         color_switch = XmNbackground;
         XColor unused;
@@ -407,7 +411,7 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
                                               RES_LABEL_CONVERT(buttonlabel),
                                               XmNshadowThickness, _at->shadow_thickness,
                                               XmNalignment, XmALIGNMENT_CENTER,
-                                              XmNfontList, p_global->fontlist, 
+                                              XmNfontList, p_global->fontlist,
                                               color_switch, bg_color,
                                               NULL );
             aw_attach_widget(button,_at,width_of_button + 2);
@@ -423,13 +427,13 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
                                               XmNrecomputeSize, AW_FALSE,
                                               XmNshadowThickness, _at->shadow_thickness,
                                               XmNalignment, XmALIGNMENT_CENTER,
-                                              XmNfontList, p_global->fontlist, 
+                                              XmNfontList, p_global->fontlist,
                                               mwidth, (int)(width_of_button + 2),
                                               color_switch, bg_color,
                                               NULL );
         }
         AW_LABEL_IN_AWAR_LIST(this,button,buttonlabel);
-        AW_INSERT_BUTTON_IN_SENS_LIST ( root, 
+        AW_INSERT_BUTTON_IN_SENS_LIST ( root,
                                         _at->id_for_next_button, _at->mask_for_next_button, button );
 
     }else{
@@ -441,7 +445,7 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
                                           XmNy, (int)(_at->y_for_next_button) + 4,
                                           XmNalignment, XmALIGNMENT_BEGINNING,
                                           RES_LABEL_CONVERT(buttonlabel),
-                                          XmNfontList, p_global->fontlist, 
+                                          XmNfontList, p_global->fontlist,
                                           color_switch, bg_color,
                                           NULL );
         if (width_of_button >= this->calculate_string_width(strlen(buttonlabel))){
@@ -467,7 +471,7 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
         if (_at->correct_for_at_center) {
             Widget w = button;
             if (_at->highlight) w = fatherwidget;
-		
+
             switch (_at->correct_for_at_center){
                 case 1:	div = 2;		// middle centered
                 case 2:				// right justified
@@ -486,9 +490,14 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
     p_w->toggle_field = button;
     this->_set_activate_callback((void *)button);
     this->unset_at_commands();
+    dump_at_position("create_button[end-1]");
     this->increment_at_commands( width_of_last_widget, height_of_last_widget );
+    dump_at_position("create_button[end]");
 }
 
+void AW_window::dump_at_position(const char *label) const {
+    printf("%s at x = %i / y = %i\n", label, _at->x_for_next_button, _at->y_for_next_button);
+}
 
 void AW_window::update_label( int *widget, const char *var_value ) {
     Widget w = (Widget) widget;
@@ -593,7 +602,7 @@ void AW_window::create_input_field( const char *var_name,  int columns ) {
                                          XmNy, (int)(_at->y_for_next_button)+ root->y_correction_for_input_labels -1,
                                          NULL );
         if (_at->attach_any){
-            aw_attach_widget(label,_at);            
+            aw_attach_widget(label,_at);
         }
         x_correcting_for_label = width_of_input_label + 10;
     }
@@ -612,14 +621,14 @@ void AW_window::create_input_field( const char *var_name,  int columns ) {
                                              XmNwidth, (int)width_of_input,
                                              XmNrows, 1,
                                              XmNvalue, string,
-                                             XmNfontList, p_global->fontlist, 
+                                             XmNfontList, p_global->fontlist,
                                              (_at->attach_any) ? NULL:XmNx, (int)(_at->x_for_next_button + x_correcting_for_label ),
                                              XmNy, (int)(_at->y_for_next_button + 5) - 8,
                                              NULL );
         if (_at->attach_any){
             aw_attach_widget(textField,_at);
         }
-	
+
     }
     free( string );
 
@@ -639,7 +648,7 @@ void AW_window::create_input_field( const char *var_name,  int columns ) {
         _d_callback->id = strdup(GBS_global_string("INPUT:%s",var_name));
         GBS_write_hash(this->get_root()->prvt->action_hash,_d_callback->id,(long)_d_callback);
     }
-	
+
     // callback for losing focus
     XtAddCallback(textField, XmNlosingFocusCallback,
                   (XtCallbackProc) AW_variable_update_callback,
@@ -720,7 +729,7 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
                                          RES_CONVERT( XmNlabelString, _at->label_for_inputfield ),
                                          XmNrecomputeSize, AW_FALSE,
                                          XmNalignment, XmALIGNMENT_BEGINNING,
-                                         XmNfontList, p_global->fontlist, 
+                                         XmNfontList, p_global->fontlist,
                                          NULL );
 
         x_correcting_for_label = width_of_text_label + 10;
@@ -735,7 +744,7 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
                                                       XmNscrollingPolicy, XmAPPLICATION_DEFINED,
                                                       XmNvisualPolicy, XmVARIABLE,
                                                       XmNscrollBarDisplayPolicy, XmSTATIC,
-                                                      XmNfontList, 			p_global->fontlist, 
+                                                      XmNfontList, 			p_global->fontlist,
                                                       NULL );
         aw_attach_widget(scrolledWindowText,_at);
 
@@ -752,10 +761,10 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
                                                       XmNscrollBarDisplayPolicy, XmSTATIC,
                                                       XmNx, (int)10,
                                                       XmNy, (int)_at->y_for_next_button,
-                                                      XmNfontList, p_global->fontlist, 
+                                                      XmNfontList, p_global->fontlist,
                                                       NULL );
     }
-	
+
     scrolledText = XtVaCreateManagedWidget( "scrolledText1",
                                             xmTextWidgetClass,
                                             scrolledWindowText,
@@ -764,13 +773,13 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
                                             XmNscrollLeftSide, AW_FALSE,
                                             XmNwidth, (int)width_of_text,
                                             XmNheight, (int)height_of_text,
-                                            XmNfontList, p_global->fontlist, 
+                                            XmNfontList, p_global->fontlist,
                                             NULL );
 
     delete string;
 
     if (!_at->to_position_exists){
-        XtVaGetValues( scrolledWindowText,	XmNheight, &height_of_last_widget, 
+        XtVaGetValues( scrolledWindowText,	XmNheight, &height_of_last_widget,
                        XmNwidth, &width_of_last_widget, NULL);
 
         width_of_last_widget += (short)x_correcting_for_label;
@@ -779,7 +788,7 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
             case 0: // left centered
                 XtVaSetValues( scrolledWindowText, XmNx, (int)(_at->x_for_next_button + x_correcting_for_label), NULL);
                 break;
-		
+
             case 1: // middle centered
                 XtVaSetValues( scrolledWindowText, XmNx, (int)( _at->x_for_next_button + x_correcting_for_label - (width_of_last_widget/2) ), NULL);
                 if ( _at->label_for_inputfield ) {
@@ -787,7 +796,7 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
                 }
                 width_of_last_widget = width_of_last_widget / 2;
                 break;
-		
+
             case 2: // right centered
                 XtVaSetValues( scrolledWindowText, XmNx, (int)( _at->x_for_next_button + x_correcting_for_label - width_of_last_widget ) , NULL);
                 if ( _at->label_for_inputfield ) {
@@ -830,7 +839,7 @@ void AW_window::update_text_field( int *widget, const char *var_value ) {
 /****************************************************************************************************************************/
 
 
-AW_selection_list* AW_window::create_selection_list( const char *var_name, const char *label, const char *mnemonic, int columns, int rows  ) {    
+AW_selection_list* AW_window::create_selection_list( const char *var_name, const char *label, const char *mnemonic, int columns, int rows  ) {
     AWUSE(mnemonic);
     Widget scrolledWindowList;
     Widget scrolledList;
@@ -886,7 +895,7 @@ AW_selection_list* AW_window::create_selection_list( const char *var_name, const
                                                       XmNvisualPolicy, XmVARIABLE,
                                                       XmNscrollBarDisplayPolicy, XmSTATIC,
                                                       XmNshadowThickness, 0,
-                                                      XmNfontList, 			p_global->fontlist, 
+                                                      XmNfontList, 			p_global->fontlist,
                                                       NULL );
         aw_attach_widget(scrolledWindowList,_at);
 
@@ -902,7 +911,7 @@ AW_selection_list* AW_window::create_selection_list( const char *var_name, const
                                                       XmNshadowThickness, 0,
                                                       XmNx, (int)10,
                                                       XmNy, (int)(_at->y_for_next_button),
-                                                      XmNfontList, p_global->fontlist, 
+                                                      XmNfontList, p_global->fontlist,
                                                       NULL );
     }
 
@@ -913,12 +922,12 @@ AW_selection_list* AW_window::create_selection_list( const char *var_name, const
         scrolledList = XtVaCreateManagedWidget( "scrolledList1",
                                                 xmListWidgetClass,
                                                 scrolledWindowList,
-                                                XmNwidth, (int)width_of_list, 
+                                                XmNwidth, (int)width_of_list,
                                                 XmNheight, (int) height_of_list,
                                                 XmNscrollBarDisplayPolicy, XmSTATIC,
                                                 XmNselectionPolicy, select_type,
                                                 XmNlistSizePolicy, XmCONSTANT,
-                                                XmNfontList, p_global->fontlist, 
+                                                XmNfontList, p_global->fontlist,
                                                 NULL );
     }
 
@@ -929,14 +938,14 @@ AW_selection_list* AW_window::create_selection_list( const char *var_name, const
         width_of_last_widget = width_of_label + width_of_list + 20;
 
         switch(_at->correct_for_at_center){
-            case 3:	break;	
+            case 3:	break;
             case 0: // left centered
                 XtVaSetValues(	scrolledWindowList, XmNx, (int)(_at->x_for_next_button + width_of_label), NULL );
                 if ( label ) {
                     XtVaSetValues(	l, XmNx, (int)(_at->x_for_next_button), NULL );
                 }
                 break;
-		
+
             case 1: // middle centered
                 XtVaSetValues( scrolledWindowList, XmNx, (int)( _at->x_for_next_button - (width_of_last_widget/2) + width_of_label), NULL );
                 if ( label ) {
@@ -944,7 +953,7 @@ AW_selection_list* AW_window::create_selection_list( const char *var_name, const
                 }
                 width_of_last_widget = width_of_last_widget / 2;
                 break;
-		
+
             case 2: // right centered
                 XtVaSetValues( scrolledWindowList, XmNx, (int)(_at->x_for_next_button - width_of_list - 18), NULL );
                 if ( label ) {
@@ -1016,7 +1025,7 @@ void AW_window::conc_list(AW_selection_list *from_list,AW_selection_list *to_lis
                 to_list->last_of_list_table->next = NULL;
             }
         }
-	    
+
         from_list_table = from_list_table->next;
     }
 
@@ -1042,7 +1051,7 @@ void AW_window::iterate_list_entry(int offset) {
 }
 
 const char *AW_window::get_list_entry_char_value() {
-    return current_list_table ? current_list_table->char_value : 0;    
+    return current_list_table ? current_list_table->char_value : 0;
 }
 
 const char *AW_window::get_list_entry_displayed() {
@@ -1051,16 +1060,16 @@ const char *AW_window::get_list_entry_displayed() {
 
 void AW_window::set_list_entry_char_value(const char *new_char_value) {
     if (!current_list_table) AW_ERROR("No Selection List Iterator");
-    
+
     free(current_list_table->char_value);
     current_list_table->char_value = AW_select_table_struct::copy_string(new_char_value);
 }
 
 void AW_window::set_list_entry_displayed(const char *new_displayed) {
     if (!current_list_table) AW_ERROR("No Selection List Iterator");
-    
+
     free(current_list_table->displayed);
-    current_list_table->displayed = AW_select_table_struct::copy_string(new_displayed);    
+    current_list_table->displayed = AW_select_table_struct::copy_string(new_displayed);
 }
 
 /*
@@ -1068,7 +1077,7 @@ const char *AW_window::get_list_entry(AW_selection_list *selection_list, int val
 {
     static int				last		= 0;
     char 				*result;
-    
+
     if (last == 1 && !val)
     {
 	last = 2;
@@ -1077,10 +1086,10 @@ const char *AW_window::get_list_entry(AW_selection_list *selection_list, int val
 	else
 	    return list_table->char_value;;
     }
-    
+
     if (last == 2 && !val)
 	return NULL;
-    
+
     if (val)
     {
 	last = 0;
@@ -1090,7 +1099,7 @@ const char *AW_window::get_list_entry(AW_selection_list *selection_list, int val
 
     if (!list_table)
 	list_table = selection_list->list_table;
-    
+
     if (!list_table)
     {
 	last = 2;
@@ -1103,7 +1112,7 @@ const char *AW_window::get_list_entry(AW_selection_list *selection_list, int val
 	last = 1;
     return result;
     }
-*/    
+*/
 
 void AW_window::set_selection_list_suffix(AW_selection_list *selection_list, const char *suffix){
     char filter[200];
@@ -1118,7 +1127,7 @@ int AW_window::get_no_of_entries( AW_selection_list *selection_list )
     int		count = 0;
     for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) count++;
     if( selection_list->default_select ) 	count++;
-    
+
     return count;
 }
 
@@ -1135,7 +1144,7 @@ void AW_window::delete_selection_from_list( AW_selection_list *selection_list, c
 
     if (count == 2)		//Letzter Eintrag + default selection
         clear_selection_list( selection_list );
-	
+
     for ( list_table 	= selection_list->list_table,
               next 		= selection_list->list_table;
           list_table;
@@ -1147,7 +1156,7 @@ void AW_window::delete_selection_from_list( AW_selection_list *selection_list, c
         if ( strcmp( disp_string, ptr ) == 0 )
         {
             next = list_table->next;
-		
+
             if (prev)
                 prev->next = next;
             else
@@ -1162,7 +1171,7 @@ void AW_window::delete_selection_from_list( AW_selection_list *selection_list, c
                 selection_list->default_select = NULL;
                 insert_default_selection( selection_list, "", "");
             }
-		
+
             delete list_table;
             return;
         }
@@ -1409,7 +1418,7 @@ const char *AW_selection_list::first_selected(){
         if (default_select->is_selected && !loop_pntr) loop_pntr = lt;
     }
     if (!loop_pntr) return 0;
-    return loop_pntr->char_value; 
+    return loop_pntr->char_value;
 }
 
 GB_ERROR AW_window::save_selection_list( AW_selection_list * selection_list, const char *filename, long number_of_lines) {
@@ -1471,7 +1480,7 @@ GBDATA_SET *AW_window::selection_list_to_species_set(GBDATA *gb_main,AW_selectio
         counter ++;
     }
     GBDATA_SET *set = GB_create_set(counter);
-	
+
     for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
         GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data,list_table->char_value);
         if (!gb_species) continue;
@@ -1484,16 +1493,16 @@ static int AW_sort_backward = 0;
 
 
 #ifdef __cplusplus
-extern "C" 
-#endif 
+extern "C"
+#endif
 int AW_sort_AW_select_table_struct(AW_select_table_struct *t1,AW_select_table_struct *t2) {
-    int cmp = strcmp(t1->displayed,t2->displayed); 
+    int cmp = strcmp(t1->displayed,t2->displayed);
     return AW_sort_backward ? -cmp : cmp;
 }
 
 void AW_window::sort_selection_list( AW_selection_list * selection_list, int backward) {
 
-    AW_select_table_struct *list_table; 
+    AW_select_table_struct *list_table;
 
     long count = 0;
     for ( list_table = selection_list->list_table; list_table; list_table = list_table->next){
@@ -1517,7 +1526,7 @@ void AW_window::sort_selection_list( AW_selection_list * selection_list, int bac
     selection_list->list_table = tables[0];
     selection_list->last_of_list_table = tables[i];
 
-    delete tables;	
+    delete tables;
     return;
 }
 
@@ -1543,7 +1552,7 @@ GB_ERROR AW_window::load_selection_list( AW_selection_list *selection_list, cons
                 *(ko++) = 0;
             else
                 ko = pl;
-			
+
             while (*ko == ' ' || *ko == '\t') ko++;
             nl = strchr(ko,'\n');
             if (nl) *(nl++) = 0;
@@ -1606,14 +1615,14 @@ void AW_window::create_option_menu( const char *var_name, AW_label label, const 
                                              XmNheight, 1,
                                              XmNallowShellResize, AW_TRUE,
                                              XmNoverrideRedirect, AW_TRUE,
-                                             XmNfontList, p_global->fontlist, 
+                                             XmNfontList, p_global->fontlist,
                                              NULL );
 
     optionMenu = XtVaCreateWidget( "optionMenu_p1",
                                    xmRowColumnWidgetClass,
                                    optionMenu_shell,
                                    XmNrowColumnType, XmMENU_PULLDOWN,
-                                   XmNfontList, p_global->fontlist, 
+                                   XmNfontList, p_global->fontlist,
                                    NULL );
 
 
@@ -1626,7 +1635,7 @@ void AW_window::create_option_menu( const char *var_name, AW_label label, const 
                                                    INFO_WIDGET,
                                                    XmNrowColumnType, XmMENU_OPTION,
                                                    XmNsubMenuId, optionMenu,
-                                                   XmNfontList, p_global->fontlist, 
+                                                   XmNfontList, p_global->fontlist,
                                                    XmNx, (int)x_for_position_of_menu,
                                                    XmNy, (int)(_at->y_for_next_button - 5),
                                                    RES_CONVERT( XmNlabelString, help_label ),
@@ -1638,7 +1647,7 @@ void AW_window::create_option_menu( const char *var_name, AW_label label, const 
                                                    INFO_WIDGET,
                                                    XmNrowColumnType, XmMENU_OPTION,
                                                    XmNsubMenuId, optionMenu,
-                                                   XmNfontList, p_global->fontlist, 
+                                                   XmNfontList, p_global->fontlist,
                                                    XmNx, (int)x_for_position_of_menu,
                                                    XmNy, (int)(_at->y_for_next_button - 5),
                                                    RES_CONVERT( XmNlabelString, help_label ),
@@ -1651,7 +1660,7 @@ void AW_window::create_option_menu( const char *var_name, AW_label label, const 
                                                (_at->attach_any)?INFO_FORM:INFO_WIDGET,
                                                XmNrowColumnType, XmMENU_OPTION,
                                                XmNsubMenuId, optionMenu,
-                                               XmNfontList, p_global->fontlist, 
+                                               XmNfontList, p_global->fontlist,
                                                XmNx, (int)x_for_position_of_menu,
                                                XmNy, (int)(_at->y_for_next_button - 5),
                                                RES_CONVERT( XmNlabelString, "" ),
@@ -1671,7 +1680,7 @@ void AW_window::create_option_menu( const char *var_name, AW_label label, const 
     get_root()->number_of_option_menues++;
 
     if ( p_global->option_menu_list ) {
-        p_global->last_option_menu->next = new AW_option_menu_struct( 
+        p_global->last_option_menu->next = new AW_option_menu_struct(
                                                                      get_root()->number_of_option_menues,
                                                                      _at->id_for_next_button,
                                                                      var_name, vs->variable_type, optionMenu1, _at->x_for_next_button - 7, _at->y_for_next_button );
@@ -1680,7 +1689,7 @@ void AW_window::create_option_menu( const char *var_name, AW_label label, const 
     else {
         p_global->last_option_menu = p_global->option_menu_list = new AW_option_menu_struct( get_root()->number_of_option_menues, _at->id_for_next_button, var_name, vs->variable_type, optionMenu1,  _at->x_for_next_button - 7, _at->y_for_next_button );
     }
-	
+
     AW_INSERT_BUTTON_IN_AWAR_LIST( vs,get_root()->number_of_option_menues, optionMenu, AW_WIDGET_CHOICE_MENU, this);
     AW_INSERT_BUTTON_IN_SENS_LIST ( root, _at->id_for_next_button, _at->mask_for_next_button, optionMenu1 );
 }
@@ -1709,7 +1718,7 @@ void *AW_window::_create_option_entry(AW_VARIABLE_TYPE type, const char *name, c
                                      xmPushButtonWidgetClass,
                                      p_w->option_menu,
                                      RES_LABEL_CONVERT(((char *)name)),
-                                     XmNfontList, p_global->fontlist, 
+                                     XmNfontList, p_global->fontlist,
                                      color_switch, bg_color,
                                      NULL );
     AW_LABEL_IN_AWAR_LIST(this,entry,name);
@@ -1885,7 +1894,7 @@ void AW_window::insert_option( AW_label option_name, const char *mnemonic, float
 void AW_window::insert_default_option( AW_label option_name, const char *mnemonic, float var_value, const char *name_of_color ) {
     Widget 			entry;
     AW_cb_struct	*cbs;
-	
+
     if (p_w->option_menu_var_type != AW_FLOAT){
         AW_ERROR("insert_option(..,..,string) used for non float awar");
         return;
@@ -1934,7 +1943,7 @@ void AW_window::update_option_menu( int option_menu_number ) {
         if ( option_menu_number == option_menu_list->option_menu_number ) {
             break;
         }
-    }	
+    }
     if ( !option_menu_list ){
         AW_ERROR("option menu does not exist");
         return;
@@ -1948,11 +1957,11 @@ void AW_window::update_option_menu( int option_menu_number ) {
     cont = AW_TRUE;
 
     switch ( option_menu_list->variable_type ) {
-        case AW_STRING:	global_var_value = root->awar( var_name )->read_string();	
+        case AW_STRING:	global_var_value = root->awar( var_name )->read_string();
             break;
-        case AW_INT:	global_var_int_value = root->awar( var_name )->read_int();	
+        case AW_INT:	global_var_int_value = root->awar( var_name )->read_int();
             break;
-        case AW_FLOAT:	global_var_float_value = root->awar( var_name )->read_float();	
+        case AW_FLOAT:	global_var_float_value = root->awar( var_name )->read_float();
             break;
         default:
             break;
@@ -1996,7 +2005,7 @@ void AW_window::update_option_menu( int option_menu_number ) {
             char *error = 0;
             menu_choice_list = option_menu_list->first_choice;
             switch ( option_menu_list->variable_type ) {
-                case AW_STRING:	
+                case AW_STRING:
                     error = root->awar(var_name)->write_string(menu_choice_list->variable_value);
                     error = root->awar(option_menu_list->variable_name)->write_string(menu_choice_list->variable_float_value);
                     break;
@@ -2054,7 +2063,7 @@ void AW_window::create_toggle_field( const char *var_name, AW_label labeli, cons
 
 void AW_window::create_toggle_field( const char *var_name, int orientation ) {
     /* orientation = 0 -> vertical else horizontal layout */
-    
+
     Widget label_for_toggle;
     Widget toggle_field;
     int x_correcting_for_label = 0;
@@ -2064,7 +2073,7 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
     if ( _at->label_for_inputfield ) {
         label = _at->label_for_inputfield;
     }
-	
+
 
     check_at_pos();
 
@@ -2090,7 +2099,7 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
                                                     RES_CONVERT( XmNlabelString, label ),
                                                     XmNrecomputeSize, AW_FALSE,
                                                     XmNalignment, XmALIGNMENT_BEGINNING,
-                                                    XmNfontList, p_global->fontlist, 
+                                                    XmNfontList, p_global->fontlist,
                                                     NULL );
 
         _at->saved_x_correction_for_label = x_correcting_for_label = width_of_label + 10;
@@ -2110,7 +2119,7 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
                                                 XmNy, (int)(_at->y_for_next_button - 2),
                                                 XmNradioBehavior, True,
                                                 XmNradioAlwaysOne, True,
-                                                XmNfontList, p_global->fontlist, 
+                                                XmNfontList, p_global->fontlist,
                                                 NULL );
     }else{
         toggle_field = XtVaCreateManagedWidget( "rowColumn for toggle field",
@@ -2120,13 +2129,13 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
                                                 XmNy, (int)(_at->y_for_next_button - 2),
                                                 XmNradioBehavior, True,
                                                 XmNradioAlwaysOne, True,
-                                                XmNfontList, p_global->fontlist, 
+                                                XmNfontList, p_global->fontlist,
                                                 NULL );
     }
     if (_at->attach_any){
         aw_attach_widget(toggle_field,_at,300);
     }
-    
+
     p_w->toggle_field = toggle_field;
     delete (p_w->toggle_field_var_name);
     p_w->toggle_field_var_name = strdup(var_name );
@@ -2138,7 +2147,7 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
         p_global->last_toggle_field->next = new AW_toggle_field_struct( get_root()->number_of_toggle_fields, var_name, vs->variable_type, toggle_field );
         p_global->last_toggle_field = p_global->last_toggle_field->next;
     }else {
-        p_global->last_toggle_field = p_global->toggle_field_list = 
+        p_global->last_toggle_field = p_global->toggle_field_list =
             new AW_toggle_field_struct( get_root()->number_of_toggle_fields,
                                         var_name, vs->variable_type, toggle_field );
     }
@@ -2162,7 +2171,7 @@ Widget _aw_create_toggle_entry(AW_window *aww,Widget toggle_field,
                                             RES_LABEL_CONVERT2(label,aww),
                                             RES_CONVERT( XmNmnemonic, mnemonic ),
                                             XmNindicatorSize, 16,
-                                            XmNfontList, p_global->fontlist, 
+                                            XmNfontList, p_global->fontlist,
 
                                             NULL );
     awts->toggle_widget = toggleButton;
@@ -2313,7 +2322,7 @@ void AW_window::update_toggle_field( int toggle_field_number ) {
             else {
                 toggle_field_list = toggle_field_list->next;
             }
-        }	
+        }
 
 
         if ( found ) {
@@ -2321,11 +2330,11 @@ void AW_window::update_toggle_field( int toggle_field_number ) {
             found = AW_FALSE;
 
             switch ( toggle_field_list->variable_type ) {
-                case AW_STRING:	global_var_value = root->awar( toggle_field_list->variable_name )->read_string();	
+                case AW_STRING:	global_var_value = root->awar( toggle_field_list->variable_name )->read_string();
                     break;
-                case AW_INT:	global_var_int_value = root->awar( toggle_field_list->variable_name )->read_int();	
+                case AW_INT:	global_var_int_value = root->awar( toggle_field_list->variable_name )->read_int();
                     break;
-                case AW_FLOAT:	global_var_float_value = root->awar( toggle_field_list->variable_name )->read_float();	
+                case AW_FLOAT:	global_var_float_value = root->awar( toggle_field_list->variable_name )->read_float();
                     break;
                 default:
                     GB_warning("Unknown AWAR type");

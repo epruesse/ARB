@@ -157,7 +157,9 @@ class AW_window {
 
 		int			number_of_timed_title_changes;
 
-		void /*AW_xfig*/	*xfig_data;
+    void /*AW_xfig*/	*xfig_data;
+
+    void dump_at_position(const char *label) const;
 
 		void create_window_variables( void );
 		void show_grabbed(void);
