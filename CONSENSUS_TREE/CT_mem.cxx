@@ -9,13 +9,12 @@ void *getmem(size_t size)
     void *p;
 
     p = malloc(size);
-    
-    if(p == NULL) {
-	fprintf(stderr, "Error occured in Module CONSENSUS! Not enough Memorz left\n");
-	    }
+
+    if (!p) {
+        fprintf(stderr, "Error occured in Module CONSENSUS! Not enough Memory left\n");
+        return 0;
+    }
 
     memset(p, 0, size);
-
     return p;
-
 }
