@@ -15,6 +15,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.4  2004/09/22 17:26:39  westram
+ * - beautified
+ *
  * Revision 1.3  2001/10/18 09:29:53  westram
  * fixes for compiling Solaris debugging version
  *
@@ -41,52 +44,53 @@ const int MAX_XFIG_LENGTH = 100000;
 char *aw_get_font_from_xfig(int fontnr);
 
 struct AW_xfig_line {
-	struct AW_xfig_line *next;
-	short	x0,y0;
-	short	x1,y1;
-	short	color;
-	int	gc;
+    struct AW_xfig_line *next;
+    
+    short x0,y0;
+    short x1,y1;
+    short color;
+    int   gc;
 };
 
 struct AW_xfig_text {
-	struct AW_xfig_text *next;
+    struct AW_xfig_text *next;
 
-	short    x,y;
-	short    pix_len;
-	char	*text;
-	AW_font  font;
-	short	 fontsize;
-	int	     center;
-	short	 color;
-	int	     gc;
+    short    x,y;
+    short    pix_len;
+    char    *text;
+    AW_font  font;
+    short    fontsize;
+    int      center;
+    short    color;
+    int      gc;
 };
 
 struct AW_xfig_pos {
-	short x,y;
-	int	center;
+    short x,y;
+    int   center;
 };
 
 class AW_xfig {
 public:
-	struct AW_xfig_text *text;
-	struct AW_xfig_line *line[MAX_LINE_WIDTH];
+    struct AW_xfig_text *text;
+    struct AW_xfig_line *line[MAX_LINE_WIDTH];
 
-	GB_HASH *hash;	            // hash table for buttons
+    GB_HASH *hash;                  // hash table for buttons
 
-	int	minx,miny;
-	int	maxx,maxy;
-    int	size_x,size_y;
-	int	centerx,centery;
+    int minx,miny;
+    int maxx,maxy;
+    int size_x,size_y;
+    int centerx,centery;
 
-	double font_scale;
-	double dpi_scale;
+    double font_scale;
+    double dpi_scale;
 
-	AW_xfig(const char *filename, int fontsize);
-	AW_xfig(int fontsize);      // creates an empty drawing area
+    AW_xfig(const char *filename, int fontsize);
+    AW_xfig(int fontsize);      // creates an empty drawing area
 
-	~AW_xfig(void);
-	void print(AW_device *device); // you can scale it
-	void create_gcs(AW_device *device, int screen_depth); // create the gcs
+    ~AW_xfig(void);
+    void print(AW_device *device); // you can scale it
+    void create_gcs(AW_device *device, int screen_depth); // create the gcs
 
     void add_line(int x1, int y1, int x2, int y2, int width); // add a line to xfig
 };
@@ -101,7 +105,7 @@ text::
 lines::
 
 2 art depth width color ....
-	x y x y 9999 9999
+x y x y 9999 9999
 
 */
 
