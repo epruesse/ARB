@@ -22,10 +22,22 @@
 
 static GB_CSTR awt_get_base_directory(const char *pwd_envar) {
     GB_CSTR res;
-    if (strcmp(pwd_envar, "PWD") == 0)  res = GB_getcwd();
-    else                                res = GB_getenv(pwd_envar);
+    
+    if (strcmp(pwd_envar, "PWD") == 0) {
+        res = GB_getcwd();
+    }
+    else if (strcmp(pwd_envar, "PT_SERVER_HOME") == 0) {        
+        static char *pt_server_home = GBS_global_string_copy("%s/lib/pts", GB_getenvARBHOME());
+        res                         = pt_server_home;
+    }
+    else {
+        res = GB_getenv(pwd_envar);
+        if (!res) {
+            res = GB_getcwd();
+            aw_message(GBS_global_string("Environment variable '%s' not defined - using '%s' as base dir", pwd_envar, res));
+        }
+    }
 
-    awt_assert(res);
     return res;
 }
 
@@ -187,38 +199,41 @@ void awt_fill_selection_box_recursive(const char *fulldir, int skipleft, const c
     closedir(dirp);
 }
 
+static void show_soft_link(AW_window *aws, AW_selection_list *sel_id, const char *envar, const char *cwd) {
+    // adds a soft link (e.g. ARBMACROHOME or ARB_WORKDIR) into file selection box
+    // if content of 'envar' matches 'cwd' nothing is inserted
+
+    const char *expanded_dir = awt_get_base_directory(envar);
+    if (strcmp(expanded_dir, cwd)) {
+        const char *entry = GBS_global_string("D %-*s(%s)", 18, GBS_global_string("'$%s'", envar), expanded_dir);
+        aws->insert_selection(sel_id, entry, expanded_dir);
+    }
+}
+
+static void show_soft_link_nodup(AW_window *aws, AW_selection_list *sel_id, const char *envar, const char *cwd) {
+    // avoid duplicate soft links
+    if (strstr(GBS_global_string(";%s;", envar), ";HOME;ARBHOME;ARB_WORKDIR;PT_SERVER_HOME;PWD;") == 0) {
+        show_soft_link(aws, sel_id, envar, cwd);
+    }
+}
+
+
 void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
     AW_root *aw_root = cbs->aws->get_root();
     AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
 
-    char       *diru            = aw_root->awar(cbs->def_dir)->read_string();
-    char       *fulldir         = AWT_unfold_path(diru,cbs->pwd);
-    char       *filter          = aw_root->awar(cbs->def_filter)->read_string();
-    const char *cwd             = awt_get_base_directory(cbs->pwd);
-    const char *home            = GB_getenvHOME();
-    const char *arbhome         = GB_getenvARBHOME();
-    const char *workingdir      = GB_getenv("ARB_WORKDIR"); // doc in arb_envar.hlp
-    if (!workingdir) workingdir = home; // if no working dir -> default to home
-    const char *callerdir       = GB_getenv("PWD");
-
-    char buffer[GB_PATH_MAX];	memset(buffer,0,GB_PATH_MAX);
-    char buffer2[GB_PATH_MAX];	memset(buffer2,0,GB_PATH_MAX);
-
-    char *name  = aw_root->awar(cbs->def_name)->read_string();
+    char       *diru      = aw_root->awar(cbs->def_dir)->read_string();
+    char       *fulldir   = AWT_unfold_path(diru,cbs->pwd);
+    char       *filter    = aw_root->awar(cbs->def_filter)->read_string();
+    char       *name      = aw_root->awar(cbs->def_name)->read_string();
     const char *name_only = 0;
     {
         char *slash = strrchr(name, '/');
         name_only   = slash ? slash+1 : name;
     }
     bool is_wildcard = strchr(name_only, '*');
-    // does not work :
-    //     if (is_wildcard) {
-    //         cbs->aws->insert_default_selection(cbs->id, "Please wait...", "?");
-    //         cbs->aws->update_selection_list(cbs->id);
-    //         cbs->aws->clear_selection_list(cbs->id);
-    //     }
-
+    
     if (cbs->show_dir) {
         if (is_wildcard) {
             cbs->aws->insert_selection( cbs->id, (char *)GBS_global_string("ALL '%s' below '%s'", name_only, fulldir), name);
@@ -232,32 +247,32 @@ void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
         }
 
         if (filter[0] && !is_wildcard) {
-            sprintf(buffer,"D \' Search for\'     (*%s)", filter);
-            cbs->aws->insert_selection( cbs->id, buffer, "*" );
+            cbs->aws->insert_selection( cbs->id, GBS_global_string("D \' Search for\'     (*%s)", filter), "*" );
         }
 
-        if (strcmp(cwd,fulldir)){
-            sprintf(buffer2, "\'$%s\'", cbs->pwd);
-            sprintf(buffer,"D %-*s(%s)", 18, buffer2, cwd);
-            cbs->aws->insert_selection( cbs->id, buffer, cwd );
+        show_soft_link_nodup(cbs->aws, cbs->id, cbs->pwd, fulldir);
+
+        if (cbs->pwdx) {        // additional directories
+            char *start = cbs->pwdx;
+            while (start) {
+                char *multiple = strchr(start, '^');
+                if (multiple) {
+                    multiple[0] = 0;
+                    show_soft_link_nodup(cbs->aws, cbs->id, start, fulldir);
+                    multiple[0] = '^';
+                    start       = multiple+1;
+                }
+                else {
+                    show_soft_link_nodup(cbs->aws, cbs->id, start, fulldir);
+                    start = 0;
+                }
+            }
         }
-        if (strcmp(home,fulldir)){
-            sprintf(buffer,"D \'$HOME\'           (%s)",home);
-            cbs->aws->insert_selection( cbs->id, buffer, home );
-        }
-        if (strcmp(callerdir,fulldir)){
-            sprintf(buffer,"D \'$PWD\'            (%s)",callerdir);
-            cbs->aws->insert_selection( cbs->id, buffer, callerdir );
-        }
-        if (strcmp(workingdir,fulldir)){
-            sprintf(buffer,"D \'$ARB_WORKDIR\'    (%s)",workingdir);
-            cbs->aws->insert_selection( cbs->id, buffer, workingdir );
-        }
-        sprintf(buffer2,"%s/lib/pts",arbhome);
-        if (strcmp(buffer2,fulldir)){
-            sprintf(buffer,"D \'$PT_SERVER_HOME\' (%s)",buffer2);
-            cbs->aws->insert_selection( cbs->id, buffer, buffer2 );
-        }
+
+        show_soft_link(cbs->aws, cbs->id, "HOME", fulldir);
+        show_soft_link(cbs->aws, cbs->id, "PWD", fulldir);
+        show_soft_link(cbs->aws, cbs->id, "ARB_WORKDIR", fulldir);
+        show_soft_link(cbs->aws, cbs->id, "PT_SERVER_HOME", fulldir);
     }
 
     if (is_wildcard) {
@@ -397,8 +412,19 @@ void awt_create_selection_box(AW_window *aws, const char *awar_prefix,const char
     AW_root             *aw_root = aws->get_root();
     struct adawcbstruct *acbs    = new adawcbstruct;
 
-    acbs->aws               = (AW_window *)aws;
-    acbs->pwd               = strdup(pwd);
+    acbs->aws = (AW_window *)aws;
+    acbs->pwd = strdup(pwd);
+    {
+        char *multiple_dirs_in_pwd = strchr(acbs->pwd, '^');
+        if (multiple_dirs_in_pwd) {
+            multiple_dirs_in_pwd[0] = 0;
+            acbs->pwdx = multiple_dirs_in_pwd+1;
+        }
+        else {
+            acbs->pwdx = 0;
+        }
+    }
+
     acbs->show_dir          = show_dir;
     acbs->def_name          = GBS_string_eval(awar_prefix,"*=*/file_name",0);
     acbs->previous_filename = 0;
