@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.cxx                                       //
 //    Purpose   : Implementation of SQ_functions.h                       //
-//    Time-stamp: <Thu Oct/02/2003 18:36 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon Oct/06/2003 10:33 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July - October 2003                        //
@@ -31,19 +31,29 @@
 
 enum { CS_CLEAR, CS_PASS1 };
 
+static GB_ERROR no_data_error(GBDATA *gb_species, const char *ali_name) {
+    GBDATA     *gb_name = GB_find(gb_species, "name", 0, down_level);
+    const char *name    = "<unknown>";
+    if (gb_name) name = GB_read_char_pntr(gb_name);
+    return GBS_global_string("Species '%s' has no data in alignment '%s'",
+                             name, ali_name);
+}
+
 
 GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main) {
     GB_push_transaction(gb_main);
 
     GB_ERROR  error          = 0;
-    char     *alignment_name = GBT_get_default_alignment(gb_main);
+    char     *alignment_name = GBT_get_default_alignment(gb_main); // @@@ wird nie freigegeben
 
     for (GBDATA *gb_species = GBT_first_species(gb_main);
          gb_species && !error;
          gb_species = GBT_next_species(gb_species))
     {
-        GBDATA *gb_ali     = GB_find(gb_species,alignment_name,0,down_level);
-        if (!gb_ali) error = GBS_global_string("No such alignment '%s'", alignment_name);
+        GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
+        if (!gb_ali) {
+            error = no_data_error(gb_species, alignment_name);
+        }
         else {
             GBDATA *gb_quality     = GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
             if (!gb_quality) error = GB_get_error();
@@ -84,7 +94,7 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 
     GB_push_transaction(gb_main);
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-    alignment_name = GBT_get_default_alignment(gb_main);
+    alignment_name = GBT_get_default_alignment(gb_main); // @@@ wird nie freigegeben
     seq_assert(alignment_name);
 
 
@@ -111,8 +121,9 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 
 	    GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
 
-	    if (!gb_ali) error = GBS_global_string("No such alignment '%s'", alignment_name);
-
+	    if (!gb_ali) {
+            error = no_data_error(gb_species, alignment_name);
+        }
 	    else {
 		GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
 		if (!gb_quality) error = GB_get_error();
@@ -179,7 +190,7 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 				globalData.SQ_add_consensus(consensus[i][j],i,j);
 			    }
 			}
-			free(consensus);
+			free(consensus); // @@@ consensus liegt auf dem Stack (free bewirkt undefiniertes Verhalten!)
 		    }
 
 
@@ -222,8 +233,9 @@ GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, b
 
 	    GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
 
-	    if (!gb_ali) error = GBS_global_string("No such alignment '%s'", alignment_name);
-
+	    if (!gb_ali) {
+            error = no_data_error(gb_species, alignment_name);
+        }
 	    else {
 		int diff = 0;
 		int temp = 0;
@@ -299,7 +311,7 @@ int SQ_get_value(GBDATA *gb_main, const char *option){
 
     GB_push_transaction(gb_main);
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-    alignment_name = GBT_get_default_alignment(gb_main);
+    alignment_name = GBT_get_default_alignment(gb_main); // @@@ wird nie freigegeben
     seq_assert(alignment_name);
 
     if (true /*marked_only*/) {
@@ -349,7 +361,7 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_ave
 
     GB_push_transaction(gb_main);
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-    alignment_name = GBT_get_default_alignment(gb_main);
+    alignment_name = GBT_get_default_alignment(gb_main); // @@@ wird nie freigegeben
     seq_assert(alignment_name);
 
     if (true /*marked_only*/) {
