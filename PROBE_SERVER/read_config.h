@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : read_config.h                                          //
 //    Purpose   : reads and provides probe_parameters.conf               //
-//    Time-stamp: <Thu Oct/09/2003 11:56 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Feb/27/2004 17:01 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2003          //
@@ -61,6 +61,8 @@ namespace {
             if (!error) parseDoubleRange_checked("temperature", data.min_temperature, data.max_temperature, 0.0, 100.0);
             if (!error) parseDoubleRange_checked("gccontent", data.min_gccontent, data.max_gccontent, 0.0, 100.0);
             if (!error) parseIntRange_checked("ecolipos", data.ecoli_min_pos, data.ecoli_max_pos, 0, 10000);
+            
+            if (!error) parseBool("weighted_mismatches", data.use_weighted_mismatches);
 
             if (!error) parseBondQuadruple("bonds_Ax", data.bonds);
             if (!error) parseBondQuadruple("bonds_Cx", data.bonds+4);
