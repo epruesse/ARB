@@ -4,6 +4,7 @@
 #include <string.h>
 #include <map>
 #include <list>
+#include <set>
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -13,13 +14,12 @@
 
 using namespace std;
 
-struct PositionPair {
-    int begin;
-    int end;
+#if defined(DEBUG)
+// #define CREATE_DEBUG_FILES
+// #define DUMP_OVERLAP_CALC
+#endif // DEBUG
 
-    PositionPair() : begin(-1), end(-1) {}
-    PositionPair(int begin_, int end_) : begin(begin_), end(end_) {}
-};
+// --------------------------------------------------------------------------------
 
 static int gene_counter          = 0; // pre-incremented counters
 static int splitted_gene_counter = 0;
@@ -27,11 +27,157 @@ static int intergene_counter     = 0;
 
 static map<const char *,char *> names;
 
+// --------------------------------------------------------------------------------
+
+struct PositionPair {
+    int begin;                  // these positions are in range [0 .. genome_length-1]
+    int end;
+
+    static int genome_length;
 
 #if defined(DEBUG)
-// #define CREATE_DEBUG_FILES
+    void check_legal() const {
+        gp_assert(begin >= 0);
+        gp_assert(begin <= end);
+        gp_assert(end < genome_length);
+    }
 #endif // DEBUG
 
+    PositionPair() : begin(-1), end(-1) {}
+    PositionPair(int begin_, int end_) : begin(begin_), end(end_) {
+#if defined(DEBUG)
+        check_legal();
+#endif // DEBUG
+    }
+
+    int length() const { return end-begin+1; }
+
+    bool overlapsWith(const PositionPair& other) const {
+#if defined(DEBUG)
+        check_legal();
+        other.check_legal();
+#endif // DEBUG
+        return ! ((end < other.begin) || (other.end < begin));
+    }
+
+#if defined(DUMP_OVERLAP_CALC)
+    void dump(const char *note) const {
+        printf("%s begin=%i end=%i\n", note, begin, end);
+    }
+#endif // DUMP_OVERLAP_CALC
+};
+
+int PositionPair::genome_length = 0;
+
+typedef list<PositionPair> PositionPairList;
+
+struct ltNonOverlap {
+    // sorting with this operator identifies all overlapping PositionPair's as "equal"
+    bool operator ()(const PositionPair& p1, const PositionPair& p2) {
+        return p1.end < p2.begin;
+    }
+};
+
+class GenePositionMap {
+    typedef set<PositionPair, ltNonOverlap> OverlappingGeneSet;
+
+    OverlappingGeneSet usedRanges;
+    unsigned long      overlapSize;
+    unsigned long      geneSize;
+public:
+    GenePositionMap() : overlapSize(0), geneSize(0) {}
+
+    void announceGene(PositionPair gene);
+    GB_ERROR buildIntergeneList(const PositionPair& wholeGenome, PositionPairList& intergeneList) const;
+    unsigned long getOverlap() const { return overlapSize; }
+    unsigned long getAllGeneSize() const { return geneSize; }
+
+#if defined(DUMP_OVERLAP_CALC)
+    void dump() const;
+#endif // DUMP_OVERLAP_CALC
+};
+
+// ____________________________________________________________
+// start of implementation of class GenePositionMap:
+
+void GenePositionMap::announceGene(PositionPair gene)
+{
+    OverlappingGeneSet::iterator found = usedRanges.find(gene);
+    if (found == usedRanges.end()) { // gene does not overlap with currently known ranges
+        usedRanges.insert(gene); // add to known ranges
+    }
+    else {
+        // 'found' overlaps with 'gene'
+        int gene_length = gene.length();
+
+        do {
+            gp_assert(gene.overlapsWith(*found));
+
+            gene                = PositionPair(min(found->begin, gene.begin), max(found->end, gene.end)); // calc combined range
+            int combined_length = gene.length();
+
+            size_t overlap  = (found->length()+gene_length)-combined_length;
+            overlapSize    += overlap;
+            geneSize       += gene_length;
+
+            usedRanges.erase(found);
+
+            gene_length = combined_length;
+            found       = usedRanges.find(gene); // search for further overlaps
+        } while (found != usedRanges.end());
+
+        usedRanges.insert(gene); // insert the combined range
+    }
+}
+
+GB_ERROR GenePositionMap::buildIntergeneList(const PositionPair& wholeGenome, PositionPairList& intergeneList) const
+{
+    OverlappingGeneSet::iterator end  = usedRanges.end();
+    OverlappingGeneSet::iterator curr = usedRanges.begin();
+    OverlappingGeneSet::iterator prev = end;
+
+    if (curr == end) { // nothing defined -> use whole genome as one big intergene
+        intergeneList.push_back(wholeGenome);
+    }
+    else {
+        if (curr->begin > wholeGenome.begin) { // intergene before first gene range ?
+            intergeneList.push_back(PositionPair(wholeGenome.begin, curr->begin-1));
+        }
+
+        prev = curr; ++curr;
+
+        while (curr != end) {
+            if (prev->end < curr->begin) {
+                if (prev->end != (curr->begin-1)) { // not directly adjacent
+                    intergeneList.push_back(PositionPair(prev->end+1, curr->begin-1));
+                }
+            }
+            else {
+                return "Internal error: Overlapping gene ranges";
+            }
+
+            prev = curr; ++curr;
+        }
+
+        if (prev != end && prev->end < wholeGenome.end) {
+            intergeneList.push_back(PositionPair(prev->end+1, wholeGenome.end));
+        }
+    }
+    return 0;
+}
+
+#if defined(DUMP_OVERLAP_CALC)
+void GenePositionMap::dump() const
+{
+    printf("List of ranges used by genes:\n");
+    for (OverlappingGeneSet::iterator g = usedRanges.begin(); g != usedRanges.end(); ++g) {
+        g->dump("- ");
+    }
+    printf("Overlap: %lu bases\n", getOverlap());
+}
+#endif // DUMP_OVERLAP_CALC
+
+// -end- of implementation of class GenePositionMap.
 
 static GB_ERROR create_data_entry(GBDATA *gb_species2, const char *sequence, int seqlen) {
     GB_ERROR  error         = 0;
@@ -132,12 +278,12 @@ static GB_ERROR create_gene(GBDATA *gb_species_data2, int pos_begin, int pos_end
     return create_genelike_entry(internal_name, gb_species_data2, pos_begin, pos_end, ali_genome, long_gene_name);
 }
 
-static GB_ERROR create_splitted_gene(GBDATA *gb_species_data2, list<PositionPair>& part_list, const char *ali_genome, const char *long_gene_name) {
+static GB_ERROR create_splitted_gene(GBDATA *gb_species_data2, PositionPairList& part_list, const char *ali_genome, const char *long_gene_name) {
     GB_ERROR                     error    = 0;
-    list<PositionPair>::iterator list_end = part_list.end();
+    PositionPairList::iterator list_end = part_list.end();
 
     int gene_size = 0;
-    for (list<PositionPair>::iterator part = part_list.begin(); part != list_end; ++part) {
+    for (PositionPairList::iterator part = part_list.begin(); part != list_end; ++part) {
         int part_size  = part->end-part->begin+1;
         gene_size     += part_size;
     }
@@ -147,7 +293,7 @@ static GB_ERROR create_splitted_gene(GBDATA *gb_species_data2, list<PositionPair
 
     char *split_pos_list = 0;   // contains split information: 'gene pos of part2,abs pos of part2;gene pos of part3,abs pos of part3;...'
 
-    for (list<PositionPair>::iterator part = part_list.begin(); part != list_end; ) {
+    for (PositionPairList::iterator part = part_list.begin(); part != list_end; ) {
         int part_size   = part->end-part->begin+1;
         int genome_pos  = part->begin;
         memcpy(gene_sequence+gene_off, ali_genome+part->begin, part_size);
@@ -182,7 +328,7 @@ static GB_ERROR create_splitted_gene(GBDATA *gb_species_data2, list<PositionPair
         error = GB_get_error();
     }
     else {
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
         printf("splitted gene: long_gene_name='%s' internal_name='%s' split_pos_list='%s'\n",
                long_gene_name, internal_name, split_pos_list);
 #endif // DEBUG
@@ -217,7 +363,7 @@ static GB_ERROR read_PositionPair(GBDATA *gb_gene, const char *pos_begin, const 
     return error;
 }
 
-static GB_ERROR scan_gene_positions(GBDATA *gb_gene, list<PositionPair>& part_list) {
+static GB_ERROR scan_gene_positions(GBDATA *gb_gene, PositionPairList& part_list) {
     PositionPair pp;
     GB_ERROR     error = read_PositionPair(gb_gene, "pos_begin", "pos_end", pp);
 
@@ -258,22 +404,22 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
         if (!organism_name) error = GB_get_error();
     }
 
-    int previous_gene_endpos = -1; // end position of previous gene
+    GenePositionMap geneRanges;
 
     int gene_counter_old          = gene_counter; // used for statistics only (see end of function)
     int splitted_gene_counter_old = splitted_gene_counter;
     int intergene_counter_old     = intergene_counter;
 
-    GBDATA     *gb_ali_genom = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
-    gp_assert(gb_ali_genom);   // existance has to be checked by caller!
-    const char *ali_genom     = GB_read_char_pntr(gb_ali_genom);
-    if (!ali_genom) error     = GB_get_error();
+    GBDATA     *gb_ali_genom    = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
+    gp_assert(gb_ali_genom);    // existance has to be checked by caller!
+    const char *ali_genom       = GB_read_char_pntr(gb_ali_genom);
+    if (!ali_genom) error       = GB_get_error();
+    PositionPair::genome_length = GB_read_count(gb_ali_genom); // this affects checks in PositionPair
 
     for (GBDATA *gb_gene = GEN_first_gene(gb_organism);
          gb_gene && !error;
          gb_gene = GEN_next_gene(gb_gene))
     {
-        // int         pos_search    = 2;
         GBDATA     *gb_gene_name = GB_find(gb_gene,"name",0,down_level);
         const char *gene_name     = 0;
 
@@ -283,7 +429,7 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
             if (!gene_name) error = GB_get_error();
         }
 
-        list<PositionPair> part_list;
+        PositionPairList part_list;
         if (!error) error                = scan_gene_positions(gb_gene, part_list);
         else if (part_list.empty()) error = "empty position list";
 
@@ -291,50 +437,65 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
             int          split_count = part_list.size();
             PositionPair first_part  = *part_list.begin();
 
-            if (previous_gene_endpos<(first_part.begin-1)) {
-                // there are bases between current and previous gene
-                // -> add intergene
-                int   ig_begin       = previous_gene_endpos+1;
-                int   ig_end         = first_part.begin-1;
-                char *long_gene_name = GBS_global_string_copy("%s;intergene_%i_%i", organism_name, ig_begin, ig_end);
-                error                = create_intergene(gb_species_data2, ig_begin, ig_end, ali_genom, long_gene_name);
-                free(long_gene_name);
-            }
-
             if (!error) {
                 char *long_gene_name = GBS_global_string_copy("%s;%s", organism_name, gene_name);
                 if (split_count == 1) { // normal gene
                     error = create_gene(gb_species_data2, first_part.begin, first_part.end, ali_genom, long_gene_name);
+                    geneRanges.announceGene(first_part);
                 }
                 else {          // splitted gene
                     error = create_splitted_gene(gb_species_data2, part_list, ali_genom, long_gene_name);
+
+                    for (PositionPairList::iterator p = part_list.begin(); p != part_list.end(); ++p) {
+                        geneRanges.announceGene(*p);
+                    }
                 }
                 free(long_gene_name);
             }
-
-            PositionPair last_part = *part_list.rbegin();
-            previous_gene_endpos   = last_part.end;
         }
 
         if (error && gene_name) error = GBS_global_string("in gene '%s': %s", gene_name, error);
     }
 
+    if (!error) { // add intergenes
+        PositionPairList intergenes;
+        PositionPair     wholeGenome(0, PositionPair::genome_length-1);
+        error = geneRanges.buildIntergeneList(wholeGenome, intergenes);
+
+        for (PositionPairList::iterator i = intergenes.begin(); !error && i != intergenes.end(); ++i) {
+            char *long_intergene_name = GBS_global_string_copy("%s;intergene_%i_%i", organism_name, i->begin, i->end);
+            error                     = create_intergene(gb_species_data2, i->begin, i->end, ali_genom, long_intergene_name);
+            free(long_intergene_name);
+        }
+    }
+
     if (error && organism_name) error = GBS_global_string("in organism '%s': %s", organism_name, error);
 
-    // while ((gb_gene = GB_find(gb_gene,0,0,this_level|search_next)) != 0);
+    {
+        int new_genes          = gene_counter-gene_counter_old; // only non-splitted genes
+        int new_splitted_genes = splitted_gene_counter-splitted_gene_counter_old;
+        int new_intergenes     = intergene_counter-intergene_counter_old;
 
-    int new_genes          = gene_counter-gene_counter_old; // only non-splitted genes
-    int new_splitted_genes = splitted_gene_counter-splitted_gene_counter_old;
-    int new_intergenes     = intergene_counter-intergene_counter_old;
+        unsigned long genesSize    = geneRanges.getAllGeneSize();
+        unsigned long overlaps     = geneRanges.getOverlap();
+        double        data_grow    = overlaps/double(PositionPair::genome_length)*100;
+        double        gene_overlap = overlaps/double(genesSize)*100;
 
-    if (new_splitted_genes) {
-        printf("  - %s: %u genes (%u splitted), %u intergenes\n",
-               organism_name, new_genes+new_splitted_genes, new_splitted_genes, new_intergenes);
+        if (new_splitted_genes) {
+
+            printf("  - %s: %u genes (%u splitted), %u intergenes",
+                   organism_name, new_genes+new_splitted_genes, new_splitted_genes, new_intergenes);
+        }
+        else {
+            printf("  - %s: %u genes, %u intergenes",
+                   organism_name, new_genes, new_intergenes);
+        }
+        printf(" (data grow: %5.2f%%, gene overlap: %5.2f%%=%lu bp)\n", data_grow, gene_overlap, overlaps);
     }
-    else {
-        printf("  - %s: %u genes, %u intergenes\n",
-               organism_name, new_genes, new_intergenes);
-    }
+
+#if defined(DUMP_OVERLAP_CALC)
+    geneRanges.dump();
+#endif // DUMP_OVERLAP_CALC
 
     return error;
 }
@@ -423,11 +584,16 @@ int main(int argc, char* argv[]) {
                 size_t moff = 0;
 
                 for (NameIter = names.begin(); NameIter != NameEnd; ++NameIter) {
-                    char temp_string[128];
-                    sprintf(temp_string,"%s;%s;",NameIter->first,NameIter->second);
-                    int  len  = strlen(temp_string);
-                    memcpy(map_string+moff,temp_string, len);
-                    moff     += len;
+                    int len1 = strlen(NameIter->first);
+                    int len2 = strlen(NameIter->second);
+
+                    memcpy(map_string+moff, NameIter->first, len1);
+                    map_string[moff+len1]  = ';';
+                    moff                  += len1+1;
+
+                    memcpy(map_string+moff, NameIter->second, len2);
+                    map_string[moff+len2]  = ';';
+                    moff                  += len2+1;
                 }
                 map_string[moff] = 0;
 
@@ -477,6 +643,4 @@ int main(int argc, char* argv[]) {
     printf("arb_gene_probe done.\n");
     return EXIT_SUCCESS;
 }
-
-
 
