@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <assert.h>
 #include <unistd.h>
 #include <sys/types.h>
 
@@ -16,6 +15,11 @@
 #include <awt_tree.hxx>
 #include <awt_csp.hxx>
 #include "ap_csp_2_gnuplot.hxx"
+
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *gb_main;
 
@@ -55,8 +59,8 @@ static GB_ERROR split_stat_filename(const char *fname, char **dirPtr, char **nam
         name_postfix = GB_strdup("*_gnu");
     }
 
-    assert(name_prefix);
-    assert(name_postfix);
+    nt_assert(name_prefix);
+    nt_assert(name_postfix);
 
     *dirPtr          = dir;
     *name_prefixPtr  = name_prefix;
@@ -68,7 +72,7 @@ static GB_ERROR split_stat_filename(const char *fname, char **dirPtr, char **nam
 //      static char * get_overlay_files(AW_root *awr, const char *fname, GB_ERROR& error)
 // -------------------------------------------------------------------------------------------
 static char * get_overlay_files(AW_root *awr, const char *fname, GB_ERROR& error) {
-    assert(!error);
+    nt_assert(!error);
 
     bool overlay_prefix  = awr->awar(AP_AWAR_CSP_GNUPLOT_OVERLAY_PREFIX)->read_int();
     bool overlay_postfix = awr->awar(AP_AWAR_CSP_GNUPLOT_OVERLAY_POSTFIX)->read_int();
@@ -171,7 +175,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                 if (!out) error = GB_export_error("Cannot write to file '%s'",fname);
             }
 
-            assert(out || error);
+            nt_assert(out || error);
 
             if (!error) {
                 char         *type     = aww->get_root()->awar(AP_AWAR_CSP_SUFFIX)->read_string();
@@ -249,7 +253,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                     char command_file[100];
 #if defined(DEBUG)
                     int  printed = sprintf(command_file,"/tmp/arb_gnuplot_commands_%s_%i",GB_getenv("USER"), getpid());
-                    assert(printed<100);
+                    nt_assert(printed<100);
 #endif // DEBUG
 
                     char *smooth  = aww->get_root()->awar(AP_AWAR_CSP_SMOOTH_GNUPLOT)->read_string();
@@ -285,7 +289,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                             free(script);
                         }
                         else {
-                            assert(mode == 2);
+                            nt_assert(mode == 2);
                             unlink(command_file);
                         }
                     }

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -17,8 +16,20 @@
 #include <awt_tree.hxx>
 #include <awt_dtree.hxx>
 
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define nt_assert(bed) arb_assert(bed)
+
 extern GBDATA *gb_main;
 
+static void init_config_awars(AW_root *root) {
+    root->awar_string(AWAR_CONFIGURATION,"default_configuration",gb_main);
+}
+
+//  ---------------------------
+//      class Store_species
+//  ---------------------------
 // stores a amount of species:
 
 class Store_species
@@ -33,7 +44,7 @@ public:
     ~Store_species();
 
     Store_species* add(Store_species *list) {
-        assert(next==0);
+        nt_assert(next==0);
         next = list;
         return this;
     }
@@ -59,20 +70,21 @@ void Store_species::call(void (*aPizza)(GBT_TREE*)) const {
 }
 
 static void unmark_species(GBT_TREE *node) {
-    assert(node);
-    assert(node->gb_node);
-    assert(GB_read_flag(node->gb_node)!=0);
+    nt_assert(node);
+    nt_assert(node->gb_node);
+    nt_assert(GB_read_flag(node->gb_node)!=0);
     GB_write_flag(node->gb_node, 0);
 }
 
 static void mark_species(GBT_TREE *node, Store_species **extra_marked_species) {
-    assert(node);
-    assert(node->gb_node);
-    assert(GB_read_flag(node->gb_node)==0);
+    nt_assert(node);
+    nt_assert(node->gb_node);
+    nt_assert(GB_read_flag(node->gb_node)==0);
     GB_write_flag(node->gb_node, 1);
 
     *extra_marked_species = (new Store_species(node))->add(*extra_marked_species);
 }
+
 
 
 /** Builds a configuration string from a tree. Returns the number of marked species */
@@ -98,10 +110,10 @@ static void mark_species(GBT_TREE *node, Store_species **extra_marked_species) {
 */
 
 GBT_TREE *rightmost_leaf(GBT_TREE *node) {
-    assert(node);
+    nt_assert(node);
     while (!node->is_leaf) {
         node = node->rightson;
-        assert(node);
+        nt_assert(node);
     }
     return node;
 }
@@ -112,7 +124,7 @@ GBT_TREE *left_neighbour_leaf(GBT_TREE *node) {
         while (father) {
             if (father->rightson==node) {
                 node = rightmost_leaf(father->leftson);
-                assert(node->is_leaf);
+                nt_assert(node->is_leaf);
                 if (!node->gb_node) { // Zombie
                     node = left_neighbour_leaf(node);
                 }
@@ -151,7 +163,7 @@ int nt_build_conf_string_rek(GB_HASH *used,GBT_TREE *tree, void *memfile,
         }
         else { // marked species
             if (marked_at_left<use_species_aside) {
-                assert(marked_at_left>=0);
+                nt_assert(marked_at_left>=0);
                 GBT_TREE *leaf_at_left = tree;
                 int step_over = marked_at_left+1; // step over myself
                 int then_mark = use_species_aside-marked_at_left;
@@ -373,18 +385,26 @@ void NT_start_editor_on_tree(AW_window *, GBT_TREE **ptree, int use_species_asid
     }
 }
 
-void nt_extract_configuration(AW_window *aww){
-    aww->hide();
-    GB_transaction dummy2(gb_main);		// open close transaction
-    char *cn = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
-    GBDATA *gb_configuration = GBT_find_configuration(gb_main,cn);
+enum extractType {
+    CONF_EXTRACT,
+    CONF_MARK,
+    CONF_UNMARK,
+    CONF_INVERT
+};
+
+void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
+    GB_transaction  dummy2(gb_main); // open close transaction
+    char           *cn               = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
+    GBDATA         *gb_configuration = GBT_find_configuration(gb_main,cn);
     if (!gb_configuration){
         aw_message(GBS_global_string("Configuration '%s' not fould in the database",cn));
     }else{
         GBDATA *gb_middle_area = GB_search(gb_configuration,"middle_area",GB_STRING);
         char *md = 0;
         if (gb_middle_area){
-            GBT_mark_all(gb_main,0);
+            extractType ext_type = extractType(cl_extractType);
+            if (ext_type == CONF_EXTRACT) GBT_mark_all(gb_main,0); // unmark all for extract
+
             md = GB_read_string(gb_middle_area);
             if (md){
                 char *p;
@@ -395,7 +415,15 @@ void nt_extract_configuration(AW_window *aww){
                     if (p[0] != 'L') continue;
                     GBDATA *gb_species = GBT_find_species(gb_main,p+1);
                     if (gb_species){
-                        GB_write_flag(gb_species,1);
+                        int mark = GB_read_flag(gb_species);
+                        switch (ext_type) {
+                            case CONF_EXTRACT:
+                            case CONF_MARK:     mark = 1; break;
+                            case CONF_UNMARK:   mark = 0; break;
+                            case CONF_INVERT:   mark = 1-mark; break;
+                            default: nt_assert(0); break;
+                        }
+                        GB_write_flag(gb_species,mark);
                     }
                 }
             }
@@ -416,32 +444,6 @@ void nt_delete_configuration(AW_window *aww){
     delete cn;
 }
 
-AW_window *NT_extract_configuration(AW_root *awr){
-    static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
-    awr->awar_string(AWAR_CONFIGURATION,"default_configuration",gb_main);
-    aws = new AW_window_simple;
-    aws->init( awr, "EXTRACT_CONFIGURATION", "EXTRACT A CONFIGURATION", 400, 200 );
-    aws->at(10,10);
-    aws->auto_space(0,0);
-    awt_create_selection_list_on_configurations(gb_main,(AW_window *)aws,AWAR_CONFIGURATION);
-    aws->at_newline();
-
-    aws->callback((AW_CB0)nt_extract_configuration);
-    aws->create_button("EXTRACT","EXTRACT","E");
-
-    aws->callback(nt_delete_configuration);
-    aws->create_button("DELETE","DELETE");
-
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
-
-    aws->callback(AW_POPUP_HELP,(AW_CL)"configuration.hlp");
-    aws->create_button("HELP","HELP","H");
-
-    aws->window_fit();
-    return (AW_window *)aws;
-}
 
 GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_name, int use_species_aside){
 	GBT_TREE *tree = *ptree;
@@ -512,9 +514,115 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
 	return error;
 }
 
+void nt_store_configuration(AW_window */*aww*/, AW_CL cl_GBT_TREE_ptr) {
+    GBT_TREE **ptree = (GBT_TREE**)cl_GBT_TREE_ptr;
+    GB_ERROR   err   = NT_create_configuration(0, ptree, 0, 0);
+    if (err) aw_message(err);
+}
+
+
+//  --------------------------------------------------------------------------------------
+//      AW_window *create_configuration_admin_window(AW_root *root, GBT_TREE **ptree)
+//  --------------------------------------------------------------------------------------
+AW_window *create_configuration_admin_window(AW_root *root, GBT_TREE **ptree) {
+    static AW_window_simple *aws = 0;
+    if (aws) return aws;
+
+    init_config_awars(root);
+
+    aws = new AW_window_simple;
+    aws->init(root, "SPECIES_SELECTIONS", "Species Selections", 0, 0);
+    aws->load_xfig("nt_selection.fig");
+
+    aws->at("close");
+	aws->callback( (AW_CB0)AW_POPDOWN);
+	aws->create_button("CLOSE","CLOSE","C");
+
+    aws->at("help");
+    aws->callback(AW_POPUP_HELP,(AW_CL)"configuration.hlp");
+	aws->create_button("HELP","HELP","H");
+
+    aws->at("list");
+    awt_create_selection_list_on_configurations(gb_main, aws, AWAR_CONFIGURATION);
+
+    aws->at("store");
+    aws->callback(nt_store_configuration, (AW_CL)ptree);
+	aws->create_button("STORE","STORE","S");
+
+    aws->at("extract");
+    aws->callback(nt_extract_configuration, CONF_EXTRACT);
+	aws->create_button("EXTRACT","EXTRACT","E");
+
+    aws->at("mark");
+    aws->callback(nt_extract_configuration, CONF_MARK);
+	aws->create_button("MARK","MARK","M");
+
+    aws->at("unmark");
+    aws->callback(nt_extract_configuration, CONF_UNMARK);
+	aws->create_button("UNMARK","UNMARK","U");
+
+    aws->at("invert");
+    aws->callback(nt_extract_configuration, CONF_INVERT);
+	aws->create_button("INVERT","INVERT","I");
+
+    aws->at("delete");
+    aws->callback(nt_delete_configuration);
+	aws->create_button("DELETE","DELETE","D");
+
+    aws->at("rename");
+	aws->create_button("RENAME","RENAME","R");
+
+    return aws;
+}
+
+void NT_configuration_admin(AW_window *aw_main, AW_CL cl_GBT_TREE_ptr, AW_CL) {
+    GBT_TREE  **ptree   = (GBT_TREE**)cl_GBT_TREE_ptr;
+    AW_root    *aw_root = aw_main->get_root();
+    AW_window  *aww     = create_configuration_admin_window(aw_root, ptree);
+
+    aww->show();
+}
+
+// --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
+
+#if 0
+
+// obsolete:
+AW_window *NT_extract_configuration(AW_root *awr){
+    static AW_window_simple *aws = 0;
+    if (aws) return (AW_window *)aws;
+    awr->awar_string(AWAR_CONFIGURATION,"default_configuration",gb_main);
+    aws = new AW_window_simple;
+    aws->init( awr, "EXTRACT_CONFIGURATION", "EXTRACT A CONFIGURATION", 400, 200 );
+    aws->at(10,10);
+    aws->auto_space(0,0);
+    awt_create_selection_list_on_configurations(gb_main,(AW_window *)aws,AWAR_CONFIGURATION);
+    aws->at_newline();
+
+    aws->callback((AW_CB0)nt_extract_configuration);
+    aws->create_button("EXTRACT","EXTRACT","E");
+
+    aws->callback(nt_delete_configuration);
+    aws->create_button("DELETE","DELETE");
+
+    aws->callback(AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
+
+    aws->callback(AW_POPUP_HELP,(AW_CL)"configuration.hlp");
+    aws->create_button("HELP","HELP","H");
+
+    aws->window_fit();
+    return (AW_window *)aws;
+}
+// obsolete:
 GB_ERROR NT_create_configuration_cb(AW_window *aww, AW_CL cl_GBT_TREE_ptr, AW_CL cl_use_species_aside) {
     GBT_TREE **ptree             = (GBT_TREE**)(cl_GBT_TREE_ptr);
     int        use_species_aside = int(cl_use_species_aside);
-    aww->get_root()->awar_string(AWAR_CONFIGURATION,"default_configuration",gb_main);
+
+    init_config_awars(aww->get_root());
     return NT_create_configuration(0, ptree, 0, use_species_aside);
 }
+
+#endif

@@ -11,11 +11,16 @@
 #include "ad_spec.hxx"
 #include "GEN.hxx"
 
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define nt_assert(bed) arb_assert(bed)
+
 void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL){
 	gb_dest = gb_main;
 	AW_window *aww = ad_create_query_window(awr);
 	ad_unquery_all();
-	GB_ERROR error = MG_simple_merge(awr);
+	GB_ERROR   error = MG_simple_merge(awr);
 	ad_query_update_list();
 	if (!error){
 	    aww->show();
@@ -44,7 +49,7 @@ void NT_import_sequences(AW_window *aww,AW_CL,AW_CL){
     int gb_main_is_genom_db  = GEN_is_genom_db(gb_main, 0);
     int gb_merge_is_genom_db = GEN_is_genom_db(gb_merge, gb_main_is_genom_db);
 
-    gb_assert(gb_main_is_genom_db == gb_merge_is_genom_db);
+    nt_assert(gb_main_is_genom_db == gb_merge_is_genom_db);
 
     awr->awar(AWAR_READ_GENOM_DB)->write_int(gb_main_is_genom_db ? 0 : 2);
 }
