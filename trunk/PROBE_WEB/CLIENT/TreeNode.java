@@ -1,9 +1,9 @@
-//package de.arbhome.allProbes;
+//package de.arbhome.arb_probe_library;
 
 
 import java.lang.*;
 import java.util.*;
-//import de.arbhome.allProbes.*;
+//import de.arbhome.arb_probe_library.*;
 
 
 
@@ -41,6 +41,7 @@ public int level;
 public static long nodeCounter = 0;
 public long nodeSerial;
 public float maxDepth = 0;
+public boolean verbose = false;
 
 
 
@@ -49,7 +50,7 @@ public TreeNode()
     nodeName = new StringBuffer();
     childNodes = new Vector();
     nodeSerial = nodeCounter;
-    System.out.println("TreeNode:node number " + nodeSerial + " generated");
+    if (verbose) System.out.println("TreeNode:node number " + nodeSerial + " generated");
     nodeCounter++;
 
 }
@@ -290,7 +291,8 @@ private String encodePath(String path)
 
 
     int value = 0;
-    for (int position = 0; position < path.length(); position++ )
+    int position;
+    for (position = 0; position < path.length(); position++ )
             {
                 //                System.out.println(path.charAt(position));
                  if (path.charAt(position) == '1')
@@ -327,7 +329,9 @@ private String encodePath(String path)
             }
 
     //        System.out.println(hexToken[value]);
+    if ((position%4) != 0) {
         coded.append(hexToken[value]);
+    }
         //                System.out.println("am Ende: " + binary);
     return coded.toString();
 }
