@@ -23,6 +23,7 @@ public:
     void set( const long index, const bool value );
 
     bool reserve( const long _capacity );
+    void invert();
     
     void print();
 
@@ -106,6 +107,17 @@ bool PS_BitSet::reserve( const long _capacity ) {
     data = new_data;                                             // store new pointer
     capacity = _capacity_bytes*8;                                // store new capacity
     return true;
+}
+
+
+// ************************************************************
+// * invert()
+// ************************************************************
+void PS_BitSet::invert() {
+    bias = (bias == false);
+    for (long i = 0; i < capacity/8; ++i) {
+        data[i] = ~data[i];
+    }
 }
 
 
