@@ -6,14 +6,17 @@ import java.awt.event.*;
 
 public class ProbesGUI extends Frame
 {
-    private ScrollPane  sc;
-    private TreeDisplay td;
-    private TreeNode    root;
-    private TextArea    details;
-    private ProbeList   probe_list;
-    private ProbeMenu   pm;
-    private Client      client;
-    
+    private Client       client; 
+    private ProbeMenu    pm;
+    private TreeToolbar  tree_toolbar;
+    private ScrollPane   sc;
+    private TreeDisplay  td;
+    private ProbeToolbar probe_toolbar;
+    private ProbeList    probe_list;
+    private TextArea     details;
+
+    private TreeNode root;
+
     private boolean         fakeScrollPaneSize = true;
     private Dimension       estimatedScrollPaneSize;
     private final Dimension wantedScrollPaneSize;
@@ -60,7 +63,7 @@ public class ProbesGUI extends Frame
             probe_list = new ProbeList(this, rightPanelColor, fixedFont);
             rightPanel.add(probe_list, BorderLayout.CENTER);
 
-            rightPanel.add(new ProbeToolbar(this), BorderLayout.NORTH);
+            rightPanel.add(probe_toolbar = new ProbeToolbar(this), BorderLayout.NORTH);
 
             details = new TextArea("Detail information", 20, textWidth, TextArea.SCROLLBARS_BOTH);
             details.setBackground(rightPanelColor);
@@ -80,8 +83,8 @@ public class ProbesGUI extends Frame
             Panel treePanel = new Panel();
             treePanel.setLayout(new BorderLayout());
 
-            TreeToolbar ttb = new TreeToolbar(this);
-            treePanel.add(ttb, BorderLayout.NORTH);
+            tree_toolbar = new TreeToolbar(this);
+            treePanel.add(tree_toolbar, BorderLayout.NORTH);
 
             sc = new ScrollPane() {
 
@@ -107,13 +110,13 @@ public class ProbesGUI extends Frame
             sc.getVAdjustable().setUnitIncrement(1);
             sc.getHAdjustable().setUnitIncrement(1);
 
-            // sc.setSize(estimatedPaneSize); // need to set this here (allows to calc. correct size for 'ttb'
+            // sc.setSize(estimatedPaneSize); // need to set this here (allows to calc. correct size for 'tree_toolbar'
 
             // sc.setWheelScrollingEnabled(true); // later - needs java 1.4 :(
             treePanel.add(sc, BorderLayout.CENTER);
             add(treePanel);
 
-            Dimension ttbdim                = ttb.getPreferredSize();
+            Dimension ttbdim                = tree_toolbar.getPreferredSize();
             estimatedScrollPaneSize.height -= ttbdim.height;
             // System.out.println("ttbdim="+ttbdim.width+"/"+ttbdim.height+"");
 
@@ -186,10 +189,14 @@ public class ProbesGUI extends Frame
 
     public Dimension getPreferredScrollPaneSize() { return sc.getPreferredSize(); }
     public Dimension getScrollPaneViewportSize() { return sc.getViewportSize(); }
+    
     public TreeDisplay getTreeDisplay() { return td; }
+    public TreeToolbar getTreeToolbar() { return tree_toolbar; }
+
     public ProbeList getProbeList() { return probe_list; }
-    public Client getClient() { return client; }
+    public ProbeToolbar getProbeToolbar() { return probe_toolbar; }
     public TextArea getDetails() { return details; }
 
+    public Client getClient() { return client; }
 
 }
