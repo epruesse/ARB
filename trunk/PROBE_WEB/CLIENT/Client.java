@@ -151,12 +151,10 @@ public void matchProbes(String probeInfo) {
     String  error      = null;
 
     clearDetails();
+    
+    needUpdate = root.unmarkSubtree(); // unmark all
 
-    if (probeInfo == null) {
-        root.unmarkSubtree();   // unmark all
-        needUpdate = true;
-    }
-    else {
+    if (probeInfo != null) {
         int komma1 = probeInfo.indexOf(',');
         int komma2 = probeInfo.indexOf(',', komma1+1);
 
@@ -171,7 +169,7 @@ public void matchProbes(String probeInfo) {
             }
             else {
                 updateDetails(probeInfo,members);
-                needUpdate = root.markSpecies(","+members+",");
+                needUpdate = root.markSpecies(members, shortNameHash);
             }
         }
     }
@@ -319,21 +317,23 @@ public void updateDetails (String probeInfo, String shortNames)
     }
 
 
-public void fillShortNameHash(TreeNode node)
+    public void fillShortNameHash(TreeNode node)
     {
         if (!node.testLeaf())
-            {
-                fillShortNameHash ( (TreeNode)node.getChilds().elementAt(0) ) ;
-                fillShortNameHash ( (TreeNode)node.getChilds().elementAt(1) ) ;
-            }
+        {
+            fillShortNameHash ( (TreeNode)node.getChilds().elementAt(0) ) ;
+            fillShortNameHash ( (TreeNode)node.getChilds().elementAt(1) ) ;
+        }
         else
-            {
-                shortNameHash.put(node.getShortName(), node);
-            }
-
-
+        {
+            shortNameHash.put(node.getShortName(), node);
+        }
     }
 
+    public HashMap getShortNameHash()
+    {
+        return shortNameHash;
+    }
 
 }
 
