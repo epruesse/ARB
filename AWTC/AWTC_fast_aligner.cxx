@@ -1546,7 +1546,7 @@ static GB_ERROR alignToNextRelative(int      pt_server_id,
                                     GB_CSTR  pt_server_alignment,
                                     int      max_seq_length,
                                     int      temporary,
-                                    int      mirrorAllowed,
+                                    int      turnAllowed,
                                     GB_CSTR  alignment,
                                     GBDATA  *gb_toAlign,
                                     int      firstColumn,
@@ -1567,7 +1567,7 @@ static GB_ERROR alignToNextRelative(int      pt_server_id,
     int        i;
 
     if (use_different_pt_server_alignment) {
-        mirrorAllowed = 0; // makes no sense if we're using a different alignment for the pt_server
+        turnAllowed = 0; // makes no sense if we're using a different alignment for the pt_server
     }
 
     for (next_relatives=0; next_relatives<relativesToTest; next_relatives++) {
@@ -1633,12 +1633,14 @@ static GB_ERROR alignToNextRelative(int      pt_server_id,
                 }
             }
 
-            if (!error && mirrorAllowed) { // test if mirrored sequence has better relatives
+            if (!error && turnAllowed) { // test if mirrored sequence has better relatives
                 char *mirroredSequence = strdup(toAlignExpSequence);
                 long length = strlen(mirroredSequence);
                 long bestMirroredScore = -1;
 
-                GBT_reverseComplementNucSequence(mirroredSequence, length, global_alignmentType);
+                char T_or_U;
+                error = GBT_determine_T_or_U(global_alignmentType, &T_or_U, "reverse-complement");
+                GBT_reverseComplementNucSequence(mirroredSequence, length, T_or_U);
 
                 error = family.go(pt_server_id, mirroredSequence,0,relativesToTest+1);
                 if (!error) {
@@ -1654,12 +1656,12 @@ static GB_ERROR alignToNextRelative(int      pt_server_id,
                 int turnIt = 0;
 
                 if (bestMirroredScore>bestScore) {
-                    if (mirrorAllowed==1) {
+                    if (turnAllowed==1) {
                         char message[200];
-                        sprintf(message, "'%s' seems to be the other way round (matches=%li, matches if mirrored=%li)",
+                        sprintf(message, "'%s' seems to be the other way round (matches=%li, matches if turned=%li)",
                                 toAlignSequence->name(), bestScore, bestMirroredScore);
 
-                        turnIt = aw_message(message, "Mirror sequence,Leave sequence alone")==0;
+                        turnIt = aw_message(message, "Turn sequence,Leave sequence alone")==0;
                     }
                     else {
                         turnIt = 1;
@@ -1879,7 +1881,7 @@ static GB_ERROR AWTC_aligner(GB_CSTR                         reference, // name 
                              int                             alignWhat, // 0 -> align current, 1 -> align marked, 2 -> align selected
                              AWTC_get_first_selected_species get_first_selected_species, // used if alignWhat == 2
                              AWTC_get_next_selected_species  get_next_selected_species,
-                             int                             mirrorAllowed, // 0 -> don't mirror; 1 -> ask user; 2 -> mirror and don't ask
+                             int                             turnAllowed, // 0 -> don't mirror; 1 -> ask user; 2 -> mirror and don't ask
                              int                             temporary, // ==1 -> create only temporary aligment report into alignment (2=resident,0=none)
                              int                             showGapsMessages, // ==1 -> display messages about missing gaps in master
                              int                             firstColumn, // first column of range to be aligned (0..len-1)
@@ -1896,10 +1898,10 @@ static GB_ERROR AWTC_aligner(GB_CSTR                         reference, // name 
 
     awtc_assert(reference==NULL || get_consensus==NULL);    // can't do both modes
 
-    if (mirrorAllowed) {
+    if (turnAllowed) {
         if ((firstColumn!=0 || lastColumn!=-1) || !search_by_pt_server) {
             // if not selected 'Range/Whole sequence' or not selected 'Reference/Auto search..'
-            mirrorAllowed = 0; // then disable mirroring for the actual call
+            turnAllowed = 0; // then disable mirroring for the actual call
         }
     }
 
@@ -2191,7 +2193,7 @@ static GB_ERROR AWTC_aligner(GB_CSTR                         reference, // name 
                         error = 0;
                         if (myProtection<=maxProtection) {
                             error = alignToNextRelative(pt_server_id, pt_server_alignment, max_seq_length,
-                                                        temporary, mirrorAllowed,
+                                                        temporary, turnAllowed,
                                                         alignment, gb_toalign,
                                                         firstColumn, lastColumn, maxRelatives, showGapsMessages);
                         }
@@ -2215,7 +2217,7 @@ static GB_ERROR AWTC_aligner(GB_CSTR                         reference, // name 
                         error = 0;
                         if (myProtection<=maxProtection) {
                             error = alignToNextRelative(pt_server_id, pt_server_alignment, max_seq_length,
-                                                        temporary, mirrorAllowed,
+                                                        temporary, turnAllowed,
                                                         alignment, gb_species,
                                                         firstColumn, lastColumn, maxRelatives, showGapsMessages);
                         }
@@ -2258,7 +2260,7 @@ static GB_ERROR AWTC_aligner(GB_CSTR                         reference, // name 
 
                         if (myProtection<=maxProtection) {
                             error = alignToNextRelative(pt_server_id, pt_server_alignment, max_seq_length,
-                                                        temporary, mirrorAllowed,
+                                                        temporary, turnAllowed,
                                                         alignment, gb_species,
                                                         firstColumn, lastColumn, maxRelatives, showGapsMessages);
                         }
