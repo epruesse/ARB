@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Fri Aug/06/2004 11:32 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Oct/01/2004 17:43 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -691,7 +691,9 @@ void awt_radio_button::build_widget(AW_window *aws) {
 
     for (; b != buttons.end() && v != values.end(); ++b, ++v, ++pos) {
         void (AW_window::*ins_togg)(AW_label, const char*, const char*);
-        ins_togg = (pos == default_position) ? &AW_window::insert_default_toggle : &AW_window::insert_toggle;
+
+        if (pos == default_position) ins_togg = &AW_window::insert_default_toggle;
+        else ins_togg                         = &AW_window::insert_toggle;
 
         (aws->*ins_togg)(b->c_str(), mask_global()->hotkey(*b), b->c_str());
     }
