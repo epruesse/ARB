@@ -582,13 +582,13 @@ void AWTC_import_go_cb(AW_window *aww)
     AW_root *awr = aww->get_root();
     bool is_genom_db;
     {
-        bool read_genom_db = awr->awar(AWAR_READ_GENOM_DB)->read_int();
+        bool read_genom_db = (awr->awar(AWAR_READ_GENOM_DB)->read_int() <2);
 
         {
             GB_transaction dummy(GB_MAIN);
 
             GBDATA *gb_genom_db = GB_find(GB_MAIN, GENOM_DB_TYPE, 0, down_level);
-            if (!gb_genom_db) {
+            if (!gb_genom_db) {								//
                 gb_genom_db = GB_create(GB_MAIN, GENOM_DB_TYPE, GB_INT);
                 GB_write_int(gb_genom_db, read_genom_db);
             }
@@ -597,10 +597,10 @@ void AWTC_import_go_cb(AW_window *aww)
 
         if (read_genom_db!=is_genom_db) {
             if (is_genom_db) {
-                aw_message("You can only import whole genom sequences (genbank-format) into a genom database.");
+                aw_message("You can only import whole genom sequences (GENBANK/EMBL-format) into a genom database.");
             }
             else {
-                aw_message("You can't import whole genom sequences (genbank-format) into a non-genom ARB database.");
+                aw_message("You can't import whole genom sequences (GENBANK/EMBL-format) into a non-genom ARB database.");
             }
             return;
         }
@@ -763,7 +763,7 @@ void AWTC_import_go_cb(AW_window *aww)
 //      static void genom_flag_changed(AW_root *root)
 //  ------------------------------------------------------
 static void genom_flag_changed(AW_root *awr) {
-    if (awr->awar(AWAR_READ_GENOM_DB)->read_int()) {
+    if (awr->awar(AWAR_READ_GENOM_DB)->read_int() <2) {
         awr->awar(AWAR_ALI)->write_string("genom");
         awr->awar(AWAR_ALI_TYPE)->write_string("dna");
         awr->awar_string(AWAR_FORM"/filter",".fit");        // dummy to hide normal import filters
@@ -788,7 +788,9 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
     awr->awar_string(AWAR_FORM"/file_name","");
     awr->awar_string(AWAR_ALI,"16s");
     awr->awar_string(AWAR_ALI_TYPE,"rna");
+    awr->awar_int(AWAR_READ_GENOM_DB, 2);
     awr->awar_int(AWAR_READ_GENOM_DB, 0)->add_callback(genom_flag_changed);
+    awr->awar_int(AWAR_READ_GENOM_DB, 1)->add_callback(genom_flag_changed);
 
     if (aws){
         aws->show();
@@ -835,9 +837,10 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
 
     aws->at("genom");
     aws->create_toggle_field(AWAR_READ_GENOM_DB);
-    aws->insert_toggle("Import genom data in GENBANK format","0",0);
-    aws->insert_toggle("Import genom data in EMBL format","1",1);
-    aws->insert_toggle("Import foreign data format (or press AUTO DETECT)","2",2);
+    aws->insert_toggle("Import genom data in GENBANK format","g",0);
+    aws->insert_toggle("Import genom data in EMBL format","e",1);
+    aws->insert_toggle("Import foreign data format (or press AUTO DETECT)","f",2);
+    aws->update_toggle_field();
 
     aws->at("go");
     aws->callback(AWTC_import_go_cb);
