@@ -19,6 +19,7 @@
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
 #include <awt_canvas.hxx>
+#include <awt_attributes.hxx>
 #include <awt.hxx>
 
 #include "GEN_local.hxx"
@@ -195,7 +196,8 @@ inline bool getDrawGcs(GEN_iterator& gene, PaintWhat what, const string& curr_ge
             draw    = (what == PAINT_MARKED);
         }
         else {
-            int color_group = AW_find_color_group(gb_gene);
+            int color_group = AWT_gene_get_dominant_color(gb_gene);
+            // int color_group = AW_find_color_group(gb_gene);
 
             if (color_group) {
                 draw_gc = text_gc = GEN_GC_FIRST_COLOR_GROUP+color_group-1;
