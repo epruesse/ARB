@@ -33,7 +33,7 @@ int SQ_count_nr_of_groups(GBT_TREE *node, GBDATA *gb_main);
 
 GB_ERROR SQ_count_nr_of_species(GBDATA *gb_main);
 
-SQ_GroupData *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main);
+void SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data);
 
 int SQ_get_value_no_tree(GBDATA *gb_main, const char *option);
 
