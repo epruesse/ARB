@@ -68,7 +68,8 @@ void PS_detect_weak_differences( const PS_NodePtr ps_root_node ) {
     PS_BitMap *theMap = new PS_BitMap( false );
     SpeciesID  maxID  = 0;
     IDvector   upperNodes;
-    
+
+    printf( "PS_detect_weak_differences_stepdown( 0, theMap, upperNodes, 0 )\n" );    
     for (PS_NodeMapConstIterator i = ps_root_node->getChildrenBegin(); i != ps_root_node->getChildrenEnd(); ++i ) {
         if (i->first % 10 == 0) printf( "PS_detect_weak_differences_stepdown( %i, theMap, upperNodes, %i )\n",i->first,maxID );
         PS_detect_weak_differences_stepdown( i->second, theMap, upperNodes, maxID );
