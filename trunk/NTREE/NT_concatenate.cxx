@@ -125,7 +125,7 @@ conAlignStruct* createSelectionList(GBDATA *gb_main,AW_window *aws, const char *
 
     GBDATA *gb_presets;
     AW_root *aw_root  = aws->get_root();
-    char    *ali_type = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();  //reading sequence type from the concatenation window  // @@@ FIXME : not free'd
+    char    *ali_type = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();  //reading sequence type from the concatenation window 
     ali_type          = GBS_global_string_copy("%s=", ali_type);            // copying the awar with '=' appended to it
 
     db_alignment_list = aws->create_selection_list(awarName,0,"",10,20);
@@ -448,7 +448,7 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
 
     GBDATA  *gb_species_data      = GB_search(gb_main, "species_data",  GB_CREATE_CONTAINER);
     GBDATA  *gb_species_full_name = GB_find(gb_species, "full_name", 0, down_level);
-    GB_CSTR  str_full_name        = GB_read_string(gb_species_full_name); // @@@ FIXME: not free'd
+    char    *str_full_name        = GB_read_string(gb_species_full_name); 
 
     error = AWTC_generate_one_name(gb_main, str_full_name, 0, new_species_name, false);
 
@@ -673,6 +673,7 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
 
     if (error) aw_message(error, "OK");
     free(new_species_name);
+    free(str_full_name);
     return gb_new_species;
 
 }
