@@ -16,7 +16,7 @@
 
 #include <fstream>
 #include <iostream>
-#include "nt_fileReader.hxx"
+
 #include "nt_validNames.hxx"
 #include "nt_validNameParser.hxx"
 
@@ -135,7 +135,7 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL)
     }
     namesFile.unsetf(ios::skipws); // keep white spaces
     // undefined iterator theEnd denotes end of stream
-    istream_iterator<char> inIter(namesFile), theEnd; 
+    istream_iterator<char> inIter(namesFile), theEnd;
 
     for ( ;inIter != theEnd; ++inIter) {
       if (*inIter == '\r') continue; // remove empty lines due to dos \r
@@ -143,12 +143,12 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL)
 	if ( !tmpString.empty())   // check for newline
 	  {
 	    fileContent.push_back(tmpString);
-	    //	  std::cout << tmpString << std::endl; 
-	    tmpString = "";	       
+	    //	  std::cout << tmpString << std::endl;
+	    tmpString = "";
 	  }else{};
       }else{
-	tmpString += *inIter;	       
-      }       
+	tmpString += *inIter;
+      }
     } // closes file automatically
     // while (getline(namesFile, tmpString)){
     if (!tmpString.empty()) fileContent.push_back(tmpString); // if last line doesn't end with \n
@@ -165,21 +165,21 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL)
 	if(it->find(nameStart.c_str(), 0, 11) != string::npos){
 	  isHeader = false;
 	  Desco myDesc =  validNames::determineType(*it);
-	  std::cout << string("valid name: ") << myDesc.getFirstName() << std::endl 
+	  std::cout << string("valid name: ") << myDesc.getFirstName() << std::endl
 		    << string("other name: \t\t") << myDesc.getSecondName() << std::endl;
-	
+
 	  myDescs.push_back(myDesc);
 	}
       }else{
 	Desco myDesc =  validNames::determineType(*it);
-	std::cout << string("valid name: ") << myDesc.getFirstName() << std::endl 
+	std::cout << string("valid name: ") << myDesc.getFirstName() << std::endl
 		  << string("other name: \t\t") << myDesc.getSecondName() << std::endl;
- 
+
 	  myDescs.push_back(myDesc);
      }
-    
+
     }
-    // continue here with database interaction 
+    // continue here with database interaction
 
     GBDATA* namesCont;
     GBDATA* pair;
@@ -215,7 +215,7 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL)
 	  case 8: typeStr = "RENSPEC"; break;
 	  case 9: typeStr = "CORSPEC"; break;
 	  default: typeStr = "NOTYPE"; break;
-	  } 
+	  }
 
 	  GB_write_string(descType, typeStr);
 	}
@@ -229,7 +229,7 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL)
   catch (...) {
     aw_message("unable to open Valid Names File");
     //    std::cout << "unable to open Valid Names File" << std::endl;
-  } 
+  }
 
 }
 
@@ -257,8 +257,8 @@ void NT_insertValidNames(AW_window*, AW_CL, AW_CL)
 //     }
 
 // strange loop
-  for (GBDATA *spe=GBT_first_species(gb_main); 
-       spe; 
+  for (GBDATA *spe=GBT_first_species(gb_main);
+       spe;
        spe=GBT_next_species(spe)) ;
 
   GBDATA* GBT_next;
@@ -274,8 +274,8 @@ void NT_insertValidNames(AW_window*, AW_CL, AW_CL)
     }
   GB_commit_transaction(gb_main);
 
-  
-  
+
+
 };
 
 
@@ -293,9 +293,9 @@ void NT_suggestValidNames(AW_window*, AW_CL, AW_CL)
   const char* typeStr;
 
   GB_begin_transaction(gb_main);
- 
-  for (GBDATA *GBT_species=GBT_first_species(gb_main); 
-       GBT_species; 
+
+  for (GBDATA *GBT_species=GBT_first_species(gb_main);
+       GBT_species;
        GBT_species=GBT_next_species(GBT_species)){
     // retrieve list of all species names
     GBDATA* GBT_fullName = GB_find(GBT_species,"full_name",0,down_level);
@@ -304,11 +304,11 @@ void NT_suggestValidNames(AW_window*, AW_CL, AW_CL)
     GB_commit_transaction(gb_main);
   } ;
 
-  /* 
+  /*
      for (){
      // iterate all pairs to look for relevant names
-     
-     
+
+
      } ;
   */
  /*

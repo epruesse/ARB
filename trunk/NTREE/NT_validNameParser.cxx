@@ -4,7 +4,7 @@
  * the valid names text file
  *
  * 29. November 2002
- * 
+ *
  * copyright by Lothar Richter
  */
 
@@ -15,8 +15,11 @@
 #include <string>
 #include <list>
 #include <vector>
-#include "nt_fileReader.hxx"
+
 #include "nt_validNameParser.hxx"
+
+// Hi Lothar,
+// ich hab ein paar CodeComments (CC : ) fuer Dich eingefuegt, die sich auf die Compiler-Warnungen beziehen.
 
 namespace validNames{
 
@@ -27,7 +30,7 @@ namespace validNames{
     int tokenEnd = 0;
     int tokenBegin = 0;
     //    std::cout  <<description.size() << std::endl;
-    while (tokenEnd != description.size()){
+    while (tokenEnd != description.size()){ // CC : warning: comparison between signed and unsigned (tokenEnd sollte nicht 'int' sondern 'unsigned' sein)
     tokenEnd = description.find_first_of(' ', tokenBegin);
     //    std::cout << string("TokenBegin:\t") << tokenBegin << "\t" <<
     //  string("TokenEnd:\t") << tokenEnd << std::endl;
@@ -50,7 +53,7 @@ namespace validNames{
 
   Desco determineType(const string& descriptionString)
   {// begin determineType
- 
+
   DESCT actType = NOTYPE;
   TokLPtr tokenLP =  new TokL;
   tokenLP = tokenize(descriptionString, tokenLP);
@@ -68,12 +71,12 @@ namespace validNames{
   int ssp = 0;
   bool isValid = true;
   bool isRenamed = false;
-  bool isHetero = false; 
+  bool isHetero = false;
   bool isHomo = false;
   bool isGenus = false;
   bool isSee = false;
   //  bool isSpecies = false;
-  bool isCorr = false;    
+  bool isCorr = false;
 
 
 
@@ -120,7 +123,7 @@ namespace validNames{
 		  if(*it == string("subsp.")){
 		    std::cout << "subspecies detected at position: >>>"<< ssp << "<<<" << std::endl;
 		    ssp == 2 ? sspPos[0] = ssp : sspPos[1] = ssp;
-		    //      : sspPos[1] == 0 ? sspPos[1] = ssp 
+		    //      : sspPos[1] == 0 ? sspPos[1] = ssp
 		    //      : 10000,exit (102); // bad hack to fake return value
 		    // max. one subsp. on each operator side
 		    std::cout << "position of subsp.: " << sspPos[0] << "\tand: " << sspPos[1] << std::endl;
@@ -136,7 +139,7 @@ namespace validNames{
 
 
     if(isGenus) { // for genus descriptions
-      std::cout << " GENUS description found " << std::endl; 
+      std::cout << " GENUS description found " << std::endl;
       if(isValid){
 	descNames[0] = (*tokenLP)[0];
 	actType = VALGEN;
@@ -145,7 +148,7 @@ namespace validNames{
 	if(isHetero){
 	  descNames[0] = (*tokenLP)[2];
 	  descNames[3] = (*tokenLP)[0];
-	  actType = HETGEN;	
+	  actType = HETGEN;
 	  std::cout << "HETERONYMGEN type set to: " << actType << std::endl;
 	}else{
 	  if(isHomo){
@@ -210,11 +213,11 @@ namespace validNames{
 	    descNames[0] = (*tokenLP)[3 + sspPos[0]];
 	    descNames[1] = (*tokenLP)[4 + sspPos[0]];
 	    if(sspPos[1]!=0){descNames[2]=(*tokenLP)[6 + sspPos[0]];} // only if subsp. exists
-	    
+
 	    descNames[3] = (*tokenLP)[0];
 	    descNames[4] = (*tokenLP)[1];
 	    if(sspPos[0]!=0){descNames[5]=(*tokenLP)[sspPos[0]+1];} // only if subsp. exists
-	    
+
 	    actType = HOMSPEC;
 
 	  }
@@ -223,13 +226,13 @@ namespace validNames{
 	      descNames[0] = (*tokenLP)[3 + sspPos[0]];
 	      descNames[1] = (*tokenLP)[4 + sspPos[0]];
 	      if(sspPos[1]!=0){descNames[2]=(*tokenLP)[6 + sspPos[0]];} // only if subsp. exists
-	      
+
 	      descNames[3] = (*tokenLP)[0];
 	      descNames[4] = (*tokenLP)[1];
 	      if(sspPos[0]!=0){descNames[5]=(*tokenLP)[sspPos[0]+1];} // only if subsp. exists
-	      
+
 	      actType = RENSPEC;
-	      
+
 	    }
 	    else{// species remaining cases
 	      std::cout << "not a valid description line detected" << std::endl;
@@ -244,14 +247,14 @@ namespace validNames{
 	      std::cout << descriptionString << std::endl;
 	      actType = NOTYPE;
 	    }
-	    
+
 	  }// end else isHomo
 	}// end else isHetero
       }//end else is Valid
     }// end of species part
 
 
-  // check line for -> or => or = 
+  // check line for -> or => or =
   //}
   std::cout << descriptionString << std::endl;
   std::cout << "classified as " << actType << std::endl ;
@@ -272,7 +275,7 @@ string Desco::getFirstName(){
       tmp = tmp + " " + "subsp." + " " + firstsub;
     }
   }
-  
+
 
   return tmp;
 } // end Desco::getFirstName()
@@ -292,7 +295,7 @@ string Desco::getSecondName(){
 
 bool isUpperCase(const string& input)
 {
-  for (int i=0;i<input.length();i++)
+    for (int i=0;i<input.length();i++) // CC : dito i sollte unsigned sein
     {
       if(input[i]<'A' || input[i]>'Z'){return false;}
     }
