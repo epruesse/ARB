@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : MessageDialog.java                                     // 
 //    Purpose   :                                                        // 
-//    Time-stamp: <Fri Mar/05/2004 02:20 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Thu Mar/11/2004 10:08 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in March 2004            // 
@@ -19,6 +19,7 @@ import java.awt.event.*;
 public class MessageDialog extends Dialog
 {
     boolean done;
+    Frame   myFrame;
 
     public MessageDialog(Frame frame, String title, String message)
     {
@@ -27,7 +28,8 @@ public class MessageDialog extends Dialog
 //         Window framewin = (Window)frame;
 //         framewin.setFocusable(false);
 
-        done = false;
+        done    = false;
+        myFrame = frame;
 
         setLayout(new BorderLayout());
 
@@ -88,13 +90,13 @@ public class MessageDialog extends Dialog
         toFront();
         show();
 
-        frame.setEnabled(false);
+        myFrame.setEnabled(false);
     }
 
     private void setDone() {
         done = true;
         dispose();
-
+        myFrame.setEnabled(true);
     }
 
     public boolean okClicked() {
