@@ -521,17 +521,28 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
 
     if (!name_term) { // insert new species
         ED4_multi_species_manager *insert_into_manager = ED4_new_species_multi_species_manager();
-        ED4_group_manager *group_man = insert_into_manager->get_parent(ED4_L_GROUP)->to_group_manager();
-        char *string = (char*)GB_calloc(strlen(species_name)+3, sizeof(*string));
-        int index = 0;
-        ED4_index y = 0;
-        ED4_index lot = 0;
+        ED4_group_manager         *group_man           = insert_into_manager->get_parent(ED4_L_GROUP)->to_group_manager();
+        char                      *string              = (char*)GB_calloc(strlen(species_name)+3, sizeof(*string));
+        int                        index               = 0;
+        ED4_index                  y                   = 0;
+        ED4_index                  lot                 = 0;
+
+        all_found         = 0;
+        not_found_message = GBS_stropen(1000);
+        GBS_strcat(not_found_message,"Species not found: ");
 
         sprintf(string, "-L%s", species_name);
         ED4_ROOT->database->fill_species(insert_into_manager,
                                          ED4_ROOT->ref_terminals.get_ref_sequence_info(), ED4_ROOT->ref_terminals.get_ref_sequence(),
                                          string, &index, &y, 0, &lot, insert_into_manager->calc_group_depth());
         loaded = 1;
+
+        {
+            char *out_message = GBS_strclose(not_found_message,0);
+            not_found_message = 0;
+            if (all_found != 0) aw_message(out_message);
+            free(out_message);
+        }
 
         {
             GBDATA *gb_species = GBT_find_species(gb_main, species_name);
@@ -602,6 +613,10 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
         aw_openstatus("ARB_EDIT4");
         aw_status("Loading species...");
 
+        all_found         = 0;
+        not_found_message = GBS_stropen(1000);
+        GBS_strcat(not_found_message,"Species not found: ");
+
         while (gb_species) {
             count++;
             GB_status(double(count)/double(marked));
@@ -653,6 +668,13 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
 
         aw_closestatus();
         aw_message(GBS_global_string("Loaded %i of %i marked species.", inserted, marked));
+
+        {
+            char *out_message = GBS_strclose(not_found_message,0);
+            not_found_message = 0;
+            if (all_found != 0) aw_message(out_message);
+            free(out_message);
+        }
 
         if (inserted) {
             ED4_ROOT->main_manager->update_info.set_resize(1);
