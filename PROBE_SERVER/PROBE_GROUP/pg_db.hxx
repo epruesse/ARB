@@ -7,6 +7,9 @@
 #ifndef PG_DB_HXX
 #define PG_DB_HXX
 
+#ifndef __CSTDIO__
+#include <cstdio>
+#endif
 #ifndef arbdb_h_included
 #include "arbdb.h"
 #endif
