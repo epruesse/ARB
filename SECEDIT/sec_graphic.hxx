@@ -1,3 +1,4 @@
+
 #ifndef sec_graphic_hxx_included
 #define sec_graphic_hxx_included
 
@@ -39,6 +40,17 @@ enum {
 	SEC_GC_ECOLI, 		SEC_GC_LAST_FONT = SEC_GC_ECOLI, 
 	
 	SEC_GC_CURSOR, 
+	
+	SEC_GC_SBACK_0,	// User 1  // Background for search //YADHU
+	SEC_GC_SBACK_1,  // User 2
+	SEC_GC_SBACK_2,  // Probe 
+	SEC_GC_SBACK_3,  // Primer (local)
+	SEC_GC_SBACK_4,  // Primer (region)
+	SEC_GC_SBACK_5,  // Primer (global)
+	SEC_GC_SBACK_6,  // Signature (local)
+	SEC_GC_SBACK_7,  // Signature (region)
+	SEC_GC_SBACK_8,  // Signature (global)
+	SEC_GC_MBACK,      //mismatches 
 	
 	SEC_GC_MAX
 }; // AW_gc

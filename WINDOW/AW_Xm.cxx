@@ -75,7 +75,7 @@ int AW_draw_string_on_screen(AW_device *device, int gc,const  char *str, size_t 
 int AW_device_Xm::text(int gc, const char *str,AW_pos x,AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2,long opt_strlen) {
 	return text_overlay(gc,str,opt_strlen,x,y,alignment,filteri,(AW_CL)this, cd1,cd2,0.0,0.0,AW_draw_string_on_screen);
 }
-
+ 
 int AW_device_Xm::box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
 	AWUSE(cd1);AWUSE(cd2);
 	register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
@@ -134,7 +134,7 @@ int AW_device_Xm::circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos widt
             if (!filled) {
                 XDrawArc(common->display, common->window_id, gcm->gc, (int)XL,(int)YL, (int)width, (int)height,0,64*360 );
             }
-            else {
+             else {
                 XFillArc(common->display, common->window_id, gcm->gc, (int)XL,(int)YL, (int)width, (int)height,0,64*360 );
             }
 		}

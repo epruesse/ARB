@@ -1,4 +1,3 @@
-
 typedef enum
 {
     ED4_SC_CASE_SENSITIVE,
@@ -106,6 +105,7 @@ public:
 };
 
 class ED4_sequence_terminal;
+
 class ED4_SearchResults // list head
 {
     int arraySize;		// ==0 -> 'first' is a list
@@ -151,6 +151,7 @@ public:
 };
 
 
+ED4_sequence_terminal *ED4_find_seq_terminal(const char *species_name); 
 
 
 

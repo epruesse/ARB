@@ -27,13 +27,9 @@
 
 ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
 {
-    AW_pos x,
-        y,
-        height = extension.size[HEIGHT] - 1;
-    AW_pos text_x,
-        text_y;
-    long left_index = 0,
-        right_index = 0;
+    AW_pos  x, y, height = extension.size[HEIGHT] - 1;
+    AW_pos text_x, text_y;
+    long left_index = 0, right_index = 0;
 
     static char *buffer;
     static size_t buffer_size = 0;
@@ -102,7 +98,6 @@ int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, 
     buffer[size] = 0;
     return device->text(gc,buffer,x,y,0.0,(AW_bitset)-1,0,cd2);
 }
-
 
 
 ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
@@ -182,7 +177,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
     {
         GB_transaction dummy(gb_main);
         ST_ML_Color *colors = 0;
-        char *searchColors = results().buildColorString(this, seq_start, seq_end);
+        char *searchColors = results().buildColorString(this, seq_start, seq_end);  // defined in ED4_SearchResults class : ED4_search.cxx
         ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
         int is_marked = GB_read_flag(spec_man->get_species_pointer());
         int selection_col1, selection_col2;
@@ -211,11 +206,11 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
                 selection_col2 = rm->screen_to_sequence(real_right);
             }
 
-            e4_assert(height<40);
+	    e4_assert(height<40);
             e4_assert(height>0);
 
             for ( i = real_left; i < real_right; i++,x2 += width) {
-                int new_pos = rm->screen_to_sequence(i);
+                int new_pos = rm->screen_to_sequence(i);  //getting the real position of the base in the sequence 
 
                 if (searchColors && searchColors[new_pos]) {
                     color = searchColors[new_pos];
@@ -237,7 +232,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
                 if (color != old_color) {	// draw till oldcolor
                     if (x2>old_x){
                         if (old_color!=ED4_G_STANDARD) {
-                            device->box(old_color,old_x, y2, x2-old_x, height, -1, 0,0);
+			    device->box(old_color,old_x, y2, x2-old_x, height, -1, 0,0); // paints the search pattern background
                         }
                     }
                     old_x = x2;
@@ -247,7 +242,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
 
             if (x2>old_x){
                 if (color!=ED4_G_STANDARD) {
-                    device->box(color,old_x, y2, x2-old_x, height, -1, 0,0);
+		    device->box(color,old_x, y2, x2-old_x, height, -1, 0,0);
                 }
             }
         }
@@ -261,7 +256,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
             screen_length = right;
         }
         if (screen_length) {
-            db_pointer = (unsigned char *)resolve_pointer_to_string(&max_seq_len); // this is necessary cause the old content of db_pointer is not valid till here
+            db_pointer = (unsigned char *)resolve_pointer_to_string(&max_seq_len); // this is necessary cause the old content of db_pointer is not valid till here	    
             device->text_overlay( ED4_G_HELIX,
                                   (char *)db_pointer, screen_length,
                                   text_x , text_y + ED4_ROOT->helix_spacing , 0.0 , -1,
