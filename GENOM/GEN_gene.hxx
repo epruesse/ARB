@@ -51,8 +51,8 @@ public:
         return cmp<0;
     }
 
-    long StartPos() const { return pos1; }
-    long EndPos() const { return pos2; }
+    long StartPos() const { return pos1; } // first position of gene (1..n)
+    long EndPos() const { return pos2; } // last position of gene (1..n)
     long Length() const { return pos2-pos1+1; }
     bool Complement() const { return complement; }
     //     int Level() const { return level; }

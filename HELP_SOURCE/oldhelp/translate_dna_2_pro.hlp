@@ -17,19 +17,38 @@ DESCRIPTION	Translates nucleic acid sequences. The alignment of the amino
 		acid sequences is adapted to that of the nucleic acids. The one
 		letter code is used.
 
-		1. Select source and destination alignment from the respective
+SECTION MANUAL SELECTION OF TRANSLATION PARAMETERS
+
+                1. Select source and destination alignment from the respective
 		   subwindows.
 
-		2. Select reading frame by pressing the 'Start at alignment
-		   position' button and selecting first, second or third
-		   absolut position (alternatively you can position the cursor
-		   in ARB_EDIT4 at start of the reading frame).
+		2. Select reading frame by pressing the 'Start position' button
+                   and selecting first, second or third absolut position.
+                   Alternatively you can position the cursor in ARB_EDIT4 at start
+                   of the reading frame.
 
-		3. Press the 'TRANSLATE' button.
+                3. Select the codon table to use.
 
-		Example:
-			DNA:		---UGG...GUAUGGUUA
-			-> PRO:		-Y.LYG
+		4. Press the 'TRANSLATE' button. All marked sequences will be translated.
+
+                   Example:
+
+                        DNA:    ---UGG...GUAUGGUUA
+			PRO:    -Y.LYG
+
+SECTION AUTOMATIC SELECTION OF TRANSLATION PARAMETERS
+
+                To allow easy translation of gene sequences you may select to use two
+                entries of the species:
+
+                        - codon_start, which has to be 1, 2 or 3
+
+                        - transl_table, which has to be a valid genetic code number.
+                          Refer to the numbers in the codon table selector to determine
+                          which genetic codes are known by ARB.
+
+                These 2 fields are extracted from genes to gene-species automatically
+                (see LINK{gene_extract.hlp}).
 
 WARNING         The program does begin at the first three bases, but at the
 		first three alignment positions. That means that all your
@@ -46,10 +65,9 @@ WARNING         The program does begin at the first three bases, but at the
 			DNA:		...111...22.2..333444
 			PRO:		.1.XX34		// bad alignment for 2
 
-NOTES		None
+NOTES		'Mold/Protozoan/Coelenterate Mitochondrial Code' and
+                'Mycoplasma/Spiroplasma Code' are identical (Genetic code 4).
+                For that reason the latter has been removed.
 
-EXAMPLES	None
+BUGS		If the editor is opened the reading frame changes after translation.
 
-WARNINGS	see above
-
-BUGS		unknown
