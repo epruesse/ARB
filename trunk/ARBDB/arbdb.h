@@ -1,20 +1,13 @@
 #ifndef arbdb_h_included
 #define arbdb_h_included
 
-#define NOT4PERL 
+#define NOT4PERL
 /* function definitions starting with NOT4PERL are not included into the ARB-perl-interface */
 
-#ifndef NDEBUG
-# define gb_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
-# ifndef DEBUG
-#  error DEBUG is NOT defined - but it has to!
-# endif
-#else
-# ifdef DEBUG
-#  error DEBUG is defined - but it should not!
-# endif
-# define gb_assert(bed)
-#endif /* NDEBUG */
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define gb_assert(bed) arb_assert(bed)
 
 typedef const char *GB_CSTR;		/* local memory mgrment */
 typedef const char *GB_ERROR;		/* memory management is controlled by the ARBDB lib */

@@ -32,7 +32,7 @@
 /* \---------/ */
 
 typedef char          *str;
-typedef  char    *cstr;
+typedef const char    *cstr;
 
 /* /----------------\ */
 /* |  Hilfroutinen  | */

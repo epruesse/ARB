@@ -10,18 +10,10 @@ extern "C" {
 #include "memory.h"
 }
 
-#ifndef NDEBUG
-# define ih_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
-# ifndef DEBUG
-#  error DEBUG is NOT defined - but it has to!
-# endif
-#else
-# ifdef DEBUG
-#  error DEBUG is defined - but it should not!
-# endif
-# define ih_assert(bed)
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
-
+#define ih_assert(bed) arb_assert(bed)
 
 IslandHoppingParameter *IslandHopping::para = 0;
 

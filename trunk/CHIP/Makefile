@@ -25,3 +25,16 @@ clean:
 	-rm *.a *.o
 	-rm -r SunWS_cache
 
+# DO NOT DELETE
+
+probe_functions.o:  $(ARBHOME)/INCLUDE/arbdb.h
+probe_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
+probe_functions.o: $(ARBHOME)/INCLUDE/ad_prot.h
+probe_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+probe_functions.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+probe_functions.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+probe_functions.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+probe_functions.o: $(ARBHOME)/INCLUDE/PT_com.h
+probe_functions.o: $(ARBHOME)/INCLUDE/client.h
+probe_functions.o: $(ARBHOME)/INCLUDE/servercntrl.h
+probe_functions.o: probe_functions.hxx chip.hxx

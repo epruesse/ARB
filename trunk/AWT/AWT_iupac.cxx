@@ -1,7 +1,9 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "awt_assert.hxx"
+#include <arb_assert.h>
+#define awt_assert(bed) arb_assert(bed)
+
 #include "awt_iupac.hxx"
 
 #define IUPAC_EMPTY " "

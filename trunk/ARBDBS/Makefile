@@ -19,374 +19,64 @@ links:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-adReference.o:  
-adReference.o:  
-adReference.o:  
-adReference.o:  
-adReference.o:  
-adReference.o:  
-adReference.o:  
-adReference.o:  
+adGene.o: adGene.h arbdb.h $(ARBHOME)/INCLUDE/arb_assert.h
+adGene.o:  ./ad_prot.h arbdbt.h ./ad_t_prot.h
 adReference.o:   arbdb.h
-adReference.o: ./ad_prot.h adlocal.h adtune.h adlmacros.h
-adReference.o: 
-adTest.o:  
-adTest.o:  
-adTest.o:  
-adTest.o:  
-adTest.o:   
-adTest.o:  
-adTest.o:  
-adTest.o:  
-adTest.o:   
-adTest.o:  adlocal.h adtune.h adlmacros.h admap.h
-ad_core.o:  
-ad_core.o:  
-ad_core.o:  
-ad_core.o:  
-ad_core.o:   
-ad_core.o:  
-ad_core.o:  
-ad_core.o:  
-ad_core.o:   
-ad_core.o: adlocal.h adtune.h adlmacros.h
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:   
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:   
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  
-ad_load.o:  adlocal.h adtune.h adlmacros.h
-ad_load.o: admap.h
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:  
-ad_save_load.o:   adlocal.h
-ad_save_load.o: adtune.h adlmacros.h admap.h
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:   
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:   
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
+adReference.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h adlocal.h
+adReference.o: adtune.h adlmacros.h 
+adRevCompl.o:   arbdb.h
+adRevCompl.o: $(ARBHOME)/INCLUDE/arb_assert.h 
+adRevCompl.o:  ./ad_prot.h arbdbt.h
+adRevCompl.o: ./ad_t_prot.h
+adTest.o:   adlocal.h adtune.h
+adTest.o: adlmacros.h admap.h
+ad_core.o:  adlocal.h adtune.h adlmacros.h
+ad_load.o:   adlocal.h
+ad_load.o: adtune.h adlmacros.h admap.h
+ad_save_load.o:  adlocal.h adtune.h adlmacros.h
+ad_save_load.o: admap.h
 adcomm.o:  adlocal.h adtune.h adlmacros.h
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:   
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcomm.o:  
-adcompr.o:  
-adcompr.o:  
-adcompr.o:  
-adcompr.o:  
-adcompr.o:   
-adcompr.o:  
-adcompr.o:  
-adcompr.o:  
-adcompr.o:   
-adcompr.o:  adlocal.h adtune.h adlmacros.h arbdbt.h
-adcompr.o: ./ad_t_prot.h ./ad_t_lpro.h
-adhash.o:  
-adhash.o:  
-adhash.o:  
-adhash.o:  
-adhash.o:   
-adhash.o:  
-adhash.o:  
-adhash.o:  
-adhash.o:   
+adcompr.o:   adlocal.h adtune.h
+adcompr.o: adlmacros.h arbdbt.h ./ad_t_prot.h
 adhash.o:  adlocal.h adtune.h adlmacros.h
-adindex.o:  
-adindex.o:  
-adindex.o:  
-adindex.o:  
-adindex.o:   
-adindex.o:  
-adindex.o:  
-adindex.o:  
-adindex.o:   
-adindex.o: adlocal.h adtune.h adlmacros.h adlundo.h
-adlang1.o:  
-adlang1.o:  
-adlang1.o:  
-adlang1.o:  
-adlang1.o:   
-adlang1.o:  
-adlang1.o:  
-adlang1.o:  
-adlang1.o:  
-adlang1.o:  
-adlang1.o:   
+adindex.o:   adlocal.h
+adindex.o: adtune.h adlmacros.h adlundo.h
 adlang1.o:  adlocal.h adtune.h adlmacros.h arbdbt.h
-adlang1.o: ./ad_t_prot.h ./ad_t_lpro.h
-adlink.o:  
-adlink.o:  
-adlink.o:  
-adlink.o:  
-adlink.o:   
-adlink.o:  
-adlink.o:  
-adlink.o:  
-adlink.o:   adlocal.h adtune.h
-adlink.o: adlmacros.h arbdb.h ./ad_prot.h
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:  
-admalloc.o:   
-admalloc.o:  
-admalloc.o:  
+adlang1.o: ./ad_t_prot.h adGene.h arbdb.h
+adlang1.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h
+adlink.o:  adlocal.h adtune.h adlmacros.h arbdb.h
+adlink.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h
 admalloc.o: adlocal.h adtune.h adlmacros.h
-admap.o:  
-admap.o:  
-admap.o:  
-admap.o:  
-admap.o:   
-admap.o:  
-admap.o:  
-admap.o:  
-admap.o:   adlocal.h adtune.h
-admap.o: adlmacros.h admap.h
-admath.o:  
-admath.o:  
-admath.o:  
-admath.o:  
-admath.o:  
-admath.o:  
-admath.o:  
-admath.o:   
-admath.o:  
-admath.o:  
-admath.o:  
-admath.o:  adlocal.h adtune.h adlmacros.h
-adoptimize.o:  
-adoptimize.o:  
-adoptimize.o:  
-adoptimize.o:  
-adoptimize.o:  
-adoptimize.o:  
-adoptimize.o:  
-adoptimize.o:  
-adoptimize.o:  
-adoptimize.o:  
-adoptimize.o:  
-adoptimize.o:  
-adoptimize.o:  
-adoptimize.o:  
-adoptimize.o:  
-adoptimize.o:  
+admap.o:  adlocal.h adtune.h adlmacros.h admap.h
+admath.o:   adlocal.h
+admath.o: adtune.h adlmacros.h
 adoptimize.o:  adlocal.h adtune.h adlmacros.h
-adperl.o:  
-adperl.o:  
-adperl.o:  
-adperl.o:  
-adperl.o:  
-adperl.o:   
-adperl.o:  
-adperl.o:  
-adperl.o:   arbdb.h
-adperl.o: ./ad_prot.h
-adquery.o:  
-adquery.o:  
-adquery.o:  
-adquery.o:  
-adquery.o:   
-adquery.o:  
-adquery.o:  
-adquery.o:  
-adquery.o:   
+adoptimize.o: arbdbt.h ./ad_t_prot.h
+adperl.o:  arbdb.h
+adperl.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h
 adquery.o:  adlocal.h adtune.h adlmacros.h
-adseqcompr.o:  
-adseqcompr.o:  
-adseqcompr.o:  
-adseqcompr.o:  
-adseqcompr.o:  
-adseqcompr.o:  
-adseqcompr.o:  
-adseqcompr.o:  
-adseqcompr.o:  
-adseqcompr.o:   adlocal.h adtune.h
-adseqcompr.o: adlmacros.h arbdb.h ./ad_prot.h arbdbt.h ./ad_t_prot.h
-adseqcompr.o: ./ad_t_lpro.h adseqcompr.h
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:   
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o:  
-adsocket.o: adlocal.h adtune.h adlmacros.h 
-adsocket.o: 
-adsort.o:  
-adsort.o:  
-adsort.o:  
-adsort.o:  
-adsort.o:   
-adsort.o:  
-adsort.o:  
-adsort.o:  
-adsort.o:   
-adsort.o:  arbdb.h ./ad_prot.h arbdbt.h ./ad_t_prot.h
-adsort.o: ./ad_t_lpro.h
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o:   
-adstring.o: adlocal.h adtune.h adlmacros.h arbdbt.h ./ad_t_prot.h
-adstring.o: ./ad_t_lpro.h  
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o:  
-adstring.o: 
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:  
-adsystem.o:   adlocal.h
-adsystem.o: adtune.h adlmacros.h arbdbt.h ./ad_t_prot.h ./ad_t_lpro.h
-adtables.o:  
-adtables.o:  
-adtables.o:  
-adtables.o:  
-adtables.o:  
-adtables.o:  
-adtables.o:  
-adtables.o:  
-adtables.o:  
+adseqcompr.o:  adlocal.h adtune.h adlmacros.h arbdb.h
+adseqcompr.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h arbdbt.h
+adseqcompr.o: ./ad_t_prot.h adseqcompr.h
+adsocket.o:   adlocal.h
+adsocket.o: adtune.h adlmacros.h 
+adsort.o:   arbdb.h
+adsort.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h arbdbt.h
+adsort.o: ./ad_t_prot.h
+adstring.o:  adlocal.h adtune.h adlmacros.h arbdbt.h
+adstring.o: ./ad_t_prot.h  
+adsystem.o:  adlocal.h adtune.h adlmacros.h
+adsystem.o: arbdbt.h ./ad_t_prot.h
 adtables.o:  adlocal.h adtune.h adlmacros.h arbdb.h
-adtables.o: ./ad_prot.h arbdbt.h ./ad_t_prot.h ./ad_t_lpro.h
-adtools.o:  
-adtools.o:  
-adtools.o:  
-adtools.o:  
-adtools.o:   
-adtools.o:  
-adtools.o:  
-adtools.o:  
-adtools.o:   
-adtools.o:  
-adtools.o:  
-adtools.o:  
+adtables.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h arbdbt.h
+adtables.o: ./ad_t_prot.h
 adtools.o:  adlocal.h adtune.h adlmacros.h arbdb.h
-adtools.o: ./ad_prot.h arbdbt.h ./ad_t_prot.h ./ad_t_lpro.h
+adtools.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h arbdbt.h
+adtools.o: ./ad_t_prot.h
 adtune.o: adtune.h
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:   
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:   
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  
-arbdb.o:  adlocal.h adtune.h adlmacros.h arbdb.h
+arbdb.o:   adlocal.h adtune.h
+arbdb.o: adlmacros.h arbdb.h $(ARBHOME)/INCLUDE/arb_assert.h
 arbdb.o: ./ad_prot.h
-arbdbpp.o:  
-arbdbpp.o:  
-arbdbpp.o:  
-arbdbpp.o:   arbdb.h
-arbdbpp.o: ./ad_prot.h arbdbt.h ./ad_t_prot.h ./ad_t_lpro.h
+arbdbpp.o:  arbdb.h
+arbdbpp.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h arbdbt.h
+arbdbpp.o: ./ad_t_prot.h

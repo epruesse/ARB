@@ -20,15 +20,5 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-readseq.o:
-readseq.o:
-readseq.o:
-readseq.o:
-readseq.o:
 readseq.o:  ureadseq.h
-ureadseq.o:
-ureadseq.o:
-ureadseq.o:
-ureadseq.o:
-ureadseq.o:
 ureadseq.o:  ureadseq.h

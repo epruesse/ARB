@@ -1,3 +1,9 @@
+
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define gde_assert(bed) arb_assert(bed)
+
 typedef struct GargChoicetype
 {
 	char *label;		        /* name for display in dialog box */
@@ -79,14 +85,4 @@ extern struct choose_get_sequence_struct {
     gde_cgss_window_type wt;
     void *THIS;
 } gde_cgss;
-
-
-#ifdef DEBUG
-#define gde_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
-#else
-#define gde_assert(bed)
-#endif
-
-
-
 

@@ -5,11 +5,10 @@
 #include <stdio.h>
 #endif
 
-#ifndef NDEBUG
-#define aw_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
-#else
-#define aw_assert(bed)
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
+#define aw_assert(bed) arb_assert(bed)
 
 #define AW_ROOT_DEFAULT (aw_main_root_default)
 class AW_root;

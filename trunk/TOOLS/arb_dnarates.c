@@ -29,11 +29,10 @@
 #include <arbdb.h>
 #include <arbdbt.h>
 
-#if defined(DEBUG)
-#define assert(cond) do { if (!(cond)) { *(char*)0 = 0; } } while(0)
-#else
-#define assert(cond)
-#endif /* DEBUG */
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define assert(bed) arb_assert(bed)
 
 
 /*  Global variables */

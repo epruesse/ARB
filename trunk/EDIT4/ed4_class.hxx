@@ -1,17 +1,10 @@
 #ifndef ed4_class_hxx_included
 #define ed4_class_hxx_included
 
-#ifndef NDEBUG
-# define e4_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
-# ifndef DEBUG
-#  error DEBUG is NOT defined - but it has to!
-# endif
-#else
-# ifdef DEBUG
-#  error DEBUG is defined - but it should not!
-# endif
-# define e4_assert(bed)
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
+#define e4_assert(bed) arb_assert(bed)
 
 #ifdef DEBUG
 # define IMPLEMENT_DUMP // comment out this line to skip compilation of the dump() methods

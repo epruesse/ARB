@@ -13,7 +13,8 @@ depend:
 	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_OBJECTS:.o=.cpp) $(CPP_OBJECTS:.o=.c)
 # DO NOT DELETE
 
-island_hopping.o: i-hopper.h defs.h
+island_hopping.o: island_hopping.h 
+island_hopping.o: i-hopper.h defs.h memory.h
 i-hopper.o:  
 i-hopper.o:  
 i-hopper.o: 

@@ -68,6 +68,7 @@ ln -s ../AISC_COM/C/struct_man.h INCLUDE/struct_man.h
 ln -s ../ARBDB/ad_prot.h INCLUDE/ad_prot.h
 ln -s ../ARBDB/ad_t_prot.h INCLUDE/ad_t_prot.h
 ln -s ../ARBDB/arbdb.h INCLUDE/arbdb.h
+ln -s ../ARBDB/arb_assert.h INCLUDE/arb_assert.h
 ln -s ../ARBDB/arbdbt.h INCLUDE/arbdbt.h
 ln -s ../ARBDBPP/adtools.hxx INCLUDE/adtools.hxx
 ln -s ../ARBDBPP/arbdb++.hxx INCLUDE/arbdb++.hxx
