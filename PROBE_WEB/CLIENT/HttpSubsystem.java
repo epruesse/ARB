@@ -5,26 +5,26 @@ import java.util.jar.*;
 
 public class HttpSubsystem
 {
-    // old version variables
+//     // old version variables
 
-    private String host;
-    private String path;
-    private int    port;
+//     private String host;
+//     private String path;
+//     private int    port;
 
-    private Socket probeSocket;
-    private String treeName;
-    private String cgiName;
+//     private Socket probeSocket;
+//     private String treeName;
+//     private String cgiName;
     
-    private byte[] byteBuffer;
+//     private byte[] byteBuffer;
     
-    private PrintWriter       toServer;
-    private InputStream       fromServer;
-    private InputStreamReader charReader;
+//     private PrintWriter       toServer;
+//     private InputStream       fromServer;
+//     private InputStreamReader charReader;
     
-    private char[] textInput;
+//     private char[] textInput;
 
     // new version variables
-    private URL    hostUrl;
+    private URL    baseUrl;
     private String neededInterfaceVersion;
     private String availableClientVersion;
     private String neededTreeVersion;
@@ -35,12 +35,12 @@ public class HttpSubsystem
     {
         // check URL
         try {
-            hostUrl = new URL(name);
-            host    = hostUrl.getHost();
-            path    = hostUrl.getPath();
-            port    = hostUrl.getPort();
+            baseUrl = new URL(name);
+            // host    = hostUrl.getHost();
+            // path    = hostUrl.getPath();
+            // port    = hostUrl.getPort();
 
-            if ((port = hostUrl.getPort()) == -1) port = 80;
+            // if ((port = hostUrl.getPort()) == -1) port = 80;
         }
         catch (Exception e) {
             Toolkit.AbortWithError("Incorrect URL '"+name+"' ("+e.getMessage()+")");
@@ -48,68 +48,119 @@ public class HttpSubsystem
 
         // check whether server is available
         try {
-            System.out.println("Connecting "+host+" ...");
-            probeSocket = new Socket(host, port);
-            probeSocket.close();
+            // System.out.println("Connecting "+host+" ...");
+            // probeSocket = new Socket(host, port);
+            // probeSocket.close();
         }
         catch (Exception e) {
-            Toolkit.AbortWithConnectionProblem("Cannot connect to server '"+host+"' ("+e.getMessage()+")");
+            Toolkit.AbortWithConnectionProblem("Cannot connect to server '"+
+                                               baseUrl.getHost()+"' ("+e.getMessage()+")");
         }
 
         // init other members
-        textInput = new char[4096];
+        // textInput = new char[4096];
         error     = "";
     }
 
     private String lastRequestError = null;
 
-    public String getLastRequestError()
-    {
+    public String getLastRequestError() {
         return lastRequestError;
     }
 
-    public String conductRequest(String url_rest)
-    {
-        try{
-            lastRequestError = null;
-            probeSocket      = new Socket(host, port);
-            fromServer       = probeSocket.getInputStream();
-            charReader       = new InputStreamReader(fromServer);
-            toServer         = new PrintWriter(probeSocket.getOutputStream());
+    public String conductRequest(String relativePath) {
+        lastRequestError = null;
+        try {
+            URL url = new URL(baseUrl, relativePath);
 
-            String request = "GET " + path + url_rest;
+            System.out.println("Generating request to '"+relativePath+"'");
+            HttpURLConnection request = (HttpURLConnection)url.openConnection();
 
-            toServer.print(request + "\n");
-            System.out.println("Request: '" + request + "'");
-            toServer.flush();
-
-            StringBuffer strb = new StringBuffer();
-
-            int charsRead;
-            while((charsRead = charReader.read(textInput)) != -1) {
-                PrintWriter testOutput = new PrintWriter(System.out);
-                testOutput.write(textInput, 0, charsRead);
-                strb.append(textInput, 0, charsRead);
-
+            if (request.usingProxy()) {
+                System.out.println("detected proxy");
+            }
+            System.out.println("connecting request");
+            try {
+                request.connect();
+            }
+            catch (IOException e) {
+                throw new Exception("can't connect "+e.getMessage());
+                // Note : e.getMessage only contains the servername
             }
 
-            // maybe not necessary but seems safer
-            fromServer.close();
-            charReader.close();
-            toServer.close();
-            probeSocket.close();
+            int response_code = request.getResponseCode();
+            if (response_code != 200) {
+                String response = request.getResponseMessage();
+                throw new Exception("response: "+response_code+" '"+response+"'");
+            }
 
-            return strb.toString();
+            String content_type = request.getContentType();
+            if (!content_type.startsWith("text/plain")) {
+                throw new Exception("answer has wrong content type: '"+content_type+"'");
+            }
+
+            int content_len = request.getContentLength();
+            System.out.println("content_len='"+content_len+"'");
+
+            byte buffer[] = new byte[content_len];
+             // StringBuffer strb = new StringBuffer(content_len);
+
+            DataInputStream dis = new DataInputStream(request.getInputStream());
+            // InputStream is  = request.getInputStream();
+
+            dis.readFully(buffer);
+
+            return new String(buffer);
         }
-        catch (Exception e)
-        {
-            lastRequestError = e.getMessage();
+        catch (Exception e) {
+            lastRequestError = "requested: '"+relativePath+"': "+e.getMessage();
             return null;
+
         }
     }
+//     public String conductRequest(String url_rest)
+//     {
+//         try{
+//             lastRequestError = null;
+//             probeSocket      = new Socket(host, port);
+//             fromServer       = probeSocket.getInputStream();
+//             charReader       = new InputStreamReader(fromServer);
+//             toServer         = new PrintWriter(probeSocket.getOutputStream());
+
+//             String request = "GET " + path + url_rest;
+
+//             toServer.print(request + "\n");
+//             System.out.println("Request: '" + request + "'");
+//             toServer.flush();
+
+//             StringBuffer strb = new StringBuffer();
+
+//             int charsRead;
+//             while((charsRead = charReader.read(textInput)) != -1) {
+//                 PrintWriter testOutput = new PrintWriter(System.out);
+//                 testOutput.write(textInput, 0, charsRead);
+//                 strb.append(textInput, 0, charsRead);
+
+//             }
+
+//             // maybe not necessary but seems safer
+//             fromServer.close();
+//             charReader.close();
+//             toServer.close();
+//             probeSocket.close();
+
+//             return strb.toString();
+//         }
+//         catch (Exception e)
+//         {
+//             lastRequestError = e.getMessage();
+//             return null;
+//         }
+//     }
 
     public String retrieveNodeInformation(String nodePath, boolean onlyExact)
     {
+        // String probes = conductRequest("getProbes.cgi?path=" + nodePath + "&plength=all&exact="+(onlyExact ? "1" : "0"));
         String probes = conductRequest("getProbes.cgi?path=" + nodePath + "&plength=all&exact="+(onlyExact ? "1" : "0"));
         if (probes == null) {
             System.out.println("Warning: no answer from Server ("+getLastRequestError()+")");
@@ -154,38 +205,94 @@ public class HttpSubsystem
     public String getAvailableClientVersion() { return availableClientVersion; }
     public String getNeededInterfaceVersion() { return neededInterfaceVersion; }
     public String getNeededTreeVersion() { return neededTreeVersion; }
-    
-    public String downloadZippedTree(String fileName)
-    {
+
+    public String downloadZippedTree(String fileName) {
+        String error        = null;
+        String relativePath = "getTree.cgi";
+
         try {
-            probeSocket = new Socket(host, port);
-            fromServer = probeSocket.getInputStream();
-            toServer = new PrintWriter(probeSocket.getOutputStream());
-            FileOutputStream outstream = new FileOutputStream(fileName);
-            byteBuffer = new byte[4096];
+            URL url = new URL(baseUrl, relativePath);
+            System.out.println("Generating request to '"+relativePath+"'");
+            HttpURLConnection request = (HttpURLConnection)url.openConnection();
 
-            String request = "GET " + path + "getTree.cgi";
-
-            toServer.print(request + "\n");
-            System.out.println("Request: '" + request + "'");
-            toServer.flush();
-
-            int bytesRead;
-            while((bytesRead = fromServer.read(byteBuffer)) != -1) {
-                outstream.write(byteBuffer, 0, bytesRead);
+            if (request.usingProxy()) {
+                System.out.println("detected proxy");
+            }
+            
+            int response_code = request.getResponseCode();
+            if (response_code != 200) {
+                String response = request.getResponseMessage();
+                throw new Exception("response: "+response_code+" '"+response+"'");
             }
 
-            fromServer.close(); // maybe not necessary but seems safer
-            toServer.close();
-            probeSocket.close();
+            String content_type = request.getContentType();
+            if (!content_type.startsWith("text/gzipped")) {
+                throw new Exception("answer has wrong content type: '"+content_type+"'");
+            }
+
+            int content_len = request.getContentLength();
+            System.out.println("content_len='"+content_len+"'");
+
+            System.out.println("connecting request");
+            try {
+                request.connect();
+            }
+            catch (IOException e) {
+                throw new Exception("can't connect "+e.getMessage());
+                // Note : e.getMessage only contains the servername
+            }
+
+            byte buffer[]        = new byte[content_len];
+            // StringBuffer strb = new StringBuffer(content_len);
+
+            DataInputStream dis = new DataInputStream(request.getInputStream());
+            // InputStream is  = request.getInputStream();
+
+            dis.readFully(buffer);
+
+            Toolkit.showMessage("Saving tree as "+fileName);
+            FileOutputStream outstream = new FileOutputStream(fileName);
+            outstream.write(buffer, 0, content_len);
             outstream.close();
-            System.out.println("Saving tree as "+fileName);
         }
-        catch (Exception e)
-        {
-            return e.getMessage();
+        catch (Exception e) {
+            error = "requested: '"+relativePath+"': "+e.getMessage();
         }
 
-        return null;
+        return error;
+
     }
+//     public String downloadZippedTree(String fileName)
+//     {
+//         try {
+//             probeSocket = new Socket(host, port);
+//             fromServer = probeSocket.getInputStream();
+//             toServer = new PrintWriter(probeSocket.getOutputStream());
+//             FileOutputStream outstream = new FileOutputStream(fileName);
+//             byteBuffer = new byte[4096];
+
+//             String request = "GET " + path + "getTree.cgi";
+
+//             toServer.print(request + "\n");
+//             System.out.println("Request: '" + request + "'");
+//             toServer.flush();
+
+//             int bytesRead;
+//             while((bytesRead = fromServer.read(byteBuffer)) != -1) {
+//                 outstream.write(byteBuffer, 0, bytesRead);
+//             }
+
+//             fromServer.close(); // maybe not necessary but seems safer
+//             toServer.close();
+//             probeSocket.close();
+//             outstream.close();
+//             System.out.println("Saving tree as "+fileName);
+//         }
+//         catch (Exception e)
+//         {
+//             return e.getMessage();
+//         }
+
+//         return null;
+//     }
 }
