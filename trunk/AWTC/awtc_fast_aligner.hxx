@@ -7,7 +7,9 @@
 #ifndef awtc_fast_aligner_hxx_included
 #define awtc_fast_aligner_hxx_included
 
-#define _USE_AW_WINDOW
+#ifndef _USE_AW_WINDOW
+# define _USE_AW_WINDOW
+#endif
 #include <BI_helix.hxx>
 
 #define INTEGRATED_ALIGNERS_TITLE "Integrated Aligners"

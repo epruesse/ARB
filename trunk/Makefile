@@ -501,7 +501,9 @@ $(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS)
 	@$(GMAKE) -C $(@D) -r \
 		"LD_LIBRARY_PATH  = ${LD_LIBRARY_PATH}" \
 		"MAKEDEPENDINC = $(MAKEDEPENDINC)" \
-		"MAKEDEPEND=$(MAKEDEPEND)" depend;
+		"MAKEDEPEND=$(MAKEDEPEND)" \
+		"ARBHOME=$(ARBHOME)" \
+		depend;
 	@(grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null && cat $(@D)/Makefile \
 		| sed	-e "s/\/[^ 	]*\/DUMMYINC\/[^ 	]*\.h//g" \
 			-e "s/\/usr\/[^ 	]*\.h//g" \
