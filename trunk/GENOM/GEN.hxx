@@ -3,8 +3,7 @@
 
 #include <arbdb.h>
 
-#define AWAR_GENOM "genom"
-#define AWAR_GENOM_DB AWAR_GENOM "/db" // main flag (true=genom db, false/missing=normal db)
+#define GENOM_DB_TYPE "genom_db" // main flag (true=genom db, false/missing=normal db)
 
 GB_ERROR GEN_read(GBDATA *gb_main, const char *filename, const char *ali_name);
 
