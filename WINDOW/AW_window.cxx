@@ -1627,6 +1627,8 @@ Widget aw_create_shell(
         // window will be resized later (on show)
         width  = 4000;
         height = 3000;
+
+        if (aww->recalc_size_at_show == 0) aww->recalc_size_at_show = 1;
     }
 
     Widget father = p_global->toplevel_widget;
