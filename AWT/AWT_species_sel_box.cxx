@@ -355,7 +355,7 @@ void awt_arbdb_scanner_value_change(void *dummy, struct adawcbstruct *cbs)
 }
 /********************* get the container of a species key description ***************/
 
-GBDATA *awt_get_key(GBDATA *gb_main, char *key, const char *change_key_path)
+GBDATA *awt_get_key(GBDATA *gb_main, const char *key, const char *change_key_path)
 {
     GBDATA *gb_key_data = GB_search(gb_main, change_key_path, GB_CREATE_CONTAINER);
     GBDATA *gb_key_name = GB_find(gb_key_data, CHANGEKEY_NAME, key, down_2_level);
@@ -364,7 +364,7 @@ GBDATA *awt_get_key(GBDATA *gb_main, char *key, const char *change_key_path)
     return gb_key;
 }
 
-GB_TYPES awt_get_type_of_changekey(GBDATA *gb_main,char *field_name, const char *change_key_path) {
+GB_TYPES awt_get_type_of_changekey(GBDATA *gb_main,const char *field_name, const char *change_key_path) {
     GBDATA *gbd = awt_get_key(gb_main,field_name, change_key_path);
     if(!gbd) return GB_NONE;
     GBDATA *gb_key_type = GB_find(gbd,CHANGEKEY_TYPE,0,down_level);

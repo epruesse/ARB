@@ -44,6 +44,7 @@
 #include <probe_design.hxx>
 #include <primer_design.hxx>
 #include <GEN.hxx>
+#include <awt_input_mask.hxx>
 
 
 void create_probe_design_variables(AW_root *aw_root,AW_default def,AW_default global);
@@ -625,6 +626,91 @@ GB_ERROR NT_create_configuration_cb(AW_window *, AW_CL cl_GBT_TREE_ptr, AW_CL cl
     return NT_create_configuration(0, ptree, 0, use_species_aside);
 }
 
+//  ----------------------------------------------------------------------------
+//      class nt_item_type_species_selector : public awt_item_type_selector
+//  ----------------------------------------------------------------------------
+class nt_item_type_species_selector : public awt_item_type_selector {
+public:
+    virtual ~nt_item_type_species_selector() {}
+
+    virtual void add_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const { // add callbacks to awars
+        root->awar(AWAR_SPECIES_NAME)->add_callback(f, cl_mask);
+    }
+    virtual GBDATA *current(AW_root *root) const { // give the current item
+        char           *species_name = root->awar(AWAR_SPECIES_NAME)->read_string();
+        GBDATA         *gb_species   = 0;
+
+        if (species_name[0]) {
+            GB_transaction dummy(gb_main);
+            gb_species = GBT_find_species(gb_main,species_name);
+        }
+
+        return gb_species;
+    }
+    virtual const char *getKeyPath() const { // give the keypath for items
+        return CHANGE_KEY_PATH;
+    }
+};
+
+static nt_item_type_species_selector item_type_species;
+
+//  ----------------------------------------------------------------------------
+//      static void NT_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL)
+//  ----------------------------------------------------------------------------
+static void NT_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
+    int                              id         = int(cl_id);
+    const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
+
+#if defined(DEBUG)
+    printf("NT_open_mask_window id=%i\n", id);
+#endif // DEBUG
+
+    assert(descriptor);
+    if (descriptor) {
+        AWT_initialize_input_mask(aww->get_root(), gb_main,
+                                  item_type_species, descriptor->get_maskname());
+    }
+}
+
+//  ----------------------------------------------------------------------
+//      static void NT_create_mask_submenu(AW_window_menu_modes *awm)
+//  ----------------------------------------------------------------------
+static void NT_create_mask_submenu(AW_window_menu_modes *awm) {
+    bool found = false;
+
+    for (int id = 0; ;++id) {
+        const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
+        if (!descriptor) break;
+
+        if (strcmp(descriptor->get_itemtypename(), "Species") == 0) {
+            if (!found) awm->insert_sub_menu(0, "User Masks", "");
+
+            found               = true;
+            char *macroname2key = GBS_string_2_key(descriptor->get_maskname());
+#if defined(DEBUG)
+            printf("insert '%s' with id=%i\n", descriptor->get_maskname(), id);
+#endif // DEBUG
+            awm->insert_menu_topic(macroname2key,
+                                   descriptor->get_title(),
+                                   "",
+                                   "input_mask.hlp",
+                                   AWM_ALL,
+                                   NT_open_mask_window, (AW_CL)id, (AW_CL)0);
+            free(macroname2key);
+        }
+    }
+
+    if (found) awm->close_sub_menu();
+}
+
+
+//  -----------------------------------------------
+//      void NT_test_input_mask(AW_root *root)
+//  -----------------------------------------------
+void NT_test_input_mask(AW_root *root) {
+    AWT_initialize_input_mask(root, gb_main, item_type_species, "test.mask");
+}
+
 #define AWMIMT awm->insert_menu_topic
 //  --------------------------------------------------------------------
 //      AW_window * create_nt_main_window(AW_root *awr, AW_CL clone)
@@ -740,6 +826,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         awm->create_menu(0,"Species","p","species.hlp",	AWM_ALL);
         {
             AWMIMT( "species_info",		"Info (Copy Delete Rename Modify) ...", "I",	"sp_info.hlp",		AWM_ALL,AW_POPUP,   (AW_CL)NT_create_species_window,	0);
+            NT_create_mask_submenu(awm);
             AWMIMT( "species_search",	"Search and Query",			"Q",	"sp_search.hlp",	AWM_ALL,AW_POPUP,   (AW_CL)ad_create_query_window,	0 );
             awm->insert_sub_menu(0, "Species Database Fields Admin","F");
             {
@@ -1195,6 +1282,10 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->set_info_area_height( last_liney+6 );
     awm->set_bottom_area_height( 0 );
     awm->get_root()->set_focus_callback((AW_RCB)NT_focus_cb,(AW_CL)gb_main,0);
+
+// #if defined(DEBUG)
+//     NT_test_input_mask(awm->get_root());
+// #endif // DEBUG
 
     GB_pop_transaction(gb_main);
 

@@ -7,8 +7,6 @@
 #	set ARBHOME to this directory
 ARBHOME = `pwd`
 
-
-
 #	disable all lib dirs
 LD_LIBRARY_PATH = ${SYSTEM_LD_LIBRARY_PATH}:$(ARBHOME)/LIBLINK:$(ARBHOME)/lib
 
