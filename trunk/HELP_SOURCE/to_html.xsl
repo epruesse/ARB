@@ -31,6 +31,10 @@
     </xsl:choose>
   </xsl:variable>
 
+  <xsl:variable name="postscriptpath">
+    <xsl:value-of select="$rootpath"/><xsl:text>../help/</xsl:text>
+  </xsl:variable>
+
   <xsl:variable name="tableBorder">0</xsl:variable>
 
   <xsl:variable name="author">ARB development</xsl:variable>
@@ -152,7 +156,7 @@
 
     <xsl:choose>
       <xsl:when test="string-length(substring-before($doc,'.ps'))&gt;0"> <!--it's a postscript link-->
-        <A href="{concat($rootpath,$doc)}">
+        <A href="{concat($postscriptpath,$doc,'.gz')}">
           <xsl:value-of select="$doc"/> (Postscript)
         </A>
       </xsl:when>
@@ -269,11 +273,20 @@
   <xsl:template match="SECTION" mode="main">
     <A name="{@name}"></A>
     <H2><xsl:value-of select="@name"/></H2>
-    <TABLE width="95%" border="{$tableBorder}" align="right"><TR><TD>
-          <xsl:apply-templates mode="top-level"/>
-        </TD></TR>
-      <TR><TD>&nbsp;</TD></TR>
-      <TR><TD>&nbsp;</TD></TR>
+    <TABLE width="100%" border="{$tableBorder}">
+      <TR>
+        <TD align="right">
+          <TABLE width="97%" border="{$tableBorder}">
+            <TR>
+              <TD>
+                <xsl:apply-templates mode="top-level"/>
+              </TD>
+            </TR>
+<!--            <TR><TD>&nbsp;</TD></TR>-->
+            <TR><TD>&nbsp;</TD></TR>
+          </TABLE>
+        </TD>
+      </TR>
     </TABLE>
   </xsl:template>
 
