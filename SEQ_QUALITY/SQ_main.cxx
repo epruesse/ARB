@@ -101,11 +101,11 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
           value_of_evaluation
         */
 
-        int weight_bases                = aw_root->awar(AWAR_SQ_WEIGHT_BASES)->read_int();
-        int weight_diff_from_average    = aw_root->awar(AWAR_SQ_WEIGHT_DEVIATION)->read_int();
-	int weight_helix                = aw_root->awar(AWAR_SQ_WEIGHT_HELIX)->read_int();
-	int weight_consensus            = aw_root->awar(AWAR_SQ_WEIGHT_CONSENSUS)->read_int();
-	int weight_iupac                = aw_root->awar(AWAR_SQ_WEIGHT_IUPAC)->read_int();
+//         int weight_bases                = aw_root->awar(AWAR_SQ_WEIGHT_BASES)->read_int();
+//         int weight_diff_from_average    = aw_root->awar(AWAR_SQ_WEIGHT_DEVIATION)->read_int();
+// 	int weight_helix                = aw_root->awar(AWAR_SQ_WEIGHT_HELIX)->read_int();
+// 	int weight_consensus            = aw_root->awar(AWAR_SQ_WEIGHT_CONSENSUS)->read_int();
+// 	int weight_iupac                = aw_root->awar(AWAR_SQ_WEIGHT_IUPAC)->read_int();
 
         /*
           The "weight_..."  -values are passed to the function "SQ_evaluate()".
@@ -120,19 +120,18 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
 
 	if(tree==0){
 	    SQ_GroupData* globalData = new SQ_GroupData_RNA;
-	    SQ_pass1(globalData, gb_main);
+	    SQ_pass1_no_tree(globalData, gb_main);
+	    SQ_pass2_no_tree(globalData, gb_main);
 	    int value = SQ_get_value_no_tree(gb_main, option);
 	    aw_message(GBS_global_string("Value in container %s : %i",option, value));
 	    delete globalData;
 
 	}
 	else {
-	    SQ_GroupData* globalData = new SQ_GroupData_RNA;
-	    SQ_pass1(globalData, gb_main);
-	    SQ_pass2(globalData, gb_main);
-	    SQ_evaluate(gb_main, weight_bases, weight_diff_from_average, weight_helix, weight_consensus, weight_iupac);
-	    int value = SQ_get_value(gb_main, option);
-	    aw_message(GBS_global_string("Value in container %s : %i",option, value));
+	    SQ_GroupData* globalData = SQ_calc_and_apply_group_data(tree, gb_main);
+//	    SQ_evaluate(gb_main, weight_bases, weight_diff_from_average, weight_helix, weight_consensus, weight_iupac);
+// 	    int value = SQ_get_value(gb_main, option);
+// 	    aw_message(GBS_global_string("Value in container %s : %i",option, value));
 	    delete globalData;
 	}
 

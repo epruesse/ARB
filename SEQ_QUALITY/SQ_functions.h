@@ -21,13 +21,15 @@
 
 GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main);
 
-GB_ERROR SQ_calc_sequence_structure(SQ_GroupData& globalData, GBDATA *gb_main, bool marked_only);
+GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main, GBDATA* gb_name);
 
-GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main);
+GB_ERROR SQ_pass1_no_tree(SQ_GroupData* globalData, GBDATA *gb_main);
 
 GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main);
 
-void SQ_traverse_through_tree(GBDATA *gb_main, GBT_TREE *tree, bool marked_only);
+GB_ERROR SQ_pass2_no_tree(SQ_GroupData* globalData, GBDATA *gb_main);
+
+SQ_GroupData *SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main);
 
 int SQ_get_value_no_tree(GBDATA *gb_main, const char *option);
 
