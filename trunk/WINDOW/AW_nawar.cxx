@@ -564,3 +564,24 @@ AW_default AW_root::get_gbdata( const char *varname) {
     }
     return 0;
 }
+
+// ---------------------------
+//      Awar_Callback_Info
+// ---------------------------
+
+void Awar_Callback_Info::remap(const char *new_awar) {
+    if (strcmp(awar_name, new_awar) != 0) {
+        remove_callback();
+        free(awar_name);
+        awar_name = strdup(new_awar);
+        add_callback();
+    }
+}
+void Awar_Callback_Info::init(AW_root *awr_, const char *awar_name_, Awar_CB2 callback_, AW_CL cd1_, AW_CL cd2_) {
+    awr           = awr_;
+    callback      = callback_;
+    cd1           = cd1_;
+    cd2           = cd2_;
+    awar_name     = strdup(awar_name_);
+    org_awar_name = strdup(awar_name_);
+}
