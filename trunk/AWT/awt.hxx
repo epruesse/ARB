@@ -33,6 +33,7 @@ int AWT_is_dir(const char *path);
 typedef enum {
     AWT_QUERY_ITEM_SPECIES,
     AWT_QUERY_ITEM_GENES,
+    AWT_QUERY_ITEM_EXPERIMENTS,
 
     AWT_QUERY_ITEM_TYPES // how many different types do we have
 
@@ -164,6 +165,8 @@ void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter); /* rescan it */
 void awt_gene_field_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
 void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter);
 
+void awt_experiment_field_selection_list_rescan_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
+void awt_experiment_field_selection_list_rescan(GBDATA *gb_main, long bitfilter);
 
 GB_ERROR awt_add_new_changekey(GBDATA *gb_main,const char *name, int type);
 /*	type == GB_TYPES
