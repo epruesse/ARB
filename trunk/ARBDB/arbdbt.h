@@ -47,19 +47,20 @@ typedef float GBT_LEN;
 
 #define AWAR_TREE_DATA          "tree_data"
 
-#ifdef FAKE_VIRTUAL_TABLE_POINTER
-typedef FAKE_VIRTUAL_TABLE_POINTER virtualTable;
+#ifdef FAKE_VTAB_PTR
+/* if defined, FAKE_VTAB_PTR contains 'char' */
+typedef FAKE_VTAB_PTR virtualTable;
 #endif
 
 typedef struct gbt_tree_struct {
-#ifdef FAKE_VIRTUAL_TABLE_POINTER
+#ifdef FAKE_VTAB_PTR
     virtualTable *dummy_virtual; /* simulate pointer to virtual-table used in AP_tree */
 #endif
     GBT_TREE_ELEMENTS(struct gbt_tree_struct);
 } GBT_TREE;
 
 typedef struct gb_seq_compr_tree {
-#ifdef FAKE_VIRTUAL_TABLE_POINTER
+#ifdef FAKE_VTAB_PTR
     virtualTable *dummy_virtual; /* simulate pointer to virtual-table used in AP_tree */
 #endif
     GBT_TREE_ELEMENTS(struct gb_seq_compr_tree);
