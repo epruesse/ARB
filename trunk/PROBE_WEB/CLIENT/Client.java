@@ -10,18 +10,63 @@ import java.awt.event.*;
 class Client
 {
 
-private  ProbesGUI display;
-private TreeDisplay tree;
-private TreeNode root;
-private String treeString;
-private String baseurl;
+private ProbesGUI    display;
+private TreeDisplay   tree;
+private TreeNode      root;
+private String        treeString;
+private String        baseurl;
 private HttpSubsystem webAccess;
 
+private HashMap knownOptions()
+     {
+         HashMap hm = new HashMap();
+         hm.put("server", "=URL        Specify server URL manually (note: needs leading /)");
+         return hm;
+     }
 
     // private TreeNode subtree;
 
     // private Communicationsubsystem
 
+
+public static String readTree(HttpSubsystem webAccess)
+    {
+        String     localTreeFile     = new String("probetree.gz");
+        TreeReader tr                = new TreeReader(localTreeFile);
+        String     error             = tr.getError();
+        String     localTreeVersion  = null;
+        String     serverTreeVersion = webAccess.getNeededTreeVersion();
+
+        if (error != null) {
+            System.out.println("Can't access the tree ("+error+")");
+            localTreeVersion = "corrupt";
+        }
+        else {
+            localTreeVersion = tr.getVersionString();
+        }
+
+        if (!serverTreeVersion.equals(localTreeVersion))
+        {
+            System.out.println("You have tree version '" + localTreeVersion+"'");
+            System.out.println("Downloading updated tree '"+serverTreeVersion+"' ..");
+
+            error = webAccess.downloadZippedTree(localTreeFile);
+            if (error == null) {
+                tr    = new TreeReader(localTreeFile);
+                error = tr.getError();
+            }
+            if (error != null) {
+                Toolkit.AbortWithError("Server problem: Can't get a valid tree ("+error+")");
+            }
+            else {
+                if (!tr.getVersionString().equals(serverTreeVersion)) {
+                    System.out.println("Warning: downloaded tree has unexpected version '"+tr.getVersionString()+"'");
+                }
+            }
+        }
+
+        return tr.getTreeString();
+    }
 
 public static void main(String[] args)
 
@@ -33,68 +78,30 @@ public static void main(String[] args)
 
         // System.out.println(args.length);
 
-        Client cl = new Client();
+        Client cl         = new Client();
+        Toolkit.clientName = "arb_probe_library";
 
-//         if (args.length == 0) cl.baseurl = new String("http://probeserver.mikro.biologie.tu-muenchen.de/");
-        if (args.length == 0) cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/");
+        System.out.println(Toolkit.clientName+" v"+Toolkit.clientVersion+" -- (C) 2003 Lothar Richter & Ralf Westram");
+        CommandLine cmdline = new CommandLine(args, cl.knownOptions());
+
+        if (cmdline.getOption("server")) {
+            cl.baseurl = cmdline.getOptionValue("server");
+        }
+        else {
+            // cl.baseurl = new String("http://probeserver.mikro.biologie.tu-muenchen.de/"); // final server URL (not working yet)
+            cl.baseurl = new String("http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/"); // URL for debugging
+        }
+
         cl.webAccess = new HttpSubsystem(cl.baseurl);
 
-        // enables users to store tree local
-        // update only when tree is changed
-
-        // here goes the web access code
-
-        // tree to display
-        String     localTreeFile = new String("probetree.gz");
-        TreeReader tr            = new TreeReader(localTreeFile);
-
-        //        cl.webAccess.conductRequest("/demo.newick");
-        // inlude version number in tree
-        ServerAnswer getTreeVersionAnswer = new ServerAnswer(cl.webAccess.conductRequest("getTreeVersion.cgi"));
-        if (getTreeVersionAnswer.hasError()) {
-            System.out.println("Error: "+getTreeVersionAnswer.getError());
-            System.exit(1);
+        // ask server for version info
+        cl.webAccess.retrieveVersionInformation(); // terminates on failure
+        if (!Toolkit.clientVersion.equals(cl.webAccess.getNeededClientVersion())) {
+            Toolkit.AbortWithError("Your client is out-of-date! Please download the new version from http://arb-home.de/");
         }
 
-        String neededClientVersion = getTreeVersionAnswer.getValue("client_version");
-        System.out.println("neededClientVersion='"+neededClientVersion+"'");
-
-        if (!neededClientVersion.equals("1.0")) {
-            System.out.println("Error: Your client is out-of-date - download the new version!");
-            System.exit(1);
-        }
-
-        String currentVersion = getTreeVersionAnswer.getValue("tree_version");
-        System.out.println("server version: " + ">>>" + currentVersion + "<<<");
-
-        //        String localVersion = new String("[CURRENTVERSION_16S_27081969]");
-        // access local jar file;
-
-                //                System.out.println(cl.treeString.substring(0,40));
-        String localVersion = tr.getVersionString();
-        System.out.println("local version: " + ">>>" + localVersion + "<<<");
-        if (!currentVersion.equals(localVersion))
-        {
-
-
-                System.out.println("TreeVersion don't match your local version");
-                System.out.println("Downloading current version");
-
-                //                System.out.println("Downloading current tree version from server");
-                //                cl.treeString = cl.webAccess.conductRequest("/demo.newick");
-
-                cl.webAccess.downloadZippedTree(localTreeFile);
-                tr = new TreeReader(localTreeFile);
-            }
-       else
-           {
-               cl.treeString = tr.getTreeString();
-           };
-
-
-        // parsing
-
-
+        // load and parse the most recent tree
+        cl.treeString = readTree(cl.webAccess); // terminates on failure
         cl.root = (new TreeParser(cl.treeString)).getRootNode();
 
         if (cl.root == null)
@@ -104,7 +111,7 @@ public static void main(String[] args)
             }
 
         cl.root.setPath("");
-        cl.display = new ProbesGUI(cl.root, 10);
+        cl.display = new ProbesGUI(cl.root, 10, Toolkit.clientName+" Version "+Toolkit.clientVersion);
         //        ProbesGUIActionListener al = new ProbesGUIActionListener(cl.display);
         //        cl.display.setMenuBar(new ProbeMenu(al));
         //
