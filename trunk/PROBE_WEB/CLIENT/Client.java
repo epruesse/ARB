@@ -189,13 +189,13 @@ public void matchProbes(String probeInfo) {
     }
 }
 
-public void updateNodeInformation(String encodedPath)
+public void updateNodeInformation(String encodedPath, boolean exactMatches)
     {
         ProbeList list = display.getProbeList();
         list.removeAll();
         list.add("wait..");
 
-        String answer = webAccess.retrieveNodeInformation(encodedPath);
+        String answer = webAccess.retrieveNodeInformation(encodedPath, exactMatches);
 
         if (answer == null) { // error during retrieval
             list.removeAll();
