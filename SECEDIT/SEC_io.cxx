@@ -257,8 +257,8 @@ SEC_segment::SEC_segment(SEC_root *root_, double alpha_, SEC_helix_strand *next_
     root = root_;
     loop = loop_;
     alpha = alpha_;
-    x = 0;
-    y = 0;
+    x_seg = 0;
+    y_seg = 0;
 }
 
 
@@ -295,14 +295,14 @@ SEC_loop::SEC_loop(SEC_root *root_, SEC_segment *segment_, double max_radius_, d
     root = root_;
     radius = 0;
     umfang = 0;
-    x = 0;
-    y = 0;
+    x_loop = 0;
+    y_loop = 0;
     max_radius = max_radius_;
     min_radius = min_radius_;
 }
 
 
-SEC_helix::SEC_helix(double delta_, double deltaIn_, double max_length_, double min_length_) //yadhu
+SEC_helix::SEC_helix(double delta_, double deltaIn_, double max_length_, double min_length_) 
 {
     delta = delta_;
     deltaIn = deltaIn_;
@@ -318,6 +318,7 @@ SEC_root::SEC_root(SEC_segment *root_segment_, int max_index_, double distance_b
     max_index = max_index_;
     root_segment = root_segment_;
     set_distance_between_strands(distance_between_strands_);
+    set_show_debug(false);
     helix_filter = (-1);
     segment_filter = (-1);
     loop_filter = (-1);

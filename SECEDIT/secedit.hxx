@@ -90,7 +90,7 @@ class SEC_helix_strand : public SEC_Base {
     SEC_loop *loop;              //Pointer to loop which contains the helix-strand
     SEC_helix_strand *other_strand;
     SEC_region region;
-    SEC_helix *helix_info;
+    SEC_helix *helix_info; // used by both strands
     SEC_segment *next_segment;
     SEC_root *root;
 
@@ -117,6 +117,7 @@ public:
     void read(SEC_loop *loop_, istream & in);
     void compute_length();
     void compute_coordinates(double distance, double *x, double *y, double previous_x, double previous_y);
+    void computeLoopCoordinates(double distance, double *x, double *y, double previous_x, double previous_y);
     void compute_attachment_points(double dir_delta);
     void update(double fixpoint_x_, double fixpoint_y_, double angle_difference);
     void paint(AW_device *device, int show_constraints);
@@ -184,6 +185,7 @@ private:
     int max_index;
 
     SEC_segment *root_segment;
+
     double distance_between_strands;
 
     int cursor;
@@ -196,6 +198,8 @@ private:
     int fresh_sequence;  //needed to check, if the coordinates of the root-loop have to be set or not
    
 public:
+
+    bool show_debug; // show debug info in structure display (todo)
 
     //variables needed for the IO-procedures
     int number;
@@ -230,7 +234,8 @@ public:
 
     ED4_sequence_terminal *seqTerminal;     //declaring a pointer class
     const  char *getSearchResults(int startPos,int endPos); // defining a function to build color string 
-    void paintSearchBackground(AW_device *device, const char* searchCols, int absPos, double x, double y, double next_x, double next_y, double radius,int otherStrand);
+    void paintSearchBackground(AW_device *device, const char* searchCols, int absPos, double x, double y, double next_x, double next_y, double radius,double lineWidth,int otherStrand);
+    void paintSearchPatternStrings(AW_device *device, int clickedPos,  AW_pos xPos,  AW_pos yPos);
     //used in SEC_paint.cxx 
 
     SEC_root(SEC_segment *root_segment, int max_index_, double distance_between_strands);
@@ -265,6 +270,8 @@ public:
     void set_max_index(int max_index_) 						{ max_index = max_index_; }
     void set_root_segment(SEC_segment *root_segment_) 				{ root_segment = root_segment_; }
     void set_distance_between_strands (double distance_between_strands_) 	{ distance_between_strands = distance_between_strands_; }
+    void set_show_debug (bool show) 	{ show_debug=show; }
+
     void set_cursor(int cursor_) 						{ cursor = cursor_; }
     void set_show_constraints(int show_constraints_) 				{ show_constraints = show_constraints_; }
 
@@ -281,8 +288,8 @@ class SEC_segment : public SEC_Base {
 private:
 
     //redundant values
-    double alpha;                              //angle of segment
-    double x, y;					//coordinates of segment
+    double alpha;                //angle of segment
+    double x_seg, y_seg;	//coordinates of segment
 
     //information, which has to be provided
     SEC_helix_strand *next_helix_strand;
@@ -378,8 +385,8 @@ public:
     SEC_region * get_region() 		{ return &region; }
 
     double get_alpha () 	{ return alpha; }
-    double get_x() 		{ return x; }
-    double get_y() 		{ return y; }
+    double get_x_seg() 		{ return x_seg; }
+    double get_y_seg() 		{ return y_seg; }
 
     void set_next_helix_strand(SEC_helix_strand *strand) 	{ next_helix_strand = strand; }
     void set_loop(SEC_loop *loop_) 				{ loop = loop_; }
@@ -394,7 +401,7 @@ private:
 
     //redundant values
     int umfang;  //number of bases in whole loop
-    double x, y;          //coordinates of central point
+    double x_loop, y_loop;          //coordinates of central point
     double radius;
 
     SEC_segment *segment;
@@ -427,8 +434,8 @@ public:
     double get_max_radius() 	{ return max_radius; }
     double get_min_radius() 	{ return min_radius; }
     SEC_segment * get_segment() 	{ return segment; }
-    double get_x() 			{ return x; }
-    double get_y() 			{ return y; }
+    double get_x_loop() 			{ return x_loop; }
+    double get_y_loop() 			{ return y_loop; }
     double get_radius() 		{ return radius; }
     int get_umfang () 		{ return umfang; }
 
@@ -438,7 +445,7 @@ public:
     void set_segment(SEC_segment *segment_) 	{ segment = segment_; }
     void set_max_radius(double max_radius_) 	{ max_radius = max_radius_; }
     void set_min_radius(double min_radius_) 	{ min_radius = min_radius_; }
-    void set_x_y(double x_, double y_) 		{ x = x_; y = y_; }
+    void set_x_y_loop(double x_, double y_) 		{ x_loop = x_; y_loop = y_; }
 };
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -457,7 +464,7 @@ private:
     
 public:
 
-    SEC_helix(double delta=7.7,double deltaIn=7.7, double max_length=0, double min_length=0);
+    SEC_helix(double delta=7.7,double deltaIn=0.0, double max_length=0, double min_length=0);
     ~SEC_helix();
 
     //methods
@@ -471,7 +478,7 @@ public:
     double get_length() 		{ return length; }
 
     double get_delta () 		{ return delta; }
-    double get_deltaIn () 		{ return deltaIn; } //yadhu
+    double get_deltaIn () 		{ return deltaIn;} //yadhu
 
     double& get_max_length_ref() 	{ return max_length; }
     double& get_min_length_ref() 	{ return min_length; }
@@ -479,18 +486,18 @@ public:
     void set_length(double length_) 	{ length = length_; }
 
     void set_delta (double delta_) {
-	while(delta_ >= (2*M_PI)) {
+ 	while(delta_ >= (2*M_PI)) {
 	    delta_ -= (2*M_PI);
 	}
 	delta = delta_;
     }
 
-    void set_deltaIn (double deltaIn_) {   //yadhu
+    void set_deltaIn (double deltaIn_) {  
 	while(deltaIn_ >= (2*M_PI)) {
 	    deltaIn_ -= (2*M_PI);
 	}
-	deltaIn = deltaIn_;
-    }
+	deltaIn = deltaIn_; 
+    } //yadhu
 };
 
 SEC_root *create_test_root();
@@ -503,7 +510,9 @@ AW_window *SEC_create_main_window(AW_root *awr);
 void SEC_create_awars(AW_root *root,AW_default def);
 void SEC_add_awar_callbacks(AW_root *aw_root, AW_default def, AWT_canvas *ntw);
 
+
 void SEC_distance_between_strands_changed_cb(AW_root *awr, AW_CL cl_ntw);
+void SEC_show_debug_toggled_cb(AW_root *awr, AW_CL cl_ntw);
 void SEC_pair_def_changed_cb(AW_root *awr, AW_CL cl_ntw);
 
 // --------------------------------------------------------------------------------

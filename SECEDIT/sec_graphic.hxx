@@ -14,6 +14,7 @@
 #define AWAR_SECEDIT_IMEXPORT_BASE 	"secedit/imexportbase"
 
 #define AWAR_SECEDIT_DIST_BETW_STRANDS 	"secedit/layout/dist_betw_strands"
+#define AWAR_SECEDIT_SHOW_DEBUG 	"secedit/layout/show_debug_info_for_yadhus_pleasure"
 
 #define AWAR_SECEDIT_STRONG_PAIRS 	"secedit/layout/pairs/strong" 		// Bonds
 #define AWAR_SECEDIT_NORMAL_PAIRS 	"secedit/layout/pairs/normal"
