@@ -30,33 +30,34 @@
 
 AW_HEADER_MAIN
 
-ED4_root 	*ED4_ROOT;
-GBDATA 		*gb_main = NULL;
-ED4_database	*main_db;
-long 		global_width = 100;
+ED4_root 	 *ED4_ROOT;
+GBDATA 		 *gb_main = NULL;
+ED4_database *main_db;
 
-int 			TERMINALHEIGHT;				// this variable replaces the define
-int			MAXLETTERDESCENT;			// Important for drawing text on the screen
-int			MAXSEQUENCECHARACTERLENGTH;		// greatest # of characters in a sequence string terminal
-int			MAXSPECIESWIDTH;
-int			MAXINFOWIDTH;				// # of characters used to display sequence info ("CONS", "4data", etc.)
-int			MAXCHARWIDTH;
-int			MARGIN;					// sets margin for cursor moves in characters
-long			ED4_counter = 0;
-long			all_found;				// nr of species which haven't been found
-long			species_read;				// nr of species read; important during loading
-void 			*not_found_message;
-long			max_seq_terminal_length;		// global maximum of sequence terminal length
-ED4_EDITMODI		awar_edit_modus;
-long			awar_edit_direction;
-bool			move_cursor;				// only needed for editing in consensus
-bool			DRAW;
-bool			last_window_reached;			// needed for refreshing all windows (if TRUE refresh/...-flags will be cleared)
+long global_width = 100;
+int  TERMINALHEIGHT;	        // this variable replaces the define
+int	 MAXLETTERDESCENT;	        // Important for drawing text on the screen
+int	 MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
+int	 MAXSPECIESWIDTH;
+int	 MAXINFOWIDTH;		        // # of pixels used to display sequence info ("CONS", "4data", etc.)
+int	 MAXCHARWIDTH;              // # of pixels of broadest sequence character
+int	 MARGIN;			        // sets margin for cursor moves in characters
 
-double			status_add_count;			// only needed for loading configuration
-double			status_total_count;
-bool			loading;
+long		  ED4_counter = 0;
+long		  all_found;		// nr of species which haven't been found
+long		  species_read;		// nr of species read; important during loading
+void 		 *not_found_message;
+long		  max_seq_terminal_length; // global maximum of sequence terminal length
+ED4_EDITMODI  awar_edit_modus;
+long		  awar_edit_direction;
+bool		  move_cursor;		// only needed for editing in consensus
+bool		  DRAW;
+bool		  last_window_reached; // needed for refreshing all windows (if TRUE refresh/...-flags will be cleared)
+double		  status_add_count;	// only needed for loading configuration
+double		  status_total_count;
+bool		  loading;
 //long 			last_used_timestamp;
+
 
 int ED4_font_info::max_width = 0;
 int ED4_font_info::max_height = 0;
