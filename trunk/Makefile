@@ -1330,6 +1330,7 @@ libclean:
 clean:	rmbak
 	rm -f `find . -type f \( -name 'core' -o -name '*.o' -o -name '*.a' ! -type l \) -print`
 	rm -f *_COM/GENH/*.h
+	rm -f *_COM/GENH/*.aisc
 	rm -f *_COM/GENC/*.c
 	rm -f lib/ARB.pm
 	rm -f NTREE/nt_date.h
@@ -1386,3 +1387,4 @@ all: checks arb libs convert tools gde readseq openwinprogs binlink $(SITE_DEPEN
 		@echo "to start arb enter 'arb'"
 #	(cd LIBLINK; for i in *.s*; do if test -r $$i; then cp $$i  ../lib; fi; done )
 
+# DO NOT DELETE
