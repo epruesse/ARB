@@ -8,18 +8,52 @@
 #include "RNA3D_Graphics.hxx"
 #include "RNA3D_Interface.hxx"
 
-OpenGLGraphics *cGraphics  = new OpenGLGraphics();
-Structure3D    *cStructure = new Structure3D();
-Texture2D      *cTexture   = new Texture2D();
-GLRenderer     *cRenderer  = new GLRenderer();
-RNA3D_Global   *GLOBAL     = new RNA3D_Global();
+// --------------------------------------------------------------------------------
+// global data
 
-float fAspectRatio;
-float fViewAngle = 90.0;
-float fClipNear  = 0.01;
-float fClipFar   = 100000;
+RNA3D_Global *RNA3D = 0; 
 
-GBDATA *OpenGL_gb_main;
+void RNA3D_init_global_data() {
+    if (!RNA3D) {
+        RNA3D = new RNA3D_Global();
+    }
+}
+
+RNA3D_Global::RNA3D_Global(){
+    OpenGLEngineState = -1;
+    iRotateMolecule   = 0;
+    bPointSpritesSupported           = false;
+    bEColiRefInitialised             = false;
+    bMapSaiDispListCreated           = false;
+    bAutoRotate                      = false;
+    bRotateMolecule                  = false;
+    bMapSearchStringsDispListCreated = false;
+
+    ROTATION_SPEED = 0.5;
+    scale = 0.01;
+
+    cGraphics  = new OpenGLGraphics();
+    cStructure = new Structure3D();
+    cTexture   = new Texture2D();
+    cRenderer  = new GLRenderer();
+}
+
+RNA3D_Global::~RNA3D_Global() {
+    delete cGraphics;
+    delete cStructure;
+    delete cTexture;
+    delete cRenderer;
+}
+
+// end of global data section
+// --------------------------------------------------------------------------------
+
+static float fAspectRatio;
+const float fViewAngle = 90.0;
+const float fClipNear  = 0.01;
+const float fClipFar   = 100000;
+
+// GBDATA *OpenGL_gb_main;
 
 static Display *dpy;
 static GLXContext glx_context;
@@ -51,11 +85,11 @@ static int SingleBuffer[] = { GLX_RGBA,
 static GLfloat rotation_matrix[16];
 static GLfloat rot_x = 0.0, rot_y = 0.0;
 
-Vector3 Viewer = Vector3(0.0, 0.0, -2);
-Vector3 Center = Vector3(0.0, 0.0, 0.0);
-Vector3 Up     = Vector3(0.0, 1.0, 0.0);
+static Vector3 Viewer = Vector3(0.0, 0.0, -2);
+static Vector3 Center = Vector3(0.0, 0.0, 0.0);
+static Vector3 Up     = Vector3(0.0, 1.0, 0.0);
 
-int iScreenWidth, iScreenHeight;
+static int iScreenWidth, iScreenHeight;
 
 static bool bMapSpDispListCreated     = false;
 static bool bCursorPosDispListCreated = false;
@@ -64,65 +98,65 @@ static bool bHelixNrDispListCreated   = false;
 using namespace std;
 
 void ShowVendorInformation(){
-	const GLubyte *vendor = NULL;  
-	vendor = glGetString(GL_VENDOR);   cout<<"Vendor  : "<<vendor<<endl;
-	vendor = glGetString(GL_RENDERER); cout<<"Rederer : "<<vendor<<endl;
-	vendor = glGetString(GL_VERSION);  cout<<"Version : "<<vendor<<endl;
+    const GLubyte *vendor = NULL;  
+    vendor = glGetString(GL_VENDOR);   cout<<"Vendor  : "<<vendor<<endl;
+    vendor = glGetString(GL_RENDERER); cout<<"Rederer : "<<vendor<<endl;
+    vendor = glGetString(GL_VERSION);  cout<<"Version : "<<vendor<<endl;
 }
 
 void initExtensions() {
     // check mandatory for extensions
-	char missingExtensions[500]="";
-	if (!GLEW_VERSION_1_2) {
-        strcat(missingExtensions,"\nOpenGL Version 1.2");	
+    char missingExtensions[500]="";
+    if (!GLEW_VERSION_1_2) {
+        strcat(missingExtensions,"\nOpenGL Version 1.2");   
     }
-	if (strlen(missingExtensions) > 0) {
-		printf("ERROR: Some needed extensions are not present:%s\n",missingExtensions);
-		char dummy;		scanf( "%c",&dummy);		exit(-1);
-	} else {		
+    if (strlen(missingExtensions) > 0) {
+        printf("ERROR: Some needed extensions are not present:%s\n",missingExtensions);
+        char dummy;     scanf( "%c",&dummy);        exit(-1);
+    } else {        
 #ifdef DEBUG
-			printf("DEBUG: All mandatory extensions seem to be ok.\n");
+            printf("DEBUG: All mandatory extensions seem to be ok.\n");
 #endif // DEBUG
-	}
+    }
 
-	// the following code checks if point sprites could be used and activates them if possible
-	missingExtensions[0] = 0;
-	if (!GLEW_EXT_point_parameters) strcat(missingExtensions,"\nGL_EXT_point_parameters");
-	if (!GLEW_ARB_point_sprite)		strcat(missingExtensions,"\nGL_ARB_point_sprite");	
-	if (strlen(missingExtensions) > 0) {
-		printf("Some extra extensions are not present:%s\n",missingExtensions);
-		printf("Molecule Display: Quality of Rendering is LOW!!\n");
-		GLOBAL->bPointSpritesSupported = false;
-	} else {		
+    // the following code checks if point sprites could be used and activates them if possible
+    missingExtensions[0] = 0;
+    if (!GLEW_EXT_point_parameters) strcat(missingExtensions,"\nGL_EXT_point_parameters");
+    if (!GLEW_ARB_point_sprite)     strcat(missingExtensions,"\nGL_ARB_point_sprite");  
+    if (strlen(missingExtensions) > 0) {
+        printf("Some extra extensions are not present:%s\n",missingExtensions);
+        printf("Molecule Display: Quality of Rendering is LOW!!\n");
+        RNA3D->bPointSpritesSupported = false;
+    } else {        
 #ifdef DEBUG
         printf("DEBUG: All extra extensions seem to be ok as well.\n");
 #endif // DEBUG
-        GLOBAL->bPointSpritesSupported = true ;
-	}
+        RNA3D->bPointSpritesSupported = true ;
+    }
 }
 
 void ReshapeOpenGLWindow( GLint width, GLint height ) {
-	iScreenWidth  = width; 
+    iScreenWidth  = width; 
     iScreenHeight = height;
 
-	fAspectRatio = (float) width / (float) height;
+    fAspectRatio = (float) width / (float) height;
 
-	glViewport( 0, 0, width, height );
-	glMatrixMode( GL_PROJECTION );
-	glLoadIdentity();
-	gluPerspective( fViewAngle, fAspectRatio, fClipNear, fClipFar );
-	glMatrixMode( GL_MODELVIEW );
-	glLoadIdentity();
+    glViewport( 0, 0, width, height );
+    glMatrixMode( GL_PROJECTION );
+    glLoadIdentity();
+    gluPerspective( fViewAngle, fAspectRatio, fClipNear, fClipFar );
+    glMatrixMode( GL_MODELVIEW );
+    glLoadIdentity();
 }
 
 void InitializeOpenGLEngine(GLint width, GLint height ) {
     cout<<"RNA3D: Initializing OpenGLEngine : "<<width<<" x "<<height<<endl;
 
-    GLOBAL->saved_x = GLOBAL->saved_y = 2.0f;
+    RNA3D->saved_x = RNA3D->saved_y = 2.0f;
     ComputeRotationXY(1,1);
     
-	//Get Information about Vendor & Version
-	ShowVendorInformation();
+    //Get Information about Vendor & Version
+    ShowVendorInformation();
 
     GLenum err = glewInit();
     if (GLEW_OK != err) {
@@ -135,21 +169,21 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
 
     // Prepare the structure Data  and Generate Display Lists  
 
-    cStructure->ReadCoOrdinateFile();    // Reading Structure information
-    cStructure->GetSecondaryStructureInfo();  // Getting Secondary Structure Information
-    cStructure->Combine2Dand3DstructureInfo(); // Combining Secondary Structure data with 3D Coordinates
+    RNA3D->cStructure->ReadCoOrdinateFile();    // Reading Structure information
+    RNA3D->cStructure->GetSecondaryStructureInfo();  // Getting Secondary Structure Information
+    RNA3D->cStructure->Combine2Dand3DstructureInfo(); // Combining Secondary Structure data with 3D Coordinates
 
-    //    cStructure->PrepareStructureSkeleton();    // Preparing structure skeleton with just coordinates  
-    cStructure->GenerateDisplayLists(); // Generating Display Lists for Rendering
+    //    RNA3D->cStructure->PrepareStructureSkeleton();    // Preparing structure skeleton with just coordinates  
+    RNA3D->cStructure->GenerateDisplayLists(); // Generating Display Lists for Rendering
 
     // Generate Textures
-    cTexture->LoadGLTextures();  // Load The Texture(s) 
-    glEnable(GL_TEXTURE_2D);	// Enable Texture Mapping
+    RNA3D->cTexture->LoadGLTextures();  // Load The Texture(s) 
+    glEnable(GL_TEXTURE_2D);    // Enable Texture Mapping
 
-    glDepthFunc(GL_LEQUAL);		     // The Type Of Depth Test To Do
-    glEnable(GL_DEPTH_TEST);	   	 // Enables Depth Testing
+    glDepthFunc(GL_LEQUAL);          // The Type Of Depth Test To Do
+    glEnable(GL_DEPTH_TEST);         // Enables Depth Testing
     glClearDepth(1.0);
-    glShadeModel(GL_FLAT);			 
+    glShadeModel(GL_FLAT);           
 
     glEnable(GL_POINT_SMOOTH);
 
@@ -162,12 +196,12 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
 
 void ComputeRotationXY(int x, int y) {
     GLfloat dx, dy;
-    dx = GLOBAL->saved_x - x; 
-    dy = GLOBAL->saved_y - y;
-    rot_y = (GLfloat)(x - GLOBAL->saved_x) * GLOBAL->ROTATION_SPEED;
-    rot_x = (GLfloat)(y - GLOBAL->saved_y) * GLOBAL->ROTATION_SPEED;
-    GLOBAL->saved_x = x;
-    GLOBAL->saved_y = y;
+    dx = RNA3D->saved_x - x; 
+    dy = RNA3D->saved_y - y;
+    rot_y = (GLfloat)(x - RNA3D->saved_x) * RNA3D->ROTATION_SPEED;
+    rot_x = (GLfloat)(y - RNA3D->saved_y) * RNA3D->ROTATION_SPEED;
+    RNA3D->saved_x = x;
+    RNA3D->saved_y = y;
 }
 
 void CalculateRotationMatrix(){
@@ -196,6 +230,9 @@ void CalculateRotationMatrix(){
 }
 
 void MapDisplayParameters(AW_root *root){
+    GLRenderer  *cRenderer  = RNA3D->cRenderer;
+    Structure3D *cStructure = RNA3D->cStructure;
+
     // General Molecule Display Section
     cRenderer->iBackBone       = root->awar(AWAR_3D_MOL_BACKBONE)->read_int();
     cRenderer->iColorise       = root->awar(AWAR_3D_MOL_COLORIZE)->read_int();
@@ -203,7 +240,7 @@ void MapDisplayParameters(AW_root *root){
     cRenderer->iDispPos        = root->awar(AWAR_3D_MOL_DISP_POS)->read_int();
     cStructure->iInterval      = root->awar(AWAR_3D_MOL_POS_INTERVAL)->read_int();
     cRenderer->iDispCursorPos  = root->awar(AWAR_3D_CURSOR_POSITION)->read_int();
-    GLOBAL->iRotateMolecule    = root->awar(AWAR_3D_MOL_ROTATE)->read_int();
+    RNA3D->iRotateMolecule    = root->awar(AWAR_3D_MOL_ROTATE)->read_int();
 
     // Display Bases Section
     cRenderer->iDisplayBases     = root->awar(AWAR_3D_DISPLAY_BASES)->read_int();
@@ -273,12 +310,12 @@ void MapDisplayParameters(AW_root *root){
     if (cStructure->iMapEnable) 
         {
             if (cStructure->iMapSearch) {
-                if (!GLOBAL->bMapSearchStringsDispListCreated) {
+                if (!RNA3D->bMapSearchStringsDispListCreated) {
                     cStructure->MapSearchStringsToEcoliTemplate(root);
                 }
             }
             if (cStructure->iMapSAI) {
-                if (!GLOBAL->bMapSaiDispListCreated) {
+                if (!RNA3D->bMapSaiDispListCreated) {
                     cStructure->MapSaiToEcoliTemplate(root);
                 }
             }
@@ -293,7 +330,7 @@ void MapDisplayParameters(AW_root *root){
 void DisplayPostionsIntervalChanged_CB(AW_root *awr) {
     MapDisplayParameters(awr);
     glDeleteLists(STRUCTURE_POS,2);
-    cStructure->ComputeBasePositions();
+    RNA3D->cStructure->ComputeBasePositions();
     RefreshOpenGLDisplay();
 }
 
@@ -305,12 +342,12 @@ void MapSelectedSpeciesChanged_CB(AW_root *awr) {
     //  2. Recalculate the Display lists for current species;
     //  3. Map it to EColi Template;
 
-    if (cStructure->iMapEnable && 
-        cRenderer->iMapSpecies && 
+    if (RNA3D->cStructure->iMapEnable && 
+        RNA3D->cRenderer->iMapSpecies && 
         bMapSpDispListCreated) 
         {
             glDeleteLists(MAP_SPECIES_BASE_DIFFERENCE,9);
-            cStructure->MapCurrentSpeciesToEcoliTemplate(awr);
+            RNA3D->cStructure->MapCurrentSpeciesToEcoliTemplate(awr);
         }
 
     // If selected species changed then regenerate the SearchStrings DisplayList
@@ -322,13 +359,13 @@ void MapSelectedSpeciesChanged_CB(AW_root *awr) {
 void MapSaiToEcoliTemplateChanged_CB(AW_root *awr) {
     //if SAI changed in EDIT4 then diplay lists should be recalculated
 
-    if (cStructure->iMapEnable  &&
-        cStructure->iMapSAI     &&
-        GLOBAL->bMapSaiDispListCreated ) 
+    if (RNA3D->cStructure->iMapEnable  &&
+        RNA3D->cStructure->iMapSAI     &&
+        RNA3D->bMapSaiDispListCreated ) 
         {   
-            GLOBAL->bMapSaiDispListCreated = false;
+            RNA3D->bMapSaiDispListCreated = false;
             glDeleteLists(MAP_SAI_TO_STRUCTURE,1);
-            cStructure->MapSaiToEcoliTemplate(awr);
+            RNA3D->cStructure->MapSaiToEcoliTemplate(awr);
         }
 
     RefreshOpenGLDisplay();
@@ -339,30 +376,30 @@ void MapSearchStringsToEcoliTemplateChanged_CB(AW_root *awr) {
     // If selected species changed then regenerate the 
     // SearchStrings DisplayList
 
-    if (cStructure->iMapEnable  &&
-        cStructure->iMapSearch  &&
-        GLOBAL->bMapSearchStringsDispListCreated) 
+    if (RNA3D->cStructure->iMapEnable  &&
+        RNA3D->cStructure->iMapSearch  &&
+        RNA3D->bMapSearchStringsDispListCreated) 
         {
-            GLOBAL->bMapSearchStringsDispListCreated = false;
+            RNA3D->bMapSearchStringsDispListCreated = false;
             glDeleteLists(MAP_SEARCH_STRINGS_TO_STRUCTURE,2);
-            cStructure->MapSearchStringsToEcoliTemplate(awr);
+            RNA3D->cStructure->MapSearchStringsToEcoliTemplate(awr);
         }
 }
 
 void CursorPositionChanged_CB(AW_root *awr) {
 
-    if(GLOBAL->bEColiRefInitialised) {
+    if(RNA3D->bEColiRefInitialised) {
         long iCursorPos = awr->awar(AWAR_CURSOR_POSITION)->read_int();
         long EColiPos, dummy;
-        cStructure->EColiRef->abs_2_rel(iCursorPos, EColiPos, dummy);
+        RNA3D->cStructure->EColiRef->abs_2_rel(iCursorPos, EColiPos, dummy);
 
         if (!bCursorPosDispListCreated) {
-            cStructure->GenerateCursorPositionDispList(EColiPos);
+            RNA3D->cStructure->GenerateCursorPositionDispList(EColiPos);
             bMapSpDispListCreated = true;
         }
         else {
             glDeleteLists(ECOLI_CURSOR_POSITION,1);
-            cStructure->GenerateCursorPositionDispList(EColiPos);
+            RNA3D->cStructure->GenerateCursorPositionDispList(EColiPos);
         }
         RefreshOpenGLDisplay();
     }
@@ -371,30 +408,31 @@ void CursorPositionChanged_CB(AW_root *awr) {
 void DisplayHelixNrsChanged_CB(AW_root *awr) {
     MapDisplayParameters(awr);
     
-    int iStart = cRenderer->iStartHelix;
-    int iEnd   = cRenderer->iEndHelix;
+    int iStart = RNA3D->cRenderer->iStartHelix;
+    int iEnd   = RNA3D->cRenderer->iEndHelix;
     if (!bHelixNrDispListCreated) {
-        cStructure->GenerateHelixNrDispList(iStart, iEnd);
+        RNA3D->cStructure->GenerateHelixNrDispList(iStart, iEnd);
         bHelixNrDispListCreated = true;
     }
     else {
         glDeleteLists(HELIX_NUMBERS, 2);
-        cStructure->GenerateHelixNrDispList(iStart, iEnd);
+        RNA3D->cStructure->GenerateHelixNrDispList(iStart, iEnd);
     }
     RefreshOpenGLDisplay();
 }
 
 void DrawStructure(){
+    GLRenderer *cRenderer = RNA3D->cRenderer;
 
     // Drawing Molecule Skeleton
-    cRenderer->DisplayMolecule(cStructure);
+    cRenderer->DisplayMolecule(RNA3D->cStructure);
 
     // Mapping Helices to The molecule
     cRenderer->DoHelixMapping();
 
     // Texture Mapping
     cRenderer->BeginTexturizer();
-    cRenderer->TexturizeStructure(cTexture);
+    cRenderer->TexturizeStructure(RNA3D->cTexture, RNA3D->cStructure);
     cRenderer->EndTexturizer();
 }
 
@@ -402,7 +440,7 @@ void RenderOpenGLScene(Widget w){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
     // setting the BackGround Color of the OpenGL Scene
-    cGraphics->SetOpenGLBackGroundColor();  
+    RNA3D->cGraphics->SetOpenGLBackGroundColor();  
 
     glLoadIdentity();
 
@@ -411,44 +449,43 @@ void RenderOpenGLScene(Widget w){
               Up.x,     Up.y,     Up.z);
 
     {// Displaying Molecule Name
-        cRenderer->DisplayMoleculeName(iScreenWidth, iScreenHeight);
+        RNA3D->cRenderer->DisplayMoleculeName(iScreenWidth, iScreenHeight);
     }
 
-    glScalef(GLOBAL->scale, GLOBAL->scale, GLOBAL->scale);
+    glScalef(RNA3D->scale, RNA3D->scale, RNA3D->scale);
 
-    if(GLOBAL->bRotateMolecule || GLOBAL->bAutoRotate) {
+    if(RNA3D->bRotateMolecule || RNA3D->bAutoRotate) {
         CalculateRotationMatrix();
     }
 
-    glMultMatrixf(rotation_matrix); 
+    glMultMatrixf(rotation_matrix);
 
-    glTranslatef(-cStructure->strCen->x, -cStructure->strCen->y, -cStructure->strCen->z);
+    Vector3& strCen = *RNA3D->cStructure->strCen;
+    glTranslatef(-strCen.x, -strCen.y, -strCen.z);
 
     DrawStructure();
 
-	glFlush();
-	glXWaitX();
-	glXSwapBuffers ( XtDisplay( w ), XtWindow( w ) );
+    glFlush();
+    glXWaitX();
+    glXSwapBuffers ( XtDisplay( w ), XtWindow( w ) );
 }
 
 void InitializeOpenGLWindow( Widget w ) {
 
-	if (GLOBAL->OpenGLEngineState == CREATED) return;
-	
-	Arg args[1];
-	XVisualInfo *vi;
-	
-	XtSetArg(args[0], (char *) GLwNvisualInfo, &vi);
-	XtGetValues(w, args, 1);
-	
-	dpy = XtDisplay(w);
-	if (!dpy) {
-		fprintf(stderr, "could not open display\n");
-	} 
+    if (RNA3D->OpenGLEngineState == CREATED) return;
+    
+    Arg args[1];
+    XVisualInfo *vi;
+    
+    XtSetArg(args[0], (char *) GLwNvisualInfo, &vi);
+    XtGetValues(w, args, 1);
+    
+    dpy = XtDisplay(w);
+    if (!dpy) {
+        fprintf(stderr, "could not open display\n");
+    } 
     else {
-        extern bool alpha_Size_Supported;
-       
-        if (alpha_Size_Supported) {
+        if (AW_alpha_Size_Supported) {
             vi = glXChooseVisual(dpy, DefaultScreen( dpy ), DoubleBufferWithAlpha);            
             printf("RNA3D: Double Buffered Visual With Alpha Size Supported !\n"); 
         }
@@ -457,25 +494,25 @@ void InitializeOpenGLWindow( Widget w ) {
             printf("RNA3D: Double Buffered Visual Supported !\n"); 
         }
 
-		if (!vi) {
-			fprintf(stderr, "try to get a single buffered visual\n");
-			vi = glXChooseVisual(dpy, DefaultScreen(dpy), SingleBuffer);
-			if (!vi)
-				fprintf(stderr, "could not get visual\n");
-		}
+        if (!vi) {
+            fprintf(stderr, "try to get a single buffered visual\n");
+            vi = glXChooseVisual(dpy, DefaultScreen(dpy), SingleBuffer);
+            if (!vi)
+                fprintf(stderr, "could not get visual\n");
+        }
         else { 
-			glx_context = glXCreateContext(dpy, vi, NULL, GL_TRUE);
-			if (!glXIsDirect(dpy, glx_context))
-				fprintf(stderr, "direct rendering not supported\n");
-			else
-				printf("RNA3D: Direct rendering supported\n");
+            glx_context = glXCreateContext(dpy, vi, NULL, GL_TRUE);
+            if (!glXIsDirect(dpy, glx_context))
+                fprintf(stderr, "direct rendering not supported\n");
+            else
+                printf("RNA3D: Direct rendering supported\n");
             
-			GLwDrawingAreaMakeCurrent(w, glx_context);
+            GLwDrawingAreaMakeCurrent(w, glx_context);
 
-			GLOBAL->glw = w;
+            RNA3D->glw = w;
 
-			GLOBAL->OpenGLEngineState = CREATED;
-		}
-	}
+            RNA3D->OpenGLEngineState = CREATED;
+        }
+    }
 }
 
