@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : Toolkit.java                                           //
 //    Purpose   : Functions uses in all classes go here                  //
-//    Time-stamp: <Wed Mar/17/2004 20:06 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Mar/18/2004 20:52 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -21,8 +21,8 @@ class Toolkit
     public static String clientName = "ARB probe library";
 
     // search globally for 'CLIENT_SERVER_VERSIONS' (other occurance is in ../SERVER/getVersion.cgi)
-    public static String client_version    = "1.1"; // if client_version does not match, a notice is printed
-    public static String interface_version = "1.0"; // if interface_version does not match, client terminates!
+    public static String client_version    = "1.2"; // if client_version does not match, a notice is printed
+    public static String interface_version = "1.1"; // if interface_version does not match, client terminates!
 
     private static String maintainer = "probeadmin@arb-home.de";
 
