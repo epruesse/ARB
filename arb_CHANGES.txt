@@ -1,6 +1,9 @@
-Major changes for next Beta:
-----------------------------
+ARB change log
 
+Major changes for next Beta:
+
+ - updated fastDNAml to 1.2.2
+ - added AxML (accelerated fastDNAml 1.2.2)
  - Field transfer definitions for exporting gene-species
  - File Selection: - recursive search available
  - The ARB_NTREE macro recording/execution has been fixed
@@ -12,7 +15,6 @@ Major changes for next Beta:
    interactive constraint editing (stretch/compress), probe info)
  - import reads Unix, DOS, and MAC linefeeds
  - NTREE/SAI/Etc/GnuPlot: calls gnuplot directly; more plotting features;basic help
- - updated fastDNAml to 1.2.1
  - tree and sequence export to XML ( DTDs are provided in ./lib/dtd )
    (reloading of these XML files is planned for the future)
  - fixed problems with phylip-tree import/export (bootstrap values,comments,...)
@@ -39,7 +41,7 @@ Major changes for next Beta:
      - a text version is in $ARBHOME/lib/help (like before, but now generated)
 
 Major changes in Beta 20011107:
--------------------------------
+
  - design probes to maximum length of 60 nucleotides
  - fastAligner1.03 bug fixed (chooses best match now in 'auto search' mode)
  - import default changed to foreign data format, ali name '16s'
@@ -52,6 +54,6 @@ Major changes in Beta 20011107:
  - support for experiments (genom databases only)
 
 Major changes in Beta 20010724:
--------------------------------
 
  - basic support for genoms (Gene Map, reads Genebank files)
+ - ported to libc6
