@@ -1171,7 +1171,7 @@ static char *get_local_help_url(AW_root *awr) {
     size_t  user_doc_path_len = strlen(user_doc_path);
     char   *result            = 0;
 
-    if (strncmp(helpfile, user_doc_path, user_doc_path_len) == 0) {
+    if (strncmp(helpfile, user_doc_path, user_doc_path_len) == 0) { // "real" help file
         result            = GBS_global_string_copy("%s%s_", user_htmldoc_path, helpfile+user_doc_path_len);
         size_t result_len = strlen(result);
 
@@ -1183,7 +1183,11 @@ static char *get_local_help_url(AW_root *awr) {
         else {
             free(result);
             result = 0;
+            GB_export_error("Can't browse that file type.");
         }
+    }
+    else { // on-the-fly-generated help file (e.g. search help)
+        GB_export_error("Can't browse temporary help node");
     }
 
     free(user_htmldoc_path);
@@ -1357,8 +1361,15 @@ void aw_help_back(AW_window *aww)
 
 void aw_help_browse(AW_window *aww) {
     char *help_url = get_local_help_url(aww->get_root());
-    awt_openURL(aww->get_root(), 0, help_url);
-    free(help_url);
+    if (help_url) {
+        awt_openURL(aww->get_root(), 0, help_url);
+        free(help_url);
+    }
+    else {
+        GB_ERROR err = GB_get_error();
+        if (!err) err = "Can't detect URL of help file";
+        aw_message(err);
+    }
 }
 
 void aw_help_search(AW_window *aww) {
