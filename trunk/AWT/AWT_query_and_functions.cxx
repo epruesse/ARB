@@ -1412,12 +1412,9 @@ static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main,
 
     aws->at("colorize");
 
-    color_mark_data *cmd = 0; // do not free!
-    if (mode == AWT_COL_COLORIZE_MARKED) {
-        cmd          = new color_mark_data;
-        cmd->sel     = sel;
-        cmd->gb_main = gb_main;
-    }
+    color_mark_data *cmd = new color_mark_data; // do not free!
+    cmd->sel             = (mode == AWT_COL_COLORIZE_MARKED) ? sel : cbs->selector;
+    cmd->gb_main = gb_main;
 
     if (mode == AWT_COL_COLORIZE_LISTED)    aws->callback(awt_colorize_listed, (AW_CL)cbs);
     else                                    aws->callback(awt_colorize_marked, (AW_CL)cmd);
