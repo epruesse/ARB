@@ -12,6 +12,7 @@ DEST_EXECUTABLES = \
 	$(ARBHOME)/PROBE_SET/bin/ps_arb2asciipaths \
 	$(ARBHOME)/PROBE_SET/bin/ps_my2asciipaths \
 	$(ARBHOME)/PROBE_SET/bin/ps_my2ascii \
+	$(ARBHOME)/PROBE_SET/bin/ps_eval \
 	$(ARBHOME)/PROBE_SET/bin/ps_find \
 	$(ARBHOME)/PROBE_SET/bin/ps_detect \
 	$(ARBHOME)/PROBE_SET/bin/ps_merge \
@@ -51,6 +52,11 @@ $(ARBHOME)/PROBE_SET/bin/ps_find : $(SHARED_OBJECTS) $(PROBE_SET_CORE4_OBJECTS)
 	$(CPP) -o $@ $(SHARED_OBJECTS) $(PROBE_SET_CORE4_OBJECTS) $(LIBS)
 #	$(CPP) -pg -g -a -o $@ $(SHARED_OBJECTS) $(PROBE_SET_CORE4_OBJECTS) $(LIBS)
 
+PROBE_SET_CORE5_OBJECTS = ps_eval_candidates.o
+$(ARBHOME)/PROBE_SET/bin/ps_eval : $(SHARED_OBJECTS) $(PROBE_SET_CORE5_OBJECTS)
+	$(CPP) -o $@ $(SHARED_OBJECTS) $(PROBE_SET_CORE5_OBJECTS) $(LIBS)
+#	$(CPP) -pg -g -a -o $@ $(SHARED_OBJECTS) $(PROBE_SET_CORE5_OBJECTS) $(LIBS)
+
 PROBE_SET_AUX1_OBJECTS = ps_my2ascii.o
 $(ARBHOME)/PROBE_SET/bin/ps_my2ascii : $(SHARED_OBJECTS) $(PROBE_SET_AUX1_OBJECTS)
 	$(CPP) -o $@ $(SHARED_OBJECTS) $(PROBE_SET_AUX1_OBJECTS) $(LIBS)
@@ -77,6 +83,7 @@ CPP_OBJECTS = $(SHARED_OBJECTS) \
 	$(PROBE_SET_CORE2_OBJECTS) \
 	$(PROBE_SET_CORE3_OBJECTS) \
 	$(PROBE_SET_CORE4_OBJECTS) \
+	$(PROBE_SET_CORE5_OBJECTS) \
 	$(PROBE_SET_AUX1_OBJECTS) \
 	$(PROBE_SET_AUX2_OBJECTS) \
 	$(PROBE_SET_AUX3_OBJECTS) \
@@ -103,14 +110,15 @@ ps_filebuffer.o: ps_filebuffer.hxx
 ps_database.o: ps_database.hxx ps_defs.hxx ps_node.hxx
 ps_database.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_database.o: $(ARBHOME)/INCLUDE/arb_assert.h ps_filebuffer.hxx
-fb_test.o: ps_bitmap.hxx ps_bitset.hxx ps_filebuffer.hxx 
-fb_test.o:  ps_defs.hxx ps_node.hxx
-fb_test.o: $(ARBHOME)/INCLUDE/smartptr.h
+fb_test.o:  ps_bitmap.hxx ps_bitset.hxx
+fb_test.o: ps_filebuffer.hxx  
+fb_test.o: ps_defs.hxx ps_node.hxx $(ARBHOME)/INCLUDE/smartptr.h
 fb_test.o: $(ARBHOME)/INCLUDE/arb_assert.h
-ps_convert_db.o: ps_database.hxx ps_defs.hxx ps_node.hxx
+ps_convert_db.o:   ps_database.hxx
+ps_convert_db.o: ps_defs.hxx ps_node.hxx
 ps_convert_db.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arb_assert.h ps_filebuffer.hxx
-ps_convert_db.o: ps_pg_tree_functions.cxx
+ps_convert_db.o:  ps_pg_tree_functions.cxx
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arbdb.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ps_merge_my_dbs.o:  ps_database.hxx ps_defs.hxx
@@ -123,12 +131,16 @@ ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_detect_weak_differences.o: ps_filebuffer.hxx 
 ps_detect_weak_differences.o:  ps_bitmap.hxx
 ps_detect_weak_differences.o: ps_bitset.hxx
-ps_find_probes.o:  ps_database.hxx ps_defs.hxx
-ps_find_probes.o: ps_node.hxx $(ARBHOME)/INCLUDE/smartptr.h
+ps_find_probes.o:  ps_database.hxx ps_defs.hxx ps_node.hxx
+ps_find_probes.o: $(ARBHOME)/INCLUDE/smartptr.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_find_probes.o: ps_filebuffer.hxx 
-ps_find_probes.o: ps_candidate.hxx 
-ps_find_probes.o: ps_bitmap.hxx ps_bitset.hxx
+ps_find_probes.o:  ps_bitmap.hxx ps_bitset.hxx
+ps_find_probes.o: ps_candidate.hxx
+ps_eval_candidates.o:  ps_database.hxx ps_defs.hxx ps_node.hxx
+ps_eval_candidates.o: $(ARBHOME)/INCLUDE/smartptr.h
+ps_eval_candidates.o: $(ARBHOME)/INCLUDE/arb_assert.h ps_filebuffer.hxx
+ps_eval_candidates.o: ps_candidate.hxx
 ps_my2ascii.o:  ps_filebuffer.hxx 
 ps_my2ascii.o: ps_node.hxx $(ARBHOME)/INCLUDE/smartptr.h
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/arb_assert.h ps_defs.hxx
