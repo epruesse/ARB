@@ -1217,7 +1217,7 @@ arbbasic2: mbin com nas ${MAKE_RTC}
 arbshared: dball aw dp awt
 
 # needed arb applications
-arbapplications: nt pa ed e4 we pt na al nal di ph ds trs gp
+arbapplications: nt pa ed e4 we pt na al nal di ph ds trs
 
 # optionally things (no real harm for ARB if any of them fails):
 arbxtras: tg ps pc pst chip
