@@ -8,7 +8,7 @@
 #define AP_F_TREE ((AW_active)16)
 #define AP_F_ALL ((AW_active)-1)
 
-#define GROUPED_SUM	3	// in AWT_graphic_tree::arb_tree_leafsum
+#define GROUPED_SUM 2	// min. no of species in a group which should be drawn as box
 
 class AW_window;
 class AW_root;
