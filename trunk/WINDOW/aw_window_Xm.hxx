@@ -213,6 +213,12 @@ public:
     void set_double_click_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
     void set_motion_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
 
+    AW_BOOL is_expose_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
+    AW_BOOL is_resize_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
+    AW_BOOL is_input_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
+    AW_BOOL is_double_click_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
+    AW_BOOL is_motion_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
+
     AW_area_management(AW_root *awr,Widget form,Widget widget);
 };
 /************************************************************************/
