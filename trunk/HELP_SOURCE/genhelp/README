@@ -4,3 +4,4 @@ All textfiles that get converted here should fit the following criteria:
 - They have the title in the first line
 - Only a few lines start in column 1 (these will get sections in help)
 
+See $ARBHOME/GDEHELP/Makefile.helpfiles for generation process. 
