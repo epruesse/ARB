@@ -31,16 +31,16 @@ arglabel:Use branchlengths?
 argchoice:Yes:"L"
 argchoice:No:
 
-#arg:USERRATES
-#argtype:text(20)
-#arglabel:User frequency rates
-#argtext:F
+// arg:USERRATES
+// argtype:text(20)
+// arglabel:User frequency rates
+// argtext:F
 
-#arg:USERRATES
-#argtype:choice_menu
-#arglabel:Choose frequency rates
-#argchoice:Calculate frequencies:F
-#argchoice:Estimate equal frequencies:F 0.25 0.25 0.25 0.25
+// arg:USERRATES
+// argtype:choice_menu
+// arglabel:Choose frequency rates
+// argchoice:Calculate frequencies:F
+// argchoice:Estimate equal frequencies:F 0.25 0.25 0.25 0.25
 
 in:in1
 informat:genbank
