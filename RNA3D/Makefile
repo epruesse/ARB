@@ -1,7 +1,8 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS = Camera.o Main.o Menu.o Mouse.o Structure3D.o
+CPP_OBJECTS = Main.o Camera.o Menu.o Mouse.o \
+			  Structure3D.o #Graphics.o OpenGLEngine.o 
 
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)

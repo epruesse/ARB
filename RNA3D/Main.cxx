@@ -4,8 +4,6 @@
 #include "Mouse.hxx"
 #include "Menu.hxx"
 
-using namespace std;
-
 //=======================  Functions =======================================
 void KeyBoardFunction(unsigned char key, int x, int y);
 void SpecialKey(int key, int x, int y);
@@ -21,7 +19,7 @@ void DisplayMain(void);
 void Init(void);
 //============================================================================
 
-// Global Class declarations 
+//Global Class declarations 
 OpenGLGraphics *cGraphics  = new OpenGLGraphics();
 Structure3D    *cStructure = new Structure3D();
 Texture2D      *cTexture   = new Texture2D();
@@ -109,9 +107,9 @@ void Init(void){
                            cStructure->xCenter, cStructure->yCenter, cStructure->zCenter, // view
                            0, 1, 0 );                                                      //upVector
 
-//     cCamera.PositionCamera(0,-1,0,
-//                            0,0,0,
-//                            0,1,0);
+    cCamera.PositionCamera(0,-1,0,
+                           0,0,0,
+                           0,1,0);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();				// Reset The Projection Matrix
     gluPerspective(90.0, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 1.0f, 1000);	// Calculate The Aspect Ratio Of The Window
@@ -366,3 +364,4 @@ void SpecialKey(int key, int x, int y) {
     }
     glutPostRedisplay();
 }
+
