@@ -4,7 +4,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <signal.h>
-// #include <sys/time.h>
 #include <time.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
@@ -14,24 +13,15 @@
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
+#include <aw_awars.hxx>
 #include <awt_www.hxx>
 #include <SIG_PF.h>
-
-// #if defined(SUN4) || defined(SUN5)
-// # ifndef __cplusplus
-// #  define SIG_PF void (*)()
-// # else
-// #  include <sysent.h>   /* c++ only for sun */
-// # endif
-// #else
-// # define SIG_PF void (*)(int )
-// #endif
 
 #ifdef SGI
 # include <bstring.h>
 #endif
 
-#   define FD_SET_TYPE
+#define FD_SET_TYPE
 
 // Globals
 #define AW_GAUGE_SIZE        40 // length of gauge display (in characters)
@@ -49,11 +39,8 @@
 #define AWAR_STATUS_GAUGE   AWAR_STATUS "Gauge"
 #define AWAR_STATUS_ELAPSED AWAR_STATUS "Elapsed"
 
-#define AWAR_MESSAGE_MESSAGE "tmp/Message"
-
-#define AW_MESSAGE_LISTEN_DELAY 500
-// look in ms whether a father died
-#define AW_MESSAGE_LINES        50
+#define AW_MESSAGE_LISTEN_DELAY 500 // look in ms whether a father died
+#define AW_MESSAGE_LINES        500
 
 #if defined(DEBUG)
 
@@ -75,6 +62,7 @@ enum {
     AW_STATUS_CMD_MESSAGE
 };
 
+
 struct {
     int        fd_to[2];
     int        fd_from[2];
@@ -88,30 +76,32 @@ struct {
     AW_window *awm;
     AW_BOOL    status_initialized;
     char      *lines[AW_MESSAGE_LINES];
-    int        line_cnt;
+    bool       need_refresh;    // if true -> message list needs to refresh
+    time_t     last_refresh_time;
+    time_t     last_message_time;
     int        local_message;
     time_t     last_start;      // time of last status start
 } aw_stg = {
-    {0,0}, // fd_to
-    {0,0}, // fd_from
-    AW_STATUS_OK, // mode
-    0, // hide
-    0, // hide_delay
-    0, // pid
-    0, // pipe_broken
-    0, // errno
-    0, // aws
-    0, // awm
-    AW_FALSE, // status_initialized
-    { 0,0,0 }, // lines
-    0, // line_cnt
-    0, // local_message
-    0 // last_start
+    {0,0},                      // fd_to
+    {0,0},                      // fd_from
+    AW_STATUS_OK,               // mode
+    0,                          // hide
+    0,                          // hide_delay
+    0,                          // pid
+    0,                          // pipe_broken
+    0,                          // errno
+    0,                          // aws
+    0,                          // awm
+    AW_FALSE,                   // status_initialized
+    { 0,0,0 },                  // lines
+    false,                      // need_refresh
+    0,                          // last_refresh_time
+    0,                          // last_message_time
+    0,                          // local_message
+    0                           // last_start
 };
 
-// including errno.h sucks for some reason, so errno is manually declared here:
 #include <errno.h>
-//extern int errno;
 
 // timeouts :
 
@@ -122,8 +112,6 @@ struct {
 #else
 #define WRITE_TIMEOUT 10000     // 10 seconds for release
 #endif // DEBUG
-
-void aw_status_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2);
 
 static void mark_pipe_broken(int err_no) {
 #if defined(PIPE_DEBUGGING)
@@ -211,24 +199,12 @@ static ssize_t safe_write(int fd, const char *buf, int count) {
     return result;
 }
 
-static void write_with_success_or_exit(int fd, const char *buf, int count) {
-    safe_write(fd, buf, count);
-//     if (safe_write(fd, buf, count) != count) {
-//         fprintf(stderr, "Pipe broken! -- former exit-point.. now continuing (aw_stg.errno=%i)\n", aw_stg.errno);
-//         exit(EXIT_FAILURE);
-//     }
-
-
-}
-
-
-void aw_status_write( int fd, int cmd)
-{
+static void aw_status_write( int fd, int cmd) {
     char buf = cmd;
-    write_with_success_or_exit(fd, &buf, 1);
+    safe_write(fd, &buf, 1);
 }
 
-int aw_status_read_byte(int fd, int poll_flag)
+static int aw_status_read_byte(int fd, int poll_flag)
     /* read one byte from the pipe, if poll ==1 then dont wait for any
        data, but return EOF */
 {
@@ -256,7 +232,7 @@ int aw_status_read_byte(int fd, int poll_flag)
     return buffer[0];
 }
 
-int aw_status_read_int(int fd, int poll_flag) {
+static int aw_status_read_int(int fd, int poll_flag) {
     /* read one integer from the pipe, if poll ==1 then dont wait for any
        data, but return EOF */
 
@@ -284,7 +260,7 @@ int aw_status_read_int(int fd, int poll_flag) {
     return *(int*)buffer;
 }
 
-int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugePtr = 0)
+static int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugePtr = 0)
 {
     char buffer[1024];
     int  cmd = aw_status_read_byte(fd,poll_flag);
@@ -334,7 +310,7 @@ int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugePtr = 0)
     return cmd;
 }
 
-void aw_status_check_pipe()
+static void aw_status_check_pipe()
 {
     if (getppid() <= 1 ) {
 #if defined(TRACE_STATUS)
@@ -344,7 +320,7 @@ void aw_status_check_pipe()
     }
 }
 
-void aw_status_wait_for_open(int fd)
+static void aw_status_wait_for_open(int fd)
 {
     char *str = 0;
     int cmd;
@@ -379,7 +355,7 @@ void aw_status_wait_for_open(int fd)
 }
 
 
-void aw_status_timer_hide_event( AW_root *awr, AW_CL cl1, AW_CL cl2)
+static void aw_status_timer_hide_event( AW_root *awr, AW_CL cl1, AW_CL cl2)
 {
     AWUSE(awr);AWUSE(cl1);AWUSE(cl2);
 
@@ -389,7 +365,7 @@ void aw_status_timer_hide_event( AW_root *awr, AW_CL cl1, AW_CL cl2)
     }
 }
 
-void aw_status_hide(AW_window *aws)
+static void aw_status_hide(AW_window *aws)
 {
     aw_stg.hide = 1;
     aws->hide();
@@ -408,7 +384,7 @@ void aw_status_hide(AW_window *aws)
 }
 
 
-void aw_status_timer_event( AW_root *awr, AW_CL cl1, AW_CL cl2)
+static void aw_status_timer_event( AW_root *awr, AW_CL cl1, AW_CL cl2)
 {
     AWUSE(awr);AWUSE(cl1);AWUSE(cl2);
 
@@ -425,7 +401,7 @@ void aw_status_timer_event( AW_root *awr, AW_CL cl1, AW_CL cl2)
     }
 }
 
-void aw_status_kill(AW_window *aws)
+static void aw_status_kill(AW_window *aws)
 {
     if(aw_stg.mode == AW_STATUS_ABORT){
         aw_status_timer_event( aws->get_root(), 0, 0);
@@ -443,29 +419,49 @@ void aw_status_kill(AW_window *aws)
                                         aw_status_timer_event, 0, 0);
 }
 
-void aw_insert_message_in_tmp_message(AW_root *awr,const char *message){
-    char *str;
-    free(aw_stg.lines[0]);
-    int i;
-    for (i = 1; i< AW_MESSAGE_LINES; i++){
-        aw_stg.lines[i-1] = aw_stg.lines[i];
-    };
-    aw_stg.lines[AW_MESSAGE_LINES-1] = strdup(message);
-    void *stru;
-    stru = GBS_stropen(1000);
-    for (i = AW_MESSAGE_LINES-1; i>=0; i--){
+static void aw_refresh_tmp_message_display(AW_root *awr) {
+    void *stru = GBS_stropen(AW_MESSAGE_LINES*60); // guessed size
+    for (int i = AW_MESSAGE_LINES-1; i>=0; i--){
         if (aw_stg.lines[i]) {
-            GBS_intcat(stru,i-AW_MESSAGE_LINES+aw_stg.line_cnt+2);
-            GBS_strcat(stru,": ");
             GBS_strcat(stru,aw_stg.lines[i]);
-            GBS_strcat(stru,"\n");
+            GBS_chrcat(stru,'\n');
         }
     };
-    aw_stg.line_cnt ++;
-    str = GBS_strclose(stru,0);
-    awr->awar("tmp/Message")->write_string(str );
+
+    char *str = GBS_strclose(stru);
+    awr->awar(AWAR_ERROR_MESSAGES)->write_string(str);
     free(str);
 
+    aw_stg.need_refresh      = false;
+    aw_stg.last_refresh_time = aw_stg.last_message_time;
+}
+
+static void aw_insert_message_in_tmp_message_delayed(const char *message) {
+    free(aw_stg.lines[0]);
+    for (int i = 1; i< AW_MESSAGE_LINES; i++){
+        aw_stg.lines[i-1] = aw_stg.lines[i];
+    };
+
+#if 1
+    time_t     t  = time(0);
+    struct tm *lt = localtime(&t);
+
+    aw_stg.lines[AW_MESSAGE_LINES-1] = GBS_global_string_copy("%02i:%02i.%02i  %s",
+                                                              lt->tm_hour, lt->tm_min, lt->tm_sec,
+                                                              message);
+    aw_stg.last_message_time         = t;
+#else
+    aw_stg.lines[AW_MESSAGE_LINES-1] = strdup(message);
+    aw_stg.last_message_time         = time(0);
+#endif
+    // aw_stg.line_cnt++;
+
+    aw_stg.need_refresh = true;
+}
+
+static void aw_insert_message_in_tmp_message(AW_root *awr,const char *message) {
+    aw_insert_message_in_tmp_message_delayed(message);
+    aw_refresh_tmp_message_display(awr);
 }
 
 inline const char *sec2disp(long seconds) {
@@ -492,7 +488,7 @@ inline const char *sec2disp(long seconds) {
 }
 
 #ifdef ARB_LOGGING
-void aw_status_append_to_log(const char* str)
+static void aw_status_append_to_log(const char* str)
 {
     static const char *logname = 0;
     if (!logname) {
@@ -510,7 +506,7 @@ void aw_status_append_to_log(const char* str)
 #endif
 
 
-void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
+static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
 {
     static int  delay      = AW_STATUS_LISTEN_DELAY;
     int         cmd;
@@ -521,12 +517,18 @@ void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
     fprintf(stderr, "in aw_status_timer_listen_event\n"); fflush(stdout);
 #endif // TRACE_STATUS
 
+    if (aw_stg.need_refresh && aw_stg.last_refresh_time != aw_stg.last_message_time) {
+        aw_refresh_tmp_message_display(awr); // force refresh each second
+    }
+
     cmd = aw_status_read_command( aw_stg.fd_to[0], 1, str, &gaugeValue);
     if (cmd == EOF){
         aw_status_check_pipe();
-        delay = delay*3/2;  // wait a longer time
-    }else{
-        delay = delay*2/3 +1;       // shorten time
+        delay = delay*3/2+1;      // wait a longer time
+        if (aw_stg.need_refresh) aw_refresh_tmp_message_display(awr); // and do the refresh here
+    }
+    else {
+        delay = delay*2/3+1;       // shorten time  (was *2/3+1)
     }
     char *gauge = 0;
     while (cmd != EOF) {
@@ -598,7 +600,7 @@ void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                 aw_status_append_to_log(str);
 #endif // ARB_LOGGING
                 aw_stg.awm->show();
-                aw_insert_message_in_tmp_message(awr,str);
+                aw_insert_message_in_tmp_message_delayed(str);
                 break;
 
             default:
@@ -617,6 +619,7 @@ void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
         free(gauge);
     }
     if (delay>AW_STATUS_LISTEN_DELAY) delay = AW_STATUS_LISTEN_DELAY;
+    else if (delay<0) delay                 = 0;
 #if defined(TRACE_STATUS)
     fprintf(stderr, "add aw_status_timer_listen_event with delay = %i\n", delay); fflush(stdout);
 #endif // TRACE_STATUS
@@ -631,10 +634,10 @@ void aw_clear_message_cb(AW_window *aww)
         free(aw_stg.lines[i]);
         aw_stg.lines[i] = 0;
     };
-    awr->awar("tmp/Message")->write_string("" );
+    awr->awar(AWAR_ERROR_MESSAGES)->write_string("" );
 }
 
-void aw_clear_and_hide_message_cb(AW_window *aww) {
+static void aw_clear_and_hide_message_cb(AW_window *aww) {
     aw_clear_message_cb(aww);
     AW_POPDOWN(aww);
 }
@@ -682,7 +685,7 @@ void aw_initstatus( void )
         aw_root->awar_string( AWAR_STATUS_TEXT,"",aw_default);
         aw_root->awar_string( AWAR_STATUS_GAUGE,"------------------------------------",aw_default);
         aw_root->awar_string( AWAR_STATUS_ELAPSED,"",aw_default);
-        aw_root->awar_string( AWAR_MESSAGE_MESSAGE,"",aw_default);
+        aw_root->awar_string( AWAR_ERROR_MESSAGES,"",aw_default);
         aw_root->init("ARB_STATUS",AW_TRUE);
 
         AW_window_simple *aws = new AW_window_simple;
@@ -718,7 +721,7 @@ void aw_initstatus( void )
         awm->load_xfig("message.fig");
 
         awm->at("Message");
-        awm->create_text_field(AWAR_MESSAGE_MESSAGE,10,2);
+        awm->create_text_field(AWAR_ERROR_MESSAGES,10,2);
 
         awm->at("Hide");
         awm->callback(AW_POPDOWN);
@@ -744,7 +747,7 @@ void aw_initstatus( void )
         // aws->get_root()->add_timed_callback(AW_STATUS_LISTEN_DELAY, aw_status_timer_listen_event, 0, 0);
         aws->get_root()->add_timed_callback(30, aw_status_timer_listen_event, 0, 0); // use short delay for first callback
 
-        aw_root->main_loop();
+        aw_root->main_loop(); // never returns
     }
 }
 
@@ -759,7 +762,7 @@ void aw_openstatus( const char *title )
         aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_INIT);
     }
     aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_OPEN);
-    write_with_success_or_exit(aw_stg.fd_to[1], title, strlen(title)+1 );
+    safe_write(aw_stg.fd_to[1], title, strlen(title)+1 );
 }
 
 void aw_closestatus( void )
@@ -774,7 +777,7 @@ int aw_status( const char *text )
     aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_TEXT);
     int len = strlen(text)+1;
 
-    write_with_success_or_exit(aw_stg.fd_to[1], text, len );
+    safe_write(aw_stg.fd_to[1], text, len );
 
     return aw_status();
 }
@@ -789,8 +792,7 @@ extern "C" {
 
         if (val != last_val) {
             aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_GAUGE);
-            write_with_success_or_exit(aw_stg.fd_to[1], (char*)&val, sizeof(int));
-            //             aw_status_write(aw_stg.fd_to[1], (int)(gauge*AW_GAUGE_GRANULARITY));
+            safe_write(aw_stg.fd_to[1], (char*)&val, sizeof(int));
         }
         last_val = val;
         return aw_status();
@@ -875,7 +877,7 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons, cons
             }
             aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_MESSAGE);
             int len = strlen(msg)+1;
-            write_with_success_or_exit(aw_stg.fd_to[1], msg, len);
+            safe_write(aw_stg.fd_to[1], msg, len);
         }
         return 0;
     }
@@ -1409,8 +1411,7 @@ static char *get_local_help_url(AW_root *awr) {
     return result;
 }
 
-void aw_help_edit_help(AW_window *aww)
-{
+static void aw_help_edit_help(AW_window *aww) {
     char buffer[1024];
     char *helpfile = get_full_qualified_help_file_name(aww->get_root(), true);
 
@@ -1420,15 +1421,12 @@ void aw_help_edit_help(AW_window *aww)
         system(buffer);
     }
 
-//     sprintf(buffer,"textedit %s &", helpfile); // we use textedit to edit help-files to ensure correct format
-//     printf("%s\n",buffer);
-//     system(buffer);
-
     GB_edit(helpfile);
 
     free(helpfile);
 }
-char *aw_ref_to_title(char *ref){
+
+static char *aw_ref_to_title(char *ref) {
     if (!ref) return 0;
 
     if (!GBS_string_cmp(ref,"*.ps",0) ){    // Postscript file
@@ -1458,7 +1456,8 @@ char *aw_ref_to_title(char *ref){
 
     return result;
 }
-void aw_help_new_helpfile(AW_root *awr){
+
+static void aw_help_new_helpfile(AW_root *awr) {
     char *help_file = get_full_qualified_help_file_name(awr);
 
     if (!strlen(help_file)) {
@@ -1558,8 +1557,7 @@ void aw_help_new_helpfile(AW_root *awr){
     free(help_file);
 }
 
-void aw_help_back(AW_window *aww)
-{
+static void aw_help_back(AW_window *aww) {
     if (!aw_help_global.history) return;
     if (!strchr(aw_help_global.history,'#') ) return;
     char *newhist = GBS_string_eval(aw_help_global.history,"*#*=*2",0); // delete first
@@ -1568,10 +1566,9 @@ void aw_help_back(AW_window *aww)
     char *helpfile = GBS_string_eval(aw_help_global.history,"*#*=*1",0);    // first word
     aww->get_root()->awar("tmp/aw_window/helpfile")->write_string(helpfile);
     free(helpfile);
-
 }
 
-void aw_help_browse(AW_window *aww) {
+static void aw_help_browse(AW_window *aww) {
     char *help_url = get_local_help_url(aww->get_root());
     if (help_url) {
         awt_openURL(aww->get_root(), 0, help_url);
@@ -1584,7 +1581,7 @@ void aw_help_browse(AW_window *aww) {
     }
 }
 
-void aw_help_search(AW_window *aww) {
+static void aw_help_search(AW_window *aww) {
     char *searchtext = aww->get_root()->awar("tmp/aw_window/search_expression")->read_string();
 
     if (searchtext[0]==0) {
