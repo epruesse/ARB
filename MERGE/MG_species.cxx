@@ -330,7 +330,7 @@ MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *referen
         }
 
         if (!gb_species_left || !gb_species_right) {
-            aw_message(GBS_global_string("Warning: Couldn't find %s'%s' in %s DB.\nPlease read PRESERVE ALIGNMENT section in help file!",
+            aw_message(GBS_global_string("Warning: Couldn't find %s'%s' in %s DB.\nPlease read ADAPT ALIGNMENT section in help file!",
                                          is_SAI ? "" : "species ",
                                          tok,
                                          gb_species_left ? "right" : "left"));
@@ -1287,9 +1287,9 @@ AW_window *MG_merge_species_cb(AW_root *awr){
         aws->shadow_width(1);
     }
 
-    // preserve alignments
+    // adapt alignments
     aws->button_length(7);
-    aws->at("preserve");
+    aws->at("adapt");
     aws->create_toggle(AWAR_REMAP_ENABLE);
 
     aws->at("reference");
