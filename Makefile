@@ -81,17 +81,20 @@ ifeq ($(DEBUG),0)
 endif
 endif
 
+# supported compiler versions:
+
+ALLOWED_GCC_295_VERSIONS=2.95.3
+# 2.95.4 is supposed to work, but not known to be tested yet 
+ALLOWED_GCC_3xx_VERSIONS=3.3.3 3.4.0 3.4.2
+ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_295_VERSIONS) $(ALLOWED_GCC_3xx_VERSIONS)
+
+GCC=gcc
+GPP=g++
+CPPreal=cpp
+
 ifdef DEBIAN
-   GCC=gcc-2.95
-   GPP=g++-2.95
-   CPPreal=cpp-2.95
-   GCCVERSIONOK=2.95.4
    XHOME = /usr/X11R6
 else
-   GCC=gcc
-   GPP=g++
-   CPPreal=cpp
-   GCCVERSIONOK=2.95.3
    XHOME = /usr/X11
 endif
 
@@ -102,7 +105,7 @@ endif
    CPP = $(GPP) -W -Wall $(enumequiv) -D$(MACH) $(havebool) -pipe#		# C++ Compiler /Linker
    PP = $(CPPreal)
    ACC = $(GCC) -W -Wall $(enumequiv) -D$(MACH) -pipe#				# Ansi C
-   CCLIB = $(ACC)#			# Ansii C. for shared libraries
+   CCLIB = $(ACC)#			# Ansi C. for shared libraries
    CCPLIB = $(CPP)#			# Same for c++
    AR = ld -r -o#			# Archive Linker
    ARLIB = ld -r -o#			# The same for shared libs.
@@ -180,7 +183,7 @@ else
 endif
 endif
 
-ifeq ($X11R6,1)
+ifeq ($(X11R6),1)
    XINCLUDES = -I/usr/X11R6/include
    XLIBS = -L/usr/X11R6/lib -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc
 else
@@ -451,24 +454,23 @@ endif
 
 # ---------------------------------------- check gcc version
 
-ifdef LINUX
-GCC_VERSION=$(shell $(GCC) --version | head -1)
-endif
+GCC_VERSION_FOUND=$(shell $(GCC) --version | head -1)
+GCC_VERSION_ALLOWED=$(strip $(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring $(version),$(GCC_VERSION_FOUND))))
 
 check_GCC_VERSION:
-ifdef LINUX
-ifeq ('$(GCCVERSIONOK)','$(GCC_VERSION)')
-		@echo "gcc version $(GCC_VERSION) used -- fine!"
-		@echo ''
-else
-		@echo ''
-		@echo "You'll need gcc $(GCCVERSIONOK) to compile ARB [your gcc version is '$(GCC_VERSION)']"
-		@echo 'More information can be found in arb_README_gcc3.2.txt'
+		@echo 'GCC version check:'
+		@echo "  - Your version is '$(GCC_VERSION_FOUND)'"
+ifeq ('$(GCC_VERSION_ALLOWED)', '')
+		@echo '  - This version is not in the list of supported gcc-versions:'
+		@$(foreach version,$(ALLOWED_GCC_VERSIONS),echo '    * $(version)';)
+		@echo '  - You may either ..'
+		@echo '    - add your version to ALLOWED_GCC_VERSIONS in the Makefile and try it out or'
+		@echo '    - switch to one of the allowed versions (see arb_README_gcc.txt)'
 		@echo ''
 		@/bin/false
-endif
 else
-		@echo "gcc version check skipped (should be gcc 2.95.3 if gcc is used on your machine)"
+		@echo "  - Supported gcc version '$(GCC_VERSION_ALLOWED)' detected - fine!"
+		@echo ''
 endif
 
 #---------------------- check ARBHOME
@@ -766,7 +768,7 @@ $(SECEDIT):	$(ARCHS_SECEDIT:.a=.dummy) shared_libs
 
 ARCHS_PROBE_COMM = PROBE_COM/server.a PROBE/PROBE.a
 
-#*********************************** gene_probe **************************************
+#*********************************** arb_gene_probe **************************************
 GENE_PROBE = bin/arb_gene_probe
 ARCHS_GENE_PROBE = \
 		GENE_PROBE/GENE_PROBE.a \
@@ -1289,7 +1291,11 @@ endif
 #		echo LD_LIBRARY_PATH=$$LD_LIBRARY_PATH; \
 #		echo calling bin/arb_proto_2_xsub ...; \
 
-		bin/arb_proto_2_xsub PERL2ARB/proto.h PERL2ARB/ARB.xs.default >PERL2ARB/ARB.xs
+ifdef DEBIAN
+	LD_LIBRARY_PATH=lib bin/arb_proto_2_xsub PERL2ARB/proto.h PERL2ARB/ARB.xs.default >PERL2ARB/ARB.xs
+else
+	bin/arb_proto_2_xsub PERL2ARB/proto.h PERL2ARB/ARB.xs.default >PERL2ARB/ARB.xs
+endif
 	echo "#undef DEBUG" >PERL2ARB/debug.h
 	echo "#undef NDEBUG" >>PERL2ARB/debug.h
 ifeq ($(DEBUG),1)
@@ -1383,7 +1389,7 @@ arb: arbbasic arbshared arbapplications help
 all: checks arb libs convert tools gde readseq openwinprogs binlink $(SITE_DEPENDEND_TARGETS)
 		-$(MAKE) tryxtras
 		@echo $(SEP)
-		@echo "'make all' has been done successful"
+		@echo "made 'all' with success."
 		@echo "to start arb enter 'arb'"
 #	(cd LIBLINK; for i in *.s*; do if test -r $$i; then cp $$i  ../lib; fi; done )
 
