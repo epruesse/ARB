@@ -13,7 +13,7 @@
 #define AUTO_FLUSH(device)
 #endif
 
-#define AW_PIXELS_PER_MM 1.0001
+// #define AW_PIXELS_PER_MM 1.0001 // stupid and wrong
 
 const AW_bitset AW_SCREEN      = 1;
 const AW_bitset AW_CLICK       = 2;
@@ -225,18 +225,47 @@ class AW_clip_scale_stack {
 };
 
 
+struct AW_font_limits {
+    short ascent;
+    short descent;
+    short height;
+    short width;
 
+    void reset() { ascent = descent = height = width = 0; }
+
+    void notify_ascent (int a_ascent ){ if(a_ascent >ascent ) ascent  = a_ascent;  }
+    void notify_descent(int a_descent){ if(a_descent>descent) descent = a_descent; }
+    void notify_width  (int a_width  ){ if(a_width  >width  ) width   = a_width;   }
+
+    void notify_all(int a_ascent, int a_descent, int a_width) {
+        notify_ascent (a_ascent);
+        notify_descent(a_descent);
+        notify_width  (a_width);
+    }
+
+    void calc_height() { height = ascent+descent+1; }
+
+    static int max(int i1, int i2) { return i1<i2 ? i2 : i1; }
+
+    AW_font_limits() { reset(); }
+    AW_font_limits(const AW_font_limits& lim1, const AW_font_limits& lim2)
+        : ascent(max(lim1.ascent, lim2.ascent))
+        , descent(max(lim1.descent, lim2.descent))
+        , width(max(lim1.width, lim2.width))
+    {
+        calc_height();
+    }
+};
+
+#define AW_FONTINFO_CHAR_MIN       32
+#define AW_FONTINFO_CHAR_MAX       255
+#define AW_FONTINFO_CHAR_ASCII_MAX 127
 
 class AW_font_information {
 public:
-    short max_letter_ascent;
-    short max_letter_descent;
-    short max_letter_height;
-    short max_letter_width;
-    short this_letter_ascent;
-    short this_letter_descent;
-    short this_letter_height;
-    short this_letter_width;
+    AW_font_limits this_letter; // letter specified in call to get_font_information()
+    AW_font_limits max_letter;  // maximas of ASCII characters (AW_FONTINFO_CHAR_MIN..AW_FONTINFO_CHAR_ASCII_MAX)
+    AW_font_limits max_all_letter; // maximas of all   characters (AW_FONTINFO_CHAR_MIN..AW_FONTINFO_CHAR_MAX)
 };
 
 
