@@ -49,7 +49,11 @@ public ProbeMenu(ActionListener al)
         mi.setShortcut(new MenuShortcut(KeyEvent.VK_R));
         m.add(mi);
 
-        m.add(new MenuItem("Count Marked Species"));
+        mi = new MenuItem("Count Marked Species");
+        mi.setShortcut(new MenuShortcut(KeyEvent.VK_M));
+        m.add(mi);
+
+
         m.add(new MenuItem("Span Marked"));
         m.addActionListener(al);
         add(m);
