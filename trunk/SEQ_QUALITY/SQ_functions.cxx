@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.cxx                                       //
 //    Purpose   : Implementation of SQ_functions.h                       //
-//    Time-stamp: <Tue Dec/16/2003 09:18 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon Feb/02/2004 18:38 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -562,22 +562,23 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 
 		/*real calculations start here*/
 		if (read_sequence) {
-		    const char *rawSequence = 0;
-		    int sequenceLength      = 0;
-		    char temp[10];
-		    char cons_dev[1000]  = "<dev>";
-		    char cons_conf[1000] = "<conf>";
-		    double value1           = 0;
-		    double value2           = 0;
-		    double eval             = 0;
-		    int value3              = 0;
-		    int evaluation          = 0;
-		    int bases               = 0;
-		    int avg_bases           = 0;
-		    int diff                = 0;
-		    int diff_percent        = 0;
-		    int avg_gc              = 0;
-		    int gcp                 = 0;
+		    const char *rawSequence    = 0;
+		    int         sequenceLength = 0;
+		    char        temp[10];
+// 		    char cons_dev[1000]        = "<dev>";
+                    string      cons_dev       = "<dev>";
+		    char cons_conf[1000]       = "<conf>";
+		    double      value1         = 0;
+		    double      value2         = 0;
+		    double      eval           = 0;
+		    int         value3         = 0;
+		    int         evaluation     = 0;
+		    int         bases          = 0;
+		    int         avg_bases      = 0;
+		    int         diff           = 0;
+		    int         diff_percent   = 0;
+		    int         avg_gc         = 0;
+		    int         gcp            = 0;
 
 		    rawSequence    = GB_read_char_pntr(read_sequence);
 		    sequenceLength = GB_read_count(read_sequence);
@@ -617,7 +618,7 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 		    seq_assert(gb_result7);
 		    GB_write_int(gb_result7, diff_percent);
 
-		    /* 
+		    /*
 		       get groupnames of visited groups
 		       search for name in group dictionary
 		       evaluate sequence with group consensus
@@ -644,15 +645,18 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 				strcat(cons_conf, temp);
 				strcat(cons_conf, ">");
 
-				strcat(cons_dev, "<");
-				strcat(cons_dev, backup->name);
-				strcat(cons_dev, ":");
-				sprintf(temp,"%f",value2);
-				strcat(cons_dev, temp);
-				strcat(cons_dev, ":");
-				sprintf(temp,"%i",value3);
-				strcat(cons_dev, temp);
-				strcat(cons_dev, ">");
+                                const char *entry = GBS_global_string("<%s:%f:%i>", backup->name, value2, value3);
+                                cons_dev += entry;
+
+// 				strcat(cons_dev, "<");
+// 				strcat(cons_dev, backup->name);
+// 				strcat(cons_dev, ":");
+// 				sprintf(temp,"%f",value2);
+// 				strcat(cons_dev, temp);
+// 				strcat(cons_dev, ":");
+// 				sprintf(temp,"%i",value3);
+// 				strcat(cons_dev, temp);
+// 				strcat(cons_dev, ">");
 
 				//if you parse the upper two values in the evaluate() function cut the following out
 				//for time reasons i do the evaluation here, as i still have the upper two values
@@ -674,14 +678,15 @@ GB_ERROR SQ_pass2(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node) {
 			backup = backup->father;
 		    }
 		    strcat(cons_conf, "</conf>"); //eof character
-		    strcat(cons_dev, "</dev>");
+                    // strcat(cons_dev, "</dev>");
+		    cons_dev += "</dev>";
 
 		    GBDATA *gb_result3 = GB_search(gb_quality, "consensus_conformity", GB_STRING);
 		    seq_assert(gb_result3);
 		    GB_write_string(gb_result3, cons_conf);
 		    GBDATA *gb_result4 = GB_search(gb_quality, "consensus_deviation", GB_STRING);
 		    seq_assert(gb_result4);
-		    GB_write_string(gb_result4, cons_dev);
+		    GB_write_string(gb_result4, cons_dev.c_str());
 
 		    //--------also cut this------
 		    if (eval != 0) {
@@ -940,7 +945,7 @@ GB_ERROR SQ_mark_species(GBDATA *gb_main, int condition){
     GBDATA *read_sequence = 0;
     GBDATA *gb_species;
     GBDATA *gb_species_data;
-    GBDATA *gb_name;
+//     GBDATA *gb_name;
     GB_ERROR error = 0;
 
 
@@ -953,26 +958,31 @@ GB_ERROR SQ_mark_species(GBDATA *gb_main, int condition){
 	 gb_species;
 	 gb_species = GBT_next_species(gb_species) ) {
 
-	gb_name = GB_find(gb_species, "name", 0, down_level);
-	if (gb_name) {
-	    GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
-	    if (gb_ali) {
-		GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
-		if (gb_quality){
-		    read_sequence = GB_find(gb_ali,"data",0,down_level);
-		    if (read_sequence) {
-			GBDATA *gb_result1 = GB_search(gb_quality, "evaluation", GB_INT);
-			result = GB_read_int(gb_result1);
-			if (result < condition) {
-			    GB_write_flag(gb_species,!GB_read_flag(gb_species));
-			}
-			pass1_counter_notree++;
-			aw_status(double(globalcounter_notree)/pass1_counter_notree);
-		    }
-		}
-	    }
-	}
+// 	gb_name = GB_find(gb_species, "name", 0, down_level);
+//         seq_assert(gb_name);
 
+        GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
+        bool    marked = false;
+        if (gb_ali) {
+            GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
+            if (gb_quality){
+                read_sequence = GB_find(gb_ali,"data",0,down_level);
+                if (read_sequence) {
+                    GBDATA *gb_result1 = GB_search(gb_quality, "evaluation", GB_INT);
+                    result             = GB_read_int(gb_result1);
+
+                    if (result < condition) {
+                        marked = true;
+                    }
+                    pass1_counter_notree++;
+                    aw_status(double(globalcounter_notree)/pass1_counter_notree);
+                }
+            }
+        }
+
+        if (GB_read_flag(gb_species) != marked) {
+            GB_write_flag(gb_species, marked);
+        }
     }
     free(alignment_name);
 
