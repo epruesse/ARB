@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Tue Sep/16/2003 18:24 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Sep/17/2003 10:17 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -32,6 +32,7 @@
 #include "../global_defs.h"
 #define SKIP_SETDATABASESTATE
 #include "../common.h"
+#include "../mapping.h"
 
 #if defined(DEBUG)
 // #define VERBOSE
