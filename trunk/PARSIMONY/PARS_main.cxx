@@ -603,7 +603,6 @@ static void NT_bootstrap(AW_window *aw,AWT_canvas *ntw,AW_CL limit_only)
 {
     AW_POPUP_HELP(aw, (AW_CL)"pa_bootstrap.hlp");
     aw_openstatus("Calculating Bootstrap Limit");
-    //GB_edit("$(ARBHOME)/lib/help/pa_bootstrap.hlp");
     isits.abort_flag = AP_FALSE;
     if (limit_only){
         rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1, GB_FALSE,(AP_BL_MODE)(AP_BL_BOOTSTRAP_LIMIT));
