@@ -241,27 +241,48 @@ void     aw_attach_widget(Widget scrolledWindowText,AW_at *_at,int default_width
     if (!_at->to_position_exists){
         XtVaGetValues( scrolledWindowText, XmNheight, &height, XmNwidth, &width,NULL );
         if (default_width >0) width = default_width;
-        _at->to_position_x = _at->x_for_next_button + width;
+
+        switch (_at->correct_for_at_center) {
+            case 0:             // left justified
+                _at->to_position_x      = _at->x_for_next_button + width;
+                break;
+            case 1:             // centered
+                _at->to_position_x      = _at->x_for_next_button + width/2;
+                _at->x_for_next_button -= width/2;
+                break;
+            case 2:             // right justified
+                _at->to_position_x      = _at->x_for_next_button;
+                _at->x_for_next_button -= width;
+                break;
+        }
         _at->to_position_y = _at->y_for_next_button + height;
-        _at->attach_x = _at->attach_lx;
-        _at->attach_y = _at->attach_ly;
+        _at->attach_x      = _at->attach_lx;
+        _at->attach_y      = _at->attach_ly;
     }
 
+#define MIN_RIGHT_OFFSET  10
+#define MIN_BOTTOM_OFFSET 10
 
-    if (_at->attach_x){
+    if (_at->attach_x) {
+        int right_offset = _at->max_x_size - _at->to_position_x;
+        if (right_offset<MIN_RIGHT_OFFSET) {
+            right_offset    = MIN_RIGHT_OFFSET;
+            _at->max_x_size = _at->to_position_x+right_offset;
+        }
+
         XtVaSetValues(  scrolledWindowText,
-                        XmNrightAttachment,         XmATTACH_FORM,
-                        XmNrightOffset,         _at->max_x_size - _at->to_position_x,
+                        XmNrightAttachment,     XmATTACH_FORM,
+                        XmNrightOffset,         right_offset,
                         NULL );
     }else{
         XtVaSetValues(  scrolledWindowText,
-                        XmNrightAttachment,         XmATTACH_OPPOSITE_FORM,
+                        XmNrightAttachment,     XmATTACH_OPPOSITE_FORM,
                         XmNrightOffset,         -_at->to_position_x,
                         NULL );
     }
-    if (_at->attach_lx){
+    if (_at->attach_lx) {
         XtVaSetValues(  scrolledWindowText,
-                        XmNwidth,           _at->to_position_x - _at->x_for_next_button,
+                        XmNwidth,               _at->to_position_x - _at->x_for_next_button,
                         XmNleftAttachment,      XmATTACH_NONE,
                         NULL );
     }else{
@@ -271,20 +292,26 @@ void     aw_attach_widget(Widget scrolledWindowText,AW_at *_at,int default_width
                         NULL );
     }
 
-    if (_at->attach_y){
+    if (_at->attach_y) {
+        int bottom_offset = _at->max_y_size - _at->to_position_y;
+        if (bottom_offset<MIN_BOTTOM_OFFSET) {
+            bottom_offset   = MIN_BOTTOM_OFFSET;
+            _at->max_y_size = _at->to_position_y+bottom_offset;
+        }
+
         XtVaSetValues(  scrolledWindowText,
-                        XmNbottomAttachment,        XmATTACH_FORM,
-                        XmNbottomOffset,        _at->max_y_size - _at->to_position_y,
+                        XmNbottomAttachment,    XmATTACH_FORM,
+                        XmNbottomOffset,        bottom_offset,
                         NULL );
     }else{
         XtVaSetValues(  scrolledWindowText,
-                        XmNbottomAttachment,        XmATTACH_OPPOSITE_FORM,
-                        XmNbottomOffset,            - _at->to_position_y,
+                        XmNbottomAttachment,    XmATTACH_OPPOSITE_FORM,
+                        XmNbottomOffset,        - _at->to_position_y,
                         NULL );
     }
     if (_at->attach_ly){
         XtVaSetValues(  scrolledWindowText,
-                        XmNheight,          _at->to_position_y - _at->y_for_next_button,
+                        XmNheight,              _at->to_position_y - _at->y_for_next_button,
                         XmNtopAttachment,       XmATTACH_NONE,
                         NULL );
 
@@ -472,12 +499,13 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
             switch (_at->correct_for_at_center){
                 case 1: div = 2;        // middle centered
                 case 2:             // right justified
-                    XtVaSetValues( w, XmNx, (
-                                             (_at->x_for_next_button + x_correcting_for_label) -
-                                             (int)(width_of_last_widget-1)/div), NULL );
+                    XtVaSetValues( w,
+                                   XmNx, ((_at->x_for_next_button + x_correcting_for_label) - (int)(width_of_last_widget-1)/div),
+                                   NULL );
                     if ( label ) {
-                        XtVaSetValues( label, XmNx, ((_at->x_for_next_button) -
-                                                     ((width_of_last_widget-1)/div) ), NULL );
+                        XtVaSetValues( label,
+                                       XmNx, ((_at->x_for_next_button) - ((width_of_last_widget-1)/div) ),
+                                       NULL );
                     }
                     width_of_last_widget -= width_of_last_widget / div;
             }
