@@ -25,7 +25,7 @@ void awt_inserchar_event(AW_window *aws,AW_CL awcl_mode)
 	long	nchar;
 	char	*deletes;
 	int	mode = (int)awcl_mode;
-	
+
 	pos = root->awar(AWAR_CURSOR_POSITION)->read_int()-1;
 	nchar = root->awar("insertchar/nchar")->read_int() * mode;
 	deletes = root->awar("insertchar/characters")->read_string();
@@ -35,10 +35,14 @@ void awt_inserchar_event(AW_window *aws,AW_CL awcl_mode)
 
 	if (alignment) {
 		GB_ERROR error = GBT_insert_character(gb_main,alignment,pos,nchar,deletes);
+
 		if (error) {
 			GB_abort_transaction(gb_main);
 			aw_message(error);
 		}else{
+            //root->awar(AWAR_COLUMNS_CHANGED)->write_int(root->awar(AWAR_COLUMNS_CHANGED)->read_int()+1);
+            root->awar(AWAR_COLUMNS_CHANGED)->touch();
+
 			GBT_check_data(gb_main,0);
 			GB_commit_transaction(gb_main);
 		}
@@ -67,11 +71,11 @@ AW_window *create_insertchar_window(AW_root *root, AW_default def)
 
 	aws->callback( (AW_CB0)AW_POPDOWN);
 	aws->at("close");
-	aws->create_button("CLOSE","CLOSE","C");			   
+	aws->create_button("CLOSE","CLOSE","C");
 
 	aws->callback( AW_POPUP_HELP,(AW_CL)"insdelchar.hlp");
 	aws->at("help");
-	aws->create_button("HELP","HELP","H");			   
+	aws->create_button("HELP","HELP","H");
 
 	aws->label_length(27);
 
@@ -86,14 +90,14 @@ AW_window *create_insertchar_window(AW_root *root, AW_default def)
 	aws->at("characters");
 	aws->label("Delete Only (% = all)");
 	aws->create_input_field("insertchar/characters",6);
-	
+
 	aws->callback(awt_inserchar_event,(AW_CL)1);
 	aws->at("insert");
-	aws->create_button("INSERT","INSERT","I");			   
+	aws->create_button("INSERT","INSERT","I");
 
 	aws->callback(awt_inserchar_event,(AW_CL)-1);
 	aws->at("delete");
-	aws->create_button("DELETE","DELETE","D");			   
+	aws->create_button("DELETE","DELETE","D");
 
 	return (AW_window *)aws;
 }
