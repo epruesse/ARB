@@ -34,77 +34,27 @@ public HttpSubsystem(String name)
             hostUrl = new URL(name);
             host    = hostUrl.getHost();
             path    = hostUrl.getPath();
-            // System.out.println("path: " + path);
-
-            port = hostUrl.getPort();
-            // System.out.println("port: " + port);
+            port    = hostUrl.getPort();
 
             if ((port = hostUrl.getPort()) == -1) port = 80;
-
-            error = "";
-
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             Toolkit.AbortWithError("Incorrect URL '"+name+"' ("+e.getMessage()+")");
         }
 
-        //        try{
-        //        host = hostname;
-        textInput = new char[4096];
-        // check server available
-        try
-        {
+        // check whether server is available
+        try {
+            System.out.println("Connecting "+host+" ...");
             probeSocket = new Socket(host, port);
             probeSocket.close();
         }
-        catch (Exception e)
-        {
-            Toolkit.AbortWithServerProblem("Cannot connect to server '" + host + "'\n(reason: "+e.getMessage()+")");
+        catch (Exception e) {
+            Toolkit.AbortWithServerProblem("Cannot connect to server '"+host+"'");
         }
 
-//         try
-//         {
-
-            // adopt to local zipped version of the tree
-            //         String archiveName = new String("allProbes.jar");
-//             String treeName = new String("probetree.gz");
-//             File treeFile = new File(treeName);
-//             if (!treeFile.exists())
-//             {
-//                 System.out.println("No tree stored local -> downloading from server ..");
-//                 String error = downloadZippedTree(treeName);
-//                 if (error != null) {
-//                     Toolkit.AbortWithError(error);
-//                 }
-//             }
-            //            FileReader in = new FileReader(f);
-            //         JarFile archive = new JarFile(archiveName, false);
-            //         Manifest locMan = archive.getManifest();
-            //         System.out.println("Manifest: >>>" + locMan.getMainAttributes().getValue("LOCALVERSION") + "<<<");
-
-            //           InputStreamReader in = new InputStreamReader(archive.getInputStream(archive.getEntry("demo.newick")));
-
-
-
-            //             char[] buffer = new char[4096];
-            //             int len;
-            //             while((len = in.read(buffer)) != -1)
-            //                 {
-            //                     String s = new String(buffer,0,len);
-            //                     inputTree.append(s);
-            //                 }
-
-//         }
-//         catch (Exception e) {
-//             System.out.println("Couldn't find treefile or was not able to download");
-//             System.exit(1);
-//         }
-
-
-        //                System.out.println(cl.treeString.substring(0,40));
-
-
+        // init other members
+        textInput = new char[4096];
+        error     = "";
     }
 
 private String lastRequestError = null;
@@ -131,12 +81,8 @@ public String conductRequest(String url_rest)
 
             StringBuffer strb = new StringBuffer();
 
-            //             int bytes_read;
             int charsRead;
-            //             while((bytes_read = fromServer.read(byteBuffer)) != -1)
-            while((charsRead = charReader.read(textInput)) != -1)
-            {
-                //                 System.out.write(byteBuffer, 0, bytes_read);
+            while((charsRead = charReader.read(textInput)) != -1) {
                 PrintWriter testOutput = new PrintWriter(System.out);
                 testOutput.write(textInput, 0, charsRead);
                 strb.append(textInput, 0, charsRead);
@@ -149,18 +95,13 @@ public String conductRequest(String url_rest)
             toServer.close();
             probeSocket.close();
 
-            //probeSocket.close();
-            //            System.out.close();
             return strb.toString();
         }
         catch (Exception e)
         {
             lastRequestError = e.getMessage();
-            // System.err.println(e.getMessage());
             return null;
         }
-
-
     }
 
 public String retrieveNodeInformation(String nodePath)
@@ -178,7 +119,7 @@ public void retrieveVersionInformation()
         if (versionInfo == null) {
             Toolkit.AbortWithServerProblem("cannot get version info ("+getLastRequestError()+")");
         }
-        ServerAnswer parsedVersionInfo = new ServerAnswer(versionInfo);
+        ServerAnswer parsedVersionInfo = new ServerAnswer(versionInfo, true, true);
 
         neededClientVersion = parsedVersionInfo.getValue("client_version");
         neededTreeVersion   = parsedVersionInfo.getValue("tree_version");
@@ -215,9 +156,7 @@ public String downloadZippedTree(String fileName)
                 outstream.write(byteBuffer, 0, bytesRead);
             }
 
-            // maybe not necessary but seems safer
-            fromServer.close();
-
+            fromServer.close(); // maybe not necessary but seems safer
             toServer.close();
             probeSocket.close();
             outstream.close();
