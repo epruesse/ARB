@@ -9,7 +9,9 @@
 // see GEN_local.hxx for local stuff
 // --------------------------------------------------------------------------------
 
-#define GENOM_DB_TYPE  "genom_db" // main flag (true=genom db, false/missing=normal db)
+#define GENOM_DB_TYPE "genom_db" // main flag (true=genom db, false/missing=normal db)
+
+bool GEN_is_genom_db(GBDATA *gb_main, int default_value = -1);
 
 // --------------------------------------------------------------------------------
 // awars:
@@ -62,6 +64,7 @@ const char *GEN_origin_organism(GBDATA *gb_pseudo);
 const char *GEN_origin_gene(GBDATA *gb_pseudo);
 GBDATA     *GEN_find_origin_organism(GBDATA *gb_pseudo);
 GBDATA     *GEN_find_origin_gene(GBDATA *gb_pseudo);
+GBDATA     *GEN_find_pseudo_species(GBDATA *gb_main, const char *organism_name, const char *gene_name);
 
 GB_ERROR GEN_organism_not_found(GBDATA *gb_pseudo);
 

@@ -13,13 +13,18 @@ TITLE		Primer Design
 
 OCCURRENCE	ARB_NT/ETC/Primer Design
 
-DESCRIPTION     Searches for pairs
+DESCRIPTION     Searches for primer pairs
                 within the given physical and biological ranges
 
-                1. select a species (ARB_NT <INFO button>)
-                2. choose ARB_NT/Etc/Primer Design...
-                3. specify searchparameters
-                4. mark a result, it will be displayed in ARB_EDIT
+                       1. select a species (ARB_NT <INFO button>)
+                       2. choose ARB_NT/Etc/Primer Design...
+                       3. specify searchparameters
+                       4. mark a result, it will be displayed in ARB_EDIT
+
+                INIT FROM SPECIES/GENE
+
+                     This initializes the values left and right position and
+                     the primer distance with (hopefully) reasonable defaults.
 
 NOTES		written by Wolfram Foerster 2001
 

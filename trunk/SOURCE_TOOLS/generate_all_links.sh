@@ -76,6 +76,7 @@ ln -s ../AWT/awt.hxx INCLUDE/awt.hxx
 ln -s ../AWT/awt_asciiprint.hxx INCLUDE/awt_asciiprint.hxx
 ln -s ../AWT/awt_canvas.hxx INCLUDE/awt_canvas.hxx
 ln -s ../AWT/awt_codon_table.hxx INCLUDE/awt_codon_table.hxx
+ln -s ../AWT/awt_config_manager.hxx INCLUDE/awt_config_manager.hxx
 ln -s ../AWT/awt_csp.hxx INCLUDE/awt_csp.hxx
 ln -s ../AWT/awt_dtree.hxx INCLUDE/awt_dtree.hxx
 ln -s ../AWT/awt_hotkeys.hxx INCLUDE/awt_hotkeys.hxx
