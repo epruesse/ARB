@@ -3,7 +3,7 @@
 //    File      : path_code.h                                            //
 //    Purpose   : node-path en/decoding                                  //
 //    Note      : include only once in each executable!!!                //
-//    Time-stamp: <Tue Oct/05/2004 19:30 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Oct/07/2004 16:00 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2003          //
@@ -21,6 +21,10 @@
 #include <arb_assert.h>
 #endif
 #define pc_assert(cond) arb_assert(cond)
+
+#ifndef CCTYPE
+#include <cctype>
+#endif
 
 #define MAXNODEPATH 1024
 
