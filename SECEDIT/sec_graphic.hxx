@@ -147,16 +147,17 @@ public:
     GB_ERROR write_data_to_db(const char *data, const char *x_string);
 
     int check_update(GBDATA *gb_main);  // reload tree if needed
-//  void update(GBDATA *gb_main);
+    //  void update(GBDATA *gb_main);
 
 };
 
+#warning replace SEC_font_info by AW_font_group
 class SEC_font_info
 {
     int width,  // maximum letter sizes
-    height,
-    ascent,
-    descent;
+        height,
+        ascent,
+        descent;
 
     static int max_width;
     static int max_height;
@@ -169,18 +170,18 @@ public:
 
     static void reset_maximas()
     {
-    max_width = 0;
-    max_ascent = 0;
-    max_height = 0;
-    max_descent = 0;
+        max_width = 0;
+        max_ascent = 0;
+        max_height = 0;
+        max_descent = 0;
     }
 
-    void update(AW_font_information *font_info)
+    void update(const AW_font_information *font_info)
     {
-    width = font_info->max_letter_width;        if (width>max_width) max_width = width;
-    height = font_info->max_letter_height;      if (height>max_height) max_height = height;
-    ascent = font_info->max_letter_ascent;      if (ascent>max_ascent) max_ascent = ascent;
-    descent = font_info->max_letter_descent;    if (descent>max_descent) max_descent = descent;
+        width = font_info->max_letter_width;        if (width>max_width) max_width = width;
+        height = font_info->max_letter_height;      if (height>max_height) max_height = height;
+        ascent = font_info->max_letter_ascent;      if (ascent>max_ascent) max_ascent = ascent;
+        descent = font_info->max_letter_descent;    if (descent>max_descent) max_descent = descent;
     }
 
     int get_width() const { return width; } // this font

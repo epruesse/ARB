@@ -2001,11 +2001,38 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
             //             offset = scale*0.4;
 
 
-            AW_font_information *fontinfo    = disp_device->get_font_information(at->gr.gc,'A');
-            double               text_ascent = fontinfo->max_letter_ascent/ disp_device->get_scale() ;
+            const AW_font_information *fontinfo = disp_device->get_font_information(at->gr.gc,'A');
 
-            yoffset = text_ascent*.5;
-            xoffset = yoffset;
+#if defined(DEBUG) && 0            
+            static bool dumped = false;
+            if (!dumped) {
+                for (int c = 32; c <= 255; c++) {
+                    AW_font_information *fi = disp_device->get_font_information(at->gr.gc,(char)c);
+                    printf("fontinfo: %3i '%c' ascent=%2i descent=%2i width=%2i\n",
+                           c, (char)c,
+                           fi->this_letter_ascent,
+                           fi->this_letter_descent,
+                           fi->this_letter_width
+                           );
+                    if (c == 255) {
+                        printf("fontinfo (maximas): ascent=%2i descent=%2i width=%2i\n",
+                               fi->max_letter_ascent,
+                               fi->max_letter_descent,
+                               fi->max_letter_width
+                               );
+                        
+                    }
+                }
+
+                dumped = true;
+            }
+#endif // DEBUG
+
+
+            double unscale = 1.0/disp_device->get_scale();
+
+            yoffset = fontinfo->max_letter_ascent * 0.5 * unscale;
+            xoffset = ((fontinfo->max_letter_width * 0.5) + NT_BOX_WIDTH) * unscale;
 
             disp_device->text(at->gr.gc,data ,
                               (AW_pos) x_son+xoffset,(AW_pos) ny0+yoffset,
@@ -2047,8 +2074,8 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
 
         // double add_y_offset = scale*0.3;
 
-        AW_font_information *fontinfo    = disp_device->get_font_information(at->gr.gc,'A');
-        double               text_ascent = fontinfo->max_letter_ascent/ disp_device->get_scale() ;
+        const AW_font_information *fontinfo    = disp_device->get_font_information(at->gr.gc,'A');
+        double                     text_ascent = fontinfo->max_letter_ascent/ disp_device->get_scale() ;
 
         yoffset = (ny1-ny0+text_ascent)*.5;
         xoffset = text_ascent*.5;
@@ -2123,12 +2150,14 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
 
 void AWT_graphic_tree::scale_text_koordinaten(AW_device *device, int gc,double& x,double& y,double orientation,int flag)
 {
-    AW_font_information *fontinfo = device->get_font_information(gc,'A');
-    double  text_height = fontinfo->max_letter_height/ disp_device->get_scale() ;
-    double dist = fontinfo->max_letter_height/ disp_device->get_scale();
+    const AW_font_information *fontinfo    = device->get_font_information(gc,'A');
+    double                     text_height = fontinfo->max_letter_height/ disp_device->get_scale() ;
+    double                     dist        = fontinfo->max_letter_height/ disp_device->get_scale();
+    
     if (flag==1) {
         dist += 1;
-    } else {
+    }
+    else {
         x += cos(orientation) * dist;
         y += sin(orientation) * dist + 0.3*text_height;
     }
@@ -2469,8 +2498,8 @@ void AWT_graphic_tree::show(AW_device *device)  {
 
     disp_device = device;
 
-    AW_font_information *fontinfo = disp_device->get_font_information(AWT_GC_SELECTED, 0);
-    scale                         = fontinfo->max_letter_height/ device->get_scale();
+    const AW_font_information *fontinfo = disp_device->get_font_information(AWT_GC_SELECTED, 0);    
+    scale = fontinfo->max_letter_height/ device->get_scale();
 
     make_node_text_init(gb_main);
 

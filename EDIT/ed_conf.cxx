@@ -75,18 +75,17 @@ void aed_left_vier( class AED_window *aedw, AED_area_entry *area_entry, char *te
 
 
 void show_config_window_draw_area(AW_device *device, AED_window *aedw, AW_pos slider_pos_horizontal, AW_pos slider_pos_vertical, AW_pos picture_l, int top_indent_of_vertical_scrollbar ) {
-    char text[100];
-    AW_pos y;
-    AW_pos right_offset = 200;
+    char           text[100];
+    AW_pos         y;
+    AW_pos         right_offset = 200;
     AED_left_side *current_entry_of_dlist;
-    AW_rectangle screen;
-    AW_pos width, height;
-    AW_font_information *font_information;
-    int counter = 1;
-    int gc1 = 0;
-    int gc2 = 1;
+    AW_rectangle   screen;
+    AW_pos         width, height;
+    int            counter      = 1;
+    int            gc1          = 0;
+    int            gc2          = 1;
 
-    font_information = device->get_font_information(gc1, 'A');
+    const AW_font_information *font_information = device->get_font_information(gc1, 'A');
     device->get_area_size( &screen );
 
     device->shift_x( 0 );

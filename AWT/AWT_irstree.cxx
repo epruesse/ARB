@@ -268,7 +268,7 @@ void AWT_graphic_tree::show_irs(AP_tree *at,AW_device *device, int height){
     device->push_clip_scale();
     int x;
     int y;
-    AW_font_information *font_info = device->get_font_information(AWT_GC_SELECTED,0);
+    const AW_font_information *font_info = device->get_font_information(AWT_GC_SELECTED,0);
     device->rtransform(0,0,x,y); // calculate real world coordinates of left/upper screen border
     int clipped_l,clipped_t;
     int clipped_r,clipped_b;

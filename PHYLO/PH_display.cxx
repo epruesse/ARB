@@ -75,7 +75,7 @@ void AP_display::initialize (display_type dpyt)
         aw_message("could not get device !!");
         return;
     }
-    AW_font_information *aw_fi=device->get_font_information(0,0);
+    const AW_font_information *aw_fi=device->get_font_information(0,0);
     switch(display_what)
     {
         case NONE: return;
@@ -141,7 +141,7 @@ void AP_display::resized(void)
             break;
 
         case matrix_dpy: {
-            AW_font_information *aw_fi = device->get_font_information(0,0);
+            const AW_font_information *aw_fi = device->get_font_information(0,0);
 
             horiz_paint_size = (squ.r-aw_fi->max_letter_width-off_dx)/cell_width;
             vert_paint_size  = (squ.b-off_dy)/cell_height;
@@ -191,7 +191,7 @@ void AP_display::display(void)   // draw area
     char buf[50],cbuf[2];
     long x,y,xpos,ypos;
     AW_window *main_win = PH_used_windows::windowList->phylo_main_window;
-    AW_font_information *aw_fi=0;
+    // AW_font_information *aw_fi=0;
     long minhom;
     long maxhom;
     long startcol,stopcol;
@@ -278,7 +278,7 @@ void AP_display::display(void)   // draw area
             }
             xpos=0;
             cbuf[0]='\0'; cbuf[1]='\0';
-            aw_fi=device->get_font_information(0,0);
+            const AW_font_information *aw_fi=device->get_font_information(0,0);
             minhom = main_win->get_root()->awar("phyl/filter/minhom")->read_int();
             maxhom = main_win->get_root()->awar("phyl/filter/maxhom")->read_int();
             startcol = main_win->get_root()->awar("phyl/filter/startcol")->read_int();
@@ -448,7 +448,7 @@ AP_display_status::AP_display_status(AW_device *awd)
     device=awd;
 
     if(!device) return;
-    AW_font_information *aw_fi=device->get_font_information(0,0);
+    const AW_font_information *aw_fi=device->get_font_information(0,0);
     font_width=aw_fi->max_letter_width;
     font_height=aw_fi->max_letter_height;
     device->reset();
