@@ -9,7 +9,7 @@ private String tree;
 private String version;
 private String error;
 
-public TreeReader(String treefile)
+public TreeReader(String treefile) throws Exception 
     {
         error                  = null;
         StringBuffer inputTree = new StringBuffer();
@@ -96,14 +96,14 @@ public String getError()
         return error;
     }
 
-public String getTreeString()
+public String getTreeString() throws Exception 
     {
         Toolkit.ExpectNoError(error);
         return tree;
     }
 
 
-public String getVersionString()
+public String getVersionString() throws Exception 
     {
         Toolkit.ExpectNoError(error);
         return version;

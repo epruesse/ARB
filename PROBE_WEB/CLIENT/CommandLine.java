@@ -12,18 +12,10 @@ private HashMap hm;
 private HashMap knownOptions;
 
 
-// public static void main(String[] args)
-//     {
-//         CommandLine lc = new CommandLine(args);
-//         lc.printArgs();
-//         System.out.println("Test: " + lc.getOptionValue("error"));
-
-//    }
 
 
 
-
-public CommandLine(String[] arguments, HashMap known)
+public CommandLine(String[] arguments, HashMap known) throws Exception 
     {
         hm            = new HashMap();
         knownOptions  = known;
@@ -60,7 +52,7 @@ public CommandLine(String[] arguments, HashMap known)
         }
     }
 
-public void showHelpAndAbortWithError(String error)
+public void showHelpAndAbortWithError(String error) throws Exception 
     {
         showHelp();
         Toolkit.AbortWithError(error);
@@ -79,14 +71,14 @@ public void showHelp()
         }
     }
 
-private void checkLegalOption(String optionName)
+private void checkLegalOption(String optionName) throws Exception 
     {
         if (!knownOptions.containsKey(optionName)) {
             showHelpAndAbortWithError("Unknown option '"+optionName+"'");
         }
     }
 
-public boolean getOption(String optionName)
+public boolean getOption(String optionName) throws Exception 
     {
         checkLegalOption(optionName);
         if (hm.containsKey(optionName)) {
@@ -98,7 +90,7 @@ public boolean getOption(String optionName)
     }
 
 
-public String getOptionValue(String optionName)
+public String getOptionValue(String optionName) throws Exception 
     {
         checkLegalOption(optionName);
         return (String) hm.get(optionName);

@@ -42,7 +42,7 @@ private void rebuildList()
         }
     }
 
-public void setContents(ServerAnswer parsed)
+public void setContents(ServerAnswer parsed) throws Exception 
     {
         if (parsed.hasError()) {
             error = parsed.getError();

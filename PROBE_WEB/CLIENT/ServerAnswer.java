@@ -44,7 +44,7 @@ private String removeTags(String str)
         return res;
     }
 
-public ServerAnswer(String answer, boolean needResult, boolean beNoisy)
+public ServerAnswer(String answer, boolean needResult, boolean beNoisy) throws Exception 
     {
         map                  = new HashMap();
         error_message        = null;
@@ -118,7 +118,7 @@ public boolean hasKey(String key)
         return !hasError() && map.containsKey(key);
     }
 
-public String getValue(String key)
+public String getValue(String key) throws Exception 
     {
         if (!hasKey(key)) {
             Toolkit.InternalError("Unknown key '"+key+"' requested");
@@ -139,7 +139,7 @@ public String getError()
         return error_message;
     }
 
-public void handleError()
+public void handleError() throws Exception 
     {
         if (hasError()) {
             if (is_server_problem) {

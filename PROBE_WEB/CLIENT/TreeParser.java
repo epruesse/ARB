@@ -149,7 +149,7 @@ private void parseProbeInfo(TreeNode node, ServerAnswer parsed_info) throws Exce
     node.setProbeInfo(exactMatches, min_non_group_hits, max_coverage);
 }
 
-private void handleInnerNodeInformation(TreeNode node, String nodeInfo) {
+private void handleInnerNodeInformation(TreeNode node, String nodeInfo) throws Exception {
     String error = null;
     try {
         String decodedNodeInfo = decodedNodeInfo(nodeInfo);
@@ -176,7 +176,7 @@ private void handleInnerNodeInformation(TreeNode node, String nodeInfo) {
     }
 }
 
-private void handleLeafNodeInformation(TreeNode node, String nodeInfo) {
+private void handleLeafNodeInformation(TreeNode node, String nodeInfo) throws Exception{
     String error = null;
 
     try {
@@ -287,7 +287,7 @@ private TreeNode parseNode() throws Exception {
 }
 
     // make abstract later on to support different tree formats in derived classes
-private TreeNode generateTreeNodes() {
+private TreeNode generateTreeNodes() throws Exception {
     parse_position     = 0;
     parse_max_position = treeString.length();
     parse_error        = null;
