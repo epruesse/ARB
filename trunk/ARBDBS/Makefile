@@ -22,10 +22,10 @@ links:
 adGene.o: adGene.h arbdb.h $(ARBHOME)/INCLUDE/arb_assert.h
 adGene.o:  ./ad_prot.h arbdbt.h ./ad_t_prot.h
 adReference.o:   arbdb.h
-adReference.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h adlocal.h
-adReference.o: adtune.h adlmacros.h 
+adReference.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h
+adReference.o: adlocal.h adtune.h adlmacros.h 
 adRevCompl.o:   arbdb.h
-adRevCompl.o: $(ARBHOME)/INCLUDE/arb_assert.h 
+adRevCompl.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adRevCompl.o:  ./ad_prot.h arbdbt.h
 adRevCompl.o: ./ad_t_prot.h
 adTest.o:   adlocal.h adtune.h
@@ -56,27 +56,27 @@ adperl.o:  arbdb.h
 adperl.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h
 adquery.o:  adlocal.h adtune.h adlmacros.h
 adseqcompr.o:  adlocal.h adtune.h adlmacros.h arbdb.h
-adseqcompr.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h arbdbt.h
-adseqcompr.o: ./ad_t_prot.h adseqcompr.h
+adseqcompr.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h
+adseqcompr.o: arbdbt.h ./ad_t_prot.h adseqcompr.h
 adsocket.o:   adlocal.h
 adsocket.o: adtune.h adlmacros.h 
 adsort.o:   arbdb.h
-adsort.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h arbdbt.h
-adsort.o: ./ad_t_prot.h
+adsort.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h
+adsort.o: arbdbt.h ./ad_t_prot.h
 adstring.o:  adlocal.h adtune.h adlmacros.h arbdbt.h
 adstring.o: ./ad_t_prot.h  
 adsystem.o:  adlocal.h adtune.h adlmacros.h
 adsystem.o: arbdbt.h ./ad_t_prot.h
 adtables.o:  adlocal.h adtune.h adlmacros.h arbdb.h
-adtables.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h arbdbt.h
-adtables.o: ./ad_t_prot.h
+adtables.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h
+adtables.o: arbdbt.h ./ad_t_prot.h
 adtools.o:  adlocal.h adtune.h adlmacros.h arbdb.h
-adtools.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h arbdbt.h
-adtools.o: ./ad_t_prot.h
+adtools.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h
+adtools.o: arbdbt.h ./ad_t_prot.h
 adtune.o: adtune.h
 arbdb.o:   adlocal.h adtune.h
-arbdb.o: adlmacros.h arbdb.h $(ARBHOME)/INCLUDE/arb_assert.h
-arbdb.o: ./ad_prot.h
+arbdb.o: adlmacros.h arbdb.h
+arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h
 arbdbpp.o:  arbdb.h
-arbdbpp.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h arbdbt.h
-arbdbpp.o: ./ad_t_prot.h
+arbdbpp.o: $(ARBHOME)/INCLUDE/arb_assert.h ./ad_prot.h
+arbdbpp.o: arbdbt.h ./ad_t_prot.h

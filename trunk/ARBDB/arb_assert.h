@@ -2,7 +2,7 @@
 
     File      : arb_assert.h
     Purpose   : Global assert macro
-    Time-stamp: <Fri Aug/23/2002 23:07 MET Coder@ReallySoft.de>
+    Time-stamp: <Fri Aug/23/2002 23:21 MET Coder@ReallySoft.de>
 
 
   Coded by Ralf Westram (coder@reallysoft.de) in August 2002
@@ -48,11 +48,11 @@
 #else
 
 /* no assert (recommended for final version!) */
-# define ASSERT_NONE
+/* # define ASSERT_NONE */
 /* assert as error in final version (allows basic debugging of NDEBUG version) */
 /* # define ASSERT_ERROR */
 /* assert as print in final version (allows basic debugging of NDEBUG version) */
-/* # define ASSERT_PRINT */
+# define ASSERT_PRINT
 
 #endif
 
@@ -67,11 +67,11 @@
 #endif
 
 #ifdef ASSERT_ERROR
-# define arb_assert(bed) do { if (!(bed)) { printf("assertion '%s' failed in %s #%i\n", #bed, __FILE__, __LINE__); exit(EXIT_FAILURE); } } while (0)
+# define arb_assert(bed) do { if (!(bed)) { fprintf(stderr, "assertion '%s' failed in %s #%i\n", #bed, __FILE__, __LINE__); fflush(stderr); exit(EXIT_FAILURE); } } while (0)
 #endif
 
 #ifdef ASSERT_PRINT
-# define arb_assert(bed) do { printf("at %s #%i\n", __FILE__, __LINE__); if (!(bed)) { printf("assertion '%s' failed!\n", #bed); } } while (0)
+# define arb_assert(bed) do { fprintf(stderr, "at %s #%i\n", __FILE__, __LINE__); if (!(bed)) { fprintf(stderr, "assertion '%s' failed!\n", #bed); } fflush(stderr); } while (0)
 #endif
 
 #ifdef ASSERT_NONE

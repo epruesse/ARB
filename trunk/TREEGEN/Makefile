@@ -32,6 +32,6 @@ base.o: base.h
 defines.o: defines.h
 frand.o: frand.h
 readcfg.o: readcfg.h
-rns.o: rns.h
+rns.o: rns.h spreadin.h  
 simcfg.o: simcfg.h
 spreadin.o: spreadin.h

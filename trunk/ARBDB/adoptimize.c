@@ -610,9 +610,9 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
     u_str  buffer;
     cu_str unknown          = source; /* start of uncompressable bytes */
     u_str  lastUncompressed = NULL; /* ptr to start of last block of uncompressable bytes (in dest) */
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     long   org_size         = size;
-#endif /* DEBUG */
+#endif /* ASSERTION_USED */
 
     ad_assert(size>0); /* compression of zero-length data fails! */
 
@@ -760,14 +760,15 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
 
     *msize = dest-buffer;
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     {
         char *test = gb_uncompress_by_dictionary_internal(dict, (GB_CSTR)buffer+1, org_size + GB_COMPRESSION_TAGS_SIZE_MAX, GB_TRUE);
 
         ad_assert(memcmp(test, s_source, org_size) == 0);
     }
-#endif /* DEBUG */
+#endif /* ASSERTION_USED */
 
+    ad_assert(1);
     return (char*)buffer;
 }
 

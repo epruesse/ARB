@@ -16,7 +16,7 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-SEC_graphic.o:  $(ARBHOME)/INCLUDE/arbdb.h
+SEC_graphic.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -28,9 +28,10 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/awt.hxx
-SEC_graphic.o: $(ARBHOME)/INCLUDE/BI_helix.hxx sec_graphic.hxx
+SEC_graphic.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+SEC_graphic.o: sec_graphic.hxx  
 SEC_graphic.o:  secedit.hxx
-SEC_main.o:  $(ARBHOME)/INCLUDE/arbdb.h
+SEC_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -55,14 +56,14 @@ SEC_read.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_read.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_read.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-SEC_read.o: $(ARBHOME)/INCLUDE/aw_device.hxx 
-SEC_read.o:  secedit.hxx
+SEC_read.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_read.o:   secedit.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_split.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_split.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_device.hxx secedit.hxx
-SEC_paint.o:  $(ARBHOME)/INCLUDE/arbdb.h
+SEC_paint.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_root.hxx

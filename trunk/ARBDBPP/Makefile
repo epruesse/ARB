@@ -11,7 +11,7 @@ depend:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 adtsequence.o: $(ARBHOME)/INCLUDE/arbdb.h
-adtsequence.o: $(ARBHOME)/INCLUDE/arb_assert.h 
+adtsequence.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adtsequence.o: $(ARBHOME)/INCLUDE/ad_prot.h arbdb++.hxx
 adtsequence.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx adtools.hxx
 adt_edit.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -20,9 +20,9 @@ adt_edit.o: $(ARBHOME)/INCLUDE/ad_prot.h arbdb++.hxx
 adt_edit.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx adtools.hxx
 adtali.o: $(ARBHOME)/INCLUDE/arbdb.h
 adtali.o: $(ARBHOME)/INCLUDE/arb_assert.h
-adtali.o: $(ARBHOME)/INCLUDE/ad_prot.h adtools.hxx arbdb++.hxx
-adtali.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-adextended.o:  $(ARBHOME)/INCLUDE/arbdb.h
+adtali.o: $(ARBHOME)/INCLUDE/ad_prot.h adtools.hxx
+adtali.o: arbdb++.hxx $(ARBHOME)/INCLUDE/aw_keysym.hxx
+adextended.o: $(ARBHOME)/INCLUDE/arbdb.h
 adextended.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adextended.o: $(ARBHOME)/INCLUDE/ad_prot.h
 adextended.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -34,7 +34,7 @@ adseq.o: $(ARBHOME)/INCLUDE/ad_prot.h
 adseq.o: $(ARBHOME)/INCLUDE/arbdbt.h
 adseq.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 adseq.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx arbdb++.hxx
-adspecies.o:  $(ARBHOME)/INCLUDE/arbdb.h
+adspecies.o: $(ARBHOME)/INCLUDE/arbdb.h
 adspecies.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adspecies.o: $(ARBHOME)/INCLUDE/ad_prot.h
 adspecies.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -52,7 +52,7 @@ adali.o: $(ARBHOME)/INCLUDE/ad_prot.h
 adali.o: $(ARBHOME)/INCLUDE/arbdbt.h
 adali.o: $(ARBHOME)/INCLUDE/ad_t_prot.h arbdb++.hxx
 adali.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-liste.o:  $(ARBHOME)/INCLUDE/arbdb.h
+liste.o: $(ARBHOME)/INCLUDE/arbdb.h
 liste.o: $(ARBHOME)/INCLUDE/arb_assert.h
 liste.o: $(ARBHOME)/INCLUDE/ad_prot.h arbdb++.hxx
 liste.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

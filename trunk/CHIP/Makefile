@@ -27,7 +27,7 @@ clean:
 
 # DO NOT DELETE
 
-probe_functions.o:  $(ARBHOME)/INCLUDE/arbdb.h
+probe_functions.o: $(ARBHOME)/INCLUDE/arbdb.h
 probe_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_functions.o: $(ARBHOME)/INCLUDE/ad_prot.h
 probe_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx

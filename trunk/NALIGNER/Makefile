@@ -40,8 +40,9 @@ ali_prealigner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-ali_prealigner.o: $(ARBHOME)/INCLUDE/servercntrl.h ali_pt.hxx
-ali_prealigner.o: ali_tlist.hxx $(ARBHOME)/INCLUDE/client.h
+ali_prealigner.o: $(ARBHOME)/INCLUDE/servercntrl.h
+ali_prealigner.o: ali_pt.hxx ali_tlist.hxx
+ali_prealigner.o: $(ARBHOME)/INCLUDE/client.h
 ali_prealigner.o: ali_pathmap.hxx ali_tarray.hxx ali_tstack.hxx
 ali_prealigner.o: ali_solution.hxx ali_aligner.hxx
 ali_aligner.o: ali_aligner.hxx ali_solution.hxx ali_profile.hxx
@@ -59,7 +60,8 @@ ali_aligner.o: $(ARBHOME)/INCLUDE/servercntrl.h ali_pt.hxx
 ali_aligner.o: ali_tlist.hxx $(ARBHOME)/INCLUDE/client.h
 ali_aligner.o: ali_tstack.hxx ali_tarray.hxx ali_pathmap.hxx
 ali_arbdb.o:   ali_arbdb.hxx
-ali_arbdb.o: ali_other_stuff.hxx $(ARBHOME)/INCLUDE/PT_com.h
+ali_arbdb.o: ali_other_stuff.hxx
+ali_arbdb.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/server.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -67,14 +69,15 @@ ali_arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-ali_arbdb.o: $(ARBHOME)/INCLUDE/servercntrl.h ali_sequence.hxx
-ali_arbdb.o: ali_misc.hxx  
+ali_arbdb.o: $(ARBHOME)/INCLUDE/servercntrl.h
+ali_arbdb.o: ali_sequence.hxx ali_misc.hxx 
 ali_sequence.o:  ali_misc.hxx 
 ali_sequence.o:  ali_sequence.hxx
 ali_solution.o: ali_misc.hxx  
 ali_solution.o:  ali_solution.hxx ali_profile.hxx
 ali_solution.o: ali_sequence.hxx  ali_arbdb.hxx
-ali_solution.o: ali_other_stuff.hxx $(ARBHOME)/INCLUDE/PT_com.h
+ali_solution.o: ali_other_stuff.hxx
+ali_solution.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_solution.o: $(ARBHOME)/INCLUDE/server.h
 ali_solution.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -97,7 +100,8 @@ ali_pt.o: $(ARBHOME)/INCLUDE/servercntrl.h ali_tlist.hxx
 ali_pt.o: ali_sequence.hxx $(ARBHOME)/INCLUDE/client.h
 ali_global.o:  ali_misc.hxx 
 ali_global.o:  ali_global.hxx ali_arbdb.hxx
-ali_global.o: ali_other_stuff.hxx $(ARBHOME)/INCLUDE/PT_com.h
+ali_global.o: ali_other_stuff.hxx
+ali_global.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_global.o: $(ARBHOME)/INCLUDE/server.h
 ali_global.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_global.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -105,10 +109,11 @@ ali_global.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_global.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_global.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ali_global.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-ali_global.o: $(ARBHOME)/INCLUDE/servercntrl.h ali_sequence.hxx
-ali_global.o: ali_pt.hxx ali_tlist.hxx $(ARBHOME)/INCLUDE/client.h
-ali_global.o: ali_profile.hxx ali_prealigner.hxx ali_pathmap.hxx
-ali_global.o: ali_tarray.hxx ali_tstack.hxx ali_solution.hxx
+ali_global.o: $(ARBHOME)/INCLUDE/servercntrl.h
+ali_global.o: ali_sequence.hxx ali_pt.hxx ali_tlist.hxx
+ali_global.o: $(ARBHOME)/INCLUDE/client.h ali_profile.hxx
+ali_global.o: ali_prealigner.hxx ali_pathmap.hxx ali_tarray.hxx
+ali_global.o: ali_tstack.hxx ali_solution.hxx
 ali_profile.o:  ali_misc.hxx 
 ali_profile.o:  ali_profile.hxx ali_sequence.hxx
 ali_profile.o:  ali_arbdb.hxx ali_other_stuff.hxx
@@ -136,12 +141,12 @@ ali_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ali_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-ali_main.o: $(ARBHOME)/INCLUDE/servercntrl.h ali_sequence.hxx
-ali_main.o:  ali_pt.hxx ali_tlist.hxx
+ali_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
+ali_main.o: ali_sequence.hxx  ali_pt.hxx ali_tlist.hxx
 ali_main.o: $(ARBHOME)/INCLUDE/client.h ali_profile.hxx
 ali_main.o: ali_prealigner.hxx ali_pathmap.hxx ali_tarray.hxx ali_tstack.hxx
 ali_main.o: ali_solution.hxx ali_aligner.hxx
-BI_helix.o:  $(ARBHOME)/INCLUDE/arbdb.h
+BI_helix.o: $(ARBHOME)/INCLUDE/arbdb.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 BI_helix.o: $(ARBHOME)/INCLUDE/ad_prot.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arbdbt.h

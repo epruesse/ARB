@@ -21,12 +21,12 @@ AC_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AC_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AC_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AC_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h ac.hxx
-AC_tree.o:  $(ARBHOME)/INCLUDE/arbdb.h
+AC_tree.o: $(ARBHOME)/INCLUDE/arbdb.h
 AC_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AC_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AC_tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AC_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h ac.hxx
-AC_sequence.o:  $(ARBHOME)/INCLUDE/arbdb.h
+AC_sequence.o: $(ARBHOME)/INCLUDE/arbdb.h
 AC_sequence.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AC_sequence.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AC_sequence.o: $(ARBHOME)/INCLUDE/arbdbt.h

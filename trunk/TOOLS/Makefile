@@ -35,23 +35,28 @@ depend:
 
 # DO NOT DELETE
 
-$(ARBHOME)/bin/arb_a2ps:  
-$(ARBHOME)/bin/arb_a2ps: 
-$(ARBHOME)/bin/arb_a2ps: 
-$(ARBHOME)/bin/arb_a2ps: 
-$(ARBHOME)/bin/arb_a2ps: 
-$(ARBHOME)/bin/arb_a2ps:  
 $(ARBHOME)/bin/arb_a2ps: 
 $(ARBHOME)/bin/arb_a2ps: 
 $(ARBHOME)/bin/arb_a2ps: 
 $(ARBHOME)/bin/arb_a2ps: 
 $(ARBHOME)/bin/arb_a2ps: 
-$(ARBHOME)/bin/arb_a2ps:  
 $(ARBHOME)/bin/arb_a2ps: 
 $(ARBHOME)/bin/arb_a2ps: 
-$(ARBHOME)/bin/arb_a2ps:  
 $(ARBHOME)/bin/arb_a2ps: 
-$(ARBHOME)/bin/arb_a2ps:  
+$(ARBHOME)/bin/arb_a2ps: 
+$(ARBHOME)/bin/arb_a2ps: 
+$(ARBHOME)/bin/arb_a2ps: 
+$(ARBHOME)/bin/arb_a2ps: 
+$(ARBHOME)/bin/arb_a2ps: 
+$(ARBHOME)/bin/arb_a2ps: 
+$(ARBHOME)/bin/arb_a2ps: 
+$(ARBHOME)/bin/arb_a2ps: 
+$(ARBHOME)/bin/arb_a2ps: 
+$(ARBHOME)/bin/arb_a2ps: 
+$(ARBHOME)/bin/arb_a2ps: 
+$(ARBHOME)/bin/arb_a2ps: 
+$(ARBHOME)/bin/arb_a2ps: 
+$(ARBHOME)/bin/arb_a2ps: 
 $(ARBHOME)/bin/arb_a2ps: 
 $(ARBHOME)/bin/arb_a2ps: 
 $(ARBHOME)/bin/arb_a2ps: 
@@ -68,7 +73,8 @@ $(ARBHOME)/bin/arb_primer:
 $(ARBHOME)/bin/arb_primer: 
 $(ARBHOME)/bin/arb_primer: 
 $(ARBHOME)/bin/arb_primer: 
-$(ARBHOME)/bin/arb_primer:  
+$(ARBHOME)/bin/arb_primer: 
+$(ARBHOME)/bin/arb_primer: 
 $(ARBHOME)/bin/arb_primer: $(ARBHOME)/INCLUDE/arbdb.h
 $(ARBHOME)/bin/arb_primer: $(ARBHOME)/INCLUDE/arb_assert.h
 $(ARBHOME)/bin/arb_primer: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -149,7 +155,8 @@ $(ARBHOME)/bin/arb_dnarates:
 $(ARBHOME)/bin/arb_dnarates: 
 $(ARBHOME)/bin/arb_dnarates: 
 $(ARBHOME)/bin/arb_dnarates: 
-$(ARBHOME)/bin/arb_dnarates:  
+$(ARBHOME)/bin/arb_dnarates: 
+$(ARBHOME)/bin/arb_dnarates: 
 $(ARBHOME)/bin/arb_dnarates: 
 $(ARBHOME)/bin/arb_dnarates: 
 $(ARBHOME)/bin/arb_dnarates: 
@@ -160,37 +167,8 @@ $(ARBHOME)/bin/arb_dnarates: $(ARBHOME)/INCLUDE/arb_assert.h
 $(ARBHOME)/bin/arb_dnarates: $(ARBHOME)/INCLUDE/ad_prot.h
 $(ARBHOME)/bin/arb_dnarates: $(ARBHOME)/INCLUDE/arbdbt.h
 $(ARBHOME)/bin/arb_dnarates: $(ARBHOME)/INCLUDE/ad_t_prot.h
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: 
-$(ARBHOME)/bin/arb_dnarates.c: DNAml_rates_1_0.h
-$(ARBHOME)/bin/arb_dnarates.c: $(ARBHOME)/INCLUDE/aw_awars.hxx
-$(ARBHOME)/bin/arb_dnarates.c: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_dnarates.c: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_dnarates.c: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_dnarates.c: $(ARBHOME)/INCLUDE/arbdbt.h
-$(ARBHOME)/bin/arb_dnarates.c: $(ARBHOME)/INCLUDE/ad_t_prot.h
-$(ARBHOME)/bin/arb_2_bin:  
+$(ARBHOME)/bin/arb_2_bin: 
+$(ARBHOME)/bin/arb_2_bin: 
 $(ARBHOME)/bin/arb_2_bin: 
 $(ARBHOME)/bin/arb_2_bin: 
 $(ARBHOME)/bin/arb_2_bin: 
@@ -265,7 +243,6 @@ $(ARBHOME)/bin/arb_proto_2_xsub:
 $(ARBHOME)/bin/arb_proto_2_xsub: $(ARBHOME)/INCLUDE/arbdb.h
 $(ARBHOME)/bin/arb_proto_2_xsub: $(ARBHOME)/INCLUDE/arb_assert.h
 $(ARBHOME)/bin/arb_proto_2_xsub: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_probe:  
 $(ARBHOME)/bin/arb_probe: 
 $(ARBHOME)/bin/arb_probe: 
 $(ARBHOME)/bin/arb_probe: 
@@ -277,7 +254,10 @@ $(ARBHOME)/bin/arb_probe:
 $(ARBHOME)/bin/arb_probe: 
 $(ARBHOME)/bin/arb_probe: 
 $(ARBHOME)/bin/arb_probe: 
-$(ARBHOME)/bin/arb_probe:  
+$(ARBHOME)/bin/arb_probe: 
+$(ARBHOME)/bin/arb_probe: 
+$(ARBHOME)/bin/arb_probe: 
+$(ARBHOME)/bin/arb_probe: 
 $(ARBHOME)/bin/arb_probe: 
 $(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/PT_com.h
 $(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/client.h
@@ -285,12 +265,14 @@ $(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/arbdb.h
 $(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/arb_assert.h
 $(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/ad_prot.h
 $(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/servercntrl.h
-$(ARBHOME)/bin/arb_test:  
 $(ARBHOME)/bin/arb_test: 
 $(ARBHOME)/bin/arb_test: 
 $(ARBHOME)/bin/arb_test: 
 $(ARBHOME)/bin/arb_test: 
-$(ARBHOME)/bin/arb_test:  
+$(ARBHOME)/bin/arb_test: 
+$(ARBHOME)/bin/arb_test: 
+$(ARBHOME)/bin/arb_test: 
+$(ARBHOME)/bin/arb_test: 
 $(ARBHOME)/bin/arb_test: 
 $(ARBHOME)/bin/arb_test: 
 $(ARBHOME)/bin/arb_test: 
