@@ -33,30 +33,31 @@ help:
 	@echo ""
 
 JAVAS=$(wildcard *.java)
+MANIFEST=mymanifest
 CLASSES=$(JAVAS:.java=.class)
-BUILDLIST=build.lst
+LINKCLASSES=*.class
+BUILDLIST=.build.lst
 
-all: $(JAR)
+# to speed up compilation this Makefile creates the file $(BUILDLIST)
+# containing all .java files that need recompilation.
 
-#.java.class:
+all:
+	test \! -f $(BUILDLIST) || rm $(BUILDLIST)
+	$(MAKE) $(JAR)
+
 %.class : %.java
 		@-((test -f $@ && rm $@) || true)
 		@echo "$<" >>$(BUILDLIST)
-
-#		javac $(JAVAS)
 
 compile:
 		@echo javac `cat $(BUILDLIST)`
 		@javac `cat $(BUILDLIST)`
 
-$(JAR) : $(CLASSES) $(JAVAS)
-		-(test -f $(BUILDLIST) && ($(MAKE) compile || rm $(BUILDLIST)))
-		-@rm $(BUILDLIST)
-		jar -cmf mymanifest $(JAR) *.class
-# $(CLASSES)
+$(JAR) : $(CLASSES) $(JAVAS) Makefile $(MANIFEST)
+		test \! -f $(BUILDLIST) || ($(MAKE) compile && rm $(BUILDLIST))
+		jar -cmf $(MANIFEST) $(JAR) $(LINKCLASSES)
 
-update:
-	jar -uf $(JAR) *.class
+rebuild: clean all
 
 test: all
 	(	mkdir -p $(TESTDIR)/debug ;\
