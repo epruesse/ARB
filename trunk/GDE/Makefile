@@ -1,42 +1,40 @@
 
-ifndef OPENWINHOME
-ifndef DEBIAN
-ARCHS = CLUSTAL/CLUSTAL.dummy  \
-	CLUSTALW/CLUSTALW.dummy  \
-	PHYLIP/PHYLIP.dummy \
+ARCHS_ALL = \
+	CLUSTAL/CLUSTAL.dummy  \
 	SUPPORT/SUPPORT.dummy \
 	MOLPHY/MOLPHY.dummy \
-	TREEPUZZLE/TREEPUZZLE.dummy \
-	FASTDNAML/FASTDNAML.dummy
-else
-export OPENWINHOME = /usr/X11R6
-ARCHS = CLUSTAL/CLUSTAL.dummy  \
-	SUPPORT/SUPPORT.dummy \
+	AxML/AxML.dummy \
+
+# --------------------------------------------------------------------------------
+# All packages using xview go here:
+
+ARCHS_XVIEW = \
 	HGL_SRC/HGL_SRC.dummy \
-	MOLPHY/MOLPHY.dummy \
 	LOOPTOOL/LOOPTOOL.dummy \
-	CORE/CORE.dummy
-## Debian has the following own packages:
-#	CLUSTALW/CLUSTALW.dummy  \
-#	PHYLIP/PHYLIP.dummy \
-#	FASTDNAML/FASTDNAML.dummy \
-#	TREEPUZZLE/TREEPUZZLE.dummy \
-#
-endif
-else
-ARCHS = CLUSTAL/CLUSTAL.dummy  \
+	CORE/CORE.dummy \
+
+# --------------------------------------------------------------------------------
+# If a package is available as debian package it should go here
+
+ARCHS_NON_DEBIAN = \
 	CLUSTALW/CLUSTALW.dummy  \
 	PHYLIP/PHYLIP.dummy \
-	SUPPORT/SUPPORT.dummy \
-	HGL_SRC/HGL_SRC.dummy \
+	TREEPUZZLE/TREEPUZZLE.dummy \
 	FASTDNAML/FASTDNAML.dummy \
-	MOLPHY/MOLPHY.dummy \
-	LOOPTOOL/LOOPTOOL.dummy \
-	TREEPUZZLE/TREEPUZZLE.dummy \
-	CORE/CORE.dummy
+
+# --------------------------------------------------------------------------------
+
+ifdef OPENWINHOME
+ARCHS = $(ARCHS_ALL) $(ARCHS_NON_DEBIAN) $(ARCHS_XVIEW)
+else
+ifdef DEBIAN
+ARCHS = $(ARCHS_ALL) $(ARCHS_XVIEW)
+else
+ARCHS = $(ARCHS_ALL) $(ARCHS_NON_DEBIAN)
+endif
 endif
 
-#ZUKER/ZUKER.dummy
+# ZUKER/ZUKER.dummy
 
 $(MAIN): $(ARCHS)
 
@@ -70,4 +68,5 @@ depend: $(ARCHS:.dummy=.depend)
 		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
 		"XHOME = $(XHOME)" \
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
+		"ARB  = yes" \
 		"MAIN = $(@F:.dummy=.a)"
