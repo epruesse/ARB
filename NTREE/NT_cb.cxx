@@ -15,6 +15,7 @@
 #include <awt_dtree.hxx>
 #include "ad_trees.hxx"
 #include "ntree.hxx"
+#include "nt_internal.h"
 
 
 #define AWT_TREE(ntw) ((AWT_graphic_tree *)ntw->tree_disp)
@@ -76,10 +77,7 @@ void NT_select_last_tree(AW_window *aww,char *awar_tree){
     }
 }
 
-AW_window *create_alignment_window(AW_root *root,AW_default aw_def);
-
-AW_window *
-NT_open_select_alignment_window(AW_root *awr)
+AW_window *NT_open_select_alignment_window(AW_root *awr)
 {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
@@ -100,7 +98,7 @@ NT_open_select_alignment_window(AW_root *awr)
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("modify");
-    aws->callback(AW_POPUP,(AW_CL)create_alignment_window,0);
+    aws->callback(AW_POPUP,(AW_CL)NT_create_alignment_window, (AW_CL)aws);
     aws->help_text("ad_align.hlp");
     aws->create_button("MODIFY","MODIFY","M");
 
