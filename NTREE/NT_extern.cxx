@@ -218,13 +218,15 @@ void create_all_awars(AW_root *awr, AW_default def)
     AWTC_create_rename_variables(awr,def);
     create_check_gcg_awars(awr,def);
     awt_create_dtree_awars(awr,gb_main);
-    awt_create_aww_vars(awr,def);
 
     awr->awar_string( "tmp/message", "", gb_main);
     awr->awar_string( AWAR_DB_COMMENT, "<no description>", gb_main);
 
     AWTC_create_submission_variables(awr, gb_main);
     NT_createConcatenationAwars(awr,def);
+
+    ARB_init_global_awars(awr, def, gb_main);
+    awt_create_aww_vars(awr,def);
 
     if (GB_read_clients(gb_main) >=0) { // no i am the server
         awr->awar("tmp/message")->add_callback( NT_show_message);
@@ -1070,17 +1072,17 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             awm->insert_sub_menu(0, "Edit Sequences","E");
             {
-              AWMIMT("new_arb_edit4", "Using Selected Species and Tree ",    "4", "arb_edit4.hlp",AWM_ALL,   (AW_CB)NT_start_editor_on_tree, (AW_CL)&(nt.tree->tree_root), 0 );
-              AWMIMT("new2_arb_edit4","Using Sequences Aside ", "4", "arb_edit4.hlp",AWM_ALL,   (AW_CB)NT_start_editor_on_tree, (AW_CL)&(nt.tree->tree_root), -1);
-              AWMIMT("old_arb_edit4", "Using Earlier Selection ",   "O", "arb_edit4.hlp",AWM_SEQ2,  AW_POPUP, (AW_CL)NT_start_editor_on_old_configuration, 0 );
+              AWMIMT("new_arb_edit4", "Using Selected Species and Tree",    "4", "arb_edit4.hlp",AWM_ALL,   (AW_CB)NT_start_editor_on_tree, (AW_CL)&(nt.tree->tree_root), 0 );
+              AWMIMT("new2_arb_edit4","Using Sequences Aside", "4", "arb_edit4.hlp",AWM_ALL,   (AW_CB)NT_start_editor_on_tree, (AW_CL)&(nt.tree->tree_root), -1);
+              AWMIMT("old_arb_edit4", "Using Earlier Selection",   "O", "arb_edit4.hlp",AWM_SEQ2,  AW_POPUP, (AW_CL)NT_start_editor_on_old_configuration, 0 );
             }
             awm->close_sub_menu();
 
             awm->insert_sub_menu(0, "Other Sequence Editors","E");
             {
-                AWMIMT( "arb_edit", "ARB Editor ",  "A", "arb_edit.hlp",    AWM_SEQ2,   (AW_CB)NT_system_cb,    (AW_CL)"arb_edit &",    0 );
-                AWMIMT( "arb_ale",  "ALE Editor ",  "L", "ale.hlp",     AWM_SEQ2,   (AW_CB)NT_system_cb,    (AW_CL)"arb_ale : &", (AW_CL)"ale.hlp" );
-                AWMIMT( "arb_gde",  "GDE Editor ",  "G", "gde.hlp",     AWM_SEQ2,   (AW_CB)NT_system_cb,    (AW_CL)"arb_gde : &", (AW_CL)"gde.hlp" );
+                AWMIMT( "arb_edit", "ARB Editor (old)",  "A", "arb_edit.hlp",    AWM_SEQ2,   (AW_CB)NT_system_cb,    (AW_CL)"arb_edit &",    0 );
+                AWMIMT( "arb_ale",  "ALE Editor",  "L", "ale.hlp",     AWM_SEQ2,   (AW_CB)NT_system_cb,    (AW_CL)"arb_ale : &", (AW_CL)"ale.hlp" );
+                AWMIMT( "arb_gde",  "GDE Editor",  "G", "gde.hlp",     AWM_SEQ2,   (AW_CB)NT_system_cb,    (AW_CL)"arb_gde : &", (AW_CL)"gde.hlp" );
             }
             awm->close_sub_menu();
             awm->insert_separator();
@@ -1437,7 +1439,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->help_text("tr_jump.hlp");
     awm->create_button("JUMP", "#pjump.bitmap",0);
 
-    awm->callback((AW_CB1)awt_openURL,(AW_CL)gb_main);
+    awm->callback((AW_CB1)awt_openDefaultURL_on_species,(AW_CL)gb_main);
     awm->help_text("www.hlp");
     awm->create_button("WWW", "#www.bitmap",0);
 
