@@ -4,6 +4,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <memory.h>
+#include <limits.h>
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>
@@ -456,7 +457,9 @@ GB_ERROR awtc_read_data(char *ali_name)
             awtc_write_entry(gb_species,"file",f,ifo->filetag,0);
         }
         int line;
-        int max_line = MAX_COMMENT_LINES;
+        static bool never_warn = false;
+        int max_line = never_warn ? INT_MAX : MAX_COMMENT_LINES;
+
         for(line=0;line<=max_line;line++){
             sprintf(num,"%i  ",line);
             if (line == max_line){
@@ -465,7 +468,18 @@ GB_ERROR awtc_read_data(char *ali_name)
                 GB_ERROR msg = GB_export_error("A database entry in file '%s' is longer than %i lines.\n"
                                                "	This might be the result of a wrong input format\n"
                                                "	or a long comment in a sequence\n",file,line);
-                if (!aw_message(msg,"Continue Reading,Abort")) max_line *= 2;
+
+                switch (aw_message(msg,"Continue Reading,Continue Reading (Never ask again),Abort"))  {
+                    case 0:
+                        max_line *= 2;
+                        break;
+                    case 1:
+                        max_line = INT_MAX;
+                        never_warn = true;
+                        break;
+                    case 2:
+                        break;
+                }
             }
             if (strlen(p) > ifo->tab){
                 for (pl = ifo->pl; pl; pl=pl->next) {
