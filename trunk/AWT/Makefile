@@ -10,7 +10,8 @@ OBJECTS =	\
 		BI_helix.o AWT_filter.o AWT_sel_boxes.o AWT_canio.o AWT_nds.o \
 		AWT_query_and_functions.o AWT_file_selection.o AWT_species_sel_box.o \
 		AWT_imp_exp.o AWT_preset.o AWT_seq_dna.o AWT_seq_protein.o AWT_seq_simple_pro.o \
-		AWT_codon_table.o AWT_iupac.o AWT_config_manager.o AWT_advice.o AWT_db_browser.o
+		AWT_codon_table.o AWT_iupac.o AWT_config_manager.o AWT_advice.o AWT_db_browser.o \
+		AWT_attributes.o
 
 $(MAIN): $(OBJECTS)
 	$(ARCPPLIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
@@ -57,6 +58,13 @@ AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+
+AWT_attributes.o: awt_attributes.hxx
+AWT_attributes.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWT_attributes.o: $(ARBHOME)/INCLUDE/arbdb.h
+AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 
 AWT_canio.o: awt.hxx
 AWT_canio.o: awt_canvas.hxx
@@ -123,6 +131,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/inline.h
 
 AWT_dtree.o: awt.hxx
+AWT_dtree.o: awt_attributes.hxx
 AWT_dtree.o: awt_canvas.hxx
 AWT_dtree.o: awt_dtree.hxx
 AWT_dtree.o: awt_nds.hxx
@@ -372,6 +381,7 @@ AWT_tables.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
 AWT_tree.o: awt.hxx
+AWT_tree.o: awt_attributes.hxx
 AWT_tree.o: awt_canvas.hxx
 AWT_tree.o: awt_pro_a_nucs.hxx
 AWT_tree.o: awt_tree.hxx
