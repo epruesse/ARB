@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.h                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Wed Nov/10/2004 17:22 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Thu Nov/18/2004 19:08 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -28,7 +28,9 @@ extern "C" {
     /* -------------------------------------------------------------------------------- */
     /* genes : */
 
-    GBDATA *GEN_get_gene_data(GBDATA *gb_species);
+    GBDATA *GEN_findOrCreate_gene_data(GBDATA *gb_species);
+    GBDATA *GEN_find_gene_data(GBDATA *gb_species);
+    GBDATA *GEN_expect_gene_data(GBDATA *gb_species);
 
     GBDATA* GEN_find_gene(GBDATA *gb_species, const char *name); /* find existing gene */
     GBDATA* GEN_create_gene(GBDATA *gb_species, const char *name); /* create or find existing gene */
