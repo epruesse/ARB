@@ -34,13 +34,14 @@ ED4_root     *ED4_ROOT;
 GBDATA       *gb_main = NULL;
 ED4_database *main_db;
 
-long global_width = 100;
 int  TERMINALHEIGHT;            // this variable replaces the define
-int  MAXLETTERDESCENT;          // Important for drawing text on the screen
+
+int INFO_TERM_TEXT_YOFFSET;
+int SEQ_TERM_TEXT_YOFFSET;
+
 int  MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
 int  MAXSPECIESWIDTH;
 int  MAXINFOWIDTH;              // # of pixels used to display sequence info ("CONS", "4data", etc.)
-int  MAXCHARWIDTH;              // # of pixels of broadest sequence character
 int  MARGIN;                    // sets margin for cursor moves in characters
 
 long          ED4_counter = 0;
@@ -321,6 +322,14 @@ void ED4_create_global_awars(AW_root *root) {
     ED4_create_search_awars(root);
 }
 
+static void ED4_edit_direction_changed(AW_root */*awr*/) {
+    ED4_ROOT->temp_ed4w->cursor.redraw();
+        
+}
+static void ED4_do_expose(AW_root *awr) {
+    ED4_expose_cb(ED4_ROOT->temp_aww, 0, 0);
+}
+
 void ED4_create_all_awars(AW_root *root, const char *config_name) { // cursor awars are created in window constructor
 
     ED4_create_global_awars(root);
@@ -330,7 +339,6 @@ void ED4_create_all_awars(AW_root *root, const char *config_name) { // cursor aw
 
     create_naligner_variables(root, AW_ROOT_DEFAULT);
 
-    root->awar_int(ED4_AWAR_SPECIES_NAME_WIDTH,20) ->add_target_var(&global_width) ->set_minmax(10,50) ->add_callback(ED4_config_change_cb);
     awar_edit_modus = AD_ALIGN;
 
     int def_sec_level = 0;
@@ -347,8 +355,9 @@ void ED4_create_all_awars(AW_root *root, const char *config_name) { // cursor aw
     root->awar_int( AWAR_EDIT_MODE,   0)->add_callback(ed4_change_edit_mode, (AW_CL)0);
     root->awar_int( AWAR_INSERT_MODE, 1)->add_callback(ed4_change_edit_mode, (AW_CL)0);
 
-    root->awar_int( AWAR_EDIT_DIRECTION, 1)->add_target_var(&awar_edit_direction);
-    root->awar_int( AWAR_EDIT_HELIX_SPACING, 6)->add_target_var(&ED4_ROOT->helix_spacing);
+    root->awar_int( AWAR_EDIT_DIRECTION, 1)->add_target_var(&awar_edit_direction)->add_callback(ED4_edit_direction_changed);
+    root->awar_int( AWAR_EDIT_HELIX_SPACING, 0)->add_target_var(&ED4_ROOT->helix_add_spacing)->add_callback(ED4_do_expose);
+    root->awar_int( AWAR_EDIT_TERMINAL_SPACING, 0)->add_target_var(&ED4_ROOT->terminal_add_spacing)->add_callback(ED4_do_expose);
     root->awar_int( AWAR_EDIT_TITLE_MODE, 0);
 
     root->awar_int(AWAR_CURSOR_POSITION, 1, gb_main);
@@ -511,7 +520,7 @@ int main(int argc,char **argv)
 
     openProperties(); // open properties database
 
-   ED4_ROOT->aw_root->init( "ARB_EDIT4" ); // initialize window-system
+    ED4_ROOT->aw_root->init( "ARB_EDIT4" ); // initialize window-system
 
     ED4_ROOT->database = new EDB_root_bact;
     ED4_ROOT->init_alignment();
@@ -523,14 +532,12 @@ int main(int argc,char **argv)
     ED4_ROOT->edk = new ed_key;
     ED4_ROOT->edk->create_awars(ED4_ROOT->aw_root);
 
-    ED4_ROOT->sequence_colors->aww = ED4_ROOT->create_new_window();// create first editor window
+    ED4_ROOT->helix = new AW_helix(ED4_ROOT->aw_root);
 
     if (err){
         aw_message(err);
         err = 0;
     }
-
-    ED4_ROOT->helix = new AW_helix(ED4_ROOT->aw_root);
 
     switch (ED4_ROOT->alignment_type) {
         case GB_AT_RNA:
@@ -553,6 +560,8 @@ int main(int argc,char **argv)
             break;
     }
 
+    if (err) aw_message(err);
+    ED4_ROOT->sequence_colors->aww = ED4_ROOT->create_new_window(); // create first editor window
     if (err) aw_message(err);
 
     {
