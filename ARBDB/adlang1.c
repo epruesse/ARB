@@ -1415,7 +1415,7 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
     /*ignore error result*/ GB_remove_callback(gbd, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, 0);
 
     if (found && !error) {
-        GB_MAIN_TYPE *Main            = GB_MAIN(gbd);
+        GB_MAIN_TYPE *Main            = gb_get_main_during_cb();
         GBDATA       *gb_main         = (GBDATA*)Main->data;
         GBDATA       *gb_tree_refresh = GB_search(gb_main, AWAR_TREE_REFRESH, GB_INT);
         if (!gb_tree_refresh) {
