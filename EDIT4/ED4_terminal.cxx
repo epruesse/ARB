@@ -133,7 +133,13 @@ ED4_object_specification column_stat_terminal_spec =
 char *ED4_terminal::resolve_pointer_to_string_copy(int *str_len) const {
     int         len;
     const char *s = resolve_pointer_to_char_pntr(&len);
-    char       *t = GB_strduplen(s, len);
+#if defined(DEBUG)
+    if (strlen(s) != size_t(len)) {
+        int         len2;
+        const char *s2 = resolve_pointer_to_char_pntr(&len2);;
+    }
+#endif // DEBUG
+    char   *t  = GB_strduplen(s, len); // space for zero byte is allocated by GB_strduplen
 
     if (str_len) *str_len = len;
     return t;
@@ -141,9 +147,9 @@ char *ED4_terminal::resolve_pointer_to_string_copy(int *str_len) const {
 
 const char *ED4_terminal::resolve_pointer_to_char_pntr(int *str_len) const
 {
-    GB_TYPES    gb_type;
-    char *db_pointer = NULL;
-    GBDATA *gbd = get_species_pointer();
+    GB_TYPES  gb_type;
+    char     *db_pointer = NULL;
+    GBDATA   *gbd        = get_species_pointer();
 
     if (!gbd) {
         if (str_len) {
@@ -155,37 +161,54 @@ const char *ED4_terminal::resolve_pointer_to_char_pntr(int *str_len) const
 
     GB_push_transaction(gb_main);
 
+    const char *copy_of = 0; // if set, return a copy of this string
+
     gb_type = GB_read_type(gbd);
     switch (gb_type)
     {
         case GB_STRING:
             db_pointer = GB_read_char_pntr(gbd);
-            if (str_len) *str_len = GB_read_string_count(gbd);
+            if (str_len) {
+                *str_len = GB_read_string_count(gbd);
+                e4_assert(*str_len == (int)strlen(db_pointer));
+            }
             break;
         case GB_BITS:
             db_pointer = GB_read_bits_pntr(gbd, '.', '+');
-            if (str_len) *str_len = GB_read_bits_count(gbd);
+            if (str_len) {
+                *str_len = GB_read_bits_count(gbd);
+                e4_assert(*str_len == (int)strlen(db_pointer));
+            }
             break;
         case GB_BYTES:
             db_pointer = GB_read_bytes_pntr(gbd);
-            if (str_len) *str_len = GB_read_bytes_count(gbd);
+            if (str_len) {
+                *str_len = GB_read_bytes_count(gbd);
+                e4_assert(*str_len == (int)strlen(db_pointer));
+            }
             break;
         case GB_DB:
-            db_pointer = new char[10];
-            strcpy(db_pointer, "GB_DB");
+            copy_of = "GB_DB";
             break;
         case GB_INTS:
-            db_pointer = new char[10];
-            strcpy(db_pointer, "GB_INTS");
+            copy_of = "GB_INTS";
             break;
         case GB_FLOATS:
-            db_pointer = new char[10];
-            strcpy(db_pointer, "GB_FLOATS");
+            copy_of = "GB_FLOATS";
             break;
         default:
             printf("Unknown data type - Please contact administrator\n");
             e4_assert(0);
             break;
+    }
+
+    if (copy_of) {
+        e4_assert(db_pointer == 0);
+
+        int len    = strlen(copy_of);
+        db_pointer = GB_strduplen(copy_of, len);
+        
+        if (str_len) *str_len = len;
     }
 
     GB_pop_transaction( gb_main );
