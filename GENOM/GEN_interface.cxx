@@ -212,14 +212,15 @@ void GEN_species_name_changed_cb(AW_root *awr) {
     char   *species_name = awr->awar(AWAR_SPECIES_NAME)->read_string();
     GBDATA *gb_species   = GBT_find_species(gb_main, species_name);
 
-    if (GEN_is_pseudo_gene_species(gb_species)) {
-        awr->awar(AWAR_ORGANISM_NAME)->write_string(GEN_origin_organism(gb_species));
-        awr->awar(AWAR_GENE_NAME)->write_string(GEN_origin_gene(gb_species));
+    if (gb_species) {
+        if (GEN_is_pseudo_gene_species(gb_species)) {
+            awr->awar(AWAR_ORGANISM_NAME)->write_string(GEN_origin_organism(gb_species));
+            awr->awar(AWAR_GENE_NAME)->write_string(GEN_origin_gene(gb_species));
+        }
+        else {
+            awr->awar(AWAR_ORGANISM_NAME)->write_string(species_name);
+        }
     }
-    else {
-        awr->awar(AWAR_ORGANISM_NAME)->write_string(species_name);
-    }
-
     free(species_name);
 }
 
