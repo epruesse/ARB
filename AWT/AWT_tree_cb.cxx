@@ -29,7 +29,7 @@ nt_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
             text = "MARK MODE    LEFT: mark subtree   RIGHT: unmark subtree";
             break;
         case AWT_MODE_GROUP:
-            text = "GROUP MODE   LEFT: group/ungroup group  RIGHT: create/destroy group";
+            text = "GROUP MODE   LEFT: fold/unfold group  RIGHT: create/rename/destroy group";
             break;
         case AWT_MODE_ZOOM:
             text = "ZOOM MODE    LEFT: press and drag to zoom   RIGHT: zoom out one step";
