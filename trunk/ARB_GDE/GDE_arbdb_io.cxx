@@ -317,7 +317,7 @@ int ReadArbdb(NA_Alignment *dataset,long marked,AP_filter *filter,long compress)
 
 
 	gb_species_data = GB_find(dataset->gb_main,"species_data",0,down_level);
-	ErrorOut(gb_species_data!=0,"species_data not found");
+	ErrorOut5(gb_species_data!=0,"species_data not found");
 
 	long maxalignlen=GBT_get_alignment_len(gb_main,dataset->alignment_name);
 

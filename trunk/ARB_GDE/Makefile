@@ -35,7 +35,8 @@ GDE_ParseMenu.o: GDE_def.h GDE_global.h GDE_extglob.h
 
 GDE.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GDE.o: $(ARBHOME)/INCLUDE/ad_prot.h $(ARBHOME)/INCLUDE/arbdbt.h
+GDE.o: $(ARBHOME)/INCLUDE/ad_prot.h
+GDE.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GDE.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GDE.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -78,8 +79,8 @@ GDE_HGLfile.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GDE_HGLfile.o: $(ARBHOME)/INCLUDE/awt.hxx gde.hxx GDE_menu.h GDE_def.h
-GDE_HGLfile.o: GDE_extglob.h
+GDE_HGLfile.o: $(ARBHOME)/INCLUDE/awt.hxx gde.hxx GDE_menu.h
+GDE_HGLfile.o: GDE_def.h GDE_extglob.h
 
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -87,8 +88,8 @@ GDE_Genbank.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GDE_Genbank.o: $(ARBHOME)/INCLUDE/awt.hxx gde.hxx GDE_menu.h GDE_def.h
-GDE_Genbank.o: GDE_extglob.h
+GDE_Genbank.o: $(ARBHOME)/INCLUDE/awt.hxx gde.hxx GDE_menu.h
+GDE_Genbank.o: GDE_def.h GDE_extglob.h
 
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -98,5 +99,5 @@ GDE_FileIO.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GDE_FileIO.o: $(ARBHOME)/INCLUDE/awt.hxx gde.hxx GDE_def.h GDE_menu.h
-GDE_FileIO.o: GDE_extglob.h
+GDE_FileIO.o: $(ARBHOME)/INCLUDE/awt.hxx gde.hxx GDE_def.h
+GDE_FileIO.o: GDE_menu.h GDE_extglob.h

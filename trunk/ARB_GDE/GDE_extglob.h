@@ -5,7 +5,7 @@
 #else
 # define P_(s) ()
 #endif
-#define GDEMAXMENU 100 
+#define GDEMAXMENU 100
 
 /* NTREE/GDE_event.cxx */
 /*void GDE_startaction_cb P_((AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd));*/
@@ -38,7 +38,7 @@ int isagap P_((NA_Sequence *a,int b));
 /* GDE_FileIO.cxx */
 int MAX P_((int a,int b));
 int MIN P_((int a,int b));
-void ErrorOut P_((int code, const char *string));
+void ErrorOut5 P_((int code, const char *string));
 char *Calloc P_((int count, int size));
 char *Realloc P_((char *block, int size));
 void Cfree P_((char *block));
@@ -81,12 +81,12 @@ extern int num_menus;
 extern GBDATA *gb_main;
 
 /* global.h */
-extern int DataType; 
+extern int DataType;
 extern int FileFormat,first_select;
 /*int Dirty,OldEditMode,EditMode = INSERT, EditDir = RIGHT;*/
 extern int DisplayAttr,OVERWRITE;
 extern int SCALE;
-extern int BlockInput; 
+extern int BlockInput;
 #ifdef SeeAlloc
 int TotalCalloc = 0;
 int TotalRealloc = 0;
@@ -97,15 +97,15 @@ extern char current_dir[1024];
 /*
 *	Months of the year
 */
-extern const char *GDEmonth[12]; 
+extern const char *GDEmonth[12];
 /*
 *       Tables for DNA/RNA <--> ASCII translation
 */
 
 extern int Default_RNA_Trans[];
- 
+
 extern int Default_DNA_Trans[];
- 
+
 extern int Default_NA_RTrans[];
 
 
@@ -139,6 +139,6 @@ extern unsigned char grey5;
 extern unsigned char grey6;
 extern unsigned char grey7;
 
-extern unsigned char **greys; 
+extern unsigned char **greys;
 extern char **grey_pm; /*Pixmap instead of char !?!*/
 #endif
