@@ -241,8 +241,7 @@ GB_ERROR AWT_print_tree_to_printer(AW_window *aww, AWT_canvas * ntw)
 	if (error) aw_message(error);
 	else switch(print2file) {
         case 2:{
-            const char *gs = getenv("ARB_GS");
-            if (!gs) gs = "ghostview";
+            GB_CSTR     gs = GB_getenvGS();
             system(GBS_global_string("(%s %s;rm -f %s) &",gs,dest,dest));
             break;
         }
