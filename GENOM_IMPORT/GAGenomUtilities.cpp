@@ -8,6 +8,8 @@
 #include <sstream>
 #include <iostream>
 
+#define ARTEM_EINS 
+
 using namespace std;
 using namespace gellisary;
 
@@ -860,13 +862,72 @@ string gellisary::GAGenomUtilities::generateGeneID(string * source_str, string *
     sout << '_';
     int i = 0;
     
-    if(tstring4 != "nix")
+    
+    
+#ifdef ARTEM_EINS
+	bool ziffer = false;
+   if(tstring4 != "nix")
     {
-    	sout << tstring4;
-	    sout << '_';
+    	for(int l = 0;l < (int)tstring4.size();l++)
+    	{
+    		if((tstring4[l] >= 48) || (tstring4[l] <= 57))
+    		{
+    			ziffer = true;
+    		}
+    	}
+    	if(!ziffer)
+    	{
+	    	sout << tstring4;
+		    sout << '_';
+    	}
     }
+    while(next)
+    {
+        i = tstring1[pointer++];
+        if(i >= 48 && i <= 57)
+        {
+		    if(!drin)
+		    {
+		    	drin = true;
+		    }
+		    sout1 << (char)i;
+        } 
+        else if(drin)
+        {
+        	drin = false;
+        	break;
+        }
+        if(pointer == (int) tstring1.size())
+        {
+            break;
+        }
+    }
+    sss = sout1.str();
+    sss1 = sout.str();
     
-    
+  	int rest = 29 - (int)sss1.size() - (int) sss.size();
+   	if(tstring3 != "nix" && !ziffer)
+   	{
+   		if(rest < (int)tstring3.size())
+	   	{
+	   		tstring3.resize(rest);
+	   		sout << tstring3;
+		    sout << '_';
+	   	}
+	   	else
+	   	{
+	   		sout << tstring3;
+		    sout << '_';
+		}
+   	}
+
+   	sout << sss;
+    target_str = sout.str();
+    return target_str;
+    sout << sss;
+    target_str = sout.str();
+    return target_str;
+#else
     
     while(next)
     {
@@ -893,8 +954,6 @@ string gellisary::GAGenomUtilities::generateGeneID(string * source_str, string *
     sss1 = sout.str();
     
   	int rest = 29 - (int)sss1.size() - (int) sss.size();
-  	cout << "gross_1 : " << rest << endl;
-  	cout << "gross_2 : " << tstring3.size() << endl;
    	if(tstring3 != "nix")
    	{
    		if(rest < (int)tstring3.size())
@@ -913,6 +972,7 @@ string gellisary::GAGenomUtilities::generateGeneID(string * source_str, string *
    	sout << sss;
     target_str = sout.str();
     return target_str;
+#endif 
 }
 
 /*
