@@ -1,11 +1,14 @@
 
 TARGET = ARB_GDEmenus
 SOURCE = ARB_GDEmenus.source
+HELPFILELIST=helpfiles.lst
+GENHELPDEST=./HELP_GEN
+GENDOCDEST=./HELP_DOC_GEN
 
 MENUS=$(wildcard MENUS/*.menu)
 GENMENUS=$(MENUS:.menu=.genmenu)
 
-all: $(TARGET)
+all: $(TARGET) help
 
 MENUS/%.genmenu : MENUS/%.menu
 		sed -e "s/^[ ]*//ig" < $< > $@
@@ -15,6 +18,23 @@ $(TARGET) : $(SOURCE) $(GENMENUS)
 	$(PP)  -IMENUS $(SOURCE) >$(TARGET)
 	chmod a-w $(TARGET)
 
+# ------------------------------------------------------------
+
+help: $(HELPFILELIST)
+	@test -d $(GENHELPDEST) || mkdir $(GENHELPDEST)
+	@test -d $(GENDOCDEST) || mkdir $(GENDOCDEST)
+	@$(MAKE) -f Makefile.helpfiles "GENHELPDEST=$(GENHELPDEST)" "GENDOCDEST=$(GENDOCDEST)" "HELPFILELIST=$(HELPFILELIST)"
+
+$(HELPFILELIST): $(TARGET)
+	grep -i '^itemhelp:' < $< | sed -e 's/^itemhelp://ig' | sort | uniq > $@
+
+# ------------------------------------------------------------
+
 save:
 	rm -f arbgdemenus*.tar.gz
 	tar cvf - MENUS ARB_GDEmenus* |gzip >`date '+arbgdemnus_%d_%m_%y.tar.gz'`
+
+clean:
+	-rm -f $(GENMENUS) $(TARGET) $(HELPFILELIST)
+	@$(MAKE) -f Makefile.helpfiles "GENHELPDEST=$(GENHELPDEST)" "GENDOCDEST=$(GENDOCDEST)" "HELPFILELIST=$(HELPFILELIST)" clean
+
