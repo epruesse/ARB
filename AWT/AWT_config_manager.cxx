@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_config_manager.cxx                                 //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu Jan/17/2002 14:48 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Nov/07/2002 19:55 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //
@@ -97,6 +97,12 @@ void remove_from_configs(const string& config, string& existing_configs) {
     }
     printf("result: '%s'\n", existing_configs.c_str());
 }
+// ---------------------------------------------------------
+//      static char *correct_key_name(const char *name)
+// ---------------------------------------------------------
+static char *correct_key_name(const char *name) {
+    return GBS_string_2_key(name);
+}
 
 //  ------------------------------------------------------------------------------
 //      static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
@@ -109,7 +115,7 @@ static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
     bool               reopen           = false;
     char              *title            = strdup(GBS_global_string("Configurations for '%s'", aww->window_name));
 
-    char   *result    = aw_string_selection(title, "Enter a new or select an existing config", config->get_awar_name("current").c_str(), 0, existing_configs.c_str(), "RESTORE,STORE,DELETE,CANCEL,HELP");
+    char   *result    = aw_string_selection(title, "Enter a new or select an existing config", config->get_awar_name("current").c_str(), 0, existing_configs.c_str(), "RESTORE,STORE,DELETE,CANCEL,HELP", correct_key_name);
     int     button    = aw_string_selection_button();
     string  awar_name = string("cfg_")+result;
 
@@ -171,7 +177,7 @@ void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const c
 //  --------------------------------------------------
 //      inline GB_ERROR decode_escapes(string& s)
 //  --------------------------------------------------
-inline GB_ERROR decode_escapes(string& s) {
+static GB_ERROR decode_escapes(string& s) {
     string::iterator f = s.begin();
     string::iterator t = s.begin();
 
@@ -179,8 +185,24 @@ inline GB_ERROR decode_escapes(string& s) {
         if (*f == '\\') {
             ++f;
             if (f == s.end()) return GBS_global_string("Trailing \\ in '%s'", s.c_str());
+            switch (*f) {
+                case 'n':
+                    *t = '\n';
+                    break;
+                case 'r':
+                    *t = '\r';
+                    break;
+                case 't':
+                    *t = '\t';
+                    break;
+                default:
+                    *t = *f;
+                    break;
+            }
         }
-        *t = *f;
+        else {
+            *t = *f;
+        }
     }
 
     s.erase(t, f);
@@ -199,9 +221,10 @@ inline void encode_escapes(string& s, const char *to_escape, char escape_char) {
         if (*p == escape_char || strchr(to_escape, *p) != 0) {
             neu = neu+escape_char+*p;
         }
-        else {
-            neu = neu+*p;
-        }
+        else if (*p == '\n') { neu = neu+escape_char+'n'; }
+        else if (*p == '\r') { neu = neu+escape_char+'r'; }
+        else if (*p == '\t') { neu = neu+escape_char+'t'; }
+        else { neu = neu+*p; }
     }
     s = neu;
 }
