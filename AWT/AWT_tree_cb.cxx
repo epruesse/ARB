@@ -102,7 +102,8 @@ void NT_count_mark_all_cb(void *dummy, AW_CL cl_ntw)
     GB_pop_transaction(ntw->gb_main);
 
     char buf[256];
-    sprintf(buf,"There are %li marked species",count);
+    if (count == 1) strcpy(buf, "There is 1 marked species");
+    else sprintf(buf,"There are %li marked species", count);
     aw_message(buf);
 }
 
