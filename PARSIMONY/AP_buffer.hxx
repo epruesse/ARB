@@ -1,9 +1,5 @@
-
-#ifndef _AP_BUUFER_INC
-#define _AP_BUUFER_INC
-
-
-
+#ifndef _AP_BUFFER_INC
+#define _AP_BUFFER_INC
 
 /*******************
 
@@ -36,14 +32,15 @@ class AP_STACK {
 
 public:
 	AP_STACK();
-	~AP_STACK();
-	void 		  push(void * element);
-	void * 		  pop();
-	void 		  clear();
-	void 		  get_init()	;
-	void *		  get();
-	void *		  get_first();
-	unsigned long size();
+	virtual ~AP_STACK();
+
+	void           push(void * element);
+	void          *pop();
+	void           clear();
+	void           get_init();
+	void          *get();
+	void          *get_first();
+	unsigned long  size();
 };
 
 /*********************************
@@ -67,16 +64,17 @@ class AP_LIST {
 	AP_list_elem *element(void * elem);
 public:
 	AP_LIST() ;
-	~AP_LIST();
-	int 		  len();
-	int 		  is_element(void * node );
-	int 		  eof();
-	void		  insert(void * new_one);
-	void 		  append(void * new_one);
-	void 		  remove(void * object);
-	void 		  push(void *elem);
-	void * 		  pop();
-	void 		  clear();
+	virtual ~AP_LIST();
+
+	int   len();
+	int   is_element(void * node );
+	int   eof();
+	void  insert(void * new_one);
+	void  append(void * new_one);
+	void  remove(void * object);
+	void  push(void *elem);
+	void *pop();
+	void  clear();
 };
 
 
@@ -121,6 +119,7 @@ struct AP_tree_buffer {
 class AP_tree_stack : public AP_STACK {
 public:
 	AP_tree_stack() { }
+	virtual ~AP_tree_stack() {}
 	void  push(struct AP_tree_buffer *value) { AP_STACK::push((void *)value); }
 	AP_tree_buffer * pop() { return ( AP_tree_buffer *) AP_STACK::pop(); }
 	AP_tree_buffer * get() { return ( AP_tree_buffer *) AP_STACK::get(); }
