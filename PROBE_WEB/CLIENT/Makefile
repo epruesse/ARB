@@ -58,16 +58,16 @@ update:
 	jar -uf $(JAR) *.class
 
 test: all
-	(	mkdir -p $(TESTDIR) ;\
-	        cd $(TESTDIR) ;\
+	(	mkdir -p $(TESTDIR)/debug ;\
+	        cd $(TESTDIR)/debug ;\
 		echo "----------------------------------------" ;\
 		java -jar $(BASE)/$(JAR) server=http://www2.mikro.biologie.tu-muenchen.de/probeserver24367472/ ;\
 		echo "----------------------------------------" ;\
 	        ls -al -rt )
 
 test_master: all
-	(	mkdir -p $(TESTDIR) ;\
-		cd $(TESTDIR) ;\
+	(	mkdir -p $(TESTDIR)/master ;\
+		cd $(TESTDIR)/master ;\
 		echo "----------------------------------------" ;\
 		echo "Adress has to be changed to probeserver.mikro..." ;\
 		java -jar $(BASE)/$(JAR) server=http://www2.mikro.biologie.tu-muenchen.de/probe_library/ ;\
@@ -75,8 +75,8 @@ test_master: all
 		ls -al -rt )
 
 test_rs: all
-	(	mkdir -p $(TESTDIR) ;\
-		cd $(TESTDIR) ;\
+	(	mkdir -p $(TESTDIR)/local ;\
+		cd $(TESTDIR)/local ;\
 		echo "----------------------------------------" ;\
 		java -jar $(BASE)/$(JAR) server=http://hi.er/probeserver/ ;\
 		echo "----------------------------------------" ;\
@@ -84,9 +84,8 @@ test_rs: all
 
 clean:
 	@-rm		*.class \
-				$(JAR) \
-				probetree.gz \
-				.depends \
+			$(JAR) \
+			.depends \
 
 # dependencies
 
