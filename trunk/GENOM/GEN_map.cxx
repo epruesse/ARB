@@ -338,11 +338,18 @@ static GB_ERROR GEN_species_add_entry(GBDATA *gb_pseudo, const char *key, const 
     GB_clear_error();
     GBDATA   *gbd   = GB_find(gb_pseudo, key, 0, down_level);
 
-    if (!gbd) {
-        gbd               = GB_create(gb_pseudo, key, GB_STRING);
-        error             = GB_get_error();
-        if (!error) error = GB_write_string(gbd, value);
+    if (!gbd) { // key does not exist yet -> create
+        gbd   = GB_create(gb_pseudo, key, GB_STRING);
+        error = GB_get_error();
     }
+    else { // key exists
+        if (GB_read_type(gbd) != GB_STRING) { // test correct key type
+            error = GB_export_error("field '%s' exists and has wrong type", key);
+        }
+    }
+
+    if (!error) error = GB_write_string(gbd, value);
+
     return error;
 }
 
@@ -375,7 +382,7 @@ void GEN_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene, const
 
     char *full_name = GBS_strdup(GBS_global_string("%s [%s]", full_species_name, gene_name));
 
-    char *sequence = GBT_read_gene_sequence(gb_gene, false);
+    char *sequence = GBT_read_gene_sequence(gb_gene, true);
     if (!sequence) {
         aw_message(GB_get_error());
     }
@@ -405,9 +412,9 @@ void GEN_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene, const
 
             switch (answer) {
                 case 0: {   // Overwrite species
-                    // @@@ delete species
+                    // @@@ FIXME:  delete species needed here
                     create_new_gene_species = true;
-                    short_name = strdup(existing_name);
+                    short_name              = strdup(existing_name);
                     break;
                 }
                 case 1: {     // Insert new alignment or overwrite alignment
@@ -491,11 +498,28 @@ void GEN_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene, const
 //                 }
             }
 
-            // write other entries (does not overwrite existing ones)
+
+
+            // write other entries:
             if (!error) error = GEN_species_add_entry(gb_exist_geneSpec, "full_name", full_name);
             if (!error) error = GEN_species_add_entry(gb_exist_geneSpec, "ARB_origin_species", species_name);
             if (!error) error = GEN_species_add_entry(gb_exist_geneSpec, "ARB_origin_gene", gene_name);
             if (!error) error = GEN_species_add_entry(gb_exist_geneSpec, "acc", acc);
+
+            // copy codon_start and transl_table :
+            const char *codon_start  = 0;
+            const char *transl_table = 0;
+
+            {
+                GBDATA *gb_codon_start  = GB_find(gb_gene, "codon_start", 0, down_level);
+                GBDATA *gb_transl_table = GB_find(gb_gene, "transl_table", 0, down_level);
+
+                if (gb_codon_start)  codon_start  = GB_read_char_pntr(gb_codon_start);
+                if (gb_transl_table) transl_table = GB_read_char_pntr(gb_transl_table);
+            }
+
+            if (!error && codon_start)  error = GEN_species_add_entry(gb_exist_geneSpec, "codon_start", codon_start);
+            if (!error && transl_table) error = GEN_species_add_entry(gb_exist_geneSpec, "transl_table", transl_table);
         }
         if (error) aw_message(error);
 
