@@ -6,7 +6,7 @@
 
 HLP_SOURCE=oldhelp
 XML_LOCATION=Xml
-HTML_LOCATION=Html
+HTML_LOCATION=../lib/help_html
 HLP_DEST=Newhelp
 
 # choose conversion mode:
