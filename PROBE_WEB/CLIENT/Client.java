@@ -15,7 +15,11 @@ class Client
     private String        treeString = null;
     private String        baseurl    = null;
     private HttpSubsystem webAccess  = null;
-    
+    private IOManager iom = null;    
+
+
+
+
 //     private GroupCache groupCache    = new GroupCache(this);
     private Vector     memberList    = new Vector();
     private HashMap    shortNameHash = new HashMap();
@@ -401,6 +405,8 @@ class Client
             }
 
             cl.display = new ProbesGUI(10, Toolkit.clientName+" v"+Toolkit.clientVersion, cl);
+
+	    cl.iom = new IOManager(cl.display, ""); // no config file name given, using default
 
             try {
                 cl.webAccess         = new HttpSubsystem(cl.baseurl);
