@@ -16,22 +16,9 @@ using namespace std;
 // --------------------------------------------------------------------------------
 // mapping shortname <-> SpeciesID
 
-<<<<<<< ps_pg_tree_functions.cxx
 static Name2IDMap __NAME2ID_MAP;
 static ID2NameMap __ID2NAME_MAP;
 static bool       __MAPS_INITIALIZED = false;
-=======
-typedef map<string, int>           String2Int;
-typedef String2Int::const_iterator String2IntIter;
-typedef String2Int::const_reverse_iterator String2IntRIter;
-typedef map<int,string>            Int2String;
-typedef Int2String::const_iterator Int2StringIter;
-typedef Int2String::const_reverse_iterator Int2StringRIter;
-
-static String2Int species2num_map;
-static Int2String num2species_map;
-static bool       species_maps_initialized = false;
->>>>>>> 1.2
 
 //  ----------------------------------------------------------------------
 //      GB_ERROR PG_initSpeciesMaps(GBDATA *pb_main)

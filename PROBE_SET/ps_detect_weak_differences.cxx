@@ -67,32 +67,18 @@ void PS_detect_weak_differences_stepdown( const PS_NodePtr _ps_node,
     
     SpeciesID id = _ps_node->getNum();
 
-<<<<<<< ps_detect_weak_differences.cxx
-=======
-void PS_detect_weak_differences_stepdown( const PS_NodePtr _ps_node, PS_BitMap *_map, IDvector &_upper_nodes ) {
-    
->>>>>>> 1.5
     //
-<<<<<<< ps_detect_weak_differences.cxx
     // append IDs to paths
-=======
-    // get SpeciesID
->>>>>>> 1.5
     //
-<<<<<<< ps_detect_weak_differences.cxx
     __PATH->push_back( id );
     for (SpeciesID i = _parent_ID+1; ((i < id) && (i >= 0)); ++i) {
         //printf( "%i ",i );
         __INVERSE_PATH->push_back( i );
     }
-=======
-    SpeciesID nodeNum = _ps_node->getNum();
->>>>>>> 1.5
 
     //
     // set values in the maps if node has probes
     //
-<<<<<<< ps_detect_weak_differences.cxx
     if (_ps_node->hasProbes()) {
         if (_ps_node->hasPositiveProbes() && _ps_node->hasInverseProbes()) {
 //            PS_print_path();
@@ -175,43 +161,28 @@ void PS_detect_weak_differences_stepdown( const PS_NodePtr _ps_node, PS_BitMap *
             }
         }
     }
-=======
-    if (!_ps_node->hasProbes()) nodeNum = -nodeNum;               // negative nodeNums indicate an empty probes-list in a node
-    _upper_nodes.push_back( nodeNum );
-
->>>>>>> 1.5
     //
     // step down the children
     //
-<<<<<<< ps_detect_weak_differences.cxx
     for (PS_NodeMapConstIterator i = _ps_node->getChildrenBegin();
          i != _ps_node->getChildrenEnd();
          ++i) {
         PS_detect_weak_differences_stepdown( i->second, id );
-=======
-    for (PS_NodeMapConstIterator i = _ps_node->getChildrenBegin(); i != _ps_node->getChildrenEnd(); ++i) {
-        PS_detect_weak_differences_stepdown( i->second, _map, _upper_nodes );
->>>>>>> 1.5
     }
 
     //
     // remove IDs from paths
     //
-<<<<<<< ps_detect_weak_differences.cxx
     __PATH->pop_back();
     while ((__INVERSE_PATH->back() > _parent_ID) && (!__INVERSE_PATH->empty())) {
         __INVERSE_PATH->pop_back();
     }
 }
-=======
-    _upper_nodes.pop_back();
->>>>>>> 1.5
 
 void PS_detect_weak_differences( const PS_NodePtr _root_node ) {
     //
     // make bitmap
     //
-<<<<<<< ps_detect_weak_differences.cxx
     __PATH         = new IDVector;
     __INVERSE_PATH = new IDVector;
 
@@ -219,15 +190,7 @@ void PS_detect_weak_differences( const PS_NodePtr _root_node ) {
     for (PS_NodeMapConstIterator i = _root_node->getChildrenBegin(); i != _root_node->getChildrenEnd(); ++i,++c ) {
         if (c % 50 ==0) fprintf( stderr, "PS_detect_weak_differences_stepdown( %i ) : %i of %i\n", i->first, c+1, _root_node->countChildren() );
         PS_detect_weak_differences_stepdown( i->second, -1 );
-=======
-    IDvector::reverse_iterator upperIndex = _upper_nodes.rbegin();    // rbegin() <-> walk from end to start
-    // skip empty nodes at the end of the upper_nodes - list
-    // because they have no probe to distinguish them from us
-    for ( ; upperIndex != _upper_nodes.rend(); ++upperIndex ) {
-        if (*upperIndex >= 0) break;
->>>>>>> 1.5
     }
-<<<<<<< ps_detect_weak_differences.cxx
     printf( "%lu * %lu + %lu set operations performed\n", __COUNT_SET_OPS2, ULONG_MAX, __COUNT_SET_OPS );
 
     delete __PATH;
@@ -288,25 +251,14 @@ void PS_find_probes_for_pairs( const PS_NodePtr  _ps_node,
              ++i) {
             PS_find_probes_for_pairs( i->second, _pairs );
         }
-=======
-    // continue with the rest of the list
-    if (nodeNum < 0) nodeNum = -nodeNum;
-    for ( ; upperIndex != _upper_nodes.rend(); ++upperIndex) {
-        _map->triangle_set( nodeNum, abs(*upperIndex), true );
-        //printf( "(%i|%i) ", nodeNum, *upperIndex );
->>>>>>> 1.5
     }
-<<<<<<< ps_detect_weak_differences.cxx
 
     //
     // remove ID from path
     //
     __PATHSET->erase( id );
-=======
->>>>>>> 1.5
 }
 
-<<<<<<< ps_detect_weak_differences.cxx
 void PS_print_and_evaluate_map( const PS_NodePtr _root_node ) {
     //
     // print and evaluate bitmap
@@ -340,39 +292,16 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node ) {
             }
         }
 //         printf( "\n" );
-=======
-void PS_detect_weak_differences( const PS_NodePtr _ps_root_node, SpeciesID _max_ID ) {
-    PS_BitMap *theMap = new PS_BitMap( false,_max_ID,PS_BitMap::TRIANGULAR );
-    IDvector   upperNodes;
-    
-    printf( "PS_detect_weak_differences_stepdown :      1 of %i (%6.2f%%)\n",_max_ID,(1/(float)_max_ID)*100 );
-    for (PS_NodeMapConstIterator i = _ps_root_node->getChildrenBegin(); i != _ps_root_node->getChildrenEnd(); ++i ) {
-        //        if (i->first % 10 == 0)
-        printf( "PS_detect_weak_differences_stepdown : %6i of %i (%6.2f%%)\n",i->first+1,_max_ID,((i->first+1)/(float)_max_ID)*100 );
-        PS_detect_weak_differences_stepdown( i->second, theMap, upperNodes );
-        if (!upperNodes.empty()) upperNodes.clear();
->>>>>>> 1.5
     }
-<<<<<<< ps_detect_weak_differences.cxx
     printf( "(enter to continue)\n" );
 //    getchar();
-=======
-    printf( "PS_detect_weak_differences_stepdown : %6i of %i (%6.2f%%)\n",_max_ID,_max_ID,100.0 );
->>>>>>> 1.5
 
-<<<<<<< ps_detect_weak_differences.cxx
     printf( "\n\n----------------- no matches ---------------\n\n" );
     for (ID2IDSetCIter i = noMatch.begin(); i != noMatch.end(); ++i) {
         printf( "%6i %6i\n", i->first, i->second );
     }
     printf( "%u no matches\n(enter to continue)\n", noMatch.size() );
 //    getchar();
-=======
-    getchar();
-    theMap->print();
-    printf( "(enter to continue)\n" );
-//     getchar();
->>>>>>> 1.5
 
     printf( "\n\n----------------- one match ---------------\n\n" );
     for (ID2IDSetCIter i = oneMatch.begin(); i != oneMatch.end(); ++i) {
@@ -459,46 +388,21 @@ void PS_detect_weak_differences( const PS_NodePtr _ps_root_node, SpeciesID _max_
 
 int main( int argc,  char *argv[] ) {
 
-<<<<<<< ps_detect_weak_differences.cxx
    // open probe-set-database
     if (argc < 2) {
         printf("Missing argument\n Usage %s <database name> [[-]bitmap filename]\n",argv[0]);
-=======
-    // open probe-set-database
-    if (argc < 3) {
-        printf("Missing arguments\n Usage %s <database name> <map name>\n",argv[0]);
->>>>>>> 1.5
         exit(1);
     }
 
-<<<<<<< ps_detect_weak_differences.cxx
     const char *input_DB_name = argv[1];
-=======
-    const char  *input_DB_name = argv[1];
-    const char  *map_file_name = argv[2];
-    unsigned int ID_count = 0;
-    
-    printf( "Opening probe-set-database '%s'..\n", map_file_name );
-    PS_FileBuffer *fb = new PS_FileBuffer( map_file_name, PS_FileBuffer::READONLY );
-    fb->get_uint( ID_count );
-    printf( "there should be %i species in the database you specified ;)\n", ID_count );
-
->>>>>>> 1.5
     printf( "Opening probe-set-database '%s'..\n", input_DB_name );
-<<<<<<< ps_detect_weak_differences.cxx
     PS_Database *db = new PS_Database( input_DB_name, PS_Database::READONLY );
     db->load();
     __MAX_ID = db->getMaxID();
-=======
-    PS_NodePtr root(new PS_Node(-1));
-    fb->reinit( input_DB_name, PS_FileBuffer::READONLY );
-    root->load( fb );
->>>>>>> 1.5
     printf( "loaded database (enter to continue)\n" );
 //    getchar();
 
 
-<<<<<<< ps_detect_weak_differences.cxx
     __MAP = new PS_BitMap_Fast( false, __MAX_ID+1 );
     if ((argc < 3) || (argv[2][0] != '-')) {
         printf( "PS_detect_weak_differences\n" );
@@ -517,9 +421,6 @@ int main( int argc,  char *argv[] ) {
     }
     printf( "(enter to continue)\n" );
 //    getchar();
-=======
-    PS_detect_weak_differences( root, ID_count );
->>>>>>> 1.5
 
     printf( "PS_print_and_evaluate_map\n" );
     PS_print_and_evaluate_map( db->getRootNode() );

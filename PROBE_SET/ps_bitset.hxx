@@ -53,16 +53,8 @@ public:
     virtual bool save( PS_FileBuffer *_file );
     virtual bool load( PS_FileBuffer *_file );
 
-<<<<<<< ps_bitset.hxx
     explicit PS_BitSet( const bool _bias, const long _capacity ) : bias(_bias), size(-1), capacity(0) {
         data = 0;
-=======
-    explicit PS_BitSet( bool _bias, long _capacity ) {
-        data     = 0;
-        size     = -1;
-        capacity = 0;
-        bias     = _bias;
->>>>>>> 1.4
         reserve( _capacity );
     }
 
