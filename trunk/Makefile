@@ -47,6 +47,7 @@ endif
 
    GMAKE = gmake -r
    CPP = g++ -Wall $(enumequiv) -D$(MACH) $(havebool) -pipe#		# C++ Compiler /Linker
+   PP = cpp
    ACC = gcc -Wall -fenum-int-equiv -D$(MACH) -pipe#				# Ansi C
    CCLIB = $(ACC)#			# Ansii C. for shared libraries
    CCPLIB = $(CPP)#			# Same for c++
