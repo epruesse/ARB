@@ -173,13 +173,22 @@ endif
 #********************* SUN5  ****
 ifdef SUN5
    SITE_DEPENDEND_TARGETS = perl
+
+ifdef ECGS
+   CPP = g++ -W -Wall $(enumequiv) -D$(MACH) -D$(MACH)_ECGS $(havebool) -pipe#		# C++ Compiler /Linker
+   ACC = gcc -Wall -fenum-int-equiv -D$(MACH) -D$(MACH)_ECGS -pipe#				# Ansi C
+
+else
    #AR = $(FORCEMASK);ld -r -o#			# Archive Linker
    AR = $(FORCEMASK);CC -xar -o#
    XAR = $(FORCEMASK);CC -xar -o#
    ARLIB = $(FORCEMASK);ld -G -o#
 
 ifdef SUN_WS_50
-   FAKE_VIRTUAL_TABLE_POINTER = -DFAKE_VIRTUAL_TABLE_POINTER=char # fake pointer to virtual table at start of structs (when passing classes to C)
+
+   # fake pointer to virtual table at start of structs (when passing classes to C)
+   FAKE_VIRTUAL_TABLE_POINTER = -DFAKE_VIRTUAL_TABLE_POINTER=char
+
    havebool = -DHAVE_BOOL
 
    SUN_ACC_FLAGS = -errtags=yes -erroff=E_MODIFY_TYPEDEF_IGNORED $(havebool) $(FAKE_VIRTUAL_TABLE_POINTER)
@@ -215,6 +224,7 @@ endif
 ifeq ($(DEBUG),1)
 	MAKE_RTC = rtc_patch
 	RTC = -lRTC8M
+endif
 endif
 endif
 
@@ -615,7 +625,7 @@ $(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS)
 
 %.dummy:
 	@echo $(SEP) Making $(@F:.dummy=.a) in $(@D)
-	@$(GMAKE) -C $(@D) -r \
+	$(GMAKE) -C $(@D) -r \
 		"GMAKE = $(GMAKE)" \
 		"ARBHOME = $(ARBHOME)" "cflags = $(cflags) -D_ARB_$(@D:/=)" "lflags = $(lflags)" \
 		"CPPINCLUDES = $(CPPINCLUDES)" "AINCLUDES = $(AINCLUDES)" \
@@ -867,6 +877,7 @@ realclean: clean
 	rm -f `find bin -type f -perm -001 -print`
 	rm -f AISC/aisc
 	rm -f AISC_MKPTPS/aisc_mkpt
+	rm -f SOURCE_TOOLS/generate_all_links.stamp
 
 rebuild:
 		$(MAKE) realclean
