@@ -24,6 +24,7 @@
 #define HELIX_MAX_NON_ST           10
 #define HELIX_AWAR_PAIR_TEMPLATE   "Helix/pairs/%s"
 #define HELIX_AWAR_SYMBOL_TEMPLATE "Helix/symbols/%s"
+#define HELIX_AWAR_ENABLE          "Helix/enable"
 
 typedef enum {
     HELIX_NONE,         // used in entries
@@ -36,16 +37,16 @@ typedef enum {
     HELIX_USER2,
     HELIX_USER3,
     HELIX_DEFAULT,
-    HELIX_NON_STANDART0,            // used in entries
-    HELIX_NON_STANDART1,            // used in entries
-    HELIX_NON_STANDART2,            // used in entries
-    HELIX_NON_STANDART3,            // used in entries
-    HELIX_NON_STANDART4,            // used in entries
-    HELIX_NON_STANDART5,            // used in entries
-    HELIX_NON_STANDART6,            // used in entries
-    HELIX_NON_STANDART7,            // used in entries
-    HELIX_NON_STANDART8,            // used in entries
-    HELIX_NON_STANDART9,            // used in entries
+    HELIX_NON_STANDARD0,            // used in entries
+    HELIX_NON_STANDARD1,            // used in entries
+    HELIX_NON_STANDARD2,            // used in entries
+    HELIX_NON_STANDARD3,            // used in entries
+    HELIX_NON_STANDARD4,            // used in entries
+    HELIX_NON_STANDARD5,            // used in entries
+    HELIX_NON_STANDARD6,            // used in entries
+    HELIX_NON_STANDARD7,            // used in entries
+    HELIX_NON_STANDARD8,            // used in entries
+    HELIX_NON_STANDARD9,            // used in entries
     HELIX_NO_MATCH,
     HELIX_MAX
 } BI_PAIR_TYPE;
