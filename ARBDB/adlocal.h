@@ -82,11 +82,12 @@ typedef struct gbs_hash_struct GB_HASH;
 /********************************************/
 
 enum {
-    GBM_CB_INDEX = -1,
-    GBM_HASH_INDEX = -2,
+    GBM_CB_INDEX     = -1,
+    GBM_HASH_INDEX   = -2,
     GBM_HEADER_INDEX = -3,
-    GBM_UNDO = -4,
-    GBM_DICT_INDEX = -5
+    GBM_UNDO         = -4,
+    GBM_DICT_INDEX   = -5,
+    GBM_USER_INDEX   = -6
 };
 
 typedef long gb_bool;
@@ -519,7 +520,7 @@ struct gb_scandir {
     int highest_quick_index;
     int newest_quick_index;
     unsigned long date_of_quick_file;
-    enum gb_scan_quicks_types type;		/* xxx.arb.quick? or xxx.a?? */ 
+    enum gb_scan_quicks_types type;		/* xxx.arb.quick? or xxx.a?? */
 };
 
 #define GBCM_SERVER_OK_WAIT 3
