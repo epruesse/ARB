@@ -3,7 +3,7 @@ UP	arb.hlp
 UP	glossary.hlp
 UP	species.hlp
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	helix.hlp
+#SUB	helix.hlp
 SUB	ecoliref.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}

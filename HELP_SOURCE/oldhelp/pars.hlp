@@ -4,9 +4,9 @@ UP	glossary.hlp
 UP	arb_pars.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	sel_fil.hlp
-#SUB	phyl.hlp
-#SUB	phylo.hlp
+#SUB	sel_fil.hlp
+SUB	phyl.hlp
+SUB	phylo.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 

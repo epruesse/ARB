@@ -4,9 +4,9 @@ UP	glossary.hlp
 UP	sp_info.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	parser.hlp
-SUB	commands.hlp
-SUB	acisrt.hlp
+#SUB	parser.hlp
+#SUB	commands.hlp
+#SUB	acisrt.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
