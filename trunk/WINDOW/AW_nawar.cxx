@@ -460,6 +460,12 @@ void AW_awar::update_targets(void){
 AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *var_value, double var_double_value, AW_default default_file, AW_root *rooti){
     memset((char *)this,0,sizeof(AW_awar));
     GB_transaction dummy((GBDATA *)default_file);
+
+#if defined(DEBUG)
+    GB_ERROR err = GB_check_hkey(var_name);
+    aw_assert(!err);
+#endif // DEBUG
+
     this->awar_name = strdup(var_name);
     this->root = rooti;
     GBDATA *gb_def = GB_search((GBDATA *)default_file, var_name,GB_FIND);
