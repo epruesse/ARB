@@ -285,6 +285,10 @@ void concatenateAlignments(AW_window *aws){
     // The following 3 'char*' have been 'const char *' - that's not correct,
     // because read_string() returns a malloc-copy!
     // These have to be free'd somewhere (only 'new_ali_name' is freed) -- please fix this.
+    //
+    // In general allocation and correct de-allocation is one the most important things when coding C(++) :
+    // - Everytime you use a function that returns a char* control whether it is allocated or not!
+    // - When a function returns a const char* then there's no need to care about freeing it!
 
 	char *new_ali_name        = aw_root->awar(AWAR_CON_NEW_ALIGNMENT_NAME)->read_string();
     char *seq_type            = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
