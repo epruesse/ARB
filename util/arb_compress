@@ -5,11 +5,11 @@
             find PERL_SCRIPTS ! -type d; \
             find SH ! -type d; \
             find GDEHELP ! -type d; \
-            find DEPOT ! -type d; \
             find Xlib ! -type d; \
             find lib ! -type d | grep -v "/pts/") \
+        | grep -v "^CVS/" \
         | grep -v "/CVS/" \
-        | grep -v "/lib\/nas\/names.dat$/" \
+        | grep -v 'lib\/nas\/names.dat$' \
         | grep -v '/.#[^/]*$' \
         ` \
     |gzip >arb.tgz
