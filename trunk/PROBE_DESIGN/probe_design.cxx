@@ -129,6 +129,13 @@ static void enable_auto_match_cb(AW_root *root, AW_window *aww, AW_CL cl_sel_id)
     auto_match_changed(root);
 }
 
+static void popup_match_window_cb(AW_window *aww) {
+    AW_root   *root         = aww->get_root();
+    AW_window *match_window = create_probe_match_window(root, 0);
+    match_window->show();
+    root->awar(AWAR_TARGET_STRING)->touch(); // force re-match
+}
+
 // --------------------------------------------------------------------------------
 
 void probe_design_create_result_window(AW_window *aww)
@@ -168,6 +175,10 @@ void probe_design_create_result_window(AW_window *aww)
     pd_gl.pd_design->at("print");
     pd_gl.pd_design->callback( create_print_box_for_selection_lists, (AW_CL)pd_gl.pd_design_id );
     pd_gl.pd_design->create_button("PRINT", "PRINT", "P");
+
+    pd_gl.pd_design->at("match");
+    pd_gl.pd_design->callback( popup_match_window_cb);
+    pd_gl.pd_design->create_button("MATCH", "MATCH", "M");
 
     pd_gl.pd_design->show();
 }
@@ -236,7 +247,7 @@ GB_ERROR pd_get_the_names(bytestring &bs, bytestring &checksum) {
 
         GBDATA *gb_data = GBT_read_sequence(gb_species, use);
         if (!gb_data) { error = species_requires(gb_species, GBS_global_string("data in '%s'", use)); break; }
-        
+
         GBS_intcat(checksums, GBS_checksum(GB_read_char_pntr(gb_data), 1, ".-"));
         GBS_strcat(names, GB_read_char_pntr(gb_name));
         GBS_chrcat(checksums, '#');
@@ -271,7 +282,7 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
             GBDATA *gb_data = GBT_read_sequence(gb_species, use);
             if (!gb_data) { error = species_requires(gb_species, GBS_global_string("data in '%s'", use)); break; }
             sequence = GB_read_char_pntr(gb_data);
-            
+
             GBDATA *gb_name = GB_search(gb_species, "name", GB_FIND);
             if (!gb_name) { error = species_requires(gb_species, "name"); break; }
             species_name = GB_read_char_pntr(gb_name);
@@ -689,14 +700,16 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         return;
     }
 
-    char *matchName, *tmpMatchInfo, *tmpProbe;
+    char *matchName, *tmpMatchInfo;
+
+    delete(g_spd);              // delete previous probe data
     g_spd = new saiProbeData;
+    transferProbeData(g_spd);
 
     if (selection_id) {
         sprintf(result, "Searched for                                     %s",probe);
         aww->insert_selection( selection_id, result, probe );
-        tmpProbe = strdup((const char *) probe);
-        g_spd->probeTarget = tmpProbe;
+        g_spd->setProbeTarget(probe);
     }
     free(probe);
 
@@ -734,6 +747,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 
     int gene_flag = 0;
     if (hinfo) {
+        g_spd->setHeadline(hinfo);
         if (selection_id) aww->insert_selection( selection_id, hinfo, "" );
         if (!strncmp(hinfo,"    species  genename",21)) gene_flag = 1;
     }
@@ -789,7 +803,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         }
     }
 
-    // read results from pt-server : 
+    // read results from pt-server :
 
     if (show_status) aw_status("Parsing results..");
 
@@ -904,12 +918,12 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         }
     }
 
-    if (!error) {
-        if (g_spd)  transferProbeData(g_spd); // to update probe list in sai probe match window
-        root->awar(AWAR_PROBE_LIST)->write_string(g_spd->probeTarget); //update probe list if probe match results changed
-    }
-    else {
+    if (error) {
         aw_message(error);
+    }
+    else if (selection_id) { // if !selection_id then probe match window is not opened
+        pd_assert(g_spd);
+        root->awar(AWAR_PROBE_LIST)->rewrite_string(g_spd->getProbeTarget()); // force refresh of SAI/Probe window
     }
 
     if (counter) *counter = mcount;
@@ -927,6 +941,9 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
     }
 
     if (show_status) aw_closestatus();
+
+    root->awar(AWAR_TREE_REFRESH)->touch();
+
     return;
 }
 
@@ -995,17 +1012,9 @@ static void selected_match_changed_cb(AW_root *root) {
         root->awar(AWAR_SPECIES_NAME)->write_string(selected_match);
     }
 
-    root->awar(AWAR_TARGET_STRING)->touch(); // forces editor to jump to probe match in gene 
-    
-    free(selected_match);
-}
+    root->awar(AWAR_TARGET_STRING)->touch(); // forces editor to jump to probe match in gene
 
-static void probeListChanged_cb(AW_root *root) {
-    //this is called whenever the probe match results changes
-    AWUSE(root);
-    if(g_spd) {
-        transferProbeData(g_spd); //transferring probe data to saiProbeMatch function
-    }
+    free(selected_match);
 }
 
 void create_probe_design_variables(AW_root *root,AW_default db1, AW_default global)
@@ -1018,7 +1027,7 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     root->awar_float( AWAR_PD_DESIGN_EXP_DTEDGE, .5  ,    db1);
     root->awar_float( AWAR_PD_DESIGN_EXP_DT, .5  ,    db1);
 
-    root->awar_string( AWAR_PROBE_LIST, "" , global)->add_callback(probeListChanged_cb);
+    root->awar_string( AWAR_PROBE_LIST, "" , global);
 
     double default_bonds[16] = {
         0.0, 0.0, 0.5, 1.1,
@@ -1492,9 +1501,12 @@ static void matchSaiProbe(AW_window *aw) {
     awExists->show();
 }
 
-AW_window *create_probe_match_window( AW_root *root,AW_default def)  {
-    AW_window_simple *aws = new AW_window_simple;
-    AWUSE(def);
+AW_window *create_probe_match_window( AW_root *root,AW_default)  {
+    static AW_window_simple *aws = 0; // the one and only probe match window
+    if (aws) return aws;
+
+    aws = new AW_window_simple;
+
     aws->init( root, "PROBE_MATCH", "PROBE MATCH");
 
     aws->load_xfig("pd_match.fig");
@@ -1621,7 +1633,7 @@ void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
                 sprintf(AW_ERROR_BUFFER,"Killed '%s' killed",choice);
                 aw_message();
             }
-            delete choice;
+            free(choice);
         }
         aw_closestatus();
     }
@@ -1736,7 +1748,7 @@ void pd_export_pt_server(AW_window *aww)
 
         if (!error ) {
             aw_status("Start new server");
-            error = arb_start_server(pt_server,gb_main,0);
+            error = arb_start_server(pt_server,gb_main, 1);
         }
         aw_closestatus();
     }
@@ -1746,9 +1758,10 @@ void pd_export_pt_server(AW_window *aww)
 void pd_edit_arb_tcp(AW_window *aww){
     awt_edit(aww->get_root(),"$(ARBHOME)/lib/arb_tcp.dat",900,400);
 }
-AW_window *create_probe_admin_window( AW_root *root,AW_default def)  {
-    AW_window_simple *aws = new AW_window_simple;
-    AWUSE(def);
+AW_window *create_probe_admin_window( AW_root *root, AW_CL cl_genome_db)  {
+    AW_window_simple *aws         = new AW_window_simple;
+    bool              is_genom_db = (bool)cl_genome_db;
+
     aws->init( root, "PT_SERVER_ADMIN", "PT_SERVER ADMIN");
 
     aws->load_xfig("pd_admin.fig");
@@ -1769,38 +1782,40 @@ AW_window *create_probe_admin_window( AW_root *root,AW_default def)  {
 
     aws->at( "kill" );
     aws->callback(pd_kill_pt_server,0);
-    aws->create_button("KILL_SERVER","KILL SERVER");
+    aws->create_button("KILL_SERVER","Kill server");
 
     aws->at( "kill_all" );
     aws->callback(pd_kill_pt_server,1);
-    aws->create_button("KILL_ALL_SERVERS","KILL ALL SERVERS");
+    aws->create_button("KILL_ALL_SERVERS","Kill all servers");
 
     aws->at( "start" );
     aws->callback(pd_start_pt_server);
-    aws->create_button("START_SERVER","START SERVER");
+    aws->create_button("START_SERVER","Start server");
 
     aws->at( "export" );
     aws->callback(pd_export_pt_server);
-    aws->create_button("UPDATE_SERVER","UPDATE SERVER");
+    aws->create_button("UPDATE_SERVER","Update server");
 
     aws->at( "query" );
     aws->callback(pd_query_pt_server);
-    aws->create_button("CHECK_SERVER","CHECK SERVER");
+    aws->create_button("CHECK_SERVER","Check server");
 
     aws->at( "edit" );
     aws->callback(pd_edit_arb_tcp);
-    aws->create_button("CREATE_TEMPLATE","CREATE TEMPLATE");
-    
+    aws->create_button("CREATE_TEMPLATE","Configure");
+
 #if defined(DEBUG)
 #if defined(DEVEL_RALF)
 #warning re-activate the toggle when gene pt-server is fixed
 #endif // DEVEL_RALF
-    aws->at( "gene_server" );
-    aws->label("Gene server");
-    aws->create_toggle(AWAR_PROBE_USE_GENE_SERVER);
+    if (is_genom_db) {
+        aws->at( "gene_label" );
+        aws->label("Gene server?");
+
+        aws->at( "gene_server" );
+        aws->create_toggle(AWAR_PROBE_USE_GENE_SERVER);
+    }
 #endif // DEBUG
-    // aws->callback(pd_export_pt_server, 1);
-    // aws->create_button("update_genesrv","Update GeneSrv");
 
     return aws;
 }
