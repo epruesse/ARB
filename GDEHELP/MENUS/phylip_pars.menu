@@ -1,5 +1,5 @@
 item:Phylip DNAPARS
-
+itemmeta: P
 itemmethod:(GEN_INFILE(in1);RUN_IN_WINDOW(($BOOTSTRP;$DISPLAY_FUNC));RM_LOCAL_FILES(in1) )&
 itemhelp:dnapars.help
 
@@ -25,7 +25,7 @@ inmask:
 insave:
 
 item:Phylip PROTPARS
-
+itemmeta: R
 itemmethod:(GEN_INFILE(in1);RUN_IN_WINDOW(($BOOTSTRP;$DISPLAY_FUNC));RM_LOCAL_FILES(in1) )&
 itemhelp:dnapars.help
 

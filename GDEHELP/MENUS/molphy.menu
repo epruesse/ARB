@@ -1,5 +1,5 @@
 item:Protein_ML (molphy max 40 species)
- 
+itemmeta: L
 itemmethod:(GEN_INFILE(in1);cat infile |tr '?' '-' >in1.in;RUN_IN_WINDOW((CONSFLAG=-consense;$BOOTSTRP;$DISPLAY_FUNC));RM_LOCAL_FILES(in1) )&
 itemhelp:phylip.help
 
@@ -9,7 +9,7 @@ arglabel:What to do with the tree:?
 argchoice:ARB ('tree_phylip'):arb_read_tree $CONSFLAG tree_ph_$$ protml.tre "PRG=protml PARMETERS=$MODEL$SEARCH FILTER=$FILTER PKG=molphy"
 argchoice:TextEdit:arb_textedit outfile
 argchoice:Treetool:treetool treefile
- 
+
 arg:BOOTSTRP
 arglabel:How many bootstraps ?
 argtype:chooser

@@ -1,4 +1,5 @@
 item:DeSoete Tree fit
+itemmeta: D
 itemmethod: ( RUN_IN_WINDOW((arb_readseq -a -f8 in1>in1.flat;count -t $CORR in1.flat> in1.tmp ; lsadt<in1.tmp -seed $SEED -init $INIT -empty -99.9 > in1.out; $DISPLAY_FUNC));/bin/rm -f in1* )&
 itemhelp:lsadt.help
 
@@ -27,10 +28,10 @@ arglabel:Random nr. seed
 argmin:0
 argmax:65535
 argvalue:12345
- 
+
 arg:DISPLAY_FUNC
 argtype:chooser
 arglabel:View tree using
 argchoice:ARB ('tree_desoete'):arb_read_tree tree_desoete_$$ in1.out "PRG=DeSoete CORR=$CORR FILTER=$FILTER"
-argchoice:TextEdit:${ARB_TEXTEDIT:-textedit} in1.out 
+argchoice:TextEdit:${ARB_TEXTEDIT:-textedit} in1.out
 argchoice:Treetool:treetool in1.out
