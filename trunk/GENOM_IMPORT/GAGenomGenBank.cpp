@@ -22,7 +22,6 @@ using namespace gellisary;
 GAGenomGenBank::GAGenomGenBank(string * fname):GAGenom(fname)
 {
     iter = 0;
-    sequence_length = 0;
 }
 
 void gellisary::GAGenomGenBank::parseFlatFile()
@@ -495,8 +494,9 @@ void gellisary::GAGenomGenBank::parseFlatFile()
                         sequence += tmp_str;*/
                         ori = false;
                     }
-                    if(tmp_str[1] == 'A')
+                    /*if(tmp_str[1] == 'A')
                     {
+                        nobc = false;
                         del_str = "BASE COUNT";
                         GAGenomUtilities::replaceByWhiteSpaceCleanly(&tmp_str,&del_str);
                         tmp_vector = GAGenomUtilities::findAndSeparateWordsByChar(&tmp_str,' ',true);
@@ -507,7 +507,7 @@ void gellisary::GAGenomGenBank::parseFlatFile()
                             tmp_int_4 = GAGenomUtilities::stringToInteger(&t_str);
                             sequence_header.push_back(tmp_int_4);
                         }
-                    }
+                    }*/
                     break;
                 case 'D':
                     if(de)
@@ -1246,21 +1246,22 @@ void gellisary::GAGenomGenBank::parseFlatFile()
 //                    cout << "seq_len : -" << seq_len << "-" << endl;
 //                    cout << "sequence.size() : -" << sequence.size() << "-" << endl;
                     if(ori)
-                    {
-                        ori = false;
-                    }
-                    if(seq_len == (int) sequence.size()) 
-	            	{
-    	        		complete_file = true;
-        	    		error_number = 0;
+	                {
+    	            	ori = false;
+        	        }
+            	    sequence_length = (int)sequence.size();
+                	if(seq_len == (int) sequence.size()) 
+		            {
+    		        	complete_file = true;
+        		    	error_number = 0;
             			error_message = "All Okay!";
             		}
-	            	else
-    	        	{
-        	    		error_number = 1;
+		            else
+    		        {
+        		    	error_number = 1;
             			error_message = "Sequence string of genome is incomplete!";
             		}
-	                flatfile.close();
+		            flatfile.close();
                     break;
                 case ' ':
                     if(de)
@@ -1495,15 +1496,6 @@ vector<int> * gellisary::GAGenomGenBank::getSequenceHeader()
     return &sequence_header;
 }
 
-int gellisary::GAGenomGenBank::getSequenceLength()
-{
-	if(!prepared)
-    {
-        parseFlatFile();
-    }
-    return sequence_length;
-}
-
 void gellisary::GAGenomGenBank::parseSequence(string * source_str)
 {
     string target_str;
@@ -1514,6 +1506,36 @@ void gellisary::GAGenomGenBank::parseSequence(string * source_str)
         if((tmp_char != ' ') && (tmp_char != '\r') && (tmp_char != '\n') && (tmp_char != '0') && (tmp_char != '1') && (tmp_char != '2') && (tmp_char != '3') && (tmp_char != '4') && (tmp_char != '5') && (tmp_char != '6') && (tmp_char != '7') && (tmp_char != '8') && (tmp_char != '9'))
         {
         	target_str += tmp_char;
+        	switch(tmp_char)
+        	{
+        		case 'a':
+        			sequence_a++;
+        			break;
+       			case 'A':
+        			sequence_a++;
+        			break;
+       			case 'c':
+        			sequence_c++;
+        			break;
+       			case 'C':
+        			sequence_c++;
+        			break;
+       			case 'g':
+        			sequence_g++;
+        			break;
+       			case 'G':
+        			sequence_g++;
+        			break;
+       			case 't':
+        			sequence_t++;
+        			break;
+       			case 'T':
+        			sequence_t++;
+        			break;
+       			default:
+        			sequence_other++;
+        			break;
+        	}
         }
     }
     *source_str = target_str;

@@ -14,6 +14,12 @@ gellisary::GAGenom::GAGenom(string * fname)
 	file_name = *fname;
 	complete_file = false;
 	error_number = 2;
+	sequence_length = 0;
+    sequence_a = 0;
+	sequence_c = 0;
+	sequence_g = 0;
+	sequence_t = 0;
+	sequence_other = 0;
 	error_message = "The FlatFile is incomplete!";
 }
 
@@ -145,6 +151,60 @@ vector<string> * gellisary::GAGenom::getKeyWords()
 		parseFlatFile();
 	}
 	return &key_words;
+}
+
+int gellisary::GAGenom::getSequenceLength()
+{
+	if(!prepared)
+    {
+        parseFlatFile();
+    }
+    return sequence_length;
+}
+
+int gellisary::GAGenom::getSequenceA()
+{
+	if(!prepared)
+    {
+        parseFlatFile();
+    }
+    return sequence_a;
+}
+
+int gellisary::GAGenom::getSequenceC()
+{
+	if(!prepared)
+    {
+        parseFlatFile();
+    }
+    return sequence_c;
+}
+
+int gellisary::GAGenom::getSequenceG()
+{
+	if(!prepared)
+    {
+        parseFlatFile();
+    }
+    return sequence_g;
+}
+
+int gellisary::GAGenom::getSequenceT()
+{
+	if(!prepared)
+    {
+        parseFlatFile();
+    }
+    return sequence_t;
+}
+
+int gellisary::GAGenom::getSequenceOther()
+{
+	if(!prepared)
+    {
+        parseFlatFile();
+    }
+    return sequence_other;
 }
 
 vector<string> * gellisary::GAGenom::getComment()

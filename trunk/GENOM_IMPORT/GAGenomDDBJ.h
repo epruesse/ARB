@@ -19,6 +19,8 @@ namespace gellisary{
         gellisary::GAGenomFeatureTableDDBJ feature_table;
         int iter;
         GAGenomReferenceDDBJ tmp_ref;
+        int sequence_length;
+        std::string consortium;
 
     public:
 
@@ -29,6 +31,7 @@ namespace gellisary{
         gellisary::GAGenomFeatureTableDDBJ * getFeatureTable();
         gellisary::GAGenomReferenceDDBJ * getReference();
         virtual void parseSequence(std::string *);
+        int getSequenceLength();
     };
 
 };

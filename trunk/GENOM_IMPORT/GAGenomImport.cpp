@@ -354,19 +354,24 @@ void gellisary::writeSourceEmbl(GBDATA * source_container, gellisary::GAGenomFea
     std::string * tmp_str_pnt;
     std::string * tmp_str_pnt2;
     source->setIterator();
+//    cout << "eins" << endl;
     while((tmp_str_pnt = source->getNameOfQualifier()) != NULL)
     {
+//        cout << "zwei" << endl;
         tmp_str_pnt2 = source->getValueOfQualifier(tmp_str_pnt);
         if(!(*tmp_str_pnt2).empty())
         {
+//            cout << "drei" << endl;
             gellisary::writeString(source_container,tmp_str_pnt,tmp_str_pnt2);
         }
         else
         {
+//            cout << "vier" << endl;
             tmp_str = "yes";
             gellisary::writeString(source_container,tmp_str_pnt,&tmp_str);
         }
     }
+//    cout << "fünf" << endl;
 }
 
 /*
@@ -589,7 +594,7 @@ void gellisary::writeGeneGenBank(GBDATA * source_container, gellisary::GAGenomGe
             {
                 t3_str = "pos_joined";
                 gellisary::writeInteger(gene_container,&t3_str,((int)joined.size()/2));
-                for(int k = 0; k < (int) joined.size(); k+=2)
+                for(int k = 0; k < ((int) joined.size()/2); k++)
                 {
                     if(k == 0)
                     {
@@ -604,12 +609,12 @@ void gellisary::writeGeneGenBank(GBDATA * source_container, gellisary::GAGenomGe
                     }
                     else
                     {
-                        t3_str = "pos_begin"+GAGenomUtilities::integerToString(k);
-                        t3_int = joined[k];
+                        t3_str = "pos_begin"+GAGenomUtilities::integerToString((k+1));
+                        t3_int = joined[(k*2)];
                         gene_length -= t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
-                        t3_str = "pos_end"+GAGenomUtilities::integerToString(k);
-                        t3_int = joined[k+1];
+                        t3_str = "pos_end"+GAGenomUtilities::integerToString((k+1));
+                        t3_int = joined[(k*2)+1];
                         gene_length += t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
                     }
@@ -672,19 +677,25 @@ void gellisary::writeSourceGenBank(GBDATA * source_container, gellisary::GAGenom
     std::string * tmp_str_pnt;
     std::string * tmp_str_pnt2;
     source->setIterator();
+//    cout << "eins" << endl;
     while((tmp_str_pnt = source->getNameOfQualifier()) != NULL)
     {
+//        cout << "zwei" << endl;
         tmp_str_pnt2 = source->getValueOfQualifier(tmp_str_pnt);
+//        cout << "drei" << endl;
         if(!(*tmp_str_pnt2).empty())
         {
+//            cout << "vier" << endl;
             gellisary::writeString(source_container,tmp_str_pnt,tmp_str_pnt2);
         }
         else
         {
+//            cout << "fünf" << endl;
             tmp_str = "yes";
             gellisary::writeString(source_container,tmp_str_pnt,&tmp_str);
         }
     }
+//    cout << "sechs" << endl;
 }
 
 /*
@@ -889,7 +900,7 @@ void gellisary::writeGeneDDBJ(GBDATA * source_container, gellisary::GAGenomGeneD
             {
                 t3_str = "pos_joined";
                 gellisary::writeInteger(gene_container,&t3_str,((int)joined.size()/2));
-                for(int k = 0; k < (int) joined.size(); k+=2)
+                for(int k = 0; k < ((int) joined.size()/2); k++)
                 {
                     if(k == 0)
                     {
@@ -904,12 +915,12 @@ void gellisary::writeGeneDDBJ(GBDATA * source_container, gellisary::GAGenomGeneD
                     }
                     else
                     {
-                        t3_str = "pos_begin"+GAGenomUtilities::integerToString(k);
-                        t3_int = joined[k];
+                        t3_str = "pos_begin"+GAGenomUtilities::integerToString((k+1));
+                        t3_int = joined[(k*2)];
                         gene_length -= t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
-                        t3_str = "pos_end"+GAGenomUtilities::integerToString(k);
-                        t3_int = joined[k+1];
+                        t3_str = "pos_end"+GAGenomUtilities::integerToString((k+1));
+                        t3_int = joined[(k*2)+1];
                         gene_length += t3_int;
                         gellisary::writeInteger(gene_container,&t3_str,t3_int);
                     }
@@ -1320,13 +1331,14 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
             }
             gellisary::writeGenomSequence(gb_species,genomgenbank.getSequence(),ali_name);
     
-            tmp_int_vector = *(genomgenbank.getSequenceHeader());
+            /*tmp_int_vector = *(genomgenbank.getSequenceHeader());
             tmp_str_vector.clear();
             tmp_str_vector.push_back("sequence_a");
             tmp_str_vector.push_back("sequence_c");
             tmp_str_vector.push_back("sequence_g");
             tmp_str_vector.push_back("sequence_t");
-            int tmp_int;
+            tmp_str_vector.push_back("sequence_other");
+            
             for(int i = 0; i < (int)tmp_int_vector.size(); i++)
             {
                 field = tmp_str_vector[i];
@@ -1335,22 +1347,50 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
                 {
                     gellisary::writeInteger(gb_species,&field,tmp_int);
                 }
+            }*/
+            int tmp_int;
+            field = "sequence_a";
+            tmp_int = 0;
+           	tmp_int = genomgenbank.getSequenceA();
+           	if(tmp_int != 0)
+            {
+            	gellisary::writeInteger(gb_species,&field,tmp_int);
             }
-            
+            field = "sequence_c";
+            tmp_int = 0;
+           	tmp_int = genomgenbank.getSequenceC();
+            if(tmp_int != 0)
+            {
+            	gellisary::writeInteger(gb_species,&field,tmp_int);
+            }
+            field = "sequence_g";
+            tmp_int = 0;
+           	tmp_int = genomgenbank.getSequenceG();
+            if(tmp_int != 0)
+            {
+            	gellisary::writeInteger(gb_species,&field,tmp_int);
+            }
+            field = "sequence_t";
+            tmp_int = 0;
+           	tmp_int = genomgenbank.getSequenceT();
+            if(tmp_int != 0)
+            {
+            	gellisary::writeInteger(gb_species,&field,tmp_int);
+            }
+            field = "sequence_other";
+            tmp_int = 0;
+           	tmp_int = genomgenbank.getSequenceOther();
+            if(tmp_int != 0)
+            {
+            	gellisary::writeInteger(gb_species,&field,tmp_int);
+            }
             field = "sequence_length";
             tmp_int = 0;
-            if((int)tmp_int_vector.size() > 0)
+           	tmp_int = genomgenbank.getSequenceLength();
+            if(tmp_int != 0)
             {
-            	for(int i = 0; i < (int)tmp_int_vector.size(); i++)
-            	{
-                	tmp_int += tmp_int_vector[i];
-            	}
+            	gellisary::writeInteger(gb_species,&field,tmp_int);
             }
-            else
-            {
-            	tmp_int = genomgenbank.getSequenceLength();
-            }
-            gellisary::writeInteger(gb_species,&field,tmp_int);
             gellisary::writeFeatureTableGenBank(gb_species,genomgenbank.getFeatureTable());
             GAGenomReferenceGenBank * tmp_reference;
             while((tmp_reference = genomgenbank.getReference()) != NULL)
@@ -1498,9 +1538,16 @@ GB_ERROR gellisary::executeQuery(GBDATA * gb_main, const char * file_name, const
             }
             field = "sequence_length";
             tmp_int = 0;
-            for(int i = 0; i < (int)tmp_int_vector.size(); i++)
+            if((int)tmp_int_vector.size() > 0)
             {
-                tmp_int += tmp_int_vector[i];
+            	for(int i = 0; i < (int)tmp_int_vector.size(); i++)
+            	{
+                	tmp_int += tmp_int_vector[i];
+            	}
+            }
+            else
+            {
+            	tmp_int = genomddbj.getSequenceLength();
             }
             gellisary::writeInteger(gb_species,&field,tmp_int);
             gellisary::writeFeatureTableDDBJ(gb_species,genomddbj.getFeatureTable());
