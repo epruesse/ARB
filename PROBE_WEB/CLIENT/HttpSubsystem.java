@@ -113,6 +113,15 @@ public String retrieveNodeInformation(String nodePath)
         return probes;
     }
 
+public String retrieveGroupMembers(String groupId, int plength)
+    {
+        String members = conductRequest("getMembers.cgi?id=" + groupId + "&plength=" + plength);
+        if (members == null) {
+            System.out.println("Warning: no answer from Server ("+getLastRequestError()+")");
+        }
+        return members;
+    }
+
 public void retrieveVersionInformation()
     {
         String versionInfo = conductRequest("getVersion.cgi");
