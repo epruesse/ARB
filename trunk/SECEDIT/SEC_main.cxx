@@ -342,7 +342,7 @@ void SEC_root::init_sequences(AW_root *awr, AWT_canvas *ntw){
     //number_found = new int[template_length];
     //}
     //if (found_abs_pos == NULL) {
-    //	found_abs_pos = new char[template_length];
+    //  found_abs_pos = new char[template_length];
     // }
 
     SEC_root * sec_root = SEC_GRAPHIC->sec_root;
@@ -363,11 +363,11 @@ void sec_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
             break;
         }
     case AWT_MODE_STRETCH: {
-	    text="STRETCH MODE  : Click and drag to EXPAND or CONTRACT the HELICES and LOOPS ";
+        text="STRETCH MODE  : Click and drag to EXPAND or CONTRACT the HELICES and LOOPS ";
             break;
         }
-	case AWT_MODE_PROINFO: {
-            text="PROBE INFO MODE    LEFT: Displays PROBE information (Please click on the PROBE)   RIGHT: Clears the Display";
+    case AWT_MODE_PROINFO: {
+            text="PROBE INFO MODE    LEFT: Displays PROBE information   RIGHT: Clears the Display";
             break;
         }
         case AWT_MODE_MOVE: {
@@ -398,7 +398,10 @@ void sec_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
             break;
         }
     }
-    aws->get_root()->awar("tmp/LeftFooter")->write_string( text);
+
+    sec_assert(strlen(text) < AWAR_FOOTER_MAX_LEN); // text too long!
+
+    aws->get_root()->awar(AWAR_FOOTER)->write_string( text);
     ntw->set_mode(mode);
     ntw->refresh();
 }
@@ -417,11 +420,11 @@ void SEC_undo_cb(AW_window *aw, AWT_canvas *ntw, AW_CL undo_type)
     }
 }
 
-#define MAXLINESIZE 	500
-#define ASS   		"ARB secondary structure v1"
-#define ASS_START 	"["ASS"]\n"
-#define ASS_EOS 	"[end of structure]\n"
-#define ASS_EOF		"[end of "ASS"]\n"
+#define MAXLINESIZE     500
+#define ASS         "ARB secondary structure v1"
+#define ASS_START   "["ASS"]\n"
+#define ASS_EOS     "[end of structure]\n"
+#define ASS_EOF     "[end of "ASS"]\n"
 
 #if 0
 // static GB_ERROR read_helix_info(char **helix, int *helix_length,  char **helix_nr, int *helix_nr_length)
@@ -442,8 +445,8 @@ void SEC_undo_cb(AW_window *aw, AWT_canvas *ntw, AW_CL undo_type)
 //         GBDATA *gb_helix = 0;
 //         GBDATA *gb_helix_nr = 0;
 
-//         if (gb_helix_nr_con) 	gb_helix_nr = GBT_read_sequence(gb_helix_nr_con,alignment_name);
-//         if (gb_helix_con) 	gb_helix = GBT_read_sequence(gb_helix_con,alignment_name);
+//         if (gb_helix_nr_con)     gb_helix_nr = GBT_read_sequence(gb_helix_nr_con,alignment_name);
+//         if (gb_helix_con)    gb_helix = GBT_read_sequence(gb_helix_con,alignment_name);
 
 //         *helix = 0;
 //         *helix_nr = 0;
@@ -502,8 +505,8 @@ static char *encode_xstring_rel_helix(GB_CSTR x_string, int xlength, BI_helix *h
 
                     if (no_of_helices==allocated) {
                         allocated += 100;
-			rel_helix = (char*)realloc(rel_helix, sizeof(*rel_helix)*allocated);
-		    }
+            rel_helix = (char*)realloc(rel_helix, sizeof(*rel_helix)*allocated);
+            }
                     rel_helix[no_of_helices++] = '0'+is_used_in_secondary_structure;
                     rel_helix[no_of_helices] = 0;
                     if (pos==(xlength-1)) {
@@ -523,7 +526,7 @@ static char *encode_xstring_rel_helix(GB_CSTR x_string, int xlength, BI_helix *h
         }
     }
 
-    *no_of_helices_ptr = no_of_helices; 
+    *no_of_helices_ptr = no_of_helices;
     return rel_helix;
 }
 
@@ -776,8 +779,8 @@ static AW_window *SEC_importExport(AW_root *root, int export_to_file, AWT_canvas
 {
     AW_window_simple *aws = new AW_window_simple;
 
-    if (export_to_file) aws->init(root, "export_secondary_structure", "Export secondary structure to ...", 100, 100);
-    else 		aws->init(root, "import_secondary_structure", "Import secondary structure from ...", 100, 100);
+    if (export_to_file) aws->init(root, "export_secondary_structure", "Export secondary structure to ...");
+    else                aws->init(root, "import_secondary_structure", "Import secondary structure from ...");
 
     aws->load_xfig("sec_imexport.fig");
 
@@ -816,7 +819,7 @@ static void SEC_new_structure(AW_window *, AW_CL cl_ntw, AW_CL) {
 
     if (aw_message("This will delete your current secondary structure!", "Abort,Continue")) {
         AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
-        //	SEC_graphic *sec_graphic = (SEC_graphic *) ntw->tree_disp;
+        //  SEC_graphic *sec_graphic = (SEC_graphic *) ntw->tree_disp;
         SEC_root *sec_root = SEC_GRAPHIC->sec_root;
         char *ali_name = GBT_get_default_alignment(gb_main);
         long ali_len = GBT_get_alignment_len(gb_main,ali_name);
@@ -832,7 +835,7 @@ static void SEC_new_structure(AW_window *, AW_CL cl_ntw, AW_CL) {
 AW_window *SEC_create_layout_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(awr, "SEC_LAYOUT", "SECEDIT Layout", 100, 100);
+    aws->init(awr, "SEC_LAYOUT", "SECEDIT Layout");
     aws->load_xfig("sec_layout.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -857,10 +860,10 @@ AW_window *SEC_create_layout_window(AW_root *awr) {
     aws->at("chars");
     aws->get_at_position(&x, &dummy);
 
-#define PAIR_FIELDS(lower, upper)				\
-    aws->at(lower "_pair"); 					\
-    aws->create_input_field(AWAR_SECEDIT_##upper##_PAIRS, 30);	\
-    aws->at_x(x);						\
+#define PAIR_FIELDS(lower, upper)               \
+    aws->at(lower "_pair");                     \
+    aws->create_input_field(AWAR_SECEDIT_##upper##_PAIRS, 30);  \
+    aws->at_x(x);                       \
     aws->create_input_field(AWAR_SECEDIT_##upper##_PAIR_CHAR, 1)
 
     PAIR_FIELDS("strong", STRONG);
@@ -879,7 +882,7 @@ AW_window *SEC_create_layout_window(AW_root *awr) {
 AW_window *SEC_create_display_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(awr, "SEC_DISPLAY", "DISPLAY OPTIONS", 100, 50);
+    aws->init(awr, "SEC_DISPLAY", "DISPLAY OPTIONS");
     aws->load_xfig("sec_display.fig");
 
     aws->at("helixNrs");
@@ -942,7 +945,7 @@ AW_window *SEC_create_main_window(AW_root *awr){
     GB_transaction tscope(gb_main);
 
     AW_window_menu_modes *awm = new AW_window_menu_modes();
-    awm->init(awr,"ARB_SECEDIT", "ARB: SECONDARY STRUCTURE EDITOR WINDOW", 800,600,10,10);
+    awm->init(awr,"ARB_SECEDIT", "ARB_SECEDIT: Secondary structure editor", 200,200);
 
     SEC_create_awars(awr, AW_ROOT_DEFAULT);
 
@@ -966,7 +969,7 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->insert_menu_topic("secedit_export", "Save Structure ", "S", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)ntw);
     awm->insert_separator();
     awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG ", "X", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_sec_export_window, (AW_CL)ntw);
-    awm->insert_menu_topic("print_secedit", "Print Structure ", "P","secedit2prt.hlp",	AWM_ALL,	(AW_CB)AWT_create_print_window, (AW_CL)ntw, 0 );
+    awm->insert_menu_topic("print_secedit", "Print Structure ", "P","secedit2prt.hlp",  AWM_ALL,    (AW_CB)AWT_create_print_window, (AW_CL)ntw, 0 );
     awm->insert_separator();
 
 #if defined(FREESTANDING)
@@ -976,11 +979,16 @@ AW_window *SEC_create_main_window(AW_root *awr){
 #endif
 
     awm->create_menu("props","Properties","P","properties.hlp", AWM_ALL);
-    //    awm->insert_menu_topic("props_menu",	"Menu: Colors and Fonts ...",	"M","props_frame.hlp",	AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
-    awm->insert_menu_topic("props_secedit",	"Change Colors and Fonts ","C","secedit_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
+    //    awm->insert_menu_topic("props_menu",  "Menu: Colors and Fonts ...",   "M","props_frame.hlp",  AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0 );
+    awm->insert_menu_topic("props_secedit", "Change Colors and Fonts ","C","secedit_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
     awm->insert_menu_topic("sec_layout", "Layout Settings", "L", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_layout_window, 0);
     awm->insert_menu_topic("display", "Change Display", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
-    awm->insert_menu_topic("save_props",	"Save Properties (~/.arb_prop/secedit)",	"P","savedef.hlp",	AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
+    awm->insert_separator();
+#if defined(FREESTANDING)
+    awm->insert_menu_topic("save_props",    "Save Properties (~/.arb_prop/secedit)",    "P","savedef.hlp",  AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
+#else
+    awm->insert_menu_topic("save_props",    "How to save properties",   "P","savedef.hlp",  AWM_ALL, (AW_CB) AW_POPUP_HELP, (AW_CL)"sec_props.hlp", 0 );
+#endif
 
     awm->create_mode( 0, "zoom.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ZOOM);
     awm->create_mode( 0, "sec_modify.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_MOVE);
@@ -1031,10 +1039,17 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->callback((AW_CB)SEC_fit_window_cb,(AW_CL)ntw,(AW_CL)0);
     awm->create_button("fitWindow", "Fit To Window");
 
-    awm->button_length(100);
     awm->at_newline();
-    awm->create_button(0,"tmp/LeftFooter");
-    awm->at_newline();
+
+    {
+        AW_at_maxsize maxSize; // store size (so AWAR_FOOTER does not affect min. window size)
+        maxSize.store(awm->_at);
+        awm->button_length(AWAR_FOOTER_MAX_LEN);
+        awm->create_button(0,AWAR_FOOTER);
+        awm->at_newline();
+        maxSize.restore(awm->_at);
+    }
+
     awm->get_at_position( &db_pathx,&db_pathy );
     awm->set_info_area_height( db_pathy+6 );
 
