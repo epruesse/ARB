@@ -449,7 +449,8 @@ int main(int argc,char **argv)
         exit (-1);
     }
 
-    ED4_ROOT = new ED4_root();
+    ED4_ROOT = new ED4_root;
+//     ED4_ROOT = new ED4_root();
 
     ED4_ROOT->db = ED4_ROOT->aw_root->open_default( ".arb_prop/edit4.arb" );    // open default-database
     ED4_ROOT->aw_root->init_variables( ED4_ROOT->db);               // pass defaults
