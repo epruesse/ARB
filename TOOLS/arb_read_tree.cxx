@@ -51,71 +51,52 @@ void add_bootstrap(GBT_TREE *node, double max_val) {
     add_bootstrap(node->rightson, max_val);
 }
 
-// -------------------------------------------------
-//      double max_branchlength(GBT_TREE *node)
-// -------------------------------------------------
-double max_branchlength(GBT_TREE *node) {
-    if (node->is_leaf) return 0.0;
-
-    double max_val                      = node->leftlen;
-    if (node->rightlen>max_val) max_val = node->rightlen;
-
-    double left_max  = max_branchlength(node->leftson);
-    double right_max = max_branchlength(node->rightson);
-
-    if (left_max>max_val) max_val = left_max;
-    if (right_max>max_val) max_val = right_max;
-
-    return max_val;
-}
-
-
 // ---------------------------------------
 //      int main(int argc,char **argv)
 // ---------------------------------------
 int main(int argc,char **argv)
 {
-	int arg              = 1;
- 	int consense         = 0;
+    int arg              = 1;
+    int consense         = 0;
     int calculated_trees = 0;
 
-	if (argc == 1) error_msg(argv);
+    if (argc == 1) error_msg(argv);
 
-	GBDATA *gb_main = GB_open(":","r");
-	if (!gb_main){
-		printf("%s: Error: you have to start an arbdb server first\n", argv[0]);
-		return -1;
-	}
+    GBDATA *gb_main = GB_open(":","r");
+    if (!gb_main){
+        printf("%s: Error: you have to start an arbdb server first\n", argv[0]);
+        return -1;
+    }
     GBT_message(gb_main, "Reading tree...");
 
-	if (!strcmp("-consense",argv[arg])){
- 	    consense = 1;
-	    arg++;
+    if (!strcmp("-consense",argv[arg])){
+        consense = 1;
+        arg++;
 
         calculated_trees = atoi(argv[arg++]);
         GBT_message(gb_main, GBS_global_string("Reinterpreting branch lengths as consense values (%i trees)", calculated_trees));
-	}
+    }
 
-	if (argc!= arg+2 && argc!= arg+3) error_msg(argv);
+    if (argc!= arg+2 && argc!= arg+3) error_msg(argv);
 
-	const char *comment = "";
-	if (argc==arg+3) comment = argv[arg+2];
+    const char *filename              = argv[arg+1];
+    const char *comment               = 0;
+    if (argc==arg+3) comment          = argv[arg+2];
+    char       *comment_from_treefile = 0;
 
-    char     *comment_from_treefile = 0;
-	GBT_TREE *tree                  = GBT_load_tree(argv[arg+1],sizeof(GBT_TREE), &comment_from_treefile);
-	if (!tree) {
+    GBT_TREE *tree = GBT_load_tree(filename, sizeof(GBT_TREE), &comment_from_treefile);
+    if (!tree) {
         show_error(gb_main);
-		return -1;
-	}
+        return -1;
+    }
 
     if (consense) {
-//         add_bootstrap(tree, max_branchlength(tree));
         add_bootstrap(tree, calculated_trees);
     }
 
-	GB_begin_transaction(gb_main);
-	if (tree->is_leaf){
- 	    const char *err = "Cannot load tree (need at least 2 leafs)";
+    GB_begin_transaction(gb_main);
+    if (tree->is_leaf){
+        const char *err = "Cannot load tree (need at least 2 leafs)";
         GB_export_error(err);
         show_error(gb_main);
 
@@ -125,29 +106,38 @@ int main(int argc,char **argv)
     }
 
     char *tree_name = argv[arg];
-	GB_ERROR error = GBT_write_tree(gb_main,0,tree_name,tree);
-	if (error) {
+    GB_ERROR error = GBT_write_tree(gb_main,0,tree_name,tree);
+    if (error) {
         GB_export_error(error);
         show_error(gb_main);
 
-	    GB_commit_transaction(gb_main);
-	    GB_close(gb_main);
+        GB_commit_transaction(gb_main);
+        GB_close(gb_main);
         return -1;
     }
 
+    // write tree comment:
     {
-        char *comment_merged = GB_strdup(comment_from_treefile ? GBS_global_string("%s\n%s", comment, comment_from_treefile) : comment);
-        GBT_write_tree_rem(gb_main,tree_name,comment_merged);
-        free(comment_merged);
+        const char *cmt = 0;
+        if (comment) {
+            if (comment_from_treefile)  cmt = GBS_global_string("%s\n%s", comment, comment_from_treefile);
+            else                        cmt = comment;
+        }
+        else {
+            if (comment_from_treefile)  cmt = comment_from_treefile;
+            else                        cmt = GBS_global_string("loaded from '%s'", filename);
+        }
+        GBT_write_tree_rem(gb_main, tree_name, cmt);
     }
+
     free(comment_from_treefile);
 
-	char buffer[256];
+    char buffer[256];
 
-	sprintf(buffer,"Tree %s read into the database",tree_name);
-	GBT_message(gb_main,buffer);
+    sprintf(buffer,"Tree %s read into the database",tree_name);
+    GBT_message(gb_main,buffer);
 
-	GB_commit_transaction(gb_main);
-	GB_close(gb_main);
-	return 0;
+    GB_commit_transaction(gb_main);
+    GB_close(gb_main);
+    return 0;
 }
