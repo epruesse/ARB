@@ -210,7 +210,7 @@ void awt_delete_species_in_list(void *dummy, struct adaqbsstruct *cbs)
 
 GB_HASH *awt_generate_species_hash(GBDATA *gb_main, char *key,int split)
 {
-    GB_HASH *hash = GBS_create_hash(10000,1);
+    GB_HASH *hash = GBS_create_hash(GBS_SPECIES_HASH_SIZE,1);
     GBDATA  *gb_species;
     GBDATA  *gb_name;
     char    *keyas;
@@ -662,43 +662,6 @@ void awt_search_equal_entries(AW_window *,struct adaqbsstruct *cbs,int tokenize)
 
         GBS_free_hash(hash);
     }
-
-    //     GBDATA  *gb_species;
-    //     GB_HASH  *hash          = GBS_create_hash(GB_number_of_subentries(gb_species_data),1);
-    //     for (        gb_species = GBT_first_species(cbs->gb_main);
-    //                 gb_species;
-    //                 gb_species = GBT_next_species(gb_species)){
-    //         CLEAR_QUERIED(gb_species,cbs);
-    //         GB_write_flag(gb_species,0);
-    //         GBDATA *gb_key     = GB_search(gb_species,key,GB_FIND);
-    //         if (!gb_key) continue;
-    //         char *data         = GB_read_as_string(gb_key);
-    //         if(!data) continue;
-    //         if (tokenize){
-    //             char *s;
-    //             for (s=strtok(data,",; \t."); s ; s = strtok(0,",; \t.")){
-    //                 GBDATA *gb_old = (GBDATA *)GBS_read_hash(hash,s);
-    //                 if (gb_old){
-    //                     SET_QUERIED(gb_old,cbs);
-    //                     SET_QUERIED(gb_species,cbs);
-    //                     GB_write_flag(gb_species,1);
-    //                 }else{
-    //                     GBS_write_hash(hash,s,(long)gb_species);
-    //                 }
-    //             }
-    //         }else{
-    //             GBDATA *gb_old = (GBDATA *)GBS_read_hash(hash,data);
-    //             if (gb_old){
-    //                 SET_QUERIED(gb_old,cbs);
-    //                 SET_QUERIED(gb_species,cbs);
-    //                 GB_write_flag(gb_species,1);
-    //             }else{
-    //                 GBS_write_hash(hash,data,(long)gb_species);
-    //             }
-    //         }
-    //         delete data;
-    //     }
-    //     GBS_free_hash(hash);
 
     free(key);
     awt_query_update_list(0,cbs);
