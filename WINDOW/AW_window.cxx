@@ -593,23 +593,41 @@ void AW_POPDOWN(AW_window *aww){
     aww->hide();
 }
 
+#define BUFSIZE 256
+static char aw_size_awar_name_buffer[BUFSIZE];
+static const char *aw_size_awar_name(AW_window *aww, const char *sub_entry) {
+#if defined(DEBUG)
+    int size =
+#endif // DEBUG
+    sprintf(aw_size_awar_name_buffer, "window/windows/%s/%s", aww->window_defaults_name, sub_entry);
+#if defined(DEBUG)
+    aw_assert(size < BUFSIZE);
+#endif // DEBUG
+    return aw_size_awar_name_buffer;
+}
+#undef BUFSIZE
+
+#define aw_awar_name_posx(aww)   aw_size_awar_name((aww), "posx")
+#define aw_awar_name_posy(aww)   aw_size_awar_name((aww), "posy")
+#define aw_awar_name_width(aww)  aw_size_awar_name((aww), "width")
+#define aw_awar_name_height(aww) aw_size_awar_name((aww), "height")
+
 void aw_calculate_WM_offsets(AW_window *aww)
 {
     if (p_aww(aww)->WM_top_offset != -1000) return; // very bad hack continued
-    AW_root *root = aww->get_root();
-    char temp[256];
-    short posy,posx;
-    int oposy,oposx;
 
-    sprintf(temp,"window/windows/%s/posy",aww->window_defaults_name);
-    oposy = (int)root->awar(temp)->read_int();
-    sprintf(temp,"window/windows/%s/posx",aww->window_defaults_name);
-    oposx = (int)root->awar(temp)->read_int();
+    AW_root *root = aww->get_root();
+    short    posy,posx;
+    int      oposy,oposx;
+
+    oposx = root->awar(aw_awar_name_posx(aww))->read_int();
+    oposy = root->awar(aw_awar_name_posy(aww))->read_int();
+
     XtVaGetValues( p_aww(aww)->shell ,
                    XmNx,    &posx,
                    XmNy,    &posy,
                    NULL );
-    p_aww(aww)->WM_top_offset = posy-oposy;
+    p_aww(aww)->WM_top_offset  = posy-oposy;
     p_aww(aww)->WM_left_offset = posx-oposx;
 }
 
@@ -850,12 +868,6 @@ void AW_window::window_fit(void){
     int width, height;
     get_window_size(width, height);
     set_window_size(width, height);
-
-//     unsigned short hoffset = 0;
-//     if (p_w->menu_bar[0]){
-//         XtVaGetValues(p_w->menu_bar[0],XmNheight,&hoffset,NULL);
-//     }
-//     set_window_size(_at->max_x_size,hoffset +  _at->max_y_size );
 }
 
 
@@ -1535,20 +1547,10 @@ long aw_loop_get_window_geometrie(const char *key, long val){
     if (posx<0)posx = 0;
     if (posy<0)posy = 0;
 
-
-    char temp[256];
-
-    sprintf(temp,"window/windows/%s/width",aww->window_defaults_name);
-    root->awar(temp)->write_int(width);
-
-    sprintf(temp,"window/windows/%s/height",aww->window_defaults_name);
-    root->awar(temp)->write_int(height);
-
-    sprintf(temp,"window/windows/%s/posx",aww->window_defaults_name);
-    root->awar(temp)->write_int(posx);
-
-    sprintf(temp,"window/windows/%s/posy",aww->window_defaults_name);
-    root->awar(temp)->write_int(posy);
+    root->awar(aw_awar_name_width (aww))->write_int(width );
+    root->awar(aw_awar_name_height(aww))->write_int(height);
+    root->awar(aw_awar_name_posx  (aww))->write_int(posx  );
+    root->awar(aw_awar_name_posy  (aww))->write_int(posy  );
 
     return val;
 }
@@ -1569,10 +1571,9 @@ Widget aw_create_shell(
 
     if ( !GBS_read_hash(root->hash_for_windows,aww->window_name)) {
         GBS_write_hash(root->hash_for_windows,aww->window_name,(long)aww);
-        char temp[GB_PATH_MAX];memset(temp,0,GB_PATH_MAX);
         bool has_user_geometry = false;
 
-        sprintf(temp,"window/windows/%s/width",aww->window_defaults_name);
+        const char *temp = aw_awar_name_width(aww);
         root->awar_int(temp,width);
         if (allow_resize) {
             int found_width   = (int)root->awar(temp)->read_int();
@@ -1582,7 +1583,7 @@ Widget aw_create_shell(
             }
         }
 
-        sprintf(temp,"window/windows/%s/height",aww->window_defaults_name);
+        temp = aw_awar_name_height(aww);
         root->awar_int(temp,height);
         if (allow_resize) {
             int found_height = (int)root->awar(temp)->read_int();
@@ -1592,7 +1593,7 @@ Widget aw_create_shell(
             }
         }
 
-        sprintf(temp,"window/windows/%s/posx",aww->window_defaults_name);
+        temp = aw_awar_name_posx(aww);
         root->awar_int(temp,posx)->set_minmax(0,4000);
         // @@@ FIXME:  maximum should be set to current screen size minus some offset
         // to ensure that windows do not appear outside screen
@@ -1604,7 +1605,7 @@ Widget aw_create_shell(
             posx              = found_posx;
         }
 
-        sprintf(temp,"window/windows/%s/posy",aww->window_defaults_name);
+        temp           = aw_awar_name_posy(aww);
         root->awar_int(temp,posy)->set_minmax(0,3000);
         int found_posy = (int)root->awar(temp)->read_int();
         if (posy != found_posy) {
@@ -1616,8 +1617,16 @@ Widget aw_create_shell(
 #if defined(DEBUG)
             printf("User geometry detected for window '%s'\n", aww->window_defaults_name);
 #endif // DEBUG
-            aww->recalc_size_at_show = 2; // keep user geometry (never recalc size)
+            aww->recalc_size_at_show = 2; // keep user geometry (only if user size is smaller than default size, the latter is used)
         }
+    }
+
+    if (allow_resize) {
+        // create the window big enough to ensure that all widgets
+        // are created in visible area (otherwise widget are crippled).
+        // window will be resized later (on show)
+        width  = 4000;
+        height = 3000;
     }
 
     Widget father = p_global->toplevel_widget;
@@ -2473,7 +2482,6 @@ static SearchPossibilitiesPtr TD_poss[MAX_DEEP_TO_TEST] = { 0 };
 
 inline void addToPoss(int menu_deep, const char *topic_name) {
     TD_poss[menu_deep] = new SearchPossibilities(topic_name, TD_poss[menu_deep]);
-//      fprintf(stderr, "addToPoss(%i, %s)\n", menu_deep, topic_name);
 }
 
 inline char oppositeCase(char c) {
@@ -2511,8 +2519,6 @@ static const char *possible_mnemonics(int menu_deep, const char *topic_name) {
         }
     }
 
-//     fprintf(stderr, "topic='%s' unused='%s' ", topic_name, unused);
-
     int topics = TD_topics[menu_deep];
     for (t = 0; t<topics; ++t) {
         char  c = TD_mnemonics[menu_deep][t]; // upper case!
@@ -2521,8 +2527,6 @@ static const char *possible_mnemonics(int menu_deep, const char *topic_name) {
         u       = strchr(unused, tolower(c));
         if (u) strcpy(u, u+1); // remove char
     }
-
-//     fprintf(stderr, "possible='%s'\n", unused);
 
     return unused;
 }
@@ -2543,8 +2547,6 @@ static void printPossibilities(int menu_deep) {
 static int menu_deep_check = 0;
 
 static void test_duplicate_mnemonics(int menu_deep, const char *topic_name, const char *mnemonic) {
-//     fprintf(stderr, "[test]  menu_deep=%i topic='%s'\n", menu_deep, topic_name);
-
     if (mnemonic && mnemonic[0] != 0) {
         if (mnemonic[1]) { // longer than 1 char -> wrong
             fprintf(stderr, "Warning: Hotkey '%s' is too long; only 1 character allowed (%s|%s)\n", mnemonic, TD_menu_name, topic_name);
@@ -2581,7 +2583,6 @@ static void test_duplicate_mnemonics(int menu_deep, const char *topic_name, cons
 }
 
 static void open_test_duplicate_mnemonics(int menu_deep, const char *sub_menu_name, const char *mnemonic) {
-//     fprintf(stderr, "[open]  menu_deep_check=%i menu_deep=%i sub_menu='%s'\n", menu_deep_check, menu_deep, sub_menu_name);
     aw_assert(menu_deep == menu_deep_check+1);
     menu_deep_check = menu_deep;
 
@@ -2590,8 +2591,6 @@ static void open_test_duplicate_mnemonics(int menu_deep, const char *sub_menu_na
 
     memset(buf, 0, len);
 
-    //    printf("old[1]: '%s' (new sub: '%s'; deep=%i)\n", TD_menu_name, sub_menu_name, menu_deep);
-
     sprintf(buf, "%s|%s", TD_menu_name, sub_menu_name);
 
     test_duplicate_mnemonics(menu_deep-1, sub_menu_name, mnemonic);
@@ -2599,26 +2598,17 @@ static void open_test_duplicate_mnemonics(int menu_deep, const char *sub_menu_na
     free(TD_menu_name);
     TD_menu_name = buf;
 
-//     aw_assert(TD_poss[menu_deep] == 0);
     TD_poss[menu_deep] = 0;
-
-    //    printf("new[1]: '%s'\n", TD_menu_name);
 }
 
 static void close_test_duplicate_mnemonics(int menu_deep) {
-//     fprintf(stderr, "[close] menu_deep_check=%i menu_deep=%i\n", menu_deep_check, menu_deep);
     aw_assert(menu_deep == menu_deep_check);
     menu_deep_check = menu_deep-1;
-
-//     printf("close_test_duplicate_mnemonics menu_deep=%i\n", menu_deep);
 
     printPossibilities(menu_deep);
     TD_topics[menu_deep] = 0;
 
-    //    printf("old[2]: '%s' (close deep=%i)\n", TD_menu_name, menu_deep);
-
     aw_assert(TD_menu_name); // otherwise no menu was opened
-//     aw_assert(TD_menu_name[0] != 0); // otherwise no menu was opened
 
     char *slash = strrchr(TD_menu_name, '|');
     if (slash) {
@@ -2627,8 +2617,6 @@ static void close_test_duplicate_mnemonics(int menu_deep) {
     else {
         TD_menu_name[0] = 0;
     }
-
-    //    printf("new[2]: '%s'\n", TD_menu_name);
 }
 
 static void init_duplicate_mnemonic() {
@@ -2636,7 +2624,6 @@ static void init_duplicate_mnemonic() {
 
     if (TD_menu_name) {
         close_test_duplicate_mnemonics(1); // close last menu
-//         close_test_duplicate_mnemonics(0); // close last menu
         free(TD_menu_name);
         TD_menu_name = 0;
     }
@@ -2650,7 +2637,6 @@ static void init_duplicate_mnemonic() {
 }
 static void exit_duplicate_mnemonic() {
     close_test_duplicate_mnemonics(1); // close last menu
-//     close_test_duplicate_mnemonics(0); // close last menu
     aw_assert(TD_menu_name);
     free(TD_menu_name);
     TD_menu_name = 0;
@@ -2783,7 +2769,6 @@ void AW_window::insert_menu_topic(const char *id, AW_label name, const char *mne
                   (XtCallbackProc) AW_server_callback,
                   (XtPointer) cbs);
 
-//     cbs->id = GBS_global_string_copy("%s/%s",window_defaults_name,id);
     cbs->id = GBS_global_string_copy("%s",id);
     GBS_write_hash(get_root()->prvt->action_hash,id,(long)cbs);
     if(!(mask&get_root()->global_mask)){
@@ -2885,10 +2870,35 @@ void AW_window::show(void) {
         get_root()->window_show();
         window_is_shown = AW_TRUE;
     }
-    if (recalc_size_at_show == 1) {
-        window_fit();
+
+    if (recalc_size_at_show) {
+        if (recalc_size_at_show == 1) {
+            window_fit();
+        }
+        else {
+            aw_assert(recalc_size_at_show == 2);
+            // check whether user size is too small and increase to minimum (aka default)
+            int      default_width, default_height;
+            get_window_size(default_width, default_height);
+            AW_root *root        = get_root();
+            int      user_width  = root->awar(aw_awar_name_width(this))->read_int();
+            int      user_height = root->awar(aw_awar_name_height(this))->read_int();
+
+#if defined(DEBUG)
+            printf("default size = %i/%i  user size = %i/%i\n", default_width, default_height, user_width, user_height);
+#endif // DEBUG
+
+            if (user_width<default_width)   user_width  = default_width;
+            if (user_height<default_height) user_height = default_height;
+
+#if defined(DEBUG)
+            printf("using size = %i/%i\n", user_width, user_height);
+#endif // DEBUG
+            set_window_size(user_width, user_height);
+        }
         recalc_size_at_show = 0;
     }
+
     XtPopup(p_w->shell,XtGrabNone);
     XtVaSetValues(p_w->shell, XmNiconic, False ,0);
     if (p_w->WM_top_offset == -1000) {      // very bad hack
@@ -3040,8 +3050,8 @@ void AW_window::load_xfig(const char *file, AW_BOOL resize) {
     _at->max_x_size = xfig->maxx - xfig->minx;
     _at->max_y_size = xfig->maxy - xfig->miny;
 
-    if (resize && recalc_size_at_show == 0) {
-        recalc_size_at_show = 1;
+    if (resize) {
+        if (recalc_size_at_show == 0) recalc_size_at_show = 1;
         set_window_size(_at->max_x_size+1000,_at->max_y_size+1000);
     }
 }
@@ -3061,7 +3071,7 @@ void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, AW_BOOL res
     _at->max_y_size = x::max(_at->max_y_size, xfig->maxy - xfig->miny);
 
     if (resize) {
-        recalc_size_at_show = 1;
+        if (recalc_size_at_show == 0) recalc_size_at_show = 1;
         set_window_size(_at->max_x_size+1000,_at->max_y_size+1000);
     }
 }
