@@ -46,6 +46,9 @@ void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbstruct *
     if (sel_list) {
         cbs->aws->insert_default_selection( cbs->id, "????", "----" );
     }
+    else {
+        cbs->aws->insert_default_option("????", "", "----" );
+    }
 }
 
 GB_ERROR awt_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name, int type, const char *keypath)
@@ -263,7 +266,13 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
     }
 
     gb_key_data = GB_search(gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
-    GB_add_callback(gb_key_data, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_scandb_cb, (int *)cbs);
+
+    if (sel_list) {
+        GB_add_callback(gb_key_data, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_scandb_cb, (int *)cbs);
+        // @@@ no automatic update for new fields
+    }
+
+
     GB_pop_transaction(gb_main);
     return (AW_CL)cbs;
 }
