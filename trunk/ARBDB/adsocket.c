@@ -651,7 +651,7 @@ char *GB_read_file(const char *path)
             GBS_chrcat(str,c);
             c = getc(stdin);
         }
-        return GBS_strclose(str,0);
+        return GBS_strclose(str);
     }
     epath = GBS_eval_env(path);
 
@@ -792,7 +792,7 @@ void GB_xcmd(const char *cmd, GB_BOOL background, GB_BOOL wait_only_if_error) {
             GBS_strcat(strstruct, " )' ) ");
         }
     }
-    sys = GBS_strclose(strstruct,0);
+    sys = GBS_strclose(strstruct);
     system(sys);
     printf("%s\n",sys);
     free(sys);
@@ -848,9 +848,19 @@ GB_CSTR GB_getenvARBMACROHOME(void){
     if (!amh) {
         char *res = getenv("ARBMACROHOME"); // doc in arb_envar.hlp
         if (res) amh = res;
-        else     amh = GBS_eval_env("$(ARBHOME)/lib/macros");
+        else     amh = GBS_eval_env("$(HOME)/.arb_prop/macros");
     }
     return amh;
+}
+
+GB_CSTR GB_getenvARBMACRO(void){
+    static const char *am = 0;
+    if (!am) {
+        char *res = getenv("ARBMACRO"); // doc in arb_envar.hlp
+        if (res) am = res;
+        else     am = GBS_eval_env("$(ARBHOME)/lib/macros");
+    }
+    return am;
 }
 
 GB_CSTR GB_getenvGS(void){
@@ -886,6 +896,7 @@ GB_CSTR GB_getenv(const char *env){
         // doc in arb_envar.hlp
 
         if (strcmp(env, "ARBMACROHOME") == 0) return GB_getenvARBMACROHOME();
+        if (strcmp(env, "ARBMACRO")     == 0) return GB_getenvARBMACRO();
         if (strcmp(env, "ARBHOME")      == 0) return GB_getenvARBHOME();
         if (strcmp(env, "ARB_GS")       == 0) return GB_getenvGS();
         if (strcmp(env, "ARB_DOC")      == 0) return GB_getenvDOCPATH();
