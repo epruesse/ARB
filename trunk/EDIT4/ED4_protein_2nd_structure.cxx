@@ -1,10 +1,11 @@
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cstdarg>
+
 #include <iostream>
-#include <fstream.h>
-#include <stdlib.h>
-#include <iomanip.h>
-#include <string.h>
-#include <stdarg.h>
+#include <fstream>
+#include <iomanip>
 
 #include "arbdb.h"
 #include "ed4_protein_2nd_structure.hxx"
@@ -14,6 +15,8 @@
 #include <arb_assert.h>
 #endif
 #define e4_assert(bed) arb_assert(bed)
+
+using namespace std;
 
 /*#define SHOW_PROGRESS
   #define STEP_THROUGH_FIND_NS
@@ -73,10 +76,16 @@ GB_ERROR ED4_predict_summary(const char *seq, char *result_buffer, int length_) 
     for (int i = 0; i < 255; i++) {
         isAA[i] = false;
     }
-    isAA['A'] = true, isAA['R'] = true, isAA['N'] = true, isAA['D'] = true, isAA['C'] = true;
-    isAA['Q'] = true, isAA['E'] = true, isAA['G'] = true, isAA['H'] = true, isAA['I'] = true;
-    isAA['L'] = true, isAA['K'] = true, isAA['M'] = true, isAA['F'] = true, isAA['P'] = true;
-    isAA['S'] = true, isAA['T'] = true, isAA['W'] = true, isAA['Y'] = true, isAA['V'] = true;
+
+    const unsigned char *AA_true = (unsigned char *)"ARNDCQEGHILKMFPSTWYV";
+    for (int i = 0; AA_true[i]; ++i) {
+        isAA[AA_true[i]] = true;
+    }
+
+    // isAA['A'] = true, isAA['R'] = true, isAA['N'] = true, isAA['D'] = true, isAA['C'] = true;
+    // isAA['Q'] = true, isAA['E'] = true, isAA['G'] = true, isAA['H'] = true, isAA['I'] = true;
+    // isAA['L'] = true, isAA['K'] = true, isAA['M'] = true, isAA['F'] = true, isAA['P'] = true;
+    // isAA['S'] = true, isAA['T'] = true, isAA['W'] = true, isAA['Y'] = true, isAA['V'] = true;
 
     // allocate memory for structures[] and initialize them
     for (int i = 0; i < 4; i++) {
@@ -84,7 +93,7 @@ GB_ERROR ED4_predict_summary(const char *seq, char *result_buffer, int length_) 
         if (structures[i]) {
             for (int j = 0; j < length; j++) {
                 //          if (!(strchr(amino_acids, sequence[j]))) {
-                if (!isAA[sequence[j]]) {
+                if (!isAA[(unsigned char)sequence[j]]) {
                     structures[i][j] = sequence[j];
                 } else {
                     structures[i][j] = ' ';
