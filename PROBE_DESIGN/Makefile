@@ -54,8 +54,10 @@ probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
 probe_match_parser.o: probe_match_parser.hxx
 probe_match_parser.o: $(ARBHOME)/INCLUDE/ad_prot.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdb.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdbt.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbtools.h
 
 SaiProbeVisualization.o: probe_match_parser.hxx
