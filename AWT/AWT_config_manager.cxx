@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_config_manager.cxx                                 //
 //    Purpose   :                                                        //
-//    Time-stamp: <Tue Dec/03/2002 19:16 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jan/08/2003 10:24 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //
@@ -122,45 +122,51 @@ static void AWT_start_config_manager(AW_window *aww, AW_CL cl_config)
     bool               reopen           = false;
     char              *title            = GBS_global_string_copy("Configurations for '%s'", aww->window_name);
 
-    char   *result    = aw_string_selection(title, "Enter a new or select an existing config", config->get_awar_name("current").c_str(), 0, existing_configs.c_str(), "RESTORE,STORE,DELETE,CLOSE,HELP", correct_key_name);
-    int     button    = aw_string_selection_button();
-    string  awar_name = string("cfg_")+result;
+    char *result = aw_string_selection(title, "Enter a new or select an existing config", config->get_awar_name("current").c_str(), 0, existing_configs.c_str(), "RESTORE,STORE,DELETE,CLOSE,HELP", correct_key_name);
+    int   button = aw_string_selection_button();
 
-    switch (button) {
-        case 0: {               // RESTORE
-            config->Restore(config->get_awar_value(awar_name));
-            config->set_awar_value("current", result);
-            break;
-        }
-        case 1: {               // STORE
-            remove_from_configs(result, existing_configs); // remove existing config
+    if (button >= 0 && button <= 2 && (!result || !result[0])) { // expected config name,  but none given
+        aw_message("Please enter or select a config");
+    }
+    else {
+        string awar_name = string("cfg_")+result;
 
-            if (existing_configs.length()) existing_configs = string(result)+';'+existing_configs;
-            else existing_configs                           = result;
+        switch (button) {
+            case 0: {           // RESTORE
+                config->Restore(config->get_awar_value(awar_name));
+                config->set_awar_value("current", result);
+                break;
+            }
+            case 1: {               // STORE
+                remove_from_configs(result, existing_configs); // remove existing config
 
-            char *config_string = config->Store();
-            config->set_awar_value(awar_name, config_string);
-            free(config_string);
-            config->set_awar_value("current", result);
-            config->set_awar_value("existing", existing_configs);
-            reopen = true;
-            break;
-        }
-        case 2: {               // DELETE
-            remove_from_configs(result, existing_configs); // remove existing config
-            config->set_awar_value("current", "");
-            config->set_awar_value("existing", existing_configs);
+                if (existing_configs.length()) existing_configs = string(result)+';'+existing_configs;
+                else existing_configs                           = result;
 
-            // config is not really deleted from properties
-            reopen = true;
-            break;
-        }
-        case 3:  {              // CLOSE
-            break;
-        }
-        case 4:  {              // HELP
-            AW_POPUP_HELP(aww, (AW_CL)"configurations.hlp");
-            break;
+                char *config_string = config->Store();
+                config->set_awar_value(awar_name, config_string);
+                free(config_string);
+                config->set_awar_value("current", result);
+                config->set_awar_value("existing", existing_configs);
+                reopen = true;
+                break;
+            }
+            case 2: {               // DELETE
+                remove_from_configs(result, existing_configs); // remove existing config
+                config->set_awar_value("current", "");
+                config->set_awar_value("existing", existing_configs);
+
+                // config is not really deleted from properties
+                reopen = true;
+                break;
+            }
+            case 3:  {              // CLOSE
+                break;
+            }
+            case 4:  {              // HELP
+                AW_POPUP_HELP(aww, (AW_CL)"configurations.hlp");
+                break;
+            }
         }
     }
     free(title);

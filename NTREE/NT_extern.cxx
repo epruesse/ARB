@@ -944,7 +944,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------------------------------------------------------------------------
         awm->create_menu(0,"Species","c","species.hlp", AWM_ALL);
         {
-            AWMIMT( "selection_admin","Select Configuration", "S", "configuration.hlp",AWM_SEQ2, NT_configuration_admin, (AW_CL)&(nt.tree->tree_root), (AW_CL)0);
+            AWMIMT( "selection_admin","Configurations", "S", "configuration.hlp",AWM_SEQ2, NT_configuration_admin, (AW_CL)&(nt.tree->tree_root), (AW_CL)0);
             AWMIMT( "species_info",   "Species Information", "I",    "sp_info.hlp",      AWM_ALL,AW_POPUP,   (AW_CL)NT_create_species_window,    0);
             AWMIMT( "species_search", "Search Species",         "Q",    "sp_search.hlp",    AWM_ALL,AW_POPUP,   (AW_CL)ad_create_query_window,  0 );
 
@@ -1078,7 +1078,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->insert_separator();
             AWMIMT( "pt_server_admin",  "PT_SERVER Admin ",  "A", "probeadmin.hlp",          AWM_ALL, AW_POPUP, (AW_CL)create_probe_admin_window, 0 );
         }
-        
+
     } // clone
 
     // --------------------------------------------------------------------------------
