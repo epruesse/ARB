@@ -5,6 +5,10 @@
 #include <malloc.h>
 #include <memory.h>
 #include <limits.h>
+
+#include <map>
+#include <string>
+
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>
@@ -64,15 +68,19 @@ AW_BOOL  awtc_read_string_pair(FILE *in, char *&s1,char *&s2)
 
 GB_ERROR awtc_read_import_format(char *file)
 {
-	char *fullfile = AWT_unfold_path(file,"ARBHOME");
+    FILE *in = 0;
+    {
+        char *fullfile = AWT_unfold_path(file,"ARBHOME");
 
-	FILE *in = fopen(fullfile,"r");
-	delete fullfile;
+        in = fopen(fullfile,"r");
+        free(fullfile);
+    }
+
 	if (!in) return "Form not readable (select a form or check permissions)";
-	struct input_format_struct *ifo;
+	struct input_format_struct   *ifo;
 	struct input_format_per_line *pl = 0;
-	ifo = awtcig.ifo = new input_format_struct;
-	char *s1=0,*s2=0;
+	ifo                              = awtcig.ifo = new input_format_struct;
+	char                         *s1 = 0,*s2=0;
 
 	while (!awtc_read_string_pair(in,s1,s2)){
 		if (!s1) {
@@ -110,9 +118,7 @@ GB_ERROR awtc_read_import_format(char *file)
 		}else if (!strcmp(s1,"DONT_GEN_NAMES")) {
 			ifo->noautonames = 1;
 		}else if (!strcmp(s1,"MATCH")) {
-
-			pl = (struct input_format_per_line *)GB_calloc(1,
-                                                           sizeof(struct input_format_per_line));
+			pl = (struct input_format_per_line *)GB_calloc(1, sizeof(struct input_format_per_line));
 			pl->next = ifo->pl;
 			ifo->pl = pl;
 			pl->match = GBS_remove_escape(s2); free(s2); s2 = 0;
@@ -124,14 +130,22 @@ GB_ERROR awtc_read_import_format(char *file)
 			pl->write = s2;s2= 0;
 		}else if (pl && !strcmp(s1,"APPEND")) {
 			pl->append = s2;s2= 0;
+		}else if (pl && !strcmp(s1,"SETVAR")) {
+			pl->setvar      = s2;
+            if (strlen(s2) != 1 || s2[0]<'a' || s2[0]>'z') aw_message("Allowed variable names are a-z");
+            s2= 0;
 		}else if (pl && !strcmp(s1,"TAG")) {
-			pl->tag = GBS_string_2_key(s2);
+			pl->tag = GB_strdup(s2);
+// 			pl->tag = GBS_string_2_key_with_exclusions(s2, "$"); // allow $ to occur in string
 			if (!strlen(pl->tag)){
 			    delete pl->tag;
 			    pl->tag = 0;
 			}
 		}else{
+            char *fullfile = AWT_unfold_path(file,"ARBHOME");
+
 			aw_message(GBS_global_string("Unknown command in import format file '%s'  command '%s'\n",fullfile,s1));
+            free(fullfile);
 		}
 	}
 
@@ -384,7 +398,7 @@ char *awtc_read_line(int tab,char *sequencestart, char *sequenceend){
 static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *tag,int append)
 {
 	GBDATA *gbk;
-	int len;
+	int len, taglen;
 	char *strin,*buf;
 	if (!gbd) return;
 	while (str[0] == ' '|| str[0] == '\t'|| str[0] == '|') str++;
@@ -419,13 +433,64 @@ static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *t
 		return;
 	}
 
-	strin = GB_read_char_pntr(gbk);
-	len = strlen(str) + strlen(strin);
-	buf = (char *)GB_calloc(sizeof(char),len+2);
-	sprintf(buf,"%s %s",strin,str);
+	strin  = GB_read_char_pntr(gbk);
+	len    = strlen(str) + strlen(strin);
+    taglen = tag ? (strlen(tag)+3) : 0;
+	buf    = (char *)GB_calloc(sizeof(char),len+2+taglen);
+
+    if (tag) {
+        char *regexp = (char*)GB_calloc(sizeof(char), taglen+1);
+        sprintf(regexp, "*[%s]*", tag);
+
+        if (GBS_string_cmp(strin, regexp, 1) != 0) { // if tag does not exist yet
+            sprintf(buf,"%s [%s] %s", strin, tag, str); // prefix with tag
+        }
+        free(regexp);
+    }
+
+    if (buf[0] == 0) {
+        sprintf(buf,"%s %s",strin,str);
+    }
+
 	GB_write_string(gbk,buf);
 	free(buf);
 	return;
+}
+
+typedef map<char, string> SetVariables;
+
+//  ---------------------------------------------------------------------------------------------------
+//      static const char *expandSetVariables(const SetVariables& variables, const string& source)
+//  ---------------------------------------------------------------------------------------------------
+static string expandSetVariables(const SetVariables& variables, const string& source) {
+    string dest;
+    string::const_iterator norm_start = source.begin();
+    string::const_iterator p          = norm_start;
+
+    while (p != source.end()) {
+        if (*p == '$') {
+            ++p;
+            if (*p == '$') { // '$$' -> '$'
+                dest.append(1, *p);
+            }
+            else { // real variable
+                SetVariables::const_iterator var = variables.find(*p);
+                if (var == variables.end()) {
+                    GB_export_error("Undefined variable %c", *p);
+                    return "<error>";
+                }
+                else {
+                    dest.append(var->second);
+                }
+            }
+            ++p;
+        }
+        else {
+            dest.append(1, *p);
+            ++p;
+        }
+    }
+    return dest;
 }
 
 GB_ERROR awtc_read_data(char *ali_name)
@@ -448,6 +513,7 @@ GB_ERROR awtc_read_data(char *ali_name)
 
     // lets start !!!!!
     while(p){
+        SetVariables variables;
         counter++;
         sprintf(text,"Reading species %i",counter);
         if (counter %10 == 0){
@@ -497,25 +563,51 @@ GB_ERROR awtc_read_data(char *ali_name)
                         char *s = 0;
                         char *dele = 0;
                         if (pl->srt){
-                            dele = s =
-                                GBS_string_eval(dup,pl->srt,gb_species);
+                            string expanded = expandSetVariables(variables, pl->srt);
+                            dele            = s = GBS_string_eval(dup,expanded.c_str(),gb_species);
                             if (!s) return GB_get_error();
                         }else{
                             s = dup;
                         }
 
                         if (pl->aci){
+                            string expanded = expandSetVariables(variables, pl->aci);
                             dup = dele;
-                            dele = s = GB_command_interpreter(GB_MAIN,
-                                                              s,pl->aci,gb_species);
+                            dele = s = GB_command_interpreter(GB_MAIN, s,expanded.c_str(),gb_species);
                             delete dup;
                             if (!s) return GB_get_error();
                         }
 
-                        if (pl->append) {
-                            awtc_write_entry(gb_species,pl->append,s,pl->tag,1);
-                        }else if (pl->write) {
-                            awtc_write_entry(gb_species,pl->write,s,pl->tag,0);
+                        if (pl->append || pl->write) {
+                            char *field = 0;
+                            char *tag   = 0;
+
+                            {
+                                string expanded_field = expandSetVariables(variables, string(pl->append ? pl->append : pl->write));
+                                field                 = GBS_string_2_key(expanded_field.c_str());;
+                            }
+
+                            if (pl->tag) {
+                                string expanded_tag = expandSetVariables(variables, string(pl->tag));
+                                tag                 = GBS_string_2_key(expanded_tag.c_str());
+                            }
+
+                            awtc_write_entry(gb_species, field, s, tag, pl->append != 0);
+                            free(tag);
+                            free(field);
+                        }
+//                         if (pl->append) {
+//                             string expanded = expandSetVariables(variables, pl->append);
+//                             string expanded_tag = expandSetVariables(variables, pl->tag);
+//                             awtc_write_entry(gb_species,expanded.c_str(),s,expanded_tag.c_str(),1);
+//                         }else if (pl->write) {
+//                             string expanded = expandSetVariables(variables, pl->write);
+//                             string expanded_tag = expandSetVariables(variables, pl->tag);
+//                             awtc_write_entry(gb_species,expanded.c_str(),s,expanded_tag.c_str(),0);
+//                         }
+
+                        if (pl->setvar) {
+                            variables[pl->setvar[0]]  = s;
                         }
                         delete dele;
                     }
@@ -527,8 +619,7 @@ GB_ERROR awtc_read_data(char *ali_name)
             p = awtc_read_line(ifo->tab,ifo->sequencestart,ifo->sequenceend);
             if (!p) break;
         }
-        return GB_export_error("No Start of Sequence found (%i lines read)",
-                               MAX_COMMENT_LINES);
+        return GB_export_error("No Start of Sequence found (%i lines read)", MAX_COMMENT_LINES);
 
     read_sequence:
         {
