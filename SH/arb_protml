@@ -15,7 +15,34 @@ else
             mv protml.tre treefile
         fi
     else
-        protml $1 $2 -v -I $3
+        # bootstrapping:
+
+        # geht nicht:
+        #
+        # protml -I -jf -q -n 100 /tmp/gde137_0.in > firstpass.quickadd
+        # protml -I -jf -u -v /tmp/gde137_0.in firstpass.quickadd
+        #
+        # funktioniert:
+        #
+        # protml -I -jf -e -n 100 /tmp/gde137_0.in > firstpass.exhaustive
+        # protml -I -jf -u -v /tmp/gde137_0.in firstpass.exhaustive
+        #
+
+        protml $1 $2 -n $4 -I $3 > outfile
+        less outfile
+        if [ \! -s outfile ]; then
+            echo "Error running protml: outfile not generated"
+        else
+            protml $1 -u -v -I $3 outfile
+
+            if [ \! -f protml.tre ]; then
+                echo "Error running protml: protml.tre not generated"
+            else
+                LINES=`wc -l <protml.tre`
+                LINES=$(($LINES-1))
+                tail -n $LINES <protml.tre >treefile
+            fi
+        fi
     fi
 fi
 
