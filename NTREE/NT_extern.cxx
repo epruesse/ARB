@@ -211,6 +211,7 @@ void create_all_awars(AW_root *awr, AW_default def)
 
     GEN_create_awars(awr, def);
     EXP_create_awars(awr, def);
+    AWT_create_db_browser_awars(awr, def);
 
     awr->awar_int( AWAR_SECURITY_LEVEL, 0, def);
     awr->awar(AWAR_SECURITY_LEVEL)->add_callback(nt_changesecurity);
@@ -334,23 +335,16 @@ AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name)
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE","CLOSE","C");
 
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->at("cancel4");
-    aws->create_button("CANCEL","CANCEL","C");
-
     aws->callback( AW_POPUP_HELP, (AW_CL)"save.hlp");
     aws->at("help");
     aws->create_button("HELP","HELP","H");
 
     awt_create_selection_box((AW_window *)aws,base_name);
 
-    aws->at("user2");
-    aws->create_button(0,"Database Description");
-
-    aws->at("user3");
+    aws->at("comment");
     aws->create_text_field(AWAR_DB_COMMENT);
 
-    aws->at("save4");aws->callback(NT_save_quick_as_cb);
+    aws->at("save");aws->callback(NT_save_quick_as_cb);
     aws->create_button("SAVE","SAVE","S");
 
     return (AW_window *)aws;
@@ -471,36 +465,27 @@ AW_window *NT_create_save_as(AW_root *aw_root,const char *base_name)
 
     aws->callback( AW_POPUP_HELP, (AW_CL)"save.hlp");
     aws->at("help");
-    aws->help_text("optimize.hlp");
     aws->create_button("HELP","HELP","H");
 
     awt_create_selection_box((AW_window *)aws,base_name);
 
-    aws->at("user");
-    aws->label("Type");
+    aws->at("type");
+    aws->label("Type ");
     aws->create_option_menu(AWAR_DB"type");
     aws->insert_option("Binary","B","b");
     aws->insert_option("Bin (with FastLoad File)","f","bm");
     aws->insert_default_option("Ascii","A","a");
     aws->update_option_menu();
 
-    aws->at("user2");
-    aws->create_button(0,"Database Description");
-
-
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->at("cancel4");
-    aws->create_button("CANCEL","CANCEL","C");
-
-
-    aws->at("opti4");
+    aws->at("optimize");
     aws->callback(AW_POPUP,(AW_CL)NT_create_database_optimization_window,0);
-    aws->create_button("OPTIMIZE","OPTIMIZE...");
+    aws->help_text("optimize.hlp");
+    aws->create_button("OPTIMIZE","OPTIMIZE");
 
-    aws->at("save4");aws->callback(NT_save_as_cb);
+    aws->at("save");aws->callback(NT_save_as_cb);
     aws->create_button("SAVE","SAVE","S");
 
-    aws->at("user3");
+    aws->at("comment");
     aws->create_text_field(AWAR_DB_COMMENT);
 
     return (AW_window *)aws;
@@ -729,7 +714,6 @@ void NT_justify_branch_lenghs(AW_window *, AW_CL ntwcl){
 
 void NT_fix_database(AW_window *) {
     GB_ERROR err = 0;
-    GB_install_error_handler(aw_message);
     err = GB_fix_database(gb_main);
     if (err) aw_message(err);
 }
@@ -997,6 +981,10 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     }else{
         awm->create_menu(       0,   "File",     "F", "nt_file.hlp",  AWM_ALL );
         {
+#if defined(DEBUG)
+            AWMIMT("db_browser", "Browse loaded database(s)", "", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_db_browser, 0);
+            SEP________________________SEP();
+#endif // DEBUG
             AWMIMT("save_changes",  "Quicksave changes",            "s","save.hlp", AWM_ALL, (AW_CB)NT_save_quick_cb, 0,    0);
             AWMIMT("save_all_as",   "Save whole database as ...",       "w","save.hlp", AWM_ALL, AW_POPUP,  (AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
 
