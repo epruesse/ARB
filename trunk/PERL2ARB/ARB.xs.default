@@ -40,6 +40,20 @@ P2A_search(gbd,str,type_of_entry)
 	OUTPUT:
 	RETVAL
 
+
+GBDATA*
+P2A_find(gbd,key,str,gbs)
+        GBDATA *gbd
+        char *key
+        char *str
+        char *gbs
+
+        CODE:
+        RETVAL = GB_find(gbd,key,str,GBP_search_mode(gbs));
+        OUTPUT:
+        RETVAL
+
+
 GBDATA *
 P2A_create(father,key,type)
 	GBDATA *father
