@@ -15,6 +15,8 @@ mkdir -p PROBE_COM/GENC
 mkdir -p PROBE_COM/GENH
 mkdir -p PROBE_COM/O
 
+test -d lib/pts || mkdir -p lib/pts
+
 # Liblink
 
 ln -s ../ARBDB/libARBDB.sl LIBLINK/libARBDB.sl
