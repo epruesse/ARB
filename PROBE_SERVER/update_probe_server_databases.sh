@@ -1,11 +1,31 @@
 #!/bin/bash
 
+# --------------------------------------------------------------------------------
+# configuration:
+
+# working directories
 SOURCE_DIR=./ps_input_db
 TEMP_DIR=./ps_tmpdata
 DEST_DIR=./ps_serverdata
 WORKER_DIR=./ps_workerdir
 
+# names output files
 DB_BASENAME=probe_db_
+TREE_BASENAME=current.tree
+CLIENTNAME=arb_probe_library.jar
+
+# which pt server to build and use
+PTS=../lib/pts
+PT_SERVER=probe_server
+
+# which probelengths shall be generated
+CREATE="15 16"
+# CREATE=15 16 17 18 19 20
+
+# does NOT work for probes longer than 20
+# CREATE="20 30 40"
+
+# --------------------------------------------------------------------------------
 
 mkdir -p $SOURCE_DIR
 mkdir -p $DEST_DIR
@@ -43,10 +63,7 @@ if [ \! -f "$DB" ]; then
     exit 1
 fi
 
-PTS=../lib/pts
-PT_SERVER=probe_server
 PT_SERVER_DB=$PTS/$PT_SERVER.arb
-
 UPDATE=0
 
 if [ \! -f $PT_SERVER_DB ]; then
@@ -77,8 +94,8 @@ create_group_db() {
     ./bin/arb_probe_group $DB $TREE $PT_SERVER.arb $OUT $1
 }
 
-TREENAME=$DEST_DIR/current.tree
-TREEVERSIONFILE=$DEST_DIR/current.tree.version
+TREENAME=$DEST_DIR/$TREE_BASENAME
+TREEVERSIONFILE=$DEST_DIR/$TREE_BASENAME.version
 ZIPPEDTREENAME=${TREENAME}.gz
 
 rm $TREENAME
@@ -124,17 +141,14 @@ treenames() {
 
 # --------------------------------------------------------------------------------
 
-# which probelengths shall be generated
-CREATE="15 16"
-# CREATE=15 16 17 18 19 20
-
 # create databases
 create_dbs $CREATE
 
 # merge trees
 echo "------------------------------------------------------------"
 SAVED_TREES=`treenames $TREENAME $CREATE`
-./bin/pgd_tree_merge $SAVED_TREES $TREENAME
+./bin/pgd_tree_merge $SAVED_TREES $TREENAME || rm $TREENAME
+rm $SAVED_TREES
 
 # prepare zipped tree
 if [ -f $TREENAME ]; then
@@ -150,9 +164,8 @@ else
     exit 1
 fi
 
-CLIENTBASENAME=arb_probe_library.jar
-CLIENTSOURCE=../PROBE_WEB/CLIENT/$CLIENTBASENAME
-CLIENTZIP=$DEST_DIR/$CLIENTBASENAME.gz
+CLIENTSOURCE=../PROBE_WEB/CLIENT/$CLIENTNAME
+CLIENTZIP=$DEST_DIR/$CLIENTNAME.gz
 
 if [ -f $CLIENTSOURCE ]; then
     echo Packing client for download..
@@ -163,3 +176,5 @@ else
 fi
 
 ls -al $DEST_DIR
+echo ""
+echo "Fine - ready to start the server!"
