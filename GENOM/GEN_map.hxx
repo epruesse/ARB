@@ -7,7 +7,6 @@
 #ifndef GEN_MAP_HXX
 #define GEN_MAP_HXX
 
-void GEN_gene_container_changed_cb(GBDATA *gb_gene_data, int *cl_ntw, GB_CB_TYPE gb_type);
 
 #else
 #error GEN_map.hxx included twice
