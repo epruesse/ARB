@@ -330,26 +330,33 @@ extern "C" aisc_string get_short(AN_local *locs)
     /* get the short name from the previously set
 			names */
 {
-    char *parsed_name;
-    char *parsed_sym;
-    char *parsed_acc;
+    char        *parsed_name;
+    char        *parsed_sym;
+    char        *parsed_acc;
     char	*new_name;
-    char *first;
-    char *second;
-    char *p;
-    static char *shrt=0;
-    AN_shorts *an_shorts;
-    int	shortlen;
+    char        *first;
+    char        *second;
+    char        *p;
+    static char *shrt              = 0;
+    AN_shorts   *an_shorts;
+    int	         shortlen;
+    const char  *full_name         = locs->full_name;
+    const char  *default_full_name = "No name";
+
+    if (!full_name || full_name[0] == 0) {
+        full_name = default_full_name;
+    }
 
     if(shrt) free(shrt);
     shrt = 0;
 
-#define ILLEGAL_NAME_CHARS              " \t#;,@_"
-#define REPLACE_ILLEGAL_NAME_CHARS      " =:\t=:#=:;=:,=:@=:_="
+#define ILLEGAL_NAME_CHARS         " \t#;,@_"
+#define REPLACE_ILLEGAL_NAME_CHARS " =:\t=:#=:;=:,=:@=:_="
 
-    parsed_name = GBS_string_eval(locs->full_name, "\t= :\"=:'=:* * *=*1 *2:sp.=species:spec.=species:.=",0);
+
+    parsed_name = GBS_string_eval(full_name, "\t= :\"=:'=:* * *=*1 *2:sp.=species:spec.=species:.=",0);
     /* delete ' " \t and more than two words */
-    parsed_sym = GBS_string_eval(locs->full_name, "\t= :* * *sym*=S",0);
+    parsed_sym = GBS_string_eval(full_name, "\t= :* * *sym*=S",0);
 
     if (strlen(parsed_sym)>1) {
         free(parsed_sym);
@@ -372,8 +379,18 @@ extern "C" aisc_string get_short(AN_local *locs)
     }
 
     an_shorts = (AN_shorts *)aisc_find_lib((struct_dllpublic_ext*)&(aisc_main->pnames),new_name);
-    if (an_shorts) { // we already have a short name
-        if (strpbrk(an_shorts->shrt, ILLEGAL_NAME_CHARS)!=0) { // contains illegal characters
+    if (an_shorts) {            // we already have a short name
+        bool recreate = false;
+
+        if (strpbrk(an_shorts->shrt, ILLEGAL_NAME_CHARS) != 0) { // contains illegal characters
+            recreate = true;
+        }
+        else if (strcmp(an_shorts->full_name, default_full_name) == 0 && // fullname in name server is default_full_name
+                 strcmp(full_name, an_shorts->full_name) != 0) // and differs from current
+        {
+            recreate = true;
+        }
+        if (recreate) {
             an_remove_short(an_shorts);
             an_shorts = 0;
         }
@@ -497,6 +514,9 @@ extern "C" int server_save(AN_main *main, int dummy)
         }
         free(sec_name);
     }
+    else {
+        printf("No changes to arb_name_server data.\n");
+    }
     return 0;
 }
 
@@ -539,7 +559,7 @@ int names_server_save(void) {
 extern "C" int server_shutdown(AN_main *pm,aisc_string passwd){
     /** passwdcheck **/
     if( strcmp(passwd, "ldfiojkherjkh") ) return 1;
-    printf("\nI got the shutdown message.\n");
+    printf("\narb_name_server: I got the shutdown message.\n");
 
     /** shoot clients **/
     aisc_broadcast(AN_global.server_communication, 0,
@@ -547,9 +567,10 @@ extern "C" int server_shutdown(AN_main *pm,aisc_string passwd){
 
     /** shutdown **/
     names_server_shutdown();
+    printf("arb_name_server: server shutdown by administrator\n");
     exit(0);
     pm = pm;
-    return 0;	/* Never Reached */
+    return 0;	                /* Never Reached */
 }
 
 int main(int argc,char **argv)
@@ -593,7 +614,7 @@ int main(int argc,char **argv)
 
     if (AN_global.cl_link) {
         if( !strcmp(argv[1],"-look")) {
-            printf("No client - terminating.\n");
+            printf("arb_name_server: No client - terminating.\n");
             aisc_close(AN_global.cl_link);AN_global.cl_link = 0;
             exit(0);
         }
@@ -607,7 +628,7 @@ int main(int argc,char **argv)
     }
     if( ((strcmp(argv[1],"-kill")==0)) ||
         ((argc==3) && (strcmp(argv[2],"-kill")==0))){
-        printf("Now I kill myself!\n");
+        printf("arb_name_server: Now I kill myself!\n");
         exit(0);
     }
     for(i=0, so=0; (i<MAX_TRY) && (!so); i++){
@@ -628,9 +649,11 @@ int main(int argc,char **argv)
         if (aisc_main->ploc_st.cnt <=0) {
             server_save(aisc_main,0);
             names_server_shutdown();
+            printf("arb_name_server done.\n"); fflush(stdout);
             exit(0);
         }
     }
 
+    printf("arb_name_server done.\n"); fflush(stdout);
     return 0;
 }
