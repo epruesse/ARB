@@ -16,7 +16,7 @@
 #define DEFAULT_LENGTH 0.1 /* default length of tree-edge w/o given length */
 
 /********************************************************************************************
-					some alignment header functions
+                    some alignment header functions
 ********************************************************************************************/
 
 char **GBT_get_alignment_names(GBDATA *gbd)
@@ -33,14 +33,14 @@ char **GBT_get_alignment_names(GBDATA *gbd)
     char **erg;
     presets = GB_search(gbd,"presets",GB_CREATE_CONTAINER);
     size = 0;
-    for (	ali = GB_find(presets,"alignment",0,down_level);
+    for (   ali = GB_find(presets,"alignment",0,down_level);
             ali;
             ali = GB_find(ali,"alignment",0,this_level|search_next) ) {
         size ++;
     }
     erg = (char **)GB_calloc(sizeof(char *),(size_t)size+1);
     size = 0;
-    for (	ali = GB_find(presets,"alignment",0,down_level);
+    for (   ali = GB_find(presets,"alignment",0,down_level);
             ali;
             ali = GB_find(ali,"alignment",0,this_level|search_next) ) {
         name = GB_find(ali,"alignment_name",0,down_level);
@@ -66,7 +66,7 @@ GB_ERROR GBT_check_alignment_name(const char *alignment_name)
 }
 
 
-GBDATA *GBT_create_alignment(	GBDATA *gbd,
+GBDATA *GBT_create_alignment(   GBDATA *gbd,
                                 const char *name, long len, long aligned,
                                 long security, const char *type )
 {
@@ -107,26 +107,26 @@ GBDATA *GBT_create_alignment(	GBDATA *gbd,
 
     gbd = GB_create_container(gb_presets,"alignment");
     GB_write_security_delete(gbd,6);
-    gbn =	GB_create(gbd,"alignment_name",GB_STRING);
+    gbn =   GB_create(gbd,"alignment_name",GB_STRING);
     GB_write_string(gbn,name);
     GB_write_security_delete(gbn,7);
     GB_write_security_write(gbn,6);
 
-    gbn =	GB_create(gbd,"alignment_len",GB_INT);
+    gbn =   GB_create(gbd,"alignment_len",GB_INT);
     GB_write_int(gbn,len);
     GB_write_security_delete(gbn,7);
     GB_write_security_write(gbn,0);
 
-    gbn =	GB_create(gbd,"aligned",GB_INT);
+    gbn =   GB_create(gbd,"aligned",GB_INT);
     GB_write_int(gbn,aligned);
     GB_write_security_delete(gbn,7);
     GB_write_security_write(gbn,0);
-    gbn =	GB_create(gbd,"alignment_write_security",GB_INT);
+    gbn =   GB_create(gbd,"alignment_write_security",GB_INT);
     GB_write_int(gbn,security);
     GB_write_security_delete(gbn,7);
     GB_write_security_write(gbn,6);
 
-    gbn =	GB_create(gbd,"alignment_type",GB_STRING);
+    gbn =   GB_create(gbd,"alignment_type",GB_STRING);
     GB_write_string(gbn,type);
     GB_write_security_delete(gbn,7);
     GB_write_security_write(gbn,0);
@@ -135,9 +135,9 @@ GBDATA *GBT_create_alignment(	GBDATA *gbd,
 
 GB_ERROR GBT_check_alignment(GBDATA *Main, GBDATA *preset_alignment)
      /* check if alignment is of the correct size,
-		if all data is present
-		sets the security deletes and writes
-	*/
+        if all data is present
+        sets the security deletes and writes
+    */
 {
     GBDATA *species;
     GBDATA *ali;
@@ -148,11 +148,11 @@ GB_ERROR GBT_check_alignment(GBDATA *Main, GBDATA *preset_alignment)
     GBDATA *species_data;
     GBDATA *extended_data;
 
-    long	ali_len;
-    long	aligned;
-    long	security_write;
-    long	len;
-    char 	*ali_name;
+    long    ali_len;
+    long    aligned;
+    long    security_write;
+    long    len;
+    char    *ali_name;
     GB_ERROR error;
     species_data = GBT_find_or_create(Main,"species_data",7);
     extended_data = GBT_find_or_create(Main,"extended_data",7);
@@ -169,7 +169,7 @@ GB_ERROR GBT_check_alignment(GBDATA *Main, GBDATA *preset_alignment)
     if (!gb_len) return GB_export_error("alignment_len not found");
     ali_len=-1;
 
-    for (	species = GBT_first_species_rel_species_data(species_data);
+    for (   species = GBT_first_species_rel_species_data(species_data);
             species;
             species = GBT_next_species(species) ){
         gb_name = GB_find(species,"name",0,down_level);
@@ -189,7 +189,7 @@ GB_ERROR GBT_check_alignment(GBDATA *Main, GBDATA *preset_alignment)
                 if (GB_read_type(data) != GB_STRING){
                     GB_delete(data);
                     GB_internal_error("CHECK ERROR unknown type\n");
-                    return GB_export_error("CHECK ERROR unknown data type",GB_read_key_pntr(data));
+                    return GB_export_error("CHECK ERROR unknown data type '%s'", GB_read_key_pntr(data));
                 }
             }
             if (!data) {
@@ -210,7 +210,7 @@ GB_ERROR GBT_check_alignment(GBDATA *Main, GBDATA *preset_alignment)
         }
         GB_write_security_delete(species,security_write);
     }
-    for (	species = GBT_first_SAI_rel_exdata(extended_data);
+    for (   species = GBT_first_SAI_rel_exdata(extended_data);
             species;
             species = GBT_next_SAI(species) ){
         gb_name = GB_find(species,"name",0,down_level);
@@ -220,7 +220,7 @@ GB_ERROR GBT_check_alignment(GBDATA *Main, GBDATA *preset_alignment)
 
         ali = GB_find(species,ali_name,0,down_level);
         if (ali){
-            for (	data = GB_find(ali,0,0,down_level) ;
+            for (   data = GB_find(ali,0,0,down_level) ;
                     data;
                     data = GB_find(data,0,0,this_level|search_next)){
                 long type = GB_read_type(data);
@@ -248,7 +248,7 @@ GB_ERROR GBT_check_alignment(GBDATA *Main, GBDATA *preset_alignment)
 
 GB_ERROR GBT_rename_alignment(GBDATA *gbd,const char *source,const char *dest, int copy, int dele)
 {
-    /* 	if copy == 1 then create a copy
+    /*  if copy == 1 then create a copy
         if dele == 1 then delete old */
     GBDATA *gb_presets;
     GBDATA *gb_species_data;
@@ -294,7 +294,7 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbd,const char *source,const char *dest, i
         error = GB_write_string(gb_using,dest);
         if (error) return error;
     }
-    for (	gb_species = GB_find(gb_species_data,"species",0,down_level);
+    for (   gb_species = GB_find(gb_species_data,"species",0,down_level);
             gb_species;
             gb_species = GB_find(gb_species,"species",0,this_level|search_next) ){
         gb_ali = GB_find(gb_species,source,0,down_level);
@@ -313,7 +313,7 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbd,const char *source,const char *dest, i
         }
     }
 
-    for (	gb_extended = GB_find(gb_extended_data,"extended",0,down_level);
+    for (   gb_extended = GB_find(gb_extended_data,"extended",0,down_level);
             gb_extended;
             gb_extended = GB_find(gb_extended,"extended",0,this_level|search_next) ){
         gb_ali = GB_find(gb_extended,source,0,down_level);
@@ -345,7 +345,7 @@ GBDATA *GBT_find_or_create(GBDATA *Main,const char *key,long delete_level)
 }
 
 /********************************************************************************************
-					check the database !!!
+                    check the database !!!
 ********************************************************************************************/
 
 GB_ERROR GBT_check_data(GBDATA *Main,char *alignment_name)
@@ -366,7 +366,7 @@ GB_ERROR GBT_check_data(GBDATA *Main,char *alignment_name)
     gb_presets = GBT_find_or_create(Main,"presets",7);
 
     if (alignment_name) {
-        gbd = GB_find(	gb_presets,"alignment_name",alignment_name,down_2_level);
+        gbd = GB_find(  gb_presets,"alignment_name",alignment_name,down_2_level);
         if (!gbd) {
             return GB_export_error("Alignment '%s' does not exist",alignment_name);
         }
@@ -374,7 +374,7 @@ GB_ERROR GBT_check_data(GBDATA *Main,char *alignment_name)
 
     gb_use = GB_find(gb_presets, "use",0,down_level);
     if (!gb_use) {
-        gbd = GB_find(	gb_presets,"alignment_name",alignment_name,down_2_level);
+        gbd = GB_find(  gb_presets,"alignment_name",alignment_name,down_2_level);
         if (gbd) {
             gb_use = GB_create(gb_presets,"use",GB_STRING);
             gbd = GB_get_father(gbd);
@@ -383,7 +383,7 @@ GB_ERROR GBT_check_data(GBDATA *Main,char *alignment_name)
             GB_write_string(gb_use,buffer);
         }
     }
-    for (	gb_ali = GB_find(gb_presets,"alignment",0,down_level);
+    for (   gb_ali = GB_find(gb_presets,"alignment",0,down_level);
             gb_ali;
             gb_ali = GB_find(gb_ali,"alignment",0,this_level|search_next) ){
         error = GBT_check_alignment(Main,gb_ali);
@@ -395,13 +395,13 @@ GB_ERROR GBT_check_data(GBDATA *Main,char *alignment_name)
 char *gbt_insert_delete(const char *source, long len, long destlen, long *newsize, long pos, long nchar, long mod, char insert_what, char insert_tail)
 {
     /* removes or inserts bytes in a string
-       len ==	len of source
+       len ==   len of source
        destlen == if != 0 than cut or append characters to get this len
-       newsize		the result
-       pos		where to insert/delete
-       nchar		and how many items
-       mod		size of an item
-       insert_what	insert this character
+       newsize      the result
+       pos      where to insert/delete
+       nchar        and how many items
+       mod      size of an item
+       insert_what  insert this character
     */
 
     char *newval;
@@ -410,14 +410,14 @@ char *gbt_insert_delete(const char *source, long len, long destlen, long *newsiz
     nchar *= mod;
     len *= mod;
     destlen *= mod;
-    if (!destlen) destlen = len;		/* if no destlen is set than keep len */
+    if (!destlen) destlen = len;        /* if no destlen is set than keep len */
 
     if ( (nchar <0) && (pos-nchar>destlen)) nchar = pos-destlen;
 
     if (len > destlen) {
-        len = destlen;			/* cut tail */
+        len = destlen;          /* cut tail */
         newval = (char *)GB_calloc(sizeof(char),(size_t)(destlen+nchar+1));
-    }else if (len < destlen) {				/* append tail */
+    }else if (len < destlen) {              /* append tail */
         newval = (char *)malloc((size_t)(destlen+nchar+1));
         memset(newval,insert_tail,(int)(destlen+nchar));
         newval[destlen+nchar] = 0;
@@ -425,18 +425,18 @@ char *gbt_insert_delete(const char *source, long len, long destlen, long *newsiz
         newval = (char *)GB_calloc(sizeof(char),(size_t)(len+nchar+1));
     }
     *newsize = (destlen+nchar)/mod;
-    newval[*newsize] = 0;					/* only for strings */
+    newval[*newsize] = 0;                   /* only for strings */
 
-    if (pos>len){		/* no place to insert / delete */
+    if (pos>len){       /* no place to insert / delete */
         GB_MEMCPY(newval,source,(size_t)len);
         return 0;
     }
 
     if (nchar < 0) {
-        if (pos-nchar>len) nchar = -(len-pos);		/* clip maximum characters to delete */
+        if (pos-nchar>len) nchar = -(len-pos);      /* clip maximum characters to delete */
     }
 
-    if (nchar > 0)	{					/* insert */
+    if (nchar > 0)  {                   /* insert */
         GB_MEMCPY(newval,source,(size_t)pos);
         memset(newval+pos,insert_what,(size_t)nchar);
         GB_MEMCPY(newval+pos+nchar,source+pos,(size_t)(len-pos));
@@ -449,11 +449,11 @@ char *gbt_insert_delete(const char *source, long len, long destlen, long *newsiz
 
 GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, long len, long pos, long nchar, const char *delete_chars, const char *species_name){
     GB_TYPES type;
-    long	size =0,l;
+    long    size =0,l;
     register long i;
-    long	dlen;
-    const char	*cchars;
-    char	*chars;
+    long    dlen;
+    const char  *cchars;
+    char    *chars;
     GB_ERROR error = 0;
     GBDATA *gb;
 
@@ -468,7 +468,7 @@ GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, long len, long pos, long ncha
 
     switch(type) {
         case GB_DB:
-            for (	gb = GB_find(gb_data,0,0,down_level);
+            for (   gb = GB_find(gb_data,0,0,down_level);
                     gb;
                     gb = GB_find(gb,0,0,search_next | this_level)){
                 error = gbt_insert_character_gbd(gb,len,pos,nchar,delete_chars, species_name);
@@ -482,9 +482,9 @@ GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, long len, long pos, long ncha
 
             if (pos>len) break;
 
-            if (nchar > 0) {			/* insert character */
-                if (		(pos >0 && chars[pos-1]	== '.')		/* @@@@ */
-                            ||	chars[pos]	== '.') {
+            if (nchar > 0) {            /* insert character */
+                if (        (pos >0 && chars[pos-1] == '.')     /* @@@@ */
+                            ||  chars[pos]  == '.') {
                     chars = gbt_insert_delete( chars,size,len, &dlen, pos, nchar, sizeof(char), '.' ,'.' );
                 }else{
                     chars = gbt_insert_delete( chars,size,len, &dlen, pos, nchar, sizeof(char), '-', '.' );
@@ -496,7 +496,7 @@ GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, long len, long pos, long ncha
                 for (i = pos; i<l; i++){
                     if (delete_chars[((unsigned char *)chars)[i]]) {
                         return GB_export_error(
-                                               "You tried to delete '%c' in species %s position %i  -> Operation aborted",
+                                               "You tried to delete '%c' in species %s position %li  -> Operation aborted",
                                                chars[i],species_name,i);
                     }
                 }
@@ -537,8 +537,8 @@ GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, long len, long pos, long ncha
             break;
         }
         case GB_FLOATS:{
-            float	*floats;
-            GB_CFLOAT	*cfloats;
+            float   *floats;
+            GB_CFLOAT   *cfloats;
             cfloats = GB_read_floats_pntr(gb_data);
             if (!cfloats) return GB_get_error();
             floats = (float *)gbt_insert_delete( (char *)cfloats,size,len, &dlen, pos, nchar, sizeof(float), 0 , 0);
@@ -555,11 +555,11 @@ GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, long len, long pos, long ncha
 }
 
 
-GB_ERROR gbt_insert_character_species(GBDATA *gb_species,const char *ali_name, long len, long pos, long nchar, const char	*delete_chars)
+GB_ERROR gbt_insert_character_species(GBDATA *gb_species,const char *ali_name, long len, long pos, long nchar, const char   *delete_chars)
 {
     GBDATA *gb_name;
     GBDATA *gb_ali;
-    char	*species_name = 0;
+    char    *species_name = 0;
     GB_ERROR error = 0;
 
     gb_ali = GB_find(gb_species,ali_name,0,down_level);
@@ -572,12 +572,12 @@ GB_ERROR gbt_insert_character_species(GBDATA *gb_species,const char *ali_name, l
     return error;
 }
 
-GB_ERROR gbt_insert_character(GBDATA *gb_species_data, const char *species,const char *name, long len, long pos, long nchar, const char	*delete_chars)
+GB_ERROR gbt_insert_character(GBDATA *gb_species_data, const char *species,const char *name, long len, long pos, long nchar, const char *delete_chars)
 {
     GBDATA *gb_species;
     GB_ERROR error;
 
-    for (	gb_species = GB_find(gb_species_data,species,0,down_level);
+    for (   gb_species = GB_find(gb_species_data,species,0,down_level);
             gb_species;
             gb_species = GB_find(gb_species,species,0,this_level|search_next)){
         error = gbt_insert_character_species(gb_species,name,len,pos,nchar,delete_chars);
@@ -596,11 +596,11 @@ GB_ERROR GBT_check_lengths(GBDATA *Main,const char *alignment_name)
     GBDATA *gb_len;
     GB_ERROR error;
 
-    gb_presets		= GBT_find_or_create(Main,"presets",7);
-    gb_species_data		= GBT_find_or_create(Main,"species_data",7);
-    gb_extended_data	= GBT_find_or_create(Main,"extended_data",7);
+    gb_presets      = GBT_find_or_create(Main,"presets",7);
+    gb_species_data     = GBT_find_or_create(Main,"species_data",7);
+    gb_extended_data    = GBT_find_or_create(Main,"extended_data",7);
 
-    for (	gb_ali = GB_find(gb_presets,"alignment",0,down_level);
+    for (   gb_ali = GB_find(gb_presets,"alignment",0,down_level);
             gb_ali;
             gb_ali = GB_find(gb_ali,"alignment",0,this_level|search_next) ){
         gbd = GB_find(gb_ali,"alignment_name",alignment_name,down_level);
@@ -623,8 +623,8 @@ GB_ERROR GBT_check_lengths(GBDATA *Main,const char *alignment_name)
 
 GB_ERROR GBT_insert_character(GBDATA *Main,char *alignment_name, long pos, long count, char *char_delete)
 {
-    /*	insert 'count' characters at position pos
-        if count < 0	then delete position to position+|count| */
+    /*  insert 'count' characters at position pos
+        if count < 0    then delete position to position+|count| */
     GBDATA *gb_ali;
     GBDATA *gb_presets;
     GBDATA *gb_species_data;
@@ -632,7 +632,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main,char *alignment_name, long pos, long 
     GBDATA *gbd;
     GBDATA *gb_len;
     long len;
-    int	ch;
+    int ch;
     GB_ERROR error;
     char char_delete_list[256];
 
@@ -651,7 +651,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main,char *alignment_name, long pos, long 
         for (ch = 0;ch<256; ch++) {
             if (char_delete) {
                 if (strchr(char_delete,ch)) char_delete_list[ch] = 0;
-                else			char_delete_list[ch] = 1;
+                else            char_delete_list[ch] = 1;
             }else{
                 char_delete_list[ch] = 0;
             }
@@ -669,7 +669,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main,char *alignment_name, long pos, long 
             len = GB_read_int(gb_len);
             if (pos > len)
                 return
-                    GB_export_error("GBT_insert_character: insert position %i exceeds length %i", pos, len);
+                    GB_export_error("GBT_insert_character: insert position %li exceeds length %li", pos, len);
             if (count < 0) {
                 if (pos - count > len)
                     count = pos - len;
@@ -695,15 +695,15 @@ GB_ERROR GBT_insert_character(GBDATA *Main,char *alignment_name, long pos, long 
 
 
 /********************************************************************************************
-					some tree write functions
+                    some tree write functions
 ********************************************************************************************/
 
 
 GB_ERROR GBT_delete_tree(GBT_TREE *tree)
-     /*	frees a tree only in memory (not in the database)
-		to delete the tree in Database
-		just call GB_delete((GBDATA *)gb_tree);
-	*/
+     /* frees a tree only in memory (not in the database)
+        to delete the tree in Database
+        just call GB_delete((GBDATA *)gb_tree);
+    */
 {
     GB_ERROR error;
     if (tree->name)  free(tree->name);
@@ -752,7 +752,7 @@ long gbt_write_tree_nodes(GBDATA *gb_tree,GBT_TREE *node,long startid)
 /*         error = GB_write_string(gb_name,node->name); */
         if (error) return -1;
     }
-    if (node->gb_node){			/* delete not used nodes else write id */
+    if (node->gb_node){         /* delete not used nodes else write id */
         gb_any = GB_find(node->gb_node,0,0,down_level);
         if (gb_any) {
             key = GB_read_key_pntr(gb_any);
@@ -786,8 +786,8 @@ long gbt_write_tree_nodes(GBDATA *gb_tree,GBT_TREE *node,long startid)
 
 GB_CPNTR gbt_write_tree_rek_new(GBDATA *gb_tree, GBT_TREE *node, char *dest, long mode)
 {
-    char buffer[40];		/* just real numbers */
-    char	*c1;
+    char buffer[40];        /* just real numbers */
+    char    *c1;
 
     if ( (c1 = node->remark_branch) ) {
         int c;
@@ -812,7 +812,7 @@ GB_CPNTR gbt_write_tree_rek_new(GBDATA *gb_tree, GBT_TREE *node, char *dest, lon
             *(dest++) = 1;
             return dest;
         }else{
-            if (node->name) return dest+1+strlen(node->name)+1;	/* N name term */
+            if (node->name) return dest+1+strlen(node->name)+1; /* N name term */
             return dest+1+1;
         }
     }else{
@@ -840,14 +840,14 @@ GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_T
     to copy a tree call GB_copy((GBDATA *)dest,(GBDATA *)source);
     or set recursively all tree->gb_node variables to zero (that unlinks the tree),
 
-	*/
-    GBDATA *gb_node,	*gb_tree_data;
+    */
+    GBDATA *gb_node,    *gb_tree_data;
     GBDATA *gb_node_next;
     GBDATA *gb_nnodes, *gbd;
-    long	size;
+    long    size;
     GB_ERROR error;
-    char	*ctree,*t_size;
-    GBDATA	*gb_ctree;
+    char    *ctree,*t_size;
+    GBDATA  *gb_ctree;
 
     if (!tree) return 0;
     if (gb_tree && tree_name) return GB_export_error("you cannot change tree name to %s",tree_name);
@@ -860,7 +860,7 @@ GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_T
         gb_tree = GB_search(gb_tree_data,tree_name,GB_CREATE_CONTAINER);
     }
     /* now delete all old style tree data */
-    for (	gb_node = GB_find(gb_tree,"node",0,down_level);
+    for (   gb_node = GB_find(gb_tree,"node",0,down_level);
             gb_node;
             gb_node = GB_find(gb_node,"node",0,this_level|search_next))
     {
@@ -883,7 +883,7 @@ GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_T
         return GB_get_error();
     }
 
-    for (	gb_node = GB_find(gb_tree,"node",0,down_level);	/* delete all ghost nodes */
+    for (   gb_node = GB_find(gb_tree,"node",0,down_level); /* delete all ghost nodes */
             gb_node;
             gb_node = gb_node_next){
         gb_node_next = GB_find(gb_node,"node",0,this_level|search_next);
@@ -901,26 +901,26 @@ GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name, GBT_T
 
 GB_ERROR GBT_write_tree_rem(GBDATA *gb_main,const char *tree_name, const char *remark){
     GBDATA *ali_cont = GBT_get_tree(gb_main,tree_name);
-    GBDATA *tree_rem =	GB_search(ali_cont,"remark",	GB_STRING);
+    GBDATA *tree_rem =  GB_search(ali_cont,"remark",    GB_STRING);
     return GB_write_string(tree_rem,remark);
 }
 /********************************************************************************************
-					some tree read functions
+                    some tree read functions
 ********************************************************************************************/
 
 GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree)
 {
     GBT_TREE *node;
     GBDATA *gb_group_name;
-    char	c;
-    char	*p1;
+    char    c;
+    char    *p1;
 
     static char *membase;
     if (structure_size>0){
         node = (GBT_TREE *)GB_calloc(1,(size_t)structure_size);
     }else{
         if (!startid[0]){
-            membase =(char *)GB_calloc(size_of_tree+1,(size_t)(-2*structure_size));	/* because of inner nodes */
+            membase =(char *)GB_calloc(size_of_tree+1,(size_t)(-2*structure_size)); /* because of inner nodes */
         }
         node = (GBT_TREE *)membase;
         node->tree_is_one_piece_of_memory = 1;
@@ -981,14 +981,14 @@ GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, 
 
 
 /** Loads a tree from the database into any user defined structure.
-	make sure that the first eight members members of your
-	structure looks exectly like GBT_TREE, You should send the size
-	of your structure ( minimum sizeof GBT_TREE) to this
-	function. If size < 0 then the tree is allocated as just one
-	big piece of memery, which can be freed by free((char
-	*)root_of_tree) + deleting names or GBT_delete_tree. tree_name
-	is the name of the tree in the db return NULL if any error
-	occur */
+    make sure that the first eight members members of your
+    structure looks exectly like GBT_TREE, You should send the size
+    of your structure ( minimum sizeof GBT_TREE) to this
+    function. If size < 0 then the tree is allocated as just one
+    big piece of memery, which can be freed by free((char
+    *)root_of_tree) + deleting names or GBT_delete_tree. tree_name
+    is the name of the tree in the db return NULL if any error
+    occur */
 
 GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main,const char *tree_name, long structure_size, int *tree_size) /* read a tree */ {
     GBDATA *gb_node;
@@ -1024,9 +1024,9 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main,const char *tree_name, long str
         return 0;
     }
     gb_ctree = GB_search(gb_tree,"tree",GB_FIND);
-    if (gb_ctree) {				/* new style tree */
+    if (gb_ctree) {             /* new style tree */
         gb_tree_nodes = (GBDATA **)GB_calloc(sizeof(GBDATA *),(size_t)size);
-        for (	gb_node = GB_find(gb_tree,"node",0,down_level);
+        for (   gb_node = GB_find(gb_tree,"node",0,down_level);
                 gb_node;
                 gb_node = GB_find(gb_node,"node",0,this_level|search_next)){
             gbd = GB_find(gb_node,"id",0,down_level);
@@ -1056,7 +1056,7 @@ GBT_TREE *GBT_read_tree(GBDATA *gb_main,const char *tree_name, long structure_si
 }
 
 /********************************************************************************************
-					link the tree tips to the database
+                    link the tree tips to the database
 ********************************************************************************************/
 long GBT_count_nodes(GBT_TREE *tree){
     if ( tree->is_leaf ) {
@@ -1091,7 +1091,7 @@ GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, GBDATA *gb_species_data, long
 
 
 /** Link a given tree to the database. That means that for all tips the member
-	gb_node is set to the database container holding the species data.
+    gb_node is set to the database container holding the species data.
 */
 GB_ERROR GBT_link_tree(GBT_TREE *tree,GBDATA *gb_main,GB_BOOL show_status)
 {
@@ -1108,7 +1108,7 @@ GB_ERROR GBT_link_tree(GBT_TREE *tree,GBDATA *gb_main,GB_BOOL show_status)
 
 
 /********************************************************************************************
-					load a tree from file system
+                    load a tree from file system
 ********************************************************************************************/
 
 #define MAX_COMMENT_SIZE 1024
@@ -1177,7 +1177,7 @@ double gbt_read_number(FILE * input)
 /** Read in a quoted or unquoted string. in quoted strings double quotes ('') are replaced by (') */
 char *gbt_read_quoted_string(FILE *input){
     char buffer[1024];
-    int	c;
+    int c;
     char *s;
     s = buffer;
     c = gbt_last_character;
@@ -1255,10 +1255,10 @@ static void setBranchName(GBT_TREE *node, char *name) {
 static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tree_file_name)
 {
     int             c;
-    GB_BOOL		loop_flag;
+    GB_BOOL     loop_flag;
     GBT_TREE *nod,*left,*right;
 
-    if ( gbt_last_character == '(' ) {	/* make node */
+    if ( gbt_last_character == '(' ) {  /* make node */
 
         nod = (GBT_TREE *)GB_calloc(structuresize,1);
         GBT_READ_CHAR(input,c);
@@ -1266,7 +1266,7 @@ static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tr
         if (!left ) return 0;
         nod->leftson = left;
         left->father = nod;
-        if (	gbt_last_character != ':' &&
+        if (    gbt_last_character != ':' &&
                 gbt_last_character != ',' &&
                 gbt_last_character != ';' &&
                 gbt_last_character != ')'
@@ -1283,8 +1283,8 @@ static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tr
             GBT_READ_CHAR(input,c);
             nod->leftlen = gbt_read_number(input);
         }
-        if ( gbt_last_character == ')' ) {	/* only a single node !!!!, skip this node */
-            GB_FREE(nod);			/* delete superflous father node */
+        if ( gbt_last_character == ')' ) {  /* only a single node !!!!, skip this node */
+            GB_FREE(nod);           /* delete superflous father node */
             left->father = NULL;
             return left;
         }
@@ -1297,7 +1297,7 @@ static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tr
         }
         loop_flag = GB_FALSE;
         while (gbt_last_character == ',') {
-            if (loop_flag==GB_TRUE) {		/* multi branch tree */
+            if (loop_flag==GB_TRUE) {       /* multi branch tree */
                 left = nod;
                 nod = (GBT_TREE *)GB_calloc(structuresize,1);
                 nod->leftson = left;
@@ -1310,7 +1310,7 @@ static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tr
             if (right == NULL) return NULL;
             nod->rightson = right;
             right->father = nod;
-            if (	gbt_last_character != ':' &&
+            if (    gbt_last_character != ':' &&
                     gbt_last_character != ',' &&
                     gbt_last_character != ';' &&
                     gbt_last_character != ')'
@@ -1333,7 +1333,7 @@ static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tr
                               gbt_last_character,gbt_line_cnt);
             return NULL;
         }
-        GBT_READ_CHAR(input,c);		/* remove the ')' */
+        GBT_READ_CHAR(input,c);     /* remove the ')' */
 
     }else{
         char *str = gbt_read_quoted_string(input);
@@ -1372,9 +1372,9 @@ void GBT_scale_bootstraps(GBT_TREE *tree, double scale) {
 */
 GBT_TREE *GBT_load_tree(char *path, int structuresize, char **commentPtr)
 {
-    FILE		*input;
-    GBT_TREE	*tree;
-    int		c;
+    FILE        *input;
+    GBT_TREE    *tree;
+    int     c;
     if ((input = fopen(path, "r")) == NULL) {
         GB_export_error("Import tree: file '%s' not found", path);
         return 0;
@@ -1432,7 +1432,7 @@ char *GBT_find_largest_tree(GBDATA *gb_main){
     char *largest = 0;
     long maxnodes = 0;
     gb_treedata = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
-    for (	gb_tree = GB_find(gb_treedata,0,0,down_level);
+    for (   gb_tree = GB_find(gb_treedata,0,0,down_level);
             gb_tree;
             gb_tree = GB_find(gb_tree, 0,0,this_level|search_next)){
         gb_nnodes = GB_find(gb_tree,"nnodes",0,down_level);
@@ -1464,7 +1464,7 @@ char *GBT_tree_info_string(GBDATA *gb_main,const  char *tree_name)
     GBDATA *gb_tree;
     GBDATA *gb_rem;
     GBDATA *gb_nnodes;
-    long	size;
+    long    size;
     memset(buffer,0,1024);
 
     gb_tree = GBT_get_tree(gb_main,tree_name);
@@ -1475,7 +1475,7 @@ char *GBT_tree_info_string(GBDATA *gb_main,const  char *tree_name)
 
     gb_nnodes = GB_find(gb_tree,"nnodes",0,down_level);
     if (!gb_nnodes) {
-        GB_export_error("nnodes not found",tree_name);
+        GB_export_error("nnodes not found in tree '%s'",tree_name);
         return 0;
     }
 
@@ -1510,14 +1510,14 @@ char **GBT_get_tree_names(GBDATA *Main){
     gb_treedata = GB_find(Main,"tree_data",0,down_level);
     if (!gb_treedata) return 0;
     count = 0;
-    for (	gb_tree = GB_find(gb_treedata,0,0,down_level);
+    for (   gb_tree = GB_find(gb_treedata,0,0,down_level);
             gb_tree;
             gb_tree = GB_find(gb_tree,0,0,this_level|search_next) ){
         count ++;
     }
     erg = (char **)GB_calloc(sizeof(char *),(size_t)count+1);
     count = 0;
-    for (	gb_tree = GB_find(gb_treedata,0,0,down_level);
+    for (   gb_tree = GB_find(gb_treedata,0,0,down_level);
             gb_tree;
             gb_tree = GB_find(gb_tree,0,0,this_level|search_next) ){
         erg[count] = GB_read_key(gb_tree);
@@ -1654,7 +1654,7 @@ GB_ERROR GBT_export_tree(GBDATA *gb_main,FILE *out,GBT_TREE *tree, GB_BOOL tripl
 }
 
 /********************************************************************************************
-					species functions
+                    species functions
 ********************************************************************************************/
 
 
@@ -1749,13 +1749,13 @@ GB_ERROR GBT_write_sequence(GBDATA *gb_data, const char *ali_name, long ali_len,
     if (slen > ali_len) {
         int i;
         for (i= slen -1; i>=ali_len; i--) {
-            if (!strchr("-.nN",sequence[i])) break;		/* real base after end of alignment */
+            if (!strchr("-.nN",sequence[i])) break;     /* real base after end of alignment */
         }
-        i++;							/* points to first 0 after alignment */
+        i++;                            /* points to first 0 after alignment */
         if (i > ali_len){
             GBDATA *gb_main = GB_get_root(gb_data);
             ali_len = GBT_get_alignment_len(gb_main,ali_name);
-            if (slen > ali_len){				/* check for modified alignment len */
+            if (slen > ali_len){                /* check for modified alignment len */
                 GBT_set_alignment_len(gb_main,ali_name,i);
                 ali_len = i;
             }
@@ -1791,7 +1791,7 @@ GBDATA *GBT_gen_accession_number(GBDATA *gb_species,const char *ali_name){
     return gb_acc;
 }
 /********************************************************************************************
-					some simple find procedures
+                    some simple find procedures
 ********************************************************************************************/
 GBDATA *GBT_get_species_data(GBDATA *gb_main) {
     return GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
@@ -1851,7 +1851,7 @@ GBDATA *GBT_find_species(GBDATA *gb_main,const char *name)
 GBDATA *GBT_first_marked_extended(GBDATA *gb_extended_data)
 {
     GBDATA *gb_extended;
-    for (	gb_extended = GB_find(gb_extended_data,"extended",0,down_level);
+    for (   gb_extended = GB_find(gb_extended_data,"extended",0,down_level);
             gb_extended;
             gb_extended = GB_find(gb_extended,"extended",0,this_level|search_next)){
         if (GB_read_flag(gb_extended)) return gb_extended;
@@ -1861,7 +1861,7 @@ GBDATA *GBT_first_marked_extended(GBDATA *gb_extended_data)
 
 GBDATA *GBT_next_marked_extended(GBDATA *gb_extended)
 {
-    while (	(gb_extended = GB_find(gb_extended,"extended",0,this_level|search_next))  ){
+    while ( (gb_extended = GB_find(gb_extended,"extended",0,this_level|search_next))  ){
         if (GB_read_flag(gb_extended)) return gb_extended;
     }
     return 0;
@@ -1916,7 +1916,7 @@ char *GBT_create_unique_species_name(GBDATA *gb_main,const char *default_name){
 }
 
 /********************************************************************************************
-					editor configurations
+                    editor configurations
 ********************************************************************************************/
 
 GBDATA *GBT_find_configuration(GBDATA *gb_main,const char *name){
@@ -1939,7 +1939,7 @@ GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name){
     return gb_configuration;
 }
 /********************************************************************************************
-					mark and unmark species
+                    mark and unmark species
 ********************************************************************************************/
 void GBT_mark_all(GBDATA *gb_main, int flag)
 {
@@ -2077,7 +2077,7 @@ GB_ERROR GBT_restore_marked_species(GBDATA *gb_main, const char *stored_marked) 
 }
 
 /********************************************************************************************
-					read species information
+                    read species information
 ********************************************************************************************/
 
 GBDATA *GBT_read_sequence(GBDATA *gb_species,const char *use)
@@ -2095,7 +2095,7 @@ char *GBT_read_name(GBDATA *gb_species)
 }
 
 /********************************************************************************************
-					alignment procedures
+                    alignment procedures
 ********************************************************************************************/
 
 char *GBT_get_default_alignment(GBDATA *gb_main)
@@ -2167,8 +2167,8 @@ GB_ERROR GBT_set_alignment_len(GBDATA *gb_main, const char *use,long new_len)
     gb_alignment_len = GB_search(gb_alignment,"alignment_len",GB_FIND);
     gb_alignment_aligned = GB_search(gb_alignment,"aligned",GB_FIND);
     GB_push_my_security(gb_main);
-    error = GB_write_int(gb_alignment_len,new_len);				/* write new len */
-    if (!error)	error = GB_write_int(gb_alignment_aligned,0);		/* sequences will be unaligned */
+    error = GB_write_int(gb_alignment_len,new_len);             /* write new len */
+    if (!error) error = GB_write_int(gb_alignment_aligned,0);       /* sequences will be unaligned */
     GB_pop_my_security(gb_main);
     return error;
 }
@@ -2233,7 +2233,7 @@ GB_BOOL GBT_is_alignment_protein(GBDATA *gb_main,const char *alignment_name)
 }
 
 /********************************************************************************************
-					check routines
+                    check routines
 ********************************************************************************************/
 GB_ERROR GBT_check_arb_file(const char *name)
      /* Checks whether the name of a file seemed to be an arb file */
@@ -2262,7 +2262,7 @@ GB_ERROR GBT_check_arb_file(const char *name)
 }
 
 /********************************************************************************************
-					analyse the database
+                    analyse the database
 ********************************************************************************************/
 #define GBT_SUM_LEN 4096
 /* maximum length of path */
@@ -2283,7 +2283,7 @@ void gbt_scan_db_rek(GBDATA *gbd,char *prefix, int deep)
     int len_of_prefix;
     if (type == GB_DB) {
         len_of_prefix = strlen(prefix);
-        for (	gb2 = GB_find(gbd,0,0,down_level);	/* find everything */
+        for (   gb2 = GB_find(gbd,0,0,down_level);  /* find everything */
                 gb2;
                 gb2 = GB_find(gb2,0,0,this_level|search_next))
         {
@@ -2301,7 +2301,7 @@ void gbt_scan_db_rek(GBDATA *gbd,char *prefix, int deep)
     }
     else {
         if (GB_check_hkey(prefix+1)) {
-            prefix = prefix;		/* for debugging purpose */
+            prefix = prefix;        /* for debugging purpose */
         }
         else {
             prefix[0] = (char)type;
@@ -2348,7 +2348,7 @@ char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
 
        if datapath              != 0, only keys with prefix datapath are scanned and
        the prefix is removed from the resulting key_names
-	*/
+    */
     gbs_scan_db_data.hash_table  = GBS_create_hash(1024,0);
     gbs_scan_db_data.buffer      = (char *)malloc(GBT_SUM_LEN);
     strcpy(gbs_scan_db_data.buffer,"");
@@ -2372,7 +2372,7 @@ char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
 }
 
 /********************************************************************************************
-				send a message to the db server to tmp/message
+                send a message to the db server to tmp/message
 ********************************************************************************************/
 
 GB_ERROR GBT_message(GBDATA *gb_main, const char *msg)
@@ -2393,7 +2393,7 @@ GB_HASH *GBT_generate_species_hash(GBDATA *gb_main,int ncase)
     GB_HASH *hash = GBS_create_hash(10000,ncase);
     GBDATA *gb_species;
     GBDATA *gb_name;
-    for (	gb_species = GBT_first_species(gb_main);
+    for (   gb_species = GBT_first_species(gb_main);
             gb_species;
             gb_species = GBT_next_species(gb_species)){
         gb_name = GB_find(gb_species,"name",0,down_level);
@@ -2408,7 +2408,7 @@ GB_HASH *GBT_generate_marked_species_hash(GBDATA *gb_main)
     GB_HASH *hash = GBS_create_hash(10000,0);
     GBDATA *gb_species;
     GBDATA *gb_name;
-    for (	gb_species = GBT_first_marked_species(gb_main);
+    for (   gb_species = GBT_first_marked_species(gb_main);
             gb_species;
             gb_species = GBT_next_marked_species(gb_species)){
         gb_name = GB_find(gb_species,"name",0,down_level);
@@ -2419,12 +2419,12 @@ GB_HASH *GBT_generate_marked_species_hash(GBDATA *gb_main)
 }
 
 /********************************************************************************************
-				Rename one or many species (only one session at a time/ uses
-				commit abort transaction)
+                Rename one or many species (only one session at a time/ uses
+                commit abort transaction)
 ********************************************************************************************/
 struct gbt_renamed_struct {
-    int		used_by;
-    char	data[1];
+    int     used_by;
+    char    data[1];
 
 };
 
@@ -2438,7 +2438,7 @@ struct gbt_rename_struct {
 } gbtrst;
 
 /* starts the rename session, if allflag = 1 then the whole database is to be
-		renamed !!!!!!! */
+        renamed !!!!!!! */
 GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag)
 {
     GB_ERROR error = GB_push_transaction(gb_main);
@@ -2595,7 +2595,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge)){
 GBDATA **GBT_gen_species_array(GBDATA *gb_main, long *pspeccnt)
 {
     GBDATA *gb_species;
-    GBDATA *gb_species_data	= GBT_find_or_create(gb_main,"species_data",7);
+    GBDATA *gb_species_data = GBT_find_or_create(gb_main,"species_data",7);
     GBDATA **result;
     *pspeccnt = 0;
     for (gb_species = GBT_first_species_rel_species_data(gb_species_data);
@@ -2784,11 +2784,11 @@ GBDATA *GB_test_link_follower(GBDATA *gb_main,GBDATA *gb_link,const char *link){
 }
 
 /********************************************************************************************
-					SAVE & LOAD
+                    SAVE & LOAD
 ********************************************************************************************/
 
 /** Open a database, create an index for species and extended names,
-	disable saving the database in the PT_SERVER directory */
+    disable saving the database in the PT_SERVER directory */
 
 GBDATA *GBT_open(const char *path,const char *opent,const char *disabled_path)
 {
@@ -2796,7 +2796,7 @@ GBDATA *GBT_open(const char *path,const char *opent,const char *disabled_path)
     GBDATA *species_data;
     GBDATA *extended_data;
     GBDATA *gb_tmp;
-    long	hash_size;
+    long    hash_size;
 
     if (!gbd) return gbd;
     if (!disabled_path) disabled_path = "$(ARBHOME)/lib/pts/*";
@@ -2818,7 +2818,7 @@ GBDATA *GBT_open(const char *path,const char *opent,const char *disabled_path)
     }
     gb_tmp = GB_search(gbd,"tmp",GB_CREATE_CONTAINER);
     GB_set_temporary(gb_tmp);
-    {				/* install link followers */
+    {               /* install link followers */
         GB_MAIN_TYPE *Main = GB_MAIN(gbd);
         Main->table_hash = GBS_create_hash(256,0);
         GB_install_link_follower(gbd,"REF",GB_test_link_follower);
@@ -2829,7 +2829,7 @@ GBDATA *GBT_open(const char *path,const char *opent,const char *disabled_path)
 }
 
 /********************************************************************************************
-					REMOTE COMMANDS
+                    REMOTE COMMANDS
 ********************************************************************************************/
 
 GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name){
