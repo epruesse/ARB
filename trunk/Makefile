@@ -225,7 +225,7 @@ ifdef ECGS
 
    XAR = $(AR)# 			# Linker for archives containing templates
 
-   SYSLIBS = -lsocket # -lm -lnsl -lgen -lposix4
+   SYSLIBS = -lsocket -lm # -lnsl -lgen -lposix4
    XLIBS =  -L$(OPENWINHOME)/lib -L$(XHOME)/lib -lXm -lXt -lX11
 
 else
