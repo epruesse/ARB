@@ -1,11 +1,11 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : SQ_functions.h                                         //
-//    Purpose   :                                                        //
-//    Time-stamp: <Tue Sep/16/2003 13:06 MET Coder@ReallySoft.de>        //
+//    Purpose   : Functions used for calculation of alignment quality    //
+//    Time-stamp: <Tue Sep/22/2003 18:00 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
-//  Coded by Juergen Huber in September 2003                             //
+//  Coded by Juergen Huber in July - October 2003                        //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
@@ -17,7 +17,7 @@
 
 GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main);
 
-void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only);
+GB_ERROR SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only);
 
 void SQ_traverse_through_tree(GBDATA *gb_main, GBT_TREE *tree, bool marked_only);
 
@@ -37,7 +37,7 @@ int SQ_get_value(GBDATA *gb_main, const char *option);
       value_of_evaluation
     */
 
-void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average, int weight_helix, int weight_consensus, int weight_iupac);
+GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average, int weight_helix, int weight_consensus, int weight_iupac);
     /*
       The "weight_..."  -values are passed to the function "SQ_evaluate()".
       SQ_evaluate() generates the final estimation for the quality of an alignment.

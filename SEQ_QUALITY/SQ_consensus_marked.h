@@ -1,3 +1,18 @@
+//  ==================================================================== //
+//                                                                       //
+//    File      : SQ_consensus_marked.h                                  //
+//    Purpose   : Class used for calculation of consensus sequences      //
+//    Time-stamp: <Tue Sep/22/2003 18:00 MET Coder@ReallySoft.de>        //
+//                                                                       //
+//                                                                       //
+//  Coded by Juergen Huber in July - October 2003                        //
+//  Copyright Department of Microbiology (Technical University Munich)   //
+//                                                                       //
+//  Visit our web site at: http://www.arb-home.de/                       //
+//                                                                       //
+//  ==================================================================== //
+
+
 class SQ_consensus_marked {
 
 public:

@@ -1,3 +1,18 @@
+//  ==================================================================== //
+//                                                                       //
+//    File      : SQ_functions.cxx                                       //
+//    Purpose   : Implementation of SQ_functions.h                       //
+//    Time-stamp: <Tue Sep/22/2003 18:00 MET Coder@ReallySoft.de>        //
+//                                                                       //
+//                                                                       //
+//  Coded by Juergen Huber in July - October 2003                        //
+//  Copyright Department of Microbiology (Technical University Munich)   //
+//                                                                       //
+//  Visit our web site at: http://www.arb-home.de/                       //
+//                                                                       //
+//  ==================================================================== //
+
+
 #include "arbdb.h"
 #include "arbdbt.h"
 #include "stdio.h"
@@ -47,12 +62,13 @@ GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main) {
     return error;
 }
 
-void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
+GB_ERROR SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 
 
     char *alignment_name;
     int avg_bases = 0;
     int worked_on_sequences = 0;
+    bool pass1_free = true; //semaphor
 
     GBDATA *read_sequence = 0;
     GBDATA *gb_species;
@@ -60,6 +76,7 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
     GBDATA *gb_name;
     GBDATA *(*getFirst)(GBDATA*) = 0;
     GBDATA *(*getNext)(GBDATA*) = 0;
+    GB_ERROR error = 0;
 
     BI_PAIR_TYPE pair_type = HELIX_PAIR;
     BI_helix my_helix;
@@ -85,20 +102,41 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 
 
     /*first pass operations*/
-    for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species) ){
+    for (gb_species = getFirst(gb_main);
+	 gb_species && !error;
+	 gb_species = getNext(gb_species) ){
 
 	gb_name = GB_find(gb_species, "name", 0, down_level);
 
-	if (gb_name) {
+        if (!gb_name) error = GB_get_error();
+
+	else {
 
 	    GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
 
-	    if (gb_ali) {
+	    if (!gb_ali) error = GBS_global_string("No such alignment '%s'", alignment_name);
 
+	    else {
 		GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
-		read_sequence      = GB_find(gb_ali,"data",0,down_level);
+		if (!gb_quality) error = GB_get_error();
 
-		if (read_sequence) {
+		/*look if first pass wasn't done already*/
+		else {
+		    GBDATA *gb_calcstate     = GB_search(gb_quality, "calcstate", GB_INT);
+		    if (!gb_calcstate) error = GB_get_error();
+		    else {
+			int sema = GB_read_int(gb_calcstate); // get calculation state;
+			if (sema != 1) pass1_free = true;
+			else {
+			    pass1_free = false;
+			}
+		    }
+		}
+
+		read_sequence = GB_find(gb_ali,"data",0,down_level);
+
+		/*real calculations start here*/
+		if (read_sequence && pass1_free) {
 
 		    int count_bases       = 0;
 		    int count_scores      = 0;
@@ -126,8 +164,8 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 		    {
 		    SQ_ambiguities ambi;
 		    ambi.SQ_count_ambiguities(rawSequence, sequenceLength);
-		    int x = ambi.SQ_get_nr_ambiguities();
-		    int y = ambi.SQ_get_percent_ambiguities();
+		    //int x = ambi.SQ_get_nr_ambiguities();
+		    //int y = ambi.SQ_get_percent_ambiguities();
 		    int z = ambi.SQ_get_iupac_value();
 		    //printf("\n ambiguities: %i %i %i \n", x, y, z);
 		    GBDATA *gb_result1 = GB_search(gb_quality, "iupac_value", GB_INT);
@@ -205,6 +243,13 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 		    seq_assert(gb_result5);
 		    GB_write_int(gb_result5, percent_bases);
 
+		    /*set first pass done*/
+		    GBDATA *gb_calcstate     = GB_search(gb_quality, "calcstate", GB_INT);
+		    if (!gb_calcstate) error = GB_get_error();
+		    else {
+			GB_write_int(gb_calcstate, CS_PASS1); // set calculation state
+		    }
+
 		}
 	    }
 	}
@@ -213,7 +258,6 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
     /*calculate the average number of bases in group*/
     if (worked_on_sequences != 0) {
 	avg_bases = avg_bases / worked_on_sequences;
-	//printf("%i",avg_bases);
     }
     //debug
     else {
@@ -221,16 +265,23 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
     }
 
 
+
     /*second pass operations*/
-    for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species) ){
+    for (gb_species = getFirst(gb_main);
+	 gb_species && !error;
+	 gb_species = getNext(gb_species) ){
 
 	gb_name = GB_find(gb_species, "name", 0, down_level);
 
-	if (gb_name) {
+        if (!gb_name) error = GB_get_error();
+
+	else {
 
 	    GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
 
-	    if (gb_ali) {
+	    if (!gb_ali) error = GBS_global_string("No such alignment '%s'", alignment_name);
+
+	    else {
 		int diff = 0;
 		int temp = 0;
 		int diff_percent = 0;
@@ -280,8 +331,10 @@ void SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 	}
     }
 
-    GB_pop_transaction(gb_main);
+    if (error) GB_abort_transaction(gb_main);
+    else GB_pop_transaction(gb_main);
 
+    return error;
 }
 
 
@@ -338,7 +391,7 @@ int SQ_get_value(GBDATA *gb_main, const char *option){
 
 
 
-void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average, int weight_helix, int weight_consensus, int weight_iupac){
+GB_ERROR SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average, int weight_helix, int weight_consensus, int weight_iupac){
 
 
     char *alignment_name;
@@ -348,6 +401,7 @@ void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average
     GBDATA *gb_name;
     GBDATA *(*getFirst)(GBDATA*) = 0;
     GBDATA *(*getNext)(GBDATA*) = 0;
+    GB_ERROR error = 0;
 
 
     GB_push_transaction(gb_main);
@@ -364,15 +418,21 @@ void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average
     }
 
 
-    for (gb_species = getFirst(gb_main); gb_species; gb_species = getNext(gb_species) ){
+    for (gb_species = getFirst(gb_main);
+	 gb_species && !error;
+	 gb_species = getNext(gb_species) ){
 
 	gb_name = GB_find(gb_species, "name", 0, down_level);
 
-	if (gb_name) {
+        if (!gb_name) error = GB_get_error();
+
+	else {
 
 	    GBDATA *gb_ali = GB_find(gb_species,alignment_name,0,down_level);
 
-	    if (gb_ali) {
+	    if (!gb_ali) error = GBS_global_string("No such alignment '%s'", alignment_name);
+
+	    else {
 		int bases      = 0;
 		int dfa        = 0;
 		int result     = 0;
@@ -407,12 +467,10 @@ void SQ_evaluate(GBDATA *gb_main, int weight_bases, int weight_diff_from_average
 	}
     }
 
-// #if defined(DEVEL_JUERGEN)
-//     GB_save_as(gb_main, path, savetype);
-// #endif // DEVEL_JUERGEN
+    if (error) GB_abort_transaction(gb_main);
+    else GB_pop_transaction(gb_main);
 
-    GB_pop_transaction(gb_main);
-
+    return error;
 }
 
 
