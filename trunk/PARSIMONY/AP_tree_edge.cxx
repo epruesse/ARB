@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <iostream.h>
-#include <iomanip.h>
+#include <iostream>
+#include <iomanip>
 #include <memory.h>
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -14,6 +14,8 @@
 #include "ap_tree_nlen.hxx"
 
 #include <aw_root.hxx>
+
+using namespace std;
 
 // #define ap_assert(x) arb_assert(x)
 
