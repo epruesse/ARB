@@ -442,7 +442,6 @@ ARCHS = \
 			DIST/DIST.a \
 			EDIT/EDIT.a \
 			EDIT4/EDIT4.a \
-			GENE_PROBE/GENE_PROBE.a \
 			EISPACK/EISPACK.a \
 			GDE/GDE.a \
 			GENOM/GENOM.a \
@@ -641,18 +640,6 @@ $(SECEDIT):	$(ARCHS_SECEDIT:.a=.dummy) shared_libs
 
 
 ARCHS_PROBE_COMM = PROBE_COM/server.a PROBE/PROBE.a
-
-#*********************************** arb_gene_probe **************************************
-GENE_PROBE = bin/arb_gene_probe
-ARCHS_GENE_PROBE = \
-		GENE_PROBE/GENE_PROBE.a \
-
-$(GENE_PROBE): $(ARCHS_GENE_PROBE:.a=.dummy) shared_libs
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_GENE_PROBE) $(LIBS) || ( \
-		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_GENE_PROBE) $(LIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_GENE_PROBE) $(LIBS) ; \
-		)
 
 #***********************************	arb_phylo **************************************
 PHYLO = bin/arb_phylo
@@ -1004,7 +991,6 @@ test:	$(TEST)
 demo:	$(AWDEMO)
 
 e4:		$(EDIT4)
-gp:		$(GENE_PROBE)
 gi:		GENOM_IMPORT/GENOM_IMPORT.dummy
 we:		$(WETC)
 eb:		$(EDITDB)
