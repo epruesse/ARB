@@ -34,15 +34,6 @@ int regerrno;
 /********************************************************************************************
                     directory handling
 ********************************************************************************************/
-void g_b_error_mixed_quicks(void){
-    GB_export_error("There are old style quick files (xxx.arb.quick?)\n"
-                    "and new style quick files (xxx.a??). This might be an internal\n"
-                    "error or somebody had restored old files in this directory\n"
-                    "Please call your system administrator or delete/rename either the new\n"
-                    "style or old style files\n");
-    GB_print_error();
-    exit(-1);
-}
 
 /* look for quick saves (basename = yyy/xxx no arb ending !!!!) */
 GB_ERROR gb_scan_directory(char *basename, struct gb_scandir *sd){
@@ -87,7 +78,6 @@ GB_ERROR gb_scan_directory(char *basename, struct gb_scandir *sd){
             if (sd->type == GB_SCAN_NEW_QUICK){
                 printf("Warning: Found new and old changes files, using new\n");
                 continue;
-                /* g_b_error_mixed_quicks(); */
             }
             sd->type = GB_SCAN_OLD_QUICK;
             curindex = atoi(suffix+oldstylelen);
@@ -100,7 +90,6 @@ GB_ERROR gb_scan_directory(char *basename, struct gb_scandir *sd){
             isdigit(suffix[3])){
             if (sd->type == GB_SCAN_OLD_QUICK){
                 printf("Warning: Found new and old changes files, using new\n");
-                /* g_b_error_mixed_quicks(); */
             }
             sd->type = GB_SCAN_NEW_QUICK;
             curindex = atoi(suffix+2);
