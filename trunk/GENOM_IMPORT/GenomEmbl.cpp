@@ -1,10 +1,3 @@
-
-#include <string>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <vector>
-
 #include "GenomEmbl.h"
 #include "GenomUtilities.h"
 // #include "GenomReferenceEmbl.h"
@@ -347,7 +340,7 @@ int GenomEmbl::prepareFlatFile(void)
 //            cout << "sq 0005 " << atol(words.at(i).c_str()) << endl;
 
 //             sequence_header.push_back(atol(words.at(i).c_str()));
-#warning read here
+//#warning read here
               // hallo artem - vector::at() kann der Compiler leider nicht
               // ich hab es an 3 Stellen wie folgt geaendert.
               sequence_header.push_back(atol(words[i].c_str()));

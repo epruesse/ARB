@@ -1,6 +1,7 @@
 #include "GenomSourceFeatureEmbl.h"
 #include "GenomUtilities.h"
 
+using namespace std;
 
 GenomSourceFeatureEmbl::GenomSourceFeatureEmbl()
 {

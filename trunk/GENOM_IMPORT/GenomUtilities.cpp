@@ -1,7 +1,7 @@
 #include "GenomUtilities.h"
 
 
-
+using namespace std;
 
 void eliminateFeatureTableSign(string * source_string, string * fts, bool semi, bool equal)
 {

@@ -3,35 +3,35 @@
 #include <iomanip>
 #include <fstream>
 #include <vector>
-#include <GenomReferenceEmbl.h>
-#include <GenomFeatureTableEmbl.h>
+#include "GenomReferenceEmbl.h"
+#include "GenomFeatureTableEmbl.h"
 
 class GenomEmbl
 {
 	private:
-		string identification;										//	ID
-		string accession_number;									//	AC
-		string sequence_version;									//	SV
-		string date_of_creation;									//	DT
-		string date_of_last_update;								//	DT
-		string description;												//	DE
-		vector<string> key_words;									//	KW
-    string key_words_to_string;
-		string organism_species;									//	OS
-		vector<string> organism_classification;		//	OC
-    string organism_classification_to_string;
-		string or_garnelle;												//	OG
-		vector<GenomReferenceEmbl> references;		//	R...
-		vector<string> database_cross_reference;	//	DR
-    string database_cross_reference_to_string;
-		string constructed;												//	CO
-		vector<string> free_text_comments;				//	CC
-    string free_text_comments_to_string;
-		vector<long> sequence_header;							//	SQ
-		vector<string> sequence_data_line;				//	...
+		std::string identification;										//	ID
+		std::string accession_number;									//	AC
+		std::string sequence_version;									//	SV
+		std::string date_of_creation;									//	DT
+		std::string date_of_last_update;								//	DT
+		std::string description;												//	DE
+		std::vector<std::string> key_words;									//	KW
+    std::string key_words_to_string;
+		std::string organism_species;									//	OS
+		std::vector<std::string> organism_classification;		//	OC
+    std::string organism_classification_to_string;
+		std::string or_garnelle;												//	OG
+		std::vector<GenomReferenceEmbl> references;		//	R...
+		std::vector<std::string> database_cross_reference;	//	DR
+    std::string database_cross_reference_to_string;
+		std::string constructed;												//	CO
+		std::vector<std::string> free_text_comments;				//	CC
+    std::string free_text_comments_to_string;
+		std::vector<long> sequence_header;							//	SQ
+		std::vector<std::string> sequence_data_line;				//	...
 		GenomFeatureTableEmbl feature_table;			//	FT
 
-		string embl_flatfile;
+		std::string embl_flatfile;
 		int actual_sq;
 		int actual_dr;
 		int actual_rr;
@@ -41,24 +41,24 @@ class GenomEmbl
 		int actual_oc;
 		bool prepared;
 	public:
-		GenomEmbl(string);
+		GenomEmbl(std::string);
 		~GenomEmbl();
-		string* getID(void);
-		string* getAC(void);
-		string* getSV(void);
-		string* getDTCreation(void);
-		string* getDTLastUpdate(void);
-		string* getDE(void);
-		string* getKW(void);
-		string* getOS(void);
-		string* getOC(void);
-		string* getOG(void);
+		std::string* getID(void);
+		std::string* getAC(void);
+		std::string* getSV(void);
+		std::string* getDTCreation(void);
+		std::string* getDTLastUpdate(void);
+		std::string* getDE(void);
+		std::string* getKW(void);
+		std::string* getOS(void);
+		std::string* getOC(void);
+		std::string* getOG(void);
 		GenomReferenceEmbl* getReference(void);
-		string* getDR(void);
-		string* getCO(void);
-		string* getCC(void);
+		std::string* getDR(void);
+		std::string* getCO(void);
+		std::string* getCC(void);
 		long getSQ(void);
-		string* get(void);
+		std::string* get(void);
 //		string* getFT(void);
 		GenomFeatureTableEmbl* getFeatureTable(void);
 

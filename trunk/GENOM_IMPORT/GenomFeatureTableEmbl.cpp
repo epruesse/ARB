@@ -1,6 +1,8 @@
 #include "GenomFeatureTableEmbl.h"
 #include "GenomUtilities.h"
 
+using namespace std;
+
 GenomFeatureTableEmbl::GenomFeatureTableEmbl()
 {
 	prepared = false;
