@@ -189,7 +189,8 @@ void AW_preset_create_color_chooser(AW_window *aws, const char *awar, const char
         aws->label(label);
     }
     aws->callback((AW_CB)aw_create_color_chooser_window,(AW_CL)strdup(awar),(AW_CL)strdup(label));
-    aws->create_button("SELECT_A_COLOR","S");
+    aws->set_background(aws->get_root()->awar(awar)->read_string());
+    aws->create_button("SELECT_A_COLOR"," ");
 }
 
 void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char *label,bool message_reload)
@@ -292,7 +293,7 @@ void aw_gc_color_changed_cb(AW_root *root,AW_MGC_awar_cb_struct *cbs, long mode)
     char *colorname;
 
     sprintf(awar_name,AWP_COLORNAME_TEMPLATE,cbs->cbs->window_awar_name,cbs->colorbasename);
-    colorname = root->awar(awar_name)->read_string();
+    colorname = root->awar(awar_name)->read_string(); 
     AW_color color = (AW_color)cbs->colorindex;
     cbs->cbs->aw->alloc_named_data_color(color,colorname);
     if (color != AW_DATA_BG) {
@@ -307,6 +308,7 @@ void aw_gc_color_changed_cb(AW_root *root,AW_MGC_awar_cb_struct *cbs, long mode)
     if (mode != -1)	{
         cbs->cbs->f(cbs->cbs->aw,cbs->cbs->cd1,cbs->cbs->cd2);
     }
+    printf("color changed to %s \n",colorname);
     free(colorname);
 }
 
@@ -497,7 +499,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
     char background[50];
     gb_assert(default_background_color[0]);
 
-    sprintf(background, "-background$%s", default_background_color);
+    sprintf(background, "-BACKGROUND$%s", default_background_color);
 
     for (int loop = 1; loop <= 2; ++loop) {
         int color_group_counter = 0;
@@ -682,17 +684,17 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
             }
 
             if (!flag_no_color_selector){
-                aws->button_length(2);
+                aws->button_length(10);
                 AW_preset_create_color_chooser(aws, awar_name, id);
             }
-            aws->create_input_field(awar_name, 10);
+            //            aws->create_input_field(awar_name, 10);
 
             if (!flag_no_fonts) {
                 sprintf(awar_name, AWP_FONTNAME_TEMPLATE,window_awar_name, fontbasename);
                 aws->label_length(5);
                 aws->create_option_menu(awar_name, "Font", 0);
                 {
-                    int         font_nr;
+                    int font_nr;
                     const char *font_string;
 
                     for (font_nr = 0;; font_nr++) {
@@ -940,7 +942,7 @@ AW_window *AWT_preset_window( AW_root *root )
     aws->create_input_field( "window/font", 12 );
     aws->at_newline();
 
-    aws->button_length(3);
+    aws->button_length(10);
     AW_preset_create_color_chooser(aws,"window/background", "Application Background", true, true);
     aws->at_x(tabstop);
     aws->create_input_field( "window/background", 12 );
