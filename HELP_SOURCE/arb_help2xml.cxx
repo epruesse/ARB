@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
-//    Time-stamp: <Fri Jun/28/2002 13:50 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jul/17/2002 01:05 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
@@ -175,7 +175,7 @@ public:
     virtual ~Helpfile() {}
 
     void readHelp(istream& in, const string& filename);
-    void writeXML(FILE *out, const string& page_name, const string& path);
+    void writeXML(FILE *out, const string& page_name, const string& path1, const string& path2);
     void checkConsistency();
 };
 
@@ -368,6 +368,8 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                     rest = eatWhite(rest);
                     parseSection(title, rest, rest-line, read);
 
+                    if (title.empty()) throw "empty TITLE not allowed";
+
                     const char *t = title.front().c_str();
 
                     if (strstr(t, "Standard help file form") != 0) {
@@ -411,16 +413,15 @@ void Helpfile::readHelp(istream& in, const string& filename) {
             }
         }
     }
-    catch (string& err) {
-        throw strf("%s:%i: %s", filename.c_str(), read.getLineNo(), err.c_str());
-    }
+    catch (string& err) { throw strf("%s:%i: %s", filename.c_str(), read.getLineNo(), err.c_str()); }
+    catch (const char *err) { throw strf("%s:%i: %s", filename.c_str(), read.getLineNo(), err); }
 }
 //  -------------------------------------------------------------------------
 //      static bool shouldReflow(const string& s, int& foundIndentation)
 //  -------------------------------------------------------------------------
 static bool shouldReflow(const string& s, int& foundIndentation) {
     // foundIndentation is only valid if shouldReflow() returns true
-    enum { START, CHAR, SPACE, MULTIPLE } state = START;
+    enum { START, CHAR, SPACE, MULTIPLE, DOT, DOTSPACE } state = START;
     bool equal_indent = true;
     int  lastIndent   = -1;
     int  thisIndent   = 0;
@@ -431,8 +432,9 @@ static bool shouldReflow(const string& s, int& foundIndentation) {
             thisIndent = 0;
         }
         else if (isWhite(*c)) {
-            if (state == SPACE) state  = MULTIPLE; // now seen multiple spaces
-            else if (state == CHAR) state = SPACE; // now seen 1 space
+            if (state == DOT || state == DOTSPACE)  state = DOTSPACE; // multiple spaces after DOT are allowed
+            else if (state == SPACE)                state = MULTIPLE; // now seen multiple spaces
+            else if (state == CHAR)                 state = SPACE; // now seen 1 space
         }
         else {
             if (state == MULTIPLE) return false; // character after multiple spaces
@@ -440,7 +442,8 @@ static bool shouldReflow(const string& s, int& foundIndentation) {
                 if (lastIndent == -1) lastIndent                = thisIndent;
                 else if (lastIndent != thisIndent) equal_indent = false;
             }
-            state = CHAR;
+            if (*c == '.' || *c == ',')  state = DOT;
+            else state                      = CHAR;
         }
     }
 
@@ -965,22 +968,25 @@ void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
     }
 }
 
-//  ---------------------------------------------------------------------------------------------------
-//      static void addMissingAttribute(XML_Tag& link, const string& basename, const string& path)
-//  ---------------------------------------------------------------------------------------------------
-static void addMissingAttribute(XML_Tag& link, const string& basename, const string& path) {
+// --------------------------------------------------------------------------------------------------------------------------
+//      static void addMissingAttribute(XML_Tag& link, const string& basename, const string& path1, const string& path2)
+// --------------------------------------------------------------------------------------------------------------------------
+static void addMissingAttribute(XML_Tag& link, const string& basename, const string& path1, const string& path2) {
     struct stat st;
-    string      fullname = path+basename+".hlp";
+    string      fullname1 = path1+basename+".hlp";
+    string      fullname2 = path2+basename+".hlp";
 
-    if (stat(fullname.c_str(), &st) == -1) {
+    if (stat(fullname1.c_str(), &st) == -1 &&
+        stat(fullname2.c_str(), &st) == -1)
+    {
         link.add_attribute("missing", "1");
     }
 }
 
-//  ----------------------------------------------------------------------------------------
-//      void Helpfile::writeXML(FILE *out, const string& page_name, const string& path)
-//  ----------------------------------------------------------------------------------------
-void Helpfile::writeXML(FILE *out, const string& page_name, const string& path) {
+// ---------------------------------------------------------------------------------------------------------------
+//      void Helpfile::writeXML(FILE *out, const string& page_name, const string& path1, const string& path2)
+// ---------------------------------------------------------------------------------------------------------------
+void Helpfile::writeXML(FILE *out, const string& page_name, const string& path1, const string& path2) {
 #if defined(DUMP_DATA)
     display(uplinks, "Uplinks", stdout);
     display(references, "References", stdout);
@@ -996,12 +1002,12 @@ void Helpfile::writeXML(FILE *out, const string& page_name, const string& path) 
     for (Strings::const_iterator s = uplinks.begin(); s != uplinks.end(); ++s) {
         XML_Tag uplink("UP");
         uplink.add_attribute("dest", *s);
-        addMissingAttribute(uplink, *s, path);
+        addMissingAttribute(uplink, *s, path1, path2);
     }
     for (Strings::const_iterator s = references.begin(); s != references.end(); ++s) {
         XML_Tag sublink("SUB");
         sublink.add_attribute("dest", *s);
-        addMissingAttribute(sublink, *s, path);
+        addMissingAttribute(sublink, *s, path1, path2);
     }
     {
         XML_Tag title_tag("TITLE");
@@ -1042,6 +1048,18 @@ void Helpfile::checkConsistency() {
     // @@@ perform some consistency check
     // (i.e. does title exist etc.)
 }
+// -------------------------------------------------------------------
+//      static void show_err(string err, const string& helpfile )
+// -------------------------------------------------------------------
+static void show_err(const string& err, const string& helpfile ) {
+    if (err.find(helpfile+':') != string::npos) {
+        cerr << err;
+    }
+    else {
+        cerr << helpfile << ":1: " << err;
+    }
+    cerr << '\n';
+}
 
 
 
@@ -1073,7 +1091,8 @@ int main(int argc, char *argv[]) {
             if (!out) throw string("Can't open '")+xml_output+'\'';
 
             try {
-                help.writeXML(out, cutoff_hlp_extension(string(arb_help, 8)), "oldhelp/"); // cut off 'oldhelp/' and '.hlp'
+
+                help.writeXML(out, cutoff_hlp_extension(string(arb_help, 8)), "oldhelp/", "genhelp/"); // cut off 'oldhelp/' and '.hlp'
                 fclose(out);
             }
             catch (...) {
@@ -1085,8 +1104,8 @@ int main(int argc, char *argv[]) {
 
         return EXIT_SUCCESS;
     }
-    catch (string& err)         { cerr << err << " (arb_help2xml " << arb_help << ")\n"; }
-    catch (const char * err)    { cerr << err << " (arb_help2xml " << arb_help << ")\n"; }
+    catch (string& err)         { show_err(err, arb_help); }
+    catch (const char * err)    { show_err(err, arb_help); }
     catch (...)                 { cerr << "unknown exception (arb_help2xml)\n"; }
 
     return EXIT_FAILURE;
