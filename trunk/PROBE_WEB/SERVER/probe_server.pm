@@ -172,7 +172,7 @@ sub get_std_result($) {
     }
   }
   close RESULT;
-#   unlink $result_name;    # remove the result file
+  unlink $result_name;    # remove the result file
 
   if (not exists $result{'result'}) {
     $error = "got empty or damaged resultfile from worker";
