@@ -6,7 +6,9 @@ Future changes:
 
 Major changes for next version:
 
- - port to gcc 3.2 - 3.4.2 (resulting executable is not stable now - stick to 2.95.3 for now)
+ - more compact display in EDIT4 
+ - capable to use iso10646 fonts
+ - port to gcc 3.2 - 3.4.2
  - fixed a bug in DB optimization (occurred when fields had bigger protection than current)
  - Bootstrap circles may be displayed as ellipses; upper size limit configurable; uses
    different color for size-limited circles; fixed xfig-export-bug
