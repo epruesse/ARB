@@ -32,7 +32,7 @@ check_syscall (int call, char *filename, char *op)
     return;
 
   fprintf (stderr, "%s: %s%s",
-	   prog_name,  
+	   prog_name,
 	   filename ? filename : "",
 	   filename ? ": " : "");
   perror (op);
@@ -55,8 +55,7 @@ check_file (FILE *f, char *filename, char *op)
 /* If NAME is null, return DEFALT.
    If NAME is non-null, try to open it with MODE; print an error message
    and exit if this doesn't succeed.  */
-FILE *
-careful_open (char *name, char *mode, FILE *defalt)
+FILE * careful_open (const char *name, const char *mode, FILE *defalt)
 {
   if (name)
     {
