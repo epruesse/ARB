@@ -14,12 +14,16 @@
 
 
 #include "awt_iupac.hxx"
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define seq_assert(bed) arb_assert(bed)
 
 class SQ_ambiguities {
 
 public:
     SQ_ambiguities();
-    void SQ_count_ambiguities(const char *iupac, int length);
+    void SQ_count_ambiguities(const char *iupac, int length, GBDATA *gb_quality);
     int SQ_get_nr_ambiguities();
     int SQ_get_percent_ambiguities();
     int SQ_get_iupac_value();
@@ -41,7 +45,7 @@ SQ_ambiguities::SQ_ambiguities(){
 }
 
 
-void SQ_ambiguities::SQ_count_ambiguities(const char *iupac, int length){
+void SQ_ambiguities::SQ_count_ambiguities(const char *iupac, int length, GBDATA *gb_quality){
     this->iupac = iupac;
     char c;
 
@@ -95,6 +99,10 @@ void SQ_ambiguities::SQ_count_ambiguities(const char *iupac, int length){
 	    }
     }
     percent = (100 * number) / length;
+
+    GBDATA *gb_result1 = GB_search(gb_quality, "iupac_value", GB_INT);
+    seq_assert(gb_result1);
+    GB_write_int(gb_result1, iupac_value);
 }
 
 

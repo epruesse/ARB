@@ -18,11 +18,10 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#undef _USE_AW_WINDOW
-#include "BI_helix.hxx"
-
-#include "SQ_consensus_marked.h"
+#include "SQ_consensus.h"
 #include "SQ_ambiguities.h"
+#include "SQ_helix.h"
+#include "SQ_physical_layout.h"
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -30,6 +29,7 @@
 #define seq_assert(bed) arb_assert(bed)
 
 enum { CS_CLEAR, CS_PASS1 };
+
 
 GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main) {
     GB_push_transaction(gb_main);
@@ -62,6 +62,7 @@ GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main) {
     return error;
 }
 
+
 GB_ERROR SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 
 
@@ -78,16 +79,12 @@ GB_ERROR SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
     GBDATA *(*getNext)(GBDATA*) = 0;
     GB_ERROR error = 0;
 
-    BI_PAIR_TYPE pair_type = HELIX_PAIR;
-    BI_helix my_helix;
 
 
     GB_push_transaction(gb_main);
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
     alignment_name = GBT_get_default_alignment(gb_main);
     seq_assert(alignment_name);
-    my_helix.init(gb_main, alignment_name);
-    SQ_consensus_marked cons_mkd(40000);
 
 
     if (marked_only) {
@@ -138,110 +135,44 @@ GB_ERROR SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 		/*real calculations start here*/
 		if (read_sequence && pass1_free) {
 
-		    int count_bases       = 0;
-		    int count_scores      = 0;
-		    int count_dots        = 0;
-		    int percent_scores    = 0;
-		    int percent_dots      = 0;
-		    int percent_bases     = 0;
 		    int sequenceLength    = 0;
-
-		    int j                 = 0;
-		    int count_helix       = 0;
-		    int count_weak_helix  = 0;
-		    int count_no_helix    = 0;
-		    int temp              = 0;
-		    char left;
-		    char right;
-
 		    const char *rawSequence = 0;
+
 
 		    rawSequence    = GB_read_char_pntr(read_sequence);
 		    sequenceLength = GB_read_count(read_sequence);
-		    count_bases    = sequenceLength;
 
-		    /*get values for  ambiguities*/
+
 		    {
-		    SQ_ambiguities ambi;
-		    ambi.SQ_count_ambiguities(rawSequence, sequenceLength);
-		    //int x = ambi.SQ_get_nr_ambiguities();
-		    //int y = ambi.SQ_get_percent_ambiguities();
-		    int z = ambi.SQ_get_iupac_value();
-		    //printf("\n ambiguities: %i %i %i \n", x, y, z);
-		    GBDATA *gb_result1 = GB_search(gb_quality, "iupac_value", GB_INT);
-		    seq_assert(gb_result1);
-		    GB_write_int(gb_result1, z);
+			/*calculate physical layout of sequence*/
+			SQ_physical_layout ps_chan;
+			ps_chan.SQ_calc_physical_layout(rawSequence, sequenceLength, gb_quality);
+			int i = ps_chan.SQ_get_number_of_bases();	
+			avg_bases = avg_bases + i;
 		    }
 
-		    for (int i = 0; i < sequenceLength; i++) {
 
-			/*claculate physical layout of sequence*/
-			if (rawSequence[i] == '-') {
-			    count_bases--;
-			    count_scores++;
-			}
+		    {
+			/*get values for  ambiguities*/
+			SQ_ambiguities ambi_chan;
+			ambi_chan.SQ_count_ambiguities(rawSequence, sequenceLength, gb_quality);
+		    }
 
-			if (rawSequence[i] == '.') {
-			    count_bases--;
-			    count_dots++;
-			}
 
+		    {
 			/*claculate the number of strong, weak and no helixes*/
-			pair_type = my_helix.entries[i].pair_type;
-			if (pair_type == HELIX_PAIR) {
-			    left = rawSequence[i];
-			    j = my_helix.entries[i].pair_pos;
-			    right = rawSequence[j];
-			    temp = my_helix.check_pair(left, right, pair_type);
+			SQ_helix heli_chan(sequenceLength);
+			heli_chan.SQ_calc_helix_layout(rawSequence, gb_main, alignment_name, gb_quality);
+ 		    }
 
-			    switch(temp){
-				case 2:
-				    count_helix++;
-				    break;
-				case 1:
-				    count_weak_helix++;
-				    break;
-				case 0:
-				    count_no_helix++;
-				    break;
-			    }
-			}
 
-			/*calculate consensus*/
-			cons_mkd.SQ_calc_consensus(rawSequence[i], i);
+		    {
+			/*calculate consensus sequence*/
+			SQ_consensus con_kun(sequenceLength);
+			con_kun.SQ_calc_consensus(rawSequence);
 		    }
 
-
-		    /*calculate the average number of bases in group*/
-		    avg_bases = avg_bases + count_bases;
 		    worked_on_sequences++;
-
-
-		    /*calculate layout in percent*/
-		    percent_scores = (100 * count_scores) / sequenceLength;
-		    percent_dots   = (100 * count_dots) / sequenceLength;
-		    percent_bases  = 100 - (percent_scores + percent_dots);
-
-
-		    GBDATA *gb_result1 = GB_search(gb_quality, "number_of_helix", GB_INT);
-		    seq_assert(gb_result1);
-		    GB_write_int(gb_result1, count_helix);
-
-		    GBDATA *gb_result2 = GB_search(gb_quality, "number_of_weak_helix", GB_INT);
-		    seq_assert(gb_result2);
-		    GB_write_int(gb_result2, count_weak_helix);
-
-		    GBDATA *gb_result3 = GB_search(gb_quality, "number_of_no_helix", GB_INT);
-		    seq_assert(gb_result3);
-		    GB_write_int(gb_result3, count_no_helix);
-
-		    GBDATA *gb_result4 = GB_search(gb_quality, "number_of_bases", GB_INT);
-		    seq_assert(gb_result4);
-		    GB_write_int(gb_result4, count_bases);
-
-		    GBDATA *gb_result5 = GB_search(gb_quality, "percent_of_bases", GB_INT);
-		    seq_assert(gb_result5);
-		    GB_write_int(gb_result5, percent_bases);
 
 		    /*set first pass done*/
 		    GBDATA *gb_calcstate     = GB_search(gb_quality, "calcstate", GB_INT);
@@ -249,11 +180,11 @@ GB_ERROR SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 		    else {
 			GB_write_int(gb_calcstate, CS_PASS1); // set calculation state
 		    }
-
 		}
 	    }
 	}
     }
+
 
     /*calculate the average number of bases in group*/
     if (worked_on_sequences != 0) {
@@ -303,28 +234,28 @@ GB_ERROR SQ_calc_sequence_structure(GBDATA *gb_main, bool marked_only) {
 
 
 		/*calculate consensus conformity*/
-		if (read_sequence) {
-		    int sequenceLength      = 0;
-		    const char *rawSequence = 0;
-		    int cons_conf           = 0;
-		    int cons_conf_percent   = 0;
-		    rawSequence    = GB_read_char_pntr(read_sequence);
-		    sequenceLength = GB_read_count(read_sequence);
+// 		if (read_sequence) {
+// 		    int sequenceLength      = 0;
+// 		    const char *rawSequence = 0;
+// 		    int cons_conf           = 0;
+// 		    int cons_conf_percent   = 0;
+// 		    rawSequence    = GB_read_char_pntr(read_sequence);
+// 		    sequenceLength = GB_read_count(read_sequence);
 
 
-		    for (int i = 0; i < sequenceLength; i++) {
-			char c;
-			c = cons_mkd.SQ_get_consensus(i);
-			if (rawSequence[i] == c) {
-			    cons_conf++;
-			}
-		    }
-		    cons_conf_percent = (cons_conf * 100) / sequenceLength;
+// 		    for (int i = 0; i < sequenceLength; i++) {
+// 			char c;
+// 			c = cons_mkd.SQ_get_consensus(i);
+// 			if (rawSequence[i] == c) {
+// 			    cons_conf++;
+// 			}
+// 		    }
+// 		    cons_conf_percent = (cons_conf * 100) / sequenceLength;
 
-		    GBDATA *gb_result6 = GB_search(gb_quality, "consensus_conformity", GB_INT);
-		    seq_assert(gb_result6);
-		    GB_write_int(gb_result6, cons_conf_percent);
-		}
+// 		    GBDATA *gb_result6 = GB_search(gb_quality, "consensus_conformity", GB_INT);
+// 		    seq_assert(gb_result6);
+// 		    GB_write_int(gb_result6, cons_conf_percent);
+// 		}
 
 
 	    }
