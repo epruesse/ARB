@@ -159,7 +159,7 @@ void awt_fill_selection_box_recursive(const char *fulldir, int skipleft, const c
                     struct tm *tms = localtime(&stt.st_mtime);
                     strftime( atime, 255,"%b %d %k:%M %Y",tms);
 
-                    long ksize = stt.st_size/1024;                    
+                    long ksize = stt.st_size/1024;
                     aws->insert_selection(selid, GBS_global_string("f %-30s   '%5lik %s'", fullname+skipleft, ksize, atime), fullname);
                 }
             }
@@ -195,7 +195,7 @@ void awt_create_selection_box_cb(void *dummy, struct adawcbstruct *cbs) {
         name_only   = slash ? slash+1 : name;
     }
     bool is_wildcard = strchr(name_only, '*');
-    // does not work : 
+    // does not work :
     //     if (is_wildcard) {
     //         cbs->aws->insert_default_selection(cbs->id, "Please wait...", "?");
     //         cbs->aws->update_selection_list(cbs->id);
@@ -297,11 +297,19 @@ void awt_create_selection_box_changed_filename(void *, struct adawcbstruct *cbs)
             if (AWT_is_dir(newName)) {
                 aw_root->awar(cbs->def_dir)->write_string(newName);
                 if (cbs->previous_filename) {
-                    const char *slash = strrchr(cbs->previous_filename, '/');
-                    const char *name  = slash ? slash+1 : cbs->previous_filename;
-                    aw_root->awar(cbs->def_name)->write_string(AWT_concat_full_path(newName, name));
+                    const char *slash              = strrchr(cbs->previous_filename, '/');
+                    const char *name               = slash ? slash+1 : cbs->previous_filename;
+                    const char *with_previous_name = AWT_concat_full_path(newName, name);
+
+                    if (!AWT_is_dir(with_previous_name)) { // write as new name if not a directory
+                        aw_root->awar(cbs->def_name)->write_string(with_previous_name);
+                    }
+                    else {
+                        aw_root->awar(cbs->def_name)->write_string(newName);
+                    }
+
                     free(newName);
-                    newName           = aw_root->awar(cbs->def_name)->read_string();
+                    newName = aw_root->awar(cbs->def_name)->read_string();
                 }
                 else {
                     aw_root->awar(cbs->def_name)->write_string("");
