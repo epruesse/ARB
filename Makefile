@@ -36,13 +36,15 @@ ifdef DEBUG
 		cflags = $(dflag1) $(dflags)
 		lflags = $(dflag1)
 		fflags = $(dflag1) -C
-		extended_warnings = -Wwrite-strings -Wunused -Wreorder -Wno-aggregate-return -Wconversion
+		extended_warnings = -Wwrite-strings -Wunused -Wno-aggregate-return -Wconversion
+		extended_cpp_warnings = -Wnon-virtual-dtor -Wreorder
 else
 		dflags = -DNDEBUG
 		cflags = -O $(dflags)
 		lflags = -O
 		fflags = -O
 		extended_warnings =
+		extended_cpp_warnings =
 endif
 
    XHOME = /usr/X11
@@ -75,8 +77,8 @@ ifdef LINUX
 
    LINUX_SPECIALS = -DNO_REGEXPR
    SITE_DEPENDEND_TARGETS = perl
-   CPP := $(CPP) $(LINUX_SPECIALS) $(extended_warnings)
-   ACC := $(ACC) $(LINUX_SPECIALS)
+   CPP := $(CPP) $(LINUX_SPECIALS) $(extended_warnings) $(extended_cpp_warnings)
+   ACC := $(ACC) $(LINUX_SPECIALS) $(extended_warnings)
    CCLIB = $(ACC) -fpic
    CCPLIB = $(CPP) -fpic	#			# Same for c++
    f77_flags = $(fflags) -W -N9 -e
