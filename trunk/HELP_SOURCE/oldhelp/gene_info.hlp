@@ -30,12 +30,13 @@ DESCRIPTION	Displays gene information stored within the 'fields' (see
 		Glossary') can be 'marked' or 'unmarked' (see 'HELP: Glossary')
 		by pressing the checkbox after the 'Marked?' prompt.
 		Editing of 'field' entries is enabled or prevented by
-		pressing the 'Edit enabled?' Checkbox.
+		pressing the 'Edit enabled?' checkbox.
+
 		The entries of a 'field' are modified by choosing it from
 		the 'DATABASE FIELDS' subwindow and modifying the entries
 		displayed in the 'Edit box' subwindow.
 
-NOTES		The 'SEARCH' window can be displayed by pressing the <SEARCH>
+NOTES		The 'SEARCH & QUERY' window can be displayed by pressing the <SEARCH>
 		button.
 
 		For modification of 'field' entries, a protection level
@@ -46,6 +47,15 @@ NOTES		The 'SEARCH' window can be displayed by pressing the <SEARCH>
 		Cut and paste of the window system can be used in the 'Edit
 		box' subwindow. This provides is an easy way to export/import
 		data.
+                Use the left mouse button to mark (cut is done automatically).
+                Then use the middle mouse button to paste.
+
+                When you open this window it will always show the information of
+                the current species. That means if you select another species (in ARB_NT or in the editor)
+                this window will follow and display information of the selected species.
+                After clicking on the <DETACH> button once the window will no longer follow the current
+                species automatically. You may open a new information window then (which will follow again).
+                Clicking again on the <DETACH> button will catch up the detached window to the current species.
 
 SECTION         STANDARD FIELDS
 
