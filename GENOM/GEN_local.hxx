@@ -29,8 +29,17 @@
 #define AWAR_GENE_EXTRACT_ALI "tmp/gene/extract/ali"
 
 // --------------------------------------------------------------------------------
+// view-local awars for organism and gene
+
+#define AWAR_LOCAL_ORGANISM_NAME(window_nr) GEN_window_local_awar_name("tmp/genemap/organism", window_nr)
+#define AWAR_LOCAL_GENE_NAME(window_nr)     GEN_window_local_awar_name("tmp/genemap/gene", window_nr)
+
+#define AWAR_LOCAL_ORGANISM_LOCK(window_nr) GEN_window_local_awar_name("tmp/genemap/organism_lock", window_nr)
+#define AWAR_LOCAL_GENE_LOCK(window_nr)     GEN_window_local_awar_name("tmp/genemap/gene_lock", window_nr)
+
+// --------------------------------------------------------------------------------
 // display styles:
-#define AWAR_GENMAP_DISPLAY_TYPE "genemap/display/type"
+#define AWAR_GENMAP_DISPLAY_TYPE(window_nr) GEN_window_local_awar_name("genemap/display/type", window_nr)
 
 // all display styles:
 #define AWAR_GENMAP_ARROW_SIZE   "genemap/display/arrow_size"
@@ -45,14 +54,19 @@
 
 // display vertical-style:
 #define AWAR_GENMAP_VERTICAL_FACTOR_X "genemap/display/vertical/factor_x"
-#define AWAR_GENMAP_VERTICAL_FACTOR_Y "genemap/displax/vertical/factor_y"
+#define AWAR_GENMAP_VERTICAL_FACTOR_Y "genemap/display/vertical/factor_y"
 
 // display radial-style:
-#define AWAR_GENMAP_RADIAL_INSIDE  "genemap/displax/radial/inside"
-#define AWAR_GENMAP_RADIAL_OUTSIDE "genemap/displax/radial/outside"
+#define AWAR_GENMAP_RADIAL_INSIDE  "genemap/display/radial/inside"
+#define AWAR_GENMAP_RADIAL_OUTSIDE "genemap/display/radial/outside"
 
 // other options:
 #define AWAR_GENMAP_AUTO_JUMP       "genemap/options/autojump"
+
+// --------------------------------------------------------------------------------
+
+const char *GEN_window_local_awar_name(const char *awar_name, int window_nr);
+AW_window  *GEN_map(AW_root *aw_root, int window_number);
 
 // --------------------------------------------------------------------------------
 #else
