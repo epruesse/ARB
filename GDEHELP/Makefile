@@ -6,7 +6,7 @@ DEPEND_ON = $(wildcard MENUS/*.menu)
 all: $(TARGET)
 
 $(TARGET) : $(SOURCE) $(DEPEND_ON)
-	chmod a+w $(TARGET)
+	-chmod a+w $(TARGET)
 	$(PP)  -IMENUS $(SOURCE) >$(TARGET)
 	chmod a-w $(TARGET)
 
