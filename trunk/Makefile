@@ -42,14 +42,18 @@ endif
 
 #---------------------- developer specific settings
 
+DEVEL_DEF=-DDEVEL_$(DEVELOPER)
+
 ifeq ($(DEVELOPER),ANY) # default setting (skip all developer specific code)
 DEVEL_DEF=
-else
-ifeq ($(DEVELOPER),RALFX) # special settings for RALFX
-DEVEL_DEF=-DDEVEL_RALF -DDEVEL_IDP -DDEVEL_JUERGEN -DDEVEL_MARKUS
-else
-DEVEL_DEF=-DDEVEL_$(DEVELOPER)
 endif
+
+ifeq ($(DEVELOPER),RALFX) # special settings for RALFX
+DEVEL_DEF=-DDEVEL_RALF -DDEVEL_IDP -DDEVEL_JUERGEN -DDEVEL_MARKUS -DDEVEL_ARTEM
+endif
+
+ifeq ($(DEVELOPER),HARALDX) # special settings for HARALDX
+DEVEL_DEF=-DDEVEL_HARALD -DDEVEL_ARTEM
 endif
 
 #----------------------
