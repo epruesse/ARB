@@ -278,7 +278,6 @@ AW_window::~AW_window(void) {
     delete picture;
 }
 
-
 #if defined(DEBUG)
 // #define DUMP_MENU_LIST          // this should NOT be defined normally (if defined, every window writes all menu-entries to stdout)
 #endif // DEBUG
