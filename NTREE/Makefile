@@ -203,8 +203,9 @@ NT_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/awti_import.hxx
-NT_import.o: $(ARBHOME)/INCLUDE/mg_merge.hxx nt_import.hxx ad_spec.hxx
-NT_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
+NT_import.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+NT_import.o: $(ARBHOME)/INCLUDE/mg_merge.hxx nt_import.hxx
+NT_import.o: nt_internal.h ad_spec.hxx $(ARBHOME)/INCLUDE/GEN.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/adGene.h
 
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arbdb.h

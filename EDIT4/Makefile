@@ -50,6 +50,8 @@ ED4_nds.o: ed4_awars.hxx
 
 ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_secedit.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_secedit.o: $(ARBHOME)/INCLUDE/arbdb.h
+ED4_secedit.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_secedit.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
