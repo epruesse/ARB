@@ -15,6 +15,8 @@ private TreeDisplay tree;
 private TreeNode root;
 private String treeString;
 private String hostname;
+private HttpSubsystem webAccess;
+
 
     // private TreeNode subtree;
 
@@ -34,6 +36,8 @@ public static void main(String[] args)
         Client cl = new Client();
 
         if (args.length == 0) cl.hostname = new String("localhost");
+        cl.webAccess = new HttpSubsystem(cl.hostname);
+        cl.webAccess.conductRequest("/demo.newick");
 
         // inlude version number in tree
         // enables users to store tree local
@@ -79,6 +83,14 @@ public Client()
  {
      return display;
  }
+
+public String getNodeInformation(String nodePath)
+    {
+        return webAccess.retrieveNodeInformation(nodePath);
+
+    }
+
+
 
 }
 

@@ -407,6 +407,7 @@ public void handleRightMouseClick(int x, int y)
             {
                 System.out.println("path to clicked node: " + clickedNode.getBinaryPath());
                 System.out.println("path to clicked node: " + clickedNode.getCodedPath());
+                System.out.println("returned node information: " + myBoss.getNodeInformation(clickedNode.getCodedPath()));
 
                 boolean state = clickedNode.isMarked();
                 clickedNode.markSubtree(!state);
