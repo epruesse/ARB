@@ -543,6 +543,9 @@ private TreeNode getClickedNode(int x, int y)
 
             }
 
+        if (x > 2*clickTolerance) { // search leftwards for node
+            return getClickedNode(x-2*clickTolerance, y);
+        }
 
         return null;
     }
