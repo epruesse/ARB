@@ -378,7 +378,7 @@ static void dumpFontInformation(struct xfont *xf) {
 
 static PIX_FONT lookfont(Display *tool_d, int f, int s, int& found_size, bool verboose)
 {
-    PIX_FONT      fontst;
+    PIX_FONT      fontst = 0;
     char          fn[128];      memset(fn,0,128);
     AW_BOOL       found;
     struct xfont *newfont, *nf, *oldnf;
@@ -477,7 +477,7 @@ static PIX_FONT lookfont(Display *tool_d, int f, int s, int& found_size, bool ve
 
     found_size = nf->size; // report used size
 
-#if defined(DUMP_FONT_DETAILS) 
+#if defined(DUMP_FONT_DETAILS)
     dumpFontInformation(nf);
 #endif // DEBUG
 
@@ -497,7 +497,7 @@ static int get_available_fontsizes(Display *tool_d, int f, int *available_sizes)
         if (found_size == size) available_sizes[size_count++] = size;
     }
 
-    // reverse order of found fontsizes 
+    // reverse order of found fontsizes
     if (size_count>1) {
         for (int reverse = size_count/2-1; reverse >= 0; --reverse) {
             int o = size_count-1-reverse;
@@ -568,6 +568,9 @@ const char *AW_root::font_2_ascii(AW_font font_nr)
                 delete [] fndry;
             }
         }
+    }
+    else  {
+        readable_fontname = xf.templat;
     }
     return readable_fontname;
     // return (ps_fontinfo[font_nr+1].name);
@@ -652,7 +655,7 @@ int AW_root::font_2_xfig(AW_font font_nr)
 #endif
 
 void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
-// if found_size != 0 -> return value for used font size 
+// if found_size != 0 -> return value for used font size
 {
     XFontStruct *xfs;
 
