@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Tue Oct/07/2003 14:31 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Oct/07/2003 17:30 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -283,8 +283,8 @@ namespace {
                 GBDATA *gb_member = GB_find(gb_subtree, "member", 0, down_level);
 
                 if (gb_member) { // leaf node
-                    SpeciesID id   = GB_read_int(gb_member);
-                    string    name = PM_ID2name(id, error);
+                    SpeciesID     id   = GB_read_int(gb_member);
+                    const string& name = PM_ID2name(id, error);
                     if (!error) members.push_back(name);
                 }
                 else {
@@ -298,6 +298,45 @@ namespace {
                 }
             }
         }
+        return error;
+    }
+
+    GB_ERROR extractIndependentMembers(const char *group_id, list<string>& members) {
+        GB_ERROR  error          = 0;
+        GBDATA   *gb_probe_group = (GBDATA*)GBS_read_hash(group_cache, group_id);
+
+        if (!gb_probe_group) {
+            error = GBS_global_string("Can't find probe group '%s'", group_id);
+        }
+        else {
+            GBDATA *gb_members = GB_find(gb_probe_group, "members", 0, down_level);
+
+            if (!gb_members) {
+                error = GBS_global_string("group '%s' has no 'members' (internal error)", group_id);
+            }
+            else {
+                const char *memberlist = GB_read_char_pntr(gb_members);
+                psw_assert(memberlist);
+                if (memberlist) {
+                    const char *number = memberlist;
+
+                    while (number && !error) {
+                        SpeciesID     id   = atoi(number);
+                        const string& name = PM_ID2name(id, error);
+
+                        if (!error) {
+                            members.push_back(name);
+
+                            const char *komma = strchr(number, ',');
+
+                            if (komma) number = komma+1;
+                            else number       = 0;
+                        }
+                    }
+                }
+            }
+        }
+
         return error;
     }
 }
@@ -321,14 +360,17 @@ namespace {
         if (!error) {
             list<string> members;
 
-            if (id[0] == 'p') {
-                // @@@ FIXME: in final version this should raise an error (not necessary - should be done by client)
+            if (id[0] == 'p') { // probe group hitting complete subtree
+                // @@@ FIXME: in final version this should raise an error (because it's not necessary - should be done by client)
 
                 const char *decoded_path = decodePath(id+1, error);
                 if (!error) error = extractSubtreeMembers(decoded_path, strlen(decoded_path), members);
             }
+            else if (id[0] == 'g') {
+                error = extractIndependentMembers(id, members);
+            }
             else {
-                error = GBS_global_string("Can't handle probe-group '%s' (not implemented yet)", id);
+                error = GBS_global_string("Illegal group id '%s'", id);
             }
 
             if (!error) {
@@ -391,8 +433,8 @@ namespace {
 
                         psw_assert(exact != 0); // in that case gb_exact should be 0
 
-                        const char *group_id = GBS_global_string("p%s", enc_path);
-                        error                = extractProbes(group_id, exactProbes);
+                        char *group_id = GBS_global_string_copy("p%s", enc_path);
+                        error          = extractProbes(group_id, exactProbes);
 
                         if (!error && (exactProbes.size() != exact)) {
                             error = GBS_global_string("Expected to find %i probes (found: %i)", exact, exactProbes.size());
@@ -403,9 +445,11 @@ namespace {
                             int count = 0;
 
                             for (list<const char*>::iterator p = exactProbes.begin(); p != exactProbes.end(); ++p, ++count) {
-                                fprintf(out, "probe%i=%s,E,p%s\n", count, *p, enc_path);
+                                fprintf(out, "probe%i=%s,E,%s\n", count, *p, group_id);
                             }
                         }
+
+                        free(group_id);
                     }
 
                     if (error) {
@@ -414,10 +458,50 @@ namespace {
                     }
                 }
                 else {
-//                     list<const char *> coverageProbes; // probes covering most of the subtree (w/o non group hits)
-//                     list<const char *> nonGroupHitProbes; // probes covering the whole subtree (with non group hits)
+                    list<const char *>  coverageProbes; // probes covering most of the subtree (w/o non group hits)
+                    list<const char *>  nonGroupHitProbes; // probes covering the whole subtree (with non group hits)
+                    int                 coverage_percentage = 0;
+                    int                 non_group_hits      = 0;
+                    const char         *covering_group_id   = 0;
+                    const char         *ngh_group_id        = 0;
 
-                    fprintf(out, "result=ok\nfound=0\n");
+                    if (GBDATA *gb_coverage = GB_find(gb_subtree, "coverage", 0, down_level)) {
+                        int     coverage       = GB_read_int(gb_coverage);
+                        GBDATA *gb_coverage_id = GB_find(gb_subtree, "coverage_id", 0, down_level);
+
+                        if (!gb_coverage_id) {
+                            error = "'coverage_id' expected";
+                        }
+                        else {
+                            GBDATA *gb_speccount = GB_find(gb_subtree, "speccount", 0, down_level);
+                            if (!gb_speccount) {
+                                error = "'speccount' expected";
+                            }
+                            else {
+                                int speccount     = GB_read_int(gb_speccount);
+                                covering_group_id = GB_read_char_pntr(gb_coverage_id);
+
+                                psw_assert(covering_group_id);
+                                psw_assert(speccount);
+                                psw_assert(coverage);
+
+                                coverage_percentage = int(double(coverage)/speccount*100.0+.5);
+                                error               = extractProbes(covering_group_id, coverageProbes);
+                            }
+                        }
+                    }
+
+                    if (!error) {
+                        fprintf(out, "result=ok\nfound=%i\n", coverageProbes.size()+nonGroupHitProbes.size());
+                        int count = 0;
+
+                        for (list<const char*>::iterator p = coverageProbes.begin(); p != coverageProbes.end(); ++p, ++count) {
+                            fprintf(out, "probe%i=%s,C%i,%s\n", count, *p, coverage_percentage, covering_group_id);
+                        }
+                        for (list<const char*>::iterator p = nonGroupHitProbes.begin(); p != nonGroupHitProbes.end(); ++p, ++count) {
+                            fprintf(out, "probe%i=%s,N%i,%s\n", count, *p, non_group_hits, ngh_group_id);
+                        }
+                    }
                 }
             }
         }
