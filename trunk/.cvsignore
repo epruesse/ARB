@@ -1,3 +1,4 @@
+*.last_gcc
 ARB_SOURCE_DOC
 ChangeLog
 arb.tgz
