@@ -49,8 +49,6 @@
 #include <awt_input_mask.hxx>
 
 #include "nt_concatenate.hxx"
-#include "nt_validNames.hxx"
-#include "nt_validManual.hxx"
 #include "seq_quality.h"
 
 #ifndef ARB_ASSERT_H
