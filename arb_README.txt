@@ -17,7 +17,7 @@ Welcome to the 'ARB' Sequence Database Tools
 
 	Hardware Requirements:
 				Minimum		Good
-	Real Memory		32		64-256
+	Real Memory		64		128-256
 	Free Disc Space		100		1000
 	Computer Speed		486dx66		586dx90
 				Sparc 1		Sparc 5/10/20
