@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : Toolkit.java                                           //
 //    Purpose   : Functions uses in all classes go here                  //
-//    Time-stamp: <Thu Mar/11/2004 10:05 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Mar/11/2004 23:45 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -13,13 +13,16 @@
 //                                                                       //
 //  ==================================================================== //
 
-class Toolkit 
+import java.awt.*;
+import java.util.*;
+
+class Toolkit
 {
     public static String clientName = "arb_probe_client";
 
     // search globally for 'CLIENT_SERVER_VERSIONS' (other occurance is in ../SERVER/getVersion.cgi)
     public static String client_version    = "1.0"; // if client_version does not match, a notice is printed
-    public static String interface_version = "1.0"; // if interface_version does not match, client terminates! 
+    public static String interface_version = "1.0"; // if interface_version does not match, client terminates!
 
     private static String maintainer = "probeadmin@arb-home.de";
 
@@ -65,5 +68,47 @@ class Toolkit
         if (error != null) {
             InternalError("Unexpected error: "+error);
         }
+    }
+
+    // dialogs
+
+    private static Frame getFrame() {
+        if (theClient == null) {
+            System.out.println("Can't get frame!");
+            return null;
+        }
+        return theClient.getDisplay();
+    }
+
+    public static String askUser(String title, String text, String buttonlist) {
+	Vector buttons = new Vector();
+
+        int start = 0;
+        int len   = buttonlist.length();
+        while (start<len) {
+            int comma = buttonlist.indexOf(',', start);
+            if (comma == -1) {
+                buttons.add(buttonlist.substring(start));
+                start = len;
+            }
+            else {
+                buttons.add(buttonlist.substring(start, comma));
+                start = comma+1;
+            }
+        }
+
+ 	DialogWrapper dw = new DialogWrapper(getFrame(), title, text, buttons);
+        return dw.getResult();
+    }
+
+    public static void clickButton(String title, String text, String button) {
+        Vector buttons = new Vector();
+        buttons.add(button);
+        
+ 	DialogWrapper dw     = new DialogWrapper(getFrame(), title, text, buttons);
+        String        answer = dw.getResult();
+    }
+    public static void clickOK(String title, String text) {
+        clickButton(title, text, "OK");
     }
 }
