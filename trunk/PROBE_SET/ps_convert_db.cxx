@@ -231,22 +231,22 @@ int main(  int  _argc,
     GB_ERROR  error    = 0;
 
     // open probe-group-database
-    if (_argc < 3) {
-        printf( "Missing arguments\n Usage %s <input database name> <output database name>\n", _argv[0] );
+    if (_argc < 2) {
+        printf( "Missing arguments\n Usage %s <input database name>\n", _argv[0] );
+        printf( "output database will be named like input database but with the suffix '.wf' instead of '.arb'\n" );
         exit( 1 );
     }
 
-    const char *input_DB_name  = _argv[ 1 ];
-    const char *output_DB_name = _argv[ 2 ];
+    const char *DB_name  = _argv[ 1 ];
     
     //
     // open and check ARB database
     //
-    printf( "Opening probe-group-database '%s'..", input_DB_name );
-    ARB_main = GB_open( input_DB_name, "rwcN" );//"rwch");
+    printf( "Opening probe-group-database '%s'..", DB_name );
+    ARB_main = GB_open( DB_name, "rwcN" );//"rwch");
     if (!ARB_main) {
         error             = GB_get_error();
-        if (!error) error = GB_export_error( "Can't open database '%s'", input_DB_name );
+        if (!error) error = GB_export_error( "Can't open database '%s'", DB_name );
     }
     printf( "loaded database (enter to continue)\n" );
 //  getchar();
@@ -285,7 +285,17 @@ int main(  int  _argc,
     //
     // create output database
     //
-    PS_Database *ps_db = new PS_Database( output_DB_name, PS_Database::WRITEONLY );
+    string output_DB_name(DB_name);
+    unsigned int suffix_pos = output_DB_name.rfind( ".arb" );
+    if (suffix_pos != string::npos) {
+        output_DB_name.erase( suffix_pos );
+    }
+    output_DB_name.append( ".wf" );
+    if (suffix_pos == string::npos) {
+        printf( "cannot find suffix '.arb' in database name '%s'\n", DB_name );
+        printf( "output file will be named '%s'\n", output_DB_name.c_str() );
+    } 
+    PS_Database *ps_db = new PS_Database( output_DB_name.c_str(), PS_Database::WRITEONLY );
 
     //
     // copy mappings
@@ -315,12 +325,10 @@ int main(  int  _argc,
     //
     // write database to file
     //
-    printf( "writing probe-data to %s\n",output_DB_name );
+    printf( "writing probe-data to %s\n",output_DB_name.c_str() );
     ps_db->save();
 
     delete inverse_path;
     delete ps_db;
     return 0;
 }
-
-

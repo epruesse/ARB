@@ -259,7 +259,7 @@ void PS_find_probes_for_pairs( const PS_NodePtr  _ps_node,
     __PATHSET->erase( id );
 }
 
-void PS_print_and_evaluate_map( const PS_NodePtr _root_node ) {
+void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result_filename ) {
     //
     // print and evaluate bitmap
     //
@@ -318,7 +318,7 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node ) {
     for (PS_NodeMapConstIterator i = _root_node->getChildrenBegin();
          (i != _root_node->getChildrenEnd()) && (!oneMatch.empty());
          ++i,++c ) {
-//         if (c % 100 == 0) printf( "PS_find_probes_for_pairs( %i ) : %i of %i\n", i->first, c+1, _root_node->countChildren() );
+        if (c % 50 == 0) printf( "PS_find_probes_for_pairs( %i ) : %i of %i\n", i->first, c+1, _root_node->countChildren() );
         PS_find_probes_for_pairs( i->second, oneMatch );
     }
     //
@@ -334,8 +334,8 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node ) {
              path_id !=i->second.end();
              ++path_id,++c) {
             current_node = current_node->getChild( *path_id ).second;
-            if (c % 10 == 0) printf( "\n" );
-            printf( "%6i%s ", *path_id, (current_node->hasProbes()) ? ((current_node->hasInverseProbes()) ? "*" : "+") : "-" );
+//             if (c % 10 == 0) printf( "\n" );
+//             printf( "%6i%s ", *path_id, (current_node->hasProbes()) ? ((current_node->hasInverseProbes()) ? "*" : "+") : "-" );
         }
         printf( "\nFinal Node : %p ", &(*current_node) );
         current_node->printOnlyMe();
@@ -378,6 +378,30 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node ) {
         }
     }
     preset->print();
+    //
+    // save results
+    //
+    if (_result_filename) {
+        PS_FileBuffer *result_file = new PS_FileBuffer( _result_filename, PS_FileBuffer::WRITEONLY );
+        // no matches
+        printf( "saving no matches to %s...\n", _result_filename );
+        result_file->put_long( noMatch.size() );
+        for (ID2IDSetCIter i = noMatch.begin(); i != noMatch.end(); ++i) {
+            result_file->put_int( i->first );
+            result_file->put_int( i->second );
+        }
+        // one matches
+        printf( "saving one matches to %s...\n", _result_filename );
+        result_file->put_long( __PAIR2PATH->size() );
+        for (IDID2IDSetMapCIter i = __PAIR2PATH->begin(); i != __PAIR2PATH->end(); ++i) {
+            result_file->put_int( i->first.first );
+            result_file->put_int( i->first.second );
+        }
+        // preset bitmap
+        printf( "saving preset bitmap to %s...\n", _result_filename );
+        preset->save( result_file );
+        delete result_file;
+    }
     delete preset;
     delete __PATHSET;
     delete __PAIR2PATH;
@@ -390,11 +414,31 @@ int main( int argc,  char *argv[] ) {
 
    // open probe-set-database
     if (argc < 2) {
-        printf("Missing argument\n Usage %s <database name> [[-]bitmap filename]\n",argv[0]);
-        exit(1);
+        printf( "Missing argument\n Usage %s <database name> [[-]bitmap filename] [+result filename]\n ", argv[0] );
+        printf( "if bitmap filename begins with '-' it is loaded, else its created\n " );
+        printf( "result filename MUST be preceded by '+'\n" );
+        exit( 1 );
     }
 
-    const char *input_DB_name = argv[1];
+    const char *input_DB_name   = argv[1];
+    const char *bitmap_filename = 0;
+    const char *result_filename = 0;
+
+    if (argc > 2) {
+        if (argv[2][0] == '+') {
+            result_filename = argv[2]+1;
+        } else {
+            bitmap_filename = argv[2];
+        }
+    }
+    if (argc > 3) {
+        if (argv[3][0] == '+') {
+            result_filename = argv[3]+1;
+        } else {
+            bitmap_filename = argv[3];
+        }
+    }
+
     printf( "Opening probe-set-database '%s'..\n", input_DB_name );
     PS_Database *db = new PS_Database( input_DB_name, PS_Database::READONLY );
     db->load();
@@ -402,20 +446,19 @@ int main( int argc,  char *argv[] ) {
     printf( "loaded database (enter to continue)\n" );
 //    getchar();
 
-
     __MAP = new PS_BitMap_Fast( false, __MAX_ID+1 );
-    if ((argc < 3) || (argv[2][0] != '-')) {
+    if (!bitmap_filename || (bitmap_filename[0] != '-')) {
         printf( "PS_detect_weak_differences\n" );
         PS_detect_weak_differences( db->getRootNode() );
-        if (argc > 2) {
-            printf( "saving bitmap to file %s\n", argv[2] );
-            PS_FileBuffer *mapfile = new PS_FileBuffer( argv[2], PS_FileBuffer::WRITEONLY );
+        if (bitmap_filename) {
+            printf( "saving bitmap to file %s\n", bitmap_filename );
+            PS_FileBuffer *mapfile = new PS_FileBuffer( bitmap_filename, PS_FileBuffer::WRITEONLY );
             __MAP->save( mapfile );
             delete mapfile;
         }
-    } else {
-        printf( "loading bitmap from file %s\n",argv[2]+1 );
-        PS_FileBuffer *mapfile = new PS_FileBuffer( argv[2]+1, PS_FileBuffer::READONLY );
+    } else if (bitmap_filename) {
+        printf( "loading bitmap from file %s\n",bitmap_filename+1 );
+        PS_FileBuffer *mapfile = new PS_FileBuffer( bitmap_filename+1, PS_FileBuffer::READONLY );
         __MAP->load( mapfile );
         delete mapfile;
     }
@@ -423,7 +466,7 @@ int main( int argc,  char *argv[] ) {
 //    getchar();
 
     printf( "PS_print_and_evaluate_map\n" );
-    PS_print_and_evaluate_map( db->getRootNode() );
+    PS_print_and_evaluate_map( db->getRootNode(), result_filename );
     printf( "(enter to continue)\n" );
 //    getchar();
     delete __MAP;
