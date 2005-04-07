@@ -34,13 +34,9 @@
 #include "ed4_visualizeSAI.hxx"
 #include "edit_naligner.hxx"
 
-#if defined(DEBUG)
 #if defined(ARB_OPENGL)
-#if defined(DEVEL_YADHU) || defined(DEVEL_RALF)
 #include "ed4_RNA3D.hxx"
-#endif
 #endif // ARB_OPENGL
-#endif // DEBUG
 
 AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL );
 
@@ -1786,15 +1782,11 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     // ----------------------------------------------------------------------------------------------------
     awmm->button_length(0);
 
-#if defined(DEBUG)
 #if defined(ARB_OPENGL)
-#if defined(DEVEL_YADHU) || defined(DEVEL_RALF)
     awmm->at("rna3d");
     awmm->callback((void(*)(AW_window*, AW_CL))ED4_RNA3D_Start, 0);
     awmm->create_button("RNA3D", "#edit/rna3d.xpm");
-#endif
 #endif // ARB_OPENGL
-#endif // DEBUG
 
     awmm->at("secedit");
     awmm->callback((void(*)(AW_window*, AW_CL))ED4_SECEDIT_start, 0);
