@@ -337,7 +337,7 @@ static GB_ERROR gbt_rename_alignment_of_item(GBDATA *gb_item_container, const ch
     {
         GBDATA *gb_ali = GB_find(gb_item, source, 0, down_level);
         if (!gb_ali) continue;
-            
+
         if (copy) {
             GBDATA *gb_new = GB_find(gb_item, dest, 0, down_level);
             if (gb_new) {
@@ -412,7 +412,7 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
                     }
                 }
             }
-                
+
             if (dele && !error) {
                 error = GB_delete(gb_old_alignment);
             }
@@ -431,7 +431,7 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
     if (!error) {
         error = gbt_rename_alignment_of_item(gb_species_data, "Species", "species", source, dest, copy, dele);
     }
-    
+
     /* copy and/or delete alignment entries in SAIs */
     if (!error) {
         error = gbt_rename_alignment_of_item(gb_extended_data, "SAI", "extended", source, dest, copy, dele);
@@ -1138,17 +1138,21 @@ GB_ERROR GBT_write_tree_rem(GBDATA *gb_main,const char *tree_name, const char *r
                     some tree read functions
 ********************************************************************************************/
 
-GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree)
+GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree, GB_ERROR *error)
 {
-    GBT_TREE *node;
-    GBDATA *gb_group_name;
-    char    c;
-    char    *p1;
-
+    GBT_TREE    *node;
+    GBDATA      *gb_group_name;
+    char         c;
+    char        *p1;
     static char *membase;
+
+    gb_assert(error);
+    if (*error) return 0;
+
     if (structure_size>0){
         node = (GBT_TREE *)GB_calloc(1,(size_t)structure_size);
-    }else{
+    }
+    else {
         if (!startid[0]){
             membase =(char *)GB_calloc(size_of_tree+1,(size_t)(-2*structure_size)); /* because of inner nodes */
         }
@@ -1184,26 +1188,34 @@ GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, 
             }
         }
         (*startid)++;
-        node->leftson = gbt_read_tree_rek(data,startid,gb_tree_nodes,structure_size,size_of_tree);
+        node->leftson = gbt_read_tree_rek(data,startid,gb_tree_nodes,structure_size,size_of_tree, error);
         if (!node->leftson) {
-            free((char *)node);
+            if (!node->tree_is_one_piece_of_memory) free((char *)node);
             return 0;
         }
-        node->rightson = gbt_read_tree_rek(data,startid,gb_tree_nodes,structure_size,size_of_tree);
+        node->rightson = gbt_read_tree_rek(data,startid,gb_tree_nodes,structure_size,size_of_tree, error);
         if (!node->rightson) {
-            free((char *)node);
+            if (!node->tree_is_one_piece_of_memory) free((char *)node);
             return 0;
         }
         node->leftson->father = node;
         node->rightson->father = node;
-    }else if (c=='L') {
+    }
+    else if (c=='L') {
         node->is_leaf = GB_TRUE;
         p1 = (char *)strchr(*data,1);
         *p1 = 0;
         node->name = (char *)GB_STRDUP(*data);
         *data = p1+1;
-    }else{
-        GB_internal_error("Error reading tree 362436");
+    }
+    else {
+        if (!c) {
+            *error = "Unexpected end of tree definition.";
+        }
+        else {
+            *error = GBS_global_string("Can't interpret tree definition (expected 'N' or 'L' - not '%c')", c);
+        }
+        /* GB_internal_error("Error reading tree 362436"); */
         return 0;
     }
     return node;
@@ -1220,19 +1232,17 @@ GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, 
     is the name of the tree in the db return NULL if any error
     occur */
 
-static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, int structure_size, int size) {
-    GBDATA    *gb_node;
+static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, int structure_size, int size, GB_ERROR *error) {
     GBDATA   **gb_tree_nodes;
-    long       startid[1];
-    char      *fbuf;
-    char      *cptr[1];
-    GBT_TREE  *node;
+    GBT_TREE  *node = 0;
 
     gb_tree_nodes = (GBDATA **)GB_calloc(sizeof(GBDATA *),(size_t)size);
     if (gb_tree) {
-        for (   gb_node = GB_find(gb_tree,"node",0,down_level);
-                gb_node;
-                gb_node = GB_find(gb_node,"node",0,this_level|search_next))
+        GBDATA *gb_node;
+
+        for (gb_node = GB_find(gb_tree,"node",0,down_level);
+             gb_node && !*error;
+             gb_node = GB_find(gb_node,"node",0,this_level|search_next))
         {
             long    i;
             GBDATA *gbd = GB_find(gb_node,"id",0,down_level);
@@ -1240,18 +1250,27 @@ static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
 
             /*{ GB_export_error("ERROR while reading tree '%s' 4634",tree_name);return 0;}*/
             i = GB_read_int(gbd);
-            if ( i<0 || i>= size ){
-                GB_internal_error("An inner node of the tree is corrupt");
-            }else{
+            if ( i<0 || i>= size ) {
+                *error = "An inner node of the tree is corrupt";
+            }
+            else {
                 gb_tree_nodes[i] = gb_node;
             }
         }
     }
-    startid[0] = 0;
-    fbuf = cptr[0] = GB_read_string(gb_ctree);
-    node = gbt_read_tree_rek(cptr, startid, gb_tree_nodes, structure_size,(int)size);
+    if (!*error) {
+        char *cptr[1];
+        long  startid[1];
+        char *fbuf;
+
+        startid[0] = 0;
+        fbuf       = cptr[0] = GB_read_string(gb_ctree);
+        node       = gbt_read_tree_rek(cptr, startid, gb_tree_nodes, structure_size,(int)size, error);
+        free (fbuf);
+    }
+
     free((char *)gb_tree_nodes);
-    free (fbuf);
+
     return node;
 }
 
@@ -1285,7 +1304,16 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main,const char *tree_name, long str
     }
     gb_ctree = GB_search(gb_tree,"tree",GB_FIND);
     if (gb_ctree) {             /* new style tree */
-        GBT_TREE *t               = read_tree_and_size_internal(gb_tree, gb_ctree, structure_size, size);
+        GB_ERROR  error = 0;
+        GBT_TREE *t     = read_tree_and_size_internal(gb_tree, gb_ctree, structure_size, size, &error);
+
+        if (error) {
+            gb_assert(!t);
+            GB_export_error("Couldn't read tree '%s': %s", tree_name, error);
+            return 0;
+        }
+
+        gb_assert(t);
         if (tree_size) *tree_size = size; /* return size of tree */
         return t;
     }
@@ -1297,11 +1325,13 @@ GBT_TREE *GBT_read_tree(GBDATA *gb_main,const char *tree_name, long structure_si
     return GBT_read_tree_and_size(gb_main, tree_name, structure_size, 0);
 }
 
-GBT_TREE *GBT_read_plain_tree(GBDATA *gb_main, GBDATA *gb_ctree, long structure_size) {
+GBT_TREE *GBT_read_plain_tree(GBDATA *gb_main, GBDATA *gb_ctree, long structure_size, GB_ERROR *error) {
     GBT_TREE *t;
 
+    gb_assert(error && !*error); /* expect cleared error*/
+
     GB_push_transaction(gb_main);
-    t = read_tree_and_size_internal(0, gb_ctree, structure_size, 0);
+    t = read_tree_and_size_internal(0, gb_ctree, structure_size, 0, error);
     GB_pop_transaction(gb_main);
 
     return t;
