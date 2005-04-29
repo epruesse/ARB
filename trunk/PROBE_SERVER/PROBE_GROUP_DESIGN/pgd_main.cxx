@@ -1063,8 +1063,15 @@ static GB_ERROR saveTreefile() {
             error = "'tree' missing";
         }
         else {
-            tree = GBT_read_plain_tree(pd_main, pd_tree, sizeof(*tree));
-            PGD_decodeBranchNames(tree);
+            tree = GBT_read_plain_tree(pd_main, pd_tree, sizeof(*tree), &error);
+            if (error) {
+                pgd_assert(!tree);
+                error = GBS_global_string("Error reading tree: %s", error);
+            }
+            else {
+                pgd_assert(!error);
+                PGD_decodeBranchNames(tree);
+            }
         }
 
         GBDATA *pd_subtree_cont = GB_find(pd_main, "subtrees", 0, down_level);
