@@ -38,7 +38,7 @@ GB_ERROR GBT_write_plain_tree P_((GBDATA *gb_main, GBDATA *gb_tree, char *tree_n
 GB_ERROR GBT_write_tree_rem P_((GBDATA *gb_main, const char *tree_name, const char *remark));
 GBT_TREE *GBT_read_tree_and_size P_((GBDATA *gb_main, const char *tree_name, long structure_size, int *tree_size));
 GBT_TREE *GBT_read_tree P_((GBDATA *gb_main, const char *tree_name, long structure_size));
-GBT_TREE *GBT_read_plain_tree P_((GBDATA *gb_main, GBDATA *gb_ctree, long structure_size));
+GBT_TREE *GBT_read_plain_tree P_((GBDATA *gb_main, GBDATA *gb_ctree, long structure_size, GB_ERROR *error));
 long GBT_count_nodes P_((GBT_TREE *tree));
 GB_ERROR GBT_link_tree P_((GBT_TREE *tree, GBDATA *gb_main, GB_BOOL show_status));
 void GBT_unlink_tree P_((GBT_TREE *tree));
