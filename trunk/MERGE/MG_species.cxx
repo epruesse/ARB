@@ -10,6 +10,7 @@
 #include <awt.hxx>
 #include "merge.hxx"
 #include <inline.h>
+#include <GEN.hxx>
 
 
 #define AWAR1 "tmp/merge1/"
@@ -502,6 +503,8 @@ void MG_transfer_species_list(AW_window *aww)
 
     GBDATA *gb_species_data2 = GB_search(gb_dest,"species_data",GB_CREATE_CONTAINER);
 
+    bool is_genome_db = GEN_is_genome_db(gb_merge, -1);
+
     GBDATA *gb_species1;
     GBDATA *gb_species2;
     GBDATA *gb_name1;
@@ -515,7 +518,7 @@ void MG_transfer_species_list(AW_window *aww)
             if (gb_species2) error = GB_delete(GB_get_father(gb_species2));
             if (!error) gb_species2 = GB_create_container(gb_species_data2,"species");
             if (!error) error = GB_copy(gb_species2,gb_species1);
-            if (!error) error = MG_export_fields(aww->get_root(), gb_species1, gb_species2);
+            if (!error && is_genome_db) error = MG_export_fields(aww->get_root(), gb_species1, gb_species2);
             if (!error) error = MG_transfer_sequence(&rm,gb_species1,gb_species2);
             if (error) break;
             GB_write_flag(gb_species2,1);
@@ -955,7 +958,7 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
     char **   D_alignment_names = GBT_get_alignment_names(gb_dest);
     GB_ERROR  error             = 0;
     char     *dest              = 0;
-    
+
     if (M_alignment_names[0] == 0) {
         error =  GB_export_error("No source sequences found");
     }
@@ -963,7 +966,7 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
         char *type = GBT_get_alignment_type_string(gb_merge,M_alignment_names[0]);
         int   s;
         int   d;
-        
+
         for (s=0,d=0;D_alignment_names[s];s++){
             char *type2 = GBT_get_alignment_type_string(gb_dest,D_alignment_names[s]);
             if (strcmp(type, type2) == 0) {
@@ -981,7 +984,7 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
         void *str;
         char *b;
         int   aliid;
-        
+
         switch (d) {
             case 0:
                 error = GB_export_error("Cannot find a target alignment with a type of '%s'\n"
