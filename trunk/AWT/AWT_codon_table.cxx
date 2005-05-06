@@ -147,7 +147,7 @@ int AWT_embl_transl_table_2_arb_code_nr(int embl_index) {
         for (int embl = 0; embl <= MAX_EMBL_TRANSL_TABLE_VALUE; ++embl) {
             arb_code_nr_table[embl] = -1; // illegal table
         }
-        for (int arb_code_nr = 0; arb_code_nr <= AWT_CODON_TABLES; ++arb_code_nr) {
+        for (int arb_code_nr = 0; arb_code_nr < AWT_CODON_TABLES; ++arb_code_nr) {
             arb_code_nr_table[AWT_codon_def[arb_code_nr].embl_feature_transl_table] = arb_code_nr;
         }
         initialized = true;
@@ -159,7 +159,15 @@ int AWT_embl_transl_table_2_arb_code_nr(int embl_index) {
     awt_assert(arb_code_nr_table[1] == 0); // Standard Code has to be on index zero!
 
     if (embl_index<0 || embl_index>MAX_EMBL_TRANSL_TABLE_VALUE) return -1;
-    return arb_code_nr_table[embl_index];
+
+    int arb_code_nr = arb_code_nr_table[embl_index];
+#ifdef DEBUG    
+    if (arb_code_nr != -1) {    
+        awt_assert(arb_code_nr >= 0 && arb_code_nr < AWT_CODON_TABLES);
+        awt_assert(AWT_arb_code_nr_2_embl_transl_table(arb_code_nr) == embl_index);
+    }
+#endif    
+    return arb_code_nr;
 }
 
 int AWT_arb_code_nr_2_embl_transl_table(int arb_code_nr) {
