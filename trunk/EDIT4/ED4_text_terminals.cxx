@@ -45,6 +45,14 @@ ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
     text_x = x + CHARACTEROFFSET; // don't change
     text_y = y + SEQ_TERM_TEXT_YOFFSET;
 
+#if defined(DEBUG) && 0
+    int paint_back = 1;
+    if (paint_back) {
+        paint_back = 3-paint_back;
+        ED4_ROOT->temp_device->box(ED4_G_FIRST_COLOR_GROUP+paint_back-1, x, y, extension.size[WIDTH], extension.size[HEIGHT], -1, 0, 0);
+    }
+#endif // DEBUG
+    
     const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
     rm->clip_screen_range(&left_index, &right_index);
 
@@ -60,11 +68,16 @@ ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
             memset(buffer, ' ' , buffer_size); // previously buffer was filled with zero's
         }
         memcpy(buffer, no_data, len);
-        right_index = buffer_size;
+        right_index = buffer_size-1;
     }
     else {
         int seq_start = rm->screen_to_sequence(left_index);
         int seq_end   = rm->screen_to_sequence(right_index);
+
+        while (seq_end >= MAXSEQUENCECHARACTERLENGTH && right_index>0) { // behind end of sequence
+            right_index--;
+            seq_end = rm->screen_to_sequence(right_index);
+        }
 
         char *cons = GB_give_buffer(seq_end+1);
         cons = get_parent( ED4_L_GROUP )->to_group_manager()->table().build_consensus_string(seq_start, seq_end, cons);
@@ -88,6 +101,7 @@ ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
                     buffer[pos] = ' ';
                 }else{
                     buffer[pos] = cons[seq_pos];
+                    e4_assert(buffer[pos]);
                 }
             }
         }
@@ -98,7 +112,7 @@ ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
         ED4_ROOT->temp_device->top_font_overlap    = 1;
         ED4_ROOT->temp_device->bottom_font_overlap = 1;
     
-        ED4_ROOT->temp_device->text( ED4_G_SEQUENCES, buffer, text_x, text_y, 0, 1, 0, 0, (long) right_index);
+        ED4_ROOT->temp_device->text( ED4_G_SEQUENCES, buffer, text_x, text_y, 0, 1, 0, 0, (long) right_index+1);
         
         ED4_ROOT->temp_device->top_font_overlap    = 0;
         ED4_ROOT->temp_device->bottom_font_overlap = 0;
@@ -187,7 +201,9 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &world_x, &world_y );
 
 #if defined(DEBUG) && 0
+    int paint_back = 1;
     if (paint_back) {
+        paint_back = 3-paint_back;
         device->box(ED4_G_FIRST_COLOR_GROUP+paint_back-1, world_x, world_y, extension.size[WIDTH], extension.size[HEIGHT], -1, 0, 0);
     }
 #endif // DEBUG
@@ -202,7 +218,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
     rm->clip_screen_range(&left, &right);
 
     {
-        int max_seq_pos = rm->sequence_to_screen_clipped(max_seq_len);
+        int max_seq_pos = rm->sequence_to_screen_clipped(max_seq_len-1);
 
         if (right>max_seq_len) right = max_seq_pos;
         if (left>right) {
@@ -214,7 +230,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
         }
     }
 
-    if (right > len_of_colored_strings){
+    if (right >= len_of_colored_strings){
         len_of_colored_strings = right + 256;
         if (!colored_strings) {
             colored_strings = (char **)GB_calloc(sizeof(char *),ED4_G_DRAG);
@@ -246,7 +262,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
         int scr_pos;
         int is_ref = ref->reference_species_is(species_name);
 
-        for (scr_pos=left; scr_pos<right; scr_pos++) {
+        for (scr_pos=left; scr_pos <= right; scr_pos++) {
             int seq_pos = rm->screen_to_sequence(scr_pos);
             int c = db_pointer[seq_pos];
             int gc = char_2_gc[c];
@@ -305,7 +321,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
                 selection_col2 = rm->screen_to_sequence(real_right);
             }
 
-            for ( i = real_left; i < real_right; i++,x2 += width) {
+            for ( i = real_left; i <= real_right; i++,x2 += width) {
                 int new_pos = rm->screen_to_sequence(i);  //getting the real position of the base in the sequence
 
                 if (searchColors && searchColors[new_pos]) {
@@ -357,8 +373,8 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
     // output helix
     if (ED4_ROOT->helix->is_enabled()) { // should do a remap
         int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->helix->size);
-        if (right< screen_length) {
-            screen_length = right;
+        if ((right+1) < screen_length) {
+            screen_length = right+1;
         }
         if (screen_length) {
             char *db_pointer = resolve_pointer_to_string_copy();
@@ -375,8 +391,8 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
     if (ED4_ROOT->protstruct)
     {   // should do a remap
         int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->protstruct_len);
-        if (right< screen_length) {
-            screen_length = right;
+        if ((right+1) < screen_length) {
+            screen_length = right+1;
         }
         if (screen_length) {
             char *db_pointer = resolve_pointer_to_string_copy();
@@ -405,7 +421,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
         for (gc = 0; gc < ED4_G_DRAG; gc++){
             if (!color_is_used[gc]) continue;
             device->text( gc, colored_strings[gc], text_x, text_y, 0, 1, 0, 0, color_is_used [gc]);
-            memset(colored_strings[gc] + left,' ', right-left); // clear string
+            memset(colored_strings[gc] + left,' ', right-left+1); // clear string
         }
     }
 
