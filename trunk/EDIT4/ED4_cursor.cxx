@@ -133,7 +133,7 @@ ED4_CursorShape::ED4_CursorShape(ED4_CursorType typ, /*int x, int y, */int term_
             }
 
             int p3 = point(x, y+UPPER_OFFSET+1);
-                
+
             line(p3, point(x+CWIDTH-1, y+UPPER_OFFSET+1)); // 3->4
             line(p3, point(x, y+LOWER_OFFSET)); // 3->5
 
@@ -161,7 +161,7 @@ ED4_CursorShape::ED4_CursorShape(ED4_CursorType typ, /*int x, int y, */int term_
             //	      8---9
             //         C/C
             //
-            //	       D/D 
+            //	       D/D
             //	      A---B
             //	   6---------7
             //	2---------------3	LOWER_OFFSET (from top)
@@ -188,7 +188,7 @@ ED4_CursorShape::ED4_CursorShape(ED4_CursorType typ, /*int x, int y, */int term_
             if (typ == ED4_TRADITIONAL_CURSOR_CONNECTED) {
                 int pu2 = point(x, y+UPPER_OFFSET+5-small_version);
                 int pl2 = point(x, y+LOWER_OFFSET-5+small_version);
-                line(pu2, pl2); 
+                line(pu2, pl2);
             }
 
             break;
@@ -269,7 +269,7 @@ ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y)
     }
 
     cursor_shape = new ED4_CursorShape(ctype,
-                                       SEQ_TERM_TEXT_YOFFSET+2, 
+                                       SEQ_TERM_TEXT_YOFFSET+2,
                                        ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES),
                                        !awar_edit_direction);
 
@@ -435,7 +435,7 @@ int ED4_species_manager::setCursorTo(ED4_cursor *cursor, int position, int unfol
         ED4_terminal *terminal = search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_terminal();
         if (terminal) {
             int seq_pos = position==-1 ? cursor->get_sequence_pos() : position;
-            cursor->set_to_terminal(ED4_ROOT->temp_aww, terminal, seq_pos);
+            cursor->set_to_terminal(ED4_ROOT->temp_aww, terminal, seq_pos, true);
 
             //	    e4_assert(cursor->is_visible());
             return 1;
@@ -470,7 +470,7 @@ void ED4_select_named_sequence_terminal(const char *name, int mode) {
             ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
             if (cursor) {
                 ED4_sequence_terminal *cursor_seq_term = 0;
-                
+
                 ED4_terminal *cursor_term = cursor->owner_of_cursor->to_text_terminal();;
                 if (cursor_term->is_sequence_terminal()) {
                     cursor_seq_term = cursor_term->to_sequence_terminal();
@@ -1113,7 +1113,7 @@ ED4_returncode ED4_cursor::move_cursor( AW_event *event )	/* up down */
     y_screen = y;
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x_screen, &y_screen );
     area_level = owner_of_cursor->get_area_level();
-    
+
     if (!is_partly_visible()) return ED4_R_BREAK; // @@@ maybe a bad idea
 
     switch (event->keycode) {
@@ -1238,7 +1238,7 @@ bool ED4_cursor::is_partly_visible() const {
 
     AW_pos x,y;
     owner_of_cursor->calc_world_coords( &x, &y );
-    
+
     int x1, y1, x2, y2;
     cursor_shape->get_bounding_box(cursor_abs_x, int(y), x1, y1, x2, y2);
 
@@ -1246,7 +1246,7 @@ bool ED4_cursor::is_partly_visible() const {
 
     switch (owner_of_cursor->get_area_level(0)) {
         case ED4_A_TOP_AREA:
-            visible = 
+            visible =
                 owner_of_cursor->is_visible(x1, 0, ED4_D_HORIZONTAL) ||
                 owner_of_cursor->is_visible(x2, 0, ED4_D_HORIZONTAL);
             break;
@@ -1260,7 +1260,7 @@ bool ED4_cursor::is_partly_visible() const {
     return visible;
 }
 
-ED4_returncode ED4_cursor::set_to_terminal(AW_window *aww, ED4_terminal *terminal, int seq_pos)
+ED4_returncode ED4_cursor::set_to_terminal(AW_window *aww, ED4_terminal *terminal, int seq_pos, bool center_cursor)
 {
     if (owner_of_cursor) {
         if (is_partly_visible()) {
@@ -1282,48 +1282,50 @@ ED4_returncode ED4_cursor::set_to_terminal(AW_window *aww, ED4_terminal *termina
     owner_of_cursor = terminal;
 
     //    AW_device *device = aww->get_device(AW_MIDDLE_AREA);
-    // int length_of_char = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width();
-    int length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
-    AW_pos seq_relx = AW_pos(screen_position*length_of_char + CHARACTEROFFSET);	// position relative to start of terminal
+    // int length_of_char   = ED4_ROOT->font_info[ED4_G_SEQUENCES].get_width();
+    int    length_of_char   = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
+    AW_pos seq_relx         = AW_pos(screen_position*length_of_char + CHARACTEROFFSET); // position relative to start of terminal
 
-    AW_pos world_x = seq_relx+termw_x;		// world position of cursor
+    AW_pos world_x = seq_relx+termw_x; // world position of cursor
     AW_pos world_y = termw_y;
 
-    ED4_coords *coords = &ED4_ROOT->temp_ed4w->coords;
-    int win_x_size = coords->window_right_clip_point - coords->window_left_clip_point + 1;	// size of scroll window
-    int win_y_size = coords->window_lower_clip_point - coords->window_upper_clip_point + 1;
+    if (center_cursor) {
+        ED4_coords *coords     = &ED4_ROOT->temp_ed4w->coords;
+        int         win_x_size = coords->window_right_clip_point - coords->window_left_clip_point + 1; // size of scroll window
+        int         win_y_size = coords->window_lower_clip_point - coords->window_upper_clip_point + 1;
 
-    ED4_folding_line *foldLine = ED4_ROOT->temp_ed4w->vertical_fl;
-    int left_area_width = 0;
+        ED4_folding_line *foldLine = ED4_ROOT->temp_ed4w->vertical_fl;
+        int left_area_width = 0;
 
-    if (foldLine) {
-        left_area_width = int(foldLine->world_pos[X_POS]);
+        if (foldLine) {
+            left_area_width = int(foldLine->world_pos[X_POS]);
+        }
+
+        int win_left = int(world_x - left_area_width - win_x_size/2); 		if (win_left<0) win_left = 0; // position
+        int win_top  = int(world_y - coords->top_area_height - win_y_size/2);	if (win_top<0) win_top = 0;
+
+        int pic_xsize = int(aww->get_scrolled_picture_width());		// size of scrolled picture = size of sliderrange
+        int pic_ysize = int(aww->get_scrolled_picture_height());
+
+        int slider_xsize = win_x_size;
+        int slider_ysize = win_y_size;
+
+        int slider_pos_xrange = pic_xsize - slider_xsize;	// allowed positions for slider
+        int slider_pos_yrange = pic_ysize - slider_ysize;
+
+        int slider_pos_x = win_left;	// new slider positions
+        int slider_pos_y = win_top;
+
+        if (slider_pos_x>slider_pos_xrange) slider_pos_x = slider_pos_xrange;
+        if (slider_pos_y>slider_pos_yrange) slider_pos_y = slider_pos_yrange;
+
+        if (slider_pos_x<0) slider_pos_x = 0;
+        if (slider_pos_y<0) slider_pos_y = 0;
+
+        aww->set_horizontal_scrollbar_position(slider_pos_x);
+        aww->set_vertical_scrollbar_position(slider_pos_y);
+        ED4_scrollbar_change_cb(aww, 0, 0);
     }
-
-    int win_left = int(world_x - left_area_width - win_x_size/2); 		if (win_left<0) win_left = 0;	// position
-    int win_top = int(world_y - coords->top_area_height - win_y_size/2);	if (win_top<0) win_top = 0;
-
-    int pic_xsize = int(aww->get_scrolled_picture_width());		// size of scrolled picture = size of sliderrange
-    int pic_ysize = int(aww->get_scrolled_picture_height());
-
-    int slider_xsize = win_x_size;
-    int slider_ysize = win_y_size;
-
-    int slider_pos_xrange = pic_xsize - slider_xsize;	// allowed positions for slider
-    int slider_pos_yrange = pic_ysize - slider_ysize;
-
-    int slider_pos_x = win_left;	// new slider positions
-    int slider_pos_y = win_top;
-
-    if (slider_pos_x>slider_pos_xrange) slider_pos_x = slider_pos_xrange;
-    if (slider_pos_y>slider_pos_yrange) slider_pos_y = slider_pos_yrange;
-
-    if (slider_pos_x<0) slider_pos_x = 0;
-    if (slider_pos_y<0) slider_pos_y = 0;
-
-    aww->set_horizontal_scrollbar_position(slider_pos_x);
-    aww->set_vertical_scrollbar_position(slider_pos_y);
-    ED4_scrollbar_change_cb(aww, 0, 0);
 
     AW_pos win_x = world_x;	// recalc coords cause window scrolled!
     AW_pos win_y = world_y;
@@ -1361,14 +1363,14 @@ ED4_returncode ED4_cursor::show_cursor_at( ED4_base *target_terminal, ED4_index 
     last_seq_position = ED4_ROOT->root_group_man->remap()->screen_to_sequence(screen_position);
 
     int length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
-    
+
     AW_pos world_x = termw_x + length_of_char*screen_position + CHARACTEROFFSET;
     AW_pos world_y = termw_y;
 
     AW_pos win_x = world_x;
     AW_pos win_y = world_y;
     ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &win_x, &win_y );
-    
+
     cursor_abs_x = (long int)world_x;
     owner_of_cursor = target_terminal;
 
@@ -1479,7 +1481,7 @@ void ED4_base_position::invalidate() {
     if (calced4base) {
         ED4_species_manager *species_manager = calced4base->get_parent(ED4_L_SPECIES)->to_species_manager();
         species_manager->remove_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
-        
+
         calced4base = 0;
     }
 }
