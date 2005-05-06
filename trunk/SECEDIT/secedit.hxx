@@ -44,6 +44,7 @@ enum SEC_BASE_TYPE {
 
 class SEC_Base {
 public:
+    virtual ~SEC_Base() {}
     virtual SEC_BASE_TYPE getType() = 0;
 };
 
