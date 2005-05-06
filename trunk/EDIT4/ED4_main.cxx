@@ -324,10 +324,17 @@ void ED4_create_global_awars(AW_root *root) {
 
 static void ED4_edit_direction_changed(AW_root */*awr*/) {
     ED4_ROOT->temp_ed4w->cursor.redraw();
-        
+
 }
-static void ED4_do_expose(AW_root */*awr*/) {
-    ED4_expose_cb(ED4_ROOT->temp_aww, 0, 0);
+
+void ED4_expose_all_windows() {
+    for (ED4_window *ew = ED4_ROOT->first_window; ew; ew = ew->next) {
+        ED4_expose_cb(ew->aww, 0, 0);
+    }
+}
+
+static void ED4_do_expose(AW_root *) {
+    ED4_expose_all_windows();
 }
 
 void ED4_create_all_awars(AW_root *root, const char *config_name) { // cursor awars are created in window constructor
