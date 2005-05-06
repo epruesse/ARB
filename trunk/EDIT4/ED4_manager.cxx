@@ -1519,8 +1519,8 @@ ED4_manager::~ED4_manager()
         children->delete_member( current_child );
         current_child->parent = NULL;
 
-        if (current_child->is_terminal()) 	delete (ED4_terminal*)current_child;
-        else if (current_child->is_manager()) 	delete (ED4_manager*)current_child;
+        if (current_child->is_terminal()) 	delete current_child->to_terminal();
+        else if (current_child->is_manager()) 	delete current_child->to_manager();
     }
 
     delete children;
@@ -1988,9 +1988,60 @@ ED4_species_manager::ED4_species_manager(const char *temp_id, AW_pos x, AW_pos y
     spec = &(species_manager_spec);
 }
 
+#if defined(DEBUG)
+// #define DEBUG_SPMAN_CALLBACKS
+#endif // DEBUG
+
+
 ED4_species_manager::~ED4_species_manager()
 {
+#if defined(DEBUG_SPMAN_CALLBACKS)
+    if (!callbacks.empty()) {
+        printf("this=%p - non-empty callbacks\n", (char*)this);
+    }
+#endif // DEBUG
+
+    e4_assert(callbacks.empty());
+    // if assertion fails, callbacks are still bound to this manager.
+    // You need to remove all callbacks at two places:
+    // 1. ED4_species_manager::remove_all_callbacks
+    // 2. ED4_quit_editor() 
 }
+
+void ED4_species_manager::add_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd) {
+#if defined(DEBUG_SPMAN_CALLBACKS)
+    printf("this=%p - add_sequence_changed_cb\n", (char*)this);
+#endif // DEBUG
+    callbacks.insert(ED4_species_manager_cb_data(cb, cd));
+}
+
+void ED4_species_manager::remove_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd) {
+    e4_assert(this);
+#if defined(DEBUG_SPMAN_CALLBACKS)
+    printf("this=%p - remove_sequence_changed_cb\n", (char*)this);
+#endif // DEBUG
+    callbacks.erase(ED4_species_manager_cb_data(cb, cd));
+}
+
+void ED4_species_manager::do_callbacks() {
+    for (std::set<ED4_species_manager_cb_data>::iterator cb = callbacks.begin(); cb != callbacks.end(); ++cb) {
+        cb->call(this);
+    }
+}
+
+void ED4_species_manager::remove_all_callbacks() {
+    if (!callbacks.empty()) {
+        for (ED4_window *ew = ED4_ROOT->first_window; ew; ew = ew->next) {
+            ED4_cursor&  cursor                  = ew->cursor;
+            ED4_base    *cursors_species_manager = cursor.owner_of_cursor->get_parent(ED4_L_SPECIES);
+            if (cursors_species_manager == this) {
+                cursor.invalidate_base_position(); // removes the callback
+            }
+        }
+        e4_assert(callbacks.empty());
+    }
+}
+
 
 // --------------------------------------------------------------------------------
 // 	ED4_group_manager::
@@ -2094,17 +2145,10 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
 {
     e4_assert(update_needed);
 
-    int cursor_sequence_position[MAXWINDOWS];
-    int ew;
-    ED4_window *next_win;
-
-    // store old cursor sequence positions
-    for (ew=0,next_win=ED4_ROOT->first_window; next_win; ew++,next_win=next_win->next) {
-        cursor_sequence_position[ew] = next_win->cursor.get_sequence_pos_set();
-    }
-
-    const ED4_char_table& table = gm->table();
-    size_t i,j;
+    int                    ew;
+    ED4_window            *next_win;
+    const ED4_char_table&  table = gm->table();
+    size_t                 i,j;
 
     changed = 0; // is changed by set_sequence_to_screen
     update_needed = 0;
@@ -2237,12 +2281,6 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
 
     if (sequence_len>1) {
         MAXSEQUENCECHARACTERLENGTH = sequence_len;
-    }
-
-    if (changed) {
-        for (ew=0,next_win=ED4_ROOT->first_window; next_win; ew++,next_win=next_win->next) {	// recalc new cursor screen positions
-            next_win->cursor.set_to_sequence_position(cursor_sequence_position[ew]);
-        }
     }
 
     return NULL;
