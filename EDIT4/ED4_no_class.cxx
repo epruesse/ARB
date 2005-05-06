@@ -31,7 +31,7 @@
 void ED4_calc_terminal_extentions(){
     const AW_font_information *seq_font_info  = ED4_ROOT->temp_device->get_font_information( ED4_G_SEQUENCES, '=' );
     const AW_font_information *info_font_info = ED4_ROOT->temp_device->get_font_information( ED4_G_STANDARD, '.' );
-    
+
     int info_char_width = info_font_info->max_letter.width;
     int seq_term_descent;
 
@@ -63,7 +63,7 @@ void ED4_calc_terminal_extentions(){
             maxbrackets*BRACKETWIDTH; // brackets defined in NDS window
     }
     MAXINFOWIDTH = CHARACTEROFFSET + info_char_width*ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_INFO_WIDTH)->read_int() + 1;
-    
+
     INFO_TERM_TEXT_YOFFSET = info_font_info->max_letter.ascent - 1;
     SEQ_TERM_TEXT_YOFFSET  = seq_font_info->max_letter.ascent - 1;
 
@@ -160,7 +160,7 @@ void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     ED4_ROOT->refresh_window(1);
 
     if (cursor.owner_of_cursor) {
-        cursor.set_to_terminal(ED4_ROOT->temp_aww, cursor.owner_of_cursor->to_terminal(), cursor_seq_pos);
+        cursor.set_to_terminal(ED4_ROOT->temp_aww, cursor.owner_of_cursor->to_terminal(), cursor_seq_pos, false);
     }
     //    GB_commit_transaction(gb_main);
     GB_pop_transaction(gb_main);
@@ -1608,7 +1608,7 @@ void ED4_compression_changed_cb(AW_root *awr){
 
         ED4_expose_cb(ED4_ROOT->temp_aww, 0, 0);
         // @@@ need sth that recalcs the scrollbars
-        
+
         // ED4_ROOT->refresh_all_windows(1);
     }
 }
@@ -1721,10 +1721,10 @@ AW_window *ED4_create_level_1_options_window(AW_root *root){
 
     aws->at("seq_helix");
     aws->create_input_field(AWAR_EDIT_HELIX_SPACING);
-    
+
     aws->at("seq_seq");
     aws->create_input_field(AWAR_EDIT_TERMINAL_SPACING);
-    
+
     //  --------------------
     //      Scroll-Speed
 
