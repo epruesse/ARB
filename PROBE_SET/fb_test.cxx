@@ -97,10 +97,10 @@ int main( void ) {
     return 0;
 
     char str[] = "ABCDEFG";
-    int a = 1;
-    int b = 1;
-    printf( "%i %c %i\n", a,str[a++],a );
-    printf( "%i %c %i\n", b,str[++b],b );
+    int a      = 1;
+    int b      = 1;
+    printf( "%i %c %i\n", a, str[a],   a+1 ); a++;
+    printf( "%i %c %i\n", b, str[b+1], b+1 ); b++;
     return 0;
 
     ID2IDSet *s = new ID2IDSet;
