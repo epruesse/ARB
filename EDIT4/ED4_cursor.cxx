@@ -1458,6 +1458,32 @@ ED4_returncode  ED4_cursor::get_upper_lower_cursor_pos( ED4_manager *starting_po
    ED4_base_position
    -------------------------------------------------------------------------------- */
 
+ED4_base_position::ED4_base_position()
+    : calced4base(0)
+    , seq_pos(0)
+    , count(0)
+{
+}
+
+ED4_base_position::~ED4_base_position() {
+    invalidate();
+    delete [] seq_pos;
+}
+
+static void ed4_bp_sequence_changed_cb(ED4_species_manager *, AW_CL cl_base_pos) {
+    ED4_base_position *base_pos = (ED4_base_position*)cl_base_pos;
+    base_pos->invalidate();
+}
+
+void ED4_base_position::invalidate() {
+    if (calced4base) {
+        ED4_species_manager *species_manager = calced4base->get_parent(ED4_L_SPECIES)->to_species_manager();
+        species_manager->remove_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
+        
+        calced4base = 0;
+    }
+}
+
 void ED4_base_position::calc4base(ED4_base *base)
 {
     e4_assert(base);
@@ -1465,6 +1491,13 @@ void ED4_base_position::calc4base(ED4_base *base)
     ED4_species_manager *species_manager = base->get_parent(ED4_L_SPECIES)->to_species_manager();
     int                  len;
     char                *seq;
+
+    if (calced4base) {
+        ED4_species_manager *prev_species_manager = calced4base->get_parent(ED4_L_SPECIES)->to_species_manager();
+        prev_species_manager->remove_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
+    }
+
+    species_manager->add_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
 
     if (species_manager->flag.is_consensus) {
         ED4_group_manager *group_manager = base->get_parent(ED4_L_GROUP)->to_group_manager();
@@ -1535,11 +1568,11 @@ int ED4_base_position::get_base_position(ED4_base *base, int sequence_position)
 
     return l;
 }
-int ED4_base_position::get_sequence_position(ED4_base *base, int base_position)
+int ED4_base_position::get_sequence_position(ED4_base *base, int base_pos)
 {
     if (!base) return 0;
     if (base!=calced4base) calc4base(base);
-    return base_position<count ? seq_pos[base_position] : seq_pos[count-1]+1;
+    return base_pos<count ? seq_pos[base_pos] : seq_pos[count-1]+1;
 }
 
 /* --------------------------------------------------------------------------------
