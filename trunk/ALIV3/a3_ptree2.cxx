@@ -69,8 +69,11 @@ static int int_compare ( const void *a,
         nanz  = node.NumOfNext(),
         count = 0;
 
-    while (count < panz) field[count] = node.position[count++];
-    
+    while (count < panz) {
+        field[count] = node.position[count];
+        count++;
+    }
+
     while (nanz--) panz += GetLeaves(*node.next[nanz],&field[panz]);
 
     return panz;
