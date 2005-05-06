@@ -296,44 +296,47 @@ ED4_returncode ED4_terminal::remove_callbacks()                     //removes ca
     return ED4_R_OK;
 }
 
+static ED4_returncode ed4_remove_species_manager_callbacks(void **, void **, ED4_base *base) {
+    if (base->is_species_manager()) {
+        base->to_species_manager()->remove_all_callbacks();
+    }
+    return ED4_R_OK;
+}
+
 ED4_returncode ED4_terminal::kill_object()
 {
-    ED4_base    *species_manager = NULL,
-        *group_manager = NULL;
-    ED4_manager *multi_species_manager;
-    int     i;
-
-    species_manager = get_parent( ED4_L_SPECIES );
+    ED4_species_manager *species_manager = get_parent( ED4_L_SPECIES )->to_species_manager();
+    ED4_manager         *parent_manager  = species_manager->parent;
+    ED4_group_manager   *group_manager   = 0;
 
     if (species_manager->flag.is_consensus)                         // whole group has to be killed
     {
-        multi_species_manager = species_manager->parent;
-        if (multi_species_manager->is_multi_species_manager() && ED4_new_species_multi_species_manager()==multi_species_manager) {
-            aw_message("You cannot delete this group");
+        if (parent_manager->is_multi_species_manager() && ED4_new_species_multi_species_manager()==parent_manager) {
+            aw_message("This group has to exist - deleting it isn't allowed");
             return ED4_R_IMPOSSIBLE;
         }
 
-        group_manager = species_manager;
-        while (!group_manager->is_group_manager()) {
-            group_manager = group_manager->parent;
+        parent_manager = species_manager;
+        while (!parent_manager->is_group_manager()) {
+            parent_manager = parent_manager->parent;
         }
+        group_manager = parent_manager->to_group_manager();
 
-        multi_species_manager = group_manager->parent;
-        multi_species_manager->children->delete_member( group_manager );
+        parent_manager = group_manager->parent;
+        parent_manager->children->delete_member( group_manager );
 
         GB_push_transaction ( gb_main );
-        multi_species_manager->update_consensus( multi_species_manager ,NULL , group_manager );
-        multi_species_manager->rebuild_consensi( multi_species_manager , ED4_U_UP );
+        parent_manager->update_consensus( parent_manager ,NULL , group_manager );
+        parent_manager->rebuild_consensi( parent_manager , ED4_U_UP );
         GB_pop_transaction ( gb_main );
         species_manager = NULL;
     }
     else
     {
-        multi_species_manager = species_manager->parent;
-        multi_species_manager->children->delete_member( species_manager );
+        parent_manager->children->delete_member( species_manager );
         GB_push_transaction (gb_main );
-        multi_species_manager->update_consensus( multi_species_manager , NULL, species_manager );
-        multi_species_manager->rebuild_consensi( species_manager, ED4_U_UP );
+        parent_manager->update_consensus( parent_manager , NULL, species_manager );
+        parent_manager->rebuild_consensi( species_manager, ED4_U_UP );
         GB_pop_transaction (gb_main);
     }
 
@@ -341,7 +344,7 @@ ED4_returncode ED4_terminal::kill_object()
         ->get_defined_level(ED4_L_GROUP)->to_group_manager()
         ->get_defined_level(ED4_L_DEVICE)->to_device_manager();
 
-    for (i=0; i<device_manager->children->members(); i++) { // when killing species numbers have to be recalculated
+    for (int i=0; i<device_manager->children->members(); i++) { // when killing species numbers have to be recalculated
         ED4_base *member = device_manager->children->member(i);
 
         if (member->is_area_manager()) {
@@ -351,12 +354,14 @@ ED4_returncode ED4_terminal::kill_object()
 
     if (species_manager) {
         species_manager->parent = NULL;
-        delete (ED4_species_manager *) species_manager;
+        species_manager->remove_all_callbacks();
+        delete species_manager;
     }
 
     if (group_manager) {
         group_manager->parent = NULL;
-        delete (ED4_group_manager *) group_manager;
+        group_manager->route_down_hierarchy(0, 0, ed4_remove_species_manager_callbacks);
+        delete group_manager;
     }
 
     return ED4_R_OK;
