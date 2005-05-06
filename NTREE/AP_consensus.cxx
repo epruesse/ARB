@@ -94,12 +94,13 @@ enum {
  *
  * AWARs modified:               x
  *
- * Dependencies:                 .
+ * Dependencies:                 Always check that behavior is identical to that
+ *                               of ED4_char_table::build_consensus_string()
  * -----------------------------------------------------------------
  */
-void CON_evaluatestatistic(char *&result,int **statistic,char **groupflags,
-                           char *groupnames,int alignlength,double fupper,int lower,
-                           double fconsidbound,int gapbound,int countgap,int numgroups )
+void CON_evaluatestatistic(char   *&result,int **statistic,char **groupflags,
+                           char    *groupnames,int alignlength,double fupper,int lower,
+                           double   fconsidbound,int gapbound,int countgap,int numgroups )
 {
     register int row=0;
     register int j = 0;
