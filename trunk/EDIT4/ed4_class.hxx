@@ -16,7 +16,8 @@
 
 #include "ed4_defs.hxx"
 #include "ed4_search.hxx"
-#include "string.h"
+#include <string.h>
+#include <set>
 
 #define ed4_beep() do {fputc(char(7), stdout); fflush(stdout); } while(0)
 
@@ -273,8 +274,10 @@ class ED4_base_position
 
 public:
 
-    ED4_base_position()     { calced4base = 0; seq_pos = 0; count = 0; }
-    ~ED4_base_position()   { delete [] seq_pos; }
+    ED4_base_position();
+    ~ED4_base_position();
+
+    void invalidate();
 
     int get_base_position(ED4_base *base, int sequence_position);
     int get_sequence_position(ED4_base *base, int base_position);
@@ -305,12 +308,12 @@ extern int ED4_update_global_cursor_awars_allowed;
 
 class ED4_cursor
 {
-    ED4_index          cursor_abs_x; // absolute (to terminal) x-position of cursor (absolute world coordinate of edit window)
-    int                screen_position; // number of displayed characters leading the cursor
-    int                last_seq_position; // last sequence position, cursor was set to (or -1)
-    ED4_base_position  base_position; // # of bases left of cursor
-    ED4_CursorType     ctype;
-    ED4_CursorShape   *cursor_shape;
+    ED4_index                  cursor_abs_x; // absolute (to terminal) x-position of cursor (absolute world coordinate of edit window)
+    int                        screen_position; // number of displayed characters leading the cursor
+    int                        last_seq_position; // last sequence position, cursor was set to (or -1)
+    mutable ED4_base_position  base_position; // # of bases left of cursor
+    ED4_CursorType             ctype;
+    ED4_CursorShape           *cursor_shape;
 
     ED4_returncode  draw_cursor( AW_pos x, AW_pos y);
     ED4_returncode  delete_cursor( AW_pos del_mark , ED4_base *target_terminal);
@@ -350,10 +353,19 @@ public:
     long get_abs_x() const   { return cursor_abs_x; }
     void set_abs_x();
 
-    int base2sequence_position(int pos) { return base_position.get_sequence_position(owner_of_cursor, pos); }
+    int base2sequence_position(int base_pos) const { return base_position.get_sequence_position(owner_of_cursor, base_pos); }
+    int sequence2base_position(int seq_pos) const { return base_position.get_base_position(owner_of_cursor, seq_pos); }
+
+    int get_base_position() const { return sequence2base_position(get_sequence_pos()); }
+    void set_to_base_position(int base_pos) { set_to_sequence_position(base2sequence_position(base_pos)); }
+
+    void invalidate_base_position() { base_position.invalidate(); }
 
     void jump_left_right_cursor(AW_window *aww, int new_cursor_screen_pos);
     void jump_left_right_cursor_to_seq_pos(AW_window *aww, int new_cursor_seq_pos);
+    void jump_left_right_cursor_to_base_pos(AW_window *aww, int new_cursor_base_pos) {
+        jump_left_right_cursor_to_seq_pos(aww, base2sequence_position(new_cursor_base_pos));
+    }
 
     void jump_centered_cursor(AW_window *aww, int new_cursor_screen_pos);
     void jump_centered_cursor_to_seq_pos(AW_window *aww, int new_cursor_seq_pos);
@@ -1359,7 +1371,7 @@ public:
         }
 
         if (show_above_percent!=above_percent) {
-            above_percent = show_above_percent;
+            show_above_percent = above_percent;
             if (mode==ED4_RM_SHOW_ABOVE) {
                 update_needed = 1;
             }
@@ -1404,11 +1416,33 @@ public:
     virtual ED4_returncode resize_requested_by_parent( void );
 };
 
+// -----------------------------------------------
+//      callback decls for ED4_species_manager
+// -----------------------------------------------
+
+typedef void (*ED4_species_manager_cb)(ED4_species_manager*, AW_CL);
+
+class ED4_species_manager_cb_data {
+    ED4_species_manager_cb cb;
+    AW_CL                  cd; // client data
+
+public:
+    ED4_species_manager_cb_data(ED4_species_manager_cb cb_, AW_CL cd_) : cb(cb_), cd(cd_) {}
+
+    void call(ED4_species_manager *man) const { cb(man, cd); }
+    bool operator<(const ED4_species_manager_cb_data& other) const {
+        return (char*)cb < (char*)other.cb &&
+            (char*)cd < (char*)other.cd;
+    }
+};
+
 // --------------------------------------------------------------------------------
 //     class ED4_species_manager : public ED4_manager
 // --------------------------------------------------------------------------------
 class ED4_species_manager : public ED4_manager
 {
+    std::set<ED4_species_manager_cb_data> callbacks;
+
     ED4_species_manager(const ED4_species_manager&); // copy-constructor not allowed
 public:
     ED4_species_manager ( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent, bool temp_is_group = 0  );
@@ -1419,6 +1453,12 @@ public:
 #endif // IMPLEMENT_DUMP
 
     int setCursorTo(ED4_cursor *cursor, int position, int unfold_groups);
+
+    void add_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd);
+    void remove_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd);
+    void remove_all_callbacks();
+
+    void do_callbacks();
 };
 
 // --------------------------------------------------------------------------------
@@ -1788,7 +1828,8 @@ inline int ED4_terminal::setCursorTo(ED4_cursor *cursor, int pos, int unfoldGrou
 
 extern      ST_ML *st_ml;
 
-void        ED4_expose_cb           (AW_window *aww,AW_CL cd1, AW_CL cd2);
+void ED4_expose_cb(AW_window *aww,AW_CL cd1, AW_CL cd2);
+void ED4_expose_all_windows();
 
 void        ED4_calc_terminal_extentions();
 
