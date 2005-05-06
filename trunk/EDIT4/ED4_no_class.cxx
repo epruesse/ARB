@@ -90,6 +90,10 @@ void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     ED4_ROOT->temp_aww  = aww;
     ED4_ROOT->temp_device = aww->get_device(AW_MIDDLE_AREA);
     ED4_ROOT->temp_ed4w = ED4_ROOT->first_window->get_matching_ed4w( aww );
+
+    ED4_cursor& cursor         = ED4_ROOT->temp_ed4w->cursor;
+    int         cursor_seq_pos = cursor.get_sequence_pos();
+
     //    GB_begin_transaction(gb_main);
     GB_push_transaction(gb_main);
 
@@ -111,17 +115,26 @@ void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
         ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[HEIGHT] = TERMINALHEIGHT;
         ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[HEIGHT]      = TERMINALHEIGHT;
         ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[WIDTH]  = MAXINFOWIDTH;
-        
-        ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[WIDTH] =
-            ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) *
-            (ED4_ROOT->root_group_man->remap()->sequence_to_screen(MAXSEQUENCECHARACTERLENGTH)+3);
 
-        ED4_terminal *top_middle_line_terminal = ED4_ROOT->main_manager->get_top_middle_line_terminal();
+        int screenwidth = ED4_ROOT->root_group_man->remap()->sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
+        while (1) {
+            ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[WIDTH] =
+                ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) *
+                (screenwidth+3);
 
-        ED4_ROOT->main_manager->get_top_middle_spacer_terminal()->extension.size[HEIGHT] = TERMINALHEIGHT - top_middle_line_terminal->extension.size[HEIGHT];
+            ED4_terminal *top_middle_line_terminal = ED4_ROOT->main_manager->get_top_middle_line_terminal();
 
-        ED4_ROOT->main_manager->route_down_hierarchy(NULL, NULL, &update_terminal_extension );
-        ED4_ROOT->resize_all();
+            ED4_ROOT->main_manager->get_top_middle_spacer_terminal()->extension.size[HEIGHT] = TERMINALHEIGHT - top_middle_line_terminal->extension.size[HEIGHT];
+
+            ED4_ROOT->main_manager->route_down_hierarchy(NULL, NULL, &update_terminal_extension );
+            ED4_ROOT->resize_all(); // may change mapping
+
+            int new_screenwidth = ED4_ROOT->root_group_man->remap()->sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
+            if (new_screenwidth == screenwidth) { // mapping did not change
+                break;
+            }
+            screenwidth = new_screenwidth;
+        }
 
 #if 0
         if ((int)cd1 == 1) { // gc has changed
@@ -145,6 +158,10 @@ void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     ED4_ROOT->temp_device->reset();
     //    ED4_ROOT->show_all();
     ED4_ROOT->refresh_window(1);
+
+    if (cursor.owner_of_cursor) {
+        cursor.set_to_terminal(ED4_ROOT->temp_aww, cursor.owner_of_cursor->to_terminal(), cursor_seq_pos);
+    }
     //    GB_commit_transaction(gb_main);
     GB_pop_transaction(gb_main);
 }
@@ -916,9 +933,9 @@ void ED4_quit_editor(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)          //Be
     {
         ED4_window *ed4w = ED4_ROOT->first_window;
 
-        while (ed4w)
-        {
+        while (ed4w) {
             ed4w->aww->hide();
+            ed4w->cursor.invalidate_base_position();
             ed4w = ed4w->next;
         }
 
@@ -1523,6 +1540,9 @@ void ed4_change_edit_mode(AW_root *root, AW_CL cd1)
 ED4_returncode rebuild_consensus(void **/*arg1*/, void **/*arg2*/, ED4_base *object)                // arg1 and arg2 are NULL-values !!!
 {
     if ( object->flag.is_consensus) {
+        ED4_species_manager *spec_man = object->to_species_manager();
+        spec_man->do_callbacks();
+
         ED4_base *sequence_data_terminal = object->search_spec_child_rek( ED4_L_SEQUENCE_STRING );
 
         sequence_data_terminal->set_refresh();
