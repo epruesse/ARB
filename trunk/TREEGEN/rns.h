@@ -54,8 +54,6 @@ extern FILE *topo,
 /* |  Eine Species  | */
 /* \----------------/ */
 
-extern int rnsCreated; /* Anzahl bisher erzeugter Species */
-
 typedef struct S_RNS
 {
     char *base;    /* Array der Basen */

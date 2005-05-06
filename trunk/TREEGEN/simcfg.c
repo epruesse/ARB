@@ -16,7 +16,7 @@
     #include "rns.h"
 #endif
 
-extern struct S_cfgLine cfg_lines[];
+static struct S_cfgLine cfg_lines[];
 
 /* -------------------------------------------------------------------------- */
 /*      static int decodeFrand(str setting, void *frandPtr) */
