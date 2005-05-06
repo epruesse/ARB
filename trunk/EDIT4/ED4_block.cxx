@@ -170,10 +170,15 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
     return error;
 }
 
+
+
 void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
-    GB_ERROR error = GB_begin_transaction(gb_main);
+    GB_ERROR               error    = GB_begin_transaction(gb_main);
     ED4_sequence_terminal *err_term = 0;
-    //    ED4_terminal *term = ED4_ROOT->root_group_man->get_first_terminal();
+    //    ED4_terminal *term        = ED4_ROOT->root_group_man->get_first_terminal();
+
+    ED4_cursor *cursor   = &ED4_ROOT->temp_ed4w->cursor;
+    int         base_pos = cursor ? cursor->get_base_position() : -1;
 
     switch (blocktype) {
         case ED4_BT_NOBLOCK: {
@@ -183,10 +188,10 @@ void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
         case ED4_BT_LINEBLOCK: {
             ED4_list_elem *listElem = ED4_ROOT->selected_objects.first();
             while (listElem && !error) {
-                ED4_selection_entry *selectionEntry = (ED4_selection_entry*)listElem->elem();
-                ED4_sequence_terminal *seqTerm = selectionEntry->object->get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_sequence_terminal();
+                ED4_selection_entry   *selectionEntry = (ED4_selection_entry*)listElem->elem();
+                ED4_sequence_terminal *seqTerm        = selectionEntry->object->get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_sequence_terminal();
 
-                error = perform_block_operation_on_whole_sequence(block_operation, seqTerm, repeat);
+                error               = perform_block_operation_on_whole_sequence(block_operation, seqTerm, repeat);
                 if (error) err_term = seqTerm;
 
                 listElem = listElem->next();
@@ -222,6 +227,8 @@ void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
     }
     else {
         GB_commit_transaction(gb_main);
+
+        cursor->jump_left_right_cursor_to_base_pos(ED4_ROOT->temp_aww, base_pos); // restore cursor at same base
     }
 }
 
