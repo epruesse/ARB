@@ -67,7 +67,8 @@ typedef IDID2IDSetMap::const_iterator IDID2IDSetMapCIter;
 // ----------------------------------------------------------------
 class PS_Callback {
 public:
-    virtual void callback( void *_caller ) =0;
+    virtual ~PS_Callback() {}
+    virtual void callback( void *_caller ) = 0;
 };
 
 // ----------------------------------------------------------------
