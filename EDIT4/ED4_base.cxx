@@ -154,14 +154,17 @@ void ED4_terminal::changed_by_database(void)
                 delete n;
 #endif
 
+                ED4_species_manager *spman = get_parent(ED4_L_SPECIES)->to_species_manager();
+                spman->do_callbacks();
+                
                 if (dynamic_prop & ED4_P_CONSENSUS_RELEVANT) {
                     ED4_multi_species_manager *multiman = get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-                    ED4_species_manager *spman = get_parent(ED4_L_SPECIES)->to_species_manager();
 
                     multiman->check_bases_and_rebuild_consensi(dup_data, data_len, spman, ED4_U_UP);
+                    
                     set_refresh(1);
                     parent->refresh_requested_by_child();
-//                     ED4_ROOT->main_manager->Show();
+                    //                     ED4_ROOT->main_manager->Show();
                 }
 
                 delete [] dup_data;
@@ -927,8 +930,8 @@ void ED4_sequence_terminal::calc_update_intervall(long *left_index, long *right_
     *left_index  = (int)((rel_left_x-CHARACTEROFFSET)/length_of_char); // - 1;
     *right_index = (int)((rel_right_x-CHARACTEROFFSET)/length_of_char) + 1;
 
-    if (*right_index > MAXSEQUENCECHARACTERLENGTH) *right_index = MAXSEQUENCECHARACTERLENGTH;
-    if (*left_index < 0) *left_index = 0;
+    if (*right_index >= MAXSEQUENCECHARACTERLENGTH) *right_index = MAXSEQUENCECHARACTERLENGTH-1;
+    if (*left_index < 0) *left_index                             = 0;
 }
 
 void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager)	//creates consensus
