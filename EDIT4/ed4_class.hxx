@@ -348,7 +348,7 @@ public:
     int get_screen_pos() const { return screen_position; }
 
     void set_to_sequence_position(int seq_pos);
-    ED4_returncode set_to_terminal(AW_window *aww, ED4_terminal *terminal, int seq_pos);
+    ED4_returncode set_to_terminal(AW_window *aww, ED4_terminal *terminal, int seq_pos, bool center_cursor);
 
     long get_abs_x() const   { return cursor_abs_x; }
     void set_abs_x();
@@ -1189,7 +1189,7 @@ public:
 class ED4_main_manager : public ED4_manager // first in hierarchy
 {
     // these terminals are redrawn after refresh (with increase clipping area)
-    // to revert text from middle area drawn into top area: 
+    // to revert text from middle area drawn into top area:
     ED4_terminal *top_middle_line;
     ED4_terminal *top_middle_spacer;
 
@@ -1200,7 +1200,7 @@ public:
 
     void set_top_middle_spacer_terminal(ED4_terminal *top_middle_spacer_) { top_middle_spacer = top_middle_spacer_; }
     void set_top_middle_line_terminal(ED4_terminal *top_middle_line_) { top_middle_line = top_middle_line_; }
-    
+
     ED4_terminal *get_top_middle_spacer_terminal() const { return top_middle_spacer; }
     ED4_terminal *get_top_middle_line_terminal() const { return top_middle_line; }
 
@@ -1719,7 +1719,7 @@ public:
     ED4_species_name_terminal *corresponding_species_name_terminal() const {
         return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
     }
-    
+
     virtual ED4_returncode draw( int only_text = 0);
 
     // GBDATA *data() { return gbdata; }
