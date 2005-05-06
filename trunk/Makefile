@@ -357,7 +357,8 @@ ifeq ('$(GCC_VERSION_ALLOWED)', '')
 		@$(foreach version,$(ALLOWED_GCC_VERSIONS),echo '    * $(version)';)
 		@echo '  - You may either ..'
 		@echo '    - add your version to ALLOWED_GCC_VERSIONS in the Makefile and try it out or'
-		@echo '    - switch to one of the allowed versions (see arb_README_gcc.txt)'
+		@echo '    - switch to one of the allowed versions (see arb_README_gcc.txt for installing'
+		@echo '      a different version of gcc)'
 		@echo ''
 		@/bin/false
 else
