@@ -418,7 +418,8 @@ void ED4_consensus_definition_changed(AW_root*, AW_CL,AW_CL) {
     }
 
     BK_up_to_date = 0;
-    ED4_ROOT->root_group_man->Show();
+    // ED4_ROOT->root_group_man->Show();
+    ED4_ROOT->refresh_all_windows(1);
 }
 
 static ED4_returncode toggle_consensus_display(void **show, void **, ED4_base *base) {
@@ -448,7 +449,8 @@ void ED4_consensus_display_changed(AW_root *root, AW_CL, AW_CL) {
 }
 
 char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *fill_id) const
-    // consensus is only built in intervall
+// consensus is only built in intervall
+// Note : Always check that consensus behavior is identical to that used in CON_evaluatestatistic()
 {
     int i;
 
@@ -469,12 +471,13 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
         fill_id[entr] = 0;
     }
 
+    e4_assert(right_idx<size());
     if (right_idx==-1 || right_idx>=size()) right_idx = size()-1;
 
     char *consensus_string = fill_id;
 
 #define PERCENT(part, all)	((100*(part))/(all))
-#define MAX_BASES_TABLES	41 //25
+#define MAX_BASES_TABLES 41     //25
 
     e4_assert(used_bases_tables<=MAX_BASES_TABLES);	// this is correct for DNA/RNA -> build_consensus_string() must be corrected for AMI/PRO
 
@@ -501,15 +504,17 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
 
             // What to do with gaps?
 
-            if (BK_countgaps && PERCENT(gaps, sequences)>=BK_gapbound) {
+            if (gaps == sequences) {
                 consensus_string[i] = '=';
             }
-
-            // Simplify using IUPAC
-
+            else if (BK_countgaps && PERCENT(gaps, sequences)>=BK_gapbound) {
+                consensus_string[i] = '-';
+            }
             else {
-                char kchar;	// character for consensus
-                int kcount; // count this character
+                // Simplify using IUPAC :
+
+                char kchar;     // character for consensus
+                int  kcount;    // count this character
 
                 if (BK_group) { // group -> iupac
                     if (IS_NUCLEOTIDE()) {
@@ -561,6 +566,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
                     }
                 }
                 else {
+                    e4_assert(max_base); // expect at least one base to occur  
                     kchar = index_to_upperChar(max_j);
                     kcount = max_base;
                 }
@@ -568,7 +574,6 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
                 // show as upper or lower case ?
 
                 int percent = PERCENT(kcount, sequences);
-                if (kchar=='-') kchar = '*';
 
                 if (percent>=BK_upper) {
                     consensus_string[i] = kchar;
