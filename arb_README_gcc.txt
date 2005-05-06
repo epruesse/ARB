@@ -1,12 +1,14 @@
 
-ARB will NOT compile with gcc 3.2 yet (and so it won't with SuSE 8.1).
+ARB will compile with several versions of gcc. Compilation was tested
+with gcc 2.95.3 and gcc versions higher or equal to gcc 3.3.3 (for
+most up-to-date details see the main Makefile).
 
-To compile you'll need to install a different version of gcc.
-Compilation was tested with gcc 2.95.3 and gcc versions higher or equal to gcc 3.3.3
+If you encounter problems compiling ARB (e.g. if Makefile reports a
+version as not supported or compilation simply does not work) you may
+want to install a different version of gcc.
 
 
-If you have a unsupported gcc as system compiler, follow the instructions below to install
-gcc version 2.95.3 (we install it in /opt/gcc-2.95):
+Here a short howto (using gcc.2.95.3 as example):
 
 - download (i.e.)
 
@@ -40,4 +42,5 @@ gcc version 2.95.3 (we install it in /opt/gcc-2.95):
   to your PATH environment variable.
 
 - compile ARB
+
 
