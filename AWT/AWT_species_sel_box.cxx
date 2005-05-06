@@ -335,7 +335,7 @@ AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
     if (scan_xfig_label) aws->at(scan_xfig_label);
 
     if (popup_list_in_window) {
-        
+
         // create HIDDEN popup window containing the selection list
         {
             AW_window_simple *aw_popup = new AW_window_simple;
@@ -793,10 +793,11 @@ void awt_scanner_scan_list(GBDATA *dummy, struct adawcbstruct *cbs)
 {
 #define INFO_WIDTH 1000
 refresh_again:
-    char       buffer[INFO_WIDTH+1];
+    char buffer[INFO_WIDTH+1];
     memset(buffer,0,INFO_WIDTH+1);
+
     static int last_max_name_width;
-    int        max_name_width      = 0;
+    int        max_name_width = 0;
 
     if (last_max_name_width == 0) last_max_name_width = 15;
 
@@ -822,28 +823,31 @@ refresh_again:
             GBDATA     *gbd  = GB_search(cbs->gb_user,name,GB_FIND);
 
             if ((!existing) == (!gbd)) { // first print only existing; then non-existing entries
-                char *p      = &buffer[0];
-                int   rest   = INFO_WIDTH;
+                char *p      = buffer;
                 int   len    = sprintf(p,"%-*s %c", last_max_name_width, name, GB_TYPE_2_CHAR[GB_read_int(gb_key_type)]);
 
-                rest -= len;
-                p    += len;
+                p += len;
 
                 int name_width = strlen(name);
                 if (name_width>max_name_width) max_name_width = name_width;
 
                 if (gbd) {      // existing entry
-                    *(p++)     = GB_read_security_write(gbd)+'0';
-                    *(p++)     = ':';
-                    *(p++)     = ' ';
-                    *p         = 0;
+                    *(p++) = GB_read_security_write(gbd)+'0';
+                    *(p++) = ':';
+                    *(p++) = ' ';
+                    *p     = 0;
+
                     char *data = GB_read_as_string(gbd);
                     int   ssize;
+
                     if (data){
-                        ssize = strlen(data);
+                        int rest = INFO_WIDTH-(p-buffer);
+                        ssize    = strlen(data);
+
                         if (ssize > rest) ssize = rest;
                         memcpy(p,data,ssize);
                         p[ssize] = 0;
+
                         free(data);
                     }
                     cbs->aws->insert_selection( cbs->id, buffer, (long)gbd );
