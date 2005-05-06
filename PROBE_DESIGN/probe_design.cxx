@@ -720,7 +720,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             }
         }
 
-        char *probe = probe = root->awar(AWAR_TARGET_STRING)->read_string();
+        char *probe = root->awar(AWAR_TARGET_STRING)->read_string();
 
         if (!error) {
             if (show_status) aw_status("Start Probe Match");

@@ -779,7 +779,7 @@ GB_ERROR GB_write_bits(GBDATA *gbd,const char *bits,long size, const char *c_0)
     GB_TEST_NON_BUFFER(bits,"GB_write_bits");
     gb_save_extern_data_in_ts(gbd);
 
-    d = gb_compress_bits(bits,size,c_0,memsize);
+    d = gb_compress_bits(bits,size,(const unsigned char *)c_0,memsize);
     gbd->flags.compressed_data = 1;
     GB_SETSMDMALLOC(gbd,size,memsize[0],d);
     gb_touch_entry(gbd,gb_changed);

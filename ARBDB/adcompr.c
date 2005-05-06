@@ -255,7 +255,7 @@ struct gb_compress_list *gb_build_compress_list(const unsigned char *data,long s
 
 char *gb_compress_bits(const char *source, long size, const unsigned char *c_0, long *msize)
 {
-    const unsigned char *s      = source;
+    const unsigned char *s      = (const unsigned char *)source;
     char                *buffer = GB_give_other_buffer(source,size);
     char                *dest   = buffer;
 
