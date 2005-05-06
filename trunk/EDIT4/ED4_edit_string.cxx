@@ -456,9 +456,8 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
             case AW_KEY_HOME:
                 {
                     int new_seq_pos = get_next_visible_base(0,1);
-                    if (new_seq_pos>=0) {
-                        seq_pos = new_seq_pos==seq_pos ? 0 : new_seq_pos;
-                    }
+                    if (new_seq_pos>=0) seq_pos = new_seq_pos==seq_pos ? 0 : new_seq_pos;
+                    else seq_pos = 0;
                     break;
                 }
             case AW_KEY_END:
@@ -467,6 +466,9 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                     if (new_seq_pos>=0) {
                         new_seq_pos++;
                         seq_pos = new_seq_pos==seq_pos ? seq_len : new_seq_pos;
+                    }
+                    else {
+                        seq_pos = seq_len; 
                     }
                     break;
                 }
