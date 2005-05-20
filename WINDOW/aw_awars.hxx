@@ -51,7 +51,7 @@
 /* - normally AWAR_ORGANISM_NAME contains the same value as AWAR_SPECIES_NAME
    - if AWAR_SPECIES_NAME contains the name of a pseudo gene-species then AWAR_ORGANISM_NAME
    contains the name of the species the pseudo gene-species originated from */
-#define AWAR_EXPERIMENT_NAME    "tmp/focus/experiment_name" /* string :  name of selected experiment */
+// #define AWAR_EXPERIMENT_NAME    "tmp/focus/experiment_name" /* string :  name of selected experiment */
 #define AWAR_SAI_NAME           "tmp/focus/sai_name" /* string :  name of selected SAI (e.g. in EDIT4 and 'Manage SAI') */
 #define AWAR_SAI_GLOBAL         "tmp/focus/sai_global" /* string :  name of selected SAI in EDIT4/Visualize SAI Tool - used in RNA3D Tool*/
 
