@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_main.cxx                                           //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu Aug/14/2003 23:08 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri May/20/2005 15:21 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -48,6 +48,8 @@ void EXP_update_combined_cb(AW_root *awr) {
 //  -------------------------------------------------------------------
 void EXP_create_awars(AW_root *aw_root, AW_default /*aw_def*/) {
     aw_root->awar_string(AWAR_EXPERIMENT_NAME, "" , gb_main)->add_callback((AW_RCB0)EXP_update_combined_cb);
+    aw_root->awar_string(AWAR_PROTEOM_NAME, "" , gb_main);
+    aw_root->awar_string(AWAR_PROTEIN_NAME, "" , gb_main);
     aw_root->awar_string(AWAR_ORGANISM_NAME, "" ,   gb_main)->add_callback((AW_RCB0)EXP_update_combined_cb);
     aw_root->awar_string(AWAR_COMBINED_EXPERIMENT_NAME, "" , gb_main);
 
