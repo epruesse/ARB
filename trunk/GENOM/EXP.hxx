@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP.hxx                                                //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri Jan/18/2002 15:54 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri May/20/2005 15:26 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -20,6 +20,11 @@ class AW_window_menu_modes;
 
 // --------------------------------------------------------------------------------
 // awars:
+
+#define AWAR_EXPERIMENT_NAME "tmp/exp/name"
+#define AWAR_PROTEOM_NAME    "tmp/exp/proteom_name"
+#define AWAR_PROTEIN_NAME    "tmp/exp/protein_name"
+
 void EXP_create_awars(AW_root *aw_root, AW_default aw_def);
 inline GBDATA* EXP_get_experiment_data(GBDATA *gb_species) { return GB_search(gb_species, "experiment_data", GB_CREATE_CONTAINER); }
 
