@@ -29,6 +29,7 @@
 #include "GEN_interface.hxx"
 #include "EXP.hxx"
 #include "EXP_interface.hxx"
+#include "EXP_local.hxx"
 #include "../NTREE/ad_spec.hxx" // needed for species query window
 
 using namespace std;
@@ -1297,11 +1298,14 @@ AW_window *GEN_create_awar_debug_window(AW_root *aw_root) {
 
         const int width = 50;
 
-        ;                  aws->label("AWAR_SPECIES_NAME      "); aws->create_input_field(AWAR_SPECIES_NAME, width);
-        aws->at_newline(); aws->label("AWAR_ORGANISM_NAME     "); aws->create_input_field(AWAR_ORGANISM_NAME, width);
-        aws->at_newline(); aws->label("AWAR_GENE_NAME         "); aws->create_input_field(AWAR_GENE_NAME, width);
-        aws->at_newline(); aws->label("AWAR_COMBINED_GENE_NAME"); aws->create_input_field(AWAR_COMBINED_GENE_NAME, width);
-        aws->at_newline(); aws->label("AWAR_EXPERIMENT_NAME   "); aws->create_input_field(AWAR_EXPERIMENT_NAME, width);
+        ;                  aws->label("AWAR_SPECIES_NAME            "); aws->create_input_field(AWAR_SPECIES_NAME, width);
+        aws->at_newline(); aws->label("AWAR_ORGANISM_NAME           "); aws->create_input_field(AWAR_ORGANISM_NAME, width);
+        aws->at_newline(); aws->label("AWAR_GENE_NAME               "); aws->create_input_field(AWAR_GENE_NAME, width);
+        aws->at_newline(); aws->label("AWAR_COMBINED_GENE_NAME      "); aws->create_input_field(AWAR_COMBINED_GENE_NAME, width);
+        aws->at_newline(); aws->label("AWAR_EXPERIMENT_NAME         "); aws->create_input_field(AWAR_EXPERIMENT_NAME, width);
+        aws->at_newline(); aws->label("AWAR_COMBINED_EXPERIMENT_NAME"); aws->create_input_field(AWAR_COMBINED_EXPERIMENT_NAME, width);
+        aws->at_newline(); aws->label("AWAR_PROTEOM_NAME            "); aws->create_input_field(AWAR_PROTEOM_NAME, width);
+        aws->at_newline(); aws->label("AWAR_PROTEIN_NAME            "); aws->create_input_field(AWAR_PROTEIN_NAME, width);
 
         aws->window_fit();
     }
