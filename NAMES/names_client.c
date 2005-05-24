@@ -152,7 +152,7 @@ GB_ERROR pars_names(GBDATA *gb_main, int use_advice, int save_data)
         //				err = "Nameserver cannot save the data";
         //			}
         //		}
-        GBT_commit_rename_session(0);
+        GBT_commit_rename_session(0, 0);
     }
     disconnect_an();
     return err2;
