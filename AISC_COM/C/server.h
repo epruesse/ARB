@@ -55,7 +55,7 @@ int aisc_broadcast P_((struct Hs_struct *hs, int message_type, const char *messa
 int aisc_private_message P_((int socket, int message_type, char *message));
 int aisc_talking P_((int con));
 struct Hs_struct *aisc_accept_calls P_((struct Hs_struct *hs));
-void aisc_server_shutdown P_((struct Hs_struct *hs));
+void aisc_server_shutdown_and_exit P_((struct Hs_struct *hs, int exitcode));
 int aisc_get_key P_((int *obj));
 extern "C" int aisc_add_destroy_callback P_((aisc_callback_func callback, long clientdata));
 void aisc_remove_destroy_callback P_((void));
