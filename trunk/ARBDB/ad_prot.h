@@ -208,7 +208,6 @@ GB_ERROR GB_touch P_((GBDATA *gbd));
 GB_ERROR GB_print_debug_information P_((void *dummy, GBDATA *gb_main));
 int GB_info P_((GBDATA *gbd));
 long GB_number_of_subentries P_((GBDATA *gbd));
-long GB_rescan_number_of_subentries P_((GBDATA *gbd));
 
 /* ad_core.c */
 
@@ -290,6 +289,8 @@ GB_ERROR GBCMS_open P_((const char *path, long timeout, GBDATA *gb_main));
 GB_ERROR GBCMS_shutdown P_((GBDATA *gbd));
 GB_BOOL GBCMS_accept_calls P_((GBDATA *gbd, GB_BOOL wait_extra_time));
 long GB_read_clients P_((GBDATA *gbd));
+GB_BOOL GB_is_server P_((GBDATA *gbd));
+GB_BOOL GB_is_client P_((GBDATA *gbd));
 GBDATA *GBCMC_find P_((GBDATA *gbd, const char *key, const char *str, enum gb_search_types gbs));
 int GBCMC_system P_((GBDATA *gbd, const char *ss));
 GB_ERROR GB_tell_server_dont_wait P_((GBDATA *gbd));
