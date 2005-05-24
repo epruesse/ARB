@@ -6,6 +6,7 @@
 
 #include <arbdb.h>
 #include <arbdbt.h>
+#include <ad_config.h>
 
 #include <aw_root.hxx>
 #include <aw_device.hxx>
@@ -616,7 +617,7 @@ int main(int argc,char **argv)
         GBDATA *species_container = GB_search(gb_main, "species_data", GB_FIND);
         GB_add_callback(species_container, (GB_CB_TYPE)GB_CB_CHANGED, (GB_CB)ED4_species_container_changed_cb, 0); // callback if species_data changes
 
-        ED4_elements_in_species_container = GB_rescan_number_of_subentries(species_container); // store # of species
+        ED4_elements_in_species_container = GB_number_of_subentries(species_container); // store # of species
 #if defined(DEBUG) && 0
         printf("Species container contains %i species (at startup)\n", ED4_elements_in_species_container);
 #endif

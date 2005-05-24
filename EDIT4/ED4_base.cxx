@@ -301,7 +301,7 @@ int ED4_elements_in_species_container; // # of elements in species container
 void ED4_species_container_changed_cb(GBDATA *gb_species_data, int */*cl*/, GB_CB_TYPE gbtype)
 {
     if (gbtype==GB_CB_CHANGED) {
-        int nsons = GB_rescan_number_of_subentries(gb_species_data);
+        int nsons = GB_number_of_subentries(gb_species_data);
 
         if (nsons>ED4_elements_in_species_container) { // new species was created
 #if defined(DEBUG) && 1
