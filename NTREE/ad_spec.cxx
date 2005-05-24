@@ -14,7 +14,10 @@
 #include <awt_canvas.hxx>
 #include <awt_dtree.hxx>
 #include <awtlocal.hxx>
+#include <awt_changekey.hxx>
+#include <db_scanner.hxx>
 #include <awtc_next_neighbours.hxx>
+#include <AW_rename.hxx>
 #include <ntree.hxx>
 
 #ifndef ARB_ASSERT_H
@@ -38,58 +41,7 @@ void create_species_var(AW_root *aw_root, AW_default aw_def)
 
 }
 
-void species_rename_cb(AW_window *aww){
-    GB_ERROR error = 0;
-    char *source = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
-    char *dest = aww->get_root()->awar(AWAR_SPECIES_DEST)->read_string();
-    GBT_begin_rename_session(gb_main,0);
-    error = GBT_rename_species(source,dest);
-    if (!error) {
-        aww->get_root()->awar(AWAR_SPECIES_NAME)->write_string(dest);
-    }
-    if (!error) GBT_commit_rename_session(0);
-    else    GBT_abort_rename_session();
-    if (error) aw_message(error);
-    free(source);
-    free(dest);
-}
-
-void species_copy_cb(AW_window *aww){
-    GB_ERROR error = 0;
-    char *source = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
-    char *dest = aww->get_root()->awar(AWAR_SPECIES_DEST)->read_string();
-    GB_begin_transaction(gb_main);
-    GBDATA *gb_species_data =   GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_species =        GBT_find_species_rel_species_data(gb_species_data,source);
-    GBDATA *gb_dest =       GBT_find_species_rel_species_data(gb_species_data,dest);
-    if (gb_dest) {
-        error = "Sorry: species already exists";
-    }else   if (gb_species) {
-        gb_dest = GB_create_container(gb_species_data,"species");
-        error = GB_copy(gb_dest,gb_species);
-        if (!error) {
-            GBDATA *gb_name =
-                GB_search(gb_dest,"name",GB_STRING);
-            error = GB_write_string(gb_name,dest);
-        }
-        if (!error) {
-            aww->get_root()->awar(AWAR_SPECIES_NAME)->write_string(dest);
-        }
-    }else{
-        error = "Please select a species first";
-    }
-    if (!error){
-        aww->hide();
-        GB_commit_transaction(gb_main);
-    }else{
-        GB_abort_transaction(gb_main);
-    }
-    if (error) aw_message(error);
-    free(source);
-    free(dest);
-}
-
-void move_species_to_extended(AW_window *aww){
+static void move_species_to_extended(AW_window *aww){
     GB_ERROR error = 0;
     char *source = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
     GB_begin_transaction(gb_main);
@@ -119,7 +71,7 @@ void move_species_to_extended(AW_window *aww){
 }
 
 
-void species_create_cb(AW_window *aww){
+static void species_create_cb(AW_window *aww){
     GB_ERROR error = 0;
     char *dest = aww->get_root()->awar(AWAR_SPECIES_DEST)->read_string();
     GB_begin_transaction(gb_main);
@@ -140,53 +92,7 @@ void species_create_cb(AW_window *aww){
     free(dest);
 }
 
-AW_window *create_species_rename_window(AW_root *root)
-{
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "RENAME_SPECIES", "SPECIES RENAME");
-    aws->load_xfig("ad_al_si.fig");
-
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
-
-    aws->at("label");
-    aws->create_autosize_button(0,"Please enter the new name\nof the species");
-
-    aws->at("input");
-    aws->create_input_field(AWAR_SPECIES_DEST,15);
-
-    aws->at("ok");
-    aws->callback(species_rename_cb);
-    aws->create_button("GO","GO","G");
-
-    return (AW_window *)aws;
-}
-
-AW_window *create_species_copy_window(AW_root *root)
-{
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "COPY_SPECIES", "SPECIES COPY");
-    aws->load_xfig("ad_al_si.fig");
-
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
-
-    aws->at("label");
-    aws->create_autosize_button(0,"Please enter the name\nof the new species");
-
-    aws->at("input");
-    aws->create_input_field(AWAR_SPECIES_DEST,15);
-
-    aws->at("ok");
-    aws->callback(species_copy_cb);
-    aws->create_button("GO","GO","G");
-
-    return (AW_window *)aws;
-}
-
-AW_window *create_species_create_window(AW_root *root)
+static AW_window *create_species_create_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "CREATE_SPECIES","SPECIES CREATE");
@@ -209,22 +115,111 @@ AW_window *create_species_create_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-void ad_species_delete_cb(AW_window *aww){
-    if (aw_message("Are you sure to delete the species","OK,CANCEL"))return;
-    GB_ERROR error = 0;
-    char *source = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
-    GB_begin_transaction(gb_main);
-    GBDATA *gb_species = GBT_find_species(gb_main,source);
+static GBDATA *expect_species_selected(AW_root *aw_root, char **give_name = 0) {
+    GB_transaction  ta(gb_main);
+    char           *name       = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
+    GBDATA         *gb_species = GBT_find_species(gb_main, name);
 
-    if (gb_species) error = GB_delete(gb_species);
-    else        error = "Please select a species first";
+    if (!gb_species) {
+        if (name && name[0]) aw_message(GBS_global_string("Species '%s' does not exist.", name));
+        else aw_message("Please select a species first");
+    }
 
-    if (!error) GB_commit_transaction(gb_main);
-    else    GB_abort_transaction(gb_main);
+    if (give_name) *give_name = name;
+    else free(name);
+
+    return gb_species;
+}
+
+static void ad_species_copy_cb(AW_window *aww, AW_CL, AW_CL) {
+    AW_root *aw_root    = aww->get_root();
+    char    *name;
+    GBDATA  *gb_species = expect_species_selected(aw_root, &name);
+    if (gb_species) {
+        GB_transaction  ta(gb_main);
+        GBDATA         *gb_species_data = GB_get_father(gb_species);
+        char           *copy_name       = AWTC_makeUniqueShortName(GBS_global_string("c_%s", name), gb_species_data);
+        GBDATA         *gb_new_species  = GB_create_container(gb_species_data, "species");
+        GB_ERROR        error           = 0;
+
+        if (!gb_new_species) {
+            error = GB_get_error();
+        }
+        else {
+            error = GB_copy(gb_new_species, gb_species);
+            if (!error) {
+                GBDATA *gb_name = GB_search(gb_new_species,"name",GB_STRING);
+                error           = GB_write_string(gb_name, copy_name);
+                
+                if (!error) aw_root->awar(AWAR_SPECIES_NAME)->write_string(copy_name); // set focus
+            }
+        }
+
+        if (error) {
+            ta.abort();
+            aw_message(error);
+        }
+        free(copy_name);
+    }
+}
+
+static void ad_species_rename_cb(AW_window *aww, AW_CL, AW_CL) {
+    AW_root *aw_root    = aww->get_root();
+    GBDATA  *gb_species = expect_species_selected(aw_root);
+    if (gb_species) {
+        GB_transaction  ta(gb_main);
+        GBDATA         *gb_full_name  = GB_search(gb_species, "full_name", GB_STRING);
+        const char     *full_name     = gb_full_name ? GB_read_char_pntr(gb_full_name) : "";
+        char           *new_full_name = aw_input("Enter new 'full_name' of species:", 0, full_name);
+
+        if (new_full_name) {
+            GB_ERROR error = 0;
+
+            if (strcmp(full_name, new_full_name) != 0) {
+                error = GB_write_string(gb_full_name, new_full_name);
+            }
+            if (!error) {
+                if (aw_message("Do you want to re-create the 'name' field?", "Yes,No") == 0) {
+                    aw_openstatus("Recreating species name");
+                    aw_status("");
+                    aw_status(0.0);
+                    error = AWTC_recreate_name(gb_species, true);
+                    if (!error) {
+                        GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+                        if (gb_name) aw_root->awar(AWAR_SPECIES_NAME)->write_string(GB_read_char_pntr(gb_name)); // set focus
+                    }
+                    aw_closestatus();
+                }
+            }
+
+            if (error) {
+                ta.abort();
+                aw_message(error);
+            }
+        }
+    }
+}
+
+static void ad_species_delete_cb(AW_window *aww, AW_CL, AW_CL) {
+    AW_root  *aw_root    = aww->get_root();
+    char     *name;
+    GBDATA   *gb_species = expect_species_selected(aw_root, &name);
+    GB_ERROR  error      = 0;
+
+    if (!gb_species) {
+        error = "Please select a species first";
+    }
+    else if (aw_message(GBS_global_string("Are you sure to delete the species '%s'", name), "OK,CANCEL") == 0) {
+        GB_transaction ta(gb_main);
+        error = GB_delete(gb_species);
+        if (error) ta.abort();
+        else aw_root->awar(AWAR_SPECIES_NAME)->write_string("");
+    }
 
     if (error) aw_message(error);
-    free(source);
+    free(name);
 }
+
 static AW_CL    ad_global_scannerid      = 0;
 static AW_root *ad_global_scannerroot    = 0;
 static AW_root *ad_global_default_awroot = 0;
@@ -233,7 +228,7 @@ void AD_set_default_root(AW_root *aw_root) {
     ad_global_default_awroot = aw_root;
 }
 
-void AD_map_species(AW_root *aw_root, AW_CL scannerid, AW_CL mapOrganism)
+static void AD_map_species(AW_root *aw_root, AW_CL scannerid, AW_CL mapOrganism)
 {
     GB_push_transaction(gb_main);
     char *source = aw_root->awar((bool)mapOrganism ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME)->read_string();
@@ -461,7 +456,7 @@ AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector)
     return (AW_window *)aws;
 }
 
-void ad_hide_field(AW_window *aws, AW_CL cl_cbs, AW_CL cl_hide)
+static void ad_hide_field(AW_window *aws, AW_CL cl_cbs, AW_CL cl_hide)
 {
     AWUSE(aws);
     GB_begin_transaction(gb_main);
@@ -491,7 +486,7 @@ void ad_hide_field(AW_window *aws, AW_CL cl_cbs, AW_CL cl_hide)
     }
 }
 
-void ad_field_delete(AW_window *aws, AW_CL cl_cbs)
+static void ad_field_delete(AW_window *aws, AW_CL cl_cbs)
 {
     AWUSE(aws);
 
@@ -582,7 +577,7 @@ AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector)
     return (AW_window *)aws;
 }
 
-void ad_field_create_cb(AW_window *aws, AW_CL cl_item_selector)
+static void ad_field_create_cb(AW_window *aws, AW_CL cl_item_selector)
 {
     GB_push_transaction(gb_main);
     char *name = aws->get_root()->awar(AWAR_FIELD_CREATE_NAME)->read_string();
@@ -658,7 +653,7 @@ void ad_spec_create_field_items(AW_window *aws) {
 
 #include <probe_design.hxx>
 
-void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs  ){
+static void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs) {
     struct adaqbsstruct *cbs        = (struct adaqbsstruct *)_cbs;
     nt_assert(cbs->selector->type == AWT_QUERY_ITEM_SPECIES);
     GB_begin_transaction(gb_main);
@@ -730,7 +725,8 @@ void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs  ){
     delete dest_field;
     delete ali_name;
 }
-void awtc_nn_search(AW_window *aww,AW_CL id ){
+
+static void awtc_nn_search(AW_window *aww,AW_CL id) { 
     GB_transaction dummy(gb_main);
     int pts = aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
     int max_hits = aww->get_root()->awar("next_neighbours/max_hits")->read_int();
@@ -774,11 +770,12 @@ void awtc_nn_search(AW_window *aww,AW_CL id ){
     }
     aww->update_selection_list(sel);
 }
-void awtc_move_hits(AW_window *,AW_CL id, AW_CL cbs){
+
+static void awtc_move_hits(AW_window *,AW_CL id, AW_CL cbs){
     awt_copy_selection_list_2_queried_species((struct adaqbsstruct *)cbs,(AW_selection_list *)id);
 }
 
-AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root,AW_CL cbs){
+static AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root,AW_CL cbs){
     static AW_window_simple *aws = 0;
     if (aws){
         return (AW_window *)aws;
@@ -813,7 +810,7 @@ AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root,AW_CL cbs){
     return (AW_window *)aws;
 }
 
-AW_window *ad_spec_next_neighbours_create(AW_root *aw_root,AW_CL cbs){
+static AW_window *ad_spec_next_neighbours_create(AW_root *aw_root,AW_CL cbs){
     static AW_window_simple *aws = 0;
     if (aws){
         return (AW_window *)aws;
@@ -924,10 +921,10 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     if (organismWindow) aws->create_menu(0,   "ORGANISM",     "O", "spa_organism.hlp",  AD_F_ALL );
     else                aws->create_menu(0,   "SPECIES",     "S", "spa_species.hlp",  AD_F_ALL );
 
-    aws->insert_menu_topic("species_delete",        "Delete",        "D","spa_delete.hlp",   AD_F_ALL,   (AW_CB)ad_species_delete_cb, 0, 0);
-    aws->insert_menu_topic("species_rename",        "Rename ...",    "R","spa_rename.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_species_rename_window, 0);
-    aws->insert_menu_topic("species_copy",          "Copy ...",      "y","spa_copy.hlp", AD_F_ALL,   AW_POPUP, (AW_CL)create_species_copy_window, 0);
-    aws->insert_menu_topic("species_create",        "Create ...",    "C","spa_create.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_species_create_window, 0);
+    aws->insert_menu_topic("species_delete",        "Delete",        "D","spa_delete.hlp",   AD_F_ALL,   ad_species_delete_cb, 0, 0);
+    aws->insert_menu_topic("species_rename",        "Rename",        "R","spa_rename.hlp",   AD_F_ALL,   ad_species_rename_cb, 0, 0);
+    aws->insert_menu_topic("species_copy",          "Copy",          "y","spa_copy.hlp", AD_F_ALL,   ad_species_copy_cb, 0, 0);
+    aws->insert_menu_topic("species_create",        "Create",        "C","spa_create.hlp",   AD_F_ALL,   AW_POPUP, (AW_CL)create_species_create_window, 0);
     aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI","S","sp_sp_2_ext.hlp",AD_F_ALL,    (AW_CB)move_species_to_extended, 0, 0);
     aws->insert_separator();
 
