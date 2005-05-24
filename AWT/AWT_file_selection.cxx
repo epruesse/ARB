@@ -562,8 +562,10 @@ void awt_create_selection_box(AW_window *aws, const char *awar_prefix,const char
 {
     AW_root             *aw_root = aws->get_root();
     struct adawcbstruct *acbs    = new adawcbstruct;
+    memset(acbs, 0, sizeof(*acbs));
 
     acbs->aws = (AW_window *)aws;
+    acbs->awr = aw_root;
     acbs->pwd = strdup(pwd);
     {
         char *multiple_dirs_in_pwd = strchr(acbs->pwd, '^');

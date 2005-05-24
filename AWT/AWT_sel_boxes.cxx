@@ -8,6 +8,7 @@
 
 #include <arbdb.h>
 #include <arbdbt.h>
+#include <ad_config.h>
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
@@ -52,18 +53,20 @@ void awt_create_selection_list_on_ad_cb(GBDATA *dummy, struct adawcbstruct *cbs)
 }
 
 void awt_create_selection_list_on_ad(GBDATA *gb_main,AW_window *aws, const char *varname,const char *comm)
-    // if comm is set then only those alignments are taken
-    // which can be parsed by comm
+// if comm is set then only those alignments are taken
+// which can be parsed by comm
 {
-    AW_selection_list*   id;
-    GBDATA              *gb_presets;
-    struct adawcbstruct *cbs;
+    AW_selection_list *id;
+    GBDATA            *gb_presets;
 
     GB_push_transaction(gb_main);
 
-    id           = aws->create_selection_list(varname,0,"",20,3);
-    cbs          = new adawcbstruct;
+    id  = aws->create_selection_list(varname,0,"",20,3);
+    struct adawcbstruct *cbs = new adawcbstruct;
+    memset(cbs, 0, sizeof(*cbs));
+
     cbs->aws     = aws;
+    cbs->awr     = aws->get_root();
     cbs->gb_main = gb_main;
     cbs->id      = id;
     cbs->comm    = 0; if (comm) cbs->comm = strdup(comm);
@@ -104,15 +107,18 @@ void awt_create_selection_list_on_trees_cb(GBDATA *dummy, struct adawcbstruct *c
 void awt_create_selection_list_on_trees(GBDATA *gb_main,AW_window *aws,const char *varname)
 {
     AW_selection_list *id;
-    GBDATA  *gb_tree_data;
-    struct adawcbstruct *cbs;
+    GBDATA            *gb_tree_data;
+    
     GB_push_transaction(gb_main);
 
     id = aws->create_selection_list(varname,0,"",40,8);
-    cbs = new adawcbstruct;
-    cbs->aws = aws;
+    struct adawcbstruct *cbs = new adawcbstruct;
+    memset(cbs, 0, sizeof(*cbs));
+
+    cbs->aws     = aws;
+    cbs->awr     = aws->get_root();
     cbs->gb_main = gb_main;
-    cbs->id = id;
+    cbs->id      = id;
 
     awt_create_selection_list_on_trees_cb(0,cbs);
 
@@ -333,6 +339,12 @@ void awt_create_selection_list_on_configurations_cb(GBDATA *dummy, struct adawcb
     cbs->aws->clear_selection_list(cbs->id);
     GBDATA *gb_configuration_data = GB_search(cbs->gb_main,AWAR_CONFIG_DATA,GB_CREATE_CONTAINER);
     GBDATA *gb_config;
+
+#if defined(DEVEL_RALF)
+#warning use GBT_get_configuration_names here and skip renaming here
+#endif // DEVEL_RALF
+
+
     for (gb_config = GB_find(gb_configuration_data,0,0,down_level);
          gb_config;
          gb_config = GB_find(gb_config,0,0,this_level | search_next))
@@ -368,12 +380,15 @@ void awt_create_selection_list_on_configurations(GBDATA *gb_main,AW_window *aws,
 {
     AW_selection_list *id;
     GBDATA  *gb_configuration_data;
-    struct adawcbstruct *cbs;
     GB_push_transaction(gb_main);
 
-    id           = aws->create_selection_list(varname,0,"",40,15);
-    cbs          = new adawcbstruct;
+    id = aws->create_selection_list(varname,0,"",40,15);
+    
+    struct adawcbstruct *cbs = new adawcbstruct;
+    memset(cbs, 0, sizeof(*cbs));
+
     cbs->aws     = aws;
+    cbs->awr     = aws->get_root();
     cbs->gb_main = gb_main;
     cbs->id      = id;
 
@@ -392,6 +407,10 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
     char   *result                = 0;
     GBDATA *gb_configuration_data = GB_search(gb_main,AWAR_CONFIG_DATA,GB_CREATE_CONTAINER);
     GBDATA *gb_config;
+
+#if defined(DEVEL_RALF)
+#warning use GBT_get_configuration_names here and skip renaming here
+#endif // DEVEL_RALF
 
     for (gb_config = GB_find(gb_configuration_data,0,0,down_level);
          gb_config;
