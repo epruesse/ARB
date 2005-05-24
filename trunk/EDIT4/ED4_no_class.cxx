@@ -6,6 +6,8 @@
 
 #include <arbdb.h>
 #include <arbdbt.h>
+#include <ad_config.h>
+
 #include <aw_root.hxx>
 #include <aw_keysym.hxx>
 #include <aw_window.hxx>
@@ -13,7 +15,8 @@
 #include <AW_helix.hxx>
 #include <awt_seq_colors.hxx>
 #include <awt.hxx>
-#include <awtc_rename.hxx>
+#include <awt_changekey.hxx>
+#include <AW_rename.hxx>
 
 #include <st_window.hxx>
 

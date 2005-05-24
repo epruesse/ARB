@@ -4,6 +4,7 @@
 
 #include <arbdb.h>
 #include <arbdbt.h>
+#include <ad_config.h>
 #include <aw_root.hxx>
 #include <aw_window.hxx>
 
