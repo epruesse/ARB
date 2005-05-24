@@ -719,6 +719,7 @@ void    AW_cb_struct::run_callback(void){
         //  the following callbacks are allowed even if disable_callbacks is true
         if( (f != (AW_CB)message_cb)       &&
             (f != (AW_CB)macro_message_cb) &&
+            (f != (AW_CB)modify_input_cb)  &&
             (f != (AW_CB)input_cb)         &&
             (f != (AW_CB)AW_POPUP_HELP)    &&
             (f != (AW_CB)AW_POPDOWN)       &&
