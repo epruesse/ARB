@@ -2,7 +2,7 @@
 .SUFFIXES: .o .c .cxx .depend
 
 include AD_MOBJECTS.h
-OBJECTS = $(GB_O) $(GB_T) $(GB_PP)
+OBJECTS = $(GB_O) $(GB_T) $(GB_PP) $(GB_X)
 
 $(MAIN): $(OBJECTS)
 	$(ARCPPLIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
@@ -35,11 +35,11 @@ tpro: $(GB_T:.o=.c)
 wc:
 	wc *.[ch]
 
-untouch:
-	/usr/5bin/touch 0101010192 ad_lpro.h ad_t_lpro.h ad_prot.h ad_t_prot.h
+#untouch:
+#	/usr/5bin/touch 0101010192 ad_lpro.h ad_t_lpro.h ad_prot.h ad_t_prot.h
 
-luntouch:
-	/usr/5bin/touch 0101010192 ad_lpro.h ad_t_lpro.h
+#luntouch:
+#	/usr/5bin/touch 0101010192 ad_lpro.h ad_t_lpro.h
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
@@ -57,6 +57,13 @@ depend.init:
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+ad_config.o: ad_config.h
+ad_config.o: ad_prot.h
+ad_config.o: ad_t_prot.h
+ad_config.o: arb_assert.h
+ad_config.o: arbdb.h
+ad_config.o: arbdbt.h
 
 ad_core.o: ad_lpro.h
 ad_core.o: ad_prot.h
@@ -272,6 +279,7 @@ adTest.o: adtune.h
 adTest.o: arb_assert.h
 adTest.o: arbdb.h
 
+adtools.o: ad_config.h
 adtools.o: ad_lpro.h
 adtools.o: ad_prot.h
 adtools.o: ad_t_lpro.h
