@@ -3,6 +3,12 @@
 symlink() {
     test -h $2 || (ln -sf $1 $2 || exit 1)
 }
+
+arbdb_symlink() {
+    symlink ../ARBDB/$1 ARBDBS/$1
+    symlink ../ARBDB/$1 ARBDB2/$1
+}
+        
 makedir() {
     mkdir -p $1 || exit 1
 }
@@ -103,6 +109,7 @@ symlink ../AISC_COM/C/server.h INCLUDE/server.h
 symlink ../AISC_COM/C/struct_man.h INCLUDE/struct_man.h
 symlink ../ARBDB/adGene.h INCLUDE/adGene.h
 symlink ../ARBDB/ad_prot.h INCLUDE/ad_prot.h
+symlink ../ARBDB/ad_config.h INCLUDE/ad_config.h
 symlink ../ARBDB/ad_t_prot.h INCLUDE/ad_t_prot.h
 symlink ../ARBDB/arb_assert.h INCLUDE/arb_assert.h
 symlink ../ARBDB/arbdb.h INCLUDE/arbdb.h
@@ -115,6 +122,7 @@ symlink ../AWT/awt_advice.hxx INCLUDE/awt_advice.hxx
 symlink ../AWT/awt_asciiprint.hxx INCLUDE/awt_asciiprint.hxx
 symlink ../AWT/awt_attributes.hxx INCLUDE/awt_attributes.hxx
 symlink ../AWT/awt_canvas.hxx INCLUDE/awt_canvas.hxx
+symlink ../AWT/awt_changekey.hxx INCLUDE/awt_changekey.hxx
 symlink ../AWT/awt_codon_table.hxx INCLUDE/awt_codon_table.hxx
 symlink ../AWT/awt_config_manager.hxx INCLUDE/awt_config_manager.hxx
 symlink ../AWT/awt_csp.hxx INCLUDE/awt_csp.hxx
@@ -174,6 +182,8 @@ symlink ../SEER/seer.hxx INCLUDE/seer.hxx
 symlink ../SERVERCNTRL/servercntrl.h INCLUDE/servercntrl.h
 symlink ../SEQ_QUALITY/seq_quality.h INCLUDE/seq_quality.h
 symlink ../SL/AW_HELIX/AW_helix.hxx INCLUDE/AW_helix.hxx
+symlink ../SL/AW_NAME/AW_rename.hxx INCLUDE/AW_rename.hxx
+symlink ../SL/DB_SCANNER/db_scanner.hxx INCLUDE/db_scanner.hxx
 symlink ../SL/HELIX/BI_helix.hxx INCLUDE/BI_helix.hxx
 symlink ../STAT/st_window.hxx INCLUDE/st_window.hxx
 symlink ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx
@@ -194,95 +204,52 @@ symlink ../../GL/glpng/glpng.h INCLUDE/GL/glpng.h
 
 # arbdb dirs
 
-symlink ../ARBDB/AD_MOBJECTS.h ARBDBS/AD_MOBJECTS.h
-symlink ../ARBDB/adReference.c ARBDBS/adReference.c
-symlink ../ARBDB/adTest.c ARBDBS/adTest.c
-symlink ../ARBDB/ad_core.c ARBDBS/ad_core.c
-symlink ../ARBDB/ad_load.c ARBDBS/ad_load.c
-symlink ../ARBDB/ad_lpro.h ARBDBS/ad_lpro.h
-symlink ../ARBDB/ad_prot.h ARBDBS/ad_prot.h
-symlink ../ARBDB/ad_save_load.c ARBDBS/ad_save_load.c
-symlink ../ARBDB/ad_t_lpro.h ARBDBS/ad_t_lpro.h
-symlink ../ARBDB/ad_t_prot.h ARBDBS/ad_t_prot.h
-symlink ../ARBDB/adcomm.c ARBDBS/adcomm.c
-symlink ../ARBDB/adcompr.c ARBDBS/adcompr.c
-symlink ../ARBDB/adhash.c ARBDBS/adhash.c
-symlink ../ARBDB/adindex.c ARBDBS/adindex.c
-symlink ../ARBDB/adlang1.c ARBDBS/adlang1.c
-symlink ../ARBDB/adlink.c ARBDBS/adlink.c
-symlink ../ARBDB/adlmacros.h ARBDBS/adlmacros.h
-symlink ../ARBDB/adlocal.h ARBDBS/adlocal.h
-symlink ../ARBDB/adlundo.h ARBDBS/adlundo.h
-symlink ../ARBDB/admalloc.c ARBDBS/admalloc.c
-symlink ../ARBDB/admap.c ARBDBS/admap.c
-symlink ../ARBDB/admap.h ARBDBS/admap.h
-symlink ../ARBDB/admath.c ARBDBS/admath.c
-symlink ../ARBDB/adoptimize.c ARBDBS/adoptimize.c
-symlink ../ARBDB/adperl.c ARBDBS/adperl.c
-symlink ../ARBDB/adquery.c ARBDBS/adquery.c
-symlink ../ARBDB/adregexp.h ARBDBS/adregexp.h
-symlink ../ARBDB/adseqcompr.c ARBDBS/adseqcompr.c
-symlink ../ARBDB/adseqcompr.h ARBDBS/adseqcompr.h
-symlink ../ARBDB/adsocket.c ARBDBS/adsocket.c
-symlink ../ARBDB/adsort.c ARBDBS/adsort.c
-symlink ../ARBDB/adstring.c ARBDBS/adstring.c
-symlink ../ARBDB/adsystem.c ARBDBS/adsystem.c
-symlink ../ARBDB/adtables.c ARBDBS/adtables.c
-symlink ../ARBDB/adtools.c ARBDBS/adtools.c
-symlink ../ARBDB/adtune.c ARBDBS/adtune.c
-symlink ../ARBDB/adtune.h ARBDBS/adtune.h
-symlink ../ARBDB/arbdb.c ARBDBS/arbdb.c
-symlink ../ARBDB/arbdb.h ARBDBS/arbdb.h
-symlink ../ARBDB/arbdbpp.cxx ARBDBS/arbdbpp.cxx
-symlink ../ARBDB/arbdbt.h ARBDBS/arbdbt.h
-symlink ../ARBDB/adRevCompl.c ARBDBS/adRevCompl.c
-symlink ../ARBDB/adGene.c ARBDBS/adGene.c
-symlink ../ARBDB/adGene.h ARBDBS/adGene.h
-
-symlink ../ARBDB/AD_MOBJECTS.h ARBDB2/AD_MOBJECTS.h
-symlink ../ARBDB/adReference.c ARBDB2/adReference.c
-symlink ../ARBDB/adTest.c ARBDB2/adTest.c
-symlink ../ARBDB/ad_core.c ARBDB2/ad_core.c
-symlink ../ARBDB/ad_load.c ARBDB2/ad_load.c
-symlink ../ARBDB/ad_lpro.h ARBDB2/ad_lpro.h
-symlink ../ARBDB/ad_prot.h ARBDB2/ad_prot.h
-symlink ../ARBDB/ad_save_load.c ARBDB2/ad_save_load.c
-symlink ../ARBDB/ad_t_lpro.h ARBDB2/ad_t_lpro.h
-symlink ../ARBDB/ad_t_prot.h ARBDB2/ad_t_prot.h
-symlink ../ARBDB/adcomm.c ARBDB2/adcomm.c
-symlink ../ARBDB/adcompr.c ARBDB2/adcompr.c
-symlink ../ARBDB/adhash.c ARBDB2/adhash.c
-symlink ../ARBDB/adindex.c ARBDB2/adindex.c
-symlink ../ARBDB/adlang1.c ARBDB2/adlang1.c
-symlink ../ARBDB/adlink.c ARBDB2/adlink.c
-symlink ../ARBDB/adlmacros.h ARBDB2/adlmacros.h
-symlink ../ARBDB/adlocal.h ARBDB2/adlocal.h
-symlink ../ARBDB/adlundo.h ARBDB2/adlundo.h
-symlink ../ARBDB/admalloc.c ARBDB2/admalloc.c
-symlink ../ARBDB/admap.c ARBDB2/admap.c
-symlink ../ARBDB/admap.h ARBDB2/admap.h
-symlink ../ARBDB/admath.c ARBDB2/admath.c
-symlink ../ARBDB/adoptimize.c ARBDB2/adoptimize.c
-symlink ../ARBDB/adperl.c ARBDB2/adperl.c
-symlink ../ARBDB/adquery.c ARBDB2/adquery.c
-symlink ../ARBDB/adregexp.h ARBDB2/adregexp.h
-symlink ../ARBDB/adseqcompr.c ARBDB2/adseqcompr.c
-symlink ../ARBDB/adseqcompr.h ARBDB2/adseqcompr.h
-symlink ../ARBDB/adsocket.c ARBDB2/adsocket.c
-symlink ../ARBDB/adsort.c ARBDB2/adsort.c
-symlink ../ARBDB/adstring.c ARBDB2/adstring.c
-symlink ../ARBDB/adsystem.c ARBDB2/adsystem.c
-symlink ../ARBDB/adtables.c ARBDB2/adtables.c
-symlink ../ARBDB/adtools.c ARBDB2/adtools.c
-symlink ../ARBDB/adtune.c ARBDB2/adtune.c
-symlink ../ARBDB/adtune.h ARBDB2/adtune.h
-symlink ../ARBDB/arbdb.c ARBDB2/arbdb.c
-symlink ../ARBDB/arbdb.h ARBDB2/arbdb.h
-symlink ../ARBDB/arbdbpp.cxx ARBDB2/arbdbpp.cxx
-symlink ../ARBDB/arbdbt.h ARBDB2/arbdbt.h
-symlink ../ARBDB/adRevCompl.c ARBDB2/adRevCompl.c
-symlink ../ARBDB/adGene.c ARBDB2/adGene.c
-symlink ../ARBDB/adGene.h ARBDB2/adGene.h
+arbdb_symlink AD_MOBJECTS.h
+arbdb_symlink adGene.c
+arbdb_symlink adGene.h
+arbdb_symlink adReference.c
+arbdb_symlink adRevCompl.c
+arbdb_symlink adTest.c
+arbdb_symlink ad_core.c
+arbdb_symlink ad_load.c
+arbdb_symlink ad_lpro.h
+arbdb_symlink ad_prot.h
+arbdb_symlink ad_save_load.c
+arbdb_symlink ad_t_lpro.h
+arbdb_symlink ad_t_prot.h
+arbdb_symlink adcomm.c
+arbdb_symlink ad_config.c
+arbdb_symlink ad_config.h
+arbdb_symlink adcompr.c
+arbdb_symlink adhash.c
+arbdb_symlink adindex.c
+arbdb_symlink adlang1.c
+arbdb_symlink adlink.c
+arbdb_symlink adlmacros.h
+arbdb_symlink adlocal.h
+arbdb_symlink adlundo.h
+arbdb_symlink admalloc.c
+arbdb_symlink admap.c
+arbdb_symlink admap.h
+arbdb_symlink admath.c
+arbdb_symlink adoptimize.c
+arbdb_symlink adperl.c
+arbdb_symlink adquery.c
+arbdb_symlink adregexp.h
+arbdb_symlink adseqcompr.c
+arbdb_symlink adseqcompr.h
+arbdb_symlink adsocket.c
+arbdb_symlink adsort.c
+arbdb_symlink adstring.c
+arbdb_symlink adsystem.c
+arbdb_symlink adtables.c
+arbdb_symlink adtools.c
+arbdb_symlink adtune.c
+arbdb_symlink adtune.h
+arbdb_symlink arbdb.c
+arbdb_symlink arbdb.h
+arbdb_symlink arbdbpp.cxx
+arbdb_symlink arbdbt.h
 
 # small dirs
 
