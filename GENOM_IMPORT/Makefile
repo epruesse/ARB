@@ -268,10 +268,10 @@ GAGenomImport.o: $(ARBHOME)/INCLUDE/arbdb.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GAGenomImport.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GAGenomImport.o: $(ARBHOME)/INCLUDE/awt.hxx
-GAGenomImport.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx
 
 GAGenomReference.o: GAGenomReference.h
 GAGenomReference.o: GAGenomUtilities.h

@@ -54,10 +54,11 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
-AWTI_import.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/GAGenomImport.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/GEN.hxx

@@ -79,6 +79,8 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/awt.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+EXP_interface.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+EXP_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 
 EXP_main.o: EXP.hxx
 EXP_main.o: EXP_interface.hxx
@@ -156,12 +158,15 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/awt.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+GEN_interface.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+GEN_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/ntree.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 
 GEN_map.o: ../NTREE/ad_spec.hxx
 GEN_map.o: EXP.hxx
 GEN_map.o: EXP_interface.hxx
+GEN_map.o: EXP_local.hxx
 GEN_map.o: GEN.hxx
 GEN_map.o: GEN_gene.hxx
 GEN_map.o: GEN_graphic.hxx
@@ -181,13 +186,13 @@ GEN_map.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_question.hxx
+GEN_map.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt_hotkeys.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
-GEN_map.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 GEN_nds.o: GEN_interface.hxx
@@ -201,6 +206,7 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt.hxx
+GEN_nds.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 
 GEN_tools.o: GEN.hxx

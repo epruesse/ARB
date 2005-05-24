@@ -42,6 +42,7 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/awt.hxx
+MG_alignment.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 
 MG_checkfield.o: merge.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -55,8 +56,10 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/awt.hxx
+MG_checkfield.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 
 MG_configs.o: merge.hxx
+MG_configs.o: $(ARBHOME)/INCLUDE/ad_config.h
 MG_configs.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_configs.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -80,6 +83,7 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/awt.hxx
+MG_extendeds.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 
 MG_gene_species.o: merge.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -109,10 +113,10 @@ MG_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+MG_main.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/awt.hxx
-MG_main.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx
 
 MG_names.o: merge.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -120,9 +124,9 @@ MG_names.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_names.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_names.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+MG_names.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MG_names.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx
 
 MG_preserves.o: merge.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -141,6 +145,7 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/smartptr.h
 MG_species.o: merge.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_species.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MG_species.o: $(ARBHOME)/INCLUDE/adGene.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_species.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_species.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -150,6 +155,9 @@ MG_species.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/awt.hxx
+MG_species.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+MG_species.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
+MG_species.o: $(ARBHOME)/INCLUDE/GEN.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/inline.h
 
 MG_trees.o: merge.hxx
