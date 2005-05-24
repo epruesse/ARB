@@ -2,7 +2,7 @@
 /*                                                                      */
 /*   File      : ad_config.c                                            */
 /*   Purpose   : handle editor configurations                           */
-/*   Time-stamp: <Mon May/23/2005 09:33 MET Coder@ReallySoft.de>        */
+/*   Time-stamp: <Tue May/24/2005 18:38 MET Coder@ReallySoft.de>        */
 /*                                                                      */
 /*                                                                      */
 /* Coded by Ralf Westram (coder@reallysoft.de) in May 2005              */
@@ -282,7 +282,7 @@ void GBT_free_config_parser(GBT_config_parser *parser) {
     free(parser);
 }
 
-#if defined(DEBUG) 
+#if defined(DEBUG) && 0 
 void GBT_test_config_parser(GBDATA *gb_main) {
     char **config_names = GBT_get_configuration_names(gb_main);
     if (config_names) {
