@@ -20,7 +20,7 @@ typedef char    *GB_CPNTR;      /* points into a piece of mem */
 #define GB_PATH_MAX 1024
 #define GBS_GLOBAL_STRING_SIZE 64000
 
-#define GBS_SPECIES_HASH_SIZE 100000L
+// #define GBS_SPECIES_HASH_SIZE 100000L (now calculated on the fly)
 
 // #ifndef GB_INCLUDED
 // #define GB_INCLUDED
