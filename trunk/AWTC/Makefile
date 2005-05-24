@@ -1,10 +1,14 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS = AWTC_next_neighbours.o AWTC_rename.o AWTC_names_admin.o \
-	AWTC_seq_search.o AWTC_fast_aligner.o AWTC_ClustalV.o AWTC_constructSequence.o \
+CPP_OBJECTS = \
+	AWTC_next_neighbours.o \
+	AWTC_seq_search.o \
+	AWTC_fast_aligner.o \
+	AWTC_ClustalV.o \
+	AWTC_constructSequence.o \
 	AWTC_submission.o
-# AWTC_names_client.o
+
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
@@ -66,16 +70,6 @@ AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/island_hopping.h
 
-AWTC_names_admin.o: awtc_rename.hxx
-AWTC_names_admin.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWTC_names_admin.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AWTC_names_admin.o: $(ARBHOME)/INCLUDE/arbdb.h
-AWTC_names_admin.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AWTC_names_admin.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AWTC_names_admin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWTC_names_admin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWTC_names_admin.o: $(ARBHOME)/INCLUDE/awt.hxx
-
 AWTC_next_neighbours.o: awtc_next_neighbours.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -85,21 +79,6 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/PT_com.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/servercntrl.h
-
-AWTC_rename.o: awtc_rename.hxx
-AWTC_rename.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWTC_rename.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AWTC_rename.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AWTC_rename.o: $(ARBHOME)/INCLUDE/arbdb.h
-AWTC_rename.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
-AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWTC_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWTC_rename.o: $(ARBHOME)/INCLUDE/client.h
-AWTC_rename.o: $(ARBHOME)/INCLUDE/names_client.h
-AWTC_rename.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
 AWTC_seq_search.o: awtc_seq_search.hxx
 AWTC_seq_search.o: $(ARBHOME)/INCLUDE/ad_prot.h
