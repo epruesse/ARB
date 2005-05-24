@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_configs.cxx                                         //
 //    Purpose   : Merge editor configurations                            //
-//    Time-stamp: <Tue Sep/28/2004 13:34 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri May/20/2005 19:51 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <arbdb.h>
 #include <arbdbt.h>
+#include <ad_config.h>
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>

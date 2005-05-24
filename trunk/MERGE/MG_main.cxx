@@ -11,7 +11,7 @@
 #include <aw_awars.hxx>
 #include <aw_global.hxx>
 #include <awt.hxx>
-#include <awtc_rename.hxx>
+#include <AW_rename.hxx>
 
 #include "merge.hxx"
 #include "mg_merge.hxx"

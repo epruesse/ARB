@@ -20,7 +20,7 @@
 #include <awt_advice.hxx>
 #include <awt_config_manager.hxx>
 
-#include <awtc_rename.hxx>
+#include <AW_rename.hxx>
 #include <awtc_submission.hxx>
 #include <gde.hxx>
 

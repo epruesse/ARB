@@ -11,6 +11,7 @@
 #include <aw_window.hxx>
 #include <awt.hxx>
 #include <aw_awars.hxx>
+#include <db_scanner.hxx>
 
 #define AWAR_SAI_DEST "tmp/focus/extended_dest"
 

@@ -7,7 +7,7 @@
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <awt.hxx>
-#include <awtc_rename.hxx>
+#include <AW_rename.hxx>
 #include <adGene.h>
 
 #ifndef _CCP_IOSTREAM

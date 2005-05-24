@@ -12,6 +12,7 @@
 #include <awt.hxx>
 #include <awt_pro_a_nucs.hxx>
 #include <awt_codon_table.hxx>
+#include <awt_changekey.hxx>
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
