@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.c                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Tue Mar/08/2005 16:03 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Mon May/23/2005 15:55 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -18,6 +18,28 @@
 
 #include "adGene.h"
 #include "arbdbt.h"
+
+//  -----------------------------------------------------------------
+//      bool GEN_is_genome_db(GBDATA *gb_main, int default_value)
+//  -----------------------------------------------------------------
+// default_value == 0 -> default to normal database
+//               == 1 -> default to GENOM database
+//               == -1 -> assume that type is already defined
+
+GB_BOOL GEN_is_genome_db(GBDATA *gb_main, int default_value) {
+    GBDATA *gb_genom_db = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
+
+    if (!gb_genom_db) {         // no DB-type entry -> create on with default
+        if (default_value == -1) {
+            GB_CORE;
+        }
+
+        gb_genom_db = GB_create(gb_main, GENOM_DB_TYPE, GB_INT);
+        GB_write_int(gb_genom_db, default_value);
+    }
+
+    return GB_read_int(gb_genom_db) != 0;
+}
 
 //  --------------
 //      genes:

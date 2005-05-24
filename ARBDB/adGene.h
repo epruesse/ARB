@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.h                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Thu Nov/18/2004 19:08 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Mon May/23/2005 15:54 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -20,11 +20,16 @@
 #endif
 
 #define GENOM_ALIGNMENT "ali_genom"
+#define GENOM_DB_TYPE "genom_db" // main flag (true=genom db, false/missing=normal db)
+
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+    GB_BOOL GEN_is_genome_db(GBDATA *gb_main, int default_value);
+    
     /* -------------------------------------------------------------------------------- */
     /* genes : */
 
