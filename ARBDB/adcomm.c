@@ -1725,13 +1725,25 @@ GB_ERROR gbcms_add_to_delete_list(GBDATA *gbd)
 ***************************************************************************************/
 long GB_read_clients(GBDATA *gbd)
 {
-    struct Hs_struct *hs;
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    if (!Main->local_mode) return -1;
-    hs = (struct Hs_struct *)Main->server_data;
-    if (!hs) return 0;
-    return (hs->nsoc);
+    GB_MAIN_TYPE *Main    = GB_MAIN(gbd);
+    long          clients = -1;
+
+    if (Main->local_mode) { /* i am the server */
+        struct Hs_struct *hs = (struct Hs_struct *)Main->server_data;
+        clients = hs ? hs->nsoc : 0;
+    }
+
+    return clients;
 }
+
+GB_BOOL GB_is_server(GBDATA *gbd) {
+    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+    return Main->local_mode;
+}
+GB_BOOL GB_is_client(GBDATA *gbd) {
+    return !GB_is_server(gbd);
+}
+
 /**************************************************************************************
                 Query in the server
 ***************************************************************************************/
