@@ -335,7 +335,7 @@ void        aw_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2);
 void        message_cb( AW_window *aw, AW_CL cd1 );
 // void        macro_message_cb( AW_window *aw, AW_CL cd1 );
 void        input_cb( AW_window *aw, AW_CL cd1 );
-
+void        modify_input_cb( AW_window *aw, AW_CL cl_mode, AW_CL cl_Default); // internal
 
 #else
 #error aw_window_Xm.hxx included twice
