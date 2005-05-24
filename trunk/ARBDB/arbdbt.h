@@ -42,9 +42,6 @@ typedef float GBT_LEN;
 #define AWAR_SAI_DATA           "extended_data"
 #define AWAR_SAI                "extended"
 
-#define AWAR_CONFIG_DATA        "configuration_data"
-#define AWAR_CONFIG             "configuration"
-
 #define AWAR_TREE_DATA          "tree_data"
 
 #define AWAR_ERROR_CONTAINER    "tmp/message/pending"
