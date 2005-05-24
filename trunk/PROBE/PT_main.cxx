@@ -55,8 +55,7 @@ extern "C" int server_shutdown(PT_main *pm,aisc_string passwd){
     aisc_broadcast(psg.com_so, 0,
                    "SERVER UPDATE BY ADMINISTRATOR!\nYou'll get the latest version. Your screen information will be lost, sorry!");
     /** shutdown **/
-    aisc_server_shutdown(psg.com_so);
-    exit(EXIT_SUCCESS);
+    aisc_server_shutdown_and_exit(psg.com_so, EXIT_SUCCESS); // never returns
     return 0;
 }
 extern "C" int broadcast(PT_main *main, int dummy )
@@ -282,9 +281,8 @@ int main(int argc, char **argv)
     printf("Init internal structs...\n");
     /****** all ok: main'loop' ********/
     if (stat(aname,&s_source)) {
-        aisc_server_shutdown(so);
         printf("PT_SERVER error while stat source %s\n",aname);
-        exit(EXIT_FAILURE);
+        aisc_server_shutdown_and_exit(so, EXIT_FAILURE); // never returns
     }
     build_flag = 0;
     if (stat(tname,&s_dest)) {
@@ -307,9 +305,8 @@ int main(int argc, char **argv)
 
     if (( error = pt_init_main_struct(aisc_main, params->db_server) ))
     {
-        aisc_server_shutdown(so);
         printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
-        exit(EXIT_FAILURE);
+        aisc_server_shutdown_and_exit(so, EXIT_FAILURE); // never returns
     }
     enter_stage_3_load_tree(aisc_main,tname);
 
@@ -317,7 +314,5 @@ int main(int argc, char **argv)
 
     printf("ok, server is running.\n");
     aisc_accept_calls(so);
-    aisc_server_shutdown(so);
-
-    return 0;       // never reached
+    aisc_server_shutdown_and_exit(so, EXIT_SUCCESS); // never returns
 }
