@@ -23,16 +23,28 @@ DESCRIPTION	Starts the 'NAME SERVER' to update names within the specified
 		Press the 'GO' button.
 
 NOTES		It is possible to link names.dat to a central names.dat, but you should
-                be aware, that there may occur temporary inconsitencies. When you didn't
-                use the NAME SERVER for 4 minutes (i.e. you didn't call 'Generate new names'
-                and you didn't import or create new species), these inconsistencies will not occur.
+                be aware, that there may occur temporary inconsitencies, if multiple users
+                use the nameserver at the same time.
 
-                The normal way to use a central NAME SERVER is to edit '$ARBHOME/lib/arb_tcp.dat'
-                and to specify a central server for ARB_NAME_SERVER. The drawback is: This currently
-                uses 'rsh' (not ssh), which makes it impossible in most environments.
+                The name server examines names.dat and terminates within 5-10 seconds if
+                the file changes. A message is written to the console window in either case. 
+
+                Another way to use a central NAME SERVER is to edit '$ARBHOME/lib/arb_tcp.dat'
+                and to specify a central server for ARB_NAME_SERVER.
+                This completely avoids any inconsistencies.
 
 EXAMPLES	None
 
-WARNINGS	None
+WARNINGS	Missing 'acc' fields are generated automatically by this function.
+
+                If there is some warning about duplicate entries, you REALLY should try
+                to understand the reason why this happens:
+
+                It only happens, when you have multiple species with the same 'acc' entry
+                (which is strongly unrecommended). To solve that problem either
+
+                - delete the duplicated species or
+                - modify duplicated acc entries by appending some personal suffix (e.g. your initials)
+
 
 BUGS		No bugs known
