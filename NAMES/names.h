@@ -1,14 +1,12 @@
 
-#define MAX_TRY 10
+#define MAX_TRY 20
+#define RETRY_SLEEP 3 // in seconds
 
-// Live time of a name server in milliseconds:
-#if defined(DEBUG)
-// debug: 30 seconds 
-#define TIME_OUT (1000*30)
-#else
-// release: 4 minutes
-#define TIME_OUT (1000*60*4)
-#endif // DEBUG
+// Lifetime of nameserver in seconds
+#define NAME_SERVER_TIMEOUT (15*60) // 15 minutes
+
+// Sleeptime of nameserver in seconds
+#define NAME_SERVER_SLEEP 5
 
 struct Hs_struct;
 struct AN_gl_struct {
