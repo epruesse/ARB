@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <signal.h>
@@ -890,15 +891,19 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons, cons
     AW_root *root = AW_root::THIS;
 
     AW_window_message *aw_msg;
-    char              *button_list;
+    char              *button_list  = strdup(buttons ? buttons : "OK");
+    static GB_HASH    *hash_windows = 0;
 
-    if (buttons) button_list = strdup( buttons );
-    else button_list         = strdup("OK");
+    if (button_list[0] == 0) {
+        // aw_assert(0);           // empty button_list
+        free(button_list);
+        button_list = strdup("Maybe ok,EXIT");
+        msg         = GBS_global_string_copy("%s\n(Program error - Unsure what happens when you click ok)", msg);
+    }
 
-    static GB_HASH *hash_windows = 0;
     if (!hash_windows) hash_windows = GBS_create_hash(256,0);
-    if (!msg) msg = "Unknown Message";
-    char *hindex = (char *)calloc(sizeof(char),strlen(msg) + strlen(button_list) + 3);
+    if (!msg) msg                   = "Unknown Message";
+    char *hindex                    = (char *)calloc(sizeof(char),strlen(msg) + strlen(button_list) + 3);
     sprintf(hindex,"%s&&%s",msg,button_list);
 
     aw_msg = (AW_window_message *)GBS_read_hash(hash_windows,hindex);
@@ -1036,7 +1041,72 @@ int aw_string_selection_button() {
 #define AW_INPUT_AWAR "tmp/input/string"
 #define AW_INPUT_TITLE_AWAR "tmp/input/title"
 
-void input_cb( AW_window *aw, AW_CL cd1 ) {
+void modify_input_cb( AW_window *aw, AW_CL cl_mode, AW_CL cl_Default) {
+    int         mode        = (int)cl_mode; // 1 = '<' 0 = '>'
+    const char *Default     = (const char *)cl_Default;
+    AW_root    *aw_root     = aw->get_root();
+    AW_awar    *awar        = aw_root->awar(AW_INPUT_AWAR);
+    char       *content     = awar->read_string();
+    bool        found_lower = false;
+    bool        found_upper = false;
+
+    for (int i = 0; content[i]; ++i) {
+        if (isalpha(content[i])) {
+            if (islower(content[i])) found_lower = true;
+            else found_upper = true;
+        }
+    }
+
+    enum { MAKE_EMPTY, MAKE_LOWER, MAKE_CAPS, MAKE_UPPER, MAKE_DEFAULT, MAKE_UNKNOWN } make = MAKE_UNKNOWN;
+
+    printf("found_upper=%i found_lower=%i content='%s'\n", int(found_upper), int(found_lower), content);
+
+    if (found_upper) {
+        if (found_lower) make = mode ? MAKE_LOWER : MAKE_UPPER; // mixed case
+        else make = mode ? MAKE_CAPS : MAKE_DEFAULT; // upper case
+    }
+    else if (found_lower) make = mode ? MAKE_EMPTY : MAKE_CAPS; // lower case
+    else {
+        if (content[0]) make = mode ? MAKE_EMPTY : MAKE_DEFAULT; // non-alpha
+        else make = mode ? MAKE_UNKNOWN : MAKE_DEFAULT; // empty
+    }
+
+    printf("make=%i\n", int(make));
+
+    switch (make) {
+        case MAKE_EMPTY:
+            content[0] = 0;
+            break;
+        case MAKE_DEFAULT:
+            free(content);
+            content    = strdup(Default);
+            break;
+        case MAKE_UNKNOWN:
+            break;
+        default: {
+            bool last_was_space = true;
+            for (int i = 0; content[i]; ++i) {
+                if (isalpha(content[i])) {
+                    switch (make) {
+                        case MAKE_LOWER: content[i] = tolower(content[i]); break;
+                        case MAKE_UPPER: content[i] = toupper(content[i]); break;
+                        case MAKE_CAPS: content[i]  = (last_was_space ? toupper : tolower)(content[i]); break;
+                        default : aw_assert(0); break;
+                    }
+                    last_was_space = false;
+                }
+                else {
+                    last_was_space = isspace(content[i]);
+                }
+            }
+        }
+    }
+
+    awar->write_string(content);
+    free(content);
+}
+
+void input_cb( AW_window *aw, AW_CL cd1) {
     // any previous contents were passed to client (who is responsible to free the resources)
     // so DONT free aw_input_cb_result here
 
@@ -1072,37 +1142,31 @@ char *aw_input( const char *title, const char *prompt, const char *awar_value, c
         // but it's not working at all
 
         aw_msg->init( root, title, false);
-//         aw_msg->at_set_min_size(600, 300);
 
         aw_msg->label_length( 0 );
         aw_msg->button_length( INPUT_SIZE+1 );
         aw_msg->auto_space( 10, 10 );
 
         aw_msg->at( 10, 10 );
-//         aw_msg->at_set_to( AW_TRUE, AW_FALSE, , 30 );
         aw_msg->create_button( 0,AW_INPUT_TITLE_AWAR );
-//         aw_msg->at_unset_to();
-
-//         aw_msg->at_newline();
 
         aw_msg->at( 10, 40 );
-//         aw_msg->at_set_to( AW_TRUE, AW_FALSE, -7, 30 );
         aw_msg->create_input_field((char *)AW_INPUT_AWAR, INPUT_SIZE);
-//         aw_msg->at_unset_to();
-
-//         aw_msg->at_newline();
 
         aw_msg->at( 10, 70 );
         aw_msg->button_length(7);
 
-//         aw_msg->at_set_to( AW_FALSE, AW_FALSE, 100, 40 ); // defines button size
-//          aw_msg->highlight();
         aw_msg->callback(input_cb, 0);
         aw_msg->create_button( "OK", "OK", "O" );
-//         aw_msg->at_unset_to();
 
         aw_msg->callback(input_cb, -1);
         aw_msg->create_button( "CANCEL", "CANCEL", "C" );
+
+        aw_msg->callback(modify_input_cb, 1, (AW_CL)default_input);
+        aw_msg->create_button("lower", "<", 0);
+        
+        aw_msg->callback(modify_input_cb, 0, (AW_CL)default_input);
+        aw_msg->create_button("upper", ">", 0);
     }
 
     aw_msg->window_fit();
