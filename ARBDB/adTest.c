@@ -235,13 +235,12 @@ void GB_dump(GBDATA *gbd) {
     }
 
     if (father) {
-        GB_MAIN_TYPE *Main        = GBCONTAINER_MAIN(father);
-        int          is_db_server = Main->local_mode ? 1 : 0; /* 0 = no (client); 1 = yes (server); */
+        GB_BOOL is_db_server = GB_is_server(gbd);
 
-        if (is_db_server == 1 && gbd->server_id != GBTUM_MAGIC_NUMBER) {
+        if (is_db_server && gbd->server_id != GBTUM_MAGIC_NUMBER) {
             key_name = GBS_global_string("<element with illegal server-id %p>", (void*)gbd->server_id);
         }
-        else if (is_db_server == 1 && father->server_id != GBTUM_MAGIC_NUMBER) {
+        else if (is_db_server && father->server_id != GBTUM_MAGIC_NUMBER) {
             key_name = GBS_global_string("<elements parent has illegal server-id %p>", (void*)father->server_id);
             father   = 0; /* avoids crashes below */
         }
