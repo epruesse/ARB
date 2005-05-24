@@ -2,7 +2,10 @@
 #include <cstring>
 #include <awt.hxx>
 #include <awt_canvas.hxx>
+#include <awt_changekey.hxx>
 #include <aw_awars.hxx>
+#include <db_scanner.hxx>
+
 #include <arbdbt.h>
 #include <probe_design.hxx>
 
@@ -109,18 +112,18 @@ extern "C" GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_speci
 //      static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range)
 //  ---------------------------------------------------------------------------------------------------------
 static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range) {
-    GBDATA   *gb_species = 0;
+    GBDATA   *gb_organism = 0;
     GB_ERROR  error      = 0;
 
     switch (range) {
         case AWT_QUERY_CURRENT_SPECIES: {
             char *species_name = aw_root->awar(AWAR_ORGANISM_NAME)->read_string();
-            gb_species         = GBT_find_species(gb_main, species_name);
+            gb_organism         = GEN_find_organism(gb_main, species_name);
             free(species_name);
             break;
         }
         case AWT_QUERY_MARKED_SPECIES: {
-            GBDATA *gb_organism = GEN_first_marked_organism(gb_main);
+            gb_organism = GEN_first_marked_organism(gb_main);
             GBDATA *gb_pseudo   = GEN_first_marked_pseudo_species(gb_main);
 
             gb_assert(old_species_marks == 0); // this occurs in case of recursive calls (not possible)
@@ -129,16 +132,13 @@ static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QU
                 old_species_marks = GBT_store_marked_species(gb_main, 1); // store and unmark marked species
 
                 error                  = GBT_with_stored_species(gb_main, old_species_marks, GEN_mark_organism_or_corresponding_organism, 0); // mark organisms related with stored
-                if (!error) gb_species = GEN_first_marked_organism(gb_main);
-            }
-            else {
-                gb_species = gb_organism;
+                if (!error) gb_organism = GEN_first_marked_organism(gb_main);
             }
 
             break;
         }
         case AWT_QUERY_ALL_SPECIES: {
-            gb_species = GBT_first_species(gb_main);
+            gb_organism = GEN_first_organism(gb_main);
             break;
         }
         default: {
@@ -148,22 +148,22 @@ static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QU
     }
 
     if (error) GB_export_error(error);
-    return gb_species ? GEN_expect_gene_data(gb_species) : 0;
+    return gb_organism ? GEN_expect_gene_data(gb_organism) : 0;
 }
 //  -------------------------------------------------------------------------------------------
 //      static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE range)
 //  -------------------------------------------------------------------------------------------
 static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE range) {
-    GBDATA *gb_species = 0;
+    GBDATA *gb_organism = 0;
     switch (range) {
         case AWT_QUERY_CURRENT_SPECIES: {
             break;
         }
         case AWT_QUERY_MARKED_SPECIES: {
-            GBDATA *gb_last_species = GB_get_father(gb_gene_data);
-            gb_species              = GEN_next_marked_organism(gb_last_species);
+            GBDATA *gb_last_organism = GB_get_father(gb_gene_data);
+            gb_organism              = GEN_next_marked_organism(gb_last_organism);
 
-            if (!gb_species && old_species_marks) { // got all -> clean up
+            if (!gb_organism && old_species_marks) { // got all -> clean up
                 GBT_restore_marked_species(gb_main, old_species_marks);
                 free(old_species_marks);
                 old_species_marks = 0;
@@ -172,8 +172,8 @@ static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE rang
             break;
         }
         case AWT_QUERY_ALL_SPECIES: {
-            GBDATA *gb_last_species = GB_get_father(gb_gene_data);
-            gb_species              = GBT_next_species(gb_last_species);
+            GBDATA *gb_last_organism = GB_get_father(gb_gene_data);
+            gb_organism              = GEN_next_organism(gb_last_organism);
             break;
         }
         default: {
@@ -182,7 +182,7 @@ static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE rang
         }
     }
 
-    return gb_species ? GEN_expect_gene_data(gb_species) : 0;
+    return gb_organism ? GEN_expect_gene_data(gb_organism) : 0;
 }
 
 //  ----------------------------------------------------
@@ -202,7 +202,8 @@ struct ad_item_selector GEN_item_selector         = {
     GEN_get_next_gene_data,
     GEN_first_gene_rel_gene_data,
     GEN_next_gene,
-    GEN_get_current_gene
+    GEN_get_current_gene,
+    &AWT_organism_selector
 };
 
 //  -------------------------------------------------------
@@ -318,30 +319,6 @@ void GEN_update_combined_cb(AW_root *awr) {
     free(gene);
     free(organism);
 }
-
-//  -----------------------------------------------------------------
-//      bool GEN_is_genome_db(GBDATA *gb_main, int default_value)
-//  -----------------------------------------------------------------
-// default_value == 0 -> default to normal database
-//               == 1 -> default to GENOM database
-//               == -1 -> assume that type is already defined
-
-bool GEN_is_genome_db(GBDATA *gb_main, int default_value) {
-    GB_transaction  dummy(gb_main);
-    GBDATA         *gb_genom_db = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
-
-    if (!gb_genom_db) {         // no DB-type entry -> create on with default
-        if (default_value == -1) {
-            GB_CORE;
-        }
-
-        gb_genom_db = GB_create(gb_main, GENOM_DB_TYPE, GB_INT);
-        GB_write_int(gb_genom_db, default_value);
-    }
-
-    return GB_read_int(gb_genom_db) != 0;
-}
-
 
 //  -------------------------------------------------------------------
 //      void GEN_create_awars(AW_root *aw_root, AW_default aw_def)
