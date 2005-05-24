@@ -1075,6 +1075,9 @@ static bool terminal_has_gap_or_base_at_current_position(ED4_base *terminal, boo
     if (terminal->is_sequence_terminal()) {
         ED4_sequence_terminal *seqTerm = terminal->to_sequence_terminal();
         int len;
+#if defined(DEVEL_RALF)
+#warning crashes when used on consensus - press ctrl down on consensus to provoke SIGSEGV
+#endif // DEVEL_RALF
         char *seq = seqTerm->resolve_pointer_to_string_copy(&len);
         if (seq) {
             test_succeeded =
