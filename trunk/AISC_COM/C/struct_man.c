@@ -10,8 +10,8 @@
 
 /********************************* HASH TABLES ****************************/
 #define CORE
-#define HASH_SIZE 256
-#define TRF_HASH_SIZE 1024
+#define HASH_SIZE 103123
+#define TRF_HASH_SIZE 103123
 
 struct aisc_hash_node {
     char           *key;
@@ -46,8 +46,9 @@ int aisc_hash(char *key,int size)
 void
 aisc_free_key(struct aisc_hash_node **table,char *key)
 {
-    long             i, size;
+    long                   i, size;
     struct aisc_hash_node *hn, *hhn;
+
     if (table && table[0]) {
         size = table[0]->data;
         i = aisc_hash(key, (int)size);
