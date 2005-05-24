@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Fri Oct/01/2004 20:29 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue May/24/2005 19:04 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2004     //
@@ -28,12 +28,12 @@
 #include <smartptr.h>
 #include <output.h>
 
-// #include <arbdb.h>
 #include <arbdbt.h>
 
 #define NEED_encodeTreeNode
 #define NEED_saveProbeContainerToString
 #define NEED_setDatabaseState
+
 #include "../common.h"
 #include "../path_code.h"
 #include "../read_config.h"
@@ -161,9 +161,6 @@ public:
     }
 };
 
-//  -------------------------------------------------------
-//      static void my_output(const char *format, ...)
-//  -------------------------------------------------------
 // output-handler for other modules
 
 static void my_output(const char *format, ...) {
@@ -174,9 +171,6 @@ static void my_output(const char *format, ...) {
 
 // command line arguments:
 
-//  -------------------------
-//      struct Parameter
-//  -------------------------
 struct Parameter {
     string db_name;
     string tree_name;
@@ -191,9 +185,6 @@ struct Parameter {
 
 static Parameter para;
 
-//  -----------------------------
-//      void helpArguments()
-//  -----------------------------
 void helpArguments() {
     fprintf(stderr,
             "\n"
@@ -212,9 +203,6 @@ void helpArguments() {
             );
 }
 
-//  --------------------------------------------------------
-//      GB_ERROR scanArguments(int argc,  char *argv[])
-//  --------------------------------------------------------
 GB_ERROR scanArguments(int argc,  char *argv[]) {
     GB_ERROR error = 0;
 
@@ -261,43 +249,10 @@ GB_ERROR scanArguments(int argc,  char *argv[]) {
     return error;
 }
 
-//  -----------------------------------------------------------------------
-//      void generate_GBT_TREE_hash_rek(GBT_TREE *node, GB_HASH *hash)
-//  -----------------------------------------------------------------------
-void generate_GBT_TREE_hash_rek(GBT_TREE *node, GB_HASH *hash) {
-    if (node->is_leaf) {
-        if (node->gb_node) {
-            GBDATA *gb_name = GB_find(node->gb_node,"name",0,down_level);
-            if (gb_name) {
-                GBS_write_hash(hash,GB_read_char_pntr(gb_name),(long)node);
-            }
-        }
-    }
-    else {
-        generate_GBT_TREE_hash_rek(node->leftson,hash);
-        generate_GBT_TREE_hash_rek(node->rightson,hash);
-    }
-}
-
-//  --------------------------------------------------------
-//      GB_HASH *generate_GBT_TREE_hash(GBT_TREE *root)
-//  --------------------------------------------------------
-GB_HASH *generate_GBT_TREE_hash(GBT_TREE *root) {
-    GB_HASH *hash = GBS_create_hash(GBS_SPECIES_HASH_SIZE,0);
-    generate_GBT_TREE_hash_rek(root,hash);
-    return hash;
-}
-
-//  -------------------------------
-//      void PG_status(double)
-//  -------------------------------
 int PG_status(double) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------------------
-//      static GB_ERROR save(GBDATA *pb_main, const string& nameS, const char *state)
-// ---------------------------------------------------------------------------------------
 static GB_ERROR save(GBDATA *pb_main, const string& nameS, const char *state) {
     GB_ERROR error = setDatabaseState(pb_main, 0, state);
 
@@ -310,9 +265,6 @@ static GB_ERROR save(GBDATA *pb_main, const string& nameS, const char *state) {
     return error;
 }
 
-//  ---------------------------------------
-//      int percent(int part, int all)
-//  ---------------------------------------
 int percent(int part, int all) {
     if (part) {
         pg_assert(all>0);
