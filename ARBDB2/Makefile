@@ -3,7 +3,7 @@
 
 include AD_MOBJECTS.h
 
-ACC_OBJECTS = $(GB_O) $(GB_T)
+ACC_OBJECTS = $(GB_O) $(GB_T) $(GB_X)
 
 $(MAIN): $(ACC_OBJECTS)
 	$(ARLIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(ACC_OBJECTS)
@@ -28,6 +28,13 @@ links:
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+ad_config.o: ad_config.h
+ad_config.o: ad_prot.h
+ad_config.o: ad_t_prot.h
+ad_config.o: arbdb.h
+ad_config.o: arbdbt.h
+ad_config.o: $(ARBHOME)/INCLUDE/arb_assert.h
 
 ad_core.o: ad_lpro.h
 ad_core.o: ad_prot.h
@@ -243,6 +250,7 @@ adTest.o: adtune.h
 adTest.o: arbdb.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_assert.h
 
+adtools.o: ad_config.h
 adtools.o: ad_lpro.h
 adtools.o: ad_prot.h
 adtools.o: ad_t_lpro.h
