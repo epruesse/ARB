@@ -498,7 +498,7 @@ GB_ERROR ST_ML::init(	const char *tree_name,
         error = tree_root->tree->remove_leafs(gb_main,AWT_REMOVE_DELETED);
         if (error) return error;
         char *l,*n;
-        keep_species_hash = GBS_create_hash(GBS_SPECIES_HASH_SIZE,0);
+        keep_species_hash = GBS_create_hash(GBT_get_species_hash_size(gb_main), 0);
         for (l = (char *)species_names; l; l = n){
             n = strchr(l,1);
             if (n) *n = 0;

@@ -700,7 +700,7 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
     {
         list<PartialSequence> partial;
         {
-            GB_HASH *partial_hash = GBS_create_hash(GBS_SPECIES_HASH_SIZE,0);;
+            GB_HASH *partial_hash = GBS_create_hash(GBT_get_species_hash_size(gb_main), 0);
             int      marked_found = 0;
 
             for (GBDATA *gb_marked = GBT_first_marked_species(gb_main);
