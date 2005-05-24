@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Tue Jan/25/2005 16:35 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue May/24/2005 13:23 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -15,8 +15,10 @@
 
 #include <awt.hxx>
 #include <awt_canvas.hxx>
+#include <awt_changekey.hxx>
 #include <arbdbt.h>
 #include <aw_awars.hxx>
+#include <db_scanner.hxx>
 
 #include "EXP.hxx"
 #include "EXP_interface.hxx"
@@ -210,7 +212,8 @@ struct ad_item_selector EXP_item_selector =
         EXP_get_next_experiment_data,
         EXP_first_experiment_rel_experiment_data,
         EXP_next_experiment,
-        EXP_get_current_experiment
+        EXP_get_current_experiment,
+        &AWT_organism_selector
     };
 
 
