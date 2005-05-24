@@ -1322,9 +1322,9 @@ struct Hs_struct *aisc_accept_calls(struct Hs_struct *hs)
     return hs;
 }
 
-/************************** aisc_server_shutdown *********************/
+/************************** aisc_server_shutdown_and_exit *********************/
 
-void aisc_server_shutdown(struct Hs_struct *hs){
+void aisc_server_shutdown_and_exit(struct Hs_struct *hs, int exitcode) {
     struct Socinf *si;
 
     for(si=hs->soci; si; si=si->next){
@@ -1334,8 +1334,10 @@ void aisc_server_shutdown(struct Hs_struct *hs){
     shutdown(hs->hso, 2);
     close(hs->hso);
     if (hs->unix_name) unlink(hs->unix_name);
-    printf("Server terminating now.\n");
-    exit(0);
+
+    printf("Server terminates with code %i.\n", exitcode);
+
+    exit(exitcode);
 }
 
 
