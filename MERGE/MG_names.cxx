@@ -4,7 +4,7 @@
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
-#include <awtc_rename.hxx>
+#include <AW_rename.hxx>
 #include "merge.hxx"
 
 AW_window *MG_merge_names_cb(AW_root *awr){

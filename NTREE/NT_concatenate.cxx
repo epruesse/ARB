@@ -26,9 +26,10 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <awt.hxx>
-#include <awtc_rename.hxx>
+#include <AW_rename.hxx>
 #include <awt_tree.hxx>
 #include <awt_canvas.hxx>
+#include <awt_changekey.hxx>
 #include "awtlocal.hxx"
 #include <aw_question.hxx>
 #include "nt_concatenate.hxx"

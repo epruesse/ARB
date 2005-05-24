@@ -8,6 +8,8 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <awt.hxx>
+#include <awt_changekey.hxx>
+#include <db_scanner.hxx>
 #include "merge.hxx"
 #include <inline.h>
 #include <GEN.hxx>

@@ -7,6 +7,7 @@
 #include <aw_window.hxx>
 #include <awt.hxx>
 #include <aw_awars.hxx>
+#include <db_scanner.hxx>
 #include "merge.hxx"
 
 #define AWAR_EX_NAME1 "tmp/merge1/extended_name"

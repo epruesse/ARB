@@ -8,6 +8,7 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <awt.hxx>
+#include <awt_changekey.hxx>
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
