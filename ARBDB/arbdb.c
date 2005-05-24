@@ -2288,36 +2288,29 @@ int GB_info(GBDATA *gbd)
 
 long GB_number_of_subentries(GBDATA *gbd)
 {
-    GBCONTAINER *gbc;
-    GB_TYPES type = (GB_TYPES)GB_TYPE(gbd);
+    long subentries = -1; 
 
-    switch(type)
-    {
-        case GB_DB:         /* @@@ client size < actual size!!! => use GB_rescan_number_of_subentries() from client */
-            gbc = (GBCONTAINER *)gbd;
-            return gbc->d.size;
-        default:
-            return -1;
+    if (GB_TYPE(gbd) == GB_DB) {
+        GBCONTAINER *gbc = (GBCONTAINER*)gbd;
+
+        if (GB_is_server(gbd)) {
+            subentries = gbc->d.size;
+        }
+        else { /* client really needs to count entries in header */
+            int                           end    = gbc->d.nheader;
+            struct gb_header_list_struct *header = GB_DATA_LIST_HEADER(gbc->d);
+            int                           index;
+
+            subentries = 0;
+            for (index = 0; index<end; index++) {
+                if ((int)header[index].flags.changed < gb_deleted) subentries++;
+            }
+        }
     }
+
+    return subentries;
 }
 
-long GB_rescan_number_of_subentries(GBDATA *gbd) {
-    /* this is just a workaround for the above function, cause GB_number_of_subentries does not work in clients; it's used in ARB_EDIT4 */
-
-    GBCONTAINER *gbc = (GBCONTAINER *)gbd;
-    /*    int userbit = GBCONTAINER_MAIN(gbc)->users[0]->userbit; */
-    int index;
-    int end = gbc->d.nheader;
-    struct gb_header_list_struct *header;
-    long count = 0;
-
-    header = GB_DATA_LIST_HEADER(gbc->d);
-    for (index = 0; index<end; index++) {
-        if ((int)header[index].flags.changed >= gb_deleted) continue;
-        count++;
-    }
-    return count;
-}
 
 
 
