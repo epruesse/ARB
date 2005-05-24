@@ -19,7 +19,7 @@
 #include <aw_question.hxx>
 #include <awt_canvas.hxx>
 #include <awt.hxx>
-#include <awtc_rename.hxx>
+#include <AW_rename.hxx>
 #include <awt_input_mask.hxx>
 
 #include "GEN_local.hxx"
@@ -616,10 +616,10 @@ AW_window *GEN_create_layout_window(AW_root *awr) {
 }
 
 typedef enum  {
-    GEN_PERFORM_ALL_SPECIES,
-    GEN_PERFORM_CURRENT_SPECIES,
-    GEN_PERFORM_ALL_BUT_CURRENT_SPECIES,
-    GEN_PERFORM_MARKED_SPECIES
+    GEN_PERFORM_ALL_ORGANISMS,
+    GEN_PERFORM_CURRENT_ORGANISM,
+    GEN_PERFORM_ALL_BUT_CURRENT_ORGANISM,
+    GEN_PERFORM_MARKED_ORGANISMS
 } GEN_PERFORM_MODE;
 
 typedef enum  {
@@ -950,45 +950,45 @@ static void  GEN_perform_command(AW_window *aww, GEN_PERFORM_MODE pmode,
     GB_begin_transaction(gb_main);
 
     switch (pmode) {
-        case GEN_PERFORM_ALL_SPECIES: {
-            for (GBDATA *gb_species = GBT_first_species(gb_main);
-                 gb_species;
-                 gb_species = GBT_next_species(gb_species))
+        case GEN_PERFORM_ALL_ORGANISMS: {
+            for (GBDATA *gb_organism = GEN_first_organism(gb_main);
+                 gb_organism;
+                 gb_organism = GEN_next_organism(gb_organism))
             {
-                do_command(mode, gb_species, cl_user);
+                do_command(mode, gb_organism, cl_user);
             }
             break;
         }
-        case GEN_PERFORM_MARKED_SPECIES: {
-            for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
-                 gb_species;
-                 gb_species = GBT_next_marked_species(gb_species))
+        case GEN_PERFORM_MARKED_ORGANISMS: {
+            for (GBDATA *gb_organism = GEN_first_marked_organism(gb_main);
+                 gb_organism;
+                 gb_organism = GEN_next_marked_organism(gb_organism))
             {
-                do_command(mode, gb_species, cl_user);
+                do_command(mode, gb_organism, cl_user);
             }
             break;
         }
-        case GEN_PERFORM_ALL_BUT_CURRENT_SPECIES: {
-            AW_root *aw_root    = aww->get_root();
-            GBDATA  *gb_curr_species = GEN_get_current_organism(gb_main, aw_root);
+        case GEN_PERFORM_ALL_BUT_CURRENT_ORGANISM: {
+            AW_root *aw_root          = aww->get_root();
+            GBDATA  *gb_curr_organism = GEN_get_current_organism(gb_main, aw_root);
 
-            for (GBDATA *gb_species = GBT_first_species(gb_main);
-                 gb_species;
-                 gb_species = GBT_next_species(gb_species))
+            for (GBDATA *gb_organism = GEN_first_organism(gb_main);
+                 gb_organism;
+                 gb_organism = GEN_next_organism(gb_organism))
             {
-                if (gb_species != gb_curr_species) do_command(mode, gb_species, cl_user);
+                if (gb_organism != gb_curr_organism) do_command(mode, gb_organism, cl_user);
             }
             break;
         }
-        case GEN_PERFORM_CURRENT_SPECIES: {
-            AW_root *aw_root    = aww->get_root();
-            GBDATA  *gb_species = GEN_get_current_organism(gb_main, aw_root);
+        case GEN_PERFORM_CURRENT_ORGANISM: {
+            AW_root *aw_root     = aww->get_root();
+            GBDATA  *gb_organism = GEN_get_current_organism(gb_main, aw_root);
 
-            if (!gb_species) {
+            if (!gb_organism) {
                 error = "First you have to select a species.";
             }
             else {
-                do_command(mode, gb_species, cl_user);
+                do_command(mode, gb_organism, cl_user);
             }
             break;
         }
@@ -1015,10 +1015,10 @@ static void GEN_mark_command(AW_window *aww, AW_CL cl_pmode, AW_CL cl_mmode) {
         const char *where = 0;
 
         switch ((GEN_PERFORM_MODE)cl_pmode) {
-            case GEN_PERFORM_CURRENT_SPECIES:           where = "the current species"; break;
-            case GEN_PERFORM_MARKED_SPECIES:            where = "all marked species"; break;
-            case GEN_PERFORM_ALL_SPECIES:               where = "all species"; break;
-            case GEN_PERFORM_ALL_BUT_CURRENT_SPECIES:   where = "all but the current species"; break;
+            case GEN_PERFORM_CURRENT_ORGANISM:         where = "the current species"; break;
+            case GEN_PERFORM_MARKED_ORGANISMS:         where = "all marked species"; break;
+            case GEN_PERFORM_ALL_ORGANISMS:            where = "all species"; break;
+            case GEN_PERFORM_ALL_BUT_CURRENT_ORGANISM: where = "all but the current species"; break;
             default: gen_assert(0); break;
         }
         aw_message(GBS_global_string("There are %li marked genes in %s", gen_count_marked_genes, where));
@@ -1244,13 +1244,13 @@ void GEN_insert_extract_submenu(AW_window_menu_modes *awm, const char *macro_pre
     char macro_name_buffer[50];
 
     sprintf(macro_name_buffer, "%s_of_current", macro_prefix);
-    AWMIMT(macro_name_buffer, "of current species...", "c", help_file, AWM_ALL, AW_POPUP, (AW_CL)create_gene_extract_window, (AW_CL)GEN_PERFORM_CURRENT_SPECIES);
+    AWMIMT(macro_name_buffer, "of current species...", "c", help_file, AWM_ALL, AW_POPUP, (AW_CL)create_gene_extract_window, (AW_CL)GEN_PERFORM_CURRENT_ORGANISM);
 
     sprintf(macro_name_buffer, "%s_of_marked", macro_prefix);
-    AWMIMT(macro_name_buffer, "of marked species...", "m", help_file, AWM_ALL, AW_POPUP, (AW_CL)create_gene_extract_window, (AW_CL)GEN_PERFORM_MARKED_SPECIES);
+    AWMIMT(macro_name_buffer, "of marked species...", "m", help_file, AWM_ALL, AW_POPUP, (AW_CL)create_gene_extract_window, (AW_CL)GEN_PERFORM_MARKED_ORGANISMS);
 
     sprintf(macro_name_buffer, "%s_of_all", macro_prefix);
-    AWMIMT(macro_name_buffer, "of all species...", "a", help_file, AWM_ALL, AW_POPUP, (AW_CL)create_gene_extract_window, (AW_CL)GEN_PERFORM_ALL_SPECIES);
+    AWMIMT(macro_name_buffer, "of all species...", "a", help_file, AWM_ALL, AW_POPUP, (AW_CL)create_gene_extract_window, (AW_CL)GEN_PERFORM_ALL_ORGANISMS);
 
     awm->close_sub_menu();
 }
@@ -1263,16 +1263,16 @@ void GEN_insert_multi_submenu(AW_window_menu_modes *awm, const char *macro_prefi
     char macro_name_buffer[50];
 
     sprintf(macro_name_buffer, "%s_of_current", macro_prefix);
-    AWMIMT(macro_name_buffer, "of current species", "c", help_file, AWM_ALL, command, GEN_PERFORM_CURRENT_SPECIES, command_mode);
+    AWMIMT(macro_name_buffer, "of current species", "c", help_file, AWM_ALL, command, GEN_PERFORM_CURRENT_ORGANISM, command_mode);
 
     sprintf(macro_name_buffer, "%s_of_all_but_current", macro_prefix);
-    AWMIMT(macro_name_buffer, "of all but current species", "b", help_file, AWM_ALL, command, GEN_PERFORM_ALL_BUT_CURRENT_SPECIES, command_mode);
+    AWMIMT(macro_name_buffer, "of all but current species", "b", help_file, AWM_ALL, command, GEN_PERFORM_ALL_BUT_CURRENT_ORGANISM, command_mode);
 
     sprintf(macro_name_buffer, "%s_of_marked", macro_prefix);
-    AWMIMT(macro_name_buffer, "of marked species", "m", help_file, AWM_ALL, command, GEN_PERFORM_MARKED_SPECIES, command_mode);
+    AWMIMT(macro_name_buffer, "of marked species", "m", help_file, AWM_ALL, command, GEN_PERFORM_MARKED_ORGANISMS, command_mode);
 
     sprintf(macro_name_buffer, "%s_of_all", macro_prefix);
-    AWMIMT(macro_name_buffer, "of all species", "a", help_file, AWM_ALL, command, GEN_PERFORM_ALL_SPECIES, command_mode);
+    AWMIMT(macro_name_buffer, "of all species", "a", help_file, AWM_ALL, command, GEN_PERFORM_ALL_ORGANISMS, command_mode);
 
     awm->close_sub_menu();
 }
