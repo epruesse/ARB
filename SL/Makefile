@@ -2,6 +2,8 @@
 ARCHS_ALL = \
 	HELIX/HELIX.dummy  \
 	AW_HELIX/AW_HELIX.dummy  \
+	AW_NAME/AW_NAME.dummy  \
+	DB_SCANNER/DB_SCANNER.dummy  \
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here
