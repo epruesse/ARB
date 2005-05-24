@@ -4,6 +4,7 @@
 
 #include <arbdb.h>
 #include <arbdbt.h>
+#include <ad_config.h>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <aw_device.hxx>
@@ -401,8 +402,9 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
     char           *cn               = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
     GBDATA         *gb_configuration = GBT_find_configuration(gb_main,cn);
     if (!gb_configuration){
-        aw_message(GBS_global_string("Configuration '%s' not fould in the database",cn));
-    }else{
+        aw_message(GBS_global_string("Configuration '%s' not found in the database",cn));
+    }
+    else {
         GBDATA *gb_middle_area = GB_search(gb_configuration,"middle_area",GB_STRING);
         char *md = 0;
         if (gb_middle_area){
@@ -416,7 +418,7 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
                     break;
                 case CONF_COMBINE: {
                     // store all marked species in hash and unmark them
-                    was_marked = GBS_create_hash(GBS_SPECIES_HASH_SIZE,1);
+                    was_marked = GBS_create_hash(GBT_get_species_hash_size(gb_main), 1);
                     for (GBDATA *gbd = GBT_first_marked_species(gb_main); gbd; gbd = GBT_next_marked_species(gbd)) {
                         int marked = GB_read_flag(gbd);
                         if (marked) {
@@ -508,7 +510,7 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
     }
 
     GB_transaction dummy2(gb_main);     // open close transaction
-    GB_HASH *used = GBS_create_hash(GBS_SPECIES_HASH_SIZE,0);
+    GB_HASH *used = GBS_create_hash(GBT_get_species_hash_size(gb_main), 0);
     void *topfile = GBS_stropen(1000);
     void *topmid = GBS_stropen(10000);
     {
