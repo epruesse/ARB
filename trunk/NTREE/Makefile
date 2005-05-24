@@ -68,6 +68,7 @@ ad_ali.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/awt.hxx
+ad_ali.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 
 ad_ext.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_ext.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -80,6 +81,7 @@ ad_ext.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/awt.hxx
+ad_ext.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 
 ad_spec.o: ad_spec.hxx
 ad_spec.o: ntree.hxx
@@ -92,16 +94,19 @@ ad_spec.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awtlocal.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 
 ad_transpro.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -115,6 +120,7 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt.hxx
+ad_transpro.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_codon_table.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 
@@ -256,16 +262,18 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_question.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
-NT_concatenate.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awtlocal.hxx
 
 NT_edconf.o: nt_edconf.hxx
+NT_edconf.o: $(ARBHOME)/INCLUDE/ad_config.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -311,6 +319,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -326,7 +335,6 @@ NT_extern.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_www.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awtc_submission.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awti_export.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/EXP.hxx
@@ -378,6 +386,7 @@ NT_join.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/awt.hxx
+NT_join.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 
 NT_main.o: nt_cb.hxx
 NT_main.o: nt_concatenate.hxx
@@ -430,6 +439,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/awt.hxx
+NT_sort.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 
 NT_validManual.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

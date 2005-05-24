@@ -148,6 +148,7 @@ ED4_main.o: ed4_nds.hxx
 ED4_main.o: ed4_search.hxx
 ED4_main.o: ed4_visualizeSAI.hxx
 ED4_main.o: edit_naligner.hxx
+ED4_main.o: $(ARBHOME)/INCLUDE/ad_config.h
 ED4_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -242,6 +243,7 @@ ED4_no_class.o: ed4_edit_string.hxx
 ED4_no_class.o: ed4_nds.hxx
 ED4_no_class.o: ed4_search.hxx
 ED4_no_class.o: ed4_tools.hxx
+ED4_no_class.o: $(ARBHOME)/INCLUDE/ad_config.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -253,11 +255,12 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/AW_helix.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ED4_no_class.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt.hxx
+ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
-ED4_no_class.o: $(ARBHOME)/INCLUDE/awtc_rename.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/st_window.hxx
 
@@ -283,7 +286,6 @@ ED4_root.o: ed4_block.hxx
 ED4_root.o: ed4_class.hxx
 ED4_root.o: ed4_defs.hxx
 ED4_root.o: ed4_nds.hxx
-ED4_root.o: ed4_RNA3D.hxx
 ED4_root.o: ed4_search.hxx
 ED4_root.o: ed4_secedit.hxx
 ED4_root.o: ed4_tools.hxx
@@ -456,6 +458,7 @@ ED4_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 EDB_root_bact.o: ed4_class.hxx
 EDB_root_bact.o: ed4_defs.hxx
 EDB_root_bact.o: ed4_search.hxx
+EDB_root_bact.o: $(ARBHOME)/INCLUDE/ad_config.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/ad_prot.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_assert.h
