@@ -21,6 +21,7 @@
 #include "awt.hxx"
 #include "awtlocal.hxx"
 #include "awt_config_manager.hxx"
+#include "awt_changekey.hxx"
 
 #include "GEN.hxx"
 
@@ -214,14 +215,15 @@ void awt_delete_species_in_list(void *dummy, struct adaqbsstruct *cbs)
 
 GB_HASH *awt_generate_species_hash(GBDATA *gb_main, char *key,int split)
 {
-    GB_HASH *hash = GBS_create_hash(GBS_SPECIES_HASH_SIZE,1);
+    GB_HASH *hash = GBS_create_hash(GBT_get_species_hash_size(gb_main),1);
     GBDATA  *gb_species;
     GBDATA  *gb_name;
     char    *keyas;
 
     for (   gb_species = GBT_first_species(gb_main);
             gb_species;
-            gb_species = GBT_next_species(gb_species)){
+            gb_species = GBT_next_species(gb_species))
+    {
         gb_name = GB_search(gb_species,key,GB_FIND);
         if (!gb_name) continue;
         keyas = GB_read_as_string(gb_name);
@@ -1914,7 +1916,8 @@ struct ad_item_selector AWT_species_selector = {
     awt_get_next_species_data,
     GBT_first_species_rel_species_data,
     GBT_next_species,
-    awt_get_selected_species
+    awt_get_selected_species,
+    0
 };
 
 struct ad_item_selector AWT_organism_selector = {
@@ -1931,7 +1934,8 @@ struct ad_item_selector AWT_organism_selector = {
     awt_get_next_species_data,
     GBT_first_species_rel_species_data,
     GBT_next_species,
-    awt_get_selected_species
+    awt_get_selected_species,
+    0
 };
 
 static void awt_new_selection_made(AW_root *aw_root, AW_CL cl_awar_selection, AW_CL cl_cbs) {
