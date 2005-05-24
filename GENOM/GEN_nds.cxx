@@ -18,6 +18,7 @@
 #include <aw_window.hxx>
 #include <awt.hxx>
 #include <awt_nds.hxx>
+#include <awt_changekey.hxx>
 
 #include "GEN_interface.hxx"
 
