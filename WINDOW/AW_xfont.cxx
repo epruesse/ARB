@@ -55,7 +55,7 @@ appresStruct appres = {
 
 #if defined(DEVEL_RALF)
 #if defined(PREFER_ISO10646)
-#warning current iso setting: prefer ISO10646
+// #warning current iso setting: prefer ISO10646 (this is recommended) 
 #else
 #warning current iso setting: prefer ISO8859
 #endif // PREFER_ISO10646
