@@ -19,8 +19,9 @@
 #include <GEN.hxx>
 #include <GAGenomImport.h>
 #include "awti_import.hxx"
-#include "awtc_rename.hxx"
+#include "AW_rename.hxx"
 #include "awti_imp_local.hxx"
+#include "awt_changekey.hxx"
 
 #define awti_assert(cond) arb_assert(cond)
 
