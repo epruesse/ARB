@@ -70,7 +70,7 @@ else
 		dflags = -DDEBUG
 endif
 
-		cflags = $(dflag1) $(dflags) $(DEVEL_DEF)
+		cflags = -O0 $(dflag1) $(dflags) $(DEVEL_DEF)
 		lflags = $(dflag1)
 		fflags = $(dflag1) -C
 		extended_warnings = -Wwrite-strings -Wunused -Wno-aggregate-return
@@ -78,9 +78,9 @@ endif
 else
 ifeq ($(DEBUG),0)
 		dflags = -DNDEBUG
-		cflags = -O $(dflags) $(DEVEL_DEF)
-		lflags = -O
-		fflags = -O
+		cflags = -O4 $(dflags) $(DEVEL_DEF)
+		lflags =
+		fflags =
 		extended_warnings =
 		extended_cpp_warnings =
 endif
@@ -531,20 +531,22 @@ ARCHS_NTREE = \
 		$(SEERLIB) \
 		ARB_GDE/ARB_GDE.a \
 		AWTC/AWTC.a \
-		SEQ_QUALITY/SEQ_QUALITY.a \
 		AWTI/AWTI.a \
 		CAT/CAT.a \
 		GENOM/GENOM.a \
+		GENOM_IMPORT/GENOM_IMPORT.a \
 		ISLAND_HOPPING/ISLAND_HOPPING.a \
 		MERGE/MERGE.a \
 		MULTI_PROBE/MULTI_PROBE.a \
 		NTREE/NTREE.a \
 		PRIMER_DESIGN/PRIMER_DESIGN.a \
 		PROBE_DESIGN/PROBE_DESIGN.a \
+		SEQ_QUALITY/SEQ_QUALITY.a \
 		SERVERCNTRL/SERVERCNTRL.a \
-		STAT/STAT.a \
-		GENOM_IMPORT/GENOM_IMPORT.a \
+		SL/AW_NAME/AW_NAME.a \
 		SL/HELIX/HELIX.a \
+		SL/DB_SCANNER/DB_SCANNER.a \
+		STAT/STAT.a \
 		XML/XML.a \
 
 $(NTREE): $(ARCHS_NTREE:.a=.dummy) NAMES_COM/server.dummy shared_libs
@@ -566,12 +568,15 @@ $(RNA3D): $(ARCHS_RNA3D:.a=.dummy) shared_libs
 #***********************************	arb_edit **************************************
 EDIT = bin/arb_edit
 ARCHS_EDIT = \
+		NAMES_COM/client.a \
+		SERVERCNTRL/SERVERCNTRL.a \
 		EDIT/EDIT.a \
 		ARB_GDE/ARB_GDE.a \
 		STAT/STAT.a \
 		XML/XML.a \
 		SL/HELIX/HELIX.a \
 		SL/AW_HELIX/AW_HELIX.a \
+		SL/AW_NAME/AW_NAME.a \
 
 $(EDIT): $(ARCHS_EDIT:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT) $(GUI_LIBS) || ( \
@@ -594,6 +599,7 @@ ARCHS_EDIT4_GENERAL = \
 		ISLAND_HOPPING/ISLAND_HOPPING.a \
 		SL/HELIX/HELIX.a \
 		SL/AW_HELIX/AW_HELIX.a \
+		SL/AW_NAME/AW_NAME.a \
 		XML/XML.a \
 
 ifeq ($(OPENGL),0)
@@ -648,8 +654,11 @@ $(DIST): $(ARCHS_DIST:.a=.dummy) shared_libs
 #***********************************	arb_pars **************************************
 PARSIMONY = bin/arb_pars
 ARCHS_PARSIMONY = \
+		NAMES_COM/client.a \
+		SERVERCNTRL/SERVERCNTRL.a \
 		PARSIMONY/PARSIMONY.a \
 		SL/HELIX/HELIX.a \
+		SL/AW_NAME/AW_NAME.a \
 		XML/XML.a \
 
 $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) shared_libs
