@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Fri Oct/01/2004 17:43 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon May/23/2005 20:00 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -32,6 +32,7 @@
 #include <sys/stat.h>
 
 #include "awt_input_mask.hxx"
+#include "awt_changekey.hxx"
 
 using namespace std;
 

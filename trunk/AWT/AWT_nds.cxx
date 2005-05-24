@@ -14,6 +14,7 @@
 #include <awt.hxx>
 #include "awt_nds.hxx"
 #include "awt_config_manager.hxx"
+#include "awt_changekey.hxx"
 
 #define NDS_COUNT 10
 
