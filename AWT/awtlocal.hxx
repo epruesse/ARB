@@ -121,7 +121,6 @@ struct awt_table {
 
 #define ALL_FIELDS_PSEUDO_FIELD "[any field]"
 
-void awt_map_arbdb_edit_box(GBDATA *dummy, struct adawcbstruct *cbs);
 long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs);
 
 
