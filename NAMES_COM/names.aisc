@@ -65,7 +65,8 @@ AN_local, LOCAL, 	2, 	(~local communication buffer~), {
 	aisc_string,    acc,	        t,	rw,	,	ACCESSION,	12,	"",		        (~ accession number ~);
 	int,	        use_advice,     t,	rw,	,	USEADVICE,	13,	,		        (~ use the advice ~);
 	aisc_string,    advice,	        t,	rw,	,	ADVICE,		14,	"",		        (~ advice for the short name ~);
-	aisc_string,    get_short,      %,	r,	,	GET_SHORT,	15,	,		        (~ the short name ~);
+	aisc_string,    get_short,      %,	r,	,	GET_SHORT,	15,	,		        (~ get a short name ~);
+	int,            del_short,      %,	r,	,	DEL_SHORT,	16,	,		        (~ forget stored short name ~);
 	};
 
 
@@ -76,9 +77,10 @@ AN_main, MAIN, 1, (~Die globalen Daten~), SAVEDIRECTION VERTICAL, {
 	AN_shorts,      shorts1,	 d,	r,	1,	SHORTS1,	12,	,		(~ the unique letters for a word ~);
 	AN_shorts,      names,	         d,	r,	1,	NAMES,		16,	,		(~ the unique names first*second*S*accession ~);
 	AN_revers,      revers,	         d,	r,	,	,		,	,		(~ the revers unique names first*second*S*accession ~);
-	int,	        touched,	 t,	r,	,	TOUCHED,	19,	0,		(~ Do the database need to be saved ~);
+	int,	        touched,	 t,	r,	,	TOUCHED,	19,	0,		(~ Does the database need to be saved ~);
         aisc_string,    server_shutdown, %,     w,      ,       SHUTDOWN,       20,     ,               (~SHUTDOWN Command~);
         int,	        server_save,	 %,     w,      ,       SAVEALL,	21, 	, 		(~SAVE everything~);
 	aisc_string,    server_file,	 t,	r,	,	FILENAME,	22,	,		(~The filename of the keys~);
+	int,            server_filedate, t,	,	,	FILEDATE,	23,	,		(~The filedate of server_file~);
 	};
 };
