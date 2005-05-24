@@ -435,7 +435,7 @@ void probe_design_event(AW_window *aww)
         error = "Cannot contact to probe server: Connection Refused";
     }
 
-    bool design_gene_probes = root->awar(AWAR_PD_DESIGN_GENE)->read_int() && GEN_is_genome_db(gb_main);
+    bool design_gene_probes = root->awar(AWAR_PD_DESIGN_GENE)->read_int() && GEN_is_genome_db(gb_main, -1);
     if (!error){
         if (design_gene_probes) { // design probes for genes
             error = pd_get_the_gene_names(bs,check);
@@ -1802,7 +1802,7 @@ void pd_query_pt_server(AW_window *aww)
 void pd_export_pt_server(AW_window *aww)
 {
     AW_root  *awr                = aww->get_root();
-    bool      create_gene_server = awr->awar(AWAR_PROBE_CREATE_GENE_SERVER)->read_int() && GEN_is_genome_db(gb_main);
+    bool      create_gene_server = awr->awar(AWAR_PROBE_CREATE_GENE_SERVER)->read_int() && GEN_is_genome_db(gb_main, -1);
     char      pt_server[256];
     char     *server;
     char     *file;
