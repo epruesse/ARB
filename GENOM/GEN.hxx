@@ -18,10 +18,6 @@ class AWT_canvas;
 // see GEN_local.hxx for local stuff
 // --------------------------------------------------------------------------------
 
-#define GENOM_DB_TYPE "genom_db" // main flag (true=genom db, false/missing=normal db)
-
-bool GEN_is_genome_db(GBDATA *gb_main, int default_value = -1);
-
 // --------------------------------------------------------------------------------
 // awars:
 
