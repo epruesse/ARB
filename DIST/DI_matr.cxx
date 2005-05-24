@@ -270,7 +270,7 @@ char *PHMATRIX::load(char *usei,AP_filter *filter,AP_weights *weights,AP_smatrix
     tree_size++;
     GB_CSTR *species_in_sort_tree = 0;
 
-    int no_of_species = all ? GBT_recount_species(gb_main) : GBT_count_marked_species(gb_main);
+    int no_of_species = all ? GBT_count_species(gb_main) : GBT_count_marked_species(gb_main);
     int in_tree_species = 0;
     int out_tree_species = no_of_species;
     int unknown_species_in_tree = 0;
