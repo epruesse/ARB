@@ -75,6 +75,8 @@ struct ad_item_selector {
     GBDATA *(*get_next_item)(GBDATA *); // for species this is normally GBT_next_species
 
     GBDATA *(*get_selected_item)(GBDATA *gb_main, AW_root *aw_root); // searches the currently selected item
+
+    struct ad_item_selector *parent_selector; // selector for parent item
 };
 
 char *AWT_get_item_id(ad_item_selector *sel, GBDATA *gb_item);
@@ -176,62 +178,6 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
                                void (*callback)(AW_window*), // set callback ..
                                AW_window* (*create_popup)(AW_root *, AW_default)); // .. or create_popup  (both together not allowed)
 
-/***********************    FIELD INFORMATIONS  ************************/
-AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
-                                          AW_window              *aws,
-                                          const char             *varname,
-                                          long                    type_filter,
-                                          const char             *scan_xfig_label,
-                                          const char             *rescan_xfig_label,
-                                          const ad_item_selector *selector,
-                                          size_t                  columns,
-                                          size_t                  visible_rows,
-                                          AW_BOOL                 popup_list_in_window        = false,
-                                          AW_BOOL                 add_all_fields_pseudo_field = false,
-                                          AW_BOOL                 include_hidden_fields       = false
-                                          );
-/* show fields of a species / extended / gene !!!
-   type filter is a bitstring which controls what types are shown in
-   the selection list: e.g 1<<GB_INT || 1 <<GB_STRING enables
-   ints and strings */
-
-enum awt_rescan_mode {
-    AWT_RS_SCAN_UNKNOWN_FIELDS  = 1, // scan database for unknown fields and add them
-    AWT_RS_DELETE_UNUSED_FIELDS = 2, // delete all unused fields
-    AWT_RS_SHOW_ALL             = 4, // unhide all hidden fields
-
-    AWT_RS_UPDATE_FIELDS  = AWT_RS_SCAN_UNKNOWN_FIELDS|AWT_RS_DELETE_UNUSED_FIELDS
-} ;
-
-void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode mode); /* rescan it */
-void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode mode);
-void awt_experiment_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode mode);
-
-void awt_selection_list_scan_unknown_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
-void awt_selection_list_delete_unused_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
-void awt_selection_list_unhide_all_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
-void awt_selection_list_update_cb(AW_window *aww,GBDATA *gb_main, long bitfilter);
-
-void awt_gene_field_selection_list_scan_unknown_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
-void awt_gene_field_selection_list_delete_unused_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
-void awt_gene_field_selection_list_unhide_all_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
-void awt_gene_field_selection_list_update_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
-
-void awt_experiment_field_selection_list_scan_unknown_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
-void awt_experiment_field_selection_list_delete_unused_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
-void awt_experiment_field_selection_list_unhide_all_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
-void awt_experiment_field_selection_list_update_cb(AW_window *dummy,GBDATA *gb_main, long bitfilter);
-
-GB_ERROR awt_add_new_changekey(GBDATA *gb_main,const char *name, int type);
-/*  type == GB_TYPES
-    add a new FIELD to the FIELD LIST */
-GB_ERROR awt_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name, int type, const char *keypath);
-// same as awt_add_new_changekey but with given keypath (with this you can add fields to any item (species, gene, ...))
-
-
-GBDATA   *awt_get_key(GBDATA *gb_main, const char *key, const char *change_key_path);
-GB_TYPES  awt_get_type_of_changekey(GBDATA *gb_main,const char *field_name, const char *change_key_path);
-
 /***********************    FILTERS     ************************/
 AW_CL   awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main, const char *def_name);
 /* Create a data structure for filters (needed for awt_create_select_filter_win */
@@ -251,48 +197,9 @@ AP_filter *awt_get_filter(AW_root *aw_root,AW_CL res_of_create_select_filter);
 
 char *AWT_get_combined_filter_name(AW_root *aw_root, GB_CSTR prefix);
 
-/**************************************************************************
- *********************   Various Database SCANNER Boxes  *******************
- ***************************************************************************/
-/*  A scanner show all (rekursiv) information of a database entry:
-    This information can be organized in two different ways:
-    1. AWT_SCANNER: Show exact all (filtered) information stored in the DB
-    2. AWT_VIEWER:  Create a list of all database fields (see FIELD INFORMATIONS)
-    and if any information is stored under a field append it.
-    example: fields:    name, full_name, acc, author
-    DB entries:    name:e.coli full_name:esc.coli flag:test
-    ->  name:       e.coli
-    full_name:  esc.coli
-    acc:
-    author:
-*/
-
-typedef enum {
-    AWT_SCANNER,
-    AWT_VIEWER
-} AWT_SCANNERMODE;
-
 #define AWT_NDS_FILTER (1<<GB_STRING)|(1<<GB_BYTE)|(1<<GB_INT)|(1<<GB_FLOAT)|(1<<GB_BITS)|(1<<GB_LINK)
 #define AWT_PARS_FILTER (1<<GB_STRING)|(1<<GB_BYTE)|(1<<GB_INT)|(1<<GB_FLOAT)|(1<<GB_BITS)|(1<<GB_LINK)
 #define AWT_STRING_FILTER (1<<GB_STRING)|(1<<GB_BITS)|(1<<GB_LINK)
-
-AW_CL awt_create_arbdb_scanner(GBDATA                 *gb_main, AW_window *aws,
-                               const char             *box_pos_fig, /* the position for the box in the xfig file */
-                               const char             *delete_pos_fig, /* create a delete button (which enables deleting) */
-                               const char             *edit_pos_fig, /* the edit field (which enables editing) */
-                               const char             *edit_enable_pos_fig, /* enable editing toggle */
-                               AWT_SCANNERMODE         mode,
-                               const char             *rescan_pos_fig, // AWT_VIEWER only (create a rescan FIELDS button)
-                               const char             *mark_pos_fig, // Create a toggle which show the database flag
-                               long                    type_filter, // AWT_VIEWER BITFILTER for TYPES
-                               const ad_item_selector *selector);
-
-void awt_map_arbdb_scanner(AW_CL  arbdb_scanid,
-                           GBDATA               *gb_pntr, int show_only_marked_flag, const char *keypath);
-/* map the Scanner to a database entry */
-GBDATA                           *awt_get_arbdb_scanner_gbdata(AW_CL arbdb_scanid);
-/* reverse mapping, should be used to keep track of deleted items */
-
 
 
 /**************************************************************************
