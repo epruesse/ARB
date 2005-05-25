@@ -14,6 +14,8 @@
 #include <awt_nds.hxx>
 #include <aw_preset.hxx>
 #include <awt.hxx>
+#include <awt_changekey.hxx>
+#include <awt_sel_boxes.hxx>
 
 #include <awt_canvas.hxx>
 #include <awt_tree.hxx>
@@ -38,7 +40,7 @@ static bool    in_colorDefChanged_callback = false; // used to avoid colorDef co
 static const char *getAwarName(int awarNo) {
     static char buf[BUFSIZE];
 
-    strcpy(buf, AWAR_SAI_COLOR);
+    strcpy(buf, AWAR_SPV_SAI_COLOR);
     (strchr(buf, 0)-1)[0] = '0'+awarNo;
 
     return buf;
@@ -92,7 +94,7 @@ void SAI_graphic::command(AW_device */*device*/, AWT_COMMAND_MODE /*cmd*/, int b
             clicked_idx = (int)ct->client_data1;
             const char *species_name = g_pbdata->probeSpecies[clicked_idx];
             aw_root->awar(AWAR_SPECIES_NAME)->write_string(species_name);
-            aw_root->awar(AWAR_SELECTED_PROBE)->write_string(species_name);
+            aw_root->awar(AWAR_SPV_SELECTED_PROBE)->write_string(species_name); 
         }
     }
 }
@@ -152,7 +154,7 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
         }
         in_colorDefChanged_callback = false;
     }
-    awr->awar(AWAR_DISP_SAI)->touch(); // refreshes the display
+    awr->awar(AWAR_SPV_DISP_SAI)->touch(); // refreshes the display
 }
 
 static void refreshCanvas(AW_root *awr, AW_CL cl_ntw) {
@@ -164,7 +166,7 @@ static void refreshCanvas(AW_root *awr, AW_CL cl_ntw) {
 
 static void createSaiProbeAwars(AW_root *aw_root) {
     // creating awars specific for the painting routine
-    aw_root->awar_int(AWAR_DISP_SAI, 0, AW_ROOT_DEFAULT); // to display SAI values
+    aw_root->awar_int(AWAR_SPV_DISP_SAI, 0, AW_ROOT_DEFAULT); // to display SAI values
 
     for (int i = 0; i < 10; i++){   // initialising 10 color definition string AWARS
        AW_awar *def_awar = aw_root->awar_string(getAwarName(i),"", AW_ROOT_DEFAULT);
@@ -174,13 +176,12 @@ static void createSaiProbeAwars(AW_root *aw_root) {
 
 static void addCallBacks(AW_root *awr, AWT_canvas *ntw) {
     // adding callbacks to the awars to refresh the display if recieved any changes
-    awr->awar(AWAR_DISP_SAI)      ->add_callback(refreshCanvas, (AW_CL)ntw);
-    awr->awar(AWAR_SAI_2_PROBE)   ->add_callback(refreshCanvas, (AW_CL)ntw);
-    awr->awar(AWAR_PROBE_LIST)    ->add_callback(refreshCanvas, (AW_CL)ntw);
-    awr->awar(AWAR_DB_FIELD_NAME) ->add_callback(refreshCanvas, (AW_CL)ntw);
-    awr->awar(AWAR_DB_FIELD_WIDTH)->add_callback(refreshCanvas, (AW_CL)ntw);
-    awr->awar(AWAR_SELECTED_PROBE)->add_callback(refreshCanvas, (AW_CL)ntw);
-    awr->awar(AWAR_ACI_COMMAND)   ->add_callback(refreshCanvas, (AW_CL)ntw);
+    awr->awar(AWAR_SPV_DISP_SAI)      ->add_callback(refreshCanvas, (AW_CL)ntw);
+    awr->awar(AWAR_SPV_SAI_2_PROBE)   ->add_callback(refreshCanvas, (AW_CL)ntw);
+    awr->awar(AWAR_SPV_DB_FIELD_NAME) ->add_callback(refreshCanvas, (AW_CL)ntw);
+    awr->awar(AWAR_SPV_DB_FIELD_WIDTH)->add_callback(refreshCanvas, (AW_CL)ntw);
+    awr->awar(AWAR_SPV_SELECTED_PROBE)->add_callback(refreshCanvas, (AW_CL)ntw);
+    awr->awar(AWAR_SPV_ACI_COMMAND)   ->add_callback(refreshCanvas, (AW_CL)ntw);
 }
 
 static const char *translateSAItoColors(AW_root *awr, int start, int end, int speciesNo) {
@@ -202,7 +203,7 @@ static const char *translateSAItoColors(AW_root *awr, int start, int end, int sp
     memset(saiColors, '0'-1, seqSize);
     memset(saiValues, '0'-1, seqSize);
 
-    char *saiSelected = awr->awar(AWAR_SAI_2_PROBE)->read_string();
+    char *saiSelected = awr->awar(AWAR_SPV_SAI_2_PROBE)->read_string();
 
     GB_push_transaction(gb_main);
     char   *alignment_name = GBT_get_default_alignment(gb_main);
@@ -381,8 +382,8 @@ static void paintProbeInfo(AW_device *device, const char *probe_info, AW_pos x, 
 char *GetDisplayInfo(AW_root *root, const char *speciesName, int displayWidth)
 {
     char ERROR[] = "ERROR";
-    char *aciCommand  = root->awar_string(AWAR_ACI_COMMAND)->read_string();
-    char *dbFieldName = root->awar_string(AWAR_DB_FIELD_NAME)->read_string();
+    char *aciCommand  = root->awar_string(AWAR_SPV_ACI_COMMAND)->read_string();
+    char *dbFieldName = root->awar_string(AWAR_SPV_DB_FIELD_NAME)->read_string();
 
     GB_push_transaction(gb_main);
 
@@ -436,10 +437,10 @@ void SAI_graphic::paint(AW_device *device) {
     pbX = 0; pbY = yStep + 10;
     pbRgX1 = pbRgX2 = lineXpos = 0;
 
-    char *saiSelected = aw_root->awar(AWAR_SAI_2_PROBE)->read_string();
-    int dispSai       = aw_root->awar(AWAR_DISP_SAI)->read_int(); // to display SAI below probe targets
+    char *saiSelected = aw_root->awar(AWAR_SPV_SAI_2_PROBE)->read_string();
+    int dispSai       = aw_root->awar(AWAR_SPV_DISP_SAI)->read_int(); // to display SAI below probe targets
 
-    int displayWidth  = aw_root->awar(AWAR_DB_FIELD_WIDTH)->read_int();  // display column width of the selected database field
+    int displayWidth  = aw_root->awar(AWAR_SPV_DB_FIELD_WIDTH)->read_int();  // display column width of the selected database field
 
     int endPos, startPos = 0;
     const char *saiCols = 0;
@@ -457,7 +458,7 @@ void SAI_graphic::paint(AW_device *device) {
             for ( size_t j = 0; j < g_pbdata->probeSpecies.size(); ++j ) {
                 const char *name = g_pbdata->probeSpecies[j];
                 const char *displayInfo = GetDisplayInfo(aw_root, name, displayWidth);
-                const char *selectedProbe = aw_root->awar(AWAR_SELECTED_PROBE)->read_string();
+                const char *selectedProbe = aw_root->awar(AWAR_SPV_SELECTED_PROBE)->read_string();
                 if (strcmp(selectedProbe,name) == 0) {
                     device->box(SAI_GC_FOREGROUND, fgX, (fgY - (yStep * 0.9)), (displayWidth * xStep), yStep, -1, 0,0);
                     device->text(SAI_GC_HIGHLIGHT, displayInfo, fgX, fgY-1, 0, AW_SCREEN|AW_CLICK, (AW_CL)j, 0, 0);
@@ -634,7 +635,7 @@ static AW_window *create_colorTranslationTable_window(AW_root *aw_root){  // cre
     AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "saveSaiColorDefs", saiColorDefs_store_config, saiColorDefs_restore_config, 0, 0);
 
     aws->at("dispSai");
-    aws->create_toggle(AWAR_DISP_SAI);
+    aws->create_toggle(AWAR_SPV_DISP_SAI);
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
@@ -654,7 +655,7 @@ static AW_window *createSelectSAI_window(AW_root *aw_root){
 
     aws->at("selection");
     aws->callback((AW_CB0)AW_POPDOWN);
-    awt_create_selection_list_on_extendeds(gb_main,(AW_window *)aws,AWAR_SAI_2_PROBE);
+    awt_create_selection_list_on_extendeds(gb_main,(AW_window *)aws,AWAR_SPV_SAI_2_PROBE);
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
@@ -675,21 +676,21 @@ static AW_window *createDisplayField_window(AW_root *aw_root){
 
     aws->at("dbField");
     aws->button_length(20);
-    aws->callback((AW_CB)AWT_create_select_nds_window, (AW_CL) AWAR_DB_FIELD_NAME,  (AW_CL) gb_main);
-    aws->create_button("SELECT_DB_FIELD", AWAR_DB_FIELD_NAME);
+    aws->callback(AWT_popup_select_species_field_window, (AW_CL) AWAR_SPV_DB_FIELD_NAME,  (AW_CL) gb_main);
+    aws->create_button("SELECT_DB_FIELD", AWAR_SPV_DB_FIELD_NAME);
 
     aws->at("aciSelect");
     aws->button_length(12);
-    aws->callback(AWT_create_select_srtaci_window, (AW_CL) AWAR_ACI_COMMAND, 0);
+    aws->callback(AWT_create_select_srtaci_window, (AW_CL) AWAR_SPV_ACI_COMMAND, 0);
     aws->create_button("SELECT_ACI", "Select ACI");
 
     aws->at("aciCmd");
     aws->button_length(20);
-    aws->create_input_field(AWAR_ACI_COMMAND,40);
+    aws->create_input_field(AWAR_SPV_ACI_COMMAND,40);
 
     aws->at("width");
     aws->button_length(5);
-    aws->create_input_field(AWAR_DB_FIELD_WIDTH,4);
+    aws->create_input_field(AWAR_SPV_DB_FIELD_WIDTH,4);
     
     aws->at("close");
     aws->button_length(10);
