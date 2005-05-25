@@ -977,15 +977,10 @@ void AW_create_gc_color_groups_window(AW_window */*aww*/, AW_CL cl_aw_root, AW_C
     aws->show();
 }
 
-//  -------------------------------------------------------------------------------
-//      AW_window *AW_create_gc_window(AW_root * aw_root, AW_gc_manager id_par)
-//  -------------------------------------------------------------------------------
-AW_window *AW_create_gc_window(AW_root * aw_root, AW_gc_manager id_par)
-{
-    //crazy simple function
-    // The window has already been created
+AW_window *AW_create_gc_window_named(AW_root * aw_root, AW_gc_manager id_par, const char *wid, const char *windowname) {
     AW_window_simple * aws = new AW_window_simple;
-    aws->init(aw_root, "PROPS_GC", "COLORS AND FONTS");
+    
+    aws->init(aw_root, wid, windowname);
 
     aw_gc_manager *gcmgr = (aw_gc_manager *)id_par;
 
@@ -1010,6 +1005,11 @@ AW_window *AW_create_gc_window(AW_root * aw_root, AW_gc_manager id_par)
 
     aws->window_fit();
     return (AW_window *) aws;
+    
+}
+AW_window *AW_create_gc_window(AW_root * aw_root, AW_gc_manager id_par)
+{
+    return AW_create_gc_window_named(aw_root, id_par, "PROPS_GC", "Colors and Fonts");
 }
 #endif //ifdef _ARB_WINDOW
 
