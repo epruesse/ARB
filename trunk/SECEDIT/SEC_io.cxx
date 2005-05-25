@@ -221,10 +221,10 @@ void SEC_helix::save(ostream & out, int indent) {
     out << "DELTA=" << delta << "\n";
 
     //writing to export file
-     for (i=0; i<indent; i++) {
-         out << "\t";
-     }
-     out << "DELTA_IN=" << deltaIn << "\n";
+    for (i=0; i<indent; i++) {
+        out << "\t";
+    }
+    out << "DELTA_IN=" << deltaIn << "\n";
 
     for (i=0; i<indent; i++) {
         out << "\t";
@@ -277,29 +277,32 @@ SEC_segment::SEC_segment(SEC_root *root_, double alpha_, SEC_helix_strand *next_
 SEC_helix_strand::SEC_helix_strand(SEC_root *root_, SEC_loop *loop_, SEC_helix_strand *other_strand_, SEC_helix *helix_info_, SEC_segment *next_segment_, int start, int end):
     region(start, end)
 {
-    loop = loop_;
-    root = root_;
+    loop         = loop_;
+    root         = root_;
     other_strand = other_strand_;
-    helix_info = helix_info_;
+    helix_info   = helix_info_;
     next_segment = next_segment_;
-    start_angle = 0;
-    old_delta = 0;
-    fixpoint_x = 0;
-    fixpoint_y = 0;
-    attachp1_x = 0;
-    attachp1_y = 0;
-    attachp2_x = 0;
-    attachp2_y = 0;
-    start_angle = 0;
-    old_delta = 0;
+    
+    start_angle     = 0;
+    old_delta       = 0;
+    fixpoint_x      = 0;
+    fixpoint_y      = 0;
+    attachp1_x      = 0;
+    attachp1_y      = 0;
+    attachp2_x      = 0;
+    attachp2_y      = 0;
+    start_angle     = 0;
+    old_delta       = 0;
     thisBaseColor   = 0;
     otherBaseColor  = 0;
     thisLastAbsPos  = 0;
     otherLastAbsPos = 0;
-    thisLast_x  = 0;
-    thisLast_y  = 0;
-    otherLast_x = 0;
-    otherLast_y = 0;
+    thisLast_x      = 0;
+    thisLast_y      = 0;
+    otherLast_x     = 0;
+    otherLast_y     = 0;
+
+    is_rootside_fixpoint = false;
 }
 
 
@@ -399,7 +402,10 @@ SEC_helix_strand::~SEC_helix_strand() {
     delete helix_info;
 
     if (other_strand != NULL) {
-        other_strand->loop->set_segment(next_segment);  //now every loop-element can be reached by loop-destructor
+        if (other_strand->loop) {
+            other_strand->loop->set_segment(next_segment); //now every loop-element can be reached by loop-destructor
+        }
+        
         if (other_strand->next_segment != NULL) {
             other_strand->next_segment->delete_pointer_2(other_strand);
         }
