@@ -132,7 +132,9 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
             if (new_seq_part) {
                 if (new_len<len_part) {
                     memcpy(seq_part, new_seq_part, new_len);
-                    char gap = ADPP_IS_ALIGN_CHARACTER(seq_part[len_part-1]) ? seq_part[len_part-1] : '.';
+                    char gap = '-';
+                    if (seq_part[len_part-1] == '.' || seq_part[len_part] == '.') gap = '.';
+
                     for (int l=new_len; l<len_part; l++) {
                         seq_part[l] = gap;
                     }
@@ -155,7 +157,7 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
                 delete new_seq_part;
 
                 if (!error) {
-                    error = GB_write_string(gbd, seq);
+                    error = GB_write_as_string(gbd, seq);
                     if (!error) {
                         term->set_refresh();
                         term->parent->refresh_requested_by_child();
@@ -178,11 +180,11 @@ void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
     //    ED4_terminal *term        = ED4_ROOT->root_group_man->get_first_terminal();
 
     ED4_cursor *cursor   = &ED4_ROOT->temp_ed4w->cursor;
-    int         base_pos = cursor ? cursor->get_base_position() : -1;
+    int         base_pos = (cursor && cursor->owner_of_cursor != 0) ? cursor->get_base_position() : -1;
 
     switch (blocktype) {
         case ED4_BT_NOBLOCK: {
-            aw_message("No block marked -- use middle mouse button");
+            aw_message("No block marked -- use right mouse button");
             break;
         }
         case ED4_BT_LINEBLOCK: {
@@ -228,7 +230,7 @@ void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
     else {
         GB_commit_transaction(gb_main);
 
-        cursor->jump_left_right_cursor_to_base_pos(ED4_ROOT->temp_aww, base_pos); // restore cursor at same base
+        if (base_pos != -1) cursor->jump_left_right_cursor_to_base_pos(ED4_ROOT->temp_aww, base_pos); // restore cursor at same base
     }
 }
 
@@ -773,29 +775,33 @@ static char *reverse_complement_sequence(const char *seq, int len, int repeat, i
 }
 
 static char *unalign_sequence_internal(const char *seq, int len, int *new_len, bool to_the_right) {
-    char *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
-    int o = 0;
-    int n = 0;
-    char gap = '-';
+    char *new_seq   = (char*)GB_calloc(len+1, sizeof(*new_seq));
+    int   o         = 0;
+    int   n         = 0;
+    char  gap       = '-';
 
-    while (o<len) {
-        if (ADPP_IS_ALIGN_CHARACTER(seq[o])) {
-            gap = seq[o];
-        }
-        else {
-            new_seq[n++] = seq[o];
-        }
-        o++;
+    if (to_the_right) {
+        if (ADPP_IS_ALIGN_CHARACTER(seq[0])) gap = seq[0]; // use first position of block if it's a gap
+        else if (ADPP_IS_ALIGN_CHARACTER(seq[-1])) gap = seq[-1]; // WARNING:  might be out-side sequence and undefined behavior
+    }
+    else {
+        if (ADPP_IS_ALIGN_CHARACTER(seq[len-1])) gap = seq[len-1]; // use first position of block if it's a gap
+        else if (ADPP_IS_ALIGN_CHARACTER(seq[len])) gap = seq[len]; // otherwise check position behind
     }
 
+    while (o<len) {
+        if (!ADPP_IS_ALIGN_CHARACTER(seq[o])) new_seq[n++] = seq[o];
+        o++;
+    }
+    
     if (n<len) {                // (move and) dot rest
-        int dotcount = len-n;
+        int gapcount = len-n;
         if (to_the_right) {
-            memmove(new_seq+dotcount, new_seq, n);
-            memset(new_seq, '.', dotcount);
+            memmove(new_seq+gapcount, new_seq, n);
+            memset(new_seq, gap, gapcount);
         }
         else {
-            memset(new_seq+n, '.', dotcount);
+            memset(new_seq+n, gap, gapcount);
         }
     }
 
@@ -827,12 +833,16 @@ static char *shift_left_sequence(const char *seq, int len, int repeat, int *new_
         }
 
         if (enough_space) {
-            char gap = seq[0];
+            char gap = '-';
 
-            new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
+            new_seq               = (char*)GB_calloc(len+1, sizeof(*new_seq));
             if (new_len) *new_len = len;
             memcpy(new_seq, seq+repeat, len-repeat);
-            memset(new_seq+len-repeat, ADPP_IS_ALIGN_CHARACTER(seq[len-1]) ? seq[len-1] : gap, repeat);
+
+            if (ADPP_IS_ALIGN_CHARACTER(seq[len-1])) gap    = seq[len-1];
+            else if (ADPP_IS_ALIGN_CHARACTER(seq[len])) gap = seq[len];
+
+            memset(new_seq+len-repeat, gap, repeat);
         }
         else {
             *error = GBS_global_string("Shift left needs %i gap%s at block start", repeat, repeat==1 ? "" : "s");
@@ -858,11 +868,15 @@ static char *shift_right_sequence(const char *seq, int len, int repeat, int *new
         }
 
         if (enough_space) {
-            char gap = seq[len-1];
+            char gap = '-';
 
             new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
             if (new_len) *new_len = len;
-            memset(new_seq, ADPP_IS_ALIGN_CHARACTER(seq[0]) ? seq[0] : gap, repeat);
+
+            if (ADPP_IS_ALIGN_CHARACTER(seq[0])) gap       = seq[0];
+            else if (ADPP_IS_ALIGN_CHARACTER(seq[-1])) gap = seq[-1]; // a working hack
+
+            memset(new_seq, gap, repeat);
             memcpy(new_seq+repeat, seq, len-repeat);
         }
         else {
