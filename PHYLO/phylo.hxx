@@ -11,6 +11,22 @@
 //                                                             //
 /////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////
+
+
+#ifndef _CPP_CSTDIO
+#include <cstdio>
+#endif
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
+#ifndef AWT_TREE_HXX
+#include <awt_tree.hxx>
+#endif
+
+
 #define PH_DB_CACHE_SIZE    2000000
 
 #define AP_F_LOADED ((AW_active)1)

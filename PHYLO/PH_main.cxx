@@ -1,5 +1,14 @@
-#include "include.hxx"
+#include "phylo.hxx"
+#include "phwin.hxx"
 #include "PH_display.hxx"
+
+#include <awt_sel_boxes.hxx>
+#include <aw_preset.hxx>
+
+#include <awt.hxx>
+
+#include <cstring>
+#include <iostream>
 
 using namespace std;
 
