@@ -181,11 +181,12 @@ symlink ../AWT/awt_map_key.hxx INCLUDE/awt_map_key.hxx &&
 symlink ../AWT/awt_nds.hxx INCLUDE/awt_nds.hxx &&
 symlink ../AWT/awt_preset.hxx INCLUDE/awt_preset.hxx &&
 symlink ../AWT/awt_pro_a_nucs.hxx INCLUDE/awt_pro_a_nucs.hxx &&
+symlink ../AWT/awt_sel_boxes.hxx INCLUDE/awt_sel_boxes.hxx &&
 symlink ../AWT/awt_seq_colors.hxx INCLUDE/awt_seq_colors.hxx &&
 symlink ../AWT/awt_seq_dna.hxx INCLUDE/awt_seq_dna.hxx &&
 symlink ../AWT/awt_seq_protein.hxx INCLUDE/awt_seq_protein.hxx &&
 symlink ../AWT/awt_seq_simple_pro.hxx INCLUDE/awt_seq_simple_pro.hxx &&
-symlink ../AWT/awt_tree.hxx INCLUDE/PH_phylo.hxx &&
+# symlink ../AWT/awt_tree.hxx INCLUDE/PH_phylo.hxx &&
 symlink ../AWT/awt_tree.hxx INCLUDE/awt_tree.hxx &&
 symlink ../AWT/awt_tree_cb.hxx INCLUDE/awt_tree_cb.hxx &&
 symlink ../AWT/awt_tree_cmp.hxx INCLUDE/awt_tree_cmp.hxx &&
