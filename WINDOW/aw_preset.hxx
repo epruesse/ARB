@@ -35,10 +35,14 @@ AW_gc_manager AW_manage_GC(AW_window                                       *aww,
             don't forget the 0 at the end of the fontname field
 
             When the GCs are modified the 'changecb' is called
-        */
+*/
 
-AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id);
-        /* opens the properties Window */
+AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id); /* opens the properties Window */
+
+// same as AW_create_gc_window, but uses different window id and name
+// (use if if there are two or more color def windows in one application,
+// otherwise they save the same window properties)
+AW_window *AW_create_gc_window_named(AW_root * aw_root, AW_gc_manager id_par, const char *wid, const char *windowname);
 
 
 void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char *label,bool message_reload = false);
