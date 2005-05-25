@@ -7,6 +7,7 @@
 
 #include <awt.hxx>
 
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 
