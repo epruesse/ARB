@@ -177,6 +177,7 @@ symlink ../AWT/awt_hotkeys.hxx INCLUDE/awt_hotkeys.hxx &&
 symlink ../AWT/awt_imp_exp.hxx INCLUDE/awt_imp_exp.hxx &&
 symlink ../AWT/awt_input_mask.hxx INCLUDE/awt_input_mask.hxx &&
 symlink ../AWT/awt_iupac.hxx INCLUDE/awt_iupac.hxx &&
+symlink ../AWT/awt_macro.hxx INCLUDE/awt_macro.hxx &&
 symlink ../AWT/awt_map_key.hxx INCLUDE/awt_map_key.hxx &&
 symlink ../AWT/awt_nds.hxx INCLUDE/awt_nds.hxx &&
 symlink ../AWT/awt_preset.hxx INCLUDE/awt_preset.hxx &&
