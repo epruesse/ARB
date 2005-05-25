@@ -68,7 +68,7 @@ public:
 
     //methods
     void save(std::ostream & out, int indent, SEC_root *root);
-    void read(std::istream & in, SEC_root *root);
+    GB_ERROR read(std::istream & in, SEC_root *root);
     void count_bases(SEC_root *root);
     void align_helix_strands(SEC_root *root, SEC_region *other_region);
     int get_faked_basecount();
@@ -96,12 +96,14 @@ class SEC_helix_strand : public SEC_Base {
     SEC_root *root;
 
     //redundant values
-    double fixpoint_x;  //coordinates, where strand meets it's loop
+    double fixpoint_x;          //coordinates, where strand meets it's loop
     double fixpoint_y;
-    double attachp1_x, attachp1_y, attachp2_x, attachp2_y;   // 2 points where the segments meet this strand from left and right
+    double attachp1_x, attachp1_y, attachp2_x, attachp2_y; // 2 points where the segments meet this strand from left and right
+    bool   is_rootside_fixpoint; // true if the above fixpoint is on the side pointing towards the root-loop
 
-    double thisLast_x,thisLast_y,otherLast_x,otherLast_y;               //these variables are used for prainting searchbackground in the
-    int    thisBaseColor,otherBaseColor,thisLastAbsPos,otherLastAbsPos;  // secondary editor
+    // these variables are used for painting searchbackground in the secondary editor
+    double thisLast_x,thisLast_y,otherLast_x,otherLast_y;
+    int    thisBaseColor,otherBaseColor,thisLastAbsPos,otherLastAbsPos;
     char   thisBase[2],otherBase[2];
 
 public:
@@ -115,12 +117,13 @@ public:
     //methods
     void save_all(std::ostream & out, int indent);
     void save_core(std::ostream & out, int indent);
-    void read(SEC_loop *loop_, std::istream & in);
+    GB_ERROR read(SEC_loop *loop_, std::istream & in);
     void compute_length();
     void compute_coordinates(double distance, double *x, double *y, double previous_x, double previous_y);
     void computeLoopCoordinates(double distance, double *x, double *y, double previous_x, double previous_y);
     void compute_attachment_points(double dir_delta);
-    void update(double fixpoint_x_, double fixpoint_y_, double angle_difference);
+    void change_angle(double angle_difference); // like update() w/o changing fixpoint
+    void update(double fixpoint_x_, double fixpoint_y_, double angle_difference, bool is_rootside_fixpoint_);
     void paint(AW_device *device, int show_constraints);
     void unlink();
     SEC_segment * get_previous_segment();
@@ -128,41 +131,46 @@ public:
     void print_ecoli_pos(long ecoli_pos, double attachpA_x, double attachpA_y, double attachpB_x, double attachpB_y, double base_x, double base_y, AW_device *device);
     void printHelixNumbers(AW_device *device, double helixStart_x, double helixStart_y, double helixEnd_x, double helixEnd_y, double base_x, double base_y, int absPos);
     void print_lonely_bases(char *buffer, AW_device *device, double attachpA_x, double attachpA_y, double attachpB_x, double attachpB_y, double base_x, double base_y,
-			    int abs_pos, double half_font_height, const char *bgColor, int thisStrand);//yadhu
+                            int abs_pos, double half_font_height, const char *bgColor, int thisStrand);//yadhu
     void generate_x_string();
-    //    void paint_this_strand(AW_device *device, double *v, double &length_of_v);
-    //    void paint_other_strand(AW_device *device, double *v, double &length_of_v);
-    void paint_strands(AW_device *device, double *v, double &length_of_v);
-
-    void paint_constraints(AW_device *device, double *v, double &length_of_v);
+    
+    void paint_strands(AW_device *device, const double *v, const double &length_of_v);
+    void paint_constraints(AW_device *device, const double *v, const double &length_of_v);
+    
     int connect_one(SEC_segment *segment_before, SEC_segment *segment_after);
     int connect_many(SEC_segment *segment_before, SEC_segment *segment_after);
 
     //selector-methods
     SEC_BASE_TYPE getType();
 
-    SEC_segment * get_next_segment() 	{ return next_segment; }
-    SEC_loop * get_loop() 			{ return loop; }
-    SEC_helix_strand * get_other_strand() 	{ return other_strand; }
-    SEC_helix * get_helix_info() 		{ return helix_info; }
-    SEC_region * get_region() 		{ return &region; }
+    SEC_segment *get_next_segment() { return next_segment; }
+    SEC_loop *get_loop() { return loop; }
+    SEC_helix_strand *get_other_strand() { return other_strand; }
+    SEC_helix *get_helix_info() { return helix_info; }
+    SEC_region *get_region() { return &region; }
 
-    double get_fixpoint_x () 	{ return fixpoint_x; }
-    double get_fixpoint_y () 	{ return fixpoint_y; }
-    double get_attachp1_x () 	{ return attachp1_x; }
-    double get_attachp1_y () 	{ return attachp1_y; }
-    double get_attachp2_x () 	{ return attachp2_x; }
-    double get_attachp2_y () 	{ return attachp2_y; }
+    double get_fixpoint_x ()    { return fixpoint_x; }
+    double get_fixpoint_y ()    { return fixpoint_y; }
+
+    bool isRootsideFixpoint() { return is_rootside_fixpoint; }
+    SEC_loop *get_rootside_loop() { return isRootsideFixpoint() ? get_loop() : other_strand->get_loop(); }
+
+    double get_attachp1_x ()    { return attachp1_x; }
+    double get_attachp1_y ()    { return attachp1_y; }
+    double get_attachp2_x ()    { return attachp2_x; }
+    double get_attachp2_y ()    { return attachp2_y; }
 
 
-    void set_loop(SEC_loop *loop_) 				{ loop = loop_; }
-    void set_other_strand(SEC_helix_strand *other_strand_) 	{ other_strand = other_strand_; }
-    void set_helix_info(SEC_helix *helix_info_) 		{ helix_info = helix_info_; }
-    void set_next_segment(SEC_segment *next_segment_) 		{ next_segment=next_segment_; }
+    void set_loop(SEC_loop *loop_)                              { loop = loop_; }
+    void set_other_strand(SEC_helix_strand *other_strand_)      { other_strand = other_strand_; }
+    void set_helix_info(SEC_helix *helix_info_)                 { helix_info = helix_info_; }
+    void set_next_segment(SEC_segment *next_segment_)           { next_segment=next_segment_; }
 
-    void set_fixpoint_x(double fixpoint_x_) 	{ fixpoint_x = fixpoint_x_; }
-    void set_fixpoint_y(double fixpoint_y_) 	{ fixpoint_y = fixpoint_y_; }
-    void set_fixpoints(double x, double y) 	{ fixpoint_x = x; fixpoint_y = y; }
+    void set_fixpoint(double x, double y, bool is_rootside_fixpoint_) {
+        fixpoint_x           = x;
+        fixpoint_y           = y;
+        is_rootside_fixpoint = is_rootside_fixpoint_;
+    }
 };
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -228,8 +236,8 @@ public:
     int loop_filter;
 
     //indicator variables
-    int show_constraints;
-    int drag_recursive;   //indicates, if a drag will recursively alter the angles of the following strands
+    int show_constraints;       // 0 = none, 1 = loops, 2 = strands, 3 = both
+    int drag_recursive;         //indicates, if a drag will recursively alter the angles of the following strands
 
     /* ******* Sequences */
 
@@ -334,7 +342,7 @@ public:
 
     //methods
     void save(std::ostream & out, int indent);
-    void read(SEC_loop *loop_,std::istream & in);
+    GB_ERROR read(SEC_loop *loop_,std::istream & in);
     void update_center_point(double start_x, double start_y, double end_x, double end_y);
     void update_alpha();
     void paint(AW_device *device, SEC_helix_strand *previous_strand_pointer);
@@ -430,9 +438,10 @@ class SEC_loop : public SEC_Base {
 private:
 
     //redundant values
-    int umfang;  //number of bases in whole loop
-    double x_loop, y_loop;          //coordinates of central point
+    int    umfang;              //number of bases in whole loop
+    double x_loop, y_loop;      //coordinates of central point
     double radius;
+    double uc_radius;           // unconstrainted
 
     SEC_segment *segment;
     double max_radius, min_radius; // constraints
@@ -445,7 +454,7 @@ public:
 
     //methods
     void save(std::ostream & out, SEC_helix_strand *caller, int indent);
-    void read(SEC_helix_strand *other_strand, std::istream & in);
+    GB_ERROR read(SEC_helix_strand *other_strand, std::istream & in);
     void find(int pos, SEC_helix_strand *caller, SEC_segment **found_segment, SEC_helix_strand **found_strand);
     void compute_umfang();
     void compute_radius();
@@ -461,21 +470,24 @@ public:
     void paint_constraints(AW_device *device);
 
     //selector methods
-    double get_max_radius() 	{ return max_radius; }
-    double get_min_radius() 	{ return min_radius; }
-    SEC_segment * get_segment() 	{ return segment; }
-    double get_x_loop() 			{ return x_loop; }
-    double get_y_loop() 			{ return y_loop; }
-    double get_radius() 		{ return radius; }
-    int get_umfang () 		{ return umfang; }
+    double get_max_radius()             { return max_radius; }
+    double get_min_radius()             { return min_radius; }
+    SEC_segment * get_segment()         { return segment; }
+    double get_center_x()               { return x_loop; }
+    double get_center_y()               { return y_loop; }
+    double get_radius()                 { return radius; }
+    double get_unconstrainted_radius()  { return uc_radius; }
+    int get_umfang ()                   { return umfang; } // unconstrainted!
+
+    SEC_helix_strand *get_rootside_strand() const;
 
     double& get_max_radius_ref() { return max_radius; }
     double& get_min_radius_ref() { return min_radius; }
 
-    void set_segment(SEC_segment *segment_) 	{ segment = segment_; }
-    void set_max_radius(double max_radius_) 	{ max_radius = max_radius_; }
-    void set_min_radius(double min_radius_) 	{ min_radius = min_radius_; }
-    void set_x_y_loop(double x_, double y_) 		{ x_loop = x_; y_loop = y_; }
+    void set_segment(SEC_segment *segment_)     { segment = segment_; }
+    void set_max_radius(double max_radius_)     { max_radius = max_radius_; }
+    void set_min_radius(double min_radius_)     { min_radius = min_radius_; }
+    void set_x_y_loop(double x_, double y_)     { x_loop = x_; y_loop = y_; }
 };
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -486,7 +498,8 @@ class SEC_helix {
 private:
 
     //redundant values
-    double length;
+    double length; // effective drawn length (respecting min_length and max_length)
+    size_t base_length; // max. # of bases in any strand
 
     double delta;
     double deltaIn;
@@ -499,34 +512,37 @@ public:
 
     //methods
     void save(std::ostream & out, int indent);
-    void read(std::istream & in);
+    GB_ERROR read(std::istream & in);
 
     //selector methods
-    double get_max_length () 	{ return max_length; }
-    double get_min_length()		{ return min_length; }
+    double get_max_length ()            { return max_length; }
+    double get_min_length()             { return min_length; }
 
-    double get_length() 		{ return length; }
+    // Note: length methods need previous call to compute_length()
+    double get_length()                 { return length; }
+    size_t get_base_length()            { return base_length; }
 
-    double get_delta () 		{ return delta; }
-    double get_deltaIn () 		{ return deltaIn;}
+    double get_delta ()                 { return delta; }
+    double get_deltaIn ()               { return deltaIn;}
 
-    double& get_max_length_ref() 	{ return max_length; }
-    double& get_min_length_ref() 	{ return min_length; }
+    double& get_max_length_ref()        { return max_length; }
+    double& get_min_length_ref()        { return min_length; }
 
-    void set_length(double length_) 	{ length = length_; }
+    void set_length(double length_)     { length = length_; }
+    void set_base_length(size_t length_){ base_length = length_; }
 
     void set_delta (double delta_) {
- 	while(delta_ >= (2*M_PI)) {
-	    delta_ -= (2*M_PI);
-	}
-	delta = delta_;
+        while(delta_ >= (2*M_PI)) {
+            delta_ -= (2*M_PI);
+        }
+        delta = delta_;
     }
 
     void set_deltaIn (double deltaIn_) {
-	while(deltaIn_ >= (2*M_PI)) {
-	    deltaIn_ -= (2*M_PI);
-	}
-	deltaIn = deltaIn_;
+        while(deltaIn_ >= (2*M_PI)) {
+            deltaIn_ -= (2*M_PI);
+        }
+        deltaIn = deltaIn_;
     }
 };
 
