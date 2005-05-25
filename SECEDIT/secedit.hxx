@@ -18,7 +18,7 @@ class SEC_graphic;
 #ifndef NDEBUG
 # define sec_assert(bed) do { if (!(bed)) { *(char*)0 = 0; } } while(0)
 #else
-# define sec_a3ssert(bed)
+# define sec_assert(bed)
 #endif
 
 class SEC_segment;
