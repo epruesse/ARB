@@ -22,6 +22,7 @@
 #include <awt_tree_cb.hxx>
 #include <awt_config_manager.hxx>
 #include <awt_canvas.hxx>
+#include <awt_sel_boxes.hxx>
 
 #include <PT_com.h>
 #include <client.h>
@@ -1012,7 +1013,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 
             if (selection_id) {     // if !selection_id then probe match window is not opened
                 pd_assert(g_spd);
-                root->awar(AWAR_PROBE_LIST)->rewrite_string(g_spd->getProbeTarget()); // force refresh of SAI/Probe window
+                root->awar(AWAR_SPV_DB_FIELD_NAME)->touch(); // force refresh of SAI/Probe window
             }
         }
 
@@ -1131,7 +1132,6 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
     root->awar_float (AWAR_PD_DESIGN_EXP_DTEDGE, .5, db1);
     root->awar_float (AWAR_PD_DESIGN_EXP_DT,     .5, db1);
 
-    root->awar_string( AWAR_PROBE_LIST, "" , global);
 
     double default_bonds[16] = {
         0.0, 0.0, 0.5, 1.1,
@@ -1191,23 +1191,14 @@ void create_probe_design_variables(AW_root *root,AW_default db1, AW_default glob
 
     root->awar_int   (AWAR_PROBE_ADMIN_PT_SERVER,    0,  db1   );
     root->awar_int   (AWAR_PROBE_CREATE_GENE_SERVER, 0,  db1   );
-    root->awar_string(AWAR_SAI_2_PROBE,              "", global);   // probe and sai visualization
-    root->awar_string(AWAR_DB_FIELD_NAME,        "name", global);   // to select the database field for display purpose
-    root->awar_int   (AWAR_DB_FIELD_WIDTH,           10, db1   );   // setting the width of the database field to display 
-    root->awar_string(AWAR_ACI_COMMAND,              "", global);   // User defined or pre-defined ACI command to display
-    root->awar_string(AWAR_SELECTED_PROBE,           "", global);   // For highlighting the selected PROBE
+    
+    root->awar_string(AWAR_SPV_SAI_2_PROBE,    "",     global); // name of SAI selected in list
+    root->awar_string(AWAR_SPV_DB_FIELD_NAME,  "name", global); // name of displayed species field
+    root->awar_int   (AWAR_SPV_DB_FIELD_WIDTH, 10,     global); // width of displayed species field
+    root->awar_string(AWAR_SPV_ACI_COMMAND,    "",     global); // User defined or pre-defined ACI command to display
+    root->awar_string(AWAR_SPV_SELECTED_PROBE, "",     global); // For highlighting the selected PROBE
 }
-/*
-AW_window *create_fig( AW_root *root, char *file)  {
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init( root, "HELP","HELP", 800, 800, 10, 10 );
-    aws->load_xfig(file);
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
-    return aws;
-}
-*/
+
 AW_window *create_probe_design_expert_window( AW_root *root)  {
     int i;
     char buffer[256];
