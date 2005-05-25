@@ -13,28 +13,30 @@ finderr() {
 }
 
 symlink_maybe_no_target() {
-    test -h $2 || ln -sf $1 $2
+    test -h $2 || ln -sf $1 $2 || finderr $2 "Failed to link '$1->$2'"
 }
 
 symlink() {
     if [ -z $2 ]; then
         if [ -z $1 ]; then
             echo "$SELF:22: Missing arguments in call to symlink()"
-            false
+            exit 1
         else
             finderr $1 "Second argument missing in call to symlink()"
+            exit 1
         fi
-    else
-        DIR=`dirname $2`
-        if [ -z $DIR ]; then
-            DIR=.
-        fi
-        (test -e $DIR/$1 || finderr $1 "Target '$DIR/$1 does not exists (anymore)" ) &&
-        (test -e $2 || (test -h $2 &&
-                        (finderr $2 "Warning Symlink '$2' points to nowhere -- removing wrong link";ls -al $2;rm $2;true)
-                        )) &&
-        (test -h $2 || ln -sf $1 $2)
     fi
+    
+    DIR=`dirname $2`
+    if [ -z $DIR ]; then
+        DIR=.
+    fi
+    
+    (test -e $DIR/$1 || finderr $1 "Target '$DIR/$1 does not exists (anymore)" ) &&
+    (test -e $2 || (test -h $2 &&
+                    (finderr $2 "Warning Symlink '$2' points to nowhere -- removing wrong link";ls -al $2;rm $2;true)
+                    ) || true) &&
+    symlink_maybe_no_target $1 $2
 }
 
 arbdb_symlink() {
@@ -43,10 +45,8 @@ arbdb_symlink() {
 }
         
 makedir() {
-    mkdir -p $1
+    mkdir -p $1 || finderr $1 "Failed to create directory '$1'"
 }
-
-true
 
 # Generates some directories as well:
 makedir INCLUDE &&
@@ -311,5 +311,4 @@ symlink ../../GDEHELP                     lib/help/GDEHELP &&
 # links related to probe web service
 symlink ../PROBE_WEB/SERVER PROBE_SERVER/ps_cgi &&
 
-true
-
+echo "generate_all_links.sh done."
