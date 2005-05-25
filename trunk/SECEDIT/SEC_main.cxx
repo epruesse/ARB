@@ -157,7 +157,7 @@ void SEC_template_changed_cb(GBDATA *gb_seq, AWT_canvas *ntw, GB_CB_TYPE type){
     }
 }
 
-void SEC_sequence_changed_cb(GBDATA *gb_seq, AWT_canvas *ntw, GB_CB_TYPE type){
+void SEC_sequence_changed_cb(GBDATA *gb_seq, AWT_canvas *ntw, GB_CB_TYPE type) {
     SEC_root * sec_root = SEC_GRAPHIC->sec_root;
     GB_transaction tscope(gb_main);
 
@@ -165,17 +165,23 @@ void SEC_sequence_changed_cb(GBDATA *gb_seq, AWT_canvas *ntw, GB_CB_TYPE type){
     sec_root->sequence = 0;
     sec_root->sequence_length = -1;
 
+    bool do_zoom_reset = false;
     if (type == GB_CB_DELETE || !sec_root->gb_sequence){
         sec_root->gb_sequence = 0;
-    }else{
+        do_zoom_reset         = true;
+    }
+    else {
         sec_root->sequence = GB_read_string(gb_seq);
         sec_root->sequence_length = GB_read_string_count(gb_seq);
     }
+
     if (sec_root->helix){
         sec_root->update();
-        ntw->recalc_size();
-        ntw->refresh();
     }
+    
+    if (do_zoom_reset) ntw->zoom_reset();
+    ntw->recalc_size();
+    ntw->refresh();
 }
 
 static inline int isInView(AW_pos x, AW_pos y, const AW_rectangle &view) {
@@ -280,26 +286,40 @@ void SEC_fit_window_cb(AW_window */*aw*/, AWT_canvas *ntw, AW_CL){
 
 
 void SEC_species_name_changed_cb(AW_root *awr, AWT_canvas *ntw){
-    SEC_root * sec_root = SEC_GRAPHIC->sec_root;
+    SEC_root *     sec_root        = SEC_GRAPHIC->sec_root;
     GB_transaction tscope(gb_main);
+    bool           had_gb_sequence = false;
+    bool           do_zoom_reset   = false;
+
     if (sec_root->gb_sequence){ // remove old callback
         GB_remove_callback(sec_root->gb_sequence,(GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED),(GB_CB)SEC_sequence_changed_cb, (int *)ntw);
         sec_root->gb_sequence = 0;
+        had_gb_sequence       = true;
     }
+    
     char *species_name = awr->awar_string(AWAR_SPECIES_NAME)->read_string();
     GBDATA *gb_species = GBT_find_species(gb_main,species_name);
-    if (gb_species){
+    if (gb_species) {
         char *ali_name = GBT_get_default_alignment(gb_main);
         sec_root->gb_sequence = GBT_read_sequence(gb_species, ali_name);
         if (sec_root->gb_sequence){
             GB_add_callback(sec_root->gb_sequence,(GB_CB_TYPE)(GB_CB_DELETE | GB_CB_CHANGED),(GB_CB)SEC_sequence_changed_cb, (int *)ntw);
+            if (!had_gb_sequence) do_zoom_reset = true; // do zoom reset if no sequence was displayed before
         }
         free(ali_name);
+    }
+    else if (had_gb_sequence) {
+        do_zoom_reset = true;
     }
 
     sec_root->seqTerminal = ED4_find_seq_terminal(species_name); // initializing the seqTerminal to get the current terminal
 
     SEC_sequence_changed_cb( sec_root->gb_sequence, ntw, GB_CB_CHANGED);
+
+    if (do_zoom_reset) {
+        ntw->zoom_reset();
+        ntw->refresh();
+    }
 
     free(species_name);
 }
@@ -360,15 +380,15 @@ void sec_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
     sec_root->show_constraints = 0;
 
     switch(mode){
-    case AWT_MODE_ZOOM: {
+        case AWT_MODE_ZOOM: {
             text="ZOOM MODE : CLICK or SELECT an area to ZOOM IN (LEFT) or ZOOM OUT (RIGHT) ";
             break;
         }
-    case AWT_MODE_STRETCH: {
-        text="STRETCH MODE  : Click and drag to EXPAND or CONTRACT the HELICES and LOOPS ";
+        case AWT_MODE_STRETCH: {
+            text="STRETCH MODE  : LEFT-CLICK & DRAG: stretch HELICES and LOOPS   RIGHT: Reset";
             break;
         }
-    case AWT_MODE_PROINFO: {
+        case AWT_MODE_PROINFO: {
             text="PROBE INFO MODE    LEFT: Displays PROBE information   RIGHT: Clears the Display";
             break;
         }
@@ -386,7 +406,7 @@ void sec_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
         }
         case AWT_MODE_MOD: {
             text="CONSTRAINT MODE    LEFT: modify constraint";
-            sec_root->show_constraints = 1;
+            sec_root->show_constraints = 3;
             break;
         }
         case AWT_MODE_LINE: {
@@ -862,38 +882,28 @@ static void SEC_sync_colors(AW_window *aww, AW_CL cl_mode, AW_CL) {
     }
 }
 
-AW_window *SEC_create_layout_window(AW_root *awr) {
+static AW_window *SEC_create_bonddef_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(awr, "SEC_LAYOUT", "SECEDIT Layout");
-    aws->load_xfig("sec_layout.fig");
+    aws->init(awr, "SEC_BONDDEF", "Bond definitions");
+    aws->load_xfig("sec_bonddef.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback( AW_POPUP_HELP,(AW_CL)"sec_layout.hlp");
+    aws->callback( AW_POPUP_HELP,(AW_CL)"sec_bonddef.hlp");
     aws->at("help");
     aws->create_button("HELP","HELP","H");
-
-     aws->at("strand_dist");
-     aws->label("Distance between strands:");
-     aws->create_input_field(AWAR_SECEDIT_DIST_BETW_STRANDS);
-
-#ifdef DEBUG
-    aws->at("debug");
-    aws->label("Show debugging info        :");
-    aws->create_toggle(AWAR_SECEDIT_SHOW_DEBUG);
-#endif
 
     int x, dummy;
     aws->at("chars");
     aws->get_at_position(&x, &dummy);
 
-#define PAIR_FIELDS(lower, upper)               \
-    aws->at(lower "_pair");                     \
-    aws->create_input_field(AWAR_SECEDIT_##upper##_PAIRS, 30);  \
-    aws->at_x(x);                       \
+#define PAIR_FIELDS(lower, upper)                                       \
+    aws->at(lower "_pair");                                             \
+    aws->create_input_field(AWAR_SECEDIT_##upper##_PAIRS, 30);          \
+    aws->at_x(x);                                                       \
     aws->create_input_field(AWAR_SECEDIT_##upper##_PAIR_CHAR, 1)
 
     PAIR_FIELDS("strong", STRONG);
@@ -909,39 +919,58 @@ AW_window *SEC_create_layout_window(AW_root *awr) {
 
 /* TO CHANGE THE DISPLAY PROPERITIES IN THE SECENDORY EDITOR WINDOW - BASES, SKELETON, HELIX NUMBERS........ */
 
-AW_window *SEC_create_display_window(AW_root *awr) {
+static AW_window *SEC_create_display_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(awr, "SEC_DISPLAY", "DISPLAY OPTIONS");
+    aws->init(awr, "SEC_DISPLAY_OPTS", "Display options");
     aws->load_xfig("sec_display.fig");
+
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    aws->callback( AW_POPUP_HELP,(AW_CL)"sec_display.hlp");
+    aws->at("help");
+    aws->create_button("HELP","HELP","H");
+    
 
     aws->at("helixNrs");
     aws->label("Show Helix Numbers         :");
     aws->create_toggle(AWAR_SECEDIT_SHOW_HELIX_NRS);
 
+    aws->at("strand_dist");
+    aws->label("Distance between strands   :");
+    aws->create_input_field(AWAR_SECEDIT_DIST_BETW_STRANDS);
+
     aws->at("strSkeleton");
     aws->label("Display Structure Skeleton :");
     aws->create_toggle(AWAR_SECEDIT_SHOW_STR_SKELETON);
 
+    aws->at("skelThickness");
+    aws->label("Skeleton Thickness         :");
+    aws->create_input_field( AWAR_SECEDIT_SKELETON_THICKNESS);
+    
     aws->at("bases");
-    aws->label("Hide Bases                 :");
-    aws->create_toggle(AWAR_SECEDIT_HIDE_BASES);
+    aws->label("Display Bases              :");
+    aws->create_inverse_toggle(AWAR_SECEDIT_HIDE_BASES);
 
     aws->at("bonds");
-    aws->label("Hide Bonds                 :");
-    aws->create_toggle(AWAR_SECEDIT_HIDE_BONDS);
+    aws->label("Display Bonds              :");
+    aws->create_inverse_toggle(AWAR_SECEDIT_HIDE_BONDS);
+
+    aws->at("bonddef");
+    aws->callback(AW_POPUP, (AW_CL)SEC_create_bonddef_window, 0);
+    aws->create_button("sec_bonddef", "Define", 0);
 
     aws->at("sai");
     aws->label("Visualise SAI              :");
     aws->create_toggle(AWAR_SECEDIT_DISPLAY_SAI);
 
-    aws->at("skelThickness");
-    aws->label("Skeleton Thickness         :");
-    aws->create_input_field( AWAR_SECEDIT_SKELETON_THICKNESS);
-
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+#ifdef DEBUG
+    aws->at("show_debug");
+    aws->label("Show debug info:");
+    aws->create_toggle(AWAR_SECEDIT_SHOW_DEBUG);
+#endif
 
     return aws;
 }
@@ -1015,13 +1044,12 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->insert_menu_topic("sync_other_colors",  "Sync other colors with EDIT4",  "o", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)4, 0);
     awm->insert_menu_topic("sync_all_colors",    "Sync all colors with EDIT4",    "a", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)(1|2|4), 0);
     awm->insert_separator();
-    awm->insert_menu_topic("sec_layout", "Layout Settings", "L", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_layout_window, 0);
-    awm->insert_menu_topic("display", "Change Display", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
+    awm->insert_menu_topic("sec_display", "Display options", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
     awm->insert_separator();
 #if defined(FREESTANDING)
     awm->insert_menu_topic("save_props",    "Save Properties (~/.arb_prop/secedit)",    "P","savedef.hlp",  AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 #else
-    awm->insert_menu_topic("save_props",    "How to save properties",   "P","savedef.hlp",  AWM_ALL, (AW_CB) AW_POPUP_HELP, (AW_CL)"sec_props.hlp", 0 );
+    awm->insert_menu_topic("save_props",    "How to save properties",   "p","savedef.hlp",  AWM_ALL, (AW_CB) AW_POPUP_HELP, (AW_CL)"sec_props.hlp", 0 );
 #endif
 
     awm->create_mode( 0, "pzoom.bitmap", "sec_mode.hlp", AWM_ALL, (AW_CB)sec_mode_event,(AW_CL)ntw,(AW_CL)AWT_MODE_ZOOM);
