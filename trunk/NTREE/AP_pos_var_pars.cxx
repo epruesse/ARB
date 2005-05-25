@@ -12,6 +12,7 @@
 #include <aw_window.hxx>
 #include <awt.hxx>
 #include <awt_tree.hxx>
+#include <awt_sel_boxes.hxx>
 
 #include "ap_pos_var_pars.hxx"
 

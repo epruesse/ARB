@@ -15,6 +15,7 @@
 #include <awt_imp_exp.hxx>
 #include <cat_tree.hxx>
 #include <awt_tree_cmp.hxx>
+#include <awt_sel_boxes.hxx>
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>

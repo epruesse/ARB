@@ -19,6 +19,7 @@
 #include <awt.hxx>
 #include <awt_nds.hxx>
 #include <awt_changekey.hxx>
+#include <awt_sel_boxes.hxx>
 
 #include "GEN_interface.hxx"
 
@@ -324,6 +325,8 @@ void GEN_create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main, GB_C
 //  ---------------------------------------------------------------------------------------
 void GEN_create_select_nds_window(AW_window *aww,char *key_text,AW_CL cgb_main)
 {
+#warning make this function more general like AWT_popup_select_species_field_window
+    
     static AW_window *win = 0;
     AW_root *aw_root = aww->get_root();
     aw_root->awar("tmp/gene_viewkey/key_text")->map(key_text);

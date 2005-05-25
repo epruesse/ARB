@@ -16,12 +16,13 @@
 #include <aw_global.hxx>
 #include <awt.hxx>
 #include <awt_advice.hxx>
+#include <awt_changekey.hxx>
+#include <awt_sel_boxes.hxx>
 #include <GEN.hxx>
 #include <GAGenomImport.h>
-#include "awti_import.hxx"
-#include "AW_rename.hxx"
-#include "awti_imp_local.hxx"
-#include "awt_changekey.hxx"
+#include <AW_rename.hxx>
+#include <awti_import.hxx>
+#include <awti_imp_local.hxx>
 
 #define awti_assert(cond) arb_assert(cond)
 

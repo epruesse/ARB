@@ -7,6 +7,7 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <awt.hxx>
+#include <awt_sel_boxes.hxx>
 #include <iostream>
 #include <string.h>
 

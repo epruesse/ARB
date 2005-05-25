@@ -22,6 +22,7 @@
 #include "awtlocal.hxx"
 #include "awt_config_manager.hxx"
 #include "awt_changekey.hxx"
+#include "awt_sel_boxes.hxx"
 
 #include "GEN.hxx"
 

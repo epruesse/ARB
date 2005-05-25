@@ -55,6 +55,7 @@
 #include <aw_awars.hxx>
 #include <aw_global.hxx>
 #include <awt.hxx>
+#include <awt_sel_boxes.hxx>
 
 typedef GB_UINT4  STATTYPE;
 static void       CPRO_memrequirement_cb(AW_root *aw_root,AW_CL cd1,AW_CL cd2);

@@ -15,6 +15,7 @@
 #include <awt_dtree.hxx>
 #include <awtlocal.hxx>
 #include <awt_changekey.hxx>
+#include <awt_sel_boxes.hxx>
 #include <db_scanner.hxx>
 #include <awtc_next_neighbours.hxx>
 #include <AW_rename.hxx>

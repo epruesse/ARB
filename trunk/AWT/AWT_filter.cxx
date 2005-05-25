@@ -11,6 +11,7 @@
 #include "awt.hxx"
 #include "awtfilter.hxx"
 #include <awt_tree.hxx>
+#include <awt_sel_boxes.hxx>
 
 
 

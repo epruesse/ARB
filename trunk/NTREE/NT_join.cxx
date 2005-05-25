@@ -9,6 +9,7 @@
 #include <aw_awars.hxx>
 #include <awt.hxx>
 #include <awt_changekey.hxx>
+#include <awt_sel_boxes.hxx>
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>

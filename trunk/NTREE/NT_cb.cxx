@@ -13,6 +13,7 @@
 
 #include <awt_tree.hxx>
 #include <awt_dtree.hxx>
+#include <awt_sel_boxes.hxx>
 #include "ad_trees.hxx"
 #include "ntree.hxx"
 #include "nt_internal.h"

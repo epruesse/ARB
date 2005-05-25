@@ -55,6 +55,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <awt.hxx>
+#include <awt_sel_boxes.hxx>
 
 #define AWAR_MAX_FREQ   "tmp/CON_MAX_FREQ/"
 
