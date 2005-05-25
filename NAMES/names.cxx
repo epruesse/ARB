@@ -14,6 +14,9 @@
 #include <servercntrl.h>
 #include <struct_man.h>
 
+#include <list>
+#include <string>
+
 #if defined(DEBUG)
 // #define DUMP_NAME_CREATION
 #endif // DEBUG
@@ -692,9 +695,25 @@ extern "C" int server_save(AN_main *main, int dummy)
     else {
         printf("No changes to ARB_name_server data.\n");
     }
-    
+
     return 0;
 }
+
+#if defined(DEBUG)
+static void check_list(AN_shorts *start) {
+    int count = 0;
+    while (++count) {
+        start = start->next;
+        if (!start) {
+            fprintf(stderr, "<list has %i elements>\n", count);
+            return;
+        }
+    }
+
+    fprintf(stderr, "<ERROR - list is looped>\n");
+    gb_assert(0);
+}
+#endif // DEBUG
 
 static void check_for_broken_short_names(AN_main *main) {
     // test for duplicated names or name parts (only differing in case)
@@ -755,23 +774,29 @@ static void check_for_broken_short_names(AN_main *main) {
         int deleted_names    = 0;
 
         // now capitalize all name parts
-        for (AN_shorts *shrt =  main->shorts1; shrt; ) {
-            AN_shorts *next     = shrt->next;
-            char      *cap_name = strdup(shrt->shrt);
-            an_autocaps(cap_name);
+        {
+            list<string> idents_to_recreate;
 
-            if (strcmp(cap_name, shrt->shrt) != 0) {
-                // fprintf(stderr, "Correcting case '%s'", shrt->shrt);
-                char *ident     = strdup(shrt->mh.ident);
+            for (AN_shorts *shrt =  main->shorts1; shrt; ) {
+                char      *cap_name = strdup(shrt->shrt);
+                an_autocaps(cap_name);
+
+                if (strcmp(cap_name, shrt->shrt) != 0) {
+                    idents_to_recreate.push_back(shrt->mh.ident);
+                }
+                free(cap_name);
+                
+                AN_shorts *next = shrt->next;
                 an_remove_short(shrt);
-                char *new_short = an_get_short(main->shorts1, &(main->pshorts1), ident);
-                // fprintf(stderr, " -> '%s'\n", new_short);
-                free(new_short);
-                free(ident);
+                shrt = next;
+            }
+
+            list<string>::const_iterator end = idents_to_recreate.end();
+            for (list<string>::const_iterator i = idents_to_recreate.begin(); i != end; ++i) {
+                const char *ident = i->c_str();
+                an_get_short(main->shorts1, &(main->pshorts1), ident);
                 regen_name_parts++;
             }
-            shrt = next;
-            free(cap_name);
         }
 
         // now capitalize all short names
