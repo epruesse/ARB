@@ -109,6 +109,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
+PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_seq_protein.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
@@ -161,5 +162,6 @@ PARS_main.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
+PARS_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx

@@ -46,6 +46,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/client.h
@@ -78,9 +79,11 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_dtree.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx

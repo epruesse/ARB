@@ -260,6 +260,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/st_window.hxx
@@ -440,6 +441,7 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 ED4_window.o: ed4_class.hxx
 ED4_window.o: ed4_defs.hxx
@@ -482,3 +484,4 @@ edit_naligner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/awt.hxx
+edit_naligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

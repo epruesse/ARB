@@ -71,6 +71,7 @@ edit_naligner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/awt.hxx
+edit_naligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 edit_tools.o: edit.hxx
 edit_tools.o: $(ARBHOME)/INCLUDE/ad_prot.h

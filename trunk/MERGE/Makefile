@@ -43,6 +43,7 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+MG_alignment.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 MG_checkfield.o: merge.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -57,6 +58,7 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+MG_checkfield.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 MG_configs.o: merge.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/ad_config.h
@@ -70,6 +72,7 @@ MG_configs.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/awt.hxx
+MG_configs.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 MG_extendeds.o: merge.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -83,6 +86,7 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/awt.hxx
+MG_extendeds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 
 MG_gene_species.o: merge.hxx
@@ -156,6 +160,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+MG_species.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/GEN.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/inline.h
@@ -171,3 +176,4 @@ MG_trees.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/awt.hxx
+MG_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

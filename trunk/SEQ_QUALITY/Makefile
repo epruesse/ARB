@@ -63,4 +63,5 @@ SQ_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt.hxx
+SQ_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/smartptr.h
