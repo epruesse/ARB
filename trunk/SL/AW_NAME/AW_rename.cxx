@@ -146,12 +146,14 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
 GB_ERROR AWTC_recreate_name(GBDATA *gb_species, bool update_status) {
     GBDATA   *gb_main = GB_get_root(gb_species);
 
-    aw_status("Connecting to name server");
-    aw_status((double)0);
+    if (update_status) {
+        aw_status("Connecting to name server");
+        aw_status((double)0);
+    }
 
     GB_ERROR error = name_server.connect(gb_main);
     if (!error) {
-        aw_status("Generating name");
+        if (update_status) aw_status("Generating name");
 
         GBDATA *gb_name      = GB_find(gb_species, "name", 0, down_level);
         GBDATA *gb_full_name = GB_find(gb_species, "full_name", 0, down_level);
@@ -201,7 +203,10 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species, bool update_status) {
             }
 
             if (error) GBT_abort_rename_session();
-            else GBT_commit_rename_session(aw_status, aw_status);
+            else {
+                if (update_status) GBT_commit_rename_session(aw_status, aw_status);
+                else GBT_commit_rename_session(0, 0);
+            }
         }
 
         free(shrt);
