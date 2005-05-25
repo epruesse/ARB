@@ -46,8 +46,15 @@ void NT_import_sequences(AW_window *aww,AW_CL,AW_CL){
     gb_merge = open_AWTC_import_window(aww->get_root(),"",0,(AW_RCB)nt_seq_load_cb,0,0);
 
     // change awar values (import window just opened!)
-    int gb_main_is_genom_db  = GEN_is_genome_db(gb_main, 0);
-    int gb_merge_is_genom_db = GEN_is_genome_db(gb_merge, gb_main_is_genom_db);
+
+    int gb_main_is_genom_db, gb_merge_is_genom_db;
+    {
+        GB_transaction t1(gb_main);
+        GB_transaction t2(gb_merge);
+
+        gb_main_is_genom_db  = GEN_is_genome_db(gb_main, 0);
+        gb_merge_is_genom_db = GEN_is_genome_db(gb_merge, gb_main_is_genom_db);
+    }
 
     nt_assert(gb_main_is_genom_db == gb_merge_is_genom_db);
 

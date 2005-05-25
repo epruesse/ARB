@@ -436,7 +436,12 @@ void probe_design_event(AW_window *aww)
         error = "Cannot contact to probe server: Connection Refused";
     }
 
-    bool design_gene_probes = root->awar(AWAR_PD_DESIGN_GENE)->read_int() && GEN_is_genome_db(gb_main, -1);
+    bool design_gene_probes = root->awar(AWAR_PD_DESIGN_GENE)->read_int();
+    if (design_gene_probes) {
+        GB_transaction ta(gb_main);
+        if (!GEN_is_genome_db(gb_main, -1)) design_gene_probes = false;
+    }
+
     if (!error){
         if (design_gene_probes) { // design probes for genes
             error = pd_get_the_gene_names(bs,check);
@@ -1793,30 +1798,34 @@ void pd_query_pt_server(AW_window *aww)
 void pd_export_pt_server(AW_window *aww)
 {
     AW_root  *awr                = aww->get_root();
-    bool      create_gene_server = awr->awar(AWAR_PROBE_CREATE_GENE_SERVER)->read_int() && GEN_is_genome_db(gb_main, -1);
     char      pt_server[256];
     char     *server;
     char     *file;
     GB_ERROR  error              = 0;
 
-    // check alignment first
-    if (create_gene_server) {
-        GB_transaction dummy(gb_main);
-        GBDATA *gb_ali = GBT_get_alignment(gb_main, GENOM_ALIGNMENT);
-        if (!gb_ali) {
-            error             = GB_get_error();
-            if (!error) error = "cannot find alignment '" GENOM_ALIGNMENT "'";
+    bool create_gene_server = awr->awar(AWAR_PROBE_CREATE_GENE_SERVER)->read_int();
+    {
+        GB_transaction ta(gb_main);
+        if (create_gene_server && !GEN_is_genome_db(gb_main, -1)) create_gene_server = false;
+
+        // check alignment first
+        if (create_gene_server) {
+            GBDATA *gb_ali = GBT_get_alignment(gb_main, GENOM_ALIGNMENT);
+            if (!gb_ali) {
+                error             = GB_get_error();
+                if (!error) error = "cannot find alignment '" GENOM_ALIGNMENT "'";
+            }
         }
-    }
-    else { // normal pt server
-        GB_transaction dummy(gb_main);
-        char              *use     = GBT_get_default_alignment(gb_main);
-        GB_alignment_type  alitype = GBT_get_alignment_type(gb_main, use);
-        if (alitype == GB_AT_AA) error = "The PT-server does only support RNA/DNA sequence data";
-        free(use);
+        else { // normal pt server
+            char              *use     = GBT_get_default_alignment(gb_main);
+            GB_alignment_type  alitype = GBT_get_alignment_type(gb_main, use);
+            if (alitype == GB_AT_AA) error = "The PT-server does only support RNA/DNA sequence data";
+            free(use);
+        }
     }
 
     sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
+    
     if (!error &&
         aw_message("This function will send your currently loaded data as the new data to the pt_server !!!\n"
                    "The server will need a long time (up to several hours) to analyse the data.\n"
