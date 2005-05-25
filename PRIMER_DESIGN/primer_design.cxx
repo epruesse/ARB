@@ -506,7 +506,8 @@ static void primer_design_restore_config(AW_window *aww, const char *stored_stri
 //
 AW_window *create_primer_design_window( AW_root *root,AW_default def )
 {
-    GB_ERROR error = 0;
+    GB_ERROR error       = 0;
+    bool     is_genome_db;
     {
         GB_transaction  dummy( gb_main );
         char           *selected_species = root->awar( AWAR_SPECIES_NAME )->read_string();
@@ -516,6 +517,8 @@ AW_window *create_primer_design_window( AW_root *root,AW_default def )
             error = "You have to select a species!";
             aw_message( error );
         }
+
+        is_genome_db = GEN_is_genome_db(gb_main, -1);
     }
 
     AWUSE( def );
@@ -527,7 +530,7 @@ AW_window *create_primer_design_window( AW_root *root,AW_default def )
     aws->callback( (AW_CB0)AW_POPDOWN );                     aws->at( "close" );   aws->create_button( "CLOSE","CLOSE","C" );
     aws->callback( AW_POPUP_HELP,(AW_CL)"primer_new.hlp" );  aws->at( "help" );    aws->create_button( "HELP","HELP","H" );
     aws->callback( primer_design_event_init, (AW_CL)0);      aws->at( "init1" );   aws->create_button( "INIT_FROM_SPECIES","Species","I" );
-    if (GEN_is_genome_db(gb_main, -1)) {
+    if (is_genome_db) {
         aws->callback( primer_design_event_init, (AW_CL)1); aws->at( "init2" ); aws->create_button( "INIT_FROM_GENE","Gene","I" );
     }
 
