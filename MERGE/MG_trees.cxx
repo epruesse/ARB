@@ -6,6 +6,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <awt.hxx>
+#include <awt_sel_boxes.hxx>
 #include "merge.hxx"
 
 #define AWAR_TREE_NAME1 "tmp/merge1/tree_name"

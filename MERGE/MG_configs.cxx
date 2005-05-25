@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_configs.cxx                                         //
 //    Purpose   : Merge editor configurations                            //
-//    Time-stamp: <Fri May/20/2005 19:51 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed May/25/2005 17:23 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -22,6 +22,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <awt.hxx>
+#include <awt_sel_boxes.hxx>
 #include "merge.hxx"
 
 #define AWAR_CONFIG_NAME1 "tmp/merge1/config_name"

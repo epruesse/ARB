@@ -6,6 +6,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <awt.hxx>
+#include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
 #include <db_scanner.hxx>
 #include "merge.hxx"

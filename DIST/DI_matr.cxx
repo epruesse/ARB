@@ -16,12 +16,15 @@
 #include <aw_window.hxx>
 #include <aw_preset.hxx>
 #include <aw_global.hxx>
-#include <awt.hxx>
 
+#include <awt.hxx>
 #include <awt_tree.hxx>
+#include <awt_sel_boxes.hxx>
+#include <awt_macro.hxx>
+#include <awt_csp.hxx>
+
 #include "dist.hxx"
 #include <BI_helix.hxx>
-#include <awt_csp.hxx>
 #include <CT_ctree.hxx>
 #include "di_matr.hxx"
 #include "di_protdist.hxx"

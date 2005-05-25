@@ -19,6 +19,8 @@
 #include <awt_preset.hxx>
 #include <awt_advice.hxx>
 #include <awt_config_manager.hxx>
+#include <awt_sel_boxes.hxx>
+#include <awt_macro.hxx>
 
 #include <AW_rename.hxx>
 #include <awtc_submission.hxx>

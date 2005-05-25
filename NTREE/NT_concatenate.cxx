@@ -30,6 +30,7 @@
 #include <awt_tree.hxx>
 #include <awt_canvas.hxx>
 #include <awt_changekey.hxx>
+#include <awt_sel_boxes.hxx>
 #include "awtlocal.hxx"
 #include <aw_question.hxx>
 #include "nt_concatenate.hxx"

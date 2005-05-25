@@ -15,6 +15,7 @@
 #include <aw_global.hxx>
 #include "awt.hxx"
 #include "awtlocal.hxx"
+#include "awt_sel_boxes.hxx"
 
 
 void ad_table_field_reorder_cb(AW_window *aws,awt_table *awtt) {

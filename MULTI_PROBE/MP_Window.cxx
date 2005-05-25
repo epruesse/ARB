@@ -5,6 +5,7 @@
 #include <aw_awars.hxx>
 #include <aw_global.hxx>
 #include <awt.hxx>
+#include <awt_sel_boxes.hxx>
 
 #include "MultiProbe.hxx"
 #include <mp_proto.hxx>

@@ -25,7 +25,7 @@
 #include "awtc_ClustalV.hxx"
 #include "awtc_fast_aligner.hxx"
 #include "awt.hxx"
-
+#include <awt_sel_boxes.hxx>
 
 static IslandHopping *island_hopper = 0;
 

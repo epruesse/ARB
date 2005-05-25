@@ -16,6 +16,7 @@
 #include <awt_csp.hxx>
 #include <awt.hxx>
 #include <awt_dtree.hxx>
+#include <awt_sel_boxes.hxx>
 #include "pars_dtree.hxx"
 
 #include "AP_buffer.hxx"

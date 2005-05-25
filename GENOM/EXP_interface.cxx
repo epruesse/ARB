@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Tue May/24/2005 13:23 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed May/25/2005 17:21 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -16,6 +16,7 @@
 #include <awt.hxx>
 #include <awt_canvas.hxx>
 #include <awt_changekey.hxx>
+#include <awt_sel_boxes.hxx>
 #include <arbdbt.h>
 #include <aw_awars.hxx>
 #include <db_scanner.hxx>

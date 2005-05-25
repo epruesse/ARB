@@ -10,6 +10,7 @@
 #include "awt_tree.hxx"
 #include "BI_helix.hxx"
 #include "awt_csp.hxx"
+#include "awt_sel_boxes.hxx"
 
 
 

@@ -16,6 +16,7 @@
 #include <awt_canvas.hxx>
 #include <awt_tree.hxx>
 #include <awt_dtree.hxx>
+#include <awt_sel_boxes.hxx>
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>

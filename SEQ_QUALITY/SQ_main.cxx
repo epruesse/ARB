@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_main.cxx                                            //
 //    Purpose   : Entrypoint to Seq. Quality analysis; calls funktions   //
-//    Time-stamp: <Thu Feb/19/2004 18:31 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed May/25/2005 17:32 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -21,6 +21,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <awt.hxx>
+#include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
 
 #include "seq_quality.h"

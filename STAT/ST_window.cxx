@@ -9,6 +9,7 @@
 #include <awt_tree.hxx>
 #include <awt_csp.hxx>
 #include <awt_changekey.hxx>
+#include <awt_sel_boxes.hxx>
 #include "st_window.hxx"
 #include "st_ml.hxx"
 #include "st_quality.hxx"

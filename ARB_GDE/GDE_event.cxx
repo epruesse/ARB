@@ -16,6 +16,7 @@
 #include <aw_window.hxx>
 #include <awt.hxx>
 #include <awt_tree.hxx>
+#include <awt_sel_boxes.hxx>
 #include <gde.hxx>
 #include "GDE_menu.h"
 #include "GDE_def.h"

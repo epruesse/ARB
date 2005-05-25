@@ -15,6 +15,7 @@
 #include <awt.hxx>
 #include <awt_tree.hxx>
 #include <awt_csp.hxx>
+#include <awt_sel_boxes.hxx>
 #include "ap_csp_2_gnuplot.hxx"
 
 #ifndef ARB_ASSERT_H

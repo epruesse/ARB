@@ -9,6 +9,7 @@
 #include <aw_window.hxx>
 #include <awt.hxx>
 #include <awt_changekey.hxx>
+#include <awt_sel_boxes.hxx>
 #include "merge.hxx"
 
 #define AWAR1 "tmp/merge1/"

@@ -19,6 +19,7 @@
 #include <awt_tree.hxx>
 #include <awt_dtree.hxx>
 #include <awt_tree_cb.hxx>
+#include <awt_sel_boxes.hxx>
 
 #include <awt_csp.hxx>
 
