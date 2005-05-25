@@ -41,6 +41,7 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt.hxx
+GDE.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 GDE_arbdb_io.o: gde.hxx
 GDE_arbdb_io.o: GDE_def.h
@@ -77,6 +78,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/awt.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 
 GDE_FileIO.o: gde.hxx

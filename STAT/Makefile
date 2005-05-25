@@ -74,4 +74,5 @@ ST_window.o: $(ARBHOME)/INCLUDE/awt.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_tree.hxx

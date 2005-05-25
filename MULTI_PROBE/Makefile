@@ -242,6 +242,7 @@ MP_Window.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/awt.hxx
+MP_Window.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MP_Window.o: $(ARBHOME)/INCLUDE/client.h
 MP_Window.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_Window.o: $(ARBHOME)/INCLUDE/servercntrl.h

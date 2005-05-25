@@ -76,7 +76,9 @@ DI_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/awt_macro.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_seq_simple_pro.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_tree.hxx

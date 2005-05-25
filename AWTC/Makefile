@@ -67,6 +67,7 @@ AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/awt.hxx
+AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/island_hopping.h
 

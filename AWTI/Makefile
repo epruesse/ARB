@@ -60,5 +60,6 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/GAGenomImport.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
