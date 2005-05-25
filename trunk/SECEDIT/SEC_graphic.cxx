@@ -20,6 +20,8 @@
 #include "sec_graphic.hxx"
 #include "secedit.hxx"
 
+using namespace std;
+
 void SEC_create_awars(AW_root *aw_root,AW_default def)
 {
     aw_root->awar_int(AWAR_SECEDIT_BASELINEWIDTH,0,def)->set_minmax(0,10);
@@ -178,6 +180,12 @@ static GB_ERROR change_constraints(GB_CSTR constraint_type, GB_CSTR element_type
     return error;
 }
 
+inline double distance(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2) {
+    double dx = x2-x1;
+    double dy = y2-y1;
+    return sqrt(dx*dx+dy*dy);
+}
+
 void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, char key_char, AW_event_type type, AW_pos screen_x, AW_pos screen_y, AW_clicked_line *cl, AW_clicked_text *ct) {
     AWUSE(cl);
     AW_pos world_x;
@@ -199,72 +207,117 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
                 break;
             }
 
-            SEC_Base *base;
-            SEC_helix_strand *strand;
-            SEC_helix *helix_info;
-            SEC_segment *segment;
-            SEC_loop *loop;
+            SEC_Base *base = (SEC_Base*)ct->client_data1;
 
-            double fixpoint_x, fixpoint_y;
-            double loopCentre_x, loopCentre_y;
-            double finalLengthConstraint;
-            // 	double initialLengthConstraint;
-            // 	double initialRadiusConstraint, finalRadiusConstraint;
-            double startDist, endDist;
+            if (base) {
+                static double start_distFix, start_size; // for start click
+                bool          do_update = false;
 
-            if(button==AWT_M_LEFT) {
-                switch(type){
-                    case AW_Mouse_Press: {
-                        base = (SEC_Base*)ct->client_data1;
-                        if (base) {
-                            if(base->getType()==SEC_HELIX_STRAND) {
-                                strand     = (SEC_helix_strand*)base;
-                                helix_info = strand->get_helix_info();
-                                fixpoint_x = strand->get_fixpoint_x();
-                                fixpoint_y = strand->get_fixpoint_y();
-                                startDist  = sqrt(((fixpoint_x-world_x)*(fixpoint_x-world_x))+((fixpoint_y- world_y)*(fixpoint_y- world_y)));
-                                //	initialLengthConstraint = helix_info->get_length();
+                switch (base->getType()) {
+                    case SEC_HELIX_STRAND: {
+                        SEC_helix_strand *strand           = (SEC_helix_strand*)base;
+                        SEC_helix        *helix_info       = strand->get_helix_info();
+                        double&           min_helix_length = helix_info->get_min_length_ref();
+                        double&           max_helix_length = helix_info->get_max_length_ref();
+                        const double      delta            = 0.1;
+
+                        if (button == AWT_M_LEFT) {
+                            double distFix = distance(world_x, world_y, strand->get_fixpoint_x(), strand->get_fixpoint_y());
+                            if (distFix <= 0.0) distFix = 0.1; // avoid zero
+
+                            if (type == AW_Mouse_Press) {
+                                start_distFix = distFix;
+                                start_size    = helix_info->get_length(); // use last drawn length
                             }
-                            if(base->getType()==SEC_SEGMENT) {
-                                segment      = (SEC_segment*)base;
-                                loop         = segment->get_loop();
-                                loopCentre_x = loop->get_x_loop();
-                                loopCentre_y = loop->get_y_loop();
-                                startDist    = sqrt(((loopCentre_x-world_x)*(loopCentre_x-world_x))+((loopCentre_y- world_y)*(loopCentre_y- world_y)));
-                                //initialRadiusConstraint = loop->get_min_radius();
+                            else if (type == AW_Mouse_Release || type == AW_Mouse_Drag) {
+                                double new_size     = start_size * (distFix/start_distFix);
+                                double default_size = helix_info->get_base_length();
+
+                                if (new_size<(default_size-delta)) { // limit max.
+                                    max_helix_length     = new_size;
+                                    if (min_helix_length>0.0 && min_helix_length>max_helix_length) min_helix_length = max_helix_length;
+                                    do_update = true;
+                                }
+                                else if (new_size>(default_size+delta)) {
+                                    min_helix_length = new_size;
+                                    if (max_helix_length>0.0 && max_helix_length<min_helix_length) max_helix_length = min_helix_length;
+                                    do_update = true;
+                                }
                             }
+                        }
+                        else if (button == AWT_M_RIGHT && type == AW_Mouse_Press) {
+                            double default_size = helix_info->get_base_length();
+                            double curr_size    = helix_info->get_length();
+
+                            if      (min_helix_length > 0.0 && curr_size<(default_size-delta)) min_helix_length = 0.0;
+                            else if (max_helix_length > 0.0 && curr_size>(default_size+delta)) max_helix_length = 0.0;
+                            else min_helix_length = max_helix_length = 0.0;
+                            
+                            do_update = true;
                         }
                         break;
                     }
-                    case AW_Mouse_Drag:{
-                        base = (SEC_Base*)ct->client_data1;
-                        if (base) {
-                            if(base->getType()==SEC_HELIX_STRAND) {
-                                strand     = (SEC_helix_strand*)base;
-                                helix_info = strand->get_helix_info();
-                                fixpoint_x = strand->get_fixpoint_x();
-                                fixpoint_y = strand->get_fixpoint_y();
-                                endDist    = sqrt(((fixpoint_x-world_x)*(fixpoint_x-world_x))+((fixpoint_y- world_y)*(fixpoint_y- world_y)));
-                                finalLengthConstraint            = ((endDist/startDist) + endDist);
-                                helix_info->get_min_length_ref() = finalLengthConstraint;
+                    case SEC_SEGMENT: {
+                        SEC_segment  *segment         = (SEC_segment*)base;
+                        SEC_loop     *loop            = segment->get_loop();
+                        double&       min_loop_radius = loop->get_min_radius_ref();
+                        double&       max_loop_radius = loop->get_max_radius_ref();
+                        const double  delta           = 0.1;
+
+                        if (button == AWT_M_LEFT) {
+                            SEC_helix_strand *strand = loop->get_rootside_strand();
+                            double            distFix;
+
+                            if (strand) {
+                                sec_assert(strand->get_rootside_loop() != loop);
+                                distFix   = distance(world_x, world_y, strand->get_fixpoint_x(), strand->get_fixpoint_y());
                             }
-                            if(base->getType()==SEC_SEGMENT) {
-                                segment      = (SEC_segment*)base;
-                                loop         = segment->get_loop();
-                                loopCentre_x = loop->get_x_loop();
-                                loopCentre_y = loop->get_y_loop();
-                                endDist      = sqrt(((loopCentre_x-world_x)*(loopCentre_x-world_x))+((loopCentre_y- world_y)*(loopCentre_y- world_y)));
-                                //	finalRadiusConstraint      = ((endDist/startDist) * initialRadiusConstraint);
-                                loop->get_min_radius_ref() = endDist;//finalRadiusConstraint;
+                            else { // root-loop has no rootside strand -> use loop center point
+                                distFix   = distance(world_x, world_y, loop->get_center_x(), loop->get_center_y());
+                            }
+                            if (distFix <= 0.0) distFix = 0.1; // avoid zero
+
+                            if (type == AW_Mouse_Press) {
+                                start_distFix = distFix;
+                                start_size    = loop->get_radius(); // use last drawn radius
+                            }
+                            else if (type == AW_Mouse_Release || type == AW_Mouse_Drag) {
+                                double new_size     = start_size * (distFix/start_distFix);
+                                double default_size = loop->get_unconstrainted_radius();
+                                
+                                if (new_size<(default_size-delta)) { // limit max.
+                                    max_loop_radius     = new_size;
+                                    if (min_loop_radius>0.0 && min_loop_radius>max_loop_radius) min_loop_radius = max_loop_radius;
+                                    do_update = true;
+                                }
+                                else if (new_size>(default_size+delta)) {
+                                    min_loop_radius = new_size;
+                                    if (max_loop_radius>0.0 && max_loop_radius<min_loop_radius) max_loop_radius = min_loop_radius;
+                                    do_update = true;
+                                }
                             }
                         }
-                        sec_root->update();
-                        exports.refresh = 1;
-                        exports.save    = 1;
+                        else if (button == AWT_M_RIGHT && type == AW_Mouse_Press) {
+                            double default_size = loop->get_unconstrainted_radius();
+                            double curr_size    = loop->get_radius();
+                            
+                            if      (min_loop_radius > 0.0 && curr_size<(default_size-delta)) min_loop_radius = 0.0;
+                            else if (max_loop_radius > 0.0 && curr_size>(default_size+delta)) max_loop_radius = 0.0;
+                            else min_loop_radius = max_loop_radius = 0.0;
+                            
+                            do_update = true;
+                        }
+
                         break;
                     }
-                    default:
-                        break;
+                    default : break;
+                }
+
+                if (do_update) {
+                    sec_root->update();
+                    exports.refresh            = 1;
+                    exports.save               = 1;
+                    sec_root->show_constraints = (base->getType() == SEC_HELIX_STRAND) ? 2 : 1;
                 }
             }
             break;
@@ -474,35 +527,20 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
                 sec_root->drag_recursive = 1;
             }
 
-            double end_angle, dif_angle, delta;
-            double fixpoint_x, fixpoint_y;
-            SEC_helix_strand *strand_pointer;
-            SEC_helix *helix_info;
-            SEC_Base *base;
-
             switch(type) {
                 case AW_Mouse_Press: {
-                    base = (SEC_Base *)ct->client_data1;
+                    SEC_Base *base = (SEC_Base *)ct->client_data1;
                     if (base) {
                         if (base->getType() == SEC_HELIX_STRAND) {
-                            strand_pointer = (SEC_helix_strand *) base;
                             sec_root->rotateBranchesMode = 1;
 
-                            //special treating for root_loop's caller
-                            // 		    SEC_loop *root_loop = (sec_root->get_root_segment())->get_loop();
+                            SEC_helix_strand *strand_pointer = (SEC_helix_strand *) base;
+                            double            fixx           = strand_pointer->get_fixpoint_x();
+                            double            fixy           = strand_pointer->get_fixpoint_y();
+                            SEC_helix        *helix_info     = strand_pointer->get_helix_info();
 
-                            /* if (strand_pointer == root_loop->get_segment()->get_next_helix()) {
-                            //turn around root_loop caller's angle  -- warum??
-                            helix_info = strand_pointer->get_helix_info();
-                            double tmp_delta = helix_info->get_delta();
-                            helix_info->set_delta(tmp_delta + M_PI);
-                            }*/
-
-                            fixpoint_x = strand_pointer->get_fixpoint_x();
-                            fixpoint_y = strand_pointer->get_fixpoint_y();
-                            strand_pointer->start_angle = (2*M_PI) + atan2( (world_y - fixpoint_y), (world_x - fixpoint_x) );
-                            helix_info = strand_pointer->get_helix_info();
-                            strand_pointer->old_delta = helix_info->get_delta();
+                            strand_pointer->start_angle = (2*M_PI) + atan2( (world_y - fixy), (world_x - fixx) );
+                            strand_pointer->old_delta   = helix_info->get_delta();
                         }
                         else {
                             aw_message("Only helix-strands can be dragged");
@@ -511,29 +549,29 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
                     break;
                 }
                 case AW_Mouse_Drag: {
-                    base = (SEC_Base *)ct->client_data1;
-                    if(base) {
+                    SEC_Base *base = (SEC_Base *)ct->client_data1;
+                    if (base) {
                         if (base->getType() == SEC_HELIX_STRAND) {
-                            strand_pointer = (SEC_helix_strand *) base;
+                            SEC_helix_strand *strand_pointer = (SEC_helix_strand *) base;
+                            SEC_helix        *helix_info     = strand_pointer->get_helix_info();
+                            double            fixx           = strand_pointer->get_fixpoint_x();
+                            double            fixy           = strand_pointer->get_fixpoint_y();
 
-                            fixpoint_x = strand_pointer->get_fixpoint_x();
-                            fixpoint_y = strand_pointer->get_fixpoint_y();
-                            end_angle = (2*M_PI) + atan2( (world_y - fixpoint_y), (world_x - fixpoint_x) );
-                            dif_angle = end_angle - strand_pointer->start_angle;
+                            double end_angle = (2*M_PI) + atan2( (world_y - fixy), (world_x - fixx) );
+                            double dif_angle = end_angle - strand_pointer->start_angle;
+                            
 
                             if (sec_root->drag_recursive) {
-                                strand_pointer->update(fixpoint_x, fixpoint_y, dif_angle);
-                                helix_info = strand_pointer->get_helix_info();
+                                strand_pointer->change_angle(dif_angle);
                                 strand_pointer->compute_attachment_points(helix_info->get_delta());
                                 strand_pointer->start_angle = end_angle;
                             }
                             else {
-                                delta = strand_pointer->old_delta;
+                                double delta = strand_pointer->old_delta;
                                 delta = delta + dif_angle + (2*M_PI);  //adding 2 PI converts negative angles into positive ones
-                                helix_info = strand_pointer->get_helix_info();
                                 helix_info->set_delta(delta);
                                 strand_pointer->compute_attachment_points(delta);
-                                strand_pointer->update(fixpoint_x, fixpoint_y, 0);
+                                strand_pointer->change_angle(0);
                             }
 
                             SEC_loop *root_loop = (sec_root->get_root_segment())->get_loop();
@@ -547,24 +585,9 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
                 }
                 case AW_Mouse_Release: {
                     sec_root->drag_recursive = 0;
-                    exports.refresh = 1;
-                    exports.save = 1;
+                    exports.refresh          = 1;
+                    exports.save             = 1;
 
-                    base = (SEC_Base *)ct->client_data1;
-                    if(base) {
-                        if (base->getType() == SEC_HELIX_STRAND) {
-                            strand_pointer = (SEC_helix_strand *) base;
-
-                            //special treating for root_loop's caller
-                            // 		    SEC_loop *root_loop = (sec_root->get_root_segment())->get_loop();
-
-                            /*  if (strand_pointer == root_loop->get_segment()->get_next_helix()) {
-                                helix_info = strand_pointer->get_helix_info();
-                                double tmp_delta = helix_info->get_delta();
-                                helix_info->set_delta(tmp_delta + M_PI );
-                                }*/
-                        }
-                    }
                     sec_root->update(0);
                     sec_root->rotateBranchesMode = 0;
                     break;
@@ -788,10 +811,10 @@ GB_ERROR SEC_graphic::load(GBDATA *dummy, const char *,AW_CL link_to_database, A
             char *msg = (char*)malloc(len);
             /*int printed = */ sprintf(msg, "Due to %s\nyou can choose between..", reason);
 
-            int answer = aw_message(msg, "Create new,Exit");
+            int answer = aw_message(msg, "Create dummy structure,Abort");
             if (answer==1) {
                 create_default = 0;
-                err = GB_export_error("no secondary structure in database");
+                err = "no valid secondary structure in database";
             }
             else {
                 err = 0;
@@ -867,14 +890,22 @@ int SEC_graphic::check_update(GBDATA *gbdummy) {
     return res;
 }
 
-void SEC_graphic::show(AW_device *device)	{
+void SEC_graphic::show(AW_device *device) {
+    const char *text = 0;
     if (sec_root) {
         sec_root->clear_last_drawed_cursor_position();
-        sec_root->paint(device);
-    }else{
-        device->line(SEC_GC_DEFAULT, -100,-100,100,100);
-        device->line(SEC_GC_DEFAULT, -100,100,100,-100);
+        if (sec_root->gb_sequence) {
+            sec_root->paint(device);
+        }
+        else {
+            text = "No species selected.";
+        }
     }
+    else {
+        text = "Error: No secondary structure";
+    }
+
+    if (text) device->text(SEC_GC_ECOLI, text, 0, 0, 0, 1, 0, 0, 0);
 }
 
 void SEC_graphic::info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct)
