@@ -7,11 +7,7 @@ help:
 	@echo	'  cleanlinks:  remove all links'
 
 all: cleanlinks
-ifdef DEBIAN
 	/bin/ln -s `find ../SH ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
-else
-	/bin/ln -s `find ../SH ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
-endif
 
 develall: all
 	/bin/ln -s `find ../SOURCE_TOOLS -name "arb_*" -perm -100 ! -type d -print` .
