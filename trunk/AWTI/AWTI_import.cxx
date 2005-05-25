@@ -753,7 +753,9 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
     AW_root *awr         = aww->get_root();
     bool      is_genom_db = false;
     {
-        bool read_genom_db = (awr->awar(AWAR_READ_GENOM_DB)->read_int() != IMP_PLAIN_SEQUENCE);
+        bool           read_genom_db = (awr->awar(AWAR_READ_GENOM_DB)->read_int() != IMP_PLAIN_SEQUENCE);
+        GB_transaction ta(GB_MAIN);
+        
         is_genom_db = GEN_is_genome_db(GB_MAIN, read_genom_db);
 
         if (read_genom_db!=is_genom_db) {
