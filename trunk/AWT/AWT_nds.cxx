@@ -15,6 +15,7 @@
 #include "awt_nds.hxx"
 #include "awt_config_manager.hxx"
 #include "awt_changekey.hxx"
+#include "awt_sel_boxes.hxx"
 
 #define NDS_COUNT 10
 
@@ -215,35 +216,10 @@ void create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main) {
     GB_pop_transaction(gb_main);
 }
 
-void awt_pop_down_select_nds(AW_root *,AW_window *aww){
-    aww->hide();
-}
+// void awt_pop_down_select_nds(AW_root *,AW_window *aww){
+    // aww->hide();
+// }
 
-void AWT_create_select_nds_window(AW_window *aww,char *key_text,AW_CL cgb_main)
-{
-    static AW_window *win = 0;
-    AW_root *aw_root = aww->get_root();
-    aw_root->awar("tmp/viewkeys/key_text_select")->map(key_text);
-    if (!win) {
-        AW_window_simple *aws = new AW_window_simple;
-        aws->init( aw_root, "NDS", "NDS_SELECT");
-        aws->load_xfig("awt/nds_sel.fig");
-        aws->button_length(13);
-
-        aws->callback( AW_POPDOWN);
-        aws->at("close");
-        aws->create_button("CLOSE", "CLOSE","C");
-
-        awt_create_selection_list_on_scandb((GBDATA *)cgb_main,
-                                            (AW_window*)aws,"tmp/viewkeys/key_text_select",
-                                            AWT_NDS_FILTER,
-                                            "scandb","rescandb", &AWT_species_selector, 20, 10);
-        //aw_root->awar(key_text)->add_callback((AW_RCB1)awt_pop_down_select_nds,(AW_CL)aws);
-
-        win =  (AW_window*)aws;
-    }
-    win->show();
-}
 void awt_pre_to_view(AW_root *aw_root){
     char *str = aw_root->awar(AWAR_SELECT_ACISRT_PRE)->read_string();
     char *brk = strchr(str,'#');
@@ -459,7 +435,7 @@ AW_window *AWT_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
             aws->create_input_field(awar_name,15);
 
             aws->button_length(0);
-            aws->callback((AW_CB)AWT_create_select_nds_window, (AW_CL)strdup(awar_name),cgb_main);
+            aws->callback(AWT_popup_select_species_field_window, (AW_CL)strdup(awar_name), cgb_main);
             aws->get_at_position( &fieldselectx,&dummy );
             aws->create_button("SELECT_NDS","S");
         }
