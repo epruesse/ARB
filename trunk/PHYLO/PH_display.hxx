@@ -1,3 +1,7 @@
+#ifndef AW_DEVICE_HXX
+#include <aw_device.hxx>
+#endif
+
 #define SPECIES_NAME_LEN 10    // only for displaying speciesnames
  
 extern char **filter_text;

@@ -1,5 +1,8 @@
-#include "include.hxx"
-#include "aw_global.hxx"
+#include "phylo.hxx"
+#include <aw_global.hxx>
+#include <aw_window.hxx>
+#include <awt.hxx>
+#include <cstring>
 
 extern void ph_view_matrix_cb(AW_window *);
 

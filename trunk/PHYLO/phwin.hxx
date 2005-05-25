@@ -1,6 +1,7 @@
-#ifndef PI
-#define PI 3.1415926
+#ifndef AW_WINDOW_HXX
+#include <aw_window.hxx>
 #endif
+
 
 class PH_used_windows {
 public:

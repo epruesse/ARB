@@ -1,4 +1,10 @@
-#include "include.hxx"
+#include "phylo.hxx"
+#include "phwin.hxx"
+
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+
 
 extern char **filter_text;
 
