@@ -306,7 +306,7 @@ symlink_maybe_no_target ../AISC_MKPTPS/aisc_mkpt MAKEBIN/aisc_mkpt &&
 
 # help files (make sure the file is present in user distribution!)
 
-symlink_maybe_no_target ../help/input_mask_format.hlp     lib/inputMasks/format.readme &&
+symlink ../help/input_mask_format.hlp     lib/inputMasks/format.readme &&
 symlink ../../GDEHELP                     lib/help/GDEHELP &&
 
 # links related to probe web service
