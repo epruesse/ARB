@@ -48,7 +48,7 @@ static IslandHopping *island_hopper = 0;
 #define FA_AWAR_USE_SECONDARY      (FA_AWAR_ROOT "use_secondary")
 #define FA_AWAR_NEXT_RELATIVES     (FA_AWAR_ROOT "next_relatives")
 
-#define FA_AWAR_PT_SERVER_ALIGNMENT (FA_AWAR_ROOT "relative_ali")
+#define FA_AWAR_PT_SERVER_ALIGNMENT ("tmp/" FA_AWAR_ROOT "relative_ali")
 
 #define FA_AWAR_ISLAND_HOPPING_ROOT "island_hopping/"
 
