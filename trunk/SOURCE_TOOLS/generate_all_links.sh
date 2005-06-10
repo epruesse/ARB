@@ -26,12 +26,12 @@ symlink() {
             exit 1
         fi
     fi
-    
+
     DIR=`dirname $2`
     if [ -z $DIR ]; then
         DIR=.
     fi
-    
+
     (test -e $DIR/$1 || finderr $1 "Target '$DIR/$1 does not exists (anymore)" ) &&
     (test -e $2 || (test -h $2 &&
                     (finderr $2 "Warning Symlink '$2' points to nowhere -- removing wrong link";ls -al $2;rm $2;true)
@@ -43,7 +43,7 @@ arbdb_symlink() {
     symlink ../ARBDB/$1 ARBDBS/$1 &&
     symlink ../ARBDB/$1 ARBDB2/$1
 }
-        
+
 makedir() {
     mkdir -p $1 || finderr $1 "Failed to create directory '$1'"
 }
@@ -238,7 +238,7 @@ symlink ../WINDOW/aw_font_group.hxx INCLUDE/aw_font_group.hxx &&
 symlink ../XML/xml.hxx INCLUDE/xml.hxx &&
 
 # gl stuff
-symlink ../../GL/glpng/glpng.h INCLUDE/GL/glpng.h && 
+symlink ../../GL/glpng/glpng.h INCLUDE/GL/glpng.h &&
 
 # arbdb dirs
 
@@ -301,8 +301,8 @@ symlink ../LIBLINK          NALIGNER/LIBLINK &&
 
 symlink ../LIBLINK          TOOLS/LIBLINK &&
 
-symlink ../AISC/aisc             MAKEBIN/aisc &&
-symlink ../AISC_MKPTPS/aisc_mkpt MAKEBIN/aisc_mkpt &&
+symlink_maybe_no_target ../AISC/aisc             MAKEBIN/aisc &&
+symlink_maybe_no_target ../AISC_MKPTPS/aisc_mkpt MAKEBIN/aisc_mkpt &&
 
 # help files (make sure the file is present in user distribution!)
 
