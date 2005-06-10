@@ -526,7 +526,7 @@ AP_tree::AP_tree(AP_tree_root   *tree_rooti)
     sequence = 0;
 
     gr.spread = 1.0;
-    
+
     if (!vtable_ptr_check_done) {
         vtable_ptr_check_done = true;
         GBT_TREE *tree        = get_gbt_tree(); // hack-warning: points to part of this!
@@ -1666,7 +1666,7 @@ void AP_tree::bootstrap2branchlen(GBDATA *gb_main) { // copy bootstraps to branc
     else {
         if (remark_branch && father) {
             int    bootstrap = atoi(remark_branch);
-            double len       = (100-bootstrap)/100.0;
+            double len       = bootstrap/100.0;
             set_branchlength(len);
         }
         leftson->bootstrap2branchlen(gb_main);
@@ -1680,7 +1680,7 @@ void AP_tree::branchlen2bootstrap(GBDATA *gb_main) { // copy branchlengths to bo
         remark_branch = 0;
     }
     if (!is_leaf) {
-        remark_branch = GBS_global_string_copy("%i%%", 100-int(get_branchlength()*100.0));
+        remark_branch = GBS_global_string_copy("%i%%", int(get_branchlength()*100.0 + .5));
 
         leftson->branchlen2bootstrap(gb_main);
         rightson->branchlen2bootstrap(gb_main);
