@@ -12,7 +12,7 @@
 #include <awt_tree.hxx>
 #include <awt_dtree.hxx>
 #include <awt_tree_cb.hxx>
-// #include <awt_assert.hxx>
+#include <awt_advice.hxx>
 #include <awt.hxx>
 
 
@@ -638,6 +638,11 @@ void NT_move_boot_branch(AW_window*, AW_CL cl_ntw, AW_CL cl_direction) // copy b
 
         tree_root->compute_tree(ntw->gb_main);
         AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
+
+        char *adviceText = GBS_global_string_copy("Please note, that you just overwrote your existing %s.",
+                                                  direction ? "bootstrap values" : "branchlengths");
+        AWT_advice(adviceText, AWT_ADVICE_TOGGLE|AWT_ADVICE_HELP, 0, "tbl_boot2len.hlp");
+        free(adviceText);
     }
     ntw->zoom_reset();
     ntw->refresh();
