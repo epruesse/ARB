@@ -14,11 +14,15 @@ OCCURRENCE	ARB_NT/Tree/Modify branches/Bootstraps .. Branchlengths
 
 DESCRIPTION     'Bootstrap -> Branchlength' sets the branchlength to
 
-                           (100 - bootstrap)  /  100.0
+                              bootstrap / 100.0
 
-                'Branchlength -> Bootstrap' does the opposite.
+                'Branchlength -> Bootstrap' sets the bootstrap values to
+
+                              branchlength * 100.0
 
 NOTES		Consider whether using this functionality really makes sense to you!
+
+                Use UNDO to go back to your old tree.
 
 EXAMPLES	None
 
