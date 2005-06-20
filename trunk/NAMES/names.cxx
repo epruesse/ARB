@@ -17,6 +17,8 @@
 #include <list>
 #include <string>
 
+using namespace std;
+
 #if defined(DEBUG)
 // #define DUMP_NAME_CREATION
 #endif // DEBUG
