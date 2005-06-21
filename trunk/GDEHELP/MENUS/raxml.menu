@@ -1,0 +1,90 @@
+item:RAxML
+itemmeta: R
+itemmethod:(GOTO_LOCAL_DIR ; \
+            arb_export_rates "$RATES" "$QUICKADD" | \
+                arb_convert_aln -GenBank in1 -phylip2 infile; \
+            RUN_IN_WINDOW((cp infile last.infile; \
+			   time raxml -f $SEARCH \
+					-g $NUMOFMOVE \
+					-d $STARTTEMP -l $TIMELIMIT -r $MINREARRANG -k $MAXREARRANG \
+	 			        -m $MODELOFNUCSUB -c $NUMOFCAT -s infile -n treefile; \
+			   cp RAxML_parsimonyTree.treefile treefile; \
+			$DISPLAY_FUNC));RM_LOCAL_FILES(in1 last.infile) )&
+
+itemhelp:dnaml.help
+
+arg:RATES
+argtype:weights
+arglabel:Select a Weighting Mask
+argchoice:POS_VAR_BY_PAR
+
+arg:SEARCH
+argtype:choice_menu
+arglabel:Select search algorithm
+argchoice:normal hill-climbing:c
+argchoice:evaluate:e
+argchoice:fast:f
+argchoice:simulates annealing:s
+
+arg:TIMELIMIT
+argtype:text
+arglabel:Time limit for searching in sec
+argtext:120
+
+arg:NUMOFMOVE
+argtype:text
+arglabel:Number of moves
+argtext:10
+
+arg:STARTTEMP
+argtype:text
+arglabel:Start temperature for chain
+argtext:3.0
+
+
+arg:MODELOFNUCSUB
+argtype:choice_menu
+arglabel:Model of Nucleotide Substitution
+argchoice:HKY85:HKY85
+argchoice:HKY85CAT:HKY85CAT
+argchoice:GTR:GTR
+argchoice:GTRCAT:GTRCAT
+
+arg:NUMOFCAT
+argtype:text
+arglabel:Number of distinct rate categories for raxml
+argtext:50
+
+arg:MINREARRANG
+argtype:text
+arglabel:Minimum rearrangement setting
+argtext:5
+
+arg:MAXREARRANG
+argtype:text
+arglabel:Maximum rearrangement setting
+argtext:21
+
+
+
+
+
+
+
+arg:QUICKADD
+argtype:choice_menu
+arglabel:Use Quickadd
+argchoice:Yes:
+argchoice:No:Q
+
+arg:DISPLAY_FUNC
+argtype:choice_menu
+arglabel:What to do with the tree:?
+argchoice:ARB ('tree_fml_//'):arb_read_tree tree_fml_$$ treefile "PRG=raxml FILTER=$FILTER RATE=$RATES"
+argchoice:Treetool:treetool treefile
+
+in:in1
+informat:genbank
+inmask:
+insave:
+
