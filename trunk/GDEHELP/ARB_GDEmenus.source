@@ -42,6 +42,7 @@ menu:Phylogeny_MaxParsimony
 
 menu:Phylogeny_MaxLikelyhood
 #include <fastdnaml.genmenu>
+#include <raxml.genmenu>
 #include <phylip_ml.genmenu>
 #include <molphy.genmenu>
 

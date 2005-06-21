@@ -4,7 +4,7 @@ ARCHS_ALL = \
 	SUPPORT/SUPPORT.dummy \
 	MOLPHY/MOLPHY.dummy \
 	AxML/AxML.dummy \
-#	RAxML/RAxML.dummy \
+
 
 # --------------------------------------------------------------------------------
 # All packages using xview go here:

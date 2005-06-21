@@ -6,7 +6,7 @@ $(MAIN): $(OBJECTS)
 .c.o:
 	$(ACC) $(cflags) -c $<  $(AINCLUDES)
 .cxx.o:
-	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
+	$(CPP) $(cflags) -I/opt/gcc.3.4.3/include/c++/3.4.3/include -c $<  $(CPPINCLUDES)
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)

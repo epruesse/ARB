@@ -29,7 +29,7 @@ argchoice:No:Q
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree:?
-argchoice:ARB ('tree_fml_//'):arb_read_tree tree_fml_$$ treefile "PRG=$PROGRAM FILTER=$FILTER PKG=olsen/felsenstein RATE=$RATES"
+argchoice:ARB ('tree_fml_//'):arb_read_tree tree_fml_$$ treefile "PRG=$PROGRAM FILTER=$FILTER RATE=$RATES"3
 argchoice:Treetool:treetool treefile
 
 in:in1
