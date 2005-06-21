@@ -756,7 +756,7 @@ static void check_for_broken_short_names(AN_main *main) {
                 an_strlwr(shrt->mh.ident);
                 aisc_link((struct_dllpublic_ext*)&(main->pnames), (struct_dllheader_ext*)shrt);
                 main->touched = 1;
-                
+
                 case_error_occurred = true;
                 idents_changed++;
             }
