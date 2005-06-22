@@ -403,3 +403,5 @@ double makenewzHKY85 (tree *, nodeptr, nodeptr, double, int);
 boolean newviewHKY85CAT (tree *, nodeptr);
 double evaluateHKY85CAT (tree *, nodeptr);   
 double makenewzHKY85CAT (tree *, nodeptr, nodeptr, double, int);
+
+void tred2 (double *a, const int n, const int np, double *d, double *e);
