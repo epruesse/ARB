@@ -1,4 +1,5 @@
 # Makefile May 2004 by Alexandros P. Stamatakis
+# modified for ARB 2005
 
 .SUFFIXES: .o .c .h .depend
 
@@ -6,7 +7,7 @@ SOURCES = $(wildcard *.c)
 OBJECTS = $(SOURCES:.c=.o)
 RM 	   = rm -f
 
-CFLAGS_RAXML = -DNORMAL -fomit-frame-pointer -funroll-loops 
+CFLAGS_RAXML = -DNORMAL -fomit-frame-pointer -funroll-loops
 
 # ----------------------------------------
 # normal compilation:
@@ -24,7 +25,7 @@ LDFLAGS = -lm
 # compile for ARB:
 else
 
-CC      = $(ACC)
+CC      = $(CPP)
 TARGET 	= $(ARBHOME)/bin
 LDFLAGS = $(LIB) -lm
 CFLAGS  = $(cflags) $(CFLAGS_RAXML)
@@ -40,14 +41,14 @@ all : $(TARGETS)
 $(TARGET)/consense : consense.o cons.o phylip.o
 	$(CC) $(CFLAGS)	-o $(TARGET)/consense $(LDFLAGS) consense.o phylip.o cons.o
 
-$(TARGET)/raxml :  axml.o dnapars.o rev_functions.o 
-	$(CC) $(CFLAGS) -o  $(TARGET)/raxml axml.o dnapars.o rev_functions.o $(LDFLAGS) 
+$(TARGET)/raxml :  axml.o dnapars.o rev_functions.o
+	$(CC) $(CFLAGS) -o  $(TARGET)/raxml axml.o dnapars.o rev_functions.o $(LDFLAGS)
 
 $(TARGET)/raxmlOMP :axmlOMP.o dnaparsOMP.o rev_functions.o
 	$(CC) $(CFLAGS_OMP) -o $(TARGET)/raxmlOMP axmlOMP.o dnaparsOMP.o rev_functions.o $(LDFLAGS)
 
-$(TARGET)/raxmlMKL : axmlMKL.o dnapars.o rev_functions.o 
-	$(CC) $(CFLAGS_MKL) -o  $(TARGET)/raxmlMKL axmlMKL.o dnapars.o rev_functions.o $(LDFLAGS) 
+$(TARGET)/raxmlMKL : axmlMKL.o dnapars.o rev_functions.o
+	$(CC) $(CFLAGS_MKL) -o  $(TARGET)/raxmlMKL axmlMKL.o dnapars.o rev_functions.o $(LDFLAGS)
 
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<
