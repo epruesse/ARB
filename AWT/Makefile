@@ -456,6 +456,7 @@ AWT_tree.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_tree.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
 AWT_tree_cb.o: awt.hxx
+AWT_tree_cb.o: awt_advice.hxx
 AWT_tree_cb.o: awt_canvas.hxx
 AWT_tree_cb.o: awt_dtree.hxx
 AWT_tree_cb.o: awt_pro_a_nucs.hxx
