@@ -3,8 +3,8 @@
 
 .SUFFIXES: .o .c .h .depend
 
-SOURCES = $(wildcard *.c)
-OBJECTS = $(SOURCES:.c=.o)
+RAXML_OBJECTS=axml.o dnapars.o rev_functions.o
+OBJECTS = $(RAXML_OBJECTS)
 RM 	   = rm -f
 
 CFLAGS_RAXML = -DNORMAL -fomit-frame-pointer -funroll-loops
@@ -25,7 +25,7 @@ LDFLAGS = -lm
 # compile for ARB:
 else
 
-CC      = $(CPP)
+CC      = $(ACC)
 TARGET 	= $(ARBHOME)/bin
 LDFLAGS = $(LIB) -lm
 CFLAGS  = $(cflags) $(CFLAGS_RAXML)
@@ -41,8 +41,8 @@ all : $(TARGETS)
 $(TARGET)/consense : consense.o cons.o phylip.o
 	$(CC) $(CFLAGS)	-o $(TARGET)/consense $(LDFLAGS) consense.o phylip.o cons.o
 
-$(TARGET)/raxml :  axml.o dnapars.o rev_functions.o
-	$(CC) $(CFLAGS) -o  $(TARGET)/raxml axml.o dnapars.o rev_functions.o $(LDFLAGS)
+$(TARGET)/raxml :  $(RAXML_OBJECTS)
+	$(CC) $(CFLAGS) -o  $(TARGET)/raxml $(RAXML_OBJECTS) $(LDFLAGS)
 
 $(TARGET)/raxmlOMP :axmlOMP.o dnaparsOMP.o rev_functions.o
 	$(CC) $(CFLAGS_OMP) -o $(TARGET)/raxmlOMP axmlOMP.o dnaparsOMP.o rev_functions.o $(LDFLAGS)
