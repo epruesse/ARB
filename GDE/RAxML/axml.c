@@ -12439,10 +12439,9 @@ void initModel(tree *tr, rawdata *rdta, cruncheddata *cdta, analdef *adef)
 
 int filexists(char *filename)
 {
-  FILE *fp;
-  fp = fopen(filename,"r");
+  FILE *fp = fopen(filename,"r");
   int res;
-
+  
 
   if(fp) 
     {
