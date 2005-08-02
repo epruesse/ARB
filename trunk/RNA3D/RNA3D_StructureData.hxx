@@ -90,6 +90,7 @@ public:
     int iMapEnable;
     int iStartPos, iEndPos;
     int iEColiStartPos, iEColiEndPos;
+    int iTotalSubs, iTotalDels, iTotalIns;
     
     BI_ecoli_ref *EColiRef;
     ED4_sequence_terminal *ED4_SeqTerminal;
