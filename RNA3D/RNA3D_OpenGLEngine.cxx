@@ -449,7 +449,7 @@ void RenderOpenGLScene(Widget w){
               RNA3D->Up.x,     RNA3D->Up.y,     RNA3D->Up.z);
 
     {// Displaying Molecule Name
-        RNA3D->cRenderer->DisplayMoleculeName(iScreenWidth, iScreenHeight);
+        RNA3D->cRenderer->DisplayMoleculeName(iScreenWidth, iScreenHeight, RNA3D->cStructure);
     }
 
     glScalef(RNA3D->scale, RNA3D->scale, RNA3D->scale);

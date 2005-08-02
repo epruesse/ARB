@@ -115,7 +115,7 @@ void GLRenderer::DoHelixMapping(void) {
     }
 }
 
-void GLRenderer::DisplayMoleculeName(int w, int h){
+void GLRenderer::DisplayMoleculeName(int w, int h, Structure3D *cStr){
     char *pSpeciesName;
 
     if(iMapSpecies) {
@@ -139,6 +139,17 @@ void GLRenderer::DisplayMoleculeName(int w, int h){
 
     G->SetColor(RNA3D_GC_FOREGROUND);
     G->PrintString(x, y, 0, pSpeciesName, GLUT_BITMAP_8_BY_13);
+
+    char buf[25];
+    if (iMapSpecies){
+        G->SetColor(RNA3D_GC_MAPPED_SPECIES);
+        sprintf(buf, "Mutations  = %d", cStr->iTotalSubs);
+        G->PrintString(x, y-10, 0, buf, GLUT_BITMAP_8_BY_13);
+        sprintf(buf, "Deletions  = %d", cStr->iTotalDels);
+        G->PrintString(x, y-20, 0, buf, GLUT_BITMAP_8_BY_13);
+        sprintf(buf, "Insertions = %d", cStr->iTotalIns);
+        G->PrintString(x, y-30, 0, buf, GLUT_BITMAP_8_BY_13);
+    }
 
     glPopMatrix();
 }

@@ -43,7 +43,7 @@ public:
     virtual ~GLRenderer(void);
 
     void DisplayMolecule(Structure3D *cStr);
-    void DisplayMoleculeName(int w, int h);
+    void DisplayMoleculeName(int w, int h, Structure3D *cStr);
     void DoHelixMapping(void);
     void DisplayHelices();
     void DisplayHelixBackBone(void);

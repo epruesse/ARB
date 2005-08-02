@@ -49,6 +49,9 @@ Structure3D::Structure3D(void) {
     iEColiEndPos    = 0;
     iStartPos       = 0;
     iEndPos         = 0;
+    iTotalSubs      = 0;
+    iTotalDels      = 0;
+    iTotalIns       = 0;
 }
 
 Structure3D::~Structure3D(void) {
@@ -1008,6 +1011,13 @@ void Structure3D::GenerateBaseDifferenceDisplayList(){
         BuildDisplayList(MAP_SPECIES_DELETION, deletion, d);
         BuildDisplayList(MAP_SPECIES_MISSING, miss, m);
         GenerateBaseDifferencePositionDisplayList();
+
+        iTotalSubs = a+g+c+u;  // Summing up the substitutions/mutations
+        iTotalDels = d;        // Storing total number of deletions
+#ifdef DEBUG
+        cout<<"Substitutions = "<<iTotalSubs<<endl;
+        cout<<"Deletions     = "<<iTotalDels<<endl;
+#endif
     }
 }
 
@@ -1049,6 +1059,7 @@ void Structure3D::GenerateInsertionDisplayList(){
     char inserts[500];
     int i, cntr;
     float spacer = 2.0;
+    iTotalIns = 0;
 
     glNewList(MAP_SPECIES_INSERTION_BASES, GL_COMPILE);
     {   
@@ -1068,10 +1079,16 @@ void Structure3D::GenerateInsertionDisplayList(){
                 sprintf(buffer, "%d:%s", cntr, inserts);
                 GRAPHICS->PrintString(str->x, str->y+spacer, str->z, 
                                       buffer, GLUT_BITMAP_8_BY_13);
+
+                iTotalIns += cntr; // Summing up the insertions
             }
         }
     }
     glEndList();
+
+#ifdef DEBUG
+    cout<<"Insertions = "<<iTotalIns<<endl;
+#endif
 
     glNewList(MAP_SPECIES_INSERTION_BASES_ANCHOR, GL_COMPILE);
     {   
