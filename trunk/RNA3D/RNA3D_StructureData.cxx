@@ -85,7 +85,9 @@ void Structure3D::StoreCoordinates(float x, float y, float z, char base, unsigne
 //=========== Reading 3D Coordinates from PDB file ====================//
 
 void Structure3D::ReadCoOrdinateFile() {
-    char *DataFile           = find_data_file("Ecoli_1M5G_16SrRNA.pdb");
+    // char *DataFile           = find_data_file("Ecoli_1VOR_23S_rRNA.pdb");
+    //  char *DataFile           = find_data_file("Ecoli_1VOR_5S_rRNA.pdb");
+    char *DataFile           = find_data_file("Ecoli_1M5G_16S_rRNA.pdb");
     char      buf[256];
 
     float X, Y, Z;
@@ -164,7 +166,7 @@ void Structure3D::Store2Dinfo(char *info, int pos, int helixNr){
 //=========== Reading Secondary Structure Data from Ecoli Secondary Structure Mask file ====================//
 
 void Structure3D::GetSecondaryStructureInfo(void) {
-    char *DataFile        = find_data_file("ECOLI_SECONDARY_STRUCTURE_INFO");
+    char *DataFile = find_data_file("SecondaryStructureModel_16SrRNA.data");
     char  buf[256];
 
     int pos, helixNr, lastHelixNr; lastHelixNr = 0;
@@ -428,7 +430,7 @@ void Structure3D::GenerateSecStructureUnpairedHelixRegions(void) {
 
 void Structure3D::GenerateTertiaryInteractionsDispLists(){
     Struct2Dplus3D *t;
-    char           *DataFile = find_data_file("ECOLI_Tertiary_Interaction.data");
+    char           *DataFile = find_data_file("TertiaryInteractions_16SrRNA.data");
     char            buf[256];
 
     ifstream readData;
@@ -647,7 +649,7 @@ void Structure3D::GenerateDisplayLists(void){
     GenerateSecStructureNonHelixRegions();
     GenerateSecStructureUnpairedHelixRegions();
 
-    GenerateTertiaryInteractionsDispLists();
+    //  GenerateTertiaryInteractionsDispLists();
 }
 
 void Structure3D::GenerateMoleculeSkeleton(void){
@@ -754,11 +756,18 @@ void Structure3D::ComputeBasePositions(){
 }
 
 void Structure3D::PrepareSecondaryStructureData(void) {
+//     const char 
+//         outFile[]      = "/nfshome/yadhu/DataBase/Struct3D/model16SrRNA/test.data",
+//         EcoliFile[]    = "/nfshome/yadhu/DataBase/Struct3D/model16SrRNA/ECOLI_GAPS",
+//         HelixNrFile[]  = "/nfshome/yadhu/DataBase/Struct3D/model16SrRNA/HELIX_NR",
+//         HelixGapFile[] = "/nfshome/yadhu/DataBase/Struct3D/model16SrRNA/HELIX_GAP",
+//         ErrorMsg[] = "\n *** Error Opening File : ";
+
     const char 
-        outFile[]      = "data/test.data",
-        EcoliFile[]    = "data/ECOLI_GAPS",
-        HelixNrFile[]  = "data/HELIX_NR",
-        HelixGapFile[] = "data/HELIX_GAP",
+        outFile[]      = "/nfshome/yadhu/DataBase/Struct3D/model23SrRNA/test.data",
+        EcoliFile[]    = "/nfshome/yadhu/DataBase/Struct3D/model23SrRNA/Ecoli_23SrRNA_with_gaps.seq",
+        HelixNrFile[]  = "/nfshome/yadhu/DataBase/Struct3D/model23SrRNA/HelixNumbers.msk",
+        HelixGapFile[] = "/nfshome/yadhu/DataBase/Struct3D/model23SrRNA/SecStructureMask_with_gaps.msk",
         ErrorMsg[] = "\n *** Error Opening File : ";
 
     int fileLen = 0;
@@ -1364,7 +1373,7 @@ void Structure3D::MapSaiToEcoliTemplate(AW_root *awr){
                             {
                                 if ((t->pos == EColiPos) && (pSearchColResults[i] >= 0)) 
                                     {
-                                        iColor = pSearchColResults[i] - SAICOLORS;
+                                        iColor = pSearchColResults[i-1] - SAICOLORS;
 
                                         if(ValidateSearchColor(iColor, SAI)) {
                                             RNA3D->cGraphics->SetColor(iColor);

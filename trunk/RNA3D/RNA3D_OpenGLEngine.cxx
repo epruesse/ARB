@@ -166,6 +166,10 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
     fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 
     initExtensions();
+    
+    { // Preparing secondary structure masks for RNA3D program
+        RNA3D->cStructure->PrepareSecondaryStructureData();
+    }
 
     // Prepare the structure Data  and Generate Display Lists  
 
