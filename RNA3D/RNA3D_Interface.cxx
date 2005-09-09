@@ -271,6 +271,21 @@ static void RefreshCanvas(AW_root *awr) {
     RefreshOpenGLDisplay();
 }
 
+static void SyncronizeColorsWithEditor(AW_window *aww) {
+    // overwrites color settings with those from EDIT4
+
+    AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "RNA3D", false,
+                "User1",   "User2",   "Probe",
+                "Primerl", "Primerr", "Primerg",
+                "Sigl",    "Sigr",    "Sigg",
+                "RANGE_0", "RANGE_1", "RANGE_2",
+                "RANGE_3", "RANGE_4", "RANGE_5",
+                "RANGE_6", "RANGE_7", "RANGE_8",
+                "RANGE_9",
+                0);
+}
+
+
 /*---------------------------- Creating WINDOWS ------------------------------ */
 static void AddCallBacks(AW_root *awr) {
     // adding callbacks to the awars to refresh the display if recieved any changes
@@ -353,7 +368,7 @@ static AW_window *CreateDisplayBases_window(AW_root *aw_root) {
     aws->init( aw_root, "DISPLAY_BASES", "RNA3D : Display BASES");
     aws->load_xfig("RNA3D_DisplayBases.fig");
 
-    aws->callback( AW_POPUP_HELP,(AW_CL)"rna3d_displayOptions.hlp");
+    aws->callback( AW_POPUP_HELP,(AW_CL)"rna3d_dispBases.hlp");
     aws->at("help");
     aws->button_length(0);
     aws->create_button("HELP","#help.xpm");
@@ -425,7 +440,7 @@ static AW_window *CreateDisplayHelices_window(AW_root *aw_root) {
     aws->init( aw_root, "DISPLAY_HELICES", "RNA3D : Display HELICES");
     aws->load_xfig("RNA3D_DisplayHelices.fig");
 
-    aws->callback( AW_POPUP_HELP,(AW_CL)"rna3d_displayOptions.hlp");
+    aws->callback( AW_POPUP_HELP,(AW_CL)"rna3d_dispHelices.hlp");
     aws->at("help");
     aws->button_length(0);
     aws->create_button("HELP","#help.xpm");
@@ -468,7 +483,7 @@ static AW_window *CreateDisplayOptions_window(AW_root *aw_root) {
     aws->init( aw_root, "GENERAL_DISPLAY", "RNA3D : General Display ");
     aws->load_xfig("RNA3D_DisplayOptions.fig");
 
-    aws->callback( AW_POPUP_HELP,(AW_CL)"rna3d_displayOptions.hlp");
+    aws->callback( AW_POPUP_HELP,(AW_CL)"rna3d_dispMolecule.hlp");
     aws->at("help");
     aws->button_length(0);
     aws->create_button("HELP","#help.xpm");
@@ -508,7 +523,7 @@ static AW_window *CreateMapSequenceData_window(AW_root *aw_root) {
     aws->init( aw_root, "MAP_SPECIES", "RNA3D : Map Sequence Data ");
     aws->load_xfig("RNA3D_SeqMapping.fig");
 
-    aws->callback( AW_POPUP_HELP,(AW_CL)"rna3d_displayOptions.hlp");
+    aws->callback( AW_POPUP_HELP,(AW_CL)"rna3d_mapSeqData.hlp");
     aws->at("help");
     aws->button_length(0);
     aws->create_button("HELP","#help.xpm");
@@ -517,6 +532,11 @@ static AW_window *CreateMapSequenceData_window(AW_root *aw_root) {
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->button_length(0);
     aws->create_button("CLOSE","#closeText.xpm");
+    
+    aws->callback(SyncronizeColorsWithEditor);
+    aws->at("sync");
+    aws->button_length(35);
+    aws->create_button("SYNC","SYNCHRONIZE COLORS WITH EDITOR");
 
     {  // Display Map Current Species Section
         aws->at("en");
@@ -629,7 +649,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
         awm->create_button("REFRESH","#refresh.xpm");
 
         awm->get_at_position( &cur_x,&cur_y );
-        awm->callback( AW_POPUP_HELP,(AW_CL)"rna3d_displayOptions.hlp");
+        awm->callback( AW_POPUP_HELP,(AW_CL)"rna3d_general.hlp");
         awm->button_length(0);
         awm->create_button("help", "#helpText.xpm");
     }
