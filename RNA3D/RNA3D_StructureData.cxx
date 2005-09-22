@@ -82,12 +82,64 @@ void Structure3D::StoreCoordinates(float x, float y, float z, char base, unsigne
     }
 }
 
+//------------------Selecting rRNA type--------------------------//
+
+int Structure3D::FindTypeOfRNA(){
+    int rnaType = 0;       
+    GB_push_transaction(gb_main);  //opening a transaction 
+
+    GBDATA *gbTemplate = GBT_find_SAI(gb_main,"ECOLI");
+    if (!gbTemplate) {
+        aw_message("SAI:ECOLI not found");
+    }
+    else {
+        char   *ali_name          = GBT_get_default_alignment(gb_main);
+        GBDATA *gbAlignment       = GB_find(gbTemplate, ali_name, 0, down_level);
+        GBDATA *gbTemplateSeqData = gbAlignment ? GB_find(gbAlignment, "data", 0, down_level) : 0;
+                 
+        if (!gbTemplateSeqData) {
+          aw_message("Could not find species in the database!");
+        }
+        else {
+            const char *pTemplateSeqData  = GB_read_char_pntr(gbTemplateSeqData);
+            int iSeqLen = strlen(pTemplateSeqData); 
+            int iBaseCount = 0;  
+            for(int i = 0; i<iSeqLen; i++) {
+                if((pTemplateSeqData[i] != '.') && (pTemplateSeqData[i] != '-')){
+                    iBaseCount++;
+                }
+            }
+
+            if (iBaseCount > 2000)      rnaType = LSU_23S;
+            else if (iBaseCount > 300)  rnaType = SSU_16S;
+            else                        rnaType = LSU_5S;
+        }
+    }
+    GB_pop_transaction(gb_main);
+    
+    return rnaType;
+}
+
 //=========== Reading 3D Coordinates from PDB file ====================//
 
 void Structure3D::ReadCoOrdinateFile() {
-    // char *DataFile           = find_data_file("Ecoli_1VOR_23S_rRNA.pdb");
-    //  char *DataFile           = find_data_file("Ecoli_1VOR_5S_rRNA.pdb");
-    char *DataFile           = find_data_file("Ecoli_1M5G_16S_rRNA.pdb");
+    char *DataFile = 0;  
+    int rnaType    = FindTypeOfRNA();
+
+    switch (rnaType) {
+    case LSU_23S: 
+        DataFile = find_data_file("Ecoli_1C2W_23S_rRNA.pdb");
+        //        DataFile = find_data_file("Ecoli_1VOR_23S_rRNA.pdb");
+        break;
+    case LSU_5S: 
+        DataFile = find_data_file("Ecoli_1C2X_5S_rRNA.pdb");
+        //  DataFile = find_data_file("Ecoli_1VOR_5S_rRNA.pdb");
+        break;
+    case SSU_16S:
+        DataFile = find_data_file("Ecoli_1M5G_16S_rRNA.pdb");
+        break;
+    }
+    
     char      buf[256];
 
     float X, Y, Z;
@@ -108,7 +160,7 @@ void Structure3D::ReadCoOrdinateFile() {
         readData.getline(buf,100);  
         string tmp, atom, line = string(buf);
 
-        if (line.find("ATOM") != string::npos ) {
+        if ((line.find("ATOM") != string::npos ) || (line.find("HETATM") != string::npos )) {
             atom = (line.substr(77,2)).c_str();
             if (atom.find("P") != string::npos) {
                 tmp = (line.substr(18,3)).c_str();
@@ -118,7 +170,9 @@ void Structure3D::ReadCoOrdinateFile() {
                 Y    = atof((line.substr(39,8)).c_str());
                 Z    = atof((line.substr(47,8)).c_str());
                 StoreCoordinates(X,Y,Z,Base,pos);
-                
+
+                //                cout<<pos<<" "<<Base<<" "<<X<<" "<<Y<<" "<<Z<<endl; // cough it out
+
                 strCen->x += X; strCen->y += Y; strCen->z += Z;
                 cntr++;
 
@@ -166,7 +220,21 @@ void Structure3D::Store2Dinfo(char *info, int pos, int helixNr){
 //=========== Reading Secondary Structure Data from Ecoli Secondary Structure Mask file ====================//
 
 void Structure3D::GetSecondaryStructureInfo(void) {
-    char *DataFile = find_data_file("SecondaryStructureModel_16SrRNA.data");
+    char *DataFile = 0;  
+    int rnaType    = FindTypeOfRNA();
+
+    switch (rnaType) {
+    case LSU_23S: 
+        DataFile = find_data_file("SecondaryStructureModel_23SrRNA.data");
+        break;
+    case LSU_5S: 
+        DataFile = find_data_file("SecondaryStructureModel_5SrRNA.data");
+        break;
+    case SSU_16S:
+        DataFile = find_data_file("SecondaryStructureModel_16SrRNA.data");
+        break;
+    }
+
     char  buf[256];
 
     int pos, helixNr, lastHelixNr; lastHelixNr = 0;
@@ -199,7 +267,8 @@ void Structure3D::GetSecondaryStructureInfo(void) {
         if ((info[2] == 'S') || (info[2] == 'E')) {
             if (!insideHelix) insideHelix = true;
             else {
-                Store2Dinfo(info, pos, lastHelixNr); skip = true;
+                Store2Dinfo(info, pos, lastHelixNr); 
+                skip        = true;
                 insideHelix = false;
             }
         }
@@ -245,7 +314,7 @@ void Structure3D::Combine2Dand3DstructureInfo(void) {
 
     temp3D = start3D;    
     temp2D = start2D;
-    while ((temp3D != NULL) &&  (temp2D != NULL)) { 
+    while ((temp3D != NULL) &&  (temp2D != NULL)) { cout<<temp3D->pos<<" "<<temp2D->pos<<endl;
         if (temp2D->pos == temp3D->pos) {
             Store2D3Dinfo(temp2D, temp3D);
         }
@@ -430,7 +499,25 @@ void Structure3D::GenerateSecStructureUnpairedHelixRegions(void) {
 
 void Structure3D::GenerateTertiaryInteractionsDispLists(){
     Struct2Dplus3D *t;
-    char           *DataFile = find_data_file("TertiaryInteractions_16SrRNA.data");
+    char *DataFile = 0;  
+    int rnaType    = FindTypeOfRNA();
+
+    switch (rnaType) {
+    case LSU_23S: 
+        cout<<"Tertiary interactions are not yet implemented for 23S rRNA!"<<endl;
+        return;
+        //        DataFile = find_data_file("TertiaryInteractions_23SrRNA.data");
+        // break;
+    case LSU_5S: 
+        cout<<"There are no tertiary interactions observed in 5S rRNA model!"<<endl;
+        return;
+        // DataFile = find_data_file("TertiaryInteractions_5SrRNA.data");
+        // break;
+    case SSU_16S:
+        DataFile = find_data_file("TertiaryInteractions_16SrRNA.data");
+        break;
+    }
+ 
     char            buf[256];
 
     ifstream readData;
@@ -538,7 +625,7 @@ void Structure3D::GenerateHelixDispLists(int HELIX_NR_ID, int HELIX_NR) {
     Struct2Dinfo *temp2D;
     Struct2Dplus3D *temp2D3D;
 
-    const int MAX = 200;
+    const int MAX = 500;
 
     int thisStrandPos[MAX], otherStrandPos[MAX];
     int i, j; i = j = 0;
@@ -636,20 +723,71 @@ void Structure3D::GenerateHelixNrDispList(int startHx, int endHx) {
 }
 
 void Structure3D::GenerateDisplayLists(void){
+    Struct2Dplus3D *temp2D3D; //oasis
 
     GenerateMoleculeSkeleton();
     ComputeBasePositions();
 
-    for (int i = 1; i <= 50;i++) {
-        GenerateHelixDispLists(i, i);
+    int rnaType = FindTypeOfRNA();
+    switch (rnaType) {
+    case SSU_16S:
+        cout<<endl; // oasis
+        for (int i = 1; i <= 50;i++) {
+            GenerateHelixDispLists(i, i);
+            {    //oasis
+                cout<<i<<": "; 
+                temp2D3D = start2D3D;
+                while (temp2D3D != NULL) {
+                    if(temp2D3D->helixNr == i) 
+                       cout<<temp2D3D->mask;
+                    temp2D3D = temp2D3D->next;
+                }
+                cout<<endl;
+            }   // oasis
+        }
+        break;
+    case LSU_23S:
+        cout<<endl; // oasis
+        for (int i = 1; i <= 101;i++) {
+            GenerateHelixDispLists(i, i);
+            {    //oasis
+                cout<<i<<": "; 
+                temp2D3D = start2D3D;
+                while (temp2D3D != NULL) {
+                    if(temp2D3D->helixNr == i) 
+                       cout<<temp2D3D->mask;
+                    temp2D3D = temp2D3D->next;
+                }
+                cout<<endl;
+            }   // oasis
+        }
+        break;
+    case LSU_5S:
+        cout<<endl; // oasis
+        for (int i = 1; i <= 5;i++) {
+            GenerateHelixDispLists(i, i);
+            {    //oasis
+                cout<<i<<": "; 
+                temp2D3D = start2D3D;
+                while (temp2D3D != NULL) {
+                    if(temp2D3D->helixNr == i) 
+                       cout<<temp2D3D->mask;
+                    temp2D3D = temp2D3D->next;
+                }
+                cout<<endl;
+            }   // oasis
+        }
+        break;
     }
+
     //    GenerateHelixNrDispList(1,50);
 
     GenerateSecStructureHelixRegions();
     GenerateSecStructureNonHelixRegions();
     GenerateSecStructureUnpairedHelixRegions();
 
-    //  GenerateTertiaryInteractionsDispLists();
+    GenerateTertiaryInteractionsDispLists();
+
 }
 
 void Structure3D::GenerateMoleculeSkeleton(void){
@@ -660,7 +798,7 @@ void Structure3D::GenerateMoleculeSkeleton(void){
         glBegin(GL_LINE_STRIP);
         t = start2D3D;    
         while (t != NULL) {
-            glVertex3f(t->x, t->y, t->z);
+            glVertex3f(t->x, t->y, t->z);cout<<t->base<<" ";
             t = t->next;
         }
         glEnd();
@@ -764,11 +902,18 @@ void Structure3D::PrepareSecondaryStructureData(void) {
 //         ErrorMsg[] = "\n *** Error Opening File : ";
 
     const char 
-        outFile[]      = "/nfshome/yadhu/DataBase/Struct3D/model23SrRNA/test.data",
-        EcoliFile[]    = "/nfshome/yadhu/DataBase/Struct3D/model23SrRNA/Ecoli_23SrRNA_with_gaps.seq",
-        HelixNrFile[]  = "/nfshome/yadhu/DataBase/Struct3D/model23SrRNA/HelixNumbers.msk",
-        HelixGapFile[] = "/nfshome/yadhu/DataBase/Struct3D/model23SrRNA/SecStructureMask_with_gaps.msk",
+        outFile[]      = "/home/Yadhu/DataBase/Struct3D/model23SrRNA/test.data",
+        EcoliFile[]    = "/home/Yadhu/DataBase/Struct3D/model23SrRNA/Ecoli_23SrRNA_with_gaps.seq",
+        HelixNrFile[]  = "/home/Yadhu/DataBase/Struct3D/model23SrRNA/HelixNumbers.msk",
+        HelixGapFile[] = "/home/Yadhu/DataBase/Struct3D/model23SrRNA/SecStructureMask_with_gaps.msk",
         ErrorMsg[] = "\n *** Error Opening File : ";
+
+//     const char 
+//         outFile[]      = "/home/Yadhu/DataBase/Struct3D/model5SrRNA/test.data",
+//         EcoliFile[]    = "/home/Yadhu/DataBase/Struct3D/model5SrRNA/Ecoli_5SrRNA_with_gaps.seq",
+//         HelixNrFile[]  = "/home/Yadhu/DataBase/Struct3D/model5SrRNA/HelixNumbers.msk",
+//         HelixGapFile[] = "/home/Yadhu/DataBase/Struct3D/model5SrRNA/SecStructureMask_with_gaps.msk",
+//         ErrorMsg[] = "\n *** Error Opening File : ";
 
     int fileLen = 0;
     char *helixNrBuf, *helixGapBuf, *ecoliBuf;

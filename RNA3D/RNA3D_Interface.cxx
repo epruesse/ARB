@@ -13,6 +13,7 @@
 #include "RNA3D_OpenGLEngine.hxx"
 #include "RNA3D_Interface.hxx"
 #include "RNA3D_OpenGLGraphics.hxx"
+#include "RNA3D_StructureData.hxx"
 
 using namespace std;
 
@@ -466,6 +467,19 @@ static AW_window *CreateDisplayHelices_window(AW_root *aw_root) {
         aws->create_input_field(AWAR_3D_HELIX_TO, 5);
         aws->at("helixSize");
         aws->create_input_field(AWAR_3D_HELIX_SIZE, 5);
+        {
+            char *helixRange;
+            Structure3D *s;
+            int rnaType = s->FindTypeOfRNA();
+            
+            switch (rnaType) {
+            case LSU_23S: helixRange = "[1-101]"; break;
+            case SSU_16S: helixRange = "[1-50]";  break;
+            case LSU_5S:  helixRange = "[1-5]";   break;
+            }
+            aws->at("rangeLabel");
+            aws->create_autosize_button(0,helixRange);
+        }
 
         aws->at("dispTI");
         aws->create_toggle(AWAR_3D_DISPLAY_TERTIARY_INTRACTIONS);

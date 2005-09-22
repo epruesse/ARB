@@ -168,7 +168,7 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
     initExtensions();
     
     { // Preparing secondary structure masks for RNA3D program
-        RNA3D->cStructure->PrepareSecondaryStructureData();
+        //        RNA3D->cStructure->PrepareSecondaryStructureData();
     }
 
     // Prepare the structure Data  and Generate Display Lists  
@@ -177,7 +177,6 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
     RNA3D->cStructure->GetSecondaryStructureInfo();  // Getting Secondary Structure Information
     RNA3D->cStructure->Combine2Dand3DstructureInfo(); // Combining Secondary Structure data with 3D Coordinates
 
-    //    RNA3D->cStructure->PrepareStructureSkeleton();    // Preparing structure skeleton with just coordinates  
     RNA3D->cStructure->GenerateDisplayLists(); // Generating Display Lists for Rendering
 
     // Generate Textures
@@ -280,13 +279,21 @@ void MapDisplayParameters(AW_root *root){
     cRenderer->iMapSpeciesInsInfo = root->awar(AWAR_3D_MAP_SPECIES_DISP_INSERTIONS_INFO)->read_int();
 
     { // Validation of Helix Numbers entered by the User
-        if (cRenderer->iStartHelix < 1 ||  cRenderer->iStartHelix > 50 ) {
+        int NoOfHelices = 0;
+        int rnaType = cStructure->FindTypeOfRNA();
+        switch (rnaType){
+        case LSU_23S: NoOfHelices = 101; break;
+        case SSU_16S: NoOfHelices = 50;  break;
+        case LSU_5S:  NoOfHelices = 5;   break;
+        }
+
+        if (cRenderer->iStartHelix < 1 ||  cRenderer->iStartHelix > NoOfHelices ) {
             cout<<"Invalid Helix NUMBER !!"<<endl;
             root->awar(AWAR_3D_HELIX_FROM)->write_int(1);
         }
-        if (cRenderer->iEndHelix < 1 ||  cRenderer->iEndHelix > 50 ) {
+        if (cRenderer->iEndHelix < 1 ||  cRenderer->iEndHelix > NoOfHelices ) {
             cout<<"Invalid Helix NUMBER !!"<<endl;
-            root->awar(AWAR_3D_HELIX_TO)->write_int(50);
+            root->awar(AWAR_3D_HELIX_TO)->write_int(NoOfHelices);
         }
 
         if(cRenderer->iStartHelix > cRenderer->iEndHelix) {
