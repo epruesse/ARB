@@ -1,9 +1,13 @@
 #define SAI    0
 #define SEARCH 1
 
+#define SSU_16S 1
+#define LSU_23S 2
+#define LSU_5S  3
+
 // DisplayLists
 enum { 
-    CIRCLE_LIST = 51,     
+    CIRCLE_LIST = 102,     
     STRUCTURE_BACKBONE,   
     STRUCTURE_BACKBONE_CLR,   
     HELIX_NUMBERS,
@@ -109,6 +113,8 @@ public:
 
     void Combine2Dand3DstructureInfo(void);
     void Store2D3Dinfo(Struct2Dinfo *s2D, Struct3Dinfo *s3D);
+
+    int FindTypeOfRNA();
 
     void GenerateMoleculeSkeleton(void);
     void ComputeBasePositions();

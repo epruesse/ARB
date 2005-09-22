@@ -21,7 +21,7 @@ GLRenderer::GLRenderer(void){
     iDisplayHelix = iHelixMidPoint = iHelixBackBone = iHelixNrs = 0;
     iDispTerInt = 0;
     iStartHelix  = 1;
-    iEndHelix    = 50;
+    iEndHelix    = 101;
     fHelixSize = 1.0;
     iDispPos = 0;
     iDispCursorPos = 0;
