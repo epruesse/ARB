@@ -1,7 +1,7 @@
 #ifndef awt_canvas_hxx_included
 #define awt_canvas_hxx_included
 
-
+class AWT_canvas;
 
 typedef enum {
 	AWT_MODE_NONE,
