@@ -44,6 +44,8 @@ public:
 
     void DisplayMolecule(Structure3D *cStr);
     void DisplayMoleculeName(int w, int h, Structure3D *cStr);
+    void DisplayMoleculeMask(int w, int h);
+
     void DoHelixMapping(void);
     void DisplayHelices();
     void DisplayHelixBackBone(void);

@@ -52,6 +52,8 @@
 #define AWAR_3D_MAP_SAI             "rna3d/map_sai"
 #define AWAR_3D_MAP_SEARCH_STRINGS  "rna3d/map_search_strings"
 
+#define AWAR_3D_23S_RRNA_MOL  "rna3d/rrna_mol_23s"
+
 typedef struct Vector3 {
 public:
     float x, y, z;						
@@ -94,6 +96,9 @@ public:
     bool bPointSpritesSupported;
     bool bAutoRotate;
     bool bRotateMolecule;
+    bool bDisplayMask;
+    bool bDisplayComments;
+
     bool bEColiRefInitialised;
     bool bMapSearchStringsDispListCreated;
     bool bMapSaiDispListCreated;
@@ -119,6 +124,8 @@ public:
 
 extern RNA3D_Global *RNA3D;
 extern GBDATA       *gb_main;
+
+extern char globalComment[1000];
 
 void RNA3D_init_global_data();
 
