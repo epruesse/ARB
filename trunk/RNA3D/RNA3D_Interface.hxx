@@ -1,5 +1,5 @@
-#define WINDOW_WIDTH   800
-#define WINDOW_HEIGHT  800
+#define WINDOW_WIDTH   950
+#define WINDOW_HEIGHT  650
 
 #define ZOOM_FACTOR    0.0005f     // scaling factor in z-axis (ZOOM)
 

@@ -52,6 +52,7 @@ Structure3D::Structure3D(void) {
     iTotalSubs      = 0;
     iTotalDels      = 0;
     iTotalIns       = 0;
+    LSU_molID       = 3;  // default molecule to load in case of 23S rRNA : 1C2W
 }
 
 Structure3D::~Structure3D(void) {
@@ -120,32 +121,105 @@ int Structure3D::FindTypeOfRNA(){
     return rnaType;
 }
 
+//----------Delete old molecule data-------------------------------// 
+// Struct2Dinfo, Struct2Dplus3D, Struct3Dinfo, HelixNrInfo, Insertions
+
+void Structure3D::DeleteOldMoleculeData(){
+    // Struct2Dinfo -> start2D
+    {   
+        Struct2Dinfo *tmp, *data;
+        for(data = start2D; data != NULL; data = tmp) {
+            tmp = data->next;
+            delete data;
+        }
+        start2D = NULL; 
+    }
+
+    // Struct2Dplus3D ->start2D3D
+    {
+        Struct2Dplus3D *tmp, *data;
+        for(data = start2D3D; data != NULL; data = tmp) {
+            tmp = data->next;
+            delete data;
+        }
+        start2D3D = NULL; 
+    }
+
+    // Struct3Dinfo ->start3D
+    {
+        Struct3Dinfo *tmp, *data;
+        for(data = start3D; data != NULL; data = tmp) {
+            tmp = data->next;
+            delete data;
+        }
+        start3D = NULL; 
+    }
+
+    // HelixNrInfo -> start
+    {
+        HelixNrInfo *tmp, *data;
+        for(data = start; data != NULL; data = tmp) {
+            tmp = data->next;
+            delete data;
+        }
+        start = NULL; 
+    }
+
+    // Insertions -> startIns
+    {
+        Insertions *tmp, *data;
+        for(data = startIns; data != NULL; data = tmp) {
+            tmp = data->next;
+            delete data;
+        }
+        startIns = NULL; 
+    }
+}
+
 //=========== Reading 3D Coordinates from PDB file ====================//
 
 void Structure3D::ReadCoOrdinateFile() {
     char *DataFile = 0;  
     int rnaType    = FindTypeOfRNA();
+    
+    RNA3D->bDisplayComments = true; // displaying comments in main window
 
     switch (rnaType) {
-    case LSU_23S: 
-        DataFile = find_data_file("Ecoli_1C2W_23S_rRNA.pdb");
-        //        DataFile = find_data_file("Ecoli_1VOR_23S_rRNA.pdb");
+    case LSU_23S:
+        switch(LSU_molID){
+        case _1PNU: 
+            DataFile = find_data_file("Ecoli_1PNU_23S_rRNA.pdb");
+            sprintf(globalComment, "The 3D molecule rendered from PDB entry : 1PNU at 8.7 Angstrom."); 
+            break;
+        case _1VOR: 
+            DataFile = find_data_file("Ecoli_1VOR_23S_rRNA.pdb");
+            sprintf(globalComment,"The 3D molecule is rendered from PDB entry [1VOR] with 11.5 Angstrom resolution."); 
+            break;
+        case _1C2W: 
+            DataFile = find_data_file("Ecoli_1C2W_23S_rRNA.pdb");
+            sprintf(globalComment,"The 3D molecule is rendered from PDB entry [1C2W] with 7.5 Angstrom resolution."); 
+            break;
+        }
         break;
     case LSU_5S: 
         DataFile = find_data_file("Ecoli_1C2X_5S_rRNA.pdb");
+        sprintf(globalComment,"The 3D molecule is rendered from PDB entry [1C2X] with 7.5 Angstrom resolution."); 
         //  DataFile = find_data_file("Ecoli_1VOR_5S_rRNA.pdb");
         break;
     case SSU_16S:
         DataFile = find_data_file("Ecoli_1M5G_16S_rRNA.pdb");
+        sprintf(globalComment, "The 3D molecule is rendered from PDB entry [1M5G] with 11.5 Angstrom resolution."); 
         break;
     }
     
+    cout<<globalComment<<endl;
+
     char      buf[256];
 
     float X, Y, Z;
     unsigned int pos;
     char Base;
-
+ 
     ifstream readData;
     readData.open(DataFile, ios::in);
     if (!readData.is_open()) {
@@ -153,6 +227,7 @@ void Structure3D::ReadCoOrdinateFile() {
     }
 
     int cntr = 0;
+    unsigned int last3Dpos = 0; 
 
     static bool bEColiStartPosStored = false;
 
@@ -169,13 +244,16 @@ void Structure3D::ReadCoOrdinateFile() {
                 X    = atof((line.substr(31,8)).c_str());
                 Y    = atof((line.substr(39,8)).c_str());
                 Z    = atof((line.substr(47,8)).c_str());
-                StoreCoordinates(X,Y,Z,Base,pos);
-
-                //                cout<<pos<<" "<<Base<<" "<<X<<" "<<Y<<" "<<Z<<endl; // cough it out
-
-                strCen->x += X; strCen->y += Y; strCen->z += Z;
-                cntr++;
-
+       
+                // special filter for 23S rRNA structure (IVOR/IPNU)
+                // IVOR/IPNU contains artifacts and are not mentioned in any of the 
+                // remarks of PDB file 
+                if (last3Dpos != pos && !(pos >= 3093)) {       
+                    StoreCoordinates(X,Y,Z,Base,pos);
+                    last3Dpos = pos;
+                    strCen->x += X; strCen->y += Y; strCen->z += Z;
+                    cntr++;
+                }
                 if(!bEColiStartPosStored) { 
                     iEColiStartPos = pos;
                     bEColiStartPosStored = true;
@@ -311,15 +389,36 @@ void Structure3D::Store2D3Dinfo(Struct2Dinfo *s2D, Struct3Dinfo *s3D) {
 void Structure3D::Combine2Dand3DstructureInfo(void) {
     Struct3Dinfo *temp3D;
     Struct2Dinfo *temp2D;
+    int cntr = 0;
+
+    cout<<"Missing Base Positions : "<<endl;
 
     temp3D = start3D;    
     temp2D = start2D;
-    while ((temp3D != NULL) &&  (temp2D != NULL)) { cout<<temp3D->pos<<" "<<temp2D->pos<<endl;
+    while ((temp3D != NULL) &&  (temp2D != NULL)) { 
         if (temp2D->pos == temp3D->pos) {
             Store2D3Dinfo(temp2D, temp3D);
         }
+        else {
+            while (temp2D->pos != temp3D->pos) {
+                cout<<temp2D->pos<<", "; // missing base positions
+                cntr++;
+                temp2D = temp2D->next;
+            }
+            Store2D3Dinfo(temp2D, temp3D);
+        }
+        
         temp3D = temp3D->next;
         temp2D = temp2D->next;
+    }
+    cout<<endl<<"Total No. of bases missing = "<<cntr<<endl;
+    
+    // printing comments in the main window
+    {
+        RNA3D->bDisplayComments = true;
+        char buf[256];
+        sprintf(buf, "Total No. of bases missing = %d. See the console messages for the actual missing base positions.",cntr);
+        strcat(globalComment,buf);
     }
 }
 
@@ -515,10 +614,12 @@ void Structure3D::GenerateTertiaryInteractionsDispLists(){
         // break;
     case SSU_16S:
         DataFile = find_data_file("TertiaryInteractions_16SrRNA.data");
+        cout<<"Tertiary Interactions are fetched from comparative RNA website [http://www.rna.icmb.utexas.edu]."
+            <<"The same are located in the file \""<<DataFile<<"\"."<<endl;
         break;
     }
- 
-    char            buf[256];
+
+    char  buf[256];
 
     ifstream readData;
     readData.open(DataFile, ios::in);
@@ -723,7 +824,6 @@ void Structure3D::GenerateHelixNrDispList(int startHx, int endHx) {
 }
 
 void Structure3D::GenerateDisplayLists(void){
-    Struct2Dplus3D *temp2D3D; //oasis
 
     GenerateMoleculeSkeleton();
     ComputeBasePositions();
@@ -731,51 +831,18 @@ void Structure3D::GenerateDisplayLists(void){
     int rnaType = FindTypeOfRNA();
     switch (rnaType) {
     case SSU_16S:
-        cout<<endl; // oasis
         for (int i = 1; i <= 50;i++) {
             GenerateHelixDispLists(i, i);
-            {    //oasis
-                cout<<i<<": "; 
-                temp2D3D = start2D3D;
-                while (temp2D3D != NULL) {
-                    if(temp2D3D->helixNr == i) 
-                       cout<<temp2D3D->mask;
-                    temp2D3D = temp2D3D->next;
-                }
-                cout<<endl;
-            }   // oasis
         }
         break;
     case LSU_23S:
-        cout<<endl; // oasis
         for (int i = 1; i <= 101;i++) {
             GenerateHelixDispLists(i, i);
-            {    //oasis
-                cout<<i<<": "; 
-                temp2D3D = start2D3D;
-                while (temp2D3D != NULL) {
-                    if(temp2D3D->helixNr == i) 
-                       cout<<temp2D3D->mask;
-                    temp2D3D = temp2D3D->next;
-                }
-                cout<<endl;
-            }   // oasis
         }
         break;
     case LSU_5S:
-        cout<<endl; // oasis
         for (int i = 1; i <= 5;i++) {
             GenerateHelixDispLists(i, i);
-            {    //oasis
-                cout<<i<<": "; 
-                temp2D3D = start2D3D;
-                while (temp2D3D != NULL) {
-                    if(temp2D3D->helixNr == i) 
-                       cout<<temp2D3D->mask;
-                    temp2D3D = temp2D3D->next;
-                }
-                cout<<endl;
-            }   // oasis
         }
         break;
     }
@@ -787,7 +854,6 @@ void Structure3D::GenerateDisplayLists(void){
     GenerateSecStructureUnpairedHelixRegions();
 
     GenerateTertiaryInteractionsDispLists();
-
 }
 
 void Structure3D::GenerateMoleculeSkeleton(void){
@@ -798,7 +864,7 @@ void Structure3D::GenerateMoleculeSkeleton(void){
         glBegin(GL_LINE_STRIP);
         t = start2D3D;    
         while (t != NULL) {
-            glVertex3f(t->x, t->y, t->z);cout<<t->base<<" ";
+            glVertex3f(t->x, t->y, t->z);
             t = t->next;
         }
         glEnd();
@@ -862,6 +928,7 @@ void Structure3D::ComputeBasePositions(){
     char POS[50];
     float spacer = 1.5;
     int posSkip = iInterval;
+    if (posSkip <= 0) posSkip = 25; // default interval value
 
     glNewList(STRUCTURE_POS, GL_COMPILE);
     {

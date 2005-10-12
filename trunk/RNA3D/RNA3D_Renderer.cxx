@@ -139,7 +139,7 @@ void GLRenderer::DisplayMoleculeName(int w, int h, Structure3D *cStr){
 
     G->SetColor(RNA3D_GC_FOREGROUND);
     G->PrintString(x, y, 0, pSpeciesName, GLUT_BITMAP_8_BY_13);
-
+    
     char buf[25];
     if (iMapSpecies){
         G->SetColor(RNA3D_GC_MAPPED_SPECIES);
@@ -151,6 +151,26 @@ void GLRenderer::DisplayMoleculeName(int w, int h, Structure3D *cStr){
         G->PrintString(x, y-30, 0, buf, GLUT_BITMAP_8_BY_13);
     }
 
+    { 
+        if (RNA3D->bDisplayComments) {
+            G->SetColor(RNA3D_GC_COMMENTS);
+            G->PrintString(x-w/2.5, y, 0, "[Escape switches off the comments]", GLUT_BITMAP_8_BY_13);
+            G->PrintString(x-w/2.5, y-10, 0, "||||||||||||||||||||||||||||||||||", GLUT_BITMAP_8_BY_13);
+            G->PrintComment(x-w/2.5, y-10, 0, globalComment);
+        }
+    }
+    glPopMatrix();
+}
+
+void GLRenderer::DisplayMoleculeMask(int w, int h){
+    // displays a rectangular mask cutting thru the centre of the molecule
+    glPushMatrix(); 
+    glScalef(0.5, 0.5, 0.5);
+
+    if (RNA3D->bDisplayMask) {
+        G->SetColor(RNA3D_GC_MASK);
+        G->DrawBox(0,0,w,h);
+    }
     glPopMatrix();
 }
 

@@ -5,6 +5,10 @@
 #define LSU_23S 2
 #define LSU_5S  3
 
+#define _1PNU  1
+#define _1VOR  2
+#define _1C2W  3
+
 // DisplayLists
 enum { 
     CIRCLE_LIST = 102,     
@@ -95,7 +99,8 @@ public:
     int iStartPos, iEndPos;
     int iEColiStartPos, iEColiEndPos;
     int iTotalSubs, iTotalDels, iTotalIns;
-    
+    int LSU_molID;
+
     BI_ecoli_ref *EColiRef;
     ED4_sequence_terminal *ED4_SeqTerminal;
 
@@ -114,7 +119,8 @@ public:
     void Combine2Dand3DstructureInfo(void);
     void Store2D3Dinfo(Struct2Dinfo *s2D, Struct3Dinfo *s3D);
 
-    int FindTypeOfRNA();
+    int  FindTypeOfRNA();
+    void DeleteOldMoleculeData();
 
     void GenerateMoleculeSkeleton(void);
     void ComputeBasePositions();

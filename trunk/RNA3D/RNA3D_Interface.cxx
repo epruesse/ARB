@@ -133,7 +133,10 @@ void KeyPressEventHandler( Widget w, XtPointer client_data, XEvent *event, char*
         RNA3D->root->awar(AWAR_3D_MOL_ROTATE)->write_int(RNA3D->iRotateMolecule);
         break;
     case XK_Escape:
-        exit(0); 
+        RNA3D->bDisplayComments = !RNA3D->bDisplayComments;
+        break;
+    case XK_Tab:
+        RNA3D->bDisplayMask = !RNA3D->bDisplayMask;
         break;
     case XK_Up:
         RNA3D->Center.y -= 0.1;
@@ -286,6 +289,36 @@ static void SyncronizeColorsWithEditor(AW_window *aww) {
                 0);
 }
 
+static void Change3DMolecule_CB(AW_root *awr) {
+    cout<<"Rendering new 3D molecule.... please wait..."<<endl;
+
+    Structure3D *s = new Structure3D;
+    s->LSU_molID = awr->awar(AWAR_3D_23S_RRNA_MOL)->read_int();
+
+    s->DeleteOldMoleculeData();        // Deleting the old molecule data
+    s->ReadCoOrdinateFile();           // Reading Structure information
+    s->GetSecondaryStructureInfo();    // Getting Secondary Structure Information
+    s->Combine2Dand3DstructureInfo();  // Combining Secondary Structure data with 3D Coordinates
+    s->GenerateDisplayLists();         // Generating Display Lists for Rendering
+
+    // Resetting the center of view to new 3D molecule 
+    {
+        extern RNA3D_Global *RNA3D;
+        delete RNA3D->cStructure->strCen;
+        RNA3D->cStructure->strCen = new Vector3(s->strCen->x,s->strCen->y,s->strCen->z);
+    }
+
+    delete s;
+
+    // Draw new 3D molecule 
+    RefreshOpenGLDisplay();
+}
+
+static void Change3DMolecule(AW_window *aww, long int molID) {
+    // changes the displayed 3D structure in the case of 23S rRNA
+    aww->get_root()->awar(AWAR_3D_23S_RRNA_MOL)->write_int(molID);
+}
+
 
 /*---------------------------- Creating WINDOWS ------------------------------ */
 static void AddCallBacks(AW_root *awr) {
@@ -337,6 +370,8 @@ static void AddCallBacks(AW_root *awr) {
     awr->awar(AWAR_3D_MAP_SPECIES_DISP_MISSING)->add_callback(RefreshCanvas);
     awr->awar(AWAR_3D_MAP_SPECIES_DISP_INSERTIONS)->add_callback(RefreshCanvas);
     awr->awar(AWAR_3D_MAP_SPECIES_DISP_INSERTIONS_INFO)->add_callback(RefreshCanvas);
+
+    awr->awar(AWAR_3D_23S_RRNA_MOL)->add_callback(Change3DMolecule_CB);
 }
 
 static void RefreshMappingDisplay(AW_window *aw) {
@@ -468,7 +503,7 @@ static AW_window *CreateDisplayHelices_window(AW_root *aw_root) {
         aws->at("helixSize");
         aws->create_input_field(AWAR_3D_HELIX_SIZE, 5);
         {
-            char *helixRange;
+            const char *helixRange;
             Structure3D *s;
             int rnaType = s->FindTypeOfRNA();
             
@@ -586,6 +621,45 @@ static AW_window *CreateMapSequenceData_window(AW_root *aw_root) {
     return (AW_window *)aws;
 }
 
+static AW_window *CreateChangeMolecule_window(AW_root *aw_root) {
+    static AW_window_simple *aws = 0;
+    if (aws) return (AW_window *)aws;
+
+    aws = new AW_window_simple;
+
+    aws->init( aw_root, "CHANGE_MOLECULE", "RNA3D : Change 3D Molecule");
+    aws->load_xfig("RNA3D_ChangeMolecule.fig");
+
+    aws->callback( AW_POPUP_HELP,(AW_CL)"rna3d_changeMolecule.hlp");
+    aws->at("help");
+    aws->button_length(0);
+    aws->create_button("HELP","#help.xpm");
+
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->button_length(0);
+    aws->create_button("CLOSE","#closeText.xpm");
+
+    aws->callback(Change3DMolecule,1);
+    aws->at("1pnu");
+    aws->button_length(73);
+    aws->create_button(0,"1PNU: 8.7 A^ Vila-Sanjurjo et al. Proc.Nat.Acad.Sci.(2003) 100, 8682.");
+
+    aws->callback(Change3DMolecule,2);
+    aws->at("1vor");
+    aws->button_length(73);
+    aws->create_button(0,"1VOR: 11.5 A^ Vila-Sanjurjo et al. Nat.Struct.Mol.Biol.(2004) 11, 1054.");
+
+    aws->callback(Change3DMolecule,3);
+    aws->at("1c2w");
+    aws->button_length(73);
+    aws->set_background("white");
+    aws->create_button(0,"1C2W: 7.5 A^ Mueller et al. J.Mol.Biol.(2000) 298, 35-59.");
+
+    aws->show();
+    return (AW_window *)aws;
+}
+
 AW_window *CreateRNA3DMainWindow(AW_root *awr){
     // Main Window - Canvas on which the actual painting is done
     GB_transaction dummy(gb_main);
@@ -607,18 +681,29 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
     RNA3D->gl_Canvas->set_mode(AWT_MODE_NONE); 
 
     awm->create_menu( 0, "File", "F", 0,  AWM_ALL );
+    {    
+        Structure3D *s;
+        int rnaType = s->FindTypeOfRNA();
+        if (rnaType == LSU_23S) 
+            awm->insert_menu_topic( "changeMolecule", "Change Molecule", "M","rna3d_changeMolecule.hlp", AWM_ALL, AW_POPUP, (AW_CL)CreateChangeMolecule_window, 0);
+    }
     awm->insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 1,0);
 
     {
-        awm->at(11,2);
+        awm->at(1,2);
         awm->auto_space(2,0);
         awm->shadow_width(1);
 
-        int cur_x, cur_y, start_x, first_line_y;
+        int cur_x, cur_y, start_x, first_line_y, second_line_y;
         awm->get_at_position( &start_x,&first_line_y);
         awm->button_length(0);
         awm->callback( (AW_CB0)AW_POPDOWN );
         awm->create_button("Quit", "#quitText.xpm");
+
+        awm->get_at_position( &cur_x,&cur_y );
+        awm->callback(RefreshMappingDisplay);
+        awm->button_length(0);
+        awm->create_button("REFRESH","#refresh.xpm");
     
         awm->get_at_position( &cur_x,&cur_y );
         awm->callback(AW_POPUP,(AW_CL)AW_create_gc_window,(AW_CL)aw_gc_manager);
@@ -658,14 +743,13 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
         awm->create_toggle(AWAR_3D_MAP_ENABLE, "#uncheck.xpm", "#check.xpm");
 
         awm->get_at_position( &cur_x,&cur_y );
-        awm->callback(RefreshMappingDisplay);
-        awm->button_length(0);
-        awm->create_button("REFRESH","#refresh.xpm");
-
-        awm->get_at_position( &cur_x,&cur_y );
         awm->callback( AW_POPUP_HELP,(AW_CL)"rna3d_general.hlp");
         awm->button_length(0);
         awm->create_button("help", "#helpText.xpm");
+
+        awm->at_newline();
+        awm->get_at_position( &cur_x,&second_line_y);
+        awm->create_autosize_button(0," Spacebar = auto rotate mode on/off | Mouse Left Button + Move = Rotates Molecule | Mouse Wheel = Zoom in/out");
     }
 
     AddCallBacks(awr);

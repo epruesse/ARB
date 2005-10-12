@@ -145,6 +145,20 @@ void OpenGLGraphics::PrintString(float x, float y, float z, char *s, void *font)
     }
 }
 
+void OpenGLGraphics::PrintComment(float x, float y, float z, char *s){
+    // if comments are longer break them and display in next line
+    int col  = 35;
+
+    glRasterPos3f(x, y, z);
+    for (unsigned int i = 0; i < strlen(s); i++) {
+        if(i%col==0) {
+            y -= 10;
+            glRasterPos3f(x, y, z);
+        }
+        glutBitmapCharacter(GLUT_BITMAP_8_BY_13, s[i]);
+    }
+}
+
 void OpenGLGraphics::PrintCharacter(float x, float y, float z, char c, void *font) {
     glRasterPos3d(x, y, z);
     glutBitmapCharacter(font, c);
@@ -217,6 +231,18 @@ void  OpenGLGraphics::DrawCube(float x, float y, float z, float radius)
 		glVertex3f(x + radius, y, z + radius);
 		glVertex3f(x + radius, y + radius, z + radius); 
 		glVertex3f(x + radius, y + radius, z);
+
+	glEnd();
+}
+
+void  OpenGLGraphics::DrawBox(float x, float y,  float w, float h)
+{
+	glBegin(GL_QUADS);		
+    
+    glVertex2f(x-w/2, y-h/2);
+    glVertex2f(x+w/2, y-h/2);
+    glVertex2f(x+w/2, y+h/2);
+    glVertex2f(x-w/2, y+h/2);
 
 	glEnd();
 }

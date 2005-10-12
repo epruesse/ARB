@@ -29,7 +29,8 @@ public:
     void DrawCursor(int x, int y);
     void PrintString(float x, float y, float z, char *s, void *font);
     void PrintCharacter(float x, float y, float z, char c, void *font);
-    
+    void PrintComment(float x, float y, float z, char *s);
+  
     void SetOpenGLBackGroundColor();    
     ColorRGBf ConvertGCtoRGB(int gc);
     void SetColor(int gc);
@@ -38,6 +39,7 @@ public:
     void DrawCircle(float radius, float x, float y);
     void DrawCube(float x, float y, float z, float radius);
     void DrawSphere(float radius, float x, float y, float z);
+    void DrawBox(float x, float y, float width, float height);
 
     void Draw3DSGrid();
     void DrawAxis(float x, float y, float z, float len);

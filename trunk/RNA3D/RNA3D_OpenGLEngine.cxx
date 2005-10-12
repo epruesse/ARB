@@ -12,6 +12,7 @@
 // global data
 
 RNA3D_Global *RNA3D = 0; 
+char globalComment[1000];// = ""; 
 
 void RNA3D_init_global_data() {
     if (!RNA3D) {
@@ -27,6 +28,8 @@ RNA3D_Global::RNA3D_Global(){
     bMapSaiDispListCreated           = false;
     bAutoRotate                      = false;
     bRotateMolecule                  = false;
+    bDisplayMask                     = false;
+    bDisplayComments                 = false;
     bMapSearchStringsDispListCreated = false;
 
     ROTATION_SPEED = 0.5;
@@ -465,13 +468,15 @@ void RenderOpenGLScene(Widget w){
 
     glScalef(RNA3D->scale, RNA3D->scale, RNA3D->scale);
 
+    RNA3D->cRenderer->DisplayMoleculeMask(iScreenWidth, iScreenHeight);
+
     if(RNA3D->bRotateMolecule || RNA3D->bAutoRotate) {
         CalculateRotationMatrix();
     }
 
     glMultMatrixf(rotation_matrix);
 
-    Vector3& strCen = *RNA3D->cStructure->strCen;
+    Vector3& strCen = *RNA3D->cStructure->strCen; 
     glTranslatef(-strCen.x, -strCen.y, -strCen.z);
 
     DrawStructure();
