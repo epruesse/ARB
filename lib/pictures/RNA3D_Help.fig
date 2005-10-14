@@ -228,7 +228,7 @@ Single
 4 0 -1 0 0 0 13 0.0000 4 165 4140 2925 1350 : Displays actual nucleotides in the structure\001
 4 0 -1 0 0 0 13 0.0000 4 150 3420 2925 5625 : Zoom IN to / OUT of the 3D molecule \001
 4 0 -1 0 0 0 13 0.0000 4 165 2880 2925 5985 : Rotates the 3D molecule freely\001
-4 0 -1 0 0 0 13 0.0000 4 150 4050 2925 6390 : Moves molecule to LEFT, RIGHT, TOP and DOWN\001
+4 0 -1 0 0 0 13 0.0000 4 150 3870 2925 6390 : Moves molecule to LEFT, RIGHT, TOP & DOWN\001
 4 0 -1 0 0 0 13 0.0000 4 165 4320 2925 5310 : Toggles ON/OFF the automatic molecule rotation\001
 4 0 -1 0 0 2 14 0.0000 4 165 2880 2340 405 Display Options and Key Bindings\001
 4 0 -1 0 0 18 13 0.0000 4 135 540 3600 7470 $close\001
