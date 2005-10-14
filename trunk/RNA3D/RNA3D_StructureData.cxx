@@ -165,15 +165,11 @@ void Structure3D::DeleteOldMoleculeData(){
         start = NULL; 
     }
 
-    // Insertions -> startIns
-    {
-        Insertions *tmp, *data;
-        for(data = startIns; data != NULL; data = tmp) {
-            tmp = data->next;
-            delete data;
-        }
-        startIns = NULL; 
-    }
+    // Delete insertions data
+    DeleteOldInsertionData();
+
+    //Delelte mapped species data
+    DeleteOldSpeciesData ();
 }
 
 //=========== Reading 3D Coordinates from PDB file ====================//
@@ -212,8 +208,6 @@ void Structure3D::ReadCoOrdinateFile() {
         break;
     }
     
-    cout<<globalComment<<endl;
-
     char      buf[256];
 
     float X, Y, Z;
@@ -261,7 +255,13 @@ void Structure3D::ReadCoOrdinateFile() {
             }
         }
     }
-    iEColiStartPos = pos; 
+    iEColiEndPos = pos; 
+
+    cout<<"--------------------------------------------------"<<endl
+        <<globalComment<<endl
+        <<"Structure contains "<<iEColiEndPos-iEColiStartPos<<"( "<<iEColiStartPos<<" - "
+        <<iEColiEndPos<<" ) positions."<<endl
+        <<"---------------------------------------------------"<<endl;
 
     strCen->x = strCen->x/cntr; 
     strCen->y = strCen->y/cntr;
@@ -731,22 +731,25 @@ void Structure3D::GenerateHelixDispLists(int HELIX_NR_ID, int HELIX_NR) {
     int thisStrandPos[MAX], otherStrandPos[MAX];
     int i, j; i = j = 0;
     {
-        temp3D = start3D;    
         temp2D = start2D;
-        while ((temp3D != NULL) &&  (temp2D != NULL)) { 
+        while (temp2D != NULL) { 
             if (temp2D->helixNr == HELIX_NR) {
                 if ((temp2D->mask == '[') || (temp2D->mask == '<'))
                     thisStrandPos[i++]  = temp2D->pos;
                 if ((temp2D->mask == ']') || (temp2D->mask == '>'))
                     otherStrandPos[j++] = temp2D->pos;
             }
-            temp3D = temp3D->next;
             temp2D = temp2D->next;
         }
     }
 
     int tempPos = 0;
     float x1,x2,y1,y2,z1,z2; x1=x2=y1=y2=z1=z2=0.0;
+
+    bool bThisStrand, bOtherStrand;
+    bThisStrand = bOtherStrand = false;
+
+    bool bMissingBasePair = false;
 
     glNewList(HELIX_NR_ID, GL_COMPILE);
     {
@@ -757,7 +760,7 @@ void Structure3D::GenerateHelixDispLists(int HELIX_NR_ID, int HELIX_NR) {
                     temp2D3D = start2D3D;
                     while (temp2D3D != NULL) { 
                         if (temp2D3D->pos == tempPos) { 
-                            glVertex3f(temp2D3D->x, temp2D3D->y, temp2D3D->z);
+                            bThisStrand = true;
                             x1=temp2D3D->x; y1=temp2D3D->y; z1=temp2D3D->z;
                             break;
                         }
@@ -769,16 +772,30 @@ void Structure3D::GenerateHelixDispLists(int HELIX_NR_ID, int HELIX_NR) {
                     temp2D3D = start2D3D;
                     while (temp2D3D != NULL) { 
                         if (temp2D3D->pos == tempPos) { 
-                            glVertex3f(temp2D3D->x, temp2D3D->y, temp2D3D->z);
+                            bOtherStrand = true;
                             x2=temp2D3D->x; y2=temp2D3D->y; z2=temp2D3D->z;
                             break;
                         }
                         temp2D3D = temp2D3D->next;
                     }
                 }
-                x1 = (x1+x2)/2; y1 = (y1+y2)/2; z1 = (z1+z2)/2;
-                StoreHelixNrInfo(x1,y1,z1,HELIX_NR);
+                //if bases present in both the strands then draw a bond
+                //and store the helix number information
+                if (bThisStrand && bOtherStrand){
+                    glVertex3f(x1, y1, z1);
+                    glVertex3f(x2, y2, z2);
+                    
+                    x1 = (x1+x2)/2; y1 = (y1+y2)/2; z1 = (z1+z2)/2;
+                    StoreHelixNrInfo(x1,y1,z1,HELIX_NR);
+
+                    bThisStrand = bOtherStrand = false;
+                }
+                else {
+                    bMissingBasePair = true;
+                    cout<<thisStrandPos[k]<<"-"<<tempPos<<"("<<HELIX_NR_ID<<"), ";
+                }
             }
+        if (bMissingBasePair) cout<<endl;
     }
     glEndList();
 }
@@ -836,9 +853,12 @@ void Structure3D::GenerateDisplayLists(void){
         }
         break;
     case LSU_23S:
+        cout<<"=========================================================="<<endl
+            <<"Missing base pairs (bracket number indicates helix number) "<<endl;
         for (int i = 1; i <= 101;i++) {
             GenerateHelixDispLists(i, i);
         }
+        cout<<"=========================================================="<<endl;
         break;
     case LSU_5S:
         for (int i = 1; i <= 5;i++) {
@@ -846,8 +866,6 @@ void Structure3D::GenerateDisplayLists(void){
         }
         break;
     }
-
-    //    GenerateHelixNrDispList(1,50);
 
     GenerateSecStructureHelixRegions();
     GenerateSecStructureNonHelixRegions();

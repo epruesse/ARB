@@ -49,6 +49,7 @@ static void  CreateRNA3DAwars(AW_root *root){
     root->awar_int(AWAR_3D_MAP_ENABLE, 0, AW_ROOT_DEFAULT); 
     root->awar_int(AWAR_3D_MAP_SEARCH_STRINGS, 0, AW_ROOT_DEFAULT); 
 
+    root->awar_int(AWAR_3D_DISPLAY_MASK, 0, AW_ROOT_DEFAULT); 
     root->awar_int(AWAR_3D_23S_RRNA_MOL, 3, AW_ROOT_DEFAULT); 
 }
 

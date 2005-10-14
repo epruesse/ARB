@@ -52,6 +52,7 @@
 #define AWAR_3D_MAP_SAI             "rna3d/map_sai"
 #define AWAR_3D_MAP_SEARCH_STRINGS  "rna3d/map_search_strings"
 
+#define AWAR_3D_DISPLAY_MASK  "rna3d/display_mask"
 #define AWAR_3D_23S_RRNA_MOL  "rna3d/rrna_mol_23s"
 
 typedef struct Vector3 {
