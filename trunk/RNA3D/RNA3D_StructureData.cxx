@@ -603,21 +603,18 @@ void Structure3D::GenerateTertiaryInteractionsDispLists(){
 
     switch (rnaType) {
     case LSU_23S: 
-        cout<<"Tertiary interactions are not yet implemented for 23S rRNA!"<<endl;
-        return;
-        //        DataFile = find_data_file("TertiaryInteractions_23SrRNA.data");
-        // break;
+        DataFile = find_data_file("TertiaryInteractions_23SrRNA.data");
+        break;
     case LSU_5S: 
         cout<<"There are no tertiary interactions observed in 5S rRNA model!"<<endl;
         return;
-        // DataFile = find_data_file("TertiaryInteractions_5SrRNA.data");
-        // break;
     case SSU_16S:
         DataFile = find_data_file("TertiaryInteractions_16SrRNA.data");
-        cout<<"Tertiary Interactions are fetched from comparative RNA website [http://www.rna.icmb.utexas.edu]."
-            <<"The same are located in the file \""<<DataFile<<"\"."<<endl;
         break;
     }
+    
+    cout<<"Tertiary Interactions are fetched from comparative RNA website [http://www.rna.icmb.utexas.edu]."<<endl
+        <<"The same are located in the file \""<<DataFile<<"\"."<<endl;
 
     char  buf[256];
 
@@ -627,8 +624,8 @@ void Structure3D::GenerateTertiaryInteractionsDispLists(){
         throw_IO_error(DataFile);
     }
 
-    int K[50];
-    int R[50];
+    int K[100];
+    int R[100];
     int k, r; k = r = 0;
 
     while (!readData.eof()) {
@@ -637,14 +634,14 @@ void Structure3D::GenerateTertiaryInteractionsDispLists(){
         tmp = strtok(buf, " ");
         if (tmp != NULL) 
             {
-                if (tmp[0] == 'K') {
+                if (strcmp(tmp, "KNOT") == 0) {
                     tmp = strtok(NULL, ":" );
                     while (tmp != NULL) {
                         K[k++] = atoi(tmp); 
                         tmp = strtok(NULL, ":" );
                     }
                 }
-                else if (tmp[0] == 'R') {
+                else if (strcmp(tmp,"TRIPLE") == 0) {
                     tmp = strtok(NULL, ":" );
                     while (tmp != NULL) {
                         R[r++] = atoi(tmp);
@@ -722,7 +719,6 @@ void Structure3D::StoreHelixNrInfo(float x, float y, float z, int helixNr) {
 }
 
 void Structure3D::GenerateHelixDispLists(int HELIX_NR_ID, int HELIX_NR) {
-    Struct3Dinfo *temp3D;
     Struct2Dinfo *temp2D;
     Struct2Dplus3D *temp2D3D;
 
