@@ -1,23 +1,23 @@
-* ==============================================================================
-* Tertiary Interactions of 16S ribosomal RNA model of E.coli. 
-* Reference : http://www.rna.icmb.utexas.edu/
-* Year of Last Update : 2001.
-* Pseudoknots(K) and Triple Base Pairs(R) are extracted and displayed in the 3D model.
-* ==============================================================================
+HEAD ==============================================================================
+HEAD Tertiary Interactions of 16S ribosomal RNA model of E.coli. 
+HEAD Reference : http://www.rna.icmb.utexas.edu/
+HEAD Year of Last Update : 2001.
+HEAD Pseudoknots(K) and Triple Base Pairs(R) are extracted and displayed in the 3D model.
+HEAD ==============================================================================
 
-K 17:918
-K 18:917
-K 19:916
-K 505:526
-K 506:525
-K 507:524
-K 521:528
-K 522:527
-K 570:866
-K 571:865
-R 124:237:121
-R 125:236:121
-R 570:866:863
-R 596:644:595
-R 933:1384:1109
-R 996:1045:995
+KNOT 17:918
+KNOT 18:917
+KNOT 19:916
+KNOT 505:526
+KNOT 506:525
+KNOT 507:524
+KNOT 521:528
+KNOT 522:527
+KNOT 570:866
+KNOT 571:865
+TRIPLE 124:237:121
+TRIPLE 125:236:121
+TRIPLE 570:866:863
+TRIPLE 596:644:595
+TRIPLE 933:1384:1109
+TRIPLE 996:1045:995
