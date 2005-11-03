@@ -89,7 +89,7 @@ void configDialog::createWindow()
     // LABEL WIDGET
     Widget label_01= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("VISUALIZATION COLORS (#RGB)"),
+        XmNlabelString, PGT_XmStringCreateLocalized("VISUALIZATION COLORS (#RGB)"),
         XmNheight, 30,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_FORM,
@@ -100,7 +100,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (COLOR ROW 01 -- CROSSHAIR COLOR)
     Widget label_02= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("Crosshair color:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Crosshair color:"),
         XmNheight, 30,
         XmNwidth, 150,
         XmNalignment, XmALIGNMENT_BEGINNING,
@@ -136,7 +136,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (COLOR ROW 02 -- UNMARKED  COLOR)
     Widget label_03= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("Unmarked protein color:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Unmarked protein color:"),
         XmNheight, 30,
         XmNwidth, 150,
         XmNalignment, XmALIGNMENT_BEGINNING,
@@ -172,7 +172,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (COLOR ROW 03 -- MARKED COLOR)
     Widget label_04= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("Marked protein color:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Marked protein color:"),
         XmNheight, 30,
         XmNwidth, 150,
         XmNalignment, XmALIGNMENT_BEGINNING,
@@ -208,7 +208,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (COLOR ROW 04 -- PROTEIN COLOR)
     Widget label_05= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("Selected protein color:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Selected protein color:"),
         XmNheight, 30,
         XmNwidth, 150,
         XmNalignment, XmALIGNMENT_BEGINNING,
@@ -244,7 +244,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (COLOR ROW 05 -- TEXT COLOR)
     Widget label_0a= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("Text color:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Text color:"),
         XmNheight, 30,
         XmNwidth, 150,
         XmNalignment, XmALIGNMENT_BEGINNING,
@@ -290,7 +290,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (PROTEIN ID TEXT)
     Widget label_06= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("PROTEIN IDENTIFIER"),
+        XmNlabelString, PGT_XmStringCreateLocalized("PROTEIN IDENTIFIER"),
         XmNheight, 30,
         XmNwidth, 150,
         XmNalignment, XmALIGNMENT_CENTER,
@@ -302,7 +302,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (GENE ID TEXT)
     Widget label_07= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("GENE IDENTIFIER"),
+        XmNlabelString, PGT_XmStringCreateLocalized("GENE IDENTIFIER"),
         XmNheight, 30,
         XmNwidth, 150,
         XmNalignment, XmALIGNMENT_CENTER,
@@ -350,7 +350,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (PROTEIN INFOS)
     Widget label_08= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("DISPLAYED PROTEIN INFO"),
+        XmNlabelString, PGT_XmStringCreateLocalized("DISPLAYED PROTEIN INFO"),
         XmNheight, 30,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -374,7 +374,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (GENE INFOS)
     Widget label_09= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("DISPLAYED GENE INFO"),
+        XmNlabelString, PGT_XmStringCreateLocalized("DISPLAYED GENE INFO"),
         XmNheight, 30,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -397,7 +397,7 @@ void configDialog::createWindow()
 
     m_cancelButton= XtVaCreateManagedWidget("button",
         xmPushButtonWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("Cancel"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Cancel"),
         XmNwidth, 100,
         XmNheight, 30,
         XmNleftAttachment, XmATTACH_FORM,
@@ -407,7 +407,7 @@ void configDialog::createWindow()
 
     m_okButton= XtVaCreateManagedWidget("button",
         xmPushButtonWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("Ok"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Ok"),
         XmNwidth, 100,
         XmNheight, 30,
         XmNrightAttachment, XmATTACH_FORM,
@@ -417,7 +417,7 @@ void configDialog::createWindow()
 
     m_defaultButton= XtVaCreateManagedWidget("button",
         xmPushButtonWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("Default"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Default"),
         XmNwidth, 100,
         XmNheight, 30,
         XmNleftAttachment, XmATTACH_WIDGET,

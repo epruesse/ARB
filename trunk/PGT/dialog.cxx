@@ -11,6 +11,8 @@
 
 
 #include "dialog.hxx"
+#include <arbdb.h>
+#include <arbdbt.h>
 
 
 /****************************************************************************
@@ -47,12 +49,12 @@ MDialog::~MDialog()
 *  MDIALOG - CREATEMYWIDGET
 *  CREATES A NEW TOP LEVEL SHELL
 ****************************************************************************/
-void MDialog::createShell(char *name)
+void MDialog::createShell(const char *name)
 {
     if(m_modal)
     {
         // CREATE TOP LEVEL DIALOG SHELL
-        m_shell= XmCreateDialogShell(m_parent, name, 0, 0);
+        m_shell= XmCreateDialogShell(m_parent, const_cast<char*>(name), 0, 0);
 
         XtVaSetValues(m_shell, XmNdialogStyle, XmDIALOG_APPLICATION_MODAL, NULL);
     }
@@ -111,9 +113,9 @@ void MDialog::realizeShell()
 /****************************************************************************
 *  MDIALOG - SETWINDOWNAME
 ****************************************************************************/
-void MDialog::setWindowName(char *name)
+void MDialog::setWindowName(const char *name)
 {
-    XStoreName(XtDisplay(m_shell), XtWindow(m_shell), name);
+    XStoreName(XtDisplay(m_shell), XtWindow(m_shell), const_cast<char*>(name));
 }
 
 
@@ -180,4 +182,13 @@ void MDialog::windowCloseCallback(Widget, XtPointer)
     closeDialog();
 }
 
+
+static char *pixmapPath(const char *pixmapName) {
+    return GBS_global_string_copy("%s/lib/pixmaps/pgt/%s", GB_getenvARBHOME(), pixmapName);
+}
+
+Pixmap PGT_LoadPixmap(const char *name, Screen *s, Pixel fg, Pixel bg) {
+    char *fullname = pixmapPath(name);
+    return XmGetPixmap(s, fullname, fg, bg);
+}
 

@@ -12,10 +12,6 @@
 #ifndef ARB_INTERFACE_H
 #define ARB_INTERFACE_H
 
-// UNCOMMENT THE APPROPRIATE DEFINE TO CONTROL THE ARB DEBUG MODE
-// #define NDEBUG
-#define DEBUG
-
 #include <Xm/XmAll.h>
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -83,11 +79,11 @@ void getEntryNamesList(Widget, bool);
 //
 extern void addLogEntry(char *, ...);
 //
-bool check_create_AWAR(GBDATA *, char *AWAR_path, bool);
-void set_AWAR(char *AWAR_path, char *content);
-char *get_AWAR(char *AWAR_path);
-void set_CONFIG(char *CONFIG_path, char *content);
-char *get_CONFIG(char *CONFIG_path);
+bool check_create_AWAR(GBDATA *, const char *AWAR_path, bool);
+void set_AWAR(const char *AWAR_path, char *content);
+char *get_AWAR(const char *AWAR_path);
+void set_CONFIG(const char *CONFIG_path, const char *content);
+char *get_CONFIG(const char *CONFIG_path);
 
 void set_species_AWAR(char *content);
 void set_experiment_AWAR(char *content);
@@ -103,7 +99,7 @@ char *get_protein_AWAR();
 char *get_gene_AWAR();
 char *get_config_AWAR();
 //
-void add_callback(char *, GB_CB, void *);
+void add_callback(const char *, GB_CB, void *);
 void add_species_callback(GB_CB, void *);
 void add_experiment_callback(GB_CB, void *);
 void add_proteom_callback(GB_CB, void *);

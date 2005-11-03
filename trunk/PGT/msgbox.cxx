@@ -10,25 +10,26 @@
 // CVS REVISION TAG  --  $Revision$
 
 #include "msgbox.hxx"
+#include "xm_defs.hxx"
 
 
-void ShowMessageBox(Widget widget, char *title, char *text)
+void ShowMessageBox(Widget widget, const char *title, const char *text)
 {
     Widget msgBox;
     Arg args[3];
-    XtSetArg(args[0], XmNmessageString, XmStringCreateLocalized(text));
-    msgBox= XmCreateMessageDialog(widget , "messageBox", args, 1);
+    XtSetArg(args[0], XmNmessageString, PGT_XmStringCreateLocalized(text));
+    msgBox= XmCreateMessageDialog(widget , const_cast<char*>("messageBox"), args, 1);
 
     XtUnmanageChild(XmMessageBoxGetChild(msgBox, XmDIALOG_HELP_BUTTON));
     XtUnmanageChild(XmMessageBoxGetChild(msgBox, XmDIALOG_CANCEL_BUTTON));
 
-    XtVaSetValues(msgBox, XmNdialogTitle, XmStringCreateLocalized(title), NULL);
+    XtVaSetValues(msgBox, XmNdialogTitle, PGT_XmStringCreateLocalized(title), NULL);
 
     XtManageChild(msgBox);
 }
 
 
-int OkCancelDialog(Widget w, char *title, char *text)
+int OkCancelDialog(Widget w, const char *title, const char *text)
 {
     int answer= 0;
     Widget dialog;
@@ -36,12 +37,12 @@ int OkCancelDialog(Widget w, char *title, char *text)
     int n= 0;
     XtAppContext context;
 
-    XtSetArg(args[n], XmNmessageString, XmStringCreateLtoR(text, XmSTRING_DEFAULT_CHARSET)); n++;
+    XtSetArg(args[n], XmNmessageString, XmStringCreateLtoR(const_cast<char*>(text), XmSTRING_DEFAULT_CHARSET)); n++;
     XtSetArg(args[n], XmNdialogStyle, XmDIALOG_APPLICATION_MODAL); n++;
 
-    dialog = XmCreateQuestionDialog(XtParent(w), text, args, n);
+    dialog = XmCreateQuestionDialog(XtParent(w), const_cast<char*>(text), args, n);
     XtUnmanageChild(XmMessageBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
-    XtVaSetValues(dialog, XmNdialogTitle, XmStringCreateLocalized(title), NULL);
+    XtVaSetValues(dialog, XmNdialogTitle, PGT_XmStringCreateLocalized(title), NULL);
 
     XtAddCallback(dialog, XmNokCallback, OkCancelResponse, &answer);
     XtAddCallback(dialog, XmNcancelCallback, OkCancelResponse, &answer);

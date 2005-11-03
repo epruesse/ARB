@@ -73,12 +73,4 @@ depend.init:
 
 axml.o: axml.h
 
-cons.o: cons.h
-cons.o: phylip.h
-
-consense.o: cons.h
-consense.o: phylip.h
-
 dnapars.o: phylip2.h
-
-phylip.o: phylip.h

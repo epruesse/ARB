@@ -16,14 +16,14 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <Xm/XmAll.h>
-
+#include "xm_defs.hxx"
 
 class MDialog
 {
     public:
         MDialog(Widget, MDialog*);
         ~MDialog();
-        void setWindowName(char*);
+        void setWindowName(const char*);
         Widget shellWidget();
         Widget parentWidget();
         void show();
@@ -32,7 +32,7 @@ class MDialog
         bool isEnabled();
         void windowCloseCallback(Widget, XtPointer);
     protected:
-        void createShell(char*);
+        void createShell(const char*);
         void realizeShell();
         //
         MDialog *m_parent_dialog;
@@ -47,5 +47,8 @@ class MDialog
 
 // STATIC CALLBACK
 void staticWindowCloseCallback(Widget, XtPointer, XtPointer);
+
+// LOAD PIXMAP
+Pixmap PGT_LoadPixmap(const char *name, Screen *s, Pixel fg, Pixel bg);
 
 #endif // MOTIF_DIALOG_HXX

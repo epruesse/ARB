@@ -14,6 +14,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include "arb_interface.hxx"
+#include "xm_defs.hxx"
 
 #define MAX_ENTRY_NAMES_COUNTER 10
 
@@ -38,7 +39,7 @@ int ARB_connect(char *s)
     global_ARB_lock= false;
     global_ARB_available= false;
 
-    char *server= ":";
+    const char *server= ":";
     if(s)
     {
         server= s;
@@ -453,7 +454,7 @@ void getSpeciesList(Widget list, bool clear= false)
             sp_name= GB_read_string(gb_sp_name);
 
             // ADD ITEM TO LIST WIDGET
-            XmListAddItemUnselected(list, XmStringCreateLocalized(sp_name), pos);
+            XmListAddItemUnselected(list, PGT_XmStringCreateLocalized(sp_name), pos);
 
             // INCREASE POSITION COUNTER
             pos++;
@@ -516,7 +517,7 @@ void getExperimentList(Widget list, char *species, bool clear= false)
                 exp_name= GB_read_string(gb_exp_name);
 
                 // ADD ITEM TO LIST WIDGET
-                XmListAddItemUnselected(list, XmStringCreateLocalized(exp_name), pos);
+                XmListAddItemUnselected(list, PGT_XmStringCreateLocalized(exp_name), pos);
 
                 // INCREASE POSITION COUNTER
                 pos++;
@@ -579,7 +580,7 @@ void getProteomeList(Widget list, char *species, char *experiment, bool clear= f
                 prot_name= GB_read_string(gb_prot_name);
 
                 // ADD ITEM TO LIST WIDGET
-                XmListAddItemUnselected(list, XmStringCreateLocalized(prot_name), pos);
+                XmListAddItemUnselected(list, PGT_XmStringCreateLocalized(prot_name), pos);
 
                 // INCREASE POSITION COUNTER
                 pos++;
@@ -637,7 +638,7 @@ void getEntryNamesList(Widget list, bool clear= false)
                     {
                         // GET KEY NAME
                         str= GB_read_key(gb_keys);
-                        XmString xm_str= XmStringCreateLocalized(str);
+                        XmString xm_str = PGT_XmStringCreateLocalized(str);
 
                         // ADD ITEM TO LIST WIDGET
                         if(!XmListItemExists(list, xm_str))
@@ -668,7 +669,7 @@ void getEntryNamesList(Widget list, bool clear= false)
 /****************************************************************************
 *  CHECK AWAR PATH AND CREATE MISSING ENTRIES
 ****************************************************************************/
-bool check_create_AWAR(GBDATA *gb_data, char *AWAR_path, bool transaction)
+bool check_create_AWAR(GBDATA *gb_data, const char *AWAR_path, bool transaction)
 {
     // DO WE HAVE A STRING?
     if(AWAR_path == NULL) return false;
@@ -751,7 +752,7 @@ bool check_create_AWAR(GBDATA *gb_data, char *AWAR_path, bool transaction)
 /****************************************************************************
 *  UPDATES THE CONTENT OF AN AWAR
 ****************************************************************************/
-void set_AWAR(char *AWAR_path, char *content)
+void set_AWAR(const char *AWAR_path, char *content)
 {
     GBDATA *gb_data= get_gbData();
 
@@ -770,7 +771,7 @@ void set_AWAR(char *AWAR_path, char *content)
 /****************************************************************************
 *  FETCH THE CONTENT OF AN AWAR
 ****************************************************************************/
-char *get_AWAR(char *AWAR_path)
+char *get_AWAR(const char *AWAR_path)
 {
     char *content;
 
@@ -792,7 +793,7 @@ char *get_AWAR(char *AWAR_path)
 /****************************************************************************
 *  UPDATES THE PGT CONFIG
 ****************************************************************************/
-void set_CONFIG(char *CONFIG_path, char *content)
+void set_CONFIG(const char *CONFIG_path, const char *content)
 {
     if(!global_CONFIG_available) return;
 
@@ -807,7 +808,7 @@ void set_CONFIG(char *CONFIG_path, char *content)
 /****************************************************************************
 *  FETCH THE CONTENT OF AN CONFIG ENTRY
 ****************************************************************************/
-char *get_CONFIG(char *CONFIG_path)
+char *get_CONFIG(const char *CONFIG_path)
 {
     if(!global_CONFIG_available) return NULL;
 
@@ -843,7 +844,7 @@ char *get_config_AWAR() { return get_AWAR(AWAR_CONFIG_CHANGED); }
 /****************************************************************************
 *  ADD A CALLBACK TO AN ARB CONTAINER
 ****************************************************************************/
-void add_callback(char *ARB_path, GB_CB callback, void *caller)
+void add_callback(const char *ARB_path, GB_CB callback, void *caller)
 {
     GBDATA *gb_data= get_gbData();
 
@@ -917,4 +918,6 @@ void checkCreateAWARS()
 
     if(!info_gene_color_CONFIG || (strlen(info_gene_color_CONFIG) == 0))
         set_CONFIG(CONFIG_PGT_INFO_GENE, DEFAULT_INFO_GENE);
+
+//     free(...);
 }

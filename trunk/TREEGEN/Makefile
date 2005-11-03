@@ -36,35 +36,20 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 base.o: base.h
-base.o: defines.h
 
 defines.o: defines.h
 
-frand.o: defines.h
 frand.o: frand.h
 
-readcfg.o: defines.h
 readcfg.o: readcfg.h
 
-rns.o: base.h
-rns.o: defines.h
-rns.o: frand.h
 rns.o: rns.h
-rns.o: simcfg.h
 rns.o: spreadin.h
 
 sim.o: base.h
-sim.o: defines.h
-sim.o: frand.h
 sim.o: rns.h
 sim.o: simcfg.h
 
-simcfg.o: base.h
-simcfg.o: defines.h
-simcfg.o: frand.h
-simcfg.o: readcfg.h
-simcfg.o: rns.h
 simcfg.o: simcfg.h
 
-spreadin.o: defines.h
 spreadin.o: spreadin.h

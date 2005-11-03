@@ -104,7 +104,7 @@ void selectionDialog::createWindow()
     // CREATE A SIMPLE LABEL
     Widget label1= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("Select Species:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Select Species:"),
         XmNheight, 30,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_FORM,
@@ -131,7 +131,7 @@ void selectionDialog::createWindow()
     // CREATE A SIMPLE LABEL
     Widget label2= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("Select Experiment:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Select Experiment:"),
         // XmNheight, 30,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -159,7 +159,7 @@ void selectionDialog::createWindow()
     // CREATE A SIMPLE LABEL
     Widget label3= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("Select Proteome:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Select Proteome:"),
         // XmNheight, 30,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -187,7 +187,7 @@ void selectionDialog::createWindow()
     // CREATE A SIMPLE LABEL
     Widget label01= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("Enter a new proteome name here:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Enter a new proteome name here:"),
         XmNheight, 30,
         // XmNalignment, XmALIGNMENT_BEGINNING,
         XmNalignment, XmALIGNMENT_CENTER,
@@ -221,13 +221,13 @@ void selectionDialog::createWindow()
 
         // AND CHANGE LABEL TEXT
         XtVaSetValues(label01,
-            XmNlabelString, XmStringCreateLocalized("---"),
+            XmNlabelString, PGT_XmStringCreateLocalized("---"),
             NULL);
     }
 
     m_warning_label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized(""),
+        XmNlabelString, PGT_XmStringCreateLocalized(""),
         // XmNheight, 30,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -238,7 +238,7 @@ void selectionDialog::createWindow()
 
     Widget exitButton= XtVaCreateManagedWidget("exitButton",
         xmPushButtonWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("Close"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Close"),
         XmNwidth, 100,
         XmNheight, 30,
         XmNrightAttachment, XmATTACH_FORM,
@@ -411,19 +411,19 @@ void selectionDialog::proteomeTextCallback(Widget, XtPointer)
     if(strlen(m_proteome) < 3)
     {
         XtVaSetValues(m_warning_label,
-            XmNlabelString, XmStringCreateLocalized("WARNING - NAME IS TOO SHORT"),
+            XmNlabelString, PGT_XmStringCreateLocalized("WARNING - NAME IS TOO SHORT"),
             NULL);
     }
     else if(strcmp(m_proteome, proteome))
     {
         XtVaSetValues(m_warning_label,
-            XmNlabelString, XmStringCreateLocalized("WARNING - CONTAINS ILLEGAL CHARACTER(S)"),
+            XmNlabelString, PGT_XmStringCreateLocalized("WARNING - CONTAINS ILLEGAL CHARACTER(S)"),
             NULL);
     }
     else
     {
         XtVaSetValues(m_warning_label,
-            XmNlabelString, XmStringCreateLocalized(""),
+            XmNlabelString, PGT_XmStringCreateLocalized(""),
             NULL);
     }
 
