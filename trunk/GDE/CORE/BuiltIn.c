@@ -964,10 +964,10 @@ NA_Sequence *element;
 		return(XV_OK);
 
 	if(element->groupb)
-		(NA_Sequence*)(element->groupb)->groupf = element->groupf;
+		((NA_Sequence*)(element->groupb))->groupf = element->groupf;
 
 	if(element->groupf)
-		(NA_Sequence*)(element->groupf)->groupb = element->groupb;
+		((NA_Sequence*)(element->groupf))->groupb = element->groupb;
 
 	element->groupf = NULL;
 	element->groupb = NULL;
