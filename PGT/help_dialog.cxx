@@ -84,23 +84,24 @@ void helpDialog::createVisualizationHelp(Widget parent)
            markinfo22_xpm, markinvert22_xpm;
 
     // OPEN THE PIXMAP FILES
-    circle22_xpm=     XmGetPixmap(XtScreen(parent), "pics/circle22.xpm", fg, bg);
-    cross22_xpm=      XmGetPixmap(XtScreen(parent), "pics/cross22.xpm", fg, bg);
-    text22_xpm=       XmGetPixmap(XtScreen(parent), "pics/text22.xpm", fg, bg);
-    markonly22_xpm=   XmGetPixmap(XtScreen(parent), "pics/markonly22.xpm", fg, bg);
-    textonly22_xpm=   XmGetPixmap(XtScreen(parent), "pics/textonly22.xpm", fg, bg);
-    markall22_xpm=    XmGetPixmap(XtScreen(parent), "pics/markall22.xpm", fg, bg);
-    markinvert22_xpm= XmGetPixmap(XtScreen(parent), "pics/markinvert22.xpm", fg, bg);
-    marknone22_xpm=   XmGetPixmap(XtScreen(parent), "pics/marknone22.xpm", fg, bg);
-    markinfo22_xpm=   XmGetPixmap(XtScreen(parent), "pics/markinfo22.xpm", fg, bg);
-    arb2mark_xpm=     XmGetPixmap(XtScreen(parent), "pics/arb2mark22.xpm", fg, bg);
-    mark2arb_xpm=     XmGetPixmap(XtScreen(parent), "pics/mark2arb22.xpm", fg, bg);
-    help_xpm=         XmGetPixmap(XtScreen(parent), "pics/help22.xpm", fg, bg);
+    Screen *s        = XtScreen(parent);
+    circle22_xpm     = PGT_LoadPixmap("circle22.xpm", s, fg, bg);
+    cross22_xpm      = PGT_LoadPixmap("cross22.xpm", s, fg, bg);
+    text22_xpm       = PGT_LoadPixmap("text22.xpm", s, fg, bg);
+    markonly22_xpm   = PGT_LoadPixmap("markonly22.xpm", s, fg, bg);
+    textonly22_xpm   = PGT_LoadPixmap("textonly22.xpm", s, fg, bg);
+    markall22_xpm    = PGT_LoadPixmap("markall22.xpm", s, fg, bg);
+    markinvert22_xpm = PGT_LoadPixmap("markinvert22.xpm", s, fg, bg);
+    marknone22_xpm   = PGT_LoadPixmap("marknone22.xpm", s, fg, bg);
+    markinfo22_xpm   = PGT_LoadPixmap("markinfo22.xpm", s, fg, bg);
+    arb2mark_xpm     = PGT_LoadPixmap("arb2mark22.xpm", s, fg, bg);
+    mark2arb_xpm     = PGT_LoadPixmap("mark2arb22.xpm", s, fg, bg);
+    help_xpm         = PGT_LoadPixmap("help22.xpm", s, fg, bg);
 
     // CREATE A SIMPLE LABEL
     Widget top_label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, parent,
-        XmNlabelString, XmStringCreateLocalized("Visualization Buttons:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Visualization Buttons:"),
         XmNheight, 32,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_FORM,
@@ -120,7 +121,7 @@ void helpDialog::createVisualizationHelp(Widget parent)
         NULL);
     Widget pos01_Label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, parent,
-        XmNlabelString, XmStringCreateLocalized("Show/hide virtual spots"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Show/hide virtual spots"),
         XmNheight, 32,
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNrightAttachment, XmATTACH_FORM,
@@ -142,7 +143,7 @@ void helpDialog::createVisualizationHelp(Widget parent)
         NULL);
     Widget pos02_Label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, parent,
-        XmNlabelString, XmStringCreateLocalized("Show/hide spot crosshair"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Show/hide spot crosshair"),
         XmNheight, 32,
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNrightAttachment, XmATTACH_FORM,
@@ -164,7 +165,7 @@ void helpDialog::createVisualizationHelp(Widget parent)
         NULL);
     Widget pos03_Label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, parent,
-        XmNlabelString, XmStringCreateLocalized("Show/hide spot information"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Show/hide spot information"),
         XmNheight, 32,
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNrightAttachment, XmATTACH_FORM,
@@ -186,7 +187,7 @@ void helpDialog::createVisualizationHelp(Widget parent)
         NULL);
     Widget pos04_Label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, parent,
-        XmNlabelString, XmStringCreateLocalized("show only marked spots"),
+        XmNlabelString, PGT_XmStringCreateLocalized("show only marked spots"),
         XmNheight, 32,
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNrightAttachment, XmATTACH_FORM,
@@ -208,7 +209,7 @@ void helpDialog::createVisualizationHelp(Widget parent)
         NULL);
     Widget pos05_Label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, parent,
-        XmNlabelString, XmStringCreateLocalized("show only spots with an ID"),
+        XmNlabelString, PGT_XmStringCreateLocalized("show only spots with an ID"),
         XmNheight, 32,
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNrightAttachment, XmATTACH_FORM,
@@ -230,7 +231,7 @@ void helpDialog::createVisualizationHelp(Widget parent)
         NULL);
     Widget pos06_Label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, parent,
-        XmNlabelString, XmStringCreateLocalized("mark all spots"),
+        XmNlabelString, PGT_XmStringCreateLocalized("mark all spots"),
         XmNheight, 32,
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNrightAttachment, XmATTACH_FORM,
@@ -252,7 +253,7 @@ void helpDialog::createVisualizationHelp(Widget parent)
         NULL);
     Widget pos07_Label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, parent,
-        XmNlabelString, XmStringCreateLocalized("unmark all spots"),
+        XmNlabelString, PGT_XmStringCreateLocalized("unmark all spots"),
         XmNheight, 32,
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNrightAttachment, XmATTACH_FORM,
@@ -274,7 +275,7 @@ void helpDialog::createVisualizationHelp(Widget parent)
         NULL);
     Widget pos08_Label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, parent,
-        XmNlabelString, XmStringCreateLocalized("transfer marker to arb gene map"),
+        XmNlabelString, PGT_XmStringCreateLocalized("transfer marker to arb gene map"),
         XmNheight, 32,
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNrightAttachment, XmATTACH_FORM,
@@ -296,7 +297,7 @@ void helpDialog::createVisualizationHelp(Widget parent)
         NULL);
     Widget pos09_Label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, parent,
-        XmNlabelString, XmStringCreateLocalized("fetch marker from arb gene map"),
+        XmNlabelString, PGT_XmStringCreateLocalized("fetch marker from arb gene map"),
         XmNheight, 32,
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNrightAttachment, XmATTACH_FORM,
@@ -318,7 +319,7 @@ void helpDialog::createVisualizationHelp(Widget parent)
         NULL);
     Widget pos10_Label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, parent,
-        XmNlabelString, XmStringCreateLocalized("invert all spot marker"),
+        XmNlabelString, PGT_XmStringCreateLocalized("invert all spot marker"),
         XmNheight, 32,
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNrightAttachment, XmATTACH_FORM,
@@ -340,7 +341,7 @@ void helpDialog::createVisualizationHelp(Widget parent)
         NULL);
     XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, parent,
-        XmNlabelString, XmStringCreateLocalized("mark only spots with an ID"),
+        XmNlabelString, PGT_XmStringCreateLocalized("mark only spots with an ID"),
         XmNheight, 32,
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNrightAttachment, XmATTACH_FORM,

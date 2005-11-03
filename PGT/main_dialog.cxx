@@ -75,7 +75,6 @@ void mainDialog::createWindow()
 
 }
 
-
 /****************************************************************************
 *  MAIN DIALOG - CREATE TOOLBAR
 ****************************************************************************/
@@ -96,13 +95,14 @@ void mainDialog::createToolbar()
     // OPEN AND IMPORT XPM IMAGES (BUTTON LOGOS)
     Pixmap analyze_xpm, exit_xpm, import_xpm, visualize_xpm, info_xpm, config_xpm, pgtinfo_xpm;
     //
-    analyze_xpm= XmGetPixmap(XtScreen(manager), "pics/analyze.xpm", fg, bg);
-    exit_xpm= XmGetPixmap(XtScreen(manager), "pics/exit.xpm", fg, bg);
-    import_xpm= XmGetPixmap(XtScreen(manager), "pics/import.xpm", fg, bg);
-    visualize_xpm= XmGetPixmap(XtScreen(manager), "pics/visualize.xpm", fg, bg);
-    info_xpm= XmGetPixmap(XtScreen(manager), "pics/proteininfo.xpm", fg, bg);
-    config_xpm= XmGetPixmap(XtScreen(manager), "pics/config.xpm", fg, bg);
-    pgtinfo_xpm= XmGetPixmap(XtScreen(manager), "pics/info.xpm", fg, bg);
+    Screen *s     = XtScreen(manager);
+    analyze_xpm   = PGT_LoadPixmap("analyze.xpm", s, fg, bg);
+    exit_xpm      = PGT_LoadPixmap("exit.xpm", s, fg, bg);
+    import_xpm    = PGT_LoadPixmap("import.xpm", s, fg, bg);
+    visualize_xpm = PGT_LoadPixmap("visualize.xpm", s, fg, bg);
+    info_xpm      = PGT_LoadPixmap("proteininfo.xpm", s, fg, bg);
+    config_xpm    = PGT_LoadPixmap("config.xpm", s, fg, bg);
+    pgtinfo_xpm   = PGT_LoadPixmap("info.xpm", s, fg, bg);
 
     // CREATE BUTTON: IMPORT
     Widget importButton= XtVaCreateManagedWidget("importbtn",
@@ -184,7 +184,7 @@ void mainDialog::createMainArea()
     // CREATE SPECIES LABEL
     Widget species_label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_selection_area,
-        XmNlabelString, XmStringCreateLocalized("Selected Species"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Selected Species"),
         XmNwidth, 200,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_FORM,
@@ -205,7 +205,7 @@ void mainDialog::createMainArea()
     // CREATE EXPERIMENT LABEL
     Widget experiment_label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_selection_area,
-        XmNlabelString, XmStringCreateLocalized("Selected Experiment"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Selected Experiment"),
         XmNwidth, 200,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -228,7 +228,7 @@ void mainDialog::createMainArea()
     // CREATE PROTEOME LABEL
     Widget proteome_label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_selection_area,
-        XmNlabelString, XmStringCreateLocalized("Selected Proteome"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Selected Proteome"),
         XmNwidth, 200,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -251,7 +251,7 @@ void mainDialog::createMainArea()
     // CREATE PROTEIN LABEL
     Widget protein_label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_selection_area,
-        XmNlabelString, XmStringCreateLocalized("Selected Protein"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Selected Protein"),
         XmNwidth, 200,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -283,16 +283,21 @@ void mainDialog::updateListEntries()
     char *protein_AWAR=    get_protein_AWAR();
 
     // SET DEFAULT CONTENT IF AWAR IS EMPTY
-    if(strlen(species_AWAR) == 0) species_AWAR= "no selected species";
-    if(strlen(experiment_AWAR) == 0) experiment_AWAR= "no selected experiment";
-    if(strlen(proteome_AWAR) == 0) proteome_AWAR= "no selected proteome";
-    if(strlen(protein_AWAR) == 0) protein_AWAR= "no selected protein";
+    if(strlen(species_AWAR) == 0) species_AWAR= strdup("no selected species");
+    if(strlen(experiment_AWAR) == 0) experiment_AWAR= strdup("no selected experiment");
+    if(strlen(proteome_AWAR) == 0) proteome_AWAR= strdup("no selected proteome");
+    if(strlen(protein_AWAR) == 0) protein_AWAR= strdup("no selected protein");
 
     // SET TEXT FIELD ENTRIES
     XtVaSetValues(m_speciesText, XmNvalue, species_AWAR, NULL);
     XtVaSetValues(m_experimentText, XmNvalue, experiment_AWAR, NULL);
     XtVaSetValues(m_proteomeText, XmNvalue, proteome_AWAR, NULL);
     XtVaSetValues(m_proteinText, XmNvalue, protein_AWAR, NULL);
+
+    free(protein_AWAR);
+    free(proteome_AWAR);
+    free(experiment_AWAR);
+    free(species_AWAR);
 }
 
 
@@ -482,7 +487,7 @@ void staticPGTInfoCallback(Widget widget, XtPointer clientData, XtPointer callDa
 void mainDialog::PGTinfoCallback(Widget widget, XtPointer)
 {
     // PGT INFORMATION STRING:
-    char *pgtinfo=
+    const char *pgtinfo=
         "PGT - Proteome and Genome Toolkit\n"
         "Version 0.2.0 (beta stage)\n\n"
         "(c) Copyright 2004-2005 Kai Bader <baderk@in.tum.de>,\n"

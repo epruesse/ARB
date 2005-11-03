@@ -69,6 +69,7 @@ RNA3D_Interface.o: RNA3D_Graphics.hxx
 RNA3D_Interface.o: RNA3D_Interface.hxx
 RNA3D_Interface.o: RNA3D_OpenGLEngine.hxx
 RNA3D_Interface.o: RNA3D_OpenGLGraphics.hxx
+RNA3D_Interface.o: RNA3D_StructureData.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/ad_prot.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/arb_assert.h

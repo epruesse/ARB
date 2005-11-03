@@ -170,7 +170,7 @@ void imageDialog::createWindow()
         XmNheight, 20,
         XmNborderWidth, 1,
         XtVaTypedArg, XmNborderColor, XmRString, "gray", strlen("gray"),
-        XmNlabelString, XmStringCreateLocalized("Ok..."),
+        XmNlabelString, PGT_XmStringCreateLocalized("Ok..."),
         XmNalignment, XmALIGNMENT_BEGINNING,
         NULL);
 
@@ -216,7 +216,7 @@ void imageDialog::createTopToolbar()
     // CREATE PROTEOME DATA LABEL
     Widget label01= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_topToolbar,
-        XmNlabelString, XmStringCreateLocalized("Proteome Data:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Proteome Data:"),
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNheight, 30,
         XmNwidth, 100,
@@ -227,7 +227,7 @@ void imageDialog::createTopToolbar()
     // CREATE TIFF IMAGE LABEL
     Widget label02= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_topToolbar,
-        XmNlabelString, XmStringCreateLocalized("TIFF Image:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("TIFF Image:"),
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNheight, 30,
         XmNwidth, 100,
@@ -238,7 +238,7 @@ void imageDialog::createTopToolbar()
 
     Widget ARBdataButton= XtVaCreateManagedWidget("ARBdataButton",
         xmPushButtonWidgetClass, m_topToolbar,
-        XmNlabelString, XmStringCreateLocalized("..."),
+        XmNlabelString, PGT_XmStringCreateLocalized("..."),
         XmNwidth, 40,
         XmNheight, 30,
         XmNtopAttachment, XmATTACH_FORM,
@@ -250,7 +250,7 @@ void imageDialog::createTopToolbar()
 
     Widget TIFFnameButton= XtVaCreateManagedWidget("TIFFnameButton",
         xmPushButtonWidgetClass, m_topToolbar,
-        XmNlabelString, XmStringCreateLocalized("..."),
+        XmNlabelString, PGT_XmStringCreateLocalized("..."),
         XmNwidth, 40,
         XmNheight, 30,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -306,7 +306,7 @@ void imageDialog::createTopToolbar()
 
     Widget label03= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_topToolbar,
-        XmNlabelString, XmStringCreateLocalized("Mouse Buttons:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Mouse Buttons:"),
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNheight, 30,
         XmNwidth, 100,
@@ -317,7 +317,7 @@ void imageDialog::createTopToolbar()
 
     XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_topToolbar,
-        XmNlabelString, XmStringCreateLocalized("left button = select protein  --  right button = (un)mark protein"),
+        XmNlabelString, PGT_XmStringCreateLocalized("left button = select protein  --  right button = (un)mark protein"),
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNheight, 30,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -345,18 +345,19 @@ void imageDialog::createLeftToolbar()
            markid22_xpm, markinvert22_xpm;
 
     // OPEN THE PIXMAP FILES
-    circle22_xpm=     XmGetPixmap(XtScreen(m_leftToolbar), "pics/circle22.xpm", fg, bg);
-    cross22_xpm=      XmGetPixmap(XtScreen(m_leftToolbar), "pics/cross22.xpm", fg, bg);
-    text22_xpm=       XmGetPixmap(XtScreen(m_leftToolbar), "pics/text22.xpm", fg, bg);
-    markonly22_xpm=   XmGetPixmap(XtScreen(m_leftToolbar), "pics/markonly22.xpm", fg, bg);
-    onlyid22_xpm=     XmGetPixmap(XtScreen(m_leftToolbar), "pics/onlyid22.xpm", fg, bg);
-    markall22_xpm=    XmGetPixmap(XtScreen(m_leftToolbar), "pics/markall22.xpm", fg, bg);
-    markinvert22_xpm= XmGetPixmap(XtScreen(m_leftToolbar), "pics/markinvert22.xpm", fg, bg);
-    marknone22_xpm=   XmGetPixmap(XtScreen(m_leftToolbar), "pics/marknone22.xpm", fg, bg);
-    markid22_xpm=     XmGetPixmap(XtScreen(m_leftToolbar), "pics/markid22.xpm", fg, bg);
-    arb2mark_xpm=     XmGetPixmap(XtScreen(m_leftToolbar), "pics/arb2mark22.xpm", fg, bg);
-    mark2arb_xpm=     XmGetPixmap(XtScreen(m_leftToolbar), "pics/mark2arb22.xpm", fg, bg);
-    help_xpm=         XmGetPixmap(XtScreen(m_leftToolbar), "pics/help22.xpm", fg, bg);
+    Screen *s        = XtScreen(m_leftToolbar);
+    circle22_xpm=     PGT_LoadPixmap("circle22.xpm", s, fg, bg);
+    cross22_xpm=      PGT_LoadPixmap("cross22.xpm", s, fg, bg);
+    text22_xpm=       PGT_LoadPixmap("text22.xpm", s, fg, bg);
+    markonly22_xpm=   PGT_LoadPixmap("markonly22.xpm", s, fg, bg);
+    onlyid22_xpm=     PGT_LoadPixmap("onlyid22.xpm", s, fg, bg);
+    markall22_xpm=    PGT_LoadPixmap("markall22.xpm", s, fg, bg);
+    markinvert22_xpm= PGT_LoadPixmap("markinvert22.xpm", s, fg, bg);
+    marknone22_xpm=   PGT_LoadPixmap("marknone22.xpm", s, fg, bg);
+    markid22_xpm=     PGT_LoadPixmap("markid22.xpm", s, fg, bg);
+    arb2mark_xpm=     PGT_LoadPixmap("arb2mark22.xpm", s, fg, bg);
+    mark2arb_xpm=     PGT_LoadPixmap("mark2arb22.xpm", s, fg, bg);
+    help_xpm=         PGT_LoadPixmap("help22.xpm", s, fg, bg);
 
     // SHOW CROSSHAIR BUTTON
     Widget spotsButton= XtVaCreateManagedWidget("spotsbtn",
@@ -577,12 +578,12 @@ void imageDialog::TIFFnameButtonCallback(Widget, XtPointer)
 {
     if (!m_hasFileDialog)
     {
-        m_fileDialog= XmCreateFileSelectionDialog(m_shell, "importDialog", NULL, 0);
+        m_fileDialog= XmCreateFileSelectionDialog(m_shell, const_cast<char*>("importDialog"), NULL, 0);
         XtAddCallback(m_fileDialog, XmNokCallback, staticImageFileDialogCallback, this);
         XtAddCallback(m_fileDialog, XmNcancelCallback, staticImageFileDialogCloseCallback, this);
         XtAddCallback(m_fileDialog, XmNnoMatchCallback, staticImageFileDialogCloseCallback, this);
         XtSetSensitive(XmFileSelectionBoxGetChild(m_fileDialog, XmDIALOG_HELP_BUTTON), False);
-        XtVaSetValues(m_fileDialog, XmNdialogTitle, XmStringCreateLocalized("Open proteome data file..."), NULL);
+        XtVaSetValues(m_fileDialog, XmNdialogTitle, PGT_XmStringCreateLocalized("Open proteome data file..."), NULL);
         m_hasFileDialog= true;
     }
 
@@ -950,7 +951,7 @@ void imageDialog::lockToggleButtonCallback(Widget, XtPointer callData)
 /****************************************************************************
 *  IMAGE DIALOG - SET NEW SPECIES NAME
 ****************************************************************************/
-void imageDialog::setSpecies(char *species)
+void imageDialog::setSpecies(const char *species)
 {
     // REMOVE OLD ENTRY
     // if(m_species) free(m_species);
@@ -969,7 +970,7 @@ void imageDialog::setSpecies(char *species)
 /****************************************************************************
 *  IMAGE DIALOG - SET NEW EXPERIMENT NAME
 ****************************************************************************/
-void imageDialog::setExperiment(char *experiment)
+void imageDialog::setExperiment(const char *experiment)
 {
     // REMOVE OLD ENTRY
     // if(m_experiment) free(m_experiment);
@@ -988,7 +989,7 @@ void imageDialog::setExperiment(char *experiment)
 /****************************************************************************
 *  IMAGE DIALOG - SET NEW PROTEOME NAME
 ****************************************************************************/
-void imageDialog::setProteome(char *proteome)
+void imageDialog::setProteome(const char *proteome)
 {
     // REMOVE OLD ENTRY
     // if(m_proteome) free(m_proteome);
@@ -1017,9 +1018,9 @@ void imageDialog::updateARBText()
 {
     // CREATE BUFFER
     char *buf= (char *)malloc(1024 * sizeof(char));
-    char *sp=   "no species";
-    char *exp=  "no experiment";
-    char *prot= "no proteome";
+    const char *sp=   "no species";
+    const char *exp=  "no experiment";
+    const char *prot= "no proteome";
 
     // USE REAL STRINGS IF AVAILABLE
     if(m_species && (strlen(m_species))) sp= m_species;
@@ -1097,7 +1098,7 @@ char *imageDialog::get_ARB_image_path()
 /****************************************************************************
 *  IMAGE DIALOG - GET THE PATH TO THE LAST USED IMAGE
 ****************************************************************************/
-void imageDialog::set_ARB_image_path(char *path)
+void imageDialog::set_ARB_image_path(const char *path)
 {
     if(!m_hasARBdata) return;
 
@@ -1359,7 +1360,7 @@ void imageDialog::imageRedraw()
 /****************************************************************************
 *  IMAGE DIALOG - REDRAW XIMAGE
 ****************************************************************************/
-void imageDialog::setText(char *text, int x, int y)
+void imageDialog::setText(const char *text, int x, int y)
 {
     // NO TEXT, IF POINTER = NULL
     if(!text) return;
@@ -1375,12 +1376,12 @@ void imageDialog::setText(char *text, int x, int y)
 
     // GET FONT LIST
     XFontStruct *fontstruct= XLoadQueryFont(display, "-*-courier-*-r-*--10-*");
-    XmFontList fontlist= XmFontListCreate(fontstruct, "charset1");
+    XmFontList fontlist= XmFontListCreate(fontstruct, const_cast<char*>("charset1"));
 
     // SET FONT (A SMALL DIRTY WORKAROUND)
     XSetFont (display, gc, XLoadFont(display, "fixed"));
 
-    XmStringDraw(display, m_pixmap, fontlist, XmStringCreateLocalized(text),
+    XmStringDraw(display, m_pixmap, fontlist, PGT_XmStringCreateLocalized(text),
         gc, x, y, m_width, XmALIGNMENT_BEGINNING,
         XmSTRING_DIRECTION_L_TO_R, NULL);
 }
@@ -1451,15 +1452,15 @@ void imageDialog::drawCircle(int x, int y, int d, int r, int g, int b)
 bool imageDialog::getSettings()
 {
     // FETCH CONFIGS
-    char *crosshairColor= get_CONFIG(CONFIG_PGT_COLOR_CROSSHAIR);
-    char *unmarkedColor=  get_CONFIG(CONFIG_PGT_COLOR_UNMARKED);
-    char *markedColor=    get_CONFIG(CONFIG_PGT_COLOR_MARKED);
-    char *selectedColor=  get_CONFIG(CONFIG_PGT_COLOR_SELECTED);
-    char *textColor=      get_CONFIG(CONFIG_PGT_COLOR_TEXT);
+    char *crosshairColor = get_CONFIG(CONFIG_PGT_COLOR_CROSSHAIR);
+    char *unmarkedColor  = get_CONFIG(CONFIG_PGT_COLOR_UNMARKED);
+    char *markedColor    = get_CONFIG(CONFIG_PGT_COLOR_MARKED);
+    char *selectedColor  = get_CONFIG(CONFIG_PGT_COLOR_SELECTED);
+    char *textColor      = get_CONFIG(CONFIG_PGT_COLOR_TEXT);
 
     if(crosshairColor)
     {
-        if(strlen(crosshairColor) != 7) crosshairColor= DEFAULT_COLOR_CROSSHAIR;
+        if(strlen(crosshairColor) != 7) crosshairColor= strdup(DEFAULT_COLOR_CROSSHAIR);
 
         hex2rgb(&m_crosshairColor.r,
                 &m_crosshairColor.g,
@@ -1470,7 +1471,7 @@ bool imageDialog::getSettings()
 
     if(unmarkedColor)
     {
-        if(strlen(unmarkedColor) != 7) unmarkedColor= DEFAULT_COLOR_UNMARKED;
+        if(strlen(unmarkedColor) != 7) unmarkedColor= strdup(DEFAULT_COLOR_UNMARKED);
 
         hex2rgb(&m_unmarkedColor.r,
                 &m_unmarkedColor.g,
@@ -1480,7 +1481,7 @@ bool imageDialog::getSettings()
 
     if(markedColor)
     {
-        if(strlen(markedColor) != 7) markedColor= DEFAULT_COLOR_MARKED;
+        if(strlen(markedColor) != 7) markedColor= strdup(DEFAULT_COLOR_MARKED);
 
         hex2rgb(&m_markedColor.r,
                 &m_markedColor.g,
@@ -1490,7 +1491,7 @@ bool imageDialog::getSettings()
 
     if(selectedColor)
     {
-        if(strlen(selectedColor) != 7) selectedColor= DEFAULT_COLOR_SELECTED;
+        if(strlen(selectedColor) != 7) selectedColor= strdup(DEFAULT_COLOR_SELECTED);
 
         hex2rgb(&m_selectedColor.r,
                 &m_selectedColor.g,
@@ -1500,13 +1501,19 @@ bool imageDialog::getSettings()
 
     if(textColor)
     {
-        if(strlen(selectedColor) != 7) textColor= DEFAULT_COLOR_SELECTED;
+        if(strlen(selectedColor) != 7) textColor= strdup(DEFAULT_COLOR_SELECTED);
 
         hex2rgb(&m_textColor.r,
                 &m_textColor.g,
                 &m_textColor.b,
                 textColor);
     }
+
+    free(crosshairColor );
+    free(unmarkedColor  );
+    free(markedColor    );
+    free(selectedColor  );
+    free(textColor      );
 
     return true;
 }
@@ -2439,7 +2446,7 @@ void imageDialog::updateStatusLabel()
     if(m_markedOnlyFlag) strcat(buf, " [MARKED ONLY]");
 
     // WRITE STRING TO STATUS LABEL
-    XtVaSetValues(m_statusLabel, XmNlabelString, XmStringCreateLocalized(buf), NULL);
+    XtVaSetValues(m_statusLabel, XmNlabelString, PGT_XmStringCreateLocalized(buf), NULL);
 
     // FREE BUFFER
     free(buf);

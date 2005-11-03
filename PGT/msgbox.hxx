@@ -18,8 +18,8 @@
 #include <Xm/XmAll.h>
 
 
-void ShowMessageBox(Widget, char *, char *);
-int OkCancelDialog(Widget, char *, char *);
+void ShowMessageBox(Widget, const char *, const char *);
+int OkCancelDialog(Widget, const char *, const char *);
 void OkCancelResponse(Widget, XtPointer, XtPointer);
 
 

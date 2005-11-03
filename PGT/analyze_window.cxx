@@ -136,7 +136,7 @@ void analyzeWindow::createTopToolbar()
     // DEBUG LABEL (PLACE HOLDER)
     XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_topToolbar,
-        XmNlabelString, XmStringCreateLocalized("TOP"),
+        XmNlabelString, PGT_XmStringCreateLocalized("TOP"),
         NULL);
 }
 
@@ -149,7 +149,7 @@ void analyzeWindow::createLeftToolbar()
     // DEBUG LABEL (PLACE HOLDER)
     XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_leftToolbar,
-        XmNlabelString, XmStringCreateLocalized("LEFT"),
+        XmNlabelString, PGT_XmStringCreateLocalized("LEFT"),
         NULL);
 }
 

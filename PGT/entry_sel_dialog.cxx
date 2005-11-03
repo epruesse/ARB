@@ -80,7 +80,7 @@ void entrySelectionDialog::createWindow()
     // CREATE A SIMPLE LABEL
     Widget label1= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("Select entry from the list:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Select entry from the list:"),
         XmNheight, 30,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_FORM,
@@ -106,7 +106,7 @@ void entrySelectionDialog::createWindow()
     // CREATE AN EXIT BUTTON
     Widget exitButton= XtVaCreateManagedWidget("exitButton",
         xmPushButtonWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("Close"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Close"),
         XmNwidth, 100,
         XmNheight, 30,
         XmNrightAttachment, XmATTACH_FORM,

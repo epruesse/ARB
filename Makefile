@@ -483,6 +483,7 @@ ARCHS = \
 			ORS_COM/server.a \
 			ORS_SERVER/ORS_SERVER.a \
 			PARSIMONY/PARSIMONY.a \
+			PGT/PGT.a \
 			PHYLO/PHYLO.a \
 			PRIMER_DESIGN/PRIMER_DESIGN.a \
 			PROBE/PROBE.a \
@@ -618,6 +619,22 @@ $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) shared_libs
 		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4) ; \
 		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4) \
 		)
+
+#***********************************	arb_pgt **************************************
+
+PGT = bin/arb_pgt
+ARCHS_PGT = \
+		PGT/PGT.a \
+
+PGT_SYS_LIBS=$(XLIBS) -ltiff $(LIBS)
+
+$(PGT) : $(ARCHS_PGT:.a=.dummy) shared_libs
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PGT) || ( \
+		echo Link $@ ; \
+		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS); \
+		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS); \
+		)
+
 
 #***********************************	arb_wetc **************************************
 WETC = bin/arb_wetc
@@ -1066,6 +1083,7 @@ gi:	GENOM_IMPORT/GENOM_IMPORT.dummy
 we:	$(WETC)
 eb:	$(EDITDB)
 
+pgt:	$(PGT)
 xml:	XML/XML.dummy
 
 #********************************************************************************
@@ -1283,7 +1301,7 @@ arbbasic2: mbin com nas ${MAKE_RTC} sl $(GL)
 arbshared: dball aw dp awt
 
 # needed arb applications
-arbapplications: nt pa ed e4 we pt na al nal di ph ds trs
+arbapplications: nt pa ed e4 we pt na al nal di ph ds trs pgt
 
 # optionally things (no real harm for ARB if any of them fails):
 arbxtras: tg ps pc pst chip a3

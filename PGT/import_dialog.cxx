@@ -117,7 +117,7 @@ void importDialog::createSelectionArea()
     // CREATE FILENAME SELECTION BUTTON
     Widget fileButtonWidget= XtVaCreateManagedWidget("fileselectbutton",
         xmPushButtonWidgetClass, manager,
-        XmNlabelString, XmStringCreateLocalized("..."),
+        XmNlabelString, PGT_XmStringCreateLocalized("..."),
         XmNwidth, 40,
         XmNheight, 30,
         XmNtopAttachment, XmATTACH_FORM,
@@ -128,7 +128,7 @@ void importDialog::createSelectionArea()
     // CREATE DATASET SELECTION BUTTON
     Widget datasetButtonWidget= XtVaCreateManagedWidget("datasetbuttonwidget",
         xmPushButtonWidgetClass, manager,
-        XmNlabelString, XmStringCreateLocalized("..."),
+        XmNlabelString, PGT_XmStringCreateLocalized("..."),
         XmNwidth, 40,
         XmNheight, 30,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -140,7 +140,7 @@ void importDialog::createSelectionArea()
     // CREATE FIRST ROW LABEL
     Widget upperLabel= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, manager,
-        XmNlabelString, XmStringCreateLocalized("Source File:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Source File:"),
         XmNwidth, 110,
         XmNheight, 30,
         XmNalignment, XmALIGNMENT_BEGINNING,
@@ -151,7 +151,7 @@ void importDialog::createSelectionArea()
     // CREATE SECOND ROW LABEL
     Widget lowerLabel= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, manager,
-        XmNlabelString, XmStringCreateLocalized("ARB Destination:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("ARB Destination:"),
         XmNwidth, 110,
         XmNheight, 30,
         XmNalignment, XmALIGNMENT_BEGINNING,
@@ -163,7 +163,7 @@ void importDialog::createSelectionArea()
     // CREATE THIRD ROW LABEL
     Widget typeLabel= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, manager,
-        XmNlabelString, XmStringCreateLocalized("Import Filter:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Import Filter:"),
         XmNwidth, 110,
         XmNheight, 30,
         XmNalignment, XmALIGNMENT_BEGINNING,
@@ -212,7 +212,7 @@ void importDialog::createSelectionArea()
     // CREATE RESET BUTTON
     Widget resetButtonWidget= XtVaCreateManagedWidget("resetbutton",
         xmPushButtonWidgetClass, manager,
-        XmNlabelString, XmStringCreateLocalized("Clear Entries"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Clear Entries"),
         XmNtopAttachment, XmATTACH_WIDGET,
         XmNtopWidget, datasetButtonWidget,
         // XmNbottomAttachment, XmATTACH_FORM,
@@ -228,7 +228,7 @@ void importDialog::createSelectionArea()
     // CREATE IMPORT BUTTON
     Widget openButtonWidget= XtVaCreateManagedWidget("openbutton",
             xmPushButtonWidgetClass, manager,
-            XmNlabelString, XmStringCreateLocalized("Open File"),
+            XmNlabelString, PGT_XmStringCreateLocalized("Open File"),
             XmNtopAttachment, XmATTACH_WIDGET,
             XmNtopWidget, resetButtonWidget,
             XmNbottomAttachment, XmATTACH_FORM,
@@ -259,7 +259,7 @@ void importDialog::createImportArea()
     // CREATE LABEL
     Widget typeLabel= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, manager,
-        XmNlabelString, XmStringCreateLocalized("Select Data Column:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Select Data Column:"),
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNleftAttachment, XmATTACH_FORM,
         XmNtopAttachment, XmATTACH_FORM,
@@ -270,7 +270,7 @@ void importDialog::createImportArea()
     // CREATE LABEL
     Widget columnTypeLabel= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, manager,
-        XmNlabelString, XmStringCreateLocalized("New ARB Container Type:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("New ARB Container Type:"),
         XmNwidth, 150,
         XmNheight, 30,
         XmNalignment, XmALIGNMENT_BEGINNING,
@@ -282,7 +282,7 @@ void importDialog::createImportArea()
     // CREATE LABEL
     Widget columnLabel= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, manager,
-        XmNlabelString, XmStringCreateLocalized("Original Column Header:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Original Column Header:"),
         XmNwidth, 150,
         XmNheight, 30,
         XmNalignment, XmALIGNMENT_BEGINNING,
@@ -294,7 +294,7 @@ void importDialog::createImportArea()
     // CREATE LABEL
     Widget containerLabel= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, manager,
-        XmNlabelString, XmStringCreateLocalized("New ARB Container Name:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("New ARB Container Name:"),
         XmNwidth, 150,
         XmNheight, 30,
         XmNalignment, XmALIGNMENT_BEGINNING,
@@ -381,7 +381,7 @@ void importDialog::createImportArea()
     // CREATE RESET NAMES BUTTON
     Widget namesButtonWidget= XtVaCreateManagedWidget("namesbutton",
         xmPushButtonWidgetClass, manager,
-        XmNlabelString, XmStringCreateLocalized("Reset Names"),
+        XmNlabelString, PGT_XmStringCreateLocalized("Reset Names"),
         XmNtopAttachment, XmATTACH_WIDGET,
         XmNtopWidget, m_containerHeaderWidget,
         XmNrightAttachment, XmATTACH_FORM,
@@ -393,7 +393,7 @@ void importDialog::createImportArea()
     // CREATE ARB NAMES BUTTON
     Widget ARBnamesButtonWidget= XtVaCreateManagedWidget("ARBnamesButton",
             xmPushButtonWidgetClass, manager,
-            XmNlabelString, XmStringCreateLocalized("ARB entry IDs"),
+            XmNlabelString, PGT_XmStringCreateLocalized("ARB entry IDs"),
             XmNtopAttachment, XmATTACH_WIDGET,
             XmNtopWidget, m_containerHeaderWidget,
             XmNrightAttachment, XmATTACH_WIDGET,
@@ -406,7 +406,7 @@ void importDialog::createImportArea()
     // CREATE IMPORT BUTTON
     Widget importButtonWidget= XtVaCreateManagedWidget("importbutton",
             xmPushButtonWidgetClass, manager,
-            XmNlabelString, XmStringCreateLocalized("Import -> ARB"),
+            XmNlabelString, PGT_XmStringCreateLocalized("Import -> ARB"),
             XmNtopAttachment, XmATTACH_WIDGET,
             XmNtopWidget, namesButtonWidget,
             XmNrightAttachment, XmATTACH_FORM,
@@ -418,7 +418,7 @@ void importDialog::createImportArea()
     // CREATE LABEL
     XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, XmStringCreateLocalized("New Proteome Content:"),
+        XmNlabelString, PGT_XmStringCreateLocalized("New Proteome Content:"),
         // XmNwidth, 160,
         // XmNheight, 30,
         NULL);
@@ -438,7 +438,7 @@ void importDialog::createImportArea()
 //     // SAMPLE SCALE (FOR SELECTING THE SAMPLE ENTRY
 //     m_sampleScale= XtVaCreateManagedWidget("sampleScale",
 //         xmScaleWidgetClass, m_top,
-//         XmNtitleString,   XmStringCreateLocalized("Entry"),
+//         XmNtitleString,   PGT_XmStringCreateLocalized("Entry"),
 //         XmNorientation,    XmHORIZONTAL,
 //         XmNmaximum,       10,
 //         XmNdecimalPoints, 0,
@@ -498,7 +498,7 @@ void importDialog::getFilenameCallback(Widget, XtPointer)
         XtAddCallback(m_fileDialog, XmNcancelCallback, staticFileDialogCloseCallback, this);
         XtAddCallback(m_fileDialog, XmNnoMatchCallback, staticFileDialogCloseCallback, this);
         XtSetSensitive(XmFileSelectionBoxGetChild(m_fileDialog, XmDIALOG_HELP_BUTTON), False);
-        XtVaSetValues(m_fileDialog, XmNdialogTitle, XmStringCreateLocalized("Open proteome data file..."), NULL);
+        XtVaSetValues(m_fileDialog, XmNdialogTitle, PGT_XmStringCreateLocalized("Open proteome data file..."), NULL);
         m_hasFileDialog= true;
     }
 
@@ -703,7 +703,7 @@ void importDialog::fillImportTypeCombobox()
     int pos= 0;
 
     // ADD CSV ENTRY TO THE COMBOBOX
-    XmComboBoxAddItem(m_fileTypeWidget, XmStringCreateLocalized("CSV"), pos, true); pos++;
+    XmComboBoxAddItem(m_fileTypeWidget, PGT_XmStringCreateLocalized("CSV"), pos, true); pos++;
 
     // ADD XSLT IMPORT FILTER (FOR XML FILES)
     m_xslt= findXSLTFiles("xslt");
@@ -712,7 +712,7 @@ void importDialog::fillImportTypeCombobox()
     {
         for(int i= 0; i < m_xslt->number; i++)
         {
-            XmComboBoxAddItem(m_fileTypeWidget, XmStringCreateLocalized(m_xslt->importer[i]), pos, true); pos++;
+            XmComboBoxAddItem(m_fileTypeWidget, PGT_XmStringCreateLocalized(m_xslt->importer[i]), pos, true); pos++;
         }
     }
 
@@ -733,9 +733,9 @@ void importDialog::fillARBTypeCombobox()
 {
     // ADD ITEMS
     int pos= 0;
-    XmComboBoxAddItem(m_fieldTypeWidget, XmStringCreateLocalized("INT"), pos, true); pos++;
-    XmComboBoxAddItem(m_fieldTypeWidget, XmStringCreateLocalized("FLOAT"), pos, true); pos++;
-    XmComboBoxAddItem(m_fieldTypeWidget, XmStringCreateLocalized("STRING"), pos, true); pos++;
+    XmComboBoxAddItem(m_fieldTypeWidget, PGT_XmStringCreateLocalized("INT"), pos, true); pos++;
+    XmComboBoxAddItem(m_fieldTypeWidget, PGT_XmStringCreateLocalized("FLOAT"), pos, true); pos++;
+    XmComboBoxAddItem(m_fieldTypeWidget, PGT_XmStringCreateLocalized("STRING"), pos, true); pos++;
 
     // SET COMBOBOX LIST LENGTH TO <= 5
     int visible= 5;
@@ -859,13 +859,13 @@ void importDialog::updateHeaderEntries()
     switch(m_table->columnType[m_activeHeader])
     {
         case DATATYPE_INT:
-            XmComboBoxSelectItem(m_fieldTypeWidget, XmStringCreateLocalized("INT"));
+            XmComboBoxSelectItem(m_fieldTypeWidget, PGT_XmStringCreateLocalized("INT"));
             break;
         case DATATYPE_FLOAT:
-            XmComboBoxSelectItem(m_fieldTypeWidget, XmStringCreateLocalized("FLOAT"));
+            XmComboBoxSelectItem(m_fieldTypeWidget, PGT_XmStringCreateLocalized("FLOAT"));
             break;
         case DATATYPE_STRING:
-            XmComboBoxSelectItem(m_fieldTypeWidget, XmStringCreateLocalized("STRING"));
+            XmComboBoxSelectItem(m_fieldTypeWidget, PGT_XmStringCreateLocalized("STRING"));
             break;
     }
 
@@ -905,7 +905,7 @@ void importDialog::updateSampleList()
     // ADD TITLE LINE TO SAMPLE LIST
     char *title= "                  CONTAINER NAME | # | CONTENT...";
     // char *title= "CONTAINER NAME                   | # | CONTENT...";
-    XmListAddItem(m_sampleList, XmStringCreateLocalized(title), 0);
+    XmListAddItem(m_sampleList, PGT_XmStringCreateLocalized(title), 0);
 
     //FETCH ALL COLUMN ENTRIES
     for(int i= 0; i < columns; i++)
@@ -934,7 +934,7 @@ void importDialog::updateSampleList()
         sprintf(buf2, "%32s | %s | %s", headerBuffer, type, buf1);
 
         // ADD STRING TO SAMPLE LIST
-        XmListAddItem(m_sampleList, XmStringCreateLocalized(buf2), 0);
+        XmListAddItem(m_sampleList, PGT_XmStringCreateLocalized(buf2), 0);
     }
 
     // SELECT THE ACTIVE ENTRY

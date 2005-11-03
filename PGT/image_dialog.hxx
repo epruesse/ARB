@@ -61,9 +61,9 @@ class imageDialog : public MDialog
         //
         void ARBdataButtonCallback(Widget, XtPointer);
         void TIFFnameButtonCallback(Widget, XtPointer);
-        void setSpecies(char *);
-        void setExperiment(char *);
-        void setProteome(char *);
+        void setSpecies(const char *);
+        void setExperiment(const char *);
+        void setProteome(const char *);
         void updateARBText();
         void imageFileDialogCallback(Widget, XtPointer);
         void imageRedrawCallback();
@@ -95,13 +95,13 @@ class imageDialog : public MDialog
         int blankImage();
         int fillBlankImage();
         int getSpotMaxDimensions();
-        void setText(char *, int, int);
+        void setText(const char *, int, int);
         void drawCrosshair(int, int);
         void drawCircle(int, int, int, int, int, int);
         void drawSpots();
         void setColor(Display *, GC, int, int, int);
         char *get_ARB_image_path();
-        void set_ARB_image_path(char *);
+        void set_ARB_image_path(const char *);
         bool getSettings();
         bool createSpotList();
         bool createDescriptions();
@@ -130,12 +130,12 @@ class imageDialog : public MDialog
         char *m_proteome;
         //
         // DEBUG -- PRESET -- DEBUG -- PRESET
-        char *m_x_container;
-        char *m_y_container;
-        char *m_id_container;
-        char *m_vol_container;
-        char *m_area_container;
-        char *m_avg_container;
+        const char *m_x_container;
+        const char *m_y_container;
+        const char *m_id_container;
+        const char *m_vol_container;
+        const char *m_area_container;
+        const char *m_avg_container;
         // DEBUG -- PRESET -- DEBUG -- PRESET
         //
         bool m_changeInProgress;
