@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_main.cxx                                           //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri May/20/2005 15:21 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Nov/04/2005 17:30 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -18,6 +18,9 @@
 #include <aw_awars.hxx>
 #include <arbdbt.h>
 #include <ntree.hxx>
+
+class AWT_canvas;
+#include <../NTREE/nt_cb.hxx>
 
 #include "EXP.hxx"
 #include "EXP_local.hxx"
@@ -143,6 +146,8 @@ void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool submenu) {
 
         awm->insert_separator();
         AWMIMT( "experiment_colors",    "Colors ...",           "C",    "mark_colors.hlp", AWM_ALL,AW_POPUP,   (AW_CL)EXP_create_experiment_colorize_window, 0);
+        awm->insert_separator();
+        AWMIMT("pgt", "Proteom Genome Toolkit (PGT)", "P", "pgt.hlp", AWM_ALL, NT_system_cb, (AW_CL)"arb_pgt &", 0);
     }
     if (submenu) awm->close_sub_menu();
 }
