@@ -56,9 +56,9 @@ RNA3D_Global::~RNA3D_Global() {
 // --------------------------------------------------------------------------------
 
 static float fAspectRatio;
-const float fViewAngle = 90.0;
+const float fViewAngle = 40.0;
 const float fClipNear  = 0.5f;
-const float fClipFar   = 10000;
+const float fClipFar   = 100;
 
 // GBDATA *OpenGL_gb_main;
 
