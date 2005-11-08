@@ -74,6 +74,7 @@ int TIFFimage::open(char *name)
     uint32 width= 0;
     uint32 height= 0;
     uint32 size= 0;
+    uint32 orientation= 0;
     bool error= false;
 
     // OPEN TIFF FiLENAME
@@ -93,10 +94,26 @@ int TIFFimage::open(char *name)
         // IF ARRAY WAS CREATED SUCCESSFULLY...
         if(array)
         {
-            // COPY BITMAP DATA TO THE MEMORY ARRAY
-            // SET ERROR VARIABLE IF READ FAILED
-            if(!(TIFFReadRGBAImageOriented(tiff, width, height, array,
-                ORIENTATION_TOPLEFT, 0))) error= true;
+            // FIX TIFF IMAGE ORIENTATION
+            if(!TIFFGetFieldDefaulted(tiff, TIFFTAG_ORIENTATION, &orientation))
+                orientation= 0;
+
+            switch(orientation)
+            {
+                case ORIENTATION_TOPLEFT:
+                case ORIENTATION_TOPRIGHT:
+                case ORIENTATION_LEFTTOP:
+                case ORIENTATION_RIGHTTOP:   orientation= ORIENTATION_BOTLEFT; break;
+
+                case ORIENTATION_BOTRIGHT:
+                case ORIENTATION_BOTLEFT:
+                case ORIENTATION_RIGHTBOT:
+                case ORIENTATION_LEFTBOT:    orientation= ORIENTATION_TOPLEFT; break;
+            }
+            TIFFSetField(tiff, TIFFTAG_ORIENTATION, orientation);
+
+            if(!(TIFFReadRGBAImage(tiff, width, height, array, 0)))
+                error= true;
         }
         else error= true; // ARRAY INIT FAILED
     }
