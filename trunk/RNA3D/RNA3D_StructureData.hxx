@@ -11,8 +11,7 @@
 
 // DisplayLists
 enum { 
-    CIRCLE_LIST = 102,     
-    STRUCTURE_BACKBONE,   
+    STRUCTURE_BACKBONE = 300,   
     STRUCTURE_BACKBONE_CLR,   
     HELIX_NUMBERS,
     HELIX_NUMBERS_POINTS,
@@ -100,6 +99,7 @@ public:
     int iEColiStartPos, iEColiEndPos;
     int iTotalSubs, iTotalDels, iTotalIns;
     int LSU_molID;
+    int HelixBase; // to create display lists storing helix information
 
     BI_ecoli_ref *EColiRef;
     ED4_sequence_terminal *ED4_SeqTerminal;

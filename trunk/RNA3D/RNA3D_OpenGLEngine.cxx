@@ -12,7 +12,7 @@
 // global data
 
 RNA3D_Global *RNA3D = 0; 
-char globalComment[1000];// = ""; 
+char globalComment[1000];
 
 void RNA3D_init_global_data() {
     if (!RNA3D) {
@@ -57,8 +57,8 @@ RNA3D_Global::~RNA3D_Global() {
 
 static float fAspectRatio;
 const float fViewAngle = 90.0;
-const float fClipNear  = 0.01;
-const float fClipFar   = 100000;
+const float fClipNear  = 0.5f;
+const float fClipFar   = 10000;
 
 // GBDATA *OpenGL_gb_main;
 
@@ -162,7 +162,7 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
     ShowVendorInformation();
 
     GLenum err = glewInit();
-    if (GLEW_OK != err) {
+    if (GLEW_OK != err){
         /* problem: glewInit failed, something is seriously wrong */
         fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
     }
@@ -184,16 +184,17 @@ void InitializeOpenGLEngine(GLint width, GLint height ) {
 
     // Generate Textures
     RNA3D->cTexture->LoadGLTextures();  // Load The Texture(s) 
-    glEnable(GL_TEXTURE_2D);    // Enable Texture Mapping
 
-    glDepthFunc(GL_LEQUAL);          // The Type Of Depth Test To Do
+    glShadeModel(GL_SMOOTH);
+    glClearColor(0,0,0,1);
+    glClearDepth(1.0f); 
+
     glEnable(GL_DEPTH_TEST);         // Enables Depth Testing
-    glClearDepth(1.0);
-    glShadeModel(GL_FLAT);           
+    glDepthFunc(GL_LEQUAL);          // The Type Of Depth Test To Do
 
-    glEnable(GL_POINT_SMOOTH);
-
+    //    glHint(GL_CLIP_VOLUME_CLIPPING_HINT_EXT,GL_DONT_CARE);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+    glEnable(GL_TEXTURE_2D);    // Enable Texture Mapping
 
     ReshapeOpenGLWindow(width,height);
 
@@ -451,7 +452,7 @@ void DrawStructure(){
 }
 
 void RenderOpenGLScene(Widget w){
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);// | GL_STENCIL_BUFFER_BIT); 
 
     // setting the BackGround Color of the OpenGL Scene
     RNA3D->cGraphics->SetOpenGLBackGroundColor();  
@@ -489,7 +490,7 @@ void RenderOpenGLScene(Widget w){
 void InitializeOpenGLWindow( Widget w ) {
 
     if (RNA3D->OpenGLEngineState == CREATED) return;
-    
+
     Arg args[1];
     XVisualInfo *vi;
     
@@ -528,6 +529,9 @@ void InitializeOpenGLWindow( Widget w ) {
             RNA3D->glw = w;
 
             RNA3D->OpenGLEngineState = CREATED;
+
+            // Initializing fonts
+            RNA3D->cGraphics->InitMainFont("fixed");
         }
     }
 }

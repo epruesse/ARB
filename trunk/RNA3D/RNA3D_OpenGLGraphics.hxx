@@ -26,22 +26,18 @@ public:
     void WinToScreenCoordinates(int x, int y, GLdouble  *screenPos);
     void ScreenToWinCoordinates(int x, int y, GLdouble *winPos);
 
-    void DrawCursor(int x, int y);
     void PrintString(float x, float y, float z, char *s, void *font);
-    void PrintCharacter(float x, float y, float z, char c, void *font);
     void PrintComment(float x, float y, float z, char *s);
-  
+
+    void init_font(GLuint base, char* f);
+    void print_string(GLuint base, char* s);
+    void InitMainFont(char* f);
+
     void SetOpenGLBackGroundColor();    
     ColorRGBf ConvertGCtoRGB(int gc);
     void SetColor(int gc);
     ColorRGBf GetColor(int gc);
 
-    void DrawCircle(float radius, float x, float y);
-    void DrawCube(float x, float y, float z, float radius);
-    void DrawSphere(float radius, float x, float y, float z);
     void DrawBox(float x, float y, float width, float height);
-
-    void Draw3DSGrid();
-    void DrawAxis(float x, float y, float z, float len);
 };
 

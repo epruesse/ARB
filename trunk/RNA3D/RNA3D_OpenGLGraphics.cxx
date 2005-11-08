@@ -93,212 +93,97 @@ ColorRGBf OpenGLGraphics::GetColor(int gc) {
     return color;
 }
 
-void OpenGLGraphics::WinToScreenCoordinates(int x, int y, GLdouble *screenPos) {
-    //project window coords to gl coord
-    glLoadIdentity();
-    GLdouble modelMatrix[16];
-    glGetDoublev(GL_MODELVIEW_MATRIX,modelMatrix);
-    GLdouble projMatrix[16];
-    glGetDoublev(GL_PROJECTION_MATRIX,projMatrix);
-    int viewport[4];
-    glGetIntegerv(GL_VIEWPORT,viewport);
-    gluUnProject(x, y, 0,
-                 modelMatrix,
-                 projMatrix,
-                 viewport,
-                 //the next 3 parameters are the pointers to the final object coordinates.(double)
-                 &screenPos[0], &screenPos[1], &screenPos[2]
-                 );
+//=========== Functions related to rendering FONTS ========================//
+
+static GLuint font_base;
+
+void OpenGLGraphics::init_font(GLuint base, char* f)
+{
+   Display* display;
+   XFontStruct* font_info;
+   int first;
+   int last;
+
+   /* Need an X Display before calling any Xlib routines. */
+   display = XOpenDisplay(0);
+   if (display == 0) {
+      fprintf(stderr, "XOpenDisplay() failed.  Exiting.\n");
+      exit(-1);
+   } 
+   else {
+      /* Load the font. */
+      font_info = XLoadQueryFont(display, f);
+      if (!font_info) {
+         fprintf(stderr, "XLoadQueryFont() failed - Exiting.\n");
+         exit(-1);
+      }
+      else {
+         /* Tell GLX which font & glyphs to use. */
+         first = font_info->min_char_or_byte2;
+         last  = font_info->max_char_or_byte2;
+         glXUseXFont(font_info->fid, first, last-first+1, base+first);
+      }
+      XCloseDisplay(display);
+      display = 0;
+   }
 }
 
-void OpenGLGraphics::ScreenToWinCoordinates(int x, int y, GLdouble *winPos) {
-    //project window coords to gl coord
-    glLoadIdentity();
-    GLdouble modelMatrix[16];
-    glGetDoublev(GL_MODELVIEW_MATRIX,modelMatrix);
-    GLdouble projMatrix[16];
-    glGetDoublev(GL_PROJECTION_MATRIX,projMatrix);
-    int viewport[4];
-    glGetIntegerv(GL_VIEWPORT,viewport);
-    gluProject(x, y, 0,
-               modelMatrix,
-               projMatrix,
-               viewport,
-               //the next 3 parameters are the pointers to the final object coordinates.(double)
-               &winPos[0], &winPos[1], &winPos[2]
-               );
+void OpenGLGraphics::print_string(GLuint base, char* s)
+{
+   if (!glIsList(font_base)) {
+      fprintf(stderr, "print_string(): Bad display list. - Exiting.\n");
+      exit (-1);
+   }
+   else if (s && strlen(s)) {
+      glPushAttrib(GL_LIST_BIT);
+      glListBase(base);
+      glCallLists(strlen(s), GL_UNSIGNED_BYTE, (GLubyte *)s);
+      glPopAttrib();
+   }
 }
 
-void OpenGLGraphics::DrawCursor(int x, int y) {
-    GLdouble screenPos[3];
-    WinToScreenCoordinates(x, y, screenPos);
-    glPushMatrix();
-    glColor4f(1,0,0,1); 
-    DrawCube((float)screenPos[0],(float)-screenPos[1],(float)screenPos[2], 0.01);
-    glPopMatrix();
+void OpenGLGraphics::InitMainFont(char* f)
+{
+    font_base = glGenLists(256);
+   if (!glIsList(font_base)) {
+      fprintf(stderr, "InitMainFont(): Out of display lists. - Exiting.\n");
+      exit (-1);
+   }
+   else {
+      init_font(font_base, f);
+   }
 }
 
 void OpenGLGraphics::PrintString(float x, float y, float z, char *s, void *font) {
     glRasterPos3f(x, y, z);
-    for (unsigned int i = 0; i < strlen(s); i++) {
-        glutBitmapCharacter(font, s[i]);
-    }
+    print_string(font_base, s);
+//         for (unsigned int i = 0; i < strlen(s); i++) {
+//             glutBitmapCharacter(font, s[i]);
+//         }
 }
 
 void OpenGLGraphics::PrintComment(float x, float y, float z, char *s){
     // if comments are longer break them and display in next line
-    int col  = 35;
+//     int col  = 35;
 
-    glRasterPos3f(x, y, z);
-    for (unsigned int i = 0; i < strlen(s); i++) {
-        if(i%col==0) {
-            y -= 10;
-            glRasterPos3f(x, y, z);
-        }
-        glutBitmapCharacter(GLUT_BITMAP_8_BY_13, s[i]);
-    }
+//         glRasterPos3f(x, y, z);
+//         for (unsigned int i = 0; i < strlen(s); i++) {
+//             if(i%col==0) {
+//                 y -= 10;
+//                 glRasterPos3f(x, y, z);
+//             }
+//             glutBitmapCharacter(GLUT_BITMAP_8_BY_13, s[i]);
+//         }
 }
 
-void OpenGLGraphics::PrintCharacter(float x, float y, float z, char c, void *font) {
-    glRasterPos3d(x, y, z);
-    glutBitmapCharacter(font, c);
-}
-
-void OpenGLGraphics::DrawSphere(float radius, float x, float y, float z){
-    GLUquadricObj *newObj = gluNewQuadric();
-    gluQuadricDrawStyle(newObj, GLU_FILL);
-    gluQuadricNormals(newObj, GLU_SMOOTH);
-    glVertex3f(x,y,z);
-    gluSphere(newObj,radius, 10, 10);
-    gluDeleteQuadric(newObj);
-}
-
-void OpenGLGraphics::DrawCircle(float radius,float x, float y){
-    glNewList(CIRCLE_LIST, GL_COMPILE);
-
-    glBegin(GL_POLYGON);
-    float degInRad, cosine, sine;
-    for (int i=0; i < 360; i++) {
-        degInRad = i * DEG2RAD;
-        cosine   = cos(degInRad)*radius;
-        sine     = sin(degInRad)*radius;
-        glVertex2f(x+cosine, y+sine);
-    }
-    glEnd();
-
-    glEndList();
-}
-
-void  OpenGLGraphics::DrawCube(float x, float y, float z, float radius)
-{
-	// Here we create 6 QUADS (Rectangles) to form a cube
-	// With the passed in radius, we determine the width and height of the cube
-
-	glBegin(GL_QUADS);		
-		
-		// These vertices create the Back Side
-		glVertex3f(x, y, z);
-		glVertex3f(x, y + radius, z);
-		glVertex3f(x + radius, y + radius, z); 
-		glVertex3f(x + radius, y, z);
-
-		// These vertices create the Front Side
-		glVertex3f(x, y, z + radius);
-		glVertex3f(x, y + radius, z + radius);
-		glVertex3f(x + radius, y + radius, z + radius); 
-		glVertex3f(x + radius, y, z + radius);
-
-		// These vertices create the Bottom Face
-		glVertex3f(x, y, z);
-		glVertex3f(x, y, z + radius);
-		glVertex3f(x + radius, y, z + radius); 
-		glVertex3f(x + radius, y, z);
-			
-		// These vertices create the Top Face
-		glVertex3f(x, y + radius, z);
-		glVertex3f(x, y + radius, z + radius);
-		glVertex3f(x + radius, y + radius, z + radius); 
-		glVertex3f(x + radius, y + radius, z);
-
-		// These vertices create the Left Face
-		glVertex3f(x, y, z);
-		glVertex3f(x, y, z + radius);
-		glVertex3f(x, y + radius, z + radius); 
-		glVertex3f(x, y + radius, z);
-
-		// These vertices create the Right Face
-		glVertex3f(x + radius, y, z);
-		glVertex3f(x + radius, y, z + radius);
-		glVertex3f(x + radius, y + radius, z + radius); 
-		glVertex3f(x + radius, y + radius, z);
-
-	glEnd();
-}
+//===============================================================================
 
 void  OpenGLGraphics::DrawBox(float x, float y,  float w, float h)
 {
 	glBegin(GL_QUADS);		
-    
-    glVertex2f(x-w/2, y-h/2);
-    glVertex2f(x+w/2, y-h/2);
-    glVertex2f(x+w/2, y+h/2);
-    glVertex2f(x-w/2, y+h/2);
-
-	glEnd();
-}
-
-void OpenGLGraphics::DrawAxis(float x, float y, float z, float len){
-    // This function draws the axis at the defined position on the screen
-
-    glLineWidth(5.0);
-
-    glBegin(GL_LINES);
-    glColor4f(1,0,0,1);  // X axis
-      glVertex3f(x, y, z);
-      glVertex3f(x + len, y, z);
-
-      glColor4f(0,0,1,1); // Y axis
-      glVertex3f(x, y, z);
-      glVertex3f(x, y + len, z);
-
-      glColor4f(0,1,0,1);// Z axis
-      glVertex3f(x, y, z);
-      glVertex3f(x, y, z + len);
+        glVertex2f(x-w/2, y-h/2);
+        glVertex2f(x+w/2, y-h/2);
+        glVertex2f(x+w/2, y+h/2);
+        glVertex2f(x-w/2, y+h/2);
     glEnd();
-
-    glColor4f(1,0,0,1);  // X axis
-    //    PrintString(x + len, y, z, "X",GLUT_BITMAP_8_BY_13);
-    glColor4f(0,0,1,1); // Y axis
-    // PrintString(x, y + len, z, "Y",GLUT_BITMAP_8_BY_13);
-    glColor4f(0,1,0,1);// Z axis
-    // PrintString(x, y, z + len, "Z",GLUT_BITMAP_8_BY_13);
-
-    glLineWidth(1.0);
-}
-
-void OpenGLGraphics::Draw3DSGrid() {
-	// This function was added to give a better feeling of moving around.
-	// A black background just doesn't give it to ya :)  We just draw 100
-	// green lines vertical and horizontal along the X and Z axis.
-
-	// Turn the lines GREEN
-	glColor3ub(0, 255, 0);
-
-	// Draw a 1x1 grid along the X and Z axis'
-	for(float i = -50; i <= 50; i += 1)
-	{
-		// Start drawing some lines
-		glBegin(GL_LINES);
-
-			// Do the horizontal lines (along the X)
-			glVertex3f(-50, 0, i);
-			glVertex3f(50, 0, i);
-
-			// Do the vertical lines (along the Z)
-			glVertex3f(i, 0, -50);
-			glVertex3f(i, 0, 50);
-
-		// Stop drawing lines
-		glEnd();
-	}
 }
