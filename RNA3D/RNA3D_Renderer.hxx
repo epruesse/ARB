@@ -3,19 +3,6 @@
 
 #define MIN(a,b) ((a)<(b)?(a):(b))
 
-enum {
-    BASES,
-    BASES_COLOR,
-    BASES_LOOP,
-    BASES_HELIX,
-    BASES_NON_HELIX,
-    BASES_UNPAIRED_HELIX,
-    HELIX_MASK,
-    HELIX_MAPPING
-};
-
-const float DEG2RAD = 3.14159/180;   // Used in circle drawing
-
 class Texture2D;
 class Structure3D;
 class OpenGLGraphics;

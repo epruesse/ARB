@@ -53,6 +53,7 @@ Structure3D::Structure3D(void) {
     iTotalDels      = 0;
     iTotalIns       = 0;
     LSU_molID       = 3;  // default molecule to load in case of 23S rRNA : 1C2W
+    HelixBase       = 500;
 }
 
 Structure3D::~Structure3D(void) {
@@ -175,7 +176,7 @@ void Structure3D::DeleteOldMoleculeData(){
 //=========== Reading 3D Coordinates from PDB file ====================//
 
 void Structure3D::ReadCoOrdinateFile() {
-    char *DataFile = 0;  
+    static char *DataFile = 0;  
     int rnaType    = FindTypeOfRNA();
     
     RNA3D->bDisplayComments = true; // displaying comments in main window
@@ -200,7 +201,6 @@ void Structure3D::ReadCoOrdinateFile() {
     case LSU_5S: 
         DataFile = find_data_file("Ecoli_1C2X_5S_rRNA.pdb");
         sprintf(globalComment,"The 3D molecule is rendered from PDB entry [1C2X] with 7.5 Angstrom resolution."); 
-        //  DataFile = find_data_file("Ecoli_1VOR_5S_rRNA.pdb");
         break;
     case SSU_16S:
         DataFile = find_data_file("Ecoli_1M5G_16S_rRNA.pdb");
@@ -298,20 +298,20 @@ void Structure3D::Store2Dinfo(char *info, int pos, int helixNr){
 //=========== Reading Secondary Structure Data from Ecoli Secondary Structure Mask file ====================//
 
 void Structure3D::GetSecondaryStructureInfo(void) {
-    char *DataFile = 0;  
+    static char *DataFile = 0;  
     int rnaType    = FindTypeOfRNA();
 
-    switch (rnaType) {
-    case LSU_23S: 
-        DataFile = find_data_file("SecondaryStructureModel_23SrRNA.data");
-        break;
-    case LSU_5S: 
-        DataFile = find_data_file("SecondaryStructureModel_5SrRNA.data");
-        break;
-    case SSU_16S:
-        DataFile = find_data_file("SecondaryStructureModel_16SrRNA.data");
-        break;
-    }
+     switch (rnaType) {
+     case LSU_23S: 
+         DataFile = find_data_file("SecondaryStructureModel_23SrRNA.data");
+         break;
+     case LSU_5S: 
+         DataFile = find_data_file("SecondaryStructureModel_5SrRNA.data");
+         break;
+     case SSU_16S:
+         DataFile = find_data_file("SecondaryStructureModel_16SrRNA.data");
+         break;
+     }
 
     char  buf[256];
 
@@ -598,7 +598,7 @@ void Structure3D::GenerateSecStructureUnpairedHelixRegions(void) {
 
 void Structure3D::GenerateTertiaryInteractionsDispLists(){
     Struct2Dplus3D *t;
-    char *DataFile = 0;  
+    static char *DataFile = 0;  
     int rnaType    = FindTypeOfRNA();
 
     switch (rnaType) {
@@ -840,26 +840,35 @@ void Structure3D::GenerateDisplayLists(void){
 
     GenerateMoleculeSkeleton();
     ComputeBasePositions();
-
+    
     int rnaType = FindTypeOfRNA();
     switch (rnaType) {
     case SSU_16S:
-        for (int i = 1; i <= 50;i++) {
-            GenerateHelixDispLists(i, i);
-        }
+        if (glIsList(HelixBase) != GL_TRUE) 
+            {
+                for (int i = 1; i <= 50;i++) {
+                    GenerateHelixDispLists(HelixBase+i, i);
+                }
+            }
         break;
     case LSU_23S:
         cout<<"=========================================================="<<endl
             <<"Missing base pairs (bracket number indicates helix number) "<<endl;
-        for (int i = 1; i <= 101;i++) {
-            GenerateHelixDispLists(i, i);
-        }
+        if (glIsList(HelixBase) != GL_TRUE) 
+            {
+                for (int i = 1; i <= 101;i++) {
+                    GenerateHelixDispLists(HelixBase+i, i);
+                }
+            }
         cout<<"=========================================================="<<endl;
         break;
     case LSU_5S:
-        for (int i = 1; i <= 5;i++) {
-            GenerateHelixDispLists(i, i);
-        }
+        if (glIsList(HelixBase) != GL_TRUE) 
+            {
+                for (int i = 1; i <= 5;i++) {
+                    GenerateHelixDispLists(HelixBase+i, i);
+                }
+            }
         break;
     }
 
