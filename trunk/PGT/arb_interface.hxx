@@ -98,14 +98,22 @@ char *get_proteom_AWAR();
 char *get_protein_AWAR();
 char *get_gene_AWAR();
 char *get_config_AWAR();
+
 //
-void add_callback(const char *, GB_CB, void *);
-void add_species_callback(GB_CB, void *);
-void add_experiment_callback(GB_CB, void *);
-void add_proteom_callback(GB_CB, void *);
-void add_protein_callback(GB_CB, void *);
-void add_gene_callback(GB_CB, void *);
-void add_config_callback(GB_CB, void *);
+class mainDialog;
+class imageDialog;
+
+void add_mainDialog_callback (const char *awar, void(*cb)( GBDATA *, mainDialog *,  GB_CB_TYPE), mainDialog *md);
+void add_imageDialog_callback(const char *awar, void(*cb)( GBDATA *, imageDialog *, GB_CB_TYPE), imageDialog *id);
+
+// void add_callback(const char *, GB_CB, void *);
+// void add_species_callback(GB_CB, void *);
+// void add_experiment_callback(GB_CB, void *);
+// void add_proteom_callback(GB_CB, void *);
+// void add_protein_callback(GB_CB, void *);
+// void add_gene_callback(GB_CB, void *);
+// void add_config_callback(GB_CB, void *);
+
 //
 void checkCreateAWARS();
 
