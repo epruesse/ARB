@@ -295,7 +295,7 @@ void GLRenderer::EndTexturizer(){
     }
  }
 
-#define POLOFFON glEnable(GL_POLYGON_OFFSET_FILL); glPolygonOffset(1,1); glDepthFunc(GL_LESS);
+#define POLOFFON  glEnable(GL_POLYGON_OFFSET_FILL); glPolygonOffset(1,1); glDepthFunc(GL_LESS);
 #define POLOFFOFF glDepthFunc(GL_LEQUAL); glPolygonOffset(0,0); glDisable(GL_POLYGON_OFFSET_FILL);
 
 void GLRenderer::TexturizeStructure(Texture2D *cImages, Structure3D *cStructure) {
@@ -325,55 +325,102 @@ void GLRenderer::TexturizeStructure(Texture2D *cImages, Structure3D *cStructure)
     {
         switch(iBaseMode) {
             case CHARACTERS: {
-                ColorRGBf& ApplicationBGColor = G->ApplicationBGColor;
+                
+                POLOFFON
+                    {  // Print Background textures
+                        ColorRGBf& ApplicationBGColor = G->ApplicationBGColor;
+                        glColor4f(ApplicationBGColor.red, ApplicationBGColor.green, ApplicationBGColor.blue, 1);
+                        glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);    
 
-                if(iBaseUnpairHelix) {
-POLOFFON
-                    glColor4f(ApplicationBGColor.red, ApplicationBGColor.green, ApplicationBGColor.blue, 1);
-                    glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);    
-                    glCallList(UNPAIRED_HELIX_A); glCallList(UNPAIRED_HELIX_G); glCallList(UNPAIRED_HELIX_C); glCallList(UNPAIRED_HELIX_U); 
-        POLOFFOFF
+                        if(iBaseHelix) {
+                            glCallList(HELIX_A); 
+                            glCallList(HELIX_G); 
+                            glCallList(HELIX_C); 
+                            glCallList(HELIX_U);
+                        }
 
-                    G->SetColor(RNA3D_GC_BASES_UNPAIRED_HELIX);
-                    glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_A]);  glCallList(UNPAIRED_HELIX_A);
-                    glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_G]);  glCallList(UNPAIRED_HELIX_G);
-                    glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_C]);  glCallList(UNPAIRED_HELIX_C);
-                    glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_U]);  glCallList(UNPAIRED_HELIX_U);
+                        if(iBaseUnpairHelix) {
+                            glCallList(UNPAIRED_HELIX_A); 
+                            glCallList(UNPAIRED_HELIX_G); 
+                            glCallList(UNPAIRED_HELIX_C); 
+                            glCallList(UNPAIRED_HELIX_U); 
+                        }
 
-                }
-
-                if(iBaseNonHelix) {
-                 POLOFFON
-                    glColor4f(ApplicationBGColor.red, ApplicationBGColor.green, ApplicationBGColor.blue, 1);
-                    glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);    
-                    glCallList(NON_HELIX_A); glCallList(NON_HELIX_G); glCallList(NON_HELIX_C); glCallList(NON_HELIX_U); 
-
+                        if(iBaseNonHelix) {
+                            glCallList(NON_HELIX_A); 
+                            glCallList(NON_HELIX_G); 
+                            glCallList(NON_HELIX_C); 
+                            glCallList(NON_HELIX_U); 
+                        }
+                    }
                 POLOFFOFF
+                    
+                    {  // Print textures representing the actual bases
+                        glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_A]);
+                        {   
+                            if(iBaseHelix) {
+                                G->SetColor(RNA3D_GC_BASES_HELIX);
+                                glCallList(HELIX_A); 
+                            }
+                            if(iBaseUnpairHelix) {
+                                G->SetColor(RNA3D_GC_BASES_UNPAIRED_HELIX);
+                                glCallList(UNPAIRED_HELIX_A); 
+                            }
+                            if(iBaseNonHelix) {
+                                G->SetColor(RNA3D_GC_BASES_NON_HELIX);
+                                glCallList(NON_HELIX_A); 
+                            }
+                        }
+                        
+                        glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_G]);
+                        {   
+                            if(iBaseHelix) {
+                                G->SetColor(RNA3D_GC_BASES_HELIX);
+                                glCallList(HELIX_G); 
+                            }
+                            if(iBaseUnpairHelix) {
+                                G->SetColor(RNA3D_GC_BASES_UNPAIRED_HELIX);
+                                glCallList(UNPAIRED_HELIX_G); 
+                            }
+                            if(iBaseNonHelix) {
+                                G->SetColor(RNA3D_GC_BASES_NON_HELIX);
+                                glCallList(NON_HELIX_G); 
+                            }
+                        }
 
-                    G->SetColor(RNA3D_GC_BASES_NON_HELIX);
-                    glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_A]);  glCallList(NON_HELIX_A);
-                    glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_G]);  glCallList(NON_HELIX_G);
-                    glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_C]);  glCallList(NON_HELIX_C);
-                    glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_U]);  glCallList(NON_HELIX_U);
+                        glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_C]);
+                        {
+                            if(iBaseHelix) {
+                                G->SetColor(RNA3D_GC_BASES_HELIX);
+                                glCallList(HELIX_C); 
+                            }
+                            if(iBaseUnpairHelix) {
+                                G->SetColor(RNA3D_GC_BASES_UNPAIRED_HELIX);
+                                glCallList(UNPAIRED_HELIX_C); 
+                            }
+                            if(iBaseNonHelix) {
+                                G->SetColor(RNA3D_GC_BASES_NON_HELIX);
+                                glCallList(NON_HELIX_C); 
+                            }
+                        }
 
-                }
-
-                if(iBaseHelix) {
-             POLOFFON
-                    glColor4f(ApplicationBGColor.red, ApplicationBGColor.green, ApplicationBGColor.blue, 1);
-                    glBindTexture(GL_TEXTURE_2D, cImages->texture[CIRCLE]);
-                    glCallList(HELIX_A); glCallList(HELIX_G); glCallList(HELIX_C); glCallList(HELIX_U);
-
-            POLOFFOFF
-
-                    G->SetColor(RNA3D_GC_BASES_HELIX);
-                     glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_A]);  glCallList(HELIX_A);
-                    glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_G]);  glCallList(HELIX_G);
-                    glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_C]);  glCallList(HELIX_C);
-                    glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_U]);  glCallList(HELIX_U);
-
-                }
-                break;
+                        glBindTexture(GL_TEXTURE_2D, cImages->texture[LETTER_U]);
+                        {
+                            if(iBaseHelix) {
+                                G->SetColor(RNA3D_GC_BASES_HELIX);
+                                glCallList(HELIX_U); 
+                            }
+                            if(iBaseUnpairHelix) {
+                                G->SetColor(RNA3D_GC_BASES_UNPAIRED_HELIX);
+                                glCallList(UNPAIRED_HELIX_U); 
+                            }
+                            if(iBaseNonHelix) {
+                                G->SetColor(RNA3D_GC_BASES_NON_HELIX);
+                                glCallList(NON_HELIX_U); 
+                            }
+                        }
+                    }
+                    break;
             }
             case SHAPES:
                 if(iBaseHelix) {
