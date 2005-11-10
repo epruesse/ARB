@@ -33,9 +33,60 @@
 #define MIN_IMAGE_SIZE 50
 
 
+// CALLBACK WRAPPER FUNCTIONS (STATIC)
+static void staticARBdataButtonCallback(Widget, XtPointer, XtPointer);
+static void staticTIFFnameButtonCallback(Widget, XtPointer, XtPointer);
+static void staticImageSpeciesCallback(Widget, XtPointer, XtPointer);
+static void staticImageExperimentCallback(Widget, XtPointer, XtPointer);
+static void staticImageProteomeCallback(Widget, XtPointer, XtPointer);
+static void staticImageFileDialogCloseCallback(Widget, XtPointer, XtPointer);
+static void staticImageFileDialogCallback(Widget, XtPointer, XtPointer);
+static void staticImageRedrawCallback(Widget, XtPointer, XtPointer);
+static void staticCrosshairButtonCallback(Widget, XtPointer, XtPointer);
+static void staticTextButtonCallback(Widget, XtPointer, XtPointer);
+static void staticTextOnlyButtonCallback(Widget, XtPointer, XtPointer);
+static void staticCircleButtonCallback(Widget, XtPointer, XtPointer);
+static void staticMarkedOnlyButtonCallback(Widget, XtPointer, XtPointer);
+static void staticMarkAllButtonCallback(Widget, XtPointer, XtPointer);
+static void staticMarkInvertButtonCallback(Widget, XtPointer, XtPointer);
+static void staticMarkNoneButtonCallback(Widget, XtPointer, XtPointer);
+static void staticImageEventCallback(Widget, XtPointer, XtPointer);
+static void staticLockToggleButtonCallback(Widget, XtPointer, XtPointer);
+static void static_ARB_protein_callback(GBDATA *, imageDialog *id, GB_CB_TYPE);
+static void static_ARB_gene_callback(GBDATA *, imageDialog *id, GB_CB_TYPE);
+static void static_PGT_config_callback(GBDATA *, imageDialog *id, GB_CB_TYPE);
+static void staticUpdateGeneButtonCallback(Widget, XtPointer, XtPointer);
+static void staticSpots2GenesButtonCallback(Widget, XtPointer, XtPointer);
+static void staticGenes2SpotsButtonCallback(Widget, XtPointer, XtPointer);
+static void staticHelpDialogCallback(Widget, XtPointer, XtPointer);
+static void staticMarkWithInfoButtonCallback(Widget, XtPointer, XtPointer);
+
+#warning hi kai, obige prototypen waren im header, werden aber nur lokal verwendet
+// prinzipielle Anmerkung: Du definierst erst den Prototyp, dann folgt der Aufruf und am Schluss
+// kommt die Funktiondefinition.
+// Besser ist folgende Definitionsreihenfolge : Erst die Funktion dann der Aufruf. Prototyp ist dadurch ueberfluessig!
+// Beispiel :
+
+// static int complicated();
+
+// static int simple() {
+//     return 2;
+// }
+
+// void aufrufe() {
+//     simple();
+//     complicated();
+// }
+
+// static int complicated() {
+//     return 7;
+// }
+
+
+
 /****************************************************************************
-*  IMAGE DIALOG - CONSTRUCTOR
-****************************************************************************/
+ *  IMAGE DIALOG - CONSTRUCTOR
+ ****************************************************************************/
 imageDialog::imageDialog(Widget p, MDialog *d)
     : MDialog(p, d)
 {
@@ -109,9 +160,14 @@ imageDialog::imageDialog(Widget p, MDialog *d)
     getSettings();
 
     // ADD ARB AWAR CALLBACKS
-    add_protein_callback(static_ARB_protein_callback, this);
-    add_gene_callback(static_ARB_gene_callback, this);
-    add_config_callback(static_PGT_config_callback, this);
+
+    add_imageDialog_callback(AWAR_PROTEIN_NAME,   static_ARB_protein_callback, this);
+    add_imageDialog_callback(AWAR_GENE_NAME,      static_ARB_gene_callback,    this);
+    add_imageDialog_callback(AWAR_CONFIG_CHANGED, static_PGT_config_callback,  this);
+    
+    // add_protein_callback(static_ARB_protein_callback, this);
+    // add_gene_callback(static_ARB_gene_callback, this);
+    // add_config_callback(static_PGT_config_callback, this);
 }
 
 
@@ -473,7 +529,7 @@ void imageDialog::createLeftToolbar()
 *  CALLBACK - ARB DATA BUTTON CLICKED...
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticARBdataButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticARBdataButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *sD= (imageDialog *)clientData;
@@ -500,7 +556,7 @@ void imageDialog::ARBdataButtonCallback(Widget, XtPointer)
 /****************************************************************************
 *  CALLBACK - SELECTION DIALOG SPECIES CHANGED
 ****************************************************************************/
-void staticImageSpeciesCallback(Widget, XtPointer clientData, XtPointer callData)
+static void staticImageSpeciesCallback(Widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -521,7 +577,7 @@ void staticImageSpeciesCallback(Widget, XtPointer clientData, XtPointer callData
 /****************************************************************************
 *  CALLBACK - SELECTION DIALOG SPECIES CHANGED
 ****************************************************************************/
-void staticImageExperimentCallback(Widget, XtPointer clientData, XtPointer callData)
+static void staticImageExperimentCallback(Widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -541,7 +597,7 @@ void staticImageExperimentCallback(Widget, XtPointer clientData, XtPointer callD
 /****************************************************************************
 *  CALLBACK - SELECTION DIALOG SPECIES CHANGED
 ****************************************************************************/
-void staticImageProteomeCallback(Widget, XtPointer clientData, XtPointer callData)
+static void staticImageProteomeCallback(Widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -561,7 +617,7 @@ void staticImageProteomeCallback(Widget, XtPointer clientData, XtPointer callDat
 *  CALLBACK - TIFF IMAGE NAME BUTTON CLICKED...
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticTIFFnameButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticTIFFnameButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *sD= (imageDialog *)clientData;
@@ -596,7 +652,7 @@ void imageDialog::TIFFnameButtonCallback(Widget, XtPointer)
 *  CALLBACK - IMPORT IMAGE FILE NAME VALUE
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticImageFileDialogCloseCallback(Widget parent, XtPointer, XtPointer)
+static void staticImageFileDialogCloseCallback(Widget parent, XtPointer, XtPointer)
 {
     // CLOSE FILE OPEN DIALOG
     XtUnmanageChild(parent);
@@ -607,7 +663,7 @@ void staticImageFileDialogCloseCallback(Widget parent, XtPointer, XtPointer)
 *  CALLBACK - IMPORT IMAGE FILE NAME VALUE
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticImageFileDialogCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticImageFileDialogCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -648,7 +704,7 @@ void imageDialog::imageFileDialogCallback(Widget widget, XtPointer callData)
 *  CALLBACK - IMPORT IMAGE FILE NAME VALUE
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticCrosshairButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticCrosshairButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -675,7 +731,7 @@ void imageDialog::crosshairButtonCallback(Widget, XtPointer)
 *  CALLBACK - IMPORT IMAGE FILE NAME VALUE
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticTextButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticTextButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -702,7 +758,7 @@ void imageDialog::textButtonCallback(Widget, XtPointer)
 *  CALLBACK - IMPORT IMAGE FILE NAME VALUE
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticTextOnlyButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticTextOnlyButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -729,7 +785,7 @@ void imageDialog::textOnlyButtonCallback(Widget, XtPointer)
 *  CALLBACK - IMPORT IMAGE FILE NAME VALUE
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticCircleButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticCircleButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -756,7 +812,7 @@ void imageDialog::circleButtonCallback(Widget, XtPointer)
 *  CALLBACK - IMPORT IMAGE FILE NAME VALUE
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticMarkedOnlyButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticMarkedOnlyButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -783,7 +839,7 @@ void imageDialog::markedOnlyButtonCallback(Widget, XtPointer)
 *  CALLBACK - MARK ALL BUTTON
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticMarkAllButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticMarkAllButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -813,7 +869,7 @@ void imageDialog::markAllButtonCallback(Widget, XtPointer)
 *  CALLBACK - INVERT MARK BUTTON
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticMarkInvertButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticMarkInvertButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -843,7 +899,7 @@ void imageDialog::markInvertButtonCallback(Widget, XtPointer)
 *  CALLBACK - MARK NONE BUTTON
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticMarkNoneButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticMarkNoneButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -923,7 +979,7 @@ bool imageDialog::setAllMarker(int state)
 *  CALLBACK - LOCK/UNLOCK ARB AWARS AND DATA UPDATE
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticLockToggleButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticLockToggleButtonCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -1295,7 +1351,7 @@ int imageDialog::fillBlankImage()
 *  IMAGE DIALOG - REDRAW XIMAGE
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticImageRedrawCallback(Widget, XtPointer clientData, XtPointer)
+static void staticImageRedrawCallback(Widget, XtPointer clientData, XtPointer)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -1625,7 +1681,7 @@ void imageDialog::drawSpots()
 *  CALLBACK - IMAGE EVENT CALLBACK
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticImageEventCallback(Widget widget, XtPointer clientData, XtPointer callData)
+static void staticImageEventCallback(Widget widget, XtPointer clientData, XtPointer callData)
 {
     // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -1768,10 +1824,10 @@ void imageDialog::markSpotAtPos(int button, int x, int y)
 *  ARB AWAR CALLBACK - PROTEIN ENTRY HAS CHANGED
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void static_ARB_protein_callback(GBDATA *, int *clientData, GB_CB_TYPE)
+static void static_ARB_protein_callback(GBDATA *, imageDialog *iD, GB_CB_TYPE)
 {
-     // GET POINTER OF THE ORIGINAL CALLER
-    imageDialog *iD= (imageDialog *)clientData;
+     // // GET POINTER OF THE ORIGINAL CALLER
+    // imageDialog *iD= (imageDialog *)clientData;
 
     // CALL CLASS MEMBER FUNCTION
     iD->ARB_protein_callback();
@@ -1798,10 +1854,10 @@ void imageDialog::ARB_protein_callback()
 *  ARB AWAR CALLBACK - GENE ENTRY HAS CHANGED
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void static_ARB_gene_callback(GBDATA *, int *clientData, GB_CB_TYPE)
+static void static_ARB_gene_callback(GBDATA *, imageDialog *iD, GB_CB_TYPE)
 {
-     // GET POINTER OF THE ORIGINAL CALLER
-    imageDialog *iD= (imageDialog *)clientData;
+     // // GET POINTER OF THE ORIGINAL CALLER
+    // imageDialog *iD= (imageDialog *)clientData;
 
     // CALL CLASS MEMBER FUNCTION
     iD->ARB_gene_callback();
@@ -1871,10 +1927,10 @@ void imageDialog::ARB_gene_callback()
 *  ARB AWAR CALLBACK - PGT CONFIG HAS CHANGED
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void static_PGT_config_callback(GBDATA *, int *clientData, GB_CB_TYPE)
+static void static_PGT_config_callback(GBDATA *, imageDialog *iD, GB_CB_TYPE)
 {
-     // GET POINTER OF THE ORIGINAL CALLER
-    imageDialog *iD= (imageDialog *)clientData;
+     // // GET POINTER OF THE ORIGINAL CALLER
+    // imageDialog *iD= (imageDialog *)clientData;
 
     // CALL CLASS MEMBER FUNCTION
     iD->PGT_config_callback();
@@ -1902,7 +1958,7 @@ void imageDialog::PGT_config_callback()
 *  REACT TO A CHANGE OF THE SELECTED GENE: YES/NO
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticUpdateGeneButtonCallback(Widget, XtPointer clientData, XtPointer)
+static void staticUpdateGeneButtonCallback(Widget, XtPointer clientData, XtPointer)
 {
      // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -2380,7 +2436,7 @@ bool imageDialog::mark_Genes2Spots()
 *  COPY SPOT MARKS TO THE ARB GENE MAP
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticSpots2GenesButtonCallback(Widget, XtPointer clientData, XtPointer)
+static void staticSpots2GenesButtonCallback(Widget, XtPointer clientData, XtPointer)
 {
      // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -2394,7 +2450,7 @@ void staticSpots2GenesButtonCallback(Widget, XtPointer clientData, XtPointer)
 *  COPY GENE MARKER TO SPOT VIEW
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticGenes2SpotsButtonCallback(Widget, XtPointer clientData, XtPointer)
+static void staticGenes2SpotsButtonCallback(Widget, XtPointer clientData, XtPointer)
 {
      // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
@@ -2408,7 +2464,7 @@ void staticGenes2SpotsButtonCallback(Widget, XtPointer clientData, XtPointer)
 *  SHOW HELP DIALOG
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticHelpDialogCallback(Widget, XtPointer clientData, XtPointer)
+static void staticHelpDialogCallback(Widget, XtPointer clientData, XtPointer)
 {
     Widget shell= ((imageDialog*)clientData)->shellWidget();
 
@@ -2459,7 +2515,7 @@ void imageDialog::updateStatusLabel()
 *  MARK ONLY SPOTS WITH INFO
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void staticMarkWithInfoButtonCallback(Widget, XtPointer clientData, XtPointer)
+static void staticMarkWithInfoButtonCallback(Widget, XtPointer clientData, XtPointer)
 {
      // GET POINTER OF THE ORIGINAL CALLER
     imageDialog *iD= (imageDialog *)clientData;
