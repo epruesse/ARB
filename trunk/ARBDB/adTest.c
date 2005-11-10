@@ -202,15 +202,16 @@ void GB_dump_db_path(GBDATA *gbd) {
     printf("Path to GBDATA %p (type=%s) is '%s'\n", gbd, GB_get_type_name(gbd), GB_get_db_path(gbd));
 }
 
-void GB_dump(GBDATA *gbd) {    
-    static int   indent            = 0;
-    int          type              = GB_TYPE(gbd);
-    const char  *type_name         = GB_get_type_name(gbd);
-    const char  *key_name          = 0;
-    const char  *content           = 0;
-    GBCONTAINER *father            = GB_FATHER(gbd);
-    GBDATA      *gb_show_later     = 0;
-    char        *whatto_show_later = 0;
+static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
+    static int     indent            = 0;
+    int            type              = GB_TYPE(gbd);
+    const char    *type_name         = GB_get_type_name(gbd);
+    const char    *key_name          = 0;
+    const char    *content           = 0;
+    unsigned long  content_len       = 0;
+    GBCONTAINER   *father            = GB_FATHER(gbd);
+    GBDATA        *gb_show_later     = 0;
+    char          *whatto_show_later = 0;
 
     if (father) {
         int index_pos = (int)gbd->index; /* my index position in father */
@@ -252,9 +253,18 @@ void GB_dump(GBDATA *gbd) {
     if (!father && !key_name) {
         key_name = "<unknown quark - element w/o father>";
     }
+    else { // test if we need a transacton
+        if (!GB_MAIN(gbd)->transaction) {
+            GB_push_transaction(gbd);
+            GB_dump_internal(gbd, lines_allowed);
+            GB_pop_transaction(gbd);
+            return;
+        }
+    }
 
     if (indent == 0) {
         printf("\nGB_dump of '%s':\n", father ? GB_get_db_path(gbd) : "<no DB-path - father missing or not inspected>");
+        if (lines_allowed) (*lines_allowed)--;
     }
 
     if (father) {
@@ -266,7 +276,7 @@ void GB_dump(GBDATA *gbd) {
                 case GB_INT:    { content = GBS_global_string("%li", GB_read_int(gbd)); break; }
                 case GB_FLOAT:  { content = GBS_global_string("%f", (float)GB_read_float(gbd)); break; }
                 case GB_BYTE:   { content = GBS_global_string("%i", GB_read_byte(gbd)); break; }
-                case GB_STRING: { content = GB_read_char_pntr(gbd); break; }
+                case GB_STRING: { content = GB_read_char_pntr(gbd); content_len = GB_read_count(gbd); break; }
                 case GB_LINK:   { content = GBS_global_string("link to %p", GB_follow_link(gbd)); break; }
                 case GB_BITS:   { break; }
                 case GB_BYTES:  { break; }
@@ -278,9 +288,36 @@ void GB_dump(GBDATA *gbd) {
         }
     }
 
-    if (content==0) content = "<unknown - not examined>";
+    if (content==0) content           = "<unknown - not examined>";
+    if (content_len == 0) content_len = strlen(content);
 
-    printf("%*s %-15s gbd=%p type=%s content='%s'\n", indent, "", key_name, gbd, type_name, content);
+    {
+        char     *prefix  = GBS_global_string_copy("%*s %-15s gbd=%p type=%s content=", indent, "", key_name, gbd, type_name);
+        unsigned  wrappos = 3000;
+
+        if (content_len <= wrappos) {
+            printf("%s'%s'\n", prefix, content);
+            if (lines_allowed) (*lines_allowed)--;
+        }
+        else {
+            char          *buffer  = malloc(wrappos+1);
+            unsigned long  rest    = content_len;
+            const char    *from    = content;
+            int            cleared = 0;
+
+            buffer[wrappos] = 0;
+            while (rest) {
+                memcpy(buffer, from, wrappos);
+                rest  = rest>wrappos ? rest-wrappos : 0;
+                from += wrappos;
+                printf("%s'%s'\n", prefix, buffer);
+                if (lines_allowed && --(*lines_allowed) <= 0) break;
+                if (!cleared) { memset(prefix, ' ', strlen(prefix)); cleared = 1; }
+            }
+            free(buffer);
+        }
+        free(prefix);
+    }
 
     if (type==GB_DB) {
         GBCONTAINER *gbc = (GBCONTAINER*)gbd;
@@ -289,18 +326,34 @@ void GB_dump(GBDATA *gbd) {
         if (gbd->flags2.folded_container) gb_unfold(gbc, -1, -1);
         for (gbp = GB_find(gbd, 0, 0, down_level); gbp; gbp = GB_find(gbp, 0, 0, this_level|search_next)) {
             ++indent;
-            GB_dump(gbp);
+            GB_dump_internal(gbp, lines_allowed);
             --indent;
+            if (lines_allowed && (*lines_allowed)<0) break;
         }
     }
 
     if (gb_show_later) {
-        printf("%*s Showing %s:\n", indent, "", whatto_show_later);
-        free(whatto_show_later); whatto_show_later = 0;
-        ++indent;
-        GB_dump(gb_show_later);
-        --indent;
+        if (!lines_allowed || (*lines_allowed)>0) {
+            printf("%*s Showing %s:\n", indent, "", whatto_show_later);
+            free(whatto_show_later); whatto_show_later = 0;
+            ++indent;
+            GB_dump_internal(gb_show_later, lines_allowed);
+            --indent;
+        }
     }
+}
+
+void GB_dump(GBDATA *gbd) {
+    int max_lines = 2500;
+    GB_dump_internal(gbd, &max_lines);
+    if (max_lines <= 0) {
+        printf("Warning: Dump has been aborted (too many lines)\n"
+               "[use GB_dump_no_limit() if you really want to dump all]\n");
+    }
+}
+
+void GB_dump_no_limit(GBDATA *gbd) {
+    GB_dump_internal(gbd, 0);
 }
 
 char *GB_ralfs_test(GBDATA *gb_main)
