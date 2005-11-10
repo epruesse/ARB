@@ -434,15 +434,15 @@ void configDialog::createWindow()
 bool configDialog::setDefault(bool global)
 {
     // SET DEFAULT VALUES
-    m_crosshairColorString= DEFAULT_COLOR_CROSSHAIR;
-    m_unmarkedColorString=  DEFAULT_COLOR_UNMARKED;
-    m_markedColorString=    DEFAULT_COLOR_MARKED;
-    m_selectedColorString=  DEFAULT_COLOR_SELECTED;
-    m_textColorString=      DEFAULT_COLOR_TEXT;
-    m_id_protein=           DEFAULT_ID_PROTEIN;
-    m_id_gene=              DEFAULT_ID_GENE;
-    m_info_protein=         DEFAULT_INFO_PROTEIN;
-    m_info_gene=            DEFAULT_INFO_GENE;
+    m_crosshairColorString= const_cast<char*>(DEFAULT_COLOR_CROSSHAIR);
+    m_unmarkedColorString=  const_cast<char*>(DEFAULT_COLOR_UNMARKED);
+    m_markedColorString=    const_cast<char*>(DEFAULT_COLOR_MARKED);
+    m_selectedColorString=  const_cast<char*>(DEFAULT_COLOR_SELECTED);
+    m_textColorString=      const_cast<char*>(DEFAULT_COLOR_TEXT);
+    m_id_protein=           const_cast<char*>(DEFAULT_ID_PROTEIN);
+    m_id_gene=              const_cast<char*>(DEFAULT_ID_GENE);
+    m_info_protein=         const_cast<char*>(DEFAULT_INFO_PROTEIN);
+    m_info_gene=            const_cast<char*>(DEFAULT_INFO_GENE);
 
     // SET GLOBAL SETTINGS ALSO TO DEFAULT?
     if(global)

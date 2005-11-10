@@ -41,7 +41,7 @@ MDialog::MDialog(Widget p, MDialog *d= NULL)
 MDialog::~MDialog()
 {
     // DESTROY ALL OUR WIDGETS
-    XtDestroyWidget(m_shell);
+    // if(m_shell != NULL) XtDestroyWidget(m_shell);
 }
 
 
@@ -183,12 +183,19 @@ void MDialog::windowCloseCallback(Widget, XtPointer)
 }
 
 
-static char *pixmapPath(const char *pixmapName) {
+static char *pixmapPath(const char *pixmapName)
+{
     return GBS_global_string_copy("%s/lib/pixmaps/pgt/%s", GB_getenvARBHOME(), pixmapName);
 }
 
-Pixmap PGT_LoadPixmap(const char *name, Screen *s, Pixel fg, Pixel bg) {
-    char *fullname = pixmapPath(name);
-    return XmGetPixmap(s, fullname, fg, bg);
-}
 
+Pixmap PGT_LoadPixmap(const char *name, Screen *s, Pixel fg, Pixel bg)
+{
+    char *fullname= pixmapPath(name);
+
+    Pixmap pixmap= XmGetPixmap(s, fullname, fg, bg);
+
+    free(fullname);
+
+    return pixmap;
+}

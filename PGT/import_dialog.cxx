@@ -424,7 +424,7 @@ void importDialog::createImportArea()
         NULL);
 
     // SAMPLE ARB CONTAINER ENTRIES LIST
-    m_sampleList= XmCreateScrolledList(m_top, "sampleList", NULL, 0);
+    m_sampleList= XmCreateScrolledList(m_top, const_cast<char*>("sampleList"), NULL, 0);
     XtVaSetValues(m_sampleList,
         XmNmarginWidth, 1,
         XmNmarginHeight, 1,
@@ -493,7 +493,7 @@ void importDialog::getFilenameCallback(Widget, XtPointer)
 {
     if (!m_hasFileDialog)
     {
-        m_fileDialog= XmCreateFileSelectionDialog(m_shell, "importDialog", NULL, 0);
+        m_fileDialog= XmCreateFileSelectionDialog(m_shell, const_cast<char*>("importDialog"), NULL, 0);
         XtAddCallback(m_fileDialog, XmNokCallback, staticFileDialogCallback, this);
         XtAddCallback(m_fileDialog, XmNcancelCallback, staticFileDialogCloseCallback, this);
         XtAddCallback(m_fileDialog, XmNnoMatchCallback, staticFileDialogCloseCallback, this);
@@ -617,8 +617,8 @@ void staticSpeciesChangedCallback(Widget, XtPointer clientData, XtPointer callDa
 
     // SET NEW NAMES
     iD->setSpecies(name);
-    iD->setExperiment("");
-    iD->setProteome("");
+    iD->setExperiment(const_cast<char*>(""));
+    iD->setProteome(const_cast<char*>(""));
 
     // UPDATE OUTPUT
     iD->updateARBText();
@@ -639,7 +639,7 @@ void staticExperimentChangedCallback(Widget, XtPointer clientData, XtPointer cal
 
     // SET NEW NAMES
     iD->setExperiment(name);
-    iD->setProteome("");
+    iD->setProteome(const_cast<char*>(""));
 
     // UPDATE OUTPUT
     iD->updateARBText();
@@ -674,9 +674,9 @@ void importDialog::updateARBText()
 {
     // CREATE BUFFER
     char *buf= (char *)malloc(1024 * sizeof(char));
-    char *sp=   "no species";
-    char *exp=  "no experiment";
-    char *prot= "no proteome";
+    char *sp=   const_cast<char*>("no species");
+    char *exp=  const_cast<char*>("no experiment");
+    char *prot= const_cast<char*>("no proteome");
 
     // USE REAL STRINGS IF AVAILABLE
     if(m_species && (strlen(m_species))) sp= m_species;
@@ -706,7 +706,7 @@ void importDialog::fillImportTypeCombobox()
     XmComboBoxAddItem(m_fileTypeWidget, PGT_XmStringCreateLocalized("CSV"), pos, true); pos++;
 
     // ADD XSLT IMPORT FILTER (FOR XML FILES)
-    m_xslt= findXSLTFiles("xslt");
+    m_xslt= findXSLTFiles(const_cast<char*>("xslt"));
 
     if(m_xslt)
     {
@@ -903,7 +903,7 @@ void importDialog::updateSampleList()
     headerBuffer[32]= 0;
 
     // ADD TITLE LINE TO SAMPLE LIST
-    char *title= "                  CONTAINER NAME | # | CONTENT...";
+    char *title= const_cast<char*>("                  CONTAINER NAME | # | CONTENT...");
     // char *title= "CONTAINER NAME                   | # | CONTENT...";
     XmListAddItem(m_sampleList, PGT_XmStringCreateLocalized(title), 0);
 
@@ -917,13 +917,13 @@ void importDialog::updateSampleList()
         switch(m_table->columnType[i])
         {
             case DATATYPE_INT:
-                type= "I";
+                type= const_cast<char*>("I");
                 break;
             case DATATYPE_FLOAT:
-                type= "F";
+                type= const_cast<char*>("F");
                 break;
             default:
-                type= "S";
+                type= const_cast<char*>("S");
                 break;
         }
 

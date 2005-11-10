@@ -173,6 +173,12 @@ void mainDialog::createToolbar()
 ****************************************************************************/
 void mainDialog::createMainArea()
 {
+    // CREATE STRINGS
+    XmString str_01= PGT_XmStringCreateLocalized("Selected Species");
+    XmString str_02= PGT_XmStringCreateLocalized("Selected Experiment");
+    XmString str_03= PGT_XmStringCreateLocalized("Selected Proteome");
+    XmString str_04= PGT_XmStringCreateLocalized("Selected Protein");
+
     // CREATE TOP LEVEL WIDGET
     m_selection_area= XtVaCreateManagedWidget("top",
         xmFormWidgetClass, m_top,
@@ -184,7 +190,7 @@ void mainDialog::createMainArea()
     // CREATE SPECIES LABEL
     Widget species_label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_selection_area,
-        XmNlabelString, PGT_XmStringCreateLocalized("Selected Species"),
+        XmNlabelString, str_01,
         XmNwidth, 200,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_FORM,
@@ -205,7 +211,7 @@ void mainDialog::createMainArea()
     // CREATE EXPERIMENT LABEL
     Widget experiment_label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_selection_area,
-        XmNlabelString, PGT_XmStringCreateLocalized("Selected Experiment"),
+        XmNlabelString, str_02,
         XmNwidth, 200,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -228,7 +234,7 @@ void mainDialog::createMainArea()
     // CREATE PROTEOME LABEL
     Widget proteome_label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_selection_area,
-        XmNlabelString, PGT_XmStringCreateLocalized("Selected Proteome"),
+        XmNlabelString, str_03,
         XmNwidth, 200,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -251,7 +257,7 @@ void mainDialog::createMainArea()
     // CREATE PROTEIN LABEL
     Widget protein_label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_selection_area,
-        XmNlabelString, PGT_XmStringCreateLocalized("Selected Protein"),
+        XmNlabelString, str_04,
         XmNwidth, 200,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -268,6 +274,12 @@ void mainDialog::createMainArea()
         XmNleftAttachment, XmATTACH_FORM,
         XmNrightAttachment, XmATTACH_FORM,
         NULL);
+
+    // FREE CREATED STRINGS
+    XmStringFree(str_01);
+    XmStringFree(str_02);
+    XmStringFree(str_03);
+    XmStringFree(str_04);
 }
 
 

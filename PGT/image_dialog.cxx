@@ -1142,8 +1142,10 @@ int imageDialog::updateImage()
     // FILE ALREADY OPENED?
     if(m_filename && (!strcmp(filename, m_filename))) return -1;
 
+    // CREATE NEW IMAGE CLASS IF NECESSARY
+    if(!m_image) m_image= new TIFFimage();
+
     // OPEN TIFF IMAGE FILE
-    m_image= new TIFFimage();
     if(m_image->open(filename)) return -1;
 
     // GET DIMENSIONS
@@ -1971,9 +1973,9 @@ bool imageDialog::createSpotList()
     // FETCH PROTEIN AWAR CONTENT
     char *awar_selected_protein= get_protein_AWAR();
     char *awar_protein_id=       get_CONFIG(CONFIG_PGT_ID_PROTEIN);
-    char *awar_protein_x=        "x_coordinate"; // DEBUG - HARDCODED
-    char *awar_protein_y=        "y_coordinate"; // DEBUG - HARDCODED
-    char *awar_protein_area=     "area";         // DEBUG - HARDCODED
+    const char *awar_protein_x=        "x_coordinate"; // DEBUG - HARDCODED
+    const char *awar_protein_y=        "y_coordinate"; // DEBUG - HARDCODED
+    const char *awar_protein_area=     "area";         // DEBUG - HARDCODED
 
     // FIND SELECTED PROTEOME
     gb_proteome= find_proteome(m_species, m_experiment, m_proteome);
@@ -2084,8 +2086,8 @@ bool imageDialog::createDescriptions()
     char *awar_gene_infos=    get_CONFIG(CONFIG_PGT_INFO_GENE);
     char *awar_protein_id=    get_CONFIG(CONFIG_PGT_ID_PROTEIN);
     char *awar_gene_id=       get_CONFIG(CONFIG_PGT_ID_GENE);
-    char *awar_protein_x=     "x_coordinate"; // DEBUG - HARDCODED
-    char *awar_protein_y=     "y_coordinate"; // DEBUG - HARDCODED
+    char *awar_protein_x=     const_cast<char*>("x_coordinate"); // DEBUG - HARDCODED
+    char *awar_protein_y=     const_cast<char*>("y_coordinate"); // DEBUG - HARDCODED
     if(!awar_protein_infos || !awar_gene_infos ||
        !awar_protein_id || !awar_gene_id) return false;
 
@@ -2423,7 +2425,7 @@ void imageDialog::updateStatusLabel()
     char *buf= (char *)malloc(1024 * sizeof(char));
     if(!buf) return;
 
-    char *selected= "none";
+    char *selected= const_cast<char*>("none");
 
     // FILL BUFFER STRING
     if(m_numSpots == 0)
