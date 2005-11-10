@@ -47,7 +47,8 @@ class mainDialog : public MDialog
 
 
 // CALLBACK WRAPPER FUNCTIONS (STATIC)
-void static_main_ARB_callback(GBDATA *, int *, GB_CB_TYPE);
+void static_main_ARB_callback(GBDATA *, mainDialog *mD, GB_CB_TYPE);
+// void static_main_ARB_callback(GBDATA *, int *, GB_CB_TYPE);
 void staticOpenImportCallback(Widget, XtPointer, XtPointer);
 void staticOpenImageCallback(Widget, XtPointer, XtPointer);
 void staticOpenAnalyzeCallback(Widget, XtPointer, XtPointer);
