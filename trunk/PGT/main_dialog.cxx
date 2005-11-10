@@ -47,10 +47,15 @@ mainDialog::mainDialog(Widget p)
     updateListEntries();
 
     // ADD ARB AWAR CALLBACKS
-    add_species_callback(static_main_ARB_callback, this);
-    add_experiment_callback(static_main_ARB_callback, this);
-    add_proteom_callback(static_main_ARB_callback, this);
-    add_protein_callback(static_main_ARB_callback, this);
+    add_mainDialog_callback(AWAR_SPECIES_NAME,    static_main_ARB_callback, this);
+    add_mainDialog_callback(AWAR_EXPERIMENT_NAME, static_main_ARB_callback, this);
+    add_mainDialog_callback(AWAR_PROTEOM_NAME,    static_main_ARB_callback, this);
+    add_mainDialog_callback(AWAR_PROTEIN_NAME,    static_main_ARB_callback, this);
+    
+    // add_species_callback(static_main_ARB_callback, this);
+    // add_experiment_callback(static_main_ARB_callback, this);
+    // add_proteom_callback(static_main_ARB_callback, this);
+    // add_protein_callback(static_main_ARB_callback, this);
 }
 
 
@@ -317,10 +322,10 @@ void mainDialog::updateListEntries()
 *  ARB AWAR CALLBACK - PROTEIN ENTRY HAS CHANGED
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
-void static_main_ARB_callback(GBDATA *, int *clientData, GB_CB_TYPE)
+void static_main_ARB_callback(GBDATA *, mainDialog *mD, GB_CB_TYPE)
 {
-     // GET POINTER OF THE ORIGINAL CALLER
-    mainDialog *mD= (mainDialog *)clientData;
+     // // GET POINTER OF THE ORIGINAL CALLER
+    // mainDialog *mD= (mainDialog *)clientData;
 
     // CALL CLASS MEMBER FUNCTION
     mD->ARB_callback();
