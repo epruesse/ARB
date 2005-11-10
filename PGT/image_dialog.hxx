@@ -171,32 +171,4 @@ class imageDialog : public MDialog
 };
 
 
-// CALLBACK WRAPPER FUNCTIONS (STATIC)
-void staticARBdataButtonCallback(Widget, XtPointer, XtPointer);
-void staticTIFFnameButtonCallback(Widget, XtPointer, XtPointer);
-void staticImageSpeciesCallback(Widget, XtPointer, XtPointer);
-void staticImageExperimentCallback(Widget, XtPointer, XtPointer);
-void staticImageProteomeCallback(Widget, XtPointer, XtPointer);
-void staticImageFileDialogCloseCallback(Widget, XtPointer, XtPointer);
-void staticImageFileDialogCallback(Widget, XtPointer, XtPointer);
-void staticImageRedrawCallback(Widget, XtPointer, XtPointer);
-void staticCrosshairButtonCallback(Widget, XtPointer, XtPointer);
-void staticTextButtonCallback(Widget, XtPointer, XtPointer);
-void staticTextOnlyButtonCallback(Widget, XtPointer, XtPointer);
-void staticCircleButtonCallback(Widget, XtPointer, XtPointer);
-void staticMarkedOnlyButtonCallback(Widget, XtPointer, XtPointer);
-void staticMarkAllButtonCallback(Widget, XtPointer, XtPointer);
-void staticMarkInvertButtonCallback(Widget, XtPointer, XtPointer);
-void staticMarkNoneButtonCallback(Widget, XtPointer, XtPointer);
-void staticImageEventCallback(Widget, XtPointer, XtPointer);
-void staticLockToggleButtonCallback(Widget, XtPointer, XtPointer);
-void static_ARB_protein_callback(GBDATA *, int *clientData, GB_CB_TYPE);
-void static_ARB_gene_callback(GBDATA *, int *clientData, GB_CB_TYPE);
-void static_PGT_config_callback(GBDATA *, int *clientData, GB_CB_TYPE);
-void staticUpdateGeneButtonCallback(Widget, XtPointer, XtPointer);
-void staticSpots2GenesButtonCallback(Widget, XtPointer, XtPointer);
-void staticGenes2SpotsButtonCallback(Widget, XtPointer, XtPointer);
-void staticHelpDialogCallback(Widget, XtPointer, XtPointer);
-void staticMarkWithInfoButtonCallback(Widget, XtPointer, XtPointer);
-
 #endif // IMAGE_DIALOG_HXX
