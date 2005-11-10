@@ -35,16 +35,17 @@ class TIFFimage
 {
     public:
         TIFFimage();
+        ~TIFFimage();
         int width();
         int height();
         int size();
         bool hasData();
         int open(char *);
+        void close();
         XImage *createXImage(Widget);
         void colorFilter(uint32);
     protected:
         void fixRGB();
-        void cleanUp();
     private:
         uint32 *m_array; // POINTER TO IMAGE ARRAY IN MEMORY
         uint32 m_width;  // IMAGE WIDTH (PIXELS)

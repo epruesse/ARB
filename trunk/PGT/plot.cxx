@@ -293,9 +293,9 @@ void Plot::demo()
 
     if(!open_command_pipe()) return;
 
-    send_command_pipe("set title \"Überschrift - Proteomdaten\"\n");
-    send_command_pipe("set xlabel \"Protein\"\n");
-    send_command_pipe("set ylabel \"Abweichung\"\n");
+    send_command_pipe(const_cast<char*>("set title \"Überschrift - Proteomdaten\"\n"));
+    send_command_pipe(const_cast<char*>("set xlabel \"Protein\"\n"));
+    send_command_pipe(const_cast<char*>("set ylabel \"Abweichung\"\n"));
 
     if(!open_data_pipe()) return;
 

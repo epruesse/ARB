@@ -28,6 +28,15 @@ TIFFimage::TIFFimage()
 
 
 /****************************************************************************
+*  TIFFIMAGE - DESTRUCTOR
+****************************************************************************/
+TIFFimage::~TIFFimage()
+{
+    if(m_hasData) close();
+}
+
+
+/****************************************************************************
 *  TIFFIMAGE - RETURN THE IMAGE WIDTH
 ****************************************************************************/
 int TIFFimage::width()
@@ -131,7 +140,7 @@ int TIFFimage::open(char *name)
 
     // IF OLD DATA IS AVAILABLE, CLEAN IT UP
     // CHECK, IF AN IMAGE IS AVAILABLE
-    if(m_hasData) cleanUp();;
+    if(m_hasData) close();
 
     // FILL LOCAL VARIABLES
     m_array= array;
@@ -181,7 +190,7 @@ void TIFFimage::fixRGB()
 /****************************************************************************
 *  TIFFIMAGE - RESET ALL ENTRIES, FREE ALLOCATED MEM IF NEEDED
 ****************************************************************************/
-void TIFFimage::cleanUp()
+void TIFFimage::close()
 {
     // CHECK, IF AN IMAGE IS AVAILABLE
     if(!m_hasData) return;

@@ -113,7 +113,7 @@ void selectionDialog::createWindow()
         NULL);
 
     // CREATE SPECIES LIST WIDGET
-    m_speciesList= XmCreateScrolledList(m_top, "speciesList", NULL, 0);
+    m_speciesList= XmCreateScrolledList(m_top, const_cast<char*>("speciesList"), NULL, 0);
     XtVaSetValues(m_speciesList,
         XmNallowResize, true,
         XmNvisibleItemCount, 5,
@@ -141,7 +141,7 @@ void selectionDialog::createWindow()
         NULL);
 
     // CREATE EXPERIMENT LIST WIDGET
-    m_experimentList= XmCreateScrolledList(m_top, "experimentList", NULL, 0);
+    m_experimentList= XmCreateScrolledList(m_top, const_cast<char*>("experimentList"), NULL, 0);
     XtVaSetValues(m_experimentList,
         XmNallowResize, true,
         XmNvisibleItemCount, 5,
@@ -169,7 +169,7 @@ void selectionDialog::createWindow()
         NULL);
 
     // CREATE PROTEOME LIST WIDGET
-    m_proteomeList= XmCreateScrolledList(m_top, "proteomeList", NULL, 0);
+    m_proteomeList= XmCreateScrolledList(m_top, const_cast<char*>("proteomeList"), NULL, 0);
     XtVaSetValues(m_proteomeList,
         XmNallowResize, true,
         XmNvisibleItemCount, 5,

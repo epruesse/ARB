@@ -89,7 +89,7 @@ void entrySelectionDialog::createWindow()
         NULL);
 
     // CREATE SPECIES LIST WIDGET
-    m_list= XmCreateScrolledList(m_top, "selectionList", NULL, 0);
+    m_list= XmCreateScrolledList(m_top, const_cast<char*>("selectionList"), NULL, 0);
     XtVaSetValues(m_list,
         XmNallowResize, true,
         XmNvisibleItemCount, 25,

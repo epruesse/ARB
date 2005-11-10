@@ -17,15 +17,24 @@ void ShowMessageBox(Widget widget, const char *title, const char *text)
 {
     Widget msgBox;
     Arg args[3];
-    XtSetArg(args[0], XmNmessageString, PGT_XmStringCreateLocalized(text));
+
+    // CREATE X11 TITLE- AND TEXT-STRING
+    XmString xm_text=  PGT_XmStringCreateLocalized(text);
+    XmString xm_title= PGT_XmStringCreateLocalized(title);
+
+    XtSetArg(args[0], XmNmessageString, xm_text);
     msgBox= XmCreateMessageDialog(widget , const_cast<char*>("messageBox"), args, 1);
 
     XtUnmanageChild(XmMessageBoxGetChild(msgBox, XmDIALOG_HELP_BUTTON));
     XtUnmanageChild(XmMessageBoxGetChild(msgBox, XmDIALOG_CANCEL_BUTTON));
 
-    XtVaSetValues(msgBox, XmNdialogTitle, PGT_XmStringCreateLocalized(title), NULL);
+    XtVaSetValues(msgBox, XmNdialogTitle, xm_title, NULL);
 
     XtManageChild(msgBox);
+
+    // FREE STRINGS
+    XmStringFree(xm_text);
+    XmStringFree(xm_title);
 }
 
 
@@ -37,12 +46,16 @@ int OkCancelDialog(Widget w, const char *title, const char *text)
     int n= 0;
     XtAppContext context;
 
-    XtSetArg(args[n], XmNmessageString, XmStringCreateLtoR(const_cast<char*>(text), XmSTRING_DEFAULT_CHARSET)); n++;
+    // CREATE X11 TITLE- AND TEXT-STRING
+    XmString xm_text=  XmStringCreateLtoR(const_cast<char*>(text), XmSTRING_DEFAULT_CHARSET);
+    XmString xm_title= PGT_XmStringCreateLocalized(title);
+
+    XtSetArg(args[n], XmNmessageString, xm_text); n++;
     XtSetArg(args[n], XmNdialogStyle, XmDIALOG_APPLICATION_MODAL); n++;
 
     dialog = XmCreateQuestionDialog(XtParent(w), const_cast<char*>(text), args, n);
     XtUnmanageChild(XmMessageBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
-    XtVaSetValues(dialog, XmNdialogTitle, PGT_XmStringCreateLocalized(title), NULL);
+    XtVaSetValues(dialog, XmNdialogTitle, xm_title, NULL);
 
     XtAddCallback(dialog, XmNokCallback, OkCancelResponse, &answer);
     XtAddCallback(dialog, XmNcancelCallback, OkCancelResponse, &answer);
@@ -53,7 +66,13 @@ int OkCancelDialog(Widget w, const char *title, const char *text)
     {
         XtAppProcessEvent (context, XtIMAll);
     }
+
+    // FREE STRINGS
+    XmStringFree(xm_text);
+    XmStringFree(xm_title);
+
     XtDestroyWidget(dialog);
+
     return answer;
 }
 
