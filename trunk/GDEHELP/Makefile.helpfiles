@@ -71,13 +71,14 @@ HELP_TREEPUZZLE=../GDE/TREEPUZZLE/doc
 HELP_PHYLIP=../GDE/PHYLIP/doc
 
 FORCED_DOC_NAMES=proml dnapars protpars
+LYNX_PARA=-dump -nolist -display_charset=iso-8859-1
 
-$(GENDOCDEST)/%.doc: $(HELP_PHYLIP)/%.html
-	lynx -dump -nolist $< | sed -e 's/©/(C)/' > $@
+$(GENDOCDEST)/%.doc: $(HELP_PHYLIP)/%.html Makefile.helpfiles
+	lynx $(LYNX_PARA) $< | sed -e 's/©/(C)/' > $@
 	test -s $@ || (echo $@ not generated or empty && false)
 
-$(GENDOCDEST)/treepuzzle.doc: $(HELP_TREEPUZZLE)/manual.html
-	lynx -dump -nolist $< | sed -e 's/©/(C)/' > $@
+$(GENDOCDEST)/treepuzzle.doc: $(HELP_TREEPUZZLE)/manual.html Makefile.helpfiles
+	lynx $(LYNX_PARA) $< | sed -e 's/©/(C)/' > $@
 	test -s $@ || (echo $@ not generated or empty && false)
 
 FORCED_DOCS=$(addsuffix .doc,$(addprefix $(GENDOCDEST)/,$(FORCED_DOC_NAMES)))
