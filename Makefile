@@ -1029,7 +1029,7 @@ mbin:	$(ARCHS_MAKEBIN:.a=.dummy)
 
 com:	$(ARCHS_COMMUNICATION:.a=.dummy)
 
-help:   xml HELP_SOURCE/dummy.dummy
+help:   menus xml HELP_SOURCE/dummy.dummy
 
 dball:	db dbs db2
 db:	ARBDB/libARBDB.dummy
