@@ -61,7 +61,9 @@ static void staticGenes2SpotsButtonCallback(Widget, XtPointer, XtPointer);
 static void staticHelpDialogCallback(Widget, XtPointer, XtPointer);
 static void staticMarkWithInfoButtonCallback(Widget, XtPointer, XtPointer);
 
-#warning hi kai, obige prototypen waren im header, werden aber nur lokal verwendet
+// #warning hi kai, obige prototypen waren im header, werden aber nur lokal verwendet
+// --> Stimmt, danke für den Hinweis. :-)
+
 // prinzipielle Anmerkung: Du definierst erst den Prototyp, dann folgt der Aufruf und am Schluss
 // kommt die Funktiondefinition.
 // Besser ist folgende Definitionsreihenfolge : Erst die Funktion dann der Aufruf. Prototyp ist dadurch ueberfluessig!
@@ -164,7 +166,7 @@ imageDialog::imageDialog(Widget p, MDialog *d)
     add_imageDialog_callback(AWAR_PROTEIN_NAME,   static_ARB_protein_callback, this);
     add_imageDialog_callback(AWAR_GENE_NAME,      static_ARB_gene_callback,    this);
     add_imageDialog_callback(AWAR_CONFIG_CHANGED, static_PGT_config_callback,  this);
-    
+
     // add_protein_callback(static_ARB_protein_callback, this);
     // add_gene_callback(static_ARB_gene_callback, this);
     // add_config_callback(static_PGT_config_callback, this);

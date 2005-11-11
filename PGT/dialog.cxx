@@ -16,6 +16,23 @@
 
 
 /****************************************************************************
+*  CALLBACK FUNCTION (FROM THE WINDOW CLOSE CALLBACK)
+****************************************************************************/
+void staticWindowCloseCallback(Widget, XtPointer clientData, XtPointer)
+{
+    // GET POINTER OF THE ORIGINAL CALLER
+    MDialog *md= (MDialog *)clientData;
+
+    // CLOSE THE DIALOG
+    md->closeDialog();
+
+    // DESTROY THE DIALOG OBJECT
+    // (POSSIBLY DANGEROUS IF A PARENT KEEPS A POINTER TO THE OBJECT)
+    delete md;
+}
+
+
+/****************************************************************************
 *  MDIALOG - CONSTRUCTOR
 ****************************************************************************/
 MDialog::MDialog(Widget p, MDialog *d= NULL)
@@ -41,7 +58,7 @@ MDialog::MDialog(Widget p, MDialog *d= NULL)
 MDialog::~MDialog()
 {
     // DESTROY ALL OUR WIDGETS
-    // if(m_shell != NULL) XtDestroyWidget(m_shell);
+    if(m_shell != NULL) XtDestroyWidget(m_shell);
 }
 
 
@@ -85,6 +102,7 @@ void MDialog::closeDialog()
 {
     // XtUnmanageChild(m_shell);
     XtDestroyWidget(m_shell);
+    m_shell= NULL;
 
     m_enabled= false;
 }
@@ -140,7 +158,7 @@ Widget MDialog::parentWidget()
 /****************************************************************************
 *  MDIALOG - SHOW WIDGET
 ****************************************************************************/
-void show()
+void MDialog::show()
 {
     // UNSUPPORTED SO FAR...
 }
@@ -149,7 +167,7 @@ void show()
 /****************************************************************************
 *  MDIALOG - HIDE WIDGET
 ****************************************************************************/
-void hide()
+void MDialog::hide()
 {
     // UNSUPPORTED SO FAR...
     // XUNMAPWINDOW ???
@@ -157,38 +175,17 @@ void hide()
 
 
 /****************************************************************************
-*  MDIALOG - THE WINDOW CLOSE CALLBACK FOR THE SHELL WIDGET
-*  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
+*  RETURNS THE REAL PATH OF TO A PGT-PIXMAP
 ****************************************************************************/
-void staticWindowCloseCallback(Widget widget, XtPointer clientData, XtPointer callData)
-{
-    // GET POINTER OF THE ORIGINAL CALLER
-    MDialog *md= (MDialog *)clientData;
-
-    // CALL CLASS MEMBER FUNCTION
-    md->windowCloseCallback(widget, callData);
-
-    // CALL DESTROY
-    delete md;
-}
-
-
-
-/****************************************************************************
-*  MDIALOG - THE WINDOW CLOSE CALLBACK FOR THE SHELL WIDGET
-****************************************************************************/
-void MDialog::windowCloseCallback(Widget, XtPointer)
-{
-    closeDialog();
-}
-
-
 static char *pixmapPath(const char *pixmapName)
 {
     return GBS_global_string_copy("%s/lib/pixmaps/pgt/%s", GB_getenvARBHOME(), pixmapName);
 }
 
 
+/****************************************************************************
+*  EXTENDED LOAD-PIXMAP FUNCTION
+****************************************************************************/
 Pixmap PGT_LoadPixmap(const char *name, Screen *s, Pixel fg, Pixel bg)
 {
     char *fullname= pixmapPath(name);

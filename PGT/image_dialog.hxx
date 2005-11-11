@@ -9,8 +9,8 @@
 
 // CVS REVISION TAG  --  $Revision$
 
-#ifndef IMAGE_DIALOG_HXX
-#define IMAGE_DIALOG_HXX
+#ifndef IMAGE_DIALOG_H
+#define IMAGE_DIALOG_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -171,4 +171,4 @@ class imageDialog : public MDialog
 };
 
 
-#endif // IMAGE_DIALOG_HXX
+#endif // IMAGE_DIALOG_H

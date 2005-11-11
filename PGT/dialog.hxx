@@ -18,6 +18,7 @@
 #include <Xm/XmAll.h>
 #include "xm_defs.hxx"
 
+
 class MDialog
 {
     public:
@@ -30,7 +31,6 @@ class MDialog
         void hide();
         void closeDialog();
         bool isEnabled();
-        void windowCloseCallback(Widget, XtPointer);
     protected:
         void createShell(const char*);
         void realizeShell();
@@ -45,10 +45,7 @@ class MDialog
 };
 
 
-// STATIC CALLBACK
-void staticWindowCloseCallback(Widget, XtPointer, XtPointer);
-
 // LOAD PIXMAP
 Pixmap PGT_LoadPixmap(const char *name, Screen *s, Pixel fg, Pixel bg);
 
-#endif // MOTIF_DIALOG_HXX
+#endif // MOTIF_DIALOG_H
