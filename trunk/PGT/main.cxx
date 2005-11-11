@@ -31,7 +31,7 @@ class CMain
         //
         bool DB_Connect();
         void DB_Disconnect();
-        bool Run(int, char **);
+        int Run(int, char **);
     protected:
         void MainLoop();
         //
@@ -73,20 +73,28 @@ CMain::~CMain()
 
 /****************************************************************************
 *  MAIN EVENT HANDLER CLASS -- CONNECT ALL DATABASES
+*
+*  RETURNVALUE:
+*       TRUE = AN ARB CONNECTION IS ESTABLISHED
+*       FALSE = AN ARB CONNECTION COULD NOT BE ESTABLISHED
 ****************************************************************************/
 bool CMain::DB_Connect()
 {
-    // CHECK IF THERE ALREADY IS A CONNECTION
-    if(m_connected) return false;
+    // CHECK CONNECTION FLAG (ALREADY CONNECTED?)
+    if(!m_connected)
+    {
+        // TRY TO CONNECT TO THE DEFAULT ARB DATABASE; EXIT IF AN ERROR OCCURS
+        if(ARB_connect(NULL))
+        {
+            // IF A CONNECTON IS ESTABLISHED: ALSO CONNECT TO THE CONFIG DB
+            // (NO 'ACCESS-FAILED' CHECK HERE AT THE MOMENT)
+            CONFIG_connect();
 
-    // TRY TO CONNECT TO THE DEFAULT ARB DATABASE; EXIT IF AN ERROR OCCURS
-    if(!ARB_connect(NULL)) return true;
+            m_connected= true;
+        }
+    }
 
-    // NO CHECK FOR A SUCCESSFULLY OPENED CONFIG DB AT THE MOMENT
-    CONFIG_connect();
-
-    m_connected= true;
-    return false;
+    return m_connected;
 }
 
 
@@ -102,6 +110,7 @@ void CMain::DB_Disconnect()
     CONFIG_disconnect();
     ARB_disconnect();
 
+    // SET CONNECTION FLAG -> FALSE
     m_connected= false;
 }
 
@@ -129,12 +138,20 @@ void CMain::MainLoop()
 
 /****************************************************************************
 *  MAIN EVENT HANDLER CLASS -- INITS THE CLASS AND RUN EVENT LOOP
+*
+*  RETURNVALUE:
+*        0 = EVERYTHING IS FINE
+        -1 = AN ERROR OCCURED (UNABLE TO ESTABLISH DB CONNECTION)
 ****************************************************************************/
-bool CMain::Run(int argc, char **argv)
+int CMain::Run(int argc, char **argv)
 {
     // TRY TO ESTABLISH THE DATABASE CONNECTIONS
     if(!m_connected)
-        if(DB_Connect()) return 1;
+        if(!DB_Connect())
+        {
+            printf("PGT-ERROR: Unable to connect to the database. Make sure ARB is already running.\n");
+            return -1;
+        }
 
     // CALL DEFAULT LANGUAGE PROCEDURE
     XtSetLanguageProc(NULL, NULL, NULL);
@@ -162,7 +179,7 @@ bool CMain::Run(int argc, char **argv)
 
 
 /****************************************************************************
-*  MAIN FUNCTION
+*  MAIN FUNCTION - NO FURTHER COMMENT NECESSARY... ;-)
 ****************************************************************************/
 int main(int argc, char **argv)
 {
@@ -170,14 +187,9 @@ int main(int argc, char **argv)
     CMain *cmain= new CMain();
 
     // RUN PGT MAIN EVENT HANDLER
-    if(cmain->Run(argc, argv))
-    {
-        // EXIT WITH AN ERROR
-        delete cmain;
-        return -1;
-    }
+    int retVal= cmain->Run(argc, argv);
 
-    // NORMAL EXIT
+    // DELETE MAIN HANDLER CLASS AND EXIT WITH RETURN VALUE 'retVal'
     delete cmain;
-    return 0;
+    return retVal;
 }

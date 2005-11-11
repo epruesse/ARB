@@ -57,4 +57,4 @@ void staticInfoCallback(Widget, XtPointer, XtPointer);
 void staticExitCallback(Widget, XtPointer, XtPointer);
 void staticPGTInfoCallback(Widget, XtPointer, XtPointer);
 
-#endif // MAIN_DIALOG_HXX
+#endif // MAIN_DIALOG_H
