@@ -1782,40 +1782,24 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     // ----------------------------------------------------------------------------------------------------
     awmm->button_length(0);
 
-    // Search for the valid alignment and the sequence type. 
     // Enable RNA3D and SECEDIT programs if the database contains valid alignment of rRNA sequences.
-    {
-        extern GBDATA *gb_main;
-        GBDATA *gbAlignment;
-        GBDATA *gbAliType;
-        char *aliType;
-
-        GB_push_transaction(gb_main);  //opening a transaction 
-        if (gbAlignment = GB_search(gb_main,"presets/alignment",GB_FIND))
-            {
-                gbAliType = GB_find(gbAlignment,"alignment_type",0,down_level);
-                aliType   = GB_read_string(gbAliType);
-                
-                if (strcmp(aliType, "rna") == 0)
-                    {
+    switch (ED4_ROOT->alignment_type) {
+        case GB_AT_RNA: {
 #if defined(ARB_OPENGL)
-                        awmm->at("rna3d");
-                        awmm->callback((void(*)(AW_window*, AW_CL))ED4_RNA3D_Start, 0);
-                        awmm->create_button("RNA3D", "#edit/rna3d.xpm");
+            awmm->at("rna3d");
+            awmm->callback((void(*)(AW_window*, AW_CL))ED4_RNA3D_Start, 0);
+            awmm->create_button("RNA3D", "#edit/rna3d.xpm");
 #endif // ARB_OPENGL
-                        awmm->at("secedit");
-                        awmm->callback((void(*)(AW_window*, AW_CL))ED4_SECEDIT_start, 0);
-                        awmm->create_button("SECEDIT", "#edit/edit_sec.bitmap");
-                    }
-                else {
-                    printf("RNA3D and SECEDIT are rRNA specific programs works only for RNA sequences!\n");
-                }
-            }
-        else {
-            printf("Database doesn't contain a VALID alignment!\n");
+            awmm->at("secedit");
+            awmm->callback((void(*)(AW_window*, AW_CL))ED4_SECEDIT_start, 0);
+            awmm->create_button("SECEDIT", "#edit/edit_sec.bitmap");
+            break;
         }
-        GB_pop_transaction(gb_main);
-        free(aliType);
+        case GB_AT_UNKNOWN:
+            e4_assert(0);       // should not occur
+            break;
+        default:
+            break;
     }
 
     awmm->button_length(6);
