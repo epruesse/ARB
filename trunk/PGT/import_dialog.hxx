@@ -78,27 +78,10 @@ class importDialog : public MDialog
         //char **m_ARBheader;
         //
         XSLTimporter *m_xslt;
+        //
+        XmString m_str_int;
+        XmString m_str_float;
+        XmString m_str_string;
 };
 
-
-// CALLBACK WRAPPER FUNCTIONS (STATIC)
-void staticGetFilenameCallback(Widget, XtPointer, XtPointer);
-void staticFileDialogCloseCallback(Widget parent, XtPointer, XtPointer);
-void staticFileDialogCallback(Widget parent, XtPointer, XtPointer call_data);
-void staticARBdestinationCallback(Widget, XtPointer, XtPointer);
-void staticSpeciesChangedCallback(Widget, XtPointer, XtPointer);
-void staticExperimentChangedCallback(Widget, XtPointer, XtPointer);
-void staticProteomeChangedCallback(Widget, XtPointer, XtPointer);
-void staticClearEntriesButtonCallback(Widget, XtPointer, XtPointer);
-void staticOpenFileButtonCallback(Widget, XtPointer, XtPointer);
-void staticColumnDownCallback(Widget, XtPointer, XtPointer);
-void staticColumnUpCallback(Widget, XtPointer, XtPointer);
-void staticHeaderChangedCallback(Widget, XtPointer, XtPointer);
-void staticResetHeaderButtonCallback(Widget, XtPointer, XtPointer);
-void staticImportDataCallback(Widget, XtPointer, XtPointer);
-void staticChangedDatatypeCallback(Widget, XtPointer, XtPointer);
-void staticSampleListEntryCallback(Widget, XtPointer, XtPointer);
-void staticExternHeaderSelectionCallback(Widget, XtPointer, XtPointer);
-void staticExternHeaderChangedCallback(Widget, XtPointer, XtPointer);
-
-#endif // IMPORT_DIALOG_HXX
+#endif // IMPORT_DIALOG_H

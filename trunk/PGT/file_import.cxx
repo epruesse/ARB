@@ -203,12 +203,19 @@ int importCSV(importTable *table, importData *data)
 {
     // FETCH ARB DATABASE HANDLE
     GBDATA *gb_main= get_gbData();
-    GBDATA *gb_prot, *gb_exp, *gb_prot_data, *gb_prot_name;
-    GBDATA *gb_protein, *gb_protein_entry;
+    GBDATA *gb_experiment;
+    GBDATA *gb_proteom, *gb_proteom_data, *gb_proteom_name;
+    GBDATA *gb_protein, *gb_protein_data, *gb_protein_entry;
     char *head, *content;
     int rows= table->rows;
     int columns= table->columns;
 
+//     GBDATA *gb_main= get_gbData();
+//     GBDATA *gb_prot, *gb_exp, *gb_prot_data, *gb_prot_name;
+//     GBDATA *gb_protein, *gb_protein_entry;
+//     char *head, *content;
+//     int rows= table->rows;
+//     int columns= table->columns;
     // CHECK IF AN ARB CONNECTION IS GIVEN
     if(!gb_main)
     {
@@ -217,20 +224,20 @@ int importCSV(importTable *table, importData *data)
     }
 
     // FIND EXPERIMENT ENTRY
-    gb_exp= find_experiment(data->species, data->experiment);
+    gb_experiment= find_experiment(data->species, data->experiment);
 
     // IF SO, EXIT THE FILE IMPORT (EVERYTHING OTHER WOULD LEAD TO INCONSISTENT DATA)
-    if(!gb_exp)
+    if(!gb_experiment)
     {
         printf("CSV import failed - the given species or experiment name could not be resolved.");
         return -2;
     }
 
     // IS THERE ALREADY A PROTEOME WITH THE NEW FILENAME?
-    gb_prot= find_proteome(gb_exp, data->proteome);
+    gb_proteom= find_proteome(gb_experiment, data->proteome);
 
     // IF SO, EXIT THE FILE IMPORT (EVERYTHING OTHER WOULD LEAD TO INCONSISTENT DATA)
-    if(gb_prot)
+    if(gb_proteom)
     {
         printf("CSV import failed - the given proteome name already exists (must be unique).");
         return -3;
@@ -240,23 +247,27 @@ int importCSV(importTable *table, importData *data)
     ARB_begin_transaction();
 
     // ENTER EXPERIMENT DATA ENTRY
-    gb_prot_data= GB_find(gb_exp, "proteome_data", 0, down_level);
+    gb_proteom_data= GB_find(gb_experiment, "proteome_data", 0, down_level);
 
     // IF THERE IS NO PROETOME_DATA ENTRY, CREATE A NEW ONE
-    if(!gb_prot_data) gb_prot_data= GB_create_container(gb_exp, "proteome_data");
+    if(!gb_proteom_data) gb_proteom_data=
+        GB_create_container(gb_experiment, "proteome_data");
 
-    // CREATE NEW PROTEOME DATA ENTRY
-    gb_prot= GB_create_container(gb_prot_data, "proteome");
+    // CREATE NEW PROTEOME ENTRY
+    gb_proteom= GB_create_container(gb_proteom_data, "proteome");
 
     // ADD THE NAME TO THE NEW PROTEOME ENTRY
-    gb_prot_name= GB_create(gb_prot, "name", GB_STRING);
-    GB_write_string(gb_prot_name, data->proteome);
+    gb_proteom_name= GB_create(gb_proteom, "name", GB_STRING);
+    GB_write_string(gb_proteom_name, data->proteome);
+
+    // CREATE PROTEINE DATA ENTRY
+    gb_protein_data= GB_create_container(gb_proteom, "proteine_data");
 
     // IMPORT CELL DATA
     for(int r= 1; r < rows; r++)
     {
         // EACH ROW REPRESENTS A PROTEIN -> NEW CONTAINER
-        gb_protein= GB_create_container(gb_prot, "protein");
+        gb_protein= GB_create_container(gb_protein_data, "protein");
 
         // TRAVERSE COLUMNS FOR EACH ROW AND CREATE ENTRIES
         for(int c= 0; c < columns; c++)

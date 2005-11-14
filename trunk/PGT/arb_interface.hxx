@@ -59,8 +59,9 @@ int CONFIG_disconnect();
 bool ARB_begin_transaction();
 bool ARB_commit_transaction();
 
-void ARB_dump(GBDATA *);
-void ARB_dump_helper(GBDATA *, int);
+// void ARB_dump(GBDATA *);                 // DEPRECATED
+// void ARB_dump_helper(GBDATA *, int);     // DEPRECATED
+
 bool ARB_connected();
 GBDATA *get_gbData();
 //
@@ -71,14 +72,15 @@ GBDATA *find_experiment(char *, char *);
 GBDATA *find_experiment(GBDATA *, char *);
 GBDATA *find_proteome(char *, char *, char *);
 GBDATA *find_proteome(GBDATA *, char *);
+GBDATA *find_proteine_data(char *, char *, char *);
 //
 void getSpeciesList(Widget, bool);
 void getExperimentList(Widget, char *, bool);
 void getProteomeList(Widget, char *, char *, bool);
 void getEntryNamesList(Widget, bool);
-//
-extern void addLogEntry(char *, ...);
-//
+
+// extern void addLogEntry(char *, ...);    // DEPRECATED
+
 bool check_create_AWAR(GBDATA *, const char *AWAR_path, bool);
 void set_AWAR(const char *AWAR_path, char *content);
 char *get_AWAR(const char *AWAR_path);
