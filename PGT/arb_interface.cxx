@@ -190,40 +190,44 @@ bool ARB_connected() { return global_ARB_available; }
 
 /****************************************************************************
 *  SMALL DEBUG FUNCTION -- DUMPS ALL ARB DB ENTRIES -- HELPER
+*
+* DEPRECATED!
 ****************************************************************************/
-void ARB_dump_helper(GBDATA *gb_level, int tabcount)
-{
-    char *key;
-
-    GBDATA *gb_next_level= GB_find(gb_level, 0, 0, down_level);
-
-    while(gb_next_level)
-    {
-        for(int i=0; i < tabcount; i++) printf("  ");
-
-        key= GB_read_key(gb_next_level);
-
-        if(key) printf("[%s]\n", key);
-        else printf("[-]\n");
-
-        ARB_dump_helper(gb_next_level, tabcount + 1);
-
-        gb_next_level= GB_find(gb_next_level, 0, 0, this_level|search_next);
-    }
-}
+// void ARB_dump_helper(GBDATA *gb_level, int tabcount)
+// {
+//     char *key;
+//
+//     GBDATA *gb_next_level= GB_find(gb_level, 0, 0, down_level);
+//
+//     while(gb_next_level)
+//     {
+//         for(int i=0; i < tabcount; i++) printf("  ");
+//
+//         key= GB_read_key(gb_next_level);
+//
+//         if(key) printf("[%s]\n", key);
+//         else printf("[-]\n");
+//
+//         ARB_dump_helper(gb_next_level, tabcount + 1);
+//
+//         gb_next_level= GB_find(gb_next_level, 0, 0, this_level|search_next);
+//     }
+// }
 
 
 /****************************************************************************
 *  SMALL DEBUG FUNCTION -- DUMPS ALL ARB DB ENTRIES -- FUNCTION
+*
+* DEPRECATED!
 ****************************************************************************/
-void ARB_dump(GBDATA *gb_main)
-{
-    ARB_begin_transaction();
-
-    ARB_dump_helper(gb_main, 0);
-
-    ARB_commit_transaction();
-}
+// void ARB_dump(GBDATA *gb_main)
+// {
+//     ARB_begin_transaction();
+//
+//     ARB_dump_helper(gb_main, 0);
+//
+//     ARB_commit_transaction();
+// }
 
 
 /****************************************************************************
@@ -413,6 +417,26 @@ GBDATA *find_proteome(GBDATA *gb_exp_entry, char *name)
     ARB_commit_transaction();
 
     return gb_prot;
+}
+
+
+/****************************************************************************
+*  FIND ARB PROTEINE_DATA ENTRY BY SPECIES, EXPERIMENT AND PROTEOME NAME
+****************************************************************************/
+GBDATA *find_proteine_data(char *sp_name, char *exp_name, char *prot_name)
+{
+    // FETCH PROTEOME DATABASE ENTRY
+    GBDATA *gb_proteome= find_proteome(sp_name, exp_name, prot_name);
+    if(!gb_proteome) return NULL;
+
+    ARB_begin_transaction();
+
+    // SEARCH PROTEINE DATA ENTRY
+    GBDATA *gb_protein_data= GB_find(gb_proteome, "proteine_data", 0, down_level);
+
+    ARB_commit_transaction();
+
+    return gb_protein_data;
 }
 
 

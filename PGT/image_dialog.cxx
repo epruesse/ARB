@@ -932,22 +932,23 @@ void imageDialog::markNoneButtonCallback(Widget, XtPointer)
 ****************************************************************************/
 bool imageDialog::setAllMarker(int state)
 {
-    GBDATA *gb_data, *gb_proteome, *gb_protein;
+    GBDATA *gb_data, *gb_proteine_data, *gb_protein;
     int flag;
 
     // GET MAIN ARB GBDATA
     gb_data= get_gbData();
     if(!gb_data) return false;
 
-    // FIND SELECTED PROTEOME
-    gb_proteome= find_proteome(m_species, m_experiment, m_proteome);
-    if(!gb_proteome) return false;
+    // FIND SELECTED PROTEIN DATA ENTRY
+    gb_proteine_data= find_proteine_data(m_species, m_experiment, m_proteome);
+    if(!gb_proteine_data) return false;
 
     // INIT AN ARB TRANSACTION
     ARB_begin_transaction();
 
     // BROWSE ALL PROTEIN ENTRIES...
-    gb_protein= GB_find(gb_proteome, "protein", 0, down_level);
+    gb_protein= GB_find(gb_proteine_data, "protein", 0, down_level);
+
     while(gb_protein)
     {
         // GET ACTUAL STATE
@@ -1732,7 +1733,8 @@ void imageDialog::markSpotAtPos(int button, int x, int y)
 {
     // LOCAL VARIABLES
     GBDATA *gb_data= NULL;
-    GBDATA *gb_proteome= NULL;
+//     GBDATA *gb_proteome= NULL;
+    GBDATA *gb_proteine_data= NULL;
     GBDATA *gb_protein= NULL;
     GBDATA *gb_nearest_protein= NULL;
     GBDATA *gb_protein_x= NULL;
@@ -1749,15 +1751,15 @@ void imageDialog::markSpotAtPos(int button, int x, int y)
     gb_data= get_gbData();
     if(!gb_data) return;
 
-    // FIND SELECTED PROTEOME
-    gb_proteome= find_proteome(m_species, m_experiment, m_proteome);
-    if(!gb_proteome) return;
+    // FIND SELECTED PROTEOME/PROTEINE_DATA
+    gb_proteine_data= find_proteine_data(m_species, m_experiment, m_proteome);
+    if(!gb_proteine_data) return;
 
     // INIT AN ARB TRANSACTION
     ARB_begin_transaction();
 
     // BROWSE ALL PROTEIN ENTRIES...
-    gb_protein= GB_find(gb_proteome, "protein", 0, down_level);
+    gb_protein= GB_find(gb_proteine_data, "protein", 0, down_level);
     while(gb_protein)
     {
         // FETCH COORDINATE CONTAINER
@@ -2015,7 +2017,7 @@ bool imageDialog::createSpotList()
     // LOCAL SPOT
     SPOT spot;
 
-    GBDATA *gb_data, *gb_proteome, *gb_protein, *gb_protein_id;
+    GBDATA *gb_data, *gb_proteine_data, *gb_protein, *gb_protein_id;
     GBDATA *gb_protein_x, *gb_protein_y, *gb_protein_area;
 
     // CREATE AN ITERATOR
@@ -2036,8 +2038,8 @@ bool imageDialog::createSpotList()
     const char *awar_protein_area=     "area";         // DEBUG - HARDCODED
 
     // FIND SELECTED PROTEOME
-    gb_proteome= find_proteome(m_species, m_experiment, m_proteome);
-    if(!gb_proteome)
+    gb_proteine_data= find_proteine_data(m_species, m_experiment, m_proteome);
+    if(!gb_proteine_data)
     {
         free(keyBuf);
         return false;
@@ -2055,7 +2057,7 @@ bool imageDialog::createSpotList()
     ARB_begin_transaction();
 
     // BROWSE ALL PROTEIN ENTRIES...
-    gb_protein= GB_find(gb_proteome, "protein", 0, down_level);
+    gb_protein= GB_find(gb_proteine_data, "protein", 0, down_level);
     while(gb_protein)
     {
         // PREDEFINE SPOT
@@ -2127,15 +2129,15 @@ bool imageDialog::createSpotList()
 bool imageDialog::createDescriptions()
 {
     char *token= NULL, *entry= NULL, *id= NULL;
-    GBDATA *gb_proteome, *gb_protein, *gb_genome, *gb_gene;
+    GBDATA *gb_proteine_data, *gb_protein, *gb_genome, *gb_gene;
     GBDATA *gb_protein_id, *gb_entry, *gb_gene_id, *gb_protein_x, *gb_protein_y;
     bool first_token;
     char *content;
     float x= 0, y= 0;
 
     // FIND SELECTED PROTEOME AND GENOME
-    gb_proteome= find_proteome(m_species, m_experiment, m_proteome);
-    if(!gb_proteome) return false;
+    gb_proteine_data= find_proteine_data(m_species, m_experiment, m_proteome);
+    if(!gb_proteine_data) return false;
     gb_genome= find_genome(m_species);
     if(!gb_genome) return false;
 
@@ -2174,7 +2176,7 @@ bool imageDialog::createDescriptions()
     }
 
     // BROWSE ALL PROTEIN ENTRIES...
-    gb_protein= GB_find(gb_proteome, "protein", 0, down_level);
+    gb_protein= GB_find(gb_proteine_data, "protein", 0, down_level);
     while(gb_protein)
     {
         // CLEAN BUFFER
@@ -2533,7 +2535,7 @@ static void staticMarkWithInfoButtonCallback(Widget, XtPointer clientData, XtPoi
 void imageDialog::markWithInfo()
 {
     // LOCAL VARIABLES
-    GBDATA *gb_data, *gb_proteome, *gb_protein, *gb_protein_id;
+    GBDATA *gb_data, *gb_proteine_data, *gb_protein, *gb_protein_id;
     char *id= NULL;
 
     // GET MAIN ARB GBDATA
@@ -2541,8 +2543,8 @@ void imageDialog::markWithInfo()
     if(!gb_data) return;
 
     // FIND SELECTED PROTEOME
-    gb_proteome= find_proteome(m_species, m_experiment, m_proteome);
-    if(!gb_proteome) return;
+    gb_proteine_data= find_proteine_data(m_species, m_experiment, m_proteome);
+    if(!gb_proteine_data) return;
 
     // FETCH PROTEIN ID AWAR
     char *awar_protein_id= get_CONFIG(CONFIG_PGT_ID_PROTEIN);
@@ -2551,7 +2553,7 @@ void imageDialog::markWithInfo()
     ARB_begin_transaction();
 
     // BROWSE ALL PROTEIN ENTRIES...
-    gb_protein= GB_find(gb_proteome, "protein", 0, down_level);
+    gb_protein= GB_find(gb_proteine_data, "protein", 0, down_level);
     while(gb_protein)
     {
         gb_protein_id=  GB_find(gb_protein, awar_protein_id, 0, down_level);
