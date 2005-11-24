@@ -2,16 +2,17 @@
 
 if [ -z $1 ] ; then
     echo ''
-    echo 'Usage: arb_valgrind [-m] [-c <callers>] [-f <filter>] [-l [-r]] <arb_program> <arguments>'
+    echo 'Usage: arb_valgrind [-m] [-c <callers>] [-f <filter>] [-l [-r]] [-A] <arb_program> <arguments>'
     echo ''
     echo '    runs valgrind (versions 2.x) on <arb_program> piping results through a filter'
     echo '    so that the output can be used as emacs error messages'
     echo ''
     echo '    -m             use memcheck (default uses addrcheck)'
-    echo '    <callers>      show <callers> stackframes (default: none)'
+    echo '    -c <callers>   show <callers> stackframes (default: none)'
     echo '                   [in fact they are always shown, but not marked as errors]'
-    echo '    <filter>       regexpr to filter the reason (default: all)'
+    echo '    -f <filter>    regexpr to filter the reason (default: all)'
     echo '    -l [-r]        turn on leak-checking (-r for reachable blocks)'
+    echo '    -A             show known boring errors (most Xt/Motif-related)'
     echo ''
     echo ''
     echo 'Usage: arb_valgrind update'
@@ -45,6 +46,7 @@ else
     UPDATE=0
     RUN=0
     CALLERS=0
+    SUPPX='--suppress-common'
     FILTER='.*'
     LEAK_CHECK=''
     TOOL='--tool=addrcheck'
@@ -85,18 +87,23 @@ else
                 shift 1
                 SCAN_ARGS=1
             fi
+            if [ $1 = '-X' ] ; then
+                SUPPX=''
+                shift 1
+                SCAN_ARGS=1
+            fi
         done
     fi
 
     if [ $UPDATE = 1 ] ; then
         echo "Creating list of source files starting in $ARB_VALGRIND_SOURCE_ROOT ..."
         find $ARB_VALGRIND_SOURCE_ROOT \! -path "*\{arch\}*" -a \
-					\( 	-name "*.[ch]" -o \
-						-name "*.[ch]xx" -o \
-						-name "*.[ch]pp" -o \
-						-name "*.cc" -o \
-						-name "*.hh" \) \
-		> $LIST
+                                        \(      -name "*.[ch]" -o \
+                                                -name "*.[ch]xx" -o \
+                                                -name "*.[ch]pp" -o \
+                                                -name "*.cc" -o \
+                                                -name "*.hh" \) \
+                > $LIST
         echo 'done.'
     fi
     if [ $RUN = 1 ] ; then
@@ -104,7 +111,7 @@ else
         echo "CALLERS='$CALLERS'"
         echo "FILTER ='$FILTER'"
         VG_CALLERS=$[$CALLERS+5]
-        valgrind --tool=memcheck -v --error-limit=no --num-callers=$VG_CALLERS $SHOW_REACHABLE $LEAK_CHECK $* 2>&1 >/tmp/arb_valgrind_$USER.stdout | $DIR/valgrind2grep $CALLERS "$FILTER"
+        valgrind --tool=memcheck -v --error-limit=no --num-callers=$VG_CALLERS $SHOW_REACHABLE $LEAK_CHECK $* 2>&1 >/tmp/arb_valgrind_$USER.stdout | $DIR/valgrind2grep $CALLERS "$FILTER" $SUPPX 
         echo 'valgrind done.'
     fi
 fi
