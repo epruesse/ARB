@@ -949,4 +949,13 @@ void checkCreateAWARS()
         set_CONFIG(CONFIG_PGT_INFO_GENE, DEFAULT_INFO_GENE);
 
 //     free(...);
+    free(crosshair_color_CONFIG);
+    free(unmarked_color_CONFIG);
+    free(marked_color_CONFIG);
+    free(selected_color_CONFIG);
+    free(text_color_CONFIG);
+    free(id_protein_CONFIG);
+    free(id_gene_CONFIG);
+    free(info_protein_CONFIG);
+    free(info_gene_color_CONFIG);
 }

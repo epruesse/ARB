@@ -85,6 +85,8 @@ selectionDialog::~selectionDialog()
     if(m_species) free(m_species);
     if(m_experiment) free(m_experiment);
     if(m_proteome) free(m_proteome);
+
+    closeDialog();
 }
 
 
@@ -270,7 +272,7 @@ void staticExitButtonCallback(Widget widget, XtPointer clientData, XtPointer cal
 void selectionDialog::exitButtonCallback(Widget, XtPointer)
 {
     m_opened= false;
-    this->~selectionDialog();
+    this->closeDialog();
 }
 
 
