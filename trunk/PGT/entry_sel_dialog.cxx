@@ -20,8 +20,7 @@ bool entrySelectionDialog::m_opened= false;
 /****************************************************************************
 *  ENTRY SELECTION DIALOG - CONSTRUCTOR
 ****************************************************************************/
-entrySelectionDialog::entrySelectionDialog(Widget p, MDialog *d)
-    : MDialog(p, d)
+entrySelectionDialog::entrySelectionDialog(MDialog *d) : MDialog(d)
 {
     if(m_opened)
     {
@@ -46,7 +45,7 @@ entrySelectionDialog::entrySelectionDialog(Widget p, MDialog *d)
     realizeShell();
 
     // SET WINDOW LABEL
-    setWindowName("PGT - Selection");
+    setDialogTitle("PGT - Selection");
 
     // DESELECT ALL WINDOW BUTTONS EXCEPT CLOSE AND MOVE
     XtVaSetValues(m_shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE, NULL);
@@ -80,7 +79,7 @@ void entrySelectionDialog::createWindow()
     // CREATE A SIMPLE LABEL
     Widget label1= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("Select entry from the list:"),
+        XmNlabelString, CreateDlgString("Select entry from the list:"),
         XmNheight, 30,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_FORM,
@@ -106,7 +105,7 @@ void entrySelectionDialog::createWindow()
     // CREATE AN EXIT BUTTON
     Widget exitButton= XtVaCreateManagedWidget("exitButton",
         xmPushButtonWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("Close"),
+        XmNlabelString, CreateDlgString("Close"),
         XmNwidth, 100,
         XmNheight, 30,
         XmNrightAttachment, XmATTACH_FORM,
@@ -186,6 +185,6 @@ void entrySelectionDialog::setListCallback(XtCallbackProc callback)
 void entrySelectionDialog::triggerListChange()
 {
     if(m_hasListCallback)
-        m_listCallback(m_parent, (XtPointer)m_parent_dialog, (XtPointer)&m_entry);
+        m_listCallback(m_parent_widget, (XtPointer)m_parent_dialog, (XtPointer)&m_entry);
 }
 

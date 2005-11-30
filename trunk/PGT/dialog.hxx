@@ -12,36 +12,40 @@
 #ifndef MOTIF_DIALOG_H
 #define MOTIF_DIALOG_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
 #include <Xm/XmAll.h>
-#include "xm_defs.hxx"
+
+using namespace std;
+#include <vector>
 
 
 class MDialog
 {
     public:
-        MDialog(Widget, MDialog*);
+        MDialog(Widget);
+        MDialog(MDialog *parent= NULL);
         ~MDialog();
-        void setWindowName(const char*);
+        void setDialogTitle(const char*);
+        void setDialogSize(int w, int h);
         Widget shellWidget();
-        Widget parentWidget();
         void show();
         void hide();
         void closeDialog();
-        bool isEnabled();
+        bool isVisible();
+        //
+        void addChild(MDialog *);
+        void removeChild(MDialog *);
+        //
+        XmString CreateDlgString(const char*);
     protected:
         void createShell(const char*);
         void realizeShell();
         //
         MDialog *m_parent_dialog;
-        Widget m_parent;
+        Widget m_parent_widget;
         Widget m_shell;
-        //
-        bool m_modal;
-        bool m_enabled;
-    private:
+        bool m_visible;
+        vector<MDialog*> m_children;
+        vector<XmString> m_strings;
 };
 
 

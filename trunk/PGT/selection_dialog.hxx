@@ -26,7 +26,7 @@
 class selectionDialog : public MDialog
 {
     public:
-        selectionDialog(Widget, MDialog*, int);
+        selectionDialog(MDialog*, int);
         ~selectionDialog();
         //
         void setSpeciesCallback(XtCallbackProc);

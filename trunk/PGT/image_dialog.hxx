@@ -21,8 +21,9 @@
 #include "arb_interface.hxx"
 
 using namespace std;
-#include <list>
+#include <vector>
 #include <map>
+
 struct ltstr
 {
     bool operator()(const char* s1, const char* s2) const
@@ -57,7 +58,8 @@ typedef struct _RGB
 class imageDialog : public MDialog
 {
     public:
-        imageDialog(Widget, MDialog*);
+        imageDialog(MDialog*);
+        ~imageDialog();
         //
         void ARBdataButtonCallback(Widget, XtPointer);
         void TIFFnameButtonCallback(Widget, XtPointer);
@@ -120,7 +122,8 @@ class imageDialog : public MDialog
         Widget m_LockToggleButton;
         Widget m_UpdateGeneButton;
         //
-        list<SPOT> m_spotList;
+        vector<SPOT> m_spotList;
+        // list<SPOT> m_spotList;
         map<char *, char *, ltstr> m_descriptorList;
         map<char *, GBDATA*, ltstr> m_gene_GBDATA_map;
         //

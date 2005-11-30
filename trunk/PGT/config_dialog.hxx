@@ -23,7 +23,7 @@
 class configDialog : public MDialog
 {
     public:
-        configDialog(Widget, MDialog*);
+        configDialog(MDialog*);
         ~configDialog();
         //
         bool setDefault(bool);
@@ -35,7 +35,7 @@ class configDialog : public MDialog
         void updateColors();
         void drawColoredSpot(Widget, int, int, int);
         void setColor(Display *, GC, int, int, int);
-
+        void freeStrings();
     private:
         char *m_crosshairColorString;
         char *m_unmarkedColorString;

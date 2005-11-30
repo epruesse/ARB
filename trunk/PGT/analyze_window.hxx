@@ -23,7 +23,7 @@
 class analyzeWindow : public MDialog
 {
     public:
-        analyzeWindow(Widget, MDialog*);
+        analyzeWindow(MDialog*);
         ~analyzeWindow();
         //
         void resizeGnuplot();

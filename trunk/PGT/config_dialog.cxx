@@ -18,8 +18,8 @@
 /****************************************************************************
 *  CONFIG DIALOG - CONSTRUCTOR
 ****************************************************************************/
-configDialog::configDialog(Widget p, MDialog *d)
-    : MDialog(p, d)
+configDialog::configDialog(MDialog *d)
+    : MDialog(d)
 {
     // PRDEFINE VARIABLES
     m_top= NULL;
@@ -35,6 +35,16 @@ configDialog::configDialog(Widget p, MDialog *d)
     m_textArea= NULL;
     m_ID_ProteinText= NULL;
     m_ID_GeneText= NULL;
+    //
+    m_crosshairColorString= NULL;
+    m_unmarkedColorString= NULL;
+    m_markedColorString= NULL;
+    m_selectedColorString= NULL;
+    m_textColorString= NULL;
+    m_id_protein= NULL;
+    m_id_gene= NULL;
+    m_info_protein= NULL;
+    m_info_gene= NULL;
 
     // CHECK THE PGT AWARS (SET DEFAULT IF NEEDED)
     checkCreateAWARS();
@@ -55,7 +65,7 @@ configDialog::configDialog(Widget p, MDialog *d)
     realizeShell();
 
     // SET WINDOW LABEL
-    setWindowName("PGT - Configuration");
+    setDialogTitle("PGT - Configuration");
 
     // DESELECT ALL WINDOW BUTTONS EXCEPT CLOSE AND MOVE
     XtVaSetValues(m_shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE, NULL);
@@ -70,6 +80,24 @@ configDialog::configDialog(Widget p, MDialog *d)
 ****************************************************************************/
 configDialog::~configDialog()
 {
+    // FREE UNNECESSARY STRINGS
+    freeStrings();
+}
+
+
+/****************************************************************************
+*  CONFIG DIALOG - FREE LOCAL STRINGS (IF NECESSARY)
+****************************************************************************/
+void configDialog::freeStrings()
+{
+    if(m_crosshairColorString) free(m_crosshairColorString);
+    if(m_unmarkedColorString) free(m_unmarkedColorString);
+    if(m_markedColorString) free(m_markedColorString);
+    if(m_textColorString) free(m_textColorString);
+    if(m_id_protein) free(m_id_protein);
+    if(m_id_gene) free(m_id_gene);
+    if(m_info_protein) free(m_info_protein);
+    if(m_info_gene) free(m_info_gene);
 }
 
 
@@ -89,7 +117,7 @@ void configDialog::createWindow()
     // LABEL WIDGET
     Widget label_01= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("VISUALIZATION COLORS (#RGB)"),
+        XmNlabelString, CreateDlgString("VISUALIZATION COLORS (#RGB)"),
         XmNheight, 30,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_FORM,
@@ -100,7 +128,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (COLOR ROW 01 -- CROSSHAIR COLOR)
     Widget label_02= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("Crosshair color:"),
+        XmNlabelString, CreateDlgString("Crosshair color:"),
         XmNheight, 30,
         XmNwidth, 150,
         XmNalignment, XmALIGNMENT_BEGINNING,
@@ -136,7 +164,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (COLOR ROW 02 -- UNMARKED  COLOR)
     Widget label_03= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("Unmarked protein color:"),
+        XmNlabelString, CreateDlgString("Unmarked protein color:"),
         XmNheight, 30,
         XmNwidth, 150,
         XmNalignment, XmALIGNMENT_BEGINNING,
@@ -172,7 +200,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (COLOR ROW 03 -- MARKED COLOR)
     Widget label_04= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("Marked protein color:"),
+        XmNlabelString, CreateDlgString("Marked protein color:"),
         XmNheight, 30,
         XmNwidth, 150,
         XmNalignment, XmALIGNMENT_BEGINNING,
@@ -208,7 +236,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (COLOR ROW 04 -- PROTEIN COLOR)
     Widget label_05= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("Selected protein color:"),
+        XmNlabelString, CreateDlgString("Selected protein color:"),
         XmNheight, 30,
         XmNwidth, 150,
         XmNalignment, XmALIGNMENT_BEGINNING,
@@ -244,7 +272,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (COLOR ROW 05 -- TEXT COLOR)
     Widget label_0a= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("Text color:"),
+        XmNlabelString, CreateDlgString("Text color:"),
         XmNheight, 30,
         XmNwidth, 150,
         XmNalignment, XmALIGNMENT_BEGINNING,
@@ -290,7 +318,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (PROTEIN ID TEXT)
     Widget label_06= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("PROTEIN IDENTIFIER"),
+        XmNlabelString, CreateDlgString("PROTEIN IDENTIFIER"),
         XmNheight, 30,
         XmNwidth, 150,
         XmNalignment, XmALIGNMENT_CENTER,
@@ -302,7 +330,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (GENE ID TEXT)
     Widget label_07= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("GENE IDENTIFIER"),
+        XmNlabelString, CreateDlgString("GENE IDENTIFIER"),
         XmNheight, 30,
         XmNwidth, 150,
         XmNalignment, XmALIGNMENT_CENTER,
@@ -350,7 +378,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (PROTEIN INFOS)
     Widget label_08= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("DISPLAYED PROTEIN INFO"),
+        XmNlabelString, CreateDlgString("DISPLAYED PROTEIN INFO"),
         XmNheight, 30,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -374,7 +402,7 @@ void configDialog::createWindow()
     // LABEL WIDGET (GENE INFOS)
     Widget label_09= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("DISPLAYED GENE INFO"),
+        XmNlabelString, CreateDlgString("DISPLAYED GENE INFO"),
         XmNheight, 30,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -397,7 +425,7 @@ void configDialog::createWindow()
 
     m_cancelButton= XtVaCreateManagedWidget("button",
         xmPushButtonWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("Cancel"),
+        XmNlabelString, CreateDlgString("Cancel"),
         XmNwidth, 100,
         XmNheight, 30,
         XmNleftAttachment, XmATTACH_FORM,
@@ -407,7 +435,7 @@ void configDialog::createWindow()
 
     m_okButton= XtVaCreateManagedWidget("button",
         xmPushButtonWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("Ok"),
+        XmNlabelString, CreateDlgString("Ok"),
         XmNwidth, 100,
         XmNheight, 30,
         XmNrightAttachment, XmATTACH_FORM,
@@ -417,7 +445,7 @@ void configDialog::createWindow()
 
     m_defaultButton= XtVaCreateManagedWidget("button",
         xmPushButtonWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("Default"),
+        XmNlabelString, CreateDlgString("Default"),
         XmNwidth, 100,
         XmNheight, 30,
         XmNleftAttachment, XmATTACH_WIDGET,
@@ -539,11 +567,17 @@ void configDialog::drawColoredSpot(Widget area, int r , int g , int b)
     XDrawArc(display, win, gc, 4, 4, 20, 20, 0, 360*64);
 
     XFlush(display);
+
+    // FREE OUR GC AS WE DONT NEED IT ANYMORE
+    XFreeGC(display, gc);
 }
 
 
 void configDialog::getCONFIGS()
 {
+    // FREE OLD STRING ENTRIES BEFORE ADDING NEW ONES
+    freeStrings();
+
     // FETCH AWARS
     m_crosshairColorString= get_CONFIG(CONFIG_PGT_COLOR_CROSSHAIR);
     m_unmarkedColorString=  get_CONFIG(CONFIG_PGT_COLOR_UNMARKED);
@@ -659,38 +693,125 @@ void configDialog::textChangedCallback(Widget widget)
 {
     int r, g, b; // DUMMY RGB VALUES
 
-    // GET TEXT FIELD ENTRIES
-    char *crosshairText= XmTextGetString(m_crosshairText);
-    char *unmarkedText= XmTextGetString(m_unmarkedText);
-    char *markedText= XmTextGetString(m_markedText);
-    char *selectedText= XmTextGetString(m_selectedText);
-    char *textText= XmTextGetString(m_textText);
+    // CROSSHAIR TEXT-WIDGET CHANGED?
+    if(widget == m_crosshairText)
+    {
+        char *crosshairColorString= XmTextGetString(m_crosshairText);
 
-    char *id_proteinText= XmTextGetString(m_ID_ProteinText);
-    char *id_geneText= XmTextGetString(m_ID_GeneText);
-    char *info_proteinText= XmTextGetString(m_info_ProteinText);
-    char *info_geneText= XmTextGetString(m_info_GeneText);
+        if(hex2rgb(&r, &g, &b, crosshairColorString))
+        {
+            if(m_crosshairColorString) free(m_crosshairColorString);
+            m_crosshairColorString= crosshairColorString;
+        }
+        else free(crosshairColorString);
+    }
+    // UNMARKED TEXT-WIDGET CHANGED?
+    else if(widget == m_unmarkedText)
+    {
+        char *unmarkedColorString= XmTextGetString(m_unmarkedText);
 
-    // UPDATE RELATED WIDGET
-    if((widget == m_crosshairText)
-        && (hex2rgb(&r, &g, &b, crosshairText))) m_crosshairColorString= crosshairText;
+        if(hex2rgb(&r, &g, &b, unmarkedColorString))
+        {
+            if(m_unmarkedColorString) free(m_unmarkedColorString);
+            m_unmarkedColorString= unmarkedColorString;
+        }
+        else free(unmarkedColorString);
+    }
+    // MARKED TEXT-WIDGET CHANGED?
+    else if(widget == m_markedText)
+    {
+        char *markedColorString= XmTextGetString(m_markedText);
 
-    else if((widget == m_unmarkedText)
-        && (hex2rgb(&r, &g, &b, unmarkedText))) m_unmarkedColorString= unmarkedText;
+        if(hex2rgb(&r, &g, &b, markedColorString))
+        {
+            if(m_markedColorString) free(m_markedColorString);
+            m_markedColorString= markedColorString;
+        }
+        else free(markedColorString);
+    }
+    // SELECTED TEXT-WIDGET CHANGED?
+    else if(widget == m_selectedText)
+    {
+        char *selectedColorString= XmTextGetString(m_selectedText);
 
-    else if((widget == m_markedText)
-        && (hex2rgb(&r, &g, &b, markedText))) m_markedColorString= markedText;
+        if(hex2rgb(&r, &g, &b, selectedColorString))
+        {
+            if(m_selectedColorString) free(m_selectedColorString);
+            m_selectedColorString= selectedColorString;
+        }
+        else free(selectedColorString);
+    }
+    // INFOTEXT TEXT-WIDGET CHANGED?
+    else if(widget == m_textText)
+    {
+        char *textColorString= XmTextGetString(m_textText);
 
-    else if((widget == m_selectedText)
-        && (hex2rgb(&r, &g, &b, selectedText))) m_selectedColorString= selectedText;
+        if(hex2rgb(&r, &g, &b, textColorString))
+        {
+            if(m_textColorString) free(m_textColorString);
+            m_textColorString= textColorString;
+        }
+        else free(textColorString);
+    }
+    // PROTEIN-ID TEXT-WIDGET CHANGED?
+    else if(widget == m_ID_ProteinText)
+    {
+        if(m_id_protein) free(m_id_protein);
+        m_id_protein= XmTextGetString(m_ID_ProteinText);
+    }
+    // GENE-ID TEXT-WIDGET CHANGED?
+    else if(widget == m_ID_GeneText)
+    {
+        if(m_id_gene) free(m_id_gene);
+        m_id_gene= XmTextGetString(m_ID_GeneText);
+    }
+    // PROTEIN-TEXT TEXT-WIDGET CHANGED?
+    else if(widget == m_info_ProteinText)
+    {
+        if(m_info_protein) free(m_info_protein);
+        m_info_protein= XmTextGetString(m_info_ProteinText);
+    }
+    // GENE-TEXT TEXT-WIDGET CHANGED?
+    else if(widget == m_info_GeneText)
+    {
+        if(m_info_gene) free(m_info_gene);
+        m_info_gene= XmTextGetString(m_info_GeneText);
+    }
 
-    else if((widget == m_textText)
-             && (hex2rgb(&r, &g, &b, textText))) m_textColorString= textText;
 
-    else if(widget == m_ID_ProteinText) m_id_protein= id_proteinText;
-    else if(widget == m_ID_GeneText) m_id_gene= id_geneText;
-    else if(widget == m_info_ProteinText) m_info_protein= info_proteinText;
-    else if(widget == m_info_GeneText) m_info_gene= info_geneText;
+
+//     // GET TEXT FIELD ENTRIES
+//     char *crosshairText= XmTextGetString(m_crosshairText);
+//     char *unmarkedText= XmTextGetString(m_unmarkedText);
+//     char *markedText= XmTextGetString(m_markedText);
+//     char *selectedText= XmTextGetString(m_selectedText);
+//     char *textText= XmTextGetString(m_textText);
+//
+//     char *id_proteinText= XmTextGetString(m_ID_ProteinText);
+//     char *id_geneText= XmTextGetString(m_ID_GeneText);
+//     char *info_proteinText= XmTextGetString(m_info_ProteinText);
+//     char *info_geneText= XmTextGetString(m_info_GeneText);
+//
+//     // UPDATE RELATED WIDGET
+//     if((widget == m_crosshairText)
+//         && (hex2rgb(&r, &g, &b, crosshairText))) m_crosshairColorString= crosshairText;
+//
+//     else if((widget == m_unmarkedText)
+//         && (hex2rgb(&r, &g, &b, unmarkedText))) m_unmarkedColorString= unmarkedText;
+//
+//     else if((widget == m_markedText)
+//         && (hex2rgb(&r, &g, &b, markedText))) m_markedColorString= markedText;
+//
+//     else if((widget == m_selectedText)
+//         && (hex2rgb(&r, &g, &b, selectedText))) m_selectedColorString= selectedText;
+//
+//     else if((widget == m_textText)
+//              && (hex2rgb(&r, &g, &b, textText))) m_textColorString= textText;
+//
+//     else if(widget == m_ID_ProteinText) m_id_protein= id_proteinText;
+//     else if(widget == m_ID_GeneText) m_id_gene= id_geneText;
+//     else if(widget == m_info_ProteinText) m_info_protein= info_proteinText;
+//     else if(widget == m_info_GeneText) m_info_gene= info_geneText;
 
     // UPDATE THE COLORS
     updateColors();
