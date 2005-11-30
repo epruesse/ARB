@@ -404,8 +404,7 @@ void mainDialog::openImageCallback(Widget, XtPointer)
 *  !!! CAUTION: THIS IS A WRAPPER FUNCTION !!!
 ****************************************************************************/
 void staticOpenAnalyzeCallback(Widget widget, XtPointer clientData, XtPointer callData)
-{// Department of Microbiology (Technical University Munich)
-
+{
     // GET POINTER OF THE ORIGINAL CALLER
     mainDialog *mD= (mainDialog *)clientData;
 
@@ -490,8 +489,6 @@ void mainDialog::exitCallback(Widget widget, XtPointer)
     int answer= OkCancelDialog(widget, "Exit PGT", "Do you really want to exit?");
     if (answer == 1)
         closeDialog();
-
-//     closeDialog();
 }
 
 

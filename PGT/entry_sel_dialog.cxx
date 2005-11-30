@@ -137,7 +137,7 @@ void staticEntrySelExitButtonCallback(Widget widget, XtPointer clientData, XtPoi
 void entrySelectionDialog::exitButtonCallback(Widget, XtPointer)
 {
     m_opened= false;
-    this->~entrySelectionDialog();
+    this->closeDialog();
 }
 
 

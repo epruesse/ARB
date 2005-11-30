@@ -108,7 +108,8 @@ void MDialog::closeDialog()
     // KILL ALL CHILDREN
     while(m_children.size())
     {
-        for(vector<MDialog*>::iterator i = m_children.begin(); i != m_children.end(); i++)
+        // for(vector<MDialog*>::iterator i = m_children.begin(); i != m_children.end(); i++)
+        for(vector<MDialog*>::iterator i = m_children.begin(); i != m_children.end(); ++i)
         {
             delete *i;
             m_children.erase(i);
@@ -123,8 +124,13 @@ void MDialog::closeDialog()
     m_visible= false;
 
     // FREE ALL STRINGS PREVIOUSLY USED BY THE DIALOG
-    for(vector<XmString>::iterator s = m_strings.begin(); s != m_strings.end(); s++)
+    // for(vector<XmString>::iterator s = m_strings.begin(); s != m_strings.end(); s++)
+    for(vector<XmString>::iterator s = m_strings.begin(); s != m_strings.end(); ++s)
+    {
+        // printf("FREEING STRING \"%s\"\n", XmCvtXmStringToCT((XmString)*s)); // DEBUG
+
         XmStringFree((XmString)*s);
+    }
     m_strings.clear();
 }
 
