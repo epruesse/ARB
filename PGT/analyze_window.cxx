@@ -16,8 +16,8 @@
 /****************************************************************************
 *  ANALYZE WINDOW - CONSTRUCTOR
 ****************************************************************************/
-analyzeWindow::analyzeWindow(Widget p, MDialog *d)
-    : MDialog(p, d)
+analyzeWindow::analyzeWindow(MDialog *d)
+    : MDialog(d)
 {
     // CREATE WINDOW SHELL
     createShell("");
@@ -35,7 +35,7 @@ analyzeWindow::analyzeWindow(Widget p, MDialog *d)
     realizeShell();
 
     // SET WINDOW LABEL
-    setWindowName("PGT - Data Analyzer");
+    setDialogTitle("PGT - Data Analyzer");
 
     // DEBUG...
 
@@ -136,7 +136,7 @@ void analyzeWindow::createTopToolbar()
     // DEBUG LABEL (PLACE HOLDER)
     XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_topToolbar,
-        XmNlabelString, PGT_XmStringCreateLocalized("TOP"),
+        XmNlabelString, CreateDlgString("TOP"),
         NULL);
 }
 
@@ -149,7 +149,7 @@ void analyzeWindow::createLeftToolbar()
     // DEBUG LABEL (PLACE HOLDER)
     XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_leftToolbar,
-        XmNlabelString, PGT_XmStringCreateLocalized("LEFT"),
+        XmNlabelString, CreateDlgString("LEFT"),
         NULL);
 }
 

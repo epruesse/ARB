@@ -22,7 +22,7 @@
 class helpDialog : public MDialog
 {
     public:
-        helpDialog(Widget, MDialog*);
+        helpDialog(MDialog*);
         ~helpDialog();
         //
 //         void setListCallback(XtCallbackProc);

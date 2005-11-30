@@ -20,8 +20,8 @@ bool selectionDialog::m_opened= false;
 /****************************************************************************
 *  SELECTION DIALOG - CONSTRUCTOR
 ****************************************************************************/
-selectionDialog::selectionDialog(Widget p, MDialog *d, int type)
-    : MDialog(p, d)
+selectionDialog::selectionDialog(MDialog *d, int type)
+    : MDialog(d)
 {
     if(m_opened)
     {
@@ -59,14 +59,14 @@ selectionDialog::selectionDialog(Widget p, MDialog *d, int type)
     switch(m_type)
     {
         case SELECTION_DIALOG_READ:
-            setWindowName("PGT - Select Source");
+            setDialogTitle("PGT - Select Source");
             break;
         case SELECTION_DIALOG_WRITE:
-            setWindowName("PGT - New Destination");
+            setDialogTitle("PGT - New Destination");
             break;
         case SELECTION_DIALOG_RW:
         default:
-            setWindowName("PGT - Selection");
+            setDialogTitle("PGT - Selection");
             break;
     }
 
@@ -104,7 +104,7 @@ void selectionDialog::createWindow()
     // CREATE A SIMPLE LABEL
     Widget label1= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("Select Species:"),
+        XmNlabelString, CreateDlgString("Select Species:"),
         XmNheight, 30,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_FORM,
@@ -131,7 +131,7 @@ void selectionDialog::createWindow()
     // CREATE A SIMPLE LABEL
     Widget label2= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("Select Experiment:"),
+        XmNlabelString, CreateDlgString("Select Experiment:"),
         // XmNheight, 30,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -159,7 +159,7 @@ void selectionDialog::createWindow()
     // CREATE A SIMPLE LABEL
     Widget label3= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("Select Proteome:"),
+        XmNlabelString, CreateDlgString("Select Proteome:"),
         // XmNheight, 30,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -187,7 +187,7 @@ void selectionDialog::createWindow()
     // CREATE A SIMPLE LABEL
     Widget label01= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("Enter a new proteome name here:"),
+        XmNlabelString, CreateDlgString("Enter a new proteome name here:"),
         XmNheight, 30,
         // XmNalignment, XmALIGNMENT_BEGINNING,
         XmNalignment, XmALIGNMENT_CENTER,
@@ -221,13 +221,13 @@ void selectionDialog::createWindow()
 
         // AND CHANGE LABEL TEXT
         XtVaSetValues(label01,
-            XmNlabelString, PGT_XmStringCreateLocalized("---"),
+            XmNlabelString, CreateDlgString("---"),
             NULL);
     }
 
     m_warning_label= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized(""),
+        XmNlabelString, CreateDlgString(""),
         // XmNheight, 30,
         XmNalignment, XmALIGNMENT_CENTER,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -238,7 +238,7 @@ void selectionDialog::createWindow()
 
     Widget exitButton= XtVaCreateManagedWidget("exitButton",
         xmPushButtonWidgetClass, m_top,
-        XmNlabelString, PGT_XmStringCreateLocalized("Close"),
+        XmNlabelString, CreateDlgString("Close"),
         XmNwidth, 100,
         XmNheight, 30,
         XmNrightAttachment, XmATTACH_FORM,
@@ -411,19 +411,19 @@ void selectionDialog::proteomeTextCallback(Widget, XtPointer)
     if(strlen(m_proteome) < 3)
     {
         XtVaSetValues(m_warning_label,
-            XmNlabelString, PGT_XmStringCreateLocalized("WARNING - NAME IS TOO SHORT"),
+            XmNlabelString, CreateDlgString("WARNING - NAME IS TOO SHORT"),
             NULL);
     }
     else if(strcmp(m_proteome, proteome))
     {
         XtVaSetValues(m_warning_label,
-            XmNlabelString, PGT_XmStringCreateLocalized("WARNING - CONTAINS ILLEGAL CHARACTER(S)"),
+            XmNlabelString, CreateDlgString("WARNING - CONTAINS ILLEGAL CHARACTER(S)"),
             NULL);
     }
     else
     {
         XtVaSetValues(m_warning_label,
-            XmNlabelString, PGT_XmStringCreateLocalized(""),
+            XmNlabelString, CreateDlgString(""),
             NULL);
     }
 
@@ -451,7 +451,7 @@ void selectionDialog::setSpeciesCallback(XtCallbackProc callback)
 void selectionDialog::triggerSpeciesChange()
 {
     if(m_hasSpeciesCallback)
-        m_speciesCallback(m_parent, (XtPointer)m_parent_dialog, (XtPointer)&m_species);
+        m_speciesCallback(m_parent_widget, (XtPointer)m_parent_dialog, (XtPointer)&m_species);
 }
 
 
@@ -471,7 +471,7 @@ void selectionDialog::setExperimentCallback(XtCallbackProc callback)
 void selectionDialog::triggerExperimentChange()
 {
     if(m_hasExperimentCallback)
-        m_experimentCallback(m_parent, (XtPointer)m_parent_dialog, (XtPointer)&m_experiment);
+        m_experimentCallback(m_parent_widget, (XtPointer)m_parent_dialog, (XtPointer)&m_experiment);
 }
 
 
@@ -497,5 +497,5 @@ void selectionDialog::triggerProteomeChange()
     m_proteome= GBS_string_2_key(proteome);
 
     if(m_hasProteomeCallback)
-        m_proteomeCallback(m_parent, (XtPointer)m_parent_dialog, (XtPointer)&m_proteome);
+        m_proteomeCallback(m_parent_widget, (XtPointer)m_parent_dialog, (XtPointer)&m_proteome);
 }

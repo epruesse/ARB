@@ -40,8 +40,8 @@ void staticExternHeaderChangedCallback(Widget, XtPointer, XtPointer);
 /****************************************************************************
 *  MAIN DIALOG - CONSTRUCTOR
 ****************************************************************************/
-importDialog::importDialog(Widget p, MDialog *d)
-    : MDialog(p, d)
+importDialog::importDialog(MDialog *d)
+    : MDialog(d)
 {
     // PRESET CLASS VARIABLES
     m_species= get_species_AWAR();
@@ -56,9 +56,9 @@ importDialog::importDialog(Widget p, MDialog *d)
     m_hasTableData = false;
 
     // CREATE TYPE STRINGS
-    m_str_int=    PGT_XmStringCreateLocalized("INT");
-    m_str_float=  PGT_XmStringCreateLocalized("FLOAT");
-    m_str_string= PGT_XmStringCreateLocalized("STRING");
+    m_str_int=    CreateDlgString("INT");
+    m_str_float=  CreateDlgString("FLOAT");
+    m_str_string= CreateDlgString("STRING");
 
     // SHOW DIALOG
     createShell("");
@@ -75,7 +75,7 @@ importDialog::importDialog(Widget p, MDialog *d)
     realizeShell();
 
     // SET WINDOW LABEL
-    setWindowName("PGT - Proteome Data Importer");
+    setDialogTitle("PGT - Proteome Data Importer");
 }
 
 
@@ -90,11 +90,6 @@ importDialog::~importDialog()
     if(m_proteome) free(m_proteome);
     if(m_table) free(m_table);
     if(m_xslt) free(m_xslt);
-
-    // FREE TYPE STRINGS
-    XmStringFree(m_str_int);
-    XmStringFree(m_str_float);
-    XmStringFree(m_str_string);
 }
 
 
@@ -137,12 +132,12 @@ void importDialog::createWindow()
 void importDialog::createSelectionArea()
 {
     // CREATE STRINGS
-    XmString str_01= PGT_XmStringCreateLocalized("...");
-    XmString str_02= PGT_XmStringCreateLocalized("Source File:");
-    XmString str_03= PGT_XmStringCreateLocalized("ARB Destination:");
-    XmString str_04= PGT_XmStringCreateLocalized("Import Filter:");
-    XmString str_05= PGT_XmStringCreateLocalized("Clear Entries");
-    XmString str_06= PGT_XmStringCreateLocalized("Open File");
+    XmString str_01= CreateDlgString("...");
+    XmString str_02= CreateDlgString("Source File:");
+    XmString str_03= CreateDlgString("ARB Destination:");
+    XmString str_04= CreateDlgString("Import Filter:");
+    XmString str_05= CreateDlgString("Clear Entries");
+    XmString str_06= CreateDlgString("Open File");
 
     // CREATE LOCAL MANAGER WIDGET
     Widget manager= XtVaCreateManagedWidget("mainarea",
@@ -277,14 +272,6 @@ void importDialog::createSelectionArea()
             XmNheight, 30,
             NULL);
     XtAddCallback(openButtonWidget, XmNactivateCallback, staticOpenFileButtonCallback, this);
-
-    // FREE CREATED STRINGS
-    XmStringFree(str_01);
-    XmStringFree(str_02);
-    XmStringFree(str_03);
-    XmStringFree(str_04);
-    XmStringFree(str_05);
-    XmStringFree(str_06);
 }
 
 
@@ -294,14 +281,14 @@ void importDialog::createSelectionArea()
 void importDialog::createImportArea()
 {
     // CREATE STRINGS
-    XmString str_01= PGT_XmStringCreateLocalized("Select Data Column:");
-    XmString str_02= PGT_XmStringCreateLocalized("New ARB Container Type:");
-    XmString str_03= PGT_XmStringCreateLocalized("Original Column Header:");
-    XmString str_04= PGT_XmStringCreateLocalized("New ARB Container Name:");
-    XmString str_05= PGT_XmStringCreateLocalized("ARB entry IDs");
-    XmString str_06= PGT_XmStringCreateLocalized("Import -> ARB");
-    XmString str_07= PGT_XmStringCreateLocalized("New Proteome Content:");
-    XmString str_08= PGT_XmStringCreateLocalized("Reset Names");
+    XmString str_01= CreateDlgString("Select Data Column:");
+    XmString str_02= CreateDlgString("New ARB Container Type:");
+    XmString str_03= CreateDlgString("Original Column Header:");
+    XmString str_04= CreateDlgString("New ARB Container Name:");
+    XmString str_05= CreateDlgString("ARB entry IDs");
+    XmString str_06= CreateDlgString("Import -> ARB");
+    XmString str_07= CreateDlgString("New Proteome Content:");
+    XmString str_08= CreateDlgString("Reset Names");
 
     // CREATE LOCAL MANAGER WIDGET
     Widget manager= XtVaCreateManagedWidget("importarea",
@@ -492,7 +479,7 @@ void importDialog::createImportArea()
 //     // SAMPLE SCALE (FOR SELECTING THE SAMPLE ENTRY
 //     m_sampleScale= XtVaCreateManagedWidget("sampleScale",
 //         xmScaleWidgetClass, m_top,
-//         XmNtitleString,   PGT_XmStringCreateLocalized("Entry"),
+//         XmNtitleString,   CreateDlgString("Entry"),
 //         XmNorientation,    XmHORIZONTAL,
 //         XmNmaximum,       10,
 //         XmNdecimalPoints, 0,
@@ -500,15 +487,6 @@ void importDialog::createImportArea()
 //         // XmNwidth,         200,
 //         // XmNheight,        100,
 //         NULL);
-
-    // FREE CREATED STRINGS
-    XmStringFree(str_01);
-    XmStringFree(str_02);
-    XmStringFree(str_03);
-    XmStringFree(str_04);
-    XmStringFree(str_05);
-    XmStringFree(str_06);
-    XmStringFree(str_07);
 }
 
 
@@ -561,9 +539,8 @@ void importDialog::getFilenameCallback(Widget, XtPointer)
         XtAddCallback(m_fileDialog, XmNnoMatchCallback, staticFileDialogCloseCallback, this);
         XtSetSensitive(XmFileSelectionBoxGetChild(m_fileDialog, XmDIALOG_HELP_BUTTON), False);
 
-        XmString str_open= PGT_XmStringCreateLocalized("Open proteome data file...");
+        XmString str_open= CreateDlgString("Open proteome data file...");
         XtVaSetValues(m_fileDialog, XmNdialogTitle, str_open, NULL);
-        XmStringFree(str_open);
 
         m_hasFileDialog= true;
     }
@@ -652,7 +629,7 @@ void staticARBdestinationCallback(Widget widget, XtPointer clientData, XtPointer
 ****************************************************************************/
 void importDialog::ARBdestinationCallback(Widget, XtPointer)
 {
-    selectionDialog *sD= new selectionDialog(m_shell, this,SELECTION_DIALOG_WRITE);
+    selectionDialog *sD= new selectionDialog(this, SELECTION_DIALOG_WRITE);
 
     // SET SPECIES CALLBACK
     sD->setSpeciesCallback(staticSpeciesChangedCallback);
@@ -769,9 +746,8 @@ void importDialog::fillImportTypeCombobox()
     int pos= 0;
 
     // ADD CSV ENTRY TO THE COMBOBOX
-    XmString str_csv= PGT_XmStringCreateLocalized("CSV");
+    XmString str_csv= CreateDlgString("CSV");
     XmComboBoxAddItem(m_fileTypeWidget, str_csv, pos, true); pos++;
-    XmStringFree(str_csv);
 
     // ADD XSLT IMPORT FILTER (FOR XML FILES)
     m_xslt= findXSLTFiles(const_cast<char*>("xslt"));
@@ -780,9 +756,8 @@ void importDialog::fillImportTypeCombobox()
     {
         for(int i= 0; i < m_xslt->number; i++)
         {
-            XmString str_import= PGT_XmStringCreateLocalized(m_xslt->importer[i]);
+            XmString str_import= CreateDlgString(m_xslt->importer[i]);
             XmComboBoxAddItem(m_fileTypeWidget, str_import, pos, true); pos++;
-            XmStringFree(str_import);
         }
     }
 
@@ -975,7 +950,7 @@ void importDialog::updateSampleList()
     // ADD TITLE LINE TO SAMPLE LIST
     char *title= const_cast<char*>("                  CONTAINER NAME | # | CONTENT...");
     // char *title= "CONTAINER NAME                   | # | CONTENT...";
-    XmListAddItem(m_sampleList, PGT_XmStringCreateLocalized(title), 0);
+    XmListAddItem(m_sampleList, CreateDlgString(title), 0);
 
     //FETCH ALL COLUMN ENTRIES
     for(int i= 0; i < columns; i++)
@@ -1004,7 +979,7 @@ void importDialog::updateSampleList()
         sprintf(buf2, "%32s | %s | %s", headerBuffer, type, buf1);
 
         // ADD STRING TO SAMPLE LIST
-        XmListAddItem(m_sampleList, PGT_XmStringCreateLocalized(buf2), 0);
+        XmListAddItem(m_sampleList, CreateDlgString(buf2), 0);
     }
 
     // SELECT THE ACTIVE ENTRY
@@ -1327,7 +1302,7 @@ void importDialog::externHeaderSelectionCallback(Widget, XtPointer)
 //     if(!esD)
 //     {
         // CREATE NEW SELECTION DIALOG
-        esD= new entrySelectionDialog(m_shell, this);
+        esD= new entrySelectionDialog(this);
 
         // ADD ENTRY CHANGED CALLBACK
         esD->setListCallback(staticExternHeaderChangedCallback);

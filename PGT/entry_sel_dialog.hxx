@@ -22,7 +22,7 @@
 class entrySelectionDialog : public MDialog
 {
     public:
-        entrySelectionDialog(Widget, MDialog*);
+        entrySelectionDialog(MDialog*);
         ~entrySelectionDialog();
         //
         void setListCallback(XtCallbackProc);

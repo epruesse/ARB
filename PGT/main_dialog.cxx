@@ -25,7 +25,7 @@
 *  MAIN DIALOG - CONSTRUCTOR
 ****************************************************************************/
 mainDialog::mainDialog(Widget p)
-    : MDialog(p, NULL)
+    : MDialog(p)
 {
     // SHOW DIALOG
     createShell("");
@@ -41,7 +41,7 @@ mainDialog::mainDialog(Widget p)
     // REALIZE WINDOW
     realizeShell();
 
-    setWindowName("PGT - Main Selector");
+    setDialogTitle("PGT - Main Selector");
 
     // UPDATE THE LIST ENTRIES
     updateListEntries();
@@ -51,7 +51,7 @@ mainDialog::mainDialog(Widget p)
     add_mainDialog_callback(AWAR_EXPERIMENT_NAME, static_main_ARB_callback, this);
     add_mainDialog_callback(AWAR_PROTEOM_NAME,    static_main_ARB_callback, this);
     add_mainDialog_callback(AWAR_PROTEIN_NAME,    static_main_ARB_callback, this);
-    
+
     // add_species_callback(static_main_ARB_callback, this);
     // add_experiment_callback(static_main_ARB_callback, this);
     // add_proteom_callback(static_main_ARB_callback, this);
@@ -79,6 +79,7 @@ void mainDialog::createWindow()
     createMainArea();
 
 }
+
 
 /****************************************************************************
 *  MAIN DIALOG - CREATE TOOLBAR
@@ -179,10 +180,10 @@ void mainDialog::createToolbar()
 void mainDialog::createMainArea()
 {
     // CREATE STRINGS
-    XmString str_01= PGT_XmStringCreateLocalized("Selected Species");
-    XmString str_02= PGT_XmStringCreateLocalized("Selected Experiment");
-    XmString str_03= PGT_XmStringCreateLocalized("Selected Proteome");
-    XmString str_04= PGT_XmStringCreateLocalized("Selected Protein");
+    XmString str_01= CreateDlgString("Selected Species");
+    XmString str_02= CreateDlgString("Selected Experiment");
+    XmString str_03= CreateDlgString("Selected Proteome");
+    XmString str_04= CreateDlgString("Selected Protein");
 
     // CREATE TOP LEVEL WIDGET
     m_selection_area= XtVaCreateManagedWidget("top",
@@ -279,12 +280,6 @@ void mainDialog::createMainArea()
         XmNleftAttachment, XmATTACH_FORM,
         XmNrightAttachment, XmATTACH_FORM,
         NULL);
-
-    // FREE CREATED STRINGS
-    XmStringFree(str_01);
-    XmStringFree(str_02);
-    XmStringFree(str_03);
-    XmStringFree(str_04);
 }
 
 
@@ -300,10 +295,26 @@ void mainDialog::updateListEntries()
     char *protein_AWAR=    get_protein_AWAR();
 
     // SET DEFAULT CONTENT IF AWAR IS EMPTY
-    if(strlen(species_AWAR) == 0) species_AWAR= strdup("no selected species");
-    if(strlen(experiment_AWAR) == 0) experiment_AWAR= strdup("no selected experiment");
-    if(strlen(proteome_AWAR) == 0) proteome_AWAR= strdup("no selected proteome");
-    if(strlen(protein_AWAR) == 0) protein_AWAR= strdup("no selected protein");
+    if(!species_AWAR || strlen(species_AWAR) == 0)
+    {
+        if(species_AWAR) free(species_AWAR);
+        species_AWAR= strdup("no selected species");
+    }
+    if(!experiment_AWAR || strlen(experiment_AWAR) == 0)
+    {
+        if(experiment_AWAR) free(experiment_AWAR);
+        experiment_AWAR= strdup("no selected experiment");
+    }
+    if(!proteome_AWAR || strlen(proteome_AWAR) == 0)
+    {
+        if(proteome_AWAR) free(proteome_AWAR);
+        proteome_AWAR= strdup("no selected proteome");
+    }
+    if(!protein_AWAR || strlen(protein_AWAR) == 0)
+    {
+        if(protein_AWAR) free(protein_AWAR);
+        protein_AWAR= strdup("no selected protein");
+    }
 
     // SET TEXT FIELD ENTRIES
     XtVaSetValues(m_speciesText, XmNvalue, species_AWAR, NULL);
@@ -361,7 +372,7 @@ void staticOpenImportCallback(Widget widget, XtPointer clientData, XtPointer cal
 void mainDialog::openImportCallback(Widget, XtPointer)
 {
     // OPEN A NEW IMPORT DIALOG, GIVE OUT SHELL WIDGET AS PARENT WIDGET
-    m_importDialog= new importDialog(m_shell, this);
+    m_importDialog= new importDialog(this);
 }
 
 
@@ -384,7 +395,7 @@ void staticOpenImageCallback(Widget widget, XtPointer clientData, XtPointer call
 ****************************************************************************/
 void mainDialog::openImageCallback(Widget, XtPointer)
 {
-    new imageDialog(m_shell, this);
+    new imageDialog(this);
 }
 
 
@@ -431,7 +442,7 @@ void staticConfigCallback(Widget widget, XtPointer clientData, XtPointer callDat
 ****************************************************************************/
 void mainDialog::configCallback(Widget, XtPointer)
 {
-    new configDialog(this->m_shell, this);
+    new configDialog(this);
 }
 
 

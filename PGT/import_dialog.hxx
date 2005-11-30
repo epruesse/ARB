@@ -23,7 +23,7 @@
 class importDialog : public MDialog
 {
     public:
-        importDialog(Widget, MDialog*);
+        importDialog(MDialog*);
         ~importDialog();
         void getFilenameCallback(Widget, XtPointer);
         void fileDialogCallback(Widget, XtPointer);

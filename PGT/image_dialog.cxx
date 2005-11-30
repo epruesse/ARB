@@ -61,36 +61,11 @@ static void staticGenes2SpotsButtonCallback(Widget, XtPointer, XtPointer);
 static void staticHelpDialogCallback(Widget, XtPointer, XtPointer);
 static void staticMarkWithInfoButtonCallback(Widget, XtPointer, XtPointer);
 
-// #warning hi kai, obige prototypen waren im header, werden aber nur lokal verwendet
-// --> Stimmt, danke für den Hinweis. :-)
-
-// prinzipielle Anmerkung: Du definierst erst den Prototyp, dann folgt der Aufruf und am Schluss
-// kommt die Funktiondefinition.
-// Besser ist folgende Definitionsreihenfolge : Erst die Funktion dann der Aufruf. Prototyp ist dadurch ueberfluessig!
-// Beispiel :
-
-// static int complicated();
-
-// static int simple() {
-//     return 2;
-// }
-
-// void aufrufe() {
-//     simple();
-//     complicated();
-// }
-
-// static int complicated() {
-//     return 7;
-// }
-
-
 
 /****************************************************************************
  *  IMAGE DIALOG - CONSTRUCTOR
  ****************************************************************************/
-imageDialog::imageDialog(Widget p, MDialog *d)
-    : MDialog(p, d)
+imageDialog::imageDialog(MDialog *d) : MDialog(d)
 {
     // PREDEFINE VARIABLES
     m_hasFileDialog= false;
@@ -148,7 +123,7 @@ imageDialog::imageDialog(Widget p, MDialog *d)
     realizeShell();
 
     // SET WINDOW LABEL
-    setWindowName("PGT - Image View");
+    setDialogTitle("PGT - Image View");
 
     // UPDATE ARB SELECTION ENTRIES
     updateARBText();
@@ -170,6 +145,50 @@ imageDialog::imageDialog(Widget p, MDialog *d)
     // add_protein_callback(static_ARB_protein_callback, this);
     // add_gene_callback(static_ARB_gene_callback, this);
     // add_config_callback(static_PGT_config_callback, this);
+}
+
+
+/****************************************************************************
+ *  IMAGE DIALOG - DESTRUCTOR
+ ****************************************************************************/
+imageDialog::~imageDialog()
+{
+    // FREE CLASS MEMBER STRINGS
+    if(m_species) free(m_species);
+    if(m_experiment) free(m_experiment);
+    if(m_proteome) free(m_proteome);
+
+    // FREE m_descriptorList
+    map<char*, char*, ltstr>::iterator descr_it;
+
+    for(descr_it= m_descriptorList.begin();
+        descr_it != m_descriptorList.end(); descr_it++)
+    {
+        free(((*descr_it).first));
+        free(((*descr_it).second));
+    }
+    m_descriptorList.clear();
+
+    // FREE m_gene_GBDATA_map
+    map<char *, GBDATA*, ltstr>::iterator gb_it;
+
+    for(gb_it= m_gene_GBDATA_map.begin();
+        gb_it != m_gene_GBDATA_map.end(); gb_it++)
+    {
+        free(((*gb_it).first));
+//         free(((*gb_it).second));
+    }
+    m_gene_GBDATA_map.clear();
+
+    // FREE m_spotList
+    vector<SPOT>::iterator spot_it;
+
+    for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); spot_it++)
+    {
+        if((*spot_it).text) free((*spot_it).text);
+        if((*spot_it).id) free((*spot_it).id);
+    }
+    m_spotList.clear();
 }
 
 
@@ -228,7 +247,7 @@ void imageDialog::createWindow()
         XmNheight, 20,
         XmNborderWidth, 1,
         XtVaTypedArg, XmNborderColor, XmRString, "gray", strlen("gray"),
-        XmNlabelString, PGT_XmStringCreateLocalized("Ok..."),
+        XmNlabelString, CreateDlgString("Ok..."),
         XmNalignment, XmALIGNMENT_BEGINNING,
         NULL);
 
@@ -274,7 +293,7 @@ void imageDialog::createTopToolbar()
     // CREATE PROTEOME DATA LABEL
     Widget label01= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_topToolbar,
-        XmNlabelString, PGT_XmStringCreateLocalized("Proteome Data:"),
+        XmNlabelString, CreateDlgString("Proteome Data:"),
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNheight, 30,
         XmNwidth, 100,
@@ -285,7 +304,7 @@ void imageDialog::createTopToolbar()
     // CREATE TIFF IMAGE LABEL
     Widget label02= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_topToolbar,
-        XmNlabelString, PGT_XmStringCreateLocalized("TIFF Image:"),
+        XmNlabelString, CreateDlgString("TIFF Image:"),
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNheight, 30,
         XmNwidth, 100,
@@ -296,7 +315,7 @@ void imageDialog::createTopToolbar()
 
     Widget ARBdataButton= XtVaCreateManagedWidget("ARBdataButton",
         xmPushButtonWidgetClass, m_topToolbar,
-        XmNlabelString, PGT_XmStringCreateLocalized("..."),
+        XmNlabelString, CreateDlgString("..."),
         XmNwidth, 40,
         XmNheight, 30,
         XmNtopAttachment, XmATTACH_FORM,
@@ -308,7 +327,7 @@ void imageDialog::createTopToolbar()
 
     Widget TIFFnameButton= XtVaCreateManagedWidget("TIFFnameButton",
         xmPushButtonWidgetClass, m_topToolbar,
-        XmNlabelString, PGT_XmStringCreateLocalized("..."),
+        XmNlabelString, CreateDlgString("..."),
         XmNwidth, 40,
         XmNheight, 30,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -364,7 +383,7 @@ void imageDialog::createTopToolbar()
 
     Widget label03= XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_topToolbar,
-        XmNlabelString, PGT_XmStringCreateLocalized("Mouse Buttons:"),
+        XmNlabelString, CreateDlgString("Mouse Buttons:"),
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNheight, 30,
         XmNwidth, 100,
@@ -375,7 +394,7 @@ void imageDialog::createTopToolbar()
 
     XtVaCreateManagedWidget("label",
         xmLabelWidgetClass, m_topToolbar,
-        XmNlabelString, PGT_XmStringCreateLocalized("left button = select protein  --  right button = (un)mark protein"),
+        XmNlabelString, CreateDlgString("left button = select protein  --  right button = (un)mark protein"),
         XmNalignment, XmALIGNMENT_BEGINNING,
         XmNheight, 30,
         XmNtopAttachment, XmATTACH_WIDGET,
@@ -546,7 +565,7 @@ static void staticARBdataButtonCallback(Widget widget, XtPointer clientData, XtP
 ****************************************************************************/
 void imageDialog::ARBdataButtonCallback(Widget, XtPointer)
 {
-    selectionDialog *sD= new selectionDialog(m_shell, this, SELECTION_DIALOG_READ);
+    selectionDialog *sD= new selectionDialog(this, SELECTION_DIALOG_READ);
 
     // SET SPECIES, EXPERIMENT AND PROTEOME CALLBACK
     sD->setSpeciesCallback(staticImageSpeciesCallback);
@@ -641,7 +660,7 @@ void imageDialog::TIFFnameButtonCallback(Widget, XtPointer)
         XtAddCallback(m_fileDialog, XmNcancelCallback, staticImageFileDialogCloseCallback, this);
         XtAddCallback(m_fileDialog, XmNnoMatchCallback, staticImageFileDialogCloseCallback, this);
         XtSetSensitive(XmFileSelectionBoxGetChild(m_fileDialog, XmDIALOG_HELP_BUTTON), False);
-        XtVaSetValues(m_fileDialog, XmNdialogTitle, PGT_XmStringCreateLocalized("Open proteome data file..."), NULL);
+        XtVaSetValues(m_fileDialog, XmNdialogTitle, CreateDlgString("Open proteome data file..."), NULL);
         m_hasFileDialog= true;
     }
 
@@ -1234,7 +1253,7 @@ int imageDialog::updateImage()
 
     // SET WINDOW TITLE
     sprintf(buf, "PGT - Image View (%s)", file);
-    setWindowName(buf);
+    setDialogTitle(buf);
 
     // FREE BUFFER
     free(buf);
@@ -1274,7 +1293,7 @@ int imageDialog::getSpotMaxDimensions()
     }
 
     // CREATE AN ITERATOR
-    list<SPOT>::iterator spot_it;
+    vector<SPOT>::iterator spot_it;
 
     float max_fx= 0, max_fy= 0;
 
@@ -1345,8 +1364,10 @@ int imageDialog::fillBlankImage()
     // TIFF DATA AVAILABLE
     m_hasImagedata= true;
 
-    return 0;
+    // FREE OUR GC AS WE DONT NEED IT ANYMORE
+    XFreeGC(display, gc);
 
+    return 0;
 }
 
 
@@ -1379,6 +1400,9 @@ void imageDialog::imageRedrawCallback()
 
     // COPY PIXMAP TO DRAWING AREA
     XCopyArea(display, m_pixmap, window, gc, 0, 0, m_width, m_height, 0, 0);
+
+    // FREE OUR GC AS WE DONT NEED IT ANYMORE
+    XFreeGC(display, gc);
 }
 
 
@@ -1442,7 +1466,7 @@ void imageDialog::setText(const char *text, int x, int y)
     // SET FONT (A SMALL DIRTY WORKAROUND)
     XSetFont (display, gc, XLoadFont(display, "fixed"));
 
-    XmStringDraw(display, m_pixmap, fontlist, PGT_XmStringCreateLocalized(text),
+    XmStringDraw(display, m_pixmap, fontlist, CreateDlgString(text),
         gc, x, y, m_width, XmALIGNMENT_BEGINNING,
         XmSTRING_DIRECTION_L_TO_R, NULL);
 }
@@ -1596,7 +1620,7 @@ void imageDialog::drawSpots()
     m_changeInProgress= true;
 
     // CREATE AN ITERATOR
-    list<SPOT>::iterator spot_it;
+    vector<SPOT>::iterator spot_it;
 
     // DO WE HAVE SPOT ENTRIES?
     if(m_spotList.size() == 0) return;
@@ -1873,7 +1897,10 @@ static void static_ARB_gene_callback(GBDATA *, imageDialog *iD, GB_CB_TYPE)
 ****************************************************************************/
 void imageDialog::ARB_gene_callback()
 {
-    char *awar_selected_gene, *config_gene_id, *name, *id;
+    char *awar_selected_gene=NULL;
+    char *config_gene_id=NULL;
+    char *name= NULL;
+    char *id= NULL;
     GBDATA *gb_genome, *gb_gene, *gb_gene_name, *gb_gene_id;
 
     if(!m_lockVisualization && !m_changeInProgress)
@@ -1920,6 +1947,10 @@ void imageDialog::ARB_gene_callback()
         // UPDATE IMAGE
         createSpotList();
         imageRedraw();
+
+        // FREE OBSOLETE STRINGS
+        if(awar_selected_gene) free(awar_selected_gene);
+        if(config_gene_id) free(config_gene_id);
     }
 
     // IF ENABLED COPY IDENTIFIER TO SELECTED GENE
@@ -2021,7 +2052,7 @@ bool imageDialog::createSpotList()
     GBDATA *gb_protein_x, *gb_protein_y, *gb_protein_area;
 
     // CREATE AN ITERATOR
-    list<SPOT>::iterator spot_it;
+    vector<SPOT>::iterator spot_it;
 
     // GET MAIN ARB GBDATA
     gb_data= get_gbData();
@@ -2042,15 +2073,17 @@ bool imageDialog::createSpotList()
     if(!gb_proteine_data)
     {
         free(keyBuf);
+        if(awar_selected_protein) free(awar_selected_protein);
+        if(awar_protein_id) free(awar_protein_id);
         return false;
     }
 
     // FLUSH THE COMPLETE LIST
-//     for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); ++spot_it)
-//     {
-//         if((*spot_it).text) free((*spot_it).text);
-//         if((*spot_it).id) free((*spot_it).id);
-//     }
+    for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); spot_it++)
+    {
+        if((*spot_it).text) free((*spot_it).text);
+        if((*spot_it).id) free((*spot_it).id);
+    }
     m_spotList.clear();
 
     // INIT AN ARB TRANSACTION
@@ -2118,6 +2151,8 @@ bool imageDialog::createSpotList()
 
     // FREE KEY BUFFER
     free(keyBuf);
+    if(awar_selected_protein) free(awar_selected_protein);
+    if(awar_protein_id) free(awar_protein_id);
 
     return true;
 }
@@ -2156,8 +2191,29 @@ bool imageDialog::createDescriptions()
     char *buf= (char *)malloc(1024 * sizeof(char));
     if(!descriptor || !buf) return false;
 
+    // FREE OLD DESCRIPTOR LIST
+    map<char*, char*, ltstr>::iterator descr_it;
+
+    for(descr_it= m_descriptorList.begin();
+        descr_it != m_descriptorList.end(); descr_it++)
+    {
+        free(((*descr_it).first));
+        free(((*descr_it).second));
+    }
+    m_descriptorList.clear();
+
     // INIT AN ARB TRANSACTION
     ARB_begin_transaction();
+
+    // FREE m_gene_GBDATA_map
+    map<char *, GBDATA*, ltstr>::iterator gb_it;
+
+    for(gb_it= m_gene_GBDATA_map.begin();
+        gb_it != m_gene_GBDATA_map.end(); gb_it++)
+    {
+        free(((*gb_it).first));
+    }
+    m_gene_GBDATA_map.clear();
 
     // CREATE GENE IDENTIFIER AND GBDATA* HASH (AVOIDS RECURSIONS)
     gb_gene= GB_find(gb_genome, "gene", 0, down_level);
@@ -2221,13 +2277,16 @@ bool imageDialog::createDescriptions()
                         // APPEND ENTRY TO DESCRIPTOR
                         strncat(descriptor, entry, 1023 - strlen(descriptor));
                     }
+
+                    // FREE OBSOLETE STRING MEM
+                    if(entry) free(entry);
                 }
                 // FETCH NEXT TOKEN
                 token= strtok(NULL, ",; ");
             }
 
             // FETCH GENE
-            if(id)
+            if(id && (strlen(id) > 0))
                 gb_gene= m_gene_GBDATA_map[id];
             else
                 gb_gene= NULL;
@@ -2256,6 +2315,9 @@ bool imageDialog::createDescriptions()
                             // APPEND ENTRY TO DESCRIPTOR
                             strncat(descriptor, entry, 1023 - strlen(descriptor));
                         }
+
+                        // WE DO NOT NEED THE ENTRY ANYMORE...
+                        free(entry);
                     }
                     // FETCH NEXT TOKEN
                     token= strtok(NULL, ",; ");
@@ -2267,11 +2329,23 @@ bool imageDialog::createDescriptions()
         genGeneKey(buf, id, x, y);
 
         // APPEND ENTRY TO LIST
-        char *d_append= (char *)malloc((strlen(descriptor) + 1) * sizeof(char));
-        char *d_id= (char *)malloc((strlen(buf) + 1) * sizeof(char));
-        strcpy(d_append, descriptor);
-        strcpy(d_id, buf);
+        char *d_append= strdup(descriptor);
+        char *d_id= strdup(buf);
+
+        // SUBOPTIMAL !?!? -- DEBUG
+        descr_it= m_descriptorList.find(d_id);
+        if(descr_it != m_descriptorList.end())
+        {
+            free(((*descr_it).first));
+            free(((*descr_it).second));
+            m_descriptorList.erase(descr_it);
+        }
+
         m_descriptorList[d_id] = d_append;
+
+        // FREE OBSOLETE STRINGS
+        // free(d_id);
+        // if(gb_protein_id) free(id); // FREED SHOULD BE DONE SOMEWHERE ELSE???
 
         // FETCH NEXT PROTEIN FROM LIST
         gb_protein= GB_find(gb_protein, "protein", 0, this_level|search_next);
@@ -2334,7 +2408,7 @@ bool imageDialog::updateSelectedGene()
 ****************************************************************************/
 bool imageDialog::mark_Spots2Genes()
 {
-    list<SPOT>::iterator spot_it;
+    vector<SPOT>::iterator spot_it;
     GBDATA *gb_genome, *gb_gene, *gb_gene_id;
     char *content;
 
@@ -2382,7 +2456,7 @@ bool imageDialog::mark_Spots2Genes()
 ****************************************************************************/
 bool imageDialog::mark_Genes2Spots()
 {
-    list<SPOT>::iterator spot_it;
+    vector<SPOT>::iterator spot_it;
     GBDATA *gb_genome, *gb_gene, *gb_gene_id;
     char *content;
     int flag;
@@ -2470,9 +2544,7 @@ static void staticGenes2SpotsButtonCallback(Widget, XtPointer clientData, XtPoin
 ****************************************************************************/
 static void staticHelpDialogCallback(Widget, XtPointer clientData, XtPointer)
 {
-    Widget shell= ((imageDialog*)clientData)->shellWidget();
-
-    new helpDialog(shell, (imageDialog*)clientData);
+    new helpDialog((imageDialog*)clientData);
 }
 
 
@@ -2508,7 +2580,7 @@ void imageDialog::updateStatusLabel()
     if(m_markedOnlyFlag) strcat(buf, " [MARKED ONLY]");
 
     // WRITE STRING TO STATUS LABEL
-    XtVaSetValues(m_statusLabel, XmNlabelString, PGT_XmStringCreateLocalized(buf), NULL);
+    XtVaSetValues(m_statusLabel, XmNlabelString, CreateDlgString(buf), NULL);
 
     // FREE BUFFER
     free(buf);

@@ -346,6 +346,7 @@ GBDATA *find_experiment(GBDATA *gb_sp_entry, char *name)
             if(gb_exp_name)
             {
                 exp_name= GB_read_string(gb_exp_name);
+
                 if(!strcmp(exp_name, name))
                 {
                     found= true;
@@ -354,6 +355,8 @@ GBDATA *find_experiment(GBDATA *gb_sp_entry, char *name)
                 {
                     gb_exp= GB_find(gb_exp, "experiment", 0, this_level|search_next);
                 }
+
+                free(exp_name);
             }
         }
     }
