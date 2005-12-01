@@ -69,6 +69,8 @@ int main(int argc, char **argv)
     }else{
         out = argv[ci++];
     }
+
+    printf("Reading database...\n");
     gb_main = GBT_open(in,rtype,0);
     if (!gb_main){
         GB_print_error();
@@ -81,10 +83,13 @@ int main(int argc, char **argv)
             ali_name = GBT_get_default_alignment(gb_main);
         }
         if (!strlen(opt_tree)) opt_tree = 0;
+        printf("Optimizing database...\n");
         error = GBT_compress_sequence_tree2(gb_main,opt_tree,ali_name);
         if (error) {
+            printf("Error during optimize: ");
             GB_print_error();
         }
+        free(ali_name);
     }
     GB_set_next_main_idx(nidx);
 
@@ -92,6 +97,7 @@ int main(int argc, char **argv)
         GB_ralfs_test(gb_main);
     }
 
+    printf("Saving database...\n");
     error = GB_save(gb_main,out,wtype);
     if (error){
         fprintf(stderr, "arb_2_bin: %s\n", error);
