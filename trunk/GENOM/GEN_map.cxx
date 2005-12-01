@@ -1313,6 +1313,14 @@ AW_window *GEN_create_awar_debug_window(AW_root *aw_root) {
 }
 #endif // DEBUG
 
+#ifdef DEVEL_KAI
+GB_ERROR run_PGToolkit_call(void *, GBDATA *)
+{
+    system("export LD_LIBRARY_PATH=$ARBHOME/lib:$LD_LIBRARY_PATH && arb_pgt&");
+    return 0;
+}
+#endif
+
 // --------------------------
 //      user mask section
 // --------------------------
@@ -1452,6 +1460,12 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE/*, A
             EXP_create_experiments_submenu(awm, true); // Experiments
             awm->insert_separator();
         }
+
+#ifdef DEVEL_KAI
+        AWMIMT("run_pgt", "PG-Toolkit", "", 0, AWM_ALL, (AW_CB)run_PGToolkit_call, (AW_CL)gb_main, 0);
+        awm->insert_separator();
+#endif
+
         AWMIMT( "gene_info",    "Gene information", "", "gene_info.hlp", AWM_ALL,GEN_popup_gene_window, (AW_CL)awm, 0);
 //         AWMIMT( "gene_info",    "Gene information", "", "gene_info.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_window, 0 );
         AWMIMT( "gene_search",  "Search and Query", "", "gene_search.hlp", AWM_ALL,AW_POPUP,   (AW_CL)GEN_create_gene_query_window, 0 );
