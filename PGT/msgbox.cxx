@@ -9,74 +9,15 @@
 
 // CVS REVISION TAG  --  $Revision$
 
+#include <Xm/XmAll.h>
 #include "msgbox.hxx"
 #include "xm_defs.hxx"
+#include "dialog.hxx"
 
 
-void ShowMessageBox(Widget widget, const char *title, const char *text)
-{
-    Widget msgBox;
-    Arg args[3];
-
-    // CREATE X11 TITLE- AND TEXT-STRING
-    XmString xm_text=  PGT_XmStringCreateLocalized(text);
-    XmString xm_title= PGT_XmStringCreateLocalized(title);
-
-    XtSetArg(args[0], XmNmessageString, xm_text);
-    msgBox= XmCreateMessageDialog(widget , const_cast<char*>("messageBox"), args, 1);
-
-    XtUnmanageChild(XmMessageBoxGetChild(msgBox, XmDIALOG_HELP_BUTTON));
-    XtUnmanageChild(XmMessageBoxGetChild(msgBox, XmDIALOG_CANCEL_BUTTON));
-
-    XtVaSetValues(msgBox, XmNdialogTitle, xm_title, NULL);
-
-    XtManageChild(msgBox);
-
-    // FREE STRINGS
-    XmStringFree(xm_text);
-    XmStringFree(xm_title);
-}
-
-
-int OkCancelDialog(Widget w, const char *title, const char *text)
-{
-    int answer= 0;
-    Widget dialog;
-    Arg args[3];
-    int n= 0;
-    XtAppContext context;
-
-    // CREATE X11 TITLE- AND TEXT-STRING
-    XmString xm_text=  XmStringCreateLtoR(const_cast<char*>(text), XmSTRING_DEFAULT_CHARSET);
-    XmString xm_title= PGT_XmStringCreateLocalized(title);
-
-    XtSetArg(args[n], XmNmessageString, xm_text); n++;
-    XtSetArg(args[n], XmNdialogStyle, XmDIALOG_APPLICATION_MODAL); n++;
-
-    dialog = XmCreateQuestionDialog(XtParent(w), const_cast<char*>(text), args, n);
-    XtUnmanageChild(XmMessageBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
-    XtVaSetValues(dialog, XmNdialogTitle, xm_title, NULL);
-
-    XtAddCallback(dialog, XmNokCallback, OkCancelResponse, &answer);
-    XtAddCallback(dialog, XmNcancelCallback, OkCancelResponse, &answer);
-    XtManageChild(dialog);
-
-    context= XtWidgetToApplicationContext (w);
-    while (answer == 0 || XtAppPending(context))
-    {
-        XtAppProcessEvent (context, XtIMAll);
-    }
-
-    // FREE STRINGS
-    XmStringFree(xm_text);
-    XmStringFree(xm_title);
-
-    XtDestroyWidget(dialog);
-
-    return answer;
-}
-
-
+/****************************************************************************
+*  CALLBACK FUNCTION - CREATS A RETURNVALUE ACCORDING TO THE SELECTED BUTTON
+****************************************************************************/
 void OkCancelResponse(Widget, XtPointer client, XtPointer call)
 {
     int *answer= (int *)client;
@@ -92,4 +33,99 @@ void OkCancelResponse(Widget, XtPointer client, XtPointer call)
         default:
             return;
     }
+}
+
+
+/****************************************************************************
+*  A SIMPLE MESSAGEBOX, ONLY WITH AN OK-BUTTON
+****************************************************************************/
+void ShowMessageBox(Widget w, const char *title, const char *text, const char *xpm_path)
+{
+    // PREDEFINED VALUES...
+    Widget msgBox;
+    Arg args[8];
+    int n= 0;
+
+    // CREATE X11 TITLE- AND TEXT-STRING
+    XmString xm_text=  PGT_XmStringCreateLocalized(text);
+    XmString xm_title= PGT_XmStringCreateLocalized(title);
+
+    // ADD A PIXMAP IF AVAILABLE
+    if(xpm_path)
+    {
+        Pixel fg, bg;
+        XtVaGetValues(w, XmNforeground, &fg, XmNbackground, &bg, NULL);
+        Pixmap xpm= PGT_LoadPixmap("msg.xpm", XtScreen(w), fg, bg);
+        XtSetArg(args[n], XmNsymbolPixmap, xpm); n++;
+    }
+
+    // SET MESSAGE TEXT
+    XtSetArg(args[n], XmNmessageString, xm_text); n++;
+    msgBox= XmCreateMessageDialog(w, const_cast<char*>("messageBox"), args, n);
+
+    XtUnmanageChild(XmMessageBoxGetChild(msgBox, XmDIALOG_HELP_BUTTON));
+    XtUnmanageChild(XmMessageBoxGetChild(msgBox, XmDIALOG_CANCEL_BUTTON));
+
+    XtVaSetValues(msgBox, XmNdialogTitle, xm_title, NULL);
+
+    XtManageChild(msgBox);
+
+    // FREE STRINGS
+    XmStringFree(xm_text);
+    XmStringFree(xm_title);
+}
+
+
+/****************************************************************************
+*  A MESSAGEBOX WITH AN OK- AND CANCEL-BUTTON
+****************************************************************************/
+int OkCancelDialog(Widget w, const char *title, const char *text, const char *xpm_path)
+{
+    // PREDEFINED VALUES...
+    int answer= 0;
+    Widget dialog;
+    Arg args[8];
+    int n= 0;
+    XtAppContext context;
+
+    // CREATE X11 TITLE- AND TEXT-STRING
+    XmString xm_text=  XmStringCreateLtoR(const_cast<char*>(text), XmSTRING_DEFAULT_CHARSET);
+    XmString xm_title= PGT_XmStringCreateLocalized(title);
+
+    // ADD A PIXMAP IF AVAILABLE
+    if(xpm_path)
+    {
+        Pixel fg, bg;
+        XtVaGetValues(w, XmNforeground, &fg, XmNbackground, &bg, NULL);
+        Pixmap xpm= PGT_LoadPixmap("msg.xpm", XtScreen(w), fg, bg);
+        XtSetArg(args[n], XmNsymbolPixmap, xpm); n++;
+    }
+
+    // SET MESSAGE TEXT AND DIALOG STYLE (MODAL)
+    XtSetArg(args[n], XmNmessageString, xm_text); n++;
+    XtSetArg(args[n], XmNdialogStyle, XmDIALOG_APPLICATION_MODAL); n++;
+
+    // CREATE QUESTION DIALOG
+    dialog = XmCreateQuestionDialog(XtParent(w), const_cast<char*>(text), args, n);
+    XtUnmanageChild(XmMessageBoxGetChild(dialog, XmDIALOG_HELP_BUTTON));
+    XtVaSetValues(dialog, XmNdialogTitle, xm_title, NULL);
+
+    // ADD CALLBACK FUNCTION
+    XtAddCallback(dialog, XmNokCallback, OkCancelResponse, &answer);
+    XtAddCallback(dialog, XmNcancelCallback, OkCancelResponse, &answer);
+    XtManageChild(dialog);
+
+    context= XtWidgetToApplicationContext(w);
+    while (answer == 0 || XtAppPending(context))
+    {
+        XtAppProcessEvent (context, XtIMAll);
+    }
+
+    // FREE STRINGS
+    XmStringFree(xm_text);
+    XmStringFree(xm_title);
+
+    XtDestroyWidget(dialog);
+
+    return answer;
 }

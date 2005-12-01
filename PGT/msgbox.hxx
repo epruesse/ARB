@@ -12,15 +12,11 @@
 #ifndef MSGBOX_H
 #define MSGBOX_H
 
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <Xm/XmAll.h>
+#include <Xm/Xm.h>
 
 
-void ShowMessageBox(Widget, const char *, const char *);
-int OkCancelDialog(Widget, const char *, const char *);
-void OkCancelResponse(Widget, XtPointer, XtPointer);
+void ShowMessageBox(Widget, const char*, const char*, const char *xpm= NULL);
+int OkCancelDialog(Widget, const char*, const char*, const char *xpm= NULL);
 
 
 #endif // MSGBOX_H
