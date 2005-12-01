@@ -184,7 +184,7 @@ imageDialog::~imageDialog()
 
     for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); spot_it++)
     {
-        if((*spot_it).text) free((*spot_it).text);
+//         if((*spot_it).text) free((*spot_it).text); // DONT! POINTER TO DESCR.LIST!!!
         if((*spot_it).id) free((*spot_it).id);
     }
     m_spotList.clear();
@@ -2075,8 +2075,8 @@ bool imageDialog::createSpotList()
     vector<SPOT>::iterator spot_it;
     for(spot_it= m_spotList.begin(); spot_it != m_spotList.end(); ++spot_it)
     {
-//         if((*spot_it).text) free((*spot_it).text);
-//         if((*spot_it).id) free((*spot_it).id);
+//         if((*spot_it).text) free((*spot_it).text); // DONT! ALSO POINTER TO DESCR.LIST!!!
+        if((*spot_it).id) free((*spot_it).id);
     }
     m_spotList.clear();
 
@@ -2185,14 +2185,14 @@ bool imageDialog::createDescriptions()
     char *buf= (char *)malloc(1024 * sizeof(char));
     if(!descriptor || !buf) return false;
 
-    // FREE OLD DESCRIPTOR LIST
+//     // FREE OLD DESCRIPTOR LIST
     map<char*, char*, ltstr>::iterator descr_it;
 
     for(descr_it= m_descriptorList.begin();
         descr_it != m_descriptorList.end(); descr_it++)
     {
-//         free(((*descr_it).first));
-//         free(((*descr_it).second));
+        free(((*descr_it).first));
+        free(((*descr_it).second));
     }
     m_descriptorList.clear();
 
@@ -2326,20 +2326,20 @@ bool imageDialog::createDescriptions()
         char *d_append= strdup(descriptor);
         char *d_id= strdup(buf);
 
-        // SUBOPTIMAL !?!? -- DEBUG
-        descr_it= m_descriptorList.find(d_id);
-        if(descr_it != m_descriptorList.end())
-        {
-            free(((*descr_it).first));
-            free(((*descr_it).second));
-            m_descriptorList.erase(descr_it);
-        }
+//         // SUBOPTIMAL !?!? -- DEBUG -- WURDE VORHER BEREITS GELOESCHT!
+//         descr_it= m_descriptorList.find(d_id);
+//         if(descr_it != m_descriptorList.end())
+//         {
+//             free(((*descr_it).first));
+//             free(((*descr_it).second));
+//             m_descriptorList.erase(descr_it);
+//         }
 
         m_descriptorList[d_id] = d_append;
 
         // FREE OBSOLETE STRINGS
         // free(d_id);
-        // if(gb_protein_id) free(id); // FREE SHOULD BE DONE SOMEWHERE ELSE???
+        // free(id);
 
         // FETCH NEXT PROTEIN FROM LIST
         gb_protein= GB_find(gb_protein, "protein", 0, this_level|search_next);

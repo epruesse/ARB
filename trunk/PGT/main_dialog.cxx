@@ -486,7 +486,7 @@ void staticExitCallback(Widget widget, XtPointer clientData, XtPointer callData)
 ****************************************************************************/
 void mainDialog::exitCallback(Widget widget, XtPointer)
 {
-    int answer= OkCancelDialog(widget, "Exit PGT", "Do you really want to exit?");
+    int answer= OkCancelDialog(widget, "Exit PGT", "Do you really want to exit?", "msg.xpm");
     if (answer == 1)
         closeDialog();
 }
