@@ -463,52 +463,80 @@ NOT4PERL GB_ERROR GBT_compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, co
 
 /* Compress sequences, call only outside a transaction */
 GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, const char *ali_name){
-    GB_ERROR error = 0;
-    GB_CTREE *ctree;
-    GB_UNDO_TYPE undo_type =  GB_get_requested_undo_type(gb_main);
-    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    char *to_free = 0;
+    GB_ERROR      error     = 0;
+    GB_CTREE     *ctree;
+    GB_UNDO_TYPE  undo_type = GB_get_requested_undo_type(gb_main);
+    GB_MAIN_TYPE *Main      = GB_MAIN(gb_main);
+    char         *to_free   = 0;
+    
     if (Main->transaction>0){
         GB_internal_error("Internal Error: Compress Sequences called during a running transacton");
         return GB_export_error("Internal Error: Compress Sequences called during a running transacton");
     }
+    
     GB_request_undo_type(gb_main,GB_UNDO_KILL);
     GB_begin_transaction(gb_main);
     GB_push_my_security(gb_main);
 
     if (!tree_name || !strlen(tree_name)) {
-        to_free = (char *)(tree_name = (const char *)GBT_find_largest_tree(gb_main));
+        to_free   = GBT_find_largest_tree(gb_main);
+        tree_name = to_free;
     }
     ctree = (GB_CTREE *)GBT_read_tree(gb_main,(char *)tree_name,-sizeof(GB_CTREE));
-    if (!ctree) return GB_export_error("Tree %s not found in database",tree_name);
-    error = GBT_link_tree((GBT_TREE *)ctree,gb_main,GB_FALSE);
-    if (!error) error = GBT_compress_sequence_tree(gb_main,ctree,ali_name);
-    GBT_delete_tree((GBT_TREE *)ctree);
-    GB_pop_my_security(gb_main);
-    if (error){
-        GB_abort_transaction(gb_main);
-    }else{
-        GB_commit_transaction(gb_main);
+    if (!ctree) {
+        error = GB_export_error("Tree %s not found in database",tree_name);
     }
-    GB_disable_quicksave(gb_main,"Database optimized");
+    else {
+        error             = GBT_link_tree((GBT_TREE *)ctree,gb_main,GB_FALSE);
+        if (!error) error = GBT_compress_sequence_tree(gb_main,ctree,ali_name);
+        GBT_delete_tree((GBT_TREE *)ctree);
+    }
+    
+    GB_pop_my_security(gb_main);
+    if (error) {
+        GB_abort_transaction(gb_main);
+    }
+    else {
+        GB_commit_transaction(gb_main);
+        GB_disable_quicksave(gb_main,"Database optimized");
+    }
     GB_request_undo_type(gb_main,undo_type);
+    
     if (to_free) free(to_free);
     return error;
 }
 
-void GBT_compression_test(void *dummy, GBDATA *gb_main){
-    GB_ERROR error;
-    char *ali_name;
+void GBT_compression_test(void *dummy, GBDATA *gb_main) {
+    GB_ERROR  error     = 0;
+    char     *tree_name = 0;
+    char     *ali_name;
+    GBDATA   *gb_tree_name;
+
     GBUSE(dummy);
+
     GB_begin_transaction(gb_main);
-    ali_name = GBT_get_default_alignment(gb_main);
-    error = GBT_compress_sequence_tree2(gb_main,"tree_test",ali_name);
-    if (error){
-        GB_warning("%s",error);
-        GB_abort_transaction(gb_main);
-    }else{
-        GB_commit_transaction(gb_main);
+
+    ali_name     = GBT_get_default_alignment(gb_main);
+    gb_tree_name = GB_search(gb_main, "/focus/tree_name", GB_FIND);
+    if (!gb_tree_name) {
+        error = "Can't detect current treename";
     }
+    else {
+        tree_name = GB_read_string(gb_tree_name);
+    }
+
+    GB_commit_transaction(gb_main);
+
+    if (!error) {
+        printf("Recompression data in alignment '%s' using tree '%s'\n", ali_name, tree_name);
+        error = GBT_compress_sequence_tree2(gb_main, tree_name, ali_name);
+    }
+    if (error) {
+        GB_warning("%s",error);
+    }
+
+    free(tree_name);
+    free(ali_name);
 }
 
 
