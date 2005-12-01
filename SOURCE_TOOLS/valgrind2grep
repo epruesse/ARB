@@ -23,10 +23,13 @@ my $unmark_rest     = "(note) ";
 sub check_ignore($\$) {
     my ($text,$ignore_r) = @_;
     if (not defined $$ignore_r) {
+        # to ignore more messages please add here:
         if ($text =~ /_XtGet(Sub)?[rR]esources.*libXt/) { $$ignore_r = $&; return; }
         if ($text =~ /_X11TransWrite.*libX11/) { $$ignore_r = $&; return; }
     }
 }
+
+my $debug = 0;
 
 # --------------------------------------------------------------- customize till here
 
@@ -155,9 +158,8 @@ while (not $in->eof) {
                 $ignore_curr_line = 1;
             }
             elsif ($content =~ /^[ ]*$/) {
-                # $ignore_curr_line = 1;
-                $ignore           = undef;
-                $_='(    ) '.$_;
+                $ignore = undef;
+                $_      = '(    ) '.$_;
             }
             else {
                 $reason = $content;
@@ -194,14 +196,18 @@ while (not $in->eof) {
                 $last_ignore = $ignore;
             }
             else {
-                # $out->print("(comm) ".$_);
-                # $out->flush;
+                if ($debug==1) {
+                    $out->print("(comm) ".$_);
+                    $out->flush;
+                }
             }
         }
     }
     else {
-        # $out->print("(SUPP) ".$_);
-        # $out->flush();
+        if ($debug==1) {
+            $out->print("(SUPP) ".$_);
+            $out->flush();
+        }
         $ignore_curr_line = 0;
     }
 }
