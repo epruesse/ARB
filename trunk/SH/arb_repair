@@ -8,6 +8,7 @@ if [ -z "$2" ]; then
 else
     echo "Repairing database $1 .. get yourself a coffee. :)"
     echo ""
+    echo "Running 'arb_2_ascii $1 - | arb_2_bin $3 $4 $5 - $2'"
     arb_2_ascii $1 - | arb_2_bin $3 $4 $5 - $2
     ls -al $1 $2
 fi
