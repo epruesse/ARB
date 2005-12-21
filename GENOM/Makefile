@@ -83,6 +83,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 
+EXP_main.o: ../NTREE/nt_cb.hxx
 EXP_main.o: EXP.hxx
 EXP_main.o: EXP_interface.hxx
 EXP_main.o: EXP_local.hxx

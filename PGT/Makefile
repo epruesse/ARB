@@ -144,6 +144,7 @@ main_dialog.o: $(ARBHOME)/INCLUDE/arb_assert.h
 main_dialog.o: $(ARBHOME)/INCLUDE/arbdb.h
 main_dialog.o: $(ARBHOME)/INCLUDE/arbdbt.h
 
+msgbox.o: dialog.hxx
 msgbox.o: msgbox.hxx
 msgbox.o: xm_defs.hxx
 
