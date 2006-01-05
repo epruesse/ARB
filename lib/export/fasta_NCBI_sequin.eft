@@ -1,0 +1,4 @@
+SUFFIX		fasta
+BEGIN
+>*(name) [organism=*(full_name)] [strain=*(strain)] [clone=*(clone)] [lineage=*(tax)] [environmental-sample=*(env_sl)] [moltype=*(moltype)] [clone-lib=*(clone_lib)] [isolation-source=*(isol_src)]
+*(|sequence|remove(".-"))
