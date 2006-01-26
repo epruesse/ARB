@@ -284,7 +284,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
                         free(shrt); shrt = newshrt;
                     }
                     GBS_incr_hash(hash,shrt);
-                    
+
                     err = GBT_rename_species(name,shrt);
                 }
 
@@ -326,7 +326,7 @@ void awt_rename_cb(AW_window *aww,GBDATA *gb_main)
     GB_ERROR error     = AWTC_pars_names(gb_main,1);
     aw_closestatus();
     if (error) aw_message(error);
-    
+
     aww->get_root()->awar(AWAR_TREE_REFRESH)->touch();
 }
 
@@ -377,8 +377,8 @@ class UniqueNameDetector {
     GB_HASH *hash;
 public:
     UniqueNameDetector(GBDATA *gb_item_data) {
-        hash = GBS_create_hash(GB_number_of_subentries(gb_item_data), 1);
-        
+        hash = GBS_create_hash(2*GB_number_of_subentries(gb_item_data), 1);
+
         for (GBDATA *gb_item = GB_find(gb_item_data, 0, 0, down_level);
              gb_item;
              gb_item = GB_find(gb_item, 0, 0, this_level|search_next))
@@ -459,7 +459,7 @@ char *AWTC_generate_random_name(GBDATA *gb_species_data) {
     char *new_species_name = 0;
     char  short_name[9];
     int   count            = 1000;
-    
+
     UniqueNameDetector existing(gb_species_data);
 
     short_name[8] = 0;
