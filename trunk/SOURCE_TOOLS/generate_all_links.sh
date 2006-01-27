@@ -3,7 +3,7 @@
 SELF=$ARBHOME/SOURCE_TOOLS/generate_all_links.sh
 
 finderr() {
-    FOUND=`grep -Hno "$1" $SELF`
+    FOUND=`grep -Hn "$1" $SELF`
     if [ -z $FOUND ]; then
         echo "$SELF:8: $2 ($1 not located -- search manually)"
     else
