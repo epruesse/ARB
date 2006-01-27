@@ -220,7 +220,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
 
                     if (is_seq_data) seq_term->set_properties( ED4_P_CONSENSUS_RELEVANT );
                     seq_term->set_properties( ED4_P_ALIGNMENT_DATA );
-                    
+
                     text_terminal = seq_term;
                 }
                 else {
@@ -349,10 +349,35 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
                 datamode = ED4_D_EXTENDED;
             }
             else {
-                printf("Unknown or misplaced tag-id '%c' - Please contact your administrator\n", str[(*index)+1]);
-                e4_assert(0);
-                retCode = ED4_R_ERROR;
-                break;
+
+                const char *entry = str+*index+1;
+                char        tag   = entry[0];
+                const char *sep   = strchr(entry, 1);
+
+                if (sep) {
+                    int   len     = sep-entry+1;
+                    char *content = (char*)GB_calloc(len+1, 1);
+                    memcpy(content, entry+1, len);
+
+                    char *message = GBS_global_string_copy("Unknown or misplaced tag-id '%c' (with content '%s'). Error in configuration-data!\nTrying to continue..", tag, content);
+                    fprintf(stderr, "ARB_EDIT4: %s\n", message);
+                    aw_message(message);
+
+                    free(message);
+                    free(content);
+                    retCode = ED4_R_WARNING;
+
+                    (*index) += sep-entry+1; // set index to next separator
+                    continue;
+                }
+                else {
+                    fprintf(stderr, "Error reading configuration: Unexpected end of data (at '%s')\n", str+*index);
+
+                    e4_assert(0);
+                    retCode = ED4_R_ERROR;
+                    break;
+                }
+                e4_assert(0); // never reached!
             }
 
             (*index) +=2;
