@@ -6,13 +6,32 @@
 
 # objects for library
 CPP_OBJECTS =   \
-		GAARB.o \
-		GALogger.o \
-		GAFile.o \
-		GAEmbl.o \
-		GADDBJ.o \
-		GAGenBank.o \
-		GASourceFileSwitcher.o \
+		GAGenom.o \
+		GAGenomGene.o \
+		GAGenomFeatureTable.o \
+		GAGenomGeneLocation.o \
+		GAGenomReference.o \
+		GAGenomFeatureTableSource.o \
+		GAGenomEmbl.o \
+		GAGenomGeneEmbl.o \
+		GAGenomFeatureTableEmbl.o \
+		GAGenomGeneLocationEmbl.o \
+		GAGenomReferenceEmbl.o \
+		GAGenomFeatureTableSourceEmbl.o \
+		GAGenomGenBank.o \
+		GAGenomGeneGenBank.o \
+		GAGenomFeatureTableGenBank.o \
+		GAGenomGeneLocationGenBank.o \
+		GAGenomReferenceGenBank.o \
+		GAGenomFeatureTableSourceGenBank.o \
+		GAGenomDDBJ.o \
+		GAParser.o	\
+		GAGenomGeneDDBJ.o \
+		GAGenomFeatureTableDDBJ.o \
+		GAGenomGeneLocationDDBJ.o \
+		GAGenomReferenceDDBJ.o \
+		GAGenomFeatureTableSourceDDBJ.o \
+		GAGenomUtilities.o \
 		GAGenomImport.o \
 
 
@@ -69,94 +88,178 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-GAARB.o: GAARB.h
-GAARB.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GAARB.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-GAARB.o: $(ARBHOME)/INCLUDE/adGene.h
-GAARB.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GAARB.o: $(ARBHOME)/INCLUDE/arbdb.h
-GAARB.o: $(ARBHOME)/INCLUDE/arbdbt.h
-GAARB.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GAARB.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GAARB.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
-GAARB.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GAARB.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GAARB.o: $(ARBHOME)/INCLUDE/awt.hxx
+GAGenom.o: GAGenom.h
+GAGenom.o: GAGenomUtilities.h
 
-GADDBJ.o: GAARB.h
-GADDBJ.o: GADDBJ.h
-GADDBJ.o: GAFile.h
-GADDBJ.o: GALogger.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/adGene.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/arbdb.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/arbdbt.h
-GADDBJ.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GADDBJ.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GADDBJ.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
-GADDBJ.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GADDBJ.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GADDBJ.o: $(ARBHOME)/INCLUDE/awt.hxx
+GAGenomDDBJ.o: GAGenom.h
+GAGenomDDBJ.o: GAGenomDDBJ.h
+GAGenomDDBJ.o: GAGenomFeatureTable.h
+GAGenomDDBJ.o: GAGenomFeatureTableDDBJ.h
+GAGenomDDBJ.o: GAGenomFeatureTableSource.h
+GAGenomDDBJ.o: GAGenomFeatureTableSourceDDBJ.h
+GAGenomDDBJ.o: GAGenomGene.h
+GAGenomDDBJ.o: GAGenomGeneDDBJ.h
+GAGenomDDBJ.o: GAGenomGeneLocation.h
+GAGenomDDBJ.o: GAGenomGeneLocationDDBJ.h
+GAGenomDDBJ.o: GAGenomReference.h
+GAGenomDDBJ.o: GAGenomReferenceDDBJ.h
+GAGenomDDBJ.o: GAGenomUtilities.h
+GAGenomDDBJ.o: GAParser.h
 
-GAEmbl.o: GAARB.h
-GAEmbl.o: GAEmbl.h
-GAEmbl.o: GAFile.h
-GAEmbl.o: GALogger.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/adGene.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/arbdb.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/arbdbt.h
-GAEmbl.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GAEmbl.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GAEmbl.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
-GAEmbl.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GAEmbl.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GAEmbl.o: $(ARBHOME)/INCLUDE/awt.hxx
+GAGenomEmbl.o: GAGenom.h
+GAGenomEmbl.o: GAGenomEmbl.h
+GAGenomEmbl.o: GAGenomFeatureTable.h
+GAGenomEmbl.o: GAGenomFeatureTableEmbl.h
+GAGenomEmbl.o: GAGenomFeatureTableSource.h
+GAGenomEmbl.o: GAGenomFeatureTableSourceEmbl.h
+GAGenomEmbl.o: GAGenomGene.h
+GAGenomEmbl.o: GAGenomGeneEmbl.h
+GAGenomEmbl.o: GAGenomGeneLocation.h
+GAGenomEmbl.o: GAGenomGeneLocationEmbl.h
+GAGenomEmbl.o: GAGenomReference.h
+GAGenomEmbl.o: GAGenomReferenceEmbl.h
+GAGenomEmbl.o: GAGenomUtilities.h
+GAGenomEmbl.o: GAParser.h
+GAGenomEmbl.o: $(ARBHOME)/INCLUDE/perf_timer.h
 
-GAFile.o: GAARB.h
-GAFile.o: GAFile.h
-GAFile.o: GALogger.h
-GAFile.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GAFile.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-GAFile.o: $(ARBHOME)/INCLUDE/adGene.h
-GAFile.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GAFile.o: $(ARBHOME)/INCLUDE/arbdb.h
-GAFile.o: $(ARBHOME)/INCLUDE/arbdbt.h
-GAFile.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GAFile.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GAFile.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
-GAFile.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GAFile.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GAFile.o: $(ARBHOME)/INCLUDE/awt.hxx
+GAGenomFeatureTable.o: GAGenomFeatureTable.h
+GAGenomFeatureTable.o: GAParser.h
 
-GAGenBank.o: GAARB.h
-GAGenBank.o: GAFile.h
-GAGenBank.o: GAGenBank.h
-GAGenBank.o: GALogger.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/adGene.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/arb_assert.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/arbdb.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/arbdbt.h
-GAGenBank.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-GAGenBank.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-GAGenBank.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
-GAGenBank.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GAGenBank.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GAGenBank.o: $(ARBHOME)/INCLUDE/awt.hxx
+GAGenomFeatureTableDDBJ.o: GAGenomFeatureTable.h
+GAGenomFeatureTableDDBJ.o: GAGenomFeatureTableDDBJ.h
+GAGenomFeatureTableDDBJ.o: GAGenomFeatureTableSource.h
+GAGenomFeatureTableDDBJ.o: GAGenomFeatureTableSourceDDBJ.h
+GAGenomFeatureTableDDBJ.o: GAGenomGene.h
+GAGenomFeatureTableDDBJ.o: GAGenomGeneDDBJ.h
+GAGenomFeatureTableDDBJ.o: GAGenomGeneLocation.h
+GAGenomFeatureTableDDBJ.o: GAGenomGeneLocationDDBJ.h
+GAGenomFeatureTableDDBJ.o: GAGenomUtilities.h
+GAGenomFeatureTableDDBJ.o: GAParser.h
 
-GAGenomImport.o: GAARB.h
-GAGenomImport.o: GADDBJ.h
-GAGenomImport.o: GAEmbl.h
-GAGenomImport.o: GAFile.h
-GAGenomImport.o: GAGenBank.h
-GAGenomImport.o: GALogger.h
-GAGenomImport.o: GASourceFileSwitcher.h
+GAGenomFeatureTableEmbl.o: GAGenomFeatureTable.h
+GAGenomFeatureTableEmbl.o: GAGenomFeatureTableEmbl.h
+GAGenomFeatureTableEmbl.o: GAGenomFeatureTableSource.h
+GAGenomFeatureTableEmbl.o: GAGenomFeatureTableSourceEmbl.h
+GAGenomFeatureTableEmbl.o: GAGenomGene.h
+GAGenomFeatureTableEmbl.o: GAGenomGeneEmbl.h
+GAGenomFeatureTableEmbl.o: GAGenomGeneLocation.h
+GAGenomFeatureTableEmbl.o: GAGenomGeneLocationEmbl.h
+GAGenomFeatureTableEmbl.o: GAGenomUtilities.h
+GAGenomFeatureTableEmbl.o: GAParser.h
+
+GAGenomFeatureTableGenBank.o: GAGenomFeatureTable.h
+GAGenomFeatureTableGenBank.o: GAGenomFeatureTableGenBank.h
+GAGenomFeatureTableGenBank.o: GAGenomFeatureTableSource.h
+GAGenomFeatureTableGenBank.o: GAGenomFeatureTableSourceGenBank.h
+GAGenomFeatureTableGenBank.o: GAGenomGene.h
+GAGenomFeatureTableGenBank.o: GAGenomGeneGenBank.h
+GAGenomFeatureTableGenBank.o: GAGenomGeneLocation.h
+GAGenomFeatureTableGenBank.o: GAGenomGeneLocationGenBank.h
+GAGenomFeatureTableGenBank.o: GAGenomUtilities.h
+GAGenomFeatureTableGenBank.o: GAParser.h
+
+GAGenomFeatureTableSource.o: GAGenomFeatureTableSource.h
+GAGenomFeatureTableSource.o: GAParser.h
+
+GAGenomFeatureTableSourceDDBJ.o: GAGenomFeatureTableSource.h
+GAGenomFeatureTableSourceDDBJ.o: GAGenomFeatureTableSourceDDBJ.h
+GAGenomFeatureTableSourceDDBJ.o: GAGenomUtilities.h
+GAGenomFeatureTableSourceDDBJ.o: GAParser.h
+
+GAGenomFeatureTableSourceEmbl.o: GAGenomFeatureTableSource.h
+GAGenomFeatureTableSourceEmbl.o: GAGenomFeatureTableSourceEmbl.h
+GAGenomFeatureTableSourceEmbl.o: GAGenomUtilities.h
+GAGenomFeatureTableSourceEmbl.o: GAParser.h
+
+GAGenomFeatureTableSourceGenBank.o: GAGenomFeatureTableSource.h
+GAGenomFeatureTableSourceGenBank.o: GAGenomFeatureTableSourceGenBank.h
+GAGenomFeatureTableSourceGenBank.o: GAGenomUtilities.h
+GAGenomFeatureTableSourceGenBank.o: GAParser.h
+
+GAGenomGenBank.o: GAGenom.h
+GAGenomGenBank.o: GAGenomFeatureTable.h
+GAGenomGenBank.o: GAGenomFeatureTableGenBank.h
+GAGenomGenBank.o: GAGenomFeatureTableSource.h
+GAGenomGenBank.o: GAGenomFeatureTableSourceGenBank.h
+GAGenomGenBank.o: GAGenomGenBank.h
+GAGenomGenBank.o: GAGenomGene.h
+GAGenomGenBank.o: GAGenomGeneGenBank.h
+GAGenomGenBank.o: GAGenomGeneLocation.h
+GAGenomGenBank.o: GAGenomGeneLocationGenBank.h
+GAGenomGenBank.o: GAGenomReference.h
+GAGenomGenBank.o: GAGenomReferenceGenBank.h
+GAGenomGenBank.o: GAGenomUtilities.h
+GAGenomGenBank.o: GAParser.h
+
+GAGenomGene.o: GAGenomGene.h
+GAGenomGene.o: GAParser.h
+
+GAGenomGeneDDBJ.o: GAGenomGene.h
+GAGenomGeneDDBJ.o: GAGenomGeneDDBJ.h
+GAGenomGeneDDBJ.o: GAGenomGeneLocation.h
+GAGenomGeneDDBJ.o: GAGenomGeneLocationDDBJ.h
+GAGenomGeneDDBJ.o: GAGenomUtilities.h
+GAGenomGeneDDBJ.o: GAParser.h
+
+GAGenomGeneEmbl.o: GAGenomGene.h
+GAGenomGeneEmbl.o: GAGenomGeneEmbl.h
+GAGenomGeneEmbl.o: GAGenomGeneLocation.h
+GAGenomGeneEmbl.o: GAGenomGeneLocationEmbl.h
+GAGenomGeneEmbl.o: GAGenomUtilities.h
+GAGenomGeneEmbl.o: GAParser.h
+
+GAGenomGeneGenBank.o: GAGenomGene.h
+GAGenomGeneGenBank.o: GAGenomGeneGenBank.h
+GAGenomGeneGenBank.o: GAGenomGeneLocation.h
+GAGenomGeneGenBank.o: GAGenomGeneLocationGenBank.h
+GAGenomGeneGenBank.o: GAGenomUtilities.h
+GAGenomGeneGenBank.o: GAParser.h
+
+GAGenomGeneLocation.o: GAGenomGeneLocation.h
+GAGenomGeneLocation.o: GAParser.h
+
+GAGenomGeneLocationDDBJ.o: GAGenomGeneLocation.h
+GAGenomGeneLocationDDBJ.o: GAGenomGeneLocationDDBJ.h
+GAGenomGeneLocationDDBJ.o: GAGenomUtilities.h
+GAGenomGeneLocationDDBJ.o: GAParser.h
+
+GAGenomGeneLocationEmbl.o: GAGenomGeneLocation.h
+GAGenomGeneLocationEmbl.o: GAGenomGeneLocationEmbl.h
+GAGenomGeneLocationEmbl.o: GAGenomUtilities.h
+GAGenomGeneLocationEmbl.o: GAParser.h
+
+GAGenomGeneLocationGenBank.o: GAGenomGeneLocation.h
+GAGenomGeneLocationGenBank.o: GAGenomGeneLocationGenBank.h
+GAGenomGeneLocationGenBank.o: GAGenomUtilities.h
+GAGenomGeneLocationGenBank.o: GAParser.h
+
+GAGenomImport.o: GAGenom.h
+GAGenomImport.o: GAGenomDDBJ.h
+GAGenomImport.o: GAGenomEmbl.h
+GAGenomImport.o: GAGenomFeatureTable.h
+GAGenomImport.o: GAGenomFeatureTableDDBJ.h
+GAGenomImport.o: GAGenomFeatureTableEmbl.h
+GAGenomImport.o: GAGenomFeatureTableGenBank.h
+GAGenomImport.o: GAGenomFeatureTableSource.h
+GAGenomImport.o: GAGenomFeatureTableSourceDDBJ.h
+GAGenomImport.o: GAGenomFeatureTableSourceEmbl.h
+GAGenomImport.o: GAGenomFeatureTableSourceGenBank.h
+GAGenomImport.o: GAGenomGenBank.h
+GAGenomImport.o: GAGenomGene.h
+GAGenomImport.o: GAGenomGeneDDBJ.h
+GAGenomImport.o: GAGenomGeneEmbl.h
+GAGenomImport.o: GAGenomGeneGenBank.h
+GAGenomImport.o: GAGenomGeneLocation.h
+GAGenomImport.o: GAGenomGeneLocationDDBJ.h
+GAGenomImport.o: GAGenomGeneLocationEmbl.h
+GAGenomImport.o: GAGenomGeneLocationGenBank.h
+GAGenomImport.o: GAGenomImport.h
+GAGenomImport.o: GAGenomReference.h
+GAGenomImport.o: GAGenomReferenceDDBJ.h
+GAGenomImport.o: GAGenomReferenceEmbl.h
+GAGenomImport.o: GAGenomReferenceGenBank.h
+GAGenomImport.o: GAGenomUtilities.h
+GAGenomImport.o: GAParser.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/adGene.h
@@ -170,6 +273,25 @@ GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GAGenomImport.o: $(ARBHOME)/INCLUDE/awt.hxx
 
-GALogger.o: GALogger.h
+GAGenomReference.o: GAGenomReference.h
+GAGenomReference.o: GAGenomUtilities.h
+GAGenomReference.o: GAParser.h
 
-GASourceFileSwitcher.o: GASourceFileSwitcher.h
+GAGenomReferenceDDBJ.o: GAGenomReference.h
+GAGenomReferenceDDBJ.o: GAGenomReferenceDDBJ.h
+GAGenomReferenceDDBJ.o: GAGenomUtilities.h
+GAGenomReferenceDDBJ.o: GAParser.h
+
+GAGenomReferenceEmbl.o: GAGenomReference.h
+GAGenomReferenceEmbl.o: GAGenomReferenceEmbl.h
+GAGenomReferenceEmbl.o: GAGenomUtilities.h
+GAGenomReferenceEmbl.o: GAParser.h
+
+GAGenomReferenceGenBank.o: GAGenomReference.h
+GAGenomReferenceGenBank.o: GAGenomReferenceGenBank.h
+GAGenomReferenceGenBank.o: GAGenomUtilities.h
+GAGenomReferenceGenBank.o: GAParser.h
+
+GAGenomUtilities.o: GAGenomUtilities.h
+
+GAParser.o: GAParser.h
