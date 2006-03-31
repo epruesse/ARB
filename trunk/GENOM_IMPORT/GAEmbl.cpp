@@ -31,10 +31,10 @@ gellisary::GAEmbl::GAEmbl(GALogger & nLogger, GAARB & nARB, std::ifstream & nARB
 	line_identifiers["CC"] = "comments_or_notes";
 	line_identifiers["XX"] = "spacer_line";
 	line_identifiers["//"] = "termination";
-	
+
 	type = EMPTY;
 	complement = false;
-	
+
 	error_line_to_short = "line is to short (min 2 chars)";
 	error_line_to_short_for_sequence = "line is to short for genome sequence (must be 80 chars)";
 	error_line_to_long = "line is to long (max 80 chars)";
@@ -48,7 +48,7 @@ gellisary::GAEmbl::GAEmbl(GALogger & nLogger, GAARB & nARB, std::ifstream & nARB
 	error_char_not_empty = "char is not empty";
 	error_wrong_sequence_format = "sequence format is wrong";
 	error_wrong_line_format = "line format is wrong";
-	
+
 	counter_a = 0;
 	counter_c = 0;
 	counter_g = 0;
@@ -98,7 +98,7 @@ void gellisary::GAEmbl::dissectGenomeSequenceLine(const std::string & source_lin
 	}
 	bool mustBeEnd = false;
 	char t_base;
-	
+
 	for(int i = 5; i < (int) source_line.size(); i++)
 	{
 		if(source_line[i] == ' ')
@@ -121,7 +121,7 @@ void gellisary::GAEmbl::dissectGenomeSequenceLine(const std::string & source_lin
 			}
 			else if((i > 70) && (i <= 79))
 			{
-				if(!std::isdigit(source_line[i]))
+				if(!isdigit(source_line[i]))
 				{
 					// Fehler
 					logger.add_log_entry(error_wrong_sequence_format+" = "+source_line.substr(i,1), counter_line, i);
@@ -138,7 +138,7 @@ void gellisary::GAEmbl::dissectGenomeSequenceLine(const std::string & source_lin
 				}
 				else
 				{
-					if(std::isalpha(source_line[i]))
+					if(isalpha(source_line[i]))
 					{
 						counter++;
 						t_base = std::tolower(source_line[i]);
@@ -175,7 +175,7 @@ void gellisary::GAEmbl::dissectMetaLine(const std::string & source_line)
 	std::string t_line_id = source_line.substr(0,2);
 	std::string t_pre_line = source_line.substr(5);
 	std::string t_line = trim(t_pre_line);
-	
+
 	std::string::size_type space_pos = t_line.find(" ");
 	bool has_space = true;
 	if(space_pos == std::string::npos)
@@ -196,7 +196,7 @@ void gellisary::GAEmbl::dissectMetaLine(const std::string & source_line)
 		}
 		else if(t_line_id == line_id)
 		{
-			
+
 			if(has_space)
 			{
 				value.append(" "+t_line);
@@ -460,7 +460,7 @@ void gellisary::GAEmbl::dissectLocation(const std::string & source)
 	int t_source_size = t_source.size();
 	for(int i = 0; i < t_source_size; i++)
 	{
-		if(!std::isdigit(t_source[i]))
+		if(!isdigit(t_source[i]))
 		{
 			t_source[i] = ' ';
 		}
@@ -527,7 +527,7 @@ bool gellisary::GAEmbl::line_examination(const std::string & source_line)
 		std::string t_line_id = source_line.substr(0,2);
 		if(check_line_identifier(t_line_id))
 		{
-			/* 
+			/*
 			 * Wenn der Zeiletyp 'XX' ist, muss das bereits gespeichert
 			 * in ARB reingeschrieben werden. Meist der Inhalt einer Meta-Zeile.
 			 * Und dann zu der nächsten Zeile.
@@ -537,7 +537,7 @@ bool gellisary::GAEmbl::line_examination(const std::string & source_line)
 			 * Bei 'FH' muss nichts detan werden, als die nächste Zeile
 			 * eingelesen werden.
 			 */
-			
+
 		 	if(new_type == END)
 		 	{
 		 		if(type == SEQUENCE)
@@ -625,7 +625,7 @@ bool gellisary::GAEmbl::line_examination(const std::string & source_line)
 				if(character_1 != ' ')
 				{
 					// Muss entweder die Meta-Zeile oder die "Table Feature / Header"-Zeile sein
-					/* 
+					/*
 					 * Zeilenidentifierer : first_character und second_character
 					 * werden bereits für spätere Benutzung gespeichert.
 					 */
@@ -692,5 +692,5 @@ void gellisary::GAEmbl::parse()
 
 gellisary::GAEmbl::~GAEmbl()
 {
-	
+
 }

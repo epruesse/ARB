@@ -21,10 +21,10 @@ gellisary::GAGenBank::GAGenBank(GALogger & nLogger, GAARB & nARB, std::ifstream 
 	line_identifiers["PUBMED"] = "reference_pubmed";
 	line_identifiers["COMMENT"] = "comments_or_notes";
 	line_identifiers["//"] = "termination";
-	
+
 	type = EMPTY;
 	complement = false;
-	
+
 	error_line_to_short = "line is to short (min 2 chars)";
 	error_line_to_short_for_sequence = "line is to short for genome sequence (must be 80 chars)";
 	error_line_to_long = "line is to long (max 80 chars)";
@@ -38,7 +38,7 @@ gellisary::GAGenBank::GAGenBank(GALogger & nLogger, GAARB & nARB, std::ifstream 
 	error_char_not_empty = "char is not empty";
 	error_wrong_sequence_format = "sequence format is wrong";
 	error_wrong_line_format = "line format is wrong";
-	
+
 	counter_a = 0;
 	counter_c = 0;
 	counter_g = 0;
@@ -107,7 +107,7 @@ void gellisary::GAGenBank::dissectGenomeSequenceLine(const std::string & source_
 			}
 			else if((i >= 0) && (i <= 8))
 			{
-				if(!std::isdigit(source_line[i]))
+				if(!isdigit(source_line[i]))
 				{
 					// Fehler
 					logger.add_log_entry(error_wrong_sequence_format+" = "+source_line.substr(i,1), counter_line, i);
@@ -124,7 +124,7 @@ void gellisary::GAGenBank::dissectGenomeSequenceLine(const std::string & source_
 				}
 				else
 				{
-					if(std::isalpha(source_line[i]))
+					if(isalpha(source_line[i]))
 					{
 						counter++;
 						t_base = std::tolower(source_line[i]);
@@ -502,7 +502,7 @@ void gellisary::GAGenBank::dissectLocation(const std::string & source)
 	int t_source_size = t_source.size();
 	for(int i = 0; i < t_source_size; i++)
 	{
-		if(!std::isdigit(t_source[i]))
+		if(!isdigit(t_source[i]))
 		{
 			t_source[i] = ' ';
 		}
@@ -622,5 +622,5 @@ void gellisary::GAGenBank::parse()
 
 gellisary::GAGenBank::~GAGenBank()
 {
-	
+
 }
