@@ -21,10 +21,10 @@ gellisary::GADDBJ::GADDBJ(GALogger & nLogger, GAARB & nARB, std::ifstream & nARB
 	line_identifiers["CONSRTM"] = "reference_consrtm"; // may be 'consortium'
 	line_identifiers["COMMENT"] = "comments_or_notes";
 	line_identifiers["//"] = "termination";
-	
+
 	type = EMPTY;
 	complement = false;
-	
+
 	error_line_to_short = "line is to short (min 2 chars)";
 	error_line_to_short_for_sequence = "line is to short for genome sequence (must be 80 chars)";
 	error_line_to_long = "line is to long (max 80 chars)";
@@ -38,7 +38,7 @@ gellisary::GADDBJ::GADDBJ(GALogger & nLogger, GAARB & nARB, std::ifstream & nARB
 	error_char_not_empty = "char is not empty";
 	error_wrong_sequence_format = "sequence format is wrong";
 	error_wrong_line_format = "line format is wrong";
-	
+
 	counter_a = 0;
 	counter_c = 0;
 	counter_g = 0;
@@ -107,7 +107,7 @@ void gellisary::GADDBJ::dissectGenomeSequenceLine(const std::string & source_lin
 			}
 			else if((i >= 0) && (i <= 8))
 			{
-				if(!std::isdigit(source_line[i]))
+				if(!isdigit(source_line[i]))
 				{
 					// Fehler
 					logger.add_log_entry(error_wrong_sequence_format+" = "+source_line.substr(i,1), counter_line, i);
@@ -124,7 +124,7 @@ void gellisary::GADDBJ::dissectGenomeSequenceLine(const std::string & source_lin
 				}
 				else
 				{
-					if(std::isalpha(source_line[i]))
+					if(isalpha(source_line[i]))
 					{
 						counter++;
 						t_base = std::tolower(source_line[i]);
@@ -502,7 +502,7 @@ void gellisary::GADDBJ::dissectLocation(const std::string & source)
 	int t_source_size = t_source.size();
 	for(int i = 0; i < t_source_size; i++)
 	{
-		if(!std::isdigit(t_source[i]))
+		if(!isdigit(t_source[i]))
 		{
 			t_source[i] = ' ';
 		}
