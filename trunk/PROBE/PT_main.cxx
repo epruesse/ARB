@@ -73,45 +73,76 @@ void PT_init_psg(){
     }
 }
 
+// ------------------------------------------------------------------------------ name mapping
+// the mapping is generated in ../TOOLS/arb_gene_probe.cxx
 
-void PT_get_names (const char **fullstring, char *first, char *second, char *third) {
-    const char *first_ptr;
-    const char *second_ptr;
-    const char *third_ptr;
-    int         flag = 0;
-
-    pt_assert(fullstring && *fullstring);
-
-    first_ptr = *fullstring;
-    second_ptr = strchr(first_ptr,';'); // Get first ';'
-    if(second_ptr == NULL) {printf("Error in Name Mapping1");exit(EXIT_FAILURE);}
-    strncpy(first,first_ptr,second_ptr-first_ptr);  // Copy String until ';'
-    first[second_ptr-first_ptr] = 0;
-
-    second_ptr++;  // Point after the ';'
-
-    third_ptr = strchr(second_ptr,';'); // Get next ';'
-    if(third_ptr == NULL) {printf("Error in Name Mapping2");exit(EXIT_FAILURE);}
-    strncpy(second,second_ptr,third_ptr-second_ptr);  // Copy String until ';'
-    second[third_ptr-second_ptr] = 0;
-
-    third_ptr++;  // Point after the ';'
-
-    first_ptr = strchr(third_ptr,';'); // Get next ';'
-    pt_assert(first_ptr);
-    if (first_ptr[1] == 0) {
-        flag = 1;
-    } // Get last String
-    strncpy(third,third_ptr,first_ptr-third_ptr); // Copy second String
-    third[first_ptr-third_ptr] = 0;
-
-    if (flag) {
-        *fullstring = 0;
+inline const char *find_sep(const char *str, char sep) {
+    // sep may occur escaped (by \)
+    const char *found = strchr(str, sep);
+    while (found) {
+        if (found>str && found[-1] == '\\') { // escaped separator
+            found = strchr(found+1, sep);
+        }
+        else {
+            break;              // non-escaped -> report
+        }
     }
-    else {
-        ++first_ptr; //  Point to next Pair
-        *fullstring = first_ptr; // Return Pointer to next Pair
+    return found;
+}
+
+inline bool copy_to_buf(const char *start, const char *behindEnd, int MAXLEN, char *destBuf) {
+    int len = behindEnd-start;
+    if (len>MAXLEN) {
+        return false;
     }
+    memcpy(destBuf, start, len);
+    destBuf[len] = 0;
+    return true;
+}
+
+static void parse_names_into_gene_struct(const char *map_str, gene_struct_list& listOfGenes) {
+#define MAX_INAME_LEN 8
+#define MAX_ONAME_LEN 8
+#define MAX_GNAME_LEN 1024
+
+    char iname[MAX_INAME_LEN+1]; // internal name
+    char oname[MAX_ONAME_LEN+1]; // organism name
+    char gname[MAX_GNAME_LEN+1]; // gene name
+
+    const char *err = 0;
+
+    while (*map_str) {
+        const char *sep1 = strchr(map_str, ';');
+        const char *sep2 = sep1 ? strchr(sep1+1, ';') : 0;
+        const char *sep3 = sep2 ? find_sep(sep2+1, ';') :  0;
+
+        if (sep3) {
+            bool ok = copy_to_buf(map_str, sep1, MAX_INAME_LEN, iname);
+            ok = ok && copy_to_buf(sep1+1, sep2, MAX_ONAME_LEN, oname);
+            ok = ok && copy_to_buf(sep2+1, sep3, MAX_GNAME_LEN, gname);
+
+            if (ok) {
+                char *unesc               = GBS_unescape_string(gname, ";", '\\');
+                listOfGenes.push_back(gene_struct(iname, oname, unesc));
+                free(unesc);
+            }
+            else {
+                err = "buffer overflow";
+                break;
+            }
+        }
+        else {
+            err = GBS_global_string("expected at least 3 ';' in '%s'", map_str);
+            break;
+        }
+        map_str = sep3+1;
+    }
+
+    if (err) {
+        printf("Error parsing name-mapping (%s)\n", err);
+        exit(EXIT_FAILURE);
+    }
+
 }
 
 void PT_init_map(){
@@ -124,15 +155,7 @@ void PT_init_map(){
         const char *map_str;
         map_str                 = GB_read_char_pntr(map_ptr_str);
 
-        char temp1[128];        // internal name
-        char temp2[128];        // arb species name
-        char temp3[128];        // arb gene name
-
-        do {
-            PT_get_names(&map_str,temp1,temp2,temp3);
-            all_gene_structs.push_back(gene_struct(temp1, temp2, temp3));
-        }
-        while (map_str != NULL && *map_str != 0);
+        parse_names_into_gene_struct(map_str, all_gene_structs);
 
         // build indices :
         gene_struct_list::const_iterator end = all_gene_structs.end();
