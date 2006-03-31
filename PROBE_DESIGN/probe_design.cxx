@@ -840,11 +840,14 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                          gb_species;
                          gb_species = GBT_next_species(gb_species))
                     {
-                        for (GBDATA *gb_gene = GEN_first_marked_gene(gb_species);
-                             gb_gene;
-                             gb_gene = GEN_next_marked_gene(gb_gene))
-                        {
-                            GB_write_flag(gb_gene,0);
+                        GBDATA *genData = GEN_find_gene_data(gb_species);
+                        if (genData) {
+                            for (GBDATA *gb_gene = GEN_first_marked_gene(gb_species);
+                                 gb_gene;
+                                 gb_gene = GEN_next_marked_gene(gb_gene))
+                            {
+                                GB_write_flag(gb_gene,0);
+                            }
                         }
                     }
                 }
