@@ -3,8 +3,13 @@
  * Mail : hagilis@web.de
  * Copyright 2004 - Lehrstuhl fuer Mikrobiologie - TU Muenchen
  */
+
 #ifndef _GLIBCXX_CSTDLIB
 #include <cstdlib>
+#endif
+
+#ifndef _GLIBCXX_CSTDIO
+#include <cstdio>
 #endif
 
 #ifndef _GLIBCXX_IOSTREAM

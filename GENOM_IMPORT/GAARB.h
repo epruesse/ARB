@@ -21,6 +21,10 @@
 #include <cstdlib>
 #endif
 
+#ifndef _GLIBCXX_CSTDIO
+#include <cstdio>
+#endif
+
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
@@ -51,7 +55,7 @@ namespace gellisary
 			GBDATA * gene;
 			char * ali_name;
 			std::string alignment_name;
-			
+
 		public:
 			GAARB(GBDATA *, const char *);
 			virtual ~GAARB();
