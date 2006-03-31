@@ -204,13 +204,33 @@ static GB_ERROR create_data_entry(GBDATA *gb_species2, const char *sequence, int
     return error;
 }
 
+#if defined(DEBUG)
+void CHECK_SEMI_ESCAPED(const char *name) {
+    // checks whether all ";\\" are escaped
+    while (*name) {
+        gp_assert(*name != ';'); // oops, unescaped ';'
+        if (*name == '\\') ++name;
+        ++name;
+    }
+}
+#else
+#define CHECK_SEMI_ESCAPED(s)
+#endif // DEBUG
+
 
 static GBDATA *create_gene_species(GBDATA *gb_species_data2, const char *internal_name, const char *long_name, int abspos, const char *sequence, int length) {
     // Note: 'sequence' is not necessarily 0-terminated!
+
     GB_ERROR  error       = 0;
     GBDATA   *gb_species2 = GB_create_container(gb_species_data2, "species");
 
-    if (gb_species2) {
+#if defined(DEBUG)
+    char *firstSem = strchr(long_name, ';');
+    gp_assert(firstSem);
+    CHECK_SEMI_ESCAPED(firstSem+1);
+#endif // DEBUG
+
+    if (!error && gb_species2) {
         GBDATA *gb_name = GB_create(gb_species2, "name", GB_STRING);
         if (gb_name) {
             error = GB_write_string(gb_name, internal_name);
@@ -264,18 +284,22 @@ static GB_ERROR create_genelike_entry(const char *internal_name, GBDATA *gb_spec
 }
 
 static GB_ERROR create_intergene(GBDATA *gb_species_data2, int pos_begin, int pos_end, const char *ali_genome, const char *long_gene_name) {
-    gp_assert(pos_begin <= pos_end);
-    char internal_name[128];
-    ++intergene_counter;
-    sprintf(internal_name, "i%x", intergene_counter);
-    return create_genelike_entry(internal_name, gb_species_data2, pos_begin, pos_end, ali_genome, long_gene_name);
+    if (pos_begin <= pos_end) {
+        char internal_name[128];
+        ++intergene_counter;
+        sprintf(internal_name, "i%x", intergene_counter);
+        return create_genelike_entry(internal_name, gb_species_data2, pos_begin, pos_end, ali_genome, long_gene_name);
+    }
+    return "Illegal inter-gene positions (start behind end)";
 }
 
 static GB_ERROR create_gene(GBDATA *gb_species_data2, int pos_begin, int pos_end, const char *ali_genome, const char *long_gene_name) {
-    gp_assert(pos_begin <= pos_end);
-    char internal_name[128];
-    sprintf(internal_name, "n%x", gene_counter++);
-    return create_genelike_entry(internal_name, gb_species_data2, pos_begin, pos_end, ali_genome, long_gene_name);
+    if (pos_begin <= pos_end) {
+        char internal_name[128];
+        sprintf(internal_name, "n%x", gene_counter++);
+        return create_genelike_entry(internal_name, gb_species_data2, pos_begin, pos_end, ali_genome, long_gene_name);
+    }
+    return "Illegal gene positions (start behind end)";
 }
 
 static GB_ERROR create_splitted_gene(GBDATA *gb_species_data2, PositionPairList& part_list, const char *ali_genome, const char *long_gene_name) {
@@ -438,7 +462,8 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
             PositionPair first_part  = *part_list.begin();
 
             if (!error) {
-                char *long_gene_name = GBS_global_string_copy("%s;%s", organism_name, gene_name);
+                char *esc_gene_name = GBS_escape_string(gene_name, ";", '\\');
+                char *long_gene_name = GBS_global_string_copy("%s;%s", organism_name, esc_gene_name);
                 if (split_count == 1) { // normal gene
                     error = create_gene(gb_species_data2, first_part.begin, first_part.end, ali_genom, long_gene_name);
                     geneRanges.announceGene(first_part);
@@ -451,6 +476,7 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
                     }
                 }
                 free(long_gene_name);
+                free(esc_gene_name);
             }
         }
 
