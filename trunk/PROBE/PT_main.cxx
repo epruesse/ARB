@@ -246,8 +246,10 @@ int main(int argc, char **argv)
             printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
             exit(EXIT_FAILURE);
         }
-        enter_stage_3_load_tree(aisc_main,tname);           /* now stage 3 */
+        enter_stage_3_load_tree(aisc_main,tname); /* now stage 3 */
+        printf("Tree loaded - performing checks..\n");
         PT_debug_tree();
+        printf("Checks done");
         exit(EXIT_SUCCESS);
     }
     psg.link = (aisc_com *) aisc_open(name, &psg.main, AISC_MAGIC_NUMBER);
