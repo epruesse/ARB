@@ -3,6 +3,8 @@
 #include "RNA3D_Textures.hxx"
 #include "RNA3D_OpenGLEngine.hxx"
 
+#include <string>
+
 using namespace std;
 
 Texture2D::Texture2D(void){
