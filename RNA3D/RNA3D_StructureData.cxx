@@ -9,6 +9,7 @@
 #include "../EDIT4/ed4_visualizeSAI.hxx"
 
 #include <cerrno>
+#include <string>
 
 #define COLORLINK (ED4_G_SBACK_0 - RNA3D_GC_SBACK_0)  // to link to the colors defined in primary editor ed4_defs.hxx
 #define SAICOLORS (ED4_G_CBACK_0 - RNA3D_GC_CBACK_0)

@@ -15,6 +15,8 @@
 #include "RNA3D_OpenGLGraphics.hxx"
 #include "RNA3D_StructureData.hxx"
 
+#include <string>
+
 using namespace std;
 
 static AW_window_menu_modes_opengl *awm;
