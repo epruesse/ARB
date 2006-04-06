@@ -686,8 +686,15 @@ bool gellisary::GADDBJ::line_examination(const std::string & source_line)
 	int line_size = source_line.size();
 	if(line_size < 2)
 	{
-		logger.add_log_entry(error_line_to_short,counter_line,line_size);
-		return false;
+		if(type != END)
+		{
+			logger.add_log_entry(error_line_to_short,counter_line,line_size);
+			return false;
+		}
+		else
+		{
+			return true;
+		}
 	}
 	else if(line_size > 80)
 	{
