@@ -281,7 +281,6 @@ ED4_RNA3D.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_RNA3D.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_RNA3D.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 
-ED4_root.o: ../NTREE/nt_date.h
 ED4_root.o: ed4_awars.hxx
 ED4_root.o: ed4_block.hxx
 ED4_root.o: ed4_class.hxx
