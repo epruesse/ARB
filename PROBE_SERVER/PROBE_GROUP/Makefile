@@ -77,5 +77,4 @@ pg_search.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 pg_search.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 pg_search.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 pg_search.o: $(ARBHOME)/INCLUDE/client.h
-pg_search.o: $(ARBHOME)/INCLUDE/PT_com.h
 pg_search.o: $(ARBHOME)/INCLUDE/servercntrl.h

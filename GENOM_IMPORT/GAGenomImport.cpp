@@ -66,20 +66,25 @@ GB_ERROR GI_importGenomeFile(GBDATA * gb_main, const char * file_name, const cha
     gellisary::GAARB arb(gb_main,ali_name);
     gellisary::GASourceFileSwitcher switcher(file_name);
     int format = switcher.make_a_decision();
-    std::ifstream flat_file(file_name);
+    std::string flat_file_name(file_name);
     if(format == gellisary::GASourceFileSwitcher::EMBL)
     {
-    	gellisary::GAEmbl embl(logger,arb,flat_file);
+    	gellisary::GAEmbl embl(logger,arb,flat_file_name);
     	embl.parse();
     }
     else if(format == gellisary::GASourceFileSwitcher::DDBJ)
     {
-    	gellisary::GADDBJ ddbj(logger,arb,flat_file);
+    	gellisary::GADDBJ ddbj(logger,arb,flat_file_name,true);
+    	ddbj.parse();
+    }
+    else if(format == gellisary::GASourceFileSwitcher::DDBJ_WITHOUT_HEADER)
+    {
+    	gellisary::GADDBJ ddbj(logger,arb,flat_file_name,false);
     	ddbj.parse();
     }
     else if(format == gellisary::GASourceFileSwitcher::GENBANK)
     {
-    	gellisary::GAGenBank genbank(logger,arb,flat_file);
+    	gellisary::GAGenBank genbank(logger,arb,flat_file_name);
     	genbank.parse();
     }
     else if(format == gellisary::GASourceFileSwitcher::UNKNOWN)

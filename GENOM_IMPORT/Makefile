@@ -171,5 +171,17 @@ GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GAGenomImport.o: $(ARBHOME)/INCLUDE/awt.hxx
 
 GALogger.o: GALogger.h
+GALogger.o: $(ARBHOME)/INCLUDE/ad_prot.h
+GALogger.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+GALogger.o: $(ARBHOME)/INCLUDE/adGene.h
+GALogger.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GALogger.o: $(ARBHOME)/INCLUDE/arbdb.h
+GALogger.o: $(ARBHOME)/INCLUDE/arbdbt.h
+GALogger.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+GALogger.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GALogger.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
+GALogger.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+GALogger.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+GALogger.o: $(ARBHOME)/INCLUDE/awt.hxx
 
 GASourceFileSwitcher.o: GASourceFileSwitcher.h

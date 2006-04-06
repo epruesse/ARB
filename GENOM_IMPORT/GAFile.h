@@ -79,6 +79,9 @@ namespace gellisary
 			bool complement; /* Für die "Location"-Angabe in der Table-Zeile.*/
 			std::vector<int> positions; /* Für die "Location"-Angabe in der 
 				Table-Zeile.*/
+			std::string flatfile_name;	/*Der Name der Flat-Datei ohne Endung.*/
+			std::string flatfile_fullname;	/*Der volle Name der Flat-Datei.*/
+			std::string flatfile_basename;	/*Der volle Name der Flat-Datei.*/
 			int counter_a; /* Für die Sequence-Zeile,
 				die aktuelle Zahl der a-Basen*/
 			int counter_c; /* Für die Sequence-Zeile,
@@ -97,7 +100,7 @@ namespace gellisary
 			GALogger & logger; /* Zuständig für das Protokollieren der Fehler
 				und Ausnahmen.*/
 			GAARB & arb; /* Ein Wrapper Objekt für die benötigten ARB-Funktionen.*/
-			std::ifstream & arb_file; /* Wie der Name der VAriable sagt, es ist 
+			std::ifstream arb_file; /* Wie der Name der VAriable sagt, es ist 
 				die Referenz auf die einzulesende Datei.*/
 			
 			bool find_word(const std::string &, const std::string &);
@@ -107,7 +110,7 @@ namespace gellisary
 			//std::string trim_end(const std::string & source, const char * delims = " \t\r\n");
 		
 		public:
-			GAFile(GALogger &, GAARB &, std::ifstream &);
+			GAFile(GALogger &, GAARB &, std::string &);
 			//GAFile();
 			virtual ~GAFile();
 			virtual void parse() = 0;

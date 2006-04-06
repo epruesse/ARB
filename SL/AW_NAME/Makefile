@@ -61,5 +61,4 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/client.h
-AW_rename.o: $(ARBHOME)/INCLUDE/names_client.h
 AW_rename.o: $(ARBHOME)/INCLUDE/servercntrl.h

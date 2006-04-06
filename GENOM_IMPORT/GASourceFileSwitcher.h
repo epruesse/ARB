@@ -27,10 +27,12 @@ namespace gellisary
 			static const int EMBL = 1;
 			static const int GENBANK = 2;
 			static const int DDBJ = 3;
+			static const int DDBJ_WITHOUT_HEADER = 4;
 			static const int UNKNOWN = 9;
 			GASourceFileSwitcher(const char *);
 			virtual ~GASourceFileSwitcher();
 			int make_a_decision();
+			bool containsHeader();
 	};
 };
 

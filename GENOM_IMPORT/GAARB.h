@@ -61,6 +61,7 @@ namespace gellisary
 			virtual ~GAARB();
 			bool write_genome_sequence(const std::string &, int, int, int, int, int, int);
 			bool write_next_gene(const std::string &, const std::string &, const std::string &, std::vector<int> &, bool, int);
+			bool create_new_genome();
 			bool write_qualifier(const std::string &, const std::string &);
 			bool write_metadata_line(const std::string &, const std::string &, int);
 			bool write_integer(const std::string &, int, bool);
