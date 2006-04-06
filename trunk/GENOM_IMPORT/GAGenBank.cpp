@@ -2,7 +2,7 @@
 #include "GAGenBank.h"
 #endif
 
-gellisary::GAGenBank::GAGenBank(GALogger & nLogger, GAARB & nARB, std::ifstream & nARB_File) : GAFile(nLogger, nARB, nARB_File)
+gellisary::GAGenBank::GAGenBank(GALogger & nLogger, GAARB & nARB, std::string & nARB_Filename) : GAFile(nLogger, nARB, nARB_Filename)
 {
 	line_identifiers["LOCUS"] = "identification";
 	line_identifiers["ACCESSION"] = "accession_number";
@@ -291,6 +291,7 @@ void gellisary::GAGenBank::dissectMetaLine(const std::string & source_line)
 		if(t_line_t == "LOCUS")
 		{
 			arb.write_metadata_line("source_database", "genbank", 0);
+			arb.write_metadata_line("flatfile_name", flatfile_name,0);
 			line_id = t_line_t;
 			value = t_line;
 		}

@@ -2,7 +2,7 @@
 #include "GAEmbl.h"
 #endif
 
-gellisary::GAEmbl::GAEmbl(GALogger & nLogger, GAARB & nARB, std::ifstream & nARB_File) : GAFile(nLogger, nARB, nARB_File)
+gellisary::GAEmbl::GAEmbl(GALogger & nLogger, GAARB & nARB, std::string & nARB_Filename) : GAFile(nLogger, nARB, nARB_Filename)
 {
 	line_identifiers["ID"] = "identification";
 	line_identifiers["AC"] = "accession_number";
@@ -276,6 +276,7 @@ void gellisary::GAEmbl::dissectMetaLine(const std::string & source_line)
 		else if(t_line_id == "ID")
 		{
 			arb.write_metadata_line("source_database", "embl",0);
+			arb.write_metadata_line("flatfile_name", flatfile_name,0);
 			type = META;
 			line_id = t_line_id;
 			value = t_line;

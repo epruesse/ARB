@@ -2,7 +2,21 @@
 #include "GADDBJ.h"
 #endif
 
-gellisary::GADDBJ::GADDBJ(GALogger & nLogger, GAARB & nARB, std::ifstream & nARB_File) : GAFile(nLogger, nARB, nARB_File)
+/*
+ * Zu tun:
+ * 	Sehr wichtig: in GASourceFileSwitcher soll noch die DDBJ-Datei auf
+ * das Vorhandensein des Hauptheaders untersucht werden. Wenn er da ist, dann
+ * wird die Datei ganz normal abgearbeitet. Wenn er aber fehlt,
+ * muss wohl oder übel danach gesucht werden. Meistens wird der Hauptheader
+ * in <Datei Name>.con Dateien gespeichert. Wenn diese Datei gefunden werden
+ * kann, dann soll ich die beiden Dateien virtuell zusammen führen und 
+ * ganz normal abarbeiten. 'Virtuell zusammen führen' bedeutet, es wird zuerst
+ * die eine Dateie (<name>.con) geöffnet, abgearbeitet und geschlossen, dann
+ * wird die zweite (<name>.ff) geöffnet, abgearbeitet und geschlossen. Das alles
+ * ('Virtuell zusammen führen') soll ich in der Funktion: parse() behandeln.
+ */
+
+gellisary::GADDBJ::GADDBJ(GALogger & nLogger, GAARB & nARB, std::string & nARB_Filename, bool withHeader) : GAFile(nLogger, nARB, nARB_Filename)
 {
 	line_identifiers["LOCUS"] = "identification";
 	line_identifiers["ACCESSION"] = "accession_number";
@@ -20,11 +34,13 @@ gellisary::GADDBJ::GADDBJ(GALogger & nLogger, GAARB & nARB, std::ifstream & nARB
 	line_identifiers["PUBMED"] = "reference_pubmed";
 	line_identifiers["CONSRTM"] = "reference_consrtm"; // may be 'consortium'
 	line_identifiers["COMMENT"] = "comments_or_notes";
+	line_identifiers["CONTIG"] = "contig";
 	line_identifiers["//"] = "termination";
-
+	
 	type = EMPTY;
 	complement = false;
-
+	with_header = withHeader;
+	
 	error_line_to_short = "line is to short (min 2 chars)";
 	error_line_to_short_for_sequence = "line is to short for genome sequence (must be 80 chars)";
 	error_line_to_long = "line is to long (max 80 chars)";
@@ -38,7 +54,7 @@ gellisary::GADDBJ::GADDBJ(GALogger & nLogger, GAARB & nARB, std::ifstream & nARB
 	error_char_not_empty = "char is not empty";
 	error_wrong_sequence_format = "sequence format is wrong";
 	error_wrong_line_format = "line format is wrong";
-
+	
 	counter_a = 0;
 	counter_c = 0;
 	counter_g = 0;
@@ -49,6 +65,11 @@ gellisary::GADDBJ::GADDBJ(GALogger & nLogger, GAARB & nARB, std::ifstream & nARB
 	counter_character = 0;
 	line_id = "";
 	feature = "";
+	sequence_offset = 0;
+	section_number = 0;
+	genome_sequence = "";
+	counter_all = 0;
+	counter_feature = 0;
 }
 
 bool gellisary::GADDBJ::check_line_identifier(const std::string & source_line_identifier)
@@ -76,11 +97,11 @@ void gellisary::GADDBJ::dissectGenomeSequenceLine(const std::string & source_lin
 {
 	if(type == META)
 	{
-		emptySequence();
+		//emptySequence();
 		type = SEQUENCE;
 		line_id = "SE";
 		type = SEQUENCE;
-		counter = 0;
+		//counter_all = 0;
 	}
 	bool mustBeEnd = false;
 	char t_base;
@@ -89,7 +110,7 @@ void gellisary::GADDBJ::dissectGenomeSequenceLine(const std::string & source_lin
 	{
 		if(source_line[i] == ' ')
 		{
-			if(((i != 9) && (i != 20) && (i != 31) && (i != 42) && (i != 53) && (i != 64)) && ((i >= 75) || (i < 8)))
+			if(((i != 9) && (i != 20) && (i != 31) && (i != 42) && (i != 53) && (i != 64)) && ((i >= 75) || (i == 8)))
 			{
 				if(!mustBeEnd)
 				{
@@ -107,11 +128,14 @@ void gellisary::GADDBJ::dissectGenomeSequenceLine(const std::string & source_lin
 			}
 			else if((i >= 0) && (i <= 8))
 			{
-				if(!isdigit(source_line[i]))
+				if(!std::isdigit(source_line[i]))
 				{
-					// Fehler
-					logger.add_log_entry(error_wrong_sequence_format+" = "+source_line.substr(i,1), counter_line, i);
-					break;
+					if(!std::isspace(source_line[i]))
+					{
+						// Fehler
+						logger.add_log_entry(error_wrong_sequence_format+" tja = "+source_line, counter_line, i);
+						break;
+					}
 				}
 			}
 			else
@@ -119,14 +143,14 @@ void gellisary::GADDBJ::dissectGenomeSequenceLine(const std::string & source_lin
 				if(mustBeEnd)
 				{
 					// Fehler
-					logger.add_log_entry(error_wrong_sequence_format+" = "+source_line.substr(i,1), counter_line, i);
+					logger.add_log_entry(error_wrong_sequence_format+" 2 = "+source_line.substr(i,1), counter_line, i);
 					break;
 				}
 				else
 				{
-					if(isalpha(source_line[i]))
+					if(std::isalpha(source_line[i]))
 					{
-						counter++;
+						counter_all++;
 						t_base = std::tolower(source_line[i]);
 						if(t_base == 'a')
 						{
@@ -148,7 +172,7 @@ void gellisary::GADDBJ::dissectGenomeSequenceLine(const std::string & source_lin
 						{
 							counter_other++;
 						}
-						value.push_back(t_base);
+						genome_sequence.push_back(t_base);
 					}
 				}
 			}
@@ -158,8 +182,8 @@ void gellisary::GADDBJ::dissectGenomeSequenceLine(const std::string & source_lin
 
 void gellisary::GADDBJ::emptySequence()
 {
-	counter = 0;
-	value = "";
+	counter_all = 0;
+	genome_sequence = "";
 	counter_a = 0;
 	counter_c = 0;
 	counter_g = 0;
@@ -179,6 +203,11 @@ void gellisary::GADDBJ::dissectMetaLine(const std::string & source_line)
 	{
 		has_space = false;
 	}
+	/*if(type == END)
+	{
+		arb.create_new_genome();
+		type = EMPTY;
+	}*/
 	if(type == META)
 	{
 		if((t_line_id[0] == ' ') && (t_line_id[1] == ' ') && (t_line_id[2] == ' '))
@@ -291,6 +320,7 @@ void gellisary::GADDBJ::dissectMetaLine(const std::string & source_line)
 		if(t_line_t == "LOCUS")
 		{
 			arb.write_metadata_line("source_database", "ddbj", 0);
+			arb.write_metadata_line("flatfile_name", flatfile_name,0);
 			line_id = t_line_t;
 			value = t_line;
 		}
@@ -304,10 +334,35 @@ void gellisary::GADDBJ::dissectMetaLine(const std::string & source_line)
 	else if(type == TABLE)
 	{
 		t_line_t = trim(t_line_id);
-		arb.write_qualifier(qualifier,value);
+		if(feature != "source")
+		{
+			if(qualifier != "translation")
+			{
+				arb.write_qualifier(qualifier,value);
+			}
+			else
+			{
+				qualifier = "";
+				value = "";
+			}
+		}
+		else
+		{
+			if(section_number == 0)
+			{
+				arb.write_metadata_line(qualifier,value,0);
+			}
+		}
 		type = META;
 		line_id = t_line_t;
 		value = t_line;
+	}
+	else if(type == END)
+	{
+		t_line_t = trim(t_line_id);
+		line_id = t_line_t;
+		value = t_line;
+		type = META;
 	}
 }
 
@@ -356,7 +411,16 @@ void gellisary::GADDBJ::dissectTableFeatureLine(const std::string & source_line)
 								}
 								else
 								{
-									arb.write_metadata_line(qualifier,value,0);
+									if(section_number > 0)
+									{
+										std::stringstream t_name;
+										t_name << "contig_" << section_number << "_" << qualifier;
+										arb.write_metadata_line(t_name.str(),value,0);
+									}
+									else
+									{
+										arb.write_metadata_line(qualifier,value,0);
+									}
 								}
 								qualifier = t_qualifier;
 								value = t_value;
@@ -394,7 +458,16 @@ void gellisary::GADDBJ::dissectTableFeatureLine(const std::string & source_line)
 		   		{
 		   			if(feature == "source")
 					{
-						arb.write_metadata_line(qualifier,value,0);
+						if(section_number > 0)
+						{
+							std::stringstream t_name;
+							t_name << "contig_" << section_number << "_" << qualifier;
+							arb.write_metadata_line(t_name.str(),value,0);
+						}
+						else
+						{
+							arb.write_metadata_line(qualifier,value,0);
+						}
 					}
 					else
 					{
@@ -409,15 +482,16 @@ void gellisary::GADDBJ::dissectTableFeatureLine(const std::string & source_line)
 						}
 					}
 					feature = trim(t_key);
-					counter++;
+					counter_feature++;
 					qualifier = "location";
 					complement = false;
-					value = t_qualifier_line;
 					dissectLocation(t_qualifier_line);
+					//value = t_qualifier_line;
+					modifyLocation(t_qualifier_line);
 					std::stringstream t_name;
-					t_name << feature << "_" << counter;
+					t_name << feature << "_" << counter_feature;
 					name = t_name.str();
-					arb.write_next_gene(name, feature, value, positions, complement, counter);
+					arb.write_next_gene(name, feature, value, positions, complement, counter_feature);
 		   		}
 		    }
 		    else
@@ -454,7 +528,16 @@ void gellisary::GADDBJ::check_and_write_metadata_line()
 	{
 		if(check_line_identifier(line_id))
 		{
-			arb.write_metadata_line(line_identifiers[line_id],value,counter);
+			if(section_number > 0)
+			{
+				std::stringstream t_name;
+				t_name << "contig_" << section_number << "_" << line_identifiers[line_id];
+				arb.write_metadata_line(t_name.str(),value,counter);
+			}
+			else
+			{
+				arb.write_metadata_line(line_identifiers[line_id],value,counter);
+			}
 		}
 		else
 		{
@@ -464,14 +547,32 @@ void gellisary::GADDBJ::check_and_write_metadata_line()
 			{
 				v_l_line_id.push_back(std::tolower(line_id[j]));
 			}
-			arb.write_metadata_line(v_l_line_id,value,counter);
+			if(section_number > 0)
+			{
+				std::stringstream t_name;
+				t_name << "contig_" << section_number << "_" << v_l_line_id;
+				arb.write_metadata_line(t_name.str(),value,counter);
+			}
+			else
+			{
+				arb.write_metadata_line(v_l_line_id,value,counter);
+			}
 		}
 	}
 	else
 	{
 		if(check_line_identifier(feature))
 		{
-			arb.write_metadata_line(line_identifiers[feature],value,counter);
+			if(section_number > 0)
+			{
+				std::stringstream t_name;
+				t_name << "contig_" << section_number << "_" << line_identifiers[feature];
+				arb.write_metadata_line(t_name.str(),value,counter);
+			}
+			else
+			{
+				arb.write_metadata_line(line_identifiers[feature],value,counter);
+			}
 		}
 		else
 		{
@@ -487,7 +588,16 @@ void gellisary::GADDBJ::check_and_write_metadata_line()
 			{
 				v_l_line_id.push_back(std::tolower(feature[j]));
 			}
-			arb.write_metadata_line(v_l_line_id,value,counter);
+			if(section_number > 0)
+			{
+				std::stringstream t_name;
+				t_name << "contig_" << section_number << "_" << v_l_line_id;
+				arb.write_metadata_line(t_name.str(),value,counter);
+			}
+			else
+			{
+				arb.write_metadata_line(v_l_line_id,value,counter);
+			}
 		}
 	}
 }
@@ -502,7 +612,7 @@ void gellisary::GADDBJ::dissectLocation(const std::string & source)
 	int t_source_size = t_source.size();
 	for(int i = 0; i < t_source_size; i++)
 	{
-		if(!isdigit(t_source[i]))
+		if(!std::isdigit(t_source[i]))
 		{
 			t_source[i] = ' ';
 		}
@@ -513,8 +623,61 @@ void gellisary::GADDBJ::dissectLocation(const std::string & source)
 	{
 		for(int i = 0; i < (int) t_positions.size(); i++)
 		{
-			positions.push_back(std::atoi((t_positions[i]).c_str()));
+			positions.push_back((std::atoi((t_positions[i]).c_str())+sequence_offset));
 		}
+	}
+}
+
+void gellisary::GADDBJ::modifyLocation(const std::string & source)
+{
+	std::string t_source_pre;
+	int source_size = source.size();
+	bool same_digit = false;
+	for(int i = 0; i < source_size; i++)
+	{
+		if(!std::isdigit(source[i]))
+		{
+			t_source_pre.push_back(source[i]);
+			same_digit = false;
+		}
+		else
+		{
+			if(!same_digit)
+			{
+				t_source_pre.push_back('|');
+				same_digit = true;
+			}
+		}
+	}
+	std::string t_source(source);
+	int t_source_size = t_source.size();
+	for(int i = 0; i < t_source_size; i++)
+	{
+		if(!std::isdigit(t_source[i]))
+		{
+			t_source[i] = ' ';
+		}
+	}
+	std::vector<std::string> t_positions;
+	std::stringstream t_source_post;
+	if(split_string(t_source,t_positions))
+	{
+		int j = 0;
+		for(int i = 0; i < (int) t_source_pre.size(); i++)
+		{
+			if(t_source_pre[i] == '|')
+			{
+				if(j < (int) t_positions.size())
+				{
+					t_source_post << (std::atoi((t_positions[j++]).c_str())+sequence_offset);
+				}
+			}
+			else
+			{
+				t_source_post << t_source_pre[i];
+			}
+		}
+		value = t_source_post.str();
 	}
 }
 
@@ -537,11 +700,20 @@ bool gellisary::GADDBJ::line_examination(const std::string & source_line)
 		{
 			if(new_type == END)
 		 	{
-		 		if(type == SEQUENCE)
+		 		if(type == META)
 		 		{
-		 			arb.write_genome_sequence(value,counter,counter_a,counter_c,counter_g,counter_t,counter_other);
-		 			// Alles muss geschlossen werden.
-		 		}
+		 			if(feature != "" || line_id != "")
+					{
+						check_and_write_metadata_line();
+					}
+					line_id = "";
+					feature = "";
+					counter = 0;
+			 	}
+			 	
+		 		section_number++;
+		 		type = END;
+		 		sequence_offset = counter_all;
 		 		return true;
 		 	}
 		 	else
@@ -568,11 +740,9 @@ bool gellisary::GADDBJ::line_examination(const std::string & source_line)
 			counter = 0;
 			return true;
 		}
-		else // Genome Sequence
+		else
 		{
-			new_type = SEQUENCE;
-			dissectGenomeSequenceLine(source_line);
-			return true;
+			return false;
 		}
 	}
 	else // Normaler Fall, hier müssen drei verbliebene Zeileformate voneinander getrennt werden.
@@ -601,22 +771,53 @@ bool gellisary::GADDBJ::line_examination(const std::string & source_line)
 		}
 		else
 		{
-			// Fehler
-			logger.add_log_entry(error_wrong_line_format, counter_line,0);
+			if(!find_word(source_line,"BASE COUNT"))
+			{
+				// Fehler
+				logger.add_log_entry(error_wrong_line_format, counter_line,0);
+			}
 			return false;
 		}
 	}
+	return false;
 }
 
 void gellisary::GADDBJ::parse()
 {
 	char buffer[100];
+	if(!with_header)
+	{
+		
+		std::ifstream con_file((flatfile_basename+"/"+flatfile_name+".con").c_str());
+		if(con_file.is_open())
+		{
+			while(!con_file.eof())
+			{
+				con_file.getline(buffer,100);
+				std::string t_line(buffer);
+				line_examination(t_line);
+				counter_line++;
+			}
+			con_file.close();
+		}
+		else
+		{
+			// Fehler
+			logger.add_log_entry("the file : "+flatfile_basename+"/"+flatfile_name+".con is not exists", counter_line,0);
+		}
+		type = END;
+	}
 	while(!arb_file.eof())
 	{
 		arb_file.getline(buffer,100);
 		std::string t_line(buffer);
 		line_examination(t_line);
 		counter_line++;
+	}
+	arb_file.close();
+	if(type == END)
+	{
+		arb.write_genome_sequence(genome_sequence,counter_all,counter_a,counter_c,counter_g,counter_t,counter_other);
 	}
 }
 

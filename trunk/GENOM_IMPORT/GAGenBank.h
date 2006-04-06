@@ -56,7 +56,7 @@ namespace gellisary
 			void check_and_write_metadata_line();
 			
 		public:
-			GAGenBank(GALogger &, GAARB &, std::ifstream &);
+			GAGenBank(GALogger &, GAARB &, std::string &);
 			virtual ~GAGenBank();
 			virtual void parse();
 	};

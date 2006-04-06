@@ -51,7 +51,6 @@ probe_design.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_tree_cb.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/client.h
 probe_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
-probe_design.o: $(ARBHOME)/INCLUDE/PT_com.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
 probe_match_parser.o: probe_match_parser.hxx

@@ -312,7 +312,6 @@ NT_extern.o: ap_pos_var_pars.hxx
 NT_extern.o: etc_check_gcg.hxx
 NT_extern.o: nt_cb.hxx
 NT_extern.o: nt_concatenate.hxx
-NT_extern.o: nt_date.h
 NT_extern.o: nt_edconf.hxx
 NT_extern.o: nt_import.hxx
 NT_extern.o: nt_internal.h
@@ -405,7 +404,6 @@ NT_join.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 NT_main.o: nt_cb.hxx
 NT_main.o: nt_concatenate.hxx
-NT_main.o: nt_date.h
 NT_main.o: ntree.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

@@ -53,5 +53,4 @@ pgd_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 pgd_main.o: $(ARBHOME)/INCLUDE/client.h
 pgd_main.o: $(ARBHOME)/INCLUDE/config_parser.h
 pgd_main.o: $(ARBHOME)/INCLUDE/output.h
-pgd_main.o: $(ARBHOME)/INCLUDE/PT_com.h
 pgd_main.o: $(ARBHOME)/INCLUDE/servercntrl.h

@@ -21,18 +21,7 @@ int gellisary::GASourceFileSwitcher::make_a_decision()
             }
         }
     }
-    for(int i = (file_name_size-1); i >= 0; i--)
-    {
-        if(file_name[i] == '/')
-        {
-            for(int j = (i+1); j < file_name_size; j++)
-            {
-                file_name += file_name[j];
-            }
-            break;
-        }
-    }
-    if((extension != "embl") && (extension != "gbk") && (extension != "ff") && (extension != "ddbj"))
+    if((extension != "embl") && (extension != "gbk") && (extension != "dat") && (extension != "ff") && (extension != "ddbj"))
     {
         flat_file.open(file_name.c_str());
         char tmp_line[128];
@@ -51,7 +40,7 @@ int gellisary::GASourceFileSwitcher::make_a_decision()
         }
         flat_file.close();
     }
-    if(extension == "embl")
+    if(extension == "embl" || extension == "dat")
     {
     	return EMBL;
     }
@@ -61,12 +50,62 @@ int gellisary::GASourceFileSwitcher::make_a_decision()
     }
     else if((extension == "ff") || (extension == "ddbj"))
     {
-    	return DDBJ;
+    	if(containsHeader())
+    	{
+	    	return DDBJ;
+    	}
+    	else
+    	{
+    		return DDBJ_WITHOUT_HEADER;
+    	}
     }
     else
     {
     	return UNKNOWN;
     }
+}
+
+bool gellisary::GASourceFileSwitcher::containsHeader()
+{
+	
+	flat_file.open(file_name.c_str());
+	char buffer[100];
+	while(!flat_file.eof())
+	{
+		flat_file.getline(buffer,100);
+		std::string t_line(buffer);
+		std::string::size_type pos_first = t_line.find_first_of(" ");
+		if(pos_first != std::string::npos)
+		{
+			std::string key_string = t_line.substr(0,pos_first);
+			if(key_string == "ACCESSION" || key_string == "accession")
+			{
+				pos_first += 3;
+				std::string value_string = t_line.substr(pos_first);
+				std::string::size_type pos_second = value_string.find_first_of(" ");
+				if(pos_second != std::string::npos)
+				{
+					flat_file.close();
+					return false;
+				}
+				else
+				{
+					flat_file.close();
+					return true;
+				}
+				break;
+			}
+			else
+			{
+				continue;
+			} 
+		}
+	}
+	if(flat_file.is_open())
+	{
+		flat_file.close();
+	}
+	return false;
 }
 
 gellisary::GASourceFileSwitcher::~GASourceFileSwitcher()
