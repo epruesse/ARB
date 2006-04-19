@@ -70,6 +70,8 @@ namespace gellisary
 			int counter_feature;
 			bool with_header;
 			
+			int counter_tmp;
+			
 			bool check_line_identifier(const std::string &);
 			void dissectGenomeSequenceLine(const std::string &);
 			void dissectMetaLine(const std::string &);
@@ -81,7 +83,11 @@ namespace gellisary
 			void check_and_write_metadata_line();
 			
 		public:
+	#if defined(DEBUG)
 			GADDBJ(GALogger &, GAARB &, std::string &, bool);
+	#else
+			GADDBJ(GAARB &, std::string &, bool);
+	#endif
 			virtual ~GADDBJ();
 			void parse();
 	};

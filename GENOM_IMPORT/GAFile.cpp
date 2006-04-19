@@ -2,6 +2,7 @@
 #include "GAFile.h"
 #endif
 
+#if defined(DEBUG)
 gellisary::GAFile::GAFile(GALogger & nLogger, GAARB & nARB, std::string & nARB_Filename) : logger(nLogger), arb(nARB)
 {
 	flatfile_fullname = nARB_Filename;
@@ -24,6 +25,30 @@ gellisary::GAFile::GAFile(GALogger & nLogger, GAARB & nARB, std::string & nARB_F
 		flatfile_basename = "";
 	}
 }
+#else
+gellisary::GAFile::GAFile(GAARB & nARB, std::string & nARB_Filename) : arb(nARB)
+{
+	flatfile_fullname = nARB_Filename;
+	arb_file.open(flatfile_fullname.c_str());
+	std::string::size_type pos_last = flatfile_fullname.find_last_of("/");
+	std::string::size_type pos_point = flatfile_fullname.find_last_of(".");
+	if(pos_last != std::string::npos && pos_point != std::string::npos)
+	{
+		flatfile_basename = flatfile_fullname.substr(0,pos_last);
+		flatfile_name = flatfile_fullname.substr(++pos_last,(pos_point-pos_last-1));
+	}
+	else if(pos_last != std::string::npos)
+	{
+		flatfile_basename = flatfile_fullname.substr(0,pos_last);
+		flatfile_name = flatfile_fullname.substr(++pos_last);
+	}
+	else
+	{
+		flatfile_name = "";
+		flatfile_basename = "";
+	}
+}
+#endif
 
 //gellisary::GAFile::GAFile(){}
 
