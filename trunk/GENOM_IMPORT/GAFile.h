@@ -96,9 +96,10 @@ namespace gellisary
 			int counter_character; /* Zähl die Zeichen in einer Zeile.*/
 			std::string name; /* Steht für den Namen des einzelnen Gens / Feature.
 				Er muss einmalig innerhalb des Genoms sein.*/
-				
+	#if defined(DEBUG)			
 			GALogger & logger; /* Zuständig für das Protokollieren der Fehler
 				und Ausnahmen.*/
+	#endif
 			GAARB & arb; /* Ein Wrapper Objekt für die benötigten ARB-Funktionen.*/
 			std::ifstream arb_file; /* Wie der Name der VAriable sagt, es ist 
 				die Referenz auf die einzulesende Datei.*/
@@ -110,7 +111,11 @@ namespace gellisary
 			//std::string trim_end(const std::string & source, const char * delims = " \t\r\n");
 		
 		public:
+	#if defined(DEBUG)
 			GAFile(GALogger &, GAARB &, std::string &);
+	#else
+			GAFile(GAARB &, std::string &);
+	#endif
 			//GAFile();
 			virtual ~GAFile();
 			virtual void parse() = 0;

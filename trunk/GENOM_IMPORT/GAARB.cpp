@@ -9,6 +9,7 @@ gellisary::GAARB::GAARB(GBDATA * gb_main, const char * ali_name)
 	GBDATA *gb_species_data = GB_search(arb, "species_data", GB_CREATE_CONTAINER);
 	char *new_species_name = AWTC_makeUniqueShortName("genome", gb_species_data);
 	genome = GBT_create_species(arb, new_species_name);
+	//gene = null;
 }
 
 bool gellisary::GAARB::create_new_genome()
@@ -169,7 +170,7 @@ bool gellisary::GAARB::write_next_gene(const std::string & gene_name, const std:
 			gene_size += positions[1];
 			write_integer("pos_end",positions[1],false);
 		}
-		write_integer("gene_length",++gene_size);
+		write_integer("gene_length",++gene_size,false);
 		return true;
 	}
 	else

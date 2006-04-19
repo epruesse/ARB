@@ -57,7 +57,11 @@ namespace gellisary
 			void dissectLocation(const std::string &);
 			
 		public:
+	#if defined(DEBUG)
 			GAEmbl(GALogger &, GAARB &, std::string &);
+	#else
+			GAEmbl(GAARB &, std::string &);
+	#endif
 			virtual ~GAEmbl();
 			virtual void parse();
 	};
