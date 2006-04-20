@@ -440,6 +440,7 @@ void gellisary::GADDBJ::dissectTableFeatureLine(const std::string & source_line)
 	std::string t_qualifier_line = trim(source_line.substr(21), " \n\t\r\"");
 	std::string::size_type t_pos;
 	std::string::size_type t_none_pos;
+	std::string::size_type t_none_pos2;
 	if(type == TABLE) // die vorherige Zeile war Table Feature
 	{
 		/*
@@ -462,7 +463,8 @@ void gellisary::GADDBJ::dissectTableFeatureLine(const std::string & source_line)
 					{
 						std::string t_qualifier = t_qualifier_line.substr(1,(t_pos-1));
 						t_none_pos = t_qualifier.find(" ");
-						if(t_none_pos == std::string::npos)
+						t_none_pos2 = t_qualifier.find("-");
+						if((t_none_pos == std::string::npos) && (t_none_pos2 == std::string::npos))
 						{
 							std::string t_value = trim(t_qualifier_line.substr(++t_pos)," \n\t\r\"");
 							if(t_qualifier == qualifier)
