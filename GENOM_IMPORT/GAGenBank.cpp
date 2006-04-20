@@ -125,6 +125,7 @@ bool gellisary::GAGenBank::check_line_identifier(const std::string & source_line
 
 void gellisary::GAGenBank::dissectGenomeSequenceLine(const std::string & source_line)
 {
+	//td::cout << "Genome Sequence Line = " << counter_line << " # " << source_line << std::endl;
 	if(type == META)
 	{
 		emptySequence();
@@ -226,6 +227,7 @@ void gellisary::GAGenBank::emptySequence()
 
 void gellisary::GAGenBank::dissectMetaLine(const std::string & source_line)
 {
+	//std::cout << "Meta Line = " << counter_line << " # " << source_line << std::endl;
 	std::string t_line_id = source_line.substr(0,12);
 	std::string t_pre_line = source_line.substr(12);
 	std::string t_line = trim(t_pre_line);
@@ -376,10 +378,12 @@ void gellisary::GAGenBank::dissectMetaLine(const std::string & source_line)
 
 void gellisary::GAGenBank::dissectTableFeatureLine(const std::string & source_line)
 {
+	//std::cout << "Table Feature Line = " << counter_line << " # " << source_line << std::endl;
 	std::string t_key = source_line.substr(0,21);
 	std::string t_qualifier_line = trim(source_line.substr(21), " \n\t\r\"");
 	std::string::size_type t_pos;
 	std::string::size_type t_none_pos;
+	std::string::size_type t_none_pos2;
 	if(type == TABLE)
 	{
 		if((t_key[0] == ' ') && (t_key[1] == ' ') && (t_key[2] == ' ') && (t_key[3] == ' ') && (t_key[4] == ' '))
@@ -395,7 +399,8 @@ void gellisary::GAGenBank::dissectTableFeatureLine(const std::string & source_li
 					{
 						std::string t_qualifier = t_qualifier_line.substr(1,(t_pos-1));
 						t_none_pos = t_qualifier.find(" ");
-						if(t_none_pos == std::string::npos)
+						t_none_pos2 = t_qualifier.find("-");
+						if((t_none_pos == std::string::npos) && (t_none_pos2 == std::string::npos))
 						{
 							std::string t_value = trim(t_qualifier_line.substr(++t_pos)," \n\t\r\"");
 							if(t_qualifier == qualifier)
