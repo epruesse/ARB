@@ -520,9 +520,10 @@ void gellisary::GAEmbl::dissectTableFeatureLine(const std::string & source_line)
 			complement = false;
 			value = t_qualifier_line;
 			dissectLocation(value);
-			std::stringstream t_name;
-			t_name << feature << "_" << counter;
-			name = t_name.str();
+			name = generateGeneID(value,feature);
+			//std::stringstream t_name;
+			//t_name << feature << "_" << counter;
+			//name = t_name.str();
 			arb.write_next_gene(name, feature, value, positions, complement, counter);
 		}
 	}

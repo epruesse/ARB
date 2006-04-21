@@ -52,6 +52,78 @@ gellisary::GAFile::GAFile(GAARB & nARB, std::string & nARB_Filename) : arb(nARB)
 
 //gellisary::GAFile::GAFile(){}
 
+std::string gellisary::GAFile::generateGeneID(const std::string & location, const std::string & feature_type, const std::string & product, const std::string & gene)
+{
+	std::string result;
+    bool next = true;
+    int pointer = 0;
+    std::ostringstream string_out_1;
+    std::ostringstream string_out_2;
+    std::string str_1;
+    std::string str_2;
+    bool drin = false;
+    string_out_1 << feature_type;
+    string_out_1 << '_';
+    int i = 0;
+    
+    std::string::size_type product_size = product.size();
+    std::string product_prepared;
+    for(int j = 0; j < product_size; j++)
+    {
+    	if(product[j] == ' ')
+    	{
+    		product_prepared.push_back('_');
+    	}
+    	else
+    	{
+    		product_prepared.push_back(product[j]);
+    	}
+    }
+    while(next)
+    {
+        i = location[pointer++];
+        if(i >= 48 && i <= 57)
+        {
+		    if(!drin)
+		    {
+		    	drin = true;
+		    }
+		    string_out_2 << (char)i;
+        } 
+        else if(drin)
+        {
+        	drin = false;
+        	break;
+        }
+        if(pointer == (int) location.size())
+        {
+            break;
+        }
+    }
+    str_1 = string_out_2.str();
+    str_2 = string_out_1.str();
+    
+  	int rest = 29 - (int)str_2.size() - (int) str_1.size();
+   	if(product_prepared != "nix")
+   	{
+   		if(rest < (int)product_prepared.size())
+	   	{
+	   		product_prepared.resize(rest);
+	   		string_out_1 << product_prepared;
+		    string_out_1 << '_';
+	   	}
+	   	else
+	   	{
+	   		string_out_1 << product_prepared;
+		    string_out_1 << '_';
+		}
+   	}
+
+   	string_out_1 << str_1;
+    result = string_out_1.str();
+    return result;
+}
+
 bool gellisary::GAFile::find_word(const std::string & source, const std::string & word_to_find)
 {
 	int source_size = source.size();
