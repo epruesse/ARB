@@ -421,6 +421,7 @@ void gellisary::GADDBJ::dissectMetaLine(const std::string & source_line)
 			}
 		}
 		type = META;
+		arb.close();
 		line_id = t_line_t;
 		value = t_line;
 	}
@@ -599,11 +600,11 @@ void gellisary::GADDBJ::dissectTableFeatureLine(const std::string & source_line)
 					dissectLocation(t_qualifier_line);
 					//value = t_qualifier_line;
 					modifyLocation(t_qualifier_line);
-					name = generateGeneID(t_qualifier_line,feature);
+					//name = generateGeneID(t_qualifier_line,feature);
 					//std::stringstream t_name;
 					//t_name << feature << "_" << counter;
 					//name = t_name.str();
-					arb.write_next_gene(name, feature, value, positions, complement, counter_feature);
+					arb.write_next_gene(feature, value, positions, complement, counter_feature);
 		   		}
 		    }
 		    else
@@ -869,12 +870,14 @@ bool gellisary::GADDBJ::line_examination(const std::string & source_line)
 		{
 			new_type = META;
 			type = META;
+			arb.close();
 			line_id = "ORIGIN";
 			counter = 0;
 			return true;
 		}
 		else
 		{
+			arb.close();
 			return false;
 		}
 	}
@@ -910,6 +913,10 @@ bool gellisary::GADDBJ::line_examination(const std::string & source_line)
 	#if defined(DEBUG)
 				logger.add_log_entry(error_wrong_line_format, counter_line,counter_character);
 	#endif
+			}
+			else
+			{
+				arb.close();
 			}
 			return false;
 		}

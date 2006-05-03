@@ -109,7 +109,7 @@ namespace gellisary
 			std::string trim(const std::string & source, const char * delims = " \t\r\n");
 			//std::string trim_begin(const std::string & source, const char * delims = " \t\r\n");
 			//std::string trim_end(const std::string & source, const char * delims = " \t\r\n");
-			std::string generateGeneID(const std::string & name, const std::string & type, const std::string & product = "nix", const std::string & gene = "nix");
+			//std::string generateGeneID(const std::string & name, const std::string & type, const std::string & product = "nix", const std::string & gene = "nix");
 		
 		public:
 	#if defined(DEBUG)
