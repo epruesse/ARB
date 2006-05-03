@@ -52,7 +52,7 @@ gellisary::GAFile::GAFile(GAARB & nARB, std::string & nARB_Filename) : arb(nARB)
 
 //gellisary::GAFile::GAFile(){}
 
-std::string gellisary::GAFile::generateGeneID(const std::string & location, const std::string & feature_type, const std::string & product, const std::string & gene)
+/*std::string gellisary::GAFile::generateGeneID(const std::string & location, const std::string & feature_type, const std::string & product, const std::string & gene)
 {
 	std::string result;
     bool next = true;
@@ -68,7 +68,7 @@ std::string gellisary::GAFile::generateGeneID(const std::string & location, cons
     
     std::string::size_type product_size = product.size();
     std::string product_prepared;
-    for(int j = 0; j < product_size; j++)
+    for(int j = 0; j < (int) product_size; j++)
     {
     	if(product[j] == ' ')
     	{
@@ -122,7 +122,7 @@ std::string gellisary::GAFile::generateGeneID(const std::string & location, cons
    	string_out_1 << str_1;
     result = string_out_1.str();
     return result;
-}
+}*/
 
 bool gellisary::GAFile::find_word(const std::string & source, const std::string & word_to_find)
 {

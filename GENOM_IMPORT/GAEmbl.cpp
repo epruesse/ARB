@@ -363,6 +363,7 @@ void gellisary::GAEmbl::dissectMetaLine(const std::string & source_line)
 	else if(type == TABLE)
 	{
 		arb.write_qualifier(qualifier,value);
+		arb.close();
 		type = META;
 		line_id = t_line_id;
 		value = t_line;
@@ -520,11 +521,11 @@ void gellisary::GAEmbl::dissectTableFeatureLine(const std::string & source_line)
 			complement = false;
 			value = t_qualifier_line;
 			dissectLocation(value);
-			name = generateGeneID(value,feature);
+			//name = generateGeneID(value,feature);
 			//std::stringstream t_name;
 			//t_name << feature << "_" << counter;
 			//name = t_name.str();
-			arb.write_next_gene(name, feature, value, positions, complement, counter);
+			arb.write_next_gene(feature, value, positions, complement, counter);
 		}
 	}
 	else if(type == META)
@@ -592,6 +593,7 @@ void gellisary::GAEmbl::emptyMeta()
 
 void gellisary::GAEmbl::emptyTable()
 {
+	arb.close();
 	counter = 0;
 	type = EMPTY;
 	line_id = "XX";
@@ -695,6 +697,10 @@ bool gellisary::GAEmbl::line_examination(const std::string & source_line)
 	 				{
 	 					arb.write_qualifier(qualifier,value);
 	 					emptyTable();
+	 				}
+	 				else
+	 				{
+	 					arb.close();
 	 				}
 	 			}
 		 	}

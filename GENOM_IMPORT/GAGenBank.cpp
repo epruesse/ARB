@@ -369,6 +369,7 @@ void gellisary::GAGenBank::dissectMetaLine(const std::string & source_line)
 	{
 		t_line_t = trim(t_line_id);
 		arb.write_qualifier(qualifier,value);
+		arb.close();
 		type = META;
 		line_id = t_line_t;
 		value = t_line;
@@ -516,11 +517,11 @@ void gellisary::GAGenBank::dissectTableFeatureLine(const std::string & source_li
 					complement = false;
 					value = t_qualifier_line;
 					dissectLocation(t_qualifier_line);
-					name = generateGeneID(t_qualifier_line,feature);
+					//name = generateGeneID(t_qualifier_line,feature);
 					//std::stringstream t_name;
 					//t_name << feature << "_" << counter;
 					//name = t_name.str();
-					arb.write_next_gene(name, feature, value, positions, complement, counter);
+					arb.write_next_gene(feature, value, positions, complement, counter);
 		   		}
 		    }
 		    else
@@ -690,12 +691,14 @@ bool gellisary::GAGenBank::line_examination(const std::string & source_line)
 			new_type = META;
 			type = META;
 			line_id = "ORIGIN";
+			arb.close();
 			counter = 0;
 			return true;
 		}
 		else // Genome Sequence
 		{
 			new_type = SEQUENCE;
+			arb.close();
 			dissectGenomeSequenceLine(source_line);
 			return true;
 		}
