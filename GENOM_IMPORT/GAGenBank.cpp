@@ -441,37 +441,44 @@ void gellisary::GAGenBank::dissectTableFeatureLine(const std::string & source_li
 					}
 					else
 					{
-						std::string t_qualifier = t_qualifier_line.substr(1);
-						t_none_pos = t_qualifier.find(" ");
+						t_none_pos = t_qualifier_line.find(" ");
 						if(t_none_pos == std::string::npos)
 						{
-							std::string t_value = trim(t_qualifier);
-							if(t_value != qualifier)
+							t_none_pos = t_qualifier_line.find(":{}");
+							if(t_none_pos == std::string::npos)
 							{
-								if(feature != "source")
+								if(t_qualifier_line != qualifier)
 								{
-									if(qualifier != "translation")
+									if(feature != "source")
 									{
-										arb.write_qualifier(qualifier,value);
+										if(qualifier != "translation")
+										{
+											arb.write_qualifier(qualifier,value);
+										}
+										else
+										{
+											qualifier = "";
+											value = "";
+										}
 									}
 									else
 									{
-										qualifier = "";
-										value = "";
+										arb.write_metadata_line(qualifier,value,0);
 									}
+									qualifier = t_qualifier_line;
+									value = "1";
 								}
-								else
-								{
-									arb.write_metadata_line(qualifier,value,0);
-								}
-								qualifier = t_value;
-								value = "1";
+							}
+							else
+							{
+								value += t_qualifier_line;
 							}
 						}
 						else
 						{
 							// Fehler
 							//value += t_qualifier_line;
+							value += t_qualifier_line;
 	#if defined(DEBUG)
 							logger.add_log_entry(error_wrong_line_format,counter_line,0);
 	#endif
