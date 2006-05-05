@@ -385,7 +385,7 @@ void gellisary::GADDBJ::dissectMetaLine(const std::string & source_line)
 		if(t_line_t == "LOCUS")
 		{
 			arb.write_metadata_line("source_database", "ddbj", 0);
-			arb.write_metadata_line("flatfile_name", flatfile_name,0);
+			arb.write_metadata_line("flatfile_name", flatfile_name+"."+flatfile_name_extension,0);
 			line_id = t_line_t;
 			value = t_line;
 		}
@@ -809,9 +809,11 @@ void gellisary::GADDBJ::modifyLocation(const std::string & source)
 
 bool gellisary::GADDBJ::line_examination(const std::string & source_line)
 {
+	end_of_file = false;
 	int line_size = source_line.size();
 	if(line_size < 2)
 	{
+		end_of_file = true;
 		if(type != END)
 		{
 	#if defined(DEBUG)
@@ -851,6 +853,7 @@ bool gellisary::GADDBJ::line_examination(const std::string & source_line)
 		 		section_number++;
 		 		type = END;
 		 		sequence_offset = counter_all;
+		 		end_of_file = true;
 		 		return true;
 		 	}
 		 	else
@@ -969,6 +972,15 @@ void gellisary::GADDBJ::parse()
 	if(type == END)
 	{
 		arb.write_genome_sequence(genome_sequence,counter_all,counter_a,counter_c,counter_g,counter_t,counter_other);
+		genome_sequence = "";
+	}
+	if(!end_of_file)
+	{
+		if(genome_sequence != "")
+		{
+			arb.write_genome_sequence(genome_sequence,counter_all,counter_a,counter_c,counter_g,counter_t,counter_other);
+		}
+		message_to_outside_world = "the flatfile "+flatfile_fullname+" is not complete";
 	}
 }
 

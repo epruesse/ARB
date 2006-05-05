@@ -334,7 +334,26 @@ std::string gellisary::GAARB::generate_gene_id(const std::string & location, con
     
     std::string::size_type product_size = product.size();
     std::string product_prepared;
-    for(int j = 0; j < product_size; j++)
+    
+	bool ziffer = false;
+	if(gene != "nix")
+	{
+		for(int l = 0;l < (int)gene.size();l++)
+		{
+			if((gene[l] >= 48) || (gene[l] <= 57))
+			{
+				ziffer = true;
+			}
+		}
+		if(!ziffer)
+		{
+			string_out_1 << gene;
+			string_out_1 << '_';
+		}
+	}
+    
+    
+    for(int j = 0; j < (int)product_size; j++)
     {
     	if(product[j] == ' ')
     	{

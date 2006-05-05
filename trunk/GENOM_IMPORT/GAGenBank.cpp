@@ -352,7 +352,7 @@ void gellisary::GAGenBank::dissectMetaLine(const std::string & source_line)
 		if(t_line_t == "LOCUS")
 		{
 			arb.write_metadata_line("source_database", "genbank", 0);
-			arb.write_metadata_line("flatfile_name", flatfile_name,0);
+			arb.write_metadata_line("flatfile_name", flatfile_name+"."+flatfile_name_extension,0);
 			line_id = t_line_t;
 			value = t_line;
 		}
@@ -637,9 +637,11 @@ void gellisary::GAGenBank::dissectLocation(const std::string & source)
 
 bool gellisary::GAGenBank::line_examination(const std::string & source_line)
 {
+	end_of_file = false;
 	int line_size = source_line.size();
 	if(line_size < 2)
 	{
+		end_of_file = true;
 		if(type != END)
 		{
 	#if defined(DEBUG)
@@ -669,6 +671,7 @@ bool gellisary::GAGenBank::line_examination(const std::string & source_line)
 		 		{
 		 			arb.write_genome_sequence(value,counter,counter_a,counter_c,counter_g,counter_t,counter_other);
 		 			// Alles muss geschlossen werden.
+		 			end_of_file = true;
 		 		}
 		 		type = END;
 		 		return true;
@@ -755,6 +758,16 @@ void gellisary::GAGenBank::parse()
 		line_examination(t_line);
 		counter_line++;
 	}
+	if(!end_of_file)
+	{
+		if(value != "")
+		{
+			arb.write_genome_sequence(value,counter,counter_a,counter_c,counter_g,counter_t,counter_other);
+			emptySequence();
+		}
+		message_to_outside_world = "the flatfile "+flatfile_fullname+" is not complete";
+	}
+	arb_file.close();
 }
 
 gellisary::GAGenBank::~GAGenBank()
