@@ -57,6 +57,7 @@
 
 GB_ERROR GI_importGenomeFile(GBDATA * gb_main, const char * file_name, const char * ali_name)
 {
+	GB_ERROR my_error = NULL;
   #if defined(DEBUG)
     gellisary::GALogger logger;
     gellisary::GAARB arb(gb_main,ali_name);
@@ -67,21 +68,37 @@ GB_ERROR GI_importGenomeFile(GBDATA * gb_main, const char * file_name, const cha
     {
     	gellisary::GAEmbl embl(logger,arb,flat_file_name);
     	embl.parse();
+    	if(embl.has_messages())
+    	{
+    		my_error = embl.get_message().c_str();
+    	}
     }
     else if(format == gellisary::GASourceFileSwitcher::DDBJ)
     {
     	gellisary::GADDBJ ddbj(logger,arb,flat_file_name,true);
     	ddbj.parse();
+    	if(ddbj.has_messages())
+    	{
+    		my_error = ddbj.get_message().c_str();
+    	}
     }
     else if(format == gellisary::GASourceFileSwitcher::DDBJ_WITHOUT_HEADER)
     {
 		gellisary::GADDBJ ddbj(logger,arb,flat_file_name,false);
     	ddbj.parse();
+    	if(ddbj.has_messages())
+    	{
+    		my_error = ddbj.get_message().c_str();
+    	}
     }
     else if(format == gellisary::GASourceFileSwitcher::GENBANK)
     {
 		gellisary::GAGenBank genbank(logger,arb,flat_file_name);
     	genbank.parse();
+    	if(genbank.has_messages())
+    	{
+    		my_error = genbank.get_message().c_str();
+    	}
     }
     else if(format == gellisary::GASourceFileSwitcher::UNKNOWN)
     {
@@ -99,26 +116,42 @@ GB_ERROR GI_importGenomeFile(GBDATA * gb_main, const char * file_name, const cha
     {
     	gellisary::GAEmbl embl(arb,flat_file_name);
     	embl.parse();
+    	if(embl.has_messages())
+    	{
+    		my_error = embl.get_message().c_str();
+    	}
     }
     else if(format == gellisary::GASourceFileSwitcher::DDBJ)
     {
     	gellisary::GADDBJ ddbj(arb,flat_file_name,true);
     	ddbj.parse();
+    	if(ddbj.has_messages())
+    	{
+    		my_error = ddbj.get_message().c_str();
+    	}
     }
     else if(format == gellisary::GASourceFileSwitcher::DDBJ_WITHOUT_HEADER)
     {
 		gellisary::GADDBJ ddbj(arb,flat_file_name,false);
     	ddbj.parse();
+    	if(ddbj.has_messages())
+    	{
+    		my_error = ddbj.get_message().c_str();
+    	}
     }
     else if(format == gellisary::GASourceFileSwitcher::GENBANK)
     {
 		gellisary::GAGenBank genbank(arb,flat_file_name);
     	genbank.parse();
+    	if(genbank.has_messages())
+    	{
+    		my_error = genbank.get_message().c_str();
+    	}
     }
     else if(format == gellisary::GASourceFileSwitcher::UNKNOWN)
     {
     }
   #endif
-    return NULL;
+    return my_error;
 }
 

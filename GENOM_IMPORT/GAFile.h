@@ -56,6 +56,8 @@ namespace gellisary
 			std::string error_wrong_sequence_format;
 			std::string error_wrong_line_format;
 			
+			std::string message_to_outside_world;
+			
 			//std::vector<std::string> line_names; /* Die Werte findet man im Konstruktor.*/
 			//std::vector<std::string> feature_names; /* Die Werte findet man im Konstruktor.*/
 			
@@ -81,7 +83,10 @@ namespace gellisary
 				Table-Zeile.*/
 			std::string flatfile_name;	/*Der Name der Flat-Datei ohne Endung.*/
 			std::string flatfile_fullname;	/*Der volle Name der Flat-Datei.*/
-			std::string flatfile_basename;	/*Der volle Name der Flat-Datei.*/
+			std::string flatfile_basename;	/*Der Pfadteil aus dem vollen Namen.*/
+			std::string flatfile_name_extension;	/*Die Erweiterung des Dateinamens.*/
+			bool end_of_file;
+			
 			int counter_a; /* Für die Sequence-Zeile,
 				die aktuelle Zahl der a-Basen*/
 			int counter_c; /* Für die Sequence-Zeile,
@@ -120,6 +125,8 @@ namespace gellisary
 			//GAFile();
 			virtual ~GAFile();
 			virtual void parse() = 0;
+			std::string get_message();
+			bool has_messages();
 	};
 };
 
