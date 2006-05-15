@@ -38,7 +38,7 @@ gellisary::GAGenBank::GAGenBank(GALogger & nLogger, GAARB & nARB, std::string & 
 	error_miss_one_base = "miss one base";
 	error_char_not_empty = "char is not empty";
 	error_wrong_sequence_format = "sequence format is wrong";
-	error_wrong_line_format = "line format is wrong";
+	error_wrong_line_format = "line format is wrong => not imported";
 	
 	counter_a = 0;
 	counter_c = 0;
@@ -87,7 +87,7 @@ gellisary::GAGenBank::GAGenBank(GAARB & nARB, std::string & nARB_Filename) : GAF
 	error_miss_one_base = "miss one base";
 	error_char_not_empty = "char is not empty";
 	error_wrong_sequence_format = "sequence format is wrong";
-	error_wrong_line_format = "line format is wrong";
+	error_wrong_line_format = "line format is wrong => not imported";
 	
 	counter_a = 0;
 	counter_c = 0;
@@ -231,7 +231,7 @@ void gellisary::GAGenBank::dissectMetaLine(const std::string & source_line)
 	std::string t_line_id = source_line.substr(0,12);
 	std::string t_pre_line = source_line.substr(12);
 	std::string t_line = trim(t_pre_line);
-	std::string::size_type space_pos = t_line.find(" ");
+	std::string::size_type space_pos = t_line.find_first_of(" ");
 	bool has_space = true;
 	std::string t_line_t;
 	if(space_pos == std::string::npos)
@@ -399,8 +399,8 @@ void gellisary::GAGenBank::dissectTableFeatureLine(const std::string & source_li
 					if(t_pos != std::string::npos)
 					{
 						std::string t_qualifier = t_qualifier_line.substr(1,(t_pos-1));
-						t_none_pos = t_qualifier.find(" ");
-						t_none_pos2 = t_qualifier.find("-");
+						t_none_pos = t_qualifier.find_first_of(" ");
+						t_none_pos2 = t_qualifier.find_first_of("-");
 						if((t_none_pos == std::string::npos) && (t_none_pos2 == std::string::npos))
 						{
 							std::string t_value = trim(t_qualifier_line.substr(++t_pos)," \n\t\r\"");
@@ -441,10 +441,10 @@ void gellisary::GAGenBank::dissectTableFeatureLine(const std::string & source_li
 					}
 					else
 					{
-						t_none_pos = t_qualifier_line.find(" ");
+						t_none_pos = t_qualifier_line.find_first_of(" ");
 						if(t_none_pos == std::string::npos)
 						{
-							t_none_pos = t_qualifier_line.find(":{}");
+							t_none_pos = t_qualifier_line.find_first_of(":{}-)([]");
 							if(t_none_pos == std::string::npos)
 							{
 								if(t_qualifier_line != qualifier)
@@ -465,7 +465,7 @@ void gellisary::GAGenBank::dissectTableFeatureLine(const std::string & source_li
 									{
 										arb.write_metadata_line(qualifier,value,0);
 									}
-									qualifier = t_qualifier_line;
+									qualifier = t_qualifier_line.substr(1);
 									value = "1";
 								}
 							}
@@ -537,6 +537,9 @@ void gellisary::GAGenBank::dissectTableFeatureLine(const std::string & source_li
 	#if defined(DEBUG)
 				logger.add_log_entry(error_wrong_line_format, counter_line,0);
 	#endif
+			std::stringstream t_t_str;
+			t_t_str << "line " << counter_line << " was skipped and not imported! => wrong format!";
+			GB_warning(t_t_str.str().c_str());
 			}
 		}
 		else
@@ -545,6 +548,9 @@ void gellisary::GAGenBank::dissectTableFeatureLine(const std::string & source_li
 	#if defined(DEBUG)
 			logger.add_log_entry(error_wrong_line_format, counter_line,0);
 	#endif
+			std::stringstream t_t_str;
+			t_t_str << "line " << counter_line << " was skipped and not imported! => wrong format!";
+			GB_warning(t_t_str.str().c_str());
 		}
 	}
 	else if(type == META)
@@ -559,6 +565,9 @@ void gellisary::GAGenBank::dissectTableFeatureLine(const std::string & source_li
 	#if defined(DEBUG)
 			logger.add_log_entry(error_wrong_line_key, counter_line,0);
 	#endif
+			std::stringstream t_t_str;
+			t_t_str << "line " << counter_line << " was skipped and not imported! => wrong format!";
+			GB_warning(t_t_str.str().c_str());
 		}
 	}
 	type = TABLE;
@@ -743,6 +752,9 @@ bool gellisary::GAGenBank::line_examination(const std::string & source_line)
 	#if defined(DEBUG)
 			logger.add_log_entry(error_wrong_line_format, counter_line,0);
 	#endif
+			std::stringstream t_t_str;
+			t_t_str << "line " << counter_line << " was skipped and not imported! => wrong format!";
+			GB_warning(t_t_str.str().c_str());
 			return false;
 		}
 	}
