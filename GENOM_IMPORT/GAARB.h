@@ -72,6 +72,7 @@ namespace gellisary
 			
 			std::string generate_gene_id(const std::string &, const std::string &, const std::string &, const std::string &);
 			bool store_gene();
+			bool check_string_key(const std::string &);
 			
 		public:
 			GAARB(GBDATA *, const char *);

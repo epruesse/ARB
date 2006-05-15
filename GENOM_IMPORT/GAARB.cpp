@@ -305,12 +305,39 @@ bool gellisary::GAARB::close()
 	return true;
 }
 
+bool gellisary::GAARB::check_string_key(const std::string & string_key)
+{
+	int string_key_size = string_key.size();
+	bool result = true;
+	for(int i = 0; i < string_key_size; i++)
+	{
+		if(((string_key[i] >= 48) && (string_key[i] <= 57)) || ((string_key[i] >= 65) && (string_key[i] <= 90))
+		 	|| ((string_key[i] >= 97) && (string_key[i] <= 122)) || (string_key[i] == '_'))
+		{
+			result = true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	return result;
+}
+
 bool gellisary::GAARB::write_qualifier(const std::string & qualifier, const std::string & value)
 {
 	if((!qualifier.empty() && qualifier.size() > 0) && (!value.empty() && value.size() > 0))
 	{
-		write_string(qualifier,value,false);
-		return true;
+		if(check_string_key(qualifier))
+		{
+			write_string(qualifier,value,false);
+			return true;
+		}
+		else
+		{
+			std::cout << "Q : " << qualifier << " # V : " << value << std::endl;
+			return false;
+		}
 	}
 	else
 	{
