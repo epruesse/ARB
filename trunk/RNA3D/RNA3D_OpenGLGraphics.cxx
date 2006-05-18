@@ -105,7 +105,8 @@ void OpenGLGraphics::init_font(GLuint base, char* f)
    int last;
 
    /* Need an X Display before calling any Xlib routines. */
-   display = XOpenDisplay(0);
+   //   display = XOpenDisplay(0); // glxFont problem : changed XOpenDisplay(0) to glXGetCurrentDisplay() 
+   display = glXGetCurrentDisplay();
    if (display == 0) {
       fprintf(stderr, "XOpenDisplay() failed.  Exiting.\n");
       exit(-1);
@@ -123,8 +124,8 @@ void OpenGLGraphics::init_font(GLuint base, char* f)
          last  = font_info->max_char_or_byte2;
          glXUseXFont(font_info->fid, first, last-first+1, base+first);
       }
-      XCloseDisplay(display);
-      display = 0;
+      //  XCloseDisplay(display); // glxFont problem 
+      // display = 0;
    }
 }
 
