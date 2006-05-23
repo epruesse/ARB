@@ -93,6 +93,24 @@ ColorRGBf OpenGLGraphics::GetColor(int gc) {
     return color;
 }
 
+void OpenGLGraphics::WinToScreenCoordinates(int x, int y, GLdouble *screenPos) {
+    //project window coords to gl coord
+    glLoadIdentity();
+    GLdouble modelMatrix[16];
+    glGetDoublev(GL_MODELVIEW_MATRIX,modelMatrix);
+    GLdouble projMatrix[16];
+    glGetDoublev(GL_PROJECTION_MATRIX,projMatrix);
+    int viewport[4];
+    glGetIntegerv(GL_VIEWPORT,viewport);
+    gluUnProject(x, y, 0,
+                 modelMatrix,
+                 projMatrix,
+                 viewport,
+                 //the next 3 parameters are the pointers to the final object coordinates.(double)
+                 &screenPos[0], &screenPos[1], &screenPos[2] 
+                 );
+}
+
 //=========== Functions related to rendering FONTS ========================//
 
 static GLuint font_base;
@@ -124,7 +142,7 @@ void OpenGLGraphics::init_font(GLuint base, char* f)
          last  = font_info->max_char_or_byte2;
          glXUseXFont(font_info->fid, first, last-first+1, base+first);
       }
-      //     XCloseDisplay(display); // glxFont problem 
+      //XCloseDisplay(display); // glxFont problem 
        display = 0;
    }
 }
@@ -158,9 +176,9 @@ void OpenGLGraphics::InitMainFont(char* f)
 void OpenGLGraphics::PrintString(float x, float y, float z, char *s, void *font) {
     glRasterPos3f(x, y, z);
     print_string(font_base, s);
-//         for (unsigned int i = 0; i < strlen(s); i++) {
-//             glutBitmapCharacter(font, s[i]);
-//         }
+    //       for (unsigned int i = 0; i < strlen(s); i++) {
+    //          glutBitmapCharacter(font, s[i]);
+    //     }
 }
 
 void OpenGLGraphics::PrintComment(float x, float y, float z, char *s){
