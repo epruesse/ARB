@@ -152,30 +152,22 @@ void GLRenderer::DisplayMoleculeName(int w, int h, Structure3D *cStr){
         pSpeciesName = (char *) "Eschericia Coli : Master Template"; 
     }
 
-    float x_ratio = (float) w/ (float)h; 
-    float y_ratio = (float) h/ (float)w; 
-    float x, y; 
-    int factor = 190;
-    
+    float x, y,z;     x=1.1; y=z=1.0;
+    float line = 0.05;
+
     glPushMatrix(); 
-    glScalef(0.01, 0.01, 0.01);
-
-    x = x_ratio*factor;
-    if(x_ratio < y_ratio)  y = x_ratio*factor;
-    else                   y = y_ratio*factor;
-
     G->SetColor(RNA3D_GC_FOREGROUND);
-    G->PrintString(x, y, 0, pSpeciesName, GLUT_BITMAP_8_BY_13);
-    
+    G->PrintString(x, y, z, pSpeciesName, GLUT_BITMAP_8_BY_13);
+ 
     char buf[25];
     if (cStr->iMapEnable && iMapSpecies){
         G->SetColor(RNA3D_GC_MAPPED_SPECIES);
         sprintf(buf, "Mutations  = %d", cStr->iTotalSubs);
-        G->PrintString(x, y-10, 0, buf, GLUT_BITMAP_8_BY_13);
+        G->PrintString(x, (y-(1*line)), z, buf, GLUT_BITMAP_8_BY_13);
         sprintf(buf, "Deletions  = %d", cStr->iTotalDels);
-        G->PrintString(x, y-20, 0, buf, GLUT_BITMAP_8_BY_13);
+        G->PrintString(x, (y-(2*line)), z, buf, GLUT_BITMAP_8_BY_13);
         sprintf(buf, "Insertions = %d", cStr->iTotalIns);
-        G->PrintString(x, y-30, 0, buf, GLUT_BITMAP_8_BY_13);
+        G->PrintString(x, (y-(3*line)), z, buf, GLUT_BITMAP_8_BY_13);
     }
 
 //     { 

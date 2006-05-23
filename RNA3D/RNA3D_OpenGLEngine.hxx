@@ -28,3 +28,4 @@ void CursorPositionChanged_CB(AW_root *awr);
 void DisplayHelixNrsChanged_CB(AW_root *awr);
 void MapSaiToEcoliTemplateChanged_CB(AW_root *awr);
 void MapSearchStringsToEcoliTemplateChanged_CB(AW_root *awr);
+void WinToScreenCoordinates(int x, int y, GLdouble *screenPos) ;
