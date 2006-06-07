@@ -125,6 +125,7 @@ $(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/ad_prot.h
 $(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/arb_assert.h
 $(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/arbdb.h
 $(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/client.h
+$(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/PT_com.h
 $(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/servercntrl.h
 
 $(ARBHOME)/bin/arb_proto_2_xsub: $(ARBHOME)/INCLUDE/ad_prot.h
