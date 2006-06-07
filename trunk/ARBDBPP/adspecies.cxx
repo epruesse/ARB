@@ -120,10 +120,8 @@ void  AD_SPECIES::initpntr()
             GB_write_usr_private(gb_species,a);
         }
         AD_READWRITE::gbdataptr = gb_species;
-        GB_add_callback(gb_species, GB_CB_DELETE,
-                        (GB_CB) AD_SPECIES_destroy, (int *) this);
-        GB_add_callback(gb_name, GB_CB_CHANGED,
-                        (GB_CB) AD_SPECIES_name_change, (int *) this);
+        GB_add_callback(gb_species, GB_CB_DELETE, (GB_CB) AD_SPECIES_destroy, (int *) this);
+        GB_add_callback(gb_name, GB_CB_CHANGED, (GB_CB) AD_SPECIES_name_change, (int *) this);
 
         //callback in DB mit routine die beim loeschen der species
         // aufgerufen wird(speicherfreigaben)
