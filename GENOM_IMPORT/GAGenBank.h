@@ -1,31 +1,31 @@
 #ifndef GAGENBANK_H
 #define GAGENBANK_H
 
-#ifndef _GLIBCXX_STRING
+#ifndef _CPP_STRING
 #include <string>
 #endif
 
-#ifndef _GLIBCXX_SSTREAM
+#ifndef _CPP_SSTREAM
 #include <sstream>
 #endif
 
-#ifndef _GLIBCXX_VECTOR
+#ifndef _CPP_VECTOR
 #include <vector>
 #endif
 
-#ifndef _GLIBCXX_IOSTREAM
+#ifndef _CPP_IOSTREAM
 #include <iostream>
 #endif
 
-#ifndef _GLIBCXX_FSTREAM
+#ifndef _CPP_FSTREAM
 #include <fstream>
 #endif
 
-#ifndef _GLIBCXX_MAP
+#ifndef _CPP_MAP
 #include <map>
 #endif
 
-#ifndef _GLIBCXX_CSTDLIB
+#ifndef _CPP_CSTDLIB
 #include <cstdlib>
 #endif
 
@@ -66,4 +66,6 @@ namespace gellisary
 	};
 };
 
+#else
+#error GAGenBank.h included twice
 #endif /*GAGENBANK_H*/
