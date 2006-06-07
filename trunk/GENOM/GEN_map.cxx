@@ -82,7 +82,7 @@ public:
 
     static bool initialized() { return aw_root != 0; }
     static void initialize(AW_root *aw_root_) { aw_root = aw_root_; }
-    static GEN_map_manager *GEN_map_manager::get_map_manager();
+    static GEN_map_manager *get_map_manager();
 
     GEN_map_window *get_map_window(int nr);
 
