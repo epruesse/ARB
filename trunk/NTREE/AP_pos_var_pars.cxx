@@ -226,16 +226,15 @@ char *AP_pos_var::save_sai( char *sai_name ){
     int max_categ = 0;
     double lnlogbase = log(logbase);
     for (i=0;i<ali_len;i++) {
-        double rate;
         if (sum[i] * 10 <= treesize) {
             data[i] = '.';
             continue;
         }
-        rate = transitions[i]/ (double)sum[i];
-        if (rate == 0.0) {
+        if (transitions[i] == 0) {
             data[i] = '-';
             continue;
         }
+        double rate = transitions[i]/ (double)sum[i];
         if (rate >= b * .95) {
             rate = b * .95;
         }
