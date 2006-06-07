@@ -1,6 +1,4 @@
-#ifndef GALOGGER_H
 #include "GALogger.h"
-#endif
 
 gellisary::GALogger::GALogger()
 {

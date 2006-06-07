@@ -3,57 +3,18 @@
  * Mail : hagilis@web.de
  * Copyright 2004 - Lehrstuhl fuer Mikrobiologie - TU Muenchen
  */
-#ifndef _GLIBCXX_CSTDLIB
+
 #include <cstdlib>
-#endif
-
-#ifndef _GLIBCXX_IOSTREAM
+#include <cstdio>
 #include <iostream>
-#endif
-
-#ifndef ARBDB_H
 #include <arbdb.h>
-#endif
-
-#ifndef GAFILE_H
 #include "GAFile.h"
-#endif
-
-#ifndef GASOURCEFILESWITCHER_H
 #include "GASourceFileSwitcher.h"
-#endif
-
-#ifndef GALOGGER_H
-#include "GALogger.h"
-#endif
-
-#ifndef GAGENBANK_H
 #include "GAGenBank.h"
-#endif
-
-#ifndef GADDBJ_H
 #include "GADDBJ.h"
-#endif
-
-#ifndef GAEMBL_H
 #include "GAEmbl.h"
-#endif
-
-#ifndef arbdbt_h_included
 #include <arbdbt.h>
-#endif
-
-#ifndef awt_hxx_included
 #include <awt.hxx>
-#endif
-
-#ifndef AW_RENAME_HXX
-#include <AW_rename.hxx>
-#endif
-
-#ifndef ADGENE_H
-#include <adGene.h>
-#endif
 
 GB_ERROR GI_importGenomeFile(GBDATA * gb_main, const char * file_name, const char * ali_name)
 {
