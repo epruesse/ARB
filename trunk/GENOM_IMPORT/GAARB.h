@@ -1,46 +1,40 @@
 #ifndef GAARB_H
 #define GAARB_H
 
-#ifndef _GLIBCXX_STRING
+#ifndef _CPP_STRING
 #include <string>
 #endif
-
-#ifndef _GLIBCXX_IOSTREAM
+#ifndef _CPP_IOSTREAM
 #include <iostream>
 #endif
-
-#ifndef _GLIBCXX_SSTREAM
+#ifndef _CPP_SSTREAM
 #include <sstream>
 #endif
-
-#ifndef _GLIBCXX_VECTOR
+#ifndef _CPP_VECTOR
 #include <vector>
 #endif
-
-#ifndef _GLIBCXX_MAP
+#ifndef _CPP_MAP
 #include <map>
 #endif
-
-#ifndef _GLIBCXX_CSTDLIB
+#ifndef _CPP_CSTDLIB
 #include <cstdlib>
+#endif
+#ifndef _CPP_CSTDIO
+#include <cstdio>
 #endif
 
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
-
 #ifndef arbdbt_h_included
 #include <arbdbt.h>
 #endif
-
 #ifndef awt_hxx_included
 #include <awt.hxx>
 #endif
-
 #ifndef AW_RENAME_HXX
 #include <AW_rename.hxx>
 #endif
-
 #ifndef ADGENE_H
 #include <adGene.h>
 #endif
@@ -89,4 +83,6 @@ namespace gellisary
 	};
 };
 
+#else
+#error GAARB.h included twice
 #endif /*GAARB_H*/

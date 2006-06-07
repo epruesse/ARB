@@ -1,15 +1,15 @@
 #ifndef GASOURCEFILESWITCHER_H
 #define GASOURCEFILESWITCHER_H
 
-#ifndef _GLIBCXX_STRING
+#ifndef _CPP_STRING
 #include <string>
 #endif
 
-#ifndef _GLIBCXX_IOSTREAM
+#ifndef _CPP_IOSTREAM
 #include <iostream>
 #endif
 
-#ifndef _GLIBCXX_FSTREAM
+#ifndef _CPP_FSTREAM
 #include <fstream>
 #endif
 
@@ -36,4 +36,6 @@ namespace gellisary
 	};
 };
 
+#else
+#error GASourceFileSwitcher.h included twice
 #endif /*GASOURCEFILESWITCHER_H*/

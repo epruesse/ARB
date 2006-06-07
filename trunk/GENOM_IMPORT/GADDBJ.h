@@ -1,42 +1,34 @@
 #ifndef GADDBJ_H
 #define GADDBJ_H
 
-#ifndef _GLIBCXX_STRING
+#ifndef _CPP_STRING
 #include <string>
 #endif
-
-#ifndef _GLIBCXX_SSTREAM
+#ifndef _CPP_SSTREAM
 #include <sstream>
 #endif
-
-#ifndef _GLIBCXX_VECTOR
+#ifndef _CPP_VECTOR
 #include <vector>
 #endif
-
-#ifndef _GLIBCXX_IOSTREAM
+#ifndef _CPP_IOSTREAM
 #include <iostream>
 #endif
-
-#ifndef _GLIBCXX_FSTREAM
+#ifndef _CPP_FSTREAM
 #include <fstream>
 #endif
-
-#ifndef _GLIBCXX_MAP
+#ifndef _CPP_MAP
 #include <map>
 #endif
-
-#ifndef _GLIBCXX_CSTDLIB
+#ifndef _CPP_CSTDLIB
 #include <cstdlib>
 #endif
 
 #ifndef GAFILE_H
 #include "GAFile.h"
 #endif
-
 #ifndef GALOGGER_H
 #include "GALogger.h"
 #endif
-
 #ifndef GAARB_H
 #include "GAARB.h"
 #endif
@@ -93,4 +85,6 @@ namespace gellisary
 	};
 };
 
+#else
+#error GADDBJ.h included twice
 #endif /*GADDBJ_H*/

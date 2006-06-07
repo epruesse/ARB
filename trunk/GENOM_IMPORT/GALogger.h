@@ -1,46 +1,40 @@
 #ifndef GALOGGER_H
 #define GALOGGER_H
 
-#ifndef _GLIBCXX_STRING
+#ifndef _CPP_STRING
 #include <string>
 #endif
-
-#ifndef _GLIBCXX_VECTOR
+#ifndef _CPP_VECTOR
 #include <vector>
 #endif
-
-#ifndef _GLIBCXX_FSTREAM
+#ifndef _CPP_FSTREAM
 #include <fstream>
 #endif
-
-#ifndef _GLIBCXX_CSTDLIB
+#ifndef _CPP_CSTDLIB
 #include <cstdlib>
 #endif
-
-#ifndef _GLIBCXX_CTIME
+#ifndef _CPP_CTIME
 #include <ctime>
 #endif
-
-#ifndef _GLIBCXX_SSTREAM
+#ifndef _CPP_SSTREAM
 #include <sstream>
+#endif
+#ifndef _CPP_CSTDIO
+#include <cstdio>
 #endif
 
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
-
 #ifndef arbdbt_h_included
 #include <arbdbt.h>
 #endif
-
 #ifndef awt_hxx_included
 #include <awt.hxx>
 #endif
-
 #ifndef AW_RENAME_HXX
 #include <AW_rename.hxx>
 #endif
-
 #ifndef ADGENE_H
 #include <adGene.h>
 #endif
@@ -67,4 +61,6 @@ namespace gellisary
 
 };
 
+#else
+#error GALogger.h included twice
 #endif /*GALOGGER_H*/
