@@ -78,6 +78,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/PT_com.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
 AWTC_seq_search.o: awtc_seq_search.hxx

@@ -35,6 +35,7 @@ ORS_lib.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ORS_lib.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ORS_lib.o: $(ARBHOME)/INCLUDE/arbdb.h
 ORS_lib.o: $(ARBHOME)/INCLUDE/client.h
+ORS_lib.o: $(ARBHOME)/INCLUDE/ors_client.h
 ORS_lib.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
 ORS_S_cf.o: ors_lib.h
@@ -46,6 +47,9 @@ ORS_S_cf.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ORS_S_cf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ORS_S_cf.o: $(ARBHOME)/INCLUDE/arbdb.h
 ORS_S_cf.o: $(ARBHOME)/INCLUDE/client.h
+ORS_S_cf.o: $(ARBHOME)/INCLUDE/ors_client.h
+ORS_S_cf.o: $(ARBHOME)/INCLUDE/ors_prototypes.h
+ORS_S_cf.o: $(ARBHOME)/INCLUDE/ors_server.h
 ORS_S_cf.o: $(ARBHOME)/INCLUDE/server.h
 ORS_S_cf.o: $(ARBHOME)/INCLUDE/servercntrl.h
 ORS_S_cf.o: $(ARBHOME)/INCLUDE/struct_man.h
@@ -58,6 +62,7 @@ ORS_S_lib.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ORS_S_lib.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ORS_S_lib.o: $(ARBHOME)/INCLUDE/arbdb.h
 ORS_S_lib.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ORS_S_lib.o: $(ARBHOME)/INCLUDE/ors_server.h
 
 ORS_S_main.o: ors_lib.h
 ORS_S_main.o: ors_s.h
@@ -68,6 +73,9 @@ ORS_S_main.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ORS_S_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ORS_S_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 ORS_S_main.o: $(ARBHOME)/INCLUDE/client.h
+ORS_S_main.o: $(ARBHOME)/INCLUDE/ors_client.h
+ORS_S_main.o: $(ARBHOME)/INCLUDE/ors_prototypes.h
+ORS_S_main.o: $(ARBHOME)/INCLUDE/ors_server.h
 ORS_S_main.o: $(ARBHOME)/INCLUDE/server.h
 ORS_S_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 ORS_S_main.o: $(ARBHOME)/INCLUDE/struct_man.h
@@ -82,6 +90,9 @@ ORS_S_probedb.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ORS_S_probedb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ORS_S_probedb.o: $(ARBHOME)/INCLUDE/arbdb.h
 ORS_S_probedb.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ORS_S_probedb.o: $(ARBHOME)/INCLUDE/ors_client.h
+ORS_S_probedb.o: $(ARBHOME)/INCLUDE/ors_prototypes.h
+ORS_S_probedb.o: $(ARBHOME)/INCLUDE/ors_server.h
 ORS_S_probedb.o: $(ARBHOME)/INCLUDE/server.h
 ORS_S_probedb.o: $(ARBHOME)/INCLUDE/servercntrl.h
 ORS_S_probedb.o: $(ARBHOME)/INCLUDE/struct_man.h
@@ -94,3 +105,4 @@ ORS_S_userdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ORS_S_userdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ORS_S_userdb.o: $(ARBHOME)/INCLUDE/arbdb.h
 ORS_S_userdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ORS_S_userdb.o: $(ARBHOME)/INCLUDE/ors_server.h
