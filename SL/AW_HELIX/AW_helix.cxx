@@ -2,7 +2,7 @@
 //                                                                      //
 //   File      : AW_helix.cxx                                           //
 //   Purpose   : Wrapper for BI_helix + AW-specific functions           //
-//   Time-stamp: <Fri Mar/04/2005 19:51 MET Coder@ReallySoft.de>        //
+//   Time-stamp: <Wed Jun/07/2006 17:23 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in December 2004         //
@@ -19,10 +19,12 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 
-struct {
+struct helix_pair_def {
     const char *awar;
     BI_PAIR_TYPE pair_type;
-} helix_awars[] = {
+};
+
+helix_pair_def helix_awars[] = {
     { "Strong_Pair", HELIX_STRONG_PAIR },
     { "Normal_Pair", HELIX_PAIR },
     { "Weak_Pair", HELIX_WEAK_PAIR },

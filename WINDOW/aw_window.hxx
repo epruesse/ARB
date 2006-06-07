@@ -235,7 +235,7 @@ public:
     AW_color    alloc_named_data_color(int colnum, char *colorname);
     const char *GC_to_RGB(AW_device *device, int gc, int& red, int& green, int& blue); // returns colors in result-parameters or error message in return value
     // Converts GC to RGB float values to the range (0 - 1.0)
-    const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red, float& green, float& blue);
+    const char *GC_to_RGB_float(AW_device *device, int gc, float& red, float& green, float& blue);
     void        _get_area_size(AW_area area, AW_rectangle *square);
     int         label_widget( void *wgt, AW_label str, char *mnemonic=0 , int width =0 , int alignment =0 );
     //***************************** *********************** ***********************************
