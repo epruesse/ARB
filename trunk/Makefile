@@ -73,8 +73,10 @@ endif
 		cflags = -O0 $(dflag1) $(dflags) $(DEVEL_DEF)
 		lflags = $(dflag1)
 		fflags = $(dflag1) -C
-		extended_warnings = -Wwrite-strings -Wunused -Wno-aggregate-return
-		extended_cpp_warnings = -Wnon-virtual-dtor -Wreorder
+		extended_warnings         = -Wwrite-strings -Wunused -Wno-aggregate-return
+		extended_cpp_warnings     = -Wnon-virtual-dtor -Wreorder -Wpointer-arith 
+		extended_cpp_3xx_warnings = -Wfloat-equal 
+		extended_cpp_4xx_warnings = 
 else
 ifeq ($(DEBUG),0)
 		dflags = -DNDEBUG
@@ -89,7 +91,6 @@ endif
 # supported compiler versions:
 
 ALLOWED_GCC_295_VERSIONS=2.95.3
-# 2.95.4 is supposed to work, but not known to be tested yet
 ALLOWED_GCC_3xx_VERSIONS=3.2 3.3.1 3.3.3 3.3.4 3.3.5 3.3.6 3.4.0 3.4.2 3.4.3
 ALLOWED_GCC_4xx_VERSIONS=4.0.0 4.0.2 4.0.3 4.1.1
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_295_VERSIONS) $(ALLOWED_GCC_3xx_VERSIONS) $(ALLOWED_GCC_4xx_VERSIONS)
@@ -343,7 +344,7 @@ endif
 
 # ---------------------------------------- check gcc version
 
-GCC_VERSION_FOUND=$(shell $(GCC) --version | head -1 | sed 's/^[^0-9]*\([0-9.]\+\).*/\1/' )
+GCC_VERSION_FOUND=$(shell $(GCC) -dumpversion)
 GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring ___$(version)___,___$(GCC_VERSION_FOUND)___))))
 
 check_same_GCC_VERSION:
@@ -376,6 +377,20 @@ ifeq ('$(HAVE_GCC_WITH_VTABLE_AFTER_CLASS)', '')
 VTABLE_INFRONTOF_CLASS=1
 else
 VTABLE_INFRONTOF_CLASS=0
+endif
+
+#---------------------- depending on gcc version add extra warnings
+
+ifeq ($(DEBUG),1)
+USING_GCC_3XX=$(strip $(foreach version,$(ALLOWED_GCC_3xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
+USING_GCC_4XX=$(strip $(foreach version,$(ALLOWED_GCC_4xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
+
+ifneq ('$(USING_GCC_3XX)','')
+extended_cpp_warnings := $(extended_cpp_warnings) $(extended_gcc_3xx_warnings)
+endif
+ifneq ('$(USING_GCC_4XX)','')
+extended_cpp_warnings := $(extended_cpp_warnings) $(extended_gcc_4xx_warnings)
+endif
 endif
 
 #---------------------- check ARBHOME
