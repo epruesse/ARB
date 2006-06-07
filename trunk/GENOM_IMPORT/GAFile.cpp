@@ -14,7 +14,7 @@ gellisary::GAFile::GAFile(GALogger & nLogger, GAARB & nARB, std::string & nARB_F
 	if(pos_last != std::string::npos && pos_point != std::string::npos)
 	{
 		flatfile_basename = flatfile_fullname.substr(0,pos_last);
-		flatfile_name = flatfile_fullname.substr(++pos_last,(pos_point-pos_last-1));
+		flatfile_name = flatfile_fullname.substr(pos_last+1,(pos_point-pos_last-1)); // fixed undefined behavior --ralf
 		flatfile_name_extension = flatfile_fullname.substr(pos_point+1);
 	}
 	else if(pos_last != std::string::npos)
