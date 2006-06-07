@@ -75,7 +75,7 @@ endif
 		fflags = $(dflag1) -C
 		extended_warnings         = -Wwrite-strings -Wunused -Wno-aggregate-return
 		extended_cpp_warnings     = -Wnon-virtual-dtor -Wreorder -Wpointer-arith 
-		extended_cpp_3xx_warnings = -Wfloat-equal 
+		extended_cpp_3xx_warnings = -Wfloat-equal -Wdisabled-optimization -Wmissing-format-attribute -Wmissing-noreturn 
 		extended_cpp_4xx_warnings = 
 else
 ifeq ($(DEBUG),0)
@@ -88,6 +88,12 @@ ifeq ($(DEBUG),0)
 endif
 endif
 
+# ---------------------- compiler version detection
+
+GCC=gcc
+GPP=g++
+CPPreal=cpp
+
 # supported compiler versions:
 
 ALLOWED_GCC_295_VERSIONS=2.95.3
@@ -95,9 +101,24 @@ ALLOWED_GCC_3xx_VERSIONS=3.2 3.3.1 3.3.3 3.3.4 3.3.5 3.3.6 3.4.0 3.4.2 3.4.3
 ALLOWED_GCC_4xx_VERSIONS=4.0.0 4.0.2 4.0.3 4.1.1
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_295_VERSIONS) $(ALLOWED_GCC_3xx_VERSIONS) $(ALLOWED_GCC_4xx_VERSIONS)
 
-GCC=gcc
-GPP=g++
-CPPreal=cpp
+GCC_VERSION_FOUND=$(shell $(GCC) -dumpversion)
+GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring ___$(version)___,___$(GCC_VERSION_FOUND)___))))
+
+#---------------------- depending on gcc version add extra warnings
+
+ifeq ($(DEBUG),1)
+USING_GCC_3XX=$(strip $(foreach version,$(ALLOWED_GCC_3xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
+USING_GCC_4XX=$(strip $(foreach version,$(ALLOWED_GCC_4xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
+
+ifneq ('$(USING_GCC_3XX)','')
+extended_cpp_warnings := $(extended_cpp_warnings) $(extended_cpp_3xx_warnings)
+endif
+ifneq ('$(USING_GCC_4XX)','')
+extended_cpp_warnings := $(extended_cpp_warnings) $(extended_cpp_3xx_warnings) $(extended_cpp_4xx_warnings)
+endif
+endif
+
+#---------------------- machine/OS specific definitions
 
 ifdef DEBIAN
    XHOME = /usr/X11R6
@@ -344,9 +365,6 @@ endif
 
 # ---------------------------------------- check gcc version
 
-GCC_VERSION_FOUND=$(shell $(GCC) -dumpversion)
-GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring ___$(version)___,___$(GCC_VERSION_FOUND)___))))
-
 check_same_GCC_VERSION:
 		$(ARBHOME)/SOURCE_TOOLS/check_same_gcc_version.pl $(GCC_VERSION_ALLOWED)
 
@@ -377,20 +395,6 @@ ifeq ('$(HAVE_GCC_WITH_VTABLE_AFTER_CLASS)', '')
 VTABLE_INFRONTOF_CLASS=1
 else
 VTABLE_INFRONTOF_CLASS=0
-endif
-
-#---------------------- depending on gcc version add extra warnings
-
-ifeq ($(DEBUG),1)
-USING_GCC_3XX=$(strip $(foreach version,$(ALLOWED_GCC_3xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
-USING_GCC_4XX=$(strip $(foreach version,$(ALLOWED_GCC_4xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
-
-ifneq ('$(USING_GCC_3XX)','')
-extended_cpp_warnings := $(extended_cpp_warnings) $(extended_gcc_3xx_warnings)
-endif
-ifneq ('$(USING_GCC_4XX)','')
-extended_cpp_warnings := $(extended_cpp_warnings) $(extended_gcc_4xx_warnings)
-endif
 endif
 
 #---------------------- check ARBHOME
