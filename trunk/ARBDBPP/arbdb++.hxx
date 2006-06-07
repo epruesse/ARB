@@ -194,6 +194,10 @@ public:
 AD_SPECIES
 ***********************************************/
 class CONTLIST;
+class AD_SPECIES;
+
+int AD_SPECIES_destroy(GBDATA *,AD_SPECIES *);
+int AD_SPECIES_name_change(GBDATA *,AD_SPECIES *);
 
 class AD_SPECIES : public AD_READWRITE
 {
@@ -303,7 +307,7 @@ public:
     AD_MAIN *get_ad_main() { return ad_ali->get_ad_main(); };
     AD_ERR *init(AD_SPECIES *,AD_ALI *);
     AD_ERR *create(AD_SPECIES *,AD_ALI *);
-    int AD_CONT::eof(void);
+    int     eof(void);
     AD_ERR *exit();
 };
 
@@ -339,7 +343,10 @@ public:
         AD_STAT
 ****************************/
 
-class AD_STAT   // Sequenzklasse in der die Sequenz und ihre
+class AD_STAT;
+int   AD_STAT_updatecall(GBDATA *,AD_STAT*);
+
+class AD_STAT                   // Sequenzklasse in der die Sequenz und ihre
 // markierung gespeichert ist
 {
     class AD_CONT *ad_cont;
