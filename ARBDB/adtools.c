@@ -1851,7 +1851,7 @@ char **GBT_get_tree_names_and_count(GBDATA *Main, int *countPtr){
     if (gb_treedata) {
         GBDATA *gb_tree;
         count = 0;
-        
+
         for (gb_tree = GB_find(gb_treedata,0,0,down_level);
              gb_tree;
              gb_tree = GB_find(gb_tree,0,0,this_level|search_next))
@@ -2379,7 +2379,7 @@ long GBT_count_marked_species(GBDATA *gb_main)
     GB_push_transaction(gb_main);
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
     GB_pop_transaction(gb_main);
-    
+
     cnt = GB_number_of_marked_subentries(gb_species_data);
     return cnt;
 }
@@ -2392,7 +2392,7 @@ long GBT_count_species(GBDATA *gb_main)
     GB_push_transaction(gb_main);
     gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
     GB_pop_transaction(gb_main);
-    
+
     cnt = GB_number_of_subentries(gb_species_data);
     return cnt;
 }
@@ -2832,7 +2832,7 @@ long GBT_get_species_hash_size(GBDATA *gb_main) {
         GB_push_transaction(gb_main);
         gb_species_data = GB_find(gb_main, "species_data", 0, down_level);
         last_gb_main    = gb_main;
-        last_hash_size  = 2*GB_number_of_subentries(gb_species_data); // hash size = 2 * number of species 
+        last_hash_size  = 2*GB_number_of_subentries(gb_species_data); // hash size = 2 * number of species
         GB_pop_transaction(gb_main);
     }
     return last_hash_size;
@@ -2924,7 +2924,7 @@ GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag)
             int hash_size = GBT_get_species_hash_size(gb_main);
 
             gbtrst.renamed_hash     = GBS_create_hash(hash_size, 0);
-            gbtrst.old_species_hash = GBT_generate_species_hash(gb_main, 0); 
+            gbtrst.old_species_hash = GBT_generate_species_hash(gb_main, 0);
         }
         gbtrst.all_flag = all_flag;
     }
@@ -3065,7 +3065,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
     }
     // rename configurations
     if (!error) {
-        int config_count;        
+        int config_count;
         char **config_names = GBT_get_configuration_names_and_count(gbtrst.gb_main, &config_count);
 
         if (config_names) {
@@ -3080,7 +3080,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
                 if (!error) {
                     int need_save = 0;
                     int mode;
-                    
+
                     for (mode = 0; !error && mode<2; ++mode) {
                         char              **configStrPtr = (mode == 0 ? &config->top_area : &config->middle_area);
                         GBT_config_parser  *parser       = GBT_start_config_parser(*configStrPtr);
@@ -3525,6 +3525,31 @@ const char *GBT_remote_touch_awar(GBDATA *gb_main, const char *application, cons
     return gbt_wait_for_remote_action(gb_main, gb_awar, awars.awar_result);
 }
 
+static GB_ERROR expect_gene_position(GBDATA *gb_gene, const char *prefix, int whichPos, long *pos) {
+    const char *pos_entry = whichPos>1 ? GBS_global_string("%s%i", prefix, whichPos) : prefix;
+    GBDATA     *gb_pos;
+    GB_ERROR    error     = 0;
+
+    *pos = 0;
+
+    gb_assert(whichPos>0);
+    gb_pos = GB_find(gb_gene, pos_entry, 0, down_level);
+    if (gb_pos) *pos = GB_read_int(gb_pos);
+    else error = GB_export_error("Expected entry '%s'", pos_entry);
+    return error;
+}
+
+GB_ERROR GBT_get_gene_positions(GBDATA *gb_gene, int whichPos, long *pos_begin, long *pos_end) {
+    GB_ERROR error    = expect_gene_position(gb_gene, "pos_begin", whichPos, pos_begin);
+    if (!error) {
+        error = expect_gene_position(gb_gene, "pos_end", whichPos, pos_end);
+        if (!error) {
+            if (*pos_begin>*pos_end) error = "Illegal gene positions";
+        }
+    }
+    return error;
+}
+
 /*  ---------------------------------------------------------------------------------  */
 /*      char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement)       */
 /*  ---------------------------------------------------------------------------------  */
@@ -3533,69 +3558,71 @@ const char *GBT_remote_touch_awar(GBDATA *gb_main, const char *application, cons
 char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement) {
     /* read the sequence for the specified gene */
 
-    GB_ERROR  error  = 0;
-    char     *result = 0;
+    GB_ERROR  error         = 0;
+    char     *result        = 0;
+    GBDATA   *gb_complement = GB_find(gb_gene, "complement", 0, down_level);
+    int       complement    = gb_complement ? GB_read_byte(gb_complement)!=0 : 0;
+    GBDATA   *gb_joined     = GB_find(gb_gene, "pos_joined", 0, down_level);
+    int       parts         = gb_joined ? GB_read_int(gb_joined) : 1;
+    int       p;
+    GBDATA   *gb_species    = GB_get_father(GB_get_father(gb_gene));
+    GBDATA   *gb_seq        = GBT_read_sequence(gb_species, "ali_genom");
+    long      seq_length    = GB_read_count(gb_seq);
+    int       resultlen     = 0;
 
-    GBDATA *gb_pos1       = GB_find(gb_gene, "pos_begin", 0, down_level);
-    GBDATA *gb_pos2       = GB_find(gb_gene, "pos_end", 0, down_level);
-    GBDATA *gb_complement = GB_find(gb_gene, "complement", 0, down_level);
-    GBDATA *gb_species    = GB_get_father(GB_get_father(gb_gene));
-
-    if (!gb_pos1) {
-        if (!gb_pos2) {
-            error = "no pos_begin/pos_end entries found";
-        }
-        else {
-            error = "no pos_begin entry found";
+    for (p = 1; p <= parts; p++) {
+        long pos_begin, pos_end;
+        error = GBT_get_gene_positions(gb_gene, p, &pos_begin, &pos_end);
+        if (!error) {
+            if (pos_end>seq_length) {
+                error = GBS_global_string("Illegal gene position(s): endpos = %li, seq.length=%li", pos_end, seq_length);
+            }
+            else  {
+                resultlen += pos_end-pos_begin+1;
+            }
         }
     }
-    else if (!gb_pos2) {
-        error = "no pos_end entry found";
-    }
-    else {
-        long pos1       = gb_pos1 ? GB_read_int(gb_pos1) : -1;
-        long pos2       = gb_pos2 ? GB_read_int(gb_pos2) : -1;
-        int  complement = gb_complement ? GB_read_byte(gb_complement)!=0 : 0;
 
-        if (pos1<1 || pos2<1 || pos2<pos1) {
-            error = "Illegal gene positions";
+    if (!error) {
+        char       *resultpos;
+        long        pos_begin, pos_end;
+        int         len;
+        const char *seq_data = GB_read_char_pntr(gb_seq);
+
+        result    = malloc(resultlen);
+        resultpos = result;
+
+#warning GBT_read_gene_sequence has to be changed later when 'complement' 'complement2' 'complement3' entries exits
+
+        if (complement == 0) {
+            for (p = 1; p <= parts; p++) {
+                error      = GBT_get_gene_positions(gb_gene, p, &pos_begin, &pos_end);
+                gb_assert(!error); // would have occurred above
+                len        = pos_end-pos_begin+1;
+                memcpy(resultpos, seq_data+pos_begin-1, len);
+                resultpos += len;
+            }
+            resultpos[resultlen] = 0;
         }
         else {
-            GBDATA *gb_seq    = GBT_read_sequence(gb_species, "ali_genom");
-            GBDATA *gb_joined = GB_find(gb_gene, "pos_joined", 0, down_level);
-            int     parts     = gb_joined ? GB_read_int(gb_joined) : 1;
-
-            if (parts>1) {
-                error = "Using sequence of joined genes not supported yet!"; /* @@@ */
+            for (p = parts; p >= 1; p--) {
+                error      = GBT_get_gene_positions(gb_gene, p, &pos_begin, &pos_end);
+                gb_assert(!error); // would have occurred above
+                len        = pos_end-pos_begin+1;
+                memcpy(resultpos, seq_data+pos_begin-1, len);
+                resultpos += len;
             }
+            resultpos[resultlen] = 0;
 
-            if (!error) {
-                long seq_length = GB_read_count(gb_seq);
-                if (pos2>seq_length) { // positions are [1..n]
-                    error = GBS_global_string("Illegal gene position(s): endpos = %li, seq.length=%li", pos2, seq_length);
-                }
+            if (use_revComplement) {
+                char  T_or_U;
+                error = GBT_determine_T_or_U(GB_AT_DNA, &T_or_U, "reverse-complement");
+                if (!error) GBT_reverseComplementNucSequence(result, resultlen, T_or_U);
             }
-
-            if (!error) {
-                const char *seq_data = GB_read_char_pntr(gb_seq);
-                long        length   = pos2-pos1+1;
-
-                result = (char*)malloc(length+1);
-                memcpy(result, seq_data+pos1-1, length);
-                result[length] = 0;
-
-                if (complement && use_revComplement) {
-                    char T_or_U;
-                    error = GBT_determine_T_or_U(GB_AT_DNA, &T_or_U, "reverse-complement");
-                    if (!error) GBT_reverseComplementNucSequence(result, length, T_or_U);
-                }
-                /* @@@ FIXME: sequence is wrong with reverse complement */
-
-                if (error)  {
-                    free(result);
-                    result = 0;
-                }
-            }
+        }
+        if (error)  {
+            free(result);
+            result = 0;
         }
     }
 
