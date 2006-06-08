@@ -70,13 +70,15 @@ GB_ERROR GEN_gene::load_positions(int part) {
     if (!gb_end) return GBS_global_string("'%s' entry missing", pos_end_name);
     pos2           = GB_read_int(gb_end);
 
+    gen_assert(pos1 <= pos2);
+
     return 0;
 }
 
 GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, GB_ERROR& error) {
-    init(gb_gene_, root_);    
+    init(gb_gene_, root_);
     error = load_positions(1);
-    
+
     if (!error) {
         nodeInfo = GEN_make_node_text_nds(root->GbMain(), gb_gene, 0);
     }
