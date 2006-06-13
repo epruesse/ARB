@@ -2400,7 +2400,7 @@ AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode)
             aws->init( root, "create_species","Create species");
             break;
         case 1:
-            aws->init( root, "create_species_from_consensus","Create species from konsensus");
+            aws->init( root, "create_species_from_consensus","Create species from consensus");
             break;
         case 2:
             aws->init( root, "copy_species","Copy current species");

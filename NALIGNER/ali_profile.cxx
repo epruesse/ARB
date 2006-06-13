@@ -699,7 +699,7 @@ int ALI_PROFILE::is_outside_helix(unsigned long pos,
 
 
 /*
- * generate a 'konsensus sequence'
+ * generate a 'consensus sequence'
  */
 char *ALI_PROFILE::cheapest_sequence(void)
 {
