@@ -1445,7 +1445,7 @@ AW_window *create_matrix_window(AW_root *aw_root) {
 
     aws->at("cancel_select");
     aws->callback((AW_CB1)AW_POPUP,(AW_CL)awt_create_select_cancel_window);
-    aws->create_button("SELECT_CANCEL_CHARS", "Select","C");
+    aws->create_button("SELECT_CANCEL_CHARS", "Info","C");
 
     aws->at("change_matrix");
     aws->callback(AW_POPUP,(AW_CL)create_dna_matrix_window,0);
