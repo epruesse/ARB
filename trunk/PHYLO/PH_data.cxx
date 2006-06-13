@@ -140,9 +140,10 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
 
     AW_BOOL bases_used;     // rna oder dna sequence : nur zum testen und Entwicklung
 
-    bases_used=AW_TRUE;
+    bases_used = AW_TRUE;
     if (!PHDATA::ROOT) return "nothing loaded yet";
-    aw_root=PH_used_windows::windowList->phylo_main_window->get_root();
+
+    aw_root = PH_used_windows::windowList->phylo_main_window->get_root();
     if (bases_used) {
         real_chars="ACGTU";
         low_chars="acgtu";
@@ -193,6 +194,7 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
     {
         distance_table->set(reference_table[(unsigned char)'N'],reference_table[(unsigned char)'X'],0.0);
         distance_table->set(reference_table[(unsigned char)'n'],reference_table[(unsigned char)'x'],0.0);
+        // @@@ why aren't opposite entries used?
     }
     distance_table->set(reference_table[(unsigned char)'.'],reference_table[(unsigned char)'-'],0.0);
 
