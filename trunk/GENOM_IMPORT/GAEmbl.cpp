@@ -182,7 +182,7 @@ void gellisary::GAEmbl::dissectGenomeSequenceLine(const std::string & source_lin
 			}
 			else if((i > 70) && (i <= 79))
 			{
-				if(!std::isdigit(source_line[i]))
+				if(!isdigit(source_line[i]))
 				{
 					// Fehler
 	#if defined(DEBUG)
@@ -203,7 +203,7 @@ void gellisary::GAEmbl::dissectGenomeSequenceLine(const std::string & source_lin
 				}
 				else
 				{
-					if(std::isalpha(source_line[i]))
+					if(isalpha(source_line[i]))
 					{
 						counter++;
 						t_base = std::tolower(source_line[i]);
@@ -577,7 +577,7 @@ void gellisary::GAEmbl::dissectLocation(const std::string & source)
 	int t_source_size = t_source.size();
 	for(int i = 0; i < t_source_size; i++)
 	{
-		if(!std::isdigit(t_source[i]))
+		if(!isdigit(t_source[i]))
 		{
 			t_source[i] = ' ';
 		}
