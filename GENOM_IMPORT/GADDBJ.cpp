@@ -187,9 +187,9 @@ void gellisary::GADDBJ::dissectGenomeSequenceLine(const std::string & source_lin
 			}
 			else if((i >= 0) && (i <= 8))
 			{
-				if(!std::isdigit(source_line[i]))
+				if(!isdigit(source_line[i]))
 				{
-					if(!std::isspace(source_line[i]))
+					if(!isspace(source_line[i]))
 					{
 						// Fehler
 	#if defined(DEBUG)
@@ -211,7 +211,7 @@ void gellisary::GADDBJ::dissectGenomeSequenceLine(const std::string & source_lin
 				}
 				else
 				{
-					if(std::isalpha(source_line[i]))
+					if(isalpha(source_line[i]))
 					{
 						counter_all++;
 						t_base = std::tolower(source_line[i]);
@@ -744,7 +744,7 @@ void gellisary::GADDBJ::dissectLocation(const std::string & source)
 	int t_source_size = t_source.size();
 	for(int i = 0; i < t_source_size; i++)
 	{
-		if(!std::isdigit(t_source[i]))
+		if(!isdigit(t_source[i]))
 		{
 			t_source[i] = ' ';
 		}
@@ -767,7 +767,7 @@ void gellisary::GADDBJ::modifyLocation(const std::string & source)
 	bool same_digit = false;
 	for(int i = 0; i < source_size; i++)
 	{
-		if(!std::isdigit(source[i]))
+		if(!isdigit(source[i]))
 		{
 			t_source_pre.push_back(source[i]);
 			same_digit = false;
@@ -785,7 +785,7 @@ void gellisary::GADDBJ::modifyLocation(const std::string & source)
 	int t_source_size = t_source.size();
 	for(int i = 0; i < t_source_size; i++)
 	{
-		if(!std::isdigit(t_source[i]))
+		if(!isdigit(t_source[i]))
 		{
 			t_source[i] = ' ';
 		}
