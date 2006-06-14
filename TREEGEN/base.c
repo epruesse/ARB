@@ -1,8 +1,5 @@
 #include "base.h"
-
-#ifndef __CTYPE_H
-    #include <ctype.h>
-#endif
+#include <ctype.h>
 
 char helixBaseChar[BASECHARS] = { 'A', 'C', 'G', 'T', '=' },
      loopBaseChar[BASECHARS]  = { 'a', 'c', 'g', 't', '-' };

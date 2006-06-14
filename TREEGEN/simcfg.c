@@ -1,20 +1,9 @@
 #include "simcfg.h"
-
-#ifndef __READCFG_H
-    #include "readcfg.h"
-#endif
-#ifndef __MATH_H
-    #include <math.h>
-#endif
-#ifndef __STDLIB_H
-    #include <stdlib.h>
-#endif
-#ifndef __STRING_H
-    #include <string.h>
-#endif
-#ifndef __RNS_H
-    #include "rns.h"
-#endif
+#include "readcfg.h"
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include "rns.h"
 
 static struct S_cfgLine cfg_lines[];
 

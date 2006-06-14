@@ -1,11 +1,8 @@
 #ifndef __DEFINES_H
 #define __DEFINES_H
 
-// #ifndef __MALLOC_H
-//     #include <malloc.h>
-// #endif
 #ifndef __STDIO_H
-    #include <stdio.h>
+#include <stdio.h>
 #endif
 
 /* /-----------\ */

@@ -2,16 +2,16 @@
 #define __RNS_H
 
 #ifndef __DEFINES_H
-    #include "defines.h"
+#include "defines.h"
 #endif
 #ifndef __BASE_H
-    #include "base.h"
+#include "base.h"
 #endif
 #ifndef __SIMCFG_H
-    #include "simcfg.h"
+#include "simcfg.h"
 #endif
 #ifndef __FRAND_H
-    #include "frand.h"
+#include "frand.h"
 #endif
 
 typedef double SingleProb[BASETYPES];

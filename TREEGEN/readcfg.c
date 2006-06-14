@@ -1,14 +1,8 @@
 #include "readcfg.h"
 
-#ifndef __STRING_H
-    #include <string.h>
-#endif
-#ifndef __STDLIB_H
-    #include <stdlib.h>
-#endif
-#ifndef __ERRNO_H
-    #include <errno.h>
-#endif
+#include <string.h>
+#include <stdlib.h>
+#include <errno.h>
 
 #define COMMENT     ';'
 #define MAXLEN  2048

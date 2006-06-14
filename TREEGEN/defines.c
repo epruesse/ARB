@@ -1,11 +1,6 @@
 #include "defines.h"
-
-#ifndef __STDLIB_H
-    #include <stdlib.h>
-#endif
-#ifndef __STDARG_H
-    #include <stdarg.h>
-#endif
+#include <stdlib.h>
+#include <stdarg.h>
 
 #define MAXERRLEN 500
 
