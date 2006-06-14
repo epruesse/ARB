@@ -1,14 +1,7 @@
 #include "frand.h"
-
-#ifndef __DEFINES_H
-    #include "defines.h"
-#endif
-#ifndef __MATH_H
-    #include <math.h>
-#endif
-#ifndef __STDLIB_H
-    #include <stdlib.h>
-#endif
+#include "defines.h"
+#include <math.h>
+#include <stdlib.h>
 
 /* -------------------------------------------------------------------------- */
 /*      static double randval(void) */

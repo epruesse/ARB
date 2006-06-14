@@ -2,7 +2,7 @@
 #define __READCFG_H
 
 #ifndef __DEFINES_H
-    #include "defines.h"
+#include "defines.h"
 #endif
 
 /*  decodeFunc bekommt einen Zeiger auf den Text hinter dem */

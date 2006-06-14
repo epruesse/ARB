@@ -1,9 +1,6 @@
 #define  __MODUL__
 #include "spreadin.h"
-
-#ifndef __STDLIB_H
-    #include <stdlib.h>
-#endif
+#include <stdlib.h>
 
 /* -------------------------------------------------------------------------- */
 /*        Spreading newSpreading(double *value, int values) */

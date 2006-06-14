@@ -2,7 +2,7 @@
 #define __SPREADIN_H
 
 #ifndef __DEFINES_H
-    #include "defines.h"
+#include "defines.h"
 #endif
 
 /* Ein Spreading ist eine Tabelle von Integerwerten, welche den Bereich */
