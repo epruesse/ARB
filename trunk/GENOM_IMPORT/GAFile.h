@@ -81,6 +81,7 @@ namespace gellisary
 			bool complement; /* Für die "Location"-Angabe in der Table-Zeile.*/
 			std::vector<int> positions; /* Für die "Location"-Angabe in der 
 				Table-Zeile.*/
+			std::vector<int> complements;
 			std::string flatfile_name;	/*Der Name der Flat-Datei ohne Endung.*/
 			std::string flatfile_fullname;	/*Der volle Name der Flat-Datei.*/
 			std::string flatfile_basename;	/*Der Pfadteil aus dem vollen Namen.*/
@@ -109,7 +110,8 @@ namespace gellisary
 			std::ifstream arb_file; /* Wie der Name der VAriable sagt, es ist 
 				die Referenz auf die einzulesende Datei.*/
 			
-			bool find_word(const std::string &, const std::string &);
+			//bool find_word(const std::string &, const std::string &);
+			int find_word(const std::string &, const std::string &);
 			bool split_string(const std::string & a, std::vector<std::string> & b, const char * delims = " \t\r\n");
 			std::string trim(const std::string & source, const char * delims = " \t\r\n");
 			//std::string trim_begin(const std::string & source, const char * delims = " \t\r\n");

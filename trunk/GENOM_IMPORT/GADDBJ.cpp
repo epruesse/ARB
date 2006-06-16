@@ -611,7 +611,7 @@ void gellisary::GADDBJ::dissectTableFeatureLine(const std::string & source_line)
 					//std::stringstream t_name;
 					//t_name << feature << "_" << counter;
 					//name = t_name.str();
-					arb.write_next_gene(feature, value, positions, complement, counter_feature);
+					arb.write_next_gene(feature, value, positions, complements, counter_feature);
 		   		}
 		    }
 		    else
@@ -736,7 +736,7 @@ void gellisary::GADDBJ::check_and_write_metadata_line()
 
 void gellisary::GADDBJ::dissectLocation(const std::string & source)
 {
-	if(find_word(source,"complement"))
+	if(find_word(source,"complement") != 0)
 	{
 		complement = true;
 	}
@@ -929,7 +929,7 @@ bool gellisary::GADDBJ::line_examination(const std::string & source_line)
 		}
 		else
 		{
-			if(!find_word(source_line,"BASE COUNT"))
+			if(find_word(source_line,"BASE COUNT") == 0)
 			{
 				// Fehler
 	#if defined(DEBUG)

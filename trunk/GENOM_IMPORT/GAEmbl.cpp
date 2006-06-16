@@ -405,6 +405,11 @@ void gellisary::GAEmbl::dissectTableFeatureLine(const std::string & source_line)
 			// cannot be location
 			if(t_qualifier_line[0] == '/')
 			{
+				if(qualifier == "location")
+				{
+					dissectLocation(value);
+					arb.write_next_gene(feature, value, positions, complements, counter);
+				}
 				t_pos = t_qualifier_line.find_first_of("=");
 				if(t_pos != std::string::npos)
 				{
@@ -527,12 +532,12 @@ void gellisary::GAEmbl::dissectTableFeatureLine(const std::string & source_line)
 			qualifier = "location";
 			complement = false;
 			value = t_qualifier_line;
-			dissectLocation(value);
+			//dissectLocation(value);
 			//name = generateGeneID(value,feature);
 			//std::stringstream t_name;
 			//t_name << feature << "_" << counter;
 			//name = t_name.str();
-			arb.write_next_gene(feature, value, positions, complement, counter);
+			//arb.write_next_gene(feature, value, positions, complements, counter);
 		}
 	}
 	else if(type == META)
@@ -569,7 +574,8 @@ void gellisary::GAEmbl::dissectTableFeatureLine(const std::string & source_line)
  */
 void gellisary::GAEmbl::dissectLocation(const std::string & source)
 {
-	if(find_word(source,"complement"))
+	int complemente = 0;
+	if((complemente = find_word(source,"complement")) != 0)
 	{
 		complement = true;
 	}
@@ -589,6 +595,32 @@ void gellisary::GAEmbl::dissectLocation(const std::string & source)
 		for(int i = 0; i < (int) t_positions.size(); i++)
 		{
 			positions.push_back(std::atoi((t_positions[i]).c_str()));
+		}
+	}
+	std::string t_source2(source);
+	int t_source2_size = t_source2.size();
+	for(int i = 0; i < t_source2_size; i++)
+	{
+		if(t_source2[i] == ',')
+		{
+			t_source2[i] = ' ';
+		}
+	}
+	complements.clear();
+	std::vector<std::string> t_positions2;
+	if(split_string(t_source2,t_positions2))
+	{
+		for(int i = 0; i < (int) t_positions2.size(); i++)
+		{
+			std::string t_string2 = t_positions2[i];
+			if(find_word(t_string2,"complement") != 0)
+			{
+				complements.push_back(1);
+			}
+			else
+			{
+				complements.push_back(0);
+			}
 		}
 	}
 }

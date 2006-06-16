@@ -182,7 +182,7 @@ bool gellisary::GAARB::write_metadata_line(const std::string & line_type, const 
 	}
 }
 
-bool gellisary::GAARB::write_next_gene(const std::string & feature, const std::string & raw_location, std::vector<int> & positions, bool complement, int counter)
+bool gellisary::GAARB::write_next_gene(const std::string & feature, const std::string & raw_location, std::vector<int> & positions, std::vector<int> & complements, int counter)
 {
 	if((!feature.empty() && feature.size() > 0) && (!raw_location.empty() && raw_location.size() > 0) && (positions.size() > 0))
 	{
@@ -196,7 +196,29 @@ bool gellisary::GAARB::write_next_gene(const std::string & feature, const std::s
 		gene_string_data["type"] = feature;
 		gene_string_data["location"] = raw_location;
 		gene_int_data["gene_number"] = counter;
-		gene_bool_data["complement"] = complement;
+		int complements_size = complements.size();
+		
+		if(complements_size < 2)
+		{
+			gene_bool_data["complement"] = complements[0];
+		}
+		else
+		{
+			for(int k = 0; k < complements_size; k++)
+			{
+				if(k == 0)
+				{
+					gene_bool_data["complement"] = complements[0];
+				}
+				else
+				{
+					std::stringstream t_complement;
+					t_complement << "complement" << (k+1);
+					gene_bool_data[t_complement.str()] = complements[k];
+				}
+			}
+		}
+		
 		int positions_size = positions.size();
 		int gene_size = 0;
 		if(positions_size > 2)
