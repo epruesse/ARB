@@ -528,7 +528,7 @@ void gellisary::GAGenBank::dissectTableFeatureLine(const std::string & source_li
 					//std::stringstream t_name;
 					//t_name << feature << "_" << counter;
 					//name = t_name.str();
-					arb.write_next_gene(feature, value, positions, complement, counter);
+					arb.write_next_gene(feature, value, positions, complements, counter);
 		   		}
 		    }
 		    else
@@ -620,7 +620,7 @@ void gellisary::GAGenBank::check_and_write_metadata_line()
 
 void gellisary::GAGenBank::dissectLocation(const std::string & source)
 {
-	if(find_word(source,"complement"))
+	if(find_word(source,"complement") != 0)
 	{
 		complement = true;
 	}

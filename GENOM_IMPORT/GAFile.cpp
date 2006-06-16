@@ -60,7 +60,7 @@ gellisary::GAFile::GAFile(GAARB & nARB, std::string & nARB_Filename) : arb(nARB)
 }
 #endif
 
-bool gellisary::GAFile::find_word(const std::string & source, const std::string & word_to_find)
+/*bool gellisary::GAFile::find_word(const std::string & source, const std::string & word_to_find)
 {
 	int source_size = source.size();
 	bool result = false;
@@ -97,6 +97,46 @@ bool gellisary::GAFile::find_word(const std::string & source, const std::string 
 		}
 	}
 	return result;
+}*/
+
+int gellisary::GAFile::find_word(const std::string & source, const std::string & word_to_find)
+{
+	int source_size = source.size();
+	//bool result = false;
+	int count_segments = 0;
+	int word_to_find_size = word_to_find.size();
+	for(int i = 0, j = 0; i < source_size; i++)
+	{
+		if(source[i] == word_to_find[j])
+		{
+			if((j+1) == word_to_find_size)
+			{
+				count_segments++;
+			}
+			else
+			{
+				j++;
+				if(j >= word_to_find_size)
+				{
+					break;
+				}
+			}
+		}
+		else
+		{
+			j = 0;
+			if(source[i] == word_to_find[j])
+			{
+				j++;
+				if(j >= word_to_find_size)
+				{
+					break;
+				}
+				
+			}
+		}
+	}
+	return count_segments;
 }
 
 bool gellisary::GAFile::split_string(const std::string & n_source, std::vector<std::string> & result, const char * delims)
