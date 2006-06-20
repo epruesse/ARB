@@ -162,8 +162,6 @@ AW_window.o: aw_xfig.hxx
 AW_window.o: aw_xfigfont.hxx
 AW_window.o: aw_xkey.hxx
 AW_window.o: aw_Xm.hxx
-AW_window.o: GLwDrawA.h
-AW_window.o: GLwMDrawA.h
 AW_window.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
