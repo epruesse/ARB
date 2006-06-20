@@ -355,7 +355,9 @@ public:
     void move_gbt_2_ap(GBT_TREE *tree, GB_BOOL insert_remove_cb);   // moves all node/leaf information from struct GBT_TREE to AP_tree
     void load_node_info();  // load linewidth etc
 
-    GB_ERROR load(     AP_tree_root *tree_static, int link_to_database, GB_BOOL insert_delete_cbs = GB_FALSE, GB_BOOL show_status = GB_FALSE);
+    GB_ERROR load(AP_tree_root *tree_static, int link_to_database,
+                  GB_BOOL insert_delete_cbs, GB_BOOL show_status,
+                  int *zombies, int *duplicates);
 
     virtual GB_ERROR save(char *tree_name);
     GB_ERROR relink( );
@@ -400,6 +402,7 @@ public:
     }
 
     GB_ERROR move_group_info(AP_tree *new_group);
+    void     mark_duplicates(GBDATA *gb_main);
     void     mark_long_branches(GBDATA *gb_main,double diff);
     void     justify_branch_lenghs(GBDATA *gb_main);
     void     relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name));
