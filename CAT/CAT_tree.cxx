@@ -268,7 +268,7 @@ GB_ERROR create_and_save_CAT_tree(GBDATA *gb_main, const char *tree_name, const 
 
     GBT_TREE *tree = GBT_read_tree(gb_main,tree_name, sizeof(GBT_TREE) );
     if (!tree) return GB_get_error();
-    GB_ERROR error = GBT_link_tree(tree,gb_main,GB_FALSE);
+    GB_ERROR error = GBT_link_tree(tree,gb_main,GB_FALSE, 0, 0);
     if (error) return error;
     error = create_and_save_CAT_tree(tree,path);
     return error;
