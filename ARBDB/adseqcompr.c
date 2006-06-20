@@ -487,7 +487,7 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, con
         error = GB_export_error("Tree %s not found in database",tree_name);
     }
     else {
-        error             = GBT_link_tree((GBT_TREE *)ctree,gb_main,GB_FALSE);
+        error             = GBT_link_tree((GBT_TREE *)ctree, gb_main, GB_FALSE, 0, 0);
         if (!error) error = GBT_compress_sequence_tree(gb_main,ctree,ali_name);
         GBT_delete_tree((GBT_TREE *)ctree);
     }
