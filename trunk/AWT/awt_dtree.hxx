@@ -110,9 +110,12 @@ protected:
     int    use_ellipse;
     float  circle_zoom_factor;
     float  circle_max_size;
-    
+
+    int zombies; // # of zombies during last load()
+    int duplicates; // # of duplicates during last load()
+
 public:
-    
+
     // *********** read only variables !!!
     AW_root      *aw_root;
     AP_tree_sort  tree_sort;
@@ -167,6 +170,7 @@ public:
     void      set_tree_type(AP_tree_sort type);
 
     double get_irs_tree_ruler_scale_factor() const { return irs_tree_ruler_scale_factor; }
+    void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
 };
 
 AWT_graphic *NT_generate_tree( AW_root *root,GBDATA *gb_main );
