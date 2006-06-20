@@ -903,6 +903,8 @@ GB_ERROR GBT_delete_tree(GBT_TREE *tree)
     if (tree->name)  free(tree->name);
     if (tree->remark_branch) free(tree->remark_branch);
     if (tree->is_leaf == 0) {
+        gb_assert(tree->leftson);
+        gb_assert(tree->rightson);
         if ( (error=GBT_delete_tree( tree->leftson) ) ) return error;
         if ( (error=GBT_delete_tree( tree->rightson)) ) return error;
     }
@@ -1348,51 +1350,83 @@ long GBT_count_nodes(GBT_TREE *tree){
     return GBT_count_nodes(tree->leftson) + GBT_count_nodes(tree->rightson);
 }
 
-GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, GBDATA *gb_species_data, long nodes, long *counter)
-{
-    GB_ERROR error = 0;
-    GBDATA *gbd;
-    if ( !tree->is_leaf ) {
-        error = gbt_link_tree_to_hash_rek(tree->leftson,gb_species_data,nodes,counter);
-        if (!error) error = gbt_link_tree_to_hash_rek(tree->rightson,gb_species_data,nodes,counter);
-        return error;
-    }
-    if (nodes){
-        GB_status(*counter/(double)nodes);
-        (*counter) ++;
-    }
+struct link_tree_data {
+    GB_HASH *species_hash;
+    GB_HASH *seen_species;      /* used to count duplicates */
+    int      nodes; /* if != 0 -> update status */;
+    int      counter;
+    int      zombies;           /* counts zombies */
+    int      duplicates;        /* counts duplicates */
+};
 
-    tree->gb_node = 0;
-    if (!tree->name) return 0;
-    gbd = GB_find(gb_species_data,"name",tree->name, down_2_level);
-    if (!gbd){
-        return 0;
+static GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, struct link_tree_data *ltd) {
+    GB_ERROR error = 0;
+    if (tree->is_leaf) {
+        if (ltd->nodes) { /* update status? */
+            GB_status(ltd->counter/(double)ltd->nodes);
+            ltd->counter++;
+        }
+
+        tree->gb_node = 0;
+        if (tree->name) {
+            GBDATA *gbd = (GBDATA*)GBS_read_hash(ltd->species_hash, tree->name);
+            if (gbd) tree->gb_node = gbd;
+            else ltd->zombies++;
+            
+            if (GBS_read_hash(ltd->seen_species, tree->name)) ltd->duplicates++;
+            else GBS_write_hash(ltd->seen_species, tree->name, 1);
+        }
     }
-    tree->gb_node = GB_get_father(gbd);
+    else {
+        error = gbt_link_tree_to_hash_rek(tree->leftson, ltd);
+        if (!error) error = gbt_link_tree_to_hash_rek(tree->rightson, ltd);
+    }
     return error;
 }
 
+GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, GBDATA *gb_main, GB_BOOL show_status, GB_HASH *species_hash, int *zombies, int *duplicates) {
+    GB_ERROR               error;
+    struct link_tree_data  ltd;
+
+    ltd.species_hash = species_hash;
+    ltd.seen_species = GBS_create_hash(GBT_get_species_hash_size(gb_main),1);
+    ltd.zombies      = 0;
+    ltd.duplicates   = 0;
+    ltd.counter      = 0;
+
+    if (show_status) {
+        GB_status2("Relinking tree to database");
+        ltd.nodes = GBT_count_nodes(tree) + 1;
+    }
+    else {
+        ltd.nodes = 0;
+    }
+
+    error = gbt_link_tree_to_hash_rek(tree, &ltd);
+    GBS_free_hash(ltd.seen_species);
+
+    if (zombies) *zombies = ltd.zombies;
+    if (duplicates) *duplicates = ltd.duplicates;
+
+    return error;
+}
 
 /** Link a given tree to the database. That means that for all tips the member
     gb_node is set to the database container holding the species data.
+    returns the number of zombies and duplicates in 'zombies' and 'duplicates'
 */
-GB_ERROR GBT_link_tree(GBT_TREE *tree,GBDATA *gb_main,GB_BOOL show_status)
+GB_ERROR GBT_link_tree(GBT_TREE *tree,GBDATA *gb_main,GB_BOOL show_status, int *zombies, int *duplicates)
 {
-    GBDATA *gb_species_data;
-    GB_ERROR error = 0;
-    long nodes =  0;
-    long counter = 0;
-    if (show_status) {
-        GB_status2("Relinking tree to database");
-        nodes = GBT_count_nodes(tree) + 1;
-    }
-    gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-    error = gbt_link_tree_to_hash_rek(tree,gb_species_data,nodes,&counter);
+    GB_HASH  *species_hash = GBT_generate_species_hash(gb_main, 1);
+    GB_ERROR  error        = GBT_link_tree_using_species_hash(tree, gb_main, show_status, species_hash, zombies, duplicates);
+
+    GBS_free_hash(species_hash);
+
     return error;
 }
 
 /** Unlink a given tree from the database.
-*/
+ */
 void GBT_unlink_tree(GBT_TREE *tree)
 {
     tree->gb_node = 0;
@@ -2838,9 +2872,9 @@ long GBT_get_species_hash_size(GBDATA *gb_main) {
     return last_hash_size;
 }
 
-GB_HASH *GBT_generate_species_hash(GBDATA *gb_main,int ncase)
+GB_HASH *GBT_generate_species_hash(GBDATA *gb_main,int ignore_case)
 {
-    GB_HASH *hash = GBS_create_hash(GBT_get_species_hash_size(gb_main),ncase);
+    GB_HASH *hash = GBS_create_hash(GBT_get_species_hash_size(gb_main),ignore_case);
     GBDATA *gb_species;
     GBDATA *gb_name;
     for (   gb_species = GBT_first_species(gb_main);
@@ -3539,7 +3573,7 @@ static GB_ERROR expect_gene_position(GBDATA *gb_gene, const char *prefix, int wh
     return error;
 }
 
-GB_ERROR GBT_get_gene_positions(GBDATA *gb_gene, int whichPos, long *pos_begin, long *pos_end) {
+NOT4PERL GB_ERROR GBT_get_gene_positions(GBDATA *gb_gene, int whichPos, long *pos_begin, long *pos_end) {
     GB_ERROR error    = expect_gene_position(gb_gene, "pos_begin", whichPos, pos_begin);
     if (!error) {
         error = expect_gene_position(gb_gene, "pos_end", whichPos, pos_end);
