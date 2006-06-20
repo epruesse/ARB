@@ -410,55 +410,65 @@ bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_
     else {
         int codon_nr = calc_codon_nr(dna);
         if (codon_nr==AWT_MAX_CODONS) { // dna is not a clean codon (it contains iupac-codes)
-            int error_positions = 0;
-            int first_error_pos = -1;
+            int  error_positions = 0;
+            int  first_error_pos = -1;
+            bool too_short       = false;
             {
                 int iupac_pos;
-                for (iupac_pos=0; iupac_pos<3; iupac_pos++) {
-                    if (strchr("ACGTU", dna[iupac_pos])==0) {
+                for (iupac_pos=0; iupac_pos<3 && !too_short; iupac_pos++) {
+                    if (!dna[iupac_pos]) {
+                        too_short = true;
+                    }
+                    else if (strchr("ACGTU", dna[iupac_pos]) == 0) {
                         if (first_error_pos==-1) first_error_pos = iupac_pos;
                         error_positions++;
                     }
                 }
             }
-            gb_assert(error_positions);
-            if (error_positions==3) { // don't accept codons with 3 errors
-                fail_reason = GBS_global_string("Three consecutive IUPAC codes '%c%c%c'", dna[0], dna[1], dna[2]);
+
+            if (too_short) {
+                fail_reason = GBS_global_string("Not enough nucleotides (got '%s')", dna);
             }
             else {
-                const char *decoded_iupac = AWT_decode_iupac(dna[first_error_pos], GB_AT_DNA, 0);
-                char dna_copy[4];
-                memcpy(dna_copy, dna, 3);
-                dna_copy[3] = 0;
-
-#if defined(DEBUG) && 0
-                printf("Check if '%s' is a codon for '%c'\n", dna_copy, protein);
-#endif
-
-                int all_are_codons = 1;
-                AWT_allowedCode allowed_code_copy;
-                allowed_code_copy = allowed_code;
-
-                for (int i=0; decoded_iupac[i]; i++) {
-                    dna_copy[first_error_pos] = decoded_iupac[i];
-                    if (!AWT_is_codon(protein, dna_copy, allowed_code_copy, allowed_code_left)) {
-                        all_are_codons = 0;
-                        break;
-                    }
-                    allowed_code_copy = allowed_code_left;
-                }
-
-                if (all_are_codons) {
-                    allowed_code_left = allowed_code_copy;
-                    is_codon          = true;
+                gb_assert(error_positions);
+                if (error_positions==3) { // don't accept codons with 3 errors
+                    fail_reason = GBS_global_string("Three consecutive IUPAC codes '%c%c%c'", dna[0], dna[1], dna[2]);
                 }
                 else {
-                    allowed_code_left.forbidAll();
-                    fail_reason = GBS_global_string("Not all IUPAC-combinations of '%s' translate", dna_copy);
-                }
+                    const char *decoded_iupac = AWT_decode_iupac(dna[first_error_pos], GB_AT_DNA, 0);
+                    char dna_copy[4];
+                    memcpy(dna_copy, dna, 3);
+                    dna_copy[3] = 0;
+
 #if defined(DEBUG) && 0
-                printf("result 	= %i\n", all_are_codons);
+                    printf("Check if '%s' is a codon for '%c'\n", dna_copy, protein);
 #endif
+
+                    int all_are_codons = 1;
+                    AWT_allowedCode allowed_code_copy;
+                    allowed_code_copy = allowed_code;
+
+                    for (int i=0; decoded_iupac[i]; i++) {
+                        dna_copy[first_error_pos] = decoded_iupac[i];
+                        if (!AWT_is_codon(protein, dna_copy, allowed_code_copy, allowed_code_left)) {
+                            all_are_codons = 0;
+                            break;
+                        }
+                        allowed_code_copy = allowed_code_left;
+                    }
+
+                    if (all_are_codons) {
+                        allowed_code_left = allowed_code_copy;
+                        is_codon          = true;
+                    }
+                    else {
+                        allowed_code_left.forbidAll();
+                        fail_reason = GBS_global_string("Not all IUPAC-combinations of '%s' translate", dna_copy);
+                    }
+#if defined(DEBUG) && 0
+                    printf("result 	= %i\n", all_are_codons);
+#endif
+                }
             }
         }
         else if (definite_translation[codon_nr]!='?') {
