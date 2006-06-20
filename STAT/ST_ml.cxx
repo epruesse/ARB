@@ -481,7 +481,7 @@ GB_ERROR ST_ML::init(	const char *tree_name,
     }
     AP_tree *tree = new AP_tree(0);
     tree_root = new AP_tree_root(gb_main,tree,tree_name);
-    error = tree->load(tree_root,  0);	// tree is not linked !!!
+    error = tree->load(tree_root, 0, GB_FALSE, GB_FALSE, 0, 0); // tree is not linked !!!
     if (error) {
         delete tree;
         delete tree_root;
@@ -510,9 +510,9 @@ GB_ERROR ST_ML::init(	const char *tree_name,
         insert_tree_into_hash_rek(tree_root->tree);
         GBS_hash_do_loop(hash_2_ap_tree,(gb_hash_loop_type)delete_species);
         GBS_free_hash(keep_species_hash); keep_species_hash = 0;
-        GBT_link_tree((GBT_TREE *)tree_root->tree,gb_main, GB_FALSE);
+        GBT_link_tree((GBT_TREE *)tree_root->tree,gb_main, GB_FALSE, 0, 0);
     }else{		// keep marked
-        GBT_link_tree((GBT_TREE *)tree_root->tree,gb_main, GB_FALSE);
+        GBT_link_tree((GBT_TREE *)tree_root->tree,gb_main, GB_FALSE, 0, 0);
         if (marked_only){
             error = tree_root->tree->remove_leafs(gb_main,AWT_REMOVE_NOT_MARKED|AWT_REMOVE_DELETED);
         }else{
