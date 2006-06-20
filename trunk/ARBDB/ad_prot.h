@@ -370,6 +370,7 @@ const char *GB_get_type_name P_((GBDATA *gbd));
 const char *GB_get_db_path P_((GBDATA *gbd));
 void GB_dump_db_path P_((GBDATA *gbd));
 void GB_dump P_((GBDATA *gbd));
+void GB_dump_no_limit P_((GBDATA *gbd));
 char *GB_ralfs_test P_((GBDATA *gb_main));
 char *GB_ralfs_menupoint P_((GBDATA *main_data));
 GB_ERROR GB_fix_database P_((GBDATA *gb_main));

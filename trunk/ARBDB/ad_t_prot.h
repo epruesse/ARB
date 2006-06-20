@@ -40,7 +40,8 @@ GBT_TREE *GBT_read_tree_and_size P_((GBDATA *gb_main, const char *tree_name, lon
 GBT_TREE *GBT_read_tree P_((GBDATA *gb_main, const char *tree_name, long structure_size));
 GBT_TREE *GBT_read_plain_tree P_((GBDATA *gb_main, GBDATA *gb_ctree, long structure_size, GB_ERROR *error));
 long GBT_count_nodes P_((GBT_TREE *tree));
-GB_ERROR GBT_link_tree P_((GBT_TREE *tree, GBDATA *gb_main, GB_BOOL show_status));
+GB_ERROR GBT_link_tree_using_species_hash P_((GBT_TREE *tree, GBDATA *gb_main, GB_BOOL show_status, GB_HASH *species_hash, int *zombies, int *duplicates));
+GB_ERROR GBT_link_tree P_((GBT_TREE *tree, GBDATA *gb_main, GB_BOOL show_status, int *zombies, int *duplicates));
 void GBT_unlink_tree P_((GBT_TREE *tree));
 void GBT_scale_tree P_((GBT_TREE *tree, double length_scale, double bootstrap_scale));
 GBT_TREE *GBT_load_tree P_((const char *path, int structuresize, char **commentPtr, int allow_length_scaling));
@@ -107,7 +108,7 @@ char **GBT_scan_db P_((GBDATA *gbd, const char *datapath));
 void GBT_install_message_handler P_((GBDATA *gb_main));
 void GBT_message P_((GBDATA *gb_main, const char *msg));
 long GBT_get_species_hash_size P_((GBDATA *gb_main));
-GB_HASH *GBT_generate_species_hash P_((GBDATA *gb_main, int ncase));
+GB_HASH *GBT_generate_species_hash P_((GBDATA *gb_main, int ignore_case));
 GB_HASH *GBT_generate_marked_species_hash P_((GBDATA *gb_main));
 GB_HASH *GBT_generate_SAI_hash P_((GBDATA *gb_main));
 GB_ERROR GBT_begin_rename_session P_((GBDATA *gb_main, int all_flag));
@@ -133,6 +134,7 @@ GB_ERROR GBT_remote_action P_((GBDATA *gb_main, const char *application, const c
 GB_ERROR GBT_remote_awar P_((GBDATA *gb_main, const char *application, const char *awar_name, const char *value));
 const char *GBT_remote_read_awar P_((GBDATA *gb_main, const char *application, const char *awar_name));
 const char *GBT_remote_touch_awar P_((GBDATA *gb_main, const char *application, const char *awar_name));
+NOT4PERL GB_ERROR GBT_get_gene_positions P_((GBDATA *gb_gene, int whichPos, long *pos_begin, long *pos_end));
 char *GBT_read_gene_sequence P_((GBDATA *gb_gene, GB_BOOL use_revComplement));
 
 /* adseqcompr.c */
