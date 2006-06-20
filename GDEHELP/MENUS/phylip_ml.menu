@@ -1,4 +1,114 @@
 
+item:PHYML (DNA)
+itemmeta: Y
+itemmethod:( GEN_INFILE(in1); \
+             RUN_IN_WINDOW((arb_phyml infile DNA $MODEL $OPTFREQ $BASEFREQEST $TSTVRATIO $PINVAR $INTERACTIVE; \
+                            $DISPLAY_FUNC )); \
+           )&
+
+arg:DISPLAY_FUNC
+argtype:choice_menu
+arglabel:What to do with the tree:?
+argchoice:ARB ('tree_phyml_'):arb_read_tree `/bin/cat arb_read_tree_args` tree_phyml_$$ outtree "PRG=phyml FILTER=$FILTER STYPE=DNA"
+argchoice:TextEdit:arb_textedit outfile &
+argchoice:Treetool:treetool outtree
+
+arg:MODEL
+argtype:choice_menu
+arglabel:Nuc. substitution model
+argchoice:HKY:0
+argchoice:F84:1
+argchoice:TN93:2
+argchoice:GTR:3
+argchoice:custom:4
+argchoice:JC69:5
+argchoice:KP2:6
+argchoice:F81:7
+
+arg:OPTFREQ
+argtype:choice_menu
+arglabel:Optimize equilibrium freq.? [custom]
+argchoice:No:0
+argchoice:Yes:1
+
+arg:BASEFREQEST
+argtype:choice_menu
+arglabel:Base frequency estimates
+argchoice:empirical:0
+argchoice:ML:1
+
+arg:TSTVRATIO
+argtype:choice_menu
+arglabel:Ts/tv ratio
+argchoice:fixed (4.00):0
+argchoice:estimated:1
+
+arg:PINVAR
+argtype:choice_menu
+arglabel:Proportion of invariable sites
+argchoice:fixed (0.00):0
+argchoice:estimated:1
+
+arg:INTERACTIVE
+argtype:choice_menu
+arglabel:Interactive?
+argchoice:No:0
+argchoice:Yes:1
+
+in:in1
+informat:genbank
+inmask:
+insave:
+
+// --------------------------------------------------------------------------------
+
+item:PHYML (Amino acids)
+itemmeta: Y
+itemmethod:( GEN_INFILE(in1); \
+             RUN_IN_WINDOW((arb_phyml infile AA $MODEL $PINVAR $INTERACTIVE; \
+                            $DISPLAY_FUNC )); \
+           )&
+
+arg:DISPLAY_FUNC
+argtype:choice_menu
+arglabel:What to do with the tree:?
+argchoice:ARB ('tree_phyml_'):arb_read_tree `/bin/cat arb_read_tree_args` tree_phyml_$$ outtree "PRG=phyml FILTER=$FILTER STYPE=AA"
+argchoice:TextEdit:arb_textedit outfile &
+argchoice:Treetool:treetool outtree
+
+arg:MODEL
+argtype:choice_menu
+arglabel:AA substitution model
+argchoice:JTT:0
+argchoice:MtRev:1
+argchoice:WAG:2
+argchoice:DCMut:3
+argchoice:RtREV:4
+argchoice:CpREV:5
+argchoice:VT:6
+argchoice:Blosum62:7
+argchoice:MtMam:8
+argchoice:Dayhoff:9
+
+arg:PINVAR
+argtype:choice_menu
+arglabel:Proportion of invariable sites
+argchoice:fixed (0.00):0
+argchoice:estimated:1
+
+arg:INTERACTIVE
+argtype:choice_menu
+arglabel:Interactive?
+argchoice:No:0
+argchoice:Yes:1
+
+in:in1
+informat:genbank
+inmask:
+insave:
+
+// --------------------------------------------------------------------------------
+
 item:Phylip PROML
 itemmeta: O
 itemmethod:(GEN_INFILE(in1);\
