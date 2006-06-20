@@ -1488,7 +1488,7 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
             *error = GB_get_error();
         }
         else {
-            *error = GBT_link_tree(tree, gb_main, GB_FALSE);
+            *error = GBT_link_tree(tree, gb_main, GB_FALSE, 0, 0);
         }
 
         if (!*error) {
