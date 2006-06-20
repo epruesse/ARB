@@ -785,6 +785,9 @@ void NT_jump_cb_auto(AW_window *dummy, AWT_canvas *ntw){    // jump only if auto
     ntw->refresh();
 }
 
+inline const char *plural(int val) {
+    return "s"+(val == 1);
+}
 
 void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, GB_BOOL set_delete_cbs)
 {
@@ -794,6 +797,23 @@ void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, GB_BOOL set_delete_cbs)
     GB_ERROR error = ntw->tree_disp->load(ntw->gb_main, tree_name,1,set_delete_cbs);    // linked
     if (error) {
         aw_message(error);
+    }
+    else {
+        int zombies, duplicates;
+        ((AWT_graphic_tree*)ntw->tree_disp)->get_zombies_and_duplicates(zombies, duplicates);
+
+        if (zombies || duplicates) {
+            const char *msg = 0;
+            if (duplicates) {
+                if (zombies) msg = GBS_global_string("%i zombie%s and %i duplicate%s", zombies, plural(zombies), duplicates, plural(duplicates));
+                else msg         = GBS_global_string("%i duplicate%s", duplicates, plural(duplicates));
+            }
+            else {
+                awt_assert(zombies);
+                msg = GBS_global_string("%i zombie%s", zombies, plural(zombies));
+            }
+            aw_message(GBS_global_string("%s in '%s'", msg, tree_name));
+        }
     }
     free(tree_name);
     ntw->zoom_reset();
