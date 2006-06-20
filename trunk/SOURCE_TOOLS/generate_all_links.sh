@@ -187,6 +187,7 @@ symlink ../AWT/awt_seq_colors.hxx INCLUDE/awt_seq_colors.hxx &&
 symlink ../AWT/awt_seq_dna.hxx INCLUDE/awt_seq_dna.hxx &&
 symlink ../AWT/awt_seq_protein.hxx INCLUDE/awt_seq_protein.hxx &&
 symlink ../AWT/awt_seq_simple_pro.hxx INCLUDE/awt_seq_simple_pro.hxx &&
+symlink ../AWT/awt_translate.hxx INCLUDE/awt_translate.hxx &&
 # symlink ../AWT/awt_tree.hxx INCLUDE/PH_phylo.hxx &&
 symlink ../AWT/awt_tree.hxx INCLUDE/awt_tree.hxx &&
 symlink ../AWT/awt_tree_cb.hxx INCLUDE/awt_tree_cb.hxx &&
