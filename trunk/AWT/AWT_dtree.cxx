@@ -1816,7 +1816,7 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name,AW_CL link_to_databas
         AP_tree      *apt = this->tree_proto->dup();
         AP_tree_root *tr  = new AP_tree_root(gb_main,apt,name);
 
-        error = apt->load(tr,(int)link_to_database,(GB_BOOL)insert_delete_cbs, GB_TRUE); // show status
+        error = apt->load(tr,(int)link_to_database,(GB_BOOL)insert_delete_cbs, GB_TRUE, &zombies, &duplicates); // show status
         this->unload();
 
         if (error) {
@@ -1869,7 +1869,7 @@ int AWT_graphic_tree::check_update(GBDATA *gbdummy)
                 return flags;
             case AP_UPDATE_RELOADED:
                 name = strdup(this->tree_static->tree_name);
-                error = this->load(gb_main,name,1,0);
+                error = this->load(gb_main, name, 1, 0);
                 if (error) aw_message(error);
                 free(name);
                 this->exports.resize = 1;
