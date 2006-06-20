@@ -296,10 +296,10 @@ GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree
     aw_openstatus("Comparing Topologies");
     do {
         aw_status("Load Tree 1");
-        error = source->load(rsource,1,GB_FALSE,GB_FALSE); // link to database
+        error = source->load(rsource, 1, GB_FALSE, GB_FALSE, 0, 0); // link to database
         if (error) break;
         aw_status("Load Tree 2");
-        error = dest->load(rdest,1,GB_FALSE,GB_FALSE);	// link also
+        error = dest->load(rdest, 1, GB_FALSE, GB_FALSE, 0, 0);	// link also
         if (error) break;
 
         long nspecies = dest->arb_tree_leafsum2();
