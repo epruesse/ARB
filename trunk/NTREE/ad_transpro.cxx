@@ -10,10 +10,11 @@
 #include <aw_awars.hxx>
 #include <aw_window.hxx>
 #include <awt.hxx>
-#include <awt_pro_a_nucs.hxx>
 #include <awt_codon_table.hxx>
 #include <awt_changekey.hxx>
 #include <awt_sel_boxes.hxx>
+#include <awt_pro_a_nucs.hxx>
+#include <awt_translate.hxx>
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -21,83 +22,6 @@
 #define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *gb_main;
-
-static int awt_pro_a_nucs_convert(char *data, long size, int pos, bool translate_all)
-    // if translate_all == true -> 'pos' > 1 produces a leading 'X' in protein data
-    //                             (otherwise nucleotides in front of the starting pos are simply ignored)
-    // returns the translated protein sequence in 'data'
-{
-    nt_assert(pos >= 0 && pos <= 2);
-
-    for (char *p = data; *p ; p++) {
-        char c = *p;
-        if ((c>='a') && (c<='z')) c = c+'A'-'a';
-        if (c=='U') c = 'T';
-        *p = c;
-    }
-
-    char buffer[4];
-    buffer[3] = 0;
-
-    char *dest  = data;
-
-    if (pos && translate_all) {
-        for (char *p = data; p<data+pos; ++p) {
-            char c = *p;
-            if (c!='.' && c!='-') { // found a nucleotide
-                *dest++ = 'X';
-                break;
-            }
-        }
-    }
-
-    int  stops = 0;
-    long i     = pos;
-    
-    for (char *p = data+pos; i+2<size; p+=3,i+=3) {
-        buffer[0] = p[0];
-        buffer[1] = p[1];
-        buffer[2] = p[2];
-        int spro  = (int)GBS_read_hash(awt_pro_a_nucs->t2i_hash,buffer);
-        int C;
-        if (!spro) {
-            C = 'X';
-        }
-        else {
-            if (spro == '*') stops++;
-            C = spro;
-            if (spro == 's') C = 'S';
-        }
-        *(dest++) = (char)C;
-    }
-    dest[0] = 0;
-    return stops;
-}
-
-static GB_ERROR findTranslationTable(GBDATA *gb_species, int& arb_transl_table) {
-    // looks for a sub-entry 'transl_table' of 'gb_species'
-    // if found -> test for validity and translate from EMBL to ARB table number
-    // returns: an error in case of problems
-    // 'arb_transl_table' is set to -1 if not found, otherwise it contains the arb table number
-
-    arb_transl_table          = -1; // not found yet
-    GB_ERROR  error           = 0;
-    GBDATA   *gb_transl_table = GB_find(gb_species, "transl_table", 0, down_level);
-
-    if (gb_transl_table) {
-        int embl_table   = atoi(GB_read_char_pntr(gb_transl_table));
-        arb_transl_table = AWT_embl_transl_table_2_arb_code_nr(embl_table);
-        if (arb_transl_table == -1) { // ill. table
-            const char *name    = "<unnamed>";
-            GBDATA     *gb_name = GB_find(gb_species, "name", 0, down_level);
-            if (gb_name) name = GB_read_char_pntr(gb_name);
-
-            error = GBS_global_string("Illegal (or unsupported) value (%i) in 'transl_table' (species=%s)", embl_table, name);
-        }
-    }
-
-    return error;
-}
 
 static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int selected_startpos,
                         bool    translate_all, const char *ali_source, const char *ali_dest)
@@ -163,7 +87,7 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
              gb_species = GBT_next_marked_species(gb_species) )
         {
             int arb_table;
-            error = findTranslationTable(gb_species, arb_table);
+            error = AWT_findTranslationTable(gb_species, arb_table);
 
             if (!error) {
                 if (arb_table == -1) arb_table = 0; // no transl_table entry -> default to standard code
@@ -255,7 +179,7 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
                 continue;
             }
 
-            stops += awt_pro_a_nucs_convert(data, GB_read_string_count(gb_source_data), startpos, translate_all); // do the translation
+            stops += AWT_pro_a_nucs_convert(data, GB_read_string_count(gb_source_data), startpos, translate_all); // do the translation
 
             count ++;
             gb_dest_data = GBT_add_data(gb_species,ali_dest,"data", GB_STRING);
@@ -525,7 +449,7 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest, long *ne
 
         if (!failed) {
             int arb_transl_table;
-            GB_ERROR local_error = findTranslationTable(gb_species, arb_transl_table);
+            GB_ERROR local_error = AWT_findTranslationTable(gb_species, arb_transl_table);
             if (local_error) {
                 failed          = 1;
                 fail_reason     = GBS_global_string("Error while reading 'transl_table' (%s)", local_error);
