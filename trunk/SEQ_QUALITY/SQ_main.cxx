@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_main.cxx                                            //
 //    Purpose   : Entrypoint to Seq. Quality analysis; calls funktions   //
-//    Time-stamp: <Wed May/25/2005 17:32 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Jun/13/2006 19:31 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -79,12 +79,12 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
         if (treename && strcmp(treename, "????") != 0) {
             GB_push_transaction(gb_main);
             tree = GBT_read_tree(gb_main, treename, sizeof(GBT_TREE));
-            if (tree){
-		error = GBT_link_tree(tree,gb_main,GB_FALSE);
-	    }
+            if (tree) {
+                error = GBT_link_tree(tree,gb_main,GB_FALSE, 0, 0);
+            }
             else{
-		aw_message(GBS_global_string("Cannot read tree '%s' -- group specific calculations skipped.\n   Treating all available sequences as one group!", treename));
-	    }
+                aw_message(GBS_global_string("Cannot read tree '%s' -- group specific calculations skipped.\n   Treating all available sequences as one group!", treename));
+            }
             GB_pop_transaction(gb_main);
         }
         else aw_message("No tree selected -- group specific calculations skipped.");

@@ -460,7 +460,7 @@ GA_tree *GA_genetic::read_tree(GBDATA *gb_cluster,long tree_id)
 		free (fbuf);
 	}
 	delete_tree(gb_cluster,gb_tree);
-	GBT_link_tree((GBT_TREE*)tree->tree,gb_main);
+	GBT_link_tree((GBT_TREE*)tree->tree,gb_main, 0, 0);
 	return tree;
 }
 

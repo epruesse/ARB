@@ -259,7 +259,7 @@ GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *t
             error = GB_get_error();
         }
         else {
-            error = GBT_link_tree(tree,gb_main,GB_TRUE);
+            error = GBT_link_tree(tree,gb_main,GB_TRUE, 0, 0);
             if (!error && use_NDS) make_node_text_init(gb_main);
 
             if (!error) {
@@ -303,7 +303,7 @@ GB_ERROR AWT_export_tree(GBDATA *gb_main, char *tree_name, AW_BOOL use_NDS, AW_B
             error = GB_get_error();
         }
         else {
-            error = GBT_link_tree(tree,gb_main,GB_TRUE);
+            error = GBT_link_tree(tree,gb_main,GB_TRUE, 0, 0);
             if (!error && use_NDS) make_node_text_init(gb_main);
 
             if (!error) {
