@@ -1392,7 +1392,7 @@ AP_FLOAT AP_tree::costs(void){
     return 0.0;
 }
 
-GB_ERROR AP_tree::load( AP_tree_root *tr, int link_to_database, GB_BOOL insert_delete_cbs, GB_BOOL show_status )    {
+GB_ERROR AP_tree::load( AP_tree_root *tr, int link_to_database, GB_BOOL insert_delete_cbs, GB_BOOL show_status, int *zombies, int *duplicates)    {
     GBDATA *gb_main = tr->gb_main;
     char *tree_name = tr->tree_name;
     GB_transaction dummy(gb_main);  // open close a transaction
@@ -1410,7 +1410,7 @@ GB_ERROR AP_tree::load( AP_tree_root *tr, int link_to_database, GB_BOOL insert_d
     gb_tree = GB_search(gb_tree_data,tree_name,GB_FIND);
 
     if (link_to_database) {
-        GB_ERROR error = GBT_link_tree(gbt_tree,gb_main,show_status);
+        GB_ERROR error = GBT_link_tree(gbt_tree,gb_main,show_status, zombies, duplicates);
         if (error) {
             GBT_delete_tree(gbt_tree);
             return error;
@@ -1426,7 +1426,7 @@ GB_ERROR AP_tree::load( AP_tree_root *tr, int link_to_database, GB_BOOL insert_d
 GB_ERROR AP_tree::relink(   )
 {
     GB_transaction dummy(this->tree_root->gb_main); // open close a transaction
-    GB_ERROR error = GBT_link_tree(this->get_gbt_tree(),this->tree_root->gb_main,GB_FALSE); // no status
+    GB_ERROR error = GBT_link_tree(this->get_gbt_tree(),this->tree_root->gb_main,GB_FALSE, 0, 0); // no status
     this->tree_root->update_timers();
     return error;
 }
@@ -1771,7 +1771,40 @@ void AP_tree::mark_long_branches(GBDATA *gb_main,double diff){
     ap_search_strange_species_rek(this,diff_eps,diff);
 }
 
+static int ap_mark_duplicates_rek(AP_tree *at, GB_HASH *seen_species) {
+    if (at->is_leaf) {
+        if (at->name) {
+            if (GBS_read_hash(seen_species, at->name)) { // already seen -> mark species
+                if (at->gb_node) {
+                    GB_write_flag(at->gb_node,1);
+                }
+                else { // duplicated zombie
+                    return 1;
+                }
+            }
+            else { // first occurrence
+                GBS_write_hash(seen_species, at->name, 1);
+            }
+        }
+    }
+    else {
+        return
+            ap_mark_duplicates_rek(at->leftson, seen_species) +
+            ap_mark_duplicates_rek(at->rightson, seen_species);
+    }
+    return 0;
+}
 
+void AP_tree::mark_duplicates(GBDATA *gb_main) {
+    GB_transaction  ta(gb_main);
+    GB_HASH        *seen_species = GBS_create_hash(GBT_get_species_hash_size(gb_main), 1);
+
+    int dup_zombies = ap_mark_duplicates_rek(this, seen_species);
+    if (dup_zombies) {
+        aw_message(GBS_global_string("Warning: Detected %i duplicated zombies", dup_zombies));
+    }
+    GBS_free_hash(seen_species);
+}
 
 double ap_just_tree_rek(AP_tree *at){
     if (at->is_leaf) return 0.0;
