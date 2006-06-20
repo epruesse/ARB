@@ -699,12 +699,21 @@ void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl){
     char *val = aw_input("Enter relativ diff [0 .. 5.0]",0);
     if (!val) return;   // operation cancelled
     NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
-    // NT_unmark_all_cb(aww,ntw);
     AWT_TREE(ntw)->tree_root->mark_long_branches(gb_main,atof(val));
     AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
     free(val);
     ntw->refresh();
 }
+
+void NT_mark_duplicates(AW_window *aww, AW_CL ntwcl){
+    GB_transaction dummy(gb_main);
+    AWT_canvas *ntw = (AWT_canvas *)ntwcl;
+    NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
+    AWT_TREE(ntw)->tree_root->mark_duplicates(gb_main);
+    AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+    ntw->refresh();
+}
+
 void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL){
     GB_transaction dummy(gb_main);
     AWT_canvas *ntw = (AWT_canvas *)cl_ntw;
@@ -1025,6 +1034,129 @@ void NT_dump_gcs(AW_window *aww, AW_CL, AW_CL) {
 }
 
 #endif // DEBUG
+
+//--------------------------------------------------------------------------------------------------
+
+static GBT_TREE *fixDeletedSon(GBT_TREE *tree) {
+    GBT_TREE *delNode = tree;
+
+    if (delNode->leftson) {
+        nt_assert(!delNode->rightson);
+        tree             = delNode->leftson;
+        delNode->leftson = 0;
+    }
+    else {
+        nt_assert(!delNode->leftson);
+        tree             = delNode->rightson;
+        delNode->rightson = 0;
+    }
+    tree->father = delNode->father;
+    if (delNode->remark_branch && !tree->remark_branch) { // rescue remarks if easily possible
+        tree->remark_branch    = delNode->remark_branch;
+        delNode->remark_branch = 0;
+    }
+    delNode->is_leaf = GB_TRUE; // don't try recursive delete
+    if (!delNode->father) {
+        delNode->father = delNode; // hack: avoid freeing memory (if tree_is_one_piece_of_memory == 1)
+    }
+    GBT_delete_tree(delNode);
+    return tree;
+}
+
+static GBT_TREE *remove_leafs(GBT_TREE *tree, long mode, GB_HASH *species_hash, int& removed) {
+    if (tree->is_leaf) {
+        if (tree->name) {
+            GBDATA *gb_node    = (GBDATA*)GBS_read_hash(species_hash, tree->name);
+            bool    deleteSelf = false;
+            if (gb_node) {
+                if (mode & AWT_REMOVE_MARKED) {
+                    if (GB_read_flag(gb_node)) deleteSelf = true;
+                }
+            }
+            else { // zombie
+                if (mode & AWT_REMOVE_DELETED) deleteSelf = true;
+            }
+
+            if (deleteSelf) {
+                GBT_delete_tree(tree);
+                removed++;
+                tree = 0;
+            }
+        }
+    }
+    else {
+        tree->leftson  = remove_leafs(tree->leftson, mode, species_hash, removed);
+        tree->rightson = remove_leafs(tree->leftson, mode, species_hash, removed);
+
+        if (tree->leftson) {
+            if (tree->rightson) { // no son deleted
+                
+            }
+            else { // right son deleted
+                tree = fixDeletedSon(tree);
+            }
+        }
+        else if (tree->rightson) { // left son deleted
+            tree = fixDeletedSon(tree);
+        }
+        else {                  // everything deleted -> delete self
+            tree->is_leaf = GB_TRUE;
+            GBT_delete_tree(tree);
+            tree          = 0;
+        }
+    }
+
+    return tree;
+}
+
+void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
+    GBDATA *gb_main = (GBDATA*)cl_gb_main;
+    long    mode    = (long)cl_mode;
+
+    GB_transaction ta(gb_main);
+
+    int    treeCount;
+    char **tree_names = GBT_get_tree_names_and_count(gb_main, &treeCount);
+
+#if defined(DEVEL_RALF)
+#warning test NT_alltree_remove_leafs. Crashes!
+#endif // DEVEL_RALF
+
+    if (tree_names) {
+        aw_openstatus("Deleting from trees");
+        GB_HASH *species_hash = GBT_generate_species_hash(gb_main, 1);
+
+        for (int t = 0; t<treeCount; t++) {
+            GB_ERROR  error = 0;
+            aw_status(t/double(treeCount));
+            GBT_TREE *tree  = GBT_read_tree(gb_main, tree_names[t], -sizeof(GBT_TREE));
+            if (!tree) {
+                aw_message(GBS_global_string("Can't load tree '%s' - skipped", tree_names[t]));
+            }
+            else {
+                int removed = 0;
+                tree        = remove_leafs(tree, mode, species_hash, removed);
+
+                if (!tree) {
+                    aw_message(GBS_global_string("'%s' would disappear. Please delete tree manually.", tree_names[t]));
+                }
+                else {
+                    if (removed>0) {
+                        error = GBT_write_tree(gb_main, 0, tree_names[t], tree);
+                        aw_message(GBS_global_string("Removed %i species from '%s'", removed, tree_names[t]));
+                    }
+                    GBT_delete_tree(tree);
+                }
+            }
+            if (error) aw_message(error);
+        }
+        aw_status(1.0);
+
+        GBS_free_names(tree_names);
+        GBS_free_hash(species_hash);
+        aw_closestatus();
+    }
+}
 
 //--------------------------------------------------------------------------------------------------
 
@@ -1370,6 +1502,12 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("tree_remove_deleted", "Remove zombies", "z", "trm_del.hlp",    AWM_TREE, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_DELETED );
             AWMIMT("tree_remove_marked",  "Remove marked",  "m", "trm_mrkd.hlp",   AWM_TREE, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_MARKED );
             AWMIMT("tree_keep_marked",    "Keep marked",    "K", "tkeep_mrkd.hlp", AWM_TREE, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_NOT_MARKED|AWT_REMOVE_DELETED);
+#if defined(DEVEL_RALF)
+#warning fix NT_alltree_remove_leafs. does SIGSEGV.
+            SEP________________________SEP();
+            AWMIMT("all_tree_remove_deleted", "Remove zombies from all trees", "a", "trm_del.hlp", AWM_TREE, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_DELETED, (AW_CL)gb_main);
+            AWMIMT("all_tree_remove_marked",  "Remove marked from all trees",  "l", "trm_del.hlp", AWM_TREE, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_MARKED, (AW_CL)gb_main);
+#endif // DEVEL_RALF
         }
         awm->close_sub_menu();
 
@@ -1437,6 +1575,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         }
         awm->close_sub_menu();
         AWMIMT("mark_long_branches", "Mark long branches", "k", "mark_long_branches.hlp", AWM_EXP, (AW_CB)NT_mark_long_branches, (AW_CL)ntw, 0);
+        AWMIMT("mark_duplicates", "Mark duplicates", "d", "mark_duplicates.hlp", AWM_EXP, (AW_CB)NT_mark_duplicates, (AW_CL)ntw, 0);
 
         SEP________________________SEP();
 
