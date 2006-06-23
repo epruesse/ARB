@@ -633,7 +633,7 @@ double GB_read_from_floats(GBDATA *gbd, long index) {
     }
 
     if (index >= 0 && index < count) {
-        return fq[index];
+        return f[index];
     }
     return -1;
 }
