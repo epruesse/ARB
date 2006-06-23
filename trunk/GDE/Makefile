@@ -5,7 +5,7 @@ ARCHS_ALL = \
 	MOLPHY/MOLPHY.dummy \
 	AxML/AxML.dummy \
 	RAxML/RAxML.dummy \
-
+	PHYML/PHYML.dummy \
 
 # --------------------------------------------------------------------------------
 # All packages using xview go here:
@@ -19,6 +19,9 @@ ARCHS_XVIEW = \
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here
+# 
+# Note: I'm not sure whether this is a good idea. Due to limited manpower it often takes
+# longer until ARB works with newer (incompatible) versions of these tools. --ralf
 
 ARCHS_NON_DEBIAN = \
 	CLUSTALW/CLUSTALW.dummy  \
