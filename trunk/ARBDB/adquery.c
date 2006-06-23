@@ -228,6 +228,10 @@ GBDATA *GB_find(GBDATA *gbd,const char *key,const char *str,long /*enum gb_searc
     GBQUARK      key_quark;
     GBDATA      *after = 0;
 
+#if defined(DEVEL_RALF) && 0
+    printf("GB_find(%p, '%s', '%s', %li)\n", gbd, key, str, gbs);
+#endif /* DEVEL_RALF */
+
     ad_assert(GB_FATHER(gbd));     /* otherwise your GBDATA has been deleted !? */
 
     /*fprintf(stderr, "GB_find(%p, %s, %s, %li)\n", gbd, key, str, gbs); */
@@ -269,6 +273,17 @@ GBDATA *GB_find(GBDATA *gbd,const char *key,const char *str,long /*enum gb_searc
             return 0;
     }
 }
+
+/* iterate over all subentries of a container.
+   mostly thought for perl use */
+
+GBDATA *GB_first(GBDATA *father) {
+    return GB_find(father, 0, 0, down_level);
+}
+GBDATA *GB_next(GBDATA *brother) {
+    return GB_find(brother, 0, 0, this_level|search_next);
+}
+
 /* get a subentry by its internal number:
    Warning: This subentry must exists, otherwise internal error */
 
