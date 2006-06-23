@@ -536,8 +536,7 @@ long GB_read_ints_count(GBDATA *gbd)
 
 GB_UINT4 *GB_read_ints(GBDATA *gbd)
 {
-    GB_CUINT4 *i;
-    i = GB_read_ints_pntr(gbd);
+    GB_CUINT4 *i = GB_read_ints_pntr(gbd);
     if (!i) return 0;
     return  (GB_UINT4 *)gbs_malloc_copy((char *)i,GB_GETSIZE(gbd)*sizeof(GB_UINT4));
 }
@@ -589,19 +588,54 @@ float *GB_read_floats(GBDATA *gbd)
 
 char *GB_read_as_string(GBDATA *gbd)
 {
-    char buffer[256];
     switch (GB_TYPE(gbd)) {
         case GB_STRING: return GB_read_string(gbd);
         case GB_LINK:   return GB_read_link(gbd);
-        case GB_BYTE:   sprintf(buffer,"%i",GB_read_byte(gbd)); return GB_STRDUP(buffer);
-        case GB_INT:    sprintf(buffer,"%li",GB_read_int(gbd)); return GB_STRDUP(buffer);
-        case GB_FLOAT:  sprintf(buffer,"%.4g",GB_read_float(gbd)); return GB_STRDUP(buffer);
+        case GB_BYTE:   return GBS_global_string_copy("%i",GB_read_byte(gbd));
+        case GB_INT:    return GBS_global_string_copy("%li",GB_read_int(gbd));
+        case GB_FLOAT:  return GBS_global_string_copy("%.4g",GB_read_float(gbd));
         case GB_BITS:   return GB_read_bits(gbd,'0','1');
             /* Be careful : When adding new types here, you have to make sure that
              * GB_write_as_string is able to write them back and that this makes sense.
              */
         default:    return 0;
     }
+}
+
+/* array type access functions (intended for perl use) */ 
+
+long GB_read_from_ints(GBDATA *gbd, long index) {
+    static GBDATA    *last_gbd = 0;
+    static long       count    = 0;
+    static GB_CUINT4 *i        = 0;
+
+    if (gbd != last_gbd) {
+        count    = GB_read_ints_count(gbd);
+        i        = GB_read_ints_pntr(gbd);
+        last_gbd = gbd;
+    }
+
+    if (index >= 0 && index < count) {
+        return i[index];
+    }
+    return -1;
+}
+
+double GB_read_from_floats(GBDATA *gbd, long index) {
+    static GBDATA    *last_gbd = 0;
+    static long       count    = 0;
+    static GB_CFLOAT *f        = 0;
+
+    if (gbd != last_gbd) {
+        count    = GB_read_floats_count(gbd);
+        f        = GB_read_floats_pntr(gbd);
+        last_gbd = gbd;
+    }
+
+    if (index >= 0 && index < count) {
+        return fq[index];
+    }
+    return -1;
 }
 
 
