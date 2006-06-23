@@ -1,6 +1,6 @@
 
 item:PHYML (DNA)
-itemmeta: Y
+itemmeta: D
 itemmethod:( GEN_INFILE(in1); \
              RUN_IN_WINDOW((arb_phyml infile DNA $MODEL $OPTFREQ $BASEFREQEST $TSTVRATIO $PINVAR $INTERACTIVE; \
                             $DISPLAY_FUNC )); \
@@ -63,7 +63,7 @@ insave:
 // --------------------------------------------------------------------------------
 
 item:PHYML (Amino acids)
-itemmeta: Y
+itemmeta: M
 itemmethod:( GEN_INFILE(in1); \
              RUN_IN_WINDOW((arb_phyml infile AA $MODEL $PINVAR $INTERACTIVE; \
                             $DISPLAY_FUNC )); \
