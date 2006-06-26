@@ -161,7 +161,7 @@ int AW_device_print::box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height,
     return this->filled_area(gc,4,q,filteri,cd1,cd2);
 }
 
-int AW_device_print::circle(int gc, AW_BOOL /*filled*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+int AW_device_print::circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     AWUSE(cd1);AWUSE(cd2);
     register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
     AW_pos x1,y1;
@@ -180,15 +180,23 @@ int AW_device_print::circle(int gc, AW_BOOL /*filled*/, AW_pos x0,AW_pos y0,AW_p
         if (drawflag) {
             AWUSE(cd1);
             AWUSE(cd2);
-            short greylevel = (short)(gcm->grey_level*22);
-            if (greylevel>21) greylevel = 21;
+
+            // Don't know how to use greylevel --ralf 
+            // short greylevel             = (short)(gcm->grey_level*22);
+            // if (greylevel>21) greylevel = 21;
 
             int line_width = gcm->line_width;
             if (line_width<=0) line_width = 1;
 
-            // @@@ I cannot test this since I don't know where arb draws circles to an xfig file -- Elmar 11.12.05
-            fprintf(out,"1 3  0 %d %d -1 0 0 %d 0.0000 1 0.000 %d %d %d %d %d %d %d %d\n",line_width,greylevel,
-                    find_color_idx(gcm->last_fg_color),
+            int colorIdx = find_color_idx(gcm->last_fg_color);
+
+            // 1, 3, 0?, line_width?, pencolor, fill_color, 0?, 0?, fill_style(-1 = none, 20 = filled),
+            // ?, ?, ?, coordinates+size (8 entries)
+            fprintf(out,"1 3  0 %d %d %d 0 0 %d 0.000 1 0.0000 %d %d %d %d %d %d %d %d\n",
+                    line_width,
+                    colorIdx, // before greylevel has been used here
+                    filled ? colorIdx : -1,
+                    filled ? 20 : -1, 
                     (int)CX0,(int)CY0,
                     (int)width,(int)height,
                     (int)CX0,(int)CY0,
