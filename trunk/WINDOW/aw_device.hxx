@@ -382,6 +382,7 @@ class AW_device: public AW_matrix, public AW_gc {
      // ********* print device only (xfig compatible) ********
      virtual const char *open(const char *path);
      virtual void    close(void);
+     virtual void    set_color_mode(bool mode);
  };
 
 #else

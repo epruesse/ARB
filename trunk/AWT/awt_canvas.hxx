@@ -170,6 +170,7 @@ void AWT_resize_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL cl2);
 #define AWAR_PRINT_TREE_2_FILE_MAGNIFICATION "tmp/NT/magnification"
 #define AWAR_PRINT_TREE_2_FILE_WHAT	         "tmp/NT/what"
 #define AWAR_PRINT_TREE_2_FILE_HANDLES	     "tmp/NT/handles"
+#define AWAR_PRINT_TREE_2_FILE_COLOR         "tmp/NT/color"
 #define AWAR_PRINT_TREE_2_FILE_BASE	         "tmp/NT/file"
 #define AWAR_PRINT_TREE_2_FILE_NAME	         AWAR_PRINT_TREE_2_FILE_BASE"/file_name"
 #define AWAR_PRINT_TREE_2_FILE_DIR	         AWAR_PRINT_TREE_2_FILE_BASE"/directory"

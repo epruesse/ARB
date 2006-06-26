@@ -17,6 +17,8 @@ public:
     short                line_width;
     AW_linestyle         style;
     short                color;
+    unsigned long        last_fg_color;
+    unsigned long        last_bg_color;
 
     short   fontsize;
     AW_font fontnr;
@@ -39,10 +41,13 @@ public:
 
 class AW_common {
 public:
-    AW_common(AW_window *aww, AW_area area, Display *display_in,XID window_id_in,unsigned long *fcolors,unsigned int **dcolors);
+    AW_common(AW_window *aww, AW_area area, Display *display_in,
+	      XID window_id_in,unsigned long *fcolors,
+	      unsigned int **dcolors, long *data_colors_size);
     
     unsigned long  *frame_colors;
     unsigned long **data_colors;
+    long           *data_colors_size;
     AW_root        *root;
     AW_rectangle    screen;
     int             screen_x_offset;
