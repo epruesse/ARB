@@ -64,6 +64,8 @@ name=`date '+arbsrc_%Y_%m_%d.tgz'`
     |grep -v '/ARB_SOURCE_DOC/' \
     |grep -v '/GEN[CH]/' \
     |grep -v '/PERL5/' \
+    |grep -v '/PERL2ARB/ARB.c' \
+    |grep -v '/PERL2ARB/ARB.xs' \
     |grep -v '/lib/help_html/' \
     |grep -v '/lib/help/' \
     |grep -v '/lib/nas/names.dat$' \
