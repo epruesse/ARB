@@ -44,9 +44,15 @@ int AW_device_print::line(int gc, AW_pos x0,AW_pos y0, AW_pos x1,AW_pos y1, AW_b
             AWUSE(cd1);
             AWUSE(cd2);
 
-            aw_assert(out); // file has to be good!
-            fprintf(out, "2 1 0 %d 0 0 0 0.000 0 0 0\n\t%d %d %d %d 9999 9999\n",
-                    (int)line_width,(int)CX0,(int)CY0,(int)CX1,(int)CY1);
+            aw_assert(out);     // file has to be good!
+
+            // type, subtype, style, thickness, pen_color,
+            // fill_color(new), depth, pen_style, area_fill, style_val,
+            // join_style(new), cap_style(new), radius, forward_arrow,
+            // backward_arrow, npoints
+            fprintf(out, "2 1 0 %d %d 0 0 0 0 0.000 0 0 0 0 0 2\n\t%d %d %d %d\n",
+                    (int)line_width,find_color_idx(gcm->last_fg_color),
+                    (int)CX0,(int)CY0,(int)CX1,(int)CY1);
         }
     }
     return drawflag;
@@ -73,7 +79,12 @@ int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str, size_
     int fontnr = common->root->font_2_xfig(gcm->fontnr);
     if (fontnr<0) fontnr = - fontnr;
     if (str[0]) {
-        fprintf(device->get_FILE(), "4 0 %d %d 0 0 0 0.000 4 %d %d %d %d ",
+        // 4=string 0=left color depth penstyle font font_size angle
+        // font_flags height length x y string
+        // (font/fontsize and color/depth have been switched from format
+        // 2.1 to 3.2
+        fprintf(device->get_FILE(), "4 0 %d 0 0 %d %d 0.000 4 %d %d %d %d ",
+                device->find_color_idx(gcm->last_fg_color),
                 fontnr,
                 gcm->fontsize,
                 (int)gcm->fontinfo.max_letter.height,
@@ -83,8 +94,7 @@ int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str, size_
         for (p = pstr; *p; p++) {
             if (*p >= 32) putc(*p,device->get_FILE());
         }
-        fputc(1,device->get_FILE());
-        fputc('\n',device->get_FILE());
+        fprintf(device->get_FILE(), "\\001\n");
     }
     free(pstr);
     return 1;
@@ -98,9 +108,38 @@ const char *AW_device_print::open(const char *path)
     }
     out = fopen(path,"w");
     if (!out) return "Sorry, I cannot open the file";
-    fprintf(out,"#FIG 2.1\n");
-    fprintf(out,"80 2\n");	/* 80 dbi Version 2 */
+    fprintf(out,"#FIG 3.2\n"    // version
+            "Landscape\n"       // "Portrait"
+            "Center\n"          // "Flush Left"
+            "Metric\n"          // "Inches"
+            "A4\n" 
+            "100.0\n"           // export&print magnification %
+            "Single\n"          // Single/Multiple Pages
+            "-3\n");            // background=transparent for gif export
+    fprintf(out,"80 2\n");	// 80dbi, 2: origin in upper left corner
+    
+    if (color_mode) {
+        for (int i=0; i<*common->data_colors_size; i++) {
+            fprintf(out, "0 %d #%06lx\n", i+32, common->data_colors[0][i]);
+        }
+    }
+
     return 0;
+}
+
+int AW_device_print::find_color_idx(unsigned long color) {
+    if (color_mode) {
+        for (int i=0; i<*common->data_colors_size; i++) {
+            if (color == common->data_colors[0][i]) {
+                return i+32;
+            }
+        }
+    }
+    return -1;
+}
+
+void AW_device_print::set_color_mode(bool mode) {
+    color_mode=mode;
 }
 
 void AW_device_print::close(void){
@@ -146,7 +185,10 @@ int AW_device_print::circle(int gc, AW_BOOL /*filled*/, AW_pos x0,AW_pos y0,AW_p
 
             int line_width = gcm->line_width;
             if (line_width<=0) line_width = 1;
-            fprintf(out,"1 3  0 %d -1 0 0 %d 0.0000 1 0.000 %d %d %d %d %d %d %d %d\n",line_width,greylevel,
+
+            // @@@ I cannot test this since I don't know where arb draws circles to an xfig file -- Elmar 11.12.05
+            fprintf(out,"1 3  0 %d %d -1 0 0 %d 0.0000 1 0.000 %d %d %d %d %d %d %d %d\n",line_width,greylevel,
+                    find_color_idx(gcm->last_fg_color),
                     (int)CX0,(int)CY0,
                     (int)width,(int)height,
                     (int)CX0,(int)CY0,
@@ -173,7 +215,8 @@ int AW_device_print::filled_area(int gc, int npoints, AW_pos *points, AW_bitset 
     int line_width = gcm->line_width;
     if (line_width<=0) line_width = 1;
 
-    fprintf(out, "2 3 0 %d -1 0 0 %d 0.000 -1 0 0\n",line_width, greylevel);
+    fprintf(out, "2 3 0 %d %d -1 0 0 %d 0.000 0 0 -1 0 0 %d\n",
+            line_width, find_color_idx(gcm->last_fg_color), greylevel, npoints+1);
 
     for (i=0; i < npoints; i++) {
         x = points[2*i];
@@ -186,7 +229,7 @@ int AW_device_print::filled_area(int gc, int npoints, AW_pos *points, AW_bitset 
     y = points[1];
     this->transform(x,y,X,Y);
     this->box_clip(X,Y,0,0,CX0,CY0,CX1,CY1);
-    fprintf(out,"	%d %d 	9999 9999\n",(int)CX0,(int)CY0);
+    fprintf(out,"	%d %d\n",(int)CX0,(int)CY0);
 
     return 1;
 }
