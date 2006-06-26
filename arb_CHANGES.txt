@@ -6,7 +6,8 @@ Future changes:
 
 Major changes for next version:
 
- - added PHYML 2.4.5 (thanks to Stephane Guidon for that great tool)
+ - ARB exports in FIG 3.2 format (optionally in colors). Thanks to Elmar Pruesse.
+ - added PHYML 2.4.5 (thanks to Stephane Guidon for the permission to distribute that great tool)
  - more compact display in EDIT4
  - capable to use iso10646 fonts
  - supports various gcc versions (2.95.3 - 4.1.1)
