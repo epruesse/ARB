@@ -7,6 +7,7 @@ PrintStrat
 Restriction
 Translate
 Zuk_to_gen
+aliv3
 arb_2_ascii
 arb_2_bin
 arb_a2ps
@@ -30,6 +31,7 @@ arb_newick_2_otb
 arb_ntree
 arb_pars
 arb_perf_test
+arb_pgt
 arb_phylo
 arb_primer
 arb_probe
@@ -80,15 +82,21 @@ mapview
 mix
 move
 neighbor
+pars
 penny
+phyml
 proml
+promlk
 protdist
 protml
 protpars
 puzzle
+raxml
+restdist
 restml
 retree
 seqboot
 sho_helix
+treedist
 trs_server
 varpos
