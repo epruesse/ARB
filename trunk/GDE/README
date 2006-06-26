@@ -2,4 +2,9 @@
 Programs in GDE subfolders are not related to GDE.
 
 Only the method how they are called is similar to the
-method introduced by GDE.
+method introduced by GDE. That method uses a scriptable
+menu configuration, defining parameters and how to pass them
+to the single programs.
+
+That menus are configured by ../GDEHELP/MENUS
+
