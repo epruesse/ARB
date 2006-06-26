@@ -11,7 +11,7 @@ itemhelp:protml.help
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree:?
-argchoice:ARB ('tree_ph_'):arb_read_tree `/bin/cat arb_read_tree_args` tree_ph_$$ treefile "PRG=protml MODEL=$MODEL SEARCH=$SEARCH FILTER=$FILTER REARRANGE=$REARRANGE PKG=molphy"
+argchoice:ARB ('tree_protml_'):arb_read_tree `/bin/cat arb_read_tree_args` tree_protml_$$ treefile "PRG=protml MODEL=$MODEL SEARCH=$SEARCH FILTER=$FILTER REARRANGE=$REARRANGE PKG=molphy"
 argchoice:TextEdit:arb_textedit treefile &
 argchoice:Treetool:treetool treefile
 
