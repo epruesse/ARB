@@ -1076,24 +1076,31 @@ int GB_host_is_local(const char *hostname){
     if (!strcmp(hostname,GBC_get_hostname())) return 1;
     return 0;
 }
+
+#define MIN(a,b) (((a)<(b))?(a):(b))
+
 /* Returns the physical memory size in k available for one process */
 GB_ULONG GB_get_physical_memory(void){
 #if defined(SUN5) || defined(LINUX)
-    long pagesize     = sysconf(_SC_PAGESIZE);
-    long pages        = sysconf(_SC_PHYS_PAGES);
+    long pagesize = sysconf(_SC_PAGESIZE);
+    long pages    = sysconf(_SC_PHYS_PAGES);
     /*    long test = sysconf(_SC_AVPHYS_PAGES); */
-    long memsize      = (pagesize/1024) * pages;
-    long nettomemsize = memsize - 10000; /* kernel size */
 
-    long maxmemsize4arb = (nettomemsize*95)/100; /* arb uses max. 95 % of memory (was 70% in the past) */
+    long memsize        = (pagesize/1024) * pages;
+    long nettomemsize   = memsize - 10240; /* reduce by 10Mb (for kernel etc.) */
+    long maxmemsize4arb = (nettomemsize*95)/100; /* arb uses max. 95 % of available memory (was 70% in the past) */
+    long addressable    = 1<<(sizeof(void*)*8-10); /* e.g. 2^32 with 4byte-pointers; -10 because we calculate in kBytes */
+    long usedmemsize    = MIN(maxmemsize4arb, addressable); /* limit to max addressable memory */
 
 #if defined(DEBUG)
-    printf("- memsize(real)   =%li\n", memsize);
-    printf("- memsize(netto)  =%li\n", nettomemsize);
-    printf("- memsize(for ARB)=%li\n", maxmemsize4arb);
+    printf("- memsize(real)        = %10li k\n", memsize);
+    printf("- memsize(netto)       = %10li k\n", nettomemsize);
+    printf("- memsize(95%%)         = %10li k\n", maxmemsize4arb);
+    printf("- memsize(addressable) = %10li k\n", addressable);
+    printf("- memsize(used by ARB) = %10li k\n", usedmemsize);
 #endif /* DEBUG */
 
-    return maxmemsize4arb;
+    return usedmemsize;
 #else
     return 128*1024;            /* 128 Mb default memory */
 #endif
