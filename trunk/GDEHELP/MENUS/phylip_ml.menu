@@ -123,7 +123,7 @@ itemhelp:proml.help
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree:?
-argchoice:ARB ('tree_ph_'):arb_read_tree `/bin/cat arb_read_tree_args` tree_ph_$$ outtree "PRG=proml FILTER=$FILTER PKG=phylip BOOT=$BOOTSTRAP MODEL=$MODEL ANALYSIS=$ANALYSIS"
+argchoice:ARB ('tree_proml_'):arb_read_tree `/bin/cat arb_read_tree_args` tree_proml_$$ outtree "PRG=proml FILTER=$FILTER PKG=phylip BOOT=$BOOTSTRAP MODEL=$MODEL ANALYSIS=$ANALYSIS"
 argchoice:TextEdit:arb_textedit outfile &
 argchoice:Treetool:treetool outtree
 
