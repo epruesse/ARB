@@ -1442,7 +1442,7 @@ void AW_area_management::create_devices(AW_window *aww, AW_area ar)
 {
     AW_root *root =aww->get_root();
     common = new AW_common(aww,ar,XtDisplay(area),XtWindow(area),p_global->color_table,
-                           (unsigned int **)&aww->color_table );
+                           (unsigned int **)&aww->color_table, &aww->color_table_size );
 }
 
 const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red, int& green, int& blue) {

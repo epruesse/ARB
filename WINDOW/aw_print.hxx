@@ -10,6 +10,7 @@ public:
     void        init(void);
     const char *open(const char *path);
     void        close(void);
+    bool        color_mode;
 
     FILE *get_FILE() { return out; }
 
@@ -22,6 +23,9 @@ public:
     int box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
     int circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
     int filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+    int find_color_idx(unsigned long color);
+    void set_color_mode(bool mode);
+
 };
 
 #else

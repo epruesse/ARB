@@ -314,10 +314,12 @@ void AW_GC_Xm::set_foreground_color(unsigned long col) {
         }
     }
     XSetForeground(common->display,gc, col );
+    last_fg_color =  col;
 }
 
 void AW_GC_Xm::set_background_color(unsigned long colori) {
     XSetBackground(common->display,gc, colori );
+    last_bg_color = colori;
 }
 
 const AW_font_information *AW_gc::get_font_information(int gc, unsigned char c) {
@@ -446,7 +448,9 @@ void AW_get_common_extends_cb(AW_window *aww,AW_common *common) {
     common->screen.r = width;
 }
 
-AW_common::AW_common(AW_window *aww, AW_area area,	Display *display_in,XID window_id_in,unsigned long *fcolors,unsigned int **dcolors)
+AW_common::AW_common(AW_window *aww, AW_area area,	Display *display_in,
+		     XID window_id_in,unsigned long *fcolors,
+		     unsigned int **dcolors, long *data_colors_size_in)
 {
     memset((char *)this,0,sizeof(AW_common));
     root = aww->get_root();
@@ -454,6 +458,7 @@ AW_common::AW_common(AW_window *aww, AW_area area,	Display *display_in,XID windo
     display = display_in;
     frame_colors = fcolors;
     data_colors = (unsigned long **)dcolors;
+    data_colors_size = data_colors_size_in;
     ngcs = 8;
     gcs = (AW_GC_Xm **)malloc(sizeof(void *)*ngcs);
     memset((char *)gcs,0,sizeof(void *)*ngcs);
@@ -639,6 +644,11 @@ const char * AW_device::open(const char *path)
 void AW_device::close(void)
 {
     AW_ERROR ("This device dont allow 'close'");
+}
+
+void AW_device::set_color_mode(bool /*mode*/)
+{
+    AW_ERROR ("This device dont allow 'set_color_mode'");
 }
 
 void AW_device::get_clicked_line(AW_clicked_line *ptr)

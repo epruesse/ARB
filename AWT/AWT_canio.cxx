@@ -27,6 +27,7 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw)
 
     long what = awr->awar(AWAR_PRINT_TREE_2_FILE_WHAT)->read_int();
     long handles = awr->awar(AWAR_PRINT_TREE_2_FILE_HANDLES)->read_int();
+    int use_color = awr->awar(AWAR_PRINT_TREE_2_FILE_COLOR)->read_int();
 
     char tmp[1024];
     const char *error;
@@ -39,6 +40,7 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw)
     AW_device *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
 
     device->reset();
+    device->set_color_mode((use_color==1));
     error = device->open(tmp);
     device->line(0,0,0,1,-1); // dummy point upper left corner
 
@@ -104,6 +106,7 @@ AW_window * AWT_create_export_window(AW_root *awr, AWT_canvas *ntw){
     awr->awar_int( AWAR_PRINT_TREE_2_FILE_MAGNIFICATION, 100, def);
     awr->awar_int( AWAR_PRINT_TREE_2_FILE_WHAT, 0, def);
     awr->awar_int( AWAR_PRINT_TREE_2_FILE_HANDLES, 1, def);
+    awr->awar_int( AWAR_PRINT_TREE_2_FILE_COLOR, 1, def);
 
     awr->awar_string( AWAR_PRINT_TREE_2_FILE_NAME, "print.fig", def);
     awr->awar_string( AWAR_PRINT_TREE_2_FILE_DIR, "", def);
@@ -138,7 +141,10 @@ AW_window * AWT_create_export_window(AW_root *awr, AWT_canvas *ntw){
     aws->insert_toggle("#print/handles.bitmap","A",1);
     aws->update_toggle_field();
 
-
+    aws->at("color");
+    aws->label("Export colors");
+    aws->create_toggle(AWAR_PRINT_TREE_2_FILE_COLOR);
+    
 
     aws->at("xfig");aws->callback(AWT_print_tree_to_file_xfig,(AW_CL)ntw);
     aws->create_button("START_XFIG", "GO XFIG","X");
@@ -207,6 +213,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw)
     double magnification = awr->awar(AWAR_PRINT_TREE_2_FILE_MAGNIFICATION)->read_int() * 0.01;
     long what = awr->awar(AWAR_PRINT_TREE_2_FILE_WHAT)->read_int();
     long handles = awr->awar(AWAR_PRINT_TREE_2_FILE_HANDLES)->read_int();
+    int use_color = awr->awar(AWAR_PRINT_TREE_2_FILE_COLOR)->read_int();
 
     char sys[2400];
     char *xfig = GBS_eval_env("/tmp/arb_print_$(USER)_$(ARB_PID).xfig");
@@ -242,6 +249,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw)
 
     aw_status("Get Picture Size");
     device->reset();
+    device->set_color_mode((use_color==1));
     error = device->open(xfig);
     device->line(0,0,0,1,-1); // dummy point upper left corner
     if (what) {				// draw all
@@ -451,6 +459,7 @@ void AWT_create_print_window(AW_window *parent_win, AWT_canvas *ntw){
     awr->awar_int( AWAR_PRINT_TREE_2_FILE_MAGNIFICATION, 100, def);
     awr->awar_int( AWAR_PRINT_TREE_2_FILE_WHAT, 0, def);
     awr->awar_int( AWAR_PRINT_TREE_2_FILE_HANDLES, 1, def);
+    awr->awar_int( AWAR_PRINT_TREE_2_FILE_COLOR, 1, def);
 
     awr->awar_string( AWAR_PRINT_TREE_2_FILE_NAME, "print.ps", def);
 
@@ -524,6 +533,10 @@ void AWT_create_print_window(AW_window *parent_win, AWT_canvas *ntw){
     aws->insert_toggle("#print/nohandles.bitmap","S",0);
     aws->insert_toggle("#print/handles.bitmap","A",1);
     aws->update_toggle_field();
+
+    aws->at("color");
+    aws->label("Export colors");
+    aws->create_toggle(AWAR_PRINT_TREE_2_FILE_COLOR);
 
     aws->button_length(7);
     aws->at("gsizex");
