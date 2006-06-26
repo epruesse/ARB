@@ -13,7 +13,7 @@ itemhelp:phylip_distance.help
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree:?
-argchoice:ARB ('tree_ph_xxx'):($CORRECTION_PROT;$CORRECTION_DNA;$PROGRAM_SEL;echo||$DPGM;arb_read_tree tree_ph_$$ outtree "PRG=$PROGRAM_NAME CORR=$TEXT FILTER=$FILTER PKG=phylip")
+argchoice:ARB ('tree_ph_'):($CORRECTION_PROT;$CORRECTION_DNA;$PROGRAM_SEL;echo||$DPGM;arb_read_tree tree_ph_$$ outtree "PRG=$PROGRAM_NAME CORR=$TEXT FILTER=$FILTER PKG=phylip")
 argchoice:TextEdit:arb_textedit outfile &
 argchoice:Treetool:treetool outtree
 
