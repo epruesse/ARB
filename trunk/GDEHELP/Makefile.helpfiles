@@ -69,8 +69,9 @@ $(GENHELPDEST)/%.help: $(GENDOCDEST)/%.doc $(HEADER)
 
 HELP_TREEPUZZLE=../GDE/TREEPUZZLE/doc
 HELP_PHYLIP=../GDE/PHYLIP/doc
+HELP_PHYML=../GDE/PHYML
 
-FORCED_DOC_NAMES=proml dnapars protpars
+FORCED_DOC_NAMES=proml dnapars protpars phyml
 LYNX_PARA=-dump -nolist -display_charset=iso-8859-1
 
 $(GENDOCDEST)/%.doc: $(HELP_PHYLIP)/%.html Makefile.helpfiles
@@ -78,6 +79,10 @@ $(GENDOCDEST)/%.doc: $(HELP_PHYLIP)/%.html Makefile.helpfiles
 	test -s $@ || (echo $@ not generated or empty && false)
 
 $(GENDOCDEST)/treepuzzle.doc: $(HELP_TREEPUZZLE)/manual.html Makefile.helpfiles
+	lynx $(LYNX_PARA) $< | sed -e 's/©/(C)/' > $@
+	test -s $@ || (echo $@ not generated or empty && false)
+
+$(GENDOCDEST)/phyml.doc: $(HELP_PHYML)/usersguide_phyliplike.html Makefile.helpfiles
 	lynx $(LYNX_PARA) $< | sed -e 's/©/(C)/' > $@
 	test -s $@ || (echo $@ not generated or empty && false)
 
