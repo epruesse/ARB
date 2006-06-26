@@ -80,7 +80,7 @@ argchoice:No:Q
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree:?
-argchoice:ARB ('tree_fml_//'):arb_read_tree tree_fml_$$ treefile "PRG=raxml FILTER=$FILTER RATE=$RATES"
+argchoice:ARB ('tree_raxml_//'):arb_read_tree tree_raxml_$$ treefile "PRG=raxml FILTER=$FILTER RATE=$RATES"
 argchoice:Treetool:treetool treefile
 
 in:in1
