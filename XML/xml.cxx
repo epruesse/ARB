@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2000
 // Ralf Westram
-// Time-stamp: <Wed May/21/2003 10:46 MET Coder@ReallySoft.de>
+// Time-stamp: <Mon Jun/26/2006 15:41 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -26,6 +26,7 @@ XML_Document *the_XML_Document = 0;
 static const char *entities =
 "  <!ENTITY nbsp \"&#160;\">\n"
 "  <!ENTITY acute \"&#180;\">\n" // Acute accent (forward)
+"  <!ENTITY eacute \"&#233;\">\n" // e Acute (forward)
 "  <!ENTITY apostr \"&#39;\">\n" // single quote (vertical)
 "  <!ENTITY semi \"&#59;\">\n"
 ;
@@ -52,9 +53,9 @@ static string encodeEntities(const string& str, bool quotedText = false) {
             case '&':  { entity = "amp"; break; }
             case '\'':  { entity = "apostr"; break; }
             case char(0xb4):  { entity = "acute"; break; } // acute (forward)
-
+            case 'é': { entity = "eacute"; break; }
             default :  { replace = *s; }
-        }
+            }
 
         if (replace) {
             neu.append(1, replace);
