@@ -681,31 +681,16 @@ do_com_if(char *str)
             READ_RSPACES(kom);
             *(++kom) = 0;
         }
+        /* printf("- str='%s' equ='%s'\n", str, equ); */
         switch (op) {
-            case 0:	if (!strcmp(str, equ))
-                return 0;
-            break;
-            case 8:	if (strcmp(str, equ))
-                return 0;
-            break;
-            case 1:	if (find_string(str, equ))
-                return 0;
-            break;
-            case 9:	if (!find_string(str, equ))
-                return 0;
-            break;
-            case 2:	if (strcmp(str, equ)<0)
-                return 0;
-            break;
-            case 10:if (strcmp(str, equ)>=0)
-                return 0;
-            break;
-            case 3:	if (strcmp(str, equ)>0)
-                return 0;
-            break;
-            case 11:if (strcmp(str, equ)<=0)
-                return 0;
-            break;
+            case 0:	if (!strcmp(str, equ)) return 0; break;
+            case 8:	if ( strcmp(str, equ)) return 0; break;
+            case 1:	if ( find_string(str, equ)) return 0; break;
+            case 9:	if (!find_string(str, equ)) return 0; break;
+            case 2:	if (strcmp(str, equ)< 0) return 0; break;
+            case 10:if (strcmp(str, equ)>=0) return 0; break;
+            case 3:	if (strcmp(str, equ)> 0) return 0; break;
+            case 11:if (strcmp(str, equ)<=0) return 0; break;
         }
         equ = kom2;
     }
