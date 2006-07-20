@@ -659,12 +659,12 @@ FUNCTION save_structure
 					P $1if ($(access)){
 					P $2fprintf(THIS_FD,"$(prekey)$(KEY|NOKEYDEFINED) ");
 					P $2aisc_server_save_token(THIS_FD,$(access),$(TOKENSIZE));}
-				ELSEIF $TYPE = int,long,char
-					P $1fprintf(THIS_FD,"$(prekey)$(KEY|NOKEYDEFINED) %i",$(access));
-				ELSEIF $TYPE = float,double
-					P $1fprintf(THIS_FD,"$(prekey)$(KEY|NOKEYDEFINED) %f",$(access));
+				ELSEIF $(TYPE) = int,long,char
+					P $1fprintf(THIS_FD,"$(prekey)$(KEY|NOKEYDEFINED) %i\n",$(access));
+				ELSEIF $(TYPE) = float,double
+					P $1fprintf(THIS_FD,"$(prekey)$(KEY|NOKEYDEFINED) %f\n",$(access));
 				ELSE
-					ERROR CANNOT SAVE TYPE $(TYPE)
+					ERROR CANNOT SAVE TYPE '$(TYPE)'
 				ENDIF
 			ELSEIF $(REF) ~ l
 				P $1fprintf(THIS_FD,"$(prekey)$(KEY|NOKEYDEFINED) %i",$(access));
@@ -782,12 +782,12 @@ FUNCTION load_structure
 				P $3if (aisc_server_load_token(THIS_FD,token,$(TOKENSIZE))) return 1;
 				IF $(TYPE) = aisc_string
 					P $3$(access) = strdup(token);
-				ELSEIF $TYPE = int,long,char
-					P $3(access) = atoi(token);
-				ELSEIF $TYPE = float,double
-					P $3(access) = atof(token);
+				ELSEIF $(TYPE) = int,long,char
+					P $3$(access) = atoi(token);
+				ELSEIF $(TYPE) = float,double
+					P $3$(access) = atof(token);
 				ELSE
-					ERROR CANNOT SAVE TYPE $(TYPE)
+					ERROR CANNOT SAVE TYPE '$(TYPE)'
 				ENDIF
 			ELSEIF $(REF) ~ l
 				P I cannot load links yet
