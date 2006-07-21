@@ -19,6 +19,12 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_main, bool update_status);
 char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data);
 char *AWTC_generate_random_name(GBDATA *gb_species_data);
 
+struct PersistantNameServerConnection {
+    bool dummy;
+    PersistantNameServerConnection();
+    ~PersistantNameServerConnection();
+};
+
 #else
 #error AW_rename.hxx included twice
 #endif
