@@ -458,26 +458,81 @@ public:
     }
 };
 
-#define ILLEGAL_NAME_CHARS         " \t#;,@_"
-#define REPLACE_ILLEGAL_NAME_CHARS " =:\t=:#=:;=:,=:@=:_="
+static bool stralnum(const char *str) {
+    bool nonalnum = false;
+    for (char c = *str++; c; c = *str++) {
+        if (!isalnum(c)) {
+            nonalnum = true;
+            break;
+        }
+    }
+    return !nonalnum;
+}
+
+static char *make_alnum(const char *str) {
+    // returns a heap-copy containing all alphanumeric characters of 'str'
+
+    char *newStr = (char*)malloc(strlen(str)+1);
+    int   n      = 0;
+
+    for (int p = 0; str[p]; ++p) {
+        if (isalnum(str[p])) newStr[n++] = str[p];
+    }
+    newStr[n] = 0;
+    return newStr;
+}
+static char *make_alpha(const char *str) {
+    // returns a heap-copy containing all alpha characters of 'str'
+
+    char *newStr = (char*)malloc(strlen(str)+1);
+    int   n      = 0;
+
+    for (int p = 0; str[p]; ++p) {
+        if (isalpha(str[p])) newStr[n++] = str[p];
+    }
+    newStr[n] = 0;
+    return newStr;
+}
+
+#if defined(DEBUG)
+#define assert_alnum(s) gb_assert(stralnum(s))
+#else
+#define assert_alnum(s)
+#endif // DEBUG
 
 NameInformation::NameInformation(AN_local *locs) {
     full_name = locs->full_name;
     if (!full_name || !full_name[0]) full_name = default_full_name;
 
-    parsed_name = GBS_string_eval(full_name, "\t= :\"=:'=:* * *=*1 *2:sp.=species:spec.=species:SP.=SPECIES:SPEC.=SPECIES:.=",0);
+    parsed_name = GBS_string_eval(full_name,
+                                  "\t= :\"= :'= :" // replace TABs and quotes by space
+                                  "sp.=species:spec.=species:SP.=SPECIES:SPEC.=SPECIES:" // replace common abbreviations of 'species' 
+                                  ".= :" // replace dots by spaces
+                                  "  = :" // multiple spaces -> 1 space
+                                  "* * *=*1 *2" // skip all beyond 2nd word
+                                  ,0);
     an_autocaps(parsed_name);
 
-    /* delete ' " \t and more than two words */
     parsed_sym = GBS_string_eval(full_name, "\t= :* * *sym*=S",0);
     if (strlen(parsed_sym)>1) {
         free(parsed_sym);
         parsed_sym = strdup("");
     }
 
-    parsed_acc   = GBS_string_eval(locs->acc,REPLACE_ILLEGAL_NAME_CHARS,0);
-    first_name   = GBS_string_eval(parsed_name,"* *=*1",0);
-    rest_of_name = GBS_string_eval(parsed_name+strlen(first_name), REPLACE_ILLEGAL_NAME_CHARS, 0);
+    parsed_acc      = make_alnum(locs->acc);
+    first_name      = GBS_string_eval(parsed_name,"* *=*1",0);
+    rest_of_name    = make_alnum(parsed_name+strlen(first_name));
+
+    {
+        char *first_name_an = make_alnum(first_name);
+        free(first_name);
+        first_name = first_name_an;
+    }
+
+    assert_alnum(parsed_acc);
+    assert_alnum(first_name);
+    assert_alnum(rest_of_name);
+
     UPPERCASE(rest_of_name[0]);
 
     // build id
@@ -485,8 +540,6 @@ NameInformation::NameInformation(AN_local *locs) {
     id = strlen(parsed_acc)
         ? GBS_global_string_copy("*%s", parsed_acc)
         : GBS_global_string_copy("%s*%s*%s", first_name, rest_of_name, parsed_sym);
-
-    
 }
 
 NameInformation::~NameInformation() {
@@ -528,11 +581,11 @@ extern "C" aisc_string get_short(AN_local *locs)
 
     NameInformation  info(locs);
     AN_shorts       *an_shorts = lookup_an_shorts(aisc_main, info.get_id());
-    
+
     if (an_shorts) {            // we already have a short name
         bool recreate = false;
 
-        if (strpbrk(an_shorts->shrt, ILLEGAL_NAME_CHARS) != 0) { // contains illegal characters
+        if (!stralnum(an_shorts->shrt)) { // contains non-alphanumeric characters
             recreate = true;
         }
         else if (strcmp(an_shorts->full_name, default_full_name) == 0 && // fullname in name server is default_full_name
@@ -551,12 +604,12 @@ extern "C" aisc_string get_short(AN_local *locs)
     if (!shrt) { /* now there is no short name (or an illegal one) */
         char *first_advice=0,*second_advice=0;
 
-        if (locs->advice[0] && strpbrk(locs->advice, ILLEGAL_NAME_CHARS)!=0) {
-            locs->advice[0] = 0; // delete advice
+        if (locs->advice[0] && !stralnum(locs->advice)) { // bad advice 
+            locs->advice[0] = 0; // delete it
         }
 
         if (locs->advice[0]) {
-            char *advice = GBS_string_eval(locs->advice, "0=:1=:2=:3=:4=:5=:6=:7=:8=:9=:" REPLACE_ILLEGAL_NAME_CHARS, 0);
+            char *advice = make_alpha(locs->advice);
 
             first_advice = strdup(advice);
             if (strlen(advice) > 3) {
@@ -611,21 +664,25 @@ extern "C" aisc_string get_short(AN_local *locs)
             second_len   = strlen(second_short);
         }
 
-        if (first_len<3) {
-            char *new_first = GBS_global_string_copy("%s___", first_short);
-            free(first_short);
-            first_short     = new_first;
+        if (first_len>3) {
+            first_short[3] = 0;
+            first_len      = 3;;
         }
-        first_short[3] = 0;
-        first_len      = 3;
 
-        if (second_len<5) {
-            char *new_second = GBS_global_string_copy("%s_____", second_short);
+        int both_len = first_len+second_len;
+        if (both_len<8) {
+            char *new_second  = GBS_global_string_copy("%s00000000", second_short);
             free(second_short);
-            second_short     = new_second;
+            second_short      = new_second;
+            second_len       += 8;
+            both_len         += 8;
         }
-        second_short[5] = 0;
-        second_len      = 5;
+
+        if (both_len>8) {
+            second_len               = 8-first_len;
+            second_short[second_len] = 0;
+            both_len                 = 8;
+        }
 
         char test_short[9];
         sprintf(test_short,"%s%s", first_short, second_short);
@@ -633,7 +690,7 @@ extern "C" aisc_string get_short(AN_local *locs)
         if (lookup_an_revers(aisc_main, test_short)) {
             int count;
 
-            gb_assert(second_len==5);
+            gb_assert(second_len>=5 && second_len <= 8);
             second_short[second_len-1] = 0;
             for (count = 2; count <99999; count++) {
                 if      (count==10)    second_short[second_len-2] = 0;
@@ -642,11 +699,13 @@ extern "C" aisc_string get_short(AN_local *locs)
                 else if (count==10000) second_short[second_len-5] = 0;
 
                 int printed = sprintf(test_short,"%s%s%i",first_short, second_short, count);
-                gb_assert(printed <= 8);
+                gb_assert(printed == 8);
                 if (!lookup_an_revers(aisc_main, test_short)) break;
             }
         }
-        
+
+        assert_alnum(test_short);
+
         shrt = strdup(test_short);
         info.add_short(locs, shrt);
 
@@ -656,6 +715,7 @@ extern "C" aisc_string get_short(AN_local *locs)
         free(second_advice);
     }
 
+    assert_alnum(shrt);
     return shrt;
 }
 
@@ -717,7 +777,7 @@ static void check_list(AN_shorts *start) {
 }
 #endif // DEBUG
 
-static void check_for_broken_short_names(AN_main *main) {
+static void check_for_case_error(AN_main *main) {
     // test for duplicated names or name parts (only differing in case)
     // such names were created by old name server versions
 
@@ -823,6 +883,37 @@ static void check_for_broken_short_names(AN_main *main) {
     }
 }
 
+static void check_for_illegal_chars(AN_main *main) {
+    // test for names containing illegal characters
+    int illegal_names = 0;
+
+    // first check name parts
+    for (AN_shorts *shrt = main->shorts1; shrt; ) {
+        AN_shorts *next = shrt->next;
+        if (!stralnum(shrt->shrt)) {
+            fprintf(stderr, "- Fixing illegal chars in '%s'\n", shrt->shrt);
+            an_remove_short(shrt);
+            illegal_names++;
+        }
+        shrt = next;
+    }
+    // then check full short-names
+    for (AN_shorts *shrt = main->names; shrt; ) {
+        AN_shorts *next  = shrt->next;
+        if (!stralnum(shrt->shrt)) {
+            fprintf(stderr, "- Fixing illegal chars in '%s'\n", shrt->shrt);
+            an_remove_short(shrt);
+            illegal_names++;
+        }
+        shrt = next;
+    }
+    
+    if (illegal_names>0) {
+        fprintf(stderr, "* Removed %i names containing illegal characters.\n"
+                "=> This leads to name changes when generating new names (which is recommended now).\n", illegal_names);
+    }
+}
+
 static GB_ERROR server_load(AN_main *main)
 {
     FILE      *file;
@@ -837,6 +928,7 @@ static GB_ERROR server_load(AN_main *main)
         error = GBS_global_string("No such file '%s'", main->server_file);
     }
     else {
+        fprintf(stderr, "* Loading %s\n", main->server_file);
         int err_code = load_AN_main(main,file);
         if (err_code) {
             error = GBS_global_string("Error #%i while loading '%s'", err_code, main->server_file);
@@ -844,19 +936,43 @@ static GB_ERROR server_load(AN_main *main)
     }
 
     if (!error) {
+        fprintf(stderr, "* Parsing data\n");
+        long nameCount =  0;
         for (shrt = main->names; shrt; shrt = shrt->next) {
-            revers = create_AN_revers();
-            revers->mh.ident = an_strlwr(strdup(shrt->shrt));
+            revers            = create_AN_revers();
+            revers->mh.ident  = an_strlwr(strdup(shrt->shrt));
             revers->full_name = strdup(shrt->full_name);
-            revers->acc  = strdup(shrt->acc);
+            revers->acc       = strdup(shrt->acc);
             aisc_link((struct_dllpublic_ext*)&(main->prevers),(struct_dllheader_ext*)revers);
+            nameCount++;
         }
-        check_for_broken_short_names(main);
+
+        int namesDBversion   = main->dbversion; // saved version
+        int currentDBversion = 2; 
+        fprintf(stderr, "* NAMEDB v%i (%li names)\n", namesDBversion, nameCount);
+
+        if (namesDBversion < currentDBversion) {
+            if (namesDBversion<2) {
+                fprintf(stderr, "* Checking for case-errors\n");
+                check_for_case_error(main);
+            }
+
+            fprintf(stderr, "* NAMEDB version %i -> %i\n", namesDBversion, currentDBversion);
+            main->dbversion = currentDBversion;
+            main->touched   = 1; // force save
+        }
+
+#if defined(DEVEL_RALF)
+#warning next check should depend on version        
+#endif // DEVEL_RALF
+        fprintf(stderr, "* Checking for illegal characters\n");
+        check_for_illegal_chars(main);
+
         fprintf(stderr, "ARB_name_server is up.\n");
         main->server_filedate = GB_time_of_file(main->server_file);
     }
     else {
-        main->server_filedate = -1; 
+        main->server_filedate = -1;
     }
     return error;
 }
