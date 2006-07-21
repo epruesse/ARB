@@ -20,9 +20,10 @@
 
 class NameServerConnection {
 private:
-    aisc_com *link;
-    T_AN_LOCAL locs;
-    T_AN_MAIN com;
+    aisc_com   *link;
+    T_AN_LOCAL  locs;
+    T_AN_MAIN   com;
+    int         persistant; // if true -> connection will not be closed
 
     //  ----------------------------------
     //      int init_local_com_names()
@@ -45,11 +46,13 @@ private:
 public:
 
     NameServerConnection() {
-        link = 0;
-        locs = 0;
-        com = 0;
+        link       = 0;
+        locs       = 0;
+        com        = 0;
+        persistant = 0;
     }
     virtual ~NameServerConnection() {
+        gb_assert(persistant == 0); // forgot to remove persistancy ? 
         disconnect();
     }
 
@@ -77,11 +80,27 @@ public:
     }
 
     void disconnect() {
-        if (link) {
-            aisc_close(link);
+        if (persistant == 0) {
+            if (link) {
+                aisc_close(link);
+            }
+            link = 0;
         }
-        link = 0;
     }
+    
+    void persistancy(bool persist) {
+        if (persist) {
+            ++persistant;
+        }
+        else {
+            --persistant;
+            if (persistant <= 0) {
+                persistant = 0;
+                disconnect();
+            }
+        }
+    }
+
 
     aisc_com *getLink() { return link; }
     T_AN_LOCAL getLocs() { return locs; }
@@ -89,6 +108,12 @@ public:
 
 static NameServerConnection name_server;
 
+PersistantNameServerConnection::PersistantNameServerConnection() {
+    name_server.persistancy(true);
+}
+PersistantNameServerConnection::~PersistantNameServerConnection() {
+    name_server.persistancy(false);
+}
 
 GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, char*& new_name, bool openstatus) {
     // create a unique short name for 'full_name'
