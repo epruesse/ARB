@@ -3623,7 +3623,7 @@ char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement) {
         int         len;
         const char *seq_data = GB_read_char_pntr(gb_seq);
 
-        result    = malloc(resultlen);
+        result    = malloc(resultlen+1);
         resultpos = result;
 
 #warning GBT_read_gene_sequence has to be changed later when 'complement' 'complement2' 'complement3' entries exits
@@ -3636,7 +3636,7 @@ char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement) {
                 memcpy(resultpos, seq_data+pos_begin-1, len);
                 resultpos += len;
             }
-            resultpos[resultlen] = 0;
+            result[resultlen] = 0;
         }
         else {
             for (p = parts; p >= 1; p--) {
@@ -3646,7 +3646,7 @@ char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement) {
                 memcpy(resultpos, seq_data+pos_begin-1, len);
                 resultpos += len;
             }
-            resultpos[resultlen] = 0;
+            result[resultlen] = 0;
 
             if (use_revComplement) {
                 char  T_or_U;
