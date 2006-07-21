@@ -1504,6 +1504,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("tree_keep_marked",    "Keep marked",    "K", "tkeep_mrkd.hlp", AWM_TREE, (AW_CB)NT_remove_leafs, (AW_CL)ntw, AWT_REMOVE_NOT_MARKED|AWT_REMOVE_DELETED);
 #if defined(DEVEL_RALF)
 #warning fix NT_alltree_remove_leafs. does SIGSEGV.
+#warning add "remove duplicates from tree"
             SEP________________________SEP();
             AWMIMT("all_tree_remove_deleted", "Remove zombies from all trees", "a", "trm_del.hlp", AWM_TREE, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_DELETED, (AW_CL)gb_main);
             AWMIMT("all_tree_remove_marked",  "Remove marked from all trees",  "l", "trm_del.hlp", AWM_TREE, (AW_CB)NT_alltree_remove_leafs, AWT_REMOVE_MARKED, (AW_CL)gb_main);
@@ -1575,7 +1576,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         }
         awm->close_sub_menu();
         AWMIMT("mark_long_branches", "Mark long branches", "k", "mark_long_branches.hlp", AWM_EXP, (AW_CB)NT_mark_long_branches, (AW_CL)ntw, 0);
-        AWMIMT("mark_duplicates", "Mark duplicates", "d", "mark_duplicates.hlp", AWM_EXP, (AW_CB)NT_mark_duplicates, (AW_CL)ntw, 0);
+        AWMIMT("mark_duplicates", "Mark duplicates", "u", "mark_duplicates.hlp", AWM_EXP, (AW_CB)NT_mark_duplicates, (AW_CL)ntw, 0);
 
         SEP________________________SEP();
 
