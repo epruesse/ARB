@@ -761,7 +761,7 @@ extern "C" int server_save(AN_main *main, int dummy)
     return 0;
 }
 
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
 static void check_list(AN_shorts *start) {
     int count = 0;
     while (++count) {
