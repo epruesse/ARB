@@ -1,10 +1,10 @@
 PROJECT arboo_server
-OBJECT_KEY AN,			# MAIN PREFIX
-MAX_KEY	40,			# MAX NUMBER OF AN ATTRIBUTE
-MAX_OBJECT 6,			# MAX DIFFERENT STRUCTURES
+OBJECT_KEY AN,          # MAIN PREFIX
+MAX_KEY 40,         # MAX NUMBER OF AN ATTRIBUTE
+MAX_OBJECT 6,           # MAX DIFFERENT STRUCTURES
 MAX_STRING_LEN 1024,
 MAX_PAR_CNT 16,
-MAGIC_NUMBER 0x927289,		#	MAGIC_NUMBER 6 HEX DIGITS
+MAGIC_NUMBER 0x927289,      #   MAGIC_NUMBER 6 HEX DIGITS
 
 SERVER_INCLUDES (~
 #include <stdio.h>
@@ -20,67 +20,68 @@ DATA {
 
 @STRUCT, @SKEY, @SKEYC, @SDOCU;
 
-dll_public,	,	,	(~Vater einer DoubledLinkedList dll~), {
-	@TYPE,		@IDENT,	@REF,	@ACC,	@SAVE,	@KEY,	@KEYC,	@INIT,	@DOCU;
-	t_key,		key,	t,	r,	,	,	,	,	(~ The key~);
-	int,		cnt,	t,	r,	,	CNT,	0,	,	(~ Number of elements~);
-	long,		hash,	t,	,	,	,	,	,	(~ Hash Table~);
-	dllheader_ext,	parent,	flt,	r,	,	PARENT,	1,	,	(~ My Owner~);
-	dllheader_ext,	last,	flt,	r,	,	LAST,	2,	,	(~ Pointer to the last element~);
-	};
+dll_public, ,   ,   (~Vater einer DoubledLinkedList dll~), {
+    @TYPE,         @IDENT, @REF, @ACC, @SAVE, @KEY,   @KEYC, @INIT, @DOCU;
+t_key,         key,    t,   r, , ,       ,  , (~ The key~);
+int,           cnt,    t,   r, , CNT,    0, , (~ Number of elements~);
+long,          hash,   t,   ,  , ,       ,  , (~ Hash Table~);
+dllheader_ext, parent, flt, r, , PARENT, 1, , (~ My Owner~);
+dllheader_ext, last,   flt, r, , LAST,   2, , (~ Pointer to the last element~);
+};
 
 
-dll_header,	COMMON,	0,	(~Der Link Header (sollte Kopf jeder Funktion sein)~), {
-	@TYPE,		@IDENT,	@REF,	@ACC,	@SAVE,	@KEY,	@KEYC,	@INIT,	@DOCU;
-	t_key,		key,	t,	r,	,	KEY,	0,	,	(~ The Key~);
-	aisc_string,		aisc_get_keystring,%,r,	,	KEYSTRING,1,	,	(~ THE STRING of the KEY ~);
-	dll_public,	parent,	ls,	r,	,	(~~),	2,	,	(~ Pointer to dll_public~);
-	aisc_string,		ident,	t,	,	1,	IDENT,	5,	,	(~ The ident [not necessary]~);
-	};
+dll_header, COMMON, 0,  (~Der Link Header (sollte Kopf jeder Funktion sein)~), {
+@TYPE,       @IDENT,             @REF, @ACC, @SAVE, @KEY,   @KEYC,  @INIT,  @DOCU;
+t_key,       key,                t,    r,    ,      KEY,    0,  ,   (~ The Key~);
+aisc_string, aisc_get_keystring, %,    r,    ,      KEYSTRING,1,    ,   (~ THE STRING of the KEY ~);
+dll_public,  parent,             ls,   r,    ,      (~~),          2,  ,   (~ Pointer to dll_public~);
+aisc_string, ident,              t,    ,     1,     IDENT,  5,  ,   (~ The ident [not necessary]~);
+};
 
 
 # ********************************* USER STRUCTURES *******************************************
 
-AN_revers,  REVERS,	4,	(~ Revers mapping for shorts ~), {
-	@TYPE,	        @IDENT,	        @REF,	@ACC,	@SAVE,	@KEY,		@KEYC,	@INIT,		@DOCU;
-	dllh,	        mh,	        t,	,	1,	(~~),		0,	,		(~Header~);
-	aisc_string,    full_name,      t,	rw,	,	,		,	,		(~ the full name of a species ~);
-	aisc_string,    acc,	        t,	rw,	,	,		,	,		(~ accession number ~);
+AN_revers,  REVERS, 4,  (~ Revers mapping for shorts ~), {
+    @TYPE,       @IDENT,    @REF, @ACC, @SAVE, @KEY,       @KEYC,  @INIT,  @DOCU;
+    dllh,        mh,        t,    ,     1,     (~~),       0,      ,       (~Header~);
+    aisc_string, full_name, t,    rw,   ,      ,           ,       ,       (~ the full name of a species ~);
+    aisc_string, acc,       t,    rw,   ,      ,           ,       ,       (~ accession number ~);
 };
 
-AN_shorts, SHORTS,	3,	(~ a dictionary ~), SAVEDIRECTION HORIZONTAL, {
-	@TYPE,	        @IDENT,	        @REF,	@ACC,	@SAVE,	@KEY,		@KEYC,	@INIT,	@DOCU;
-	dllh,	        mh,	        t,	,	1,	(~~),		0,	,	(~Header~);
-	aisc_string,    full_name,      t,	r,	1,	FULL_NAME,	10,	,	(~ the full name of a species ~);
-	aisc_string,    acc,	        t,	r,	1,	ACC,		11,	,	(~ accession number ~);
-	aisc_string,	shrt,	        t,	r,	1,	SHORT,		12,	,	(~ The Short ~);
+AN_shorts, SHORTS,  3,  (~ a dictionary ~), SAVEDIRECTION HORIZONTAL, {
+    @TYPE,          @IDENT,         @REF,   @ACC,   @SAVE,  @KEY,       @KEYC,  @INIT,  @DOCU;
+    dllh,           mh,             t,      ,       1,      (~~),       0,      ,       (~Header~);
+    aisc_string,    full_name,      t,      r,      1,      FULL_NAME,  10,     ,       (~ the full name of a species ~);
+    aisc_string,    acc,            t,      r,      1,      ACC,        11,     ,       (~ accession number ~);
+    aisc_string,    shrt,           t,      r,      1,      SHORT,      12,     ,       (~ The Short ~);
 };
 
-AN_local, LOCAL, 	2, 	(~local communication buffer~), {
-	@TYPE,	        @IDENT,	        @REF,	@ACC,	@SAVE,	@KEY,		@KEYC,	@INIT,		        @DOCU;
-	dllh,	        mh,	        t,	,	,	(~~),		0,	,		        (~Header~);
-	int,	        socket,	        t,	,	,	,		,	names_init_socket(THIS), (~the callback~), DESTROY names_destroy_socket(THIS);
-	aisc_string,    whoami,	        t,	,	,	WHOAMI,		10,	,		        (~ who am i ~);
-	aisc_string,    full_name,      t,	rw,	,	FULL_NAME,	11,	"",		        (~ the full name of a species ~);
-	aisc_string,    acc,	        t,	rw,	,	ACCESSION,	12,	"",		        (~ accession number ~);
-	int,	        use_advice,     t,	rw,	,	USEADVICE,	13,	,		        (~ use the advice ~);
-	aisc_string,    advice,	        t,	rw,	,	ADVICE,		14,	"",		        (~ advice for the short name ~);
-	aisc_string,    get_short,      %,	r,	,	GET_SHORT,	15,	,		        (~ get a short name ~);
-	int,            del_short,      %,	r,	,	DEL_SHORT,	16,	,		        (~ forget stored short name ~);
-	};
+AN_local, LOCAL,    2,  (~local communication buffer~), {
+    @TYPE,          @IDENT,         @REF,   @ACC,   @SAVE,  @KEY,       @KEYC,  @INIT,              @DOCU;
+    dllh,           mh,         t,  ,   ,   (~~),       0,  ,               (~Header~);
+    int,            socket,         t,  ,   ,   ,       ,   names_init_socket(THIS), (~the callback~), DESTROY names_destroy_socket(THIS);
+    aisc_string,    whoami,         t,  ,   ,   WHOAMI,     10, ,               (~ who am i ~);
+    aisc_string,    full_name,      t,  rw, ,   FULL_NAME,  11, "",             (~ the full name of a species ~);
+    aisc_string,    acc,            t,  rw, ,   ACCESSION,  12, "",             (~ accession number ~);
+    int,            use_advice,     t,  rw, ,   USEADVICE,  13, ,               (~ use the advice ~);
+    aisc_string,    advice,         t,  rw, ,   ADVICE,     14, "",             (~ advice for the short name ~);
+    aisc_string,    get_short,      %,  r,  ,   GET_SHORT,  15, ,               (~ get a short name ~);
+    int,            del_short,      %,  r,  ,   DEL_SHORT,  16, ,               (~ forget stored short name ~);
+    };
 
 
 AN_main, MAIN, 1, (~Die globalen Daten~), SAVEDIRECTION VERTICAL, {
-	@TYPE,	        @IDENT,		 @REF,	@ACC,	@SAVE,	@KEY,		@KEYC,	@INIT,		@DOCU;
-	t_key, 	        key,		 t,	n,	,	,		,	,		(~Der KEY~);
-	AN_local,       loc_st,	         d,	,	,	LOCAL,		10,	,		(~Die Parameter~);
-	AN_shorts,      shorts1,	 d,	r,	1,	SHORTS1,	12,	,		(~ the unique letters for a word ~);
-	AN_shorts,      names,	         d,	r,	1,	NAMES,		16,	,		(~ the unique names first*second*S*accession ~);
-	AN_revers,      revers,	         d,	r,	,	,		,	,		(~ the revers unique names first*second*S*accession ~);
-	int,	        touched,	 t,	r,	,	TOUCHED,	19,	0,		(~ Does the database need to be saved ~);
-        aisc_string,    server_shutdown, %,     w,      ,       SHUTDOWN,       20,     ,               (~SHUTDOWN Command~);
-        int,	        server_save,	 %,     w,      ,       SAVEALL,	21, 	, 		(~SAVE everything~);
-	aisc_string,    server_file,	 t,	r,	,	FILENAME,	22,	,		(~The filename of the keys~);
-	int,            server_filedate, t,	,	,	FILEDATE,	23,	,		(~The filedate of server_file~);
-	};
+    @TYPE,          @IDENT,          @REF,  @ACC,   @SAVE,  @KEY,       @KEYC,  @INIT,  @DOCU;
+    t_key,          key,             t,     n,      ,       ,           ,       ,       (~Der KEY~);
+    AN_local,       loc_st,          d,     ,       ,       LOCAL,      10,     ,       (~Die Parameter~);
+    AN_shorts,      shorts1,         d,     r,      1,      SHORTS1,    12,     ,       (~ the unique letters for a word ~);
+    AN_shorts,      names,           d,     r,      1,      NAMES,      16,     ,       (~ the unique names first*second*S*accession ~);
+    AN_revers,      revers,          d,     r,      ,       ,           ,       ,       (~ the revers unique names first*second*S*accession ~);
+    int,            touched,         t,     r,      ,       TOUCHED,    19,     0,      (~ Does the database need to be saved ~);
+    aisc_string,    server_shutdown, %,     w,      ,       SHUTDOWN,   20,     ,       (~SHUTDOWN Command~);
+    int,            server_save,     %,     w,      ,       SAVEALL,    21,     ,       (~SAVE everything~);
+    aisc_string,    server_file,     t,     r,      ,       FILENAME,   22,     ,       (~The filename of the keys~);
+    int,            server_filedate, t,     ,       ,       FILEDATE,   23,     ,       (~The filedate of server_file~);
+    int,            dbversion,       t,     ,       1,      DBVERSION,  24,     1,      (~Nameserver database version ~);
+    };
 };
