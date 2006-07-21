@@ -1046,7 +1046,10 @@ void gene_extract_cb(AW_window *aww, AW_CL cl_pmode){
         ask_to_overwrite_alignment      = new AW_repeated_question();
 
         aw_openstatus("Extracting pseudo-species");
-        GEN_perform_command(aww, (GEN_PERFORM_MODE)cl_pmode, do_mark_command_for_one_species, GEN_EXTRACT_MARKED, (AW_CL)ali);
+        {
+            PersistantNameServerConnection stayAlive; 
+            GEN_perform_command(aww, (GEN_PERFORM_MODE)cl_pmode, do_mark_command_for_one_species, GEN_EXTRACT_MARKED, (AW_CL)ali);
+        }
         aw_closestatus();
 
         delete ask_to_overwrite_alignment;
