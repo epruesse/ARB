@@ -280,7 +280,7 @@ void gbm_debug_mem P_((GB_MAIN_TYPE *Main));
 /* ad_load.c */
 GB_ERROR gb_read_ascii P_((const char *path, GBCONTAINER *gbd));
 long gb_read_bin_rek P_((FILE *in, GBCONTAINER *gbd, long nitems, long version, long reversed));
-long gb_recover_corrupt_file P_((GBCONTAINER *gbd, FILE *in));
+long gb_recover_corrupt_file P_((GBCONTAINER *gbd, FILE *in, GB_ERROR recovery_reason));
 long gb_read_bin_rek_V2 P_((FILE *in, GBCONTAINER *gbd, long nitems, long version, long reversed, long deep));
 GBDATA *gb_search_system_folder_rek P_((GBDATA *gbd));
 void gb_search_system_folder P_((GBDATA *gb_main));
