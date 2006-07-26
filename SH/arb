@@ -129,7 +129,11 @@ fi
 ARB_LIBRARY_PATH="${LD_LIBRARY_PATH}"
 export ARB_LIBRARY_PATH
 
-echo "Please wait while the program ARB is starting ....."
-(arb_ntree $args;arb_clean >/dev/null 2>&1;echo ARB done) &
-
+if [ "$args" = "shell" ]; then
+    echo "Opening an ARB shell"
+    sh
+else    
+    echo "Please wait while the program ARB is starting ....."
+    (arb_ntree $args;arb_clean >/dev/null 2>&1;echo ARB done) &
+fi
 
