@@ -711,21 +711,27 @@ long gb_read_bin_rek(FILE *in,GBCONTAINER *gbd,long nitems,long version,long rev
 }
 
 
-long gb_recover_corrupt_file(GBCONTAINER *gbd,FILE *in){
+long gb_recover_corrupt_file(GBCONTAINER *gbd,FILE *in, GB_ERROR recovery_reason){
     /* search pattern dx xx xx xx string 0 */
     static FILE *old_in = 0;
     static unsigned char *file = 0;
     static long size = 0;
     long pos = ftell(in);
     if (!GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
-        GB_export_error("Your data file is corrupt.\n"
-                        "   This may happen if \n"
-                        "   - there is a hardware error (e.g a drive crash),\n"
-                        "   - data is corrupted by bad internet connections,\n"
-                        "   - data is destroyed by the program or\n"
-                        "   - if it isn't an arb file\n"
-                        "   You may recover part of your data by running\n"
-                        "       arb_repair old_arb_file panic.arb\n");
+        if (!recovery_reason) { recovery_reason = GB_get_error(); }
+        GB_export_error("Aborting recovery (because recovery mode is disabled)\n"
+                        "Error causing recovery: '%s'\n"
+                        "Part of data may be recovered using 'arb_repair yourDB.arb newName.arb'\n"
+                        "(Note: Recovery doen't work if the error occurs while loading a quick save file)",
+                        recovery_reason);
+        /*         GB_export_error("Your data file is corrupt.\n" */
+        /*                         "   This may happen if \n" */
+        /*                         "   - there is a hardware error (e.g a drive crash),\n" */
+        /*                         "   - data is corrupted by bad internet connections,\n" */
+        /*                         "   - data is destroyed by the program or\n" */
+        /*                         "   - if it isn't an arb file\n" */
+        /*                         "   You may recover part of your data by running\n" */
+        /*                         "       arb_repair old_arb_file panic.arb\n"); */
         return -1;
     }
     pos = ftell(in);
@@ -787,7 +793,7 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
         if (!type) {
             int func;
             if (version == 1) { /* master file */
-                if (gb_recover_corrupt_file(gbd,in)) return -1;
+                if (gb_recover_corrupt_file(gbd,in, "Unknown DB type 0 (DB version=1)")) return -1;
                 continue;
             }
             func = getc(in);
@@ -808,7 +814,7 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
 
                     break;
                 default:
-                    if (gb_recover_corrupt_file(gbd,in)) return -1;
+                    if (gb_recover_corrupt_file(gbd,in, GBS_global_string("Unknown func=%i", func))) return -1;
                     continue;
             }
             continue;
@@ -947,7 +953,7 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
                 break;
             default:
                 gb_read_bin_error(in,gb2,"Unknown type");
-                if (gb_recover_corrupt_file(gbd,in)){
+                if (gb_recover_corrupt_file(gbd,in, NULL)){
                     if (GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery){
                         return 0;       /* loading stopped */
                     }else{
@@ -1522,7 +1528,14 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
                             err = gb_read_bin(input, gbd, 1);
                             fclose (input);
 
-                            if (err) err_msg = "Loading failed (file corrupt?)";
+                            if (err) {
+                                GB_ERROR suberr = GB_get_error();
+                                if (!suberr) { suberr = "<no specified reason>"; }
+
+                                err_msg = GBS_global_string("Loading failed (file corrupt?)\n"
+                                                            "[Fail-Reason: '%s']\n", 
+                                                            suberr);
+                            }
                         }
                         else {
                             err_msg = "Wrong file format (not a quicksave file)";
