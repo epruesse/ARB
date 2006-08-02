@@ -28,11 +28,17 @@ DESCRIPTION With the help of concatenation function, one can cancatenate the ali
             Pressing CONCATENATE button performs concatenation function for the alignments selected in the order of the alignments present in the "Alignments to be concatenated" list. 
 
             Use MERGE SIMILAR SPECIES button to create new species by merging similar species (for e.g., Similar species having different sequence alignments). 
-            Additionally, you can do the same frome the "Species" menu clicking on "Merge Similar Species" item.
+            Additionally, you can do the same from the "Species" menu clicking on "Merge Similar Species" item.
 
             If the database contains similar species with different sequence alignments use "MERGE and CONCATENATE" button to generate new species by merging similar species in the database and concatenating the different sequence alignments contained in the newly merged species.
     
-NOTES		None
+NOTES	    If problems occurs during "Merging similar species" and/or "Concatenation", try the following -
+        
+            1. Search the database for the "merged_species" field and mark the listed species, if any, and delete them.
+    
+            2. Then search the database for the <criterion_field> to use for merging similar species. Mark the resulting species and perform merging similar species. 
+    
+            3. Usually newly generated (merged) species are marked and use the same to perform concatenation. CAUTION: Make sure that the new alignment name DOES NOT coinside with the selected alignments (names) to be concatenated !!!          
 
 EXAMPLES	None
 

@@ -41,6 +41,21 @@ void EDB_root_bact::calc_no_of_all(char *string_to_scan, long *group, long *spec
     }
 }
 
+#if defined(DEVEL_YADHU)
+//YKADI
+bool bIsSpecies = false;
+void  AddNewTerminalToTheSequence(ED4_multi_sequence_manager *multi_sequence_manager,
+                                                       ED4_sequence_info_terminal *ref_sequence_info_terminal,
+                                                       ED4_sequence_terminal      *ref_sequence_terminal,
+                                                       GBDATA                     *gb_datamode,
+                                                       int                         count_too,
+                                                       ED4_index                  *seq_coords,
+                                                       ED4_index                  *max_sequence_terminal_length,
+                                  ED4_alignment               alignment_flag);
+
+//YKADI
+#endif
+
 ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_species_manager,
                                         ED4_sequence_info_terminal *ref_sequence_info_terminal,
                                         ED4_sequence_terminal      *ref_sequence_terminal,
@@ -68,6 +83,11 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
         }
         case ED4_D_SPECIES: {
             gb_datamode = GBT_find_species(gb_main, str);
+#if defined(DEVEL_YADHU)
+            //YKADI
+            //            bIsSpecies = true;
+            //YKADI
+#endif
             break;
         }
     }
@@ -145,6 +165,70 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
     return ED4_R_OK;
 }
 
+#if defined(DEVEL_YADHU)
+// YKADI
+void  AddNewTerminalToTheSequence(ED4_multi_sequence_manager *multi_sequence_manager,
+                                                       ED4_sequence_info_terminal *ref_sequence_info_terminal,
+                                                       ED4_sequence_terminal      *ref_sequence_terminal,
+                                                       GBDATA                     *gb_datamode,
+                                                       int                         count_too,
+                                                       ED4_index                  *seq_coords,
+                                                       ED4_index                  *max_sequence_terminal_length,
+                                                       ED4_alignment               alignment_flag)
+{
+    AW_device *device;
+    int        j          = 1;
+    int        pixel_length;
+    long       string_length;
+    char      *key_string;
+    char       namebuffer[NAME_BUFFERSIZE];
+
+    sprintf( namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count_too++ );
+    ED4_sequence_manager *seq_manager = new ED4_sequence_manager( namebuffer, 0, j*TERMINALHEIGHT, 0, 0, multi_sequence_manager );
+    seq_manager->set_properties( ED4_P_MOVABLE );
+    multi_sequence_manager->children->append_member( seq_manager );
+
+    ED4_sequence_info_terminal *sequence_info_terminal =
+        new ED4_sequence_info_terminal(key_string, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, seq_manager );
+    sequence_info_terminal->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );
+    sequence_info_terminal->set_links( ref_sequence_info_terminal, ref_sequence_info_terminal );
+    //         sequence_info_terminal->set_species_pointer(gb_alignment);    // segmentation fault
+    seq_manager->children->append_member( sequence_info_terminal );
+
+    ED4_text_terminal *text_terminal = 0;
+    sprintf(namebuffer, "PureText_Term%ld.%d",ED4_counter, count_too++);
+    text_terminal = new ED4_pure_text_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, seq_manager);
+
+    text_terminal->set_properties( ED4_P_CURSOR_ALLOWED );
+    text_terminal->set_links( ref_sequence_terminal, ref_sequence_terminal );
+    seq_manager->children->append_member(text_terminal);
+    //           text_terminal->set_species_pointer(gb_alignment);
+
+    string_length = 100;
+
+    device = ED4_ROOT->first_window->aww->get_device(AW_MIDDLE_AREA);
+    pixel_length = device->get_string_size( ED4_G_SEQUENCES, NULL, string_length) + 100;
+
+    *max_sequence_terminal_length = max(*max_sequence_terminal_length, pixel_length);
+    text_terminal->extension.size[WIDTH] = pixel_length;
+
+    if (MAXSEQUENCECHARACTERLENGTH < string_length) {
+        MAXSEQUENCECHARACTERLENGTH = string_length;
+        ref_sequence_terminal->extension.size[WIDTH] = pixel_length;
+    }
+
+    if (!ED4_ROOT->scroll_links.link_for_hor_slider) {
+        ED4_ROOT->scroll_links.link_for_hor_slider = text_terminal;
+    }
+    else if (*max_sequence_terminal_length > ED4_ROOT->scroll_links.link_for_hor_slider->extension.size[WIDTH]) {
+        ED4_ROOT->scroll_links.link_for_hor_slider = text_terminal;
+    }
+
+    *seq_coords += TERMINALHEIGHT;
+}
+
+// YKADI
+#endif
 
 ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manager *multi_sequence_manager,
                                                        ED4_sequence_info_terminal *ref_sequence_info_terminal,
@@ -265,12 +349,29 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
 
                 *seq_coords += TERMINALHEIGHT;
                 j++;
+
+                {
+#if defined(DEVEL_YADHU)
+                    //YKADI
+                    // creates a new text terminal if it is a species
+                    if(bIsSpecies) {
+// //                         //                        for (int i =0; i<2;i++) {
+                        AddNewTerminalToTheSequence(multi_sequence_manager, ref_sequence_info_terminal, ref_sequence_terminal, gb_datamode,
+                                                    count_too, seq_coords, &max_seq_terminal_length, ED4_A_DEFAULT);
+// //                             //                        }
+                        bIsSpecies = false; 
+                    }
+                    //YKADI
+#endif
+                }
+
             }
         }
     }
 
     return ED4_R_OK;
 }
+
 
 char* EDB_root_bact::make_string()
 {

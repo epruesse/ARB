@@ -33,6 +33,7 @@
 #include "ed4_secedit.hxx"
 #include "ed4_visualizeSAI.hxx"
 #include "edit_naligner.hxx"
+#include "ed4_ProteinViewer.hxx"
 
 #if defined(ARB_OPENGL)
 #include "ed4_RNA3D.hxx"
@@ -487,10 +488,19 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     ED4_window *new_window;
     long total_no_of_species, total_no_of_groups, group_count, species_count;
 
+    /*****YKADI COMMENT****************/
+    // this is the sequence reference region - it counts the species and related info (e.g. helix) displayed
+    //in the REFERENCE region -- TOP REGION
+    /*****YKADI COMMENT****************/
+
     database->calc_no_of_all(area_string_top, &group_count, &species_count);
     total_no_of_groups = group_count;
     total_no_of_species = species_count;
     loading = 1;
+
+    /*****YKADI COMMENT****************/
+    //  MIDDLE  REGION -- counts no of species and sais including groups
+    /*****YKADI COMMENT****************/
 
     database->calc_no_of_all(area_string_middle, &group_count, &species_count);
     total_no_of_groups += group_count;
@@ -637,7 +647,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
             tree_terminal->extension.size[HEIGHT] = y - help;
 
             mid_multi_species_manager->generate_id_for_groups();
-            y += 10;                                                // add top-mid_spacer_terminal height
+            y += 10;                                                // add top-mid_spacer_terminal height 
 
             mid_bot_line_terminal = new ED4_line_terminal( "Mid_Bot_Line_Terminal" ,0, y, 0, 3, device_manager );   // width will be set below
             device_manager->children->append_member( mid_bot_line_terminal );
@@ -1622,7 +1632,9 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic( "dcs_threshold", "Set threshold for D.c.s.", "f", "st_ml.hlp",AWM_ALL, ED4_set_col_stat_threshold, 1, 0);
     SEP________________________SEP;
     awmm->insert_menu_topic( "visulize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_createVisualizeSAI_window, 0 );
-
+#if defined(DEVEL_YADHU)
+    awmm->insert_menu_topic( "Protein_Viewer", "Protein Viewer", "w", "proteinViewer.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_CreateProteinViewer_window, 0 );
+#endif
     // ------------------------------
     //  Block
     // ------------------------------
