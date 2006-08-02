@@ -454,7 +454,7 @@ static char *makeUniqueShortName(const char *prefix, UniqueNameDetector& existin
 
 char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data) {
     // generates a unique species name from prefix
-    // (prefix will be fillup with '_00..' and the shortened down to first char)
+    // (prefix will be fillup with zero digits and then shortened down to first char)
     // returns 0 if fails
 
     int  len = strlen(prefix);
@@ -463,7 +463,7 @@ char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data) {
 
     if (len>8) len = 8;
     else {
-        if (len <= 6) p[len++] = '_';
+        if (len == 0) p[len++] = 'x'; // don't use digit as first character
         while (len<8) p[len++] = '0';
     }
 
@@ -483,14 +483,16 @@ char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data) {
 char *AWTC_generate_random_name(GBDATA *gb_species_data) {
     char *new_species_name = 0;
     char  short_name[9];
-    int   count            = 1000;
+    int   count            = 10000;
 
     UniqueNameDetector existing(gb_species_data);
 
     short_name[8] = 0;
     while (count--) {
-        for (int x=0; x<8; ++x) {
-            int r = int((double(rand())/RAND_MAX)*36);
+        short_name[0] = 'a'+GB_random(26); // first character has to be alpha
+
+        for (int x=1; x<8; ++x) {
+            int r = GB_random(36); // rest may be alphanumeric
             short_name[x] = r<10 ? ('0'+r) : ('a'+r-10);
         }
 
@@ -498,6 +500,11 @@ char *AWTC_generate_random_name(GBDATA *gb_species_data) {
             new_species_name = strdup(short_name);
             break;
         }
+    }
+
+    if (!new_species_name) {
+        aw_message("Failed to generate a random name - retrying (this might hang forever)");
+        return AWTC_generate_random_name(gb_species_data);
     }
 
     return new_species_name;
