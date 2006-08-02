@@ -2068,7 +2068,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
 
         if (!error) {
             if (creation_mode==0) {
-                error = "It's no good to create short-name for new species by nameserver! (has no acc yet)";
+                error = "It's no good idea to create the short-name for a new species using the nameserver! (has no acc yet)";
             }
             else {
                 error = AWTC_generate_one_name(gb_main, new_species_full_name, acc, new_species_name, true);
@@ -2084,7 +2084,10 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
             }
 
             if (error) {        // try to make a random name
-                error            = 0;
+                const char *msg = GBS_global_string("%s\nGenerating a random name instead.", error);
+                aw_message(msg);
+                error           = 0;
+
                 new_species_name = AWTC_generate_random_name(gb_species_data);
 
                 if (!new_species_name) {

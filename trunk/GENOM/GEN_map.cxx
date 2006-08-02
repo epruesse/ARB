@@ -783,7 +783,10 @@ void GEN_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene, const
                         }
                     }
                     if (error) {            // try to make a random name
+                        const char *msg = GBS_global_string("%s\nGenerating a random name instead.", error);
+                        aw_message(msg);
                         error      = 0;
+
                         short_name = AWTC_generate_random_name(gb_species_data);
                         if (!short_name) error = GBS_global_string("Failed to create a new name for pseudo gene-species '%s'", full_name);
                     }
