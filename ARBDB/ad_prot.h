@@ -215,6 +215,8 @@ long GB_number_of_subentries P_((GBDATA *gbd));
 
 /* admath.c */
 double GB_log_fak P_((int n));
+double GB_frandom P_((void));
+int GB_random P_((int range));
 
 /* adoptimize.c */
 GB_ERROR GB_optimize P_((GBDATA *gb_main));
