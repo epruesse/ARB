@@ -3,6 +3,7 @@
 /* #include <malloc.h> */
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 /*#include <arbdb.h>*/
 #include "adlocal.h"
@@ -27,6 +28,34 @@ double GB_log_fak(int n){
     return res[n];
 }
 
+/* ---------------------------------- */
+/*      random number generation      */
+/* ---------------------------------- */
 
+#if defined(DEVEL_RALF)
+#warning TODO: replace all occurrances of rand / srand in ARB code by calls to GB_random/GB_frandom  
+#endif /* DEVEL_RALF */
+
+
+static int randomSeeded = 0;
+
+double GB_frandom() {
+    /* produces a random number in range [0.0 .. 1.0] */
+    if (!randomSeeded) {
+        srand(time(0));
+        randomSeeded = 1;;
+    }
+    return ((double)rand())/RAND_MAX;
+}
+
+int GB_random(int range) {
+    /* produces a random number in range [0 .. range-1] */
+    if (!randomSeeded) {
+        srand(time(0));
+        randomSeeded = 1;
+    }
+
+    return (int)(rand()*((double)range) / (RAND_MAX+1.0));
+}
 
 
