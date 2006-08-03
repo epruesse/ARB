@@ -136,10 +136,15 @@ void PV_CreateNewTerminal() {
             char *name = GBT_read_name(gb_species);
             ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(name);
 
-            if (name_term) { 
+            if (name_term) {
                 {
+#if defined(DEVEL_YADHU)
                     extern bool bIsSpecies;
+                    // its nearly always a very bad idea to declare something extern
+                    
                     bIsSpecies = true;
+#error Linker error :  undefined reference to bIsSpecies
+#endif // DEVEL_YADHU
 
                     ED4_species_manager *species_manager = name_term->get_parent(ED4_L_SPECIES)->to_species_manager();
                     ED4_multi_sequence_manager *multiSeqManager = species_manager->search_spec_child_rek(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
