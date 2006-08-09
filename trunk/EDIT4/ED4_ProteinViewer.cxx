@@ -5,8 +5,10 @@
 //    => Painting the aminoacid sequences along with the DNA sequence
 /*============================================================================*/
 
-#include <stream.h>
+#include <ostream>
 #include "pv_header.hxx"
+
+using namespace std;
 
 void RetrieveDNAsequence();
 void TranslateDNA();
