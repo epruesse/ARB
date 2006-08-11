@@ -607,11 +607,12 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
     GBDATA  *gb_species_full_name = GB_find(gb_species, "full_name", 0, down_level);
     char    *str_full_name        = GB_read_string(gb_species_full_name);
     char    *new_species_name     = 0;
-    GB_ERROR error                = AWTC_generate_one_name(gb_main, str_full_name, 0, new_species_name, false);
+    GB_ERROR error                = AWTC_generate_one_name(gb_main, str_full_name, 0, new_species_name, false, true);
 
     if (!error) {   // name was created
         if (GBT_find_species_rel_species_data(gb_species_data, new_species_name) != 0) { //if the name is not unique create unique name
-            char *uniqueName = AWTC_makeUniqueShortName(new_species_name, gb_species_data);
+            UniqueNameDetector und(gb_species_data);
+            char *uniqueName = AWTC_makeUniqueShortName(new_species_name, und);
             free(new_species_name);
             new_species_name = uniqueName;
             if (!new_species_name) error = "No short name created.";
