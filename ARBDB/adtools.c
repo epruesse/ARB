@@ -3589,6 +3589,18 @@ NOT4PERL GB_ERROR GBT_get_gene_positions(GBDATA *gb_gene, int whichPos, long *po
 /*  ---------------------------------------------------------------------------------  */
 /* GBT_read_gene_sequence is intentionally located here (otherwise we get serious linkage problems) */
 
+static const char *gb_cache_genome(GBDATA *gb_genome) {
+    static GBDATA     *gb_last_genome = 0;
+    static const char *last_genome    = 0;
+
+    if (gb_genome != gb_last_genome) {
+        last_genome    = GB_read_char_pntr(gb_genome);
+        gb_last_genome = gb_genome;
+    }
+
+    return last_genome;
+}
+
 char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement) {
     /* read the sequence for the specified gene */
 
@@ -3621,7 +3633,8 @@ char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement) {
         char       *resultpos;
         long        pos_begin, pos_end;
         int         len;
-        const char *seq_data = GB_read_char_pntr(gb_seq);
+        /* const char *seq_data = GB_read_char_pntr(gb_seq); */
+        const char *seq_data = gb_cache_genome(gb_seq);
 
         result    = malloc(resultlen+1);
         resultpos = result;
