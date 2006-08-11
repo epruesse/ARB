@@ -2067,14 +2067,18 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
         }
 
         if (!error) {
+            UniqueNameDetector *existingNames = 0;
+
             if (creation_mode==0) {
                 error = "It's no good idea to create the short-name for a new species using the nameserver! (has no acc yet)";
             }
             else {
-                error = AWTC_generate_one_name(gb_main, new_species_full_name, acc, new_species_name, true);
+                error = AWTC_generate_one_name(gb_main, new_species_full_name, acc, new_species_name, true, true);
                 if (!error) {   // name was created
                     if (!nameIsUnique(new_species_name, gb_species_data)) {
-                        char *uniqueName = AWTC_makeUniqueShortName(new_species_name, gb_species_data);
+                        if (!existingNames) existingNames = new UniqueNameDetector(gb_species_data);
+                        
+                        char *uniqueName = AWTC_makeUniqueShortName(new_species_name, *existingNames);
                         free(new_species_name);
                         new_species_name = uniqueName;
 
@@ -2088,12 +2092,15 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                 aw_message(msg);
                 error           = 0;
 
-                new_species_name = AWTC_generate_random_name(gb_species_data);
+                if (!existingNames) existingNames = new UniqueNameDetector(gb_species_data);
+                new_species_name = AWTC_generate_random_name(*existingNames);
 
                 if (!new_species_name) {
                     error = GB_export_error("Failed to create a new name for '%s'", new_species_full_name);
                 }
             }
+
+            if (existingNames) delete existingNames;
         }
 
         if (!error) {
