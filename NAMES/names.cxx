@@ -1082,9 +1082,10 @@ int main(int argc,char **argv)
 
     while (!error && accept_calls>0) {
         aisc_accept_calls(so);
-        accept_calls--;
 
         if (aisc_main->ploc_st.cnt <=0) { // timeout passed and no clients
+            accept_calls--;
+
             long server_date = GB_time_of_file(aisc_main->server_file);
             if (server_date == 0 && aisc_main->server_filedate != 0) {
                 fprintf(stderr, "ARB_name_server data has been deleted.\n");
@@ -1099,10 +1100,16 @@ int main(int argc,char **argv)
                 accept_calls = accept_calls_init;
             }
         }
+        else { // got a client
+            accept_calls = accept_calls_init;
+        }
     }
 
     if (error) {
         fprintf(stderr, "Error in ARB_name_server: %s\n", error);
+    }
+    else if (accept_calls == 0) {
+        fprintf(stderr, "Been idle for %i minutes.\n", int(NAME_SERVER_TIMEOUT/60));
     }
 
     printf("ARB_name_server terminating...\n");
