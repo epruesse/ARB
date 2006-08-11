@@ -139,7 +139,8 @@ static void ad_species_copy_cb(AW_window *aww, AW_CL, AW_CL) {
     if (gb_species) {
         GB_transaction  ta(gb_main);
         GBDATA         *gb_species_data = GB_get_father(gb_species);
-        char           *copy_name       = AWTC_makeUniqueShortName(GBS_global_string("c_%s", name), gb_species_data);
+        UniqueNameDetector und(gb_species_data);
+        char           *copy_name       = AWTC_makeUniqueShortName(GBS_global_string("c%s", name), und);
         GBDATA         *gb_new_species  = GB_create_container(gb_species_data, "species");
         GB_ERROR        error           = 0;
 
