@@ -32,7 +32,6 @@
 #include <awt_translate.hxx>
 
 #define AWAR_PROTVIEW                                               "protView/"
-#define AWAR_PROTVIEW_DB_FIELD                                AWAR_PROTVIEW "db_field" 
 #define AWAR_PROTVIEW_FORWARD_TRANSLATION         AWAR_PROTVIEW "forward_translation" 
 #define AWAR_PROTVIEW_FORWARD_TRANSLATION_1      AWAR_PROTVIEW "forward_translation_1" 
 #define AWAR_PROTVIEW_FORWARD_TRANSLATION_2      AWAR_PROTVIEW "forward_translation_2" 

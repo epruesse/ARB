@@ -24,8 +24,6 @@ void PV_AddCallBacks(AW_root *awr) {
 static void  PV_CreateAwars(AW_root *root){
     // ******** Creating AWARS to be used by the PROTVIEW module***************
 
-    root->awar_int(AWAR_PROTVIEW_DB_FIELD, 0, AW_ROOT_DEFAULT); 
-
     root->awar_int(AWAR_PROTVIEW_FORWARD_TRANSLATION, 0, AW_ROOT_DEFAULT); 
     root->awar_int(AWAR_PROTVIEW_FORWARD_TRANSLATION_1, 0, AW_ROOT_DEFAULT); 
     root->awar_int(AWAR_PROTVIEW_FORWARD_TRANSLATION_2, 0, AW_ROOT_DEFAULT); 
@@ -99,26 +97,61 @@ void PV_CreateNewTerminal() {
                 sprintf(namebuffer, "PRotienInfo_Term%ld.%d",ED4_counter, count++);
                 new_SeqInfoTERMINAL = new ED4_sequence_info_terminal(namebuffer, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, new_SeqMANAGER );
                 new_SeqInfoTERMINAL->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );
-                new_SeqInfoTERMINAL->set_links( curr_SeqInfoTERMINAL, curr_SeqInfoTERMINAL );
+                new_SeqInfoTERMINAL->set_links( curr_SeqInfoTERMINAL, curr_SeqTERMINAL );
                 new_SeqMANAGER->children->append_member( new_SeqInfoTERMINAL );
 
-                ED4_text_terminal *new_TextTERMINAL = 0;
-                sprintf(namebuffer, "PureText_Term%ld.%d",ED4_counter, count++);
-                new_TextTERMINAL = new ED4_pure_text_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqMANAGER);
-                new_TextTERMINAL->set_properties( ED4_P_CURSOR_ALLOWED );
-                new_TextTERMINAL->set_links( curr_SeqInfoTERMINAL, curr_SeqInfoTERMINAL );
-                new_SeqMANAGER->children->append_member(new_TextTERMINAL);
-
-                {
-                    GBDATA *gbd = GBT_read_sequence(gb_species, default_alignment);
-
-                    if (gbd) {
-                        char *data = GB_read_string(gbd);
-                        int len = GB_read_string_count(gbd);
-                        //         cout<<len<<" = "<<data<<endl;
-                        //                        curr_GroupMANAGER->table().add(data, len);
-                    }
+                GBDATA *gb_SeqData = GBT_read_sequence(gb_species, default_alignment);
+                char *str_SeqData = 0;
+                int len = 0;
+                if (gb_SeqData) {
+                    str_SeqData = GB_read_string(gb_SeqData);
+                    len = GB_read_string_count(gb_SeqData);
                 }
+
+                //                for(int i =0;i<len;i++) { if(str_SeqData[i]!='.' && str_SeqData[i]!='-') cout<<str_SeqData[i];} cout<<endl;
+
+                GBT_write_int(gb_main, AWAR_PROTEIN_TYPE, 0);// set wanted protein table
+                awt_pro_a_nucs_convert_init(gb_main); // (re-)initialize codon tables for current translation table
+                int stops = AWT_pro_a_nucs_convert(str_SeqData, len, 1, "true");
+
+                GB_ERROR error = 0;
+                GBDATA *gb_ProSeqData = 0;
+                gb_ProSeqData = GBT_add_data(gb_species,"ali_protein_seq","data", GB_STRING);
+                if (!gb_ProSeqData) {cout<<"ERROR : "<<GB_get_error()<<endl;exit(0);}
+                //              error        = GB_write_string(gb_ProSeqData,str_SeqData);
+
+                char *s = (char*)malloc(len+1);
+                int j=0, k=0;
+                for(int i =0;i<len;i++) {
+                    if((k==i) && (j<len)) {
+                        s[i]=str_SeqData[j++];
+                        k+=3;
+                    }
+                    else 
+                        s[i]='~';
+                }
+
+                error  = GB_write_string(gb_ProSeqData,s);
+                free(str_SeqData);
+
+                if (error) {cout<<"error during writing data.....!!!"<<endl;exit(0);}
+
+                ED4_AA_sequence_terminal *new_SeqTERMINAL = 0;
+                sprintf(namebuffer, "Sequence_Term%ld.%d",ED4_counter, count++);
+                new_SeqTERMINAL = new ED4_AA_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqMANAGER);
+                //                new_SeqTERMINAL->set_properties( ED4_P_CURSOR_ALLOWED );
+                new_SeqTERMINAL->set_links( curr_SeqTERMINAL, curr_SeqTERMINAL );
+                //                new_SeqTERMINAL->species_name = curr_SeqTERMINAL->get_name_of_species();
+                new_SeqTERMINAL->set_species_pointer(gb_ProSeqData);
+                new_SeqMANAGER->children->append_member(new_SeqTERMINAL);
+
+//                 ED4_text_terminal *new_TextTERMINAL = 0;
+//                 sprintf(namebuffer, "PureText_Term%ld.%d",ED4_counter, count++);
+//                 new_TextTERMINAL = new ED4_pure_text_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqMANAGER);
+//                 //                new_TextTERMINAL->set_properties( ED4_P_CURSOR_ALLOWED );
+//                 new_TextTERMINAL->set_links( curr_SeqTERMINAL, curr_SeqTERMINAL );
+//                 new_TextTERMINAL->set_species_pointer(gb_SeqData);
+//                 new_SeqMANAGER->children->append_member(new_TextTERMINAL);
 
                 ED4_counter++;
 
@@ -126,6 +159,7 @@ void PV_CreateNewTerminal() {
 
 //                 if(hide) new_SeqMANAGER->hide_children();
 //                 else {new_SeqMANAGER->make_children_visible();hide=!hide;}
+//                ED4_base proteinSeqTerminal = curr_MultiSeqMANAGER->search_ID("ProteinInfo_Term");
 
                 appended++;
                 cout<<appended<<" : "<<speciesName<<endl;
@@ -218,9 +252,6 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
             aws->insert_option(AWT_get_codon_code_name(code_nr), "", code_nr);
         }
         aws->update_option_menu();
-
-        aws->at("DBfield");
-        aws->create_toggle(AWAR_PROTVIEW_DB_FIELD);
 
         aws->at("frwd");
         aws->create_toggle(AWAR_PROTVIEW_FORWARD_TRANSLATION);
