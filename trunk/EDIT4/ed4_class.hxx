@@ -1072,7 +1072,7 @@ class ED4_reference_terminals
     ED4_sequence_info_terminal *ref_sequence_info;
     ED4_sequence_terminal      *ref_sequence;
     ED4_sequence_info_terminal *ref_column_stat_info;
-    ED4_columnStat_terminal    *ref_column_stat;
+     ED4_columnStat_terminal    *ref_column_stat;
 
     void null() { ref_sequence_info = 0; ref_sequence = 0; ref_column_stat = 0; ref_column_stat_info = 0; }
 public:
@@ -1606,9 +1606,42 @@ Beispiel(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_ma
 */
 
 // --------------------------------------------------------------------------------
+//         class ED4_sequence_terminal_basic: public ED4_text_terminal
+// --------------------------------------------------------------------------------
+class ED4_sequence_terminal_basic: public ED4_text_terminal
+{
+public:
+    ED4_sequence_terminal_basic( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
+    virtual ~ED4_sequence_terminal_basic();
+
+    char    *species_name; 
+    ED4_species_name_terminal *corresponding_species_name_terminal() const {
+        return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
+    }
+    void calc_intervall_displayed_in_rectangle(AW_rectangle *area_rect, long *left_index, long *right_index );
+    void calc_update_intervall(long *left_index, long *right_index );
+    
+    int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
+};
+
+// --------------------------------------------------------------------------------
+//         class ED4_AA_sequence_terminal: public ED4_sequence_terminal_basic
+// --------------------------------------------------------------------------------
+class ED4_AA_sequence_terminal: public ED4_sequence_terminal_basic
+{
+    virtual ED4_returncode  draw( int only_text = 0 );
+    ED4_AA_sequence_terminal(const ED4_AA_sequence_terminal&);
+public:
+    ED4_AA_sequence_terminal( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
+    virtual ~ED4_AA_sequence_terminal();
+    bool isAA;
+    //    virtual void GetSeqType(isAA=true;);
+};
+
+// --------------------------------------------------------------------------------
 //     class ED4_sequence_terminal : public ED4_text_terminal
 // --------------------------------------------------------------------------------
-class ED4_sequence_terminal : public ED4_text_terminal
+class ED4_sequence_terminal : public ED4_sequence_terminal_basic
 {
     ED4_SearchResults searchResults;
 
@@ -1617,7 +1650,6 @@ class ED4_sequence_terminal : public ED4_text_terminal
 
 public:
 
-    char    *species_name;
     AP_tree *st_ml_node;
 
     ED4_sequence_terminal( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
@@ -1626,18 +1658,18 @@ public:
     virtual void deleted_from_database();
 
     ED4_SearchResults& results() { return searchResults; }
-    ED4_species_name_terminal *corresponding_species_name_terminal() const {
-        return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-    }
+//     ED4_species_name_terminal *corresponding_species_name_terminal() const {
+//         return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
+//     }
     ED4_columnStat_terminal *corresponding_columnStat_terminal() const {
         ED4_base *col_term = get_parent(ED4_L_MULTI_SEQUENCE)->search_spec_child_rek(ED4_L_COL_STAT);
         return col_term ? col_term->to_columnStat_terminal() : 0;
     }
 
-    int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
+    //   int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
 
-    void calc_intervall_displayed_in_rectangle(AW_rectangle *area_rect, long *left_index, long *right_index );
-    void calc_update_intervall(long *left_index, long *right_index );
+//     void calc_intervall_displayed_in_rectangle(AW_rectangle *area_rect, long *left_index, long *right_index );
+//     void calc_update_intervall(long *left_index, long *right_index );
 
 #if defined(IMPLEMENT_DUMP)
     virtual void dump(size_t indent) const;
