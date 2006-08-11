@@ -5,7 +5,7 @@
 //    => Painting the aminoacid sequences along with the DNA sequence
 /*============================================================================*/
 
-#include <ostream>
+#include <iostream>
 #include "pv_header.hxx"
 
 using namespace std;
