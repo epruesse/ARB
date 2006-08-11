@@ -231,7 +231,7 @@ void GEN_species_name_changed_cb(AW_root *awr) {
 //  ----------------------------------------------------------------------------------------------------------------------------
 static void auto_select_pseudo_species(AW_root *awr, GBDATA *gb_main, const char *organism, const char *gene) {
     GB_transaction  dummy(gb_main);
-    GBDATA         *gb_pseudo = GEN_find_pseudo_species(gb_main, organism, gene); // search for pseudo species..
+    GBDATA         *gb_pseudo = GEN_find_pseudo_species(gb_main, organism, gene, 0); // search for pseudo species..
 
     if (gb_pseudo) {
         GBDATA *gb_name     = GB_find(gb_pseudo, "name", 0, down_level);
