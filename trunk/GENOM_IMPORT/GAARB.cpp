@@ -2,34 +2,41 @@
 #include "GAARB.h"
 #endif
 
+#warning fix class GAARB ctor and create_new_genome method - useless work done here
+
 gellisary::GAARB::GAARB(GBDATA * gb_main, const char * ali_name)
 {
-	arb = gb_main;
+	arb            = gb_main;
 	alignment_name = ali_name;
-	GBDATA *gb_species_data = GB_search(arb, "species_data", GB_CREATE_CONTAINER);
-	char *new_species_name = AWTC_makeUniqueShortName("genome", gb_species_data);
-	genome = GBT_create_species(arb, new_species_name);
-	new_gene = true;
+
+	GBDATA             *gb_species_data = GB_search(arb, "species_data", GB_CREATE_CONTAINER);
+    UniqueNameDetector  und(gb_species_data);
+	char *new_species_name              = AWTC_makeUniqueShortName("genome", und); // @@@ expensive function, do not use like this
+    
+	genome               = GBT_create_species(arb, new_species_name);
+	new_gene             = true;
 	gene_location_string = "";
-	gene_gene = "nix";
-	gene_product = "nix";
-	gene_feature = "";
-	real_write = false;
-	gene_to_store = false;
+	gene_gene            = "nix";
+	gene_product         = "nix";
+	gene_feature         = "";
+	real_write           = false;
+	gene_to_store        = false;
 }
 
 bool gellisary::GAARB::create_new_genome()
 {
-	GBDATA *gb_species_data = GB_search(arb, "species_data", GB_CREATE_CONTAINER);
-	char *new_species_name = AWTC_makeUniqueShortName("genome", gb_species_data);
-	genome = GBT_create_species(arb, new_species_name);
-	new_gene = true;
+	GBDATA             *gb_species_data  = GB_search(arb, "species_data", GB_CREATE_CONTAINER);
+    UniqueNameDetector  und(gb_species_data);
+	char               *new_species_name = AWTC_makeUniqueShortName("genome", und);
+    
+	genome               = GBT_create_species(arb, new_species_name);
+	new_gene             = true;
 	gene_location_string = "";
-	gene_gene = "nix";
-	gene_product = "nix";
-	gene_feature = "";
-	real_write = false;
-	gene_to_store = false;
+	gene_gene            = "nix";
+	gene_product         = "nix";
+	gene_feature         = "";
+	real_write           = false;
+	gene_to_store        = false;
 	return true;
 }
 
