@@ -1,6 +1,18 @@
 
-Short instructions how to profile ARB
--------------------------------------
+Short instructions how to profile ARB using valgrind
+====================================================
+
+valgrind 3.2.0:
+---------------
+
+1. run valgrind --tool=callgrind programname prog_arguments
+2. perform the actions you want to get info for and terminate 'programname'
+3. run 'callgrind_annotate --tree=both --inclusive=yes [--auto=yes] callgrind.out.xxx'
+   where xxx is the PID of the program. 
+
+
+Older valgrind versions:
+------------------------
 
 1. Install calltree (a valgrind extension)
 2. run 'calltree --trace-children=yes programname prog_arguments'
