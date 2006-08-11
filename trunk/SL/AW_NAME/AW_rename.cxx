@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 // #include <malloc.h>
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -23,7 +24,8 @@ private:
     aisc_com   *link;
     T_AN_LOCAL  locs;
     T_AN_MAIN   com;
-    int         persistant; // if true -> connection will not be closed
+    int         persistant;     // if true -> connection will not be closed
+    time_t      linktime;       // time, when link has been established
 
     //  ----------------------------------
     //      int init_local_com_names()
@@ -43,6 +45,18 @@ private:
     NameServerConnection(const NameServerConnection& other);
     NameServerConnection& operator=(const NameServerConnection& /*other*/);
 
+    GB_ERROR reconnect(GBDATA *gb_main) { // reconnect ignoring consistency
+        int old_persistant = persistant;
+
+        printf("Reconnecting name server\n");
+
+        persistant = 0; // otherwise disconnect() won't disconnect
+        disconnect();
+        persistant = old_persistant; // restore previous persistancy
+
+        return connect(gb_main);
+    }
+
 public:
 
     NameServerConnection() {
@@ -52,7 +66,7 @@ public:
         persistant = 0;
     }
     virtual ~NameServerConnection() {
-        gb_assert(persistant == 0); // forgot to remove persistancy ? 
+        gb_assert(persistant == 0); // forgot to remove persistancy ?
         disconnect();
     }
 
@@ -71,9 +85,28 @@ public:
                     exit (-1);
                 }
 
-                link = (aisc_com *)aisc_open(servername, &com,AISC_MAGIC_NUMBER);
+                link     = (aisc_com *)aisc_open(servername, &com,AISC_MAGIC_NUMBER);
+                linktime = time(0);
+                
                 if (init_local_com_names()) err = "Sorry I can't start the NAME SERVER";
                 free(servername);
+            }
+        }
+        else {
+            long linkage = int(time(0)-linktime);
+
+#if defined(DEBUG) && 0
+            // print information about name-server link age
+            static long lastage = -1;
+            if (linkage != lastage) {
+                printf("Age of NameServerConnection: %li\n", linkage);
+                lastage = linkage;
+            }
+#endif // DEBUG
+            
+            if (linkage > (5*60)) { // perform a reconnect after 15 minutes
+                // Reason : The pipe to the name server breaks after some time
+                err = reconnect(gb_main);
             }
         }
         return err;
@@ -115,7 +148,7 @@ PersistantNameServerConnection::~PersistantNameServerConnection() {
     name_server.persistancy(false);
 }
 
-GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, char*& new_name, bool openstatus) {
+GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, char*& new_name, bool openstatus, bool showstatus) {
     // create a unique short name for 'full_name'
     // the result is written into 'new_name' (as malloc-copy)
     // if fails: GB_ERROR!=0 && new_name==0
@@ -124,15 +157,20 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
     new_name = 0;
     if (!acc) acc = "";
 
-    if (openstatus) aw_openstatus(GBS_global_string("Short name for '%s'", full_name));
+    if (openstatus) {
+        aw_openstatus(GBS_global_string("Short name for '%s'", full_name));
+        showstatus = true;
+    }
 
-    aw_status("Connecting to name server");
-    aw_status((double)0);
-
+    if (showstatus) {
+        aw_status("Connecting to name server");
+        aw_status((double)0);
+    }
+    
     GB_ERROR err = name_server.connect(gb_main);
     if (err) return err;
 
-    aw_status("Generating name");
+    if (showstatus) aw_status("Generating name");
     static char *shrt = 0;
     if (strlen(full_name)) {
         if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
@@ -243,7 +281,6 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species, bool update_status) {
     return error;
 }
 
-
 GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
 {
     GB_ERROR err = name_server.connect(gb_main);
@@ -275,7 +312,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
                 char *full_name = gb_full_name ? GB_read_string(gb_full_name) : strdup("");
                 char *name      = GB_read_string(gb_name);
 
-                /*static*/ char *shrt = 0;
+                char *shrt = 0;
 
                 if (strlen(acc) + strlen(full_name) ) {
                     if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
@@ -298,7 +335,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
                     if (GBS_read_hash(hash,shrt)) {
                         char *newshrt;
                         int i;
-                        newshrt = (char *)GB_calloc(sizeof(char),strlen(shrt)+10);
+                        newshrt = (char *)GB_calloc(sizeof(char),strlen(shrt)+20);
                         for (i= 1 ; ; i++) {
                             sprintf(newshrt,"%s.%i",shrt,i);
                             if (!GBS_read_hash(hash,newshrt))break;
@@ -306,17 +343,17 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
                         warning = "There are duplicated entries!!.\n"
                             "The duplicated entries contain a '.' character in field 'name'!\n"
                             "Please resolve this problem (see HELP in 'Generate new names' window)";
-                        free(shrt); shrt = newshrt;
+                        free(shrt);
+                        shrt = newshrt;
                     }
                     GBS_incr_hash(hash,shrt);
 
                     err = GBT_rename_species(name,shrt);
                 }
 
-                if (name)       free(name);
-                if (acc)        free(acc);
-                if (full_name)  free(full_name);
-
+                free(name);
+                free(acc);
+                free(full_name);
                 free(shrt);
             }
 
@@ -398,27 +435,21 @@ void AWTC_create_rename_variables(AW_root *root,AW_default db1){
     root->awar_int( AWT_RENAME_SAVE_DATA, 1  ,  db1);
 }
 
-class UniqueNameDetector {
-    GB_HASH *hash;
-public:
-    UniqueNameDetector(GBDATA *gb_item_data) {
-        hash = GBS_create_hash(2*GB_number_of_subentries(gb_item_data), 1);
+UniqueNameDetector::UniqueNameDetector(GBDATA *gb_item_data, int additionalEntries) {
+    hash = GBS_create_hash(2*(GB_number_of_subentries(gb_item_data)+additionalEntries), 1);
 
-        for (GBDATA *gb_item = GB_find(gb_item_data, 0, 0, down_level);
-             gb_item;
-             gb_item = GB_find(gb_item, 0, 0, this_level|search_next))
-        {
-            GBDATA *gb_name = GB_find(gb_item, "name", 0, down_level);
-            if (gb_name) { // item has name -> insert to hash
-                GBS_write_hash(hash, GB_read_char_pntr(gb_name), 1);
-            }
+    for (GBDATA *gb_item = GB_find(gb_item_data, 0, 0, down_level);
+         gb_item;
+         gb_item = GB_find(gb_item, 0, 0, this_level|search_next))
+    {
+        GBDATA *gb_name = GB_find(gb_item, "name", 0, down_level);
+        if (gb_name) { // item has name -> insert to hash
+            GBS_write_hash(hash, GB_read_char_pntr(gb_name), 1);
         }
     }
+}
 
-    ~UniqueNameDetector() { GBS_free_hash(hash); }
-    bool name_known(const char *name) { return GBS_read_hash(hash, name) == 1; }
-    void add_name(const char *name) { GBS_write_hash(hash, name, 1); }
-};
+UniqueNameDetector::~UniqueNameDetector() { GBS_free_hash(hash); }
 
 // inline bool nameIsUnique(const char *short_name, GBDATA *gb_species_data) {
     // return GBT_find_species_rel_species_data(gb_species_data, short_name)==0;
@@ -428,31 +459,38 @@ static char *makeUniqueShortName(const char *prefix, UniqueNameDetector& existin
     // generates a non-existing short-name (name starts with prefix)
     // returns 0 if failed
 
-    char *result = 0;
+    char *result     = 0;
+    int   prefix_len = strlen(prefix);
 
-    int prefix_len = strlen(prefix);
-    gb_assert(prefix_len<8); // short name will be 8 chars - prefix has to be shorter!
+    gb_assert(prefix_len<8); // prefix has to be shorter than 8 chars!
+    if (prefix_len<8) {
+        const int max_nums[8] = { 100000000, 10000000, 1000000, 100000, 10000, 1000, 100, 10 };
+        static int next_try[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-    int max_num = 1;
-    for (int l=prefix_len+1; l<=8; ++l) max_num *= 10; // calculate max possibilities
-
-    if (max_num>1) {
-        char  short_name[9];
+        int  max_num = max_nums[prefix_len];
+        char short_name[9];
         strcpy(short_name, prefix);
-        char *dig_pos = short_name+prefix_len;
 
-        for (int x = 0; x<max_num; ++x) {
-            sprintf(dig_pos, "%i", x);
+        char *dig_pos = short_name+prefix_len;
+        int   num     = next_try[prefix_len];
+        int   stop    = num ? num-1 : max_num;
+
+        while (num != stop) {
+            sprintf(dig_pos, "%i", num);
+            ++num;
             if (!existing.name_known(short_name))  {
                 result = strdup(short_name);
                 break;
             }
+            if (num == max_num && stop != max_num) num = 0;
         }
+        if (num == max_num) num = 0; 
+        next_try[prefix_len] = num;
     }
     return result;
 }
 
-char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data) {
+char *AWTC_makeUniqueShortName(const char *prefix, UniqueNameDetector& existingNames) {
     // generates a unique species name from prefix
     // (prefix will be fillup with zero digits and then shortened down to first char)
     // returns 0 if fails
@@ -470,22 +508,21 @@ char *AWTC_makeUniqueShortName(const char *prefix, GBDATA *gb_species_data) {
     p[len] = 0;
 
     char *result = 0;
-    UniqueNameDetector existing(gb_species_data);
 
     for (int l = len-1; l>0 && !result; --l) {
         p[l]   = 0;
-        result = makeUniqueShortName(p, existing);
+        result = makeUniqueShortName(p, existingNames);
     }
+
+    gb_assert(!result || strlen(result) <= 8);
 
     return result;
 }
 
-char *AWTC_generate_random_name(GBDATA *gb_species_data) {
+char *AWTC_generate_random_name(UniqueNameDetector& existingNames) {
     char *new_species_name = 0;
     char  short_name[9];
     int   count            = 10000;
-
-    UniqueNameDetector existing(gb_species_data);
 
     short_name[8] = 0;
     while (count--) {
@@ -496,7 +533,7 @@ char *AWTC_generate_random_name(GBDATA *gb_species_data) {
             short_name[x] = r<10 ? ('0'+r) : ('a'+r-10);
         }
 
-        if (!existing.name_known(short_name))  {
+        if (!existingNames.name_known(short_name))  {
             new_species_name = strdup(short_name);
             break;
         }
@@ -504,7 +541,7 @@ char *AWTC_generate_random_name(GBDATA *gb_species_data) {
 
     if (!new_species_name) {
         aw_message("Failed to generate a random name - retrying (this might hang forever)");
-        return AWTC_generate_random_name(gb_species_data);
+        return AWTC_generate_random_name(existingNames);
     }
 
     return new_species_name;
