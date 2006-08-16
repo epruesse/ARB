@@ -26,6 +26,7 @@
 #include "ed4_edit_string.hxx"
 #include "ed4_nds.hxx"
 #include "ed4_visualizeSAI.hxx"
+#include "ed4_ProteinViewer.hxx"
 
 #include "edit_naligner.hxx"
 
@@ -416,6 +417,10 @@ void ED4_create_all_awars(AW_root *root, const char *config_name) { // cursor aw
     root->awar_int(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE, 0);
 
     ED4_createVisualizeSAI_Awars(root,AW_ROOT_DEFAULT);
+
+    // Create Awars and terminals To Be Used In Protein Viewer
+    PV_CreateAwars(root,AW_ROOT_DEFAULT);
+    PV_CreateAllTerminals(root);
 }
 
 const char *ED4_propertyName(int mode) {
