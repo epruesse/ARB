@@ -31,14 +31,3 @@
 #include <awt_pro_a_nucs.hxx>
 #include <awt_translate.hxx>
 
-#define AWAR_PROTVIEW                                               "protView/"
-#define AWAR_PROTVIEW_FORWARD_TRANSLATION         AWAR_PROTVIEW "forward_translation" 
-#define AWAR_PROTVIEW_FORWARD_TRANSLATION_1      AWAR_PROTVIEW "forward_translation_1" 
-#define AWAR_PROTVIEW_FORWARD_TRANSLATION_2      AWAR_PROTVIEW "forward_translation_2" 
-#define AWAR_PROTVIEW_FORWARD_TRANSLATION_3      AWAR_PROTVIEW "forward_translation_3" 
-#define AWAR_PROTVIEW_REVERSE_TRANSLATION           AWAR_PROTVIEW "reverse_translation" 
-#define AWAR_PROTVIEW_REVERSE_TRANSLATION_1        AWAR_PROTVIEW "reverse_translation_1" 
-#define AWAR_PROTVIEW_REVERSE_TRANSLATION_2        AWAR_PROTVIEW "reverse_translation_2" 
-#define AWAR_PROTVIEW_REVERSE_TRANSLATION_3        AWAR_PROTVIEW "reverse_translation_3" 
-#define AWAR_PROTVIEW_DEFINED_FIELDS                      AWAR_PROTVIEW "defined_fields" 
-
