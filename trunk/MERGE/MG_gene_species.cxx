@@ -3,7 +3,7 @@
 //    File      : MG_gene_species.cxx                                    //
 //    Purpose   : Transfer fields from organism and gene when            //
 //                tranferring gene species                               //
-//    Time-stamp: <Tue Aug/17/2004 14:36 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Aug/17/2006 20:38 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2002             //
@@ -76,37 +76,31 @@ void MG_create_gene_species_awars(AW_root *aw_root, AW_default aw_def) {
 
 #define BUFSIZE 100
 
-// --------------------------------------------------------------------
-//      inline const char *field_awar_base(const char *field_name)
-// --------------------------------------------------------------------
-inline const char *field_awar_base(const char *field_name) {
-    static char buffer[BUFSIZE];
-#if defined(ASSERTION_USED)
-    int         printed =
-#endif // ASSERTION_USED
-        sprintf(buffer, AWAR_MERGE_GENE_SPECIES_BASE"def_%s/", field_name);
-    mg_assert(printed<BUFSIZE);
-
-    return buffer;
+inline char *strcpydest(char *dest, const char *src) {
+    // like strcpy, but returns pointer to zero terminator
+    int i = 0;
+    while (src[i]) {
+        dest[i] = src[i];
+        i++;
+    }
+    dest[i] = 0;
+    return dest+i;
 }
 
-// -------------------------------------------------------------------------------------
-//      inline const char *field_awar(const char *field_name, const char *subfield)
-// -------------------------------------------------------------------------------------
 inline const char *field_awar(const char *field_name, const char *subfield) {
-    static char buffer[BUFSIZE];
-#if defined(ASSERTION_USED)
-    int printed =
-#endif // ASSERTION_USED
-        sprintf(buffer, "%s%s", field_awar_base(field_name), subfield);
-    mg_assert(printed<BUFSIZE);
+    static char        buffer[BUFSIZE];
+    static const char *prefix    = AWAR_MERGE_GENE_SPECIES_BASE"def_";
+    static int         prefixlen = strlen(prefix);
+
+    char *end = strcpydest(strcpydest(buffer, AWAR_MERGE_GENE_SPECIES_BASE"def_"), field_name);
+    *end++ = '/';
+    end       = strcpydest(end, subfield);
+
+    mg_assert((end-buffer)<BUFSIZE);
 
     return buffer;
 }
 
-// ---------------------------------------------------------------------------------------
-//      inline const char *current_field_awar(AW_root *aw_root, const char *subfield)
-// ---------------------------------------------------------------------------------------
 inline const char *current_field_awar(AW_root *aw_root, const char *subfield) {
     static char *cur_field = 0;
 
@@ -127,12 +121,9 @@ static void create_awars_for_field(AW_root *aw_root, const char *cur_field) {
     aw_root->awar_int(field_awar(cur_field, "method"), 1, MG_props);
     aw_root->awar_string(field_awar(cur_field, "aci"), "", MG_props);
 }
-// -------------------------------------------------------------------------------------------------------------------------------------------
-//      static char *MG_create_field_content(GBDATA *gb_species, int method, const char *origins_field, const char *aci, GB_ERROR& error)
-// -------------------------------------------------------------------------------------------------------------------------------------------
-// does not write to database (only creates the content)
 
-static char *MG_create_field_content(GBDATA *gb_species, int method, const char *origins_field, const char *aci, GB_ERROR& error) {
+static char *MG_create_field_content(GBDATA *gb_species, int method, const char *origins_field, const char *aci, GB_ERROR& error, GB_HASH *organism_hash) {
+    // does not write to database (only creates the content)
     mg_assert(GEN_is_pseudo_gene_species(gb_species));
 
     char   *result    = 0;
@@ -140,10 +131,10 @@ static char *MG_create_field_content(GBDATA *gb_species, int method, const char 
 
     switch (method) {
         case MG_CREATE_COPY_ORGANISM:
-            gb_origin = GEN_find_origin_organism(gb_species);
+            gb_origin = GEN_find_origin_organism(gb_species, organism_hash);
             break;
         case MG_CREATE_COPY_GENE:
-            gb_origin = GEN_find_origin_gene(gb_species);
+            gb_origin = GEN_find_origin_gene(gb_species, organism_hash);
             break;
         case MG_CREATE_USING_ACI_ONLY:
             break;
@@ -193,16 +184,13 @@ static char *MG_create_field_content(GBDATA *gb_species, int method, const char 
     return result;
 }
 
-// -----------------------------------------------------------------------------------------
-//      GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest)
-// -----------------------------------------------------------------------------------------
-GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest) {
+GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, GB_HASH *error_suppressor, GB_HASH *source_organism_hash) {
     GB_ERROR error         = 0;
     int      export_fields = aw_root->awar(AWAR_MERGE_GENE_SPECIES_CREATE_FIELDS)->read_int();
 
     if (export_fields) { // should fields be exported ?
-        char *existing_definitions = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->read_string();
-        char *start                = existing_definitions+1;
+        char    *existing_definitions = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->read_string();
+        char    *start                = existing_definitions+1;
 
         mg_assert(existing_definitions[0] == ';');
 
@@ -222,7 +210,7 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest) 
                 char *source = aw_root->awar(field_awar(start, "source"))->read_string();
                 char *aci    = aw_root->awar(field_awar(start, "aci"))->read_string();
 
-                char *result = MG_create_field_content(gb_source, method, source, aci, error);
+                char *result = MG_create_field_content(gb_source, method, source, aci, error, source_organism_hash);
                 mg_assert(result || error);
                 if (result) {
                     GBDATA *gb_export = GB_search(gb_dest, start, GB_STRING);
@@ -231,10 +219,20 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest) 
                     free(result);
                 }
                 else {
-                    GBDATA     *gb_name = GB_find(gb_source, "name", 0, down_level);
-                    const char *name    = gb_name ? GB_read_char_pntr(gb_name) : "<unknown species>";
+                    long error_seen = GBS_read_hash(error_suppressor, error);
+#define MAX_EQUAL_WARNINGS 10
+                    if (error_seen >= MAX_EQUAL_WARNINGS) {
+                        if (error_seen == MAX_EQUAL_WARNINGS) {
+                            aw_message(GBS_global_string("More than %i warnings about '%s' (suppressing)", MAX_EQUAL_WARNINGS, error));
+                        }
+                    }
+                    else {
+                        GBDATA     *gb_name = GB_find(gb_source, "name", 0, down_level);
+                        const char *name    = gb_name ? GB_read_char_pntr(gb_name) : "<unknown species>";
 
-                    aw_message(GBS_global_string("'%s' when exporting %s (continuing)", error, name));
+                        aw_message(GBS_global_string("'%s' when exporting %s (continuing)", error, name));
+                    }
+                    GBS_incr_hash(error_suppressor, error);
                     error = 0;
                 }
 
@@ -251,15 +249,12 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest) 
     return 0;
 }
 
-// -------------------------------------------------------------------------------------------------------------
-//      static char *MG_create_current_field_content(AW_root *aw_root, GBDATA *gb_species, GB_ERROR& error)
-// -------------------------------------------------------------------------------------------------------------
 static char *MG_create_current_field_content(AW_root *aw_root, GBDATA *gb_species, GB_ERROR& error) {
     int   method        = aw_root->awar(AWAR_MERGE_GENE_SPECIES_METHOD)->read_int();
     char *origins_field = aw_root->awar(AWAR_MERGE_GENE_SPECIES_SOURCE)->read_string();
     char *aci           = aw_root->awar(AWAR_MERGE_GENE_SPECIES_ACI)->read_string();
 
-    char *result = MG_create_field_content(gb_species, method, origins_field, aci, error);
+    char *result = MG_create_field_content(gb_species, method, origins_field, aci, error, 0);
 
     free(aci);
     free(origins_field);
