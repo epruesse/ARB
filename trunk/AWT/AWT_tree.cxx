@@ -1828,21 +1828,21 @@ void AP_tree::justify_branch_lenghs(GBDATA *gb_main){
     ap_just_tree_rek(this);
 }
 
-static void relink_tree_rek(AP_tree *node, GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name)) {
+static void relink_tree_rek(AP_tree *node, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name, GB_HASH *organism_hash), GB_HASH *organism_hash) {
     if (node->is_leaf) {
-        relinker(node->gb_node, node->name);
+        relinker(node->gb_node, node->name, organism_hash);
     }
     else {
-        relink_tree_rek(node->leftson, gb_main, relinker);
-        relink_tree_rek(node->rightson, gb_main, relinker);
+        relink_tree_rek(node->leftson, relinker, organism_hash);
+        relink_tree_rek(node->rightson, relinker, organism_hash);
     }
 }
 
-void AP_tree::relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name)) {
+void AP_tree::relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name, GB_HASH *organism_hash), GB_HASH *organism_hash) {
     // relinks the tree using a relinker-function
     // every node in tree is passed to relinker, relinker might modify
     // these values (ref_gb_node and ref_name) and the modified values are written back into tree
 
-    GB_transaction dummy(gb_main);
-    relink_tree_rek(this, gb_main, relinker);
+    GB_transaction  dummy(gb_main);
+    relink_tree_rek(this, relinker, organism_hash);
 }

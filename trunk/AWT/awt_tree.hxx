@@ -405,7 +405,7 @@ public:
     void     mark_duplicates(GBDATA *gb_main);
     void     mark_long_branches(GBDATA *gb_main,double diff);
     void     justify_branch_lenghs(GBDATA *gb_main);
-    void     relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name));
+    void     relink_tree(GBDATA *gb_main, void (*relinker)(GBDATA *&ref_gb_node, char *&ref_name, GB_HASH *organism_hash), GB_HASH *organism_hash);
 };
 
 long AP_timer(void);
