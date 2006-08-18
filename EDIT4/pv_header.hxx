@@ -31,3 +31,6 @@
 #include <awt_pro_a_nucs.hxx>
 #include <awt_translate.hxx>
 
+#define START_POS_1  0
+#define START_POS_2  1
+#define START_POS_3  2

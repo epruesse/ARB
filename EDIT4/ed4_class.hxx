@@ -53,6 +53,7 @@ class ED4_root_group_manager;
 class ED4_sequence_info_terminal;
 class ED4_sequence_manager;
 class ED4_sequence_terminal;
+class ED4_AA_sequence_terminal;
 class ED4_spacer_terminal;
 class ED4_species_manager;
 class ED4_species_name_terminal;
@@ -840,6 +841,7 @@ public:
     int is_species_name_terminal()  const { return !this || spec->level & ED4_L_SPECIES_NAME; }
     int is_sequence_info_terminal() const { return !this || spec->level & ED4_L_SEQUENCE_INFO; }
     int is_sequence_terminal()      const { return !this || spec->level & ED4_L_SEQUENCE_STRING; }
+    int is_aa_sequence_terminal()      const { return !this || spec->level & ED4_L_AA_SEQUENCE_STRING; }//ykadi
     int is_pure_text_terminal()     const { return !this || spec->level & ED4_L_PURE_TEXT; }
     int is_columnStat_terminal()    const { return !this || spec->level & ED4_L_COL_STAT; }
 
@@ -870,6 +872,7 @@ public:
     ED4_species_name_terminal   *to_species_name_terminal() const   { e4_assert(is_species_name_terminal()); return (ED4_species_name_terminal *)this; }
     ED4_sequence_info_terminal  *to_sequence_info_terminal() const  { e4_assert(is_sequence_info_terminal()); return (ED4_sequence_info_terminal*)this; }
     ED4_sequence_terminal       *to_sequence_terminal() const       { e4_assert(is_sequence_terminal());    return (ED4_sequence_terminal*)this; }
+    ED4_AA_sequence_terminal  *to_aa_sequence_terminal() const       { e4_assert(is_aa_sequence_terminal());    return (ED4_AA_sequence_terminal*)this; } //ykadi
     ED4_pure_text_terminal      *to_pure_text_terminal() const      { e4_assert(is_pure_text_terminal());   return (ED4_pure_text_terminal*)this; }
     ED4_columnStat_terminal     *to_columnStat_terminal() const     { e4_assert(is_columnStat_terminal());  return (ED4_columnStat_terminal*)this; }
 
@@ -1614,6 +1617,8 @@ public:
     ED4_sequence_terminal_basic( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
     virtual ~ED4_sequence_terminal_basic();
 
+    virtual GB_alignment_type GetAliType() = 0;
+
     char    *species_name; 
     ED4_species_name_terminal *corresponding_species_name_terminal() const {
         return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
@@ -1634,8 +1639,13 @@ class ED4_AA_sequence_terminal: public ED4_sequence_terminal_basic
 public:
     ED4_AA_sequence_terminal( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
     virtual ~ED4_AA_sequence_terminal();
-    bool isAA;
-    //    virtual void GetSeqType(isAA=true;);
+
+    GBDATA *aaSequence;
+    static int aaSeqFlag;
+
+    virtual GB_alignment_type GetAliType();
+    static void SET_aaSeqFlag (int flag) {aaSeqFlag = flag;}
+    static int GET_aaSeqFlag (){return aaSeqFlag;}
 };
 
 // --------------------------------------------------------------------------------
@@ -1654,6 +1664,8 @@ public:
 
     ED4_sequence_terminal( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
     virtual ~ED4_sequence_terminal();
+
+    virtual GB_alignment_type GetAliType();
 
     virtual void deleted_from_database();
 

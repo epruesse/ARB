@@ -418,9 +418,8 @@ void ED4_create_all_awars(AW_root *root, const char *config_name) { // cursor aw
 
     ED4_createVisualizeSAI_Awars(root,AW_ROOT_DEFAULT);
 
-    // Create Awars and terminals To Be Used In Protein Viewer
+    // Create Awars To Be Used In Protein Viewer
     PV_CreateAwars(root,AW_ROOT_DEFAULT);
-    PV_CreateAllTerminals(root);
 }
 
 const char *ED4_propertyName(int mode) {
@@ -611,6 +610,9 @@ int main(int argc,char **argv)
             char *as_top = ED4_ROOT->database->make_top_bot_string();
 
             ED4_ROOT->create_hierarchy(as_mid, as_top);
+
+            // Create Addistional sequence (aminoacid) terminals to be used in Protein Viewwer
+            PV_CallBackFunction(ED4_ROOT->aw_root);
 
             delete as_mid;
             delete as_top;
