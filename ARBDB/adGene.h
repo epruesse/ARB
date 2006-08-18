@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.h                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Wed Aug/09/2006 17:35 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Thu Aug/17/2006 13:03 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -57,18 +57,22 @@ extern "C" {
 
     const char *GEN_origin_organism(GBDATA *gb_pseudo);
     const char *GEN_origin_gene(GBDATA *gb_pseudo);
-    GBDATA     *GEN_find_origin_organism(GBDATA *gb_pseudo);
-    GBDATA     *GEN_find_origin_gene(GBDATA *gb_pseudo);
 
+    GBDATA  *GEN_find_origin_organism(GBDATA *gb_pseudo, GB_HASH *organism_hash);
+    GBDATA  *GEN_find_origin_gene(GBDATA *gb_pseudo, GB_HASH *organism_hash);
     GBDATA  *GEN_find_pseudo_species(GBDATA *gb_main, const char *organism_name, const char *gene_name, GB_HASH *pseudo_hash);
-    /* Note : GEN_find_pseudo_species is very complex when used w/o pseudo_hash.
+
+    /* Note : GEN_find_pseudo_species is quite complex when used w/o pseudo_hash.
        The following functions shall be used to maintain a hash of pseudo species: */
     GB_HASH *GEN_create_pseudo_species_hash(GBDATA *gb_main, int additionalSize);
     void     GEN_add_pseudo_species_to_hash(GBDATA *gb_pseudo, GB_HASH *pseudo_hash);
     GBDATA  *GEN_read_pseudo_species_from_hash(GB_HASH *pseudo_hash, const char *organism_name, const char *gene_name);
 
-    GB_ERROR GEN_organism_not_found(GBDATA *gb_pseudo);
+    /* same for organism hash (use with GEN_find_origin_organism/gene) */
+    GB_HASH *GEN_create_organism_hash(GBDATA *gb_main);
+    void     GEN_add_organism_to_hash(GBDATA *gb_organism, GB_HASH *organism_hash);
 
+    GB_ERROR GEN_organism_not_found(GBDATA *gb_pseudo);
 
     GBDATA *GEN_find_pseudo(GBDATA *gb_organism, GBDATA *gb_gene);
 
