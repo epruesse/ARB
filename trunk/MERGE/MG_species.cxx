@@ -443,9 +443,7 @@ GB_ERROR MG_transfer_sequence(MG_remaps *remaps, GBDATA *source_species, GBDATA 
 
 
 
-void MG_transfer_selected_species(AW_window *aww)
-{
-
+void MG_transfer_selected_species(AW_window *aww) {
     if (MG_check_alignment(aww,1)) return;
     aw_openstatus("Transferring selected species");
     GB_ERROR error = 0;
@@ -472,7 +470,7 @@ void MG_transfer_selected_species(AW_window *aww)
     }
     if (!error) {
         error = GB_copy(gb_species2,gb_species1);
-        if (!error) error = MG_export_fields(aww->get_root(), gb_species1, gb_species2);
+        if (!error) error = MG_export_fields(aww->get_root(), gb_species1, gb_species2, 0, 0);
         GB_write_flag(gb_species2,1);
     }
     if (!error) {       // align sequence !!!!!!!!!
@@ -504,29 +502,48 @@ void MG_transfer_species_list(AW_window *aww)
     GB_begin_transaction(gb_merge);
     GB_begin_transaction(gb_dest);
 
-    GBDATA *gb_species_data2 = GB_search(gb_dest,"species_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_dest_species_data = GB_search(gb_dest,"species_data",GB_CREATE_CONTAINER);
 
     bool is_genome_db = GEN_is_genome_db(gb_merge, -1);
 
+    GB_HASH   *error_suppressor     = GBS_create_hash(50, 1);
+    GB_HASH   *source_organism_hash = GEN_create_organism_hash(gb_merge);
+    GB_HASH   *dest_organism_hash   = GEN_create_organism_hash(gb_dest);
+    MG_remaps  rm(gb_merge,gb_dest,aww->get_root());
+
     GBDATA *gb_species1;
-    GBDATA *gb_species2;
-    GBDATA *gb_name1;
-    MG_remaps rm(gb_merge,gb_dest,aww->get_root());
+    int     queried = 0;
+    int     count   = 0;
+
+    for (gb_species1 = GBT_first_species(gb_merge); gb_species1; gb_species1 = GBT_next_species(gb_species1)) {
+        if (IS_QUERIED(gb_species1)) queried++;
+    }
+    
     for (gb_species1 = GBT_first_species(gb_merge); gb_species1; gb_species1 = GBT_next_species(gb_species1)) {
         if (IS_QUERIED(gb_species1)) {
-            gb_name1 = GB_find(gb_species1,"name",0,down_level);
-            if (!gb_name1) continue;    // no name what happend ???
-            gb_species2 = GB_find(gb_species_data2,"name", GB_read_char_pntr(gb_name1),down_2_level);
+            GBDATA *gb_name1 = GB_find(gb_species1,"name",0,down_level);
+            gb_assert(gb_name1);
+            if (!gb_name1) continue;    // no name what happened ???
 
-            if (gb_species2) error = GB_delete(GB_get_father(gb_species2));
-            if (!error) gb_species2 = GB_create_container(gb_species_data2,"species");
-            if (!error) error = GB_copy(gb_species2,gb_species1);
-            if (!error && is_genome_db) error = MG_export_fields(aww->get_root(), gb_species1, gb_species2);
-            if (!error) error = MG_transfer_sequence(&rm,gb_species1,gb_species2);
+            const char *name        = GB_read_char_pntr(gb_name1);
+            GBDATA     *gb_species2 = (GBDATA*)GBS_read_hash(dest_organism_hash, name);
+            if (gb_species2) error  = GB_delete(GB_get_father(gb_species2));
+
+            if (!error) gb_species2           = GB_create_container(gb_dest_species_data,"species");
+            if (!error) error                 = GB_copy(gb_species2,gb_species1);
+            if (!error && is_genome_db) error = MG_export_fields(aww->get_root(), gb_species1, gb_species2, error_suppressor, source_organism_hash);
+            if (!error) error                 = MG_transfer_sequence(&rm,gb_species1,gb_species2);
             if (error) break;
             GB_write_flag(gb_species2,1);
+            GBS_write_hash(dest_organism_hash, name, (long)gb_species2);
+            aw_status(++count/double(queried));
         }
     }
+
+    GBS_free_hash(dest_organism_hash);
+    GBS_free_hash(source_organism_hash);
+    GBS_free_hash(error_suppressor);
+    
     if (error) {
         GB_abort_transaction(gb_merge);
         GB_abort_transaction(gb_dest);
@@ -560,7 +577,7 @@ void MG_transfer_fields_cb(AW_window *aww){
     GB_begin_transaction(gb_merge);
     GB_begin_transaction(gb_dest);
 
-    GBDATA *gb_species_data2 = GB_search(gb_dest,"species_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_dest_species_data = GB_search(gb_dest,"species_data",GB_CREATE_CONTAINER);
 
     GBDATA *gb_species1;
     GBDATA *gb_species2;
@@ -583,10 +600,10 @@ void MG_transfer_fields_cb(AW_window *aww){
         if (IS_QUERIED(gb_species1)) {
             gb_name1 = GB_find(gb_species1,"name",0,down_level);
             if (!gb_name1) continue;    // no name what happend ???
-            gb_species2 = GB_find(gb_species_data2,"name", GB_read_char_pntr(gb_name1),down_2_level);
+            gb_species2 = GB_find(gb_dest_species_data,"name", GB_read_char_pntr(gb_name1),down_2_level);
 
             if (!gb_species2) {
-                gb_species2 = GB_create_container(gb_species_data2,"species");
+                gb_species2 = GB_create_container(gb_dest_species_data,"species");
                 if (!gb_species2) {
                     error = GB_get_error();
                     break;
@@ -827,7 +844,7 @@ void MG_merge_tagged_field_cb(AW_window *aww){
     char *tag_del1= awr->awar(AWAR_TAG_DEL1)->read_string();
 
 
-    GBDATA *gb_species_data2 = GB_search(gb_dest,"species_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_dest_species_data = GB_search(gb_dest,"species_data",GB_CREATE_CONTAINER);
 
     GBDATA *gb_species1;
     GBDATA *gb_species2;
@@ -845,7 +862,7 @@ void MG_merge_tagged_field_cb(AW_window *aww){
             if (!gb_name1) continue;    // no name what happend ???
             delete name;
             name = GB_read_string(gb_name1);
-            gb_species2 = GBT_create_species_rel_species_data(gb_species_data2,name);
+            gb_species2 = GBT_create_species_rel_species_data(gb_dest_species_data,name);
 
             if (!gb_species2) {
                 error = GB_get_error();
