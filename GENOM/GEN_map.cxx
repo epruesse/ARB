@@ -1307,17 +1307,20 @@ static void mark_gene_species_using_current_alignment(AW_window */*aww*/, AW_CL 
     }
 }
 static void mark_genes_of_marked_gene_species(AW_window */*aww*/, AW_CL, AW_CL) {
-    GB_transaction dummy(gb_main);
+    GB_transaction  dummy(gb_main);
+    GB_HASH        *organism_hash = GEN_create_organism_hash(gb_main);
 
     for (GBDATA *gb_pseudo = GEN_first_pseudo_species(gb_main);
          gb_pseudo;
          gb_pseudo = GEN_next_pseudo_species(gb_pseudo))
     {
         if (GB_read_flag(gb_pseudo)) {
-            GBDATA *gb_gene = GEN_find_origin_gene(gb_pseudo);
+            GBDATA *gb_gene = GEN_find_origin_gene(gb_pseudo, organism_hash);
             GB_write_flag(gb_gene, 1); // mark gene
         }
     }
+    
+    GBS_free_hash(organism_hash);
 }
 
 AW_window *create_gene_extract_window(AW_root *root, AW_CL cl_pmode)
