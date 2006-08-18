@@ -424,11 +424,11 @@ static GB_ERROR gbl_origin(GBL_command_arguments *args)
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
 
     if (strcmp(args->command, "origin_organism") == 0) {
-        gb_origin = GEN_find_origin_organism(args->gb_ref);
+        gb_origin = GEN_find_origin_organism(args->gb_ref, 0);
     }
     else {
         ad_assert(strcmp(args->command, "origin_gene") == 0);
-        gb_origin = GEN_find_origin_gene(args->gb_ref);
+        gb_origin = GEN_find_origin_gene(args->gb_ref, 0);
     }
 
     {
