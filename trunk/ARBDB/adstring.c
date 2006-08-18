@@ -641,8 +641,8 @@ long GBS_string_cmp(const char *str,const char *search,long upper_case)
      /* *   Wildcard in search string */
      /* ?   any Charakter   */
      /* if uppercase    change all letters to uppercase */
-     /* returns 0 if strings are equal -1 or +1 if left strings is
-        less/greater than right string */
+     /* returns 0 if strings are equal
+        -int/+int if left string is less/greater than right string */
 {
     register const char *p1,*p2;
     register char a,b,*d;
@@ -652,12 +652,13 @@ long GBS_string_cmp(const char *str,const char *search,long upper_case)
     p1 = str;
     p2 = search;
     while (1) {
-        a = *p1;b=*p2;
+        a = *p1;
+        b = *p2;
         if (b == '*')   {
             if (!p2[1]) break; /* -> return 0; */
             i = 0;
             d = fsbuf;
-            for (p2++;(b=*p2)&&(b!='*');){
+            for (p2++; (b=*p2)&&(b!='*'); ) {
                 *(d++) = b;
                 p2++;
                 i++;
@@ -667,21 +668,30 @@ long GBS_string_cmp(const char *str,const char *search,long upper_case)
                 p1 += strlen(p1)-i;     /* check the end of the string */
                 if (p1 < str) return -1;    /* neither less or greater */
                 p2 -= i;
-            }else{
+            }
+            else {
                 *d=0;
                 p1 = GBS_find_string(p1,fsbuf,upper_case+2);
                 if (!p1) return -1;
                 p1 += i;
             }
             continue;
-        }else{
-            if (!a) return b;
-            if (!b) return a;
-            if (b != '?')   {
-                if (upper_case) {
-                    if (toupper(a) !=toupper(b) ) return 1;
-                }else{
-                    if (a!=b) return 1;
+        }
+        else {
+            if (!a) return -b;  /* return 0 or -int */
+            if (a != b) {
+                if (b != '?') {
+                    if (!b) return a; /* return +int */
+                    if (upper_case) {
+                        a = toupper(a);
+                        b = toupper(b);
+                        if (a != b) {
+                            return a-b; /* return -int if a<b, +int otherwise */
+                        }
+                    }
+                    else {
+                        return a-b; /* return -int if a<b, +int otherwise */
+                    }
                 }
             }
         }
