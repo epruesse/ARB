@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : merge.hxx                                              //
 //    Purpose   : Local header for usage inside directory MERGE          //
-//    Time-stamp: <Fri Jul/25/2003 10:00 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Aug/17/2006 13:10 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Copyright Department of Microbiology (Technical University Munich)   //
@@ -40,7 +40,7 @@ int MG_check_alignment(AW_window *aww, int fast = 0);
 
 void       MG_create_gene_species_awars(AW_root *aw_root, AW_default aw_def);
 AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root);
-GB_ERROR   MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest); // export defined fields
+GB_ERROR   MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, GB_HASH *error_suppressor, GB_HASH *source_organism_hash); // export defined fields
 
 #define AWAR_REMAP_SPECIES_LIST "merge/remap_species_list"
 #define AWAR_REMAP_ENABLE       "merge/remap_enable"
