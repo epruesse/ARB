@@ -75,54 +75,77 @@ GBDATA *GB_find_sub_by_quark(GBDATA *father, int key_quark, const char *val, GBD
     header = GB_DATA_LIST_HEADER(gbf->d);
     if (after) index = (int)after->index+1; else index = 0;
 
-    for (   ; index < end; index++) {
-        if ( (key_quark<0 && ((int)header[index].flags.key_quark != 0)) || ((int)header[index].flags.key_quark  == key_quark) )
-        {
-            if ( (int)header[index].flags.changed >= gb_deleted) continue;
-            if (!(gb=GB_HEADER_LIST_GBD(header[index])))
-            {
-                gb_unfold( gbf, 0, index);
-                header = GB_DATA_LIST_HEADER(gbf->d);
-                gb = GB_HEADER_LIST_GBD(header[index]);
-                if (!gb){
-                    const char *err = GBS_global_string("Database entry #%u is missing (in '%s')", index, GB_get_GBDATA_path(father));
-                    GB_internal_error(err);
-                    /*                  GB_internal_error("Database entry is missing"); */
-                    continue;
+    if (key_quark<0) { /* unspecific key quark */
+        gb_assert(!val);        /* search for val not possible! */
+        if (!val) {
+            for ( ; index < end; index++) {
+                if ((int)header[index].flags.key_quark != 0) {
+                    if ( (int)header[index].flags.changed >= gb_deleted) continue;
+                    if (!(gb=GB_HEADER_LIST_GBD(header[index]))) {
+                        gb_unfold( gbf, 0, index);
+                        header = GB_DATA_LIST_HEADER(gbf->d);
+                        gb     = GB_HEADER_LIST_GBD(header[index]);
+                        if (!gb) {
+                            const char *err = GBS_global_string("Database entry #%u is missing (in '%s')", index, GB_get_GBDATA_path(father));
+                            GB_internal_error(err);
+                            continue;
+                        }
+                    }
+                    return gb;
                 }
             }
-            if (val){
-                if (!gb){
-                    GB_internal_error("Cannot unfold data");
-                    continue;
-                }
-
-                switch (GB_TYPE(gb)) {
-                    case GB_STRING:
-                    case GB_LINK:
-                        if (GBS_string_cmp(GB_read_char_pntr(gb), val, 1)) continue;
-                        break;
-                    case GB_INT: {
-                        int i = GB_read_int(gb);
-                        if (i != *(int*)val) continue;
-                        break;
-                    }
-                    case GB_FLOAT: {
-                        double d = GB_read_float(gb);
-                        if (d != *(double*)val) continue;
-                        break;
-                    }
-                    default: {
-                        const char *err = GBS_global_string("Value search not supported for data type %i", GB_TYPE(gb));
+        }
+    }
+    else { /* specific key quark */
+        for ( ; index < end; index++) {
+            if ( (key_quark == (int)header[index].flags.key_quark))
+                /* if ( (key_quark<0 && ((int)header[index].flags.key_quark != 0)) || ((int)header[index].flags.key_quark  == key_quark) ) */
+            {
+                if ( (int)header[index].flags.changed >= gb_deleted) continue;
+                if (!(gb=GB_HEADER_LIST_GBD(header[index])))
+                {
+                    gb_unfold( gbf, 0, index);
+                    header = GB_DATA_LIST_HEADER(gbf->d);
+                    gb = GB_HEADER_LIST_GBD(header[index]);
+                    if (!gb){
+                        const char *err = GBS_global_string("Database entry #%u is missing (in '%s')", index, GB_get_GBDATA_path(father));
                         GB_internal_error(err);
                         continue;
                     }
                 }
+                if (val){
+                    if (!gb){
+                        GB_internal_error("Cannot unfold data");
+                        continue;
+                    }
 
-                /* if (GB_TYPE(gb) != GB_STRING && GB_TYPE(gb) != GB_LINK) continue; */
-                /* if (GBS_string_cmp(GB_read_char_pntr(gb), val, 1)) continue; */
+                    switch (GB_TYPE(gb)) {
+                        case GB_STRING:
+                        case GB_LINK:
+                            if (GBS_string_cmp(GB_read_char_pntr(gb), val, 1)) continue;
+                            break;
+                        case GB_INT: {
+                            int i = GB_read_int(gb);
+                            if (i != *(int*)val) continue;
+                            break;
+                        }
+                        case GB_FLOAT: {
+                            double d = GB_read_float(gb);
+                            if (d != *(double*)val) continue;
+                            break;
+                        }
+                        default: {
+                            const char *err = GBS_global_string("Value search not supported for data type %i", GB_TYPE(gb));
+                            GB_internal_error(err);
+                            continue;
+                        }
+                    }
+
+                    /* if (GB_TYPE(gb) != GB_STRING && GB_TYPE(gb) != GB_LINK) continue; */
+                    /* if (GBS_string_cmp(GB_read_char_pntr(gb), val, 1)) continue; */
+                }
+                return gb;
             }
-            return gb;
         }
     }
     return 0;
@@ -134,7 +157,6 @@ GBDATA *GB_find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_key_qu
     register GBCONTAINER *gbf = (GBCONTAINER*)father;
     GBDATA *gb;
     GBDATA *res;
-    GBQUARK key_quark;
     struct gb_index_files_struct *ifs=0;
     GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gbf);
 
@@ -142,7 +164,6 @@ GBDATA *GB_find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_key_qu
     header = GB_DATA_LIST_HEADER(gbf->d);
 
     if (after) index = (int)after->index+1; else index = 0;
-    key_quark = -1;
 
     /******* look for any hash index tables *********/
     /******* no wildcards allowed       ********/
@@ -156,24 +177,18 @@ GBDATA *GB_find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_key_qu
             }
         }
         if (gbf->d.size > GB_MAX_LOCAL_SEARCH && val) {
-            if (after) {
-                res = GBCMC_find(after,key,val,
-                                 (enum gb_search_types)(down_level|search_next));
-            }else{
-                res = GBCMC_find(father,key,val,down_2_level);
-            }
+            if (after) res = GBCMC_find(after,  key, val, (enum gb_search_types)(down_level|search_next));
+            else       res = GBCMC_find(father, key, val, down_2_level);
             return res;
         }
     }
-    if (    val &&
-            (ifs=GBCONTAINER_IFS(gbf))!=NULL &&
-            (!strchr(val, '*')) &&
-            (!strchr(val, '?')))
+    if (val &&
+        (ifs=GBCONTAINER_IFS(gbf))!=NULL &&
+        (!strchr(val, '*')) &&
+        (!strchr(val, '?')))
     {
-        for (; ifs; ifs = GB_INDEX_FILES_NEXT(ifs))
-        {
-            if (ifs->key != sub_key_quark)
-                continue;
+        for (; ifs; ifs = GB_INDEX_FILES_NEXT(ifs)) {
+            if (ifs->key != sub_key_quark) continue;
             /****** We found the index table ******/
             res = gb_index_find(gbf, ifs, sub_key_quark, val, index);
             return res;
@@ -183,34 +198,23 @@ GBDATA *GB_find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_key_qu
     if (after)  gb = after;
     else        gb = NULL;
 
-    for (   ; index < end; index++)
-    {
-        if ( key_quark<0 || (int)header[index].flags.key_quark == key_quark )
-        {
-            GBDATA *gbn = GB_HEADER_LIST_GBD(header[index]);
+    for ( ; index < end; index++) {
+        GBDATA *gbn = GB_HEADER_LIST_GBD(header[index]);
 
-            if ( (int)header[index].flags.changed >= gb_deleted) continue;
-            if (!gbn)
-            {
-                if (!Main->local_mode)
-                {
-                    if (gb)
-                    {
-                        res = GBCMC_find(gb,key,val,
-                                         (enum gb_search_types)(down_level|search_next));
-                    }else{
-                        res = GBCMC_find(father,key,val,down_2_level);
-                    }
-                    return res;
-                }
-                GB_internal_error("Empty item in server");
-                continue;
+        if ( (int)header[index].flags.changed >= gb_deleted) continue;
+        if (!gbn) {
+            if (!Main->local_mode) {
+                if (gb) res = GBCMC_find(gb,     key, val, (enum gb_search_types)(down_level|search_next));
+                else    res = GBCMC_find(father, key, val, down_2_level);
+                return res;
             }
-            gb = gbn;
-            if (GB_TYPE(gb) != GB_DB) continue;
-            res = GB_find_sub_by_quark(gb,sub_key_quark,val,0);
-            if (res) return res;
+            GB_internal_error("Empty item in server");
+            continue;
         }
+        gb = gbn;
+        if (GB_TYPE(gb) != GB_DB) continue;
+        res = GB_find_sub_by_quark(gb,sub_key_quark,val,0);
+        if (res) return res;
     }
     return 0;
 }
@@ -232,11 +236,11 @@ GBDATA *GB_find(GBDATA *gbd,const char *key,const char *str,long /*enum gb_searc
     printf("GB_find(%p, '%s', '%s', %li)\n", gbd, key, str, gbs);
 #endif /* DEVEL_RALF */
 
+    if ( gbd == NULL ) return NULL;
+
     ad_assert(GB_FATHER(gbd));     /* otherwise your GBDATA has been deleted !? */
 
     /*fprintf(stderr, "GB_find(%p, %s, %s, %li)\n", gbd, key, str, gbs); */
-
-    if ( gbd == NULL ) return NULL;
 
     if (gbs & this_level) {
         gbs &= ~this_level;
