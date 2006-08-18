@@ -94,7 +94,7 @@ extern "C" GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_speci
     GB_ERROR error = 0;
 
     if (GEN_is_pseudo_gene_species(gb_species)) {
-        GBDATA *gb_organism = GEN_find_origin_organism(gb_species);
+        GBDATA *gb_organism = GEN_find_origin_organism(gb_species, 0);
         if (gb_organism) {
             GB_write_flag(gb_organism, 1);
         }
