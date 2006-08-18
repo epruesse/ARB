@@ -731,10 +731,10 @@ void NT_fix_database(AW_window *) {
     if (err) aw_message(err);
 }
 
-static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_name) {
+static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_name, GB_HASH *organism_hash) {
     if (ref_gb_node) {
         if (GEN_is_pseudo_gene_species(ref_gb_node)) {
-            GBDATA *gb_organism = GEN_find_origin_organism(ref_gb_node);
+            GBDATA *gb_organism = GEN_find_origin_organism(ref_gb_node, organism_hash);
             if (gb_organism) {
                 GBDATA *gb_name = GB_find(gb_organism, "name", 0, down_level);
                 if (gb_name) {
@@ -752,10 +752,12 @@ void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl){
     GB_transaction  dummy(gb_main);
     AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
     if (AWT_TREE(ntw)->tree_root){
-        AWT_TREE(ntw)->tree_root->relink_tree(ntw->gb_main, relink_pseudo_species_to_organisms);
+        GB_HASH *organism_hash = GEN_create_organism_hash(gb_main);
+        AWT_TREE(ntw)->tree_root->relink_tree(ntw->gb_main, relink_pseudo_species_to_organisms, organism_hash);
         AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
         AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
         ntw->refresh();
+        GBS_free_hash(organism_hash);
     }
 }
 
