@@ -210,6 +210,7 @@ void ED4_text_terminal::deleted_from_database()
         e4_assert(0); // not prepated for that situation
     }
 }
+
 void ED4_sequence_terminal::deleted_from_database()
 {
 #if defined(DEBUG)

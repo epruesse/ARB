@@ -179,6 +179,7 @@ typedef enum
     ED4_L_SPECIES_NAME      = 0x100,
     ED4_L_SEQUENCE_INFO     = 0x200,                //evtl. aendern fuer Name-Manager und group-manager
     ED4_L_SEQUENCE_STRING   = 0x400,
+    ED4_L_AA_SEQUENCE_STRING   = 0x600, //ykadi
     ED4_L_SPACER        = 0x800,
     ED4_L_LINE          = 0x1000,
     ED4_L_MULTI_NAME        = 0x2000,
@@ -291,6 +292,16 @@ typedef enum
     ED4_A_CONTAINER
 }   ED4_alignment;
 
+typedef enum
+{
+    ED4_AA_FRWD_1,
+    ED4_AA_FRWD_2,
+    ED4_AA_FRWD_3,
+    ED4_AA_RVRS_1,
+    ED4_AA_RVRS_2,
+    ED4_AA_RVRS_3,
+    ED4_AA_DB_FIELD
+}  ED4_aa_seq_flag;
 
 typedef enum
 {

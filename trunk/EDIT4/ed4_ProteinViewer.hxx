@@ -17,7 +17,7 @@
 void  PV_CreateAwars(AW_root *root, AW_default aw_def);
 
 // Create All Terminals 
-void PV_CreateAllTerminals(AW_root *root);
+void PV_CallBackFunction(AW_root *root);
  
 // Create ProteinViewer window
 AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root); 

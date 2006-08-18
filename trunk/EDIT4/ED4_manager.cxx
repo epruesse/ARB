@@ -93,7 +93,7 @@ ED4_object_specification sequence_manager_spec =
 	(ED4_properties) ( ED4_P_IS_MANAGER | ED4_P_VERTICAL ),	  // static props
 	ED4_L_SEQUENCE,                                           // level
 	(ED4_level) ( ED4_L_SEQUENCE_INFO |
-                  ED4_L_SEQUENCE_STRING ),			  // allowed children level
+                  ED4_L_SEQUENCE_STRING | ED4_L_AA_SEQUENCE_STRING),			  // allowed children level
 	ED4_L_NO_LEVEL,                                           // handled object
 	ED4_L_SPECIES,                                            // restriction level
 	0                                                         // justification value (0 means top-aligned)
