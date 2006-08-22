@@ -10,15 +10,31 @@
 #include "ed4_ProteinViewer.hxx"
 
 using namespace std;
+// Definitions used
+#define BUFFERSIZE            1000
+#define FORWARD_STRAND        3
+#define COMPLEMENTARY_STRAND  3
+#define DB_FIELD_STRAND       1
 
+// Global Variables
+extern GBDATA *gb_main;
+static bool gTerminalsCreated = false;
+static int PV_AA_Terminals4Species = 0;
+AW_root *gRoot = 0;
+
+// Functions 
+void PV_AddCallBacks(AW_root *awr);
+void PV_CreateAwars(AW_root *root, AW_default aw_def);
+bool PV_LookForNewTerminals(AW_root *root);
 void PV_CallBackFunction(AW_root *root);
+//void PV_AA_SequenceUpdate_CB(AW_root *root);
+void PV_AA_SequenceUpdate_CB(GBDATA *gb_species_data, int */*cl*/, GB_CB_TYPE gbtype);
 void PV_CreateAllTerminals(AW_root *root);
 void PV_ManageTerminals(AW_root *root);
-
-extern GBDATA *gb_main;
-static bool hide = false;
-static bool gTerminalsCreated = false;
-#define BUFFERSIZE 1000
+void PV_HideTerminal(ED4_AA_sequence_terminal *aaSeqTerminal);
+void PV_UnHideTerminal(ED4_AA_sequence_terminal *aaSeqTerminal);
+GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int startPos4Translation, bool complementaryStrand);
+AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root);
 
 // --------------------------------------------------------------------------------
 //        Binding callback function to the AWARS
@@ -36,12 +52,21 @@ void PV_AddCallBacks(AW_root *awr) {
     awr->awar(AWAR_PROTVIEW_REVERSE_TRANSLATION_3)->add_callback(PV_CallBackFunction);
 
     awr->awar(AWAR_PROTVIEW_DEFINED_FIELDS)->add_callback(PV_CallBackFunction);
+    
+    {
+        GB_transaction dummy(gb_main);
+        GBDATA *spContainer = GB_search(gb_main, "species_data", GB_FIND);
+        // callback if sequence alignment changes
+        GB_add_callback(spContainer, (GB_CB_TYPE)GB_CB_CHANGED, (GB_CB)PV_AA_SequenceUpdate_CB, 0); 
+    }
+    
+    //    awr->awar(SPECIES_NAME)->add_callback(PV_AA_SequenceUpdate_CB);
 }
 
 // --------------------------------------------------------------------------------
 //        Creating AWARS to be used by the PROTVIEW module
 // --------------------------------------------------------------------------------
-void  PV_CreateAwars(AW_root *root, AW_default aw_def){
+void PV_CreateAwars(AW_root *root, AW_default aw_def){
 
     root->awar_int(AWAR_PROTVIEW_FORWARD_TRANSLATION, 0, aw_def); 
     root->awar_int(AWAR_PROTVIEW_FORWARD_TRANSLATION_1, 0, aw_def); 
@@ -56,7 +81,7 @@ void  PV_CreateAwars(AW_root *root, AW_default aw_def){
     root->awar_int(AWAR_PROTVIEW_DEFINED_FIELDS, 0, aw_def); 
 }
 
-bool LookForNewTerminals(AW_root *root){
+bool PV_LookForNewTerminals(AW_root *root){
     bool bTerminalsFound = true;
 
     int frwdTrans  = root->awar(AWAR_PROTVIEW_FORWARD_TRANSLATION)->read_int();
@@ -114,13 +139,12 @@ void PV_ManageTerminals(AW_root *root){
     int frwdTrans1 = root->awar(AWAR_PROTVIEW_FORWARD_TRANSLATION_1)->read_int();
     int frwdTrans2 = root->awar(AWAR_PROTVIEW_FORWARD_TRANSLATION_2)->read_int();
     int frwdTrans3 = root->awar(AWAR_PROTVIEW_FORWARD_TRANSLATION_3)->read_int();
-//     int rvrsTrans   = root->awar(AWAR_PROTVIEW_REVERSE_TRANSLATION)->read_int();
-//     int rvrsTrans1  = root->awar(AWAR_PROTVIEW_REVERSE_TRANSLATION_1)->read_int();
-//     int rvrsTrans2  = root->awar(AWAR_PROTVIEW_REVERSE_TRANSLATION_2)->read_int();
-//     int rvrsTrans3  = root->awar(AWAR_PROTVIEW_REVERSE_TRANSLATION_3)->read_int();
+    int rvrsTrans   = root->awar(AWAR_PROTVIEW_REVERSE_TRANSLATION)->read_int();
+    int rvrsTrans1  = root->awar(AWAR_PROTVIEW_REVERSE_TRANSLATION_1)->read_int();
+    int rvrsTrans2  = root->awar(AWAR_PROTVIEW_REVERSE_TRANSLATION_2)->read_int();
+    int rvrsTrans3  = root->awar(AWAR_PROTVIEW_REVERSE_TRANSLATION_3)->read_int();
 
     ED4_terminal *terminal = 0;
-
     for( terminal = ED4_ROOT->root_group_man->get_first_terminal();
          terminal;  
          terminal = terminal->get_next_terminal())
@@ -131,67 +155,113 @@ void PV_ManageTerminals(AW_root *root){
                 if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) 
                     {
                         // we are in the sequence terminal section of a species
-                        terminal = terminal->get_next_terminal()->get_next_terminal(); //get the corresponding  AA_sequence_terminal
-                        if (terminal->is_aa_sequence_terminal()) {
-                            // this is the first AA sequence terminal for the species
-                            ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                            // Check AliType to make sure it is AA sequence terminal
-                            GB_alignment_type AliType = aaSeqTerminal->GetAliType();
-                            if (AliType && (AliType==GB_AT_AA)) {
-                                // Get the AA sequence flag - says which strand we are in 
-                                int aaSeqFlag = int(aaSeqTerminal->GET_aaSeqFlag()); 
-                                // Check the display options and make visible or hide the AA seq terminal
-                                (frwdTrans && frwdTrans1)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal);
+                        // walk through all the corresponding AA sequence terminals for the speecies and 
+                        // hide or unhide the terminals based on the display options set by the user
+                        for(int i=0; i<PV_AA_Terminals4Species; i++) 
+                            {
+                                // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+                                // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
+                                terminal = terminal->get_next_terminal()->get_next_terminal(); 
+                                if (terminal->is_aa_sequence_terminal()) {
+                                    ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
+                                    // Check AliType to make sure it is AA sequence terminal
+                                    GB_alignment_type AliType = aaSeqTerminal->GetAliType();
+                                    if (AliType && (AliType==GB_AT_AA)) {
+                                        // Get the AA sequence flag - says which strand we are in 
+                                        int aaSeqFlag = int(aaSeqTerminal->GET_aaSeqFlag()); 
+                                        // Check the display options and make visible or hide the AA seq terminal
+                                        switch (aaSeqFlag) 
+                                            {
+                                            case 1: 
+                                                (frwdTrans && frwdTrans1)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal);
+                                                    break;
+                                            case 2: 
+                                                (frwdTrans && frwdTrans2)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal);
+                                                    break;
+                                            case 3: 
+                                                (frwdTrans && frwdTrans3)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal);
+                                                    break;
+                                            case 4: 
+                                                (rvrsTrans && rvrsTrans1)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal);
+                                                    break;
+                                            case 5: 
+                                                (rvrsTrans && rvrsTrans2)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal);
+                                                    break;
+                                            case 6: 
+                                                (rvrsTrans && rvrsTrans3)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal);
+                                                    break;
+                                            }
+                                    }
+                                }
                             }
-                        }
-                        terminal = terminal->get_next_terminal()->get_next_terminal(); //get the corresponding  AA_sequence_terminal
-                        if (terminal->is_aa_sequence_terminal()) {
-                            // this is the Second AA sequence terminal for the species
-                            ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                            // Check AliType to make sure it is AA sequence terminal
-                            GB_alignment_type AliType = aaSeqTerminal->GetAliType();
-                            if (AliType && (AliType==GB_AT_AA)) {
-                                // Get the AA sequence flag - says which strand we are in 
-                                int aaSeqFlag = int(aaSeqTerminal->GET_aaSeqFlag()); 
-                                // Check the display options and make visible or hide the AA seq terminal
-                                (frwdTrans && frwdTrans2)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal);
-                            }
-                        }
-                        terminal = terminal->get_next_terminal()->get_next_terminal(); //get the corresponding  AA_sequence_terminal
-                        if (terminal->is_aa_sequence_terminal()) {
-                            // this is the third AA sequence terminal for the species
-                            ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                            // Check AliType to make sure it is AA sequence terminal
-                            GB_alignment_type AliType = aaSeqTerminal->GetAliType();
-                            if (AliType && (AliType==GB_AT_AA)) {
-                                // Get the AA sequence flag - says which strand we are in 
-                                int aaSeqFlag = int(aaSeqTerminal->GET_aaSeqFlag()); 
-                                // Check the display options and make visible or hide the AA seq terminal
-                                (frwdTrans && frwdTrans3)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal);
-                            }
-                        }
-
-                        //                                 switch (aaSeqFlag) 
-                        //                                     {
-                        //                                     case 1: 
-                        //                                         (frwdTrans && frwdTrans1)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal);
-                        //                                             break;
-                        //                                     case 2: 
-                        //                                         (frwdTrans && frwdTrans2)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal);
-                        //                                             break;
-                        //                                     case 3: 
-                        //                                         (frwdTrans && frwdTrans3)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal);
-                        //                                             break;
-                        //                                     }
                     }
             }
         }
 }
 
-GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int startPos4Translation){
+void PV_ComplementarySequence(char *sequence)
+{
+    int seqLen = strlen(sequence);
+    char *temp_str = (char*)malloc(seqLen+1);
+    int i;
+
+    for(i=0; i<seqLen; i++)
+    {
+        if ((sequence[i]=='A') || (sequence[i]=='a') ||
+            (sequence[i]=='G') || (sequence[i]=='g') ||
+            (sequence[i]=='C') || (sequence[i]=='c') ||
+            (sequence[i]=='U') || (sequence[i]=='u') ||
+            (sequence[i]=='T') || (sequence[i]=='t'))
+            {
+                switch(sequence[i])
+                    {
+                    case 'A':
+                        temp_str[i] = 'U';
+                        break;
+                    case 'a':
+                        temp_str[i] = 'u';
+                        break;
+                    case 'C':
+                        temp_str[i] = 'G';
+                        break;
+                    case 'c':
+                        temp_str[i] = 'g';
+                        break;
+                    case 'G':
+                        temp_str[i] = 'C';
+                        break;
+                    case 'g':
+                        temp_str[i] = 'c';
+                        break;
+                    case 'T':
+                    case 'U':
+                        temp_str[i] = 'A';
+                        break;
+                    case 't':
+                    case 'u':
+                        temp_str[i] = 'a';
+                        break;
+                    }
+            }
+        else {
+            temp_str[i] = sequence[i];
+        }
+    }
+    temp_str[i] = '\0';
+    strcpy(sequence, temp_str);
+    if(temp_str != NULL)
+    {
+        free(temp_str);
+        temp_str = NULL;
+    }
+}
+
+GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int startPos4Translation, bool complementaryStrand){
     GBDATA    *gb_species = GBT_find_species(gb_main, speciesName);
     char *defaultAlignment = GBT_get_default_alignment(gb_main);
     GBDATA  *gb_SeqData = GBT_read_sequence(gb_species, defaultAlignment);
+
+    e4_assert(startPos4Translation>=0 && startPos4Translation<=2);
 
     char *str_SeqData = 0;
     int len = 0;
@@ -205,12 +275,14 @@ GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int s
     GBT_write_int(gb_main, AWAR_PROTEIN_TYPE, translationTable);// set wanted protein table
     awt_pro_a_nucs_convert_init(gb_main); // (re-)initialize codon tables for current translation table
     //AWT_pro_a_nucs_convert(char *seqdata, long seqlen, int startpos, bool translate_all)
+    if(complementaryStrand) PV_ComplementarySequence(str_SeqData);
     int stops = AWT_pro_a_nucs_convert(str_SeqData, len, startPos4Translation, "true");
 
     GB_ERROR error = 0;
     GBDATA *gb_ProSeqData = 0;
     char buf[100];
-    sprintf(buf, "ali_temp_aa_seq_%ld",startPos4Translation);
+    if(complementaryStrand)  sprintf(buf, "ali_temp_aa_seq_%ld",startPos4Translation+FORWARD_STRAND);
+    else                     sprintf(buf, "ali_temp_aa_seq_%ld",startPos4Translation);
     gb_ProSeqData = GBT_add_data(gb_species,buf,"data", GB_STRING);
     if (!gb_ProSeqData) {
         cout<<"ERROR : "<<GB_get_error()<<endl;
@@ -229,7 +301,7 @@ GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int s
                     k+=3;
                 }
                 else 
-                    s[i]='=';
+                    s[i]='_';
             }
             break;
         case START_POS_2:
@@ -245,7 +317,7 @@ GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int s
                         k+=3;
                     }
                     else 
-                        s[i]='=';
+                        s[i]='_';
                 }
             //            }
             break;
@@ -258,7 +330,7 @@ GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int s
                     k+=3;
                 }
                 else 
-                    s[i]='=';
+                    s[i]='_';
             }
             break;
         }
@@ -273,6 +345,55 @@ GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int s
     return gb_ProSeqData;
 }
 
+void PV_AA_SequenceUpdate_CB(GBDATA */*gb_species_data*/, int */*cl*/, GB_CB_TYPE gbtype)
+{
+    if (gbtype==GB_CB_CHANGED) {
+        GB_transaction dummy(gb_main);
+        
+        ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+        if (cursor->owner_of_cursor) {
+            ED4_terminal *cursorTerminal = cursor->owner_of_cursor->to_terminal();
+            
+            if (!cursorTerminal->parent->parent->flag.is_consensus) 
+                {
+                    ED4_sequence_terminal *seqTerminal = cursorTerminal->to_sequence_terminal();
+                    char                  *speciesName = seqTerminal->species_name; 
+                    bool complementaryStrand;
+
+                    for(int i=0; i<PV_AA_Terminals4Species; i++) 
+                        {
+                            // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+                            // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
+                            cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal(); 
+                            if (cursorTerminal->is_aa_sequence_terminal()) {
+                                ED4_AA_sequence_terminal *aaSeqTerminal = cursorTerminal->to_aa_sequence_terminal();
+                                // Check AliType to make sure it is AA sequence terminal
+                                GB_alignment_type AliType = aaSeqTerminal->GetAliType();
+                                if (AliType && (AliType==GB_AT_AA)) {
+                                    // Get the AA sequence flag - says which strand we are in 
+                                    int aaSeqFlag = int(aaSeqTerminal->GET_aaSeqFlag()); 
+                                    // retranslate the genesequence and store it to the AA_sequnce_terminal
+                                    e4_assert (speciesName);
+                                    int startPos;
+                                    if(i<FORWARD_STRAND) {
+                                        startPos = aaSeqFlag-1;
+                                        complementaryStrand = false;
+                                    }
+                                    else {
+                                        startPos = (aaSeqFlag-FORWARD_STRAND)-1;
+                                        complementaryStrand = true;
+                                    }
+                                    aaSeqTerminal->aaSequence = TranslateGeneToAminoAcidSequence(gRoot, speciesName, startPos, complementaryStrand);
+                                    aaSeqTerminal->set_species_pointer(aaSeqTerminal->aaSequence);
+                                    
+                                }
+                            }
+                        }
+                }
+        }
+    }
+}
+
 void PV_CreateAllTerminals(AW_root *root) {
     // Idea: 1
     // 1. Get the species terminal pointer
@@ -282,15 +403,19 @@ void PV_CreateAllTerminals(AW_root *root) {
 
     // Look for already created terminals, if found do nothing, otherwise, create
     // new terminals and set gTerminalsCreated to true
-    bool bTerminalsFound = LookForNewTerminals(root);
+    bool bTerminalsFound = PV_LookForNewTerminals(root);
     // if terminals are already created then do nothing exit the function
     if(bTerminalsFound) return;
 
     GB_transaction dummy(gb_main);
 
-    int i =0;
+    // Number of AA sequence terminals to be created = 3 forward strands + 3 complementary strands + 1 DB field strand
+    // totally 7 strands has to be created
+    int aaTerminalsToBeCreated = FORWARD_STRAND + COMPLEMENTARY_STRAND;
+    PV_AA_Terminals4Species = aaTerminalsToBeCreated;
+    bool complementaryStrand;
+                                        
     ED4_terminal *terminal = 0;
-
     for( terminal = ED4_ROOT->root_group_man->get_first_terminal();
          terminal;  
          terminal = terminal->get_next_terminal())
@@ -303,9 +428,10 @@ void PV_CreateAllTerminals(AW_root *root) {
                         if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) 
                             {
                                 char namebuffer[BUFFERSIZE];
-                                for(int startPos = 0; startPos<3;startPos++)
+                                for(int i = 0; i<aaTerminalsToBeCreated; i++)
                                     {
                                         int count = 1;
+                                        int startPos = 0;
 
                                         sprintf( namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
                                         ED4_multi_sequence_manager *multiSeqManager = speciesManager->search_spec_child_rek(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
@@ -314,7 +440,8 @@ void PV_CreateAllTerminals(AW_root *root) {
                                         multiSeqManager->children->append_member(new_SeqManager);
 
                                         ED4_sequence_info_terminal *new_SeqInfoTerminal = 0;
-                                        sprintf(namebuffer, "PRotienInfo_Term%ld.%d",ED4_counter, count++);
+                                        if (i<FORWARD_STRAND) sprintf(namebuffer, "F%dProtienInfo_Term%ld.%d",i+1,ED4_counter, count++);
+                                        else                  sprintf(namebuffer, "R%dProtienInfo_Term%ld.%d",(i-FORWARD_STRAND)+1,ED4_counter, count++);
                                         new_SeqInfoTerminal = new ED4_sequence_info_terminal(namebuffer, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, new_SeqManager );
                                         new_SeqInfoTerminal->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );
                                         ED4_sequence_info_terminal *seqInfoTerminal = speciesManager->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
@@ -327,10 +454,17 @@ void PV_CreateAllTerminals(AW_root *root) {
                                         //                new_SeqTERMINAL->set_properties( ED4_P_CURSOR_ALLOWED );
                                         AA_SeqTerminal->set_links( seqTerminal, seqTerminal );
                                         char       *speciesName    = seqTerminal->species_name; 
-                                        AA_SeqTerminal->aaSequence = TranslateGeneToAminoAcidSequence(root, speciesName, startPos);
+                                        if (i<FORWARD_STRAND){
+                                            startPos = i;
+                                            complementaryStrand = false;
+                                        }
+                                        else {
+                                            startPos = i-FORWARD_STRAND;
+                                            complementaryStrand = true;
+                                        }
+                                        AA_SeqTerminal->aaSequence = TranslateGeneToAminoAcidSequence(root, speciesName, startPos, complementaryStrand);
                                         AA_SeqTerminal->set_species_pointer(AA_SeqTerminal->aaSequence);
-                                        //                                        AA_SeqTerminal->SET_aaSeqFlag(&(startPos+1));
-                                        AA_SeqTerminal->aaSeqFlag = startPos+1;
+                                        AA_SeqTerminal->SET_aaSeqFlag(i+1);
                                         new_SeqManager->children->append_member(AA_SeqTerminal);
 
                                         ED4_counter++;
@@ -345,181 +479,12 @@ void PV_CreateAllTerminals(AW_root *root) {
     ED4_ROOT->main_manager->resize_requested_by_parent();
 
     gTerminalsCreated = true;
-
     //    ED4_ROOT->refresh_all_windows(0);
-}
-
-//     //    ED4_ROOT->main_manager->route_down_hierarchy(NULL, NULL, <>);
-
-//     GB_transaction dummy(gb_main);
-//     int marked = GBT_count_marked_species(gb_main);
-
-//     if (marked) {
-//         int appended = 0;
-
-//         GBDATA *gb_species = GBT_first_marked_species(gb_main);
-//         char *default_alignment = GBT_get_default_alignment(gb_main);
-
-//         cout<<"New Terminals are created and appended for the following species....."<<endl;
-
-//         while (gb_species) {
-
-//             char *speciesName = GBT_read_name(gb_species);
-//             ED4_species_name_terminal *speciesNameTERMINAL = ED4_find_species_name_terminal(speciesName);
-
-//             if (speciesNameTERMINAL->is_species_name_terminal()) {
-
-//                 ED4_group_manager               *curr_GroupMANAGER    = 0;
-//                 ED4_species_manager             *curr_SpeciesMANAGER  = 0;
-//                 ED4_multi_sequence_manager  *curr_MultiSeqMANAGER = 0;
-//                 ED4_sequence_manager          *curr_SeqMANAGER       = 0;
-//                 ED4_sequence_terminal           *curr_SeqTERMINAL      = 0;
-//                 ED4_sequence_info_terminal    *curr_SeqInfoTERMINAL = 0;
-
-//                 curr_GroupMANAGER    = speciesNameTERMINAL->get_parent(ED4_L_GROUP)->to_group_manager();
-//                 curr_SpeciesMANAGER  = speciesNameTERMINAL->get_parent(ED4_L_SPECIES)->to_species_manager();
-//                 curr_MultiSeqMANAGER = curr_SpeciesMANAGER->search_spec_child_rek(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
-//                 curr_SeqMANAGER       = curr_SpeciesMANAGER->search_spec_child_rek(ED4_L_SEQUENCE)->to_sequence_manager();
-//                 curr_SeqTERMINAL       = curr_SpeciesMANAGER->search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_sequence_terminal();
-//                 curr_SeqInfoTERMINAL = curr_SpeciesMANAGER->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
-     
-//                 char namebuffer[BUFFERSIZE];
-//                 int count = 1;
-//                 sprintf( namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
-
-//                 ED4_sequence_manager *new_SeqMANAGER = new ED4_sequence_manager(namebuffer, 0, 0, 0, 0, curr_MultiSeqMANAGER);
-//                 new_SeqMANAGER->set_properties(ED4_P_MOVABLE);
-//                 curr_MultiSeqMANAGER->children->append_member(new_SeqMANAGER);
-
-//                 ED4_sequence_info_terminal *ref_sequence_info_terminal = ED4_ROOT->ref_terminals.get_ref_sequence_info();
-
-//                 ED4_sequence_info_terminal *new_SeqInfoTERMINAL = 0;
-//                 sprintf(namebuffer, "PRotienInfo_Term%ld.%d",ED4_counter, count++);
-//                 new_SeqInfoTERMINAL = new ED4_sequence_info_terminal(namebuffer, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, new_SeqMANAGER );
-//                 new_SeqInfoTERMINAL->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );
-//                 new_SeqInfoTERMINAL->set_links( curr_SeqInfoTERMINAL, curr_SeqTERMINAL );
-//                 new_SeqMANAGER->children->append_member( new_SeqInfoTERMINAL );
-
-//                 GBDATA *gb_SeqData = GBT_read_sequence(gb_species, default_alignment);
-//                 char *str_SeqData = 0;
-//                 int len = 0;
-//                 if (gb_SeqData) {
-//                     str_SeqData = GB_read_string(gb_SeqData);
-//                     len = GB_read_string_count(gb_SeqData);
-//                 }
-
-//                 GBT_write_int(gb_main, AWAR_PROTEIN_TYPE, 0);// set wanted protein table
-//                 awt_pro_a_nucs_convert_init(gb_main); // (re-)initialize codon tables for current translation table
-//                 int stops = AWT_pro_a_nucs_convert(str_SeqData, len, 1, "true");
-
-//                 GB_ERROR error = 0;
-//                 GBDATA *gb_ProSeqData = 0;
-//                 gb_ProSeqData = GBT_add_data(gb_species,"ali_protein_seq","data", GB_STRING);
-//                 if (!gb_ProSeqData) {cout<<"ERROR : "<<GB_get_error()<<endl;exit(0);}
-//                 //              error        = GB_write_string(gb_ProSeqData,str_SeqData);
-
-//                 char *s = (char*)malloc(len+1);
-//                 int j=0, k=0;
-//                 for(int i =0;i<len;i++) {
-//                     if((k==i) && (j<len)) {
-//                         s[i]=str_SeqData[j++];
-//                         k+=3;
-//                     }
-//                     else 
-//                         s[i]='~';
-//                 }
-
-//                 error  = GB_write_string(gb_ProSeqData,s);
-//                 free(str_SeqData);
-
-//                 if (error) {cout<<"error during writing data.....!!!"<<endl;exit(0);}
-
-//                 ED4_AA_sequence_terminal *new_SeqTERMINAL = 0;
-//                 sprintf(namebuffer, "Sequence_Term%ld.%d",ED4_counter, count++);
-//                 new_SeqTERMINAL = new ED4_AA_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqMANAGER);
-//                 //                new_SeqTERMINAL->set_properties( ED4_P_CURSOR_ALLOWED );
-//                 new_SeqTERMINAL->set_links( curr_SeqTERMINAL, curr_SeqTERMINAL );
-//                 //                new_SeqTERMINAL->species_name = curr_SeqTERMINAL->get_name_of_species();
-//                 new_SeqTERMINAL->set_species_pointer(gb_ProSeqData);
-//                 new_SeqMANAGER->children->append_member(new_SeqTERMINAL);
-
-// //                 ED4_text_terminal *new_TextTERMINAL = 0;
-// //                 sprintf(namebuffer, "PureText_Term%ld.%d",ED4_counter, count++);
-// //                 new_TextTERMINAL = new ED4_pure_text_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqMANAGER);
-// //                 //                new_TextTERMINAL->set_properties( ED4_P_CURSOR_ALLOWED );
-// //                 new_TextTERMINAL->set_links( curr_SeqTERMINAL, curr_SeqTERMINAL );
-// //                 new_TextTERMINAL->set_species_pointer(gb_SeqData);
-// //                 new_SeqMANAGER->children->append_member(new_TextTERMINAL);
-
-//                 ED4_counter++;
-
-//                 new_SeqMANAGER->resize_requested_by_child();
-
-// //                 if(hide) new_SeqMANAGER->hide_children();
-// //                 else {new_SeqMANAGER->make_children_visible();hide=!hide;}
-// //                ED4_base proteinSeqTerminal = curr_MultiSeqMANAGER->search_ID("ProteinInfo_Term");
-
-//                 appended++;
-//                 cout<<appended<<" : "<<speciesName<<endl;
-//             }
-//             else {
-//                 cout<<"ERROR: Failed to find the species terminal for the species \""<<speciesName<<"\" !"<<endl
-//                     <<"New sequence terminals are not created for the same!"<<endl;
-//             }
-//             gb_species = GBT_next_marked_species(gb_species);
-//         } 
-
-//         if (appended) {
-//             ED4_ROOT->main_manager->update_info.set_resize(1);
-//             ED4_ROOT->main_manager->resize_requested_by_parent();
-//         }
-//     }
-//     else {
-//         aw_message("No species marked to create new terminals!!");
-//     }
-
-//     gTerminalsCreated = true;
-
-//     ED4_ROOT->refresh_all_windows(0);
-// }
-
-void StartTranslation(AW_window *aww){
-
-    AW_root *aw_root = aww->get_root();
-    GB_ERROR error;
-
-
-//         GB_begin_transaction(gb_main);
-
-// #if defined(DEBUG) && 0
-//     test_AWT_get_codons();
-// #endif
-
-//     awt_pro_a_nucs_convert_init(gb_main);
-
-//     char *ali_source    = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
-//     char *ali_dest      = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
-//     char *mode          = aw_root->awar(AWAR_TRANSPRO_MODE)->read_string();
-//     int   startpos      = aw_root->awar(AWAR_TRANSPRO_POS)->read_int();
-//     bool  save2fields   = aw_root->awar(AWAR_TRANSPRO_WRITE)->read_int();
-//     bool  translate_all = aw_root->awar(AWAR_TRANSPRO_XSTART)->read_int();
-
-//     error = arb_r2a(gb_main, strcmp(mode, "fields") == 0, save2fields, startpos, translate_all, ali_source, ali_dest);
-//     if (error) {
-//         GB_abort_transaction(gb_main);
-//         aw_message(error);
-//     }else{
-//         GBT_check_data(gb_main,0);
-//         GB_commit_transaction(gb_main);
-//     }
-
-//     free(mode);
-//     free(ali_dest);
-//     free(ali_source);
 }
 
 AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
     GB_transaction dummy(gb_main);
+    gRoot = aw_root;
 
     static AW_window_simple *aws = 0;
     if (aws) return aws;
@@ -574,14 +539,10 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
 
         aws->at("defined");
         aws->create_toggle(AWAR_PROTVIEW_DEFINED_FIELDS);
-
-//         aws->at("go"); 
-//         aws->callback(StartTranslation);  // translation function
-//         aws->button_length(25);
-//         aws->create_button("START","DISPLAY", "D");
     }
 
-    PV_AddCallBacks(aw_root);  // binding callback function to the AWARS
+    // binding callback function to the AWARS
+    PV_AddCallBacks(aw_root);  
 
     // Create All Terminals 
     PV_CreateAllTerminals(aw_root);
@@ -590,6 +551,9 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
 
     return (AW_window *)aws;
 }
+
+#undef BUFFERSIZE
+
 
 // char      *key_string;
 // void  AddNewTerminalToTheSequence(ED4_multi_sequence_manager *multi_sequence_manager,
@@ -653,4 +617,3 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
 //     *seq_coords += TERMINALHEIGHT;
 // }
 
-#undef BUFFERSIZE

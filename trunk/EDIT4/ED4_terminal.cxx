@@ -1178,13 +1178,14 @@ ED4_sequence_terminal_basic::~ED4_sequence_terminal_basic()
 {
 }
 
-int ED4_AA_sequence_terminal::aaSeqFlag = 0;
+//int ED4_AA_sequence_terminal::aaSeqFlag = 0;
 
 ED4_AA_sequence_terminal::ED4_AA_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent )
     : ED4_sequence_terminal_basic( temp_id, x, y, width, height, temp_parent )
 {
     spec = &(sequence_terminal_spec);
     aaSequence = 0;
+    aaSeqFlag = 0;
 }
 
 GB_alignment_type ED4_AA_sequence_terminal::GetAliType()
