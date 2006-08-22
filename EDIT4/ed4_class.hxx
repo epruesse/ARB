@@ -1641,11 +1641,11 @@ public:
     virtual ~ED4_AA_sequence_terminal();
 
     GBDATA *aaSequence;
-    static int aaSeqFlag;
+    int aaSeqFlag;
 
     virtual GB_alignment_type GetAliType();
-    static void SET_aaSeqFlag (int flag) {aaSeqFlag = flag;}
-    static int GET_aaSeqFlag (){return aaSeqFlag;}
+    void SET_aaSeqFlag (int flag) {aaSeqFlag = flag;}
+    int GET_aaSeqFlag (){return aaSeqFlag;}
 };
 
 // --------------------------------------------------------------------------------
