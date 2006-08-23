@@ -22,12 +22,11 @@ void crop P_((char *input, char *head, char *tail));
 
 /* GDE_arbdb_io.cxx */
 int Arbdb_get_curelem P_((NA_Alignment *dataset));
-void ReadArbdb P_((char *filename, NA_Alignment *dataset, int type));
+void ReadArbdb_plain P_((char *filename, NA_Alignment *dataset, int type));
 class AP_filter;
-int ReadArbdb P_((NA_Alignment *dataset,long marked,AP_filter *filter,long compress));
-int ReadArbdb2 P_((NA_Alignment *dataset,AP_filter *filter,long compress));
-int
- WriteArbdb P_((NA_Alignment *aln, char *filename, int method, int maskable));
+int ReadArbdb P_((NA_Alignment *dataset,long marked,AP_filter *filter,long compress, bool cutoff_stop_codon));
+int ReadArbdb2 P_((NA_Alignment *dataset,AP_filter *filter,long compress, bool cutoff_stop_codon));
+int WriteArbdb P_((NA_Alignment *aln, char *filename, int method, int maskable));
 //void Updata_Arbdb P_((Panel_item item, Event *event));
 int getelem P_((NA_Sequence *a,int b));
 void putelem P_((NA_Sequence *a,int b,NA_Base c));
