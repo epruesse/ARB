@@ -154,7 +154,7 @@ static void awt_arbdb_scanner_value_change(void *dummy, struct adawcbstruct *cbs
                         if (strlen(value)) {
                             GBT_begin_rename_session(cbs->gb_main,0);
                             
-                            error = GBT_rename_species(name, value);
+                            error = GBT_rename_species(name, value, GB_FALSE);
 
                             if (error) GBT_abort_rename_session();
                             else GBT_commit_rename_session(aw_status, aw_status);
@@ -172,8 +172,6 @@ static void awt_arbdb_scanner_value_change(void *dummy, struct adawcbstruct *cbs
                 }
                 else { // non-species (gene, experiment, etc.)
                     if (strlen(value)) {
-                        
-                        
                         GBDATA *gb_exists    = 0;
                         GBDATA *gb_item_data = GB_get_father(cbs->gb_user);
 
