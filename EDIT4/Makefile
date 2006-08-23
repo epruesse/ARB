@@ -145,6 +145,7 @@ ED4_main.o: ed4_class.hxx
 ED4_main.o: ed4_defs.hxx
 ED4_main.o: ed4_edit_string.hxx
 ED4_main.o: ed4_nds.hxx
+ED4_main.o: ed4_ProteinViewer.hxx
 ED4_main.o: ed4_search.hxx
 ED4_main.o: ed4_visualizeSAI.hxx
 ED4_main.o: edit_naligner.hxx
@@ -270,6 +271,38 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arbdb.h
 
+ED4_ProteinViewer.o: ed4_awars.hxx
+ED4_ProteinViewer.o: ed4_block.hxx
+ED4_ProteinViewer.o: ed4_class.hxx
+ED4_ProteinViewer.o: ed4_defs.hxx
+ED4_ProteinViewer.o: ed4_edit_string.hxx
+ED4_ProteinViewer.o: ed4_nds.hxx
+ED4_ProteinViewer.o: ed4_ProteinViewer.hxx
+ED4_ProteinViewer.o: ed4_search.hxx
+ED4_ProteinViewer.o: pv_header.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arbdb.h
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_codon_table.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_translate.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/st_window.hxx
+
 ED4_RNA3D.o: ../RNA3D/RNA3D_Main.hxx
 ED4_RNA3D.o: ed4_RNA3D.hxx
 ED4_RNA3D.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -287,6 +320,7 @@ ED4_root.o: ed4_block.hxx
 ED4_root.o: ed4_class.hxx
 ED4_root.o: ed4_defs.hxx
 ED4_root.o: ed4_nds.hxx
+ED4_root.o: ed4_ProteinViewer.hxx
 ED4_root.o: ed4_search.hxx
 ED4_root.o: ed4_secedit.hxx
 ED4_root.o: ed4_tools.hxx
