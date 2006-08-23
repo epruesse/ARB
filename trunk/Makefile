@@ -23,6 +23,7 @@ include config.makefile
 #                       DEVELOPER='ANY' (default setting) will be ignored
 #                       configurable in config.makefile
 # OPENGL=0/1		whether OPENGL is available
+# OPENWINHOME		whether openwin programs shall be compiled (arb_gde, gde)
 #
 
 #********************* Default set and gcc static enviroments *****************
