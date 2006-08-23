@@ -1,9 +1,9 @@
 /*
 	dgg addition for new arb_readseq, 24 dec 92
-
-
-item:Pretty Print (using GDE/readseq) ...
 */
+
+item:Pretty print sequences (slow) ...
+itemmeta: P
 itemmethod: arb_readseq in1 -p -a -f=pretty $NAMELEFT $NAMERIGHT $NUMTOP $NUMBOT $NUMLEFT $NUMRIGHT -col=$COLS -width=$WIDTH $MATCH $GAPC > in1.pretty;\
             (arb_textprint in1.pretty;\
              /bin/rm -f in1 in1.pretty )&

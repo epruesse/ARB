@@ -14,8 +14,6 @@ lmenu:export
 #include <export.genmenu>
 
 lmenu:pretty_print
-item:Pretty print sequences (slow) ...
-itemmeta: P
 #include <pretty_print.genmenu>
 
 lmenu:import
