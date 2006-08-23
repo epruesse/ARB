@@ -246,7 +246,7 @@ void LoadFile(char *filename,NA_Alignment *dataset,int type,int format)
             break;
 
         case ARBDB:
-            ReadArbdb(filename,dataset,type);
+            ReadArbdb_plain(filename,dataset,type);
             ((NA_Alignment*)dataset)->format = ARBDB;
             break;
 
