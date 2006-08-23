@@ -51,8 +51,8 @@ int Arbdb_get_curelem(NA_Alignment *dataset)
 
 extern int Default_PROColor_LKUP[],Default_NAColor_LKUP[];
 
-int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned char **the_names,unsigned char **the_sequences,
-                    unsigned long numberspecies,unsigned long maxalignlen,AP_filter *filter, long compress)
+static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned char **the_names,unsigned char **the_sequences,
+                           unsigned long numberspecies,unsigned long maxalignlen,AP_filter *filter, long compress, bool cutoff_stop_codon)
 {
     GBDATA *gb_name;
     GBDATA *gb_species;
@@ -84,6 +84,19 @@ int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned char **t
         }
     }
 
+    // added by RALF : 
+    if (cutoff_stop_codon) {
+        unsigned long i;
+        for(i=0;i<numberspecies;i++) {
+            uchar *seq        = the_sequences[i];
+            uchar *stop_codon = (uchar*)strchr((char*)seq, '*');
+            if (stop_codon) {
+                long pos     = stop_codon-seq;
+                long restlen = maxalignlen-pos;
+                memset(stop_codon, '.', restlen);
+            }
+        }
+    }
 
     uchar **sequfilt=(uchar**)calloc((unsigned int)numberspecies+1,sizeof(uchar*));
     if(compress==2)  // compress all gaps and filter positions
@@ -264,13 +277,13 @@ int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned char **t
     return(0);
 }
 
-void ReadArbdb(char *filename,NA_Alignment *dataset,int type)
+void ReadArbdb_plain(char *filename,NA_Alignment *dataset,int type)
 {
 	AWUSE(filename); AWUSE(type);
-	ReadArbdb(dataset,(long)1,0,0);
+	ReadArbdb(dataset,(long)1,0,0, 0);
 }
 
-int ReadArbdb2(NA_Alignment *dataset,AP_filter *filter,long compress)
+int ReadArbdb2(NA_Alignment *dataset,AP_filter *filter,long compress, bool cutoff_stop_codon)
 {
 	dataset->gb_main = gb_main;
 	GBDATA **the_species;
@@ -289,7 +302,7 @@ int ReadArbdb2(NA_Alignment *dataset,AP_filter *filter,long compress)
 		return 1;
 	}
 
-	InsertDatainGDE(dataset,0,the_names,(unsigned char **)the_sequences,numberspecies,maxalignlen,filter,compress);
+	InsertDatainGDE(dataset,0,the_names,(unsigned char **)the_sequences,numberspecies,maxalignlen,filter,compress, cutoff_stop_codon);
 	long i;
 	for(i=0;i<numberspecies;i++)
 	{
@@ -304,7 +317,7 @@ int ReadArbdb2(NA_Alignment *dataset,AP_filter *filter,long compress)
 
 
 
-int ReadArbdb(NA_Alignment *dataset,long marked,AP_filter *filter,long compress)
+int ReadArbdb(NA_Alignment *dataset,long marked,AP_filter *filter,long compress, bool cutoff_stop_codon)
 {
 	GBDATA *gb_species_data;
 	GBDATA *gb_species;
@@ -371,8 +384,7 @@ int ReadArbdb(NA_Alignment *dataset,long marked,AP_filter *filter,long compress)
 		strncpy(the_sequences[i],data,size);
 		//printf("%s \n",the_sequences[i]);
 	}
-	InsertDatainGDE(dataset,the_species,0,(unsigned char **)the_sequences,
-                    numberspecies,maxalignlen,filter,compress);
+	InsertDatainGDE(dataset,the_species,0,(unsigned char **)the_sequences, numberspecies,maxalignlen,filter,compress, cutoff_stop_codon);
 	for(i=0;i<numberspecies;i++) {
 		free(the_sequences[i]);
 	}
