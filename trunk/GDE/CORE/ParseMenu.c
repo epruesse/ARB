@@ -171,6 +171,14 @@ void ParseMenu()
             thisitem->meta = temp[0];
         }
         /*
+         *       Sequence type restriction
+         */
+        else if(Find(Inline,"seqtype:"))
+        {
+            crop(Inline,head,temp);
+            thisitem->seqtype = toupper(temp[0]); /* 'A' -> amino acids, 'N' -> nucleotides, otherwise both */
+        }
+        /*
          *   arg: defines the symbol for a command line arguement.
          *       this is used for substitution into the itemmethod
          *       definition.
