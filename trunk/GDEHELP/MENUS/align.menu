@@ -151,6 +151,7 @@ outformat:flat
 // --------------------------------------------------------------------------------
 
 item:ClustalW DNA Alignment (slow & accurate)
+seqtype: N
 itemmeta: s
 itemmethod:(GOTO_LOCAL_DIR; \
             tr '"%//' '>' <in1 >clus_in ; \
@@ -240,6 +241,7 @@ outformat:flat
 // --------------------------------------------------------------------------------
 
 item:ClustalW Protein Alignment (fast)
+seqtype: A
 itemmeta: o
 itemmethod:(GOTO_LOCAL_DIR; \
             tr '"%//' '>' <in1 >clus_in ; \
@@ -346,6 +348,7 @@ outformat:flat
 // --------------------------------------------------------------------------------
 
 item:ClustalW Protein Alignment (slow & accurate)
+seqtype: A
 itemmeta: l
 itemmethod:(GOTO_LOCAL_DIR; \
             tr '"%//' '>' <in1 >clus_in ; \
