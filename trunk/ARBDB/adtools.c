@@ -2857,19 +2857,15 @@ void GBT_message(GBDATA *gb_main, const char *msg) {
 }
 
 long GBT_get_species_hash_size(GBDATA *gb_main) {
-    static GBDATA *last_gb_main   = 0;
-    static long    last_hash_size = 0;
+    GBDATA *gb_species_data;
+    long    hash_size;
 
-    if (gb_main != last_gb_main) {
-        GBDATA *gb_species_data;
-
-        GB_push_transaction(gb_main);
-        gb_species_data = GB_find(gb_main, "species_data", 0, down_level);
-        last_gb_main    = gb_main;
-        last_hash_size  = 2*GB_number_of_subentries(gb_species_data); // hash size = 2 * number of species
-        GB_pop_transaction(gb_main);
-    }
-    return last_hash_size;
+    GB_push_transaction(gb_main);
+    gb_species_data = GB_find(gb_main, "species_data", 0, down_level);
+    hash_size       = 2*GB_number_of_subentries(gb_species_data); // hash size = 2 * number of species
+    GB_pop_transaction(gb_main);
+    
+    return hash_size;
 }
 
 GB_HASH *GBT_generate_species_hash(GBDATA *gb_main,int ignore_case)
@@ -2965,7 +2961,7 @@ GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag)
     return error;
 }
 /* returns errors */
-GB_ERROR GBT_rename_species(const char *oldname,const  char *newname)
+GB_ERROR GBT_rename_species(const char *oldname, const  char *newname, GB_BOOL ignore_protection)
 {
     GBDATA   *gb_species;
     GBDATA   *gb_name;
@@ -3001,9 +2997,9 @@ GB_ERROR GBT_rename_species(const char *oldname,const  char *newname)
     }
 
     gb_name = GB_find(gb_species,"name",0,down_level);
-    GB_push_my_security(gbtrst.gb_main);
+    if (ignore_protection) GB_push_my_security(gbtrst.gb_main);
     error   = GB_write_string(gb_name,newname);
-    GB_pop_my_security(gbtrst.gb_main);
+    if (ignore_protection) GB_pop_my_security(gbtrst.gb_main);
 
     if (!error){
         struct gbt_renamed_struct *rns;
