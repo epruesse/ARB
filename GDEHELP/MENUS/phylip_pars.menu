@@ -1,4 +1,5 @@
 item:Phylip DNAPARS
+seqtype: N
 itemmeta: D
 itemmethod:(GEN_INFILE(in1);\
             RUN_IN_WINDOW((arb_dnapars $BOOTSTRP $SEARCH $VIEWOUT $RANDOM $TRANSVERSION_PARS $THRESHOLD_PARS $INTERACTIVE;$DISPLAY_FUNC));\
@@ -67,6 +68,7 @@ insave:
 // --------------------------------------------------------------------------------
 
 item:Phylip PROTPARS
+seqtype: A
 itemmeta: P
 itemmethod:(GEN_INFILE(in1);\
             RUN_IN_WINDOW((arb_protpars $BOOTSTRP $GENETIC_CODE $VIEWOUT $RANDOM $THRESHOLD_PARS $INTERACTIVE;$DISPLAY_FUNC));\

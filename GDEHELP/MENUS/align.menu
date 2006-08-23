@@ -52,6 +52,7 @@ outformat:flat
 // --------------------------------------------------------------------------------
 
 item:ClustalW DNA Alignment (fast)
+seqtype: N
 itemmeta: N
 itemmethod:(GOTO_LOCAL_DIR; \
             tr '"%//' '>' <in1 >clus_in ; \
