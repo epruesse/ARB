@@ -246,7 +246,7 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species, bool update_status) {
 
         if (!error) {
             GBT_begin_rename_session(gb_main, 0);
-            error = GBT_rename_species(name, shrt);
+            error = GBT_rename_species(name, shrt, GB_TRUE);
             if (error) {
                 if (GBT_find_species(gb_main, shrt)) { // it was a rename error
                     int done = 0;
@@ -254,7 +254,7 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species, bool update_status) {
                     for (int count = 2; !done && !error && count<10; count++) {
                         const char *other_short = GBS_global_string("%s.%i", shrt, count);
                         if (!GBT_find_species(gb_main, other_short)) {
-                            error            = GBT_rename_species(name, other_short);
+                            error            = GBT_rename_species(name, other_short, GB_TRUE);
                             if (!error) done = 1;
                         }
                     }
@@ -348,7 +348,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
                     }
                     GBS_incr_hash(hash,shrt);
 
-                    err = GBT_rename_species(name,shrt);
+                    err = GBT_rename_species(name, shrt, GB_TRUE);
                 }
 
                 free(name);
