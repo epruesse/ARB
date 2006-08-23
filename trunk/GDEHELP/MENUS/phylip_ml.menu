@@ -1,5 +1,6 @@
 
 item:PHYML (DNA)
+seqtype: N
 itemmeta: D
 itemmethod:( GEN_INFILE(in1); \
              RUN_IN_WINDOW((arb_phyml infile DNA $MODEL $OPTFREQ $BASEFREQEST $TSTVRATIO $PINVAR $INTERACTIVE; \
@@ -64,6 +65,7 @@ insave:
 // --------------------------------------------------------------------------------
 
 item:PHYML (Amino acids)
+seqtype: A
 itemmeta: M
 itemmethod:( GEN_INFILE(in1); \
              RUN_IN_WINDOW((arb_phyml infile AA $MODEL $PINVAR $INTERACTIVE; \
@@ -112,6 +114,7 @@ insave:
 // --------------------------------------------------------------------------------
 
 item:Phylip PROML
+seqtype: A
 itemmeta: O
 itemmethod:(GEN_INFILE(in1);\
             RUN_IN_WINDOW((arb_proml $BOOTSTRAP $MODEL $VIEWOUT $ANALYSIS $RANDOM $REARRANGE \

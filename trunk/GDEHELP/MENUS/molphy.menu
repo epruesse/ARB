@@ -1,4 +1,5 @@
 item:Protein_ML (molphy; max 40 species)
+seqtype: A
 itemmeta: L
 itemmethod:(GEN_INFILE(in1);\
             cat infile |tr '?' '-' >in1.in;\
