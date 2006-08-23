@@ -334,11 +334,12 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     AWUSE(cd);
     AW_root *aw_root=aw->get_root();
 
-    long compress=aw_root->awar("gde/compression")->read_int();
-    AP_filter *filter2 = awt_get_filter(aw_root,agde_filtercd);
-    char *filter_name  = 0; //aw_root->awar("gde/filter/name")->read_string();
-    char *alignment_name=strdup("ali_unknown");
-    long marked=aw_root->awar("gde/species")->read_int();
+    long       compress          = aw_root->awar("gde/compression")->read_int();
+    AP_filter *filter2           = awt_get_filter(aw_root,agde_filtercd);
+    char      *filter_name       = 0; // aw_root->awar("gde/filter/name")->read_string();
+    char      *alignment_name    = strdup("ali_unknown");
+    long       marked            = aw_root->awar("gde/species")->read_int();
+    long       cutoff_stop_codon = aw_root->awar("gde/cutoff_stop_codon")->read_int();
 
     GmenuItem *current_item;
     current_item=AWinfo->gmenuitem;
@@ -361,10 +362,10 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
         aw_status("reading database");
         int stop;
         if (gde_cgss.get_sequences) {
-            stop=ReadArbdb2(DataSet,filter2,compress);
+            stop = ReadArbdb2(DataSet,filter2,compress, cutoff_stop_codon);
         }
         else {
-            stop=ReadArbdb(DataSet,marked,filter2,compress);
+            stop = ReadArbdb(DataSet,marked,filter2,compress, cutoff_stop_codon);
         }
         GB_commit_transaction(DataSet->gb_main);
 
