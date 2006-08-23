@@ -112,7 +112,7 @@ GB_HASH *GBT_generate_species_hash P_((GBDATA *gb_main, int ignore_case));
 GB_HASH *GBT_generate_marked_species_hash P_((GBDATA *gb_main));
 GB_HASH *GBT_generate_SAI_hash P_((GBDATA *gb_main));
 GB_ERROR GBT_begin_rename_session P_((GBDATA *gb_main, int all_flag));
-GB_ERROR GBT_rename_species P_((const char *oldname, const char *newname));
+GB_ERROR GBT_rename_species P_((const char *oldname, const char *newname, GB_BOOL ignore_protection));
 GB_ERROR GBT_abort_rename_session P_((void));
 GB_ERROR GBT_commit_rename_session P_((int (*show_status )(double gauge ), int (*show_status_text )(const char *)));
 GBDATA **GBT_gen_species_array P_((GBDATA *gb_main, long *pspeccnt));
