@@ -33,17 +33,18 @@ typedef struct GfileFormattype
 
 typedef struct GmenuItemtype
 {
-	int		numargs;	/* number of agruments to cmnd */
-	int		numoutputs;	/* number of outputs from cmnd */
-	int		numinputs;	/* number of input files to cmnd */
-	char		*label;		/* item name */
-	char		*method;	/* commandline produced */
-	GfileFormat	*input;		/* input definitions */
-	GfileFormat	*output;	/* output definitions */
-	GmenuItemArg	*arg;		/* arguement definitions */
-	char		meta;		/* Meta character for function */
-        char            *help;          /* commandline help */
-	Panel_item	X;		/* Xview panel */
+	int		      numargs;	    /* number of agruments to cmnd */
+	int		      numoutputs;	/* number of outputs from cmnd */
+	int		      numinputs;	/* number of input files to cmnd */
+	char		 *label;		/* item name */
+	char		 *method;	    /* commandline produced */
+	GfileFormat	 *input;		/* input definitions */
+	GfileFormat	 *output;	    /* output definitions */
+	GmenuItemArg *arg;		    /* arguement definitions */
+	char		  meta;		    /* Meta character for function */
+    char          seqtype;      /* A -> amino, N -> nucleotide, otherwise both */
+    char         *help;         /* commandline help */
+	Panel_item X;		        /* Xview panel */
 } GmenuItem;
 
 typedef struct Gmenutype
