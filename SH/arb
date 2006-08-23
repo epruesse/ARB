@@ -3,14 +3,14 @@
 nargs=$#
 args="$*"
 
-# Add to the path variable named by $1 the component $2.  $3 must be
-# "append" or "prepend" to indicate where the component is added.
-
 # error message function
 err () {
 	echo "`basename $0`: $@" 1>&2
 	exit 1
 }
+
+# Add to the path variable named by $1 the component $2.  $3 must be
+# "append" or "prepend" to indicate where the component is added.
 
 addpath () {
     eval value=\"\$$1\"
