@@ -53,6 +53,7 @@ typedef struct GmenuItemtype
     GfileFormat  *output;       /* output definitions */
     GmenuItemArg *arg;          /* arguement definitions */
     char          meta;         /* Meta character for function */
+    char          seqtype;      /* A -> amino, N -> nucleotide, otherwise both */
     char         *help;         /* commandline help */
     /* ARB BEGIN */
     /*  Panel_item  X; */       /* Xview panel */
