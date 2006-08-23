@@ -474,6 +474,10 @@ long GBS_incr_hash(GB_HASH *hs,const char *key)
     return 1;
 }
 
+#if defined(DEVEL_RALF)
+/* #define DUMP_HASH_ENTRIES */
+#endif /* DEVEL_RALF */
+
 void GBS_free_hash_entries(GB_HASH *hs)
 {
     register long          i;
@@ -481,34 +485,44 @@ void GBS_free_hash_entries(GB_HASH *hs)
     struct gbs_hash_entry *e, *ee;
 
 #if defined(DEBUG)
-    int queues               = 0;
-    int queues_with_multiple = 0;
+    int strcmps_needed = 0;
 #endif /* DEBUG */
 
     e2 = hs->size;
+
+#if defined(DUMP_HASH_ENTRIES)
+    for (i = 0; i < e2; i++) {
+        printf("hash[%li] =", i);
+        for (e = hs->entries[i]; e; e = e->next) {
+            printf(" '%s'", e->key);
+        }
+        printf("\n");
+    }
+#endif /* DUMP_HASH_ENTRIES */
+
     for (i = 0; i < e2; i++) {
 #if defined(DEBUG)
-        if (hs->entries[i]) {
-            queues++;
-            if (hs->entries[i]->next) queues_with_multiple++;
-        }
+        int strcmps = 1;
 #endif /* DEBUG */
         for (e = hs->entries[i]; e; e = ee) {
             free(e->key);
-            ee = e->next;
+            ee              = e->next;
             gbm_free_mem((char *)e,sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
+#if defined(DEBUG)
+            strcmps_needed += strcmps++;
+#endif /* DEBUG */
         }
         hs->entries[i] = 0;
     }
-#if defined(DEBUG)
-    {
-        long   non_collision  = queues-queues_with_multiple;
-        long   collisions     = hs->nelem - non_collision;
-        double collision_rate = (double)collisions/hs->nelem;
 
-        if (collision_rate > 0.3) { // more than 30% collisions - increase hash ?
-            printf("hash-size-warning: size=%li elements=%li collisions=%li collision_rate=%5.1f%%\n",
-                   hs->size, hs->nelem, collisions, collision_rate*100.0);
+#if defined(DEBUG)
+    if (hs->nelem) {
+        double mean_access    = (double)strcmps_needed/hs->nelem;
+        double collision_rate = 1 - 1/mean_access;
+
+        if (collision_rate > 0.3) { // more than 30% collisions - increase hash size?
+            printf("hash-size-warning: size=%li elements=%li mean_access=%.2f collision-rate=%.1f%%\n",
+                   hs->size, hs->nelem, mean_access, collision_rate*100);
         }
     }
 #endif /* DEBUG */
