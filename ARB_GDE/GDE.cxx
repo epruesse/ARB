@@ -146,10 +146,11 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
 #define BUFSIZE 200
     char bf[BUFSIZE+1];
 #if defined(ASSERTION_USED)
-    int printed =
+    int printed  = 
 #endif // ASSERTION_USED
         sprintf(bf,"GDE / %s / %s",AWinfo->gmenu->label,AWinfo->gmenuitem->label);
     gb_assert(printed<=BUFSIZE);
+    char seqtype = AWinfo->gmenuitem->seqtype;
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root,bf,bf);
@@ -188,15 +189,24 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
 
     if (AWinfo->gmenuitem->numinputs>0) {
         switch (gde_cgss.wt) {
-            case CGSS_WT_DEFAULT:
+            case CGSS_WT_DEFAULT: {
                 aws->at("which_alignment");
-                awt_create_selection_list_on_ad(gb_main, (AW_window *)aws,"tmp/gde/alignment","*=");
+                const char *ali_filter = seqtype == 'A' ? "pro=:ami=" : (seqtype == 'N' ? "dna=:rna=" : "*=");
+                awt_create_selection_list_on_ad(gb_main, (AW_window *)aws,"tmp/gde/alignment", ali_filter);
+                
                 aws->at( "which_species" );
                 aws->create_toggle_field( "gde/species" );
                 aws->insert_toggle( "all", "a", 0 );
                 aws->insert_default_toggle( "marked",  "m", 1 );
                 aws->update_toggle_field();
+
+                if (seqtype != 'N') {
+                    aws->at("stop_codon");
+                    aws->label("Cut stop-codon");
+                    aws->create_toggle("gde/cutoff_stop_codon");
+                }
                 break;
+            }
             case CGSS_WT_EDIT:
                 aws->at("bottom"); aws->create_toggle("gde/bottom_area");
                 aws->at("bottomsai"); aws->create_toggle("gde/bottom_area_sai");
@@ -460,6 +470,7 @@ void create_gde_var(AW_root  *aw_root, AW_default aw_def,
     aw_root->awar_string( "presets/use","" ,gb_main );
     aw_root->awar_string( "gde/filter/name","",aw_def);
     aw_root->awar_string( "gde/filter/filter","",aw_def);
+    aw_root->awar_int( "gde/cutoff_stop_codon",0,aw_def);
     aw_root->awar_int( "gde/species",1,aw_def);
     aw_root->awar_int( "gde/compression",1,aw_def);
     aw_root->awar_string( "gde/filter/alignment","",aw_def);
