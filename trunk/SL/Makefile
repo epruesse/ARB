@@ -53,7 +53,7 @@ depends: $(ARCHS:.dummy=.depend)
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
 
 %.dummy:
-	@$(MAKE) -C $(@D) -r \
+	@((($(MAKE) -C $(@D) -r \
 		"MAKE = $(MAKE)" \
 		"ARBHOME = $(ARBHOME)" "cflags = $(cflags) -D_ARB_$(@D:/=)" "lflags = $(lflags)" \
 		"CPPINCLUDES = $(CPPINCLUDES)" "AINCLUDES = $(AINCLUDES)" \
@@ -65,7 +65,10 @@ depends: $(ARCHS:.dummy=.depend)
 		"XHOME = $(XHOME)" "XLIBS = $(XLIBS)" \
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
 		"ARB  = yes" \
-		"MAIN = $(@F:.dummy=.a)"
+		"MAIN = $(@F:.dummy=.a)" \
+		>$(@D).log 2>&1 && cat $(@D).log) || (cat $(@D).log; false)) && (rm $(@D).log))
+
+# the end of the above command avoids that the output of parallel make calls gets mixed up 
 
 # DO NOT DELETE
 
