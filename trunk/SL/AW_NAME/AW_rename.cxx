@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <time.h>
 // #include <malloc.h>
 #include <arbdb.h>
@@ -545,4 +546,27 @@ char *AWTC_generate_random_name(UniqueNameDetector& existingNames) {
     }
 
     return new_species_name;
+}
+
+int AWTC_name_quality(const char *short_name) {
+    // result 0 = ok for external tools
+    //        1 = ok for ARB
+    //        2 = not ok
+
+    int len         = -1;
+    int alnum_count = 0;
+    int ascii_count = 0;
+
+    while (char c = short_name[++len]) {
+        alnum_count += (isalnum(c) != 0);
+        ascii_count += (c > 32 && c < 127);
+    }
+
+    if (len>0) {
+        if (len <= 8) {
+            if (len == alnum_count) return 0; // ok for external programs
+        }
+        if (len == ascii_count) return 1; // ok for ARB
+    }
+    return 2; // not ok
 }
