@@ -17,6 +17,7 @@
 #include "GDE_def.h"
 #include "GDE_menu.h"
 #include "GDE_extglob.h"
+#include "AW_rename.hxx"
 
 long filter_true(char *filter)
 {
@@ -165,10 +166,12 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
 
     free(seqlen);
 
-    long number=0;
-    int	curelem;
+    long number    = 0;
+    int	 curelem;
+    int  bad_names = 0;
 
     if (the_species) {
+
         for (gb_species = the_species[number]; gb_species; gb_species = the_species[++number] ) {
             if((number/10)*10==number)
                 if(aw_status((double)number/(double)numberspecies))
@@ -184,6 +187,8 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
             this_elem->gb_species = gb_species;
 
             strncpy(this_elem->short_name,GB_read_char_pntr(gb_name),31);
+
+            if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
 
             gbd = GB_find(gb_species,"author",0,down_level);
             if (gbd)	strncpy(this_elem->authority,GB_read_char_pntr(gbd),79);
@@ -220,6 +225,7 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
             }
             //		}
         }
+
     }
     else {	// use the_names
         unsigned char *species_name;
@@ -238,6 +244,8 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
             this_elem->gb_species = 0;
 
             strncpy((char*)this_elem->short_name, (char*)species_name, 31);
+            if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
+
             this_elem->authority[0] = 0;
             this_elem->seq_name[0] = 0;
             this_elem->id[0] = 0;
@@ -259,6 +267,13 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
         }
     }
 
+    if (bad_names) {
+        aw_message(GBS_global_string("Problematic names found: %i\n"
+                                     "External program call may fail or produce invalid results.\n"
+                                     "You might want to use 'Generate new names' and read the associated help.",
+                                     bad_names));
+    }
+    
     {
         unsigned long i;
         for(i=0;i<dataset->numelements;i++)
