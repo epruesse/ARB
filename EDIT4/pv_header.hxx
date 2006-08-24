@@ -31,6 +31,22 @@
 #include <awt_pro_a_nucs.hxx>
 #include <awt_translate.hxx>
 
+// Definitions used
+#define FORWARD_STRAND             1
+#define COMPLEMENTARY_STRAND   2
+#define DB_FIELD_STRAND             3
+
+#define FORWARD_STRANDS            3
+#define COMPLEMENTARY_STRANDS  3
+#define DB_FIELD_STRANDS             1
+
 #define START_POS_1  0
 #define START_POS_2  1
 #define START_POS_3  2
+
+// typedefs
+typedef enum {
+    PV_FAILED = 0,
+    PV_SUCCESS
+} PV_ERROR;
+

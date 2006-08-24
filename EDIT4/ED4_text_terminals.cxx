@@ -262,146 +262,45 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
         free(db_pointer);
     }
 
-    // Set background
-
+//     // Set background
 //     {
 //         GB_transaction       dummy(gb_main);
-//         ST_ML_Color         *colors       = 0;
-//         //        char                *searchColors = results().buildColorString(this, seq_start, seq_end); // defined in ED4_SearchResults class : ED4_search.cxx
-//         ED4_species_manager *spec_man     = get_parent(ED4_L_SPECIES)->to_species_manager();
-//         int                  is_marked    = GB_read_flag(spec_man->get_species_pointer());
-//         int                  selection_col1, selection_col2;
-//         int                  is_selected  = ED4_get_selected_range(this, &selection_col1, &selection_col2);
-//         int                  color_group  = AWT_species_get_dominant_color(spec_man->get_species_pointer());
-//         // int                  color_group  = AW_find_color_group(spec_man->get_species_pointer());
+//         int    i;
+//         AW_pos width      = ED4_ROOT->font_group.get_width(ED4_G_HELIX);
+//         int    real_left  = left;
+//         int    real_right = right;
+//         AW_pos x2         = text_x + width*real_left;
+//         AW_pos old_x      = x2;
+//         AW_pos y1         = world_y;
+//         AW_pos y2         = text_y+1;
+//         AW_pos height     = y2-y1+1;
+//         int    old_color  = ED4_G_SBACK_0;
+//         int    color      = ED4_G_SBACK_0;
 
-// //         if (species_name &&
-// //             ED4_ROOT->column_stat_activated &&
-// //             (st_ml_node || (st_ml_node = st_ml_convert_species_name_to_node(ED4_ROOT->st_ml,this->species_name))))
-// //             {
-// //                 colors = st_ml_get_color_string(ED4_ROOT->st_ml, 0, st_ml_node, seq_start, seq_end);
-// //             }
+//         for ( i = real_left; i <= real_right; i++,x2 += width) {
+//             int new_pos = rm->screen_to_sequence(i);  //getting the real position of the base in the sequence
 
-//         const char *saiColors = 0;
-
-//         if (species_name                                     &&
-//             ED4_ROOT->visualizeSAI                           &&
-//             !spec_man->flag.is_SAI                           &&
-//             (is_marked || ED4_ROOT->visualizeSAI_allSpecies))
-//         {
-//             saiColors = getSaiColorString(ED4_ROOT->aw_root, seq_start, seq_end);
+//             if (color != old_color) {   // draw till oldcolor
+//                 if (x2>old_x){
+//                     if (old_color!=ED4_G_STANDARD) {
+//                         device->box(old_color,old_x, y1, x2-old_x, height, -1, 0,0); // paints the search pattern background
+//                     }
+//                 }
+//                 old_x = x2;
+//                 old_color = color;
+//             }
 //         }
 
-//         if (colors || is_marked || is_selected || color_group || saiColors) {
-//             int    i;
-//             AW_pos width      = ED4_ROOT->font_group.get_width(ED4_G_HELIX);
-//             int    real_left  = left;
-//             int    real_right = right;
-//             AW_pos x2         = text_x + width*real_left;
-//             AW_pos old_x      = x2;
-//             AW_pos y1         = world_y;
-//             AW_pos y2         = text_y+1;
-//             AW_pos height     = y2-y1+1;
-//             int    old_color  = ED4_G_STANDARD;
-//             int    color      = ED4_G_STANDARD;
-
-//             if (is_selected && selection_col2<0) {
-//                 selection_col2 = rm->screen_to_sequence(real_right);
-//             }
-
-//             for ( i = real_left; i <= real_right; i++,x2 += width) {
-//                 int new_pos = rm->screen_to_sequence(i);  //getting the real position of the base in the sequence
-
-// //                 if (searchColors && searchColors[new_pos]) {
-// //                     color = searchColors[new_pos];
-// //                 }
-//                 /*  else */if (is_selected && new_pos>=selection_col1 && new_pos<=selection_col2) {
-//                     color = ED4_G_SELECTED;
-//                 }
-//                 else if (colors) {
-//                     color = colors[new_pos] + ED4_G_CBACK_0;
-//                     if (color > ED4_G_CBACK_9) color = ED4_G_CBACK_9;
-//                 }
-//                 else if (saiColors) {
-//                     color = saiColors[new_pos];
-//                     if (color < ED4_G_CBACK_0 || color > ED4_G_CBACK_9)  color = ED4_G_STANDARD;
-//                 }
-//                 else if (is_marked) {
-//                     color = ED4_G_MARKED;
-//                 }
-//                 else if (color_group) {
-//                     color = ED4_G_FIRST_COLOR_GROUP+color_group-1;
-//                 }
-//                 else {
-//                     color = ED4_G_STANDARD;
-//                 }
-
-//                 if (color != old_color) {   // draw till oldcolor
-//                     if (x2>old_x){
-//                         if (old_color!=ED4_G_STANDARD) {
-//                             device->box(old_color,old_x, y1, x2-old_x, height, -1, 0,0); // paints the search pattern background
-//                         }
-//                     }
-//                     old_x = x2;
-//                     old_color = color;
-//                 }
-//             }
-
-//             if (x2>old_x){
-//                 if (color!=ED4_G_STANDARD) {
-//                     device->box(color,old_x, y1, x2-old_x, height, -1, 0,0);
-//                 }
+//         if (x2>old_x){
+//             if (color!=ED4_G_STANDARD) {
+//                 device->box(color,old_x, y1, x2-old_x, height, -1, 0,0);
 //             }
 //         }
 //     }
+
 
     device->top_font_overlap    = 1;
     device->bottom_font_overlap = 1;
-
-//     // output helix
-//     if (ED4_ROOT->helix->is_enabled()) { // should do a remap
-//         int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->helix->size);
-//         if ((right+1) < screen_length) {
-//             screen_length = right+1;
-//         }
-//         if (screen_length) {
-//             char *db_pointer = resolve_pointer_to_string_copy();
-//             device->text_overlay( ED4_G_HELIX,
-//                                   (char *)db_pointer, screen_length,
-//                                   text_x , text_y + ED4_ROOT->helix_spacing , 0.0 , -1,
-//                                   (AW_CL)ED4_ROOT->helix, (AW_CL)max_seq_len, 0,
-//                                   1.0,1.0, ED4_show_helix_on_device);
-//             free(db_pointer);
-//         }
-//     }
-
-//     // output protein structure match
-//     if (ED4_ROOT->protstruct)
-//     {   // should do a remap
-//         int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->protstruct_len);
-//         if ((right+1) < screen_length) {
-//             screen_length = right+1;
-//         }
-//         if (screen_length) {
-//             char *db_pointer = resolve_pointer_to_string_copy();
-
-//             show_summary_parameters ssp;
-//             char *predicted_summary = (char*)GB_calloc(max_seq_len+1, 1); // @@@ FIXME: cache predicted_summary in terminal
-//             ED4_predict_summary(db_pointer, predicted_summary, max_seq_len);
-
-//             ssp.global_protstruct = ED4_ROOT->protstruct;
-//             ssp.protstruct        = predicted_summary;
-
-//             device->text_overlay( ED4_G_HELIX,
-//                                   (char *)db_pointer, screen_length,
-//                                   text_x , text_y + ED4_ROOT->helix_spacing , 0.0 , -1,
-//                                   (AW_CL)ED4_ROOT->protstruct, (AW_CL)max_seq_len, 0,
-//                                   1.0,1.0, ED4_show_summary_match_on_device);
-
-//             free(db_pointer);
-//             free(predicted_summary);
-//         }
-//     }
 
     // output strings
     {
