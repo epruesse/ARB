@@ -57,7 +57,8 @@ static void awt_awar_changed_cb(GBDATA *, int *cl, GB_CB_TYPE){
 static void create_seq_color_awars(AW_root *awr, AWT_seq_colors *asc) {
     awt_assert(!seq_color_awars_created);
 
-    awr->awar_int(AWAR_SEQ_NAME_SELECTOR, default_set, AW_ROOT_DEFAULT)->add_callback((AW_RCB)awt_awar_changed_cb,(AW_CL)asc,0);;
+    awr->awar_int(AWAR_SEQ_NAME_SELECTOR_NA, default_set, AW_ROOT_DEFAULT)->add_callback((AW_RCB)awt_awar_changed_cb,(AW_CL)asc,0);;
+    awr->awar_int(AWAR_SEQ_NAME_SELECTOR_AA, default_set, AW_ROOT_DEFAULT)->add_callback((AW_RCB)awt_awar_changed_cb,(AW_CL)asc,0);; //ykadi
     for (int elem = 0; elem<AWT_SEQ_COLORS_MAX_ELEMS; ++elem) {
         const char *awar_name = GBS_global_string(AWAR_SEQ_NAME_STRINGS_TEMPLATE, elem);
         awr->awar_string(awar_name, default_characters(elem));
@@ -88,13 +89,13 @@ AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc){
     aws->callback     ( AW_POPUP_HELP,(AW_CL)"sequence_colors.hlp" );aws->create_button( "HELP", "HELP" );
     aws->at_newline();
 
-    aws->label_length( 6 ); // @@@ has no effect
-    aws->button_length( 6 );
+    //    aws->label_length( 6 ); // @@@ has no effect
+    //    aws->button_length( 6 );
     int set;
     int elem;
 
-    aws->label("Select");
-    aws->create_toggle_field(AWAR_SEQ_NAME_SELECTOR,1);
+    aws->label("Select Colors For Nucleotides (NA) :");
+    aws->create_toggle_field(AWAR_SEQ_NAME_SELECTOR_NA,1);
     for (set = 0; set < AWT_SEQ_COLORS_MAX_SET;set++){
         sprintf(buf,"S_%i",set);
         aws->insert_toggle( buf," ",set );
@@ -102,6 +103,18 @@ AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc){
     aws->update_toggle_field();
     aws->at_newline();
 
+    aws->label("Select Colors For Amino Acids (AA) :");
+    aws->create_toggle_field(AWAR_SEQ_NAME_SELECTOR_AA,1);
+    for (set = 0; set < AWT_SEQ_COLORS_MAX_SET;set++){
+        sprintf(buf,"S_%i",set);
+        aws->insert_toggle( buf," ",set );
+    }
+    aws->update_toggle_field();
+    aws->at_newline();
+
+     aws->label_length( 6 ); 
+     aws->button_length( 6 );
+ 
     for (int big_columns = 0; big_columns <= 1; ++big_columns) {
         aws->create_button(0,"Char");
         for (set = 0; set < AWT_SEQ_COLORS_MAX_SET;set++){
@@ -145,7 +158,7 @@ void AWT_seq_colors::reload(){
     memset(char_2_gc,base_gc,256);
     int i;
     for (i=0;i<256;i++) char_2_char[i] = i;
-    long set = GBT_read_int2(gb_def,AWAR_SEQ_NAME_SELECTOR, default_set);
+    long set = GBT_read_int2(gb_def,AWAR_SEQ_NAME_SELECTOR_NA, default_set);
     if (set <0 || set >= AWT_SEQ_COLORS_MAX_SET) return;
     int elem;
     int s2;
@@ -178,6 +191,45 @@ void AWT_seq_colors::reload(){
         }
         free(val);
         free(sc);
+    }
+    {
+        memset(char_2_gc_aa,base_gc,256);
+        int i;
+        for (i=0;i<256;i++) char_2_char_aa[i] = i;
+        long set = GBT_read_int2(gb_def,AWAR_SEQ_NAME_SELECTOR_AA, default_set);
+        if (set <0 || set >= AWT_SEQ_COLORS_MAX_SET) return;
+        int elem;
+        int s2;
+        for (elem = 0; elem < AWT_SEQ_COLORS_MAX_ELEMS; elem++){
+            sprintf(buf,AWAR_SEQ_NAME_STRINGS_TEMPLATE,elem);
+            unsigned char *sc = (unsigned char *)GBT_read_string2(gb_def,buf,default_characters(elem));
+            if (!cbexists){
+                GBDATA *gb_ne = GB_search(gb_def,buf,GB_STRING);
+                GB_add_callback(gb_ne,GB_CB_CHANGED,awt_awar_changed_cb,(int *)this);
+                for (s2=0;s2 <  AWT_SEQ_COLORS_MAX_SET; s2++){
+                    sprintf(buf,AWAR_SEQ_NAME_TEMPLATE,s2,elem);
+                    GBT_read_string2(gb_def,buf,default_color(s2, elem));
+                    gb_ne = GB_search(gb_def,buf,GB_STRING);
+                    GB_add_callback(gb_ne,GB_CB_CHANGED,awt_awar_changed_cb,(int *)this);
+                }
+            }
+            sprintf(buf,AWAR_SEQ_NAME_TEMPLATE,(int)set,elem);
+            char *val = GBT_read_string(gb_def,buf);
+            if (strlen(val) != 2 || val[1] >'9' || val[1] < '0'){
+                aw_message(GB_export_error("Error in Color Lookup Table: '%s' is not of type X#",val));
+                delete val;
+                delete sc;
+                continue;
+            }
+            for (i=0;sc[i];i++){
+                char_2_gc_aa[sc[i]] = val[1]-'0' + base_gc;
+                if (val[0] != '='){
+                    char_2_char_aa[sc[i]] = val[0];
+                }
+            }
+            free(val);
+            free(sc);
+        }
     }
     cbexists = 1;
     run_cb();

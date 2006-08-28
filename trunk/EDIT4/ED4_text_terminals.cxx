@@ -179,6 +179,7 @@ int ED4_show_summary_match_on_device(AW_device *device, int gc, const char *opt_
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //  ProteinViewer: Drawing AminoAcid sequence parallel to the DNA sequence
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#define is_upper(c) ('A'<=(c) && (c)<='Z')
 
 ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
 {
@@ -245,8 +246,8 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
         unsigned char *db_pointer = (unsigned char *)resolve_pointer_to_string_copy();
 
         ref->expand_to_length(seq_end);
-        char *char_2_char = ED4_ROOT->sequence_colors->char_2_char;
-        char *char_2_gc = ED4_ROOT->sequence_colors->char_2_gc;
+        char *char_2_char = ED4_ROOT->sequence_colors->char_2_char_aa;
+        char *char_2_gc = ED4_ROOT->sequence_colors->char_2_gc_aa;
         int scr_pos;
         int is_ref = ref->reference_species_is(species_name);
 
@@ -262,41 +263,69 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
         free(db_pointer);
     }
 
-//     // Set background
-//     {
-//         GB_transaction       dummy(gb_main);
-//         int    i;
-//         AW_pos width      = ED4_ROOT->font_group.get_width(ED4_G_HELIX);
-//         int    real_left  = left;
-//         int    real_right = right;
-//         AW_pos x2         = text_x + width*real_left;
-//         AW_pos old_x      = x2;
-//         AW_pos y1         = world_y;
-//         AW_pos y2         = text_y+1;
-//         AW_pos height     = y2-y1+1;
-//         int    old_color  = ED4_G_SBACK_0;
-//         int    color      = ED4_G_SBACK_0;
+    // Set background
+    {
+        GB_transaction       dummy(gb_main);
+        int    i;
+        AW_pos width      = ED4_ROOT->font_group.get_width(ED4_G_HELIX);
+        int    real_left  = left;
+        int    real_right = right;
+        AW_pos x2         = text_x + width*real_left;
+        AW_pos old_x      = x2;
+        AW_pos y1         = world_y;
+        AW_pos y2         = text_y+1;
+        AW_pos height     = y2-y1+1;
+        int    old_color  = ED4_G_SBACK_0;
+        int    color      = ED4_G_SBACK_0;
+        char *char_2_gc_aa = ED4_ROOT->sequence_colors->char_2_gc_aa;
+        unsigned char *db_pointer_temp = (unsigned char *)resolve_pointer_to_string_copy();
+        AWT_reference *ref        = ED4_ROOT->reference;
+        int paintSameColor = -1;
+        int oldColor = ED4_G_STANDARD;
 
-//         for ( i = real_left; i <= real_right; i++,x2 += width) {
-//             int new_pos = rm->screen_to_sequence(i);  //getting the real position of the base in the sequence
+        for ( i = real_left; i <= real_right; i++,x2 += width) {
+            int new_pos = rm->screen_to_sequence(i);  //getting the real position of the base in the sequence
+    
+            int c = db_pointer_temp[new_pos];
+            char base = ref->convert(c, new_pos);
+            int gcChar =  char_2_gc_aa[c];
+            
+            if (gcChar<ED4_G_DRAG) {
+                color = gcChar;
+            }
+            else {
+                color = ED4_G_STANDARD ;
+            }
+ 
+            if (is_upper(base)) {
+                oldColor = color;
+                paintSameColor = 3;
+            }
 
-//             if (color != old_color) {   // draw till oldcolor
-//                 if (x2>old_x){
-//                     if (old_color!=ED4_G_STANDARD) {
-//                         device->box(old_color,old_x, y1, x2-old_x, height, -1, 0,0); // paints the search pattern background
-//                     }
-//                 }
-//                 old_x = x2;
-//                 old_color = color;
-//             }
-//         }
+            if (paintSameColor>0) {
+                color = oldColor;
+                paintSameColor--;
+            }
 
-//         if (x2>old_x){
-//             if (color!=ED4_G_STANDARD) {
-//                 device->box(color,old_x, y1, x2-old_x, height, -1, 0,0);
-//             }
-//         }
-//     }
+            if (color != old_color) {   // draw till oldcolor
+                if (x2>old_x){
+                    if (old_color!=ED4_G_STANDARD) {
+                        device->box(old_color,old_x, y1, x2-old_x, height, -1, 0,0);
+                        //                        device->text(ED4_G_STANDARD, c, text_x, text_y, 0, 1, 0, 0, 1);
+                    }
+                }
+                old_x = x2;
+                old_color = color;
+            }
+        }
+
+        if (x2>old_x){
+            if (color!=ED4_G_STANDARD) {
+                device->box(color,old_x, y1, x2-old_x, height, -1, 0,0);
+            }
+       }
+        free(db_pointer_temp);
+    }
 
 
     device->top_font_overlap    = 1;
