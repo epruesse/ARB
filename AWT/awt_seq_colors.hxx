@@ -1,12 +1,14 @@
 #ifndef awt_seq_colors_hxx_included
 #define awt_seq_colors_hxx_included
 
-#define AWAR_SEQ_NAME_STRINGS_TEMPLATE "awt/seq_colors/strings/elem_%i"
-#define AWAR_SEQ_NAME_TEMPLATE         "awt/seq_colors/set_%i/elem_%i"
-#define AWAR_SEQ_NAME_SELECTOR         "awt/seq_colors/select"
+#define AWAR_SEQ_PATH  "awt/seq_colors/"
+#define AWAR_SEQ_NAME_STRINGS_TEMPLATE    AWAR_SEQ_PATH  "strings/elem_%i"
+#define AWAR_SEQ_NAME_TEMPLATE                  AWAR_SEQ_PATH  "set_%i/elem_%i"
+#define AWAR_SEQ_NAME_SELECTOR_NA            AWAR_SEQ_PATH   "na/select"
+#define AWAR_SEQ_NAME_SELECTOR_AA             AWAR_SEQ_PATH   "aa/select"
 
 #define AWT_SEQ_COLORS_MAX_SET   5
-#define AWT_SEQ_COLORS_MAX_ELEMS 26 // has to be a even number!
+#define AWT_SEQ_COLORS_MAX_ELEMS 28 // has to be a even number!
 
 class AWT_seq_colors {
     int base_gc;
@@ -23,6 +25,8 @@ public:
 // real public
     char char_2_gc[256];	// translate to gc
     char char_2_char[256];	// translate to char
+    char char_2_gc_aa[256];	// translate to gc  - for aminoacid sequence 
+    char char_2_char_aa[256];	// translate to char - for aminoacid sequence 
     AWT_seq_colors(GBDATA *gb_default, int base_gc,AW_CB cb,AW_CL cd1,AW_CL cd2);
 };
 
