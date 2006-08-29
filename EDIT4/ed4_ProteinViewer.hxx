@@ -12,8 +12,9 @@
 #define AWAR_PROTVIEW_COMPLEMENTARY_STRAND_2   AWAR_PROTVIEW "complementary_strand_2" 
 #define AWAR_PROTVIEW_COMPLEMENTARY_STRAND_3   AWAR_PROTVIEW "complementary_strand_3" 
 #define AWAR_PROTVIEW_DEFINED_FIELDS                   AWAR_PROTVIEW "defined_fields" 
-#define AWAR_PROTVIEW_DISPLAY_AA                         AWAR_PROTVIEW "display_aa" 
-
+#define AWAR_PROTVIEW_DISPLAY_AA                         AWAR_PROTVIEW "display_aa"
+#define AWAR_PROTVIEW_DISPLAY_OPTIONS                    AWAR_PROTVIEW "display_options" 
+ 
 // Create Awars For Protein Viewer
 void  PV_CreateAwars(AW_root *root, AW_default aw_def);
 

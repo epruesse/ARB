@@ -37,6 +37,7 @@ GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int s
 AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root);
 void PV_DisplayAminoAcidNames(AW_root *root);
 void PV_PrintMissingDBentryInformation(void);
+void PV_RefreshWindow(AW_root *root);
 
 // --------------------------------------------------------------------------------
 //        Binding callback function to the AWARS
@@ -55,6 +56,7 @@ void PV_AddCallBacks(AW_root *awr) {
 
     awr->awar(AWAR_PROTVIEW_DEFINED_FIELDS)->add_callback(PV_CallBackFunction);
     awr->awar(AWAR_PROTVIEW_DISPLAY_AA)->add_callback(PV_DisplayAminoAcidNames);
+    awr->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->add_callback(PV_RefreshWindow);
     
     {
         GB_transaction dummy(gb_main);
@@ -81,6 +83,7 @@ void PV_CreateAwars(AW_root *root, AW_default aw_def){
 
     root->awar_int(AWAR_PROTVIEW_DEFINED_FIELDS, 0, aw_def); 
     root->awar_int(AWAR_PROTVIEW_DISPLAY_AA, 0, aw_def); 
+    root->awar_int(AWAR_PROTVIEW_DISPLAY_OPTIONS, 0, aw_def); 
 }
 
 bool PV_LookForNewTerminals(AW_root *root){
@@ -114,6 +117,12 @@ bool PV_LookForNewTerminals(AW_root *root){
     return bTerminalsFound;
 }
 
+void PV_RefreshWindow(AW_root *root){
+    AWUSE(root);
+    ED4_ROOT->refresh_all_windows(0);
+    ED4_refresh_window(0, 0, 0);
+}
+
 void PV_CallBackFunction(AW_root *root) {
     // Create New Terminals If Aminoacid Sequence Terminals Are Not Created 
     if(!gTerminalsCreated){
@@ -123,7 +132,7 @@ void PV_CallBackFunction(AW_root *root) {
     if(gTerminalsCreated) {
         PV_ManageTerminals(root);
     }
-    ED4_ROOT->refresh_all_windows(0);
+    PV_RefreshWindow(root);
 }
 
 void PV_HideTerminal(ED4_AA_sequence_terminal *aaSeqTerminal) {
@@ -642,6 +651,12 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
 
         aws->at("aaName");
         aws->create_toggle(AWAR_PROTVIEW_DISPLAY_AA);
+
+        aws->at("dispOption");
+        aws->create_toggle_field(AWAR_PROTVIEW_DISPLAY_OPTIONS,1);
+        aws->insert_toggle("TEXT", "T", 0);
+        aws->insert_toggle("BOX", "B", 1);
+        aws->update_toggle_field();
     }
 
     // binding callback function to the AWARS

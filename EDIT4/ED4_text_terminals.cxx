@@ -27,6 +27,7 @@
 #include "ed4_block.hxx"
 #include "ed4_nds.hxx"
 #include "ed4_visualizeSAI.hxx"
+#include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
 
 ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
@@ -263,6 +264,7 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
         free(db_pointer);
     }
 
+    if (ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->read_int()) {
     // Set background
     {
         GB_transaction       dummy(gb_main);
@@ -288,6 +290,7 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
     
             int c = db_pointer_temp[new_pos];
             char base = ref->convert(c, new_pos);
+            //            if(base>64 && base<116) continue;
             int gcChar =  char_2_gc_aa[c];
             
             if (gcChar<ED4_G_DRAG) {
@@ -298,24 +301,16 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
             }
  
             if (is_upper(base)) {
-                oldColor = color;
-                paintSameColor = 3;
-            }
-
-            if (paintSameColor>0) {
-                color = oldColor;
-                paintSameColor--;
-            }
-
-            if (color != old_color) {   // draw till oldcolor
+                x2= x2+(width*3);
                 if (x2>old_x){
-                    if (old_color!=ED4_G_STANDARD) {
-                        device->box(old_color,old_x, y1, x2-old_x, height, -1, 0,0);
-                        //                        device->text(ED4_G_STANDARD, c, text_x, text_y, 0, 1, 0, 0, 1);
-                    }
+                    if (color!=ED4_G_STANDARD) {
+                        device->box(color,old_x, y1, x2-old_x, height, -1, 0,0);
+                        }
                 }
                 old_x = x2;
+                oldColor = color;
                 old_color = color;
+                i = i+3;
             }
         }
 
@@ -326,11 +321,10 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
        }
         free(db_pointer_temp);
     }
-
-
+    }
+    else {
     device->top_font_overlap    = 1;
     device->bottom_font_overlap = 1;
-
     // output strings
     {
         int gc;
@@ -340,10 +334,10 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
             memset(colored_strings[gc] + left,' ', right-left+1); // clear string
         }
     }
-
+    }
     device->top_font_overlap    = 0;
     device->bottom_font_overlap = 0;
-
+    
     return ( ED4_R_OK );
 }
 //YKADI
