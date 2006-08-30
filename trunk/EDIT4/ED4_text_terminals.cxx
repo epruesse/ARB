@@ -180,7 +180,6 @@ int ED4_show_summary_match_on_device(AW_device *device, int gc, const char *opt_
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //  ProteinViewer: Drawing AminoAcid sequence parallel to the DNA sequence
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#define is_upper(c) ('A'<=(c) && (c)<='Z')
 
 ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
 {
@@ -300,7 +299,7 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
                 color = ED4_G_STANDARD ;
             }
  
-            if (is_upper(base)) {
+            if (isupper(base)) {
                 x2= x2+(width*3);
                 if (x2>old_x){
                     if (color!=ED4_G_STANDARD) {
