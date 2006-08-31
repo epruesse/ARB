@@ -76,7 +76,7 @@ endif
 		fflags = $(dflag1) -C
 		extended_warnings         = -Wwrite-strings -Wunused -Wno-aggregate-return
 		extended_cpp_warnings     = -Wnon-virtual-dtor -Wreorder -Wpointer-arith 
-		extended_cpp_3xx_warnings = -Wfloat-equal -Wdisabled-optimization -Wmissing-format-attribute -Wmissing-noreturn 
+		extended_cpp_3xx_warnings = -Wdisabled-optimization -Wmissing-format-attribute -Wmissing-noreturn # -Wfloat-equal  
 		extended_cpp_4xx_warnings = 
 else
 ifeq ($(DEBUG),0)
