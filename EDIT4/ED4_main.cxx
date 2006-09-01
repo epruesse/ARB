@@ -19,6 +19,7 @@
 #include <AW_helix.hxx>
 #include <st_window.hxx>
 #include <gde.hxx>
+#include<awt_pro_a_nucs.hxx>
 
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
@@ -611,9 +612,6 @@ int main(int argc,char **argv)
 
             ED4_ROOT->create_hierarchy(as_mid, as_top);
 
-            // Create Addistional sequence (aminoacid) terminals to be used in Protein Viewwer
-            PV_CallBackFunction(ED4_ROOT->aw_root);
-
             delete as_mid;
             delete as_top;
         }
@@ -629,6 +627,9 @@ int main(int argc,char **argv)
         printf("Species container contains %i species (at startup)\n", ED4_elements_in_species_container);
 #endif
     }
+    
+    // Create Addistional sequence (aminoacid) terminals to be used in Protein Viewwer
+    PV_CallBackFunction(ED4_ROOT->aw_root);
 
     ED4_ROOT->aw_root->main_loop(); // enter main-loop
 }

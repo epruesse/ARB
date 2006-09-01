@@ -601,7 +601,19 @@ int AW_device::box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bi
     erg |= line(gc,x0+width,y0+height,x0+width,y0+height,filteri,cd1,cd2);
     return erg;
 }
+
 int AW_device::circle(int gc, AW_BOOL /*filled has no effect here*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
+{
+    int erg = 0;
+    if (	!(filteri & filter) ) return 0;
+    erg |= line(gc,x0,y0+height,x0+width,y0,filteri,cd1,cd2);
+    erg |= line(gc,x0,y0+height,x0-width,y0,filteri,cd1,cd2);
+    erg |= line(gc,x0,y0-height,x0+width,y0,filteri,cd1,cd2);
+    erg |= line(gc,x0,y0-height,x0-width,y0,filteri,cd1,cd2);
+    return erg;
+}
+
+int AW_device::arc(int gc, AW_BOOL /*filled has no effect here*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
 {
     int erg = 0;
     if (	!(filteri & filter) ) return 0;

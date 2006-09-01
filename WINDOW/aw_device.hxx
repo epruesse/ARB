@@ -353,6 +353,7 @@ class AW_device: public AW_matrix, public AW_gc {
 
      virtual int box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
      virtual int circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
+     virtual int arc(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
      virtual int filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
      // * third level functions (never virtual)

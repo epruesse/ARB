@@ -119,7 +119,7 @@ int AW_device_Xm::circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos widt
 }
 
 int AW_device_Xm::arc(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
-    int angle = 180; // drawing arc
+    int angle = -180; // drawing arc
     return circle_arc(gc,filled,x0, y0, width, height, filteri, cd1, cd2,angle);
 }
 
@@ -151,10 +151,11 @@ int AW_device_Xm::circle_arc(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos 
             width  *= 2.0 * this->get_scale();
             height *= 2.0 * this->get_scale();
             if (!filled) {
-                XDrawArc(common->display, common->window_id, gcm->gc, AW_INT(XL), AW_INT(YL), AW_INT(width), AW_INT(height), 0, 64*angle);
+                //int XDrawArc(Display *display, Drawable d, GC gc, int x, int y, unsigned int width, unsigned int height, int angle1, int angle2);
+                XDrawArc(common->display, common->window_id, gcm->gc, AW_INT(XL), AW_INT(YL), AW_INT(width), AW_INT(height), 0*angle, 64*angle);
             }
              else {
-                XFillArc(common->display, common->window_id, gcm->gc, AW_INT(XL), AW_INT(YL), AW_INT(width), AW_INT(height), 0, 64*angle);
+                XFillArc(common->display, common->window_id, gcm->gc, AW_INT(XL), AW_INT(YL), AW_INT(width), AW_INT(height), 0*angle, 64*angle);
             }
             AUTO_FLUSH(this);
         }

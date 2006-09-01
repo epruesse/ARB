@@ -180,6 +180,7 @@ int ED4_show_summary_match_on_device(AW_device *device, int gc, const char *opt_
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //  ProteinViewer: Drawing AminoAcid sequence parallel to the DNA sequence
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#define is_upper(c) ('A'<=(c) && (c)<='Z')
 
 ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
 {
@@ -240,6 +241,10 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
     // mark all strings as unused
     memset(color_is_used,0,sizeof(color_is_used));
 
+    int    iDisplayAminoAcids = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_AA)->read_int();
+    int iDisplayAsColoredBox = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->read_int();
+    int skip = (iDisplayAminoAcids)? 0:1;
+
     // transform strings, compress if needed
     {
         AWT_reference *ref        = ED4_ROOT->reference;
@@ -256,76 +261,61 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
             int c = db_pointer[seq_pos];
             int gc = char_2_gc[c];
 
-            color_is_used[gc] = scr_pos+1;
-            colored_strings[gc][scr_pos] = char_2_char[is_ref ? c : ref->convert(c, seq_pos)];
+            color_is_used[gc] = scr_pos+skip+1;
+            colored_strings[gc][scr_pos+skip] = char_2_char[is_ref ? c : ref->convert(c, seq_pos)];
         }
 
         free(db_pointer);
     }
 
-    if (ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->read_int()) {
-    // Set background
-    {
-        GB_transaction       dummy(gb_main);
-        int    i;
-        AW_pos width      = ED4_ROOT->font_group.get_width(ED4_G_HELIX);
-        int    real_left  = left;
-        int    real_right = right;
-        AW_pos x2         = text_x + width*real_left;
-        AW_pos old_x      = x2;
-        AW_pos y1         = world_y;
-        AW_pos y2         = text_y+1;
-        AW_pos height     = y2-y1+1;
-        int    old_color  = ED4_G_SBACK_0;
-        int    color      = ED4_G_SBACK_0;
-        char *char_2_gc_aa = ED4_ROOT->sequence_colors->char_2_gc_aa;
-        unsigned char *db_pointer_temp = (unsigned char *)resolve_pointer_to_string_copy();
-        AWT_reference *ref        = ED4_ROOT->reference;
-        int paintSameColor = -1;
-        int oldColor = ED4_G_STANDARD;
+    if(!iDisplayAminoAcids) {
+        {
+            AW_pos       width = ED4_ROOT->font_group.get_width(ED4_G_HELIX);
+            int          real_left  = left;
+            int        real_right  = right;
+            AW_pos           x2  = text_x + width*real_left;
+            AW_pos            x1 = x2;
+            AW_pos           y1  = world_y;
+            AW_pos           y2  = text_y+1;
+            AW_pos       height = y2-y1+1;
+            int                color  = ED4_G_STANDARD;
+            char *char_2_gc_aa = ED4_ROOT->sequence_colors->char_2_gc_aa;
 
-        for ( i = real_left; i <= real_right; i++,x2 += width) {
-            int new_pos = rm->screen_to_sequence(i);  //getting the real position of the base in the sequence
-    
-            int c = db_pointer_temp[new_pos];
-            char base = ref->convert(c, new_pos);
-            //            if(base>64 && base<116) continue;
-            int gcChar =  char_2_gc_aa[c];
-            
-            if (gcChar<ED4_G_DRAG) {
-                color = gcChar;
-            }
-            else {
-                color = ED4_G_STANDARD ;
-            }
- 
-            if (isupper(base)) {
-                x2= x2+(width*3);
-                if (x2>old_x){
-                    if (color!=ED4_G_STANDARD) {
-                        device->box(color,old_x, y1, x2-old_x, height, -1, 0,0);
+            unsigned char *db_pointer_temp = (unsigned char *)resolve_pointer_to_string_copy();
+            AWT_reference                   *ref = ED4_ROOT->reference;
+            int    i;
+
+            for ( i = real_left; i <= real_right; i++,x2 += width) {
+                int new_pos = rm->screen_to_sequence(i);  //getting the real position of the base in the sequence
+                int           c = db_pointer_temp[new_pos];
+                char    base = ref->convert(c, new_pos);
+
+                if (is_upper(base) || (base=='*')) {
+                    x1   = x2;         // store current x pos to x1
+                    x2 += width*3; // add 3 char width to x2
+                    i    += 2;         //jump two pos 
+
+                    int gcChar =  char_2_gc_aa[c];
+                    if ((gcChar>=0) && (gcChar<ED4_G_DRAG)) {
+                        color = gcChar;
+                        if (iDisplayAsColoredBox) {
+                            device->box(color,x1, y1, x2-x1, height, -1, 0,0);
+                        } else {
+                            //int AW_device_Xm::arc(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) 
+                            device->arc(ED4_G_STANDARD, false, x1+(width*3)/2, y1, (width*3)/2, height/2, -1, 0, 0);
+                            //                        device->box(0,x1+width, y1, width, height, -1, 0,0);
                         }
+                    }
+                    x2 -= width;
                 }
-                old_x = x2;
-                oldColor = color;
-                old_color = color;
-                i = i+3;
             }
+            free(db_pointer_temp);
         }
-
-        if (x2>old_x){
-            if (color!=ED4_G_STANDARD) {
-                device->box(color,old_x, y1, x2-old_x, height, -1, 0,0);
-            }
-       }
-        free(db_pointer_temp);
     }
-    }
-    else {
     device->top_font_overlap    = 1;
     device->bottom_font_overlap = 1;
     // output strings
-    {
+    if (!iDisplayAsColoredBox || iDisplayAminoAcids) { 
         int gc;
         for (gc = 0; gc < ED4_G_DRAG; gc++){
             if (!color_is_used[gc]) continue;
@@ -333,10 +323,9 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
             memset(colored_strings[gc] + left,' ', right-left+1); // clear string
         }
     }
-    }
     device->top_font_overlap    = 0;
     device->bottom_font_overlap = 0;
-    
+
     return ( ED4_R_OK );
 }
 //YKADI
