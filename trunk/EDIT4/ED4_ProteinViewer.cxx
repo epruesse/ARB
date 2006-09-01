@@ -126,6 +126,9 @@ void PV_RefreshWindow(AW_root *root){
 void PV_CallBackFunction(AW_root *root) {
     // Create New Terminals If Aminoacid Sequence Terminals Are Not Created 
     if(!gTerminalsCreated){
+        // AWAR_PROTEIN_TYPE is not initilized if called from ED4_main before creating proteinViewer window
+        // so, initilize it here
+        root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, gb_main);
         PV_CreateAllTerminals(root);
     }
     // Manage the terminals showing only those selected by the user
@@ -328,7 +331,6 @@ GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int s
                 translationTable      = AWT_embl_transl_table_2_arb_code_nr(sp_embl_table);
             }
             else {   // use selected translation table as default (if 'transl_table' field is missing)
-                //  aw_message(GBS_global_string("ERROR: Database doesNOT contain translation table entry for \" %s \" species! Using default tranlation table...", speciesName));
                 gMissingTransTable++;
                 translationTable  = GBT_read_int(gb_main,AWAR_PROTEIN_TYPE);
             }
@@ -342,7 +344,6 @@ GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int s
                 }
             }
             else {
-                //   aw_message(GBS_global_string("ERROR: Database doesNOT contain 'codon start' entry for \" %s \" species! Using 1st base as codon start...", speciesName));
                 gMissingCodonStart++;                
                 startPos4Translation = 0;
             }
@@ -374,7 +375,7 @@ GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int s
 
     char *s = (char*)malloc(len+1);
     int i,j;
-    char spChar = '_';
+    char spChar = ' ';
     {
         int displayAminoAcid = root->awar(AWAR_PROTVIEW_DISPLAY_AA)->read_int();
         if (displayAminoAcid) 
