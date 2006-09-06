@@ -1640,12 +1640,13 @@ public:
     ED4_AA_sequence_terminal( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
     virtual ~ED4_AA_sequence_terminal();
 
-    GBDATA *aaSequence;
+    char *aaSequence;
     int aaSeqFlag;
 
     virtual GB_alignment_type GetAliType();
     void SET_aaSeqFlag (int flag) {aaSeqFlag = flag;}
     int GET_aaSeqFlag (){return aaSeqFlag;}
+    void SET_aaSequence_pointer(char *aaSeq) { aaSequence = new char[strlen(aaSeq)]; aaSequence = aaSeq;}
 };
 
 // --------------------------------------------------------------------------------
