@@ -27,17 +27,16 @@ void PV_AddCallBacks(AW_root *awr);
 void PV_CreateAwars(AW_root *root, AW_default aw_def);
 bool PV_LookForNewTerminals(AW_root *root);
 void PV_CallBackFunction(AW_root *root);
-//void PV_AA_SequenceUpdate_CB(AW_root *root);
 void PV_AA_SequenceUpdate_CB(GBDATA *gb_species_data, int */*cl*/, GB_CB_TYPE gbtype);
 void PV_CreateAllTerminals(AW_root *root);
 void PV_ManageTerminals(AW_root *root);
 void PV_HideTerminal(ED4_AA_sequence_terminal *aaSeqTerminal);
 void PV_UnHideTerminal(ED4_AA_sequence_terminal *aaSeqTerminal);
-GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int startPos4Translation, int translationMode);
-AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root);
+void TranslateGeneToAminoAcidSequence(AW_root *root,ED4_AA_sequence_terminal *seqTerm, char *speciesName, int startPos4Translation, int translationMode);
 void PV_DisplayAminoAcidNames(AW_root *root);
 void PV_PrintMissingDBentryInformation(void);
 void PV_RefreshWindow(AW_root *root);
+AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root);
 
 // --------------------------------------------------------------------------------
 //        Binding callback function to the AWARS
@@ -193,8 +192,7 @@ void PV_DisplayAminoAcidNames(AW_root *root) {
                                             startPos = 0;
                                             translationMode = DB_FIELD_STRAND;
                                         }
-                                        aaSeqTerminal->aaSequence = TranslateGeneToAminoAcidSequence(gRoot, speciesName, startPos, translationMode);
-                                        aaSeqTerminal->set_species_pointer(aaSeqTerminal->aaSequence);
+                                        TranslateGeneToAminoAcidSequence(gRoot, aaSeqTerminal, speciesName, startPos, translationMode);
                                     }
                                 }
                             }
@@ -203,6 +201,7 @@ void PV_DisplayAminoAcidNames(AW_root *root) {
         }
     // Print missing DB entries
     PV_PrintMissingDBentryInformation();
+    PV_RefreshWindow(root);
 }
 
 void PV_ManageTerminals(AW_root *root){
@@ -223,7 +222,6 @@ void PV_ManageTerminals(AW_root *root){
          terminal = terminal->get_next_terminal())
         {
             if(terminal->is_sequence_terminal()) {
-                ED4_sequence_terminal *seqTerminal = terminal->to_sequence_terminal();
                 ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
                 if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) 
                     {
@@ -289,8 +287,8 @@ PV_ERROR PV_ComplementarySequence(char *sequence)
     strcpy(sequence, complementarySeq);
     return PV_SUCCESS;
 }
-
-GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int startPos4Translation, int translationMode){
+// This function translates gene sequence to aminoacid sequence and stores into the respective AA_Sequence_terminal
+void TranslateGeneToAminoAcidSequence(AW_root *root, ED4_AA_sequence_terminal *seqTerm, char *speciesName, int startPos4Translation, int translationMode){
     GBDATA    *gb_species = GBT_find_species(gb_main, speciesName);
     char *defaultAlignment = GBT_get_default_alignment(gb_main);
     GBDATA  *gb_SeqData = GBT_read_sequence(gb_species, defaultAlignment);
@@ -358,22 +356,9 @@ GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int s
     }
     //AWT_pro_a_nucs_convert(char *seqdata, long seqlen, int startpos, bool translate_all)
     int stops = AWT_pro_a_nucs_convert(str_SeqData, len, startPos4Translation, "false"); 
+    AWUSE(stops);
 
-    GBDATA *gb_ProSeqData = 0;
-    char buf[100];
-    // Create temporary alignment data to store the translated sequence 
-    switch(translationMode) {
-    case FORWARD_STRAND:           sprintf(buf, "ali_temp_aa_seq_%ld_%ld",FORWARD_STRAND, startPos4Translation); break;
-    case COMPLEMENTARY_STRAND: sprintf(buf, "ali_temp_aa_seq_%ld_%ld",COMPLEMENTARY_STRAND, startPos4Translation); break;
-    case DB_FIELD_STRAND:            sprintf(buf, "ali_temp_aa_seq_%ld_%ld",DB_FIELD_STRAND, startPos4Translation); break;
-    }
-    gb_ProSeqData = GBT_add_data(gb_species,buf,"data", GB_STRING);
-    if (!gb_ProSeqData) {
-        cout<<"ERROR : "<<GB_get_error()<<endl;
-        exit(0);
-    }
-
-    char *s = (char*)malloc(len+1);
+    char *s = new char[len+1];
     int i,j;
     char spChar = ' ';
     {
@@ -396,7 +381,7 @@ GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int s
                             s[i++]=base;
                     }
                     if (AAname) {
-                        for(int n =0; n<strlen(AAname) && i<len ;n++) {
+                        for(unsigned int n =0; n<strlen(AAname) && i<len ;n++) {
                             s[i++]=AAname[n];
                         }
                     }
@@ -416,10 +401,10 @@ GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int s
             }
         s[i]='\0'; // close the string
     }
-
-    error  = GB_write_string(gb_ProSeqData,s);
-
-    free(s);
+    
+    seqTerm->SET_aaSequence_pointer(strdup(s));
+    
+    delete s;
     free(str_SeqData);
 
     GBT_write_int(gb_main, AWAR_PROTEIN_TYPE, selectedTable);// restore the selected table
@@ -428,13 +413,11 @@ GBDATA *TranslateGeneToAminoAcidSequence(AW_root *root, char *speciesName, int s
         cout<<"error during writing translated data.....!!!"<<endl;
         exit(0);
     }
-
-    return gb_ProSeqData;
 }
 
 void PV_PrintMissingDBentryInformation(void){
-    aw_message(GBS_global_string("WARNING:  'codon start' entry not found in %d of %d species! Using 1st base as codon start...",gMissingCodonStart,  GBT_count_marked_species(gb_main)));
-    aw_message(GBS_global_string("WARNING:  'translation table' entry not found in %d of %d species! Using selected translation table  as a default table...",gMissingTransTable,  GBT_count_marked_species(gb_main)));
+    aw_message(GBS_global_string("WARNING:  'codon start' entry not found in %d of %d species! Using 1st base as codon start...",gMissingCodonStart,  (int) GBT_count_marked_species(gb_main)));
+    aw_message(GBS_global_string("WARNING:  'translation table' entry not found in %d of %d species! Using selected translation table  as a default table...",gMissingTransTable, (int) GBT_count_marked_species(gb_main)));
     gMissingCodonStart = gMissingTransTable = 0;
 }
 
@@ -480,13 +463,13 @@ void PV_AA_SequenceUpdate_CB(GBDATA */*gb_species_data*/, int */*cl*/, GB_CB_TYP
                                         startPos = 0;
                                         translationMode = DB_FIELD_STRAND;
                                     }
-                                    aaSeqTerminal->aaSequence = TranslateGeneToAminoAcidSequence(gRoot, speciesName, startPos, translationMode);
-                                    aaSeqTerminal->set_species_pointer(aaSeqTerminal->aaSequence);
+                                    TranslateGeneToAminoAcidSequence(gRoot, aaSeqTerminal, speciesName, startPos, translationMode);
                                 }
                             }
                         }
                     // Print missing DB entries
                     PV_PrintMissingDBentryInformation();
+                    PV_RefreshWindow(gRoot);
                 }
         }
     }
@@ -568,8 +551,7 @@ void PV_CreateAllTerminals(AW_root *root) {
                                             startPos = 0;
                                             translationMode = DB_FIELD_STRAND;
                                         }
-                                        AA_SeqTerminal->aaSequence = TranslateGeneToAminoAcidSequence(root, speciesName, startPos, translationMode);
-                                        AA_SeqTerminal->set_species_pointer(AA_SeqTerminal->aaSequence);
+                                        TranslateGeneToAminoAcidSequence(root, AA_SeqTerminal, speciesName, startPos, translationMode);
                                         AA_SeqTerminal->SET_aaSeqFlag(i+1);
                                         new_SeqManager->children->append_member(AA_SeqTerminal);
 

@@ -1195,6 +1195,7 @@ GB_alignment_type ED4_AA_sequence_terminal::GetAliType()
 
 ED4_AA_sequence_terminal::~ED4_AA_sequence_terminal()
 {
+    delete aaSequence;
 }
 
 ED4_sequence_terminal::ED4_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent )
