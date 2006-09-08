@@ -243,7 +243,6 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
     int    iDisplayAminoAcids = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_AA)->read_int();
     int iDisplayAsColoredBox = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->read_int();
     unsigned char *aaSequence = (unsigned char *) strdup(this->aaSequence);
-    int skip = (iDisplayAminoAcids)? 0:1;
 
     {     // transform strings, compress if needed
         AWT_reference *ref        = ED4_ROOT->reference;
@@ -257,8 +256,8 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
             int c = aaSequence[seq_pos];
             int gc = char_2_gc[c];
 
-            color_is_used[gc] = scr_pos+skip+1;
-            colored_strings[gc][scr_pos+skip] = char_2_char[aaSequence[seq_pos]];
+            color_is_used[gc] = scr_pos+1;
+            colored_strings[gc][scr_pos] = char_2_char[aaSequence[seq_pos]];
         }
     }
 
@@ -281,21 +280,20 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
                 int       c = aaSequence[new_pos];
                 char    base = aaSequence[new_pos];
                 if (is_upper(base) || (base=='*')) {
-                    x1   = x2;         // store current x pos to x1
-                    x2 += width*3; // add 3 char width to x2
+                    x1   = x2-width;         // store current x pos to x1
+                    x2 += width*2; // add 2 char width to x2
                     i    += 2;         //jump two pos 
 
                     int gcChar =  char_2_gc_aa[c];
                     if ((gcChar>=0) && (gcChar<ED4_G_DRAG)) {
-                        color = gcChar;
+                        color = gcChar;  
                         if (iDisplayAsColoredBox) {
-                            device->box(color,x1, y1, x2-x1, height, -1, 0,0);
+                            device->box(color,x1, y1, width*3, height, -1, 0,0);
                         } else {
                             //int AW_device_Xm::arc(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) 
                             device->arc(ED4_G_STANDARD, false, x1+(width*3)/2, y1, (width*3)/2, height/2, -1, 0, 0);
                         }
                     }
-                    x2 -= width;
                 }
             }
         }
