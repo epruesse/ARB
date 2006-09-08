@@ -56,6 +56,7 @@ void PV_AddCallBacks(AW_root *awr) {
     awr->awar(AWAR_PROTVIEW_DEFINED_FIELDS)->add_callback(PV_CallBackFunction);
     awr->awar(AWAR_PROTVIEW_DISPLAY_AA)->add_callback(PV_DisplayAminoAcidNames);
     awr->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->add_callback(PV_RefreshWindow);
+    awr->awar(AWAR_PROTVIEW_DISPLAY_MODE)->add_callback(PV_RefreshWindow);
     
     {
         GB_transaction dummy(gb_main);
@@ -83,6 +84,7 @@ void PV_CreateAwars(AW_root *root, AW_default aw_def){
     root->awar_int(AWAR_PROTVIEW_DEFINED_FIELDS, 0, aw_def); 
     root->awar_int(AWAR_PROTVIEW_DISPLAY_AA, 0, aw_def); 
     root->awar_int(AWAR_PROTVIEW_DISPLAY_OPTIONS, 0, aw_def); 
+    root->awar_int(AWAR_PROTVIEW_DISPLAY_MODE, 3, aw_def); 
 }
 
 bool PV_LookForNewTerminals(AW_root *root){
@@ -118,7 +120,6 @@ bool PV_LookForNewTerminals(AW_root *root){
 
 void PV_RefreshWindow(AW_root *root){
     AWUSE(root);
-    ED4_ROOT->refresh_all_windows(0);
     ED4_refresh_window(0, 0, 0);
 }
 
@@ -134,7 +135,7 @@ void PV_CallBackFunction(AW_root *root) {
     if(gTerminalsCreated) {
         PV_ManageTerminals(root);
     }
-    PV_RefreshWindow(root);
+    ED4_ROOT->refresh_all_windows(0);
 }
 
 void PV_HideTerminal(ED4_AA_sequence_terminal *aaSeqTerminal) {
@@ -228,6 +229,7 @@ void PV_ManageTerminals(AW_root *root){
                         // we are in the sequence terminal section of a species
                         // walk through all the corresponding AA sequence terminals for the speecies and 
                         // hide or unhide the terminals based on the display options set by the user
+
                         for(int i=0; i<PV_AA_Terminals4Species; i++) 
                             {
                                 // get the corresponding AA_sequence_terminal skipping sequence_info terminal
@@ -389,7 +391,7 @@ void TranslateGeneToAminoAcidSequence(AW_root *root, ED4_AA_sequence_terminal *s
             }
         else 
             {
-                int k = startPos4Translation;
+                int k = startPos4Translation+1;
                 for(i=0, j=0; i<len; i++) {
                     if((k==i) && (j<len)) {
                         s[i]=str_SeqData[j++];
@@ -530,14 +532,14 @@ void PV_CreateAllTerminals(AW_root *root) {
                                         new_SeqInfoTerminal = new ED4_sequence_info_terminal(namebuffer, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, new_SeqManager );
                                         new_SeqInfoTerminal->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );
                                         ED4_sequence_info_terminal *seqInfoTerminal = speciesManager->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
-                                        new_SeqInfoTerminal->set_links( seqInfoTerminal, seqTerminal );
+                                        new_SeqInfoTerminal->set_links( seqInfoTerminal, seqInfoTerminal );
                                         new_SeqManager->children->append_member( new_SeqInfoTerminal );
 
                                         ED4_AA_sequence_terminal *AA_SeqTerminal = 0;
                                         sprintf(namebuffer, "AA_Sequence_Term%ld.%d",ED4_counter, count++);
                                         AA_SeqTerminal = new ED4_AA_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqManager);
-                                        //                new_SeqTERMINAL->set_properties( ED4_P_CURSOR_ALLOWED );
                                         AA_SeqTerminal->set_links( seqTerminal, seqTerminal );
+
                                         char       *speciesName    = seqTerminal->species_name; 
                                         if (i<FORWARD_STRANDS){
                                             startPos = i;
@@ -554,7 +556,7 @@ void PV_CreateAllTerminals(AW_root *root) {
                                         TranslateGeneToAminoAcidSequence(root, AA_SeqTerminal, speciesName, startPos, translationMode);
                                         AA_SeqTerminal->SET_aaSeqFlag(i+1);
                                         new_SeqManager->children->append_member(AA_SeqTerminal);
-
+                     
                                         ED4_counter++;
 
                                         new_SeqManager->resize_requested_by_child();
@@ -639,6 +641,14 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
         aws->create_toggle_field(AWAR_PROTVIEW_DISPLAY_OPTIONS,1);
         aws->insert_toggle("TEXT", "T", 0);
         aws->insert_toggle("BOX", "B", 1);
+        aws->update_toggle_field();
+
+        aws->at("dispMode");
+        aws->create_toggle_field(AWAR_PROTVIEW_DISPLAY_MODE,1);
+        aws->insert_toggle("MARKED", "M", 0);
+        aws->insert_toggle("SELECTED", "S", 1);
+        aws->insert_toggle("CURSOR", "C", 2);
+        aws->insert_toggle("ALL", "A", 3);
         aws->update_toggle_field();
     }
 
