@@ -420,7 +420,9 @@ void ED4_create_all_awars(AW_root *root, const char *config_name) { // cursor aw
     ED4_createVisualizeSAI_Awars(root,AW_ROOT_DEFAULT);
 
     // Create Awars To Be Used In Protein Viewer
-    PV_CreateAwars(root,AW_ROOT_DEFAULT);
+    if(ED4_ROOT->alignment_type == GB_AT_DNA) {
+        PV_CreateAwars(root,AW_ROOT_DEFAULT);
+    }
 }
 
 const char *ED4_propertyName(int mode) {
@@ -628,8 +630,10 @@ int main(int argc,char **argv)
 #endif
     }
     
-    // Create Addistional sequence (aminoacid) terminals to be used in Protein Viewwer
-    PV_CallBackFunction(ED4_ROOT->aw_root);
+    // Create Additional sequence (aminoacid) terminals to be used in Protein Viewer
+    if(ED4_ROOT->alignment_type == GB_AT_DNA) {
+        PV_CallBackFunction(ED4_ROOT->aw_root);
+    }
 
     ED4_ROOT->aw_root->main_loop(); // enter main-loop
 }

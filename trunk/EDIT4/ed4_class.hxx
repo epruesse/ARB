@@ -1641,11 +1641,13 @@ public:
     virtual ~ED4_AA_sequence_terminal();
 
     char *aaSequence;
-    int aaSeqFlag;
+    int aaStartPos;
+    int aaStrandType;
 
     virtual GB_alignment_type GetAliType();
-    void SET_aaSeqFlag (int flag) {aaSeqFlag = flag;}
-    int GET_aaSeqFlag (){return aaSeqFlag;}
+    void SET_aaSeqFlags (int startPos, int strandType) { aaStartPos = startPos; aaStrandType = strandType;}
+    int GET_aaStartPos (){ return aaStartPos;}
+    int GET_aaStrandType (){ return aaStrandType;}
     void SET_aaSequence_pointer(char *aaSeq) { aaSequence = new char[strlen(aaSeq)]; aaSequence = aaSeq;}
 };
 
