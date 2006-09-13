@@ -283,6 +283,11 @@ ED4_returncode  ED4_root::remove_from_selected( ED4_terminal *object )
                 seq_term->parent->refresh_requested_by_child();
             }
 
+            //ProtView: Refresh corresponding AA_sequence terminals
+            if(ED4_ROOT->alignment_type == GB_AT_DNA) {
+                PV_CallBackFunction(this->aw_root); 
+            }
+
             ED4_multi_species_manager *multi_man = object->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
             multi_man->invalidate_species_counters();
         }
@@ -388,6 +393,11 @@ ED4_returncode  ED4_root::add_to_selected( ED4_terminal *object )
             if (seq_term) {
                 seq_term->set_refresh();
                 seq_term->parent->refresh_requested_by_child();
+            }
+
+            //ProtView: Refresh corresponding AA_sequence terminals
+            if(ED4_ROOT->alignment_type == GB_AT_DNA) {
+                PV_CallBackFunction(this->aw_root); 
             }
 
             ED4_multi_species_manager *multi_man = object->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
@@ -1633,7 +1643,10 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     SEP________________________SEP;
     awmm->insert_menu_topic( "visulize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_createVisualizeSAI_window, 0 );
 #if defined(DEVEL_YADHU)
-    awmm->insert_menu_topic( "Protein_Viewer", "Protein Viewer", "w", "proteinViewer.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_CreateProteinViewer_window, 0 );
+    // Enable ProteinViewer only for DNA sequence type
+    if(ED4_ROOT->alignment_type == GB_AT_DNA) {
+        awmm->insert_menu_topic( "Protein_Viewer", "Protein Viewer", "w", "proteinViewer.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_CreateProteinViewer_window, 0 );
+    }
 #endif
     // ------------------------------
     //  Block
