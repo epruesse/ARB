@@ -1,3 +1,15 @@
+/*=======================================================================================*/
+//
+//    File            : pv_header.hxx                               
+//    Purpose      : Local Header File For Protein Viewer Module
+//    Time-stamp : Thu Sep 14 2006                                                       
+//    Author        : Yadhu Kumar (yadhu@arb-home.de)
+//    web site      : http://www.arb-home.de/                                              
+//                                                                                      
+//        Copyright Department of Microbiology (Technical University Munich)            
+//                                                                                      
+/*=======================================================================================*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

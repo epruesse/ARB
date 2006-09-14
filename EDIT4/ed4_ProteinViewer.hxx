@@ -1,5 +1,16 @@
 #ifndef ed4_ProteinViewer_hxx_included
 #define ed4_ProteinViewer_hxx_included
+/*=======================================================================================*/
+//
+//    File            : ed4_ProteinViewer.hxx                               
+//    Purpose      : Global Header File For Protein Viewer Module
+//    Time-stamp : Thu Sep 14 2006                                                       
+//    Author        : Yadhu Kumar (yadhu@arb-home.de)
+//    web site      : http://www.arb-home.de/                                              
+//                                                                                      
+//        Copyright Department of Microbiology (Technical University Munich)            
+//                                                                                      
+/*=======================================================================================*/
 
 // Define Awars
 #define AWAR_PROTVIEW                                           "protView/"
