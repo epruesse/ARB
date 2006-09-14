@@ -1,9 +1,14 @@
-/*============================================================================*/
-//  DNA-Protein Viewer Module:
-//    => Retrieving the protein gene (DNA) sequence
-//    => Translating into aminoacid sequence ( 1 letter codon)
-//    => Painting the aminoacid sequences along with the DNA sequence
-/*============================================================================*/
+/*=======================================================================================*/
+//
+//    File            : ED4_ProteinViewer.cxx                               
+//    Purpose      : Protein Viewer :Dynamically Translating And Displaying Of Aminoacid Sequence In The DNA Sequence Alignment.
+//    Time-stamp : Thu Sep 14 2006                                                       
+//    Author        : Yadhu Kumar (yadhu@arb-home.de)
+//    web site      : http://www.arb-home.de/                                              
+//                                                                                      
+//        Copyright Department of Microbiology (Technical University Munich)            
+//                                                                                      
+/*=======================================================================================*/
 
 #include <iostream>
 #include "pv_header.hxx"
