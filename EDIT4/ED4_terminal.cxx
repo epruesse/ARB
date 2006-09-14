@@ -516,7 +516,9 @@ ED4_returncode  ED4_terminal::event_sent_by_parent( AW_event *event, AW_window *
                                     set_refresh();
                                     parent->refresh_requested_by_child();
                                     //ProtView: Refreshing AA_sequence terminals
-                                    PV_CallBackFunction(aww->get_root()); 
+                                    if (ED4_ROOT->alignment_type ==  GB_AT_DNA) {
+                                        PV_RefreshWindow(aww->get_root());
+                                    }
                                 }
                                 break;
                             }
