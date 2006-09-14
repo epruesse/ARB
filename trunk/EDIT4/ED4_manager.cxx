@@ -18,6 +18,7 @@
 #include "ed4_awars.hxx"
 #include "ed4_edit_string.hxx"
 #include "ed4_tools.hxx"
+#include "ed4_ProteinViewer.hxx"
 
 //#define TEST_REFRESH_FLAG
 
@@ -281,6 +282,11 @@ ED4_returncode ED4_manager::check_bases_and_rebuild_consensi(const char *old_seq
     ED4_returncode result  = (result1 != ED4_R_OK) ? result1 : result2;
 
     free(new_sequence);
+
+    // Refresh aminoacid  sequence terminals in Protein Viewer
+    if(ED4_ROOT->alignment_type == GB_AT_DNA) {
+        PV_AA_SequenceUpdate_CB(GB_CB_CHANGED);
+    }
 
     return result;
 }

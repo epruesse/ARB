@@ -25,4 +25,10 @@ void PV_CallBackFunction(AW_root *root);
 // Create ProteinViewer window
 AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root); 
 
+// callback function to update sequence change in EDITOR
+void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype);
+
+// refresh all AA sequene terminals
+void PV_RefreshWindow(AW_root *root);
+
 #endif

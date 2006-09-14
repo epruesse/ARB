@@ -22,13 +22,13 @@ static int gMissingTransTable  = 0;
 static int gMissingCodonStart = 0;
 static int giLastTranlsationTable = -1;
 static bool gbWritingData = false;
+static int giNewAlignments = 0;
 
 // Functions 
 void PV_AddCallBacks(AW_root *awr);
 void PV_CreateAwars(AW_root *root, AW_default aw_def);
 bool PV_LookForNewTerminals(AW_root *root);
 void PV_CallBackFunction(AW_root *root);
-void PV_AA_SequenceUpdate_CB(GBDATA *gb_species_data, int */*cl*/, GB_CB_TYPE gbtype);
 void PV_CreateAllTerminals(AW_root *root);
 void PV_ManageTerminals(AW_root *root);
 void PV_HideTerminal(ED4_AA_sequence_terminal *aaSeqTerminal);
@@ -40,6 +40,7 @@ void PV_RefreshWindow(AW_root *root);
 void PV_ManageTerminalDisplay(AW_root *root, ED4_AA_sequence_terminal *aaSeqTerminal);
 PV_ERROR PV_ComplementarySequence(char *sequence);
 AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root);
+void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype);
 
 // --------------------------------------------------------------------------------
 //        Binding callback function to the AWARS
@@ -62,13 +63,6 @@ void PV_AddCallBacks(AW_root *awr) {
     awr->awar(AWAR_PROTVIEW_DISPLAY_MODE)->add_callback(PV_CallBackFunction);
 
     awr->awar(AWAR_SPECIES_NAME)->add_callback(PV_CallBackFunction);
-    
-    {
-        GB_transaction dummy(gb_main);
-        GBDATA *spContainer = GB_search(gb_main, "species_data", GB_FIND);
-        // callback if sequence alignment changes
-        GB_add_callback(spContainer, (GB_CB_TYPE)GB_CB_CHANGED, (GB_CB)PV_AA_SequenceUpdate_CB, 0); 
-    }
 }
 
 // --------------------------------------------------------------------------------
@@ -124,8 +118,13 @@ bool PV_LookForNewTerminals(AW_root *root){
 }
 
 void PV_RefreshWindow(AW_root *root){
-    AWUSE(root);
-    ED4_refresh_window(0, 0, 0);
+    // Manage the terminals showing only those selected by the user
+    if(gTerminalsCreated) {
+        PV_ManageTerminals(root);
+    }
+    //Refresh all windows
+     ED4_refresh_window(0, 0, 0);
+     ED4_ROOT->refresh_all_windows(0);
 }
 
 void PV_CallBackFunction(AW_root *root) {
@@ -136,11 +135,8 @@ void PV_CallBackFunction(AW_root *root) {
         root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, gb_main);
         PV_CreateAllTerminals(root);
     }
-    // Manage the terminals showing only those selected by the user
-    if(gTerminalsCreated) {
-        PV_ManageTerminals(root);
-    }
-    ED4_ROOT->refresh_all_windows(0);
+
+    PV_RefreshWindow(root);
 }
 
 void PV_HideTerminal(ED4_AA_sequence_terminal *aaSeqTerminal) {
@@ -405,7 +401,7 @@ void PV_ManageTerminals(AW_root *root){
 }
 
 void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *spName){
-    GB_push_transaction(gb_main);  //open database for transaction
+    GB_begin_transaction(gb_main);  //open database for transaction
 
     GB_ERROR error = 0;
     GBDATA    *gb_species = GBT_find_species(gb_main, spName);
@@ -421,68 +417,62 @@ void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *s
     else error = "error in reading sequence from database!";
 
     if(!error) {
-        { // Get complementary sequence
-            PV_ERROR pvError =  PV_ComplementarySequence(str_SeqData);
-            if (pvError == PV_FAILED) {
-                error = "Getting complementary strand failed!!";
-            }
-        }
-        int translationTable = GBT_read_int(gb_main,AWAR_PROTEIN_TYPE);
-
         GBDATA *gb_ProSeqData = 0;
-        char buf[100];
+        char newAlignmentName[100];
         int aaStrandType = int(aaSeqTerm->GET_aaStrandType()); 
-        int   aaStartPos = int(aaSeqTerm->GET_aaStartPos()); 
-        switch (aaStrandType) {
-        case FORWARD_STRAND:
-            sprintf(buf, "ali_pro_ProtView_forward_start_pos_%ld", (long int) aaStartPos); break;
-        case COMPLEMENTARY_STRAND:
-            sprintf(buf, "ali_pro_ProtView_complementary_start_pos_%ld", (long int) aaStartPos); break;
-        case DB_FIELD_STRAND:
-            sprintf(buf, "ali_pro_ProtView_database_field_start_pos_%ld", (long int) aaStartPos); break;
+        { // If strandType is complementary strand then Get complementary sequence
+            if(aaStrandType == COMPLEMENTARY_STRAND) {
+                PV_ERROR pvError =  PV_ComplementarySequence(str_SeqData);
+                if (pvError == PV_FAILED) {
+                    error = "Getting complementary strand failed!!";
+                }
+            }
         }
 
-        // set wanted tranlation code table and initialize
-        // if the current table is different from the last table then set new table and initilize the same 
-        if (translationTable != giLastTranlsationTable) {
-            GBT_write_int(gb_main, AWAR_PROTEIN_TYPE, translationTable);// set wanted protein table
-            awt_pro_a_nucs_convert_init(gb_main); // (re-)initialize codon tables for current translation table
-            giLastTranlsationTable = translationTable;  // store the current table 
-        }
-        int stops = AWT_pro_a_nucs_convert(str_SeqData, len, aaStartPos-1, "false"); 
-        AWUSE(stops);
+        if (!error) {
+            int   aaStartPos = int(aaSeqTerm->GET_aaStartPos()); 
+            switch (aaStrandType) {
+            case FORWARD_STRAND:
+                sprintf(newAlignmentName, "ali_pro_ProtView_forward_start_pos_%ld", (long int) aaStartPos); break;
+            case COMPLEMENTARY_STRAND:
+                sprintf(newAlignmentName, "ali_pro_ProtView_complementary_start_pos_%ld", (long int) aaStartPos); break;
+            case DB_FIELD_STRAND:
+                sprintf(newAlignmentName, "ali_pro_ProtView_database_field_start_pos_%ld", (long int) aaStartPos); break;
+            }
 
-        // Create alignment data to store the translated sequence 
-        GBDATA *gb_presets          = GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
-        GBDATA *gb_alignment_exists = GB_find(gb_presets, "alignment_name", buf, down_2_level);
-        GBDATA *gb_new_alignment    = 0;
+            int stops = AWT_pro_a_nucs_convert(str_SeqData, len, aaStartPos-1, "false"); 
+            AWUSE(stops);
 
-        if (gb_alignment_exists) {    // check wheather new alignment exists or not, if yes prompt user to overwrite the existing alignment; if no create an empty alignment
-            int ans = aw_message(GBS_global_string("Existing data in alignment \"%s\" may be overwritten for species \"%s\". Do you want to continue?", buf, spName), "YES,NO", false);
-            if (ans) error = "Alignment exists! Quitting function...!!!";
-            else {
-                gb_new_alignment = GBT_get_alignment(gb_main,buf);
+            // Create alignment data to store the translated sequence 
+            GBDATA *gb_presets             = GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
+            GBDATA *gb_alignment_exists = GB_find(gb_presets, "alignment_name", newAlignmentName, down_2_level);
+            GBDATA *gb_new_alignment    = 0;
+
+            if (gb_alignment_exists) {   
+                gb_new_alignment = GBT_get_alignment(gb_main,newAlignmentName);
                 if (!gb_new_alignment) error = GB_get_error();
+            } else {
+                long aliLen = GBT_get_alignment_len(gb_main,defaultAlignment);
+                gb_new_alignment = GBT_create_alignment(gb_main,newAlignmentName,aliLen/3+1,0,1,"ami");
+                if (!gb_new_alignment) error = GB_get_error();
+                else                          giNewAlignments++;
             }
-        } else {
-            long aliLen = GBT_get_alignment_len(gb_main,defaultAlignment);
-            gb_new_alignment = GBT_create_alignment(gb_main,buf,aliLen/3+1,0,1,"ami");
-            if (!gb_new_alignment) error = GB_get_error();
-        }
-
-        if(!error){
-            gb_ProSeqData = GBT_add_data(gb_species,buf,"data", GB_STRING);
-            if (gb_ProSeqData) {
-                error  = GB_write_string(gb_ProSeqData,str_SeqData);
-            }
-            else {
-                error = GB_get_error();
+            
+            if(!error){
+                gb_ProSeqData = GBT_add_data(gb_species,newAlignmentName,"data", GB_STRING);
+                if (gb_ProSeqData) {
+                    error  = GB_write_string(gb_ProSeqData,str_SeqData);
+                }
+                else {
+                    error = GB_get_error();
+                }
             }
         }
         free(str_SeqData);
     }
     if (!error) {
-        GB_pop_transaction(gb_main);
+        GBT_check_data(gb_main,0);
+        GB_commit_transaction(gb_main);
     }
     else {
         GB_abort_transaction(gb_main);
@@ -500,6 +490,12 @@ void PV_SaveData(AW_window *aww){
     //6. write to the database
     gbWritingData = true;
     if(gTerminalsCreated) {
+        {        // set wanted tranlation code table and initialize
+            int translationTable = GBT_read_int(gb_main,AWAR_PROTEIN_TYPE);
+            GBT_write_int(gb_main, AWAR_PROTEIN_TYPE, translationTable);// set wanted protein table
+            awt_pro_a_nucs_convert_init(gb_main); // (re-)initialize codon tables for current translation table
+        }
+
         ED4_terminal *terminal = 0;
         for( terminal = ED4_ROOT->root_group_man->get_first_terminal();
              terminal;  
@@ -520,7 +516,6 @@ void PV_SaveData(AW_window *aww){
                                     ED4_base *base = (ED4_base*)aaSeqTerminal;
                                     if(!base->flag.hidden) {
                                         PV_WriteTranslatedSequenceToDB(aaSeqTerminal, speciesName);
-                                        cout<<"Data saved to "<<speciesName<<endl;
                                     }
                                 }
                             }
@@ -528,6 +523,11 @@ void PV_SaveData(AW_window *aww){
                     }
                 }
             }
+        if (giNewAlignments>0) {
+            int ans = aw_message(GBS_global_string("Protein data saved to NEW alignments. %d new alignments are created and are named as ali_prot_ProtView_XXXX", giNewAlignments), "OK", false);
+            aw_message(GBS_global_string("Protein data saved to NEW alignments. %d new alignments are created  and are named as ali_prot_ProtView_XXXX", giNewAlignments)); 
+            giNewAlignments = 0;
+         }
     }
     gbWritingData = false;
     AWUSE(aww);
@@ -686,44 +686,48 @@ void PV_PrintMissingDBentryInformation(void){
     }
 }
 
-void PV_AA_SequenceUpdate_CB(GBDATA */*gb_species_data*/, int */*cl*/, GB_CB_TYPE gbtype)
+void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype)
 {
-    if (gbtype==GB_CB_CHANGED && gTerminalsCreated && (ED4_ROOT->alignment_type == GB_AT_DNA) && !gbWritingData) {
-        GB_transaction dummy(gb_main);
+    if (gbtype==GB_CB_CHANGED && 
+        gTerminalsCreated && 
+        (ED4_ROOT->alignment_type == GB_AT_DNA) && 
+        !gbWritingData) 
+        {
+            GB_transaction dummy(gb_main);
         
-        ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
-        if (cursor->owner_of_cursor) {
-            ED4_terminal *cursorTerminal = cursor->owner_of_cursor->to_terminal();
+            ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+            if (cursor->owner_of_cursor) {
+                ED4_terminal *cursorTerminal = cursor->owner_of_cursor->to_terminal();
             
-            if (!cursorTerminal->parent->parent->flag.is_consensus) 
-                {
-                    ED4_sequence_terminal *seqTerminal = cursorTerminal->to_sequence_terminal();
-                    char                  *speciesName = seqTerminal->species_name; 
+                if (!cursorTerminal->parent->parent->flag.is_consensus) 
+                    {
+                        ED4_sequence_terminal *seqTerminal = cursorTerminal->to_sequence_terminal();
+                        char                  *speciesName = seqTerminal->species_name; 
 
-                    for(int i=0; i<PV_AA_Terminals4Species; i++) 
-                        {
-                            // get the corresponding AA_sequence_terminal skipping sequence_info terminal
-                            // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
-                            cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal(); 
-                            if (cursorTerminal->is_aa_sequence_terminal()) {
-                                ED4_AA_sequence_terminal *aaSeqTerminal = cursorTerminal->to_aa_sequence_terminal();
-                                // Check AliType to make sure it is AA sequence terminal
-                                GB_alignment_type AliType = aaSeqTerminal->GetAliType();
-                                if (AliType && (AliType==GB_AT_AA)) {
-                                    // Get the AA sequence flag - says which strand we are in 
-                                    int   aaStartPos = int(aaSeqTerminal->GET_aaStartPos()); 
-                                    int aaStrandType = int(aaSeqTerminal->GET_aaStrandType()); 
-                                    // retranslate the genesequence and store it to the AA_sequnce_terminal
-                                    TranslateGeneToAminoAcidSequence(gRoot, aaSeqTerminal, speciesName, aaStartPos-1, aaStrandType);
+                        for(int i=0; i<PV_AA_Terminals4Species; i++) 
+                            {
+                                // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+                                // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
+                                cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal(); 
+                                if (cursorTerminal->is_aa_sequence_terminal()) {
+                                    ED4_AA_sequence_terminal *aaSeqTerminal = cursorTerminal->to_aa_sequence_terminal();
+                                    // Check AliType to make sure it is AA sequence terminal
+                                    GB_alignment_type AliType = aaSeqTerminal->GetAliType();
+                                    if (AliType && (AliType==GB_AT_AA)) {
+                                        // Get the AA sequence flag - says which strand we are in 
+                                        int   aaStartPos = int(aaSeqTerminal->GET_aaStartPos()); 
+                                        int aaStrandType = int(aaSeqTerminal->GET_aaStrandType()); 
+                                        // retranslate the genesequence and store it to the AA_sequnce_terminal
+                                        TranslateGeneToAminoAcidSequence(gRoot, aaSeqTerminal, speciesName, aaStartPos-1, aaStrandType);
+                                    }
                                 }
                             }
-                        }
-                    // Print missing DB entries
-                    PV_PrintMissingDBentryInformation();
-                    PV_RefreshWindow(gRoot);
-                }
+                        // Print missing DB entries
+                        PV_PrintMissingDBentryInformation();
+                        PV_RefreshWindow(gRoot);
+                    }
+            }
         }
-    }
 }
 
 void PV_CreateAllTerminals(AW_root *root) {
