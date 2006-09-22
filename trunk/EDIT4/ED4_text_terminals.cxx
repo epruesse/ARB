@@ -593,7 +593,7 @@ ED4_returncode ED4_sequence_info_terminal::draw( int /*only_text*/ )
         GB_pop_transaction(gbdata);
     }
     else {
-        buffer[0] = '-';
+        buffer[0] = ' ';
     }
     strncpy(&buffer[1],this->id,8);
     buffer[9] = 0;
