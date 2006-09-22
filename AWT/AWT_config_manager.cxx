@@ -192,7 +192,7 @@ void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const c
 
     aww->button_length(0); // -> autodetect size by size of graphic 
     aww->callback(AWT_start_config_manager, (AW_CL)config);
-    aww->create_button("SAVELOAD_CONFIG", "#disk.bitmap", 0);
+    aww->create_button("SAVELOAD_CONFIG", "#conf_save.xpm");
 }
 
 static GB_ERROR decode_escapes(string& s) {
