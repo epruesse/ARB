@@ -405,7 +405,9 @@ void PV_ManageTerminals(AW_root *root){
         }
 }
 
-void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *spName){
+static AW_repeated_question *ASKtoOverWriteData = 0;
+
+void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *spName/*, AW_repeated_question ASKtoOverWriteData*/){
     GB_begin_transaction(gb_main);  //open database for transaction
 
     GB_ERROR error = 0;
@@ -453,9 +455,22 @@ void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *s
             GBDATA *gb_alignment_exists = GB_find(gb_presets, "alignment_name", newAlignmentName, down_2_level);
             GBDATA *gb_new_alignment    = 0;
 
-            if (gb_alignment_exists) {   
-                gb_new_alignment = GBT_get_alignment(gb_main,newAlignmentName);
-                if (!gb_new_alignment) error = GB_get_error();
+            if (gb_alignment_exists) {
+                int skip_sp = 0;
+                char *question;
+                GBDATA *gb_seq_data = GBT_read_sequence(gb_species, newAlignmentName);
+                if (gb_seq_data) {
+                    e4_assert(ASKtoOverWriteData);
+                    question = GBS_global_string_copy("\"%s\" contain data in the alignment \"%s\"!", spName, newAlignmentName);
+                    skip_sp        = ASKtoOverWriteData->get_answer(question, "Overwrite, Skip Species", "all", false);
+                }
+                if(skip_sp) {
+                    error = GBS_global_string_copy("%s You chose to skip this Species!", question);
+                }
+                else {
+                    gb_new_alignment = GBT_get_alignment(gb_main,newAlignmentName);
+                    if (!gb_new_alignment) error = GB_get_error();
+                }
             } else {
                 long aliLen = GBT_get_alignment_len(gb_main,defaultAlignment);
                 gb_new_alignment = GBT_create_alignment(gb_main,newAlignmentName,aliLen/3+1,0,1,"ami");
@@ -500,6 +515,8 @@ void PV_SaveData(AW_window *aww){
             GBT_write_int(gb_main, AWAR_PROTEIN_TYPE, translationTable);// set wanted protein table
             awt_pro_a_nucs_convert_init(gb_main); // (re-)initialize codon tables for current translation table
         }
+        
+        ASKtoOverWriteData = new AW_repeated_question();
 
         ED4_terminal *terminal = 0;
         for( terminal = ED4_ROOT->root_group_man->get_first_terminal();
@@ -520,7 +537,7 @@ void PV_SaveData(AW_window *aww){
                                 if (AliType && (AliType==GB_AT_AA)) {
                                     ED4_base *base = (ED4_base*)aaSeqTerminal;
                                     if(!base->flag.hidden) {
-                                        PV_WriteTranslatedSequenceToDB(aaSeqTerminal, speciesName);
+                                        PV_WriteTranslatedSequenceToDB(aaSeqTerminal, speciesName);//, ASKtoOverWriteData);
                                     }
                                 }
                             }
@@ -530,6 +547,7 @@ void PV_SaveData(AW_window *aww){
             }
         if (giNewAlignments>0) {
             int ans = aw_message(GBS_global_string("Protein data saved to NEW alignments. %d new alignments are created and are named as ali_prot_ProtView_XXXX", giNewAlignments), "OK", false);
+            AWUSE(ans);
             aw_message(GBS_global_string("Protein data saved to NEW alignments. %d new alignments are created  and are named as ali_prot_ProtView_XXXX", giNewAlignments)); 
             giNewAlignments = 0;
          }

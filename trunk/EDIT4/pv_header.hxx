@@ -30,18 +30,20 @@
 #include <awt_attributes.hxx>
 #include <st_window.hxx>
 
+#include <awt_codon_table.hxx>
+#include <awt_changekey.hxx>
+#include <awt_sel_boxes.hxx>
+#include <awt_pro_a_nucs.hxx>
+#include <awt_translate.hxx>
+#include <aw_question.hxx>
+#include <aw_global.hxx>
+
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
 #include "ed4_edit_string.hxx"
 #include "ed4_block.hxx"
 #include "ed4_nds.hxx"
 #include "ed4_defs.hxx"
-
-#include <awt_codon_table.hxx>
-#include <awt_changekey.hxx>
-#include <awt_sel_boxes.hxx>
-#include <awt_pro_a_nucs.hxx>
-#include <awt_translate.hxx>
 
 // Definitions used
 #define FORWARD_STRAND         1
