@@ -3,7 +3,7 @@
 #                                                                          #
 #   File      : grepx.pl                                                   #
 #   Purpose   : Replacement for grep (used from emacs)                     #
-#   Time-stamp: <Thu Jul/20/2006 11:33 MET Coder@ReallySoft.de>            #
+#   Time-stamp: <Tue Aug/22/2006 16:07 MET Coder@ReallySoft.de>            #
 #                                                                          #
 #   (C) November 2005 by Ralf Westram                                      #
 #                                                                          #
@@ -122,7 +122,7 @@ my @groups = (
               # ARB specifics
               [
                [ ],
-               [ '.menu' ],
+               [ '.menu', '.source' ],
               ],
               );
 
