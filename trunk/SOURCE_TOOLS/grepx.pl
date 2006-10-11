@@ -3,7 +3,7 @@
 #                                                                          #
 #   File      : grepx.pl                                                   #
 #   Purpose   : Replacement for grep (used from emacs)                     #
-#   Time-stamp: <Wed Oct/11/2006 12:00 MET Coder@ReallySoft.de>            #
+#   Time-stamp: <Wed Oct/11/2006 12:33 MET Coder@ReallySoft.de>            #
 #                                                                          #
 #   (C) November 2005 by Ralf Westram                                      #
 #                                                                          #
@@ -405,9 +405,6 @@ sub grepfile($) {
         my $hitlen = length($&);
         my $pos    = length($`)+1;
 
-        if ($arbSpecials!=1) {
-          die "bah";
-        }
         if ($matches==0 and $arbSpecials==1) {
           if (shall_skip_file($file)==1) {
             print "grepx: Unlisted occurance(s) in $file\n";
