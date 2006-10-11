@@ -3,7 +3,7 @@
 #                                                                          #
 #   File      : grepx.pl                                                   #
 #   Purpose   : Replacement for grep (used from emacs)                     #
-#   Time-stamp: <Tue Aug/22/2006 16:07 MET Coder@ReallySoft.de>            #
+#   Time-stamp: <Wed Oct/11/2006 12:00 MET Coder@ReallySoft.de>            #
 #                                                                          #
 #   (C) November 2005 by Ralf Westram                                      #
 #                                                                          #
@@ -144,6 +144,7 @@ my $recurse_subdirs  = 0;
 my $one_hit_per_line = 0;
 my $verbose          = 0;
 my $matchFiles       = 1;
+my $arbSpecials      = 0;
 my $maxhits          = undef; # undef means unlimited
 
 my $extension       = undef;
@@ -160,6 +161,18 @@ my $GSM_CVS    = 1; # scan a CVS tree
 my $GSM_PARENT = 2; # do a simple parent scan
 
 my $global_scan_mode = $GSM_NONE;
+
+# --------------------------------------------------------------------------------
+
+sub shall_skip_file($) {
+  my ($file) = @_;
+  die "arbSpecials not 1" if ($arbSpecials!=1);
+  if ($file =~ /PERL2ARB\//o) {
+    my $rest = $';
+    if ($rest eq 'ARB.c' or $rest eq 'proto.h') { return 1; }
+  }
+  return 0;
+}
 
 # --------------------------------------------------------------------------------
 
@@ -182,7 +195,7 @@ sub shall_search_file($$) {
   if ($use_as_wildcard==0) {
     if ($file =~ $reg_nameOnly) { $file = $1; } # behind last /
 
-    if ($file =~ /^\.?#/ or $file =~ /~$/) { return 0; } # skip backup files etc.
+    if ($file =~ /^\.?\#/ or $file =~ /~$/) { return 0; } # skip backup files etc.
 
     my $ext = '';
     if ($file =~ $reg_extension) { $ext = $1; }
@@ -300,6 +313,7 @@ sub init_wanted() {
     foreach (keys %wanted_files) { print " $_"; }
     print "\n";
   }
+
 }
 
 # --------------------------------------------------------------------------------
@@ -315,6 +329,7 @@ sub print_usage() {
     " -o -> one hit per line (default is to report multiple hits)\n".
     " -v -> be verbose (for debugging)\n".
     " -n -> don't match filenames\n".
+    " -A -> do ARB specials if \$ARBHOME is defined\n".
     " -m xxx -> report max. xxx hits\n".
     "\n".
     " 'ext'     extension of file where grepx is called from\n".
@@ -339,6 +354,10 @@ sub parse_args() {
       elsif ($option eq 'o') { $one_hit_per_line = 1; }
       elsif ($option eq 'v') { $verbose = 1; }
       elsif ($option eq 'n') { $matchFiles = 0; }
+      elsif ($option eq 'A') {
+        if (exists $ENV{'ARBHOME'}) { $arbSpecials = 1; }
+        else { print "grepx: Ignoring -A (ARBHOME not set)"; }
+      }
       elsif ($option eq 'm') { $maxhits = int($ARGV[++$ap]); }
       else { die "Unknown option '-$option'\n"; }
     }
@@ -385,6 +404,16 @@ sub grepfile($) {
         my $rest   = $';
         my $hitlen = length($&);
         my $pos    = length($`)+1;
+
+        if ($arbSpecials!=1) {
+          die "bah";
+        }
+        if ($matches==0 and $arbSpecials==1) {
+          if (shall_skip_file($file)==1) {
+            print "grepx: Unlisted occurance(s) in $file\n";
+            return (0,0);
+          }
+        }
 
         chomp($line);
         $line =~ s/
