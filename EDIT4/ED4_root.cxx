@@ -1642,12 +1642,11 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic( "dcs_threshold", "Set threshold for D.c.s.", "f", "st_ml.hlp",AWM_ALL, ED4_set_col_stat_threshold, 1, 0);
     SEP________________________SEP;
     awmm->insert_menu_topic( "visulize_SAI", "Visualize SAIs", "z", "visualizeSAI.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_createVisualizeSAI_window, 0 );
-#if defined(DEVEL_YADHU)
     // Enable ProteinViewer only for DNA sequence type
     if(ED4_ROOT->alignment_type == GB_AT_DNA) {
         awmm->insert_menu_topic( "Protein_Viewer", "Protein Viewer", "w", "proteinViewer.hlp", AWM_ALL,AW_POPUP,(AW_CL)ED4_CreateProteinViewer_window, 0 );
     }
-#endif
+
     // ------------------------------
     //  Block
     // ------------------------------
