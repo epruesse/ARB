@@ -6,6 +6,7 @@ Future changes:
 
 Major changes for next version:
 
+ - Display translation with different ORFs in EDIT4
  - ARB exports in FIG 3.2 format (optionally in colors). Thanks to Elmar Pruesse.
  - added PHYML 2.4.5 (thanks to Stephane Guidon for the permission to distribute that great tool)
  - more compact display in EDIT4
@@ -48,7 +49,7 @@ Major changes for next version:
  - rewrote ASCII database import
  - arb_repair for databases of any size (script for database repair)
  - fixed bug in data compression
- - increased internal cache size (alignments up to 400.000bp possible)
+ - increased internal cache size (alignments up to 400.000bp possible w/o performance collapse)
  - ARBparsimony: increase hardcoded species limit (50.000 -> 250.000) 
  - GDE menus cleanup
  - translation/re-alignment tweaked
