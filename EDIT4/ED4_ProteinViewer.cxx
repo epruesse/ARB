@@ -22,7 +22,6 @@ using namespace std;
 extern GBDATA *gb_main;
 static bool gTerminalsCreated = false;
 static int PV_AA_Terminals4Species = 0;
-AW_root *gRoot = 0;
 static int gMissingTransTable  = 0;
 static int gMissingCodonStart = 0;
 static int giLastTranlsationTable = -1;
@@ -214,7 +213,7 @@ void PV_DisplayAminoAcidNames(AW_root *root) {
                                         int   aaStartPos = int(aaSeqTerminal->GET_aaStartPos()); 
                                         int aaStrandType = int(aaSeqTerminal->GET_aaStrandType()); 
                                         // retranslate the genesequence and store it to the AA_sequnce_terminal
-                                        TranslateGeneToAminoAcidSequence(gRoot, aaSeqTerminal, speciesName, aaStartPos-1, aaStrandType);
+                                        TranslateGeneToAminoAcidSequence(root, aaSeqTerminal, speciesName, aaStartPos-1, aaStrandType);
                                     }
                                 }
                             }
@@ -744,20 +743,19 @@ void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype)
                                         int   aaStartPos = int(aaSeqTerminal->GET_aaStartPos()); 
                                         int aaStrandType = int(aaSeqTerminal->GET_aaStrandType()); 
                                         // retranslate the genesequence and store it to the AA_sequnce_terminal
-                                        TranslateGeneToAminoAcidSequence(gRoot, aaSeqTerminal, speciesName, aaStartPos-1, aaStrandType);
+                                        TranslateGeneToAminoAcidSequence(ED4_ROOT->aw_root, aaSeqTerminal, speciesName, aaStartPos-1, aaStrandType);
                                     }
                                 }
                             }
                         // Print missing DB entries
                         PV_PrintMissingDBentryInformation();
-                        PV_RefreshWindow(gRoot);
+                        PV_RefreshWindow(ED4_ROOT->aw_root);
                     }
             }
         }
 }
 
 void PV_CreateAllTerminals(AW_root *root) {
-    // Idea: 1
     // 1. Get the species terminal pointer
     // 2. Append the second terminal
     // 3. resize the multi-species manager
@@ -857,7 +855,6 @@ void PV_CreateAllTerminals(AW_root *root) {
 
 AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
     GB_transaction dummy(gb_main);
-    gRoot = aw_root;
 
     static AW_window_simple *aws = 0;
     if (aws) return aws;
@@ -937,7 +934,7 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
     }
 
     // binding callback function to the AWARS
-    PV_AddCallBacks(aw_root);  
+    PV_AddCallBacks(aw_root);
 
     // Create All Terminals 
     PV_CreateAllTerminals(aw_root);
