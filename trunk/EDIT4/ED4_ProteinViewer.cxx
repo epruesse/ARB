@@ -294,20 +294,23 @@ void PV_ManageTerminals(AW_root *root){
                     {
                         char *spName = GBT_read_name(gbSpecies);
                         ED4_species_name_terminal *spNameTerm = ED4_find_species_name_terminal(spName);
-                        ED4_terminal *terminal = spNameTerm->corresponding_sequence_terminal();
-                        for(int i=0; i<PV_AA_Terminals4Species; i++) {
-                            // get the corresponding AA_sequence_terminal skipping sequence_info terminal
-                            // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
-                            terminal = terminal->get_next_terminal()->get_next_terminal(); 
-                            if (terminal->is_aa_sequence_terminal()) {
-                                ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                                // Check AliType to make sure it is AA sequence terminal
-                                GB_alignment_type AliType = aaSeqTerminal->GetAliType();
-                                if (AliType && (AliType==GB_AT_AA)) {
-                                    PV_ManageTerminalDisplay(root, aaSeqTerminal);
+                        if (spNameTerm && spNameTerm->is_species_name_terminal()) 
+                            {
+                                ED4_terminal *terminal = spNameTerm->corresponding_sequence_terminal();
+                                for(int i=0; i<PV_AA_Terminals4Species; i++) {
+                                    // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+                                    // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
+                                    terminal = terminal->get_next_terminal()->get_next_terminal(); 
+                                    if (terminal->is_aa_sequence_terminal()) {
+                                        ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
+                                        // Check AliType to make sure it is AA sequence terminal
+                                        GB_alignment_type AliType = aaSeqTerminal->GetAliType();
+                                        if (AliType && (AliType==GB_AT_AA)) {
+                                            PV_ManageTerminalDisplay(root, aaSeqTerminal);
+                                        }
+                                    }
                                 }
                             }
-                        }
                     }
             }
             }
