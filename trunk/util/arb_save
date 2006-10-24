@@ -35,6 +35,7 @@ name=`date '+arbsrc_%Y_%m_%d.tgz'`
         ./lib/inputMasks \
         ./lib/macro.head \
         ./lib/macros \
+        ./lib/rna3d \
         ./lib/nas/names.dat.template \
         ./lib/pictures \
         ./lib/pixmaps \
