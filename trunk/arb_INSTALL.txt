@@ -17,6 +17,7 @@ Software that is needed to run ARB:
 - xview
 - (open)motif
 - bash
+- libGLEW -- Open GL extensions library (see subdirectory libGLEW)
 
 Software that is useful together with ARB:
 ------------------------------------------
