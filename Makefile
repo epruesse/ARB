@@ -1163,14 +1163,14 @@ menus: binlink
 	@echo $(SEP) Make everything in GDEHELP
 	$(MAKE) -C GDEHELP -r "PP=$(PP)" all
 
-tarfile:	rebuild
+tarfile: rebuild
 	util/arb_compress
 
 tarfile_quick: all
 	util/arb_compress
 
-sourcetarfile:
-		util/arb_save
+sourcetarfile: rmbak
+	util/arb_save
 
 build:
 	-rm arb.tgz arbsrc.tgz
@@ -1301,13 +1301,12 @@ rebuild: realclean
 relink: bclean libclean
 	$(MAKE) all
 
-save:	rmbak
-	util/arb_save
+save: sourcetarfile 
 
 savedepot: rmbak
 	util/arb_save_depot
 
-release: tarfile save
+release: build
 
 # --------------------------------------------------------------------------------
 
