@@ -42,4 +42,10 @@ void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype);
 // refresh all AA sequene terminals
 void PV_RefreshWindow(AW_root *root);
 
+// Creates new AA sequence terminals for new species added to the editor ** called from ED4_cursor.cxx **
+void PV_AddCorrespondingAAseqTerminals(ED4_species_name_terminal *spNameTerm);
+
+// Creates new AA sequence terminals when newly marked species is loaded
+void PV_AddAAseqTerminalsToLoadedSpecies();
+
 #endif

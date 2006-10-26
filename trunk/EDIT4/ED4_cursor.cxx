@@ -17,6 +17,7 @@
 #include "ed4_tools.hxx"
 #include "ed4_awars.hxx"
 #include "ed4_secedit.hxx"
+#include "ed4_ProteinViewer.hxx"
 
 /* --------------------------------------------------------------------------------
    CursorShape
@@ -637,6 +638,10 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
 
         name_term = ED4_find_species_name_terminal(species_name);
         if (name_term) {
+            /* new AAseqTerminals should be created if it is in ProtView mode */
+            if(ED4_ROOT->alignment_type == GB_AT_DNA) {
+                PV_AddCorrespondingAAseqTerminals(name_term);
+            }
             ED4_ROOT->main_manager->update_info.set_resize(1);
             ED4_ROOT->main_manager->resize_requested_by_parent();
         }
@@ -757,6 +762,11 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
         }
 
         if (inserted) {
+            /* new AAseqTerminals should be created if it is in ProtView mode */
+            if (ED4_ROOT->alignment_type == GB_AT_DNA) {
+                PV_AddAAseqTerminalsToLoadedSpecies();
+            }
+     
             ED4_ROOT->main_manager->update_info.set_resize(1);
             ED4_ROOT->main_manager->resize_requested_by_parent();
         }
