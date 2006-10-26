@@ -19,7 +19,7 @@ name=`date '+arbsrc_%Y_%m_%d.tgz'`
             -o -name "*.pl" -o -name "*.PL" \
             -o -name "*.sh" -o -name "*.dat" \
             -o -name "*.pod" -o -name "*.POD" \
-            -o -name "*.xs" -o -name "*.pm" \
+            -o -name "*.xs.default" -o -name "*.pm" \
             -o -name "*.html" -o -name "*.gif" \
             -o -name "*.dtd" -o -name "*.xsl" \
             -o -name "*.footer" -o -name "*.header" \
