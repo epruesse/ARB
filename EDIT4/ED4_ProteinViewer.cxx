@@ -755,6 +755,103 @@ void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype)
         }
 }
 
+void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_species_manager *speciesManager){
+    int  translationMode = 0;
+    char namebuffer[BUFFERSIZE];
+    for(int i = 0; i<PV_AA_Terminals4Species; i++)
+        {
+            int count = 1;
+            int startPos = 0;
+
+            sprintf( namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
+            ED4_multi_sequence_manager *multiSeqManager = speciesManager->search_spec_child_rek(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
+            ED4_sequence_manager         *new_SeqManager = new ED4_sequence_manager(namebuffer, 0, 0, 0, 0, multiSeqManager);
+            new_SeqManager->set_properties(ED4_P_MOVABLE);
+            multiSeqManager->children->append_member(new_SeqManager);
+
+            ED4_sequence_info_terminal *new_SeqInfoTerminal = 0;
+            if (i<FORWARD_STRANDS) 
+                sprintf(namebuffer, "F%dProtienInfo_Term%ld.%d",i+1,ED4_counter, count++);
+            else if ((i-FORWARD_STRANDS)<COMPLEMENTARY_STRANDS)  
+                sprintf(namebuffer, "C%dProtienInfo_Term%ld.%d",(i-FORWARD_STRANDS)+1,ED4_counter, count++);
+            else
+                sprintf(namebuffer, "DBProtienInfo_Term%ld.%d",ED4_counter, count++);
+            new_SeqInfoTerminal = new ED4_sequence_info_terminal(namebuffer, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, new_SeqManager );
+            new_SeqInfoTerminal->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );
+            ED4_sequence_info_terminal *seqInfoTerminal = speciesManager->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
+            new_SeqInfoTerminal->set_links( seqInfoTerminal, seqInfoTerminal );
+            new_SeqManager->children->append_member( new_SeqInfoTerminal );
+
+            ED4_AA_sequence_terminal *AA_SeqTerminal = 0;
+            sprintf(namebuffer, "AA_Sequence_Term%ld.%d",ED4_counter, count++);
+            AA_SeqTerminal = new ED4_AA_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqManager);
+            AA_SeqTerminal->set_links( seqTerminal, seqTerminal );
+
+            char       *speciesName    = seqTerminal->species_name; 
+            if (i<FORWARD_STRANDS){
+                startPos = i;
+                translationMode = FORWARD_STRAND;
+            }
+            else if ((i-FORWARD_STRANDS)<COMPLEMENTARY_STRANDS){
+                startPos = i-FORWARD_STRANDS;
+                translationMode = COMPLEMENTARY_STRAND;
+            }
+            else {
+                startPos = 0;
+                translationMode = DB_FIELD_STRAND;
+            }
+            TranslateGeneToAminoAcidSequence(ED4_ROOT->aw_root, AA_SeqTerminal, speciesName, startPos, translationMode);
+            AA_SeqTerminal->SET_aaSeqFlags(startPos+1,translationMode);
+            new_SeqManager->children->append_member(AA_SeqTerminal);
+                     
+            ED4_counter++;
+
+            new_SeqManager->resize_requested_by_child();
+        }
+}
+
+void PV_AddCorrespondingAAseqTerminals(ED4_species_name_terminal *spNameTerm) {
+    if(gTerminalsCreated) {
+        if (spNameTerm && spNameTerm->is_species_name_terminal()) 
+            {
+                ED4_sequence_terminal *seqTerminal    = spNameTerm->corresponding_sequence_terminal()->to_sequence_terminal();
+                ED4_species_manager *speciesManager = spNameTerm->get_parent(ED4_L_SPECIES)->to_species_manager();
+                PV_AddNewAAseqTerminals(seqTerminal,speciesManager);
+                PV_RefreshWindow(ED4_ROOT->aw_root);
+            }
+    }
+}
+
+void PV_AddAAseqTerminalsToLoadedSpecies() {
+   if(gTerminalsCreated) {
+       GB_transaction dummy(gb_main);
+            int marked = GBT_count_marked_species(gb_main);
+            if (marked) {
+                GBDATA *gbSpecies;
+                for(gbSpecies = GBT_first_marked_species(gb_main);
+                    gbSpecies;
+                    gbSpecies = GBT_next_marked_species(gbSpecies))
+                    {
+                        char *spName = GBT_read_name(gbSpecies); cout<<marked--<<". "<<spName<<endl;
+                        ED4_species_name_terminal *spNameTerm = ED4_find_species_name_terminal(spName);
+                        if (spNameTerm && spNameTerm->is_species_name_terminal()) 
+                            {
+                                ED4_terminal *terminal = spNameTerm->corresponding_sequence_terminal();
+                                // $$$ If next terminal is species_name terminal => corresponding AA seq terminal doesnt exist ==> create one $$$
+                                terminal = terminal->get_next_terminal();
+                                if (terminal->is_species_name_terminal() || terminal->is_spacer_terminal()) 
+                                    {
+                                    ED4_sequence_terminal *seqTerminal    = spNameTerm->corresponding_sequence_terminal()->to_sequence_terminal();
+                                    ED4_species_manager *speciesManager = spNameTerm->get_parent(ED4_L_SPECIES)->to_species_manager();
+                                    PV_AddNewAAseqTerminals(seqTerminal,speciesManager);
+                                    }
+                            }
+                    }
+                PV_RefreshWindow(ED4_ROOT->aw_root);
+            }
+   }
+}
+
 void PV_CreateAllTerminals(AW_root *root) {
     // 1. Get the species terminal pointer
     // 2. Append the second terminal
@@ -773,7 +870,6 @@ void PV_CreateAllTerminals(AW_root *root) {
     // totally 7 strands has to be created
     int aaTerminalsToBeCreated = FORWARD_STRANDS + COMPLEMENTARY_STRANDS + DB_FIELD_STRANDS;
     PV_AA_Terminals4Species = aaTerminalsToBeCreated;
-    int  translationMode = 0;
                                         
     ED4_terminal *terminal = 0;
     for( terminal = ED4_ROOT->root_group_man->get_first_terminal();
@@ -787,57 +883,7 @@ void PV_CreateAllTerminals(AW_root *root) {
                         ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
                         if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) 
                             {
-                                char namebuffer[BUFFERSIZE];
-                                for(int i = 0; i<aaTerminalsToBeCreated; i++)
-                                    {
-                                        int count = 1;
-                                        int startPos = 0;
-
-                                        sprintf( namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
-                                        ED4_multi_sequence_manager *multiSeqManager = speciesManager->search_spec_child_rek(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
-                                        ED4_sequence_manager         *new_SeqManager = new ED4_sequence_manager(namebuffer, 0, 0, 0, 0, multiSeqManager);
-                                        new_SeqManager->set_properties(ED4_P_MOVABLE);
-                                        multiSeqManager->children->append_member(new_SeqManager);
-
-                                        ED4_sequence_info_terminal *new_SeqInfoTerminal = 0;
-                                        if (i<FORWARD_STRANDS) 
-                                            sprintf(namebuffer, "F%dProtienInfo_Term%ld.%d",i+1,ED4_counter, count++);
-                                         else if ((i-FORWARD_STRANDS)<COMPLEMENTARY_STRANDS)  
-                                             sprintf(namebuffer, "C%dProtienInfo_Term%ld.%d",(i-FORWARD_STRANDS)+1,ED4_counter, count++);
-                                         else
-                                             sprintf(namebuffer, "DBProtienInfo_Term%ld.%d",ED4_counter, count++);
-                                        new_SeqInfoTerminal = new ED4_sequence_info_terminal(namebuffer, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, new_SeqManager );
-                                        new_SeqInfoTerminal->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );
-                                        ED4_sequence_info_terminal *seqInfoTerminal = speciesManager->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
-                                        new_SeqInfoTerminal->set_links( seqInfoTerminal, seqInfoTerminal );
-                                        new_SeqManager->children->append_member( new_SeqInfoTerminal );
-
-                                        ED4_AA_sequence_terminal *AA_SeqTerminal = 0;
-                                        sprintf(namebuffer, "AA_Sequence_Term%ld.%d",ED4_counter, count++);
-                                        AA_SeqTerminal = new ED4_AA_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqManager);
-                                        AA_SeqTerminal->set_links( seqTerminal, seqTerminal );
-
-                                        char       *speciesName    = seqTerminal->species_name; 
-                                        if (i<FORWARD_STRANDS){
-                                            startPos = i;
-                                            translationMode = FORWARD_STRAND;
-                                        }
-                                        else if ((i-FORWARD_STRANDS)<COMPLEMENTARY_STRANDS){
-                                            startPos = i-FORWARD_STRANDS;
-                                            translationMode = COMPLEMENTARY_STRAND;
-                                        }
-                                        else {
-                                            startPos = 0;
-                                            translationMode = DB_FIELD_STRAND;
-                                        }
-                                        TranslateGeneToAminoAcidSequence(root, AA_SeqTerminal, speciesName, startPos, translationMode);
-                                        AA_SeqTerminal->SET_aaSeqFlags(startPos+1,translationMode);
-                                        new_SeqManager->children->append_member(AA_SeqTerminal);
-                     
-                                        ED4_counter++;
-
-                                        new_SeqManager->resize_requested_by_child();
-                                    }
+                                PV_AddNewAAseqTerminals(seqTerminal,speciesManager);
                             }
                     }
             }
