@@ -19,7 +19,7 @@ name=`date '+arbsrc_%Y_%m_%d.tgz'`
             -o -name "*.pl" -o -name "*.PL" \
             -o -name "*.sh" -o -name "*.dat" \
             -o -name "*.pod" -o -name "*.POD" \
-            -o -name "*.xs.default" -o -name "*.pm" \
+            -o -name "*.pm" \
             -o -name "*.html" -o -name "*.gif" \
             -o -name "*.dtd" -o -name "*.xsl" \
             -o -name "*.footer" -o -name "*.header" \
@@ -65,11 +65,11 @@ name=`date '+arbsrc_%Y_%m_%d.tgz'`
     |grep -v '/ARB_SOURCE_DOC/' \
     |grep -v '/GEN[CH]/' \
     |grep -v '/PERL5/' \
-    |grep -v '/PERL2ARB/ARB.c' \
-    |grep -v '/PERL2ARB/ARB.xs' \
+    |grep -v '/PERL2ARB/ARB\.c' \
+    |grep -v '/PERL2ARB/ARB\.xs$' \
     |grep -v '/lib/help_html/' \
     |grep -v '/lib/help/' \
-    |grep -v '/lib/nas/names.dat$' \
+    |grep -v '/lib/nas/names\.dat$' \
     |grep -v '\.xvpics' \
     |grep -v '\.genmenu$' \
     |grep -v '\.cvsignore$' \
