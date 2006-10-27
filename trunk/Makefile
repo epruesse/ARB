@@ -1205,8 +1205,8 @@ else
 openwinprogs:
 endif
 
-nas:
-		(cd lib;$(MAKE) nameserver)
+preplib:
+		(cd lib;$(MAKE) all)
 
 perl: tools lib/ARB.pm
 
@@ -1311,10 +1311,10 @@ release: build
 # --------------------------------------------------------------------------------
 
 # basic arb libraries
-arbbasic: links
+arbbasic: links preplib
 		$(MAKE) arbbasic2
 
-arbbasic2: mbin com nas ${MAKE_RTC} sl $(GL)
+arbbasic2: mbin com ${MAKE_RTC} sl $(GL)
 
 # shared arb libraries
 arbshared: dball aw dp awt
