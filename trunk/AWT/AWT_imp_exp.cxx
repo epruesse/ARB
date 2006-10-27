@@ -51,7 +51,7 @@ static void awt_export_tree_label(const char *label, FILE *out) {
 
 
 
-// documentation of the Newick Format is in "./newick_doc.html"
+// documentation of the Newick Format is in ../SOURCE_TOOLS/docs/newick_doc.html
 
 static const char *awt_export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *tree, const char *tree_name, int deep,
                                               AW_BOOL use_NDS, AW_BOOL save_branchlengths, AW_BOOL save_bootstraps, AW_BOOL save_groupnames)
