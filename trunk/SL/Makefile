@@ -66,7 +66,7 @@ depends: $(ARCHS:.dummy=.depend)
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
 		"ARB  = yes" \
 		"MAIN = $(@F:.dummy=.a)" \
-		>$(@D).log 2>&1 && cat $(@D).log) || (cat $(@D).log; false)) && (rm $(@D).log))
+		>$(@D).log 2>&1 && cat $(@D).log) || (cat $(@D).log; rm $(@D).log; false)) && (rm $(@D).log))
 
 # the end of the above command avoids that the output of parallel make calls gets mixed up 
 
