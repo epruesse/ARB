@@ -33,7 +33,7 @@ help:
 	@echo ""
 
 JAVAS=$(wildcard *.java)
-MANIFEST=mymanifest
+MANIFEST=ProbeLibrary.manifest
 CLASSES=$(JAVAS:.java=.class)
 LINKCLASSES=*.class
 BUILDLIST=.build.lst
