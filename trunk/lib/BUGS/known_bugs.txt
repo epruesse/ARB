@@ -1,0 +1,3 @@
+
+- Many refresh problems in EDIT4
+- Chimere check broken (and disabled in public version)
