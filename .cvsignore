@@ -1,6 +1,8 @@
 *.last_gcc
 ARB_SOURCE_DOC
 ChangeLog
+INCLUDE
+PERL5
 arb.tgz
 arbsrc.lst
 arbsrc_*.tgz
