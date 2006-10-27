@@ -1,5 +1,5 @@
 
-.SUFFIXES: .o .c .cxx .source .hlp .xml .html .depend
+.SUFFIXES: .o .c .cxx .source .hlp .xml .html .depend .ps.gz .pdf.gz
 
 # --------------------------------------------------------------------------------
 
@@ -32,7 +32,7 @@ VALIDATE = $(QUIETLY) RXP
 
 # --------------------------------------------------------------------------------
 
-all: date generated dirs tools delzerohtml
+all: date generated dirs tools nonhlp_formats delzerohtml
 ifeq ($(CONVERT_FROM_OLD_HELP),1)
 		@echo ---------------------------------------------------
 		@echo ------------ Converting old hlp 2 xml:
@@ -106,7 +106,9 @@ XML=$(XML_TMP2:$(HLP_GENERATED)/%=$(XML_LOCATION)/%)
 
 XML_DEPEND=xml.stamp# xml files are rebuild if this stamp is recreated
 
-$(XML) : $(XML_DEPEND) Makefile $(QUIETLY)
+$(XML) : $(XML_DEPEND)  $(QUIETLY)
+
+#$(XML) : $(XML_DEPEND) Makefile $(QUIETLY)
 
 xml : $(XML)
 
@@ -140,6 +142,26 @@ HTML=$(HTML_TMP:$(XML_LOCATION)/%=$(HTML_LOCATION)/%)
 
 HELP_TMP=$(XML:%.xml=%.hlp)
 HELP=$(HELP_TMP:$(XML_LOCATION)/%=$(HLP_DEST)/%)
+
+# --------------------------------------------------------------------------------
+
+PS_SRC=$(wildcard $(HLP_SOURCE)/*.ps.gz)
+PDF_SRC=$(wildcard $(HLP_SOURCE)/*.pdf.gz)
+
+PS_DEST=$(PS_SRC:$(HLP_SOURCE)/%=$(HLP_DEST)/%)
+PDF_DEST=$(PDF_SRC:$(HLP_SOURCE)/%=$(HLP_DEST)/%)
+
+ps: $(PS_DEST)
+
+pdf: $(PDF_DEST)
+
+nonhlp_formats: ps pdf
+
+$(HLP_DEST)/%.ps.gz : $(HLP_SOURCE)/%.ps.gz
+	cp -p $< $@
+
+$(HLP_DEST)/%.pdf.gz : $(HLP_SOURCE)/%.pdf.gz
+	cp -p $< $@
 
 # --------------------------------------------------------------------------------
 
