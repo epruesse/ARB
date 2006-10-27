@@ -39,15 +39,16 @@ ARB_DB_SERVER		:/tmp/arb_db_$(USER)_$(ARB_PID)
 ARB_NAME_SERVER		localhost:3029		arb_name_server	-d$(ARBHOME)/lib/nas/names.dat
 
 #***********	PT_SERVERS The server should run on the nfs server ******************
-#*******     You may add new pt_servers here: (numbers must be continues)   *********
+#*******     You may add new pt_servers here: (numbers must be continued)   *********
 
-ARB_PT_SERVER0		localhost:3030		arb_pt_server	-D$(ARBHOME)/lib/pts/LSU_rRNA.arb
-ARB_PT_SERVER1		localhost:3031		arb_pt_server	-D$(ARBHOME)/lib/pts/SSU_rRNA.arb
-ARB_PT_SERVER2		localhost:3032		arb_pt_server	-D$(ARBHOME)/lib/pts/user1.arb
-ARB_PT_SERVER3		localhost:3033		arb_pt_server	-D$(ARBHOME)/lib/pts/user2.arb
-ARB_PT_SERVER4		localhost:3034		arb_pt_server	-D$(ARBHOME)/lib/pts/user3.arb
-ARB_PT_SERVER5		localhost:3035		arb_pt_server	-D$(ARBHOME)/lib/pts/user4.arb
-ARB_PT_SERVER6		localhost:3036		arb_pt_server	-D$(ARBHOME)/lib/pts/user5.arb
-ARB_PT_SERVER7		localhost:3037		arb_pt_server	-D$(ARBHOME)/lib/pts/user6.arb
-ARB_PT_SERVER8		localhost:3038		arb_pt_server	-D$(ARBHOME)/lib/pts/user7.arb
-ARB_PT_SERVER9		localhost:3039		arb_pt_server	-D$(ARBHOME)/lib/pts/user8.arb
+ARB_PT_SERVER0		localhost:3030		arb_pt_server	-D$(ARBHOME)/lib/pts/probe_server.arb RESERVED
+ARB_PT_SERVER1		localhost:3031		arb_pt_server	-D$(ARBHOME)/lib/pts/LSU_rRNA.arb
+ARB_PT_SERVER2		localhost:3032		arb_pt_server	-D$(ARBHOME)/lib/pts/SSU_rRNA.arb
+ARB_PT_SERVER3		localhost:3033		arb_pt_server	-D$(ARBHOME)/lib/pts/user1.arb
+ARB_PT_SERVER4		localhost:3034		arb_pt_server	-D$(ARBHOME)/lib/pts/user2.arb
+ARB_PT_SERVER5		localhost:3035		arb_pt_server	-D$(ARBHOME)/lib/pts/user3.arb
+ARB_PT_SERVER6		localhost:3036		arb_pt_server	-D$(ARBHOME)/lib/pts/user4.arb
+ARB_PT_SERVER7		localhost:3037		arb_pt_server	-D$(ARBHOME)/lib/pts/user5.arb
+ARB_PT_SERVER8		localhost:3038		arb_pt_server	-D$(ARBHOME)/lib/pts/user6.arb
+ARB_PT_SERVER9		localhost:3039		arb_pt_server	-D$(ARBHOME)/lib/pts/user7.arb
+ARB_PT_SERVER10		localhost:3040		arb_pt_server	-D$(ARBHOME)/lib/pts/user8.arb
