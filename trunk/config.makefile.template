@@ -9,7 +9,7 @@ DEVELOPER=ANY
 DEBUG=0# build with debug information
 DEBUG_GRAPHICS = 0# force instant graphic update
 # SEER = 1
-OPENGL=0
+OPENGL=1
 
 # --------------------------------------------------------------------------------
 # target machine section
