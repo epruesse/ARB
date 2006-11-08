@@ -8,7 +8,7 @@ help.make:
 all: tcpdat nameserver
 
 tcpdat:
-		test arb_tcp.dat || cp -p arb_tcp_org.dat arb_tcp.dat
+		test -e arb_tcp.dat || cp -p arb_tcp_org.dat arb_tcp.dat
 
 nameserver:
 		(cd nas;$(MAKE) all)
