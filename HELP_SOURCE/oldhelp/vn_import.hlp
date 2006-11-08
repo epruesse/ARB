@@ -14,7 +14,7 @@ TITLE		Import Valid Names from File
 OCCURRENCE	ARB_NT/species/Valid Names/Import names from file
 
 DESCRIPTION     Imports the valid and accepted names of bacterial species from a text file issued by the DSZM.
-                The file is $ARBHOME/lib/unixnames.txt. Import is necessary always once. All the names are then stored
+                The file is $ARBHOME/lib/LoVPBN.txt. Import is necessary always once. All the names are then stored
                 in a separate database section. This section has to be removed before a newer version of the
                 names list can be imported.
 
@@ -22,10 +22,12 @@ NOTES		None
 
 EXAMPLES	None
 
-WARNINGS	If you want to update the file yourself:
-                -convert DOS files to files with unix new-line characters
-                -line above ABIOTROPHA are ignored
-                -file name has to be unixnames.txt
+WARNINGS	If you want to update LoVPBN.txt yourself:
+                - download a new version from http://www.dsmz.de/download/bactnom/names.txt
+                - convert line-feed-characters to unix convention (see 'man dos2unix')
+                - overwrite $ARBHOME/lib/LoVPBN.txt
+                - lines above ABIOTROPHA are ignored
+
 BUGS		No bugs known
 
 
