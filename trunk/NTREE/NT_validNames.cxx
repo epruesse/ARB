@@ -64,7 +64,8 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
     string                 tmpString;
     StrL                   fileContent;
 
-    char *fileName = GBS_global_string_copy("%s/lib/unixnames.txt", GB_getenvARBHOME());
+    // Load LoVPBN (List of Validly Published Bacterial Names)
+    char *fileName = GBS_global_string_copy("%s/lib/LoVPBN.txt", GB_getenvARBHOME());
 
     DescList myDescs;
 
