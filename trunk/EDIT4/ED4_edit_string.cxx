@@ -30,9 +30,9 @@ int ED4_Edit_String::nrepeat_is_already_set = 0;    // nrepeat was zero (and was
 unsigned char ED4_is_align_character[255];
 void ED4_init_is_align_character(GB_CSTR gap_chars)
 {
-    int c;
-    for (c=0; c<=255; c++) {
-        ED4_is_align_character[c] = (strchr(gap_chars, c)!=NULL);
+    memset(ED4_is_align_character, 0, 256);
+    for (int p = 0; gap_chars[p]; ++p) {
+        ED4_is_align_character[(unsigned char)(gap_chars[p])] = 1;
     }
 }
 
