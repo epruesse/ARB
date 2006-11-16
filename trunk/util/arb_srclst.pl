@@ -126,6 +126,8 @@ my @skipped_when_matchesFull = (
                                 qr/^\.\/PERL2ARB\/Makefile$/,
                                 qr/^\.\/lib\/ARB\.pm$/,
                                 qr/^\.\/lib\/nas\/names\.dat$/,
+                                qr/^\.\/lib\/arb_tcp\.dat$/,
+                                qr/^\.\/arb.*\.tgz$/,
                                );
 
 my @forced_when_matchesFull = (
