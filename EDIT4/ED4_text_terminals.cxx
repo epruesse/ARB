@@ -329,6 +329,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
     AW_device    *device                 = ED4_ROOT->temp_device;
 
     resolve_pointer_to_char_pntr(&max_seq_len);
+    e4_assert(max_seq_len>0);
 
 #if defined(DEBUG) && 0
     int paint_back = 0;
