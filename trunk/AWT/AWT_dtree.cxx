@@ -51,8 +51,7 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
                      "+-Probe 1$red",       "-Probes 1+3$magenta",
                      "+-Probe 2$green",     "-Probes 2+3$cyan",
                      "+-Probe 3$blue",      "-All probes$white",
-
-                     0 );
+                     NULL );
 
     return preset_window;
 }
