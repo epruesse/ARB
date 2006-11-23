@@ -132,6 +132,7 @@ my @skipped_when_matchesFull = (
 
 my @forced_when_matchesFull = (
                                qr/\/PROBE_WEB\/SERVER\/.*\.jar$/,
+                               qr/\/lib\/addlibs\/.*$/,
                               );
 
 my @skipped_directories = (
