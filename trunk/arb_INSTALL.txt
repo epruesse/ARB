@@ -6,7 +6,7 @@ To install a precompiled ARB
    and save them into a directory of your choice (i.e. ~/arb-install/ )
 
    Files needed: 'arb.tgz', 'arb_install.sh' and 'zcat'
-   (Note: zcat is a copy gzip for most systems)
+   Note: zcat just is a copy of gzip
 
 2. get root
 3. run arb_install.sh and follow the instructions
@@ -17,7 +17,9 @@ Software that is needed to run ARB:
 - xview
 - (open)motif
 - bash
-- libGLEW -- Open GL extensions library (see subdirectory libGLEW)
+- OPENGL
+- libGLEW -- Open GL extensions library (see subdirectory lib/addlibs)
+- libpng
 
 Software that is useful together with ARB:
 ------------------------------------------
