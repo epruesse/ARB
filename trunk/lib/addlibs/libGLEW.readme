@@ -1,0 +1,13 @@
+
+RNA3D (accessible via the '3D' button in ARB_EDIT4)
+needs the extension library (GLEW) to work.
+
+The arb install script installs libGLEW.so.1.2.4 into
+/usr/lib and creates symlink 'libGLEW.so.1' to it.
+
+
+Original and more recent GLEW libraries can be found at :
+--------------------------------------------------
+GLEW - openGL extension wrangler library
+URL : http://glew.sourceforge.net/
+--------------------------------------------------
