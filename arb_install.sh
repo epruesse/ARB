@@ -331,21 +331,9 @@ case "$var" in
      echo ">>> server installed";;
 esac
 
-if test -r /vmunix -a \( ! -r /usr/lib/X11/XKeysymDB \); then
-
-  seperator
-  echo "/usr/lib/X11/XKeysymDB not found: Should I install it now (y/n)[y]"
-  read var
-  echo
-  case "$var" in
-    n)
-       echo ">>> XKeysymDB not installed";;
-    *)
-       install -d /usr/lib/X11
-       install Xlib/XKeysymDB Xlib/XErrorDB /usr/lib/X11
-       echo ">>> XKeysymDB XErrorDB installed";;
-  esac
-fi
+# install missing libraries
+seperator
+( cd lib/addlibs; ./install_libs.sh )
 
 seperator
 echo ">>> Installation Complete"
@@ -413,7 +401,6 @@ SHELL_ANS=0
              echo "	alias arb '$ARBHOME/bin/arb'";
              echo "and reread the file or"
              echo "type one of these lines at the command prompt."
-             rm -f /usr/lib/libAW.so
              SHELL_ANS=1 ;;
           *)
              echo 'Wrong answer';;
