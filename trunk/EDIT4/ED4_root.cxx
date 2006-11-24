@@ -1491,7 +1491,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
                                     "#f8f8f8",
                                     "STANDARD$black", // Standard Color showing sequences
-                                    "#SEQUENCES$#808080", // default color for sequences (color 0)
+                                    "#SEQUENCES (0)$#505050", // default color for sequences (color 0)
                                     "+-HELIX (1)$#8E0000",  "+-COLOR 2$#0000dd",    "-COLOR 3$#00AA55",
                                     "+-COLOR 4$#80f",       "+-COLOR 5$#c0a020",    "-COLOR 6$grey",
                                     "+-COLOR 7$#ff0000",    "+-COLOR 8$#44aaff",    "-COLOR 9$#ffaa00",
