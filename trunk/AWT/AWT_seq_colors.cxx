@@ -222,7 +222,6 @@ void AWT_seq_colors::reload(){
             free(sc);
         }
     }
-}
 
     cbexists = 1;
     run_cb();
