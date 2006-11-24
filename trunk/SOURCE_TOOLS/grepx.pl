@@ -3,7 +3,7 @@
 #                                                                          #
 #   File      : grepx.pl                                                   #
 #   Purpose   : Replacement for grep (used from emacs)                     #
-#   Time-stamp: <Wed Oct/11/2006 12:33 MET Coder@ReallySoft.de>            #
+#   Time-stamp: <Fri Nov/17/2006 13:42 MET Coder@ReallySoft.de>            #
 #                                                                          #
 #   (C) November 2005 by Ralf Westram                                      #
 #                                                                          #
@@ -30,6 +30,10 @@
 use strict;
 use warnings;
 use Cwd;
+
+# --------------------------------------------------------------------------------
+
+my $tabsize = 4; # specify your emacs tabsize here (used to correct column position)
 
 # --------------------------------------------------------------------------------
 # group definitions (you may want to change here):
@@ -122,7 +126,7 @@ my @groups = (
               # ARB specifics
               [
                [ ],
-               [ '.menu', '.source' ],
+               [ '.menu', '.source', '.hlp' ],
               ],
               );
 
@@ -170,6 +174,9 @@ sub shall_skip_file($) {
   if ($file =~ /PERL2ARB\//o) {
     my $rest = $';
     if ($rest eq 'ARB.c' or $rest eq 'proto.h') { return 1; }
+  }
+  elsif ($file =~ /lib\/help\//o) {
+    return 1;
   }
   return 0;
 }
@@ -385,6 +392,13 @@ sub parse_args() {
 
 # --------------------------------------------------------------------------------
 
+sub pos_correction($$) {
+  my ($line,$pos) = @_;
+  my $prematch = substr($line,0,$pos);
+  $prematch =~ s/[^\t]//go;
+  return length($prematch)*($tabsize-1);
+}
+
 my $lines_examined = 0;
 my $reg_startdir = undef;
 
@@ -402,8 +416,15 @@ sub grepfile($) {
     if ($line =~ $regexpr) {
       if ((not defined $maxhits) or ($maxhits>0)) {
         my $rest   = $';
-        my $hitlen = length($&);
-        my $pos    = length($`)+1;
+        my $hitlen = $-[0] - $+[0];
+        my $pos;
+
+        if ($#+ > 0) { # regexpr has subgroups -> point to start of first subgroup
+          $pos = $-[$#+] + 1; # start of first subgroup
+        }
+        else {
+          $pos = $-[0] + 1; # start of regexpr
+        }
 
         if ($matches==0 and $arbSpecials==1) {
           if (shall_skip_file($file)==1) {
@@ -412,25 +433,38 @@ sub grepfile($) {
           }
         }
 
+        my $correct = pos_correction($line,$pos);
         chomp($line);
         $line =~ s/
-//;
-        print "$show:$.:$pos: $line\n";
+//o;
+        $pos += $correct;
+        $line =~ s/^([\s\t]+)//o;
         my $hits = 1;
 
         if ($one_hit_per_line==0) {
+          print "$show:$.:$pos:        $line\n";
           chomp($rest);
           $rest =~ s/
 //;
 
           while ($rest =~ $regexpr) {
-            my $start_pos = $pos+$hitlen;
-            $hitlen = length($&);
-            $pos = $start_pos+length($`);
-            print "$show:$.:$pos: $line\n";
+            my $start_pos = $pos+$hitlen-1;
+            $hitlen = $-[0] - $+[0];
+            if ($#+ > 0) {
+              $pos = $-[$#+] + 1;
+            }
+            else {
+              $pos = $-[0] + 1;
+            }
+            $correct = pos_correction($rest,$pos);
+            $pos += $start_pos+$correct;
+            print "$show:$.:$pos: [same] $line\n";
             $hits++;
             $rest = $';
           }
+        }
+        else {
+          print "$show:$.:$pos: $line\n";
         }
 
         $reported += $hits;
