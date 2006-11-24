@@ -1,11 +1,11 @@
 #ifndef awt_seq_colors_hxx_included
 #define awt_seq_colors_hxx_included
 
-#define AWAR_SEQ_PATH  "awt/seq_colors/"
-#define AWAR_SEQ_NAME_STRINGS_TEMPLATE    AWAR_SEQ_PATH  "strings/elem_%i"
-#define AWAR_SEQ_NAME_TEMPLATE                  AWAR_SEQ_PATH  "set_%i/elem_%i"
-#define AWAR_SEQ_NAME_SELECTOR_NA            AWAR_SEQ_PATH   "na/select"
-#define AWAR_SEQ_NAME_SELECTOR_AA             AWAR_SEQ_PATH   "aa/select"
+#define AWAR_SEQ_PATH                  "awt/seq_colors/"
+#define AWAR_SEQ_NAME_STRINGS_TEMPLATE AWAR_SEQ_PATH  "strings/elem_%i"
+#define AWAR_SEQ_NAME_TEMPLATE         AWAR_SEQ_PATH  "set_%i/elem_%i"
+#define AWAR_SEQ_NAME_SELECTOR_NA      AWAR_SEQ_PATH   "na/select"
+#define AWAR_SEQ_NAME_SELECTOR_AA      AWAR_SEQ_PATH   "aa/select"
 
 #define AWT_SEQ_COLORS_MAX_SET   5
 #define AWT_SEQ_COLORS_MAX_ELEMS 28 // has to be a even number!
