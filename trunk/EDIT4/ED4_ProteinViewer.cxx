@@ -167,13 +167,10 @@ void PV_HideAllTerminals(){
                         // get the corresponding AA_sequence_terminal skipping sequence_info terminal
                         // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
                         terminal = terminal->get_next_terminal()->get_next_terminal(); 
+                        // Make sure it is AA sequence terminal
                         if (terminal->is_aa_sequence_terminal()) {
                             ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                            // Check AliType to make sure it is AA sequence terminal
-                            GB_alignment_type AliType = aaSeqTerminal->GetAliType();
-                            if (AliType && (AliType==GB_AT_AA)) {
-                                PV_HideTerminal(aaSeqTerminal);
-                            }
+                            PV_HideTerminal(aaSeqTerminal);
                         }
                     }
                 }
@@ -204,17 +201,14 @@ void PV_DisplayAminoAcidNames(AW_root *root) {
                                 // get the corresponding AA_sequence_terminal skipping sequence_info terminal
                                 // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
                                 terminal = terminal->get_next_terminal()->get_next_terminal(); 
+                                // Make sure it is AA sequence terminal
                                 if (terminal->is_aa_sequence_terminal()) {
                                     ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                                    // Check AliType to make sure it is AA sequence terminal
-                                    GB_alignment_type AliType = aaSeqTerminal->GetAliType();
-                                    if (AliType && (AliType==GB_AT_AA)) {
-                                        // we are in AA sequence terminal
-                                        int   aaStartPos = int(aaSeqTerminal->GET_aaStartPos()); 
-                                        int aaStrandType = int(aaSeqTerminal->GET_aaStrandType()); 
-                                        // retranslate the genesequence and store it to the AA_sequnce_terminal
-                                        TranslateGeneToAminoAcidSequence(root, aaSeqTerminal, speciesName, aaStartPos-1, aaStrandType);
-                                    }
+                                    // we are in AA sequence terminal
+                                    int   aaStartPos = int(aaSeqTerminal->GET_aaStartPos()); 
+                                    int aaStrandType = int(aaSeqTerminal->GET_aaStrandType()); 
+                                    // retranslate the genesequence and store it to the AA_sequnce_terminal
+                                    TranslateGeneToAminoAcidSequence(root, aaSeqTerminal, speciesName, aaStartPos-1, aaStrandType);
                                 }
                             }
                     }
@@ -300,13 +294,10 @@ void PV_ManageTerminals(AW_root *root){
                                     // get the corresponding AA_sequence_terminal skipping sequence_info terminal
                                     // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
                                     terminal = terminal->get_next_terminal()->get_next_terminal(); 
+                                    // Make sure it is AA sequence terminal
                                     if (terminal->is_aa_sequence_terminal()) {
                                         ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                                        // Check AliType to make sure it is AA sequence terminal
-                                        GB_alignment_type AliType = aaSeqTerminal->GetAliType();
-                                        if (AliType && (AliType==GB_AT_AA)) {
-                                            PV_ManageTerminalDisplay(root, aaSeqTerminal);
-                                        }
+                                        PV_ManageTerminalDisplay(root, aaSeqTerminal);
                                     }
                                 }
                             }
@@ -333,13 +324,10 @@ void PV_ManageTerminals(AW_root *root){
                                     // get the corresponding AA_sequence_terminal skipping sequence_info terminal
                                     // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
                                     terminal = terminal->get_next_terminal()->get_next_terminal(); 
+                                    // Make sure it is AA sequence terminal
                                     if (terminal->is_aa_sequence_terminal()) {
                                         ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                                        // Check AliType to make sure it is AA sequence terminal
-                                        GB_alignment_type AliType = aaSeqTerminal->GetAliType();
-                                        if (AliType && (AliType==GB_AT_AA)) {
-                                            PV_ManageTerminalDisplay(root, aaSeqTerminal);
-                                        }
+                                        PV_ManageTerminalDisplay(root, aaSeqTerminal);
                                     }
                                 }
                             }
@@ -353,20 +341,17 @@ void PV_ManageTerminals(AW_root *root){
             // Display Only Terminals Corresponding To The Cursor Position in the multiple alignment
             ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
             if (cursor->owner_of_cursor) {
-            // Get The Cursor Terminal And The Corresponding Aa_Sequence Terminals And Set The Display Options
+                // Get The Cursor Terminal And The Corresponding Aa_Sequence Terminals And Set The Display Options
                 ED4_terminal *cursorTerminal = cursor->owner_of_cursor->to_terminal();
                 if (!cursorTerminal->parent->parent->flag.is_consensus) {
                     for(int i=0; i<PV_AA_Terminals4Species; i++) {
                         // get the corresponding AA_sequence_terminal skipping sequence_info terminal
                         // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
                         cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal(); 
+                        // Make sure it is AA sequence terminal
                         if (cursorTerminal->is_aa_sequence_terminal()) {
                             ED4_AA_sequence_terminal *aaSeqTerminal = cursorTerminal->to_aa_sequence_terminal();
-                            // Check AliType to make sure it is AA sequence terminal
-                            GB_alignment_type AliType = aaSeqTerminal->GetAliType();
-                            if (AliType && (AliType==GB_AT_AA)) {
-                                PV_ManageTerminalDisplay(root, aaSeqTerminal);
-                            }
+                            PV_ManageTerminalDisplay(root, aaSeqTerminal);
                         }
                     }
                 }
@@ -390,13 +375,10 @@ void PV_ManageTerminals(AW_root *root){
                                 // get the corresponding AA_sequence_terminal skipping sequence_info terminal
                                 // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
                                 terminal = terminal->get_next_terminal()->get_next_terminal(); 
+                                // Make sure it is AA sequence terminal
                                 if (terminal->is_aa_sequence_terminal()) {
                                     ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                                    // Check AliType to make sure it is AA sequence terminal
-                                    GB_alignment_type AliType = aaSeqTerminal->GetAliType();
-                                    if (AliType && (AliType==GB_AT_AA)) {
-                                        PV_ManageTerminalDisplay(root, aaSeqTerminal);
-                                    }
+                                    PV_ManageTerminalDisplay(root, aaSeqTerminal);
                                 }
                             }
                         }
@@ -532,16 +514,13 @@ void PV_SaveData(AW_window *aww){
                         for(int i=0; i<PV_AA_Terminals4Species; i++) {
                             // get the corresponding AA_sequence_terminal skipping sequence_info terminal
                             terminal = terminal->get_next_terminal()->get_next_terminal(); 
+                            // Make sure it is AA sequence terminal
                             if (terminal->is_aa_sequence_terminal()) {
                                 ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                                // Check AliType to make sure it is AA sequence terminal
-                                GB_alignment_type AliType = aaSeqTerminal->GetAliType();
-                                if (AliType && (AliType==GB_AT_AA)) {
                                     ED4_base *base = (ED4_base*)aaSeqTerminal;
                                     if(!base->flag.hidden) {
                                         PV_WriteTranslatedSequenceToDB(aaSeqTerminal, speciesName);//, ASKtoOverWriteData);
                                     }
-                                }
                             }
                         }
                     }
@@ -734,17 +713,14 @@ void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype)
                                 // get the corresponding AA_sequence_terminal skipping sequence_info terminal
                                 // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
                                 cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal(); 
+                                // Make sure it is AA sequence terminal
                                 if (cursorTerminal->is_aa_sequence_terminal()) {
                                     ED4_AA_sequence_terminal *aaSeqTerminal = cursorTerminal->to_aa_sequence_terminal();
-                                    // Check AliType to make sure it is AA sequence terminal
-                                    GB_alignment_type AliType = aaSeqTerminal->GetAliType();
-                                    if (AliType && (AliType==GB_AT_AA)) {
                                         // Get the AA sequence flag - says which strand we are in 
                                         int   aaStartPos = int(aaSeqTerminal->GET_aaStartPos()); 
                                         int aaStrandType = int(aaSeqTerminal->GET_aaStrandType()); 
                                         // retranslate the genesequence and store it to the AA_sequnce_terminal
                                         TranslateGeneToAminoAcidSequence(ED4_ROOT->aw_root, aaSeqTerminal, speciesName, aaStartPos-1, aaStrandType);
-                                    }
                                 }
                             }
                         // Print missing DB entries
