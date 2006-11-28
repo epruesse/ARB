@@ -1629,9 +1629,15 @@ public:
     int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
 };
 
-// --------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------------------
 //         class ED4_AA_sequence_terminal: public ED4_sequence_terminal_basic
-// --------------------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------------------
+// NOTE: ED4_AA_sequence_terminal is a separte terminal class used to Open Reading Frames (ORFs)
+//       for the corresponding gene (DNA) sequence. It is used in ProteinViewer Module and should not be 
+//       used for drawing aminoacid sequence alone as in protien alignment. Aminoacid sequences are 
+//       handled by the standard "ED4_sequence_terminal" class.
+// ------------------------------------------------------------------------------------------------------
+
 class ED4_AA_sequence_terminal: public ED4_sequence_terminal_basic
 {
     virtual ED4_returncode  draw( int only_text = 0 );

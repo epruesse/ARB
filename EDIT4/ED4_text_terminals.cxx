@@ -400,8 +400,11 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
         unsigned char *db_pointer = (unsigned char *)resolve_pointer_to_string_copy();
 
         ref->expand_to_length(seq_end);
-        char *char_2_char = ED4_ROOT->sequence_colors->char_2_char;
-        char *char_2_gc = ED4_ROOT->sequence_colors->char_2_gc;
+
+        GB_alignment_type aliType = GetAliType();
+        char *char_2_char = (aliType && (aliType==GB_AT_AA))? ED4_ROOT->sequence_colors->char_2_char_aa:ED4_ROOT->sequence_colors->char_2_char;
+        char *char_2_gc   = (aliType && (aliType==GB_AT_AA))? ED4_ROOT->sequence_colors->char_2_gc_aa:ED4_ROOT->sequence_colors->char_2_gc;
+
         int scr_pos;
         int is_ref = ref->reference_species_is(species_name);
 
