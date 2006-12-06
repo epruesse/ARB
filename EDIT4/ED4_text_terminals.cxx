@@ -240,8 +240,8 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
     // mark all strings as unused
     memset(color_is_used,0,sizeof(color_is_used));
 
-    int    iDisplayAminoAcids = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_AA)->read_int();
-    int iDisplayAsColoredBox = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->read_int();
+    //    int    iDisplayAminoAcids = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_AA)->read_int();
+    int iDisplayMode = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->read_int();
     unsigned char *aaSequence = (unsigned char *) strdup(this->aaSequence);
 
     {     // transform strings, compress if needed
@@ -261,7 +261,8 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
         }
     }
 
-    if(!iDisplayAminoAcids) {
+    // painting background
+    if((iDisplayMode == PV_AA_CODE) || (iDisplayMode == PV_AA_BOX)) {
         {
             AW_pos       width = ED4_ROOT->font_group.get_width(ED4_G_HELIX);
             int          real_left  = left;
@@ -287,7 +288,7 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
                     int gcChar =  char_2_gc_aa[c];
                     if ((gcChar>=0) && (gcChar<ED4_G_DRAG)) {
                         color = gcChar;  
-                        if (iDisplayAsColoredBox) {
+                        if (iDisplayMode == PV_AA_BOX) {
                             device->box(color,x1, y1, width*3, height, -1, 0,0);
                         } else {
                             //int AW_device_Xm::arc(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) 
@@ -302,8 +303,10 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
 
     device->top_font_overlap    = 1;
     device->bottom_font_overlap = 1;
-    // output strings
-    if (!iDisplayAsColoredBox || iDisplayAminoAcids) { 
+
+    // output strings -- when display aminoacid sequence selected
+    if((iDisplayMode == PV_AA_NAME) || (iDisplayMode == PV_AA_CODE)) {
+        //    if (!iDisplayAsColoredBox || iDisplayAminoAcids) { 
         int gc;
         for (gc = 0; gc < ED4_G_DRAG; gc++){
             if (!color_is_used[gc]) continue;
