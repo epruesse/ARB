@@ -644,6 +644,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
             }
             ED4_ROOT->main_manager->update_info.set_resize(1);
             ED4_ROOT->main_manager->resize_requested_by_parent();
+            /* it should create new AA Sequence terminals if the protien viewer is enabled */
         }
         delete string;
     }

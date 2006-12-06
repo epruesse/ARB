@@ -41,32 +41,55 @@ void TranslateGeneToAminoAcidSequence(AW_root *root,ED4_AA_sequence_terminal *se
 void PV_DisplayAminoAcidNames(AW_root *root);
 void PV_PrintMissingDBentryInformation(void);
 void PV_RefreshWindow(AW_root *root);
-void PV_ManageTerminalDisplay(AW_root *root, ED4_AA_sequence_terminal *aaSeqTerminal);
+void PV_ManageTerminalDisplay(AW_root *root, ED4_AA_sequence_terminal *aaSeqTerminal,long int DispMode);
 PV_ERROR PV_ComplementarySequence(char *sequence);
 AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root);
 void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype);
+void PV_RefreshDisplay(AW_root *root);
 
 // --------------------------------------------------------------------------------
 //        Binding callback function to the AWARS
 // --------------------------------------------------------------------------------
 void PV_AddCallBacks(AW_root *awr) {
 
-    awr->awar(AWAR_PROTVIEW_FORWARD_STRAND)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_DISPLAY_ALL)->add_callback(PV_CallBackFunction);
     awr->awar(AWAR_PROTVIEW_FORWARD_STRAND_1)->add_callback(PV_CallBackFunction);
     awr->awar(AWAR_PROTVIEW_FORWARD_STRAND_2)->add_callback(PV_CallBackFunction);
     awr->awar(AWAR_PROTVIEW_FORWARD_STRAND_3)->add_callback(PV_CallBackFunction);
-
-    awr->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND)->add_callback(PV_CallBackFunction);
     awr->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_1)->add_callback(PV_CallBackFunction);
     awr->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_2)->add_callback(PV_CallBackFunction);
     awr->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_3)->add_callback(PV_CallBackFunction);
-
     awr->awar(AWAR_PROTVIEW_DEFINED_FIELDS)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PROTVIEW_DISPLAY_AA)->add_callback(PV_DisplayAminoAcidNames);
-    awr->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->add_callback(PV_RefreshWindow);
-    awr->awar(AWAR_PROTVIEW_DISPLAY_MODE)->add_callback(PV_CallBackFunction);
 
+    awr->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->add_callback(PV_RefreshDisplay);
     awr->awar(AWAR_SPECIES_NAME)->add_callback(PV_CallBackFunction);
+
+    awr->awar(AWAR_PV_SELECTED)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_SELECTED_DB)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_SELECTED_FS_1)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_SELECTED_FS_2)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_SELECTED_FS_3)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_SELECTED_CS_1)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_SELECTED_CS_2)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_SELECTED_CS_3)->add_callback(PV_CallBackFunction);
+
+    awr->awar(AWAR_PV_MARKED)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_MARKED_DB)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_MARKED_FS_1)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_MARKED_FS_2)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_MARKED_FS_3)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_MARKED_CS_1)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_MARKED_CS_2)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_MARKED_CS_3)->add_callback(PV_CallBackFunction);
+
+    awr->awar(AWAR_PV_CURSOR)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_CURSOR_DB)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_CURSOR_FS_1)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_CURSOR_FS_2)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_CURSOR_FS_3)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_CURSOR_CS_1)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_CURSOR_CS_2)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_CURSOR_CS_3)->add_callback(PV_CallBackFunction);
 }
 
 // --------------------------------------------------------------------------------
@@ -74,39 +97,91 @@ void PV_AddCallBacks(AW_root *awr) {
 // --------------------------------------------------------------------------------
 void PV_CreateAwars(AW_root *root, AW_default aw_def){
 
-    root->awar_int(AWAR_PROTVIEW_FORWARD_STRAND, 0, aw_def); 
+    root->awar_int(AWAR_PV_DISPLAY_ALL, 0, aw_def); 
+
     root->awar_int(AWAR_PROTVIEW_FORWARD_STRAND_1, 0, aw_def); 
     root->awar_int(AWAR_PROTVIEW_FORWARD_STRAND_2, 0, aw_def); 
     root->awar_int(AWAR_PROTVIEW_FORWARD_STRAND_3, 0, aw_def); 
 
-    root->awar_int(AWAR_PROTVIEW_COMPLEMENTARY_STRAND, 0, aw_def); 
     root->awar_int(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_1, 0, aw_def); 
     root->awar_int(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_2, 0, aw_def); 
     root->awar_int(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_3, 0, aw_def); 
 
     root->awar_int(AWAR_PROTVIEW_DEFINED_FIELDS, 0, aw_def); 
-    root->awar_int(AWAR_PROTVIEW_DISPLAY_AA, 0, aw_def); 
     root->awar_int(AWAR_PROTVIEW_DISPLAY_OPTIONS, 0, aw_def); 
-    root->awar_int(AWAR_PROTVIEW_DISPLAY_MODE, 3, aw_def); 
+
+    root->awar_int(AWAR_PV_SELECTED, 0, aw_def); 
+    root->awar_int(AWAR_PV_SELECTED_DB, 0, aw_def); 
+    root->awar_int(AWAR_PV_SELECTED_FS_1, 0, aw_def); 
+    root->awar_int(AWAR_PV_SELECTED_FS_2, 0, aw_def); 
+    root->awar_int(AWAR_PV_SELECTED_FS_3, 0, aw_def); 
+    root->awar_int(AWAR_PV_SELECTED_CS_1, 0, aw_def); 
+    root->awar_int(AWAR_PV_SELECTED_CS_2, 0, aw_def); 
+    root->awar_int(AWAR_PV_SELECTED_CS_3, 0, aw_def); 
+
+    root->awar_int(AWAR_PV_MARKED, 0, aw_def); 
+    root->awar_int(AWAR_PV_MARKED_DB, 0, aw_def); 
+    root->awar_int(AWAR_PV_MARKED_FS_1, 0, aw_def); 
+    root->awar_int(AWAR_PV_MARKED_FS_2, 0, aw_def); 
+    root->awar_int(AWAR_PV_MARKED_FS_3, 0, aw_def); 
+    root->awar_int(AWAR_PV_MARKED_CS_1, 0, aw_def); 
+    root->awar_int(AWAR_PV_MARKED_CS_2, 0, aw_def); 
+    root->awar_int(AWAR_PV_MARKED_CS_3, 0, aw_def); 
+
+    root->awar_int(AWAR_PV_CURSOR, 0, aw_def); 
+    root->awar_int(AWAR_PV_CURSOR_DB, 0, aw_def); 
+    root->awar_int(AWAR_PV_CURSOR_FS_1, 0, aw_def); 
+    root->awar_int(AWAR_PV_CURSOR_FS_2, 0, aw_def); 
+    root->awar_int(AWAR_PV_CURSOR_FS_3, 0, aw_def); 
+    root->awar_int(AWAR_PV_CURSOR_CS_1, 0, aw_def); 
+    root->awar_int(AWAR_PV_CURSOR_CS_2, 0, aw_def); 
+    root->awar_int(AWAR_PV_CURSOR_CS_3, 0, aw_def); 
 }
 
 bool PV_LookForNewTerminals(AW_root *root){
     bool bTerminalsFound = true;
 
-    int frwdStrand  = root->awar(AWAR_PROTVIEW_FORWARD_STRAND)->read_int();
-    int frwdStrand1 = root->awar(AWAR_PROTVIEW_FORWARD_STRAND_1)->read_int();
-    int frwdStrand2 = root->awar(AWAR_PROTVIEW_FORWARD_STRAND_2)->read_int();
-    int frwdStrand3 = root->awar(AWAR_PROTVIEW_FORWARD_STRAND_3)->read_int();
-    int complStrand   = root->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND)->read_int();
-    int complStrand1  = root->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_1)->read_int();
-    int complStrand2  = root->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_2)->read_int();
-    int complStrand3  = root->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_3)->read_int();
-    int defFields     = root->awar(AWAR_PROTVIEW_DEFINED_FIELDS)->read_int();
-    
+    int all = root->awar(AWAR_PV_DISPLAY_ALL)->read_int();
+    int all_f1 = root->awar(AWAR_PROTVIEW_FORWARD_STRAND_1)->read_int();
+    int all_f2 = root->awar(AWAR_PROTVIEW_FORWARD_STRAND_2)->read_int();
+    int all_f3 = root->awar(AWAR_PROTVIEW_FORWARD_STRAND_3)->read_int();
+    int all_c1  = root->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_1)->read_int();
+    int all_c2  = root->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_2)->read_int();
+    int all_c3  = root->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_3)->read_int();
+    int all_db     = root->awar(AWAR_PROTVIEW_DEFINED_FIELDS)->read_int();
+
+    int sel = root->awar(AWAR_PV_SELECTED)->read_int();
+    int sel_db = root->awar(AWAR_PV_SELECTED_DB)->read_int();
+    int sel_f1 = root->awar(AWAR_PV_SELECTED_FS_1)->read_int();
+    int sel_f2 = root->awar(AWAR_PV_SELECTED_FS_2)->read_int();
+    int sel_f3 = root->awar(AWAR_PV_SELECTED_FS_3)->read_int();
+    int sel_c1 = root->awar(AWAR_PV_SELECTED_CS_1)->read_int();
+    int sel_c2 = root->awar(AWAR_PV_SELECTED_CS_2)->read_int();
+    int sel_c3 = root->awar(AWAR_PV_SELECTED_CS_3)->read_int();
+
+    int mrk = root->awar(AWAR_PV_MARKED)->read_int();
+    int mrk_db = root->awar(AWAR_PV_MARKED_DB)->read_int();
+    int mrk_f1 = root->awar(AWAR_PV_MARKED_FS_1)->read_int();
+    int mrk_f2 = root->awar(AWAR_PV_MARKED_FS_2)->read_int();
+    int mrk_f3 = root->awar(AWAR_PV_MARKED_FS_3)->read_int();
+    int mrk_c1 = root->awar(AWAR_PV_MARKED_CS_1)->read_int();
+    int mrk_c2 = root->awar(AWAR_PV_MARKED_CS_2)->read_int();
+    int mrk_c3 = root->awar(AWAR_PV_MARKED_CS_3)->read_int();
+
+    int cur = root->awar(AWAR_PV_CURSOR)->read_int();
+    int cur_db = root->awar(AWAR_PV_CURSOR_DB)->read_int();
+    int cur_f1 = root->awar(AWAR_PV_CURSOR_FS_1)->read_int();
+    int cur_f2 = root->awar(AWAR_PV_CURSOR_FS_2)->read_int();
+    int cur_f3 = root->awar(AWAR_PV_CURSOR_FS_3)->read_int();
+    int cur_c1 = root->awar(AWAR_PV_CURSOR_CS_1)->read_int();
+    int cur_c2 = root->awar(AWAR_PV_CURSOR_CS_2)->read_int();
+    int cur_c3 = root->awar(AWAR_PV_CURSOR_CS_3)->read_int();
+
     // Test whether any of the options are selected or not? 
-    if((frwdStrand && (frwdStrand1 || frwdStrand2 || frwdStrand3)) ||
-       (complStrand && (complStrand1 || complStrand2 || complStrand3)) ||
-       (defFields))
+    if ((all && (all_f1 || all_f2 || all_f3 || all_c1 || all_c2 || all_c3 || all_db)) || 
+        (sel && (sel_db || sel_f1 || sel_f2 || sel_f3 || sel_c1 || sel_c2 || sel_c3)) ||
+        (mrk && (mrk_db || mrk_f1 || mrk_f2 || mrk_f3 || mrk_c1 || mrk_c2 || mrk_c3)) ||
+        (cur && (cur_db || cur_f1 || cur_f2 || cur_f3 || cur_c1 || cur_c2 || cur_c3)))
         {
             // if so, then test whether the terminals are created already or not?
             if(gTerminalsCreated) {
@@ -178,6 +253,10 @@ void PV_HideAllTerminals(){
         }
 }
 
+void PV_RefreshDisplay(AW_root *root) {
+    PV_DisplayAminoAcidNames(root);
+}
+
 void PV_DisplayAminoAcidNames(AW_root *root) {
     GB_transaction dummy(gb_main);
 
@@ -219,51 +298,123 @@ void PV_DisplayAminoAcidNames(AW_root *root) {
     PV_RefreshWindow(root);
 }
 
-void PV_ManageTerminalDisplay(AW_root *root, ED4_AA_sequence_terminal *aaSeqTerminal){
-    int frwdStrand   = root->awar(AWAR_PROTVIEW_FORWARD_STRAND)->read_int();
-    int frwdStrand1  = root->awar(AWAR_PROTVIEW_FORWARD_STRAND_1)->read_int();
-    int frwdStrand2  = root->awar(AWAR_PROTVIEW_FORWARD_STRAND_2)->read_int();
-    int frwdStrand3  = root->awar(AWAR_PROTVIEW_FORWARD_STRAND_3)->read_int();
-    int complStrand  = root->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND)->read_int();
-    int complStrand1 = root->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_1)->read_int();
-    int complStrand2 = root->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_2)->read_int();
-    int complStrand3 = root->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_3)->read_int();
-    int useDBentries = root->awar(AWAR_PROTVIEW_DEFINED_FIELDS)->read_int();
+void PV_ManageTerminalDisplay(AW_root *root, ED4_AA_sequence_terminal *aaSeqTerminal,long int DispMode){
 
+    int all, af_1,af_2,af_3,ac_1,ac_2,ac_3,adb;
+    all =  root->awar(AWAR_PV_DISPLAY_ALL)->read_int();
+    adb = root->awar(AWAR_PROTVIEW_DEFINED_FIELDS)->read_int();
+    af_1 = root->awar(AWAR_PROTVIEW_FORWARD_STRAND_1)->read_int();
+    af_2 = root->awar(AWAR_PROTVIEW_FORWARD_STRAND_2)->read_int();
+    af_3 = root->awar(AWAR_PROTVIEW_FORWARD_STRAND_3)->read_int();
+    ac_1 = root->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_1)->read_int();
+    ac_2 = root->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_2)->read_int();
+    ac_3 = root->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_3)->read_int();
+
+    int mrk, mf_1,mf_2,mf_3,mc_1,mc_2,mc_3,mdb;
+    mrk = root->awar(AWAR_PV_MARKED)->read_int();
+    mdb = root->awar(AWAR_PV_MARKED_DB)->read_int();
+    mf_1 = root->awar(AWAR_PV_MARKED_FS_1)->read_int();
+    mf_2 = root->awar(AWAR_PV_MARKED_FS_2)->read_int();
+    mf_3 = root->awar(AWAR_PV_MARKED_FS_3)->read_int();
+    mc_1 = root->awar(AWAR_PV_MARKED_CS_1)->read_int();
+    mc_2 = root->awar(AWAR_PV_MARKED_CS_2)->read_int();
+    mc_3 = root->awar(AWAR_PV_MARKED_CS_3)->read_int();
+
+    int sel, sf_1,sf_2,sf_3,sc_1,sc_2,sc_3,sdb;
+    sel = root->awar(AWAR_PV_SELECTED)->read_int();
+    sdb = root->awar(AWAR_PV_SELECTED_DB)->read_int();
+    sf_1 = root->awar(AWAR_PV_SELECTED_FS_1)->read_int();
+    sf_2 = root->awar(AWAR_PV_SELECTED_FS_2)->read_int();
+    sf_3 = root->awar(AWAR_PV_SELECTED_FS_3)->read_int();
+    sc_1 = root->awar(AWAR_PV_SELECTED_CS_1)->read_int();
+    sc_2 = root->awar(AWAR_PV_SELECTED_CS_2)->read_int();
+    sc_3 = root->awar(AWAR_PV_SELECTED_CS_3)->read_int();
+
+    int cur, cf_1,cf_2,cf_3,cc_1,cc_2,cc_3,cdb;
+    cur = root->awar(AWAR_PV_CURSOR)->read_int();
+    cdb = root->awar(AWAR_PV_CURSOR_DB)->read_int();
+    cf_1 = root->awar(AWAR_PV_CURSOR_FS_1)->read_int();
+    cf_2 = root->awar(AWAR_PV_CURSOR_FS_2)->read_int();
+    cf_3 = root->awar(AWAR_PV_CURSOR_FS_3)->read_int();
+    cc_1 = root->awar(AWAR_PV_CURSOR_CS_1)->read_int();
+    cc_2 = root->awar(AWAR_PV_CURSOR_CS_2)->read_int();
+    cc_3 = root->awar(AWAR_PV_CURSOR_CS_3)->read_int();
+    
     // Get the AA sequence flag - says which strand we are in 
     int aaStrandType = int(aaSeqTerminal->GET_aaStrandType()); 
     // Check the display options and make visible or hide the AA seq terminal
     switch (aaStrandType) 
         {
         case FORWARD_STRAND:
-            if(frwdStrand){
+            {
                 int aaStartPos = int(aaSeqTerminal->GET_aaStartPos()); 
                 switch (aaStartPos){
                 case 1:
-                    (frwdStrand1)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal); break;
+                    switch (DispMode){
+                    case PV_ALL:      (all && af_1)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_MARKED:   (mrk && mf_1)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_SELECTED: (sel && sf_1)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_CURSOR:   (cur && cf_1)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    }
+                    break;
                 case 2:
-                    (frwdStrand2)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal); break;
+                    switch (DispMode){
+                    case PV_ALL:      (all && af_2)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_MARKED:   (mrk && mf_2)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_SELECTED: (sel && sf_2)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_CURSOR:   (cur && cf_2)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    }
+                    break;
                 case 3:
-                    (frwdStrand3)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal); break;
+                    switch (DispMode){
+                    case PV_ALL:      (all && af_3)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_MARKED:   (mrk && mf_3)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_SELECTED: (sel && sf_3)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_CURSOR:   (cur && cf_3)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    }
+                    break;
                 }
             }
             break;
         case COMPLEMENTARY_STRAND: 
-            if(complStrand){
+            {
                 int aaStartPos = int(aaSeqTerminal->GET_aaStartPos()); 
                 switch (aaStartPos){
                 case 1:
-                    (complStrand1)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal); break;
+                    switch (DispMode){
+                    case PV_ALL:      (all && ac_1)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_MARKED:   (mrk && mc_1)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_SELECTED: (sel && sc_1)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_CURSOR:   (cur && cc_1)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    }
+                    break;
                 case 2:
-                    (complStrand2)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal); break;
+                    switch (DispMode){
+                    case PV_ALL:      (all && ac_2)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_MARKED:   (mrk && mc_2)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_SELECTED: (sel && sc_2)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_CURSOR:   (cur && cc_2)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    }
+                    break;
                 case 3:
-                    (complStrand3)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal); break;
+                    switch (DispMode){
+                    case PV_ALL:      (all && ac_3)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_MARKED:   (mrk && mc_3)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_SELECTED: (sel && sc_3)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    case PV_CURSOR:   (cur && cc_3)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+                    }
+                    break;
                 }
             }
             break;
         case DB_FIELD_STRAND: 
-            (useDBentries)? PV_UnHideTerminal(aaSeqTerminal):PV_HideTerminal(aaSeqTerminal);
-                break;
+            switch (DispMode){
+            case PV_ALL:      (all && adb)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+            case PV_MARKED:   (mrk && mdb)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+            case PV_SELECTED: (sel && sdb)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+            case PV_CURSOR:   (cur && cdb)? PV_UnHideTerminal(aaSeqTerminal): PV_HideTerminal(aaSeqTerminal); break; 
+            }
+            break;
         }
 }
 
@@ -272,11 +423,38 @@ void PV_ManageTerminals(AW_root *root){
     // First Hide all AA_sequence Terminals
     PV_HideAllTerminals();
 
-    int displayMode = root->awar(AWAR_PROTVIEW_DISPLAY_MODE)->read_int();
-    switch(displayMode)
-        {
-        case PV_MARKED:
+    int dispAll = root->awar(AWAR_PV_DISPLAY_ALL)->read_int();
+    if (dispAll)
+    {
+        ED4_terminal *terminal = 0;
+        for( terminal = ED4_ROOT->root_group_man->get_first_terminal();
+             terminal;  
+             terminal = terminal->get_next_terminal())
             {
+                if(terminal->is_sequence_terminal()) {
+                    ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
+                    if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) {
+                        // we are in the sequence terminal section of a species
+                        // walk through all the corresponding AA sequence terminals for the speecies and 
+                        // hide or unhide the terminals based on the display options set by the user
+                        for(int i=0; i<PV_AA_Terminals4Species; i++) {
+                            // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+                            // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
+                            terminal = terminal->get_next_terminal()->get_next_terminal(); 
+                            // Make sure it is AA sequence terminal
+                            if (terminal->is_aa_sequence_terminal()) {
+                                ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
+                                PV_ManageTerminalDisplay(root, aaSeqTerminal, PV_ALL);
+                            }
+                        }
+                    }
+                }
+            }
+    }
+
+    int dispMarked = root->awar(AWAR_PV_MARKED)->read_int();
+    if (dispMarked)
+        {
             GB_transaction dummy(gb_main);
             int marked = GBT_count_marked_species(gb_main);
             if (marked) {
@@ -297,16 +475,17 @@ void PV_ManageTerminals(AW_root *root){
                                     // Make sure it is AA sequence terminal
                                     if (terminal->is_aa_sequence_terminal()) {
                                         ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                                        PV_ManageTerminalDisplay(root, aaSeqTerminal);
+                                        PV_ManageTerminalDisplay(root, aaSeqTerminal, PV_MARKED);
                                     }
                                 }
                             }
                     }
             }
-            }
-            break;
-        case PV_SELECTED:
-            {
+        }
+
+    int dispSelected = root->awar(AWAR_PV_SELECTED)->read_int();
+    if (dispSelected)
+        {
             ED4_terminal *terminal = 0;
             for( terminal = ED4_ROOT->root_group_man->get_first_terminal();
                  terminal;  
@@ -327,17 +506,18 @@ void PV_ManageTerminals(AW_root *root){
                                     // Make sure it is AA sequence terminal
                                     if (terminal->is_aa_sequence_terminal()) {
                                         ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                                        PV_ManageTerminalDisplay(root, aaSeqTerminal);
+                                        PV_ManageTerminalDisplay(root, aaSeqTerminal,PV_SELECTED);
                                     }
                                 }
                             }
                         }
                     }
                 }
-            }
-            break;
-        case PV_CURSOR:
-            {
+        }
+
+    int dispAtCursor = root->awar(AWAR_PV_CURSOR)->read_int();
+    if (dispAtCursor)
+        {
             // Display Only Terminals Corresponding To The Cursor Position in the multiple alignment
             ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
             if (cursor->owner_of_cursor) {
@@ -351,43 +531,137 @@ void PV_ManageTerminals(AW_root *root){
                         // Make sure it is AA sequence terminal
                         if (cursorTerminal->is_aa_sequence_terminal()) {
                             ED4_AA_sequence_terminal *aaSeqTerminal = cursorTerminal->to_aa_sequence_terminal();
-                            PV_ManageTerminalDisplay(root, aaSeqTerminal);
+                            PV_ManageTerminalDisplay(root, aaSeqTerminal, PV_CURSOR);
                         }
                     }
                 }
             }
-            }
-            break;
-        case PV_ALL:
-            {
-            ED4_terminal *terminal = 0;
-            for( terminal = ED4_ROOT->root_group_man->get_first_terminal();
-                 terminal;  
-                 terminal = terminal->get_next_terminal())
-                {
-                    if(terminal->is_sequence_terminal()) {
-                        ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-                        if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) {
-                            // we are in the sequence terminal section of a species
-                            // walk through all the corresponding AA sequence terminals for the speecies and 
-                            // hide or unhide the terminals based on the display options set by the user
-                            for(int i=0; i<PV_AA_Terminals4Species; i++) {
-                                // get the corresponding AA_sequence_terminal skipping sequence_info terminal
-                                // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
-                                terminal = terminal->get_next_terminal()->get_next_terminal(); 
-                                // Make sure it is AA sequence terminal
-                                if (terminal->is_aa_sequence_terminal()) {
-                                    ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                                    PV_ManageTerminalDisplay(root, aaSeqTerminal);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            break;
         }
 }
+
+//void PV_ManageTerminals(AW_root *root){
+
+// {
+
+//     // First Hide all AA_sequence Terminals
+//     PV_HideAllTerminals();
+
+//     int displayMode = root->awar(AWAR_PROTVIEW_DISPLAY_MODE)->read_int();
+//     switch(displayMode)
+//         {
+//         case PV_MARKED:
+//             {
+//             GB_transaction dummy(gb_main);
+//             int marked = GBT_count_marked_species(gb_main);
+//             if (marked) {
+//                 GBDATA *gbSpecies;
+//                 for(gbSpecies = GBT_first_marked_species(gb_main);
+//                     gbSpecies;
+//                     gbSpecies = GBT_next_marked_species(gbSpecies))
+//                     {
+//                         char *spName = GBT_read_name(gbSpecies);
+//                         ED4_species_name_terminal *spNameTerm = ED4_find_species_name_terminal(spName);
+//                         if (spNameTerm && spNameTerm->is_species_name_terminal()) 
+//                             {
+//                                 ED4_terminal *terminal = spNameTerm->corresponding_sequence_terminal();
+//                                 for(int i=0; i<PV_AA_Terminals4Species; i++) {
+//                                     // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+//                                     // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
+//                                     terminal = terminal->get_next_terminal()->get_next_terminal(); 
+//                                     // Make sure it is AA sequence terminal
+//                                     if (terminal->is_aa_sequence_terminal()) {
+//                                         ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
+//                                         PV_ManageTerminalDisplay(root, aaSeqTerminal);
+//                                     }
+//                                 }
+//                             }
+//                     }
+//             }
+//             }
+//             break;
+//         case PV_SELECTED:
+//             {
+//             ED4_terminal *terminal = 0;
+//             for( terminal = ED4_ROOT->root_group_man->get_first_terminal();
+//                  terminal;  
+//                  terminal = terminal->get_next_terminal())
+//                 {
+//                     if(terminal->is_sequence_terminal()) {
+//                         ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
+//                         if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) {
+//                             // we are in the sequence terminal section of a species
+//                             // walk through all the corresponding AA sequence terminals for the speecies and 
+//                             // hide or unhide the terminals based on the display options set by the user
+//                             ED4_species_name_terminal *speciesNameTerm = speciesManager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
+//                             if (speciesNameTerm->flag.selected) {
+//                                 for(int i=0; i<PV_AA_Terminals4Species; i++) {
+//                                     // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+//                                     // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
+//                                     terminal = terminal->get_next_terminal()->get_next_terminal(); 
+//                                     // Make sure it is AA sequence terminal
+//                                     if (terminal->is_aa_sequence_terminal()) {
+//                                         ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
+//                                         PV_ManageTerminalDisplay(root, aaSeqTerminal);
+//                                     }
+//                                 }
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//             break;
+//         case PV_CURSOR:
+//             {
+//             // Display Only Terminals Corresponding To The Cursor Position in the multiple alignment
+//             ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+//             if (cursor->owner_of_cursor) {
+//                 // Get The Cursor Terminal And The Corresponding Aa_Sequence Terminals And Set The Display Options
+//                 ED4_terminal *cursorTerminal = cursor->owner_of_cursor->to_terminal();
+//                 if (!cursorTerminal->parent->parent->flag.is_consensus) {
+//                     for(int i=0; i<PV_AA_Terminals4Species; i++) {
+//                         // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+//                         // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
+//                         cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal(); 
+//                         // Make sure it is AA sequence terminal
+//                         if (cursorTerminal->is_aa_sequence_terminal()) {
+//                             ED4_AA_sequence_terminal *aaSeqTerminal = cursorTerminal->to_aa_sequence_terminal();
+//                             PV_ManageTerminalDisplay(root, aaSeqTerminal);
+//                         }
+//                     }
+//                 }
+//             }
+//             }
+//             break;
+//         case PV_ALL:
+//             {
+//             ED4_terminal *terminal = 0;
+//             for( terminal = ED4_ROOT->root_group_man->get_first_terminal();
+//                  terminal;  
+//                  terminal = terminal->get_next_terminal())
+//                 {
+//                     if(terminal->is_sequence_terminal()) {
+//                         ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
+//                         if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) {
+//                             // we are in the sequence terminal section of a species
+//                             // walk through all the corresponding AA sequence terminals for the speecies and 
+//                             // hide or unhide the terminals based on the display options set by the user
+//                             for(int i=0; i<PV_AA_Terminals4Species; i++) {
+//                                 // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+//                                 // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
+//                                 terminal = terminal->get_next_terminal()->get_next_terminal(); 
+//                                 // Make sure it is AA sequence terminal
+//                                 if (terminal->is_aa_sequence_terminal()) {
+//                                     ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
+//                                     PV_ManageTerminalDisplay(root, aaSeqTerminal);
+//                                 }
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//             break;
+//         }
+// }
 
 static AW_repeated_question *ASKtoOverWriteData = 0;
 
@@ -551,6 +825,7 @@ PV_ERROR PV_ComplementarySequence(char *sequence)
     strcpy(sequence, complementarySeq);
     return PV_SUCCESS;
 }
+
 // This function translates gene sequence to aminoacid sequence and stores into the respective AA_Sequence_terminal
 void TranslateGeneToAminoAcidSequence(AW_root *root, ED4_AA_sequence_terminal *seqTerm, char *speciesName, int startPos4Translation, int translationMode){
     GBDATA    *gb_species = GBT_find_species(gb_main, speciesName);
@@ -626,8 +901,8 @@ void TranslateGeneToAminoAcidSequence(AW_root *root, ED4_AA_sequence_terminal *s
     int i,j;
     char spChar = ' ';
     {
-        int displayAminoAcid = root->awar(AWAR_PROTVIEW_DISPLAY_AA)->read_int();
-        if (displayAminoAcid) 
+        int iDisplayMode = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->read_int();
+        if (iDisplayMode == PV_AA_NAME) 
             {
                 for( i=0, j=0; i<len && j<len; ) {
                     // start from the start pos of aa sequence
@@ -747,7 +1022,7 @@ void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_species_man
 
             ED4_sequence_info_terminal *new_SeqInfoTerminal = 0;
             if (i<FORWARD_STRANDS) 
-                sprintf(namebuffer, "F%dProtienInfo_Term%ld.%d",i+1,ED4_counter, count++);
+                sprintf(namebuffer, "F%d ProtienInfo_Term%ld.%d",i+1,ED4_counter, count++);
             else if ((i-FORWARD_STRANDS)<COMPLEMENTARY_STRANDS)  
                 sprintf(namebuffer, "C%dProtienInfo_Term%ld.%d",(i-FORWARD_STRANDS)+1,ED4_counter, count++);
             else
@@ -905,8 +1180,8 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
         }
         aws->update_option_menu();
 
-        aws->at("frwd");
-        aws->create_toggle(AWAR_PROTVIEW_FORWARD_STRAND);
+        aws->at("all");
+        aws->create_toggle(AWAR_PV_DISPLAY_ALL);
 
         aws->at("f1");
         aws->create_toggle(AWAR_PROTVIEW_FORWARD_STRAND_1);
@@ -916,9 +1191,6 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
 
         aws->at("f3");
         aws->create_toggle(AWAR_PROTVIEW_FORWARD_STRAND_3);
-
-        aws->at("cmpl");
-        aws->create_toggle(AWAR_PROTVIEW_COMPLEMENTARY_STRAND);
 
         aws->at("c1");
         aws->create_toggle(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_1);
@@ -932,22 +1204,59 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
         aws->at("defined");
         aws->create_toggle(AWAR_PROTVIEW_DEFINED_FIELDS);
 
-        aws->at("aaName");
-        aws->create_toggle(AWAR_PROTVIEW_DISPLAY_AA);
-
         aws->at("dispOption");
-        aws->create_toggle_field(AWAR_PROTVIEW_DISPLAY_OPTIONS,1);
-        aws->insert_toggle("TEXT", "T", 0);
-        aws->insert_toggle("BOX", "B", 1);
+        aws->create_toggle_field(AWAR_PROTVIEW_DISPLAY_OPTIONS,0);
+        aws->insert_toggle("Single Letter Code", "S", 0);
+        aws->insert_toggle("Triple Letter Code", "T", 1);
+        aws->insert_toggle("Colored Box", "B", 2);
         aws->update_toggle_field();
 
-        aws->at("dispMode");
-        aws->create_toggle_field(AWAR_PROTVIEW_DISPLAY_MODE,1);
-        aws->insert_toggle("MARKED", "M", 0);
-        aws->insert_toggle("SELECTED", "S", 1);
-        aws->insert_toggle("CURSOR", "C", 2);
-        aws->insert_toggle("ALL", "A", 3);
-        aws->update_toggle_field();
+        aws->at("colMaps");
+        aws->callback(AW_POPUP,(AW_CL)create_seq_colors_window, (AW_CL)ED4_ROOT->sequence_colors);
+        aws->button_length(0);
+        aws->create_button("COLORMAPS","#colorMaps.xpm");
+
+        aws->at("colors");
+        aws->callback(AW_POPUP,(AW_CL)AW_create_gc_window, (AW_CL)ED4_ROOT->aw_gc_manager);
+        aws->button_length(0);
+        aws->create_button("COLORS","#colors.xpm");
+
+        {
+            aws->at("sel"); aws->create_toggle(AWAR_PV_SELECTED);
+            aws->at("sf1"); aws->create_toggle(AWAR_PV_SELECTED_FS_1);
+            aws->at("sf2"); aws->create_toggle(AWAR_PV_SELECTED_FS_2);
+            aws->at("sf3"); aws->create_toggle(AWAR_PV_SELECTED_FS_3);
+            aws->at("sc1"); aws->create_toggle(AWAR_PV_SELECTED_CS_1);
+            aws->at("sc2"); aws->create_toggle(AWAR_PV_SELECTED_CS_2);
+            aws->at("sc3"); aws->create_toggle(AWAR_PV_SELECTED_CS_3);
+            aws->at("sdb"); aws->create_toggle(AWAR_PV_SELECTED_DB);
+
+            aws->at("mrk"); aws->create_toggle(AWAR_PV_MARKED);
+            aws->at("mf1"); aws->create_toggle(AWAR_PV_MARKED_FS_1);
+            aws->at("mf2"); aws->create_toggle(AWAR_PV_MARKED_FS_2);
+            aws->at("mf3"); aws->create_toggle(AWAR_PV_MARKED_FS_3);
+            aws->at("mc1"); aws->create_toggle(AWAR_PV_MARKED_CS_1);
+            aws->at("mc2"); aws->create_toggle(AWAR_PV_MARKED_CS_2);
+            aws->at("mc3"); aws->create_toggle(AWAR_PV_MARKED_CS_3);
+            aws->at("mdb"); aws->create_toggle(AWAR_PV_MARKED_DB);
+
+            aws->at("cur"); aws->create_toggle(AWAR_PV_CURSOR);
+            aws->at("cf1"); aws->create_toggle(AWAR_PV_CURSOR_FS_1);
+            aws->at("cf2"); aws->create_toggle(AWAR_PV_CURSOR_FS_2);
+            aws->at("cf3"); aws->create_toggle(AWAR_PV_CURSOR_FS_3);
+            aws->at("cc1"); aws->create_toggle(AWAR_PV_CURSOR_CS_1);
+            aws->at("cc2"); aws->create_toggle(AWAR_PV_CURSOR_CS_2);
+            aws->at("cc3"); aws->create_toggle(AWAR_PV_CURSOR_CS_3);
+            aws->at("cdb"); aws->create_toggle(AWAR_PV_CURSOR_DB);
+        }
+
+//         aws->at("dispMode");
+//         aws->create_toggle_field(AWAR_PROTVIEW_DISPLAY_MODE,0);
+//         aws->insert_toggle("MARKED", "M", 0);
+//         aws->insert_toggle("SELECTED", "S", 1);
+//         aws->insert_toggle("CURSOR", "C", 2);
+//         aws->insert_toggle("ALL", "A", 3);
+//         aws->update_toggle_field();
 
         aws->at("save");
         aws->callback(PV_SaveData);

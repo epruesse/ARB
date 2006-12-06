@@ -1512,6 +1512,9 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
                                     0);
 
+    ED4_ROOT->aw_gc_manager = aw_gc_manager;
+
+
 #define SEP________________________SEP awmm->insert_separator()
 
     // ------------------------------
