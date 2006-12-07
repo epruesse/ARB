@@ -1250,14 +1250,6 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
             aws->at("cdb"); aws->create_toggle(AWAR_PV_CURSOR_DB);
         }
 
-//         aws->at("dispMode");
-//         aws->create_toggle_field(AWAR_PROTVIEW_DISPLAY_MODE,0);
-//         aws->insert_toggle("MARKED", "M", 0);
-//         aws->insert_toggle("SELECTED", "S", 1);
-//         aws->insert_toggle("CURSOR", "C", 2);
-//         aws->insert_toggle("ALL", "A", 3);
-//         aws->update_toggle_field();
-
         aws->at("save");
         aws->callback(PV_SaveData);
         aws->button_length(5);

@@ -22,6 +22,7 @@
 #include <awt.hxx>
 #include <awt_canvas.hxx>
 #include <awt_sel_boxes.hxx>
+#include <aw_preset.hxx>
 
 #include "ed4_class.hxx"
 #include "ed4_visualizeSAI.hxx"
@@ -679,6 +680,11 @@ static AW_window *create_editColorTranslationTable_window(AW_root *aw_root){  //
     aws->at("reverse");
     aws->callback(reverseColorTranslationTable);
     aws->create_button("REVERSE", "Reverse", "R");
+
+    aws->at("colors");
+    aws->callback(AW_POPUP,(AW_CL)AW_create_gc_window, (AW_CL)ED4_ROOT->aw_gc_manager);
+    aws->button_length(0);
+    aws->create_button("COLORS","#colors.xpm");
 
     return (AW_window *)aws;
 }
