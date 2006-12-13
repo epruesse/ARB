@@ -208,8 +208,10 @@ symlink ../CONSENSUS_TREE/CT_ctree.hxx INCLUDE/CT_ctree.hxx &&
 symlink ../DIST/dist.hxx INCLUDE/dist.hxx &&
 symlink ../GENOM/EXP.hxx INCLUDE/EXP.hxx &&
 symlink ../GENOM/GEN.hxx INCLUDE/GEN.hxx &&
+# symlink ../GENOM/GEN_tools.hxx INCLUDE/GEN_tools.hxx &&
 # symlink ../GENOM/GEN_extern.h INCLUDE/GEN_extern.h &&
 symlink ../GENOM_IMPORT/GAGenomImport.h INCLUDE/GAGenomImport.h &&
+# symlink ../GENOM_IMPORT/GenomeImport.h INCLUDE/GenomeImport.h &&
 symlink ../ISLAND_HOPPING/island_hopping.h INCLUDE/island_hopping.h &&
 symlink ../MERGE/mg_merge.hxx INCLUDE/mg_merge.hxx &&
 symlink ../NTREE/ntree.hxx INCLUDE/ntree.hxx &&
@@ -223,6 +225,7 @@ symlink ../SEQ_QUALITY/seq_quality.h INCLUDE/seq_quality.h &&
 symlink ../SL/AW_HELIX/AW_helix.hxx INCLUDE/AW_helix.hxx &&
 symlink ../SL/AW_NAME/AW_rename.hxx INCLUDE/AW_rename.hxx &&
 symlink ../SL/DB_SCANNER/db_scanner.hxx INCLUDE/db_scanner.hxx &&
+symlink ../SL/FILE_BUFFER/FileBuffer.h INCLUDE/FileBuffer.h &&
 symlink ../SL/HELIX/BI_helix.hxx INCLUDE/BI_helix.hxx &&
 symlink ../STAT/st_window.hxx INCLUDE/st_window.hxx &&
 symlink ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx &&
