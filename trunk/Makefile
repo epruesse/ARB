@@ -303,7 +303,7 @@ first_target:
 		@echo ''
 		@echo 'Development targets:'
 		@echo ''
-		@echo ' depends      - create or update dependencies'
+		@echo ' depends      - create or update dependencies ("SUBDIR/SUBDIR.depends" to update only SUBDIR)'
 		@echo ' tags         - create tags for xemacs'
 		@echo ' rmbak        - remove all "*%" and cores'
 		@echo ' show         - show available shortcuts (AKA subtargets)'
@@ -567,6 +567,7 @@ ARCHS_NTREE = \
 		SL/AW_NAME/AW_NAME.a \
 		SL/HELIX/HELIX.a \
 		SL/DB_SCANNER/DB_SCANNER.a \
+		SL/FILE_BUFFER/FILE_BUFFER.a \
 		STAT/STAT.a \
 		XML/XML.a \
 
@@ -1215,7 +1216,6 @@ PERLDEPS= \
 	ARBDB/ad_t_prot.h \
 	ARBDB/arbdb.h \
 	ARBDB/arbdbt.h \
-	ARBDB/adGene.h \
 	ARBDB/arb_assert.h \
 	bin/arb_proto_2_xsub \
 	PERL2ARB/ARB.xs.default \
@@ -1235,7 +1235,7 @@ else
 endif
 	rm -f PERL2ARB/ARB.xs
 	rm -f PERL2ARB/proto.h
-	cat ARBDB/ad_prot.h ARBDB/ad_t_prot.h ARBDB/adGene.h >PERL2ARB/proto.h
+	cat ARBDB/ad_prot.h ARBDB/ad_t_prot.h >PERL2ARB/proto.h
 
 ifdef DEBIAN
 	LD_LIBRARY_PATH=lib bin/arb_proto_2_xsub PERL2ARB/proto.h PERL2ARB/ARB.xs.default >PERL2ARB/ARB.xs
