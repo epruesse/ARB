@@ -1171,9 +1171,9 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
     aws->button_length(0);
     aws->create_button("CLOSE","#closeText.xpm");
 
-    {
+    {       
         aw_root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, gb_main);
-        aws->at("table");
+        aws->at("table");          
         aws->create_option_menu(AWAR_PROTEIN_TYPE);
         for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
             aws->insert_option(AWT_get_codon_code_name(code_nr), "", code_nr);
@@ -1181,6 +1181,7 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
         aws->update_option_menu();
 
         aws->at("all");
+        aws->set_background("grey91");
         aws->create_toggle(AWAR_PV_DISPLAY_ALL);
 
         aws->at("f1");
