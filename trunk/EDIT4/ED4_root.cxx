@@ -1144,7 +1144,7 @@ static void title_mode_changed(AW_root *aw_root, AW_window *aww)
     int title_mode = aw_root->awar(AWAR_EDIT_TITLE_MODE)->read_int();
 
     if (title_mode==0) {
-        aww->set_info_area_height(55);
+        aww->set_info_area_height(58);
     }
     else {
         aww->set_info_area_height(170);
@@ -1738,64 +1738,108 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->shadow_width(3);
 
     int db_pathx,db_pathy;
-    awmm->get_at_position( &db_pathx,&db_pathy );
+    awmm->get_at_position(&db_pathx,&db_pathy );
     awmm->callback( ED4_quit_editor, 0, 0);
 
     awmm->shadow_width(1);
     awmm->load_xfig("edit4/editmenu.fig", AW_FALSE);
 
     // ----------------------------------------------------------------------------------------------------
-    awmm->button_length(7);
+    awmm->button_length(0);
     awmm->help_text("quit.hlp");
     awmm->at("quit");
-    if (ED4_window::no_of_windows == 1)     awmm->create_button("QUIT","QUIT"); // this is the first window
-    else                    awmm->create_button("CLOSE","CLOSE");
+    if (ED4_window::no_of_windows == 1)     awmm->create_button("QUIT","#quit.xpm"); // this is the first window
+    else                    awmm->create_button("CLOSE","#close.xpm");
 
     awmm->at("help");
     awmm->callback(AW_POPUP_HELP,(AW_CL)"e4.hlp");
-    awmm->create_button("HELP","HELP");
+    awmm->create_button("HELP","#help.xpm");
 
-    awmm->button_length(0);
     awmm->at("fold");
-    awmm->create_toggle(AWAR_EDIT_TITLE_MODE, "edit/folded.bitmap", "edit/unfolded.bitmap");
+    awmm->button_length(0);
+    awmm->create_toggle(AWAR_EDIT_TITLE_MODE, "#more.xpm", "#less.xpm");
+
+    awmm->at("sep");
+    awmm->button_length(0);
+    awmm->create_button(0, "#separator.xpm");
 
     // ----------------------------------------------------------------------------------------------------
     int db_treex,db_treey;
     awmm->get_at_position( &db_treex,&db_treey );
     awmm->button_length(200);
 
+    awmm->at("posTxt");
+    awmm->button_length(0);
+    awmm->create_button(0, "#position.xpm");
+
     awmm->at("pos");
     awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_cursor, AW_CL(1));
-    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_cursor,8);
+    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_cursor,9);
+
+    awmm->at("ecoliTxt");
+    awmm->button_length(0);
+    awmm->create_button(0, "#ecoli.xpm");
 
     awmm->at("ecoli");
     awmm->callback((AW_CB)ED4_jump_to_cursor_position,(AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_Ecoli, AW_CL(0));
-    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_Ecoli,8);
+    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_Ecoli,9);
+
+    awmm->at("baseTxt");
+    awmm->button_length(0);
+    awmm->create_button(0, "#base.xpm");
 
     awmm->at("base");
     awmm->callback((AW_CB)ED4_jump_to_cursor_position,(AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_basePos, AW_CL(0));
-    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_basePos,8);
+    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_basePos,9);
+
+    awmm->at("iupacTxt");
+    awmm->button_length(0);
+    awmm->create_button(0, "#iupac.xpm");
 
     awmm->at("iupac");
     awmm->callback((AW_CB)ED4_set_iupac,(AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_IUPAC, AW_CL(0));
-    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_IUPAC,5);
+    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_IUPAC,7);
+
+    awmm->at("helixnrTxt");
+    awmm->button_length(0);
+    awmm->create_button(0, "#helixnr.xpm");
 
     awmm->at("helixnr");
     awmm->callback((AW_CB)ED4_set_helixnr,(AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_helixNr, AW_CL(0));
     awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_helixNr,6);
 
+    awmm->at("sep2");
+    awmm->button_length(0);
+    awmm->create_button(0, "#separator.xpm");
+
     // ----------------------------------------------------------------------------------------------------
+
+    awmm->at("protect");
+    awmm->button_length(0);
+    awmm->create_option_menu(AWAR_EDIT_SECURITY_LEVEL);
+    awmm->insert_option("0",0,0);
+    awmm->insert_option("1",0,1);
+    awmm->insert_option("2",0,2);
+    awmm->insert_option("3",0,3);
+    awmm->insert_option("4",0,4);
+    awmm->insert_option("5",0,5);
+    awmm->insert_default_option("6",0,6);
+    awmm->update_option_menu();
+    awmm->at("protectTxt");
+    awmm->button_length(0);
+    awmm->create_button("PROTECT","#protect.xpm");
+
     awmm->button_length(8);
     awmm->at("insert");
-    awmm->create_toggle(AWAR_INSERT_MODE, "edit/replace.bitmap", "edit/insert.bitmap");
+    awmm->create_toggle(AWAR_INSERT_MODE, "#replace.xpm", "insert.xpm");
 
     awmm->button_length(8);
     awmm->at("edit");
-    awmm->create_toggle(AWAR_EDIT_MODE, "edit/align.bitmap", "edit/noalign.bitmap");
+    awmm->create_toggle(AWAR_EDIT_MODE, "align.xpm", "editseq.xpm");
 
     awmm->button_length(8);
     awmm->at("direct");
-    awmm->create_toggle(AWAR_EDIT_DIRECTION,"edit/r2l.bitmap","edit/l2r.bitmap");
+    awmm->create_toggle(AWAR_EDIT_DIRECTION,"3to5.xpm","5to3.xpm");
 
     awmm->at("cons");
     awmm->create_toggle(ED4_AWAR_CONSENSUS_SHOW, "edit/nocons.bitmap", "edit/cons.bitmap");
@@ -1819,7 +1863,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 #endif // ARB_OPENGL
             awmm->at("secedit");
             awmm->callback((void(*)(AW_window*, AW_CL))ED4_SECEDIT_start, 0);
-            awmm->create_button("SECEDIT", "#edit/edit_sec.bitmap");
+            awmm->create_button("SECEDIT", "#edit/secedit.xpm");
             break;
         }
         case GB_AT_UNKNOWN:
@@ -1829,34 +1873,31 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
             break;
     }
 
-    awmm->button_length(6);
+
     awmm->at("undo");
     awmm->callback(ED4_undo_redo, GB_UNDO_UNDO);
-    awmm->create_button("UNDO", "UNDO");
+    awmm->button_length(0);
+    awmm->create_button("UNDO", "#undo.xpm");
 
     awmm->at("redo");
     awmm->callback(ED4_undo_redo, GB_UNDO_REDO);
-    awmm->create_button("REDO", "REDO");
+    awmm->button_length(0);
+    awmm->create_button("REDO", "#redo.xpm");
 
     awmm->at("jump");
     awmm->callback(ED4_jump_to_current_species, 0);
-    awmm->create_button("JUMP", "JUMP");
+    awmm->button_length(0);
+    awmm->create_button("JUMP", "#jumpsp.xpm");
 
     awmm->at("get");
     awmm->callback(ED4_get_and_jump_to_actual, 0);
-    awmm->create_button("GET", "GET");
+    awmm->button_length(0);
+    awmm->create_button("GET", "#loadsp.xpm");
 
-    awmm->button_length(5);
-    awmm->at("protect");
-    awmm->create_option_menu(AWAR_EDIT_SECURITY_LEVEL);
-    awmm->insert_option("0",0,0);
-    awmm->insert_option("1",0,1);
-    awmm->insert_option("2",0,2);
-    awmm->insert_option("3",0,3);
-    awmm->insert_option("4",0,4);
-    awmm->insert_option("5",0,5);
-    awmm->insert_default_option("6",0,6);
-    awmm->update_option_menu();
+    awmm->at("saiviz");
+    awmm->callback(AW_POPUP,(AW_CL)ED4_createVisualizeSAI_window, 0 );
+    awmm->button_length(0);
+    awmm->create_button("SAIVIZ", "#saiviz.xpm");
 
     // search
     awmm->button_length(0);
