@@ -147,7 +147,7 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name,const 
                     sprintf(color_name, "#%2.2X%2.2X%2.2X", rgb==0 ? 0xff : 0x55, rgb==1 ? 0xff : 0x55, rgb==2 ? 0xff : 0x55);
                     aws->set_background(color_name);
                     aws->callback((AW_CB1)aw_incdec_color, (AW_CL)strdup(action));
-                    aws->create_button(action, action+1);
+                    aws->create_button(action, action+1,0,color_name);
                 }
             }
         }
@@ -162,7 +162,7 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name,const 
                     sprintf(color_name,"#%2.2X%2.2X%2.2X", red, green,blue);
                     aws->set_background(color_name);
                     aws->callback((AW_CB1)aw_set_color,(AW_CL)strdup(color_name));
-                    aws->create_button(color_name,"=");
+                    aws->create_button(color_name,"=",0,color_name); 
                 }
             }
             aws->at_newline();
@@ -172,7 +172,7 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name,const 
             sprintf(color_name,"#%2.2X%2.2X%2.2X", (red==256)?255:red, (red>=256)?255:red,(red>=256)?255:red);
             aws->set_background(color_name);
             aws->callback((AW_CB1)aw_set_color,(AW_CL)strdup(color_name));
-            aws->create_button(color_name,"=");
+            aws->create_button(color_name,"=",0,color_name); 
         }
         aws->at_newline();
 
@@ -193,7 +193,7 @@ void AW_preset_create_color_chooser(AW_window *aws, const char *awar, const char
     }
     aws->callback((AW_CB)aw_create_color_chooser_window,(AW_CL)strdup(awar),(AW_CL)strdup(label));
     aws->set_background(aws->get_root()->awar(awar)->read_string());
-    aws->create_button("SELECT_A_COLOR"," ");
+    aws->create_button("SELECT_A_COLOR"," ",0, aws->get_root()->awar(awar)->read_string());
 }
 
 void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char *label,bool message_reload)
