@@ -2111,7 +2111,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
             if (xpos_calc[1] == -1) aws->get_at_position(&xpos_calc[1], &ypos_dummy);
 
             aws->at(xpos_calc[1], ypos+key*KEY_Y_OFFSET);
-            aws->create_toggle(cbs->awar_not[key], "matches.bitmap", "not.bitmap");
+            aws->create_toggle(cbs->awar_not[key], "#equal.xpm", "#notEqual.xpm");
 
             if (xpos_calc[2] == -1) aws->get_at_position(&xpos_calc[2], &ypos_dummy);
         }
@@ -2171,8 +2171,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
     if (awtqs->do_query_pos_fig){
         aws->at(awtqs->do_query_pos_fig);
         aws->callback((AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_NONE);
-        aws->highlight();
-        aws->create_button("SEARCH", "SEARCH","Q");
+        aws->create_button("SEARCH", "#search.xpm");
     }
     if (awtqs->do_refresh_pos_fig && !GB_NOVICE){
         aws->at(awtqs->do_refresh_pos_fig);
@@ -2183,19 +2182,19 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         aws->at(awtqs->do_mark_pos_fig);
         aws->help_text("mark_list.hlp");
         aws->callback((AW_CB)awt_do_mark_list,(AW_CL)cbs,1);
-        aws->create_button("MARK_LISTED_UNMARK_REST", "MARK LISTED\nUNMARK REST","M");
+        aws->create_button("MARK_LISTED_UNMARK_REST", "Mark Listed\nUnmark Rest","M");
     }
     if (awtqs->do_unmark_pos_fig){
         aws->at(awtqs->do_unmark_pos_fig);
         aws->help_text("unmark_list.hlp");
         aws->callback((AW_CB)awt_do_mark_list,(AW_CL)cbs,0);
-        aws->create_button("UNMARK_LISTED_MARK_REST","UNMARK LISTED\nMARK REST","U");
+        aws->create_button("UNMARK_LISTED_MARK_REST","Unmark Listed\nMark Rest","U");
     }
     if (awtqs->do_delete_pos_fig){
         aws->at(awtqs->do_delete_pos_fig);
         aws->help_text("del_list.hlp");
         aws->callback((AW_CB)awt_delete_species_in_list,(AW_CL)cbs,0);
-        aws->create_button("DELETE_LISTED","DELETE LISTED","D");
+        aws->create_button("DELETE_LISTED","Delete Listed","D");
     }
     if (awtqs->do_set_pos_fig && !GB_NOVICE){
         sprintf(buffer,"tmp/arbdb_query_%i/set_key",query_id);
@@ -2213,7 +2212,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         aws->at(awtqs->do_set_pos_fig);
         aws->help_text("mod_field_list.hlp");
         aws->callback(AW_POPUP,(AW_CL)create_awt_do_set_list,(AW_CL)cbs);
-        aws->create_button("WRITE_TO_FIELDS_OF_LISTED", "WRITE TO FIELDS\nOF LISTED","S");
+        aws->create_button("WRITE_TO_FIELDS_OF_LISTED", "Write to Fields\nof Listed","S");
     }
 
     char *Items = strdup(cbs->selector->items_name);
