@@ -66,6 +66,7 @@
 /* defined here by Yadhu inorder to make it more General */
 bool AW_alpha_Size_Supported = false;
 
+
 #endif // ARB_OPENGL
 
 
@@ -2569,18 +2570,37 @@ inline int yoffset_for_mode_button(int button_number) {
 int AW_window::create_mode(const char *id, const char *pixmap, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     Widget button;
 
+    set_background("grey92");
+
+    const char *color_switch = 0;
+    Pixel       bg_color     = 0;
+
+    if (_at->background_colorname){
+        color_switch = XmNbackground;
+        XColor unused;
+        XColor color;
+        if( XAllocNamedColor(p_global->display,p_global->colormap,_at->background_colorname,&color,&unused) == 0) {
+            fprintf(stderr,"XAllocColor failed: %s\n",_at->background_colorname);
+            color_switch = 0;
+        }
+        else {
+            bg_color = color.pixel;
+        }
+    }
+
     char path[256]; memset(path,0,256);
     sprintf(path,"%s/lib/pixmaps/%s",GB_getenvARBHOME(),pixmap);
 //     int y = p_w->number_of_modes*MODE_BUTTON_OFFSET + (p_w->number_of_modes/4)*8 + 2;
     int  y   = yoffset_for_mode_button(p_w->number_of_modes);
     button   = XtVaCreateManagedWidget( "",
-                                      xmPushButtonWidgetClass,
-                                      p_w->mode_area,
-                                      XmNx, 0,
-                                      XmNy, y,
-                                      XmNlabelType, XmPIXMAP,
-                                      XmNshadowThickness, 1,
-                                      NULL);
+                                        xmPushButtonWidgetClass,
+                                        p_w->mode_area,
+                                        XmNx, 0,
+                                        XmNy, y,
+                                        XmNlabelType, XmPIXMAP,
+                                        XmNshadowThickness, 1,
+                                        color_switch, bg_color,
+                                        NULL);
     XtVaSetValues( button, RES_CONVERT( XmNlabelPixmap, path ), NULL );
     XtVaGetValues(button,XmNforeground, &p_global->foreground,  0);
 
@@ -2840,6 +2860,24 @@ void AW_window::insert_sub_menu(const char *id, AW_label name, const char *mnemo
     AWUSE(help_text);
     Widget shell, label;
 
+    set_background("grey92");
+
+    const char *color_switch = 0;
+    Pixel       bg_color     = 0;
+
+    if (_at->background_colorname){
+        color_switch = XmNbackground;
+        XColor unused;
+        XColor color;
+        if( XAllocNamedColor(p_global->display,p_global->colormap,_at->background_colorname,&color,&unused) == 0) {
+            fprintf(stderr,"XAllocColor failed: %s\n",_at->background_colorname);
+            color_switch = 0;
+        }
+        else {
+            bg_color = color.pixel;
+        }
+    }
+
 #if defined(DUMP_MENU_LIST)
     dumpOpenSubMenu(name);
 #endif // DUMP_MENU_LIST
@@ -2875,6 +2913,7 @@ void AW_window::insert_sub_menu(const char *id, AW_label name, const char *mnemo
                                          RES_CONVERT( XmNlabelString, name ),
                                          RES_CONVERT( XmNmnemonic, mnemonic ),
                                          XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1],
+                                         color_switch, bg_color,
                                          NULL);
     }
     else {
@@ -2883,6 +2922,7 @@ void AW_window::insert_sub_menu(const char *id, AW_label name, const char *mnemo
                                          p_w->menu_bar[p_w->menu_deep],
                                          RES_CONVERT( XmNlabelString, name ),
                                          XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1],
+                                         color_switch, bg_color,
                                          NULL);
     }
 
@@ -2905,6 +2945,24 @@ void AW_window::insert_menu_topic(const char *id, AW_label name, const char *mne
     Widget button;
     if (!id) id = name;
 
+    set_background("grey92");
+
+    const char *color_switch = 0;
+    Pixel       bg_color     = 0;
+
+    if (_at->background_colorname){
+        color_switch = XmNbackground;
+        XColor unused;
+        XColor color;
+        if( XAllocNamedColor(p_global->display,p_global->colormap,_at->background_colorname,&color,&unused) == 0) {
+            fprintf(stderr,"XAllocColor failed: %s\n",_at->background_colorname);
+            color_switch = 0;
+        }
+        else {
+            bg_color = color.pixel;
+        }
+    }
+
 #if defined(DUMP_MENU_LIST)
     dumpMenuEntry(name);
 #endif // DUMP_MENU_LIST
@@ -2919,12 +2977,14 @@ void AW_window::insert_menu_topic(const char *id, AW_label name, const char *mne
                                           p_w->menu_bar[p_w->menu_deep],
                                           RES_LABEL_CONVERT( name ),
                                           RES_CONVERT( XmNmnemonic, mnemonic ),
+                                          color_switch, bg_color,
                                           NULL);
     }else{
         button = XtVaCreateManagedWidget( "",
                                           xmPushButtonWidgetClass,
                                           p_w->menu_bar[p_w->menu_deep],
                                           RES_LABEL_CONVERT( name ),
+                                          color_switch, bg_color,
                                           NULL);
 
     }

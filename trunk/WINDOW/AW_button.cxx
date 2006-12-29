@@ -496,14 +496,23 @@ void AW_window::create_autosize_button( const char *macro_name, AW_label buttonl
     _at->length_of_buttons = length_of_buttons;
 }
 
-void AW_window::create_button( const char *macro_name, AW_label buttonlabel,const  char *mnemonic) {
+void AW_window::create_button( const char *macro_name, AW_label buttonlabel,const  char *mnemonic, const char *color) {
     // Create a button or text display.
     //
     // if buttonlabel starts with '#' the rest of buttonlabel is used as name of bitmap file used for button
     // if buttonlabel contains a '/' it's interpreted as AWAR name and the button displays the content of the awar
     // otherwise buttonlabel is interpreted as button label (may contain '\n').
     //
-    // Note: Button width 0 does not work together with labels!
+    // Note 1: Button width 0 does not work together with labels!
+
+    // Note 2: "color" is used for the button background. In case no color is specified uses grey92 color as a background
+
+    if(color) {
+        set_background(color);
+    }
+    else {
+        set_background("grey92");
+    }
 
     AWUSE(mnemonic);
 
@@ -879,6 +888,8 @@ void AW_window::update_toggle(int *wgt,const char *var,AW_CL cd)
 }
 
 void AW_window::create_toggle( const char *var_name,const char *no, const char *yes ) {
+    set_background("grey92");
+
     AW_cb_struct *cbs = _callback;
     _callback         = (AW_cb_struct *)1;
 
@@ -2114,6 +2125,23 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
         }
     }
 
+    set_background("grey92");
+
+    const char *color_switch = 0;
+    Pixel       bg_color     = 0;
+
+    if (_at->background_colorname){
+        color_switch = XmNbackground;
+        XColor unused;
+        XColor color;
+        if( XAllocNamedColor(p_global->display,p_global->colormap,_at->background_colorname,&color,&unused) == 0) {
+            fprintf(stderr,"XAllocColor failed: %s\n",_at->background_colorname);
+            color_switch = 0;
+        }
+        else {
+            bg_color = color.pixel;
+        }
+    }
 
     AW_awar *vs = root->awar(var_name);
 
@@ -2133,9 +2161,8 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
                                    optionMenu_shell,
                                    XmNrowColumnType, XmMENU_PULLDOWN,
                                    XmNfontList, p_global->fontlist,
+                                   color_switch, bg_color,
                                    NULL );
-
-
     if ( label ) {
         char *help_label;
         int   width_help_label, height_help_label;
@@ -2251,6 +2278,8 @@ void AW_window::clear_option_menu(AW_option_menu_struct *oms) {
 }
 
 void *AW_window::_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic,const char *name_of_color) {
+    name_of_color = "grey92";
+
     AWUSE(mnemonic);
     Widget                 entry;
     AW_option_menu_struct *oms = p_global->current_option_menu;
@@ -2498,7 +2527,6 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
     if ( _at->label_for_inputfield ) {
         label = _at->label_for_inputfield;
     }
-
 
     check_at_pos();
 
