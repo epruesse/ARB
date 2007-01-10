@@ -3,7 +3,7 @@
 #                                                                          #
 #   File      : grepx.pl                                                   #
 #   Purpose   : Replacement for grep (used from emacs)                     #
-#   Time-stamp: <Fri Nov/17/2006 13:42 MET Coder@ReallySoft.de>            #
+#   Time-stamp: <Wed Jan/10/2007 16:09 MET Coder@ReallySoft.de>            #
 #                                                                          #
 #   (C) November 2005 by Ralf Westram                                      #
 #                                                                          #
@@ -124,9 +124,11 @@ my @groups = (
                [ '.exw' ],
               ],
               # ARB specifics
-              [
+              [ # anything where aci/srt commands occur
                [ ],
-               [ '.menu', '.source', '.hlp' ],
+               [ '.menu', '.source', '.hlp', '.eft', '.ift', '.mask', '.sellst' ],
+               [ ],
+               [ '.c', '.cxx' ],
               ],
               );
 
@@ -187,10 +189,10 @@ my $reg_nameOnly  = qr/\/([^\/]+)$/;
 my $reg_extension = qr/(\.[^\.]+)$/;
 # (\.[^\.]+)
 
-my ($IS_HEADER,$IS_NORMAL,$IS_OTHER,$IS_ADDITIONAL) = (3,2,1,4);
+my ($IS_HEADER,$IS_NORMAL,$IS_OTHER,$IS_ADDITIONAL) = (4,3,2,1);
 
 my %wanted_extensions = ();
-my %wanted_files      = ();
+my %wanted_files      = (); # files that are always searched
 
 my @add_header_dirs = ();
 
@@ -596,7 +598,7 @@ sub grep_collected_files(\%) {
 
   print "grepx: Searching $searched files..\n";
   foreach (@files) {
-    # print "searching '$_' (depth=$depth{$_})\n";
+    $verbose==0 || print "searching '$_' (depth=$depth{$_}, importance=$$files_r{$_})\n";
     my ($m,$r) = grepfile($_);
     $matches += $m;
     $reported += $r;
@@ -616,8 +618,8 @@ sub perform_grep($$) {
     if ($_ > $max_importance) { $max_importance = $_; }
   }
 
-  if ($max_importance==$IS_OTHER) {
-    print "grepx: Only found files with importance==$IS_OTHER (forgetting them)\n";
+  if ($max_importance<=$IS_OTHER) {
+    print "grepx: Only found files with importance==$max_importance (aborting)\n";
     %files = ();
   }
 
