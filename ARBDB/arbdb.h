@@ -263,6 +263,7 @@ extern "C" {
     typedef int (*gb_status_func_type)(double val);
     typedef int (*gb_status_func2_type)(const char *val);
     typedef void (*gb_error_handler_type)(const char *msg);
+    typedef const char* (*gb_export_sequence_cb)(GBDATA *gb_species, size_t *seq_len, GB_ERROR *error);
 
 #ifdef __cplusplus
 }
