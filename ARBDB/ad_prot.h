@@ -25,6 +25,9 @@ char *GBT_quicksort P_((void **array, long start, long end, gb_compare_two_items
 char *GB_mergesort P_((void **array, long start, long end, gb_compare_two_items_type compare, char *client_data));
 
 /* adlang1.c */
+NOT4PERL void GB_set_export_sequence_hook P_((gb_export_sequence_cb escb));
+void GB_set_ACISRT_trace P_((int enable));
+int GB_get_ACISRT_trace P_((void));
 
 /* adstring.c */
 char *GB_find_all_files P_((const char *dir, const char *mask, GB_BOOL filename_only));
@@ -384,6 +387,42 @@ GB_ERROR GB_fix_database P_((GBDATA *gb_main));
 /* adtune.c */
 
 /* adGene.c */
+GB_BOOL GEN_is_genome_db P_((GBDATA *gb_main, int default_value));
+GBDATA *GEN_findOrCreate_gene_data P_((GBDATA *gb_species));
+GBDATA *GEN_find_gene_data P_((GBDATA *gb_species));
+GBDATA *GEN_expect_gene_data P_((GBDATA *gb_species));
+GBDATA *GEN_find_gene_rel_gene_data P_((GBDATA *gb_gene_data, const char *name));
+GBDATA *GEN_find_gene P_((GBDATA *gb_species, const char *name));
+GBDATA *GEN_create_gene_rel_gene_data P_((GBDATA *gb_gene_data, const char *name));
+GBDATA *GEN_create_gene P_((GBDATA *gb_species, const char *name));
+GBDATA *GEN_first_gene P_((GBDATA *gb_species));
+GBDATA *GEN_first_gene_rel_gene_data P_((GBDATA *gb_gene_data));
+GBDATA *GEN_next_gene P_((GBDATA *gb_gene));
+GBDATA *GEN_first_marked_gene P_((GBDATA *gb_species));
+GBDATA *GEN_next_marked_gene P_((GBDATA *gb_gene));
+const char *GEN_origin_organism P_((GBDATA *gb_pseudo));
+const char *GEN_origin_gene P_((GBDATA *gb_pseudo));
+GB_BOOL GEN_is_pseudo_gene_species P_((GBDATA *gb_species));
+GB_ERROR GEN_organism_not_found P_((GBDATA *gb_pseudo));
+GBDATA *GEN_read_pseudo_species_from_hash P_((GB_HASH *pseudo_hash, const char *organism_name, const char *gene_name));
+void GEN_add_pseudo_species_to_hash P_((GBDATA *gb_pseudo, GB_HASH *pseudo_hash));
+GB_HASH *GEN_create_pseudo_species_hash P_((GBDATA *gb_main, int additionalSize));
+GBDATA *GEN_find_pseudo_species P_((GBDATA *gb_main, const char *organism_name, const char *gene_name, GB_HASH *pseudo_hash));
+void GEN_add_organism_to_hash P_((GBDATA *gb_organism, GB_HASH *organism_hash));
+GB_HASH *GEN_create_organism_hash P_((GBDATA *gb_main));
+GBDATA *GEN_find_origin_organism P_((GBDATA *gb_pseudo, GB_HASH *organism_hash));
+GBDATA *GEN_find_origin_gene P_((GBDATA *gb_pseudo, GB_HASH *organism_hash));
+GBDATA *GEN_first_pseudo_species P_((GBDATA *gb_main));
+GBDATA *GEN_first_pseudo_species_rel_species_data P_((GBDATA *gb_species_data));
+GBDATA *GEN_next_pseudo_species P_((GBDATA *gb_species));
+GBDATA *GEN_first_marked_pseudo_species P_((GBDATA *gb_main));
+GBDATA *GEN_next_marked_pseudo_species P_((GBDATA *gb_species));
+GB_BOOL GEN_is_organism P_((GBDATA *gb_species));
+GBDATA *GEN_find_organism P_((GBDATA *gb_main, const char *name));
+GBDATA *GEN_first_organism P_((GBDATA *gb_main));
+GBDATA *GEN_next_organism P_((GBDATA *gb_organism));
+GBDATA *GEN_first_marked_organism P_((GBDATA *gb_main));
+GBDATA *GEN_next_marked_organism P_((GBDATA *gb_organism));
 
 #ifdef __cplusplus
 }
