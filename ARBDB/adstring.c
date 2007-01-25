@@ -1131,10 +1131,11 @@ GB_ERROR gbs_build_replace_string(void *strstruct,
                                     break;
                                 case '|':
                                     h = GB_command_interpreter(GB_get_root(gb_container), entry,psym+1,gb_container, 0);
-                                    if (h){
+                                    if (h) {
                                         GBS_strcat(strstruct,h);
                                         free(h);
-                                    }else{
+                                    }
+                                    else {
                                         return GB_get_error();
                                     }
                                     break;
@@ -1154,7 +1155,10 @@ GB_ERROR gbs_build_replace_string(void *strstruct,
                         break;
                     }
                     c = '*';
-                }else{
+                    GBS_chrcat(strstruct,c);
+                    GBS_chrcat(strstruct,d);
+                }
+                else {
                     wildcard_num = d - '1';
                     if (c == GBS_WILD) {
                         c = '?';
@@ -1164,10 +1168,12 @@ GB_ERROR gbs_build_replace_string(void *strstruct,
                         }
                         if (wildcard_num>=max_wildcard) {
                             GBS_chrcat(strstruct,c);
-                        }else{
+                        }
+                        else {
                             GBS_chrcat(strstruct,wildcards[wildcard_num]);
                         }
-                    }else{
+                    }
+                    else {
                         c = '*';
                         if ( (wildcard_num<0)||(wildcard_num>9) ) {
                             p--;            /* use this character */
@@ -1179,13 +1185,11 @@ GB_ERROR gbs_build_replace_string(void *strstruct,
                             GBS_strcat(strstruct,mwildcards[wildcard_num]);
                         }
                     }
-                    break;
                 }
-                GBS_chrcat(strstruct,c);
-                GBS_chrcat(strstruct,d);
                 break;
             default:
                 GBS_chrcat(strstruct,c);
+                break;
         }       /* switch c */
     }
     return 0;
@@ -1209,12 +1213,15 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
         the replace is repeated as many times as possible
         '\' is the escape character: e.g. \n is newline; '\\' is '\'; '\=' is '='; ....
 
-    eg:
+        eg:
         print first three characters of first word and the whole second word:
 
-        *(arb_key)  is the value of the a database entry arb key
-
-    */
+        *(arb_key)          is the value of the a database entry arb key
+        *(arb_key#string)   value of the database entry or 'string' if the entry does not exist
+        *(arb_key\:SRT)     runs SRT recursively on the value of the database entry 
+        *([arb_key]|ACI)    runs the ACI command interpreter on the value of the database entry (or on an empty string)
+        
+     */
 
 {
     register char *source;      /* pointer into the current string when parsed */
@@ -2064,7 +2071,10 @@ char *GBS_regreplace(const char *in, const char *regexprin, GBDATA *gb_species){
     while (subs && subs > regexpr && subs[-1] == '\\') subs = strrchr(subs,'/');
     if (!subs || subs == regexpr){
         free(regexpr);
-        GB_export_error("no '/' found in regexpr"); /* dont change this error message (or change it in adquery/GB_command_interpreter too) */
+        
+        /* dont change this error message (or change it in adquery/GB_command_interpreter too) : */
+        GB_export_error("no '/' found in regexpr");
+        
         return 0;
     }
     *(subs++) = 0;
