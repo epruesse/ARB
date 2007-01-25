@@ -11,6 +11,21 @@
 
 #define AWAR_TREE_REFRESH "tmp/focus/tree_refresh" // touch this awar to refresh the tree display
 
+/* hook for 'export_sequence' */
+
+static gb_export_sequence_cb get_export_sequence = 0;
+
+NOT4PERL void GB_set_export_sequence_hook(gb_export_sequence_cb escb) {
+    ad_assert(!get_export_sequence || !escb); // avoid unwanted overwrite
+    get_export_sequence = escb;
+}
+
+/* global ACI/SRT debug switch */
+static int trace = 0;
+
+void GB_set_ACISRT_trace(int enable) { trace = enable; }
+int GB_get_ACISRT_trace() { return trace; }
+
 /********************************************************************************************
                                         Parameter Functions
 ********************************************************************************************/
@@ -62,14 +77,13 @@ static int gbl_param_bit(const char *str,int def, const char *help_text, struct 
     return def;
 }
 
-#define GBL_PARAM_INT(var,_str,_def,_help_text) int var = \
-                gbl_param_int(_str,_def,_help_text, &params, (char **)&var)
-#define GBL_PARAM_STRING(var,_str,_def,_help_text) const char *var = \
-                gbl_param_string(_str,_def,_help_text, &params, (char **)&var)
+#define GBL_PARAM_INT(var,_str,_def,_help_text) int var = gbl_param_int(_str,_def,_help_text, &params, (char **)&var)
+#define GBL_PARAM_SIZET(var,_str,_def,_help_text) size_t var = (size_t)gbl_param_int(_str,_def,_help_text, &params, (char **)&var)
+#define GBL_PARAM_STRING(var,_str,_def,_help_text) const char *var = gbl_param_string(_str,_def,_help_text, &params, (char **)&var)
+#define GBL_PARAM_BIT(var,_str,_def,_help_text) int var = gbl_param_bit(_str,_def,_help_text, &params, (char **)&var)
+
 /* #define GBL_PARAM_FLOAT(var,_str,_def,_help_text) float var = \ */
                 /* gbl_param_float(_str,_def,_help_text, &params, (char **)&var) */
-#define GBL_PARAM_BIT(var,_str,_def,_help_text) int var = \
-                gbl_param_bit(_str,_def,_help_text, &params, (char **)&var)
 
 
 
@@ -263,6 +277,60 @@ static const char *gbl_stristr(const char *haystack, const char *needle) {
     return 0;
 }
 
+/* ***************************** gbl_mid_streams *****************************
+ * used as well to copy all streams (e.g. by 'dd')
+ */
+
+static GB_ERROR gbl_mid_streams(int arg_cinput, const GBL *arg_vinput,
+                                int *arg_cout, GBL **arg_vout,
+                                int start,int mstart,int end,int relend)
+{
+    int i;
+    GBL_CHECK_FREE_PARAM(*arg_cout,arg_cinput);
+    for (i=0;i<arg_cinput;i++) {         /* go through all in streams    */
+        char *p;
+        int c;
+
+        int len;
+        int nstart = start;
+        int nend = end;
+
+        p = arg_vinput[i].str;
+        len = strlen(p);
+        if (nstart<0) nstart = len - mstart;
+        if (nend<0) nend = len - relend;        /* check rel len */
+
+        if (nstart>len ) nstart = len;  /* check boundaries */
+        if (nstart<0) nstart = 0;
+        if (nend>len) nend = len;
+        if (nend<nstart) nend = nstart;
+
+        c = p[nend];
+        p[nend] =0;
+        (*arg_vout)[(*arg_cout)++].str = GB_STRDUP(p+nstart);     /* export result string */
+        p[nend] = c;
+    }
+    return 0;
+}
+
+/* ***************************** trace ***************************** */
+
+static GB_ERROR gbl_trace(GBL_command_arguments *args) {
+    int trace;
+
+    if (args->cparam!=1) return "syntax: trace(0|1)";
+
+    trace = atoi(args->vparam[0].str);
+    if (trace<0 || trace>1) return GBS_global_string("Illegal value %i to trace", trace);
+
+    if (trace != GB_get_ACISRT_trace()) {
+        printf("*** %sctivated ACI trace ***\n", trace ? "A" : "De-a");
+        GB_set_ACISRT_trace(trace);
+    }
+
+    return gbl_mid_streams(args->cinput, args->vinput,args->coutput, args->voutput, 0, 0, -1, 0); /* copy all streams */
+}
+
 /********************************************************************************************
           Binary operators:
 ********************************************************************************************/
@@ -396,10 +464,11 @@ static GB_ERROR gbl_eval(GBL_command_arguments *args)
 
     to_eval = unEscapeString(args->vparam[0].str);
     command = GB_command_interpreter(gb_main, "", to_eval, args->gb_ref, args->default_tree_name); // evaluate independent
-#if defined(DEBUG)
-    printf("evaluating '%s'\n", to_eval);
-    printf("executing '%s'\n", command);
-#endif /* DEBUG */
+
+    if (GB_get_ACISRT_trace()) {
+        printf("evaluating '%s'\n", to_eval);
+        printf("executing '%s'\n", command);
+    }
 
     for (i=0;i<args->cinput;i++) { /* go through all orig streams  */
         char *result = GB_command_interpreter(gb_main, args->vinput[i].str, command, args->gb_ref, args->default_tree_name);
@@ -410,6 +479,75 @@ static GB_ERROR gbl_eval(GBL_command_arguments *args)
     }
     free(to_eval);
     free(command);
+    return 0;
+}
+
+static GB_HASH *definedCommands = 0;
+
+static GB_ERROR gbl_define(GBL_command_arguments *args) {
+    GB_ERROR error = 0;
+
+    if (args->cparam!=2) {
+        error = "syntax: define(name, \"escaped command\")";
+    }
+    else {
+        const char *name = args->vparam[0].str;
+        char       *cmd  = unEscapeString(args->vparam[1].str);
+        char       *oldcmd;
+
+        if (!definedCommands) definedCommands = GBS_create_hash(100, 0);
+
+        oldcmd = (char*)GBS_read_hash(definedCommands, name);
+        if (oldcmd) free(oldcmd);
+        GBS_write_hash(definedCommands, name, (long)cmd);
+
+        if (GB_get_ACISRT_trace()) {
+            printf("defining command '%s'='%s'\n", name, cmd);
+        }
+    }
+
+    return error;
+}
+
+static GB_ERROR gbl_do(GBL_command_arguments *args) {
+    GB_ERROR error = 0;
+
+    if (args->cparam!=1) {
+        error = "syntax: do(name)";
+    }
+    else {
+        const char *name = args->vparam[0].str;
+        const char *cmd  = 0;
+        
+        if (definedCommands) cmd = (const char*)GBS_read_hash(definedCommands, name);
+        if (!cmd) {
+            error = GBS_global_string("Can't do undefined command '%s' - use define(%s, ...) first", name, name);
+        }
+        else {
+            GBDATA *gb_main = (GBDATA*)GB_MAIN(args->gb_ref)->data;
+            int     i;
+
+            GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
+
+            if (GB_get_ACISRT_trace()) {
+                printf("executing defined command '%s'='%s' on %i streams\n", name, cmd, args->cinput);
+            }
+            
+            for (i=0;i<args->cinput;i++) { /* go through all orig streams  */
+                char *result = GB_command_interpreter(gb_main, args->vinput[i].str, cmd, args->gb_ref, args->default_tree_name);
+                if (!result) return GB_get_error();
+
+                (*args->voutput)[(*args->coutput)++].str = result;
+                /* export result string */
+            }
+        }
+    }
+    return error;
+}
+
+static GB_ERROR gbl_streams(GBL_command_arguments *args) {
+    GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
+    (*args->voutput)[(*args->coutput)++].str = GBS_global_string_copy("%i", args->cinput);
     return 0;
 }
 
@@ -467,7 +605,7 @@ static GB_ERROR gbl_count(GBL_command_arguments *args)
         while (*p){
             sum += tab[(unsigned int)*(p++)];
         }
-        sprintf(result,"%li ",sum);
+        sprintf(result,"%li",sum);
         (*args->voutput)[(*args->coutput)++].str = GB_STRDUP(result);       /* export result string */
     }
     return 0;
@@ -496,7 +634,7 @@ static GB_ERROR gbl_len(GBL_command_arguments *args)
         while (*p){
             sum += tab[(unsigned int)*(p++)];
         }
-        sprintf(result,"%li ",sum);
+        sprintf(result,"%li",sum);
         (*args->voutput)[(*args->coutput)++].str = GB_STRDUP(result);       /* export result string */
     }
     return 0;
@@ -670,55 +808,24 @@ static GB_ERROR gbl_echo(GBL_command_arguments *args)
     return 0;
 }
 
-static GB_ERROR _gbl_mid(int arg_cinput, const GBL *arg_vinput,
-                         int *arg_cout, GBL **arg_vout,
-                         int start,int mstart,int end,int relend)
-{
-    int i;
-    GBL_CHECK_FREE_PARAM(*arg_cout,arg_cinput);
-    for (i=0;i<arg_cinput;i++) {         /* go through all in streams    */
-        char *p;
-        int c;
-
-        int len;
-        int nstart = start;
-        int nend = end;
-
-        p = arg_vinput[i].str;
-        len = strlen(p);
-        if (nstart<0) nstart = len - mstart;
-        if (nend<0) nend = len - relend;        /* check rel len */
-
-        if (nstart>len ) nstart = len;  /* check boundaries */
-        if (nstart<0) nstart = 0;
-        if (nend>len) nend = len;
-        if (nend<nstart) nend = nstart;
-
-        c = p[nend];
-        p[nend] =0;
-        (*arg_vout)[(*arg_cout)++].str = GB_STRDUP(p+nstart);     /* export result string */
-        p[nend] = c;
-    }
-    return 0;
-}
-
 static GB_ERROR gbl_dd(GBL_command_arguments *args)
 {
-    if (args->cparam!=0) return "dd syntax: dd (no parameters)";
-    return _gbl_mid(args->cinput, args->vinput,args->coutput, args->voutput, 0, 0, -1, 0);
+    if (args->cparam!=0) return "syntax: dd (no parameters)";
+    return gbl_mid_streams(args->cinput, args->vinput,args->coutput, args->voutput, 0, 0, -1, 0); /* copy all streams */
 }
 
 static GB_ERROR gbl_string_convert(GBL_command_arguments *args)
 {
     int mode  = -1;
     int i;
-    if (args->cparam!=0) return "dd syntax: dd (no parameters)";
 
     if (strcmp(args->command, "lower")      == 0) mode = 0;
     else if (strcmp(args->command, "upper") == 0) mode = 1;
     else if (strcmp(args->command, "caps")  == 0) mode = 2;
     else return GB_export_error("Unknown command '%s'", args->command);
 
+    if (args->cparam!=0) return GBS_global_string("syntax: %s (no parameters)", args->command);
+    
     GBL_CHECK_FREE_PARAM(*args->coutput,args->cinput);
     for (i=0;i<args->cinput;i++) { /* go through all in streams    */
         char *p              = GB_STRDUP(args->vinput[i].str);
@@ -754,7 +861,7 @@ static GB_ERROR gbl_head(GBL_command_arguments *args)
     int start;
     if (args->cparam!=1) return "head syntax: head(#start)";
     start = atoi(args->vparam[0].str);
-    return _gbl_mid(args->cinput, args->vinput,args->coutput, args->voutput, 0,0, start, -start);
+    return gbl_mid_streams(args->cinput, args->vinput,args->coutput, args->voutput, 0,0, start, -start);
 }
 
 static GB_ERROR gbl_tail(GBL_command_arguments *args)
@@ -762,7 +869,7 @@ static GB_ERROR gbl_tail(GBL_command_arguments *args)
     int end;
     if (args->cparam!=1) return "tail syntax: tail(#length_of_tail)";
     end = atoi(args->vparam[0].str);
-    return _gbl_mid(args->cinput, args->vinput,args->coutput, args->voutput, -1, end, -1, 0);
+    return gbl_mid_streams(args->cinput, args->vinput,args->coutput, args->voutput, -1, end, -1, 0);
 }
 
 static GB_ERROR gbl_mid0(GBL_command_arguments *args)
@@ -772,7 +879,7 @@ static GB_ERROR gbl_mid0(GBL_command_arguments *args)
     if (args->cparam!=2) return "mid0 syntax: mid0(#start;#end)";
     start = atoi(args->vparam[0].str);
     end = atoi(args->vparam[1].str);
-    return _gbl_mid(args->cinput, args->vinput, args->coutput, args->voutput, start, -start, end, -end);
+    return gbl_mid_streams(args->cinput, args->vinput, args->coutput, args->voutput, start, -start, end, -end);
 }
 
 static GB_ERROR gbl_mid(GBL_command_arguments *args)
@@ -782,7 +889,7 @@ static GB_ERROR gbl_mid(GBL_command_arguments *args)
     if (args->cparam!=2) return "mid syntax: mid(#start;#end)";
     start = atoi(args->vparam[0].str)-1;
     end = atoi(args->vparam[1].str)-1;
-    return _gbl_mid(args->cinput, args->vinput, args->coutput, args->voutput, start, -start, end, -end);
+    return gbl_mid_streams(args->cinput, args->vinput, args->coutput, args->voutput, start, -start, end, -end);
 }
 
 static GB_ERROR gbl_tab(GBL_command_arguments *args)
@@ -1063,8 +1170,65 @@ static GB_ERROR gbl_merge(GBL_command_arguments *args)
         (*args->voutput)[(*args->coutput)++].str = GBS_strclose(str);
     }
 
-    if ((*args->coutput) == 0) {
-        (*args->voutput)[(*args->coutput)++].str = GB_STRDUP(""); // return at least one empty output stream
+    return 0;
+}
+
+static GB_ERROR gbl_split(GBL_command_arguments *args) {
+    const char *separator;
+    int   split_mode = 0;       /* 0 = remove separator, 1 = split before separator, 2 = split behind separator */
+
+    switch (args->cparam) {
+        case 0:                 /* default behavior: split into lines and remove LF */
+            separator  = "\n";
+            break;
+        case 2:
+            split_mode = atoi(args->vparam[1].str);
+            if (split_mode<0 || split_mode>2) {
+                return GBS_global_string("Illegal split mode '%i' (valid: 0..2)", split_mode);
+            }
+            /* fall-through */
+        case 1:
+            separator          = args->vparam[0].str;
+            break;
+        default : return "expect 0, 1 or 2 parameters";
+    }
+
+    {
+        size_t sepLen = strlen(separator);
+        int    i;
+
+        for (i = 0; i<args->cinput; ++i) {
+            char *in   = args->vinput[i].str;
+            char *from = in; /* search from here */
+
+            while (in) {
+                GBL_CHECK_FREE_PARAM(*args->coutput, 1);
+
+                char *splitAt = strstr(from, separator);
+                if (splitAt) {
+                    size_t  len;
+                    char   *copy;
+
+                    if (split_mode == 2) splitAt += sepLen; /* split behind separator */
+
+                    len  = splitAt-in;
+                    copy = (char*)malloc(len+1);
+
+                    memcpy(copy, in, len);
+                    copy[len] = 0;
+
+                    (*args->voutput)[(*args->coutput)++].str = copy;
+                    
+                    in   = splitAt + (split_mode == 0 ? sepLen : 0);
+                    from = in+(split_mode == 1 ? sepLen : 0);
+                }
+                else { // last part
+                    (*args->voutput)[(*args->coutput)++].str = GB_STRDUP(in);
+                    
+                    in = 0;
+                }
+            }
+        }
     }
 
     return 0;
@@ -1748,6 +1912,43 @@ static GB_ERROR gbl_sequence(GBL_command_arguments *args)
     return error;
 }
 
+static GB_ERROR gbl_export_sequence(GBL_command_arguments *args) {
+    if (args->cparam!=0) return "\"sequence\" syntax: \"export_sequence\" (no parameters)";
+    if (args->cinput==0) return "No input stream";
+
+    GB_ERROR error = 0;
+    GBL_CHECK_FREE_PARAM(*args->coutput,1);
+
+    switch (identify_gb_item(args->gb_ref)) {
+        case GBT_ITEM_UNKNOWN: {
+            error = "'export_sequence' used for unknown item";
+            break;
+        }
+        case GBT_ITEM_SPECIES: {
+            if (get_export_sequence == 0) {
+                error = "No export-sequence-hook defined (can't use 'export_sequence' here)";
+            }
+            else {
+                size_t      len;
+                const char *seq = get_export_sequence(args->gb_ref, &len, &error);
+
+                if (seq) {
+                    (*args->voutput)[(*args->coutput)++].str = GB_strduplen(seq, len);
+                }
+                else {
+                    ad_assert(error); // either should get seq or error
+                }
+            }
+            break;
+        }
+        case GBT_ITEM_GENE: {
+            error = "'export_sequence' cannot be used for gene";
+            break;
+        }
+    }
+    return error;
+}
+
 static GB_ERROR gbl_sequence_type(GBL_command_arguments *args)
 {
     char *use;
@@ -1762,89 +1963,210 @@ static GB_ERROR gbl_sequence_type(GBL_command_arguments *args)
 
 static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
 {
-    int i;
-    void *strstruct;
-    char        *p;
-    char        buffer[256];
-    char        spr[256];
+    GB_ERROR error = 0;
+    int      ic;
 
     GBL_BEGIN_PARAMS;
-    GBL_PARAM_INT   (firsttab, "firsttab=", 10,  "Indent first line"                     );
-    GBL_PARAM_INT   (tab,      "tab=",      10,  "Indent not first line"                 );
-    GBL_PARAM_BIT   (numleft,  "numleft",   0,   "Numbers left of sequence"              );
-    GBL_PARAM_INT   (gap,      "gap=",      10,  "Insert ' ' every n sequence characters");
-    GBL_PARAM_INT   (width,    "width=",    50,  "Sequence width (bases only)"           );
-    GBL_PARAM_STRING(nl,       "nl=",       " ", "Break line at characters 'str'"        );
+    GBL_PARAM_SIZET (firsttab, "firsttab=", 10,   "Indent first line");
+    GBL_PARAM_SIZET (tab,      "tab=",      10,   "Indent not first line");
+    GBL_PARAM_BIT   (numleft,  "numleft",   0,    "Numbers left of sequence");
+    GBL_PARAM_SIZET (gap,      "gap=",      10,   "Insert ' ' every n sequence characters");
+    GBL_PARAM_SIZET (width,    "width=",    50,   "Sequence width (bases only)");
+    GBL_PARAM_STRING(nl,       "nl=",       " ",  "Break line at characters 'str' if wrapping needed");
+    GBL_PARAM_STRING(forcenl,  "forcenl=",  "\n", "Always break line at characters 'str'");
     GBL_TRACE_PARAMS(args->cparam,args->vparam);
     GBL_END_PARAMS;
 
-    if (args->cinput==0) return "No input stream";
-    GBL_CHECK_FREE_PARAM(*args->coutput,1);
+    for (ic = 0; ic<args->cinput; ++ic) {
+        GBL_CHECK_FREE_PARAM(*args->coutput,1);
 
-    strstruct = GBS_stropen(5000);
+        {
+            const char *src           = args->vinput[ic].str;
+            size_t      data_size     = strlen(src);
+            size_t      needed_size;
+            char       *result        = 0;
+            int         simple_format = (strcmp(args->command,"format") == 0);
 
-    if (!strcmp(args->command,"format")) {
-        for (i=0,p= args->vinput[0].str; *p; i++) {
-            int len = strlen(p);
-            if (i==0) {
-                int j;
-                for (j=0;j<firsttab;j++) buffer[j] = ' ';
-                buffer[j] = 0;
-                GBS_strcat(strstruct,buffer);
+            {
+                size_t lines;
+                size_t line_size;
+
+                if (simple_format) {
+                    lines     = data_size/2 + 1; // worst case
+                    line_size = tab + width + 1;
+                }
+                else {
+                    size_t gapsPerLine = (width-1)/gap;
+                    lines              = data_size/width+1;
+                    line_size          = tab + width + gapsPerLine + 1;
+                }
+
+                needed_size = lines*line_size + firsttab + 1 + 10;
             }
-            if (len>=width) {           /* cut too long lines */
-                int j;
-                for (j=width-1;j>=0;j--){
-                    if (strchr(nl,p[j]))        break;
-                }
-                if (j<0) {
-                    GBS_strncat(strstruct,p,width);
-                    p+=width;
-                }else{
-                    GBS_strncat(strstruct,p,j);
-                    p += j+1;
-                }
-                buffer[0] = '\n';
-                for (j=1;j<=tab;j++) buffer[j] = ' ';
-                buffer[j] = 0;
-                GBS_strcat(strstruct,buffer);
-            }else{
-                GBS_strcat(strstruct,p);
-                p+=len;
-            }
-        }
-    }else{
-        for (i=0,p= args->vinput[0].str; *p; i++) {
-            if (i==0) {
-                if (numleft) {
-                    sprintf(spr,"%%-%ii ",firsttab-1);
-                    sprintf(buffer,spr,p-args->vinput[0].str);
-                }else{
-                    int j;
-                    for (j=0;j<firsttab;j++) buffer[j] = ' ';
-                    buffer[j] = 0;
-                }
-                GBS_strcat(strstruct,buffer);
-            }else if (i%width ==0) {
-                if (numleft) {
-                    sprintf(spr,"\n%%-%ii ",tab-1);
-                    sprintf(buffer,spr,p-args->vinput[0].str);
-                }else{
-                    int j;
-                    buffer[0] = '\n';
-                    for (j=1;j<=tab;j++) buffer[j] = ' ';
-                    buffer[j] = 0;
-                }
-                GBS_strcat(strstruct,buffer);
-            }else if (gap && (i%gap==0)){
-                GBS_strcat(strstruct," ");
-            };
-            GBS_chrcat(strstruct,*(p++));
 
+            result = malloc(needed_size);
+            if (!result) {
+                error = GBS_global_string("Out of memory (tried to alloc %u bytes)", needed_size);
+            }
+            else {
+                char   *dst       = result;
+                size_t  rest_data = data_size;
+                int     i;
+
+                if (simple_format) {
+                    /* format string w/o gaps or numleft
+                     * does word-wrapping at chars in nl
+                     */
+                
+                    /* build wrap table */
+                    unsigned char isWrapChar[256];
+                    memset(isWrapChar, 0, sizeof(isWrapChar));
+                    for (i = 0; nl[i]; ++i) isWrapChar[(unsigned char)nl[i]] = 1;
+                    for (i = 0; forcenl[i]; ++i) isWrapChar[(unsigned char)forcenl[i]] = 2;
+
+                    if (firsttab>0) {
+                        memset(dst, ' ', firsttab);
+                        dst += firsttab;
+                    }
+
+                    while (rest_data>width) {
+                        int take;
+                        int move;
+                        int took;
+
+                        for (take = width; take > 0; --take) {
+                            if (isWrapChar[(unsigned char)src[take]]) break;
+                        }
+                        if (take <= 0) { /* no wrap character found -> hard wrap at width */
+                            take  = move = width;
+                        }
+                        else { /* soft wrap at last found wrap character */
+                            move = take+1;
+                        }
+
+                        for (took = 0; took<take; took++) {
+                            char c = src[took];
+                            if (isWrapChar[(unsigned char)c] == 2) { /* forced newline */
+                                take = took;
+                                move = take+1;
+                                break;
+                            }
+                            dst[took] = c;
+                        }
+
+                        /* memcpy(dst, src, take); */
+                        dst       += take;
+                        src       += move;
+                        rest_data -= move;
+
+                        if (rest_data>0) {
+                            *dst++ = '\n';
+                            if (tab>0) {
+                                memset(dst, ' ', tab);
+                                dst += tab;
+                            }
+                        }
+                    }
+
+                    if (rest_data>0) {
+                        size_t j, k;
+                        for (j = 0, k = 0; j<rest_data; ++j) {
+                            char c = src[j];
+
+                            if (isWrapChar[(unsigned char)c] == 2) {
+                                dst[k++] = '\n';
+                                if (tab>0) {
+                                    memset(dst+k, ' ', tab);
+                                    k += tab;
+                                }
+                            }
+                            else {
+                                dst[k++] = c;
+                            }
+                        }
+                        src       += j;
+                        dst       += k;
+                        rest_data  = 0;
+                    }
+                }
+                else {
+                    /* "format_sequence" with gaps and numleft */
+                    char       *format    = 0;
+                    const char *src_start = src;
+
+                    if (numleft) {
+                        if (firsttab>0) {
+                            char *firstFormat = GBS_global_string_copy("%%-%iu ", firsttab-1);
+                            dst += sprintf(dst, firstFormat, (size_t)1);
+                            free(firstFormat);
+                        }
+                        else {
+                            dst += sprintf(dst, "%u ", (size_t)1);
+                        }
+                        format = tab>0 ? GBS_global_string_copy("%%-%iu ", tab-1) : strdup("%u ");
+                    }
+                    else if (firsttab>0) {
+                        memset(dst, ' ', firsttab);
+                        dst += firsttab;
+                    }
+
+                    while (rest_data>0) {
+                        size_t take = rest_data>width ? width : rest_data;
+
+                        rest_data -= take;
+
+                        while (take>gap) {
+                            memcpy(dst, src, gap);
+                            dst  += gap;
+                            src  += gap;
+                            *dst++ = ' ';
+                            take -= gap;
+                        }
+
+                        memcpy(dst, src, take);
+                        dst += take;
+                        src += take;
+
+                        if (rest_data>0) {
+                            *dst++ = '\n';
+                            if (numleft) {
+                                dst += sprintf(dst, format, (src-src_start)+1);
+                            }
+                            else if (tab>0) {
+                                memset(dst, ' ', tab);
+                                dst += tab;
+                            }
+                        }
+                    }
+
+                    free(format);
+                }
+
+                *dst++ = 0;         /* close str */
+
+#if defined(DEBUG)
+                { /* check for array overflow */
+                    size_t  used_size   = dst-result;
+                    char   *new_result;
+
+                    gb_assert(used_size <= needed_size);
+
+                    new_result = realloc(result, used_size);
+                    if (!new_result) {
+                        error = "Out of memory";
+                    }
+                    else {
+                        result = new_result;
+                    }
+                }
+#endif /* DEBUG */
+            }
+            
+            if (!error) (*args->voutput)[(*args->coutput)++].str = result;
+            else free(result);
         }
     }
-    (*args->voutput)[(*args->coutput)++].str = GBS_strclose(strstruct);
-    return 0;
+    return error;
 }
 
 /********************************************************************************************
@@ -2151,8 +2473,10 @@ static struct GBL_command_table gbl_command_table[] = {
     {"crop",             gbl_crop },
     {"cut",              gbl_cut },
     {"dd",               gbl_dd },
+    {"define",           gbl_define },
     {"diff",             gbl_diff },
     {"div",              gbl_div },
+    {"do",               gbl_do },
     {"drop",             gbl_drop },
     {"dropempty",        gbl_dropempty },
     {"dropzero",         gbl_dropzero },
@@ -2161,6 +2485,7 @@ static struct GBL_command_table gbl_command_table[] = {
     {"iequals",          gbl_iequals },
     {"eval",             gbl_eval },
     {"exec",             gbl_exec },
+    {"export_sequence",  gbl_export_sequence },
     {"extract_sequence", gbl_extract_sequence },
     {"extract_words",    gbl_extract_words },
     {"filter",           gbl_filter },
@@ -2191,13 +2516,16 @@ static struct GBL_command_table gbl_command_table[] = {
     {"select",           gbl_select },
     {"sequence",         gbl_sequence },
     {"sequence_type",    gbl_sequence_type },
+    {"split",            gbl_split },
     {"srt",              gbl_srt },
+    {"streams",          gbl_streams },
     {"swap",             gbl_swap },
     {"tab",              gbl_tab },
     {"tail",             gbl_tail },
     {"taxonomy",         gbl_taxonomy },
     {"toback",           gbl_toback },
     {"tofront",          gbl_tofront },
+    {"trace",            gbl_trace },
     {"translate",        gbl_translate },
     {"upper",            gbl_string_convert },
     {0,0}
