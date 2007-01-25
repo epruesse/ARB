@@ -6,6 +6,10 @@ Future changes:
 
 Major changes for next version:
 
+ - Normal export (not using readseq) improved:
+   * supports filters and gap removal
+   * optimized for big amount of data
+   * reworked export filters
  - Display translation with different ORFs in EDIT4
  - ARB exports in FIG 3.2 format (optionally in colors). Thanks to Elmar Pruesse.
  - added PHYML 2.4.5 (thanks to Stephane Guidon for the permission to distribute that great tool)
@@ -27,7 +31,10 @@ Major changes for next version:
    * allows to write taxonomy into database field of species
    * compare taxonomies of two trees
    * ...
- - many new ACI commands; unified handling of binary ACI-operators
+ - ACI:
+   * many new ACI commands
+   * unified handling of binary ACI-operators
+   * tracing of ACI actions for debugging purpose
  - ARB Neighbour joining:
    * bootstrap limit configurable
    * bugfix: when aborting bootstrap calculation, sometimes no tree was generated
