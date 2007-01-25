@@ -24,20 +24,19 @@ init_gm_data()	{
 */
 void
 genbank_to_macke(inf, outf)
-char	*inf, *outf;
+     char	*inf, *outf;
 {
-	FILE	*ifp, *ofp;
-	char	temp[TOKENNUM];
-	int	indi, total_num;
-/* 	void	init(), init_seq_data(), init_gm_data(); */
-/* 	void	macke_out_header(), macke_out0(), macke_out1(), macke_out2(); */
-/* 	void	error(); */
+	FILE	    *IFP, *ofp;
+    FILE_BUFFER  ifp;
+	char	     temp[TOKENNUM];
+	int	         indi, total_num;
 
-	if((ifp=fopen(inf, "r"))==NULL)	{
+	if((IFP=fopen(inf, "r"))==NULL)	{
 		sprintf(temp, "CANNOT open input file %s, exit.\n", inf);
 		error(0, temp);
 	}
-	if(Lenstr(outf)<=0)	ofp = stdout;
+    ifp              = create_FILE_BUFFER(inf, IFP);
+	if(Lenstr(outf) <= 0)	ofp = stdout;
 	else if((ofp=fopen(outf, "w"))==NULL)	{
 		sprintf(temp, "CANNOT open output file %s, exit.\n", outf);
 		error(1, temp);
@@ -52,7 +51,7 @@ char	*inf, *outf;
 #endif
 
 	for(indi=0; indi<3; indi++)	{
-		rewind(ifp);
+		FILE_BUFFER_rewind(ifp);
 		init_seq_data();
 		while(genbank_in(ifp)!=EOF)	{
 			data.numofseq++;
@@ -642,19 +641,23 @@ num_of_remark()	{
 */
 void
 macke_to_genbank(inf, outf)
-char	*inf, *outf;
+     char	*inf, *outf;
 {
-	FILE	*ifp1, *ifp2, *ifp3, *ofp;
-	char	temp[TOKENNUM];
-/* 	void	init(), init_seq_data(), init_gm_data(); */
-/* 	void	error(); */
-/* 	int	mtog(); */
+	FILE	    *IFP1, *IFP2, *IFP3, *ofp;
+    FILE_BUFFER  ifp1, ifp2, ifp3;
+	char	     temp[TOKENNUM];
 
-	if((ifp1=fopen(inf, "r"))==NULL||(ifp2=fopen(inf, "r"))==NULL||
-		(ifp3=fopen(inf, "r"))==NULL)	{
+	if((IFP1=fopen(inf, "r"))==NULL||
+       (IFP2=fopen(inf, "r"))==NULL||
+       (IFP3=fopen(inf, "r"))==NULL)	{
 		sprintf(temp, "Cannot open input file %s\n", inf);
 		error(19, temp);
 	}
+
+    ifp1 = create_FILE_BUFFER(inf, IFP1);
+    ifp2 = create_FILE_BUFFER(inf, IFP2);
+    ifp3 = create_FILE_BUFFER(inf, IFP3);
+
 	if(Lenstr(outf)<=0)	ofp = stdout;
 	else if((ofp=fopen(outf, "w"))==NULL)	{
 		sprintf(temp, "Cannot open output file %s\n", outf);

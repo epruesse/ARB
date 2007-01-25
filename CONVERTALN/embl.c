@@ -86,7 +86,7 @@ init_embl()	{
 */
 char
 embl_in(fp)
-FILE	*fp;
+FILE_BUFFER	fp;
 {
 	char	line[LINENUM], key[TOKENNUM];
 	char	*eof, eoen;
@@ -208,7 +208,7 @@ FILE	*fp;
 */
 char
 embl_in_id(fp)
-FILE	*fp;
+FILE_BUFFER	fp;
 {
 	char	line[LINENUM], key[TOKENNUM];
 	char	*eof, eoen;
@@ -300,7 +300,7 @@ int	numb;
 char
 *embl_continue_line(pattern, string, line, fp)
 char	*pattern, **string, *line;
-FILE	*fp;
+FILE_BUFFER	fp;
 {
 	int	ind;
 /* 	int	embl_check_blanks(), Skip_white_space(); */
@@ -333,7 +333,7 @@ FILE	*fp;
 char
 *embl_one_entry(line, fp, entry, key)
 char	*line;
-FILE	*fp;
+FILE_BUFFER	fp;
 char	**entry, *key;
 {
 	int	index;
@@ -385,7 +385,7 @@ int	refnum;
 char
 *embl_date(line, fp)
 char	*line;
-FILE	*fp;
+FILE_BUFFER	fp;
 {
 	int	index;
 	char	*eof, key[TOKENNUM];
@@ -419,7 +419,7 @@ FILE	*fp;
 char
 *embl_version(line, fp)
 char	*line;
-FILE	*fp;
+FILE_BUFFER	fp;
 {
 	int	index;
 	char	*eof;
@@ -451,7 +451,7 @@ FILE	*fp;
 char
 *embl_comments(line, fp)
 char	*line;
-FILE	*fp;
+FILE_BUFFER	fp;
 {
 	int	index, offset;
 /* 	int	Skip_white_space(); */
@@ -573,7 +573,7 @@ FILE	*fp;
 char
 *embl_skip_unidentified(pattern, line, fp)
 char	*pattern, *line;
-FILE	*fp;
+FILE_BUFFER	fp;
 {
 /* 	int	Lenstr(), Cmpstr(); */
 	char	*eof;
@@ -620,7 +620,7 @@ char	*key;
 *			this function.
 */
 char *embl_one_comment_entry(fp, datastring, line, start_index)
-FILE	*fp;
+FILE_BUFFER	fp;
 char	**datastring, *line;
 int	start_index;
 {
@@ -655,7 +655,7 @@ int	start_index;
 char
 *embl_origin(line, fp)
 char	*line;
-FILE	*fp;
+FILE_BUFFER	fp;
 {
 	char	*eof;
 	int	index;
@@ -974,26 +974,24 @@ FILE	*fp;
 */
 void
 embl_to_macke(inf, outf, format)
-char	*inf, *outf;
-int	format;
+     char	*inf, *outf;
+     int	format;
 {
-	FILE	*ifp, *ofp;
-	char	temp[TOKENNUM];
-/* 	void	init(), init_em_data(), init_seq_data(); */
-/* 	void	macke_out_header(), macke_out0(); */
-/* 	void	macke_out1(), macke_out2(); */
-/* 	void	error(); */
+	FILE	    *IFP, *ofp;
+    FILE_BUFFER  ifp;
+	char	     temp[TOKENNUM];
 	int	indi, total_num;
 
-	if((ifp=fopen(inf, "r"))==NULL)	{
+	if((IFP=fopen(inf, "r"))==NULL)	{
 		sprintf(temp,
-		"Cannot open input file %s, exit\n", inf);
+                "Cannot open input file %s, exit\n", inf);
 		error(98, temp);
 	}
-	if(Lenstr(outf)<=0)	ofp = stdout;
+    ifp              = create_FILE_BUFFER(inf, IFP);
+	if(Lenstr(outf) <= 0)	ofp = stdout;
 	else if((ofp=fopen(outf, "w"))==NULL)	{
 		sprintf(temp,
-		"Cannot open output file %s, exit\n", outf);
+                "Cannot open output file %s, exit\n", outf);
 		error(97, temp);
 	}
 
@@ -1001,7 +999,7 @@ int	format;
 	/* macke format seq irelenvant header */
 	macke_out_header(ofp);
 	for(indi=0; indi<3; indi++)	{
-		rewind(ifp);
+		FILE_BUFFER_rewind(ifp);
 		init_seq_data();
 		init_em_data();
 		while(embl_in(ifp)!=EOF)	{
@@ -1060,23 +1058,23 @@ int etom()	{
 */
 void
 embl_to_embl(inf, outf, format)
-char	*inf, *outf;
-int	format;
+     char	*inf, *outf;
+     int	format;
 {
-	FILE	*ifp, *ofp;
-	char	temp[TOKENNUM];
-/* 	void	init(), init_seq_data(), init_embl(); */
-/* 	void	error(), warning(); */
+	FILE	    *IFP, *ofp;
+    FILE_BUFFER  ifp;
+	char	     temp[TOKENNUM];
 
-	if((ifp=fopen(inf, "r"))==NULL)	{
+	if((IFP=fopen(inf, "r"))==NULL)	{
 		sprintf(temp,
-		"Cannot open input file %s\n", inf);
+                "Cannot open input file %s\n", inf);
 		error(27, temp);
 	}
-	if(Lenstr(outf)<=0)	ofp = stdout;
+    ifp              = create_FILE_BUFFER(inf, IFP);
+	if(Lenstr(outf) <= 0)	ofp = stdout;
 	else if((ofp=fopen(outf, "w"))==NULL)	{
 		sprintf(temp,
-		"Cannot open output file %s\n", outf);
+                "Cannot open output file %s\n", outf);
 		error(28, temp);
 	}
 	init();
@@ -1106,20 +1104,19 @@ int	format;
 */
 void
 embl_to_genbank(inf, outf, format)
-char	*inf, *outf;
-int	format;
+     char	*inf, *outf;
+     int	format;
 {
-	FILE	*ifp, *ofp;
-	char	temp[TOKENNUM];
-/* 	void	init(), init_seq_data(), init_genbank(), init_embl(); */
-/* 	void	error(), warning(); */
-/* 	int	etog(); */
+	FILE	    *IFP, *ofp;
+    FILE_BUFFER  ifp;
+	char	     temp[TOKENNUM];
 
-	if((ifp=fopen(inf, "r"))==NULL)	{
+	if((IFP=fopen(inf, "r"))==NULL)	{
 		sprintf(temp, "Cannot open input file %s\n", inf);
 		error(30, temp);
 	}
-	if(Lenstr(outf)<=0)	ofp = stdout;
+    ifp              = create_FILE_BUFFER(inf, IFP);
+	if(Lenstr(outf) <= 0)	ofp = stdout;
 	else if((ofp=fopen(outf, "w"))==NULL)	{
 		sprintf(temp, "Cannot open output file %s\n", outf);
 		error(31, temp);
@@ -1458,29 +1455,27 @@ etog_comments()	{
 */
 void
 genbank_to_embl(inf, outf)
-char	*inf, *outf;
+     char	*inf, *outf;
 {
-	FILE	*ifp, *ofp;
-	char	temp[TOKENNUM];
-/* 	char	*Dupstr(); */
-/* 	void	init(), init_embl(), embl_out(); */
-/* 	void	init_genbank(), error(); */
-/* 	int	gtoe(); */
+	FILE        *IFP, *ofp;
+    FILE_BUFFER  ifp;
+	char         temp[TOKENNUM];
 
-	if((ifp=fopen(inf, "r"))==NULL)	{
+	if((IFP=fopen(inf, "r"))==NULL)	{
 		sprintf(temp,
-		"Cannot open input file %s, exit\n", inf);
+                "Cannot open input file %s, exit\n", inf);
 		error(132, temp);
 	}
+    ifp = create_FILE_BUFFER(inf, IFP);
 	if((ofp=fopen(outf, "w"))==NULL)	{
 		sprintf(temp,
-		"Cannot open output file %s, exit\n", outf);
+                "Cannot open output file %s, exit\n", outf);
 		error(133, temp);
 	}
 	init();
 	init_genbank();
 	init_embl();
-	rewind(ifp);
+	/* rewind(ifp); */
 	while(genbank_in(ifp)!=EOF)	{
 		data.numofseq++;
 		if(gtoe()) embl_out(ofp);
@@ -1494,7 +1489,7 @@ char	*inf, *outf;
 		data.numofseq);
 #endif
 
-	fclose(ifp);	fclose(ofp);
+	destroy_FILE_BUFFER(ifp);	fclose(ofp);
 }
 /* ------------------------------------------------------------
 *	Function gtoe().
@@ -1777,20 +1772,24 @@ gtoe_comments()	{
 */
 void
 macke_to_embl(inf, outf)
-char	*inf, *outf;
+     char	*inf, *outf;
 {
-	FILE	*ifp1, *ifp2, *ifp3, *ofp;
-	char	temp[TOKENNUM];
-/* 	void	init(), init_seq_data(), init_genbank(); */
-/* 	void	init_macke(), init_embl(), error(), embl_out(); */
-/* 	int	mtog(), gtoe(), partial_mtoe(); */
+	FILE	    *IFP1, *IFP2, *IFP3, *ofp;
+    FILE_BUFFER  ifp1, ifp2, ifp3;
+	char	     temp[TOKENNUM];
 
-	if((ifp1=fopen(inf, "r"))==NULL
-	||(ifp2=fopen(inf, "r"))==NULL||
-	(ifp3=fopen(inf, "r"))==NULL)	{
+	if ((IFP1=fopen(inf, "r"))==NULL ||
+        (IFP2=fopen(inf, "r"))==NULL ||
+        (IFP3=fopen(inf, "r"))==NULL)
+    {
 		sprintf(temp, "Cannot open input file %s\n", inf);
 		error(99, temp);
 	}
+
+    ifp1 = create_FILE_BUFFER(inf, IFP1);
+    ifp2 = create_FILE_BUFFER(inf, IFP2);
+    ifp3 = create_FILE_BUFFER(inf, IFP3);
+
 	if(Lenstr(outf)<=0)	ofp = stdout;
 	else if((ofp=fopen(outf, "w"))==NULL)	{
 		sprintf(temp, "Cannot open output file %s\n", outf);
