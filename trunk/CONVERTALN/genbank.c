@@ -73,7 +73,7 @@ void init_genbank()	{
  *		Read in one genbank entry.
  */
 char genbank_in(fp)
-     FILE *fp;
+     FILE_BUFFER fp;
 {
     char	    line[LINENUM], key[TOKENNUM] /*, temp[LINENUM]*/;
     const char *eof;
@@ -233,7 +233,7 @@ int genbank_check_blanks(line, numb)
 char *genbank_continue_line(string, line, numb, fp)
      char **string, *line;
      int	numb;	            /* number of blanks needed to define a continue line */
-     FILE  *fp;
+     FILE_BUFFER  fp;
 {
 	int	ind;
 /* 	int	Lenstr(); */
@@ -263,7 +263,7 @@ char *genbank_continue_line(string, line, numb, fp)
  */
 char *genbank_one_entry_in(datastring, line, fp)
      char **datastring, *line;
-     FILE  *fp;
+     FILE_BUFFER  fp;
 {
 	int	index;
 /* 	int	Skip_white_space(), Lenstr(); */
@@ -274,8 +274,7 @@ char *genbank_one_entry_in(datastring, line, fp)
 	index = Skip_white_space(line, 12);
 	Freespace(datastring);
 	*datastring = Dupstr(line+index);
-	eof = (char*)genbank_continue_line
-		(datastring, line, 12, fp);
+	eof = (char*)genbank_continue_line(datastring, line, 12, fp);
 
 	return(eof);
 }
@@ -286,7 +285,7 @@ char *genbank_one_entry_in(datastring, line, fp)
 char *genbank_one_comment_entry(datastring, line, start_index, fp)
      char **datastring, *line;
      int	start_index;
-     FILE  *fp;
+     FILE_BUFFER  fp;
 {
 	int	index;
 /* 	int	Skip_white_space(), Lenstr(); */
@@ -297,8 +296,7 @@ char *genbank_one_comment_entry(datastring, line, start_index, fp)
 	index = Skip_white_space(line, start_index);
 	Freespace(datastring);
 	*datastring = Dupstr(line+index);
-	eof = (char*)genbank_continue_line
-		(datastring, line, 20, fp);
+	eof = (char*)genbank_continue_line (datastring, line, 20, fp);
 	return(eof);
 }
 /* --------------------------------------------------------------
@@ -308,7 +306,7 @@ char *genbank_one_comment_entry(datastring, line, start_index, fp)
  */
 char *genbank_source(line, fp)
      char *line;
-     FILE *fp;
+     FILE_BUFFER fp;
 {
  	int     index;
 /*  	int     Skip_white_space(); */
@@ -335,7 +333,7 @@ char *genbank_source(line, fp)
  */
 char *genbank_reference(line, fp)
      char *line;
-     FILE *fp;
+     FILE_BUFFER fp;
 {
 #define AUTH	0
 #define TIT	1
@@ -362,8 +360,7 @@ char *genbank_reference(line, fp)
 		data.gbk.reference = (Reference*)Reallocspace ((char*)data.gbk.reference, (unsigned) (sizeof(Reference)*(data.gbk.numofref)));
 		/* initialize the buffer */
 		init_reference(&(data.gbk.reference[refnum-1]), ALL);
-		eof = genbank_one_entry_in
-		(&(data.gbk.reference[refnum-1].ref),line, fp);
+		eof = genbank_one_entry_in (&(data.gbk.reference[refnum-1].ref),line, fp);
 	}
 	/* find the reference listings */
 	for( ;eof!=NULL&&line[0]==' '&&line[1]==' '; )
@@ -445,7 +442,7 @@ char *genbank_reference(line, fp)
  */
 const char *genbank_comments(line, fp)
      char *line;
-     FILE *fp;
+     FILE_BUFFER fp;
 {
 	int	index, indi, ptr/*, genbank_check_blanks()*/;
 /* 	int	Lenstr(), Skip_white_space(); */
@@ -560,8 +557,8 @@ const char *genbank_comments(line, fp)
 */
 char
 *genbank_origin(line, fp)
-char	*line;
-FILE	*fp;
+     char	*line;
+     FILE_BUFFER	fp;
 {
 	char	*eof;
 	int	index;
@@ -600,17 +597,17 @@ FILE	*fp;
 	return(eof);
 }
 /* ---------------------------------------------------------------
-*	Function genbank_skip_unidentified().
-*		Skip the lines of unidentified keyword.
-*/
+ *	Function genbank_skip_unidentified().
+ *		Skip the lines of unidentified keyword.
+ */
 char
 *genbank_skip_unidentified(line, fp, blank_num)
-char	*line;
-FILE	*fp;
-int	blank_num;
+     char	     *line;
+     FILE_BUFFER  fp;
+     int	blank_num;
 {
 	char	*eof;
-/* 	int	genbank_check_blanks(); */
+    /* 	int	genbank_check_blanks(); */
 
 	for(eof=Fgetline(line, LINENUM, fp);
 	eof!=NULL&&genbank_check_blanks(line, blank_num);
@@ -721,7 +718,7 @@ genbank_verify_keywords()	{
 */
 char
 genbank_in_locus(fp)
-FILE	*fp;
+     FILE_BUFFER fp;
 {
 	char	line[LINENUM], key[TOKENNUM];
 	char	*eof, eoen;
@@ -1122,28 +1119,26 @@ FILE	*fp;
 */
 void
 genbank_to_genbank(inf, outf)
-char	*inf, *outf;
+     char	*inf, *outf;
 {
-	FILE	*ifp, *ofp;
-	char	temp[TOKENNUM];
-/* 	char	*Dupstr(); */
-/* 	void	init(); */
-/* 	void	init_genbank(), error(); */
-/* 	int	gtoe(); */
+	FILE	    *IFP, *ofp;
+    FILE_BUFFER  ifp;
+	char	     temp[TOKENNUM];
 
-	if((ifp=fopen(inf, "r"))==NULL)	{
+	if((IFP=fopen(inf, "r"))==NULL)	{
 		sprintf(temp,
-		"Cannot open input file %s, exit\n", inf);
+                "Cannot open input file %s, exit\n", inf);
 		error(35, temp);
 	}
+    ifp = create_FILE_BUFFER(inf, IFP);
 	if((ofp=fopen(outf, "w"))==NULL)	{
 		sprintf(temp,
-		"Cannot open output file %s, exit\n", outf);
+                "Cannot open output file %s, exit\n", outf);
 		error(36, temp);
 	}
 	init();
 	init_genbank();
-	rewind(ifp);
+	/* rewind(ifp); */
 	while(genbank_in(ifp)!=EOF)	{
 		data.numofseq++;
 		genbank_out(ofp);
@@ -1156,7 +1151,7 @@ char	*inf, *outf;
 		data.numofseq);
 #endif
 
-	fclose(ifp);	fclose(ofp);
+	destroy_FILE_BUFFER(ifp); fclose(ofp);
 }
 /* -----------------------------------------------------------
 *	Function init_reference().

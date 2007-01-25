@@ -8,42 +8,42 @@
 */
 void
 to_gcg(intype, inf)
-int	intype;
-char	*inf;
+     int	intype;
+     char *inf;
 {
-	FILE	*ifp1, *ifp2, *ifp3, *ofp;
-	char	temp[TOKENNUM], *eof, line[LINENUM], key[TOKENNUM];
-	char	line1[LINENUM], line2[LINENUM], line3[LINENUM], name[LINENUM];
-	char	*eof1, *eof2, *eof3;
-	char	outf[TOKENNUM];
-/* 	char 	*embl_origin(), *genbank_origin(), *macke_origin(); */
-/* 	void	init_seq_data(), gcg_seq_out(), gcg_doc_out(); */
-/* 	void	embl_key_word(), genbank_key_word(); */
-/* 	void	gcg_output_filename(); */
-	int	seqdata;
+	FILE        *IFP1, *IFP2, *IFP3, *ofp;
+    FILE_BUFFER  ifp1 = 0, ifp2 = 0, ifp3 = 0;
+	char         temp[TOKENNUM], *eof, line[LINENUM], key[TOKENNUM];
+	char         line1[LINENUM], line2[LINENUM], line3[LINENUM], name[LINENUM];
+	char        *eof1, *eof2, *eof3;
+	char         outf[TOKENNUM];
+	int	         seqdata;
 
 	if(intype==MACKE)	{
-		if((ifp1=fopen(inf, "r"))==NULL||(ifp2=fopen(inf, "r"))==NULL
-		||(ifp3=fopen(inf, "r"))==NULL)	{
+		if((IFP1=fopen(inf, "r"))==NULL||(IFP2=fopen(inf, "r"))==NULL ||(IFP3=fopen(inf, "r"))==NULL)	{
 			sprintf(temp, "Cannot open input file %s\n", inf);
 			error(38, temp);
 		}
-	} else if((ifp1=fopen(inf, "r"))==NULL)	{
-		sprintf(temp, "CANNOT open input file %s, exit.\n", inf);
-		error(37, temp);
+        ifp1 = create_FILE_BUFFER(inf, IFP1);
+        ifp2 = create_FILE_BUFFER(inf, IFP2);
+        ifp3 = create_FILE_BUFFER(inf, IFP3);
+	}
+    else {
+        if((IFP1=fopen(inf, "r")) == NULL)	{
+            sprintf(temp, "CANNOT open input file %s, exit.\n", inf);
+            error(37, temp);
+        }
+        ifp1 = create_FILE_BUFFER(inf, IFP1);
 	}
 	if(intype==MACKE)	{
 		/* skip to #=; where seq. first appears */
-		for(eof1=Fgetline(line1, LINENUM, ifp1);
-		eof1!=NULL&&(line1[0]!='#'||line1[1]!='=');
+		for(eof1=Fgetline(line1, LINENUM, ifp1); eof1!=NULL&&(line1[0]!='#'||line1[1]!='=') ;
 		eof1=Fgetline(line1, LINENUM, ifp1)) ;
 		/* skip to #:; where the seq. information is */
-		for(eof2=Fgetline(line2, LINENUM, ifp2);
-		eof2!=NULL&&(line2[0]!='#'||line2[1]!=':');
+		for(eof2=Fgetline(line2, LINENUM, ifp2); eof2!=NULL&&(line2[0]!='#'||line2[1]!=':');
 		eof2=Fgetline(line2, LINENUM, ifp2)) ;
 		/* skip to where seq. data starts */
-		for(eof3=Fgetline(line3,LINENUM, ifp3);
-		eof3!=NULL&&line3[0]=='#';
+		for(eof3=Fgetline(line3,LINENUM, ifp3); eof3!=NULL&&line3[0]=='#';
 		eof3=Fgetline(line3, LINENUM, ifp3)) ;
 		/* for each seq. print out one gcg file. */
 		for(; eof1!=NULL&&(line1[0]=='#'&&line1[1]=='=');

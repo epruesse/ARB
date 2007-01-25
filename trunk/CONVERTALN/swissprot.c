@@ -78,7 +78,7 @@ char	*inf, *outf;
 	init();
 	macke_out_header(ofp);
 	for(indi=0; indi<3; indi++)	{
-		rewind(ifp);
+		FILE_BUFFER_rewind(ifp);
 		init_seq_data();
 		init_pm_data();
 		while(protein_in(ifp)!=EOF)	{
@@ -735,7 +735,7 @@ char	*inf, *outf;
 
 	/* seq irelenvant header */
 	init();
-	rewind(ifp);
+	/* rewind(ifp); */
 	init_genbank();
 	init_macke();
 	init_protein();
@@ -782,7 +782,7 @@ char	*inf, *outf;
 	paup_print_header(ofp);
 	while(maxsize>current)	{
 		init();
-		rewind(ifp);
+		FILE_BUFFER_rewind(ifp);
 		total_seq = 0;
 		/* first time read input file */
 		first_line = 0;
