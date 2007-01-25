@@ -682,6 +682,16 @@ char *gbs_search_next_seperator(const char *source,const char *seps){
     return 0;
 }
 
+static void dumpStreams(const char *name, int count, const GBL *args) {
+    printf("%s=%i\n", name, count);
+    if (count > 0) {
+        int c;
+        for (c = 0; c<count; c++) {
+            printf("  %02i='%s'\n", c, args[c].str);
+        }
+    }
+}
+
 char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name) {
     /* simple command interpreter returns 0 on error (+ GB_export_error) */
     /* if first character is == ':' run string parser
@@ -704,9 +714,10 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     GBL min[GBL_MAX_ARGUMENTS];
     GBL mout[GBL_MAX_ARGUMENTS];
 
-    GBL *orig = & morig[0];
-    GBL *in = & min[0];
-    GBL *out = & mout[0];
+    GBL *orig  = & morig[0];
+    GBL *in    = & min[0];
+    GBL *out   = & mout[0];
+    int  trace = GB_get_ACISRT_trace();
 
     if (!str) {
         if (!gbd) {
@@ -716,6 +727,13 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
         str = GB_read_as_string(gbd);
         strmalloc = 1;
     }
+
+
+    if (trace) {
+        printf("GB_command_interpreter: str='%s'\n"
+               "                        command='%s'\n", str, commands);
+    }
+    
     /*********************** empty command -> do not modify string ***************/
     if (!commands || !commands[0]) {    /* empty command -> return GB_STRDUP(str) */
         if (!strmalloc) return GB_STRDUP(str);
@@ -821,8 +839,8 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                 }
                 *end = 0;
                 out[argcout++].str = GB_STRDUP(s1+1);
-            }else{
-
+            }
+            else {
                 argcparam = 0;
                 bracket = strchr(s1,'(');
                 if (bracket){       /* I got the parameter list */
@@ -884,7 +902,15 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                         args.coutput           = &argcout;
                         args.voutput           = &out;
 
-                        error = command(&args);
+                        if (trace) {
+                            printf("-----------------------\nExecution of command '%s':\n", args.command);
+                            dumpStreams("Arguments", args.cparam, args.vparam);
+                            dumpStreams("InputStreams", args.cinput, args.vinput);
+                        }
+
+                        error = command(&args); /* execute the command */
+
+                        if (!error && trace) dumpStreams("OutputStreams", *args.coutput, *args.voutput);
 
                         if (error) {
                             char *inputstreams = 0;
@@ -953,10 +979,12 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     {
         char *s1;
         if (!argcout) {
-            s1 = GB_STRDUP("<NULL>");
-        }else if (argcout ==1) {
+            s1 = GB_STRDUP(""); /* returned '<NULL>' in the past */
+        }
+        else if (argcout ==1) {
             s1 = out[0].str;
-        }else{              /* concatenate output strings */
+        }
+        else{              /* concatenate output strings */
             void *strstruct = GBS_stropen(1000);
             for (i=0;i<argcout;i++) {
                 if (out[i].str){
@@ -968,9 +996,11 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
         }
         free(buffer);
 
-
-        if (!error) return s1;
-        if (s1) free(s1);
+        if (!error) {
+            if (trace) printf("GB_command_interpreter: result='%s'\n", s1);
+            return s1;
+        }
+        free(s1);
     }
 
     GB_export_error("in '%s': %s", commands, error);
