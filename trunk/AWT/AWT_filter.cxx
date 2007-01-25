@@ -194,11 +194,22 @@ void awt_create_select_filter_window_gb_cb(void *dummy,struct adfiltercbstruct *
 
 
 AW_CL   awt_create_select_filter(AW_root *aw_root,GBDATA *gb_main,const char *def_name)
+    // def_name = filter name awar (has to exist, name has to be "SOMETHING/name")
+    // awars "SOMETHING/filter" (STRING) and "SOMETHING/alignment" (STRING) have to exist as well! 
 {
-    struct adfiltercbstruct *acbs = new adfiltercbstruct ;
-    acbs->gb_main = gb_main;
+    struct adfiltercbstruct *acbs   = new adfiltercbstruct ;
+    acbs->gb_main                   = gb_main;
     GB_push_transaction(acbs->gb_main);
-    AW_default aw_def = aw_root->get_default(def_name);
+    AW_default               aw_def = aw_root->get_default(def_name);
+
+#if defined(DEBUG)
+    {
+        int len = strlen(def_name);
+
+        awt_assert(len >= 5);
+        awt_assert(strcmp(def_name+len-5, "/name") == 0); // filter awar has to be "SOMETHING/name"
+    }
+#endif                          // DEBUG
 
     acbs->def_name = GBS_string_eval(def_name,"/name=/name",0);
     acbs->def_filter = GBS_string_eval(def_name,"/name=/filter",0);
