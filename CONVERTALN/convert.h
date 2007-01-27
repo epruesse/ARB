@@ -1,5 +1,9 @@
 /* data structure for each file format and sequences */
 
+#ifndef FILEBUFFER_H
+#include <FileBuffer.h>
+#endif
+
 #ifdef SGI
 #define char signed char
 #endif
@@ -138,20 +142,24 @@ typedef struct	{
 	char	*id;		/* locus */
 	char	*description;
 } Nbrf;
+
 /* one sequence entry */
 struct	{
-	int	numofseq;		/* number of sequences */
-	int	seq_length;		/* sequence length */
-	int	max;
-	char	*sequence;		/* sequence data */
+	int	      numofseq;		    /* number of sequences */
+	int	      seq_length;		/* sequence length */
+	int	      max;
+	char	 *sequence;		    /* sequence data */
 	/* to read all the sequences into memory at one time */
-	char	**ids;			/* array of ids. */
-	char	**seqs;			/* array of sequence data */
+	char	**ids;			    /* array of ids. */
+	char	**seqs;			    /* array of sequence data */
+    int      *lengths;          /* array of sequence lengths */
+    int       allocated;        /* for how many sequences space has been allocated */
 	/* PAUP, PHYLIP, GCG, and PRINTABLE */
-	GenBank	gbk;			/* one GenBank entry */
-	Macke 	macke;			/* one Macke entry */
-	Paup	paup;			/* one Paup entry */
-	Embl	embl;
-	Alma	alma;
-	Nbrf	nbrf;
+	GenBank	  gbk;			    /* one GenBank entry */
+	Macke 	  macke;			/* one Macke entry */
+	Paup	  paup;			    /* one Paup entry */
+	Embl	  embl;
+	Alma	  alma;
+	Nbrf	  nbrf;
 } data;
+
