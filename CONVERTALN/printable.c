@@ -10,29 +10,22 @@
 */
 void
 to_printable(inf, outf, informat)
-char	*inf, *outf;
-int	informat;
+     char	*inf, *outf;
+     int	informat;
 {
-	FILE	*ifp, *ofp;
-	int	maxsize, current, total_seq, length;
-	int	out_of_memory, indi, index, *base_nums, base_count, start;
-/* 	int	alma_key_word(); */
-/* 	char	alma_in(), genbank_in_locus(); */
-/* 	char	macke_in_name(), embl_in_id(); */
-	char	temp[TOKENNUM], eof;
-	char	*name;
-/* 	char	*Dupstr(), *Reallocspace(), *name, *today_date(), *today; */
-/* 	void	init(), init_seq_data(); */
-/* 	void	init_alma(), init_genbank(), init_macke(), init_embl(); */
-/* 	void	printable_print_line(), to_printable_1x1(); */
-/* 	void	Freespace(), error(), Cpystr(); */
-/* 	void	genbank_key_word(), embl_key_word(); */
+	FILE	    *IFP, *ofp;
+    FILE_BUFFER  ifp;
+	int	         maxsize, current, total_seq, length;
+	int	         out_of_memory, indi, index, *base_nums, base_count, start;
+	char	     temp[TOKENNUM], eof;
+	char	    *name;
 
-	if((ifp=fopen(inf, "r"))==NULL)	{
+	if((IFP=fopen(inf, "r"))==NULL)	{
 		sprintf(temp, "Cannot open input file %s, exit\n", inf);
 		error(64, temp);
 	}
-	if(Lenstr(outf)<=0)	ofp = stdout;
+    ifp              = create_FILE_BUFFER(inf, IFP);
+	if(Lenstr(outf) <= 0)	ofp = stdout;
 	else if((ofp=fopen(outf, "w"))==NULL)	{
 		sprintf(temp, "Cannot open output file %s, exit\n", outf);
 		error(117, temp);
@@ -70,27 +63,26 @@ int	informat;
 		} else error(120,
 		"UNKNOW input format when converting to PRINABLE format.");
 		total_seq++;
-		if((name = Dupstr(temp))==NULL&&temp!=NULL)
-			{ out_of_memory=1; break; }
-		if(data.seq_length>maxsize)
-			maxsize = data.seq_length;
-		data.ids=(char**)Reallocspace((char *)data.ids,
-			sizeof(char*)*total_seq);
-		if(data.ids==NULL)	{ out_of_memory=1; break; }
-		data.seqs=(char**)Reallocspace((char *)data.seqs,
-			sizeof(char*)*total_seq);
-		if(data.seqs==NULL)	{ out_of_memory=1; break; }
-		base_nums=(int*)Reallocspace((char *)base_nums, sizeof(int)*total_seq);
+        
+		if((name = Dupstr(temp))==NULL&&temp!=NULL) { out_of_memory=1; break; }
+		if(data.seq_length>maxsize) maxsize = data.seq_length;
+        
+        if (!realloc_sequence_data(total_seq)) { out_of_memory = 1; break; }
+
+        base_nums=(int*)Reallocspace((char *)base_nums, sizeof(int)*total_seq);
 		if(base_nums==NULL)	{ out_of_memory=1; break; }
-		data.ids[total_seq-1]=name;
-		data.seqs[total_seq-1]=(char*)Dupstr(data.sequence);
-		base_nums[total_seq-1]=0;
+
+		data.ids[total_seq-1]     = name;
+		data.seqs[total_seq-1]    = (char*)Dupstr(data.sequence);
+        data.lengths[total_seq-1] = Lenstr(data.sequence);
+		base_nums[total_seq-1]    = 0;
+
 	} while(!out_of_memory);
 
 	if(out_of_memory)	{	/* cannot hold all seqs into mem. */
 		fprintf(stderr,
 		"Rerun the conversion throught one seq. by one seq. base.\n");
-		fclose(ifp); fclose(ofp);
+		destroy_FILE_BUFFER(ifp); fclose(ofp);
 		to_printable_1x1(inf, outf, informat);
 		return;
 	}
@@ -126,7 +118,7 @@ int	informat;
 	fprintf(stderr, "Total %d sequences have been processed\n", total_seq);
 #endif
 
-	fclose(ifp); fclose(ofp);
+	destroy_FILE_BUFFER(ifp); fclose(ofp);
 }
 /* ---------------------------------------------------------------
 *	Function to_printable_1x1()
@@ -134,22 +126,22 @@ int	informat;
 */
 void
 to_printable_1x1(inf, outf, informat)
-char 	*inf, *outf;
-int	informat;
+     char 	*inf, *outf;
+     int	informat;
 {
-	FILE	*ifp, *ofp;
-	int	maxsize, current, total_seq;
-	int	base_count, /*count,*/ index;
-/* 	int	alma_key_word(); */
-	char	temp[TOKENNUM], eof;
-	char	*name;
-/* 	char	*Dupstr(), *name, *today_date(), *today; */
+	FILE	    *IFP, *ofp;
+    FILE_BUFFER  ifp;
+	int	         maxsize, current, total_seq;
+	int	         base_count, index;
+	char	     temp[TOKENNUM], eof;
+	char	    *name;
 
-	if((ifp=fopen(inf, "r"))==NULL)	{
+	if((IFP=fopen(inf, "r"))==NULL)	{
 		sprintf(temp, "Cannot open input file %s, exit\n", inf);
 		error(125, temp);
 	}
-	if(Lenstr(outf)<=0)	ofp = stdout;
+    ifp              = create_FILE_BUFFER(inf, IFP);
+	if(Lenstr(outf) <= 0)	ofp = stdout;
 	else if((ofp=fopen(outf, "w"))==NULL)	{
 		sprintf(temp, "Cannot open output file %s, exit\n", outf);
 		error(126, temp);
@@ -158,7 +150,7 @@ int	informat;
 	name = NULL;
 	while(maxsize>current)	{
 		init();
-		rewind(ifp);
+		FILE_BUFFER_rewind(ifp);
 		total_seq = 0;
 		do	{	/* read in one sequence */
 			if(informat==ALMA)	{
@@ -221,7 +213,7 @@ int	informat;
 		if(maxsize>current) fprintf(ofp, "\n\n");
 	}	/* print block by block */
 
-	fclose(ifp); fclose(ofp);
+	destroy_FILE_BUFFER(ifp); fclose(ofp);
 
 #ifdef log
 	fprintf(stderr, "Total %d sequences have been processed\n", total_seq);
