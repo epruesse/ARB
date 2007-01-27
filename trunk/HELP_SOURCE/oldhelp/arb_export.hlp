@@ -15,14 +15,24 @@ TITLE		Export Selected Species and Sequences
 OCCURRENCE	ARB_NT/File/Export Foreign Format
 
 DESCRIPTION
-		The marked 'species' (see LINK{glossary.hlp}) of the selected
-		'alignment' (see LINK{glossary.hlp}) and the corresponding
-		sequences are exported in various formats.
+                Exports the selected 'alignment' of some or all 'species' in
+                various formats.
 
 		Choose the 'EXPORT FOREIGN FORMAT' option from the 'File' menu
 			to display the 'ARB EXPORT' window.
 
 		Select a formate from the corresponding subwindow.
+
+                Choose whether to export all or only marked species.
+
+                Choose a filter to export only selected columns.
+
+                Select a compression method:
+                       - 'none' preserves the alignment information
+                       - 'vertical gaps' removes all columns containing only gaps
+                       - 'all gaps' completely remove the alignment information
+
+                Check 'Cut stop codon' to cut off the sequence at the stop codon.
 
 		Define whether the data should be written to one or to multiple
 			files by clicking on the checkbox after the 'Should the
@@ -48,9 +58,9 @@ DESCRIPTION
 		the reference.
 		See LINK{export_format.hlp} for more information.
 
-NOTES		Filters and/or compression not available.
+NOTES           The formates can be customized (see LINK{export_format.hlp})
 
-		The formates can be customized (see LINK{export_format.hlp})
+                For a list of common database entries see LINK{sp_info.hlp}.
 
 EXAMPLES	None
 
