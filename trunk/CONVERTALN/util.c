@@ -192,42 +192,23 @@ int Reach_white_space(line, index)
 *		Get a line from assigned file, also checking for buffer
 *			overflow.
 */
-char *Fgetline(line, linenum, fp)
-     char	*line;
-     int	linenum;
-     FILE	*fp;
-{
-/* 	char	*eof; */
-	int	c;
-	int	indi;
 
-	for(indi=0, c='a'; indi<(linenum-2)&&(c=fgetc(fp))!='\n'&&c!=EOF; indi++)
-		line[indi]=c;
-	line[indi]='\0';
+char *Fgetline(char *line, size_t maxread, FILE_BUFFER fb) {
+    size_t      len;
+    const char *fullLine = FILE_BUFFER_read(fb, &len);
+    if (!fullLine) return 0;
 
-	if(indi>=(linenum-2)&&c!=EOF)	{
-		if(warning_out)
-            fprintf(stderr, "Warning(148): OVERFLOW LINE: %s", line);
-		for(; (c=fgetc(fp))!='\n'&&c!=EOF; )
-			fprintf(stderr, "%c", c);
-		fprintf(stderr, "\n");
-	}
-	line[indi]='\n';
-	line[++indi]='\0';
+    if (len <= (maxread-2)) {
+        memcpy(line, fullLine, len);
+        line[len] = '\n';
+        line[len+1] = 0;
+        return line;
+    }
 
-	if(c==EOF) return(NULL);
-	else return(line);
-
-    /* ####
-       eof=fgets(line, linenum, fp);
-       if(Lenstr(line)>=(linenum-1))	{
-       if(warning_out)
-       fprintf(stderr, "Warning(148): OVERFLOW LINE: %s\n\n", line);
-       for(; (c=fgetc(fp))!='\n'&&c!=EOF; ) ;
-       }
-       return(eof);
-    */
+    fprintf(stderr, "Error(148): OVERFLOW LINE: %s\n", fullLine);
+    return 0;
 }
+
 /* ------------------------------------------------------------
 *	Function Getstr().
 *		Get input string from terminal.
