@@ -1,4 +1,4 @@
 SUFFIX		fasta
 BEGIN
->*(name)	*(|sequence|len(.-)) bp		*(|sequence_type)
-*(|sequence)
+>*(name)	*(|export_sequence|len(.-)) bp		*(|sequence_type)
+*(|export_sequence)
