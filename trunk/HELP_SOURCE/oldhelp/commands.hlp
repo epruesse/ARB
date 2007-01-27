@@ -73,7 +73,7 @@ DESCRIPTION
 SECTION COMMANDLIST
 
 		If not otherwise mentioned every command creates one
-		output stream for each input stream ;
+		output stream for each input stream.
 
 	STREAM HANDLING
 
@@ -105,6 +105,17 @@ SECTION COMMANDLIST
                                         If 'sep' is specified, it's inserted between them.
                                         If no input streams are given, it returns 1 empty
                                         input stream.
+
+                split([sep[,mode]])     splits all input streams at separator string 'sep'
+                                        (default: split at linefeed).
+
+                                        Modes:
+
+                                        0               remove found separators (default)
+                                        1               split before separator
+                                        2               split after separator
+
+                streams                 returns the number of input streams
 
 	STRING
 
@@ -173,8 +184,9 @@ SECTION COMMANDLIST
 			firsttab=#   (10)          first line left indent
 			tab=#        (10)          left indent (not first line)
 			"nl=chrs"    (" ")         list of characters that specify
-                                                   the point of a line break;
+                                                   a possibly point of a line break;
                                                    This character is deleted !
+                        "forcenl=chrs" ("\n")      Force a newline at these characters.
 
 		extract_words("chars",val)
 
@@ -245,6 +257,14 @@ SECTION COMMANDLIST
                                              2 selects 'c' and so on.
                                         The selected argument is interpreted as ACI command
                                         and is applied to an empty input stream.
+
+        DEBUGGING
+
+                trace(onoff)            toggle tracing of ACI actions to standard output.
+                                        Start arb from a terminal to see the output.
+                                        Parameter: 0 or 1 (switch off or on)
+
+                                        All streams are copied (like 'dd').
 
 	DATABASE AND SEQUENCE
 
@@ -327,14 +347,16 @@ SECTION COMMANDLIST
 
 		command(escapedCommand)
 
-                        executes escapedCommand with
+                        applies 'escapedCommand' to all input streams using
 
                                  - ACI,
                                  - SRT (if starts with ':') (see LINK{parser.hlp})
                                  - or as REG (if starts with '/') (see LINK{regexpr.hlp}).
 
                         In escapedCommand you have to escape '\' and '"' by
-                        preceeding a '\'. If you nest calls you have to use multiple escapes.
+                        preceeding a '\'. If you nest calls you have to use multiple escapes
+                        (e.g. inside an export filter - which is in fact an
+                        SRT expression - you'll have to use double escapes).
 
                 eval(escapedCommand)
 
@@ -359,6 +381,18 @@ SECTION COMMANDLIST
                                  is 'sequence|eval("mid(10;20)")' which is equivalent
                                  to 'sequence|mid(10;20)'.
 
+                define(name,escapedCommand)
+
+                        defines a ACI-macro 'name'. 'escapedCommand' contains an escaped
+                        ACI command sequence. This command sequence can be executed with
+                        do(name).
+
+                do(name)
+
+                        applies a previously defined ACI-macro to all input streams (see 'define').
+
+                        'define' followed by 'do' works similar to 'command'.
+                        See embl.eft for an example using define and 'do'
 
                 origin_organism(escapedCommand)
                 origin_gene(escapedCommand)
