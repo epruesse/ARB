@@ -45,7 +45,7 @@ MATCH	"  JOURNAL *"
 MATCH	"  MEDLINE *"
 	SRT	"No information*="
 	TAG	"GB"
-	APPEND	"medline"
+	APPEND	"medline_id"
 
 MATCH	"     source*strain=*"
 	SRT	"*strain\=\"*\"*=*2"
