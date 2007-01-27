@@ -53,12 +53,14 @@ init_macke()	{
 	data.macke.subspecies=Dupstr("\n");
 }
 /* -------------------------------------------------------------
-*	Function macke_in().
-*		Read in one sequence data from Macke file.
-*/
+ *	Function macke_in().
+ *		Read in one sequence data from Macke file.
+ */
 char
 macke_in(fp1, fp2, fp3)
-FILE	*fp1, *fp2, *fp3;
+     FILE_BUFFER  fp1;
+     FILE_BUFFER  fp2;
+     FILE_BUFFER  fp3;
 {
 	static	char	line1[LINENUM];
 	static	char	line2[LINENUM];
@@ -180,18 +182,17 @@ FILE	*fp1, *fp2, *fp3;
 	return(EOF+1);
 }
 /* -----------------------------------------------------------------
-*	Function macke_one_entry_in().
-*		Get one Macke entry.
-*/
+ *	Function macke_one_entry_in().
+ *		Get one Macke entry.
+ */
 char
 *macke_one_entry_in(fp, key, oldname, var, line, index)
-FILE	*fp;
-const char	*key;
-char	*oldname, **var, *line;
-int	index;
+     FILE_BUFFER  fp;
+     const char	 *key;
+     char	     *oldname, **var, *line;
+     int	      index;
 {
-/* 	void	replace_entry(), Append_rp_eoln(); */
-	char	*eof;
+	char *eof;
 
 	if(Lenstr((*var))>1) Append_rp_eoln(var, line+index);
 	else replace_entry(var, line+index);
@@ -208,7 +209,7 @@ int	index;
 char *macke_continue_line(key, oldname, var, line, fp)
      const char	*key;
      char	    *oldname, **var, *line;
-     FILE	    *fp;
+     FILE_BUFFER fp;
 {
 	char	*eof, name[TOKENNUM], newkey[TOKENNUM];
 	int	index;
@@ -231,18 +232,16 @@ char *macke_continue_line(key, oldname, var, line, fp)
 	return(eof);
 }
 /* ----------------------------------------------------------------
-*	Function macke_origin().
-*		Read in sequence data in macke file.
-*/
+ *	Function macke_origin().
+ *		Read in sequence data in macke file.
+ */
 char
 *macke_origin(key, line, fp)
-char	*key, *line;
-FILE	*fp;
+     char *key, *line;
+     FILE_BUFFER	fp;
 {
-	int	index, indj, seqnum;
-/* 	int	macke_abbrev(); */
-	char	*eof, name[TOKENNUM], seq[LINENUM];
-/* 	char	*Reallocspace(); */
+	int	  index, indj, seqnum;
+	char *eof, name[TOKENNUM], seq[LINENUM];
 
 	/* read in seq. data */
 	data.seq_length=0;
@@ -327,7 +326,7 @@ int	index;
 */
 char
 macke_in_name(fp)
-FILE	*fp;
+FILE_BUFFER	fp;
 {
 	static	char	line[LINENUM];
 	static	int	first_time = 1;
@@ -723,35 +722,29 @@ int macke_in_one_line(string)
 *	Function macke_out2().
 *		Output Macke format sequences data.
 */
-void
-macke_out2(fp)
-FILE	*fp;
+void macke_out2(fp)
+     FILE *fp;
 {
-	int	indj, indk;
-	char	temp[LINENUM];
-/* 	void	warning(); */
+    int  indj, indk;
+    char temp[LINENUM];
 
-	if(data.seq_length>MACKELIMIT)
-		sprintf(temp,
-	"Lenght of sequence data is %d over AE2's limit %d.\n",
-		data.seq_length, MACKELIMIT);
-		warning(145, temp);
+    if (data.seq_length > MACKELIMIT) {
+        sprintf(temp, "Lenght of sequence data is %d over AE2's limit %d.\n",
+                data.seq_length, MACKELIMIT);
+        warning(145, temp);
+    }
 
-	for(indk=indj=0; indk<data.seq_length; indk++)
-	{
-		if(indj==0)
-			fprintf(fp,"%s%6d ",
-			data.macke.seqabbr, indk);
+    for (indk=indj=0; indk<data.seq_length; indk++)
+    {
+        if(indj==0) fprintf(fp,"%s%6d ", data.macke.seqabbr, indk);
 
-		fprintf(fp, "%c",
-			data.sequence[indk]);
+        fputc(data.sequence[indk], fp);
 
-		indj++;
+        indj++;
+        if(indj==50) { indj=0; fprintf(fp, "\n"); }
 
-		if(indj==50) { indj=0; fprintf(fp, "\n"); }
+    } /* every line */
 
-	} /* every line */
-
-	if(indj!=0) fprintf(fp, "\n");
-		/* every sequence */
+    if(indj!=0) fprintf(fp, "\n");
+    /* every sequence */
 }
