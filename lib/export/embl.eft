@@ -1,0 +1,34 @@
+SUFFIX		embl
+BEGIN
+*(|define(formatMeta,"split(\\"[\\",1)|crop(\\" \\")|dropempty|format(firsttab=0;tab=0;width=73;forcenl=\\"|\n\\")|merge(\\"\n\\")"))\
+ID   *(name)   *(|sequence_type); *(|export_sequence|len(.-)) BP.
+XX
+AC   *(acc);
+OS   *(full_name)
+*(organelle|  do(formatMeta)|split|dropempty|srt("*=OG   *\n"))\
+*(tax|        do(formatMeta)|split|dropempty|srt("*=OC   *\n"))\
+XX
+*(version|    do(formatMeta)|split|dropempty|srt("*=SV   *\n"))\
+*(keywd|      do(formatMeta)|split|dropempty|srt("*=KW   *\n"))\
+XX
+*(date|       do(formatMeta)|split|dropempty|srt("*=DT   *\n"))\
+*(db_xref|    do(formatMeta)|split|dropempty|srt("*=DR   *\n"))\
+*(description|do(formatMeta)|split|dropempty|srt("*=DE   *\n"))\
+XX
+*(author|     do(formatMeta)|split|dropempty|srt("*=RA   *\n"))\
+*(title|      do(formatMeta)|split|dropempty|srt("*=RT   *\n"))\
+*(journal|    do(formatMeta)|split|dropempty|srt("*=RL   *\n"))\
+*(refgrp|     do(formatMeta)|split|dropempty|srt("*=RG   *\n"))\
+*(auth_comm|  do(formatMeta)|split|dropempty|srt("*=RC   *\n"))\
+*(nuc_rp|     do(formatMeta)|split|dropempty|srt("*=RP   *\n"))\
+XX
+*(pubmed_id|  crop(" ")|           dropempty|srt("*=RX   PUBMED *\n"))\
+*(medline_id| crop(" ")|           dropempty|srt("*=RX   MEDLINE *\n"))\
+XX
+*(comment|    do(formatMeta)|split|dropempty|srt("*=CC   *\n"))\
+XX
+*(strain|crop(" ")|dropempty|srt("*=FT   strain\\=*\n"))\
+XX
+SQ   Sequence *(|export_sequence|len(.-)) BP;
+*(|export_sequence|format_sequence(firsttab=10;tab=10;width=50;numleft;gap=10)) 
+//
