@@ -1,16 +1,9 @@
 SUFFIX		seq
 BEGIN
-ID   *(name)   *(|sequence_type); *(|sequence|len(.-)) BP.
-AC   *(acc|extract_words("0123456789",4.0));
-DT   *(date)
-OS   *(full_name)
-RA   *(author)
-RT   *(title)
-FT   strain=*(strain)
-SQ   Sequence *(|sequence|len(.-)) BP;
+!!NA_SEQUENCE 1.0
 
-  *(name) Length: *(|sequence|len(.-)) Check: *(|sequence|remove(.-)|gcgchecksum) ..
+*(full_name)
 
-*(|sequence|remove(.-)|format_sequence(firsttab=10;tab=10;width=50;numleft;gap=10)) 
+*(name) Length: *(|export_sequence|len) Check: *(|export_sequence|gcgchecksum) ..
 
-//
+*(|export_sequence|format_sequence(firsttab=10;tab=10;width=50;numleft;gap=10))
