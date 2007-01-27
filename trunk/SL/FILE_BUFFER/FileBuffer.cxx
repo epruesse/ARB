@@ -2,7 +2,7 @@
 //                                                                  //
 //   File      : FileBuffer.cxx                                     //
 //   Purpose   :                                                    //
-//   Time-stamp: <Wed Dec/13/2006 19:04 MET Coder@ReallySoft.de>    //
+//   Time-stamp: <Fri Dec/22/2006 17:16 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in December 2006   //
 //   Institute of Microbiology (Technical University Munich)        //
@@ -26,23 +26,49 @@ void FileBuffer::fillBuffer()
     }
 }
 
+static char eol[3] = "\n\r";
+static inline bool is_EOL(char c) { return c == eol[0] || c == eol[1]; }
+
 bool FileBuffer::getLine_intern(string& line)
 {
     if (offset==read) return false;
 
-    size_t lineEnd = offset;;
-    for (; lineEnd<read && !is_EOL(buf[lineEnd]); ++lineEnd) ;
+    size_t lineEnd;
+    {
+        size_t  rest   = read-offset;
+        char   *eolPos = (char*)memchr(buf+offset, eol[0], rest);
 
-    if (lineEnd<read) { // found end of line char
-        line   = string(buf+offset, lineEnd-offset);
-        offset = lineEnd+1;
-        while (offset<read && is_EOL(buf[offset])) ++offset;
-        if (offset == read) {
-            fillBuffer();
-            while (offset<read && is_EOL(buf[offset])) ++offset;
+        if (!eolPos) {
+            eolPos = (char*)memchr(buf+offset, eol[1], rest);
+            if (!eolPos) {
+                lineEnd = read;
+            }
+            else {
+                swap(eol[0], eol[1]);
+                lineEnd = eolPos-buf;
+            }
+        }
+        else {
+            lineEnd = eolPos-buf;
+            if (lineEnd>0 && buf[lineEnd-1] == eol[1]) {
+                swap(eol[0], eol[1]);
+                lineEnd--;
+            }
         }
     }
-    else {
+
+    if (lineEnd<read) { // found end of line char
+        line    = string(buf+offset, lineEnd-offset);
+        char lf = buf[lineEnd];
+
+        offset = lineEnd+1;
+        if (offset == read) fillBuffer();
+
+        char nextChar = buf[offset];
+        if (is_EOL(nextChar) && nextChar != lf) offset++; // skip DOS linefeed
+        if (offset == read) fillBuffer();
+    }
+    else { // reached end of buffer
         line = string(buf+offset, read-offset);
         fillBuffer();
         string rest;
@@ -64,14 +90,33 @@ string FileBuffer::lineError(const char *msg) {
     }
 
     int printed = sprintf(buffer, "while reading %s (line #%li):\n%s", filename.c_str(), lineNumber, msg);
-    gi_assert((size_t)printed < allocated);
+    fb_assert((size_t)printed < allocated);
 
     // return GBS_global_string("while reading %s (line #%li):\n%s", filename.c_str(), lineNumber, msg);
     return buffer;
 }
 
+void FileBuffer::rewind() {
+    std::rewind(fp);
+    read = BUFFERSIZE;
+    fillBuffer();
+        
+    if (next_line) {
+        delete next_line;
+        next_line = 0;
+    }
+    lineNumber = 0;
+}
+
 // --------------------------------------------------------------------------------
 // C interface
+
+inline FileBuffer *to_FileBuffer(FILE_BUFFER fb) {
+    FileBuffer *fileBuffer = reinterpret_cast<FileBuffer*>(fb);
+    fb_assert(fileBuffer);
+    fb_assert(fileBuffer->good());
+    return fileBuffer;
+}
 
 extern "C" FILE_BUFFER create_FILE_BUFFER(const char *filename, FILE *in) {
     FileBuffer *fb = new FileBuffer(filename, in);
@@ -79,24 +124,25 @@ extern "C" FILE_BUFFER create_FILE_BUFFER(const char *filename, FILE *in) {
 }
 
 extern "C" void destroy_FILE_BUFFER(FILE_BUFFER file_buffer) {
-    FileBuffer *fb = reinterpret_cast<FileBuffer*>(file_buffer);
-    delete fb;
+    delete to_FileBuffer(file_buffer);
 }
 
-extern "C" const char *FILE_BUFFER_read(FILE_BUFFER file_buffer) {
-    FileBuffer    *fb = reinterpret_cast<FileBuffer*>(file_buffer);
+extern "C" const char *FILE_BUFFER_read(FILE_BUFFER file_buffer, size_t *lengthPtr) {
     static string  line;
 
-    if (fb->getLine(line)) {
+    if (to_FileBuffer(file_buffer)->getLine(line)) {
+        if (lengthPtr) *lengthPtr = line.length();
         return line.c_str();
     }
     return 0;
 }
 
 extern "C" void FILE_BUFFER_back(FILE_BUFFER file_buffer, const char *backline) {
-    FileBuffer *fb = reinterpret_cast<FileBuffer*>(file_buffer);
-
     static string line;
     line = backline;
-    fb->backLine(line);
+    to_FileBuffer(file_buffer)->backLine(line);
+}
+
+extern "C" void FILE_BUFFER_rewind(FILE_BUFFER file_buffer) {
+    to_FileBuffer(file_buffer)->rewind();
 }
