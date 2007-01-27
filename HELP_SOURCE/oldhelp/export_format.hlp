@@ -36,6 +36,8 @@ DESCRIPTION	The export format description file (*.eft) describes
 
 			3. All lines containing the word '$$DELETE_LINE$$' are deleted.
 
+                        4. Lines ending with a \ are joined with the next line.
+
 	SPECIAL	SECTIONS
 
 		PRE_FORMAT xxx.eft
