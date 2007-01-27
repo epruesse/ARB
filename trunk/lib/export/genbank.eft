@@ -1,15 +1,18 @@
-SUFFIX		GB
+SUFFIX		gb
 BEGIN
-LOCUS       *(name|tab(10))*(|sequence|len(.-)|crop(" ")|pretab(7)) bp ss-*(|sequence_type|upper|tab(5))           *(|sequence_type|upper) *(date:* *=*1)
-DEFINITION  *(full_name)
-ACCESSION   *(acc|extract_words("0123456789",4.0))
-SOURCE      *(source|crop(" "))
-  ORGANISM  *(full_name)
+*(|define(formatMeta, "split(\\\"[\\\",1)|split(\\\"|\\\",0)|crop(\\\" \\\")|dropempty|merge(\\\"\n\\\")|format(firsttab=0;tab=12;width=70;forcenl=\\\"\n\\\")"))\
+LOCUS       *(name|tab(10))*(|export_sequence|len(.-)|pretab(7)) bp ss-*(|sequence_type|upper|tab(5))           *(|sequence_type|upper) *(date:* *=*1)
+*(full_name|   do(formatMeta)|dropempty|srt("*=DEFINITION  *\n"))\
+ACCESSION   *(acc)
+*(source|      do(formatMeta)|dropempty|srt("*=SOURCE      *\n"))\
+*(tax|         do(formatMeta)|dropempty|srt("*=  ORGANISM  *\n"))\
 REFERENCE   1
-  AUTHORS   *(author|crop(" ")|format(firsttab=0;tab=12;width=70;"nl=|"))
-  TITLE     *(title|crop(" ")|format(firsttab=0;tab=12;width=70;"nl=|"))
-  JOURNAL   *(journal|crop(" ")|format(firsttab=0;tab=12;width=70;"nl=|"))
-COMMENT     *(strain|crop(" ")|format(firsttab=0;tab=12;width=70;"nl=|"))
+*(author|      do(formatMeta)|dropempty|srt("*=  AUTHORS   *\n"))\
+*(title|       do(formatMeta)|dropempty|srt("*=  TITLE     *\n"))\
+*(journal|     do(formatMeta)|dropempty|srt("*=  JOURNAL   *\n"))\
+*(pubmed_id|   do(formatMeta)|dropempty|srt("*=   PUBMED   *\n"))\
+*(medline_id|  do(formatMeta)|dropempty|srt("*=  MEDLINE   *\n"))\
+*(strain|      do(formatMeta)|dropempty|srt("*=COMMENT     *\n"))\
 ORIGIN
-*(|sequence|format_sequence(firsttab=12;tab=12;width=60;numleft;gap=10))
+*(|export_sequence|format_sequence(firsttab=12;tab=12;width=60;numleft;gap=10))
 //
