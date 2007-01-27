@@ -592,6 +592,9 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
 
                     awr->awar(AWAR_STATUS_ELAPSED)->write_string(buffer);
                 }
+                else if (gaugeValue == 0) { // restart timer
+                    aw_stg.last_start = time(0);
+                }
                 break;
             }
             case AW_STATUS_CMD_MESSAGE:
