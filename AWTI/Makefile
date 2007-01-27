@@ -34,12 +34,16 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/awt.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/inline.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/xml.hxx
 

@@ -75,6 +75,7 @@ ED4_cursor.o: ed4_awars.hxx
 ED4_cursor.o: ed4_class.hxx
 ED4_cursor.o: ed4_defs.hxx
 ED4_cursor.o: ed4_edit_string.hxx
+ED4_cursor.o: ed4_ProteinViewer.hxx
 ED4_cursor.o: ed4_search.hxx
 ED4_cursor.o: ed4_secedit.hxx
 ED4_cursor.o: ed4_tools.hxx
@@ -166,6 +167,7 @@ ED4_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/awt_map_key.hxx
+ED4_main.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/gde.hxx
@@ -175,6 +177,7 @@ ED4_manager.o: ed4_awars.hxx
 ED4_manager.o: ed4_class.hxx
 ED4_manager.o: ed4_defs.hxx
 ED4_manager.o: ed4_edit_string.hxx
+ED4_manager.o: ed4_ProteinViewer.hxx
 ED4_manager.o: ed4_search.hxx
 ED4_manager.o: ed4_tools.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -285,12 +288,15 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -321,6 +327,7 @@ ED4_root.o: ed4_class.hxx
 ED4_root.o: ed4_defs.hxx
 ED4_root.o: ed4_nds.hxx
 ED4_root.o: ed4_ProteinViewer.hxx
+ED4_root.o: ed4_RNA3D.hxx
 ED4_root.o: ed4_search.hxx
 ED4_root.o: ed4_secedit.hxx
 ED4_root.o: ed4_tools.hxx
@@ -391,6 +398,7 @@ ED4_terminal.o: ed4_class.hxx
 ED4_terminal.o: ed4_defs.hxx
 ED4_terminal.o: ed4_edit_string.hxx
 ED4_terminal.o: ed4_nds.hxx
+ED4_terminal.o: ed4_ProteinViewer.hxx
 ED4_terminal.o: ed4_search.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -414,6 +422,7 @@ ED4_text_terminals.o: ed4_defs.hxx
 ED4_text_terminals.o: ed4_edit_string.hxx
 ED4_text_terminals.o: ed4_nds.hxx
 ED4_text_terminals.o: ed4_protein_2nd_structure.hxx
+ED4_text_terminals.o: ed4_ProteinViewer.hxx
 ED4_text_terminals.o: ed4_search.hxx
 ED4_text_terminals.o: ed4_visualizeSAI.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -471,6 +480,7 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/awt.hxx
