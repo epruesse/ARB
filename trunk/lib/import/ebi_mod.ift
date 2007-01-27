@@ -74,11 +74,11 @@ MATCH	"FT */tissue_lib*"
 MATCH	"RX *"
 	SRT	"*_uids\=*&*=*2"	
 	TAG	"EBI"
-	WRITE	"medline"
+	WRITE	"medline_id"
 
 MATCH	"RP *"
 	TAG	"EBI"
-	WRITE	"gene_pos"
+	WRITE	"nuc_rp"
 
 MATCH	"FT *"
 	APPEND	"ebi_comment"
