@@ -223,7 +223,7 @@ file_type(filename)
 		sprintf(temp, "Cannot open file: %s. Exit.\n", filename);
 		error(5, temp);
 	}
-	rewind(fp);
+	/* rewind(fp); */
 	fscanf(fp, "%s", token);
 	if(Cmpstr(token, "LOCUS")==EQ)
 		return(GENBANK);
