@@ -8,16 +8,7 @@
 *		Init. paup data.
 */
 void init_paup() {
-
-	int	indi;
-/* 	void	Freespace(); */
-
-	for(indi=0; indi<data.paup.ntax; indi++)	{
-		Freespace(&(data.ids[indi]));
-		Freespace(&(data.seqs[indi]));
-	}
-	Freespace(&(data.ids));
-	Freespace(&(data.seqs));
+    free_sequence_data(data.paup.ntax);
 	data.paup.ntax = 0;
 	data.paup.nchar = 0;
 }
@@ -27,34 +18,26 @@ void init_paup() {
 */
 void
 to_paup(inf, outf, informat)
-char	*inf, *outf;
-int	informat;
+     char	*inf, *outf;
+     int	informat;
 {
-	FILE	*ifp, *ofp;
-	int	maxsize, current, total_seq, first_line;
-	int	out_of_memory, indi;
-/* 	int	alma_key_word(); */
-/* 	char	alma_in(), genbank_in_locus(); */
-/* 	char	macke_in_name(), embl_in_id(); */
-	char	temp[TOKENNUM], eof;
-	char	*name, *today;
-/* 	void	init(), init_paup(), init_seq_data(); */
-/* 	void	init_alma(), init_genbank(); */
-/* 	void	init_macke(), init_embl(); */
-/* 	void	paup_print_line(), to_paup_1x1(); */
-/* 	void	error(), Cpystr(); */
-/* 	void	genbank_key_word(), embl_key_word(); */
-/* 	void	paup_verify_name(), paup_print_header(); */
+	FILE	    *IFP, *ofp;
+    FILE_BUFFER  ifp;
+	int	         maxsize, current, total_seq, first_line;
+	int	         out_of_memory, indi;
+	char	     temp[TOKENNUM], eof;
+	char	    *name, *today;
 
-	if((ifp=fopen(inf, "r"))==NULL)	{
+	if((IFP=fopen(inf, "r"))==NULL)	{
 		sprintf(temp,
-		"Cannot open input file %s, exit\n", inf);
+                "Cannot open input file %s, exit\n", inf);
 		error(64, temp);
 	}
-	if(Lenstr(outf)<=0)	ofp = stdout;
+    ifp              = create_FILE_BUFFER(inf, IFP);
+	if(Lenstr(outf) <= 0)	ofp = stdout;
 	else if((ofp=fopen(outf, "w"))==NULL)	{
 		sprintf(temp,
-		"Cannot open output file %s, exit\n", outf);
+                "Cannot open output file %s, exit\n", outf);
 		error(65, temp);
 	}
 	maxsize = 1;
@@ -100,20 +83,12 @@ int	informat;
 			{ out_of_memory=1; break; }
 		paup_verify_name(&name);
 
-		if(data.seq_length>maxsize)
-			maxsize = data.seq_length;
-		data.ids=(char**)Reallocspace((char *)data.ids,
-			sizeof(char*)*total_seq);
+		if(data.seq_length>maxsize) maxsize = data.seq_length;
+        if (!realloc_sequence_data(total_seq)) { out_of_memory = 1; break; }
 
-		if(data.ids==NULL)	{ out_of_memory=1; break; }
-		data.seqs=(char**)Reallocspace((char *)data.seqs,
-			sizeof(char*)*total_seq);
-
-		if(data.seqs==NULL)	{ out_of_memory=1; break; }
-
-		data.ids[total_seq-1]=name;
-		data.seqs[total_seq-1]=(char*)Dupstr(data.sequence);
-
+        data.ids[total_seq-1]     = name;
+		data.seqs[total_seq-1]    = (char*)Dupstr(data.sequence);
+        data.lengths[total_seq-1] = Lenstr(data.sequence);
 	} while(!out_of_memory);
 
 	if(out_of_memory)	{
@@ -121,7 +96,7 @@ int	informat;
 		fprintf(stderr,
 	"Rerun the conversion throught one seq. by one seq. base.\n");
 
-		fclose(ifp); fclose(ofp);
+		destroy_FILE_BUFFER(ifp); fclose(ofp);
 		to_paup_1x1(inf, outf, informat);
 		return;
 	}
@@ -129,11 +104,8 @@ int	informat;
 	while(maxsize>current)	{
 		first_line = 0;
 		for(indi=0; indi<total_seq; indi++)	{
-			if(current<Lenstr(data.seqs[indi]))
-				first_line++;
-			paup_print_line(data.ids[indi],
-				data.seqs[indi], current,
-			 	(first_line==1), ofp);
+			if(current<data.lengths[indi]) first_line++;
+			paup_print_line(data.ids[indi], data.seqs[indi], data.lengths[indi], current, (first_line==1), ofp);
 
  			/* Avoid repeating */
 			if(first_line==1) first_line++;
@@ -165,7 +137,7 @@ int	informat;
 		"      NTAX = %6d\n      NCHAR = %6d\n      ;\n",
 			total_seq, maxsize);
 
-	fclose(ifp); fclose(ofp);
+	destroy_FILE_BUFFER(ifp); fclose(ofp);
 }
 /* ---------------------------------------------------------------
 *	Function to_paup_1x1()
@@ -174,24 +146,23 @@ int	informat;
 */
 void
 to_paup_1x1(inf, outf, informat)
-char	*inf, *outf;
-int	informat;
+     char	*inf, *outf;
+     int	informat;
 {
-	FILE	*ifp, *ofp;
-	int	maxsize, current, total_seq, first_line;
-/* 	int	alma_key_word(); */
-	char	temp[TOKENNUM], eof;
+	FILE	    *IFP, *ofp;
+    FILE_BUFFER  ifp;
+	int	         maxsize, current, total_seq, first_line;
+	char	     temp[TOKENNUM], eof;
 	char	*name, *today;
 
-	if((ifp=fopen(inf, "r"))==NULL)	{
-		sprintf(temp,
-			"Cannot open input file %s, exit\n", inf);
+	if((IFP=fopen(inf, "r"))==NULL)	{
+		sprintf(temp, "Cannot open input file %s, exit\n", inf);
 		error(121, temp);
 	}
-	if(Lenstr(outf)<=0)	ofp = stdout;
+    ifp              = create_FILE_BUFFER(inf, IFP);
+	if(Lenstr(outf) <= 0)	ofp = stdout;
 	else if((ofp=fopen(outf, "w"))==NULL)	{
-		sprintf(temp,
-			"Cannot open output file %s, exit\n", outf);
+		sprintf(temp, "Cannot open output file %s, exit\n", outf);
 		error(122, temp);
 	}
 	maxsize = 1; current = 0;
@@ -199,7 +170,7 @@ int	informat;
 	paup_print_header(ofp);
 	while(maxsize>current)	{
 		init();
-		rewind(ifp);
+		FILE_BUFFER_rewind(ifp);
 		total_seq = 0;
 		first_line = 0;
 		do	{	/* read in one sequence */
@@ -244,8 +215,7 @@ int	informat;
 
 			if(current<data.seq_length) first_line++;
 
-			paup_print_line(name, data.sequence, current,
-				(first_line==1), ofp);
+			paup_print_line(name, data.sequence, data.seq_length, current, (first_line==1), ofp);
 
 			/* Avoid repeating */
 			if(first_line==1) first_line++;
@@ -279,7 +249,7 @@ int	informat;
 	"      NTAX = %6d\n      NCHAR = %6d\n      ;\n",
 		total_seq, maxsize);
 
-	fclose(ifp); fclose(ofp);
+	destroy_FILE_BUFFER(ifp); fclose(ofp);
 }
 /* -----------------------------------------------------------
 *	Function paup_verify_name().
@@ -318,52 +288,46 @@ char	**string;
 	}
 }
 /* --------------------------------------------------------------
-*	Function paup_print_line().
-*		print paup file.
-*/
+ *	Function paup_print_line().
+ *		print paup file.
+ */
 void
-paup_print_line(string, sequence, index, first_line, fp)
-char	*string, *sequence;
-int	index, first_line;
-FILE	*fp;
+paup_print_line(string, sequence, seq_length, index, first_line, fp)
+     char *string, *sequence;
+     int   seq_length;
+     int   index, first_line;
+     FILE *fp;
 {
-	int	indi, indj, bnum, length, seq_length;
+    int indi, indj, length;
 
-	length = SEQLINE-10;
-	fprintf(fp, "      ");
-	if(Lenstr(string)>10)	{
-		/* truncate if length of seq ID is greater than 10 */
-		for(indi=0; indi<10; indi++)
-			fprintf(fp, "%c", string[indi]);
-		bnum = 1;
-	} else	{
-		fprintf(fp, "%s", string);
-		bnum = 10 - Lenstr(string)+1;
-	}
-	/* Print out blanks after sequence ID to make up 10 chars. */
-	seq_length = Lenstr(sequence);
+    length = SEQLINE-10;
 
-	if(index<seq_length)
-		for(indi=0; indi<bnum; indi++)
-			fprintf(fp, " ");
+    fputs("      ", fp);
+    /* truncate if length of seq ID is greater than 10 */
+    for(indi=0; indi<10 && string[indi]; indi++) fputc(string[indi], fp);
 
-	for(indi=indj=0; indi<length; indi++)	{
-		if((index+indi)<seq_length)	{
+    if (seq_length == 0) seq_length = Lenstr(sequence);
 
-			fprintf(fp, "%c", sequence[index+indi]);
-			indj++;
-			if(indj==10&&indi<(length-1)
-			&&(indi+index)<(seq_length-1)) {
-				fprintf(fp, " ");
-				indj=0;
-			}
-		} else break;
-	}
+    if (index<seq_length) {
+        for (; indi<11; indi++) fputc(' ', fp);
+
+        for (indi=indj=0; indi<length; indi++)	{
+            if ((index+indi)<seq_length) {
+                fputc(sequence[index+indi], fp);
+                indj++;
+                if(indj==10 && indi<(length-1) && (indi+index)<(seq_length-1)) {
+                    fputc(' ', fp);
+                    indj = 0;
+                }
+            }
+            else break;
+        }
+    }
 
 	if(first_line)
 		fprintf(fp, " [%d - %d]", index+1, (index+indi));
 
-	fprintf(fp, "\n");
+	fputc('\n', fp);
 }
 /* ----------------------------------------------------------
 *	Function paup_print_header().
