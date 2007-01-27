@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2000
 // Ralf Westram
-// Time-stamp: <Wed Dec/13/2006 19:05 MET Coder@ReallySoft.de>
+// Time-stamp: <Thu Dec/14/2006 18:31 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -25,7 +25,8 @@
 // --------------------------------------------------------------------------------
 // c-interface
 
-typedef void *FILE_BUFFER;
+struct ClassFileBuffer;
+typedef struct ClassFileBuffer *FILE_BUFFER;
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,8 +34,9 @@ extern "C" {
 
     FILE_BUFFER  create_FILE_BUFFER(const char *filename, FILE *in);
     void         destroy_FILE_BUFFER(FILE_BUFFER file_buffer);
-    const char  *FILE_BUFFER_read(FILE_BUFFER file_buffer);
+    const char  *FILE_BUFFER_read(FILE_BUFFER file_buffer, size_t *lengthPtr);
     void         FILE_BUFFER_back(FILE_BUFFER file_buffer, const char *backline);
+    void         FILE_BUFFER_rewind(FILE_BUFFER file_buffer);
 
 #ifdef __cplusplus
 }
@@ -54,7 +56,7 @@ extern "C" {
 #include <arb_assert.h>
 #endif
 
-#define gi_assert(cond) arb_assert(cond)
+#define fb_assert(cond) arb_assert(cond)
 
 using std::string;
 
@@ -75,8 +77,6 @@ private:
 
     void fillBuffer();
 
-    static inline bool is_EOL(char c) { return c == '\n' || c == '\r'; }
-
     bool getLine_intern(string& line);
 
 public:
@@ -84,14 +84,14 @@ public:
         filename = filename_;
         fp       = in;
 
-        arb_assert(fp);
+        fb_assert(fp);
         read = BUFFERSIZE;
         fillBuffer();
 
         next_line  = 0;
         lineNumber = 0;
     }
-    virtual ~FileBuffer() {
+    ~FileBuffer() {
         delete next_line;
         if (fp) fclose(fp);
     }
@@ -112,10 +112,12 @@ public:
     long getLineNumber() const { return lineNumber; }
 
     void backLine(const string& line) { // push line back
-        gi_assert(next_line==0);
+        fb_assert(next_line==0);
         next_line = new string(line);
         lineNumber--;
     }
+
+    void rewind();
 
     const string& getFilename() const { return filename; }
 
