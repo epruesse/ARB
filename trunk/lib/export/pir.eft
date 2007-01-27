@@ -1,5 +1,5 @@
 SUFFIX		pir
 BEGIN
->DL; *(name)	*(|sequence|len(.-)) bp		*(|sequence_type)
+>DL; *(name)	*(|export_sequence|len(.-)) bp		*(|sequence_type)
 *(full_name)
-*(|sequence|remove("*")|format_sequence(firsttab=0;tab=0;width=50))\*
+*(|export_sequence|remove("*")|format_sequence(firsttab=0;tab=0;width=50))\*
