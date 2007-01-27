@@ -56,6 +56,7 @@ GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/awt.hxx
