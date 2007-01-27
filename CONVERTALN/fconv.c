@@ -139,97 +139,100 @@ void convert(inf, outf, intype, outype)
 void
 init()	{
 
-/* initialize macke format */
-	data.macke.seqabbr=NULL;
-	data.macke.name=NULL;
-	data.macke.atcc=NULL;
-	data.macke.rna=NULL;
-	data.macke.date=NULL;
-	data.macke.nbk=NULL;
-	data.macke.acs=NULL;
-	data.macke.who=NULL;
-	data.macke.remarks=NULL;
-	data.macke.numofrem=0;
-	data.macke.rna_or_dna='d';
-	data.macke.journal=NULL;
-	data.macke.title=NULL;
-	data.macke.author=NULL;
-	data.macke.strain=NULL;
-	data.macke.subspecies=NULL;
-/* initialize gnebank format */
-	data.gbk.locus=NULL;
-	data.gbk.definition=NULL;
-	data.gbk.accession=NULL;
-	data.gbk.keywords=NULL;
-	data.gbk.source=NULL;
-	data.gbk.organism=NULL;
-	data.gbk.numofref=0;
-	data.gbk.reference=NULL;
-	data.gbk.comments.orginf.exist=0;
-	data.gbk.comments.orginf.source=NULL;
-	data.gbk.comments.orginf.cc=NULL;
-	data.gbk.comments.orginf.formname=NULL;
-	data.gbk.comments.orginf.nickname=NULL;
-	data.gbk.comments.orginf.commname=NULL;
-	data.gbk.comments.orginf.hostorg=NULL;
-	data.gbk.comments.seqinf.exist=0;
-	data.gbk.comments.seqinf.RDPid=NULL;
-	data.gbk.comments.seqinf.gbkentry=NULL;
-	data.gbk.comments.seqinf.methods=NULL;
-	data.gbk.comments.seqinf.comp5=' ';
-	data.gbk.comments.seqinf.comp3=' ';
-	data.gbk.comments.others=NULL;
-/* initialize paup format */
-	data.paup.ntax = 0;
-	data.paup.equate = "~=.|><";
-	data.paup.gap = '-';
-/* initial phylip data */
-/* initial embl data */
-	data.embl.id=NULL;
-	data.embl.dateu=NULL;
-	data.embl.datec=NULL;
-	data.embl.description=NULL;
-	data.embl.os=NULL;
-	data.embl.accession=NULL;
-	data.embl.keywords=NULL;
-	data.embl.dr=NULL;
-	data.embl.numofref=0;
-	data.embl.reference=NULL;
-	data.embl.comments.orginf.exist=0;
-	data.embl.comments.orginf.source=NULL;
-	data.embl.comments.orginf.cc=NULL;
-	data.embl.comments.orginf.formname=NULL;
-	data.embl.comments.orginf.nickname=NULL;
-	data.embl.comments.orginf.commname=NULL;
-	data.embl.comments.orginf.hostorg=NULL;
-	data.embl.comments.seqinf.exist=0;
-	data.embl.comments.seqinf.RDPid=NULL;
-	data.embl.comments.seqinf.gbkentry=NULL;
-	data.embl.comments.seqinf.methods=NULL;
-	data.embl.comments.seqinf.comp5=' ';
-	data.embl.comments.seqinf.comp3=' ';
-	data.embl.comments.others=NULL;
-/* initial alma data */
-	data.alma.id=NULL;
-	data.alma.filename=NULL;
-	data.alma.format=UNKNOWN;
-	data.alma.defgap='-';
-	data.alma.num_of_sequence=0;
-	data.alma.sequence=NULL;
-/* inital NBRF data format */
-	data.nbrf.id=NULL;
-	data.nbrf.description=NULL;
-/* initial sequence data */
-	data.numofseq = 0;
-	data.seq_length = 0;
-	data.max = INITSEQ;
-	data.sequence = (char*)calloc(1,(unsigned)(sizeof(char)*INITSEQ+1));
-	data.ids=NULL;
-	data.seqs=NULL;
+    /* initialize macke format */
+	data.macke.seqabbr                 = NULL;
+	data.macke.name                    = NULL;
+	data.macke.atcc                    = NULL;
+	data.macke.rna                     = NULL;
+	data.macke.date                    = NULL;
+	data.macke.nbk                     = NULL;
+	data.macke.acs                     = NULL;
+	data.macke.who                     = NULL;
+	data.macke.remarks                 = NULL;
+	data.macke.numofrem                = 0;
+	data.macke.rna_or_dna              = 'd';
+	data.macke.journal                 = NULL;
+	data.macke.title                   = NULL;
+	data.macke.author                  = NULL;
+	data.macke.strain                  = NULL;
+	data.macke.subspecies              = NULL;
+    /* initialize gnebank format */
+	data.gbk.locus                     = NULL;
+	data.gbk.definition                = NULL;
+	data.gbk.accession                 = NULL;
+	data.gbk.keywords                  = NULL;
+	data.gbk.source                    = NULL;
+	data.gbk.organism                  = NULL;
+	data.gbk.numofref                  = 0;
+	data.gbk.reference                 = NULL;
+	data.gbk.comments.orginf.exist     = 0;
+	data.gbk.comments.orginf.source    = NULL;
+	data.gbk.comments.orginf.cc        = NULL;
+	data.gbk.comments.orginf.formname  = NULL;
+	data.gbk.comments.orginf.nickname  = NULL;
+	data.gbk.comments.orginf.commname  = NULL;
+	data.gbk.comments.orginf.hostorg   = NULL;
+	data.gbk.comments.seqinf.exist     = 0;
+	data.gbk.comments.seqinf.RDPid     = NULL;
+	data.gbk.comments.seqinf.gbkentry  = NULL;
+	data.gbk.comments.seqinf.methods   = NULL;
+	data.gbk.comments.seqinf.comp5     = ' ';
+	data.gbk.comments.seqinf.comp3     = ' ';
+	data.gbk.comments.others           = NULL;
+    /* initialize paup format */
+	data.paup.ntax                     = 0;
+	data.paup.equate                   = "~=.|><";
+	data.paup.gap                      = '-';
+    /* initial phylip data */
+    /* initial embl data */
+	data.embl.id                       = NULL;
+	data.embl.dateu                    = NULL;
+	data.embl.datec                    = NULL;
+	data.embl.description              = NULL;
+	data.embl.os                       = NULL;
+	data.embl.accession                = NULL;
+	data.embl.keywords                 = NULL;
+	data.embl.dr                       = NULL;
+	data.embl.numofref                 = 0;
+	data.embl.reference                = NULL;
+	data.embl.comments.orginf.exist    = 0;
+	data.embl.comments.orginf.source   = NULL;
+	data.embl.comments.orginf.cc       = NULL;
+	data.embl.comments.orginf.formname = NULL;
+	data.embl.comments.orginf.nickname = NULL;
+	data.embl.comments.orginf.commname = NULL;
+	data.embl.comments.orginf.hostorg  = NULL;
+	data.embl.comments.seqinf.exist    = 0;
+	data.embl.comments.seqinf.RDPid    = NULL;
+	data.embl.comments.seqinf.gbkentry = NULL;
+	data.embl.comments.seqinf.methods  = NULL;
+	data.embl.comments.seqinf.comp5    = ' ';
+	data.embl.comments.seqinf.comp3    = ' ';
+	data.embl.comments.others          = NULL;
+    /* initial alma data */
+	data.alma.id                       = NULL;
+	data.alma.filename                 = NULL;
+	data.alma.format                   = UNKNOWN;
+	data.alma.defgap                   = '-';
+	data.alma.num_of_sequence          = 0;
+	data.alma.sequence                 = NULL;
+    /* inital NBRF data format */
+	data.nbrf.id                       = NULL;
+	data.nbrf.description              = NULL;
+    /* initial sequence data */
+	data.numofseq                      = 0;
+	data.seq_length                    = 0;
+	data.max                           = INITSEQ;
+	data.sequence                      = (char*)calloc(1,(unsigned)(sizeof(char)*INITSEQ+1));
+
+	data.ids       = NULL;
+	data.seqs      = NULL;
+	data.lengths   = NULL;
+    data.allocated = 0;
 }
 /* --------------------------------------------------------------
-*	Function init_seq_data().
-*		Init. seq. data.
+ *	Function init_seq_data().
+ *		Init. seq. data.
 */
 void
 init_seq_data()	{
