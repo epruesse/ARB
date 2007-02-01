@@ -2,7 +2,7 @@
 //                                                                  //
 //   File      : FileBuffer.cxx                                     //
 //   Purpose   :                                                    //
-//   Time-stamp: <Fri Dec/22/2006 17:16 MET Coder@ReallySoft.de>    //
+//   Time-stamp: <Thu Feb/01/2007 10:43 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in December 2006   //
 //   Institute of Microbiology (Technical University Munich)        //
@@ -89,7 +89,10 @@ string FileBuffer::lineError(const char *msg) {
         buffer    = (char*)malloc(allocated);
     }
 
-    int printed = sprintf(buffer, "while reading %s (line #%li):\n%s", filename.c_str(), lineNumber, msg);
+#if defined(DEBUG)
+    int printed =
+#endif // DEBUG
+        sprintf(buffer, "while reading %s (line #%li):\n%s", filename.c_str(), lineNumber, msg);
     fb_assert((size_t)printed < allocated);
 
     // return GBS_global_string("while reading %s (line #%li):\n%s", filename.c_str(), lineNumber, msg);
