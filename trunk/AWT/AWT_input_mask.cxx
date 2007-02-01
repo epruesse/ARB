@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Mon May/23/2005 20:00 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Feb/01/2007 11:05 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -1810,7 +1810,6 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
         bool          edit_reload = false;
         bool          edit_enable = true;
         bool          show_marked = true;
-        awt_item_type itemtype;
 
         string line;
         size_t err_pos = 0;     // 0 = unknown; string::npos = at end of line; else position+1;
@@ -1858,15 +1857,15 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
         // check data :
         if (!error) {
             if (title == "") title = string("Untitled (")+mask_name+")";
-            itemtype = AWT_getItemType(itemtypename);
+            awt_item_type itemtype = AWT_getItemType(itemtypename);
 
             if (itemtype == AWT_IT_UNKNOWN)         error = GBS_global_string("Unknown @ITEMTYPE '%s'", itemtypename.c_str());
             if (itemtype != sel->get_item_type())   error = GBS_global_string("Mask is designed for @ITEMTYPE '%s' (current @ITEMTYPE '%s')",
                                                                               itemtypename.c_str(), awt_itemtype_names[sel->get_item_type()]);
-        }
 
-        // create mask
-        if (!error) mask = new awt_input_mask(root, gb_main, mask_name, itemtype, local, sel, edit_enable);
+            // create mask
+            if (!error) mask = new awt_input_mask(root, gb_main, mask_name, itemtype, local, sel, edit_enable);
+        }
 
         // create window
         if (!error) {
