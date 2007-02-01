@@ -29,6 +29,20 @@ Software that is useful together with ARB:
 - xfig (+ fig2dev to print from xfig)
 - perl5
 
+
+Non-OPENGL version of ARB:
+--------------------------
+
+Instead of downloading arb.tgz, download arb_noOPENGL.tgz, rename it into arb.tgz.
+
+
+Libraries needed to run 32-bit ARB on 64-bit machine:
+-----------------------------------------------------
+(checked on OpenSuSE 10.2)
+
+- openmotif-libs-32bit + create link: cd /usr/lib; ln -s libXm.so.4 libXm.so.3  
+
+
 ================================================================================
 To build ARB from source
 ================================================================================
