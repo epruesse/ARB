@@ -3,8 +3,26 @@
 use strict;
 use warnings;
 
+my $debug_matching = 0;
+
 # ------------------------------------------------------------
-# first used/skipped match wins:
+# skipped_directories and files inside are never examined:
+
+my @skipped_directories = (
+                           qr/_GEN$/o,
+                           qr/_COM\/GEN[CH]$/o,
+                           qr/_COM\/O$/o,
+                           qr/\/.+\/bin$/o,
+                           qr/\/HELP_SOURCE\/Xml$/o,
+                           qr/\/PERL2ARB\/blib$/o,
+                           qr/^\.\/INCLUDE$/o,
+                           qr/^\.\/PERL5$/o,
+                           qr/^\.\/lib\/pts$/o,
+                           qr/^\.\/lib\/help$/o,
+                           qr/^\.\/lib\/help_html$/o,
+                          );
+
+# first used/skipped match wins (exception see @3 below)
 
 my %used_files = map { $_ => 1; } (
                                    'demo.arb',
@@ -58,96 +76,87 @@ my %skipped_extensions = map { $_ => 1; } (
                                           );
 
 
+# used_when_matches, skipped_when_matches and used_when_matchesFull are only tested,
+# if above filters did not match:
+
 my @used_when_matches = (
-                         qr/^arb_.*\.txt$/,
-                         qr/license/i,
-                         qr/disclaimer/i,
-                         qr/readme$/i,
-                         qr/unused.*source.*\.tgz$/i,
+                         qr/^arb_.*\.txt$/o,
+                         qr/license/io,
+                         qr/disclaimer/io,
+                         qr/readme$/io,
+                         qr/unused.*source.*\.tgz$/io,
                         );
 
 my @skipped_when_matches = (
-                            qr/^arbsrc.*\.lst$/,
-                            qr/^arbsrc.*\.tgz$/,
-                            qr/.*\.last_gcc$/,
+                            qr/^arbsrc.*\.lst$/o,
+                            qr/^arbsrc.*\.tgz$/o,
+                            qr/\#.*\#$/o,
+                            qr/.*\.last_gcc$/o,
                            );
 
 my @used_when_matchesFull = (
-                             qr/\/EISPACK\/rg\.html$/,
-                             qr/\/CLUSTALW\/.*$/,
-                             qr/\/HGL_SRC\/plot\.icon$/,
-                             qr/\/PHYLIP\/doc\//,
-                             qr/\/GDE\/.*\.html$/,
-                             qr/\/GDEHELP\/GDE.*/,
-                             qr/\/GDEHELP\/Makefile\.helpfiles/,
-                             qr/\/GDEHELP\/DATA_FILES/,
-                             qr/\/GDEHELP\/FASTA/,
-                             qr/\/GDEHELP\/HELP_PLAIN/,
-                             qr/\/HELP_SOURCE\/.*\.gif$/,
-                             qr/\/HELP_SOURCE\/oldhelp\/.*\.hlp$/,
-                             qr/\/HELP_SOURCE\/oldhelp\/.*\.(ps|pdf)\.gz$/,
-                             qr/\/TREEPUZZLE\/.*\.gif$/,
-                             qr/\/PERL2ARB\/.*\.html$/,
-                             qr/\/PERL2ARB\/typemap$/,
-                             qr/\/PROBE_SERVER\/.*\.conf$/,
-                             qr/\/READSEQ\/Formats$/,
-                             qr/\/READSEQ\/.*\.help$/,
-                             qr/\/SH\/[^\/\.]*$/,
-                             qr/\/SOURCE_TOOLS\//,
-                             qr/^\.\/etc\//,
-                             qr/^\.\/lib\/arb_tcp_org\.dat$/,
-                             qr/^\.\/lib\/config\.[^\.]+$/i,
-                             qr/^\.\/lib\/arb_default\/.*\.arb$/,
-                             qr/^\.\/lib\/export\/.*\.eft$/,
-                             qr/^\.\/lib\/import\/.*\.ift2?$/,
-                             qr/^\.\/lib\/inputMasks\/.*\.mask$/,
-                             qr/^\.\/lib\/macros\/.*\.amc$/,
-                             qr/^\.\/lib\/nas\/names\.dat\.template$/,
-                             qr/^\.\/lib\/pictures\/.*\.(fig|vfont)$/,
-                             qr/^\.\/lib\/pixmaps\/.*\.xpm$/,
-                             qr/^\.\/lib\/rna3d\/.*\.(pdb|data)$/,
-                             qr/^\.\/lib\/rna3d\/images\/.*\.png$/,
-                             qr/^\.\/lib\/sellists\/.*\.sellst$/,
-                             qr/^\.\/lib\/submit\//,
-                             qr/^\.\/util\/arb_.*$/,
-                             qr/^\.\/util\/config\..*$/,
+                             qr/\/EISPACK\/rg\.html$/o,
+                             qr/\/CLUSTALW\/.*$/o,
+                             qr/\/HGL_SRC\/plot\.icon$/o,
+                             qr/\/PHYLIP\/doc\//o,
+                             qr/\/GDE\/.*\.html$/o,
+                             qr/\/GDEHELP\/GDE.*/o,
+                             qr/\/GDEHELP\/Makefile\.helpfiles/o,
+                             qr/\/GDEHELP\/DATA_FILES/o,
+                             qr/\/GDEHELP\/FASTA/o,
+                             qr/\/GDEHELP\/HELP_PLAIN/o,
+                             qr/\/HELP_SOURCE\/.*\.gif$/o,
+                             qr/\/HELP_SOURCE\/oldhelp\/.*\.hlp$/o,
+                             qr/\/HELP_SOURCE\/oldhelp\/.*\.(ps|pdf)\.gz$/o,
+                             qr/\/TREEPUZZLE\/.*\.gif$/o,
+                             qr/\/PERL2ARB\/.*\.html$/o,
+                             qr/\/PERL2ARB\/typemap$/o,
+                             qr/\/PROBE_SERVER\/.*\.conf$/o,
+                             qr/\/READSEQ\/Formats$/o,
+                             qr/\/READSEQ\/.*\.help$/o,
+                             qr/\/SH\/[^\/\.]*$/o,
+                             qr/\/SOURCE_TOOLS\//o,
+                             qr/^\.\/etc\//o,
+                             qr/^\.\/lib\/arb_tcp_org\.dat$/o,
+                             qr/^\.\/lib\/config\.[^\.]+$/io,
+                             qr/^\.\/lib\/arb_default\/.*\.arb$/o,
+                             qr/^\.\/lib\/export\/.*\.eft$/o,
+                             qr/^\.\/lib\/import\/.*\.ift2?$/o,
+                             qr/^\.\/lib\/inputMasks\/.*\.mask$/o,
+                             qr/^\.\/lib\/macros\/.*\.amc$/o,
+                             qr/^\.\/lib\/nas\/names\.dat\.template$/o,
+                             qr/^\.\/lib\/pictures\/.*\.(fig|vfont)$/o,
+                             qr/^\.\/lib\/pixmaps\/.*\.xpm$/o,
+                             qr/^\.\/lib\/rna3d\/.*\.(pdb|data)$/o,
+                             qr/^\.\/lib\/rna3d\/images\/.*\.png$/o,
+                             qr/^\.\/lib\/sellists\/.*\.sellst$/o,
+                             qr/^\.\/lib\/submit\//o,
+                             qr/^\.\/util\/arb_.*$/o,
+                             qr/^\.\/util\/config\..*$/o,
                             );
 
-# skipped_when_matchesFull and forced_when_matchesFull are always tested!
+# skipped_when_matchesFull and forced_when_matchesFull are always tested! (@3)
+
 my @skipped_when_matchesFull = (
-                                qr/\/MOLPHY\/prot_tml\.h$/,
-                                qr/date\.xsl$/,
-                                qr/\/genhelp\/.*\.hlp$/,
-                                qr/^\.\/PERL2ARB\/.*\.h$/,
-                                qr/^\.\/PERL2ARB\/ARB\.xs$/,
-                                qr/^\.\/PERL2ARB\/ARB\.c$/,
-                                qr/^\.\/PERL2ARB\/ARB\.bs$/,
-                                qr/^\.\/PERL2ARB\/pm_to_blib$/,
-                                qr/^\.\/PERL2ARB\/Makefile$/,
-                                qr/^\.\/lib\/ARB\.pm$/,
-                                qr/^\.\/lib\/nas\/names\.dat$/,
-                                qr/^\.\/lib\/arb_tcp\.dat$/,
-                                qr/^\.\/arb.*\.tgz$/,
+                                qr/\/MOLPHY\/prot_tml\.h$/o,
+                                qr/date\.xsl$/o,
+                                qr/\/genhelp\/.*\.hlp$/o,
+                                qr/^\.\/PERL2ARB\/.*\.h$/o,
+                                qr/^\.\/PERL2ARB\/ARB\.xs$/o,
+                                qr/^\.\/PERL2ARB\/ARB\.c$/o,
+                                qr/^\.\/PERL2ARB\/ARB\.bs$/o,
+                                qr/^\.\/PERL2ARB\/pm_to_blib$/o,
+                                qr/^\.\/PERL2ARB\/Makefile$/o,
+                                qr/^\.\/lib\/ARB\.pm$/o,
+                                qr/^\.\/lib\/nas\/names\.dat$/o,
+                                qr/^\.\/lib\/arb_tcp\.dat$/o,
+                                qr/^\.\/arb.*\.tgz$/o,
                                );
 
 my @forced_when_matchesFull = (
-                               qr/\/PROBE_WEB\/SERVER\/.*\.jar$/,
-                               qr/\/lib\/addlibs\/.*$/,
+                               qr/\/PROBE_WEB\/SERVER\/.*\.jar$/o,
+                               qr/\/lib\/addlibs\/(lib.*|.*\.sh)$/o,
                               );
-
-my @skipped_directories = (
-                           qr/_GEN$/,
-                           qr/_COM\/GEN[CH]$/,
-                           qr/_COM\/O$/,
-                           qr/\/.+\/bin$/,
-                           qr/\/HELP_SOURCE\/Xml$/,
-                           qr/\/PERL2ARB\/blib$/,
-                           qr/^\.\/INCLUDE$/,
-                           qr/^\.\/PERL5$/,
-                           qr/^\.\/lib\/pts$/,
-                           qr/^\.\/lib\/help$/,
-                           qr/^\.\/lib\/help_html$/,
-                          );
 
 # ------------------------------------------------------------
 # sanity checks
@@ -171,6 +180,37 @@ sub useDir($) {
   return 1;
 }
 
+sub matchingExpr($\@) {
+  # return 0 if no regexp matched, return index+1 otherwise
+  my ($str,$regexp_arr_r) = @_;
+
+  my $regexps = scalar(@$regexp_arr_r);
+  for (my $r=0; $r<$regexps; $r++) {
+    my $reg = $$regexp_arr_r[$r];
+    if ($str =~ $reg) {
+      return $r+1;
+    }
+  }
+  return 0;
+}
+
+sub useIfMatching($\@\$) {
+  my ($str,$regexp_arr_r,$use_r) = @_;
+  my $matches = matchingExpr($str,@$regexp_arr_r);
+  if ($matches>0) {
+    if ($debug_matching!=0) { print "'$str' matches '".$$regexp_arr_r[$matches-1]."' => use!\n"; }
+    $$use_r = 1;
+  }
+}
+sub dontUseIfMatching($\@\$) {
+  my ($str,$regexp_arr_r,$use_r) = @_;
+  my $matches = matchingExpr($str,@$regexp_arr_r);
+  if ($matches>0) {
+    if ($debug_matching!=0) { print "'$str' matches '".$$regexp_arr_r[$matches-1]."' => dont use!\n"; }
+    $$use_r = 0;
+  }
+}
+
 sub useFile($$) {
   my ($dir,$file) = @_;
 
@@ -189,25 +229,18 @@ sub useFile($$) {
   }
 
   if (not defined $use) {
-    foreach (@used_when_matches) {
-      if ($file =~ $_) { $use = 1; }
-    }
+    useIfMatching($file,@used_when_matches, $use);
   }
 
   if (not defined $use) {
-    foreach (@skipped_when_matches) {
-      if ($file =~ $_) { $use = 0; }
-    }
+    dontUseIfMatching($file,@skipped_when_matches, $use);
   }
 
   my $full;
   if (not defined $use) {
     $full = $dir.'/'.$file;
 
-    foreach (@used_when_matchesFull) {
-      if ($full =~ $_) { $use = 1; }
-    }
-
+    useIfMatching($full,@used_when_matchesFull, $use);
     if (not defined $use) {
       if (-X $full and $hasExt==0) { $use = 0; } # exclude binaries by default (wrong for scripts)
     }
@@ -215,15 +248,12 @@ sub useFile($$) {
 
   if (not defined $use or $use==1) {
     if (not defined $full) { $full = $dir.'/'.$file; }
-    foreach (@skipped_when_matchesFull) {
-      if ($full =~ $_) { $use = 0; }
-    }
+
+    dontUseIfMatching($full,@skipped_when_matchesFull, $use);
   }
   if (not defined $use or $use==0) {
     if (not defined $full) { $full = $dir.'/'.$file; }
-    foreach (@forced_when_matchesFull) {
-      if ($full =~ $_) { $use = 1; }
-    }
+    useIfMatching($full,@forced_when_matchesFull, $use);
   }
 
   if (not defined $use) {
