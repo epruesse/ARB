@@ -40,5 +40,6 @@ install_lib() {
 
 DEST=/usr/lib
 
-install_lib libGLEW.so.1.2.4 libGLEW.so.1 $DEST
+install_lib libGLEW.so.1.3.5 libGLEW.so.1   $DEST
+install_lib libGLEW.so.1.3.5 libGLEW.so.1.3 $DEST # simply does 2nd symlink
 
