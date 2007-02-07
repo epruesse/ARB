@@ -234,9 +234,6 @@ void create_all_awars(AW_root *awr, AW_default def)
 
 void
 nt_exit(AW_window *aw_window){
-#ifdef DEBUG
-    exit(0);
-#endif
     AWUSE(aw_window);
     if (gb_main) {
         if (GB_read_clients(gb_main)>=0) {
@@ -248,12 +245,11 @@ nt_exit(AW_window *aw_window){
                     secs = GB_time_of_day() - secs;
                     if (secs>10){
                         sprintf(AW_ERROR_BUFFER,"You last saved your data %li:%li minutes ago\nSure to quit ?",secs/60,secs%60);
-                        if (aw_message(AW_ERROR_BUFFER,
-                                       "QUIT ARB,DO NOT QUIT")) return;
+                        if (aw_message(AW_ERROR_BUFFER, "QUIT ARB,DO NOT QUIT")) return;
                     }
-                }else{
-                    if (aw_message("You never saved any data\nSure to quit ???",
-                                   "QUIT ARB,DO NOT QUIT")) return;
+                }
+                else {
+                    if (aw_message("You never saved any data\nSure to quit ???", "QUIT ARB,DO NOT QUIT")) return;
                 }
             }
 #endif // NDEBUG
@@ -1708,7 +1704,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     int db_pathx;
 
     awm->get_at_position( &db_pathx, &first_liney);
-    awm->callback( AW_POPUP, (AW_CL)nt_exit, 0);
+    awm->callback(nt_exit);
     awm->help_text("quit.hlp");
     awm->button_length(0);
     awm->create_button("QUIT", "#quit.xpm");
