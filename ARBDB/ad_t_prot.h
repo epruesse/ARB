@@ -74,6 +74,8 @@ GBDATA *GBT_first_species P_((GBDATA *gb_main));
 GBDATA *GBT_next_species P_((GBDATA *gb_species));
 GBDATA *GBT_find_species_rel_species_data P_((GBDATA *gb_species_data, const char *name));
 GBDATA *GBT_find_species P_((GBDATA *gb_main, const char *name));
+void GBT_add_species_to_hash P_((GBDATA *gb_species, GB_HASH *species_hash));
+GB_HASH *GBT_create_species_hash P_((GBDATA *gb_main));
 GBDATA *GBT_first_marked_extended P_((GBDATA *gb_extended_data));
 GBDATA *GBT_next_marked_extended P_((GBDATA *gb_extended));
 GBDATA *GBT_first_SAI P_((GBDATA *gb_main));
