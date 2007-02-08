@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.c                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Thu Aug/17/2006 11:35 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Thu Feb/08/2007 12:44 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -337,10 +337,10 @@ GBDATA* GEN_next_marked_pseudo_species(GBDATA *gb_species) {
 /* ------------------------ */
 
 GB_BOOL GEN_is_organism(GBDATA *gb_species) {
+    gb_assert(GEN_is_genome_db(GB_get_root(gb_species), -1)); /* assert this is a genome db */
+    /* otherwise it is an error to use GEN_is_organism (or its callers)!!!! */
+    
     return GB_find(gb_species, GENOM_ALIGNMENT, 0, down_level) != 0;
-/*     return */
-/*         !GEN_is_pseudo_gene_species(gb_species) && */
-/*         GEN_find_gene_data(gb_species) != 0; // has gene_data */
 }
 
 GBDATA *GEN_find_organism(GBDATA *gb_main, const char *name) {
