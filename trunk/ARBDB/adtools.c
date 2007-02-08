@@ -2221,7 +2221,6 @@ int GBT_is_partial(GBDATA *gb_species, int default_value, int define_if_undef) {
     return result;
 }
 
-
 /********************************************************************************************
                     some simple find procedures
 ********************************************************************************************/
@@ -2278,8 +2277,34 @@ GBDATA *GBT_find_species(GBDATA *gb_main,const char *name)
     return GB_get_father(gb_species_name);
 }
 
+/* species hashes */
 
-GBDATA *GBT_first_marked_extended(GBDATA *gb_extended_data)
+void GBT_add_species_to_hash(GBDATA *gb_species, GB_HASH *species_hash) {
+    GBDATA     *gb_name = GB_find(gb_species, "name", 0, down_level);
+    const char *name;
+    
+    gb_assert(gb_name);
+    name = GB_read_char_pntr(gb_name);
+    GBS_write_hash(species_hash, name, (long)gb_species);
+}
+
+GB_HASH *GBT_create_species_hash(GBDATA *gb_main) {
+    GB_HASH *species_hash = GBS_create_hash(GBT_get_species_hash_size(gb_main), 1);
+    GBDATA  *gb_species;
+
+    for (gb_species = GBT_first_species(gb_main);
+         gb_species;
+         gb_species = GBT_next_species(gb_species))
+    {
+        GBT_add_species_to_hash(gb_species, species_hash);
+    }
+    
+    return species_hash;
+}
+
+/* ---- */
+
+    GBDATA *GBT_first_marked_extended(GBDATA *gb_extended_data)
 {
     GBDATA *gb_extended;
     for (   gb_extended = GB_find(gb_extended_data,"extended",0,down_level);
@@ -2993,7 +3018,7 @@ GB_ERROR GBT_rename_species(const char *oldname, const  char *newname, GB_BOOL i
     }
 
     if (!gb_species) {
-        return GB_export_error("No species named '%s' exists.",oldname);
+        return GB_export_error("Expected that a species named '%s' exists (maybe there are duplicate species, database might be corrupt)",oldname);
     }
 
     gb_name = GB_find(gb_species,"name",0,down_level);
