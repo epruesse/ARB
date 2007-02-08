@@ -73,6 +73,7 @@ my %skipped_extensions = map { $_ => 1; } (
                                            'jar',
                                            'stamp',
                                            'list',
+                                           'log',
                                           );
 
 
