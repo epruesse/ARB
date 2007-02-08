@@ -310,18 +310,13 @@ first_target:
 		@echo ''
 		@echo 'Internal maintainance:'
 		@echo ''
-		@echo ' release     - make tarfile + make save'
+		@echo ' release     - make tarfile + make save ("release_quick" to skip rebuild)'
 		@echo ' tarfile     - make rebuild and create arb version tarfile ("tarfile_quick" to skip rebuild)'
 #		@echo ' tarale      - compress emacs and ale lisp files int arb_ale.tar.gz'
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE'
 #		@echo ' savedepot   - save all extended ARB source (DEPOT2 subdir) into arbdepot_DATE.cpio.gz'
 		@echo ' rtc_patch   - create LIBLINK/libRTC8M.so (SOLARIS ONLY)'
 		@echo ' source_doc  - create doxygen documentation'
-ifeq ($(DEVELOPER), RELEASE)
-		@echo ' export      - make tarfiles and export to homepage'
-		@echo ' export_beta - make tarfiles and export to homepage (as beta version)'
-		@echo ' build       - make tarfiles in local dir'
-endif
 		@echo ''
 		@echo $(SEP)
 		@echo ''
@@ -1173,17 +1168,6 @@ tarfile_quick: all
 sourcetarfile: rmbak
 	util/arb_save
 
-build:
-	-rm arb.tgz arbsrc.tgz
-	$(MAKE) tarfile sourcetarfile
-
-export_beta: build
-	util/arb_export /beta
-
-export:
-	util/arb_export
-
-
 ifeq ($(DEBUG),1)
 BIN_TARGET=develall
 else
@@ -1306,7 +1290,13 @@ save: sourcetarfile
 savedepot: rmbak
 	util/arb_save_depot
 
-release: build
+release:
+	-rm arb.tgz arbsrc.tgz
+	$(MAKE) tarfile sourcetarfile
+
+release_quick:
+	-rm arb.tgz arbsrc.tgz
+	$(MAKE) tarfile_quick sourcetarfile
 
 # --------------------------------------------------------------------------------
 
