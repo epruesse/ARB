@@ -507,8 +507,9 @@ void MG_transfer_species_list(AW_window *aww)
     bool is_genome_db = GEN_is_genome_db(gb_merge, -1);
 
     GB_HASH   *error_suppressor     = GBS_create_hash(50, 1);
-    GB_HASH   *source_organism_hash = GEN_create_organism_hash(gb_merge);
-    GB_HASH   *dest_organism_hash   = GEN_create_organism_hash(gb_dest);
+    GB_HASH   *source_species_hash  = GBT_create_species_hash(gb_merge);
+    GB_HASH   *dest_species_hash    = GBT_create_species_hash(gb_dest);
+    GB_HASH   *source_organism_hash = is_genome_db ? GEN_create_organism_hash(gb_merge) : 0;
     MG_remaps  rm(gb_merge,gb_dest,aww->get_root());
 
     GBDATA *gb_species1;
@@ -526,8 +527,8 @@ void MG_transfer_species_list(AW_window *aww)
             if (!gb_name1) continue;    // no name what happened ???
 
             const char *name        = GB_read_char_pntr(gb_name1);
-            GBDATA     *gb_species2 = (GBDATA*)GBS_read_hash(dest_organism_hash, name);
-            if (gb_species2) error  = GB_delete(GB_get_father(gb_species2));
+            GBDATA     *gb_species2 = (GBDATA*)GBS_read_hash(dest_species_hash, name);
+            if (gb_species2) error  = GB_delete(gb_species2);
 
             if (!error) gb_species2           = GB_create_container(gb_dest_species_data,"species");
             if (!error) error                 = GB_copy(gb_species2,gb_species1);
@@ -535,15 +536,16 @@ void MG_transfer_species_list(AW_window *aww)
             if (!error) error                 = MG_transfer_sequence(&rm,gb_species1,gb_species2);
             if (error) break;
             GB_write_flag(gb_species2,1);
-            GBS_write_hash(dest_organism_hash, name, (long)gb_species2);
+            GBS_write_hash(dest_species_hash, name, (long)gb_species2);
             aw_status(++count/double(queried));
         }
     }
 
-    GBS_free_hash(dest_organism_hash);
-    GBS_free_hash(source_organism_hash);
+    GBS_free_hash(dest_species_hash);
+    GBS_free_hash(source_species_hash);
+    if (source_organism_hash) GBS_free_hash(source_organism_hash);
     GBS_free_hash(error_suppressor);
-    
+
     if (error) {
         GB_abort_transaction(gb_merge);
         GB_abort_transaction(gb_dest);
