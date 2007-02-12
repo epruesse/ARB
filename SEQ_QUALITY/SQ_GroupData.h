@@ -86,7 +86,8 @@ class Int
             }
             return *this;
         }
-        Int& operator= ( const Int& other )
+
+        Int& operator = ( const Int& other )
         {
             for ( int j = 0; j<I; ++j )
             {
@@ -108,7 +109,7 @@ class SQ_GroupData_Impl : public SQ_GroupData
 
         SQ_GroupData_Impl& operator= ( const SQ_GroupData_Impl& other )
         {
-           seq_assert ( other.size>0 && other.initialized );
+            seq_assert ( other.size>0 && other.initialized );
             if ( !initialized ) SQ_init_consensus ( other.size );
             seq_assert ( size==other.size );
             avg_bases = other.avg_bases;

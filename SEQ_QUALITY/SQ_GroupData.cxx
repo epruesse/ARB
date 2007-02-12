@@ -34,77 +34,92 @@ SQ_GroupData::~SQ_GroupData() { }
 double SQ_GroupData_RNA::SQ_calc_consensus_deviation ( const char *sequence ) const
 {
     double deviation = 0;
-    int current[6];
+    // int current[6];
 
     for ( int i = 0; i < size; i++ )
     {
-        for ( int k = 0; k < 6; k++ )
-        {
-            current[k] = 0;
-        }
+        int current[6] = { 0, 0, 0, 0, 0, 0};
+
         //fill up current with decoded iupac values
-        switch ( toupper ( sequence[i] ) )
+        switch ( sequence[i] )
         {
+            case 'a':
             case 'A':
                 current[0] = current[0] + 100;
                 break;
+            case 't':
             case 'T':
                 current[1] = current[1] + 100;
                 break;
+            case 'c':
             case 'C':
                 current[2] = current[2] + 100;
                 break;
+            case 'g':
             case 'G':
                 current[3] = current[3] + 100;
                 break;
+            case 'u':
             case 'U':
                 current[1] = current[1] + 100;
                 break;
+            case 'r':
             case 'R':
                 current[0] = current[0] + 50;
                 current[3] = current[3] + 50;
                 break;
+            case 'y':
             case 'Y':
                 current[2] = current[2] + 50;
                 current[1] = current[1] + 50;
                 break;
+            case 'm':
             case 'M':
                 current[0] = current[0] + 50;
                 current[2] = current[2] + 50;
                 break;
+            case 'k':
             case 'K':
                 current[3] = current[3] + 50;
                 current[1] = current[1] + 50;
                 break;
+            case 'w':
             case 'W':
                 current[0] = current[0] + 50;
                 current[1] = current[1] + 50;
                 break;
+            case 's':
             case 'S':
                 current[3] = current[3] + 50;
                 current[2] = current[2] + 50;
                 break;
+            case 'b':
             case 'B':
                 current[2] = current[2] + 33;
                 current[1] = current[1] + 33;
                 current[3] = current[3] + 33;
                 break;
+            case 'd':
             case 'D':
                 current[0] = current[0] + 33;
                 current[1] = current[1] + 33;
                 current[3] = current[3] + 33;
                 break;
+            case 'h':
             case 'H':
                 current[2] = current[2] + 33;
                 current[1] = current[1] + 33;
                 current[0] = current[0] + 33;
                 break;
+            case 'v':
             case 'V':
                 current[0] = current[0] + 33;
                 current[2] = current[2] + 33;
                 current[3] = current[3] + 33;
                 break;
+            case 'n':
             case 'N':
+            case 'x':
             case 'X':
                 current[2] = current[2] + 25;
                 current[1] = current[1] + 25;
@@ -125,16 +140,13 @@ double SQ_GroupData_RNA::SQ_calc_consensus_deviation ( const char *sequence ) co
 
         for ( int j = 0; j < 6; j++ )
         {
-            consensus[i].i[j] -= current[j];  //subtract actual value from consensus
-            if ( ( consensus[i].i[j] <= 0 ) && ( current[j] > 0 ) )
+            int currentj  = current[j];
+            if ( ( currentj > 0 ) && ( ( consensus[i].i[j] - currentj ) <= 0 ) )
             {
-                deviation += current[j];
+                deviation += currentj;
             }
-            consensus[i].i[j] += current[j];  //restore consensus
         }
-
     }
-
     deviation = deviation / size;  //set deviation in relation to sequencelength and percent
     return deviation;
 }
@@ -143,78 +155,92 @@ double SQ_GroupData_RNA::SQ_calc_consensus_deviation ( const char *sequence ) co
 double SQ_GroupData_RNA::SQ_calc_consensus_conformity ( const char *sequence ) const
 {
     double value = 0;
-    int sum = 0;
-    int current[6];
+    // int current[6];
 
     for ( int i = 0; i < size; i++ )
     {
-        for ( int k = 0; k < 6; k++ )
-        {
-            current[k] = 0;
-        }
+        int current[6] = { 0, 0, 0, 0, 0, 0};
+
         //fill up current with decoded iupac values
-        switch ( toupper ( sequence[i] ) )
+        switch ( sequence[i] )
         {
+            case 'a':
             case 'A':
                 current[0] = current[0] + 100;
                 break;
+            case 't':
             case 'T':
                 current[1] = current[1] + 100;
                 break;
+            case 'c':
             case 'C':
                 current[2] = current[2] + 100;
                 break;
+            case 'g':
             case 'G':
                 current[3] = current[3] + 100;
                 break;
+            case 'u':
             case 'U':
                 current[1] = current[1] + 100;
                 break;
+            case 'r':
             case 'R':
                 current[0] = current[0] + 50;
                 current[3] = current[3] + 50;
                 break;
+            case 'y':
             case 'Y':
                 current[2] = current[2] + 50;
                 current[1] = current[1] + 50;
                 break;
+            case 'm':
             case 'M':
                 current[0] = current[0] + 50;
                 current[2] = current[2] + 50;
                 break;
+            case 'k':
             case 'K':
                 current[3] = current[3] + 50;
                 current[1] = current[1] + 50;
                 break;
+            case 'w':
             case 'W':
                 current[0] = current[0] + 50;
                 current[1] = current[1] + 50;
                 break;
+            case 's':
             case 'S':
                 current[3] = current[3] + 50;
                 current[2] = current[2] + 50;
                 break;
+            case 'b':
             case 'B':
                 current[2] = current[2] + 33;
                 current[1] = current[1] + 33;
                 current[3] = current[3] + 33;
                 break;
+            case 'd':
             case 'D':
                 current[0] = current[0] + 33;
                 current[1] = current[1] + 33;
                 current[3] = current[3] + 33;
                 break;
+            case 'h':
             case 'H':
                 current[2] = current[2] + 33;
                 current[1] = current[1] + 33;
                 current[0] = current[0] + 33;
                 break;
+            case 'v':
             case 'V':
                 current[0] = current[0] + 33;
                 current[2] = current[2] + 33;
                 current[3] = current[3] + 33;
                 break;
+            case 'n':
             case 'N':
+            case 'x':
             case 'X':
                 current[2] = current[2] + 25;
                 current[1] = current[1] + 25;
@@ -233,23 +259,17 @@ double SQ_GroupData_RNA::SQ_calc_consensus_conformity ( const char *sequence ) c
 
         }//end fill up current
 
-        for ( int j = 0; j < 6; j++ )
-        {
-            consensus[i].i[j] -= current[j];  //subtract actual value from consensus
-            sum += consensus[i].i[j];
-        }
+        int* cs = consensus[i].i;
+        int sum = cs[0]+cs[1]+cs[2]+cs[3]+cs[4]+cs[5]; // some work for the compiler optimization...
 
         for ( int j = 0; j < 6; j++ )
         {
-            if ( ( consensus[i].i[j] > 0 ) && ( current[j] > 0 ) )
+            int currentj  = current[j];
+            if ( ( currentj > 0 ) && ( ( cs[j] - currentj ) > 0 ) )
             {
-                value += consensus[i].i[j] / sum;
+                value += ( cs[j] - currentj ) / sum;
             }
-            consensus[i].i[j] += current[j];  //restore consensus
         }
-
-        sum = 0;
-
     }
 
     value = value / size;  //set conformity in relation to sequencelength
@@ -262,79 +282,98 @@ void SQ_GroupData_RNA::SQ_add_sequence ( const char *sequence )
 
     for ( int i=0; i < size; i++ )
     {
-        switch ( toupper ( sequence[i] ) )
+        int* cs = consensus[i].i;
+
+        switch ( sequence[i] )
         {
+            case 'a':
             case 'A':
-                consensus[i].i[0] = consensus[i].i[0] + 100;
+                cs[0] = cs[0] + 100;
                 break;
+            case 't':
             case 'T':
-                consensus[i].i[1] = consensus[i].i[1] + 100;
+                cs[1] = cs[1] + 100;
                 break;
+            case 'c':
             case 'C':
-                consensus[i].i[2] = consensus[i].i[2] + 100;
+                cs[2] = cs[2] + 100;
                 break;
+            case 'g':
             case 'G':
-                consensus[i].i[3] = consensus[i].i[3] + 100;
+                cs[3] = cs[3] + 100;
                 break;
+            case 'u':
             case 'U':
-                consensus[i].i[1] = consensus[i].i[1] + 100;
+                cs[1] = cs[1] + 100;
                 break;
+            case 'r':
             case 'R':
-                consensus[i].i[0] = consensus[i].i[0] + 50;
-                consensus[i].i[3] = consensus[i].i[3] + 50;
+                cs[0] = cs[0] + 50;
+                cs[3] = cs[3] + 50;
                 break;
+            case 'y':
             case 'Y':
-                consensus[i].i[2] = consensus[i].i[2] + 50;
-                consensus[i].i[1] = consensus[i].i[1] + 50;
+                cs[2] = cs[2] + 50;
+                cs[1] = cs[1] + 50;
                 break;
+            case 'm':
             case 'M':
-                consensus[i].i[0] = consensus[i].i[0] + 50;
-                consensus[i].i[2] = consensus[i].i[2] + 50;
+                cs[0] = cs[0] + 50;
+                cs[2] = cs[2] + 50;
                 break;
+            case 'k':
             case 'K':
-                consensus[i].i[3] = consensus[i].i[3] + 50;
-                consensus[i].i[1] = consensus[i].i[1] + 50;
+                cs[3] = cs[3] + 50;
+                cs[1] = cs[1] + 50;
                 break;
+            case 'w':
             case 'W':
-                consensus[i].i[0] = consensus[i].i[0] + 50;
-                consensus[i].i[1] = consensus[i].i[1] + 50;
+                cs[0] = cs[0] + 50;
+                cs[1] = cs[1] + 50;
                 break;
+            case 's':
             case 'S':
-                consensus[i].i[3] = consensus[i].i[3] + 50;
-                consensus[i].i[2] = consensus[i].i[2] + 50;
+                cs[3] = cs[3] + 50;
+                cs[2] = cs[2] + 50;
                 break;
+            case 'b':
             case 'B':
-                consensus[i].i[2] = consensus[i].i[2] + 33;
-                consensus[i].i[1] = consensus[i].i[1] + 33;
-                consensus[i].i[3] = consensus[i].i[3] + 33;
+                cs[2] = cs[2] + 33;
+                cs[1] = cs[1] + 33;
+                cs[3] = cs[3] + 33;
                 break;
+            case 'd':
             case 'D':
-                consensus[i].i[0] = consensus[i].i[0] + 33;
-                consensus[i].i[1] = consensus[i].i[1] + 33;
-                consensus[i].i[3] = consensus[i].i[3] + 33;
+                cs[0] = cs[0] + 33;
+                cs[1] = cs[1] + 33;
+                cs[3] = cs[3] + 33;
                 break;
+            case 'h':
             case 'H':
-                consensus[i].i[2] = consensus[i].i[2] + 33;
-                consensus[i].i[1] = consensus[i].i[1] + 33;
-                consensus[i].i[0] = consensus[i].i[0] + 33;
+                cs[2] = cs[2] + 33;
+                cs[1] = cs[1] + 33;
+                cs[0] = cs[0] + 33;
                 break;
+            case 'v':
             case 'V':
-                consensus[i].i[0] = consensus[i].i[0] + 33;
-                consensus[i].i[2] = consensus[i].i[2] + 33;
-                consensus[i].i[3] = consensus[i].i[3] + 33;
+                cs[0] = cs[0] + 33;
+                cs[2] = cs[2] + 33;
+                cs[3] = cs[3] + 33;
                 break;
+            case 'n':
             case 'N':
+            case 'x':
             case 'X':
-                consensus[i].i[2] = consensus[i].i[2] + 25;
-                consensus[i].i[1] = consensus[i].i[1] + 25;
-                consensus[i].i[0] = consensus[i].i[0] + 25;
-                consensus[i].i[3] = consensus[i].i[3] + 25;
+                cs[2] = cs[2] + 25;
+                cs[1] = cs[1] + 25;
+                cs[0] = cs[0] + 25;
+                cs[3] = cs[3] + 25;
                 break;
             case '.':
-                consensus[i].i[4] = consensus[i].i[4] + 1;
+                cs[4] = cs[4] + 1;
                 break;
             case '-':
-                consensus[i].i[5] = consensus[i].i[5] + 1;
+                cs[5] = cs[5] + 1;
                 break;
             default :
                 fprintf ( stderr, "Illegal character '%c'", sequence[i] );
@@ -345,17 +384,22 @@ void SQ_GroupData_RNA::SQ_add_sequence ( const char *sequence )
 }
 
 
-double SQ_GroupData_PRO::SQ_calc_consensus_deviation ( const char *sequence ) const
+// double SQ_GroupData_PRO::SQ_calc_consensus_deviation ( const char *sequence ) const
+double SQ_GroupData_PRO::SQ_calc_consensus_deviation ( const char * ) const
 {
 #warning implementation missing
+    return 0; // dummy return value
 }
 
-double SQ_GroupData_PRO::SQ_calc_consensus_conformity ( const char *sequence ) const
+// double SQ_GroupData_PRO::SQ_calc_consensus_conformity ( const char *sequence ) const
+double SQ_GroupData_PRO::SQ_calc_consensus_conformity ( const char * ) const
 {
 #warning implementation missing
+    return 0; // dummy return value
 }
 
-void SQ_GroupData_PRO::SQ_add_sequence ( const char *sequence )
+// void SQ_GroupData_PRO::SQ_add_sequence ( const char *sequence )
+void SQ_GroupData_PRO::SQ_add_sequence ( const char * )
 {
 #warning implementation missing
 }
