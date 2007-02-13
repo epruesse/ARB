@@ -1143,7 +1143,6 @@ gde:		GDE/GDE.dummy
 GDE:		gde
 agde: 		ARB_GDE/ARB_GDE.dummy
 tools:		TOOLS/TOOLS.dummy
-chip:		CHIP/CHIP.dummy
 nf77:		NIELS_F77/NIELS_F77.dummy
 trs:		TRS/TRS.dummy
 convert:	CONVERTALN/CONVERTALN.dummy
@@ -1313,7 +1312,7 @@ arbshared: dball aw dp awt
 arbapplications: nt pa ed e4 we pt na al nal di ph ds trs pgt
 
 # optionally things (no real harm for ARB if any of them fails):
-arbxtras: tg ps pc pst chip a3
+arbxtras: tg ps pc pst a3
 
 tryxtras:
 		@echo $(SEP)
