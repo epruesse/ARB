@@ -74,25 +74,22 @@ class Int
 
         Int()
         {
-            for ( int j=0; j<I; ++j )
-                i[j] = 0;
+            memset ( i, 0, I*sizeof ( int ) );
         }
 
         Int& operator += ( const Int& other )
         {
+            const int *otheri = other.i;
             for ( int j = 0; j<I; ++j )
             {
-                i[j] += other.i[j];
+                i[j] += otheri[j];
             }
             return *this;
         }
 
         Int& operator = ( const Int& other )
         {
-            for ( int j = 0; j<I; ++j )
-            {
-                i[j] = other.i[j];
-            }
+            memcpy ( i, other.i, I*sizeof ( int ) );
             return *this;
         }
 };
@@ -104,7 +101,11 @@ class SQ_GroupData_Impl : public SQ_GroupData
         SQ_GroupData_Impl ( const SQ_GroupData_Impl& other );
 
     public:
-        SQ_GroupData_Impl() { consensus = 0; }
+        SQ_GroupData_Impl()
+        {
+            consensus = 0;
+        }
+
         virtual ~SQ_GroupData_Impl();
 
         SQ_GroupData_Impl& operator= ( const SQ_GroupData_Impl& other )
@@ -137,7 +138,7 @@ class SQ_GroupData_RNA: public SQ_GroupData_Impl<6>
 
         SQ_GroupData_RNA ( const SQ_GroupData_RNA& other );         // copying not allowed
     public:
-        SQ_GroupData_RNA() {}
+        SQ_GroupData_RNA();
 
         SQ_GroupData_RNA *clone() const { return new SQ_GroupData_RNA; }
         SQ_GroupData_RNA& operator= ( const SQ_GroupData& other )
@@ -148,6 +149,11 @@ class SQ_GroupData_RNA: public SQ_GroupData_Impl<6>
         double SQ_calc_consensus_deviation ( const char *sequence ) const;
         double SQ_calc_consensus_conformity ( const char *sequence ) const;
         void   SQ_add_sequence ( const char *sequence );
+
+        void SQ_init_iupacmatrix();
+    protected:
+        static int **m_iupacmatrix;
+        static int *m_iupacsum;
 };
 
 
