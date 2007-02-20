@@ -528,15 +528,21 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
         {
             GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
             if (gb_name) {
-                const char *name = GB_read_char_pntr(gb_name);
-                if (GBS_read_hash(species_name_hash, name) != 0) {
-                    error = GBS_global_string("Species name '%s' used twice -- database corrupt", name);
+                const char *name  = GB_read_char_pntr(gb_name);
+                long        occur = GBS_read_hash(species_name_hash, name);
+                
+                if (occur>0) {
+                    GB_ERROR prevError = error;
+
+                    error                = GBS_global_string("Detected %li. occurrance of species name '%s'", occur+1, name);
+                    if (prevError) error = GBS_global_string("%s\n%s", prevError, error);
+                    else error           = GBS_global_string("Your database is corrupted!\n%s", error);
                 }
-                else {
-                    GBS_write_hash(species_name_hash, name, 1);
-                }
+                GBS_write_hash(species_name_hash, name, occur+1);
             }
         }
+
+        if (error) error = GBS_global_string("%s\nRename single duplicates manually, delete unwanted instances, save and restart ARB.", error);
     }
 
     if (!error) {
