@@ -205,7 +205,7 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled)
 
     awm->insert_menu_topic("quit","Quit",               "Q","quit.hlp", AWM_ALL, MG_exit, 0, 0 );
     if (save_enabled) {
-        awm->insert_menu_topic("quit","Quit & Start DB II", "S","quit.hlp", AWM_ALL, MG_exit, 1, 0 );
+        awm->insert_menu_topic("quit","Quit & Start DB II", "D","quit.hlp", AWM_ALL, MG_exit, 1, 0 );
     }
 
     awm->insert_menu_topic("save_props","Save properties (to ~/.arb_prop/ntree.arb)",               "p","savedef.hlp",  AWM_ALL,      (AW_CB)AW_save_defaults, 0, 0 );
