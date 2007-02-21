@@ -3,7 +3,7 @@
 //    File      : MG_gene_species.cxx                                    //
 //    Purpose   : Transfer fields from organism and gene when            //
 //                tranferring gene species                               //
-//    Time-stamp: <Thu Aug/17/2006 20:38 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Feb/21/2007 13:26 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2002             //
@@ -189,8 +189,10 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
     int      export_fields = aw_root->awar(AWAR_MERGE_GENE_SPECIES_CREATE_FIELDS)->read_int();
 
     if (export_fields) { // should fields be exported ?
-        char    *existing_definitions = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->read_string();
-        char    *start                = existing_definitions+1;
+        mg_assert(GEN_is_pseudo_gene_species(gb_source));
+        
+        char *existing_definitions = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->read_string();
+        char *start                = existing_definitions+1;
 
         mg_assert(existing_definitions[0] == ';');
 
