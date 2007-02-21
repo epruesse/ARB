@@ -451,6 +451,8 @@ void MG_transfer_selected_species(AW_window *aww) {
     GB_begin_transaction(gb_merge);
     GB_begin_transaction(gb_dest);
 
+    bool is_genome_db = GEN_is_genome_db(gb_merge, -1);
+
     GBDATA *gb_species_data1 = GB_search(gb_merge,"species_data",GB_CREATE_CONTAINER);
     GBDATA *gb_species_data2 = GB_search(gb_dest,"species_data",GB_CREATE_CONTAINER);
 
@@ -470,7 +472,9 @@ void MG_transfer_selected_species(AW_window *aww) {
     }
     if (!error) {
         error = GB_copy(gb_species2,gb_species1);
-        if (!error) error = MG_export_fields(aww->get_root(), gb_species1, gb_species2, 0, 0);
+        if (!error && is_genome_db && GEN_is_pseudo_gene_species(gb_species1)) {
+            error = MG_export_fields(aww->get_root(), gb_species1, gb_species2, 0, 0);
+        }
         GB_write_flag(gb_species2,1);
     }
     if (!error) {       // align sequence !!!!!!!!!
@@ -530,11 +534,16 @@ void MG_transfer_species_list(AW_window *aww)
             GBDATA     *gb_species2 = (GBDATA*)GBS_read_hash(dest_species_hash, name);
             if (gb_species2) error  = GB_delete(gb_species2);
 
-            if (!error) gb_species2           = GB_create_container(gb_dest_species_data,"species");
-            if (!error) error                 = GB_copy(gb_species2,gb_species1);
-            if (!error && is_genome_db) error = MG_export_fields(aww->get_root(), gb_species1, gb_species2, error_suppressor, source_organism_hash);
-            if (!error) error                 = MG_transfer_sequence(&rm,gb_species1,gb_species2);
+            if (!error) gb_species2 = GB_create_container(gb_dest_species_data,"species");
+            if (!error) error       = GB_copy(gb_species2,gb_species1);
+
+            if (!error && is_genome_db && GEN_is_pseudo_gene_species(gb_species1)) {
+                error = MG_export_fields(aww->get_root(), gb_species1, gb_species2, error_suppressor, source_organism_hash);
+            }
+
+            if (!error) error = MG_transfer_sequence(&rm,gb_species1,gb_species2);
             if (error) break;
+            
             GB_write_flag(gb_species2,1);
             GBS_write_hash(dest_species_hash, name, (long)gb_species2);
             aw_status(++count/double(queried));
