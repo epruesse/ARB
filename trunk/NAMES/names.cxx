@@ -570,6 +570,8 @@ extern "C" int del_short(AN_local *locs)
     return removed;
 }
 
+static GB_HASH *nameModHash = 0; // key = default name; value = max. counter tested
+
 extern "C" aisc_string get_short(AN_local *locs)
 /* get the short name from the previously set names */
 {
@@ -686,22 +688,73 @@ extern "C" aisc_string get_short(AN_local *locs)
 
         char test_short[9];
         sprintf(test_short,"%s%s", first_short, second_short);
+        
+        gb_assert(size_t(both_len) == strlen(test_short));
+        gb_assert(second_len>=5 && second_len <= 8);
 
         if (lookup_an_revers(aisc_main, test_short)) {
-            int count;
+            if (!nameModHash) nameModHash = GBS_create_hash(1000, 1);
 
-            gb_assert(second_len>=5 && second_len <= 8);
-            second_short[second_len-1] = 0;
-            for (count = 2; count <99999; count++) {
-                if      (count==10)    second_short[second_len-2] = 0;
-                else if (count==100)   second_short[second_len-3] = 0;
-                else if (count==1000)  second_short[second_len-4] = 0;
-                else if (count==10000) second_short[second_len-5] = 0;
+            char *test_short_dup = strdup(test_short);
+            long  count          = GBS_read_hash(nameModHash, test_short);
+            if (count<2) count   = 2; // first name modification uses number 2
 
-                int printed = sprintf(test_short,"%s%s%i",first_short, second_short, count);
-                gb_assert(printed == 8);
-                if (!lookup_an_revers(aisc_main, test_short)) break;
+            int  printOffset = both_len;
+            bool foundUnused = false;
+
+            // first create alternate name with digits only
+            {
+                int digLimit[6] = { 0, 9, 99, 999, 9999, 99999 };
+                for (int digits = 1; !foundUnused && digits <= 5; ++digits) {
+                    int maxOffset = 8-digits;
+                    int limit     = digLimit[digits];
+
+                    if (printOffset>maxOffset) printOffset = maxOffset;
+                
+                    char *printAt = test_short+printOffset;
+
+                    for (; !foundUnused && count <= limit; ++count) {
+                        int printed = sprintf(printAt, "%li", count);
+                        gb_assert((printed+printOffset) <= 8);
+                        if (!lookup_an_revers(aisc_main, test_short)) foundUnused = true; // name does not exist
+                    }
+                }
             }
+
+            // if no unused name found, create one with alpha-chars
+            if (!foundUnused) {
+                strcpy(test_short, test_short_dup);
+
+                long        count2  = count-100000; // 100000 numbers were used above
+                char       *printAt = test_short+3;
+                const char *base36  = "0123456789abcdefghijklmnopqrstuvwxyz";
+
+                printAt[5] = 0;
+
+                for (; !foundUnused && count2<16796160; ++count2) { // 16796160 = 36^4*10
+                    // now print count2 converted to base 36
+
+                    int c = count2;
+                    for (int pos = 0; pos<5; ++pos) {
+                        int nextc = c/36;
+                        int rest  = c-36*nextc;
+
+                        printAt[4-pos] = base36[rest];
+                        c              = nextc;
+
+                        gb_assert(pos != 4 || c == 0);
+                    }
+
+                    if (!lookup_an_revers(aisc_main, test_short)) foundUnused = true; // name does not exist
+                }
+
+                count = count2+100000;
+            }
+
+            gb_assert(foundUnused);
+            GBS_write_hash(nameModHash, test_short_dup, count);
+
+            free(test_short_dup);
         }
 
         assert_alnum(test_short);
@@ -789,7 +842,7 @@ static void check_for_case_error(AN_main *main) {
         AN_shorts *next  = shrt->next;
         AN_shorts *found = an_find_shrt(main->shorts1, shrt->shrt);
         if (found != shrt) {
-            fprintf(stderr, "- Correcting case-error in name-database: '%s' equals '%s'\n",
+            fprintf(stderr, "- Correcting error in name-database: '%s' equals '%s'\n",
                     found->shrt, shrt->shrt);
             an_remove_short(shrt);
             case_error_occurred = true;
@@ -803,7 +856,7 @@ static void check_for_case_error(AN_main *main) {
         AN_revers *found = lookup_an_revers(main, shrt->shrt);
 
         if (found && (shrt->acc && found->acc && an_stricmp(shrt->acc, found->acc) != 0)) {
-            fprintf(stderr, "- Correcting case-error in name-database: '%s' equals '%s' (but acc differs)\n",
+            fprintf(stderr, "- Correcting error in name-database: '%s' equals '%s' (but acc differs)\n",
                     found->mh.ident, shrt->shrt);
 
             an_remove_short(shrt);
@@ -821,7 +874,7 @@ static void check_for_case_error(AN_main *main) {
                 idents_changed++;
             }
             else if (self_find != shrt) {
-                fprintf(stderr, "- Correcting case-error in name-database: '%s' equals '%s' (case-difference in full_name or acc)\n",
+                fprintf(stderr, "- Correcting error in name-database: '%s' equals '%s' (case-difference in full_name or acc)\n",
                         shrt->mh.ident, self_find->mh.ident);
                 an_remove_short(shrt);
                 case_error_occurred = true;
@@ -948,12 +1001,12 @@ static GB_ERROR server_load(AN_main *main)
         }
 
         int namesDBversion   = main->dbversion; // saved version
-        int currentDBversion = 2; 
+        int currentDBversion = 3; // current nameserver db version
         fprintf(stderr, "* NAMEDB v%i (%li names)\n", namesDBversion, nameCount);
 
         if (namesDBversion < currentDBversion) {
-            if (namesDBversion<2) {
-                fprintf(stderr, "* Checking for case-errors\n");
+            if (namesDBversion<3) {
+                fprintf(stderr, "* Checking for case-errors and duplicated names.\n");
                 check_for_case_error(main);
             }
 
