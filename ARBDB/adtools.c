@@ -1395,7 +1395,7 @@ GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, GBDATA *gb_main, GB_BO
     struct link_tree_data  ltd;
 
     ltd.species_hash = species_hash;
-    ltd.seen_species = GBS_create_hash(GBT_get_species_hash_size(gb_main),1);
+    ltd.seen_species = GBS_create_hash(2*GBT_get_species_hash_size(gb_main),1);
     ltd.zombies      = 0;
     ltd.duplicates   = 0;
     ltd.counter      = 0;
