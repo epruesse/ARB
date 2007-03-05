@@ -106,7 +106,6 @@ static void sq_calc_seq_quality_cb ( AW_window *aww )
 
     if ( !error )
     {
-
         struct SQ_weights weights;
 
         weights.bases             = aw_root->awar ( AWAR_SQ_WEIGHT_BASES )->read_int();

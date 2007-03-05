@@ -63,15 +63,13 @@ int SQ_physical_layout::roundme ( double value )
 
 void SQ_physical_layout::SQ_calc_physical_layout ( const char *sequence, int size, GBDATA *gb_quality )
 {
-    char c;
     count_bases = size;
 
     for ( int i = 0; i < size; i++ )
     {
-        c = sequence[i];
-        switch ( c )
+        switch ( sequence[i] )
         {
-            case '-':            /*claculate number of dots and spaces*/
+            case '-':            /*calculate number of dots and spaces*/
                 count_bases--;
                 count_scores++;
                 break;
@@ -79,10 +77,12 @@ void SQ_physical_layout::SQ_calc_physical_layout ( const char *sequence, int siz
                 count_bases--;
                 count_dots++;
                 break;
-            case 'G':            /*claculate GC layout of sequence*/
+            case 'G':            /*calculate GC layout of sequence*/
+            case 'g':
                 GC++;
                 break;
             case 'C':
+            case 'c':
                 GC++;
                 break;
         }
