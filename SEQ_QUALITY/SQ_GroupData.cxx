@@ -12,9 +12,11 @@
 //                                                                       //
 //  ==================================================================== //
 
+
 #include <cstdio>
 #include <cctype>
 #include "SQ_GroupData.h"
+
 
 using namespace std;
 
@@ -40,7 +42,9 @@ SQ_GroupData_RNA::SQ_GroupData_RNA()
 int **SQ_GroupData_RNA::m_iupacmatrix = NULL;
 int *SQ_GroupData_RNA::m_iupacsum =   NULL;
 
+
 // TODO: Counter, wann m_iupacmatrix im Destruktor freigegeben werden kann!?
+
 
 void SQ_GroupData_RNA::SQ_init_iupacmatrix()
 {

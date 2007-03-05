@@ -12,6 +12,7 @@
 //                                                                       //
 //  ==================================================================== //
 
+
 #ifndef SQ_GROUPDATA_H
 #define SQ_GROUPDATA_H
 
@@ -135,7 +136,6 @@ class SQ_GroupData_Impl : public SQ_GroupData
 
 class SQ_GroupData_RNA: public SQ_GroupData_Impl<6>
 {
-
         SQ_GroupData_RNA ( const SQ_GroupData_RNA& other );         // copying not allowed
     public:
         SQ_GroupData_RNA();
@@ -159,7 +159,6 @@ class SQ_GroupData_RNA: public SQ_GroupData_Impl<6>
 
 class SQ_GroupData_PRO: public SQ_GroupData_Impl<20>
 {
-
         SQ_GroupData_PRO ( const SQ_GroupData_PRO& other );         // copying not allowed
     public:
         SQ_GroupData_PRO() {}
@@ -176,17 +175,16 @@ class SQ_GroupData_PRO: public SQ_GroupData_Impl<20>
 };
 
 
-
 // -----------------------
 //      implementation
 // -----------------------
+
 
 template <int I>
 SQ_GroupData_Impl<I>::~SQ_GroupData_Impl()
 {
     delete [] consensus;
 }
-
 
 
 template <int I>
@@ -198,6 +196,7 @@ void SQ_GroupData_Impl<I>::SQ_init_consensus ( int size_ )
     consensus   = new Int<I>[size];
     initialized = true;
 }
+
 
 template <int I>
 void SQ_GroupData_Impl<I>::SQ_add ( const SQ_GroupData& other_base )
@@ -213,6 +212,7 @@ void SQ_GroupData_Impl<I>::SQ_add ( const SQ_GroupData& other_base )
     gc_prop += other.gc_prop;
 }
 
+
 template <int I>
 int SQ_GroupData_Impl<I>::SQ_print_on_screen()
 {
@@ -225,7 +225,6 @@ int SQ_GroupData_Impl<I>::SQ_print_on_screen()
     }
     return ( 0 );
 }
-
 
 #else
 #error SQ_GroupData.h included twice

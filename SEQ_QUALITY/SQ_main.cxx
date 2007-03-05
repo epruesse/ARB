@@ -12,6 +12,7 @@
 //                                                                       //
 //  ==================================================================== //
 
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -48,70 +49,76 @@ extern GBDATA *gb_main;
 #define AWAR_SQ_REEVALUATE AWAR_SQ_PERM "reevaluate"
 
 
-void SQ_create_awars(AW_root *aw_root, AW_default aw_def) {
+void SQ_create_awars ( AW_root *aw_root, AW_default aw_def )
+{
     {
-        char *default_tree = aw_root->awar(AWAR_TREE)->read_string();
-        aw_root->awar_string(AWAR_SQ_TREE, default_tree, aw_def);
-        free(default_tree);
+        char *default_tree = aw_root->awar ( AWAR_TREE )->read_string();
+        aw_root->awar_string ( AWAR_SQ_TREE, default_tree, aw_def );
+        free ( default_tree );
     }
-    aw_root->awar_int(AWAR_SQ_WEIGHT_BASES, 5, aw_def);
-    aw_root->awar_int(AWAR_SQ_WEIGHT_DEVIATION, 15, aw_def);
-    aw_root->awar_int(AWAR_SQ_WEIGHT_HELIX, 15, aw_def);
-    aw_root->awar_int(AWAR_SQ_WEIGHT_CONSENSUS, 50, aw_def);
-    aw_root->awar_int(AWAR_SQ_WEIGHT_IUPAC, 5, aw_def);
-    aw_root->awar_int(AWAR_SQ_WEIGHT_GC, 10, aw_def);
-    aw_root->awar_int(AWAR_SQ_MARK_FLAG, 1, aw_def);
-    aw_root->awar_int(AWAR_SQ_MARK_BELOW, 40, aw_def);
-    aw_root->awar_int(AWAR_SQ_REEVALUATE, 0, aw_def);
+    aw_root->awar_int ( AWAR_SQ_WEIGHT_BASES, 5, aw_def );
+    aw_root->awar_int ( AWAR_SQ_WEIGHT_DEVIATION, 15, aw_def );
+    aw_root->awar_int ( AWAR_SQ_WEIGHT_HELIX, 15, aw_def );
+    aw_root->awar_int ( AWAR_SQ_WEIGHT_CONSENSUS, 50, aw_def );
+    aw_root->awar_int ( AWAR_SQ_WEIGHT_IUPAC, 5, aw_def );
+    aw_root->awar_int ( AWAR_SQ_WEIGHT_GC, 10, aw_def );
+    aw_root->awar_int ( AWAR_SQ_MARK_FLAG, 1, aw_def );
+    aw_root->awar_int ( AWAR_SQ_MARK_BELOW, 40, aw_def );
+    aw_root->awar_int ( AWAR_SQ_REEVALUATE, 0, aw_def );
 }
 
 // --------------------------------------------------------------------------------
 
-static void sq_calc_seq_quality_cb(AW_window *aww) {
 
-
+static void sq_calc_seq_quality_cb ( AW_window *aww )
+{
     AW_root  *aw_root = aww->get_root();
     GB_ERROR  error   = 0;
     GBT_TREE *tree    = 0;
 
     {
-        char *treename = aw_root->awar(AWAR_SQ_TREE)->read_string(); // contains "????" if no tree is selected
-        if (treename && strcmp(treename, "????") != 0) {
-            GB_push_transaction(gb_main);
-            tree = GBT_read_tree(gb_main, treename, sizeof(GBT_TREE));
-            if (tree) {
-                error = GBT_link_tree(tree,gb_main,GB_FALSE, 0, 0);
+        char *treename = aw_root->awar ( AWAR_SQ_TREE )->read_string(); // contains "????" if no tree is selected
+        if ( treename && strcmp ( treename, "????" ) != 0 )
+        {
+            GB_push_transaction ( gb_main );
+            tree = GBT_read_tree ( gb_main, treename, sizeof ( GBT_TREE ) );
+            if ( tree )
+            {
+                error = GBT_link_tree ( tree,gb_main,GB_FALSE, 0, 0 );
             }
-            else{
-                aw_message(GBS_global_string("Cannot read tree '%s' -- group specific calculations skipped.\n   Treating all available sequences as one group!", treename));
+            else
+            {
+                aw_message ( GBS_global_string ( "Cannot read tree '%s' -- group specific calculations skipped.\n   Treating all available sequences as one group!", treename ) );
             }
-            GB_pop_transaction(gb_main);
+            GB_pop_transaction ( gb_main );
         }
-        else aw_message("No tree selected -- group specific calculations skipped.");
-        free(treename);
+        else aw_message ( "No tree selected -- group specific calculations skipped." );
+        free ( treename );
     }
 
-    if (!error) {
+    if ( !error )
+    {
         //error = SQ_reset_quality_calcstate(gb_main);
     }
 
     // if tree == 0 -> do basic quality calculations that are possible without tree information
     // otherwise    -> use all groups found in tree and compare sequences against the groups they are contained in
 
-    if (!error) {
+    if ( !error )
+    {
 
         struct SQ_weights weights;
 
-        weights.bases             = aw_root->awar(AWAR_SQ_WEIGHT_BASES)->read_int();
-        weights.diff_from_average = aw_root->awar(AWAR_SQ_WEIGHT_DEVIATION)->read_int();
-	weights.helix             = aw_root->awar(AWAR_SQ_WEIGHT_HELIX)->read_int();
-	weights.consensus         = aw_root->awar(AWAR_SQ_WEIGHT_CONSENSUS)->read_int();
- 	weights.iupac             = aw_root->awar(AWAR_SQ_WEIGHT_IUPAC)->read_int();
- 	weights.gc                = aw_root->awar(AWAR_SQ_WEIGHT_GC)->read_int();
+        weights.bases             = aw_root->awar ( AWAR_SQ_WEIGHT_BASES )->read_int();
+        weights.diff_from_average = aw_root->awar ( AWAR_SQ_WEIGHT_DEVIATION )->read_int();
+        weights.helix             = aw_root->awar ( AWAR_SQ_WEIGHT_HELIX )->read_int();
+        weights.consensus         = aw_root->awar ( AWAR_SQ_WEIGHT_CONSENSUS )->read_int();
+        weights.iupac             = aw_root->awar ( AWAR_SQ_WEIGHT_IUPAC )->read_int();
+        weights.gc                = aw_root->awar ( AWAR_SQ_WEIGHT_GC )->read_int();
 
-	int mark_flag  = aw_root->awar(AWAR_SQ_MARK_FLAG)->read_int();
-	int mark_below = aw_root->awar(AWAR_SQ_MARK_BELOW)->read_int();
-	int reevaluate = aw_root->awar(AWAR_SQ_REEVALUATE)->read_int();
+        int mark_flag  = aw_root->awar ( AWAR_SQ_MARK_FLAG )->read_int();
+        int mark_below = aw_root->awar ( AWAR_SQ_MARK_BELOW )->read_int();
+        int reevaluate = aw_root->awar ( AWAR_SQ_REEVALUATE )->read_int();
 
         /*
           SQ_evaluate() generates the final estimation for the quality of an alignment.
@@ -121,119 +128,128 @@ static void sq_calc_seq_quality_cb(AW_window *aww) {
           for the final result.
         */
 
-	if(tree==0){
-	    if (reevaluate) {
-		aw_openstatus("Marking Sequences...");
-		SQ_mark_species(gb_main, mark_below);
-		aw_closestatus();
-	    }
-	    else {
-		SQ_GroupData* globalData = new SQ_GroupData_RNA;
-		SQ_count_nr_of_species(gb_main);
-		aw_openstatus("Calculating pass 1 of 2 ...");
-		SQ_pass1_no_tree(globalData, gb_main);
-		aw_closestatus();
-		aw_openstatus("Calculating pass 2 of 2 ...");
-		SQ_pass2_no_tree(globalData, gb_main);
-		SQ_evaluate(gb_main, weights);
-		aw_closestatus();
-		if (mark_flag) {
-		    aw_openstatus("Marking Sequences...");
-		    SQ_mark_species(gb_main, mark_below);
-		    aw_closestatus();
-		}
-		delete globalData;
-	    }
-
-	}
-	else {
-	    if (reevaluate) {
-		aw_openstatus("Marking Sequences...");
-		SQ_count_nr_of_species(gb_main);
-		SQ_mark_species(gb_main, mark_below);
-		aw_closestatus();
-	    }
-	    else {
-		aw_openstatus("Calculating pass 1 of 2...");
-		SQ_reset_counters(tree);
-		SQ_GroupData* globalData = new SQ_GroupData_RNA;
-		SQ_calc_and_apply_group_data(tree, gb_main, globalData);
-		aw_closestatus();
-		SQ_reset_counters(tree);
-		aw_openstatus("Calculating pass 2 of 2...");
-		SQ_calc_and_apply_group_data2(tree, gb_main, globalData);
-		SQ_evaluate(gb_main, weights);
-		aw_closestatus();
-		SQ_reset_counters(tree);
-		if (mark_flag) {
-		    aw_openstatus("Marking Sequences...");
-		    SQ_count_nr_of_species(gb_main);
-		    SQ_mark_species(gb_main, mark_below);
-		    aw_closestatus();
-		}
-		delete globalData;
-	    }
-	}
-
+        if ( tree==0 )
+        {
+            if ( reevaluate )
+            {
+                aw_openstatus ( "Marking Sequences..." );
+                SQ_mark_species ( gb_main, mark_below );
+                aw_closestatus();
+            }
+            else
+            {
+                SQ_GroupData* globalData = new SQ_GroupData_RNA;
+                SQ_count_nr_of_species ( gb_main );
+                aw_openstatus ( "Calculating pass 1 of 2 ..." );
+                SQ_pass1_no_tree ( globalData, gb_main );
+                aw_closestatus();
+                aw_openstatus ( "Calculating pass 2 of 2 ..." );
+                SQ_pass2_no_tree ( globalData, gb_main );
+                SQ_evaluate ( gb_main, weights );
+                aw_closestatus();
+                if ( mark_flag )
+                {
+                    aw_openstatus ( "Marking Sequences..." );
+                    SQ_mark_species ( gb_main, mark_below );
+                    aw_closestatus();
+                }
+                delete globalData;
+            }
+        }
+        else
+        {
+            if ( reevaluate )
+            {
+                aw_openstatus ( "Marking Sequences..." );
+                SQ_count_nr_of_species ( gb_main );
+                SQ_mark_species ( gb_main, mark_below );
+                aw_closestatus();
+            }
+            else
+            {
+                aw_openstatus ( "Calculating pass 1 of 2..." );
+                SQ_reset_counters ( tree );
+                SQ_GroupData* globalData = new SQ_GroupData_RNA;
+                SQ_calc_and_apply_group_data ( tree, gb_main, globalData );
+                aw_closestatus();
+                SQ_reset_counters ( tree );
+                aw_openstatus ( "Calculating pass 2 of 2..." );
+                SQ_calc_and_apply_group_data2 ( tree, gb_main, globalData );
+                SQ_evaluate ( gb_main, weights );
+                aw_closestatus();
+                SQ_reset_counters ( tree );
+                if ( mark_flag )
+                {
+                    aw_openstatus ( "Marking Sequences..." );
+                    SQ_count_nr_of_species ( gb_main );
+                    SQ_mark_species ( gb_main, mark_below );
+                    aw_closestatus();
+                }
+                delete globalData;
+            }
+        }
     }
 
-    if (error) {
-        aw_message(error);
+    if ( error )
+    {
+        aw_message ( error );
     }
 
     SQ_clear_group_dictionary();
 }
 
+
 // create window for sequence quality calculation (called only once)
-AW_window *SQ_create_seq_quality_window(AW_root *aw_root, AW_CL) {
+AW_window *SQ_create_seq_quality_window ( AW_root *aw_root, AW_CL )
+{
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(aw_root, "CALC_SEQ_QUALITY", "CALCULATE SEQUENCE QUALITY");
-    aws->load_xfig("seq_quality.fig");
+    aws->init ( aw_root, "CALC_SEQ_QUALITY", "CALCULATE SEQUENCE QUALITY" );
+    aws->load_xfig ( "seq_quality.fig" );
 
-    aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->at ( "close" );
+    aws->callback ( ( AW_CB0 ) AW_POPDOWN );
+    aws->create_button ( "CLOSE", "CLOSE", "C" );
 
-    aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"seq_quality.hlp");
-    aws->create_button("HELP", "HELP", "H");
+    aws->at ( "help" );
+    aws->callback ( AW_POPUP_HELP, ( AW_CL ) "seq_quality.hlp" );
+    aws->create_button ( "HELP", "HELP", "H" );
 
-    aws->at("base");
-    aws->create_input_field(AWAR_SQ_WEIGHT_BASES, 3);
+    aws->at ( "base" );
+    aws->create_input_field ( AWAR_SQ_WEIGHT_BASES, 3 );
 
-    aws->at("deviation");
-    aws->create_input_field(AWAR_SQ_WEIGHT_DEVIATION, 3);
+    aws->at ( "deviation" );
+    aws->create_input_field ( AWAR_SQ_WEIGHT_DEVIATION, 3 );
 
-    aws->at("no_helices");
-    aws->create_input_field(AWAR_SQ_WEIGHT_HELIX, 3);
+    aws->at ( "no_helices" );
+    aws->create_input_field ( AWAR_SQ_WEIGHT_HELIX, 3 );
 
-    aws->at("consensus");
-    aws->create_input_field(AWAR_SQ_WEIGHT_CONSENSUS, 3);
+    aws->at ( "consensus" );
+    aws->create_input_field ( AWAR_SQ_WEIGHT_CONSENSUS, 3 );
 
-    aws->at("iupac");
-    aws->create_input_field(AWAR_SQ_WEIGHT_IUPAC, 3);
+    aws->at ( "iupac" );
+    aws->create_input_field ( AWAR_SQ_WEIGHT_IUPAC, 3 );
 
-    aws->at("gc_proportion");
-    aws->create_input_field(AWAR_SQ_WEIGHT_GC, 3);
+    aws->at ( "gc_proportion" );
+    aws->create_input_field ( AWAR_SQ_WEIGHT_GC, 3 );
 
-    aws->at("mark");
-    aws->create_toggle(AWAR_SQ_MARK_FLAG);
+    aws->at ( "mark" );
+    aws->create_toggle ( AWAR_SQ_MARK_FLAG );
 
-    aws->at("mark_below");
-    aws->create_input_field(AWAR_SQ_MARK_BELOW, 3);
+    aws->at ( "mark_below" );
+    aws->create_input_field ( AWAR_SQ_MARK_BELOW, 3 );
 
-    aws->at("tree");
-    awt_create_selection_list_on_trees(gb_main,(AW_window *)aws, AWAR_SQ_TREE);
+    aws->at ( "tree" );
+    awt_create_selection_list_on_trees ( gb_main, ( AW_window * ) aws, AWAR_SQ_TREE );
 
-    aws->at("go");
-    aws->callback(sq_calc_seq_quality_cb);
+    aws->at ( "go" );
+    aws->callback ( sq_calc_seq_quality_cb );
     aws->highlight();
-    aws->create_button("GO", "GO", "G");
+    aws->create_button ( "GO", "GO", "G" );
 
-    aws->at("reevaluate");
-    aws->label("Re-Evaluate only");
-    aws->create_toggle(AWAR_SQ_REEVALUATE);
+    aws->at ( "reevaluate" );
+    aws->label ( "Re-Evaluate only" );
+    aws->create_toggle ( AWAR_SQ_REEVALUATE );
 
     return aws;
 }
