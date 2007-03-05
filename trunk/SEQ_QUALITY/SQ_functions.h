@@ -11,6 +11,8 @@
 //  Visit our web site at: http://www.arb-home.de/                       //
 //                                                                       //
 //  ==================================================================== //
+
+
 #ifndef SQ_FUNCTIONS_H
 #define SQ_FUNCTIONS_H
 
@@ -29,39 +31,42 @@
 #include <smartptr.h>
 #endif
 
+
 typedef SmartPtr<SQ_GroupData> SQ_GroupDataPtr;
 typedef std::map<std::string, SQ_GroupDataPtr> SQ_GroupDataDictionary;
 
+GB_ERROR SQ_reset_quality_calcstate ( GBDATA *gb_main );
 
-GB_ERROR SQ_reset_quality_calcstate(GBDATA *gb_main);
+GB_ERROR SQ_pass1 ( SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node );
 
-GB_ERROR SQ_pass1(SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node);
+GB_ERROR SQ_pass1_no_tree ( SQ_GroupData* globalData, GBDATA *gb_main );
 
-GB_ERROR SQ_pass1_no_tree(SQ_GroupData* globalData, GBDATA *gb_main);
+GB_ERROR SQ_pass2 ( const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node );
 
-GB_ERROR SQ_pass2(const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node);
+GB_ERROR SQ_pass2_no_tree ( const SQ_GroupData* globalData, GBDATA *gb_main );
 
-GB_ERROR SQ_pass2_no_tree(const SQ_GroupData* globalData, GBDATA *gb_main);
+GB_ERROR SQ_count_nr_of_species ( GBDATA *gb_main );
 
-GB_ERROR SQ_count_nr_of_species(GBDATA *gb_main);
+void SQ_reset_counters ( GBT_TREE *root ); // reset counters used by SQ_calc_and_apply_group_data
 
-void SQ_reset_counters(GBT_TREE *root); // reset counters used by SQ_calc_and_apply_group_data
+void SQ_calc_and_apply_group_data ( GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data );
 
-void SQ_calc_and_apply_group_data(GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data);
+void SQ_calc_and_apply_group_data2 ( GBT_TREE *node, GBDATA *gb_main, const SQ_GroupData *data );
 
-void SQ_calc_and_apply_group_data2(GBT_TREE *node, GBDATA *gb_main, const SQ_GroupData *data);
+void create_multi_level_consensus ( GBT_TREE *node, SQ_GroupData *data );
 
-void create_multi_level_consensus(GBT_TREE *node, SQ_GroupData *data);
+int SQ_get_value_no_tree ( GBDATA *gb_main, const char *option );
 
-int SQ_get_value_no_tree(GBDATA *gb_main, const char *option);
+int SQ_get_value ( GBDATA *gb_main, const char *option );
 
-int SQ_get_value(GBDATA *gb_main, const char *option);
 /*
   "option" is variable which is passed to function "SQ_get_value()".
   SQ_get_value() returns the values that are stored in the specific containers used for alignment quality evaluation.
 */
 
-struct SQ_weights {
+
+struct SQ_weights
+{
     int bases;
     int diff_from_average;
     int helix;
@@ -71,7 +76,7 @@ struct SQ_weights {
 };
 
 
-GB_ERROR SQ_evaluate(GBDATA *gb_main, const SQ_weights& weights);
+GB_ERROR SQ_evaluate ( GBDATA *gb_main, const SQ_weights& weights );
 /*
   The "weight_..."  -values are passed to the function "SQ_evaluate()".
   SQ_evaluate() generates the final estimation for the quality of an alignment.
@@ -81,7 +86,9 @@ GB_ERROR SQ_evaluate(GBDATA *gb_main, const SQ_weights& weights);
   for the final result.
 */
 
-GB_ERROR SQ_mark_species(GBDATA *gb_main, int condition);
+
+GB_ERROR SQ_mark_species ( GBDATA *gb_main, int condition );
+
 
 void SQ_clear_group_dictionary();
 
