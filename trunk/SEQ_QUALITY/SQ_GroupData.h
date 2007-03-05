@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_GroupData.h                                         //
 //    Purpose   : Classes to store global information about sequences    //
-//    Time-stamp: <Fri Oct/01/2004 17:50 MET Coder@ReallySoft.de>       //
+//    Time-stamp: <Fri Oct/01/2004 17:50 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -29,6 +29,14 @@
 #define seq_assert(bed) arb_assert(bed)
 
 
+typedef struct
+{
+    double conformity;
+    double deviation;
+}
+consensus_result;
+
+
 class SQ_GroupData
 {
     public:
@@ -46,9 +54,10 @@ class SQ_GroupData
         bool         SQ_is_initialized() const { return initialized; }
 
         virtual void   SQ_init_consensus ( int size )                              = 0;
-        virtual int    SQ_print_on_screen()                                     = 0;
+        virtual int    SQ_print_on_screen()                                        = 0;
         virtual double SQ_calc_consensus_deviation ( const char *sequence ) const  = 0;
         virtual double SQ_calc_consensus_conformity ( const char *sequence ) const = 0;
+        virtual consensus_result SQ_calc_consensus ( const char *sequence ) const  = 0;
         virtual void   SQ_add_sequence ( const char *sequence )                    = 0;
         virtual void   SQ_add ( const SQ_GroupData& other )                        = 0;
 
@@ -66,7 +75,7 @@ class SQ_GroupData
 template <int I>
 class Int
 {
-        Int ( const Int& other );         // copying not allowed
+        Int ( const Int& other );   // copying not allowed
 
     public:
         int i[I];
@@ -138,7 +147,7 @@ class SQ_GroupData_RNA: public SQ_GroupData_Impl<6>
 {
         SQ_GroupData_RNA ( const SQ_GroupData_RNA& other );         // copying not allowed
     public:
-        SQ_GroupData_RNA();
+        SQ_GroupData_RNA() {}
 
         SQ_GroupData_RNA *clone() const { return new SQ_GroupData_RNA; }
         SQ_GroupData_RNA& operator= ( const SQ_GroupData& other )
@@ -148,12 +157,10 @@ class SQ_GroupData_RNA: public SQ_GroupData_Impl<6>
 
         double SQ_calc_consensus_deviation ( const char *sequence ) const;
         double SQ_calc_consensus_conformity ( const char *sequence ) const;
+        consensus_result SQ_calc_consensus ( const char *sequence ) const;
         void   SQ_add_sequence ( const char *sequence );
-
-        void SQ_init_iupacmatrix();
     protected:
-        static int **m_iupacmatrix;
-        static int *m_iupacsum;
+        static int class_counter;
 };
 
 
@@ -171,6 +178,7 @@ class SQ_GroupData_PRO: public SQ_GroupData_Impl<20>
 
         double SQ_calc_consensus_deviation ( const char *sequence ) const;
         double SQ_calc_consensus_conformity ( const char *sequence ) const;
+        consensus_result SQ_calc_consensus ( const char *sequence ) const;
         void   SQ_add_sequence ( const char *sequence );
 };
 

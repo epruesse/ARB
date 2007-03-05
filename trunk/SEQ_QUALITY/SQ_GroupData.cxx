@@ -17,8 +17,8 @@
 #include <cctype>
 #include "SQ_GroupData.h"
 
-
 using namespace std;
+
 
 SQ_GroupData::SQ_GroupData()
 {
@@ -33,295 +33,261 @@ SQ_GroupData::SQ_GroupData()
 SQ_GroupData::~SQ_GroupData() { }
 
 
-SQ_GroupData_RNA::SQ_GroupData_RNA()
+// TODO: deprecated
+double SQ_GroupData_RNA::SQ_calc_consensus_deviation ( const char * ) const
 {
-    SQ_init_iupacmatrix();
+    return 0; // dummy return value
 }
 
 
-int **SQ_GroupData_RNA::m_iupacmatrix = NULL;
-int *SQ_GroupData_RNA::m_iupacsum =   NULL;
-
-
-// TODO: Counter, wann m_iupacmatrix im Destruktor freigegeben werden kann!?
-
-
-void SQ_GroupData_RNA::SQ_init_iupacmatrix()
+// TODO: deprecated
+double SQ_GroupData_RNA::SQ_calc_consensus_conformity ( const char * ) const
 {
-    if ( m_iupacmatrix )
-    {
-        return;
-    }
-
-    m_iupacmatrix = ( int** ) malloc ( 256*sizeof ( int* ) );
-
-    for ( int i= 0; i < 256; ++i )
-    {
-        m_iupacmatrix[i] = ( int* ) malloc ( 6*sizeof ( int ) );
-        memset ( m_iupacmatrix[i], 0, 6*sizeof ( int ) );
-    }
-
-    m_iupacsum = ( int* ) malloc ( 256*sizeof ( int ) );
-    memset ( m_iupacsum, 0, 256*sizeof ( int ) );
-
-    // populate matrix
-    //     m_iupacmatrix[0] <==> 'A'
-    //     m_iupacmatrix[1] <==> 'T','U'
-    //     m_iupacmatrix[2] <==> 'C'
-    //     m_iupacmatrix[3] <==> 'G'
-    //     m_iupacmatrix[4] <==> '.'
-    //     m_iupacmatrix[5] <==> '-'
-
-    //     case 'a':
-    //     case 'A':
-    m_iupacmatrix['a'][0] = 100;
-    m_iupacmatrix['A'][0] = 100;
-
-    m_iupacsum['a'] = 100;
-    m_iupacsum['A'] = 100;
-
-    //     case 't':
-    //     case 'T':
-    m_iupacmatrix['t'][1] = 100;
-    m_iupacmatrix['T'][1] = 100;
-
-    m_iupacsum['t'] = 100;
-    m_iupacsum['T'] = 100;
-
-    //     case 'c':
-    //     case 'C':
-    m_iupacmatrix['c'][2] = 100;
-    m_iupacmatrix['C'][2] = 100;
-
-    m_iupacsum['c'] = 100;
-    m_iupacsum['C'] = 100;
-
-    //     case 'g':
-    //     case 'G':
-    m_iupacmatrix['g'][3] = 100;
-    m_iupacmatrix['G'][3] = 100;
-
-    m_iupacsum['g'] = 100;
-    m_iupacsum['G'] = 100;
-
-    //     case 'u':
-    //     case 'U':
-    m_iupacmatrix['u'][1] = 100;
-    m_iupacmatrix['U'][1] = 100;
-
-    m_iupacsum['u'] = 100;
-    m_iupacsum['U'] = 100;
-
-    //     case 'r':
-    //     case 'R':
-    m_iupacmatrix['r'][0] = 50;
-    m_iupacmatrix['R'][0] = 50;
-    m_iupacmatrix['r'][1] = 50;
-    m_iupacmatrix['R'][1] = 50;
-
-    m_iupacsum['r'] = 100;
-    m_iupacsum['R'] = 100;
-
-    //     case 'y':
-    //     case 'Y':
-    m_iupacmatrix['y'][2] = 50;
-    m_iupacmatrix['Y'][2] = 50;
-    m_iupacmatrix['y'][3] = 50;
-    m_iupacmatrix['Y'][3] = 50;
-
-    m_iupacsum['y'] = 100;
-    m_iupacsum['Y'] = 100;
-
-    //     case 'm':
-    //     case 'M':
-    m_iupacmatrix['m'][0] = 50;
-    m_iupacmatrix['m'][0] = 50;
-    m_iupacmatrix['M'][3] = 50;
-    m_iupacmatrix['M'][3] = 50;
-
-    m_iupacsum['m'] = 100;
-    m_iupacsum['M'] = 100;
-
-    //     case 'k':
-    //     case 'K':
-    m_iupacmatrix['k'][1] = 50;
-    m_iupacmatrix['k'][1] = 50;
-    m_iupacmatrix['K'][2] = 50;
-    m_iupacmatrix['K'][2] = 50;
-
-    m_iupacsum['k'] = 100;
-    m_iupacsum['K'] = 100;
-
-    //     case 'w':
-    //     case 'W':
-    m_iupacmatrix['w'][0] = 50;
-    m_iupacmatrix['w'][0] = 50;
-    m_iupacmatrix['W'][2] = 50;
-    m_iupacmatrix['W'][2] = 50;
-
-    m_iupacsum['w'] = 100;
-    m_iupacsum['W'] = 100;
-
-    //     case 's':
-    //     case 'S':
-    m_iupacmatrix['s'][1] = 50;
-    m_iupacmatrix['s'][1] = 50;
-    m_iupacmatrix['S'][3] = 50;
-    m_iupacmatrix['S'][3] = 50;
-
-    m_iupacsum['s'] = 100;
-    m_iupacsum['S'] = 100;
-
-    //     case 'b':
-    //     case 'B':
-    m_iupacmatrix['b'][1] = 33;
-    m_iupacmatrix['b'][2] = 33;
-    m_iupacmatrix['b'][3] = 33;
-    m_iupacmatrix['B'][1] = 33;
-    m_iupacmatrix['B'][2] = 33;
-    m_iupacmatrix['B'][3] = 33;
-
-    m_iupacsum['b'] = 99;
-    m_iupacsum['B'] = 99;
-
-    //     case 'd':
-    //     case 'D':
-    m_iupacmatrix['d'][0] = 33;
-    m_iupacmatrix['d'][1] = 33;
-    m_iupacmatrix['d'][2] = 33;
-    m_iupacmatrix['D'][0] = 33;
-    m_iupacmatrix['D'][1] = 33;
-    m_iupacmatrix['D'][2] = 33;
-
-    m_iupacsum['d'] = 99;
-    m_iupacsum['D'] = 99;
-
-    //     case 'h':
-    //     case 'H':
-    m_iupacmatrix['h'][0] = 33;
-    m_iupacmatrix['h'][2] = 33;
-    m_iupacmatrix['h'][3] = 33;
-    m_iupacmatrix['H'][0] = 33;
-    m_iupacmatrix['H'][2] = 33;
-    m_iupacmatrix['H'][3] = 33;
-
-    m_iupacsum['h'] = 99;
-    m_iupacsum['H'] = 99;
-
-    //     case 'v':
-    //     case 'V':
-    m_iupacmatrix['v'][0] = 33;
-    m_iupacmatrix['v'][1] = 33;
-    m_iupacmatrix['v'][3] = 33;
-    m_iupacmatrix['V'][0] = 33;
-    m_iupacmatrix['V'][1] = 33;
-    m_iupacmatrix['v'][3] = 33;
-
-    m_iupacsum['v'] = 99;
-    m_iupacsum['V'] = 99;
-
-    //     case 'n':
-    //     case 'N':
-    //     case 'x':
-    //     case 'X':
-    m_iupacmatrix['n'][0] = 25;
-    m_iupacmatrix['n'][1] = 25;
-    m_iupacmatrix['n'][2] = 25;
-    m_iupacmatrix['n'][3] = 25;
-    m_iupacmatrix['N'][0] = 25;
-    m_iupacmatrix['N'][1] = 25;
-    m_iupacmatrix['N'][2] = 25;
-    m_iupacmatrix['N'][3] = 25;
-
-    m_iupacsum['n'] = 100;
-    m_iupacsum['N'] = 100;
-
-    m_iupacmatrix['x'][0] = 25;
-    m_iupacmatrix['x'][1] = 25;
-    m_iupacmatrix['x'][2] = 25;
-    m_iupacmatrix['x'][3] = 25;
-    m_iupacmatrix['X'][0] = 25;
-    m_iupacmatrix['X'][1] = 25;
-    m_iupacmatrix['X'][2] = 25;
-    m_iupacmatrix['X'][3] = 25;
-
-    m_iupacsum['x'] = 100;
-    m_iupacsum['X'] = 100;
-
-    //     case '.':
-    m_iupacmatrix['.'][4] = 1;
-    m_iupacsum['.'] = 1;
-
-    //     case '-':
-    m_iupacmatrix['-'][5] = 1;
-    m_iupacsum['-'] = 1;
+    return 0; // dummy return value
 }
 
 
-double SQ_GroupData_RNA::SQ_calc_consensus_deviation ( const char *sequence ) const
+consensus_result SQ_GroupData_RNA::SQ_calc_consensus ( const char *sequence ) const
 {
-    double deviation = 0;
+    consensus_result cr;
+    cr.conformity = 0;
+    cr.deviation = 0;
 
-    for ( int i = 0; i < size; i++ )
+    // for ( int i = 0; i < size; i++ ) // FIXME: ecoli Beschraenkung
+    for ( int i = 10000; i < 53744; i++ )
     {
-        char s = sequence[i];
+        int current[6] = { 0, 0, 0, 0, 0, 0};
 
-        for ( int j = 0; j < 6; j++ )
+        //fill up current with decoded iupac values
+        switch ( sequence[i] )
         {
-            int c  = m_iupacmatrix[s][j];
-            if ( ( c > 0 ) && ( consensus[i].i[j] <= c ) )
-            {
-                deviation += c;
-            }
-        }
-    }
-    deviation = deviation / size;  //set deviation in relation to sequencelength and percent
-    return deviation;
-}
+            case 'a':
+            case 'A':
+                current[0] = 100;
+                break;
+            case 't':
+            case 'T':
+                current[1] = 100;
+                break;
+            case 'c':
+            case 'C':
+                current[2] = 100;
+                break;
+            case 'g':
+            case 'G':
+                current[3] = 100;
+                break;
+            case 'u':
+            case 'U':
+                current[1] = 100;
+                break;
+            case 'r':
+            case 'R':
+                current[0] = 50;
+                current[3] = 50;
+                break;
+            case 'y':
+            case 'Y':
+                current[2] = 50;
+                current[1] = 50;
+                break;
+            case 'm':
+            case 'M':
+                current[0] = 50;
+                current[2] = 50;
+                break;
+            case 'k':
+            case 'K':
+                current[3] = 50;
+                current[1] = 50;
+                break;
+            case 'w':
+            case 'W':
+                current[0] = 50;
+                current[1] = 50;
+                break;
+            case 's':
+            case 'S':
+                current[3] = 50;
+                current[2] = 50;
+                break;
+            case 'b':
+            case 'B':
+                current[2] = 33;
+                current[1] = 33;
+                current[3] = 33;
+                break;
+            case 'd':
+            case 'D':
+                current[0] = 33;
+                current[1] = 33;
+                current[3] = 33;
+                break;
+            case 'h':
+            case 'H':
+                current[2] = 33;
+                current[1] = 33;
+                current[0] = 33;
+                break;
+            case 'v':
+            case 'V':
+                current[0] = 33;
+                current[2] = 33;
+                current[3] = 33;
+                break;
+            case 'n':
+            case 'N':
+            case 'x':
+            case 'X':
+                current[2] = 25;
+                current[1] = 25;
+                current[0] = 25;
+                current[3] = 25;
+                break;
+            case '.':
+                current[4] = 1;
+                break;
+            case '-':
+                current[5] = 1;
+                break;
+            default :
+                seq_assert ( 0 ); // unhandled character
+                break;
 
+        }//end fill up current
 
-double SQ_GroupData_RNA::SQ_calc_consensus_conformity ( const char *sequence ) const
-{
-    double value = 0;
-
-    for ( int i = 0; i < size; i++ )
-    {
         int* cs = consensus[i].i;
-        char s = sequence[i];
+        double sum = ( double ) ( cs[0]+cs[1]+cs[2]+cs[3]+cs[4]+cs[5] );
 
         for ( int j = 0; j < 6; j++ )
         {
-            int c  = m_iupacmatrix[s][j];
-
-            if ( ( c > 0 ) && ( cs[j] > c ) )
+            int currentj  = current[j];
+            if ( currentj > 0 )
             {
-                value += ( double ) ( cs[j] - c ) / ( double ) m_iupacsum[s];
+                if ( cs[j] > currentj )
+                {
+                    cr.conformity += ( double ) ( cs[j] - currentj ) / sum;
+                }
+                else // == if ( cs[j] <= currentj )
+                {
+                    cr.deviation += current[j];
+                }
             }
         }
     }
 
-    value = value / size;  //set conformity in relation to sequencelength
-    return value;
+    cr.conformity = cr.conformity / size;  //set conformity in relation to sequencelength
+    cr.deviation = cr.deviation / size;  //set deviation in relation to sequencelength
+    return cr;
 }
 
 
 void SQ_GroupData_RNA::SQ_add_sequence ( const char *sequence )
 {
-
-    for ( int i=0; i < size; i++ )
+    // for ( int i = 0; i < size; i++ ) // FIXME: ecoli Beschraenkung
+    for ( int i = 10000; i < 53744; i++ )
     {
         int* cs = consensus[i].i;
-        char s = sequence[i];
-
-        for ( int j=0; j < 6; ++j )
+        switch ( sequence[i] )
         {
-            cs[j] = m_iupacmatrix[s][j];
+            case 'a':
+            case 'A':
+                cs[0] += 100;
+                break;
+            case 't':
+            case 'T':
+                cs[1] += 100;
+                break;
+            case 'c':
+            case 'C':
+                cs[2] += 100;
+                break;
+            case 'g':
+            case 'G':
+                cs[3] += 100;
+                break;
+            case 'u':
+            case 'U':
+                cs[1] += 100;
+                break;
+            case 'r':
+            case 'R':
+                cs[0] += 50;
+                cs[3] += 50;
+                break;
+            case 'y':
+            case 'Y':
+                cs[2] += 50;
+                cs[1] += 50;
+                break;
+            case 'm':
+            case 'M':
+                cs[0] += 50;
+                cs[2] += 50;
+                break;
+            case 'k':
+            case 'K':
+                cs[3] += 50;
+                cs[1] += 50;
+                break;
+            case 'w':
+            case 'W':
+                cs[0] += 50;
+                cs[1] += 50;
+                break;
+            case 's':
+            case 'S':
+                cs[3] += 50;
+                cs[2] += 50;
+                break;
+            case 'b':
+            case 'B':
+                cs[2] += 33;
+                cs[1] += 33;
+                cs[3] += 33;
+                break;
+            case 'd':
+            case 'D':
+                cs[0] += 33;
+                cs[1] += 33;
+                cs[3] += 33;
+                break;
+            case 'h':
+            case 'H':
+                cs[2] += 33;
+                cs[1] += 33;
+                cs[0] += 33;
+                break;
+            case 'v':
+            case 'V':
+                cs[0] += 33;
+                cs[2] += 33;
+                cs[3] += 33;
+                break;
+            case 'n':
+            case 'x':
+            case 'N':
+            case 'X':
+                cs[2] += 25;
+                cs[1] += 25;
+                cs[0] += 25;
+                cs[3] += 25;
+                break;
+            case '.':
+                cs[4] += 1;
+                break;
+            case '-':
+                cs[5] += 1;
+                break;
+            default :
+                fprintf ( stderr, "Illegal character '%c'", sequence[i] );
+                seq_assert ( 0 ); // unhandled character
+                break;
         }
     }
 }
 
 
-// double SQ_GroupData_PRO::SQ_calc_consensus_deviation ( const char *sequence ) const
 double SQ_GroupData_PRO::SQ_calc_consensus_deviation ( const char * ) const
 {
 #warning implementation missing
@@ -329,7 +295,6 @@ double SQ_GroupData_PRO::SQ_calc_consensus_deviation ( const char * ) const
 }
 
 
-// double SQ_GroupData_PRO::SQ_calc_consensus_conformity ( const char *sequence ) const
 double SQ_GroupData_PRO::SQ_calc_consensus_conformity ( const char * ) const
 {
 #warning implementation missing
@@ -337,7 +302,16 @@ double SQ_GroupData_PRO::SQ_calc_consensus_conformity ( const char * ) const
 }
 
 
-// void SQ_GroupData_PRO::SQ_add_sequence ( const char *sequence )
+consensus_result SQ_GroupData_PRO::SQ_calc_consensus ( const char * ) const
+{
+#warning implementation missing
+    consensus_result cr;
+    cr.conformity = 0;
+    cr.deviation = 0;
+    return cr; // dummy return value
+}
+
+
 void SQ_GroupData_PRO::SQ_add_sequence ( const char * )
 {
 #warning implementation missing
