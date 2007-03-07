@@ -37,21 +37,23 @@ typedef std::map<std::string, SQ_GroupDataPtr> SQ_GroupDataDictionary;
 
 GB_ERROR SQ_reset_quality_calcstate ( GBDATA *gb_main );
 
-GB_ERROR SQ_pass1 ( SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node );
+char *SQ_fetch_filtered_sequence ( GBDATA *read_sequence, AP_filter *filter );
 
-GB_ERROR SQ_pass1_no_tree ( SQ_GroupData* globalData, GBDATA *gb_main );
+GB_ERROR SQ_pass1 ( SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node, AP_filter *filter );
 
-GB_ERROR SQ_pass2 ( const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node );
+GB_ERROR SQ_pass1_no_tree ( SQ_GroupData* globalData, GBDATA *gb_main, AP_filter *filter );
 
-GB_ERROR SQ_pass2_no_tree ( const SQ_GroupData* globalData, GBDATA *gb_main );
+GB_ERROR SQ_pass2 ( const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node, AP_filter *filter );
+
+GB_ERROR SQ_pass2_no_tree ( const SQ_GroupData* globalData, GBDATA *gb_main, AP_filter *filter );
 
 GB_ERROR SQ_count_nr_of_species ( GBDATA *gb_main );
 
 void SQ_reset_counters ( GBT_TREE *root ); // reset counters used by SQ_calc_and_apply_group_data
 
-void SQ_calc_and_apply_group_data ( GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data );
+void SQ_calc_and_apply_group_data ( GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data, AP_filter *filter );
 
-void SQ_calc_and_apply_group_data2 ( GBT_TREE *node, GBDATA *gb_main, const SQ_GroupData *data );
+void SQ_calc_and_apply_group_data2 ( GBT_TREE *node, GBDATA *gb_main, const SQ_GroupData *data, AP_filter *filter );
 
 void create_multi_level_consensus ( GBT_TREE *node, SQ_GroupData *data );
 

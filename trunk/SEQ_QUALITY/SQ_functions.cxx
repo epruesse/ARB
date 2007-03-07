@@ -25,6 +25,7 @@
 #include <aw_window.hxx>
 #include <aw_preset.hxx>
 #include <awt.hxx>
+#include <awt_tree.hxx>
 
 #include "SQ_GroupData.h"
 #include "SQ_ambiguities.h"
@@ -250,118 +251,121 @@ GB_ERROR SQ_evaluate ( GBDATA *gb_main, const SQ_weights& weights )
 
                 GBDATA *gb_quality = GB_search ( gb_ali, "quality", GB_FIND );
 
-                //evaluate the percentage of bases the actual sequence consists of
-                GBDATA *gb_result1 = GB_search ( gb_quality, "percent_of_bases", GB_INT );
-                bases = GB_read_int ( gb_result1 );
-                if ( bases < 4 ) result = 0;
-                else
-                {
-                    if ( bases < 6 ) result = 1;
-                else { result = 2;}
-                }
-                if ( result != 0 ) result = ( result * weights.bases ) / 2;
-                value += result;
-
-                //evaluate the difference in number of bases from sequence to group
-                GBDATA *gb_result2 = GB_search ( gb_quality, "percent_base_deviation", GB_INT );
-                dfa = GB_read_int ( gb_result2 );
-                if ( abs ( dfa ) < 2 ) result = 5;
-                else
-                {
-                    if ( abs ( dfa ) < 4 ) result = 4;
+                if ( gb_quality )
+                { // FIXME: should give user a warning when a species without quality data is found
+                    //evaluate the percentage of bases the actual sequence consists of
+                    GBDATA *gb_result1 = GB_search ( gb_quality, "percent_of_bases", GB_INT );
+                    bases = GB_read_int ( gb_result1 );
+                    if ( bases < 4 ) result = 0;
                     else
                     {
-                        if ( abs ( dfa ) < 6 ) result = 3;
+                        if ( bases < 6 ) result = 1;
+                    else { result = 2;}
+                    }
+                    if ( result != 0 ) result = ( result * weights.bases ) / 2;
+                    value += result;
+
+                    //evaluate the difference in number of bases from sequence to group
+                    GBDATA *gb_result2 = GB_search ( gb_quality, "percent_base_deviation", GB_INT );
+                    dfa = GB_read_int ( gb_result2 );
+                    if ( abs ( dfa ) < 2 ) result = 5;
+                    else
+                    {
+                        if ( abs ( dfa ) < 4 ) result = 4;
                         else
                         {
-                            if ( abs ( dfa ) < 8 ) result = 2;
+                            if ( abs ( dfa ) < 6 ) result = 3;
                             else
                             {
-                                if ( abs ( dfa ) < 10 ) result = 1;
-                            else { result = 0;}
+                                if ( abs ( dfa ) < 8 ) result = 2;
+                                else
+                                {
+                                    if ( abs ( dfa ) < 10 ) result = 1;
+                                else { result = 0;}
+                                }
                             }
                         }
                     }
-                }
-                if ( result != 0 ) result = ( result * weights.diff_from_average ) / 5;
-                value += result;
+                    if ( result != 0 ) result = ( result * weights.diff_from_average ) / 5;
+                    value += result;
 
-                //evaluate the number of positions where no helix can be built
-                GBDATA *gb_result3 = GB_search ( gb_quality, "number_of_no_helix", GB_INT );
-                noh = GB_read_int ( gb_result3 );
-                if ( noh < 20 ) result = 5;
-                else
-                {
-                    if ( noh < 50 ) result = 4;
+                    //evaluate the number of positions where no helix can be built
+                    GBDATA *gb_result3 = GB_search ( gb_quality, "number_of_no_helix", GB_INT );
+                    noh = GB_read_int ( gb_result3 );
+                    if ( noh < 20 ) result = 5;
                     else
                     {
-                        if ( noh < 125 ) result = 3;
+                        if ( noh < 50 ) result = 4;
                         else
                         {
-                            if ( noh < 250 ) result = 2;
+                            if ( noh < 125 ) result = 3;
                             else
                             {
-                                if ( noh < 500 ) result = 1;
-                            else { result = 0;}
+                                if ( noh < 250 ) result = 2;
+                                else
+                                {
+                                    if ( noh < 500 ) result = 1;
+                                else { result = 0;}
+                                }
                             }
                         }
                     }
-                }
-                if ( result != 0 ) result = ( result * weights.helix ) / 5;
-                value += result;
+                    if ( result != 0 ) result = ( result * weights.helix ) / 5;
+                    value += result;
 
-                //evaluate the consensus
-                GBDATA *gb_result4 = GB_search ( gb_quality, "consensus_evaluated", GB_INT );
-                cos = GB_read_int ( gb_result4 );
-                result = cos;
-                if ( result != 0 ) result = ( result * weights.consensus ) / 12;
-                value += result;
+                    //evaluate the consensus
+                    GBDATA *gb_result4 = GB_search ( gb_quality, "consensus_evaluated", GB_INT );
+                    cos = GB_read_int ( gb_result4 );
+                    result = cos;
+                    if ( result != 0 ) result = ( result * weights.consensus ) / 12;
+                    value += result;
 
-                //evaluate the number of iupacs in a sequence
-                GBDATA *gb_result5 = GB_search ( gb_quality, "iupac_value", GB_INT );
-                iupv = GB_read_int ( gb_result5 );
-                if ( iupv < 1 ) result = 3;
-                else
-                {
-                    if ( iupv < 5 ) result = 2;
+                    //evaluate the number of iupacs in a sequence
+                    GBDATA *gb_result5 = GB_search ( gb_quality, "iupac_value", GB_INT );
+                    iupv = GB_read_int ( gb_result5 );
+                    if ( iupv < 1 ) result = 3;
                     else
                     {
-                        if ( iupv < 10 ) result = 1;
-                    else { result = 0;}
-                    }
-                }
-                if ( result != 0 ) result = ( result * weights.iupac ) / 3;
-                value += result;
-
-                //evaluate the difference in the GC proportion from sequence to group
-                GBDATA *gb_result6 = GB_search ( gb_quality, "percent_GC_difference", GB_INT );
-                gcprop = GB_read_int ( gb_result6 );
-                if ( abs ( gcprop ) < 1 ) result = 5;
-                else
-                {
-                    if ( abs ( gcprop ) < 2 ) result = 4;
-                    else
-                    {
-                        if ( abs ( gcprop ) < 4 ) result = 3;
+                        if ( iupv < 5 ) result = 2;
                         else
                         {
-                            if ( abs ( gcprop ) < 8 ) result = 2;
+                            if ( iupv < 10 ) result = 1;
+                        else { result = 0;}
+                        }
+                    }
+                    if ( result != 0 ) result = ( result * weights.iupac ) / 3;
+                    value += result;
+
+                    //evaluate the difference in the GC proportion from sequence to group
+                    GBDATA *gb_result6 = GB_search ( gb_quality, "percent_GC_difference", GB_INT );
+                    gcprop = GB_read_int ( gb_result6 );
+                    if ( abs ( gcprop ) < 1 ) result = 5;
+                    else
+                    {
+                        if ( abs ( gcprop ) < 2 ) result = 4;
+                        else
+                        {
+                            if ( abs ( gcprop ) < 4 ) result = 3;
                             else
                             {
-                                if ( abs ( gcprop ) < 16 ) result = 1;
-                            else { result = 0;}
+                                if ( abs ( gcprop ) < 8 ) result = 2;
+                                else
+                                {
+                                    if ( abs ( gcprop ) < 16 ) result = 1;
+                                else { result = 0;}
+                                }
                             }
                         }
                     }
-                }
-                if ( result != 0 ) result = ( result * weights.gc ) / 5;
-                value += result;
+                    if ( result != 0 ) result = ( result * weights.gc ) / 5;
+                    value += result;
 
-                /*write the final value of the evaluation*/
-                value2 = sq_round ( value );
-                GBDATA *gb_result7 = GB_search ( gb_quality, "evaluation", GB_INT );
-                seq_assert ( gb_result7 );
-                GB_write_int ( gb_result7, value2 );
+                    /*write the final value of the evaluation*/
+                    value2 = sq_round ( value );
+                    GBDATA *gb_result7 = GB_search ( gb_quality, "evaluation", GB_INT );
+                    seq_assert ( gb_result7 );
+                    GB_write_int ( gb_result7, value2 );
+                }
             }
         }
     }
@@ -373,8 +377,66 @@ GB_ERROR SQ_evaluate ( GBDATA *gb_main, const SQ_weights& weights )
     return error;
 }
 
+// TODO: Better use a define here...
+// static bool isGap(char c) { return c == '-' || c == '.'; }
 
-GB_ERROR SQ_pass1 ( SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node )
+
+char *SQ_fetch_filtered_sequence ( GBDATA *read_sequence, AP_filter *filter )
+{
+    if ( !read_sequence ) return 0;
+
+    char *rawSequence = GB_read_char_pntr ( read_sequence );
+    // int sequenceLength = GB_read_count ( read_sequence );
+    int filteredLength = filter->real_len;
+
+    // TODO: Maybe one call on creation of AP_filter is enough?
+    filter->calc_filter_2_seq();
+
+    char *filteredSequence = ( char * ) malloc ( filteredLength * sizeof ( char ) );
+
+    if ( filteredSequence )
+    {
+        for ( int i = 0; i < filteredLength; ++i )
+        {
+            filteredSequence[i] = rawSequence[filter->filterpos_2_seqpos[i]];
+        }
+    }
+
+    /////////////////////
+    /*
+    int gap_columns = filter->real_len;
+    int *gap_column = new int[gap_columns];
+    memcpy(gap_column, filter->filterpos_2_seqpos, gap_columns*sizeof(*gap_column));
+    gap_column[gap_columns] = max_ali_len;
+
+    const char *sdata = GB_read_char_pntr ( read_sequence );
+    // if (!error) {
+    int j = 0;
+    for (int i = 0; i < gap_columns; ++i)
+    {
+        if (isGap(sdata[gap_column[i]]))
+        {
+            gap_column[j++] = gap_column[i]; // keep gap column
+        }
+        // otherwise it's overwritten
+    }
+
+    int skipped_columns  = i-j;
+    gap_columns      -= skipped_columns;
+    awte_assert(gap_columns >= 0);
+    // }
+    ++count;
+    if (count >= next_stat) {
+        if (aw_status(count/double(species_count))) error = "User abort";
+        next_stat = count+stat_update;
+    }*/
+    /////////////////////
+
+    return filteredSequence;
+}
+
+
+GB_ERROR SQ_pass1 ( SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node, AP_filter *filter )
 {
     char *alignment_name;
 
@@ -413,11 +475,14 @@ GB_ERROR SQ_pass1 ( SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node )
             /*real calculations start here*/
             if ( read_sequence )
             {
-                int sequenceLength = 0;
-                const char *rawSequence = 0;
+//                 int sequenceLength = 0;
+//                 const char *rawSequence = 0;
+//
+//                 rawSequence    = GB_read_char_pntr ( read_sequence );
+//                 sequenceLength = GB_read_count ( read_sequence );
 
-                rawSequence    = GB_read_char_pntr ( read_sequence );
-                sequenceLength = GB_read_count ( read_sequence );
+                char *rawSequence = SQ_fetch_filtered_sequence ( read_sequence, filter );
+                int sequenceLength = filter->real_len;
 
                 /*calculate physical layout of sequence*/
                 {
@@ -450,6 +515,8 @@ GB_ERROR SQ_pass1 ( SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node )
                     }
                     globalData->SQ_add_sequence ( rawSequence );
                 }
+
+                delete ( rawSequence );
             }
         }
     }
@@ -463,7 +530,7 @@ GB_ERROR SQ_pass1 ( SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node )
 }
 
 
-GB_ERROR SQ_pass1_no_tree ( SQ_GroupData* globalData, GBDATA *gb_main )
+GB_ERROR SQ_pass1_no_tree ( SQ_GroupData* globalData, GBDATA *gb_main, AP_filter *filter )
 {
     char *alignment_name;
 
@@ -512,11 +579,14 @@ GB_ERROR SQ_pass1_no_tree ( SQ_GroupData* globalData, GBDATA *gb_main )
                 /*real calculations start here*/
                 if ( read_sequence )
                 {
-                    int sequenceLength = 0;
-                    const char *rawSequence = 0;
+//                     int sequenceLength = 0;
+//                     const char *rawSequence = 0;
+//
+//                     rawSequence    = GB_read_char_pntr ( read_sequence );
+//                     sequenceLength = GB_read_count ( read_sequence );
 
-                    rawSequence    = GB_read_char_pntr ( read_sequence );
-                    sequenceLength = GB_read_count ( read_sequence );
+                    char *rawSequence = SQ_fetch_filtered_sequence ( read_sequence, filter );
+                    int sequenceLength = filter->real_len;
 
                     /*calculate physical layout of sequence*/
                     SQ_physical_layout* ps_chan = new SQ_physical_layout();
@@ -548,6 +618,8 @@ GB_ERROR SQ_pass1_no_tree ( SQ_GroupData* globalData, GBDATA *gb_main )
                     }
                     pass1_counter_notree++;
                     aw_status ( double ( globalcounter_notree ) /pass1_counter_notree );
+
+                    delete ( rawSequence );
                 }
             }
         }
@@ -562,7 +634,7 @@ GB_ERROR SQ_pass1_no_tree ( SQ_GroupData* globalData, GBDATA *gb_main )
 }
 
 
-GB_ERROR SQ_pass2 ( const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node )
+GB_ERROR SQ_pass2 ( const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node, AP_filter *filter )
 {
     char *alignment_name;
 
@@ -613,8 +685,11 @@ GB_ERROR SQ_pass2 ( const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *n
                 double      avg_gc         = 0;
                 double      gcp            = 0;
 
-                rawSequence    = GB_read_char_pntr ( read_sequence );
-                sequenceLength = GB_read_count ( read_sequence );
+//                 rawSequence    = GB_read_char_pntr ( read_sequence );
+//                 sequenceLength = GB_read_count ( read_sequence );
+                rawSequence = SQ_fetch_filtered_sequence ( read_sequence, filter );
+                sequenceLength = filter->real_len;
+
 
                 /*
                   calculate the average number of bases in group, and the difference of
@@ -756,6 +831,8 @@ GB_ERROR SQ_pass2 ( const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *n
                 seq_assert ( gb_result5 );
                 GB_write_int ( gb_result5, evaluation );
                 //--------end cut this-------
+
+                delete ( rawSequence );
             }
         }
     }
@@ -769,7 +846,7 @@ GB_ERROR SQ_pass2 ( const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *n
 }
 
 
-GB_ERROR SQ_pass2_no_tree ( const SQ_GroupData* globalData, GBDATA *gb_main )
+GB_ERROR SQ_pass2_no_tree ( const SQ_GroupData* globalData, GBDATA *gb_main, AP_filter *filter )
 {
     char *alignment_name;
 
@@ -829,8 +906,11 @@ GB_ERROR SQ_pass2_no_tree ( const SQ_GroupData* globalData, GBDATA *gb_main )
                     double      avg_gc         = 0;
                     double      gcp            = 0;
 
-                    rawSequence    = GB_read_char_pntr ( read_sequence );
-                    sequenceLength = GB_read_count ( read_sequence );
+                    // rawSequence    = GB_read_char_pntr ( read_sequence );
+                    // sequenceLength = GB_read_count ( read_sequence );
+
+                    rawSequence = SQ_fetch_filtered_sequence ( read_sequence, filter );
+                    sequenceLength = filter->real_len;
 
                     /*
                       calculate the average number of bases in group, and the difference of
@@ -960,6 +1040,8 @@ GB_ERROR SQ_pass2_no_tree ( const SQ_GroupData* globalData, GBDATA *gb_main )
                     //--------end cut this-------
                     pass2_counter_notree++;
                     aw_status ( double ( globalcounter_notree ) /pass2_counter_notree );
+
+                    delete ( rawSequence );
                 }
             }
         }
@@ -1096,13 +1178,13 @@ void create_multi_level_consensus ( GBT_TREE *node, SQ_GroupData *data )
 // }
 
 
-void SQ_calc_and_apply_group_data ( GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data )
+void SQ_calc_and_apply_group_data ( GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data, AP_filter *filter )
 {
     if ( node->is_leaf )
     {
         if ( node->gb_node )
         {
-            SQ_pass1 ( data, gb_main, node );
+            SQ_pass1 ( data, gb_main, node, filter );
             seq_assert ( data->getSize() > 0 );
         }
     }
@@ -1119,51 +1201,57 @@ void SQ_calc_and_apply_group_data ( GBT_TREE *node, GBDATA *gb_main, SQ_GroupDat
             if ( data->getSize() == 0 )
             {
                 parentIsEmpty = true;
-                SQ_calc_and_apply_group_data ( node1, gb_main, data ); // process left branch with empty data
-                seq_assert ( data->getSize() > 0 );
+                SQ_calc_and_apply_group_data ( node1, gb_main, data, filter ); // process left branch with empty data
+                // seq_assert ( data->getSize() > 0 ); // FIXME: really the right check to ignore zombies?
             }
             else
             {
                 leftData = data->clone(); // create new empty SQ_GroupData
-                SQ_calc_and_apply_group_data ( node1, gb_main, leftData ); // process left branch
-                seq_assert ( leftData->getSize() > 0 );
+                SQ_calc_and_apply_group_data ( node1, gb_main, leftData, filter ); // process left branch
+                // seq_assert ( leftData->getSize() > 0 ); // FIXME: really the right check to ignore zombies?
             }
 
             rightData = data->clone(); // create new empty SQ_GroupData
-            SQ_calc_and_apply_group_data ( node2, gb_main, rightData ); // process right branch
-            seq_assert ( rightData->getSize() > 0 );
+            SQ_calc_and_apply_group_data ( node2, gb_main, rightData, filter ); // process right branch
+            // seq_assert ( rightData->getSize() > 0 ); // FIXME: really the right check to ignore zombies?
 
             if ( !parentIsEmpty )
             {
-                data->SQ_add ( *leftData );
+                if ( leftData->getSize() > 0 )  // FIXME: really the right check to ignore zombies?
+                    data->SQ_add ( *leftData );
                 delete leftData;
             }
-            data->SQ_add ( *rightData );
+
+            if ( rightData->getSize() > 0 )  // FIXME: really the right check to ignore zombies?
+                data->SQ_add ( *rightData );
             delete rightData;
 
-            create_multi_level_consensus ( node, data );
+            if ( data->getSize() > 0 )  // FIXME: really the right check to ignore zombies?
+            {
+                create_multi_level_consensus ( node, data );
+            }
             globalcounter++;
-            aw_status ( double ( globalcounter ) /groupcounter );
+            aw_status ( double ( globalcounter ) / groupcounter );
         }
         else
         {
-            SQ_calc_and_apply_group_data ( node1, gb_main, data ); // enter left branch
-            seq_assert ( data->getSize() > 0 );
+            SQ_calc_and_apply_group_data ( node1, gb_main, data, filter ); // enter left branch
+            // seq_assert ( data->getSize() > 0 ); // FIXME: really the right check to ignore zombies?
 
-            SQ_calc_and_apply_group_data ( node2, gb_main, data ); // enter right branch
-            seq_assert ( data->getSize() > 0 );
+            SQ_calc_and_apply_group_data ( node2, gb_main, data, filter ); // enter right branch
+            // seq_assert ( data->getSize() > 0 ); // FIXME: really the right check to ignore zombies?
         }
     }
 }
 
 
-void SQ_calc_and_apply_group_data2 ( GBT_TREE *node, GBDATA *gb_main, const SQ_GroupData *data )
+void SQ_calc_and_apply_group_data2 ( GBT_TREE *node, GBDATA *gb_main, const SQ_GroupData *data, AP_filter *filter )
 {
     if ( node->is_leaf )
     {
         if ( node->gb_node )
         {
-            SQ_pass2 ( data, gb_main, node );
+            SQ_pass2 ( data, gb_main, node, filter );
         }
     }
 
@@ -1174,11 +1262,11 @@ void SQ_calc_and_apply_group_data2 ( GBT_TREE *node, GBDATA *gb_main, const SQ_G
 
         if ( node1 )
         {
-            SQ_calc_and_apply_group_data2 ( node1, gb_main, data );
+            SQ_calc_and_apply_group_data2 ( node1, gb_main, data, filter );
         }
         if ( node2 )
         {
-            SQ_calc_and_apply_group_data2 ( node2, gb_main, data );
+            SQ_calc_and_apply_group_data2 ( node2, gb_main, data, filter );
         }
         if ( node->name )
         {      //  group identified

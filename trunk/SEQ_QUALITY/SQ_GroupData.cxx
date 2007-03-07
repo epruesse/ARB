@@ -53,8 +53,7 @@ consensus_result SQ_GroupData_RNA::SQ_calc_consensus ( const char *sequence ) co
     cr.conformity = 0;
     cr.deviation = 0;
 
-    // for ( int i = 0; i < size; i++ ) // FIXME: ecoli Beschraenkung
-    for ( int i = 10000; i < 53744; i++ )
+    for ( int i = 0; i < size; i++ )
     {
         int current[6] = { 0, 0, 0, 0, 0, 0};
 
@@ -184,8 +183,7 @@ consensus_result SQ_GroupData_RNA::SQ_calc_consensus ( const char *sequence ) co
 
 void SQ_GroupData_RNA::SQ_add_sequence ( const char *sequence )
 {
-    // for ( int i = 0; i < size; i++ ) // FIXME: ecoli Beschraenkung
-    for ( int i = 10000; i < 53744; i++ )
+    for ( int i = 0; i < size; i++ )
     {
         int* cs = consensus[i].i;
         switch ( sequence[i] )
