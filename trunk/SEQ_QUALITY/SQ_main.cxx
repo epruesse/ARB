@@ -140,6 +140,15 @@ static void sq_calc_seq_quality_cb ( AW_window *aww, AW_CL res_from_awt_create_s
           for the final result.
         */
 
+        aw_openstatus ( "Checking tree for zombies..." );
+        if ( SQ_check_4_zombies ( tree ) )
+        {
+            aw_message ( "Found zombies in the tree.\nPlease remove them and restart the quality check." );
+            aw_closestatus();
+            return;
+        }
+        aw_closestatus();
+
         if ( tree==0 )
         {
             if ( reevaluate )
