@@ -33,14 +33,12 @@ SQ_GroupData::SQ_GroupData()
 SQ_GroupData::~SQ_GroupData() { }
 
 
-// TODO: deprecated
 double SQ_GroupData_RNA::SQ_calc_consensus_deviation ( const char * ) const
 {
     return 0; // dummy return value
 }
 
 
-// TODO: deprecated
 double SQ_GroupData_RNA::SQ_calc_consensus_conformity ( const char * ) const
 {
     return 0; // dummy return value

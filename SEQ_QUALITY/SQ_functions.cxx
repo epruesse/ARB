@@ -251,8 +251,8 @@ GB_ERROR SQ_evaluate ( GBDATA *gb_main, const SQ_weights& weights )
 
                 GBDATA *gb_quality = GB_search ( gb_ali, "quality", GB_FIND );
 
-                if ( gb_quality )
-                { // FIXME: should give user a warning when a species without quality data is found
+                if ( gb_quality ) // FIXME: should give user a warning when a species without quality data is found
+                {
                     //evaluate the percentage of bases the actual sequence consists of
                     GBDATA *gb_result1 = GB_search ( gb_quality, "percent_of_bases", GB_INT );
                     bases = GB_read_int ( gb_result1 );
@@ -377,16 +377,12 @@ GB_ERROR SQ_evaluate ( GBDATA *gb_main, const SQ_weights& weights )
     return error;
 }
 
-// TODO: Better use a define here...
-// static bool isGap(char c) { return c == '-' || c == '.'; }
-
 
 char *SQ_fetch_filtered_sequence ( GBDATA *read_sequence, AP_filter *filter )
 {
     if ( !read_sequence ) return 0;
 
     char *rawSequence = GB_read_char_pntr ( read_sequence );
-    // int sequenceLength = GB_read_count ( read_sequence );
     int filteredLength = filter->real_len;
 
     // TODO: Maybe one call on creation of AP_filter is enough?
@@ -401,36 +397,6 @@ char *SQ_fetch_filtered_sequence ( GBDATA *read_sequence, AP_filter *filter )
             filteredSequence[i] = rawSequence[filter->filterpos_2_seqpos[i]];
         }
     }
-
-    /////////////////////
-    /*
-    int gap_columns = filter->real_len;
-    int *gap_column = new int[gap_columns];
-    memcpy(gap_column, filter->filterpos_2_seqpos, gap_columns*sizeof(*gap_column));
-    gap_column[gap_columns] = max_ali_len;
-
-    const char *sdata = GB_read_char_pntr ( read_sequence );
-    // if (!error) {
-    int j = 0;
-    for (int i = 0; i < gap_columns; ++i)
-    {
-        if (isGap(sdata[gap_column[i]]))
-        {
-            gap_column[j++] = gap_column[i]; // keep gap column
-        }
-        // otherwise it's overwritten
-    }
-
-    int skipped_columns  = i-j;
-    gap_columns      -= skipped_columns;
-    awte_assert(gap_columns >= 0);
-    // }
-    ++count;
-    if (count >= next_stat) {
-        if (aw_status(count/double(species_count))) error = "User abort";
-        next_stat = count+stat_update;
-    }*/
-    /////////////////////
 
     return filteredSequence;
 }
@@ -1140,44 +1106,6 @@ void create_multi_level_consensus ( GBT_TREE *node, SQ_GroupData *data )
 }
 
 
-// void SQ_calc_and_apply_group_data ( GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data )
-// {
-//     if ( node->is_leaf )
-//     {
-//         if ( node->gb_node )
-//         {
-//             SQ_pass1 ( data, gb_main, node );
-//             seq_assert ( data->getSize() >0 );
-//         }
-//     }
-//
-//     else
-//     {
-//         GBT_TREE *node1 = node->leftson;
-//         GBT_TREE *node2 = node->rightson;
-//
-//         SQ_calc_and_apply_group_data ( node1, gb_main, data ); //Note: data is not used yet!
-//         seq_assert ( data->getSize() >0 );
-//
-//         SQ_GroupData *rightData = data->clone();
-//
-//         SQ_calc_and_apply_group_data ( node2, gb_main, rightData );
-//         seq_assert ( rightData->getSize() >0 );
-//
-//         data->SQ_add ( *rightData );
-//
-//         delete rightData;
-//
-//         if ( node->name )
-//         {        //  group identified
-//             create_multi_level_consensus ( node, data );
-//             globalcounter++;
-//             aw_status ( double ( globalcounter ) /groupcounter );
-//         }
-//     }
-// }
-
-
 void SQ_calc_and_apply_group_data ( GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data, AP_filter *filter )
 {
     if ( node->is_leaf )
@@ -1202,44 +1130,39 @@ void SQ_calc_and_apply_group_data ( GBT_TREE *node, GBDATA *gb_main, SQ_GroupDat
             {
                 parentIsEmpty = true;
                 SQ_calc_and_apply_group_data ( node1, gb_main, data, filter ); // process left branch with empty data
-                // seq_assert ( data->getSize() > 0 ); // FIXME: really the right check to ignore zombies?
+                seq_assert ( data->getSize() > 0 );
             }
             else
             {
                 leftData = data->clone(); // create new empty SQ_GroupData
                 SQ_calc_and_apply_group_data ( node1, gb_main, leftData, filter ); // process left branch
-                // seq_assert ( leftData->getSize() > 0 ); // FIXME: really the right check to ignore zombies?
+                seq_assert ( leftData->getSize() > 0 );
             }
 
             rightData = data->clone(); // create new empty SQ_GroupData
             SQ_calc_and_apply_group_data ( node2, gb_main, rightData, filter ); // process right branch
-            // seq_assert ( rightData->getSize() > 0 ); // FIXME: really the right check to ignore zombies?
+            seq_assert ( rightData->getSize() > 0 );
 
             if ( !parentIsEmpty )
             {
-                if ( leftData->getSize() > 0 )  // FIXME: really the right check to ignore zombies?
-                    data->SQ_add ( *leftData );
+                data->SQ_add ( *leftData );
                 delete leftData;
             }
 
-            if ( rightData->getSize() > 0 )  // FIXME: really the right check to ignore zombies?
-                data->SQ_add ( *rightData );
+            data->SQ_add ( *rightData );
             delete rightData;
 
-            if ( data->getSize() > 0 )  // FIXME: really the right check to ignore zombies?
-            {
-                create_multi_level_consensus ( node, data );
-            }
+            create_multi_level_consensus ( node, data );
             globalcounter++;
             aw_status ( double ( globalcounter ) / groupcounter );
         }
         else
         {
             SQ_calc_and_apply_group_data ( node1, gb_main, data, filter ); // enter left branch
-            // seq_assert ( data->getSize() > 0 ); // FIXME: really the right check to ignore zombies?
+            seq_assert ( data->getSize() > 0 );
 
             SQ_calc_and_apply_group_data ( node2, gb_main, data, filter ); // enter right branch
-            // seq_assert ( data->getSize() > 0 ); // FIXME: really the right check to ignore zombies?
+            seq_assert ( data->getSize() > 0 );
         }
     }
 }
@@ -1331,4 +1254,24 @@ GB_ERROR SQ_mark_species ( GBDATA *gb_main, int condition )
     else GB_pop_transaction ( gb_main );
 
     return error;
+}
+
+
+bool SQ_check_4_zombies ( GBT_TREE *node )
+{
+    bool found = false;
+
+    if ( node->is_leaf )
+    {
+        if ( !node->gb_node )
+            found = true; // found a zombie, aaarrrggghhh... ;-)
+    }
+    else
+    {
+        if ( SQ_check_4_zombies ( node->leftson ) )
+            found = true; // zombie...
+        else found = SQ_check_4_zombies ( node->rightson );
+    }
+
+    return found;
 }
