@@ -162,15 +162,15 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
         strcat(all_chars,rest_chars);
     }
     strcat(all_chars,".-");
-  
+
     // initialize variables
 
-    options_vector[0]=aw_root->awar("phyl/matrix/point")->read_int();
-    options_vector[1]=aw_root->awar("phyl/matrix/minus")->read_int();
-    options_vector[2]=aw_root->awar("phyl/matrix/rest")->read_int();
-    options_vector[3]=aw_root->awar("phyl/matrix/lower")->read_int();
+    options_vector[OPT_FILTER_POINT] = aw_root->awar("phyl/matrix/point")->read_int();
+    options_vector[OPT_FILTER_MINUS] = aw_root->awar("phyl/matrix/minus")->read_int();
+    options_vector[OPT_FILTER_AMBIG] = aw_root->awar("phyl/matrix/rest")->read_int();
+    options_vector[OPT_FILTER_LOWER] = aw_root->awar("phyl/matrix/lower")->read_int();
 
-  
+
     for(i=0;i<256;i++) compare[i]=AW_FALSE;
     for(i=0;i<long(strlen(real_chars));i++) compare[(unsigned char)real_chars[i]]=AW_TRUE;
     for(i=0;i<long(strlen(all_chars));i++) reference_table[(unsigned char)all_chars[i]]=i;
