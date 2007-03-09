@@ -1,20 +1,27 @@
 #ifndef AW_RENAME_HXX
 #define AW_RENAME_HXX
 
-
 #define AWT_RENAME_USE_ADVICE "awt_rename/use_advice"
-#define AWT_RENAME_SAVE_DATA "awt_rename/save_data"
-#define NAMES_FILE_LOCATION "$(ARBHOME)/lib/nas/names.dat"
+#define AWT_RENAME_SAVE_DATA  "awt_rename/save_data"
+
+#define AWAR_NAMESERVER_ADDID "nt/nameserver_addid"
 
 void       AWTC_create_rename_variables(AW_root *root,AW_default db1);
 AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main);
 void       awt_rename_cb(AW_window *aww,GBDATA *gb_main);
 
-AW_window *create_awtc_names_admin_window(AW_root *aw_root);
+void       AW_create_namesadmin_awars(AW_root *aw_root, GBDATA *gb_main);
+AW_window *AW_create_namesadmin_window(AW_root *aw_root, AW_CL cl_gb_main);
 
 GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status = 0);
-GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, char*& new_name, bool openstatus, bool showstatus);
+GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, const char *addid, char*& new_name, bool openstatus, bool showstatus);
 GB_ERROR AWTC_recreate_name(GBDATA *gb_main, bool update_status);
+
+// return name of additional field used for species identification
+// (-> para 'addid' in AWTC_generate_one_name)
+const char *AW_get_nameserver_addid(GBDATA *gb_main);
+
+GB_ERROR AW_test_nameserver(GBDATA *gb_main); // create a test link to the nameserver
 
 class UniqueNameDetector {
     // Note: If you add new items to the DB while one instance of this class exists,
