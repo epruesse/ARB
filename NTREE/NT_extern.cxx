@@ -193,6 +193,8 @@ void create_all_awars(AW_root *awr, AW_default def)
     EXP_create_awars(awr, def);
     AWT_create_db_browser_awars(awr, def);
 
+    AW_create_namesadmin_awars(awr, gb_main);
+
     awr->awar_int( AWAR_SECURITY_LEVEL, 0, def);
     awr->awar(AWAR_SECURITY_LEVEL)->add_callback(nt_changesecurity);
 #if defined(DEBUG) && 0
@@ -1609,7 +1611,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         // --------------------------------------------------------------------------------
         awm->create_menu(0,"Tools","o","nt_etc.hlp", AWM_ALL);
         {
-            AWMIMT("names_admin",      "Name server admin",    "s","namesadmin.hlp",   AWM_EXP, AW_POPUP, (AW_CL)create_awtc_names_admin_window, 0 );
+            AWMIMT("names_admin",      "Name server admin",    "s","namesadmin.hlp",   AWM_EXP, AW_POPUP, (AW_CL)AW_create_namesadmin_window, (AW_CL)gb_main );
             awm->insert_sub_menu( 0,   "Network", "N");
             {
                 AWMIMT("ors",   "ORS (disabled) ...",      "O","ors.hlp",          AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"netscape http://pop.mikro.biologie.tu-muenchen.de/ORS/ &", 0);
