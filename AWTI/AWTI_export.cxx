@@ -191,7 +191,7 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
 
         size_t species_count = count_species();
         size_t stat_update   = species_count/1000;
-        
+
         if (stat_update == 0) stat_update = 1;
 
         size_t count         = 0;
@@ -229,7 +229,7 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
         }
 
         aw_status(1.0);
-        
+
         if (!error) {
             columns       = filter->real_len - gap_columns;
             export_column = new int[columns];
@@ -244,7 +244,7 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
                     gpos++;
                 }
                 else { // not only gaps -> use column
-                    awte_assert(fpos<gap_column[gpos]); 
+                    awte_assert(fpos<gap_column[gpos]);
                     awte_assert(epos < columns); // got more columns than expected
                     export_column[epos++] = fpos;
                 }
@@ -263,7 +263,7 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
     else { // compress all or none (simply use filter)
         export_column              = filter->filterpos_2_seqpos;
         filter->filterpos_2_seqpos = 0;
-        columns                    = filter->filter_len;
+        columns                    = filter->real_len;
     }
 
     seq = new char[columns+1];
@@ -421,7 +421,7 @@ static GB_ERROR AWTI_XML_recursive(GBDATA *gbd) {
             }
         }
     }
-    
+
     delete tag;
     return error;
 }
@@ -629,7 +629,7 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, GBDATA *gb_main,
                     out = 0;
 
                     if (error) unlink(curr_outname);
-                    
+
                     free(curr_outname);
                     curr_outname = 0;
                 }
@@ -637,7 +637,7 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, GBDATA *gb_main,
                 count++;
                 if (!error && count >= next_stat) {
                     if (aw_status(count/double(species_count))) error = "User abort";
-                    
+
                     next_stat = count+stat_mod;
                 }
             }
@@ -695,7 +695,7 @@ void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_crea
 
     aw_closestatus();
     if (error) aw_message(error);
-    
+
     if (real_outname) awr->awar(AWAR_EXPORT_FILE"/file_name")->write_string(real_outname);
 
     awt_refresh_selection_box(awr, AWAR_EXPORT_FILE);
