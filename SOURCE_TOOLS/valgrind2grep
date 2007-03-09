@@ -1,5 +1,7 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
+use warnings;
+use strict;
 use IO::Handle;
 
 # -------------------------------------------------------------------- customize here
@@ -21,12 +23,12 @@ my $unmark_filtered = "(filt) ";
 my $unmark_rest     = "(note) ";
 
 sub check_ignore($\$) {
-    my ($text,$ignore_r) = @_;
-    if (not defined $$ignore_r) {
-        # to ignore more messages please add here:
-        if ($text =~ /_XtGet(Sub)?[rR]esources.*libXt/) { $$ignore_r = $&; return; }
-        if ($text =~ /_X11TransWrite.*libX11/) { $$ignore_r = $&; return; }
-    }
+  my ($text,$ignore_r) = @_;
+  if (not defined $$ignore_r) {
+    # to ignore more messages please add here:
+    if ($text =~ /_XtGet(Sub)?[rR]esources.*libXt/) { $$ignore_r = $&; return; }
+    if ($text =~ /_X11TransWrite.*libX11/) { $$ignore_r = $&; return; }
+  }
 }
 
 my $debug = 0;
@@ -43,9 +45,9 @@ my $filter  = $ARGV[1];
 
 my $suppress_common = 0;
 if ($args==3) {
-    my $a = $ARGV[2];
-    if ($a eq '--suppress-common') { $suppress_common=1; }
-    else { die "Unknown argument '$a'"; }
+  my $a = $ARGV[2];
+  if ($a eq '--suppress-common') { $suppress_common=1; }
+  else { die "Unknown argument '$a'"; }
 }
 
 # read list of source files:
@@ -53,42 +55,65 @@ if ($args==3) {
 open(SOURCELIST,"<$sourcelist") || die "can't open $sourcelist";
 
 my %fileIndex = ();
-foreach (<SOURCELIST>) {
-    chomp;
-    $fileIndex{$_} = $_;
-    if (/\/([^\/]+)\/([^\/]+)$/) {
-        my $last_dir = $1;
-        my $fname    = $2;
 
-        $fileIndex{$fname} = $_;
-        $fileIndex{$last_dir.'/'.$fname} = $_;
-    }
-    elsif (/\/([^\/]+)$/) {
-        my $fname = $1;
-        $fileIndex{$fname} = $_;
-    }
-    else {
-        die "invalid entry in $sourcelist ('$_')"
-    }
+sub addFileIndex($$) {
+  my ($key,$val) = @_;
+  if (not exists $fileIndex{$key}) {
+    my @array = ();
+    $fileIndex{$key} = \@array;
+  }
+  my $array_r = $fileIndex{$key};
+  push @$array_r, $val;
+}
+
+foreach (<SOURCELIST>) {
+  chomp;
+  addFileIndex($_,$_);
+  # $fileIndex{$_} = $_;
+  if (/\/([^\/]+)\/([^\/]+)$/) {
+    my $last_dir = $1;
+    my $fname    = $2;
+
+    addFileIndex($fname,$_);
+    addFileIndex($last_dir.'/'.$fname,$_);
+    # $fileIndex{$fname} = $_;
+    # $fileIndex{$last_dir.'/'.$fname} = $_;
+  }
+  elsif (/\/([^\/]+)$/) {
+    my $fname = $1;
+    addFileIndex($fname,$_);
+    # $fileIndex{$fname} = $_;
+  }
+  else {
+    die "invalid entry in $sourcelist ('$_')"
+  }
 }
 
 close(SOURCELIST);
 
+# make entries unique
+foreach (keys %fileIndex) {
+  my $array_r = $fileIndex{$_};
+  my %unique = map { $_ => 1; } @$array_r;
+  @$array_r = keys %unique;
+}
+
+
 # use unbuffered I/O (otherwise pipe waits for valgrind to terminate???)
 
-$in = new IO::Handle;
+my $in = new IO::Handle;
 $in->fdopen(fileno(STDIN),"r") || die "can't open STDIN";
 
-$out = new IO::Handle;
+my $out = new IO::Handle;
 $out->fdopen(fileno(STDOUT),"w") || die "can't open STDOUT";
 
 $out->print("Settings: Showing $callers caller(s).\n");
 $out->print("          Filtering with '$filter'.\n");
 
 sub avoid_location($) {         # invalidate everything emacs could missinterpret as error-location (i.e. '(file:lineno)')
-    $_ = shift;
-    s/([(].*)(:)(.*[)])/$1_$2_$3/ig;
-    $_;
+  $_ = shift;
+  s/([(].*)(:)(.*[)])/$1_$2_$3/ig;
+  $_;
 }
 
 # variables:
@@ -96,8 +121,8 @@ sub avoid_location($) {         # invalidate everything emacs could missinterpre
 my $i;
 my $called_from      = "called from";
 my $reason           = 'no reason yet';
-my $caller_count     = 0;           # counts callers
-my $filtered         = 0;           # filter current error
+my $caller_count     = 0;       # counts callers
+my $filtered         = 0;       # filter current error
 my $ignore           = undef;
 my $last_ignore      = '';
 my $ignore_curr_line = 0;
@@ -105,111 +130,123 @@ my $ignore_curr_line = 0;
 # the filter loop:
 
 while (not $in->eof) {
-    # read one line:
-    $_ = $in->getline;
+  # read one line:
+  $_ = $in->getline;
 
-    # convert error messages to grep format:
-    if (/^([=\-0-9]+[ ]+)(.*)$/) {
-        my $prefix  = $1;
-        my $content = $2;
+  # convert error messages to grep format:
+  if (/^([=\-0-9]+[ ]+)(.*)$/) {
+    my $prefix  = $1;
+    my $content = $2;
 
-        if ($content =~ /^([ab][ty].*)([(][^()]+[)])$/) { # looks like an valgrind error
-            $content = $1;
-            my $location = $2;
+    if ($content =~ /^([ab][ty].*)([(][^()]+[)])$/) { # looks like an valgrind error
+      $content = $1;
+      my $location = $2;
 
-            if ($location =~ /[(](.*):(.*)[)]/) { # seems to have a valid '(file:line)' location at eol
-                if ($filtered == 1) {
-                    $_ = $unmark_filtered.' '.&avoid_location($_);
-                }
-                else {
-                    my $replace = $fileIndex{$1};
-                    if ($replace) {
-                        if (not -f $replace) {
-                            $_ = "$sourcelist:1: might be outdated ($replace does not exist)\n";
-                        }
-                        else {
-                            $_ = "$replace:$2: $reason ($content)\n";
-                            if ($reason eq $called_from) { # its a caller
-                                $caller_count++;
-                                if ($caller_count > $callers) {
-                                    $_ = $unmark_callers.$_;
-                                } # hide this caller
-                            } else {
-                                $caller_count = 0;
-                            }
-                            $reason = $called_from;
-                        }
-                    }
-                    else {      # location in unavailable file (i.e. in library)
-                        $_ = $unmark_rest.$prefix.$reason." $content (in unavailable file $1 line $2)\n";
-                    }
-                }
-            }
-            else {              # valgrind error w/o location
-                $_=$unmark_rest.' '.$_;
-                if ($suppress_common==1) { check_ignore($_, $ignore); }
-            }
-        }
-        else {                  # no location found
-            if ($content =~ /^TRANSLATE: / or
-                $content =~ /^Reading syms from/ or
-                $content =~ /object doesn.t have a/)
-            {
-                $ignore_curr_line = 1;
-            }
-            elsif ($content =~ /^[ ]*$/) {
-                $ignore = undef;
-                $_      = '(    ) '.$_;
-            }
-            else {
-                $reason = $content;
-                $_='(    ) '.$_;
-
-                # should that reason be filtered ?
-                if ($reason =~ /alloc\'d/) { # an allocator message (applies to last message) -> so never filter
-                    $reason = "ORIGIN: $reason";
-                    # keep $ignore like before
-                }
-                else {
-                    if ($reason =~ /$filter/i) { $filtered = 0; }
-                    else { $filtered = 1; }
-
-                    if ($filtered == 1) { $ignore = undef; }
-                }
-            }
-        }
-    }
-
-    # print out line
-    if ($ignore_curr_line==0) { 
-        if (not defined $ignore) {
-            $out->print($_);
-            $out->flush;
-            $last_ignore = '';
+      if ($location =~ /[(](.*):(.*)[)]/) { # seems to have a valid '(file:line)' location at eol
+        my ($file,$line) = ($1,$2);
+        if ($filtered == 1) {
+          $_ = $unmark_filtered.' '.&avoid_location($_);
         }
         else {
-            if ($ignore ne $last_ignore) {
-                s/^\(note\)[ ]*//;
-                $out->print("(igno) '$ignore' ".$_);
-                $out->print("(skip) further messages suppressed\n");
-                $out->flush;
-                $last_ignore = $ignore;
+          my $array_r = $fileIndex{$file};
+          if (defined $array_r) {
+            my @lines = ();
+            if (scalar(@$array_r)>1) {
+              push @lines, $unmark_rest."Multiple occurrances of '$file' - not sure which location is the correct one\n";
+            }
+
+            if ($reason eq $called_from) { # its a caller
+              $caller_count++;
             }
             else {
-                if ($debug==1) {
-                    $out->print("(comm) ".$_);
-                    $out->flush;
-                }
+              $caller_count = 0;
             }
+
+            foreach my $replace (@$array_r) {
+              if (not -f $replace) {
+                $_ = "$sourcelist:1: might be outdated ($replace does not exist)\n";
+              }
+              else {
+                $_ = "$replace:$line: $reason ($content)\n";
+                if ($caller_count > $callers) {
+                  $_ = $unmark_callers.$_;
+                }             # hide this caller
+              }
+              push @lines, $_;
+            }
+
+            $reason = $called_from;
+            $_ = join '', @lines;
+          }
+          else {                # location in unavailable file (i.e. in library)
+            $_ = $unmark_rest.$prefix.$reason." $content (in unavailable file $file line $line)\n";
+          }
         }
+      }
+      else {                    # valgrind error w/o location
+        $_=$unmark_rest.' '.$_;
+        if ($suppress_common==1) { check_ignore($_, $ignore); }
+      }
+    }
+    else {                      # no location found
+      if ($content =~ /^TRANSLATE: / or
+          $content =~ /^Reading syms from/ or
+          $content =~ /object doesn.t have a/) {
+        $ignore_curr_line = 1;
+      }
+      elsif ($content =~ /^[ ]*$/) {
+        $ignore = undef;
+        $_      = '(    ) '.$_;
+      }
+      else {
+        $reason = $content;
+        $_='(    ) '.$_;
+
+        # should that reason be filtered ?
+        if ($reason =~ /alloc\'d/) { # an allocator message (applies to last message) -> so never filter
+          $reason = "ORIGIN: $reason";
+          # keep $ignore like before
+        }
+        else {
+          if ($reason =~ /$filter/i) { $filtered = 0; }
+          else { $filtered = 1; }
+
+          if ($filtered == 1) { $ignore = undef; }
+        }
+      }
+    }
+  }
+
+  # print out line
+  if ($ignore_curr_line==0) { 
+    if (not defined $ignore) {
+      $out->print($_);
+      $out->flush;
+      $last_ignore = '';
     }
     else {
+      if ($ignore ne $last_ignore) {
+        s/^\(note\)[ ]*//;
+        $out->print("(igno) '$ignore' ".$_);
+        $out->print("(skip) further messages suppressed\n");
+        $out->flush;
+        $last_ignore = $ignore;
+      }
+      else {
         if ($debug==1) {
-            $out->print("(SUPP) ".$_);
-            $out->flush();
+          $out->print("(comm) ".$_);
+          $out->flush;
         }
-        $ignore_curr_line = 0;
+      }
     }
+  }
+  else {
+    if ($debug==1) {
+      $out->print("(SUPP) ".$_);
+      $out->flush();
+    }
+    $ignore_curr_line = 0;
+  }
 }
 
 $in->close;
