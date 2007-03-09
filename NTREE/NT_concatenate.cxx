@@ -603,47 +603,46 @@ GB_ERROR checkAndMergeFields( GBDATA *gb_new_species, GB_ERROR error, speciesCon
 GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speciesConcatenateList scl){
     GB_push_transaction(gb_main);
 
-    GBDATA  *gb_species_data      = GB_search(gb_main, "species_data",  GB_CREATE_CONTAINER);
-    GBDATA  *gb_species_full_name = GB_find(gb_species, "full_name", 0, down_level);
-    char    *str_full_name        = GB_read_string(gb_species_full_name);
-    char    *new_species_name     = 0;
-    GB_ERROR error                = AWTC_generate_one_name(gb_main, str_full_name, 0, new_species_name, false, true);
+    GB_ERROR  error           = 0;
+    GBDATA   *gb_species_data = GB_search(gb_main, "species_data",  GB_CREATE_CONTAINER);
 
-    if (!error) {   // name was created
-        if (GBT_find_species_rel_species_data(gb_species_data, new_species_name) != 0) { //if the name is not unique create unique name
-            UniqueNameDetector und(gb_species_data);
-            char *uniqueName = AWTC_makeUniqueShortName(new_species_name, und);
-            free(new_species_name);
-            new_species_name = uniqueName;
-            if (!new_species_name) error = "No short name created.";
+    // data needed for name generation
+    char *full_name = 0;
+    char *acc       = 0;
+    char *addid     = 0;
+
+    /*--------------------getting the species related data --------------------*/
+
+    GBDATA *gb_new_species = 0;
+
+    if (!error) {
+        // copy species to create a new species
+        gb_new_species = GB_create_container(gb_species_data, "species");
+        error          = gb_new_species ? GB_copy(gb_new_species, gb_species) : GB_get_error();
+
+        if (!error) { // write dummy-name (real name written below)
+            GBDATA *gb_name = GB_search(gb_new_species, "name", GB_STRING);
+            error           = gb_name ? GB_write_string(gb_name, "$currcat$") : GB_get_error();
         }
     }
 
-    /*--------------------getting the species releated data --------------------*/
-    GBDATA *gb_species_name   = GB_find(gb_species, "name", 0, down_level);
-    char   *str_name          = GB_read_string(gb_species_name);
-    GBDATA *gb_species_source = GBT_find_species_rel_species_data(gb_species_data, str_name);
-    GBDATA *gb_new_species    = 0;
-    free(str_name);
+    if (!error) { // copy full name
+        GBDATA *gb_full_name = GB_find(gb_species, "full_name", 0, down_level);
+        if (!gb_full_name) error = GB_get_error();
+        else {
+            full_name = GB_read_string(gb_full_name);
+            if (!full_name) error = GB_get_error();
+        }
 
-    if (!error) {
-        gb_new_species = GB_create_container(gb_species_data, "species");
-        error          = GB_copy(gb_new_species, gb_species_source); // copy first found species to create a new species
-    }
-    if (!error) {
-        GBDATA *gb_name = GB_search(gb_new_species, "name", GB_STRING);
-        error           = GB_write_string(gb_name, new_species_name); // insert new 'name'
-    }
-    if (!error) {
-        GBDATA *gb_full_name = GB_search(gb_new_species, "full_name", GB_STRING);
-        error                = GB_write_string(gb_full_name, str_full_name); // insert new 'full_name'
+        if (!error) {
+            GBDATA *gb_new_full_name = GB_search(gb_new_species, "full_name", GB_STRING);
+            error = gb_new_full_name ? GB_write_string(gb_new_full_name, full_name) : GB_get_error();
+        }
     }
 
-    long id = 0;
-    char buffer[100];
-
-    if(!error) {
+    if (!error) {
         char **ali_names = GBT_get_alignment_names(gb_main);
+        long   id        = 0;
 
         for (speciesConcatenateList speciesList = scl; speciesList; speciesList = speciesList->next) {
             for (int no_of_alignments = 0; ali_names[no_of_alignments]!=0; no_of_alignments++) {
@@ -655,29 +654,62 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
                     if (!error) id += GBS_checksum(seq_data,1,".-");  //creating checksum of the each aligned sequence to generate new accession number
                     free(seq_data);
                 }
-                if (error) error    = GB_export_error("Can't create alignment '%s'", ali_names[no_of_alignments]);
+                if (error) error = GB_export_error("Can't create alignment '%s'", ali_names[no_of_alignments]);
             }
         }
-        sprintf(buffer,"ARB_%lX",id);
+
+        if (!error) {
+            GBDATA *gb_acc = GB_search(gb_new_species,"acc",GB_STRING);
+            acc            = GBS_global_string_copy("ARB_%lX", id);
+            GB_write_string(gb_acc, acc); //inserting new accession number
+        }
+
         GBT_free_names(ali_names);
     }
 
-    if(!error) error = checkAndMergeFields(gb_new_species, error, scl);
+    if (!error) error = checkAndMergeFields(gb_new_species, error, scl);
 
-    free(new_species_name);
-    free(str_full_name);
+    // now generate new name
+    if (!error) {
+        char *new_species_name = 0;
 
-    if(!error) {
-        GBDATA *gb_acc = GB_search(gb_new_species,"acc",GB_STRING);
-        GB_write_string(gb_acc,buffer); //inserting new accession number
-        GB_pop_transaction(gb_main);
-        return gb_new_species;
+        const char *add_field = AW_get_nameserver_addid(gb_main);
+        GBDATA     *gb_addid  = add_field[0] ? GB_find(gb_new_species, add_field, 0, down_level) : 0;
+        if (gb_addid) addid = GB_read_string(gb_addid);
+
+        error = AWTC_generate_one_name(gb_main, full_name, acc, addid, new_species_name, false, true);
+        if (!error) {   // name was created
+            if (GBT_find_species_rel_species_data(gb_species_data, new_species_name) != 0) { //if the name is not unique create unique name
+                UniqueNameDetector und(gb_species_data);
+                char *uniqueName = AWTC_makeUniqueShortName(new_species_name, und);
+                free(new_species_name);
+                new_species_name = uniqueName;
+                if (!new_species_name) error = "No short name created.";
+            }
+        }
+
+        if (!error) {
+            GBDATA *gb_name = GB_search(gb_new_species, "name", GB_STRING);
+            error           = GB_write_string(gb_name, new_species_name); // insert new 'name'
+        }
+        
+        free(new_species_name);
+    }
+
+    if (error) {
+        GB_abort_transaction(gb_main);
+        gb_new_species = 0;
+        aw_message(error, "OK");
     }
     else {
-        GB_abort_transaction(gb_main);
-        aw_message(error, "OK");
-        return 0;
+        GB_pop_transaction(gb_main);
     }
+
+    free(addid);
+    free(acc);
+    free(full_name);
+
+    return gb_new_species;
 }
 
 GB_ERROR checkAndCreateNewField(GBDATA *gb_main, char *new_field_name){
