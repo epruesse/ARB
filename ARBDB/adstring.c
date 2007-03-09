@@ -384,6 +384,22 @@ int gbs_stricmp(const char *s1, const char *s2) {
     return cmp;
 }
 
+int gbs_strnicmp(const char *s1, const char *s2, size_t len) {
+    int c1, c2, cmp = 0;
+
+    if (len>0) {
+        do {
+            --len;
+            c1  = *s1++;
+            c2  = *s2++;
+            cmp = toupper(c1)-toupper(c2);
+        }
+        while (cmp == 0 && c1 != 0 && len>0);
+    }
+
+    return cmp;
+}
+
 void gbs_memcopy(char *dest, const char *source, long len)
 {
     register long    i;
@@ -1442,36 +1458,81 @@ char *GBS_eval_env(const char *p){
 ********************************************************************************************/
 
 char *GBS_ptserver_id_to_choice(int i) {
-    char  search_for[256];
-    char  choice[256];
-    char *fr;
-    char *file;
-    char *server;
-    char empty[] = "";
+    char *serverID = GBS_global_string_copy("ARB_PT_SERVER%i", i);
+    char *ipPort   = GBS_read_arb_tcp(serverID);
+    char *result   = 0;
 
-    sprintf(search_for,"ARB_PT_SERVER%i",i);
+    if (ipPort) {
+        char       *file     = GBS_scan_arb_tcp_param(ipPort, "-d");
+        const char *nameOnly = strrchr(file, '/');
+        char       *colon;
 
-    server = GBS_read_arb_tcp(search_for);
-    if (!server) return 0;
+        if (nameOnly) nameOnly++;   // position behind '/'
+        else nameOnly = file;       // otherwise show complete file
 
-    fr               = server;
-    file             = server;  /* i got the machine name of the server */
-    if (*file) file += strlen(file)+1; /* now i got the command string */
-    if (*file) file += strlen(file)+1; /* now i got the file */
+        colon = strchr(ipPort, ':');
+        if (colon) *colon = 0; // hide port
 
-    if (strrchr(file,'/'))              file   = strrchr(file,'/')-1;
-    if (!(server = strtok(server,":"))) server = empty;
+        result = GBS_global_string_copy("%-8s: %s", ipPort, nameOnly);
 
-    sprintf(choice,"%-8s: %s",server,file+2);
-    free(fr);
+        free(file);
+    }
+    free(ipPort);
+    free(serverID);
 
-    return strdup(choice);
+    return result;
 }
 
+char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam) {
+    /* search a specific server parameter in result from GBS_read_arb_tcp()
+     * wantedParam may be sth like '-d' (case is ignored!)
+     */
+    char *result = 0;
+    if (ipPort) {
+        const char *exe   = strchr(ipPort, 0)+1;
+        const char *param = strchr(exe, 0)+1;
+        size_t      plen  = strlen(param);
+        size_t      wplen = strlen(wantedParam);
+
+        while (plen) {
+            if (gbs_strnicmp(param, wantedParam, wplen) == 0) { /* starts with wantedParam */
+                result = strdup(param+wplen);
+                break;
+            }
+            param += plen+1;    /* position behind 0-delimiter */
+            plen   = strlen(param);
+        }
+    }
+    return result;
+}
 
 /********************************************************************************************
             Find an entry in the $ARBHOME/lib/arb_tcp.dat file
 ********************************************************************************************/
+
+/* Be aware: GBS_read_arb_tcp returns a quite unusual string containing several string delimiters (0-characters).
+   It contains all words (separated by space or tab in arb_tcp.dat) of the corresponding line in arb_tcp.dat.
+   These words get concatenated (separated by 0 characters).
+
+   The first word (which matches the parameter env) is skipped.
+   The second word (the socket info = "host:port") is returned directly as result.
+   The third word is the server executable name.
+   Thr fourth and following words are parameters to the executable. 
+
+   To access these words follow this example:
+
+   char *ipPort    = GBS_read_arb_tcp("ARB_NAME_SERVER");
+   if (ipPort) {
+   char *serverExe = strchr(ipPort, 0)+1;
+   char *para1     = strchr(serverExe, 0)+1; // always exists!
+   char *para2     = strchr(para1, 0)+1;
+   if (para2[0]) {
+   // para2 exists
+   }
+   }
+
+   see also GBS_read_arb_tcp_param() above
+*/
 
 char *GBS_read_arb_tcp(const char *env)
 {
@@ -1533,6 +1594,7 @@ char *GBS_read_arb_tcp(const char *env)
                     p += len+1;
                     tok1 = strtok(0," \t");
                 }
+                *p++ = 0; /* add additional 0 terminator */
 
                 result = (char*)GB_calloc(sizeof(char),p-buffer);
                 GB_MEMCPY(result,buffer,p-buffer);
