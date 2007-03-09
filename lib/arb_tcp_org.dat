@@ -8,11 +8,12 @@
 #
 #	Existing SERVER_IDs:
 #
-#		ARB_DB_SERVER 		Your private database server. It is automatically started
-#		ARB_PT_SERVER		Default PT_SERVER for PB_RETRIEVE (privat TU_Munich server)
-#		ARB_PT_SERVERn		Global PT_SERVERs. Needed for fast database search (align seq, probe des.)
-#					n starts from 0 to max, no number can be excluded !!!
-#		ARB_NAME_SERVER		Generates short names for species
+#		ARB_DB_SERVER 		    Your private database server. It is automatically started
+#		ARB_PT_SERVER		    Default PT_SERVER for PB_RETRIEVE (privat TU_Munich server)
+#		ARB_PT_SERVERn		    Global PT_SERVERs. Needed for fast database search (align seq, probe des.)
+#					            n starts from 0 to max, no number can be excluded !!!
+#		ARB_NAME_SERVER		    Generates short names for species (using 'acc')
+#		ARB_NAME_SERVER_field   Generates short names for species (using 'acc' and 'field')
 #
 #*****************************************************************
 
@@ -35,8 +36,12 @@ ARB_DB_SERVER		:/tmp/arb_db_$(USER)_$(ARB_PID)
 #***********	Global Servers (for all users) ******************
 #
 #***********	Nameserver The server should run on the nfs server ******************
+# The primary nameserver (ARB_NAME_SERVER) uses the field 'acc' for species identification
+# You may define additional nameservers, using one additional field for identification.
+# The defined nameserver 'ARB_NAME_SERVER_START' uses the fields 'acc' and 'start'.
 
-ARB_NAME_SERVER		localhost:3029		arb_name_server	-d$(ARBHOME)/lib/nas/names.dat
+ARB_NAME_SERVER         localhost:3020		arb_name_server	-d$(ARBHOME)/lib/nas/names.dat
+ARB_NAME_SERVER_START   localhost:3021		arb_name_server	-d$(ARBHOME)/lib/nas/names_start.dat
 
 #***********	PT_SERVERS The server should run on the nfs server ******************
 #*******     You may add new pt_servers here: (numbers must be continued)   *********
