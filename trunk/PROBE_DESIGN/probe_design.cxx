@@ -1800,11 +1800,9 @@ void pd_query_pt_server(AW_window *aww)
 
 void pd_export_pt_server(AW_window *aww)
 {
-    AW_root  *awr                = aww->get_root();
+    AW_root  *awr   = aww->get_root();
+    GB_ERROR  error = 0;
     char      pt_server[256];
-    char     *server;
-    char     *file;
-    GB_ERROR  error              = 0;
 
     bool create_gene_server = awr->awar(AWAR_PROBE_CREATE_GENE_SERVER)->read_int();
     {
@@ -1840,11 +1838,9 @@ void pd_export_pt_server(AW_window *aww)
         aw_openstatus("Export db to server");
         aw_status("Search server to kill");
         arb_look_and_kill_server(AISC_MAGIC_NUMBER,pt_server);
-        server = GBS_read_arb_tcp(pt_server);
-        file = server;              /* i got the machine name of the server */
-        if (*file) file += strlen(file)+1;  /* now i got the command string */
-        if (*file) file += strlen(file)+1;  /* now i got the file */
-        if (*file == '-') file += 2;
+
+        char *ipPort = GBS_read_arb_tcp(pt_server);
+        char *file   = GBS_scan_arb_tcp_param(ipPort, "-d");
 
         aw_status("Exporting the database");
         {
@@ -1888,6 +1884,9 @@ void pd_export_pt_server(AW_window *aww)
             error = arb_start_server(pt_server,gb_main, 1);
         }
         aw_closestatus();
+
+        free(file);
+        free(ipPort);
     }
     if (error) aw_message(error);
 }
