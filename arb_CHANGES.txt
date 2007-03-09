@@ -1,11 +1,10 @@
 ARB change log
 
-Future changes:
-
- - Sequence quality check 
-
 Major changes for next version:
 
+ - Sequence quality check 
+ - Nameserver may use one field additional to 'acc' (useful to keep multiple species with same acc)
+ - tweaked base frequency filter generation
  - Normal export (not using readseq) improved:
    * supports filters and gap removal
    * optimized for big amount of data
