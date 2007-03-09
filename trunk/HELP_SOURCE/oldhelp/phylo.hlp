@@ -57,11 +57,11 @@ DESCRIPTION	Calculate base frequencies and/or a base frequency filter.
                         treat as regular character
 
                               This is only applicable to 'ambiguity codes'. Treats ambiguity codes like
-                              regular sequence characters. (Note: 'use like uppercase char' setting for
+                              regular sequence characters. (Note: 'treat as uppercase char' setting for
                               lowercase characters affects ambiguity codes as well, if treated as regular
                               characters)
 
-                        use like uppercase char
+                        treat as uppercase char
 
                               This is only applicable to 'lowercase chars'. Simply treat regular lowercase
                               sequence characters like uppercase characters.
@@ -86,7 +86,7 @@ EXAMPLES	To create a filter which hits all columns containing sequence data, use
                    - similarity 0 to 100
                    - both gaps: 'dont count (ignore)'
                    - ambiguity codes: 'treat as regular character'
-                   - lowercase chars: 'use like uppercase char'
+                   - lowercase chars: 'treat as uppercase char'
 
 WARNINGS	None
 
