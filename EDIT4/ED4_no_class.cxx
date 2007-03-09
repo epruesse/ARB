@@ -2024,10 +2024,11 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
         error = GB_export_error("Please enter a full_name for the new species");
     }
     else {
-        error = GB_begin_transaction(gb_main);
-        GBDATA *gb_species_data = GB_search(gb_main, "species_data",  GB_CREATE_CONTAINER);
-        char *new_species_name = 0;
-        char *acc = 0;
+        error                    = GB_begin_transaction(gb_main);
+        GBDATA *gb_species_data  = GB_search(gb_main, "species_data",  GB_CREATE_CONTAINER);
+        char   *new_species_name = 0;
+        char   *acc              = 0;
+        char   *addid            = 0;
 
         enum e_dataSource { MERGE_FIELDS, COPY_FIELDS } dataSource = (enum e_dataSource)ED4_ROOT->aw_root ->awar(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE)->read_int();
         enum { NOWHERE, ON_SPECIES, ON_KONSENSUS } where_we_are = NOWHERE;
@@ -2054,11 +2055,13 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                     ED4_species_name_terminal *spec_name   = cursor_terminal->to_sequence_terminal()->corresponding_species_name_terminal();
                     const char                *source_name = spec_name->resolve_pointer_to_char_pntr();
                     GBDATA                    *gb_source   = GBT_find_species_rel_species_data(gb_species_data, source_name);
-                    GBDATA                    *gb_acc      = GB_search(gb_source, "acc", GB_FIND);
 
-                    if (gb_acc) { // if has accession
-                        acc = GB_read_string(gb_acc);
-                    }
+                    GBDATA *gb_acc  = GB_search(gb_source, "acc", GB_FIND);
+                    if (gb_acc) acc = GB_read_string(gb_acc); // if has accession
+
+                    const char *add_field = AW_get_nameserver_addid(gb_main);
+                    GBDATA     *gb_addid  = add_field[0] ? GB_search(gb_source, add_field, GB_FIND) : 0;
+                    if (gb_addid) addid   = GB_read_as_string(gb_addid);
                 }
                 else {
                     error = "Please place cursor on a species";
@@ -2073,7 +2076,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                 error = "It's no good idea to create the short-name for a new species using the nameserver! (has no acc yet)";
             }
             else {
-                error = AWTC_generate_one_name(gb_main, new_species_full_name, acc, new_species_name, true, true);
+                error = AWTC_generate_one_name(gb_main, new_species_full_name, acc, addid, new_species_name, true, true);
                 if (!error) {   // name was created
                     if (!nameIsUnique(new_species_name, gb_species_data)) {
                         if (!existingNames) existingNames = new UniqueNameDetector(gb_species_data);
@@ -2391,11 +2394,13 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                 ED4_ROOT->refresh_all_windows(1);
             }
         }
+
+        free(addid);
+        free(acc);
+        free(new_species_name);
     }
 
-    if (error) {
-        aw_message(error, "OK");
-    }
+    if (error) aw_message(error, "OK");
 }
 
 AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode)
