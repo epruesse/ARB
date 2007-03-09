@@ -19,14 +19,22 @@
 
 using namespace std;
 
+// --------------------------------------------------------------------------------
+
 #if defined(DEBUG)
 // #define DUMP_NAME_CREATION
 #endif // DEBUG
 
 #define UPPERCASE(c) do{ (c) = toupper(c); }while(0)
 
+// --------------------------------------------------------------------------------
+
 struct AN_gl_struct  AN_global;
 AN_main             *aisc_main; /* muss so heissen */
+
+const int SERVER_VERSION = 4;
+
+// --------------------------------------------------------------------------------
 
 inline char *an_strlwr(char *str) {
     for (int i = 0; str[i]; i++) {
@@ -68,7 +76,9 @@ static AN_revers *lookup_an_revers(AN_main *main, const char *shortname) {
 }
 
 static AN_shorts *lookup_an_shorts(AN_main *main, const char *identifier) {
-    // 'identifier' is either '*acc' or 'name1*name2*S' (see get_short() for details)
+    // 'identifier' is either '*acc*add_id' or 'name1*name2*S' (see get_short() for details)
+    // 'add_id' is the value of an additional DB field and may be empty.
+
     char      *key       = an_strlwr(strdup(identifier));
     AN_shorts *an_shorts = (AN_shorts*)aisc_find_lib((struct_dllpublic_ext*)&(main->pnames), key);
 
@@ -77,7 +87,9 @@ static AN_shorts *lookup_an_shorts(AN_main *main, const char *identifier) {
     return an_shorts;
 }
 
-static void an_add_short(AN_local *locs,const char *new_name, const char *parsed_name, const char *parsed_sym, const char *shrt, const char *acc)
+static void an_add_short(AN_local *locs, const char *new_name,
+                         const char *parsed_name, const char *parsed_sym,
+                         const char *shrt, const char *acc, const char *add_id)
 {
     AN_shorts *an_shorts;
     AN_revers *an_revers;
@@ -95,16 +107,21 @@ static void an_add_short(AN_local *locs,const char *new_name, const char *parsed
     an_shorts = create_AN_shorts();
     an_revers = create_AN_revers();
 
-    an_shorts->mh.ident = an_strlwr(strdup(new_name));
-    an_shorts->shrt = strdup(shrt);
+    an_shorts->mh.ident  = an_strlwr(strdup(new_name));
+    an_shorts->shrt      = strdup(shrt);
     an_shorts->full_name = strdup(full_name);
-    an_shorts->acc = strdup(acc);
+    an_shorts->acc       = strdup(acc);
+    an_shorts->add_id    = strdup(add_id);
+
     aisc_link((struct_dllpublic_ext*)&(aisc_main->pnames),(struct_dllheader_ext*)an_shorts);
 
-    an_revers->mh.ident = an_strlwr(strdup(shrt));
+    an_revers->mh.ident  = an_strlwr(strdup(shrt));
     an_revers->full_name = full_name;
-    an_revers->acc = strdup(acc);
+    an_revers->acc       = strdup(acc);
+    an_revers->add_id    = strdup(add_id);
+
     aisc_link((struct_dllpublic_ext*)&(aisc_main->prevers),(struct_dllheader_ext*)an_revers);
+
     aisc_main->touched = 1;
 }
 
@@ -146,14 +163,16 @@ static AN_shorts *an_find_shrt(AN_shorts *sin,char *search)
     return 0;
 }
 
-static char *nas_string_2_key(const char *str)  /* converts any string to a valid key */
+static char *nas_string_2_key(const char *str)
+// converts any string to a valid key
 {
 #if defined(DUMP_NAME_CREATION)
-    const char *org_str          = str;
+    const char *org_str = str;
 #endif // DUMP_NAME_CREATION
+    
     char buf[GB_KEY_LEN_MAX+1];
-    int i;
-    int c;
+    int  i;
+    int  c;
     for (i=0;i<GB_KEY_LEN_MAX;) {
         c                        = *(str++);
         if (!c) break;
@@ -436,6 +455,7 @@ class NameInformation {
     char *parsed_name;
     char *parsed_sym;
     char *parsed_acc;
+    char *parsed_add_id;
 
     char *first_name;
     char *rest_of_name;
@@ -453,7 +473,7 @@ public:
 
     void add_short(AN_local *locs, const char *shrt) const {
         if (strlen(parsed_name)>3) {
-            an_add_short(locs, id, parsed_name, parsed_sym, shrt, parsed_acc);
+            an_add_short(locs, id, parsed_name, parsed_sym, shrt, parsed_acc, parsed_add_id);
         }
     }
 };
@@ -520,6 +540,7 @@ NameInformation::NameInformation(AN_local *locs) {
     }
 
     parsed_acc      = make_alnum(locs->acc);
+    parsed_add_id   = make_alnum(locs->add_id);
     first_name      = GBS_string_eval(parsed_name,"* *=*1",0);
     rest_of_name    = make_alnum(parsed_name+strlen(first_name));
 
@@ -537,8 +558,8 @@ NameInformation::NameInformation(AN_local *locs) {
 
     // build id
 
-    id = strlen(parsed_acc)
-        ? GBS_global_string_copy("*%s", parsed_acc)
+    id = (strlen(parsed_acc)+strlen(parsed_add_id))
+        ? GBS_global_string_copy("*%s*%s", parsed_acc, parsed_add_id)
         : GBS_global_string_copy("%s*%s*%s", first_name, rest_of_name, parsed_sym);
 }
 
@@ -548,12 +569,14 @@ NameInformation::~NameInformation() {
     free(rest_of_name);
     free(first_name);
 
+    free(parsed_add_id);
     free(parsed_acc);
     free(parsed_sym);
     free(parsed_name);
 }
 
 // --------------------------------------------------------------------------------
+// AISC functions
 
 extern "C" int del_short(AN_local *locs)
 /* forget about a short name */
@@ -862,6 +885,13 @@ static void check_for_case_error(AN_main *main) {
             an_remove_short(shrt);
             case_error_occurred = true;
         }
+        else if (found && (shrt->add_id && found->add_id && an_stricmp(shrt->add_id, found->add_id) != 0)) {
+            fprintf(stderr, "- Correcting error in name-database: '%s' equals '%s' (but add_id differs)\n",
+                    found->mh.ident, shrt->shrt);
+
+            an_remove_short(shrt);
+            case_error_occurred = true;
+        }
         else {
             AN_shorts *self_find = lookup_an_shorts(main, shrt->mh.ident);
             if (!self_find) { // stored with wrong key (not lowercase)
@@ -996,30 +1026,27 @@ static GB_ERROR server_load(AN_main *main)
             revers->mh.ident  = an_strlwr(strdup(shrt->shrt));
             revers->full_name = strdup(shrt->full_name);
             revers->acc       = strdup(shrt->acc);
+            revers->add_id    = strdup(shrt->add_id);
             aisc_link((struct_dllpublic_ext*)&(main->prevers),(struct_dllheader_ext*)revers);
             nameCount++;
         }
 
-        int namesDBversion   = main->dbversion; // saved version
-        int currentDBversion = 3; // current nameserver db version
-        fprintf(stderr, "* NAMEDB v%i (%li names)\n", namesDBversion, nameCount);
+        int namesDBversion = main->dbversion; // version used to save names.dat
+        fprintf(stderr, "* Loaded NAMEDB v%i (contains %li names)\n", namesDBversion, nameCount);
 
-        if (namesDBversion < currentDBversion) {
-            if (namesDBversion<3) {
-                fprintf(stderr, "* Checking for case-errors and duplicated names.\n");
+        if (namesDBversion < SERVER_VERSION) {
+            if (namesDBversion<4) {
+                fprintf(stderr, "* Checking for case-errors\n");
                 check_for_case_error(main);
+                
+                fprintf(stderr, "* Checking for illegal characters\n");
+                check_for_illegal_chars(main);
             }
 
-            fprintf(stderr, "* NAMEDB version %i -> %i\n", namesDBversion, currentDBversion);
-            main->dbversion = currentDBversion;
+            fprintf(stderr, "* NAMEDB version upgrade %i -> %i\n", namesDBversion, SERVER_VERSION);
+            main->dbversion = SERVER_VERSION;
             main->touched   = 1; // force save
         }
-
-#if defined(DEVEL_RALF)
-#warning next check should depend on version        
-#endif // DEVEL_RALF
-        fprintf(stderr, "* Checking for illegal characters\n");
-        check_for_illegal_chars(main);
 
         fprintf(stderr, "ARB_name_server is up.\n");
         main->server_filedate = GB_time_of_file(main->server_file);
@@ -1056,6 +1083,19 @@ extern "C" int server_shutdown(AN_main *pm, aisc_string passwd){
     return 0;
 }
 
+static void usage(const char *exeName, const char *err) __attribute__((noreturn));
+static void usage(const char *exeName, const char *err) {
+    printf("ARB nameserver v%i\n"
+           "Usage: %s command server-parameters\n"
+           "command = -boot\n"
+           "          -kill\n"
+           "          -look\n"
+           , SERVER_VERSION, exeName);
+    arb_print_server_params();
+    if (err) printf("Error: %s\n", err);
+    exit(-1);
+}
+
 int main(int argc,char **argv)
 {
     char              *name;
@@ -1063,22 +1103,18 @@ int main(int argc,char **argv)
     struct Hs_struct  *so;
     struct arb_params *params;
 
-    params = arb_trace_argv(&argc,argv);
-    if (!params->default_file) {
-        printf("No file: Syntax: %s -boot/-kill/-look -dfile\n",argv[0]);
-        exit(-1);
-    }
+    params                 = arb_trace_argv(&argc,argv);
+    const char *executable = argv[0];
 
-    if (argc ==1) {
+    if (!params->default_file) usage(executable, "Missing default file");
+
+    if (argc==1) { // default command is '-look'
         char flag[]="-look";
         argv[1] = flag;
         argc = 2;
     }
 
-    if (argc!=2) {
-        printf("Wrong Parameters %i Syntax: %s -boot/-kill/-look -dfile\n",argc,argv[0]);
-        exit(-1);
-    }
+    if (argc!=2) usage(executable, "Too many parameters");
 
     aisc_main = create_AN_main();
     /***** try to open com with any other pb server ******/
@@ -1102,7 +1138,7 @@ int main(int argc,char **argv)
             exit(0);
         }
 
-        printf("There is another activ server. I try to kill him...\n");
+        printf("There is another active nameserver. I try to kill it..\n");
         aisc_nput(AN_global.cl_link, AN_MAIN, AN_global.cl_main,
                   MAIN_SHUTDOWN, "ldfiojkherjkh",
                   NULL);
@@ -1127,11 +1163,34 @@ int main(int argc,char **argv)
     aisc_main->server_file     = strdup(params->default_file);
     aisc_main->server_filedate = GB_time_of_file(aisc_main->server_file);
 
-    GB_ERROR error             = server_load(aisc_main);
-    long     accept_calls_init = NAME_SERVER_TIMEOUT/long(NAME_SERVER_SLEEP);
-    long     accept_calls      = accept_calls_init;
+    GB_ERROR error = server_load(aisc_main);
 
-    if (aisc_main->touched) server_save(aisc_main, 0);
+    if (!error) {
+        const char *field     = params->field;
+        if (field == 0) field = ""; // default to no field
+        
+        if (aisc_main->add_field == 0) {
+            printf("* add. field not defined yet -> using '%s'\n", field);
+            aisc_main->add_field = strdup(field);
+            aisc_main->touched   = 1;
+        }
+        else {
+            if (strcmp(aisc_main->add_field, field) != 0) {
+                if (aisc_main->add_field[0]) {
+                    error = GBS_global_string("This nameserver has to be started with -f%s", aisc_main->add_field);
+                }
+                else {
+                    error = "This nameserver has to be started w/o -f option";
+                }
+            }
+        }
+    }
+
+    long accept_calls_init = NAME_SERVER_TIMEOUT/long(NAME_SERVER_SLEEP);
+    long accept_calls      = accept_calls_init;
+    bool isTimeout         = true;
+
+    if (!error && aisc_main->touched) server_save(aisc_main, 0);
 
     while (!error && accept_calls>0) {
         aisc_accept_calls(so);
@@ -1143,10 +1202,12 @@ int main(int argc,char **argv)
             if (server_date == 0 && aisc_main->server_filedate != 0) {
                 fprintf(stderr, "ARB_name_server data has been deleted.\n");
                 accept_calls = 0;
+                isTimeout    = false;
             }
             if (server_date>aisc_main->server_filedate) {
                 fprintf(stderr, "ARB_name_server data changed on disc.\n");
                 accept_calls = 0;
+                isTimeout    = false;
             }
             else if (aisc_main->touched) {
                 server_save(aisc_main,0);
@@ -1162,7 +1223,9 @@ int main(int argc,char **argv)
         fprintf(stderr, "Error in ARB_name_server: %s\n", error);
     }
     else if (accept_calls == 0) {
-        fprintf(stderr, "Been idle for %i minutes.\n", int(NAME_SERVER_TIMEOUT/60));
+        if (isTimeout) {
+            fprintf(stderr, "Been idle for %i minutes.\n", int(NAME_SERVER_TIMEOUT/60));
+        }
     }
 
     printf("ARB_name_server terminating...\n");
