@@ -824,7 +824,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
         if (!error) {
             if (create_new_gene_species) {
                 if (!short_name) { // create a new name
-                    error = AWTC_generate_one_name(gb_main, full_name, acc, short_name, false, false);
+                    error = AWTC_generate_one_name(gb_main, full_name, acc, 0, short_name, false, false);
                     if (!error) { // name has been created
                         if (eg2ps->existing.name_known(short_name)) { // nameserver-generated name is already in use
                             const char *other_acc    = readACC(eg2ps->gb_species_data, short_name);
