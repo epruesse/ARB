@@ -3,7 +3,7 @@
 #                                                                          #
 #   File      : grepx.pl                                                   #
 #   Purpose   : Replacement for grep (used from emacs)                     #
-#   Time-stamp: <Wed Jan/10/2007 16:09 MET Coder@ReallySoft.de>            #
+#   Time-stamp: <Thu Feb/22/2007 14:28 MET Coder@ReallySoft.de>            #
 #                                                                          #
 #   (C) November 2005 by Ralf Westram                                      #
 #                                                                          #
@@ -538,8 +538,13 @@ sub collect_files($\%$) {
       my $descent = 1;
       my $reason = 'not specified';
       if ($global_scan_mode==$GSM_CVS and not $is_additional_directory and not CVS_controlled($_)) {
-        $descent = 0;
-        $reason = 'not CVS controlled';
+        if ($arbSpecials==1 and $_ =~ /\/GEN[CH]$/) {
+          $verbose==0 || print "Descending non-CVS dir '$_' (caused by ARB mode)\n";
+        }
+        else {
+          $descent = 0;
+          $reason = 'not CVS controlled';
+        }
       }
       if ($descent==1) {
         collect_files($_, %$files_r, $is_additional_directory);
