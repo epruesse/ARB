@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <ctype.h>
 /* #include <malloc.h> */
 #include <client_privat.h>
 #include <client.h>
@@ -17,44 +18,55 @@ struct gl_struct {
 
 GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
 {
-    char *tcp_id;
-    char *server;
-    char *file;
-    char *host;
-    char *p;
-    char  command[1024];
+    char       *tcp_id;
+    const char *server;
+    const char *serverparams = 0;
+    char        command[1024];
 
     if (!(tcp_id = (char *) GBS_read_arb_tcp(arb_tcp_env))) {
         return GB_export_error("Entry '%s' in $(ARBHOME)/lib/arb_tcp.dat not found", arb_tcp_env);
     }
-    server = tcp_id + strlen(tcp_id) + 1;
-    if (*server) {
-        file = server + strlen(server) + 1;
-    } else {
-        file = server;
-    }
 
-    if (*tcp_id == ':') {	/* local mode */
-        sprintf(command,"%s %s -T%s &",server, file, tcp_id);
+    server = strchr(tcp_id, 0) + 1;
+    {
+        char   *param = strchr(server, 0)+1;
+        size_t  plen  = strlen(param);
+
+        serverparams = param;
+
+        while (plen) {
+            param[plen]  = ' '; /* concatenate with next param */
+            param       += plen+1;
+            plen         = strlen(param);
+        }
+    }
+    /* Note :  changed behavior on 2007/Mar/09 -- ralf
+       serverparams now is one space if nothing defined in arb_tcp.dat
+       (previously was same as 'server' - whyever)
+    */
+
+    if (*tcp_id == ':') {   /* local mode */
+        sprintf(command,"%s %s -T%s &",server, serverparams, tcp_id);
         if (!gbmain || GBCMC_system(gbmain,command)){
             system(command);
         }
         if (do_sleep) sleep(4);
     }
     else {
-        host = strdup(tcp_id);
-        p = strchr(host, ':');
+        char *host = strdup(tcp_id);
+        char *p = strchr(host, ':');
         if (!p) {
             return GB_export_error("Error: Missing ':' in line '%s' file $(ARBHOME)/lib/arb_tcp.dat", arb_tcp_env);
         }
         *p = 0;
         if (GB_host_is_local(host)){
-            sprintf(command,"%s %s -T%s &",server, file, tcp_id);
+            sprintf(command,"%s %s -T%s &",server, serverparams, tcp_id);
 #if defined(DEBUG)
             printf("Contacting local host '%s' (cmd='%s')\n", host, command);
 #endif /* DEBUG */
-        }else{
-            sprintf(command,"ssh %s -n %s %s -T%s &",host, server, file, tcp_id);
+        }
+        else {
+            sprintf(command,"ssh %s -n %s %s -T%s &",host, server, serverparams, tcp_id);
 #if defined(DEBUG)
             printf("Contacting remote host '%s' (cmd='%s')\n", host, command);
 #endif /* DEBUG */
@@ -89,66 +101,84 @@ static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, GBDATA *gbmain, con
 }
 
 GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, GBDATA *gbmain) {
-    char *tcp_id;
-    char *server;
-    char *file;
+    GB_ERROR    error       = 0;
+    char       *tcp_id      = GBS_read_arb_tcp(arb_tcp_env);
+    const char *arb_tcp_dat = "$(ARBHOME)/lib/arb_tcp.dat";
 
-    if (!(tcp_id = (char *) GBS_read_arb_tcp(arb_tcp_env))) {
-        return GB_export_error("Entry '%s' in $(ARBHOME)/lib/arb_tcp.dat not found", arb_tcp_env);
+    if (!tcp_id) {
+        error = GBS_global_string("Entry '%s' not found in %s", arb_tcp_env, arb_tcp_dat);
     }
-    server = tcp_id + strlen(tcp_id) + 1;
-    if (*server) {
-        file = server + strlen(server) + 1;
-    } else {
-        file = server;
-    }
-    if (strchr(file,'/')) file = strchr(file,'/');
-    if (GB_size_of_file(file) <= 0) {
-        if (strcmp(arb_tcp_env, "ARB_NAME_SERVER") == 0) {
-            const char *copy_cmd       = GBS_global_string("cp %s.template %s", file, file);
-            system(copy_cmd);
-            if (GB_size_of_file(file) <= 0) {
-                return GB_export_error("Cannot copy nameserver template (%s.template missing?)", file);
-            }
-        }
-        else if (strncmp(arb_tcp_env, "ARB_PT_SERVER", 13) == 0) {
-            return GB_export_error("Sorry there is no database for your template '%s' yet\n"
-                                   "	To create such a database and it's index file:\n"
-                                   "	1. Start ARB on the whole database you want to use for\n"
-                                   "		probe match / design\n"
-                                   "	2. Go to ARB_NT/Probes/PT_SERVER Admin\n"
-                                   "	3. Select '%s' and press UPDATE SERVER\n"
-                                   "	4. Wait ( few hours )\n"
-                                   "	5. Meanwhile read the help file: PT_SERVER: What Why and How",
-                                   file, file);
+    else {
+        char *file = GBS_scan_arb_tcp_param(tcp_id, "-d"); // find parameter behind '-d'
+
+        if (!file) {
+            error = GBS_global_string("Parameter -d missing for entry '%s' in %s", arb_tcp_env, arb_tcp_dat);
         }
         else {
-            return GB_export_error("The file '%s' is missing. \nUnable to start %s", file, arb_tcp_env);
+            if (GB_size_of_file(file) <= 0) {
+                if (strncmp(arb_tcp_env, "ARB_NAME_SERVER", 15) == 0) {
+                    char *dir       = strdup(file);
+                    char *lastSlash = strrchr(dir, '/');
+
+                    if (lastSlash) {
+                        lastSlash[0]         = 0; // cut off file
+                        const char *copy_cmd = GBS_global_string("cp %s/names.dat.template %s", dir, file);
+                        system(copy_cmd);
+                        if (GB_size_of_file(file) <= 0) {
+                            error = GBS_global_string("Cannot copy nameserver template (%s/names.dat.template missing?)", dir);
+                        }
+                    }
+                    else {
+                        error = GBS_global_string("Can't determine directory from '%s'", dir);
+                    }
+                    free(dir);
+                }
+                else if (strncmp(arb_tcp_env, "ARB_PT_SERVER", 13) == 0) {
+                    error = GBS_global_string("Sorry there is no database for your template '%s' yet\n"
+                                              " To create such a database and it's index file:\n"
+                                              " 1. Start ARB on the whole database you want to use for\n"
+                                              "    probe match / design\n"
+                                              " 2. Go to ARB_NT/Probes/PT_SERVER Admin\n"
+                                              " 3. Select '%s' and press UPDATE SERVER\n"
+                                              " 4. Wait ( up to hours )\n"
+                                              " 5. Meanwhile read the help file: PT_SERVER: What Why and How",
+                                              file, file);
+                }
+                else {
+                    error = GBS_global_string("The file '%s' is missing. \nUnable to start %s", file, arb_tcp_env);
+                }
+            }
         }
+
+        if (!error) {
+            error = arb_wait_for_server(arb_tcp_env, gbmain, tcp_id, magic_number, &glservercntrl, 20);
+
+            if (!error) {
+                if (!glservercntrl.link) { // couldn't start server
+                    error =
+                        "I got some problems to start your server:\n"
+                        "   Possible Reasons may be one or more of the following list:\n"
+                        "   - there is no database in $ARBHOME/lib/pts/*\n"
+                        "     update server <ARB_NT/Probes/PT_SERVER Admin/UPDATE SERVER>\n"
+                        "   - you are not allowed to run 'ssh host pt_server ....&'\n"
+                        "     check file '/etc/hosts.equiv' (read man pages for help)\n"
+                        "   - the permissions of $ARBHOME/lib/pts/* do not allow read access\n"
+                        "   - the PT_SERVER host is not up\n"
+                        "   - the tcp_id is already used by another program\n"
+                        "     check $ARBHOME/lib/arb_tcp.dat and /etc/services\n";
+                }
+                else {
+                    aisc_close(glservercntrl.link);
+                    glservercntrl.link = 0;
+                }
+            }
+        }
+
+        free(file);
     }
 
-    {
-        GB_ERROR error = arb_wait_for_server(arb_tcp_env, gbmain, tcp_id, magic_number, &glservercntrl, 20);
-        free(tcp_id);
-        if (error) return error;
-    }
-
-    if (glservercntrl.link) {
-        aisc_close(glservercntrl.link);
-        glservercntrl.link = 0;
-        return 0;
-    }
-    
-    return GB_export_error("I got some problems to start your server:\n"
-                           "	Possible Reasons may be one or more of the following list:\n"
-                           "	- there is no database in $ARBHOME/lib/pts/*\n"
-                           "		update server <ARB_NT/Probes/PT_SERVER Admin/UPDATE SERVER>\n"
-                           "	- you are not allowed to run 'ssh host pt_server ....&'\n"
-                           "		check file '/etc/hosts.equiv' (read man pages for help)\n"
-                           "	- the permissions of $ARBHOME/lib/pts/* do not allow read access\n"
-                           "	- the PT_SERVER host is not up\n"
-                           "	- the tcp_id is already used by another program\n"
-                           "		check $ARBHOME/lib/arb_tcp.dat and /etc/services\n");
+    free(tcp_id);
+    return error;
 }
 
 GB_ERROR
@@ -160,8 +190,7 @@ arb_look_and_kill_server(int magic_number, char *arb_tcp_env)
     GB_ERROR	error = 0;
 
     if (!(tcp_id = (char *) GBS_read_arb_tcp(arb_tcp_env))) {
-        return GB_export_error(
-                               "Missing line '%s' in $(ARBHOME)/lib/arb_tcp.dat:",arb_tcp_env);
+        return GB_export_error("Missing line '%s' in $(ARBHOME)/lib/arb_tcp.dat:",arb_tcp_env);
     }
     server = tcp_id + strlen(tcp_id) + 1;
 
@@ -182,6 +211,22 @@ arb_look_and_kill_server(int magic_number, char *arb_tcp_env)
     return error;
 }
 
+void arb_print_server_params() {
+    printf("General server parameters (some maybe unused by this server):\n"
+           "    -s<name>        sets species name to '<name>'\n"
+           "    -e<name>        sets extended name to '<name>'\n"
+           "    -a<ali>         sets alignment to '<ali>'\n"
+           "    -d<file>        sets default file to '<file>'\n"
+           "    -f<field>       sets DB field to '<field>'\n"
+           "    -r              read-only mode\n"
+           "    -D<server>      sets DB-server to '<server>'  [default = ':']\n"
+           "    -J<server>      sets job-server to '<server>' [default = 'ARB_JOB_SERVER']\n"
+           "    -M<server>      sets MGR-server to '<server>' [default = 'ARB_MGR_SERVER']\n"
+           "    -P<server>      sets PT-server to '<server>'  [default = 'ARB_PT_SERVER']\n"
+           "    -T<host:port>   sets TCP connection to '<host:port>'\n"
+           );
+}
+
 struct arb_params *arb_trace_argv(int *argc, char **argv)
 {
     struct arb_params *erg;
@@ -196,17 +241,18 @@ struct arb_params *arb_trace_argv(int *argc, char **argv)
     for (s=d=0; s<*argc; s++) {
         if (argv[s][0] == '-') {
             switch (argv[s][1]) {
-                case 's':	erg->species_name = strdup(argv[s]+2);break;
+                case 's':	erg->species_name  = strdup(argv[s]+2);break;
                 case 'e':	erg->extended_name = strdup(argv[s]+2);break;
-                case 'a':	erg->alignment = strdup(argv[s]+2);break;
-                case 'd':	erg->default_file = strdup(argv[s]+2);break;
-                case 'r':	erg->read_only = 1;break;
-                case 'J':	erg->job_server = strdup(argv[s]+2);break;
-                case 'D':	erg->db_server = strdup(argv[s]+2);break;
-                case 'M':	erg->mgr_server = strdup(argv[s]+2);break;
-                case 'P':	erg->pt_server = strdup(argv[s]+2);break;
-                case 'T':	erg->tcp = strdup(argv[s]+2);break;
-                default:	argv[d++] = argv[s];
+                case 'a':	erg->alignment     = strdup(argv[s]+2);break;
+                case 'd':	erg->default_file  = strdup(argv[s]+2);break;
+                case 'f':	erg->field         = strdup(argv[s]+2);break;
+                case 'r':	erg->read_only     = 1;break;
+                case 'J':	erg->job_server    = strdup(argv[s]+2);break;
+                case 'D':	erg->db_server     = strdup(argv[s]+2);break;
+                case 'M':	erg->mgr_server    = strdup(argv[s]+2);break;
+                case 'P':	erg->pt_server     = strdup(argv[s]+2);break;
+                case 'T':	erg->tcp           = strdup(argv[s]+2);break;
+                default:	argv[d++]          = argv[s];
             }
         }else{
             argv[d++] = argv[s];
