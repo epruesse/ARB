@@ -4,6 +4,8 @@
 #include <awt.hxx>
 #include <cstring>
 
+#warning module completely unused
+
 extern void ph_view_matrix_cb(AW_window *);
 
 
@@ -68,7 +70,7 @@ void create_matrix_variables(AW_root *aw_root, AW_default def)
 
 
 
-void ph_calculate_matrix_cb(AW_window *aww,AW_CL cb1,AW_CL cb2)
+void ph_calculate_matrix_cb(AW_window *aww,AW_CL cb1,AW_CL cb2)  
 { AWUSE(cb1); AWUSE(cb2);
  char *cancel,*transformation;
 
@@ -161,8 +163,6 @@ AW_window *awt_create_select_cancel_window(AW_root *aw_root)
 }
 
 
-
-
 AW_window *create_matrix_window(AW_root *aw_root)
 { AW_window_simple *aws = new AW_window_simple;
  aws->init( aw_root, "DISTANCE_TABLE", "DistanceTable");
@@ -173,25 +173,25 @@ AW_window *create_matrix_window(AW_root *aw_root)
  aws->create_button("CLOSE","CLOSE","C");
 
  aws->at("point_opts");
- aws->create_option_menu("phyl/matrix/point","'.' in column      ","0");  // "0": no shortcut
+ aws->create_option_menu("phyl/matrix/point","'.'","0");
  aws->insert_option("forget pair for distancematrix","0",0);
  aws->insert_option("use distancetable","0",1);
  aws->update_option_menu();
 
  aws->at("minus_opts");
- aws->create_option_menu("phyl/matrix/minus","'-' in column      ","0");
+ aws->create_option_menu("phyl/matrix/minus","'-'","0");
  aws->insert_option("forget pair for distancematrix","0",0);
  aws->insert_option("use distancetable","0",1);
  aws->update_option_menu();
 
  aws->at("rest_opts");
- aws->create_option_menu("phyl/matrix/rest","rest in column     ","0");
+ aws->create_option_menu("phyl/matrix/rest", "ambiguity codes","0");
  aws->insert_option("forget pair for distancematrix","0",0);
  aws->insert_option("use distancetable","0",1);
  aws->update_option_menu();
 
  aws->at("lower_opts");
- aws->create_option_menu("phyl/matrix/lower","'acgtu' in column  ","0");
+ aws->create_option_menu("phyl/matrix/lower","lowercase chars","0");
  aws->insert_option("forget pair for distancematrix","0",0);
  aws->insert_option("use distancetable","0",1);
  aws->update_option_menu();
