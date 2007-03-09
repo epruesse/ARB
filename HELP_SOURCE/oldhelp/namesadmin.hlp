@@ -1,0 +1,76 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		NAME_SERVER ADMIN
+
+OCCURRENCE	ARB_NT/Tools/Name server admin
+
+DESCRIPTION     Delete old names file
+
+                       After using the nameserver for a while, the names database
+                       may contain several entries which are used nowhere.
+
+                       This happens e.g. if you've changed accession numbers during
+                       your data curation or if you had species in one of your database
+                       which you don't store anymore.
+
+                       To get rid of these unused names click 'Delete old names file'.
+                       Your names database will be deleted and names will be regenerated.
+
+                Edit names file
+
+                       The names database is a simple text file, which may be modified
+                       with a texteditor.
+
+                       Use this feature with care!
+
+                Remove ARB_XXXX entries
+
+                       ARB automatically generates accession numbers if they are missing.
+                       e.g if you import plain sequence data.
+
+                       Use this to get rid of all nameserver entried using ARB_xxx accession
+                       numbers.
+
+                Additional species ID field
+
+                       If you have good reasons, why you have to keep several species
+                       with identical accession numbers in your databases, you'll normally
+                       get problems with the ARB nameserver, because it handles these species
+                       as "identical" and gives them names like 'HalHalob.2', 'HalHalob.3' etc.
+                       to mark them as duplicates.
+
+                       Here you can specify an additional DB-species-field, which will be used
+                       for species identification in addition to 'acc' (accession number).
+
+                       This setting is database-specific - so you have to set it for each database
+                       where it's needed. 
+
+                       For each field you use, a seperate name server will be generated.
+                       That means:
+
+                       - You have to add a new entry into arb_tcp.dat (except for field 'start'
+                         where a predefined entry exists)
+
+                       - Names between database using different additional fields (or no add.
+                         field) are NOT compatible. To merge such databases, change this setting
+                         such that both databases use equal additional fields and generate new names.
+                         Otherwise you'll most likely merge the data of non-equal species, which will
+                         corrupt your data!
+
+NOTES		If you comment out the default ARB_NAME_SERVER entry in arb_tcp.dat, renaming
+                with empty 'Additional species ID field' will lead to an error. Use this to
+                avoid creating databases that use the standard name server with no additional field.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
