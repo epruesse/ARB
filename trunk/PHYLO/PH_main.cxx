@@ -33,14 +33,15 @@ GB_ERROR ph_check_initialized() {
 
 void create_filter_text()
 {
-    filter_text = (char **) calloc(5,sizeof (char *));
-    for(int i=0;i<5;i++)
-        filter_text[i] = new char[100];
-    strcpy(filter_text[0],"don't count                                       ");
-    strcpy(filter_text[1],"don't use column when maximal                     ");
-    strcpy(filter_text[2],"forget whole column                               ");
-    strcpy(filter_text[3],"use like another valid base/acid while not maximal");
-    strcpy(filter_text[4],"use like uppercase character (ACGTU)              ");
+    filter_text = (char **) calloc(FILTER_MODES,sizeof (char *));
+    for(int i=0;i<FILTER_MODES;i++) filter_text[i] = new char[100];
+    
+    strcpy(filter_text[DONT_COUNT],           "don't count (ignore)                              ");
+    strcpy(filter_text[SKIP_COLUMN_IF_MAX],   "if occurs most often => forget whole column       ");
+    strcpy(filter_text[SKIP_COLUMN_IF_OCCUR], "if occurs => forget whole column                  ");
+    strcpy(filter_text[COUNT_DONT_USE_MAX],   "count, but do NOT use as maximum                  ");
+    strcpy(filter_text[TREAT_AS_UPPERCASE],   "use like uppercase character                      ");
+    strcpy(filter_text[TREAT_AS_REGULAR],     "treat as regular character                        ");
 }
 
 void startup_sequence_cb(AW_window *aww,AW_CL cd1, AW_CL cl_aww)
@@ -161,15 +162,20 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
 
     if (!error) {
         AW_window *main_win = PH_used_windows::windowList->phylo_main_window;
-        long minhom = main_win->get_root()->awar("phyl/filter/minhom")->read_int();
-        long maxhom = main_win->get_root()->awar("phyl/filter/maxhom")->read_int();
-        long startcol = main_win->get_root()->awar("phyl/filter/startcol")->read_int();
-        long stopcol = main_win->get_root()->awar("phyl/filter/stopcol")->read_int();
-        long len = PHDATA::ROOT->get_seq_len();
-        char *data = (char *)calloc(sizeof(char),(int)len+1);
-        int x;
+        long       minhom   = main_win->get_root()->awar("phyl/filter/minhom")->read_int();
+        long       maxhom   = main_win->get_root()->awar("phyl/filter/maxhom")->read_int();
+        long       startcol = main_win->get_root()->awar("phyl/filter/startcol")->read_int();
+        long       stopcol  = main_win->get_root()->awar("phyl/filter/stopcol")->read_int();
+
+        long   len        = PHDATA::ROOT->get_seq_len();
+        char  *data       = (char *)calloc(sizeof(char),(int)len+1);
+        int    x;
         float *markerline = PHDATA::ROOT->markerline;
-        int cnt=0; FILE *saveResults = fopen("/tmp/conservationProfile.gnu","w+"); if(!saveResults) cout<<"Cant write to file"<<endl; //YK
+        int    cnt        = 0;
+        
+        FILE *saveResults = fopen("/tmp/conservationProfile.gnu","w+");
+        if(!saveResults) cout<<"Cant write to file"<<endl; //YK
+
         for (x=0;x<len;x++) {
             char c;
 
@@ -306,15 +312,15 @@ void PH_save_ml_cb(AW_window *aww) {
     }
 
     if (!error) {
-        AW_window *main_win = PH_used_windows::windowList->phylo_main_window;
-        long minhom = main_win->get_root()->awar("phyl/filter/minhom")->read_int();
-        long maxhom = main_win->get_root()->awar("phyl/filter/maxhom")->read_int();
-        long startcol = main_win->get_root()->awar("phyl/filter/startcol")->read_int();
-        long stopcol = main_win->get_root()->awar("phyl/filter/stopcol")->read_int();
-        long len = PHDATA::ROOT->get_seq_len();
-        char *bits = (char *)calloc(sizeof(char),(int)len+1);
-        int x;
-        float *markerline = PHDATA::ROOT->markerline;
+        AW_window *main_win   = PH_used_windows::windowList->phylo_main_window;
+        long       minhom     = main_win->get_root()->awar("phyl/filter/minhom")->read_int();
+        long       maxhom     = main_win->get_root()->awar("phyl/filter/maxhom")->read_int();
+        long       startcol   = main_win->get_root()->awar("phyl/filter/startcol")->read_int();
+        long       stopcol    = main_win->get_root()->awar("phyl/filter/stopcol")->read_int();
+        long       len        = PHDATA::ROOT->get_seq_len();
+        char      *bits       = (char *)calloc(sizeof(char),(int)len+1);
+        int        x;
+        float     *markerline = PHDATA::ROOT->markerline;
 
         for (x=0;x<len;x++) {
             int bit;
@@ -340,7 +346,7 @@ void PH_save_ml_cb(AW_window *aww) {
 
         GB_write_string(gb_TYPE,buffer);
 
-        delete bits;
+        free(bits);
     }
     delete fname;
 
