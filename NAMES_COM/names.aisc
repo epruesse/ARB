@@ -46,6 +46,7 @@ AN_revers,  REVERS, 4,  (~ Revers mapping for shorts ~), {
     dllh,        mh,        t,    ,     1,     (~~),       0,      ,       (~Header~);
     aisc_string, full_name, t,    rw,   ,      ,           ,       ,       (~ the full name of a species ~);
     aisc_string, acc,       t,    rw,   ,      ,           ,       ,       (~ accession number ~);
+    aisc_string, add_id,    t,    rw,   ,      ,           ,       ,       (~ additional id data ~);
 };
 
 AN_shorts, SHORTS,  3,  (~ a dictionary ~), SAVEDIRECTION HORIZONTAL, {
@@ -53,22 +54,31 @@ AN_shorts, SHORTS,  3,  (~ a dictionary ~), SAVEDIRECTION HORIZONTAL, {
     dllh,           mh,             t,      ,       1,      (~~),       0,      ,       (~Header~);
     aisc_string,    full_name,      t,      r,      1,      FULL_NAME,  10,     ,       (~ the full name of a species ~);
     aisc_string,    acc,            t,      r,      1,      ACC,        11,     ,       (~ accession number ~);
-    aisc_string,    shrt,           t,      r,      1,      SHORT,      12,     ,       (~ The Short ~);
+    aisc_string,    add_id,         t,      r,      1,      ADDID,      12,     ,       (~ additional id data ~);
+    aisc_string,    shrt,           t,      r,      1,      SHORT,      13,     ,       (~ The Short ~);
 };
 
-AN_local, LOCAL,    2,  (~local communication buffer~), {
-    @TYPE,          @IDENT,         @REF,   @ACC,   @SAVE,  @KEY,       @KEYC,  @INIT,              @DOCU;
-    dllh,           mh,         t,  ,   ,   (~~),       0,  ,               (~Header~);
-    int,            socket,         t,  ,   ,   ,       ,   names_init_socket(THIS), (~the callback~), DESTROY names_destroy_socket(THIS);
-    aisc_string,    whoami,         t,  ,   ,   WHOAMI,     10, ,               (~ who am i ~);
-    aisc_string,    full_name,      t,  rw, ,   FULL_NAME,  11, "",             (~ the full name of a species ~);
-    aisc_string,    acc,            t,  rw, ,   ACCESSION,  12, "",             (~ accession number ~);
-    int,            use_advice,     t,  rw, ,   USEADVICE,  13, ,               (~ use the advice ~);
-    aisc_string,    advice,         t,  rw, ,   ADVICE,     14, "",             (~ advice for the short name ~);
-    aisc_string,    get_short,      %,  r,  ,   GET_SHORT,  15, ,               (~ get a short name ~);
-    int,            del_short,      %,  r,  ,   DEL_SHORT,  16, ,               (~ forget stored short name ~);
-    };
 
+# called from code using id AN_LOCAL
+# single functions: LOCAL_GET_SHORT LOCAL_DEL_SHORT
+
+AN_local, LOCAL,    2,  (~local communication buffer~), {
+    @TYPE,       @IDENT,     @REF, @ACC, @SAVE, @KEY,      @KEYC, @INIT,                   @DOCU;
+    dllh,        mh,         t,    ,     ,      (~~),      0,     ,                        (~Header~);
+    int,         socket,     t,    ,     ,      ,          ,      names_init_socket(THIS), (~the callback~), DESTROY names_destroy_socket(THIS);
+    aisc_string, whoami,     t,    ,     ,      WHOAMI,    10,    ,                        (~ who am i ~);
+    aisc_string, full_name,  t,    rw,   ,      FULL_NAME, 11,    "",                      (~ the full name of a species ~);
+    aisc_string, acc,        t,    rw,   ,      ACCESSION, 12,    "",                      (~ accession number ~);
+    aisc_string, add_id,     t,    rw,   ,      ADDID,     13,    "",                      (~ additional id data ~);
+    int,         use_advice, t,    rw,   ,      USEADVICE, 14,    ,                        (~ use the advice ~);
+    aisc_string, advice,     t,    rw,   ,      ADVICE,    15,    "",                      (~ advice for the short name ~);
+    aisc_string, get_short,  %,    r,    ,      GET_SHORT, 16,    ,                        (~ get a short name ~);
+    int,         del_short,  %,    r,    ,      DEL_SHORT, 17,    ,                        (~ forget stored short name ~);
+};
+
+
+# called from code using id AN_MAIN
+# single functions: MAIN_SHUTDOWN MAIN_SAVEALL
 
 AN_main, MAIN, 1, (~Die globalen Daten~), SAVEDIRECTION VERTICAL, {
     @TYPE,          @IDENT,          @REF,  @ACC,   @SAVE,  @KEY,       @KEYC,  @INIT,  @DOCU;
@@ -82,6 +92,7 @@ AN_main, MAIN, 1, (~Die globalen Daten~), SAVEDIRECTION VERTICAL, {
     int,            server_save,     %,     w,      ,       SAVEALL,    21,     ,       (~SAVE everything~);
     aisc_string,    server_file,     t,     r,      ,       FILENAME,   22,     ,       (~The filename of the keys~);
     int,            server_filedate, t,     ,       ,       FILEDATE,   23,     ,       (~The filedate of server_file~);
-    int,            dbversion,       t,     ,       1,      DBVERSION,  24,     1,      (~Nameserver database version ~);
+    int,            dbversion,       t,     ,       1,      DBVERSION,  24,     4,      (~Nameserver database version ~);
+    aisc_string,    add_field,       t,     r,      1,      ADD_FIELD,  25,     ,       (~additional field used for identification ~);
     };
 };
