@@ -315,37 +315,6 @@ AW_window *create_naligner_window( AW_root *root, AW_CL cd2 ) {
     aws->label("PT_SERVER:");
     awt_create_selection_list_on_pt_servers(aws, "naligner/pt_server", AW_TRUE);
 
-
-//     aws->create_option_menu( "naligner/pt_server", "PT_SERVER:" , "" );
-//     {
-//         int i;
-//         char *server;
-//         const char *file;
-//         char search_for[256];
-//         char choice[256];
-//         char *fr;
-
-//         for (i=0;i<1000;i++) {
-//             sprintf(search_for,"ARB_PT_SERVER%i",i);
-//             // @@@ FIXME: PT_SERVER_CHOICE
-
-//             server = GBS_read_arb_tcp(search_for);
-//             if (!server) break;
-//             fr = server;
-//             file = server;				/* i got the machine name of the server */
-//             if (*file) file += strlen(file)+1;	/* now i got the command string */
-//             if (*file) file += strlen(file)+1;	/* now i got the file */
-//             if (strrchr(file,'/')) file = strrchr(file,'/')-1;
-//             static char empty[] = "";
-//             if (!(server = strtok(server,":"))) server = empty;
-//             sprintf(choice,"%s: %s",server,file+2);
-//             aws->insert_option( choice, "", i );
-//             delete fr;
-//         }
-//     }
-//     aws->insert_default_option( "select a PT_SERVER", "d", -1);
-//     aws->update_option_menu();
-
     aws->at( "mark" );
     aws->label_length(40);
     aws->label("Mark sequences found by the pt_server");
