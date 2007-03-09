@@ -27,6 +27,7 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
+PH_data.o: PH_filter.hxx
 PH_data.o: phwin.hxx
 PH_data.o: phylo.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -43,6 +44,7 @@ PH_data.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 
 PH_display.o: PH_display.hxx
+PH_display.o: PH_filter.hxx
 PH_display.o: phwin.hxx
 PH_display.o: phylo.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -58,6 +60,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 
+PH_filt.o: PH_filter.hxx
 PH_filt.o: phwin.hxx
 PH_filt.o: phylo.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -74,6 +77,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 
 PH_main.o: PH_display.hxx
+PH_main.o: PH_filter.hxx
 PH_main.o: phwin.hxx
 PH_main.o: phylo.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -92,6 +96,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 
+PH_matr.o: PH_filter.hxx
 PH_matr.o: phylo.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_matr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -108,6 +113,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/awt.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 
+PH_root.o: PH_filter.hxx
 PH_root.o: phylo.hxx
 PH_root.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_root.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
