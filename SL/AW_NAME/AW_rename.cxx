@@ -11,10 +11,19 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include "AW_rename.hxx"
+#include "inline.h"
 
 #include <names_client.h>
 #include <servercntrl.h>
 #include <client.h>
+
+const char *AW_get_nameserver_addid(GBDATA *gb_main) {
+    GB_transaction ta(gb_main);
+    GBDATA *gb_addid = GB_search(gb_main, AWAR_NAMESERVER_ADDID, GB_FIND);
+    aw_assert(gb_addid);
+
+    return GB_read_char_pntr(gb_addid);
+}
 
 //  -----------------------------------
 //      class NameServerConnection
@@ -58,6 +67,28 @@ private:
         return connect(gb_main);
     }
 
+    char *fieldUsedByServer(GB_ERROR& err) {
+        char *field = 0;
+        if (aisc_get(link, AN_MAIN, com,
+                     MAIN_ADD_FIELD, &field,
+                     0)) {
+            err = "Connection Problems with the NAME_SERVER";
+            aw_assert(field == 0);
+        }
+        return field;
+    }
+
+    GB_ERROR expectServerUsesField(const char *expected_field) {
+        GB_ERROR  err          = 0;
+        char     *server_field = fieldUsedByServer(err);
+
+        if (!err && strcmp(expected_field, server_field) != 0) {
+            err = GBS_global_string("Additional field doesn't match (expected='%s', server uses='%s')", expected_field, server_field);
+        }
+        free(server_field);
+        return err;
+    }
+
 public:
 
     NameServerConnection() {
@@ -74,39 +105,67 @@ public:
     GB_ERROR connect(GBDATA *gb_main) {
         GB_ERROR err = 0;
         if (!link) {
-            const char *name_server = "ARB_NAME_SERVER";
+            char       *server_id;
+            const char *add_field = AW_get_nameserver_addid(gb_main);
 
-            if (arb_look_and_start_server(AISC_MAGIC_NUMBER,name_server,gb_main)) {
-                err = "Sorry I can't start the NAME SERVER";
+            if (add_field[0] == 0) { // no additional field -> traditional name server
+                server_id = strdup("ARB_NAME_SERVER");
             }
             else {
-                char *servername = (char *)GBS_read_arb_tcp(name_server);
-                if (!servername) {
-                    GB_CORE;
-                    exit (-1);
-                }
-
-                link     = (aisc_com *)aisc_open(servername, &com,AISC_MAGIC_NUMBER);
-                linktime = time(0);
-                
-                if (init_local_com_names()) err = "Sorry I can't start the NAME SERVER";
-                free(servername);
+                server_id = GBS_global_string_copy("ARB_NAME_SERVER_%s", add_field);
+                ARB_strupper(server_id);
             }
+
+            err = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_id, gb_main);
+
+            if (!err) {
+                char *ipport = (char *)GBS_read_arb_tcp(server_id);
+                if (!ipport) {
+                    err = GB_get_error();
+                }
+                else {
+                    link     = (aisc_com *)aisc_open(ipport, &com,AISC_MAGIC_NUMBER);
+                    linktime = time(0);
+
+                    if (init_local_com_names()) {
+                        err = GBS_global_string("Can't connect %s %s", server_id, ipport);
+                    }
+                    else {
+                        err = expectServerUsesField(add_field);
+                    }
+                    free(ipport);
+                }
+            }
+            free(server_id);
         }
         else {
-            long linkage = int(time(0)-linktime);
+            long linkAge     = int(time(0)-linktime);
+            bool doReconnect = false;
 
 #if defined(DEBUG) && 0
             // print information about name-server link age
             static long lastage = -1;
-            if (linkage != lastage) {
-                printf("Age of NameServerConnection: %li\n", linkage);
-                lastage = linkage;
+            if (linkAge != lastage) {
+                printf("Age of NameServerConnection: %li\n", linkAge);
+                lastage = linkAge;
             }
 #endif // DEBUG
-            
-            if (linkage > (5*60)) { // perform a reconnect after 15 minutes
+
+            if (linkAge > (5*60)) { // perform a reconnect after 5 minutes
                 // Reason : The pipe to the name server breaks after some time
+                doReconnect = true;
+            }
+            else {
+                const char *add_field = AW_get_nameserver_addid(gb_main);
+                GB_ERROR    error     = expectServerUsesField(add_field);
+
+                if (error) {
+                    printf("Error: %s\n", error);
+                    doReconnect = true;
+                }
+            }
+
+            if (doReconnect) {
                 err = reconnect(gb_main);
             }
         }
@@ -149,7 +208,16 @@ PersistantNameServerConnection::~PersistantNameServerConnection() {
     name_server.persistancy(false);
 }
 
-GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, char*& new_name, bool openstatus, bool showstatus) {
+// --------------------------------------------------------------------------------
+
+GB_ERROR AW_test_nameserver(GBDATA *gb_main) {
+    GB_ERROR err = name_server.connect(gb_main);
+    return err;
+}
+
+// --------------------------------------------------------------------------------
+
+GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, const char *addid, char*& new_name, bool openstatus, bool showstatus) {
     // create a unique short name for 'full_name'
     // the result is written into 'new_name' (as malloc-copy)
     // if fails: GB_ERROR!=0 && new_name==0
@@ -177,6 +245,7 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
         if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
                       LOCAL_FULL_NAME,  full_name,
                       LOCAL_ACCESSION,  acc,
+                      LOCAL_ADDID,      addid,
                       LOCAL_ADVICE,     "",
                       0)){
             err = "Connection Problems with the NAME_SERVER";
@@ -219,19 +288,26 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species, bool update_status) {
     if (!error) {
         if (update_status) aw_status("Generating name");
 
+        const char *add_field = AW_get_nameserver_addid(gb_main);
+        char       *ali_name  = GBT_get_default_alignment(gb_main);
+
         GBDATA *gb_name      = GB_find(gb_species, "name", 0, down_level);
         GBDATA *gb_full_name = GB_find(gb_species, "full_name", 0, down_level);
-        GBDATA *gb_acc       = GB_find(gb_species, "acc", 0, down_level);
+        GBDATA *gb_acc       = GBT_gen_accession_number(gb_species, ali_name);
+        GBDATA *gb_addfield  = add_field[0] ? GB_find(gb_species, add_field, 0, down_level) : 0;
 
-        char *name      = gb_name ? GB_read_string(gb_name) : strdup("");
-        char *full_name = gb_full_name ? GB_read_string(gb_full_name) : strdup("");
-        char *acc       = gb_acc ? GB_read_string(gb_acc) : strdup("");
-        int   deleted   = 0;
-        char *shrt      = 0;
+        char *name      = gb_name?      GB_read_string(gb_name)     : strdup("");
+        char *full_name = gb_full_name? GB_read_string(gb_full_name): strdup("");
+        char *acc       = gb_acc?       GB_read_string(gb_acc)      : strdup("");
+        char *addid     = gb_addfield?  GB_read_string(gb_addfield) : strdup("");
+        
+        int   deleted = 0;
+        char *shrt    = 0;
 
         if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
                       LOCAL_FULL_NAME,  full_name,
                       LOCAL_ACCESSION,  acc,
+                      LOCAL_ADDID,      addid,
                       LOCAL_ADVICE,     "",
                       0) != 0 ||
             aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
@@ -274,6 +350,7 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species, bool update_status) {
         }
 
         free(shrt);
+        free(addid);
         free(acc);
         free(full_name);
         free(name);
@@ -299,26 +376,31 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
                 spcount = GBT_count_species(gb_main);
             }
 
+            const char *add_field = AW_get_nameserver_addid(gb_main);
+
             for (GBDATA *gb_species = GBT_first_species(gb_main);
                  gb_species && !err;
                  gb_species = GBT_next_species(gb_species))
             {
                 if (update_status) aw_status(count++/(double)spcount);
 
-                GBDATA *gb_full_name = GB_find(gb_species,"full_name",0,down_level);
                 GBDATA *gb_name      = GB_find(gb_species,"name",0,down_level);
-                GBDATA *gb_acc       = GBT_gen_accession_number(gb_species,ali_name);
+                GBDATA *gb_full_name = GB_find(gb_species,"full_name",0,down_level);
+                GBDATA *gb_acc       = GBT_gen_accession_number(gb_species, ali_name);
+                GBDATA *gb_addfield  = add_field[0] ? GB_find(gb_species, add_field, 0, down_level) : 0;
 
-                char *acc       = gb_acc ? GB_read_string(gb_acc) : strdup("");
+                char *name      = gb_name?      GB_read_string(gb_name)     : strdup("");
                 char *full_name = gb_full_name ? GB_read_string(gb_full_name) : strdup("");
-                char *name      = GB_read_string(gb_name);
+                char *acc       = gb_acc ? GB_read_string(gb_acc) : strdup("");
+                char *addid     = gb_addfield?  GB_read_string(gb_addfield) : strdup("");
 
                 char *shrt = 0;
 
-                if (strlen(acc) + strlen(full_name) ) {
+                if (full_name[0] || acc[0] || addid[0]) {
                     if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
                                   LOCAL_FULL_NAME,  full_name,
                                   LOCAL_ACCESSION,  acc,
+                                  LOCAL_ADDID,      addid,
                                   LOCAL_ADVICE,     name,
                                   0)){
                         err = "Connection Problems with the NAME_SERVER";
@@ -352,10 +434,11 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
                     err = GBT_rename_species(name, shrt, GB_TRUE);
                 }
 
-                free(name);
+                free(shrt);
+                free(addid);
                 free(acc);
                 free(full_name);
-                free(shrt);
+                free(name);
             }
 
             if (err) {
