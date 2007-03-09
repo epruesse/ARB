@@ -1,6 +1,6 @@
 
-#define MAX_TRY 20
-#define RETRY_SLEEP 3 // in seconds
+#define MAX_TRY     20
+#define RETRY_SLEEP 3           // in seconds
 
 // Lifetime of nameserver in seconds
 #define NAME_SERVER_TIMEOUT (15*60) // 15 minutes
