@@ -481,6 +481,12 @@ void AP_display_status::write(const char *text)
     x_pos+=strlen(text);
 }
 
+void AP_display_status::writePadded(const char *text, size_t len)
+{
+    device->text(0,text,x_pos*font_width,y_pos*font_height,0.0,-1,0,0);
+    x_pos += len;
+}
+
 void AP_display_status::write(long numl)
 {
     char buf[20];
@@ -512,6 +518,9 @@ void display_status(AW_window *dummy,AW_CL cl_awroot,AW_CL cd2)    // bottom are
     {
         static AP_display_status apds(PH_used_windows::windowList->phylo_main_window->get_device (AW_BOTTOM_AREA));
         apds.clear();
+        
+        const int LABEL_LEN = 21;
+
         switch(AP_display::apdisplay->displayed())
         {
             case NONE: return;
@@ -520,36 +529,44 @@ void display_status(AW_window *dummy,AW_CL cl_awroot,AW_CL cd2)    // bottom are
                 apds.set_cursor((apds.get_size('x')/2)-10,0);
                 apds.write("STATUS REPORT FILTER");
                 apds.newline();
-                apds.newline();
-                apds.write("start at column:     ");
+                
+                apds.writePadded("Start at column:", LABEL_LEN);
                 apds.write((long)aw_root->awar("phyl/filter/startcol")->read_int());
-                apds.move_x(40);
+                apds.move_x(15);
                 apds.set_tab();
-                apds.write("stop at column:      ");
+                apds.writePadded("Stop at column:", LABEL_LEN);
                 apds.write((long)aw_root->awar("phyl/filter/stopcol")->read_int());
                 apds.newline();
-                apds.write("minimal similarity:  ");
+
+                apds.writePadded("Minimal similarity:", LABEL_LEN);
                 apds.write((long)aw_root->awar("phyl/filter/minhom")->read_int());
                 apds.set_cursor_x(apds.get_tab());
-                apds.write("maximal similarity:  ");
+                apds.writePadded("Maximal similarity:", LABEL_LEN);
                 apds.write((long)aw_root->awar("phyl/filter/maxhom")->read_int());
                 apds.newline();
-                apds.write("'.' in column:     ");
+                apds.newline();
+
+                apds.writePadded("'.':", LABEL_LEN);
                 apds.write(filter_text[aw_root->awar("phyl/filter/point")->read_int()]);
                 apds.newline();
-                apds.write("'-' in column:     ");
+
+                apds.writePadded("'-':", LABEL_LEN);
                 apds.write(filter_text[aw_root->awar("phyl/filter/minus")->read_int()]);
                 apds.newline();
-                apds.write("'rest' in column:  ");
+
+                apds.writePadded("ambiguity codes:", LABEL_LEN);
                 apds.write(filter_text[aw_root->awar("phyl/filter/rest")->read_int()]);
                 apds.newline();
-                apds.write("'acgtu' in column: ");
+
+                apds.writePadded("lowercase chars:", LABEL_LEN);
                 apds.write(filter_text[aw_root->awar("phyl/filter/lower")->read_int()]);
                 break;
+
             case matrix_dpy: apds.set_origin();
                 apds.set_cursor((apds.get_size('x')/2)-10,0);
                 apds.write("STATUS REPORT MATRIX");
                 break;
+                
             default: printf("\nstatus: unknown display type (maybe not implemented yet)\n");
         }
     }
