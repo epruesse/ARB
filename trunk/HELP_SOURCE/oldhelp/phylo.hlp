@@ -8,15 +8,85 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Matrices, Masks, Profiles V2.0
+TITLE		ARB_PHYLO - Create filters by base frequency
 
 OCCURRENCE	ARB_NT/SAI/Create Filter/by Base Frequncy
 
-DESCRIPTION	refer to LINK{phyl.hlp}
+DESCRIPTION	Calculate base frequencies and/or a base frequency filter.
 
-NOTES		Not yet implemented
+                Open Config/Filter to define how the filter will be created:
 
-EXAMPLES	None
+                     Define the alignment range, for which the filter shall
+                     be generated using the input fields 'Start at column'
+                     and 'Stop at column'. Columns outside that range will get
+                     filtered, i.e. the generated filter will contain '0'.
+
+                     Define the similarity range, which will lead to a '1' in the
+                     resulting base frequency filter, by specifying the lower and
+                     upper percentage in the input field 'Minimal similarity'
+                     and 'Maximal similarity'. Similarity values outside that range
+                     will lead to '0' in the generated base frequency filter and will
+                     as well not be exported as base frequencies. (Note: It's not necessary to
+                     re-calculate, when you change this value)
+
+                     For non-regular sequence characters (gaps, ambiguity codes and lowercase characters)
+                     you may define how the frequency calculation acts, by setting their toggles to one of
+                     the following values:
+
+                        don't count (ignore)
+
+                              The corresponding characters are ignored (as if they were not present).
+
+                        if occurs most often => forget whole column
+
+                              If the corresponding character(s) occur(s) more often than any other
+                              regular sequence character, then skip column, i.e. write '0' to filter. 
+
+                        if occurs => forget whole column
+
+                              If (one of) the corresponding character(s) occurs, then skip the column,
+                              i.e. write '0' to filter.
+
+                        count, but do NOT use as maximum
+
+                              The corresponding characters are counted like regular sequence characters,
+                              but never interpreted as "being the most homologous character".
+                              Compared with 'dont count' it will result in lower base frequencies, cause
+                              the overall number of characters occurring per column will be higher.
+
+                        treat as regular character
+
+                              This is only applicable to 'ambiguity codes'. Treats ambiguity codes like
+                              regular sequence characters. (Note: 'use like uppercase char' setting for
+                              lowercase characters affects ambiguity codes as well, if treated as regular
+                              characters)
+
+                        use like uppercase char
+
+                              This is only applicable to 'lowercase chars'. Simply treat regular lowercase
+                              sequence characters like uppercase characters.
+
+                Press 'Calculate/Column Filter' to calculate the base frequencies.
+
+                When calculated, three lines will appear below your sequences in the main window.
+                Reading the columns of these 3 lines from top to bottom, they mark completely
+                filtered columns by 'XXX' and else show the frequency of the most frequent base in percent.
+
+                The color of each column indicates whether the frequency will be exported and respectively
+                whether the column will be '0' or '1' in the base frequency filter.
+
+                If pleased with the results, either export detailed base frequencies
+                via 'File/Export frequencies' or export a base frequency filter via 'File/Export filter'.
+
+NOTES		None
+
+EXAMPLES	To create a filter which hits all columns containing sequence data, use the following settings:
+
+                   - all alignment columns
+                   - similarity 0 to 100
+                   - both gaps: 'dont count (ignore)'
+                   - ambiguity codes: 'treat as regular character'
+                   - lowercase chars: 'use like uppercase char'
 
 WARNINGS	None
 
