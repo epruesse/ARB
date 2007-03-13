@@ -134,13 +134,7 @@ ED4_object_specification column_stat_terminal_spec =
 char *ED4_terminal::resolve_pointer_to_string_copy(int *str_len) const {
     int         len;
     const char *s = resolve_pointer_to_char_pntr(&len);
-#if defined(DEBUG)
-    if (strlen(s) != size_t(len)) {
-        int         len2;
-        const char *s2 = resolve_pointer_to_char_pntr(&len2);;
-    }
-#endif // DEBUG
-    char   *t  = GB_strduplen(s, len); // space for zero byte is allocated by GB_strduplen
+    char       *t = GB_strduplen(s, len); // space for zero byte is allocated by GB_strduplen
 
     if (str_len) *str_len = len;
     return t;
