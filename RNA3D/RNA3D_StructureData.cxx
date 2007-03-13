@@ -1478,19 +1478,14 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
     GB_pop_transaction(gb_main);
 }
 
-int Structure3D::ValidateSearchColor(int iColor, int mode){
+static bool ValidSearchColor(int iColor, int mode) {
+    bool isValid = false;
 
-    switch (mode) 
-        {
-        case SAI:
-            if ((iColor >= RNA3D_GC_CBACK_0) && (iColor < RNA3D_GC_MAX))  return  1;
-            else                                                          return  0;
-            break;
-        case SEARCH:
-            if ((iColor >= RNA3D_GC_SBACK_0) && (iColor < RNA3D_GC_MAX))  return  1;
-            else                                                          return  0;
-            break;
-        }
+    switch (mode) {
+        case SAI:    isValid = (iColor >= RNA3D_GC_CBACK_0) && (iColor < RNA3D_GC_MAX); break;
+        case SEARCH: isValid = (iColor >= RNA3D_GC_SBACK_0) && (iColor < RNA3D_GC_MAX); break;
+    }
+    return isValid;
 }
 
 void Structure3D::MapSearchStringsToEcoliTemplate(AW_root *awr){
@@ -1524,7 +1519,7 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root *awr){
                                     {
                                         iColor = pSearchColResults[i] - COLORLINK;
 
-                                        if(ValidateSearchColor(iColor, SEARCH)) {
+                                        if(ValidSearchColor(iColor, SEARCH)) {
                                             RNA3D->cGraphics->SetColor(iColor);
                                             PointsToQuads(t->x, t->y, t->z);
                                         }
@@ -1555,7 +1550,7 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root *awr){
                                     {
                                         iColor = pSearchColResults[i] - COLORLINK;
 
-                                        if(ValidateSearchColor(iColor, SEARCH)) {
+                                        if(ValidSearchColor(iColor, SEARCH)) {
                                             if ((iLastClr == iColor) && (iLastPos == EColiPos-1)) {
                                                 RNA3D->cGraphics->SetColor(iColor);
                                                 glVertex3f(vLastPt.x, vLastPt.y, vLastPt.z);
@@ -1611,7 +1606,7 @@ void Structure3D::MapSaiToEcoliTemplate(AW_root *awr){
                                     {
                                         iColor = pSearchColResults[i-1] - SAICOLORS;
 
-                                        if(ValidateSearchColor(iColor, SAI)) {
+                                        if(ValidSearchColor(iColor, SAI)) {
                                             RNA3D->cGraphics->SetColor(iColor);
                                             PointsToQuads(t->x, t->y, t->z);
                                         }
