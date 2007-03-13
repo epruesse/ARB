@@ -151,7 +151,7 @@ static GB_ERROR NT_fix_gene_data(GBDATA *gb_main) {
          gb_species && !error;
          gb_species = GBT_next_species(gb_species))
     {
-        bool    is_organism  = GEN_is_organism(gb_species);
+        bool    is_organism  = (GB_find(gb_species, GENOM_ALIGNMENT, 0, down_level) != 0); // same test as GEN_is_organism, but w/o genome-db-assertion
         GBDATA *gb_gene_data = GEN_find_gene_data(gb_species);
 
         if (is_organism && !gb_gene_data) {
