@@ -152,5 +152,4 @@ public:
 
     void MapSaiToEcoliTemplate(AW_root *awr);
     void MapSearchStringsToEcoliTemplate(AW_root *awr);
-    int  ValidateSearchColor(int iColor, int mode);
 };
