@@ -372,7 +372,7 @@ SearchTree::SearchTree(const SearchSettings *s)
         }
     }
 
-#define ROOT(tok,com)                                       \
+#define INSERT_ROOT_PATTERN(tok,com)                        \
     do {                                                    \
         if (root) {                                         \
             root = root->insert_unified_pattern(tok, com);  \
@@ -384,12 +384,13 @@ SearchTree::SearchTree(const SearchSettings *s)
 
 
     {
-        char       *pattern      = strdup(sett->get_pattern());
-        const char *trenner      = "\n,";
-        char       *tok          = strtok(pattern, trenner);
+        char       *pattern           = strdup(sett->get_pattern());
+        const char *trenner           = "\n,";
+        char       *tok               = strtok(pattern, trenner);
         char       *comment;
         char        T_or_U;
-        GB_ERROR    T_or_U_error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "complement");
+        GB_ERROR    T_or_U_error      = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "complement");
+        bool        show_T_or_U_error = false;
 
         while (tok) {
             splitTokComment(&tok, &comment);
@@ -406,63 +407,61 @@ SearchTree::SearchTree(const SearchSettings *s)
                 }
 
                 if (!s_exact || (!s_reverse && !s_complement)) {
-                    ROOT(uni_tok, comment);
+                    // insert original search pattern if all patterns shall be used (!s_exact)
+                    // or if neither s_reverse nor s_complement
+                    INSERT_ROOT_PATTERN(uni_tok, comment);
                 }
                 int commentLen = comment ? strlen(comment) : 0;
 
                 if (s_reverse) {
                     char *reverse = GBT_reverseNucSequence(uni_tok, uni_tok_len);
-                    char *reverseComment = appendComment(comment, commentLen, "(reverse)");
 
-                    if (!s_exact || (s_reverse && !s_complement)) {
-                        ROOT(reverse, reverseComment);
+                    if (!s_exact || !s_complement) {
+                        char *reverseComment = appendComment(comment, commentLen, "(reverse)");
+
+                        INSERT_ROOT_PATTERN(reverse, reverseComment); // insert reverse pattern
+                        free(reverseComment);
                     }
                     if (s_complement) {
                         e4_assert(IS_NUCLEOTIDE());
                         // char T_or_U = ED4_ROOT->alignment_type==GB_AT_DNA ? 'T' : 'U';
                         if (T_or_U) {
-                            char *revcomp = GBT_complementNucSequence(reverse, uni_tok_len, T_or_U);
+                            char *revcomp        = GBT_complementNucSequence(reverse, uni_tok_len, T_or_U);
                             char *revcompComment = appendComment(comment, commentLen, "(reverse complement)");
+                            char *uni_revcomp    = unify_pattern(revcomp, 0);
 
-                            if (!s_exact || (s_reverse && s_complement)) {
-                                ROOT(revcomp, revcompComment);
-                            }
+                            INSERT_ROOT_PATTERN(uni_revcomp, revcompComment); // insert reverse complement pattern
+
+                            free(uni_revcomp);
                             free(revcompComment);
                             free(revcomp);
                         }
                         else {
-                            if (T_or_U_error) {
-                                aw_message(T_or_U_error);
-                                T_or_U_error = 0; // only once
-                            }
+                            show_T_or_U_error = true; // only show error if it matters
                         }
                     }
 
-                    free(reverseComment);
                     free(reverse);
                 }
-                else if (s_complement) {
+                
+                if (s_complement) {
                     GB_transaction dummy(gb_main);
 
-//                     GB_alignment_type ali_type = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
-//                     e4_assert(ali_type==GB_AT_DNA || ali_type==GB_AT_RNA);
-//                     char              T_or_U   = ali_type==GB_AT_DNA ? 'T' : 'U';
-
                     if (T_or_U) {
-                        char *complement        = GBT_complementNucSequence(uni_tok, uni_tok_len, T_or_U);
-                        char *complementComment = appendComment(comment, commentLen, "(complement)");
+                        if (!s_exact || !s_reverse) {
+                            char *complement        = GBT_complementNucSequence(uni_tok, uni_tok_len, T_or_U);
+                            char *complementComment = appendComment(comment, commentLen, "(complement)");
+                            char *uni_complement    = unify_pattern(complement, 0);
 
-                        if (!s_exact || (!s_reverse && s_complement)) {
-                            ROOT(complement, complementComment);
+                            INSERT_ROOT_PATTERN(uni_complement, complementComment); // insert complement pattern
+
+                            free(uni_complement);
+                            free(complementComment);
+                            free(complement);
                         }
-                        free(complementComment);
-                        free(complement);
                     }
                     else {
-                        if (T_or_U_error) {
-                            aw_message(T_or_U_error);
-                            T_or_U_error = 0; // only once
-                        }
+                        show_T_or_U_error = true; // only show error if it matters
                     }
                 }
 
@@ -472,9 +471,11 @@ SearchTree::SearchTree(const SearchSettings *s)
             free(uni_tok);
         }
         free(pattern);
+
+        if (show_T_or_U_error && T_or_U_error) aw_message(T_or_U_error);
     }
 
-#undef ROOT
+#undef INSERT_ROOT_PATTERN
 }
 
 SearchTree::~SearchTree()
@@ -716,12 +717,17 @@ static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
     }
 
     if (action & (RECALC_SEARCH_TREE|TEST_MIN_MISMATCH|TEST_MAX_MISMATCH)) {
-        if (tree[type]->get_shortestPattern() < 4*root->awar(awar_list[type].max_mismatches)->read_int()) {
-            aw_message("Too many mismatches!");
-            int mami = tree[type]->get_shortestPattern()/4;
-            root->awar(awar_list[type].max_mismatches)->write_int(mami);
-            if (root->awar(awar_list[type].min_mismatches)->read_int() > mami) {
-                root->awar(awar_list[type].min_mismatches)->write_int(mami);
+        int patLen = tree[type]->get_shortestPattern();
+        int maxMis = root->awar(awar_list[type].max_mismatches)->read_int();
+
+        if (patLen < 3*maxMis) {
+            int maxMaxMis = tree[type]->get_shortestPattern()/3;
+
+            aw_message(GBS_global_string("Too many mismatches (patterns of length=%i allow only %i max. mismatches)", patLen, maxMaxMis));
+
+            root->awar(awar_list[type].max_mismatches)->write_int(maxMaxMis);
+            if (root->awar(awar_list[type].min_mismatches)->read_int() > maxMaxMis) {
+                root->awar(awar_list[type].min_mismatches)->write_int(maxMaxMis);
             }
             goto recalc;
         }
