@@ -28,6 +28,11 @@ DESCRIPTION	Search
 				window when you position your cursor on a found
 				pattern.
 
+                Mark species with matches
+
+                        Marks all species which match one of the current search patterns.
+                        Does not unmark rest on species.
+
 		Last/Next
 
 			Jumps to the last/next occurance of any of the given patterns.
@@ -67,7 +72,7 @@ DESCRIPTION	Search
 			If checked, gaps in the search pattern will be ignored.
 			(A-CG-U, AC---GU, ... will find ACGU)
 
-		Treat T as U?
+		Treat T and U as match?
 
 			If checked, T and U will be treated as equal.
 			(ACGU will find ACGT and vice versa)
