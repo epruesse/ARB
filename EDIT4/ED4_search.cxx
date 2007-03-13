@@ -616,7 +616,7 @@ void SearchTree::findMatches(const char *seq, int len, reportMatch report)
 #define AWAR_NAME(t,s)  ED4_AWAR_##t##_SEARCH_##s
 
 #define AWAR_LIST(t)                            \
-AWAR_NAME(t,PATTERN),                           \
+    AWAR_NAME(t,PATTERN),                       \
     AWAR_NAME(t,MIN_MISMATCHES),                \
     AWAR_NAME(t,MAX_MISMATCHES),                \
     AWAR_NAME(t,CASE),                          \
@@ -642,8 +642,7 @@ static struct S_SearchAwarList awar_list[SEARCH_PATTERNS] = {
     { AWAR_LIST(SIG3) },
 };
 
-static inline int resultsAreShown(ED4_SearchPositionType type)
-{
+static inline int resultsAreShown(ED4_SearchPositionType type) {
     return ED4_ROOT->aw_root->awar(awar_list[type].show)->read_int();
 }
 
@@ -1368,8 +1367,8 @@ void ED4_search(AW_window */*aww*/, AW_CL searchDescriptor)
     while (terminal) {
         if (terminal->is_sequence_terminal()) {
             ED4_sequence_terminal *seq_terminal = terminal->to_sequence_terminal();
-            ED4_SearchResults& results = seq_terminal->results();
-            ED4_SearchPosition *found = 0;
+            ED4_SearchResults&     results      = seq_terminal->results();
+            ED4_SearchPosition    *found        = 0;
 
             if (pattern==ED4_ANY_PATTERN || settings[pattern]->get_open_folded() || !terminal->is_in_folded_group()) {
                 results.search(seq_terminal);
@@ -1422,6 +1421,39 @@ void ED4_search(AW_window */*aww*/, AW_CL searchDescriptor)
         if (terminal==start_terminal) {
             last_loop = 1;
         }
+    }
+}
+
+void ED4_mark_matching_species(AW_window */*aww*/, AW_CL cl_pattern) {
+    ED4_SearchPositionType  pattern  = ED4_SearchPositionType(cl_pattern);
+    ED4_terminal           *terminal = ED4_ROOT->root_group_man->get_first_terminal();
+    GB_ERROR                error    = 0;
+    GB_transaction          ta(gb_main);
+
+    while (terminal && !error) {
+        if (terminal->is_sequence_terminal()) {
+            ED4_sequence_terminal *seq_terminal = terminal->to_sequence_terminal();
+            ED4_SearchResults&     results      = seq_terminal->results();
+
+            results.search(seq_terminal);
+            ED4_SearchPosition *found = results.get_first_starting_after(pattern, INT_MIN, false);
+
+            if (found) {
+                ED4_species_manager *species_man = seq_terminal->get_parent(ED4_L_SPECIES)->to_species_manager();;
+                if (!species_man->flag.is_consensus) {
+                    GBDATA *gbd = species_man->get_species_pointer();
+                    e4_assert(gbd);
+                    error = GB_write_flag(gbd, 1);
+                }            
+            }
+        }
+
+        terminal = terminal->get_next_terminal();
+    }
+
+    if (error) {
+        aw_message(error);
+        ta.abort();
     }
 }
 
@@ -1718,6 +1750,10 @@ AW_window *ED4_create_search_window(AW_root *root, AW_CL cl) {
     aws->at("previous");
     aws->callback(ED4_search, (AW_CL)ED4_encodeSearchDescriptor(-1, type));
     aws->create_button("SEARCH_LAST", "#edit/last.bitmap", "L");
+
+    aws->at("mark");
+    aws->callback(ED4_mark_matching_species, (AW_CL)type);
+    aws->create_autosize_button("MARK_SPECIES", "Mark species with matches", "M");
 
     aws->at("show");
     aws->create_toggle(awarList->show);
