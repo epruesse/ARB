@@ -1,36 +1,45 @@
-typedef enum
-{
+// =============================================================== //
+//                                                                 //
+//   File      : ed4_search.hxx                                    //
+//   Purpose   :                                                   //
+//   Time-stamp: <Tue Mar/13/2007 17:56 MET Coder@ReallySoft.de>   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de)                   //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#ifndef ED4_SEARCH_HXX
+#define ED4_SEARCH_HXX
+
+typedef enum {
     ED4_SC_CASE_SENSITIVE,
     ED4_SC_CASE_INSENSITIVE
-
 } ED4_SEARCH_CASE;
 
-typedef enum
-{
+typedef enum {
     ED4_ST_T_NOT_EQUAL_U,
     ED4_ST_T_EQUAL_U
-
 } ED4_SEARCH_TU;
 
-typedef enum
-{
+typedef enum {
     ED4_SG_CONSIDER_GAPS,
     ED4_SG_IGNORE_GAPS
-
 } ED4_SEARCH_GAPS;
 
-void ED4_search(AW_window *aww, AW_CL searchDescriptor);
-GB_ERROR ED4_repeat_last_search(void);
+void       ED4_search(AW_window *aww, AW_CL searchDescriptor);
+GB_ERROR   ED4_repeat_last_search(void);
 AW_window *ED4_create_search_window(AW_root *root, AW_CL type);
-void ED4_create_search_awars(AW_root *root);
+void       ED4_create_search_awars(AW_root *root);
 
 // --------------------------------------------------------------------------------
 
 #define SEARCH_PATTERNS 9
-#define MAX_MISMATCHES 5
+#define MAX_MISMATCHES  5
 
 typedef enum
-{
+    {
     ED4_USER1_PATTERN,
     ED4_USER2_PATTERN,
     ED4_PROBE_PATTERN,
@@ -77,23 +86,20 @@ class ED4_SearchPosition // one found position
 public:
 
     ED4_SearchPosition(int sp, int ep, ED4_SearchPositionType wf, GB_CSTR found_comment, int mismatches[MAX_MISMATCHES]);
-    ~ED4_SearchPosition()
-    {
-        delete next;
-    }
+    ~ED4_SearchPosition() { delete next; }
 
     ED4_SearchPosition(const ED4_SearchPosition& other); // copy-ctor ('next' is always zero)
 
     ED4_SearchPosition *insert(ED4_SearchPosition *toAdd);
     ED4_SearchPosition *remove(ED4_SearchPositionType typeToRemove);
 
-    ED4_SearchPosition *get_next() const 		{ return next; }
-    int get_start_pos() const 				{ return start_pos; }
-    int get_end_pos() const 				{ return end_pos; }
-    ED4_SearchPositionType get_whatsFound() const 	{ return whatsFound; }
+    ED4_SearchPosition *get_next() const          { return next; }
+    int get_start_pos() const                     { return start_pos; }
+    int get_end_pos() const                       { return end_pos; }
+    ED4_SearchPositionType get_whatsFound() const { return whatsFound; }
     GB_CSTR get_comment() const;
 
-    const int *getMismatches() const 			{ return mismatch; }
+    const int *getMismatches() const              { return mismatch; }
 
     int containsPos(int pos) const { return start_pos<=pos && end_pos>=pos; }
 
@@ -108,10 +114,10 @@ class ED4_sequence_terminal;
 
 class ED4_SearchResults // list head
 {
-    int arraySize;		// ==0 -> 'first' is a list
+    int arraySize;              // ==0 -> 'first' is a list
     // >0 -> 'array' is an array of 'ED4_SearchPosition*' with 'arraySize' elements
 
-    ED4_SearchPosition *first; 	// ==0 -> no results, this list is sorted by start_pos, end_pos
+    ED4_SearchPosition *first;  // ==0 -> no results, this list is sorted by start_pos, end_pos
     ED4_SearchPosition **array; // ==0 -> no results, same sorting as 'first'
     int timeOf[SEARCH_PATTERNS];
 
@@ -127,8 +133,8 @@ class ED4_SearchResults // list head
     int is_list() const { return arraySize==0; }
     int is_array() const { return arraySize>0; }
 
-    void to_array() const;	// ensures that result is in array-format (used to improve search performance)
-    void to_list() const;	// ensures that result is in list-format (used to improve insert performance)
+    void to_array() const;      // ensures that result is in array-format (used to improve search performance)
+    void to_list() const;       // ensures that result is in list-format (used to improve insert performance)
 
 public:
 
@@ -153,5 +159,7 @@ public:
 
 ED4_sequence_terminal *ED4_find_seq_terminal(const char *species_name);
 
-
+#else
+#error ed4_search.hxx included twice
+#endif // ED4_SEARCH_HXX
 
