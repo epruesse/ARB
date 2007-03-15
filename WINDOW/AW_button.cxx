@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream.h>
 #include <memory.h>
 #include <Xm/Xm.h>
 #include <Xm/Frame.h>
@@ -505,13 +506,32 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
     //
     // Note 1: Button width 0 does not work together with labels!
 
-    // Note 2: "color" is used for the button background. In case no color is specified uses grey92 color as a background
+    // Note 2: "color" is used for the button background. 
+    // If color is specified uses the specified color as a background for the buttons
+    // if not ==> then sets default background color for the buttons
 
-    if(color) {
-        set_background(color);
-    }
-    else {
-        set_background("grey92");
+    {
+        int tune = 1;
+        if (color) {
+            if (color[0]=='+') { // use some "bright" color
+                tune = 2;
+            }
+            else if (color[0]=='-') { // use some "dark" color
+                tune = 3;
+            }
+            else {
+                // specified backgroud color
+                set_background(color);
+                tune = 0;
+            }
+        }
+        if (tune) {
+            // Gets the Background Color and decreases the rgb values to 
+            // create slightly darker background to give a 3D button look
+            Widget w = (_at->attach_any) ? INFO_FORM : INFO_WIDGET;
+            TuneBackground(w, tune==1 ? (_callback ? TUNE_BUTTON : 0) 
+                           : (tune==2 ? TUNE_BRIGHT : TUNE_DARK));    
+        }
     }
 
     AWUSE(mnemonic);
@@ -888,7 +908,6 @@ void AW_window::update_toggle(int *wgt,const char *var,AW_CL cd)
 }
 
 void AW_window::create_toggle( const char *var_name,const char *no, const char *yes ) {
-    set_background("grey92");
 
     AW_cb_struct *cbs = _callback;
     _callback         = (AW_cb_struct *)1;
@@ -2125,8 +2144,23 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
         }
     }
 
-    set_background("grey92");
+    AW_awar *vs = root->awar(var_name);
 
+
+    optionMenu_shell = XtVaCreatePopupShell ("optionMenu shell",
+                                             xmMenuShellWidgetClass,
+                                             INFO_WIDGET,
+                                             XmNwidth, 1,
+                                             XmNheight, 1,
+                                             XmNallowShellResize, AW_TRUE,
+                                             XmNoverrideRedirect, AW_TRUE,
+                                             XmNfontList, p_global->fontlist,
+                                             NULL );
+    {
+        // Gets the Background Color and decreases the rgb values to 
+        // create slightly darker background to give a 3D button look
+        TuneBackground(optionMenu_shell, TUNE_BUTTON);    
+    }
     const char *color_switch = 0;
     Pixel       bg_color     = 0;
 
@@ -2143,19 +2177,6 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
         }
     }
 
-    AW_awar *vs = root->awar(var_name);
-
-
-    optionMenu_shell = XtVaCreatePopupShell ("optionMenu shell",
-                                             xmMenuShellWidgetClass,
-                                             INFO_WIDGET,
-                                             XmNwidth, 1,
-                                             XmNheight, 1,
-                                             XmNallowShellResize, AW_TRUE,
-                                             XmNoverrideRedirect, AW_TRUE,
-                                             XmNfontList, p_global->fontlist,
-                                             NULL );
-
     optionMenu = XtVaCreateWidget( "optionMenu_p1",
                                    xmRowColumnWidgetClass,
                                    optionMenu_shell,
@@ -2163,6 +2184,7 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
                                    XmNfontList, p_global->fontlist,
                                    color_switch, bg_color,
                                    NULL );
+
     if ( label ) {
         char *help_label;
         int   width_help_label, height_help_label;
@@ -2278,7 +2300,6 @@ void AW_window::clear_option_menu(AW_option_menu_struct *oms) {
 }
 
 void *AW_window::_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic,const char *name_of_color) {
-    name_of_color = "grey92";
 
     AWUSE(mnemonic);
     Widget                 entry;
@@ -2286,6 +2307,12 @@ void *AW_window::_create_option_entry(AW_VARIABLE_TYPE type, const char *name, c
 
     if ( oms->variable_type != type ) {
         AW_ERROR("Option menu not defined for this type");
+    }
+
+    {
+        // Gets the Background Color and decreases the rgb values to 
+        // create slightly darker background to give a 3D button look
+        TuneBackground(oms->menu_widget, TUNE_BUTTON);    
     }
     Pixel bg_color = 0;
     const char *color_switch = 0;

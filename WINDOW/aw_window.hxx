@@ -35,6 +35,14 @@ extern bool AW_alpha_Size_Supported;
 #define AW_MESSAGE_TIME 2000
 #define AW_HEADER_MAIN  extern "C" { int XtAppInitialize(); } void aw_never_called_main(void) { XtAppInitialize(); }
 
+//======= Used in Tune background function =================================
+#define TUNE_BUTTON 10
+#define TUNE_SUBMENU 0
+#define TUNE_MENUTOPIC 15
+#define TUNE_BRIGHT (256+50)
+#define TUNE_DARK   (-TUNE_BRIGHT)
+// ==========================================================================
+
 #ifndef AW_AT_HXX
 class AW_at;
 #endif
@@ -357,6 +365,7 @@ public:
 
     void auto_off( void );              // disable auto_xxxxx
     void shadow_width (int shadow_thickness);       // set the shadow_thickness of buttons
+    void TuneBackground(Widget w,int modStrength);
 
     // *** local modifiers: ********
     void at( int x, int y );    // abs pos of a button (>10,10)

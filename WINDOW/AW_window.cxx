@@ -2108,6 +2108,11 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     create_help_entry(this);
     create_window_variables();
     set_icon(window_defaults_name);
+    {
+        // Gets the Background Color and decreases the rgb values to 
+        // create slightly darker background to give a 3D button look
+        TuneBackground(main_window,0);    
+    }
 }
 
 
@@ -2319,6 +2324,11 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     create_help_entry(this);
     create_window_variables();
     set_icon(window_defaults_name);
+    {
+        // Gets the Background Color and decreases the rgb values to 
+        // create slightly darker background to give a 3D button look
+        TuneBackground(main_window,0);    
+    }
 }
 
 void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windowname) {
@@ -2354,6 +2364,11 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
     aw_realize_widget(this );
     create_devices();
     set_icon(window_defaults_name);
+    {
+        // Gets the Background Color and decreases the rgb values to 
+        // create slightly darker background to give a 3D button look
+        TuneBackground(form1,0);    
+    }
 }
 
 
@@ -2444,6 +2459,11 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
     create_help_entry(this);
     create_devices();
     set_icon(window_defaults_name);
+    {
+        // Gets the Background Color and decreases the rgb values to 
+        // create slightly darker background to give a 3D button look
+        TuneBackground(main_window,0);    
+    }
 }
 
 
@@ -2570,7 +2590,11 @@ inline int yoffset_for_mode_button(int button_number) {
 int AW_window::create_mode(const char *id, const char *pixmap, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     Widget button;
 
-    set_background("grey92");
+    {
+        // Gets the Background Color and decreases the rgb values to 
+        // create slightly darker background to give a 3D button look
+        TuneBackground(p_w->mode_area, TUNE_BUTTON);    
+    }
 
     const char *color_switch = 0;
     Pixel       bg_color     = 0;
@@ -2859,8 +2883,11 @@ void AW_window::all_menus_created() { // this is called by AW_window::show() (i.
 void AW_window::insert_sub_menu(const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask) {
     AWUSE(help_text);
     Widget shell, label;
-
-    set_background("grey92");
+    {
+        // Gets the Background Color and decreases the rgb values to 
+        // create slightly darker background to give a 3D button look
+        TuneBackground( p_w->menu_bar[p_w->menu_deep], TUNE_SUBMENU);    
+    }
 
     const char *color_switch = 0;
     Pixel       bg_color     = 0;
@@ -2945,7 +2972,11 @@ void AW_window::insert_menu_topic(const char *id, AW_label name, const char *mne
     Widget button;
     if (!id) id = name;
 
-    set_background("grey92");
+    {
+        // Gets the Background Color and decreases the rgb values to 
+        // create slightly darker background to give a 3D button look
+        TuneBackground(p_w->menu_bar[p_w->menu_deep], TUNE_MENUTOPIC);    
+    }
 
     const char *color_switch = 0;
     Pixel       bg_color     = 0;
@@ -3591,6 +3622,41 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,const char *rm_ba
     return 0;
 }
 
+void AW_window::TuneBackground(Widget w, int modStrength) {
+    // Gets the Background Color and decreases the rgb values to create slightly darker background to give a 3D button look
+    // If abs(modStrength) > 256 -> use fixed mod direction (increase if positive, decrease if negative).
+
+    Pixel bg;
+    XtVaGetValues(w, XmNbackground, &bg, NULL); 
+    XColor xc;
+    xc.pixel = bg;
+    XQueryColor( XtDisplay( w ), p_global->colormap, &xc );
+    char hex_color[8];
+    int col[3];
+    col[0]=xc.red/255; col[1]=xc.green/255; col[2]=xc.blue/255;
+
+    for (int i=0;i<3;i++) {
+        int c = col[i]; 
+        if (modStrength>255) { // prefer color increase
+            int ms = modStrength-256;
+            c = (c<(256-ms))? c+ms : c-ms;
+        }
+        else if (modStrength<-255) { // prefer color decrease
+            int ms = -(modStrength+256);
+            c = (c>ms)? c-ms : c+ms;
+        }
+        else { // no special preference
+            c = c<128 ? c+modStrength : c-modStrength;
+        }
+        //        col[i] = (c<0)? c+ms: ((c>255)? c-ms: c);
+        col[i] = c<0 ? 0 : (c>255 ? 255 : c);
+    }
+
+    sprintf(hex_color, "#%2.2X%2.2X%2.2X", col[0], col[1], col[2]);
+    //    printf("use for button: %s\n", hex_color);
+    set_background(hex_color);
+}
+
 /// Extended by Daniel Koitzsch & Christian Becker 19-05-04
 #if defined(ARB_OPENGL)
 
@@ -3919,3 +3985,5 @@ void AW_window_menu_modes_opengl::init( AW_root *root_in, const char *wid, const
     set_icon(window_defaults_name);
 }
 #endif // ARB_OPENGL
+
+
