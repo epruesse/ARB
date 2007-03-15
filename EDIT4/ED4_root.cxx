@@ -1775,6 +1775,9 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
     awmm->at("posTxt");
     awmm->button_length(0);
+#ifdefined (DEVEL_RALF)
+#warning  Please remove label background color parameter after testing!
+#endif
     awmm->create_button(0, "Position", 0, "-");
 
     awmm->at("pos");
@@ -1783,6 +1786,9 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
     awmm->at("ecoliTxt");
     awmm->button_length(0);
+#ifdefined (DEVEL_RALF)
+#warning  Please remove label background color parameter after testing!
+#endif
     awmm->create_button(0, "E.coli", 0, "+");
 
     awmm->at("ecoli");
