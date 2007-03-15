@@ -2159,7 +2159,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
     if (awtqs->count_pos_fig){
         aws->at(awtqs->count_pos_fig);
         aws->label("Hits:");
-        aws->create_button(0,cbs->awar_count);
+        aws->create_button(0,cbs->awar_count,0,"+");
     }
 
     if (awtqs->config_pos_fig){

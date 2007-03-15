@@ -1775,7 +1775,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
     awmm->at("posTxt");
     awmm->button_length(0);
-    awmm->create_button(0, "Position");
+    awmm->create_button(0, "Position", 0, "-");
 
     awmm->at("pos");
     awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_cursor, AW_CL(1));
@@ -1783,7 +1783,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
     awmm->at("ecoliTxt");
     awmm->button_length(0);
-    awmm->create_button(0, "E.coli");
+    awmm->create_button(0, "E.coli", 0, "+");
 
     awmm->at("ecoli");
     awmm->callback((AW_CB)ED4_jump_to_cursor_position,(AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_Ecoli, AW_CL(0));
