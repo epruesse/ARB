@@ -12,16 +12,15 @@ UP	sp_info.hlp
 TITLE		Reorder Fields
 
 OCCURRENCE	ARB_NT/Species/Info/FIELDS/Reorder fields
-            ARB_NT/Genes/Info/FIELDS/Reorder fields
+                ARB_NT/Genes/Info/FIELDS/Reorder fields
 
-DESCRIPTION	    Allows changing the order of the fields within the
+DESCRIPTION	Allows changing the order of the fields within the
                 'DATABASE FIELDS' subwindow of the 'SPECIES/GENE INFORMATION'
                 window.
 
- 		        Choose the 'Reorder fields' item from the 'FIELDS' menu to
-		        display the 'REORDER FIELDS' window. Select fields from the
-		        subwindows and press the 'PUT SELECTED ITEM ..' to change the
-		        fields display on the 'SPECIES/GENE INFORMATION' window.
+ 		        Select fields from the subwindows and press the 'MOVE ..' buttons
+                        to change the order of the fields displayed in
+                        the 'SPECIES/GENE INFORMATION' window.
 
 NOTES		None
 
