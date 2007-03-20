@@ -1,7 +1,6 @@
 #ifndef AW_AT_HXX
 #define AW_AT_HXX
 
-
 class AW_at {
 public:
     short	shadow_thickness;
@@ -13,7 +12,8 @@ public:
     char	  *helptext_for_next_button;
     AW_active  mask_for_next_button;
 
-    char *background_colorname;
+    unsigned long int background_color; // X11 Pixel
+
     char *label_for_inputfield;
 
     int	x_for_next_button;
