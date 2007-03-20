@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <iostream.h>
+#include <iostream>
 #include <memory.h>
 #include <Xm/Xm.h>
 #include <Xm/Frame.h>
@@ -485,7 +485,7 @@ static void detect_text_size(const char *text, int& width, int& height) {
     return;
 }
 
-void AW_window::create_autosize_button( const char *macro_name, AW_label buttonlabel,const  char *mnemonic, unsigned xtraSpace) {
+void AW_window::create_autosize_button(const char *macro_name, AW_label buttonlabel, const  char *mnemonic, unsigned xtraSpace) {
     int width, height;
     detect_text_size(buttonlabel, width, height);
 
@@ -497,8 +497,11 @@ void AW_window::create_autosize_button( const char *macro_name, AW_label buttonl
     _at->length_of_buttons = length_of_buttons;
 }
 
-void AW_window::create_button( const char *macro_name, AW_label buttonlabel,const  char *mnemonic, const char *color) {
+void AW_window::create_button(const char *macro_name, AW_label buttonlabel, const  char *mnemonic, const char *color) {
     // Create a button or text display.
+    // 
+    // If a callback is bound via at->callback(), a button is created.
+    // Otherwise a text display is created.
     //
     // if buttonlabel starts with '#' the rest of buttonlabel is used as name of bitmap file used for button
     // if buttonlabel contains a '/' it's interpreted as AWAR name and the button displays the content of the awar
@@ -506,33 +509,11 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
     //
     // Note 1: Button width 0 does not work together with labels!
 
-    // Note 2: "color" is used for the button background. 
-    // If color is specified uses the specified color as a background for the buttons
-    // if not ==> then sets default background color for the buttons
+    // Note 2: "color" may be specified for the button background (see TuneOrSetBackground for details)
 
-    {
-        int tune = 1;
-        if (color) {
-            if (color[0]=='+') { // use some "bright" color
-                tune = 2;
-            }
-            else if (color[0]=='-') { // use some "dark" color
-                tune = 3;
-            }
-            else {
-                // specified backgroud color
-                set_background(color);
-                tune = 0;
-            }
-        }
-        if (tune) {
-            // Gets the Background Color and decreases the rgb values to 
-            // create slightly darker background to give a 3D button look
-            Widget w = (_at->attach_any) ? INFO_FORM : INFO_WIDGET;
-            TuneBackground(w, tune==1 ? (_callback ? TUNE_BUTTON : 0) 
-                           : (tune==2 ? TUNE_BRIGHT : TUNE_DARK));    
-        }
-    }
+    TuneOrSetBackground(_at->attach_any ? INFO_FORM : INFO_WIDGET, // set background for buttons / text displays
+                        color,
+                        _callback ? TUNE_BUTTON : 0); 
 
     AWUSE(mnemonic);
 
@@ -716,22 +697,7 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
                                                     NULL);
         }
     }
-    const char *color_switch = 0;
-    Pixel       bg_color     = 0;
-
-    if (_at->background_colorname){
-        color_switch = XmNbackground;
-        XColor unused;
-        XColor color;
-        if( XAllocNamedColor(p_global->display,p_global->colormap,_at->background_colorname,&color,&unused) == 0) {
-            fprintf(stderr,"XAllocColor failed: %s\n",_at->background_colorname);
-            color_switch = 0;
-        }
-        else {
-            bg_color = color.pixel;
-        }
-    }
-
+    
     Widget  button       = 0;
     char   *mwidth       = XmNwidth;
     Widget  toRecenter   = 0;
@@ -758,8 +724,8 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
                                               XmNshadowThickness, _at->shadow_thickness,
                                               XmNalignment, XmALIGNMENT_CENTER,
                                               XmNfontList, p_global->fontlist,
-                                              mwidth, (int)width_of_button,
-                                              color_switch, bg_color,
+                                              XmNbackground, _at->background_color,
+                                              mwidth, (int)width_of_button, // may terminate the list
                                               NULL );
             aw_attach_widget(button,_at);
         }
@@ -777,9 +743,8 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
                                               XmNshadowThickness, _at->shadow_thickness,
                                               XmNalignment, XmALIGNMENT_CENTER,
                                               XmNfontList, p_global->fontlist,
-                                              mwidth, (int)width_of_button,
-                                              // mwidth, (int)(width_of_button + 2),
-                                              color_switch, bg_color,
+                                              XmNbackground, _at->background_color,
+                                              mwidth, (int)width_of_button, // may terminate the list
                                               NULL );
         }
         AW_label_in_awar_list(this,button,buttonlabel);
@@ -802,13 +767,9 @@ void AW_window::create_button( const char *macro_name, AW_label buttonlabel,cons
                                           // XmNalignment, XmALIGNMENT_BEGINNING, // alignment of text inside button
                                           RES_LABEL_CONVERT(buttonlabel),
                                           XmNfontList, p_global->fontlist,
-                                          mwidth, (int)width_of_button,
-                                          color_switch, bg_color,
+                                          XmNbackground, _at->background_color,
+                                          mwidth, (int)width_of_button, // may terminate the list
                                           NULL );
-
-        // if (width_of_button >= this->calculate_string_width(strlen(buttonlabel))){
-            // XtVaSetValues( button, XmNwidth, width_of_button + 2, NULL);
-        // }
 
         if (_at->attach_any) aw_attach_widget(button,_at);
         AW_JUSTIFY_LABEL(button,_at->correct_for_at_center);
@@ -979,10 +940,12 @@ void AW_window::create_input_field( const char *var_name,  int columns ) {
     // width_of_input_label = this->calculate_string_width( calculate_label_length() );
     int width_of_input = this->calculate_string_width( columns ) + 18;
 
+    Widget parentWidget = _at->attach_any ? INFO_FORM : INFO_WIDGET;
+
     if ( _at->label_for_inputfield ) {
         label = XtVaCreateManagedWidget( "label",
                                          xmLabelWidgetClass,
-                                         (_at->attach_any)?INFO_FORM:INFO_WIDGET,
+                                         parentWidget, 
                                          XmNwidth, (int)(width_of_input_label + 2),
                                          XmNhighlightThickness, 0,
                                          RES_CONVERT( XmNlabelString, _at->label_for_inputfield ),
@@ -992,9 +955,7 @@ void AW_window::create_input_field( const char *var_name,  int columns ) {
                                          (_at->attach_any) ? NULL:XmNx,(int)_at->x_for_next_button,
                                          XmNy, (int)(_at->y_for_next_button)+ root->y_correction_for_input_labels -1,
                                          NULL );
-        if (_at->attach_any){
-            aw_attach_widget(label,_at);
-        }
+        if (_at->attach_any) aw_attach_widget(label,_at);
         x_correcting_for_label = width_of_input_label + 10;
     }
 
@@ -1005,23 +966,24 @@ void AW_window::create_input_field( const char *var_name,  int columns ) {
         width_of_input = _at->to_position_x - _at->x_for_next_button - x_correcting_for_label + 2;
         width_of_last_widget = _at->to_position_x - _at->x_for_next_button;
     }
+    
     {
+        TuneBackground(parentWidget, TUNE_INPUT);
         textField = XtVaCreateManagedWidget( "textField",
                                              xmTextFieldWidgetClass,
-                                             (_at->attach_any)?INFO_FORM:INFO_WIDGET,
+                                             parentWidget, 
                                              XmNwidth, (int)width_of_input,
                                              XmNrows, 1,
                                              XmNvalue, String,
                                              XmNfontList, p_global->fontlist,
+                                              XmNbackground, _at->background_color,
                                              (_at->attach_any) ? NULL:XmNx, (int)(_at->x_for_next_button + x_correcting_for_label ),
                                              XmNy, (int)(_at->y_for_next_button + 5) - 8,
                                              NULL );
-        if (_at->attach_any){
-            aw_attach_widget(textField,_at);
-        }
-
+        if (_at->attach_any) aw_attach_widget(textField,_at);
     }
-    free( String );
+    
+    free(String);
 
     // user-own callback
     cbs = _callback;
@@ -1159,6 +1121,7 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
                                                       NULL );
     }
 
+    TuneBackground(scrolledWindowText, TUNE_INPUT);
     scrolledText = XtVaCreateManagedWidget( "scrolledText1",
                                             xmTextWidgetClass,
                                             scrolledWindowText,
@@ -1168,8 +1131,8 @@ void AW_window::create_text_field( const char *var_name, int columns, int rows )
                                             XmNwidth, (int)width_of_text,
                                             XmNheight, (int)height_of_text,
                                             XmNfontList, p_global->fontlist,
+                                            XmNbackground, _at->background_color,
                                             NULL );
-
     free(String);
 
     if (!_at->to_position_exists){
@@ -1313,6 +1276,7 @@ AW_selection_list* AW_window::create_selection_list( const char *var_name, const
         int select_type = XmMULTIPLE_SELECT;
         if (vs) select_type = XmSINGLE_SELECT;
 
+        TuneBackground(scrolledWindowList, TUNE_INPUT);
         scrolledList = XtVaCreateManagedWidget( "scrolledList1",
                                                 xmListWidgetClass,
                                                 scrolledWindowList,
@@ -1322,6 +1286,7 @@ AW_selection_list* AW_window::create_selection_list( const char *var_name, const
                                                 XmNselectionPolicy, select_type,
                                                 XmNlistSizePolicy, XmCONSTANT,
                                                 XmNfontList, p_global->fontlist,
+                                                XmNbackground, _at->background_color, 
                                                 NULL );
     }
 
@@ -2144,9 +2109,6 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
         }
     }
 
-    AW_awar *vs = root->awar(var_name);
-
-
     optionMenu_shell = XtVaCreatePopupShell ("optionMenu shell",
                                              xmMenuShellWidgetClass,
                                              INFO_WIDGET,
@@ -2156,33 +2118,12 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
                                              XmNoverrideRedirect, AW_TRUE,
                                              XmNfontList, p_global->fontlist,
                                              NULL );
-    {
-        // Gets the Background Color and decreases the rgb values to 
-        // create slightly darker background to give a 3D button look
-        TuneBackground(optionMenu_shell, TUNE_BUTTON);    
-    }
-    const char *color_switch = 0;
-    Pixel       bg_color     = 0;
-
-    if (_at->background_colorname){
-        color_switch = XmNbackground;
-        XColor unused;
-        XColor color;
-        if( XAllocNamedColor(p_global->display,p_global->colormap,_at->background_colorname,&color,&unused) == 0) {
-            fprintf(stderr,"XAllocColor failed: %s\n",_at->background_colorname);
-            color_switch = 0;
-        }
-        else {
-            bg_color = color.pixel;
-        }
-    }
-
+    
     optionMenu = XtVaCreateWidget( "optionMenu_p1",
                                    xmRowColumnWidgetClass,
                                    optionMenu_shell,
                                    XmNrowColumnType, XmMENU_PULLDOWN,
                                    XmNfontList, p_global->fontlist,
-                                   color_switch, bg_color,
                                    NULL );
 
     if ( label ) {
@@ -2238,8 +2179,19 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
         }
     }
 
+#if 0
+    // setting background color for radio button only does not work.
+    // works only for label and button together, that's not what we want.
+    // 
+    TuneBackground(optionMenu_shell, TUNE_BUTTON); // set background color for radio button
+    XtVaSetValues(optionMenu1, // colorizes background and label
+                  XmNbackground, _at->background_color,
+                  NULL);
+#endif
+
     get_root()->number_of_option_menues++;
 
+    AW_awar *vs = root->awar(var_name);
     {
         AW_option_menu_struct *next =
             new AW_option_menu_struct(get_root()->number_of_option_menues,
@@ -2309,31 +2261,13 @@ void *AW_window::_create_option_entry(AW_VARIABLE_TYPE type, const char *name, c
         AW_ERROR("Option menu not defined for this type");
     }
 
-    {
-        // Gets the Background Color and decreases the rgb values to 
-        // create slightly darker background to give a 3D button look
-        TuneBackground(oms->menu_widget, TUNE_BUTTON);    
-    }
-    Pixel bg_color = 0;
-    const char *color_switch = 0;
-    if (name_of_color){
-        color_switch = XmNbackground;
-        XColor unused;
-        XColor color;
-        if( XAllocNamedColor(p_global->display,p_global->colormap,name_of_color,&color,&unused) == 0) {
-            fprintf(stderr,"XAllocColor failed: %s\n",name_of_color);
-            color_switch = 0;
-        }else{
-            bg_color = color.pixel;
-        }
-    }
-
+    TuneOrSetBackground(oms->menu_widget, name_of_color, TUNE_BUTTON); // set background color for radio button entries
     entry = XtVaCreateManagedWidget( "optionMenu_entry",
                                      xmPushButtonWidgetClass,
                                      oms->menu_widget,
                                      RES_LABEL_CONVERT(((char *)name)),
                                      XmNfontList, p_global->fontlist,
-                                     color_switch, bg_color,
+                                     XmNbackground, _at->background_color, 
                                      NULL );
     AW_label_in_awar_list(this,entry,name);
     return (void *)entry;
@@ -2557,8 +2491,6 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
 
     check_at_pos();
 
-    AW_awar *vs = root->awar(var_name);
-
     if ( _at->correct_for_at_center ) {
 //         _at->correct_for_at_center_intern = _at->correct_for_at_center;
         _at->saved_x = _at->x_for_next_button;
@@ -2619,6 +2551,8 @@ void AW_window::create_toggle_field( const char *var_name, int orientation ) {
         aw_attach_widget(toggle_field,_at,300);
     }
 
+    AW_awar *vs = root->awar(var_name);
+    
     p_w->toggle_field = toggle_field;
     free((p_w->toggle_field_var_name));
     p_w->toggle_field_var_name = strdup(var_name );
