@@ -296,10 +296,10 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species, bool update_status) {
         GBDATA *gb_acc       = GBT_gen_accession_number(gb_species, ali_name);
         GBDATA *gb_addfield  = add_field[0] ? GB_find(gb_species, add_field, 0, down_level) : 0;
 
-        char *name      = gb_name?      GB_read_string(gb_name)     : strdup("");
-        char *full_name = gb_full_name? GB_read_string(gb_full_name): strdup("");
-        char *acc       = gb_acc?       GB_read_string(gb_acc)      : strdup("");
-        char *addid     = gb_addfield?  GB_read_string(gb_addfield) : strdup("");
+        char *name      = gb_name?      GB_read_string   (gb_name)     : strdup("");
+        char *full_name = gb_full_name? GB_read_string   (gb_full_name): strdup("");
+        char *acc       = gb_acc?       GB_read_string   (gb_acc)      : strdup("");
+        char *addid     = gb_addfield?  GB_read_as_string(gb_addfield) : strdup("");
         
         int   deleted = 0;
         char *shrt    = 0;
@@ -389,10 +389,10 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
                 GBDATA *gb_acc       = GBT_gen_accession_number(gb_species, ali_name);
                 GBDATA *gb_addfield  = add_field[0] ? GB_find(gb_species, add_field, 0, down_level) : 0;
 
-                char *name      = gb_name?      GB_read_string(gb_name)     : strdup("");
-                char *full_name = gb_full_name ? GB_read_string(gb_full_name) : strdup("");
-                char *acc       = gb_acc ? GB_read_string(gb_acc) : strdup("");
-                char *addid     = gb_addfield?  GB_read_string(gb_addfield) : strdup("");
+                char *name      = gb_name      ? GB_read_string   (gb_name)     : strdup("");
+                char *full_name = gb_full_name ? GB_read_string   (gb_full_name): strdup("");
+                char *acc       = gb_acc       ? GB_read_string   (gb_acc)      : strdup("");
+                char *addid     = gb_addfield  ? GB_read_as_string(gb_addfield) : strdup("");
 
                 char *shrt = 0;
 
