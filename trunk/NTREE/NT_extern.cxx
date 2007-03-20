@@ -42,7 +42,7 @@
 #include "nt_edconf.hxx"
 #include "ap_pos_var_pars.hxx"
 #include "nt_import.hxx"
-#include "nt_date.h"
+#include <arb_version.h>
 #include "nt_internal.h"
 #include <st_window.hxx>
 #include <probe_design.hxx>
@@ -573,7 +573,10 @@ void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
     else{
         fprintf(mail,"%s\n",text);
         fprintf(mail,"------------------------------\n");
-        fprintf(mail,"VERSION       :" DATE "\n");
+        fprintf(mail,"VERSION       :" ARB_VERSION "\n");
+#if defined(SHOW_WHERE_BUILD)
+        fprintf(mail,"BUILD_BY      :" BUILD_USER "@" BUILD_HOST "\n");        
+#endif // SHOW_WHERE_BUILD
         fprintf(mail,"SYSTEMINFO    :\n");
         fclose(mail);
 
@@ -1294,7 +1297,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             {
                 AWMIMT( "registration", "Registration",         "R","registration.hlp", AWM_EXP, (AW_CB)AW_POPUP,   (AW_CL)NT_submit_bug, 0 );
                 AWMIMT( "bug_report",   "Bug report",           "B","registration.hlp", AWM_ALL, (AW_CB)AW_POPUP,   (AW_CL)NT_submit_bug, 1 );
-                AWMIMT( "version_info", "Version info (" DATE ")",  "V","version.hlp",  AWM_ALL, (AW_CB)AW_POPUP_HELP,  (AW_CL)"version.hlp", 0 );
+                AWMIMT( "version_info", "Version info (" ARB_VERSION ")",  "V","version.hlp",  AWM_ALL, (AW_CB)AW_POPUP_HELP,  (AW_CL)"version.hlp", 0 );
             }
             awm->close_sub_menu();
 #if 0
