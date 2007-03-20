@@ -657,8 +657,7 @@ static AW_window *CreateChangeMolecule_window(AW_root *aw_root) {
     aws->callback(Change3DMolecule,3);
     aws->at("1c2w");
     aws->button_length(73);
-    aws->set_background("white");
-    aws->create_button(0,"1C2W: 7.5 A^ Mueller et al. J.Mol.Biol.(2000) 298, 35-59.");
+    aws->create_button(0,"1C2W: 7.5 A^ Mueller et al. J.Mol.Biol.(2000) 298, 35-59.", 0, "white");
 
     aws->show();
     return (AW_window *)aws;
