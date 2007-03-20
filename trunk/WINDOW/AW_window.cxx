@@ -3654,17 +3654,8 @@ void AW_window::TuneBackground(Widget w, int modStrength) {
 
     switch (preferredDir) {
         case 0:                 // no direction preferred yet, need to decide
-            if (incs == decs) { // both directions possible
-                // int grey     = (col[0]+col[1]+col[2]) / 3;
-                // preferredDir = grey <= 128 ? 1 : -1;
-                preferredDir    = 1;
-            }
-            else {
-                preferredDir = incs>decs ? 1 : -1;
-            }
-            if (invertedMod && (incs && decs)) { 
-                preferredDir = -preferredDir;
-            }
+            if (invertedMod) preferredDir = decs ? -1 : 1;
+            else             preferredDir = incs ? 1 : -1;
             break;
         case 1:
             if (!incs) preferredDir = -1;
