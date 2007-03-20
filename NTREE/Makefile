@@ -13,28 +13,12 @@ CPP_OBJECTS =  NT_edconf.o NT_join.o NT_sort.o NT_cb.o NT_main.o NT_extern.o\
 
 CPP_SOURCES = $(CPP_OBJECTS:.o=.cxx)
 
-DATE_HEADER=nt_date.h
-
-$(MAIN): nt_date_update $(CPP_OBJECTS)
-	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $(MAIN) $(DATE_HEADER) $(CPP_OBJECTS) || ( \
+$(MAIN): $(CPP_OBJECTS)
+	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $(MAIN) $(CPP_OBJECTS) || ( \
 		echo "Link $(MAIN)" ; \
 		echo $(AR) $(MAIN) $(CPP_OBJECTS) ; \
 		$(AR) $(MAIN) $(CPP_OBJECTS) ; \
 	)
-
-nt_date.h: nt_date_update
-
-nt_date_update:
-	echo '#define DATE' `date '+"%y.%m.%d"'`  >  nt_date.h.tmp
-	echo '#define DATE_YEAR' `date '+"%Y"'`   >> nt_date.h.tmp
-	../SOURCE_TOOLS/mv_if_diff nt_date.h.tmp nt_date.h
-
-# explicit date dependencies
-
-NT_main.o: nt_date.h
-
-NT_extern.o: nt_date.h
-
 
 proto:
 	rm -f nt_internal.h
@@ -313,7 +297,6 @@ NT_extern.o: ap_pos_var_pars.hxx
 NT_extern.o: etc_check_gcg.hxx
 NT_extern.o: nt_cb.hxx
 NT_extern.o: nt_concatenate.hxx
-NT_extern.o: nt_date.h
 NT_extern.o: nt_edconf.hxx
 NT_extern.o: nt_import.hxx
 NT_extern.o: nt_internal.h
@@ -324,6 +307,8 @@ NT_extern.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/adGene.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_assert.h
+NT_extern.o: $(ARBHOME)/INCLUDE/arb_build.h
+NT_extern.o: $(ARBHOME)/INCLUDE/arb_version.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -406,12 +391,13 @@ NT_join.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 NT_main.o: nt_cb.hxx
 NT_main.o: nt_concatenate.hxx
-NT_main.o: nt_date.h
 NT_main.o: ntree.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_main.o: $(ARBHOME)/INCLUDE/adGene.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+NT_main.o: $(ARBHOME)/INCLUDE/arb_build.h
+NT_main.o: $(ARBHOME)/INCLUDE/arb_version.h
 NT_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_main.o: $(ARBHOME)/INCLUDE/arbtools.h
