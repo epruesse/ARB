@@ -35,12 +35,13 @@ extern bool AW_alpha_Size_Supported;
 #define AW_MESSAGE_TIME 2000
 #define AW_HEADER_MAIN  extern "C" { int XtAppInitialize(); } void aw_never_called_main(void) { XtAppInitialize(); }
 
-//======= Used in Tune background function =================================
-#define TUNE_BUTTON 10
-#define TUNE_SUBMENU 0
-#define TUNE_MENUTOPIC 15
-#define TUNE_BRIGHT (256+50)
-#define TUNE_DARK   (-TUNE_BRIGHT)
+//======= Used in Tune background function ================================= 
+#define TUNE_BUTTON    8
+#define TUNE_INPUT     (-TUNE_BUTTON)
+#define TUNE_SUBMENU   0
+#define TUNE_MENUTOPIC (-12)
+#define TUNE_BRIGHT    (256+30)
+#define TUNE_DARK      (-TUNE_BRIGHT)
 // ==========================================================================
 
 #ifndef AW_AT_HXX
@@ -186,10 +187,14 @@ struct AW_option_menu_struct;
 class AW_window {
 private:
     void all_menus_created();
+    
 protected:
     AW_root *root;
-    void     check_at_pos( void );
-    void     create_devices(void);
+
+    void check_at_pos( void );
+    void create_devices(void);
+    void AW_window::set_background(const char *colorname, Widget w);
+    
 public:
 
     // ************ This is not the public section *************
@@ -363,9 +368,11 @@ public:
     void auto_space( int xspace, int yspace ); // enable automatic placement of buttons
     // xspace is the horizontal space between 2 buttons
 
-    void auto_off( void );              // disable auto_xxxxx
-    void shadow_width (int shadow_thickness);       // set the shadow_thickness of buttons
+    void auto_off( void );      // disable auto_xxxxx
+    void shadow_width (int shadow_thickness); // set the shadow_thickness of buttons
+
     void TuneBackground(Widget w,int modStrength);
+    void TuneOrSetBackground(Widget w, const char *color, int modStrength);
 
     // *** local modifiers: ********
     void at( int x, int y );    // abs pos of a button (>10,10)
@@ -403,7 +410,6 @@ public:
     void d_callback( void (*f)(AW_window*,AW_CL), AW_CL cd1); // selection lists only !!
     void d_callback( void (*f)(AW_window*));
     void d_callback( AW_cb_struct * /*owner*/awcbs); // Calls f with
-    void set_background(const char *colorname);
     // *** create the buttons ********
 
     //    void   create_button( const char *macro_name, AW_label label,const char *mnemonic = 0); // simple button; shadow only when callback
