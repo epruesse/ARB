@@ -2108,11 +2108,6 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
     create_help_entry(this);
     create_window_variables();
     set_icon(window_defaults_name);
-    {
-        // Gets the Background Color and decreases the rgb values to 
-        // create slightly darker background to give a 3D button look
-        TuneBackground(main_window,0);    
-    }
 }
 
 
@@ -2324,11 +2319,6 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
     create_help_entry(this);
     create_window_variables();
     set_icon(window_defaults_name);
-    {
-        // Gets the Background Color and decreases the rgb values to 
-        // create slightly darker background to give a 3D button look
-        TuneBackground(main_window,0);    
-    }
 }
 
 void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windowname) {
@@ -2364,11 +2354,6 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
     aw_realize_widget(this );
     create_devices();
     set_icon(window_defaults_name);
-    {
-        // Gets the Background Color and decreases the rgb values to 
-        // create slightly darker background to give a 3D button look
-        TuneBackground(form1,0);    
-    }
 }
 
 
@@ -2459,11 +2444,6 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
     create_help_entry(this);
     create_devices();
     set_icon(window_defaults_name);
-    {
-        // Gets the Background Color and decreases the rgb values to 
-        // create slightly darker background to give a 3D button look
-        TuneBackground(main_window,0);    
-    }
 }
 
 
@@ -2590,31 +2570,10 @@ inline int yoffset_for_mode_button(int button_number) {
 int AW_window::create_mode(const char *id, const char *pixmap, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     Widget button;
 
-    {
-        // Gets the Background Color and decreases the rgb values to 
-        // create slightly darker background to give a 3D button look
-        TuneBackground(p_w->mode_area, TUNE_BUTTON);    
-    }
-
-    const char *color_switch = 0;
-    Pixel       bg_color     = 0;
-
-    if (_at->background_colorname){
-        color_switch = XmNbackground;
-        XColor unused;
-        XColor color;
-        if( XAllocNamedColor(p_global->display,p_global->colormap,_at->background_colorname,&color,&unused) == 0) {
-            fprintf(stderr,"XAllocColor failed: %s\n",_at->background_colorname);
-            color_switch = 0;
-        }
-        else {
-            bg_color = color.pixel;
-        }
-    }
+    TuneBackground(p_w->mode_area, TUNE_BUTTON); // set background color for mode-buttons
 
     char path[256]; memset(path,0,256);
     sprintf(path,"%s/lib/pixmaps/%s",GB_getenvARBHOME(),pixmap);
-//     int y = p_w->number_of_modes*MODE_BUTTON_OFFSET + (p_w->number_of_modes/4)*8 + 2;
     int  y   = yoffset_for_mode_button(p_w->number_of_modes);
     button   = XtVaCreateManagedWidget( "",
                                         xmPushButtonWidgetClass,
@@ -2623,7 +2582,7 @@ int AW_window::create_mode(const char *id, const char *pixmap, const char *help_
                                         XmNy, y,
                                         XmNlabelType, XmPIXMAP,
                                         XmNshadowThickness, 1,
-                                        color_switch, bg_color,
+                                        XmNbackground, _at->background_color,
                                         NULL);
     XtVaSetValues( button, RES_CONVERT( XmNlabelPixmap, path ), NULL );
     XtVaGetValues(button,XmNforeground, &p_global->foreground,  0);
@@ -2883,27 +2842,10 @@ void AW_window::all_menus_created() { // this is called by AW_window::show() (i.
 void AW_window::insert_sub_menu(const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask) {
     AWUSE(help_text);
     Widget shell, label;
-    {
-        // Gets the Background Color and decreases the rgb values to 
-        // create slightly darker background to give a 3D button look
-        TuneBackground( p_w->menu_bar[p_w->menu_deep], TUNE_SUBMENU);    
-    }
 
-    const char *color_switch = 0;
-    Pixel       bg_color     = 0;
-
-    if (_at->background_colorname){
-        color_switch = XmNbackground;
-        XColor unused;
-        XColor color;
-        if( XAllocNamedColor(p_global->display,p_global->colormap,_at->background_colorname,&color,&unused) == 0) {
-            fprintf(stderr,"XAllocColor failed: %s\n",_at->background_colorname);
-            color_switch = 0;
-        }
-        else {
-            bg_color = color.pixel;
-        }
-    }
+    TuneBackground( p_w->menu_bar[p_w->menu_deep], TUNE_SUBMENU); // set background color for submenus
+    // (Note: This must even be called if TUNE_SUBMENU is 0!
+    //        Otherwise several submenus get the TUNE_MENUTOPIC color)
 
 #if defined(DUMP_MENU_LIST)
     dumpOpenSubMenu(name);
@@ -2940,7 +2882,7 @@ void AW_window::insert_sub_menu(const char *id, AW_label name, const char *mnemo
                                          RES_CONVERT( XmNlabelString, name ),
                                          RES_CONVERT( XmNmnemonic, mnemonic ),
                                          XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1],
-                                         color_switch, bg_color,
+                                         XmNbackground, _at->background_color,
                                          NULL);
     }
     else {
@@ -2949,7 +2891,7 @@ void AW_window::insert_sub_menu(const char *id, AW_label name, const char *mnemo
                                          p_w->menu_bar[p_w->menu_deep],
                                          RES_CONVERT( XmNlabelString, name ),
                                          XmNsubMenuId, p_w->menu_bar[p_w->menu_deep+1],
-                                         color_switch, bg_color,
+                                         XmNbackground, _at->background_color,
                                          NULL);
     }
 
@@ -2972,27 +2914,7 @@ void AW_window::insert_menu_topic(const char *id, AW_label name, const char *mne
     Widget button;
     if (!id) id = name;
 
-    {
-        // Gets the Background Color and decreases the rgb values to 
-        // create slightly darker background to give a 3D button look
-        TuneBackground(p_w->menu_bar[p_w->menu_deep], TUNE_MENUTOPIC);    
-    }
-
-    const char *color_switch = 0;
-    Pixel       bg_color     = 0;
-
-    if (_at->background_colorname){
-        color_switch = XmNbackground;
-        XColor unused;
-        XColor color;
-        if( XAllocNamedColor(p_global->display,p_global->colormap,_at->background_colorname,&color,&unused) == 0) {
-            fprintf(stderr,"XAllocColor failed: %s\n",_at->background_colorname);
-            color_switch = 0;
-        }
-        else {
-            bg_color = color.pixel;
-        }
-    }
+    TuneBackground(p_w->menu_bar[p_w->menu_deep], TUNE_MENUTOPIC); // set background color for normal menu topics
 
 #if defined(DUMP_MENU_LIST)
     dumpMenuEntry(name);
@@ -3008,16 +2930,15 @@ void AW_window::insert_menu_topic(const char *id, AW_label name, const char *mne
                                           p_w->menu_bar[p_w->menu_deep],
                                           RES_LABEL_CONVERT( name ),
                                           RES_CONVERT( XmNmnemonic, mnemonic ),
-                                          color_switch, bg_color,
+                                          XmNbackground, _at->background_color,
                                           NULL);
     }else{
         button = XtVaCreateManagedWidget( "",
                                           xmPushButtonWidgetClass,
                                           p_w->menu_bar[p_w->menu_deep],
                                           RES_LABEL_CONVERT( name ),
-                                          color_switch, bg_color,
+                                          XmNbackground, _at->background_color,
                                           NULL);
-
     }
 
     AW_label_in_awar_list(this,button,name);
@@ -3622,40 +3543,150 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,const char *rm_ba
     return 0;
 }
 
-void AW_window::TuneBackground(Widget w, int modStrength) {
-    // Gets the Background Color and decreases the rgb values to create slightly darker background to give a 3D button look
-    // If abs(modStrength) > 256 -> use fixed mod direction (increase if positive, decrease if negative).
+void AW_window::set_background(const char *colorname, Widget parentWidget) {
+    bool colorSet = false;
+    
+    if (colorname) {
+        XColor unused, color;
 
-    Pixel bg;
-    XtVaGetValues(w, XmNbackground, &bg, NULL); 
-    XColor xc;
-    xc.pixel = bg;
-    XQueryColor( XtDisplay( w ), p_global->colormap, &xc );
-    char hex_color[8];
-    int col[3];
-    col[0]=xc.red/255; col[1]=xc.green/255; col[2]=xc.blue/255;
-
-    for (int i=0;i<3;i++) {
-        int c = col[i]; 
-        if (modStrength>255) { // prefer color increase
-            int ms = modStrength-256;
-            c = (c<(256-ms))? c+ms : c-ms;
+        if( XAllocNamedColor(p_global->display, p_global->colormap, colorname, &color, &unused) == 0) {
+            fprintf(stderr,"XAllocColor failed: %s\n", colorname);
         }
-        else if (modStrength<-255) { // prefer color decrease
-            int ms = -(modStrength+256);
-            c = (c>ms)? c-ms : c+ms;
+        else {
+            _at->background_color = color.pixel;
+            colorSet             = true;
         }
-        else { // no special preference
-            c = c<128 ? c+modStrength : c-modStrength;
-        }
-        //        col[i] = (c<0)? c+ms: ((c>255)? c-ms: c);
-        col[i] = c<0 ? 0 : (c>255 ? 255 : c);
     }
 
-    sprintf(hex_color, "#%2.2X%2.2X%2.2X", col[0], col[1], col[2]);
-    //    printf("use for button: %s\n", hex_color);
-    set_background(hex_color);
+    if (!colorSet) {
+        XtVaGetValues(parentWidget, XmNbackground, &(_at->background_color), NULL); // fallback to background color
+    }
 }
+
+void AW_window::TuneOrSetBackground(Widget w, const char *color, int modStrength) {
+    // Sets the background for the next created widget.
+    //
+    // If 'color' is specified, it may contain one of the following values:
+    //      "+"    means: slightly increase color of parent widget 'w' 
+    //      "-"    means: slightly decrease color of parent widget 'w' 
+    //      otherwise it contains a specific color ('name' or '#RGB')
+    // 
+    // If color is not specified, the color of the parent widget 'w' is modified
+    // by 'modStrength' (increased if positive,  decreased if negative)
+    // 
+    // If it's not possible to modify the color (e.g. we cannot increase 'white'),
+    // the color will be modified in the opposite direction. For details see TuneBackground()
+
+    if (color) {
+        switch (color[0]) {
+            case '+': TuneBackground(w, TUNE_BRIGHT); break;
+            case '-': TuneBackground(w, TUNE_DARK); break;
+            default : set_background(color, w); // use explicit color
+        }
+    }
+    else {
+        TuneBackground(w, modStrength);
+    }
+}
+
+void AW_window::TuneBackground(Widget w, int modStrength) {
+    // Gets the Background Color, modifies the rgb values slightly and sets new background color
+    // Intended to give buttons a nicer 3D-look.
+    //
+    // possible values for modStrength:
+    //
+    //    0        = do not modify (i.e. set to background color of parent widget)
+    //    1 .. 127 = increase if background is bright, decrease if background is dark
+    //   -1 ..-127 = opposite behavior than above
+    //  256 .. 383 = always increase
+    // -256 ..-383 = always decrease 
+    //
+    // if it's impossible to decrease or increase -> opposite direction is used.
+
+    int col[3];
+    {
+        Pixel bg;
+        XtVaGetValues(w, XmNbackground, &bg, NULL);
+
+        XColor xc;
+        xc.pixel = bg;
+        XQueryColor( XtDisplay( w ), p_global->colormap, &xc );
+
+        col[0] = xc.red >> 8; // take MSB
+        col[1] = xc.green >> 8;
+        col[2] = xc.blue >> 8;
+    }
+
+    int  mod          = modStrength;
+    int  preferredDir = 0;
+    bool invertedMod  = false;
+
+    if (modStrength>0) {
+        if (modStrength>255) {
+            mod          -= 256;
+            preferredDir  = 1; // increase preferred
+        }
+    }
+    else {
+        if (modStrength<-255) {
+            mod = -modStrength-256;
+            preferredDir = -1; // decrease preferred
+        }
+        else {
+            invertedMod = true;
+            mod = -mod;
+        }
+    }
+
+    aw_assert(mod >= 0 && mod < 128); // illegal modification
+
+    bool incPossible[3]; // increment possible for color
+    bool decPossible[3]; // decrement possible for color
+    int  incs = 0; // count possible increments
+    int  decs = 0; // count possible decrements
+
+    for (int i = 0; i<3; ++i) {
+        if ((incPossible[i] = ((col[i]+mod) <= 255))) incs++;
+        if ((decPossible[i] = ((col[i]-mod) >=   0))) decs++;
+    }
+
+    aw_assert(incs||decs);
+
+    switch (preferredDir) {
+        case 0:                 // no direction preferred yet, need to decide
+            if (incs == decs) { // both directions possible
+                // int grey     = (col[0]+col[1]+col[2]) / 3;
+                // preferredDir = grey <= 128 ? 1 : -1;
+                preferredDir    = 1;
+            }
+            else {
+                preferredDir = incs>decs ? 1 : -1;
+            }
+            if (invertedMod && (incs && decs)) { 
+                preferredDir = -preferredDir;
+            }
+            break;
+        case 1:
+            if (!incs) preferredDir = -1;
+            break;
+        case -1:
+            if (!decs) preferredDir = 1;
+            break;
+    }
+
+    if      (preferredDir ==  1) { for (int i=0; i<3; ++i) col[i] += (incPossible[i] ? mod : 0); }
+    else if (preferredDir == -1) { for (int i=0; i<3; ++i) col[i] -= (decPossible[i] ? mod : 0); }
+    else aw_assert(0); // no direction chosen above
+
+    aw_assert(preferredDir == 1 || preferredDir == -1);
+
+    char hex_color[50];
+    sprintf(hex_color, "#%2.2X%2.2X%2.2X", col[0], col[1], col[2]);
+    aw_assert(strlen(hex_color) == 7); // otherwise some value overflowed
+    set_background(hex_color, w);
+}
+
+
 
 /// Extended by Daniel Koitzsch & Christian Becker 19-05-04
 #if defined(ARB_OPENGL)
