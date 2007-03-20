@@ -132,6 +132,8 @@ symlink ../TEMPLATES/arbtools.h INCLUDE/arbtools.h &&
 symlink ../TEMPLATES/config_parser.h INCLUDE/config_parser.h &&
 symlink ../TEMPLATES/SIG_PF.h INCLUDE/SIG_PF.h &&
 symlink ../TEMPLATES/perf_timer.h INCLUDE/perf_timer.h &&
+symlink ../TEMPLATES/arb_version.h INCLUDE/arb_version.h &&
+symlink_maybe_no_target ../TEMPLATES/arb_build.h INCLUDE/arb_build.h &&
 
 # INCLUDE directory
 
