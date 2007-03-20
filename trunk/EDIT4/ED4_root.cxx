@@ -19,7 +19,7 @@
 #include <awtc_fast_aligner.hxx>
 #include <awtc_constructSequence.hxx>
 
-#include "../NTREE/nt_date.h"
+#include <arb_version.h>
 
 #include <AW_helix.hxx>
 #include <st_window.hxx>
@@ -1951,7 +1951,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->create_button("CLEAR", "#edit/clear.bitmap");
 
     awmm->at("errortext");
-    aw_root->awar_string(AWAR_ERROR_MESSAGES, "This is ARB Edit4 [Build " DATE "]");
+    aw_root->awar_string(AWAR_ERROR_MESSAGES, "This is ARB Edit4 [Build " ARB_VERSION "]");
     awmm->create_text_field(AWAR_ERROR_MESSAGES);
     aw_set_local_message();
 
