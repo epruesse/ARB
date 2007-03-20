@@ -1101,6 +1101,7 @@ eb:	$(EDITDB)
 
 pgt:	$(PGT)
 xml:	XML/XML.dummy
+templ:	TEMPLATES/TEMPLATES.dummy
 
 #********************************************************************************
 
@@ -1268,7 +1269,6 @@ clean:	rmbak
 	-rm -f *_COM/GENH/*.aisc
 	-rm -f *_COM/GENC/*.c
 	-rm -f lib/ARB.pm
-	-rm -f NTREE/nt_date.h
 	$(MAKE) -C HELP_SOURCE clean
 	$(MAKE) -C GDEHELP clean
 	-rm *.last_gcc
@@ -1303,7 +1303,7 @@ release_quick:
 arbbasic: links preplib
 		$(MAKE) arbbasic2
 
-arbbasic2: mbin com ${MAKE_RTC} sl $(GL)
+arbbasic2: templ mbin com ${MAKE_RTC} sl $(GL)
 
 # shared arb libraries
 arbshared: dball aw dp awt
