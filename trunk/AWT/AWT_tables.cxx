@@ -75,6 +75,10 @@ AW_window *create_ad_table_field_reorder_window(AW_root *root,awt_table *awtt)
     aws->at("close");
     aws->create_button("CLOSE","CLOSE","C");
 
+    aws->callback( AW_POPUP_HELP,(AW_CL)"spaf_reorder.hlp");
+    aws->at("help");
+    aws->create_button("HELP","HELP","H");
+
     aws->at("doit");
     aws->button_length(0);
     aws->callback((AW_CB1)ad_table_field_reorder_cb,(AW_CL)awtt);
