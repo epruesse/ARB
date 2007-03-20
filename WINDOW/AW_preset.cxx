@@ -130,7 +130,7 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name,const 
 
         x1 = x1>x2 ? x1 : x2;
 
-        int red,green,blue;
+        int red,green,blue,grey;
 
         for (int minus = 0; minus<=1; ++minus) {
             aws->at(x1, minus==0 ? y1 : y2);
@@ -145,7 +145,6 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name,const 
 
                     char color_name[10];
                     sprintf(color_name, "#%2.2X%2.2X%2.2X", rgb==0 ? 0xff : 0x55, rgb==1 ? 0xff : 0x55, rgb==2 ? 0xff : 0x55);
-                    aws->set_background(color_name);
                     aws->callback((AW_CB1)aw_incdec_color, (AW_CL)strdup(action));
                     aws->create_button(action, action+1,0,color_name);
                 }
@@ -160,17 +159,15 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name,const 
                 for (blue = 0; blue <= 255; blue += 255/3){
                     char color_name[256];
                     sprintf(color_name,"#%2.2X%2.2X%2.2X", red, green,blue);
-                    aws->set_background(color_name);
                     aws->callback((AW_CB1)aw_set_color,(AW_CL)strdup(color_name));
                     aws->create_button(color_name,"=",0,color_name); 
                 }
             }
             aws->at_newline();
         }
-        for (red = 0; red <= 256; red += 256/16){ // grey buttons
+        for (grey = 0; grey <= 256; grey += 256/16){ // grey buttons
             char color_name[256];
-            sprintf(color_name,"#%2.2X%2.2X%2.2X", (red==256)?255:red, (red>=256)?255:red,(red>=256)?255:red);
-            aws->set_background(color_name);
+            sprintf(color_name,"#%2.2X%2.2X%2.2X", (grey==256)?255:grey, (grey>=256)?255:grey,(grey>=256)?255:grey);
             aws->callback((AW_CB1)aw_set_color,(AW_CL)strdup(color_name));
             aws->create_button(color_name,"=",0,color_name); 
         }
@@ -192,8 +189,9 @@ void AW_preset_create_color_chooser(AW_window *aws, const char *awar, const char
         aws->label(label);
     }
     aws->callback((AW_CB)aw_create_color_chooser_window,(AW_CL)strdup(awar),(AW_CL)strdup(label));
-    aws->set_background(aws->get_root()->awar(awar)->read_string());
-    aws->create_button("SELECT_A_COLOR"," ",0, aws->get_root()->awar(awar)->read_string());
+    char *color = aws->get_root()->awar(awar)->read_string();
+    aws->create_button("SELECT_A_COLOR", " ", 0, color);
+    free(color);
 }
 
 void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char *label,bool message_reload)
