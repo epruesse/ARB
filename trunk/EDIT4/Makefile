@@ -320,7 +320,6 @@ ED4_RNA3D.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_RNA3D.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_RNA3D.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 
-ED4_root.o: ../NTREE/nt_date.h
 ED4_root.o: ed4_awars.hxx
 ED4_root.o: ed4_block.hxx
 ED4_root.o: ed4_class.hxx
@@ -336,6 +335,8 @@ ED4_root.o: edit_naligner.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_root.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_root.o: $(ARBHOME)/INCLUDE/arb_build.h
+ED4_root.o: $(ARBHOME)/INCLUDE/arb_version.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

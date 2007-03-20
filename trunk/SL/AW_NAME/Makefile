@@ -48,6 +48,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/awt.hxx
+AW_names_admin.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
 
 AW_rename.o: AW_rename.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -61,5 +62,6 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/client.h
+AW_rename.o: $(ARBHOME)/INCLUDE/inline.h
 AW_rename.o: $(ARBHOME)/INCLUDE/names_client.h
 AW_rename.o: $(ARBHOME)/INCLUDE/servercntrl.h
