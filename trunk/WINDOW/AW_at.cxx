@@ -115,14 +115,9 @@ void AW_window::d_callback( AW_cb_struct * /*owner*/awcbs ) {
     _d_callback = awcbs;
 }
 
-void AW_window::set_background(const char *colorname){
-    _at->background_colorname = strdup(colorname);
-}
-
-
 void AW_window::label( const char *label ) {
-    delete _at->label_for_inputfield;
-    _at->label_for_inputfield = strdup( label );
+    free(_at->label_for_inputfield);
+    _at->label_for_inputfield = strdup(label);
 }
 
 
@@ -314,29 +309,21 @@ void AW_window::restore_at_size_and_attach( const AW_at_size *at_size ) {
 }
 
 void AW_window::unset_at_commands( void ) {
+    _at->mask_for_next_button = AWM_ALL;
 
-    delete _at->id_for_next_button;
-    _at->id_for_next_button = NULL;
-
-    delete _at->helptext_for_next_button;
-    _at->helptext_for_next_button   = NULL;
-
-    _at->mask_for_next_button           = AWM_ALL;
-
-    _callback               = NULL;
-    _d_callback             = NULL;
-
-    free(_at->label_for_inputfield);
-    _at->label_for_inputfield = NULL;
+    _callback   = NULL;
+    _d_callback = NULL;
 
     _at->correct_for_at_string = AW_FALSE;
     _at->correct_for_at_center = 0;
+    _at->to_position_exists    = AW_FALSE;
+    _at->highlight             = AW_FALSE;
 
-    _at->to_position_exists = AW_FALSE;
-
-    _at->highlight = AW_FALSE;
-    free(_at->background_colorname);
-    _at->background_colorname = 0;
+    free(_at->id_for_next_button)      ; _at->id_for_next_button       = 0;
+    free(_at->helptext_for_next_button); _at->helptext_for_next_button = 0;
+    free(_at->label_for_inputfield)    ; _at->label_for_inputfield     = 0;
+    
+    _at->background_color = 0;
 }
 
 void AW_window::increment_at_commands( int width, int height ) {
