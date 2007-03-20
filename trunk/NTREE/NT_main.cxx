@@ -26,7 +26,7 @@
 #include "nt_concatenate.hxx"
 #include "ntree.hxx"
 #include "nt_cb.hxx"
-#include "nt_date.h"
+#include <arb_version.h>
 
 #include <set>
 #include <string>
@@ -413,7 +413,7 @@ AW_window *nt_create_intro_window(AW_root *awr)
     aws->create_button(0,"#logo.bitmap");
 
     aws->at("version");
-    aws->create_button(0, GBS_global_string("Version " DATE), 0); // version
+    aws->create_button(0, GBS_global_string("Version " ARB_VERSION), 0); // version
 
     aws->at("copyright");
     aws->create_button(0, GBS_global_string("(C) 1993-" DATE_YEAR), 0);
@@ -530,9 +530,12 @@ int main(int argc, char **argv)
         {
             fprintf(stderr,
                     "\n"
-                    "arb_ntree version " DATE "\n"
+                    "arb_ntree version " ARB_VERSION "\n"
                     "(C) 1993-" DATE_YEAR " Lehrstuhl fuer Mikrobiologie - TU Muenchen\n"
                     "http://www.arb-home.de/\n"
+#if defined(SHOW_WHERE_BUILD)
+                    "(version build by: " BUILD_USER "@" BUILD_HOST ")\n"
+#endif // SHOW_WHERE_BUILD
                     "\n"
                     "Known command line arguments:\n"
                     "\n"
