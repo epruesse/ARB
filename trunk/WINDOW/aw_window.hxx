@@ -193,7 +193,7 @@ protected:
 
     void check_at_pos( void );
     void create_devices(void);
-    void AW_window::set_background(const char *colorname, Widget w);
+    void set_background(const char *colorname, Widget w);
     
 public:
 
