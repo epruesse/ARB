@@ -1202,9 +1202,10 @@ static GB_ERROR gbl_split(GBL_command_arguments *args) {
             char *from = in; /* search from here */
 
             while (in) {
+                char *splitAt;
                 GBL_CHECK_FREE_PARAM(*args->coutput, 1);
 
-                char *splitAt = strstr(from, separator);
+                splitAt = strstr(from, separator);
                 if (splitAt) {
                     size_t  len;
                     char   *copy;
@@ -1913,37 +1914,43 @@ static GB_ERROR gbl_sequence(GBL_command_arguments *args)
 }
 
 static GB_ERROR gbl_export_sequence(GBL_command_arguments *args) {
-    if (args->cparam!=0) return "\"sequence\" syntax: \"export_sequence\" (no parameters)";
-    if (args->cinput==0) return "No input stream";
-
     GB_ERROR error = 0;
-    GBL_CHECK_FREE_PARAM(*args->coutput,1);
 
-    switch (identify_gb_item(args->gb_ref)) {
-        case GBT_ITEM_UNKNOWN: {
-            error = "'export_sequence' used for unknown item";
-            break;
-        }
-        case GBT_ITEM_SPECIES: {
-            if (get_export_sequence == 0) {
-                error = "No export-sequence-hook defined (can't use 'export_sequence' here)";
+    if (args->cparam!=0) {
+        error = "\"sequence\" syntax: \"export_sequence\" (no parameters)";
+    }
+    else if (args->cinput==0) {
+        error = "No input stream";
+    }
+    else {
+        GBL_CHECK_FREE_PARAM(*args->coutput,1);
+
+        switch (identify_gb_item(args->gb_ref)) {
+            case GBT_ITEM_UNKNOWN: {
+                error = "'export_sequence' used for unknown item";
+                break;
             }
-            else {
-                size_t      len;
-                const char *seq = get_export_sequence(args->gb_ref, &len, &error);
-
-                if (seq) {
-                    (*args->voutput)[(*args->coutput)++].str = GB_strduplen(seq, len);
+            case GBT_ITEM_SPECIES: {
+                if (get_export_sequence == 0) {
+                    error = "No export-sequence-hook defined (can't use 'export_sequence' here)";
                 }
                 else {
-                    ad_assert(error); // either should get seq or error
+                    size_t      len;
+                    const char *seq = get_export_sequence(args->gb_ref, &len, &error);
+
+                    if (seq) {
+                        (*args->voutput)[(*args->coutput)++].str = GB_strduplen(seq, len);
+                    }
+                    else {
+                        ad_assert(error); // either should get seq or error
+                    }
                 }
+                break;
             }
-            break;
-        }
-        case GBT_ITEM_GENE: {
-            error = "'export_sequence' cannot be used for gene";
-            break;
+            case GBT_ITEM_GENE: {
+                error = "'export_sequence' cannot be used for gene";
+                break;
+            }
         }
     }
     return error;
