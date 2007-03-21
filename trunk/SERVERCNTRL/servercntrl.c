@@ -122,8 +122,10 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
 
                     if (lastSlash) {
                         lastSlash[0]         = 0; // cut off file
-                        const char *copy_cmd = GBS_global_string("cp %s/names.dat.template %s", dir, file);
-                        system(copy_cmd);
+                        {
+                            const char *copy_cmd = GBS_global_string("cp %s/names.dat.template %s", dir, file);
+                            system(copy_cmd);
+                        }
                         if (GB_size_of_file(file) <= 0) {
                             error = GBS_global_string("Cannot copy nameserver template (%s/names.dat.template missing?)", dir);
                         }
