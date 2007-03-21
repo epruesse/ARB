@@ -2,10 +2,13 @@
 ARB_SOURCE_DOC
 ChangeLog
 INCLUDE
+LIBLINK
+MAKEBIN
 PERL5
 arb.tgz
 arbsrc.lst
 arbsrc_*.tgz
+compile.log
 config.makefile
 demo.ARF
 demo.a[0-9][0-9]
