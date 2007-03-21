@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_GroupData.h                                         //
 //    Purpose   : Classes to store global information about sequences    //
-//    Time-stamp: <Fri Oct/01/2004 17:50 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Mar/21/2007 00:16 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -21,6 +21,9 @@
 #endif
 #ifndef _CPP_IOSTREAM
 # include <iostream>
+#endif
+#ifndef _MEMORY_H
+#include <memory.h>
 #endif
 
 #ifndef ARB_ASSERT_H
