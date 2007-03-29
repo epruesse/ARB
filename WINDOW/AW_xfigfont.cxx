@@ -37,6 +37,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.3  2007/03/29 16:53:48  westram
+ * - changed call of AW_xfig
+ *
  * Revision 1.2  2005/01/05 11:45:48  westram
  * - removed _AW_COMMON_INCLUDED define
  *
@@ -140,7 +143,7 @@ AW_vectorfont *aw_read_xfigfont(char *filename)
    AW_xfig_vectorfont *aw_xfig_vectorfont;	
 
    // 0.    read the font resource file - use negative fontsize for non-fatal return
-   AW_xfig *xfig = new  AW_xfig(filename, -XFIG_DEFAULT_FONT_SIZE);
+   AW_xfig *xfig = new AW_xfig(filename, -XFIG_DEFAULT_FONT_WIDTH, -XFIG_DEFAULT_FONT_HEIGHT);
    // just in case it's really zero ... 
    if (!xfig || !xfig->text || !xfig->line){
       xfig->~AW_xfig();
