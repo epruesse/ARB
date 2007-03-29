@@ -50,8 +50,8 @@ static GB_CSTR awt_get_base_directory(const char *pwd_envar) {
 }
 
 GB_CSTR AWT_get_full_path(const char *anypath) {
-    static char buf[FILENAME_MAX+1];
-    if (strlen(anypath) > FILENAME_MAX) GB_CORE;
+    static char buf[PATH_MAX+1];
+    if (strlen(anypath) > PATH_MAX) GB_CORE;
     if (strncmp(anypath, "~/", 2) == 0) {
         GB_CSTR home    = GB_getenvHOME();
         GB_CSTR newpath = GBS_global_string("%s%s", home, anypath+1);
