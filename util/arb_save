@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 #watch out for DEPOT and DEPOT2 [they are no longer in use]
 name=`date '+arbsrc_%Y_%m_%d__%H_%M.tgz'`
 
