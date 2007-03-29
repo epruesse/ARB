@@ -707,7 +707,7 @@ void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_crea
 }
 
 void AWTC_create_export_awars(AW_root *awr, AW_default def) {
-    aw_create_selection_box_awars(awr, AWAR_EXPORT_FORM, AWT_path_in_ARBHOME("lib/export"), ".eft", "*");
+    aw_create_selection_box_awars(awr, AWAR_EXPORT_FORM, AWT_path_in_ARBHOME("lib/export"), ".eft", "*", AW_ROOT_DEFAULT, true);
     aw_create_selection_box_awars(awr, AWAR_EXPORT_FILE, "", "", "noname");
 
     awr->awar_string(AWAR_EXPORT_ALI,"16s",def);
@@ -760,7 +760,7 @@ AW_window *open_AWTC_export_window(AW_root *awr,GBDATA *gb_main)
     aws->insert_option("all gaps", "a", 2);
     aws->update_option_menu();
 
-    aws->at("filter");
+    aws->at("seqfilter");
     AW_CL filtercd = awt_create_select_filter(aws->get_root(), gb_main, AWAR_EXPORT_FILTER_NAME);
     aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, filtercd);
     aws->create_button("SELECT_FILTER", AWAR_EXPORT_FILTER_NAME);
