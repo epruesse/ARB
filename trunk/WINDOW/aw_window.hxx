@@ -183,10 +183,12 @@ public:
 };
 
 struct AW_option_menu_struct;
+struct aw_toggle_data;
 
 class AW_window {
 private:
     void all_menus_created();
+    void create_toggle(const char *var_name, aw_toggle_data *tdata);
     
 protected:
     AW_root *root;
@@ -387,7 +389,10 @@ public:
 
     void label( const char *label ); // Create a label before the button
 
-    void get_at_position( int *x, int *y );
+    void get_at_position(int *x, int *y);
+    int get_at_xposition();
+    int get_at_yposition();
+
     void dump_at_position(const char *debug_label) const; // for debugging (uses printf)
 
     void at_attach(AW_BOOL attach_x, AW_BOOL attach_y); // attach to X, Y or both
@@ -419,8 +424,10 @@ public:
 
     void create_toggle( const char *awar_name); // int 0/1  string yes/no   float undef
     void create_inverse_toggle( const char *awar_name); // like create_toggle, but displays inverted toggle value
-    
-    void create_toggle( const char *awar_name, const char *nobitmap,const char *yesbitmap);
+
+    void create_toggle( const char *awar_name, const char *nobitmap,const char *yesbitmap, int buttonWidth = 0);
+    void create_text_toggle(const char *var_name, const char *noText, const char *yesText, int buttonWidth = 0);
+
     void create_input_field( const char *awar_name, int columns = 0 ); // One line textfield
     void create_text_field( const char *awar_name, int columns = 20, int rows = 4 ); // Multi line textfield
     // with scrollbars
