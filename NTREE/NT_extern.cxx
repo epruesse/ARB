@@ -155,16 +155,9 @@ void create_export_nds_awars(AW_root *awr, AW_default def)
     awr->awar_int( AWAR_EXPORT_NDS"/tabbed", 0, def);
 }
 
-static void AWAR_SEARCH_BUTTON_TEXT_change_cb(AW_root *awr) {
-    char *value  = awr->awar(AWAR_SPECIES_NAME)->read_string();
-
-    if (strcmp(value,"")==0) {
-        awr->awar(AWAR_SEARCH_BUTTON_TEXT)->write_string("Species Info");
-    }
-    else {
-        awr->awar(AWAR_SEARCH_BUTTON_TEXT)->write_string(value);
-    }
-
+static void AWAR_INFO_BUTTON_TEXT_change_cb(AW_root *awr) {
+    char *value = awr->awar(AWAR_SPECIES_NAME)->read_string();
+    awr->awar(AWAR_INFO_BUTTON_TEXT)->write_string(value[0] ? value : "Species Info");
     free(value);
 }
 
@@ -183,8 +176,8 @@ void create_all_awars(AW_root *awr, AW_default def)
     awr->awar_string( AWAR_SAI_NAME, "" ,   gb_main);
     awr->awar_string( AWAR_SAI_GLOBAL, "" ,   gb_main);
     awr->awar_string( AWAR_MARKED_SPECIES_COUNTER, "unknown" ,  gb_main);
-    awr->awar_string( AWAR_SEARCH_BUTTON_TEXT, "Species Info" ,  gb_main);
-    awr->awar(AWAR_SPECIES_NAME)->add_callback(AWAR_SEARCH_BUTTON_TEXT_change_cb);
+    awr->awar_string( AWAR_INFO_BUTTON_TEXT, "Species Info" ,  gb_main);
+    awr->awar(AWAR_SPECIES_NAME)->add_callback(AWAR_INFO_BUTTON_TEXT_change_cb);
     awr->awar_int( AWAR_NTREE_TITLE_MODE, 1);
 
     awr->awar_string(AWAR_SAI_COLOR_STR, "", gb_main); //sai visualization in probe match
@@ -1700,177 +1693,196 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     awm->set_info_area_height( 250 );
     awm->at(5,2);
-    awm->auto_space(0,-5);
+    awm->auto_space(-2,-2);
     awm->shadow_width(1);
 
-    // path, tree, alignment & searchSpecies buttons:
+    // -------------------------
+    //      create top area
+    // -------------------------
 
     int first_liney;
-    int db_pathx;
+    int leftx;
+    awm->get_at_position( &leftx, &first_liney);
 
-    awm->get_at_position( &db_pathx, &first_liney);
+    // ---------------------
+    //      quit + help
+    // ---------------------
+
+    awm->button_length(0);
+    
     awm->callback(nt_exit);
     awm->help_text("quit.hlp");
-    awm->button_length(0);
     awm->create_button("QUIT", "#quit.xpm");
 
-    awm->callback( AW_POPUP, (AW_CL)NT_create_save_quick_as, (AW_CL)"tmp/nt/arbdb");
-    awm->button_length(16);
-    awm->help_text("saveas.hlp");
-    awm->create_button("SAVE_AS",AWAR_DB_NAME);
+    int db_pathx = awm->get_at_xposition();
 
-    awm->button_length(0);
-    awm->create_button(0, "#separator.xpm");
-
-    int db_treex;
-    awm->get_at_position( &db_treex, &first_liney);
-    awm->callback((AW_CB2)AW_POPUP,(AW_CL)NT_open_select_tree_window,(AW_CL)awar_tree);
-    awm->button_length(14);
-    awm->help_text("nt_tree_select.hlp");
-    awm->create_button("SELECT_A_TREE", awar_tree);
-
-    awm->button_length(0);
-    awm->create_button(0, "#separator.xpm");
-
-    int db_alignx;
-    awm->get_at_position( &db_alignx, &first_liney);
-    awm->callback(AW_POPUP,   (AW_CL)NT_open_select_alignment_window, 0 );
-    awm->help_text("nt_align_select.hlp");
-    awm->button_length(14);
-    awm->create_button("SELECT_AN_ALIGNMENT", AWAR_DEFAULT_ALIGNMENT);
-
-    awm->button_length(0);
-    awm->create_button(0, "#separator.xpm");
-
-    int db_searchx;
-    awm->get_at_position(&db_searchx, &first_liney);
-    // dummy button === search button is created after protection button
-    // to avoid protection combo box painting on search button   
-    awm->button_length(10); awm->create_button(0, "=");
-
-    int db_listspx;
-    awm->get_at_position(&db_listspx, &first_liney);
-    awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_LIST_NDS);
-    awm->help_text("tr_type_nds.hlp");
-    awm->button_length(16);
-    awm->create_button("NO_TREE_TYPE", "List Species");
-
-    int db_speciesx;
-    awm->get_at_position(&db_speciesx, &first_liney);
-    awm->callback(NT_popup_species_window, (AW_CL)awm, 0);
-    awm->button_length(14);
-    awm->help_text("sp_search.hlp");
-    awm->create_button("SEARCH_SPECIES",  AWAR_SEARCH_BUTTON_TEXT);
-
-//     awm->button_length(0);
-//     awm->callback(AW_POPUP, (AW_CL)NT_arb_credits_window, 0 );
-//     awm->create_button(0, "#arb.xpm");
-
-    int behind_buttonsx; // after first row of buttons
-    awm->get_at_position( &behind_buttonsx, &first_liney );
-
+    // now fetch the yposition for the 2nd button line
     awm->at_newline();
-    int second_linex, second_liney;
-    awm->get_at_position(&second_linex, &second_liney);
-    second_liney -= 26;
-    awm->at_y(second_liney);
+    int second_liney = awm->get_at_yposition();
 
-    awm->at_x(db_pathx);
     awm->callback( AW_help_entry_pressed );
-    awm->button_length(0);
     awm->help_text("arb_ntree.hlp");
     awm->create_button("?","#help.xpm");
 
-    awm->at_y(second_liney-3);
+    // -------------------------
+    //      save + undo/redo
+    // -------------------------
+    
     awm->callback(NT_save_quick_cb);
     awm->help_text("save.hlp");
-    awm->button_length(0);
     awm->create_button("SAVE", "#save.xpm");
 
-    awm->callback( AW_POPUP, (AW_CL)NT_create_save_quick_as, (AW_CL)"tmp/nt/arbdb");
+    awm->callback( AW_POPUP, (AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
     awm->help_text("saveas.hlp");
-    awm->button_length(0);
     awm->create_button("SAVE_AS", "#saveAs.xpm");
 
     // undo/redo:
     awm->callback(NT_undo_cb,(AW_CL)GB_UNDO_UNDO,(AW_CL)ntw);
     awm->help_text("undo.hlp");
-    awm->button_length(0);
-    awm->create_button("UNDO", "#undo.xpm");
+    awm->create_button("UNDO", "#undo.bitmap");
 
     awm->callback(NT_undo_cb,(AW_CL)GB_UNDO_REDO,(AW_CL)ntw);
     awm->help_text("undo.hlp");
-    awm->button_length(0);
-    awm->create_button("REDO", "#redo.xpm");
+    awm->create_button("REDO", "#redo.bitmap");
 
-    awm->at(db_treex, second_liney-6);
+    int db_pathx2 = awm->get_at_xposition();
+
+    awm->at(db_pathx, first_liney);
+    // size of DB-name button is determined by buttons below:
+    awm->at_set_to(AW_FALSE, AW_FALSE, db_pathx2-db_pathx-1, second_liney-first_liney+1);
+    awm->callback( AW_POPUP, (AW_CL)NT_create_save_quick_as, (AW_CL)"tmp/nt/arbdb"); // do sth else
+    awm->help_text("saveas.hlp");
+    awm->create_button("QUICK_SAVE_AS",AWAR_DB_NAME);
+
+    // ----------------------------
+    //      tree + tree display
+    // ----------------------------
+
+#define TREE_BUTTON_OVERSIZE 6
+
+    int db_treex      = awm->get_at_xposition();
+    int second_uppery = second_liney-TREE_BUTTON_OVERSIZE;
+
+    awm->at(db_treex, second_uppery);
+    awm->button_length(0);
+
     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_RADIAL);
     awm->help_text("tr_type_radial.hlp");
-    awm->button_length(0);
-    awm->create_button("RADIAL_TREE_TYPE", "#radial.xpm");
+    awm->create_button("RADIAL_TREE_TYPE", "#radial.bitmap");
 
     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_NORMAL);
     awm->help_text("tr_type_list.hlp");
-    awm->button_length(0);
-    awm->create_button("LIST_TREE_TYPE", "#dendro.xpm");
+    awm->create_button("LIST_TREE_TYPE", "#dendro.bitmap");
 
-    //    awm->at(db_treex, third_liney);
     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_IRS);
     awm->help_text("tr_type_irs.hlp");
-    awm->button_length(0);
-    awm->create_button("FOLDED_LIST_TREE_TYPE", "#dendroIrs.xpm");
+    awm->create_button("FOLDED_LIST_TREE_TYPE", "#dendroIrs.bitmap");
+    
+    awm->callback((AW_CB)NT_set_tree_style, (AW_CL)ntw, (AW_CL)AP_LIST_NDS);
+    awm->help_text("tr_type_nds.hlp");
+    awm->create_button("NO_TREE_TYPE", "#listdisp.bitmap");
 
+    int db_treex2 = awm->get_at_xposition();
+    
+    awm->at(db_treex, first_liney);
+    // size of tree-name button is determined by buttons below:
+    awm->at_set_to(AW_FALSE, AW_FALSE, db_treex2-db_treex-1, second_uppery-first_liney+1);
+    awm->callback((AW_CB2)AW_POPUP,(AW_CL)NT_open_select_tree_window,(AW_CL)awar_tree);
+    awm->help_text("nt_tree_select.hlp");
+    awm->create_button("SELECT_A_TREE", awar_tree);
+
+    // --------------------------------------------------
+    //      protection, alignment + editor (and maybe Genome Map)
+    // --------------------------------------------------
+
+    int db_alignx = awm->get_at_xposition();
+
+    // editor and genemap buttons have to be 44x24 sized
+#define EDIT_XSIZE 50
+#define EDIT_YSIZE 30 // same as 'save as' buttons
+
+    // first draw protection:
+    int protectx = db_alignx + 2*EDIT_XSIZE;
+
+    awm->at(protectx+2, first_liney+1);
+    awm->button_length(0);
+    awm->create_button("PROTECT","#protect.xpm");
+
+    awm->at(protectx, second_liney+2);
+    awm->create_option_menu(AWAR_SECURITY_LEVEL);
+    awm->insert_option("0",0,0);
+    awm->insert_option("1",0,1);
+    awm->insert_option("2",0,2);
+    awm->insert_option("3",0,3);
+    awm->insert_option("4",0,4);
+    awm->insert_option("5",0,5);
+    awm->insert_default_option("6",0,6);
+    awm->update_option_menu();
+
+    int db_searchx = awm->get_at_xposition() - 7;
+
+    // draw ali/editor buttons AFTER protect menu (to get rid of it's label)
+    awm->at(db_alignx, second_liney);
+    
+    awm->at_set_to(AW_FALSE, AW_FALSE, ((2-is_genome_db)*EDIT_XSIZE), EDIT_YSIZE);
+    awm->callback((AW_CB)NT_start_editor_on_tree, (AW_CL)&(nt.tree->tree_root), 0);
+    awm->help_text("arb_edit4.hlp");
+    awm->create_button("EDIT_SEQUENCES", "#edit.xpm");
+
+    if (is_genome_db) {
+        awm->at_set_to(AW_FALSE, AW_FALSE, EDIT_XSIZE, EDIT_YSIZE);
+        awm->callback((AW_CB)AW_POPUP, (AW_CL)GEN_map_first, 0); // initial gene map
+        awm->help_text("gene_map.hlp");
+        awm->create_button("OPEN_GENE_MAP", "#gen_map.xpm");
+    }
+
+    int db_alignx2 = awm->get_at_xposition();
+    
+    awm->at(db_alignx, first_liney);
+    awm->at_set_to(AW_FALSE, AW_FALSE, db_alignx2-db_alignx-1, second_liney-first_liney+1);
+    awm->callback(AW_POPUP,   (AW_CL)NT_open_select_alignment_window, 0 );
+    awm->help_text("nt_align_select.hlp");
+    awm->create_button("SELECT_AN_ALIGNMENT", AWAR_DEFAULT_ALIGNMENT);
+
+    // ------------------------------
+    //      create mode-help line
+    // ------------------------------
+    
     awm->at_newline();
     awm->button_length(AWAR_FOOTER_MAX_LEN);
     awm->create_button(0,AWAR_FOOTER);
 
     awm->at_newline();
-    int last_linex, last_liney;
-    awm->get_at_position( &last_linex,&last_liney );
+    int third_liney = awm->get_at_yposition();
 
-    // edit, gene-map, jump & web buttons (+help buttons):
+    // --------------------------------------
+    //      Info / marked / Search / Jump
+    // --------------------------------------
 
-    awm->at(db_alignx, second_liney-3);
-    awm->callback((AW_CB)NT_start_editor_on_tree, (AW_CL)&(nt.tree->tree_root), 0);
-    awm->help_text("arb_edit4.hlp");
-    (is_genome_db)? awm->button_length(7):awm->button_length(14);
-    awm->create_button("EDIT_SEQUENCES", "#edit.xpm");
-
-    if (is_genome_db) {
-        awm->button_length(7);
-        awm->callback((AW_CB)AW_POPUP, (AW_CL)GEN_map_first, 0/*, (AW_CL)ntw*/); // initial gene map
-        awm->help_text("gene_map.hlp");
-        awm->create_button("OPEN_GENE_MAP", "#gen_map.bitmap",0);
-    }
-
-    // protect:
-    awm->at(db_searchx, second_liney+3);
-    if (!GB_NOVICE){
-        awm->button_length(0);
-        awm->create_button("PROTECT","#protect.xpm");
-        awm->create_option_menu(AWAR_SECURITY_LEVEL);
-        awm->insert_option("0",0,0);
-        awm->insert_option("1",0,1);
-        awm->insert_option("2",0,2);
-        awm->insert_option("3",0,3);
-        awm->insert_option("4",0,4);
-        awm->insert_option("5",0,5);
-        awm->insert_default_option("6",0,6);
-        awm->update_option_menu();
-    }else{
-        awr->awar(AWAR_SECURITY_LEVEL)->write_int(6);
-    }
-
+    awm->button_length(7);
+    
     awm->at(db_searchx, first_liney);
     awm->callback(AW_POPUP, (AW_CL)ad_create_query_window, 0 );
     awm->help_text("sp_search.hlp");
-    awm->button_length(0);
-    awm->create_button("SEARCH", "#search.xpm");
+    awm->create_button("SEARCH",  "Search");
 
-    awm->at(db_listspx, second_liney);
+    awm->at(db_searchx, second_uppery);
+    awm->callback((AW_CB)NT_jump_cb,(AW_CL)ntw,1);
+    awm->help_text("tr_jump.hlp");
+    awm->create_button("JUMP", "Jump");
+    
+    int db_infox = awm->get_at_xposition();
+    
+    awm->at(db_infox, first_liney);
+    awm->button_length(13);
+    awm->callback(NT_popup_species_window, (AW_CL)awm, 0);
+    awm->help_text("sp_search.hlp");
+    awm->create_button("INFO",  AWAR_INFO_BUTTON_TEXT);
+
+    awm->at(db_infox, second_uppery);
+    awm->button_length(13);
     awm->help_text("marked_species.hlp");
-    awm->callback(nt_count_marked);    
-    awm->button_length(16);
+    awm->callback(NT_configuration_admin, (AW_CL)&(nt.tree->tree_root), 0);
     awm->create_button(0, AWAR_MARKED_SPECIES_COUNTER);
     {
         GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
@@ -1878,170 +1890,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         nt_count_marked(awm);
     }
 
-    awm->at(db_speciesx, second_liney);
-    awm->callback((AW_CB)NT_jump_cb,(AW_CL)ntw,1);
-    awm->button_length(7);
-    awm->help_text("tr_jump.hlp");
-    awm->create_button("JUMP", "Jump");
-
-    awm->callback((AW_CB1)awt_openDefaultURL_on_species,(AW_CL)gb_main);
-    awm->help_text("www.hlp");
-    awm->button_length(7);
-    awm->create_button("WWW", "WWW");
-
-//     int db_treex;
-//     awm->get_at_position( &db_treex, &first_liney);
-//     awm->callback((AW_CB2)AW_POPUP,(AW_CL)NT_open_select_tree_window,(AW_CL)awar_tree);
-//     awm->button_length(19);
-//     awm->help_text("nt_tree_select.hlp");
-//     awm->create_button("SELECT_A_TREE", awar_tree);
-
-//     int db_alignx;
-//     awm->get_at_position( &db_alignx, &first_liney);
-//     awm->callback(AW_POPUP,   (AW_CL)NT_open_select_alignment_window, 0 );
-//     awm->help_text("nt_align_select.hlp");
-//     awm->create_button("SELECT_AN_ALIGNMENT", AWAR_DEFAULT_ALIGNMENT);
-
-//     int db_searchx;
-//     awm->get_at_position(&db_searchx, &first_liney);
-//     awm->callback(NT_popup_species_window, (AW_CL)awm, 0);
-// //     awm->callback(AW_POPUP,   (AW_CL)create_speciesOrganismWindow/*ad_create_query_window*/, 0 );
-//     awm->button_length(20);
-//     awm->help_text("sp_search.hlp");
-//     awm->create_button("SEARCH_SPECIES",  AWAR_SEARCH_BUTTON_TEXT);
-
-//     int behind_buttonsx; // after first row of buttons
-//     awm->get_at_position( &behind_buttonsx, &first_liney );
-
-//     awm->at_newline();
-//     int second_linex, second_liney;
-//     awm->get_at_position(&second_linex, &second_liney);
-//     second_liney += 5;
-//     awm->at_y(second_liney);
-
-//     // undo/redo:
-
-//     awm->auto_space(-2,-2);
-
-//     awm->button_length(9);
-//     awm->at_x(db_pathx);
-//     awm->callback(NT_undo_cb,(AW_CL)GB_UNDO_UNDO,(AW_CL)ntw);
-//     awm->help_text("undo.hlp");
-//     awm->create_button("UNDO", "#undo.bitmap",0);
-
-//     awm->callback(NT_undo_cb,(AW_CL)GB_UNDO_REDO,(AW_CL)ntw);
-//     awm->help_text("undo.hlp");
-//     awm->create_button("REDO", "#redo.bitmap",0);
-
-//     awm->at_newline();
-//     int third_linex, third_liney;
-//     awm->get_at_position(&third_linex, &third_liney);
-
-//     // tree buttons:
-
-//     awm->button_length(9);
-//     awm->at(db_treex, second_liney);
-//     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_RADIAL);
-//     awm->help_text("tr_type_radial.hlp");
-//     awm->create_button("RADIAL_TREE_TYPE", "#radial.bitmap",0);
-
-//     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_NORMAL);
-//     awm->help_text("tr_type_list.hlp");
-//     awm->create_button("LIST_TREE_TYPE", "#list.bitmap",0);
-
-//     awm->at(db_treex, third_liney);
-//     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_TREE_IRS);
-//     awm->help_text("tr_type_irs.hlp");
-//     awm->create_button("FOLDED_LIST_TREE_TYPE", "#list.bitmap",0);
-
-//     awm->callback((AW_CB)NT_set_tree_style,(AW_CL)ntw,(AW_CL)AP_LIST_NDS);
-//     awm->help_text("tr_type_nds.hlp");
-//     awm->create_button("NO_TREE_TYPE", "#ndstree.bitmap",0);
-
-//     awm->at_newline();
-//     awm->button_length(AWAR_FOOTER_MAX_LEN);
-//     awm->create_button(0,AWAR_FOOTER);
-//     awm->at_newline();
-//     int last_linex, last_liney;
-//     awm->get_at_position( &last_linex,&last_liney );
-
-//     // edit, gene-map, jump & web buttons (+help buttons):
-
-//     awm->button_length(9);
-//     awm->at(db_alignx, second_liney);
-//     awm->callback((AW_CB)NT_start_editor_on_tree, (AW_CL)&(nt.tree->tree_root), 0);
-//     awm->help_text("arb_edit4.hlp");
-//     awm->create_button("EDIT_SEQUENCES", "#edit.bitmap",0);
-
-//     if (is_genome_db) {
-//         awm->button_length(4);
-//         awm->callback((AW_CB)AW_POPUP, (AW_CL)GEN_map_first, 0/*, (AW_CL)ntw*/); // initial gene map
-//         awm->help_text("gene_map.hlp");
-//         awm->create_button("OPEN_GENE_MAP", "#gen_map.bitmap",0);
-//     }
-
-//     awm->button_length(0);
-//     awm->at(db_searchx, second_liney);
-
-//     awm->callback(AW_POPUP,   (AW_CL)ad_create_query_window, 0 );
-//     awm->create_button("SEARCH", "#search.bitmap",0);
-
-//     awm->callback((AW_CB)NT_jump_cb,(AW_CL)ntw,1);
-//     awm->help_text("tr_jump.hlp");
-//     awm->create_button("JUMP", "#pjump.bitmap",0);
-
-//     awm->callback((AW_CB1)awt_openDefaultURL_on_species,(AW_CL)gb_main);
-//     awm->help_text("www.hlp");
-//     awm->create_button("WWW", "#www.bitmap",0);
-
-//     // count marked species
-
-//     awm->button_length(20);
-//     awm->at(db_searchx, third_liney);
-//     awm->callback(nt_count_marked);
-//     awm->help_text("marked_species.hlp");
-//     awm->create_button(0, AWAR_MARKED_SPECIES_COUNTER);
-//     {
-//         GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-//         GB_add_callback(gb_species_data, GB_CB_CHANGED, nt_auto_count_marked_species, (int*)awm);
-//         nt_count_marked(awm);
-//     }
-
-//     // help:
-
-//     awm->at(behind_buttonsx, first_liney);
-//     awm->callback(AW_POPUP_HELP,(AW_CL)"arb_ntree.hlp");
-//     awm->button_length(0);
-//     awm->help_text("help.hlp");
-//     awm->create_button("HELP","HELP","H");
-
-//     awm->callback( AW_help_entry_pressed );
-//     awm->create_button("?","?");
-
-//     // expand and collapse display icons
-
-//     awr->awar_int(AWAR_NTREE_TITLE_MODE)->add_callback((AW_RCB1)title_mode_changed, (AW_CL)awm);
-//     awm->create_toggle(AWAR_NTREE_TITLE_MODE, "#more.bitmap", "#less.bitmap");
-
-//     // protect:
-
-//     awm->at(behind_buttonsx, second_liney+3);
-//     if (!GB_NOVICE){
-//         awm->label("Protect");
-//         awm->create_option_menu(AWAR_SECURITY_LEVEL);
-//         awm->insert_option("0",0,0);
-//         awm->insert_option("1",0,1);
-//         awm->insert_option("2",0,2);
-//         awm->insert_option("3",0,3);
-//         awm->insert_option("4",0,4);
-//         awm->insert_option("5",0,5);
-//         awm->insert_default_option("6",0,6);
-//         awm->update_option_menu();
-//     }else{
-//         awr->awar(AWAR_SECURITY_LEVEL)->write_int(6);
-//     }
-
-    awm->set_info_area_height( last_liney+4 ); windowHeight = last_liney+4;
+    
+    // set height of top area:
+    awm->set_info_area_height(third_liney+2); windowHeight = third_liney+2;
     awm->set_bottom_area_height( 0 );
     awr->set_focus_callback((AW_RCB)NT_focus_cb,(AW_CL)gb_main,0);
 
