@@ -1290,6 +1290,9 @@ savedepot: rmbak
 	util/arb_save_depot
 
 release:
+	@echo Making release
+	@echo PATH=$(PATH)
+	@echo ARBHOME=$(ARBHOME)
 	-rm arb.tgz arbsrc.tgz
 	$(MAKE) tarfile sourcetarfile
 
