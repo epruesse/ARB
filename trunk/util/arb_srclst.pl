@@ -89,7 +89,8 @@ my @used_when_matches = (
                         );
 
 my @skipped_when_matches = (
-                            qr/^arbsrc.*\.lst$/o,
+                            qr/^arbsrc\.lst$/o,
+                            qr/^arbsrc\.lst\.tmp$/o,
                             qr/^arbsrc.*\.tgz$/o,
                             qr/\#.*\#$/o,
                             qr/.*\.last_gcc$/o,
@@ -148,6 +149,7 @@ my @skipped_when_matchesFull = (
                                 qr/^\.\/PERL2ARB\/ARB\.bs$/o,
                                 qr/^\.\/PERL2ARB\/pm_to_blib$/o,
                                 qr/^\.\/PERL2ARB\/Makefile$/o,
+                                qr/^\.\/TEMPLATES\/arb_build\.h$/o,
                                 qr/^\.\/lib\/ARB\.pm$/o,
                                 qr/^\.\/lib\/nas\/names\.dat$/o,
                                 qr/^\.\/lib\/arb_tcp\.dat$/o,
