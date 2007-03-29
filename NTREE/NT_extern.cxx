@@ -1747,6 +1747,10 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     int db_pathx2 = awm->get_at_xposition();
 
+    // fetch position for mode help-line: 
+    awm->at_newline();
+    int third_liney = awm->get_at_yposition();
+    
     awm->at(db_pathx, first_liney);
     // size of DB-name button is determined by buttons below:
     awm->at_set_to(AW_FALSE, AW_FALSE, db_pathx2-db_pathx-1, second_liney-first_liney+1);
@@ -1848,12 +1852,12 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     //      create mode-help line
     // ------------------------------
     
-    awm->at_newline();
+    awm->at(leftx, third_liney);
     awm->button_length(AWAR_FOOTER_MAX_LEN);
     awm->create_button(0,AWAR_FOOTER);
 
     awm->at_newline();
-    int third_liney = awm->get_at_yposition();
+    int bottomy = awm->get_at_yposition();
 
     // --------------------------------------
     //      Info / marked / Search / Jump
@@ -1892,7 +1896,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     
     // set height of top area:
-    awm->set_info_area_height(third_liney+2); windowHeight = third_liney+2;
+    awm->set_info_area_height(bottomy+2); windowHeight = bottomy+2;
     awm->set_bottom_area_height( 0 );
     awr->set_focus_callback((AW_RCB)NT_focus_cb,(AW_CL)gb_main,0);
 
