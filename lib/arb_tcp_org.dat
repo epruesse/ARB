@@ -37,11 +37,12 @@ ARB_DB_SERVER		:/tmp/arb_db_$(USER)_$(ARB_PID)
 #
 #***********	Nameserver The server should run on the nfs server ******************
 # The primary nameserver (ARB_NAME_SERVER) uses the field 'acc' for species identification
+#
 # You may define additional nameservers, using one additional field for identification.
 # The defined nameserver 'ARB_NAME_SERVER_START' uses the fields 'acc' and 'start'.
 
 ARB_NAME_SERVER         localhost:3020		arb_name_server	-d$(ARBHOME)/lib/nas/names.dat
-ARB_NAME_SERVER_START   localhost:3021		arb_name_server	-d$(ARBHOME)/lib/nas/names_start.dat
+ARB_NAME_SERVER_START   localhost:3021		arb_name_server	-d$(ARBHOME)/lib/nas/names_start.dat -fstart
 
 #***********	PT_SERVERS The server should run on the nfs server ******************
 #*******     You may add new pt_servers here: (numbers must be continued)   *********
