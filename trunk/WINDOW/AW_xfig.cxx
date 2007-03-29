@@ -16,6 +16,10 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.8  2007/03/29 16:53:43  westram
+ * - use both font dimensions to calculate scaling factor
+ * - added function calc_scaling() and removed dup-code
+ *
  * Revision 1.7  2005/03/04 23:14:24  westram
  * - fixed calls to AW_device::clear/clear_part
  *
@@ -142,20 +146,21 @@ public:
     }
 };
 
-//  ----------------------------------------
-//      AW_xfig::AW_xfig(int font_size)
-//  ----------------------------------------
-// creates the same as loading an empty xfig
-AW_xfig::AW_xfig(int font_size) {
-    memset(this,0,sizeof(AW_xfig));
-    font_scale = abs(font_size) / (float) XFIG_DEFAULT_FONT_SIZE;
-    dpi_scale = font_scale;
+void AW_xfig::calc_scaling(int font_width, int font_height) {
+    double font_x_scale = abs(font_width) / (double) XFIG_DEFAULT_FONT_WIDTH;
+    double font_y_scale = abs(font_height) / (double) XFIG_DEFAULT_FONT_HEIGHT;
 
+    font_scale = font_x_scale>font_y_scale ? font_x_scale : font_y_scale;
+    dpi_scale  = font_scale;
 }
-// --------------------------------------------------------------------------------
-//     AW_xfig::AW_xfig(const char *filename, int font_size)
-// --------------------------------------------------------------------------------
-AW_xfig::AW_xfig(const char *filename, int font_size)
+
+AW_xfig::AW_xfig(int font_width, int font_height) {
+    // creates the same as loading an empty xfig
+    memset(this,0,sizeof(AW_xfig));
+    calc_scaling(font_width, font_height);
+}
+
+AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
 {
     int bail_out=0;
     const char *error_notice = "unknown";
@@ -171,8 +176,8 @@ AW_xfig::AW_xfig(const char *filename, int font_size)
 
     if(!filename || !strlen(filename)) return;
     memset(this,0,sizeof(AW_xfig));
-    font_scale = abs(font_size) / (float) XFIG_DEFAULT_FONT_SIZE;
-    dpi_scale = font_scale;
+    
+    calc_scaling(font_width, font_height);
 
     const char *arbhome = GB_getenvARBHOME();
     char *buffer = (char *)calloc(sizeof(char),MAX_XFIG_LENGTH);
@@ -251,11 +256,16 @@ AW_xfig::AW_xfig(const char *filename, int font_size)
 
     if (bail_out) {
     do_bail_out:
+        int fatal_exit = 0;
+
         aw_assert(error_notice);
         aw_assert(expanded_filename);
-        if (font_size>0)
+        
+        if (font_width>0 && font_height>0) { // react with fatal exit
             fprintf(stderr,"Error: Xfig Resource File %s not found or invalid file - programmer's error or defect installation (circumstances: %s)\n",
                     expanded_filename, error_notice);
+            fatal_exit = 1;
+        }
         else {
             sprintf(AW_ERROR_BUFFER,"Warning: Requested Xfig Resource File %s not found or invalid (circumstances: %s).\n",
                     expanded_filename, error_notice);
@@ -267,13 +277,17 @@ AW_xfig::AW_xfig(const char *filename, int font_size)
         if (file) fclose(file);
 
         // exit or return
-        if (font_size>0) exit(-1) ; else return;
+        if (fatal_exit) {
+            fprintf(stderr, "Cannot continue - terminating.\n");
+            exit(-1);
+        }
+        return;
     }
 
 
     // failure of the constructor is shown as missing hash/text/lines on return
 
-    if (font_size<0) font_size = abs(font_size);
+    // if (font_size<0) font_size = abs(font_size);
 
     hash = GBS_create_hash(100,0);
     maxx = maxy = 0;
