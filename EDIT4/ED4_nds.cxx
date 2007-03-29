@@ -80,7 +80,7 @@ void ED4_create_NDS_awars(AW_root *root)
     root->awar_int(ED4_AWAR_NDS_SELECT, 0)->add_callback(NDS_changed,1);
     root->awar_int(ED4_AWAR_NDS_BRACKETS, 6)->set_minmax(0,99)->add_callback(NDS_changed,1);
     root->awar_int(ED4_AWAR_NDS_INFO_WIDTH, 5)->set_minmax(0,99)->add_callback(NDS_changed,1);
-    root->awar_string(ED4_AWAR_NDS_ECOLI_NAME, "Ecoli (usually)")->add_callback(NDS_changed,1);
+    root->awar_string(ED4_AWAR_NDS_ECOLI_NAME, "Ecoli")->add_callback(NDS_changed,1);
 
     for (i=0; i<NDS_COUNT; i++) {
         char buf[256];
