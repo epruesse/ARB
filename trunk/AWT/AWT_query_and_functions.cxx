@@ -2167,11 +2167,12 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
         aws->at(awtqs->config_pos_fig);
         AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "query_box", query_box_store_config, query_box_restore_config, (AW_CL)cbs, 0);
     }
-    aws->button_length(19);
+
+    aws->button_length(18);
     if (awtqs->do_query_pos_fig){
         aws->at(awtqs->do_query_pos_fig);
         aws->callback((AW_CB)awt_do_query,(AW_CL)cbs,AWT_EXT_QUERY_NONE);
-        aws->create_button("SEARCH", "#search.xpm");
+        aws->create_button("SEARCH", "Search");
     }
     if (awtqs->do_refresh_pos_fig && !GB_NOVICE){
         aws->at(awtqs->do_refresh_pos_fig);
