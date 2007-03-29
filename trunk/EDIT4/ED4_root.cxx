@@ -1472,12 +1472,13 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     *device     = awmm->get_device(AW_MIDDLE_AREA); //Points to Middle Area device
     *new_window = ED4_window::insert_window( awmm ); //append to window list
 
-    if (ED4_window::no_of_windows >= 1)                         // this is the first window
-    {
+    e4_assert(ED4_window::no_of_windows >= 1);
+    if (ED4_window::no_of_windows == 1) { // this is the first window
+        AW_init_color_group_defaults("arb_edit4");
+    }
+    else { // additional edit windows
         copy_window_struct( first_window, *new_window );
     }
-
-    AW_init_color_group_defaults("arb_edit4");
 
     aw_gc_manager   = AW_manage_GC( awmm,                           //Window
                                     *device,                //device-handle of window
@@ -1746,86 +1747,115 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->shadow_width(1);
     awmm->load_xfig("edit4/editmenu.fig", AW_FALSE);
 
-    // ----------------------------------------------------------------------------------------------------
+    // -------------------------
+    //      help /quit /fold
+    // -------------------------
+    
     awmm->button_length(0);
+    
     awmm->help_text("quit.hlp");
     awmm->at("quit");
      if (ED4_window::no_of_windows == 1)  awmm->create_button("QUIT","#quit.xpm"); // this is the first window
      else                                 awmm->create_button("CLOSE","#close.xpm");
 
     awmm->at("help");
-    //    awmm->callback(AW_POPUP_HELP,(AW_CL)"e4.hlp");
     awmm->callback( AW_help_entry_pressed );
     awmm->help_text("e4.hlp");
     awmm->create_button("HELP","#help.xpm");
 
-    awmm->button_length(0);
     awmm->at("fold");
     awmm->help_text("e4.hlp");
-    awmm->create_toggle(AWAR_EDIT_TITLE_MODE, "#more.xpm", "#less.xpm");
+    awmm->create_toggle(AWAR_EDIT_TITLE_MODE, "#more.bitmap", "#less.bitmap");
 
-    awmm->at("sep");
+    // ------------------
+    //      positions
+    // ------------------
+    
     awmm->button_length(0);
-    awmm->create_button(0, "#separator.xpm");
+    
+    awmm->at("posTxt");     awmm->create_button(0, "Position");
 
-    // ----------------------------------------------------------------------------------------------------
-    int db_treex,db_treey;
-    awmm->get_at_position( &db_treex,&db_treey );
-    awmm->button_length(200);
+    awmm->button_length(6+1);
+    
+    awmm->at("ecoliTxt");   awmm->create_button(0, ED4_AWAR_NDS_ECOLI_NAME, 0, "+");
 
-    awmm->at("posTxt");
     awmm->button_length(0);
-#if defined (DEVEL_RALF)
-#warning  Please remove label background color parameter after testing!
-#endif
-    awmm->create_button(0, "Position", 0, "-");
+    
+    awmm->at("baseTxt");    awmm->create_button(0, "Base");
+    awmm->at("iupacTxt");   awmm->create_button(0, "IUPAC");
+    awmm->at("helixnrTxt"); awmm->create_button(0, "Helix#");
 
     awmm->at("pos");
     awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_cursor, AW_CL(1));
-    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_cursor,8);
-
-    awmm->at("ecoliTxt");
-    awmm->button_length(0);
-#if defined (DEVEL_RALF)
-#warning  Please remove label background color parameter after testing!
-#endif
-    awmm->create_button(0, "E.coli", 0, "+");
+    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_cursor,7);
 
     awmm->at("ecoli");
     awmm->callback((AW_CB)ED4_jump_to_cursor_position,(AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_Ecoli, AW_CL(0));
-    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_Ecoli,9);
-
-    awmm->at("baseTxt");
-    awmm->button_length(0);
-    awmm->create_button(0, "Base");
+    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_Ecoli,6);
 
     awmm->at("base");
     awmm->callback((AW_CB)ED4_jump_to_cursor_position,(AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_basePos, AW_CL(0));
-    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_basePos,9);
-
-    awmm->at("iupacTxt");
-    awmm->button_length(0);
-    awmm->create_button(0, "IUPAC");
+    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_basePos,6);
 
     awmm->at("iupac");
     awmm->callback((AW_CB)ED4_set_iupac,(AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_IUPAC, AW_CL(0));
-    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_IUPAC,7);
-
-    awmm->at("helixnrTxt");
-    awmm->button_length(0);
-    awmm->create_button(0, "Helix Nr.");
+    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_IUPAC,4);
 
     awmm->at("helixnr");
     awmm->callback((AW_CB)ED4_set_helixnr,(AW_CL) ED4_ROOT->temp_ed4w->awar_path_for_helixNr, AW_CL(0));
-    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_helixNr,6);
+    awmm->create_input_field(ED4_ROOT->temp_ed4w->awar_path_for_helixNr,5);
 
-    awmm->at("sep2");
+    // ---------------------------
+    //      jump/get/undo/redo
+    // ---------------------------
+
+    awmm->button_length(4);
+    
+    awmm->at("jump");
+    awmm->callback(ED4_jump_to_current_species, 0);
+    awmm->help_text("e4.hlp");
+    awmm->create_button("JUMP", "Jump");
+
+    awmm->at("get");
+    awmm->callback(ED4_get_and_jump_to_actual, 0);
+    awmm->help_text("e4.hlp");
+    awmm->create_button("GET", "Get");
+
     awmm->button_length(0);
-    awmm->create_button(0, "#separator.xpm");
+    
+    awmm->at("undo");
+    awmm->callback(ED4_undo_redo, GB_UNDO_UNDO);
+    awmm->help_text("undo.hlp");
+    awmm->create_button("UNDO", "#undo.bitmap");
 
-    // ----------------------------------------------------------------------------------------------------
+    awmm->at("redo");
+    awmm->callback(ED4_undo_redo, GB_UNDO_REDO);
+    awmm->help_text("undo.hlp");
+    awmm->create_button("REDO", "#redo.bitmap");
+
+    // -------------------------
+    //      aligner / SAIviz
+    // -------------------------
+    
+    awmm->button_length(7);
+    
+    awmm->at("aligner");
+    awmm->callback(AW_POPUP, (AW_CL)ED4_create_faligner_window, (AW_CL)&faligner_client_data);
+    awmm->help_text("faligner.hlp");
+    awmm->create_button("ALIGNER", "Aligner");
+
+    awmm->at("saiviz");
+    awmm->callback(AW_POPUP,(AW_CL)ED4_createVisualizeSAI_window, 0 );
+    awmm->help_text("visualizeSAI.hlp");
+    awmm->create_button("SAIVIZ", "SAIviz");
+
+    // ------------------------------------------
+    //      align/insert/protection/direction
+    // ------------------------------------------
+
+    awmm->button_length(0);
+    
     awmm->at("protect");
-    awmm->button_length(0);
     awmm->create_option_menu(AWAR_EDIT_SECURITY_LEVEL);
     awmm->insert_option("0",0,0);
     awmm->insert_option("1",0,1);
@@ -1835,24 +1865,74 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_option("5",0,5);
     awmm->insert_default_option("6",0,6);
     awmm->update_option_menu();
-    awmm->at("protectTxt");
-    awmm->button_length(0);
+
+    // draw protection icon AFTER protection!!
+    awmm->at("pico");
     awmm->create_button("PROTECT","#protect.xpm");
 
-    awmm->button_length(8);
-    awmm->at("insert");
-    awmm->create_toggle(AWAR_INSERT_MODE, "edit/replace.xpm", "edit/insert.xpm");
-    //    awmm->create_toggle(AWAR_INSERT_MODE, "edit/replace.bitmap", "edit/insert.bitmap");
-
-    awmm->button_length(8);
+    // draw align/edit-button AFTER protection!!
     awmm->at("edit");
-    awmm->create_toggle(AWAR_EDIT_MODE, "edit/align.xpm", "edit/editseq.xpm");
-    //    awmm->create_toggle(AWAR_EDIT_MODE, "edit/align.bitmap", "edit/noalign.bitmap");
+    awmm->create_toggle(AWAR_EDIT_MODE, "edit/align.xpm", "edit/editseq.xpm", 7);
 
-    awmm->button_length(8);
+    awmm->at("insert");
+    awmm->create_text_toggle(AWAR_INSERT_MODE, "Replace", "Insert", 7);
+
     awmm->at("direct");
-    awmm->create_toggle(AWAR_EDIT_DIRECTION,"edit/3to5.xpm","edit/5to3.xpm");
-    //    awmm->create_toggle(AWAR_EDIT_DIRECTION,"edit/r2l.bitmap","edit/l2r.bitmap");
+    awmm->create_toggle(AWAR_EDIT_DIRECTION,"edit/3to5.bitmap","edit/5to3.bitmap", 7);
+
+    // ------------------------
+    //      secedit / rna3d
+    // ------------------------
+
+    int xoffset = 0;
+
+    // Enable RNA3D and SECEDIT programs if the database contains valid alignment of rRNA sequences.
+    if (ED4_ROOT->alignment_type == GB_AT_RNA) {
+        awmm->button_length(0);
+        
+        awmm->at("secedit");
+        awmm->callback((void(*)(AW_window*, AW_CL))ED4_SECEDIT_start, 0);
+        awmm->help_text("arb_secedit.hlp");
+        awmm->create_button("SECEDIT", "#edit/secedit.xpm");
+        
+#if defined(ARB_OPENGL)
+        awmm->at("rna3d");
+        awmm->callback((void(*)(AW_window*, AW_CL))ED4_RNA3D_Start, 0);
+        awmm->help_text("rna3d_general.hlp");
+        awmm->create_button("RNA3D", "#edit/rna3d.xpm");
+#endif // ARB_OPENGL
+    }
+    else {
+        awmm->at("secedit");
+        int xsecedit = awmm->get_at_xposition();
+        awmm->at("zoom");
+        int xzoom    = awmm->get_at_xposition();
+        xoffset      = xsecedit-xzoom; // shift message stuff to the left by xoffset
+    }
+
+    {
+        int x, y;
+
+        awmm->at("zoom");
+        if (xoffset) { awmm->get_at_position(&x, &y); awmm->at(x+xoffset, y); }
+        awmm->callback(AW_POPUP, (AW_CL)ED4_zoom_message_window, (AW_CL)0);
+        awmm->create_button("ZOOM", "#edit/zoom.bitmap");
+
+        awmm->at("clear");
+        if (xoffset) { awmm->get_at_position(&x, &y); awmm->at(x+xoffset, y); }
+        awmm->callback(ED4_clear_errors, (AW_CL)0);
+        awmm->create_button("CLEAR", "#edit/clear.bitmap");
+
+        awmm->at("errortext");
+        if (xoffset) { awmm->get_at_position(&x, &y); awmm->at(x+xoffset, y); }
+        aw_root->awar_string(AWAR_ERROR_MESSAGES, "This is ARB Edit4 [Build " ARB_VERSION "]");
+        awmm->create_text_field(AWAR_ERROR_MESSAGES);
+        aw_set_local_message();
+    }
+
+    // --------------------
+    //      'more' area
+    // --------------------
 
     awmm->at("cons");
     awmm->create_toggle(ED4_AWAR_CONSENSUS_SHOW, "edit/nocons.bitmap", "edit/cons.bitmap");
@@ -1863,62 +1943,8 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->at("key");
     awmm->create_toggle("key_mapping/enable", "edit/nokeymap.bitmap", "edit/keymap.bitmap");
 
-    // ----------------------------------------------------------------------------------------------------
-    awmm->button_length(0);
-
-    // Enable RNA3D and SECEDIT programs if the database contains valid alignment of rRNA sequences.
-    switch (ED4_ROOT->alignment_type) {
-        case GB_AT_RNA: {
-#if defined(ARB_OPENGL)
-            awmm->at("rna3d");
-            awmm->callback((void(*)(AW_window*, AW_CL))ED4_RNA3D_Start, 0);
-            awmm->help_text("rna3d_general.hlp");
-            awmm->create_button("RNA3D", "#edit/rna3d.xpm");
-#endif // ARB_OPENGL
-            awmm->at("secedit");
-            awmm->callback((void(*)(AW_window*, AW_CL))ED4_SECEDIT_start, 0);
-            awmm->help_text("arb_secedit.hlp");
-            awmm->create_button("SECEDIT", "#edit/secedit.xpm");
-            break;
-        }
-        case GB_AT_UNKNOWN:
-            e4_assert(0);       // should not occur
-            break;
-        default:
-            break;
-    }
-
-    awmm->at("undo");
-    awmm->callback(ED4_undo_redo, GB_UNDO_UNDO);
-    awmm->button_length(0);
-    awmm->help_text("undo.hlp");
-    awmm->create_button("UNDO", "#undo.xpm");
-
-    awmm->at("redo");
-    awmm->callback(ED4_undo_redo, GB_UNDO_REDO);
-    awmm->button_length(0);
-    awmm->help_text("undo.hlp");
-    awmm->create_button("REDO", "#redo.xpm");
-
-    awmm->at("jump");
-    awmm->callback(ED4_jump_to_current_species, 0);
-    awmm->button_length(12);
-    awmm->help_text("e4.hlp");
-    awmm->create_button("JUMP", "Jump Sp.");
-
-    awmm->at("get");
-    awmm->callback(ED4_get_and_jump_to_actual, 0);
-    awmm->button_length(12);
-    awmm->help_text("e4.hlp");
-    awmm->create_button("GET", "Load Sp.");
-
-    awmm->at("saiviz");
-    awmm->callback(AW_POPUP,(AW_CL)ED4_createVisualizeSAI_window, 0 );
-    awmm->button_length(8);
-    awmm->help_text("visualizeSAI.hlp");
-    awmm->create_button("SAIVIZ", "SAIviz");
-
     // search
+    
     awmm->button_length(0);
 #define INSERT_SEARCH_FIELDS(Short, label_prefix, prefix) insert_search_fields(awmm, #label_prefix, #prefix, ED4_AWAR_##prefix##_SEARCH_PATTERN, ED4_##prefix##_PATTERN, ED4_AWAR_##prefix##_SEARCH_SHOW, Short)
 
@@ -1941,19 +1967,6 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->at("anext");
     awmm->callback(ED4_search, ED4_encodeSearchDescriptor(+1, ED4_ANY_PATTERN));
     awmm->create_button("ALL_SEARCH_NEXT", "#edit/next.bitmap");
-
-    awmm->at("zoom");
-    awmm->callback(AW_POPUP, (AW_CL)ED4_zoom_message_window, (AW_CL)0);
-    awmm->create_button("ZOOM", "#edit/zoom.bitmap");
-
-    awmm->at("clear");
-    awmm->callback(ED4_clear_errors, (AW_CL)0);
-    awmm->create_button("CLEAR", "#edit/clear.bitmap");
-
-    awmm->at("errortext");
-    aw_root->awar_string(AWAR_ERROR_MESSAGES, "This is ARB Edit4 [Build " ARB_VERSION "]");
-    awmm->create_text_field(AWAR_ERROR_MESSAGES);
-    aw_set_local_message();
 
     title_mode_changed(aw_root, awmm);
 
