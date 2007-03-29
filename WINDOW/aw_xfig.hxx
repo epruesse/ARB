@@ -15,6 +15,11 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.6  2007/03/29 16:54:01  westram
+ * - XFIG_DEFAULT_FONT_SIZE -> XFIG_DEFAULT_FONT_WIDTH / XFIG_DEFAULT_FONT_HEIGHT
+ * - added private ctor-helper calc_scaling
+ * - changed ctor-prototypes of AW_xfig
+ *
  * Revision 1.5  2005/01/05 11:25:40  westram
  * - changed include wrapper
  *
@@ -40,8 +45,12 @@
  */
 
 
-const int XFIG_DEFAULT_FONT_SIZE = 13;
-const int MAX_LINE_WIDTH = 20;
+const int XFIG_DEFAULT_FONT_WIDTH = 8;
+const int XFIG_DEFAULT_FONT_HEIGHT = 13;
+
+// const int XFIG_DEFAULT_FONT_SIZE = 13;
+
+const int MAX_LINE_WIDTH  = 20;
 const int MAX_XFIG_LENGTH = 100000;
 
 char *aw_get_font_from_xfig(int fontnr);
@@ -74,6 +83,8 @@ struct AW_xfig_pos {
 };
 
 class AW_xfig {
+    void calc_scaling(int font_width, int font_height);
+
 public:
     struct AW_xfig_text *text;
     struct AW_xfig_line *line[MAX_LINE_WIDTH];
@@ -88,8 +99,8 @@ public:
     double font_scale;
     double dpi_scale;
 
-    AW_xfig(const char *filename, int fontsize);
-    AW_xfig(int fontsize);      // creates an empty drawing area
+    AW_xfig(const char *filename, int font_width, int font_height);
+    AW_xfig(int font_width, int font_height);      // creates an empty drawing area
 
     ~AW_xfig(void);
     void print(AW_device *device); // you can scale it
