@@ -1190,7 +1190,9 @@ void AW_root::init_variables( AW_default database ) {
     awar_int("vectorfont/active", 1,application_database); // zoomtext-calls: call text or use vectorfont (1)
 
     // this MIGHT lead to inconsistencies, as the validated data is in /name ---> worst case: reset
-    aw_create_selection_box_awars(this, "vectorfont", GBS_global_string("%s/lib/pictures", GB_getenvARBHOME()), ".vfont", vectorfont_name, application_database);
+    aw_create_selection_box_awars(this, "vectorfont",
+                                  GBS_global_string("%s/lib/pictures", GB_getenvARBHOME()), ".vfont", vectorfont_name,
+                                  application_database, true);
     awar("vectorfont/file_name")->add_callback( (AW_RCB0)   aw_xfig_font_changefont_cb);
 }
 
@@ -3209,31 +3211,21 @@ static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
 }
 
 void AW_window::load_xfig(const char *file, AW_BOOL resize) {
+    AW_xfig *xfig;
 
-    if (file) {
-        xfig_data = (void*)new AW_xfig( file, get_root()->font_height );
-    }
-    else {
-        xfig_data = (void*)new AW_xfig(get_root()->font_height ); // create an empty xfig
-    }
+    if (file) xfig = new AW_xfig(file, get_root()->font_width, get_root()->font_height);
+    else      xfig = new AW_xfig(      get_root()->font_width, get_root()->font_height); // create an empty xfig
+
+    xfig_data = (void*)xfig;
+
     set_expose_callback(AW_INFO_AREA, (AW_CB)AW_xfigCB_info_area,(AW_CL)xfig_data,0);
-
-    AW_device *device = get_device ( AW_INFO_AREA );
-    AW_xfig *xfig = (AW_xfig *)xfig_data;
-    if (get_root()->color_mode){
-        xfig->create_gcs(device,8);
-    }else{
-        xfig->create_gcs(device,1);
-    }
-
+    xfig->create_gcs(get_device(AW_INFO_AREA), get_root()->color_mode ? 8 : 1);
+    
     int xsize = xfig->maxx - xfig->minx;
     int ysize = xfig->maxy - xfig->miny;
 
     if (xsize>_at->max_x_size) _at->max_x_size = xsize;
     if (ysize>_at->max_y_size) _at->max_y_size = ysize;
-
-//     _at->max_x_size = xfig->maxx - xfig->minx;
-//     _at->max_y_size = xfig->maxy - xfig->miny;
 
     if (resize) {
         if (recalc_size_at_show == 0) recalc_size_at_show = 1;
