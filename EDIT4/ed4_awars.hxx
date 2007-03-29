@@ -62,7 +62,7 @@
 #define ED4_AWAR_NDS_WIDTH_TEMPLATE       "nds/pat_%i/width"
 #define ED4_AWAR_NDS_BRACKETS             "nds/brackets"
 #define ED4_AWAR_NDS_INFO_WIDTH           "nds/infowidth"
-#define ED4_AWAR_NDS_ECOLI_NAME           "nds/ecoli_name"
+#define ED4_AWAR_NDS_ECOLI_NAME           "nds/ecoliname"
 
 //      Search awars
 
