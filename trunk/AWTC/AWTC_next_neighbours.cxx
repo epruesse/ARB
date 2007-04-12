@@ -31,8 +31,8 @@ void awtc_ff_message(const char *msg){
 void AWTC_FIND_FAMILY::delete_family_list(){
     AWTC_FIND_FAMILY_MEMBER *fl,*fln;
     for (fl = family_list; fl ; fl = fln){
-	 fln = fl->next;
-	 delete fl;
+         fln = fl->next;
+         delete fl;
     }
     family_list = 0;
 }
@@ -43,10 +43,10 @@ GB_ERROR AWTC_FIND_FAMILY::init_communication(void)
 
 /*** create and init local com structure ***/
     if( aisc_create(link, PT_MAIN, com,
-		    MAIN_LOCS, PT_LOCS, &locs,
-		    LOCS_USER, user,
-		    NULL)){
-	return GB_export_error("Cannot initialize communication");
+                    MAIN_LOCS, PT_LOCS, &locs,
+                    LOCS_USER, user,
+                    NULL)){
+        return GB_export_error("Cannot initialize communication");
     }
     return 0;
 }
@@ -83,7 +83,7 @@ GB_ERROR AWTC_FIND_FAMILY::open(char *servername)
 void AWTC_FIND_FAMILY::close(void)
 {
    if (link) aisc_close(link);
-	link = 0;
+   link = 0;
 }
 
 AWTC_FIND_FAMILY::AWTC_FIND_FAMILY(GBDATA *gb_maini)
@@ -117,9 +117,9 @@ GB_ERROR AWTC_FIND_FAMILY::find_family(char *sequence, int find_type, int max_hi
      */
 
     if (aisc_put(link, PT_LOCS, locs,
-		 LOCS_FIND_TYPE, find_type,
-		 LOCS_FIND_FAMILY, &bs,0)){
-	return GB_export_error  ("Communication Error (2)");
+                 LOCS_FIND_TYPE, find_type,
+                 LOCS_FIND_FAMILY, &bs,0)){
+        return GB_export_error  ("Communication Error (2)");
     }
 
     /*
@@ -128,16 +128,16 @@ GB_ERROR AWTC_FIND_FAMILY::find_family(char *sequence, int find_type, int max_hi
     aisc_get(link,PT_LOCS, locs,LOCS_FAMILY_LIST, &f_list, 0);
 
     while (f_list){
-	if (max_hits== 0) break;
-	max_hits--;
-	AWTC_FIND_FAMILY_MEMBER *fl = new AWTC_FIND_FAMILY_MEMBER();
-	fl->next = family_list;
-	family_list = fl;
+        if (max_hits== 0) break;
+        max_hits--;
+        AWTC_FIND_FAMILY_MEMBER *fl = new AWTC_FIND_FAMILY_MEMBER();
+        fl->next = family_list;
+        family_list = fl;
 
-	aisc_get(link, PT_FAMILYLIST, f_list,
-		 FAMILYLIST_NAME,&fl->name,
-		 FAMILYLIST_MATCHES,&fl->matches,
-		 FAMILYLIST_NEXT, &f_list,0);
+        aisc_get(link, PT_FAMILYLIST, f_list,
+                 FAMILYLIST_NAME,&fl->name,
+                 FAMILYLIST_MATCHES,&fl->matches,
+                 FAMILYLIST_NEXT, &f_list,0);
     }
 
     free(compressed_sequence);
@@ -148,7 +148,7 @@ GB_ERROR AWTC_FIND_FAMILY::find_family(char *sequence, int find_type, int max_hi
 void AWTC_FIND_FAMILY::print(){
     AWTC_FIND_FAMILY_MEMBER *fl;
     for (fl = family_list; fl ; fl = fl->next){
-	printf("%s %li\n",fl->name,fl->matches);
+        printf("%s %li\n",fl->name,fl->matches);
     }
 }
 
@@ -162,8 +162,8 @@ GB_ERROR AWTC_FIND_FAMILY::go(int server_id,char *sequence,GB_BOOL fast,int max_
     if (error) return error;
     error = find_family(sequence,fast,max_hits);
     if (error){
-	close();
-	return error;
+        close();
+        return error;
     }
     close();
     return 0;
