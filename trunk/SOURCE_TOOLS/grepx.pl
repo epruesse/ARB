@@ -3,7 +3,7 @@
 #                                                                          #
 #   File      : grepx.pl                                                   #
 #   Purpose   : Replacement for grep (used from emacs)                     #
-#   Time-stamp: <Thu Feb/22/2007 14:28 MET Coder@ReallySoft.de>            #
+#   Time-stamp: <Sat Apr/14/2007 13:51 MET Coder@ReallySoft.de>            #
 #                                                                          #
 #   (C) November 2005 by Ralf Westram                                      #
 #                                                                          #
@@ -731,8 +731,7 @@ eval {
     }
     else { print "grepx: No matches were found.\n"; }
   }
-
-  print "\n";
+  # print "\n";
 };
 if ($@) {
   print_usage();
