@@ -1026,7 +1026,7 @@ static GB_ERROR server_load(AN_main *main)
             revers->mh.ident  = an_strlwr(strdup(shrt->shrt));
             revers->full_name = strdup(shrt->full_name);
             revers->acc       = strdup(shrt->acc);
-            revers->add_id    = strdup(shrt->add_id);
+            revers->add_id    = shrt->add_id ? strdup(shrt->add_id) : 0;
             aisc_link((struct_dllpublic_ext*)&(main->prevers),(struct_dllheader_ext*)revers);
             nameCount++;
         }
