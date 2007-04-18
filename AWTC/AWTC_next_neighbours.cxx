@@ -52,32 +52,23 @@ GB_ERROR AWTC_FIND_FAMILY::init_communication(void)
 }
 
 
-GB_ERROR AWTC_FIND_FAMILY::open(char *servername)
-{
-   char *socketid;
-
-   if (arb_look_and_start_server(AISC_MAGIC_NUMBER,servername,gb_main)){
-      return GB_export_error ("Cannot contact PT  server");
-   }
-
-   socketid = GBS_read_arb_tcp(servername);
-
-   if (!socketid) {
-      return GB_export_error ("Cannot find entry '%s' in $ARBHOME/arb_tcp.dat",servername);
-   }
-
-   link = (aisc_com *)aisc_open(socketid,&com,AISC_MAGIC_NUMBER);
-
-   if (!link) {
-      return GB_export_error ("Cannot contact Probe bank server ");
-   }
-
-   if (init_communication()) {
-      return GB_export_error  ("Cannot contact Probe bank server (2)");
-   }
-
-   free(socketid);
-   return 0;
+GB_ERROR AWTC_FIND_FAMILY::open(char *servername) {
+    GB_ERROR error = 0;
+    if (arb_look_and_start_server(AISC_MAGIC_NUMBER,servername,gb_main)){
+        error = "Cannot contact PT  server";
+    }
+    else {
+        const char *socketid = GBS_read_arb_tcp(servername);
+        if (!socketid) {
+            error = GB_get_error();
+        }
+        else {
+            link = (aisc_com *)aisc_open(socketid, &com, AISC_MAGIC_NUMBER);
+            if (!link) error = "Cannot contact PT server [1]";
+            else if (init_communication()) error = "Cannot contact PT server [2]";
+        }
+    }
+    return error;
 }
 
 void AWTC_FIND_FAMILY::close(void)
