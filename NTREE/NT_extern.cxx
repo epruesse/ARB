@@ -1411,9 +1411,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             SEP________________________SEP();
 
 #if defined(DEBUG)
-#if defined(DEVEL_RALF)
+#if defined(DEVEL_RALF) || defined(DEVEL_KAI)
 #warning sequence quality check for big databases needs to be fixed
-#endif // DEVEL_RALF
+#endif // DEVEL_RALF DEVEL_KAI
             AWMIMT("seq_quality", "Check Sequence Quality",    "",  "seq_quality.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)SQ_create_seq_quality_window, 0);
 #endif // DEBUG
 
