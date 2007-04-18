@@ -279,16 +279,67 @@ void GB_clear_error() {         /* clears the error buffer */
 
 /* -------------------------------------------------------------------------------- */
 
+#if defined(DEBUG)
+#if defined(DEVEL_RALF)
+/* #define TRACE_BUFFER_USAGE */
+#endif /* DEBUG */
+#endif /* DEVEL_RALF */
+
+
 #define GLOBAL_STRING_BUFFERS 4
 
 static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_reuse)
 {
-    static char buffer[GLOBAL_STRING_BUFFERS][GBS_GLOBAL_STRING_SIZE+2]; // two buffers - used alternately
-    static int  idx    = 0;
-    int         my_idx = (idx+1)%GLOBAL_STRING_BUFFERS; // use next buffer
-    int         psize;
+    static char buffer[GLOBAL_STRING_BUFFERS][GBS_GLOBAL_STRING_SIZE+2]; // serveral buffers - used alternately
+    static int  idx                             = 0;
+    static char lifetime[GLOBAL_STRING_BUFFERS] = { };
+    static char nextIdx[GLOBAL_STRING_BUFFERS] = { };
+    
+    int my_idx;
+    int psize;
 
-    ad_assert(my_idx >= 0 && my_idx<GLOBAL_STRING_BUFFERS);
+    if (nextIdx[0] == 0) { // initialize nextIdx
+        for (my_idx = 0; my_idx<GLOBAL_STRING_BUFFERS; my_idx++) {
+            nextIdx[my_idx] = (my_idx+1)%GLOBAL_STRING_BUFFERS;
+        }
+    }
+
+    if (allow_reuse == -1) { /* called from GBS_reuse_buffer */
+        /* buffer to reuse is passed in 'templat' */
+
+        for (my_idx = 0; my_idx<GLOBAL_STRING_BUFFERS; my_idx++) {
+            if (buffer[my_idx] == templat) {
+                lifetime[my_idx] = 0;
+#if defined(TRACE_BUFFER_USAGE)
+                printf("Reusing buffer #%i\n", my_idx);
+#endif /* TRACE_BUFFER_USAGE */
+                if (nextIdx[my_idx] == idx) idx = my_idx;
+                return 0;
+            }
+#if defined(TRACE_BUFFER_USAGE)
+            else {
+                printf("(buffer to reuse is not buffer #%i (%p))\n", my_idx, buffer[my_idx]);
+            }
+#endif /* TRACE_BUFFER_USAGE */
+        }
+        for (my_idx = 0; my_idx<GLOBAL_STRING_BUFFERS; my_idx++) {
+            printf("buffer[%i]=%p\n", my_idx, buffer[my_idx]);
+        }
+        ad_assert(0);       /* GBS_reuse_buffer called with illegal buffer */
+        return 0;
+    }
+
+    if (lifetime[idx] == 0) {
+        my_idx = idx;
+    }
+    else {
+        for (my_idx = nextIdx[idx]; lifetime[my_idx]>0; my_idx = nextIdx[my_idx]) {
+#if defined(TRACE_BUFFER_USAGE)
+            printf("decreasing lifetime[%i] (%i->%i)\n", my_idx, lifetime[my_idx], lifetime[my_idx]-1);
+#endif /* TRACE_BUFFER_USAGE */
+            lifetime[my_idx]--;
+        }
+    }
 
 #ifdef LINUX
     psize = vsnprintf(buffer[my_idx],GBS_GLOBAL_STRING_SIZE,templat,parg);
@@ -296,14 +347,32 @@ static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_r
     psize = vsprintf(buffer[my_idx],templat,parg);
 #endif
 
+#if defined(TRACE_BUFFER_USAGE)
+    printf("Printed into global buffer #%i ('%s')\n", my_idx, buffer[my_idx]);
+#endif /* TRACE_BUFFER_USAGE */
+    
     if (psize == -1 || psize >= GBS_GLOBAL_STRING_SIZE) {
         ad_assert(0);              // buffer overflow (increase GBS_GLOBAL_STRING_SIZE or use your own buffer)
         GB_CORE;
     }
 
-    if (!allow_reuse) idx = my_idx;
+    if (!allow_reuse) {
+        idx           = my_idx;
+        lifetime[idx] = 1;
+    }
+#if defined(TRACE_BUFFER_USAGE)
+    else {
+        printf("Allow reuse of buffer #%i\n", my_idx);
+    }
+#endif /* TRACE_BUFFER_USAGE */
 
     return buffer[my_idx];
+}
+
+void GBS_reuse_buffer(GB_CSTR global_buffer) {
+    /* If you've just shortely used a buffer, you can put it back here */
+
+    gbs_vglobal_string(global_buffer, 0, -1);
 }
 
 GB_CSTR GBS_global_string(const char *templat, ...) {
@@ -1452,175 +1521,14 @@ char *GBS_eval_env(const char *p){
     return p2;
 }
 
-/********************************************************************************************
-            Create an entry representing pt-server 'i'
-            (reads from arb_tcp.dat)
-********************************************************************************************/
-
-char *GBS_ptserver_id_to_choice(int i) {
-    char *serverID = GBS_global_string_copy("ARB_PT_SERVER%i", i);
-    char *ipPort   = GBS_read_arb_tcp(serverID);
-    char *result   = 0;
-
-    if (ipPort) {
-        char       *file     = GBS_scan_arb_tcp_param(ipPort, "-d");
-        const char *nameOnly = strrchr(file, '/');
-        char       *colon;
-
-        if (nameOnly) nameOnly++;   // position behind '/'
-        else nameOnly = file;       // otherwise show complete file
-
-        colon = strchr(ipPort, ':');
-        if (colon) *colon = 0; // hide port
-
-        result = GBS_global_string_copy("%-8s: %s", ipPort, nameOnly);
-
-        free(file);
-    }
-    free(ipPort);
-    free(serverID);
-
-    return result;
-}
-
-char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam) {
-    /* search a specific server parameter in result from GBS_read_arb_tcp()
-     * wantedParam may be sth like '-d' (case is ignored!)
-     */
-    char *result = 0;
-    if (ipPort) {
-        const char *exe   = strchr(ipPort, 0)+1;
-        const char *param = strchr(exe, 0)+1;
-        size_t      plen  = strlen(param);
-        size_t      wplen = strlen(wantedParam);
-
-        while (plen) {
-            if (gbs_strnicmp(param, wantedParam, wplen) == 0) { /* starts with wantedParam */
-                result = strdup(param+wplen);
-                break;
-            }
-            param += plen+1;    /* position behind 0-delimiter */
-            plen   = strlen(param);
-        }
-    }
-    return result;
-}
-
-/********************************************************************************************
-            Find an entry in the $ARBHOME/lib/arb_tcp.dat file
-********************************************************************************************/
-
-/* Be aware: GBS_read_arb_tcp returns a quite unusual string containing several string delimiters (0-characters).
-   It contains all words (separated by space or tab in arb_tcp.dat) of the corresponding line in arb_tcp.dat.
-   These words get concatenated (separated by 0 characters).
-
-   The first word (which matches the parameter env) is skipped.
-   The second word (the socket info = "host:port") is returned directly as result.
-   The third word is the server executable name.
-   Thr fourth and following words are parameters to the executable. 
-
-   To access these words follow this example:
-
-   char *ipPort    = GBS_read_arb_tcp("ARB_NAME_SERVER");
-   if (ipPort) {
-   char *serverExe = strchr(ipPort, 0)+1;
-   char *para1     = strchr(serverExe, 0)+1; // always exists!
-   char *para2     = strchr(para1, 0)+1;
-   if (para2[0]) {
-   // para2 exists
-   }
-   }
-
-   see also GBS_read_arb_tcp_param() above
-*/
-
-char *GBS_read_arb_tcp(const char *env)
-{
-    char       *filename;
-    char       *result = 0;
-
-    if (strchr(env,':')){
-        return GB_STRDUP(env);
-    }
-
-    filename = GBS_find_lib_file("arb_tcp.dat","", 1);
-    if (!filename) {
-        GB_export_error("File $ARBHOME/lib/arb_tcp.dat not found");
-    }
-    else {
-        FILE       *arb_tcp = fopen(filename,"r");
-        int         envlen  = strlen(env);
-        const char *user    = GB_getenvUSER();
-
-        if (!user) {
-            GB_export_error("Enviroment Variable 'USER' not found");
-            GB_print_error();
-        }
-        else {
-            int   envuserlen = strlen(user)+envlen+1;
-            char *envuser    = (char *)GB_calloc(sizeof(char),envuserlen+1);
-            char  buffer[256];
-            char *p;
-            char *nl;
-            char *tok1;
-
-            sprintf(envuser,"%s:%s",user,env);
-
-            for (p = fgets(buffer,255,arb_tcp);
-                 p;
-                 p = fgets(p,255,arb_tcp))
-            {
-                if (!strncmp(envuser,buffer,envuserlen)) {
-                    envlen = envuserlen;
-                    break;
-                }
-                if (!strncmp(env,buffer,envlen)) break;
-            }
-
-            if (p) {
-                if ( (nl = strchr(p,'\n')) ) *nl = 0;
-                p = p+envlen;
-                while ((*p == ' ') || (*p == '\t')) p++;
-                p = GBS_eval_env(p);
-                strncpy(buffer,p,200);
-                free(p);
-                p = buffer;
-
-                tok1 = strtok(p," \t");
-                p = buffer;
-                while (tok1) {
-                    int len = strlen(tok1);
-                    memmove(p, tok1, len+1);
-                    p += len+1;
-                    tok1 = strtok(0," \t");
-                }
-                *p++ = 0; /* add additional 0 terminator */
-
-                result = (char*)GB_calloc(sizeof(char),p-buffer);
-                GB_MEMCPY(result,buffer,p-buffer);
-            }
-            else {
-                GB_export_error("Missing '%s' in '%s'",env,filename);
-            }
-
-            free(envuser);
-        }
-        fclose(arb_tcp);
-    }
-    free(filename);
-
-    return result;
-}
-
 char* GBS_find_lib_file(const char *filename,const char *libprefix, int warn_when_not_found)
-     /*
- * Searches in $CURRENTDIR $HOME $ARBHOME/lib
- */
 {
-    char            buffer[256];
-    const char           *arbhome;
-    const char           *home;
-    FILE           *in;
+    /* Searches files in $CURRENTDIR, $HOME, $ARBHOME/lib */
+    
+    char        buffer[256];
+    const char *arbhome;
+    const char *home;
+    FILE       *in;
 
     arbhome = GB_getenvARBHOME();
     home = GB_getenvHOME();
@@ -1949,9 +1857,9 @@ void GB_internal_error(const char *templat, ...) {
 
     full_message = GBS_global_string("Internal ARB Error: %s", message);
     gb_error_handler(full_message);
-    gb_error_handler("  ARB may be unstable now (due to this error).\n"
-                     "  Consider saving your database (maybe under a different name),\n"
-                     "  try to fix the error and restart ARB.");
+    gb_error_handler("ARB is most likely unstable now (due to this error).\n"
+                     "If you've made changes to the database, consider to save it using a different name.\n"
+                     "Try to fix the cause of the error and restart ARB.");
 
     if (GBS_do_core()) {
         GB_CORE;
