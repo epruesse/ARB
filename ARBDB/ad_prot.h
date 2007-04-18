@@ -38,6 +38,7 @@ GB_ERROR GB_export_IO_error P_((const char *action, const char *filename));
 GB_ERROR GB_print_error P_((void));
 GB_ERROR GB_get_error P_((void));
 void GB_clear_error P_((void));
+void GBS_reuse_buffer P_((GB_CSTR global_buffer));
 GB_CSTR GBS_global_string P_((const char *templat, ...)) __attribute__((format(printf, 1, 2)));
 char *GBS_global_string_copy P_((const char *templat, ...)) __attribute__((format(printf, 1, 2)));
 char *GBS_string_2_key_with_exclusions P_((const char *str, const char *additional));
@@ -65,9 +66,6 @@ void GBS_intcat P_((void *strstruct, long val));
 void GBS_floatcat P_((void *strstruct, double val));
 char *GBS_string_eval P_((const char *insource, const char *icommand, GBDATA *gb_container));
 char *GBS_eval_env P_((const char *p));
-char *GBS_ptserver_id_to_choice P_((int i));
-char *GBS_scan_arb_tcp_param P_((const char *ipPort, const char *wantedParam));
-char *GBS_read_arb_tcp P_((const char *env));
 char *GBS_find_lib_file P_((const char *filename, const char *libprefix, int warn_when_not_found));
 char **GBS_read_dir P_((const char *dir, const char *filter));
 GB_ERROR GBS_free_names P_((char **names));
@@ -424,6 +422,12 @@ GBDATA *GEN_first_organism P_((GBDATA *gb_main));
 GBDATA *GEN_next_organism P_((GBDATA *gb_organism));
 GBDATA *GEN_first_marked_organism P_((GBDATA *gb_main));
 GBDATA *GEN_next_marked_organism P_((GBDATA *gb_organism));
+
+/* adtcp.c */
+char *GBS_ptserver_id_to_choice P_((int i));
+const char *GBS_scan_arb_tcp_param P_((const char *ipPort, const char *wantedParam));
+const char *GBS_read_arb_tcp P_((const char *env));
+const char *const *GBS_get_arb_tcp_entries P_((const char *matching));
 
 #ifdef __cplusplus
 }
