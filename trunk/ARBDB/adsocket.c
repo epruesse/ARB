@@ -414,7 +414,7 @@ struct gbcmc_comm *gbcmc_open(const char *path)
         if (link->unix_name) free(link->unix_name); /* @@@ */
         free((char *)link);
         if(*err){
-            GB_internal_error("ARB_DB_CLIENT_OPEN");
+            GB_internal_error(GBS_global_string("ARB_DB_CLIENT_OPEN\n(Reason: %s)", err));
         }
         return 0;
     }
