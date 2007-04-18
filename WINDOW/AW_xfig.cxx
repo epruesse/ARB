@@ -16,6 +16,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.9  2007/04/18 22:00:33  westram
+ * - fixed undefined behavior in AW_xfig::print
+ *
  * Revision 1.8  2007/03/29 16:53:43  westram
  * - use both font dimensions to calculate scaling factor
  * - added function calc_scaling() and removed dup-code
@@ -562,26 +565,31 @@ void AW_xfig::print(AW_device *device)
     struct AW_xfig_text *xtext;
     for (xtext = text; xtext; xtext=xtext->next){
         char *str = xtext->text;
-        int   x   = xtext->x;
-        int   y   = xtext->y;
 
-        if (str[1] == ':') {
-            if (str[0] == 'Y') {
-                y   += (ws.b - ws.t)- size_y;
-                str += 2;
-            }
-            else if (str[0] == 'X') {
-                x   += (ws.r - ws.l)- size_x;
-                str += 2;
-            }
-        }
-        else if (str[2] == ':' && str[0] == 'X' && str[1] == 'Y') {
-            x   += (ws.r - ws.l)- size_x;
-            y   += (ws.b - ws.t)- size_y;
-            str += 3;
-        }
+        if (str[0]) {
+            int   x   = xtext->x;
+            int   y   = xtext->y;
 
-        device->text(xtext->gc,str,(AW_pos)x,(AW_pos)y,(AW_pos)xtext->center*.5,-1,0,0);        // filter
+            if (str[1]) {
+                if (str[1] == ':') {
+                    if (str[0] == 'Y') {
+                        y   += (ws.b - ws.t)- size_y;
+                        str += 2;
+                    }
+                    else if (str[0] == 'X') {
+                        x   += (ws.r - ws.l)- size_x;
+                        str += 2;
+                    }
+                }
+                else if (str[2] == ':' && str[0] == 'X' && str[1] == 'Y') {
+                    x   += (ws.r - ws.l)- size_x;
+                    y   += (ws.b - ws.t)- size_y;
+                    str += 3;
+                }
+            }
+
+            device->text(xtext->gc,str,(AW_pos)x,(AW_pos)y,(AW_pos)xtext->center*.5,-1,0,0);        // filter
+        }
     }
 
     struct AW_xfig_line *xline;
