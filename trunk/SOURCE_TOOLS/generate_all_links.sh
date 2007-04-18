@@ -287,6 +287,7 @@ arbdb_symlink adsort.c &&
 arbdb_symlink adstring.c &&
 arbdb_symlink adsystem.c &&
 arbdb_symlink adtables.c &&
+arbdb_symlink adtcp.c &&
 arbdb_symlink adtools.c &&
 arbdb_symlink adtune.c &&
 arbdb_symlink adtune.h &&
