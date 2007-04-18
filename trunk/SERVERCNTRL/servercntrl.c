@@ -18,12 +18,12 @@ struct gl_struct {
 
 GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
 {
-    char       *tcp_id;
+    const char *tcp_id;
     const char *server;
     const char *serverparams = 0;
     char        command[1024];
 
-    if (!(tcp_id = (char *) GBS_read_arb_tcp(arb_tcp_env))) {
+    if (!(tcp_id = GBS_read_arb_tcp(arb_tcp_env))) {
         return GB_export_error("Entry '%s' in $(ARBHOME)/lib/arb_tcp.dat not found", arb_tcp_env);
     }
 
@@ -77,7 +77,6 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
         free(host);
         if (do_sleep) sleep(5); 
     }
-    free(tcp_id);
     return 0;
 }
 
@@ -102,14 +101,14 @@ static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, GBDATA *gbmain, con
 
 GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, GBDATA *gbmain) {
     GB_ERROR    error       = 0;
-    char       *tcp_id      = GBS_read_arb_tcp(arb_tcp_env);
+    const char *tcp_id      = GBS_read_arb_tcp(arb_tcp_env);
     const char *arb_tcp_dat = "$(ARBHOME)/lib/arb_tcp.dat";
 
     if (!tcp_id) {
         error = GBS_global_string("Entry '%s' not found in %s", arb_tcp_env, arb_tcp_dat);
     }
     else {
-        char *file = GBS_scan_arb_tcp_param(tcp_id, "-d"); // find parameter behind '-d'
+        const char *file = GBS_scan_arb_tcp_param(tcp_id, "-d"); // find parameter behind '-d'
 
         if (!file) {
             error = GBS_global_string("Parameter -d missing for entry '%s' in %s", arb_tcp_env, arb_tcp_dat);
@@ -175,11 +174,8 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
                 }
             }
         }
-
-        free(file);
     }
 
-    free(tcp_id);
     return error;
 }
 
