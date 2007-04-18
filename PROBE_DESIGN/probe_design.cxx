@@ -216,7 +216,7 @@ int init_local_com_struct()
     return 0;
 }
 
-char *probe_pt_look_for_server(AW_root *root)
+static const char *probe_pt_look_for_server(AW_root *root)
 {
     char choice[256];
     sprintf(choice, "ARB_PT_SERVER%li", root->awar(AWAR_PT_SERVER)->read_int());
@@ -689,7 +689,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         }
 
         if (!error) {
-            char *servername = probe_pt_look_for_server(root);
+            const char *servername = probe_pt_look_for_server(root);
             if (!servername) error = GB_get_error();
 
             if (!error) {
@@ -708,7 +708,6 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                 }
 
                 pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
-                free(servername);
             }
         }
 
@@ -1772,16 +1771,18 @@ void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
 void pd_query_pt_server(AW_window *aww)
 {
     AW_root *awr = aww->get_root();
-    char *server;
-    char pt_server[256];
+    char     pt_server[256];
     sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
-    server = GBS_read_arb_tcp(pt_server);
-    char *ssh = 0;
+
+    const char *server = GBS_read_arb_tcp(pt_server);
+    char       *ssh    = 0;
+    
     if ( server[0] && strchr(server+1,':') ) {
         strchr(server+1,':') [0] = 0;
         ssh = (char *)calloc(1, 4+10+strlen(server) );
         sprintf(ssh,"ssh %s ",server);
-    }else{
+    }
+    else {
         ssh = strdup("");
     }
     void *strstruct = GBS_stropen(1024);
@@ -1839,8 +1840,8 @@ void pd_export_pt_server(AW_window *aww)
         aw_status("Search server to kill");
         arb_look_and_kill_server(AISC_MAGIC_NUMBER,pt_server);
 
-        char *ipPort = GBS_read_arb_tcp(pt_server);
-        char *file   = GBS_scan_arb_tcp_param(ipPort, "-d");
+        const char *ipPort = GBS_read_arb_tcp(pt_server);
+        const char *file   = GBS_scan_arb_tcp_param(ipPort, "-d");
 
         aw_status("Exporting the database");
         {
@@ -1884,9 +1885,6 @@ void pd_export_pt_server(AW_window *aww)
             error = arb_start_server(pt_server,gb_main, 1);
         }
         aw_closestatus();
-
-        free(file);
-        free(ipPort);
     }
     if (error) aw_message(error);
 }
