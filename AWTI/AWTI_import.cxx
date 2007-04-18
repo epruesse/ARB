@@ -19,7 +19,7 @@
 #include <awt_changekey.hxx>
 #include <awt_sel_boxes.hxx>
 #include <GEN.hxx>
-#include <GenomeImport.h>
+#include <GAGenomImport.h>
 #include <AW_rename.hxx>
 #include <awti_import.hxx>
 #include <awti_imp_local.hxx>
@@ -857,7 +857,8 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
 
                     GB_begin_transaction(GB_MAIN);
 
-                    error_this_file = GI_importGenomeFile(gb_species_data, fnames[count], ali_name, und_species);
+                    // error_this_file = GI_importGenomeFile(gb_species_data, fnames[count], ali_name, und_species);
+                    error_this_file = GI_importGenomeFile(gb_species_data, fnames[count], ali_name);
 
                     if (!error_this_file) {
                         GB_commit_transaction(GB_MAIN);
