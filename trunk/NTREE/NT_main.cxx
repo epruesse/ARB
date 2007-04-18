@@ -388,7 +388,7 @@ void nt_intro_start_import(AW_window *aws)
     aws->hide();
     aws->get_root()->awar_string( AWAR_DB_PATH )->write_string( "noname.arb");
     aws->get_root()->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // Default toggle  in window  "Create&import" is Non-Genom
-    gb_main = open_AWTC_import_window(aws->get_root(),"",1,(AW_RCB)main3,0,0);
+    gb_main = open_AWTC_import_window(aws->get_root(), "", true, 0, (AW_RCB)main3, 0, 0);
 }
 
 AW_window *nt_create_intro_window(AW_root *awr)
@@ -511,10 +511,12 @@ int main(int argc, char **argv)
 
     NT_createConcatenationAwars(aw_root, aw_default); // creating AWARS for concatenation and merge simlar species function
 
-    if (argc==3) {      // looks like merge
-        MG_create_all_awars(aw_root,aw_default,argv[1],argv[2]);
-        nt_intro_start_merge(0,aw_root);
-        aw_root->main_loop();
+    if (argc==3) {              // looks like merge
+        if (argv[1][0] != '-') { // not if first argument is a switch 
+            MG_create_all_awars(aw_root,aw_default,argv[1],argv[2]);
+            nt_intro_start_merge(0,aw_root);
+            aw_root->main_loop();
+        }
     }
 
     bool  abort            = false;
@@ -543,6 +545,7 @@ int main(int argc, char **argv)
                     ":                  => start ARB_NTREE and connect to existing db_server\n"
                     "db1.arb db2.arb    => merge databases db1.arb and db2.arb\n"
                     "-export            => connect to existing ARB server and export database to noname.arb\n"
+                    "-import file       => import 'file' into new database\n"
                     "w/o arguments      => start database browser\n"
                     "\n"
                     );
@@ -566,8 +569,17 @@ int main(int argc, char **argv)
             aw_root->main_loop();
         }
 
-        db_server = argv[1];
-        if (GB_ERROR load_file_err = GBT_check_arb_file(db_server)) {
+        bool run_importer = false;
+        if (strcmp(argv[1], "-import") == 0) {
+            argv++;
+            run_importer = true;
+        }
+
+        db_server              = argv[1];
+        GB_ERROR load_file_err = 0;
+        if (!run_importer) load_file_err = GBT_check_arb_file(db_server);
+
+        if (load_file_err) {
             int   answer    = -1;
             char *full_path = AWT_unfold_path(db_server);
 
@@ -598,9 +610,7 @@ int main(int argc, char **argv)
                     break;
                 }
                 case 1: {        // Start converter
-                    aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE);
-                    gb_main = open_AWTC_import_window(aw_root,db_server, 1,(AW_RCB)main3,0,0);
-                    aw_root->main_loop();
+                    run_importer =  true;
                     break;
                 }
                 case 2: {        // Browse
@@ -631,6 +641,12 @@ int main(int argc, char **argv)
                 }
             }
             free(full_path);
+        }
+
+        if (run_importer) {
+            aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE);
+            gb_main = open_AWTC_import_window(aw_root, db_server, true, 0, (AW_RCB)main3, 0, 0);
+            aw_root->main_loop();
         }
     }
 
