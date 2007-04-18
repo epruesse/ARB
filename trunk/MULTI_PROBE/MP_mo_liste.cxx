@@ -31,20 +31,21 @@ MO_Liste::~MO_Liste()
 
 void MO_Liste::get_all_species()
 {
-    char            *servername = NULL, *match_name = NULL;
-    char            toksep[2];
-    char            *probe = NULL;
-    char            *locs_error;
-    bytestring      bs;
-    int         i=0;
-    long        j=0, nr_of_species;
+    const char *servername = NULL;
+    char       *match_name = NULL;
+    char        toksep[2];
+    char       *probe      = NULL;
+    char       *locs_error;
+    bytestring  bs;
+    int         i          = 0;
+    long        j          = 0, nr_of_species;
 
-    if( !(servername=(char *)MP_probe_pt_look_for_server()) ){
+    if( !(servername=MP_probe_pt_look_for_server()) ){
         return;
     }
 
     mp_pd_gl.link = (aisc_com *)aisc_open(servername, &mp_pd_gl.com,AISC_MAGIC_NUMBER);
-    free (servername); servername = 0;
+    servername = 0;
 
     if (!mp_pd_gl.link) {
         aw_message ("Cannot contact Probe bank server ");
