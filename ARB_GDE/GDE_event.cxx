@@ -192,19 +192,24 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
             aw_message(GBS_global_string("Warning: sequence type of species '%s' changed",sequ->short_name));
         }
 
-        if(sequ->tmatrix)
-            for(long j=0;j<sequ->seqlen;j++)
-                sequ->sequence[j]=(char)sequ->tmatrix[sequ->sequence[j]];
-        char *savename=GBS_string_2_key(sequ->short_name);
+        if(sequ->tmatrix) {
+            for(long j=0;j<sequ->seqlen;j++) {
+                sequ->sequence[j] = (char)sequ->tmatrix[sequ->sequence[j]];
+            }
+        }
+
+        char *savename   = GBS_string_2_key(sequ->short_name);
         sequ->gb_species = 0;
-        if(!issame)  /* save as extended */
+        
+        if (!issame)            /* save as extended */
         {
 
             GBDATA *gb_extended =   GBT_create_SAI(gb_main,savename);
             sequ->gb_species=gb_extended;
             GBDATA *gb_data = GBT_add_data(gb_extended, align,"data", GB_STRING);
             error = GBT_write_sequence(gb_data,align,maxalignlen,(char *)sequ->sequence);
-        }else /* save as sequence */
+        }
+        else /* save as sequence */
         {
             GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
             GBDATA *gb_species;
@@ -228,10 +233,10 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
                                                     savename);
                 if (!load_all) {
                     select_mode = aw_message(msg,
-                                             "delete existing,"
-                                             "skip,"
-                                             "reimport sequence,"
-                                             "reimport all"
+                                             "delete existing," // 0
+                                             "skip," // 1
+                                             "reimport sequence," // 2
+                                             "reimport all" // 3
                                              );
 
                     if (select_mode == 3) { // load all sequences
@@ -262,8 +267,21 @@ void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
                 gb_species = GBT_create_species_rel_species_data(gb_species_data, savename);
             }
             if (!gb_species) continue;
-            sequ->gb_species=gb_species;
-            GBDATA *gb_data = GBT_add_data(gb_species, align,"data", GB_STRING);
+            sequ->gb_species = gb_species;
+
+            GBDATA *gb_old_data = GBT_read_sequence(gb_species, align);
+            GBDATA *gb_data     = GBT_add_data(gb_species, align,"data", GB_STRING);
+
+            if (gb_old_data) { // we already have data -> compare checksums
+                const char *old_seq      = GB_read_char_pntr(gb_old_data);
+                long        old_checksum = GBS_checksum(old_seq, 1, "-.");
+                long        new_checksum = GBS_checksum((char*)sequ->sequence, 1, "-.");
+
+                if (old_checksum != new_checksum) {
+                    aw_message(GBS_global_string("Warning: Sequence checksum for '%s' differs", savename));
+                }
+            }
+
             error = GBT_write_sequence(gb_data,align,maxalignlen,(char *)sequ->sequence);
             GB_pop_my_security(gb_main);
 
