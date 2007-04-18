@@ -77,7 +77,7 @@ static int init_local_com_struct(struct gl_struct& pd_gl)
 //  --------------------------------------------------------------------------------------
 //      static char *probe_pt_look_for_server(const char *servername, GB_ERROR& error)
 //  --------------------------------------------------------------------------------------
-static char *probe_pt_look_for_server(GBDATA *gb_main, const char *servername, GB_ERROR& error)
+static const char *probe_pt_look_for_server(GBDATA *gb_main, const char *servername, GB_ERROR& error)
 {
     int serverid = -1;
 
