@@ -245,6 +245,17 @@ adtables.o: arbdb.h
 adtables.o: arbdbt.h
 adtables.o: $(ARBHOME)/INCLUDE/arb_assert.h
 
+adtcp.o: ad_lpro.h
+adtcp.o: ad_prot.h
+adtcp.o: ad_t_lpro.h
+adtcp.o: ad_t_prot.h
+adtcp.o: adlmacros.h
+adtcp.o: adlocal.h
+adtcp.o: adtune.h
+adtcp.o: arbdb.h
+adtcp.o: arbdbt.h
+adtcp.o: $(ARBHOME)/INCLUDE/arb_assert.h
+
 adTest.o: ad_lpro.h
 adTest.o: ad_prot.h
 adTest.o: adlmacros.h
