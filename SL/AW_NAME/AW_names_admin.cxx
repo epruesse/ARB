@@ -50,7 +50,7 @@ void awtc_remove_arb_acc(AW_window *aws, AW_CL cl_gb_main){
     free(path);
 }
 
-static void addid_changed_cb(AW_root *awr, AW_CL cl_gb_main) {
+static void addid_changed_cb(AW_root *, AW_CL cl_gb_main) {
     GBDATA   *gb_main = (GBDATA*)cl_gb_main;
     GB_ERROR  error   = AW_test_nameserver(gb_main);
 
