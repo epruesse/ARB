@@ -302,6 +302,8 @@ void gb_testDB P_((GBDATA *gbd));
 
 /* adGene.c */
 
+/* adtcp.c */
+
 #ifdef __cplusplus
 }
 #endif
