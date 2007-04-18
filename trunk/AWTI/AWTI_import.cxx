@@ -19,7 +19,7 @@
 #include <awt_changekey.hxx>
 #include <awt_sel_boxes.hxx>
 #include <GEN.hxx>
-#include <GAGenomImport.h>
+#include <GenomeImport.h>
 #include <AW_rename.hxx>
 #include <awti_import.hxx>
 #include <awti_imp_local.hxx>
@@ -839,6 +839,12 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
             else {
                 int successfull_imports = 0;
                 int failed_imports      = 0;
+                int count;
+
+                for (count = 0; fnames[count]; ++count) ; // count filenames
+
+                GBDATA             *gb_species_data = GB_search(GB_MAIN, "species_data", GB_CREATE_CONTAINER);
+                UniqueNameDetector  und_species(gb_species_data, count*10);
 
                 // close the above transaction and do each importfile in separate transaction
                 // to avoid that all imports are undone by transaction abort in case of error
@@ -846,22 +852,12 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
 
                 aw_openstatus("Reading input files");
 
-                for (int count = 0; !error && fnames[count]; ++count) {
+                for (count = 0; !error && fnames[count]; ++count) {
                     GB_ERROR error_this_file =  0;
 
                     GB_begin_transaction(GB_MAIN);
-                    aw_status(GBS_global_string("Reading %s", fnames[count]));
-                    GB_warning("Trying to import: '%s' ", fnames[count]);
-#if defined(DEBUG)
-                    printf("Reading '%s' ...\n", fnames[count]);
-#endif // DEBUG
 
-                    try {
-                        error_this_file = GI_importGenomeFile(GB_MAIN,fnames[count], ali_name);
-                    }
-                    catch (...) {
-                        error_this_file = GB_export_error("Error: %s not imported (Unknown exception occurred)", fnames[count]);
-                    }
+                    error_this_file = GI_importGenomeFile(gb_species_data, fnames[count], ali_name, und_species);
 
                     if (!error_this_file) {
                         GB_commit_transaction(GB_MAIN);
@@ -869,7 +865,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                         successfull_imports++;
                     }
                     else { // error occurred during import
-                        error_this_file = GBS_global_string("'%s' not imported (Reason: %s)", fnames[count], error_this_file);
+                        error_this_file = GBS_global_string("'%s' not imported\nReason: %s", fnames[count], error_this_file);
                         GB_warning("Import error: %s", error_this_file);
                         GB_abort_transaction(GB_MAIN);
                         failed_imports++;
@@ -961,7 +957,10 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                        "Generate new short names (recommended),Use found names")==0)
         {
             aw_status("Pass 3: Generate unique names");
-            error = AWTC_pars_names(GB_MAIN,1);
+            error = AW_select_nameserver(GB_MAIN, awtcig.gb_other_main);
+            if (!error) {
+                error = AWTC_pars_names(GB_MAIN,1);
+            }
         }
     }
 
@@ -1037,8 +1036,12 @@ static void genom_flag_changed(AW_root *awr) {
     }
 }
 
+static void import_window_close_cb(AW_window *aww) {
+    if (awtcig.doExit) exit(EXIT_SUCCESS);
+    else AW_POPDOWN(aww);
+}
 
-GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, AWTC_RCB(func), AW_CL cd1, AW_CL cd2)
+GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, bool do_exit, GBDATA *gb_main, AWTC_RCB(func), AW_CL cd1, AW_CL cd2)
 {
     static AW_window_simple *aws = 0;
 
@@ -1046,6 +1049,10 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
     awtcig.func = func;
     awtcig.cd1 = cd1;
     awtcig.cd2 = cd2;
+
+    awtcig.gb_other_main = gb_main;
+
+    awtcig.doExit = do_exit; // change/set behavior of CLOSE button
 
     aw_create_selection_box_awars(awr, AWAR_FILE_BASE, ".", "", defname);
     aw_create_selection_box_awars(awr, AWAR_FORM, AWT_path_in_ARBHOME("lib/import"), ".ift", "*");
@@ -1068,8 +1075,7 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, int do_exit, A
     aws->load_xfig("awt/import_db.fig");
 
     aws->at("close");
-    if (do_exit) aws->callback((AW_CB0)exit);
-    else aws->callback(AW_POPDOWN);
+    aws->callback(import_window_close_cb);
     aws->create_button("CLOSE", "CLOSE","C");
 
     aws->at("help");
