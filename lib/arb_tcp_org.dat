@@ -3,8 +3,16 @@
 #	[USER:]SERVER_ID		HOST:IP_NR	[programm	args]
 #	[USER:]SERVER_ID		:SOCKETPATH	[programm	args]
 #		[xxx] means optional field
-#		all $(enviroment_variable) are replaced by the value of the 'enviroment_variable'
-#		if host is localhost than it replaces by `hostname`
+#		all $(enviroment_variable) are replaced by the value of the 'enviroment_variable'.
+#		if host is localhost then it is replaced by the result of `hostname`.
+#
+#   Specifying an username before the SERVER_ID makes the server user specific.
+#
+#   This file is searched at several locations:
+#       - in the current directory
+#       - in the $(HOME) (=home directory of the current user)
+#       - in $(ARBHOME)/lib
+#   The first occurrance found is taken.
 #
 #	Existing SERVER_IDs:
 #
@@ -17,6 +25,8 @@
 #
 #*****************************************************************
 
+# version of arb_tcp.dat
+ARB_TCP_DAT_VERSION 2
 
 #***********	Private Servers (for each user) ******************
 #
@@ -29,7 +39,7 @@ ARB_DB_SERVER		:/tmp/arb_db_$(USER)_$(ARB_PID)
 # If you want to run programs on a workstation cluster, you have to assign your arbdb server
 # and one ip-id for each user. To choose an ip_id choose any number between 1000 and 4000 and
 # examine /etc/services whether this ip-id has not yet been allocated by another programm
-#	smith:ARB_DB_SERVER 	myhost:4011		// socket for smith ('arb' have to be started on 'myhost')
+#	smith:ARB_DB_SERVER 	myhost:4011		// socket for smith ('arb' has to be started on 'myhost')
 #	ludwig:ARB_DB_SERVER 	myhost:4012		// socket for ludwig
 #	ARB_DB_SERVER		:/tmp/arb_db_$(USER)_$(ARB_PID)	// and sockets for all others
 
