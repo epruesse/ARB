@@ -98,17 +98,15 @@ char *ALI_PT::get_extension_member(char *specifiedfamily,    unsigned long numbe
 
 int ALI_PT::open(char *servername,GBDATA *gb_main)
 {
-    char *socketid;
-
     if (arb_look_and_start_server(AISC_MAGIC_NUMBER,servername,gb_main)){
         ali_message ("Cannot contact Probe bank server");
         return -1;
     }
 
-    socketid = GBS_read_arb_tcp(servername);
+    const char *socketid = GBS_read_arb_tcp(servername);
 
     if (!socketid) {
-        ali_message ("Cannot find entry in $ARBHOME/arb_tcp.dat");
+        ali_message (GB_get_error());
         return -1;
     }
 
@@ -124,7 +122,6 @@ int ALI_PT::open(char *servername,GBDATA *gb_main)
         return -1;
     }
 
-    free(socketid);
     return 0;
 }
 

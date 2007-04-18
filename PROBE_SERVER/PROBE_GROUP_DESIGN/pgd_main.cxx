@@ -139,7 +139,7 @@ static GB_ERROR init_path2subtree_hash(GBDATA *pd_father, long expected_no_of_su
     return error;
 }
 
-static char *probe_pt_look_for_server(GBDATA *gb_main,const char *servername,GB_ERROR& error){
+static const char *probe_pt_look_for_server(GBDATA *gb_main,const char *servername,GB_ERROR& error){
     int serverid = -1;
 
     for (int i=0;i<1000;++i){

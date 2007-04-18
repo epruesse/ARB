@@ -65,7 +65,7 @@ void aw_message(const char *error){
     printf("%s\n",error);
 }
 
-char *probe_pt_look_for_server()
+static const char *probe_pt_look_for_server()
 {
     char choice[256];
     sprintf(choice,"ARB_PT_SERVER%i",P.SERVERID);
