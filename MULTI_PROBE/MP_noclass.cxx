@@ -1014,7 +1014,7 @@ int MP_init_local_com_struct()
     return 0;
 }
 
-char* MP_probe_pt_look_for_server()
+const char *MP_probe_pt_look_for_server()
 {
     char choice[256];
     sprintf(choice,"ARB_PT_SERVER%ld",mp_gl_awars.ptserver);
