@@ -270,6 +270,17 @@ adtables.o: arb_assert.h
 adtables.o: arbdb.h
 adtables.o: arbdbt.h
 
+adtcp.o: ad_lpro.h
+adtcp.o: ad_prot.h
+adtcp.o: ad_t_lpro.h
+adtcp.o: ad_t_prot.h
+adtcp.o: adlmacros.h
+adtcp.o: adlocal.h
+adtcp.o: adtune.h
+adtcp.o: arb_assert.h
+adtcp.o: arbdb.h
+adtcp.o: arbdbt.h
+
 adTest.o: ad_lpro.h
 adTest.o: ad_prot.h
 adTest.o: adlmacros.h
