@@ -43,7 +43,7 @@ void NT_import_sequences(AW_window *aww,AW_CL,AW_CL){
 
     awr->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // value is overwritten below
 
-    gb_merge = open_AWTC_import_window(aww->get_root(),"",0,(AW_RCB)nt_seq_load_cb,0,0);
+    gb_merge = open_AWTC_import_window(aww->get_root(), "", false, gb_main, (AW_RCB)nt_seq_load_cb, 0, 0);
 
     // change awar values (import window just opened!)
 
