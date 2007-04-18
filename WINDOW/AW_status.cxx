@@ -444,18 +444,43 @@ static void aw_insert_message_in_tmp_message_delayed(const char *message) {
         aw_stg.lines[i-1] = aw_stg.lines[i];
     };
 
-#if 1
-    time_t     t  = time(0);
-    struct tm *lt = localtime(&t);
+    time_t      t    = time(0);
+    struct tm  *lt   = localtime(&t);
+    const char *lf   = strchr(message, '\n');
+    char       *copy = 0;
+
+    if (lf) { // contains linefeeds
+        const int indentation = 10;
+        int       count       = 1;
+
+        while (lf) { lf = strchr(lf+1, '\n'); ++count; }
+
+        int newsize = strlen(message)+count*indentation+1;
+        copy        = (char*)malloc(newsize);
+
+        lf       = strchr(message, '\n');
+        char *cp = copy;
+        while (lf) {
+            int len  = lf-message;
+            memcpy(cp, message, len+1);
+            cp      += len+1;
+            memset(cp, ' ', indentation);
+            cp      += indentation;
+
+            message = lf+1;
+            lf      = strchr(message, '\n');
+        }
+
+        strcpy(cp, message);
+
+        message = copy;
+    }
 
     aw_stg.lines[AW_MESSAGE_LINES-1] = GBS_global_string_copy("%02i:%02i.%02i  %s",
                                                               lt->tm_hour, lt->tm_min, lt->tm_sec,
                                                               message);
     aw_stg.last_message_time         = t;
-#else
-    aw_stg.lines[AW_MESSAGE_LINES-1] = strdup(message);
-    aw_stg.last_message_time         = time(0);
-#endif
+    free(copy);
     // aw_stg.line_cnt++;
 
     aw_stg.need_refresh = true;
