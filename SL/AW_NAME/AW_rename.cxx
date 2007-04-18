@@ -17,13 +17,109 @@
 #include <servercntrl.h>
 #include <client.h>
 
-const char *AW_get_nameserver_addid(GBDATA *gb_main) {
+static const char *get_addid(GBDATA *gb_main) {
     GB_transaction ta(gb_main);
     GBDATA *gb_addid = GB_search(gb_main, AWAR_NAMESERVER_ADDID, GB_FIND);
-    aw_assert(gb_addid);
-
-    return GB_read_char_pntr(gb_addid);
+    return gb_addid ? GB_read_char_pntr(gb_addid) : 0;
 }
+
+static GB_ERROR set_addid(GBDATA *gb_main, const char *addid) {
+    GB_transaction  ta(gb_main);
+    GB_ERROR        error    = 0;
+    GBDATA         *gb_addid = GB_search(gb_main, AWAR_NAMESERVER_ADDID, GB_STRING);
+
+#if defined(DEBUG)
+    printf("set_addid(%s)\n", addid);
+#endif // DEBUG
+
+    if (gb_addid) error = GB_write_string(gb_addid, addid ? addid : "");
+    else error          = GB_get_error();
+
+    return error;
+}
+
+const char *AW_get_nameserver_addid(GBDATA *gb_main) {
+    // return the additional field used for nameserver connection
+    const char *addid = get_addid(gb_main);
+
+    aw_assert(addid); // the current DB has no entry AWAR_NAMESERVER_ADDID! (programmers error)
+    if (!addid) addid = ""; // NDEBUG fallback
+
+    return addid;
+}
+
+GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
+    // if entry AWAR_NAMESERVER_ADDID isnt defined yet, try to detect a reasonable value
+    // from arb_tcp.dat. Ask user if multiple servers are defined.
+    // 
+    // if gb_other_main is defined try to use value from there.
+
+    const char *addid   = get_addid(gb_main);
+    GB_ERROR    error   = 0;
+
+    if (!addid && gb_other_main && gb_other_main != gb_main) {
+        // look whether main DB has a defined addid
+        addid = get_addid(gb_other_main);
+        set_addid(gb_main, addid);
+    }
+
+    if (!addid) {
+        const char * const *nameservers = GBS_get_arb_tcp_entries("ARB_NAME_SERVER*");
+
+        if (!nameservers) {
+            error = GB_get_error();
+        }
+        else {
+            int serverCount = 0;
+
+            for (int c = 0; nameservers[c]; c++) serverCount++;
+
+            if (serverCount == 0) {
+                error = GBS_global_string("No nameserver defined.");
+            }
+            else {
+                char **fieldNames = (char **)malloc(serverCount*sizeof(*fieldNames));
+                for (int c = 0; c<serverCount; c++) {
+                    const char *ipport = GBS_read_arb_tcp(nameservers[c]);
+                    fieldNames[c]      = GB_strdup(GBS_scan_arb_tcp_param(ipport, "-f")); // may return 0
+                }
+
+                if (serverCount == 1) { // exactly 1 server defined -> don't ask
+                    error = set_addid(gb_main, fieldNames[0]);
+                }
+                else { // let the user select which nameserver to use
+                    int         len     = serverCount; // commas+0term
+                    const char *nofield = "None";
+
+                    for (int c = 0; c<serverCount; c++) {
+                        if (fieldNames[c]) len += strlen(fieldNames[c]);
+                        else len += strlen(nofield);
+                    }
+
+                    char *buttons = (char*)malloc(len);
+                    buttons[0]    = 0;
+                    for (int c = 0; c<serverCount; c++) {
+                        if (c) strcat(buttons, ",");
+                        strcat(buttons, fieldNames[c] ? fieldNames[c] : nofield);
+                    }
+
+                    int answer = aw_message("Select if and which additional DB field you want to use",
+                                            buttons, false, "namesadmin.hlp");
+
+                    error = set_addid(gb_main, fieldNames[answer]);
+
+                    free(buttons);
+                }
+                
+                for (int c = 0; c<serverCount; c++) free(fieldNames[c]);
+                free(fieldNames);
+            }
+        }
+    }
+
+    return error;
+}
+
 
 //  -----------------------------------
 //      class NameServerConnection
@@ -119,7 +215,7 @@ public:
             err = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_id, gb_main);
 
             if (!err) {
-                char *ipport = (char *)GBS_read_arb_tcp(server_id);
+                const char *ipport = GBS_read_arb_tcp(server_id);
                 if (!ipport) {
                     err = GB_get_error();
                 }
@@ -133,7 +229,6 @@ public:
                     else {
                         err = expectServerUsesField(add_field);
                     }
-                    free(ipport);
                 }
             }
             free(server_id);
