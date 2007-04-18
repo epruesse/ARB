@@ -58,13 +58,15 @@ struct input_format_struct {
 };
 
 extern struct awtcig_struct {
-    struct input_format_struct *ifo;    // main input format
-    struct input_format_struct *ifo2;   // symlink to input format
-    GBDATA *gb_main;
-    AW_CL   cd1,cd2;
+    struct input_format_struct  *ifo; // main input format
+    struct input_format_struct  *ifo2; // symlink to input format
+    GBDATA                      *gb_main; // import database
+    AW_CL                        cd1,cd2;
     AWTC_RCB(func);
-    char    **filenames;
-    char    **current_file;
-    FILE    *in;
+    char                       **filenames;
+    char                       **current_file;
+    FILE                        *in;
+    bool                         doExit; // whether import window 'close' does exit
+    GBDATA                      *gb_other_main; // main DB 
 } awtcig;
 
