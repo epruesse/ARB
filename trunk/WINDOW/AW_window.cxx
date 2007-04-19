@@ -1587,41 +1587,47 @@ static void create_help_entry(AW_window *aww){
 
 const char *aw_str_2_label(const char *str,AW_window *aww)
 {
-    static char buffer[256];
-    static char *var_value = 0;
-    static char *last_value = 0;
+    static char        buffer[256];
+    static char       *var_value    = 0;
+    static char       *last_value   = 0;
     static const char *last_pointer = 0;
-    if (str == last_pointer && !strcmp(str,last_value)){
-        str = 0;
-    }else{
+
+    if (str == last_pointer && strcmp(str,last_value) == 0) { // same as last
+        str = 0; // return last result
+    }
+    else { 
         free(last_value);
         last_value = strdup(str);
         last_pointer = str;
     }
-    if (!str) {
-        if (var_value) return var_value;
-        return &buffer[0];
+    
+    if (str) {
+        free(var_value);
+        var_value = 0;
+
+        if (str[0] == '#') {
+            const char *arbhome = GB_getenvARBHOME();
+            sprintf(buffer, "%s/lib/pixmaps/%s", arbhome, str+1 );
+        }
+        else {
+            AW_awar *vs;
+            if (strchr(str,'/') && (vs=aww->get_root()->awar_no_error(str))) {
+                int wanted_len = aww->_at->length_of_buttons-2;
+                if (wanted_len<1) wanted_len = 1;
+
+                var_value = (char*)malloc(wanted_len+1);
+                memset(var_value, 'y', wanted_len);
+
+                var_value[wanted_len] = 0;
+            }
+            else {
+                if (strlen(str)<256) sprintf(buffer,"%s",str);
+                else var_value = strdup(str);
+            }
+        }
     }
-    free(var_value); var_value = 0;
-    if (str[0] == '#') {
-        const char *arbhome = GB_getenvARBHOME();
-        sprintf( &buffer[0], "%s/lib/pixmaps/%s", arbhome, str+1 );
-        return &buffer[0];
-    }
-    AW_awar *vs;
-    if (strchr(str,'/') &&
-        (vs=aww->get_root()->awar_no_error(str))){
-        var_value = (char*)malloc(aww->_at->length_of_buttons+1);
-        memset(var_value,'y',aww->_at->length_of_buttons);
-        var_value[aww->_at->length_of_buttons-2] = 0; // @@@ strange! is this correct ?
-        return var_value;
-    }
-    if (strlen(str)<256){
-        sprintf(buffer,"%s",str);
-    }else{
-        var_value = strdup(str);
-    }
-    return str;
+    
+    return var_value ? var_value : buffer;
 }
 
 
