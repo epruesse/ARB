@@ -20,7 +20,7 @@ MACH  = LINUX# Linux g++  and gcc
 LINUX = 1
 ECGS  = 1# use GCC? (always 1 for LINUX)
 
-# ******** Debian GNU/Linux ********
+# ******** Debian GNU/Linux and (K)Ubuntu system ********
 # DEBIAN = 1
 
 # uncomment next line for REDHAT systems
