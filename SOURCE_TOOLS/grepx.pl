@@ -3,7 +3,7 @@
 #                                                                          #
 #   File      : grepx.pl                                                   #
 #   Purpose   : Replacement for grep (used from emacs)                     #
-#   Time-stamp: <Sat Apr/14/2007 13:51 MET Coder@ReallySoft.de>            #
+#   Time-stamp: <Thu Apr/19/2007 10:42 MET Coder@ReallySoft.de>            #
 #                                                                          #
 #   (C) November 2005 by Ralf Westram                                      #
 #                                                                          #
@@ -24,6 +24,8 @@
 # * prints line column information
 # * knows about groups of files belonging together (e.g. *.cxx *.hxx)
 # * knows about special file locations (e.g. emacs lisp code, /usr/include, ...)
+# * able to search complete CVS trees
+# * some ARB specific specials
 #
 # --------------------------------------------------------------------------------
 
@@ -139,8 +141,6 @@ my @normally_searches = ( 'makefile' );
 my @global_always_searches = ( );
 
 # --------------------------------------------------------------------------------
-
-my $self = '~/emacs/bin/grepx';
 
 my $global           = 0;
 my $headers_only     = 0;
