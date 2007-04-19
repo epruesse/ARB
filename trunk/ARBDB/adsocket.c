@@ -255,25 +255,24 @@ void *gbcm_sigio()
 
 GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id)
 {
-    char           *p;
-    char           *mn;
-    char    *to_free = NULL;
-    long             i;
+    const char *p;
+    char       *mn;
+    long        i;
+
     if (!path) {
         return "OPEN_ARB_DB_CLIENT ERROR: missing hostname:socketid";
     }
-    if (!strcmp(path,":")) {
-        to_free = (char *)(path = GBS_read_arb_tcp("ARB_DB_SERVER"));
+    if (strcmp(path,":") == 0) {
+        path = GBS_read_arb_tcp("ARB_DB_SERVER");
         if (!path) return GB_get_error();
     }
-    p = (char *) strchr(path, ':');
+    p = strchr(path, ':');
     if (path[0] == '*' || path[0] == ':'){  /* UNIX MODE */
         if (!p) {
             return GB_export_error("OPEN_ARB_DB_CLIENT ERROR: missing ':' in %s",path);
         }
         *m_name = GB_STRDUP(p+1);
         *id = -1;
-        if (to_free) free(to_free);
         return 0;
     }
     if (!p) {
@@ -287,7 +286,6 @@ GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id)
         return GB_export_error("OPEN_ARB_DB_CLIENT ERROR: socketnumber %li not in [1024..4095]",i);
     }
     *id = i;
-    if (to_free) free(to_free);
     return 0;
 }
 
