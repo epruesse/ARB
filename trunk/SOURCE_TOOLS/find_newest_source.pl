@@ -21,13 +21,56 @@ my @boring_files = (
                     'TAGS',
                    );
 
+my @boring_dirs = ();
+
+my @boring_namematches = (
+                          qr/^\#.*\#$/, # emacs autosaves
+                          qr/^\.\#.*\.[0-9]+\.[0-9]+$/, # old cvs revisions
+                         );
+my @boring_fullmatches = (
+                         );
+
 my $max_print = 1000; # max lines to print
 
 # --------------------------------------------------------------------------------
 
+my $ARBHOME = $ENV{'ARBHOME'};
+if (defined $ARBHOME) {
+  push @boring_extensions, 'genmenu';
+  push @boring_extensions, 'stamp';
+  push @boring_extensions, 'depends';
+  push @boring_extensions, 'last_gcc';
+
+  push @boring_fullmatches, qr/$ARBHOME\/lib\/ARB\.pm$/;
+  push @boring_fullmatches, qr/$ARBHOME\/PERL2ARB\/.*ARB\.(bs|xs|c|3pm)$/;
+  push @boring_fullmatches, qr/$ARBHOME\/PERL2ARB\/(debug|proto)\.h$/;
+  push @boring_fullmatches, qr/$ARBHOME\/PERL2ARB\/Makefile$/;
+  push @boring_fullmatches, qr/$ARBHOME\/TEMPLATES\/arb_build\.h$/;
+  push @boring_fullmatches, qr/$ARBHOME\/HELP_SOURCE\/(date\.xsl|html\.list|_index\.html)$/;
+  push @boring_fullmatches, qr/$ARBHOME\/AISC\/aisc$/;
+  push @boring_fullmatches, qr/$ARBHOME\/AISC_MKPTPS\/aisc_mkpt$/;
+  push @boring_fullmatches, qr/$ARBHOME\/.*\/GEN[CH]\//;
+  push @boring_fullmatches, qr/$ARBHOME\/GDEHELP\/(helpfiles\.lst|ARB_GDEmenus)$/;
+
+  push @boring_dirs, $ARBHOME.'/PROBE_SERVER/bin';
+  push @boring_dirs, $ARBHOME.'/PROBE_SET/bin';
+  push @boring_dirs, $ARBHOME.'/ARB_SOURCE_DOC';
+  push @boring_dirs, $ARBHOME.'/HELP_SOURCE/Xml';
+  push @boring_dirs, $ARBHOME.'/HELP_SOURCE/genhelp';
+  push @boring_dirs, $ARBHOME.'/GDEHELP/HELP_GEN';
+  push @boring_dirs, $ARBHOME.'/GDEHELP/HELP_DOC_GEN';
+  push @boring_dirs, $ARBHOME.'/lib/help';
+  push @boring_dirs, $ARBHOME.'/lib/help_html';
+  push @boring_dirs, $ARBHOME.'/bin';
+}
+
+# --------------------------------------------------------------------------------
+
 my @files = ();
+
 my %boring_extensions = map { $_ => 1; } @boring_extensions;
 my %boring_files = map { $_ => 1;      } @boring_files;
+my %boring_dirs = map { $_ => 1;       } @boring_dirs;
 
 sub scan_tree_recursive($);
 sub scan_tree_recursive($) {
@@ -36,12 +79,14 @@ sub scan_tree_recursive($) {
   opendir(DIR,$dir) || die "can't read directory '$dir'";
   my @subdirs = ();
   foreach (readdir(DIR)) {
-    if ($_ ne '.' and $_ ne '..') { # ignore curr- and up-dir
+    if (not /^[.]+$/o) { # ignore curr- and up-dir
       my $fullname = $dir.'/'.$_;
       if (not -l $fullname) { # ignore links
         if (-d $fullname) {
           if (not ( /^CVS$/ )) {
-            push @subdirs, $fullname;
+            if (not exists $boring_dirs{$fullname}) {
+              push @subdirs, $fullname;
+            }
           }
         }
         else {
@@ -53,12 +98,15 @@ sub scan_tree_recursive($) {
             $skip = 1;
           }
           else {
-            if (/^\#.*\#$/ or # emacs autosave
-                /^\.\#.*\.[0-9]+\.[0-9]+$/ # old cvs revisions
-               )
-              {
-                $skip = 1;
+            my $name = $_;
+          TEST1: foreach (@boring_namematches) {
+              if ($name =~ $_) { $skip = 1; last TEST1; }
+            }
+            if ($skip==0) {
+            TEST2: foreach (@boring_fullmatches) {
+                if ($fullname =~ $_) { $skip = 1; last TEST2; }
               }
+            }
           }
 
           if ($skip==0) { push @files, $fullname; }
@@ -125,7 +173,8 @@ sub readable_age($) {
   if ($age<60) { return $age.'s'; }
   $age = int($age/60); if ($age<60) { return $age.'m'; }
   $age = int($age/60); if ($age<24) { return $age.'h'; }
-  $age = int($age/24); if ($age<30) { return $age.'d'; }
+  $age = int($age/24); if ($age<14) { return $age.'d'; }
+  my $weeks = int($age/7); if ($weeks<9) { return $weeks.'w'; }
   my $months = int($age/30); if ($months<12) { return $months.'M'; }
   my $years = int($age/365);
   return $years.'Y';
