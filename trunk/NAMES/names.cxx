@@ -1120,13 +1120,15 @@ int main(int argc,char **argv)
     /***** try to open com with any other pb server ******/
     if (params->tcp) {
         name = params->tcp;
-    }else{
-        if( !(name=(char *)GBS_read_arb_tcp("ARB_NAME_SERVER")) ){
+    }
+    else {
+        const char *cname = GBS_read_arb_tcp("ARB_NAME_SERVER");
+
+        if (!cname) {
             GB_print_error();
             exit(-1);
-        }else{
-            name=strdup(name);
         }
+        name = strdup(cname);
     }
 
     AN_global.cl_link = (aisc_com *)aisc_open(name, (long *)&AN_global.cl_main,AISC_MAGIC_NUMBER);

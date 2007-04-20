@@ -207,7 +207,7 @@ int main(int argc, char **argv)
 {
     int                i;
     struct Hs_struct  *so;
-     char             *name;
+    const char        *name;
     char              *error;
     char              *aname,*tname;
     const char        *suffix;
@@ -242,7 +242,7 @@ int main(int argc, char **argv)
     }
 
     if (!(name = params->tcp)) {
-        if( !(name=(char *)GBS_read_arb_tcp("ARB_PT_SERVER0")) ){
+        if( !(name=GBS_read_arb_tcp("ARB_PT_SERVER0")) ){
             GB_print_error();
             exit(EXIT_FAILURE);
         }
