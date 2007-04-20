@@ -256,7 +256,7 @@ char *aisc_get_hostname(void){
     return hn;
 }
 
-const char *aisc_get_m_id(char *path, char **m_name, int *id)
+const char *aisc_get_m_id(const char *path, char **m_name, int *id)
 {
     char           *p;
     char           *mn;
@@ -303,7 +303,7 @@ const char *aisc_get_m_id(char *path, char **m_name, int *id)
 }
 
 
-const char *aisc_open_socket(char *path, int delay, int do_connect, int *psocket, char **unix_name) {
+const char *aisc_open_socket(const char *path, int delay, int do_connect, int *psocket, char **unix_name) {
 
     char buffer[128];
     struct in_addr addr;	/* union -> u_long  */
@@ -394,7 +394,7 @@ const char *aisc_open_socket(char *path, int delay, int do_connect, int *psocket
 
 /******************************************* open the server *******************************************/
 
-struct Hs_struct *open_aisc_server(char *path,int timeout,int fork)
+struct Hs_struct *open_aisc_server(const char *path,int timeout,int fork)
 {
     struct Hs_struct *hs;
     static int      so;
