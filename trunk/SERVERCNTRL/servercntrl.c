@@ -19,65 +19,89 @@ struct gl_struct {
 GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
 {
     const char *tcp_id;
-    const char *server;
-    const char *serverparams = 0;
-    char        command[1024];
+    GB_ERROR error = 0;
 
     if (!(tcp_id = GBS_read_arb_tcp(arb_tcp_env))) {
-        return GB_export_error("Entry '%s' in $(ARBHOME)/lib/arb_tcp.dat not found", arb_tcp_env);
-    }
-
-    server = strchr(tcp_id, 0) + 1;
-    {
-        char   *param = strchr(server, 0)+1;
-        size_t  plen  = strlen(param);
-
-        serverparams = param;
-
-        while (plen) {
-            param[plen]  = ' '; /* concatenate with next param */
-            param       += plen+1;
-            plen         = strlen(param);
-        }
-    }
-    /* Note :  changed behavior on 2007/Mar/09 -- ralf
-       serverparams now is one space if nothing defined in arb_tcp.dat
-       (previously was same as 'server' - whyever)
-    */
-
-    if (*tcp_id == ':') {   /* local mode */
-        sprintf(command,"%s %s -T%s &",server, serverparams, tcp_id);
-        if (!gbmain || GBCMC_system(gbmain,command)){
-            system(command);
-        }
-        if (do_sleep) sleep(4);
+        error = GB_export_error("Entry '%s' in $(ARBHOME)/lib/arb_tcp.dat not found", arb_tcp_env);
     }
     else {
-        char *host = strdup(tcp_id);
-        char *p = strchr(host, ':');
-        if (!p) {
-            return GB_export_error("Error: Missing ':' in line '%s' file $(ARBHOME)/lib/arb_tcp.dat", arb_tcp_env);
+        const char *server       = strchr(tcp_id, 0) + 1;
+        char       *serverparams = 0;
+        char       *command      = 0;
+
+        /* concatenate all params behind server
+           Note :  changed behavior on 2007/Mar/09 -- ralf
+           serverparams now is one space if nothing defined in arb_tcp.dat
+           (previously was same as 'server' - most likely a bug)
+        */
+        {
+            const char *param  = strchr(server, 0)+1;
+            size_t      plen   = strlen(param);
+            size_t      alllen = 0;
+
+            while (plen) {
+                param  += plen+1;
+                alllen += plen+1;
+                plen    = strlen(param);
+            }
+
+            serverparams    = (char*)malloc(alllen+1);
+            serverparams[0] = 0; /* needed if no param exists */
+            {
+                char *sp = serverparams;
+
+                param = strchr(server, 0)+1;
+                plen  = strlen(param);
+
+                while (plen) {
+                    memcpy(sp, param, plen);
+                    sp[plen]  = ' ';
+                    sp       += plen+1;
+                    param    += plen+1;
+                    plen      = strlen(param);
+                }
+            }
         }
-        *p = 0;
-        if (GB_host_is_local(host)){
-            sprintf(command,"%s %s -T%s &",server, serverparams, tcp_id);
-#if defined(DEBUG)
-            printf("Contacting local host '%s' (cmd='%s')\n", host, command);
-#endif /* DEBUG */
+
+        if (*tcp_id == ':') {   /* local mode */
+            command = GBS_global_string_copy("%s %s -T%s &",server, serverparams, tcp_id);
+            if (!gbmain || GBCMC_system(gbmain,command)){
+                system(command);
+            }
+            if (do_sleep) sleep(4);
         }
         else {
-            sprintf(command,"ssh %s -n %s %s -T%s &",host, server, serverparams, tcp_id);
+            char *host = strdup(tcp_id);
+            char *p    = strchr(host, ':');
+
+            if (!p) {
+                error = GB_export_error("Error: Missing ':' in line '%s' file $(ARBHOME)/lib/arb_tcp.dat", arb_tcp_env);
+            }
+            else {
+                *p = 0;
+                if (GB_host_is_local(host)){
+                    command = GBS_global_string_copy("%s %s -T%s &",server, serverparams, tcp_id);
 #if defined(DEBUG)
-            printf("Contacting remote host '%s' (cmd='%s')\n", host, command);
+                    printf("Contacting local host '%s' (cmd='%s')\n", host, command);
 #endif /* DEBUG */
+                }
+                else {
+                    command = GBS_global_string_copy("ssh %s -n %s %s -T%s &",host, server, serverparams, tcp_id);
+#if defined(DEBUG)
+                    printf("Contacting remote host '%s' (cmd='%s')\n", host, command);
+#endif /* DEBUG */
+                }
+                if (!gbmain || GBCMC_system(gbmain,command)) {
+                    system(command);
+                }
+                if (do_sleep) sleep(5);
+            }
+            free(host);
         }
-        if (!gbmain || GBCMC_system(gbmain,command)){
-            system(command);
-        }
-        free(host);
-        if (do_sleep) sleep(5); 
+        free(command);
+        free(serverparams);
     }
-    return 0;
+    return error;
 }
 
 static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, GBDATA *gbmain, const char *tcp_id, int magic_number, struct gl_struct *serverctrl, int wait) {
@@ -179,33 +203,31 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
     return error;
 }
 
-GB_ERROR
-arb_look_and_kill_server(int magic_number, char *arb_tcp_env)
+GB_ERROR arb_look_and_kill_server(int magic_number, char *arb_tcp_env)
 {
-    char           *tcp_id;
-    char           *server;
-    char            command[1024];
-    GB_ERROR	error = 0;
+    const char *tcp_id;
+    GB_ERROR    error = 0;
 
-    if (!(tcp_id = (char *) GBS_read_arb_tcp(arb_tcp_env))) {
-        return GB_export_error("Missing line '%s' in $(ARBHOME)/lib/arb_tcp.dat:",arb_tcp_env);
+    if (!(tcp_id = GBS_read_arb_tcp(arb_tcp_env))) {
+        error = GB_export_error("Missing line '%s' in $(ARBHOME)/lib/arb_tcp.dat:",arb_tcp_env);
     }
-    server = tcp_id + strlen(tcp_id) + 1;
+    else {
+        const char *server = strchr(tcp_id, 0)+1;
 
-    glservercntrl.link = (aisc_com *) aisc_open(tcp_id, &glservercntrl.com, magic_number);
-    if (glservercntrl.link) {
-        sprintf(command,
-                "%s -kill -T%s &",
-                server, tcp_id);
-        if (system(command)) {
-            error = GB_export_error("Cannot execute '%s'",command);
+        glservercntrl.link = (aisc_com *) aisc_open(tcp_id, &glservercntrl.com, magic_number);
+        if (glservercntrl.link) {
+            const char *command = GBS_global_string("%s -kill -T%s &", server, tcp_id);
+            /* sprintf(command, "%s -kill -T%s &", server, tcp_id); */
+            if (system(command)) {
+                error = GB_export_error("Cannot execute '%s'",command);
+            }
+            aisc_close(glservercntrl.link);
+            glservercntrl.link = 0;
         }
-        aisc_close(glservercntrl.link);
-        glservercntrl.link = 0;
-    }else{
-        error= GB_export_error("I cannot kill your server because I cannot find it");
+        else {
+            error= GB_export_error("I cannot kill your server because I cannot find it");
+        }
     }
-    free(tcp_id);
     return error;
 }
 
