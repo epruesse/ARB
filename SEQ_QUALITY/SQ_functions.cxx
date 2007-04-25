@@ -470,7 +470,7 @@ GB_ERROR SQ_pass1 ( SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node, A
                 /*calculate the number of strong, weak and no helixes*/
                 {
                     SQ_helix heli_chan ( sequenceLength );
-                    heli_chan.SQ_calc_helix_layout ( rawSequence, gb_main, alignment_name, gb_quality );
+                    heli_chan.SQ_calc_helix_layout ( rawSequence, gb_main, alignment_name, gb_quality, filter );
                 }
 
                 /*calculate consensus sequence*/
@@ -571,7 +571,7 @@ GB_ERROR SQ_pass1_no_tree ( SQ_GroupData* globalData, GBDATA *gb_main, AP_filter
 
                     /*claculate the number of strong, weak and no helixes*/
                     SQ_helix* heli_chan = new SQ_helix ( sequenceLength );
-                    heli_chan->SQ_calc_helix_layout ( rawSequence, gb_main, alignment_name, gb_quality );
+                    heli_chan->SQ_calc_helix_layout ( rawSequence, gb_main, alignment_name, gb_quality, filter);
                     delete heli_chan;
 
                     /*calculate consensus sequence*/
