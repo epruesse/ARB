@@ -27,7 +27,7 @@ class SQ_helix
     public:
         SQ_helix ( int size );
         ~SQ_helix();
-        void SQ_calc_helix_layout ( const char *sequence, GBDATA *gb_main, char *alignment_name, GBDATA *gb_quality );
+        void SQ_calc_helix_layout ( const char *sequence, GBDATA *gb_main, char *alignment_name, GBDATA *gb_quality, AP_filter *filter);
         int  SQ_get_no_helix() const { return count_no_helix; }
         int  SQ_get_weak_helix() const { return count_weak_helix; }
         int  SQ_get_strong_helix() const { return count_strong_helix; }
@@ -79,7 +79,7 @@ SQ_helix::SQ_helix ( int size_ )
 SQ_helix::~SQ_helix() {}
 
 
-void SQ_helix::SQ_calc_helix_layout ( const char *sequence, GBDATA *gb_main, char *alignment_name, GBDATA *gb_quality )
+void SQ_helix::SQ_calc_helix_layout ( const char *sequence, GBDATA *gb_main, char *alignment_name, GBDATA *gb_quality, AP_filter *filter )
 {
     BI_helix& my_helix = getHelix ( gb_main, alignment_name );
 
@@ -92,29 +92,38 @@ void SQ_helix::SQ_calc_helix_layout ( const char *sequence, GBDATA *gb_main, cha
     else
     {
         /*calculate the number of strong, weak and no helixes*/
-        for ( int i = 0; i < size; i++ )
+        for ( int i = 0; i < filter->real_len; i++ )
         {
-            BI_PAIR_TYPE pair_type = my_helix.entries[i].pair_type;
+            int i_seq = filter->filterpos_2_seqpos[i];
+
+            BI_PAIR_TYPE pair_type = my_helix.entries[i_seq].pair_type;
             if ( pair_type == HELIX_PAIR )
             {
-                int j = my_helix.entries[i].pair_pos;
+                int j = my_helix.entries[i_seq].pair_pos;
                 if ( j > i )
                 { // ignore right helix positions
                     char left  = sequence[i];
-                    char right = sequence[j];
-                    int  temp  = my_helix.check_pair ( left, right, pair_type );
 
-                    switch ( temp )
-                    {
-                        case 2:
-                            count_strong_helix++;
-                            break;
-                        case 1:
-                            count_weak_helix++;
-                            break;
-                        case 0:
-                            if ( ! ( ( left == '-' ) && ( right == '-' ) ) ) count_no_helix++;
-                            break;
+                    // TODO: fix this dirty hack...
+                    int k = i;
+                    while((filter->filterpos_2_seqpos[k] < j) && (k < filter->real_len)) {k++;}
+                    if(filter->filterpos_2_seqpos[k] == j) {
+                        char right = sequence[k];
+
+                        int  temp  = my_helix.check_pair ( left, right, pair_type );
+
+                        switch ( temp )
+                        {
+                            case 2:
+                                count_strong_helix++;
+                                break;
+                            case 1:
+                                count_weak_helix++;
+                                break;
+                            case 0:
+                                if ( ! ( ( left == '-' ) && ( right == '-' ) ) ) count_no_helix++;
+                                break;
+                        }
                     }
                 }
             }
