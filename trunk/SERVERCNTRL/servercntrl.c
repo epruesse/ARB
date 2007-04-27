@@ -159,15 +159,17 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
                     free(dir);
                 }
                 else if (strncmp(arb_tcp_env, "ARB_PT_SERVER", 13) == 0) {
-                    error = GBS_global_string("Sorry there is no database for your template '%s' yet\n"
-                                              " To create such a database and it's index file:\n"
-                                              " 1. Start ARB on the whole database you want to use for\n"
-                                              "    probe match / design\n"
+                    const char *nameOnly    = strrchr(file, '/');
+                    if (!nameOnly) nameOnly = file;
+
+                    error = GBS_global_string("PT_server '%s' has not been created yet.\n"
+                                              " To create it follow these steps:\n"
+                                              " 1. Start ARB on the whole database you want to use for probe match/design\n"
                                               " 2. Go to ARB_NT/Probes/PT_SERVER Admin\n"
                                               " 3. Select '%s' and press UPDATE SERVER\n"
-                                              " 4. Wait ( up to hours )\n"
+                                              " 4. Wait (up to hours, depending on your DB size)\n"
                                               " 5. Meanwhile read the help file: PT_SERVER: What Why and How",
-                                              file, file);
+                                              file, nameOnly);
                 }
                 else {
                     error = GBS_global_string("The file '%s' is missing. \nUnable to start %s", file, arb_tcp_env);
@@ -203,7 +205,7 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
     return error;
 }
 
-GB_ERROR arb_look_and_kill_server(int magic_number, char *arb_tcp_env)
+GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env)
 {
     const char *tcp_id;
     GB_ERROR    error = 0;
