@@ -2,7 +2,7 @@
 /*                                                                 */
 /*   File      : adtcp.c                                           */
 /*   Purpose   : arb_tcp.dat handling                              */
-/*   Time-stamp: <Fri Apr/20/2007 17:15 MET Coder@ReallySoft.de>   */
+/*   Time-stamp: <Fri Apr/27/2007 11:52 MET Coder@ReallySoft.de>   */
 /*                                                                 */
 /*   Coded by Ralf Westram (coder@reallysoft.de) in April 2007     */
 /*   Institute of Microbiology (Technical University Munich)       */
@@ -262,13 +262,15 @@ static GB_ERROR load_arb_tcp_dat() {
     return error;
 }
 
-char *GBS_ptserver_id_to_choice(int i, int showBuild) {
+/* char *GBS_ptserver_id_to_choice(int i, int showBuild) { */
+char *GBS_ptserver_id_to_choice(int i) {
     /* Return a readable name for PTserver number 'i'
        if 'showBuild' then show build date as well
     */
     char       *serverID  = GBS_global_string_copy("ARB_PT_SERVER%i", i);
     const char *ipPort    = GBS_read_arb_tcp(serverID);
     char       *result    = 0;
+    int         showBuild = 0;
 
     if (ipPort) {
         const char *file     = GBS_scan_arb_tcp_param(ipPort, "-d");
