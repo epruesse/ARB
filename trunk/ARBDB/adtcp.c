@@ -2,7 +2,7 @@
 /*                                                                 */
 /*   File      : adtcp.c                                           */
 /*   Purpose   : arb_tcp.dat handling                              */
-/*   Time-stamp: <Wed Apr/18/2007 19:43 MET Coder@ReallySoft.de>   */
+/*   Time-stamp: <Fri Apr/20/2007 17:15 MET Coder@ReallySoft.de>   */
 /*                                                                 */
 /*   Coded by Ralf Westram (coder@reallysoft.de) in April 2007     */
 /*   Institute of Microbiology (Technical University Munich)       */
@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <sys/stat.h>
 
 #include "adlocal.h"
@@ -261,28 +262,51 @@ static GB_ERROR load_arb_tcp_dat() {
     return error;
 }
 
-/********************************************************************************************
-            Create an entry representing pt-server 'i'
-            (reads from arb_tcp.dat)
-********************************************************************************************/
-
-char *GBS_ptserver_id_to_choice(int i) {
-    char       *serverID = GBS_global_string_copy("ARB_PT_SERVER%i", i);
-    const char *ipPort   = GBS_read_arb_tcp(serverID);
-    char       *result   = 0;
+char *GBS_ptserver_id_to_choice(int i, int showBuild) {
+    /* Return a readable name for PTserver number 'i'
+       if 'showBuild' then show build date as well
+    */
+    char       *serverID  = GBS_global_string_copy("ARB_PT_SERVER%i", i);
+    const char *ipPort    = GBS_read_arb_tcp(serverID);
+    char       *result    = 0;
 
     if (ipPort) {
         const char *file     = GBS_scan_arb_tcp_param(ipPort, "-d");
         const char *nameOnly = strrchr(file, '/');
-        char       *colon;
 
-        if (nameOnly) nameOnly++;   // position behind '/'
-        else nameOnly = file;       // otherwise show complete file
+        if (nameOnly) nameOnly++;   /* position behind '/' */
+        else nameOnly = file;       /* otherwise show complete file */
 
-        colon = strchr(ipPort, ':');
-        if (colon) *colon = 0; // hide port
+        {
+            char *remote      = GB_strdup(ipPort);
+            char *colon       = strchr(remote, ':');
+            if (colon) *colon = 0; /* hide port */
 
-        result = GBS_global_string_copy("%-8s: %s", ipPort, nameOnly);
+            if (strcmp(remote, "localhost") == 0) { /* hide localhost */
+                result = GB_strdup(nameOnly);
+            }
+            else {
+                result = GBS_global_string_copy("%s: %s", remote, nameOnly);
+            }
+            free(remote);
+        }
+
+
+        if (showBuild) {
+            char        *serverDB = GBS_global_string_copy("%s.pt", file);
+            struct stat  st;
+            if (stat(serverDB, &st) == 0) {
+                char       atime[256];
+                struct tm *tms = localtime(&st.st_mtime);
+                char      *resPlus;
+
+                strftime(atime, 255,"%Y/%m/%d %k:%M", tms);
+                resPlus = GBS_global_string_copy("%s [%s]", result, atime);
+                free(result);
+                result  = resPlus;
+            }
+            free(serverDB);
+        }
     }
     free(serverID);
 
