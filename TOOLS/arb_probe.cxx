@@ -210,7 +210,8 @@ void AP_probe_match_event()
     }
 
     pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
-    free (servername); servername = 0;
+    // free (servername);
+    servername = 0;
 
     if (!pd_gl.link) {
         aw_message ("Cannot contact Probe bank server ");
