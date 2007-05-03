@@ -69,10 +69,10 @@ static const char *probe_pt_look_for_server()
 {
     char choice[256];
     sprintf(choice,"ARB_PT_SERVER%i",P.SERVERID);
-    GB_ERROR error;
-    error = arb_look_and_start_server(AISC_MAGIC_NUMBER,choice,0);
+    
+    GB_ERROR error = arb_look_and_start_server(AISC_MAGIC_NUMBER,choice,0);
     if (error) {
-        aw_message((char *)error);
+        aw_message(error);
         return 0;
     }
     return GBS_read_arb_tcp(choice);
@@ -90,19 +90,17 @@ int probe_design_send_data(T_PT_PDC  pdc) {
 }
 
 void AP_probe_design_event() {
-    char *servername;
-    //    char  buffer[256];
-    T_PT_PDC  pdc;
-    T_PT_TPROBE tprobe;
-    bytestring bs;
-    char *match_info;
+    T_PT_PDC     pdc;
+    T_PT_TPROBE  tprobe;
+    bytestring   bs;
+    char        *match_info;
 
-    if( !(servername=(char *)probe_pt_look_for_server()) ){
-        return;
+    {
+        const char *servername = probe_pt_look_for_server();
+        
+        if (!servername) return;
+        pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
     }
-
-    pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
-    free (servername); servername = 0;
 
     if (!pd_gl.link) {
         aw_message ("Cannot contact Probe bank server ");
@@ -194,24 +192,17 @@ void AP_probe_design_event() {
 
 void AP_probe_match_event()
 {
-    char           *servername;
-    //    char  buffer[256];
-    //    char  result[1024];
     T_PT_PDC        pdc;
     T_PT_MATCHLIST  match_list;
-    //    char *match_info, *match_name;
-    //    int   mark;
     char           *probe = 0;
     char           *locs_error;
 
-
-    if( !(servername=(char *)probe_pt_look_for_server()) ){
-        return;
+    {
+        const char *servername = probe_pt_look_for_server();
+        
+        if (!servername) return;
+        pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
     }
-
-    pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
-    // free (servername);
-    servername = 0;
 
     if (!pd_gl.link) {
         aw_message ("Cannot contact Probe bank server ");
