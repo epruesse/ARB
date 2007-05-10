@@ -306,12 +306,14 @@ GB_ERROR GB_install_pid P_((int mode));
 /* adhash.c */
 long GBS_get_a_prime P_((long above_or_equal_this));
 GB_HASH *GBS_create_hash P_((long user_size, int ignore_case));
+void GBS_optimize_hash P_((GB_HASH *hs));
 char *GBS_hashtab_2_string P_((GB_HASH *hash));
 char *GBS_string_2_hashtab P_((GB_HASH *hash, char *data));
 long GBS_read_hash P_((GB_HASH *hs, const char *key));
 long GBS_write_hash P_((GB_HASH *hs, const char *key, long val));
 long GBS_write_hash_no_strdup P_((GB_HASH *hs, char *key, long val));
 long GBS_incr_hash P_((GB_HASH *hs, const char *key));
+double GBS_hash_mean_access_costs P_((GB_HASH *hs));
 void GBS_free_hash_entries P_((GB_HASH *hs));
 void GBS_free_hash P_((GB_HASH *hs));
 void GBS_clear_hash_statistic_summary P_((const char *id));
