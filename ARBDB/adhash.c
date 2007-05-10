@@ -21,11 +21,11 @@ struct gbs_hash_entry {
     struct gbs_hash_entry *next;
 };
 typedef struct gbs_hash_struct {
-    long size;
-    long nelem;
-    int upper_case;
+    size_t size;
+    size_t nelem;
+    int    upper_case;
 
-    int loop_pos;
+    size_t loop_pos;
     struct gbs_hash_entry *loop_entry;
     struct gbs_hash_entry **entries;
 } gbs_hash;
@@ -260,7 +260,6 @@ long GBS_get_a_prime(long above_or_equal_this) {
         index = index % size;                                                   \
     }
 
-
 GB_HASH *GBS_create_hash(long user_size,int ignore_case) {
     /* Create a hash of size size, this hash is using linked list to avoid collisions,
      *  ignore_case == 0 -> 'a != A'
@@ -273,8 +272,60 @@ GB_HASH *GBS_create_hash(long user_size,int ignore_case) {
     hs->size       = size;
     hs->nelem      = 0;
     hs->upper_case = ignore_case;
-    hs->entries    = (struct gbs_hash_entry **)GB_calloc(sizeof(struct gbs_hash_entry *),(size_t)size);
+    hs->entries    = (struct gbs_hash_entry **)GB_calloc(sizeof(struct gbs_hash_entry *), size);
     return hs;
+}
+
+#if defined(DEBUG)
+static void dump_access(const char *title, GB_HASH *hs, double mean_access) {
+    fprintf(stderr,
+            "%s: size=%u elements=%u mean_access=%.2f hash-speed=%.1f%%\n",
+            title, hs->size, hs->nelem, mean_access, 100.0/mean_access);
+}
+#endif /* DEBUG */
+
+#if defined(DEVEL_RALF)
+#warning maybe call GBS_optimize_hash automatically - but where?
+#endif /* DEVEL_RALF */
+
+void GBS_optimize_hash(GB_HASH *hs) {
+    if (hs->nelem > hs->size*3) { /* hash is overfilled (even full is bad) */
+        size_t new_size = GBS_get_a_prime(hs->nelem*3);
+
+#if defined(DEBUG)
+        dump_access("Optimizing filled hash", hs, GBS_hash_mean_access_costs(hs));
+#endif /* DEBUG */
+
+        if (new_size>hs->size) { // avoid overflow
+            struct gbs_hash_entry **new_entries = GB_calloc(sizeof(struct gbs_hash_entry*), new_size);
+            size_t                  pos;
+
+            for (pos = 0; pos<hs->size; ++pos) {
+                struct gbs_hash_entry *e;
+                struct gbs_hash_entry *next;
+
+                for (e = hs->entries[pos]; e; e = next) {
+                    long new_idx;
+                    next = e->next;
+
+                    if (hs->upper_case) { GB_CALC_HASH_INDEX_TO_UPPER(e->key, new_idx, new_size); }
+                    else { GB_CALC_HASH_INDEX(e->key, new_idx, new_size); }
+
+                    e->next              = new_entries[new_idx];
+                    new_entries[new_idx] = e;
+                }
+            }
+
+            free(hs->entries);
+
+            hs->size    = new_size;
+            hs->entries = new_entries;
+        }
+#if defined(DEBUG)
+        dump_access("Optimized hash        ", hs, GBS_hash_mean_access_costs(hs));
+#endif /* DEBUG */
+
+    }
 }
 
 static void *gbs_save_hash_strstruct = 0;
@@ -363,6 +414,7 @@ long GBS_read_hash(GB_HASH *hs,const char *key)
 
 long GBS_write_hash(GB_HASH *hs,const char *key,long val)
 {
+    /* returns the previous value */
     struct gbs_hash_entry *e;
     long i2;
     unsigned long i;
@@ -460,11 +512,11 @@ long GBS_incr_hash(GB_HASH *hs,const char *key)
             if (!strcmp(e->key,key)) break;
         }
     }
-    if (e){
-
+    if (e) {
         e->val++;
         return e->val;
     }
+    
     e = (struct gbs_hash_entry *)gbm_get_mem(sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
     e->next = hs->entries[i];
     e->key = (char *)GB_STRDUP(key);
@@ -478,15 +530,38 @@ long GBS_incr_hash(GB_HASH *hs,const char *key)
 /* #define DUMP_HASH_ENTRIES */
 #endif /* DEVEL_RALF */
 
+#if defined(DEBUG)
+double GBS_hash_mean_access_costs(GB_HASH *hs) {
+    /* returns the mean access costs of the hash [1.0 .. inf[
+     * 1.0 is optimal
+     * 2.0 means: hash speed is 50% (1/2.0)  
+    */
+    double mean_access = 1.0;
+
+    if (hs->nelem) {
+        int    strcmps_needed = 0;
+        size_t pos;
+
+        for (pos = 0; pos<hs->size; pos++) {
+            int                    strcmps = 1;
+            struct gbs_hash_entry *e;
+
+            for (e = hs->entries[pos]; e; e = e->next) {
+                strcmps_needed += strcmps++;
+            }
+        }
+
+        mean_access = (double)strcmps_needed/hs->nelem;
+    }
+    return mean_access;
+}
+#endif /* DEBUG */
+
 void GBS_free_hash_entries(GB_HASH *hs)
 {
     register long          i;
     register long          e2;
     struct gbs_hash_entry *e, *ee;
-
-#if defined(DEBUG)
-    int strcmps_needed = 0;
-#endif /* DEBUG */
 
     e2 = hs->size;
 
@@ -500,32 +575,23 @@ void GBS_free_hash_entries(GB_HASH *hs)
     }
 #endif /* DUMP_HASH_ENTRIES */
 
-    for (i = 0; i < e2; i++) {
 #if defined(DEBUG)
-        int strcmps = 1;
+    {
+        double mean_access = GBS_hash_mean_access_costs(hs);
+        if (mean_access > 1.5) { // every 2nd access is a collision - increase hash size?
+            dump_access("hash-size-warning", hs, mean_access);
+        }
+    }
 #endif /* DEBUG */
+
+    for (i = 0; i < e2; i++) {
         for (e = hs->entries[i]; e; e = ee) {
             free(e->key);
             ee              = e->next;
             gbm_free_mem((char *)e,sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
-#if defined(DEBUG)
-            strcmps_needed += strcmps++;
-#endif /* DEBUG */
         }
         hs->entries[i] = 0;
     }
-
-#if defined(DEBUG)
-    if (hs->nelem) {
-        double mean_access    = (double)strcmps_needed/hs->nelem;
-        double collision_rate = 1 - 1/mean_access;
-
-        if (collision_rate > 0.3) { // more than 30% collisions - increase hash size?
-            printf("hash-size-warning: size=%li elements=%li mean_access=%.2f collision-rate=%.1f%%\n",
-                   hs->size, hs->nelem, mean_access, collision_rate*100);
-        }
-    }
-#endif /* DEBUG */
 }
 
 void GBS_free_hash(GB_HASH *hs)
@@ -615,7 +681,7 @@ void GBS_print_hash_statistic_summary(const char *id) {
 }
 
 void GBS_calc_hash_statistic(GB_HASH *hs, const char *id, int print) {
-    long   i;
+    size_t i;
     long   queues     = 0;
     long   collisions;
     double fill_ratio = (double)hs->nelem/hs->size;
@@ -630,8 +696,8 @@ void GBS_calc_hash_statistic(GB_HASH *hs, const char *id, int print) {
 
     if (print != 0) {
         printf("Statistic for hash '%s':\n", id);
-        printf("- size       = %li\n", hs->size);
-        printf("- elements   = %li (fill ratio = %4.1f%%)\n", hs->nelem, fill_ratio*100.0);
+        printf("- size       = %u\n", hs->size);
+        printf("- elements   = %u (fill ratio = %4.1f%%)\n", hs->nelem, fill_ratio*100.0);
         printf("- collisions = %li (hash quality = %4.1f%%)\n", collisions, hash_quality*100.0);
     }
 
