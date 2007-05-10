@@ -208,7 +208,7 @@ sub die_usage($) {
       "       Annotates all or one callgrind.out.xxx\n".
       "       Annotations are written to callgrind.annotated.xxx\n".
       "       If 'all' is specified, all callgrind.annotated.xxx files without source get deleted.\n".
-      "       If DIR is give it's used for auto source annotation.\n".
+      "       If DIR is given it's used for auto source annotation.\n".
       "Error: $err\n"
        );
 }
