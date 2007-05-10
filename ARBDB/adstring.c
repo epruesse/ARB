@@ -350,9 +350,10 @@ static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_r
 #if defined(TRACE_BUFFER_USAGE)
     printf("Printed into global buffer #%i ('%s')\n", my_idx, buffer[my_idx]);
 #endif /* TRACE_BUFFER_USAGE */
-    
+
     if (psize == -1 || psize >= GBS_GLOBAL_STRING_SIZE) {
-        ad_assert(0);              // buffer overflow (increase GBS_GLOBAL_STRING_SIZE or use your own buffer)
+        fprintf(stderr, "Internal buffer overflow (psize=%i)\n", psize);
+        ad_assert(0);           // buffer overflow (you better use your own buffer)
         GB_CORE;
     }
 
