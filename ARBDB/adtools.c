@@ -520,29 +520,29 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
     if (!alignment_name && !error) {
         // if all alignments are checked -> use species_name_hash to detect duplicated species and species w/o data
         GBDATA *gb_species;
-        species_name_hash = GBS_create_hash(GBT_get_species_hash_size(Main), 1);
+        long    duplicates = 0;
+        species_name_hash  = GBS_create_hash(GBT_get_species_hash_size(Main), 1);
 
         for (gb_species = GBT_first_species_rel_species_data(gb_sd);
-             gb_species;
+             gb_species && !error;
              gb_species = GBT_next_species(gb_species))
         {
             GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
             if (gb_name) {
                 const char *name  = GB_read_char_pntr(gb_name);
-                long        occur = GBS_read_hash(species_name_hash, name);
-                
-                if (occur>0) {
-                    GB_ERROR prevError = error;
+                long        occur = GBS_read_hash(species_name_hash, name) + 1;
 
-                    error                = GBS_global_string("Detected %li. occurrance of species name '%s'", occur+1, name);
-                    if (prevError) error = GBS_global_string("%s\n%s", prevError, error);
-                    else error           = GBS_global_string("Your database is corrupted!\n%s", error);
-                }
-                GBS_write_hash(species_name_hash, name, occur+1);
+                if (occur>1) duplicates++;
+                GBS_write_hash(species_name_hash, name, occur);
             }
         }
 
-        if (error) error = GBS_global_string("%s\nRename single duplicates manually, delete unwanted instances, save and restart ARB.", error);
+        if (duplicates) {
+            error = GBS_global_string("Database is corrupted:\n"
+                                      "Found %li duplicated species with identical names!\n"
+                                      "Fix the problem, save and restart ARB."
+                                      , duplicates);
+        }
     }
 
     if (!error) {
