@@ -159,6 +159,7 @@ const char *ED4_terminal::resolve_pointer_to_char_pntr(int *str_len) const
     const char *copy_of = 0; // if set, return a copy of this string
 
     gb_type = GB_read_type(gbd);
+#warning temporary workaround - gb_type GB_INT and GB_FLOAT in the switch directive must not be displayed but ignored
     switch (gb_type)
     {
         case GB_STRING:
@@ -185,13 +186,13 @@ const char *ED4_terminal::resolve_pointer_to_char_pntr(int *str_len) const
         case GB_DB:
             copy_of = "GB_DB";
             break;
-        case GB_INT:
+        case GB_INT: // FIXME: temporary Workaround
             copy_of = "GB_INT";
             break;
         case GB_INTS:
             copy_of = "GB_INTS";
             break;
-        case GB_FLOAT:
+        case GB_FLOAT: // FIXME: temporary Workaround
             copy_of = "GB_FLOAT";
             break;
         case GB_FLOATS:
