@@ -21,21 +21,21 @@ DATA {
 @STRUCT, @SKEY, @SKEYC, @SDOCU;
 
 dll_public, ,   ,   (~Vater einer DoubledLinkedList dll~), {
-    @TYPE,         @IDENT, @REF, @ACC, @SAVE, @KEY,   @KEYC, @INIT, @DOCU;
-t_key,         key,    t,   r, , ,       ,  , (~ The key~);
-int,           cnt,    t,   r, , CNT,    0, , (~ Number of elements~);
-long,          hash,   t,   ,  , ,       ,  , (~ Hash Table~);
-dllheader_ext, parent, flt, r, , PARENT, 1, , (~ My Owner~);
-dllheader_ext, last,   flt, r, , LAST,   2, , (~ Pointer to the last element~);
+@TYPE,         @IDENT, @REF, @ACC, @SAVE, @KEY,   @KEYC, @INIT, @DOCU;
+t_key,         key,    t,    r,    ,      ,       ,      ,      (~ The key~);
+int,           cnt,    t,    r,    ,      CNT,    0,     ,      (~ Number of elements~);
+long,          hash,   t,    ,     ,      ,       ,      ,      (~ Hash Table~);
+dllheader_ext, parent, flt,  r,    ,      PARENT, 1,     ,      (~ My Owner~);
+dllheader_ext, last,   flt,  r,    ,      LAST,   2,     ,      (~ Pointer to the last element~);
 };
 
 
 dll_header, COMMON, 0,  (~Der Link Header (sollte Kopf jeder Funktion sein)~), {
-@TYPE,       @IDENT,             @REF, @ACC, @SAVE, @KEY,   @KEYC,  @INIT,  @DOCU;
-t_key,       key,                t,    r,    ,      KEY,    0,  ,   (~ The Key~);
-aisc_string, aisc_get_keystring, %,    r,    ,      KEYSTRING,1,    ,   (~ THE STRING of the KEY ~);
-dll_public,  parent,             ls,   r,    ,      (~~),          2,  ,   (~ Pointer to dll_public~);
-aisc_string, ident,              t,    ,     1,     IDENT,  5,  ,   (~ The ident [not necessary]~);
+@TYPE,       @IDENT,             @REF, @ACC, @SAVE, @KEY,      @KEYC, @INIT, @DOCU;
+t_key,       key,                t,    r,    ,      KEY,       0,     ,      (~ The Key~);
+aisc_string, aisc_get_keystring, %,    r,    ,      KEYSTRING, 1,     ,      (~ THE STRING of the KEY ~);
+dll_public,  parent,             ls,   r,    ,      (~~),      2,     ,      (~ Pointer to dll_public~);
+aisc_string, ident,              t,    ,     1,     IDENT,     5,     ,      (~ The ident [not necessary]~);
 };
 
 
@@ -94,5 +94,6 @@ AN_main, MAIN, 1, (~Die globalen Daten~), SAVEDIRECTION VERTICAL, {
     int,            server_filedate, t,     ,       ,       FILEDATE,   23,     ,       (~The filedate of server_file~);
     int,            dbversion,       t,     ,       1,      DBVERSION,  24,     4,      (~Nameserver database version ~);
     aisc_string,    add_field,       t,     r,      1,      ADD_FIELD,  25,     ,       (~additional field used for identification ~);
+    long,           prefix_hash,     t,     ,       ,       ,           ,       0,      (~prefix hash table~)
     };
 };
