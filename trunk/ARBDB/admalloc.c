@@ -109,8 +109,10 @@ void *GB_calloc(unsigned int nelem, unsigned int elsize)
     return mem;
 }
 
-char *GB_strdup(const char *p)
-{
+
+
+char *GB_strdup(const char *p) {
+    /* does strdup(), but working with NULL */
     if (p) return GB_STRDUP(p);
     return NULL;
 }
@@ -125,6 +127,35 @@ char *GB_strduplen(const char *p, unsigned len) {
         return neu;
     }
     return 0;
+}
+
+char *GB_strpartdup(const char *start, const char *end) {
+    /* strdup of a part of a string
+     * 'end' may point behind end of string -> copy only till zero byte
+     * if 'end'=('start'-1) -> return ""
+     * if 'end'<('start'-1) -> return 0
+     */
+
+    int   len = end-start+1;
+    char *result;
+
+    if (len >= 0) {
+        const char *eos = memchr(start, 0, len);
+
+        if (eos) len = eos-start;
+        result = malloc(len+1);
+        memcpy(result, start, len);
+        result[len] = 0;
+    }
+    else {
+        result = 0;
+    }
+    
+    return result;
+}
+
+char *GB_strndup(const char *start, int len) {
+    return GB_strpartdup(start, start+len-1);
 }
 
 void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, unsigned int elsize)
