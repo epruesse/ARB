@@ -618,6 +618,9 @@ GB_ERROR GB_check_hkey(const char *key)
 
 /*  return 0; */
 
+#if defined(DEVEL_RALF)
+#warning why do GBS_strdup and GB_strdup exist ? 
+#endif /* DEVEL_RALF */
 
 char *GBS_strdup(const char *s){
     if (!s) return NULL;
