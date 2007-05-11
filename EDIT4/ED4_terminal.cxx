@@ -185,8 +185,14 @@ const char *ED4_terminal::resolve_pointer_to_char_pntr(int *str_len) const
         case GB_DB:
             copy_of = "GB_DB";
             break;
+        case GB_INT:
+            copy_of = "GB_INT";
+            break;
         case GB_INTS:
             copy_of = "GB_INTS";
+            break;
+        case GB_FLOAT:
+            copy_of = "GB_FLOAT";
             break;
         case GB_FLOATS:
             copy_of = "GB_FLOATS";
@@ -202,7 +208,7 @@ const char *ED4_terminal::resolve_pointer_to_char_pntr(int *str_len) const
 
         int len    = strlen(copy_of);
         db_pointer = GB_strduplen(copy_of, len);
-        
+
         if (str_len) *str_len = len;
     }
 
@@ -1273,7 +1279,7 @@ ED4_returncode ED4_line_terminal::draw( int /*only_text*/ )     // draws boundin
     device->clear_part(x1, y1+1, x2-x1+1, y2-y1-1, -1);
 #endif // DEBUG
     device->line(ED4_G_STANDARD, x1, y2, x2, y2, -1, 0, 0);
-    
+
     return ED4_R_OK;
 }
 
@@ -1410,7 +1416,7 @@ GB_CSTR ED4_columnStat_terminal::build_probe_match_string(int start_pos, int end
 
 ED4_returncode ED4_columnStat_terminal::draw(int /*only_text*/)
 {
-#warning test drawing of ED4_columnStat_terminal    
+#warning test drawing of ED4_columnStat_terminal
     if (!update_likelihood()) {
         aw_message("Can't calculate likelihood.", "OK");
         return ED4_R_IMPOSSIBLE;
