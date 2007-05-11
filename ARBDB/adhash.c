@@ -289,7 +289,7 @@ static void dump_access(const char *title, GB_HASH *hs, double mean_access) {
 #endif /* DEVEL_RALF */
 
 void GBS_optimize_hash(GB_HASH *hs) {
-    if (hs->nelem > hs->size*3) { /* hash is overfilled (even full is bad) */
+    if (hs->nelem > hs->size) { /* hash is overfilled (even full is bad) */
         size_t new_size = GBS_get_a_prime(hs->nelem*3);
 
 #if defined(DEBUG)
