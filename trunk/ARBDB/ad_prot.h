@@ -364,6 +364,8 @@ GB_ERROR GB_disable_path P_((GBDATA *gbd, const char *path));
 void *GB_calloc P_((unsigned int nelem, unsigned int elsize));
 char *GB_strdup P_((const char *p));
 char *GB_strduplen P_((const char *p, unsigned len));
+char *GB_strpartdup P_((const char *start, const char *end));
+char *GB_strndup P_((const char *start, int len));
 void *GB_recalloc P_((void *ptr, unsigned int oelem, unsigned int nelem, unsigned int elsize));
 void GB_memerr P_((void));
 
