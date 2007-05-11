@@ -316,7 +316,7 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
     // create a unique short name for 'full_name'
     // the result is written into 'new_name' (as malloc-copy)
     // if fails: GB_ERROR!=0 && new_name==0
-    // acc may be 0
+    // acc and addid may be 0
 
     new_name = 0;
     if (!acc) acc = "";
@@ -340,7 +340,7 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
         if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
                       LOCAL_FULL_NAME,  full_name,
                       LOCAL_ACCESSION,  acc,
-                      LOCAL_ADDID,      addid,
+                      LOCAL_ADDID,      addid ? addid : "",
                       LOCAL_ADVICE,     "",
                       0)){
             err = "Connection Problems with the NAME_SERVER";
