@@ -87,6 +87,54 @@ static AN_shorts *lookup_an_shorts(AN_main *main, const char *identifier) {
     return an_shorts;
 }
 
+// ----------------------------------------
+// prefix hash
+
+static size_t an_shorts_elems(AN_shorts *sin) {
+    size_t count = 0;
+    while (sin) {
+        sin = sin->next;
+        count++;
+    }
+    return count;
+}
+
+#define PREFIXLEN 3
+
+static GB_HASH *an_get_prefix_hash() {
+    if (!aisc_main->prefix_hash) {
+        AN_shorts *sin       = aisc_main->shorts1;
+        size_t     elems     = an_shorts_elems(sin);
+        if (elems<100) elems = 100;
+        
+        GB_HASH *hash = GBS_create_hash(2*elems, 1);
+
+        while (sin) {
+            GBS_write_hash_no_strdup(hash, GB_strndup(sin->shrt, PREFIXLEN), (long)sin);
+            sin = sin->next;
+        }
+
+        aisc_main->prefix_hash = (long)hash;
+    }
+    return (GB_HASH*)aisc_main->prefix_hash;
+}
+
+static const char *an_make_prefix(const char *str) {
+    static char buf[] = "xxx";
+
+    buf[0] = str[0];
+    buf[1] = str[1];
+    buf[2] = str[2];
+    
+    return buf;
+}
+
+static AN_shorts *an_find_shrt_prefix(const char *search) {
+    return (AN_shorts*)GBS_read_hash(an_get_prefix_hash(), an_make_prefix(search));
+}
+
+// ----------------------------------------
+
 static void an_add_short(AN_local *locs, const char *new_name,
                          const char *parsed_name, const char *parsed_sym,
                          const char *shrt, const char *acc, const char *add_id)
@@ -97,10 +145,10 @@ static void an_add_short(AN_local *locs, const char *new_name,
     locs = locs;
 
     if (strlen(parsed_sym)){
-        full_name = (char *)calloc(sizeof(char),
-                                   strlen(parsed_name) + strlen(" sym")+1);
+        full_name = (char *)calloc(sizeof(char), strlen(parsed_name) + strlen(" sym")+1);
         sprintf(full_name,"%s sym",parsed_name);
-    }else{
+    }
+    else {
         full_name = strdup(parsed_name);
     }
 
@@ -122,6 +170,10 @@ static void an_add_short(AN_local *locs, const char *new_name,
 
     aisc_link((struct_dllpublic_ext*)&(aisc_main->prevers),(struct_dllheader_ext*)an_revers);
 
+    GB_HASH *phash = an_get_prefix_hash();
+    GBS_write_hash(phash, an_make_prefix(an_shorts->shrt), (long)an_shorts); // add an_shorts to hash
+    GBS_optimize_hash(phash);
+
     aisc_main->touched = 1;
 }
 
@@ -129,6 +181,8 @@ static void an_remove_short(AN_shorts *an_shorts) {
     /* this should only be used to remove illegal entries from name-server.
        normally removing names does make problems - so use it very rarely */
 
+    GBS_write_hash(an_get_prefix_hash(), an_make_prefix(an_shorts->shrt), 0); // delete an_shorts from hash
+    
     AN_revers *an_revers = lookup_an_revers(aisc_main, an_shorts->shrt);
 
     if (an_revers) {
@@ -147,20 +201,6 @@ static void an_remove_short(AN_shorts *an_shorts) {
     free(an_shorts->full_name);
     free(an_shorts->acc);
     free(an_shorts);
-}
-
-
-
-
-static AN_shorts *an_find_shrt(AN_shorts *sin,char *search)
-{
-    while (sin) {
-        if (!an_strnicmp(sin->shrt,search,3)) {
-            return sin;
-        }
-        sin = sin->next;
-    }
-    return 0;
 }
 
 static char *nas_string_2_key(const char *str)
@@ -273,6 +313,7 @@ static char *an_get_short(AN_shorts *shorts, dll_public *parent, const char *ful
     AN_shorts *look;
 
     gb_assert(full);
+    gb_assert(shorts == aisc_main->shorts1); // otherwise prefix_hash does not work!
 
     if (full[0]==0) {
         return strdup("Xxx");
@@ -302,7 +343,7 @@ static char *an_get_short(AN_shorts *shorts, dll_public *parent, const char *ful
     UPPERCASE(shrt[0]);
     shrt[3] = 0;
 
-    look = an_find_shrt(shorts,shrt);
+    look = an_find_shrt_prefix(shrt);
     if (!look) {
         len2   = strlen(full2);
         an_complete_shrt(shrt, len2>=3 ? full2+3 : "");
@@ -318,7 +359,7 @@ static char *an_get_short(AN_shorts *shorts, dll_public *parent, const char *ful
         shrt[1] = full3[p1];
         for (p2=p1+1; p2<len3; p2++) {
             shrt[2] = full3[p2];
-            look = an_find_shrt(shorts, shrt);
+            look = an_find_shrt_prefix(shrt);
             if (!look) {
                 an_complete_shrt(shrt, full3+p2+1);
                 goto found_short;
@@ -333,7 +374,7 @@ static char *an_get_short(AN_shorts *shorts, dll_public *parent, const char *ful
         shrt[1] = full2[p1];
         for (p2=p1+1; p2<len2; p2++) {
             shrt[2] = full2[p2];
-            look = an_find_shrt(shorts, shrt);
+            look = an_find_shrt_prefix(shrt);
             if (!look) {
                 an_complete_shrt(shrt, full2+p2+1);
                 goto found_short;
@@ -347,7 +388,7 @@ static char *an_get_short(AN_shorts *shorts, dll_public *parent, const char *ful
         shrt[1] = full2[p1];
         for (p2=0; p2<=9; p2++) {
             shrt[2] = '0'+p2;
-            look = an_find_shrt(shorts, shrt);
+            look = an_find_shrt_prefix(shrt);
             if (!look) {
                 an_complete_shrt(shrt, full2+p1+1);
                 goto found_short;
@@ -360,7 +401,7 @@ static char *an_get_short(AN_shorts *shorts, dll_public *parent, const char *ful
     for (p1=1; p1<=99; p1++) {
         shrt[1] = '0'+(p1/10);
         shrt[2] = '0'+(p1%10);
-        look = an_find_shrt(shorts, shrt);
+        look = an_find_shrt_prefix(shrt);
         if (!look) {
             an_complete_shrt(shrt, full2+1);
             goto found_short;
@@ -374,7 +415,7 @@ static char *an_get_short(AN_shorts *shorts, dll_public *parent, const char *ful
         for (p2=0; p2<=99; p2++) {
             shrt[1] = '0'+(p2/10);
             shrt[2] = '0'+(p2%10);
-            look = an_find_shrt(shorts, shrt);
+            look = an_find_shrt_prefix(shrt);
             if (!look) {
                 an_complete_shrt(shrt, full2);
                 goto found_short;
@@ -390,7 +431,7 @@ static char *an_get_short(AN_shorts *shorts, dll_public *parent, const char *ful
             shrt[1] = p2;
             for (p3=0; p3<=9; p3++) {
                 shrt[2] = '0'+p3;
-                look = an_find_shrt(shorts, shrt);
+                look = an_find_shrt_prefix(shrt);
                 if (!look) {
                     an_complete_shrt(shrt, full2);
                     goto found_short;
@@ -407,7 +448,7 @@ static char *an_get_short(AN_shorts *shorts, dll_public *parent, const char *ful
             shrt[1] = p2;
             for (p3='a'; p3<='z'; p3++) {
                 shrt[2] = p3;
-                look = an_find_shrt(shorts, shrt);
+                look = an_find_shrt_prefix(shrt);
                 if (!look) {
                     an_complete_shrt(shrt, full2);
                 found_short:
@@ -716,7 +757,7 @@ extern "C" aisc_string get_short(AN_local *locs)
         gb_assert(second_len>=5 && second_len <= 8);
 
         if (lookup_an_revers(aisc_main, test_short)) {
-            if (!nameModHash) nameModHash = GBS_create_hash(1000, 1);
+            if (!nameModHash) nameModHash = GBS_create_hash(100, 1);
 
             char *test_short_dup = strdup(test_short);
             long  count          = GBS_read_hash(nameModHash, test_short);
@@ -776,6 +817,7 @@ extern "C" aisc_string get_short(AN_local *locs)
 
             gb_assert(foundUnused);
             GBS_write_hash(nameModHash, test_short_dup, count);
+            GBS_optimize_hash(nameModHash);
 
             free(test_short_dup);
         }
@@ -859,11 +901,10 @@ static void check_for_case_error(AN_main *main) {
 
     bool case_error_occurred = false;
     int  idents_changed      = 0;
-
     // first check name parts
     for (AN_shorts *shrt = main->shorts1; shrt; ) {
         AN_shorts *next  = shrt->next;
-        AN_shorts *found = an_find_shrt(main->shorts1, shrt->shrt);
+        AN_shorts *found = an_find_shrt_prefix(shrt->shrt);
         if (found != shrt) {
             fprintf(stderr, "- Correcting error in name-database: '%s' equals '%s'\n",
                     found->shrt, shrt->shrt);
@@ -1231,5 +1272,6 @@ int main(int argc,char **argv)
     }
 
     printf("ARB_name_server terminating...\n");
+    if (nameModHash) GBS_free_hash(nameModHash);
     names_server_shutdown(error ? EXIT_FAILURE : EXIT_SUCCESS); // never returns
 }
