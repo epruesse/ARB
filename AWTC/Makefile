@@ -97,3 +97,4 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWTC_submission.o: $(ARBHOME)/INCLUDE/awt.hxx
