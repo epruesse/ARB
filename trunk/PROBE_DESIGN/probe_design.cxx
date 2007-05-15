@@ -216,7 +216,7 @@ int init_local_com_struct()
     return 0;
 }
 
-static const char *probe_pt_look_for_server(AW_root *root)
+static const char *PD_probe_pt_look_for_server(AW_root *root)
 {
     char choice[256];
     sprintf(choice, "ARB_PT_SERVER%li", root->awar(AWAR_PT_SERVER)->read_int());
@@ -408,7 +408,6 @@ int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
 void probe_design_event(AW_window *aww)
 {
     AW_root     *root  = aww->get_root();
-    char        *servername;
     T_PT_PDC     pdc;
     T_PT_TPROBE  tprobe;
     bytestring   bs;
@@ -419,13 +418,16 @@ void probe_design_event(AW_window *aww)
     aw_openstatus("Probe Design");
     aw_status("Search a free running server");
 
-    if( !(servername=(char *)probe_pt_look_for_server(root)) ){
-        aw_closestatus();
-        return;
-    }
+    {
+        const char *servername = PD_probe_pt_look_for_server(root);
+        if (!servername) {
+            aw_closestatus();
+            return;
+        }
 
-    pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
-    free (servername); servername = 0;
+        pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
+        servername = 0;
+    }
 
     if (!pd_gl.link) {
         aw_message ("Cannot contact Probe bank server ");
@@ -689,7 +691,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         }
 
         if (!error) {
-            const char *servername = probe_pt_look_for_server(root);
+            const char *servername = PD_probe_pt_look_for_server(root);
             if (!servername) error = GB_get_error();
 
             if (!error) {
@@ -1896,7 +1898,7 @@ static void pd_export_pt_server(AW_window *aww)
     if (error) aw_message(error);
 }
 
-static void arb_tcp_dat_changed_cb(const char *path, bool fileChanged, bool editorTerminated) {
+static void arb_tcp_dat_changed_cb(const char */*path*/, bool fileChanged, bool /*editorTerminated*/) {
 #if defined(DEBUG) && 0
     printf("File '%s': changed=%i editorTerminated=%i\n", path, int(fileChanged), int(editorTerminated));
 #endif // DEBUG
