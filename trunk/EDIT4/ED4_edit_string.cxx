@@ -519,7 +519,7 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
 
                         // Ctrl+Cursor = move cursor to next end of word (or to end of next word)
 
-                        if (keymod&AW_KEY_CONTROL) {
+                        if (keymod & AW_KEYMODE_CONTROL) {
                             if (adjacent_scr_pos>=0) {
                                 long pos = adjacent_seq_pos;
 
@@ -549,7 +549,7 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
 
                         // ALT/META+Cursor = jump & fetch
 
-                        if (keymod & (AW_KEY_META|AW_KEY_ALT)) {
+                        if (keymod & (AW_KEYMODE_ALT)) {
                             if (is_consensus) { cannot_handle = 1; return 0; }
 
                             if (ADPP_IS_ALIGN_CHARACTER(seq[adjacent_seq_pos])) { // there's a _gap_ next to the cursor -> let's fetch
@@ -903,13 +903,13 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                         }
                         case 'O': { //  for ALT-left
                             keycode = AW_KEY_LEFT;
-                            keymod = AW_KEY_META;
+                            keymod = AW_KEYMODE_ALT;
                             reinterpret_key = 1;
                             break;
                         }
                         case 'P': { // for ALT-right
                             keycode = AW_KEY_RIGHT;
-                            keymod = AW_KEY_META;
+                            keymod = AW_KEYMODE_ALT;
                             reinterpret_key = 1;
                             break;
                         }
