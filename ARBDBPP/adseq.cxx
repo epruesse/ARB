@@ -911,7 +911,7 @@ AD_ERR  *AD_SEQ::command( AW_key_mod keymod, AW_key_code keycode, char key, int 
             }
             nrepeat = 0;
             if (direction>=0) offset = 0; else offset = -1;
-            if (keymod & AW_KEY_CONTROL) {      // push pull
+            if (keymod & AW_KEYMODE_CONTROL) {      // push pull
                 if (ADPP_IS_ALIGN_CHARACTER(seq[cursorpos+offset])){
                     // pull operation
                     h = this->get_next_gap(     cursorpos,-direction);
@@ -923,7 +923,7 @@ AD_ERR  *AD_SEQ::command( AW_key_mod keymod, AW_key_code keycode, char key, int 
                     changed_flag = 1;
                     cursorpos += direction;
                 }
-            }else if (keymod & AW_KEY_ALT) {    // jump fetch
+            }else if (keymod & AW_KEYMODE_ALT) {    // jump fetch
                 if (ADPP_IS_ALIGN_CHARACTER(seq[cursorpos+offset])){
                     // fetch
                     ad_err = fetch(cursorpos,direction);

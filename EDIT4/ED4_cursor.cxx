@@ -1132,7 +1132,7 @@ ED4_returncode ED4_cursor::move_cursor( AW_event *event )	/* up down */
 
     switch (event->keycode) {
         case AW_KEY_UP: {
-            if (event->keymodifier & AW_KEY_CONTROL) {
+            if (event->keymodifier & AW_KEYMODE_CONTROL) {
                 current_position = last_seq_position;
                 bool has_base = terminal_has_base_at_current_position(owner_of_cursor);
 
@@ -1166,7 +1166,7 @@ ED4_returncode ED4_cursor::move_cursor( AW_event *event )	/* up down */
         }
 
         case AW_KEY_DOWN: {
-            if (event->keymodifier & AW_KEY_CONTROL) {
+            if (event->keymodifier & AW_KEYMODE_CONTROL) {
                 current_position = last_seq_position;
                 bool has_base = terminal_has_base_at_current_position(owner_of_cursor);
 
