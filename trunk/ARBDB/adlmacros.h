@@ -194,10 +194,10 @@ inline gb_header_flags& GB_ARRAY_FLAGS(GBCONTAINER *gbc)    { return GB_DATA_LIS
 
 #else
 
-#define GB_KEY_QUARK(gbd)           (GB_DATA_LIST_HEADER(GB_FATHER(gbd)->d)[(gbd)->index].flags.key_quark)
-#define GB_KEY(gbd)                 (GB_MAIN(gbd)->keys[GB_KEY_QUARK(gbd)].key)
-#define GB_TYPE(gbd)                ((int)gbd->flags.type)
-#define GB_TYPE_TS(ts)              ((int)ts->flags.type)
+#define GB_KEY_QUARK(gbd) (GB_DATA_LIST_HEADER(GB_FATHER(gbd)->d)[(gbd)->index].flags.key_quark)
+#define GB_KEY(gbd)       (GB_MAIN(gbd)->keys[GB_KEY_QUARK(gbd)].key)
+#define GB_TYPE(gbd)      ((GB_TYPES)gbd->flags.type) // return type was 'int', changed 11.Mai.07 hopefully w/o harm --ralf
+#define GB_TYPE_TS(ts)    ((GB_TYPES)ts->flags.type)
 
 #define GB_ARRAY_FLAGS(gbd)         (GB_DATA_LIST_HEADER(GB_FATHER(gbd)->d)[(gbd)->index].flags)
 
