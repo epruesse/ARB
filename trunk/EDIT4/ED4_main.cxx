@@ -320,11 +320,6 @@ static void ED4_gap_chars_changed(AW_root *root) {
     ED4_init_is_align_character(gap_chars);
 }
 
-void ED4_create_global_awars(AW_root *root) {
-    root->awar_string(AWAR_ITARGET_STRING, "", gb_main);
-    ED4_create_search_awars(root);
-}
-
 static void ED4_edit_direction_changed(AW_root */*awr*/) {
     ED4_ROOT->temp_ed4w->cursor.redraw();
 
@@ -340,9 +335,40 @@ static void ED4_do_expose(AW_root *) {
     ED4_expose_all_windows();
 }
 
-void ED4_create_all_awars(AW_root *root, const char *config_name) { // cursor awars are created in window constructor
+static void ed4_bind_mainDB_awar_callbacks(AW_root *root) {
+    // callbacks to main DB awars are bound later
+    // (otherwise its easy to crash the editor by clicking around in ARB_NTREE during editor startup)
 
-    ED4_create_global_awars(root);
+    root->awar(AWAR_SET_CURSOR_POSITION)->add_callback(ED4_remote_set_cursor_cb, 0, 0);
+    root->awar(AWAR_SPECIES_NAME)->add_callback(ED4_selected_species_changed_cb);
+    root->awar(AWAR_SAI_NAME)->add_callback(ED4_selected_SAI_changed_cb);
+}
+
+static void ed4_create_mainDB_awars(AW_root *root, const char *config_name) {
+    // WARNING: do not bind callbacks here -> do it in ed4_bind_mainDB_awar_callbacks()
+
+    root->awar_string(AWAR_ITARGET_STRING, "", gb_main);
+
+    root->awar_int(AWAR_CURSOR_POSITION, 1, gb_main);
+    root->awar_int( AWAR_CURSOR_POSITION_LOCAL, 0, gb_main);
+    root->awar_int(AWAR_SET_CURSOR_POSITION, 1, gb_main);
+
+    root->awar_string(AWAR_FIELD_CHOSEN, "", gb_main);
+
+    root->awar_string(AWAR_SPECIES_NAME, "", gb_main);
+    root->awar_string(AWAR_SAI_NAME, "", gb_main);
+    root->awar_string(AWAR_SAI_GLOBAL, "", gb_main);
+    //    root->awar_string(AWAR_SAI_COLOR_STR, "", gb_main); //sai visualization in probe match
+
+    root->awar_string(AWAR_EDIT_CONFIGURATION, config_name, gb_main);
+
+    ED4_create_search_awars(root);
+}
+
+static void ed4_create_all_awars(AW_root *root, const char *config_name) {
+    // Note: cursor awars are created in window constructor
+
+    ed4_create_mainDB_awars(root, config_name);
     ARB_init_global_awars(root, AW_ROOT_DEFAULT, gb_main);
     
     AWT_create_db_browser_awars(root, AW_ROOT_DEFAULT);
@@ -370,18 +396,6 @@ void ED4_create_all_awars(AW_root *root, const char *config_name) { // cursor aw
     root->awar_int( AWAR_EDIT_TERMINAL_SPACING, 0)->add_target_var(&ED4_ROOT->terminal_add_spacing)->add_callback(ED4_do_expose);
     root->awar_int( AWAR_EDIT_TITLE_MODE, 0);
 
-    root->awar_int(AWAR_CURSOR_POSITION, 1, gb_main);
-    root->awar_int( AWAR_CURSOR_POSITION_LOCAL, 0, gb_main);
-    root->awar_int(AWAR_SET_CURSOR_POSITION, 1, gb_main)->add_callback(ED4_remote_set_cursor_cb, 0, 0);
-
-    root->awar_string(AWAR_FIELD_CHOSEN, "", gb_main);
-
-    root->awar_string(AWAR_SPECIES_NAME, "", gb_main)->add_callback(ED4_selected_species_changed_cb);
-    root->awar_string(AWAR_SAI_NAME, "", gb_main)->add_callback(ED4_selected_SAI_changed_cb);
-    root->awar_string(AWAR_SAI_GLOBAL, "", gb_main);
-    //    root->awar_string(AWAR_SAI_COLOR_STR, "", gb_main); //sai visualization in probe match
-
-    root->awar_string(AWAR_EDIT_CONFIGURATION,config_name,gb_main);
     ed4_changesecurity(root,0);
 
     root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_GAPS,0)->add_callback(ED4_compression_toggle_changed_cb, AW_CL(0), 0);
@@ -539,7 +553,7 @@ int main(int argc,char **argv)
 
     ED4_ROOT->database = new EDB_root_bact;
     ED4_ROOT->init_alignment();
-    ED4_create_all_awars(ED4_ROOT->aw_root, config_name);
+    ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
     ED4_ROOT->st_ml = new_ST_ML(gb_main);
     ED4_ROOT->sequence_colors = new AWT_seq_colors((GBDATA *)ED4_ROOT->aw_root->application_database,(int)ED4_G_SEQUENCES, ED4_refresh_window, 0,0);
@@ -575,9 +589,9 @@ int main(int argc,char **argv)
             break;
     }
 
-    if (err) aw_message(err);
+    if (err) aw_message(err); // write to console
     ED4_ROOT->sequence_colors->aww = ED4_ROOT->create_new_window(); // create first editor window
-    if (err) aw_message(err);
+    if (err) aw_message(err); // write again to status window
 
     {
         int found_config = 0;
@@ -619,6 +633,9 @@ int main(int argc,char **argv)
         }
     }
 
+    // now bind DB depending callbacks
+
+    ed4_bind_mainDB_awar_callbacks(ED4_ROOT->aw_root);
     {
         GB_transaction dummy(gb_main);
         GBDATA *species_container = GB_search(gb_main, "species_data", GB_FIND);
