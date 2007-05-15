@@ -487,7 +487,7 @@ int main(int argc, char **argv)
     unsigned long mtime = GB_time_of_file("$(ARBHOME)/lib/message");
     unsigned long rtime = GB_time_of_file("$(HOME)/.arb_prop/msgtime");
     if (mtime > rtime){
-        GB_edit("${ARBHOME}/lib/message");
+        AWT_edit("${ARBHOME}/lib/message");
         system("touch ${HOME}/.arb_prop/msgtime");
     }
     aw_initstatus();
