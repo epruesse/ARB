@@ -1003,13 +1003,16 @@ void ED4_refresh_window( AW_window *aww, AW_CL cd_called_from_menu, AW_CL /*cd2*
         ED4_ROOT->temp_ed4w = ED4_ROOT->first_window->get_matching_ed4w( aww );
     }
 
-    if (ED4_ROOT->main_manager->update_info.delete_requested) {
-        ED4_ROOT->main_manager->delete_requested_childs();
-    }
+    ED4_main_manager *mainman = ED4_ROOT->main_manager;
+    if (mainman) { // avoids a crash durin startup
+        if (mainman->update_info.delete_requested) {
+            mainman->delete_requested_childs();
+        }
 
-    //    ED4_ROOT->deselect_all();
-    ED4_ROOT->main_manager->update_info.set_clear_at_refresh(1);
-    ED4_ROOT->main_manager->Show(1);
+        //    ED4_ROOT->deselect_all();
+        mainman->update_info.set_clear_at_refresh(1);
+        mainman->Show(1);
+    }
 }
 
 void ED4_set_reference_species( AW_window *aww, AW_CL disable, AW_CL cd2 ){
