@@ -2,7 +2,7 @@
 //                                                                      //
 //   File      : awt_sel_boxes.hxx                                      //
 //   Purpose   :                                                        //
-//   Time-stamp: <Wed May/25/2005 17:49 MET Coder@ReallySoft.de>        //
+//   Time-stamp: <Fri Apr/20/2007 17:57 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in May 2005              //
@@ -31,6 +31,7 @@ void awt_create_selection_list_on_trees(GBDATA *gb_main,AW_window *aws, const ch
 /* Selection list for pt-servers */
 
 void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, AW_BOOL popup);
+void awt_refresh_all_pt_server_selection_lists();
 
 /***********************    Tables Fields       ************************/
 
