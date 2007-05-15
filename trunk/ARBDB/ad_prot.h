@@ -270,7 +270,6 @@ long GB_size_of_FILE P_((FILE *in));
 GB_ULONG GB_time_of_day P_((void));
 long GB_last_saved_clock P_((GBDATA *gb_main));
 GB_ULONG GB_last_saved_time P_((GBDATA *gb_main));
-void GB_edit P_((const char *path));
 void GB_textprint P_((const char *path));
 GB_CSTR GB_getcwd P_((void));
 void GB_xterm P_((void));
@@ -297,7 +296,7 @@ GB_BOOL GBCMS_accept_calls P_((GBDATA *gbd, GB_BOOL wait_extra_time));
 long GB_read_clients P_((GBDATA *gbd));
 GB_BOOL GB_is_server P_((GBDATA *gbd));
 GB_BOOL GB_is_client P_((GBDATA *gbd));
-GBDATA *GBCMC_find P_((GBDATA *gbd, const char *key, const char *str, enum gb_search_types gbs));
+GBDATA *GBCMC_find P_((GBDATA *gbd, const char *key, GB_TYPES type, const char *str, enum gb_search_types gbs));
 int GBCMC_system P_((GBDATA *gbd, const char *ss));
 GB_ERROR GB_tell_server_dont_wait P_((GBDATA *gbd));
 GB_CSTR GBC_get_hostname P_((void));
@@ -335,9 +334,9 @@ char *GB_set_cache_size P_((GBDATA *gbd, long size));
 
 /* adquery.c */
 const char *GB_get_GBDATA_path P_((GBDATA *gbd));
-GBDATA *GB_find_sub_by_quark P_((GBDATA *father, int key_quark, const char *val, GBDATA *after));
-GBDATA *GB_find_sub_sub_by_quark P_((GBDATA *father, const char *key, int sub_key_quark, const char *val, GBDATA *after));
+NOT4PERL GBDATA *GB_find_sub_by_quark P_((GBDATA *father, int key_quark, GB_TYPES type, const char *val, GBDATA *after));
 GBDATA *GB_find P_((GBDATA *gbd, const char *key, const char *str, long gbs));
+NOT4PERL GBDATA *GB_find_int P_((GBDATA *gbd, const char *key, long val, long gbs));
 GBDATA *GB_first P_((GBDATA *father));
 GBDATA *GB_next P_((GBDATA *brother));
 char *GB_first_non_key_char P_((const char *str));
@@ -428,10 +427,12 @@ GBDATA *GEN_first_marked_organism P_((GBDATA *gb_main));
 GBDATA *GEN_next_marked_organism P_((GBDATA *gb_organism));
 
 /* adtcp.c */
-char *GBS_ptserver_id_to_choice P_((int i));
 const char *GBS_scan_arb_tcp_param P_((const char *ipPort, const char *wantedParam));
 const char *GBS_read_arb_tcp P_((const char *env));
 const char *const *GBS_get_arb_tcp_entries P_((const char *matching));
+const char *GBS_ptserver_logname P_((void));
+void GBS_add_ptserver_logentry P_((const char *entry));
+char *GBS_ptserver_id_to_choice P_((int i, int showBuild));
 
 #ifdef __cplusplus
 }

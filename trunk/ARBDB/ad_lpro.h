@@ -156,6 +156,8 @@ long gbcm_write_two P_((int socket, long a, long c));
 long gbcm_read_two P_((int socket, long a, long *b, long *c));
 long gbcm_write_string P_((int socket, const char *key));
 char *gbcm_read_string P_((int socket));
+long gbcm_write_long P_((int socket, long data));
+long gbcm_read_long P_((int socket));
 
 /* adcomm.c */
 void *gbcms_sighup P_((void));
@@ -212,7 +214,7 @@ char *gb_alloc_cache_index P_((GBDATA *gbd, long size));
 /* adquery.c */
 GBDATA *gb_find_by_nr P_((GBDATA *father, int index));
 void gb_init_ctype_table P_((void));
-GBDATA *gb_search P_((GBDATA *gbd, const char *str, long create, int internflag));
+GBDATA *gb_search P_((GBDATA *gbd, const char *str, GB_TYPES create, int internflag));
 GBDATA *gb_search_marked P_((GBCONTAINER *gbc, GBQUARK key_quark, int firstindex));
 void gb_install_command_table P_((GBDATA *gb_main, struct GBL_command_table *table));
 char *gbs_search_second_x P_((const char *str));

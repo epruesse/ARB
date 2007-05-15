@@ -138,6 +138,9 @@ const char *GBT_remote_read_awar P_((GBDATA *gb_main, const char *application, c
 const char *GBT_remote_touch_awar P_((GBDATA *gb_main, const char *application, const char *awar_name));
 NOT4PERL GB_ERROR GBT_get_gene_positions P_((GBDATA *gb_gene, int whichPos, long *pos_begin, long *pos_end));
 char *GBT_read_gene_sequence P_((GBDATA *gb_gene, GB_BOOL use_revComplement));
+char *GB_generate_notification P_((GBDATA *gb_main, void (*cb )(const char *message, void *client_data ), const char *message, void *client_data));
+GB_ERROR GB_remove_last_notification P_((GBDATA *gb_main));
+GB_ERROR GB_notify P_((GBDATA *gb_main, int id, const char *message));
 
 /* adseqcompr.c */
 NOT4PERL GB_ERROR GBT_compress_sequence_tree P_((GBDATA *gb_main, GB_CTREE *tree, const char *ali_name));
