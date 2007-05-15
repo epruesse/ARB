@@ -176,8 +176,14 @@ public:
     void process_events(void);
     AW_ProcessEventType peek_key_event(AW_window *);
 
-    void add_timed_callback               (int ms, void (*f)(class AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
-    void add_timed_callback_never_disabled(int ms, void (*f)(class AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+    void add_timed_callback               (int ms, AW_RCB2 f, AW_CL cd1, AW_CL cd2);
+    void add_timed_callback_never_disabled(int ms, AW_RCB2 f, AW_CL cd1, AW_CL cd2);
+
+    void add_timed_callback               (int ms, AW_RCB1 f, AW_CL cd1) { add_timed_callback               (ms, (AW_RCB2)f, cd1, 0); }
+    void add_timed_callback_never_disabled(int ms, AW_RCB1 f, AW_CL cd1) { add_timed_callback_never_disabled(ms, (AW_RCB2)f, cd1, 0); }
+
+    void add_timed_callback               (int ms, AW_RCB0 f) { add_timed_callback               (ms, (AW_RCB2)f, 0, 0); }
+    void add_timed_callback_never_disabled(int ms, AW_RCB0 f) { add_timed_callback_never_disabled(ms, (AW_RCB2)f, 0, 0); }
 
     void set_focus_callback(void(*f)(class AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); /* any focus callback in any window */
 
