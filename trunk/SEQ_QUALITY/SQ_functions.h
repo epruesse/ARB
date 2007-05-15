@@ -95,7 +95,9 @@ GB_ERROR SQ_mark_species ( GBDATA *gb_main, int condition );
 void SQ_clear_group_dictionary();
 
 
-bool SQ_check_4_zombies ( GBT_TREE *node );
+enum SQ_TREE_ERROR { NONE = 0, ZOMBIE = 1, MISSING_NODE = 2 };
+
+SQ_TREE_ERROR SQ_check_tree_structure ( GBT_TREE *node );
 
 #else
 #error SQ_functions.h included twice
