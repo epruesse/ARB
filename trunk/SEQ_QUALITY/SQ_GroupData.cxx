@@ -33,18 +33,6 @@ SQ_GroupData::SQ_GroupData()
 SQ_GroupData::~SQ_GroupData() { }
 
 
-double SQ_GroupData_RNA::SQ_calc_consensus_deviation ( const char * ) const
-{
-    return 0; // dummy return value
-}
-
-
-double SQ_GroupData_RNA::SQ_calc_consensus_conformity ( const char * ) const
-{
-    return 0; // dummy return value
-}
-
-
 consensus_result SQ_GroupData_RNA::SQ_calc_consensus ( const char *sequence ) const
 {
     consensus_result cr;
@@ -281,20 +269,6 @@ void SQ_GroupData_RNA::SQ_add_sequence ( const char *sequence )
                 break;
         }
     }
-}
-
-
-double SQ_GroupData_PRO::SQ_calc_consensus_deviation ( const char * ) const
-{
-#warning implementation missing
-    return 0; // dummy return value
-}
-
-
-double SQ_GroupData_PRO::SQ_calc_consensus_conformity ( const char * ) const
-{
-#warning implementation missing
-    return 0; // dummy return value
 }
 
 

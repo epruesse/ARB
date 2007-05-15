@@ -58,8 +58,6 @@ class SQ_GroupData
 
         virtual void   SQ_init_consensus ( int size )                              = 0;
         virtual int    SQ_print_on_screen()                                        = 0;
-        virtual double SQ_calc_consensus_deviation ( const char *sequence ) const  = 0;
-        virtual double SQ_calc_consensus_conformity ( const char *sequence ) const = 0;
         virtual consensus_result SQ_calc_consensus ( const char *sequence ) const  = 0;
         virtual void   SQ_add_sequence ( const char *sequence )                    = 0;
         virtual void   SQ_add ( const SQ_GroupData& other )                        = 0;
@@ -155,11 +153,10 @@ class SQ_GroupData_RNA: public SQ_GroupData_Impl<6>
         SQ_GroupData_RNA *clone() const { return new SQ_GroupData_RNA; }
         SQ_GroupData_RNA& operator= ( const SQ_GroupData& other )
         {
-            return static_cast<SQ_GroupData_RNA&> ( SQ_GroupData_Impl<6>::operator= ( static_cast<const SQ_GroupData_Impl<6>& > ( other ) ) );
+            return static_cast<SQ_GroupData_RNA&> ( SQ_GroupData_Impl<6>::operator=
+                    ( static_cast<const SQ_GroupData_Impl<6>& > ( other ) ) );
         }
 
-        double SQ_calc_consensus_deviation ( const char *sequence ) const;
-        double SQ_calc_consensus_conformity ( const char *sequence ) const;
         consensus_result SQ_calc_consensus ( const char *sequence ) const;
         void   SQ_add_sequence ( const char *sequence );
     protected:
@@ -176,11 +173,10 @@ class SQ_GroupData_PRO: public SQ_GroupData_Impl<20>
         SQ_GroupData_PRO *clone() const { return new SQ_GroupData_PRO; }
         SQ_GroupData_PRO& operator= ( const SQ_GroupData& other )
         {
-            return static_cast<SQ_GroupData_PRO&> ( SQ_GroupData_Impl<20>::operator= ( static_cast<const SQ_GroupData_Impl<20>& > ( other ) ) );
+            return static_cast<SQ_GroupData_PRO&> ( SQ_GroupData_Impl<20>::operator=
+                    ( static_cast<const SQ_GroupData_Impl<20>& > ( other ) ) );
         }
 
-        double SQ_calc_consensus_deviation ( const char *sequence ) const;
-        double SQ_calc_consensus_conformity ( const char *sequence ) const;
         consensus_result SQ_calc_consensus ( const char *sequence ) const;
         void   SQ_add_sequence ( const char *sequence );
 };
