@@ -201,14 +201,12 @@ void awt_set_string(AW_window *aws, AW_CL varname, AW_CL value);    // set an aw
  *********************   Call External Editor        *******************
  ***************************************************************************/
 
-void awt_edit(AW_root *awr, const char *path, int x = 640, int y = 400, const char *font = "7x13");
-
-
+typedef void (*awt_fileChanged_cb)(const char *path, bool fileWasChanged, bool editorTerminated);
+void AWT_edit(const char *path, awt_fileChanged_cb callback = 0, AW_window *aww = 0, GBDATA *gb_main = 0);
 
 void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print,const char *title=0);
 void AWT_write_file(const char *filename,const char *file);
 void AWT_show_file(AW_root *awr, const char *filename);
-
 
 enum AD_MAP_VIEWER_TYPE {
     ADMVT_INFO,
