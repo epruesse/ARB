@@ -334,12 +334,9 @@ void MP_Window::build_pt_server_list()
     aws->callback(MP_cache_sonden);
     aws->create_option_menu( MP_AWAR_PTSERVER, NULL, "");
 
-    for (i=0; i<1000; i++)
-    {
-        choice = GBS_ptserver_id_to_choice(i);
-
-        if (! choice)
-            break;
+    for (i=0; ; i++) {
+        choice = GBS_ptserver_id_to_choice(i, 1);
+        if (! choice) break;
 
         aws->insert_option( choice, "", i);
         delete choice;
