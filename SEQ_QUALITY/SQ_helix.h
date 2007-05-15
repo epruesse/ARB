@@ -14,12 +14,10 @@
 
 
 #include <string>
+#include <map>
 
 #undef _USE_AW_WINDOW
 #include "BI_helix.hxx"
-
-// #include <arb_assert.h>
-// #define seq_assert(bed) arb_assert(bed)
 
 
 class SQ_helix
@@ -41,6 +39,8 @@ class SQ_helix
         static BI_helix    *helix;
         static GBDATA      *helix_gb_main;
         static std::string  helix_ali_name;
+        static std::map<int, int> filterMap;
+        static bool has_filterMap;
 
         static BI_helix& getHelix ( GBDATA *gb_main, const char *ali_name );
 };
@@ -50,6 +50,8 @@ class SQ_helix
 BI_helix    *SQ_helix::helix         = 0;
 GBDATA      *SQ_helix::helix_gb_main = 0;
 std::string  SQ_helix::helix_ali_name;
+std::map<int, int> SQ_helix::filterMap;
+bool SQ_helix::has_filterMap = false;
 
 
 // SQ_helix implementation
@@ -83,7 +85,17 @@ void SQ_helix::SQ_calc_helix_layout ( const char *sequence, GBDATA *gb_main, cha
 {
     BI_helix& my_helix = getHelix ( gb_main, alignment_name );
 
-    if ( my_helix.entries==0 )
+    // one call should be enough here (alignment does not change during the whole evaluation)
+    if(!has_filterMap) {
+        filterMap.clear();
+
+        for ( int filter_pos = 0; filter_pos < filter->real_len; filter_pos++ )
+            filterMap[filter->filterpos_2_seqpos[filter_pos]] = filter_pos;
+
+        has_filterMap = true;
+    }
+
+    if ( my_helix.entries == 0 )
     {
         count_strong_helix=1;
         count_weak_helix=1;
@@ -91,28 +103,29 @@ void SQ_helix::SQ_calc_helix_layout ( const char *sequence, GBDATA *gb_main, cha
     }
     else
     {
-        /*calculate the number of strong, weak and no helixes*/
-        for ( int i = 0; i < filter->real_len; i++ )
+        // calculate the number of strong, weak and no helixes
+        for ( int filter_pos = 0; filter_pos < filter->real_len; filter_pos++ )
         {
-            int i_seq = filter->filterpos_2_seqpos[i];
+            int seq_pos = filter->filterpos_2_seqpos[filter_pos];
 
-            BI_PAIR_TYPE pair_type = my_helix.entries[i_seq].pair_type;
+            BI_PAIR_TYPE pair_type = my_helix.entries[seq_pos].pair_type;
             if ( pair_type == HELIX_PAIR )
             {
-                int j = my_helix.entries[i_seq].pair_pos;
-                if ( j > i )
+                int v_seq_pos = my_helix.entries[seq_pos].pair_pos;
+                if ( v_seq_pos > seq_pos )
                 { // ignore right helix positions
-                    char left  = sequence[i];
+                    int v_filter_pos = filterMap[v_seq_pos];
 
-                    // TODO: fix this dirty hack...
-                    int k = i;
-                    while((filter->filterpos_2_seqpos[k] < j) && (k < filter->real_len)) {k++;}
-                    if(filter->filterpos_2_seqpos[k] == j) {
-                        char right = sequence[k];
+#warning v_filter_pos==0 indicates a 'not found' entry but it also can be a legal position
+                    seq_assert ( v_filter_pos );
 
-                        int  temp  = my_helix.check_pair ( left, right, pair_type );
+                    if(v_filter_pos > 0) {
+                        char left  = sequence[filter_pos];
+                        char right = sequence[v_filter_pos];
 
-                        switch ( temp )
+                        int check = my_helix.check_pair ( left, right, pair_type );
+
+                        switch ( check )
                         {
                             case 2:
                                 count_strong_helix++;
