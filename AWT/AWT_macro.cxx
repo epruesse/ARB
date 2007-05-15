@@ -2,7 +2,7 @@
 //                                                                      //
 //   File      : AWT_macro.cxx                                          //
 //   Purpose   :                                                        //
-//   Time-stamp: <Wed May/25/2005 17:59 MET Coder@ReallySoft.de>        //
+//   Time-stamp: <Fri Apr/27/2007 12:26 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in May 2005              //
@@ -95,7 +95,7 @@ static void awt_edit_macro_cb(AW_window *aww){
     //         path = GBS_global_string_copy("%s/%s",GB_getenvARBMACROHOME(),mn);
     //     }
     char *path = awt_get_selected_fullname(aww->get_root(), AWAR_MACRO_BASE);
-    GB_edit(path);
+    AWT_edit(path);
     free(path);
     //     delete mn;
 }

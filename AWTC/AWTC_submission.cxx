@@ -8,6 +8,7 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <awt.hxx>
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -32,7 +33,7 @@ static void ed_calltexe_event(AW_window *aww,char *varname)
     AW_root *aw_root = aww->get_root();
     char    *file;
     file = aw_root->awar(varname)->read_string();
-    GB_edit(file);
+    AWT_edit(file);
     free(file);
 }
 
