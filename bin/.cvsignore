@@ -28,6 +28,7 @@ arb_message
 arb_naligner
 arb_name_server
 arb_newick_2_otb
+arb_notify
 arb_ntree
 arb_pars
 arb_perf_test
