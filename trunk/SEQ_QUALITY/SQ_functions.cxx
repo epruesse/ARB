@@ -385,8 +385,9 @@ char *SQ_fetch_filtered_sequence ( GBDATA *read_sequence, AP_filter *filter )
     char *rawSequence = GB_read_char_pntr ( read_sequence );
     int filteredLength = filter->real_len;
 
-    // TODO: Maybe one call on creation of AP_filter is enough?
-    filter->calc_filter_2_seq();
+    // TODO: Is one init for the filter enough?
+    if(filter->filterpos_2_seqpos == 0)
+        filter->calc_filter_2_seq();
 
     char *filteredSequence = ( char * ) malloc ( filteredLength * sizeof ( char ) );
 
@@ -441,12 +442,6 @@ GB_ERROR SQ_pass1 ( SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE* node, A
             /*real calculations start here*/
             if ( read_sequence )
             {
-//                 int sequenceLength = 0;
-//                 const char *rawSequence = 0;
-//
-//                 rawSequence    = GB_read_char_pntr ( read_sequence );
-//                 sequenceLength = GB_read_count ( read_sequence );
-
                 char *rawSequence = SQ_fetch_filtered_sequence ( read_sequence, filter );
                 int sequenceLength = filter->real_len;
 
@@ -545,12 +540,6 @@ GB_ERROR SQ_pass1_no_tree ( SQ_GroupData* globalData, GBDATA *gb_main, AP_filter
                 /*real calculations start here*/
                 if ( read_sequence )
                 {
-//                     int sequenceLength = 0;
-//                     const char *rawSequence = 0;
-//
-//                     rawSequence    = GB_read_char_pntr ( read_sequence );
-//                     sequenceLength = GB_read_count ( read_sequence );
-
                     char *rawSequence = SQ_fetch_filtered_sequence ( read_sequence, filter );
                     int sequenceLength = filter->real_len;
 
@@ -635,8 +624,6 @@ GB_ERROR SQ_pass2 ( const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *n
             /*real calculations start here*/
             if ( read_sequence )
             {
-                const char *rawSequence    = 0;
-                int         sequenceLength = 0;
                 string      cons_dev       = "<dev>";
                 string      cons_conf      = "<conf>";
                 double      value1         = 0;
@@ -651,11 +638,7 @@ GB_ERROR SQ_pass2 ( const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *n
                 double      avg_gc         = 0;
                 double      gcp            = 0;
 
-//                 rawSequence    = GB_read_char_pntr ( read_sequence );
-//                 sequenceLength = GB_read_count ( read_sequence );
-                rawSequence = SQ_fetch_filtered_sequence ( read_sequence, filter );
-                sequenceLength = filter->real_len;
-
+                const char *rawSequence = SQ_fetch_filtered_sequence ( read_sequence, filter );
 
                 /*
                   calculate the average number of bases in group, and the difference of
@@ -711,8 +694,7 @@ GB_ERROR SQ_pass2 ( const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *n
                         if ( GDI != group_dict.end() )
                         {
                             SQ_GroupDataPtr GD_ptr = GDI->second;
-//                 value1 = GD_ptr->SQ_calc_consensus_conformity(rawSequence);
-//                 value2 = GD_ptr->SQ_calc_consensus_deviation(rawSequence);
+
                             consensus_result cr = GD_ptr->SQ_calc_consensus ( rawSequence );
                             value1 = cr.conformity;
                             value2 = cr.deviation;
@@ -856,8 +838,6 @@ GB_ERROR SQ_pass2_no_tree ( const SQ_GroupData* globalData, GBDATA *gb_main, AP_
                 /*real calculations start here*/
                 if ( read_sequence )
                 {
-                    const char *rawSequence    = 0;
-                    int         sequenceLength = 0;
                     string      cons_dev       = "<dev>";
                     string      cons_conf      = "<conf>";
                     double      value1         = 0;
@@ -872,11 +852,7 @@ GB_ERROR SQ_pass2_no_tree ( const SQ_GroupData* globalData, GBDATA *gb_main, AP_
                     double      avg_gc         = 0;
                     double      gcp            = 0;
 
-                    // rawSequence    = GB_read_char_pntr ( read_sequence );
-                    // sequenceLength = GB_read_count ( read_sequence );
-
-                    rawSequence = SQ_fetch_filtered_sequence ( read_sequence, filter );
-                    sequenceLength = filter->real_len;
+                    const char *rawSequence = SQ_fetch_filtered_sequence ( read_sequence, filter );
 
                     /*
                       calculate the average number of bases in group, and the difference of
@@ -926,8 +902,6 @@ GB_ERROR SQ_pass2_no_tree ( const SQ_GroupData* globalData, GBDATA *gb_main, AP_
                     consensus_result cr = globalData->SQ_calc_consensus ( rawSequence );
                     value1 = cr.conformity;
                     value2 = cr.deviation;
-//          value1 = globalData->SQ_calc_consensus_conformity(rawSequence);
-//          value2 = globalData->SQ_calc_consensus_deviation(rawSequence);
                     value3 = globalData->SQ_get_nr_sequences();
 
                     //format: <Groupname:value:numberofspecies>
@@ -1257,21 +1231,19 @@ GB_ERROR SQ_mark_species ( GBDATA *gb_main, int condition )
 }
 
 
-bool SQ_check_4_zombies ( GBT_TREE *node )
+SQ_TREE_ERROR SQ_check_tree_structure ( GBT_TREE *node )
 {
-    bool found = false;
+    SQ_TREE_ERROR retval = NONE;
 
-    if ( node->is_leaf )
-    {
+    if (!node) return MISSING_NODE;
+
+    if ( node->is_leaf ) {
         if ( !node->gb_node )
-            found = true; // found a zombie, aaarrrggghhh... ;-)
-    }
-    else
-    {
-        if ( SQ_check_4_zombies ( node->leftson ) )
-            found = true; // zombie...
-        else found = SQ_check_4_zombies ( node->rightson );
+            retval = ZOMBIE;
+    } else {
+        retval = SQ_check_tree_structure ( node->leftson );
+        if ( retval == NONE ) retval = SQ_check_tree_structure ( node->rightson );
     }
 
-    return found;
+    return retval;
 }
