@@ -152,7 +152,8 @@ long gbcm_read_buffered(int socket,char *ptr, long size)
         holding = read(socket,gb_local->write_buffer,(size_t)gb_local->write_bufsize);
 
         if (!holding){
-            fprintf(stderr,"Cannot read data: len %li: errno %i\n",holding,errno);
+            fprintf(stderr,"Cannot read data from client: len=%li (%s, errno %i)\n",
+                    holding, strerror(errno), errno);
             return 0;
         }
         gbcm_read_flush(socket);
@@ -225,9 +226,8 @@ gbcm_write_flush(int socket)
     }
     return GBCM_SERVER_OK;
 }
-int
-gbcm_write(int socket,const char *ptr,long size)
-{
+
+int gbcm_write(int socket,const char *ptr,long size) {
 
     while  (size >= gb_local->write_free){
         GB_MEMCPY(gb_local->write_ptr, ptr, (int)gb_local->write_free);
@@ -433,7 +433,7 @@ long gbcm_write_two(int socket, long a, long c)
     ia[1] = 3;
     ia[2] = c;
     if (!socket) return 1;
-    return  gbcm_write(socket,(char *)(&(ia[0])),sizeof(long)*3);
+    return  gbcm_write(socket, (const char *)ia, sizeof(long)*3);
 }
 
 
@@ -469,16 +469,13 @@ long gbcm_read_two(int socket, long a, long *b, long *c)
 
 long gbcm_write_string(int socket, const char *key)
 {
-    long x[1];
-    if (key){
-        x[0] = strlen(key);
-        gbcm_write(socket,(char *)x,sizeof(long));
-        if (x[0]) {
-            gbcm_write(socket,key,x[0]);
-        }
-    }else{
-        x[0] = -1;
-        gbcm_write(socket,(char *)x,sizeof(long));
+    if (key) {
+        size_t len = strlen(key);
+        gbcm_write_long(socket, len);
+        if (len) gbcm_write(socket,key,len);
+    }
+    else {
+        gbcm_write_long(socket, -1);
     }
     return GBCM_SERVER_OK;
 }
@@ -486,21 +483,34 @@ long gbcm_write_string(int socket, const char *key)
 char *gbcm_read_string(int socket)
 {
     char *key;
-    long strlen[1];
-    gbcm_read(socket,(char *)strlen,sizeof(long));
-    if (strlen[0]>=0) {
-        if (strlen[0]) {
-            key = (char *)GB_calloc(sizeof(char),(size_t)strlen[0]+1);
-            gbcm_read(socket,key,strlen[0]);
-        }else{
-            key = GB_strdup("");
+    long  strlen = gbcm_read_long(socket);
+
+    if (strlen) {
+        if (strlen>0) {
+            key = (char *)GB_calloc(sizeof(char), (size_t)strlen+1);
+            gbcm_read(socket, key, strlen);
         }
-    }else{
-        key = 0;
+        else {
+            key = 0;
+        }
     }
+    else {
+        key = GB_strdup("");
+    }
+
     return key;
 }
 
+long gbcm_write_long(int socket, long data) {
+    gbcm_write(socket, (char*)&data, sizeof(data));
+    return GBCM_SERVER_OK;
+}
+
+long gbcm_read_long(int socket) {
+    long data;
+    gbcm_read(socket, (char*)&data, sizeof(data));
+    return data;
+}
 
 
 struct stat gb_global_stt;
@@ -742,19 +752,6 @@ long GB_last_saved_clock(GBDATA *gb_main){
 
 GB_ULONG GB_last_saved_time(GBDATA *gb_main){
     return GB_MAIN(gb_main)->last_saved_time;
-}
-
-void GB_edit(const char *path){
-    const char *editor  = GB_getenvARB_TEXTEDIT();
-    char       *fpath   = GBS_eval_env(path);
-    char       *command = GBS_global_string_copy("%s %s &", editor, fpath);
-
-    GB_information("Executing '%s'", command);
-    if (system(command) != 0) {
-        GB_warning("Could not start editor command '%s'", command);
-    }
-    free(command);
-    free(fpath);
 }
 
 void GB_textprint(const char *path){
