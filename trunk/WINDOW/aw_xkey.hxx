@@ -11,7 +11,7 @@ struct awxkeymap_struct {
 	};
 
 void aw_install_xkeys(Display *display);
-struct awxkeymap_struct *aw_xkey_2_awkey(XKeyEvent *xkeyevent);
+const struct awxkeymap_struct *aw_xkey_2_awkey(XKeyEvent *xkeyevent);
 
 #else
 #error aw_xkey.hxx included twice
