@@ -37,8 +37,6 @@ extern GBDATA *gb_main;
 #define AWAR_SQ_PERM "seq_quality/"     // saved in properties
 #define AWAR_SQ_TEMP "tmp/seq_quality/" // not saved in properties
 
-#define AWAR_SQ_TREE AWAR_SQ_TEMP "tree_name"
-
 #define AWAR_SQ_WEIGHT_BASES     AWAR_SQ_PERM "weight_bases"
 #define AWAR_SQ_WEIGHT_DEVIATION AWAR_SQ_PERM "weight_deviation"
 #define AWAR_SQ_WEIGHT_HELIX     AWAR_SQ_PERM "weight_helix"
@@ -57,11 +55,6 @@ extern GBDATA *gb_main;
 
 void SQ_create_awars ( AW_root *aw_root, AW_default aw_def )
 {
-    {
-        char *default_tree = aw_root->awar ( AWAR_TREE )->read_string();
-        aw_root->awar_string ( AWAR_SQ_TREE, default_tree, aw_def );
-        free ( default_tree );
-    }
     aw_root->awar_int ( AWAR_SQ_WEIGHT_BASES, 5, aw_def );
     aw_root->awar_int ( AWAR_SQ_WEIGHT_DEVIATION, 15, aw_def );
     aw_root->awar_int ( AWAR_SQ_WEIGHT_HELIX, 15, aw_def );
@@ -87,7 +80,7 @@ static void sq_calc_seq_quality_cb ( AW_window *aww, AW_CL res_from_awt_create_s
     GBT_TREE *tree    = 0;
 
     {
-        char *treename = aw_root->awar ( AWAR_SQ_TREE )->read_string(); // contains "????" if no tree is selected
+        char *treename = aw_root->awar ( AWAR_TREE )->read_string(); // contains "????" if no tree is selected
         if ( treename && strcmp ( treename, "????" ) != 0 )
         {
             GB_push_transaction ( gb_main );
@@ -140,10 +133,21 @@ static void sq_calc_seq_quality_cb ( AW_window *aww, AW_CL res_from_awt_create_s
           for the final result.
         */
 
-        aw_openstatus ( "Checking tree for zombies..." );
-        if ( SQ_check_4_zombies ( tree ) )
+        aw_openstatus ( "Checking tree for irregularities..." );
+        SQ_TREE_ERROR check= NONE;
+        if ( (check = SQ_check_tree_structure ( tree )) != NONE )
         {
-            aw_message ( "Found zombies in the tree.\nPlease remove them and restart the quality check." );
+            switch(check) {
+                case ZOMBIE:
+                    aw_message ( "Found one or more zombies in the tree.\nPlease remove them or use another tree before running the quality check tool." );
+                    break;
+                case MISSING_NODE:
+                    aw_message ( "Missing node(s) or unusable tree structure.\nPlease fix the tree before running the quality check tool." );
+                    break;
+                default:
+                    aw_message ( "An error occured while traversing the tree.\nPlease fix the tree before running the quality check tool." );
+                    break;
+            }
             aw_closestatus();
             return;
         }
@@ -261,7 +265,7 @@ AW_window *SQ_create_seq_quality_window ( AW_root *aw_root, AW_CL )
     aws->create_input_field ( AWAR_SQ_MARK_BELOW, 3 );
 
     aws->at ( "tree" );
-    awt_create_selection_list_on_trees ( gb_main, ( AW_window * ) aws, AWAR_SQ_TREE );
+    awt_create_selection_list_on_trees(gb_main, (AW_window *)aws, AWAR_TREE);
 
     aws->at ( "filter" );
     AW_CL filtercd = awt_create_select_filter ( aws->get_root(), gb_main, AWAR_FILTER_NAME );
