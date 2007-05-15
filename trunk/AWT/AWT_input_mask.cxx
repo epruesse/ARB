@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Thu Feb/01/2007 11:05 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue May/15/2007 15:20 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -1301,7 +1301,8 @@ static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name,
 static void AWT_edit_input_mask(AW_window *aww, AW_CL cl_mask_name, AW_CL cl_local) {
     const string *mask_name = (const string *)cl_mask_name;
     string        fullmask  = inputMaskFullname(*mask_name, (bool)cl_local);
-    awt_edit(aww->get_root(), fullmask.c_str());
+    
+    AWT_edit(fullmask.c_str()); // @@@ add callback and automatically reload input mask
 }
 
 //  ---------------------------------
