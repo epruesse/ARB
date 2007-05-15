@@ -1914,7 +1914,6 @@ void        ED4_restart_editor          (AW_window *aww, AW_CL,AW_CL);
 void        ED4_save_configuration          (AW_window *aww,AW_CL close_flag);
 AW_window   *ED4_save_configuration_as_open_window  (AW_root *awr);
 
-extern void ED4_create_all_awars        (AW_root *root, const char *config_name);
 void        ED4_set_iupac           (AW_window *aww, char *awar_name, bool callback_flag);
 void        ED4_set_helixnr         (AW_window *aww, char *awar_name, bool callback_flag);
 void        ed4_changesecurity      (AW_root *root, AW_CL cd1);
