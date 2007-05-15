@@ -139,7 +139,7 @@ static GB_ERROR init_path2subtree_hash(GBDATA *pd_father, long expected_no_of_su
     return error;
 }
 
-static const char *probe_pt_look_for_server(GBDATA *gb_main, const char *servername, GB_ERROR& error) {
+static const char *PGD_probe_pt_look_for_server(GBDATA *gb_main, const char *servername, GB_ERROR& error) {
     int serverNum = -1;
 
     for (int i=0; serverNum == -1; ++i) {
@@ -177,7 +177,7 @@ static GB_ERROR PG_init_pt_server(GBDATA *gb_main, const char *servername) {
     else {
         out.put("Search a free running pt-server..");
         indent i(out);
-        current_server_name            = GB_strdup(probe_pt_look_for_server(gb_main,servername,error));
+        current_server_name            = GB_strdup(PGD_probe_pt_look_for_server(gb_main,servername,error));
         if (!error) server_initialized = true;
     }
     return error;
