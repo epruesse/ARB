@@ -139,34 +139,34 @@ static GB_ERROR init_path2subtree_hash(GBDATA *pd_father, long expected_no_of_su
     return error;
 }
 
-static const char *probe_pt_look_for_server(GBDATA *gb_main,const char *servername,GB_ERROR& error){
-    int serverid = -1;
+static const char *probe_pt_look_for_server(GBDATA *gb_main, const char *servername, GB_ERROR& error) {
+    int serverNum = -1;
 
-    for (int i=0;i<1000;++i){
-        char *aServer=GBS_ptserver_id_to_choice(i);
-        if (aServer){
-            if(strcmp(aServer,servername)==0){
-                serverid=i;
-                out.put("Found pt-server: %s",aServer);
-                free(aServer);
-                break;
-            }
-            free(aServer);
+    for (int i=0; serverNum == -1; ++i) {
+        char *aServer = GBS_ptserver_id_to_choice(i, 0);
+        if (!aServer) break;    //  no more servers
+        
+        if (strcmp(aServer, servername) == 0) { // wanted server
+            serverNum = i;
+            out.put("Found pt-server: %s", aServer);
         }
-    }
-    if (serverid==-1){
-        error = GB_export_error("'%s' is not a known pt-server.",servername);
-        return 0;
+        free(aServer);
     }
 
-    char choice[256];
-    sprintf(choice,"ARB_PT_SERVER%li",(long)serverid);
-    GB_ERROR starterr = arb_look_and_start_server(AISC_MAGIC_NUMBER, choice, gb_main);
-    if (starterr) {
-        error = GB_export_error("Cannot start pt-server '%s' (Reason: %s)", servername, starterr);
-        return 0;
+    const char *result = 0;
+    if (serverNum==-1){
+        error = GB_export_error("'%s' is not a known pt-server.",servername);
     }
-    return GBS_read_arb_tcp(choice);
+    else {
+        char     *serverID = GBS_global_string_copy("ARB_PT_SERVER%i", serverNum);
+        GB_ERROR  starterr = arb_look_and_start_server(AISC_MAGIC_NUMBER, serverID, gb_main);
+
+        if (starterr) error = GB_export_error("Cannot start pt-server '%s' (Reason: %s)", servername, starterr);
+        else result         = GBS_read_arb_tcp(serverID);
+        
+        free(serverID);
+    }
+    return result;
 }
 
 static GB_ERROR PG_init_pt_server(GBDATA *gb_main, const char *servername) {
@@ -177,7 +177,7 @@ static GB_ERROR PG_init_pt_server(GBDATA *gb_main, const char *servername) {
     else {
         out.put("Search a free running pt-server..");
         indent i(out);
-        current_server_name            = (char *)probe_pt_look_for_server(gb_main,servername,error);
+        current_server_name            = GB_strdup(probe_pt_look_for_server(gb_main,servername,error));
         if (!error) server_initialized = true;
     }
     return error;
@@ -209,22 +209,27 @@ class PT_server_connection {
     //    struct gl_struct my_pd_gl;
 
 public:
-    T_PT_PDC  pdc;
-    GB_ERROR error;
+    T_PT_PDC         pdc;
+    GB_ERROR         error;
     struct gl_struct my_pd_gl;
-    PT_server_connection(){
+    
+    PT_server_connection() {
         error = 0;
         memset(&my_pd_gl, 0, sizeof(my_pd_gl));
 
-    my_pd_gl.link=(aisc_com *)aisc_open(current_server_name,&my_pd_gl.com,AISC_MAGIC_NUMBER);
+        my_pd_gl.link = aisc_open(current_server_name,&my_pd_gl.com,AISC_MAGIC_NUMBER);
 
-    if(!my_pd_gl.link) error = "can't contact pt_server (unknown reason\n";
-    else if(init_local_com_struct(my_pd_gl)) error = "can't contact pt_server (connection refused)\n";
-    else{
-        aisc_create(my_pd_gl.link,PT_LOCS, my_pd_gl.locs,
-                LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc,
-                0);
-    }
+        if (!my_pd_gl.link) {
+            error = "can't contact pt_server (unknown reason\n";
+        }
+        else if(init_local_com_struct(my_pd_gl)) {
+            error = "can't contact pt_server (connection refused)\n";
+        }
+        else {
+            aisc_create(my_pd_gl.link,PT_LOCS, my_pd_gl.locs,
+                        LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc,
+                        0);
+        }
     }
     virtual ~PT_server_connection() {
         if (my_pd_gl.link) aisc_close(my_pd_gl.link);
