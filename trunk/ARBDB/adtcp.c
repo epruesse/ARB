@@ -2,7 +2,7 @@
 /*                                                                 */
 /*   File      : adtcp.c                                           */
 /*   Purpose   : arb_tcp.dat handling                              */
-/*   Time-stamp: <Fri Apr/27/2007 11:52 MET Coder@ReallySoft.de>   */
+/*   Time-stamp: <Fri May/04/2007 17:56 MET Coder@ReallySoft.de>   */
 /*                                                                 */
 /*   Coded by Ralf Westram (coder@reallysoft.de) in April 2007     */
 /*   Institute of Microbiology (Technical University Munich)       */
@@ -262,59 +262,6 @@ static GB_ERROR load_arb_tcp_dat() {
     return error;
 }
 
-/* char *GBS_ptserver_id_to_choice(int i, int showBuild) { */
-char *GBS_ptserver_id_to_choice(int i) {
-    /* Return a readable name for PTserver number 'i'
-       if 'showBuild' then show build date as well
-    */
-    char       *serverID  = GBS_global_string_copy("ARB_PT_SERVER%i", i);
-    const char *ipPort    = GBS_read_arb_tcp(serverID);
-    char       *result    = 0;
-    int         showBuild = 0;
-
-    if (ipPort) {
-        const char *file     = GBS_scan_arb_tcp_param(ipPort, "-d");
-        const char *nameOnly = strrchr(file, '/');
-
-        if (nameOnly) nameOnly++;   /* position behind '/' */
-        else nameOnly = file;       /* otherwise show complete file */
-
-        {
-            char *remote      = GB_strdup(ipPort);
-            char *colon       = strchr(remote, ':');
-            if (colon) *colon = 0; /* hide port */
-
-            if (strcmp(remote, "localhost") == 0) { /* hide localhost */
-                result = GB_strdup(nameOnly);
-            }
-            else {
-                result = GBS_global_string_copy("%s: %s", remote, nameOnly);
-            }
-            free(remote);
-        }
-
-
-        if (showBuild) {
-            char        *serverDB = GBS_global_string_copy("%s.pt", file);
-            struct stat  st;
-            if (stat(serverDB, &st) == 0) {
-                char       atime[256];
-                struct tm *tms = localtime(&st.st_mtime);
-                char      *resPlus;
-
-                strftime(atime, 255,"%Y/%m/%d %k:%M", tms);
-                resPlus = GBS_global_string_copy("%s [%s]", result, atime);
-                free(result);
-                result  = resPlus;
-            }
-            free(serverDB);
-        }
-    }
-    free(serverID);
-
-    return result;
-}
-
 const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam) {
     /* search a specific server parameter in result from GBS_read_arb_tcp()
      * wantedParam may be sth like '-d' (case is ignored!)
@@ -443,5 +390,98 @@ const char * const *GBS_get_arb_tcp_entries(const char *matching) {
     }
     if (error) GB_export_error(error);
     return error ? 0 : matchingEntries;
+}
+
+/* --------------------------- */
+/*      pt server related      */
+/* --------------------------- */
+
+const char *GBS_ptserver_logname() {
+    static char *serverlog = 0;
+    if (!serverlog) serverlog = GBS_eval_env("$(ARBHOME)/lib/pts/ptserver.log");
+    return serverlog;
+}
+
+void GBS_add_ptserver_logentry(const char *entry) {
+    FILE *log = fopen(GBS_ptserver_logname(), "at");
+    if (log) {
+        char       atime[256];
+        time_t     t   = time(0);
+        struct tm *tms = localtime(&t);
+        strftime(atime, 255, "%Y/%m/%d %k:%M:%S", tms);
+        fprintf(log, "%s %s\n", atime, entry);
+        fclose(log);
+    }
+    else {
+        fprintf(stderr, "Failed to write to '%s'\n", GBS_ptserver_logname());
+    }
+}
+
+char *GBS_ptserver_id_to_choice(int i, int showBuild) {
+    /* Return a readable name for PTserver number 'i'
+       if 'showBuild' then show build info as well
+    */
+    char       *serverID = GBS_global_string_copy("ARB_PT_SERVER%i", i);
+    const char *ipPort   = GBS_read_arb_tcp(serverID);
+    char       *result   = 0;
+
+    if (ipPort) {
+        const char *file     = GBS_scan_arb_tcp_param(ipPort, "-d");
+        const char *nameOnly = strrchr(file, '/');
+
+        if (nameOnly) nameOnly++;   /* position behind '/' */
+        else nameOnly = file;       /* otherwise show complete file */
+
+        {
+            char *remote      = GB_strdup(ipPort);
+            char *colon       = strchr(remote, ':');
+            if (colon) *colon = 0; /* hide port */
+
+            if (strcmp(remote, "localhost") == 0) { /* hide localhost */
+                result = GB_strdup(nameOnly);
+            }
+            else {
+                result = GBS_global_string_copy("%s: %s", remote, nameOnly);
+            }
+            free(remote);
+        }
+
+
+        if (showBuild) {
+            struct stat  st;
+
+            if (stat(file, &st) == 0) { // xxx.arb present
+                time_t  fileMod   = st.st_mtime;
+                char   *serverDB  = GBS_global_string_copy("%s.pt", file);
+                char   *newResult = 0;
+
+                if (stat(serverDB, &st) == 0) { // pt-database present
+                    if (st.st_mtime < fileMod) { // DB is newer than pt-database
+                        newResult = GBS_global_string_copy("%s [starting or failed update]", result);
+                    }
+                    else {
+                        char       atime[256];
+                        struct tm *tms  = localtime(&st.st_mtime);
+
+                        strftime(atime, 255,"%Y/%m/%d %k:%M", tms);
+                        newResult = GBS_global_string_copy("%s [%s]", result, atime);
+                    }
+                }
+                else { // check for running build
+                    char *serverDB_duringBuild = GBS_global_string_copy("%s%%", serverDB);
+                    if (stat(serverDB_duringBuild, &st) == 0) {
+                        newResult = GBS_global_string_copy("%s [building..]", result);
+                    }
+                    free(serverDB_duringBuild);
+                }
+
+                if (newResult) { free(result); result = newResult; }
+                free(serverDB);
+            }
+        }
+    }
+    free(serverID);
+
+    return result;
 }
 
