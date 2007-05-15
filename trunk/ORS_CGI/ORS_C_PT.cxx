@@ -55,8 +55,8 @@ int init_pt_local_struct()
 /****************************
   return name of server #n
 *****************************/
-char *probe_pt_look_for_server(int server_nr)	// 0 = 16s 1 = 23s ...
-	{
+char *OC_probe_pt_look_for_server(int server_nr)	// 0 = 16s 1 = 23s ...
+{
 	char choice[256];
 	sprintf(choice,"ARB_PT_SERVER%i",server_nr);
 	return ORS_read_a_line_in_a_file(ORS_LIB_PATH "CONFIG",choice);
@@ -73,7 +73,7 @@ void probe_match (	int server_nr, char *probe_seq, int max_mismatches,
 	char	*servername;
 	char	*locs_error;
 
-	if( !(servername=(char *)probe_pt_look_for_server(server_nr)) ){
+	if( !(servername=OC_probe_pt_look_for_server(server_nr)) ){
 		quit_with_error (ORS_export_error("PT_SERVER #%i is unknown (see: ors_lib/servers)",server_nr));
 	}
 
@@ -130,7 +130,7 @@ void probe_find (int server_nr, char *probe_seq)
 	char	*servername;
 	char	*locs_error;
 
-	if( !(servername=(char *)probe_pt_look_for_server(server_nr)) ){
+	if( !(servername=OC_probe_pt_look_for_server(server_nr)) ){
 		quit_with_error (ORS_export_error("PT_SERVER #%i is unknown (see: ors_lib/servers)",server_nr));
 	}
 
