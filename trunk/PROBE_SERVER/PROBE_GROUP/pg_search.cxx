@@ -33,9 +33,10 @@ static void my_print(const char *, ...) {
 
 // ================================================================================
 
-static bool      server_initialized            = false;
-static char     *current_server_name           = 0;
-static void      (*print)(const char *format, ...)  = my_print;
+static bool  server_initialized  = false;
+static char *current_server_name = 0;
+
+static void (*print)(const char *format, ...) = my_print;
 
 static GB_ERROR connection_lost      = "connection to pt-server lost";
 static GB_ERROR cant_contact_unknown = "can't contact pt-server (unknown reason)";
@@ -74,10 +75,7 @@ static int init_local_com_struct(struct gl_struct& pd_gl)
     return 0;
 }
 
-//  --------------------------------------------------------------------------------------
-//      static char *probe_pt_look_for_server(const char *servername, GB_ERROR& error)
-//  --------------------------------------------------------------------------------------
-static const char *probe_pt_look_for_server(GBDATA *gb_main, const char *servername, GB_ERROR& error)
+static const char *PG_probe_pt_look_for_server(GBDATA *gb_main, const char *servername, GB_ERROR& error)
 {
     int serverid = -1;
 
@@ -118,7 +116,7 @@ GB_ERROR PG_init_pt_server(GBDATA *gb_main, const char *servername, void (*print
     print         = print_function;
 
     print("Search a free running pt-server..");
-    current_server_name = (char *)probe_pt_look_for_server(gb_main, servername, error);
+    current_server_name = GB_strdup(PG_probe_pt_look_for_server(gb_main, servername, error));
     pg_assert(error || current_server_name);
     server_initialized  = true;;
     return error;
