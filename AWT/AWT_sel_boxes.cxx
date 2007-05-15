@@ -5,6 +5,7 @@
 #include <string.h>
 // #include <malloc.h>
 #include <memory.h>
+#include <sys/stat.h>
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -135,12 +136,21 @@ void awt_create_selection_list_on_trees(GBDATA *gb_main,AW_window *aws,const cha
 
 #define PT_SERVERNAME_LENGTH        23 // thats for buttons
 #define PT_SERVERNAME_SELLIST_WIDTH 30 // this for lists
+#define PT_SERVER_TRACKLOG_TIMER    10000 // every 10 seconds
+
+struct selection_list_handle {
+    AW_window                    *aws;
+    AW_selection_list            *sellst;
+    struct selection_list_handle *next;
+};
+
+static selection_list_handle *allPTserverSellists = 0; // all pt server selection lists
 
 static void fill_pt_server_selection_list(AW_window *aws, AW_selection_list *id) {
     aws->clear_selection_list(id);
 
-    for (int i=0;i<1000;i++) {
-        char *choice = GBS_ptserver_id_to_choice(i);
+    for (int i=0; ; i++) {
+        char *choice = GBS_ptserver_id_to_choice(i, 1);
         if (!choice) break;
 
         aws->insert_selection(id,choice,(long)i);
@@ -151,8 +161,58 @@ static void fill_pt_server_selection_list(AW_window *aws, AW_selection_list *id)
     aws->update_selection_list(id);
 }
 
+void awt_refresh_all_pt_server_selection_lists() {
+    // refresh content of all PT_server selection lists
+    selection_list_handle *serverList = allPTserverSellists;
+
+    while (serverList) {
+        fill_pt_server_selection_list(serverList->aws, serverList->sellst);
+        serverList = serverList->next;
+    }
+}
+
+static void track_log_cb(AW_root *awr) {
+    static long  last_ptserverlog_mod = 0;
+    const char  *ptserverlog          = GBS_ptserver_logname();
+    long         ptserverlog_mod      = GB_time_of_file(ptserverlog);
+
+    if (ptserverlog_mod != last_ptserverlog_mod) {
+#if defined(DEBUG)
+        fprintf(stderr, "%s modified!\n", ptserverlog);
+#endif // DEBUG
+        awt_refresh_all_pt_server_selection_lists();
+        last_ptserverlog_mod = ptserverlog_mod;
+    }
+
+    awr->add_timed_callback(PT_SERVER_TRACKLOG_TIMER, track_log_cb);
+}
+
+static void announce_pt_server_selection_list(AW_window *aws, AW_selection_list *id) {
+#if defined(DEBUG)
+    selection_list_handle *serverList = allPTserverSellists;
+    while (serverList) {
+        awt_assert(aws != serverList->aws || id != serverList->sellst); // oops - added twice
+        serverList = serverList->next;
+    }
+#endif // DEBUG
+
+    if (!allPTserverSellists) { // first pt server selection list -> install log tracker
+        aws->get_root()->add_timed_callback(PT_SERVER_TRACKLOG_TIMER, track_log_cb);
+    }
+
+    selection_list_handle *newServerList = (selection_list_handle *)malloc(sizeof(*newServerList));
+
+    newServerList->aws    = aws;
+    newServerList->sellst = id;
+    newServerList->next   = allPTserverSellists;
+
+    allPTserverSellists = newServerList;
+}
+
+// --------------------------------------------------------------------------------
+
 static char *readable_pt_servername(int index, int maxlength) {
-    char *fullname = GBS_ptserver_id_to_choice(index);
+    char *fullname = GBS_ptserver_id_to_choice(index, 0);
     if (!fullname) {
 #ifdef DEBUG
       printf("awar given to awt_create_selection_list_on_pt_servers() does not contain a valid index\n");
@@ -201,6 +261,7 @@ AW_window *awt_popup_selection_list_on_pt_servers(AW_root *aw_root, const char *
 
     aw_popup->window_fit();
 
+    announce_pt_server_selection_list(aw_popup, id);
     fill_pt_server_selection_list(aw_popup, id);
 
     return aw_popup;
@@ -238,9 +299,11 @@ void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname
     }
     else {
         AW_selection_list *id = aws->create_selection_list(varname);
+        announce_pt_server_selection_list(aws, id);
         fill_pt_server_selection_list(aws, id);
     }
 }
+
 
 // ******************** selection boxes on tables ********************
 
@@ -736,9 +799,125 @@ void awt_write_string( AW_window *aws, AW_CL varname, AW_CL value)  // set an aw
     aws->get_root()->awar((char *)varname)->write_string((char *)value);
 }
 
+struct fileChanged_cb_data {
+    char               *fpath;  // full name of edited file
+    int                 lastModtime; // last known modification time of 'fpath'
+    bool                editorTerminated; // do not free before this has been set to 'true'
+    awt_fileChanged_cb  callback;
 
-void awt_edit(AW_root */*awr*/, const char *path, int /*x*/, int /*y*/, const char */*font*/){
-    GB_edit(path);
+    fileChanged_cb_data(char **fpath_ptr, awt_fileChanged_cb cb) {
+        fpath            = *fpath_ptr;
+        *fpath_ptr       = 0;   // take ownage
+        lastModtime      = getModtime();
+        editorTerminated = false;
+        callback         = cb;
+    }
+
+    ~fileChanged_cb_data() {
+        free(fpath);
+    }
+
+    int getModtime() {
+        struct stat st;
+        if (stat(fpath, &st) == 0) return st.st_mtime;
+        return 0;
+    }
+
+    bool fileWasChanged() {
+        int  modtime = getModtime();
+        bool changed = modtime != lastModtime;
+        lastModtime  = modtime;
+        return changed;
+    }
+};
+
+static void editor_terminated_cb(const char *message, void *cb_data) {
+    fileChanged_cb_data *data = (fileChanged_cb_data*)cb_data;
+
+#if defined(DEBUG)
+    printf("editor_terminated_cb: message='%s' fpath='%s'\n", message, data->fpath);
+#endif // DEBUG
+
+    data->callback(data->fpath, data->fileWasChanged(), true);
+    data->editorTerminated = true; // trigger removal of check_file_changed_cb
+}
+
+#define AWT_CHECK_FILE_TIMER 700 // in ms
+
+static void check_file_changed_cb(AW_root *aw_root, AW_CL cl_cbdata) {
+    fileChanged_cb_data *data = (fileChanged_cb_data*)cl_cbdata;
+
+    if (data->editorTerminated) {
+        delete data;
+    }
+    else {
+        bool changed = data->fileWasChanged();
+
+        if (changed) data->callback(data->fpath, true, false);
+        aw_root->add_timed_callback(AWT_CHECK_FILE_TIMER, check_file_changed_cb, cl_cbdata);
+    }
+}
+
+void AWT_edit(const char *path, awt_fileChanged_cb callback, AW_window *aww, GBDATA *gb_main) {
+    // Start external editor on file 'path' (asynchronously)
+    // if 'callback' is specified, it is called everytime the file is changed
+    // [aww and gb_main may be 0 if callback is 0]
+
+    const char          *editor  = GB_getenvARB_TEXTEDIT();
+    char                *fpath   = GBS_eval_env(path);
+    char                *command = 0;
+    fileChanged_cb_data *cb_data = 0;
+    GB_ERROR             error   = 0;
+
+    if (callback) {
+        awt_assert(aww);
+        awt_assert(gb_main);
+
+        cb_data = new fileChanged_cb_data(&fpath, callback); // fpath now is 0 and belongs to cb_data
+
+        char *arb_notify = GB_generate_notification(gb_main, editor_terminated_cb, "editor terminated", (void*)cb_data);
+        if (arb_notify) {
+            char *arb_message = GBS_global_string_copy("arb_message \"Could not start editor '%s'\"", editor);
+            
+            command = GBS_global_string_copy("((%s %s || %s); %s)&", editor, cb_data->fpath, arb_message, arb_notify);
+            free(arb_message);
+            free(arb_notify);
+        }
+        else {
+            error = GB_get_error();
+        }
+    }
+    else {
+        command = GBS_global_string_copy("%s %s &", editor, fpath);
+    }
+
+    if (command) {
+        GB_information("Executing '%s'", command);
+        if (system(command) != 0) {
+            aw_message(GBS_global_string("Could not start editor command '%s'", command));
+            if (callback) {
+                error = GB_remove_last_notification(gb_main);
+            }
+        }
+        else { // sucessfully started editor
+            // Can't be sure editor really started when callback is used (see command above).
+            // But it doesnt matter, cause arb_notify is called anyway and removes all callbacks
+            if (callback) {
+                // add timed callback tracking file change
+                AW_root *aw_root = aww->get_root();
+                aw_root->add_timed_callback(AWT_CHECK_FILE_TIMER, check_file_changed_cb, (AW_CL)cb_data);
+                cb_data          = 0; // now belongs to check_file_changed_cb 
+            }
+        }
+    }
+
+    if (error) {
+        aw_message(error);
+    }
+
+    free(command);
+    delete cb_data;
+    free(fpath);
 }
 
 
