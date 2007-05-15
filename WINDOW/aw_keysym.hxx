@@ -37,12 +37,12 @@ typedef enum {
 
 
 typedef enum {
-	AW_KEYMODE_NONE = 0,
-	AW_KEY_CONTROL = 1,
-	AW_KEY_META = 2,
-	AW_KEY_ALT = 4,
-	AW_KEY_SHIFT = 8
-	} AW_key_mod;
+	AW_KEYMODE_NONE    = 0,
+	AW_KEYMODE_SHIFT   = 2,
+	AW_KEYMODE_CONTROL = 4,
+	AW_KEYMODE_ALT     = 8, // Alt or Meta key
+	AW_KEYMODE_NUMLOCK = 16,
+} AW_key_mod;
 
 // #endif
 
