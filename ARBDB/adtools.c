@@ -3714,3 +3714,216 @@ char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement) {
     return result;
 }
 
+/* --------------------------- */
+/*      self-notification      */
+/* --------------------------- */
+/* provides a mechanism to notify ARB after some external tool finishes */
+
+#define ARB_NOTIFICATIONS "tmp/notify"
+
+/* DB structure for notifications : 
+ *
+ * ARB_NOTIFICATIONS/counter        GB_INT      counts used ids
+ * ARB_NOTIFICATIONS/notify/id      GB_INT      id of notification
+ * ARB_NOTIFICATIONS/notify/message GB_STRING   message of notification (set by callback)
+ */
+
+typedef void (*notify_cb_type)(const char *message, void *client_data);
+
+struct NCB {
+    notify_cb_type  cb;
+    void           *client_data;
+};
+
+static void notify_cb(GBDATA *gb_message, int *cb_info, GB_CB_TYPE cb_type) {
+    GB_ERROR error   = GB_remove_callback(gb_message, GB_CB_CHANGED|GB_CB_DELETE, notify_cb, cb_info);
+    int      cb_done = 0;
+
+    struct NCB *pending = (struct NCB*)cb_info;
+
+    if (cb_type == GB_CB_CHANGED) {
+        if (!error) {
+            const char *message = GB_read_char_pntr(gb_message);
+            if (message) {
+                pending->cb(message, pending->client_data);
+                cb_done = 1;
+            }
+        }
+
+        if (!cb_done) {
+            if (!error) error = GB_get_error();
+            fprintf(stderr, "Notification failed (Reason: %s)\n", error);
+            gb_assert(0);
+        }
+    }
+    else { /* called from GB_remove_last_notification */
+        gb_assert(cb_type == GB_CB_DELETE);
+    }
+
+    free(pending);
+}
+
+static int allocateNotificationID(GBDATA *gb_main, int *cb_info) {
+    int      id    = 0;
+    GB_ERROR error = GB_push_transaction(gb_main);
+
+    if (!error) {
+        GBDATA *gb_notify = GB_search(gb_main, ARB_NOTIFICATIONS, GB_CREATE_CONTAINER);
+        if (gb_notify) {
+            GBDATA *gb_counter = GB_find(gb_notify, "counter", 0, down_level);
+
+            if (!gb_counter) {          /* first call */
+                gb_counter = GB_create(gb_notify, "counter", GB_INT);
+                if (gb_counter) {
+                    error = GB_write_int(gb_counter, 0);
+                }
+            }
+
+            if (gb_counter) {
+                int newid = GB_read_int(gb_counter) + 1; /* increment counter */
+                error     = GB_write_int(gb_counter, newid);
+
+                if (!error) {
+                    /* change transaction (to never use id twice!) */
+                    error             = GB_pop_transaction(gb_main);
+                    if (!error) error = GB_push_transaction(gb_main);
+
+                    GBDATA *gb_notification = GB_create_container(gb_notify, "notify");
+                    if (gb_notification) {
+                        GBDATA *gb_id = GB_create(gb_notification, "id", GB_INT);
+                        if (gb_id) {
+                            error = GB_write_int(gb_id, newid);
+                            if (!error) {
+                                GBDATA *gb_message = GB_create(gb_notification, "message", GB_STRING);
+                                if (gb_message) {
+                                    error = GB_write_string(gb_message, "");
+                                    if (!error) {
+                                        error = GB_add_callback(gb_message, GB_CB_CHANGED|GB_CB_DELETE, notify_cb, cb_info);
+                                        if (!error) {
+                                            id = newid; /* success */
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (error || !id) {
+        GB_abort_transaction(gb_main);
+        if (error) GB_export_error(error);
+    }
+    else GB_pop_transaction(gb_main);
+
+    return id;
+}
+
+
+char *GB_generate_notification(GBDATA *gb_main,
+                               void (*cb)(const char *message, void *client_data),
+                               const char *message, void *client_data)
+{
+    /* generates a call to 'arb_notify', meant to be inserted into some external system call.
+     * When that call is executed, the callback instanciated here will be called.
+     *
+     * Tip : To return variable results from the shell skript, use the name of an environment
+     *       variable in 'message' (e.g. "$RESULT")
+     */
+
+    int         id;
+    char       *arb_notify_call = 0;
+    struct NCB *pending         = malloc(sizeof(*pending));
+
+    pending->cb          = cb;
+    pending->client_data = client_data;
+
+    id = allocateNotificationID(gb_main, (int*)pending);
+    if (id) {
+        arb_notify_call = GBS_global_string_copy("arb_notify %i \"%s\"", id, message);
+    }
+    else {
+        free(pending);
+    }
+
+    return arb_notify_call;
+}
+
+GB_ERROR GB_remove_last_notification(GBDATA *gb_main) {
+    /* aborts the last notification */
+    GB_ERROR error = GB_push_transaction(gb_main);
+
+    if (!error) {
+        GBDATA *gb_notify = GB_search(gb_main, ARB_NOTIFICATIONS, GB_CREATE_CONTAINER);
+        if (gb_notify) {
+            GBDATA *gb_counter = GB_find(gb_notify, "counter", 0, down_level);
+            if (gb_counter) {
+                int     id    = GB_read_int(gb_counter);
+                GBDATA *gb_id = GB_find_int(gb_notify, "id", id, down_2_level);
+
+                if (!gb_id) {
+                    error = GBS_global_string("No notification for ID %i", id);
+                    gb_assert(0);           // GB_generate_notification() has not been called for 'id'!
+                }
+                else {
+                    GBDATA *gb_notification = GB_get_father(gb_id);
+                    GBDATA *gb_message      = GB_find(gb_notification, "message", 0, down_level);
+
+                    if (!gb_message) {
+                        error = "Missing 'message' entry";
+                    }
+                    else {
+                        error = GB_delete(gb_message); /* calls notify_cb */
+                    }
+                }
+            }
+            else {
+                error = "No notification generated yet";
+            }
+        }
+    }
+
+    GB_pop_transaction(gb_main);
+
+    return error;
+}
+
+GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message) {
+    /* called via 'arb_notify'
+     * 'id' has to be generated by GB_generate_notification()
+     * 'message' is passed to notification callback belonging to id
+     */
+
+    GB_ERROR  error     = 0;
+    GBDATA   *gb_notify = GB_search(gb_main, ARB_NOTIFICATIONS, GB_FIND);
+
+    if (!gb_notify) {
+        error = "Missing notification data";
+        gb_assert(0);           // GB_generate_notification() has not been called!
+    }
+    else {
+        GBDATA *gb_id = GB_find_int(gb_notify, "id", id, down_2_level);
+
+        if (!gb_id) {
+            error = GBS_global_string("No notification for ID %i", id);
+        }
+        else {
+            GBDATA *gb_notification = GB_get_father(gb_id);
+            GBDATA *gb_message      = GB_find(gb_notification, "message", 0, down_level);
+
+            if (!gb_message) {
+                error = "Missing 'message' entry";
+            }
+            else {
+                /* callback the instanciating DB client */
+                error = GB_write_string(gb_message, message);
+            }
+        }
+    }
+
+    return error;
+}
+
+
