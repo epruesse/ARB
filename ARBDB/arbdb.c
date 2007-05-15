@@ -1261,7 +1261,7 @@ GB_ERROR gb_delete_force(GBDATA *source)    /* delete always */
 ********************************************************************************************/
 GB_ERROR GB_copy(GBDATA *dest, GBDATA *source)
 {
-    long type;
+    GB_TYPES type;
     GB_ERROR error = 0;
     GBDATA *gb_p;
     GBDATA *gb_d;
@@ -1272,8 +1272,8 @@ GB_ERROR GB_copy(GBDATA *dest, GBDATA *source)
     type = GB_TYPE(source);
     if (GB_TYPE(dest) != type)
     {
-        return GB_export_error("incompatible types in GB_copy (source %s:%li != %s:%i",
-                               GB_read_key_pntr(source),type, GB_read_key_pntr(dest), GB_TYPE(dest));
+        return GB_export_error("incompatible types in GB_copy (source %s:%u != %s:%u",
+                               GB_read_key_pntr(source), type, GB_read_key_pntr(dest), GB_TYPE(dest));
     }
 
     switch (type)
