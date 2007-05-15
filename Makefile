@@ -307,6 +307,7 @@ first_target:
 		@echo ' tags         - create tags for xemacs'
 		@echo ' rmbak        - remove all "*%" and cores'
 		@echo ' show         - show available shortcuts (AKA subtargets)'
+		@echo ' up           - shortcut for depends+tags'
 		@echo ''
 		@echo 'Internal maintainance:'
 		@echo ''
@@ -1102,6 +1103,10 @@ eb:	$(EDITDB)
 pgt:	$(PGT)
 xml:	XML/XML.dummy
 templ:	TEMPLATES/TEMPLATES.dummy
+
+#********************************************************************************
+
+up: depends tags
 
 #********************************************************************************
 
