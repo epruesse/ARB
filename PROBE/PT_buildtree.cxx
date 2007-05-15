@@ -183,6 +183,10 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
     putc(0,out);        /* disable zero father */
     pos = 1;
 
+    // now temp file exists -> trigger ptserver-selectionlist-update in all
+    // ARB applications by writing to log
+    GBS_add_ptserver_logentry(GBS_global_string("Calculating probe tree (%s)", tname));
+
     psg.ptmain = PT_init(PT_B_MAX);
     psg.ptmain->stage1 = 1;             /* enter stage 1 */
 
