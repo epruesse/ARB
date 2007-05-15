@@ -1739,29 +1739,26 @@ void pd_start_pt_server(AW_window *aww)
 
 void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
 {
-    AW_root *awr = aww->get_root();
-    char pt_server[256];
     long min = 0;
     long max = 1000;
-    long i;
-    if (!kill_all) min = max = awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
-    if (!aw_message("Are you sure to kill a server","YES,CANCEL")){
-        aw_openstatus("Kill a server");
-        GB_ERROR error;
-        for (i= min ; i <=max ; i++) {
-            char *choice = GBS_ptserver_id_to_choice((int)i);
+
+    if (!kill_all) min = max = aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
+
+    if (!aw_message("Are you sure to kill a server","YES,CANCEL")) {
+        aw_openstatus("Killing PTserver");
+        
+        for (int i= min ; i <=max ; i++) {
+            char *choice = GBS_ptserver_id_to_choice(i, 0);
             if (!choice) break;
-            sprintf(AW_ERROR_BUFFER,"Try to call '%s'",choice);
-            aw_status(AW_ERROR_BUFFER);
-            sprintf(pt_server,"ARB_PT_SERVER%li",i);
-            error = arb_look_and_kill_server(AISC_MAGIC_NUMBER,pt_server);
-            if (error) {
-                sprintf(AW_ERROR_BUFFER,"NOP    '%s' -- %s",choice,error);
-                aw_message();
-            }else{
-                sprintf(AW_ERROR_BUFFER,"Killed '%s' killed",choice);
-                aw_message();
-            }
+
+            aw_status(GBS_global_string("Try to kill '%s'",choice));
+
+            const char *pt_server = GBS_global_string("ARB_PT_SERVER%i",i);
+            GB_ERROR    error     = arb_look_and_kill_server(AISC_MAGIC_NUMBER, pt_server);
+
+            if (error) aw_message(GBS_global_string("Could not kill '%s' (Reason: %s)", choice, error));
+            else aw_message(GBS_global_string("Killed '%s'", choice));
+            
             free(choice);
         }
         aw_closestatus();
@@ -1799,7 +1796,7 @@ void pd_query_pt_server(AW_window *aww)
     free(ssh);
 }
 
-void pd_export_pt_server(AW_window *aww)
+static void pd_export_pt_server(AW_window *aww)
 {
     AW_root  *awr   = aww->get_root();
     GB_ERROR  error = 0;
@@ -1826,8 +1823,9 @@ void pd_export_pt_server(AW_window *aww)
         }
     }
 
-    sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
-    
+    long serverid = awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
+    sprintf(pt_server,"ARB_PT_SERVER%li", serverid);
+
     if (!error &&
         aw_message("This function will send your currently loaded data as the new data to the pt_server !!!\n"
                    "The server will need a long time (up to several hours) to analyse the data.\n"
@@ -1843,6 +1841,13 @@ void pd_export_pt_server(AW_window *aww)
         const char *ipPort = GBS_read_arb_tcp(pt_server);
         const char *file   = GBS_scan_arb_tcp_param(ipPort, "-d");
 
+        GBS_add_ptserver_logentry(GBS_global_string("Started update of '%s'", file));
+        {
+            char *db_name = awr->awar(AWAR_DB_PATH)->read_string();
+            GBS_add_ptserver_logentry(GBS_global_string("Exporting DB '%s'", db_name));
+            free(db_name);
+        }
+
         aw_status("Exporting the database");
         {
             const char *mode = "bfm"; // save PT-server database with Fastload file
@@ -1853,7 +1858,8 @@ void pd_export_pt_server(AW_window *aww)
 
                 if (!error) {
                     // convert database (genes -> species)
-                    aw_status("Preparing database for gene PT server");
+                    aw_status("Preparing DB for gene PT server");
+                    GBS_add_ptserver_logentry("Preparing DB for gene PT server");
                     char *command = GBS_global_string_copy("$ARBHOME/bin/arb_gene_probe %s %s", temp_server_name, file);
                     printf("Executing '%s'\n", command);
                     int result = system(command);
@@ -1885,13 +1891,25 @@ void pd_export_pt_server(AW_window *aww)
             error = arb_start_server(pt_server,gb_main, 1);
         }
         aw_closestatus();
+
     }
     if (error) aw_message(error);
 }
 
-void pd_edit_arb_tcp(AW_window *aww){
-    awt_edit(aww->get_root(),"$(ARBHOME)/lib/arb_tcp.dat",900,400);
+static void arb_tcp_dat_changed_cb(const char *path, bool fileChanged, bool editorTerminated) {
+#if defined(DEBUG) && 0
+    printf("File '%s': changed=%i editorTerminated=%i\n", path, int(fileChanged), int(editorTerminated));
+#endif // DEBUG
+    if (fileChanged) {
+        awt_refresh_all_pt_server_selection_lists();
+    }
 }
+
+static void pd_edit_arb_tcp(AW_window *aww, AW_CL cl_gb_main) {
+    GBDATA *gb_main = (GBDATA*)cl_gb_main;
+    AWT_edit("$(ARBHOME)/lib/arb_tcp.dat", arb_tcp_dat_changed_cb, aww, gb_main);
+}
+
 AW_window *create_probe_admin_window( AW_root *root, AW_CL cl_genome_db)  {
     AW_window_simple *aws         = new AW_window_simple;
     bool              is_genom_db = (bool)cl_genome_db;
@@ -1931,7 +1949,7 @@ AW_window *create_probe_admin_window( AW_root *root, AW_CL cl_genome_db)  {
     aws->create_button("KILL_ALL_SERVERS","Kill all servers");
 
     aws->at( "edit" );
-    aws->callback(pd_edit_arb_tcp);
+    aws->callback(pd_edit_arb_tcp, (AW_CL)gb_main);
     aws->create_button("CREATE_TEMPLATE","Configure");
 
     aws->at( "export" );
