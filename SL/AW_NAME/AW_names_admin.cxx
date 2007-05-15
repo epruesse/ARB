@@ -22,7 +22,7 @@ static char *namesFilename(AW_CL cl_gb_main) {
     return fullname;
 }
 
-void awtc_delete_names_file(AW_window *aws, AW_CL cl_gb_main) {
+static void awtc_delete_names_file(AW_window *aws, AW_CL cl_gb_main) {
     AWUSE(aws);
     char     *path    = namesFilename(cl_gb_main);
     char     *newpath = GBS_string_eval(path,"*=*%",0);
@@ -32,14 +32,13 @@ void awtc_delete_names_file(AW_window *aws, AW_CL cl_gb_main) {
     free(path);
 }
 
-void awtc_edit_names_file(AW_window *aws, AW_CL cl_gb_main){
+static void awtc_edit_names_file(AW_window */*aws*/, AW_CL cl_gb_main){
     char *path = namesFilename(cl_gb_main);
-    awt_edit(aws->get_root(),path,1000,700);
+    AWT_edit(path);
     free(path);
 }
 
-void awtc_remove_arb_acc(AW_window *aws, AW_CL cl_gb_main){
-    AWUSE(aws);
+static void awtc_remove_arb_acc(AW_window */*aws*/, AW_CL cl_gb_main){
     char *path    = namesFilename(cl_gb_main);
     char *newpath = GBS_string_eval(path,"*=*%",0);
     char  command[1024];
