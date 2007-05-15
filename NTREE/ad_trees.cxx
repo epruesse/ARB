@@ -526,7 +526,7 @@ void ad_move_tree_info(AW_window *aww,AW_CL mode){
 
     AWT_move_info(gb_main, t1, t2, log_file, compare_node_info, delete_old_nodes, nodes_with_marked_only);
 
-    if (log_file) GB_edit(log_file);
+    if (log_file) AWT_edit(log_file);
 
     free(log_file);
     free(t2);

@@ -16,6 +16,7 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <awt_www.hxx>
+#include <awt.hxx>
 #include <SIG_PF.h>
 
 #ifdef SGI
@@ -1566,7 +1567,7 @@ static void aw_help_edit_help(AW_window *aww) {
         system(buffer);
     }
 
-    GB_edit(helpfile);
+    AWT_edit(helpfile);
 
     free(helpfile);
 }
