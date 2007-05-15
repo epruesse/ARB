@@ -45,21 +45,21 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
                 plen    = strlen(param);
             }
 
-            serverparams    = (char*)malloc(alllen+1);
-            serverparams[0] = 0; /* needed if no param exists */
+            serverparams = (char*)malloc(alllen+1);
             {
                 char *sp = serverparams;
 
                 param = strchr(server, 0)+1;
                 plen  = strlen(param);
-
-                while (plen) {
+                if (!plen) sp++;
+                else do {
                     memcpy(sp, param, plen);
                     sp[plen]  = ' ';
                     sp       += plen+1;
                     param    += plen+1;
                     plen      = strlen(param);
-                }
+                } while (plen);
+                sp[-1] = 0;
             }
         }
 
