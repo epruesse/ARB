@@ -19,7 +19,7 @@ int main P_((int argc, char **argv));
 
 /* ORS_C_PT.cxx */
 int init_pt_local_struct P_((void));
-char *probe_pt_look_for_server P_((int server_nr));
+char *OC_probe_pt_look_for_server P_((int server_nr));
 void probe_match P_((int server_nr, char *probe_seq, int max_mismatches, int weighted_mis, int reversed, int complement, int max_hits));
 void probe_find P_((int server_nr, char *probe_seq));
 void output_html_match_result P_((void));
