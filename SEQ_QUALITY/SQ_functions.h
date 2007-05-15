@@ -6,6 +6,7 @@
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
+//  Coded by Kai Bader (baderk@in.tum.de) in 2007                        //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
@@ -67,8 +68,7 @@ int SQ_get_value ( GBDATA *gb_main, const char *option );
 */
 
 
-struct SQ_weights
-{
+struct SQ_weights {
     int bases;
     int diff_from_average;
     int helix;
@@ -95,7 +95,9 @@ GB_ERROR SQ_mark_species ( GBDATA *gb_main, int condition );
 void SQ_clear_group_dictionary();
 
 
-enum SQ_TREE_ERROR { NONE = 0, ZOMBIE = 1, MISSING_NODE = 2 };
+enum SQ_TREE_ERROR {
+    NONE = 0, ZOMBIE = 1, MISSING_NODE = 2
+};
 
 SQ_TREE_ERROR SQ_check_tree_structure ( GBT_TREE *node );
 

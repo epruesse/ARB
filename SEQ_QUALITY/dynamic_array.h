@@ -5,6 +5,7 @@
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
+//  Coded by Kai Bader (baderk@in.tum.de) in 2007                        //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //

@@ -6,6 +6,7 @@
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
+//  Coded by Kai Bader (baderk@in.tum.de) in 2007                        //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
@@ -20,29 +21,34 @@
 #include "BI_helix.hxx"
 
 
-class SQ_helix
-{
-    public:
-        SQ_helix ( int size );
-        ~SQ_helix();
-        void SQ_calc_helix_layout ( const char *sequence, GBDATA *gb_main, char *alignment_name, GBDATA *gb_quality, AP_filter *filter);
-        int  SQ_get_no_helix() const { return count_no_helix; }
-        int  SQ_get_weak_helix() const { return count_weak_helix; }
-        int  SQ_get_strong_helix() const { return count_strong_helix; }
-    private:
-        const char * sequence;
-        int          count_strong_helix;
-        int          count_weak_helix;
-        int          count_no_helix;
-        int          size;
+class SQ_helix {
+public:
+    SQ_helix ( int size );
+    ~SQ_helix();
+    void SQ_calc_helix_layout ( const char *sequence, GBDATA *gb_main, char *alignment_name, GBDATA *gb_quality, AP_filter *filter);
+    int  SQ_get_no_helix() const {
+        return count_no_helix;
+    }
+    int  SQ_get_weak_helix() const {
+        return count_weak_helix;
+    }
+    int  SQ_get_strong_helix() const {
+        return count_strong_helix;
+    }
+private:
+    const char * sequence;
+    int          count_strong_helix;
+    int          count_weak_helix;
+    int          count_no_helix;
+    int          size;
 
-        static BI_helix    *helix;
-        static GBDATA      *helix_gb_main;
-        static std::string  helix_ali_name;
-        static std::map<int, int> filterMap;
-        static bool has_filterMap;
+    static BI_helix    *helix;
+    static GBDATA      *helix_gb_main;
+    static std::string  helix_ali_name;
+    static std::map<int, int> filterMap;
+    static bool has_filterMap;
 
-        static BI_helix& getHelix ( GBDATA *gb_main, const char *ali_name );
+    static BI_helix& getHelix ( GBDATA *gb_main, const char *ali_name );
 };
 
 
@@ -55,10 +61,8 @@ bool SQ_helix::has_filterMap = false;
 
 
 // SQ_helix implementation
-BI_helix& SQ_helix::getHelix ( GBDATA *gb_main, const char *ali_name )
-{
-    if ( !helix || gb_main != helix_gb_main || strcmp ( helix_ali_name.c_str(), ali_name ) != 0 )
-    {
+BI_helix& SQ_helix::getHelix ( GBDATA *gb_main, const char *ali_name ) {
+    if ( !helix || gb_main != helix_gb_main || strcmp ( helix_ali_name.c_str(), ali_name ) != 0 ) {
         delete helix;
         helix = new BI_helix;
 
@@ -81,12 +85,11 @@ SQ_helix::SQ_helix ( int size_ )
 SQ_helix::~SQ_helix() {}
 
 
-void SQ_helix::SQ_calc_helix_layout ( const char *sequence, GBDATA *gb_main, char *alignment_name, GBDATA *gb_quality, AP_filter *filter )
-{
+void SQ_helix::SQ_calc_helix_layout ( const char *sequence, GBDATA *gb_main, char *alignment_name, GBDATA *gb_quality, AP_filter *filter ) {
     BI_helix& my_helix = getHelix ( gb_main, alignment_name );
 
     // one call should be enough here (alignment does not change during the whole evaluation)
-    if(!has_filterMap) {
+    if (!has_filterMap) {
         filterMap.clear();
 
         for ( int filter_pos = 0; filter_pos < filter->real_len; filter_pos++ )
@@ -95,47 +98,40 @@ void SQ_helix::SQ_calc_helix_layout ( const char *sequence, GBDATA *gb_main, cha
         has_filterMap = true;
     }
 
-    if ( my_helix.entries == 0 )
-    {
+    if ( my_helix.entries == 0 ) {
         count_strong_helix=1;
         count_weak_helix=1;
         count_no_helix=1;
-    }
-    else
-    {
+    } else {
         // calculate the number of strong, weak and no helixes
-        for ( int filter_pos = 0; filter_pos < filter->real_len; filter_pos++ )
-        {
+        for ( int filter_pos = 0; filter_pos < filter->real_len; filter_pos++ ) {
             int seq_pos = filter->filterpos_2_seqpos[filter_pos];
 
             BI_PAIR_TYPE pair_type = my_helix.entries[seq_pos].pair_type;
-            if ( pair_type == HELIX_PAIR )
-            {
+            if ( pair_type == HELIX_PAIR ) {
                 int v_seq_pos = my_helix.entries[seq_pos].pair_pos;
-                if ( v_seq_pos > seq_pos )
-                { // ignore right helix positions
+                if ( v_seq_pos > seq_pos ) { // ignore right helix positions
                     int v_filter_pos = filterMap[v_seq_pos];
 
 #warning v_filter_pos==0 indicates a 'not found' entry but it also can be a legal position
                     seq_assert ( v_filter_pos );
 
-                    if(v_filter_pos > 0) {
+                    if (v_filter_pos > 0) {
                         char left  = sequence[filter_pos];
                         char right = sequence[v_filter_pos];
 
                         int check = my_helix.check_pair ( left, right, pair_type );
 
-                        switch ( check )
-                        {
-                            case 2:
-                                count_strong_helix++;
-                                break;
-                            case 1:
-                                count_weak_helix++;
-                                break;
-                            case 0:
-                                if ( ! ( ( left == '-' ) && ( right == '-' ) ) ) count_no_helix++;
-                                break;
+                        switch ( check ) {
+                        case 2:
+                            count_strong_helix++;
+                            break;
+                        case 1:
+                            count_weak_helix++;
+                            break;
+                        case 0:
+                            if ( ! ( ( left == '-' ) && ( right == '-' ) ) ) count_no_helix++;
+                            break;
                         }
                     }
                 }
