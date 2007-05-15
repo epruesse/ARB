@@ -11,7 +11,7 @@ TOOLS = \
 	arb_newick_2_otb arb_dnarates \
 	arb_2_bin arb_replace arb_read_tree \
 	arb_proto_2_xsub arb_probe arb_test arb_export_rates arb_export_tree arb_count_chars \
-	arb_perf_test arb_message arb_gene_probe
+	arb_perf_test arb_message arb_gene_probe arb_notify
 
 TARGETS = $(addprefix $(ARBHOME)/bin/,$(TOOLS))
 
@@ -108,6 +108,12 @@ $(ARBHOME)/bin/arb_newick_2_otb: $(ARBHOME)/INCLUDE/arb_assert.h
 $(ARBHOME)/bin/arb_newick_2_otb: $(ARBHOME)/INCLUDE/arbdb.h
 $(ARBHOME)/bin/arb_newick_2_otb: $(ARBHOME)/INCLUDE/arbdbt.h
 $(ARBHOME)/bin/arb_newick_2_otb: $(ARBHOME)/INCLUDE/cat_tree.hxx
+
+$(ARBHOME)/bin/arb_notify: $(ARBHOME)/INCLUDE/ad_prot.h
+$(ARBHOME)/bin/arb_notify: $(ARBHOME)/INCLUDE/ad_t_prot.h
+$(ARBHOME)/bin/arb_notify: $(ARBHOME)/INCLUDE/arb_assert.h
+$(ARBHOME)/bin/arb_notify: $(ARBHOME)/INCLUDE/arbdb.h
+$(ARBHOME)/bin/arb_notify: $(ARBHOME)/INCLUDE/arbdbt.h
 
 $(ARBHOME)/bin/arb_perf_test: $(ARBHOME)/INCLUDE/ad_prot.h
 $(ARBHOME)/bin/arb_perf_test: $(ARBHOME)/INCLUDE/ad_t_prot.h
