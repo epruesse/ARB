@@ -260,7 +260,21 @@ int main(int argc, char **argv)
             exit(EXIT_FAILURE);
         }
         enter_stage_1_build_tree(aisc_main,tname);
-        printf("PT_SERVER database '%s' has been created.\n", params->db_server);
+
+        {
+            char *msg = GBS_global_string_copy("PT_SERVER database \"%s\" has been created.", params->db_server);
+            puts(msg);
+            GBS_add_ptserver_logentry(msg);
+
+            char *command = GBS_global_string_copy("arb_message '%s'", msg);
+
+            if (system(command) != 0) {
+                fprintf(stderr, "Failed to run '%s'\n", command);
+            }
+            free(command);
+            free(msg);
+        }
+
         exit(EXIT_SUCCESS);
     }
     if (!strcmp(command_flag, "-QUERY")) {
