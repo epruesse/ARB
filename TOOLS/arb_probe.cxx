@@ -65,7 +65,7 @@ void aw_message(const char *error){
     printf("%s\n",error);
 }
 
-static const char *probe_pt_look_for_server()
+static const char *AP_probe_pt_look_for_server()
 {
     char choice[256];
     sprintf(choice,"ARB_PT_SERVER%i",P.SERVERID);
@@ -96,7 +96,7 @@ void AP_probe_design_event() {
     char        *match_info;
 
     {
-        const char *servername = probe_pt_look_for_server();
+        const char *servername = AP_probe_pt_look_for_server();
         
         if (!servername) return;
         pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
@@ -198,7 +198,7 @@ void AP_probe_match_event()
     char           *locs_error;
 
     {
-        const char *servername = probe_pt_look_for_server();
+        const char *servername = AP_probe_pt_look_for_server();
         
         if (!servername) return;
         pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com,AISC_MAGIC_NUMBER);
