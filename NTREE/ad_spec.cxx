@@ -798,7 +798,7 @@ static AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root,AW_CL c
     aws->create_button("HELP","HELP","H");
 
     aws->at("pt_server");
-    awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, true);
+    awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, AW_TRUE);
 
     aws->at("field");
     awt_create_selection_list_on_scandb(gb_main,aws,"next_neighbours/dest_field",
