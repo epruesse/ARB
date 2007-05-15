@@ -82,7 +82,7 @@ static const char *probe_pt_look_for_server(GBDATA *gb_main, const char *servern
     int serverid = -1;
 
     for (int i=0;i<1000; ++i) {
-        char *aServer = GBS_ptserver_id_to_choice(i);
+        char *aServer = GBS_ptserver_id_to_choice(i, 0);
         if (aServer) {
             if (strcmp(aServer, servername)==0) {
                 serverid = i;
