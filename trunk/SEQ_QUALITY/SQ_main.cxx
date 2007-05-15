@@ -6,6 +6,7 @@
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
+//  Coded by Kai Bader (baderk@in.tum.de) in 2007                        //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
@@ -53,8 +54,7 @@ extern GBDATA *gb_main;
 #define AWAR_FILTER_FILTER  AWAR_FILTER_PREFIX "filter"
 #define AWAR_FILTER_ALI     AWAR_FILTER_PREFIX "alignment"
 
-void SQ_create_awars ( AW_root *aw_root, AW_default aw_def )
-{
+void SQ_create_awars ( AW_root *aw_root, AW_default aw_def ) {
     aw_root->awar_int ( AWAR_SQ_WEIGHT_BASES, 5, aw_def );
     aw_root->awar_int ( AWAR_SQ_WEIGHT_DEVIATION, 15, aw_def );
     aw_root->awar_int ( AWAR_SQ_WEIGHT_HELIX, 15, aw_def );
@@ -73,42 +73,34 @@ void SQ_create_awars ( AW_root *aw_root, AW_default aw_def )
 // --------------------------------------------------------------------------------
 
 
-static void sq_calc_seq_quality_cb ( AW_window *aww, AW_CL res_from_awt_create_select_filter )
-{
+static void sq_calc_seq_quality_cb ( AW_window *aww, AW_CL res_from_awt_create_select_filter ) {
     AW_root  *aw_root = aww->get_root();
     GB_ERROR  error   = 0;
     GBT_TREE *tree    = 0;
 
     {
         char *treename = aw_root->awar ( AWAR_TREE )->read_string(); // contains "????" if no tree is selected
-        if ( treename && strcmp ( treename, "????" ) != 0 )
-        {
+        if ( treename && strcmp ( treename, "????" ) != 0 ) {
             GB_push_transaction ( gb_main );
             tree = GBT_read_tree ( gb_main, treename, sizeof ( GBT_TREE ) );
-            if ( tree )
-            {
+            if ( tree ) {
                 error = GBT_link_tree ( tree,gb_main,GB_FALSE, 0, 0 );
-            }
-            else
-            {
+            } else {
                 aw_message ( GBS_global_string ( "Cannot read tree '%s' -- group specific calculations skipped.\n   Treating all available sequences as one group!", treename ) );
             }
             GB_pop_transaction ( gb_main );
-        }
-        else aw_message ( "No tree selected -- group specific calculations skipped." );
+        } else aw_message ( "No tree selected -- group specific calculations skipped." );
         free ( treename );
     }
 
-    if ( !error )
-    {
+    if ( !error ) {
         //error = SQ_reset_quality_calcstate(gb_main);
     }
 
     // if tree == 0 -> do basic quality calculations that are possible without tree information
     // otherwise    -> use all groups found in tree and compare sequences against the groups they are contained in
 
-    if ( !error )
-    {
+    if ( !error ) {
         struct SQ_weights weights;
 
         weights.bases             = aw_root->awar ( AWAR_SQ_WEIGHT_BASES )->read_int();
@@ -135,34 +127,29 @@ static void sq_calc_seq_quality_cb ( AW_window *aww, AW_CL res_from_awt_create_s
 
         aw_openstatus ( "Checking tree for irregularities..." );
         SQ_TREE_ERROR check= NONE;
-        if ( (check = SQ_check_tree_structure ( tree )) != NONE )
-        {
-            switch(check) {
-                case ZOMBIE:
-                    aw_message ( "Found one or more zombies in the tree.\nPlease remove them or use another tree before running the quality check tool." );
-                    break;
-                case MISSING_NODE:
-                    aw_message ( "Missing node(s) or unusable tree structure.\nPlease fix the tree before running the quality check tool." );
-                    break;
-                default:
-                    aw_message ( "An error occured while traversing the tree.\nPlease fix the tree before running the quality check tool." );
-                    break;
+        if ( (check = SQ_check_tree_structure ( tree )) != NONE ) {
+            switch (check) {
+            case ZOMBIE:
+                aw_message ( "Found one or more zombies in the tree.\nPlease remove them or use another tree before running the quality check tool." );
+                break;
+            case MISSING_NODE:
+                aw_message ( "Missing node(s) or unusable tree structure.\nPlease fix the tree before running the quality check tool." );
+                break;
+            default:
+                aw_message ( "An error occured while traversing the tree.\nPlease fix the tree before running the quality check tool." );
+                break;
             }
             aw_closestatus();
             return;
         }
         aw_closestatus();
 
-        if ( tree==0 )
-        {
-            if ( reevaluate )
-            {
+        if ( tree==0 ) {
+            if ( reevaluate ) {
                 aw_openstatus ( "Marking Sequences..." );
                 SQ_mark_species ( gb_main, mark_below );
                 aw_closestatus();
-            }
-            else
-            {
+            } else {
                 SQ_GroupData* globalData = new SQ_GroupData_RNA;
                 SQ_count_nr_of_species ( gb_main );
                 aw_openstatus ( "Calculating pass 1 of 2 ..." );
@@ -172,26 +159,20 @@ static void sq_calc_seq_quality_cb ( AW_window *aww, AW_CL res_from_awt_create_s
                 SQ_pass2_no_tree ( globalData, gb_main, filter );
                 SQ_evaluate ( gb_main, weights );
                 aw_closestatus();
-                if ( mark_flag )
-                {
+                if ( mark_flag ) {
                     aw_openstatus ( "Marking Sequences..." );
                     SQ_mark_species ( gb_main, mark_below );
                     aw_closestatus();
                 }
                 delete globalData;
             }
-        }
-        else
-        {
-            if ( reevaluate )
-            {
+        } else {
+            if ( reevaluate ) {
                 aw_openstatus ( "Marking Sequences..." );
                 SQ_count_nr_of_species ( gb_main );
                 SQ_mark_species ( gb_main, mark_below );
                 aw_closestatus();
-            }
-            else
-            {
+            } else {
                 aw_openstatus ( "Calculating pass 1 of 2..." );
                 SQ_reset_counters ( tree );
                 SQ_GroupData* globalData = new SQ_GroupData_RNA;
@@ -203,8 +184,7 @@ static void sq_calc_seq_quality_cb ( AW_window *aww, AW_CL res_from_awt_create_s
                 SQ_evaluate ( gb_main, weights );
                 aw_closestatus();
                 SQ_reset_counters ( tree );
-                if ( mark_flag )
-                {
+                if ( mark_flag ) {
                     aw_openstatus ( "Marking Sequences..." );
                     SQ_count_nr_of_species ( gb_main );
                     SQ_mark_species ( gb_main, mark_below );
@@ -215,8 +195,7 @@ static void sq_calc_seq_quality_cb ( AW_window *aww, AW_CL res_from_awt_create_s
         }
     }
 
-    if ( error )
-    {
+    if ( error ) {
         aw_message ( error );
     }
 
@@ -225,8 +204,7 @@ static void sq_calc_seq_quality_cb ( AW_window *aww, AW_CL res_from_awt_create_s
 
 
 // create window for sequence quality calculation (called only once)
-AW_window *SQ_create_seq_quality_window ( AW_root *aw_root, AW_CL )
-{
+AW_window *SQ_create_seq_quality_window ( AW_root *aw_root, AW_CL ) {
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init ( aw_root, "CALC_SEQ_QUALITY", "CALCULATE SEQUENCE QUALITY" );

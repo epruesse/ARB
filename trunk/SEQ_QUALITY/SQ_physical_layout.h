@@ -6,6 +6,7 @@
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
+//  Coded by Kai Bader (baderk@in.tum.de) in 2007                        //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
@@ -19,28 +20,26 @@
 #define seq_assert(bed) arb_assert(bed)
 
 
-class SQ_physical_layout
-{
-    public:
-        SQ_physical_layout();
-        void   SQ_calc_physical_layout ( const char *sequence, int size, GBDATA *gb_quality );
-        int    SQ_get_number_of_bases() const;
-        double SQ_get_gc_proportion() const;
-    private:
-        int roundme ( double value );
-        double temp;
-        double count_bases;
-        double count_scores;
-        double count_dots;
-        double GC;
-        double GC_proportion;
-        int    percent_bases;
-        int    count_bases2;
+class SQ_physical_layout {
+public:
+    SQ_physical_layout();
+    void   SQ_calc_physical_layout ( const char *sequence, int size, GBDATA *gb_quality );
+    int    SQ_get_number_of_bases() const;
+    double SQ_get_gc_proportion() const;
+private:
+    int roundme ( double value );
+    double temp;
+    double count_bases;
+    double count_scores;
+    double count_dots;
+    double GC;
+    double GC_proportion;
+    int    percent_bases;
+    int    count_bases2;
 };
 
 
-SQ_physical_layout::SQ_physical_layout()
-{
+SQ_physical_layout::SQ_physical_layout() {
     temp              = 0;
     count_bases       = 0;
     count_scores      = 0;
@@ -52,8 +51,7 @@ SQ_physical_layout::SQ_physical_layout()
 }
 
 
-int SQ_physical_layout::roundme ( double value )
-{
+int SQ_physical_layout::roundme ( double value ) {
     int x;
     value += 0.5;
     x = ( int ) floor ( value );
@@ -61,36 +59,32 @@ int SQ_physical_layout::roundme ( double value )
 }
 
 
-void SQ_physical_layout::SQ_calc_physical_layout ( const char *sequence, int size, GBDATA *gb_quality )
-{
+void SQ_physical_layout::SQ_calc_physical_layout ( const char *sequence, int size, GBDATA *gb_quality ) {
     count_bases = size;
 
-    for ( int i = 0; i < size; i++ )
-    {
-        switch ( sequence[i] )
-        {
-            case '-':            /*calculate number of dots and spaces*/
-                count_bases--;
-                count_scores++;
-                break;
-            case '.':
-                count_bases--;
-                count_dots++;
-                break;
-            case 'G':            /*calculate GC layout of sequence*/
-            case 'g':
-                GC++;
-                break;
-            case 'C':
-            case 'c':
-                GC++;
-                break;
+    for ( int i = 0; i < size; i++ ) {
+        switch ( sequence[i] ) {
+        case '-':            /*calculate number of dots and spaces*/
+            count_bases--;
+            count_scores++;
+            break;
+        case '.':
+            count_bases--;
+            count_dots++;
+            break;
+        case 'G':            /*calculate GC layout of sequence*/
+        case 'g':
+            GC++;
+            break;
+        case 'C':
+        case 'c':
+            GC++;
+            break;
         }
     }
 
     /*calculate layout in percent*/
-    if ( GC!=0 )
-    {
+    if ( GC!=0 ) {
         GC_proportion = GC / count_bases;
     }
     temp = 100 - ( 100* ( ( count_scores + count_dots ) /size ) );
@@ -111,16 +105,14 @@ void SQ_physical_layout::SQ_calc_physical_layout ( const char *sequence, int siz
 }
 
 
-inline int SQ_physical_layout::SQ_get_number_of_bases() const
-{
+inline int SQ_physical_layout::SQ_get_number_of_bases() const {
     int i;
     i = count_bases2;
     return i;
 }
 
 
-inline double SQ_physical_layout::SQ_get_gc_proportion() const
-{
+inline double SQ_physical_layout::SQ_get_gc_proportion() const {
     double i;
     i = GC_proportion;
     return i;
