@@ -445,7 +445,7 @@ void awt_do_query(void *dummy, struct adaqbsstruct *cbs,AW_CL ext_query)
                                 all_fields = 1;
                             }
                             else {
-                                gb_key = GB_find_sub_by_quark(gb_item,this_query->getKeyquark(),0,0);
+                                gb_key = GB_find_sub_by_quark(gb_item, this_query->getKeyquark(), GB_NONE, 0, 0);
                             }
 
                             while (gb_key) {
