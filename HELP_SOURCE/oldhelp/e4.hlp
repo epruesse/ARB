@@ -160,12 +160,12 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 
 		Moving nucleotide (amino acid) symbols:
 
-			SHIFT+LEFT/RIGHT
+			SHIFT + LEFT/RIGHT
 
 				Push or pull a coherent sequence stretch next
 				to the cursor.
 
-			META+LEFT/RIGHT (or CTRL+O/P)
+			ALT + LEFT/RIGHT
 
 				Move a single nucleotide (amino acid) symbol.
 
@@ -201,6 +201,8 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 			- press the small X to get rid of all errors
 
 EXAMPLES	None
+
+NOTES           You may use the META key instead of ALT (especially if there is no ALT key :)
 
 WARNINGS	The key mappings may conflict with some window managers
 		(eg. olvwm). Disable the CNTRL-LEFT/RIGHT keys of the window

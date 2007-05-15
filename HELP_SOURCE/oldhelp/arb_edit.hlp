@@ -127,23 +127,19 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 
 		Moving nucleotide (amino acid) symbols:
 
-			CNTRL+LEFT/RIGHT
+			CTRL + LEFT/RIGHT
 
-                        Push or pull a coherent sequence
-						stretch next to the cursor.
+                             Push or pull a coherent sequence
+                             stretch next to the cursor.
 
-			META+LEFT/RIGHT (META is ALT on some systems)
+			ALT + LEFT/RIGHT
 
-                        Move a single nucleotide
-						(amino acid) symbol from right or
-						left to the cursor position.
-						If the cursor is placed at a gap
-						position adjacent to a
-						nucleotide (amino acid) symbol
-						this symbol is moved in the
-						direction of cursor position to
-						the next symbol (jumps over
-						gaps)
+                            Move a single nucleotide (amino acid) symbol from right or
+                            left to the cursor position.
+
+                            If the cursor is placed at a gap position adjacent to a nucleotide (amino acid)
+                            symbol this symbol is moved in the direction of cursor position to the next
+                            symbol (jumps over gaps).
 
 			@@ Shift left and Right
                         @@ MG Knopf
@@ -153,6 +149,8 @@ EXAMPLES	None
 NOTES		The order of the entries cannot be saved to the database.
 		The cursor is removed if it is scrolled outside the visible
 		area.
+
+                You may use the META key instead of ALT (especially if there is no ALT key :)
 
 WARNINGS	The key mappings may conflict with some window managers
 		(eg. olvwm). Disable the CNTRL-LEFT/RIGHT keys of the window
