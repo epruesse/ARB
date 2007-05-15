@@ -140,15 +140,15 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, long estimated_size)
     ifs->nr_of_elements = 0;
     SET_GB_INDEX_FILES_ENTRIES(ifs, (struct gb_if_entries **)GB_calloc(sizeof(void *),(int)ifs->hash_table_size));
 
-    for (   gbf = GB_find_sub_by_quark(gbd,-1,0,0);
-            gbf;
-            gbf = GB_find_sub_by_quark(gbd,-1,0,gbf))
+    for (gbf = GB_find_sub_by_quark(gbd,-1,GB_NONE, 0,0);
+         gbf;
+         gbf = GB_find_sub_by_quark(gbd,-1,GB_NONE, 0,gbf))
     {
         if (GB_TYPE(gbf) != GB_DB) continue;
 
-        for (   gb2 = GB_find_sub_by_quark(gbf,key_quark,0,0);
+        for (   gb2 = GB_find_sub_by_quark(gbf,key_quark,GB_NONE, 0,0);
                 gb2;
-                gb2 = GB_find_sub_by_quark(gbf,key_quark,0,gb2))
+                gb2 = GB_find_sub_by_quark(gbf,key_quark,GB_NONE, 0,gb2))
         {
             if (GB_TYPE(gb2) != GB_STRING && GB_TYPE(gb2) != GB_LINK) continue;
             gb_index_check_in(gb2);
