@@ -710,7 +710,7 @@ PV_ERROR PV_ComplementarySequence(char *sequence)
 }
 
 // This function translates gene sequence to aminoacid sequence and stores into the respective AA_Sequence_terminal
-void TranslateGeneToAminoAcidSequence(AW_root *root, ED4_AA_sequence_terminal *seqTerm, char *speciesName, int startPos4Translation, int translationMode){
+void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_terminal *seqTerm, char *speciesName, int startPos4Translation, int translationMode){
     GBDATA    *gb_species = GBT_find_species(gb_main, speciesName);
     char *defaultAlignment = GBT_get_default_alignment(gb_main);
     GBDATA  *gb_SeqData = GBT_read_sequence(gb_species, defaultAlignment);

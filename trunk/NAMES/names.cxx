@@ -309,7 +309,7 @@ static void an_autocaps(char *str) {
     }
 }
 
-static char *an_get_short(AN_shorts *shorts, dll_public *parent, const char *full){
+static char *an_get_short(AN_shorts *IF_DEBUG(shorts), dll_public *parent, const char *full){
     AN_shorts *look;
 
     gb_assert(full);
@@ -778,7 +778,7 @@ extern "C" aisc_string get_short(AN_local *locs)
                     char *printAt = test_short+printOffset;
 
                     for (; !foundUnused && count <= limit; ++count) {
-                        int printed = sprintf(printAt, "%li", count);
+                        IF_DEBUG(int printed =) sprintf(printAt, "%li", count);
                         gb_assert((printed+printOffset) <= 8);
                         if (!lookup_an_revers(aisc_main, test_short)) foundUnused = true; // name does not exist
                     }

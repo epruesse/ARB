@@ -126,9 +126,9 @@ static void Usage ( void )
 //              if (!pre) error = 3;
 //              else
                 {
-                    BI_helix helix;
+                    BI_helix    helix;
                     const char *err = helix.init(db.gb_main);
-                    long pos = 0;
+                    size_t      pos = 0;
 
                     if (err) cout << err << ", " << helix.size;
 
@@ -137,7 +137,7 @@ static void Usage ( void )
                         if (helix.entries[pos].pair_type != HELIX_PAIR) cout << ".";
                         else
                         {
-                            if (helix.entries[pos].pair_pos < pos) cout << "]";
+                            if (helix.entries[pos].pair_pos < (long)pos) cout << "]";
                             else cout << "[";
                         }
 

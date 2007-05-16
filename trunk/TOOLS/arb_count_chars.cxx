@@ -32,18 +32,18 @@ int main(int argc, char **argv){
     char filter[256];
     if (is_amino){
 	memset(filter,1,256);
-	filter['B'] = 0;
-	filter['J'] = 0;
-	filter['O'] = 0;
-	filter['U'] = 0;
-	filter['Z'] = 0;
+	filter[(unsigned char)'B'] = 0;
+	filter[(unsigned char)'J'] = 0;
+	filter[(unsigned char)'O'] = 0;
+	filter[(unsigned char)'U'] = 0;
+	filter[(unsigned char)'Z'] = 0;
     }else{
 	memset(filter,0,256);
-	filter['A'] = 1;
-	filter['C'] = 1;
-	filter['G'] = 1;
-	filter['T'] = 1;
-	filter['U'] = 1;
+	filter[(unsigned char)'A'] = 1;
+	filter[(unsigned char)'C'] = 1;
+	filter[(unsigned char)'G'] = 1;
+	filter[(unsigned char)'T'] = 1;
+	filter[(unsigned char)'U'] = 1;
     }
 
 				// malloc and clear arrays for counting characters (only letters)
@@ -71,7 +71,7 @@ int main(int argc, char **argv){
 	const char *seq = GB_read_char_pntr(gb_data);
 	if (!seq) continue;
 
-	char c;
+	unsigned char c;
 	for ( i=0; (i< alignment_len) && (c = *(seq)); i++, seq++){
 	    if (!isalpha(c)) continue;
 	    c = toupper(c);

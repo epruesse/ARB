@@ -404,7 +404,7 @@ bool ED4_base::is_visible(AW_pos x, AW_pos y, ED4_direction direction)
     return visible;
 }
 
-bool ED4_base::is_visible(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction direction)
+bool ED4_base::is_visible(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction IF_DEBUG(direction))
 // optimized case of function above (to avoid the need to call it 4 times)
 {
     e4_assert(direction == ED4_D_ALL_DIRECTION);

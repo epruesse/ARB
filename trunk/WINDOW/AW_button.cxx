@@ -544,7 +544,10 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
 #define FLAT_GRAPHIC_PADDING   4 // for buttons w/o callback
 
     bool is_graphical_button = buttonlabel[0] == '#';
-    bool is_awar             = !is_graphical_button && (strchr(buttonlabel, '/') && !strchr(buttonlabel, ' '));
+    
+#if defined(DEBUG)
+    bool is_awar = !is_graphical_button && (strchr(buttonlabel, '/') && !strchr(buttonlabel, ' '));
+#endif // DEBUG
 
     int width_of_button = -1, height_of_button = -1;
 

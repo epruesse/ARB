@@ -1163,26 +1163,30 @@ int treeGetCh ()
 } /* treeGetCh */
 
 
-void  treeFlushLabel ()
-{ /* treeFlushLabel */
-    int      ch;
-    boolean  done, quoted;
+void treeFlushLabel()
+{
+    int     ch;
+    boolean done;
 
     if ((ch = treeGetCh()) == EOF)  return;
     done = (ch == ':' || ch == ',' || ch == ')'  || ch == '[' || ch == ';');
-    if (! done && (quoted = (ch == '\'')))  ch = getc(INFILE);
 
-    while (! done) {
-        if (quoted) {
-            if ((ch = findch('\'')) == EOF)  return;      /* find close quote */
-            ch = getc(INFILE);                            /* check next char */
-            if (ch != '\'') done = TRUE;                  /* not doubled quote */
+    if (!done) {
+        boolean quoted = (ch == '\'');
+        if (quoted) ch = getc(INFILE);
+        
+        while (! done) {
+            if (quoted) {
+                if ((ch = findch('\'')) == EOF)  return;      /* find close quote */
+                ch = getc(INFILE);                            /* check next char */
+                if (ch != '\'') done = TRUE;                  /* not doubled quote */
+            }
+            else if (ch == ':' || ch == ',' || ch == ')'  || ch == '['
+                     || ch == ';' || ch == '\n' || ch == EOF) {
+                done = TRUE;
+            }
+            if (! done)  done = ((ch = getc(INFILE)) == EOF);
         }
-        else if (ch == ':' || ch == ',' || ch == ')'  || ch == '['
-                 || ch == ';' || ch == '\n' || ch == EOF) {
-            done = TRUE;
-        }
-        if (! done)  done = ((ch = getc(INFILE)) == EOF);
     }
 
     if (ch != EOF)  (void) ungetc(ch, INFILE);

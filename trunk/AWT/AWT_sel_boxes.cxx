@@ -831,7 +831,7 @@ struct fileChanged_cb_data {
     }
 };
 
-static void editor_terminated_cb(const char *message, void *cb_data) {
+static void editor_terminated_cb(const char *IF_DEBUG(message), void *cb_data) {
     fileChanged_cb_data *data = (fileChanged_cb_data*)cb_data;
 
 #if defined(DEBUG)
