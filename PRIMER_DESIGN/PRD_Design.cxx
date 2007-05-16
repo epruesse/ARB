@@ -504,11 +504,11 @@ void PrimerDesign::printPrimerTrees ()
 //
 void PrimerDesign::matchSequenceAgainstPrimerTrees()
 {
-    SearchFIFO        *fifo1             = new SearchFIFO( root1,min_distance_to_next_match,expand_IUPAC_Codes );
-    SearchFIFO        *fifo2             = new SearchFIFO( root2,min_distance_to_next_match,expand_IUPAC_Codes );
-    SequenceIterator  *sequence_iterator = new SequenceIterator( sequence,0,SequenceIterator::IGNORE,SequenceIterator::IGNORE,SequenceIterator::FORWARD );
-    char               base;
-    PRD_Sequence_Pos   pos;
+    SearchFIFO       *fifo1             = new SearchFIFO( root1,min_distance_to_next_match,expand_IUPAC_Codes );
+    SearchFIFO       *fifo2             = new SearchFIFO( root2,min_distance_to_next_match,expand_IUPAC_Codes );
+    SequenceIterator *sequence_iterator = new SequenceIterator( sequence,0,SequenceIterator::IGNORE,SequenceIterator::IGNORE,SequenceIterator::FORWARD );
+    char              base;
+    PRD_Sequence_Pos  pos               = sequence_iterator->pos;
 
 #if defined(DEBUG)
     printf( "root1 : [C %p, G %p, A %p, TU %p]\n",root1->child[0],root1->child[1],root1->child[2],root1->child[3] );

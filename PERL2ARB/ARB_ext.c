@@ -36,7 +36,7 @@ GB_ERROR GBP_add_callback(GBDATA *gbd, char *perl_func, char *perl_cl){
     data = (char *)calloc(1,strlen(perl_func) + strlen(perl_cl) + 100);
     arg = (char *)calloc(1,strlen(perl_func) + strlen(perl_cl) + 2);
     sprintf(arg,"%s%c%s",perl_func,'\0',perl_cl);
-    sprintf(data,"%x:%s%c%s",gbd,perl_func,'\1',perl_cl);
+    sprintf(data,"%p:%s%c%s",gbd,perl_func,'\1',perl_cl);
     if (!GBS_read_hash(gbp_cp_hash_table,data)){
 	GBS_write_hash(gbp_cp_hash_table,data,(long)data);
 	GB_add_callback(gbd,GB_CB_DELETE|GB_CB_CHANGED,GBP_callback, (int *)arg);
@@ -52,7 +52,7 @@ GB_ERROR GBP_remove_callback(GBDATA *gbd, char *perl_func, char *perl_cl){
     char *arg = 0;
     if (gbp_cp_hash_table ==0) gbp_cp_hash_table = GBS_create_hash(4096,0);
     data = (char *)calloc(1,strlen(perl_func) + strlen(perl_cl) + 100);
-    sprintf(data,"%x:%s%c%s",gbd,perl_func,'\1',perl_cl);
+    sprintf(data,"%p:%s%c%s",gbd,perl_func,'\1',perl_cl);
     arg =(char *)GBS_read_hash(gbp_cp_hash_table,data);
     if (!arg){
 	free(data);

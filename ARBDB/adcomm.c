@@ -803,13 +803,12 @@ int gbcms_talking_undo(int socket,long *hsin,void *sin,GBDATA *gbd)
 int
 gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd)
 {
-    GB_ERROR              error;
-    char                 *key;
-    char                 *val1 = 0;
-    long                  val2;
-    GB_TYPES              type;
-    /* enum gb_search_types  gbs[1]; */
-    void                 *buffer[2];
+    GB_ERROR  error;
+    char     *key;
+    char     *val1 = 0;
+    long      val2 = 0;
+    GB_TYPES  type;
+    void     *buffer[2];
 
     struct Hs_struct *hs = (struct Hs_struct *) hsin;
     GBUSE(hs);GBUSE(sin);

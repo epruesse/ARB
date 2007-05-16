@@ -434,7 +434,7 @@ static GBDATA *groupEntry_recursive(GBDATA *pb_father, SpeciesBagIter start, Spe
 }
 
 // search/create entry for group
-GBDATA *PG_Group::groupEntry(GBDATA *pb_main, bool create, bool& created) {
+GBDATA *PG_Group::groupEntry(GBDATA *pb_main, bool IF_DEBUG(create), bool& created) {
     GB_transaction  dummy(pb_main);
     GBDATA         *pb_group_tree   = group_tree(pb_main);
     GBDATA         *pb_current_node = pb_group_tree;

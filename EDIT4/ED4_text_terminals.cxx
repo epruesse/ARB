@@ -154,10 +154,10 @@ struct show_summary_parameters {
 };
 
 
-int ED4_show_summary_match_on_device(AW_device *device, int gc, const char *opt_string, size_t opt_string_size, size_t start, size_t size,
-                                     AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
-                                     AW_CL cd_summary_paramters, AW_CL real_sequence_length, AW_CL cd2){
-    AWUSE(opt_ascent);AWUSE(opt_descent);AWUSE(opt_string_size);
+int ED4_show_summary_match_on_device(AW_device *device, int gc, const char */*opt_string*/, size_t /*opt_string_size*/, size_t start, size_t size,
+                                     AW_pos x,AW_pos y, AW_pos /*opt_ascent*/,AW_pos /*opt_descent*/,
+                                     AW_CL cd_summary_paramters, AW_CL /*real_sequence_length*/, AW_CL cd2)
+{
     show_summary_parameters *ssp    = (show_summary_parameters*)cd_summary_paramters;
     const ED4_remap         *rm     = ED4_ROOT->root_group_man->remap();
     char                    *buffer = GB_give_buffer(size+1);
@@ -234,7 +234,7 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
         }
     }
 
-    int seq_start = rm->screen_to_sequence(left); // real start of sequence
+    // int seq_start = rm->screen_to_sequence(left); // real start of sequence
     int seq_end = rm->screen_to_sequence(right);
 
     // mark all strings as unused
@@ -310,7 +310,7 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
         int gc;
         for (gc = 0; gc < ED4_G_DRAG; gc++){
             if (!color_is_used[gc]) continue;
-            if (strlen(colored_strings[gc])>=color_is_used[gc]) {
+            if ((int)strlen(colored_strings[gc])>=color_is_used[gc]) {
                 device->text( gc, colored_strings[gc], text_x, text_y, 0, 1, 0, 0, color_is_used [gc]);
                 memset(colored_strings[gc] + left,' ', right-left+1); // clear string
             }
