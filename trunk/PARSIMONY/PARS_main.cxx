@@ -789,11 +789,11 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
                     break;
                 }
 
-                AP_tree    *part_leaf = i->release();
-                AP_tree    *full_seq  = const_cast<AP_tree*>(i->get_best_match());
-                AP_tree    *brother   = full_seq->brother();
-                int         is_partial;
-                AP_tree    *target    = 0;
+                AP_tree *part_leaf  = i->release();
+                AP_tree *full_seq   = const_cast<AP_tree*>(i->get_best_match());
+                AP_tree *brother    = full_seq->brother();
+                int      is_partial = 0;
+                AP_tree *target     = 0;
 
                 if (brother->is_leaf) {
                     if (brother->gb_node) {
@@ -827,8 +827,9 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
                     }
                     else {      // brother subtree only contains partial sequences
                         // find one of the least-deep leafs
-                        int depth = INT_MAX;
-                        target    = find_least_deep_leaf(brother, 0, &depth);
+                        int depth  = INT_MAX;
+                        target     = find_least_deep_leaf(brother, 0, &depth);
+                        is_partial = 1;
                     }
                 }
 
