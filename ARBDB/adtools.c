@@ -540,7 +540,9 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
         if (duplicates) {
             error = GBS_global_string("Database is corrupted:\n"
                                       "Found %li duplicated species with identical names!\n"
-                                      "Fix the problem, save and restart ARB."
+                                      "Fix the problem using\n"
+                                      "   'Search For Equal Fields and Mark Duplikates'\n"
+                                      "in ARB_NTREE search tool, save DB and restart ARB."
                                       , duplicates);
         }
     }
@@ -3065,6 +3067,8 @@ GB_ERROR GBT_abort_rename_session(void)
     return error;
 }
 
+static const char *currentTreeName = 0;
+
 GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree,int tree_index){
     char buffer[256];
     static int counter = 0;
@@ -3076,7 +3080,8 @@ GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree,int tree_index){
                 char *newname;
                 if (rns->used_by == tree_index){ /* species more than once in the tree */
                     sprintf(buffer,"%s_%i", rns->data, counter++);
-                    GB_warning("Species '%s' more than once in a tree, creating zombie '%s'", tree->name, buffer);
+                    GB_warning("Species '%s' more than once in '%s', creating zombie '%s'",
+                               tree->name, currentTreeName, buffer);
                     newname = buffer;
                 }
                 else {
@@ -3117,7 +3122,10 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
                 GBT_TREE *tree  = GBT_read_tree(gbtrst.gb_main,tname,-sizeof(GBT_TREE));
 
                 if (tree) {
+                    currentTreeName = tname; // provide tree name (used for error message)
                     gbt_rename_tree_rek(tree, count+1);
+                    currentTreeName = 0;
+
                     GBT_write_tree(gbtrst.gb_main, 0, tname, tree);
                     GBT_delete_tree(tree);
                 }
