@@ -1066,7 +1066,6 @@ GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name,
     GBDATA   *gb_node,    *gb_tree_data;
     GBDATA   *gb_node_next;
     GBDATA   *gb_nnodes, *gbd;
-    long      size;
     GB_ERROR  error;
     char     *ctree,*t_size;
     GBDATA   *gb_ctree;
@@ -1104,26 +1103,29 @@ GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name,
     error     = GB_set_compression(gb_main,-1); /* allow all types of compression */
 
     free(ctree);
-    if (!plain_only) {
-        if (!error) size = gbt_write_tree_nodes(gb_tree,tree,0);
-        if (error || (size<0)) {
-            GB_print_error();
-            return GB_get_error();
+    if (!plain_only && !error) {
+        long size = gbt_write_tree_nodes(gb_tree,tree,0);
+            
+        if (size<0) {
+            error = GB_get_error();
         }
+        else {
+            for (gb_node = GB_find(gb_tree,"node",0,down_level); /* delete all ghost nodes */
+                 gb_node && !error;
+                 gb_node = gb_node_next)
+            {
+                gb_node_next = GB_find(gb_node,"node",0,this_level|search_next);
+                gbd = GB_find(gb_node,"id",0,down_level);
+                if (!gbd || GB_read_usr_private(gb_node)) {
+                    error = GB_delete(gb_node);
+                }
+            }
 
-        for (   gb_node = GB_find(gb_tree,"node",0,down_level); /* delete all ghost nodes */
-                gb_node;
-                gb_node = gb_node_next)
-        {
-            gb_node_next = GB_find(gb_node,"node",0,this_level|search_next);
-            gbd = GB_find(gb_node,"id",0,down_level);
-            if (!gbd || GB_read_usr_private(gb_node)) {
-                error = GB_delete(gb_node);
-                if (error) GB_print_error();
+            if (!error) {
+                gb_nnodes = GB_search(gb_tree,"nnodes",GB_INT);
+                error = GB_write_int(gb_nnodes,size);
             }
         }
-        gb_nnodes = GB_search(gb_tree,"nnodes",GB_INT);
-        error = GB_write_int(gb_nnodes,size);
     }
 
     if (error) return error;
