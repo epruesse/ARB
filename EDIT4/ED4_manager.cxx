@@ -2151,8 +2151,6 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
 {
     e4_assert(update_needed);
 
-    int                    ew;
-    ED4_window            *next_win;
     const ED4_char_table&  table = gm->table();
     size_t                 i,j;
 
