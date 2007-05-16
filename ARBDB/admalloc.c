@@ -95,7 +95,7 @@ static struct gbb_Cluster
 } gbb_cluster[GBB_CLUSTERS+1];
 
 /* @@@ */
-void *GB_calloc(unsigned int nelem, unsigned int elsize)
+NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize)
 {
     size_t size = nelem*elsize;
     void *mem = malloc(size);
@@ -158,7 +158,7 @@ char *GB_strndup(const char *start, int len) {
     return GB_strpartdup(start, start+len-1);
 }
 
-void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, unsigned int elsize)
+NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, unsigned int elsize)
 {
     size_t nsize = nelem*elsize;
     void *mem = malloc(nsize);

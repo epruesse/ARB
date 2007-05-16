@@ -1829,7 +1829,7 @@ GB_CPNTR gb_read_pntr_ts(GBDATA *gbd, struct gb_transaction_save *ts){
 }
 
 /* get last array value in callbacks */
-void *GB_read_old_value(){
+NOT4PERL void *GB_read_old_value(){
     char *data;
 
     if (!g_b_old_callback_list) {
