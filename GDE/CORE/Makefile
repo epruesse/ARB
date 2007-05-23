@@ -19,10 +19,10 @@ proto: functions.h
 $(C_OBJECTS) : functions.h
 
 functions.h: $(C_OBJECTS:.o=.c)
-	rm -f functions.h
-	../../MAKEBIN/aisc_mkpt -C *.c >functions.h
-	arb_replace -l 'DummyRepaint*=DummyRepaint();' functions.h
-	arb_replace -l 'RepaintNACan*=RepaintNACan();' functions.h
+	$(ARBHOME)/MAKEBIN/aisc_mkpt -C *.c >functions.h.tmp
+	arb_replace -l 'DummyRepaint*=DummyRepaint();' functions.h.tmp
+	arb_replace -l 'RepaintNACan*=RepaintNACan();' functions.h.tmp
+	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff functions.h.tmp functions.h
 
 .c.o:
 	$(ACC) $(cflags) $(AINCLUDES) -c -o $@ $<

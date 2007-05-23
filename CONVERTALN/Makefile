@@ -11,8 +11,8 @@ $(ARBHOME)/bin/arb_convert_aln: $(OBJECT)
 	$(ACC) $(cflags) -Wstrict-prototypes -c $< $(AINCLUDES)
 
 proto:
-	rm -f prototypes.h
-	../MAKEBIN/aisc_mkpt -C $(OBJECT:.o=.c) >prototypes.h
+	../MAKEBIN/aisc_mkpt -C $(OBJECT:.o=.c) >prototypes.h.tmp
+	../SOURCE_TOOLS/mv_if_diff prototypes.h.tmp prototypes.h
 
 #depend:
 #	$(MAKEDEPEND) $(OBJECT:.o=.c*)
