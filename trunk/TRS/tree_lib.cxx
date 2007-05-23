@@ -32,8 +32,8 @@ FILE *t2j_debug;
 
 char *TRS_error_buffer = 0;
 
-char *TRS_export_error(const char *templat, ...)
-{
+char *TRS_export_error(const char *templat, ...) {
+    /* goes to header: __attribute__((format(printf, 1, 2))) */
     char buffer[10000];
     char *p = buffer;
     va_list	parg;
@@ -189,22 +189,22 @@ char *TRS_read_file(const char *path)
     return buffer;
 }
 
-char *TRS_map_FILE(FILE *in,int writeable){
+char *TRS_map_FILE(const char *path, FILE *in,int writeable){
     int fi = fileno(in);
-    long size = TRS_size_of_FILE(in);
+    long size = TRS_size_of_FILE(path, in);
     char *buffer;
     if (size<=0) {
-	TRS_export_error("TRS_map_file: sorry file not found");
-	return 0;
+        TRS_export_error("TRS_map_file: sorry file '%s' not found", path);
+        return 0;
     }
     if (writeable){
-	buffer = (char *)mmap(0, (int)size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fi, 0);/*@@@*/
+        buffer = (char *)mmap(0, (int)size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fi, 0);/*@@@*/
     }else{
-	buffer = (char *)mmap(0, (int)size, PROT_READ, MAP_SHARED, fi, 0);/* @@@ */
+        buffer = (char *)mmap(0, (int)size, PROT_READ, MAP_SHARED, fi, 0);/* @@@ */
     }
     if (!buffer){
-	TRS_export_error("TRS_map_file: Error Out of Memory: mmap failes ");
-	return 0;
+        TRS_export_error("TRS_map_file: Error Out of Memory: mmap failes ");
+        return 0;
     }
     return buffer;
 }
@@ -214,10 +214,10 @@ char *TRS_map_file(const char *path,int writeable){
     char *buffer;
     in = fopen(path,"r");
     if (!in) {
-	TRS_export_error("TRS_map_file: sorry file '%s' not readable",path);
-	return 0;
+        TRS_export_error("TRS_map_file: sorry file '%s' not readable",path);
+        return 0;
     }
-    buffer = TRS_map_FILE(in,writeable);
+    buffer = TRS_map_FILE(path, in,writeable);
     fclose(in);
     return buffer;
 }
@@ -228,12 +228,12 @@ long TRS_size_of_file(const char *path)
     return gb_global_stt.st_size;
 }
 
-long TRS_size_of_FILE(FILE *in){
+long TRS_size_of_FILE(const char *path, FILE *in) {
     int fi = fileno(in);
     struct stat st;
     if (fstat(fi, &st)) {
-	TRS_export_error("TRS_size_of_FILE: sorry file '%s' not readable");
-	return -1;
+        TRS_export_error("TRS_size_of_FILE: sorry file '%s' not readable", path);
+        return -1;
     }
     return st.st_size;
 }
@@ -251,7 +251,7 @@ T2J_transfer_struct::T2J_transfer_struct(long size, enum CAT_FIELDS key_indexi) 
 ***********************************************************************/
 int t2j_last_nibble  = -1;
 
-GB_INLINE void t2j_write_nibble(int value){
+inline void t2j_write_nibble(int value){
     if (t2j_last_nibble<0) {
 	t2j_last_nibble = value;
     }else{
@@ -261,7 +261,7 @@ GB_INLINE void t2j_write_nibble(int value){
     }
 }
 
-GB_INLINE void t2j_flush_nibble(void){
+inline void t2j_flush_nibble(void){
     if (t2j_last_nibble>=0) {
 	int o = t2j_last_nibble<<4 | 15;
 	fputc(o,t2j_out);
@@ -272,13 +272,13 @@ GB_INLINE void t2j_flush_nibble(void){
 int t2j_last_bit_string = 0;
 int t2j_bits_already_in_c = 0;
 
-GB_INLINE void t2j_flush_bits(void){
+inline void t2j_flush_bits(void){
     fputc(t2j_last_bit_string,t2j_out);
     t2j_last_bit_string = 0;
     t2j_bits_already_in_c = 0;
 }
 
-GB_INLINE void t2j_write_bit(int bit){
+inline void t2j_write_bit(int bit){
     if (bit) {
 	t2j_last_bit_string |=  0x80 >> t2j_bits_already_in_c;
     }
@@ -288,12 +288,12 @@ GB_INLINE void t2j_write_bit(int bit){
 }
 
 
-void t2j_write_byte(int value){
+static void t2j_write_byte(int value){
     t2j_flush_nibble();
     fputc(value,t2j_out);
 }
 
-char *t2j_write_int2(unsigned int value){
+static char *t2j_write_int2(unsigned int value){
     register int i;
     i = (value >>24) & 0xff; t2j_write_byte(i);
     i = (value >>16) & 0xff; t2j_write_byte(i);
@@ -302,7 +302,7 @@ char *t2j_write_int2(unsigned int value){
     return 0;
 }
 
-char *t2j_write_uint(unsigned int value, int or_cmd){
+static char *t2j_write_uint(unsigned int value, int or_cmd){
     t2j_write_nibble(0);		// attention
     register int i;
     if (value >= 0x1000000) {
@@ -347,7 +347,7 @@ struct t2j_s1_item_header {
     long	estimated_transfer_size;		// very rough idea !!!
 };
 
-CAT_node_id t2j_get_focus_right_bound(CAT_node_id focus){
+static CAT_node_id t2j_get_focus_right_bound(CAT_node_id focus){
     while (cat_tree->nodes[focus].rightson) {
 	focus = cat_tree->nodes[focus].rightson;
     }
@@ -360,19 +360,19 @@ CAT_node_id t2j_get_focus_right_bound(CAT_node_id focus){
 	followed by data with a lot of hits
 	Sideeffects: sorts an void ** array
 ***********************************************************************/
-long t2j_compare_two_hitems(struct t2j_s1_item_header *hi0, struct t2j_s1_item_header *hi1){
+static long t2j_compare_two_hitems(struct t2j_s1_item_header *hi0, struct t2j_s1_item_header *hi1){
     double l = (hi0->focus_members + hi0->members/20) / hi0->estimated_transfer_size;
     double r = (hi1->focus_members + hi1->members/20) / hi1->estimated_transfer_size;
     if (l>r) return 1;
     return -1;
 }
 
-long t2j_compare_two_ids(long i1, long i2) {
+static long t2j_compare_two_ids(long i1, long i2) {
     if (i1 < i2) return -1;
     return 1;
 }
 
-void t2j_write_range(int start_of_range, int end_of_range){
+static void t2j_write_range(int start_of_range, int end_of_range){
     int rsize = end_of_range - start_of_range;
     if (rsize == 1) {		// no range !!!
 	t2j_write_nibble(rsize);
@@ -386,7 +386,7 @@ void t2j_write_range(int start_of_range, int end_of_range){
     }
 }
 
-void t2j_indexlist_2_OTF(long *buffer, long buf_size){
+static void t2j_indexlist_2_OTF(long *buffer, long buf_size){
     int j;
     int start_of_range, end_of_range;
     start_of_range = end_of_range = -1;
@@ -573,7 +573,7 @@ char *T2J_send_bit_coded_tree(char *path_of_tree, FILE *out){
 	Send the tree.   level numbering !!! branch lengths from 0-15
 	Sideeffects: writes to out
 ***********************************************************************/
-CAT_node_id *t2j_mcreate_level_indexing(void){
+static CAT_node_id *t2j_mcreate_level_indexing(void){
     static CAT_node_id *ids = NULL;
     if (ids) return ids;
     ids = (CAT_node_id *)calloc(sizeof(CAT_node_id), cat_tree->nnodes);
@@ -610,7 +610,7 @@ char *T2J_send_branch_lengths(char *path_of_tree, FILE *out){
 ***********************************************************************/
 #define SEPERATOR '\''
 
-void t2j_send_newick_rek(CAT_node *node, double addbl, FILE *out){
+static void t2j_send_newick_rek(CAT_node *node, double addbl, FILE *out){
     const char *name = 0;
 
     if (!node->leftson){	// leaf
@@ -663,7 +663,7 @@ void t2j_send_newick_rek(CAT_node *node, double addbl, FILE *out){
     }
 }
 
-GB_ERROR t2j_patch_tree(CAT_node_id *levelindex,char *patch){
+static GB_ERROR t2j_patch_tree(CAT_node_id *levelindex,char *patch){
     int c;
     char *readp = strdup(patch);
     c = *(readp++);
@@ -703,7 +703,7 @@ GB_ERROR t2j_patch_tree(CAT_node_id *levelindex,char *patch){
     return 0;
 }
 
-const char *t2j_group_tree(CAT_node_id *levelindex,const char *grouped){
+static const char *t2j_group_tree(CAT_node_id *levelindex,const char *grouped){
     int c;
     const char *readp = grouped;
     c = *(readp++);
@@ -924,8 +924,11 @@ char *T2J_transfer_group_names(char *path_of_tree,FILE *out) {
     return T2J_send_tree(0);
 }
 
-long	t2j_get_deepest_node_that_contains_all_selected(CAT_node_id nn,
-							char *selected_ids,long nselected, CAT_node_id *focusout){
+static long t2j_get_deepest_node_that_contains_all_selected(CAT_node_id nn,
+                                                            char *selected_ids,
+                                                            long nselected,
+                                                            CAT_node_id *focusout)
+{
     CAT_node *node = & cat_tree->nodes[nn];
     long sum = 0;
     if (node->leftson > 0) {		// inner node
@@ -947,7 +950,7 @@ long	t2j_get_deepest_node_that_contains_all_selected(CAT_node_id nn,
 /***********************************************************************
 *	Convert names into selection
 ************************************************************************/
-void t2j_out_number( int number, char base){
+static void t2j_out_number( int number, char base){
     do {
 	printf("%c", (number &0xf) + base);
 	number = number>>4;
@@ -1098,7 +1101,7 @@ char *T2J_get_selection(char *path_of_tree, char *sel, const char *varname, int 
     color = leftson.color | rightson.color
     */
 
-int t2j_set_color_rek(int node){
+static int t2j_set_color_rek(int node){
     int ls = cat_tree->nodes[node].leftson;
     int rs = cat_tree->nodes[node].rightson;
     int color = 0;
