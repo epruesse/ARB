@@ -456,7 +456,8 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int */*cl*/, GB_CB_T
         if (err) { aw_message(err); err = 0; }
 
         if (was_increased) {
-            ED4_ROOT->main_manager->route_down_hierarchy((void**)&new_length, 0, change_char_table_length);
+            int *new_length_ptr = &new_length;
+            ED4_ROOT->main_manager->route_down_hierarchy((void**)new_length_ptr, 0, change_char_table_length);
             ED4_ROOT->root_group_man->remap()->mark_compile_needed_force();
         }
     }
