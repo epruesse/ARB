@@ -228,7 +228,6 @@ void create_all_awars(AW_root *awr, AW_default def)
 
 
 void nt_exit(AW_window * /*aw_window*/) {
-    /* goes to header : __attribute__((noreturn)) */
     if (gb_main) {
         if (GB_read_clients(gb_main)>=0) {
 #ifdef NDEBUG
