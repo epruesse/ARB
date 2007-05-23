@@ -14,6 +14,13 @@
 # error P_ already defined elsewhere
 #endif
 
+/* hide GNU extensions for non-gnu compilers: */
+#ifndef GNU
+# ifndef __attribute__
+#  define __attribute__(x)
+# endif
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
