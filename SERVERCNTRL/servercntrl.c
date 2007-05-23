@@ -8,6 +8,30 @@
 #include <client.h>
 #include <arbdb.h>
 #include <servercntrl.h>
+
+/*
+ * The following lines go to servercntrl.h
+ * edit here, not there!!
+ * call 'make proto' to update
+ */
+
+/* AISC_MKPT_PROMOTE:struct arb_params {*/
+/* AISC_MKPT_PROMOTE:    char *species_name;*/
+/* AISC_MKPT_PROMOTE:    char *extended_name;*/
+/* AISC_MKPT_PROMOTE:    char *alignment;*/
+/* AISC_MKPT_PROMOTE:    char *default_file;*/
+/* AISC_MKPT_PROMOTE:    char *field;*/
+/* AISC_MKPT_PROMOTE:*/ 
+/* AISC_MKPT_PROMOTE:    int  read_only;*/
+/* AISC_MKPT_PROMOTE:*/ 
+/* AISC_MKPT_PROMOTE:    char *job_server;*/
+/* AISC_MKPT_PROMOTE:    char *db_server;*/
+/* AISC_MKPT_PROMOTE:    char *mgr_server;*/
+/* AISC_MKPT_PROMOTE:    char *pt_server;*/
+/* AISC_MKPT_PROMOTE:*/ 
+/* AISC_MKPT_PROMOTE:    char *tcp;*/
+/* AISC_MKPT_PROMOTE:};*/
+
 #define TRIES 1
 
 struct gl_struct {
@@ -15,6 +39,7 @@ struct gl_struct {
     long             locs;
     long             com;
 }               glservercntrl;
+
 
 GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
 {
