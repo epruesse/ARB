@@ -27,7 +27,7 @@ void export_nds_cb(AW_window *aww, AW_CL print_flag);
 AW_window *create_nds_export_window(AW_root *root);
 void create_export_nds_awars(AW_root *awr, AW_default def);
 void create_all_awars(AW_root *awr, AW_default def);
-void nt_exit(AW_window *) __attribute__((noreturn));
+void nt_exit(AW_window *);
 void NT_save_cb(AW_window *aww);
 void NT_save_quick_cb(AW_window *aww);
 void NT_save_quick_as_cb(AW_window *aww);
