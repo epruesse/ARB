@@ -20,14 +20,12 @@ extern GBDATA *gb_main;
 class NT_install_window_creator{
     int dummy;
 public:
-    NT_install_window_creator( AW_Window_Creator wc ){
-	nt.window_creator = wc;
+    NT_install_window_creator( AW_Window_Creator wc ) {
+        nt.window_creator = wc;
     };
 };
 
-void       nt_main_startup_main_window(AW_root *aw_root);
-void       nt_exit(AW_window *aw_window);
-AW_window *NT_create_save_as(AW_root *aw_root,const char *base_name); // basename is awar_prefix
+void nt_main_startup_main_window(AW_root *aw_root);
 
 #define AWAR_EXPORT_NDS                "tmp/export_nds"
 #define AWAR_NT_REMOTE_BASE            "tmp/remote/ARB_NT"
