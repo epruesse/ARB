@@ -109,7 +109,6 @@ void PT_analyse_tree P_((POS_TREE *pt, int height));
 void PT_debug_tree P_((void));
 
 /* PT_match.cxx */
-GB_INLINE double ptnd_get_wmismatch P_((PT_pdc *pdc, char *probe, int pos, char ref));
 int PT_chain_print P_((int name, int apos, int rpos, long ilocs));
 int read_names_and_pos P_((PT_local *locs, POS_TREE *pt));
 int get_info_about_probe P_((PT_local *locs, char *probe, POS_TREE *pt, int mismatches, double wmismatches, int N_mismatches, int height));
