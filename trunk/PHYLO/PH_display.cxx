@@ -121,8 +121,8 @@ void AP_display::initialize (display_type dpyt)
 void AP_display::resized(void)
 {
     AW_rectangle squ;
-    AW_rectangle rect;
-    long horiz_paint_size,vert_paint_size;
+    AW_rectangle rect =  { 0, 0, 0, 0 };
+    long         horiz_paint_size,vert_paint_size;
 
     PH_used_windows::windowList->phylo_main_window->get_device(AW_MIDDLE_AREA)-> get_area_size(&squ);
     screen_width  = squ.r-squ.l;
