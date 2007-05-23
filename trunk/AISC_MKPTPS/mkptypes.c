@@ -21,24 +21,31 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
 
 #ifndef EXIT_SUCCESS
 #define EXIT_SUCCESS  0
 #define EXIT_FAILURE  1
 #endif
 
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
-
 static void Version(void);
 
 
 #define check_heap_sanity() do{ char *x = malloc(10); free(x); }while(0)
 
+#if defined(DEBUG)
+/* #define DEBUG_PRINTS */
+#endif /* DEBUG */
+
+#ifdef DEBUG_PRINTS 
 /* #define DEBUG_PRINT(s) do{ fputs((s), stderr); check_heap_sanity(); }while(0) */
-/* #define DEBUG_PRINT(s) fputs((s), stderr) */
+#define DEBUG_PRINT(s) fputs((s), stderr)
+#else
 #define DEBUG_PRINT(s)
+#endif
 
 #define PRINT(s) fputs((s), stdout)
 
@@ -52,6 +59,7 @@ static int  doinline            = 0;   /* include inline functions? */
 static int  donum               = 0;   /* print line numbers? */
 static int  define_macro        = 1;   /* define macro for prototypes? */
 static int  use_macro           = 1;   /* use a macro for prototypes? */
+static int  use_main            = 0;   /* add prototype for main? */
 static int  no_parm_names       = 0;   /* no parm names - only types */
 static int  print_extern        = 0;   /* use "extern" before function declarations */
 static int  dont_promote        = 0;   /* don't promote prototypes */
@@ -63,11 +71,30 @@ static int  extern_c_seen       = 0;   /* true if extern "C" was parsed */
 static int  search__attribute__ = 0;   /* search for gnu-extension __attribute__(()) ? */
 static int  inquote             = 0;   /* in a quote?? */
 static int  newline_seen        = 1;   /* are we at the start of a line */
-static long linenum             = 1L;  /* line number in current file */
 static int  glastc              = ' '; /* last char. seen by getsym() */
+
+static char *current_file = 0;  /* name of current file */
+static char *current_dir = 0;  /* name of current directory */
+static long  linenum      = 1L; /* line number in current file */
 
 static char const *macro_name = "P_";  /*   macro to use for prototypes */
 static char const *ourname;            /* our name, from argv[] array */
+
+/* ------------------------------------------------------------ */
+
+static void errorAt(long line, const char *msg) {
+    printf("\n"
+           "#line %li \"%s/%s\"\n"
+           "#error in aisc_mkpt: %s\n",
+           line, 
+           current_dir,
+           current_file,
+           msg);
+}
+
+static void error(const char *msg) {
+    errorAt(linenum, msg);
+}
 
 /* char *sym_part = 0;*/        /* create only prototypes starting with 'sym_start' */
 /* int sym_part_len = 0; */
@@ -338,11 +365,11 @@ static void print_promotions() {
     promotions = 0;
 }
 
-static void search_comment_for_promotion() {
-    char       *promotion_found;
-    const char *promotion_tag     = "AISC_MKPT_PROMOTE:";
-    int         promotion_tag_len = 18;
+static const char *promotion_tag     = "AISC_MKPT_PROMOTE:";
+static int         promotion_tag_len = 18;
 
+static void search_comment_for_promotion() {
+    char *promotion_found;
     last_comment[lc_size] = 0;  // close string
 
     promotion_found = strstr(last_comment, promotion_tag);
@@ -403,6 +430,8 @@ static int fnextch(FILE *f){
     if (c == '/' && !inquote) {
         c = ngetc(f);
         if (c == '*') {
+            long commentStartLine = linenum;
+
             incomment = 1;
             c         = ' ';
             DEBUG_PRINT("fnextch: comment seen\n");
@@ -416,6 +445,8 @@ static int fnextch(FILE *f){
 
                 if (lastc == '*' && c == '/') incomment = 0;
                 else if (c < 0) {
+                    error("EOF reached in comment");
+                    errorAt(commentStartLine, "comment started here");
                     return c;
                 }
             }
@@ -436,13 +467,11 @@ static int fnextch(FILE *f){
                 assert(lc_size<MAX_COMMENT_SIZE);
 
                 if (lastc != '\\' && c == '\n') incomment = 0;
-                else if (c < 0) {
-                    return c;
-                }
+                else if (c < 0) break;
             }
             if (search__attribute__) search_comment_for_attribute();
             if (promote_lines) search_comment_for_promotion();
-            return fnextch(f);
+            return c;
         }
         else {
             /* if we pre-fetched a linefeed, remember to adjust the line number */
@@ -507,22 +536,28 @@ static int nextch(FILE *f){
 
     if (c == '\'' || c == '\"') {
         char buffer[11];
-        int index = 0;
+        int  index          = 0;
+        long quoteStartLine = linenum;
 
         DEBUG_PRINT("nextch: in a quote\n");
         inquote = c;
         while ( (c = fnextch(f)) >= 0 ) {
             if (c == inquote) {
-                DEBUG_PRINT("nextch: out of quote\n");
                 buffer[index] = 0;
-
-                DEBUG_PRINT("buffer='");
+                DEBUG_PRINT("quoted content='");
                 DEBUG_PRINT(buffer);
                 DEBUG_PRINT("'\n");
 
+                DEBUG_PRINT("nextch: out of quote\n");
+
+                if (linenum != quoteStartLine) {
+                    error("multiline quotes");
+                    errorAt(quoteStartLine, "quotes opened here");
+                }
+
                 if (inquote=='\"' && strcmp(buffer, "C")==0) {
                     inquote = 0;
-                    return '$';
+                    return '$'; /* found "C" (needed for 'extern "C"')*/
                 }
                 inquote = 0;
                 return '0';
@@ -531,6 +566,8 @@ static int nextch(FILE *f){
                 if (index<10) buffer[index++] = c;
             }
         }
+        error("EOF in a quote");
+        errorAt(quoteStartLine, "quote started here");
         DEBUG_PRINT("nextch: EOF in a quote\n");
     }
     return c;
@@ -543,53 +580,74 @@ static int nextch(FILE *f){
  */
 
 static int getsym(char *buf, FILE *f){
-    register int c;
+    int c;
     int inbrack = 0;
+    
+#if defined(DEBUG_PRINTS)
+    char *bufStart = buf;
+#endif /* DEBUG_PRINTS */
 
-    DEBUG_PRINT("in getsym\n");
     c = glastc;
     while ((c > 0) && isspace(c)) {
         c = nextch(f);
     }
-    DEBUG_PRINT("getsym: spaces skipped\n");
+
     if (c < 0) {
         DEBUG_PRINT("EOF read in getsym\n");
         return -1;
     }
+
     if (c == '{') {
+        long bracketStartLine = linenum;
+
         inbrack = 1;
-        DEBUG_PRINT("getsym: in bracket\n");
+        DEBUG_PRINT("getsym: in '{'\n");
         while (inbrack) {
             c = nextch(f);
             if (c < 0) {
+                error("EOF seen in bracket loop (unbalanced brackets?)");
+                errorAt(bracketStartLine, "bracket opened here");
                 DEBUG_PRINT("getsym: EOF seen in bracket loop\n");
                 glastc = c;
                 return c;
             }
-            if (c == '{') inbrack++;
-            else if (c == '}') inbrack--;
+            if (c == '{') {
+                inbrack++;
+#if defined(DEBUG_PRINTS)
+                fprintf(stderr, "inbrack=%i (line=%li)\n", inbrack, linenum);
+#endif /* DEBUG_PRINTS */
+            }
+            else if (c == '}') {
+                inbrack--;
+#if defined(DEBUG_PRINTS)
+                fprintf(stderr, "inbrack=%i (line=%li)\n", inbrack, linenum);
+#endif /* DEBUG_PRINTS */
+            }
         }
         strcpy(buf, "{}");
         glastc = nextch(f);
-        DEBUG_PRINT("getsym: out of in bracket loop\n");
-        return 0;
+        DEBUG_PRINT("getsym: returning brackets '");
     }
-    if (!ISCSYM(c)) {
+    else if (!ISCSYM(c)) {
         *buf++ = c;
-        *buf = 0;
+        *buf   = 0;
         glastc = nextch(f);
-        DEBUG_PRINT("getsym: returning special symbol\n");
-        return 0;
+
+        DEBUG_PRINT("getsym: returning special symbol '");
     }
-    while (ISCSYM(c)) {
-        *buf++ = c;
-        c = nextch(f);
+    else {
+        while (ISCSYM(c)) {
+            *buf++ = c;
+            c = nextch(f);
+        }
+        *buf   = 0;
+        glastc = c;
+        DEBUG_PRINT("getsym: returning word '");
     }
-    *buf = 0;
-    glastc = c;
-    DEBUG_PRINT("getsym: returning word '");
-    DEBUG_PRINT(buf);
+
+    DEBUG_PRINT(bufStart);
     DEBUG_PRINT("'\n");
+    
     return 0;
 }
 
@@ -872,6 +930,7 @@ static void emit(Word *wlist, Word *plist, long startline){
     int   count     = 0;
     int   needspace = 0;
     int   isstatic  = 0;
+    int   ismain    = 0;
     int   refs      = 0 ;
 
     if (promote_lines) print_promotions();
@@ -879,9 +938,12 @@ static void emit(Word *wlist, Word *plist, long startline){
     for (w = wlist; w; w = w->next) {
         if (w->string[0]) {
             count ++;
-            if (strcmp(w->string, "static")==0) isstatic = 1;
+            if      (strcmp(w->string, "static") == 0) isstatic = 1;
+            else if (strcmp(w->string, "main"  ) == 0) ismain = 1;
         }
     }
+
+    if (ismain && !use_main) return;
 
     if (aisc) {
         if (count < 2) {
@@ -1141,6 +1203,7 @@ static void Usage(void){
     fputs("   -F sym_part[,sym_part]*: create prototypes only for function-names containing one of the sym_parts\n", stderr);
     fputs("   -C: insert 'extern \"C\"'\n", stderr);
     fputs("   -E: promote 'extern \"C\"' to prototype\n", stderr);
+    fputs("   -m: promote 'main()' (default is to skip it)\n", stderr);
     fputs("   -g: search for GNU extension __attribute__ in comment behind function header\n", stderr);
     fputs("   -P: promote /*AISC_MKPT_PROMOTE:forHeader*/ to header\n", stderr);
     exit(EXIT_FAILURE);
@@ -1180,6 +1243,7 @@ int main(int argc, char **argv){
             else if (*t == 'x')         no_parm_names       = 1; /* no parm names, only types (sg) */
             else if (*t == 'z')         define_macro        = 0;
             else if (*t == 'P')         promote_lines       = 1;
+            else if (*t == 'm')         use_main            = 1;
             else if (*t == 'p') {
                 t = *argv++; --argc;
                 if (!t) Usage();
@@ -1255,32 +1319,40 @@ int main(int argc, char **argv){
             printf("#endif\n\n");
         }
     }
+    
+    current_dir = strdup(getcwd(0,255));
     if (argc == 0) {
+        current_file = strdup("STDIN");
         getdecl(stdin);
     }
     else {
-
+        
         while (argc > 0 && *argv) {
-            DEBUG_PRINT("trying a new file\n");
+            DEBUG_PRINT("trying new file '");
+            DEBUG_PRINT(*argv);
+            DEBUG_PRINT("'\n");
+            
             if (!(f = fopen(*argv, "r"))) {
                 perror(*argv);
                 exit(EXIT_FAILURE);
             }
-            if (iobuf)
-                setvbuf(f, iobuf, _IOFBF, NEWBUFSIZ);
-            if (aisc)
-                printf("\n#%s\n", *argv);
-            else
-                printf("\n/* %s */\n", *argv);
-            linenum = 1;
+
+            current_file = strdup(*argv);
+
+            if (iobuf) setvbuf(f, iobuf, _IOFBF, NEWBUFSIZ);
+            if (aisc) printf("\n#%s\n", *argv);
+            else printf("\n/* %s */\n", *argv);
+
+            linenum      = 1;
             newline_seen = 1;
-            glastc = ' ';
-            DEBUG_PRINT("calling getdecl\n");
+            glastc       = ' ';
+            
             getdecl(f);
-            DEBUG_PRINT("back from getdecl\n");
             argc--; argv++;
             fclose(f);
-            DEBUG_PRINT("back from fclose\n");
+
+            free(current_file);
+            current_file = 0;
         }
     }
     if (aisc) {
@@ -1297,6 +1369,8 @@ int main(int argc, char **argv){
     }
 
     freeSymParts();
+    free(current_file);
+    free(current_dir);
 
     return 0;
 }
