@@ -5,11 +5,8 @@
 // #include <malloc.h>
 #include <memory.h>
 #include <PT_server.h>
-#define IMPLEMENT_PROBE_TREE
 #include "probe.h"
-
 #include "probe_tree.hxx"
-
 
 struct PTM_struct PTM;
 char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
