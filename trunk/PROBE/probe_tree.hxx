@@ -1,4 +1,3 @@
-#if (!defined(NO_INLINE)) || defined(IMPLEMENT_PROBE_TREE)
 
 #define PTM_magic             0xf4
 #define PTM_TABLE_SIZE        (1024*256)
@@ -464,4 +463,3 @@ GB_INLINE int PT_read_chain(PTM2 *ptmain,POS_TREE *node, int func(int name,int a
     return error;
 }
 
-#endif
