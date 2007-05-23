@@ -10,6 +10,10 @@
 #include "pt_prototypes.h"
 #include <arbdbt.h>
 
+
+// overloaded functions to avoid problems with type-punning:
+inline void aisc_link(dll_public *dll, PT_family_list *family)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(family)); }
+
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
@@ -171,7 +175,7 @@ int make_PT_family_list(PT_local *locs)
         fl->name = strdup(my_list[i]->name);
         fl->matches = my_list[i]->stat.match_count;
         fl->rel_matches = my_list[i]->stat.rel_match_count;
-        aisc_link((struct_dllpublic_ext*)&locs->pfl,(struct_dllheader_ext*)fl);
+        aisc_link(&locs->pfl, fl);
     }
     free((char *)my_list);
     return 0;
