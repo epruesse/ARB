@@ -133,6 +133,7 @@ symlink ../TEMPLATES/config_parser.h INCLUDE/config_parser.h &&
 symlink ../TEMPLATES/SIG_PF.h INCLUDE/SIG_PF.h &&
 symlink ../TEMPLATES/perf_timer.h INCLUDE/perf_timer.h &&
 symlink ../TEMPLATES/arb_version.h INCLUDE/arb_version.h &&
+symlink ../TEMPLATES/arb_debug.h INCLUDE/arb_debug.h &&
 symlink_maybe_no_target ../TEMPLATES/arb_build.h INCLUDE/arb_build.h &&
 
 # INCLUDE directory
@@ -155,6 +156,7 @@ symlink ../AISC_COM/C/client.h INCLUDE/client.h &&
 symlink ../AISC_COM/C/client_privat.h INCLUDE/client_privat.h &&
 symlink ../AISC_COM/C/server.h INCLUDE/server.h &&
 symlink ../AISC_COM/C/struct_man.h INCLUDE/struct_man.h &&
+symlink ../AISC_COM/C/aisc_global.h INCLUDE/aisc_global.h &&
 symlink ../ARBDB/adGene.h INCLUDE/adGene.h &&
 symlink ../ARBDB/ad_prot.h INCLUDE/ad_prot.h &&
 symlink ../ARBDB/ad_config.h INCLUDE/ad_config.h &&
