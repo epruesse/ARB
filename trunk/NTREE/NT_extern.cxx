@@ -227,9 +227,8 @@ void create_all_awars(AW_root *awr, AW_default def)
 }
 
 
-void
-nt_exit(AW_window *aw_window){
-    AWUSE(aw_window);
+void nt_exit(AW_window * /*aw_window*/) {
+    /* goes to header : __attribute__((noreturn)) */
     if (gb_main) {
         if (GB_read_clients(gb_main)>=0) {
 #ifdef NDEBUG
@@ -255,9 +254,7 @@ nt_exit(AW_window *aw_window){
     exit(0);
 }
 
-void
-NT_save_cb(AW_window *aww)
-{
+void NT_save_cb(AW_window *aww) {
     char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
     GB_ERROR error = GB_save(gb_main, filename, "b");
     delete filename;
@@ -266,9 +263,7 @@ NT_save_cb(AW_window *aww)
 }
 
 
-void
-NT_save_quick_cb(AW_window *aww)
-{
+void NT_save_quick_cb(AW_window *aww) {
     char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
     GB_ERROR error = GB_save_quick(gb_main,filename);
     free(filename);
@@ -276,9 +271,7 @@ NT_save_quick_cb(AW_window *aww)
     else awt_refresh_selection_box(aww->get_root(), "tmp/nt/arbdb");
 }
 
-void
-NT_save_quick_as_cb(AW_window *aww)
-{
+void NT_save_quick_as_cb(AW_window *aww) {
     char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
     GB_ERROR error = GB_save_quick_as(gb_main, filename);
     free(filename);
@@ -866,17 +859,19 @@ void NT_popup_species_window(AW_window *aww, AW_CL, AW_CL) {
 
 //--------------------------------------- to increase the area of display --------------------
 static int windowHeight = 0;
-static void title_mode_changed(AW_root *aw_root, AW_window *aww)
-{
-    int title_mode = aw_root->awar(AWAR_NTREE_TITLE_MODE)->read_int();
 
-    if (title_mode==0) {
-        aww->set_info_area_height(25);
-    }
-    else {
-        aww->set_info_area_height(windowHeight);
-    }
-}
+// static void title_mode_changed(AW_root *aw_root, AW_window *aww)
+// {
+//     int title_mode = aw_root->awar(AWAR_NTREE_TITLE_MODE)->read_int();
+
+//     if (title_mode==0) {
+//         aww->set_info_area_height(25);
+//     }
+//     else {
+//         aww->set_info_area_height(windowHeight);
+//     }
+// }
+
 //--------------------------------------------------------------------------------------------------
 #if defined(DEBUG)
 void NT_rename_test(AW_window *, AW_CL cl_gb_main, AW_CL) {
