@@ -4,11 +4,10 @@ CPP_OBJECTS = TB_main.o TB_extern.o
 
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
+
 .cxx.o: 
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
-NT_cb.hxx: NT_cb.cxx NT_extern.cxx
-	rm -f $@
-	../../makebin/aisc_mkpt -C NT_cb.cxx NT_extern.cxx >$@
+
 depend:
 	$(MAKEDEPEND) $(MAKEDEPENDINC) $(CPP_OBJECTS:.o=.cxx)
 # DO NOT DELETE THIS LINE -- make depend depends on it.
