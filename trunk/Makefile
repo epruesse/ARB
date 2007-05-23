@@ -13,7 +13,6 @@ include config.makefile
 # GNU			activates __attribute__ definitions
 # HAVE_BOOL		should be true if compiler supports the type 'bool'
 # $(MACH)		name of the machine (LINUX,SUN4,SUN5,HP,SGI or DIGITAL; see config.makefile)
-# NO_INLINE		for machines w/o keyword 'inline' (needs code fixes, cause we have no such machine)
 # NO_REGEXPR		for machines w/o regular expression library
 #
 # DEBUG			compiles the DEBUG sections
@@ -72,6 +71,9 @@ else
 endif
 
 		cflags = -O0 $(dflag1) $(dflags) $(DEVEL_DEF)
+#		cflags = -O2 $(dflag1) $(dflags) $(DEVEL_DEF)
+#		cflags = -O4 $(dflag1) $(dflags) $(DEVEL_DEF)
+
 		lflags = $(dflag1)
 		fflags = $(dflag1) -C
 		extended_warnings         = -Wwrite-strings -Wunused -Wno-aggregate-return
@@ -304,10 +306,11 @@ first_target:
 		@echo 'Development targets:'
 		@echo ''
 		@echo ' depends      - create or update dependencies ("SUBDIR/SUBDIR.depends" to update only SUBDIR)'
+		@echo ' proto        - create or update prototypes ("SUBDIR/SUBDIR.proto" to update only SUBDIR)'
 		@echo ' tags         - create tags for xemacs'
 		@echo ' rmbak        - remove all "*%" and cores'
 		@echo ' show         - show available shortcuts (AKA subtargets)'
-		@echo ' up           - shortcut for depends+tags'
+		@echo ' up           - shortcut for depends+proto+tags'
 		@echo ''
 		@echo 'Internal maintainance:'
 		@echo ''
@@ -740,8 +743,6 @@ $(SECEDIT):	$(ARCHS_SECEDIT:.a=.dummy) shared_libs
 	false
 
 
-ARCHS_PROBE_COMM = PROBE_COM/server.a PROBE/PROBE.a
-
 #***********************************	arb_phylo **************************************
 PHYLO = bin/arb_phylo
 ARCHS_PHYLO = \
@@ -944,6 +945,9 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 	@mv $(@D)/Makefile.old $(@D)/Makefile # restore old Makefile
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
 
+%.proto:
+	@$(MAKE) -C $(@D) proto
+
 %.dummy:
 	@echo $(SEP) Make everything in $(@D)
 	@$(GMAKE) -C $(@D) -r \
@@ -1106,12 +1110,26 @@ templ:	TEMPLATES/TEMPLATES.dummy
 
 #********************************************************************************
 
-up: depends tags
+up: depends proto tags
 
 #********************************************************************************
 
 depends: $(ARCHS:.a=.depends) \
 		HELP_SOURCE/HELP_SOURCE.depends \
+
+proto: AISC_MKPTPS/dummy.dummy
+		$(MAKE) \
+				AISC/AISC.proto \
+				ARBDB/ARBDB.proto \
+				CONVERTALN/CONVERTALN.proto \
+				NTREE/NTREE.proto \
+				ORS_CGI/ORS_CGI.proto \
+				ORS_SERVER/ORS_SERVER.proto \
+				PROBE/PROBE.proto \
+				SERVERCNTRL/SERVERCNTRL.proto \
+				TRS/TRS.proto \
+				AISC_COM/AISC_COM.proto \
+				GDE/GDE.proto \
 
 #********************************************************************************
 
