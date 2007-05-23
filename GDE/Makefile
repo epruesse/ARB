@@ -58,6 +58,9 @@ endif
 
 $(MAIN): $(ARCHS)
 
+proto:
+		$(MAKE) -C CORE proto
+
 depends: $(ARCHS:.dummy=.depend)
 
 %.depend:
