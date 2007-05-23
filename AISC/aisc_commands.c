@@ -20,6 +20,7 @@ int print_error(const char *err) {
 #define ERRBUFSIZE 200
 
 int printf_error(const char *format, ...) {
+    /* goes to header:  __attribute__((format(printf, 1, 2))) */
     static char *errbuf = 0;
     if (!errbuf) { errbuf = (char*)malloc(ERRBUFSIZE+1); }
 
