@@ -3798,19 +3798,21 @@ static int allocateNotificationID(GBDATA *gb_main, int *cb_info) {
                     error             = GB_pop_transaction(gb_main);
                     if (!error) error = GB_push_transaction(gb_main);
 
-                    GBDATA *gb_notification = GB_create_container(gb_notify, "notify");
-                    if (gb_notification) {
-                        GBDATA *gb_id = GB_create(gb_notification, "id", GB_INT);
-                        if (gb_id) {
-                            error = GB_write_int(gb_id, newid);
-                            if (!error) {
-                                GBDATA *gb_message = GB_create(gb_notification, "message", GB_STRING);
-                                if (gb_message) {
-                                    error = GB_write_string(gb_message, "");
-                                    if (!error) {
-                                        error = GB_add_callback(gb_message, GB_CB_CHANGED|GB_CB_DELETE, notify_cb, cb_info);
+                    if (!error) {
+                        GBDATA *gb_notification = GB_create_container(gb_notify, "notify");
+                        if (gb_notification) {
+                            GBDATA *gb_id = GB_create(gb_notification, "id", GB_INT);
+                            if (gb_id) {
+                                error = GB_write_int(gb_id, newid);
+                                if (!error) {
+                                    GBDATA *gb_message = GB_create(gb_notification, "message", GB_STRING);
+                                    if (gb_message) {
+                                        error = GB_write_string(gb_message, "");
                                         if (!error) {
-                                            id = newid; /* success */
+                                            error = GB_add_callback(gb_message, GB_CB_CHANGED|GB_CB_DELETE, notify_cb, cb_info);
+                                            if (!error) {
+                                                id = newid; /* success */
+                                            }
                                         }
                                     }
                                 }
