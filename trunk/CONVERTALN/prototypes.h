@@ -20,7 +20,6 @@ extern "C" {
 
 
 /* main.c */
-int main P_((int argc, char **argv));
 int file_type P_((char *filename));
 int isnum P_((char *string));
 int file_exist P_((char *file_name));

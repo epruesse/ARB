@@ -4,6 +4,13 @@
  *
  */
 
+/* hide GNU extensions for non-gnu compilers: */
+#ifndef GNU
+# ifndef __attribute__
+#  define __attribute__(x)
+# endif
+#endif
+
 
 /* NT_edconf.cxx */
 AW_window *NT_start_editor_on_old_configuration(AW_root *awr);
@@ -35,6 +42,35 @@ void NT_system_cb2(AW_window *aww, AW_CL command, AW_CL auto_help_file);
 GB_ERROR NT_format_all_alignments(GBDATA *gb_main);
 
 /* NT_extern.cxx */
+void NT_save_cb(AW_window *aww);
+void NT_save_quick_cb(AW_window *aww);
+void NT_save_quick_as_cb(AW_window *aww);
+AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name);
+void NT_database_optimization(AW_window *aww);
+AW_window *NT_create_database_optimization_window(AW_root *aw_root);
+void NT_save_as_cb(AW_window *aww);
+AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name);
+void NT_undo_cb(AW_window *, AW_CL undo_type, AW_CL ntw);
+void NT_undo_info_cb(AW_window *, AW_CL undo_type);
+AW_window *NT_create_tree_setting(AW_root *aw_root);
+void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base);
+AW_window *NT_submit_bug(AW_root *aw_root, int bug_report);
+void NT_focus_cb(AW_window *aww);
+void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2);
+void NT_primer_cb(void);
+void NT_set_compression(AW_window *, AW_CL dis_compr, AW_CL dummy_1x);
+void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl);
+void NT_mark_duplicates(AW_window *aww, AW_CL ntwcl);
+void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL dummy_1x);
+void NT_fix_database(AW_window *);
+void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl);
+void NT_test_input_mask(AW_root *root);
+void NT_update_marked_counter(AW_window *aww, long count);
+void NT_popup_species_window(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_1x);
+void NT_rename_test(AW_window *, AW_CL cl_gb_main, AW_CL dummy_1x);
+void NT_test_AWT(AW_window *aww);
+void NT_dump_gcs(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_1x);
+void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main);
 
 /* NT_validNames.cxx */
 void NT_deleteValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_1x);

@@ -189,7 +189,7 @@ GB_ERROR GB_no_transaction P_((GBDATA *gbd));
 GB_ERROR GB_abort_transaction P_((GBDATA *gbd));
 GB_ERROR GB_commit_transaction P_((GBDATA *gbd));
 GB_ERROR GB_update_server P_((GBDATA *gbd));
-void *GB_read_old_value P_((void));
+NOT4PERL void *GB_read_old_value P_((void));
 long GB_read_old_size P_((void));
 char *GB_get_callback_info P_((GBDATA *gbd));
 GB_ERROR GB_add_priority_callback P_((GBDATA *gbd, enum gb_call_back_type type, GB_CB func, int *clientdata, int priority));
@@ -246,6 +246,7 @@ GBDATA *GB_follow_link P_((GBDATA *gb_link));
 GB_ERROR GB_install_link_follower P_((GBDATA *gb_main, const char *link_type, GB_Link_Follower link_follower));
 
 /* adsocket.c */
+void GB_usleep P_((long usec));
 void GB_usleep P_((long usec));
 void GB_usleep P_((long usec));
 GB_ULONG GB_time_of_file P_((const char *path));
@@ -360,12 +361,12 @@ GB_ERROR GB_disable_path P_((GBDATA *gbd, const char *path));
 /* adcompr.c */
 
 /* admalloc.c */
-void *GB_calloc P_((unsigned int nelem, unsigned int elsize));
+NOT4PERL void *GB_calloc P_((unsigned int nelem, unsigned int elsize));
 char *GB_strdup P_((const char *p));
 char *GB_strduplen P_((const char *p, unsigned len));
 char *GB_strpartdup P_((const char *start, const char *end));
 char *GB_strndup P_((const char *start, int len));
-void *GB_recalloc P_((void *ptr, unsigned int oelem, unsigned int nelem, unsigned int elsize));
+NOT4PERL void *GB_recalloc P_((void *ptr, unsigned int oelem, unsigned int nelem, unsigned int elsize));
 void GB_memerr P_((void));
 
 /* ad_load.c */
