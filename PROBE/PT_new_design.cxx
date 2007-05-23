@@ -16,6 +16,11 @@
 
 #include "pt_prototypes.h"
 
+// overloaded functions to avoid problems with type-punning:
+inline void aisc_link(dll_public *dll, PT_tprobes *tprobe)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(tprobe)); }
+inline void aisc_link(dll_public *dll, PT_probeparts *parts) { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(parts)); }
+inline void aisc_link(dll_public *dll, PT_probematch *match) { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(match)); }
+
 extern "C" {
     int pt_init_bond_matrix(PT_pdc *THIS)
     {
@@ -89,8 +94,8 @@ static void ptnd_sort_probes_by(PT_pdc *pdc, int mode)  /* mode 0 quality, mode 
     }
 
     for (i=0;i<list_len;i++) {
-        aisc_unlink((struct_dllheader_ext*)my_list[i]);
-        aisc_link((struct_dllpublic_ext*)&(pdc->ptprobes),(struct_dllheader_ext*)my_list[i]);
+        aisc_unlink(reinterpret_cast<dllheader_ext*>(my_list[i]));
+        aisc_link(&pdc->ptprobes, my_list[i]);
     }
     free((char *)my_list);
 }
@@ -459,7 +464,7 @@ static void ptnd_cp_tprobe_2_probepart(PT_pdc *pdc)
             parts->sequence = strdup(tprobe->sequence+pos);
             parts->source = tprobe;
             parts->start = pos;
-            aisc_link((struct_dllpublic_ext*)&(pdc->pparts),(struct_dllheader_ext*)parts);
+            aisc_link(&pdc->pparts, parts);
         }
     }
 }
@@ -480,7 +485,7 @@ static void ptnd_duplikate_probepart_rek(PT_pdc *pdc, char *insequence, int deep
         newparts->dt = dt;
         newparts->start = parts->start;
         newparts->sum_bonds = sum_bonds;
-        aisc_link((struct_dllpublic_ext*)&(pdc->pdparts),(struct_dllheader_ext*)newparts);
+        aisc_link(&pdc->pdparts, newparts);
         return;
     }
     base = sequence[deep];
@@ -507,7 +512,7 @@ static void ptnd_duplikate_probepart(PT_pdc *pdc)
     while (( parts = pdc->dparts ))
     {
         aisc_unlink((struct_dllheader_ext*)parts);
-        aisc_link((struct_dllpublic_ext*)&(pdc->pparts),(struct_dllheader_ext*)parts);
+        aisc_link(&pdc->pparts, parts);
     }
 }
 /***********************************************************************
@@ -542,7 +547,7 @@ static void ptnd_sort_parts(PT_pdc *pdc)
 
     for (i=0;i<list_len;i++) {
         aisc_unlink((struct_dllheader_ext*)my_list[i]);
-        aisc_link((struct_dllpublic_ext*)&(pdc->pparts),(struct_dllheader_ext*)my_list[i]);
+        aisc_link(&pdc->pparts, my_list[i]);
     }
     free((char *)my_list);
 }
@@ -610,7 +615,7 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts,
             match = psg.data[name].match;
         }else{
             match = create_PT_probematch();
-            aisc_link((struct_dllpublic_ext*)&(ptnd.locs->ppm),(struct_dllheader_ext*)match);
+            aisc_link(&ptnd.locs->ppm, match);
             psg.data[name].match = match;
         }
         match->name = name;
@@ -817,7 +822,7 @@ extern "C" {
             tprobe->sequence = strdup(probe);
             tprobe->temp = pt_get_temperature(probe);
             tprobe->groupsize = (int)count;
-            aisc_link((struct_dllpublic_ext*)&(ptnd.pdc->ptprobes),(struct_dllheader_ext*)tprobe);
+            aisc_link(&ptnd.pdc->ptprobes, tprobe);
         }
         return count;
     }
@@ -1045,7 +1050,7 @@ void ptnd_new_match(PT_local * locs, char *probestring)
     if (!pdc) return;			/* no config */
     tprobe = create_PT_tprobes();
     tprobe->sequence = strdup(probestring);
-    aisc_link((struct_dllpublic_ext*)&(pdc->ptprobes),(struct_dllheader_ext*)tprobe);
+    aisc_link(&pdc->ptprobes, tprobe);
     ptnd_check_bonds(pdc,ptnd.new_match);
     ptnd_cp_tprobe_2_probepart(pdc);
     ptnd_duplikate_probepart(pdc);
