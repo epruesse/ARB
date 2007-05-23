@@ -7,9 +7,10 @@ $(MAIN): $(OBJECTS)
 	$(ACC) $(cflags) -c $< $(AINCLUDES)
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
+
 proto:
-	rm -f servercntrl_prototypes.h
-	../MAKEBIN/aisc_mkpt -C $(OBJECTS:.o=.c) >servercntrl_prototypes.h
+	../MAKEBIN/aisc_mkpt -A -P -C $(OBJECTS:.o=.c) >servercntrl.h.tmp
+	../SOURCE_TOOLS/mv_if_diff servercntrl.h.tmp servercntrl.h
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
@@ -30,6 +31,7 @@ depend.init:
 
 servercntrl.o: servercntrl.h
 servercntrl.o: $(ARBHOME)/INCLUDE/ad_prot.h
+servercntrl.o: $(ARBHOME)/INCLUDE/aisc_global.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_assert.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arbdb.h
 servercntrl.o: $(ARBHOME)/INCLUDE/client.h

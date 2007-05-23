@@ -31,8 +31,8 @@ clean:
 	mv doc.pub doc
 
 proto:
-	rm -f aisc_proto.h
-	../AISC_MKPTPS/aisc_mkpt -C *.c >aisc_proto.h
+	../AISC_MKPTPS/aisc_mkpt -C -g *.c >aisc_proto.h.tmp
+	../SOURCE_TOOLS/mv_if_diff aisc_proto.h.tmp aisc_proto.h
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

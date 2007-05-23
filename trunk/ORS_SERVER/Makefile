@@ -8,9 +8,11 @@ $(MAIN): ors_s_proto.hxx $(OBJECTS)
 	$(ACC) $(cflags) -c $<  $(AINCLUDES)
 .cxx.o:
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
+
 ors_s_proto.hxx: $(OBJECTS:.o=.cxx)
-	rm -f ors_s_proto.hxx
-	../MAKEBIN/aisc_mkpt -E $(OBJECTS:.o=.cxx) >ors_s_proto.hxx
+	../MAKEBIN/aisc_mkpt -E $(OBJECTS:.o=.cxx) >ors_s_proto.hxx.tmp
+	../SOURCE_TOOLS/mv_if_diff ors_s_proto.hxx.tmp ors_s_proto.hxx
+
 proto: ors_s_proto.hxx
 
 DEPENDS = $(OBJECTS:.o=.depend)

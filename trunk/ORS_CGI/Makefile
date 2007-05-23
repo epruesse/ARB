@@ -9,8 +9,8 @@ $(MAIN): $(CPP_OBJECTS)
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
 
 proto:
-	rm -f ors_c_proto.hxx
-	../MAKEBIN/aisc_mkpt $(CPP_OBJECTS:.o=.cxx) | grep -v '::' >ors_c_proto.hxx
+	../MAKEBIN/aisc_mkpt $(CPP_OBJECTS:.o=.cxx) >ors_c_proto.hxx.tmp
+	../SOURCE_TOOLS/mv_if_diff ors_c_proto.hxx.tmp ors_c_proto.hxx
 
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)

@@ -13,12 +13,8 @@ $(ARBHOME)/bin/trs_server: $(OBJECTS)
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
 proto:
-	rm -f trs_proto.h
-	echo "#define P_(s) s" > trs_proto.h
-	../MAKEBIN/aisc_mkpt $(OBJECTS:.o=.cxx) |awk '$$2 ~ /TRS/ {print;}' >>trs_proto.h
-	../MAKEBIN/aisc_mkpt $(OBJECTS:.o=.cxx) |awk '$$2 ~ /T2J/ {print;}' |grep -v ':' >>trs_proto.h
-	echo "#undef P_" >>trs_proto.h
-
+	../MAKEBIN/aisc_mkpt -g $(OBJECTS:.o=.cxx) >trs_proto.h.tmp
+	../SOURCE_TOOLS/mv_if_diff trs_proto.h.tmp trs_proto.h
 
 $(ARBHOME)/irsbin/%: %.cxx
 	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) $(LIB2)
