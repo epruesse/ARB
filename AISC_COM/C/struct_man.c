@@ -142,7 +142,7 @@ const char *aisc_link(dllpublic_ext * parent, dllheader_ext * mh) {
     }
     if (parent->key != mh->key) {
         CORE;
-        return "Parent key doesnt mach Object key";
+        return "Parent key doesnt match Object key";
     }
     if (mh->ident) {
         if (strlen(mh->ident) <= 0) {
