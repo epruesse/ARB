@@ -286,8 +286,6 @@ extern "C" {
 }
 #endif
 
-#define GB_INLINE
-
 #ifdef __cplusplus
 
 struct gb_data_base_type2;
@@ -303,11 +301,12 @@ public:
 
 int GB_info(struct gb_data_base_type2 *gbd);
 
-# ifndef NO_INLINE
-#  undef GB_INLINE
-#  define GB_INLINE inline
-# endif /*NO_INLINE*/
+// #define GB_INLINE inline
+#else
+// #define GB_INLINE
 #endif /*__cplusplus*/
+
+#define GB_INLINE inline
 
 #else
 #error "arbdb.h included twice"
