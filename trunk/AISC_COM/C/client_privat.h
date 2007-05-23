@@ -1,9 +1,6 @@
-#define AISC_ATTR_INT           0x1000000
-#define AISC_ATTR_DOUBLE        0x2000000
-#define AISC_ATTR_STRING        0x3000000
-#define AISC_ATTR_COMMON        0x4000000
-#define AISC_ATTR_BYTES 	0x5000000
-#define AISC_INDEX              0x1ff0000
+#ifndef GLOBAL_H
+#include "aisc_global.h"
+#endif
 
 typedef struct struct_aisc_com {
 	int		socket;
