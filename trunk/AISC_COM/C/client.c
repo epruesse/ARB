@@ -27,6 +27,8 @@
 
 #include "../INCLUDE/SIG_PF.h"
 
+#include "trace.h"
+
 #if 0
 /* #if defined(SUN5_ECGS) */
 /* #else */
@@ -50,7 +52,7 @@ int aisc_core_on_error = 1;
 
 char *aisc_error;
 #define	CORE if (aisc_core_on_error) { *(int *)NULL = 0; };
-long aisc_mes_buffer[AISC_MESSAGE_BUFFER_LEN];
+static long aisc_mes_buffer[AISC_MESSAGE_BUFFER_LEN];
 aisc_com *aisc_client_link;
 
 int aisc_print_error_to_stderr = 1;
@@ -504,6 +506,8 @@ int aisc_get(aisc_com *link, int o_type, long objekt, ...)
     long	i,len;
     long	size;
 
+    AISC_DUMP_SEP();
+
     mes_cnt = 2;
     arg_cnt = 0;
     count =4;
@@ -557,18 +561,24 @@ int aisc_get(aisc_com *link, int o_type, long objekt, ...)
             switch (arg_types[i]) {
                 case AISC_ATTR_INT:
                 case AISC_ATTR_COMMON:
+                    AISC_DUMP(aisc_get, int, aisc_mes_buffer[mes_cnt]);
                     arg_pntr[i][0] = aisc_mes_buffer[mes_cnt++];
                     break;
                 case AISC_ATTR_DOUBLE:
+                    AISC_DUMP(aisc_get, double, *(double*)&(aisc_mes_buffer[mes_cnt]));
                     arg_pntr[i][0] = aisc_mes_buffer[mes_cnt++];
                     arg_pntr[i][1] = aisc_mes_buffer[mes_cnt++];
                     break;
-                case AISC_ATTR_STRING:
-                    arg_pntr[i][0] = (long)strdup((char *)(&(aisc_mes_buffer[mes_cnt+1])));
-                    mes_cnt += aisc_mes_buffer[mes_cnt] + 1;
+                case AISC_ATTR_STRING: {
+                    char *str = strdup((char *)(&(aisc_mes_buffer[mes_cnt+1])));
+                    AISC_DUMP(aisc_get, charPtr, str);
+                    arg_pntr[i][0]  = (long)str;
+                    mes_cnt        += aisc_mes_buffer[mes_cnt] + 1;
                     break;
+                }
                 case AISC_ATTR_BYTES:
                     size = arg_pntr[i][1] = aisc_mes_buffer[mes_cnt++];
+                    AISC_DUMP(aisc_get, int, size);
                     if (size){
                         arg_pntr[i][0] = (long)calloc(sizeof(char),(size_t)size);
                         len = aisc_c_read(link->socket,(char *)(arg_pntr[i][0]),size);
@@ -576,6 +586,9 @@ int aisc_get(aisc_com *link, int o_type, long objekt, ...)
                             link->error = err_connection_problems;
                             PRTERR("AISC_GET_ERROR");
                         }
+#if defined(DUMP_COMMUNICATION)
+                        aisc_dump_hex("aisc_get bytestring: ", (char *)(arg_pntr[i][0]), size);
+#endif /* DUMP_COMMUNICATION */
                     }else{
                         arg_pntr[i][0] = 0;
                     }
@@ -642,6 +655,8 @@ static int 	aisc_collect_sets(aisc_com *link,
     char 	*str;
     int arg_cnt = 0;
 
+    AISC_DUMP_SEP();
+
     while( (code=va_arg(parg,int)) ) {
         attribute	= code &0x0000ffff;
         type 		= code &0xff000000;
@@ -668,17 +683,20 @@ static int 	aisc_collect_sets(aisc_com *link,
             case AISC_ATTR_INT:
             case AISC_ATTR_COMMON:
                 aisc_mes_buffer[mes_cnt++] = va_arg(parg,long);
+                AISC_DUMP(aisc_collect_sets, int, aisc_mes_buffer[mes_cnt-1]);
                 break;
-            case AISC_ATTR_DOUBLE:
-                {	int  *ptr;
-                dummy = va_arg(parg, double);
-                ptr = (int *)&dummy;
+            case AISC_ATTR_DOUBLE: {
+                long  *ptr;
+                dummy    = va_arg(parg, double);
+                AISC_DUMP(aisc_collect_sets, double, dummy);
+                ptr = (long*)&dummy;
                 aisc_mes_buffer[mes_cnt++] = *ptr++;
                 aisc_mes_buffer[mes_cnt++] = *ptr;
                 break;
-                }
+            }
             case AISC_ATTR_STRING:
                 str = va_arg(parg,char *);
+                AISC_DUMP(aisc_collect_sets, charPtr, str);
                 len = strlen(str)+1;
                 if (len > AISC_MAX_STRING_LEN) {
                     sprintf(errbuf, "ARG %i: STRING \'%s\' TOO LONG", count+2, str);
@@ -697,8 +715,13 @@ static int 	aisc_collect_sets(aisc_com *link,
                 {
                     bytestring *bs;
                     bs = va_arg(parg,bytestring *);
-                    if (bs->data && bs->size)
+                    AISC_DUMP(aisc_collect_sets, int, bs->size);
+                    if (bs->data && bs->size) {
                         aisc_c_add_to_bytes_queue(bs->data,bs->size);
+#if defined(DUMP_COMMUNICATION)
+                        aisc_dump_hex("aisc_collect_sets bytestring: ", bs->data, bs->size);
+#endif /* DUMP_COMMUNICATION */
+                    }
                     aisc_mes_buffer[mes_cnt++] = bs->size;		/* size */
                     break;
                 }
