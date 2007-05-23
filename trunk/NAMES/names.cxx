@@ -21,6 +21,14 @@ using namespace std;
 
 // --------------------------------------------------------------------------------
 
+// overloaded functions to avoid problems with type-punning:
+inline long aisc_find_lib(dll_public *dll, char *key) { return aisc_find_lib(reinterpret_cast<dllpublic_ext*>(dll), key); }
+
+inline void aisc_link(dll_public *dll, AN_shorts *shorts)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(shorts)); }
+inline void aisc_link(dll_public *dll, AN_revers *revers)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(revers)); }
+
+// --------------------------------------------------------------------------------
+
 #if defined(DEBUG)
 // #define DUMP_NAME_CREATION
 #endif // DEBUG
@@ -68,7 +76,7 @@ inline int an_stricmp(const char *s1, const char *s2) {
 
 static AN_revers *lookup_an_revers(AN_main *main, const char *shortname) {
     char      *key        = an_strlwr(strdup(shortname));
-    AN_revers *an_reverse = (AN_revers*)aisc_find_lib((struct_dllpublic_ext*)&(main->prevers), key);
+    AN_revers *an_reverse = (AN_revers*)aisc_find_lib(&main->prevers, key);
     
     free(key);
 
@@ -80,7 +88,7 @@ static AN_shorts *lookup_an_shorts(AN_main *main, const char *identifier) {
     // 'add_id' is the value of an additional DB field and may be empty.
 
     char      *key       = an_strlwr(strdup(identifier));
-    AN_shorts *an_shorts = (AN_shorts*)aisc_find_lib((struct_dllpublic_ext*)&(main->pnames), key);
+    AN_shorts *an_shorts = (AN_shorts*)aisc_find_lib(&main->pnames, key);
 
     free(key);
 
@@ -161,14 +169,14 @@ static void an_add_short(AN_local *locs, const char *new_name,
     an_shorts->acc       = strdup(acc);
     an_shorts->add_id    = strdup(add_id);
 
-    aisc_link((struct_dllpublic_ext*)&(aisc_main->pnames),(struct_dllheader_ext*)an_shorts);
+    aisc_link(&aisc_main->pnames, an_shorts);
 
     an_revers->mh.ident  = an_strlwr(strdup(shrt));
     an_revers->full_name = full_name;
     an_revers->acc       = strdup(acc);
     an_revers->add_id    = strdup(add_id);
 
-    aisc_link((struct_dllpublic_ext*)&(aisc_main->prevers),(struct_dllheader_ext*)an_revers);
+    aisc_link(&aisc_main->prevers, an_revers);
 
     GB_HASH *phash = an_get_prefix_hash();
     GBS_write_hash(phash, an_make_prefix(an_shorts->shrt), (long)an_shorts); // add an_shorts to hash
@@ -938,7 +946,7 @@ static void check_for_case_error(AN_main *main) {
             if (!self_find) { // stored with wrong key (not lowercase)
                 aisc_unlink((struct_dllheader_ext*)shrt);
                 an_strlwr(shrt->mh.ident);
-                aisc_link((struct_dllpublic_ext*)&(main->pnames), (struct_dllheader_ext*)shrt);
+                aisc_link(&main->pnames, shrt);
                 main->touched = 1;
 
                 case_error_occurred = true;
@@ -1068,7 +1076,7 @@ static GB_ERROR server_load(AN_main *main)
             revers->full_name = strdup(shrt->full_name);
             revers->acc       = strdup(shrt->acc);
             revers->add_id    = shrt->add_id ? strdup(shrt->add_id) : 0;
-            aisc_link((struct_dllpublic_ext*)&(main->prevers),(struct_dllheader_ext*)revers);
+            aisc_link(&main->prevers, revers);
             nameCount++;
         }
 
@@ -1098,9 +1106,9 @@ static GB_ERROR server_load(AN_main *main)
     return error;
 }
 
-int names_server_shutdown(int exitcode) {
+void names_server_shutdown(int exitcode) __attribute__((noreturn));
+void names_server_shutdown(int exitcode) {
     aisc_server_shutdown_and_exit(AN_global.server_communication, exitcode); // never returns
-    return 0;
 }
 
 int names_server_save(void) {
