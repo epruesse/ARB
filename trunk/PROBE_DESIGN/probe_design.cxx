@@ -775,9 +775,15 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             {
                 error = "Connection to PT_SERVER lost (3)";
             }
-
-            if (*locs_error) error = GBS_global_string("%s", locs_error);
-            free(locs_error);
+            else {
+                if (locs_error) {
+                    if (*locs_error) error = GBS_global_string("%s", locs_error);
+                    free(locs_error);
+                }
+                else {
+                    error = "Missing status from server (connection aborted?)";
+                }
+            }
 
             root->awar(AWAR_PD_MATCH_NHITS)->write_string(GBS_global_string(matches_truncated ? "> %li" : "%li", match_list_cnt));
             if (matches_truncated) {
