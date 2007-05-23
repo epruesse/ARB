@@ -11,12 +11,13 @@ char *TRS_map_file(const char *path,int writeable);
 #include "tree_lib.hxx"
 #include "trs_proto.h"
 
-void quit_with_error(char *error){
+static void quit_with_error(char *error) __attribute__((noreturn));
+static void quit_with_error(char *error) {
 	fprintf(stdout,"%s\n",error);
 	exit(-1);
 }
 
-char *get_indata(int argc, char **argv) {
+static char *get_indata(int argc, char **argv) {
 	char *indata = 0;
 	char *request_method;
 
@@ -48,7 +49,7 @@ char *get_indata(int argc, char **argv) {
 }
 
 
-long convert_cgi_to_hash(char *indata){		// destroys indata
+static long convert_cgi_to_hash(char *indata){		// destroys indata
 	long hash = TRS_create_hash(10);
 	char *p;
 	for (p = strtok(indata,"&");p; p = strtok(0,"&")){
@@ -81,10 +82,12 @@ long convert_cgi_to_hash(char *indata){		// destroys indata
 	return hash;
 }
 
-long trs_show_hash(char *key,long val){
+/*
+static long trs_show_hash(char *key,long val){
 	printf("%s:%s\n",key,(char *)val);
 	return val;
 }
+*/
 
 int main(int argc, char **argv){
 	char *data = get_indata(argc,argv);
