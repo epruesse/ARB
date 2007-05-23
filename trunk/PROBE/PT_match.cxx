@@ -11,17 +11,23 @@
 #include <arbdbt.h>
 /* if chain is reached copy data in locs structure */
 
+// overloaded functions to avoid problems with type-punning:
+inline void aisc_link(dll_public *dll, PT_probematch *match)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(match)); }
 
-GB_INLINE double ptnd_get_wmismatch(PT_pdc *pdc, char *probe, int pos, char ref)
+static double ptnd_get_wmismatch(PT_pdc *pdc, char *probe, int pos, char ref)
 {
-    int	base;
-    int	complement;
-    double	max_bind;
-    double	new_bind;
-    base = probe[pos];
-    complement = psg.complement[base];
-    max_bind = pdc->bond[  (complement-(int)PT_A)*4 + base-(int)PT_A].val;
-    new_bind = pdc->bond[  (complement-(int)PT_A)*4 + ref-(int)PT_A].val;
+    int base       = probe[pos];
+    int complement = psg.complement[base];
+    int rowIdx     = (complement-(int)PT_A)*4;
+    int maxIdx     = rowIdx + base-(int)PT_A;
+    int newIdx     = rowIdx + ref-(int)PT_A;
+
+    arb_assert(maxIdx >= 0 && maxIdx < 16);
+    arb_assert(newIdx >= 0 && newIdx < 16);
+
+    double max_bind = pdc->bond[maxIdx].val;
+    double new_bind = pdc->bond[newIdx].val;
+
     return (max_bind - new_bind);
 }
 
@@ -77,7 +83,7 @@ int PT_chain_print(int name, int apos, int rpos, long ilocs)
     ml->sequence     = psg.main_probe;
     ml->reversed     = psg.reversed ? 1 : 0;
 
-    aisc_link((struct_dllpublic_ext*)&(locs->ppm),(struct_dllheader_ext*)ml);
+    aisc_link(&locs->ppm, ml);
 
     return 0;
 }
@@ -113,7 +119,7 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt)
         ml->sequence     = psg.main_probe;
         ml->reversed     = psg.reversed ? 1 : 0;
 
-        aisc_link((struct_dllpublic_ext*)&(locs->ppm),(struct_dllheader_ext*)ml);
+        aisc_link(&locs->ppm, ml);
 
         return 0;
     }else
@@ -160,7 +166,8 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
                     newmis = mismatches;
                     newwmis = wmismatches;
                     new_N_mis = N_mismatches + 1;
-                }else 	if (i != base) {
+                }
+                else if (i != base) {
                     if (locs->pdc) {
                         h = ptnd_get_wmismatch(locs->pdc, probe, height, i);
                         newwmis = wmismatches + psg.pos_to_weight[height] * h;
@@ -272,7 +279,7 @@ void pt_sort_match_list(PT_local * locs)
     GB_mergesort((void **)my_list,0,list_len,pt_sort_compare_match,0 );
     for (i=0;i<list_len;i++) {
         aisc_unlink((struct_dllheader_ext*)my_list[i]);
-        aisc_link((struct_dllpublic_ext*)&(locs->ppm),(struct_dllheader_ext*)my_list[i]);
+        aisc_link(&locs->ppm, my_list[i]);
     }
     free((char *)my_list);
 }
@@ -341,6 +348,17 @@ extern "C" int probe_match(PT_local * locs, aisc_string probestring)
     compress_data(probestring);
     while ((ml = locs->pm)) destroy_PT_probematch(ml);
     locs->matches_truncated = 0;
+
+#if defined(DEBUG)
+    PT_pdc *pdc = locs->pdc;
+    printf("Current bond values:\n");
+    for (int y = 0; y<4; y++) {
+        for (int x = 0; x<4; x++) {
+            printf("%5.2f", pdc->bond[y*4+x].val);
+        }
+        printf("\n");
+    }
+#endif // DEBUG
 
     {
         int probe_len = strlen(probestring);
