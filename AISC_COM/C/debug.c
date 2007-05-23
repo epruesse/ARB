@@ -5,13 +5,7 @@
 #include <ad_varargs.h>
 #include <aisc_com.h>
 #include "client.h"
-
-#define AISC_ATTR_INT           0x1000000
-#define AISC_ATTR_DOUBLE        0x2000000
-#define AISC_ATTR_STRING        0x3000000
-#define AISC_ATTR_COMMON        0x4000000
-#define AISC_ATTR_BYTES        	0x5000000
-#define AISC_COMMON 0
+#include "aisc_global.h"
 
 #ifdef __cplusplus
 extern "C" {
