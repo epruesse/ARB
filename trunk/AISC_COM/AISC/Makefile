@@ -1,7 +1,7 @@
-#the next lines should be defined in the meta Makefile
 
-COMPILER = acc -g
-AR = ld -r -o
+# no-strict-aliasing is important - starting with gcc 4.1.1 code doesn't work without!
+# (problems are caused by type-punning w/o using union which is used widely here)
+FORCED_FLAGS=-fno-strict-aliasing -Wno-unused
 
 .SUFFIXES: .o .c .h .aisc
 
@@ -46,16 +46,16 @@ $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS): \
 					$(GEN_SERVER_EXTERN_PROTO) $(IMPORT_PROTO) \
 					$(GEN_SERVER_OBJECTS:.o=.c) \
 					$(PRIVATE_SERVER_OBJECTS:.o=.c)
-	$(COMPILER) -Wno-unused -c -o $@ $(@:.o=.c) -IGENH -I. -IC -DAISC_SAVE_$(AISC_SAVE)
+	$(COMPILER) $(FORCED_FLAGS) -c -o $@ $(@:.o=.c) -IGENH -I. -IC -DAISC_SAVE_$(AISC_SAVE)
 
 $(GEN_CLIENT_OBJECTS): $(GEN_INCLUDES) $(GEN_CLIENT_OBJECTS:.o=.c)
-	$(CLIENTCOMPILER) -Wno-unused -c -o $@ $(@:.o=.c) -IGENH -I. -IC
+	$(CLIENTCOMPILER) $(FORCED_FLAGS) -c -o $@ $(@:.o=.c) -IGENH -I. -IC
 
 O/%.o: C/%.c $(GEN_INCLUDES) $(CLIENT_INCLUDES) C/server.h
-	$(COMPILER) -Wno-unused -c -o $@ $< -IGENH -I. -IC
+	$(COMPILER) $(FORCED_FLAGS) -c -o $@ $< -IGENH -I. -IC
 
 $(CLIENT_OBJECTS):	$(CLIENT_OBJECTS:O/%.o=C/%.c) $(GEN_INCLUDES) $(CLIENT_INCLUDES)
-	$(CLIENTCOMPILER) -Wno-unused -c -o $@ C/$(@F:.o=.c) -IGENH -I. -IC
+	$(CLIENTCOMPILER) $(FORCED_FLAGS) -c -o $@ C/$(@F:.o=.c) -IGENH -I. -IC
 
 GENH/%.h: AISC/%.pa AISC/*.pa $(MAIN_SOURCE) $(INCLUDE_INCLUDES)
 	@echo "----------------------------------------"
