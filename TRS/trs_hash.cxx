@@ -294,7 +294,7 @@ long TRS_hash_do_loop(long hash, long func(const char *key,long val) )
 					Some Hash Procedures for [long,long]
 ********************************************************************************************/
 
-long trs_hashi_index(long key, long size)
+static long trs_hashi_index(long key, long size)
 	{
 	register long x;
 	x = (key*97)%size;
