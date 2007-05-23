@@ -10,7 +10,7 @@ struct sigcontext;
 #include <import_proto.h>
 
 extern AN_main *aisc_main;
-int names_server_shutdown(void);
+void names_server_shutdown(void) __attribute__((noreturn));
 int names_server_save(void);
 
 #ifdef __cplusplus
