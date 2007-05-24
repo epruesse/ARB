@@ -230,10 +230,14 @@ void create_all_awars(AW_root *awr, AW_default def)
 void nt_exit(AW_window * /*aw_window*/) {
     if (gb_main) {
         if (GB_read_clients(gb_main)>=0) {
-#ifdef NDEBUG
             if (GB_read_clock(gb_main) > GB_last_saved_clock(gb_main)){
                 long secs;
                 secs = GB_last_saved_time(gb_main);
+
+#if defined(DEBUG)
+                secs =  GB_time_of_day(); // simulate "just saved"
+#endif // DEBUG
+
                 if (secs) {
                     secs = GB_time_of_day() - secs;
                     if (secs>10){
@@ -245,7 +249,6 @@ void nt_exit(AW_window * /*aw_window*/) {
                     if (aw_message("You never saved any data\nSure to quit ???", "QUIT ARB,DO NOT QUIT")) return;
                 }
             }
-#endif // NDEBUG
         }
         GBCMS_shutdown(gb_main);
         GB_exit(gb_main);
