@@ -3712,11 +3712,11 @@ char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement) {
 
     if (error) {
         GBDATA *gb_name   = GB_find(gb_gene, "name", 0, down_level);
-        char   *gene_name = GBS_strdup(gb_name ? GB_read_char_pntr(gb_name) : "<unnamed gene>");
+        char   *gene_name = GB_strdup(gb_name ? GB_read_char_pntr(gb_name) : "<unnamed gene>");
         char   *species_name;
 
         gb_name      = GB_find(gb_species, "name", 0, down_level);
-        species_name = GBS_strdup(gb_name ? GB_read_char_pntr(gb_name) : "<unnamed species>");
+        species_name = GB_strdup(gb_name ? GB_read_char_pntr(gb_name) : "<unnamed species>");
 
         error = GB_export_error("%s (in %s/%s)", error, species_name, gene_name);
     }

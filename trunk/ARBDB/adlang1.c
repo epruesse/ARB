@@ -179,7 +179,7 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
 
 static char *unEscapeString(const char *escapedString) {
     /* replaces all \x by x */
-    char *result = GBS_strdup(escapedString);
+    char *result = GB_strdup(escapedString);
     char *to     = result;
     char *from   = result;
 
