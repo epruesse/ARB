@@ -84,6 +84,17 @@ void print_man()
 }
 
 
+void ali_fatal_error(const char *message, const char *func) {
+    fprintf(stderr,"FATAL ERROR %s: %s\n",func,message);
+    exit(-1);
+}
+
+void ali_error(const char *message, const char *func) {
+    fprintf(stderr,"ERROR %s: %s\n",func,message);
+    exit(-1);
+}
+
+
 /********************
 void del_test(ALI_PROFILE *prof,long begin, long end)
 {
