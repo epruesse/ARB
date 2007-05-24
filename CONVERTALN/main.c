@@ -19,10 +19,7 @@
  *		File conversion;  convert from one file format to
  *		the other.  eg.  Genbank<-->Macke format.
  */
-int main(argc, argv)
-     int	argc;
-     char **argv;
-{
+int main(int argc, char *argv[]) {
 	int	intype, outtype;
 /* 	int	Lenstr(), file_exist(); */
 /* 	void	error(), genbank_to_macke(), macke_to_genbank(); */
