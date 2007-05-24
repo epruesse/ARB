@@ -16,21 +16,6 @@
 #define ALI_DOT_CODE 6
 #define ALI_UNDEF_CODE	200
 
-inline void ali_fatal_error(const char *message, const char *func = "")
-{
-    fprintf(stderr,"FATAL ERROR %s: %s\n",func,message);
-    exit(-1);
-}
-
-inline void *CALLOC(long i,long j)	{
-    char *v = (char *)malloc(i*j);
-    if (!v) {
-	ali_fatal_error("Out of Memory");
-    }
-    memset(v,0,i*j);
-    return v;
-}
-
 /*****************************************************************************
  *
  * Some Error Funktions
@@ -47,12 +32,17 @@ inline void ali_warning(const char *message, const char *func = "")
     fprintf(stderr,"WARNING %s: %s\n",func,message);
 }
 
-inline void ali_error(const char *message, const char *func = "")
-{   
-    fprintf(stderr,"ERROR %s: %s\n",func,message);
-    exit(-1);
-}
+void ali_error(const char *message, const char *func = "") __attribute__((noreturn));
+void ali_fatal_error(const char *message, const char *func = "") __attribute__((noreturn));
 
+inline void *CALLOC(long i,long j)	{
+    char *v = (char *)malloc(i*j);
+    if (!v) {
+	ali_fatal_error("Out of Memory");
+    }
+    memset(v,0,i*j);
+    return v;
+}
 
 
 /*****************************************************************************
