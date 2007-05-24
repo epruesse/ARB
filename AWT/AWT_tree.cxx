@@ -908,7 +908,7 @@ GB_ERROR AP_tree::set_root()
 
     {           // move remark branches to top
         AP_tree *node;
-        char *remark = GBS_strdup(this->remark_branch);
+        char *remark = GB_strdup(this->remark_branch);
         for (node = this;node->father;node = node->father){
             char *sh = node->remark_branch;
             node->remark_branch = remark;

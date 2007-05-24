@@ -750,7 +750,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
         return;
     }
 
-    char *full_name = GBS_strdup(GBS_global_string("%s [%s]", full_species_name, gene_name));
+    char *full_name = GB_strdup(GBS_global_string("%s [%s]", full_species_name, gene_name));
 
     char *sequence = GBT_read_gene_sequence(gb_gene, true);
     if (!sequence) {
