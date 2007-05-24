@@ -197,6 +197,7 @@ static void aed_save_bin(AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
 }
 
 
+static void aed_quit(AW_window *aw, AW_CL cd1, AW_CL cd2) __attribute__((noreturn));
 static void aed_quit(AW_window *aw, AW_CL cd1, AW_CL cd2) {
     AWUSE(aw);AWUSE(cd2);
     AED_root *root = (AED_root *)cd1;

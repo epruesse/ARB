@@ -76,6 +76,7 @@ void startup_sequence_cb(AW_window *aww,AW_CL cd1, AW_CL cl_aww)
 
 
 
+void ap_exit(AW_window *aw_window,AP_root *ap_root) __attribute__((noreturn));
 void ap_exit(AW_window *aw_window,AP_root *ap_root)
 {
     AWUSE(aw_window);

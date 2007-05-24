@@ -1294,6 +1294,7 @@ static void ph_autodetect_callback(AW_window *aww)
     free(filter_str);
 }
 
+static void ap_exit(AW_window *) __attribute__((noreturn));
 static void ap_exit(AW_window *)
 {
     if (gb_main) GB_exit(gb_main);
