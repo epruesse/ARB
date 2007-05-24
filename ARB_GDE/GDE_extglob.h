@@ -16,7 +16,7 @@ char *GBS_string_to_key P_((char *s));
 void ParseMenu P_((void));
 int Find P_((const char *target, const char *key));
 int Find2 P_((const char *target, const char *key));
-void Error P_((const char *msg));
+void Error P_((const char *msg)) __attribute__((noreturn));
 int getline P_((FILE *file, char *string));
 void crop P_((char *input, char *head, char *tail));
 

@@ -5,9 +5,10 @@
 #include <arbdbt.h>
 #include <cat_tree.hxx>
 
-void error_msg(char **argv){
+static void error_msg(char **argv) __attribute__((noreturn));
+static void error_msg(char **argv){
     printf("syntax: %s treefile otb-file\n"
-	   "	syntax of tree tips:	name#full_name\n"
+           "	syntax of tree tips:	name#full_name\n"
 	   ,argv[0]);
     exit(-1);
 }
