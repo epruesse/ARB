@@ -46,7 +46,6 @@ char *GBS_string_2_key P_((const char *str));
 GB_ERROR GB_check_key P_((const char *key));
 GB_ERROR GB_check_link_name P_((const char *key));
 GB_ERROR GB_check_hkey P_((const char *key));
-char *GBS_strdup P_((const char *s));
 GB_CPNTR GBS_find_string P_((const char *str, const char *key, long match_mode));
 long GBS_string_scmp P_((const char *str, const char *search, long upper_case));
 long GBS_string_cmp P_((const char *str, const char *search, long upper_case));
