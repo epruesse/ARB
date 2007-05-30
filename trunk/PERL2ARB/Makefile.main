@@ -1,6 +1,5 @@
 # -*-Mode: Makefile;-*-
 
-
 THIS=Makefile.main
 LIB=$(ARBHOME)/lib
 ARBDB=$(ARBHOME)/ARBDB
@@ -18,15 +17,20 @@ TARGET_SO=$(LIB)/ARB.so
 
 TARGETS=$(TARGET_PM) $(TARGET_SO)
 
-all: $(TARGETS)
+XS_DEPENDS = Makefile ARB.xs debug.h Makefile.PL
+
+# ------------------------------------------------------------
+
+all: perlmain.c $(TARGETS)
+
+perlmain.c: perlmain_source.c
+	cp $< $@
 
 $(TARGET_PM) : ARB.pm
 	cp $< $@
 
 $(TARGET_SO) : $(ARB_SO)
 	cp $< $@
-
-XS_DEPENDS = Makefile ARB.xs debug.h Makefile.PL
 
 $(ARB_SO) : $(XS_DEPENDS) depends.stamp
 	-rm $(ARB_SO)
