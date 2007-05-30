@@ -175,7 +175,7 @@ Ndmlproc.o : Ndmlproc.c protdml.h molphy.h optimtpm.c abratio.c
 # others
 
 clean :
-	rm -f core *.o $(PRGS)
+	rm -f $(OBJECTS) $(PRGS)
 
 DEPENDS = $(SOURCES_TML:.c=.depend)
 depends: $(DEPENDS)

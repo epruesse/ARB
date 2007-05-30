@@ -14,16 +14,8 @@ $(MAIN): $(CPP_OBJECTS)
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
-andy:
-	CC -o mpw $(CPP_OBJECTS)
-
 clean:
-	rm *.o
-	rm *.a
-	rm *.bak
-	rm *~
-	rm *#
-	rm *\%
+	rm -f $(CPP_OBJECTS) *.a
 
 #.IGNORE:
 #	clean

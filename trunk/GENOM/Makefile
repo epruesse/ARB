@@ -25,12 +25,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(ACC) $(cflags) -c $< $(CPPINCLUDES)
 
 clean:
-	rm *.o
-	rm *.a
-	rm *.bak
-	rm *~
-	rm *#
-	rm *\%
+	rm -f $(CPP_OBJECTS) *.a
 
 #.IGNORE:
 #	clean

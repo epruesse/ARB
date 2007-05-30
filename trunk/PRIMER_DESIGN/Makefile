@@ -16,17 +16,15 @@ CPP_OBJECTS =   \
 
 $(MAIN): $(CPP_OBJECTS)
 	$(XAR) $(MAIN) $(CPP_OBJECTS)
-#	$(MAKE) prd_test
 
 ./prd_test: $(MAIN) PRD_main.o
 	$(CPP) $(lflags) -o $@ PRD_main.o $(MAIN)
-
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
 clean:
-	-rm *.o *.a *~ prd_test *# *\%
+	rm -f $(CPP_OBJECTS) *.a
 
 #.IGNORE:
 #	clean

@@ -1,3 +1,5 @@
+# -*-Mode: Makefile;-*-  (emacs! this is a makefile!)
+
 .SUFFIXES: .doc .help .html
 
 # GENHELPDEST, GENDOCDEST and HELPFILELIST are passed from 'Makefile'
@@ -98,5 +100,5 @@ $(GENHELPDEST)/%.help:
 #	false
 
 clean:
-	-rm $(GENHELPDEST)/*.help
-	-rm $(GENDOCDEST)/*.doc
+	rm -f $(GENHELPDEST)/*.help
+	rm -f $(GENDOCDEST)/*.doc

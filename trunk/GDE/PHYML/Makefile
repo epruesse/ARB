@@ -37,7 +37,7 @@ $(EXEC) : $(OBJS)
 		$(CC) -o $(EXEC) $(OBJS) $(LIBS) $(CFLAGS)
 
 clean :
-		@-rm *.o
+		rm -f $(OBJS) $(EXEC)
 
 .c.o:
 		$(CC) $(CFLAGS) $(DFLAG) -c -o $@ $<

@@ -52,6 +52,6 @@ agde.hlp: $(GDE_HLP) agde.footer
 	@cat agde.footer >>$@
 
 clean:
-		-rm *.hlp
+		rm -f *.hlp
 
 

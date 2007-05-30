@@ -8,7 +8,7 @@ $(MAIN): $(OBJS)
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 clean:
-	rm -f *.o tp a.out
+	rm -f $(OBJS) *.a
 
 DEPENDS = $(OBJS:.o=.depend)
 depends: $(DEPENDS)

@@ -3,9 +3,11 @@
 .SUFFIXES: .o .c .depend
 OBJECTS = aisc.o aisc_commands.o aisc_var_ref.o aisc_mix.o
 
-$(MAIN): aisc
+BINARY=aisc
 
-aisc:	$(OBJECTS)
+$(MAIN): $(BINARY)
+
+$(BINARY):	$(OBJECTS)
 	$(CPP) $(cflags) -o $@ $(OBJECTS)
 
 .c.o:
@@ -22,13 +24,7 @@ depend.init:
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 clean:
-	rm -f *.[ao]
-	rm -f $(OBJECTS:.o=)
-	rm -f *%
-	rm -f core
-	mv doc/doc.pub .
-	rm -f doc/*
-	mv doc.pub doc
+	rm -f $(OBJECTS) $(BINARY)
 
 proto:
 	../AISC_MKPTPS/aisc_mkpt -C -g *.c >aisc_proto.h.tmp
