@@ -399,7 +399,8 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
 //             temp_parent->check_bases_and_rebuild_consensi(seq, seq_len, temp_species_manager, ED4_U_UP); // bases_check
 //         }
 
-        ED4_ROOT->main_manager->Show();
+        // ED4_ROOT->main_manager->Show(); // original version
+        ED4_ROOT->main_manager->Show(1, 0); // temporary fix for worst-refresh problems
 
         if (work_info->center_cursor) {
             cursor->jump_centered_cursor_to_seq_pos(aww, work_info->out_seq_position);
