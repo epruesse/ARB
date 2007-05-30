@@ -10,9 +10,8 @@ $(MAIN): $(CPP_OBJECTS)
 .cxx.o:
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
 
-NT_cb.hxx: NT_cb.cxx NT_extern.cxx
-	rm -f $@
-	../MAKEBIN/aisc_mkpt -C NT_cb.cxx NT_extern.cxx >$@
+clean:
+	rm -f $(CPP_OBJECTS) *.a
 
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)
