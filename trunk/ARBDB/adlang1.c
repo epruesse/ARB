@@ -32,60 +32,55 @@ int GB_get_ACISRT_trace() { return trace; }
 
 struct gbl_param {
     struct gbl_param *next;
-    GB_TYPES type;
-    char **addr;
-    const char *str;
-    const char *help_text;
+    GB_TYPES          type;     // type of variable
+    void             *varaddr;  // address of variable where value gets stored
+    const char       *param_name; // parameter name (e.g. 'include=')
+    const char       *help_text; // help text for parameter
 };
-
-
 
 #define GBL_BEGIN_PARAMS struct gbl_param *params = 0
 
-static int gbl_param_int(const char *str,int def, const char *help_text, struct gbl_param **pp, char **vaddr)
-{
-    struct gbl_param *_gblp = (struct gbl_param *)GB_calloc(1,sizeof(struct gbl_param));
-    _gblp->next = *pp; *pp = _gblp; _gblp->help_text = help_text;
-    _gblp->addr = vaddr; _gblp->type = GB_INT; _gblp->str = str;
-    _gblp->type = GB_INT;
+static void gbl_new_param(struct gbl_param **pp, GB_TYPES type, void *vaddr, const char *param_name, const char *help_text) {
+    struct gbl_param *gblp = (struct gbl_param *)GB_calloc(1,sizeof(struct gbl_param));
+    
+    gblp->next = *pp;
+    *pp         = gblp;
+
+    gblp->type       = type;
+    gblp->varaddr    = vaddr;
+    gblp->param_name = param_name;
+    gblp->help_text  = help_text;
+}
+
+static int gbl_param_int(const char *param_name,int def, const char *help_text, struct gbl_param **pp, int *vaddr) {
+    gbl_new_param(pp, GB_INT, vaddr, param_name, help_text);
     return def;
 }
 
-static const char *gbl_param_string(const char *str,const char *def, const char *help_text, struct gbl_param **pp, char **vaddr) {
-    struct gbl_param *_gblp = (struct gbl_param *)GB_calloc(1,sizeof(struct gbl_param));
-    _gblp->next = *pp; *pp = _gblp; _gblp->help_text = help_text;
-    _gblp->addr = vaddr; _gblp->type = GB_INT; _gblp->str = str;
-    _gblp->type = GB_STRING;
+static size_t gbl_param_size_t(const char *param_name, size_t def, const char *help_text, struct gbl_param **pp, size_t *vaddr) {
+    gbl_new_param(pp, GB_INT, vaddr, param_name, help_text);
     return def;
 }
 
-/*
-static float gbl_param_float(char *str,float def, char *help_text, struct gbl_param **pp, char **vaddr) {
-        struct gbl_param *_gblp = (struct gbl_param *)GB_calloc(1,sizeof(struct gbl_param));
-        _gblp->next = *pp; *pp = _gblp; _gblp->help_text = help_text;
-        _gblp->addr = vaddr; _gblp->type = GB_INT; _gblp->str = str;
-        _gblp->type = GB_FLOAT;
-        return def;
-        }
-        */
-
-static int gbl_param_bit(const char *str,int def, const char *help_text, struct gbl_param **pp, char **vaddr) {
-    struct gbl_param *_gblp = (struct gbl_param *)GB_calloc(1,sizeof(struct gbl_param));
-    _gblp->next = *pp; *pp = _gblp; _gblp->help_text = help_text;
-    _gblp->addr = vaddr; _gblp->type = GB_INT; _gblp->str = str;
-    _gblp->type = GB_BIT;
+static const char *gbl_param_string(const char *param_name, const char *def, const char *help_text, struct gbl_param **pp, const char **vaddr) {
+    gbl_new_param(pp, GB_STRING, vaddr, param_name, help_text);
     return def;
 }
 
-#define GBL_PARAM_INT(var,_str,_def,_help_text) int var = gbl_param_int(_str,_def,_help_text, &params, (char **)&var)
-#define GBL_PARAM_SIZET(var,_str,_def,_help_text) size_t var = (size_t)gbl_param_int(_str,_def,_help_text, &params, (char **)&var)
-#define GBL_PARAM_STRING(var,_str,_def,_help_text) const char *var = gbl_param_string(_str,_def,_help_text, &params, (char **)&var)
-#define GBL_PARAM_BIT(var,_str,_def,_help_text) int var = gbl_param_bit(_str,_def,_help_text, &params, (char **)&var)
+static int gbl_param_bit(const char *param_name, int def, const char *help_text, struct gbl_param **pp, int *vaddr) {
+    gbl_new_param(pp, GB_BIT, vaddr, param_name, help_text);
+    return def;
+}
 
-/* #define GBL_PARAM_FLOAT(var,_str,_def,_help_text) float var = \ */
-                /* gbl_param_float(_str,_def,_help_text, &params, (char **)&var) */
+typedef const char *string;
+typedef int         bit;
 
+#define GBL_PARAM_TYPE(type, var, param_name, def, help_text) type  var = gbl_param_##type(param_name, def, help_text, &params, &var)
 
+#define GBL_PARAM_INT(   var, param_name, def, help_text) GBL_PARAM_TYPE(int,    var, param_name, def, help_text)
+#define GBL_PARAM_SIZET( var, param_name, def, help_text) GBL_PARAM_TYPE(size_t, var, param_name, def, help_text)
+#define GBL_PARAM_STRING(var, param_name, def, help_text) GBL_PARAM_TYPE(string, var, param_name, def, help_text)
+#define GBL_PARAM_BIT(   var, param_name, def, help_text) GBL_PARAM_TYPE(bit,    var, param_name, def, help_text)
 
 #define GBL_TRACE_PARAMS(argc,argv) { \
         GB_ERROR error = trace_params(argc,argv,params,args->command); \
@@ -104,20 +99,20 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
     struct gbl_param *para;
     for (i=0;i<argc;i++) {
         for (para = ppara; para; para = para->next) {
-            len = strlen(para->str);
-            if (!strncmp(argv[i].str,para->str,len)) {
+            len = strlen(para->param_name);
+            if (!strncmp(argv[i].str, para->param_name,len)) {
                 switch(para->type) {
                     case GB_STRING:
-                        *para->addr = argv[i].str+len;
+                        *(char **)para->varaddr  = argv[i].str+len;
                         break;
                     case GB_INT:
-                        *((int *)para->addr) = atoi(argv[i].str+len);
+                        gb_assert(sizeof(int) == sizeof(size_t)); // assumed by GBL_PARAM_SIZET
+                        
+                        *(int *)para->varaddr = atoi(argv[i].str+len);
                         break;
-                    case GB_FLOAT:
-                        *((float *)para->addr) = atof(argv[i].str+len);
-                        break;
+                        
                     case GB_BIT:
-                        *((float *)para->addr) += 1;
+                        *(int *)para->varaddr = 1;
                         break;
                     default:
                         GB_internal_error("ACI: Unknown Parameter Type");
@@ -143,7 +138,7 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
             for (pcount--; pcount>=0; pcount--) {
                 para = params[pcount];
                 GBS_strcat(str,"\t");
-                GBS_strcat(str,para->str);
+                GBS_strcat(str,para->param_name);
                 switch(para->type) {
                     case GB_STRING:
                         GBS_strcat(str,"STRING");
