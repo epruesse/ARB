@@ -196,7 +196,7 @@ int g_b_set_masters_and_set_leafs(GB_CTREE *node,
     return 1;
 }
 
-static GB_INLINE long g_b_read_number2(unsigned char **s) {
+static GB_INLINE long g_b_read_number2(const unsigned char **s) {
     register unsigned int c0,c1,c2,c3,c4;
     c0 = (*((*s)++));
     if (c0 & 0x80){
@@ -630,47 +630,42 @@ char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master
     return buffer;
 }
 
-char *gb_uncompress_by_sequence(GBDATA *gbd, const char *s,long size, GB_ERROR *error){
-    register char *dest;
-    GB_MAIN_TYPE *Main;
-    GBDATA *gb_main;
-    GBDATA *gb_master;
-    char *master;
-    GBQUARK quark;
-    int index;
-    long master_size;
-    char *to_free;
+char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss,long size, GB_ERROR *error){
+    char *dest = 0;
 
     *error = 0;
-
     if (!GB_FATHER(gbd)) {
         *error = "Cannot uncompress this sequence: Sequence has no father";
-        return 0;
     }
+    else {
+        GB_MAIN_TYPE        *Main    = GB_MAIN(gbd);;
+        GBDATA              *gb_main = (GBDATA*)Main->data;
+        char                *to_free = gb_check_out_buffer(ss); /* Get our own buffer, maybe load_single_key_data will destroy it */
+        const unsigned char *s       = (const unsigned char *)ss;
+        int                  index   = g_b_read_number2(&s);
+        GBQUARK              quark   = g_b_read_number2(&s);
 
-    Main = GB_MAIN(gbd);
-    gb_main = (GBDATA *)Main->data;
+        if (!Main->keys[quark].gb_master_ali){
+            gb_load_single_key_data(gb_main,quark);
+        }
 
-    to_free = gb_check_out_buffer(s); /* Get our own buffer, maybe load_single_key_data will destroy it */
+        if (!Main->keys[quark].gb_master_ali){
+            *error = "Cannot uncompress this sequence: Cannot find a master sequence";
+        }
+        else {
+            GBDATA *gb_master = gb_find_by_nr(Main->keys[quark].gb_master_ali,index);
+            if (!gb_master){
+                dest = (char*)GB_get_error();
+            }
+            else {
+                long  master_size = GB_read_string_count(gb_master); // @@@ why unused ? 
+                char *master      = GB_read_char_pntr(gb_master); /* make sure that this is not a buffer !!! */
 
-    index = g_b_read_number2((unsigned char **)&s);
-    quark = g_b_read_number2((unsigned char **)&s);
-
-    if (!Main->keys[quark].gb_master_ali){
-        gb_load_single_key_data(gb_main,quark);
+                dest = g_b_uncompress_single_sequence_by_master(ss, master, size);
+            }
+        }
+        free(to_free);
     }
-    if (!Main->keys[quark].gb_master_ali){
-        *error = "Cannot uncompress this sequence: Cannot find a master sequence";
-        return 0;
-    }
-
-    gb_master = gb_find_by_nr(Main->keys[quark].gb_master_ali,index);
-    if (!gb_master){
-        return (char *)GB_get_error();
-    }
-    master_size = GB_read_string_count(gb_master);
-    master = GB_read_char_pntr(gb_master); /* make sure that this is not a buffer !!! */
-    dest = g_b_uncompress_single_sequence_by_master(s,master,size);
-    if (to_free) free(to_free);
-    return (char *)dest;
+    
+    return dest;
 }
