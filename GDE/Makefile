@@ -59,9 +59,11 @@ endif
 $(MAIN): $(ARCHS)
 
 proto:
-		$(MAKE) -C CORE proto
+	$(MAKE) -C CORE proto
 
 depends: $(ARCHS:.dummy=.depend)
+
+clean: $(ARCHS:.dummy=.clean)
 
 %.depend:
 	@cp -p $(@D)/Makefile $(@D)/Makefile.old # save old Makefile
@@ -94,6 +96,13 @@ depends: $(ARCHS:.dummy=.depend)
 		"ARB  = yes" \
 		"MAIN = $(@F:.dummy=.a)" \
 		>$(@D).log 2>&1 && cat $(@D).log) || (cat $(@D).log; false)) && (rm $(@D).log))
+
+%.clean:
+	@echo "$(ARBHOME)/GDE/$(@D)/Makefile:1: here"
+	@$(MAKE) -C $(@D) \
+		"ARB  = yes" \
+		"OPENGL=$(OPENGL)" \
+		clean
 
 # the end of the above command avoids that the output of parallel make calls gets mixed up 
 

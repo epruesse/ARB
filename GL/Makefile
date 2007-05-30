@@ -34,6 +34,8 @@ $(MAIN): $(ARCHS)
 
 depends: $(ARCHS:.dummy=.depend)
 
+clean: $(ARCHS:.dummy=.clean)
+
 %.depend:
 	@cp -p $(@D)/Makefile $(@D)/Makefile.old # save old Makefile
 	@$(MAKE) -C $(@D) -r \
@@ -63,6 +65,12 @@ depends: $(ARCHS:.dummy=.depend)
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
 		"ARB  = yes" \
 		"MAIN = $(@F:.dummy=.a)"
+
+%.clean:
+	@echo "$(ARBHOME)/GL/$(@D)/Makefile:1: here"
+	@$(MAKE) -C $(@D) \
+		"OPENGL=$(OPENGL)" \
+		clean
 
 # DO NOT DELETE
 

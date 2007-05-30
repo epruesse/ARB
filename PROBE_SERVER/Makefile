@@ -89,6 +89,7 @@ $(DEST)/pgd_tree_merge:
 #		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PGD_TREE_MERGE) $(LIBS) $(SYSLIBS)
 
 depends: $(SUBS:.dummy=.depend)
+clean: $(SUBS:.dummy=.clean)
 
 %.depend:
 	@cp -p $(@D)/Makefile $(@D)/Makefile.old # save old Makefile
@@ -120,6 +121,12 @@ depends: $(SUBS:.dummy=.depend)
 		"ARB  = yes" \
 		"MAIN = $(@F:.dummy=.a)" \
 		>$(@D).log 2>&1 && cat $(@D).log) || (cat $(@D).log; false)) && (rm $(@D).log))
+
+%.clean:
+	@echo "$(ARBHOME)/PROBE_SERVER/$(@D)/Makefile:1: here"
+	@$(MAKE) -C $(@D) \
+		"OPENGL=$(OPENGL)" \
+		clean
 
 # the end of the above command avoids that the output of parallel make calls gets mixed up 
 
