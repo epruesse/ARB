@@ -24,7 +24,7 @@ server.a: $(MAIN_SOURCE) $(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES)
 				"AR = $(AR)"
 
 depends:
-	$(MAKE) -r -f AISC/Makefile depends
+#	$(MAKE) -r -f AISC/Makefile depends
 
 clean:
 	$(MAKE) $(makeflags) -f AISC/Makefile clean
