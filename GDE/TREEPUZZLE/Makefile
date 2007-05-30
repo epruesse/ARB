@@ -15,17 +15,18 @@ OBJECT =  \
 
 # src/ppuzzle.o \
 
+BINARY=$(ARBHOME)/bin/puzzle
 
 PUZZ_CFLAGS = $(cflags) -DPACKAGE=\"tree-puzzle\" -DVERSION=\"5.0\" -DHAVE_LIBM=1 -DSTDC_HEADERS=1 -DHAVE_LIMITS_H=1 -Isrc
 
-$(ARBHOME)/bin/puzzle: $(OBJECT)
+$(BINARY): $(OBJECT)
 		$(ACC) $(PUZZ_CFLAGS) -o $@ $(OBJECT) $(LIB) -lm
 
 src/%.o : src/%.c
 	$(ACC) $(PUZZ_CFLAGS) -c -o $@ $< $(AINCLUDES)
 
 clean:
-		-rm src/*.o
+	rm -f $(OBJECT) $(BINARY)
 
 DEPENDS = $(OBJECT:.o=.depend)
 depends: $(DEPENDS)
