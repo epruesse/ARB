@@ -3,15 +3,18 @@
 .SUFFIXES: .o .c .depend
 
 OBJECTS = mkptypes.o
-PROG = aisc_mkpt
+BINARY = aisc_mkpt
 
-$(MAIN): $(PROG)
+$(MAIN): $(BINARY)
 
-$(PROG):$(OBJECTS)
+$(BINARY): $(OBJECTS)
 	$(ACC) $(cflags) -o $@ $(OBJECTS)
 
 .c.o:
 	$(ACC) $(cflags) -c $<
+
+clean:
+	rm -f $(OBJECTS) $(BINARY)
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
