@@ -29,6 +29,7 @@
 	#include <windows.h>
 #endif
 
+#include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include <GL/glpng.h>
@@ -325,8 +326,9 @@ int APIENTRY pngLoadRawF(FILE *fp, pngRawInfo *pinfo) {
 	free(row_p);
 
 	if (color == PNG_COLOR_TYPE_PALETTE) {
-		int cols;
-		png_get_PLTE(png, info, (png_colorp *) &pinfo->Palette, &cols);
+        int             cols;
+        unsigned char **palette = &pinfo->Palette;
+        png_get_PLTE(png, info, (png_colorp *) palette, &cols);
 	}
 	else {
 		pinfo->Palette = NULL;
