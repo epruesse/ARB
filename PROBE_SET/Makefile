@@ -191,6 +191,13 @@ ps_find_probes.o: ps_tools.hxx
 ps_find_probes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/smartptr.h
 
+ps_get_probes.o: ps_defs.hxx
+ps_get_probes.o: ps_filebuffer.hxx
+ps_get_probes.o: ps_pg_tree_functions.cxx
+ps_get_probes.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ps_get_probes.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_get_probes.o: $(ARBHOME)/INCLUDE/arbdb.h
+
 ps_merge_my_dbs.o: ps_database.hxx
 ps_merge_my_dbs.o: ps_defs.hxx
 ps_merge_my_dbs.o: ps_filebuffer.hxx
