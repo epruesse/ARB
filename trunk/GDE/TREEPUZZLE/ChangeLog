@@ -1,3 +1,7 @@
+2007-05-30  Ralf Westram  <westram@bio.tum.de>
+
+	* Makefile: - proper 'clean'
+
 2004-04-29  Ralf Westram  <Coder@ReallySoft.de>
 
 	* doc/manual.html: - removed umlauts
