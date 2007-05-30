@@ -23,4 +23,4 @@ depends:
 		$(ARBHOME)/SOURCE_TOOLS/mv_if_diff .depends_new .depends
 
 clean:
-	make $(makeflags) -f AISC/Makefile clean
+	$(MAKE) -C AISC clean
