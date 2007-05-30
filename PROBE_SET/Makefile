@@ -93,6 +93,7 @@ CPP_OBJECTS = $(SHARED_OBJECTS) \
 	$(PROBE_SET_CORE3_OBJECTS) \
 	$(PROBE_SET_CORE4_OBJECTS) \
 	$(PROBE_SET_CORE5_OBJECTS) \
+	$(PROBE_SET_CORE6_OBJECTS) \
 	$(PROBE_SET_AUX1_OBJECTS) \
 	$(PROBE_SET_AUX2_OBJECTS) \
 	$(PROBE_SET_AUX3_OBJECTS) \
@@ -103,9 +104,8 @@ CPP_OBJECTS = $(SHARED_OBJECTS) \
 #	$(CPP) $(cflags) -pg -g -a -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES)
 
 clean:
-	-rm *.a *.o
-	-rm -r SunWS_cache
-	-rm $(DEST_EXECUTABLES)
+	rm -f $(CPP_OBJECTS)
+	rm -f $(DEST_EXECUTABLES)
 
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)
