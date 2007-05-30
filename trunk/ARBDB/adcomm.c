@@ -1796,7 +1796,10 @@ gbcmc_unfold_list(int socket, GBDATA * gbd)
 
 GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str, enum gb_search_types gbs) {
     /* perform search in DB server (from DB client) */
-    GBDATA *gb_result[1];
+    union {
+        GBDATA *gbd;
+        long    l;
+    } result;    
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
 
     int socket;
@@ -1836,13 +1839,13 @@ GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str,
         GB_print_error();
         return 0;
     }
-    gbcm_read_two(socket,GBCM_COMMAND_FIND_ERG,0,(long *)gb_result);
-    if (gb_result[0]){
+    gbcm_read_two(socket, GBCM_COMMAND_FIND_ERG, 0, &result.l);
+    if (result.gbd){
         gbcmc_unfold_list(socket,gbd);
-        gb_result[0] =(GBDATA *)GBS_read_hashi(Main->remote_hash,(long)gb_result[0]);
+        result.l = GBS_read_hashi(Main->remote_hash, result.l);
     }
     gbcm_read_flush(socket);
-    return gb_result[0];
+    return result.gbd;
 }
 
 
