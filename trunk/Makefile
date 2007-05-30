@@ -10,21 +10,22 @@ include config.makefile
 #
 # The ARB source code is aware of the following defines
 #
-# GNU			activates __attribute__ definitions
-# HAVE_BOOL		should be true if compiler supports the type 'bool'
-# $(MACH)		name of the machine (LINUX,SUN4,SUN5,HP,SGI or DIGITAL; see config.makefile)
-# NO_REGEXPR		for machines w/o regular expression library
+# GNU					activates __attribute__ definitions
+# HAVE_BOOL				should be true if compiler supports the type 'bool'
+# $(MACH)				name of the machine (LINUX,SUN4,SUN5,HP,SGI or DIGITAL; see config.makefile)
+# NO_REGEXPR			for machines w/o regular expression library
 #
-# DEBUG			compiles the DEBUG sections
-# NDEBUG		doesnt compile the DEBUG sections
-# DEBUG_GRAPHICS 	all X-graphics are flushed immediately (for debugging)
+# DEBUG					compiles the DEBUG sections
+# NDEBUG				doesnt compile the DEBUG sections
+# DEBUG_GRAPHICS 		all X-graphics are flushed immediately (for debugging)
 # DEVEL_$(DEVELOPER)	developer-dependent flag (enables you to have private sections in code)
 #                       DEVELOPER='ANY' (default setting) will be ignored
 #                       configurable in config.makefile
-# OPENGL=0/1		whether OPENGL is available
-# OPENWINHOME		whether openwin programs shall be compiled (arb_gde, gde)
+# OPENGL=0/1			whether OPENGL is available
+# OPENWINHOME			whether openwin programs shall be compiled (arb_gde, gde)
+# ARB_64=0/1        	1=>compile 64 bit version
 #
-
+#
 #********************* Default set and gcc static enviroments *****************
 #
 FORCEMASK = umask 002
@@ -91,6 +92,10 @@ ifeq ($(DEBUG),0)
 endif
 endif
 
+ifeq ($(ARB_64),1)
+		cflags := -DARB_64
+endif
+
 # ---------------------- compiler version detection
 
 GCC=gcc
@@ -146,7 +151,6 @@ endif
    F77 = f77
 
    CTAGS = etags
-   CLEAN_BEFORE_MAKE = # make clean before all (needed because of bug in Sun CC with templates)
    XMKMF = 	/usr/bin/X11/xmkmf
 
 ifdef SEER
@@ -291,9 +295,8 @@ first_target:
 		@echo ' all         - Compile ARB + TOOLs + and copy shared libs + link foreign software'
 		@echo '               (That is most likely the target you want)'
 		@echo ''
-		@echo ' clean       - remove intermediate files (objs,libs,etc.)'
-		@echo ' realclean   - remove ALL generated files'
-		@echo ' rebuild     - realclean + all'
+		@echo ' clean       - remove generated files'
+		@echo ' rebuild     - clean + all'
 		@echo ' relink      - remove all binaries and relink them from objects'
 		@echo ''
 		@echo 'Some often used sub targets (make all makes them all):'
@@ -933,6 +936,7 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 %.depends:
 	@cp -p $(@D)/Makefile $(@D)/Makefile.old # save old Makefile
 	@$(MAKE) -C $(@D) -r \
+		"AUTODEPENDS=1" \
 		"LD_LIBRARY_PATH  = ${LD_LIBRARY_PATH}" \
 		"MAKEDEPENDFLAGS = $(MAKEDEPENDFLAGS)" \
 		"MAKEDEPEND=$(MAKEDEPEND)" \
@@ -946,24 +950,47 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
 
 %.proto:
-	@$(MAKE) -C $(@D) proto
+	@$(MAKE) -C $(@D) \
+		"AUTODEPENDS=0" \
+		proto
 
+%.clean:
+	@echo "$(ARBHOME)/$(@D)/Makefile:1: here"
+	@$(MAKE) -C $(@D) \
+		"AUTODEPENDS=0" \
+		"MACH=$(MACH)" \
+		"OPENGL=$(OPENGL)" \
+		clean
+
+# rule to generate main target (normally a library):
 %.dummy:
 	@echo $(SEP) Make everything in $(@D)
-	@$(GMAKE) -C $(@D) -r \
-		"GMAKE = $(GMAKE)" \
-		"ARBHOME = $(ARBHOME)" "cflags = $(cflags) -D_ARB_$(subst /,_,$(@D))" "lflags = $(lflags)" \
-		"CPPINCLUDES = $(CPPINCLUDES)" "AINCLUDES = $(AINCLUDES)" \
-		"F77 = $(F77)" "f77_flags = $(f77_flags)" "F77LIB = $(F77LIB)" \
-		"CPP = $(CPP)" "ACC = $(ACC)" \
-		"CCLIB = $(CCLIB)" "CCPLIB = $(CCPLIB)" "CCPLIBS = $(CCPLIBS)" \
-		"AR = $(AR)" "XAR = $(XAR)" "ARLIB = $(ARLIB)" "ARCPPLIB = $(ARCPPLIB)" \
-		"LIBPATH = $(LIBPATH)" "SYSLIBS = $(SYSLIBS)" \
-		"XHOME = $(XHOME)" "XLIBS = $(XLIBS)" \
+	@$(MAKE) -C $(@D) -r \
+		"AUTODEPENDS=1" \
+		"ARBHOME = $(ARBHOME)" \
+		"cflags = $(cflags) -D_ARB_$(subst /,_,$(@D))" \
+		"lflags = $(lflags)" \
+		"CPPINCLUDES = $(CPPINCLUDES)" \
+		"AINCLUDES = $(AINCLUDES)" \
+		"F77 = $(F77)" \
+		"f77_flags = $(f77_flags)" \
+		"F77LIB = $(F77LIB)" \
+		"CPP = $(CPP)" \
+		"ACC = $(ACC)" \
+		"CCLIB = $(CCLIB)" \
+		"CCPLIB = $(CCPLIB)" \
+		"CCPLIBS = $(CCPLIBS)" \
+		"AR = $(AR)" \
+		"XAR = $(XAR)" \
+		"ARLIB = $(ARLIB)" \
+		"ARCPPLIB = $(ARCPPLIB)" \
+		"LIBPATH = $(LIBPATH)" \
+		"SYSLIBS = $(SYSLIBS)" \
+		"XHOME = $(XHOME)" \
+		"XLIBS = $(XLIBS)" \
 		"STATIC = $(STATIC)"\
 		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
-		"CLEAN_BEFORE_MAKE  = $(CLEAN_BEFORE_MAKE)" \
 		"OPENGL  = $(OPENGL)" \
 		"MAIN = $(@F:.dummy=.a)"
 
@@ -1182,15 +1209,6 @@ menus: binlink
 	@echo $(SEP) Make everything in GDEHELP
 	$(MAKE) -C GDEHELP -r "PP=$(PP)" all
 
-tarfile: rebuild
-	util/arb_compress
-
-tarfile_quick: all
-	util/arb_compress
-
-sourcetarfile: rmbak
-	util/arb_save
-
 ifeq ($(DEBUG),1)
 BIN_TARGET=develall
 else
@@ -1216,60 +1234,32 @@ endif
 preplib:
 		(cd lib;$(MAKE) all)
 
-perl: tools lib/ARB.pm
+# ---------------------------------------- perl
 
-PERLDEPS= \
-	ARBDB/ad_prot.h \
-	ARBDB/ad_t_prot.h \
-	ARBDB/arbdb.h \
-	ARBDB/arbdbt.h \
-	ARBDB/arb_assert.h \
-	bin/arb_proto_2_xsub \
-	PERL2ARB/ARB.xs.default \
-	PERL2ARB/${MACH}.PL \
+perl: tools
+	@echo $(SEP) Make everything in PERL2ARB
+	@$(MAKE) -C PERL2ARB -r -f Makefile.main \
+		"AUTODEPENDS=1" \
+		"MACH=$(MACH)" \
+		"dflags=$(dflags)" \
+		"ARBHOME=$(ARBHOME)" \
+		"DEBUG=$(DEBUG)" \
+		"MAKEDEPEND=$(MAKEDEPEND)" \
+		"MAKEDEPENDFLAGS=$(MAKEDEPENDFLAGS)" \
+		all
 
+perl_clean:
+	@$(MAKE) -C PERL2ARB -r -f Makefile.main \
+		"AUTODEPENDS=0" \
+		"MACH=$(MACH)" \
+		clean
 
-lib/ARB.pm: ${PERLDEPS}
-ifdef PERLBIN
-	mkdir -p PERL5/bin
-	(cd PERL5/bin;ln -f -s ${PERLBIN}/perl .);
-endif
-	rm -f lib/perl5
-ifdef PERLLIB
-	(cd lib;ln -f -s ${PERLLIB}/perl5 .);
-else
-	(cd lib;ln -f -s ../PERL5/perl5 .);
-endif
-	rm -f PERL2ARB/ARB.xs
-	rm -f PERL2ARB/proto.h
-	cat ARBDB/ad_prot.h ARBDB/ad_t_prot.h >PERL2ARB/proto.h
-
-ifdef DEBIAN
-	LD_LIBRARY_PATH=lib bin/arb_proto_2_xsub PERL2ARB/proto.h PERL2ARB/ARB.xs.default >PERL2ARB/ARB.xs
-else
-	bin/arb_proto_2_xsub PERL2ARB/proto.h PERL2ARB/ARB.xs.default >PERL2ARB/ARB.xs
-endif
-	echo "#undef DEBUG" >PERL2ARB/debug.h
-	echo "#undef NDEBUG" >>PERL2ARB/debug.h
-ifeq ($(DEBUG),1)
-	echo "#define DEBUG" >>PERL2ARB/debug.h
-else
-	echo "#define NDEBUG" >>PERL2ARB/debug.h
-endif
-	PATH=/usr/arb/bin:${PATH}; \
-		export PATH; \
-		cd PERL2ARB; \
-		echo calling perl ${MACH}.PL; \
-		perl ${MACH}.PL; \
-		echo -------- calling MakeMaker makefile; \
-		make "dflags=${dflags}"
-	echo -------- end of MakeMaker-Makefile
-	cp PERL2ARB/blib/arch/auto/ARB/ARB.so lib
-	cp PERL2ARB/ARB.pm lib
-	echo Make lib/ARB.pm and lib/ARB.so finished.
+# ----------------------------------------
 
 wc:
 	wc `find . -type f \( -name '*.[ch]' -o -name '*.[ch]xx' \) -print`
+
+# ---------------------------------------- cleaning
 
 rmbak:
 	find . \( -name '*%' -o -name '*.bak' -o -name 'core' \
@@ -1286,22 +1276,16 @@ bclean:
 libclean:
 	rm -f `find . -type f \( -name '*.a' ! -type l \) -print`
 
-clean:	rmbak
-	-rm -f `find . -type f \( -name 'core' -o -name '*.o' -o -name '*.a' ! -type l \) -print`
-	-rm -f *_COM/GENH/*.h
-	-rm -f *_COM/GENH/*.aisc
-	-rm -f *_COM/GENC/*.c
-	-rm -f lib/ARB.pm
-	$(MAKE) -C HELP_SOURCE clean
-	$(MAKE) -C GDEHELP clean
-	-rm *.last_gcc
+clean: $(ARCHS:.a=.clean) \
+		GDEHELP/GDEHELP.clean \
+		HELP_SOURCE/HELP_SOURCE.clean \
+		SOURCE_TOOLS/SOURCE_TOOLS.clean \
+		perl_clean
+	rm -f *.last_gcc
 
-realclean: clean
-	-rm -f AISC/aisc
-	-rm -f AISC_MKPTPS/aisc_mkpt
-	-rm -f SOURCE_TOOLS/generate_all_links.stamp
+# -----------------------------------
 
-rebuild: realclean
+rebuild: clean
 	$(MAKE) all
 
 relink: bclean libclean
@@ -1311,6 +1295,15 @@ save: sourcetarfile
 
 savedepot: rmbak
 	util/arb_save_depot
+
+tarfile: rebuild
+	util/arb_compress
+
+tarfile_quick: all
+	util/arb_compress
+
+sourcetarfile: rmbak
+	util/arb_save
 
 release:
 	@echo Making release
