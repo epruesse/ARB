@@ -3,12 +3,16 @@
 OBJECTS = clustalv.o amenu.o myers.o sequence.o showpair.o \
           upgma.o util.o trees.o gcgcheck.o
 
+BINARY=$(ARBHOME)/bin/clustalv
 
-$(ARBHOME)/bin/clustalv : $(OBJECTS)
+$(BINARY) : $(OBJECTS)
 	$(ACC) $(cflags) -o $@ $(OBJECTS) -lm
 
 .c.o:
 	$(ACC) $(cflags) -c -o $@ $< $(AINCLUDES)
+
+clean:
+	rm -f $(OBJECTS) $(BINARY)
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)

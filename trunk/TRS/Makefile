@@ -3,11 +3,10 @@
 
 OBJECTS = trs_hash.o tree_lib.o trs_server.o
 
-$(ARBHOME)/bin/trs_server: $(OBJECTS)
+BINARY=$(ARBHOME)/bin/trs_server
+
+$(BINARY): $(OBJECTS)
 	$(CPP) -o $@ $(STATIC) $(OBJECTS)
-
-
-# $(OBJECTS:%.o=$(ARBHOME)/irsbin/%)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
@@ -15,6 +14,9 @@ $(ARBHOME)/bin/trs_server: $(OBJECTS)
 proto:
 	../MAKEBIN/aisc_mkpt -g $(OBJECTS:.o=.cxx) >trs_proto.h.tmp
 	../SOURCE_TOOLS/mv_if_diff trs_proto.h.tmp trs_proto.h
+
+clean:
+	rm -f $(OBJECTS) $(BINARY)
 
 $(ARBHOME)/irsbin/%: %.cxx
 	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) $(LIB2)

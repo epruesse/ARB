@@ -12,6 +12,9 @@ AC_sequence.o: AC_sequence.cxx
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
+clean:
+	rm -f $(OBJECTS) 
+
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile

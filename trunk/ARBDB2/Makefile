@@ -11,6 +11,9 @@ $(MAIN): $(ACC_OBJECTS)
 .c.o:
 	$(CCLIB) $(cflags) -c $< $(AINCLUDES)
 
+clean:
+	rm -f $(ACC_OBJECTS) *.a *.so
+
 DEPENDS = $(ACC_OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile

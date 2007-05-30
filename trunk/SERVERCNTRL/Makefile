@@ -12,6 +12,9 @@ proto:
 	../MAKEBIN/aisc_mkpt -A -P -C $(OBJECTS:.o=.c) >servercntrl.h.tmp
 	../SOURCE_TOOLS/mv_if_diff servercntrl.h.tmp servercntrl.h
 
+clean:
+	rm -f $(OBJECTS) *.a
+
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile

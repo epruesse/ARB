@@ -8,6 +8,9 @@ $(MAIN): $(OBJECTS)
 .cxx.o:
 	$(CPP) $(cflags) -I/opt/gcc.3.4.3/include/c++/3.4.3/include -c $<  $(CPPINCLUDES)
 
+clean:
+	rm -f $(OBJECTS) *.a
+
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile

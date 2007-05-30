@@ -7,6 +7,9 @@ $(MAIN): $(CPP_OBJECTS)
 .cxx.o:
 	$(CCPLIB) $(cflags) -c $< $(CPPINCLUDES)
 
+clean:
+	rm -f $(CPP_OBJECTS) *.a *.so
+
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile

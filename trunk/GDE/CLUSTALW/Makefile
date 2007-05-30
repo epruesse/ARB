@@ -4,11 +4,16 @@ SOURCE_FILES = $(wildcard *.c)
 
 OBJECTS = $(SOURCE_FILES:.c=.o)
 
-$(ARBHOME)/bin/clustalw : $(OBJECTS)
+BINARY=$(ARBHOME)/bin/clustalw
+
+$(BINARY) : $(OBJECTS)
 	 $(ACC) $(cflags) -o $@ $(OBJECTS) -lm
 
 .c.o:
 	$(ACC) $(cflags) -c -o $@ $< $(AINCLUDES)
+
+clean:
+	rm -f *.o $(BINARY)
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)

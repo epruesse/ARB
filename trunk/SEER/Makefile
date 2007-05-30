@@ -8,10 +8,11 @@ CPP_OBJECTS =  SEER_main.o SEER_interface.o SEER_connect.o SEER_arb.o SEER_to_se
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
 
-
-
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
+
+clean:
+	rm -f $(CPP_OBJECTS)
 
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)

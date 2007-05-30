@@ -3,11 +3,15 @@
 OBJECT =  CAP2.o Restriction.o Zuk_to_gen.o count.o findall.o lsadt.o \
 	sho_helix.o varpos.o
 
+BINARIES=$(OBJECT:%.o=$(ARBHOME)/bin/%)
 
-all: $(OBJECT:%.o=../../bin/%)
+all: $(BINARIES)
 
-../../bin/%: %.c
+$(ARBHOME)/bin/%: %.c
 	$(ACC) $(cflags) -o $@ $< $(AINCLUDES) $(LIB) -lm
+
+clean:
+	rm -f $(BINARIES)
 
 DEPENDS = $(OBJECT:.o=.depend)
 depends: $(DEPENDS)

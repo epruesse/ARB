@@ -18,6 +18,9 @@ proto:
 	../MAKEBIN/aisc_mkpt -E $(OBJECTS:.o=.cxx) probe_tree.hxx >pt_prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff pt_prototypes.h.tmp pt_prototypes.h
 
+clean:
+	rm -f $(OBJECTS) *.a
+
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile

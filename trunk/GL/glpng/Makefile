@@ -10,6 +10,9 @@ $(MAIN): $(C_OBJECTS)
 .c.o:
 	$(ACC) $(cflags) -c $< $(AINCLUDES)
 
+clean:
+	rm -f $(C_OBJECTS) *.a
+
 DEPENDS = $(C_OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile

@@ -3,12 +3,15 @@
 
 CPP_OBJECTS = D_main.o D_classes.o D_awt_graphic_designer.o
 
+$(MAIN): $(CPP_OBJECTS)
+	$(AR) $(MAIN) $(CPP_OBJECTS)
+
 .cxx.o:
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
 
 
-$(MAIN): $(CPP_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS)
+clean:
+	rm -f $(CPP_OBJECTS) *.a
 
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)

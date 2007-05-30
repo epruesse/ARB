@@ -35,6 +35,9 @@ tpro: $(GB_T:.o=.c)
 wc:
 	wc *.[ch]
 
+clean:
+	rm -f $(OBJECTS) *.a *.so
+
 #untouch:
 #	/usr/5bin/touch 0101010192 ad_lpro.h ad_t_lpro.h ad_prot.h ad_t_prot.h
 

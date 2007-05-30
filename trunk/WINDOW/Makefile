@@ -23,6 +23,9 @@ $(MAIN): $(OBJECTS)
 .c.o:
 	$(ACC) $(cflags) -c $< $(CPPINCLUDES)
 
+clean:
+	rm -f $(OBJECTS) *.a *.so
+
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile
