@@ -26,6 +26,9 @@ awt_tree_cb.hxx: AWT_tree_cb.cxx
 	rm -f $@
 	../MAKEBIN/aisc_mkpt -C $? >$@
 
+clean:
+	rm -f $(OBJECTS) *.a *.so
+
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile

@@ -9,6 +9,9 @@ $(OBJECTS): $(LOCALS) $(ARBDBH) $(SERVERCNTRLH)
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
+clean:
+	rm -f $(OBJECTS) *.a
+
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile

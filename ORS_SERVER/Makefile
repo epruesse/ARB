@@ -15,6 +15,9 @@ ors_s_proto.hxx: $(OBJECTS:.o=.cxx)
 
 proto: ors_s_proto.hxx
 
+clean:
+	rm -f $(OBJECTS)
+
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile

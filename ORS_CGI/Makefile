@@ -12,6 +12,9 @@ proto:
 	../MAKEBIN/aisc_mkpt $(CPP_OBJECTS:.o=.cxx) >ors_c_proto.hxx.tmp
 	../SOURCE_TOOLS/mv_if_diff ors_c_proto.hxx.tmp ors_c_proto.hxx
 
+clean:
+	rm -f $(CPP_OBJECTS)
+
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile

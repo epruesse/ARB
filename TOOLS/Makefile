@@ -13,10 +13,10 @@ TOOLS = \
 	arb_proto_2_xsub arb_probe arb_test arb_export_rates arb_export_tree arb_count_chars \
 	arb_perf_test arb_message arb_gene_probe arb_notify
 
-TARGETS = $(addprefix $(ARBHOME)/bin/,$(TOOLS))
+BINARIES = $(addprefix $(ARBHOME)/bin/,$(TOOLS))
 
 #all: $(OBJECT:%.o=$(ARBHOME)/bin/%)
-all: $(TARGETS)
+all: $(BINARIES)
 
 $(ARBHOME)/bin/arb_probe: arb_probe.cxx
 	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a $(LIB2)
@@ -32,6 +32,10 @@ $(ARBHOME)/bin/%: %.c
 
 $(ARBHOME)/bin/%: %.cxx
 	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) $(LIB2)
+
+
+clean:
+	rm -f $(BINARIES)
 
 #DEPENDS = $(OBJECT:.o=.depend)
 DEPENDS = $(addsuffix .depend,$(TOOLS))

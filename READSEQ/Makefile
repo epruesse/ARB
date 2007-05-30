@@ -1,12 +1,14 @@
+.SUFFIXES: .o .c .cxx .depend
+
 OBJECT = readseq.o ureadseq.o
 
-.SUFFIXES: .o .c .cxx .depend
+BINARY=$(ARBHOME)/bin/arb_readseq
 
 ifdef DEBIAN
 all:
 	@echo Do not compile readseq.  Instead use the Debian package.
 else
-all: $(ARBHOME)/bin/arb_readseq
+all: $(BINARY)
 endif
 
 # --------------------------------------------------------------------------------
@@ -21,11 +23,15 @@ SUB_ACC=$(ACC)
 endif
 
 
-$(ARBHOME)/bin/arb_readseq:  $(OBJECT)
+
+$(BINARY):  $(OBJECT)
 	$(SUB_ACC) $(cflags) -o $@ $(OBJECT)
 
 .c.o:
 	$(SUB_ACC) $(cflags) -c $< $(AINCLUDES)
+
+clean:
+	rm -f $(OBJECT) $(BINARY) 
 
 DEPENDS = $(OBJECT:.o=.depend)
 depends: $(DEPENDS)

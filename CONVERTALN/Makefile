@@ -4,7 +4,9 @@ OBJECT=  main.o fconv.o mg.o genbank.o macke.o phylip.o paup.o \
 
 .SUFFIXES: .o .c .cxx .depend
 
-$(ARBHOME)/bin/arb_convert_aln: $(OBJECT)
+BINARY=$(ARBHOME)/bin/arb_convert_aln
+
+$(BINARY): $(OBJECT)
 	$(CPP) $(lflags) -o $@ $(OBJECT) ../SL/FILE_BUFFER/FILE_BUFFER.a
 
 .c.o:
@@ -13,6 +15,9 @@ $(ARBHOME)/bin/arb_convert_aln: $(OBJECT)
 proto:
 	../MAKEBIN/aisc_mkpt -C $(OBJECT:.o=.c) >prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff prototypes.h.tmp prototypes.h
+
+clean:
+	rm -f $(OBJECT) $(BINARY)
 
 #depend:
 #	$(MAKEDEPEND) $(OBJECT:.o=.c*)
