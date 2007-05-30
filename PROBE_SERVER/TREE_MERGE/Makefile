@@ -7,9 +7,7 @@
 
 CPP_OBJECTS = tree_merge.o
 
-all :
-	$(CLEAN_BEFORE_MAKE)
-	$(MAKE) $(MAIN)
+all : $(MAIN)
 
 $(MAIN): $(CPP_OBJECTS)
 	$(XAR) $(MAIN) $(CPP_OBJECTS)
@@ -18,9 +16,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES)
 
 clean:
-	-rm *.a *.o
-	-rm -r SunWS_cache
-
+	rm -f $(CPP_OBJECTS) *.a
 
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)

@@ -18,8 +18,7 @@ $(MAIN): $(OBJECTS)
 	$(ACC) $(cflags) -c $< $(AINCLUDES)
 
 clean:
-	@-rm $(OBJECTS)
-	@-rm *.a
+	rm -f $(OBJECTS) *.a
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)

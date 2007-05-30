@@ -16,7 +16,7 @@ $(MAIN): $(CPP_OBJECTS) $(C_OBJECTS)
 	$(ACC) $(cflags) -c $< $(CPPINCLUDES)
 
 clean:
-	@-rm $(OBJECTS)
+	rm -f $(OBJECTS) *.a
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)

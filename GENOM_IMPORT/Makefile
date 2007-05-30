@@ -41,14 +41,9 @@ endif
 	$(ACC) $(cflags) -c $< $(CPPINCLUDES)
 
 clean:
-	-rm *.o
-	-rm *.a
-	-rm *.bak
-	-rm *~
-	-rm *#
-	-rm *\%
+	rm -f $(CPP_OBJECTS) *.a
 ifeq ($(CREATE_TEST_EXECUTABLE),1)
-	-rm test_import
+	rm -f test_import
 endif
 
 #.IGNORE:

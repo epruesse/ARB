@@ -235,12 +235,12 @@ help : $(HELP)
 # --------------------------------------------------------------------------------
 
 clean:
-		-rm $(HTML_IDX) `find $(HLP_DEST) -name "*.hlp"`
-		-rm html.list `find $(HTML_LOCATION) -name "*.html"`
+		rm -f $(HTML_IDX) `find $(HLP_DEST) -name "*.hlp"`
+		rm -f html.list `find $(HTML_LOCATION) -name "*.html"`
 ifeq ($(CONVERT_FROM_OLD_HELP),1)
-		-rm $(XML_DEPEND) dummy `find $(XML_LOCATION) -name "*.xml"`
+		rm -f $(XML_DEPEND) dummy `find $(XML_LOCATION) -name "*.xml"`
 endif
-		(cd $(HLP_GENERATED);$(MAKE) clean)
+		$(MAKE) -C $(HLP_GENERATED) clean
 
 # --------------------------------------------------------------------------------
 

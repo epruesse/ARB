@@ -14,14 +14,13 @@ PROGS   =          clique consense contml contrast dnacomp dnadist \
                    protpars restdist restml retree seqboot treedist \
                    drawgram drawtree
 
-
-BIN=../../bin
+BIN=$(ARBHOME)/bin
+BINARIES=$(addprefix $(BIN)/,$(PROGS))
 
 DLIBS=$(LIBS) $(XLIBS) -lXaw
 
 
-all:	$(addprefix $(BIN)/,$(PROGS))
-
+all: $(BINARIES)
 
 $(BIN)/clique:       clique.o  disc.o  phylip.o
 	$(ACC) $(cflags) -o $@ $^ $(LIBS)
@@ -174,7 +173,7 @@ depend.init:
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 clean:
-	@rm $(PROGS:%=../../bin/%) *.o
+	rm -f $(BINARIES) *.o
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
