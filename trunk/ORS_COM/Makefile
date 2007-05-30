@@ -23,7 +23,7 @@ server.a:	$(MAIN_SOURCE)	$(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES)
 				"AR = $(AR)"
 
 depends:
-		$(MAKE) -r -f AISC/Makefile depends
+#		$(MAKE) -r -f AISC/Makefile depends
 
 #	@echo "no automatic dependencies for ORS_COM - skipped"
 
