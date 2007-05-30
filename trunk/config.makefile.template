@@ -10,6 +10,7 @@ DEBUG=0# build with debug information
 DEBUG_GRAPHICS = 0# force instant graphic update
 # SEER = 1
 OPENGL=1
+ARB_64=0# compile on 64 bit machine (has no effect yet)
 
 # --------------------------------------------------------------------------------
 # target machine section
