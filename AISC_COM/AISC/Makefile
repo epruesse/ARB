@@ -33,7 +33,7 @@ CLIENT = client.a
 
 AISC_SERVER_EXTERN = GENH/aisc_server_extern.aisc
 
-all:	$(CLIENT) $(SERVER)
+all: $(CLIENT) $(SERVER)
 
 $(SERVER):	$(SERVER_OBJECTS) $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS)
 	$(AR) $@ $^
@@ -88,18 +88,13 @@ $(GEN_SERVER_PROTO): $(S_GEN_SERVER_PROTO)
 clean:
 	rm -f *.[ao]
 	rm -f */*.[ao]
-	rm -f $(OBJECTS:.o=)
-	rm -f *%
-	rm -f */*%
-	rm -f core
-	rm -f */core
 	rm -f GENH/*
 	rm -f GENC/*
 
-depends:
+.depends:
 	makedepend C/*.c GENC/*.c -I GENH -I C -f- -w1 | grep -v ' /usr' | sed -e 's/^C/O/ig' > .depends_new
 	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff .depends_new .depends
 
-.depends: depends
-
+ifeq ($(AUTODEPENDS),1)
 include .depends
+endif
