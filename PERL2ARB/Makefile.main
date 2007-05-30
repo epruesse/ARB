@@ -1,0 +1,87 @@
+# -*-Mode: Makefile;-*-
+
+
+THIS=Makefile.main
+LIB=$(ARBHOME)/lib
+ARBDB=$(ARBHOME)/ARBDB
+ARB_PROTO_2_XSUB=$(ARBHOME)/bin/arb_proto_2_xsub
+
+HEADERS = \
+	$(ARBDB)/ad_prot.h \
+	$(ARBDB)/ad_t_prot.h \
+	$(ARBDB)/adGene.h \
+
+ARB_SO=blib/arch/auto/ARB/ARB.so
+
+TARGET_PM=$(LIB)/ARB.pm
+TARGET_SO=$(LIB)/ARB.so
+
+TARGETS=$(TARGET_PM) $(TARGET_SO)
+
+all: $(TARGETS)
+
+$(TARGET_PM) : ARB.pm
+	cp $< $@
+
+$(TARGET_SO) : $(ARB_SO)
+	cp $< $@
+
+XS_DEPENDS = Makefile ARB.xs debug.h Makefile.PL
+
+$(ARB_SO) : $(XS_DEPENDS) depends.stamp
+	-rm $(ARB_SO)
+	@echo "-------- calling MakeMaker-Makefile"
+	$(MAKE) "dflags=${dflags}" $@
+	@echo "-------- post-recreating .depends"
+	$(MAKE) -f $(THIS) "DEPENDS=0" .depends
+	$(MAKE) -f $(THIS) $@ # recurse
+
+ARB.c : $(XS_DEPENDS) 
+	@echo "-------- calling MakeMaker-Makefile (to get depends)"
+	$(MAKE) "dflags=${dflags}" $@
+	@echo "-------- end of MakeMaker-Makefile" 
+
+Makefile : $(MACH).PL typemap  
+	( PATH=/usr/arb/bin:${PATH}; \
+	  export PATH; \
+	  echo calling perl ${MACH}.PL; \
+	  perl ${MACH}.PL )
+
+Makefile.PL : $(MACH).PL
+	cp -p $< $@
+
+ARB.xs : $(ARB_PROTO_2_XSUB) proto.h ARB.xs.default
+ifdef DEBIAN
+	LD_LIBRARY_PATH=$(LIB) $(ARB_PROTO_2_XSUB) proto.h ARB.xs.default > $@
+else
+	$(ARB_PROTO_2_XSUB) proto.h ARB.xs.default > $@
+endif
+
+proto.h : $(HEADERS) $(THIS) depends.stamp
+	cat $(HEADERS) > $@
+
+debug.h : $(THIS)
+	echo "#undef DEBUG" > $@
+	echo "#undef NDEBUG" >> $@
+ifeq ($(DEBUG),1)
+	echo "#define DEBUG" >> $@
+else
+	echo "#define NDEBUG" >> $@
+endif
+
+clean:
+	(test -f Makefile && $(MAKE) clean) || true
+	rm -f Makefile.old proto.h debug.h ARB.xs .depends depends.stamp Makefile.PL $(TARGETS)
+
+.depends: depends.stamp
+	test -f ARB.c || $(MAKE) -f $(THIS) "AUTODEPENDS=0" ARB.c 
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) ARB.c 2>/dev/null | \
+		perl -ne "s/ARB.o/depends.stamp/g; print $$_;" > $@
+
+depends.stamp:
+	touch $@
+
+ifeq ($(AUTODEPENDS),1) 
+include .depends
+endif
+
