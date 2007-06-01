@@ -638,12 +638,20 @@ char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss,long size, GB_ERROR 
         *error = "Cannot uncompress this sequence: Sequence has no father";
     }
     else {
-        GB_MAIN_TYPE        *Main    = GB_MAIN(gbd);;
-        GBDATA              *gb_main = (GBDATA*)Main->data;
-        char                *to_free = gb_check_out_buffer(ss); /* Get our own buffer, maybe load_single_key_data will destroy it */
-        const unsigned char *s       = (const unsigned char *)ss;
-        int                  index   = g_b_read_number2(&s);
-        GBQUARK              quark   = g_b_read_number2(&s);
+        GB_MAIN_TYPE *Main    = GB_MAIN(gbd);
+        GBDATA       *gb_main = (GBDATA*)Main->data;
+        char         *to_free = gb_check_out_buffer(ss); /* Remove 'ss' from memory management, otherwise load_single_key_data() may destroy it */
+        int           index;
+        GBQUARK       quark;
+
+        {
+            const unsigned char *s = (const unsigned char *)ss;
+
+            index = g_b_read_number2(&s);
+            quark = g_b_read_number2(&s);
+
+            ss = (const char *)s;
+        }
 
         if (!Main->keys[quark].gb_master_ali){
             gb_load_single_key_data(gb_main,quark);
@@ -658,8 +666,8 @@ char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss,long size, GB_ERROR 
                 dest = (char*)GB_get_error();
             }
             else {
-                long  master_size = GB_read_string_count(gb_master); // @@@ why unused ? 
-                char *master      = GB_read_char_pntr(gb_master); /* make sure that this is not a buffer !!! */
+                long        master_size = GB_read_string_count(gb_master); // @@@ why unused ?
+                const char *master      = GB_read_char_pntr(gb_master); /* make sure that this is not a buffer !!! */
 
                 dest = g_b_uncompress_single_sequence_by_master(ss, master, size);
             }
