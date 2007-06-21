@@ -151,7 +151,7 @@ void st_ml_add_quality_string_to_species(GBDATA *gb_main,
         char *s2 = info->ss2.generate_string();
         char *s5 = info->ss5.generate_string();
         char *su = info->ssu.generate_string();
-        sprintf(buffer,"a%s b%s c%s",s2,s5,su);
+        snprintf(buffer,256,"a%s b%s c%s",s2,s5,su);
         delete [] s2;
         delete [] s5;
         error = GB_write_string(gb_dest,buffer);
