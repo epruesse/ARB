@@ -21,28 +21,32 @@
 using namespace std;
 
 
-SQ_GroupData::SQ_GroupData() {
-    size         = 0;
-    avg_bases    = 0;
+SQ_GroupData::SQ_GroupData()
+{
+    size = 0;
+    avg_bases = 0;
     nr_sequences = 0;
-    gc_prop      = 0;
-    initialized  = false;
+    gc_prop = 0;
+    initialized = false;
 }
 
 
-SQ_GroupData::~SQ_GroupData() { }
+SQ_GroupData::~SQ_GroupData()
+{
+}
 
 
-consensus_result SQ_GroupData_RNA::SQ_calc_consensus ( const char *sequence ) const {
+consensus_result SQ_GroupData_RNA::SQ_calc_consensus(const char *sequence) const
+{
     consensus_result cr;
     cr.conformity = 0;
     cr.deviation = 0;
 
-    for ( int i = 0; i < size; i++ ) {
-        int current[6] = { 0, 0, 0, 0, 0, 0};
+    for (int i = 0; i < size; i++) {
+        int current[6] = { 0, 0, 0, 0, 0, 0 };
 
         //fill up current with decoded iupac values
-        switch ( sequence[i] ) {
+        switch (sequence[i]) {
         case 'a':
         case 'A':
             current[0] = 100;
@@ -132,21 +136,22 @@ consensus_result SQ_GroupData_RNA::SQ_calc_consensus ( const char *sequence ) co
         case '-':
             current[5] = 1;
             break;
-        default :
-            seq_assert ( 0 ); // unhandled character
+        default:
+            seq_assert(0);      // unhandled character
             break;
 
-        }//end fill up current
+        }                       //end fill up current
 
-        int* cs = consensus[i].i;
-        double sum = ( double ) ( cs[0]+cs[1]+cs[2]+cs[3]+cs[4]+cs[5] );
+        int *cs = consensus[i].i;
+        double sum =
+            (double) (cs[0] + cs[1] + cs[2] + cs[3] + cs[4] + cs[5]);
 
-        for ( int j = 0; j < 6; j++ ) {
-            int currentj  = current[j];
-            if ( currentj > 0 ) {
-                if ( cs[j] > currentj ) {
-                    cr.conformity += ( double ) ( cs[j] - currentj ) / sum;
-                } else // == if ( cs[j] <= currentj )
+        for (int j = 0; j < 6; j++) {
+            int currentj = current[j];
+            if (currentj > 0) {
+                if (cs[j] > currentj) {
+                    cr.conformity += (double) (cs[j] - currentj) / sum;
+                } else          // == if ( cs[j] <= currentj )
                 {
                     cr.deviation += current[j];
                 }
@@ -154,16 +159,17 @@ consensus_result SQ_GroupData_RNA::SQ_calc_consensus ( const char *sequence ) co
         }
     }
 
-    cr.conformity = cr.conformity / size;  //set conformity in relation to sequencelength
-    cr.deviation = cr.deviation / size;  //set deviation in relation to sequencelength
+    cr.conformity = cr.conformity / size;       //set conformity in relation to sequencelength
+    cr.deviation = cr.deviation / size; //set deviation in relation to sequencelength
     return cr;
 }
 
 
-void SQ_GroupData_RNA::SQ_add_sequence ( const char *sequence ) {
-    for ( int i = 0; i < size; i++ ) {
-        int* cs = consensus[i].i;
-        switch ( sequence[i] ) {
+void SQ_GroupData_RNA::SQ_add_sequence(const char *sequence)
+{
+    for (int i = 0; i < size; i++) {
+        int *cs = consensus[i].i;
+        switch (sequence[i]) {
         case 'a':
         case 'A':
             cs[0] += 100;
@@ -253,24 +259,26 @@ void SQ_GroupData_RNA::SQ_add_sequence ( const char *sequence ) {
         case '-':
             cs[5] += 1;
             break;
-        default :
-            fprintf ( stderr, "Illegal character '%c'", sequence[i] );
-            seq_assert ( 0 ); // unhandled character
+        default:
+            fprintf(stderr, "Illegal character '%c'", sequence[i]);
+            seq_assert(0);      // unhandled character
             break;
         }
     }
 }
 
 
-consensus_result SQ_GroupData_PRO::SQ_calc_consensus ( const char * ) const {
+consensus_result SQ_GroupData_PRO::SQ_calc_consensus(const char *) const
+{
 #warning implementation missing
     consensus_result cr;
     cr.conformity = 0;
     cr.deviation = 0;
-    return cr; // dummy return value
+    return cr;                  // dummy return value
 }
 
 
-void SQ_GroupData_PRO::SQ_add_sequence ( const char * ) {
+void SQ_GroupData_PRO::SQ_add_sequence(const char *)
+{
 #warning implementation missing
 }
