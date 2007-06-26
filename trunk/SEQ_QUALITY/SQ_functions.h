@@ -33,34 +33,42 @@
 #endif
 
 
-typedef SmartPtr<SQ_GroupData> SQ_GroupDataPtr;
-typedef std::map<std::string, SQ_GroupDataPtr> SQ_GroupDataDictionary;
+typedef SmartPtr < SQ_GroupData > SQ_GroupDataPtr;
+typedef std::map < std::string, SQ_GroupDataPtr > SQ_GroupDataDictionary;
 
-GB_ERROR SQ_reset_quality_calcstate ( GBDATA *gb_main );
+GB_ERROR SQ_reset_quality_calcstate(GBDATA * gb_main);
 
-char *SQ_fetch_filtered_sequence ( GBDATA *read_sequence, AP_filter *filter );
+char *SQ_fetch_filtered_sequence(GBDATA * read_sequence,
+                                 AP_filter * filter);
 
-GB_ERROR SQ_pass1 ( SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node, AP_filter *filter );
+GB_ERROR SQ_pass1(SQ_GroupData * globalData, GBDATA * gb_main,
+                  GBT_TREE * node, AP_filter * filter);
 
-GB_ERROR SQ_pass1_no_tree ( SQ_GroupData* globalData, GBDATA *gb_main, AP_filter *filter );
+GB_ERROR SQ_pass1_no_tree(SQ_GroupData * globalData, GBDATA * gb_main,
+                          AP_filter * filter);
 
-GB_ERROR SQ_pass2 ( const SQ_GroupData* globalData, GBDATA *gb_main, GBT_TREE *node, AP_filter *filter );
+GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
+                  GBT_TREE * node, AP_filter * filter);
 
-GB_ERROR SQ_pass2_no_tree ( const SQ_GroupData* globalData, GBDATA *gb_main, AP_filter *filter );
+GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData,
+                          GBDATA * gb_main, AP_filter * filter);
 
-GB_ERROR SQ_count_nr_of_species ( GBDATA *gb_main );
+GB_ERROR SQ_count_nr_of_species(GBDATA * gb_main);
 
-void SQ_reset_counters ( GBT_TREE *root ); // reset counters used by SQ_calc_and_apply_group_data
+void SQ_reset_counters(GBT_TREE * root);        // reset counters used by SQ_calc_and_apply_group_data
 
-void SQ_calc_and_apply_group_data ( GBT_TREE *node, GBDATA *gb_main, SQ_GroupData *data, AP_filter *filter );
+void SQ_calc_and_apply_group_data(GBT_TREE * node, GBDATA * gb_main,
+                                  SQ_GroupData * data, AP_filter * filter);
 
-void SQ_calc_and_apply_group_data2 ( GBT_TREE *node, GBDATA *gb_main, const SQ_GroupData *data, AP_filter *filter );
+void SQ_calc_and_apply_group_data2(GBT_TREE * node, GBDATA * gb_main,
+                                   const SQ_GroupData * data,
+                                   AP_filter * filter);
 
-void create_multi_level_consensus ( GBT_TREE *node, SQ_GroupData *data );
+void create_multi_level_consensus(GBT_TREE * node, SQ_GroupData * data);
 
-int SQ_get_value_no_tree ( GBDATA *gb_main, const char *option );
+int SQ_get_value_no_tree(GBDATA * gb_main, const char *option);
 
-int SQ_get_value ( GBDATA *gb_main, const char *option );
+int SQ_get_value(GBDATA * gb_main, const char *option);
 
 /*
   "option" is variable which is passed to function "SQ_get_value()".
@@ -78,7 +86,7 @@ struct SQ_weights {
 };
 
 
-GB_ERROR SQ_evaluate ( GBDATA *gb_main, const SQ_weights& weights );
+GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights);
 /*
   The "weight_..."  -values are passed to the function "SQ_evaluate()".
   SQ_evaluate() generates the final estimation for the quality of an alignment.
@@ -89,7 +97,7 @@ GB_ERROR SQ_evaluate ( GBDATA *gb_main, const SQ_weights& weights );
 */
 
 
-GB_ERROR SQ_mark_species ( GBDATA *gb_main, int condition );
+GB_ERROR SQ_mark_species(GBDATA * gb_main, int condition);
 
 
 void SQ_clear_group_dictionary();
@@ -99,7 +107,7 @@ enum SQ_TREE_ERROR {
     NONE = 0, ZOMBIE = 1, MISSING_NODE = 2
 };
 
-SQ_TREE_ERROR SQ_check_tree_structure ( GBT_TREE *node );
+SQ_TREE_ERROR SQ_check_tree_structure(GBT_TREE * node);
 
 #else
 #error SQ_functions.h included twice
