@@ -45,6 +45,7 @@ extern GBDATA *gb_main;
 #define AWAR_SQ_WEIGHT_IUPAC     AWAR_SQ_PERM "weight_iupac"
 #define AWAR_SQ_WEIGHT_GC        AWAR_SQ_PERM "weight_gc"
 
+#define AWAR_SQ_MARK_ONLY_FLAG  AWAR_SQ_PERM "mark_only_flag"
 #define AWAR_SQ_MARK_FLAG  AWAR_SQ_PERM "mark_flag"
 #define AWAR_SQ_MARK_BELOW AWAR_SQ_PERM "mark_below"
 #define AWAR_SQ_REEVALUATE AWAR_SQ_PERM "reevaluate"
@@ -62,6 +63,7 @@ void SQ_create_awars(AW_root * aw_root, AW_default aw_def)
     aw_root->awar_int(AWAR_SQ_WEIGHT_CONSENSUS, 50, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_IUPAC, 5, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_GC, 10, aw_def);
+    aw_root->awar_int(AWAR_SQ_MARK_ONLY_FLAG, 0, aw_def);
     aw_root->awar_int(AWAR_SQ_MARK_FLAG, 1, aw_def);
     aw_root->awar_int(AWAR_SQ_MARK_BELOW, 40, aw_def);
     aw_root->awar_int(AWAR_SQ_REEVALUATE, 0, aw_def);
@@ -80,25 +82,53 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
     AW_root *aw_root = aww->get_root();
     GB_ERROR error = 0;
     GBT_TREE *tree = 0;
+    bool marked_only =
+        (aw_root->awar(AWAR_SQ_MARK_ONLY_FLAG)->read_int() > 0);
+    char *treename = aw_root->awar(AWAR_TREE)->read_string();   // contains "????" if no tree is selected
 
-    {
-        char *treename = aw_root->awar(AWAR_TREE)->read_string();       // contains "????" if no tree is selected
-        if (treename && strcmp(treename, "????") != 0) {
+    if (treename && strcmp(treename, "????") != 0) {
+        AP_tree *ap_tree = new AP_tree(0);
+        AP_tree_root *ap_tree_root =
+            new AP_tree_root(gb_main, ap_tree, treename);
+
+        error = ap_tree->load(ap_tree_root, 0, GB_FALSE, GB_FALSE, 0, 0);
+        if (error) {
+            delete ap_tree;
+            delete ap_tree_root;
+            aw_message(GBS_global_string
+                       ("Cannot read tree '%s' -- group specific calculations skipped.\n   Treating all available sequences as one group!",
+                        treename));
+            tree = 0;
+        } else {
+            ap_tree_root->tree = ap_tree;
+
             GB_push_transaction(gb_main);
-            tree = GBT_read_tree(gb_main, treename, sizeof(GBT_TREE));
-            if (tree) {
-                error = GBT_link_tree(tree, gb_main, GB_FALSE, 0, 0);
-            } else {
-                aw_message(GBS_global_string
-                           ("Cannot read tree '%s' -- group specific calculations skipped.\n   Treating all available sequences as one group!",
-                            treename));
-            }
+            GBT_link_tree((GBT_TREE *) ap_tree_root->tree, gb_main,
+                          GB_FALSE, 0, 0);
             GB_pop_transaction(gb_main);
-        } else
-            aw_message
-                ("No tree selected -- group specific calculations skipped.");
-        free(treename);
+
+            if (marked_only) {
+                error =
+                    ap_tree_root->tree->remove_leafs(gb_main,
+                                                     AWT_REMOVE_NOT_MARKED
+                                                     | AWT_REMOVE_DELETED);
+            }
+            if (error || !ap_tree_root->tree
+                || ap_tree_root->tree->is_leaf) {
+                aw_message
+                    ("No tree selected -- group specific calculations skipped.");
+                tree = 0;
+            } else {
+                tree = ((GBT_TREE *) ap_tree_root->tree);
+            }
+        }
+    } else {
+        aw_message
+            ("No tree selected -- group specific calculations skipped.");
+        tree = 0;
     }
+
+    free(treename);
 
     if (!error) {
         //error = SQ_reset_quality_calcstate(gb_main);
@@ -159,7 +189,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
         if (tree == 0) {
             if (reevaluate) {
                 aw_openstatus("Marking Sequences...");
-                SQ_mark_species(gb_main, mark_below);
+                SQ_mark_species(gb_main, mark_below, marked_only);
                 aw_closestatus();
             } else {
                 SQ_GroupData *globalData = new SQ_GroupData_RNA;
@@ -173,7 +203,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
                 aw_closestatus();
                 if (mark_flag) {
                     aw_openstatus("Marking Sequences...");
-                    SQ_mark_species(gb_main, mark_below);
+                    SQ_mark_species(gb_main, mark_below, marked_only);
                     aw_closestatus();
                 }
                 delete globalData;
@@ -182,7 +212,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
             if (reevaluate) {
                 aw_openstatus("Marking Sequences...");
                 SQ_count_nr_of_species(gb_main);
-                SQ_mark_species(gb_main, mark_below);
+                SQ_mark_species(gb_main, mark_below, marked_only);
                 aw_closestatus();
             } else {
                 aw_openstatus("Calculating pass 1 of 2...");
@@ -201,7 +231,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
                 if (mark_flag) {
                     aw_openstatus("Marking Sequences...");
                     SQ_count_nr_of_species(gb_main);
-                    SQ_mark_species(gb_main, mark_below);
+                    SQ_mark_species(gb_main, mark_below, marked_only);
                     aw_closestatus();
                 }
                 delete globalData;
@@ -251,6 +281,9 @@ AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL)
     aws->at("gc_proportion");
     aws->create_input_field(AWAR_SQ_WEIGHT_GC, 3);
 
+    aws->at("monly");
+    aws->create_toggle(AWAR_SQ_MARK_ONLY_FLAG);
+
     aws->at("mark");
     aws->create_toggle(AWAR_SQ_MARK_FLAG);
 
@@ -262,9 +295,8 @@ AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL)
                                        AWAR_TREE);
 
     aws->at("filter");
-    AW_CL filtercd =
-        awt_create_select_filter(aws->get_root(), gb_main,
-                                 AWAR_FILTER_NAME);
+    AW_CL filtercd = awt_create_select_filter(aws->get_root(), gb_main,
+                                              AWAR_FILTER_NAME);
     aws->callback(AW_POPUP, (AW_CL) awt_create_select_filter_win,
                   filtercd);
     aws->create_button("SELECT_FILTER", AWAR_FILTER_NAME);

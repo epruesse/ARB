@@ -97,7 +97,8 @@ GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights);
 */
 
 
-GB_ERROR SQ_mark_species(GBDATA * gb_main, int condition);
+GB_ERROR SQ_mark_species(GBDATA * gb_main, int condition,
+                         bool marked_only);
 
 
 void SQ_clear_group_dictionary();

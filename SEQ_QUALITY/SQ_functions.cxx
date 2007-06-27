@@ -992,10 +992,10 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData,
                     value3 = globalData->SQ_get_nr_sequences();
 
                     //format: <Groupname:value:numberofspecies>
-                    const char *entry =
-                        GBS_global_string("<%s:%f:%i>",
-                                          "one global consensus", value1,
-                                          value3);
+                    const char *entry = GBS_global_string("<%s:%f:%i>",
+                                                          "one global consensus",
+                                                          value1,
+                                                          value3);
                     cons_conf += entry;
                     entry =
                         GBS_global_string("<%s:%f:%i>",
@@ -1267,7 +1267,7 @@ void SQ_calc_and_apply_group_data2(GBT_TREE * node, GBDATA * gb_main,
 
 
 //marks species that are below threshold "evaluation"
-GB_ERROR SQ_mark_species(GBDATA * gb_main, int condition)
+GB_ERROR SQ_mark_species(GBDATA * gb_main, int condition, bool marked_only)
 {
     char *alignment_name;
     int result = 0;
@@ -1283,8 +1283,19 @@ GB_ERROR SQ_mark_species(GBDATA * gb_main, int condition)
     alignment_name = GBT_get_default_alignment(gb_main);
     seq_assert(alignment_name);
 
-    for (gb_species = GBT_first_species(gb_main);
-         gb_species; gb_species = GBT_next_species(gb_species)) {
+    GBDATA *(*getFirst) (GBDATA *) = 0;
+    GBDATA *(*getNext) (GBDATA *) = 0;
+
+    if (marked_only) {
+        getFirst = GBT_first_marked_species;
+        getNext = GBT_next_marked_species;
+    } else {
+        getFirst = GBT_first_species;
+        getNext = GBT_next_species;
+    }
+
+    for (gb_species = getFirst(gb_main);
+         gb_species; gb_species = getNext(gb_species)) {
         GBDATA *gb_ali =
             GB_find(gb_species, alignment_name, 0, down_level);
         bool marked = false;
