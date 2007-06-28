@@ -86,7 +86,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
         (aw_root->awar(AWAR_SQ_MARK_ONLY_FLAG)->read_int() > 0);
     char *treename = aw_root->awar(AWAR_TREE)->read_string();   // contains "????" if no tree is selected
 
-    if (treename && strcmp(treename, "????") != 0) {
+    if (treename && strstr(treename, "????") == 0) {
         AP_tree *ap_tree = new AP_tree(0);
         AP_tree_root *ap_tree_root =
             new AP_tree_root(gb_main, ap_tree, treename);
@@ -164,28 +164,6 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
            for the final result.
          */
 
-        aw_openstatus("Checking tree for irregularities...");
-        SQ_TREE_ERROR check = NONE;
-        if ((check = SQ_check_tree_structure(tree)) != NONE) {
-            switch (check) {
-            case ZOMBIE:
-                aw_message
-                    ("Found one or more zombies in the tree.\nPlease remove them or use another tree before running the quality check tool.");
-                break;
-            case MISSING_NODE:
-                aw_message
-                    ("Missing node(s) or unusable tree structure.\nPlease fix the tree before running the quality check tool.");
-                break;
-            default:
-                aw_message
-                    ("An error occured while traversing the tree.\nPlease fix the tree before running the quality check tool.");
-                break;
-            }
-            aw_closestatus();
-            return;
-        }
-        aw_closestatus();
-
         if (tree == 0) {
             if (reevaluate) {
                 aw_openstatus("Marking Sequences...");
@@ -209,6 +187,28 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
                 delete globalData;
             }
         } else {
+            aw_openstatus("Checking tree for irregularities...");
+            SQ_TREE_ERROR check = NONE;
+            if ((check = SQ_check_tree_structure(tree)) != NONE) {
+                switch (check) {
+                case ZOMBIE:
+                    aw_message
+                        ("Found one or more zombies in the tree.\nPlease remove them or use another tree before running the quality check tool.");
+                    break;
+                case MISSING_NODE:
+                    aw_message
+                        ("Missing node(s) or unusable tree structure.\nPlease fix the tree before running the quality check tool.");
+                    break;
+                default:
+                    aw_message
+                        ("An error occured while traversing the tree.\nPlease fix the tree before running the quality check tool.");
+                    break;
+                }
+                aw_closestatus();
+                return;
+            }
+            aw_closestatus();
+
             if (reevaluate) {
                 aw_openstatus("Marking Sequences...");
                 SQ_count_nr_of_species(gb_main);
