@@ -149,9 +149,21 @@ static selection_list_handle *allPTserverSellists = 0; // all pt server selectio
 static void fill_pt_server_selection_list(AW_window *aws, AW_selection_list *id) {
     aws->clear_selection_list(id);
 
-    for (int i=0; ; i++) {
+    const char * const *pt_servers = GBS_get_arb_tcp_entries("ARB_PT_SERVER*");
+    int count = 0;
+    while (pt_servers[count]) count++;
+
+    for (int i=0; i<count; i++) {
         char *choice = GBS_ptserver_id_to_choice(i, 1);
-        if (!choice) break;
+        if (!choice) {
+            GB_ERROR error = GB_get_error();
+            if (!error) {
+                error = GBS_global_string("Failed to get pt-server id #%i (please report)", i);
+                gb_assert(0); // should not occur
+            }
+            aw_message(error);
+            break;
+        }
 
         aws->insert_selection(id,choice,(long)i);
         free(choice);
