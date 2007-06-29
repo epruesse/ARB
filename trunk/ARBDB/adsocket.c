@@ -1067,8 +1067,9 @@ GB_CSTR GB_getenv(const char *env){
 
 int GB_host_is_local(const char *hostname){
     /* returns 1 if host is local */
-    if (!strcmp(hostname,"localhost")) return 1;
-    if (!strcmp(hostname,GBC_get_hostname())) return 1;
+    if (strcmp(hostname,"localhost")        == 0) return 1;
+    if (strcmp(hostname,GBC_get_hostname()) == 0) return 1;
+    if (strstr(hostname, "127.0.0.")        == hostname) return 1;
     return 0;
 }
 
