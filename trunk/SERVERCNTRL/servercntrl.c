@@ -35,11 +35,40 @@
 #define TRIES 1
 
 struct gl_struct {
-    aisc_com       *link;
-    long             locs;
-    long             com;
-}               glservercntrl;
+    aisc_com *link;
+    long      locs;
+    long      com;
+} glservercntrl;
 
+
+char *prefixSSH(const char *host, const char *command, int async) {
+    /* 'host' is a hostname or 'hostname:port' (where hostname may be an IP)
+       'command' is the command to be executed
+       if 'async' is 1 -> append '&'
+
+       returns a SSH system call for foreign host or
+       a direct system call for the local machine
+    */
+
+    char *result    = 0;
+    char  asyncChar = "&"[!async];
+
+    if (host && host[0]) {
+        const char *hostPort = strchr(host, ':');
+        char       *hostOnly = GB_strpartdup(host, hostPort ? hostPort-1 : 0);
+
+        if (!GB_host_is_local(hostOnly)) {
+            result = GBS_global_string_copy("ssh %s -n '%s' %c", hostOnly, command, asyncChar);
+        }
+        free(hostOnly);
+    }
+
+    if (!result) {
+        result = GBS_global_string_copy("(%s) %c", command, asyncChar);
+    }
+
+    return result;
+}
 
 GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
 {
@@ -52,7 +81,6 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
     else {
         const char *server       = strchr(tcp_id, 0) + 1;
         char       *serverparams = 0;
-        char       *command      = 0;
 
         /* concatenate all params behind server
            Note :  changed behavior on 2007/Mar/09 -- ralf
@@ -88,42 +116,36 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
             }
         }
 
-        if (*tcp_id == ':') {   /* local mode */
-            command = GBS_global_string_copy("%s %s -T%s &",server, serverparams, tcp_id);
-            if (!gbmain || GBCMC_system(gbmain,command)){
-                system(command);
-            }
-            if (do_sleep) sleep(4);
-        }
-        else {
-            char *host = strdup(tcp_id);
-            char *p    = strchr(host, ':');
+        {
+            char *command = 0;
+            int   delay   = 5;
 
-            if (!p) {
-                error = GB_export_error("Error: Missing ':' in line '%s' file $(ARBHOME)/lib/arb_tcp.dat", arb_tcp_env);
+            if (*tcp_id == ':') { /* local mode */
+                command = GBS_global_string_copy("%s %s -T%s &",server, serverparams, tcp_id);
             }
             else {
-                *p = 0;
-                if (GB_host_is_local(host)){
-                    command = GBS_global_string_copy("%s %s -T%s &",server, serverparams, tcp_id);
-#if defined(DEBUG)
-                    printf("Contacting local host '%s' (cmd='%s')\n", host, command);
-#endif /* DEBUG */
+                const char *port = strchr(tcp_id, ':');
+
+                if (!port) {
+                    error = GB_export_error("Error: Missing ':' in line '%s' file $(ARBHOME)/lib/arb_tcp.dat", arb_tcp_env);
                 }
                 else {
-                    command = GBS_global_string_copy("ssh %s -n %s %s -T%s &",host, server, serverparams, tcp_id);
-#if defined(DEBUG)
-                    printf("Contacting remote host '%s' (cmd='%s')\n", host, command);
-#endif /* DEBUG */
+                    char *remoteCommand = GBS_global_string_copy("$ARBHOME/bin/%s %s -T%s", server, serverparams, port);
+
+                    command = prefixSSH(tcp_id, remoteCommand, 1);
+                    free(remoteCommand);
                 }
-                if (!gbmain || GBCMC_system(gbmain,command)) {
-                    system(command);
-                }
-                if (do_sleep) sleep(5);
             }
-            free(host);
+
+            if (!error) {
+#if defined(DEBUG)
+                printf("Starting server (cmd='%s')\n", command);
+#endif /* DEBUG */
+                if (!gbmain || GBCMC_system(gbmain,command)) system(command);
+                if (do_sleep) sleep(delay);
+            }
+            free(command);
         }
-        free(command);
         free(serverparams);
     }
     return error;
@@ -163,7 +185,11 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
             error = GBS_global_string("Parameter -d missing for entry '%s' in %s", arb_tcp_env, arb_tcp_dat);
         }
         else {
-            if (GB_size_of_file(file) <= 0) {
+            if (strcmp(file, "!ASSUME_RUNNING") == 0) {
+                // assume pt-server is running on a host,  w/o access to common network drive
+                // i.e. we cannot check for the existance of the database file
+            }
+            else if (GB_size_of_file(file) <= 0) {
                 if (strncmp(arb_tcp_env, "ARB_NAME_SERVER", 15) == 0) {
                     char *dir       = strdup(file);
                     char *lastSlash = strrchr(dir, '/');
@@ -270,7 +296,7 @@ void arb_print_server_params() {
            "    -J<server>      sets job-server to '<server>' [default = 'ARB_JOB_SERVER']\n"
            "    -M<server>      sets MGR-server to '<server>' [default = 'ARB_MGR_SERVER']\n"
            "    -P<server>      sets PT-server to '<server>'  [default = 'ARB_PT_SERVER']\n"
-           "    -T<host:port>   sets TCP connection to '<host:port>'\n"
+           "    -T<[host]:port>   sets TCP connection to '<[host]:port>'\n"
            );
 }
 
@@ -298,7 +324,16 @@ struct arb_params *arb_trace_argv(int *argc, char **argv)
                 case 'D':	erg->db_server     = strdup(argv[s]+2);break;
                 case 'M':	erg->mgr_server    = strdup(argv[s]+2);break;
                 case 'P':	erg->pt_server     = strdup(argv[s]+2);break;
-                case 'T':	erg->tcp           = strdup(argv[s]+2);break;
+                case 'T':	{
+                    char *ipport = argv[s]+2;
+                    if (ipport[0] == ':') { /* port only -> assume localhost */
+                        erg->tcp = GBS_global_string_copy("localhost%s", ipport);
+                    }
+                    else {
+                        erg->tcp = strdup(ipport);
+                    }
+                    break;
+                }
                 default:	argv[d++]          = argv[s];
             }
         }else{
