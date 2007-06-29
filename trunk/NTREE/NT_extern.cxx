@@ -53,6 +53,7 @@
 
 #include "nt_concatenate.hxx"
 #include "seq_quality.h"
+#include "NT_trackAliChanges.h"
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -205,6 +206,7 @@ void create_all_awars(AW_root *awr, AW_default def)
     create_cprofile_var(awr,def);
     NT_create_transpro_variables(awr,def);
     NT_build_resort_awars(awr,def);
+    NT_create_trackAliChanges_Awars(awr, gb_main);
 
     NT_create_alignment_vars(awr,def);
     create_nds_vars(awr,def,gb_main);
@@ -1395,12 +1397,13 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             awm->insert_sub_menu(0, "Align Sequences",  "S");
             {
-                AWMIMT("arb_align",   "Align sequence into an existing alignment",         "A", "align.hlp",       AWM_ALL, (AW_CB) AW_POPUP_HELP,(AW_CL)"align.hlp",0   );
-                AWMIMT("realign_dna", "Realign nucleic acid according to aligned protein", "R", "realign_dna.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_realign_dna_window, 0);
+                AWMIMT("arb_align",   "Align sequence into an existing alignment",         "A", "align.hlp",       AWM_ALL, (AW_CB) AW_POPUP_HELP, (AW_CL)"align.hlp",                  0);
+                AWMIMT("realign_dna", "Realign nucleic acid according to aligned protein", "R", "realign_dna.hlp", AWM_ALL, AW_POPUP,              (AW_CL)NT_create_realign_dna_window, 0);
                 GDE_load_menu(awm,"align");
             }
             awm->close_sub_menu();
-            AWMIMT("seq_concat","Concatenate Sequences/Alignments", "C","concatenate_align.hlp", AWM_EXP,    AW_POPUP, (AW_CL)NT_createConcatenationWindow, (AW_CL)ntw );
+            AWMIMT("seq_concat",    "Concatenate Sequences/Alignments", "C", "concatenate_align.hlp", AWM_EXP, AW_POPUP, (AW_CL)NT_createConcatenationWindow,     (AW_CL)ntw );
+            AWMIMT("track_changes", "Track alignment changes",          "T", "track_ali_changes.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_trackAliChanges_window, 0)     ;
             SEP________________________SEP();
 
             AWMIMT("dna_2_pro", "Perform translation",                     "t", "translate_dna_2_pro.hlp", AWM_PRO, AW_POPUP, (AW_CL)NT_create_dna_2_pro_window, 0      );
