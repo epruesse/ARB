@@ -1747,25 +1747,42 @@ void pd_start_pt_server(AW_window *aww)
 
 void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
 {
-    long min = 0;
-    long max = 1000;
+    if (!aw_message(GBS_global_string("Are you sure to stop %s",
+                                      kill_all ? "all servers" : "that server"),
+                    "YES,CANCEL"))
+    {
+        long min = 0;
+        long max = 0;
 
-    if (!kill_all) min = max = aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
+        if (kill_all) {
+            const char * const *pt_servers = GBS_get_arb_tcp_entries("ARB_PT_SERVER*");
+            while (pt_servers[max]) max++;
+        }
+        else {
+            min = max = aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int(); // selected server
+        }
 
-    if (!aw_message("Are you sure to kill a server","YES,CANCEL")) {
-        aw_openstatus("Killing PTserver");
-        
+        aw_openstatus("Stopping PT-servers..");
+
         for (int i= min ; i <=max ; i++) {
             char *choice = GBS_ptserver_id_to_choice(i, 0);
-            if (!choice) break;
+            if (!choice) {
+                GB_ERROR error = GB_get_error();
+                if (!error) {
+                    error = GBS_global_string("Failed to get pt-server id #%i (please report)", i);
+                    gb_assert(0); // should not occur
+                }
+                aw_message(error);
+                break;
+            }
 
-            aw_status(GBS_global_string("Try to kill '%s'",choice));
+            aw_status(GBS_global_string("Trying to stop '%s'",choice));
 
             const char *pt_server = GBS_global_string("ARB_PT_SERVER%i",i);
             GB_ERROR    error     = arb_look_and_kill_server(AISC_MAGIC_NUMBER, pt_server);
 
-            if (error) aw_message(GBS_global_string("Could not kill '%s' (Reason: %s)", choice, error));
-            else aw_message(GBS_global_string("Killed '%s'", choice));
+            if (error) aw_message(GBS_global_string("Could not stop '%s' (Reason: %s)", choice, error));
+            else aw_message(GBS_global_string("Stopped '%s'", choice));
             
             free(choice);
         }
@@ -1779,29 +1796,23 @@ void pd_query_pt_server(AW_window *aww)
     char     pt_server[256];
     sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
 
-    const char *server = GBS_read_arb_tcp(pt_server);
-    char       *ssh    = 0;
-    
-    if ( server[0] && strchr(server+1,':') ) {
-        strchr(server+1,':') [0] = 0;
-        ssh = (char *)calloc(1, 4+10+strlen(server) );
-        sprintf(ssh,"ssh %s ",server);
-    }
-    else {
-        ssh = strdup("");
-    }
-    void *strstruct = GBS_stropen(1024);
+    void       *strstruct = GBS_stropen(1024);
     GBS_strcat(strstruct,   "echo Contents of directory ARBHOME/lib/pts:;echo;"
                "(cd $ARBHOME/lib/pts; ls -l);"
                "echo; echo Disk Space for PT_server files:; echo;"
                "df $ARBHOME/lib/pts;");
     GBS_strcat(strstruct,"echo;echo Running ARB Programms:;");
-    GBS_strcat(strstruct,ssh);
-    GBS_strcat(strstruct,"$ARBHOME/bin/arb_who");
+
+    {
+        const char *server  = GBS_read_arb_tcp(pt_server);
+        char       *arb_who = prefixSSH(server, "\$ARBHOME/bin/arb_who", 0);
+        GBS_strcat(strstruct, arb_who);
+        free(arb_who);
+    }
+
     char *sys = GBS_strclose(strstruct);
     GB_xcmd(sys,GB_TRUE, GB_FALSE);
     free(sys);
-    free(ssh);
 }
 
 static void pd_export_pt_server(AW_window *aww)
@@ -1842,8 +1853,8 @@ static void pd_export_pt_server(AW_window *aww)
                    "Note 2: The server will do the job in background,\n"
                    "        quitting this program won't affect the server","Cancel,Do it"))
     {
-        aw_openstatus("Export db to server");
-        aw_status("Search server to kill");
+        aw_openstatus("Updating PT-server");
+        aw_status("Stopping PT-server");
         arb_look_and_kill_server(AISC_MAGIC_NUMBER,pt_server);
 
         const char *ipPort = GBS_read_arb_tcp(pt_server);
@@ -1895,7 +1906,7 @@ static void pd_export_pt_server(AW_window *aww)
         }
 
         if (!error ) {
-            aw_status("Start new server");
+            aw_status("Start PT-server (builds in background)");
             error = arb_start_server(pt_server,gb_main, 1);
         }
         aw_closestatus();
@@ -1946,7 +1957,7 @@ AW_window *create_probe_admin_window( AW_root *root, AW_CL cl_genome_db)  {
 
     aws->at( "kill" );
     aws->callback(pd_kill_pt_server,0);
-    aws->create_button("KILL_SERVER","Kill server");
+    aws->create_button("KILL_SERVER","Stop server");
 
     aws->at( "query" );
     aws->callback(pd_query_pt_server);
@@ -1954,7 +1965,7 @@ AW_window *create_probe_admin_window( AW_root *root, AW_CL cl_genome_db)  {
 
     aws->at( "kill_all" );
     aws->callback(pd_kill_pt_server,1);
-    aws->create_button("KILL_ALL_SERVERS","Kill all servers");
+    aws->create_button("KILL_ALL_SERVERS","Stop all servers");
 
     aws->at( "edit" );
     aws->callback(pd_edit_arb_tcp, (AW_CL)gb_main);
