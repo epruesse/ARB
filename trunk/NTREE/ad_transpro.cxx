@@ -761,10 +761,7 @@ void transdna_event(AW_window *aww)
 
 }
 
-AW_window *NT_create_realign_dna_window(AW_root *root)
-{
-    AWUSE(root);
-
+AW_window *NT_create_realign_dna_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "REALIGN_DNA", "REALIGN DNA");
 
