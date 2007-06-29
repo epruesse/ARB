@@ -134,23 +134,29 @@ char *GB_strpartdup(const char *start, const char *end) {
      * 'end' may point behind end of string -> copy only till zero byte
      * if 'end'=('start'-1) -> return ""
      * if 'end'<('start'-1) -> return 0
+     * if 'end' == 0 -> copy whole string
      */
 
-    int   len = end-start+1;
     char *result;
+    if (end) {
+        int len = end-start+1;
 
-    if (len >= 0) {
-        const char *eos = memchr(start, 0, len);
+        if (len >= 0) {
+            const char *eos = memchr(start, 0, len);
 
-        if (eos) len = eos-start;
-        result = malloc(len+1);
-        memcpy(result, start, len);
-        result[len] = 0;
+            if (eos) len = eos-start;
+            result = malloc(len+1);
+            memcpy(result, start, len);
+            result[len] = 0;
+        }
+        else {
+            result = 0;
+        }
     }
-    else {
-        result = 0;
+    else { /* end = 0 -> return copy of complete string */
+        result = GB_strdup(start);
     }
-    
+
     return result;
 }
 
