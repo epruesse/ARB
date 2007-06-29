@@ -44,7 +44,7 @@ GB_ERROR gbt_rename_tree_rek P_((GBT_TREE *tree, int tree_index));
 /* adseqcompr.c */
 char *gb_compress_seq_by_master P_((const char *master, int master_len, int master_index, GBQUARK q, const char *seq, long seq_len, long *memsize, int old_flag));
 char *gb_compress_sequence_by_master P_((GBDATA *gbd, const char *master, int master_len, int master_index, GBQUARK q, const char *seq, int seq_len, long *memsize));
-char *gb_uncompress_by_sequence P_((GBDATA *gbd, const char *s, long size, GB_ERROR *error));
+char *gb_uncompress_by_sequence P_((GBDATA *gbd, const char *ss, long size, GB_ERROR *error));
 
 /* adtables.c */
 GBDATA *gbt_table_link_follower P_((GBDATA *gb_main, GBDATA *gb_link, const char *link));
