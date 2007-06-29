@@ -56,6 +56,9 @@ ARB_NAME_SERVER_START   localhost:3021		arb_name_server	-d$(ARBHOME)/lib/nas/nam
 
 #***********	PT_SERVERS The server should run on the nfs server ******************
 #*******     You may add new pt_servers here: (numbers must be continued)   *********
+# Note: If the database name is '!ASSUME_RUNNING' (i.e. -D!ASSUME_RUNNING), ARB will not
+#       try to start/stop/update/... the server and will not check DB for existance.
+#       To use such a PT-Server you'll have to start it manually on the remote host
 
 ARB_PT_SERVER0		localhost:3030		arb_pt_server	-D$(ARBHOME)/lib/pts/probe_server.arb RESERVED
 ARB_PT_SERVER1		localhost:3031		arb_pt_server	-D$(ARBHOME)/lib/pts/LSU_rRNA.arb
