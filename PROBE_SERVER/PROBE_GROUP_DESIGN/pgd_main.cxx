@@ -144,8 +144,11 @@ static const char *PGD_probe_pt_look_for_server(GBDATA *gb_main, const char *ser
 
     for (int i=0; serverNum == -1; ++i) {
         char *aServer = GBS_ptserver_id_to_choice(i, 0);
-        if (!aServer) break;    //  no more servers
-        
+        if (!aServer) { //  no more servers
+            GB_clear_error(); // suppress error about missing entry
+            break;              
+        }
+
         if (strcmp(aServer, servername) == 0) { // wanted server
             serverNum = i;
             out.put("Found pt-server: %s", aServer);
