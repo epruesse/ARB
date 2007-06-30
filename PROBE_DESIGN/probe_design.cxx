@@ -1805,7 +1805,7 @@ void pd_query_pt_server(AW_window *aww)
 
     {
         const char *server  = GBS_read_arb_tcp(pt_server);
-        char       *arb_who = prefixSSH(server, "\$ARBHOME/bin/arb_who", 0);
+        char       *arb_who = prefixSSH(server, "\\$ARBHOME/bin/arb_who", 0);
         GBS_strcat(strstruct, arb_who);
         free(arb_who);
     }
