@@ -1144,7 +1144,7 @@ up: depends proto tags
 depends: $(ARCHS:.a=.depends) \
 		HELP_SOURCE/HELP_SOURCE.depends \
 
-proto: AISC_MKPTPS/dummy.dummy
+proto: AISC_MKPTPS/AISC_MKPTPS.dummy TOOLS/TOOLS.dummy 
 		$(MAKE) \
 				AISC/AISC.proto \
 				ARBDB/ARBDB.proto \
