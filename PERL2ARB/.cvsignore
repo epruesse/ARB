@@ -4,6 +4,7 @@ ARB.c
 ARB.xs
 ChangeLog
 Makefile
+Makefile.PL
 blib
 debug.h
 depends.stamp
