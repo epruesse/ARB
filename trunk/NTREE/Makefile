@@ -309,6 +309,7 @@ NT_extern.o: nt_import.hxx
 NT_extern.o: nt_internal.h
 NT_extern.o: nt_join.hxx
 NT_extern.o: nt_sort.hxx
+NT_extern.o: NT_trackAliChanges.h
 NT_extern.o: ntree.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -449,6 +450,19 @@ NT_sort.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
+
+NT_trackAliChanges.o: NT_trackAliChanges.h
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/ad_prot.h
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arb_assert.h
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arbdbt.h
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/awt.hxx
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 NT_validManual.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
