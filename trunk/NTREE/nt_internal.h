@@ -142,3 +142,7 @@ AW_window *AP_open_csp_2_gnuplot_window(AW_root *root);
 /* AP_conservProfile2Gnuplot.cxx */
 void AP_conservProfile2Gnuplot_callback(AW_window *aww);
 AW_window *AP_openConservationPorfileWindow(AW_root *root);
+
+/* NT_trackAliChanges.cxx */
+void NT_create_trackAliChanges_Awars(AW_root *root, AW_default properties);
+AW_window *NT_create_trackAliChanges_window(AW_root *root);
