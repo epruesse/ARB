@@ -43,6 +43,7 @@ my %skipped_files = map { $_ => 1; } (
                                       'helpfiles.lst',
                                       '_index.html',
                                       'nt_date.h',
+                                      'TAGS',
                                      );
 
 my %used_extensions = map { $_ => 1; } (
@@ -113,6 +114,7 @@ my @used_when_matchesFull = (
                              qr/\/TREEPUZZLE\/.*\.gif$/o,
                              qr/\/PERL2ARB\/.*\.html$/o,
                              qr/\/PERL2ARB\/typemap$/o,
+                             qr/\/PERL2ARB\/Makefile.main$/o,
                              qr/\/PROBE_SERVER\/.*\.conf$/o,
                              qr/\/READSEQ\/Formats$/o,
                              qr/\/READSEQ\/.*\.help$/o,
@@ -143,12 +145,15 @@ my @skipped_when_matchesFull = (
                                 qr/\/MOLPHY\/prot_tml\.h$/o,
                                 qr/date\.xsl$/o,
                                 qr/\/genhelp\/.*\.hlp$/o,
+                                qr/^\.\/GDE\/CORE\/functions.h$/o,
                                 qr/^\.\/PERL2ARB\/.*\.h$/o,
                                 qr/^\.\/PERL2ARB\/ARB\.xs$/o,
                                 qr/^\.\/PERL2ARB\/ARB\.c$/o,
                                 qr/^\.\/PERL2ARB\/ARB\.bs$/o,
                                 qr/^\.\/PERL2ARB\/pm_to_blib$/o,
                                 qr/^\.\/PERL2ARB\/Makefile$/o,
+                                qr/^\.\/PERL2ARB\/Makefile.PL$/o,
+                                qr/^\.\/PERL2ARB\/perlmain.c$/o,
                                 qr/^\.\/TEMPLATES\/arb_build\.h$/o,
                                 qr/^\.\/lib\/ARB\.pm$/o,
                                 qr/^\.\/lib\/nas\/names\.dat$/o,
