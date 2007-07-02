@@ -82,14 +82,15 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
     AW_root *aw_root = aww->get_root();
     GB_ERROR error = 0;
     GBT_TREE *tree = 0;
+    AP_tree *ap_tree = 0;
+    AP_tree_root *ap_tree_root = 0;
     bool marked_only =
         (aw_root->awar(AWAR_SQ_MARK_ONLY_FLAG)->read_int() > 0);
     char *treename = aw_root->awar(AWAR_TREE)->read_string();   // contains "????" if no tree is selected
 
     if (treename && strstr(treename, "????") == 0) {
-        AP_tree *ap_tree = new AP_tree(0);
-        AP_tree_root *ap_tree_root =
-            new AP_tree_root(gb_main, ap_tree, treename);
+        ap_tree = new AP_tree(0);
+        ap_tree_root = new AP_tree_root(gb_main, ap_tree, treename);
 
         error = ap_tree->load(ap_tree_root, 0, GB_FALSE, GB_FALSE, 0, 0);
         if (error) {
@@ -114,11 +115,14 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
                                                      | AWT_REMOVE_DELETED);
             }
             if (error || !ap_tree_root->tree
-                || ap_tree_root->tree->is_leaf) {
+                || ((GBT_TREE *) ap_tree_root->tree)->is_leaf) {
                 aw_message
                     ("No tree selected -- group specific calculations skipped.");
                 tree = 0;
             } else {
+                error =
+                    ap_tree_root->tree->remove_leafs(gb_main,
+                                                     AWT_REMOVE_DELETED);
                 tree = ((GBT_TREE *) ap_tree_root->tree);
             }
         }
@@ -131,7 +135,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
     free(treename);
 
     if (!error) {
-        //error = SQ_reset_quality_calcstate(gb_main);
+        // error = SQ_reset_quality_calcstate(gb_main);
     }
     // if tree == 0 -> do basic quality calculations that are possible without tree information
     // otherwise    -> use all groups found in tree and compare sequences against the groups they are contained in
@@ -244,6 +248,10 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
     }
 
     SQ_clear_group_dictionary();
+
+    // Cleanup trees
+    delete ap_tree_root;
+    delete ap_tree;
 }
 
 
