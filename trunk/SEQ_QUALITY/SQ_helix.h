@@ -30,11 +30,14 @@ class SQ_helix {
                               AP_filter * filter);
     int SQ_get_no_helix() const {
         return count_no_helix;
-    } int SQ_get_weak_helix() const {
+    }
+    int SQ_get_weak_helix() const {
         return count_weak_helix;
-    } int SQ_get_strong_helix() const {
+    }
+    int SQ_get_strong_helix() const {
         return count_strong_helix;
-  } private:
+    }
+  private:
     const char *sequence;
     int count_strong_helix;
     int count_weak_helix;
