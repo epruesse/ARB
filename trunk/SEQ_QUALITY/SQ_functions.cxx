@@ -628,8 +628,8 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData * globalData, GBDATA * gb_main,
                         globalData->SQ_add_sequence(rawSequence);
                     }
                     pass1_counter_notree++;
-                    aw_status(double (globalcounter_notree) /
-                              pass1_counter_notree);
+                    aw_status((double) pass1_counter_notree /
+                              (double) globalcounter_notree);
 
                     delete(rawSequence);
                 }
@@ -1083,8 +1083,8 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData,
                     GB_write_int(gb_result5, evaluation);
                     //--------end cut this-------
                     pass2_counter_notree++;
-                    aw_status(double (globalcounter_notree) /
-                              pass2_counter_notree);
+                    aw_status((double) pass2_counter_notree /
+                              (double) globalcounter_notree);
 
                     delete(rawSequence);
                 }
@@ -1228,7 +1228,7 @@ void SQ_calc_and_apply_group_data(GBT_TREE * node, GBDATA * gb_main,
 
             create_multi_level_consensus(node, data);
             globalcounter++;
-            aw_status(double (globalcounter) / groupcounter);
+            aw_status((double) globalcounter / (double) groupcounter);
         } else {
             SQ_calc_and_apply_group_data(node1, gb_main, data, filter); // enter left branch
             seq_assert(data->getSize() > 0);
@@ -1260,7 +1260,7 @@ void SQ_calc_and_apply_group_data2(GBT_TREE * node, GBDATA * gb_main,
         }
         if (node->name) {       //  group identified
             globalcounter++;
-            aw_status(double (globalcounter) / groupcounter);
+            aw_status((double) globalcounter / (double) groupcounter);
         }
     }
 }
@@ -1313,8 +1313,8 @@ GB_ERROR SQ_mark_species(GBDATA * gb_main, int condition, bool marked_only)
                         marked = true;
                     }
                     pass1_counter_notree++;
-                    aw_status(double (globalcounter_notree) /
-                              pass1_counter_notree);
+                    aw_status((double) pass1_counter_notree /
+                              (double) globalcounter_notree);
                 }
             }
         }
