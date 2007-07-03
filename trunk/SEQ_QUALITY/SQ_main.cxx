@@ -249,9 +249,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
 
     SQ_clear_group_dictionary();
 
-    // Cleanup trees
     delete ap_tree_root;
-    delete ap_tree;
 }
 
 
