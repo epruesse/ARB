@@ -1079,12 +1079,12 @@ com:	$(ARCHS_COMMUNICATION:.a=.dummy)
 
 help:   menus xml HELP_SOURCE/dummy.dummy
 
-dball:	db dbs db2
-db:	ARBDB/libARBDB.dummy
+dball:	db dbs db2 dp
+db:		ARBDB/libARBDB.dummy
 dbs:	ARBDBS/libARBDB.dummy
 db2:	ARBDB2/libARBDB.dummy
-dp:	ARBDBPP/libARBDBPP.dummy
-aw:	WINDOW/libAW.dummy
+dp:		ARBDBPP/libARBDBPP.dummy
+aw:		WINDOW/libAW.dummy
 awt:	AWT/libAWT.dummy
 awtc:	AWTC/AWTC.dummy
 awti:	AWTI/AWTI.dummy
