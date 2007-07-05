@@ -55,11 +55,7 @@ Makefile.PL : $(MACH).PL
 	cp -p $< $@
 
 ARB.xs : $(ARB_PROTO_2_XSUB) proto.h ARB.xs.default
-ifdef DEBIAN
-	LD_LIBRARY_PATH=$(LIB) $(ARB_PROTO_2_XSUB) proto.h ARB.xs.default > $@
-else
-	$(ARB_PROTO_2_XSUB) proto.h ARB.xs.default > $@
-endif
+	LD_LIBRARY_PATH=$(LIB):$(LD_LIBRARY_PATH) $(ARB_PROTO_2_XSUB) proto.h ARB.xs.default > $@
 
 proto.h : $(HEADERS) $(THIS) depends.stamp
 	cat $(HEADERS) > $@
