@@ -84,18 +84,18 @@ GB_ERROR SQ_reset_quality_calcstate(GBDATA * gb_main)
 
     for (GBDATA * gb_species = GBT_first_species(gb_main);
          gb_species && !error; gb_species = GBT_next_species(gb_species)) {
-        GBDATA *gb_ali =
-            GB_find(gb_species, alignment_name, 0, down_level);
-        if (!gb_ali) {
-            error = no_data_error(gb_species, alignment_name);
-        } else {
-            GBDATA *gb_quality =
-                GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
-            if (!gb_quality)
-                error = GB_get_error();
-            else {
+        GBDATA *gb_quality =
+            GB_search(gb_species, "quality", GB_CREATE_CONTAINER);
+        if (!gb_quality)
+            error = GB_get_error();
+        else {
+            GBDATA *gb_quality_ali =
+                GB_search(gb_quality, alignment_name, GB_CREATE_CONTAINER);
+            if (!gb_quality_ali) {
+                error = no_data_error(gb_quality, alignment_name);
+            } else {
                 GBDATA *gb_calcstate =
-                    GB_search(gb_quality, "calcstate", GB_INT);
+                    GB_search(gb_quality_ali, "calcstate", GB_INT);
                 if (!gb_calcstate)
                     error = GB_get_error();
                 else {
@@ -141,13 +141,16 @@ int SQ_get_value(GBDATA * gb_main, const char *option)
         gb_name = GB_find(gb_species, "name", 0, down_level);
 
         if (gb_name) {
-            GBDATA *gb_ali =
-                GB_find(gb_species, alignment_name, 0, down_level);
-
-            if (gb_ali) {
-                GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
-                GBDATA *gb_result1 = GB_search(gb_quality, option, GB_INT);
-                result = GB_read_int(gb_result1);
+            GBDATA *gb_quality =
+                GB_find(gb_species, "quality", 0, down_level);
+            if (gb_quality) {
+                GBDATA *gb_quality_ali =
+                    GB_find(gb_quality, alignment_name, 0, down_level);
+                if (gb_quality_ali) {
+                    GBDATA *gb_result1 =
+                        GB_search(gb_quality_ali, option, GB_INT);
+                    result = GB_read_int(gb_result1);
+                }
             }
         }
     }
@@ -184,18 +187,22 @@ int SQ_get_value_no_tree(GBDATA * gb_main, const char *option)
          gb_species = getNext(gb_species)) {
         gb_name = GB_find(gb_species, "name", 0, down_level);
         if (gb_name) {
+
             GBDATA *gb_ali =
                 GB_find(gb_species, alignment_name, 0, down_level);
-            if (gb_ali) {
-                GBDATA *gb_quality =
-                    GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
-                if (gb_quality) {
-                    read_sequence = GB_find(gb_ali, "data", 0, down_level);
-                    if (read_sequence) {
-                        GBDATA *gb_result1 =
-                            GB_search(gb_quality, option, GB_INT);
-                        result = GB_read_int(gb_result1);
-                    }
+            if (gb_ali)
+                read_sequence = GB_find(gb_ali, "data", 0, down_level);
+
+            GBDATA *gb_quality =
+                GB_search(gb_species, "quality", GB_CREATE_CONTAINER);
+            if (gb_quality && read_sequence) {
+                GBDATA *gb_quality_ali =
+                    GB_search(gb_quality, alignment_name,
+                              GB_CREATE_CONTAINER);
+                if (gb_quality_ali) {
+                    GBDATA *gb_result1 =
+                        GB_search(gb_quality_ali, option, GB_INT);
+                    result = GB_read_int(gb_result1);
                 }
             }
         }
@@ -237,31 +244,37 @@ GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights)
         if (!gb_name)
             error = GB_get_error();
         else {
-            GBDATA *gb_ali =
-                GB_find(gb_species, alignment_name, 0, down_level);
+            GBDATA *gb_quality =
+                GB_find(gb_species, "quality", 0, down_level);
+            if (gb_quality) {
 
-            if (!gb_ali)
-                error =
-                    GBS_global_string("No such alignment '%s'",
-                                      alignment_name);
-            else {
-                int bases = 0;
-                int dfa = 0;
-                int noh = 0;
-                int cos = 0;
-                int iupv = 0;
-                int gcprop = 0;
-                int value2 = 0;
-                double value = 0;
-                double result = 0;
+                GBDATA *gb_quality_ali =
+                    GB_find(gb_quality, alignment_name, 0, down_level);
 
-                GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
+                if (!gb_quality_ali)
+                    error =
+                        GBS_global_string
+                        ("No alignment entry '%s' in quality data",
+                         alignment_name);
+                else {
+                    int bases = 0;
+                    int dfa = 0;
+                    int noh = 0;
+                    int cos = 0;
+                    int iupv = 0;
+                    int gcprop = 0;
+                    int value2 = 0;
+                    double value = 0;
+                    double result = 0;
 
-                if (gb_quality) // FIXME: should give user a warning when a species without quality data is found
-                {
+//                 GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
+
+//                 if (gb_quality) // FIXME: should give user a warning when a species without quality data is found
+//                 {
                     //evaluate the percentage of bases the actual sequence consists of
                     GBDATA *gb_result1 =
-                        GB_search(gb_quality, "percent_of_bases", GB_INT);
+                        GB_search(gb_quality_ali, "percent_of_bases",
+                                  GB_INT);
                     bases = GB_read_int(gb_result1);
                     if (bases < 4)
                         result = 0;
@@ -278,7 +291,7 @@ GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights)
 
                     //evaluate the difference in number of bases from sequence to group
                     GBDATA *gb_result2 =
-                        GB_search(gb_quality, "percent_base_deviation",
+                        GB_search(gb_quality_ali, "percent_base_deviation",
                                   GB_INT);
                     dfa = GB_read_int(gb_result2);
                     if (abs(dfa) < 2)
@@ -308,7 +321,7 @@ GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights)
 
                     //evaluate the number of positions where no helix can be built
                     GBDATA *gb_result3 =
-                        GB_search(gb_quality, "number_of_no_helix",
+                        GB_search(gb_quality_ali, "number_of_no_helix",
                                   GB_INT);
                     noh = GB_read_int(gb_result3);
                     if (noh < 20)
@@ -338,7 +351,7 @@ GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights)
 
                     //evaluate the consensus
                     GBDATA *gb_result4 =
-                        GB_search(gb_quality, "consensus_evaluated",
+                        GB_search(gb_quality_ali, "consensus_evaluated",
                                   GB_INT);
                     cos = GB_read_int(gb_result4);
                     result = cos;
@@ -348,7 +361,7 @@ GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights)
 
                     //evaluate the number of iupacs in a sequence
                     GBDATA *gb_result5 =
-                        GB_search(gb_quality, "iupac_value", GB_INT);
+                        GB_search(gb_quality_ali, "iupac_value", GB_INT);
                     iupv = GB_read_int(gb_result5);
                     if (iupv < 1)
                         result = 3;
@@ -369,7 +382,7 @@ GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights)
 
                     //evaluate the difference in the GC proportion from sequence to group
                     GBDATA *gb_result6 =
-                        GB_search(gb_quality, "percent_GC_difference",
+                        GB_search(gb_quality_ali, "percent_GC_difference",
                                   GB_INT);
                     gcprop = GB_read_int(gb_result6);
                     if (abs(gcprop) < 1)
@@ -400,7 +413,7 @@ GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights)
                     /*write the final value of the evaluation */
                     value2 = sq_round(value);
                     GBDATA *gb_result7 =
-                        GB_search(gb_quality, "evaluation", GB_INT);
+                        GB_search(gb_quality_ali, "evaluation", GB_INT);
                     seq_assert(gb_result7);
                     GB_write_int(gb_result7, value2);
                 }
@@ -474,12 +487,18 @@ GB_ERROR SQ_pass1(SQ_GroupData * globalData, GBDATA * gb_main,
             error = no_data_error(gb_species, alignment_name);
         } else {
             GBDATA *gb_quality =
-                GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
+                GB_search(gb_species, "quality", GB_CREATE_CONTAINER);
 
             if (!gb_quality) {
                 error = GB_get_error();
             }
+
             read_sequence = GB_find(gb_ali, "data", 0, down_level);
+
+            GBDATA *gb_quality_ali =
+                GB_search(gb_quality, alignment_name, GB_CREATE_CONTAINER);
+            if (!gb_quality_ali)
+                error = GB_get_error();
 
             /*real calculations start here */
             if (read_sequence) {
@@ -492,7 +511,7 @@ GB_ERROR SQ_pass1(SQ_GroupData * globalData, GBDATA * gb_main,
                     SQ_physical_layout ps_chan;
                     ps_chan.SQ_calc_physical_layout(rawSequence,
                                                     sequenceLength,
-                                                    gb_quality);
+                                                    gb_quality_ali);
 
                     /*calculate the average number of bases in group */
                     globalData->SQ_count_sequences();
@@ -507,7 +526,7 @@ GB_ERROR SQ_pass1(SQ_GroupData * globalData, GBDATA * gb_main,
                     SQ_ambiguities ambi_chan;
                     ambi_chan.SQ_count_ambiguities(rawSequence,
                                                    sequenceLength,
-                                                   gb_quality);
+                                                   gb_quality_ali);
                 }
 
                 /*calculate the number of strong, weak and no helixes */
@@ -515,7 +534,7 @@ GB_ERROR SQ_pass1(SQ_GroupData * globalData, GBDATA * gb_main,
                     SQ_helix heli_chan(sequenceLength);
                     heli_chan.SQ_calc_helix_layout(rawSequence, gb_main,
                                                    alignment_name,
-                                                   gb_quality, filter);
+                                                   gb_quality_ali, filter);
                 }
 
                 /*calculate consensus sequence */
@@ -580,11 +599,18 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData * globalData, GBDATA * gb_main,
                 error = no_data_error(gb_species, alignment_name);
             } else {
                 GBDATA *gb_quality =
-                    GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
+                    GB_search(gb_species, "quality", GB_CREATE_CONTAINER);
                 if (!gb_quality) {
                     error = GB_get_error();
                 }
+
                 read_sequence = GB_find(gb_ali, "data", 0, down_level);
+
+                GBDATA *gb_quality_ali =
+                    GB_search(gb_quality, alignment_name,
+                              GB_CREATE_CONTAINER);
+                if (!gb_quality_ali)
+                    error = GB_get_error();
 
                 /*real calculations start here */
                 if (read_sequence) {
@@ -596,7 +622,7 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData * globalData, GBDATA * gb_main,
                     SQ_physical_layout *ps_chan = new SQ_physical_layout();
                     ps_chan->SQ_calc_physical_layout(rawSequence,
                                                      sequenceLength,
-                                                     gb_quality);
+                                                     gb_quality_ali);
 
                     /*calculate the average number of bases in group */
                     globalData->SQ_count_sequences();
@@ -610,14 +636,15 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData * globalData, GBDATA * gb_main,
                     SQ_ambiguities *ambi_chan = new SQ_ambiguities();
                     ambi_chan->SQ_count_ambiguities(rawSequence,
                                                     sequenceLength,
-                                                    gb_quality);
+                                                    gb_quality_ali);
                     delete ambi_chan;
 
                     /*claculate the number of strong, weak and no helixes */
                     SQ_helix *heli_chan = new SQ_helix(sequenceLength);
                     heli_chan->SQ_calc_helix_layout(rawSequence, gb_main,
                                                     alignment_name,
-                                                    gb_quality, filter);
+                                                    gb_quality_ali,
+                                                    filter);
                     delete heli_chan;
 
                     /*calculate consensus sequence */
@@ -677,9 +704,15 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
             error = no_data_error(gb_species, alignment_name);
         } else {
             GBDATA *gb_quality =
-                GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
+                GB_search(gb_species, "quality", GB_CREATE_CONTAINER);
             if (!gb_quality)
                 error = GB_get_error();
+
+            GBDATA *gb_quality_ali =
+                GB_search(gb_quality, alignment_name, GB_CREATE_CONTAINER);
+            if (!gb_quality_ali)
+                error = GB_get_error();
+
             read_sequence = GB_find(gb_ali, "data", 0, down_level);
 
             /*real calculations start here */
@@ -705,9 +738,9 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
                    calculate the average number of bases in group, and the difference of
                    a single seqeunce in group from it
                  */
-                GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
+//                 GBDATA *gb_quality = GB_search(gb_ali, "quality", GB_FIND);
                 GBDATA *gb_result1 =
-                    GB_search(gb_quality, "number_of_bases", GB_INT);
+                    GB_search(gb_quality_ali, "number_of_bases", GB_INT);
                 bases = GB_read_int(gb_result1);
                 avg_bases = globalData->SQ_get_avg_bases();
 
@@ -718,7 +751,7 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
                 }
 
                 GBDATA *gb_result2 =
-                    GB_search(gb_quality, "percent_base_deviation",
+                    GB_search(gb_quality_ali, "percent_base_deviation",
                               GB_INT);
                 seq_assert(gb_result2);
                 GB_write_int(gb_result2, diff_percent);
@@ -728,7 +761,7 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
                    a single seqeunce in group from it
                  */
                 GBDATA *gb_result6 =
-                    GB_search(gb_quality, "GC_proportion", GB_FLOAT);
+                    GB_search(gb_quality_ali, "GC_proportion", GB_FLOAT);
                 gcp = GB_read_float(gb_result6);
                 avg_gc = globalData->SQ_get_avg_gc();
 
@@ -739,7 +772,8 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
                 }
 
                 GBDATA *gb_result7 =
-                    GB_search(gb_quality, "percent_GC_difference", GB_INT);
+                    GB_search(gb_quality_ali, "percent_GC_difference",
+                              GB_INT);
                 seq_assert(gb_result7);
                 GB_write_int(gb_result7, diff_percent);
 
@@ -838,12 +872,12 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
                 cons_dev += "</dev>";
 
                 GBDATA *gb_result3 =
-                    GB_search(gb_quality, "consensus_conformity",
+                    GB_search(gb_quality_ali, "consensus_conformity",
                               GB_STRING);
                 seq_assert(gb_result3);
                 GB_write_string(gb_result3, cons_conf.c_str());
                 GBDATA *gb_result4 =
-                    GB_search(gb_quality, "consensus_deviation",
+                    GB_search(gb_quality_ali, "consensus_deviation",
                               GB_STRING);
                 seq_assert(gb_result4);
                 GB_write_string(gb_result4, cons_dev.c_str());
@@ -854,7 +888,8 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
                     evaluation = sq_round(eval);
                 }
                 GBDATA *gb_result5 =
-                    GB_search(gb_quality, "consensus_evaluated", GB_INT);
+                    GB_search(gb_quality_ali, "consensus_evaluated",
+                              GB_INT);
                 seq_assert(gb_result5);
                 GB_write_int(gb_result5, evaluation);
                 //--------end cut this-------
@@ -906,14 +941,20 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData,
         else {
             GBDATA *gb_ali =
                 GB_find(gb_species, alignment_name, 0, down_level);
-
             if (!gb_ali) {
                 error = no_data_error(gb_species, alignment_name);
             } else {
                 GBDATA *gb_quality =
-                    GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
+                    GB_search(gb_species, "quality", GB_CREATE_CONTAINER);
                 if (!gb_quality)
                     error = GB_get_error();
+
+                GBDATA *gb_quality_ali =
+                    GB_search(gb_quality, alignment_name,
+                              GB_CREATE_CONTAINER);
+                if (!gb_quality_ali)
+                    error = GB_get_error();
+
                 read_sequence = GB_find(gb_ali, "data", 0, down_level);
 
                 /*real calculations start here */
@@ -939,10 +980,11 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData,
                        calculate the average number of bases in group, and the difference of
                        a single seqeunce in group from it
                      */
-                    GBDATA *gb_quality =
-                        GB_search(gb_ali, "quality", GB_FIND);
+//                     GBDATA *gb_quality =
+//                         GB_search(gb_ali, "quality", GB_FIND);
                     GBDATA *gb_result1 =
-                        GB_search(gb_quality, "number_of_bases", GB_INT);
+                        GB_search(gb_quality_ali, "number_of_bases",
+                                  GB_INT);
                     bases = GB_read_int(gb_result1);
                     avg_bases = globalData->SQ_get_avg_bases();
 
@@ -953,7 +995,7 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData,
                     }
 
                     GBDATA *gb_result2 =
-                        GB_search(gb_quality, "percent_base_deviation",
+                        GB_search(gb_quality_ali, "percent_base_deviation",
                                   GB_INT);
                     seq_assert(gb_result2);
                     GB_write_int(gb_result2, diff_percent);
@@ -963,7 +1005,8 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData,
                        a single seqeunce in group from it
                      */
                     GBDATA *gb_result6 =
-                        GB_search(gb_quality, "GC_proportion", GB_FLOAT);
+                        GB_search(gb_quality_ali, "GC_proportion",
+                                  GB_FLOAT);
                     gcp = GB_read_float(gb_result6);
                     avg_gc = globalData->SQ_get_avg_gc();
 
@@ -974,7 +1017,7 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData,
                     }
 
                     GBDATA *gb_result7 =
-                        GB_search(gb_quality, "percent_GC_difference",
+                        GB_search(gb_quality_ali, "percent_GC_difference",
                                   GB_INT);
                     seq_assert(gb_result7);
                     GB_write_int(gb_result7, diff_percent);
@@ -1062,12 +1105,12 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData,
                     cons_dev += "</dev>";
 
                     GBDATA *gb_result3 =
-                        GB_search(gb_quality, "consensus_conformity",
+                        GB_search(gb_quality_ali, "consensus_conformity",
                                   GB_STRING);
                     seq_assert(gb_result3);
                     GB_write_string(gb_result3, cons_conf.c_str());
                     GBDATA *gb_result4 =
-                        GB_search(gb_quality, "consensus_deviation",
+                        GB_search(gb_quality_ali, "consensus_deviation",
                                   GB_STRING);
                     seq_assert(gb_result4);
                     GB_write_string(gb_result4, cons_dev.c_str());
@@ -1077,7 +1120,7 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData,
                         evaluation = sq_round(eval);
                     }
                     GBDATA *gb_result5 =
-                        GB_search(gb_quality, "consensus_evaluated",
+                        GB_search(gb_quality_ali, "consensus_evaluated",
                                   GB_INT);
                     seq_assert(gb_result5);
                     GB_write_int(gb_result5, evaluation);
@@ -1151,7 +1194,7 @@ GB_ERROR SQ_count_nr_of_species(GBDATA * gb_main)
                 error = no_data_error(gb_species, alignment_name);
             } else {
                 GBDATA *gb_quality =
-                    GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
+                    GB_search(gb_species, "quality", GB_CREATE_CONTAINER);
                 if (!gb_quality)
                     error = GB_get_error();
                 read_sequence = GB_find(gb_ali, "data", 0, down_level);
@@ -1301,20 +1344,26 @@ GB_ERROR SQ_mark_species(GBDATA * gb_main, int condition, bool marked_only)
         bool marked = false;
         if (gb_ali) {
             GBDATA *gb_quality =
-                GB_search(gb_ali, "quality", GB_CREATE_CONTAINER);
+                GB_search(gb_species, "quality", GB_CREATE_CONTAINER);
             if (gb_quality) {
                 read_sequence = GB_find(gb_ali, "data", 0, down_level);
                 if (read_sequence) {
-                    GBDATA *gb_result1 =
-                        GB_search(gb_quality, "evaluation", GB_INT);
-                    result = GB_read_int(gb_result1);
+                    GBDATA *gb_quality_ali =
+                        GB_search(gb_quality, alignment_name,
+                                  GB_CREATE_CONTAINER);
+                    if (gb_quality_ali) {
+                        GBDATA *gb_result1 =
+                            GB_search(gb_quality_ali, "evaluation",
+                                      GB_INT);
+                        result = GB_read_int(gb_result1);
 
-                    if (result < condition) {
-                        marked = true;
+                        if (result < condition) {
+                            marked = true;
+                        }
+                        pass1_counter_notree++;
+                        aw_status((double) pass1_counter_notree /
+                                  (double) globalcounter_notree);
                     }
-                    pass1_counter_notree++;
-                    aw_status((double) pass1_counter_notree /
-                              (double) globalcounter_notree);
                 }
             }
         }
