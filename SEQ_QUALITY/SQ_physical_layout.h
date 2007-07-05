@@ -24,7 +24,7 @@ class SQ_physical_layout {
   public:
     SQ_physical_layout();
     void SQ_calc_physical_layout(const char *sequence, int size,
-                                 GBDATA * gb_quality);
+                                 GBDATA * gb_quality_ali);
     int SQ_get_number_of_bases() const;
     double SQ_get_gc_proportion() const;
   private:
@@ -64,7 +64,7 @@ int SQ_physical_layout::roundme(double value)
 
 void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence,
                                                  int size,
-                                                 GBDATA * gb_quality)
+                                                 GBDATA * gb_quality_ali)
 {
     count_bases = size;
 
@@ -97,15 +97,18 @@ void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence,
     percent_bases = roundme(temp);
     count_bases2 = roundme(count_bases);
 
-    GBDATA *gb_result1 = GB_search(gb_quality, "number_of_bases", GB_INT);
+    GBDATA *gb_result1 =
+        GB_search(gb_quality_ali, "number_of_bases", GB_INT);
     seq_assert(gb_result1);
     GB_write_int(gb_result1, count_bases2);
 
-    GBDATA *gb_result2 = GB_search(gb_quality, "percent_of_bases", GB_INT);
+    GBDATA *gb_result2 =
+        GB_search(gb_quality_ali, "percent_of_bases", GB_INT);
     seq_assert(gb_result2);
     GB_write_int(gb_result2, percent_bases);
 
-    GBDATA *gb_result3 = GB_search(gb_quality, "GC_proportion", GB_FLOAT);
+    GBDATA *gb_result3 =
+        GB_search(gb_quality_ali, "GC_proportion", GB_FLOAT);
     seq_assert(gb_result3);
     GB_write_float(gb_result3, GC_proportion);
 }
