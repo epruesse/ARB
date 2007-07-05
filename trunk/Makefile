@@ -295,7 +295,7 @@ first_target:
 		@echo ' all         - Compile ARB + TOOLs + and copy shared libs + link foreign software'
 		@echo '               (That is most likely the target you want)'
 		@echo ''
-		@echo ' clean       - remove generated files'
+		@echo ' clean       - remove generated files ("SUBDIR/SUBDIR.clean" to clean only SUBDIR)'
 		@echo ' rebuild     - clean + all'
 		@echo ' relink      - remove all binaries and relink them from objects'
 		@echo ''
