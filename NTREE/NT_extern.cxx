@@ -211,7 +211,7 @@ void create_all_awars(AW_root *awr, AW_default def)
     NT_create_alignment_vars(awr,def);
     create_nds_vars(awr,def,gb_main);
     create_export_nds_awars(awr,def);
-    AWTC_create_rename_variables(awr,def);
+    AWTC_create_rename_awars(awr,def);
     create_check_gcg_awars(awr,def);
     awt_create_dtree_awars(awr,gb_main);
 
