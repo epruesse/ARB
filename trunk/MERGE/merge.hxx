@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : merge.hxx                                              //
 //    Purpose   : Local header for usage inside directory MERGE          //
-//    Time-stamp: <Thu Aug/17/2006 13:10 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Jul/05/2007 16:47 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Copyright Department of Microbiology (Technical University Munich)   //
@@ -30,9 +30,16 @@ AW_window *create_mg_check_fields(AW_root *aw_root);
 
 void MG_create_config_awar(AW_root *aw_root, AW_default aw_def);
 void MG_create_trees_awar(AW_root *aw_root, AW_default aw_def);
-void MG_create_extendeds_var(AW_root *aw_root, AW_default aw_def);
-void MG_create_alignment_vars(AW_root *aw_root,AW_default aw_def);
-void MG_create_species_var(AW_root *aw_root, AW_default aw_def);
+void MG_create_extendeds_awars(AW_root *aw_root, AW_default aw_def);
+void MG_create_alignment_awars(AW_root *aw_root,AW_default aw_def);
+void MG_create_species_awars(AW_root *aw_root, AW_default aw_def);
+void MG_create_rename_awars(AW_root *aw_root, AW_default aw_def);
+
+
+void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_merge, GBDATA *gb_dest);
+
+void     MG_set_renamed(bool renamed, AW_root *aw_root, const char *reason);
+GB_ERROR MG_expect_renamed();
 
 int MG_check_alignment(AW_window *aww, int fast = 0);
 
