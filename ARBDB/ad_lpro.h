@@ -306,6 +306,8 @@ void gb_testDB P_((GBDATA *gbd));
 
 /* adtcp.c */
 
+/* adhashtools.c */
+
 #ifdef __cplusplus
 }
 #endif

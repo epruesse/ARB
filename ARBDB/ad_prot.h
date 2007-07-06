@@ -434,6 +434,16 @@ const char *GBS_ptserver_logname P_((void));
 void GBS_add_ptserver_logentry P_((const char *entry));
 char *GBS_ptserver_id_to_choice P_((int i, int showBuild));
 
+/* adhashtools.c */
+long GBT_get_species_hash_size P_((GBDATA *gb_main));
+void GBT_add_item_to_hash P_((GBDATA *gb_item, GB_HASH *item_hash));
+GB_HASH *GBT_create_species_hash P_((GBDATA *gb_main));
+GB_HASH *GBT_create_species_hash_with_size P_((GBDATA *gb_main, long estimated_species));
+GB_HASH *GBT_generate_species_hash P_((GBDATA *gb_main, int ignore_case));
+GB_HASH *GBT_generate_species_hash_sized P_((GBDATA *gb_main, long species_count));
+GB_HASH *GBT_generate_marked_species_hash P_((GBDATA *gb_main));
+GB_HASH *GBT_generate_SAI_hash P_((GBDATA *gb_main));
+
 #ifdef __cplusplus
 }
 #endif
