@@ -10,31 +10,46 @@ SUB	rename.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Check and Update Names
 
-DESCRIPTION	Merging two databases species names assigned to the
-		corresponding accession numbers and other information have to be
-		identical in both databases.
+DESCRIPTION     When merging two databases it is VERY IMPORTANT to use identical
+                short names for identical species and different short names for
+                different species. If not, data of different species will be merged or
+                overwritten.
 
-		To enshure this, press the 'RENAME DATABASE' buttons to display
-			the 'AUTORENAME SPECIES' window.
+                Species are identified using the accession number and (optionally) one
+                additional field. If you use an additional field, a different nameserver
+                is used to rename species.
 
-		To save modifications pres the 'Save result' button of the
-			'ARB_MERGE' window.
+                Because of different name servers, merging two databases is only possible
+                if both databases use no additional field or if they use the same.
+
+                To rename all species in both databases, press the 'Check names...' button
+                to open the 'SYNCHRONIZE NAMES' window.
+
+                Make sure both databases use the same additional id.
+
+                Press the 'Rename species' button to generate new names for both databases.
 
 
-NOTES		Creates automatically unique names (=identifiers) for the
+NOTES		Creates automatically unique names (=identifiers) for all
 		species entries in the database. The entries are identified by
-		their accession numbers (public databases). The names are given
+		their accession numbers (public databases). The names are created
 		using the 'full_name' information. Usually, the first three
 		letters are taken from the genus designation, the remaining
 		letters from the species name.
 
-		If there are duplicated entries (same accession number -
+WARNINGS        If there are duplicated entries (same accession number -
 		different 'full_name'; no accession number - same 'full_name')
 		the different versions are indicated by appending running
 		numbers separated from the 'name' by a dot.
 
-		 
-WARNINGS	If any species has lost is accession number it will not be
-		renamed correctly.
+                Normally merging is not allowed when there are duplicated species.
+
+                You may overide that behavior by checking 'Allow merging duplicates',
+                but be warned:
+
+                    It is VERY DANGEROUS to merge when duplicated species are in your
+                    databases, cause there is no garantee, that duplicates with the
+                    same .NUM suffix refer to the same species.
+                    You may easily overwrite or duplicate your data!
 
 BUGS		No bugs known
