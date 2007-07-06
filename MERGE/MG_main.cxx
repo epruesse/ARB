@@ -171,6 +171,30 @@ AW_window *MG_save_quick_result_cb(AW_root *aw_root, char *base_name)
     return (AW_window *)aws;
 }
 
+
+static void MG_create_db_dependent_awars(AW_root *aw_root, GBDATA *gb_merge, GBDATA *gb_dest) {
+    MG_create_db_dependent_rename_awars(aw_root, gb_merge, gb_dest);
+}
+
+static void MG_popup_if_renamed(AW_window *aww, AW_CL cl_create_window) {
+    GB_ERROR error = MG_expect_renamed();
+    if (!error) {
+        static long  popup_hash = GBS_create_hashi(10);
+        AW_window   *aw_popup   = (AW_window*)GBS_read_hashi(popup_hash, cl_create_window);
+
+        if (!aw_popup) { // window has not been created yet
+            typedef AW_window *(*window_creator)(AW_root *);
+            window_creator create_window = (window_creator)cl_create_window;
+            aw_popup                     = create_window(aww->get_root());
+            GBS_write_hashi(popup_hash, cl_create_window, (long)aw_popup);
+        }
+        
+        aw_popup->show();
+    }
+
+    if (error) aw_message(error);
+}
+
 // uses gb_dest and gb_merge
 void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled)
 {
@@ -189,6 +213,9 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled)
     GB_change_my_security(gb_dest,6,"passwd");
     GB_change_my_security(gb_merge,6,"passwd");
     if (aww) aww->hide();
+
+    MG_create_db_dependent_awars(aw_root, gb_merge, gb_dest);
+    MG_set_renamed(false, aw_root, "Not renamed yet.");
 
     AW_window_simple_menu *awm = new AW_window_simple_menu();
     awm->init(aw_root,"ARB_MERGE", "ARB_MERGE");
@@ -225,7 +252,7 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled)
     }
 
     awm->at("species");
-    awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_species_cb);
+    awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_species_cb);
     awm->help_text("mg_species.hlp");
     awm->create_button("TRANSFER_SPECIES", "Transfer Species ... ");
 
@@ -235,12 +262,12 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled)
     awm->create_button("TRANSFER_SAIS", "Transfer SAIs ...");
 
     awm->at("trees");
-    awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_trees_cb);
+    awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_trees_cb);
     awm->help_text("mg_trees.hlp");
     awm->create_button("TRANSFER_TREES", "Transfer Trees ...");
 
     awm->at("configs");
-    awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_configs_cb);
+    awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_configs_cb);
     awm->help_text("mg_configs.hlp");
     awm->create_button("TRANSFER_CONFIGS", "Transfer Configurations ...");
 
@@ -351,15 +378,11 @@ AW_window *create_merge_init_window(AW_root *awr)
     aws->update_option_menu();
 
     aws->callback(MG_start_cb);
-    aws->at("go");
-    aws->highlight();
-    aws->create_button("GO","GO","G");
 
     aws->button_length(0);
     aws->shadow_width(1);
     aws->at("icon");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"arb_merge.hlp");
-    aws->create_button("HELP_MERGE", "#merge/icon.bitmap");
+    aws->create_button("GO","#merge/icon_vertical.bitmap","G");
 
     return (AW_window *)aws;
 }
@@ -373,12 +396,13 @@ void MG_create_all_awars(AW_root *awr, AW_default aw_def,const char *fname_one, 
 
     MG_create_trees_awar(awr,aw_def);
     MG_create_config_awar(awr,aw_def);
-    MG_create_extendeds_var(awr,aw_def);
-    MG_create_alignment_vars(awr,aw_def);
-    MG_create_species_var(awr,aw_def);
+    MG_create_extendeds_awars(awr,aw_def);
+    MG_create_alignment_awars(awr,aw_def);
+    MG_create_species_awars(awr,aw_def);
     MG_create_gene_species_awars(awr, aw_def);
 
-    AWTC_create_rename_variables(awr, aw_def);
+    MG_create_rename_awars(awr, aw_def);
+    AWTC_create_rename_awars(awr, aw_def);
     AWT_create_db_browser_awars(awr, aw_def);
 }
 
