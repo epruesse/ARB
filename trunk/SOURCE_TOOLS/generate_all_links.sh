@@ -256,6 +256,8 @@ arbdb_symlink adGene.h &&
 arbdb_symlink adReference.c &&
 arbdb_symlink adRevCompl.c &&
 arbdb_symlink adTest.c &&
+arbdb_symlink ad_config.c &&
+arbdb_symlink ad_config.h &&
 arbdb_symlink ad_core.c &&
 arbdb_symlink ad_load.c &&
 arbdb_symlink ad_lpro.h &&
@@ -264,10 +266,9 @@ arbdb_symlink ad_save_load.c &&
 arbdb_symlink ad_t_lpro.h &&
 arbdb_symlink ad_t_prot.h &&
 arbdb_symlink adcomm.c &&
-arbdb_symlink ad_config.c &&
-arbdb_symlink ad_config.h &&
 arbdb_symlink adcompr.c &&
 arbdb_symlink adhash.c &&
+arbdb_symlink adhashtools.c &&
 arbdb_symlink adindex.c &&
 arbdb_symlink adlang1.c &&
 arbdb_symlink adlink.c &&
