@@ -27,6 +27,9 @@ functions.h: $(C_OBJECTS:.o=.c)
 .c.o:
 	$(ACC) $(cflags) $(AINCLUDES) -c -o $@ $<
 
+clean:
+	rm $(MAIN) $(C_OBJECTS)
+
 DEPENDS = $(C_OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile
