@@ -454,9 +454,30 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species, bool update_status) {
     return error;
 }
 
-GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
+char *AWTC_create_numbered_suffix(GB_HASH *species_name_hash, const char *shortname, GB_ERROR& warning) {
+    char *newshort = 0;
+    if (GBS_read_hash(species_name_hash, shortname)) {
+        int i;
+        newshort = (char *)GB_calloc(sizeof(char),strlen(shortname)+20);
+        for (i= 1 ; ; i++) {
+            sprintf(newshort, "%s.%i", shortname, i);
+            if (!GBS_read_hash(species_name_hash, newshort))break;
+        }
+
+        warning = "There are duplicated entries!!.\n"
+            "The duplicated entries contain a '.' character in field 'name'!\n"
+            "Please resolve this problem (see HELP in 'Generate new names' window)";
+    }
+    return newshort;
+}
+
+GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status, bool *isWarningPtr)
+// rename species according to name_server
+// 'isWarning' is set to true, in case of duplicates-warning
 {
-    GB_ERROR err = name_server.connect(gb_main);
+    GB_ERROR err       = name_server.connect(gb_main);
+    bool     isWarning = false;
+    
     if (!err) {
         err = GBT_begin_rename_session(gb_main,1);
         if (!err) {
@@ -510,22 +531,13 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
                     shrt = strdup(name);
                 }
                 if (!err) {
-                    if (GBS_read_hash(hash,shrt)) {
-                        char *newshrt;
-                        int i;
-                        newshrt = (char *)GB_calloc(sizeof(char),strlen(shrt)+20);
-                        for (i= 1 ; ; i++) {
-                            sprintf(newshrt,"%s.%i",shrt,i);
-                            if (!GBS_read_hash(hash,newshrt))break;
-                        }
-                        warning = "There are duplicated entries!!.\n"
-                            "The duplicated entries contain a '.' character in field 'name'!\n"
-                            "Please resolve this problem (see HELP in 'Generate new names' window)";
+                    char *newshrt = AWTC_create_numbered_suffix(hash, shrt, warning);
+                    if (newshrt) {
                         free(shrt);
                         shrt = newshrt;
                     }
-                    GBS_incr_hash(hash,shrt);
 
+                    GBS_incr_hash(hash,shrt);
                     err = GBT_rename_species(name, shrt, GB_TRUE);
                 }
 
@@ -548,10 +560,15 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status)
             GBS_free_hash(hash);
             free(ali_name);
 
-            if (!err) err = warning;
+            if (!err) {
+                err = warning;
+                if (warning) isWarning = true;
+            }
         }
         name_server.disconnect();
     }
+
+    if (isWarningPtr) *isWarningPtr = isWarning;
 
     return err;
 }
@@ -609,7 +626,7 @@ AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main)
     return (AW_window *)aws;
 }
 
-void AWTC_create_rename_variables(AW_root *root,AW_default db1){
+void AWTC_create_rename_awars(AW_root *root,AW_default db1){
     root->awar_int( AWT_RENAME_USE_ADVICE, 0  ,     db1);
     root->awar_int( AWT_RENAME_SAVE_DATA, 1  ,  db1);
 }
