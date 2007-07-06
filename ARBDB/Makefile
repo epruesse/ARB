@@ -131,6 +131,17 @@ adhash.o: adtune.h
 adhash.o: arb_assert.h
 adhash.o: arbdb.h
 
+adhashtools.o: ad_lpro.h
+adhashtools.o: ad_prot.h
+adhashtools.o: ad_t_lpro.h
+adhashtools.o: ad_t_prot.h
+adhashtools.o: adlmacros.h
+adhashtools.o: adlocal.h
+adhashtools.o: adtune.h
+adhashtools.o: arb_assert.h
+adhashtools.o: arbdb.h
+adhashtools.o: arbdbt.h
+
 adindex.o: ad_lpro.h
 adindex.o: ad_prot.h
 adindex.o: adlmacros.h

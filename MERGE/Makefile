@@ -155,6 +155,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_species.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+MG_species.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/awt.hxx
