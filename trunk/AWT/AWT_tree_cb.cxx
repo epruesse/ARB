@@ -249,7 +249,8 @@ void NT_mark_nontree_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_mark_mode)
         cd.hash = GBT_generate_marked_species_hash(ntw->gb_main); // because it only hashes marked species
     }
     else {
-        cd.hash = GBT_generate_species_hash(ntw->gb_main, 0); // otherwise we have to hash ALL species
+        cd.hash = GBT_generate_species_hash(ntw->gb_main, 1); // otherwise we have to hash ALL species
+        // Note: changed to ignore case (ralf 2007-07-06)
     }
 
     NT_remove_species_in_tree_from_hash(gtree->tree_root, cd.hash);
