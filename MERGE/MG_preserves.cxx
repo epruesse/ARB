@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_preserves.cxx                                       //
 //    Purpose   : find candidates for alignment preservation             //
-//    Time-stamp: <Fri Oct/01/2004 17:56 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Jul/06/2007 12:36 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -215,7 +215,7 @@ static void find_species_candidates(Candidates& candidates, const char **ali_nam
     aw_status(0.0);
 
     // collect names of all species in source database
-    GB_HASH *src_species = GBT_generate_species_hash(gb_merge, 0);
+    GB_HASH *src_species = GBT_generate_species_hash(gb_merge, 1); // Note: changed to ignore case (ralf 2007-07-06)
     long     src_count   = GBS_hash_count_elems(src_species);
     long     found       = 0;
     bool     aborted     = false;
