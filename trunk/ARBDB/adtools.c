@@ -2287,34 +2287,33 @@ GBDATA *GBT_find_species(GBDATA *gb_main,const char *name)
     return GB_get_father(gb_species_name);
 }
 
-/* species hashes */
+/* --------------------- */
+/*      count items      */
+/* --------------------- */
 
-void GBT_add_species_to_hash(GBDATA *gb_species, GB_HASH *species_hash) {
-    GBDATA     *gb_name = GB_find(gb_species, "name", 0, down_level);
-    const char *name;
-    
-    gb_assert(gb_name);
-    name = GB_read_char_pntr(gb_name);
-    GBS_write_hash(species_hash, name, (long)gb_species);
+long GBT_get_item_count(GBDATA *gb_main, const char *item_container_name) {
+    GBDATA *gb_item_data;
+    long    count = 0;
+
+    GB_push_transaction(gb_main);
+    gb_item_data = GB_find(gb_main, item_container_name, 0, down_level);
+    if (gb_item_data) count = GB_number_of_subentries(gb_item_data);
+    GB_pop_transaction(gb_main);
+
+    return count;
 }
 
-GB_HASH *GBT_create_species_hash(GBDATA *gb_main) {
-    GB_HASH *species_hash = GBS_create_hash(GBT_get_species_hash_size(gb_main), 1);
-    GBDATA  *gb_species;
-
-    for (gb_species = GBT_first_species(gb_main);
-         gb_species;
-         gb_species = GBT_next_species(gb_species))
-    {
-        GBT_add_species_to_hash(gb_species, species_hash);
-    }
-    
-    return species_hash;
+long GBT_get_species_count(GBDATA *gb_main) {
+    return GBT_get_item_count(gb_main, "species_data");
 }
 
-/* ---- */
+long GBT_get_SAI_count(GBDATA *gb_main) {
+    return GBT_get_item_count(gb_main, "extended_data");
+}
 
-    GBDATA *GBT_first_marked_extended(GBDATA *gb_extended_data)
+/* -------------------------------------------------------------------------------- */
+
+GBDATA *GBT_first_marked_extended(GBDATA *gb_extended_data)
 {
     GBDATA *gb_extended;
     for (   gb_extended = GB_find(gb_extended_data,"extended",0,down_level);
@@ -2891,67 +2890,6 @@ void GBT_message(GBDATA *gb_main, const char *msg) {
     GB_pop_transaction(gb_main);
 }
 
-long GBT_get_species_hash_size(GBDATA *gb_main) {
-    GBDATA *gb_species_data;
-    long    hash_size;
-
-    GB_push_transaction(gb_main);
-    gb_species_data = GB_find(gb_main, "species_data", 0, down_level);
-    hash_size       = 2*GB_number_of_subentries(gb_species_data); // hash size = 2 * number of species
-    GB_pop_transaction(gb_main);
-    
-    return hash_size;
-}
-
-GB_HASH *GBT_generate_species_hash(GBDATA *gb_main,int ignore_case)
-{
-    GB_HASH *hash = GBS_create_hash(GBT_get_species_hash_size(gb_main),ignore_case);
-    GBDATA *gb_species;
-    GBDATA *gb_name;
-    for (   gb_species = GBT_first_species(gb_main);
-            gb_species;
-            gb_species = GBT_next_species(gb_species))
-    {
-        gb_name = GB_find(gb_species,"name",0,down_level);
-        if (!gb_name) continue;
-        GBS_write_hash(hash,GB_read_char_pntr(gb_name),(long)gb_species);
-    }
-    return hash;
-}
-
-GB_HASH *GBT_generate_marked_species_hash(GBDATA *gb_main)
-{
-    GB_HASH *hash = GBS_create_hash(GBT_get_species_hash_size(gb_main),0);
-    GBDATA *gb_species;
-    GBDATA *gb_name;
-    for (   gb_species = GBT_first_marked_species(gb_main);
-            gb_species;
-            gb_species = GBT_next_marked_species(gb_species))
-    {
-        gb_name = GB_find(gb_species,"name",0,down_level);
-        if (!gb_name) continue;
-        GBS_write_hash(hash,GB_read_char_pntr(gb_name),(long)gb_species);
-    }
-    return hash;
-}
-
-GB_HASH *GBT_generate_SAI_hash(GBDATA *gb_main)
-{
-    GB_HASH *hash = GBS_create_hash(1000, 0);
-    GBDATA  *gb_ext;
-
-    for (gb_ext = GBT_first_SAI(gb_main);
-         gb_ext;
-         gb_ext = GBT_next_SAI(gb_ext))
-    {
-        GBDATA *gb_name = GB_find(gb_ext, "name", 0, down_level);
-        if (gb_name) {
-            GBS_write_hash(hash, GB_read_char_pntr(gb_name), (long)gb_ext);
-        }
-    }
-    return hash;
-}
-
 /********************************************************************************************
                 Rename one or many species (only one session at a time/ uses
                 commit abort transaction)
@@ -2989,7 +2927,8 @@ GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag)
             int hash_size = GBT_get_species_hash_size(gb_main);
 
             gbtrst.renamed_hash     = GBS_create_hash(hash_size, 0);
-            gbtrst.old_species_hash = GBT_generate_species_hash(gb_main, 0);
+            /* gbtrst.old_species_hash = GBT_generate_species_hash(gb_main, 0); */
+            gbtrst.old_species_hash = GBT_generate_species_hash(gb_main, 1);
         }
         gbtrst.all_flag = all_flag;
     }
