@@ -62,7 +62,7 @@ void MG_alignment_vars_callback(AW_root *aw_root,GBDATA *gbd, long ali_nr)
 }
 
 
-void MG_create_alignment_vars(AW_root *aw_root,AW_default aw_def)
+void MG_create_alignment_awars(AW_root *aw_root,AW_default aw_def)
 {
     aw_root->awar_string( AWAR_ALI1, "" ,   aw_def);
     aw_root->awar_string( AWAR_ALI2, "" ,   aw_def);

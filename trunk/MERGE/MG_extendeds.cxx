@@ -16,7 +16,7 @@
 #define AWAR_EX_NAME2 "tmp/merge2/extended_name"
 #define AWAR_EX_DEST2 "tmp/merge2/extended_dest"
 
-void MG_create_extendeds_var(AW_root *aw_root, AW_default aw_def)
+void MG_create_extendeds_awars(AW_root *aw_root, AW_default aw_def)
 {
     aw_root->awar_string( AWAR_EX_NAME1, "" ,   aw_def);
     aw_root->awar_string( AWAR_EX_DEST1, "" ,   aw_def);
