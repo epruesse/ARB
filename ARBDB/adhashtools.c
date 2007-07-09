@@ -2,7 +2,7 @@
 /*                                                                 */
 /*   File      : adhashtools.c                                     */
 /*   Purpose   : convenience functions for hashes                  */
-/*   Time-stamp: <Fri Jul/06/2007 12:08 MET Coder@ReallySoft.de>   */
+/*   Time-stamp: <Mon Jul/09/2007 14:05 MET Coder@ReallySoft.de>   */
 /*                                                                 */
 /*   Coded by Ralf Westram (coder@reallysoft.de) in July 2007      */
 /*   Institute of Microbiology (Technical University Munich)       */
@@ -14,12 +14,10 @@
 #include "adlocal.h"
 #include "arbdbt.h"
 
-static long items2hashsize(long estimated_entries) {
-    return 2*estimated_entries; // hash size = 2 * number of species
-}
+#define ITEMS2HASHSIZE(entries) (2*(entries)) /* hash size = 2 * number of species */
 
 long GBT_get_species_hash_size(GBDATA *gb_main) {
-    return items2hashsize(GBT_get_species_count(gb_main));
+    return ITEMS2HASHSIZE(GBT_get_species_count(gb_main));
 }
 
 void GBT_add_item_to_hash(GBDATA *gb_item, GB_HASH *item_hash) {
@@ -31,93 +29,45 @@ void GBT_add_item_to_hash(GBDATA *gb_item, GB_HASH *item_hash) {
     GBS_write_hash(item_hash, name, (long)gb_item);
 }
 
-static GB_HASH *create_species_hash(GBDATA *gb_main, long size) {
-    GB_HASH *species_hash = GBS_create_hash(size, 1);
-    GBDATA  *gb_species;
+typedef GBDATA *(*item_iterator)(GBDATA *);
 
-    for (gb_species = GBT_first_species(gb_main);
-         gb_species;
-         gb_species = GBT_next_species(gb_species))
-    {
-        GBT_add_item_to_hash(gb_species, species_hash);
+static GB_HASH *create_item_hash(long size, GBDATA *gb_start, item_iterator getFirst, item_iterator getNext) {
+    GB_HASH *item_hash = GBS_create_hash(size, 1);
+    GBDATA  *gb_item;
+
+    for (gb_item = getFirst(gb_start); gb_item; gb_item = getNext(gb_item)) {
+        GBT_add_item_to_hash(gb_item, item_hash);
     }
-    
-    return species_hash;
+
+    return item_hash;
 }
 
-GB_HASH *GBT_create_species_hash(GBDATA *gb_main) { /* = GBT_generate_species_hash(gb_main, 1) */
-    long size = GBT_get_species_hash_size(gb_main);
-    return create_species_hash(gb_main, size);
-}
-
-GB_HASH *GBT_create_species_hash_with_size(GBDATA *gb_main, long estimated_species) {
-    long hash_size = items2hashsize(estimated_species);
-    return create_species_hash(gb_main, hash_size);
-}
-
-#if defined(DEVEL_RALF)
-#warning parameter ignore_case is misleading. now all calls use 1. remove if no problems arise. 
-#endif /* DEVEL_RALF */
-
-GB_HASH *GBT_generate_species_hash(GBDATA *gb_main,int ignore_case)
+GB_HASH *GBT_create_species_hash(GBDATA *gb_main)
 {
-    GB_HASH *hash = GBS_create_hash(GBT_get_species_hash_size(gb_main),ignore_case);
-    GBDATA  *gb_species;
-    
-    for (gb_species = GBT_first_species(gb_main);
-         gb_species;
-         gb_species = GBT_next_species(gb_species))
-    {
-        GBT_add_item_to_hash(gb_species, hash);
-    }
-
-    return hash;
+    return create_item_hash(GBT_get_species_hash_size(gb_main),
+                            gb_main, GBT_first_species, GBT_next_species);
 }
 
-GB_HASH *GBT_generate_species_hash_sized(GBDATA *gb_main, long species_count)
+GB_HASH *GBT_create_species_hash_sized(GBDATA *gb_main, long species_count)
 {
-    GB_HASH *hash = GBS_create_hash(items2hashsize(species_count), 1);
-    GBDATA  *gb_species;
-    
-    for (gb_species = GBT_first_species(gb_main);
-         gb_species;
-         gb_species = GBT_next_species(gb_species))
-    {
-        GBT_add_item_to_hash(gb_species, hash);
-    }
-
-    return hash;
+    return create_item_hash(ITEMS2HASHSIZE(species_count),
+                            gb_main, GBT_first_species, GBT_next_species);
 }
 
-GB_HASH *GBT_generate_marked_species_hash(GBDATA *gb_main)
+GB_HASH *GBT_create_marked_species_hash(GBDATA *gb_main)
 {
-    GB_HASH *hash = GBS_create_hash(GBT_get_species_hash_size(gb_main),0);
-    GBDATA  *gb_species;
-    
-    for (gb_species = GBT_first_marked_species(gb_main);
-         gb_species;
-         gb_species = GBT_next_marked_species(gb_species))
-    {
-        GBT_add_item_to_hash(gb_species, hash);
-    }
-    
-    return hash;
+    return create_item_hash(GBT_get_species_hash_size(gb_main),
+                            gb_main, GBT_first_marked_species, GBT_next_marked_species);
 }
 
-GB_HASH *GBT_generate_SAI_hash(GBDATA *gb_main)
+GB_HASH *GBT_create_SAI_hash(GBDATA *gb_main)
 {
-    GB_HASH *hash = GBS_create_hash(1000, 0);
-    GBDATA  *gb_ext;
+    return create_item_hash(ITEMS2HASHSIZE(GBT_get_SAI_count(gb_main)),
+                            gb_main, GBT_first_SAI, GBT_next_SAI);
+}
 
-    for (gb_ext = GBT_first_SAI(gb_main);
-         gb_ext;
-         gb_ext = GBT_next_SAI(gb_ext))
-    {
-        GBDATA *gb_name = GB_find(gb_ext, "name", 0, down_level);
-        if (gb_name) {
-            GBS_write_hash(hash, GB_read_char_pntr(gb_name), (long)gb_ext);
-        }
-    }
-    return hash;
+GB_HASH *GBT_create_organism_hash(GBDATA *gb_main) {
+    return create_item_hash(ITEMS2HASHSIZE(GEN_get_organism_count(gb_main)),
+                            gb_main, GEN_first_organism, GEN_next_organism);
 }
 
