@@ -489,7 +489,7 @@ static void nt_add(AW_window * aww, AWT_canvas *ntw, int what, AP_BOOL quick, in
     }
     else
     {
-        hash = GBT_generate_marked_species_hash(gb_main);
+        hash = GBT_create_marked_species_hash(gb_main);
         if (!hash) error = GB_get_error();
     }
     GB_commit_transaction (gb_main);

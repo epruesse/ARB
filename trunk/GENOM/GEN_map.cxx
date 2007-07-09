@@ -1308,7 +1308,7 @@ static void mark_gene_species_using_current_alignment(AW_window */*aww*/, AW_CL 
 }
 static void mark_genes_of_marked_gene_species(AW_window */*aww*/, AW_CL, AW_CL) {
     GB_transaction  dummy(gb_main);
-    GB_HASH        *organism_hash = GEN_create_organism_hash(gb_main);
+    GB_HASH        *organism_hash = GBT_create_organism_hash(gb_main);
 
     for (GBDATA *gb_pseudo = GEN_first_pseudo_species(gb_main);
          gb_pseudo;

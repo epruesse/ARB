@@ -743,7 +743,7 @@ void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl){
     GB_transaction  dummy(gb_main);
     AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
     if (AWT_TREE(ntw)->tree_root){
-        GB_HASH *organism_hash = GEN_create_organism_hash(gb_main);
+        GB_HASH *organism_hash = GBT_create_organism_hash(gb_main);
         AWT_TREE(ntw)->tree_root->relink_tree(ntw->gb_main, relink_pseudo_species_to_organisms, organism_hash);
         AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
         AWT_TREE(ntw)->save(ntw->gb_main,0,0,0);
@@ -1119,7 +1119,7 @@ void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
 
     if (tree_names) {
         aw_openstatus("Deleting from trees");
-        GB_HASH *species_hash = GBT_generate_species_hash(gb_main, 1);
+        GB_HASH *species_hash = GBT_create_species_hash(gb_main);
 
         for (int t = 0; t<treeCount; t++) {
             GB_ERROR  error = 0;
