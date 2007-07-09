@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_preserves.cxx                                       //
 //    Purpose   : find candidates for alignment preservation             //
-//    Time-stamp: <Fri Jul/06/2007 12:36 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon Jul/09/2007 13:21 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -215,7 +215,7 @@ static void find_species_candidates(Candidates& candidates, const char **ali_nam
     aw_status(0.0);
 
     // collect names of all species in source database
-    GB_HASH *src_species = GBT_generate_species_hash(gb_merge, 1); // Note: changed to ignore case (ralf 2007-07-06)
+    GB_HASH *src_species = GBT_create_species_hash(gb_merge/*, 1*/); // Note: changed to ignore case (ralf 2007-07-06)
     long     src_count   = GBS_hash_count_elems(src_species);
     long     found       = 0;
     bool     aborted     = false;
@@ -257,7 +257,7 @@ static void find_SAI_candidates(Candidates& candidates, const char **ali_names) 
     aw_status(0.0);
 
     // collect names of all SAIs in source database
-    GB_HASH *src_SAIs  = GBT_generate_SAI_hash(gb_merge);
+    GB_HASH *src_SAIs  = GBT_create_SAI_hash(gb_merge);
     long     src_count = GBS_hash_count_elems(src_SAIs);
     long     found       = 0;
 

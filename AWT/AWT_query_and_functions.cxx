@@ -214,7 +214,7 @@ void awt_delete_species_in_list(void *dummy, struct adaqbsstruct *cbs)
     }
 }
 
-GB_HASH *awt_generate_species_hash(GBDATA *gb_main, char *key,int split)
+GB_HASH *awt_create_species_hash(GBDATA *gb_main, char *key,int split)
 {
     GB_HASH *hash = GBS_create_hash(GBT_get_species_hash_size(gb_main),1);
     GBDATA  *gb_species;
@@ -396,7 +396,7 @@ void awt_do_query(void *dummy, struct adaqbsstruct *cbs,AW_CL ext_query)
 
     if (cbs->gb_ref && ( ext_query == AWT_EXT_QUERY_COMPARE_LINES || ext_query == AWT_EXT_QUERY_COMPARE_WORDS)) {
         GB_push_transaction(cbs->gb_ref);
-        ref_hash = awt_generate_species_hash(cbs->gb_ref,first_key, ext_query == AWT_EXT_QUERY_COMPARE_WORDS);
+        ref_hash = awt_create_species_hash(cbs->gb_ref,first_key, ext_query == AWT_EXT_QUERY_COMPARE_WORDS);
     }
 
     for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);

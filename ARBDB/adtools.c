@@ -1427,7 +1427,7 @@ GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, GBDATA *gb_main, GB_BO
 */
 GB_ERROR GBT_link_tree(GBT_TREE *tree,GBDATA *gb_main,GB_BOOL show_status, int *zombies, int *duplicates)
 {
-    GB_HASH  *species_hash = GBT_generate_species_hash(gb_main, 1);
+    GB_HASH  *species_hash = GBT_create_species_hash(gb_main);
     GB_ERROR  error        = GBT_link_tree_using_species_hash(tree, gb_main, show_status, species_hash, zombies, duplicates);
 
     GBS_free_hash(species_hash);
@@ -2927,8 +2927,7 @@ GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag)
             int hash_size = GBT_get_species_hash_size(gb_main);
 
             gbtrst.renamed_hash     = GBS_create_hash(hash_size, 0);
-            /* gbtrst.old_species_hash = GBT_generate_species_hash(gb_main, 0); */
-            gbtrst.old_species_hash = GBT_generate_species_hash(gb_main, 1);
+            gbtrst.old_species_hash = GBT_create_species_hash(gb_main);
         }
         gbtrst.all_flag = all_flag;
     }

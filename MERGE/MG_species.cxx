@@ -514,7 +514,7 @@ void MG_transfer_species_list(AW_window *aww)
     GB_HASH   *error_suppressor     = GBS_create_hash(50, 1);
     GB_HASH   *source_species_hash  = GBT_create_species_hash(gb_merge);
     GB_HASH   *dest_species_hash    = GBT_create_species_hash(gb_dest);
-    GB_HASH   *source_organism_hash = is_genome_db ? GEN_create_organism_hash(gb_merge) : 0;
+    GB_HASH   *source_organism_hash = is_genome_db ? GBT_create_organism_hash(gb_merge) : 0;
     MG_remaps  rm(gb_merge,gb_dest,aww->get_root());
 
     GBDATA *gb_species1;
@@ -1109,7 +1109,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
 
         // create hash containing all species from gb_dest,
         // but sized to hold all species from both DBs: 
-        D_species_hash = GBT_generate_species_hash_sized(gb_dest, M_species_count+D_species_count);
+        D_species_hash = GBT_create_species_hash_sized(gb_dest, M_species_count+D_species_count);
     }
 
     for (M_species = GB_find(M_species_data,"species",0,down_level);
