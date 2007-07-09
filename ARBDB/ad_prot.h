@@ -410,8 +410,6 @@ GBDATA *GEN_read_pseudo_species_from_hash P_((GB_HASH *pseudo_hash, const char *
 void GEN_add_pseudo_species_to_hash P_((GBDATA *gb_pseudo, GB_HASH *pseudo_hash));
 GB_HASH *GEN_create_pseudo_species_hash P_((GBDATA *gb_main, int additionalSize));
 GBDATA *GEN_find_pseudo_species P_((GBDATA *gb_main, const char *organism_name, const char *gene_name, GB_HASH *pseudo_hash));
-void GEN_add_organism_to_hash P_((GBDATA *gb_organism, GB_HASH *organism_hash));
-GB_HASH *GEN_create_organism_hash P_((GBDATA *gb_main));
 GBDATA *GEN_find_origin_organism P_((GBDATA *gb_pseudo, GB_HASH *organism_hash));
 GBDATA *GEN_find_origin_gene P_((GBDATA *gb_pseudo, GB_HASH *organism_hash));
 GBDATA *GEN_first_pseudo_species P_((GBDATA *gb_main));
@@ -423,6 +421,7 @@ GB_BOOL GEN_is_organism P_((GBDATA *gb_species));
 GBDATA *GEN_find_organism P_((GBDATA *gb_main, const char *name));
 GBDATA *GEN_first_organism P_((GBDATA *gb_main));
 GBDATA *GEN_next_organism P_((GBDATA *gb_organism));
+long GEN_get_organism_count P_((GBDATA *gb_main));
 GBDATA *GEN_first_marked_organism P_((GBDATA *gb_main));
 GBDATA *GEN_next_marked_organism P_((GBDATA *gb_organism));
 
@@ -438,11 +437,10 @@ char *GBS_ptserver_id_to_choice P_((int i, int showBuild));
 long GBT_get_species_hash_size P_((GBDATA *gb_main));
 void GBT_add_item_to_hash P_((GBDATA *gb_item, GB_HASH *item_hash));
 GB_HASH *GBT_create_species_hash P_((GBDATA *gb_main));
-GB_HASH *GBT_create_species_hash_with_size P_((GBDATA *gb_main, long estimated_species));
-GB_HASH *GBT_generate_species_hash P_((GBDATA *gb_main, int ignore_case));
-GB_HASH *GBT_generate_species_hash_sized P_((GBDATA *gb_main, long species_count));
-GB_HASH *GBT_generate_marked_species_hash P_((GBDATA *gb_main));
-GB_HASH *GBT_generate_SAI_hash P_((GBDATA *gb_main));
+GB_HASH *GBT_create_species_hash_sized P_((GBDATA *gb_main, long species_count));
+GB_HASH *GBT_create_marked_species_hash P_((GBDATA *gb_main));
+GB_HASH *GBT_create_SAI_hash P_((GBDATA *gb_main));
+GB_HASH *GBT_create_organism_hash P_((GBDATA *gb_main));
 
 #ifdef __cplusplus
 }
