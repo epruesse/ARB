@@ -8,7 +8,6 @@ ARB_PROTO_2_XSUB=$(ARBHOME)/bin/arb_proto_2_xsub
 HEADERS = \
 	$(ARBDB)/ad_prot.h \
 	$(ARBDB)/ad_t_prot.h \
-	$(ARBDB)/adGene.h \
 
 ARB_SO=blib/arch/auto/ARB/ARB.so
 
