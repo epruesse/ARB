@@ -1403,14 +1403,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             }
             awm->close_sub_menu();
             AWMIMT("seq_concat",    "Concatenate Sequences/Alignments", "C", "concatenate_align.hlp", AWM_EXP, AW_POPUP, (AW_CL)NT_createConcatenationWindow,     (AW_CL)ntw );
-            AWMIMT("track_changes", "Track alignment changes",          "T", "track_ali_changes.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_trackAliChanges_window, 0)     ;
+            AWMIMT("track_changes", "Track alignment changes",          "k", "track_ali_changes.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_trackAliChanges_window, 0)     ;
             SEP________________________SEP();
 
             AWMIMT("dna_2_pro", "Perform translation",                     "t", "translate_dna_2_pro.hlp", AWM_PRO, AW_POPUP, (AW_CL)NT_create_dna_2_pro_window, 0      );
             AWMIMT("arb_dist",  "Compare sequences using Distance Matrix", "D", "dist.hlp",                AWM_SEQ, (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0);
             SEP________________________SEP();
 
-            AWMIMT("seq_quality",   "Check Sequence Quality", "",  "seq_quality.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)SQ_create_seq_quality_window,   0)     ;
+            AWMIMT("seq_quality",   "Check Sequence Quality", "Q", "seq_quality.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)SQ_create_seq_quality_window,   0)     ;
             AWMIMT("chimere_check", "Chimere Check",          "m", "check_quality.hlp", AWM_SEQ2, AW_POPUP, (AW_CL)st_create_quality_check_window, (AW_CL)gb_main);
 
             SEP________________________SEP();
