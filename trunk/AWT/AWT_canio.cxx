@@ -102,7 +102,7 @@ AW_window * AWT_create_export_window(AW_root *awr, AWT_canvas *ntw){
     if (aws) return (AW_window *)aws;
 
     AW_default def = AW_ROOT_DEFAULT;
-    awr->awar_string(AWAR_PRINT_TREE_ORIENTATION, "", def);
+    awr->awar_int(AWAR_PRINT_TREE_LANDSCAPE, 0, def);
     awr->awar_int(AWAR_PRINT_TREE_MAGNIFICATION, 100, def);
     awr->awar_int(AWAR_PRINT_TREE_CLIP, 0, def);
     awr->awar_int(AWAR_PRINT_TREE_HANDLES, 1, def);
@@ -208,11 +208,12 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw)
     GB_ERROR error = 0;
 
 
-    char   *orientation   = awr->awar(AWAR_PRINT_TREE_ORIENTATION)->read_string();
-    double  magnification = awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->read_int() * 0.01;
-    long    what          = awr->awar(AWAR_PRINT_TREE_CLIP)->read_int();
-    long    handles       = awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int();
-    int     use_color     = awr->awar(AWAR_PRINT_TREE_COLOR)->read_int();
+    bool   landscape     = awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->read_int();
+    bool   useOverlap    = awr->awar(AWAR_PRINT_TREE_OVERLAP)->read_int();
+    double magnification = awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->read_int() * 0.01;
+    long   what          = awr->awar(AWAR_PRINT_TREE_CLIP)->read_int();
+    long   handles       = awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int();
+    int    use_color     = awr->awar(AWAR_PRINT_TREE_COLOR)->read_int();
 
     char sys[2400];
     char *xfig = GBS_eval_env("/tmp/arb_print_$(USER)_$(ARB_PID).xfig");
@@ -234,8 +235,14 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw)
         }
         else {
             fclose(out);
-            //          sprintf(sys, "fig2dev -L ps -P -m %f %s %s %s", magnification, orientation, xfig, dest);
-            sprintf(sys, "fig2dev -L ps -M -m %f %s %s %s", magnification, orientation, xfig, dest);
+            sprintf(sys,
+                    "fig2dev -L ps -M %s -m %f %s %s %s",
+                    (useOverlap ? "-O" : ""), 
+                    magnification,
+                    (landscape ? "-l 0" : "-p 0"),
+                    xfig,
+                    dest);
+
         }
     }
 
@@ -283,6 +290,9 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw)
         ntw->tree_disp->show(device);
         device->close();
         aw_status("Converting to Postscript");
+#if defined(DEBUG)
+        printf("convert command: '%s'\n", sys);
+#endif // DEBUG
         if (system(sys)){
             error = GB_export_error("System error occured while running '%s'", sys);
         }
@@ -317,14 +327,13 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw)
 
     free(xfig);
     free(dest);
-    free(orientation);
     aw_closestatus();
 
     if (error) aw_message(error);
 }
 
 
-void awt_print_tree_check_size(AW_window *, AW_CL cl_ntw) {
+static void awt_print_tree_check_size(void *, AW_CL cl_ntw) {
     AWT_canvas     *ntw  = (AWT_canvas*)cl_ntw;
     GB_transaction  dummy2(ntw->gb_main);
     AW_world        size;
@@ -346,98 +355,176 @@ void awt_print_tree_check_size(AW_window *, AW_CL cl_ntw) {
     ntw->aww->get_root()->awar(AWAR_PRINT_TREE_GSIZEY)->write_float((size.b-size.t + 30)/80);
 }
 
-void awt_page_size_check_cb(void *dummy, AW_root *awr) {
-    AWUSE(dummy);
-    char   *orientation = awr->awar(AWAR_PRINT_TREE_ORIENTATION)->read_string();
-    double  px          = awr->awar(AWAR_PRINT_TREE_PSIZEX)->read_float();
-    double  py          = awr->awar(AWAR_PRINT_TREE_PSIZEY)->read_float();
-    int     swap        = 0;
+inline int xy2pages(double sx, double sy) {
+    return (int(sx+0.99)*int(sy+0.99));
+}
 
-    if (strlen(orientation)){   // Landscape
-        if (px < py) swap = 1;
-    }else{
-        if (px > py) swap = 1;
-    }
-    if (swap) {
+void awt_page_size_check_cb(AW_root *awr) {
+    bool   landscape = awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->read_int();
+    double px        = awr->awar(AWAR_PRINT_TREE_PSIZEX)->read_float();
+    double py        = awr->awar(AWAR_PRINT_TREE_PSIZEY)->read_float();
+
+    if (landscape != (px>py)) {
         awr->awar(AWAR_PRINT_TREE_PSIZEX)->write_float(py);   // recalls this function
         awr->awar(AWAR_PRINT_TREE_PSIZEY)->write_float(px);
         return;
     }
+
     long   magnification = awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->read_int();
     double gx            = awr->awar(AWAR_PRINT_TREE_GSIZEX)->read_float();
     double gy            = awr->awar(AWAR_PRINT_TREE_GSIZEY)->read_float();
 
-    awr->awar(AWAR_PRINT_TREE_SIZEX)->write_float(gx * magnification / 100 / px);
-    awr->awar(AWAR_PRINT_TREE_SIZEY)->write_float(gy * magnification / 100 / py);
+    double ox = (gx*magnification)/100; // resulting size of output in inches
+    double oy = (gy*magnification)/100;
 
-    free(orientation);
+    double sx = 0;              // resulting pages
+    double sy = 0;
+
+    bool useOverlap = awr->awar(AWAR_PRINT_TREE_OVERLAP)->read_int();
+    if (useOverlap) {
+        double overlapAmount = awr->awar(AWAR_PRINT_TREE_OVERLAP_AMOUNT)->read_float();
+
+        if (overlapAmount >= px || overlapAmount >= py) {
+            aw_message("Overlap amount bigger than paper size. Please fix!");
+        }
+        else {
+            while (ox>px) { ox  = ox-px+overlapAmount; sx += 1.0; }
+            while (oy>py) { oy = oy-py+overlapAmount; sy += 1.0; }
+            sx += ox/px;
+            sy += oy/py;
+        }
+    }
+    else {
+        sx = ox/px;
+        sy = oy/py;
+    }
+
+    awr->awar(AWAR_PRINT_TREE_SIZEX)->write_float(sx);
+    awr->awar(AWAR_PRINT_TREE_SIZEY)->write_float(sy);
+
+    awr->awar(AWAR_PRINT_TREE_PAGES)->write_int(xy2pages(sx, sy));
 }
 
-// called when resulting pages (x) were changed by users
-void awt_calc_mag_from_psizex(AW_window *aww) {
-    AW_root *awr = aww->get_root();
-    double   p   = awr->awar(AWAR_PRINT_TREE_PSIZEX)->read_float();
-    double   g   = awr->awar(AWAR_PRINT_TREE_GSIZEX)->read_float();
-    double   s   = awr->awar(AWAR_PRINT_TREE_SIZEX)->read_float();
+static long calc_mag_from_psize(AW_root *awr, double papersize, double gfxsize, double wantedpages) {
+    bool   useOverlap = awr->awar(AWAR_PRINT_TREE_OVERLAP)->read_int();
+    long   mag        = -1;
+    double usableSize = 0;
 
-    awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->write_int((long)(s * p * 100 / g));
-}
+    if (useOverlap) {
+        double overlapAmount = awr->awar(AWAR_PRINT_TREE_OVERLAP_AMOUNT)->read_float();
+        if (wantedpages>1.0) {
+            while (wantedpages>1.0) {
+                usableSize  += papersize-overlapAmount;
+                wantedpages -= 1.0;
+            }
+            if (usableSize<0.1) aw_message("Usable size very low. Wrong overlap amount?");
+        }
+        usableSize += papersize * wantedpages; // add (partial) page (dont subtract overlapAmount)
+    }
+    else {
+        usableSize = wantedpages*papersize;
+    }
 
-// called when resulting pages (y) were changed by users
-void awt_calc_mag_from_psizey(AW_window *aww) {
-    AW_root *awr = aww->get_root();
-    double   p   = awr->awar(AWAR_PRINT_TREE_PSIZEY)->read_float();
-    double   g   = awr->awar(AWAR_PRINT_TREE_GSIZEY)->read_float();
-    double   s   = awr->awar(AWAR_PRINT_TREE_SIZEY)->read_float();
-
-    awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->write_int((long)(s * p * 100 / g));
-}
-
-
-
-void awt_calc_best_fit(AW_window *aww) {
-    const char *best_orientation    = 0;
-    const char *best_zoom_awar_name = 0;
-    int         best_magnification  = 0;
-    AW_root    *awr                 = aww->get_root();
-
-    for (int o = 0; o <= 1; ++o) {
-        const char *orientation = o ? "-l 0" : ""; // Landscape or Portrait
-        awr->awar(AWAR_PRINT_TREE_ORIENTATION)->write_string(orientation); // set orientation (calls awt_page_size_check_cb)
-
-        for (int xy = 0; xy <= 1; ++xy) {
-            const char *awar_name  = xy == 0 ? AWAR_PRINT_TREE_SIZEX : AWAR_PRINT_TREE_SIZEY;
-            awr->awar(awar_name)->write_float(1.0); // set zoom (x or y)
-
-            // calculate magnification :
-            if (xy == 0) awt_calc_mag_from_psizex(aww);
-            else awt_calc_mag_from_psizey(aww);
-
-            int    magnification = awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->read_int(); // read calculated magnification
-            double sx            = awr->awar(AWAR_PRINT_TREE_SIZEX)->read_float();
-            double sy            = awr->awar(AWAR_PRINT_TREE_SIZEY)->read_float();
+    mag = (long)(usableSize*100/gfxsize);
 
 #if defined(DEBUG)
-            fprintf(stderr, "sx=%f sy=%f mag=%i awar_name=%s orientation='%s'\n", sx, sy, magnification, awar_name, orientation);
+    fprintf(stderr, "usableSize=%f mag=%li\n", usableSize, mag);
 #endif // DEBUG
 
-            if (sx <= 1.0 && sy <= 1.0 && magnification>best_magnification) { // yes -- fits on 1 page and is best result yet
-                best_magnification  = magnification;
-                best_orientation    = orientation;
-                best_zoom_awar_name = awar_name;
+    return mag;
+}
+
+// called when resulting pages x-factor was changed by users
+void awt_calc_mag_from_psizex(AW_window *aww) {
+    AW_root *awr         = aww->get_root();
+    double   papersize   = awr->awar(AWAR_PRINT_TREE_PSIZEX)->read_float();
+    double   gfxsize     = awr->awar(AWAR_PRINT_TREE_GSIZEX)->read_float();
+    double   wantedpages = awr->awar(AWAR_PRINT_TREE_SIZEX)->read_float();
+    long     mag         = calc_mag_from_psize(awr, papersize, gfxsize, wantedpages);
+
+    awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->write_int(mag);
+}
+
+// called when resulting pages y-factor was changed by users
+void awt_calc_mag_from_psizey(AW_window *aww) {
+    AW_root *awr         = aww->get_root();
+    double   papersize   = awr->awar(AWAR_PRINT_TREE_PSIZEY)->read_float();
+    double   gfxsize     = awr->awar(AWAR_PRINT_TREE_GSIZEY)->read_float();
+    double   wantedpages = awr->awar(AWAR_PRINT_TREE_SIZEY)->read_float();
+    long     mag         = calc_mag_from_psize(awr, papersize, gfxsize, wantedpages);
+
+    awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->write_int(mag);
+}
+
+void awt_calc_best_fit(AW_window *aww) {
+    int         best_orientation    = -1;
+    const char *best_zoom_awar_name = 0;
+    float       best_zoom           = 0;
+    int         best_magnification  = 0;
+    int         best_pages          = 0;
+    AW_root    *awr                 = aww->get_root();
+    int         wanted_pages        = awr->awar(AWAR_PRINT_TREE_PAGES)->read_int();
+
+    for (int o = 0; o <= 1; ++o) {
+        awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->write_int(o); // set orientation (calls awt_page_size_check_cb)
+
+        for (int xy = 0; xy <= 1; ++xy) {
+            const char *awar_name = xy == 0 ? AWAR_PRINT_TREE_SIZEX : AWAR_PRINT_TREE_SIZEY;
+
+            for (int pcount = 1; pcount <= wanted_pages; pcount++) {
+                double zoom = pcount*1.0;
+                awr->awar(awar_name)->write_float(zoom); // set zoom (x or y)
+
+                // calculate magnification :
+                if (xy == 0) awt_calc_mag_from_psizex(aww);
+                else awt_calc_mag_from_psizey(aww);
+
+                int    magnification = awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->read_int(); // read calculated magnification
+                double sx            = awr->awar(AWAR_PRINT_TREE_SIZEX)->read_float();
+                double sy            = awr->awar(AWAR_PRINT_TREE_SIZEY)->read_float();
+                int    pages         = xy2pages(sx, sy);
+
+                if (pages>wanted_pages) break; // pcount-loop
+
+#if defined(DEBUG)
+                fprintf(stderr, "pages=%i sx=%f sy=%f mag=%i awar_name=%s landscape='%i'",
+                        pages, sx, sy, magnification, awar_name, o);
+#endif // DEBUG
+
+                if (pages <= wanted_pages && pages >= best_pages && magnification>best_magnification) {
+                    // fits on wanted_pages and is best result yet
+                    best_magnification  = magnification;
+                    best_orientation    = o;
+                    best_zoom_awar_name = awar_name;
+                    best_zoom           = zoom;
+                    best_pages          = pages;
+#if defined(DEBUG)
+                    fprintf(stderr, " [best yet]");
+#endif // DEBUG
+                }
+#if defined(DEBUG)
+                fprintf(stderr, "\n");
+#endif // DEBUG
             }
         }
     }
 
-    if (best_orientation) {
+    if (best_orientation != -1) {
         awt_assert(best_zoom_awar_name);
 
         // take the best found values :
-        awr->awar(AWAR_PRINT_TREE_ORIENTATION)->write_string(best_orientation);
-        awr->awar(best_zoom_awar_name)->write_float(1.0);
+        awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->write_int(best_orientation);
+        awr->awar(best_zoom_awar_name)->write_float(best_zoom);
+        awr->awar(AWAR_PRINT_TREE_PAGES)->write_int(best_pages);
+        awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->write_int(best_magnification);
+
+        if (best_pages != wanted_pages) {
+            aw_message(GBS_global_string("That didn't fit on %i page(s) - using %i page(s)",
+                                         wanted_pages, best_pages));
+        }
     }
     else {
-        aw_message("That won't fit on 1 page -- whyever?!");
+        aw_message(GBS_global_string("That didn't fit on %i page(s)", wanted_pages));
     }
 }
 
@@ -452,10 +539,13 @@ void AWT_create_print_window(AW_window *parent_win, AWT_canvas *ntw){
     }
 
     AW_default def = AW_ROOT_DEFAULT;
-    awr->awar_string(AWAR_PRINT_TREE_ORIENTATION, "", def);
+    awr->awar_int(AWAR_PRINT_TREE_LANDSCAPE, 0, def);
     awr->awar_int(AWAR_PRINT_TREE_MAGNIFICATION, 100, def);
     awr->awar_int(AWAR_PRINT_TREE_CLIP, 0, def);
     awr->awar_int(AWAR_PRINT_TREE_HANDLES, 1, def);
+    awr->awar_int(AWAR_PRINT_TREE_PAGES, 1, def);
+    awr->awar_int(AWAR_PRINT_TREE_OVERLAP, 1, def);
+    awr->awar_float(AWAR_PRINT_TREE_OVERLAP_AMOUNT, 0.82, def);
     awr->awar_int(AWAR_PRINT_TREE_COLOR, 1, def);
 
     awr->awar_string(AWAR_PRINT_TREE_FILE_NAME, "print.ps", def);
@@ -463,9 +553,10 @@ void AWT_create_print_window(AW_window *parent_win, AWT_canvas *ntw){
     awr->awar_float(AWAR_PRINT_TREE_GSIZEX);
     awr->awar_float(AWAR_PRINT_TREE_GSIZEY);
 
+    // default paper size (A4 =  8.27*11.69)
+    // using 'preview' determined the following values (fitting 1 page!):
     awr->awar_float(AWAR_PRINT_TREE_PSIZEX, 7.5);
-    awr->awar_float(AWAR_PRINT_TREE_PSIZEY, 9.5);
-
+    awr->awar_float(AWAR_PRINT_TREE_PSIZEY, 10.5);
 
     awr->awar_float(AWAR_PRINT_TREE_SIZEX);
     awr->awar_float(AWAR_PRINT_TREE_SIZEY);
@@ -487,14 +578,22 @@ void AWT_create_print_window(AW_window *parent_win, AWT_canvas *ntw){
 
     awt_print_tree_check_size(0, (AW_CL)ntw);
 
-    awr->awar(AWAR_PRINT_TREE_CLIP)     ->add_callback((AW_RCB1)awt_print_tree_check_size, (AW_CL)ntw);
-    awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)    ->add_callback((AW_RCB1)awt_page_size_check_cb, (AW_CL)awr);
-    awr->awar(AWAR_PRINT_TREE_ORIENTATION)  ->add_callback((AW_RCB1)awt_page_size_check_cb, (AW_CL)awr);
-    awr->awar(AWAR_PRINT_TREE_PSIZEX) ->add_callback((AW_RCB1)awt_page_size_check_cb, (AW_CL)awr);
-    awr->awar(AWAR_PRINT_TREE_PSIZEY) ->add_callback((AW_RCB1)awt_page_size_check_cb, (AW_CL)awr);
-    awr->awar(AWAR_PRINT_TREE_GSIZEX) ->add_callback((AW_RCB1)awt_page_size_check_cb, (AW_CL)awr);
-    awr->awar(AWAR_PRINT_TREE_GSIZEY) ->add_callback((AW_RCB1)awt_page_size_check_cb, (AW_CL)awr);
-    awt_page_size_check_cb(0, awr);
+    awr->awar(AWAR_PRINT_TREE_CLIP)->add_callback((AW_RCB1)awt_print_tree_check_size, (AW_CL)ntw);
+
+    { // add callbacks for page recalculation
+        const char *checked_awars[] = {
+            AWAR_PRINT_TREE_MAGNIFICATION, AWAR_PRINT_TREE_LANDSCAPE,
+            AWAR_PRINT_TREE_OVERLAP,       AWAR_PRINT_TREE_OVERLAP_AMOUNT,
+            AWAR_PRINT_TREE_PSIZEX,        AWAR_PRINT_TREE_PSIZEY,
+            AWAR_PRINT_TREE_GSIZEX,        AWAR_PRINT_TREE_GSIZEY,
+            0
+        };
+        for (int ca = 0; checked_awars[ca]; ca++) {
+            awr->awar(checked_awars[ca])->add_callback(awt_page_size_check_cb);
+        }
+    }
+
+    awt_page_size_check_cb(awr);
 
     aws = new AW_window_simple;
     aws->init(awr, "PRINT_CANVAS", "PRINT GRAPHIC");
@@ -508,9 +607,9 @@ void AWT_create_print_window(AW_window *parent_win, AWT_canvas *ntw){
 
 
     aws->at("orientation");
-    aws->create_toggle_field(AWAR_PRINT_TREE_ORIENTATION, 1);
-    aws->insert_toggle("#print/landscape.bitmap", "L", "-l 0");
-    aws->insert_toggle("#print/portrait.bitmap", "P", "");
+    aws->create_toggle_field(AWAR_PRINT_TREE_LANDSCAPE, 1);
+    aws->insert_toggle("#print/landscape.bitmap", "L", 1);
+    aws->insert_toggle("#print/portrait.bitmap",  "P", 0);
     aws->update_toggle_field();
     aws->label_length(15);
 
@@ -552,7 +651,16 @@ void AWT_create_print_window(AW_window *parent_win, AWT_canvas *ntw){
 
     aws->at("best_fit");
     aws->callback(awt_calc_best_fit);
-    aws->create_autosize_button(0, "Fit on page");
+    aws->create_autosize_button(0, "Fit on");
+
+    aws->at("pages");
+    aws->create_input_field(AWAR_PRINT_TREE_PAGES, 3);
+
+    aws->at("overlap");
+    aws->create_toggle(AWAR_PRINT_TREE_OVERLAP);
+
+    aws->at("amount");
+    aws->create_input_field(AWAR_PRINT_TREE_OVERLAP_AMOUNT, 4);
 
     aws->at("printto");
     aws->label_length(12);
@@ -579,7 +687,7 @@ void AWT_create_print_window(AW_window *parent_win, AWT_canvas *ntw){
     aws->button_length(0);
 
     aws->at("getsize");
-    aws->callback(awt_print_tree_check_size, (AW_CL)ntw);
+    aws->callback((AW_CB1)awt_print_tree_check_size, (AW_CL)ntw);
     aws->create_button(0, "Get Graphic Size");
 
 
