@@ -28,6 +28,16 @@ DESCRIPTION	Multi Page Printer
 
 		Paper Size:	X * Y inches
 
+                                Popular paper sizes in portrait mode (in inch):
+
+                                        A4           8.27 * 11.69
+                                        A3          11.69 * 16.54
+                                        Letter       8    * 11.5
+
+                                You have to specify the size w/o the border used on your
+                                system. For A4 7.5*10.5 is a value working for us - use
+                                preview to figure out values fitting your configuration.
+
 		Orientation:	Landscape or Portrait mode
 
 		Pages:		X * Y Number of resulting pages
@@ -36,12 +46,19 @@ DESCRIPTION	Multi Page Printer
 				magnification will be adjusted to fit
 				the graphic into the number of pages.
 
-                Fit to page:    Tests how to fit the printout best onto 1 page
-                                (sets 'Orientation' and 'Pages')
+                Fit to pages:   Tests how to fit the printout best onto a given number of pages
+                                (sets 'Orientation' and 'Magnification')
 
 		Destination:	Printer: Use print command to print
 				File: Use File Name as destination file name
 				Preview: Print to file and show using gv (ghostview)
+
+                Overlap:        If checked, the printed pages will "slightly" overlap.
+
+                                Note: ARB cannot influence the size of the overlap-region (this
+                                      seems to be hardcoded in fig2dev), so you may have to
+                                      change the default to the size used on your system.
+                                
 
 NOTES           The default printer used by ARB can be defined by setting the
                 environment variable PRINTER to your printer name.
