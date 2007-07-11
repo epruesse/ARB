@@ -159,22 +159,25 @@ void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
 void AWT_expose_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL cl2);
 void AWT_resize_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
 
-#define AWAR_PRINT_TREE               "NT/print/"
-#define AWAR_PRINT_TREE_ORIENTATION   AWAR_PRINT_TREE "orientation"
-#define AWAR_PRINT_TREE_MAGNIFICATION AWAR_PRINT_TREE "magnification"
-#define AWAR_PRINT_TREE_CLIP          AWAR_PRINT_TREE "clip"
-#define AWAR_PRINT_TREE_HANDLES       AWAR_PRINT_TREE "handles"
-#define AWAR_PRINT_TREE_COLOR         AWAR_PRINT_TREE "color"
-#define AWAR_PRINT_TREE_DEST          AWAR_PRINT_TREE "dest"
-#define AWAR_PRINT_TREE_PRINTER       AWAR_PRINT_TREE "printer"
+#define AWAR_PRINT_TREE                "NT/print/"
+#define AWAR_PRINT_TREE_LANDSCAPE      AWAR_PRINT_TREE "landscape"
+#define AWAR_PRINT_TREE_MAGNIFICATION  AWAR_PRINT_TREE "magnification"
+#define AWAR_PRINT_TREE_CLIP           AWAR_PRINT_TREE "clip"
+#define AWAR_PRINT_TREE_HANDLES        AWAR_PRINT_TREE "handles"
+#define AWAR_PRINT_TREE_COLOR          AWAR_PRINT_TREE "color"
+#define AWAR_PRINT_TREE_DEST           AWAR_PRINT_TREE "dest"
+#define AWAR_PRINT_TREE_PRINTER        AWAR_PRINT_TREE "printer"
+#define AWAR_PRINT_TREE_OVERLAP        AWAR_PRINT_TREE "overlap"
+#define AWAR_PRINT_TREE_OVERLAP_AMOUNT AWAR_PRINT_TREE "amount"
 
 #define AWAR_PRINT_TREE_TMP    "tmp/" AWAR_PRINT_TREE
 #define AWAR_PRINT_TREE_GSIZEX AWAR_PRINT_TREE_TMP "gsizex" // graphic size
 #define AWAR_PRINT_TREE_GSIZEY AWAR_PRINT_TREE_TMP "gsizey"
 #define AWAR_PRINT_TREE_PSIZEX AWAR_PRINT_TREE_TMP "psizex" // print size
 #define AWAR_PRINT_TREE_PSIZEY AWAR_PRINT_TREE_TMP "psizey"
-#define AWAR_PRINT_TREE_SIZEX  AWAR_PRINT_TREE_TMP "sizex"
+#define AWAR_PRINT_TREE_SIZEX  AWAR_PRINT_TREE_TMP "sizex" // size in pages
 #define AWAR_PRINT_TREE_SIZEY  AWAR_PRINT_TREE_TMP "sizey"
+#define AWAR_PRINT_TREE_PAGES  AWAR_PRINT_TREE_TMP "pages"
 
 #define AWAR_PRINT_TREE_FILE_BASE   AWAR_PRINT_TREE_TMP "file"
 #define AWAR_PRINT_TREE_FILE_NAME   AWAR_PRINT_TREE_FILE_BASE "/file_name"
