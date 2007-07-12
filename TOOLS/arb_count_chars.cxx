@@ -81,29 +81,23 @@ int main(int argc, char **argv){
 	}
     }
 
-    char *result_low = (char *)calloc(sizeof(char), alignment_len + 1);
-    char *result_high = (char *)calloc(sizeof(char), alignment_len + 1);
-    {				// build result string
-	for (i=0;i<alignment_len;i++){
-	    int sum = 0;
-	    for (int l = 0; l < MAXLETTER; l++){
-		if (counters[l][i]>0) sum++;
-	    }
-	    result_low[i] = '0' + (sum % 10);
-	    result_high[i] = '0' + (sum / 10);
-	}
+    char *result = (char *)calloc(sizeof(char), alignment_len + 1);
+    for (i=0; i<alignment_len; i++) { 
+        int sum = 0;
+        for (int l = 0; l < MAXLETTER; l++){
+            if (counters[l][i]>0) sum++;
+        }
+        result[i] = sum<10 ? '0'+sum : 'A'-10+sum;
     }
-
-    {				// save result as SAI  counted_chars
-	    GBDATA *gb_sai = GBT_create_SAI(gb_main,RESULTNAME);
-	    if (!gb_sai) {
-		GB_print_error();
-		return -1;
-	    }
-	    GBDATA *gb_low = GBT_add_data(gb_sai,alignment_name,"low",GB_STRING);
-	    GB_write_string(gb_low,result_low);
-	    GBDATA *gb_high = GBT_add_data(gb_sai,alignment_name,"high",GB_STRING);
-	    GB_write_string(gb_high,result_high);
+    // save result as SAI COUNTED_CHARS
+    {
+        GBDATA *gb_sai = GBT_create_SAI(gb_main,RESULTNAME);
+        if (!gb_sai) {
+            GB_print_error();
+            return -1;
+        }
+        GBDATA *gb_data = GBT_add_data(gb_sai, alignment_name, "data", GB_STRING);
+        GB_write_string(gb_data, result);
     }
 
     GB_commit_transaction(gb_main); // commit it
