@@ -447,6 +447,7 @@ AW_window *AP_open_csp_2_gnuplot_window( AW_root *root ){
     for (int pt = 0; pt<PT_PLOT_TYPES; ++pt) {
         aws->insert_selection(selid, plotTypeDescription[pt], plotTypeName[pt]);
     }
+    aws->insert_default_selection(selid, "<select one>", "");
     aws->update_selection_list(selid);
 
     AW_CL filter = awt_create_select_filter(root,gb_main,AP_AWAR_FILTER_NAME);
