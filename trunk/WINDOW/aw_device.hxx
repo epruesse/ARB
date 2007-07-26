@@ -304,87 +304,87 @@ public:
  ***************************************************************************************************/
 
 class AW_device: public AW_matrix, public AW_gc {
-     AW_device(const AW_device& other);
-     AW_device& operator=(const AW_device& other);
- protected:
-     AW_clip_scale_stack *clip_scale_stack;
-     virtual         void  _privat_reset(void);
+    AW_device(const AW_device& other);
+    AW_device& operator=(const AW_device& other);
+protected:
+    AW_clip_scale_stack *clip_scale_stack;
+    virtual         void  _privat_reset(void);
 
- public:
-     AW_device(AW_common *common); // get the device from  AW_window
-     virtual ~AW_device() {}
-     // by device = get_device(area);
-     /***************** The Read Only  Section ******************/
-     AW_bitset filter;
-     /***************** The real Public Section ******************/
+public:
+    AW_device(AW_common *common); // get the device from  AW_window
+    virtual ~AW_device() {}
+    // by device = get_device(area);
+    /***************** The Read Only  Section ******************/
+    AW_bitset filter;
+    /***************** The real Public Section ******************/
 
-     void reset(void);
-     void get_area_size(AW_rectangle *rect); //read the frame size
-     void get_area_size(AW_world *rect); //read the frame size
-     void set_filter( AW_bitset filteri ); //set the main filter mask
+    void reset(void);
+    void get_area_size(AW_rectangle *rect); //read the frame size
+    void get_area_size(AW_world *rect); //read the frame size
+    void set_filter( AW_bitset filteri ); //set the main filter mask
 
-     void push_clip_scale(void); // push clipping area and scale
-     void pop_clip_scale(void); // pop them
+    void push_clip_scale(void); // push clipping area and scale
+    void pop_clip_scale(void); // pop them
 
-     virtual AW_DEVICE_TYPE type(void) =0;
+    virtual AW_DEVICE_TYPE type(void) =0;
 
-     // * functions below return 1 if any pixel is drawn, 0 otherwise
-     // * primary functions (always virtual)
+    // * functions below return 1 if any pixel is drawn, 0 otherwise
+    // * primary functions (always virtual)
 
-     virtual bool ready_to_draw(int gc);
+    virtual bool ready_to_draw(int gc);
 
-     virtual int line(int gc, AW_pos x0,AW_pos y0, AW_pos x1,AW_pos y1,
-                      AW_bitset filteri = (AW_bitset)-1, AW_CL cd1 = 0, AW_CL cd2 = 0) = 0; // used by click device
+    virtual int line(int gc, AW_pos x0,AW_pos y0, AW_pos x1,AW_pos y1,
+                     AW_bitset filteri = (AW_bitset)-1, AW_CL cd1 = 0, AW_CL cd2 = 0) = 0; // used by click device
 
-     virtual int text(int gc, const char *string,AW_pos x,AW_pos y,
-                      AW_pos alignment  = 0.0, // 0.0 alignment left 0.5 centered 1.0 right justified
-                      AW_bitset filteri    = (AW_bitset)-1, AW_CL cd1 = 0, AW_CL cd2 = 0, // used by click device
-                      long opt_strlen = 0) = 0;
+    virtual int text(int gc, const char *string,AW_pos x,AW_pos y,
+                     AW_pos alignment  = 0.0, // 0.0 alignment left 0.5 centered 1.0 right justified
+                     AW_bitset filteri    = (AW_bitset)-1, AW_CL cd1 = 0, AW_CL cd2 = 0, // used by click device
+                     long opt_strlen = 0) = 0;
 
-     // * second level functions (maybe non virtual)
+    // * second level functions (maybe non virtual)
 
-     virtual int invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL cd1, AW_CL cd2); // returns 1 when invisible would be on screen
-     virtual int cursor(int gc, AW_pos x0,AW_pos y0, AW_cursor_type type, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+    virtual int invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL cd1, AW_CL cd2); // returns 1 when invisible would be on screen
+    virtual int cursor(int gc, AW_pos x0,AW_pos y0, AW_cursor_type type, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
-     virtual int zoomtext(int gc, const char *string, AW_pos x,AW_pos y, AW_pos height, AW_pos alignment,AW_pos rotation,AW_bitset filteri,AW_CL cd1,AW_CL cd2);
-     virtual int zoomtext1(int gc, const char *string, AW_pos x,AW_pos y, AW_pos scale, AW_pos alignment,AW_pos rotation, AW_bitset filteri,AW_CL cd1,AW_CL cd2);
-     virtual int zoomtext4line(int gc, const char *string, AW_pos height, AW_pos lx0, AW_pos ly0, AW_pos lx1, AW_pos ly1, AW_pos alignmentx, AW_pos alignmenty, AW_bitset filteri,AW_CL cd1,AW_CL cd2);
-
-
-     virtual int box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
-     virtual int circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
-     virtual int arc(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
-     virtual int filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
-
-     // * third level functions (never virtual)
-
-     // reduces any string (or virtual string) to its actual drawn size and calls the function f with the result
-     int     text_overlay( int gc, const char *opt_string, long opt_strlen,  // either string or strlen != 0
-                           AW_pos x,AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cduser, AW_CL cd1, AW_CL cd2,
-                           AW_pos opt_ascent,AW_pos opt_descent,   // optional height (if == 0 take font height)
-                           int (*f)(AW_device *device, int gc, const char *opt_string, size_t opt_string_len, size_t start, size_t size,
-                                    AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
-                                    AW_CL cduser, AW_CL cd1, AW_CL cd2));
+    virtual int zoomtext(int gc, const char *string, AW_pos x,AW_pos y, AW_pos height, AW_pos alignment,AW_pos rotation,AW_bitset filteri,AW_CL cd1,AW_CL cd2);
+    virtual int zoomtext1(int gc, const char *string, AW_pos x,AW_pos y, AW_pos scale, AW_pos alignment,AW_pos rotation, AW_bitset filteri,AW_CL cd1,AW_CL cd2);
+    virtual int zoomtext4line(int gc, const char *string, AW_pos height, AW_pos lx0, AW_pos ly0, AW_pos lx1, AW_pos ly1, AW_pos alignmentx, AW_pos alignmenty, AW_bitset filteri,AW_CL cd1,AW_CL cd2);
 
 
-     // ********* X11 Device only ********
-     virtual void    clear(AW_bitset filteri);
-     virtual void    clear_part(AW_pos x, AW_pos y, AW_pos width, AW_pos height, AW_bitset filteri);
-     virtual void    clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
-     virtual void    move_region( AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y );
-     virtual void    fast(void);                                     // e.g. zoom linewidth off
-     virtual void    slow(void);
-     virtual void    flush(void);                                    // empty X11 buffers
-     // ********* click device only ********
-     virtual void    get_clicked_line(AW_clicked_line *ptr);
-     virtual void    get_clicked_text(AW_clicked_text *ptr);
-     // ********* size device only ********
-     virtual void    get_size_information(AW_world *ptr);
-     // ********* print device only (xfig compatible) ********
-     virtual const char *open(const char *path);
-     virtual void    close(void);
-     virtual void    set_color_mode(bool mode);
- };
+    virtual int box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+    virtual int circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
+    virtual int arc(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
+    virtual int filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+
+    // * third level functions (never virtual)
+
+    // reduces any string (or virtual string) to its actual drawn size and calls the function f with the result
+    int     text_overlay( int gc, const char *opt_string, long opt_strlen,  // either string or strlen != 0
+                          AW_pos x,AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cduser, AW_CL cd1, AW_CL cd2,
+                          AW_pos opt_ascent,AW_pos opt_descent,   // optional height (if == 0 take font height)
+                          int (*f)(AW_device *device, int gc, const char *opt_string, size_t opt_string_len, size_t start, size_t size,
+                                   AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
+                                   AW_CL cduser, AW_CL cd1, AW_CL cd2));
+
+
+    // ********* X11 Device only ********
+    virtual void    clear(AW_bitset filteri);
+    virtual void    clear_part(AW_pos x, AW_pos y, AW_pos width, AW_pos height, AW_bitset filteri);
+    virtual void    clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+    virtual void    move_region( AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y );
+    virtual void    fast(void);                                     // e.g. zoom linewidth off
+    virtual void    slow(void);
+    virtual void    flush(void);                                    // empty X11 buffers
+    // ********* click device only ********
+    virtual void    get_clicked_line(AW_clicked_line *ptr);
+    virtual void    get_clicked_text(AW_clicked_text *ptr);
+    // ********* size device only ********
+    virtual void    get_size_information(AW_world *ptr);
+    // ********* print device only (xfig compatible) ********
+    virtual const char *open(const char *path);
+    virtual void    close(void);
+    virtual void    set_color_mode(bool mode);
+};
 
 #else
 #error aw_device.hxx included twice
