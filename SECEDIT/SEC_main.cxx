@@ -616,7 +616,7 @@ static void export_structure_to_file(AW_window *, AW_CL /*cl_ntw*/)
     //    AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
     //    SEC_graphic *sec_graphic = (SEC_graphic*)ntw->tree_disp;
     AW_root *aw_root = SEC_GRAPHIC->aw_root;
-    char *filename = aw_root->awar(AWAR_SECEDIT_IMEXPORT_BASE"/file_name")->read_string();
+    char *filename = aw_root->awar(AWAR_SECEDIT_SAVEDIR"/file_name")->read_string();
     FILE *out = fopen(filename, "wt");
     GB_ERROR error = 0;
 
@@ -670,7 +670,7 @@ static void import_structure_from_file(AW_window *, AW_CL cl_ntw)
     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
     //    SEC_graphic *sec_graphic = (SEC_graphic*)ntw->tree_disp;
     AW_root *aw_root = SEC_GRAPHIC->aw_root;
-    char *filename = aw_root->awar(AWAR_SECEDIT_IMEXPORT_BASE"/file_name")->read_string();
+    char *filename = aw_root->awar(AWAR_SECEDIT_SAVEDIR"/file_name")->read_string();
     FILE *in = fopen(filename, "rt");
     GB_ERROR error = 0;
 
@@ -814,7 +814,7 @@ static AW_window *SEC_importExport(AW_root *root, int export_to_file, AWT_canvas
     aws->callback( AW_POPUP_HELP, (AW_CL)"sec_imexport.hlp");
     aws->create_button("HELP","HELP","H");
 
-    awt_create_selection_box((AW_window *)aws, AWAR_SECEDIT_IMEXPORT_BASE);
+    awt_create_selection_box((AW_window *)aws, AWAR_SECEDIT_SAVEDIR);
 
     aws->at("cancel");
     aws->callback( (AW_CB0)AW_POPDOWN);
