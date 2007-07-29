@@ -10,8 +10,8 @@
 #include "ctype.h"
 #endif
 
-#define AWAR_SECEDIT_BASELINEWIDTH  "secedit/baselinewidth"
-#define AWAR_SECEDIT_IMEXPORT_BASE  "secedit/imexportbase"
+#define AWAR_SECEDIT_BASELINEWIDTH "secedit/baselinewidth"
+#define AWAR_SECEDIT_SAVEDIR       "secedit/savedir"
 
 #define AWAR_SECEDIT_DIST_BETW_STRANDS  "secedit/layout/dist_betw_strands"
 #define AWAR_SECEDIT_SKELETON_THICKNESS "secedit/layout/skelton_thickness"
