@@ -654,11 +654,13 @@ void aw_create_selection_box_awars(AW_root *awr, const char *awar_base,
             int         arbhomelen = strlen(arbhome);
 
             if (strncmp(directory, arbhome, arbhomelen) == 0) { // default points into $ARBHOME
-                aw_assert(resetValues); // otherwise it's possible, that locations from previously installed ARB versions are used
+                aw_assert(resetValues); // should be called with resetValues == true
+                // otherwise it's possible, that locations from previously installed ARB versions are used
             }
 #endif // DEBUG
 
             if (!GB_is_directory(stored_directory)) {
+                awar_dir->write_string(directory);
                 fprintf(stderr,
                         "Warning: Replaced reference to non-existing directory '%s'\n"
                         "         by '%s'\n"
@@ -669,7 +671,16 @@ void aw_create_selection_box_awars(AW_root *awr, const char *awar_base,
 
         free(stored_directory);
     }
-    
+
+    char *dir = awar_dir->read_string();
+    if (!GB_is_directory(dir)) {
+        int answer = aw_message(GBS_global_string("Directory '%s' does not exist", dir), "Create,Ignore");
+        if (answer == 0) {
+            GB_ERROR error = GB_create_directory(dir);
+            if (error) aw_message(GBS_global_string("Failed to create directory '%s' (Reason: %s)", dir, error));
+        }
+    }
+
     delete [] awar_name;
 }
 
