@@ -798,7 +798,7 @@ void ED4_create_search_awars(AW_root *root)
 
     // awars to save/load search parameters:
     {
-        char *dir = GBS_global_string_copy("%s/lib/search_settings", GB_getenvARBHOME());
+        char *dir = GBS_global_string_copy("%s/.arb_prop/search_settings", GB_getenvHOME());
         aw_create_selection_box_awars(root, ED4_SEARCH_SAVE_BASE, dir, ".asp", "noname.asp");
         root->awar(ED4_SEARCH_SAVE_BASE"/directory")->write_string(dir);
         free(dir);
