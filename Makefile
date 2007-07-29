@@ -1116,7 +1116,7 @@ ds:	$(DBSERVER)
 pt:	$(PROBE)
 ps:	PROBE_SERVER/PROBE_SERVER.dummy
 pc:	PROBE_WEB/PROBE_WEB.dummy
-pst:	PROBE_SET/PROBE_SET.dummy
+pst: PROBE_SET/PROBE_SET.dummy
 pd:	PROBE_DESIGN/PROBE_DESIGN.dummy
 na:	$(NAMES)
 os:	$(ORS_SERVER)
@@ -1126,6 +1126,8 @@ ac:	$(ARBDB_COMPRESS) # unused? does not compile
 
 test:	$(TEST)
 demo:	$(AWDEMO)
+
+sec: SECEDIT/SECEDIT.dummy
 
 e4:	$(EDIT4)
 gi:	GENOM_IMPORT/GENOM_IMPORT.dummy
