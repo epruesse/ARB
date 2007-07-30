@@ -143,7 +143,8 @@ void GLRenderer::DoHelixMapping(void) {
 }
 
 void GLRenderer::DisplayMoleculeName(int w, int h, Structure3D *cStr){
-    char *pSpeciesName;
+	AWUSE(w);AWUSE(h);
+	char *pSpeciesName;
 
     if(cStr->iMapEnable && iMapSpecies) {
         pSpeciesName = RNA3D->root->awar(AWAR_3D_SELECTED_SPECIES)->read_string();

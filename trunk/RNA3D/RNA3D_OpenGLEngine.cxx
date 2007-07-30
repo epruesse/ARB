@@ -531,7 +531,8 @@ void InitializeOpenGLWindow( Widget w ) {
             RNA3D->OpenGLEngineState = CREATED;
 
             // Initializing fonts
-            RNA3D->cGraphics->InitMainFont("fixed");
+	char fontName[] = "fixed";
+            RNA3D->cGraphics->InitMainFont(fontName);
         }
     }
 }
