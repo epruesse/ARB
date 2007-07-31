@@ -10,6 +10,7 @@ UP	glossary.hlp
 TITLE		Print a Graphic to a Printer
 
 OCCURRENCE	ARB_NT/Tree/Print Tree
+                ARB_SECEDIT/File/Print structure
 
 DESCRIPTION	Multi Page Printer
 
@@ -63,6 +64,9 @@ DESCRIPTION	Multi Page Printer
 NOTES           The default printer used by ARB can be defined by setting the
                 environment variable PRINTER to your printer name.
 
+                To change the proportion between font- and graphic-size you have to change the
+                physical zoom factor (of the radial tree/secondary structure).
+
 EXAMPLES	Print a long list tree:
 
 			1. Select tree style in ARB_NT main window
@@ -72,5 +76,4 @@ EXAMPLES	Print a long list tree:
 
 WARNINGS	Printing cannot be stopped
 
-BUGS		This print utility is based on 'fig2dev', which sometimes
-		generates too many pages. Use preview to check the printout.
+BUGS		None
