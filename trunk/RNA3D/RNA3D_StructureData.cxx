@@ -33,6 +33,7 @@ static char *find_data_file(const char *name) {
     return fname;
 }
 
+static void throw_IO_error(const char *filename) __attribute__((noreturn));
 static void throw_IO_error(const char *filename) {
     string error = string("IO-Error: ")+strerror(errno)+" ('"+filename+"')";
     throw error;
