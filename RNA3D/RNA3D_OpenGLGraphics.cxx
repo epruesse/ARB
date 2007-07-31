@@ -173,8 +173,7 @@ void OpenGLGraphics::InitMainFont(char* f)
    }
 }
 
-void OpenGLGraphics::PrintString(float x, float y, float z, char *s, void *font) {
-	AWUSE(font);
+void OpenGLGraphics::PrintString(float x, float y, float z, char *s, void * /*font */) {
     glRasterPos3f(x, y, z);
     print_string(font_base, s);
     //       for (unsigned int i = 0; i < strlen(s); i++) {
@@ -182,8 +181,7 @@ void OpenGLGraphics::PrintString(float x, float y, float z, char *s, void *font)
     //     }
 }
 
-void OpenGLGraphics::PrintComment(float x, float y, float z, char *s){
-	AWUSE(x);AWUSE(y);AWUSE(z);AWUSE(s);
+void OpenGLGraphics::PrintComment(float /* x */, float /* y */, float /* z */, char */*s */){
     // if comments are longer break them and display in next line
 //     int col  = 35;
 

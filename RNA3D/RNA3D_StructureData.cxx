@@ -1488,8 +1488,7 @@ static bool ValidSearchColor(int iColor, int mode) {
     return isValid;
 }
 
-void Structure3D::MapSearchStringsToEcoliTemplate(AW_root *awr){
-    AWUSE(awr);
+void Structure3D::MapSearchStringsToEcoliTemplate(AW_root * /*awr*/){
     if (ED4_SeqTerminal) { 
         const char *pSearchColResults = 0;
 
