@@ -184,11 +184,9 @@ void AWT_resize_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
 #define AWAR_PRINT_TREE_FILE_DIR    AWAR_PRINT_TREE_FILE_BASE "/directory"
 #define AWAR_PRINT_TREE_FILE_FILTER AWAR_PRINT_TREE_FILE_BASE "/filter"
 
-AW_window *AWT_create_export_window(AW_root *root, AWT_canvas *ntw);
-
-AW_window *AWT_create_sec_export_window(AW_root *root, AWT_canvas *ntw);
-
-void AWT_create_print_window(AW_window *parent_win, AWT_canvas *ntw);
+void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL);
+void AWT_popup_sec_export_window (AW_window *parent_win, AW_CL cl_canvas, AW_CL);
+void AWT_popup_print_window      (AW_window *parent_win, AW_CL cl_canvas, AW_CL);
 
 
 #endif
