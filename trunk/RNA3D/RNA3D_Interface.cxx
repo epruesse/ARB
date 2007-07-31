@@ -32,8 +32,7 @@ static GLboolean                    Spinning = GL_FALSE;
 //    the animation will continue.
 //===============================================================================//
 
-Boolean SpinMolecule(XtPointer clientData) {
-    AWUSE(clientData);
+Boolean SpinMolecule(XtPointer /*clientData*/) {
     RNA3D->ROTATION_SPEED = 0.05;
     RefreshOpenGLDisplay();
     return false; /* leave work proc active */
@@ -72,8 +71,7 @@ static void RotateMoleculeStateChanged_cb(AW_root *awr) {
     RefreshOpenGLDisplay();
 }
 
-void ResizeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x ) {
-	AWUSE(w);AWUSE(client_data);AWUSE(x);
+void ResizeOpenGLWindow( Widget /* w*/, XtPointer /*client_data*/, XEvent *event, char* /*x*/ ) {
 	XConfigureEvent *evt;
 	evt = (XConfigureEvent*) event;
 	
@@ -86,8 +84,7 @@ void ResizeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x
     RefreshOpenGLDisplay();
 }
 
-void KeyReleaseEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x ) {
-	AWUSE(w);AWUSE(client_data);AWUSE(x);
+void KeyReleaseEventHandler(Widget /* w*/, XtPointer /*client_data*/, XEvent *event, char* /*x*/ )  {
 	XKeyEvent *evt;
     evt = (XKeyEvent*) event;
 
@@ -116,11 +113,9 @@ void KeyReleaseEventHandler( Widget w, XtPointer client_data, XEvent *event, cha
     RefreshOpenGLDisplay();
 }
 
-void KeyPressEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x ) {
+void KeyPressEventHandler(Widget /* w*/, XtPointer /*client_data*/, XEvent *event, char* /*x*/ )  {
 	XKeyEvent *evt;
     evt = (XKeyEvent*) event;
-
-	AWUSE(w);AWUSE(client_data);AWUSE(x);
 
     char   buffer[1];
     KeySym keysym;
@@ -173,10 +168,9 @@ void KeyPressEventHandler( Widget w, XtPointer client_data, XEvent *event, char*
     RefreshOpenGLDisplay();
 }
 
-void ButtonReleaseEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x ) {
+void ButtonReleaseEventHandler(Widget /* w*/, XtPointer /*client_data*/, XEvent *event, char* /*x*/ ) {
 	XButtonEvent *xr;
 	xr = (XButtonEvent*) event;
-	AWUSE(w);AWUSE(client_data);AWUSE(x);
 
     switch(xr->button) 
         {
@@ -194,11 +188,10 @@ void ButtonReleaseEventHandler( Widget w, XtPointer client_data, XEvent *event, 
     RefreshOpenGLDisplay();
 }
 
-void ButtonPressEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x ) {
+void ButtonPressEventHandler( Widget /* w*/, XtPointer /*client_data*/, XEvent *event, char* /*x*/ ){
 
 	XButtonEvent *xp;
 	xp = (XButtonEvent*) event;
-	AWUSE(w);AWUSE(client_data);AWUSE(x);
 
     switch(xp->button) 
         {
@@ -227,11 +220,10 @@ void ButtonPressEventHandler( Widget w, XtPointer client_data, XEvent *event, ch
     RefreshOpenGLDisplay();
 }
 
-void MouseMoveEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x ) {
+void MouseMoveEventHandler(Widget /* w*/, XtPointer /*client_data*/, XEvent *event, char* /*x*/ ) {
 	
 	XMotionEvent *xp;
 	xp = (XMotionEvent*) event;
-	AWUSE(w);AWUSE(client_data);AWUSE(x);
 	
     if (!RNA3D->bAutoRotate) {
         RNA3D->ROTATION_SPEED = 0.5;
@@ -245,9 +237,8 @@ void MouseMoveEventHandler( Widget w, XtPointer client_data, XEvent *event, char
     RefreshOpenGLDisplay();
 }
 
-void ExposeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x ) {
+void ExposeOpenGLWindow( Widget  w, XtPointer /*client_data*/, XEvent *event, char* /*x*/ ) {
     static bool ok = false;
-	AWUSE(w);AWUSE(client_data);AWUSE(x);
 
 	if ( RNA3D->OpenGLEngineState == NOT_CREATED ) {
 		// extern GBDATA* OpenGL_gb_main;
@@ -325,9 +316,8 @@ static void Change3DMolecule(AW_window *aww, long int molID) {
     aww->get_root()->awar(AWAR_3D_23S_RRNA_MOL)->write_int(molID);
 }
 
-static void DisplayMoleculeMask(AW_root *awr){
-	AWUSE(awr);
-    RNA3D->bDisplayMask = !RNA3D->bDisplayMask;
+static void DisplayMoleculeMask(AW_root */*awr */){
+   RNA3D->bDisplayMask = !RNA3D->bDisplayMask;
     RefreshOpenGLDisplay();
 }
 
@@ -387,11 +377,10 @@ static void AddCallBacks(AW_root *awr) {
     awr->awar(AWAR_3D_23S_RRNA_MOL)->add_callback(Change3DMolecule_CB);
 }
 
-static void RefreshMappingDisplay(AW_window *aw) {
+static void RefreshMappingDisplay(AW_window */*aw */) {
     // Refreshes the SAI Display if and when ...
     // 1.Changes made to SAI related settings in EDIT4 and not updated automatically 
     // 2.Colors related to SAI Display changed in RNA3D Application
-	AWUSE(aw);
     MapSaiToEcoliTemplateChanged_CB(RNA3D->root);
 
     // Refreshes the Search Strings Display if 

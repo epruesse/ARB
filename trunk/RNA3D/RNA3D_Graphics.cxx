@@ -58,30 +58,23 @@ RNA3D_Graphics::RNA3D_Graphics(AW_root *aw_root_, GBDATA *gb_main_):AWT_graphic(
 RNA3D_Graphics::~RNA3D_Graphics(void) {}
 
 void RNA3D_Graphics::command(AW_device */*device*/, AWT_COMMAND_MODE /*cmd*/, int /*button*/, AW_key_mod /*key_modifier*/, char /*key_char*/,
-                             AW_event_type /*type*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line *cl, AW_clicked_text *ct)
+                             AW_event_type /*type*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line * /*cl*/, AW_clicked_text * /*ct*/)
 {
-    AWUSE(cl);
-    AWUSE(ct);
+;
 }
 
 void RNA3D_Graphics::show(AW_device *device){
     paint(device);
 }
 
-void RNA3D_Graphics::info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct)
+void RNA3D_Graphics::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/)
 {
     aw_message("INFO MESSAGE");
-    AWUSE(device);
-    AWUSE(x);
-    AWUSE(y);
-    AWUSE(cl);
-    AWUSE(ct);
 }
 
-void RNA3D_Graphics::paint(AW_device *device) {
+void RNA3D_Graphics::paint(AW_device */*device*/) {
     MapDisplayParameters(aw_root);
     RefreshOpenGLDisplay();
-    AWUSE(device);    
 }
 
 

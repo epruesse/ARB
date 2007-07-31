@@ -142,8 +142,7 @@ void GLRenderer::DoHelixMapping(void) {
     }
 }
 
-void GLRenderer::DisplayMoleculeName(int w, int h, Structure3D *cStr){
-	AWUSE(w);AWUSE(h);
+void GLRenderer::DisplayMoleculeName(int /*w*/, int /*h*/, Structure3D *cStr){
 	char *pSpeciesName;
 
     if(cStr->iMapEnable && iMapSpecies) {
