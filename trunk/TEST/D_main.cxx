@@ -37,7 +37,7 @@ AW_window *create_main_window(AW_root *aw_root) {
     awm->insert_separator();
     awm->insert_menu_topic(0,"Colors and Fonts ...", "C","colors.hlp",0,
                            AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
-    awm->insert_menu_topic(0, "Print View to Printer ...",  "P","print.hlp",0,(AW_CB)AWT_create_print_window, (AW_CL)ntw,   0 );
+    awm->insert_menu_topic(0, "Print View to Printer ...",  "P","print.hlp",0, AWT_popup_print_window, (AW_CL)ntw,   0 );
 
     awm->create_mode( 0, "pzoom.bitmap", "mode_pzoom.hlp", 0, (AW_CB)nt_mode_event,
                       (AW_CL)ntw,
