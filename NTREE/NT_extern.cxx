@@ -1577,8 +1577,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         SEP________________________SEP();
 
         if (!clone){
-            AWMIMT("print_tree",  "Print tree",          "P", "tree2prt.hlp",  AWM_ALL, (AW_CB)AWT_create_print_window, (AW_CL)ntw, 0         );
-            AWMIMT("tree_2_xfig", "Export tree to XFIG", "X", "tree2file.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_export_window,  (AW_CL)ntw);
+            AWMIMT("print_tree",  "Print tree",          "P", "tree2prt.hlp",  AWM_ALL, AWT_popup_print_window,       (AW_CL)ntw, 0);
+            AWMIMT("tree_2_xfig", "Export tree to XFIG", "X", "tree2file.hlp", AWM_ALL, AWT_popup_tree_export_window, (AW_CL)ntw, 0);
             SEP________________________SEP();
         }
 
