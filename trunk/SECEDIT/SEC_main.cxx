@@ -373,9 +373,8 @@ void SEC_root::init_sequences(AW_root *awr, AWT_canvas *ntw){
 
 void sec_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
 {
-    SEC_root *sec_root = SEC_GRAPHIC->sec_root;
-    AWUSE(aws);
-    const char *text = 0;
+    SEC_root   *sec_root = SEC_GRAPHIC->sec_root;
+    const char *text     = 0;
 
     sec_root->show_constraints = 0;
 
@@ -428,9 +427,8 @@ void sec_mode_event( AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
     ntw->refresh();
 }
 
-void SEC_undo_cb(AW_window *aw, AWT_canvas *ntw, AW_CL undo_type)
+void SEC_undo_cb(AW_window *, AWT_canvas *ntw, AW_CL undo_type)
 {
-    AWUSE(aw);
     GB_ERROR error = GB_undo(gb_main,(GB_UNDO_TYPE)undo_type);
     if (error) {
         aw_message(error);
@@ -1027,8 +1025,8 @@ AW_window *SEC_create_main_window(AW_root *awr){
     awm->insert_menu_topic("secedit_import", "Load Structure", "L", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_import, (AW_CL)ntw);
     awm->insert_menu_topic("secedit_export", "Save Structure", "S", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)ntw);
     awm->insert_separator();
-    awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG", "X", "sec_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_sec_export_window, (AW_CL)ntw);
-    awm->insert_menu_topic("print_secedit", "Print Structure", "P","secedit2prt.hlp",  AWM_ALL,    (AW_CB)AWT_create_print_window, (AW_CL)ntw, 0 );
+    awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG", "X", "sec_layout.hlp",  AWM_ALL, AWT_popup_sec_export_window, (AW_CL)ntw, 0);
+    awm->insert_menu_topic("print_secedit",  "Print Structure",          "P", "secedit2prt.hlp", AWM_ALL, AWT_popup_print_window,      (AW_CL)ntw, 0);
     awm->insert_separator();
 
 #if defined(FREESTANDING)
