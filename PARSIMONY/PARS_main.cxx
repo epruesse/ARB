@@ -51,9 +51,7 @@ void PARS_export_tree(void){
     }
 }
 
-void PARS_export_cb(AW_window *aww, AWT_canvas *ntw, AW_CL mode ){
-    AWUSE(aww);
-    AWUSE(ntw);
+void PARS_export_cb(AW_window *, AWT_canvas *, AW_CL mode){
     if (mode &1){       // export tree
         PARS_export_tree();
     }
@@ -64,9 +62,8 @@ void PARS_export_cb(AW_window *aww, AWT_canvas *ntw, AW_CL mode ){
     }
 }
 
-void AP_user_push_cb(AW_window *aww,AWT_canvas *ntw)
+void AP_user_push_cb(AW_window *aww, AWT_canvas *)
 {
-    AWUSE(ntw);
     ap_main->user_push();
     aww->get_root()->awar(AWAR_STACKPOINTER)->write_int(ap_main->user_push_counter);
 }
@@ -442,10 +439,9 @@ extern "C" {
         return (long)insert_species_in_tree(key, (AP_tree*)leaf);
     }
 
-    static long count_hash_elements(const char *key,long val) {
+    static long count_hash_elements(const char *,long val) {
         if (!val) return val;
         isits.maxspecies++;
-        AWUSE(key);
         return val;
     }
 
@@ -453,10 +449,8 @@ extern "C" {
 }
 #endif
 
-static void nt_add(AW_window * aww, AWT_canvas *ntw, int what, AP_BOOL quick, int test)
+static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int test)
 {
-    AWUSE(aww);AWUSE(ntw);
-
     GB_begin_transaction (gb_main);
     GB_HASH *hash = 0;
     GB_ERROR error = 0;
@@ -982,9 +976,8 @@ static void NT_partial_add(AW_window *aww, AW_CL cl_ntw, AW_CL) {
 
 // --------------------------------------------------------------------------------
 
-static void NT_branch_lengths(AW_window * aww,AWT_canvas *ntw)
+static void NT_branch_lengths(AW_window *, AWT_canvas *ntw)
 {
-    AWUSE(aww);
     aw_openstatus("Calculating Branch Lengths");
     isits.abort_flag = AP_FALSE;
     rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1, GB_FALSE,AP_BL_BL_ONLY);
@@ -1100,9 +1093,8 @@ static AW_window *NT_create_tree_setting(AW_root *aw_root)
 
 }
 
-static void PA_focus_cb(AW_window *aww,GBDATA *gb_main_par)
+static void PA_focus_cb(AW_window *,GBDATA *gb_main_par)
 {
-    AWUSE(aww);
     GB_transaction dummy(gb_main_par);
 }
 
@@ -1174,15 +1166,12 @@ static void testTree(AP_tree_nlen *tree,int *nodeCount, int *edgeCount)
     }
 }
 
-static void TEST_testWholeTree(AW_window * aww,AWT_canvas *ntw)
-    // Tests the whole tree structure (edges and nodes) for consistency
+static void TEST_testWholeTree(AW_window *, AWT_canvas *)
+// Tests the whole tree structure (edges and nodes) for consistency
 {
-    AP_tree_nlen *root = (AP_tree_nlen*)*ap_main->tree_root;
-    int nodes = 0,
-        edges = 0;
-
-    AWUSE(aww);
-    AWUSE(ntw);
+    AP_tree_nlen *root  = (AP_tree_nlen*)*ap_main->tree_root;
+    int           nodes = 0;
+    int           edges = 0;
 
     if (root->father)
     {
@@ -1227,10 +1216,8 @@ static int dumpNodes(AP_tree_nlen *node)
     return cnt;
 }
 
-static void TEST_dumpNodes(AW_window *aww,AWT_canvas *ntw)
+static void TEST_dumpNodes(AW_window *, AWT_canvas *)
 {
-    AWUSE(aww);
-    AWUSE(ntw);
     AP_tree_nlen *root = (AP_tree_nlen*)*ap_main->tree_root;
     int cnt;
 
@@ -1249,9 +1236,8 @@ static void setBranchlens(AP_tree_nlen *node,double newLen)
         setBranchlens(node->Rightson(),newLen);
     }
 }
-static void TEST_setBranchlen(AW_window *aww,AWT_canvas *ntw)
+static void TEST_setBranchlen(AW_window *, AWT_canvas *ntw)
 {
-    AWUSE(aww);
     AP_tree_nlen *root = (AP_tree_nlen*)*ap_main->tree_root;
 
     setBranchlens(root,1.0);
@@ -1312,29 +1298,23 @@ static void TEST_performRandomMoves(AW_window *aww,AWT_canvas *ntw)
 }
 */
 
-static void TEST_mixTree(AW_window *aww,AWT_canvas *ntw)
+static void TEST_mixTree(AW_window *, AWT_canvas *ntw)
 {
-    AWUSE(aww);
     rootEdge()->mixTree(100);
     refreshTree(ntw);
 }
 
-static void TEST_sortTreeByName(AW_window *aww,AWT_canvas *ntw)
+static void TEST_sortTreeByName(AW_window *, AWT_canvas *ntw)
 {
     AP_tree_nlen *root = (AP_tree_nlen*)*ap_main->tree_root;
-
-    AWUSE(aww);
 
     root->sortByName();
     refreshTree(ntw);
 }
 
-static void TEST_buildAndDumpChain(AW_window *aww,AWT_canvas *ntw)
+static void TEST_buildAndDumpChain(AW_window *, AWT_canvas *)
 {
     AP_tree_nlen *root = (AP_tree_nlen*)*ap_main->tree_root;
-
-    AWUSE(aww);
-    AWUSE(ntw);
 
     root->Leftson()->edgeTo(root->Rightson())->testChain(2);
     root->Leftson()->edgeTo(root->Rightson())->testChain(3);
@@ -1504,7 +1484,7 @@ static void pars_start_cb(AW_window *aww)
         awm->insert_menu_topic("db_browser", "Browse loaded database(s)", "", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_db_browser, 0);
         awm->insert_separator();
 #endif // DEBUG
-        awm->insert_menu_topic("print_tree", "Print Tree ...",          "P","tree2prt.hlp", AWM_ALL,    (AW_CB)AWT_create_print_window, (AW_CL)ntw, 0 );
+        awm->insert_menu_topic("print_tree", "Print Tree ...",          "P","tree2prt.hlp", AWM_ALL, AWT_popup_print_window, (AW_CL)ntw, 0 );
         awm->insert_menu_topic( "quit",     "Quit",             "Q","quit.hlp",     AWM_ALL, (AW_CB)PARS_export_cb, (AW_CL)ntw,2);
     }
 
@@ -1519,8 +1499,8 @@ static void pars_start_cb(AW_window *aww)
         awm->insert_menu_topic( "nds",      "NDS ( Select Node Information ) ...",      "N","props_nds.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AWT_open_nds_window, (AW_CL)gb_main );
 
         awm->insert_separator();
-        awm->insert_menu_topic("tree_2_xfig",   "Edit Tree View using XFIG ...",        "E","tree2file.hlp",    AWM_ALL,    AW_POPUP, (AW_CL)AWT_create_export_window,  (AW_CL)ntw );
-        awm->insert_menu_topic("tree_print",    "Print Tree View to Printer ...",       "P","tree2prt.hlp", AWM_ALL,    (AW_CB)AWT_create_print_window, (AW_CL)ntw, 0 );
+        awm->insert_menu_topic("tree_2_xfig", "Edit Tree View using XFIG ...",  "E", "tree2file.hlp", AWM_ALL, AWT_popup_tree_export_window, (AW_CL)ntw, 0);
+        awm->insert_menu_topic("tree_print",  "Print Tree View to Printer ...", "P", "tree2prt.hlp",  AWM_ALL, AWT_popup_print_window,       (AW_CL)ntw, 0);
         awm->insert_separator();
         awm->insert_sub_menu(0, "Collapse/Expand Tree",         "C");
         {
