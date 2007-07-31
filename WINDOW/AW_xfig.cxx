@@ -16,6 +16,13 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.10  2007/07/31 15:38:03  westram
+ * - simpler and straight-forward error handling for AW_xfig-ctor
+ * - sometimes xfig-files are stored with magnification != 100.00
+ *   Now xfig-reader ignores the magnification (previously it expected '100.00'),
+ *   does not seem to make any difference!
+ * - fixed AWUSE
+ *
  * Revision 1.9  2007/04/18 22:00:33  westram
  * - fixed undefined behavior in AW_xfig::print
  *
@@ -165,10 +172,17 @@ AW_xfig::AW_xfig(int font_width, int font_height) {
 
 AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
 {
-    int bail_out=0;
-    const char *error_notice = "unknown";
-    char *ret;
-    char *expanded_filename = 0;
+    if (!filename || !strlen(filename)) return;
+    
+    memset(this,0,sizeof(AW_xfig));
+
+    // ----------------
+
+    GB_ERROR  error  = 0;
+    char     *ret;
+    char     *buffer = (char *)calloc(sizeof(char),MAX_XFIG_LENGTH);
+    FILE     *file   = 0;
+
     enum {
         XFIG_UNKNOWN,
         XFIG_OLD_FORMAT, // XFIG 2.1 saves old format
@@ -177,23 +191,19 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
 
     } version = XFIG_UNKNOWN;
 
-    if(!filename || !strlen(filename)) return;
-    memset(this,0,sizeof(AW_xfig));
-    
     calc_scaling(font_width, font_height);
 
-    const char *arbhome = GB_getenvARBHOME();
-    char *buffer = (char *)calloc(sizeof(char),MAX_XFIG_LENGTH);
-
-    FILE *file;
     if (filename[0]=='/') {
         // absolute file ?
         strcpy(buffer,filename);
-        file=fopen(buffer,"r");
-    } else {
+        file = fopen(buffer,"r");
+    }
+    else {
+        const char *arbhome = GB_getenvARBHOME();
+
         // in $ARBHOME/lib/pictures ?
         sprintf(buffer,"%s/lib/pictures/%s",arbhome,filename);
-        file=fopen(buffer,"r");
+        file = fopen(buffer,"r");
         if (!file) {
             // in $ARBHOME ?
             sprintf(buffer,"%s/%s",arbhome,filename);
@@ -205,22 +215,24 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
             }
         }
     }
-    if (!file) bail_out=1;
+    
+    if (!file) {
+        error = GBS_global_string("Can't locate '%s'", filename);
+    }
+    else {
+        char *expanded_filename = strdup(buffer);
+        int   mainVersion       = 0;
+        int   subVersion        = 0;
+        int   lineNumber        = 0;
 
-    expanded_filename = strdup(buffer);
-    int mainVersion = 0;
-    int subVersion = 0;
-    int lineNumber = 0;
-
-    if (!bail_out) {
         ret = fgets(buffer,MAX_XFIG_LENGTH,file); ++lineNumber;
         if (!ret || strncmp("#FIG",ret,4) ) {
-            bail_out=1;
+            error = "Expected XFIG format";
         }
         else {
             char *xfig_version = strchr(ret, ' ');
             if (!xfig_version) {
-                bail_out = 1;
+                error = "Missing version info";
             }
             else {
                 *xfig_version++ = 0;
@@ -237,8 +249,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
 
                 if (mainVersion>3 || (mainVersion==3 && subVersion>2)) {
                     version = XFIG_UNSUPPORTED; // unsupported (maybe only untested)
-                    error_notice = "Xfig-format above 3.2 not supported";
-                    bail_out = 1;
+                    error = "Xfig-format above 3.2 not supported";
                 }
                 else {
                     if (mainVersion==3 && subVersion==2) {
@@ -249,283 +260,271 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
                     }
                 }
             }
+            if (!error) {
+                ret             = fgets(buffer,MAX_XFIG_LENGTH,file); ++lineNumber;
+                if (!ret) error = "Unexpected end of file";
+            }
+
+            if (!error) {
+                hash = GBS_create_hash(100,0);
+                maxx = maxy = 0;
+                minx = miny = INT_MAX;
+
+                if (version==XFIG_NEW_FORMAT) { // XFIG 3.2 format
+                    // new xfig format has the following changes:
+                    //
+                    //  - header (see just below)
+                    //  - lines do not end with 9999 9999
+                    //  - ??? maybe more changes
+
+
+                    // over-read xfig-header:
+                    // Landscape
+                    // Center
+                    // Metric
+                    // A4
+                    // 100.00
+                    // Single
+                    // -2
+
+                    int count;
+                    for (count = 0;
+                         ret && count<=6;
+                         ret=fgets(buffer,MAX_XFIG_LENGTH,file), count++,  ++lineNumber)
+                    {
+                        const char *awaited = 0;
+                        switch (count) {
+                            case 0: awaited = "Landscape"; break;
+                            case 1: awaited = "Center"; break;
+                            case 2: awaited = "Metric"; break;
+                            case 3: awaited = "A4"; break;
+                            case 4: awaited = ""; break; // accept any magnification (accepted only 100 before)
+                            case 5: awaited = "Single"; break;
+                            case 6: awaited = "-2"; break;
+                            default: aw_assert(0);
+                        }
+
+                        if (strncmp(ret, awaited, strlen(awaited))!=0) {
+                            error = GBS_global_string("'%s' expected", awaited);
+                        }
+                    }
+                }
+            }
+            
+            if (!error) {
+                // read resolution
+                int dpi = 80;
+                int default_dpi = 80; // used in old version (before 3.2)
+                if (ret) {
+                    char *p = strtok(ret, "\t");
+                    if (p) dpi = atoi(p);
+
+                    ret = fgets(buffer,MAX_XFIG_LENGTH,file); ++lineNumber;
+
+                    if (dpi!=default_dpi) dpi_scale = font_scale * (double(default_dpi)/double(dpi));
+                }
+
+                while (ret) {
+                    AW_BOOL got_nextline = AW_FALSE;
+                    char *p;
+                    int width =0;
+                    int color = 0;
+                    int x,y;
+
+                    if (ret[0]=='2')  { // lines
+                        int oldx =0,oldy =0;
+
+                        {
+                            Xfig_Eater args(ret, " \t");
+
+                            bool ok =
+                                args.ignore(3) &&       // ignore '2', type, depth
+                                args.eat_int(width) &&  // width
+                                args.eat_int(color);    // color
+
+                            if (!ok) break;
+                        }
+
+                        while (1) {
+                            ret = fgets(buffer,MAX_XFIG_LENGTH,file);  ++lineNumber;
+                            if (!ret) break;
+                            if (ret[0]!='\t') {
+                                got_nextline = AW_TRUE;
+                                break;
+                            }
+
+                            Xfig_Eater args(ret, " \t");
+                            bool ok = true;
+                            oldx = oldy = INT_MAX;
+
+                            while (ok) {
+                                ok = args.eat_int(x) && args.eat_int(y);
+                                if (!ok) break;
+
+                                // 9999/9999 is the end of line-points marker in old version
+                                if (version==XFIG_OLD_FORMAT && x==9999 && y==9999) break;
+
+                                x = scaleAndRound(x, dpi_scale);
+                                y = scaleAndRound(y, dpi_scale);
+                                //                     x = (int)(x*scale);
+                                //                     y = (int)(y*scale);
+
+                                setMinMax(x, minx, maxx);
+                                setMinMax(y, miny, maxy);
+
+                                aw_assert(x>=0 && y>=0);
+
+                                if (oldx == INT_MAX && oldy == INT_MAX) {
+                                    oldx = x;
+                                    oldy = y;
+                                    continue;
+                                }
+
+                                struct AW_xfig_line *xline = new AW_xfig_line;
+                                if (width>= MAX_LINE_WIDTH) width = MAX_LINE_WIDTH - 1;
+                                xline->next = line[width];
+                                line[width] = xline;
+                                xline->x0 = oldx;
+                                xline->y0 = oldy;
+                                xline->x1 = x;
+                                xline->y1 = y;
+                                oldx = x;
+                                oldy = y;
+                                xline->color = color;
+                            }
+                        }
+
+                    } // end if ('2')
+
+                    else if (ret[0]=='4') { // text
+                        int align;
+                        int fontnr;
+                        int fontsize;
+
+                        // old format: 4 align font  fontsize   depth   color ???       angle justi flags width x y text
+                        // new format: 4 align color depth      ???     font  fontsize  angle justi flags width x y text
+                        //                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+                        Xfig_Eater args(ret, " \t");
+
+                        bool ok =
+                            args.ignore(1) &&       // the '4'
+                            args.eat_int(align);    // align
+
+                        if (ok) {
+                            if (version==XFIG_OLD_FORMAT) {
+                                ok =
+                                    args.eat_int(fontnr) &&         // font
+                                    args.eat_int(fontsize) &&       // fontsize
+                                    args.ignore(1) &&               // depth
+                                    args.eat_int(color) &&          // color
+                                    args.ignore(1);                 // ???
+                            }
+                            else {
+                                aw_assert(version==XFIG_NEW_FORMAT);
+
+                                ok =
+                                    args.eat_int(color) &&          // color
+                                    args.ignore(1) &&               // depth
+                                    args.ignore(1) &&               // ???
+                                    args.eat_int(fontnr) &&         // font
+                                    args.eat_int(fontsize);         // fontsize
+                            }
+
+                            if (ok) {
+                                ok =
+                                    args.ignore(3) &&           // angle, justi, flags
+                                    args.eat_int(width) &&      // width
+                                    args.eat_int(x) &&          // x
+                                    args.eat_int(y);            // y
+
+                            }
+                        }
+
+                        if (ok && (p=args.get_rest())!=0) {
+                            x = scaleAndRound(x, dpi_scale);
+                            y = scaleAndRound(y, dpi_scale);
+
+                            while (*p==' ' || *p=='\t') ++p;
+
+                            char *endf = strchr(p, 1); // search for ASCII-1 (new EOL-marker)
+                            char *endf2 = GBS_find_string(p, "\\001", 0); // search for "\001" (Pseudo-ASCII-1)
+                            if (endf || endf2) {
+                                if (endf) *endf = 0;
+                                if (endf2) *endf2 = 0;
+                            }
+
+                            if (*p=='$') {      // text starts with a '$'
+                                // place a button
+                                if (!strcmp(p,"$$")) {
+                                    this->centerx = x;
+                                    this->centery = y;
+                                }else{
+                                    struct AW_xfig_pos *xpos = new AW_xfig_pos;
+                                    xpos->center = align;
+                                    xpos->x = x; xpos->y = y;
+                                    GBS_write_hash(hash,p+1,(long)xpos);
+                                }
+                            }else{
+                                struct AW_xfig_text *xtext = new AW_xfig_text;
+                                xtext->x = x;
+                                xtext->y = y;
+
+                                if (x>maxx) maxx = x;
+                                if (y>maxy) maxy = y;
+                                if (x<minx) minx = x;
+                                if (y<miny) miny = y;
+
+                                xtext->text = strdup(p);
+                                xtext->fontsize = fontsize;
+                                xtext->color = color;
+                                xtext->center = align;
+                                xtext->font = fontnr;
+                                xtext->next = text;
+                                text = xtext;
+                            }
+                        }
+
+                    } // end if ('4')
+
+                    if (!got_nextline) {
+                        ret = fgets(buffer,MAX_XFIG_LENGTH,file);  ++lineNumber;
+                    }
+                }
+
+                this->size_x = maxx - minx;
+                this->size_y = maxy - miny;
+            }
         }
-    }
 
-    if (!bail_out) {
-        ret = fgets(buffer,MAX_XFIG_LENGTH,file); ++lineNumber;
-        if (!ret ) bail_out=1;
-    }
-
-    if (bail_out) {
-    do_bail_out:
-        int fatal_exit = 0;
-
-        aw_assert(error_notice);
-        aw_assert(expanded_filename);
-        
-        if (font_width>0 && font_height>0) { // react with fatal exit
-            fprintf(stderr,"Error: Xfig Resource File %s not found or invalid file - programmer's error or defect installation (circumstances: %s)\n",
-                    expanded_filename, error_notice);
-            fatal_exit = 1;
-        }
-        else {
-            sprintf(AW_ERROR_BUFFER,"Warning: Requested Xfig Resource File %s not found or invalid (circumstances: %s).\n",
-                    expanded_filename, error_notice);
-            aw_message();
+        if (error) { // append file-info to error
+            aw_assert(expanded_filename);
+            error = GBS_global_string("While reading %s:%i:\nError: %s", expanded_filename, lineNumber, error);
         }
 
         free(expanded_filename);
-        delete buffer;
-        if (file) fclose(file);
-
-        // exit or return
-        if (fatal_exit) {
-            fprintf(stderr, "Cannot continue - terminating.\n");
-            exit(-1);
-        }
-        return;
+        fclose(file);
     }
 
-
-    // failure of the constructor is shown as missing hash/text/lines on return
-
-    // if (font_size<0) font_size = abs(font_size);
-
-    hash = GBS_create_hash(100,0);
-    maxx = maxy = 0;
-    minx = miny = INT_MAX;
-
-    if (version==XFIG_NEW_FORMAT) { // XFIG 3.2 format
-        // new xfig format has the following changes:
-        //
-        //  - header (see just below)
-        //  - lines do not end with 9999 9999
-        //  - ??? maybe more changes
-
-
-        // over-read xfig-header:
-        // Landscape
-        // Center
-        // Metric
-        // A4
-        // 100.00
-        // Single
-        // -2
-
-        int count;
-        for (count = 0;
-             ret && count<=6;
-             ret=fgets(buffer,MAX_XFIG_LENGTH,file), count++,  ++lineNumber)
-        {
-            const char *awaited = 0;
-            switch (count) {
-                case 0: awaited = "Landscape"; break;
-                case 1: awaited = "Center"; break;
-                case 2: awaited = "Metric"; break;
-                case 3: awaited = "A4"; break;
-                case 4: awaited = "100.00"; break;
-                case 5: awaited = "Single"; break;
-                case 6: awaited = "-2"; break;
-                default: aw_assert(0);
-            }
-
-            if (strncmp(ret, awaited, strlen(awaited))!=0) {
-                error_notice = GBS_global_string("'%s' awaited in line #%i", awaited, lineNumber);
-                goto do_bail_out;
-            }
-        }
-    }
-
-    // read resolution
-    int dpi = 80;
-    int default_dpi = 80; // used in old version (before 3.2)
-    if (ret) {
-        char *p = strtok(ret, "\t");
-        if (p) dpi = atoi(p);
-
-        ret = fgets(buffer,MAX_XFIG_LENGTH,file); ++lineNumber;
-
-        if (dpi!=default_dpi) dpi_scale = font_scale * (double(default_dpi)/double(dpi));
-    }
-
-    while (ret) {
-        AW_BOOL got_nextline = AW_FALSE;
-        char *p;
-        int width =0;
-        int color = 0;
-        int x,y;
-
-        if (ret[0]=='2')  { // lines
-            int oldx =0,oldy =0;
-
-            {
-                Xfig_Eater args(ret, " \t");
-
-                bool ok =
-                    args.ignore(3) &&       // ignore '2', type, depth
-                    args.eat_int(width) &&  // width
-                    args.eat_int(color);    // color
-
-                if (!ok) break;
-            }
-
-            while (1) {
-                ret = fgets(buffer,MAX_XFIG_LENGTH,file);  ++lineNumber;
-                if (!ret) break;
-                if (ret[0]!='\t') {
-                    got_nextline = AW_TRUE;
-                    break;
-                }
-
-                Xfig_Eater args(ret, " \t");
-                bool ok = true;
-                oldx = oldy = INT_MAX;
-
-                while (ok) {
-                    ok = args.eat_int(x) && args.eat_int(y);
-                    if (!ok) break;
-
-                    // 9999/9999 is the end of line-points marker in old version
-                    if (version==XFIG_OLD_FORMAT && x==9999 && y==9999) break;
-
-                    x = scaleAndRound(x, dpi_scale);
-                    y = scaleAndRound(y, dpi_scale);
-                    //                     x = (int)(x*scale);
-                    //                     y = (int)(y*scale);
-
-                    setMinMax(x, minx, maxx);
-                    setMinMax(y, miny, maxy);
-
-                    aw_assert(x>=0 && y>=0);
-
-                    if (oldx == INT_MAX && oldy == INT_MAX) {
-                        oldx = x;
-                        oldy = y;
-                        continue;
-                    }
-
-                    struct AW_xfig_line *xline = new AW_xfig_line;
-                    if (width>= MAX_LINE_WIDTH) width = MAX_LINE_WIDTH - 1;
-                    xline->next = line[width];
-                    line[width] = xline;
-                    xline->x0 = oldx;
-                    xline->y0 = oldy;
-                    xline->x1 = x;
-                    xline->y1 = y;
-                    oldx = x;
-                    oldy = y;
-                    xline->color = color;
-                }
-            }
-
-        } // end if ('2')
-
-        else if (ret[0]=='4') { // text
-            int align;
-            int fontnr;
-            int fontsize;
-
-            // old format: 4 align font  fontsize   depth   color ???       angle justi flags width x y text
-            // new format: 4 align color depth      ???     font  fontsize  angle justi flags width x y text
-            //                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-            Xfig_Eater args(ret, " \t");
-
-            bool ok =
-                args.ignore(1) &&       // the '4'
-                args.eat_int(align);    // align
-
-            if (ok) {
-                if (version==XFIG_OLD_FORMAT) {
-                    ok =
-                        args.eat_int(fontnr) &&         // font
-                        args.eat_int(fontsize) &&       // fontsize
-                        args.ignore(1) &&               // depth
-                        args.eat_int(color) &&          // color
-                        args.ignore(1);                 // ???
-                }
-                else {
-                    aw_assert(version==XFIG_NEW_FORMAT);
-
-                    ok =
-                        args.eat_int(color) &&          // color
-                        args.ignore(1) &&               // depth
-                        args.ignore(1) &&               // ???
-                        args.eat_int(fontnr) &&         // font
-                        args.eat_int(fontsize);         // fontsize
-                }
-
-                if (ok) {
-                    ok =
-                        args.ignore(3) &&           // angle, justi, flags
-                        args.eat_int(width) &&      // width
-                        args.eat_int(x) &&          // x
-                        args.eat_int(y);            // y
-
-                }
-            }
-
-            if (ok && (p=args.get_rest())!=0) {
-                x = scaleAndRound(x, dpi_scale);
-                y = scaleAndRound(y, dpi_scale);
-
-                while (*p==' ' || *p=='\t') ++p;
-
-                char *endf = strchr(p, 1); // search for ASCII-1 (new EOL-marker)
-                char *endf2 = GBS_find_string(p, "\\001", 0); // search for "\001" (Pseudo-ASCII-1)
-                if (endf || endf2) {
-                    if (endf) *endf = 0;
-                    if (endf2) *endf2 = 0;
-                }
-
-                if (*p=='$') {      // text starts with a '$'
-                    // place a button
-                    if (!strcmp(p,"$$")) {
-                        this->centerx = x;
-                        this->centery = y;
-                    }else{
-                        struct AW_xfig_pos *xpos = new AW_xfig_pos;
-                        xpos->center = align;
-                        xpos->x = x; xpos->y = y;
-                        GBS_write_hash(hash,p+1,(long)xpos);
-                    }
-                }else{
-                    struct AW_xfig_text *xtext = new AW_xfig_text;
-                    xtext->x = x;
-                    xtext->y = y;
-
-                    if (x>maxx) maxx = x;
-                    if (y>maxy) maxy = y;
-                    if (x<minx) minx = x;
-                    if (y<miny) miny = y;
-
-                    xtext->text = strdup(p);
-                    xtext->fontsize = fontsize;
-                    xtext->color = color;
-                    xtext->center = align;
-                    xtext->font = fontnr;
-                    xtext->next = text;
-                    text = xtext;
-                }
-            }
-
-        } // end if ('4')
-
-        if (!got_nextline) {
-            ret = fgets(buffer,MAX_XFIG_LENGTH,file);  ++lineNumber;
-        }
-    }
-
-    this->size_x = maxx - minx;
-    this->size_y = maxy - miny;
     free(buffer);
-    free(expanded_filename);
+
+    if (error) {
+        error = GBS_global_string("Error: Can't read XFIG ressource - programmers error or defect installation\n"
+                                  "Reason: %s\n", error);
+
+        if (font_width>0 && font_height>0) { // react with fatal exit
+            fputs(error, stderr);
+            fprintf(stderr, "Cannot continue - terminating.\n");
+            exit(-1); // FATAL -> exit
+        }
+        
+        // special case (used by aw_read_xfigfont())
+        aw_message(error);
+    }
 }
 
-long aw_xfig_hash_free_loop(const char *key,long val)
+static long aw_xfig_hash_free_loop(const char */*key*/,long val)
 {
-    AWUSE(key);
     if (val) free( (char *)val);
     return 0;
 }
@@ -535,7 +534,7 @@ AW_xfig::~AW_xfig(void)
     int i;
 
     if (hash) {
-        GBS_hash_do_loop(hash,(gb_hash_loop_type)aw_xfig_hash_free_loop);
+        GBS_hash_do_loop(hash, aw_xfig_hash_free_loop);
         GBS_free_hash(hash);
     }
     struct AW_xfig_text *xtext;
