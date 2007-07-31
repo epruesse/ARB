@@ -58,7 +58,6 @@
 #include <awt_sel_boxes.hxx>
 
 typedef GB_UINT4  STATTYPE;
-static void       CPRO_memrequirement_cb(AW_root *aw_root,AW_CL cd1,AW_CL cd2);
 extern GBDATA    *gb_main;
 enum {
     GAP = 1,
@@ -591,6 +590,9 @@ static char CPRO_makestatistic(char **speciesdata,GBDATA **speciesdatabase, unsi
  * Dependencies:   CPRO_readandallocate , CPRO_makestatistic , CPRO_deallocate
  * -----------------------------------------------------------------
  */
+
+static void CPRO_memrequirement_cb(AW_root *aw_root); // prototype
+
 static void CPRO_calculate_cb(AW_window *aw,AW_CL which_statistic)
 {
     AW_root *awr=aw->get_root();
@@ -673,13 +675,12 @@ static void CPRO_calculate_cb(AW_window *aw,AW_CL which_statistic)
         return;
     }
 
-    CPRO_memrequirement_cb(awr,0,0);
+    CPRO_memrequirement_cb(awr);
 
 }
 
-static void CPRO_memrequirement_cb(AW_root *aw_root,AW_CL cd1,AW_CL cd2)
+static void CPRO_memrequirement_cb(AW_root *aw_root)
 {
-    AWUSE(cd1),AWUSE(cd2);
     char *align=aw_root->awar("cpro/alignment")->read_string();
     char *marked=aw_root->awar("cpro/which_species")->read_string();
     char versus=0; /* all vs all */
@@ -1075,9 +1076,8 @@ void CPRO_drawstatistic (AW_device *device,unsigned char which_statistic)
     }
 }
 
-void CPRO_resize_cb( AW_window *aws,AW_CL which_statistic, AW_CL cd2)
+static void CPRO_resize_cb(AW_window *aws, AW_CL which_statistic, AW_CL)
 {
-    AWUSE(cd2);
     AW_root *awr=aws->get_root();
     CPRO.column=awr->awar(AWAR_CURSOR_POSITION)->read_int();
     CPRO.gridvertical=(long)awr->awar("cpro/gridvertical")->read_int();
@@ -1090,9 +1090,8 @@ void CPRO_resize_cb( AW_window *aws,AW_CL which_statistic, AW_CL cd2)
     CPRO_drawstatistic(device,(char)which_statistic);
 }
 
-void CPRO_expose_cb( AW_window *aws,AW_CL which_statistic, AW_CL cd2)
+static void CPRO_expose_cb( AW_window *aws,AW_CL which_statistic, AW_CL)
 {
-    AWUSE(cd2);
     AW_root *awr=aws->get_root();
     CPRO.column=awr->awar(AWAR_CURSOR_POSITION)->read_int();
     char buf[80];
@@ -1110,9 +1109,8 @@ void CPRO_expose_cb( AW_window *aws,AW_CL which_statistic, AW_CL cd2)
     CPRO_drawstatistic(device,(char)which_statistic);
 }
 
-void CPRO_column_cb(AW_root *awr,AW_window *aws,AW_CL which_statistic)
+static void CPRO_column_cb(AW_root *awr,AW_window *aws,AW_CL which_statistic)
 {
-    AWUSE(awr);
     char buf[80];
     sprintf(buf,"cpro/drawmode%d",(int)which_statistic);
     CPRO.result[which_statistic].drawmode=(char)awr->awar(buf)->read_int();
@@ -1121,19 +1119,15 @@ void CPRO_column_cb(AW_root *awr,AW_window *aws,AW_CL which_statistic)
 
 void CPRO_columnminus_cb(AW_window *aws)
 {
-    AWUSE(aws);
-    AW_root *awr=aws->get_root();
-    if(CPRO.column>1) {
-        awr->awar(AWAR_CURSOR_POSITION)->write_int(CPRO.column-1); }
+    AW_root *awr = aws->get_root();
+    if (CPRO.column>1) awr->awar(AWAR_CURSOR_POSITION)->write_int(CPRO.column-1);
 }
 
-void CPRO_columnplus_cb(AW_window *aws,AW_CL which_statistic,AW_CL cd2)
+void CPRO_columnplus_cb(AW_window *aws, AW_CL /*which_statistic*/, AW_CL)
 {
-    AWUSE(aws);AWUSE(cd2);AWUSE(which_statistic);
-    AW_root *awr=aws->get_root();
+    AW_root *awr = aws->get_root();
     awr->awar(AWAR_CURSOR_POSITION)->write_int(CPRO.column+1);
-    /*if(CPRO.column<CPRO.result[which_statistic].maxalignlen) {
-      awr->awar(AWAR_CURSOR_POSITION)->write_int(CPRO.column+1); }*/
+    /*if(CPRO.column<CPRO.result[which_statistic].maxalignlen) { awr->awar(AWAR_CURSOR_POSITION)->write_int(CPRO.column+1); }*/
 }
 
 void CPRO_savestatistic_cb(AW_window *aw,AW_CL which_statistic)
@@ -1308,7 +1302,7 @@ void CPRO_loadstatistic_cb(AW_window *aw,AW_CL which_statistic)
     }
     GB_close(oldbase);
     CPRO.result[which_statistic].statisticexists=1;
-    CPRO_memrequirement_cb(awr,0,0);
+    CPRO_memrequirement_cb(awr);
     aw->hide();
 }
 
@@ -1599,27 +1593,19 @@ AW_window *CPRO_showstatistic_cb( AW_root *aw_root, AW_CL which_statistic)
     aws->insert_option( "smoothing 15", "7",15);
     aws->update_option_menu();
 
-    aw_root->awar(buf)->add_callback(
-                                     (AW_RCB)CPRO_column_cb,(AW_CL)aws,which_statistic);
-    aw_root->awar("cpro/gridhorizontal")->add_callback(
-                                                       (AW_RCB)CPRO_column_cb,(AW_CL)aws,which_statistic);
-    aw_root->awar("cpro/gridvertical")->add_callback(
-                                                     (AW_RCB)CPRO_column_cb,(AW_CL)aws,which_statistic);
+    aw_root->awar(buf)->add_callback((AW_RCB)CPRO_column_cb,(AW_CL)aws,which_statistic);
+    aw_root->awar("cpro/gridhorizontal")->add_callback((AW_RCB)CPRO_column_cb,(AW_CL)aws,which_statistic);
+    aw_root->awar("cpro/gridvertical")->add_callback((AW_RCB)CPRO_column_cb,(AW_CL)aws,which_statistic);
 
     aws->at("maxdistance");
     //aws->label("max distance");
     aws->create_input_field("cpro/maxdistance",3);
 
-    aws->set_resize_callback (AW_INFO_AREA,(AW_CB)CPRO_resize_cb,
-                              which_statistic,0);
-    aws->set_expose_callback (AW_INFO_AREA, (AW_CB)CPRO_expose_cb,
-                              (AW_CL)which_statistic,0);
-    aw_root->awar(AWAR_CURSOR_POSITION)->add_callback((AW_RCB)CPRO_column_cb,
-                                                      (AW_CL)aws,which_statistic);
-    aw_root->awar("cpro/maxdistance")->add_callback((AW_RCB)CPRO_column_cb,
-                                                    (AW_CL)aws,which_statistic);
-    aw_root->awar("cpro/maxdistance")->add_callback((AW_RCB)CPRO_column_cb,
-                                                    (AW_CL)aws,which_statistic);
+    aws->set_resize_callback (AW_INFO_AREA, CPRO_resize_cb, which_statistic, 0);
+    aws->set_expose_callback (AW_INFO_AREA, CPRO_expose_cb, which_statistic, 0);
+    aw_root->awar(AWAR_CURSOR_POSITION)->add_callback((AW_RCB)CPRO_column_cb, (AW_CL)aws,which_statistic);
+    aw_root->awar("cpro/maxdistance")->add_callback((AW_RCB)CPRO_column_cb, (AW_CL)aws,which_statistic);
+    aw_root->awar("cpro/maxdistance")->add_callback((AW_RCB)CPRO_column_cb, (AW_CL)aws,which_statistic);
     aws->button_length( 6);
 
     AW_device *device=aws->get_device (AW_INFO_AREA);
@@ -1773,14 +1759,14 @@ AP_open_cprofile_window( AW_root *aw_root)
     aws->at("resolution1");aws->create_button(0,"tmp/cpro/nowres1");
     aws->at("resolution2");aws->create_button(0,"tmp/cpro/nowres2");
 
-    aw_root->awar("cpro/alignment")->add_callback((AW_RCB)CPRO_memrequirement_cb,0,0);
-    aw_root->awar("cpro/partition")->add_callback((AW_RCB)CPRO_memrequirement_cb,0,0);
-    aw_root->awar("cpro/resolution")->add_callback((AW_RCB)CPRO_memrequirement_cb,0,0);
-    aw_root->awar("cpro/which_species")->add_callback((AW_RCB)CPRO_memrequirement_cb,0,0);
+    aw_root->awar("cpro/alignment")->add_callback(CPRO_memrequirement_cb);
+    aw_root->awar("cpro/partition")->add_callback(CPRO_memrequirement_cb);
+    aw_root->awar("cpro/resolution")->add_callback(CPRO_memrequirement_cb);
+    aw_root->awar("cpro/which_species")->add_callback(CPRO_memrequirement_cb);
 
     GB_pop_transaction(gb_main);
 
-    CPRO_memrequirement_cb(aw_root,0,0);
+    CPRO_memrequirement_cb(aw_root);
 
     return (AW_window *)aws;
 }
