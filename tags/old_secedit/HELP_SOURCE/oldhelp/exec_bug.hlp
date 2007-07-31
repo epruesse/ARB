@@ -1,0 +1,41 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+SUB	arb_commands.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		How to fix an 'exec' problem ?
+
+OCCURRENCE	NDS + ACI exec - command
+
+DESCRIPTION	If you use the exec command in the NDS window then
+		you might have to wait extremely long:
+
+			number of species *
+			execution time of the command
+			(5000 species, 1.5 sec/exec) -> 2 hour waiting.
+
+SECTION         WHAT TO DO
+
+		The only way the to remove the exec command is:
+		run arb_panic on any shell
+		save the database to /tmp/panic.arb
+		edit /tmp/panic.arb
+		search the exec command
+		replace it by the 'echo' command
+		save file
+		test it with 'arb /tmp/panic.arb'
+		If everything works fine save it in your home directory
+		enter 'arb_clean' on any shell
+		remove /tmp/panic.arb
+
+WARNINGS	Test your database very carefully because it may not be
+		consistent.
+		Check sequence checksum
+
+BUGS		No bugs known

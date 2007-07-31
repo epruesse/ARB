@@ -1,0 +1,1500 @@
+GBRNA.SEQ          Genetic Sequence Data Bank
+                         15 August 1993
+
+                NCBI-GenBank Flat File Release 78
+
+                     Structural RNA Sequences
+
+    3348 loci,   1987296 bases, from   3348 reported sequences
+
+LOCUS       AAURRA        118 bp ss-rRNA            RNA       16-JUN-1986
+DEFINITION  A.auricula-judae (mushroom) 5S ribosomal RNA.
+ACCESSION   K03160
+KEYWORDS    5S ribosomal RNA; ribosomal RNA.
+SOURCE      A.auricula-judae (mushroom) ribosomal RNA.
+  ORGANISM  Auricularia auricula-judae
+            Eukaryota; Fungi; Eumycota; Basidiomycotina; Phragmobasidiomycetes;
+            Heterobasidiomycetidae; Auriculariales; Auriculariaceae.
+REFERENCE   1  (bases 1 to 118)
+  AUTHORS   Huysmans,E., Dams,E., Vandenberghe,A. and De Wachter,R.
+  TITLE     The nucleotide sequences of the 5S rRNAs of four mushrooms and
+            their use in studying the phylogenetic position of basidiomycetes
+            among the eukaryotes
+  JOURNAL   Nucleic Acids Res. 11, 2871-2880 (1983)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..118
+                     /note="5S ribosomal RNA"
+     source          1..118
+                     /organism="Auricularia auricula-judae"
+BASE COUNT       27 a     34 c     34 g     23 t
+ORIGIN      5' end of mature rRNA.
+        1 atccacggcc ataggactct gaaagcactg catcccgtcc gatctgcaaa gttaaccaga
+       61 gtaccgccca gttagtacca cggtggggga ccacgcggga atcctgggtg ctgtggtt
+//
+LOCUS       ABCRR5SA      120 bp ss-rRNA            RNA       08-DEC-1992
+DEFINITION  Acetobacter pasteurianus 5S ribosomal RNA.
+ACCESSION   M76569
+KEYWORDS    5S ribosomal RNA.
+SOURCE      Acetobacter pasteurianus (library: NCIB 12228) rRNA.
+  ORGANISM  Acetobacter pasteurianus
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Azotobacteraceae.
+REFERENCE   1  (bases 1 to 120)
+  AUTHORS   Bulygina,E.S., Gulikova,O.M., Dikanskaya,E.M., Netrusov,A.I.,
+            Tourova,T.P. and Chumakov,K.M.
+  TITLE     Taxonomic studies of the genera Acidomonas, Acetobacter and
+            Gluconobacter by 5S ribosomal RNA sequencing
+  JOURNAL   J. Gen. Microbiol. 138, 2283-2286 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..120
+                     /product="5S ribosomal RNA"
+                     /gene="5S rRNA"
+     source          1..120
+                     /organism="Acetobacter pasteurianus"
+BASE COUNT       25 a     40 c     34 g     19 t      2 others
+ORIGIN      
+        1 rracctggtg gccatggcgg gagagatcca cccgatccca tcccgaactc ggccgtgaaa
+       61 acccccagcg cctatgatac gttggcttaa gccacgggaa agtcggtcgc cgccaggtct
+//
+LOCUS       ABCRR5SC      120 bp ss-rRNA            RNA       08-DEC-1992
+DEFINITION  Acetobacter methanolicus 5S ribosomal RNA.
+ACCESSION   M76571
+KEYWORDS    5S ribosomal RNA.
+SOURCE      Acetobacter methanolicus (strain MB58) rRNA.
+  ORGANISM  Acetobacter methanolicus
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Azotobacteraceae.
+REFERENCE   1  (bases 1 to 120)
+  AUTHORS   Bulygina,E.S., Gulikova,O.M., Dikanskaya,E.M., Netrusov,A.I.,
+            Tourova,T.P. and Chumakov,K.M.
+  TITLE     Taxonomic studies of the genera Acidomonas, Acetobacter and
+            Gluconobacter by 5S ribosomal RNA sequencing
+  JOURNAL   J. Gen. Microbiol. 138, 2283-2286 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..120
+                     /product="5S ribosomal RNA"
+                     /gene="5S rRNA"
+     source          1..120
+                     /organism="Acetobacter methanolicus"
+BASE COUNT       27 a     41 c     32 g     18 t      2 others
+ORIGIN      
+        1 ngatctggtg gccatggcgg gagcaaatca gccgatccca tcccgaactc ggccgtcaaa
+       61 tgccccagcg cccatgatac tctgcctcaa ggcacggaaa agtcggtcgc cgccagatcy
+//
+LOCUS       ABCRR5SD      120 bp ss-rRNA            RNA       08-DEC-1992
+DEFINITION  Acetobacter xylinum 5S ribosomal RNA.
+ACCESSION   M76572
+KEYWORDS    5S ribosomal RNA.
+SOURCE      Acetobacter xylinum (strain VKM 820) rRNA.
+  ORGANISM  Acetobacter xylinum
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Azotobacteraceae.
+REFERENCE   1  (bases 1 to 120)
+  AUTHORS   Bulygina,E.S., Gulikova,O.M., Dikanskaya,E.M., Netrusov,A.I.,
+            Tourova,T.P. and Chumakov,K.M.
+  TITLE     Taxonomic studies of the genera Acidomonas, Acetobacter and
+            Gluconobacter by 5S ribosomal RNA sequencing
+  JOURNAL   J. Gen. Microbiol. 138, 2283-2286 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..120
+                     /product="5S ribosomal RNA"
+                     /gene="5S rRNA"
+     source          1..120
+                     /organism="Acetobacter xylinum"
+BASE COUNT       26 a     39 c     35 g     20 t
+ORIGIN      
+        1 agacctggtg gcaatggcgg ggaatatcca cccgatccca tcccgaactc ggccgtgaaa
+       61 tgccccagcg cccatgatac tgtgccttaa ggcacgggaa agtcggtcgc cgccaggtct
+//
+LOCUS       ABCRR5SE      120 bp ss-rRNA            RNA       08-DEC-1992
+DEFINITION  Acetobacter aceti (NCIB 8621) 5S ribosomal RNA.
+ACCESSION   M76573
+KEYWORDS    5S ribosomal RNA.
+SOURCE      Acetobacter aceti (library: NCIB 8621) rRNA.
+  ORGANISM  Acetobacter aceti
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Azotobacteraceae.
+REFERENCE   1  (bases 1 to 120)
+  AUTHORS   Bulygina,E.S., Gulikova,O.M., Dikanskaya,E.M., Netrusov,A.I.,
+            Tourova,T.P. and Chumakov,K.M.
+  TITLE     Taxonomic studies of the genera Acidomonas, Acetobacter and
+            Gluconobacter by 5S ribosomal RNA sequencing
+  JOURNAL   J. Gen. Microbiol. 138, 2283-2286 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..120
+                     /product="5S ribosomal RNA"
+                     /gene="5S rRNA"
+     source          1..120
+                     /organism="Acetobacter aceti"
+BASE COUNT       24 a     39 c     36 g     20 t      1 others
+ORIGIN      
+        1 rgacctggtg gctatggcgg gagagatcca cccgatccca tcccgaactc ggccgtgaaa
+       61 acccccagcg cctatgatac tgcggcttaa gccgtgggaa agtcggtcgc cgccaggtct
+//
+LOCUS       ABCRR5SF      120 bp ss-rRNA            RNA       08-DEC-1992
+DEFINITION  Acetobacter sp. (strain 867) 5S ribosomal RNA.
+ACCESSION   M76574
+KEYWORDS    5S ribosomal RNA.
+SOURCE      Acetobacter sp. (strain 867) rRNA.
+  ORGANISM  Acetobacter sp.
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Azotobacteraceae.
+REFERENCE   1  (bases 1 to 120)
+  AUTHORS   Bulygina,E.S., Gulikova,O.M., Dikanskaya,E.M., Netrusov,A.I.,
+            Tourova,T.P. and Chumakov,K.M.
+  TITLE     Taxonomic studies of the genera Acidomonas, Acetobacter and
+            Gluconobacter by 5S ribosomal RNA sequencing
+  JOURNAL   J. Gen. Microbiol. 138, 2283-2286 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..120
+                     /product="5S ribosomal RNA"
+                     /gene="5S rRNA"
+     source          1..120
+                     /organism="Acetobacter sp."
+BASE COUNT       27 a     42 c     31 g     18 t      2 others
+ORIGIN      
+        1 ngatctggtg gccatggcgg cagcaaatca cccgatccca tgccgaactc ggccgtcaaa
+       61 tgccccagcg cccatgatac tctgcctcaa ggcacggaaa agtcggtcgc cgccagatcy
+//
+LOCUS       ABCRR5SG      120 bp ss-rRNA            RNA       08-DEC-1992
+DEFINITION  Acetobacter sp. (strain 913) 5S ribosomal RNA.
+ACCESSION   M76575
+KEYWORDS    5S ribosomal RNA.
+SOURCE      Acetobacter sp. (strain 913) rRNA.
+  ORGANISM  Acetobacter sp.
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Azotobacteraceae.
+REFERENCE   1  (bases 1 to 120)
+  AUTHORS   Bulygina,E.S., Gulikova,O.M., Dikanskaya,E.M., Netrusov,A.I.,
+            Tourova,T.P. and Chumakov,K.M.
+  TITLE     Taxonomic studies of the genera Acidomonas, Acetobacter and
+            Gluconobacter by 5S ribosomal RNA sequencing
+  JOURNAL   J. Gen. Microbiol. 138, 2283-2286 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..120
+                     /product="5S ribosomal RNA"
+                     /gene="5S rRNA"
+     source          1..120
+                     /organism="Acetobacter sp."
+BASE COUNT       28 a     41 c     30 g     20 t      1 others
+ORIGIN      
+        1 ngatctggtg gtcatagcgg gagtaaatca cccgatccca tcccgaactc ggccgtcaaa
+       61 tgcctcagcg cccatgatac tctgcctcaa ggcacggaaa agtcggtcgc cgccagaccc
+//
+LOCUS       ABCRR5SH      120 bp ss-rRNA            RNA       08-DEC-1992
+DEFINITION  Acetobacter sp. (strain 924) 5S ribosomal RNA.
+ACCESSION   M76576
+KEYWORDS    5S ribosomal RNA.
+SOURCE      Acetobacter sp. (strain 924) rRNA.
+  ORGANISM  Acetobacter sp.
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Azotobacteraceae.
+REFERENCE   1  (bases 1 to 120)
+  AUTHORS   Bulygina,E.S., Gulikova,O.M., Dikanskaya,E.M., Netrusov,A.I.,
+            Tourova,T.P. and Chumakov,K.M.
+  TITLE     Taxonomic studies of the genera Acidomonas, Acetobacter and
+            Gluconobacter by 5S ribosomal RNA sequencing
+  JOURNAL   J. Gen. Microbiol. 138, 2283-2286 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..120
+                     /product="5S ribosomal RNA"
+                     /gene="5S rRNA"
+     source          1..120
+                     /organism="Acetobacter sp."
+BASE COUNT       29 a     42 c     29 g     18 t      2 others
+ORIGIN      
+        1 ngatctgatg accatggcgg gagcaaatca cccgatccca tcccgaactc ggccgtcaaa
+       61 tgccccagcg cccatgatac tctgcctcaa ggcacggaaa agtcggtcgc cgccagatcy
+//
+LOCUS       ABCRR5SI      120 bp ss-rRNA            RNA       08-DEC-1992
+DEFINITION  Acetobacter aceti (strain VKM 879) 5S ribosomal RNA.
+ACCESSION   M76578
+KEYWORDS    5S ribosomal RNA.
+SOURCE      Acetobacter aceti (strain VKM 879) rRNA.
+  ORGANISM  Acetobacter aceti
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Azotobacteraceae.
+REFERENCE   1  (bases 1 to 120)
+  AUTHORS   Bulygina,E.S., Gulikova,O.M., Dikanskaya,E.M., Netrusov,A.I.,
+            Tourova,T.P. and Chumakov,K.M.
+  TITLE     Taxonomic studies of the genera Acidomonas, Acetobacter and
+            Gluconobacter by 5S ribosomal RNA sequencing
+  JOURNAL   J. Gen. Microbiol. 138, 2283-2286 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..120
+                     /product="5S ribosomal RNA"
+                     /gene="5S rRNA"
+     source          1..120
+                     /organism="Acetobacter aceti"
+BASE COUNT       24 a     40 c     37 g     19 t
+ORIGIN      
+        1 ggacctggtg gctatggcgg gagagatcca cccgatccca tcccgaactc ggccgtgaaa
+       61 acccccagcg cctatgatac tgcggcttaa gccgtgggaa agtcggtcgc cgccaggtcc
+//
+LOCUS       ABCRR5SJ      120 bp ss-rRNA            RNA       08-DEC-1992
+DEFINITION  Acetobacter sp. (strain 914) 5S ribosomal RNA.
+ACCESSION   M76580
+KEYWORDS    5S ribosomal RNA.
+SOURCE      Acetobacter sp. (strain 914) rRNA.
+  ORGANISM  Acetobacter sp.
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Azotobacteraceae.
+REFERENCE   1  (bases 1 to 120)
+  AUTHORS   Bulygina,E.S., Gulikova,O.M., Dikanskaya,E.M., Netrusov,A.I.,
+            Tourova,T.P. and Chumakov,K.M.
+  TITLE     Taxonomic studies of the genera Acidomonas, Acetobacter and
+            Gluconobacter by 5S ribosomal RNA sequencing
+  JOURNAL   J. Gen. Microbiol. 138, 2283-2286 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..120
+                     /product="5S ribosomal RNA"
+                     /gene="5S rRNA"
+     source          1..120
+                     /organism="Acetobacter sp."
+BASE COUNT       28 a     42 c     30 g     18 t      2 others
+ORIGIN      
+        1 ngatctgatg gccatggcgg gagcaaatca cccgatccca tcccgaactc ggccgtcaaa
+       61 tgccccagcg cccatgatac tctgcctcaa ggcacggaaa agtcggtcgc cgccagatcy
+//
+LOCUS       ABCRRAA       118 bp ss-rRNA            RNA       15-SEP-1990
+DEFINITION  Acetobacter sp. (strain MB 58) 5S ribosomal RNA, complete sequence.
+ACCESSION   M34766
+KEYWORDS    5S ribosomal RNA.
+SOURCE      Acetobacter sp. (strain MB 58) rRNA.
+  ORGANISM  Acetobacter sp.
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Azotobacteraceae.
+REFERENCE   1  (bases 1 to 118)
+  AUTHORS   Bulygina,E.S., Galchenko,V.F., Govorukhina,N.I., Netrusov,A.I.,
+            Nikitin,D.I., Trotsenko,Y.A. and Chumakov,K.M.
+  TITLE     Taxonomic studies of methylotrophic bacteria by 5S ribosomal RNA
+            sequencing
+  JOURNAL   J. Gen. Microbiol. 136, 441-446 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..118
+                     /note="5S ribosomal RNA"
+     source          1..118
+                     /organism="Acetobacter sp."
+BASE COUNT       27 a     40 c     32 g     17 t      2 others
+ORIGIN      
+        1 gatctggtgg ccatggcggg agcaaatcag ccgatcccat cccgaactcg gccgtcaaat
+       61 gccccagcgc ccatgatact ctgcctcaag gcacggaaaa gtcggtcgcc gccagayy
+//
+LOCUS       ABCRRAB       118 bp ss-rRNA            RNA       15-SEP-1990
+DEFINITION  Acetobacter sp. (strain 914) 5S ribosomal RNA, complete sequence.
+ACCESSION   M34767
+KEYWORDS    5S ribosomal RNA.
+SOURCE      Acetobacter sp. (strain 914) rRNA.
+  ORGANISM  Acetobacter sp.
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Azotobacteraceae.
+REFERENCE   1  (bases 1 to 118)
+  AUTHORS   Bulygina,E.S., Galchenko,V.F., Govorukhina,N.I., Netrusov,A.I.,
+            Nikitin,D.I., Trotsenko,Y.A. and Chumakov,K.M.
+  TITLE     Taxonomic studies of methylotrophic bacteria by 5S ribosomal RNA
+            sequencing
+  JOURNAL   J. Gen. Microbiol. 136, 441-446 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..118
+                     /note="5S ribosomal RNA"
+     source          1..118
+                     /organism="Acetobacter sp."
+BASE COUNT       27 a     42 c     29 g     18 t      2 others
+ORIGIN      
+        1 nntctgatgg ccatggcggg agcaaatcac ccgatcccat cccgaactcg gccgtcaaat
+       61 gccccagcgc ccatgatact ctgcctcaag gcacggaaaa gtcggtcgcc gccagatc
+//
+LOCUS       ABCRRS5B      120 bp ss-rRNA            RNA       08-DEC-1992
+DEFINITION  Acetobacter sp. (strain MB 58/4) 5S ribosomal RNA.
+ACCESSION   M76570
+KEYWORDS    5S ribosomal RNA.
+SOURCE      Acetobacter sp. (strain MB 58/4) rRNA.
+  ORGANISM  Acetobacter sp.
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Azotobacteraceae.
+REFERENCE   1  (bases 1 to 120)
+  AUTHORS   Bulygina,E.S., Gulikova,O.M., Dikanskaya,E.M., Netrusov,A.I.,
+            Tourova,T.P. and Chumakov,K.M.
+  TITLE     Taxonomic studies of the genera Acidomonas, Acetobacter and
+            Gluconobacter by 5S ribosomal RNA sequencing
+  JOURNAL   J. Gen. Microbiol. 138, 2283-2286 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..120
+                     /product="5S ribosomal RNA"
+                     /gene="5S rRNA"
+     source          1..120
+                     /organism="Acetobacter sp."
+BASE COUNT       25 a     44 c     32 g     18 t      1 others
+ORIGIN      
+        1 ngatctggtg gccatggcgg ggcgcaatca cccgatccca tcccgaactc ggccgtcaaa
+       61 tgccccagcg cccatgatac tctgcctcaa ggcacggaaa agtcggtcgc cgccagatcc
+//
+LOCUS       ABLREAA      1441 bp ss-rRNA            RNA       17-OCT-1991
+DEFINITION  Amblyomma americanum 18S rRNA sequence.
+ACCESSION   M60487
+KEYWORDS    ribosomal RNA.
+SOURCE      Amblyomma americanum rRNA.
+  ORGANISM  Amblyomma americanum
+            Eukaryota; Animalia; Metazoa; Arthropoda; Chelicerata; Arachnida;
+            Acari; Parasitiformes; Ixodida; Ixodoidea; Ixodidae.
+REFERENCE   1  (bases 1 to 1441)
+  AUTHORS   Turbeville,J.M., Pfeifer,D.M., Field,K.G. and Raff,R.A.
+  TITLE     The phylogenetic status of arthropods, as inferred 18S rRNA
+            sequences
+  JOURNAL   Mol. Biol. Evol. 8, 669-686 (1991)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            <1..>1441
+     source          1..1441
+                     /organism="Amblyomma americanum"
+BASE COUNT      357 a    330 c    393 g    351 t     10 others
+ORIGIN      
+        1 tggcggccgc tctagagcta atacatgcat tgagcctgaa ggcctttggc tgacgggcgc
+       61 ttttattaga ccaagaccca tcgggttctg cccgtactct gtggtgactc tggataactt
+      121 tgtgctgatc gcatggccat gagccggcga cgtttctttc aagtgtctgc cttatcaact
+      181 ttcgatggta ggttacttgc ctaccatggt tgttacgggt aacggagaat cagggttcga
+      241 ttccggagag ggagcctgag aaacggctac cacatccaag gaaggcagca ggcgcgcaaa
+      301 ttacccactc ccggcacggg gaggtagtga cgaaaaataa caatacggga ctcttttgag
+      361 gccccgtaat tgaaatgagt acactctaaa tcctttaacg aggatcaatt ggagggcaag
+      421 tctggtgcca gcanccgcgg taattccagc tccaatagcg tatattaann ctgctgcggt
+      481 taaaaagctc gtagttggat ctcagttcca gactgagtag tgcatctacc cgatgcgacg
+      541 gctcggactg aacatcatgc cggtcctctc ttggtgccct tcattggtgc gtctcgagga
+      601 ggcctgcgct tttactttga aaaaattaga gtgctcaacg cagcgagtcg cctgaataaa
+      661 cttgcatgga ataatagaac aagaccccgt ttctgttctg ttggtttttg gaatacgggg
+      721 taatgattaa gagggacaga cgggggcatt cgtattgcgg cgctagaggt gaaattcttg
+      781 gaccgtcgca agacgaacta ctgcgaaagc atttgccaag aatgttttct ttgatcaaga
+      841 acgaaagtca gaggttcgaa ggcgatcaga taccgcccta gttctgacca taaacgatgc
+      901 caaccagcga tccgcctgag ttactcaaat gactcggcgg gcagcttccg ggaaaccaaa
+      961 gtatttgggt tccgggggaa gtatggttgc aaagctgaaa cttaaaggaa ttgacngann
+     1021 ggcaccacca ggagtggagc ctgcgcttaa tttgactcaa cacgggaaaa cttacncgnn
+     1081 ncggacactg ggaggattga cagattgaga gctctttctt gattcggtgg atggtggtgc
+     1141 atggccgttc ttagttggtg gagcgatttg tctggttaat tccgataacg aacgagactc
+     1201 tagcctatta atagtgcggg ttcccagcac cttacaacct tcttagaggg acaacgctcc
+     1261 tagccgcacg aaacagagca ataacaggtc tgtgatgccc ttagatgtcc ggggccgcac
+     1321 gcgcgctaca ctgaaggaag cagcgtgtct ttatccctgt ctgaaaagac tgggtaaccc
+     1381 gtggaacttc cttcgtgatt gggatagggg cttgcaattg ttccccttga acgaggaatt
+     1441 c
+//
+LOCUS       ABYMTRR12S    952 bp ss-rRNA            RNA       10-DEC-1992
+DEFINITION  Amblysomus hottentotus mitochondrial 12S ribosomal RNA.
+ACCESSION   M95108
+KEYWORDS    12S ribosomal RNA.
+SOURCE      Amblysomus hottentotus (organelle Mitochondrion Amblysomus
+            hottentotus) liver rRNA.
+  ORGANISM  Amblysomus hottentotus
+            Eukaryota; Animalia; Chordata; Vertebrata; Mammalia; Theria;
+            Eutheria; Insectivora; Lipotyphla; Chrysochloridae.
+REFERENCE   1  (bases 1 to 952)
+  AUTHORS   Allard,M.W. and Miyamoto,M.M.
+  TITLE     Testing phylogenetic approaches with empirical data as illustrated
+            with the parsimony method
+  JOURNAL   Mol. Biol. Evol. 9, 778-786 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..952
+                     /product="12S ribosomal RNA"
+                     /gene="12S rRNA"
+     source          1..952
+                     /organism="Amblysomus hottentotus"
+BASE COUNT      347 a    187 c    161 g    257 t
+ORIGIN      
+        1 taaaggtttg gtcctggcct ttttattagt tggtagtaaa attatacatg caagtttcag
+       61 caacccagtg agaataccct ttaaatctgc tagattaata ggagtaggta tcaagcacac
+      121 cattaggtag ctaataacac cttgcttagc cacaccccca cgggttacag cagtaacaaa
+      181 aatttagcaa ttaacgaaag ttagactaag ttatactact ctagggttgg taaatttcgt
+      241 gccagccacc gcggtcatac gattaaccca aactaataaa taccggcgta aagcgtgttc
+      301 aggggaaaca aaacaataaa gatgaaatat ttctacactg taaaaagtta tagaagtact
+      361 aaaaatatac tacgaaagtg actttattac accttacaac acgatagcta agacacaaac
+      421 tgggattaga taccccacta tgcttagccc taaactttaa taatttaaaa caaaattatt
+      481 cgccagagaa ctactagcaa tagcctaaaa cttaaaggac ttggcggtgc tttatatcca
+      541 cctagaggag cctgttatat aatcgataaa ccccgataaa cctcaccact tcttgctaat
+      601 ccagtctata taccgccatc ttcagcaaac ccttaaaagg caaaacagta agcttaataa
+      661 tttccataaa aacgttaggt caaggtgtag cctatgtagt ggtattcaat gggctacatt
+      721 ttctgatcca gaacattctt aacggatatt tttatgaaat taaaaattaa aggaggattt
+      781 agtagtaaac taagaataga gagcttagtt gaattaggcc atgaagcacg tacacaccgc
+      841 ccgtcaccct cctcaagtaa ctatattcta ttaaacatat tttatcctaa taaatacaag
+      901 aggagataag tcgtaacaag gtaagcatac tggaaagtgt gcttggaaaa ct
+//
+LOCUS       ACARR58S      162 bp ss-rRNA            RNA       15-MAR-1989
+DEFINITION  A.castellanii (amoeba) 5.8S ribosomal RNA.
+ACCESSION   K00471
+KEYWORDS    5.8S ribosomal RNA; ribosomal RNA.
+SOURCE      A.castellani (amoeba; strain ATCC 30010) rRNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 162)
+  AUTHORS   Mackay,R.M. and Doolittle,W.F.
+  TITLE     Nucleotide sequences of AcanthamoebA.castellanii 5S and 5.8S
+            ribosomal ribonucleic acids: Phylogenetic and comparative
+            structural analyses
+  JOURNAL   Nucleic Acids Res. 9, 3321-3334 (1981)
+  STANDARD  full automatic
+COMMENT     [1] also sequenced A.castellanii 5S rRNA <K03160>.
+FEATURES             Location/Qualifiers
+     rRNA            1..162
+                     /note="5.8S rRNA"
+     source          1..162
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       40 a     39 c     44 g     39 t
+ORIGIN      5' end of mature rRNA.
+        1 aactcctaac aacggatatc ttggttctcg cgaggatgaa gaacgcagcg aaatgcgata
+       61 cgtagtgtga atcgcaggga tcagtgaatc atcgaatctt tgaacgcaag ttgcgctctc
+      121 gtggtttaac cccccgggag cacgttcgct tgagtgccgc tt
+//
+LOCUS       ACARRDX       119 bp ss-rRNA            RNA       15-SEP-1990
+DEFINITION  A.castellani 5S ribosomal RNA.
+ACCESSION   M28984
+KEYWORDS    5S ribosomal RNA.
+SOURCE      A.castellani ribosomal RNA from Viluy encephalomyelitis patient
+            KPN..
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 119)
+  AUTHORS   Chumakov,K.M. and Karavanov,A.S.
+  TITLE     Preliminary characterization of an organism isolated from a case of
+            Viluy encephalomyelitis indicates a protozoal, rather than viral,
+            aetiology
+  JOURNAL   J. Gen. Microbiol. 132, 1127-1133 (1986)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..119
+                     /note="5S ribosomal RNA"
+     source          1..119
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       26 a     36 c     37 g     20 t
+ORIGIN      
+        1 ggatacggcc atactgcgca gaaagcaccg cttcccatcc gaacagcgaa gttaagctgc
+       61 gcgaggcggt gttagtactg gggtgggcga ccacccggga atccaccgtg ccgtatcct
+//
+LOCUS       ACARRJJE      241 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57865 M33241
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 013) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 241)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..241
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       60 a     39 c     57 g     48 t     37 others
+ORIGIN      A region.
+        1 ccctatnaac tttngatggt ngatagaggc ctncatggtc gtaangcggt annggagaat
+       61 tagggttnga ttgcnggann anngagccgt gagaaatcgg ctnnccatct tntaaggnng
+      121 gcagcaggng cnnnnattac ccnatccgac nnggggagng nntgacaata aataacaata
+      181 caggcgctcg ataagagnct tgtaattgga atgagtacaa tttaancccc ttancnnntn
+      241 n
+//
+LOCUS       ACARRJJEA     258 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57866 M33242
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 010) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 258)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..258
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       67 a     43 c     66 g     56 t     26 others
+ORIGIN      A region.
+        1 aaaatttctn ccctatacaa ctttngatgg tagnatagag gcctacnatg gtcagtaang
+       61 cggtancgnn naattagggt tcgattnccc gagannnnng agctctgaga aatcggctnc
+      121 catcttgcta nangggnngg cagcaggcgc nnnaattngc ccagagtcgc agacnngggg
+      181 aggtgatgtg agctatataa agtgagatca atacaggcgg cctcgataag agtcttgtaa
+      241 ttggaatgag tacaattt
+//
+LOCUS       ACARRJJEB     257 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57867 M33243
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 102) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 257)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..257
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       66 a     50 c     66 g     56 t     19 others
+ORIGIN      A region.
+        1 acggcgacga ttcattacaa atttctgccc tatcancttt cgatggtagg atagaggtcc
+       61 taccatggtc gtaacgcggt aacggagaat tagggttcga ttnccggann anngagccgt
+      121 gagaaatcgg ctnccntctt gcntgaaggg nnggcagcag gcgcnnnaat tncccaatcc
+      181 gacnngggga ggtngtgnca ataaataatc aatacaggcc ctcgataaga gtcttgtaat
+      241 tggaatgagt gacaatt
+//
+LOCUS       ACARRJJEC     261 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57868 M33244
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 014) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 261)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..261
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       71 a     46 c     69 g     55 t     20 others
+ORIGIN      A region.
+        1 ggcgacgatt cattacaaat ttctgcccta tcaactttcg atggtaggat agaggcctac
+       61 catggtcgta angcggtaac ggngaatata gggttcgatt ncnnnagann nngagcctga
+      121 gaaatcggct nccatcttnc taagggnngg cagcaggcgc nnnaattacc caagtccaga
+      181 cnnggggagg tgagtgagca atanaagtga gatcaataca ggcgctcgat aagagtcttg
+      241 taattggaat gagtgacaat t
+//
+LOCUS       ACARRJJED     223 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57869 M33245
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 001) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 223)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..223
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       61 a     42 c     55 g     43 t     22 others
+ORIGIN      A region.
+        1 ncctgcccta tnaacttcga tggtaggata gaggcctacn tngtcgtaag gggnancgnn
+       61 naattagggn tncnattccg gaaanngagc ctgagaaatc ggctaccact tctaaggnng
+      121 gcagcaggcg cnnnaattac ccaatccgac nnggggaggt agtgacaata aataacnata
+      181 caggcgctcg acaagagtct tgtaattgga atgagtacaa ttt
+//
+LOCUS       ACARRJJEE     209 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57870 M33246
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 151) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 209)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..209
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       50 a     40 c     51 g     40 t     28 others
+ORIGIN      A region.
+        1 atggtaggat agaggcctac acatcggtcg taaccgggnn ccgnnnaatt agggttcgat
+       61 tccggaannn agcctgagaa atggctaccc acttctaagg nggcagcagg cgcnnnnatt
+      121 ccnnatccgn nncggggagn tagtgacaat aaataacnat acaggtctcg annngagtct
+      181 tgtnattggn atgagtacaa tttnnnccc
+//
+LOCUS       ACARRJJEF     187 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57871 M33247
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 009) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 187)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..187
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       44 a     32 c     43 g     35 t     33 others
+ORIGIN      A region.
+        1 gtcgtaancg ggnnncgnnn aatagggttc gattccggan nnngagcctg agaaatggct
+       61 nccacttcta agnnggcagc aggcgnnnnn attncccaat gccgnnnngg ggaantagtg
+      121 aacaataaat aacnatacag gtctcgannn gagtcttgta attggnatga gtacaatttn
+      181 nccccnt
+//
+LOCUS       ACARRJJEG     247 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57872 M33248
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 013) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 247)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..247
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       49 a     41 c     58 g     47 t     52 others
+ORIGIN      B region.
+        1 ganagttann nnatngaann cnatnngata annntcgtag tnnnnaccat aagaactgat
+       61 gtcnnagcgc agactgactt aatgnggagc agcgtgtgnt agtntcataa tactatccac
+      121 nantcggcgc ggtngtcctt ggcgtcngtc cnnttcaacg ggnnnnggcg nnaggncggt
+      181 ttagcnggtn nnaccggtga atgactcccc nngcngcttg tgagaaatca taagnnnntg
+      241 ggnnnnn
+//
+LOCUS       ACARRJJEH     278 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57873 M33249
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 010) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 278)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..278
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       63 a     56 c     65 g     57 t     37 others
+ORIGIN      B region.
+        1 ctgccaagca ctnnnttcaa ttantnaann nnganagtta agggaatacg aaggactgat
+       61 cagataacng tcgtaggtcn nnatctctat tacagacgaa ttgcnnagcg nancgattaa
+      121 ggaggangtg tggcatagtc atcaatacat acnccacnat cggcgcngtn gtccttggcg
+      181 gtgtctcngc ttcacggccn ngncgcgcna nggncggttt acgcnggtnn naccggtgaa
+      241 tgnctcccct agcagtcgtt gtgagaaatc ataagnnt
+//
+LOCUS       ACARRJJEI     250 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57874 M33250
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 102) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 250)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..250
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       59 a     47 c     61 g     51 t     32 others
+ORIGIN      B region.
+        1 ccattaatca aanngacaag ttgatgggga tcngaagaac gactcagact acngtgcgta
+       61 gtcnnnacca taaacgatgc ngacnagcga ttaggagaag cgttgagatc atcgacataa
+      121 ctacccacca tccggtgcgg tcggttcttn gnnngtcgtt ggnctcgcnn gnnnatggng
+      181 tnnnggggcn atttanctga tgnnatnggt gaatgnctcc cctagcagct tgtgagaaat
+      241 cataagnntn
+//
+LOCUS       ACARRJJEJ     271 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57875 M33251
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 014) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 271)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..271
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       81 a     51 c     63 g     58 t     18 others
+ORIGIN      B region.
+        1 atttagtgaa agattaccgt tctgcnagac acgcatctag ccaagagatg nnttcagtta
+       61 atcaaggnng aagacgtgta gcgggatcga gagacgatca gatacngtcg tagtcnnnag
+      121 cgcataaacg atgccgacca gcgattagga gacgttgaat acaaaacacc accatacata
+      181 attcagtaca tggccagtca aatggttgtg natnnnttgt gtatgnnacc ggtgaatgnc
+      241 tcccctagca gcttgtgaga aatcataagn n
+//
+LOCUS       ACARRJJEK     248 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57876 M33252
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 001) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 248)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..248
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       70 a     47 c     56 g     58 t     17 others
+ORIGIN      B region.
+        1 gcgaaagcat ctgccaagga ngnnttcatt aatcaagnng aaagttaggg gatcgaagac
+       61 gancagatnc ngtcgtagtc nnaccataaa cgatgccgac cagcgattag gagacgttga
+      121 atacaaaaca ccatccattt agcatggtcg ntttcaaata ttcctttttg cgaaggttgt
+      181 ttgggaacnn ttcgtcctga tgnatctggn gaatgactcc cctagcagct tgtgagaaat
+      241 cataagnn
+//
+LOCUS       ACARRJJEL     217 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57877 M33253
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 151) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 217)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..217
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       49 a     48 c     52 g     43 t     25 others
+ORIGIN      B region.
+        1 cattcaatca annnaaagta ggatcgaagt cgattagatn nngtcgtagt cttaaccata
+       61 aaccatgcca ccagcgattg ggcgacgttt cacnnggaag tggnnccggn ggggggcgcc
+      121 nctttgctct gtnnnnnagn ncngagcaga gcnnnnntcc tttgggctgc ttccactaaa
+      181 ggatgactcc cccagcagct tgtgagaaat catcaag
+//
+LOCUS       ACARRJJEM     255 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57878 M33254
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 009) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 255)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..255
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       62 a     53 c     67 g     56 t     17 others
+ORIGIN      B region.
+        1 ttatgaaaga ttacttctgc gaaagcatct gccaaggatg ttttcattaa tcaagnngaa
+       61 agttagggga tcgaagacga ttagatacng tcgtagtctt aaccataaac catgccgacc
+      121 agcgattggg ngacgtttca cacggaggtt ggcncgggcg ccgtgccnnt gtcgcgcaag
+      181 cggcaggcgc gannnntttt gggcngcttc cnctnaagga tgactccnnn agcagcttgt
+      241 gagaaatcat caagt
+//
+LOCUS       ACARRJJEN     108 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57879 M33255
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 013) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 108)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..108
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       20 a     17 c     16 g     30 t     25 others
+ORIGIN      C region.
+        1 cngnnnnann tnttgcaaan tttnatcgtn ctncngatng ctcnntgtaa ttnttagatg
+       61 ctatcganan gnnnnattcc tngtaatncc gagtactatg cagtcgtc
+//
+LOCUS       ACARRJJEO     131 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57880 M33256
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 010) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 131)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..131
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       26 a     16 c     32 g     37 t     20 others
+ORIGIN      C region.
+        1 gncggctgan tcnnnnatnt ggcagcntgg gcnnanaggt ctgnnnnatc tttgcaaatt
+       61 taatcgtgct tggggataga tcattgtaat tattgatgnt tcgaagnngg nattcctagt
+      121 tatangcgag t
+//
+LOCUS       ACARRJJEP     111 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57881 M33257
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 102) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 111)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..111
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       24 a     15 c     22 g     32 t     18 others
+ORIGIN      C region.
+        1 gtngtcnnng atngncctgg gcnnataggt cagnnnnatc tttncaaatt taatcgtgct
+       61 ggggatanat cattgtaatt attgatcttc aannnggnat tcctagtaag c
+//
+LOCUS       ACARRJJEQ     141 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57882 M33258
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 014) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 141)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..141
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       28 a     24 c     33 g     42 t     14 others
+ORIGIN      C region.
+        1 ggngtcaanc cgtatcgtat gttgctgtcc nngatntgcg cctgggccga taggtccgnn
+       61 nnatctttnc aaatttaatc gtgcttgggg atagatcatt gtaattattg atcttcaann
+      121 nggnattcct agtaagcgag t
+//
+LOCUS       ACARRJJER     237 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57883 M33259
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 001) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 237)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..237
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       49 a     43 c     46 g     67 t     32 others
+ORIGIN      C region.
+        1 nnnnagatnt nctcgggnnc angcgcgcta cactgattaa ttcaacgagt cnncttcaan
+       61 cnaggcgtag atnngttttg gtttgtgtna gncatcaacc aanactattt ctgcncttcc
+      121 nnnatcgcgc ctgggccgat aggttctggn naatctttgc aaatttaact nctgtgctng
+      181 gggatagatc tacttgtaat tattgatctt caantnggna ttcctagtaa ngnnagt
+//
+LOCUS       ACARRJJES     174 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57884 M33260
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 151) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 174)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..174
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       33 a     30 c     45 g     42 t     24 others
+ORIGIN      C region.
+        1 gcttgcgctc anaaggactg ggtccttcgt ncangnnagc ggggaggcgg cngnnctngt
+       61 ccctgggccg ataggatcta gnnnaatcct tgtgaaattt aatccgtgct ggggatagat
+      121 cattgtaatt attgatcttc annnnggnat tcctagtaan gnnagtnnnn agct
+//
+LOCUS       ACARRJJET     210 bp ss-rRNA            RNA       05-NOV-1990
+DEFINITION  A.castellanii 18S ribosomal RNA.
+ACCESSION   M57885 M33261
+KEYWORDS    18S ribosomal RNA.
+SOURCE      A.castellanii (strain 009) ribosomal RNA.
+  ORGANISM  Acanthamoeba castellanii
+            Eukaryota; Animalia; Protozoa; Sarcomastigophora; Sarcodina;
+            Rhizopoda; Lobosa; Gymnamoeba; Amoebida; Acanthopodina;
+            Acanthamoebidae.
+REFERENCE   1  (bases 1 to 210)
+  AUTHORS   Johnson,A.M., Fielke,R., Christy,P.E., Robinson,B. and
+            Baverstock,P.R.
+  TITLE     Small subunit ribosomal RNA evolution in the genus Acanthamoeba
+  JOURNAL   J. Gen. Microbiol. 136, 1689-1698 (1990)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     source          1..210
+                     /organism="Acanthamoeba castellanii"
+BASE COUNT       36 a     40 c     52 g     57 t     25 others
+ORIGIN      C region.
+        1 attaattcca cgagttccac tgcnncntng tacgtgggtg gngcgtcgtn ctctgagatc
+       61 gacaaggctg gtngtgcggc ntcgtnntgc ggcngcnctn tccctgggcc gataggtctg
+      121 nnnnatcttt gtgaaattta atcgtgctcg gggatagatc attgtaatta ttgatcttca
+      181 nnnnggnatt cctagtaang nnagtcatca
+//
+LOCUS       ACCRRSAA     1536 bp ss-rRNA            RNA       15-SEP-1990
+DEFINITION  A.calcoaceticus 16S ribosomal RNA.
+ACCESSION   M34139
+KEYWORDS    16S ribosomal RNA.
+SOURCE      A.calcoaceticus (strain 33604) ribosomal RNA.
+  ORGANISM  Acinetobacter calcoaceticus
+            Prokaryotae; Gracilicutes; Scotobacteria; Neisseriaceae.
+REFERENCE   1  (bases 1 to 1536)
+  AUTHORS   Woese,C.R.
+  JOURNAL   Unpublished (1990)
+  STANDARD  full automatic
+COMMENT     Draft entry and computer-readable sequence for [1] kindly submitted
+            by C.R.Woese, 09-MAY-1990.
+             
+              Author address: C.R.Woese
+              University of Illinois
+              Dept. Microbiology
+              131 Burrill Hall
+              407 S. Goodwin Ave.
+              Urbana, IL 61801
+              (217) 333-9369.
+FEATURES             Location/Qualifiers
+     rRNA            1..1536
+                     /note="16S ribosomal RNA"
+     source          1..1536
+                     /organism="Acinetobacter calcoaceticus"
+BASE COUNT      387 a    329 c    460 g    330 t     30 others
+ORIGIN      
+        1 ttaactgaag agtttgatca tggctcagat tgaacgctgg cggcaggctt aacacatgca
+       61 agtcgagcgg ggaaggttgc ttcggtaact gactagcggc ggacgggtga gtaatgctta
+      121 ggaatctgcc atttagtggg ggacaacatt ccgaanggaa tgctaatacc gcatacgtcc
+      181 tacaggagaa agcaggggat ctccggacct tgcgctaaat gatgagccta agtcggatta
+      241 gctagttggt ggggtaaagg cctaccaagg cgacgatctg tagcgggtct gagaggatga
+      301 tccgccacac tgggactgag acacggccca gactcctacg ggaggcagca gtggggaata
+      361 ttggacaatg ggcgcaagcc ngatccagcc atgccgcgtg tgtgaagaag gccttttggt
+      421 tgtaaagcac tttaagcgag gaggaggctc tcttagttaa tacctaagat gagtggacgt
+      481 tactcgcaga ataagcaccg gctaactctg tgccagcagc cgcggtaata cagagngtgc
+      541 gagcgttaat cggatttact gggcgtaaag cgtgcgtagg cggcttttta agtcggatgt
+      601 gaaatccccg agcttaactt gggaattgca ttcgatactg ggaagctaga gtatgggaga
+      661 ggatggtaga attccaggtg tagcggtgaa atgcgtagag atctggagga ataccgatgg
+      721 cgaaggcagc catctggcct aatactgacg ctgaggtacg naagcatggg gagcaaacag
+      781 gattagatac cctggtagtc catgccgtaa acgatgtcta ctagccgttg gggcctttga
+      841 ggctttagtg gcgcagctaa cgcgataagt agactgcctg gggagtacgg tcgcaagact
+      901 aaaactcaaa tgaattgacg ggggcncgca caagcggtgg agcatgtggt ttaattcgat
+      961 gcaacgcgaa gaaccttacc tggccttgac atactagaaa ctttccagag atggattggt
+     1021 gccttcggga atctagatac aggtgctgca tggctgtcgt cagctcgtgt cgtgagatgt
+     1081 tgggttaagt cccgcaacga gcgcaaccct tttccttact tgccagcatt tcggatggga
+     1141 actttaagga tactgccagt gacaaactgg aggaaggcgg ggacgacgtc aagtcatcat
+     1201 ggcccttacg gctagggcta cacacgtgct acaatggtcg gtacaaaggg ttgctaccta
+     1261 gcgataggat gctaatctca aaaagccgat cgtagttcgg attggagtct gcaactcgac
+     1321 tccatgaagt cggaatcgct agtaatcgcg gatcagaatg ccgcggtgaa tacgttcccg
+     1381 ggccttgtac acaccgcccg tcacaccatg ggagtttgtt gcaccagaag tagctagcct
+     1441 aactgcaaag agggcggtta ccacggtgtg gccgatgact agggnnnnnn ngtaacaagn
+     1501 nnnnnnnnnn ngaacctgnn nnnngatcac ctcctt
+//
+LOCUS       ACDRRAAC      122 bp ss-rRNA            RNA       15-MAR-1988
+DEFINITION  Acidiphilium cryptum 5S ribosomal RNA.
+ACCESSION   M11545
+KEYWORDS    5S ribosomal RNA.
+SOURCE      Acidiphilium cryptum (ATCC 33463) ribosomal RNA.
+  ORGANISM  Acidiphilium cryptum
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Alcaligenaceae.
+REFERENCE   1  (bases 1 to 122)
+  AUTHORS   Lane,D.J., Stahl,D.A., Olsen,G.J., Heller,D.J. and Pace,N.R.
+  TITLE     Phylogenetic analysis of the genera Thiobacillus and Thiomicrospira
+            by 5S rRNA sequences
+  JOURNAL   J. Bacteriol. 163, 75-81 (1985)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..122
+                     /note="5S ribosomal RNA"
+     source          1..122
+                     /organism="Acidiphilium cryptum"
+BASE COUNT       22 a     44 c     37 g     19 t
+ORIGIN      5' end of mature 5S rRNA.
+        1 cgacctggtg gccattgcgg ggagcctgca cccgatccca tcccgaactc ggccgtgaaa
+       61 atccccagcg cccatggtac tgtgcctcaa ggcacgggag agtaggtcgc cgccaggtcc
+      121 tc
+//
+LOCUS       ACDRRDA01     316 bp ss-rRNA            RNA       24-JUN-1993
+DEFINITION  Acidiphilium angustum 16S rRNA sequence.
+ACCESSION   M79363
+KEYWORDS    16S ribosomal RNA.
+SEGMENT     1 of 3
+SOURCE      Acidiphilium angustum (library: ATCC 35903) rRNA.
+  ORGANISM  Acidiphilium angustum
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Alcaligenaceae.
+REFERENCE   1  (bases 1 to 316)
+  AUTHORS   Lane,D.J., Harrison,A.P., Stahl,D.A., Pace,B., Giovannoni,S.J.,
+            Olsen,G.J. and Pace,N.R.
+  TITLE     Evolutionary relationships among sulfur- and iron-oxidizing
+            eubacteria
+  JOURNAL   J. Bacteriol. 174, 269-278 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..316
+                     /product="16S ribosomal RNA"
+                     /gene="16S rRNA"
+                     /partial
+     source          1..316
+                     /organism="Acidiphilium angustum"
+                     /sequenced_mol="rRNA"
+                     /tissue_lib="ATCC 35903"
+BASE COUNT       77 a     65 c     98 g     58 t     18 others
+ORIGIN      
+        1 aanctacggc taatacngca taatgcctga gggcnaaaga cgtaagtcgt cttggnagga
+       61 gcctgcgtct gattaggtag ttggtggggt aaaggcctac nnagccnncg atcagtagct
+      121 ngtctgagag gatgatcagc cacattggga ctgagacacg gccnnaactc ctacgggagg
+      181 cagcagtggg gaatattgga caatgggggc aacccnnatc cagcaatgcc gcgtgggtga
+      241 agaaggtntt cggattgtaa agccnntttg gcggggacga tgatgacggt acccgcagaa
+      301 taagctccgg cnnact
+//
+LOCUS       ACDRRDA02     321 bp ss-rRNA            RNA       24-JUN-1993
+DEFINITION  Acidiphilium angustum 16S rRNA sequence.
+ACCESSION   M79364
+KEYWORDS    16S ribosomal RNA.
+SEGMENT     2 of 3
+SOURCE      Acidiphilium angustum (library: ATCC 35903) rRNA.
+  ORGANISM  Acidiphilium angustum
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Alcaligenaceae.
+REFERENCE   1  (bases 1 to 321)
+  AUTHORS   Lane,D.J., Harrison,A.P., Stahl,D.A., Pace,B., Giovannoni,S.J.,
+            Olsen,G.J. and Pace,N.R.
+  TITLE     Evolutionary relationships among sulfur- and iron-oxidizing
+            eubacteria
+  JOURNAL   J. Bacteriol. 174, 269-278 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..321
+                     /product="16S ribosomal RNA"
+                     /gene="16S rRNA"
+                     /partial
+     source          1..321
+                     /organism="Acidiphilium angustum"
+                     /sequenced_mol="rRNA"
+                     /tissue_lib="ATCC 35903"
+BASE COUNT       76 a     63 c     98 g     71 t     13 others
+ORIGIN      
+        1 cgtaggcgct tacatagtta ggcgtgaaat tcctnggctc aacctgggnc tgcgtctnat
+       61 acatgtagcn ygagtgtgaa agagggtcgt sgaatttcca gtgtagaggt gaaattcgta
+      121 gatattggaa agaacaccgg tggcgaaggc ggcgacctng ttcattactg acgctgaggc
+      181 gcnaaagcgt ggggagcaaa caggattaga taccctngta gtccacgctg taaacgatgt
+      241 gtsctsgatg ttggggtgct tagcacttca gtgtcgtast aacgcggtaa gcacaccgcc
+      301 tngggagtac ggccgcaagg t
+//
+LOCUS       ACDRRDA03     339 bp ss-rRNA            RNA       24-JUN-1993
+DEFINITION  Acidiphilium angustum 16S rRNA sequence.
+ACCESSION   M79365
+KEYWORDS    16S ribosomal RNA.
+SEGMENT     3 of 3
+SOURCE      Acidiphilium angustum (library: ATCC 35903) rRNA.
+  ORGANISM  Acidiphilium angustum
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Alcaligenaceae.
+REFERENCE   1  (bases 1 to 339)
+  AUTHORS   Lane,D.J., Harrison,A.P., Stahl,D.A., Pace,B., Giovannoni,S.J.,
+            Olsen,G.J. and Pace,N.R.
+  TITLE     Evolutionary relationships among sulfur- and iron-oxidizing
+            eubacteria
+  JOURNAL   J. Bacteriol. 174, 269-278 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..339
+                     /product="16S ribosomal RNA"
+                     /gene="16S rRNA"
+                     /partial
+     source          1..339
+                     /organism="Acidiphilium angustum"
+                     /sequenced_mol="rRNA"
+                     /tissue_lib="ATCC 35903"
+BASE COUNT       72 a     83 c    103 g     74 t      7 others
+ORIGIN      
+        1 acaggtgctg catggctgtc gtcagctcgt gtcgtgagat gttgggttaa gtcccgcaac
+       61 gagcgcaacc ctcgccttta gttgccagca cgtttgggtg ggnactctag aggaactgcc
+      121 ggtgacaagc cggaggaagg tgggnatgac gtcaagtcct catggccctt atgtcctggg
+      181 ctacacacgt gctacaatgg cggtgacagt gggaagccaa gcagcgatgc tnagctnatc
+      241 ctgaaaagcc gtctcagttc ggattgcact ctgcaactcg ggtgcatgaa ggtggaatcg
+      301 ctagtaatcg cggatcagca tgccgcngtn aatacnttc
+//
+LOCUS       ACDRRDD01     315 bp ss-rRNA            RNA       24-JUN-1993
+DEFINITION  Acidiphilium cryptum 16S rRNA sequence.
+ACCESSION   M79366
+KEYWORDS    16S ribosomal RNA.
+SEGMENT     1 of 3
+SOURCE      Acidiphilium cryptum (library: ATCC 33463) rRNA.
+  ORGANISM  Acidiphilium cryptum
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Alcaligenaceae.
+REFERENCE   1  (bases 1 to 315)
+  AUTHORS   Lane,D.J., Harrison,A.P., Stahl,D.A., Pace,B., Giovannoni,S.J.,
+            Olsen,G.J. and Pace,N.R.
+  TITLE     Evolutionary relationships among sulfur- and iron-oxidizing
+            eubacteria
+  JOURNAL   J. Bacteriol. 174, 269-278 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..315
+                     /product="16S ribosomal RNA"
+                     /gene="16S rRNA"
+                     /partial
+     source          1..315
+                     /organism="Acidiphilium cryptum"
+                     /sequenced_mol="rRNA"
+                     /tissue_lib="ATCC 33463"
+BASE COUNT       78 a     68 c     99 g     57 t     13 others
+ORIGIN      
+        1 aaactacgnc taatacngca tgatcctgag gggcaaagnn nnaagtcgcc tgaggaggag
+       61 cctgcgtctg attaggtagt tggtggggta aaggcctacc aagcctncga tcagtagctg
+      121 gtctgagagg atgatcagcc acactgggac tgagacacgg cccngactcc tacgggaggc
+      181 agcagtgggg aatattggac aatgggcgaa agcctnatcc agcaatgccg cgtggatgaa
+      241 gaaggtcttc ggattgtaaa gtccntttgg cggggacgat gatgacggta cccgcagaat
+      301 aagctccggc nnnct
+//
+LOCUS       ACDRRDD02     350 bp ss-rRNA            RNA       24-JUN-1993
+DEFINITION  Acidiphilium cryptum 16S rRNA sequence.
+ACCESSION   M79367
+KEYWORDS    16S ribosomal RNA.
+SEGMENT     2 of 3
+SOURCE      Acidiphilium cryptum (library: ATCC 33463) rRNA.
+  ORGANISM  Acidiphilium cryptum
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Alcaligenaceae.
+REFERENCE   1  (bases 1 to 350)
+  AUTHORS   Lane,D.J., Harrison,A.P., Stahl,D.A., Pace,B., Giovannoni,S.J.,
+            Olsen,G.J. and Pace,N.R.
+  TITLE     Evolutionary relationships among sulfur- and iron-oxidizing
+            eubacteria
+  JOURNAL   J. Bacteriol. 174, 269-278 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..350
+                     /product="16S ribosomal RNA"
+                     /gene="16S rRNA"
+                     /partial
+     source          1..350
+                     /organism="Acidiphilium cryptum"
+                     /sequenced_mol="rRNA"
+                     /tissue_lib="ATCC 33463"
+BASE COUNT       79 a     71 c    122 g     74 t      4 others
+ORIGIN      
+        1 agcgttgctc ggaatgactg ggcgtaaagg gcgcgtaggc ggacggcaca gtcaggcgtg
+       61 aaattcctgg gctcaacctg ggnctgcgtc tgagacgtgt tgtcttgagt atggaagagg
+      121 gttgtggaat ttccagtgta gaggtgaaat tcgtagatat tggaaagaac accggtggcg
+      181 aaggcggcaa cctggtccat tnctgacgct gaggcgcgaa agcgtgggga gcaaacagga
+      241 ttagataccc tggtagtcca cgctgtaaac gatgtgtgct ggatgttggg gtgcttagca
+      301 cttcagtgtc gtacgtaacg cggtaagcac accgccnngg gagtacggcc
+//
+LOCUS       ACDRRDD03     303 bp ss-rRNA            RNA       24-JUN-1993
+DEFINITION  Acidiphilium cryptum 16S rRNA sequence.
+ACCESSION   M79368
+KEYWORDS    16S ribosomal RNA.
+SEGMENT     3 of 3
+SOURCE      Acidiphilium cryptum (library: ATCC 33463) rRNA.
+  ORGANISM  Acidiphilium cryptum
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Alcaligenaceae.
+REFERENCE   1  (bases 1 to 303)
+  AUTHORS   Lane,D.J., Harrison,A.P., Stahl,D.A., Pace,B., Giovannoni,S.J.,
+            Olsen,G.J. and Pace,N.R.
+  TITLE     Evolutionary relationships among sulfur- and iron-oxidizing
+            eubacteria
+  JOURNAL   J. Bacteriol. 174, 269-278 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..303
+                     /product="16S ribosomal RNA"
+                     /gene="16S rRNA"
+                     /partial
+     source          1..303
+                     /organism="Acidiphilium cryptum"
+                     /sequenced_mol="rRNA"
+                     /tissue_lib="ATCC 33463"
+BASE COUNT       62 a     72 c     97 g     66 t      6 others
+ORIGIN      
+        1 tgtcgtgaga tgttgggtta agtccgcaac gagcgcaacc ctcgccntca gttgccagca
+       61 tgtttgggtg ggcactctga aggaactgcc ggtgacaagc cggaggaagg tggggatgac
+      121 gtcaagtcct catggcccnt atgtcctggg ctacacacgt gctactatgg cggtgacwgt
+      181 gggaagccag gtggtgacac cgagctgatc tcaaaaagcc gnctcwgttc ggattgcact
+      241 ctgctactcg agtgcatgaa ggtggaatcg ctagttatcg cggatctgca tgcngcggtg
+      301 aat
+//
+LOCUS       ACDRRDG01     264 bp ss-rRNA            RNA       24-JUN-1993
+DEFINITION  Acidiphilium facilis 16S rRNA sequence.
+ACCESSION   M79369
+KEYWORDS    16S ribosomal RNA.
+SEGMENT     1 of 3
+SOURCE      Acidiphilium facilis (library: ATCC 35904) rRNA.
+  ORGANISM  Acidiphilium facilis
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Alcaligenaceae.
+REFERENCE   1  (bases 1 to 264)
+  AUTHORS   Lane,D.J., Harrison,A.P., Stahl,D.A., Pace,B., Giovannoni,S.J.,
+            Olsen,G.J. and Pace,N.R.
+  TITLE     Evolutionary relationships among sulfur- and iron-oxidizing
+            eubacteria
+  JOURNAL   J. Bacteriol. 174, 269-278 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..264
+                     /product="16S ribosomal RNA"
+                     /gene="16S rRNA"
+                     /partial
+     source          1..264
+                     /organism="Acidiphilium facilis"
+                     /sequenced_mol="rRNA"
+                     /tissue_lib="ATCC 35904"
+BASE COUNT       60 a     54 c     75 g     46 t     29 others
+ORIGIN      
+        1 aggagcctgc gtctgattag ctkgttggtg gggtnaaggc ctaccaagnn nnckatcagt
+       61 agctggtctg agaggatgat cagccacatt gggactgaga cacggccnna actcctacgg
+      121 gaggcagcag tgggmmatat tggacaatgg gcgcaagcch matccagcaa tgccgmgtgt
+      181 gtgaagaagg hmhhcnnatt gtaaagcach httggcangg mctgattgat gacggtacch
+      241 mcagaataag ccccvgchma cttc
+//
+LOCUS       ACDRRDG02     313 bp ss-rRNA            RNA       24-JUN-1993
+DEFINITION  Acidiphilium facilis 16S rRNA sequence.
+ACCESSION   M79370
+KEYWORDS    16S ribosomal RNA.
+SEGMENT     2 of 3
+SOURCE      Acidiphilium facilis (library: ATCC 35904) rRNA.
+  ORGANISM  Acidiphilium facilis
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Alcaligenaceae.
+REFERENCE   1  (bases 1 to 313)
+  AUTHORS   Lane,D.J., Harrison,A.P., Stahl,D.A., Pace,B., Giovannoni,S.J.,
+            Olsen,G.J. and Pace,N.R.
+  TITLE     Evolutionary relationships among sulfur- and iron-oxidizing
+            eubacteria
+  JOURNAL   J. Bacteriol. 174, 269-278 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..313
+                     /product="16S ribosomal RNA"
+                     /partial
+     source          1..313
+                     /organism="Acidiphilium facilis"
+                     /sequenced_mol="rRNA"
+                     /tissue_lib="ATCC 35904"
+BASE COUNT       83 a     59 c     97 g     69 t      5 others
+ORIGIN      
+        1 tgtacagtca gaagtgaaat tcctggctca acctgggnac tgcttttgat acgtgcaagc
+       61 tagagtgagg aagagggttg tggaatttcc agtgtagagg tgaaattcgt agatattgga
+      121 aagaacaccg gtggcgaagg cggcaacctg gtcctnaact gacgctgagg cgcnaaagcg
+      181 tggggagcaa acaggattag ataccctrgt agtccacgct gtaaacgatg tgtgctagat
+      241 gttggggaac ttagtttctc agtgtcgtac gtaacgcgat aagcacacag cctrgggagt
+      301 acggccgcaa ggt
+//
+LOCUS       ACDRRDG03     345 bp ss-rRNA            RNA       24-JUN-1993
+DEFINITION  Acidiphilium facilis 16S rRNA sequence.
+ACCESSION   M79371
+KEYWORDS    16S ribosomal RNA.
+SEGMENT     3 of 3
+SOURCE      Acidiphilium facilis (library: ATCC 35904) rRNA.
+  ORGANISM  Acidiphilium facilis
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Alcaligenaceae.
+REFERENCE   1  (bases 1 to 345)
+  AUTHORS   Lane,D.J., Harrison,A.P., Stahl,D.A., Pace,B., Giovannoni,S.J.,
+            Olsen,G.J. and Pace,N.R.
+  TITLE     Evolutionary relationships among sulfur- and iron-oxidizing
+            eubacteria
+  JOURNAL   J. Bacteriol. 174, 269-278 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..345
+                     /product="16S ribosomal RNA"
+                     /partial
+     source          1..345
+                     /organism="Acidiphilium facilis"
+                     /sequenced_mol="rRNA"
+                     /tissue_lib="ATCC 35904"
+BASE COUNT       76 a     84 c     97 g     86 t      2 others
+ORIGIN      
+        1 ccttccgaca ggtgctgcat ggctgtcgtc agctcgtgtc gtgagatgtt gggttaagtc
+       61 ccgcaacgag cgcaaccctt gcctttagtt gccatcattt agttgggcac tctacaggaa
+      121 ctgccggtga caagccggag gaaggtgggg atgacgtcaa gtcctcatgg cccttatgtc
+      181 ctgggctaca cacgtgctac aatggtggtg acagtgggaa gctaggtagt gataccgtgc
+      241 tcatctctaa aagccatctc agttcagatt gtactctgca actcgagtmc atgaaggtgg
+      301 aatcgctagt aatcgtggat cagcatgcca cggtnaatac gttcc
+//
+LOCUS       ACDRRDJ01     363 bp ss-rRNA            RNA       24-JUN-1993
+DEFINITION  Acidiphilium rubrum 16S rRNA sequence.
+ACCESSION   M79377
+KEYWORDS    16S ribosomal RNA.
+SEGMENT     1 of 3
+SOURCE      Acidiphilium rubrum (library: ATCC 35905) rRNA.
+  ORGANISM  Acidiphilium rubrum
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Alcaligenaceae.
+REFERENCE   1  (bases 1 to 363)
+  AUTHORS   Lane,D.J., Harrison,A.P., Stahl,D.A., Pace,B., Giovannoni,S.J.,
+            Olsen,G.J. and Pace,N.R.
+  TITLE     Evolutionary relationships among sulfur- and iron-oxidizing
+            eubacteria
+  JOURNAL   J. Bacteriol. 174, 269-278 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..363
+                     /product="16S ribosomal RNA"
+                     /gene="16S rRNA"
+                     /partial
+     source          1..363
+                     /organism="Acidiphilium rubrum"
+                     /sequenced_mol="rRNA"
+                     /tissue_lib="ATCC 35905"
+BASE COUNT       83 a     71 c    110 g     64 t     35 others
+ORIGIN      
+        1 ggtagtacgc gtaggaatct atccnnnnnn nnnnnnnnnn nnnnggaaac tacggctaat
+       61 accgcataat sctgagggcg aaagacgtaa gtcgtctggg gaggagcctg cgtctgatta
+      121 ggtagttggt ggggtnaagg cctacnnagc cnncgatcag tagctggtct gagaggatga
+      181 tcagccacat tgggactgag acacggccnn aactcctacg ggaggcagca gtggggaata
+      241 ttggacaatg ggggcaaccc tnatccagca atgccgcgtg ggtgaagaag gtnttcggat
+      301 tgtaaagccn nnttggcggg gacgatgatg acggtacccg cagaataagc tccggcnnac
+      361 ttc
+//
+LOCUS       ACDRRDJ02     347 bp ss-rRNA            RNA       24-JUN-1993
+DEFINITION  Acidiphilium rubrum 16S rRNA sequence.
+ACCESSION   M79378
+KEYWORDS    16S ribosomal RNA.
+SEGMENT     2 of 3
+SOURCE      Acidiphilium rubrum (library: ATCC 35905) rRNA.
+  ORGANISM  Acidiphilium rubrum
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Alcaligenaceae.
+REFERENCE   1  (bases 1 to 347)
+  AUTHORS   Lane,D.J., Harrison,A.P., Stahl,D.A., Pace,B., Giovannoni,S.J.,
+            Olsen,G.J. and Pace,N.R.
+  TITLE     Evolutionary relationships among sulfur- and iron-oxidizing
+            eubacteria
+  JOURNAL   J. Bacteriol. 174, 269-278 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..347
+                     /product="16S ribosomal RNA"
+                     /gene="16S rRNA"
+                     /partial
+     source          1..347
+                     /organism="Acidiphilium rubrum"
+                     /sequenced_mol="rRNA"
+                     /tissue_lib="ATCC 35905"
+BASE COUNT       83 a     67 c    114 g     78 t      5 others
+ORIGIN      
+        1 tctgaatgac tgggcgtaaa gggncgtagg cgcttacata gttaggcgtg aaattcctgg
+       61 gctcaacctg gggctgcgtc taatacatgt aggcttgagt gtgaaagagg gtcgtggaat
+      121 ttccagtgta gaggtgaaat tcgtagatat tggaaagaac accggtggcg aaggcggcga
+      181 cctngttcat tactgacgct gaggcgcnaa agcgtgggga gcaaacagga ttagataccc
+      241 tngtagtcca cgctgtaaac gatgtgtgct ggatgttggg gtgcttagca cttcagtgtc
+      301 gtagctaacg cggtaagcac accgcctngg gagtacggcc gcaaggt
+//
+LOCUS       ACDRRDJ03     383 bp ss-rRNA            RNA       24-JUN-1993
+DEFINITION  Acidiphilium rubrum 16S rRNA sequence.
+ACCESSION   M79379
+KEYWORDS    16S ribosomal RNA.
+SEGMENT     3 of 3
+SOURCE      Acidiphilium rubrum (library: ATCC 35905) rRNA.
+  ORGANISM  Acidiphilium rubrum
+            Prokaryotae; Gracilicutes; Scotobacteria; Aerobic rods and cocci;
+            Alcaligenaceae.
+REFERENCE   1  (bases 1 to 383)
+  AUTHORS   Lane,D.J., Harrison,A.P., Stahl,D.A., Pace,B., Giovannoni,S.J.,
+            Olsen,G.J. and Pace,N.R.
+  TITLE     Evolutionary relationships among sulfur- and iron-oxidizing
+            eubacteria
+  JOURNAL   J. Bacteriol. 174, 269-278 (1992)
+  STANDARD  full automatic
+FEATURES             Location/Qualifiers
+     rRNA            1..383
+                     /product="16S ribosomal RNA"
+                     /gene="16S rRNA"
+                     /partial
+     source          1..383
+                     /organism="Acidiphilium rubrum"
+                     /sequenced_mol="rRNA"
+                     /tissue_lib="ATCC 35905"
+BASE COUNT       79 a     92 c    120 g     84 t      8 others
+ORIGIN      
+        1 ttgacatgag agcgtgccag agatnnnttc cgcaggnnct ttgcacaggt gctgcatggc
+       61 tgtcgtcagc tcgtgtcgtg agatgttggg ttaagtcccg caacgagcgc aaccctcgcc
+      121 tttagttgcc agcacgtttg ggtgggnact ctagaggrac tgccggtgac aagccggagg
+      181 aaggtgggna tgacgtcaag tcctcatggc ccttatgtcc tgggctacac acgtgctaca
+      241 atggcggtga cagtgggaag ccaagcagcg atgctgagct gatcctgaaa agccgtctca
+      301 gttcggattg cactctgcaa ctcgggtgca tgaaggtgga atcgctagta atcgcggatc
+      361 agcatgccgc ggtgaatacg ttc
+//

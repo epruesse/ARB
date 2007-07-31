@@ -1,0 +1,89 @@
+================================================================================
+To install a precompiled ARB
+================================================================================
+
+1. download the needed files from our homepage http://www.arb-home.de/
+   and save them into a directory of your choice (i.e. ~/arb-install/ )
+
+   Files needed: 'arb.tgz', 'arb_install.sh' and 'zcat'
+   Note: zcat just is a copy of gzip
+
+2. get root
+3. run arb_install.sh and follow the instructions
+4. Install the following packages:
+
+Software that is needed to run ARB:
+
+- xview
+- (open)motif
+- bash
+- OPENGL
+- libGLEW -- Open GL extensions library (see subdirectory lib/addlibs)
+- libpng
+
+Software that is useful together with ARB:
+------------------------------------------
+
+- gnuplot
+- ghostview (gv)
+- xfig (+ fig2dev to print from xfig)
+- perl5
+
+
+Non-OPENGL version of ARB:
+--------------------------
+
+Instead of downloading arb.tgz, download arb_noOPENGL.tgz, rename it into arb.tgz.
+
+
+Libraries needed to run 32-bit ARB on 64-bit machine:
+-----------------------------------------------------
+(checked on OpenSuSE 10.2)
+
+- openmotif-libs-32bit + create link: cd /usr/lib; ln -s libXm.so.4 libXm.so.3  
+
+
+================================================================================
+To build ARB from source
+================================================================================
+
+1. download the needed files from our homepage http://www.arb-home.de/
+   and save them into a directory of your choice (i.e. ~/arb-build/ )
+
+   Files needed: 'arbsrc*.tgz'
+
+2. Unpack the source
+
+   e.g.
+        tar -zxvf arbsrc_2003_05_22.tgz
+
+3. Run
+
+        make all
+
+   and follow the instructions there.
+
+
+Additional software that is needed to compile ARB:
+--------------------------------------------------
+
+- expat, rxp, sablotron 0.82-1.0 [needed for target 'help' only]
+- openmotif, openmotif-devel
+- xaw???
+- xview-devel
+- libtiff-devel
+- java 1.3.1 or above [needed for arb_probe_library only]
+- lynx
+
+Additional software that is needed to compile open gl parts:
+------------------------------------------------------------
+
+- mesa-devel ?
+- libpng
+- libglew                  http://glew.sourceforge.net/
+
+----------------------------------------------------------------------
+If we forgot something (or if your OS needs something special)
+please notify us (devel@arb-home.de). We will mention it here..
+----------------------------------------------------------------------
+

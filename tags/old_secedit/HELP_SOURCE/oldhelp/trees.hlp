@@ -1,0 +1,38 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Trees
+
+OCCURRENCE	ARB_NT
+
+DESCRIPTION	A tree consists of two types of 'nodes':
+
+		- tips or terminal nodes: species
+
+			connected to exactly one father
+
+		- inner nodes: hypothetical ancestors
+
+			connected to one father
+			(and in the binary case to two children).
+			A group_name may be assigned to an inner node; in this
+			case, the node and all its children become a group.
+			<ARB_NT/INFO_MODE/M>
+
+		There are significant differences between
+		phylogenetic trees and binary trees:
+
+		phylogenetic trees 		 	binary trees:
+                -------------------------------------------------------------------------
+		unrooted				rooted
+		inner nodes have n children		all inner nodes have two children
+
+		Since binary trees are much easier to handle, ARB converts
+		phylogenetic trees to binary trees.
+

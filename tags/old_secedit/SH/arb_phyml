@@ -1,0 +1,107 @@
+#!/bin/bash -x
+
+showinput() {
+    echo '------------------'
+    cat -
+    echo '------------------'
+}
+
+switchmodel() {
+    if [ $1 = 0 ]; then
+        echo ""
+    else
+        echo "m `switchmodel $[$1-1]`"
+    fi
+}
+
+PHYML=$ARBHOME/bin/phyml
+if [ \! -x $PHYML ]; then
+    arb_message 'Error: You have to install phyml and link it into $ARBHOME/bin\n(e.g.: cd ARBHOME/bin; ln -s /path/to/your/phyml .)'
+else
+    INFILE=$1; shift
+    DATATYPE=$1; shift
+    MODEL=$1; shift
+
+    if [ "$DATATYPE" = "DNA" ]; then
+        OPTFREQ=$1; shift
+        BASEFREQEST=$1; shift
+        TSTVRATIO=$1; shift
+        PINVAR=$1; shift
+    else
+        if [ "$DATATYPE" = "AA" ]; then
+            PINVAR=$1; shift
+        else
+            echo "Invalid datatype '$DATATYPE'"
+            exit 1
+        fi
+    fi
+    INTERACTIVE=$1; shift
+
+    if [ -z $INTERACTIVE -o \! -z $1 ]; then
+        echo 'Usage: arb_phyml seqfile DNA substmodel optfreq basefreqest tstvratio pinvar interactive'
+        echo 'Usage: arb_phyml seqfile AA  substmodel pinvar interactive'
+    else
+        # echo "INFILE='$INFILE'"
+        # echo "DATATYPE='$DATATYPE'"
+        # echo "MODEL='$MODEL'"
+        # echo "OPTFREQ='$OPTFREQ'"
+        # echo "BASEFREQEST='$BASEFREQEST'"
+        # echo "TSTVRATIO='$TSTVRATIO'"
+        # echo "PINVAR='$PINVAR'"
+        # echo "INTERACTIVE='$INTERACTIVE'"
+        
+        ARGS=$INFILE
+        SETMODEL=`switchmodel $MODEL`
+        if [ "$DATATYPE" = "AA" ]; then
+            ARGS="$ARGS d $SETMODEL"
+            if [ $PINVAR = 1 ]; then
+                ARGS="$ARGS v y"
+            fi
+        else
+            ARGS="$ARGS $SETMODEL"
+            if [ $OPTFREQ = 1 ]; then
+                if [ $MODEL = 4 ]; then
+                    ARGS="$ARGS e"
+                else
+                    arb_message "'Optimize equilibrium frequencies' only applies to 'custom' model. Ignored."
+                fi
+            fi
+            if [ $BASEFREQEST = 1 ]; then
+                if [ $MODEL = 5 -o $MODEL = 6 -o $MODEL = 4 ]; then
+                    arb_message "'Base frequency estimates' does not apply to chosen model. Ignored."
+                else
+                    ARGS="$ARGS e"
+                fi
+            fi
+            if [ $TSTVRATIO = 1 ]; then
+                if [ $MODEL = 3 -o $MODEL = 4 -o $MODEL = 5 -o $MODEL = 7 ]; then
+                    arb_message "'Ts/tv ratio' does not apply to chosen model. Ignored."
+                else
+                    ARGS="$ARGS t y"
+                fi
+            fi
+            if [ $PINVAR = 1 ]; then
+                if [ $MODEL = 4 ]; then
+                    arb_message "'Proportion of invariable sites' does not apply to chosen model. Ignored."
+                else
+                    ARGS="$ARGS v y"
+                fi
+            fi
+        fi
+
+        # PHYML=showinput
+        if [ $INTERACTIVE = 1 ]; then
+            (arb_echo $ARGS; cat -) | $PHYML
+        else
+            arb_echo $ARGS y | $PHYML
+        fi
+        
+        TREEFILE=infile_phyml_tree.txt
+        if [ \! -s $TREEFILE ]; then
+            arb_message "'$TREEFILE' was not generated or is empty"
+        else
+            echo >arb_read_tree_args
+            mv $TREEFILE outtree
+        fi
+    fi
+fi

@@ -1,0 +1,45 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP  rna3d_general.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Mapping Secondary Structural Infomation
+
+OCCURRENCE	In ARB primary structure editor (ARB_EDIT4) -> RNA3D
+
+DESCRIPTION     
+
+      Secondary and tertiary structure interactions of the well established comparative structure models of rRNA which are used in SECEDIT to generate 2D structure models are fitted to the three-dimensional structure of E. coli master sequence. 
+
+    DISPLAY HELICES : Enabling this check box maps the secondary structural motifs (loops, helices and bulges) onto the molecule. Secondary structural information is according to the comparative models of rRNA used in primary and secondary structure editors. 
+
+    HELIX SKELETON : Enabling will draw a skeleton of secondary structure mask.  By setting a grey or light color you can achieve transparent mask avoiding any interference with other information overlays.
+
+    DISPLAY MID-HELIX : This displays middle point of the helices. 
+
+    DISPLAY HELIX NUMBER : Checking this box will display the corresponding helix numbers in the rRNA 3D structure. Helix numbers are according to ARB numbering scheme.  The small subunit (16S) rRNA of E.coli contains 50 helices which are numbered from 1 to 50. 
+
+    DISPLAY NUMBER OF HELICES : Using this you can set the number of helices you would like to be displayed in the 3D molecule. This feature is very helpful to thoroughly examine the specific helices in the structure. 
+
+    HELIX SIZE : Thickness or the size of the helices can be set by specifying the desired value in this box.
+
+    DISPLAY TERTIARY INTERACTIONS : The tertiary interactions observed in small subunit rRNA can be displayed in the three-dimensional conformations of small subunit rRNA by enabling this check box. The tertiary information data is from Gauthert et al.
+
+    Color settings related to helix, skeleton, mid-helix, helix number and tertiary interactions can be changed using “Color Settings” of the main RNA3D window.
+
+NOTES
+		
+    Gautheret D, Damberger SH, Gutell RR: Identification of base-triples in RNA using comparative sequence analysis. J Mol Biol 1995, 248: 27-43.
+
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

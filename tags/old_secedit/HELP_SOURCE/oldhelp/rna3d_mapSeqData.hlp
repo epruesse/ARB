@@ -1,0 +1,65 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP  rna3d_general.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Superimposing rRNA sequence data, SAI and probes
+
+OCCURRENCE	In ARB primary structure editor (ARB_EDIT4) -> RNA3D
+
+DESCRIPTION 
+
+    SUPERIMPOSING rRNA SEQUENCE DATA
+    Any rRNA sequence contained in the multiple sequence alignments of ARB primary structure editor can be overlaid onto the structure of E. coli in the RNA3D window. Desired rRNA sequence to be mapped onto the structure can be selected by the left mouse button in the multiple sequence alignment and the selected rRNA sequence will be instantly mapped onto the master structure. 
+
+    The selected rRNA sequence is annotated with mutation (base substitutions), insertion and deletion information at each site as compared to the master sequence (E. coli). 
+
+    For the regions where the sequences are aligned without deletion or insertion, direct base substitution (mutation) is applied. Because the C’---C’ distance is essentially the same (~10.2 Å) in all Watson-Crick base pairs (Watson and Crick, 1953), this simple procedure preserves the base pairing and the double helical structure while substituting the bases. Although there do exist the requirement of structural adjustments for non-Watson-Crick base pairs, currently, simple base substitutions are kept because the development of new models to achieve the necessary structural adjustments is out of the scope of the RNA3D tool. 
+
+    In the regions where the alignment (of selected rRNA sequence) involves insertions, the respective insertion points to corresponding E. coli base position in the alignment are shown as down arrows in the crystal structure. The number of insertions and the participating nucleotides can also be displayed at the insertion points. 
+
+    In the case of regions, where deletions are observed in the alignment corresponding to the master sequence (E. coli), respective sites in the crystal structure are indicated as deleted.
+
+    DISPLAY OPTIONS
+    
+    ENABLE MAPPING : Checking this box will enable the mapping or overlaying of any information onto the molecule globally. It is very useful to swiftly switching off mapping information.
+
+    MAP SELECTED SPECIES :  This check box will enable mapping rRNA sequence data contained in the multiple alignments onto the 3D molecule.
+ 
+    DISPLAY BASE DIFFERENCE : Enabling this check box will display the substitutions or mutations observed with respect to E.coli sequence onto 16S rRNA 3D structure.  
+
+    DISPLAY BASE POSITION : Base positions corresponding to the observed substitutions or mutations in the mapped rRNA sequence are displayed by enabling this check box.
+
+    DISPLAY DELETIONS : Enabling this check box will display deletions in mapped rRNA sequence with respect to E.coli reference sequence data. 
+
+    DISPLAY INSERTIONS : Enabling this check box will display insertions in mapped rRNA sequence with respect to E.coli reference sequence data. By checking 'Bases' box, the number of insertions along with the actual bases or residues is displayed at the insertion points. 
+
+    DISPLAY MISSING BASES : Bases or residues which are presumed to be missing in the rRNA sequence alignments when comparing with the consensus model and/or during manual curation, can be visualized in the 3D structure. Missing bases denoted as dots ('.') in the multiple sequence alignments are mapped onto the rRNA 3D structure as question marks ('?') by enabling this check box. Such missing bases are more often attributed to errors during sequencing. 
+
+    Color settings related to mapped sequence data including insertions, deletions, mutations, and missing residues can be changed using 'Color Settings' of the main RNA3D window.
+
+    MAPPING OLIGONUCLEOTIDE PROBES
+    The localization of the proposed oligonucleotide probe targets can be visualized in customizable background colors with in the rRNA crystal structure. Using the navigation capabilities of RNA3D tool (see “Navigation” section), one can get an idea about the probable binding site of the proposed probe with respect to the structural conformation of rRNA.
+
+    Oligonucleotide probes are designed using integrated Probe Design and Probe Match tools of ARB. The selected oligonucleotide probe in probe match window is directly mapped onto the rRNA 3D structure by enabling “Map Search Patterns” check box.
+
+    OVERLAYING SEQUENCE ASSOCIATED INFORMATION (SAI)
+    Various column statistics like sequence consensus, base frequency, positional variability based on parsimony method and any other user defined column statistics that are performed on the sequence alignments can be readily overlaid onto the 3D structure. 
+
+    Once the column statistics are performed, the user can define the color translation table for the chosen SAI in the ARB primary structure editor (see “View | Visualize SAIs” menu). Different colors (up to 10 colors) can be set to the values or characters stored in the SAI to visualize in the molecular structure. The molecule can be re-colored using new settings anytime by clicking the color palate button (using Color Settings in RNA3D window). 
+    
+    By enabling the “Map Sequence Associated Information” check box, the transformed data is readily overlaid onto the rRNA 3D structure. Any change in the SAIs and respective color transformations can be reapplied by clicking “refresh” button. 
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

@@ -1,0 +1,50 @@
+#define STD_REMOVE(in1)         /bin/rm -f in1 infile intree outfile outtree treefile arb_read_tree_args
+
+#define GOTO_LOCAL_DIR          mkdir -p ~/.arb_tmp/$$; cd ~/.arb_tmp/$$; STD_REMOVE(nofile)
+#define RM_LOCAL_DIR(in1)       cd ~/.arb_tmp/$$ ; STD_REMOVE(in1); cd .. ; rmdir $$
+
+#define GEN_INFILE(in1)         GOTO_LOCAL_DIR ; arb_convert_aln -GenBank in1 -phylip infile
+#define RM_LOCAL_FILES(in1)     RM_LOCAL_DIR(in1)
+
+#define RUN_IN_WINDOW(cmd)	    ${ARB_XCMD:-cmdtool} bash -x -c ''LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; cmd ;arb_wait''
+
+#include <warning.genmenu>
+
+lmenu:export
+#include <export.genmenu>
+
+lmenu:pretty_print
+#include <pretty_print.genmenu>
+
+lmenu:import
+#include <import.genmenu>
+
+menu:align
+#include <align.genmenu>
+
+menu:user
+#include <start_arb.genmenu>
+
+menu:SAI
+#include <dnamlrates.genmenu>
+
+menu:Incremental phylogeny
+#include <inc_fastdnaml.genmenu>
+
+menu:Phylogeny_DistMatrix
+#include <phylip_dist_org.genmenu>
+#include <phylip_dist.genmenu>
+
+menu:Phylogeny_MaxParsimony
+#include <phylip_pars.genmenu>
+
+menu:Phylogeny_MaxLikelyhood
+#include <fastdnaml.genmenu>
+#include <raxml.genmenu>
+#include <phylip_ml.genmenu>
+#include <molphy.genmenu>
+
+menu:Phylogeny_Other
+#include <puzzle.genmenu>
+#include <desoete.genmenu>
+

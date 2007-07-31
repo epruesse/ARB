@@ -1,0 +1,48 @@
+item:Phylip help
+itemmeta: h
+itemmethod:(arb_textedit $ARBHOME/GDEHELP/PHYLIP/$FILE)&
+itemhelp:phylip.help
+
+arg:FILE
+argtype:choice_menu
+arglabel:Which program?
+argchoice:clique:clique.doc
+argchoice:coallike:coallike.doc
+argchoice:consense:consense.doc
+argchoice:contchar:contchar.doc
+argchoice:contml:contml.doc
+argchoice:contrast:contrast.doc
+argchoice:discrete:discrete.doc
+argchoice:distance:distance.doc
+argchoice:dnacomp:dnacomp.doc
+argchoice:dnadist:dnadist.doc
+argchoice:dnainvar:dnainvar.doc
+argchoice:dnaml:dnaml.doc
+argchoice:dnamlk:dnamlk.doc
+argchoice:dnamove:dnamove.doc
+argchoice:dnapars:dnapars.doc
+argchoice:dnapenny:dnapenny.doc
+argchoice:dollop:dollop.doc
+argchoice:dolmove:dolmove.doc
+argchoice:dolpenny:dolpenny.doc
+argchoice:draw:draw.doc
+argchoice:drawgram:drawgram.doc
+argchoice:drawtree:drawtree.doc
+argchoice:factor:factor.doc
+argchoice:fitch:fitch.doc
+argchoice:gendist:gendist.doc
+argchoice:kitsch:kitsch.doc
+argchoice:main:main.doc
+argchoice:makeinf:makeinf.doc
+argchoice:mix:mix.doc
+argchoice:move:move.doc
+argchoice:neighbor:neighbor.doc
+argchoice:penny:penny.doc
+argchoice:protdist:protdist.doc
+argchoice:protml:protml.doc
+argchoice:protpars:protpars.doc
+argchoice:restml:restml.doc
+argchoice:retree:retree.doc
+argchoice:seqboot:seqboot.doc
+argchoice:sequence:sequence.doc
+

@@ -1,0 +1,27 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Scale branchlengths
+
+OCCURRENCE	ARB_NT/Tree/Modify branches/Scale branchlengths
+
+DESCRIPTION     Scales all branches of the selected tree by a user-provided factor.
+
+NOTES		Use this when ARB has misinterpreted branchlengths during import of
+                a tree. That happens when one branchlength is slightly above 1.0
+                (i.e. when the treeing program has an error) in which case ARB has
+                assumed that branchlengths are in range [0 .. 100] and
+                has devided them by 100.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

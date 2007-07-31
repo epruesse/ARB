@@ -1,0 +1,29 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	input_mask_format.hlp
+SUB	input_mask_new.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		User masks
+
+OCCURRENCE	ARB_NT/Species/User Masks (if 'Species'-masks existing)
+
+DESCRIPTION	A user mask is a user-definable interface to the database.
+
+NOTES		To define new users masks modify one of our examples and
+		save it with a different name.
+
+EXAMPLES	See $(ARBHOME)/lib/inputMasks
+
+WARNINGS	If there is an 'Edit enable' toggle at top of the mask, you'll
+                need to check this switch before you make changes to any fields.
+
+                If there is no such toggle or if the toggle is checked, all changes
+                will be written to the database without any confirmations.
+
+BUGS		No bugs known.
