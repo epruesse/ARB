@@ -49,8 +49,16 @@ typedef enum { AW_FALSE=0, AW_TRUE } AW_BOOL;
 
 extern AW_default aw_main_root_default;
 
-// #define AWUSE(variable) variable=variable
+// #define AWUSE(variable) variable = variable
+#if defined(DEBUG) && defined(DEVEL_RALF)
+#define AWUSE(variable) (void)variable; int DONT_USE_AWUSE_FOR_##variable
+#else
 #define AWUSE(variable) (void)variable
+#endif // DEBUG
+
+// AWUSE is a obsolete way to get rid of unused-warnings. Will be removed in the future - do not use!
+// If your warning is about a parameter, skip the parameters name.
+// If your warning is about a variable, the variable is superfluous and should most likely be removed.
 
 typedef enum {
     AW_NONE             = 0,
