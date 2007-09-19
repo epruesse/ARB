@@ -209,36 +209,14 @@ int AW_clip::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_
     return is_visible;
 }
 
-
-
-void	AW_matrix::shift_x(AW_pos xoff) {
-    xoffset = xoff*scale;
+void AW_matrix::zoom(AW_pos val) {
+    scale   *= val;
+    unscale  = 1.0/scale;
 }
 
-
-void	AW_matrix::shift_y(AW_pos yoff) {
-    yoffset = yoff*scale;
-}
-
-
-void	AW_matrix::shift_dx(AW_pos xoff) {
-    xoffset += xoff*scale;
-}
-
-
-void	AW_matrix::shift_dy(AW_pos yoff) {
-    yoffset += yoff*scale;
-}
-
-
-void	AW_matrix::zoom(AW_pos val) {
-    scale *= val;
-}
-
-
-void	AW_matrix::reset(void) {
-    scale = 1.0;
-    xoffset = yoffset = 0.0;
+void AW_matrix::reset(void) {
+    unscale = scale   = 1.0;
+    offset  = AW::Vector(0, 0);
 }
 
 /**********************************************************************************************
@@ -470,9 +448,30 @@ AW_common::AW_common(AW_window *aww, AW_area area,	Display *display_in,
 						DEVICE and GCS
 **********************************************************************************************/
 
+// ----------------------------
+//      AW_clip_scale_stack
+// ----------------------------
+
 #if defined(DEBUG)
 // #define SHOW_CLIP_STACK_CHANGES
 #endif // DEBUG
+
+class AW_clip_scale_stack {
+    // completely private, but accessible by AW_device 
+    friend class AW_device;
+
+    AW_rectangle clip_rect;
+
+    int top_font_overlap;
+    int bottom_font_overlap;
+    int left_font_overlap;
+    int right_font_overlap;
+
+    AW::Vector offset;
+    AW_pos scale;
+
+    class AW_clip_scale_stack *next;
+};
 
 #if defined(SHOW_CLIP_STACK_CHANGES)
 static const char *clipstatestr(AW_device *device) {
@@ -487,19 +486,23 @@ static const char *clipstatestr(AW_device *device) {
 #endif // SHOW_CLIP_STACK_CHANGES
 
 
+
 void AW_device::push_clip_scale(void)
 {
     AW_clip_scale_stack *stack = new AW_clip_scale_stack;
-    stack->next                = clip_scale_stack;
-    clip_scale_stack           = stack;
-    stack->scale               = scale;
-    stack->xoffset             = xoffset;
-    stack->yoffset             = yoffset;
+
+    stack->next      = clip_scale_stack;
+    clip_scale_stack = stack;
+
+    stack->scale  = get_scale();
+    stack->offset = get_offset();
+
     stack->top_font_overlap    = top_font_overlap;
     stack->bottom_font_overlap = bottom_font_overlap;
     stack->left_font_overlap   = left_font_overlap;
     stack->right_font_overlap  = right_font_overlap;
-    stack->clip_rect           = clip_rect;
+    
+    stack->clip_rect = clip_rect;
 
 #if defined(SHOW_CLIP_STACK_CHANGES)
     printf("push_clip_scale: %s\n", clipstatestr(this));
@@ -515,16 +518,18 @@ void AW_device::pop_clip_scale(void){
     char *state_before_pop = strdup(clipstatestr(this));
 #endif // SHOW_CLIP_STACK_CHANGES
 
-    scale = clip_scale_stack->scale;
-    xoffset = clip_scale_stack->xoffset;
-    yoffset = clip_scale_stack->yoffset;
+    zoom(clip_scale_stack->scale);
+    set_offset(clip_scale_stack->offset);
+
     clip_rect = clip_scale_stack->clip_rect;
-    top_font_overlap = clip_scale_stack->top_font_overlap;
+
+    top_font_overlap    = clip_scale_stack->top_font_overlap;
     bottom_font_overlap = clip_scale_stack->bottom_font_overlap;
-    left_font_overlap = clip_scale_stack->left_font_overlap;
-    right_font_overlap = clip_scale_stack->right_font_overlap;
+    left_font_overlap   = clip_scale_stack->left_font_overlap;
+    right_font_overlap  = clip_scale_stack->right_font_overlap;
+
     AW_clip_scale_stack *oldstack = clip_scale_stack;
-    clip_scale_stack = clip_scale_stack->next;
+    clip_scale_stack              = clip_scale_stack->next;
     delete oldstack;
 
 #if defined(SHOW_CLIP_STACK_CHANGES)
@@ -532,6 +537,8 @@ void AW_device::pop_clip_scale(void){
     free(state_before_pop);
 #endif // SHOW_CLIP_STACK_CHANGES
 }
+
+// --------------------------------------------------------------------------------
 
 void AW_device::get_area_size(AW_rectangle *rect) {	//get the extends from the class AW_device
     *rect = common->screen;
@@ -544,7 +551,12 @@ void AW_device::get_area_size(AW_world *rect) {	//get the extends from the class
     rect->r = common->screen.r;
 }
 
-void AW_device::_privat_reset()
+AW::Rectangle AW_device::get_area_size() {
+    AW_rectangle& scr = common->screen;
+    return AW::Rectangle(scr.l, scr.t, scr.r, scr.b);
+}
+
+void AW_device::privat_reset()
 {
     ;
 }
@@ -555,7 +567,7 @@ void AW_device::reset(){
     }
     get_area_size(&clip_rect);
     AW_matrix::reset();
-    _privat_reset();
+    privat_reset();
 }
 
 AW_device::AW_device(class AW_common *commoni) : AW_gc(){
@@ -571,18 +583,16 @@ AW_gc::AW_gc() : AW_clip(){
 						DEVICE and OUTPUT
 **********************************************************************************************/
 
-int AW_device::invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
+bool AW_device::invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
     AWUSE(clientdata1);AWUSE(clientdata2);
     AWUSE(gc);
-    AW_pos X,Y;							// Transformed pos
     if(filteri & filter) {
+        AW_pos X,Y;             // Transformed pos
         transform(x,y,X,Y);
-        if ( X > clip_rect.r) return 0;
-        if ( X < clip_rect.l) return 0;
-        if ( Y > clip_rect.b) return 0;
-        if ( Y < clip_rect.t) return 0;
+        return ! (X<clip_rect.l || X>clip_rect.r ||
+                  Y<clip_rect.t || Y>clip_rect.b);
     }
-    return 1;
+    return true;
 }
 
 bool AW_device::ready_to_draw(int gc) {
@@ -591,16 +601,20 @@ bool AW_device::ready_to_draw(int gc) {
 
 // PJ: ::zoomtext is defined in AW_xfigfont.cxx
 
-int AW_device::box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
+int AW_device::box(int gc, AW_BOOL /*filled*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
 {
     int erg = 0;
-    if (	!(filteri & filter) ) return 0;
+    if ( !(filteri & filter) ) return 0;
     erg |= line(gc,x0,y0,x0+width,y0,filteri,cd1,cd2);
     erg |= line(gc,x0,y0,x0,y0+height,filteri,cd1,cd2);
     erg |= line(gc,x0+width,y0+height,x0+width,y0+height,filteri,cd1,cd2);
     erg |= line(gc,x0+width,y0+height,x0+width,y0+height,filteri,cd1,cd2);
     return erg;
 }
+
+#if defined(DEVEL_RALF)
+#warning draw in 45-degree-steps (8-cornered-polygones instead of circles)
+#endif // DEVEL_RALF
 
 int AW_device::circle(int gc, AW_BOOL /*filled has no effect here*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
 {
@@ -613,7 +627,7 @@ int AW_device::circle(int gc, AW_BOOL /*filled has no effect here*/, AW_pos x0,A
     return erg;
 }
 
-int AW_device::arc(int gc, AW_BOOL /*filled has no effect here*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
+int AW_device::arc(int gc, AW_BOOL /*filled has no effect here*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
 {
     int erg = 0;
     if (	!(filteri & filter) ) return 0;
@@ -646,40 +660,14 @@ void AW_device::fast(void) {}
 void AW_device::slow(void) {}
 void AW_device::flush(void) {}
 
-const char * AW_device::open(const char *path)
-{
-    AW_ERROR ("This device dont allow 'open'");
-    AWUSE(path);
-    return 0;
-}
-
-void AW_device::close(void)
-{
-    AW_ERROR ("This device dont allow 'close'");
-}
-
-void AW_device::set_color_mode(bool /*mode*/)
-{
-    AW_ERROR ("This device dont allow 'set_color_mode'");
-}
-
-void AW_device::get_clicked_line(AW_clicked_line *ptr)
-{
-    AW_ERROR ("This device dont allow 'get_clicked_line'");
-    AWUSE(ptr);
-}
-void AW_device::get_clicked_text(AW_clicked_text *ptr){
-    AW_ERROR ("This device dont allow 'get_clicked_text'");
-    AWUSE(ptr);
-}
-
-void AW_device::get_size_information(AW_world *ptr){
-    AW_ERROR ("This device dont allow 'get_size_information'");
-    AWUSE(ptr);
-}
-
-
-
+// forbidden operations: 
+static void forbidden(const char *toUse) { AW_ERROR("It's not allowed to use '%s' with this device", toUse); }
+const char *AW_device::open(const char */*path*/) { forbidden("open"); return 0; }
+void AW_device::close(void) { forbidden("close"); }
+void AW_device::set_color_mode(bool /*mode*/) { forbidden("set_color_mode"); }
+void AW_device::get_clicked_line(AW_clicked_line */*ptr*/) { forbidden("get_clicked_line"); }
+void AW_device::get_clicked_text(AW_clicked_text */*ptr*/) { forbidden("get_clicked_text"); }
+void AW_device::get_size_information(AW_world */*ptr*/) { forbidden("get_size_information"); }
 
 int AW_device::cursor(int gc, AW_pos x0,AW_pos y0, AW_cursor_type type, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
     register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
