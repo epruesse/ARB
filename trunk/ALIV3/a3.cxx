@@ -130,14 +130,14 @@ static void Usage ( void )
                     const char *err = helix.init(db.gb_main);
                     size_t      pos = 0;
 
-                    if (err) cout << err << ", " << helix.size;
+                    if (err) cout << err << ", " << helix.size();
 
-                    while(pos < helix.size)
+                    while (pos < helix.size())
                     {
-                        if (helix.entries[pos].pair_type != HELIX_PAIR) cout << ".";
+                        if (helix.pairtype(pos) != HELIX_PAIR) cout << ".";
                         else
                         {
-                            if (helix.entries[pos].pair_pos < (long)pos) cout << "]";
+                            if (helix.opposite_position(pos) < pos) cout << "]";
                             else cout << "[";
                         }
 
