@@ -1,3 +1,21 @@
+// =============================================================== //
+//                                                                 //
+//   File      : RNA3D_StructureData.hxx                           //
+//   Purpose   :                                                   //
+//   Time-stamp: <Sat Aug/25/2007 17:33 MET Coder@ReallySoft.de>   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#ifndef RNA3D_STRUCTUREDATA_HXX
+#define RNA3D_STRUCTUREDATA_HXX
+
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
+
 #define SAI    0
 #define SEARCH 1
 
@@ -86,6 +104,7 @@ struct Insertions {
 struct Vector3;
 
 class ED4_sequence_terminal; 
+class BI_ecoli_ref; 
 
 class Structure3D {
 public:
@@ -101,6 +120,7 @@ public:
     int LSU_molID;
     int HelixBase; // to create display lists storing helix information
 
+    static GBDATA *gb_main;
     BI_ecoli_ref *EColiRef;
     ED4_sequence_terminal *ED4_SeqTerminal;
 
@@ -119,7 +139,7 @@ public:
     void Combine2Dand3DstructureInfo(void);
     void Store2D3Dinfo(Struct2Dinfo *s2D, Struct3Dinfo *s3D);
 
-    int  FindTypeOfRNA();
+    static int FindTypeOfRNA();
     void DeleteOldMoleculeData();
 
     void GenerateMoleculeSkeleton(void);
@@ -153,3 +173,7 @@ public:
     void MapSaiToEcoliTemplate(AW_root *awr);
     void MapSearchStringsToEcoliTemplate(AW_root *awr);
 };
+
+#else
+#error RNA3D_StructureData.hxx included twice
+#endif
