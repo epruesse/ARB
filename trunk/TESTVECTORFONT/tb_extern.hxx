@@ -12,8 +12,11 @@
  * $Header$
  *
  * $Log$
- * Revision 1.1  2000/11/23 09:41:16  westram
- * Initial revision
+ * Revision 1.2  2007/09/19 13:33:01  westram
+ * - fixed command()
+ *
+ * Revision 1.1.1.1  2000/11/23 09:41:16  westram
+ * Erster Import
  *
  * Revision 1.1  1995/03/13  15:49:36  jakobi
  * Initial revision
@@ -52,9 +55,10 @@ class AWT_graphic_testbed  : public AWT_graphic {
         void info(AW_device *device, AW_pos x, AW_pos y,
                                 AW_clicked_line *cl, AW_clicked_text *ct);
 
-        void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_event_type type,  
-                                AW_pos x, AW_pos y,
-                                AW_clicked_line *cl, AW_clicked_text *ct); 
+        void command(AW_device *device, AWT_COMMAND_MODE cmd, int button,
+                     AW_key_mod key_modifier, AW_key_code key_code, char key_char, 
+                     AW_event_type type, AW_pos x, AW_pos y,
+                     AW_clicked_line *cl, AW_clicked_text *ct);
 };
 
 // test parameters
