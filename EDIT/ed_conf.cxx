@@ -88,11 +88,9 @@ void show_config_window_draw_area(AW_device *device, AED_window *aedw, AW_pos sl
     const AW_font_information *font_information = device->get_font_information(gc1, 'A');
     device->get_area_size( &screen );
 
-    device->shift_x( 0 );
-    device->shift_y( 0 );
+    device->set_offset(AW::Vector());
     device->line( gc2, 0, 19, screen.r,  19, AED_F_INFO_SEPARATOR, 0, 0 );                             // Linie horizontal
-    device->shift_x( 0 - slider_pos_horizontal );
-    device->shift_y( 0 );
+    device->set_offset(AW::Vector(-slider_pos_horizontal, 0));
     device->text( gc2, "Sichtbar", 75, 15, 0.0, AED_F_TEXT_2, 0, 0 );
     device->text( gc2, "Unsichtbar", 75+right_offset, 15, 0.0, AED_F_TEXT_2, 0, 0 );
     device->line( gc2, right_offset,  0, right_offset,  screen.b, AED_F_INFO_SEPARATOR, 0, 0 );        // Linie vertikal
@@ -110,8 +108,7 @@ void show_config_window_draw_area(AW_device *device, AED_window *aedw, AW_pos sl
 
         device->get_area_size( &screen );
 
-        device->shift_x( 0 - picture_l - slider_pos_horizontal );
-        device->shift_y( 0 - slider_pos_vertical );
+        device->set_offset(AW::Vector(-picture_l-slider_pos_horizontal, -slider_pos_vertical));
         device->set_top_clip_border( top_indent_of_vertical_scrollbar );
 
         y += AED_LINE_SPACING + font_information->max_letter.ascent;
@@ -129,11 +126,7 @@ void show_config_window_draw_area(AW_device *device, AED_window *aedw, AW_pos sl
             height = font_information->max_letter.height + 2;
 
             device->text( gc2, text, 4, y, 0.0, AED_F_TEXT_1, (AW_CL)current_entry_of_dlist, AED_F_NAME );
-
-            device->line( gc2, 2,       help_y,        2+width,  help_y,         AED_F_FRAME, (AW_CL)"box", 0 );     // unten
-            device->line( gc2, 2,       help_y,        2,        help_y-height,  AED_F_FRAME, (AW_CL)"box", 0 );     // links
-            device->line( gc2, 2+width, help_y,        2+width,  help_y-height,  AED_F_FRAME, (AW_CL)"box", 0 );     // rechts
-            device->line( gc2, 2,       help_y-height, 2+width,  help_y-height,  AED_F_FRAME, (AW_CL)"box", 0 );     // oben
+            device->box( gc2, AW_FALSE, 2, help_y-height, width, height, AED_F_FRAME, (AW_CL)"box", 0 );
         }
 
         device->pop_clip_scale();
@@ -154,8 +147,7 @@ void show_config_window_draw_area(AW_device *device, AED_window *aedw, AW_pos sl
 
         device->get_area_size( &screen );
 
-        device->shift_x( 0 - picture_l - slider_pos_horizontal );
-        device->shift_y( 0 - slider_pos_vertical );
+        device->set_offset(AW::Vector(-picture_l-slider_pos_horizontal, -slider_pos_vertical));
         device->set_top_clip_border( top_indent_of_vertical_scrollbar );
 
         y += AED_LINE_SPACING + font_information->max_letter.ascent;
@@ -173,11 +165,7 @@ void show_config_window_draw_area(AW_device *device, AED_window *aedw, AW_pos sl
             height = font_information->max_letter.height + 2;
 
             device->text( gc2, text, 4+right_offset, y, 0.0, AED_F_TEXT_1, (AW_CL)current_entry_of_dlist, AED_F_NAME );
-
-            device->line( gc2, 2+right_offset,       help_y,        2+right_offset+width,  help_y,         AED_F_FRAME, (AW_CL)"box", 0 );     // unten
-            device->line( gc2, 2+right_offset,       help_y,        2+right_offset,        help_y-height,  AED_F_FRAME, (AW_CL)"box", 0 );     // links
-            device->line( gc2, 2+right_offset+width, help_y,        2+right_offset+width,  help_y-height,  AED_F_FRAME, (AW_CL)"box", 0 );     // rechts
-            device->line( gc2, 2+right_offset,       help_y-height, 2+right_offset+width,  help_y-height,  AED_F_FRAME, (AW_CL)"box", 0 );     // oben
+            device->box(gc2, AW_FALSE, 2, help_y-height, right_offset+width, height, AED_F_FRAME, (AW_CL)"box", 0);
         }
 
         device->pop_clip_scale();
@@ -356,8 +344,7 @@ void aed_config_window_motion(AW_window *aw, AW_CL cd1, AW_CL cd2) {
 
     if ( aedw->drag ) {                                                                                                                         // mitten im dragging
         aw->get_event ( &motion_event );
-        device->shift_y( 0 );
-        device->shift_x( 0 );
+        device->set_offset(AW::Vector());
         drag_box( device, 2, aedw->drag_x - aedw->drag_x_correcting, aedw->drag_y - aedw->drag_y_correcting, 0, 0, aedw->selected_entry_of_dlist_left_side->text_for_dragging );
 
         if( motion_event.y < 20 )
@@ -388,8 +375,7 @@ void aed_config_window_motion(AW_window *aw, AW_CL cd1, AW_CL cd2) {
             aw->get_event ( &motion_event );
             aedw->drag_x_correcting = event.x - aedw->selected_entry_of_dlist_left_side->absolut_x;
             aedw->drag_y_correcting = event.y - aedw->selected_entry_of_dlist_left_side->absolut_y;
-            device->shift_y( 0 );
-            device->shift_x( 0 );
+            device->set_offset(AW::Vector());
             drag_box( device, 2, motion_event.x - aedw->drag_x_correcting, motion_event.y - aedw->drag_y_correcting, 0, 0, aedw->selected_entry_of_dlist_left_side->text_for_dragging );
             aedw->drag_x = motion_event.x;
             aedw->drag_y = motion_event.y;
@@ -434,8 +420,7 @@ void aed_config_window_expose_info_area(AW_window *aw, AW_CL cd1, AW_CL cd2) {
     info_device = aedw->config_window->get_device (AW_INFO_AREA  );
     info_device->set_filter(AED_F_ALL);
     info_device->clear(AED_F_ALL);
-    info_device->shift_y( 0 );
-    info_device->shift_x( 0 );
+    info_device->set_offset(AW::Vector());
     info_device->text( 1, "Anleitung 1", 4, 20, 0.0, AED_F_INFO, (AW_CL)0, (AW_CL)0 );
     info_device->text( 1, "Anleitung 2", 4, 36, 0.0, AED_F_INFO, (AW_CL)0, (AW_CL)0 );
 }

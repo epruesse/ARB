@@ -628,8 +628,7 @@ void AED_window::show_single_top_data(AW_device *device, AW_window *awmm, AED_ar
 
         // display species names on the left side
         device->push_clip_scale();
-        device->shift_x( 0 );
-        device->shift_y( 0 );
+        device->set_offset(AW::Vector());
         device->set_bottom_clip_border( display_struct.top_indent );
         device->set_right_clip_border( display_struct.left_indent );
 
@@ -657,10 +656,7 @@ void AED_window::show_single_top_data(AW_device *device, AW_window *awmm, AED_ar
                 device->clear_part(  0, *y - font_information->max_letter.ascent - 1, width+1, height+1, AED_F_ALL);
 
             if ( (tmp  = (AW_BOOL)device->text( AED_GC_SELECTED, left_text, 4, *y, 0.0,AED_F_NAME, (AW_CL)area_entry, AED_F_NAME )) ) {
-                device->line( AED_GC_SELECTED, 2,       help_y,        2+width,  help_y,         AED_F_ALL, (AW_CL)"box", 0 );     // unten
-                device->line( AED_GC_SELECTED, 2,       help_y,        2,        help_y-height,  AED_F_ALL, (AW_CL)"box", 0 );     // links
-                device->line( AED_GC_SELECTED, 2+width, help_y,        2+width,  help_y-height,  AED_F_ALL, (AW_CL)"box", 0 );     // rechts
-                device->line( AED_GC_SELECTED, 2,       help_y-height, 2+width,  help_y-height,  AED_F_ALL, (AW_CL)"box", 0 );     // oben
+                device->box(AED_GC_SELECTED, AW_FALSE, 2, help_y-height, width, height, AED_F_ALL, (AW_CL)"box", 0);
             }
             if ( display_struct.visible_control ) {
                 selected_area_entry_is_visible = tmp;
@@ -672,9 +668,7 @@ void AED_window::show_single_top_data(AW_device *device, AW_window *awmm, AED_ar
 
     // display sequences of the species on the right side
     device->push_clip_scale();
-    device->shift_x( -(display_struct.picture_l + display_struct.slider_pos_horizontal) );
-    device->shift_dx( display_struct.left_indent );
-    device->shift_y( 0 );
+    device->set_offset(AW::Vector(display_struct.left_indent - (display_struct.picture_l + display_struct.slider_pos_horizontal), 0));
 
     device->set_bottom_clip_border( display_struct.top_indent );
     device->set_left_clip_border( display_struct.left_indent );
@@ -743,12 +737,12 @@ static int AED_show_colored_sequence(AW_device *device, int gc, const char *opt_
             color = colors[i] + AED_GC_0;
             if (color > AED_GC_9) color = AED_GC_9;
             if (color != old_color) {   // draw till oldcolor
-                device->box(old_color,x, y2, x2-x, height, -1, cd1,cd2);
+                device->box(old_color,AW_TRUE, x, y2, x2-x, height, -1, cd1,cd2);
                 x = x2;
                 old_color = color;
             }
         }
-        device->box(color,x, y2, x2-x, height, -1, cd1,cd2);
+        device->box(color, AW_TRUE, x, y2, x2-x, height, -1, cd1,cd2);
     }
     return device->text(gc, opt_string,0,y,0.0, -1,cd1,cd2,size+start);
 }
@@ -775,9 +769,7 @@ void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED
 
         // display species names on the left side
         device->push_clip_scale();
-        device->shift_x( 0 );
-        device->shift_y( -(display_struct.picture_t + display_struct.slider_pos_vertical) );
-        device->shift_dy( display_struct.top_indent );
+        device->set_offset(AW::Vector(0, display_struct.top_indent - (display_struct.picture_t + display_struct.slider_pos_vertical)));
         device->set_top_clip_border( display_struct.top_indent );
         device->set_bottom_clip_margin( display_struct.bottom_indent );
         device->set_right_clip_border( display_struct.left_indent );
@@ -806,10 +798,7 @@ void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED
                 device->clear_part(  2, *y - font_information->max_letter.ascent - 1, width+1, height+1, AED_F_ALL);
 
             if ( (tmp = (AW_BOOL)device->text( AED_GC_SELECTED, left_text, 4, *y, 0.0,AED_F_NAME, (AW_CL)area_entry, AED_F_NAME ))  ) {
-                device->line( AED_GC_SELECTED, 2,       help_y,        2+width,  help_y,         AED_F_ALL, (AW_CL)"box", 0 );     // unten
-                device->line( AED_GC_SELECTED, 2,       help_y,        2,        help_y-height,  AED_F_ALL, (AW_CL)"box", 0 );     // links
-                device->line( AED_GC_SELECTED, 2+width, help_y,        2+width,  help_y-height,  AED_F_ALL, (AW_CL)"box", 0 );     // rechts
-                device->line( AED_GC_SELECTED, 2,       help_y-height, 2+width,  help_y-height,  AED_F_ALL, (AW_CL)"box", 0 );     // oben
+                device->box(AED_GC_SELECTED, AW_FALSE, 2, help_y-height, width, height, AED_F_ALL, (AW_CL)"box", 0);
             }
             if ( display_struct.visible_control ) {
                 selected_area_entry_is_visible = tmp;
@@ -821,10 +810,8 @@ void AED_window::show_single_middle_data(AW_device *device, AW_window *awmm, AED
 
     // display sequences of the species on the right side
     device->push_clip_scale();
-    device->shift_x( -(display_struct.picture_l + display_struct.slider_pos_horizontal) );
-    device->shift_dx( display_struct.left_indent );
-    device->shift_y( -(display_struct.picture_t + display_struct.slider_pos_vertical) );
-    device->shift_dy( display_struct.top_indent );
+    device->set_offset(AW::Vector(display_struct.left_indent - (display_struct.picture_l + display_struct.slider_pos_horizontal),
+                                  display_struct.top_indent  - (display_struct.picture_t + display_struct.slider_pos_vertical)));
     device->set_top_clip_border( display_struct.top_indent );
     device->set_bottom_clip_margin( display_struct.bottom_indent );
     device->set_left_clip_border( display_struct.left_indent );
@@ -911,9 +898,7 @@ void AED_window::show_single_bottom_data(AW_device *device, AW_window *awmm, AED
 
         // display species names on the left side
         device->push_clip_scale();
-        device->shift_x( 0 );
-        device->shift_y( screen.b - display_struct.bottom_indent );
-        //  device->set_top_clip_border( screen.b - display_struct.bottom_indent );
+        device->set_offset(AW::Vector(0, screen.b - display_struct.bottom_indent));
         device->set_right_clip_border( display_struct.left_indent );
 
         device->invisible( AED_GC_NAME, 0, 0, AED_F_ALL, (AW_CL)0, (AW_CL)0 );
@@ -938,10 +923,7 @@ void AED_window::show_single_bottom_data(AW_device *device, AW_window *awmm, AED
                 device->clear_part(  2, *y - font_information->max_letter.ascent - 1, width+1, height+1, AED_F_ALL);
 
             if ( (tmp = (AW_BOOL)device->text( AED_GC_SELECTED, left_text, 4, *y, 0.0,AED_F_NAME, (AW_CL)area_entry, AED_F_NAME )) ) {
-                device->line( AED_GC_SELECTED, 2,       help_y,        2+width,  help_y,         AED_F_ALL, (AW_CL)"box", 0 );     // unten
-                device->line( AED_GC_SELECTED, 2,       help_y,        2,        help_y-height,  AED_F_ALL, (AW_CL)"box", 0 );     // links
-                device->line( AED_GC_SELECTED, 2+width, help_y,        2+width,  help_y-height,  AED_F_ALL, (AW_CL)"box", 0 );     // rechts
-                device->line( AED_GC_SELECTED, 2,       help_y-height, 2+width,  help_y-height,  AED_F_ALL, (AW_CL)"box", 0 );     // oben
+                device->box(AED_GC_SELECTED, AW_FALSE, 2, help_y-height, width, height, AED_F_ALL, (AW_CL)"box", 0);
             }
             if ( display_struct.visible_control ) {
                 selected_area_entry_is_visible = tmp;
@@ -953,10 +935,8 @@ void AED_window::show_single_bottom_data(AW_device *device, AW_window *awmm, AED
 
     // display sequences of the species on the right side
     device->push_clip_scale();
-    device->shift_x( -(display_struct.picture_l + display_struct.slider_pos_horizontal) );
-    device->shift_dx( display_struct.left_indent );
-    device->shift_y( screen.b - display_struct.bottom_indent );
-    //  device->set_top_clip_border( screen.b - display_struct.bottom_indent );
+    device->set_offset(AW::Vector(display_struct.left_indent - (display_struct.picture_l + display_struct.slider_pos_horizontal),
+                                  screen.b - display_struct.bottom_indent));
     device->set_left_clip_border( display_struct.left_indent );
     if ( quickdraw ) {
         device->set_left_clip_border( quickdraw_left_indent );
@@ -1012,8 +992,7 @@ void AED_window::show_data( AW_device *device, AW_window *awmm, AW_BOOL visibili
     this->show_bottom_data( device, awmm, display_struct );
 
     device->get_area_size( &screen );
-    device->shift_y( 0 );
-    device->shift_x( 0 );
+    device->set_offset(AW::Vector());
     if ( area_top )
         device->line( AED_GC_NAME, screen.l, awmm->top_indent_of_vertical_scrollbar-2, screen.r, awmm->top_indent_of_vertical_scrollbar-2, AED_F_NAME, (AW_CL)"Loben", 0 );
     if ( area_bottom )
@@ -1139,8 +1118,7 @@ static void aed_horizontal( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
 
             aedw->quickdraw_left_indent = awmm->left_indent_of_horizontal_scrollbar;
             aedw->quickdraw_right_indent = awmm->left_indent_of_horizontal_scrollbar - awmm->slider_pos_horizontal + aedw->last_slider_position + 10;
-            device->shift_x( 0 );
-            device->shift_y( 0 );
+            device->set_offset(AW::Vector());
             device->clear_part(  awmm->left_indent_of_horizontal_scrollbar, 0, aedw->last_slider_position - (AW_pos)awmm->slider_pos_horizontal, screen.b, AED_F_ALL);
             aedw->show_data( device, awmm, AW_TRUE );
             aedw->quickdraw = AW_FALSE;
@@ -1148,8 +1126,7 @@ static void aed_horizontal( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
     }
     else {  // mehr als eine Seite gescrollt
         aedw->quickdraw = AW_TRUE;
-        device->shift_x( 0 );
-        device->shift_y( 0 );
+        device->set_offset(AW::Vector());
         device->clear_part(  awmm->left_indent_of_horizontal_scrollbar, 0, screen.r - awmm->left_indent_of_horizontal_scrollbar, screen.b, AED_F_ALL);
         aedw->quickdraw_left_indent = awmm->left_indent_of_horizontal_scrollbar;
         aedw->quickdraw_right_indent = screen.r;
@@ -1189,8 +1166,7 @@ static void aed_vertical( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
         aedw->manage_cursor( device, awmm, AW_FALSE );
     }
 
-    device->shift_x( 0 );
-    device->shift_y( 0 );
+    device->set_offset(AW::Vector());
 
     device->clear_part( 0, awmm->top_indent_of_vertical_scrollbar,
                         screen.r, screen.b - awmm->top_indent_of_vertical_scrollbar - awmm->bottom_indent_of_vertical_scrollbar, AED_F_ALL);
@@ -1253,26 +1229,24 @@ AW_BOOL AED_window::manage_cursor( AW_device *device, AW_window *awmm, AW_BOOL u
     }
 
     device->push_clip_scale();
-    device->shift_x( -( awmm->picture->l + slider_position_horizontal ) );
-    device->shift_dx( awmm->left_indent_of_horizontal_scrollbar );
+    double offsetx = awmm->left_indent_of_horizontal_scrollbar - (awmm->picture->l + slider_position_horizontal);
     device->set_left_clip_border(awmm->left_indent_of_horizontal_scrollbar);
 
     if ( selected_area_entry->in_area == area_top ) {
-        device->shift_y( 0 );
+        device->set_offset(AW::Vector(offsetx, 0));
         device->set_bottom_clip_border( awmm->top_indent_of_vertical_scrollbar );
         device->set_left_clip_border( awmm->left_indent_of_horizontal_scrollbar );
     }
 
     if ( selected_area_entry->in_area == area_middle ) {
-        device->shift_y( awmm->top_indent_of_vertical_scrollbar );
-        device->shift_dy( -(awmm->picture->t + awmm->slider_pos_vertical ) );
+        device->set_offset(AW::Vector(offsetx, awmm->top_indent_of_vertical_scrollbar - (awmm->picture->t + awmm->slider_pos_vertical)));
         device->set_top_clip_border( awmm->top_indent_of_vertical_scrollbar );
         device->set_bottom_clip_margin( awmm->bottom_indent_of_vertical_scrollbar );
     }
 
     if ( selected_area_entry->in_area == area_bottom ) {
         device->get_area_size(&screen);
-        device->shift_y( screen.b - awmm->bottom_indent_of_vertical_scrollbar );
+        device->set_offset(AW::Vector(offsetx, screen.b - awmm->bottom_indent_of_vertical_scrollbar));
         device->set_top_clip_border( screen.b - awmm->bottom_indent_of_vertical_scrollbar );
     }
     cursor_drawn = (AW_BOOL)device->cursor( AED_GC_NAME_DRAG, cursor * font_information->max_letter.width, selected_area_entry->in_line, AW_cursor_insert, AED_F_CURSOR, 0, 0 );
@@ -1324,10 +1298,7 @@ void drag_box(AW_device *device, int gc, AW_pos x, AW_pos y, AW_pos width, AW_po
         height = font_information->max_letter.height + 4;
     }
     AW_pos y_help = y + 2;
-    device->line( gc, x,       y_help,        x+width, y_help,        AED_F_ALL,(AW_CL)"drag_box",0);                       // unten
-    device->line( gc, x,       y_help,        x,       y_help-height, AED_F_ALL,(AW_CL)"drag_box",0);                   // links
-    device->line( gc, x+width, y_help,        x+width, y_help-height, AED_F_ALL,(AW_CL)"drag_box",0);   // rechts
-    device->line( gc, x,       y_help-height, x+width, y_help-height, AED_F_ALL,(AW_CL)"drag_box",0);   // oben
+    device->box(gc, AW_FALSE, x, y_help-height, width, height, AED_F_ALL, (AW_CL)"drag_box", 0);
     device->text( gc, str, x+2, y-2, 0, AED_F_ALL, (AW_CL)"drag_box", 0 );                      // Text
 }
 
@@ -1540,12 +1511,10 @@ static void jump_to_cursor_position(AW_window *aww, AED_window *aedw, char *awar
 {
     AW_root *root = aww->get_root();
     long pos = root->awar(awar_name)->read_int();
-    if (strcmp(awar_name,AWAR_CURSOR_POSITION_LOCAL) ){ // rel->abs
-        long apos;
-        const char *error = edg.ref->rel_2_abs(pos,0,apos);
-        AWUSE(error);
-        root->awar(AWAR_CURSOR_POSITION_LOCAL)->write_int( apos);
-        pos = apos;
+    if (strcmp(awar_name,AWAR_CURSOR_POSITION_LOCAL) ) {
+        long apos = edg.ref->rel_2_abs(pos); // rel->abs
+        root->awar(AWAR_CURSOR_POSITION_LOCAL)->write_int(apos);
+        pos       = apos;
     }
     set_cursor_to(aedw,pos,0);
 }
@@ -1860,8 +1829,7 @@ static void aed_motion( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
 
     if ( aedw->drag ) {                                                                                                                         // mitten im dragging
         aw->get_event ( &motion_event );
-        device->shift_y( 0 );
-        device->shift_x( 0 );
+        device->set_offset(AW::Vector());
         aedw->make_left_text( left_text, aedw->selected_area_entry );
         drag_box( device, AED_GC_NAME_DRAG, aedw->drag_x - aedw->drag_x_correcting, aedw->drag_y - aedw->drag_y_correcting, 0, 0, left_text );          // vorher gemalte Box entfernen
         aedw->drag_x = motion_event.x;
@@ -1885,8 +1853,7 @@ static void aed_motion( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
                 aw->get_event ( &motion_event );
                 aedw->drag_x_correcting = event.x - (int)aedw->selected_area_entry->absolut_x;
                 aedw->drag_y_correcting = event.y - (int)aedw->selected_area_entry->absolut_y;
-                device->shift_y( 0 );
-                device->shift_x( 0 );
+                device->set_offset(AW::Vector());
                 aedw->make_left_text( left_text, aedw->selected_area_entry );
                 drag_box( device, AED_GC_NAME_DRAG, motion_event.x - aedw->drag_x_correcting , motion_event.y - aedw->drag_y_correcting, 0, 0, left_text );
                 aedw->drag_x = motion_event.x;
@@ -1957,11 +1924,9 @@ void aed_initialize_device(AW_device *device) {
 }
 static void ED_calc_ecoli_pos(AW_root *root){
     long apos = root->awar(AWAR_CURSOR_POSITION_LOCAL)->read_int();
-    long rpos;
-    long dummy;
-    const char *error = edg.ref->abs_2_rel(apos,rpos,dummy);
-    AWUSE(error);
-    root->awar(AWAR_CURSER_POS_REF_ECOLI)->write_int( rpos);
+    long rpos = edg.ref->abs_2_rel(apos);
+    
+    root->awar(AWAR_CURSER_POS_REF_ECOLI)->write_int(rpos);
 }
 
 static char *ED_create_sequences_for_gde(void *THIS, GBDATA **&the_species,
