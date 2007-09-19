@@ -21,6 +21,8 @@
 
 #include <st_window.hxx>
 
+#include <ed4_extern.hxx>
+
 #include "ed4_awars.hxx"
 #include "ed4_class.hxx"
 #include "ed4_edit_string.hxx"
@@ -439,19 +441,9 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
     delete work_info;
 }
 
-//          while (1) { // catch repeated keys
-//          AW_ProcessEventType nextEventType = ED4_ROOT->aw_root->peek_key_event(aww);
-//          AW_event nextEvent;
-
-//          if (nextEventType!=KEY_RELEASED) break;
-//          aww->get_event(&nextEvent);
-//          if (nextEvent.type==AW_Keyboard_Press &&
-//              nextEvent.keymodifier==event.keymodifier &&
-//              nextEvent.keycode==event.keycode) {
-//              work_info->repeat_count++;
-//          }
-//          }
-
+void ED4_remote_event(AW_event *faked_event) { // keystrokes forwarded from SECEDIT
+    executeKeystroke(ED4_ROOT->temp_aww, faked_event, 1);
+}
 
 void ED4_input_cb(AW_window *aww,AW_CL /*cd1*/, AW_CL /*cd2*/)
 {
@@ -789,10 +781,14 @@ void ED4_motion_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 
 void ED4_remote_set_cursor_cb(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/)
 {
-    long pos = awr->awar(AWAR_SET_CURSOR_POSITION)->read_int();
-    ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+    AW_awar *awar = awr->awar(AWAR_SET_CURSOR_POSITION);
+    long     pos  = awar->read_int();
 
-    cursor->jump_centered_cursor_to_seq_pos(ED4_ROOT->temp_aww, pos);
+    if (pos != -1) {
+        ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+        cursor->jump_centered_cursor_to_seq_pos(ED4_ROOT->temp_aww, pos);
+        awar->write_int(-1);
+    }
 }
 
 void ED4_jump_to_cursor_position(AW_window *aww, char *awar_name, bool /*callback_flag*/)           // callback function
@@ -804,22 +800,15 @@ void ED4_jump_to_cursor_position(AW_window *aww, char *awar_name, bool /*callbac
     ED4_ROOT->temp_device = aww->get_device(AW_MIDDLE_AREA);
     ED4_ROOT->temp_ed4w = ED4_ROOT->first_window->get_matching_ed4w( aww );
 
-    if (strcmp(awar_name,ED4_ROOT->temp_ed4w->awar_path_for_Ecoli)==0) // callback from ecoli
-    {
-        long apos;
-        ED4_ROOT->ecoli_ref->rel_2_abs(pos,0,apos);
-        pos = apos;
-    }
-    else if (strcmp(awar_name, ED4_ROOT->temp_ed4w->awar_path_for_basePos)==0) // callback from basePos
-    {
-        ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
-        long seq_pos = cursor->base2sequence_position(pos);
-        pos = seq_pos;
-    }
-
     ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
-    int scr_pos = 0;
+    if (strcmp(awar_name,ED4_ROOT->temp_ed4w->awar_path_for_Ecoli)==0) { // callback from ecoli
+        pos = ED4_ROOT->ecoli_ref->rel_2_abs(pos);
+    }
+    else if (strcmp(awar_name, ED4_ROOT->temp_ed4w->awar_path_for_basePos)==0) { // callback from basePos
+        pos = cursor->base2sequence_position(pos);;
+    }
 
+    int scr_pos = 0;
     pos--; // correction to avoid Position 0
 
     if (pos<0) {
@@ -827,10 +816,10 @@ void ED4_jump_to_cursor_position(AW_window *aww, char *awar_name, bool /*callbac
     }
     else if (cursor->owner_of_cursor) {
         ED4_text_terminal *text_term = cursor->owner_of_cursor->to_text_terminal();
-        //  ED4_sequence_terminal *seq_term = cursor->owner_of_cursor->to_sequence_terminal();
-        int len = text_term->get_length();
 
+        int len = text_term->get_length();
         if (pos>len) { pos = len; }
+        
         scr_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen_clipped(pos);
     }
 
@@ -842,44 +831,14 @@ void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /*callback_flag*/)
     ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
 
     if (cursor->owner_of_cursor) {
-        AW_root *root = aww->get_root();
-        int helix_nr = root->awar(awar_name)->read_int();
-        int pos = -1; // move cursor to this sequence position (-1=don't move)
-
-        if (helix_nr!=0) {
-            AW_helix *helix = ED4_ROOT->helix;
-            unsigned p;
-
-            for (p=0; p<helix->size; p++) {
-                if (helix->entries[p].pair_type) {
-                    int found_helix_nr = atoi(helix->entries[p].helix_nr);
-
-                    if (found_helix_nr==helix_nr) {
-                        pos = p;
-                        break;
-                    }
-                    else if (found_helix_nr==-helix_nr) { // found opposite helix
-                        pos = p = helix->entries[p].pair_pos; // start from opposite position
-                        while (p>0) { // search backwards ..
-                            p--;
-                            if (helix->entries[p].pair_type) {
-                                found_helix_nr = atoi(helix->entries[p].helix_nr);
-                                if (found_helix_nr==0) continue;
-                                if (found_helix_nr!=helix_nr) break; // .. until we find a different helix_nr
-                                pos = p; // store leftmost position of searched helix
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-        }
+        AW_root    *root     = aww->get_root();
+        const char *helix_nr = root->awar(awar_name)->read_string();
+        long        pos      = ED4_ROOT->helix->first_position(helix_nr);
 
         if (pos!=-1) {
             ED4_sequence_terminal *seq_term = cursor->owner_of_cursor->to_sequence_terminal();
-            int len;
-
-            seq_term->resolve_pointer_to_char_pntr(&len);
+            
+            int len = seq_term->get_length();
             if (pos>len) pos = len;
 
             int scr_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen(pos);
