@@ -5,6 +5,8 @@ UP	glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB	sec_mode.hlp
+SUB	sec_keys.hlp
+SUB	sec_main.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -14,17 +16,13 @@ TITLE		ARB_SECEDIT - Secondary structure editor
 OCCURRENCE	ARB_EDIT4/Edit/Edit secondary structure
 
 DESCRIPTION	ARB_SECEDIT is designed to maintain the structure and layout
-		information of secondary structures [ARB only supports ONE
-		secondary structure per database].
+		information of secondary structures.
 
 		ARB_SECEDIT always displays the data of the species currently
 		selected in ARB_EDIT4.
 
-NOTES		If you start ARB_SECEDIT the first time (for the current
-		database), you'll see a structure formed like a big bone.
-		This is the default structure and after you've created a valid
-		helix you should delete the default helix (because it's
-		futile, but there always has to be at least one helix).
+NOTES		If you start ARB_SECEDIT the first time with the current
+		alignment, you'll see a initial structure with one helix folded.
 
 EXAMPLES	None
 
