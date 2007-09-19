@@ -150,6 +150,8 @@ struct probe_statistic_struct {
 
 };
 
+class BI_ecoli_ref;
+
 extern struct probe_struct_global   {
     GBDATA  *gb_main;           /* ARBDB interface */
     GBDATA  *gb_species_data;
@@ -159,8 +161,8 @@ extern struct probe_struct_global   {
 
     struct probe_input_data *data; /* the internal database */
 
-    char *ecoli;                /* the ecoli sequenz */
-    void *bi_ecoli;
+    char         *ecoli;        /* the ecoli sequenz */
+    BI_ecoli_ref *bi_ecoli;
 
     int  data_count;
     int  max_size;              /* maximum sequence len */
