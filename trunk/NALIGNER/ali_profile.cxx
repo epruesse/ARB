@@ -500,23 +500,17 @@ void ALI_PROFILE::initialize_helix(ALI_PROFILE_CONTEXT *context)
     if ((error_string = bi_helix.init(context->arbdb->gb_main)) != 0)
         ali_warning(error_string);
 
-    printf("len = %d  entries = %p\n",bi_helix.size,bi_helix.entries);
-
-    helix_len = bi_helix.size;
-
+    helix_len = bi_helix.size();
     helix = (long **) CALLOC((unsigned int) helix_len, sizeof(long));
-    //helix = (long (*) [1]) CALLOC((unsigned int) helix_len, sizeof(long));
     helix_borders = (char **) CALLOC((unsigned int) helix_len, sizeof(long));
-    //helix_borders = (char (*) [1]) CALLOC((unsigned int) helix_len, sizeof(long));
-    if (helix == 0 || helix_borders == 0)
-        ali_fatal_error("Out of memory");
+    if (helix == 0 || helix_borders == 0) ali_fatal_error("Out of memory");
 
     /*
      * convert helix for internal use
      */
     for (i = 0; i < helix_len; i++)
-        if (bi_helix.entries[i].pair_type == HELIX_PAIR)
-            (*helix)[i] = bi_helix.entries[i].pair_pos;
+        if (bi_helix.pairtype(i) == HELIX_PAIR)
+            (*helix)[i] = bi_helix.opposite_position(i);
         else
             (*helix)[i] = -1;
 }
