@@ -42,8 +42,8 @@
 
 /* global awars */
 
-#define AWAR_CURSOR_POSITION     "tmp/focus/cursor_position" /* int: position in sequence */
-#define AWAR_SET_CURSOR_POSITION "tmp/focus/set_cursor_position" /* int: set position in sequence (remote control for ARB_EDIT4) */
+#define AWAR_CURSOR_POSITION     "tmp/focus/cursor_position" /* int: position in sequence range=[1;len] */
+#define AWAR_SET_CURSOR_POSITION "tmp/focus/set_cursor_position" /* int: set position in sequence (remote control for ARB_EDIT4)  range=[0;len-1] */
 
 #define AWAR_SPECIES_NAME       "tmp/focus/species_name" /* string: name of selected species */
 #define AWAR_INFO_BUTTON_TEXT   "tmp/focus/info_button_text" /* string: to display selected species */
