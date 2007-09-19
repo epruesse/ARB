@@ -13,7 +13,6 @@
 
 #include <awt_tree.hxx>
 #include "dist.hxx"
-#include <BI_helix.hxx>
 
 #include <di_matr.hxx>
 #include <di_view_matrix.hxx>
@@ -174,8 +173,7 @@ void PH_dmatrix::display(void)   // draw area
         if (awm) awm->hide();
         return;
     }
-    device->shift_dx(off_dx);
-    device->shift_dy(off_dy);
+    device->shift(AW::Vector(off_dx, off_dy));
     xpos = 0;
 
     int name_display_width; {
@@ -202,7 +200,7 @@ void PH_dmatrix::display(void)   // draw area
                 int x2 = xpos * cell_width;
                 double len = ((val2-min_view_dist)/(max_view_dist-min_view_dist)) * maxw;
                 if (len >= 0) {
-                    device->box(PH_G_RULER_DISPLAY, x2, y2,len, h*.8,-1,0,0);
+                    device->box(PH_G_RULER_DISPLAY, AW_TRUE, x2, y2,len, h*.8,-1,0,0);
                 }else{
                     device->text(PH_G_STANDARD, "????", xpos * cell_width, ypos * cell_height - cell_offset, 0.0, -1, 0, 0);
                 }
@@ -235,7 +233,7 @@ void PH_dmatrix::display(void)   // draw area
         device->text(PH_G_NAMES, buf, xpos * cell_width, cell_height - off_dy - cell_offset, 0.0, -1, 0, 0);
         xpos++;
     }
-    device->shift_dx(-off_dx);
+    device->shift(AW::Vector(-off_dx, 0));
     //display vertical speciesnames
     ypos = 0;
     for (y = vert_page_start; y < vert_page_start + vert_page_size; y++) {
@@ -244,7 +242,7 @@ void PH_dmatrix::display(void)   // draw area
         device->text(PH_G_NAMES, buf, 0, ypos * cell_height - cell_offset, 0.0, -1, 0, 0);
         ypos++;
     }
-    device->shift_dy(-off_dy);
+    device->shift(AW::Vector(0, -off_dy));
 #undef BUFLEN
 }
 
