@@ -83,27 +83,26 @@ extern bool         loading;
 #define MAXWINDOWS  5
 #define MINSPECFORSTATWIN   200
 
-#define AWAR_EDIT_MODE              "tmp/edit4/edit_mode"
-#define AWAR_INSERT_MODE            "tmp/edit4/insert_mode"
-#define AWAR_EDIT_DIRECTION         "tmp/edit4/edit_direction"
+#define AWAR_EDIT_MODE                  "tmp/edit4/edit_mode"
+#define AWAR_INSERT_MODE                "tmp/edit4/insert_mode"
 #define AWAR_EDIT_SECURITY_LEVEL        "tmp/edit4/security_level"
-#define AWAR_EDIT_SECURITY_LEVEL_ALIGN      "tmp/edit4/security_level_align"
-#define AWAR_EDIT_SECURITY_LEVEL_CHANGE     "tmp/edit4/security_level_change"
+#define AWAR_EDIT_SECURITY_LEVEL_ALIGN  "tmp/edit4/security_level_align"
+#define AWAR_EDIT_SECURITY_LEVEL_CHANGE "tmp/edit4/security_level_change"
 #define AWAR_EDIT_CONFIGURATION         "tmp/edit4/configuration"
 
-#define AWAR_EDIT_SEQ_POSITION          "tmp/edit4/jump_to_position%d"      // used to create ED4_window.awar_path_for_cursor[]
-#define AWAR_EDIT_ECOLI_POSITION        "tmp/edit4/cursor_ref_ecoli%d"      // used to create ED4_window.awar_path_for_Ecoli[]
-#define AWAR_EDIT_BASE_POSITION         "tmp/edit4/cursor_to_basepos%d"     // used to create ED4_window.awar_path_for_basePos[]
-#define AWAR_EDIT_IUPAC             "tmp/edit4/iupac%d"         // used to create ED4_window.awar_path_for_IUPAC[]
-#define AWAR_EDIT_HELIXNR           "tmp/edit4/helixnr%d"           // used to create ED4_window.awar_path_for_helixNr[]
+#define AWAR_EDIT_SEQ_POSITION   "tmp/edit4/jump_to_position%d" // used to create ED4_window.awar_path_for_cursor[]
+#define AWAR_EDIT_ECOLI_POSITION "tmp/edit4/cursor_ref_ecoli%d" // used to create ED4_window.awar_path_for_Ecoli[]
+#define AWAR_EDIT_BASE_POSITION  "tmp/edit4/cursor_to_basepos%d" // used to create ED4_window.awar_path_for_basePos[]
+#define AWAR_EDIT_IUPAC          "tmp/edit4/iupac%d" // used to create ED4_window.awar_path_for_IUPAC[]
+#define AWAR_EDIT_HELIXNR        "tmp/edit4/helixnr%d" // used to create ED4_window.awar_path_for_helixNr[]
 
-#define AWAR_FIELD_CHOSEN           "tmp/edit4/field_chosen"        // used for field selection box
+#define AWAR_FIELD_CHOSEN "tmp/edit4/field_chosen" // used for field selection box
 
 #define AWAR_EDIT_TITLE_MODE       "edit4/title_mode"
 #define AWAR_EDIT_HELIX_SPACING    "edit4/helix_add_spacing"
 #define AWAR_EDIT_TERMINAL_SPACING "edit4/terminal_add_spacing"
 
-#define CHARACTEROFFSET     5           // spacer-width left of text-terminal
+#define CHARACTEROFFSET 5       // spacer-width left of text-terminal
 #define CONSENSUS       "Consensusfunktion"
 
 #define ED4_index   long
@@ -114,56 +113,6 @@ inline int ABS(int x)       { return x<0 ? -x : x; }
 
 #define ED4_SCROLL_OVERLAP 20   // 15 Pixels overlap
 
-#define ED4_G_FIRST_FONT ED4_G_STANDARD // ED4_G_SEQUENCES
-#define ED4_G_LAST_FONT  ED4_G_HELIX
-
-typedef enum
-{
-    ED4_G_STANDARD,
-
-    ED4_G_SEQUENCES,
-    ED4_G_HELIX,
-
-    ED4_G_COLOR_2,
-    ED4_G_COLOR_3,
-    ED4_G_COLOR_4,
-    ED4_G_COLOR_5,
-    ED4_G_COLOR_6,
-    ED4_G_COLOR_7,
-    ED4_G_COLOR_8,
-    ED4_G_COLOR_9,
-
-    ED4_G_CBACK_0,  // Ranges for column statitics
-    ED4_G_CBACK_1,
-    ED4_G_CBACK_2,
-    ED4_G_CBACK_3,
-    ED4_G_CBACK_4,
-    ED4_G_CBACK_5,
-    ED4_G_CBACK_6,
-    ED4_G_CBACK_7,
-    ED4_G_CBACK_8,
-    ED4_G_CBACK_9,
-
-    ED4_G_SBACK_0,  // Background for search
-    ED4_G_SBACK_1,
-    ED4_G_SBACK_2,
-    ED4_G_SBACK_3,
-    ED4_G_SBACK_4,
-    ED4_G_SBACK_5,
-    ED4_G_SBACK_6,
-    ED4_G_SBACK_7,
-    ED4_G_SBACK_8,
-    ED4_G_MBACK,    // Mismatches
-
-    ED4_G_CURSOR,               // Color of cursor
-    ED4_G_MARKED,               // Background for marked species
-    ED4_G_SELECTED,             // Background for selected species
-
-    ED4_G_FIRST_COLOR_GROUP,   // Background colors for colored species
-    ED4_G_LAST_COLOR_GROUP = ED4_G_FIRST_COLOR_GROUP+AW_COLOR_GROUPS-1,
-
-    ED4_G_DRAG = ED4_G_LAST_COLOR_GROUP+1               // must be last
-} ED4_gc;
 
 typedef enum
 {
@@ -441,6 +390,5 @@ struct ED4_coords
     window_right_clip_point = 0;
     }
 };
-
 
 #endif
