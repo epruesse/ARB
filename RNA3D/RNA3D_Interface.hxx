@@ -20,5 +20,6 @@ void MouseMoveEventHandler( Widget w, XtPointer client_data, XEvent *event, char
 void RefreshOpenGLDisplay();
 //void SetOpenGLBackGroundColor();
 
-// Creates RNA3D Application Main Window
-AW_window *CreateRNA3DMainWindow(AW_root *awr);
+class AW_root;
+class AW_window;
+AW_window *CreateRNA3DMainWindow(AW_root *awr); // Creates RNA3D Application Main Window
