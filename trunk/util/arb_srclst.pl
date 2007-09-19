@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 my $debug_matching = 0;
+my $ignore_unknown = 0;
 
 # ------------------------------------------------------------
 # skipped_directories and files inside are never examined:
@@ -94,6 +95,7 @@ my @skipped_when_matches = (
                             qr/^arbsrc\.lst\.tmp$/o,
                             qr/^arbsrc.*\.tgz$/o,
                             qr/\#.*\#$/o,
+                            qr/\.\#.*$/o,
                             qr/.*\.last_gcc$/o,
                            );
 
@@ -265,7 +267,10 @@ sub useFile($$) {
   }
 
   if (not defined $use) {
-    die "Don't know whether to use or skip '$file' (in $dir)";
+    if ($ignore_unknown==0) {
+      die "Don't know whether to use or skip '$file' (in $dir)";
+    }
+    $use = 1;
   }
 
   return $use;
@@ -307,7 +312,7 @@ sub getCVSEntries($\%) {
 
 sub expectCVSmember($$\%) {
   my ($full,$item,$CVS_r) = @_;
-  if (not exists $$CVS_r{$item}) {
+  if (not exists $$CVS_r{$item} and $ignore_unknown==0) {
     die "'$full' ($_) included, but not in CVS (seems to be generated)";
   }
 }
@@ -320,7 +325,7 @@ my %unpackedCVSmember = map { $_ => 1; } (
 sub unexpectCVSmember($$\%) {
   my ($full,$item,$CVS_r) = @_;
   if (exists $$CVS_r{$item}) {
-    if (not exists $unpackedCVSmember{$item}) {
+    if (not exists $unpackedCVSmember{$item} and $ignore_unknown==0) {
       die "'$full' excluded, but in CVS";
     }
   }
@@ -365,4 +370,21 @@ sub dumpFiles($) {
   foreach (@subdirs) { dumpFiles($_); }
 }
 
-dumpFiles('.');
+my $args = scalar(@ARGV);
+if ($args==0) {
+  dumpFiles('.');
+}
+else {
+  my $arg = $ARGV[0];
+  if ($arg eq 'ignore') {
+    $ignore_unknown = 1;
+    dumpFiles('.');
+  }
+  elsif ($arg eq 'matching') {
+    $debug_matching = 1;
+    dumpFiles('.');
+  }
+  else {
+    die "Usage: arb_srclst.pl [ignore|matching]\n";
+  }
+}
