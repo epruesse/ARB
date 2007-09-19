@@ -7,12 +7,15 @@
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
-#include "awt_canvas.hxx"
+#include <awt_canvas.hxx>
+#include <awt.hxx>
 
+#include <algorithm>
+
+using namespace std;
+using namespace AW;
 
 void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
-void nt_draw_zoom_box(AW_device *device, int gc,
-                      AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2 );
 void AWT_clip_expose(AW_window *aww,AWT_canvas *ntw,
                      int left_border, int right_border,
                      int top_border, int bottom_border,
@@ -97,8 +100,7 @@ AWT_canvas::set_scrollbars( )
 
 void AWT_canvas::init_device(AW_device *device) {
     device->reset();
-    device->shift_dx(this->shift_x_to_fit);
-    device->shift_dy(this->shift_y_to_fit);
+    device->shift(AW::Vector(shift_x_to_fit, shift_y_to_fit));
     device->zoom(this->trans_to_fit);
 }
 
@@ -188,79 +190,125 @@ AWT_canvas::recalc_size( void ){
     this->set_scrollbars();
 }
 
-void
-AWT_canvas::tree_zoom(AW_device *device, AW_pos sx, AW_pos sy, AW_pos ex, AW_pos ey)
-{
-    AW_rectangle *rectangle;
-    AW_pos wsx,wsy,wex,wey,h;
+void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_part, const Rectangle& current_part) {
+    // zooms the device.
+    //
+    // zoomIn == true -> wanted_part is zoomed to current_part
+    // zoomIn == false -> current_part is zoomed to wanted_part
+    //
+    // If wanted_part is very small -> assume mistake (act like single click)
+    // Single click zooms by 10% centering on click position
 
+    init_device(device);
 
-    if(ex<sx){
-        h=ex; ex=sx; sx=h;
+    AW_pos width  = worldinfo.r-worldinfo.l;
+    AW_pos height = worldinfo.b-worldinfo.t;
+
+    if (width<EPS) width = EPS;
+    if (height<EPS) height = EPS;
+
+    bool takex = true;
+    bool takey = true;
+
+    if (tree_disp) {
+        if (tree_disp->exports.dont_fit_y) takey = false;
+        if (tree_disp->exports.dont_fit_x) takex = false;
+        if (tree_disp->exports.dont_fit_larger) {
+            if (width>height)   takey = false;
+            else                takex = false;
+        }
     }
-    if(ey<sy){
-        h=ey; ey=sy; sy=h;
-    }
-    if( (ex-sx<10.0) || (ey-sy<10.0) ){
-        aw_message("Please select a greater rectangle!\n(To zoom in, press left mousebutton and drag it, keeping the button pressed)");
-        return;
-    }
-    this->init_device(device);
 
-    device->rtransform(sx,sy,wsx,wsy);
-    device->rtransform(ex,ey,wex,wey);
+    awt_assert(takex||takey); // illegal fit combination ?
+    
+    Rectangle current(device->rtransform(current_part));
+    Rectangle wanted;
 
-    // complete, upper left corner
-    this->shift_x_to_fit= - wsx;
-    this->shift_y_to_fit= - wsy;
+    bool isClick = false;
+    if (takex) {
+        if (takey) {
+            if (wanted_part.line_vector().length()<40.0) isClick = true;
+        }
+        else {
+            if (wanted_part.width()<30.0) isClick = true;
+        }
+    }
+    else {
+        if (wanted_part.height()<30.0) isClick = true;
+    }
+
+    if (isClick) { // very small part or single click
+        // -> zomm by 10 % on click position
+        Vector wanted_diagonal = current.diagonal()*0.45;
+
+        Position clickPos     = device->rtransform(wanted_part.centroid());
+        Position screenCenter = current.centroid();
+        
+        Vector center2click(screenCenter, clickPos);
+        Vector center2click_zoomed = center2click / 0.9;
+
+        Position clickPos_zoomed = screenCenter+center2click_zoomed;
+        Vector   to_zoomed(clickPos, clickPos_zoomed);
+
+        Position zoomedCenter = screenCenter+to_zoomed;
+
+        // wanted = Rectangle(clickPos-wanted_diagonal, 2*wanted_diagonal);
+        // zoom-rectangle around center
+        wanted = Rectangle(zoomedCenter-wanted_diagonal, 2*wanted_diagonal);
+
+        
+    }
+    else {
+        wanted = Rectangle(device->rtransform(wanted_part));
+    }
+
+    if (!zoomIn) {
+        // calculate big rectangle (outside of viewport), which is zoomed into viewport
+        double    factor = current.diagonal().length()/wanted.diagonal().length();
+        Vector    curr2wanted(current.start(), wanted.start());
+        Rectangle big(current.start()+(curr2wanted*-factor), current.diagonal()*factor);
+
+        wanted = big;
+    }
+
+    // scroll
+    
+    shift_x_to_fit = takex ? -wanted.start().xpos() : 0;
+    shift_y_to_fit = takey ? -wanted.start().ypos() : 0;
 
     // scale
-    rectangle = &this->rect;
+    if ((rect.r-rect.l)<EPS) rect.r = rect.l+1;
+    if ((rect.b-rect.t)<EPS) rect.b = rect.t+1;
 
-    if( (rectangle->r)-(rectangle->l)<EPS ){
-        (rectangle->r) = (rectangle->l) + 1;
+    AW_pos max_trans_to_fit;
+    if (takex) {
+        if (takey) { // take both
+            trans_to_fit     = max((rect.r-rect.l)/wanted.width(), (rect.b-rect.t)/wanted.height());
+            max_trans_to_fit = 32000.0/max(width, height);
+        }
+        else { // takex
+            trans_to_fit = (rect.r-rect.l)/wanted.width();
+            max_trans_to_fit = 32000.0/width;
+        }
     }
-    if( (rectangle->b)-(rectangle->t)<EPS ){
-        (rectangle->b) = (rectangle->t) + 1;
+    else { // takey
+        trans_to_fit = (rect.b-rect.t)/wanted.height();
+        max_trans_to_fit = 32000.0/height;
     }
-
-
-    AW_pos width = this->worldinfo.r - this->worldinfo.l;
-    if (width<EPS) width = EPS;
-    AW_pos max_trans_to_fit = 32000.0/width;
-
-
-    AW_pos trans_to_fity = ((rectangle->b)-(rectangle->t))/(wey-wsy);
-    this->trans_to_fit = (rectangle->r-rectangle->l)/(wex-wsx);
-    if (    tree_disp   &&  !tree_disp->exports.dont_fit_y  &&
-            this->trans_to_fit > trans_to_fity){
-        this->trans_to_fit = trans_to_fity;
-    }
-
-    if(this->trans_to_fit > max_trans_to_fit){
-        // aw_message("Maximum Zoom Factor exceeded!");
-        this->trans_to_fit = max_trans_to_fit;
+    if (trans_to_fit > max_trans_to_fit) {
+        trans_to_fit = max_trans_to_fit;
     }
 
-    this->set_scrollbars();
-
+    set_scrollbars();
 }
 
-
-void
-nt_draw_zoom_box(AW_device *device, int gc,
-                 AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2 )
-{
-    device->line(gc, x1, y1, x1, y2, AWT_F_ALL, 0,0);
-    device->line(gc, x1, y2, x2, y2, AWT_F_ALL, 0,0);
-    device->line(gc, x2, y2, x2, y1, AWT_F_ALL, 0,0);
-    device->line(gc, x2, y1, x1, y1, AWT_F_ALL, 0,0);
+inline void nt_draw_zoom_box(AW_device *device, int gc, AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2 ) {
+    device->box(gc, AW_FALSE, x1, y1, x2-x1, y2-y1, AWT_F_ALL, 0, 0);
 }
-
-
-void AWT_canvas::set_mode(AWT_COMMAND_MODE mo)
-{
-    this->mode = mo;
+inline void nt_draw_zoom_box(AW_device *device, AWT_canvas *ntw) {
+    nt_draw_zoom_box(device, ntw->drag_gc,
+                     ntw->zoom_drag_sx, ntw->zoom_drag_sy,
+                     ntw->zoom_drag_ex, ntw->zoom_drag_ey);
 }
 
 void AWT_clip_expose(AW_window *aww,AWT_canvas *ntw,
@@ -308,8 +356,6 @@ void AWT_expose_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL){
     ntw->refresh();
 }
 
-
-
 void AWT_canvas::refresh( void )
 {
     AW_device *device = this->aww->get_device (AW_MIDDLE_AREA);
@@ -318,11 +364,11 @@ void AWT_canvas::refresh( void )
                     this->rect.t, this->rect.b,0,0);
 }
 
-void AWT_resize_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL cl2)
+void AWT_resize_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL)
 {
     AWUSE(dummy);
-    ntw->zoom_reset(  );
-    AWT_expose_cb (ntw->aww, ntw, cl2 );
+    ntw->zoom_reset();
+    AWT_expose_cb(ntw->aww, ntw, 0);
 }
 
 
@@ -338,6 +384,34 @@ void AWT_focus_cb(AW_window *dummy,AWT_canvas *ntw){
         ntw->refresh();
     }
     ntw->tree_disp->pop_transaction(ntw->gb_main);
+}
+
+static bool handleZoomEvent(AW_window *aww, AWT_canvas *ntw, AW_device *device, const AW_event& event) {
+    bool handled = false;
+    bool zoomIn  = true;
+
+    if      (event.button == AWT_M_LEFT)  { handled = true; }
+    else if (event.button == AWT_M_RIGHT) { handled = true; zoomIn  = false; }
+
+    if (handled) {
+        if (event.type == AW_Mouse_Press) {
+            ntw->drag = 1;
+            ntw->zoom_drag_sx = ntw->zoom_drag_ex = event.x;
+            ntw->zoom_drag_sy = ntw->zoom_drag_ey = event.y;
+        }
+        else {
+            /* delete last box */
+            nt_draw_zoom_box(device, ntw);
+            ntw->drag = 0;
+
+            Rectangle screen(ntw->rect);
+            Rectangle drag(ntw->zoom_drag_sx, ntw->zoom_drag_sy, ntw->zoom_drag_ex, ntw->zoom_drag_ey);
+
+            ntw->zoom(device, zoomIn, drag, screen);
+            AWT_expose_cb(aww, ntw, 0);
+        }
+    }
+    return handled;
 }
 
 void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
@@ -357,116 +431,135 @@ void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
 
     ntw->tree_disp->check_update(ntw->gb_main);
 
-    int screenwidth,screenheight;
-
     /*** here appear all modes which must be handled right here ***/
 
-    switch(ntw->mode){
-        case AWT_MODE_ZOOM:
-            switch(event.button){
-                case AWT_M_LEFT:
-                    if(event.type==AW_Mouse_Press){
-                        ntw->drag = 1;
-                        ntw->zoom_drag_sx = ntw->zoom_drag_ex = event.x;
-                        ntw->zoom_drag_sy = ntw->zoom_drag_ey = event.y;
-                    }else{
-                        /* delete last box */
-                        nt_draw_zoom_box(device, ntw->drag_gc,
-                                         ntw->zoom_drag_sx, ntw->zoom_drag_sy,
-                                         ntw->zoom_drag_ex, ntw->zoom_drag_ey);
-                        ntw->drag = 0;
-                        screenwidth  = ntw->rect.r-ntw->rect.l;
-                        screenheight = ntw->rect.b-ntw->rect.t;
-                        if(ntw->zoom_drag_sx!=event.x){
-                            ntw->tree_zoom(device, ntw->zoom_drag_sx, ntw->zoom_drag_sy, event.x, event.y);
-                        }else{
-                            ntw->tree_zoom(device, AWT_ZOOM_OUT_STEP, AWT_ZOOM_OUT_STEP,
-                                           screenwidth  - AWT_ZOOM_OUT_STEP,
-                                           screenheight - AWT_ZOOM_OUT_STEP);
-                        }
-                        AWT_expose_cb(aww,ntw,0);
-                    }
-                    break;
-                case AWT_M_RIGHT:
-                    if(event.type==AW_Mouse_Press){
-                        ntw->drag = 1;
-                        ntw->zoom_drag_sx = ntw->zoom_drag_ex = event.x;
-                        ntw->zoom_drag_sy = ntw->zoom_drag_ey = event.y;
-                    }else{
-                        screenwidth  = ntw->rect.r-ntw->rect.l;
-                        screenheight = ntw->rect.b-ntw->rect.t;
-                        nt_draw_zoom_box(device, ntw->drag_gc, ntw->zoom_drag_sx, ntw->zoom_drag_sy,
-                                         ntw->zoom_drag_ex, ntw->zoom_drag_ey);
-                        ntw->drag = 0;
-                        if(ntw->zoom_drag_sx!=event.x){
-                            ntw->tree_zoom(device, -(ntw->zoom_drag_sx*2), -(ntw->zoom_drag_sy*2),
-                                           ((screenwidth-event.x) + screenwidth)*2,
-                                           ((screenheight-event.y)+ screenheight)*2);
-                        }
-                        else{
-                            ntw->tree_zoom(device, -AWT_ZOOM_OUT_STEP, -AWT_ZOOM_OUT_STEP,
-                                           screenwidth  + AWT_ZOOM_OUT_STEP,
-                                           screenheight + AWT_ZOOM_OUT_STEP);
-                        }
-                        AWT_expose_cb(aww,ntw,0);
-                    }
-                    break;
-            }
-            break;
+    bool event_handled = false;
 
-            /*** here appear all modes, which are to be handled by the object's command methods ***/
-
-        default:
-            goto shit_default;  // hurray I found a bug in SGI CC compiler
+    if (ntw->mode == AWT_MODE_ZOOM) { // zoom mode is identical for all applications, so handle it here
+        event_handled = handleZoomEvent(aww, ntw, device, event);
     }
-    goto shit_no_default;
- shit_default:
 
-    click_device = aww->get_click_device (AW_MIDDLE_AREA,event.x, event.y, AWT_CATCH_LINE, AWT_CATCH_TEXT, 0);
-    click_device->set_filter(AW_CLICK);
-    device->set_filter(AW_SCREEN);
+    if (!event_handled) {
+        click_device = aww->get_click_device (AW_MIDDLE_AREA,event.x, event.y, AWT_CATCH_LINE, AWT_CATCH_TEXT, 0);
+        click_device->set_filter(AW_CLICK);
+        device->set_filter(AW_SCREEN);
 
-    ntw->init_device(click_device);
-    ntw->init_device(device);
+        ntw->init_device(click_device);
+        ntw->init_device(device);
 
-    ntw->tree_disp->show(click_device);
-    click_device->get_clicked_line(&ntw->clicked_line);
-    click_device->get_clicked_text(&ntw->clicked_text);
+        ntw->tree_disp->show(click_device);
+        click_device->get_clicked_line(&ntw->clicked_line);
+        click_device->get_clicked_text(&ntw->clicked_text);
 
-    ntw->tree_disp->command(device, ntw->mode,
-                            event.button, event.keymodifier, event.character,
-                            event.type, event.x,
-                            event.y, &ntw->clicked_line,
-                            &ntw->clicked_text );
-    if (ntw->tree_disp->exports.save ) {
-        // save it
-        GB_ERROR error = ntw->tree_disp->save(ntw->gb_main, 0,0,0);
-        if (error) {
-            aw_message(error);
-            ntw->tree_disp->load(ntw->gb_main, 0,0,0);
+        ntw->tree_disp->command(device, ntw->mode,
+                                event.button, event.keymodifier, event.keycode, event.character,
+                                event.type, event.x,
+                                event.y, &ntw->clicked_line,
+                                &ntw->clicked_text );
+        if (ntw->tree_disp->exports.save ) {
+            // save it
+            GB_ERROR error = ntw->tree_disp->save(ntw->gb_main, 0,0,0);
+            if (error) {
+                aw_message(error);
+                ntw->tree_disp->load(ntw->gb_main, 0,0,0);
+            }
+        }
+        if (ntw->gb_main) {
+            ntw->tree_disp->update(ntw->gb_main);
+        }
+        if (ntw->tree_disp->exports.zoom_reset) {
+            ntw->zoom_reset();
+            ntw->refresh();
+        }
+        else if (ntw->tree_disp->exports.resize) {
+            ntw->recalc_size();
+            ntw->refresh();
+        }
+        else if (ntw->tree_disp->exports.refresh) {
+            ntw->refresh();
         }
     }
-    if (ntw->gb_main) {
-        ntw->tree_disp->update(ntw->gb_main);
-    }
-    if (ntw->tree_disp->exports.zoom_reset) {
-        ntw->zoom_reset();
-        ntw->refresh();
-    }
-    else if (ntw->tree_disp->exports.resize) {
-        ntw->recalc_size();
-        ntw->refresh();
-    }
-    else if (ntw->tree_disp->exports.refresh) {
-        ntw->refresh();
-    }
-
- shit_no_default:
 
     ntw->zoom_drag_ex = event.x;
     ntw->zoom_drag_ey = event.y;
     if (ntw->gb_main) {
         ntw->tree_disp->pop_transaction(ntw->gb_main);
+    }
+}
+
+
+void AWT_canvas::set_dragEndpoint(int dragx, int dragy) {
+    bool fit_proportional = false;
+    if (tree_disp) {
+        bool dont_fit_x = tree_disp->exports.dont_fit_x;
+        bool dont_fit_y = tree_disp->exports.dont_fit_y;
+
+        if (tree_disp->exports.dont_fit_larger) {
+            AW_pos width  = worldinfo.r-worldinfo.l;
+            AW_pos height = worldinfo.b-worldinfo.t;
+
+            if (width>height) {     // like dont_fit_x = 1; dont_fit_y = 0;
+                dont_fit_x = true;
+            }
+            else { // like dont_fit_y = 1; dont_fit_x = 0;
+                dont_fit_y = true;
+            }
+        }
+
+        if (dont_fit_y) {
+            zoom_drag_sy = rect.t;
+            zoom_drag_ey = rect.b;
+            zoom_drag_ex = dragx;
+        }
+        else if (dont_fit_x) {
+            zoom_drag_sx = rect.l;
+            zoom_drag_ex = rect.r;
+            zoom_drag_ey = dragy;
+        }
+        else {
+            fit_proportional = true;
+        }
+    }
+    else {
+        fit_proportional = true;
+    }
+
+    if (fit_proportional) {
+        zoom_drag_ex = dragx;
+        zoom_drag_ey = dragy;
+
+        int drag_sx = zoom_drag_ex-zoom_drag_sx;
+        int drag_sy = zoom_drag_ey-zoom_drag_sy;
+
+        bool   correct_x = false;
+        bool   correct_y = false;
+        double factor;
+
+        int scr_sx = rect.r-rect.l;
+        int scr_sy = rect.b-rect.t;
+
+        if (drag_sx == 0) {
+            if (drag_sy != 0) { factor = double(drag_sy)/scr_sy; correct_x = true; }
+        }
+        else {
+            if (drag_sy == 0) { factor = double(drag_sx)/scr_sx; correct_y = true; }
+            else {
+                double facx = double(drag_sx)/scr_sx;
+                double facy = double(drag_sy)/scr_sy;
+
+                if (fabs(facx)>fabs(facy)) { factor = facx; correct_y = true; }
+                else                       { factor = facy; correct_x = true; }
+            }
+        }
+
+        if (correct_x) {
+            int width    = int(scr_sx*factor);
+            zoom_drag_ex = zoom_drag_sx+width;
+        }
+        else if (correct_y) {
+            int height   = int(scr_sy*factor);
+            zoom_drag_ey = zoom_drag_sy+height;
+        }
     }
 }
 
@@ -484,133 +577,72 @@ void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
     if (ntw->gb_main) ntw->tree_disp->push_transaction(ntw->gb_main);
     aww->get_event( &event );
 
-    switch(event.button){
-        case AWT_M_LEFT:
-            if(ntw->mode == AWT_MODE_ZOOM){
-                nt_draw_zoom_box(device, ntw->drag_gc,
-                                 ntw->zoom_drag_sx, ntw->zoom_drag_sy,
-                                 ntw->zoom_drag_ex, ntw->zoom_drag_ey );
-                ntw->zoom_drag_ex = event.x;
-                ntw->zoom_drag_ey = event.y;
-                nt_draw_zoom_box(device, ntw->drag_gc,
-                                 ntw->zoom_drag_sx, ntw->zoom_drag_sy,
-                                 ntw->zoom_drag_ex, ntw->zoom_drag_ey );
-            } else {
-                ntw->init_device(device);
-                switch(ntw->mode) {
-                    case AWT_MODE_MOVE:
-                    case AWT_MODE_SWAP2:
-                        click_device = aww->get_click_device (AW_MIDDLE_AREA,
-                                                              event.x, event.y, AWT_CATCH_LINE,
-                                                              AWT_CATCH_TEXT, 0);
-                        click_device->set_filter(AW_CLICK_DRAG);
-                        ntw->init_device(click_device);
-                        ntw->tree_disp->show(click_device);
-                        click_device->get_clicked_line(&ntw->clicked_line);
-                        click_device->get_clicked_text(&ntw->clicked_text);
-                    default:
-                        ntw->tree_disp->command(device, ntw->mode,
-                                                event.button, event.keymodifier, event.keycode, AW_Mouse_Drag, event.x,
-                                                event.y, &ntw->clicked_line,
-                                                &ntw->clicked_text );
-                        if (ntw->gb_main) {
-                            ntw->tree_disp->update(ntw->gb_main);
-                        }
-                }
-                break;
-            }
-            break;
+    if (event.button == AWT_M_MIDDLE) {
+        // shift display in ALL modes
+        dx = event.x - ntw->zoom_drag_ex;
+        dy = event.y - ntw->zoom_drag_ey;
 
-        case AWT_M_RIGHT:
-            if(ntw->mode == AWT_MODE_ZOOM){
-                nt_draw_zoom_box(device, ntw->drag_gc,
-                                 ntw->zoom_drag_sx, ntw->zoom_drag_sy,
-                                 ntw->zoom_drag_ex, ntw->zoom_drag_ey );
-                ntw->zoom_drag_ex = event.x;
-                ntw->zoom_drag_ey = event.y;
-                nt_draw_zoom_box(device, ntw->drag_gc,
-                                 ntw->zoom_drag_sx, ntw->zoom_drag_sy,
-                                 ntw->zoom_drag_ex, ntw->zoom_drag_ey );
-            } else {
-                ntw->init_device(device);
-                switch(ntw->mode) {
-                    case AWT_MODE_MOVE:
-                        click_device = aww->get_click_device (AW_MIDDLE_AREA,
-                                                              event.x, event.y, AWT_CATCH_LINE,
-                                                              AWT_CATCH_TEXT, 0);
-                        click_device->set_filter(AW_CLICK_DRAG);
-                        ntw->init_device(click_device);
-                        ntw->tree_disp->show(click_device);
-                        click_device->get_clicked_line(&ntw->clicked_line);
-                        click_device->get_clicked_text(&ntw->clicked_text);
-                    default:
-                        ntw->tree_disp->command(device, ntw->mode,
-                                                event.button, event.keymodifier, event.keycode, AW_Mouse_Drag, event.x,
-                                                event.y, &ntw->clicked_line,
-                                                &ntw->clicked_text );
-                        if (ntw->gb_main) {
-                            ntw->tree_disp->update(ntw->gb_main);
-                        }
-                        break;
-                }
-            }
-            break;
+        ntw->zoom_drag_ex = event.x;
+        ntw->zoom_drag_ey = event.y;
 
-        case AWT_M_MIDDLE:
-            /** in most modes the user shall be able to
-                shift the display by dragging MM */
-            switch(ntw->mode){
-                case AWT_MODE_SELECT:
-                case AWT_MODE_MARK:
-                case AWT_MODE_GROUP:
+
+        /* display */
+        ntw->scroll(aww, -dx *3, -dy *3);
+    }
+    else {
+        bool run_command = true;
+
+        if (event.button == AWT_M_LEFT || event.button == AWT_M_RIGHT) {
+            switch (ntw->mode) {
                 case AWT_MODE_ZOOM:
-                case AWT_MODE_LZOOM:
-                case AWT_MODE_MOD:
-                case AWT_MODE_WWW:
-                case AWT_MODE_LINE:
-                case AWT_MODE_ROT:
-                case AWT_MODE_SPREAD:
-                case AWT_MODE_SWAP:
-                case AWT_MODE_SWAP2:
-                case AWT_MODE_LENGTH:
-                case AWT_MODE_MOVE:
-                case AWT_MODE_SETROOT:
-                case AWT_MODE_RESET:
-                case AWT_MODE_KERNINGHAN:
-                case AWT_MODE_NNI:
-                case AWT_MODE_OPTIMIZE:
-                case AWT_MODE_PROINFO:
-                case AWT_MODE_STRETCH:
-
-                    dx = event.x - ntw->zoom_drag_ex;
-                    dy = event.y - ntw->zoom_drag_ey;
-
-                    ntw->zoom_drag_ex = event.x;
-                    ntw->zoom_drag_ey = event.y;
-
-
-                    /* display */
-                    ntw->scroll(aww, -dx *3, -dy *3);
-
+                    nt_draw_zoom_box(device, ntw);
+                    ntw->set_dragEndpoint(event.x, event.y);
+                    nt_draw_zoom_box(device, ntw);
+                    run_command = false;
                     break;
 
-                default:
+                case AWT_MODE_SWAP2:
+                    if (event.button == AWT_M_RIGHT) break;
+                    // fall-through
+                case AWT_MODE_MOVE:
+                    ntw->init_device(device);
+                    click_device = aww->get_click_device (AW_MIDDLE_AREA,
+                                                          event.x, event.y, AWT_CATCH_LINE,
+                                                          AWT_CATCH_TEXT, 0);
+                    click_device->set_filter(AW_CLICK_DRAG);
+                    ntw->init_device(click_device);
+                    ntw->tree_disp->show(click_device);
+                    click_device->get_clicked_line(&ntw->clicked_line);
+                    click_device->get_clicked_text(&ntw->clicked_text);
+                    run_command  = false;
+                    break;
+                    
+                default :
                     break;
             }
-            break;
+        }
 
-
-        default:
-            break;
-    } /* switch event_action(event) */
-
+        if (run_command) {
+            ntw->init_device(device);
+            ntw->tree_disp->command(device, ntw->mode,
+                                    event.button, event.keymodifier, event.keycode, event.character, AW_Mouse_Drag, event.x,
+                                    event.y, &ntw->clicked_line,
+                                    &ntw->clicked_text );
+            if (ntw->gb_main) {
+                ntw->tree_disp->update(ntw->gb_main);
+            }
+        }
+    }
+    
     if (ntw->tree_disp->exports.zoom_reset) {
         ntw->zoom_reset();
         ntw->refresh();
-    }else if(ntw->tree_disp->exports.resize){
+    }
+    else if (ntw->tree_disp->exports.resize) {
         ntw->recalc_size();
         ntw->refresh();
-    }else  if(ntw->tree_disp->exports.refresh){
+    }
+    else if (ntw->tree_disp->exports.refresh) {
         ntw->refresh();
     }
 
@@ -727,19 +759,20 @@ AWT_scroll_hor_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1)
 }
 
 
-AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_gc_manager &gc_manager, const char *user_awari)
+AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_gc_manager &set_gc_manager, const char *user_awari)
+    : user_awar(strdup(user_awari))
+    , shift_x_to_fit(0)
+    , shift_y_to_fit(0)
+    , gb_main(gb_maini)
+    , aww(awwi)
+    , awr(aww->get_root())
+    , tree_disp(awd)
+    , gc_manager(tree_disp->init_devices(aww, aww->get_device (AW_MIDDLE_AREA), this, (AW_CL)0))
+    , drag_gc(aww->main_drag_gc)
+    , mode(AWT_MODE_NONE)
 {
-    this->gb_main   = gb_maini;
-    this->aww       = awwi;
-    this->user_awar = strdup(user_awari);
-    tree_disp       = awd;
-    mode            = AWT_MODE_NONE;
-
-    this->awr          = aww->get_root();
-    gc_manager         = awd->init_devices(aww, aww->get_device (AW_MIDDLE_AREA), this, (AW_CL)0 );
-    this->gc_manager   = gc_manager;
-    tree_disp->drag_gc = aww->main_drag_gc;
-    this->drag_gc      = aww->main_drag_gc;
+    tree_disp->drag_gc  = drag_gc;
+    set_gc_manager      = gc_manager;
 
     memset((char *)&clicked_line,0,sizeof(clicked_line));
     memset((char *)&clicked_text,0,sizeof(clicked_text));
@@ -756,20 +789,14 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_g
     aww->set_vertical_change_callback((AW_CB)AWT_scroll_vert_cb,(AW_CL)this, 0 );
 }
 
-GB_ERROR AWT_graphic::load(GBDATA *gb_main, const char *name,AW_CL cd1, AW_CL cd2) {
-    AWUSE(name); AWUSE(cd1);AWUSE(cd2);AWUSE(gb_main);
-    return "this object cannot be loaded";
-}
+// --------------------
+//      AWT_graphic
+// --------------------
 
-GB_ERROR AWT_graphic::save(GBDATA *gb_main, const char *name,AW_CL cd1, AW_CL cd2) {
-    AWUSE(name); AWUSE(cd1);AWUSE(cd2);AWUSE(gb_main);
-    return "this object cannot be saved";
+AWT_graphic::AWT_graphic(void) {
+    exports.init();
 }
-int AWT_graphic::check_update(GBDATA *gb_main) {
-    AWUSE(gb_main);return -1;
-}
-void AWT_graphic::update(GBDATA *gb_main) {
-    AWUSE(gb_main);return;
+AWT_graphic::~AWT_graphic(void) {
 }
 
 void AWT_graphic::pop_transaction(GBDATA *gb_main)  {
@@ -779,10 +806,7 @@ void AWT_graphic::push_transaction(GBDATA *gb_main) {
     GB_push_transaction(gb_main);
 }
 
-
-
-
-void AWT_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, char key_char, AW_event_type type,AW_pos x, AW_pos y,
+void AWT_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char, AW_event_type type,AW_pos x, AW_pos y,
                           AW_clicked_line *cl, AW_clicked_text *ct){
     AWUSE(device);
     AWUSE(type);
@@ -801,11 +825,30 @@ void AWT_graphic::text(AW_device *device, char *text){
     AWUSE(text);
 }
 
-AWT_graphic::~AWT_graphic(void)
-{
+// --------------------------
+//      AWT_nonDB_graphic
+// --------------------------
+
+AWT_nonDB_graphic::~AWT_nonDB_graphic() {}
+
+GB_ERROR AWT_nonDB_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
+    return "AWT_nonDB_graphic cannot be loaded";
 }
 
-AWT_graphic::AWT_graphic(void)
-{
-    exports.init();
+GB_ERROR AWT_nonDB_graphic::save(GBDATA *, const char *, AW_CL, AW_CL) {
+    return "AWT_nonDB_graphic cannot be saved";
 }
+
+int AWT_nonDB_graphic::check_update(GBDATA *) {
+#if defined(DEBUG)
+    printf("AWT_nonDB_graphic can't be check for update\n");
+#endif // DEBUG
+    return -1;
+}
+void AWT_nonDB_graphic::update(GBDATA *) {
+#if defined(DEBUG)
+    printf("AWT_nonDB_graphic can't be updated\n");
+#endif // DEBUG
+}
+
+
