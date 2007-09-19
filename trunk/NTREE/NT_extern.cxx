@@ -1194,9 +1194,10 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     AWT_canvas *ntw;
     {
-        AP_tree_sort  old_sort_type = nt.tree->tree_sort;
+        AP_tree_sort old_sort_type = nt.tree->tree_sort;
         nt.tree->set_tree_type(AP_LIST_SIMPLE); // avoid NDS warnings during startup
-        ntw = new AWT_canvas(gb_main,(AW_window *)awm,nt.tree, aw_gc_manager,awar_tree) ;
+
+        ntw = new AWT_canvas(gb_main, awm, nt.tree, aw_gc_manager, awar_tree);
         nt.tree->set_tree_type(old_sort_type);
         ntw->set_mode(AWT_MODE_SELECT);
     }
