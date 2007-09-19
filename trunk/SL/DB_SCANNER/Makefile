@@ -44,6 +44,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/arbdbt.h
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+db_scanner.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_window.hxx

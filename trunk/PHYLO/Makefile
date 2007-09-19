@@ -41,6 +41,7 @@ PH_data.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PH_data.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+PH_data.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
@@ -58,6 +59,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PH_display.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+PH_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
@@ -74,6 +76,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+PH_filt.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
@@ -91,6 +94,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PH_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+PH_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -110,6 +114,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+PH_matr.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/awt.hxx

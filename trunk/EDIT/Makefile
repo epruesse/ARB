@@ -37,6 +37,7 @@ ed_conf.o: $(ARBHOME)/INCLUDE/arbdb++.hxx
 ed_conf.o: $(ARBHOME)/INCLUDE/arbdb.h
 ed_conf.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ed_conf.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ed_conf.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ed_conf.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ed_conf.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
@@ -53,6 +54,7 @@ edit.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 edit.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 edit.o: $(ARBHOME)/INCLUDE/AW_helix.hxx
 edit.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+edit.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 edit.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 edit.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 edit.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -71,6 +73,7 @@ edit_naligner.o: $(ARBHOME)/INCLUDE/arbdbt.h
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+edit_naligner.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -84,5 +87,6 @@ edit_tools.o: $(ARBHOME)/INCLUDE/arbdb++.hxx
 edit_tools.o: $(ARBHOME)/INCLUDE/arbdb.h
 edit_tools.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 edit_tools.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+edit_tools.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 edit_tools.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 edit_tools.o: $(ARBHOME)/INCLUDE/aw_window.hxx

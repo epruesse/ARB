@@ -41,6 +41,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+AWTI_export.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -61,6 +62,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+AWTI_import.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx

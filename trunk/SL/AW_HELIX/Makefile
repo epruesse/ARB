@@ -41,6 +41,7 @@ AW_helix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+AW_helix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx

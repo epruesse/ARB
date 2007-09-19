@@ -73,6 +73,7 @@ GAARB.o: $(ARBHOME)/INCLUDE/arbdb.h
 GAARB.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GAARB.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GAARB.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GAARB.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GAARB.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GAARB.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GAARB.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -90,6 +91,7 @@ GADDBJ.o: $(ARBHOME)/INCLUDE/arbdb.h
 GADDBJ.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GADDBJ.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GADDBJ.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GADDBJ.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GADDBJ.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GADDBJ.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GADDBJ.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -107,6 +109,7 @@ GAEmbl.o: $(ARBHOME)/INCLUDE/arbdb.h
 GAEmbl.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GAEmbl.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GAEmbl.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GAEmbl.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GAEmbl.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GAEmbl.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GAEmbl.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -123,6 +126,7 @@ GAFile.o: $(ARBHOME)/INCLUDE/arbdb.h
 GAFile.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GAFile.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GAFile.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GAFile.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GAFile.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GAFile.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GAFile.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -140,6 +144,7 @@ GAGenBank.o: $(ARBHOME)/INCLUDE/arbdb.h
 GAGenBank.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GAGenBank.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GAGenBank.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GAGenBank.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GAGenBank.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GAGenBank.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GAGenBank.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -160,6 +165,7 @@ GAGenomImport.o: $(ARBHOME)/INCLUDE/arbdb.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GAGenomImport.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GAGenomImport.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -174,6 +180,7 @@ GALogger.o: $(ARBHOME)/INCLUDE/arbdb.h
 GALogger.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GALogger.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GALogger.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GALogger.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GALogger.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GALogger.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GALogger.o: $(ARBHOME)/INCLUDE/aw_window.hxx
