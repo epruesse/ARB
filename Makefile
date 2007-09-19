@@ -624,6 +624,7 @@ ARCHS_EDIT4_GENERAL = \
 		SL/HELIX/HELIX.a \
 		SL/AW_HELIX/AW_HELIX.a \
 		SL/AW_NAME/AW_NAME.a \
+		SL/FILE_BUFFER/FILE_BUFFER.a \
 		XML/XML.a \
 
 ifeq ($(OPENGL),0)
@@ -1108,7 +1109,7 @@ ph:	$(PHYLO)
 pa:	$(PARSIMONY)
 tg:	$(TREEGEN)
 
-3d:	$(RNA3D)
+3d:	RNA3D/RNA3D.dummy
 gl:	GL/GL.dummy
 sl:	SL/SL.dummy
 
@@ -1140,7 +1141,7 @@ templ:	TEMPLATES/TEMPLATES.dummy
 
 #********************************************************************************
 
-up: depends proto tags
+up: depends proto tags valgrind_update
 
 #********************************************************************************
 
@@ -1160,6 +1161,11 @@ proto: AISC_MKPTPS/AISC_MKPTPS.dummy TOOLS/TOOLS.dummy
 				TRS/TRS.proto \
 				AISC_COM/AISC_COM.proto \
 				GDE/GDE.proto \
+
+#********************************************************************************
+
+valgrind_update:
+		$(MAKE) -C SOURCE_TOOLS valgrind_update
 
 #********************************************************************************
 
@@ -1283,6 +1289,7 @@ clean: $(ARCHS:.a=.clean) \
 		GDEHELP/GDEHELP.clean \
 		HELP_SOURCE/HELP_SOURCE.clean \
 		SOURCE_TOOLS/SOURCE_TOOLS.clean \
+		bin/bin.clean \
 		perl_clean
 	rm -f *.last_gcc
 
@@ -1307,6 +1314,9 @@ tarfile_quick: all
 
 sourcetarfile: rmbak
 	util/arb_save
+
+save2: rmbak
+		util/arb_save ignore
 
 release:
 	@echo Making release
