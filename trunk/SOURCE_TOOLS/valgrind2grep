@@ -50,6 +50,14 @@ if ($args==3) {
   else { die "Unknown argument '$a'"; }
 }
 
+# use unbuffered I/O (otherwise pipe waits for valgrind to terminate???)
+
+my $in = new IO::Handle;
+$in->fdopen(fileno(STDIN),"r") || die "can't open STDIN";
+
+my $out = new IO::Handle;
+$out->fdopen(fileno(STDOUT),"w") || die "can't open STDOUT";
+
 # read list of source files:
 
 open(SOURCELIST,"<$sourcelist") || die "can't open $sourcelist";
@@ -91,21 +99,59 @@ foreach (<SOURCELIST>) {
 
 close(SOURCELIST);
 
+sub makeTargetAbsolute($$) {
+  my ($abslink,$reltarget) = @_;
+  if ($abslink =~ /\/[^\/]+$/o) {
+    my $absdir = $`;
+    while ($reltarget =~ /^..\//o) {
+      $reltarget = $';
+      if ($absdir =~ /\/[^\/]+$/o) {
+        $absdir = $`;
+      }
+      else {
+        die "Can't detect parent dir of '$absdir'";
+      }
+    }
+    # print "absdir='$absdir' reltarget='$reltarget'\n";
+    return $absdir.'/'.$reltarget;
+  }
+  else {
+    die "Can't detect parent dir of '$abslink'";
+  }
+}
+
 # make entries unique
 foreach (keys %fileIndex) {
   my $array_r = $fileIndex{$_};
   my %unique = map { $_ => 1; } @$array_r;
+
+  my $changed = 1;
+  while ($changed==1) {
+    $changed = 0;
+    my @del = ();
+    my @add = ();
+    foreach (keys %unique) {
+      my $target = undef;
+      eval { $target = readlink($_); };
+      if ($@) {                 # a link with invalid target?
+        push @del, $_;
+        $out->print("Remove invalid link '$_' (Reason: $!)\n");
+      }
+      elsif (defined $target) { # a link with valid target
+        $target = makeTargetAbsolute($_,$target);
+        push @del, $_;
+        push @add, $target;
+        # $out->print("Replace link '$_'\n   by target '$target'\n");
+        # $out->print("Target '$target' exists:".(-e $target ? 'yes' : 'no')."\n");
+      }
+      # else not a link
+    }
+    if (scalar(@del)) { foreach (@del) { delete $unique{$_}; } $changed=1; }
+    if (scalar(@add)) { foreach (@add) { $unique{$_} = 1; } $changed=1; }
+  }
   @$array_r = keys %unique;
 }
 
-
-# use unbuffered I/O (otherwise pipe waits for valgrind to terminate???)
-
-my $in = new IO::Handle;
-$in->fdopen(fileno(STDIN),"r") || die "can't open STDIN";
-
-my $out = new IO::Handle;
-$out->fdopen(fileno(STDOUT),"w") || die "can't open STDOUT";
 
 $out->print("Settings: Showing $callers caller(s).\n");
 $out->print("          Filtering with '$filter'.\n");
