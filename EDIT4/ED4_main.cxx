@@ -21,6 +21,8 @@
 #include <gde.hxx>
 #include<awt_pro_a_nucs.hxx>
 
+#include <ed4_extern.hxx>
+
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
 #include "ed4_defs.hxx"
@@ -248,7 +250,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
 
                 if (seq) {
                     set_and_realloc_gde_array(the_names, the_sequences, allocated, numberspecies, maxalign, name, name_len, seq, seq_len);
-                    if (show_helix && !is_SAI && ED4_ROOT->helix->size) {
+                    if (show_helix && !is_SAI && ED4_ROOT->helix->size()) {
                         char *helix = ED4_ROOT->helix->seq_2_helix(seq, '.');
                         set_and_realloc_gde_array(the_names, the_sequences, allocated, numberspecies, maxalign, name, name_len, helix, seq_len);
                     }
@@ -485,7 +487,7 @@ static void openProperties() {
 
 static char *ED4_find_protein_structure_SAI(GBDATA *gb_main, const char *alignment_name) {
     GB_transaction dummy(gb_main);
-	GBDATA *gb_extended_data = GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_extended_data = GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
     GBDATA *gb_protstruct    = GBT_find_SAI_rel_exdata(gb_extended_data, "protstruct");
 
     if (gb_protstruct) {
@@ -580,7 +582,9 @@ int main(int argc,char **argv)
                 ED4_ROOT->protstruct_len = strlen(ED4_ROOT->protstruct);
             }
             else {
+#if defined(DEBUG)
                 fprintf(stderr, "No SAI \"protstruct\" found. Protein structure information will not be displayed.\n");
+#endif // DEBUG
             }
             break;
 
