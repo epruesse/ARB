@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : ed4_search.hxx                                    //
 //   Purpose   :                                                   //
-//   Time-stamp: <Tue Mar/13/2007 17:56 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Sat Sep/01/2007 10:00 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de)                   //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -141,7 +141,7 @@ public:
     ED4_SearchResults();
     ~ED4_SearchResults();
 
-    void search(ED4_sequence_terminal *seq_terminal);
+    void search(const ED4_sequence_terminal *seq_terminal);
     void addSearchPosition(ED4_SearchPosition *pos);
 
     ED4_SearchPosition *get_first() const { return first; }
@@ -153,11 +153,9 @@ public:
     static void setNewSearch(ED4_SearchPositionType type);
     void searchAgain();
 
-    char *buildColorString(ED4_sequence_terminal *seq_terminal, int start, int end);
+    char *buildColorString(const ED4_sequence_terminal *seq_terminal, int start, int end);
 };
 
-
-ED4_sequence_terminal *ED4_find_seq_terminal(const char *species_name);
 
 #else
 #error ed4_search.hxx included twice
