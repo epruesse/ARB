@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_helix.h                                             //
 //    Purpose   : Class used for calculation of helix layout             //
-//    Time-stamp: <Thu Feb/05/2004 11:40 MET Coder@ReallySoft.de>       //
+//    Time-stamp: <Mon Sep/17/2007 12:28 MET Coder@ReallySoft.de>       //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -13,13 +13,16 @@
 //                                                                       //
 //  ==================================================================== //
 
-
+#ifndef _CPP_STRING
 #include <string>
+#endif
+#ifndef _CPP_MAP
 #include <map>
+#endif
 
-#undef _USE_AW_WINDOW
-#include "BI_helix.hxx"
-
+#ifndef BI_HELIX_HXX
+#include <BI_helix.hxx>
+#endif
 
 class SQ_helix {
   public:
@@ -95,20 +98,20 @@ void SQ_helix::SQ_calc_helix_layout(const char *sequence, GBDATA * gb_main,
                                     GBDATA * gb_quality,
                                     AP_filter * filter)
 {
-    BI_helix & my_helix = getHelix(gb_main, alignment_name);
+    BI_helix& helix = getHelix(gb_main, alignment_name);
 
     // one call should be enough here (alignment does not change during the whole evaluation)
     if (!has_filterMap) {
         filterMap.clear();
 
-        for (int filter_pos = 0; filter_pos < filter->real_len;
-             filter_pos++)
+        for (int filter_pos = 0; filter_pos < filter->real_len; filter_pos++) {
             filterMap[filter->filterpos_2_seqpos[filter_pos]] = filter_pos;
+        }
 
         has_filterMap = true;
     }
 
-    if (my_helix.entries == 0) {
+    if (!helix.has_entries()) {
         count_strong_helix = 1;
         count_weak_helix = 1;
         count_no_helix = 1;
@@ -118,9 +121,9 @@ void SQ_helix::SQ_calc_helix_layout(const char *sequence, GBDATA * gb_main,
              filter_pos++) {
             int seq_pos = filter->filterpos_2_seqpos[filter_pos];
 
-            BI_PAIR_TYPE pair_type = my_helix.entries[seq_pos].pair_type;
+            BI_PAIR_TYPE pair_type = helix.pairtype(seq_pos);
             if (pair_type == HELIX_PAIR) {
-                int v_seq_pos = my_helix.entries[seq_pos].pair_pos;
+                int v_seq_pos = helix.opposite_position(seq_pos);
                 if (v_seq_pos > seq_pos) {      // ignore right helix positions
                     int v_filter_pos = filterMap[v_seq_pos];
 
@@ -128,23 +131,20 @@ void SQ_helix::SQ_calc_helix_layout(const char *sequence, GBDATA * gb_main,
                     seq_assert(v_filter_pos);
 
                     if (v_filter_pos > 0) {
-                        char left = sequence[filter_pos];
+                        char left  = sequence[filter_pos];
                         char right = sequence[v_filter_pos];
-
-                        int check =
-                            my_helix.check_pair(left, right, pair_type);
+                        int  check = helix.check_pair(left, right, pair_type);
 
                         switch (check) {
-                        case 2:
-                            count_strong_helix++;
-                            break;
-                        case 1:
-                            count_weak_helix++;
-                            break;
-                        case 0:
-                            if (!((left == '-') && (right == '-')))
-                                count_no_helix++;
-                            break;
+                            case 2:
+                                count_strong_helix++;
+                                break;
+                            case 1:
+                                count_weak_helix++;
+                                break;
+                            case 0:
+                                if (!((left == '-') && (right == '-'))) count_no_helix++;
+                                break;
                         }
                     }
                 }
@@ -156,18 +156,15 @@ void SQ_helix::SQ_calc_helix_layout(const char *sequence, GBDATA * gb_main,
 //     /*if (count_weak_helix   != 0)*/ count_weak_helix = count_weak_helix / 2;
 //     /*if (count_no_helix     != 0)*/ count_no_helix = count_no_helix / 2;
 
-    GBDATA *gb_result1 =
-        GB_search(gb_quality, "number_of_no_helix", GB_INT);
+    GBDATA *gb_result1 = GB_search(gb_quality, "number_of_no_helix", GB_INT);
     seq_assert(gb_result1);
     GB_write_int(gb_result1, count_no_helix);
 
-    GBDATA *gb_result2 =
-        GB_search(gb_quality, "number_of_weak_helix", GB_INT);
+    GBDATA *gb_result2 = GB_search(gb_quality, "number_of_weak_helix", GB_INT);
     seq_assert(gb_result2);
     GB_write_int(gb_result2, count_weak_helix);
 
-    GBDATA *gb_result3 =
-        GB_search(gb_quality, "number_of_strong_helix", GB_INT);
+    GBDATA *gb_result3 = GB_search(gb_quality, "number_of_strong_helix", GB_INT);
     seq_assert(gb_result3);
     GB_write_int(gb_result3, count_strong_helix);
 }
