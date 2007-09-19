@@ -44,7 +44,8 @@ void aw_message_reload(AW_root *){
 }
 char *aw_glob_font_awar_name = 0;
 
-void aw_set_color(AW_window *aww,const char *color_name){
+static void aw_set_color(AW_window *aww, AW_CL cl_color_name){
+    const char *color_name = (const char *)cl_color_name;
     aww->get_root()->awar(aw_glob_font_awar_name)->write_string(color_name);
 }
 
@@ -165,10 +166,10 @@ void aw_create_color_chooser_window(AW_window *aww, const char *awar_name,const 
             }
             aws->at_newline();
         }
-        for (grey = 0; grey <= 256; grey += 256/16){ // grey buttons
+        for (grey = 256/32; grey < 256; grey += 256/16){ // grey buttons (skip black/white - already present above)
             char color_name[256];
-            sprintf(color_name,"#%2.2X%2.2X%2.2X", (grey==256)?255:grey, (grey>=256)?255:grey,(grey>=256)?255:grey);
-            aws->callback((AW_CB1)aw_set_color,(AW_CL)strdup(color_name));
+            sprintf(color_name,"#%2.2X%2.2X%2.2X", grey, grey, grey);
+            aws->callback(aw_set_color,(AW_CL)strdup(color_name));
             aws->create_button(color_name,"=",0,color_name); 
         }
         aws->at_newline();
@@ -562,6 +563,7 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
      *                          +   append next in same line
      *
      *                          $color at end of string = > define default color value
+     *                          ${GCname} at end of string = > use default of previously defined color
      */
 
     AW_root    *aw_root = aww->get_root();
@@ -616,17 +618,44 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
 
             AW_MGC_awar_cb_struct *acbs = 0;
             {
-                char * id_copy = strdup(id);
-                char *color = strchr(id_copy, '$'); // search color def
-                if (color) {
-                    *color++ = 0;
-                }
-                else {
-                    if (first) color = (char*)"white";
-                    else color = (char*)"navy";
+                char       *id_copy       = strdup(id);
+                const char *default_color = 0;
+
+                {
+                    char *color = strchr(id_copy, '$'); // search color def
+
+                    if (color) {
+                        *color++ = 0;
+
+                        if (color[0] == '{') {
+                            char *close = strchr(color+1, '}');
+                            aw_assert(close); // format is '${KNOWN_GC}'
+                            aw_assert(close[1] == 0); // unexpected chars behind
+                            if (close) {
+                                close[0] = 0;
+                                color++;
+
+                                aw_gc_manager *known = gcmgrfirst;
+                                aw_assert(known);
+                                while (known) {
+                                    if (strcmp(known->get_field(), color) == 0) { // found referred gc
+                                        default_color = known->get_default_value(); // use it's default color
+                                        break;
+                                    }
+                                    known = known->get_next();
+                                }
+                                aw_assert(known); // referred to unknown {GC}
+                            }
+                        }
+                        else {
+                            default_color = color;
+                        }
+                    }
                 }
 
-                gcmgr2 = new aw_gc_manager(strdup(id_copy), color ? strdup(color) : 0);
+                if (!default_color) default_color = first ? "white" : "black";
+
+                gcmgr2 = new aw_gc_manager(strdup(id_copy), strdup(default_color));
 
                 gcmgrlast->enqueue(gcmgr2);
                 gcmgrlast = gcmgr2;
