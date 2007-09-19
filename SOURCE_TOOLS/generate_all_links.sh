@@ -192,7 +192,6 @@ symlink ../AWT/awt_seq_dna.hxx INCLUDE/awt_seq_dna.hxx &&
 symlink ../AWT/awt_seq_protein.hxx INCLUDE/awt_seq_protein.hxx &&
 symlink ../AWT/awt_seq_simple_pro.hxx INCLUDE/awt_seq_simple_pro.hxx &&
 symlink ../AWT/awt_translate.hxx INCLUDE/awt_translate.hxx &&
-# symlink ../AWT/awt_tree.hxx INCLUDE/PH_phylo.hxx &&
 symlink ../AWT/awt_tree.hxx INCLUDE/awt_tree.hxx &&
 symlink ../AWT/awt_tree_cb.hxx INCLUDE/awt_tree_cb.hxx &&
 symlink ../AWT/awt_tree_cmp.hxx INCLUDE/awt_tree_cmp.hxx &&
@@ -201,7 +200,6 @@ symlink ../AWT/awtlocal.hxx INCLUDE/awtlocal.hxx &&
 symlink ../AWTC/awtc_constructSequence.hxx INCLUDE/awtc_constructSequence.hxx &&
 symlink ../AWTC/awtc_fast_aligner.hxx INCLUDE/awtc_fast_aligner.hxx &&
 symlink ../AWTC/awtc_next_neighbours.hxx INCLUDE/awtc_next_neighbours.hxx &&
-# symlink ../AWTC/awtc_rename.hxx INCLUDE/awtc_rename.hxx &&
 symlink ../AWTC/awtc_seq_search.hxx INCLUDE/awtc_seq_search.hxx &&
 symlink ../AWTC/awtc_submission.hxx INCLUDE/awtc_submission.hxx &&
 symlink ../AWTI/awti_export.hxx INCLUDE/awti_export.hxx &&
@@ -210,19 +208,16 @@ symlink ../BUGEX/bugex.h INCLUDE/bugex.h &&
 symlink ../CAT/cat_tree.hxx INCLUDE/cat_tree.hxx &&
 symlink ../CONSENSUS_TREE/CT_ctree.hxx INCLUDE/CT_ctree.hxx &&
 symlink ../DIST/dist.hxx INCLUDE/dist.hxx &&
+symlink ../EDIT4/ed4_extern.hxx INCLUDE/ed4_extern.hxx &&
 symlink ../GENOM/EXP.hxx INCLUDE/EXP.hxx &&
 symlink ../GENOM/GEN.hxx INCLUDE/GEN.hxx &&
-# symlink ../GENOM/GEN_tools.hxx INCLUDE/GEN_tools.hxx &&
-# symlink ../GENOM/GEN_extern.h INCLUDE/GEN_extern.h &&
 symlink ../GENOM_IMPORT/GAGenomImport.h INCLUDE/GAGenomImport.h &&
-# symlink ../GENOM_IMPORT/GenomeImport.h INCLUDE/GenomeImport.h &&
 symlink ../ISLAND_HOPPING/island_hopping.h INCLUDE/island_hopping.h &&
 symlink ../MERGE/mg_merge.hxx INCLUDE/mg_merge.hxx &&
 symlink ../NTREE/ntree.hxx INCLUDE/ntree.hxx &&
 symlink ../PRIMER_DESIGN/primer_design.hxx INCLUDE/primer_design.hxx &&
 symlink ../PROBE_DESIGN/probe_design.hxx INCLUDE/probe_design.hxx &&
-symlink ../SECEDIT/sec_graphic.hxx INCLUDE/sec_graphic.hxx &&
-symlink ../SECEDIT/secedit.hxx INCLUDE/secedit.hxx &&
+symlink ../SECEDIT/secedit_extern.hxx INCLUDE/secedit_extern.hxx &&
 symlink ../SEER/seer.hxx INCLUDE/seer.hxx &&
 symlink ../SERVERCNTRL/servercntrl.h INCLUDE/servercntrl.h &&
 symlink ../SEQ_QUALITY/seq_quality.h INCLUDE/seq_quality.h &&
@@ -237,6 +232,7 @@ symlink ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx &&
 symlink ../WINDOW/aw_device.hxx INCLUDE/aw_device.hxx &&
 symlink ../WINDOW/aw_global_awars.hxx INCLUDE/aw_global_awars.hxx &&
 symlink ../WINDOW/aw_keysym.hxx INCLUDE/aw_keysym.hxx &&
+symlink ../WINDOW/aw_position.hxx INCLUDE/aw_position.hxx &&
 symlink ../WINDOW/aw_preset.hxx INCLUDE/aw_preset.hxx &&
 symlink ../WINDOW/aw_question.hxx INCLUDE/aw_question.hxx &&
 symlink ../WINDOW/aw_root.hxx INCLUDE/aw_root.hxx &&
