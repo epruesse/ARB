@@ -1,6 +1,8 @@
 #include "RNA3D_GlobalHeader.hxx"
 
 // The following includes are needed to use AW_window_Motif 
+#include <aw_root.hxx>
+#include <aw_window.hxx>
 #include "../WINDOW/aw_awar.hxx"
 #include "../WINDOW/aw_Xm.hxx"
 #include "../WINDOW/aw_click.hxx"
@@ -16,6 +18,13 @@
 #include "RNA3D_StructureData.hxx"
 
 #include <string>
+#include <iostream>
+
+#include <X11/keysym.h>
+
+#include <aw_preset.hxx>
+#include <aw_awars.hxx>
+
 
 using namespace std;
 
@@ -85,46 +94,17 @@ void ResizeOpenGLWindow( Widget /* w*/, XtPointer /*client_data*/, XEvent *event
 }
 
 void KeyReleaseEventHandler(Widget /* w*/, XtPointer /*client_data*/, XEvent *event, char* /*x*/ )  {
-	XKeyEvent *evt;
-    evt = (XKeyEvent*) event;
-
-    char   buffer[1];
-    KeySym keysym;
-    int    count;
-
-    // Converting keycode to keysym
-    count = XLookupString((XKeyEvent *) event, buffer, 1, &keysym, NULL);
-
-    switch(keysym) {
-    case XK_Up:
-        //        RNA3D->bRotateMolecule = false;   
-        break;
-    case XK_Down:
-        //      RNA3D->bRotateMolecule = false;   
-        break;
-    case XK_Left:
-        //        RNA3D->bRotateMolecule = false;   
-        break;
-    case XK_Right:
-        //        RNA3D->bRotateMolecule = false;   
-        break;
-    }
-
     RefreshOpenGLDisplay();
 }
 
 void KeyPressEventHandler(Widget /* w*/, XtPointer /*client_data*/, XEvent *event, char* /*x*/ )  {
-	XKeyEvent *evt;
+    XKeyEvent *evt;
     evt = (XKeyEvent*) event;
 
     char   buffer[1];
     KeySym keysym;
     int    count;
-    //float fRotationFactor = 2.0f;
-
-//     RNA3D->saved_x = evt->x;
-//     RNA3D->saved_y = evt->y;
-
+    
     // Converting keycode to keysym
     count = XLookupString((XKeyEvent *) event, buffer, 1, &keysym, NULL);
 
@@ -141,27 +121,15 @@ void KeyPressEventHandler(Widget /* w*/, XtPointer /*client_data*/, XEvent *even
         break;
     case XK_Up:
         RNA3D->Center.y -= 0.1;
-//         RNA3D->bRotateMolecule = true;   
-//         RNA3D->saved_y += fRotationFactor;
-//         ComputeRotationXY(evt->x, evt->y);
         break;
     case XK_Down:
         RNA3D->Center.y += 0.1;
-//         RNA3D->bRotateMolecule = true;   
-//         RNA3D->saved_y -= fRotationFactor;
-//         ComputeRotationXY(evt->x, evt->y);
         break;
     case XK_Left:
         RNA3D->Center.x -= 0.1;
-//         RNA3D->bRotateMolecule = true;   
-//         RNA3D->saved_x += fRotationFactor;
-//         ComputeRotationXY(evt->x, evt->y);
         break;
     case XK_Right:
         RNA3D->Center.x += 0.1;
-//         RNA3D->bRotateMolecule = true;   
-//         RNA3D->saved_x -= fRotationFactor;
-//         ComputeRotationXY(evt->x, evt->y);
         break;
     }
 
@@ -507,6 +475,9 @@ static AW_window *CreateDisplayHelices_window(AW_root *aw_root) {
         {
             const char *helixRange;
             Structure3D *s;
+#if defined(DEVEL_RALF)
+#warning s is not initialized here
+#endif // DEVEL_RALF
             int rnaType = s->FindTypeOfRNA();
             
             switch (rnaType) {
@@ -709,6 +680,7 @@ static AW_window *CreateHelp_window(AW_root *aw_root) {
 
 AW_window *CreateRNA3DMainWindow(AW_root *awr){
     // Main Window - Canvas on which the actual painting is done
+    extern GBDATA *gb_main;
     GB_transaction dummy(gb_main);
 
     awr->awar_int(AWAR_3D_SAI_SELECTED, 0, AW_ROOT_DEFAULT); 
@@ -718,8 +690,10 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
     awm = new AW_window_menu_modes_opengl();
     awm->init(awr,"RNA3D", "RNA3D: 3D Structure of Ribosomal RNA", WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    AW_gc_manager aw_gc_manager;
+    AW_gc_manager   aw_gc_manager;
     RNA3D_Graphics *rna3DGraphics = new RNA3D_Graphics(awr,gb_main);
+
+    Structure3D::gb_main = gb_main;
 
     RNA3D->gl_Canvas = new AWT_canvas(gb_main,awm, rna3DGraphics, aw_gc_manager,AWAR_SPECIES_NAME);
 
