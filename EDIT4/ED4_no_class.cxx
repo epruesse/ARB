@@ -836,9 +836,8 @@ void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /*callback_flag*/)
         long        pos      = ED4_ROOT->helix->first_position(helix_nr);
 
         if (pos!=-1) {
-            ED4_sequence_terminal *seq_term = cursor->owner_of_cursor->to_sequence_terminal();
-            
-            int len = seq_term->get_length();
+            ED4_text_terminal *text_term = cursor->owner_of_cursor->to_text_terminal();
+            int len = text_term->get_length();
             if (pos>len) pos = len;
 
             int scr_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen(pos);
