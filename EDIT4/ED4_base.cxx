@@ -14,6 +14,8 @@
 #include <aw_window.hxx>
 #include <aw_preset.hxx>
 
+#include <ed4_extern.hxx>
+
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
 #include "ed4_edit_string.hxx"
@@ -1484,7 +1486,7 @@ ED4_returncode ED4_base::clear_background(int color)
                 ED4_ROOT->temp_device->clear_part(x, y, extension.size[WIDTH], extension.size[HEIGHT], (AW_bitset)-1);
             }
             else {
-                ED4_ROOT->temp_device->box(color, x, y, extension.size[WIDTH], extension.size[HEIGHT], (AW_bitset)-1, 0, 0); // fill range with color for debugging
+                ED4_ROOT->temp_device->box(color, AW_TRUE, x, y, extension.size[WIDTH], extension.size[HEIGHT], (AW_bitset)-1, 0, 0); // fill range with color for debugging
             }
         }
         ED4_ROOT->temp_device->pop_clip_scale();
@@ -1492,7 +1494,7 @@ ED4_returncode ED4_base::clear_background(int color)
     return ( ED4_R_OK );
 }
 
-ED4_returncode ED4_base::clear_whole_background( void )						// clear AW_MIDDLE_AREA
+ED4_returncode ED4_base::clear_whole_background( void ) // clear AW_MIDDLE_AREA
 {
     if (ED4_ROOT->temp_device)
     {
@@ -1509,16 +1511,10 @@ void ED4_base::draw_bb(int color)
     if (ED4_ROOT->temp_device) {
         ED4_ROOT->temp_device->push_clip_scale();
         if (adjust_clipping_rectangle()) {
-            AW_pos x1, y1, x2, y2;
+            AW_pos x1, y1;
             calc_world_coords( &x1, &y1 );
             ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x1, &y1 );
-            x2 = x1+extension.size[WIDTH]-1;
-            y2 = y1+extension.size[HEIGHT]-1;
-
-            ED4_ROOT->temp_device->line(color, x1, y1, x1, y2, (AW_bitset)-1, 0, 0);
-            ED4_ROOT->temp_device->line(color, x1, y1, x2, y1, (AW_bitset)-1, 0, 0);
-            ED4_ROOT->temp_device->line(color, x2, y1, x2, y2, (AW_bitset)-1, 0, 0);
-            ED4_ROOT->temp_device->line(color, x1, y2, x2, y2, (AW_bitset)-1, 0, 0);
+            ED4_ROOT->temp_device->box(color, AW_FALSE, x1, y1, extension.size[WIDTH]-1, extension.size[HEIGHT]-1, (AW_bitset)-1, 0, 0);
         }
         ED4_ROOT->temp_device->pop_clip_scale();
     }
