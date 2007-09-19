@@ -6,12 +6,6 @@
 #include <arbdb.h>
 #include <arbdbt.h>
 
-#ifdef _USE_AW_WINDOW
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#endif
-
 #include "BI_helix.hxx"
 
 #define LEFT_HELIX "{[<("
@@ -19,7 +13,7 @@
 #define LEFT_NONS "#*abcdefghij"
 #define RIGHT_NONS "#*ABCDEFGHIJ"
 
-char *BI_helix::error = 0;
+char *BI_helix::helix_error = 0;
 
 struct helix_stack {
     struct helix_stack *next;
@@ -35,7 +29,7 @@ void BI_helix::_init(void)
     for (i=0;i<HELIX_MAX; i++) char_bind[i] = 0;
 
     entries = 0;
-    size = 0;
+    Size = 0;
 
     pairs[HELIX_NONE]=strdup("");
     char_bind[HELIX_NONE] = strdup(" ");
@@ -74,8 +68,6 @@ void BI_helix::_init(void)
 
     pairs[HELIX_NO_MATCH]=strdup("");
     char_bind[HELIX_NO_MATCH] = strdup("|");
-
-    // deleteable = 1;
 }
 
 BI_helix::BI_helix(void) {
@@ -83,44 +75,16 @@ BI_helix::BI_helix(void) {
 }
 
 BI_helix::~BI_helix(void){
-    // if (!deleteable){
-        // GB_warning("Internal program error: You cannot delete BI_helix !!");
-    // }
     unsigned i;
     for (i=0;i<HELIX_MAX; i++)  free(pairs[i]);
     for (i=0;i<HELIX_MAX; i++)  free(char_bind[i]);
 
     if (entries) {
-        for (i = 0; i<size; ++i) {
-            if (entries[i].helix_nr && entries[i].helix_nr[0] != '-') {
-#if defined(DEBUG)
-                unsigned pair_pos   = entries[i].pair_pos;
-                bi_assert(entries[pair_pos].helix_nr != 0);
-                bi_assert(entries[pair_pos].helix_nr[0] == '-');
-                bi_assert(entries[pair_pos].helix_nr == (entries[i].helix_nr-1));
-#endif // DEBUG
-                entries[i].helix_nr = 0; // those NOT starting with '-' are only pointers into pairing helix_nr
+        for (i = 0; i<Size; ++i) {
+            if (entries[i].allocated) {
+                free(entries[i].helix_nr);
             }
         }
-
-        char *to_free = 0;      // each position in one helix points to the same string (free it only once!)
-
-        for (i = 0; i<size; ++i) {
-            if (entries[i].helix_nr) {
-#if defined(DEBUG)
-                bi_assert(entries[i].helix_nr != 0);
-                bi_assert(entries[i].helix_nr[0] == '-');
-                unsigned pair_pos = entries[i].pair_pos;
-                bi_assert(entries[pair_pos].helix_nr == 0);
-#endif // DEBUG
-                if (to_free != entries[i].helix_nr) {
-                    free(to_free);
-                    to_free = entries[i].helix_nr;
-                }
-            }
-        }
-
-        free(to_free);
         free(entries);
     }
 }
@@ -128,10 +92,8 @@ BI_helix::~BI_helix(void){
 extern "C" long BI_helix_check_error(const char *key, long val)
 {
     struct helix_stack *stack = (struct helix_stack *)val;
-    if (BI_helix::error) return val; // don't overwrite existing error
-    if (stack) {
-        BI_helix::error = GBS_global_string_copy("Too many '%c' in Helix '%s' pos %li",
-                                                 stack->c, key, stack->pos);
+    if (!BI_helix::get_error() && stack) { // don't overwrite existing error
+        BI_helix::set_error(GBS_global_string("Too many '%c' in Helix '%s' pos %li", stack->c, key, stack->pos));
     }
     return val;
 }
@@ -149,12 +111,14 @@ extern "C" long BI_helix_free_hash(const char *key, long val)
     return 0;
 }
 
-const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
-    /* helix_nr string of helix identifiers
+const char *BI_helix::initFromData(const char *helix_nr, const char *helix, size_t sizei)
+/* helix_nr string of helix identifiers
    helix    helix
    size     alignment len
 */
 {
+    clear_error();
+    
     GB_HASH *hash = GBS_create_hash(256,1);
     size_t pos;
     char c;
@@ -162,49 +126,47 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
     char *sident;
     struct helix_stack *laststack = 0,*stack;
 
-    size = sizei;
+    Size = sizei;
 
     {
         size_t len = strlen(helix);
-        if (len > size) len = size;
-        char *h = (char *)malloc(size+1);
-        h[size] = 0;
-        if (len<size) memset(h+len,'.', size-len);
+        if (len > Size) len = Size;
+        char *h = (char *)malloc(Size+1);
+        h[Size] = 0;
+        if (len<Size) memset(h+len,'.', Size-len);
         memcpy(h,helix,len);
         helix = h;
     }
 
     if (helix_nr) {
         size_t len = strlen(helix_nr);
-        if (len > size) len = (int)size;
-        char *h = (char *)malloc((int)size+1);
-        h[size] = 0;
-        if (len<size) memset(h+len,'.',(int)(size-len));
+        if (len > Size) len = (int)Size;
+        char *h = (char *)malloc((int)Size+1);
+        h[Size] = 0;
+        if (len<Size) memset(h+len,'.',(int)(Size-len));
         memcpy(h,helix_nr,len);
         helix_nr = h;
     }
 
-    if (error) {
-        free(error);
-        error = 0;
-    }
-
     strcpy(ident,"0");
-    entries = (struct BI_helix_entry *)GB_calloc(sizeof(struct BI_helix_entry),(size_t)size);
+    long pos_scanned_till = -1;
+
+    entries = (struct BI_helix_entry *)GB_calloc(sizeof(struct BI_helix_entry),(size_t)Size);
     sident  = 0;
-    for (pos = 0; pos < size; pos ++ ) {
+    
+    for (pos = 0; pos < Size; pos ++ ) {
         if (helix_nr) {
-            if ( isdigit(helix_nr[pos])) {
-                int j;
-                for (j=0;j<3 && pos+j<size;j++) {
-                    c = helix_nr[pos+j];
-                    helix_nr[pos+j] = ' ';
-                    if ( isalnum(c) ) {
-                        ident[j] = c;
-                        ident[j+1] = 0;
-                        if ( isdigit(c) ) continue;
+            if (long(pos)>pos_scanned_till && isalnum(helix_nr[pos])) {
+                for (int j=0; (pos+j)<Size; j++) {
+                    char hn = helix_nr[pos+j];
+                    if (isalnum(hn)) {
+                        ident[j] = hn;
                     }
-                    break;
+                    else {
+                        ident[j]         = 0;
+                        pos_scanned_till = pos+j;
+                        break;
+                    }
                 }
             }
         }
@@ -220,8 +182,8 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
         else if (strchr(RIGHT_HELIX,c) || strchr(RIGHT_NONS,c) ){   // pop
             stack = (struct helix_stack *)GBS_read_hash(hash,ident);
             if (!stack) {
-                bi_assert(!error); // already have an error
-                error = GBS_global_string_copy("Too many '%c' in Helix '%s' pos %i", c, ident, pos);
+                bi_assert(!helix_error); // already have an error
+                helix_error = GBS_global_string_copy("Too many '%c' in Helix '%s' pos %i", c, ident, pos);
                 goto helix_end;
             }
             if (strchr(RIGHT_HELIX,c)) {
@@ -230,9 +192,9 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
             }else{
                 c = tolower(c);
                 if (stack->c != c) {
-                    bi_assert(!error); // already have an error
-                    error = GBS_global_string_copy("Character '%c' pos %li don't match character '%c' pos %i in Helix '%s'",
-                                                   stack->c, stack->pos, c, pos, ident);
+                    bi_assert(!helix_error); // already have an error
+                    helix_error = GBS_global_string_copy("Character '%c' pos %li doesn't match character '%c' pos %i in Helix '%s'",
+                                                         stack->c, stack->pos, c, pos, ident);
                     goto helix_end;
                 }
                 if (isalpha(c)) {
@@ -250,6 +212,8 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
             if (sident == 0 || strcmp(sident+1,ident) != 0) {
                 sident = (char*)malloc(strlen(ident)+2);
                 sprintf(sident,"-%s",ident);
+                
+                entries[stack->pos].allocated = true;
             }
             entries[pos].helix_nr        = sident+1;
             entries[stack->pos].helix_nr = sident;
@@ -264,39 +228,36 @@ const char *BI_helix::init(char *helix_nr, char *helix, size_t sizei)
  helix_end:;
     GBS_hash_do_loop(hash,BI_helix_free_hash);
     GBS_free_hash(hash);
-    free(helix_nr);
-    free(helix);
 
-    return error;
+    return get_error();
 }
 
 
-const char *BI_helix::init(GBDATA *gb_helix_nr,GBDATA *gb_helix,size_t sizei)
-{
-    if (gb_helix) GB_push_transaction(gb_helix);
-    char *helix_nr = 0;
-    char *helix = 0;
-    const char *err = 0;
-    if (!gb_helix) err =  "Cannot find the helix";
-    else if (gb_helix_nr) helix_nr = GB_read_string(gb_helix_nr);
-    if (!err) {
-        helix = GB_read_string(gb_helix);
-        err = init(helix_nr,helix,sizei);
+const char *BI_helix::init(GBDATA *gb_helix_nr, GBDATA *gb_helix, size_t sizei) {
+    clear_error();
+    
+    if (!gb_helix) set_error("Can't find SAI:HELIX");
+    else if (!gb_helix_nr) set_error("Can't find SAI:HELIX_NR");
+    else {
+        GB_transaction ta(gb_helix);
+        initFromData(GB_read_char_pntr(gb_helix_nr), GB_read_char_pntr(gb_helix), sizei);
     }
-    free(helix_nr);
-    free(helix);
-    if (gb_helix) GB_pop_transaction(gb_helix);
-    return err;
+    
+    return get_error();
 }
 
 const char *BI_helix::init(GBDATA *gb_main, const char *alignment_name, const char *helix_nr_name, const char *helix_name)
 {
-    const char *err = 0;
-    GB_push_transaction(gb_main);
+    GB_transaction ta(gb_main);
+    clear_error();
+
     GBDATA *gb_extended_data = GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
-    long size2 = GBT_get_alignment_len(gb_main,alignment_name);
-    if (size2<=0) err = (char *)GB_get_error();
-    if (!err) {
+    long    size2            = GBT_get_alignment_len(gb_main,alignment_name);
+
+    if (size2<=0) {
+        set_error(GB_get_error());
+    }
+    else {
         GBDATA *gb_helix_nr_con = GBT_find_SAI_rel_exdata(gb_extended_data, helix_nr_name);
         GBDATA *gb_helix_con = GBT_find_SAI_rel_exdata(gb_extended_data, helix_name);
         GBDATA *gb_helix = 0;
@@ -305,27 +266,28 @@ const char *BI_helix::init(GBDATA *gb_main, const char *alignment_name, const ch
         if (gb_helix_nr_con)    gb_helix_nr = GBT_read_sequence(gb_helix_nr_con,alignment_name);
         if (gb_helix_con)       gb_helix = GBT_read_sequence(gb_helix_con,alignment_name);
 
-        err = init(gb_helix_nr, gb_helix, size2);
+        init(gb_helix_nr, gb_helix, size2);
     }
-    GB_pop_transaction(gb_main);
-    return err;
+
+    return get_error();
 }
 
 const char *BI_helix::init(GBDATA *gb_main)
 {
-    const char *err = 0;
-    GB_push_transaction(gb_main);
-    char *helix = GBT_get_default_helix(gb_main);
+    GB_transaction ta(gb_main);
+    clear_error();
+    
+    char *helix    = GBT_get_default_helix(gb_main);
     char *helix_nr = GBT_get_default_helix_nr(gb_main);
-    char *use = GBT_get_default_alignment(gb_main);
-    err =   init(gb_main,use,helix_nr,helix);
-    GB_pop_transaction(gb_main);
+    char *use      = GBT_get_default_alignment(gb_main);
+
+    init(gb_main,use,helix_nr,helix);
+    
     free(helix);
     free(helix_nr);
     free(use);
 
-    return err;
-
+    return get_error();
 }
 
 extern "C" {
@@ -364,21 +326,67 @@ int BI_helix::check_pair(char left, char right, BI_PAIR_TYPE pair_type)
     }
 }
 
+long BI_helix::first_pair_position() const {
+    return entries[0].pair_type == HELIX_NONE ? next_pair_position(0) : 0;
+}
+
+long BI_helix::next_pair_position(size_t pos) const {
+    if (entries[pos].next_pair_pos == 0) {
+        size_t p;
+        long   next_pos = -1;
+        for (p = pos+1; p<Size && next_pos == -1; ++p) {
+            if (entries[p].pair_type != HELIX_NONE) {
+                next_pos = p;
+            }
+            else if (entries[p].next_pair_pos != 0) {
+                next_pos = entries[p].next_pair_pos;
+            }
+        }
+
+        size_t q = p<Size ? p-2: Size-1;
+
+        for (p = pos; p <= q; ++p) {
+            bi_assert(entries[p].next_pair_pos == 0);
+            entries[p].next_pair_pos = next_pos;
+        }
+    }
+    return entries[pos].next_pair_pos;
+}
+
+long BI_helix::first_position(const char *helixNr) const {
+    long pos;
+    for (pos = first_pair_position(); pos != -1; pos = next_pair_position(pos)) {
+        if (strcmp(helixNr, entries[pos].helix_nr) == 0) break;
+    }
+    return pos;
+}
+
+long BI_helix::last_position(const char *helixNr) const {
+    long pos = first_position(helixNr);
+    if (pos != -1) {
+        long next_pos = next_pair_position(pos);
+        while (next_pos != -1 && strcmp(helixNr, entries[next_pos].helix_nr) == 0) {
+            pos      = next_pos;
+            next_pos = next_pair_position(next_pos);
+        }
+    }
+    return pos;
+}
+
+
+
 
 /***************************************************************************************
 *******         Reference to abs pos                    ********
 ****************************************************************************************/
 void BI_ecoli_ref::bi_exit(void){
-    delete [] _abs_2_rel1;
-    delete [] _abs_2_rel2;
-    delete [] _rel_2_abs;
-    _abs_2_rel1 = 0;
-    _abs_2_rel2 = 0;
-    _rel_2_abs = 0;
+    delete [] abs2rel;
+    delete [] rel2abs;
+    abs2rel = 0;
+    rel2abs = 0;
 }
 
-BI_ecoli_ref::BI_ecoli_ref(void)
-{
+BI_ecoli_ref::BI_ecoli_ref(void) {
     memset((char *)this,0,sizeof(BI_ecoli_ref));
 }
 
@@ -386,94 +394,60 @@ BI_ecoli_ref::~BI_ecoli_ref(void){
     bi_exit();
 }
 
-const char *BI_ecoli_ref::init(char *seq,long size)
-{
-    bi_exit();
-    
-    _abs_2_rel1 = new long[size];
-    _abs_2_rel2 = new long[size];
-    _rel_2_abs  = new long[size];
-    memset((char *)_rel_2_abs,0,(size_t)(sizeof(long)*size));
+inline bool isGap(char c) { return c == '-' || c == '.'; }
 
-    _rel_len = 0;
-    _abs_len = size;
-    long rel_len2 = 0;
-    long i;
-    long sl = strlen(seq);
-    for (i= 0;i<size;i++) {
-        _abs_2_rel1[i] = _rel_len;
-        _abs_2_rel2[i] = rel_len2;
-        _rel_2_abs[_rel_len] = i;
-        if (i>=sl || seq[i] == '.' || seq[i] == '-') {
-            rel_len2++;
-        }else{
-            rel_len2 = 0;
-            _rel_len ++;
-        }
+const char *BI_ecoli_ref::init(const char *seq, size_t size) {
+    bi_exit();
+
+    abs2rel = new size_t[size];
+    rel2abs = new size_t[size];
+    memset((char *)rel2abs,0,(size_t)(sizeof(*rel2abs)*size));
+
+    relLen = 0;
+    absLen = size;
+    size_t i;
+    size_t sl = strlen(seq);
+    for (i=0; i<size; i++) {
+        abs2rel[i]      = relLen;
+        rel2abs[relLen] = i;
+        if (i<sl && !isGap(seq[i])) ++relLen;
     }
     return 0;
 }
 
-const char *BI_ecoli_ref::init(GBDATA *gb_main,char *alignment_name, char *ref_name)
-{
-    const char *err = 0;
-    GB_transaction dummy(gb_main);
-    long size = GBT_get_alignment_len(gb_main,alignment_name);
-    if (size<=0) err = (char*)GB_get_error();
-    if (!err) {
-        GBDATA *gb_ref_con =
-            GBT_find_SAI(gb_main, ref_name);
-        GBDATA *gb_ref = 0;
-        if (gb_ref_con){
-            gb_ref = GBT_read_sequence(gb_ref_con,alignment_name);
-            if (gb_ref){
+const char *BI_ecoli_ref::init(GBDATA *gb_main,char *alignment_name, char *ref_name) {
+    GB_transaction ta(gb_main);
+
+    GB_ERROR err  = 0;
+    long     size = GBT_get_alignment_len(gb_main,alignment_name);
+    
+    if (size<=0) {
+        err = GB_get_error();
+        bi_assert(err);
+    }
+    else {
+        GBDATA *gb_ref_con   = GBT_find_SAI(gb_main, ref_name);
+        if (!gb_ref_con) err = GBS_global_string("I cannot find the SAI '%s'",ref_name);
+        else {
+            GBDATA *gb_ref   = GBT_read_sequence(gb_ref_con,alignment_name);
+            if (!gb_ref) err = GBS_global_string("Your SAI '%s' has no sequence '%s/data'", ref_name, alignment_name);
+            else {
                 err = init(GB_read_char_pntr(gb_ref), size);
-            }else{
-                err = (char *)GB_export_error("Your SAI '%s' has no sequence '%s/data'",
-                                              ref_name,alignment_name);
             }
-        }else{
-            err = (char *)GB_export_error("I cannot find the SAI '%s'",ref_name);
         }
     }
     return err;
 }
 
-const char *BI_ecoli_ref::init(GBDATA *gb_main)
-{
-    const char *err = 0;
-    GB_transaction dummy(gb_main);
-    char *ref = GBT_get_default_ref(gb_main);
-    char *use = GBT_get_default_alignment(gb_main);
-    err =   init(gb_main,use,ref);
+const char *BI_ecoli_ref::init(GBDATA *gb_main) {
+    GB_transaction ta(gb_main);
+
+    char     *ref = GBT_get_default_ref(gb_main);
+    char     *use = GBT_get_default_alignment(gb_main);
+    GB_ERROR  err = init(gb_main,use,ref);
+
     free(ref);
     free(use);
 
     return err;
-
-}
-
-
-const char *BI_ecoli_ref::abs_2_rel(long in,long &out,long &add){
-    if (!_abs_2_rel1) {
-        out = in;
-        add = 0;
-        return "BI_ecoli_ref is not correctly initialized";
-    }
-    if (in >= _abs_len) in = _abs_len -1;
-    if (in < 0 ) in  = 0;
-    out = _abs_2_rel1[in];
-    add = _abs_2_rel2[in];
-    return 0;
-}
-
-const char *BI_ecoli_ref::rel_2_abs(long in,long add,long &out){
-    if (!_abs_2_rel1) {
-        out = in;
-        return ("BI_ecoli_ref is not correctly initialized");
-    }
-    if (in >= _rel_len) in = _rel_len -1;
-    if (in < 0 ) in  = 0;
-    out = _rel_2_abs[in]+add;
-    return 0;
 }
