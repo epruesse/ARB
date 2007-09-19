@@ -757,8 +757,9 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
     fontinfo.max_all_letter.reset();
 
     aw_assert(AW_FONTINFO_CHAR_MIN < AW_FONTINFO_CHAR_MAX);
+    aw_assert(AW_FONTINFO_CHAR_ASCII_MIN < AW_FONTINFO_CHAR_ASCII_MAX);
+    aw_assert(AW_FONTINFO_CHAR_MIN <= AW_FONTINFO_CHAR_ASCII_MIN);
     aw_assert(AW_FONTINFO_CHAR_ASCII_MAX <= AW_FONTINFO_CHAR_MAX);
-    aw_assert(AW_FONTINFO_CHAR_MIN < AW_FONTINFO_CHAR_ASCII_MAX);
 
     unsigned int i;
     for (i = AW_FONTINFO_CHAR_MIN; i <= AW_FONTINFO_CHAR_MAX; i++) {
@@ -773,7 +774,7 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
             descent_of_chars[i] = cs->descent;
             width_of_chars[i]   = cs->width;
 
-            if (i <= AW_FONTINFO_CHAR_ASCII_MAX) {
+            if (i >= AW_FONTINFO_CHAR_ASCII_MIN && i <= AW_FONTINFO_CHAR_ASCII_MAX) {
                 fontinfo.max_letter.notify_all(cs->ascent, cs->descent, cs->width);
             }
             fontinfo.max_all_letter.notify_all(cs->ascent, cs->descent, cs->width);
