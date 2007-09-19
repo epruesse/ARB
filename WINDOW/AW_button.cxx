@@ -1635,10 +1635,17 @@ void AW_window::delete_selection_from_list( AW_selection_list *selection_list, c
     }
 }
 
-void AW_window::insert_selection( AW_selection_list *selection_list, const char *displayed, const char *value ) {
+static void type_mismatch(const char *triedType, const char *intoWhat) {
+    AW_ERROR("Cannot insert %s into %s which uses a non-%s AWAR", triedType, intoWhat, triedType);
+}
 
+inline void selection_type_mismatch(const char *triedType) { type_mismatch(triedType, "selection-list"); }
+inline void option_type_mismatch(const char *triedType) { type_mismatch(triedType, "option-menu"); }
+inline void toggle_type_mismatch(const char *triedType) { type_mismatch(triedType, "toggle"); }
+
+void AW_window::insert_selection(AW_selection_list *selection_list, const char *displayed, const char *value) {
     if ( selection_list->variable_type != AW_STRING ) {
-        AW_ERROR( "This selection list is only defined for strings" );
+        selection_type_mismatch("string");
         return;
     }
 
@@ -1655,7 +1662,7 @@ void AW_window::insert_selection( AW_selection_list *selection_list, const char 
 void AW_window::insert_default_selection( AW_selection_list *selection_list, const char *displayed, const char *value ) {
 
     if ( selection_list->variable_type != AW_STRING ) {
-        AW_ERROR( "This selection list is only defined for strings" );
+        selection_type_mismatch("string");
         return;
     }
     if ( selection_list->default_select ) {
@@ -1668,7 +1675,7 @@ void AW_window::insert_default_selection( AW_selection_list *selection_list, con
 void AW_window::insert_selection( AW_selection_list *selection_list, const char *displayed, long value ) {
 
     if ( selection_list->variable_type != AW_INT ) {
-        AW_ERROR( "This selection list is only defined for ints" );
+        selection_type_mismatch("int");
         return;
     }
     if ( selection_list->list_table ) {
@@ -1684,7 +1691,7 @@ void AW_window::insert_selection( AW_selection_list *selection_list, const char 
 void AW_window::insert_default_selection( AW_selection_list *selection_list, const char *displayed, long value ) {
 
     if ( selection_list->variable_type != AW_INT ) {
-        AW_ERROR( "This selection list is only defined for ints" );
+        selection_type_mismatch("int");
         return;
     }
     if ( selection_list->default_select ) {
@@ -1708,9 +1715,9 @@ void AW_window::clear_selection_list( AW_selection_list *selection_list ) {
         delete selection_list->default_select;
     }
 
-    selection_list->list_table      = NULL;
-    selection_list->last_of_list_table  = NULL;
-    selection_list->default_select      = NULL;
+    selection_list->list_table         = NULL;
+    selection_list->last_of_list_table = NULL;
+    selection_list->default_select     = NULL;
 
 
 }
@@ -2302,7 +2309,7 @@ inline void option_menu_add_option(AW_option_menu_struct *oms, AW_option_struct 
 void AW_window::insert_option_internal(AW_label option_name, const char *mnemonic, const char *var_value, const char *name_of_color, bool default_option) {
     AW_option_menu_struct *oms = p_global->current_option_menu;
     if (oms->variable_type != AW_STRING){
-        AW_ERROR("insert_option(..string..) used for non-string awar");
+        option_type_mismatch("string");
     }
     else {
         Widget        entry = (Widget)_create_option_entry(AW_STRING, option_name, mnemonic, name_of_color);
@@ -2322,7 +2329,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
     AW_option_menu_struct *oms = p_global->current_option_menu;
 
     if (oms->variable_type != AW_INT){
-        AW_ERROR("insert_option(..int..) used for non-int awar");
+        option_type_mismatch("int");
     }
     else {
         Widget        entry = (Widget)_create_option_entry(AW_INT, option_name, mnemonic, name_of_color);
@@ -2342,7 +2349,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
     AW_option_menu_struct *oms = p_global->current_option_menu;
 
     if (oms->variable_type != AW_FLOAT){
-        AW_ERROR("insert_option(..float..) used for non-float awar");
+        option_type_mismatch("float");
     }
     else {
         Widget        entry = (Widget)_create_option_entry(AW_FLOAT, option_name, mnemonic, name_of_color);
@@ -2627,7 +2634,7 @@ static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
 void AW_window::insert_toggle( AW_label toggle_label, const char *mnemonic, const char *var_value ) {
 
     if ( p_w->toggle_field_var_type != AW_STRING ) {
-        AW_ERROR("This toggle field only defined for strings");
+        toggle_type_mismatch("string");
         return;
     }
 
@@ -2643,7 +2650,7 @@ void AW_window::insert_toggle( AW_label toggle_label, const char *mnemonic, cons
 // for string
 void AW_window::insert_default_toggle( AW_label toggle_label, const char *mnemonic, const char *var_value ) {
     if ( p_w->toggle_field_var_type != AW_STRING ) {
-        AW_ERROR("This toggle field only defined for strings");
+        toggle_type_mismatch("string");
         return;
     }
     _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
@@ -2660,7 +2667,7 @@ void AW_window::insert_default_toggle( AW_label toggle_label, const char *mnemon
 void AW_window::insert_toggle( AW_label toggle_label, const char *mnemonic, int var_value ) {
 
     if ( p_w->toggle_field_var_type != AW_INT ) {
-        AW_ERROR("This toggle field only defined for int");
+        toggle_type_mismatch("int");
         return;
     }
     _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
@@ -2675,7 +2682,7 @@ void AW_window::insert_toggle( AW_label toggle_label, const char *mnemonic, int 
 // for int
 void AW_window::insert_default_toggle( AW_label toggle_label, const char *mnemonic, int var_value ) {
     if ( p_w->toggle_field_var_type != AW_INT ) {
-        AW_ERROR("This toggle field only defined for int");
+        toggle_type_mismatch("int");
         return;
     }
     _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
@@ -2690,7 +2697,7 @@ void AW_window::insert_default_toggle( AW_label toggle_label, const char *mnemon
 // for float
 void AW_window::insert_toggle( AW_label toggle_label, const char *mnemonic, float var_value ) {
     if ( p_w->toggle_field_var_type != AW_FLOAT ) {
-        AW_ERROR("This toggle field not defined for float");
+        toggle_type_mismatch("float");
         return;
     }
     _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
@@ -2706,7 +2713,7 @@ void AW_window::insert_toggle( AW_label toggle_label, const char *mnemonic, floa
 // for float
 void AW_window::insert_default_toggle( AW_label toggle_label, const char *mnemonic, float var_value ) {
     if ( p_w->toggle_field_var_type != AW_FLOAT ) {
-        AW_ERROR("This toggle field only defined for float");
+        toggle_type_mismatch("float");
         return;
     }
     _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
