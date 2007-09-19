@@ -187,76 +187,67 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
 
 // --------------------------------------------------------------------------------
 
-const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw)
-{
+const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw) {
     // export to xfig
+    GB_transaction ta(ntw->gb_main);
 
-    GB_transaction  dummy(ntw->gb_main);
-    AW_root        *awr  = aww->get_root();
-    //  char           *dest = awr->awar(AWAR_PRINT_TREE_FILE_NAME)->read_string();
-    char           *dest = awt_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
-    if (!strlen(dest)) {
-        delete(dest);
-        sprintf(AW_ERROR_BUFFER, "Please enter a file name first");
-        aw_message();
-        return AW_ERROR_BUFFER;
+    AW_root  *awr   = aww->get_root();
+    char     *dest  = awt_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
+    GB_ERROR  error = 0;
+
+    if (dest[0] == 0) {
+        error = "Please enter a file name";
     }
+    else {
+        long what      = awr->awar(AWAR_PRINT_TREE_CLIP)->read_int();
+        long handles   = awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int();
+        int  use_color = awr->awar(AWAR_PRINT_TREE_COLOR)->read_int();
+        
+        AW_device *device      = ntw->aww->get_print_device(AW_MIDDLE_AREA);
+        AW_device *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
 
-    long what      = awr->awar(AWAR_PRINT_TREE_CLIP)->read_int();
-    long handles   = awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int();
-    int  use_color = awr->awar(AWAR_PRINT_TREE_COLOR)->read_int();
+        device->reset();
+        device->set_color_mode(use_color==1);
+        error = device->open(dest);
+        device->line(0, 0, 0, 1, -1); // dummy point upper left corner
 
-    char tmp[1024];
-    const char *error;
-
-
-    sprintf(tmp, "%s", dest);
-
-
-    AW_device *device      = ntw->aww->get_print_device(AW_MIDDLE_AREA);
-    AW_device *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
-
-    device->reset();
-    device->set_color_mode((use_color==1));
-    error = device->open(tmp);
-    device->line(0, 0, 0, 1, -1); // dummy point upper left corner
-
-    if (what) {             // draw all
-        AW_world size;
-        size_device->reset();
-        size_device->zoom(ntw->trans_to_fit);
-        size_device->set_filter(AW_SCREEN);
-        ntw->tree_disp->show(size_device);
-        size_device->get_size_information(&size);
-        size.l -= 50;
-        size.t -= 40;           // expand pic
-        size.r += 20;
-        size.b += 20;
-        device->shift_x(-size.l/ntw->trans_to_fit);
-        device->shift_y(-size.t/ntw->trans_to_fit);
-        device->set_bottom_clip_border((int)(size.b-size.t), AW_TRUE);
-        device->set_right_clip_border((int)(size.r-size.l), AW_TRUE);
-        //      device->set_bottom_font_overlap(AW_TRUE);
-        //      device->set_right_font_overlap(AW_TRUE);
-        device->zoom(ntw->trans_to_fit);
-    }else{
-        ntw->init_device(device);   // draw screen
-    }
-    if (!error) {
-        if (handles) {
-            device->set_filter(AW_PRINTER | AW_PRINTER_EXT);
-        }else{
-            device->set_filter(AW_PRINTER);
+        if (what) {             // draw all
+            AW_world size;
+            size_device->reset();
+            size_device->zoom(ntw->trans_to_fit);
+            size_device->set_filter(AW_SCREEN);
+            ntw->tree_disp->show(size_device);
+            size_device->get_size_information(&size);
+            size.l -= 50;
+            size.t -= 40;           // expand pic
+            size.r += 20;
+            size.b += 20;
+            device->set_offset(AW::Vector(size.l, size.t) / -ntw->trans_to_fit);
+            device->set_bottom_clip_border((int)(size.b-size.t), AW_TRUE);
+            device->set_right_clip_border((int)(size.r-size.l), AW_TRUE);
+            device->zoom(ntw->trans_to_fit);
         }
-        ntw->tree_disp->show(device);
-        device->close();
-        awr->awar(AWAR_PRINT_TREE_FILE_DIR)->touch();   // reload dir !!!
+        else {
+            ntw->init_device(device);   // draw screen
+        }
+        
+        if (!error) {
+            if (handles) {
+                device->set_filter(AW_PRINTER | AW_PRINTER_EXT);
+            }
+            else {
+                device->set_filter(AW_PRINTER);
+            }
+            ntw->tree_disp->show(device);
+            device->close();
+            awr->awar(AWAR_PRINT_TREE_FILE_DIR)->touch();   // reload dir !!!
+        }
     }
-
 
     if (error) aw_message(error);
-    else    aww->get_root()->awar(AWAR_PRINT_TREE_FILE_DIR)->touch();
-    delete dest;
+
+    free(dest);
+    
     return error;
 }
 
@@ -265,12 +256,9 @@ void AWT_print_tree_to_file_xfig(AW_window *aww, AW_CL cl_ntw){
     AW_root *awr = aww->get_root();
     const char *error = AWT_print_tree_to_file(aww, ntw);
     if (!error) {
-        // char *dest = awr->awar(AWAR_PRINT_TREE_FILE_NAME)->read_string();
         char *dest = awt_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
-        char  com[1024];
-        sprintf(com, "xfig %s &", dest);
-        system(com);
-        delete dest;
+        system(GBS_global_string("xfig %s &", dest));
+        free(dest);
     }
 }
 
@@ -326,7 +314,6 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL)
 }
 /*------------------------------------- to export secondary structure to XFIG ---------------------------------------------*/
 
-// AW_window * AWT_create_sec_export_window(AW_root *awr, AWT_canvas *ntw){
 void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
     static AW_window_simple *aws = 0;
 
@@ -443,8 +430,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw)
         size.t -= 40;       // expand pic
         size.r += 20;
         size.b += 20;
-        device->shift_x(-size.l/ntw->trans_to_fit);
-        device->shift_y(-size.t/ntw->trans_to_fit);
+        device->set_offset(AW::Vector(size.l, size.t) / -ntw->trans_to_fit);
         device->set_bottom_clip_border((int)(size.b-size.t), AW_TRUE);
         device->set_right_clip_border((int)(size.r-size.l), AW_TRUE);
         device->zoom(ntw->trans_to_fit);
