@@ -5,10 +5,12 @@
 #include <stdio.h>
 #endif
 
+#ifndef aw_assert
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
 #define aw_assert(bed) arb_assert(bed)
+#endif
 
 /* hide GNU extensions for non-gnu compilers: */
 #ifndef GNU
@@ -50,7 +52,7 @@ typedef enum { AW_FALSE=0, AW_TRUE } AW_BOOL;
 extern AW_default aw_main_root_default;
 
 // #define AWUSE(variable) variable = variable
-#if defined(DEBUG) && defined(DEVEL_RALF)
+#if defined(DEBUG) && defined(DEVEL_RALF) && 0
 #define AWUSE(variable) (void)variable; int DONT_USE_AWUSE_FOR_##variable
 #else
 #define AWUSE(variable) (void)variable
