@@ -265,11 +265,11 @@ class ED4_window;
 // --------------------------------------------------------------------------------
 class ED4_base_position
 {
-    ED4_base *calced4base;
+    const ED4_base *calced4base;
     int      *seq_pos;
     int       count;
 
-    void calc4base(ED4_base *base);
+    void calc4base(const ED4_base *base);
 
     ED4_base_position(const ED4_base_position&); // copy-constructor not allowed
 
@@ -280,8 +280,8 @@ public:
 
     void invalidate();
 
-    int get_base_position(ED4_base *base, int sequence_position);
-    int get_sequence_position(ED4_base *base, int base_position);
+    int get_base_position(const ED4_base *base, int sequence_position);
+    int get_sequence_position(const ED4_base *base, int base_position);
 
 };
 
@@ -398,7 +398,7 @@ public:
     ED4_coords              coords;
     static int              no_of_windows;
 
-    char awar_path_for_cursor[50]; // position in current sequence
+    char awar_path_for_cursor[50]; // position in current sequence, range=[1;len]
     char awar_path_for_Ecoli[50]; // position relative to ecoli
     char awar_path_for_basePos[50]; // base position in current sequence (# of bases left to cursor)
     char awar_path_for_IUPAC[50]; // IUPAC decoder content for current position
@@ -1615,19 +1615,21 @@ Beispiel(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_ma
 class ED4_sequence_terminal_basic: public ED4_text_terminal
 {
 public:
+    
+    char *species_name;
+
     ED4_sequence_terminal_basic( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
     virtual ~ED4_sequence_terminal_basic();
 
     virtual GB_alignment_type GetAliType() = 0;
+    virtual int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
 
-    char    *species_name; 
     ED4_species_name_terminal *corresponding_species_name_terminal() const {
         return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
     }
     void calc_intervall_displayed_in_rectangle(AW_rectangle *area_rect, long *left_index, long *right_index );
     void calc_update_intervall(long *left_index, long *right_index );
     
-    int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
 };
 
 // -----------------------------------------------------------------------------------------------------
@@ -1663,7 +1665,7 @@ public:
 // --------------------------------------------------------------------------------
 class ED4_sequence_terminal : public ED4_sequence_terminal_basic
 {
-    ED4_SearchResults searchResults;
+    mutable ED4_SearchResults searchResults;
 
     virtual ED4_returncode  draw( int only_text = 0 );
     ED4_sequence_terminal(const ED4_sequence_terminal&); // copy-constructor not allowed
@@ -1678,20 +1680,14 @@ public:
     virtual GB_alignment_type GetAliType();
 
     virtual void deleted_from_database();
+    virtual int get_length() const { return ED4_sequence_terminal_basic::get_length(); }
 
-    ED4_SearchResults& results() { return searchResults; }
-//     ED4_species_name_terminal *corresponding_species_name_terminal() const {
-//         return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
-//     }
+    ED4_SearchResults& results() const { return searchResults; }
+    
     ED4_columnStat_terminal *corresponding_columnStat_terminal() const {
         ED4_base *col_term = get_parent(ED4_L_MULTI_SEQUENCE)->search_spec_child_rek(ED4_L_COL_STAT);
         return col_term ? col_term->to_columnStat_terminal() : 0;
     }
-
-    //   int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
-
-//     void calc_intervall_displayed_in_rectangle(AW_rectangle *area_rect, long *left_index, long *right_index );
-//     void calc_update_intervall(long *left_index, long *right_index );
 
 #if defined(IMPLEMENT_DUMP)
     virtual void dump(size_t indent) const;
@@ -1713,16 +1709,15 @@ class ED4_columnStat_terminal : public ED4_text_terminal
     ED4_columnStat_terminal(const ED4_columnStat_terminal&); // copy-constructor not allowed
 public:
     //functions concerning graphic output
-    virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0);
-    virtual ED4_returncode      draw(int only_text=0);
+    virtual ED4_returncode Show(int refresh_all=0, int is_cleared=0);
+    virtual ED4_returncode draw(int only_text=0);
+    virtual int get_length() const { return corresponding_sequence_terminal()->to_text_terminal()->get_length(); }
 
     static int threshold_is_set();
     static void set_threshold(double aThreshold);
     static double get_threshold() { return threshold; }
 
     ED4_sequence_terminal *corresponding_sequence_terminal() const { return get_parent(ED4_L_MULTI_SEQUENCE)->search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_sequence_terminal(); }
-
-    int get_length() const { return corresponding_sequence_terminal()->to_text_terminal()->get_length(); }
 
     GB_CSTR build_probe_match_string(int start_pos, int end_pos) const;
 
@@ -1747,7 +1742,7 @@ public:
     ~ED4_species_name_terminal();
 
     GB_CSTR get_displayed_text() const;
-    int get_length() const { return strlen(get_displayed_text()); }
+    virtual int get_length() const { return strlen(get_displayed_text()); }
 
     ED4_sequence_terminal *corresponding_sequence_terminal() const {
         ED4_base *seq_term = get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SEQUENCE_STRING);
@@ -1781,7 +1776,7 @@ public:
     GBDATA *data() { return get_species_pointer(); }
     const GBDATA *data() const { return get_species_pointer(); }
 
-    int get_length() const { return 1+strlen(id); }
+    virtual int get_length() const { return 1+strlen(id); }
 
     virtual bool remove_deleted_childs();
 
@@ -1801,7 +1796,7 @@ public:
     ED4_pure_text_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_pure_text_terminal();
 
-    int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
+    virtual int get_length() const { int len; resolve_pointer_to_char_pntr(&len); return len; }
 
 #if defined(IMPLEMENT_DUMP)
     virtual void dump(size_t indent) const;
@@ -1815,9 +1810,13 @@ class ED4_consensus_sequence_terminal : public ED4_sequence_terminal
 {
     virtual ED4_returncode  draw( int only_text = 0 );
     ED4_consensus_sequence_terminal(const ED4_consensus_sequence_terminal&); // copy-constructor not allowed
+
+    ED4_char_table& get_char_table() const { return get_parent( ED4_L_GROUP )->to_group_manager()->table(); }
 public:
     ED4_consensus_sequence_terminal( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
-    ~ED4_consensus_sequence_terminal();
+    virtual ~ED4_consensus_sequence_terminal();
+
+    virtual int get_length() const;
 
 #if defined(IMPLEMENT_DUMP)
     virtual void dump(size_t indent) const;
