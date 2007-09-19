@@ -1,41 +1,4 @@
-// C/C++ Header files
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <string.h>
-#include <ctype.h>
-#include <iostream>
-#include <fstream>
-
-// ARB Header files
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <aw_preset.hxx>
-#include <awt_canvas.hxx>
-#include <awt.hxx>
-#include <awt_tree.hxx>
-#include <awt_dtree.hxx>
-#include <awt_tree_cb.hxx>
-#include <BI_helix.hxx>
-
-// Xt/Motif Header files
-#include <X11/keysym.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/StringDefs.h>
-#include <Xm/Xm.h>
-#include <Xm/Protocols.h>
-#include <Xm/MwmUtil.h>
-#include <Xm/MainW.h>
-
 // OpenGl Header files
-
-// @yadhu : please don't remove any code here until it works on all machines
 
 #define OPEN_GL_WAY_TO_INCLUDE 3
 // ------------------------------
@@ -47,8 +10,8 @@
 #ifdef __GLX_glx_h__
 #error include wrapper define for glx.h already set -- next include will do nothing
 #endif
-// @ralf: i have not included this file in my version. I replaced glxew.h with glx.h when
-// you mentioned that it was not compiling on your machine and checked in to the repository. 
+// i have not included this file in my version. I replaced glxew.h with glx.h when
+// you mentioned that it was not compiling on your machine and checked in to the repository. --yadhu 
 //#include <GL/glx.h>
 #endif // OPEN_GL_WAY_TO_INCLUDE == 1
 // ------------------------------
