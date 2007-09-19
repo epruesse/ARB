@@ -12,6 +12,19 @@
 #include "aw_commn.hxx"
 #include <aw_Xm.hxx>
 
+#if defined(DEVEL_RALF)
+#warning change implementation of draw functions (read more)
+// * cd1 and cd2 shall not be passed to real draw functions (only to click device)
+// * filter has to be checked early (in AW_device)
+// * functions shall use Position/LineVector/Rectangle only
+// way to do :
+// AW_device-methods
+// * expect parameters 'AW_bitset filteri, AW_CL cd1, AW_CL cd2' (as in the past)
+// * they are really implemented, check the filter, save cd's into AW_device and
+//   call virtual private methods w/o above parameters
+#endif // DEVEL_RALF
+
+
 //*****************************************************************************************
 //          device_Xm
 //*****************************************************************************************
@@ -79,60 +92,62 @@ int AW_device_Xm::text(int gc, const char *str,AW_pos x,AW_pos y, AW_pos alignme
     return text_overlay(gc,str,opt_strlen,x,y,alignment,filteri,(AW_CL)this, cd1,cd2,0.0,0.0,AW_draw_string_on_screen);
 }
 
-int AW_device_Xm::box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+int AW_device_Xm::box(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     AWUSE(cd1);AWUSE(cd2);
     register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
     AW_pos x1,y1;
     AW_pos X0,Y0,X1,Y1; // Transformed pos
     AW_pos CX0,CY0,CX1,CY1; // Clipped line
     int drawflag = 0;
-    short greylevel = (short)(gcm->grey_level*22);
-    if (greylevel>21) greylevel = 21;
+    // short greylevel = (short)(gcm->grey_level*22);
+    // if (greylevel>21) greylevel = 21;
 
     if(filteri & filter) {
         x1 = x0 + width;
         y1 = y0 + height;
         this->transform(x0,y0,X0,Y0);
         this->transform(x1,y1,X1,Y1);
-        drawflag = this->box_clip(X0,Y0,X1,Y1,CX0,CY0,CX1,CY1);
-        if (drawflag) {
-            AWUSE(cd1);
-            AWUSE(cd2);
 
-            int cx0 = AW_INT(CX0);
-            int cx1 = AW_INT(CX1);
-            int cy0 = AW_INT(CY0);
-            int cy1 = AW_INT(CY1);
+        if (filled) {
+            drawflag = this->box_clip(X0,Y0,X1,Y1,CX0,CY0,CX1,CY1);
+            if (drawflag) {
+                AWUSE(cd1);
+                AWUSE(cd2);
 
-            XFillRectangle(common->display, common->window_id, gcm->gc,
-                           cx0, cy0, cx1-cx0+1, cy1-cy0+1);
-            AUTO_FLUSH(this);
+                int cx0 = AW_INT(CX0);
+                int cx1 = AW_INT(CX1);
+                int cy0 = AW_INT(CY0);
+                int cy1 = AW_INT(CY1);
+
+                XFillRectangle(common->display, common->window_id, gcm->gc,
+                               cx0, cy0, cx1-cx0+1, cy1-cy0+1);
+                AUTO_FLUSH(this);
+            }
+        }
+        else {
+            line(gc, x0, y0, x1, y0, filteri, cd1, cd2);
+            line(gc, x0, y0, x0, y1, filteri, cd1, cd2);
+            line(gc, x0, y1, x1, y1, filteri, cd1, cd2);
+            line(gc, x1, y0, x1, y1, filteri, cd1, cd2);
         }
     }
 
     return 0;
 }
 
-int AW_device_Xm::circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
-    int angle = 360; // drawing circle
-    return circle_arc(gc,filled,x0, y0, width, height, filteri, cd1, cd2,angle);
+int AW_device_Xm::circle(int gc, AW_BOOL filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+    return arc(gc,filled,x0, y0, width, height, 0, 360, filteri, cd1, cd2);
 }
 
-int AW_device_Xm::arc(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
-    int angle = -180; // drawing arc
-    return circle_arc(gc,filled,x0, y0, width, height, filteri, cd1, cd2,angle);
-}
-
-int AW_device_Xm::circle_arc(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2, int angle) {
+int AW_device_Xm::arc(int gc, AW_BOOL filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     AWUSE(cd1);AWUSE(cd2);
     register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
-    //AW_pos x1,y1;
     AW_pos X0,Y0,X1,Y1; // Transformed pos
     AW_pos XL,YL;   // Left edge of circle pos
     AW_pos CX0,CY0,CX1,CY1; // Clipped line
     int drawflag = 0;
-    short greylevel = (short)(gcm->grey_level*22);
-    if (greylevel>21) greylevel = 21;
+    // short greylevel = (short)(gcm->grey_level*22);
+    // if (greylevel>21) greylevel = 21;
 
     if(filteri & filter) {
 
@@ -150,12 +165,15 @@ int AW_device_Xm::circle_arc(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos 
             AWUSE(cd2);
             width  *= 2.0 * this->get_scale();
             height *= 2.0 * this->get_scale();
+
+            start_degrees = -start_degrees;
+            while (start_degrees<0) start_degrees += 360;
+
             if (!filled) {
-                //int XDrawArc(Display *display, Drawable d, GC gc, int x, int y, unsigned int width, unsigned int height, int angle1, int angle2);
-                XDrawArc(common->display, common->window_id, gcm->gc, AW_INT(XL), AW_INT(YL), AW_INT(width), AW_INT(height), 0*angle, 64*angle);
+                XDrawArc(common->display, common->window_id, gcm->gc, AW_INT(XL), AW_INT(YL), AW_INT(width), AW_INT(height), 64*start_degrees, 64*arc_degrees);
             }
-             else {
-                XFillArc(common->display, common->window_id, gcm->gc, AW_INT(XL), AW_INT(YL), AW_INT(width), AW_INT(height), 0*angle, 64*angle);
+            else {
+                XFillArc(common->display, common->window_id, gcm->gc, AW_INT(XL), AW_INT(YL), AW_INT(width), AW_INT(height), 64*start_degrees, 64*arc_degrees);
             }
             AUTO_FLUSH(this);
         }
@@ -174,8 +192,8 @@ void AW_device_Xm::clear(AW_bitset filteri) {
 void AW_device_Xm::clear_part( AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri)
 {
     if (filteri & filter) {
-        AW_pos x1 = x0+width-1;
-        AW_pos y1 = y0+height-1;
+        AW_pos x1 = x0+width; // -1; // removed -1 -- 14.8.07 ralf
+        AW_pos y1 = y0+height; // -1;
         
         AW_pos X0,Y0,X1,Y1;     // Transformed pos
         this->transform(x0, y0, X0, Y0);
