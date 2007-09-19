@@ -8,6 +8,8 @@
 #include <aw_root.hxx>
 #include <aw_window.hxx>
 
+#include <ed4_extern.hxx>
+
 #include "ed4_class.hxx"
 
 #define NAME_BUFFERSIZE 100

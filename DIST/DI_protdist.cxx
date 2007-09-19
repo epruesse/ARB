@@ -17,7 +17,6 @@
 
 #include <awt_tree.hxx>
 #include "dist.hxx"
-#include <BI_helix.hxx>
 #include <awt_csp.hxx>
 
 #include "di_matr.hxx"

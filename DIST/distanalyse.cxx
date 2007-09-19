@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-// #include <malloc.h>
 #include <string.h>
 
 #include <math.h>
@@ -17,7 +16,6 @@
 
 #include <awt_tree.hxx>
 #include "dist.hxx"
-#include "BI_helix.hxx"
 #include "di_matr.hxx"
 
 
