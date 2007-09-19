@@ -129,10 +129,11 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
         error = 0;
         for (j=i=0;i<(unsigned long)alignment_length;i++) {
             if (!filter || filter->filter_mask[i]) {
-                if (helix.size > i && helix.entries[i].pair_type== HELIX_PAIR) {
+                if (helix.pairtype(i) == HELIX_PAIR) {
                     is_helix[j] = 1;
                     weights[j] = 1;
-                }else{
+                }
+                else{
                     is_helix[j] = 0;
                     weights[j] = 2;
                 }

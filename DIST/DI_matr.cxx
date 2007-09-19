@@ -426,8 +426,8 @@ long *PHMATRIX::create_helix_filter(BI_helix *helix,AP_filter *filter){
     for (i=0;i<filter->filter_len;i++) {
         if (filter->filter_mask[i]) {
             temp[i] = count;
-            if (helix->entries[i].pair_type== HELIX_PAIR) {
-                result[count] = helix->entries[i].pair_pos;
+            if (helix->pairtype(i)== HELIX_PAIR) {
+                result[count] = helix->opposite_position(i);
             }else{
                 result[count] = -1;
             }
