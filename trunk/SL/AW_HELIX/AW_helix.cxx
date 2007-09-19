@@ -2,7 +2,7 @@
 //                                                                      //
 //   File      : AW_helix.cxx                                           //
 //   Purpose   : Wrapper for BI_helix + AW-specific functions           //
-//   Time-stamp: <Wed Jun/07/2006 17:23 MET Coder@ReallySoft.de>        //
+//   Time-stamp: <Sat Aug/25/2007 21:26 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in December 2004         //
@@ -91,18 +91,20 @@ char AW_helix::get_symbol(char left, char right, BI_PAIR_TYPE pair_type){
 
 char *AW_helix::seq_2_helix(char *sequence,char undefsymbol){
     size_t size2 = strlen(sequence);
-    bi_assert(size2<=size); // if this fails there is a sequence longer than the alignment
-    char *helix = (char *)GB_calloc(sizeof(char),size+1);
-    register unsigned long i,j;
+    bi_assert(size2<=size()); // if this fails there is a sequence longer than the alignment
+    char *helix = (char *)GB_calloc(sizeof(char),size()+1);
+    size_t i,j;
     for (i=0; i<size2; i++) {
-        if ( i<size && entries[i].pair_type) {
-            j = entries[i].pair_pos;
-            helix[i] = get_symbol(sequence[i],sequence[j],
-                                  entries[i].pair_type);
-        }else{
+        BI_PAIR_TYPE pairType = pairtype(i);
+
+        if (pairType == HELIX_NONE) {
             helix[i] = undefsymbol;
         }
-        if (helix[i] == ' ') helix[i] = undefsymbol;
+        else {
+            j        = opposite_position(i);
+            char sym = get_symbol(sequence[i], sequence[j], pairType);
+            helix[i] = sym == ' ' ? undefsymbol : sym;
+        }
     }
     return helix;
 }
@@ -112,22 +114,21 @@ int BI_show_helix_on_device(AW_device *device, int gc, const char *opt_string, s
                             AW_CL cduser, AW_CL cd1, AW_CL cd2)
 {
     AWUSE(opt_ascent);AWUSE(opt_descent);
-    AW_helix *THIS = (AW_helix *)cduser;
+    AW_helix *helix = (AW_helix *)cduser;
     char *buffer = GB_give_buffer(size+1);
     register unsigned long i,j,k;
 
     for (k=0; k<size; k++) {
         i = k+start;
-        if ( i<THIS->size && THIS->entries[i].pair_type) {
-            j = THIS->entries[i].pair_pos;
-            char pairing_character = '.';
-            if (j < opt_string_size){
-                pairing_character = opt_string[j];
-            }
-            buffer[k] = THIS->get_symbol(opt_string[i],pairing_character,
-                                         THIS->entries[i].pair_type);
-        }else{
+
+        BI_PAIR_TYPE pairType = helix->pairtype(i);
+        if (pairType == HELIX_NONE) {
             buffer[k] = ' ';
+        }
+        else {
+            j             = helix->opposite_position(i);
+            char pairchar = j<opt_string_size ? opt_string[j] : '.';
+            buffer[k]     = helix->get_symbol(opt_string[i],pairchar, pairType);
         }
     }
     buffer[size] = 0;
@@ -139,7 +140,7 @@ int AW_helix::show_helix( void *devicei, int gc1 , char *sequence,
                           AW_bitset filter,
                           AW_CL cd1, AW_CL cd2){
 
-    if (!entries) return 0;
+    if (!has_entries()) return 0;
     AW_device *device = (AW_device *)devicei;
     return device->text_overlay(gc1, sequence, 0, x , y, 0.0 , filter, (AW_CL)this, cd1, cd2,
                                 1.0,1.0, BI_show_helix_on_device);
