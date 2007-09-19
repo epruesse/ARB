@@ -25,6 +25,8 @@
       class AP_tree
 ****************************/
 
+using namespace AW;
+
 AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2)
 {
     AW_gc_manager preset_window = 
@@ -954,7 +956,7 @@ inline double discrete_ruler_lenght(double analog_ruler_lenth, double min_length
 }
 
 void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
-                               int button, AW_key_mod key_modifier, char key_char,
+                               int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
                                AW_event_type type, AW_pos x, AW_pos y,
                                AW_clicked_line *cl, AW_clicked_text *ct)
 {
@@ -1020,34 +1022,35 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
             case AWT_MODE_MOVE: // Move Ruler text
                 switch(type){
                     case AW_Mouse_Press:
-                        rot_ct = *ct;
-                        rot_ct.x0 = x;
-                        rot_ct.y0 = y;
+                        rot_ct          = *ct;
+                        rot_ct.textArea.moveTo(Position(x, y));
                         break;
                     case AW_Mouse_Drag: {
-                        double scale = device->get_scale();
-                        tree_awar    = show_ruler(device, this->drag_gc);
+                        double          scale = device->get_scale();
+                        const Position &start = rot_ct.textArea.start();
+
+                        tree_awar    = show_ruler(device, drag_gc);
                         sprintf(awar,"ruler/%s/text_x", tree_awar);
-                        h            = (x - rot_ct.x0)/scale + GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+
+                        h = (x - start.xpos())/scale + GBT_read_float2(tree_static->gb_tree, awar, 0.0);
                         GBT_write_float(this->tree_static->gb_tree, awar, h);
                         sprintf(awar,"ruler/%s/text_y", tree_awar);
-                        h            = (y - rot_ct.y0)/scale + GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
-                        GBT_write_float(this->tree_static->gb_tree, awar, h);
-                        rot_ct.x0    = x;
-                        rot_ct.y0    = y;
-                        show_ruler(device, this->drag_gc);
+                        h = (y - start.ypos())/scale + GBT_read_float2(tree_static->gb_tree, awar, 0.0);
+                        GBT_write_float(tree_static->gb_tree, awar, h);
+                        rot_ct.textArea.moveTo(Position(x, y));
+                        show_ruler(device, drag_gc);
                         break;
                     }
                     case AW_Mouse_Release:
                         rot_ct.exists = AW_FALSE;
-                        this->exports.resize = 1;
+                        exports.resize = 1;
                         break;
                     default: break;
                 }
                 return;
             default:    break;
-        } // switch cmd
-    }   // if
+        }
+    }
 
 
     if ((rot_cl.exists && (!rot_cl.client_data1) &&
@@ -1891,29 +1894,20 @@ void AWT_graphic_tree::update(GBDATA *gbdummy){
     this->tree_root->update();
 }
 
-void AWT_graphic_tree::NT_scalebox(int gc, double u, double v, double width)
+void AWT_graphic_tree::NT_scalebox(int gc, double x, double y, double width)
 {
     double diam  = width/disp_device->get_scale();
     double diam2 = diam+diam;
     disp_device->set_fill(gc, this->grey_level);
-    disp_device->box(gc, u-diam, v-diam, diam2, diam2, mark_filter, 0, 0);
+    disp_device->box(gc, AW_TRUE, x-diam, y-diam, diam2, diam2, mark_filter, 0, 0);
 }
 
 void AWT_graphic_tree::NT_emptybox(int gc, double x, double y, double width)
 {
-    double scale_div = 1/disp_device->get_scale();
-    double diam  = width * scale_div;
-    double x1    = x-diam;
-    double x2    = x+diam;
-    double y1    = y-diam;
-    double y2    = y+diam;
-
-    disp_device->set_line_attributes(gc, 0.0, AW_SOLID); 
-    
-    disp_device->line(gc, x1, y1, x1, y2, mark_filter, 0, 0);
-    disp_device->line(gc, x2, y1, x2, y2, mark_filter, 0, 0);
-    disp_device->line(gc, x1, y1, x2, y1, mark_filter, 0, 0);
-    disp_device->line(gc, x1, y2, x2, y2, mark_filter, 0, 0);
+    double diam  = width/disp_device->get_scale();
+    double diam2 = diam+diam;
+    disp_device->set_line_attributes(gc, 0.0, AW_SOLID);
+    disp_device->box(gc, AW_FALSE, x-diam, y-diam, diam2, diam2, mark_filter, 0, 0);
 }
 
 void AWT_graphic_tree::NT_rotbox(int gc, double x, double y, double width) // box with one corner down
