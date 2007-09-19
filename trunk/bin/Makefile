@@ -3,7 +3,7 @@ help:
 	@echo	''
 	@echo	'  all		create all links to binaries in: SH PERL_SCRIPTS'
 	@echo	'  develall     create links to arb_binaries in: SOURCE_TOOLS (development only)'
-	@echo	'  realclean:   remove everything but this Makefile'
+	@echo	'  realclean:   remove all executables and links'
 	@echo	'  cleanlinks:  remove all links'
 
 all: cleanlinks
@@ -13,8 +13,12 @@ develall: all
 	/bin/ln -s `find ../SOURCE_TOOLS -name "arb_*" -perm -100 ! -type d -print` .
 
 
+clean: realclean
+
 realclean:
-	rm -f dummyprg `find . ! -name Makefile -print`
+	find . -type l            -exec rm {} \;
+	find . -type f -perm -100 -exec rm {} \;
+
 
 cleanlinks:
 	ln -s dummy dummy
