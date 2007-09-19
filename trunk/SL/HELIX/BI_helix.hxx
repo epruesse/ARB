@@ -1,10 +1,6 @@
 #ifndef BI_HELIX_HXX
 #define BI_HELIX_HXX
 
-#ifdef _USE_AW_WINDOW
-#error Use AW_helix instead of BI_helix (and do not define _USE_AW_WINDOW)
-#endif
-
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
@@ -15,6 +11,9 @@
 #endif
 #ifndef _CPP_CSTDIO
 #include <cstdio>
+#endif
+#ifndef _CPP_CSTRING
+#include <cstring>
 #endif
 
 #ifndef ARBDB_H
@@ -51,79 +50,104 @@ typedef enum {
     HELIX_MAX
 } BI_PAIR_TYPE;
 
+struct BI_helix_entry {
+    long          pair_pos;
+    BI_PAIR_TYPE  pair_type;
+    char         *helix_nr;
+
+    long next_pair_pos;         // next position with pair_type != HELIX_NONE
+    // contains 0 if uninitialized, -1 behind last position
+    bool allocated;
+};
 
 class BI_helix {
-private:
+    BI_helix_entry *entries;
+    size_t          Size;
+
     void _init(void);
-    // int  deleteable;
-protected: 
-    int  _check_pair(char left, char right, BI_PAIR_TYPE pair_type);
+
+    static char *helix_error;         // error occurring during init is stored here
     
+protected:
+
+    char *pairs[HELIX_MAX];
+    char *char_bind[HELIX_MAX];
+    
+    int _check_pair(char left, char right, BI_PAIR_TYPE pair_type);
+
 public:
-    // read only section
-    struct BI_helix_entry {
-        long pair_pos;
-        BI_PAIR_TYPE pair_type;
-        char    *helix_nr;
-    } *entries;
 
-    // **read only:
-    char        *pairs[HELIX_MAX];
-    char        *char_bind[HELIX_MAX];
-    size_t       size;
-    static char *error;
+    static char *get_error() { return helix_error; }
+    static void clear_error() { free(helix_error); helix_error = 0; }
+    static void set_error(const char *err) { free(helix_error); helix_error = err ? strdup(err) : 0; }
 
-    // ***** read and write
     BI_helix(void);
-// #ifdef _USE_AW_WINDOW
-    // BI_helix(AW_root *aw_root);
-// #endif
     ~BI_helix(void);
 
     const char *init(GBDATA *gb_main);
     const char *init(GBDATA *gb_main, const char *alignment_name, const char *helix_nr_name = "HELIX_NR", const char *helix_name = "HELIX");
     const char *init(GBDATA *gb_helix_nr,GBDATA *gb_helix,size_t size);
-    const char *init(char *helix_nr, char *helix, size_t size);
+    const char *initFromData(const char *helix_nr, const char *helix, size_t size);
 
-    int check_pair(char left, char right, BI_PAIR_TYPE pair_type);
-        // returns 1 if bases form a pair
+    int check_pair(char left, char right, BI_PAIR_TYPE pair_type); // return 1 if bases form a pair
 
-// #ifdef _USE_AW_WINDOW
-//     char *seq_2_helix(char *sequence,char undefsymbol = ' ');
+    size_t size() const { return Size; }
+    bool has_entries() const { return entries; }
+    const BI_helix_entry& entry(size_t pos) const {
+        bi_assert(pos<Size);
+        bi_assert(entries);
+        return entries[pos];
+    }
 
-//     char get_symbol(char left, char right, BI_PAIR_TYPE pair_type);
+    size_t opposite_position(size_t pos) const {
+        const BI_helix_entry& Entry = entry(pos);
+        bi_assert(Entry.pair_type != HELIX_NONE); // not a pair -> no opposite position
+        return Entry.pair_pos;
+    }
+    BI_PAIR_TYPE pairtype(size_t pos) const { return pos<Size ? entry(pos).pair_type : HELIX_NONE; }
+    const char *helixNr(size_t pos) const { return pairtype(pos) == HELIX_NONE ? 0 : entry(pos).helix_nr; }
+    // Note: results of helixNr may be compared by == (instead of strcmp())
 
-
-//     int show_helix( void *device, int gc1 , char *sequence,
-//         AW_pos x, AW_pos y,
-//         AW_bitset filter,
-//         AW_CL cd1, AW_CL cd2);
-// #endif
+    long first_pair_position() const; // first pair position (or -1)
+    long next_pair_position(size_t pos) const; // next pair position behind 'pos' (or -1)
+    
+    long first_position(const char *helixNr) const; // returns -1 for non-existing helixNr's
+    long last_position(const char *helixNr) const; // returns -1 for non-existing helixNr's
 };
 
-// #ifdef _USE_AW_WINDOW
-// AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct * /*owner*/awcbs);
-// #endif
+
 
 
 class BI_ecoli_ref {
-    private:
-        long _abs_len;
-        long _rel_len;
+    size_t absLen;
+    size_t relLen;
 
-        long *_abs_2_rel1;
-        long *_abs_2_rel2;
-        long *_rel_2_abs;
-        void    bi_exit(void);
-    public:
-    BI_ecoli_ref(void);
-    ~BI_ecoli_ref(void);
+    size_t *abs2rel;
+    size_t *rel2abs;
+    
+    void bi_exit();
+
+public:
+    BI_ecoli_ref();
+    ~BI_ecoli_ref();
+
     const char *init(GBDATA *gb_main);
     const char *init(GBDATA *gb_main,char *alignment_name, char *ref_name);
-    const char *init(char *seq,long size);
+    const char *init(const char *seq, size_t size);
 
-    const char *abs_2_rel(long in,long &out,long &add);
-    const char *rel_2_abs(long in,long add,long &out);
+    size_t abs_2_rel(size_t abs) const {
+        bi_assert(abs2rel); // call init!
+        if (abs >= absLen) abs = absLen-1;
+        return abs2rel[abs];
+    }
+
+    size_t rel_2_abs(size_t rel) const {
+        bi_assert(abs2rel); // call init!
+        if (rel >= relLen) rel = relLen-1;
+        return rel2abs[rel];
+    }
+    
+    size_t base_count() const { return relLen; }
 };
 
 
