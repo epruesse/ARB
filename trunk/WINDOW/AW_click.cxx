@@ -11,6 +11,7 @@
 #include "aw_commn.hxx"
 #include <aw_click.hxx>
 
+using namespace AW;
 
 // *****************************************************************************************
 //          device_click
@@ -104,6 +105,9 @@ int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
         }
 
         if(best_line == AW_TRUE) {
+            aw_assert(x0 == x0); aw_assert(x1 == x1); // not NAN
+            aw_assert(y0 == y0); aw_assert(y1 == y1);
+
             opt_line.x0           = x0;
             opt_line.y0           = y0;
             opt_line.x1           = x1;
@@ -121,110 +125,99 @@ int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
 
 
 int AW_device_click::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2,long opt_strlen) {
-    class AW_GC_Xm       *gcm         = AW_MAP_GC(gc);
-    register XFontStruct *xfs         = &common->gcs[gc]->curfont;
-    register    int       position;
-    AW_pos                X0,Y0; // Transformed pos
-    short                 letter_width;
-    int                   text_width;
-    AW_BOOL               not_optimal = AW_FALSE;
-    AW_pos                best_dist   = 0;
-
     if(filteri & filter) {
-
-
+        AW_pos X0,Y0;           // Transformed pos
         this->transform(x,y,X0,Y0);
 
-        AW_pos Yb = Y0+(AW_pos)(xfs->max_bounds.descent);
-        AW_pos Yt = Y0-(AW_pos)(xfs->max_bounds.ascent);
+        XFontStruct *xfs = &common->gcs[gc]->curfont;
+
+        AW_pos Y1 = Y0+(AW_pos)(xfs->max_bounds.descent);
+        Y0        = Y0-(AW_pos)(xfs->max_bounds.ascent);
 
         /***************** Fast check text against top bottom clip ***************************/
-        if(this->clip_rect.t == 0) {
-            if (Yb < this->clip_rect.t) return 0;
-        }else {
-            if (Yt < this->clip_rect.t) return 0;
+
+        if (this->clip_rect.t == 0) {
+            if (Y1 < this->clip_rect.t) return 0;
+        }
+        else {
+            if (Y0 < this->clip_rect.t) return 0;
         }
 
-        if(this->clip_rect.b == common->screen.b) {
-            if (Yt > this->clip_rect.b) return 0;
-        }else {
-            if (Yb > this->clip_rect.b) return 0;
+        if (this->clip_rect.b == common->screen.b) {
+            if (Y0 > this->clip_rect.b) return 0;
         }
-
-#if 0
-        /***************** Fast check mouse against top bottom areas ***************************/
-
-        if (mouse_x < this->clip_rect.l - xfs->max_bounds.width) return 0;
-        if (mouse_x > this->clip_rect.r) return 0;
-#endif
+        else {
+            if (Y1 > this->clip_rect.b) return 0;
+        }
 
         /***************** vertical check mouse against textsurrounding  ***************************/
 
-        if(mouse_y > Yb) {              // outside text
-            if(mouse_y > Yb + max_distance_text ){
-                return 0;           // too far away
-            } else {
-                not_optimal = AW_TRUE;
-                best_dist = mouse_y - Yb;
-            }
-        }else   if (mouse_y < (Yt) ) {
-            if(mouse_y < Yt - max_distance_text ){
-                return 0;
-            } else {
-                not_optimal = AW_TRUE;
-                best_dist = Yt - mouse_y;
-            }
+        bool   exact     = true;
+        double best_dist = 0;
+        
+        if (mouse_y > Y1) {     // outside text
+            if (mouse_y > Y1+max_distance_text) return 0; // too far above
+            exact = false;
+            best_dist = mouse_y - Y1;
         }
-
+        else if (mouse_y < Y0) {
+            if (mouse_y < Y0-max_distance_text) return 0; // too far below
+            exact = false;
+            best_dist = Y0 - mouse_y;
+        }
 
         /***************** align text  ***************************/
-        int len;
-        if (opt_strlen) len = (int)opt_strlen;
-        else len = strlen(str);
-        text_width = (int)get_string_size(gc,str,len);
-        X0 = common->x_alignment(X0,text_width,alignment);
-        text_width += xfs->max_bounds.width*2;
+        int len        = opt_strlen ? opt_strlen : strlen(str);
+        int text_width = (int)get_string_size(gc,str,len);
+
+        X0        = common->x_alignment(X0,text_width,alignment);
+        AW_pos X1 = X0+text_width;
 
         /**************** check against left right clipping areas *********/
-        if (X0 + text_width< this->clip_rect.l) return 0;
-        if (X0 > this->clip_rect.r + xfs->max_bounds.width) return 0;
+        if (X1 < this->clip_rect.l) return 0;
+        if (X0 > this->clip_rect.r) return 0;
 
-        /***************** left of text  ***************************/
-        if(mouse_x < (X0 - (xfs->max_bounds.width)) ) {
-            return 0;
-        }
+        if (mouse_x < X0) return 0; // left of text
+        if (mouse_x > X1) return 0; // right of text
 
-        /***************** right of text  ***************************/
-        if (mouse_x > (X0 + text_width) ) {
-            return 0;
-        }
+        max_distance_text = best_dist; // exact hit -> distance = 0;
 
-        /***************** hit !!!!  ***************************/
-        max_distance_text = best_dist;                      // exact hit -> distance = 0;
-
+        int position;
         if (xfs->max_bounds.width == xfs->min_bounds.width) {           // monospaced font
-            letter_width = xfs->max_bounds.width;
+            short letter_width = xfs->max_bounds.width;
             position = (int)((mouse_x-X0)/letter_width);
             if (position<0) position = 0;
-            if (position>len) position = len;
-        }else {                                 // non-monospaced font
-            position = 0;
-            text_width = 0;
-            while( (position <= len)  ) {
-                text_width += gcm->width_of_chars[(unsigned char)str[position]];
-                if ( mouse_x > (X0 + text_width) )  position++;
-                else                    break;
+            if (position>(len-1)) position = len-1;
+        }
+        else {                                 // non-monospaced font
+            AW_GC_Xm *gcm = AW_MAP_GC(gc);
+            position   = 0;
+            int offset = 0;
+            while (position<=len) {
+                offset += gcm->width_of_chars[(unsigned char)str[position]];
+                if (mouse_x <= X0+offset) break;
+                position++;
             }
         }
-        opt_text.x0           = x;
-        opt_text.y0           = y;
-        opt_text.alignment    = alignment;
-        opt_text.rotation     = 0;
-        opt_text.distance     = max_distance_text;
-        opt_text.cursor       = position;
-        opt_text.client_data1 = clientdata1;
-        opt_text.client_data2 = clientdata2;
-        opt_text.exists       = AW_TRUE;
+
+        AW_pos dist2center = Distance(Position(mouse_x, mouse_y),
+                                      LineVector(X0, Y0, X0+text_width, Y1).centroid());
+
+        if (!opt_text.exists || // first candidate
+            (!opt_text.exactHit && exact) || // previous candidate was no exact hit
+            (dist2center<opt_text.dist2center)) // distance to text-center is smaller
+        {
+            opt_text.textArea     = Rectangle(rtransform(LineVector(X0, Y0, X1, Y1)));
+            opt_text.alignment    = alignment;
+            opt_text.rotation     = 0;
+            opt_text.distance     = max_distance_text;
+            opt_text.dist2center  = dist2center;
+            opt_text.cursor       = position;
+            opt_text.client_data1 = clientdata1;
+            opt_text.client_data2 = clientdata2;
+            opt_text.exists       = AW_TRUE;
+            opt_text.exactHit     = exact;
+        }
     }
     return 1;
 }
@@ -238,3 +231,50 @@ void AW_device_click::get_clicked_line(class AW_clicked_line *ptr) {
 void AW_device_click::get_clicked_text(class AW_clicked_text *ptr) {
     *ptr = opt_text;
 }
+
+double AW_clicked_line::distanceTo(const AW::Position& pos) {
+    AW::LineVector cl(x0, y0, x1, y1);
+    if (cl.length() == 0) {
+        return AW::Distance(pos, cl.start());
+    }
+    return AW::Distance(pos, cl);
+}
+
+bool AW_getBestClick(const AW::Position& click, AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2) {
+    // detect the nearest item next to 'click'
+    // and return that items callback params.
+    // returns false, if nothing has been clicked
+
+    AW_clicked_element *bestClick = 0;
+
+    if (cl->exists) {
+        if (ct->exists) {
+            if (cl->distanceTo(click) < ct->distance) {
+                bestClick = cl;
+            }
+            else {
+                bestClick = ct;
+            }
+        }
+        else {
+            bestClick = cl;
+        }
+    }
+    else if (ct->exists) {
+        bestClick = ct;
+    }
+
+    if (bestClick) {
+        *cd1 = bestClick->client_data1;
+        *cd2 = bestClick->client_data2;
+    }
+    else {
+        *cd1 = 0;
+        *cd2 = 0;
+    }
+
+    return bestClick;
+}
+
+
+
