@@ -85,6 +85,9 @@ class Structure3D;
 class Texture2D;
 class GLRenderer;
 
+class AW_root;
+class AWT_canvas;
+
 class RNA3D_Global {
 public:
     Widget      glw;
@@ -124,9 +127,7 @@ public:
 // global variables
 
 extern RNA3D_Global *RNA3D;
-extern GBDATA       *gb_main;
-
-extern char globalComment[1000];
+extern char          globalComment[1000];
 
 void RNA3D_init_global_data();
 
