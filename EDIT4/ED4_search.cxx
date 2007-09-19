@@ -16,6 +16,7 @@
 #include <awt.hxx>
 #include <awt_config_manager.hxx>
 
+#include <ed4_extern.hxx>
 #include "ed4_awars.hxx"
 #include "ed4_class.hxx"
 #include "ed4_tools.hxx"
@@ -768,6 +769,8 @@ static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
         ED4_refresh_window(ED4_ROOT->temp_aww, 0, 0);
         ED4_update_global_cursor_awars_allowed = old_update;
     }
+
+    root->awar(ED4_AWAR_SEARCH_RESULT_CHANGED)->touch(); // trigger refresh in SECEDIT
 }
 
 void ED4_create_search_awars(AW_root *root)
@@ -793,6 +796,8 @@ void ED4_create_search_awars(AW_root *root)
         settings[i] = new SearchSettings(&awar_list[i]);
         tree[i] = new SearchTree(settings[i]);
     }
+
+    root->awar_int(ED4_AWAR_SEARCH_RESULT_CHANGED, 0, gb_main);
 
 #undef cb
 
@@ -999,7 +1004,7 @@ void ED4_SearchResults::addSearchPosition(ED4_SearchPosition *pos)
     }
 }
 
-void ED4_SearchResults::search(ED4_sequence_terminal *seq_terminal)
+void ED4_SearchResults::search(const ED4_sequence_terminal *seq_terminal)
 {
     int i;
     int needed[SEARCH_PATTERNS];
@@ -1165,7 +1170,7 @@ void ED4_SearchResults::searchAgain()
     }
 }
 
-char *ED4_SearchResults::buildColorString(ED4_sequence_terminal *seq_terminal, int start, int end)
+char *ED4_SearchResults::buildColorString(const ED4_sequence_terminal *seq_terminal, int start, int end) 
     // builds a char buffer (access is only valid from result[start] till result[end])
 {
     int i;
@@ -1246,8 +1251,12 @@ char *ED4_SearchResults::buildColorString(ED4_sequence_terminal *seq_terminal, i
     return buffer-start;
 }
 
+const char *ED4_buildColorString(const ED4_sequence_terminal *seq_terminal, int start, int end) {
+    return seq_terminal->results().buildColorString(seq_terminal, start, end);
+}
+
 ED4_SearchPosition *ED4_SearchResults::get_shown_at(int pos) const
-    // used by ED4_cursor::updateAwars to get search-comment
+// used by ED4_cursor::updateAwars to get search-comment
 {
     ED4_SearchPosition *p = get_last_starting_before(ED4_ANY_PATTERN, pos, 0); // @@@ tofix: should find last_ending before
     ED4_SearchPosition *best = 0;
