@@ -25,6 +25,8 @@
 #include <st_window.hxx>
 #include <gde.hxx>
 
+#include <ed4_extern.hxx>
+
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
 #include "ed4_tools.hxx"
@@ -1595,7 +1597,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic("align_sequence","Old Aligner From ARB_EDIT", "O","ne_align_seq.hlp", AWM_ALL,AW_POPUP, (AW_CL)create_naligner_window, 0 );
     awmm->insert_menu_topic("del_ali_tmp", "Remove All Aligner Entries", "R", 0, AWM_ALL, ED4_remove_faligner_entries, 1, 0);
     SEP________________________SEP;
-    awmm->insert_menu_topic("sec_edit", "Edit Secondary Structure", "", 0, AWM_ALL, ED4_SECEDIT_start, 0, 0);
+    awmm->insert_menu_topic("sec_edit", "Edit Secondary Structure", "", 0, AWM_ALL, ED4_SECEDIT_start, (AW_CL)gb_main, 0);
 
     // ------------------------------
     //  View
@@ -1743,7 +1745,6 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
     int db_pathx,db_pathy;
     awmm->get_at_position( &db_pathx,&db_pathy );
-    awmm->callback( ED4_quit_editor, 0, 0);
 
     awmm->shadow_width(1);
     awmm->load_xfig("edit4/editmenu.fig", AW_FALSE);
@@ -1754,13 +1755,14 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     
     awmm->button_length(0);
     
-    awmm->help_text("quit.hlp");
     awmm->at("quit");
+    awmm->callback(ED4_quit_editor, 0, 0);
+    awmm->help_text("quit.hlp");
      if (ED4_window::no_of_windows == 1)  awmm->create_button("QUIT","#quit.xpm"); // this is the first window
      else                                 awmm->create_button("CLOSE","#close.xpm");
 
     awmm->at("help");
-    awmm->callback( AW_help_entry_pressed );
+    awmm->callback(AW_help_entry_pressed);
     awmm->help_text("e4.hlp");
     awmm->create_button("HELP","#help.xpm");
 
@@ -1892,13 +1894,13 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
         awmm->button_length(0);
         
         awmm->at("secedit");
-        awmm->callback((void(*)(AW_window*, AW_CL))ED4_SECEDIT_start, 0);
+        awmm->callback(ED4_SECEDIT_start, (AW_CL)gb_main, 0);
         awmm->help_text("arb_secedit.hlp");
         awmm->create_button("SECEDIT", "#edit/secedit.xpm");
         
 #if defined(ARB_OPENGL)
         awmm->at("rna3d");
-        awmm->callback((void(*)(AW_window*, AW_CL))ED4_RNA3D_Start, 0);
+        awmm->callback(ED4_RNA3D_Start, 0, 0);
         awmm->help_text("rna3d_general.hlp");
         awmm->create_button("RNA3D", "#edit/rna3d.xpm");
 #endif // ARB_OPENGL
