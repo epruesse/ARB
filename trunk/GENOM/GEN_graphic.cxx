@@ -86,15 +86,9 @@ void GEN_graphic::show(AW_device *device) {
     }
 }
 
-inline int update_max(int u1, int u2) {
-    if (u1 == 1 || u2 == 1) return 1;
-    if (u1 == -1 || u2 == -1) return -1;
-    return 0;
-}
-
 int GEN_graphic::check_update(GBDATA *gbdummy) {
     // if check_update returns >0 -> zoom_reset is done
-    int do_zoom_reset = update_max(AWT_graphic::check_update(gbdummy), want_zoom_reset);
+    int do_zoom_reset = want_zoom_reset;
     want_zoom_reset   = false;
     return do_zoom_reset;
 }
@@ -108,7 +102,7 @@ void GEN_graphic::info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *c
     AWUSE(ct);
 }
 
-void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod /*key_modifier*/, char /*key_char*/, AW_event_type type,
+void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod /*key_modifier*/, AW_key_code /*key_code*/, char /*key_char*/, AW_event_type type,
                           AW_pos screen_x, AW_pos screen_y, AW_clicked_line *cl, AW_clicked_text *ct) {
     AW_pos world_x;
     AW_pos world_y;
