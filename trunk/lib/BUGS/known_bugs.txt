@@ -1,2 +1,8 @@
 
-- Many refresh problems in EDIT4
+Known bugs are listed in our bug-tracker at
+
+    http://bugs.arb-home.de/
+
+
+
+
