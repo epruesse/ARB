@@ -71,7 +71,7 @@ AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
     return preset_window;
 }
 
-SAI_graphic::SAI_graphic(AW_root *aw_rooti, GBDATA *gb_maini):AWT_graphic() {
+SAI_graphic::SAI_graphic(AW_root *aw_rooti, GBDATA *gb_maini) {
     exports.dont_fit_x      = 1;
     exports.dont_fit_y      = 1;
     exports.dont_fit_larger = 0;
@@ -85,7 +85,7 @@ SAI_graphic::SAI_graphic(AW_root *aw_rooti, GBDATA *gb_maini):AWT_graphic() {
     this->gb_main = gb_maini;
 }
 
-void SAI_graphic::command(AW_device */*device*/, AWT_COMMAND_MODE /*cmd*/, int button, AW_key_mod /*key_modifier*/, char /*key_char*/,
+void SAI_graphic::command(AW_device */*device*/, AWT_COMMAND_MODE /*cmd*/, int button, AW_key_mod /*key_modifier*/, AW_key_code /*key_code*/, char /*key_char*/,
                           AW_event_type type, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line *cl, AW_clicked_text *ct)
 {
     if (type == AW_Mouse_Press && (cl->exists || ct->exists) && button != AWT_M_MIDDLE ) {
@@ -351,7 +351,7 @@ static void paintBackgroundAndSAI (AW_device *device, size_t probeRegionLen, AW_
     // and also printing the values based on the options set by user
     for (size_t j = 0; j<probeRegionLen; j++) {
         if (saiCols[j] >= '0') {
-            device->box(saiCols[j]-'0'+SAI_GC_0, pbRgX1+j*pbMaxWidth, pbY-pbMaxHeight+1, pbMaxWidth, pbMaxHeight, -1, 0,0);
+            device->box(saiCols[j]-'0'+SAI_GC_0, AW_TRUE, pbRgX1+j*pbMaxWidth, pbY-pbMaxHeight+1, pbMaxWidth, pbMaxHeight, -1, 0,0);
         }
         if (dispSai && saiValues[j]) {
             char saiVal[2];
@@ -480,7 +480,7 @@ void SAI_graphic::paint(AW_device *device) {
                 char       *displayInfo = GetDisplayInfo(aw_root, name, displayWidth, default_tree);
 
                 if (strcmp(selectedProbe,name) == 0) {
-                    device->box(SAI_GC_FOREGROUND, fgX, (fgY - (yStep * 0.9)), (displayWidth * xStep_info), yStep, -1, 0,0);
+                    device->box(SAI_GC_FOREGROUND, AW_TRUE, fgX, (fgY - (yStep * 0.9)), (displayWidth * xStep_info), yStep, -1, 0,0);
                     device->text(SAI_GC_HIGHLIGHT, displayInfo, fgX, fgY-1, 0, AW_SCREEN|AW_CLICK, (AW_CL)j, 0, 0);
                 }
                 else {
@@ -503,7 +503,7 @@ void SAI_graphic::paint(AW_device *device) {
 
         int  probeLen = g_pbdata->getProbeTargetLen();
 
-        device->box(SAI_GC_FOREGROUND, pbX, 10-yStep, (probeLen * xStep_target), yStep, -1, 0,0);
+        device->box(SAI_GC_FOREGROUND, AW_TRUE, pbX, 10-yStep, (probeLen * xStep_target), yStep, -1, 0,0);
         paintProbeInfo(device, g_pbdata->getProbeTarget(), pbX, 10, xStep_target, yStep, maxDescent, (AW_CL)0, SAI_GC_HIGHLIGHT);
         device->set_line_attributes(SAI_GC_FOREGROUND,2, AW_SOLID);
 
