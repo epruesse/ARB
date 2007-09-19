@@ -3,6 +3,9 @@
 #include "RNA3D_Interface.hxx"
 #include "RNA3D_OpenGLEngine.hxx"
 
+#include <aw_preset.hxx>
+
+
 using namespace std;
 
 
@@ -33,7 +36,7 @@ AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AW
                       "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#E0E0E0",    "-RANGE 2$#C0C0C0",
                       "+-RANGE 3$#A0A0A0",    "+-RANGE 4$#909090",    "-RANGE 5$#808080",
                       "+-RANGE 6$#808080",    "+-RANGE 7$#505050",    "-RANGE 8$#404040",
-                      "+-RANGE 9$#303030",    "+-Psuedoknots$#FFAAFF","-Triple Bases$#55FF00",
+                      "+-RANGE 9$#303030",    "+-Pseudoknots$#FFAAFF","-Triple Bases$#55FF00",
 
                       "+-Cursor$#FFFFFF",    "+-Comments$#808080",    "-MoleculeMask$#00FF00",
                       0 );
@@ -41,7 +44,7 @@ AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AW
     return preset_window;
 }
 
-RNA3D_Graphics::RNA3D_Graphics(AW_root *aw_root_, GBDATA *gb_main_):AWT_graphic() {
+RNA3D_Graphics::RNA3D_Graphics(AW_root *aw_root_, GBDATA *gb_main_) {
     exports.dont_fit_x      = 1;
     exports.dont_fit_y      = 1;
     exports.dont_fit_larger = 0;
@@ -56,12 +59,6 @@ RNA3D_Graphics::RNA3D_Graphics(AW_root *aw_root_, GBDATA *gb_main_):AWT_graphic(
 }
 
 RNA3D_Graphics::~RNA3D_Graphics(void) {}
-
-void RNA3D_Graphics::command(AW_device */*device*/, AWT_COMMAND_MODE /*cmd*/, int /*button*/, AW_key_mod /*key_modifier*/, char /*key_char*/,
-                             AW_event_type /*type*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line * /*cl*/, AW_clicked_text * /*ct*/)
-{
-;
-}
 
 void RNA3D_Graphics::show(AW_device *device){
     paint(device);
