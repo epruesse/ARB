@@ -12,11 +12,12 @@
 #include <aw_window.hxx>
 #include <AW_helix.hxx>
 
+#include <ed4_extern.hxx>
+
 #include "ed4_class.hxx"
 #include "ed4_edit_string.hxx"
 #include "ed4_tools.hxx"
 #include "ed4_awars.hxx"
-#include "ed4_secedit.hxx"
 #include "ed4_ProteinViewer.hxx"
 
 /* --------------------------------------------------------------------------------
@@ -35,12 +36,14 @@ class ED4_CursorShape {
     int start[MAXLINES];
     int end[MAXLINES];
 
+    int char_width;
+
     bool reverse;
 
     int point(int x, int y) {
         e4_assert(points<MAXPOINTS);
         if (reverse) {
-            xpos[points] = -x-1;
+            xpos[points] = char_width-x;
         }
         else {
             xpos[points] = x;
@@ -97,9 +100,10 @@ public:
 
 ED4_CursorShape::ED4_CursorShape(ED4_CursorType typ, /*int x, int y, */int term_height, int character_width, bool reverse_cursor)
 {
-    lines    = 0;
-    points   = 0;
-    reverse  = reverse_cursor;
+    lines      = 0;
+    points     = 0;
+    reverse    = reverse_cursor;
+    char_width = character_width;
 
     int x = 0;
     int y = 0;
@@ -883,12 +887,8 @@ void ED4_cursor::updateAwars()
     // update awar for ecoli position:
 
     {
-        long lseq_pos = seq_pos+1;
-        long ecoli_pos;
-        long dummy;
-
-        ED4_ROOT->ecoli_ref->abs_2_rel(lseq_pos, ecoli_pos, dummy);
-        aw_root->awar(win->awar_path_for_Ecoli)->write_int(ecoli_pos);
+        long ecoli_pos = ED4_ROOT->ecoli_ref->abs_2_rel(seq_pos);
+        aw_root->awar(win->awar_path_for_Ecoli)->write_int(ecoli_pos+1);
     }
 
     // update awar for base position:
@@ -931,16 +931,8 @@ void ED4_cursor::updateAwars()
     aw_root->awar(win->awar_path_for_IUPAC)->write_string(iupac);
 
     // update awar for helix#:
-
-    {
-        AW_helix *helix = ED4_ROOT->helix;
-        int helixnr = 0;
-
-        if (size_t(seq_pos)<helix->size && helix->entries[seq_pos].pair_type) {
-            helixnr = atoi(helix->entries[seq_pos].helix_nr);
-        }
-        aw_root->awar(win->awar_path_for_helixNr)->write_int(helixnr);
-    }
+    const char *helixNr = ED4_ROOT->helix->helixNr(seq_pos);
+    aw_root->awar(win->awar_path_for_helixNr)->write_string(helixNr ? helixNr : "");
 }
 
 void ED4_cursor::jump_cursor(AW_window *aww, int new_cursor_screen_pos, bool center_cursor, bool fix_left_border)
@@ -1068,11 +1060,6 @@ void ED4_cursor::jump_left_right_cursor_to_seq_pos(AW_window *aww, int new_curso
 
 void ED4_cursor::jump_centered_cursor_to_seq_pos(AW_window *aww, int new_cursor_seq_pos) {
     int screen_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen_clipped(new_cursor_seq_pos);
-
-    if (!awar_edit_direction) { // reverse editing (5'<-3')
-        screen_pos++;
-        new_cursor_seq_pos = -1; // uninitialized
-    }
 
     jump_centered_cursor(aww, screen_pos);
     last_seq_position = new_cursor_seq_pos;
@@ -1402,9 +1389,6 @@ ED4_returncode ED4_cursor::show_clicked_cursor(AW_pos click_xpos, ED4_base *targ
     target_terminal->calc_world_coords( &termw_x, &termw_y );
 
     ED4_index scr_pos = ED4_ROOT->pixel2pos(click_xpos - termw_x);
-
-    if (!awar_edit_direction) scr_pos++; // reverse editing -> set behind clicked base
-
     return show_cursor_at(target_terminal, scr_pos);
 }
 
@@ -1500,7 +1484,7 @@ void ED4_base_position::invalidate() {
     }
 }
 
-void ED4_base_position::calc4base(ED4_base *base)
+void ED4_base_position::calc4base(const ED4_base *base)
 {
     e4_assert(base);
 
@@ -1556,7 +1540,7 @@ void ED4_base_position::calc4base(ED4_base *base)
 
     free(seq);
 }
-int ED4_base_position::get_base_position(ED4_base *base, int sequence_position)
+int ED4_base_position::get_base_position(const ED4_base *base, int sequence_position)
 {
     if (!base) return 0;
     if (base!=calced4base) calc4base(base);
@@ -1577,19 +1561,27 @@ int ED4_base_position::get_base_position(ED4_base *base, int sequence_position)
         else {
             if (l==h) break;
 
-            if (sequence_position<seq_pos[m]) 	h = m;
-            else				l = m+1;
+            if (sequence_position<seq_pos[m]) h = m;
+            else                              l = m+1;
         }
     }
 
     return l;
 }
-int ED4_base_position::get_sequence_position(ED4_base *base, int base_pos)
+int ED4_base_position::get_sequence_position(const ED4_base *base, int base_pos)
 {
     if (!base) return 0;
     if (base!=calced4base) calc4base(base);
     return base_pos<count ? seq_pos[base_pos] : seq_pos[count-1]+1;
 }
+
+int ED4_get_base_position(const ED4_sequence_terminal *seq_term, int seq_position) {
+    static ED4_base_position *base_pos = 0;
+    
+    if (!base_pos) base_pos = new ED4_base_position;
+    return base_pos->get_base_position(seq_term, seq_position);
+}
+
 
 /* --------------------------------------------------------------------------------
              Store/Restore Cursorpositions
@@ -1703,17 +1695,17 @@ void ED4_helix_jump_opposite(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)
         return;
     }
 
-    int seq_pos = cursor->get_sequence_pos();
-    AW_helix *helix = ED4_ROOT->helix;
+    int           seq_pos  = cursor->get_sequence_pos();
+    AW_helix     *helix    = ED4_ROOT->helix;
+    BI_PAIR_TYPE  pairType = helix->pairtype(seq_pos);
 
-    if (size_t(seq_pos)<helix->size && helix->entries[seq_pos].pair_type) {
-        int pairing_pos = helix->entries[seq_pos].pair_pos;
-        e4_assert(helix->entries[pairing_pos].pair_pos==seq_pos);
+    if (pairType != HELIX_NONE) {
+        int pairing_pos = helix->opposite_position(seq_pos);
         cursor->jump_centered_cursor_to_seq_pos(aww, pairing_pos);
-        return;
     }
-
-    aw_message("No helix position");
+    else {
+        aw_message("Not at helix position");
+    }
 }
 
 void ED4_change_cursor(AW_window */*aww*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
