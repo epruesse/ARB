@@ -4,6 +4,10 @@
 #include "RNA3D_OpenGLEngine.hxx"
 
 #include <string>
+#include <iostream>
+
+#include <arbdb.h>
+
 
 using namespace std;
 

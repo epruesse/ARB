@@ -5,10 +5,13 @@
 #include "RNA3D_Textures.hxx"
 #include "RNA3D_StructureData.hxx"
 
-#include <math.h>
+#include <cmath>
+#include <cstdlib>
 
 // The following includes are needed to use AW_window_Motif 
 // and access Application's colormap
+#include <aw_root.hxx>
+#include <aw_window.hxx>
 #include "../WINDOW/aw_awar.hxx"
 #include "../WINDOW/aw_Xm.hxx"
 #include "../WINDOW/aw_click.hxx"
@@ -16,6 +19,9 @@
 #include "../WINDOW/aw_print.hxx"
 #include "../WINDOW/aw_window_Xm.hxx"
 #include "../WINDOW/aw_commn.hxx"
+
+#include <awt_canvas.hxx>
+
 
 using namespace std;
 

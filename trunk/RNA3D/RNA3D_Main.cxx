@@ -3,6 +3,11 @@
 #include "RNA3D_Main.hxx"
 #include "RNA3D_Interface.hxx"
 
+#include <aw_root.hxx>
+#include <aw_window.hxx>
+#include <arbdb.h>
+
+
 using namespace std;
 
 static void  CreateRNA3DAwars(AW_root *root){
