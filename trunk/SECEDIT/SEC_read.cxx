@@ -1,18 +1,19 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cctype>
-#include <cstring>
+// =============================================================== //
+//                                                                 //
+//   File      : SEC_read.cxx                                      //
+//   Purpose   : read structure from declaration string            //
+//   Time-stamp: <Fri Sep/07/2007 09:02 MET Coder@ReallySoft.de>   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <iostream>
-#include <fstream>
+
 #include <sstream>
+#include "SEC_root.hxx"
+#include "SEC_iter.hxx"
 
-#include <arbdb.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-
-#include"secedit.hxx"
 #define BUFFER_SIZE 1000
 
 using namespace std;
@@ -111,6 +112,13 @@ static GB_ERROR sec_expect_keyword_and_doubles(const char *string_buffer, const 
     return error;
 }
 
+static GB_ERROR sec_expect_constraints(const char *string_buffer, const char *keyword, size_t keywordlen, SEC_constrainted *elem) {
+    double   min, max;
+    GB_ERROR error = sec_expect_keyword_and_doubles(string_buffer, keyword, keywordlen, &min, &max);
+    if (!error) elem->setConstraints(min, max);
+    return error;
+}
+
 static GB_ERROR sec_expect_closing_bracket(istream& in) {
     const char *string_buffer = sec_read_line(in);
 
@@ -122,168 +130,96 @@ static GB_ERROR sec_expect_closing_bracket(istream& in) {
  * READ-Functions
  ***********************************************************************/
 
-GB_ERROR SEC_segment::read(SEC_loop *loop_, istream & in) {
-    loop              = loop_;
-    GB_ERROR error    = region.read(in, root);
-    if (!error) error = sec_expect_closing_bracket(in);
-    return error;
-}
-
-GB_ERROR SEC_region::read(istream & in, SEC_root *root) {
+GB_ERROR SEC_region::read(istream & in, SEC_root *root, int /*version*/) {
     int         seq_start, seq_end;
     const char *string_buffer = sec_read_line(in);
     GB_ERROR    error         = sec_expect_keyword_and_ints(string_buffer, "SEQ", 3, &seq_start, &seq_end);
 
     if (!error) {
-        if (root->template_sequence != NULL) {
-            if (seq_start >= root->ap_length) {
-                error = GBS_global_string("Region start (%i) out of bounds [0..%i]", seq_start, root->ap_length-1);
-            }
-            else if (seq_end >= root->ap_length) {
-                error = GBS_global_string("Region end (%i) out of bounds [0..%i]", seq_end, root->ap_length-1);
+        sec_assert(root->get_db()->canDisplay());
+        if (root->get_db()->canDisplay()) {
+            const XString& x_string = root->get_xString();
+            int x_count  = x_string.getXcount();
+
+            if (seq_start >= x_count)           error = GBS_global_string("Region start (%i) out of bounds [0..%i]", seq_start, x_count-1);
+            else if (seq_end >= x_count)        error = GBS_global_string("Region end (%i) out of bounds [0..%i]", seq_end, x_count-1);
+            else                                set_sequence_portion(x_string.getAbsPos(seq_start), x_string.getAbsPos(seq_end));
+        }
+        else {
+            set_sequence_portion(seq_start, seq_end);
+        }
+    }
+    return error;
+}
+
+GB_ERROR SEC_segment::read(SEC_loop *loop_, istream & in, int version) {
+    loop              = loop_;
+    GB_ERROR error    = get_region()->read(in, get_root(), version);
+    if (!error) error = sec_expect_closing_bracket(in);
+    return error;
+}
+
+GB_ERROR SEC_helix::read(istream & in, int version, double& old_angle_in) {
+    const char *string_buffer = sec_read_line(in);
+    GB_ERROR    error         = 0;
+
+    old_angle_in = NAN;     // illegal for version >= 3
+
+    if (version >= 3) {
+        double angle;
+
+        error = sec_expect_keyword_and_doubles(string_buffer, "REL", 3, &angle, 0);
+        
+        if (!error) {
+            string_buffer = sec_read_line(in);
+            set_rel_angle(angle);
+        }
+    }
+    else { // version 2 or lower
+        double angle;
+        
+        error = sec_expect_keyword_and_doubles(string_buffer, "DELTA", 5, &angle, 0);
+        if (!error) {
+            string_buffer = sec_read_line(in);
+            set_abs_angle(angle);
+
+            if (version == 2) {
+                error = sec_expect_keyword_and_doubles(string_buffer, "DELTA_IN", 8, &angle, 0);
+
+                if (!error) {
+                    string_buffer = sec_read_line(in);
+                    old_angle_in  = angle+M_PI; // rotate! (DELTA_IN pointed from outside-loop to strand)
+                }
             }
             else {
-                sequence_start = root->ap[seq_start];
-                sequence_end   = root->ap[seq_end];
+                old_angle_in = angle; // use strands angle
             }
         }
-        else {
-            sequence_start = seq_start;
-            sequence_end   = seq_end;
-        }
     }
+
+    if (!error) error = sec_expect_constraints(string_buffer, "LENGTH", 6, this);
+
     return error;
 }
 
 
-GB_ERROR SEC_helix::read(istream & in) {
-    const char *string_buffer = sec_read_line(in);
-    GB_ERROR    error         = sec_expect_keyword_and_doubles(string_buffer, "DELTA", 5, &delta, 0);
+GB_ERROR SEC_helix_strand::read(SEC_loop *loop_, istream & in, int version) {
+    // this points away from root-loop, strand2 points towards root
+
+    SEC_helix_strand *strand2 = new SEC_helix_strand;
+
+    origin_loop = 0; 
+
+    SEC_root *root  = loop_->get_root();
+    GB_ERROR  error = get_region()->read(in, root, version);
+    
+    double next_loop_angle = NAN;
 
     if (!error) {
-        string_buffer = sec_read_line(in);
-        error         = sec_expect_keyword_and_doubles(string_buffer, "DELTA_IN", 8, &deltaIn, 0);
-        if (error) {
-            static bool warned = false;
-            if (!warned) {
-                aw_message(GBS_global_string("Warning: %s.\nSetting DELTA_IN to 0.0", error));
-                warned = true; // warn only once
-            }
-            error   = 0;
-            deltaIn = 0.0;
-        }
-        else {
-            string_buffer = sec_read_line(in);
-        }
-    }
-
-    if (!error) {
-        error = sec_expect_keyword_and_doubles(string_buffer, "LENGTH", 6, &min_length, &max_length);
-    }
-
-    return error;
-}
-
-GB_ERROR SEC_loop::read(SEC_helix_strand *other_strand, istream & in) {
-
-    const char *string_buffer = sec_read_line(in);
-    GB_ERROR    error         = sec_expect_keyword_and_doubles(string_buffer, "RADIUS", 6, &min_radius, &max_radius);
-
-    if (!error) {
-        string_buffer = sec_read_line(in);
-        if (strncmp(string_buffer, "SEGMENT={", 6) == 0) {
-            segment = new SEC_segment(root, 0, NULL, NULL); //creating first segment
-            error   = segment->read(this, in);
-        }
-        else {
-            error = "Loop has to contain at least one 'SEGMENT={}'";
-        }
-    }
-
-    if (!error) {
-        string_buffer = sec_read_line(in); //either "STRAND={" or "}" ist read from input stream
-
-        enum { OP_UNDEF, OP_STRAND, OP_SEGMENT, OP_END } operation_selector = OP_UNDEF;
-
-        if (strncmp(string_buffer, "STRAND={", 8) == 0) { // if STRAND does not follow on SEGMENT then the loop is already complete;
-            operation_selector = OP_STRAND;
-        }
-        else if (strncmp(string_buffer, "}", 1) == 0) {
-            operation_selector = OP_END;
-#if defined(DEBUG)
-            sec_assert(other_strand!=NULL);
-#endif // DEBUG
-            segment->set_next_helix_strand(other_strand);
-        }
-
-        SEC_segment      *segment_pointer = segment;
-        SEC_helix_strand *strand_pointer  = 0;
-
-        while (operation_selector != OP_END && !error) {
-            if (operation_selector==OP_STRAND) {
-                strand_pointer = new SEC_helix_strand(root, NULL, NULL, NULL, NULL, 0, 0);
-                error          = strand_pointer->read(this, in);
-                if (!error) {
-                    // sets next_helix_strand-pointer of segment created previously to newly created strand
-                    segment_pointer->set_next_helix_strand(strand_pointer);
-                }
-                else {
-                    delete strand_pointer;
-                }
-            }
-            else if (operation_selector==OP_SEGMENT) {
-                segment_pointer = new SEC_segment(root, 0, NULL, NULL);
-                error           = segment_pointer->read(this, in);
-                if (!error) {
-                    strand_pointer->set_next_segment(segment_pointer);
-                }
-                else {
-                    delete segment_pointer;
-                }
-            }
-
-            if (!error) {
-                string_buffer = sec_read_line(in);
-            
-                if (strncmp(string_buffer, "STRAND={", 8) == 0) {
-                    operation_selector = OP_STRAND;
-                }
-                else if (strncmp(string_buffer, "}", 1) == 0) {
-                    operation_selector = OP_END;
-                    if (other_strand) {
-                        segment_pointer->set_next_helix_strand(other_strand);
-                        strand_pointer->set_next_segment(segment_pointer);
-                    }
-                    else {
-                        strand_pointer->set_next_segment(segment);
-                    }
-                }
-                else if (strncmp(string_buffer, "SEGMENT={", 9) == 0) {
-                    operation_selector = OP_SEGMENT;
-                }
-                else {
-                    error = GBS_global_string("Illegal content while reading loop ('%s')", string_buffer);
-                }
-            }
-        }
-    }
-    return error;
-}
-
-
-GB_ERROR SEC_helix_strand::read(SEC_loop *loop_, istream & in) {
-    SEC_helix_strand *strand2 = new SEC_helix_strand(root, NULL, NULL, NULL, NULL, 0, 0);
-
-    loop                  = 0; // only set loop at end and only if no error occurred (otherwise 'this' might be freed while PC is still inside this method)
-    other_strand          = strand2;
-    strand2->other_strand = this;
-
-    GB_ERROR error = region.read(in, root);
-
-    if (!error) {
-        helix_info          = new SEC_helix;
-        strand2->helix_info = helix_info;
-        error               = helix_info->read(in);
+        helix_info  = new SEC_helix(root, strand2, this);
+        origin_loop = loop_;    // needed by read()
+        error       = helix_info->read(in, version, next_loop_angle);
+        origin_loop = 0;
 
         if (error) {
             delete helix_info;
@@ -298,97 +234,310 @@ GB_ERROR SEC_helix_strand::read(SEC_loop *loop_, istream & in) {
             error = GBS_global_string("Strand must be followed by 'LOOP={' (not by '%s')", string_buffer);
         }
         else {
-            strand2->loop = new SEC_loop(root, NULL, 0, 0);
-            error         = strand2->loop->read(strand2, in);
-            if (!error) {
-                strand2->next_segment = strand2->loop->get_segment(); // strand2's next_segment points to his loop's first segment
-                strand2->region.read(in, root); // Loop is complete, now trailing SEQ information must be read
+            SEC_loop *new_loop   = new SEC_loop(root);
+            strand2->origin_loop = new_loop;
 
+            error = new_loop->read(strand2, in, version, next_loop_angle);
+
+            if (!error) {
+                error = strand2->get_region()->read(in, root, version); // Loop is complete, now trailing SEQ information must be read
                 string_buffer = sec_read_line(in);    // remove closing } from input-stream
             }
-            else {
-                delete strand2->loop;
-                strand2->loop = 0;
+            
+            if (error) {
+                strand2->origin_loop = 0;
+                delete new_loop;
             }
         }
     }
 
     // Note: don't delete strand2 in case of error -- it's done by caller via deleting 'this'
 
-    sec_assert(loop == 0);
+    sec_assert(origin_loop == 0);
+    if (!error) origin_loop = loop_; 
+
+    return error;
+}
+
+
+
+GB_ERROR SEC_loop::read(SEC_helix_strand *rootside_strand, istream & in, int version, double loop_angle) {
+    // loop_angle is only used by old versions<3
+    
+    const char *string_buffer = sec_read_line(in);
+    GB_ERROR    error         = sec_expect_constraints(string_buffer, "RADIUS", 6, this);
+
     if (!error) {
-        loop = loop_;           // don't set in case of error (see above)
+        set_fixpoint_strand(rootside_strand);
+
+        if (version == 3) {
+            string_buffer = sec_read_line(in);
+
+            double angle;
+            error = sec_expect_keyword_and_doubles(string_buffer, "REL", 3, &angle, 0);
+            if (!error) set_rel_angle(angle);
+        }
+        else {
+            set_abs_angle(loop_angle);
+            sec_assert(get_rel_angle().valid());
+        }
+    }
+
+    if (!error) {
+        enum { EXPECT_SEGMENT, EXPECT_STRAND } expect = (!rootside_strand && version >= 3) ? EXPECT_STRAND : EXPECT_SEGMENT;
+
+        SEC_segment      *first_new_segment   = 0;
+        SEC_helix_strand *first_new_strand    = 0;
+        SEC_segment      *last_segment        = 0;
+        SEC_helix_strand *last_outside_strand = rootside_strand;
+
+        bool done = false;
+        while (!done && !error) {
+            string_buffer = sec_read_line(in);
+
+            if (strncmp(string_buffer, "}", 1) == 0) {
+                done = true;
+            }
+            else if (expect == EXPECT_SEGMENT) {
+                if (strncmp(string_buffer, "SEGMENT={", 9) == 0) {
+                    SEC_segment *new_seg = new SEC_segment;
+
+                    error = new_seg->read(this, in, version);
+                    if (!error) {
+                        if (last_outside_strand) last_outside_strand->set_next_segment(new_seg);
+                        last_outside_strand = 0;
+                        last_segment        = new_seg;
+
+                        if (!first_new_segment) first_new_segment = new_seg;
+                        
+                        expect = EXPECT_STRAND;
+                    }
+                    else delete new_seg;
+                }
+                else error = GBS_global_string("Expected SEGMENT (in '%s')", string_buffer);
+            }
+            else {
+                sec_assert(expect == EXPECT_STRAND);
+                if (strncmp(string_buffer, "STRAND={", 8) == 0) {
+                    SEC_helix_strand *new_strand = new SEC_helix_strand;
+
+                    error = new_strand->read(this, in, version);
+                    if (!error) {
+                        if (last_segment) last_segment->set_next_strand(new_strand);
+                        last_outside_strand = new_strand;
+                        last_segment        = 0;
+
+                        if (!first_new_strand) {
+                            first_new_strand = new_strand;
+                            if (!rootside_strand) set_fixpoint_strand(first_new_strand);
+                        }
+
+                        expect = EXPECT_SEGMENT;
+                    }
+                    else delete new_strand;
+                }
+                else error = GBS_global_string("Expected STRAND (in '%s')", string_buffer);
+            }
+        }
+        
+        if (!error && !first_new_segment) error = "Expected at least one SEGMENT in LOOP{}";
+        if (!error && !first_new_strand && !rootside_strand) error = "Expected at least one STRAND in root-LOOP{}";
+
+        if (!error) {
+            if (last_segment) {
+                sec_assert(last_segment->get_next_strand() == 0);
+                if (rootside_strand) {
+                    last_segment->set_next_strand(rootside_strand);
+                }
+                else { // root loop (since version 3)
+                    last_segment->set_next_strand(first_new_strand);
+                }
+            }
+            else {
+                sec_assert(last_outside_strand);
+                sec_assert(version<3); // version 3 loops always end with segment
+
+                sec_assert(!rootside_strand); // only occurs in root-loop
+                last_outside_strand->set_next_segment(first_new_segment);
+                
+            }
+        }
+        else {
+            if (rootside_strand) rootside_strand->set_next_segment(0); // unlink me from parent
+        }
+    }
+
+    if (error) set_fixpoint_strand(0);
+
+    return error;
+}
+
+GB_ERROR SEC_root::read_data(const char *input_string, const char *x_string_in) {
+    istringstream in(input_string);
+
+    delete xString;
+    xString = 0;
+
+    GB_ERROR error   = 0;
+    int      version = -1;      // version of structure string
+
+    sec_assert(db->canDisplay());
+
+    if (!error) {
+        const char *string_buffer  = sec_read_line(in);
+        double      firstLoopAngle = 0; 
+
+        error = sec_expect_keyword_and_ints(string_buffer, "VERSION", 7, &version, 0); // version 3++
+        if (error) { // version < 3!
+            version = 2;        // or less
+
+            int ignoreMaxIndex;
+            error = sec_expect_keyword_and_ints(string_buffer, "MAX_INDEX", 9, &ignoreMaxIndex, 0); // version 1+2
+            if (!error) {
+                string_buffer = sec_read_line(in);
+                error = sec_expect_keyword_and_doubles(string_buffer, "ROOT_ANGLE", 10, &firstLoopAngle, 0); // version 2 only
+                if (error) {
+                    firstLoopAngle += M_PI;
+                    version = 1; // version 1 had no ROOT_ANGLE entry
+                    error   = 0;
+                }
+                else {
+                    firstLoopAngle += M_PI;
+                    string_buffer = sec_read_line(in);
+                }
+            }
+        }
+        else {
+            if (version>DATA_VERSION) {
+                error = GBS_global_string("Structure has version %i, your ARB can only handle versions up to %i", version, DATA_VERSION);
+            }
+            else {
+                string_buffer = sec_read_line(in);
+            }
+        }
+
+        if (!error) { //   && db->canDisplay()
+            sec_assert(!xString);
+
+            size_t len     = strlen(x_string_in);
+            size_t exp_len = db->length();
+
+            if (len != exp_len && len != (exp_len+1)) {
+                error = GBS_global_string("Wrong xstring-length (found=%u, expected=%u-%u)",
+                                          len, exp_len, exp_len+1);
+            }
+            else {
+                xString = new XString(x_string_in, len, db->length());
+                size_t xlen = xString->getLength(); // internally one position longer than alignment length
+
+#if defined(DEBUG)
+                printf("x_string_in len=%u\nxlen=%u\nali_length=%u\n", strlen(x_string_in), xlen, db->length());
+#endif // DEBUG
+            }
+        }
+
+        set_root_loop(0);
+    
+        if (!error) {
+#if defined(DEBUG)
+            printf("Reading structure format (version %i)\n", version);
+#endif // DEBUG
+
+            if (strncmp(string_buffer, "LOOP={", 6) == 0) {
+                SEC_loop *root_loop = new SEC_loop(this); // , NULL, 0, 0);
+
+                set_root_loop(root_loop);
+                set_under_construction(true);
+                error = root_loop->read(NULL, in, version, firstLoopAngle);
+
+                if (!error) {
+                    set_under_construction(false); // mark as "constructed"
+                }
+                else {
+                    set_root_loop(0);
+                    delete root_loop;
+                }
+            }
+            else {
+                error = GBS_global_string("Expected root loop ('LOOP={'), not '%s'", string_buffer);
+            }
+        }
+    }
+
+    if (!error) {
+        if (version<3) fixStructureBugs(version);
+#if defined(CHECK_INTEGRITY)
+        check_integrity(CHECK_STRUCTURE);
+#endif // CHECK_INTEGRITY
+        if (version<3) {
+            relayout();
+            root_loop->fixAngleBugs(version);
+        }
     }
 
     return error;
 }
 
-GB_ERROR SEC_root::read_data(char *input_string, char *x_string_in, long current_ali_len) {
-    istringstream in(input_string);
+void SEC_helix::fixAngleBugs(int version) {
+    if (version<3) {
+        outsideLoop()->fixAngleBugs(version); // first correct substructure
 
-    int n = 0;
-    if (template_sequence != NULL) {
-        int i;
+        // versions<3 silently mirrored angles between strand and origin-loop
+        // to ensure that strand always points away from loop (and not inside).
+        // This correction was done during refresh and therefore not saved to the DB.
+        // Since version 3 no angles will be mirrored automatically, so we need to correct them here.
 
-        for (i=strlen(x_string_in)-1; i >= 0; i--) { // count number of x
-            if (x_string_in[i] == 'x') n++;
+        Vector loop2strand(rootsideLoop()->get_center(), get_fixpoint());
+        if (scalarProduct(loop2strand, get_abs_angle().normal()) < 0) { // < 0 means angle is an acute angle
+            printf("* Autofix acute angle (loop2strand=%.2f, abs=%.2f) of helix nr '%s'\n",
+                   Angle(loop2strand).radian(),
+                   get_abs_angle().radian(),
+                   get_root()->helixNrAt(strandToOutside()->startAttachAbspos()));
+            set_rel_angle(Angle(get_rel_angle()).rotate180deg());
         }
-        ap = new int[n];
-        ap_length = n;
-        int j=0;
-        int x_string_in_len = strlen(x_string_in);
-        for (i=0; i<x_string_in_len; i++) { // create x to absposition table
-            if (x_string_in[i] == 'x') {
-                ap[j] = i;
-                j++;
+    }
+}
+
+void SEC_loop::fixAngleBugs(int version) {
+    if (version<3) {
+        for (SEC_strand_iterator strand(this); strand; ++strand) {
+            if (strand->pointsToOutside()) {
+                strand->get_helix()->fixAngleBugs(version);
             }
         }
     }
+}
 
-    GB_ERROR error = 0;
+void SEC_root::fixStructureBugs(int version) {
+    if (version < 3) {
+        // old versions produced data structure with non-adjacent regions
+        SEC_base_part *start_part = root_loop->get_fixpoint_strand();
+        SEC_base_part *part       = start_part;
+        SEC_region    *reg        = part->get_region();
 
-    const char *string_buffer = sec_read_line(in);
-    error                     = sec_expect_keyword_and_ints(string_buffer, "MAX_INDEX", 9, &max_index, 0);
+        do {
+            SEC_base_part *next_part = part->next();
+            SEC_region    *next_reg  = next_part->get_region();
 
-    if (!error) {
-        if (max_index < current_ali_len) {
-            max_index = current_ali_len;
-        }
+            if (!are_adjacent_regions(reg, next_reg)) {
+                printf("* Fixing non-adjacent regions: %i..%i and %i..%i\n",
+                       reg->get_sequence_start(), reg->get_sequence_end(),
+                       next_reg->get_sequence_start(), next_reg->get_sequence_end());
 
-        string_buffer = sec_read_line(in);
-        error         = sec_expect_keyword_and_doubles(string_buffer, "ROOT_ANGLE", 10, &rootAngle, 0);
-        if (error) {
-            rootAngle = 0.0;
-            error     = 0; // ignore this error 
-            aw_message("Warning: Missing 'ROOT_ANGLE' entry (old structure format?)");
-        }
-        else {
-            string_buffer = sec_read_line(in);
-        }
-    }
-    
-    root_segment = 0;
-    
-    if (!error) {
-        if (strncmp(string_buffer, "LOOP={", 6) == 0) {
-            SEC_loop *root_loop = new SEC_loop(this, NULL, 0, 0);
-            error               = root_loop->read(NULL, in);
+                // known bug occurs at segment->strand transition..
+                sec_assert(part->parent()->getType() == SEC_LOOP);
 
-            if (!error) {
-                root_segment = root_loop->get_segment(); // root_segment of root_loop points to first segment of root-loop
-                update(0);
+                // .. and segment region ends one position too early
+                sec_assert(get_helix()->helixNr(reg->get_sequence_end()) == 0);
+                sec_assert(get_helix()->helixNr(next_reg->get_sequence_start()) != 0);
+
+                // make them adjacent
+                reg->set_sequence_portion(reg->get_sequence_start(), next_reg->get_sequence_start());
             }
-            else {
-                delete root_loop;
-            }
-        }
-        else {
-            error = GBS_global_string("Expected root loop ('LOOP={'), not '%s'", string_buffer);
-        }
 
+            part = next_part;
+            reg  = next_reg;
+        }
+        while (part != start_part);
     }
-
-    delete [] ap; ap = 0;
-
-    return error;
 }
