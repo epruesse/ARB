@@ -7,8 +7,6 @@
 #ifndef awtc_fast_aligner_hxx_included
 #define awtc_fast_aligner_hxx_included
 
-#include <BI_helix.hxx>
-
 #define INTEGRATED_ALIGNERS_TITLE "Integrated Aligners"
 
  typedef char* 	(*AWTC_get_consensus_func)(const char *species_name, int start_pos, int end_pos);
