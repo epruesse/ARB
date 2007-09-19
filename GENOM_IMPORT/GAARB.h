@@ -26,7 +26,7 @@
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
-#ifndef arbdbt_h_included
+#ifndef ARBDBT_H
 #include <arbdbt.h>
 #endif
 #ifndef awt_hxx_included
