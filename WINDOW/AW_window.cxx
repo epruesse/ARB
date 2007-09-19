@@ -2621,6 +2621,7 @@ int AW_window::create_mode(const char *id, const char *pixmap, const char *help_
     return p_w->number_of_modes;
 }
 
+
 // ------------------------
 //      Hotkey Checking
 // ------------------------
@@ -3211,8 +3212,7 @@ static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
     if (aww->get_root()->color_mode == 0) {     // mono colr
         device->clear(-1);
     }
-    device->shift_x(-xfig->minx);
-    device->shift_y(-xfig->miny);
+    device->set_offset(AW::Vector(-xfig->minx, -xfig->miny));
     xfig->print( device );
 }
 
