@@ -1,687 +1,502 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cmath>
+// =============================================================== //
+//                                                                 //
+//   File      : SEC_split.cxx                                     //
+//   Purpose   : split/unsplit loops (aka fold/unfold helices)     //
+//   Time-stamp: <Fri Sep/07/2007 09:03 MET Coder@ReallySoft.de>   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <iostream>
+#include <map>
 
-#include <arbdb.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
+#include "SEC_root.hxx"
+#include "SEC_drawn_pos.hxx"
+#include "SEC_iter.hxx"
 
-#include"secedit.hxx"
+using namespace std;
 
+enum AngleBufferMode {
+    BUFFER_ABSOLUTE_ANGLES, 
+    BUFFER_CENTER_RELATIVE, 
+};
 
+class AngleBuffer { // stores the absolute values of some SEC_oriented
+    typedef std::map<SEC_helix*, Angle> AngleMap;
 
-void SEC_loop::find(int pos, SEC_helix_strand *caller, SEC_segment **found_segment, SEC_helix_strand **found_strand) {
-    SEC_segment *segment_pointer;
-    SEC_helix_strand *strand_pointer;
-    SEC_region *region_pointer;
-    int seq_start, seq_end;
-    int is_root = 0;
+    AngleMap        angles;
+    AngleBufferMode mode;
 
-    if (caller == NULL) {
-        is_root = 1;
-        caller = segment->get_next_helix();
+    Angle loop2helix(SEC_loop *loop, SEC_helix *helix) {
+        return Angle(loop->get_center(), helix->strandAwayFrom(loop)->get_fixpoint());
     }
 
-    segment_pointer = caller->get_next_segment();
+public:
+    AngleBuffer(AngleBufferMode Mode) : mode(Mode) {}
 
-    while(1) {
-        region_pointer = segment_pointer->get_region();
-        seq_start = region_pointer->get_sequence_start();
-        seq_end = region_pointer->get_sequence_end();
-
-        if (segment_pointer->is_endings_segment()) { // special index-check for segment containing both ends of the sequence
-            // the endings-segment has to define a maximum index against which pos can be compared
-
-            // SEC_endings_segment *endings_segment_pointer = (SEC_endings_segment *) segment_pointer;
-            int max_index = root->get_max_index();
-            if (pos > max_index) {
-                aw_message("Index-overflow! aborting ...\n");
-                return;
-            }
-            if ((pos >= seq_start) && (pos <= max_index)) {
-                *found_segment = segment_pointer;
+    void store(SEC_helix *helix, SEC_loop *loop) {
+        switch (mode) {
+            case BUFFER_ABSOLUTE_ANGLES:
+                angles[helix] = helix->get_abs_angle();
                 break;
-            }
-            if ( (pos >= 0) && (pos < seq_end) ) {
-                *found_segment = segment_pointer;
+            case BUFFER_CENTER_RELATIVE:
+                angles[helix] = helix->get_abs_angle()-loop2helix(loop, helix);
                 break;
-            }
-            if (pos >= seq_end) {
-                if ( segment_pointer->is_it_element_of_next_strand(pos) ) {
-                    strand_pointer = segment_pointer->get_next_helix();
-                    region_pointer = strand_pointer->get_region();
-                    seq_start = region_pointer->get_sequence_start();
-                    seq_end = region_pointer->get_sequence_end();
-                    if( (pos >= seq_start) && (pos < seq_end) ) {
-                        *found_strand = strand_pointer;
-                        break;
-                    }
-                    strand_pointer = strand_pointer->get_other_strand();
-                    SEC_loop *loop_pointer = strand_pointer->get_loop();
-                    loop_pointer->find(pos, strand_pointer, found_segment, found_strand);
-                    break;
+        }
+    }
+
+    void set_angle(SEC_helix *helix, const Angle& angle) { angles[helix] = angle; }
+
+    void restore(SEC_helix *helix, SEC_loop *loop) {
+        switch (mode) {
+            case BUFFER_ABSOLUTE_ANGLES:
+                helix->set_abs_angle(angles[helix]);
+                break;
+            case BUFFER_CENTER_RELATIVE:
+                if (helix->hasLoop(loop)) {
+                    helix->set_abs_angle(angles[helix]+loop2helix(loop, helix));
                 }
-                else {
-                    strand_pointer = segment_pointer->get_next_helix();
-                    segment_pointer = strand_pointer->get_next_segment();
-                }
-            }
+                break;
+        }
+    }
+
+    void restoreAll(SEC_loop *loop) {
+        AngleMap::iterator e = angles.end();
+        for (AngleMap::iterator a = angles.begin(); a != e; ++a) {
+            restore(a->first, loop);
+        }
+    }
+
+    void remove(SEC_helix *helix) { angles.erase(helix); }
+
+    void storeAllHelices(SEC_loop *loop, SEC_helix *skip) {
+        for (SEC_strand_iterator strand(loop); strand; ++strand) {
+            SEC_helix *helix = strand->get_helix();
+            if (helix != skip) store(helix, loop);
+        }
+    }
+};
+
+
+// --------------------
+//      moving root
+// --------------------
+
+void SEC_loop::toggle_root(SEC_loop *old_root) {
+    // make this the new root loop
+    sec_assert(old_root != this);
+    SEC_helix *mid_helix = get_rootside_helix();
+
+    // set root to loop behind mid_helix
+    {
+        SEC_loop *behind = mid_helix->rootsideLoop();
+        if (behind != old_root) {
+            behind->toggle_root(old_root);
+            old_root = behind;
+        }
+    }
+
+    // store abs angles of all strands
+    Angle midAngle = mid_helix->get_abs_angle();
+
+    AngleBuffer thisOldAbs(BUFFER_ABSOLUTE_ANGLES);
+    AngleBuffer otherOldAbs(BUFFER_ABSOLUTE_ANGLES);
+
+    thisOldAbs.storeAllHelices(this, mid_helix);
+    otherOldAbs.storeAllHelices(old_root, mid_helix);
+    
+    // modify structure
+    get_root()->set_root_loop(this);
+    mid_helix->flip();
+    set_fixpoint_strand(mid_helix->strandAwayFrom(this));
+    old_root->set_fixpoint_strand(mid_helix->strandAwayFrom(old_root));
+
+    // calculate abs angles of loops and mid_helix
+    set_rel_angle(Angle(center, get_fixpoint()));
+    mark_angle_absolute();      // root-loop: rel == abs
+    mid_helix->set_abs_angle(midAngle.rotate180deg());
+    old_root->set_abs_angle(Angle(old_root->get_fixpoint(), old_root->get_center()));
+
+    // restore angles of other helices
+    thisOldAbs.restoreAll(this);
+    otherOldAbs.restoreAll(old_root);
+}
+
+void SEC_root::set_root(SEC_loop *loop) {
+    SEC_loop *old_root = get_root_loop();
+    if (loop != old_root) {
+        Vector new2old(loop->get_center(), old_root->get_center());
+        add_autoscroll(new2old);
+        loop->toggle_root(old_root);
+        recalc();
+    }
+}
+
+
+// ---------------------------------
+//      search segment by abspos
+// ---------------------------------
+
+SEC_base_part *SEC_root::find(int pos) {
+    SEC_helix_strand *start_strand = root_loop->get_fixpoint_strand();
+    SEC_helix_strand *strand       = start_strand;
+    do {
+        SEC_region *reg = strand->get_region();
+        if (reg->contains_seq_position(pos)) return strand;
+
+        SEC_helix_strand *other_strand = strand->get_other_strand();
+        SEC_region       *oreg         = other_strand->get_region();
+
+        SEC_segment *seg;
+        if (SEC_region(reg->get_sequence_end(), oreg->get_sequence_start()).contains_seq_position(pos)) {
+            seg = other_strand->get_next_segment();
         }
         else {
-            if( (pos >= seq_start) && (pos < seq_end) ) {
-                *found_segment = segment_pointer;
-                break;
+            if (oreg->contains_seq_position(pos)) return other_strand;
+            seg = strand->get_next_segment();
+        }
+
+        if (seg->get_region()->contains_seq_position(pos)) return seg;
+        strand = seg->get_next_strand();
+    }
+    while (strand != start_strand);
+
+    return 0;
+}
+
+inline SEC_segment *findSegmentContaining(SEC_root *root, int pos, GB_ERROR& error) {
+    SEC_segment *result = 0;
+    error               = 0;
+
+    SEC_base_part *found  = root->find(pos);
+    if (found) {
+        if (found->parent()->getType() == SEC_LOOP) {
+            result = static_cast<SEC_segment*>(found);
+        }
+        else {
+            error = GBS_global_string("Position %i not in a segment", pos);
+        }
+    }
+    else {
+        error = GBS_global_string("Position %i is outside allowed range", pos);
+    }
+    return result;
+}
+
+inline SEC_segment *findSegmentContaining(SEC_root *root, int start, int end, GB_ERROR& error) {
+    // end is position behind questionable position
+    error = 0;
+
+    SEC_segment *start_segment = findSegmentContaining(root, start, error);
+    if (start_segment) {
+        SEC_segment *end_segment;
+        if (end == start+1) {
+            end_segment = start_segment;;
+        }
+        else {
+            end_segment = findSegmentContaining(root, end-1, error);
+        }
+        
+        if (end_segment) {
+            if (end_segment != start_segment) {
+                error         = GBS_global_string("Positions %i and %i are in different segments", start, end);
+                start_segment = 0;
             }
-            if ( segment_pointer->is_it_element_of_next_strand(pos) ) { // is pos in strand or somewhere "on the other side" of the strand
-                strand_pointer = segment_pointer->get_next_helix();
-                region_pointer = strand_pointer->get_region();
-                seq_start = region_pointer->get_sequence_start();
-                seq_end = region_pointer->get_sequence_end();
-                if( (pos >= seq_start) && (pos < seq_end) ) { // pos is in strand
-                    *found_strand = strand_pointer;
-                    break;
-                }
-                strand_pointer = strand_pointer->get_other_strand();
-                SEC_loop *loop_pointer = strand_pointer->get_loop();
-                loop_pointer->find(pos, strand_pointer, found_segment, found_strand); // search on other side
-                break;
+        }
+    }
+    sec_assert(!start_segment != !error); // either start_segment or error
+    return start_segment;
+}
+
+// -------------------
+//      split loop
+// -------------------
+
+GB_ERROR SEC_root::split_loop(int start1, int end1, int start2, int end2) {
+    // end1/end2 are positions behind the helix-positions!
+    sec_assert(start1<end1);
+    sec_assert(start2<end2);
+
+    if (start1>start2) {
+        return split_loop(start2, end2, start1, end1);
+    }
+
+    GB_ERROR error = 0;
+    if (start2<end1) {
+        error = GBS_global_string("Helices overlap (%i-%i and %i-%i)", start1, end1, start2, end2);
+    }
+
+    if (!error) {
+        SEC_segment *seg1 = findSegmentContaining(this, start1, end1, error);
+        SEC_segment *seg2 = 0;
+
+        if (!error) seg2 = findSegmentContaining(this, start2, end2, error);
+
+        if (!error) {
+            sec_assert(seg1 && seg2);
+            SEC_loop *old_loop = seg1->get_loop();
+            if (old_loop != seg2->get_loop()) {
+                error = "Positions are in different loops (no tertiary structures possible)";
             }
             else {
-                strand_pointer = segment_pointer->get_next_helix();
-                segment_pointer = strand_pointer->get_next_segment();
-            }
-        }
-        // rw: removed the following else-branch to allow segments with length==0
-        //
-        // 	else {
-        // 	    sec_assert(0); // Invalid segment! Start and end of segment are equal!
-        // 	    aw_message("Your secondary structure has an internal error - please contact your system administrator", "OK");
-        // 	    return;
-        // 	}
-    }
-}
-
-
-void SEC_root::find(int pos, SEC_segment **found_segment, SEC_helix_strand **found_strand) {
-    SEC_loop *root_loop = root_segment->get_loop();
-
-    root_loop->find(pos, NULL, found_segment, found_strand);
-#if defined(DEBUG)
-    sec_assert(*found_segment || *found_strand); // pos should be somewhere (maybe pos is wrong?)
-#endif // DEBUG
-}
-
-
-int SEC_root::check_errors(int &start1, int &end1, int &start2, int &end2,
-                           SEC_segment **found_start_segment1, SEC_segment **found_start_segment2,
-                           SEC_segment **found_end_segment1, SEC_segment **found_end_segment2,
-                           SEC_helix_strand **found_strand, SEC_loop **old_loop) {
-
-    if ( (end1<=start1) ) {
-        aw_message("End-position of a selection must be greater than the start-position");
-        return(1);
-    }
-    if ( (end2<=start2) ) {
-        aw_message("End-position of a selection must be greater than the start-position");
-        return(1);
-    }
-
-    find(start1, found_start_segment1, found_strand);
-    if (*found_strand != NULL) {
-    found_in_strand:
-        aw_message("The position you were looking for was found in a strand, not in a segment!");
-        return(1);
-    }
-
-    find(end1-1, found_end_segment1, found_strand);
-    if (*found_strand != NULL) {
-        goto found_in_strand;
-    }
-
-    find(start2, found_start_segment2, found_strand);
-    if (*found_strand != NULL) {
-        goto found_in_strand;
-    }
-
-    find(end2-1, found_end_segment2, found_strand);
-    if (*found_strand != NULL) {
-        goto found_in_strand;
-    }
-
-    if ( (*found_start_segment1 != *found_end_segment1) || (*found_start_segment2 != *found_end_segment2) ) {
-        aw_message("Start and end of a selection must be within the same segment!");
-        return(1);
-    }
-
-    *old_loop = (*found_start_segment1)->get_loop();
-    if (*old_loop != (*found_start_segment2)->get_loop()) {
-        aw_message("Both selections must take place within the same loop!");
-        return(1);
-    }
-
-    //test, if endings would be in a strand after the split
-    if ((*found_start_segment1)->is_endings_segment()) {
-        SEC_region *segment_region = (*found_start_segment1)->get_region();
-        if( (end1 > 0) && (end1 < (segment_region->get_sequence_end())) ) {
-            if ( (start1==0) || ((start1 <= max_index) && (start1 >= (segment_region->get_sequence_start()))) ) {
-                aw_message("No valid selection! Ends of sequence would be in a strand!");
-                return(1);
-            }
-        }
-    }
-
-    if ((*found_start_segment2)->is_endings_segment()) {
-        SEC_region *segment_region = (*found_start_segment2)->get_region();
-        if( (end2 > 0) && (end2 < (segment_region->get_sequence_end())) ) {
-            if ( (start2 == 0) || ((start2 <= max_index) && (start2 >= (segment_region->get_sequence_start()))) ) {
-                aw_message("No valid selection! Ends of sequence would be in a strand!");
-                return(1);
-            }
-        }
-    }
-    return(0);
-
-}
-
-
-void SEC_root::split_separate_segments(SEC_segment *found_start_segment1, SEC_segment *found_start_segment2, SEC_loop *old_loop, int &start1, int &end1, int &start2, int &end2) {
-    SEC_region *region_pointer1 = found_start_segment1->get_region();
-    SEC_region *region_pointer2 = found_start_segment2->get_region();
-
-    //create new objects and initialize pointers
-    SEC_helix_strand *new_strand1 = new SEC_helix_strand(this, NULL, NULL, NULL, NULL, 0, 0);
-    SEC_helix_strand *new_strand2 = new SEC_helix_strand(this, NULL, NULL, NULL, NULL, 0, 0);
-    SEC_loop *new_loop = new SEC_loop(this, NULL, 0, 0);
-    SEC_helix *helix_info = new SEC_helix;
-
-    SEC_segment *new_segment_4_old_loop = new SEC_segment(this, 0, (found_start_segment1->get_next_helix()), old_loop);
-    SEC_segment *new_segment_4_new_loop = new SEC_segment(this, 0, (found_start_segment2->get_next_helix()), new_loop);
-    found_start_segment2->set_next_helix_strand(new_strand1);
-    found_start_segment1->set_next_helix_strand(new_strand2);
-    found_start_segment1->set_loop(new_loop);
-
-    new_strand1->set_other_strand(new_strand2);
-    new_strand2->set_other_strand(new_strand1);
-    new_strand1->set_next_segment(new_segment_4_old_loop);
-    new_strand2->set_next_segment(new_segment_4_new_loop);
-    new_strand1->set_loop(old_loop);
-    new_strand2->set_loop(new_loop);
-    new_strand1->set_helix_info(helix_info);
-    new_strand2->set_helix_info(helix_info);
-
-    //reset pointers of old structure-elements to point to new_loop
-    SEC_helix_strand *strand_pointer = new_segment_4_new_loop->get_next_helix();
-    SEC_segment *segment_pointer = strand_pointer->get_next_segment();
-    while (segment_pointer != found_start_segment1) {
-        strand_pointer->set_loop(new_loop);
-        segment_pointer->set_loop(new_loop);
-
-        strand_pointer = segment_pointer->get_next_helix();
-        segment_pointer = strand_pointer->get_next_segment();
-    }
-    strand_pointer->set_loop(new_loop);
-
-
-    //evt. setting segment-pointer of old_loop to point to new segment
-    new_loop->set_segment(new_segment_4_new_loop);
-    if ( ((old_loop->get_segment()) == found_start_segment1)) {
-        old_loop->set_segment(new_segment_4_old_loop);
-    }
-
-    //reset the region objects of the new and the old objects
-
-    region_pointer1 = found_start_segment1->get_region();
-    region_pointer2 = new_segment_4_old_loop->get_region();
-
-    region_pointer2->set_sequence_start(end1);
-    region_pointer2->set_sequence_end(region_pointer1->get_sequence_end());
-
-    //*****************
-    region_pointer2 = new_strand1->get_region();
-
-    region_pointer2->set_sequence_start(start2);
-    region_pointer2->set_sequence_end(end2);
-
-    //*****************
-    region_pointer1->set_sequence_end(start1);
-
-    //*****************
-    region_pointer1 = found_start_segment2->get_region();
-    region_pointer2 = new_segment_4_new_loop->get_region();
-
-    region_pointer2->set_sequence_start(end2);
-    region_pointer2->set_sequence_end(region_pointer1->get_sequence_end());
-
-    //*****************
-    region_pointer2 = new_strand2->get_region();
-
-    region_pointer2->set_sequence_start(start1);
-    region_pointer2->set_sequence_end(end1);
-
-    //*****************
-    region_pointer1->set_sequence_end(start2);
-
-    //initialize helix_info-object of new strand with information
-    helix_info->set_delta(-1);    //mark this strand, so the loop::update-method can compute the new delta
-    //max and min length have the standard settings. Both should be computed by counting the possible amount of
-    //bases on this part of the whole sequence
-
-}
-
-
-void SEC_root::split_same_segment1(SEC_segment *found_start_segment1, SEC_loop *old_loop, int &start1, int &end1, int &start2, int &end2) {
-    SEC_region *region_pointer1 = found_start_segment1->get_region();
-    SEC_region *region_pointer2;
-    SEC_loop *new_loop = new SEC_loop(this, NULL, 0, 0);
-    SEC_helix_strand *new_strand1 = new SEC_helix_strand(this, NULL, NULL, NULL, NULL, 0, 0);
-    SEC_helix_strand *new_strand2 = new SEC_helix_strand(this, NULL, NULL, NULL, NULL, 0, 0);
-    SEC_helix *helix_info = new SEC_helix;
-
-    SEC_segment *new_segment1_4_new_loop = new SEC_segment(this, 0, (found_start_segment1->get_next_helix()), new_loop);
-    SEC_segment *new_segment2_4_new_loop = new SEC_segment(this, 0, new_strand2, new_loop);
-
-    new_strand1->set_other_strand(new_strand2);
-    new_strand2->set_other_strand(new_strand1);
-    new_strand1->set_next_segment(found_start_segment1);
-    new_strand2->set_next_segment(new_segment1_4_new_loop);
-    new_strand1->set_loop(old_loop);
-    new_strand2->set_loop(new_loop);
-    new_strand1->set_helix_info(helix_info);
-    new_strand2->set_helix_info(helix_info);
-
-    new_loop->set_segment(new_segment1_4_new_loop);
-    old_loop->set_segment(found_start_segment1);
-
-    SEC_helix_strand *strand_pointer = found_start_segment1->get_next_helix();
-    SEC_segment *segment_pointer = strand_pointer->get_next_segment();
-    while (segment_pointer != found_start_segment1) {
-        strand_pointer->set_loop(new_loop);
-        segment_pointer->set_loop(new_loop);
-        strand_pointer=segment_pointer->get_next_helix();
-        segment_pointer=strand_pointer->get_next_segment();
-    }
-    strand_pointer->set_loop(new_loop);
-
-    strand_pointer->set_next_segment(new_segment2_4_new_loop);
-    found_start_segment1->set_next_helix_strand(new_strand1);
-
-
-
-    //reset regions of old and new objects
-    region_pointer1 = found_start_segment1->get_region();
-    region_pointer2 = new_segment1_4_new_loop->get_region();
-
-    region_pointer2->set_sequence_start(end1);
-    region_pointer2->set_sequence_end(region_pointer1->get_sequence_end());
-
-    //***************
-    region_pointer2 = new_segment2_4_new_loop->get_region();
-    SEC_region *region_pointer3 = strand_pointer->get_other_strand()->get_region();
-
-    region_pointer2->set_sequence_start(region_pointer3->get_sequence_end());
-    region_pointer2->set_sequence_end(start2);
-
-    //***************
-    region_pointer2 = new_strand1->get_region();
-
-    region_pointer2->set_sequence_start(start1);
-    region_pointer2->set_sequence_end(end1);
-
-    //***************
-    region_pointer2 = new_strand2->get_region();
-
-    region_pointer2->set_sequence_start(start2);
-    region_pointer2->set_sequence_end(end2);
-
-    //***************
-    region_pointer1->set_sequence_end(start1);
-    region_pointer1->set_sequence_start(end2);
-
-    //initialize helix_info-object of new strand with information
-    helix_info->set_delta(-1);    //mark this strand, so the loop::update-method can compute the new delta
-    //max and min length have the standard settings. Both should be computed by counting the possible amount of
-    //bases on this part of the whole sequence
-
-}
-
-
-void SEC_root::split_same_segment2(SEC_segment *found_start_segment1, SEC_loop *old_loop, int &start1, int &end1, int &start2, int &end2) {
-    SEC_region *region_pointer1 = found_start_segment1->get_region();
-    SEC_region *region_pointer2;
-    SEC_loop *new_loop = new SEC_loop(this, NULL, 0, 0);
-    SEC_helix_strand *new_strand1 = new SEC_helix_strand(this, NULL, NULL, NULL, NULL, 0, 0);
-    SEC_helix_strand *new_strand2 = new SEC_helix_strand(this, NULL, NULL, NULL, NULL, 0, 0);
-    SEC_helix *helix_info = new SEC_helix;
-
-    SEC_segment *new_segment_4_new_loop = new SEC_segment(this, 0, new_strand2, new_loop);
-    SEC_segment *new_segment_4_old_loop = new SEC_segment(this, 0, (found_start_segment1->get_next_helix()), old_loop);
-    found_start_segment1->set_next_helix_strand(new_strand1);
-
-    new_strand1->set_other_strand(new_strand2);
-    new_strand2->set_other_strand(new_strand1);
-    new_strand1->set_next_segment(new_segment_4_old_loop);
-    new_strand2->set_next_segment(new_segment_4_new_loop);
-    new_strand1->set_loop(old_loop);
-    new_strand2->set_loop(new_loop);
-    new_strand1->set_helix_info(helix_info);
-    new_strand2->set_helix_info(helix_info);
-
-    new_loop->set_segment(new_segment_4_new_loop);
-
-    //reset regions of old and new objects
-
-    region_pointer1 = found_start_segment1->get_region();
-    region_pointer2 = new_segment_4_old_loop->get_region();
-
-    region_pointer2->set_sequence_start(end2);
-    region_pointer2->set_sequence_end(region_pointer1->get_sequence_end());
-
-    //***************
-    region_pointer2 = new_segment_4_new_loop->get_region();
-
-    region_pointer2->set_sequence_start(end1);
-    region_pointer2->set_sequence_end(start2);
-
-    //***************
-    region_pointer2 = new_strand1->get_region();
-
-    region_pointer2->set_sequence_start(start1);
-    region_pointer2->set_sequence_end(end1);
-
-    //***************
-    region_pointer2 = new_strand2->get_region();
-
-    region_pointer2->set_sequence_start(start2);
-    region_pointer2->set_sequence_end(end2);
-
-    //***************
-    region_pointer1->set_sequence_end(start1);
-
-    //initialize helix_info-object of new strand with information
-    helix_info->set_delta(-1);    //mark this strand, so the loop::update-method can compute the new delta
-    //max and min length have the standard settings. Both should be computed by counting the possible amount of
-    //bases on this part of the whole sequence
-}
-
-
-
-void SEC_root::split_loop (int start1, int end1, int start2, int end2) {
-    SEC_root *root = this;
-    SEC_segment *found_start_segment1 = NULL;
-    SEC_segment *found_start_segment2 = NULL;
-    SEC_segment *found_end_segment1 = NULL;
-    SEC_segment *found_end_segment2 = NULL;
-    SEC_helix_strand *found_strand = NULL;
-    SEC_loop *old_loop = NULL;
-
-    if (check_errors(start1, end1, start2, end2,
-                     &found_start_segment1, &found_start_segment2,
-                     &found_end_segment1, &found_end_segment2,
-                     &found_strand, &old_loop)) {
-        return;
-    }
-
-    if (found_start_segment1 != found_start_segment2) {
-        split_separate_segments(found_start_segment1,  found_start_segment2, old_loop, start1, end1, start2, end2);
-    }
-    else {
-
-        if (start2>=start1) {
-            if (start2==start1) {
-                aw_message("The two selections are not separate!");
-                return;
-            }
-            if (start2<end1) {
-                aw_message("The two selections are not separate!");
-                return;
-            }
-            if (start2==end1) {
-                aw_message("Error! New loop would contain no data!");
-                return;
-            }
-        }
-        else {
-            if (end2>=start1) {
-                if (end2==start1) {
-                    aw_message("New loop would contain no data!");
-                    return;
+                SEC_loop *setRootTo = 0; // set root back afterwards?
+
+                if (old_loop->is_root_loop()) {
+                    set_root(seg1->get_next_strand()->get_destination_loop()); // another loop
+                    setRootTo = old_loop;
                 }
-                else {
-                    aw_message("Error! The two selections are not separate!");
-                    return;
+
+                AngleBuffer oldAngles(BUFFER_CENTER_RELATIVE);
+                oldAngles.storeAllHelices(old_loop, 0);
+
+                SEC_helix *new_helix = 0;
+                SEC_loop  *new_loop  = 0;
+                
+                if (seg1 == seg2) { // split one segment
+                    //                           \                                                   .
+                    //                            \ seg1     >>>                                     .
+                    //     seg1                    \       strand1     ....
+                    // ______________     =>        \_________________.    .   seg2
+                    //                               _________________.    .
+                    //                              /                  ....
+                    //                             /       strand2
+                    //                            / seg3     <<<
+                    //                           /
+                    //
+                    // seg1 is the old segment
+
+                    SEC_helix_strand *strand1 = seg1->split(start1, end1, &seg2);
+                    SEC_helix_strand *strand2 = 0;
+                    SEC_segment      *seg3    = 0;
+
+                    if (seg1->get_region()->contains_seq_position(start2)) {
+                        seg3    = seg2;
+                        strand2 = strand1;
+                        strand1 = seg1->split(start2, end2, &seg2);
+                    }
+                    else {
+                        sec_assert(seg2->get_region()->contains_seq_position(start2));
+                        strand2 = seg2->split(start2, end2, &seg3);
+                    }
+
+                    sec_assert(are_adjacent_regions(seg1->get_region(), strand1->get_region()));
+                    sec_assert(are_adjacent_regions(strand1->get_region(), seg2->get_region()));
+                    sec_assert(are_adjacent_regions(seg2->get_region(), strand2->get_region()));
+                    sec_assert(are_adjacent_regions(strand2->get_region(), seg3->get_region()));
+
+                    new_helix = new SEC_helix(this, strand2, strand1); // strands are responsible for memory
+
+                    strand1->set_next_segment(seg3);
+                    strand2->set_next_segment(seg2);
+
+                    new_loop = new SEC_loop(this);
+
+                    seg2->set_loop(new_loop);
+                    
+                    strand2->set_origin_loop(new_loop);
+                    new_loop->set_fixpoint_strand(strand2);
+                }
+                else { // split two segments
+                    //                                   \                       /
+                    //     seg1                           \ seg1     >>>        / 
+                    // ______________                      \       strand1     / seg3
+                    //                                      \_________________/      
+                    //                    =>     old_loop    _________________        new_loop
+                    // ______________                       /                 \                                     .   
+                    //     seg2                            /       strand2     \ seg2
+                    //                                    / seg4     <<<        \                                   .
+                    //                                   /                       \                                  .
+                    //
+                    // seg1 and seg2 are the old segments
+
+                    // maybe swap seg1/seg2 (to ensure fixpoint-strand stays in old loop)
+                    for (SEC_segment *s = seg1; s != seg2; ) {
+                        SEC_helix_strand *hs = s->get_next_strand();
+                        if (!hs->isRootsideFixpoint()) { // fixpoint-strand is between seg1 -> seg2
+                            // swap seg1<->seg2
+                            swap(seg1, seg2);
+                            swap(start1, start2);
+                            swap(end1, end2);
+                            break;
+                        }
+                        s = hs->get_next_segment();
+                    }
+
+                    SEC_segment *seg3;
+                    SEC_segment *seg4;
+                    SEC_helix_strand *strand1 = seg1->split(start1, end1, &seg3);
+                    SEC_helix_strand *strand2 = seg2->split(start2, end2, &seg4);
+
+                    new_helix = new SEC_helix(this, strand2, strand1);
+                    
+                    strand1->set_next_segment(seg4);
+                    strand2->set_next_segment(seg3);
+
+                    new_loop = new SEC_loop(this);
+
+                    for (SEC_segment *s = seg3; ; ) {
+                        s->set_loop(new_loop);
+                        SEC_helix_strand *h = s->get_next_strand();
+                        h->set_origin_loop(new_loop);
+                        if (s == seg2) break;
+                        s = h->get_next_segment();
+                    }
+
+                    new_loop->set_fixpoint_strand(strand2);
+                }
+
+                // set angles of new helix and new loop
+                new_helix->set_rel_angle(0); // wrong, but relayout fails otherwise
+                new_loop->set_rel_angle(0);
+
+                relayout(); 
+
+                // correct angles of other helices
+                oldAngles.restoreAll(new_loop);
+                oldAngles.set_angle(new_helix, Angle(0));
+                oldAngles.restoreAll(old_loop);
+
+                recalc();      
+                
+                if (setRootTo) {
+                    set_root(setRootTo); // restore root loop
                 }
             }
         }
+    }
+    return error;
+}
 
-        int decision = 0;
-        //special treating, otherwise the sequence can be doubled
-        if (found_start_segment1->is_endings_segment() && (end1 < start2)) {
-            SEC_helix_strand *strand_pointer = found_start_segment1->get_next_helix();
-            SEC_region *region_pointer = strand_pointer->get_region();
-            if ((region_pointer->get_sequence_start() >= end1) && (region_pointer->get_sequence_start() < start2)) {
-                decision = 1;
+// ----------------------
+//      fold a strand
+// ----------------------
+
+GB_ERROR SEC_root::unsplit_loop(SEC_helix_strand *remove_strand) {
+    // 
+    //          \ before[0]               / after[1]
+    //           \                       /
+    //            \        >>>>         /
+    //             \      strand[0]    /
+    //              \_________________/
+    //   loop[0]     _________________           loop[1]
+    //              /     strand[1]   \                             . 
+    //             /       <<<<        \                            .
+    //            /                     \                           .
+    //           /                       \                          .
+    //          / after[0]                \ before[1]
+    //
+    // The strands are removed and segments get connected.
+    // One loop is deleted.
+
+    GB_ERROR error = 0;
+    SEC_helix_strand *strand[2] = { remove_strand, remove_strand->get_other_strand() };
+    SEC_segment *before[2], *after[2];
+    SEC_loop    *loop[2];
+
+#if defined(CHECK_INTEGRITY)
+    check_integrity(CHECK_STRUCTURE);
+#endif // CHECK_INTEGRITY
+    
+    int s;
+    for (s = 0; s<2; s++) {
+        after[s]  = strand[s]->get_next_segment();
+        before[s] = strand[s]->get_previous_segment();
+        loop[s]   = strand[s]->get_origin_loop();
+
+        sec_assert(before[s]->get_loop() == loop[s]);
+        sec_assert(after[s]->get_loop() == loop[s]);
+    }
+
+    bool is_terminal_loop[2] = { before[0] == after[0], before[1] == after[1] };
+    int  i0      = -1;          // index of terminal loop (or -1)
+    bool unsplit = true;
+
+    if (is_terminal_loop[0]) {
+        if (is_terminal_loop[1]) {
+            error   = "You cannot delete the last helix";
+            unsplit = false;
+        }
+        else i0 = 0;
+    }
+    else {
+        if (is_terminal_loop[1]) i0 = 1;
+    }
+
+    if (unsplit) {
+        int del = i0 >= 0 ? i0 : 1; // index of loop which will be deleted
+
+        SEC_loop *setRootTo = 0; // set root back to afterwards? 
+
+        {
+            // move away root-loop to make things easy
+            SEC_loop *rootLoop = get_root_loop();
+            if (loop[0] == rootLoop || loop[1] == rootLoop) {
+                SEC_loop         *termLoop    = is_terminal_loop[0] ? loop[0] : loop[1];
+                SEC_helix_strand *toTerm      = strand[0]->get_helix()->strandTowards(termLoop);
+                SEC_helix_strand *toNextLoop  = toTerm->get_next_segment()->get_next_strand();
+                SEC_loop         *anotherLoop = toNextLoop->get_destination_loop();
+
+                sec_assert(anotherLoop != loop[0] && anotherLoop != loop[1]);
+
+                set_root(anotherLoop);
+                setRootTo = loop[1-del]; // afterwards set root back to non-deleted loop
+
+                // recalc();
             }
         }
 
-        if (decision) {
-            split_same_segment1(found_start_segment1, old_loop, start1, end1, start2, end2);
+        SEC_helix   *removed_helix = strand[0]->get_helix();
+        AngleBuffer  oldAngles(BUFFER_CENTER_RELATIVE);
+        oldAngles.storeAllHelices(loop[0], removed_helix);
+        oldAngles.storeAllHelices(loop[1], removed_helix);
+
+        if (i0 >= 0) { // one loop is terminal
+            // i0 and i1 are indexes 0 and 1 in picture above.
+            // The left loop (loop[i0]) will be removed.
+            int i1 = 1-i0; // index of non-terminal loop
+
+            before[i1]->mergeWith(after[i1], loop[i1]);
+
+            sec_assert(after[i0] == before[i0]);
+            delete after[i0];       // delete the segment of the terminal-loop 
         }
-        else {
-            split_same_segment2(found_start_segment1, old_loop, start1, end1, start2, end2);
+        else { // none of the loops is terminal
+            // keep loop[0], delete loop[1]
+
+            SEC_helix_strand *rootsideStrand = strand[0]->get_helix()->rootsideLoop()->get_rootside_strand();
+
+            before[1]->mergeWith(after[0], loop[0]);
+            before[0]->mergeWith(after[1], loop[0]);
+            // after[] segments are invalid now!
+
+            // loop over all segments in loop[1] and relink them to loop[0]
+            SEC_segment *seg = before[0];
+            while (seg != before[1]) {
+                SEC_helix_strand *loop1_strand = seg->get_next_strand();
+                loop1_strand->set_origin_loop(loop[0]);
+
+                seg = loop1_strand->get_next_segment();
+                seg->set_loop(loop[0]);
+            }
+
+            loop[0]->set_fixpoint_strand(rootsideStrand);
         }
-    }
-    root->update(0);
-    return;
-}
 
+        loop[del]->set_fixpoint_strand(NULL);
+        delete loop[del];
 
-void SEC_helix_strand::unlink(void) {
-    next_segment = NULL;
-    other_strand = NULL;
-    loop = NULL;
-    root = NULL;
+        for (s = 0; s<2; s++) strand[s]->unlink(false);
+        delete strand[0];       // delete both strands
 
-}
+        relayout();
+        
+        oldAngles.restoreAll(loop[1-del]);
+        recalc();  
 
-void SEC_segment::unlink(void) {
-    next_helix_strand = NULL;
-}
-
-
-SEC_segment * SEC_helix_strand::get_previous_segment(void) {
-
-    SEC_segment *segment_before;
-    SEC_helix_strand *strand_pointer = next_segment->get_next_helix();
-
-    if (strand_pointer == this) {
-        segment_before = next_segment;   //we are in a loop with only one segment
-    }
-    else {
-        while (strand_pointer != this) {
-            segment_before = strand_pointer->get_next_segment();
-            strand_pointer = segment_before->get_next_helix();
-        }
-    }
-    return segment_before;
-}
-
-
-void SEC_loop::update_caller(void){
-
-    //updates delta of a caller of the root loop if neccessary
-    SEC_helix_strand *caller = segment->get_next_helix();
-    SEC_helix *helix_info = caller->get_helix_info();
-
-    double delta = helix_info->get_delta();
-    double fixpoint_x = caller->get_fixpoint_x();
-    double fixpoint_y = caller->get_fixpoint_y();
-    double direction = (cos(delta)*(fixpoint_x - x_loop)) + (sin(delta)*(fixpoint_y - y_loop));
-
-    if (direction > 0) {
-        helix_info->set_delta(delta + M_PI);
+        if (setRootTo) set_root(setRootTo);
     }
 
-}
-
-
-int SEC_helix_strand::connect_many(SEC_segment *segment_before, SEC_segment *segment_after) {
-
-    SEC_region *region_before = segment_before->get_region();
-    SEC_region *region_after = segment_after->get_region();
-
-    //update sequence data
-    region_before->set_sequence_end(region_after->get_sequence_end());
-
-    //update pointers
-    SEC_helix_strand *strand_pointer = segment_after->get_next_helix();
-    segment_before->set_next_helix_strand(strand_pointer);
-    strand_pointer->set_loop(loop);
-    SEC_segment *segment_pointer = strand_pointer->get_next_segment();
-    strand_pointer = segment_pointer->get_next_helix();
-    while (strand_pointer != other_strand) {
-        segment_pointer->set_loop(loop);
-        strand_pointer->set_loop(loop);
-
-        segment_pointer = strand_pointer->get_next_segment();
-        strand_pointer = segment_pointer->get_next_helix();
-    }
-    segment_pointer->set_loop(loop);
-
-    //the same procedure for the other_strand
-    SEC_segment *other_segment_before = other_strand->get_previous_segment();
-    SEC_segment *other_segment_after = next_segment;
-
-    SEC_region *other_region_before = other_segment_before->get_region();
-    SEC_region *other_region_after = other_segment_after->get_region();
-
-    other_region_before->set_sequence_end(other_region_after->get_sequence_end());
-    other_segment_before->set_next_helix_strand(other_segment_after->get_next_helix());
-
-    loop->set_segment(segment_before);
-
-    if ((root->get_root_segment())->get_loop() == other_strand->loop) {
-        //if we are to delete the root-loop, we have to reset the segment pointer of loop
-        root->set_root_segment(segment_before);
-        //also we have to account for that the "caller" of a loop allways points TO a loop
-        loop->update_caller();
-    }
-    if ((root->get_root_segment())->get_loop() == loop) {
-        //afterwards we will delete next_segment. If root_segment points to it, then root_segment has to be reset
-        root->set_root_segment(segment_before);
-        loop->update_caller();
-    }
-
-    return 4;
-}
-
-
-int SEC_helix_strand::connect_one(SEC_segment *segment_before, SEC_segment *segment_after) {
-    SEC_region *region_before = segment_before->get_region();
-    SEC_region *region_after = segment_after->get_region();
-
-    segment_after = next_segment;
-    region_after = segment_after->get_region();
-
-    region_before->set_sequence_end(region_after->get_sequence_end());
-    segment_before->set_next_helix_strand(segment_after->get_next_helix());
-    loop->set_segment(segment_before);
-    if ((root->get_root_segment())->get_loop() == other_strand->loop) {
-        //if we are to delete the root-loop, we have to reset the segment pointer of loop
-        root->set_root_segment(segment_before);
-        //also we have to account for that the "caller" of a loop allways points TO a loop
-        loop->update_caller();
-    }
-    if ((root->get_root_segment())->get_loop() == loop) {
-        //afterwards we will delete next_segment. If root_segment points to it, then root_segment has to be reset
-        root->set_root_segment(segment_before);
-        loop->update_caller();
-    }
-
-    return 1;
-}
-
-
-int SEC_helix_strand::connect_segments_and_strand(void) {
-    SEC_segment *segment_before;
-    SEC_segment *segment_after;
-
-    segment_before = get_previous_segment();
-    segment_after = other_strand->get_next_segment();
-
-    if (segment_before == next_segment) {
-        //we are in a loop with only one segment, and the following loop has also got only one segment
-        //this is no valid structure
-        return 2;
-    }
-
-    if (segment_after->get_next_helix() != other_strand) {
-        return(connect_many(segment_before, segment_after));
-    }
-    else {   //when the following loop has only got one segment
-        return(connect_one(segment_before, segment_after));
-    }
-}
-
-
-
-void SEC_root::unsplit_loop(SEC_helix_strand *delete_strand) {
-    SEC_segment *segment_before = delete_strand->get_previous_segment();
-    SEC_helix_strand *other_strand = delete_strand->get_other_strand();
-    int decision;
-
-    if (segment_before == delete_strand->get_next_segment()) {  //if loop of delete_strand has got only one segment
-        decision = other_strand->connect_segments_and_strand();
-        decision++;
-    }
-    else {
-        decision = delete_strand->connect_segments_and_strand();
-    }
-
-    SEC_loop *other_loop;
-    SEC_segment *other_segment;
-    switch (decision) {
-        case 1:
-            other_loop = other_strand->get_loop();
-            other_loop->set_segment(NULL);
-            delete other_loop;
-            other_segment = other_strand->get_next_segment();
-            delete other_segment;
-            other_segment = delete_strand->get_next_segment();
-            delete other_segment;
-            delete_strand->unlink();
-            other_strand->unlink();
-            delete delete_strand;
-            break;
-        case 2:
-            other_loop = delete_strand->get_loop();
-            other_loop->set_segment(NULL);
-            delete other_loop;
-            other_segment = other_strand->get_next_segment();
-            delete other_segment;
-            other_segment = delete_strand->get_next_segment();
-            delete other_segment;
-            delete_strand->unlink();
-            other_strand->unlink();
-            delete delete_strand;
-            break;
-        case 3:
-            aw_message("The structure has to consist of at least two loops connected by one helix-strand");
-            break;
-        case 4:
-            other_loop = other_strand->get_loop();
-            other_loop->set_segment(NULL);
-            delete other_loop;
-            other_segment = delete_strand->get_next_segment();
-            delete other_segment;
-            other_segment = other_strand->get_next_segment();
-            delete other_segment;
-            delete_strand->unlink();
-            other_strand->unlink();
-            delete delete_strand;
-            break;
-    }
-
-    update(0);
+    return error;
 }
