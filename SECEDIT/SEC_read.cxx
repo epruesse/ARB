@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_read.cxx                                      //
 //   Purpose   : read structure from declaration string            //
-//   Time-stamp: <Fri Sep/07/2007 09:02 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Sep/19/2007 16:39 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -428,9 +428,8 @@ GB_ERROR SEC_root::read_data(const char *input_string, const char *x_string_in) 
             }
             else {
                 xString = new XString(x_string_in, len, db->length());
-                size_t xlen = xString->getLength(); // internally one position longer than alignment length
-
 #if defined(DEBUG)
+                size_t xlen = xString->getLength(); // internally one position longer than alignment length
                 printf("x_string_in len=%u\nxlen=%u\nali_length=%u\n", strlen(x_string_in), xlen, db->length());
 #endif // DEBUG
             }

@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_graphic.cxx                                   //
 //   Purpose   : GUI for structure window                          //
-//   Time-stamp: <Mon Sep/17/2007 11:30 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Sep/19/2007 16:41 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -72,8 +72,8 @@ AW_gc_manager SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
 static GB_ERROR change_constraints(SEC_base *elem) {
     GB_ERROR  error    = 0;
 
-    GB_CSTR constraint_type;
-    GB_CSTR element_type;
+    GB_CSTR constraint_type = 0;
+    GB_CSTR element_type    = 0;
 
     switch (elem->getType()) {
         case SEC_HELIX:
@@ -86,46 +86,48 @@ static GB_ERROR change_constraints(SEC_base *elem) {
             break;
         default:
             sec_assert(0);
+            error           = "Illegal element type";
             break;
     }
 
-    char *question = GBS_global_string_copy("%s-constraints for %s", constraint_type, element_type);
-    char *answer   = aw_input(question, 0, GBS_global_string("%.2f-%.2f", elem->minSize(), elem->maxSize()));
+    if (!error) {
+        char *question = GBS_global_string_copy("%s-constraints for %s", constraint_type, element_type);
+        char *answer   = aw_input(question, 0, GBS_global_string("%.2f-%.2f", elem->minSize(), elem->maxSize()));
 
-    while (answer) {
-        char *end;
-        double low = strtod(answer, &end);
+        while (answer) {
+            char *end;
+            double low = strtod(answer, &end);
 
-        if (end[0]!='-') {
-            error = "Wrong format! Wanted format is 'lower-upper'";
-        }
-        else {
-            double high = strtod(end+1, 0);
-
-            if (low<0 || high<0 || (low && high && low>high)) {
-                error = "Illegal values";
+            if (end[0]!='-') {
+                error = "Wrong format! Wanted format is 'lower-upper'";
             }
             else {
+                double high = strtod(end+1, 0);
+
+                if (low<0 || high<0 || (low && high && low>high)) {
+                    error = "Illegal values";
+                }
+                else {
 #if defined(DEBUG)
-                sec_assert(!low || !high || low<=high);
+                    sec_assert(!low || !high || low<=high);
 #endif // DEBUG
-                elem->setConstraints(low, high);
-                break;
+                    elem->setConstraints(low, high);
+                    break;
+                }
             }
+
+            sec_assert(error);
+
+            aw_message(error, "Ok");
+            char *retry = aw_input(question, 0, answer);
+            free(answer);
+        
+            answer = retry;
         }
 
-        sec_assert(error);
-
-        aw_message(error, "Ok");
-        char *retry = aw_input(question, 0, answer);
         free(answer);
-        
-        answer = retry;
+        free(question);
     }
-
-    free(answer);
-    free(question);
-
     return error;
 }
 

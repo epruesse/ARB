@@ -251,7 +251,7 @@ void SEC_root::paintEcoliPositions(AW_device *device) {
     paintPosAnnotation(device, SEC_GC_ECOLI, size_t(abspos), "1", true, true);
 
     const BI_ecoli_ref *ecoli = db->ecoli();
-    for (int ep = 99; ep < ecoli->base_count(); ep += 100) {
+    for (size_t ep = 99; ep < ecoli->base_count(); ep += 100) {
         abspos = ecoli->rel_2_abs(ep);
         paintPosAnnotation(device, SEC_GC_ECOLI, size_t(abspos), GBS_global_string("%u", ep+1), true, true);
     }
@@ -1107,8 +1107,9 @@ GB_ERROR SEC_root::paint(AW_device *device) {
             device->line(SEC_GC_CURSOR, cursor_dir, -1, 0, curAbs);
 
 
-            int cursor_gc;
-            int cursor_pos;
+            int cursor_gc  = -1;
+            int cursor_pos = -1;
+            
             switch (displayParams.show_curpos) {
                 case SHOW_ABS_CURPOS:
                     cursor_gc  = SEC_GC_CURSOR;
