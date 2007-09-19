@@ -3,7 +3,9 @@
 
 #define RNA3D_assert(cond) arb_assert(cond)
 
-
+#ifndef AWT_CANVAS_HXX
+#include <awt_canvas.hxx>
+#endif
 
 enum {
     RNA3D_GC_FOREGROUND,
@@ -49,23 +51,20 @@ enum {
     RNA3D_GC_MAX
 };
 
-class RNA3D_Graphics: public AWT_graphic {
+class RNA3D_Graphics: public AWT_nonDB_graphic {
 public:
 
     GBDATA     *gb_main;
     AW_root    *aw_root;
 
     RNA3D_Graphics(AW_root *aw_root, GBDATA *gb_main);
-    ~RNA3D_Graphics(void);
+    virtual ~RNA3D_Graphics(void);
 
     AW_gc_manager init_devices(AW_window *,AW_device *,AWT_canvas *ntw,AW_CL);
 
     void show(AW_device *device);
     void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
-    void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, char key_char,
-                 AW_event_type type, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
     void paint(AW_device *device);
-
 };
 
 #else
