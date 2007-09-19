@@ -24,6 +24,8 @@
 #include <awt_sel_boxes.hxx>
 #include <aw_preset.hxx>
 
+#include <ed4_extern.hxx>
+
 #include "ed4_class.hxx"
 #include "ed4_visualizeSAI.hxx"
 
@@ -390,10 +392,12 @@ void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def) {  // ---
     AW_awar *awar_defaults_created = aw_root->awar_int(AWAR_SAI_CLR_DEFAULTS_CREATED, 0,  aw_def);
 
     if (awar_defaults_created->read_int() == 0) {
-        addDefaultTransTable(aw_root, "numeric", "0;1;2;3;4;5;6;7;8;9;");
-        addDefaultTransTable(aw_root, "binary", ".;+;;;;;;;;;");
-        addDefaultTransTable(aw_root, "xstring", ";x;;;;;;;;;");
+        addDefaultTransTable(aw_root, "numeric",   "0;1;2;3;4;5;6;7;8;9;");
+        addDefaultTransTable(aw_root, "binary",    ".;+;;;;;;;;;");
         addDefaultTransTable(aw_root, "consensus", "=ACGTU;;acgtu;.;;;;;;;");
+        addDefaultTransTable(aw_root, "helix",     ";;<>;;;;;[];;;");
+        addDefaultTransTable(aw_root, "xstring",   ";x;;;;;;;;;");
+        addDefaultTransTable(aw_root, "gaps",      ";-.;;;;;;;;;");
 
         awar_defaults_created->write_int(1);
     }
@@ -495,7 +499,7 @@ static AW_selection_list *buildClrTransTabNamesList(AW_window *aws) {
     return id;
 }
 
-const char *getSaiColorString(AW_root *awr, int start, int end) {
+const char *ED4_getSaiColorString(AW_root *awr, int start, int end) {
     static int   seqBufferSize = 0;
     static char *saiColors     = 0;
     static int   lastStart     = -1;
@@ -715,7 +719,7 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
 
     aws = new AW_window_simple;
 
-    aws->init( aw_root, "VISUALIZE_SAI", "VISUALIZE SAI");
+    aws->init( aw_root, "VISUALIZE_SAI", "Visualize SAIs");
     aws->load_xfig("visualizeSAI.fig");
 
     aws->callback( AW_POPUP_HELP,(AW_CL)"visualizeSAI.hlp");
@@ -772,3 +776,6 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
     return (AW_window *)aws;
 }
 
+bool ED4_SAIs_visualized() {
+    return ED4_ROOT->visualizeSAI;
+}
