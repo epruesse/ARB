@@ -2,8 +2,8 @@
 #watch out for DEPOT and DEPOT2 [they are no longer in use]
 name=`date '+arbsrc_%Y_%m_%d__%H_%M.tgz'`
 
-( ( util/arb_srclst.pl > arbsrc.lst.tmp ) || \
-  ( echo "Failed to build arbsrc.lst" ; false ) \
+( ( util/arb_srclst.pl $* > arbsrc.lst.tmp ) || \
+  ( echo "Failed to build arbsrc.lst" ; echo "To save manually use 'make save2'"; false ) \
 ) && \
 sort < arbsrc.lst.tmp > arbsrc.lst && \
 rm -f arbsrc.lst.tmp && \
