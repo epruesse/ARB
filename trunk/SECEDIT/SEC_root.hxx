@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_root.hxx                                      //
 //   Purpose   : secondary structure representation                //
-//   Time-stamp: <Mon Sep/17/2007 11:30 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Sep/19/2007 16:36 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -777,20 +777,20 @@ private:
 public:
 
 #if defined(CHECK_INTEGRITY)
-    void recalc() {
-        calculate_coordinates();
-    }
-    void relayout() {
-        calculate_size();
-        calculate_coordinates();
-    }
-#else
     void recalc() {                     check_integrity(static_cast<SEC_CHECK_TYPE>(CHECK_STRUCTURE|CHECK_SIZE));
         calculate_coordinates();        check_integrity(CHECK_POSITIONS);
     }
     void relayout() {                   check_integrity(CHECK_STRUCTURE);
         calculate_size();               check_integrity(CHECK_SIZE);
         calculate_coordinates();        check_integrity(CHECK_POSITIONS);
+    }
+#else
+    void recalc() {
+        calculate_coordinates();
+    }
+    void relayout() {
+        calculate_size();
+        calculate_coordinates();
     }
 #endif
 
