@@ -8,6 +8,12 @@
 #include "RNA3D_Graphics.hxx"
 #include "RNA3D_Interface.hxx"
 
+#include <iostream>
+
+#include <aw_awars.hxx>
+#include <BI_helix.hxx>
+
+
 // --------------------------------------------------------------------------------
 // global data
 
@@ -405,8 +411,7 @@ void CursorPositionChanged_CB(AW_root *awr) {
 
     if(RNA3D->bEColiRefInitialised) {
         long iCursorPos = awr->awar(AWAR_CURSOR_POSITION)->read_int();
-        long EColiPos, dummy;
-        RNA3D->cStructure->EColiRef->abs_2_rel(iCursorPos, EColiPos, dummy);
+        long EColiPos   = RNA3D->cStructure->EColiRef->abs_2_rel(iCursorPos);
 
         if (!bCursorPosDispListCreated) {
             RNA3D->cStructure->GenerateCursorPositionDispList(EColiPos);
