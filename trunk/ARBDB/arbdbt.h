@@ -1,5 +1,9 @@
-#ifndef arbdbt_h_included
-#define arbdbt_h_included
+#ifndef ARBDBT_H
+#define ARBDBT_H
+
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
 
 #define GBT_SPECIES_INDEX_SIZE       10000
 #define GBT_SAI_INDEX_SIZE           1000
@@ -87,4 +91,7 @@ extern "C" {
 # endif
 
 #undef P_
-#endif /*arbdbt_h_included*/
+
+#else
+#error arbdbt.h included twice
+#endif 
