@@ -2,7 +2,7 @@
 #define ARBDB_H
 
 #ifndef _STDIO_H
-#error "arbdb.h needs stdio.h included"
+#include <stdio.h>
 #endif
 
 #define NOT4PERL
