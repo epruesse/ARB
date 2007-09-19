@@ -11,7 +11,6 @@
 #include <aw_window.hxx>
 #include <awt_tree.hxx>
 #include "dist.hxx"
-#include <BI_helix.hxx>
 #include <awt_nds.hxx>
 #include <awt_csp.hxx>
 

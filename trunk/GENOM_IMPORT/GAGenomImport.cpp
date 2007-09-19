@@ -13,7 +13,6 @@
 #include "GAGenBank.h"
 #include "GADDBJ.h"
 #include "GAEmbl.h"
-#include <arbdbt.h>
 #include <awt.hxx>
 
 GB_ERROR GI_importGenomeFile(GBDATA * gb_main, const char * file_name, const char * ali_name)
