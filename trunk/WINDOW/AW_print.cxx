@@ -152,13 +152,28 @@ int AW_device_print::text(int gc, const char *str,AW_pos x,AW_pos y, AW_pos alig
     return text_overlay(gc,str,opt_strlen,x,y,alignment,filteri,(AW_CL)this, cd1,cd2,0.0,0.0,AW_draw_string_on_printer);
 }
 
-int AW_device_print::box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
-    AW_pos q[8];
-    q[0] = x0;		q[1] = y0;
-    q[2] = x0 + width;	q[3] = y0;
-    q[4] = x0 + width;	q[5] = y0 + height;
-    q[6] = x0;		q[7] = y0 + height;
-    return this->filled_area(gc,4,q,filteri,cd1,cd2);
+int AW_device_print::box(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+    int res;
+    if (filled) {
+        AW_pos q[8];
+        
+        q[0] = x0;          q[1] = y0;
+        q[2] = x0 + width;  q[3] = y0;
+        q[4] = x0 + width;  q[5] = y0 + height;
+        q[6] = x0;          q[7] = y0 + height;
+        
+        res = this->filled_area(gc,4,q,filteri,cd1,cd2);
+    }
+    else {
+        AW_pos x1 = x0+width;
+        AW_pos y1 = y0+height;
+
+        res  = line(gc, x0, y0, x1, y0, filteri, cd1, cd2);
+        res |= line(gc, x0, y0, x0, y1, filteri, cd1, cd2);
+        res |= line(gc, x0, y1, x1, y1, filteri, cd1, cd2);
+        res |= line(gc, x1, y0, x1, y1, filteri, cd1, cd2);
+    }
+    return res;
 }
 
 int AW_device_print::circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
