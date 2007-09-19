@@ -97,6 +97,7 @@ primer_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
 primer_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+primer_design.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/awt.hxx

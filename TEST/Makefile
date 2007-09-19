@@ -36,6 +36,7 @@ D_awt_graphic_designer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 D_awt_graphic_designer.o: $(ARBHOME)/INCLUDE/arbdb.h
 D_awt_graphic_designer.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 D_awt_graphic_designer.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+D_awt_graphic_designer.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 D_awt_graphic_designer.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 D_awt_graphic_designer.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 D_awt_graphic_designer.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -53,6 +54,7 @@ D_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 D_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 D_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 D_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+D_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 D_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 D_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 D_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx

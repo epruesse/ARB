@@ -42,6 +42,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+SQ_functions.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -68,6 +69,7 @@ SQ_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+SQ_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt.hxx

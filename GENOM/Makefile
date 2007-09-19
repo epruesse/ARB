@@ -70,6 +70,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/arbdbt.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+EXP_interface.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -90,6 +91,7 @@ EXP_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+EXP_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -113,6 +115,7 @@ GEN_gene.o: $(ARBHOME)/INCLUDE/arbdb.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GEN_gene.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
@@ -130,6 +133,7 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -151,6 +155,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GEN_interface.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -182,6 +187,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GEN_map.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
@@ -201,6 +207,7 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/arbdb.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GEN_nds.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -217,5 +224,6 @@ GEN_tools.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GEN_tools.o: $(ARBHOME)/INCLUDE/arbdb.h
 GEN_tools.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GEN_tools.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+GEN_tools.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_tools.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_tools.o: $(ARBHOME)/INCLUDE/aw_window.hxx
