@@ -2,7 +2,8 @@
 #include "GAARB.h"
 #endif
 
-#warning fix class GAARB ctor and create_new_genome method - useless work done here
+// #warning fix class GAARB ctor and create_new_genome method - useless work done here
+// dontfix anything - obsolete code!
 
 gellisary::GAARB::GAARB(GBDATA * gb_main, const char * ali_name)
 {
