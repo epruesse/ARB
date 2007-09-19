@@ -12,6 +12,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.3  2007/09/19 13:32:51  westram
+ * - fixed command()
+ *
  * Revision 1.2  2002/12/17 10:36:40  westram
  * valgrinded
  *
@@ -54,7 +57,7 @@ class AWT_graphic_testbed  : public AWT_graphic {
         void info(AW_device *device, AW_pos x, AW_pos y,
                                 AW_clicked_line *cl, AW_clicked_text *ct);
 
-        void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod modifier, AW_key_code keycode, AW_event_type type,
+    void command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod modifier, AW_key_code keycode, char key_char, AW_event_type type,
                                 AW_pos x, AW_pos y,
                                 AW_clicked_line *cl, AW_clicked_text *ct);
 };

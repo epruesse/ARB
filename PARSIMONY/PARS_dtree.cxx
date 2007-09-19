@@ -306,7 +306,7 @@ void AWT_graphic_parsimony::show(AW_device *device)
 }
 
 
-void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, char key_char,
+void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
                                     AW_event_type type, AW_pos x, AW_pos y,
                                     AW_clicked_line *cl, AW_clicked_text *ct)
 {
@@ -489,7 +489,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
 #endif // NNI_MODES
 
         default:
-            AWT_graphic_tree::command(device,cmd,button, key_modifier, key_char, type, x, y, cl, ct);
+            AWT_graphic_tree::command(device,cmd,button, key_modifier, key_code, key_char, type, x, y, cl, ct);
             break;
     }
 
