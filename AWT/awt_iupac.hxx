@@ -1,5 +1,5 @@
-#ifndef awt_iupac_included
-#define awt_iupac_included
+#ifndef AWT_IUPAC
+#define AWT_IUPAC
 
 #ifndef ARBDB_H
 #include <arbdb.h>
@@ -23,4 +23,6 @@ inline int AWT_iupac2index(char c) { // calculate index for AWT_iupac_code
     return *(char*)0; // exception
 }
 
-#endif // awt_iupac_included
+#else
+#error awt_iupac.hxx included twice
+#endif // AWT_IUPAC
