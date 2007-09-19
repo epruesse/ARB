@@ -2,7 +2,7 @@
 //                                                                      //
 //   File      : AW_helix.hxx                                           //
 //   Purpose   : Wrapper for BI_helix + AW-specific functions           //
-//   Time-stamp: <Fri Mar/04/2005 16:50 MET Coder@ReallySoft.de>        //
+//   Time-stamp: <Sat Aug/25/2007 20:39 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in December 2004         //
@@ -36,7 +36,7 @@ public:
                     AW_bitset filter,
                     AW_CL cd1, AW_CL cd2);
 
-    bool is_enabled() const { return (enabled != 0) && (size>0); }
+    bool is_enabled() const { return (enabled != 0) && (size()>0); }
 };
 
 AW_window *create_helix_props_window(AW_root *awr, AW_cb_struct * /*owner*/awcbs);
