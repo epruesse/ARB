@@ -209,8 +209,7 @@ void AP_display::display(void)   // draw area
     {
         case NONE: return;
         case species_dpy:
-            device->shift_dy(off_dy);
-            device->shift_dx(off_dx);
+            device->shift(AW::Vector(off_dx, off_dy));
             ypos=0;
             for(y=vert_page_start;y<(vert_page_start+vert_page_size) &&
                     (y<total_cells_vert);y++)
@@ -229,12 +228,11 @@ void AP_display::display(void)   // draw area
                              0.0,-1,0,0);                          // alignment
                 ypos++;
             }
-            device->shift_dy(-off_dy);
-            device->shift_dx(-off_dx);
+            device->shift(-AW::Vector(off_dx, off_dy));
             break;
 
-        case matrix_dpy: device->shift_dx(off_dx);
-            device->shift_dy(off_dy);
+        case matrix_dpy:
+            device->shift(AW::Vector(off_dx, off_dy));
             xpos=0;
             for(x=horiz_page_start;x<(horiz_page_start+horiz_page_size) &&
                     (x<total_cells_horiz);x++)
@@ -253,7 +251,7 @@ void AP_display::display(void)   // draw area
                              xpos*cell_width,cell_height-off_dy-cell_offset,0.0,-1,0,0);
                 xpos++;
             }
-            device->shift_dx(-off_dx);
+            device->shift(AW::Vector(-off_dx, 0));
             // display vertical speciesnames
             ypos=0;
             for(y=vert_page_start;y<vert_page_start+vert_page_size;y++)
@@ -262,15 +260,14 @@ void AP_display::display(void)   // draw area
                              0,ypos*cell_height-cell_offset,0.0,-1,0,0);
                 ypos++;
             }
-            device->shift_dy(-off_dy);
+            device->shift(AW::Vector(0, -off_dy));
             break;
 
 
 
 
         case filter_dpy: {
-            device->shift_dy(off_dy);
-            device->shift_dx(off_dx);
+            device->shift(AW::Vector(off_dx, off_dy));
             ypos=0;
             for(y=vert_page_start;y<(vert_page_start+vert_page_size) &&
                     (y<total_cells_vert);y++)
@@ -323,15 +320,13 @@ void AP_display::display(void)   // draw area
                 }
                 xpos++;
             }
-            device->shift_dy(-off_dy);
-            device->shift_dx(-off_dx);
+            device->shift(-AW::Vector(off_dx, off_dy));
             break;
         }
 
         default:
             printf("\ndisplay: unknown display type (maybe not implemented yet)\n");
-    }  // switch
-    //  display_status(0,(AW_CL) main_win->get_root(),0);
+    }
 }
 
 

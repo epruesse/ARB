@@ -56,7 +56,7 @@ class AP_display_status
 public:
     AP_display_status(AW_device *);
     
-    void set_origin(void) { device->reset(); device->shift_x(font_width); device->shift_y(font_height); }
+    void set_origin(void) { device->reset(); device->set_offset(AW::Vector(font_width, font_height)); }
     void newline(void) { x_pos = 0; y_pos+=(y_pos>=max_y) ? 0.0 : 1.0; }
     AW_pos get_size(char c) { return((c=='x') ? max_x : max_y); }
     void set_cursor(AW_pos x,AW_pos y) { x_pos = (x<=max_x) ? x : x_pos; y_pos=(y<=max_y) ? y : y_pos; }
