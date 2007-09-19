@@ -59,6 +59,8 @@ enum PH_SAVE_TYPE {
     PH_SAVE_TABBED
 };
 
+class BI_helix;
+
 class PHMATRIX {
 private:
     friend class PHENTRY;
