@@ -857,15 +857,12 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                         case 'J': { // CTRL-J = Jump to opposite helix position
                             AW_helix *helix = ED4_ROOT->helix;
 
-                            if (size_t(seq_pos)<helix->size && helix->entries[seq_pos].pair_type) {
-                                int pairing_pos = helix->entries[seq_pos].pair_pos;
-
-                                e4_assert(helix->entries[pairing_pos].pair_pos==seq_pos);
-                                seq_pos = pairing_pos;
+                            if (helix->pairtype(seq_pos) != HELIX_NONE) {
+                                seq_pos = helix->opposite_position(seq_pos);
                                 center_cursor = true;
                             }
                             else {
-                                ad_err = GBS_global_string("No helix position");
+                                ad_err = GBS_global_string("No at helix position");
                             }
                             break;
                         }
@@ -1069,6 +1066,10 @@ void ED4_Edit_String::edit(ED4_work_info *info)
 {
     e4_assert(info->working_terminal != 0);
 
+    if (info->direction == 0) { // 5'<-3'
+        info->char_position++;
+    }
+
     info->out_seq_position = remap->screen_to_sequence(info->char_position);
     info->refresh_needed   = false;
     info->center_cursor    = false;
@@ -1190,6 +1191,13 @@ void ED4_Edit_String::edit(ED4_work_info *info)
             seq = 0;
         }
     }
+
+    if (info->direction == 0) {
+        info->char_position = remap->sequence_to_screen(info->out_seq_position);
+        info->char_position--;
+        info->out_seq_position = remap->screen_to_sequence(info->char_position);
+    }
+
     info->error = (char *)err;
 }
 
