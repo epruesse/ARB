@@ -4,12 +4,16 @@
 #include "RNA3D_Graphics.hxx"
 #include "RNA3D_StructureData.hxx"
 
-#include "../EDIT4/ed4_class.hxx"
-#include "../EDIT4/ed4_defs.hxx"  //for background colors
-#include "../EDIT4/ed4_visualizeSAI.hxx"
-
 #include <cerrno>
 #include <string>
+#include <iostream>
+#include <fstream>
+
+#include <arbdbt.h>
+#include <aw_awars.hxx>
+#include <ed4_extern.hxx>
+#include <BI_helix.hxx>
+
 
 #define COLORLINK (ED4_G_SBACK_0 - RNA3D_GC_SBACK_0)  // to link to the colors defined in primary editor ed4_defs.hxx
 #define SAICOLORS (ED4_G_CBACK_0 - RNA3D_GC_CBACK_0)
@@ -38,6 +42,8 @@ static void throw_IO_error(const char *filename) {
     string error = string("IO-Error: ")+strerror(errno)+" ('"+filename+"')";
     throw error;
 }
+
+GBDATA *Structure3D::gb_main = 0;
 
 Structure3D::Structure3D(void) {
     strCen          = new Vector3(0.0, 0.0, 0.0);
@@ -1495,12 +1501,11 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root * /*awr*/){
 
         if (iMapSearch) {
             // buildColorString builds the background color of each base
-            pSearchColResults = ED4_SeqTerminal->results().buildColorString(ED4_SeqTerminal, iStartPos, iEndPos); 
+            pSearchColResults = ED4_buildColorString(ED4_SeqTerminal, iStartPos, iEndPos); 
         }
         
         if(pSearchColResults) {
             int iColor = 0;
-            // extern OpenGLGraphics *cGraphics;
 
             glNewList(MAP_SEARCH_STRINGS_TO_STRUCTURE, GL_COMPILE);
             {
@@ -1509,13 +1514,12 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root * /*awr*/){
                 }
                 for (int i = iStartPos; i < iEndPos; i++) {
                     if(RNA3D->bEColiRefInitialised) {
-                        long absPos = (long) i;
-                        long EColiPos, dummy;
-                        EColiRef->abs_2_rel(absPos, EColiPos, dummy);
+                        long absPos   = (long) i;
+                        long EColiPos = EColiRef->abs_2_rel(absPos);
 
-                        for(Struct3Dinfo *t = start3D; t != NULL; t = t->next) 
-                            {
-                                if ((t->pos == EColiPos) && (pSearchColResults[i] >= 0)) 
+                        for(Struct3Dinfo *t = start3D; t != NULL; t = t->next)
+                        {
+                            if ((t->pos == EColiPos) && (pSearchColResults[i] >= 0))
                                     {
                                         iColor = pSearchColResults[i] - COLORLINK;
 
@@ -1540,13 +1544,12 @@ void Structure3D::MapSearchStringsToEcoliTemplate(AW_root * /*awr*/){
                 glBegin(GL_LINES);
                 for (int i = iStartPos; i < iEndPos; i++) {
                     if(RNA3D->bEColiRefInitialised) {
-                        long absPos = (long) i;
-                        long EColiPos, dummy;
-                        EColiRef->abs_2_rel(absPos, EColiPos, dummy);
+                        long absPos   = (long) i;
+                        long EColiPos = EColiRef->abs_2_rel(absPos);
 
-                        for(Struct3Dinfo *t = start3D; t != NULL; t = t->next) 
-                            {
-                                if ((t->pos == EColiPos) && (pSearchColResults[i] >= 0)) 
+                        for(Struct3Dinfo *t = start3D; t != NULL; t = t->next)
+                        {
+                            if ((t->pos == EColiPos) && (pSearchColResults[i] >= 0))
                                     {
                                         iColor = pSearchColResults[i] - COLORLINK;
 
@@ -1580,14 +1583,12 @@ void Structure3D::MapSaiToEcoliTemplate(AW_root *awr){
     if (ED4_SeqTerminal) { 
         const char *pSearchColResults = 0;
 
-        if (iMapSAI && ED4_ROOT->visualizeSAI) {
-            // returns 0 if sth went wrong
-            pSearchColResults = getSaiColorString(awr, iStartPos, iEndPos);
+        if (iMapSAI && ED4_SAIs_visualized()) {
+            pSearchColResults = ED4_getSaiColorString(awr, iStartPos, iEndPos); // returns 0 if sth went wrong
         }
 
         if(pSearchColResults) {
             int iColor = 0;
-            // extern OpenGLGraphics *cGraphics;
 
             glNewList(MAP_SAI_TO_STRUCTURE, GL_COMPILE);
             {
@@ -1596,13 +1597,12 @@ void Structure3D::MapSaiToEcoliTemplate(AW_root *awr){
                 }
                 for (int i = iStartPos; i < iEndPos; i++) {
                     if(RNA3D->bEColiRefInitialised) {
-                        long absPos = (long) i;
-                        long EColiPos, dummy;
-                        EColiRef->abs_2_rel(absPos, EColiPos, dummy);
+                        long absPos   = (long) i;
+                        long EColiPos = EColiRef->abs_2_rel(absPos);
 
-                        for(Struct3Dinfo *t = start3D; t != NULL; t = t->next) 
-                            {
-                                if ((t->pos == EColiPos) && (pSearchColResults[i] >= 0)) 
+                        for(Struct3Dinfo *t = start3D; t != NULL; t = t->next)
+                        {
+                            if ((t->pos == EColiPos) && (pSearchColResults[i] >= 0))
                                     {
                                         iColor = pSearchColResults[i-1] - SAICOLORS;
 
@@ -1623,7 +1623,7 @@ void Structure3D::MapSaiToEcoliTemplate(AW_root *awr){
 
             RNA3D->bMapSaiDispListCreated = true;
         }
-        else cout<<"getSaiColorString did not get the colors : SAI cannot be Visualized!"<<endl;                                                     
+        else cout<<"ED4_getSaiColorString did not get the colors : SAI cannot be Visualized!"<<endl;                                                     
     }
     else cout<<"Problem with initialization : SAI cannot be Visualized!"<<endl;  
 }
