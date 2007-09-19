@@ -284,24 +284,18 @@ void PT_build_species_hash(void){
             delete psg.ecoli;
             psg.ecoli = 0;
         }else{
-            psg.bi_ecoli = (void *)ref;
+            psg.bi_ecoli = ref;
         }
     }
 }
 
 
-long PT_abs_2_rel(long pos)
-{
+long PT_abs_2_rel(long pos) {
     if (!psg.ecoli) return pos;
-    long res,dummy;
-    ((BI_ecoli_ref *)psg.bi_ecoli)->abs_2_rel(pos,res,dummy);
-    return res;
+    return psg.bi_ecoli->abs_2_rel(pos);
 }
 
-long PT_rel_2_abs(long pos)
-{
+long PT_rel_2_abs(long pos) {
     if (!psg.ecoli) return pos;
-    long res;
-    ((BI_ecoli_ref *)psg.bi_ecoli)->rel_2_abs(pos,0,res);
-    return res;
+    return psg.bi_ecoli->rel_2_abs(pos);
 }
