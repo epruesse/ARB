@@ -4,6 +4,9 @@
 #ifndef AW_ROOT_HXX
 #include <aw_root.hxx>
 #endif
+#ifndef AW_POSITION_HXX
+#include <aw_position.hxx>
+#endif
 
 #if defined(DEBUG) && defined(DEBUG_GRAPHICS)
 // if you want flush() to be called after every motif command :
@@ -14,12 +17,13 @@
 
 // #define AW_PIXELS_PER_MM 1.0001 // stupid and wrong
 
+const AW_bitset AW_ALL_DEVICES = (AW_bitset)-1; 
 const AW_bitset AW_SCREEN      = 1;
 const AW_bitset AW_CLICK       = 2;
 const AW_bitset AW_CLICK_DRAG  = 4;
 const AW_bitset AW_SIZE        = 8;
-const AW_bitset AW_PRINTER     = 16;
-const AW_bitset AW_PRINTER_EXT = 32; // Handles ...
+const AW_bitset AW_PRINTER     = 16; // print/xfig-export
+const AW_bitset AW_PRINTER_EXT = 32; // (+Handles) use combined with AW_PRINTER only
 
 typedef enum {
     AW_DEVICE_SCREEN  = 1,
@@ -93,60 +97,97 @@ typedef enum {
     AW_cursor_overwrite
 } AW_cursor_type;
 
-class AW_clicked_line {
+
+// @@@ FIXME: elements of the following classes should go private! 
+
+class AW_clicked_element {
+public:
+    AW_CL   client_data1;
+    AW_CL   client_data2;
+    AW_BOOL exists;         // AW_TRUE if a drawn element was clicked, else AW_FALSE
+};
+
+class AW_clicked_line : public AW_clicked_element {
 public:
     AW_pos  x0,y0,x1,y1;
     AW_pos  height;
     AW_pos  length;
-    AW_CL   client_data1;
-    AW_CL   client_data2;
-    AW_BOOL exists;
+
+    double distanceTo(const AW::Position& click);
 };
 
-class AW_clicked_text {
+class AW_clicked_text : public AW_clicked_element {
 public:
-    AW_pos  x0, y0;         // start of text
-    AW_pos  alignment;
-    AW_pos  rotation;
-    AW_pos  distance;       // Entfernung zum Text, <0 => oberhalb, >0 => unterhalb
-    int     cursor;         // which letter was selected, from 0 to strlen-1
-    AW_CL   client_data1;
-    AW_CL   client_data2;
-    AW_BOOL exists;         // AW_TRUE if a text was clicked, else AW_FALSE
+    AW::Rectangle textArea;     // world coordinates of text
+    AW_pos        alignment;
+    AW_pos        rotation;
+    AW_pos        distance;     // y-Distance to text, <0 -> above, >0 -> below
+    AW_pos        dist2center;  // Distance to center of text
+    int           cursor;       // which letter was selected, from 0 to strlen-1
+    bool          exactHit;     // true -> real click on text (not only near text)
 };
+
+bool AW_getBestClick(const AW::Position& click, AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2);
 
 class AW_matrix {
-    friend class AW_device;
-    AW_pos xoffset,yoffset;
-    AW_pos scale;
+    AW::Vector offset;
+    AW_pos     scale;
+    AW_pos     unscale;         // = 1.0/scale
+
 public:
     AW_matrix(void) { this->reset();};
     virtual ~AW_matrix() {}
 
     void zoom(AW_pos scale);
+
     AW_pos get_scale() { return scale; };
+    AW_pos get_unscale() { return unscale; };
+    AW::Vector get_offset() const { return offset; }
+
     void rotate(AW_pos angle);
-    void shift_x(AW_pos xoff);
-    void shift_y(AW_pos yoff);
-    void shift_dx(AW_pos xoff);
-    void shift_dy(AW_pos yoff);
+
+public:
+    void set_offset(const AW::Vector& off) { offset = off*scale; }
+    void shift(const AW::Vector& doff) { offset += doff*scale; }
+
     void reset(void);
 
-    void transform(int x,int y,int& xout,int& yout) {
-        xout = int((x+ xoffset)*scale);
-        yout = int((y + yoffset)*scale);
+    double transform_size(const double& size) const { return size*scale; }
+    double rtransform_size(const double& size) const { return size*unscale; }
+
+    // transforming a Vector only scales the vector (a Vector has no position!)
+    AW::Vector transform (const AW::Vector& vec) const { return vec*scale; }
+    AW::Vector rtransform(const AW::Vector& vec) const { return vec*unscale; }
+
+    // transform a Position
+    AW::Position transform (const AW::Position& pos) const { return transform(AW::Vector(pos+offset)).endpoint(); }
+    AW::Position rtransform(const AW::Position& pos) const { return rtransform(AW::Vector(pos)).endpoint()-offset; }
+#if defined(DEVEL_RALF)
+#warning fix transformations
+    // @@@ I think this calculation is wrong, cause offset is already scaled
+    //     (same applies to old-style transform/rtransform below)
+#endif // DEVEL_RALF
+
+    AW::LineVector transform (const AW::LineVector& lvec) const { return AW::LineVector(transform(lvec.start()), transform(lvec.line_vector())); }
+    AW::LineVector rtransform(const AW::LineVector& lvec) const { return AW::LineVector(rtransform(lvec.start()), rtransform(lvec.line_vector())); }
+
+    // old style functions, not preferred:
+    void transform(int x,int y,int& xout,int& yout) const {
+        xout = int((x+offset.x())*scale);
+        yout = int((y+offset.y())*scale);
     }
-    void transform(AW_pos x,AW_pos y,AW_pos& xout,AW_pos& yout) {
-        xout = (x+ xoffset)*scale;
-        yout = (y + yoffset)*scale;
+    void transform(AW_pos x,AW_pos y,AW_pos& xout,AW_pos& yout) const {
+        xout = (x+offset.x())*scale;
+        yout = (y+offset.y())*scale;
     }
-    void rtransform(int x,int y,int& xout,int& yout) {
-        xout = int(x/scale - xoffset);
-        yout = int(y/scale - yoffset);
+
+    void rtransform(int x,int y,int& xout,int& yout) const {
+        xout = int(x*unscale - offset.x());
+        yout = int(y*unscale - offset.y());
     }
-    void rtransform(AW_pos x,AW_pos y,AW_pos& xout,AW_pos& yout) {
-        xout = x/scale - xoffset;
-        yout = y/scale - yoffset;
+    void rtransform(AW_pos x,AW_pos y,AW_pos& xout,AW_pos& yout) const {
+        xout = x*unscale - offset.x();
+        yout = y*unscale - offset.y();
     }
 };
 
@@ -205,23 +246,6 @@ public:
     virtual ~AW_clip() {}
 };
 
-class AW_clip_scale_stack {
-    friend class AW_device;
-
-    AW_rectangle clip_rect;
-
-    int top_font_overlap;
-    int bottom_font_overlap;
-    int left_font_overlap;
-    int right_font_overlap;
-
-    AW_pos xoffset,yoffset;
-    AW_pos scale;
-
-    class AW_clip_scale_stack *next;
-};
-
-
 struct AW_font_limits {
     short ascent;
     short descent;
@@ -256,13 +280,16 @@ struct AW_font_limits {
 
 #define AW_FONTINFO_CHAR_MIN       32
 #define AW_FONTINFO_CHAR_MAX       255
+
+#define AW_FONTINFO_CHAR_ASCII_MIN 32
 #define AW_FONTINFO_CHAR_ASCII_MAX 127
 
 class AW_font_information {
 public:
+    // maximas of ..
     AW_font_limits this_letter; // letter specified in call to get_font_information()
-    AW_font_limits max_letter;  // maximas of ASCII characters (AW_FONTINFO_CHAR_MIN..AW_FONTINFO_CHAR_ASCII_MAX)
-    AW_font_limits max_all_letter; // maximas of all   characters (AW_FONTINFO_CHAR_MIN..AW_FONTINFO_CHAR_MAX)
+    AW_font_limits max_letter;  // max of all ASCII characters (AW_FONTINFO_CHAR_ASCII_MIN..AW_FONTINFO_CHAR_ASCII_MAX)
+    AW_font_limits max_all_letter; // max of all characters (AW_FONTINFO_CHAR_MIN..AW_FONTINFO_CHAR_MAX)
 };
 
 
@@ -293,6 +320,7 @@ public:
     int  get_string_size(int gc,const  char *string,long textlen); // get the size of the string
 
     const AW_font_information *get_font_information(int gc, unsigned char c);
+    
     int get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes);
     
     AW_gc();
@@ -303,12 +331,16 @@ public:
  ***********                     The abstract class AW_device ...                        ************
  ***************************************************************************************************/
 
-class AW_device: public AW_matrix, public AW_gc {
+class AW_clip_scale_stack;
+
+class AW_device: public AW_matrix, public AW_gc
+{
     AW_device(const AW_device& other);
     AW_device& operator=(const AW_device& other);
+    
 protected:
     AW_clip_scale_stack *clip_scale_stack;
-    virtual         void  _privat_reset(void);
+    virtual         void  privat_reset(void);
 
 public:
     AW_device(AW_common *common); // get the device from  AW_window
@@ -319,8 +351,11 @@ public:
     /***************** The real Public Section ******************/
 
     void reset(void);
-    void get_area_size(AW_rectangle *rect); //read the frame size
-    void get_area_size(AW_world *rect); //read the frame size
+
+    void          get_area_size(AW_rectangle *rect); //read the frame size
+    void          get_area_size(AW_world *rect); //read the frame size
+    AW::Rectangle get_area_size();
+
     void set_filter( AW_bitset filteri ); //set the main filter mask
 
     void push_clip_scale(void); // push clipping area and scale
@@ -343,7 +378,7 @@ public:
 
     // * second level functions (maybe non virtual)
 
-    virtual int invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL cd1, AW_CL cd2); // returns 1 when invisible would be on screen
+    virtual bool invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL cd1, AW_CL cd2); // returns true if x/y is outside viewport (or if it would now be drawn undrawn)
     virtual int cursor(int gc, AW_pos x0,AW_pos y0, AW_cursor_type type, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
     virtual int zoomtext(int gc, const char *string, AW_pos x,AW_pos y, AW_pos height, AW_pos alignment,AW_pos rotation,AW_bitset filteri,AW_CL cd1,AW_CL cd2);
@@ -351,12 +386,48 @@ public:
     virtual int zoomtext4line(int gc, const char *string, AW_pos height, AW_pos lx0, AW_pos ly0, AW_pos lx1, AW_pos ly1, AW_pos alignmentx, AW_pos alignmenty, AW_bitset filteri,AW_CL cd1,AW_CL cd2);
 
 
-    virtual int box(int gc, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
-    virtual int circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
-    virtual int arc(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
+    virtual int box(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+    virtual int circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
+    virtual int arc(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
     virtual int filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
     // * third level functions (never virtual)
+
+    // convenience functions
+    
+    int line(int gc, const AW::Position& pos1, const AW::Position& pos2, AW_bitset filteri = (AW_bitset)-1, AW_CL cd1 = 0, AW_CL cd2 = 0) {
+        return line(gc, pos1.xpos(), pos1.ypos(), pos2.xpos(), pos2.ypos(), filteri, cd1, cd2);
+    }
+    int line(int gc, const AW::LineVector& Line, AW_bitset filteri = (AW_bitset)-1, AW_CL cd1 = 0, AW_CL cd2 = 0) {
+        return line(gc, Line.start(), Line.head(), filteri, cd1, cd2);
+    }
+    int text(int gc, const char *string, const AW::Position& pos,
+             AW_pos alignment  = 0.0, // 0.0 alignment left 0.5 centered 1.0 right justified
+             AW_bitset filteri = (AW_bitset)-1, AW_CL cd1 = 0, AW_CL cd2 = 0,
+             long opt_strlen = 0)
+    {
+        return text(gc, string, pos.xpos(), pos.ypos(), alignment, filteri, cd1, cd2, opt_strlen);
+    }
+    bool invisible(int gc, AW::Position pos, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+        return invisible(gc, pos.xpos(), pos.ypos(), filteri, cd1, cd2);
+    }
+    int box(int gc, AW_BOOL filled, const AW::Position& pos, const AW::Vector& size, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+        return box(gc, filled, pos.xpos(), pos.ypos(), size.x(), size.y(), filteri, cd1, cd2);
+    }
+    int box(int gc, AW_BOOL filled, const AW::Rectangle& rect, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+        return box(gc, filled, rect.upper_left_corner(), rect.diagonal(), filteri, cd1, cd2);
+    }
+    
+    int circle(int gc, AW_BOOL filled, const AW::Position& pos, AW_pos width, AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+        return circle(gc, filled, pos.xpos(), pos.ypos(), width, heigth, filteri, cd1, cd2);
+    }
+    int circle(int gc, AW_BOOL filled, const AW::Rectangle& rect, AW_bitset filteri, AW_CL cd1, AW_CL cd2) { // paint a circle/ellipsoid into a rectangle
+        return circle(gc, filled, rect.centroid(), rect.width(), rect.height(), filteri, cd1, cd2);
+    }
+    
+    int arc(int gc, AW_BOOL filled, const AW::Position& pos, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+        return arc(gc, filled, pos.xpos(), pos.ypos(), width, heigth, start_degrees, arc_degrees, filteri, cd1, cd2);
+    }
 
     // reduces any string (or virtual string) to its actual drawn size and calls the function f with the result
     int     text_overlay( int gc, const char *opt_string, long opt_strlen,  // either string or strlen != 0
@@ -370,6 +441,9 @@ public:
     // ********* X11 Device only ********
     virtual void    clear(AW_bitset filteri);
     virtual void    clear_part(AW_pos x, AW_pos y, AW_pos width, AW_pos height, AW_bitset filteri);
+
+    void clear_part(const AW::Rectangle&rect, AW_bitset filteri) { clear_part(rect.xpos(), rect.ypos(), rect.width(), rect.height(), filteri); }
+
     virtual void    clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
     virtual void    move_region( AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y );
     virtual void    fast(void);                                     // e.g. zoom linewidth off
