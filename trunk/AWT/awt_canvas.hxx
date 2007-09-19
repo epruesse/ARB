@@ -1,7 +1,20 @@
-#ifndef awt_canvas_hxx_included
-#define awt_canvas_hxx_included
+#ifndef AWT_CANVAS_HXX
+#define AWT_CANVAS_HXX
+
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+#ifndef AW_POSITION_HXX
+#include <aw_position.hxx>
+#endif
+#ifndef AW_WINDOW_HXX
+#include <aw_window.hxx>
+#endif
 
 class AWT_canvas;
+class AW_device;
+class AW_clicked_line;
+class AW_clicked_text;
 
 typedef enum {
     AWT_MODE_NONE,
@@ -23,8 +36,6 @@ typedef enum {
     AWT_MODE_RESET,
 
     AWT_MODE_KERNINGHAN,
-    AWT_MODE_INSERT,
-    AWT_MODE_REMOVE,
     AWT_MODE_NNI,
     AWT_MODE_OPTIMIZE,
     AWT_MODE_PROINFO,
@@ -60,6 +71,18 @@ protected:
 public:
     AWT_graphic_exports exports;
 
+    AWT_graphic();
+    virtual ~AWT_graphic();
+    
+    // pure virtual interface (methods implemented by AWT_nonDB_graphic)
+
+    virtual GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) = 0;
+    virtual GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) = 0;
+    virtual int  check_update(GBDATA *gb_main)                                     = 0; // check whether anything changed
+    virtual void update(GBDATA *gb_main)                                           = 0; // mark the database
+
+    // pure virtual interface (rest)
+    
     virtual void show(AW_device *device) = 0;
 
     virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) = 0;     /* double click */
@@ -69,21 +92,29 @@ public:
                 or AWT_resize_cb(aw_window, ntw, cd2);
                 The function may return a pointer to a preset window */
 
-    virtual GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2);
-    virtual GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2);
-    virtual int check_update(GBDATA *gb_main); // check wether anything changed
-    virtual void update(GBDATA *gb_main);       // mark the database
+    // implemented interface (most are dummies doing nothing): 
+
     virtual void push_transaction(GBDATA *gb_main);
     virtual void pop_transaction(GBDATA *gb_main);
 
     virtual void command(AW_device *device, AWT_COMMAND_MODE cmd,
-                         int button, AW_key_mod key_modifier, char key_char,
+                         int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
                          AW_event_type type, AW_pos x, AW_pos y,
                          AW_clicked_line *cl, AW_clicked_text *ct);
     virtual void text(AW_device *device, char *text);
+};
 
-    AWT_graphic(void);
-    virtual ~AWT_graphic(void);
+// a partly implementation of AWT_graphic 
+class AWT_nonDB_graphic : public AWT_graphic {
+public:
+    AWT_nonDB_graphic() {}
+    virtual ~AWT_nonDB_graphic();
+
+    // dummy functions, only spittings out warnings: 
+    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2);
+    GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2);
+    int  check_update(GBDATA *gb_main);
+    void update(GBDATA *gb_main); 
 };
 
 
@@ -128,30 +159,39 @@ public:
     AW_clicked_text clicked_text;
 
     void set_scrollbars();
+    void set_dragEndpoint(int x, int y);
 
     void set_horizontal_scrollbar_position(AW_window *aww, int pos);
     void set_vertical_scrollbar_position(AW_window *aww, int pos);
 
 
     /*************  Read only public section : ************/
-    int               drag_gc;
-    GBDATA           *gb_main;
-    AW_window        *aww;
-    AW_root          *awr;
-    AWT_COMMAND_MODE  mode;
-    AW_gc_manager     gc_manager;
+    GBDATA      *gb_main;
+    AW_window   *aww;
+    AW_root     *awr;
+    AWT_graphic *tree_disp;
+
+    AW_gc_manager gc_manager;
+    int           drag_gc;
+    
+    AWT_COMMAND_MODE mode;
 
     /** the real public section **/
 
     AWT_canvas(GBDATA *gb_main, AW_window *aww, AWT_graphic *awd, AW_gc_manager &gc_manager, const char *user_awar);
     // gc_manager is the preset window
-    AWT_graphic *tree_disp;
-    void    refresh();
-    void    recalc_size();      // Calculate the size of the sb
-    void    zoom_reset();       // Calculate all
-    void    tree_zoom(AW_device *device, AW_pos sx, AW_pos sy, AW_pos ex, AW_pos ey);
-    void    scroll(AW_window *aww, int delta_x, int delta_y, AW_BOOL dont_update_scrollbars = AW_FALSE);
-    void    set_mode(AWT_COMMAND_MODE mo);
+
+    void refresh();
+    void recalc_size();         // Calculate the size of the sb
+    void zoom_reset();          // Calculate all
+    void zoom(AW_device *device, bool zoomIn, const AW::Rectangle& wanted_part, const AW::Rectangle& current_part);
+
+    void set_mode(AWT_COMMAND_MODE mo) { mode = mo; }
+
+    void scroll(AW_window *aww, int delta_x, int delta_y, AW_BOOL dont_update_scrollbars = AW_FALSE);
+    void scroll(AW_window *aww, const AW::Vector& delta, AW_BOOL dont_update_scrollbars = AW_FALSE) {
+        scroll(aww, int(delta.x()), int(delta.y()), dont_update_scrollbars);
+    }
 };
 
 void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
