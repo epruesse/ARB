@@ -37,6 +37,5 @@
 
 void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def); // create awars
 AW_window  *ED4_createVisualizeSAI_window(AW_root *aw_root);
-const char *getSaiColorString(AW_root *aw_root, int start, int end); // used in ED4_text_terminal.cxx & SEC_paint.cxx to paint the SAI in the backgro
 
 #endif
