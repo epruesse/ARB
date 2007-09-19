@@ -2545,11 +2545,10 @@ GB_ERROR GBT_restore_marked_species(GBDATA *gb_main, const char *stored_marked) 
                     read species information
 ********************************************************************************************/
 
-GBDATA *GBT_read_sequence(GBDATA *gb_species,const char *use)
+GBDATA *GBT_read_sequence(GBDATA *gb_species, const char *aliname)
 {
-    GBDATA *gb_ali = GB_find(gb_species,use,0,down_level);
-    if (!gb_ali) return 0;
-    return GB_find(gb_ali,"data",0,down_level);
+    GBDATA *gb_ali = GB_find(gb_species, aliname, 0, down_level);
+    return gb_ali ? GB_find(gb_ali, "data", 0, down_level) : 0;
 }
 
 char *GBT_read_name(GBDATA *gb_species)
@@ -2598,80 +2597,71 @@ char *GBT_get_default_ref(GBDATA *gb_main)
 }
 
 
-GBDATA *GBT_get_alignment(GBDATA *gb_main,const char *use)
-{
-    GBDATA *gb_alignment_name;
-    GBDATA *gb_presets;
-    gb_presets = GB_search(gb_main,"presets",GB_CREATE_CONTAINER);
-    gb_alignment_name = GB_find(gb_presets,"alignment_name",use,down_2_level);
+GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname) {
+    GBDATA *gb_presets        = GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
+    GBDATA *gb_alignment_name = GB_find(gb_presets,"alignment_name",aliname,down_2_level);
+    
     if (!gb_alignment_name) {
-        GB_export_error("alignment '%s' not found",use);
+        GB_export_error("alignment '%s' not found", aliname);
         return 0;
     }
     return GB_get_father(gb_alignment_name);
 }
 
-long GBT_get_alignment_len(GBDATA *gb_main,const char *use)
-{
-    GBDATA *gb_alignment;
-    GBDATA *gb_alignment_len;
-    gb_alignment = GBT_get_alignment(gb_main,use);
-    if (!gb_alignment) return -1;
-    gb_alignment_len = GB_search(gb_alignment,"alignment_len",GB_FIND);
-    return GB_read_int(gb_alignment_len);
+long GBT_get_alignment_len(GBDATA *gb_main, const char *aliname) {
+    GBDATA *gb_alignment = GBT_get_alignment(gb_main, aliname);
+    if (gb_alignment) {
+        GBDATA *gb_alignment_len = GB_search(gb_alignment, "alignment_len", GB_FIND);
+        gb_assert(gb_alignment_len);
+        return GB_read_int(gb_alignment_len);
+    }
+    return -1;
 }
 
-GB_ERROR GBT_set_alignment_len(GBDATA *gb_main, const char *use,long new_len)
-{
-    GBDATA *gb_alignment;
-    GBDATA *gb_alignment_len;
-    GBDATA *gb_alignment_aligned;
-    GB_ERROR error = 0;
-    gb_alignment = GBT_get_alignment(gb_main,use);
-    if (!gb_alignment) return GB_export_error("Alignment '%s' not found",use);
-    gb_alignment_len = GB_search(gb_alignment,"alignment_len",GB_FIND);
-    gb_alignment_aligned = GB_search(gb_alignment,"aligned",GB_FIND);
-    GB_push_my_security(gb_main);
-    error = GB_write_int(gb_alignment_len,new_len);             /* write new len */
-    if (!error) error = GB_write_int(gb_alignment_aligned,0);       /* sequences will be unaligned */
-    GB_pop_my_security(gb_main);
+GB_ERROR GBT_set_alignment_len(GBDATA *gb_main, const char *aliname, long new_len) {
+    GB_ERROR  error        = 0;
+    GBDATA   *gb_alignment = GBT_get_alignment(gb_main, aliname);
+
+    if (gb_alignment) {
+        GBDATA *gb_alignment_len     = GB_search(gb_alignment,"alignment_len",GB_FIND);
+        GBDATA *gb_alignment_aligned = GB_search(gb_alignment,"aligned",GB_FIND);
+        
+        GB_push_my_security(gb_main);
+        error             = GB_write_int(gb_alignment_len,new_len); /* write new len */
+        if (!error) error = GB_write_int(gb_alignment_aligned,0); /* sequences will be unaligned */
+        GB_pop_my_security(gb_main);
+
+    }
+    else error = GB_export_error("Alignment '%s' not found", aliname);
     return error;
 }
 
-int GBT_get_alignment_aligned(GBDATA *gb_main,const char *use)
-{
-    GBDATA *gb_alignment;
-    GBDATA *gb_alignment_aligned;
-    gb_alignment = GBT_get_alignment(gb_main,use);
-    if (!gb_alignment) return -1;
-    gb_alignment_aligned = GB_search(gb_alignment,"aligned",GB_FIND);
-    return GB_read_int(gb_alignment_aligned);
-}
-
-char *GBT_get_alignment_type_string(GBDATA *gb_main,const char *use)
-{
-    GBDATA *gb_alignment;
-    GBDATA *gb_alignment_type;
-
-    gb_alignment = GBT_get_alignment(gb_main,use);
-    if (!gb_alignment) {
-        return 0;
+int GBT_get_alignment_aligned(GBDATA *gb_main, const char *aliname) {
+    GBDATA *gb_alignment = GBT_get_alignment(gb_main, aliname);
+    if (gb_alignment) {
+        GBDATA *gb_alignment_aligned = GB_search(gb_alignment, "aligned", GB_FIND);
+        gb_assert(gb_alignment_aligned);
+        return GB_read_int(gb_alignment_aligned);
     }
-    gb_alignment_type = GB_search(gb_alignment,"alignment_type",GB_FIND);
-    return GB_read_string(gb_alignment_type);
+    return -1;
 }
 
-GB_alignment_type GBT_get_alignment_type(GBDATA *gb_main, const char *use)
-{
-    char *ali_type;
-    GB_alignment_type at;
+char *GBT_get_alignment_type_string(GBDATA *gb_main, const char *aliname) {
+    GBDATA *gb_alignment = GBT_get_alignment(gb_main, aliname);
+    if (gb_alignment) {
+        GBDATA *gb_alignment_type = GB_search(gb_alignment,"alignment_type",GB_FIND);
+        gb_assert(gb_alignment_type);
+        return GB_read_string(gb_alignment_type);
+    }
+    return 0;
+}
 
-    ali_type = GBT_get_alignment_type_string(gb_main, use);
-    at = GB_AT_UNKNOWN;
+GB_alignment_type GBT_get_alignment_type(GBDATA *gb_main, const char *aliname) {
+    char              *ali_type = GBT_get_alignment_type_string(gb_main, aliname);
+    GB_alignment_type  at       = GB_AT_UNKNOWN;
 
     if (ali_type) {
-        switch(ali_type[0])
-        {
+        switch(ali_type[0]) {
             case 'r': if (strcmp(ali_type, "rna")==0) at = GB_AT_RNA; break;
             case 'd': if (strcmp(ali_type, "dna")==0) at = GB_AT_DNA; break;
             case 'a': if (strcmp(ali_type, "ami")==0) at = GB_AT_AA; break;
@@ -3259,6 +3249,11 @@ GBDATA *GBT_search_float(GBDATA *gb_main, const char *awar_name, double def){
     GB_pop_transaction(gb_main);
     return gbd;
 }
+
+#if defined(DEVEL_RALF)
+#warning give the following functions meaningful names!
+/* e.g. GBT_readOrCreate_string() etc. */
+#endif /* DEVEL_RALF */
 
 char *GBT_read_string2(GBDATA *gb_main, const char *awar_name, const char *def)
 {
