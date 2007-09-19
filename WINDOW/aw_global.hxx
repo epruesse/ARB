@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : aw_global.hxx                                          // 
 //    Purpose   : global functions from WINDOWS lib                      // 
-//    Time-stamp: <Wed Mar/28/2007 19:04 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Sat Aug/18/2007 21:47 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in June 2004             // 
@@ -14,6 +14,10 @@
 
 #ifndef AW_GLOBAL_HXX
 #define AW_GLOBAL_HXX
+
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
 
 void aw_create_selection_box_awars(AW_root *awr, const char *awar_base,
                                    const char *directory, const char *filter, const char *file_name,
