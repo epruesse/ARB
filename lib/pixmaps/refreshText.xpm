@@ -1,6 +1,6 @@
 /* XPM */ 
 static const unsigned char * refreshtext_xpm[] = {
-"70 19 8 1",
+"70 19 8 1", 
 " 	c None",
 "!	c black",
 "#	c #616161",
