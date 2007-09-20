@@ -1,5 +1,7 @@
-// OpenGl Header files
+// fix missing dependencies on Debian-based systems
+#include <Xm/Xm.h>
 
+// OpenGl Header files
 #define OPEN_GL_WAY_TO_INCLUDE 3
 // ------------------------------
 #if (OPEN_GL_WAY_TO_INCLUDE == 1)
@@ -11,7 +13,7 @@
 #error include wrapper define for glx.h already set -- next include will do nothing
 #endif
 // i have not included this file in my version. I replaced glxew.h with glx.h when
-// you mentioned that it was not compiling on your machine and checked in to the repository. --yadhu 
+// you mentioned that it was not compiling on your machine and checked in to the repository. --yadhu
 //#include <GL/glx.h>
 #endif // OPEN_GL_WAY_TO_INCLUDE == 1
 // ------------------------------
@@ -35,7 +37,7 @@
 // @@@ HACK @@@
 // including glew.h does define the include wrapper used by glx.h
 // so including glx.h does includes nothing and symbols are missing.
-// Undefining it here does the job: 
+// Undefining it here does the job:
 #undef __GLX_glx_h__
 #include <GL/glx.h>
 #endif // OPEN_GL_WAY_TO_INCLUDE == 3
