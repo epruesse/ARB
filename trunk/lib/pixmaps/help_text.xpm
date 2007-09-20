@@ -1,6 +1,6 @@
 /* XPM */ 
 static const unsigned char * help_text_xpm[] = {
-"70 18 7 1",
+"70 18 7 1", 
 " 	c None",
 "!	c black",
 "#	c #008000",
