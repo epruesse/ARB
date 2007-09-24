@@ -900,7 +900,6 @@ GB_ERROR GBT_insert_character(GBDATA *Main,char *alignment_name, long pos, long 
                     some tree write functions
 ********************************************************************************************/
 
-
 GB_ERROR GBT_delete_tree(GBT_TREE *tree)
      /* frees a tree only in memory (not in the database)
         to delete the tree in Database
@@ -1216,10 +1215,14 @@ GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, 
     }
     else if (c=='L') {
         node->is_leaf = GB_TRUE;
-        p1 = (char *)strchr(*data,1);
-        *p1 = 0;
+        p1            = (char *)strchr(*data,1);
+
+        gb_assert(p1);
+        gb_assert(p1[0] == 1);
+
+        *p1        = 0;
         node->name = (char *)GB_STRDUP(*data);
-        *data = p1+1;
+        *data      = p1+1;
     }
     else {
         if (!c) {
@@ -1239,11 +1242,15 @@ GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, 
     make sure that the first eight members members of your
     structure looks exectly like GBT_TREE, You should send the size
     of your structure ( minimum sizeof GBT_TREE) to this
-    function. If size < 0 then the tree is allocated as just one
-    big piece of memery, which can be freed by free((char
-    *)root_of_tree) + deleting names or GBT_delete_tree. tree_name
-    is the name of the tree in the db return NULL if any error
-    occur */
+    function.
+
+    If size < 0 then the tree is allocated as just one big piece of memery,
+    which can be freed by free((char *)root_of_tree) + deleting names or
+    by GBT_delete_tree.
+
+    tree_name is the name of the tree in the db
+    return NULL if any error occur
+*/
 
 static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, int structure_size, int size, GB_ERROR *error) {
     GBDATA   **gb_tree_nodes;
