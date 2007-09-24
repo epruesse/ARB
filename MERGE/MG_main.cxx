@@ -239,7 +239,7 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled)
 
     awm->button_length(30);
 
-    if (GB_read_clients(gb_merge)>=0){      // There is no reason to rename an newly created database
+    if (GB_read_clients(gb_merge)>=0){ // merge 2 database
         awm->at("alignment");
         awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_alignment_cb);
         awm->help_text("mg_alignment.hlp");
@@ -249,6 +249,9 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled)
         awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_names_cb);
         awm->help_text("mg_names.hlp");
         awm->create_button("CHECK_NAMES", "Check Names ...");
+    }
+    else { // export into new database
+        MG_set_renamed(true, aw_root, "Not necessary"); // a newly created database needs no renaming
     }
 
     awm->at("species");
