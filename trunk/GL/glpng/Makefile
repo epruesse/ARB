@@ -8,7 +8,7 @@ $(MAIN): $(C_OBJECTS)
 	$(AR) $(MAIN) $(C_OBJECTS)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES)
+	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(C_OBJECTS) *.a

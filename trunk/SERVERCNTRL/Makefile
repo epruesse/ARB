@@ -4,9 +4,9 @@ OBJECTS = servercntrl.o
 $(MAIN): $(OBJECTS)
 	$(AR) $(@) $(OBJECTS)
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES)
+	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
+	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 proto:
 	../MAKEBIN/aisc_mkpt -A -P -C $(OBJECTS:.o=.c) >servercntrl.h.tmp

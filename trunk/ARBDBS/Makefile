@@ -9,9 +9,9 @@ OBJECTS = $(GB_O) $(GB_T) $(GB_PP) $(GB_X)
 $(MAIN): $(OBJECTS)
 	$(AR) $(MAIN) $(OBJECTS)
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES)
+	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
+	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a

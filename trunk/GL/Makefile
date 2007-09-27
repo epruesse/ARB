@@ -63,6 +63,7 @@ clean: $(ARCHS:.dummy=.clean)
 		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
 		"XHOME = $(XHOME)" "XLIBS = $(XLIBS)" \
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
+		"POST_COMPILE  = $(POST_COMPILE)" \
 		"ARB  = yes" \
 		"MAIN = $(@F:.dummy=.a)"
 

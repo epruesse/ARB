@@ -19,19 +19,19 @@ BINARIES = $(addprefix $(ARBHOME)/bin/,$(TOOLS))
 all: $(BINARIES)
 
 $(ARBHOME)/bin/arb_probe: arb_probe.cxx
-	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a $(LIB2)
+	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a $(LIB2) $(POST_COMPILE)
 
 $(ARBHOME)/bin/arb_newick_2_otb: arb_newick_2_otb.cxx
-	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) ../CAT/CAT.a ../LIBLINK/libARBDB.a $(SYSLIBS)
+	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) ../CAT/CAT.a ../LIBLINK/libARBDB.a $(SYSLIBS) $(POST_COMPILE)
 
 $(ARBHOME)/bin/arb_dnarates: arb_dnarates.c
-	$(ACC) $(cflags) -o $@ $< $(AINCLUDES) $(LIB)
+	$(ACC) $(cflags) -o $@ $< $(AINCLUDES) $(LIB) $(POST_COMPILE)
 
 $(ARBHOME)/bin/%: %.c
-	$(ACC) $(cflags) -o $@ $< $(AINCLUDES)
+	$(ACC) $(cflags) -o $@ $< $(AINCLUDES) $(POST_COMPILE)
 
 $(ARBHOME)/bin/%: %.cxx
-	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) $(LIB2)
+	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) $(LIB2) $(POST_COMPILE)
 
 
 clean:
