@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Tue May/15/2007 15:20 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Sep/27/2007 15:24 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -55,13 +55,9 @@ const char *awt_itemtype_names[AWT_IT_TYPES+1] =
 
 awt_input_mask_id_list awt_input_mask_global::global_ids; // stores global ids
 
-// ####################################
-// ####################################
-// ###                              ###
-// ##          global awars          ##
-// ###                              ###
-// ####################################
-// ####################################
+// ---------------------
+//      global awars
+// ---------------------
 
 #define AWAR_INPUT_MASK_BASE   "tmp/inputMask"
 #define AWAR_INPUT_MASK_NAME   AWAR_INPUT_MASK_BASE"/name"
@@ -73,9 +69,6 @@ awt_input_mask_id_list awt_input_mask_global::global_ids; // stores global ids
 
 static bool global_awars_created = false;
 
-//  --------------------------------------------------------------
-//      void AWT_input_mask_create_global_awars(AW_root *awr)
-//  --------------------------------------------------------------
 static void create_global_awars(AW_root *awr) {
     awt_assert(!global_awars_created);
     awr->awar_string(AWAR_INPUT_MASK_NAME, "new");
@@ -86,21 +79,14 @@ static void create_global_awars(AW_root *awr) {
     global_awars_created = true;
 }
 
-// #########################################################
-// #########################################################
-// ###                                                   ###
-// ##          Callbacks from database and awars          ##
-// ###                                                   ###
-// #########################################################
-// #########################################################
+// ------------------------------------------
+//      Callbacks from database and awars
+// ------------------------------------------
 
 static bool in_item_changed_callback  = false;
 static bool in_field_changed_callback = false;
 static bool in_awar_changed_callback  = false;
 
-//  --------------------------------------------------------------------------------------------------
-//      static void item_changed_cb(GBDATA *gb_item, int *cl_awt_linked_to_item, GB_CB_TYPE type)
-//  --------------------------------------------------------------------------------------------------
 static void item_changed_cb(GBDATA */*gb_item*/, int *cl_awt_linked_to_item, GB_CB_TYPE type) {
     if (!in_item_changed_callback) { // avoid deadlock
         in_item_changed_callback      = true;
@@ -121,9 +107,6 @@ static void item_changed_cb(GBDATA */*gb_item*/, int *cl_awt_linked_to_item, GB_
     }
 }
 
-//  --------------------------------------------------------------------------------------------------
-//      static void field_changed_cb(GBDATA *gb_item, int *cl_awt_input_handler, GB_CB_TYPE type)
-//  --------------------------------------------------------------------------------------------------
 static void field_changed_cb(GBDATA */*gb_item*/, int *cl_awt_input_handler, GB_CB_TYPE type) {
     if (!in_field_changed_callback) { // avoid deadlock
         in_field_changed_callback  = true;
@@ -138,9 +121,7 @@ static void field_changed_cb(GBDATA */*gb_item*/, int *cl_awt_input_handler, GB_
         in_field_changed_callback = false;
     }
 }
-//  -------------------------------------------------------------------------------
-//      static void awar_changed_cb(AW_root *awr, AW_CL cl_awt_mask_awar_item)
-//  -------------------------------------------------------------------------------
+
 static void awar_changed_cb(AW_root */*awr*/, AW_CL cl_awt_mask_awar_item) {
     if (!in_awar_changed_callback) { // avoid deadlock
         in_awar_changed_callback   = true;
@@ -151,11 +132,6 @@ static void awar_changed_cb(AW_root */*awr*/, AW_CL cl_awt_mask_awar_item) {
     }
 }
 
-// start of implementation of class awt_input_mask_global:
-
-//  ----------------------------------------------------------------------------------
-//      static string awt_input_mask_global::generate_id(const string& mask_name_)
-//  ----------------------------------------------------------------------------------
 string awt_input_mask_global::generate_id(const string& mask_name_)
 {
     string result;
@@ -167,29 +143,16 @@ string awt_input_mask_global::generate_id(const string& mask_name_)
     return result;
 }
 
-//  ---------------------------------------------------------
-//      bool awt_input_mask_global::edit_allowed() const
-//  ---------------------------------------------------------
 bool awt_input_mask_global::edit_allowed() const {
     return !test_edit_enabled ||
         get_root()->awar(AWAR_INPUT_MASKS_EDIT_ENABLED)->read_int() == 1;
 }
 
-//  ------------------------------------------------------------
-//      void awt_input_mask_global::no_item_selected() const
-//  ------------------------------------------------------------
 void awt_input_mask_global::no_item_selected() const {
     aw_message(GBS_global_string("This had no effect, because no %s is selected",
                                  awt_itemtype_names[get_itemtype()]));
 }
 
-// -end- of implementation of class awt_input_mask_global.
-
-// start of implementation of class awt_input_mask_id_list:
-
-//  --------------------------------------------------------------------------------------
-//      GB_ERROR awt_input_mask_id_list::add(const string& name, awt_mask_item *item)
-//  --------------------------------------------------------------------------------------
 GB_ERROR awt_input_mask_id_list::add(const string& name, awt_mask_item *item) {
     awt_mask_item *existing = lookup(name);
     if (existing) return GB_export_error("ID '%s' already exists", name.c_str());
@@ -197,37 +160,21 @@ GB_ERROR awt_input_mask_id_list::add(const string& name, awt_mask_item *item) {
     id[name] = item;
     return 0;
 }
-//  --------------------------------------------------------------------
-//      GB_ERROR awt_input_mask_id_list::remove(const string& name)
-//  --------------------------------------------------------------------
 GB_ERROR awt_input_mask_id_list::remove(const string& name) {
     if (!lookup(name)) return GB_export_error("ID '%s' does not exist", name.c_str());
     id.erase(name);
     return 0;
 }
 
-// -end- of implementation of class awt_input_mask_id_list.
-
-// start of implementation of class awt_mask_item:
-
-//  --------------------------------------------------------------------
-//      awt_mask_item::awt_mask_item(awt_input_mask_global *global_)
-//  --------------------------------------------------------------------
 awt_mask_item::awt_mask_item(awt_input_mask_global *global_)
     : global(global_)
 {
 }
 
-//  ----------------------------------------
-//      awt_mask_item::~awt_mask_item()
-//  ----------------------------------------
 awt_mask_item::~awt_mask_item() {
     awt_assert(!has_name()); // you forgot to call remove_name()
 }
 
-//  -----------------------------------------------------------------------------
-//      GB_ERROR awt_mask_item::set_name(const string& name_, bool is_global)
-//  -----------------------------------------------------------------------------
 GB_ERROR awt_mask_item::set_name(const string& name_, bool is_global)
 {
     GB_ERROR error = 0;
@@ -248,9 +195,6 @@ GB_ERROR awt_mask_item::set_name(const string& name_, bool is_global)
     return error;
 }
 
-//  ---------------------------------------------
-//      GB_ERROR awt_mask_item::remove_name()
-//  ---------------------------------------------
 GB_ERROR awt_mask_item::remove_name()
 {
     GB_ERROR error = 0;
@@ -261,13 +205,6 @@ GB_ERROR awt_mask_item::remove_name()
     return error;
 }
 
-// -end- of implementation of class awt_mask_item.
-
-// start of implementation of class awt_mask_awar_item:
-
-//  ----------------------------------------------------------------------------------------------------------------------------------------------------------------
-//      awt_mask_awar_item::awt_mask_awar_item(awt_input_mask_global *global_, const string& awar_base, const string& default_value, bool saved_with_properties)
-//  ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 awt_mask_awar_item::awt_mask_awar_item(awt_input_mask_global *global_, const string& awar_base, const string& default_value, bool saved_with_properties)
     : awt_mask_item(global_)
 {
@@ -284,30 +221,17 @@ awt_mask_awar_item::awt_mask_awar_item(awt_input_mask_global *global_, const str
     add_awar_callbacks();
 }
 
-//  ------------------------------------------------------
-//      void awt_mask_awar_item::add_awar_callbacks()
-//  ------------------------------------------------------
 void awt_mask_awar_item::add_awar_callbacks() {
     AW_awar *var = awar();
     awt_assert(var);
     if (var) var->add_callback(awar_changed_cb, AW_CL(this));
 }
-//  ---------------------------------------------------------
-//      void awt_mask_awar_item::remove_awar_callbacks()
-//  ---------------------------------------------------------
 void awt_mask_awar_item::remove_awar_callbacks() {
     AW_awar *var = awar();
     awt_assert(var);
     if (var) var->remove_callback((AW_RCB)awar_changed_cb, AW_CL(this), AW_CL(0));
 }
 
-// -end- of implementation of class awt_mask_awar_item.
-
-// start of implementation of class awt_variable:
-
-//  ---------------------------------------------------------------------------------------------------------------------------------------------------
-//      awt_variable::awt_variable(awt_input_mask_global *global_, const string& id, bool is_global_, const string& default_value, GB_ERROR& error)
-//  ---------------------------------------------------------------------------------------------------------------------------------------------------
 awt_variable::awt_variable(awt_input_mask_global *global_, const string& id, bool is_global_, const string& default_value, GB_ERROR& error)
     : awt_mask_awar_item(global_, generate_baseName(global_, id, is_global_), default_value, true)
     , is_global(is_global_)
@@ -315,20 +239,10 @@ awt_variable::awt_variable(awt_input_mask_global *global_, const string& id, boo
     error = set_name(id, is_global);
 }
 
-//  -------------------------------------
-//      awt_variable::~awt_variable()
-//  -------------------------------------
 awt_variable::~awt_variable()
 {
 }
 
-// -end- of implementation of class awt_variable.
-
-// start of implementation of class awt_script:
-
-//  --------------------------------------------
-//      string awt_script::get_value() const
-//  --------------------------------------------
 string awt_script::get_value() const
 {
     string                        result;
@@ -360,21 +274,11 @@ string awt_script::get_value() const
     return result;
 }
 
-//  -------------------------------------------------------------------
-//      GB_ERROR awt_script::set_value(const string& /*new_value*/)
-//  -------------------------------------------------------------------
 GB_ERROR awt_script::set_value(const string& /*new_value*/)
 {
     return GBS_global_string("You cannot assign a value to script '%s'", has_name() ? get_name().c_str() : "<unnamed>");
 }
 
-// -end- of implementation of class awt_script.
-
-// start of implementation of class awt_linked_to_item:
-
-//  -------------------------------------------------------
-//      GB_ERROR awt_linked_to_item::add_db_callbacks()
-//  -------------------------------------------------------
 GB_ERROR awt_linked_to_item::add_db_callbacks()
 {
     GB_ERROR error = 0;
@@ -382,9 +286,6 @@ GB_ERROR awt_linked_to_item::add_db_callbacks()
     return error;
 }
 
-//  ----------------------------------------------------------
-//      GB_ERROR awt_linked_to_item::remove_db_callbacks()
-//  ----------------------------------------------------------
 GB_ERROR awt_linked_to_item::remove_db_callbacks()
 {
     GB_ERROR error = 0;
@@ -392,13 +293,6 @@ GB_ERROR awt_linked_to_item::remove_db_callbacks()
     return error;
 }
 
-// -end- of implementation of class awt_linked_to_item.
-
-// start of implementation of class awt_script_viewport:
-
-//  ----------------------------------------------------------------------------------------------------------------------------------------------------
-//      awt_script_viewport::awt_script_viewport(awt_input_mask_global *global_, const awt_script *script_, const string& label_, long field_width_)
-//  ----------------------------------------------------------------------------------------------------------------------------------------------------
 awt_script_viewport::awt_script_viewport(awt_input_mask_global *global_, const awt_script *script_, const string& label_, long field_width_)
     : awt_viewport(global_, generate_baseName(global_), "", false, label_)
     , script(script_)
@@ -406,17 +300,11 @@ awt_script_viewport::awt_script_viewport(awt_input_mask_global *global_, const a
 {
 }
 
-//  ---------------------------------------------------
-//      awt_script_viewport::~awt_script_viewport()
-//  ---------------------------------------------------
 awt_script_viewport::~awt_script_viewport()
 {
     unlink();
 }
 
-//  ------------------------------------------------------------------
-//      GB_ERROR awt_script_viewport::link_to(GBDATA *gb_new_item)
-//  ------------------------------------------------------------------
 GB_ERROR awt_script_viewport::link_to(GBDATA *gb_new_item)
 {
     GB_ERROR       error = 0;
@@ -440,9 +328,6 @@ GB_ERROR awt_script_viewport::link_to(GBDATA *gb_new_item)
     return error;
 }
 
-//  --------------------------------------------------------------
-//      void awt_script_viewport::build_widget(AW_window *aws)
-//  --------------------------------------------------------------
 void awt_script_viewport::build_widget(AW_window *aws)
 {
     const string& lab = get_label();
@@ -451,62 +336,31 @@ void awt_script_viewport::build_widget(AW_window *aws)
     aws->create_input_field(awar_name().c_str(), field_width);
 }
 
-//  ----------------------------------------------
-//      void awt_script_viewport::db_changed()
-//  ----------------------------------------------
 void awt_script_viewport::db_changed()
 {
     GB_ERROR error = 0;
-
-//     if (!script) { // search script
-//         awt_mask_item *item = mask_global()->get_identified_item(script_id, error);
-//         if (!error) {
-//             awt_script *found_script = dynamic_cast<awt_script*>(item);
-//             if (found_script) script = found_script;
-//             else        error        = GBS_global_string("ID '%s' does not represent a script", script_id.c_str());
-//         }
-//     }
-
-//     if (!error) {
-        awt_assert(script);
-        string current_value = script->get_value();
-        error                = awt_mask_awar_item::set_value(current_value);
-//     }
+    awt_assert(script);
+    string current_value = script->get_value();
+    error                = awt_mask_awar_item::set_value(current_value);
 
     if (error) aw_message(error);
 }
 
-//  ------------------------------------------------
-//      void awt_script_viewport::awar_changed()
-//  ------------------------------------------------
 void awt_script_viewport::awar_changed() {
     aw_message("It makes no sense to change the result of a script");
 }
 
-// -end- of implementation of class awt_script_viewport.
-
-// start of implementation of class awt_input_handler:
-
-//  ----------------------------------------------------
-//      GB_ERROR awt_input_handler::add_callbacks()
-//  ----------------------------------------------------
 GB_ERROR awt_input_handler::add_db_callbacks() {
     GB_ERROR error = awt_linked_to_item::add_db_callbacks();
     if (item() && gbd) error = GB_add_callback(gbd, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), field_changed_cb, (int*)this);
     return error;
 }
-//  ---------------------------------------------------
-//      void awt_input_handler::remove_callbacks()
-//  ---------------------------------------------------
 GB_ERROR awt_input_handler::remove_db_callbacks() {
     GB_ERROR error = awt_linked_to_item::remove_db_callbacks();
     if (item() && gbd) error = GB_remove_callback(gbd, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), field_changed_cb, (int*)this);
     return error;
 }
 
-//  ---------------------------------------------------------------------------------------------------------------------------------------------
-//      awt_input_handler::awt_input_handler(awt_input_mask_global *global_, const string& child_path_, GB_TYPES type_, const string& label_)
-//  ---------------------------------------------------------------------------------------------------------------------------------------------
 awt_input_handler::awt_input_handler(awt_input_mask_global *global_, const string& child_path_, GB_TYPES type_, const string& label_)
     : awt_viewport(global_, generate_baseName(global_, child_path_), "", false, label_)
     , gbd(0)
@@ -516,17 +370,11 @@ awt_input_handler::awt_input_handler(awt_input_mask_global *global_, const strin
 {
 }
 
-//  ------------------------------------------------
-//      awt_input_handler::~awt_input_handler()
-//  ------------------------------------------------
 awt_input_handler::~awt_input_handler() {
     in_destructor = true;
     unlink();
 }
 
-//  -----------------------------------------------------------------
-//      GB_ERROR awt_input_handler::link_to(GBDATA *gb_new_item)
-//  -----------------------------------------------------------------
 GB_ERROR awt_input_handler::link_to(GBDATA *gb_new_item) {
     GB_ERROR       error = 0;
     GB_transaction dummy(mask_global()->get_gb_main());
@@ -560,13 +408,8 @@ GB_ERROR awt_input_handler::link_to(GBDATA *gb_new_item) {
     return error;
 }
 
-// -end- of implementation of class awt_input_handler.
-
-//  ------------------------------------------------
-//      void awt_string_handler::awar_changed()
-//  ------------------------------------------------
 void awt_string_handler::awar_changed() {
-    GBDATA   *gbd       = data();
+    GBDATA   *gbdata    = data();
     GBDATA   *gb_main   = mask_global()->get_gb_main();
     bool      relink_me = false;
     GB_ERROR  error     = 0;
@@ -575,18 +418,18 @@ void awt_string_handler::awar_changed() {
 
     if (!mask_global()->edit_allowed()) error = "Editing is disabled. Check the 'Enable edit' switch!";
 
-    if (!error && !gbd) {
+    if (!error && !gbdata) {
         const char *child   = get_child_path().c_str();
         const char *keypath = mask_global()->get_selector()->getKeyPath();
 
         if (item()) {
-            gbd = GB_search(item(), child, GB_FIND);
+            gbdata = GB_search(item(), child, GB_FIND);
 
-            if (!gbd) {
+            if (!gbdata) {
                 GB_TYPES found_typ = awt_get_type_of_changekey(gb_main, child, keypath);
                 if (found_typ != GB_NONE) set_type(found_typ); // fix type if different
 
-                gbd = GB_search(item(), child, type()); // here new items are created
+                gbdata = GB_search(item(), child, type()); // here new items are created
                 if (found_typ == GB_NONE) awt_add_new_changekey_to_keypath(gb_main, child, type(), keypath);
                 relink_me = true; //  @@@ only if child was created!!
             }
@@ -598,12 +441,12 @@ void awt_string_handler::awar_changed() {
         }
     }
 
-    if (!error && gbd) {
+    if (!error && gbdata) {
         char     *content   = awar()->read_string();
-        GB_TYPES  found_typ = GB_read_type(gbd);
+        GB_TYPES  found_typ = GB_read_type(gbdata);
         if (found_typ != type()) set_type(found_typ); // fix type if different
 
-        error = GB_write_as_string(gbd, awar2db(content).c_str());
+        error = GB_write_as_string(gbdata, awar2db(content).c_str());
 
         free(content);
     }
@@ -619,14 +462,12 @@ void awt_string_handler::awar_changed() {
 
     if (relink_me) relink();
 }
-//  ----------------------------------------------
-//      void awt_string_handler::db_changed()
-//  ----------------------------------------------
+
 void awt_string_handler::db_changed() {
-    GBDATA *gbd = data();
-    if (gbd) { // gbd may be zero, if field does not exist
+    GBDATA *gbdata = data();
+    if (gbdata) { // gbdata may be zero, if field does not exist
         GB_transaction  dummy(mask_global()->get_gb_main());
-        char           *content = GB_read_as_string(gbd);
+        char           *content = GB_read_as_string(gbdata);
         awar()->write_string(db2awar(content).c_str());
         free(content);
     }
@@ -635,17 +476,10 @@ void awt_string_handler::db_changed() {
     }
 }
 
-// ###############################
-// ###############################
-// ###                         ###
-// ##          Widgets          ##
-// ###                         ###
-// ###############################
-// ###############################
+// ----------------
+//      Widgets
+// ----------------
 
-//  -----------------------------------------------------------
-//      void awt_input_field::build_widget(AW_window *aws)
-//  -----------------------------------------------------------
 void awt_input_field::build_widget(AW_window *aws) {
     const string& lab = get_label();
     if (lab.length()) aws->label(lab.c_str());
@@ -653,11 +487,6 @@ void awt_input_field::build_widget(AW_window *aws) {
     aws->create_input_field(awar_name().c_str(), field_width);
 }
 
-// start of implementation of class awt_text_viewport:
-
-//  ------------------------------------------------------------
-//      void awt_text_viewport::build_widget(AW_window *aws)
-//  ------------------------------------------------------------
 void awt_text_viewport::build_widget(AW_window *aws)
 {
     const string& lab = get_label();
@@ -666,20 +495,12 @@ void awt_text_viewport::build_widget(AW_window *aws)
     aws->create_input_field(awar_name().c_str(), field_width);
 }
 
-// -end- of implementation of class awt_text_viewport.
-
-//  ---------------------------------------------------------
-//      void awt_check_box::build_widget(AW_window *aws)
-//  ---------------------------------------------------------
 void awt_check_box::build_widget(AW_window *aws) {
     const string& lab = get_label();
     if (lab.length()) aws->label(lab.c_str());
 
     aws->create_toggle(awar_name().c_str());
 }
-//  ------------------------------------------------------------
-//      void awt_radio_button::build_widget(AW_window *aws)
-//  ------------------------------------------------------------
 void awt_radio_button::build_widget(AW_window *aws) {
     const string& lab = get_label();
     if (lab.length()) aws->label(lab.c_str());
@@ -704,17 +525,10 @@ void awt_radio_button::build_widget(AW_window *aws) {
     aws->update_toggle_field();
 }
 
-// ########################################################
-// ########################################################
-// ###                                                  ###
-// ##          Special AWAR <-> DB translations          ##
-// ###                                                  ###
-// ########################################################
-// ########################################################
+// -----------------------------------------
+//      Special AWAR <-> DB translations
+// -----------------------------------------
 
-//  ------------------------------------------------------------------
-//      string awt_check_box::awar2db(const string& awar_content)
-//  ------------------------------------------------------------------
 string awt_check_box::awar2db(const string& awar_content) const {
     GB_TYPES typ = type();
 
@@ -727,18 +541,12 @@ string awt_check_box::awar2db(const string& awar_content) const {
         return "0";
     }
 }
-//  ----------------------------------------------------------------
-//      string awt_check_box::db2awar(const string& db_content)
-//  ----------------------------------------------------------------
 string awt_check_box::db2awar(const string& db_content) const {
     if (db_content == "yes" || db_content == "1") return "yes";
     if (db_content == "no" || db_content == "0") return "no";
     return atoi(db_content.c_str()) ? "yes" : "no";
 }
 
-//  ---------------------------------------------------------------------
-//      string awt_radio_button::awar2db(const string& awar_content)
-//  ---------------------------------------------------------------------
 string awt_radio_button::awar2db(const string& awar_content) const {
     vector<string>::const_iterator b   = buttons.begin();
     vector<string>::const_iterator v   = values.begin();
@@ -750,9 +558,7 @@ string awt_radio_button::awar2db(const string& awar_content) const {
 
     return string("Unknown awar_content '")+awar_content+"'";
 }
-//  -------------------------------------------------------------------
-//      string awt_radio_button::db2awar(const string& db_content)
-//  -------------------------------------------------------------------
+
 string awt_radio_button::db2awar(const string& db_content) const {
     vector<string>::const_iterator b   = buttons.begin();
     vector<string>::const_iterator v   = values.begin();
@@ -764,9 +570,6 @@ string awt_radio_button::db2awar(const string& db_content) const {
     return buttons[default_position];
 }
 
-//  ----------------------------------------------------------------------------------
-//      string awt_numeric_input_field::awar2db(const string& awar_content) const
-//  ----------------------------------------------------------------------------------
 string awt_numeric_input_field::awar2db(const string& awar_content) const {
     long val = strtol(awar_content.c_str(), 0, 10);
 
@@ -777,17 +580,10 @@ string awt_numeric_input_field::awar2db(const string& awar_content) const {
     return GBS_global_string("%li", val);
 }
 
-// ########################################################
-// ########################################################
-// ###                                                  ###
-// ##          Routines to parse user-mask file          ##
-// ###                                                  ###
-// ########################################################
-// ########################################################
+// -----------------------------------------
+//      Routines to parse user-mask file
+// -----------------------------------------
 
-//  -------------------------------------------------------------------------
-//      static GB_ERROR readLine(FILE *in, string& line, size_t& lineNo)
-//  -------------------------------------------------------------------------
 static GB_ERROR readLine(FILE *in, string& line, size_t& lineNo) {
     const int  BUFSIZE = 8000;
     char       buffer[BUFSIZE];
@@ -825,9 +621,6 @@ static GB_ERROR readLine(FILE *in, string& line, size_t& lineNo) {
     return error;
 }
 
-//  -----------------------------------------------------------------------
-//      inline size_t next_non_white(const string& line, size_t start)
-//  -----------------------------------------------------------------------
 inline size_t next_non_white(const string& line, size_t start) {
     if (start == string::npos) return string::npos;
     return line.find_first_not_of(" \t", start);
@@ -835,9 +628,6 @@ inline size_t next_non_white(const string& line, size_t start) {
 
 static bool was_last_parameter = false;
 
-//  --------------------------------------------------------------------------------------------
-//      inline size_t eat_para_separator(const string& line, size_t start, GB_ERROR& error)
-//  --------------------------------------------------------------------------------------------
 inline size_t eat_para_separator(const string& line, size_t start, GB_ERROR& error) {
     size_t para_sep = next_non_white(line, start);
 
@@ -863,18 +653,12 @@ inline size_t eat_para_separator(const string& line, size_t start, GB_ERROR& err
     return para_sep;
 }
 
-//  ---------------------------------------------------------------------------------
-//      static void check_last_parameter(GB_ERROR& error, const string& command)
-//  ---------------------------------------------------------------------------------
 static void check_last_parameter(GB_ERROR& error, const string& command) {
     if (!error && !was_last_parameter) {
         error = GBS_global_string("Superfluous arguments to '%s'", command.c_str());
     }
 }
 
-//  ---------------------------------------------------------------------------------------------------------------------
-//      static void check_no_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, const string& command)
-//  ---------------------------------------------------------------------------------------------------------------------
 static void check_no_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, const string& command) {
     size_t start = next_non_white(line, scan_pos);
     scan_pos     = start;
@@ -891,9 +675,6 @@ static void check_no_parameter(const string& line, size_t& scan_pos, GB_ERROR& e
     }
 }
 
-//  --------------------------------------------------
-//      inline GB_ERROR decode_escapes(string& s)
-//  --------------------------------------------------
 inline GB_ERROR decode_escapes(string& s) {
     string::iterator f = s.begin();
     string::iterator t = s.begin();
@@ -911,9 +692,6 @@ inline GB_ERROR decode_escapes(string& s) {
     return 0;
 }
 
-//  ---------------------------------------------------------------------------------------------------
-//      static string scan_string_parameter(const string& line, size_t& scan_pos, GB_ERROR& error)
-//  ---------------------------------------------------------------------------------------------------
 static string scan_string_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, bool allow_escaped = false) {
     string result;
     size_t open_quote = next_non_white(line, scan_pos);
@@ -960,9 +738,6 @@ static string scan_string_parameter(const string& line, size_t& scan_pos, GB_ERR
     return result;
 }
 
-//  ------------------------------------------------------------
-//      string list_keywords(const char **allowed_keywords)
-//  ------------------------------------------------------------
 string list_keywords(const char **allowed_keywords) {
     string result;
     for (int i = 0; allowed_keywords[i]; ++i) {
@@ -975,9 +750,6 @@ string list_keywords(const char **allowed_keywords) {
     return result;
 }
 
-//  -------------------------------------------------------------------
-//      inline int isKeyword(const char *current, const char *keyword)
-//  -------------------------------------------------------------------
 inline int isKeyword(const char *current, const char *keyword) {
     int pos = 0;
     for (; keyword[pos]; ++pos) {
@@ -987,12 +759,10 @@ inline int isKeyword(const char *current, const char *keyword) {
     }
     return pos;
 }
-//  --------------------------------------------------------------------------------------------------------------------------------
-//      static int scan_keyword_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, const char **allowed_keywords)
-//  --------------------------------------------------------------------------------------------------------------------------------
-// return index of keyword (or -1)
-// allowed_keywords has to be 0-terminated
+
 static int scan_keyword_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, const char **allowed_keywords) {
+    // return index of keyword (or -1)
+    // allowed_keywords has to be 0-terminated
     int    result = -1;
     size_t start  = next_non_white(line, scan_pos);
     scan_pos      = start;
@@ -1023,9 +793,6 @@ EXPECTED :
     return result;
 }
 
-//  -----------------------------------------------------------------------------------------------------------
-//      static void scan_string_or_keyword_parameter(const string& line, size_t& scan_pos, GB_ERROR& error,
-//  -----------------------------------------------------------------------------------------------------------
 static void scan_string_or_keyword_parameter(const string& line, size_t& scan_pos, GB_ERROR& error,
                                              string& string_para, int& keyword_index, // result parameters
                                              const char **allowed_keywords) {
@@ -1047,9 +814,6 @@ static void scan_string_or_keyword_parameter(const string& line, size_t& scan_po
     }
 }
 
-//  -----------------------------------------------------------------------------------------------
-//      static long scan_long_parameter(const string& line, size_t& scan_pos, GB_ERROR& error)
-//  -----------------------------------------------------------------------------------------------
 static long scan_long_parameter(const string& line, size_t& scan_pos, GB_ERROR& error) {
     int    result = 0;
     size_t start  = next_non_white(line, scan_pos);
@@ -1081,11 +845,8 @@ static long scan_long_parameter(const string& line, size_t& scan_pos, GB_ERROR& 
 
     return neg ? -result : result;
 }
-//  -------------------------------------------------------------------------------------------------------------------
-//      static long scan_long_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, long min, long max)
-//  -------------------------------------------------------------------------------------------------------------------
-// with range-check
 static long scan_long_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, long min, long max) {
+    // with range-check
     awt_assert(!error);
     size_t old_scan_pos = scan_pos;
     long   result       = scan_long_parameter(line, scan_pos, error);
@@ -1098,9 +859,6 @@ static long scan_long_parameter(const string& line, size_t& scan_pos, GB_ERROR& 
     return result;
 }
 
-//  ------------------------------------------------------------------------------------------------------------------
-//      static long scan_optional_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, long if_empty)
-//  ------------------------------------------------------------------------------------------------------------------
 static long scan_optional_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, long if_empty) {
     awt_assert(!error);
     size_t old_scan_pos = scan_pos;
@@ -1121,13 +879,9 @@ static long scan_optional_parameter(const string& line, size_t& scan_pos, GB_ERR
     return result;
 }
 
-
-//  ---------------------------------------------------------------------------------------------------------------------------
-//      static int scan_flag_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, const string& allowed_flags)
-//  ---------------------------------------------------------------------------------------------------------------------------
-// return 0..n-1 ( = position in 'allowed_flags')
-// or error is set
 static int scan_flag_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, const string& allowed_flags) {
+    // return 0..n-1 ( = position in 'allowed_flags')
+    // or error is set
     awt_assert(!error);
     int    result = 0;
     size_t start  = next_non_white(line, scan_pos);
@@ -1151,9 +905,6 @@ static int scan_flag_parameter(const string& line, size_t& scan_pos, GB_ERROR& e
     }
     return result;
 }
-//  -----------------------------------------------------------------------------------------------
-//      static bool scan_bool_parameter(const string& line, size_t& scan_pos, GB_ERROR& error)
-//  -----------------------------------------------------------------------------------------------
 static bool scan_bool_parameter(const string& line, size_t& scan_pos, GB_ERROR& error) {
     awt_assert(!error);
     size_t old_scan_pos = scan_pos;
@@ -1166,9 +917,6 @@ static bool scan_bool_parameter(const string& line, size_t& scan_pos, GB_ERROR& 
     return result != 0;
 }
 
-//  ---------------------------------------------------------------------------------------------
-//      static string scan_identifier(const string& line, size_t& scan_pos, GB_ERROR& error)
-//  ---------------------------------------------------------------------------------------------
 static string scan_identifier(const string& line, size_t& scan_pos, GB_ERROR& error) {
     string id;
     size_t start = next_non_white(line, scan_pos);
@@ -1188,28 +936,6 @@ static string scan_identifier(const string& line, size_t& scan_pos, GB_ERROR& er
     return id;
 }
 
-// //  -----------------------------------------------------------------------------------------------------------------------------------------
-// //      static string scan_unused_identifier(const awt_input_mask_global *global, const string& line, size_t& scan_pos, GB_ERROR& error)
-// //  -----------------------------------------------------------------------------------------------------------------------------------------
-// static string scan_unused_identifier(const awt_input_mask_global *global, const string& line, size_t& scan_pos, GB_ERROR& error) {
-//     string id = scan_identifier(line, scan_pos, error);
-//     if (!error && global->has_id(id)) error = GB_export_error("ID '%s' declared twice", id.c_str());
-//     return id;
-// }
-
-// //  ---------------------------------------------------------------------------------------------------------------------------------------
-// //      static string scan_used_identifier(const awt_input_mask_global *global, const string& line, size_t& scan_pos, GB_ERROR& error)
-// //  ---------------------------------------------------------------------------------------------------------------------------------------
-// static string scan_used_identifier(const awt_input_mask_global *global, const string& line, size_t& scan_pos, GB_ERROR& error) {
-//     string id                               = scan_identifier(line, scan_pos, error);
-//     if (!error && !global->has_id(id)) error = GB_export_error("Undeclared ID '%s' referenced", id.c_str());
-//     // @@@ FIXME: if not declared -> store in list and test after parsing mask
-//     return id;
-// }
-
-// -----------------------------------------------------
-//      inline const char *inputMaskDir(bool local)
-// -----------------------------------------------------
 inline const char *inputMaskDir(bool local) {
     if (local) {
         static char *local_mask_dir;
@@ -1222,9 +948,6 @@ inline const char *inputMaskDir(bool local) {
     return global_mask_dir;
 }
 
-//  -----------------------------------------------------------------------------
-//      inline string inputMaskFullname(const string& mask_name, bool local)
-//  -----------------------------------------------------------------------------
 inline string inputMaskFullname(const string& mask_name, bool local) {
     const char *dir = inputMaskDir(local);
     return string(dir)+'/'+mask_name;
@@ -1232,9 +955,6 @@ inline string inputMaskFullname(const string& mask_name, bool local) {
 
 #define ARB_INPUT_MASK_ID "ARB-Input-Mask"
 
-//  -----------------------------------------------------------------------------------------------------------------------------
-//      static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name, const string& filename, bool local)
-//  -----------------------------------------------------------------------------------------------------------------------------
 static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name, const string& filename, bool local) {
     FILE     *in     = fopen(filename.c_str(), "rt");
     size_t    lineNo = 0;
@@ -1295,10 +1015,7 @@ static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name,
     return 0;
 }
 
-//  ----------------------------------------------------------------------------------------
-//      static void AWT_edit_input_mask(AW_window *aww, AW_CL cl_mask_name, bool local)
-//  ----------------------------------------------------------------------------------------
-static void AWT_edit_input_mask(AW_window *aww, AW_CL cl_mask_name, AW_CL cl_local) {
+static void AWT_edit_input_mask(AW_window *, AW_CL cl_mask_name, AW_CL cl_local) {
     const string *mask_name = (const string *)cl_mask_name;
     string        fullmask  = inputMaskFullname(*mask_name, (bool)cl_local);
     
@@ -1312,16 +1029,10 @@ typedef SmartPtr<awt_input_mask>        awt_input_mask_ptr;
 typedef map<string, awt_input_mask_ptr> InputMaskList; // contains all active masks
 static InputMaskList                    input_mask_list;
 
-//  ---------------------------------------------------------------------------------
-//      static void awt_input_mask_awar_changed_cb(AW_root *root, AW_CL cl_mask)
-//  ---------------------------------------------------------------------------------
 static void awt_input_mask_awar_changed_cb(AW_root */*root*/, AW_CL cl_mask) {
     awt_input_mask *mask = (awt_input_mask*)(cl_mask);
     mask->relink();
 }
-//  -------------------------------------------------------------------
-//      static void link_mask_to_database(awt_input_mask_ptr mask)
-//  -------------------------------------------------------------------
 static void link_mask_to_database(awt_input_mask_ptr mask) {
     awt_input_mask_global         *global = mask->mask_global();
     const awt_item_type_selector  *sel    = global->get_selector();
@@ -1330,9 +1041,6 @@ static void link_mask_to_database(awt_input_mask_ptr mask) {
     sel->add_awar_callbacks(root, awt_input_mask_awar_changed_cb, (AW_CL)(&*mask));
     awt_input_mask_awar_changed_cb(root, (AW_CL)(&*mask));
 }
-//  -----------------------------------------------------------------------
-//      static void unlink_mask_from_database(awt_input_mask_ptr mask)
-//  -----------------------------------------------------------------------
 static void unlink_mask_from_database(awt_input_mask_ptr mask) {
     awt_input_mask_global        *global = mask->mask_global();
     const awt_item_type_selector *sel    = global->get_selector();
@@ -1341,16 +1049,10 @@ static void unlink_mask_from_database(awt_input_mask_ptr mask) {
     sel->remove_awar_callbacks(root, awt_input_mask_awar_changed_cb, (AW_CL)(&*mask));
 }
 
-//  --------------------------------------------------------
-//      inline bool isInternalMaskName(const string& s)
-//  --------------------------------------------------------
 inline bool isInternalMaskName(const string& s) {
     return s[0] == '0' || s[0] == '1';
 }
 
-//  --------------------------------------------------------------------------------------------------------------------------------------------
-//      static void awt_open_input_mask(AW_window *aww, AW_CL cl_internal_mask_name, AW_CL cl_mask_to_open, bool reload, bool hide_current)
-//  --------------------------------------------------------------------------------------------------------------------------------------------
 static void awt_open_input_mask(AW_window *aww, AW_CL cl_internal_mask_name, AW_CL cl_mask_to_open, bool reload, bool hide_current) {
     const string            *internal_mask_name = (const string *)cl_internal_mask_name;
     const string            *mask_to_open       = (const string *)cl_mask_to_open;
@@ -1446,9 +1148,6 @@ public:
     virtual ~awt_assignment() {}
 };
 
-//  -------------------------------------------------------------------------------------------------------
-//      static void AWT_input_mask_perform_action(AW_window */*aww*/, AW_CL cl_awt_mask_action, AW_CL)
-//  -------------------------------------------------------------------------------------------------------
 static void AWT_input_mask_perform_action(AW_window */*aww*/, AW_CL cl_awt_mask_action, AW_CL) {
     awt_mask_action *action = (awt_mask_action*)cl_awt_mask_action;
     action->perform_action();
@@ -1473,26 +1172,10 @@ static void AWT_input_mask_browse_url(AW_window *aww, AW_CL cl_url_srt, AW_CL cl
     }
 }
 
-// static void AWT_input_mask_do_assign(AW_window */*aww*/, AW_CL cl_awt_assignment, AW_CL cl_mask_ptr) {
-//     const awt_assignment *assign      = (awt_assignment*)cl_awt_assignment;
-//     const awt_input_mask *mask        = (const awt_input_mask *)cl_mask_ptr;
-//     GB_ERROR              error       = 0;
-//     const awt_mask_item  *item_source = mask->mask_global()->get_identified_item(assign->IdSource(), error);
-//     awt_mask_item        *item_dest   = mask->mask_global()->get_identified_item(assign->IdDest(), error);
 
-//     if (!error) error = item_dest->set_value(item_source->get_value());
-
-//     if (error) aw_message(error);
-// }
-
-
-// ##########################################
-// ##########################################
-// ###                                    ###
-// ##          User Mask Commands          ##
-// ###                                    ###
-// ##########################################
-// ##########################################
+// ---------------------------
+//      User Mask Commands
+// ---------------------------
 
 enum MaskCommand  {
     CMD_TEXTFIELD,
@@ -1545,9 +1228,6 @@ static struct MaskCommandDefinition mask_command[MASK_COMMANDS+1] =
  { 0, CMD_UNKNOWN}
 };
 
-//  ---------------------------------------------------------------
-//      inline MaskCommand findCommand(const string& cmd_name)
-//  ---------------------------------------------------------------
 inline MaskCommand findCommand(const string& cmd_name) {
     int mc = 0;
 
@@ -1559,11 +1239,9 @@ inline MaskCommand findCommand(const string& cmd_name) {
     return CMD_UNKNOWN;
 }
 
-//  -----------------------------------------------------------------------------------------------------------
-//      static void parse_CMD_RADIO(string& line, size_t& scan_pos, GB_ERROR& error, const string& command,
-//  -----------------------------------------------------------------------------------------------------------
 static void parse_CMD_RADIO(string& line, size_t& scan_pos, GB_ERROR& error, const string& command,
-                            awt_mask_item_ptr& handler1, awt_mask_item_ptr& handler2, awt_input_mask_global *global) {
+                            awt_mask_item_ptr& handler1, awt_mask_item_ptr& handler2, awt_input_mask_global *global)
+{
     string         label, data_path;
     int            default_position = -1, orientation = -1;
     vector<string> buttons;
@@ -1631,9 +1309,6 @@ static void parse_CMD_RADIO(string& line, size_t& scan_pos, GB_ERROR& error, con
     }
 }
 
-//  ----------------------------------------------------------------------------------------
-//      static string find_internal_name(const string& mask_name, bool search_in_local)
-//  ----------------------------------------------------------------------------------------
 static string find_internal_name(const string& mask_name, bool search_in_local) {
     const char *internal_local  = 0;
     const char *internal_global = 0;
@@ -1659,9 +1334,10 @@ static string find_internal_name(const string& mask_name, bool search_in_local) 
     return (search_in_local && internal_local) ? internal_local : (internal_global ? internal_global : "");
 }
 
-//  -----------------------------------------------------------------------------------
-//      class awt_marked_checkbox : public awt_viewport, public awt_linked_to_item
-//  -----------------------------------------------------------------------------------
+// ----------------------------------
+//      class awt_marked_checkbox
+// ----------------------------------
+
 class awt_marked_checkbox : public awt_viewport, public awt_linked_to_item {
 private:
 
@@ -1684,9 +1360,6 @@ public:
     virtual void build_widget(AW_window *aws); // builds the widget at the current position
 };
 
-//  -------------------------------------------------------------------
-//      GB_ERROR awt_marked_checkbox::link_to(GBDATA *gb_new_item)
-//  -------------------------------------------------------------------
 GB_ERROR awt_marked_checkbox::link_to(GBDATA *gb_new_item) { // link to a new item
     GB_ERROR       error = 0;
     GB_transaction dummy(mask_global()->get_gb_main());
@@ -1707,9 +1380,7 @@ GB_ERROR awt_marked_checkbox::link_to(GBDATA *gb_new_item) { // link to a new it
     add_awar_callbacks();       // rebind awar callbacks
     return error;
 }
-//  -------------------------------------------------
-//      void awt_marked_checkbox::awar_changed()
-//  -------------------------------------------------
+
 void awt_marked_checkbox::awar_changed() { // called when awar changes
     if (item()) {
         string         value  = get_value();
@@ -1721,9 +1392,7 @@ void awt_marked_checkbox::awar_changed() { // called when awar changes
         mask_global()->no_item_selected();
     }
 }
-//  -----------------------------------------------
-//      void awt_marked_checkbox::db_changed()
-//  -----------------------------------------------
+
 void awt_marked_checkbox::db_changed() {
     bool marked = false;
 
@@ -1733,9 +1402,7 @@ void awt_marked_checkbox::db_changed() {
         set_value(marked ? "yes" : "no"); // @@@ TEST: moved into if (was below)
     }
 }
-//  ---------------------------------------------------------------
-//      void awt_marked_checkbox::build_widget(AW_window *aws)
-//  ---------------------------------------------------------------
+
 void awt_marked_checkbox::build_widget(AW_window *aws) { // builds the widget at the current position
     const string& lab = get_label();
     if (lab.length()) aws->label(lab.c_str());
@@ -1743,9 +1410,6 @@ void awt_marked_checkbox::build_widget(AW_window *aws) { // builds the widget at
     aws->create_toggle(awar_name().c_str());
 }
 
-//  -------------------------------------------------------------------------------------------------------------------------
-//      static GB_ERROR writeDefaultMaskfile(const string& fullname, const string& maskname, const string& itemtypename)
-//  -------------------------------------------------------------------------------------------------------------------------
 static GB_ERROR writeDefaultMaskfile(const string& fullname, const string& maskname, const string& itemtypename, bool hidden) {
     FILE *out = fopen(fullname.c_str(), "wt");
     if (!out) return GBS_global_string("Can't open '%s'", fullname.c_str());
@@ -1782,9 +1446,7 @@ static GB_ERROR writeDefaultMaskfile(const string& fullname, const string& maskn
     fclose(out);
     return 0;
 }
-//  --------------------------------------------------------------------------------------------------------------------------
-//      static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel,
-//  --------------------------------------------------------------------------------------------------------------------------
+
 static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel,
                                                 const string& mask_name, bool local, GB_ERROR& error) {
     size_t             lineNo = 0;
@@ -2151,11 +1813,11 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                 else if (cmd == CMD_SELF) {
                                     check_no_parameter(line, scan_pos, error, command);
                                     if (!error) {
-                                        const awt_item_type_selector *sel              = mask->mask_global()->get_selector();
-                                        string                        button_awar_name = sel->get_self_awar();
+                                        const awt_item_type_selector *selector         = mask->mask_global()->get_selector();
+                                        string                        button_awar_name = selector->get_self_awar();
                                         char                         *key              = GBS_string_2_key(button_awar_name.c_str());
 
-                                        aws->button_length(sel->get_self_awar_content_length());
+                                        aws->button_length(selector->get_self_awar_content_length());
                                         aws->create_button(key, button_awar_name.c_str());
                                         free(key);
                                     }
@@ -2318,9 +1980,6 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
     return mask;
 }
 
-//  -------------------------------------------------------------------------------------------------------------------------------------------------
-//      GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel, const char* mask_name, bool local)
-//  -------------------------------------------------------------------------------------------------------------------------------------------------
 GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel, const char* internal_mask_name, bool local) {
     const char              *mask_name  = internal_mask_name+1;
     InputMaskList::iterator  mask_iter  = input_mask_list.find(internal_mask_name);
@@ -2375,9 +2034,6 @@ GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_ite
 
 // start of implementation of class awt_input_mask:
 
-//  -----------------------------------------
-//      awt_input_mask::~awt_input_mask()
-//  -----------------------------------------
 awt_input_mask::~awt_input_mask()
 {
     for (awt_mask_item_list::iterator h = handlers.begin(); h != handlers.end(); ++h) {
@@ -2385,12 +2041,8 @@ awt_input_mask::~awt_input_mask()
     }
 }
 
-
-//  --------------------------------------
-//      void awt_input_mask::relink()
-//  --------------------------------------
-// this functions links/unlinks all registered item handlers to/from the database
 void awt_input_mask::relink(bool unlink) {
+    // this functions links/unlinks all registered item handlers to/from the database
     const awt_item_type_selector *sel     = global.get_selector();
     GBDATA                       *gb_item = unlink ? 0 : sel->current(global.get_root());
 
@@ -2404,9 +2056,6 @@ void awt_input_mask::relink(bool unlink) {
 // -end- of implementation of class awt_input_mask.
 
 
-//  -------------------------------------------------------------------------------------------------------------------------------------------------------------
-//      awt_input_mask_descriptor::awt_input_mask_descriptor(const char *title_, const char *maskname_, const char *itemtypename_, bool local, bool hidden_)
-//  -------------------------------------------------------------------------------------------------------------------------------------------------------------
 awt_input_mask_descriptor::awt_input_mask_descriptor(const char *title_, const char *maskname_, const char *itemtypename_, bool local, bool hidden_) {
     title                = strdup(title_);
     internal_maskname    = (char*)malloc(strlen(maskname_)+2);
@@ -2417,17 +2066,11 @@ awt_input_mask_descriptor::awt_input_mask_descriptor(const char *title_, const c
     local_mask           = local;
     hidden               = hidden_;
 }
-//  ----------------------------------------------------------------
-//      awt_input_mask_descriptor::~awt_input_mask_descriptor()
-//  ----------------------------------------------------------------
 awt_input_mask_descriptor::~awt_input_mask_descriptor() {
     free(itemtypename);
     free(internal_maskname);
     free(title);
 }
-//  -----------------------------------------------------------------------------------------------------
-//      awt_input_mask_descriptor::awt_input_mask_descriptor(const awt_input_mask_descriptor& other)
-//  -----------------------------------------------------------------------------------------------------
 awt_input_mask_descriptor::awt_input_mask_descriptor(const awt_input_mask_descriptor& other) {
     title             = strdup(other.title);
     internal_maskname = strdup(other.internal_maskname);
@@ -2435,9 +2078,6 @@ awt_input_mask_descriptor::awt_input_mask_descriptor(const awt_input_mask_descri
     local_mask        = other.local_mask;
     hidden            = other.hidden;
 }
-//  ------------------------------------------------------------------------------------------------------------------
-//      awt_input_mask_descriptor& awt_input_mask_descriptor::operator = (const awt_input_mask_descriptor& other)
-//  ------------------------------------------------------------------------------------------------------------------
 awt_input_mask_descriptor& awt_input_mask_descriptor::operator = (const awt_input_mask_descriptor& other) {
     if (this != &other) {
         free(itemtypename);
@@ -2457,9 +2097,6 @@ awt_input_mask_descriptor& awt_input_mask_descriptor::operator = (const awt_inpu
 static bool scanned_existing_input_masks = false;
 static vector<awt_input_mask_descriptor> existing_masks;
 
-//  -----------------------------------------
-//      static void add_new_input_mask()
-//  -----------------------------------------
 static void add_new_input_mask(const string& maskname, const string& fullname, bool local) {
     awt_input_mask_descriptor *descriptor = quick_scan_input_mask(maskname, fullname, local);
     if (descriptor) {
@@ -2467,9 +2104,6 @@ static void add_new_input_mask(const string& maskname, const string& fullname, b
         delete descriptor;
     }
 }
-//  ------------------------------------------------
-//      static void scan_existing_input_masks()
-//  ------------------------------------------------
 static void scan_existing_input_masks() {
 
     awt_assert(!scanned_existing_input_masks);
@@ -2508,9 +2142,6 @@ static void scan_existing_input_masks() {
     scanned_existing_input_masks = true;
 }
 
-//  ---------------------------------------------------------------------
-//      const awt_input_mask_descriptor *AWT_look_input_mask(int id)
-//  ---------------------------------------------------------------------
 const awt_input_mask_descriptor *AWT_look_input_mask(int id) {
     if (!scanned_existing_input_masks) scan_existing_input_masks();
 
@@ -2520,9 +2151,6 @@ const awt_input_mask_descriptor *AWT_look_input_mask(int id) {
     return descriptor;
 }
 
-//  -------------------------------------------------------------------
-//      awt_item_type AWT_getItemType(const string& itemtype_name)
-//  -------------------------------------------------------------------
 awt_item_type AWT_getItemType(const string& itemtype_name) {
     awt_item_type type = AWT_IT_UNKNOWN;
 
@@ -2536,13 +2164,9 @@ awt_item_type AWT_getItemType(const string& itemtype_name) {
     return type;
 }
 
-// ############################################
-// ############################################
-// ###                                      ###
-// ##          Registered Itemtypes          ##
-// ###                                      ###
-// ############################################
-// ############################################
+// -----------------------------
+//      Registered Itemtypes
+// -----------------------------
 
 typedef void (*AWT_OpenMaskWindowCallback)(AW_window* aww, AW_CL cl_id, AW_CL);
 
@@ -2569,9 +2193,6 @@ public:
 
 static map<awt_item_type, AWT_registered_itemtype> registeredTypes;
 
-//  -------------------------------------------------------------------
-//      void openMaskWindowByType(int mask_id, awt_item_type type)
-//  -------------------------------------------------------------------
 static GB_ERROR openMaskWindowByType(int mask_id, awt_item_type type) {
     map<awt_item_type, AWT_registered_itemtype>::const_iterator registered = registeredTypes.find(type);
     GB_ERROR                                                    error      = 0;
@@ -2582,9 +2203,6 @@ static GB_ERROR openMaskWindowByType(int mask_id, awt_item_type type) {
     return error;
 }
 
-//  ---------------------------------------------------------------------------------------------------------------------------
-//      static void registerType(awt_item_type type, AW_window_menu_modes *awm, AWT_OpenMaskWindowCallback open_window_cb)
-//  ---------------------------------------------------------------------------------------------------------------------------
 static void registerType(awt_item_type type, AW_window_menu_modes *awm, AWT_OpenMaskWindowCallback open_window_cb) {
     map<awt_item_type, AWT_registered_itemtype>::const_iterator alreadyRegistered = registeredTypes.find(type);
     if (alreadyRegistered == registeredTypes.end()) {
@@ -2598,17 +2216,10 @@ static void registerType(awt_item_type type, AW_window_menu_modes *awm, AWT_Open
 #endif // DEBUG
 }
 
-// #############################################################
-// #############################################################
-// ###                                                       ###
-// ##          Create a new input mask (interactive)          ##
-// ###                                                       ###
-// #############################################################
-// #############################################################
+// ----------------------------------------------
+//      Create a new input mask (interactive)
+// ----------------------------------------------
 
-//  ----------------------------------------------------
-//      static void create_new_mask_cb(AW_window *)
-//  ----------------------------------------------------
 static void create_new_mask_cb(AW_window *aww) {
     AW_root *awr = aww->get_root();
 
@@ -2682,9 +2293,6 @@ static void create_new_mask_cb(AW_window *aww) {
     if (error) aw_message(error);
 }
 
-//  -------------------------------------------------------------------------------------
-//      static void create_new_input_mask(AW_window *aww, AW_CL cl_item_type, AW_CL)
-//  -------------------------------------------------------------------------------------
 static void create_new_input_mask(AW_window *aww, AW_CL cl_item_type, AW_CL) { // create new user mask (interactively)
     static AW_window_simple *aws = 0;
 
@@ -2743,17 +2351,10 @@ static void create_new_input_mask(AW_window *aww, AW_CL cl_item_type, AW_CL) { /
     aww->get_root()->awar(AWAR_INPUT_MASK_ITEM)->write_string(awt_itemtype_names[int(cl_item_type)]);
 }
 
-// ####################################################################
-// ####################################################################
-// ###                                                              ###
-// ##          Create User-Mask-Submenu for any application          ##
-// ###                                                              ###
-// ####################################################################
-// ####################################################################
+// -----------------------------------------------------
+//      Create User-Mask-Submenu for any application
+// -----------------------------------------------------
 
-//  ------------------------------------------------------------------------------------------------------------------------------------------------------------
-//      void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, void (*open_window_cb)(AW_window* aww, AW_CL cl_id, AW_CL))
-//  ------------------------------------------------------------------------------------------------------------------------------------------------------------
 void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, void (*open_window_cb)(AW_window* aww, AW_CL cl_id, AW_CL)) {
     // add a user mask submenu at current position
     AW_root *awr = awm->get_root();
