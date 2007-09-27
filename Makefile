@@ -77,10 +77,11 @@ endif
 
 		lflags = $(dflag1)
 		fflags = $(dflag1) -C
-		extended_warnings         = -Wwrite-strings -Wunused -Wno-aggregate-return
+		extended_warnings         = -Wwrite-strings -Wunused -Wno-aggregate-return -Wshadow
 		extended_cpp_warnings     = -Wnon-virtual-dtor -Wreorder -Wpointer-arith 
 		extended_cpp_3xx_warnings = -Wdisabled-optimization -Wmissing-format-attribute -Wmissing-noreturn # -Wfloat-equal  
-		extended_cpp_4xx_warnings = 
+		extended_cpp_4xx_warnings =
+		POST_COMPILE= 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
 else
 ifeq ($(DEBUG),0)
 		dflags = -DNDEBUG
@@ -89,6 +90,7 @@ ifeq ($(DEBUG),0)
 		fflags =
 		extended_warnings =
 		extended_cpp_warnings =
+		POST_COMPILE=
 endif
 endif
 
@@ -99,7 +101,7 @@ endif
 # ---------------------- compiler version detection
 
 GCC=gcc
-GPP=g++
+GPP=g++ -fmessage-length=0
 CPPreal=cpp
 
 # supported compiler versions:
@@ -993,6 +995,7 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
 		"OPENGL  = $(OPENGL)" \
+		"POST_COMPILE = $(POST_COMPILE)" \
 		"MAIN = $(@F:.dummy=.a)"
 
 
