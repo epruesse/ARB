@@ -1421,7 +1421,6 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
 
                     GBDATA *gbSeqData    = GBT_read_sequence(gbSpecies, ali_name);
                     const char *pSeqData = GB_read_char_pntr(gbSeqData); 
-                    int iSeqCount = 0;
 
                     if (pSeqData && pTemplateSeqData) {
                         int iSeqLen = strlen(pTemplateSeqData); 
@@ -1430,7 +1429,7 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
                             DeleteOldSpeciesData();
                         }
 
-                        for(int i = 0; i<iSeqLen; i++) {
+                        for(int i = 0, iSeqCount = 0; i<iSeqLen; i++) {
                             if((pTemplateSeqData[i] != '.') && (pTemplateSeqData[i] != '-'))
                             { 
                                 if (!bStartPosStored) {

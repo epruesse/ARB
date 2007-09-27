@@ -319,7 +319,7 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
                 gene_name = GB_read_char_pntr(gb_gene_name);
             }
 
-            long checksum;
+            long CheckSum;
             {
                 GBDATA *gb_gene_pos_begin = GB_find(gb_gene, "pos_begin", 0, down_level);
                 if (!gb_gene_pos_begin) { error = gene_requires(gb_gene, "pos_begin"); break; }
@@ -335,14 +335,14 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
                 strncpy(gene_seq, sequence+pos_begin, len);
                 gene_seq[len]  = 0;
 
-                checksum = GBS_checksum(gene_seq, 1, ".-");
+                CheckSum = GBS_checksum(gene_seq, 1, ".-");
 
                 // @@@ FIXME: what to do with splitted genes ?
             }
 
             const char *id = GBS_global_string("%s/%s", species_name, gene_name);
 
-            GBS_intcat(checksums, checksum);
+            GBS_intcat(checksums, CheckSum);
             GBS_strcat(names, id);
             GBS_chrcat(checksums, '#');
             GBS_chrcat(names, '#');
@@ -956,7 +956,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
 
                         if (write_2_tmp) {
                             GBDATA   *gb_tmp = 0;
-                            GB_ERROR  error  = 0;
+                            GB_ERROR  error2  = 0;
                             {
                                 GBDATA *gb_parent = gene_flag ? gb_gene : gb_species;
                                 gb_tmp            = GB_search(gb_parent, "tmp", GB_FIND);
@@ -964,7 +964,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                                     const char *name    = "<unknown>";
                                     GBDATA     *gb_name = GB_search(gb_parent, "name", GB_FIND);
                                     if (gb_name) name   = GB_read_char_pntr(gb_name);
-                                    error               = GBS_global_string("field 'tmp' already exists for %s '%s'", gene_flag ? "gene" : "species", name);
+                                    error2               = GBS_global_string("field 'tmp' already exists for %s '%s'", gene_flag ? "gene" : "species", name);
                                     gb_tmp              = 0; // don't overwrite
                                 }
                                 else {
@@ -972,12 +972,12 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                                 }
                             }
 
-                            if (!error) {
+                            if (!error2) {
                                 pd_assert(gb_tmp);
-                                error = GB_write_string(gb_tmp, match_info);
+                                error2 = GB_write_string(gb_tmp, match_info);
                             }
 
-                            if (error) aw_message(error);
+                            if (error2) aw_message(error2);
                         }
                     }
                     else {

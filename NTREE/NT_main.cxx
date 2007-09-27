@@ -78,7 +78,8 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
             const char *ali_name     = GB_read_char_pntr(gb_ali_name);
             bool        is_ali_genom = strcmp(ali_name, GENOM_ALIGNMENT) == 0;
 
-            if (GBDATA *gb_auto_format = GB_find(gb_ali, "auto_format", 0, down_level)) {
+            GBDATA *gb_auto_format = GB_find(gb_ali, "auto_format", 0, down_level);
+            if (gb_auto_format) {
                 format_action = GB_read_int(gb_auto_format);
 
                 if (is_ali_genom) {
@@ -89,7 +90,7 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
                 }
             }
             else if (is_ali_genom) {
-                GBDATA *gb_auto_format = GB_search(gb_ali, "auto_format", GB_INT);
+                gb_auto_format = GB_search(gb_ali, "auto_format", GB_INT);
                 GB_write_int(gb_auto_format, 2); // always skip
                 format_action          = 2;
             }

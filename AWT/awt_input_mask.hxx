@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.h                                       //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Fri Oct/01/2004 17:40 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Sep/27/2007 15:08 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -495,8 +495,8 @@ private:
     int    field_width;
 
 public:
-    awt_input_field(awt_input_mask_global *global_, const std::string& child_path_, const std::string& label_, int field_width_, const std::string& default_value, GB_TYPES default_type)
-        : awt_string_handler(global_, child_path_, default_value, default_type, label_)
+    awt_input_field(awt_input_mask_global *global_, const std::string& child_path_, const std::string& label_, int field_width_, const std::string& default_value_, GB_TYPES default_type)
+        : awt_string_handler(global_, child_path_, default_value_, default_type, label_)
         , field_width(field_width_)
     { }
     virtual ~awt_input_field() {}
@@ -535,8 +535,8 @@ private:
     long min, max;
 
 public:
-    awt_numeric_input_field(awt_input_mask_global *global_, const std::string& child_path_, const std::string& label_, int field_width_, long default_value, long min_, long max_)
-        : awt_input_field(global_, child_path_, label_, field_width_, GBS_global_string("%li", default_value), GB_FLOAT)
+    awt_numeric_input_field(awt_input_mask_global *global_, const std::string& child_path_, const std::string& label_, int field_width_, long default_value_, long min_, long max_)
+        : awt_input_field(global_, child_path_, label_, field_width_, GBS_global_string("%li", default_value_), GB_FLOAT)
         , min(min_)
         , max(max_)
     {}
