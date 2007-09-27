@@ -89,7 +89,7 @@ typedef const char *AW_label;       // label for buttons menues etc
 // "#file.bitmap"   // bitmap in $ARBHOME/lib/pixmaps/file.bitmap
 
 
-typedef struct {
+struct AW_event {
     AW_event_type       type;       /* AW_Keyboard or AW_Mouse */
     unsigned long       time;       /* time in msec, when event occured */
     //***** button fields
@@ -99,7 +99,7 @@ typedef struct {
     AW_key_mod      keymodifier;    /* control alt meta .... */
     AW_key_code     keycode;    /* which key type was pressed */
     char            character;  /* the c character */
-} AW_event;
+};
 
 
 void AW_POPDOWN(AW_window *);
