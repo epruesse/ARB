@@ -9,7 +9,7 @@ $(MAIN): $(ACC_OBJECTS)
 	$(ARLIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(ACC_OBJECTS)
 	touch $@
 .c.o:
-	$(CCLIB) $(cflags) -c $< $(AINCLUDES)
+	$(CCLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(ACC_OBJECTS) *.a *.so

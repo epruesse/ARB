@@ -10,7 +10,7 @@ $(BINARY): $(OBJECT)
 	$(CPP) $(lflags) -o $@ $(OBJECT) ../SL/FILE_BUFFER/FILE_BUFFER.a
 
 .c.o:
-	$(ACC) $(cflags) -Wstrict-prototypes -c $< $(AINCLUDES)
+	$(ACC) $(cflags) -Wstrict-prototypes -c $< $(AINCLUDES) $(POST_COMPILE)
 
 proto:
 	../MAKEBIN/aisc_mkpt -C $(OBJECT:.o=.c) >prototypes.h.tmp

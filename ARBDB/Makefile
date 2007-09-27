@@ -8,9 +8,9 @@ $(MAIN): $(OBJECTS)
 	$(ARCPPLIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
 	touch $@
 .c.o:
-	$(CCLIB) $(cflags) -c $< $(AINCLUDES)
+	$(CCLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 .cxx.o:
-	$(CCPLIB) $(cflags) -c $< $(AINCLUDES)
+	$(CCPLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 proto:	pro tpro lproto
 

@@ -11,7 +11,7 @@ $(BINARY): $(OBJECTS)
 	$(ACC) $(cflags) -o $@ $(OBJECTS)
 
 .c.o:
-	$(ACC) $(cflags) -c $<
+	$(ACC) $(cflags) -c $< $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) $(BINARY)
