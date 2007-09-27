@@ -143,15 +143,15 @@ public:
         return *this;
     }
 
-    void add(int partNum, int reverse, int score) {
+    void add(int partNum, int reverse, int Score) {
         awtc_assert(my_length<my_maxlength);
         partNum++;  // recode cause partNum==0 cannot be negative
         my_way[my_length++] = reverse ? -partNum : partNum;
-        my_score += score;
+        my_score += Score;
     }
-    void shorten(int score) {
+    void shorten(int Score) {
         my_length--;
-        my_score -= score;
+        my_score -= Score;
     }
 
     int score() const       {return my_score; /*my_length ? my_score/my_length : 0;*/}

@@ -189,8 +189,8 @@ public:
     void set_mode(AWT_COMMAND_MODE mo) { mode = mo; }
 
     void scroll(AW_window *aww, int delta_x, int delta_y, AW_BOOL dont_update_scrollbars = AW_FALSE);
-    void scroll(AW_window *aww, const AW::Vector& delta, AW_BOOL dont_update_scrollbars = AW_FALSE) {
-        scroll(aww, int(delta.x()), int(delta.y()), dont_update_scrollbars);
+    void scroll(AW_window *aw, const AW::Vector& delta, AW_BOOL dont_update_scrollbars = AW_FALSE) {
+        scroll(aw, int(delta.x()), int(delta.y()), dont_update_scrollbars);
     }
 };
 

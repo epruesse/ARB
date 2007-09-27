@@ -34,27 +34,21 @@ void AWTC_message(const char *format, ...)
     aw_message(buffer);
 }
 
-void AWTC_Points::append(AWTC_Points *neu)
-{
-    if (!my_next)
-    {
-        my_next = neu;
-        return;
-    }
-
-    my_next->append(neu);
+void AWTC_Points::append(AWTC_Points *neu) {
+    if (Next) Next->append(neu);
+    else Next = neu;
 }
 
-AWTC_CompactedSequence::AWTC_CompactedSequence(const char *text, int length, const char *name, int start_offset)
+AWTC_CompactedSequence::AWTC_CompactedSequence(const char *Text, int Length, const char *name, int start_offset)
 {
     long cPos;
     long xPos;
-    long *compPositionTab = new long[length];
+    long *compPositionTab = new long[Length];
     myLength = 0;
     int lastWasPoint = 0;
 
     myStartOffset = start_offset;
-    myEndOffset = start_offset+length-1;
+    myEndOffset = start_offset+Length-1;
 
     awtc_assert(name);
 
@@ -62,27 +56,27 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *text, int length, con
     myName = strdup(name);
 
     long firstBase = 0;
-    long lastBase = length-1;
+    long lastBase = Length-1;
 
-    for (xPos=0; xPos<length; xPos++) {		// convert point gaps at beginning to dash gaps
-        char c = text[xPos];
+    for (xPos=0; xPos<Length; xPos++) {		// convert point gaps at beginning to dash gaps
+        char c = Text[xPos];
         if (!AWTC_is_gap(c)) {
             firstBase = xPos;
             break;
         }
     }
 
-    for (xPos=length-1; xPos>=0; xPos--) 	// same for end of sequence
+    for (xPos=Length-1; xPos>=0; xPos--) 	// same for end of sequence
     {
-        char c = text[xPos];
+        char c = Text[xPos];
         if (!AWTC_is_gap(c)) {
             lastBase = xPos;
             break;
         }
     }
 
-    for (xPos=0; xPos<length; xPos++) {
-        char c = toupper(text[xPos]);
+    for (xPos=0; xPos<Length; xPos++) {
+        char c = toupper(Text[xPos]);
 
         if (AWTC_is_gap(c)) {
             if (c=='-' || xPos<firstBase || xPos>lastBase) {
@@ -111,22 +105,22 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *text, int length, con
     //	storePoints(myLength+1);
     //    }
 
-    //awtc_assert(myLength);	// otherwise text does only contain gaps
+    //awtc_assert(myLength);	// otherwise Text does only contain gaps
 
     myText           = new char[myLength+1];
     myText[myLength] = 0;
 
     expdPositionTab = new int[myLength+1];	// plus one extra element
-    expdPositionTab[myLength] = length;		// which is the original length
+    expdPositionTab[myLength] = Length;		// which is the original length
 
     gapsBeforePosition = new int[myLength+1];
 
-    for (xPos=0; xPos<length; xPos++) {
+    for (xPos=0; xPos<Length; xPos++) {
         cPos = compPositionTab[xPos];
         awtc_assert(cPos<myLength);
 
         if (cPos>=0) {
-            myText[cPos] = toupper(text[xPos]);
+            myText[cPos] = toupper(Text[xPos]);
             expdPositionTab[cPos] = xPos;
             gapsBeforePosition[cPos] =
                 cPos
@@ -136,7 +130,7 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *text, int length, con
     }
 
     if (myLength>0) {
-        gapsBeforePosition[myLength] = length - expdPositionTab[myLength-1]; // gaps before end of sequence
+        gapsBeforePosition[myLength] = Length - expdPositionTab[myLength-1]; // gaps before end of sequence
     }
 
     referred = 1;
