@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : aw_position.hxx                                   //
 //   Purpose   : Positions, Vectors and Angles                     //
-//   Time-stamp: <Mon Sep/10/2007 11:55 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Thu Sep/27/2007 11:48 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in July 2007      //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -120,7 +120,7 @@ namespace AW {
 
         Vector()                                         : len(NAN) {} // default is not a vector
         Vector(const double& X, const double& Y)         : end(X, Y), len(-1) { ISVALID(*this); } // vector (0,0)->(X,Y)
-        Vector(const double& X, const double& Y, const double& length) : end(X, Y), len(length) { ISVALID(*this); } // same with known length
+        Vector(const double& X, const double& Y, const double& Length) : end(X, Y), len(Length) { ISVALID(*this); } // same with known length
         explicit Vector(const Position& to)              : end(to), len(-1) { ISVALID(*this); } // vector origin->to
         Vector(const Position& from, const Position& to) : end(to.xpos()-from.xpos(), to.ypos()-from.ypos()), len(-1) { ISVALID(*this); } // vector from->to
         ~Vector() {}
@@ -129,7 +129,7 @@ namespace AW {
         const double& y() const { return end.ypos(); }
         const Position& endpoint() { return end; }
 
-        Vector& set(const double& X, const double& Y, double length = -1) { end = Position(X, Y); len = length; return *this; }
+        Vector& set(const double& X, const double& Y, double Length = -1) { end = Position(X, Y); len = Length; return *this; }
         Vector& setx(const double& X) { end.setx(X); len = -1; return *this; }
         Vector& sety(const double& Y) { end.sety(Y); len = -1; return *this; }
 
@@ -227,8 +227,8 @@ namespace AW {
     public:
         bool valid() const { return Start.valid() && ToEnd.valid(); }
         
-        LineVector(const Position& start, const Position& end) : Start(start), ToEnd(start, end) { ISVALID(*this); }
-        LineVector(const Position& start, const Vector& to_end) : Start(start), ToEnd(to_end) { ISVALID(*this); }
+        LineVector(const Position& startpos, const Position& end) : Start(startpos), ToEnd(startpos, end) { ISVALID(*this); }
+        LineVector(const Position& startpos, const Vector& to_end) : Start(startpos), ToEnd(to_end) { ISVALID(*this); }
         LineVector(double X1, double Y1, double X2, double Y2) : Start(X1, Y1), ToEnd(X2-X1, Y2-Y1) { ISVALID(*this); }
         LineVector(const AW_rectangle& r) : Start(r.l, r.t), ToEnd(r.r-r.l-1, r.b-r.t-1) { ISVALID(*this); }
         LineVector() {}
@@ -256,7 +256,7 @@ namespace AW {
 
     class Rectangle : public LineVector { // the LineVector describes one corner and the diagonal
     public:
-        explicit Rectangle(const LineVector& diagonal) : LineVector(diagonal) { standardize(); }
+        explicit Rectangle(const LineVector& Diagonal) : LineVector(Diagonal) { standardize(); }
         Rectangle(const Position& corner, const Position& opposite_corner) : LineVector(corner, opposite_corner) { standardize(); }
         Rectangle(const Position& corner, const Vector& to_opposite_corner) : LineVector(corner, to_opposite_corner) { standardize(); }
         Rectangle(double X1, double Y1, double X2, double Y2) : LineVector(X1, Y1, X2, Y2) { standardize(); }

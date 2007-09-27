@@ -100,9 +100,8 @@ static void awt_edit_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_CB_T
 }
 
 
-static void awt_arbdb_scanner_value_change(void *dummy, struct adawcbstruct *cbs)
+static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
 {
-    AWUSE(dummy);
     char *value = cbs->aws->get_root()->awar(cbs->def_dest)->read_string();
     int   vlen  = strlen(value);
     
@@ -227,7 +226,7 @@ static void awt_arbdb_scanner_value_change(void *dummy, struct adawcbstruct *cbs
     }
 
     if (update_self) { // if the name changed -> rewrite awars AFTER transaction was closed
-        GB_transaction dummy(cbs->gb_main);
+        GB_transaction ta(cbs->gb_main);
         
         char *my_id = cbs->selector->generate_item_id(cbs->gb_main, cbs->gb_user);
         cbs->selector->update_item_awars(cbs->gb_main, cbs->awr, my_id); // update awars (e.g. AWAR_SPECIES_NAME)
