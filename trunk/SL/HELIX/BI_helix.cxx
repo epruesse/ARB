@@ -353,19 +353,19 @@ long BI_helix::next_pair_position(size_t pos) const {
     return entries[pos].next_pair_pos;
 }
 
-long BI_helix::first_position(const char *helixNr) const {
+long BI_helix::first_position(const char *helix_Nr) const {
     long pos;
     for (pos = first_pair_position(); pos != -1; pos = next_pair_position(pos)) {
-        if (strcmp(helixNr, entries[pos].helix_nr) == 0) break;
+        if (strcmp(helix_Nr, entries[pos].helix_nr) == 0) break;
     }
     return pos;
 }
 
-long BI_helix::last_position(const char *helixNr) const {
-    long pos = first_position(helixNr);
+long BI_helix::last_position(const char *helix_Nr) const {
+    long pos = first_position(helix_Nr);
     if (pos != -1) {
         long next_pos = next_pair_position(pos);
-        while (next_pos != -1 && strcmp(helixNr, entries[next_pos].helix_nr) == 0) {
+        while (next_pos != -1 && strcmp(helix_Nr, entries[next_pos].helix_nr) == 0) {
             pos      = next_pos;
             next_pos = next_pair_position(next_pos);
         }
