@@ -537,7 +537,7 @@ static bool shouldReflow(const string& s, int& foundIndentation) {
     return equal_indent;
 }
 
-static bool startsWithNumber(string& s, int& number, bool do_erase = true) {
+static bool startsWithNumber(string& s, long long &number, bool do_erase = true) {
     // tests if first line starts with 'number.'
     // if true then the number is removed
 
@@ -657,7 +657,7 @@ private:
     ParagraphTree *son;         // indentation + 1
 
     bool is_enumerated;         // 1., 2.,  usw.
-    int  enumeration;           // the value of the enumeration (undefined if !is_enumerated)
+    long long enumeration;           // the value of the enumeration (undefined if !is_enumerated)
 
     bool reflow;                // should the paragraph be reflown ? (true if indentation is equal for all lines of text)
     int  indentation;           // the real indentation of the black (after enumeration was removed)
@@ -837,7 +837,7 @@ private:
         size_t this_lineend = text.find('\n');
 
         while (this_lineend != string::npos) {
-            int    number;
+            long long number;
             string embedded = text.substr(this_lineend);
             if (startsWithNumber(embedded, number, false)) {
                 if (number == lookfor) {
