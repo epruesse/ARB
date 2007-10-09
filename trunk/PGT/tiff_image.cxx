@@ -80,9 +80,9 @@ int TIFFimage::open(char *name)
     // DEFINE LOCAL VARIABLES
     TIFF *tiff= NULL;
     uint32 *array= NULL;
-    uint32 width= 0;
-    uint32 height= 0;
-    uint32 size= 0;
+    uint32 loc_width= 0;
+    uint32 loc_height= 0;
+    uint32 loc_size= 0;
     uint32 orientation= 0;
     bool error= false;
 
@@ -93,12 +93,12 @@ int TIFFimage::open(char *name)
     if(tiff)
     {
         // GET TIFF IMAGE DIMENSIONS
-        TIFFGetField(tiff, TIFFTAG_IMAGEWIDTH, &width);
-        TIFFGetField(tiff, TIFFTAG_IMAGELENGTH, &height);
-        size= width * height;
+        TIFFGetField(tiff, TIFFTAG_IMAGEWIDTH, &loc_width);
+        TIFFGetField(tiff, TIFFTAG_IMAGELENGTH, &loc_height);
+        loc_size= loc_width * loc_height;
 
         // CREATE MEMORY ARRAY FOR THE TIFF IMAGE DATA
-        array= (uint32 *)_TIFFmalloc(size * sizeof(uint32));
+        array= (uint32 *)_TIFFmalloc(loc_size * sizeof(uint32));
 
         // IF ARRAY WAS CREATED SUCCESSFULLY...
         if(array)
@@ -121,7 +121,7 @@ int TIFFimage::open(char *name)
             }
             TIFFSetField(tiff, TIFFTAG_ORIENTATION, orientation);
 
-            if(!(TIFFReadRGBAImage(tiff, width, height, array, 0)))
+            if(!(TIFFReadRGBAImage(tiff, loc_width, loc_height, array, 0)))
                 error= true;
         }
         else error= true; // ARRAY INIT FAILED
@@ -144,9 +144,9 @@ int TIFFimage::open(char *name)
 
     // FILL LOCAL VARIABLES
     m_array= array;
-    m_width= width;
-    m_height= height;
-    m_size= size;
+    m_width= loc_width;
+    m_height= loc_height;
+    m_size= loc_size;
     m_hasData= true;
 
     // SAVE FILE NAME
