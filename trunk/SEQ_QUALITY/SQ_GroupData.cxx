@@ -270,15 +270,16 @@ void SQ_GroupData_RNA::SQ_add_sequence(const char *sequence)
 
 consensus_result SQ_GroupData_PRO::SQ_calc_consensus(const char *) const
 {
-#warning implementation missing
+    // Warning: implementation missing
     consensus_result cr;
     cr.conformity = 0;
     cr.deviation = 0;
-    return cr;                  // dummy return value
+    return cr;
+    // dummy return values
 }
 
 
 void SQ_GroupData_PRO::SQ_add_sequence(const char *)
 {
-#warning implementation missing
+    // Warning: implementation missing
 }
