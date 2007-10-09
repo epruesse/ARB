@@ -93,12 +93,12 @@ SQ_helix::~SQ_helix()
 }
 
 
-void SQ_helix::SQ_calc_helix_layout(const char *sequence, GBDATA * gb_main,
+void SQ_helix::SQ_calc_helix_layout(const char *seq, GBDATA * gb_main,
                                     char *alignment_name,
                                     GBDATA * gb_quality,
                                     AP_filter * filter)
 {
-    BI_helix& helix = getHelix(gb_main, alignment_name);
+    getHelix(gb_main, alignment_name);
 
     // one call should be enough here (alignment does not change during the whole evaluation)
     if (!has_filterMap) {
@@ -111,7 +111,7 @@ void SQ_helix::SQ_calc_helix_layout(const char *sequence, GBDATA * gb_main,
         has_filterMap = true;
     }
 
-    if (!helix.has_entries()) {
+    if (!helix->has_entries()) {
         count_strong_helix = 1;
         count_weak_helix = 1;
         count_no_helix = 1;
@@ -121,9 +121,9 @@ void SQ_helix::SQ_calc_helix_layout(const char *sequence, GBDATA * gb_main,
              filter_pos++) {
             int seq_pos = filter->filterpos_2_seqpos[filter_pos];
 
-            BI_PAIR_TYPE pair_type = helix.pairtype(seq_pos);
+            BI_PAIR_TYPE pair_type = helix->pairtype(seq_pos);
             if (pair_type == HELIX_PAIR) {
-                int v_seq_pos = helix.opposite_position(seq_pos);
+                int v_seq_pos = helix->opposite_position(seq_pos);
                 if (v_seq_pos > seq_pos) {      // ignore right helix positions
                     int v_filter_pos = filterMap[v_seq_pos];
 
@@ -131,9 +131,9 @@ void SQ_helix::SQ_calc_helix_layout(const char *sequence, GBDATA * gb_main,
                     seq_assert(v_filter_pos);
 
                     if (v_filter_pos > 0) {
-                        char left  = sequence[filter_pos];
-                        char right = sequence[v_filter_pos];
-                        int  check = helix.check_pair(left, right, pair_type);
+                        char left  = seq[filter_pos];
+                        char right = seq[v_filter_pos];
+                        int  check = helix->check_pair(left, right, pair_type);
 
                         switch (check) {
                             case 2:
