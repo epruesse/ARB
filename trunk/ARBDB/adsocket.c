@@ -151,7 +151,8 @@ long gbcm_read_buffered(int socket,char *ptr, long size)
     if (holding <= 0) {
         holding = read(socket,gb_local->write_buffer,(size_t)gb_local->write_bufsize);
 
-        if (!holding){
+        if (holding < 0)
+        {
             fprintf(stderr,"Cannot read data from client: len=%li (%s, errno %i)\n",
                     holding, strerror(errno), errno);
             return 0;
