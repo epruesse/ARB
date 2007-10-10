@@ -865,8 +865,8 @@ void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_sort_
 long gbs_hashi_index(long key, long size)
 {
     register long x;
-    x = (key*97)%size;
-    if (x<0) x+= size;
+    x = (key * (long long)97)%size;     // make one multiplier a (long long) to avoid
+    if (x<0) x+= size;                  // int overflow and abort if compield with -ftrapv
     return x;
 }
 
