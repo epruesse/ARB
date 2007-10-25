@@ -77,7 +77,7 @@ static long convert_cgi_to_hash(char *indata){		// destroys indata
 		char *eq = strchr(out,'=');
 		if (!eq) continue;
 		*(eq) = 0;
-		TRS_write_hash(hash,out,(int)(eq+1));
+		TRS_write_hash(hash,out,(long)(eq+1));
 	}
 	return hash;
 }
