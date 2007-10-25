@@ -119,7 +119,7 @@ static int nt_species_has_alignment(GBDATA *gb_species, void *cd_use) {
 }
 
 static int nt_sequence_is_partial(GBDATA *gb_species, void *cd_partial) {
-    int wanted  = (int)cd_partial;
+    long wanted  = (long)cd_partial;
     awt_assert(wanted == 0 || wanted == 1);
     int partial = GBT_is_partial(gb_species, 1-wanted, 0);
 
