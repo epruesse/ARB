@@ -1086,17 +1086,18 @@ GB_ULONG GB_get_physical_memory(void){
     long memsize        = (pagesize/1024) * pages;
     long nettomemsize   = memsize - 10240; /* reduce by 10Mb (for kernel etc.) */
     long maxmemsize4arb = (nettomemsize*95)/100; /* arb uses max. 95 % of available memory (was 70% in the past) */
-    long addressable    = 1<<(sizeof(void*)*8-10); /* e.g. 2^32 with 4byte-pointers; -10 because we calculate in kBytes */
+    long addressable    = (long)1<<((long)sizeof(void*)*(long)8-(long)10); /* e.g. 2^32 with 4byte-pointers; -10 because we calculate in kBytes */
     long usedmemsize    = MIN(maxmemsize4arb, addressable); /* limit to max addressable memory */
 
 #if defined(DEBUG)
-    printf("- memsize(real)        = %10li k\n", memsize);
-    printf("- memsize(netto)       = %10li k\n", nettomemsize);
-    printf("- memsize(95%%)         = %10li k\n", maxmemsize4arb);
-    printf("- memsize(addressable) = %10li k\n", addressable);
-    printf("- memsize(used by ARB) = %10li k\n", usedmemsize);
+    printf("- memsize(real)        = %20li k\n", memsize);
+    printf("- memsize(netto)       = %20li k\n", nettomemsize);
+    printf("- memsize(95%%)         = %20li k\n", maxmemsize4arb);
+    printf("- memsize(addressable) = %20li k\n", addressable);
+    printf("- memsize(used by ARB) = %20li k\n", usedmemsize);
 #endif /* DEBUG */
-
+    
+    arb_assert(usedmemsize != 0);
     return usedmemsize;
 #else
     return 128*1024;            /* 128 Mb default memory */
