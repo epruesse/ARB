@@ -3,6 +3,8 @@
 .SUFFIXES: .o .cxx .depend
 
 CPP_OBJECTS = \
+	ED4_protein_2nd_structure.o \
+	ED4_ProteinViewer.o \
 	ED4_search.o \
 	ED4_cursor.o \
 	ED4_dump.o \
@@ -26,15 +28,13 @@ CPP_OBJECTS = \
 	ED4_block.o \
 	ED4_visualizeSAI.o \
 	edit_naligner.o \
-	ED4_protein_2nd_structure.o \
-	ED4_ProteinViewer.o \
 
 
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES)
+	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -313,15 +313,10 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arbdb.h
 
-ED4_ProteinViewer.o: ed4_awars.hxx
-ED4_ProteinViewer.o: ed4_block.hxx
 ED4_ProteinViewer.o: ed4_class.hxx
 ED4_ProteinViewer.o: ed4_defs.hxx
-ED4_ProteinViewer.o: ed4_edit_string.hxx
-ED4_ProteinViewer.o: ed4_nds.hxx
 ED4_ProteinViewer.o: ed4_ProteinViewer.hxx
 ED4_ProteinViewer.o: ed4_search.hxx
-ED4_ProteinViewer.o: pv_header.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -332,7 +327,6 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
-ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
@@ -340,14 +334,10 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt.hxx
-ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
-ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_codon_table.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
-ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_translate.hxx
-ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/st_window.hxx
 
 ED4_RNA3D.o: ../RNA3D/RNA3D_Main.hxx
 ED4_RNA3D.o: ed4_RNA3D.hxx
