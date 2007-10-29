@@ -408,7 +408,7 @@ unsigned char ED4_Edit_String::get_gap_type(long pos, int direction)
 }
 
 ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, char key, int direction, ED4_EDITMODI mode, bool is_consensus,
-                                     long &seq_pos, bool &changed_flag, bool &center_cursor, bool &cannot_handle, bool &write_fault, GBDATA* gb_data, bool is_sequence)
+                                     long &seq_pos, bool &changed_flag, ED4_CursorJumpType& cursor_jump, bool &cannot_handle, bool &write_fault, GBDATA* gb_data, bool is_sequence)
 {
     changed_flag = 0;
     write_fault = 0;
@@ -599,65 +599,6 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                                     else {
                                         ad_err = GBS_global_string("You can only jump single bases.");
                                     }
-#if 0
-                                    if (gap_behind<0 || gap_behind>seq_len) {
-                                        ad_err = GBS_global_string("Cannot jump out of sequence!");
-                                    }
-                                    else {
-                                        if (ADPP_IS_ALIGN_CHARACTER(seq[gap_behind])) { // jump only one base
-                                            long dest_pos = get_next_base(gap_behind, direction); // destination pos of jumped base
-
-                                            if (dest_pos<0) {
-                                                dest_pos = direction<0 ? 0 : seq_len-1;
-                                                if (!ADPP_IS_ALIGN_CHARACTER(seq[dest_pos])) {
-                                                    dest_pos = -1;
-                                                }
-                                            }
-                                            else {
-                                                dest_pos -= direction;
-                                            }
-
-                                            if (dest_pos>=0) {
-                                                ad_err = moveBase(adjacent_seq_pos, dest_pos, get_gap_type(adjacent_seq_pos, -direction));
-
-                                                if (!ad_err) { // move cursor into opposite direction (to jump next base)
-                                                    seq_pos = get_next_base(adjacent_seq_pos, -direction);
-                                                    if (seq_pos==-1) {
-                                                        seq_pos = direction>0 ? 0 : seq_len; // if no next base -> cursor to beg or end of seq
-                                                    }
-                                                    else {
-                                                        seq_pos += (direction<0);
-                                                    }
-                                                }
-                                            }
-                                            else {
-                                                n = 0;
-                                            }
-                                        }
-                                        else { // jump two or more bases
-                                            long next_gap = get_next_gap(adjacent_seq_pos, direction);
-
-                                            if (next_gap>=0) {
-                                                long dest_pos = get_next_base(next_gap, direction);
-                                                long source_pos = get_next_base(next_gap, -direction);
-                                                long last_source = direction>0 ? seq_pos : seq_pos-1;
-
-                                                dest_pos = dest_pos==-1 ? (direction<0 ? 0 : seq_len-1) : dest_pos-direction;
-                                                e4_assert(source_pos>=0);
-
-                                                ad_err = shiftBases(source_pos, last_source, dest_pos, direction, &dest_pos,
-                                                                    get_gap_type(adjacent_seq_pos, -direction));
-
-                                                if (!ad_err) {
-                                                    seq_pos = dest_pos + (direction<0);
-                                                }
-                                            }
-                                            else {
-                                                n = 0;
-                                            }
-                                        }
-                                    }
-#endif
                                 }
                                 else {
                                     n = 0;
@@ -803,7 +744,7 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                             break;
                         }
                         case 'A': { // CTRL-A = Start Fast-Aligner
-                            AW_window *aw_tmp = ED4_ROOT->temp_aww;
+                            AW_window *aw_tmp = ED4_ROOT->get_aww();
                             if (is_consensus) { cannot_handle = 1; return 0; };
                             if (mode==AD_NOWRITE) { write_fault = 1; return 0; }
 
@@ -859,7 +800,7 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
 
                             if (helix->pairtype(seq_pos) != HELIX_NONE) {
                                 seq_pos = helix->opposite_position(seq_pos);
-                                center_cursor = true;
+                                cursor_jump = ED4_JUMP_KEEP_POSITION;
                             }
                             else {
                                 ad_err = GBS_global_string("No at helix position");
@@ -885,13 +826,13 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                         }
                         case 'L':  { // CTRL-L = Refresh
                             ED4_refresh_window(0, 0, 0);
-                            center_cursor = true;
+                            cursor_jump = ED4_JUMP_CENTERED;
                             break;
                         }
                         case 'S': { // CTRL-S = Repeat last search
-                            ad_err = ED4_repeat_last_search();
-                            seq_pos = ED4_ROOT->temp_ed4w->cursor.get_sequence_pos();
-                            center_cursor = true;
+                            ad_err      = ED4_repeat_last_search();
+                            seq_pos     = ED4_ROOT->get_ed4w()->cursor.get_sequence_pos();
+                            cursor_jump = ED4_JUMP_KEEP_POSITION;
                             break;
                         }
                         case 'U': {
@@ -1072,7 +1013,7 @@ void ED4_Edit_String::edit(ED4_work_info *info)
 
     info->out_seq_position = remap->screen_to_sequence(info->char_position);
     info->refresh_needed   = false;
-    info->center_cursor    = false;
+    info->cursor_jump      = ED4_JUMP_KEEP_VISIBLE;
     info->cannot_handle    = false;
     old_seq                = 0;
 
@@ -1085,9 +1026,6 @@ void ED4_Edit_String::edit(ED4_work_info *info)
         int seq_len_int;
         seq = info->working_terminal->resolve_pointer_to_string_copy(&seq_len_int);
         seq_len = seq_len_int;
-
-        //         seq     = GB_read_string(info->gb_data);
-        //         seq_len = GB_read_string_count(info->gb_data);
     }
 
     int map_key = ED4_ROOT->edk->map_key(info->event.character);
@@ -1152,7 +1090,7 @@ void ED4_Edit_String::edit(ED4_work_info *info)
                       (int)(info->string!=0),
                       info->out_seq_position,
                       info->refresh_needed,
-                      info->center_cursor,
+                      info->cursor_jump,
                       info->cannot_handle,
                       write_fault,
                       info->gb_data,
