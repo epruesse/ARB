@@ -1,143 +1,68 @@
 /*=======================================================================================*/
 //
-//    File            : ED4_ProteinViewer.cxx                               
-//    Purpose      : Protein Viewer :Dynamically Translating And Displaying Of Aminoacid Sequence In The DNA Sequence Alignment.
+//    File       : ED4_ProteinViewer.cxx                               
+//    Purpose    : Protein Viewer: Dynamical translation and display of
+//                 aminoacid sequences in the dna alignment.
 //    Time-stamp : Thu Sep 14 2006                                                       
-//    Author        : Yadhu Kumar (yadhu@arb-home.de)
-//    web site      : http://www.arb-home.de/                                              
+//    Author     : Yadhu Kumar (yadhu@arb-home.de)
+//    web site   : http://www.arb-home.de/                                              
 //                                                                                      
-//        Copyright Department of Microbiology (Technical University Munich)            
+//    Copyright Department of Microbiology (Technical University Munich)            
 //                                                                                      
 /*=======================================================================================*/
 
-#include <iostream>
-#include "pv_header.hxx"
 #include "ed4_ProteinViewer.hxx"
+#include "ed4_class.hxx"
+
+#include <awt_pro_a_nucs.hxx>
+#include <awt_codon_table.hxx>
+#include <awt_translate.hxx>
+#include <awt_seq_colors.hxx>
+#include <aw_question.hxx>
+#include <aw_preset.hxx>
+#include <aw_awars.hxx>
+#include <arbdbt.h>
+
+#include <iostream>
 
 using namespace std;
+
 // Definitions used
+#define FORWARD_STRAND         1
+#define COMPLEMENTARY_STRAND   2
+#define DB_FIELD_STRAND        3
+
+#define FORWARD_STRANDS        3
+#define COMPLEMENTARY_STRANDS  3
+#define DB_FIELD_STRANDS       1
+
+// typedefs
+typedef enum {
+    PV_FAILED = 0,
+    PV_SUCCESS
+} PV_ERROR;
+
+enum {
+    PV_MARKED = 0,
+    PV_SELECTED,
+    PV_CURSOR,
+    PV_ALL
+};
+
 #define BUFFERSIZE            1000
 
 // Global Variables
 extern GBDATA *gb_main;
-static bool gTerminalsCreated = false;
-static int PV_AA_Terminals4Species = 0;
-static int gMissingTransTable  = 0;
-static int gMissingCodonStart = 0;
-static int giLastTranlsationTable = -1;
-static bool gbWritingData = false;
-static int giNewAlignments = 0;
 
-// Functions 
-void PV_AddCallBacks(AW_root *awr);
-void PV_CreateAwars(AW_root *root, AW_default aw_def);
-bool PV_LookForNewTerminals(AW_root *root);
-void PV_CallBackFunction(AW_root *root);
-void PV_CreateAllTerminals(AW_root *root);
-void PV_ManageTerminals(AW_root *root);
-void PV_HideTerminal(ED4_AA_sequence_terminal *aaSeqTerminal);
-void PV_UnHideTerminal(ED4_AA_sequence_terminal *aaSeqTerminal);
-void TranslateGeneToAminoAcidSequence(AW_root *root,ED4_AA_sequence_terminal *seqTerm, char *speciesName, int startPos4Translation, int translationMode);
-void PV_DisplayAminoAcidNames(AW_root *root);
-void PV_PrintMissingDBentryInformation(void);
-void PV_RefreshWindow(AW_root *root);
-void PV_ManageTerminalDisplay(AW_root *root, ED4_AA_sequence_terminal *aaSeqTerminal,long int DispMode);
-PV_ERROR PV_ComplementarySequence(char *sequence);
-AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root);
-void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype);
-void PV_RefreshDisplay(AW_root *root);
-void PV_RefreshProtViewDisplay(AW_window *aww);
+static bool gTerminalsCreated       = false;
+static int  PV_AA_Terminals4Species = 0;
+static int  gMissingTransTable      = 0;
+static int  gMissingCodonStart      = 0;
+static int  giLastTranlsationTable  = -1;
+static bool gbWritingData           = false;
+static int  giNewAlignments         = 0;
 
-// --------------------------------------------------------------------------------
-//        Binding callback function to the AWARS
-// --------------------------------------------------------------------------------
-void PV_AddCallBacks(AW_root *awr) {
-
-    awr->awar(AWAR_PV_DISPLAY_ALL)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PROTVIEW_FORWARD_STRAND_1)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PROTVIEW_FORWARD_STRAND_2)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PROTVIEW_FORWARD_STRAND_3)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_1)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_2)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_3)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PROTVIEW_DEFINED_FIELDS)->add_callback(PV_CallBackFunction);
-
-    awr->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->add_callback(PV_RefreshDisplay);
-    awr->awar(AWAR_SPECIES_NAME)->add_callback(PV_CallBackFunction);
-
-    awr->awar(AWAR_PV_SELECTED)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_SELECTED_DB)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_SELECTED_FS_1)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_SELECTED_FS_2)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_SELECTED_FS_3)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_SELECTED_CS_1)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_SELECTED_CS_2)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_SELECTED_CS_3)->add_callback(PV_CallBackFunction);
-
-    awr->awar(AWAR_PV_MARKED)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_MARKED_DB)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_MARKED_FS_1)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_MARKED_FS_2)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_MARKED_FS_3)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_MARKED_CS_1)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_MARKED_CS_2)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_MARKED_CS_3)->add_callback(PV_CallBackFunction);
-
-    awr->awar(AWAR_PV_CURSOR)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_CURSOR_DB)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_CURSOR_FS_1)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_CURSOR_FS_2)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_CURSOR_FS_3)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_CURSOR_CS_1)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_CURSOR_CS_2)->add_callback(PV_CallBackFunction);
-    awr->awar(AWAR_PV_CURSOR_CS_3)->add_callback(PV_CallBackFunction);
-}
-
-// --------------------------------------------------------------------------------
-//        Creating AWARS to be used by the PROTVIEW module
-// --------------------------------------------------------------------------------
-void PV_CreateAwars(AW_root *root, AW_default aw_def){
-
-    root->awar_int(AWAR_PV_DISPLAY_ALL, 0, aw_def); 
-
-    root->awar_int(AWAR_PROTVIEW_FORWARD_STRAND_1, 0, aw_def); 
-    root->awar_int(AWAR_PROTVIEW_FORWARD_STRAND_2, 0, aw_def); 
-    root->awar_int(AWAR_PROTVIEW_FORWARD_STRAND_3, 0, aw_def); 
-
-    root->awar_int(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_1, 0, aw_def); 
-    root->awar_int(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_2, 0, aw_def); 
-    root->awar_int(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_3, 0, aw_def); 
-
-    root->awar_int(AWAR_PROTVIEW_DEFINED_FIELDS, 0, aw_def); 
-    root->awar_int(AWAR_PROTVIEW_DISPLAY_OPTIONS, 0, aw_def); 
-
-    root->awar_int(AWAR_PV_SELECTED, 0, aw_def); 
-    root->awar_int(AWAR_PV_SELECTED_DB, 0, aw_def); 
-    root->awar_int(AWAR_PV_SELECTED_FS_1, 0, aw_def); 
-    root->awar_int(AWAR_PV_SELECTED_FS_2, 0, aw_def); 
-    root->awar_int(AWAR_PV_SELECTED_FS_3, 0, aw_def); 
-    root->awar_int(AWAR_PV_SELECTED_CS_1, 0, aw_def); 
-    root->awar_int(AWAR_PV_SELECTED_CS_2, 0, aw_def); 
-    root->awar_int(AWAR_PV_SELECTED_CS_3, 0, aw_def); 
-
-    root->awar_int(AWAR_PV_MARKED, 0, aw_def); 
-    root->awar_int(AWAR_PV_MARKED_DB, 0, aw_def); 
-    root->awar_int(AWAR_PV_MARKED_FS_1, 0, aw_def); 
-    root->awar_int(AWAR_PV_MARKED_FS_2, 0, aw_def); 
-    root->awar_int(AWAR_PV_MARKED_FS_3, 0, aw_def); 
-    root->awar_int(AWAR_PV_MARKED_CS_1, 0, aw_def); 
-    root->awar_int(AWAR_PV_MARKED_CS_2, 0, aw_def); 
-    root->awar_int(AWAR_PV_MARKED_CS_3, 0, aw_def); 
-
-    root->awar_int(AWAR_PV_CURSOR, 0, aw_def); 
-    root->awar_int(AWAR_PV_CURSOR_DB, 0, aw_def); 
-    root->awar_int(AWAR_PV_CURSOR_FS_1, 0, aw_def); 
-    root->awar_int(AWAR_PV_CURSOR_FS_2, 0, aw_def); 
-    root->awar_int(AWAR_PV_CURSOR_FS_3, 0, aw_def); 
-    root->awar_int(AWAR_PV_CURSOR_CS_1, 0, aw_def); 
-    root->awar_int(AWAR_PV_CURSOR_CS_2, 0, aw_def); 
-    root->awar_int(AWAR_PV_CURSOR_CS_3, 0, aw_def); 
-}
+static AW_repeated_question *ASKtoOverWriteData = 0;
 
 bool PV_LookForNewTerminals(AW_root *root){
     bool bTerminalsFound = true;
@@ -197,28 +122,6 @@ bool PV_LookForNewTerminals(AW_root *root){
     return bTerminalsFound;
 }
 
-void PV_RefreshWindow(AW_root *root){
-    // Manage the terminals showing only those selected by the user
-    if(gTerminalsCreated) {
-        PV_ManageTerminals(root);
-    }
-    //Refresh all windows
-     ED4_refresh_window(0, 0, 0);
-     ED4_ROOT->refresh_all_windows(0);
-}
-
-void PV_CallBackFunction(AW_root *root) {
-    // Create New Terminals If Aminoacid Sequence Terminals Are Not Created 
-    if(!gTerminalsCreated){
-        // AWAR_PROTEIN_TYPE is not initilized if called from ED4_main before creating proteinViewer window
-        // so, initilize it here
-        root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, gb_main);
-        PV_CreateAllTerminals(root);
-    }
-
-    PV_RefreshWindow(root);
-}
-
 void PV_HideTerminal(ED4_AA_sequence_terminal *aaSeqTerminal) {
     ED4_sequence_manager *seqManager = aaSeqTerminal->get_parent(ED4_L_SEQUENCE)->to_sequence_manager();
     seqManager->hide_children();
@@ -254,50 +157,6 @@ void PV_HideAllTerminals(){
         }
 }
 
-void PV_RefreshDisplay(AW_root *root) {
-    PV_DisplayAminoAcidNames(root);
-}
-
-void PV_DisplayAminoAcidNames(AW_root *root) {
-    GB_transaction dummy(gb_main);
-
-    ED4_terminal *terminal = 0;
-    for( terminal = ED4_ROOT->root_group_man->get_first_terminal();
-         terminal;  
-         terminal = terminal->get_next_terminal())
-        {
-            if(terminal->is_sequence_terminal()) {
-                ED4_sequence_terminal *seqTerminal = terminal->to_sequence_terminal();
-                char                          *speciesName = seqTerminal->species_name; 
-
-                ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-                if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) 
-                    {
-                        // we are in the sequence terminal section of a species
-                        // walk through all the corresponding AA sequence terminals for the speecies and 
-                        // hide or unhide the terminals based on the display options set by the user
-                        for(int i=0; i<PV_AA_Terminals4Species; i++) 
-                            {
-                                // get the corresponding AA_sequence_terminal skipping sequence_info terminal
-                                // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
-                                terminal = terminal->get_next_terminal()->get_next_terminal(); 
-                                // Make sure it is AA sequence terminal
-                                if (terminal->is_aa_sequence_terminal()) {
-                                    ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
-                                    // we are in AA sequence terminal
-                                    int   aaStartPos = int(aaSeqTerminal->GET_aaStartPos()); 
-                                    int aaStrandType = int(aaSeqTerminal->GET_aaStrandType()); 
-                                    // retranslate the genesequence and store it to the AA_sequnce_terminal
-                                    TranslateGeneToAminoAcidSequence(root, aaSeqTerminal, speciesName, aaStartPos-1, aaStrandType);
-                                }
-                            }
-                    }
-            }
-        }
-    // Print missing DB entries
-    PV_PrintMissingDBentryInformation();
-    PV_RefreshWindow(root);
-}
 
 void PV_ManageTerminalDisplay(AW_root *root, ED4_AA_sequence_terminal *aaSeqTerminal,long int DispMode){
 
@@ -520,7 +379,7 @@ void PV_ManageTerminals(AW_root *root){
     if (dispAtCursor)
         {
             // Display Only Terminals Corresponding To The Cursor Position in the multiple alignment
-            ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+            ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
             if (cursor->owner_of_cursor) {
                 // Get The Cursor Terminal And The Corresponding Aa_Sequence Terminals And Set The Display Options
                 ED4_terminal *cursorTerminal = cursor->owner_of_cursor->to_terminal();
@@ -540,7 +399,30 @@ void PV_ManageTerminals(AW_root *root){
         }
 }
 
-static AW_repeated_question *ASKtoOverWriteData = 0;
+void PV_RefreshWindow(AW_root *root){
+    // Manage the terminals showing only those selected by the user
+    if(gTerminalsCreated) {
+        PV_ManageTerminals(root);
+    }
+    //Refresh all windows
+     ED4_refresh_window(0, 0, 0);
+     ED4_ROOT->refresh_all_windows(0);
+}
+
+PV_ERROR PV_ComplementarySequence(char *sequence)
+{
+    char T_or_U;
+    GB_ERROR error  = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "complement");
+    if (error) {
+        cout<<error<<endl;
+        return PV_FAILED;
+    }
+
+    int seqLen = strlen(sequence);
+    char *complementarySeq  = GBT_complementNucSequence((const char*) sequence, seqLen, T_or_U);
+    strcpy(sequence, complementarySeq);
+    return PV_SUCCESS;
+}
 
 void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *spName/*, AW_repeated_question ASKtoOverWriteData*/){
     GB_begin_transaction(gb_main);  //open database for transaction
@@ -635,12 +517,6 @@ void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *s
     }
 }
 
-void PV_RefreshProtViewDisplay(AW_window *aww){
-    if(gTerminalsCreated) {
-        PV_RefreshDisplay(aww->get_root());
-    }
-}
-
 void PV_SaveData(AW_window *aww){
     //IDEA: 
     //1. walk thru the AA_sequence terminals 
@@ -692,21 +568,6 @@ void PV_SaveData(AW_window *aww){
     }
     gbWritingData = false;
     AWUSE(aww);
-}
-
-PV_ERROR PV_ComplementarySequence(char *sequence)
-{
-    char T_or_U;
-    GB_ERROR error  = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "complement");
-    if (error) {
-        cout<<error<<endl;
-        return PV_FAILED;
-    }
-
-    int seqLen = strlen(sequence);
-    char *complementarySeq  = GBT_complementNucSequence((const char*) sequence, seqLen, T_or_U);
-    strcpy(sequence, complementarySeq);
-    return PV_SUCCESS;
 }
 
 // This function translates gene sequence to aminoacid sequence and stores into the respective AA_Sequence_terminal
@@ -848,6 +709,56 @@ void PV_PrintMissingDBentryInformation(void){
     }
 }
 
+void PV_DisplayAminoAcidNames(AW_root *root) {
+    GB_transaction dummy(gb_main);
+
+    ED4_terminal *terminal = 0;
+    for( terminal = ED4_ROOT->root_group_man->get_first_terminal();
+         terminal;  
+         terminal = terminal->get_next_terminal())
+        {
+            if(terminal->is_sequence_terminal()) {
+                ED4_sequence_terminal *seqTerminal = terminal->to_sequence_terminal();
+                char                          *speciesName = seqTerminal->species_name; 
+
+                ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
+                if (speciesManager && !speciesManager->flag.is_consensus && !speciesManager->flag.is_SAI) 
+                    {
+                        // we are in the sequence terminal section of a species
+                        // walk through all the corresponding AA sequence terminals for the speecies and 
+                        // hide or unhide the terminals based on the display options set by the user
+                        for(int i=0; i<PV_AA_Terminals4Species; i++) 
+                            {
+                                // get the corresponding AA_sequence_terminal skipping sequence_info terminal
+                                terminal = terminal->get_next_terminal()->get_next_terminal(); 
+                                // Make sure it is AA sequence terminal
+                                if (terminal->is_aa_sequence_terminal()) {
+                                    ED4_AA_sequence_terminal *aaSeqTerminal = terminal->to_aa_sequence_terminal();
+                                    // we are in AA sequence terminal
+                                    int   aaStartPos = int(aaSeqTerminal->GET_aaStartPos()); 
+                                    int aaStrandType = int(aaSeqTerminal->GET_aaStrandType()); 
+                                    // retranslate the genesequence and store it to the AA_sequnce_terminal
+                                    TranslateGeneToAminoAcidSequence(root, aaSeqTerminal, speciesName, aaStartPos-1, aaStrandType);
+                                }
+                            }
+                    }
+            }
+        }
+    // Print missing DB entries
+    PV_PrintMissingDBentryInformation();
+    PV_RefreshWindow(root);
+}
+
+void PV_RefreshDisplay(AW_root *root) {
+    PV_DisplayAminoAcidNames(root);
+}
+
+void PV_RefreshProtViewDisplay(AW_window *aww){
+    if(gTerminalsCreated) {
+        PV_RefreshDisplay(aww->get_root());
+    }
+}
+
 void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype)
 {
     if (gbtype==GB_CB_CHANGED && 
@@ -857,7 +768,7 @@ void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype)
         {
             GB_transaction dummy(gb_main);
         
-            ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+            ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
             if (cursor->owner_of_cursor) {
                 ED4_terminal *cursorTerminal = cursor->owner_of_cursor->to_terminal();
             
@@ -1031,6 +942,109 @@ void PV_CreateAllTerminals(AW_root *root) {
     PV_PrintMissingDBentryInformation();
 
     //    ED4_ROOT->refresh_all_windows(0);
+}
+
+void PV_CallBackFunction(AW_root *root) {
+    // Create New Terminals If Aminoacid Sequence Terminals Are Not Created 
+    if(!gTerminalsCreated){
+        // AWAR_PROTEIN_TYPE is not initilized if called from ED4_main before creating proteinViewer window
+        // so, initilize it here
+        root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, gb_main);
+        PV_CreateAllTerminals(root);
+    }
+
+    PV_RefreshWindow(root);
+}
+
+// --------------------------------------------------------------------------------
+//        Binding callback function to the AWARS
+// --------------------------------------------------------------------------------
+void PV_AddCallBacks(AW_root *awr) {
+
+    awr->awar(AWAR_PV_DISPLAY_ALL)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PROTVIEW_FORWARD_STRAND_1)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PROTVIEW_FORWARD_STRAND_2)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PROTVIEW_FORWARD_STRAND_3)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_1)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_2)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_3)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PROTVIEW_DEFINED_FIELDS)->add_callback(PV_CallBackFunction);
+
+    awr->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->add_callback(PV_RefreshDisplay);
+    awr->awar(AWAR_SPECIES_NAME)->add_callback(PV_CallBackFunction);
+
+    awr->awar(AWAR_PV_SELECTED)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_SELECTED_DB)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_SELECTED_FS_1)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_SELECTED_FS_2)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_SELECTED_FS_3)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_SELECTED_CS_1)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_SELECTED_CS_2)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_SELECTED_CS_3)->add_callback(PV_CallBackFunction);
+
+    awr->awar(AWAR_PV_MARKED)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_MARKED_DB)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_MARKED_FS_1)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_MARKED_FS_2)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_MARKED_FS_3)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_MARKED_CS_1)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_MARKED_CS_2)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_MARKED_CS_3)->add_callback(PV_CallBackFunction);
+
+    awr->awar(AWAR_PV_CURSOR)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_CURSOR_DB)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_CURSOR_FS_1)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_CURSOR_FS_2)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_CURSOR_FS_3)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_CURSOR_CS_1)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_CURSOR_CS_2)->add_callback(PV_CallBackFunction);
+    awr->awar(AWAR_PV_CURSOR_CS_3)->add_callback(PV_CallBackFunction);
+}
+
+// --------------------------------------------------------------------------------
+//        Creating AWARS to be used by the PROTVIEW module
+// --------------------------------------------------------------------------------
+void PV_CreateAwars(AW_root *root, AW_default aw_def){
+
+    root->awar_int(AWAR_PV_DISPLAY_ALL, 0, aw_def); 
+
+    root->awar_int(AWAR_PROTVIEW_FORWARD_STRAND_1, 0, aw_def); 
+    root->awar_int(AWAR_PROTVIEW_FORWARD_STRAND_2, 0, aw_def); 
+    root->awar_int(AWAR_PROTVIEW_FORWARD_STRAND_3, 0, aw_def); 
+
+    root->awar_int(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_1, 0, aw_def); 
+    root->awar_int(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_2, 0, aw_def); 
+    root->awar_int(AWAR_PROTVIEW_COMPLEMENTARY_STRAND_3, 0, aw_def); 
+
+    root->awar_int(AWAR_PROTVIEW_DEFINED_FIELDS, 0, aw_def); 
+    root->awar_int(AWAR_PROTVIEW_DISPLAY_OPTIONS, 0, aw_def); 
+
+    root->awar_int(AWAR_PV_SELECTED, 0, aw_def); 
+    root->awar_int(AWAR_PV_SELECTED_DB, 0, aw_def); 
+    root->awar_int(AWAR_PV_SELECTED_FS_1, 0, aw_def); 
+    root->awar_int(AWAR_PV_SELECTED_FS_2, 0, aw_def); 
+    root->awar_int(AWAR_PV_SELECTED_FS_3, 0, aw_def); 
+    root->awar_int(AWAR_PV_SELECTED_CS_1, 0, aw_def); 
+    root->awar_int(AWAR_PV_SELECTED_CS_2, 0, aw_def); 
+    root->awar_int(AWAR_PV_SELECTED_CS_3, 0, aw_def); 
+
+    root->awar_int(AWAR_PV_MARKED, 0, aw_def); 
+    root->awar_int(AWAR_PV_MARKED_DB, 0, aw_def); 
+    root->awar_int(AWAR_PV_MARKED_FS_1, 0, aw_def); 
+    root->awar_int(AWAR_PV_MARKED_FS_2, 0, aw_def); 
+    root->awar_int(AWAR_PV_MARKED_FS_3, 0, aw_def); 
+    root->awar_int(AWAR_PV_MARKED_CS_1, 0, aw_def); 
+    root->awar_int(AWAR_PV_MARKED_CS_2, 0, aw_def); 
+    root->awar_int(AWAR_PV_MARKED_CS_3, 0, aw_def); 
+
+    root->awar_int(AWAR_PV_CURSOR, 0, aw_def); 
+    root->awar_int(AWAR_PV_CURSOR_DB, 0, aw_def); 
+    root->awar_int(AWAR_PV_CURSOR_FS_1, 0, aw_def); 
+    root->awar_int(AWAR_PV_CURSOR_FS_2, 0, aw_def); 
+    root->awar_int(AWAR_PV_CURSOR_FS_3, 0, aw_def); 
+    root->awar_int(AWAR_PV_CURSOR_CS_1, 0, aw_def); 
+    root->awar_int(AWAR_PV_CURSOR_CS_2, 0, aw_def); 
+    root->awar_int(AWAR_PV_CURSOR_CS_3, 0, aw_def); 
 }
 
 AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
