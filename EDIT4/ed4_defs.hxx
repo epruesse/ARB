@@ -1,9 +1,13 @@
-#ifndef ED4_defs
-#define ED4_defs
+#ifndef ED4_DEFS_HXX
+#define ED4_DEFS_HXX
 
 #ifndef AW_COLOR_GROUPS_HXX
 #include <aw_color_groups.hxx>
 #endif
+#ifndef AW_WINDOW_HXX
+#include <aw_window.hxx>
+#endif
+
 
 //needed prototype classes
 class ED4_root;
@@ -37,7 +41,6 @@ extern int SEQ_TERM_TEXT_YOFFSET;
 extern int           MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
 extern int           MAXSPECIESWIDTH;
 extern int           MAXINFOWIDTH;
-extern int           MARGIN;    // sets margin for cursor moves in characters
 extern long          ED4_counter;
 extern long          all_found; // nr of species which haven't been found
 extern long          species_read; // nr of species read; important during loading
@@ -52,13 +55,11 @@ extern bool          last_window_reached; //only needed for refreshing all windo
 extern double           status_add_count;                   //only needed for loading configuration
 extern double           status_total_count;
 extern bool         loading;
-//extern long           last_used_timestamp;                    // time of last timed callback
 
 // globally used defines and flags
 
 #define INFINITE    -1
 #define SLIDER_OFFSET   5
-//#define HALFCURSORWIDTH   3
 
 // these are recommended for accessing ED4_extension:
 #define X_POS       0
@@ -79,7 +80,6 @@ extern bool         loading;
 #define MAX_POSSIBLE_SEQ_LENGTH     100000000
 
 #define MAXCHARTABLE    256                     // Maximum of Consensustable
-//#define MAXBASESTABLE 7
 #define MAXWINDOWS  5
 #define MINSPECFORSTATWIN   200
 
@@ -164,10 +164,6 @@ typedef enum
     ED4_R_ERROR     = 4,
     ED4_R_BREAK     = 8,
     ED4_R_DESASTER  = 16,
-//    ED4_R_REMOVE  = 32,
-//    ED4_R_LEAVE       = 64,
-//    ED4_R_ADD     = 128,
-//    ED4_R_REMOVE_ALL  = 256,
     ED4_R_ALL       = 0x7fffffff
 }   ED4_returncode;
 
@@ -199,8 +195,8 @@ typedef enum
     ED4_P_MOVABLE       = 128,
     ED4_P_IS_HANDLE     = 256,
     ED4_P_CURSOR_ALLOWED    = 512,
-//  ED4_P_SCROLL_HORIZONTAL = 1024,
-//  ED4_P_SCROLL_VERTICAL   = 2048,
+//  ED4_P_ = 1024,
+//  ED4_P_   = 2048,
     ED4_P_IS_FOLDED     = 4096,                 // Flag whether group is folded or not
     ED4_P_CONSENSUS_RELEVANT= 8192, // contains information relevant for consensus
     ED4_P_ALIGNMENT_DATA= 16384, // contains aligned data (also SAIs)
@@ -303,20 +299,26 @@ struct ED4_scroll_picture
     long    old_y;
 };
 
+enum ED4_CursorJumpType {
+    ED4_JUMP_CENTERED,          // centers the cursor
+    ED4_JUMP_KEEP_VISIBLE,      // keeps the cursor visible (keeps a fixed margin)
+    ED4_JUMP_KEEP_POSITION,     // paint cursor at previous position
+};
 
 struct ED4_work_info
 {
-    AW_event    event;
-    GBDATA  *gb_data;
-    char    *string;        // pointer to consensus; only if editing the consensus
-    long    char_position;      // screen position after cursor
+    AW_event  event;
+    GBDATA   *gb_data;
+    char     *string;           // pointer to consensus; only if editing the consensus
+    long      char_position;    // screen position after cursor
 
     int     direction;      // contains direction of editing (-1 left, +1 right )
     ED4_EDITMODI mode;
 
     bool    is_sequence;        // ==1 -> special handling for sequences
     bool    cannot_handle;      // if TRUE than cannot edit
-    bool    center_cursor;      // if true => cursor gets centered horizontally
+
+    ED4_CursorJumpType cursor_jump;
     bool    refresh_needed;
 
     long    out_seq_position;   // sequence position (after editing)
@@ -391,4 +393,6 @@ struct ED4_coords
     }
 };
 
+#else
+#error ed4_defs.hxx included twice
 #endif
