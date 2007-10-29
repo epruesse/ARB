@@ -521,50 +521,6 @@ ED4_base* ED4_manager::get_competent_clicked_child( AW_pos x, AW_pos y, ED4_prop
 	}
 }
 
-// #if 0
-// ED4_returncode ED4_manager::show_scrolled(ED4_properties scroll_prop, int /*only_text*/)
-// {
-//     ED4_base      	*current_child;
-//     ED4_index      	current_index;
-//     AW_pos	       	x, y;
-//     ED4_AREA_LEVEL	ar_lv;
-
-//     if (!flag.hidden) {
-// 	calc_world_coords( &x, &y );
-
-// 	if ((long) y >= ED4_ROOT->temp_ed4w->coords.window_lower_clip_point)			// we are beyond the visible area
-// 	    return ED4_R_BREAK;								// =>don't draw our terminals
-
-// 	ar_lv = get_area_level(0);							// we are over the visible area => don't draw
-// 	if ((long) y + extension.size[HEIGHT] < ED4_ROOT->temp_ed4w->coords.window_upper_clip_point &&
-// 	    ar_lv == ED4_A_MIDDLE_AREA)
-// 	    return ED4_R_BREAK;
-
-// 	if (((update_info.refresh_horizontal_scrolling) && (scroll_prop | ED4_P_SCROLL_HORIZONTAL)) ||
-// 	    ((update_info.refresh_vertical_scrolling)   && (scroll_prop | ED4_P_SCROLL_VERTICAL)) ) {
-// 	    current_index = 0;
-// 	    while ( (current_child = children->member_list[current_index++]) != NULL ) {
-// 		if (current_child->is_terminal() && !(current_child->is_bracket_terminal())) { // don't show selected object only if all visible
-// 		    if (((ED4_terminal *) current_child)->selection_info && (ar_lv == ED4_A_MIDDLE_AREA)) {
-// 			if (current_child->is_visible( 0, y, ED4_D_VERTICAL )) {
-// 			    current_child->show_scrolled(scroll_prop, 1 );
-// 			}
-// 		    }
-// 		    else {
-// 			current_child->show_scrolled(scroll_prop);
-// 		    }
-// 		}
-// 		else {
-// 		    current_child->show_scrolled(scroll_prop);
-// 		}
-// 	    }
-// 	}
-//     }
-//     return ( ED4_R_OK );
-// }
-// #endif
-
-
 ED4_returncode	ED4_manager::handle_move( ED4_move_info *mi )					// handles a move request with target world
 {												// coordinates within current object's borders
     AW_pos	          	rel_x, rel_y, x_off, y_off;
@@ -745,41 +701,6 @@ ED4_returncode	ED4_manager::move_requested_by_parent( ED4_move_info *mi )		// ha
 
 	return ( handle_move( mi ) );
 }
-
-// #if 0
-// ED4_returncode ED4_manager::set_scroll_refresh( AW_pos world_x,
-// 						AW_pos world_y,
-// 						AW_pos width,
-// 						AW_pos height,
-// 						ED4_properties scroll_prop )		// sets refresh flag of current object and
-// {											// his children if object is (even partly) within given rectangle
-//     ED4_index      current_index;
-//     ED4_base      *current_child;
-//     AW_pos         x, y;
-
-//     calc_world_coords( &x, &y );
-
-//     if (((x + extension.size[WIDTH]) <= world_x) || ((width != INFINITE) && (x >= (world_x + width))) ) // check if x is out of rectangle
-// 	return ( ED4_R_OK );
-
-
-//     if (((y + extension.size[HEIGHT]) <= world_y) || ((height != INFINITE) && (y >= (world_y + height)))) // check if y is out of rectangle
-// 	return ( ED4_R_OK );
-
-
-//     if (scroll_prop & ED4_P_SCROLL_HORIZONTAL) // at this this point we have to be within the rectangle => ask our children
-// 	update_info.refresh_horizontal_scrolling = 1;
-
-//     if (scroll_prop & ED4_P_SCROLL_VERTICAL)
-// 	update_info.refresh_vertical_scrolling = 1;
-
-//     current_index = 0;
-//     while ((current_child = children->member_list[current_index++]) != NULL )
-// 	current_child->set_scroll_refresh( world_x, world_y, width, height, scroll_prop );
-
-//     return ( ED4_R_OK );
-// }
-// #endif
 
 
 ED4_returncode 	ED4_manager::move_requested_by_child( ED4_move_info *mi)				// handles a move request coming from a child,
@@ -1070,7 +991,7 @@ ED4_returncode ED4_main_manager::resize_requested_by_parent() {
 
     if (update_info.resize) {
         result = ED4_manager::resize_requested_by_parent();
-        ED4_ROOT->temp_ed4w->update_scrolled_rectangle();
+        ED4_ROOT->get_ed4w()->update_scrolled_rectangle();
     }
     return ED4_R_OK;
 }
@@ -1100,7 +1021,7 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared)
     printf("Show main_manager\n");
 #endif
 
-    AW_device *device = ED4_ROOT->temp_device;
+    AW_device *device = ED4_ROOT->get_device();
 
     if (flag.hidden) {
         if (last_window_reached && update_info.refresh) {
@@ -1126,7 +1047,7 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared)
 
         int x1,y1,x2,y2;
         ED4_folding_line *flv,*flh;
-        ED4_window& win = *ED4_ROOT->temp_ed4w;
+        ED4_window& win = *ED4_ROOT->get_ed4w();
         int old_last_window_reached = last_window_reached;
 
         last_window_reached = 0;
@@ -1238,7 +1159,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared)
     }
     if (!flag.hidden && (refresh_all || update_info.refresh)) {
         ED4_index i = 0;
-        const AW_rectangle &clip_rect = ED4_ROOT->temp_device->clip_rect;	// clipped rectangle in win coordinates
+        const AW_rectangle &clip_rect = ED4_ROOT->get_device()->clip_rect;	// clipped rectangle in win coordinates
         AW_rectangle rect; // clipped rectangle in world coordinates
 
         if (update_info.clear_at_refresh && !is_cleared) {
@@ -1251,7 +1172,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared)
             x = clip_rect.l;
             y = clip_rect.t;
 
-            ED4_ROOT->win_to_world_coords(ED4_ROOT->temp_aww, &x, &y);
+            ED4_ROOT->win_to_world_coords(ED4_ROOT->get_aww(), &x, &y);
 
             rect.l = int(x);
             rect.t = int(y);
@@ -1338,7 +1259,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared)
                 AW_pos x,y;
                 child->calc_world_coords(&x, &y);
 
-                AW_device *device = ED4_ROOT->temp_device;
+                AW_device *device = ED4_ROOT->get_device();
 
                 if (!(((y-rect.b)>0.5) ||
                       ((rect.t-(y+child->extension.size[HEIGHT]-1))>0.5) ||
