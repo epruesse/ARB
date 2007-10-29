@@ -231,24 +231,24 @@ ED4_returncode ED4_members::append_member(ED4_base *new_member) {
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_members::delete_member( ED4_base *member )
+ED4_returncode ED4_members::delete_member(ED4_base *member_to_del)
 {
-    ED4_index index = member->index;
-
-    if (!member || (no_of_members <= 0)) {
+    if (!member_to_del || (no_of_members <= 0)) {
         return ( ED4_R_IMPOSSIBLE );
     }
+
+    ED4_index index = member_to_del->index;
 
     if ( shift_list( (index + 1), -1 ) != ED4_R_OK ) { //shift member list to left, starting at index+1
         return ( ED4_R_WARNING );
     }
 
-    member->parent = 0; // avoid referencing wrong parent
+    member_to_del->parent = 0; // avoid referencing wrong parent
 
     no_of_members--;
     e4_assert(members_ok());
 
-    owner()->resize_requested_by_child();					// tell owner about resize
+    owner()->resize_requested_by_child(); // tell owner about resize
 
     return ( ED4_R_OK );
 }
