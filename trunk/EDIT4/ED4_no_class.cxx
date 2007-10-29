@@ -35,8 +35,8 @@
   //*************************************************
 
 void ED4_calc_terminal_extentions(){
-    const AW_font_information *seq_font_info  = ED4_ROOT->temp_device->get_font_information( ED4_G_SEQUENCES, '=' );
-    const AW_font_information *info_font_info = ED4_ROOT->temp_device->get_font_information( ED4_G_STANDARD, '.' );
+    const AW_font_information *seq_font_info  = ED4_ROOT->get_device()->get_font_information( ED4_G_SEQUENCES, '=' );
+    const AW_font_information *info_font_info = ED4_ROOT->get_device()->get_font_information( ED4_G_STANDARD, '.' );
 
     int info_char_width = info_font_info->max_letter.width;
     int seq_term_descent;
@@ -93,14 +93,11 @@ void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     AWUSE(cd1);
     AWUSE(cd2);
 
-    ED4_ROOT->temp_aww  = aww;
-    ED4_ROOT->temp_device = aww->get_device(AW_MIDDLE_AREA);
-    ED4_ROOT->temp_ed4w = ED4_ROOT->first_window->get_matching_ed4w( aww );
+    ED4_ROOT->use_window(aww);
 
-    ED4_cursor& cursor         = ED4_ROOT->temp_ed4w->cursor;
+    ED4_cursor& cursor         = ED4_ROOT->get_ed4w()->cursor;
     int         cursor_seq_pos = cursor.get_sequence_pos();
 
-    //    GB_begin_transaction(gb_main);
     GB_push_transaction(gb_main);
 
     if (!dummy) {
@@ -110,9 +107,6 @@ void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     {
         ED4_ROOT->recalc_font_group();
         ED4_calc_terminal_extentions();
-
-        ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
-        if (cursor->owner_of_cursor) cursor->set_abs_x();
 
 #if defined(DEBUG)
 #warning below calculations have to be done at startup as well - maybe call expose_cb once after create_hierarchy
@@ -142,33 +136,17 @@ void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
             screenwidth = new_screenwidth;
         }
 
-#if 0
-        if ((int)cd1 == 1) { // gc has changed
-            ED4_ROOT->temp_ed4w->scroll_rectangle(ED4_ROOT->temp_aww->slider_pos_horizontal, 0);
-            ED4_ROOT->temp_ed4w->scroll_rectangle(0, ED4_ROOT->temp_aww->slider_pos_vertical);
-            ED4_ROOT->temp_ed4w->scroll_rectangle(ED4_ROOT->temp_aww->slider_pos_horizontal, ED4_ROOT->temp_aww->slider_pos_vertical);
-
-            ED4_ROOT->temp_aww->set_horizontal_scrollbar_position (0);
-            ED4_ROOT->temp_aww->set_vertical_scrollbar_position (0);
-
-            ED4_ROOT->temp_ed4w->slider_pos_horizontal = aww->slider_pos_horizontal;
-            ED4_ROOT->temp_ed4w->slider_pos_vertical = aww->slider_pos_vertical;
-        }
-#endif
-
-        ED4_ROOT->temp_ed4w->update_scrolled_rectangle();
+        ED4_ROOT->get_ed4w()->update_scrolled_rectangle();
     }
 
-    ED4_ROOT->temp_ed4w->update_window_coords();
+    ED4_ROOT->get_ed4w()->update_window_coords();
 
-    ED4_ROOT->temp_device->reset();
-    //    ED4_ROOT->show_all();
+    ED4_ROOT->get_device()->reset();
     ED4_ROOT->refresh_window(1);
 
     if (cursor.owner_of_cursor) {
-        cursor.set_to_terminal(ED4_ROOT->temp_aww, cursor.owner_of_cursor->to_terminal(), cursor_seq_pos, false);
+        cursor.set_to_terminal(ED4_ROOT->get_aww(), cursor.owner_of_cursor->to_terminal(), cursor_seq_pos, ED4_JUMP_KEEP_POSITION);
     }
-    //    GB_commit_transaction(gb_main);
     GB_pop_transaction(gb_main);
 }
 
@@ -178,19 +156,17 @@ void ED4_resize_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     AWUSE(cd1);
     AWUSE(cd2);
 
-    ED4_ROOT->temp_aww  = aww;
-    ED4_ROOT->temp_device   = aww->get_device(AW_MIDDLE_AREA);
-    ED4_ROOT->temp_ed4w     = ED4_ROOT->first_window->get_matching_ed4w( aww );
+    ED4_ROOT->use_window(aww);
 
     GB_push_transaction(gb_main);
 
-    ED4_ROOT->temp_device->reset();
+    ED4_ROOT->get_device()->reset();
     //  ED4_ROOT->deselect_all();
 
-    ED4_ROOT->temp_ed4w->update_scrolled_rectangle();
+    ED4_ROOT->get_ed4w()->update_scrolled_rectangle();
 
-    ED4_ROOT->temp_ed4w->slider_pos_horizontal= aww->slider_pos_horizontal;
-    ED4_ROOT->temp_ed4w->slider_pos_vertical  = aww->slider_pos_vertical;
+    ED4_ROOT->get_ed4w()->slider_pos_horizontal= aww->slider_pos_horizontal;
+    ED4_ROOT->get_ed4w()->slider_pos_vertical  = aww->slider_pos_vertical;
 
     GB_pop_transaction(gb_main);
 }
@@ -227,7 +203,7 @@ ED4_returncode call_edit( void **error, void **work_info_ptr, ED4_base *object )
         new_work_info.char_position    = work_info->char_position;
         new_work_info.out_seq_position = work_info->out_seq_position;
         new_work_info.refresh_needed   = false;
-        new_work_info.center_cursor    = false;
+        new_work_info.cursor_jump      = ED4_JUMP_KEEP_VISIBLE;
         new_work_info.out_string       = NULL;
         new_work_info.error            = NULL;
         new_work_info.mode             = work_info->mode;
@@ -281,7 +257,7 @@ ED4_returncode call_edit( void **error, void **work_info_ptr, ED4_base *object )
         }
 
         if (move_cursor) {
-            ED4_ROOT->temp_ed4w->cursor.jump_left_right_cursor_to_seq_pos(ED4_ROOT->temp_aww, new_work_info.out_seq_position);
+            ED4_ROOT->get_ed4w()->cursor.jump_sequence_pos(ED4_ROOT->get_aww(), new_work_info.out_seq_position, ED4_JUMP_KEEP_VISIBLE);
             move_cursor = 0;
         }
     }
@@ -291,7 +267,7 @@ ED4_returncode call_edit( void **error, void **work_info_ptr, ED4_base *object )
 
 static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
     ED4_work_info *work_info = new ED4_work_info;
-    ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+    ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
 
     if (event->keycode==AW_KEY_NONE) return;
 
@@ -314,8 +290,8 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
     work_info->char_position    = cursor->get_screen_pos();
     work_info->out_seq_position = cursor->get_sequence_pos();
     work_info->refresh_needed   = false;
-    work_info->center_cursor    = false;
-    work_info->out_string       = NULL;                         // nur falls new malloc
+    work_info->cursor_jump      = ED4_JUMP_KEEP_VISIBLE;
+    work_info->out_string       = NULL; // nur falls new malloc
     work_info->error            = NULL;
     work_info->repeat_count     = repeatCount;
 
@@ -366,11 +342,10 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
     if (species_manager->flag.is_consensus) {
         ED4_group_manager *group_manager = terminal->get_parent(ED4_L_GROUP)->to_group_manager();
 
-        //         e4_assert(!work_info->string && !terminal->id);
         work_info->string = terminal->id = group_manager->table().build_consensus_string();
 
         edit_string->edit(work_info);
-        cursor->jump_left_right_cursor_to_seq_pos(aww, work_info->out_seq_position);
+        cursor->jump_sequence_pos(aww, work_info->out_seq_position, ED4_JUMP_KEEP_VISIBLE);
 
         work_info->string = 0;
 
@@ -390,51 +365,32 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
     else {
         edit_string->edit( work_info );
 
-//         if ((terminal->dynamic_prop & ED4_P_CONSENSUS_RELEVANT) && edit_string->old_seq) { // only check out, if user has been editing sequences
-//             ED4_manager *temp_parent = terminal->get_parent( ED4_L_MULTI_SPECIES )->to_manager();
-//             ED4_species_manager  *temp_species_manager = terminal->get_parent( ED4_L_SPECIES )->to_species_manager();
-
-//             terminal->actual_timestamp = GB_read_clock(gb_main);
-
-//             char *seq = edit_string->old_seq;
-//             int seq_len = edit_string->old_seq_len;
-//             temp_parent->check_bases_and_rebuild_consensi(seq, seq_len, temp_species_manager, ED4_U_UP); // bases_check
-//         }
-
         // ED4_ROOT->main_manager->Show(); // original version
         ED4_ROOT->main_manager->Show(1, 0); // temporary fix for worst-refresh problems
-
-        if (work_info->center_cursor) {
-            cursor->jump_centered_cursor_to_seq_pos(aww, work_info->out_seq_position);
-        }
-        else {
-            cursor->jump_left_right_cursor_to_seq_pos(aww, work_info->out_seq_position);
-        }
+        cursor->jump_sequence_pos(aww, work_info->out_seq_position, work_info->cursor_jump);
     }
 
     edit_string->finish_edit();
 
     if (work_info->error || (error && *error == 1)) {
         aw_message(work_info->error);
-        GB_abort_transaction (gb_main);             // hier evtl. nochmal route_down_hierarchy aufrufen ?!!
+        GB_abort_transaction(gb_main); // hier evtl. nochmal route_down_hierarchy aufrufen ?!!
         ED4_ROOT->refresh_all_windows(0);
-        delete work_info;
-        delete edit_string;
-        return;
     }
+    else {
+        GB_pop_transaction( gb_main );
 
-    GB_pop_transaction( gb_main );
+        if (work_info->refresh_needed) {
+            GB_transaction dummy(gb_main);
 
-    if (work_info->refresh_needed) {
-        GB_transaction dummy(gb_main);
-
-        terminal->set_refresh();
-        terminal->parent->refresh_requested_by_child();
-        if (terminal->is_sequence_terminal()) {
-            ED4_sequence_terminal *seq_term = terminal->to_sequence_terminal();
-            seq_term->results().searchAgain();
+            terminal->set_refresh();
+            terminal->parent->refresh_requested_by_child();
+            if (terminal->is_sequence_terminal()) {
+                ED4_sequence_terminal *seq_term = terminal->to_sequence_terminal();
+                seq_term->results().searchAgain();
+            }
+            ED4_ROOT->refresh_all_windows(0);
         }
-        ED4_ROOT->refresh_all_windows(0);
     }
 
     delete edit_string;
@@ -442,7 +398,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
 }
 
 void ED4_remote_event(AW_event *faked_event) { // keystrokes forwarded from SECEDIT
-    executeKeystroke(ED4_ROOT->temp_aww, faked_event, 1);
+    executeKeystroke(ED4_ROOT->get_aww(), faked_event, 1);
 }
 
 void ED4_input_cb(AW_window *aww,AW_CL /*cd1*/, AW_CL /*cd2*/)
@@ -451,10 +407,8 @@ void ED4_input_cb(AW_window *aww,AW_CL /*cd1*/, AW_CL /*cd2*/)
     static AW_event lastEvent;
     static int repeatCount;
 
-    ED4_ROOT->temp_aww  = aww;
-    ED4_ROOT->temp_device = aww->get_device(AW_MIDDLE_AREA);
-    ED4_ROOT->temp_ed4w = ED4_ROOT->first_window->get_matching_ed4w( aww );
-
+    ED4_ROOT->use_window(aww);
+    
     aww->get_event(&event);
 
 #if defined(DEBUG) && 0
@@ -508,9 +462,6 @@ void ED4_input_cb(AW_window *aww,AW_CL /*cd1*/, AW_CL /*cd2*/)
             break;
         }
         default: {
-            //      AWUSE(cd1);
-            //      AWUSE(cd2);
-
             if (event.type == AW_Mouse_Release && event.button == ED4_B_MIDDLE_BUTTON) {
                 ED4_ROOT->scroll_picture.scroll = 0;
                 return;
@@ -547,30 +498,9 @@ void ED4_input_cb(AW_window *aww,AW_CL /*cd1*/, AW_CL /*cd2*/)
     }
 }
 
-#if 0
-static void paintMarksOfSelectedObjects()
-{
-    ED4_list_elem *object = ED4_ROOT->selected_objects.first();
-
-    while (object) {
-        ED4_selection_entry *sel_entry = ( ED4_selection_entry *) object->elem();
-        ED4_terminal *base_object = sel_entry->object;
-        AW_pos x,y;
-
-        base_object->calc_world_coords( &x, &y );
-
-        if (base_object->is_visible( 0, y, ED4_D_VERTICAL )) {
-            ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
-            ED4_ROOT->temp_device->box(ED4_G_DRAG, x, y, base_object->extension.size[WIDTH] - 1, base_object->extension.size[HEIGHT] - 1, (AW_bitset)-1,0 ,0);
-        }
-        object = object->next();
-    }
-}
-#endif
-
 static AW_pos get_max_slider_xpos() {
     AW_rectangle rect;
-    ED4_ROOT->temp_device->get_area_size(&rect); // screensize
+    ED4_ROOT->get_device()->get_area_size(&rect); // screensize
 
     AW_pos x, y;
     ED4_base *horizontal_link = ED4_ROOT->scroll_links.link_for_hor_slider;
@@ -584,7 +514,7 @@ static AW_pos get_max_slider_xpos() {
 
 static AW_pos get_max_slider_ypos() {
     AW_rectangle rect;
-    ED4_ROOT->temp_device->get_area_size(&rect); // screensize
+    ED4_ROOT->get_device()->get_area_size(&rect); // screensize
 
     AW_pos x, y;
     ED4_base *vertical_link = ED4_ROOT->scroll_links.link_for_ver_slider;
@@ -601,13 +531,11 @@ void ED4_vertical_change_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     AWUSE(cd1);
     AWUSE(cd2);
 
-    ED4_ROOT->temp_aww  = aww;
-    ED4_ROOT->temp_device   = aww->get_device(AW_MIDDLE_AREA);
-    ED4_ROOT->temp_ed4w     = ED4_ROOT->first_window->get_matching_ed4w( aww );
+    ED4_ROOT->use_window(aww);
 
     GB_push_transaction(gb_main);
 
-    ED4_window *win = ED4_ROOT->temp_ed4w;
+    ED4_window *win = ED4_ROOT->get_ed4w();
     AW_pos old_slider_pos = win->slider_pos_vertical;
 
     //    e4_assert(aww->slider_pos_vertical>=0);
@@ -640,13 +568,11 @@ void ED4_horizontal_change_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     AWUSE(cd1);
     AWUSE(cd2);
 
-    ED4_ROOT->temp_aww  = aww;
-    ED4_ROOT->temp_device   = aww->get_device(AW_MIDDLE_AREA);
-    ED4_ROOT->temp_ed4w     = ED4_ROOT->first_window->get_matching_ed4w( aww );
+    ED4_ROOT->use_window(aww);
 
     GB_push_transaction(gb_main);
 
-    ED4_window *win = ED4_ROOT->temp_ed4w;
+    ED4_window *win = ED4_ROOT->get_ed4w();
     AW_pos old_slider_pos = win->slider_pos_horizontal;
 
     if (aww->slider_pos_horizontal<0) aww->slider_pos_horizontal = 0;
@@ -677,30 +603,27 @@ void ED4_scrollbar_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
     AWUSE(cd1);
     AWUSE(cd2);
 
-    ED4_ROOT->temp_aww = aww;
-    ED4_ROOT->temp_device = aww->get_device(AW_MIDDLE_AREA);
-    ED4_ROOT->temp_ed4w = ED4_ROOT->first_window->get_matching_ed4w( aww );
+    ED4_ROOT->use_window(aww);
 
-    //    paintMarksOfSelectedObjects();
     GB_push_transaction(gb_main);
 
-    AW_pos old_hslider_pos = ED4_ROOT->temp_ed4w->slider_pos_horizontal;
-    AW_pos old_vslider_pos = ED4_ROOT->temp_ed4w->slider_pos_vertical;
+    AW_pos old_hslider_pos = ED4_ROOT->get_ed4w()->slider_pos_horizontal;
+    AW_pos old_vslider_pos = ED4_ROOT->get_ed4w()->slider_pos_vertical;
 
-    ED4_coords *coords = &ED4_ROOT->temp_ed4w->coords;
+    ED4_coords *coords = &ED4_ROOT->get_ed4w()->coords;
 
     coords->window_upper_clip_point += (long) aww->slider_pos_vertical   - (long) old_vslider_pos;
     coords->window_lower_clip_point += (long) aww->slider_pos_vertical   - (long) old_vslider_pos;
     coords->window_left_clip_point  += (long) aww->slider_pos_horizontal - (long) old_hslider_pos;
     coords->window_right_clip_point += (long) aww->slider_pos_horizontal - (long) old_hslider_pos;
 
-    ED4_ROOT->temp_ed4w->scroll_rectangle( -(aww->slider_pos_horizontal - old_hslider_pos), -(aww->slider_pos_vertical - old_vslider_pos));
+    ED4_ROOT->get_ed4w()->scroll_rectangle( -(aww->slider_pos_horizontal - old_hslider_pos), -(aww->slider_pos_vertical - old_vslider_pos));
 
-    ED4_ROOT->temp_ed4w->slider_pos_vertical = aww->slider_pos_vertical;
-    ED4_ROOT->temp_ed4w->slider_pos_horizontal = aww->slider_pos_horizontal;
+    ED4_ROOT->get_ed4w()->slider_pos_vertical = aww->slider_pos_vertical;
+    ED4_ROOT->get_ed4w()->slider_pos_horizontal = aww->slider_pos_horizontal;
 
     GB_pop_transaction(gb_main);
-    ED4_ROOT->temp_ed4w->update_window_coords();
+    ED4_ROOT->get_ed4w()->update_window_coords();
     //    paintMarksOfSelectedObjects();
 }
 
@@ -710,9 +633,7 @@ void ED4_motion_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     AWUSE(cd2);
     AW_event event;
 
-    ED4_ROOT->temp_aww  = aww;
-    ED4_ROOT->temp_device   = aww->get_device(AW_MIDDLE_AREA);
-    ED4_ROOT->temp_ed4w     = ED4_ROOT->first_window->get_matching_ed4w( aww );
+    ED4_ROOT->use_window(aww);
 
     aww->get_event(&event);
 
@@ -785,8 +706,8 @@ void ED4_remote_set_cursor_cb(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/)
     long     pos  = awar->read_int();
 
     if (pos != -1) {
-        ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
-        cursor->jump_centered_cursor_to_seq_pos(ED4_ROOT->temp_aww, pos);
+        ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+        cursor->jump_sequence_pos(ED4_ROOT->get_aww(), pos, ED4_JUMP_CENTERED);
         awar->write_int(-1);
     }
 }
@@ -794,61 +715,45 @@ void ED4_remote_set_cursor_cb(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/)
 void ED4_jump_to_cursor_position(AW_window *aww, char *awar_name, bool /*callback_flag*/)           // callback function
 {
     AW_root *root = aww->get_root();
+
+    ED4_ROOT->use_window(aww);
+
+    ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+
     long pos = root->awar(awar_name)->read_int();
+    if (pos>0) pos--;           // user->real position (userpos is 1..n)
 
-    ED4_ROOT->temp_aww  = aww;
-    ED4_ROOT->temp_device = aww->get_device(AW_MIDDLE_AREA);
-    ED4_ROOT->temp_ed4w = ED4_ROOT->first_window->get_matching_ed4w( aww );
-
-    ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
-    if (strcmp(awar_name,ED4_ROOT->temp_ed4w->awar_path_for_Ecoli)==0) { // callback from ecoli
+    if (strcmp(awar_name, ED4_ROOT->get_ed4w()->awar_path_for_Ecoli)==0) { // callback from ecoli
         pos = ED4_ROOT->ecoli_ref->rel_2_abs(pos);
     }
-    else if (strcmp(awar_name, ED4_ROOT->temp_ed4w->awar_path_for_basePos)==0) { // callback from basePos
-        pos = cursor->base2sequence_position(pos);;
+    else if (strcmp(awar_name, ED4_ROOT->get_ed4w()->awar_path_for_basePos)==0) { // callback from basePos
+        pos = cursor->base2sequence_position(pos);
     }
 
-    int scr_pos = 0;
-    pos--; // correction to avoid Position 0
-
-    if (pos<0) {
-        pos = 0;
-    }
-    else if (cursor->owner_of_cursor) {
-        ED4_text_terminal *text_term = cursor->owner_of_cursor->to_text_terminal();
-
-        int len = text_term->get_length();
-        if (pos>len) { pos = len; }
-        
-        scr_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen_clipped(pos);
-    }
-
-    cursor->jump_centered_cursor(aww, scr_pos);
+    cursor->jump_sequence_pos(aww, pos, ED4_JUMP_CENTERED);
 }
 
 void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /*callback_flag*/)
 {
-    ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+    ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
 
     if (cursor->owner_of_cursor) {
         AW_root    *root     = aww->get_root();
         const char *helix_nr = root->awar(awar_name)->read_string();
         long        pos      = ED4_ROOT->helix->first_position(helix_nr);
 
-        if (pos!=-1) {
-            ED4_text_terminal *text_term = cursor->owner_of_cursor->to_text_terminal();
-            int len = text_term->get_length();
-            if (pos>len) pos = len;
-
-            int scr_pos = ED4_ROOT->root_group_man->remap()->sequence_to_screen(pos);
-            cursor->jump_centered_cursor(aww, scr_pos);
+        if (pos == -1) {
+            aw_message(GBS_global_string("No helix '%s'", helix_nr));
+        }
+        else {
+            cursor->jump_sequence_pos(aww, pos, ED4_JUMP_CENTERED);
         }
     }
 }
 
 void ED4_set_iupac(AW_window */*aww*/, char *awar_name, bool /*callback_flag*/)
 {
-    ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+    ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
 
     if (cursor->owner_of_cursor) {
         ED4_species_manager *species_manager =  cursor->owner_of_cursor->get_parent(ED4_L_SPECIES)->to_species_manager();
@@ -877,9 +782,7 @@ void ED4_set_iupac(AW_window */*aww*/, char *awar_name, bool /*callback_flag*/)
 
 void ED4_gc_is_modified(AW_window *aww,AW_CL cd1, AW_CL cd2)                        // callback if gc is modified
 {
-    ED4_ROOT->temp_aww  = aww;
-    ED4_ROOT->temp_device   = aww->get_device(AW_MIDDLE_AREA);
-    ED4_ROOT->temp_ed4w     = ED4_ROOT->first_window->get_matching_ed4w( aww );
+    ED4_ROOT->use_window(aww);
 
     ED4_resize_cb(aww,cd1,cd2);
     ED4_expose_cb(aww,cd1,cd2);
@@ -887,12 +790,9 @@ void ED4_gc_is_modified(AW_window *aww,AW_CL cd1, AW_CL cd2)                    
 
 void ED4_quit_editor(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)          //Be Careful: Is this the last window?
 {
-    ED4_ROOT->temp_aww  = aww;
-    ED4_ROOT->temp_device   = aww->get_device(AW_MIDDLE_AREA);
-    ED4_ROOT->temp_ed4w     = ED4_ROOT->first_window->get_matching_ed4w( aww );
+    ED4_ROOT->use_window(aww);
 
-
-    if (ED4_ROOT->first_window == ED4_ROOT->temp_ed4w)          // quit button has been pressed in first window
+    if (ED4_ROOT->first_window == ED4_ROOT->get_ed4w())          // quit button has been pressed in first window
     {
         ED4_window *ed4w = ED4_ROOT->first_window;
 
@@ -911,15 +811,13 @@ void ED4_quit_editor(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)          //Be
         ::exit(0);
     }
     // case : in another window close has been pressed
-    ED4_ROOT->temp_aww->hide();
-    ED4_ROOT->temp_ed4w->is_hidden = 1;
+    ED4_ROOT->get_aww()->hide();
+    ED4_ROOT->get_ed4w()->is_hidden = 1;
 }
 
 void ED4_load_data( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 {
-    ED4_ROOT->temp_aww  = aww;
-    ED4_ROOT->temp_device   = aww->get_device(AW_MIDDLE_AREA);
-    ED4_ROOT->temp_ed4w     = ED4_ROOT->first_window->get_matching_ed4w( aww );
+    ED4_ROOT->use_window(aww);
 
     AWUSE(aww);
     AWUSE(cd1);
@@ -928,9 +826,7 @@ void ED4_load_data( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 
 void ED4_save_data( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 {
-    ED4_ROOT->temp_aww  = aww;
-    ED4_ROOT->temp_device   = aww->get_device(AW_MIDDLE_AREA);
-    ED4_ROOT->temp_ed4w     = ED4_ROOT->first_window->get_matching_ed4w( aww );
+    ED4_ROOT->use_window(aww);
 
     AWUSE(aww);
     AWUSE(cd1);
@@ -957,9 +853,7 @@ void ED4_refresh_window( AW_window *aww, AW_CL cd_called_from_menu, AW_CL /*cd2*
     GB_transaction dummy(gb_main);
 
     if (int(cd_called_from_menu)) {
-        ED4_ROOT->temp_aww  = aww;
-        ED4_ROOT->temp_device = aww->get_device(AW_MIDDLE_AREA);
-        ED4_ROOT->temp_ed4w = ED4_ROOT->first_window->get_matching_ed4w( aww );
+        ED4_ROOT->use_window(aww);
     }
 
     ED4_main_manager *mainman = ED4_ROOT->main_manager;
@@ -981,7 +875,7 @@ void ED4_set_reference_species( AW_window *aww, AW_CL disable, AW_CL cd2 ){
         ED4_ROOT->reference->init();
     }
     else {
-        ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+        ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
 
         if (cursor->owner_of_cursor) {
             ED4_terminal *terminal = cursor->owner_of_cursor->to_terminal();
@@ -1063,7 +957,7 @@ void ED4_show_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
         ED4_set_col_stat_threshold(aww, 0, 0);
     }
 
-    ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+    ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
     if (!cursor->owner_of_cursor) {
         aw_message("First you have to place your cursor");
         return;
@@ -1238,8 +1132,8 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
 
     multi_species_manager->resize_requested_by_child();
 
-    ED4_ROOT->temp_ed4w->update_scrolled_rectangle();
-    ED4_ROOT->temp_device->reset();
+    ED4_ROOT->get_ed4w()->update_scrolled_rectangle();
+    ED4_ROOT->get_device()->reset();
     ED4_ROOT->refresh_all_windows(1);
 }
 
@@ -1247,9 +1141,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
     GB_ERROR error = 0;
     GB_push_transaction(gb_main);
 
-    ED4_ROOT->temp_aww    = use_as_main_window;
-    ED4_ROOT->temp_device = use_as_main_window->get_device(AW_MIDDLE_AREA);
-    ED4_ROOT->temp_ed4w   = ED4_ROOT->first_window->get_matching_ed4w(use_as_main_window);
+    ED4_ROOT->use_window(use_as_main_window);
 
     if (!use_field) {
         char group_name[GB_GROUP_NAME_MAX+1];
@@ -1384,13 +1276,11 @@ void group_species_cb(AW_window *aww, AW_CL cl_use_fields, AW_CL) {
 
 void ED4_load_new_config(char *string)
 {
-    char        *config_data_top    = NULL,
-        *config_data_middle     = NULL;
-    //  AW_device   *dev_temp;
-    ED4_window  *window; //, *ed4w_temp;
-    //  int         i;
-    //  AW_window   *aw_temp;
-    GB_transaction dummy(gb_main);
+    char *config_data_top    = NULL;
+    char *config_data_middle = NULL;
+    
+    ED4_window     *window;
+    GB_transaction  dummy(gb_main);
 
 
     ED4_ROOT->main_manager->clear_whole_background();
@@ -1411,10 +1301,6 @@ void ED4_load_new_config(char *string)
     ED4_ROOT->scroll_picture.old_x          = 0;
     ED4_ROOT->scroll_picture.old_y          = 0;
 
-    //  delete ED4_ROOT->ref_terminals.ref_sequence_info;
-    //  delete ED4_ROOT->ref_terminals.ref_sequence;
-    //  ED4_ROOT->ref_terminals.ref_sequence_info   = NULL;
-    //  ED4_ROOT->ref_terminals.ref_sequence        = NULL;
     ED4_ROOT->ref_terminals.clear();
 
     for (window=ED4_ROOT->first_window; window; window=window->next) {
@@ -1445,26 +1331,6 @@ void ED4_load_new_config(char *string)
 
     ED4_ROOT->create_hierarchy( config_data_middle, config_data_top );
     ED4_ROOT->refresh_all_windows(1);
-
-    //  ed4w_temp = ED4_ROOT->temp_ed4w;                        // show_all for all windows beginning
-    //  aw_temp   = ED4_ROOT->temp_aww;
-    //  dev_temp  = ED4_ROOT->temp_device;
-
-    //  window = ED4_ROOT->first_window;
-    //  while (window)
-    //  {
-    //      ED4_ROOT->temp_aww  = window->aww;
-    //      ED4_ROOT->temp_device   = window->aww->get_device(AW_MIDDLE_AREA);
-    //      ED4_ROOT->temp_ed4w     = window;
-
-    //      ED4_ROOT->show_all();
-
-    //      window = window->next;
-    //  }
-
-    //  ED4_ROOT->temp_ed4w = ed4w_temp;
-    //  ED4_ROOT->temp_aww = aw_temp;
-    //  ED4_ROOT->temp_device = dev_temp;                       // show_all for all windows end
 
     free(config_data_middle);
     free(config_data_top);
@@ -1519,26 +1385,14 @@ ED4_returncode rebuild_consensus(void **/*arg1*/, void **/*arg2*/, ED4_base *obj
 
 void ED4_new_editor_window( AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/ )
 {
-    AW_device   *device = NULL,
-        *temp_device;
-    ED4_window  *new_window = NULL,
-        *temp_ed4_window;
-    AW_window   *temp_aw_window;
+    ED4_ROOT->use_window(aww);
 
-    ED4_ROOT->temp_aww  = aww;
-    ED4_ROOT->temp_device   = aww->get_device(AW_MIDDLE_AREA);
-    ED4_ROOT->temp_ed4w     = ED4_ROOT->first_window->get_matching_ed4w( aww );
-
-    if (ED4_ROOT->generate_window( &device, &new_window) == ED4_R_BREAK)            // don't open more then five windows
+    AW_device  *device;
+    ED4_window *new_window;
+    if (ED4_ROOT->generate_window( &device, &new_window) == ED4_R_BREAK) // don't open more then five windows
         return;
 
-    temp_device = ED4_ROOT->temp_device;
-    temp_ed4_window = ED4_ROOT->temp_ed4w;
-    temp_aw_window = ED4_ROOT->temp_aww;
-
-    ED4_ROOT->temp_device = device;
-    ED4_ROOT->temp_ed4w = new_window;
-    ED4_ROOT->temp_aww = new_window->aww;
+    ED4_ROOT->use_window(new_window);
 
     new_window->set_scrolled_rectangle( 0, 0, 0, 0, ED4_ROOT->scroll_links.link_for_hor_slider,
                                         ED4_ROOT->scroll_links.link_for_ver_slider,
@@ -1548,9 +1402,7 @@ void ED4_new_editor_window( AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/ )
     new_window->aww->show();
     new_window->update_scrolled_rectangle();
 
-    ED4_ROOT->temp_device = temp_device;
-    ED4_ROOT->temp_ed4w = temp_ed4_window;
-    ED4_ROOT->temp_aww = temp_aw_window;
+    ED4_ROOT->use_window(aww);
 }
 
 
@@ -1569,13 +1421,16 @@ void ED4_compression_changed_cb(AW_root *awr){
     GB_transaction transaction_var(gb_main);
 
     if (ED4_ROOT->root_group_man) {
+        ED4_cursor& cursor  = ED4_ROOT->get_ed4w()->cursor;
+        int         rel_pos = cursor.get_screen_relative_pos();
+
         ED4_remap *remap = ED4_ROOT->root_group_man->remap();
         remap->set_mode(mode, percent);
 
-        ED4_expose_cb(ED4_ROOT->temp_aww, 0, 0);
-        // @@@ need sth that recalcs the scrollbars
+        AW_window *aww = ED4_ROOT->get_aww();
+        ED4_expose_cb(aww, 0, 0);
 
-        // ED4_ROOT->refresh_all_windows(1);
+        cursor.set_screen_relative_pos(aww, rel_pos);
     }
 }
 
@@ -1602,25 +1457,6 @@ void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /*cd2*/)
             }
             break;
         }
-        // the following is obsolete:
-//         case 2: { // ED4_AWAR_COMPRESS_SEQUENCE_TYPE changed
-
-//             cst_change_denied = 1;
-
-//             switch (mode) {
-//                 case ED4_RM_NONE:           if (gaps!=0) root->awar(ED4_AWAR_COMPRESS_SEQUENCE_GAPS)->write_int(0); break;
-//                 case ED4_RM_DYNAMIC_GAPS:   if (gaps!=1) root->awar(ED4_AWAR_COMPRESS_SEQUENCE_GAPS)->write_int(1); break;
-
-//                 case ED4_RM_MAX_ALIGN:      if (hide!=0) root->awar(ED4_AWAR_COMPRESS_SEQUENCE_HIDE)->write_int(0); break;
-//                 case ED4_RM_SHOW_ABOVE:     if (hide!=1) root->awar(ED4_AWAR_COMPRESS_SEQUENCE_HIDE)->write_int(1); break;
-
-//                 default: e4_assert(0); break;
-//             }
-
-//             cst_change_denied = 0;
-//             ED4_compression_changed_cb(root);
-//             return;
-//         }
         default: {
             e4_assert(0);
             break;
@@ -1642,7 +1478,6 @@ void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /*cd2*/)
         default: e4_assert(0); break;
     }
 
-    //if (!cst_change_denied)
     root->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->write_int(int(mode));
 }
 
@@ -1696,8 +1531,12 @@ AW_window *ED4_create_level_1_options_window(AW_root *root){
 
     aws->at("scroll_x");
     aws->create_input_field(ED4_AWAR_SCROLL_SPEED_X);
+    
     aws->at("scroll_y");
     aws->create_input_field(ED4_AWAR_SCROLL_SPEED_Y);
+
+    aws->at("margin");
+    aws->create_input_field(ED4_AWAR_SCROLL_MARGIN);
 
     //  ---------------
     //      Editing
@@ -1998,7 +1837,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
 
         if (!error) {
             if (creation_mode==CREATE_FROM_CONSENSUS || creation_mode==COPY_SPECIES) {
-                ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+                ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
 
                 if (cursor->owner_of_cursor) {
                     cursor_terminal = cursor->owner_of_cursor->to_terminal();
@@ -2433,8 +2272,4 @@ AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode)
 
     return (AW_window *)aws;
 }
-
-
-
-
 
