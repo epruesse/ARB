@@ -25,7 +25,6 @@
 
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
-#include "ed4_defs.hxx"
 #include "ed4_edit_string.hxx"
 #include "ed4_nds.hxx"
 #include "ed4_visualizeSAI.hxx"
@@ -47,7 +46,6 @@ int SEQ_TERM_TEXT_YOFFSET;
 int  MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
 int  MAXSPECIESWIDTH;
 int  MAXINFOWIDTH;              // # of pixels used to display sequence info ("CONS", "4data", etc.)
-int  MARGIN;                    // sets margin for cursor moves in characters
 
 long          ED4_counter = 0;
 long          all_found;        // nr of species which haven't been found
@@ -323,8 +321,7 @@ static void ED4_gap_chars_changed(AW_root *root) {
 }
 
 static void ED4_edit_direction_changed(AW_root */*awr*/) {
-    ED4_ROOT->temp_ed4w->cursor.redraw();
-
+    ED4_ROOT->get_ed4w()->cursor.redraw();
 }
 
 void ED4_expose_all_windows() {
@@ -416,8 +413,9 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_string(ED4_AWAR_REP_SEARCH_PATTERN, ".");
     root->awar_string(ED4_AWAR_REP_REPLACE_PATTERN, "-");
 
-    root->awar_int( ED4_AWAR_SCROLL_SPEED_X, 40);
-    root->awar_int( ED4_AWAR_SCROLL_SPEED_Y, 20);
+    root->awar_int(ED4_AWAR_SCROLL_SPEED_X, 40);
+    root->awar_int(ED4_AWAR_SCROLL_SPEED_Y, 20);
+    root->awar_int(ED4_AWAR_SCROLL_MARGIN, 5);
 
     root->awar_string(ED4_AWAR_SPECIES_TO_CREATE, "");
 
