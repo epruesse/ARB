@@ -428,7 +428,7 @@ ED4_returncode ED4_terminal::draw_drag_box( AW_pos x, AW_pos y, GB_CSTR text, in
 
         if (drag_target && !is_sequence_info_terminal()) {
             drag_target->calc_world_coords ( &target_x, &target_y );
-            ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &target_x, &target_y );
+            ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &target_x, &target_y);
 #define ARROW_LENGTH 3
             drag_line_x0[0] = target_x + 5;                                     // horizontal
             drag_line_y0[0] = target_y + drag_target->extension.size[HEIGHT];
@@ -446,13 +446,13 @@ ED4_returncode ED4_terminal::draw_drag_box( AW_pos x, AW_pos y, GB_CSTR text, in
             drag_line_y1[2] = drag_line_y0[0];
 #undef ARROW_LENGTH
             for( i = 0; i <= 2; i++ ) {
-                ED4_ROOT->temp_device->line( ED4_G_DRAG, drag_line_x0[i], drag_line_y0[i], drag_line_x1[i], drag_line_y1[i], 1, 0, 0);
+                ED4_ROOT->get_device()->line( ED4_G_DRAG, drag_line_x0[i], drag_line_y0[i], drag_line_x1[i], drag_line_y1[i], 1, 0, 0);
             }
         }
     }
 
     if ( text != NULL ) {
-        ED4_ROOT->temp_device->text( ED4_G_DRAG, text, (x + 20), (y + INFO_TERM_TEXT_YOFFSET), 0, 1, 0, 0);
+        ED4_ROOT->get_device()->text( ED4_G_DRAG, text, (x + 20), (y + INFO_TERM_TEXT_YOFFSET), 0, 1, 0, 0);
     }
 
     return ( ED4_R_OK );
@@ -543,7 +543,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent( AW_event *event, AW_window *
                     else  {
                         if (dynamic_prop & ED4_P_CURSOR_ALLOWED) {
                             ED4_no_dangerous_modes();
-                            ED4_ROOT->temp_ed4w->cursor.show_clicked_cursor(event->x, this);
+                            ED4_ROOT->get_ed4w()->cursor.show_clicked_cursor(event->x, this);
                         }
                     }
                     break;
@@ -710,7 +710,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent( AW_event *event, AW_window *
                             ED4_ROOT->remove_from_selected(dragged_name_terminal);
                         }
 
-                        ED4_expose_cb(ED4_ROOT->temp_aww, 0, 0);
+                        ED4_expose_cb(ED4_ROOT->get_aww(), 0, 0);
                         //          ED4_ROOT->refresh_all_windows(0);
 
                         pressed_left_button = 0;
@@ -840,12 +840,12 @@ int ED4_terminal::adjust_clipping_rectangle( void )                  //set scrol
     AW_pos              x, y; //, width, height;
     AW_rectangle        area_size;
 
-    ED4_ROOT->temp_device->get_area_size( &area_size );
+    ED4_ROOT->get_device()->get_area_size(&area_size);
 
-    calc_world_coords( &x, &y );
-    ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
+    calc_world_coords(&x, &y);
+    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y);
 
-    return ED4_ROOT->temp_device->reduceClipBorders(int(y), int(y+extension.size[HEIGHT]-1), int(x), int(x+extension.size[WIDTH]-1));
+    return ED4_ROOT->get_device()->reduceClipBorders(int(y), int(y+extension.size[HEIGHT]-1), int(x), int(x+extension.size[WIDTH]-1));
 }
 
 
@@ -867,7 +867,7 @@ ED4_terminal::~ED4_terminal()
     if (selection_info) {
         delete selection_info;
     }
-    ED4_cursor& cursor = ED4_ROOT->temp_ed4w->cursor;
+    ED4_cursor& cursor = ED4_ROOT->get_ed4w()->cursor;
     if (this == cursor.owner_of_cursor) {
         cursor.init();
     }
@@ -892,14 +892,14 @@ ED4_tree_terminal::ED4_tree_terminal(const char *temp_id, AW_pos x, AW_pos y, AW
 ED4_returncode ED4_tree_terminal::Show(int IF_DEBUG(refresh_all), int is_cleared)
 {
     e4_assert(update_info.refresh || refresh_all);
-    ED4_ROOT->temp_device->push_clip_scale();
+    ED4_ROOT->get_device()->push_clip_scale();
     if (adjust_clipping_rectangle()) {
         if (update_info.clear_at_refresh && !is_cleared) {
             clear_background();
         }
         draw();
     }
-    ED4_ROOT->temp_device->pop_clip_scale();
+    ED4_ROOT->get_device()->pop_clip_scale();
 
     return ( ED4_R_OK );
 }
@@ -912,14 +912,14 @@ ED4_returncode ED4_tree_terminal::draw( int /*only_text*/ )                 // d
     AW_pos  text_x, text_y;
     char   *db_pointer;
 
-    calc_world_coords( &x, &y );
-    ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
+    calc_world_coords(&x, &y);
+    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y);
 
     text_x = x + CHARACTEROFFSET;                           // don't change
     text_y = y + SEQ_TERM_TEXT_YOFFSET;
 
     db_pointer = resolve_pointer_to_string_copy();
-    ED4_ROOT->temp_device->text( ED4_G_STANDARD, db_pointer, text_x, text_y, 0, 1, 0, 0);
+    ED4_ROOT->get_device()->text( ED4_G_STANDARD, db_pointer, text_x, text_y, 0, 1, 0, 0);
     free(db_pointer);
 
     return ( ED4_R_OK );
@@ -938,14 +938,14 @@ ED4_bracket_terminal::ED4_bracket_terminal(const char *temp_id, AW_pos x, AW_pos
 ED4_returncode ED4_bracket_terminal::Show(int IF_DEBUG(refresh_all), int is_cleared)
 {
     e4_assert(update_info.refresh || refresh_all);
-    ED4_ROOT->temp_device->push_clip_scale();
+    ED4_ROOT->get_device()->push_clip_scale();
     if (adjust_clipping_rectangle()) {
         if (update_info.clear_at_refresh && !is_cleared) {
             clear_background();
         }
         draw();
     }
-    ED4_ROOT->temp_device->pop_clip_scale();
+    ED4_ROOT->get_device()->pop_clip_scale();
 
     return ED4_R_OK;
 }
@@ -964,8 +964,8 @@ ED4_returncode ED4_bracket_terminal::draw( int /*only_text*/ )                  
     AW_pos      arrow_x1[6], arrow_y1[6];
 
 
-    calc_world_coords( &x, &y );
-    ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
+    calc_world_coords(&x, &y);
+    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y);
 
     line_x0[0] = x + margin + 2;
     line_y0[0] = y + margin + 2;
@@ -985,7 +985,7 @@ ED4_returncode ED4_bracket_terminal::draw( int /*only_text*/ )                  
     ED4_group_manager *group_man = get_parent(ED4_L_GROUP)->to_group_manager();
     ED4_multi_species_manager *multi_man = group_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
     if (multi_man->get_no_of_selected_species()) {  // if multi_species_manager contains selected species
-        ED4_ROOT->temp_device->box(ED4_G_SELECTED, AW_TRUE, x, y, extension.size[WIDTH], extension.size[HEIGHT], (AW_bitset)-1, 0, 0);
+        ED4_ROOT->get_device()->box(ED4_G_SELECTED, AW_TRUE, x, y, extension.size[WIDTH], extension.size[HEIGHT], (AW_bitset)-1, 0, 0);
     }
 
     if (dynamic_prop & ED4_P_IS_FOLDED) { // paint triangle for folded group
@@ -1020,7 +1020,7 @@ ED4_returncode ED4_bracket_terminal::draw( int /*only_text*/ )                  
         arrow_y1[5] = y + margin + 4 + 5;
 
         for( i = 0; i < 6; i++ ) {
-            ED4_ROOT->temp_device->line( ED4_G_STANDARD, arrow_x0[i], arrow_y0[i], arrow_x1[i], arrow_y1[i], 1, 0, 0 );
+            ED4_ROOT->get_device()->line( ED4_G_STANDARD, arrow_x0[i], arrow_y0[i], arrow_x1[i], arrow_y1[i], 1, 0, 0 );
         }
     }
     else {
@@ -1055,12 +1055,12 @@ ED4_returncode ED4_bracket_terminal::draw( int /*only_text*/ )                  
         arrow_y1[5] = y + margin + 9;
 
         for( i = 0; i < 6; i++ ) {
-            ED4_ROOT->temp_device->line( ED4_G_STANDARD, arrow_x0[i], arrow_y0[i], arrow_x1[i], arrow_y1[i], 1, 0, 0 );
+            ED4_ROOT->get_device()->line( ED4_G_STANDARD, arrow_x0[i], arrow_y0[i], arrow_x1[i], arrow_y1[i], 1, 0, 0 );
         }
     }
 
     for( i = 0; i <= 2; i++ ) {
-        ED4_ROOT->temp_device->line( ED4_G_STANDARD, line_x0[i], line_y0[i], line_x1[i], line_y1[i], 1, 0, 0 );
+        ED4_ROOT->get_device()->line( ED4_G_STANDARD, line_x0[i], line_y0[i], line_x1[i], line_y1[i], 1, 0, 0 );
     }
 
     return ( ED4_R_OK );
@@ -1267,13 +1267,13 @@ ED4_spacer_terminal::~ED4_spacer_terminal()
 ED4_returncode ED4_line_terminal::draw( int /*only_text*/ )     // draws bounding box of object
 {
     AW_pos x1, y1;
-    calc_world_coords( &x1, &y1 );
-    ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x1, &y1 );
+    calc_world_coords(&x1, &y1);
+    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x1, &y1);
 
     AW_pos x2 = x1+extension.size[WIDTH]-1;
     AW_pos y2 = y1+extension.size[HEIGHT]-1;
 
-    AW_device *device = ED4_ROOT->temp_device;
+    AW_device *device = ED4_ROOT->get_device();
 
     device->line(ED4_G_STANDARD, x1, y1, x2, y1, -1, 0, 0);
 #if defined(DEBUG)
@@ -1313,14 +1313,14 @@ ED4_line_terminal::~ED4_line_terminal()
 ED4_returncode ED4_columnStat_terminal::Show(int IF_DEBUG(refresh_all), int is_cleared)
 {
     e4_assert(update_info.refresh || refresh_all);
-    ED4_ROOT->temp_device->push_clip_scale();
+    ED4_ROOT->get_device()->push_clip_scale();
     if (adjust_clipping_rectangle()) {
         if (update_info.clear_at_refresh && !is_cleared) {
             clear_background();
         }
         draw();
     }
-    ED4_ROOT->temp_device->pop_clip_scale();
+    ED4_ROOT->get_device()->pop_clip_scale();
 
     return ED4_R_OK;
 }
@@ -1427,7 +1427,7 @@ ED4_returncode ED4_columnStat_terminal::draw(int /*only_text*/)
 
     AW_pos x, y;
     calc_world_coords(&x, &y);
-    ED4_ROOT->world_to_win_coords(ED4_ROOT->temp_aww, &x, &y);
+    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y);
 
     AW_pos term_height = extension.size[HEIGHT];
     AW_pos font_height = ED4_ROOT->font_group.get_height(ED4_G_SEQUENCES);
@@ -1436,7 +1436,7 @@ ED4_returncode ED4_columnStat_terminal::draw(int /*only_text*/)
     AW_pos text_x = x + CHARACTEROFFSET;
     AW_pos text_y = y + term_height - (font_height /*+ ED4_ROOT->font_info[ED4_G_SEQUENCES].get_descent()*/ );
 
-    AW_device *device = ED4_ROOT->temp_device;
+    AW_device *device = ED4_ROOT->get_device();
     ED4_sequence_terminal *seq_term = corresponding_sequence_terminal();
     const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
     long left,right;
