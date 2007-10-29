@@ -196,25 +196,19 @@ ED4_folding_line* ED4_window::insert_folding_line( AW_pos world_x,
     return ( fl );
 }
 
-ED4_window *ED4_window::get_matching_ed4w( AW_window *temp_aww )
-{
-    ED4_window      *window;
-
-    window = ED4_ROOT->first_window;
-    while (window && window->aww != temp_aww)
-        window = window->next;
-
-        return window;
+ED4_window *ED4_window::get_matching_ed4w(AW_window *aw) {
+    ED4_window *window = ED4_ROOT->first_window;
+    while (window && window->aww != aw) window = window->next;
+    return window;
 }
 
 
 
-ED4_returncode ED4_window::delete_folding_line( ED4_folding_line *fl, ED4_properties prop )
-{
-        AWUSE(fl);
+ED4_returncode ED4_window::delete_folding_line(ED4_folding_line *fl, ED4_properties prop) {
+    AWUSE(fl);
     AWUSE(prop);
 
-        return ( ED4_R_OK );
+    return ( ED4_R_OK );
 }
 
 ED4_returncode ED4_window::update_scrolled_rectangle( void )
@@ -298,7 +292,7 @@ ED4_returncode ED4_window::update_scrolled_rectangle( void )
     scrolled_rect.scroll_left->dimension += delta;                  // the borders of scrolled rectangle
     delta = aww->slider_pos_vertical - slider_pos_vertical;
     scrolled_rect.scroll_top->dimension += delta;
-    ED4_ROOT->temp_device->get_area_size( &area_size );
+    ED4_ROOT->get_device()->get_area_size( &area_size );
 
     if ( scrolled_rect.height_link != NULL )
     slider_pos_vertical = aww->slider_pos_vertical;
@@ -338,23 +332,6 @@ ED4_returncode ED4_window::update_scrolled_rectangle( void )
     scrolled_rect.scroll_right->window_pos[Y_POS] = world_y;
 
     update_window_coords();
-
-// #if 0
-//     scroll_prop = (ED4_properties) ( ED4_P_SCROLL_HORIZONTAL | ED4_P_SCROLL_VERTICAL );          // set current scrolling update flags
-//     ED4_ROOT->main_manager->set_scroll_refresh( world_x, world_y, width, height, scroll_prop );
-
-//     scroll_prop = ED4_P_SCROLL_HORIZONTAL;
-//     ED4_ROOT->main_manager->set_scroll_refresh( world_x, 0, width, world_y, scroll_prop );
-//     ED4_ROOT->main_manager->set_scroll_refresh( world_x, (world_y + height), width, INFINITE, scroll_prop );
-
-//     scroll_prop = ED4_P_SCROLL_VERTICAL;
-//     ED4_ROOT->main_manager->set_scroll_refresh( 0,   world_y, world_x,  height, scroll_prop );
-//     ED4_ROOT->main_manager->set_scroll_refresh( (world_x + width),   world_y, INFINITE, height, scroll_prop );
-
-//     scroll_prop = ED4_P_NO_PROP;
-//     ED4_ROOT->main_manager->set_scroll_refresh( 0, 0, world_x, world_y, scroll_prop );
-//     ED4_ROOT->main_manager->set_scroll_refresh( (world_x + width), world_y, INFINITE, height, scroll_prop );
-// #endif
 
     return ( ED4_R_OK );
 }
@@ -403,7 +380,7 @@ ED4_returncode ED4_window::set_scrolled_rectangle( AW_pos world_x, AW_pos world_
         height = height_link->extension.size[HEIGHT];
     }
 
-    ED4_ROOT->temp_device->get_area_size( &area_size );
+    ED4_ROOT->get_device()->get_area_size( &area_size );
 
     if ( (area_size.r <= world_x) || (area_size.b <= world_y) )
         return ( ED4_R_IMPOSSIBLE );
@@ -448,10 +425,10 @@ static inline void clear_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, A
 
 #if defined(DEBUG) && 0
     static int toggle = 0;
-    ED4_ROOT->temp_device->box(ED4_G_COLOR_2+toggle, x1, y1, x2-x1+1, y2-y1+1, (AW_bitset)-1, 0, 0);    // fill range with color (for testing)
+    ED4_ROOT->get_device()->box(ED4_G_COLOR_2+toggle, x1, y1, x2-x1+1, y2-y1+1, (AW_bitset)-1, 0, 0);    // fill range with color (for testing)
     toggle = (toggle+1)&7;
 #else
-    ED4_ROOT->temp_device->clear_part(x1, y1, x2-x1+1, y2-y1+1, (AW_bitset)-1);
+    ED4_ROOT->get_device()->clear_part(x1, y1, x2-x1+1, y2-y1+1, (AW_bitset)-1);
 #endif
 
     ED4_ROOT->main_manager->to_manager()->Show(1,1);
@@ -478,7 +455,7 @@ static inline void move_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, AW
         ED4_set_clipping_rectangle(&rect);
     }
 
-    AW_device *device = ED4_ROOT->temp_device;
+    AW_device *device = ED4_ROOT->get_device();
     device->move_region(fx, fy, xs, ys, tx, ty);
 
     if (dy<0) { // scroll to the top
@@ -545,7 +522,7 @@ ED4_returncode ED4_window::scroll_rectangle( int dx, int dy )
     AW_pos toptop_y = coords.top_area_y;
     AW_pos topbottom_y = toptop_y + coords.top_area_height - 1;
 
-    ED4_ROOT->temp_device->push_clip_scale();
+    ED4_ROOT->get_device()->push_clip_scale();
 
     // main area
 
@@ -566,7 +543,7 @@ ED4_returncode ED4_window::scroll_rectangle( int dx, int dy )
         else            move_and_update_rectangle(left_x, toptop_y, right_x, topbottom_y, int(dx), 0);
     }
 
-    ED4_ROOT->temp_device->pop_clip_scale();
+    ED4_ROOT->get_device()->pop_clip_scale();
 
     return ( ED4_R_OK );
 }
@@ -599,11 +576,8 @@ void ED4_window::delete_window( ED4_window *window) //delete from window list
         temp = ED4_ROOT->first_window;                  //delete temp afterwards
         ED4_ROOT->first_window = ED4_ROOT->first_window->next;
 
-        if (no_of_windows > 1)
-        {
-            ED4_ROOT->temp_ed4w = ED4_ROOT->first_window;
-                ED4_ROOT->temp_aww = ED4_ROOT->temp_ed4w->aww;
-                ED4_ROOT->temp_device = ED4_ROOT->temp_ed4w->aww->get_device ( AW_MIDDLE_AREA );
+        if (no_of_windows > 1) {
+            ED4_ROOT->use_first_window();
         }
     }
     else
@@ -618,9 +592,7 @@ void ED4_window::delete_window( ED4_window *window) //delete from window list
 
         temp2->next = temp->next;
 
-        ED4_ROOT->temp_ed4w = temp2;
-            ED4_ROOT->temp_aww = ED4_ROOT->temp_ed4w->aww;
-            ED4_ROOT->temp_device = ED4_ROOT->temp_ed4w->aww->get_device ( AW_MIDDLE_AREA );
+        ED4_ROOT->use_window(temp2);
     }
 
     ED4_ROOT->aw_root->awar(temp->awar_path_for_cursor)->write_int(0);              // save in database
@@ -634,27 +606,25 @@ void ED4_window::delete_window( ED4_window *window) //delete from window list
 
 ED4_window *ED4_window::insert_window( AW_window *new_aww )
 {
-    AW_device       *device;
-    ED4_window      *last,*temp;
+    ED4_window *last,*temp;
 
     temp = ED4_ROOT->first_window;          //append at end of window list
     last = temp;
-    while (temp)
-    {
+    while (temp) {
         last = temp;
         temp = temp->next;
     }
 
     temp = new ED4_window ( new_aww );
 
-    if ( ED4_ROOT->first_window == NULL )       //this is the first window
+    if (!ED4_ROOT->first_window) {       //this is the first window
         ED4_ROOT->first_window = temp;
-    else
-        if ( last != NULL)
-            last->next = temp;
+    }
+    else if ( last != NULL) {
+        last->next = temp;
+    }
 
     // treat devices
-    device = new_aww->get_device    ( AW_MIDDLE_AREA);
     new_aww->set_expose_callback    ( AW_MIDDLE_AREA, ED4_expose_cb , 0, 0 );
     new_aww->set_resize_callback    ( AW_MIDDLE_AREA, ED4_resize_cb , 0, 0 );
     new_aww->set_input_callback     ( AW_MIDDLE_AREA, ED4_input_cb  , 0, 0 );
@@ -662,13 +632,10 @@ ED4_window *ED4_window::insert_window( AW_window *new_aww )
     new_aww->set_horizontal_change_callback( ED4_horizontal_change_cb   , 0, 0 );
     new_aww->set_vertical_change_callback  ( ED4_vertical_change_cb , 0, 0 );
 
-    // set temporary variables in ED4_ROOT
-    ED4_ROOT->temp_ed4w = temp;
-    ED4_ROOT->temp_aww = new_aww;
-    ED4_ROOT->temp_device = device;
+    ED4_ROOT->use_window(temp);
     ED4_ROOT->temp_gc = ED4_G_STANDARD;
 
-    return ( temp );
+    return temp;
 }
 
 ED4_window::ED4_window( AW_window *window )

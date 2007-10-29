@@ -48,27 +48,9 @@ static void NDS_changed(AW_root *root, AW_CL refresh)
     NDS_width = root->awar(buf)->read_int();
 
     if (int(refresh)) {
-        //	GB_transaction dummy(gb_main);
-
         ED4_calc_terminal_extentions();
         ED4_ROOT->main_manager->route_down_hierarchy(0,0,update_terminal_extension);
-        ED4_gc_is_modified(ED4_ROOT->temp_aww, 0, 0);
-
-#if 0
-        ED4_terminal *term = ED4_ROOT->root_group_man->get_first_terminal();
-        while (term) {
-            if (term->is_species_name_terminal()) {
-                update_terminal_extension(0,0,term);
-                term->parent->resize_requested_by_child();
-                term->set_refresh();
-                term->parent->refresh_requested_by_child();
-            }
-            term = term->get_next_terminal();
-        }
-
-        ED4_ROOT->resize_all();
-        ED4_ROOT->show_all();
-#endif
+        ED4_gc_is_modified(ED4_ROOT->get_aww(), 0, 0);
     }
 }
 
