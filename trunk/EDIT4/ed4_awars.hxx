@@ -1,6 +1,16 @@
-// ----------------------
-//     EDIT4 awars
-// ----------------------
+// ================================================================= //
+//                                                                   //
+//   File      : ed4_awars.hxx                                       //
+//   Purpose   : edit4 awars                                         //
+//   Time-stamp: <Wed Sep/26/2007 09:10 MET Coder@ReallySoft.de>     //
+//                                                                   //
+//   Institute of Microbiology (Technical University Munich)         //
+//   http://www.arb-home.de/                                         //
+//                                                                   //
+// ================================================================= //
+
+#ifndef ED4_AWARS_HXX
+#define ED4_AWARS_HXX
 
 #define ED4_TEMP_AWAR        "/tmp/edit4/" // path for temporary awars
 #define ED4_SEARCH_SAVE_BASE ED4_TEMP_AWAR "srchpara"
@@ -21,6 +31,7 @@
 
 #define ED4_AWAR_SCROLL_SPEED_X "scrolling/speed_x"
 #define ED4_AWAR_SCROLL_SPEED_Y "scrolling/speed_y"
+#define ED4_AWAR_SCROLL_MARGIN  "scrolling/margin"
 
 #define ED4_AWAR_GAP_CHARS                 "sequence/gap_chars"
 #define ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES "sequence/announce_checksum_changes"
@@ -196,17 +207,6 @@
 
 #define ED4_AWAR_SPECIES_TO_CREATE ED4_TEMP_AWAR "species_to_create"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#else
+#error ed4_awars.hxx included twice
+#endif
