@@ -1,16 +1,25 @@
-#ifndef ed4_ProteinViewer_hxx_included
-#define ed4_ProteinViewer_hxx_included
 /*=======================================================================================*/
 //
-//    File            : ed4_ProteinViewer.hxx                               
-//    Purpose      : Global Header File For Protein Viewer Module
-//    Time-stamp : Thu Sep 14 2006                                                       
-//    Author        : Yadhu Kumar (yadhu@arb-home.de)
-//    web site      : http://www.arb-home.de/                                              
+//    File       : ed4_ProteinViewer.hxx                               
+//    Purpose    : Protein viewer
+//    Time-stamp : <Wed Sep/26/2007 08:45 MET Coder@ReallySoft.de>
+//    Author     : Yadhu Kumar (yadhu@arb-home.de)
+//    web site   : http://www.arb-home.de/                                              
 //                                                                                      
 //        Copyright Department of Microbiology (Technical University Munich)            
 //                                                                                      
 /*=======================================================================================*/
+
+#ifndef ED4_PROTEINVIEWER_HXX
+#define ED4_PROTEINVIEWER_HXX
+
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+
 
 // Define Awars
 #define AWAR_PROTVIEW                                           "protView/"
@@ -52,6 +61,7 @@
 #define AWAR_PV_CURSOR_CS_2    AWAR_PROTVIEW "cursor_cs_2" 
 #define AWAR_PV_CURSOR_CS_3    AWAR_PROTVIEW "cursor_cs_3" 
 
+
 // Create Awars For Protein Viewer
 void  PV_CreateAwars(AW_root *root, AW_default aw_def);
 
@@ -68,7 +78,7 @@ void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype);
 void PV_RefreshWindow(AW_root *root);
 
 // Creates new AA sequence terminals for new species added to the editor ** called from ED4_cursor.cxx **
-void PV_AddCorrespondingAAseqTerminals(ED4_species_name_terminal *spNameTerm);
+void PV_AddCorrespondingAAseqTerminals(class ED4_species_name_terminal *spNameTerm);
 
 // Creates new AA sequence terminals when newly marked species is loaded
 void PV_AddAAseqTerminalsToLoadedSpecies();
