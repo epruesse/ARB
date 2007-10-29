@@ -1,5 +1,5 @@
-#ifndef ed4_class_hxx_included
-#define ed4_class_hxx_included
+#ifndef ED4_CLASS_HXX
+#define ED4_CLASS_HXX
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -14,10 +14,18 @@
 # define IMPLEMENT_DUMP // comment out this line to skip compilation of the dump() methods
 #endif
 
+#ifndef ED4_DEFS_HXX
 #include "ed4_defs.hxx"
+#endif
+#ifndef ED4_SEARCH_HXX
 #include "ed4_search.hxx"
-#include <string.h>
+#endif
+#ifndef _CPP_CSTRING
+#include <cstring>
+#endif
+#ifndef _CPP_SET
 #include <set>
+#endif
 
 #define ed4_beep() do {fputc(char(7), stdout); fflush(stdout); } while(0)
 
@@ -288,18 +296,17 @@ public:
 class ED4_CursorShape;
 
 
-typedef enum
-    {
-        ED4_RIGHT_ORIENTED_CURSOR,
-        ED4_RIGHT_ORIENTED_CURSOR_THIN,
-        ED4_TRADITIONAL_CURSOR,
-        ED4_TRADITIONAL_CURSOR_BOTTOM,
-        ED4_TRADITIONAL_CURSOR_CONNECTED,
-        ED4_FUCKING_BIG_CURSOR,
+enum ED4_CursorType {
+    ED4_RIGHT_ORIENTED_CURSOR,
+    ED4_RIGHT_ORIENTED_CURSOR_THIN,
+    ED4_TRADITIONAL_CURSOR,
+    ED4_TRADITIONAL_CURSOR_BOTTOM,
+    ED4_TRADITIONAL_CURSOR_CONNECTED,
+    ED4_FUCKING_BIG_CURSOR,
 
-        ED4_CURSOR_TYPES
+    ED4_CURSOR_TYPES
 
-    } ED4_CursorType;
+};
 
 extern int ED4_update_global_cursor_awars_allowed;
 
@@ -311,20 +318,16 @@ class ED4_cursor
 {
     ED4_index                  cursor_abs_x; // absolute (to terminal) x-position of cursor (absolute world coordinate of edit window)
     int                        screen_position; // number of displayed characters leading the cursor
-    int                        last_seq_position; // last sequence position, cursor was set to (or -1)
     mutable ED4_base_position  base_position; // # of bases left of cursor
     ED4_CursorType             ctype;
     ED4_CursorShape           *cursor_shape;
 
     ED4_returncode  draw_cursor( AW_pos x, AW_pos y);
     ED4_returncode  delete_cursor( AW_pos del_mark , ED4_base *target_terminal);
-    //    ED4_returncode    draw_cursor_pos_box(/*ED4_gc gc,*/ ED4_base *terminal);
     ED4_returncode  get_upper_lower_cursor_pos( ED4_manager *starting_point, ED4_base **terminal, ED4_cursor_move cursor_move, AW_pos actual_y, bool (*terminal_is_appropriate)(ED4_base *terminal));
-    void        updateAwars();
+    void            updateAwars();
 
     ED4_cursor(const ED4_cursor&); // copy-constructor not allowed
-
-    void        jump_cursor(AW_window *aww, int new_cursor_screen_pos, bool center_cursor, bool fix_left_border);
 
 public:
 
@@ -340,16 +343,12 @@ public:
 
     ED4_returncode HideCursor(); // deletes cursor and does refresh
     ED4_returncode move_cursor( AW_event *event );
-    ED4_returncode show_clicked_cursor(AW_pos click_xpos, ED4_base *target_terminal);
-    ED4_returncode show_cursor_at( ED4_base *target_terminal, ED4_index what_pos);
+    ED4_returncode show_clicked_cursor(AW_pos click_xpos, ED4_terminal *target_terminal);
+    ED4_returncode show_cursor_at(ED4_terminal *target_terminal, ED4_index what_pos);
     ED4_returncode ShowCursor(ED4_index offset_x, ED4_cursor_move move, int move_pos = 1);
 
     int get_sequence_pos() const;
-    int get_sequence_pos_set() const { return last_seq_position==-1 ? get_sequence_pos() : last_seq_position; }
     int get_screen_pos() const { return screen_position; }
-
-    void set_to_sequence_position(int seq_pos);
-    ED4_returncode set_to_terminal(AW_window *aww, ED4_terminal *terminal, int seq_pos, bool center_cursor);
 
     long get_abs_x() const   { return cursor_abs_x; }
     void set_abs_x();
@@ -358,21 +357,19 @@ public:
     int sequence2base_position(int seq_pos) const { return base_position.get_base_position(owner_of_cursor, seq_pos); }
 
     int get_base_position() const { return sequence2base_position(get_sequence_pos()); }
-    void set_to_base_position(int base_pos) { set_to_sequence_position(base2sequence_position(base_pos)); }
 
     void invalidate_base_position() { base_position.invalidate(); }
 
-    void jump_left_right_cursor(AW_window *aww, int new_cursor_screen_pos);
-    void jump_left_right_cursor_to_seq_pos(AW_window *aww, int new_cursor_seq_pos);
-    void jump_left_right_cursor_to_base_pos(AW_window *aww, int new_cursor_base_pos) {
-        jump_left_right_cursor_to_seq_pos(aww, base2sequence_position(new_cursor_base_pos));
-    }
+    void jump_screen_pos(AW_window *aww, int screen_pos, ED4_CursorJumpType jump_type);
+    void jump_sequence_pos(AW_window *aww, int sequence_pos, ED4_CursorJumpType jump_type);
+    void jump_base_pos(AW_window *aww, int base_pos, ED4_CursorJumpType jump_type);
 
-    void jump_centered_cursor(AW_window *aww, int new_cursor_screen_pos);
-    void jump_centered_cursor_to_seq_pos(AW_window *aww, int new_cursor_seq_pos);
+    int get_screen_relative_pos();
+    void set_screen_relative_pos(AW_window *aww, int scroll_to_relpos);
+
+    void set_to_terminal(AW_window *aww, ED4_terminal *terminal, int seq_pos, ED4_CursorJumpType jump_type);
 
     void init();
-    //    ED4_returncode    calc_cursor_pos_box(/*ED4_gc gc,*/ ED4_base *target_terminal);                      //calcs and draws
 
     ED4_window *window() const;
 
@@ -427,8 +424,6 @@ public:
     ED4_folding_line    *insert_folding_line( AW_pos world_x, AW_pos world_y, AW_pos length, AW_pos dimension, ED4_base *link, ED4_properties prop );
     ED4_returncode  delete_folding_line( ED4_folding_line *fl, ED4_properties prop );
 
-    //    void redraw();
-
     ED4_window(AW_window *window);
     ~ED4_window();
 };
@@ -451,7 +446,6 @@ public:
     ED4_manager* owner() const { return my_owner; }
     ED4_base* member(ED4_index i) const { e4_assert(i>=0 && i<size_of_list); return memberList[i]; }
     ED4_index members() const { return no_of_members; }
-    //    ED4_index size() const { return size_of_list; }
 
     ED4_returncode  insert_member   (ED4_base *new_member); // only used to move members with mouse
     ED4_returncode  append_member   (ED4_base *new_member);
@@ -585,10 +579,6 @@ class ED4_char_table
     int                  sequences; // # of sequences added to the table
     int                  ignore; // this table will be ignored when calculating tables higher in hierarchy
     // (used to suppress SAI in root_group_man tables)
-
-    // #ifdef TEST_CHAR_TABLE_INTEGRITY
-    //     static bool tables_are_valid;
-    // #endif
 
     static bool           initialized;
     static unsigned char  char_to_index_tab[MAXCHARTABLE];
@@ -750,7 +740,6 @@ public:
     virtual ED4_returncode  clear_background(int color=0);
     virtual short calc_bounding_box(void)                             = 0;
 
-    //    virtual ED4_returncode      show_scrolled(ED4_properties scroll_prop, int only_text = 0 ) = 0;
     ED4_returncode clear_whole_background( void ); // clear AW_MIDDLE_AREA
     bool is_visible(AW_pos x, AW_pos y, ED4_direction direction);
     bool is_visible(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction direction);
@@ -784,14 +773,12 @@ public:
     virtual ED4_returncode  set_refresh (int clear=1)=0;
     virtual ED4_returncode  resize_requested_by_child(void)=0;
     virtual ED4_returncode  resize_requested_by_parent(void)=0;
-    //    virtual ED4_returncode    refresh_requested_by_parent(void)=0;
 
     virtual ED4_returncode  delete_requested_by_parent(void)=0;
     virtual ED4_returncode  delete_requested_by_child(void);
     virtual ED4_returncode  delete_requested_childs(void)=0;
 
     virtual ED4_returncode  calc_size_requested_by_parent( void )=0;
-    //    virtual ED4_returncode      set_scroll_refresh( AW_pos world_x, AW_pos world_y, AW_pos width, AW_pos height, ED4_properties scroll_prop )=0;  // (***)
     virtual ED4_returncode  move_requested_by_parent( ED4_move_info *mi )=0;
     virtual ED4_returncode  event_sent_by_parent(AW_event *event, AW_window *aww);
     virtual ED4_returncode  move_requested_by_child(ED4_move_info *moveinfo)=0;
@@ -809,7 +796,9 @@ public:
 
     ED4_AREA_LEVEL      get_area_level(ED4_multi_species_manager **multi_species_manager=0); // returns area we belong to and the next multi species manager of the area
 
-    int             is_child_of(ED4_manager *parent);
+    bool has_parent(ED4_manager *Parent);
+    bool is_child_of(ED4_manager *Parent) { return has_parent(Parent); }
+
     ED4_group_manager       *is_in_folded_group() const;
     virtual char        *resolve_pointer_to_string_copy(int *str_len = 0) const;
     virtual const char      *resolve_pointer_to_char_pntr(int *str_len = 0) const;
@@ -920,14 +909,12 @@ public:
     virtual ED4_returncode  Resize();
     virtual short       calc_bounding_box(void);
     virtual ED4_returncode  distribute_children();
-    //    virtual ED4_returncode    show_scrolled(ED4_properties scroll_prop, int only_text = 0 );
 
     //top-down functions, means travelling down the hierarchy
     virtual ED4_returncode  event_sent_by_parent(AW_event *event, AW_window *aww);
     virtual ED4_returncode  set_refresh(int clear=1);
     ED4_returncode      clear_refresh(void);
     virtual ED4_returncode      resize_requested_by_parent( void );
-    //    virtual ED4_returncode    refresh_requested_by_parent(void);
 
     virtual ED4_returncode  delete_requested_by_parent(void);
     virtual ED4_returncode  delete_requested_childs(void);
@@ -944,7 +931,6 @@ public:
     virtual ED4_returncode  move_requested_by_child(ED4_move_info *moveinfo);
     virtual ED4_returncode  resize_requested_by_child(void);
     virtual ED4_returncode  refresh_requested_by_child(void);
-    //    virtual ED4_returncode    set_scroll_refresh( AW_pos world_x, AW_pos world_y, AW_pos width, AW_pos height, ED4_properties scroll_prop );       // (***)
     ED4_base            *get_defined_level(ED4_level lev) const;
 
     // functions refering the consensus
@@ -1025,21 +1011,16 @@ public:
     virtual short calc_bounding_box(void);
     virtual ED4_returncode  calc_size_requested_by_parent( void );
 
-    //    virtual ED4_returncode    show_selected( void );
     virtual ED4_returncode      draw_drag_box( AW_pos x, AW_pos y, GB_CSTR text = NULL, int cursor_y=-1 );
-    //    virtual ED4_returncode    show_scrolled(ED4_properties scroll_prop, int only_text = 0 );
-    //    virtual ED4_returncode    adjust_scroll_clipping_rectangle( void );
 
     //functions which concern the object as a child
     virtual ED4_returncode  set_refresh(int clear=1);
     virtual ED4_returncode  resize_requested_by_child(void);
     virtual ED4_returncode      resize_requested_by_parent(void);
-    //    virtual ED4_returncode    refresh_requested_by_parent( void );
 
     virtual ED4_returncode  delete_requested_by_parent(void);
     virtual ED4_returncode  delete_requested_childs(void);
 
-    //    virtual ED4_returncode    set_scroll_refresh( AW_pos world_x, AW_pos world_y, AW_pos width, AW_pos height, ED4_properties scroll_prop );      // (***)
     virtual ED4_returncode  move_requested_by_parent( ED4_move_info *mi );
     virtual ED4_returncode  event_sent_by_parent(AW_event *event, AW_window *aww);
     virtual ED4_base        *get_competent_child( AW_pos x, AW_pos y, ED4_properties relevant_prop);
@@ -1055,7 +1036,8 @@ public:
     virtual ED4_ERROR *write_sequence(const char *seq, int seq_len);
     virtual ED4_returncode  remove_callbacks();
 
-    inline int          setCursorTo(ED4_cursor *cursor, int pos, int unfoldGroups);
+    void scroll_into_view(AW_window *aww);
+    inline bool setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfoldGroups, ED4_CursorJumpType jump_type);
 
     ED4_terminal(GB_CSTR id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_terminal();
@@ -1096,6 +1078,7 @@ public:
 // --------------------------------------------------------------------------------
 class ED4_root
 {
+    int ED4_ROOT;
     ED4_root(const ED4_root&);  // copy-constructor not allowed
 public:
     AW_root                 *aw_root; // Points to 'AW-Window-Controller'
@@ -1134,10 +1117,32 @@ public:
     int                      visualizeSAI;
     int                      visualizeSAI_allSpecies;
 
-    // temporary Variables changing during runtime
-    ED4_window    *temp_ed4w;
-    AW_window     *temp_aww;
-    AW_device     *temp_device;
+private:
+    AW_window  *tmp_aww;
+    ED4_window *tmp_ed4w;
+    AW_device  *tmp_device;
+
+public:
+    void use_window(AW_window *aww) {
+        if (aww != tmp_aww) {
+            e4_assert(aww);
+            tmp_aww    = aww;
+            tmp_device = aww->get_device(AW_MIDDLE_AREA);
+            tmp_ed4w   = first_window->get_matching_ed4w(aww);
+        }
+    }
+    void use_window(ED4_window *ed4w) {
+        e4_assert(ed4w);
+        tmp_ed4w   = ed4w;
+        tmp_aww    = ed4w->aww;
+        tmp_device = tmp_aww->get_device(AW_MIDDLE_AREA);
+    }
+    void use_first_window() { use_window(first_window); }
+
+    AW_window *get_aww() const { e4_assert(tmp_aww); return tmp_aww; }
+    AW_device *get_device() const { e4_assert(tmp_device); return tmp_device; }
+    ED4_window *get_ed4w() const { e4_assert(tmp_ed4w); return tmp_ed4w; }
+
     int            temp_gc;
     AW_font_group  font_group;
 
@@ -1159,9 +1164,6 @@ public:
     ED4_returncode      refresh_window(int redraw);
     ED4_returncode  refresh_all_windows(int redraw);
 
-    //    ED4_returncode      show_all( void );
-    //    ED4_returncode    resize_all_windows( void );
-
     void announce_deletion(ED4_base *object); // before deleting an object, announce here
 
     // functions concerned with list of selected objects
@@ -1180,7 +1182,6 @@ public:
     ED4_root();
     ~ED4_root();
 };
-
 
 //***************************************
 //* Manager specifications   beginning  *
@@ -1456,7 +1457,7 @@ public:
     virtual void dump(size_t indent) const;
 #endif // IMPLEMENT_DUMP
 
-    int setCursorTo(ED4_cursor *cursor, int position, int unfold_groups);
+    bool setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfold_groups, ED4_CursorJumpType jump_type);
 
     void add_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd);
     void remove_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd);
@@ -1771,8 +1772,6 @@ public:
 
     virtual ED4_returncode draw( int only_text = 0);
 
-    // GBDATA *data() { return gbdata; }
-    // const GBDATA *data() const { return gbdata; }
     GBDATA *data() { return get_species_pointer(); }
     const GBDATA *data() const { return get_species_pointer(); }
 
@@ -1790,7 +1789,6 @@ public:
 // --------------------------------------------------------------------------------
 class ED4_pure_text_terminal : public ED4_text_terminal
 {
-    //    virtual ED4_returncode draw(int only_text=0);
     ED4_pure_text_terminal(const ED4_pure_text_terminal&);  // copy-constructor not allowed
 public:
     ED4_pure_text_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
@@ -1831,7 +1829,6 @@ class ED4_spacer_terminal : public ED4_terminal
     ED4_spacer_terminal(const ED4_spacer_terminal&); // copy-constructor not allowed
 public:
     virtual ED4_returncode      Show(int refresh_all=0, int is_cleared=0);
-    //    ED4_returncode      show_scrolled(ED4_properties scroll_prop, int only_text = 0 );
     virtual ED4_returncode      draw(int only_text = 0);
 
     ED4_spacer_terminal( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
@@ -1851,7 +1848,6 @@ class ED4_line_terminal : public ED4_terminal
 public:
     virtual ED4_returncode      Show(int refresh_all=0, int is_cleared=0);
     virtual ED4_returncode  draw(int only_text = 0);
-    //    virtual ED4_returncode set_scroll_refresh(AW_pos world_x, AW_pos world_y, AW_pos width, AW_pos height, ED4_properties scroll_prop ); // (***)
 
     ED4_line_terminal( const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent );
     ~ED4_line_terminal();
@@ -1869,10 +1865,9 @@ public:
 //* inline expansion which need complete classdefs *
 //**************************************************
 
-inline int ED4_terminal::setCursorTo(ED4_cursor *cursor, int pos, int unfoldGroups)
-{
+inline bool ED4_terminal::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfoldGroups, ED4_CursorJumpType jump_type) {
     ED4_species_manager *sm = get_parent(ED4_L_SPECIES)->to_species_manager();
-    return sm->setCursorTo(cursor, pos, unfoldGroups);
+    return sm->setCursorTo(cursor, seq_pos, unfoldGroups, jump_type);
 }
 
 //***************************************
@@ -1976,10 +1971,12 @@ extern "C" {
     void    ED4_alignment_length_changed(GBDATA *gb_alignment_len, int *dummy, GB_CB_TYPE gbtype);
 }
 
-#endif
-
 struct AWTC_faligner_cd;
 void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data);
+
+#else
+#error ed4_class included twice
+#endif
 
 
 
