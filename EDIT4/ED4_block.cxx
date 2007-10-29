@@ -179,7 +179,7 @@ void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
     ED4_sequence_terminal *err_term = 0;
     //    ED4_terminal *term        = ED4_ROOT->root_group_man->get_first_terminal();
 
-    ED4_cursor *cursor   = &ED4_ROOT->temp_ed4w->cursor;
+    ED4_cursor *cursor   = &ED4_ROOT->get_ed4w()->cursor;
     int         base_pos = (cursor && cursor->owner_of_cursor != 0) ? cursor->get_base_position() : -1;
 
     switch (blocktype) {
@@ -230,7 +230,9 @@ void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
     else {
         GB_commit_transaction(gb_main);
 
-        if (base_pos != -1) cursor->jump_left_right_cursor_to_base_pos(ED4_ROOT->temp_aww, base_pos); // restore cursor at same base
+        if (base_pos != -1) {
+            cursor->jump_base_pos(ED4_ROOT->get_aww(), base_pos, ED4_JUMP_KEEP_VISIBLE); // restore cursor at same base
+        }
     }
 }
 
@@ -532,7 +534,7 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
                 {
                     AW_pos ex = event->x;
                     AW_pos ey = event->y;
-                    ED4_ROOT->world_to_win_coords(ED4_ROOT->temp_ed4w->aww, &ex, &ey);
+                    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_ed4w()->aww, &ex, &ey);
 
                     if (ED4_ROOT->get_area_rectangle(&area_rect, ex, ey)!=ED4_R_OK) {
                         e4_assert(0);
@@ -886,30 +888,6 @@ static char *shift_right_sequence(const char *seq, int len, int repeat, int *new
 
     return new_seq;
 }
-
-#if 0
-static char *shift_right_sequence(const char *seq, int len, int repeat, int *new_len, GB_ERROR *error) {
-    char *new_seq = 0;
-
-    if (ADPP_IS_ALIGN_CHARACTER(seq[len-1])) {
-        char gap = seq[len-1];
-        new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
-        if (new_len) *new_len = len;
-        memcpy(new_seq+1, seq, len-1);
-        if (ADPP_IS_ALIGN_CHARACTER(seq[0])) {
-            new_seq[0] = seq[0];
-        }
-        else {
-            new_seq[0] = gap;
-        }
-    }
-    else {
-        *error = "Shift right needs a gap as last block character";
-    }
-
-    return new_seq;
-}
-#endif
 
 void ED4_perform_block_operation(ED4_blockoperation_type operationType) {
     int nrepeat = ED4_ROOT->edit_string->use_nrepeat();
