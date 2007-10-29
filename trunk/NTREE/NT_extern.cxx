@@ -1293,7 +1293,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             awm->insert_sub_menu(  0,"Import",      "I" );
             {
-                AWMIMT("import_seq",    "Import sequences and fields (ARB)","I","arb_import.hlp",AWM_ALL, NT_import_sequences,0,0);
+                AWMIMT("import_seq", "Import sequences and fields","I","arb_import.hlp",AWM_ALL, NT_import_sequences,0,0);
                 GDE_load_menu(awm,"import");
 #if defined(DEVEL_LOTHAR) || defined(DEVEL_RALF)
                 AWMIMT("MAUS", "Filter through MAUS..", "M", "MAUS.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_MAUS_window, 0);
