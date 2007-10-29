@@ -723,8 +723,8 @@ static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
     }
 
     if (settings[type]->get_autoJump() && (action & DO_AUTO_JUMP)) { // auto jump
-        ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
-        int jumped = 0;
+        ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+        bool jumped = false;
 
         if (cursor->owner_of_cursor && cursor->owner_of_cursor->is_sequence_terminal()) {
             int pos = cursor->get_sequence_pos();
@@ -751,9 +751,11 @@ static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
             }
 
             if (bestPos!=-1) {
-                jumped = 1;
-                if (bestPos!=pos) {
-                    seq_term->setCursorTo(cursor, bestPos, 1);
+                if (bestPos == pos) {
+                    jumped = true; // already there
+                }
+                else {
+                    jumped = seq_term->setCursorTo(cursor, bestPos, 1, ED4_JUMP_KEEP_POSITION);
                 }
             }
         }
@@ -766,7 +768,7 @@ static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
     if (action & REFRESH_ALWAYS) {
         bool old_update                        = ED4_update_global_cursor_awars_allowed;
         ED4_update_global_cursor_awars_allowed = false;
-        ED4_refresh_window(ED4_ROOT->temp_aww, 0, 0);
+        ED4_refresh_window(ED4_ROOT->get_aww(), 0, 0);
         ED4_update_global_cursor_awars_allowed = old_update;
     }
 
@@ -1353,7 +1355,7 @@ void ED4_search(AW_window */*aww*/, AW_CL searchDescriptor)
     ED4_terminal *terminal = 0; // start search at this terminal
     int pos; // ... and at this position
 
-    ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+    ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
     if (cursor->owner_of_cursor) { // if cursor is shown -> use cursor position
         terminal = cursor->owner_of_cursor->to_terminal();
         pos = cursor->get_sequence_pos();
@@ -1400,7 +1402,7 @@ void ED4_search(AW_window */*aww*/, AW_CL searchDescriptor)
                         }
                     }
                     else {
-                        seq_terminal->setCursorTo(&ED4_ROOT->temp_ed4w->cursor, pos, 1);
+                        seq_terminal->setCursorTo(&ED4_ROOT->get_ed4w()->cursor, pos, true, ED4_JUMP_KEEP_POSITION);
                     }
                     break;
                 }

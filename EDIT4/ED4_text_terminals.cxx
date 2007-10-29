@@ -45,8 +45,8 @@ ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
     static char   *buffer      = 0;
     static size_t  buffer_size = 0;
 
-    calc_world_coords( &x, &y );
-    ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
+    calc_world_coords(&x, &y);
+    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y);
     calc_update_intervall(&left_index, &right_index );
 
     text_x = x + CHARACTEROFFSET; // don't change
@@ -56,7 +56,7 @@ ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
     int paint_back = 1;
     if (paint_back) {
         paint_back = 3-paint_back;
-        ED4_ROOT->temp_device->box(ED4_G_FIRST_COLOR_GROUP+paint_back-1, x, y, extension.size[WIDTH], extension.size[HEIGHT], -1, 0, 0);
+        ED4_ROOT->get_device()->box(ED4_G_FIRST_COLOR_GROUP+paint_back-1, x, y, extension.size[WIDTH], extension.size[HEIGHT], -1, 0, 0);
     }
 #endif // DEBUG
     
@@ -116,13 +116,13 @@ ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
 
 
     if (buffer_size) {
-        ED4_ROOT->temp_device->top_font_overlap    = 1;
-        ED4_ROOT->temp_device->bottom_font_overlap = 1;
+        ED4_ROOT->get_device()->top_font_overlap    = 1;
+        ED4_ROOT->get_device()->bottom_font_overlap = 1;
     
-        ED4_ROOT->temp_device->text( ED4_G_SEQUENCES, buffer, text_x, text_y, 0, 1, 0, 0, (long) right_index+1);
+        ED4_ROOT->get_device()->text( ED4_G_SEQUENCES, buffer, text_x, text_y, 0, 1, 0, 0, (long) right_index+1);
         
-        ED4_ROOT->temp_device->top_font_overlap    = 0;
-        ED4_ROOT->temp_device->bottom_font_overlap = 0;
+        ED4_ROOT->get_device()->top_font_overlap    = 0;
+        ED4_ROOT->get_device()->bottom_font_overlap = 0;
     }
 
     return ( ED4_R_OK );
@@ -194,14 +194,14 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
     static int    color_is_used[ED4_G_DRAG];
     static char **colored_strings        = 0;
     static int    len_of_colored_strings = 0;
-    AW_device    *device                 = ED4_ROOT->temp_device;
+    AW_device    *device                 = ED4_ROOT->get_device();
 
     max_seq_len = strlen(this->aaSequence);
 
     AW_pos world_x, world_y;
 
-    calc_world_coords( &world_x, &world_y );
-    ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &world_x, &world_y );
+    calc_world_coords(&world_x, &world_y);
+    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &world_x, &world_y);
 
     text_x    = world_x + CHARACTEROFFSET; // don't change
     text_y    = world_y + SEQ_TERM_TEXT_YOFFSET;
@@ -335,7 +335,7 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
     static int    color_is_used[ED4_G_DRAG];
     static char **colored_strings        = 0;
     static int    len_of_colored_strings = 0;
-    AW_device    *device                 = ED4_ROOT->temp_device;
+    AW_device    *device                 = ED4_ROOT->get_device();
 
     resolve_pointer_to_char_pntr(&max_seq_len);
     e4_assert(max_seq_len>0);
@@ -349,8 +349,8 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
 
     AW_pos world_x, world_y;
 
-    calc_world_coords( &world_x, &world_y );
-    ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &world_x, &world_y );
+    calc_world_coords(&world_x, &world_y);
+    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &world_x, &world_y);
 
 #if defined(DEBUG) && 0
     int paint_back = 1;
@@ -591,8 +591,8 @@ ED4_returncode ED4_sequence_info_terminal::draw( int /*only_text*/ )
 {
     AW_pos x, y;
 
-    calc_world_coords( &x, &y );
-    ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
+    calc_world_coords(&x, &y);
+    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y);
 
     AW_pos text_x = x + CHARACTEROFFSET; // don't change
     AW_pos text_y = y+INFO_TERM_TEXT_YOFFSET;
@@ -613,16 +613,16 @@ ED4_returncode ED4_sequence_info_terminal::draw( int /*only_text*/ )
 
     ED4_species_name_terminal *name_term = corresponding_species_name_terminal();
     if (name_term->flag.selected) {
-        ED4_ROOT->temp_device->box(ED4_G_SELECTED, AW_TRUE, x, y, extension.size[WIDTH], text_y-y+1, (AW_bitset)-1, 0, 0);
+        ED4_ROOT->get_device()->box(ED4_G_SELECTED, AW_TRUE, x, y, extension.size[WIDTH], text_y-y+1, (AW_bitset)-1, 0, 0);
     }
 
-    ED4_ROOT->temp_device->top_font_overlap    = 1;
-    ED4_ROOT->temp_device->bottom_font_overlap = 1;
+    ED4_ROOT->get_device()->top_font_overlap    = 1;
+    ED4_ROOT->get_device()->bottom_font_overlap = 1;
     
-    ED4_ROOT->temp_device->text( ED4_G_STANDARD, buffer, text_x, text_y, 0, 1, 0, 0, 0);
+    ED4_ROOT->get_device()->text( ED4_G_STANDARD, buffer, text_x, text_y, 0, 1, 0, 0, 0);
 
-    ED4_ROOT->temp_device->top_font_overlap    = 0;
-    ED4_ROOT->temp_device->bottom_font_overlap = 0;
+    ED4_ROOT->get_device()->top_font_overlap    = 0;
+    ED4_ROOT->get_device()->bottom_font_overlap = 0;
 
     return ( ED4_R_OK );
 
@@ -635,20 +635,20 @@ ED4_returncode ED4_sequence_info_terminal::draw( int /*only_text*/ )
 ED4_returncode ED4_text_terminal::Show(int IF_DEBUG(refresh_all), int is_cleared)
 {
     e4_assert(update_info.refresh || refresh_all);
-    ED4_ROOT->temp_device->push_clip_scale();
+    ED4_ROOT->get_device()->push_clip_scale();
     if (adjust_clipping_rectangle()) {
         if (update_info.clear_at_refresh && !is_cleared) {
             clear_background();
         }
         draw();
     }
-    ED4_ROOT->temp_device->pop_clip_scale();
+    ED4_ROOT->get_device()->pop_clip_scale();
 
-    ED4_cursor *cursor = &ED4_ROOT->temp_ed4w->cursor;
+    ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
     if (this == cursor->owner_of_cursor){
-        ED4_ROOT->temp_device->push_clip_scale();
+        ED4_ROOT->get_device()->push_clip_scale();
         cursor->ShowCursor(0, ED4_C_NONE, 0);
-        ED4_ROOT->temp_device->pop_clip_scale();
+        ED4_ROOT->get_device()->pop_clip_scale();
     }
 
     return ED4_R_OK;
@@ -659,14 +659,14 @@ ED4_returncode ED4_text_terminal::draw( int /*only_text*/ )
     AW_pos x, y;
     AW_pos text_x, text_y;
 
-    calc_world_coords( &x, &y );
-    ED4_ROOT->world_to_win_coords( ED4_ROOT->temp_aww, &x, &y );
+    calc_world_coords(&x, &y);
+    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y);
 
     text_x = x + CHARACTEROFFSET; // don't change
     text_y = y + INFO_TERM_TEXT_YOFFSET;
 
-    ED4_ROOT->temp_device->top_font_overlap    = 1;
-    ED4_ROOT->temp_device->bottom_font_overlap = 1;
+    ED4_ROOT->get_device()->top_font_overlap    = 1;
+    ED4_ROOT->get_device()->bottom_font_overlap = 1;
 
     if (is_species_name_terminal()) {
         GB_CSTR real_name      = to_species_name_terminal()->get_displayed_text();
@@ -695,9 +695,9 @@ ED4_returncode ED4_text_terminal::draw( int /*only_text*/ )
         }
 
         if (flag.selected) {
-            ED4_ROOT->temp_device->box(ED4_G_SELECTED, AW_TRUE, x, y, extension.size[WIDTH], text_y-y+1, (AW_bitset)-1, 0, 0);
+            ED4_ROOT->get_device()->box(ED4_G_SELECTED, AW_TRUE, x, y, extension.size[WIDTH], text_y-y+1, (AW_bitset)-1, 0, 0);
         }
-        ED4_ROOT->temp_device->text( ED4_G_STANDARD, real_name, text_x+width_of_char, text_y, 0, 1, 0, 0, 0);
+        ED4_ROOT->get_device()->text( ED4_G_STANDARD, real_name, text_x+width_of_char, text_y, 0, 1, 0, 0, 0);
 
         if (paint_box) {
             int xsize = (width_of_char*6)/10;
@@ -707,9 +707,9 @@ ED4_returncode ED4_text_terminal::draw( int /*only_text*/ )
             int bx    = int(text_x+xoff);
             int by    = int(text_y-(yoff+ysize));
 
-            ED4_ROOT->temp_device->box(ED4_G_STANDARD, AW_TRUE, bx, by, xsize, ysize, (AW_bitset)-1, 0, 0);
+            ED4_ROOT->get_device()->box(ED4_G_STANDARD, AW_TRUE, bx, by, xsize, ysize, (AW_bitset)-1, 0, 0);
             if (!is_marked && xsize>2 && ysize>2) {
-                ED4_ROOT->temp_device->clear_part(bx+1, by+1, xsize-2, ysize-2, (AW_bitset)-1);
+                ED4_ROOT->get_device()->clear_part(bx+1, by+1, xsize-2, ysize-2, (AW_bitset)-1);
             }
         }
     }
@@ -717,11 +717,11 @@ ED4_returncode ED4_text_terminal::draw( int /*only_text*/ )
         char *db_pointer = resolve_pointer_to_string_copy();
 
         if (is_sequence_info_terminal()) {
-            ED4_ROOT->temp_device->text( ED4_G_STANDARD, db_pointer, text_x, text_y, 0, 1, 0, 0, 4);
+            ED4_ROOT->get_device()->text( ED4_G_STANDARD, db_pointer, text_x, text_y, 0, 1, 0, 0, 4);
         }
         else if (is_pure_text_terminal()) { // normal text (i.e. remark)
             text_y += (SEQ_TERM_TEXT_YOFFSET-INFO_TERM_TEXT_YOFFSET);
-            ED4_ROOT->temp_device->text( ED4_G_SEQUENCES, db_pointer, text_x, text_y, 0, 1, 0, 0, 0);
+            ED4_ROOT->get_device()->text( ED4_G_SEQUENCES, db_pointer, text_x, text_y, 0, 1, 0, 0, 0);
         }
         else{
             GB_CORE;
@@ -729,8 +729,8 @@ ED4_returncode ED4_text_terminal::draw( int /*only_text*/ )
 
         free(db_pointer);
     }
-    ED4_ROOT->temp_device->top_font_overlap    = 0;
-    ED4_ROOT->temp_device->bottom_font_overlap = 0;
+    ED4_ROOT->get_device()->top_font_overlap    = 0;
+    ED4_ROOT->get_device()->bottom_font_overlap = 0;
 
     return ( ED4_R_OK );
 }
