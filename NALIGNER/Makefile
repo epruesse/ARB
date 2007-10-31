@@ -6,16 +6,17 @@
 #CFLAGS = -O2
 CFLAGS = $(cflags)
 
-# CPP_OBJECTS = ali_prealigner.o ali_aligner.o ali_postree.o \
-# 				  ali_arbdb.o ali_sequence.o ali_solution.o \
-# 				  ali_pt.o ali_global.o ali_profile.o ali_pathmap.o \
-# 				  ali_main.o BI_helix.o
-
-CPP_OBJECTS = ali_prealigner.o ali_aligner.o \
-				  ali_arbdb.o ali_sequence.o ali_solution.o \
-				  ali_pt.o ali_global.o ali_profile.o ali_pathmap.o \
-				  ali_main.o
-
+CPP_OBJECTS = \
+	ali_aligner.o \
+	ali_arbdb.o \
+	ali_global.o \
+	ali_main.o \
+	ali_pathmap.o \
+	ali_prealigner.o \
+	ali_profile.o \
+	ali_pt.o \
+	ali_sequence.o \
+	ali_solution.o \
 
 $(MAIN): $(CPP_OBJECTS)
 	$(AR) $(MAIN) $(CPP_OBJECTS)
