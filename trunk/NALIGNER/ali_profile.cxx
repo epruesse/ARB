@@ -125,9 +125,9 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
     int i;
     size_t j;
     unsigned long *l;
-    float	*g;
+    float       *g;
     unsigned char **seq;
-    long	*seq_len;
+    long        *seq_len;
     float (*w_del)[], (*percent)[];
 
     /*
@@ -181,17 +181,17 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
      * allocate memory for costs
      */
 
-    base_weights = (float (**) [4]) CALLOC((unsigned int) prof_len,	sizeof(float [4]));
-    //base_weights = (float (*) [1][4]) CALLOC((unsigned int) prof_len,	sizeof(float [4]));
-    sub_costs = (float (**) [6])  CALLOC((unsigned int) prof_len,		sizeof(float [6]));
-    //sub_costs = (float (*) [1][6]) CALLOC((unsigned int) prof_len,		sizeof(float [6]));
-    binding_costs = (float (*) [5][5]) CALLOC((unsigned int) 5,		sizeof(float [5]));
-    lmin = (unsigned long *) CALLOC((unsigned int) prof_len,		sizeof(unsigned long));
-    lmax = (unsigned long *) CALLOC((unsigned int) prof_len,		sizeof(unsigned long));
-    gap_costs = (float ***) CALLOC((unsigned int) prof_len,		sizeof(float *));
-    //gap_costs = (float *(*)[1]) CALLOC((unsigned int) prof_len,		sizeof(float *));
-    gap_percents = (float***) CALLOC((unsigned int) prof_len,		sizeof(float *));
-    //gap_percents = (float*(*)[1]) CALLOC((unsigned int) prof_len,		sizeof(float *));
+    base_weights = (float (**) [4]) CALLOC((unsigned int) prof_len,     sizeof(float [4]));
+    //base_weights = (float (*) [1][4]) CALLOC((unsigned int) prof_len, sizeof(float [4]));
+    sub_costs = (float (**) [6])  CALLOC((unsigned int) prof_len,               sizeof(float [6]));
+    //sub_costs = (float (*) [1][6]) CALLOC((unsigned int) prof_len,            sizeof(float [6]));
+    binding_costs = (float (*) [5][5]) CALLOC((unsigned int) 5,         sizeof(float [5]));
+    lmin = (unsigned long *) CALLOC((unsigned int) prof_len,            sizeof(unsigned long));
+    lmax = (unsigned long *) CALLOC((unsigned int) prof_len,            sizeof(unsigned long));
+    gap_costs = (float ***) CALLOC((unsigned int) prof_len,             sizeof(float *));
+    //gap_costs = (float *(*)[1]) CALLOC((unsigned int) prof_len,               sizeof(float *));
+    gap_percents = (float***) CALLOC((unsigned int) prof_len,           sizeof(float *));
+    //gap_percents = (float*(*)[1]) CALLOC((unsigned int) prof_len,             sizeof(float *));
     if (binding_costs == 0 || sub_costs == 0 || lmin == 0 || lmax == 0 ||
         gap_costs == 0 || gap_percents == 0 || base_weights == 0) {
         ali_fatal_error("Out of memory");
@@ -320,8 +320,8 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
             lmin[p] = lmax[p] = p;
         }
 
-        w_del = (float (*) []) CALLOC((unsigned int) (lmax[p]-lmin[p]+2),		sizeof(float));
-        percent = (float (*) []) CALLOC((unsigned int) (lmax[p]-lmin[p]+2),	sizeof(float));
+        w_del = (float (*) []) CALLOC((unsigned int) (lmax[p]-lmin[p]+2),               sizeof(float));
+        percent = (float (*) []) CALLOC((unsigned int) (lmax[p]-lmin[p]+2),     sizeof(float));
         if (w_del == 0 || percent == 0)
             ali_fatal_error("Out of memory");
         (*gap_costs)[p] = (float *) w_del;
