@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.c                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Mon Jul/09/2007 14:05 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Tue Oct/30/2007 11:43 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -29,7 +29,7 @@
 GB_BOOL GEN_is_genome_db(GBDATA *gb_main, int default_value) {
     GBDATA *gb_genom_db = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
 
-    if (!gb_genom_db) {         // no DB-type entry -> create on with default
+    if (!gb_genom_db) {         // no DB-type entry -> create one with default
         if (default_value == -1) {
             GB_CORE;
         }
