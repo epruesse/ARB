@@ -196,110 +196,120 @@ static void MG_popup_if_renamed(AW_window *aww, AW_CL cl_create_window) {
 }
 
 // uses gb_dest and gb_merge
-void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled)
-{
+void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled) {
+    GB_ERROR error = 0;
+
     mg_save_enabled = save_enabled;
     GB_transaction dummy2(gb_merge);
-    //  if (GB_read_clients(gb_merge) >= 0) {
-    //      awt_selection_list_rescan(gb_merge,AWT_NDS_FILTER);
-    //  }
 
     GB_transaction dummy(gb_dest);
     GBT_mark_all(gb_dest,0);
-    //  if (GB_read_clients(gb_merge) >= 0) {
-    //      awt_selection_list_rescan(gb_dest,AWT_NDS_FILTER);
-    //  }
 
-    GB_change_my_security(gb_dest,6,"passwd");
-    GB_change_my_security(gb_merge,6,"passwd");
-    if (aww) aww->hide();
+    // test whether DB-type matches
+    // (sets default for old DBs)
+    {
+        bool merge_is_genome = GEN_is_genome_db(gb_merge, 0);
+        bool dest_is_genome  = GEN_is_genome_db(gb_dest, 0);
 
-    MG_create_db_dependent_awars(aw_root, gb_merge, gb_dest);
-    MG_set_renamed(false, aw_root, "Not renamed yet.");
+        if (merge_is_genome != dest_is_genome) {
+            error = "Can't merge a genome DB with a non-genome DB";
+        }
+    }
 
-    AW_window_simple_menu *awm = new AW_window_simple_menu();
-    awm->init(aw_root,"ARB_MERGE", "ARB_MERGE");
-    awm->load_xfig("merge/main.fig");
+    if (!error) {
+        GB_change_my_security(gb_dest,6,"passwd");
+        GB_change_my_security(gb_merge,6,"passwd");
+        if (aww) aww->hide();
 
-    awm->create_menu(       0,   "File",     "F", "merge_file.hlp",  AWM_ALL );
+        MG_create_db_dependent_awars(aw_root, gb_merge, gb_dest);
+        MG_set_renamed(false, aw_root, "Not renamed yet.");
+
+        AW_window_simple_menu *awm = new AW_window_simple_menu();
+        awm->init(aw_root,"ARB_MERGE", "ARB_MERGE");
+        awm->load_xfig("merge/main.fig");
+
+        awm->create_menu(       0,   "File",     "F", "merge_file.hlp",  AWM_ALL );
 #if defined(DEBUG)
-    awm->insert_menu_topic("db_browser", "Browse loaded database(s)", "", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_db_browser, 0);
-    awm->insert_separator();
+        awm->insert_menu_topic("db_browser", "Browse loaded database(s)", "", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_db_browser, 0);
+        awm->insert_separator();
 #endif // DEBUG
-    if (mg_save_enabled && GB_read_clients(gb_merge)>=0) {
-        awm->insert_menu_topic("save_DB1","Save Data Base I ...",       "S","save_as.hlp",AWM_ALL, AW_POPUP, (AW_CL)MG_save_source_cb,(AW_CL)AWAR_MERGE_DB );
+        if (mg_save_enabled && GB_read_clients(gb_merge)>=0) {
+            awm->insert_menu_topic("save_DB1","Save Data Base I ...",       "S","save_as.hlp",AWM_ALL, AW_POPUP, (AW_CL)MG_save_source_cb,(AW_CL)AWAR_MERGE_DB );
+        }
+
+        awm->insert_menu_topic("quit","Quit",               "Q","quit.hlp", AWM_ALL, MG_exit, 0, 0 );
+        if (save_enabled) {
+            awm->insert_menu_topic("quit","Quit & Start DB II", "D","quit.hlp", AWM_ALL, MG_exit, 1, 0 );
+        }
+
+        awm->insert_menu_topic("save_props","Save properties (to ~/.arb_prop/ntree.arb)",               "p","savedef.hlp",  AWM_ALL,      (AW_CB)AW_save_defaults, 0, 0 );
+
+        awm->button_length(30);
+
+        if (GB_read_clients(gb_merge)>=0){ // merge 2 database
+            awm->at("alignment");
+            awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_alignment_cb);
+            awm->help_text("mg_alignment.hlp");
+            awm->create_button("CHECK_ALIGNMENTS", "Check Alignments ...");
+
+            awm->at("names");
+            awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_names_cb);
+            awm->help_text("mg_names.hlp");
+            awm->create_button("CHECK_NAMES", "Check Names ...");
+        }
+        else { // export into new database
+            MG_set_renamed(true, aw_root, "Not necessary"); // a newly created database needs no renaming
+        }
+
+        awm->at("species");
+        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_species_cb);
+        awm->help_text("mg_species.hlp");
+        awm->create_button("TRANSFER_SPECIES", "Transfer Species ... ");
+
+        awm->at("extendeds");
+        awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_extendeds_cb);
+        awm->help_text("mg_extendeds.hlp");
+        awm->create_button("TRANSFER_SAIS", "Transfer SAIs ...");
+
+        awm->at("trees");
+        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_trees_cb);
+        awm->help_text("mg_trees.hlp");
+        awm->create_button("TRANSFER_TREES", "Transfer Trees ...");
+
+        awm->at("configs");
+        awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_configs_cb);
+        awm->help_text("mg_configs.hlp");
+        awm->create_button("TRANSFER_CONFIGS", "Transfer Configurations ...");
+
+        if (save_enabled && GB_read_clients(gb_dest)>=0){       // No need to save when importing data
+            awm->at("save");
+            awm->callback(AW_POPUP,(AW_CL)MG_save_result_cb,(AW_CL)AWAR_MAIN_DB);
+            awm->create_button("SAVE_WHOLE_DB2", "Save Whole DB II ...");
+
+            awm->at("save_quick");
+            awm->highlight();
+            awm->callback(AW_POPUP,(AW_CL)MG_save_quick_result_cb,(AW_CL)AWAR_MAIN_DB);
+            awm->create_button("SAVE_CHANGES_OF_DB2", "Save Changes of DB II as ...");
+        }
+
+        awm->button_length(15);
+
+        awm->at("db1");
+        awm->create_button(0,AWAR_MERGE_DB"/file_name");
+
+        awm->at("db2");
+        awm->create_button(0,AWAR_MAIN_DB"/file_name");
+
+        awm->button_length(0);
+        awm->shadow_width(1);
+        awm->at("icon");
+        awm->callback(AW_POPUP_HELP, (AW_CL)"mg_main.hlp");
+        awm->create_button("HELP_MERGE", "#merge/icon.bitmap");
+
+        awm->show();
     }
 
-    awm->insert_menu_topic("quit","Quit",               "Q","quit.hlp", AWM_ALL, MG_exit, 0, 0 );
-    if (save_enabled) {
-        awm->insert_menu_topic("quit","Quit & Start DB II", "D","quit.hlp", AWM_ALL, MG_exit, 1, 0 );
-    }
-
-    awm->insert_menu_topic("save_props","Save properties (to ~/.arb_prop/ntree.arb)",               "p","savedef.hlp",  AWM_ALL,      (AW_CB)AW_save_defaults, 0, 0 );
-
-    awm->button_length(30);
-
-    if (GB_read_clients(gb_merge)>=0){ // merge 2 database
-        awm->at("alignment");
-        awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_alignment_cb);
-        awm->help_text("mg_alignment.hlp");
-        awm->create_button("CHECK_ALIGNMENTS", "Check Alignments ...");
-
-        awm->at("names");
-        awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_names_cb);
-        awm->help_text("mg_names.hlp");
-        awm->create_button("CHECK_NAMES", "Check Names ...");
-    }
-    else { // export into new database
-        MG_set_renamed(true, aw_root, "Not necessary"); // a newly created database needs no renaming
-    }
-
-    awm->at("species");
-    awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_species_cb);
-    awm->help_text("mg_species.hlp");
-    awm->create_button("TRANSFER_SPECIES", "Transfer Species ... ");
-
-    awm->at("extendeds");
-    awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_extendeds_cb);
-    awm->help_text("mg_extendeds.hlp");
-    awm->create_button("TRANSFER_SAIS", "Transfer SAIs ...");
-
-    awm->at("trees");
-    awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_trees_cb);
-    awm->help_text("mg_trees.hlp");
-    awm->create_button("TRANSFER_TREES", "Transfer Trees ...");
-
-    awm->at("configs");
-    awm->callback(MG_popup_if_renamed, (AW_CL)MG_merge_configs_cb);
-    awm->help_text("mg_configs.hlp");
-    awm->create_button("TRANSFER_CONFIGS", "Transfer Configurations ...");
-
-    if (save_enabled && GB_read_clients(gb_dest)>=0){       // No need to save when importing data
-        awm->at("save");
-        awm->callback(AW_POPUP,(AW_CL)MG_save_result_cb,(AW_CL)AWAR_MAIN_DB);
-        awm->create_button("SAVE_WHOLE_DB2", "Save Whole DB II ...");
-
-        awm->at("save_quick");
-        awm->highlight();
-        awm->callback(AW_POPUP,(AW_CL)MG_save_quick_result_cb,(AW_CL)AWAR_MAIN_DB);
-        awm->create_button("SAVE_CHANGES_OF_DB2", "Save Changes of DB II as ...");
-    }
-
-    awm->button_length(15);
-
-    awm->at("db1");
-    awm->create_button(0,AWAR_MERGE_DB"/file_name");
-
-    awm->at("db2");
-    awm->create_button(0,AWAR_MAIN_DB"/file_name");
-
-    awm->button_length(0);
-    awm->shadow_width(1);
-    awm->at("icon");
-    awm->callback(AW_POPUP_HELP, (AW_CL)"mg_main.hlp");
-    awm->create_button("HELP_MERGE", "#merge/icon.bitmap");
-
-    awm->show();
+    if (error) aw_message(error);
 }
 
 void MG_start_cb(AW_window *aww)
