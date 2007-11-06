@@ -27,6 +27,7 @@ char **GBT_get_alignment_names(GBDATA *gbd)
 {
     /* get all alignment names out of a database
        (array of strings, the last stringptr is zero)
+       Note: use GBT_free_names() to free strings+array
     */
 
     GBDATA *presets;
@@ -758,7 +759,7 @@ GB_ERROR gbt_insert_character(GBDATA *gb_species_data, const char *species,const
     GBDATA *gb_species;
     GB_ERROR error;
 
-    long species_count = GBT_count_species(GB_get_root(gb_species_data));
+    long species_count = GBT_get_species_count(GB_get_root(gb_species_data));
     long count         = 0;
 
     for (gb_species = GB_find(gb_species_data,species,0,down_level);
@@ -2456,19 +2457,6 @@ long GBT_count_marked_species(GBDATA *gb_main)
     GB_pop_transaction(gb_main);
 
     cnt = GB_number_of_marked_subentries(gb_species_data);
-    return cnt;
-}
-
-long GBT_count_species(GBDATA *gb_main)
-{
-    long    cnt = 0;
-    GBDATA *gb_species_data;
-
-    GB_push_transaction(gb_main);
-    gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
-    GB_pop_transaction(gb_main);
-
-    cnt = GB_number_of_subentries(gb_species_data);
     return cnt;
 }
 
