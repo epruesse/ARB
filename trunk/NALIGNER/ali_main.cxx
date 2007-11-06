@@ -246,13 +246,12 @@ int convert_for_back_write(char *seq_new, char *seq_orig)
 
 int main(int argc, char **argv)
 {
-    int i;
-    char message_buffer[100];
-    char species_name[100], species_number;
-    char *string;
-    ALI_PREALIGNER *align_prealigner;
+    int                            i;
+    char                           message_buffer[100];
+    char                           species_name[100], species_number;
+    ALI_PREALIGNER                *align_prealigner;
     ali_prealigner_approx_element *approx_elem;
-    ALI_SEQUENCE *sequence;
+    ALI_SEQUENCE                  *sequence;
 
 
     ali_message(ali_version);
@@ -311,12 +310,12 @@ int main(int argc, char **argv)
                  * write information about the profile to the database
                  */
                 aligs.arbdb.begin_transaction();
-                string = align_profile->cheapest_sequence();
-                aligs.arbdb.put_extended("ALI_CON",string,0);
-                free(string);
-                string = align_profile->borders_sequence();
+                char *String = align_profile->cheapest_sequence();
+                aligs.arbdb.put_extended("ALI_CON",String);
+                free(String);
+                String = align_profile->borders_sequence();
                 //                              aligs.arbdb.put_extended("ALI_BOR",string,0);
-                free(string);
+                free(String);
                 aligs.arbdb.commit_transaction();
 
                 /*
@@ -341,12 +340,12 @@ int main(int argc, char **argv)
                  * write result of alignment into database
                  */
                 aligs.arbdb.begin_transaction();
-                string = align_pre_sequence_i->string();
-                aligs.arbdb.put_extended("ALI_PRE_I",string,0);
-                free(string);
-                string = align_pre_sequence->string();
-                aligs.arbdb.put_extended("ALI_PRE",string,0);
-                free(string);
+                String = align_pre_sequence_i->string();
+                aligs.arbdb.put_extended("ALI_PRE_I",String);
+                free(String);
+                String = align_pre_sequence->string();
+                aligs.arbdb.put_extended("ALI_PRE",String);
+                free(String);
                 aligs.arbdb.commit_transaction();
 
 
@@ -364,17 +363,17 @@ int main(int argc, char **argv)
                 approx_elem = align_pre_approx->first();
 
                 sequence = approx_elem->map->sequence(align_profile->sequence());
-                string = sequence->string();
+                String = sequence->string();
 
-                if (!check_base_invariance(string,align_string))
+                if (!check_base_invariance(String,align_string))
                     ali_error("Bases changed in output sequence");
 
-                if (!convert_for_back_write(string,align_string_original))
+                if (!convert_for_back_write(String,align_string_original))
                     ali_fatal_error("Can't convert correctly");
 
                 aligs.arbdb.begin_transaction();
-                aligs.arbdb.put_sequence_string(species_name,string,0);
-                aligs.arbdb.put_extended("ALI_INSERTS",approx_elem->ins_marker,0);
+                aligs.arbdb.put_sequence_string(species_name,String);
+                aligs.arbdb.put_extended("ALI_INSERTS",approx_elem->ins_marker);
                 aligs.arbdb.commit_transaction();
                 delete sequence;
 
