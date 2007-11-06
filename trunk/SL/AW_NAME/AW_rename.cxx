@@ -489,7 +489,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status, bool *isWarningPtr)
 
             if (update_status) {
                 aw_status("Renaming");
-                spcount = GBT_count_species(gb_main);
+                spcount = GBT_get_species_count(gb_main);
             }
 
             const char *add_field = AW_get_nameserver_addid(gb_main);

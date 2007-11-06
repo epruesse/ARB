@@ -234,7 +234,7 @@ GB_ERROR st_ml_check_sequence_quality(GBDATA * gb_main,
     }
 
     GB_HASH *species_to_info_hash =
-        GBS_create_hash(GBT_count_species(gb_main), 1);
+        GBS_create_hash(GBT_get_species_count(gb_main), 1);
     GB_CSTR *snames =
         GBT_get_species_names_of_tree((GBT_TREE *) st_ml.tree_root->tree);
 
