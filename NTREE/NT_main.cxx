@@ -76,23 +76,25 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
 
             GBDATA     *gb_ali_name  = GB_find(gb_ali,"alignment_name",0,down_level);
             const char *ali_name     = GB_read_char_pntr(gb_ali_name);
-            bool        is_ali_genom = strcmp(ali_name, GENOM_ALIGNMENT) == 0;
 
-            GBDATA *gb_auto_format = GB_find(gb_ali, "auto_format", 0, down_level);
-            if (gb_auto_format) {
-                format_action = GB_read_int(gb_auto_format);
+            {
+                bool    is_ali_genom   = strcmp(ali_name, GENOM_ALIGNMENT) == 0;
+                GBDATA *gb_auto_format = GB_find(gb_ali, "auto_format", 0, down_level);
+                if (gb_auto_format) {
+                    format_action = GB_read_int(gb_auto_format);
 
-                if (is_ali_genom) {
-                    if (format_action != 2) {
-                        format_action = 2; // always skip ali_genom
-                        GB_write_int(gb_auto_format, 2);
+                    if (is_ali_genom) {
+                        if (format_action != 2) {
+                            format_action = 2; // always skip ali_genom
+                            GB_write_int(gb_auto_format, 2);
+                        }
                     }
                 }
-            }
-            else if (is_ali_genom) {
-                gb_auto_format = GB_search(gb_ali, "auto_format", GB_INT);
-                GB_write_int(gb_auto_format, 2); // always skip
-                format_action          = 2;
+                else if (is_ali_genom) {
+                    gb_auto_format = GB_search(gb_ali, "auto_format", GB_INT);
+                    GB_write_int(gb_auto_format, 2); // always skip
+                    format_action          = 2;
+                }
             }
 
             bool perform_format = false;
@@ -142,11 +144,12 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
     return err;
 }
 
-static GB_ERROR NT_fix_gene_data(GBDATA *gb_main) {
+static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /*sai_count*/) {
     GB_transaction ta(gb_main);
-    int            deleted_gene_datas   = 0;
-    int            generated_gene_datas = 0;
+    size_t         deleted_gene_datas   = 0;
+    size_t         generated_gene_datas = 0;
     GB_ERROR       error                = 0;
+    size_t         count                = 0;
 
     for (GBDATA *gb_species = GBT_first_species(gb_main);
          gb_species && !error;
@@ -176,19 +179,105 @@ static GB_ERROR NT_fix_gene_data(GBDATA *gb_main) {
                                           "This causes problems - please fix!", name);
             }
         }
+        
+        aw_status(double(++count)/species_count);
     }
 
     if (error) {
         ta.abort();
     }
     else {
-        if (deleted_gene_datas>0) {
-            aw_message(GBS_global_string("Deleted %i useless empty 'gene_data' entries.", deleted_gene_datas));
+        if (deleted_gene_datas) {
+            aw_message(GBS_global_string("Deleted %u useless empty 'gene_data' entries.", deleted_gene_datas));
         }
-        if (generated_gene_datas>0) {
-            aw_message(GBS_global_string("Re-created %i missing 'gene_data' entries.\nThese organisms have no genes!", generated_gene_datas));
+        if (generated_gene_datas) {
+            aw_message(GBS_global_string("Re-created %u missing 'gene_data' entries.\nThese organisms have no genes yet!", generated_gene_datas));
         }
     }
+    return error;
+}
+
+static GB_ERROR NT_del_mark_move_REF(GBDATA *gb_main, size_t species_count, size_t sai_count) {
+    GB_transaction ta(gb_main);
+    GB_ERROR       error   = 0;
+    size_t         count   = 0;
+    size_t         all     = species_count+sai_count;
+    size_t         removed = 0;
+
+    // delete 'mark' entries from all alignments of species/SAIs
+
+    char **ali_names = GBT_get_alignment_names(gb_main);
+
+    for (int pass = 0; pass < 2 && !error; ++pass) {
+        for (GBDATA *gb_item = (pass == 0) ? GBT_first_species(gb_main) : GBT_first_SAI(gb_main);
+             gb_item && !error;
+             gb_item = (pass == 0) ? GBT_next_species(gb_item) : GBT_next_SAI(gb_item))
+        {
+            for (int ali = 0; ali_names[ali] && !error; ++ali) {
+                GBDATA *gb_ali = GB_find(gb_item, ali_names[ali], 0, down_level);
+                if (gb_ali) {
+                    GBDATA *gb_mark = GB_find(gb_ali, "mark", 0, down_level);
+                    if (gb_mark) {
+                        error = GB_delete(gb_mark);
+                        removed++;
+                    }
+                }
+            }
+
+            aw_status(double(++count)/all);
+        }
+    }
+
+    {
+        char   *helix_name = GBT_get_default_helix(gb_main);
+        GBDATA *gb_helix   = GBT_find_SAI(gb_main, helix_name);
+
+        if (gb_helix) {
+            for (int ali = 0; ali_names[ali] && !error; ++ali) {
+                GBDATA *gb_ali     = GB_find(gb_helix, ali_names[ali], 0, down_level);
+                GBDATA *gb_old_ref = GB_find(gb_ali, "REF", 0, down_level);
+                GBDATA *gb_new_ref = GB_find(gb_ali, "_REF", 0, down_level);
+
+                if (gb_old_ref) {
+                    if (gb_new_ref) {
+                        error = GBS_global_string("SAI:%s has 'REF' and '_REF' in '%s' (data corrupt?!)",
+                                                  helix_name, ali_names[ali]);
+                    }
+                    else { // move info from REF -> _REF
+                        char *content = GB_read_string(gb_old_ref);
+                        if (content) {
+                            gb_new_ref = GB_create(gb_ali, "_REF", GB_STRING);
+                            if (!gb_new_ref) {
+                                error = GB_get_error();
+                            }
+                            else {
+                                error = GB_write_string(gb_new_ref, content);
+                                if (!error) error = GB_delete(gb_old_ref);
+                            }
+                            free(content);
+                        }
+                        else {
+                            error = GB_get_error();
+                        }
+                    }
+                }
+            }
+        }
+
+        free(helix_name);
+    }
+
+    GBT_free_names(ali_names);
+
+    if (error) {
+        ta.abort();
+    }
+    else {
+        if (removed) {
+            aw_message(GBS_global_string("Deleted %u useless 'mark' entries.", removed));
+        }
+    }
+
     return error;
 }
 
@@ -198,6 +287,8 @@ static GB_ERROR NT_fix_gene_data(GBDATA *gb_main) {
 
 class CheckedConsistencies {
     GBDATA      *gb_main;
+    size_t       species_count;
+    size_t       sai_count;
     set<string>  consistencies;
 
 public:
@@ -211,6 +302,9 @@ public:
         {
             consistencies.insert(GB_read_char_pntr(gb_check));
         }
+
+        species_count = GBT_get_species_count(gb_main);
+        sai_count = GBT_get_SAI_count(gb_main);
     }
 
     bool was_performed(const string& check_name) const {
@@ -238,6 +332,19 @@ public:
         }
         return error;
     }
+
+    void perform_check(const string& check_name,
+                       GB_ERROR (*do_check)(GBDATA *gb_main, size_t species, size_t sais),
+                       GB_ERROR& error)
+    {
+        if (!error && !was_performed(check_name)) {
+            aw_status(check_name.c_str());
+            aw_status(0.0);
+            error = do_check(gb_main, species_count, sai_count);
+            aw_status(1.0);
+            if (!error) register_as_performed(check_name);
+        }
+    }
 };
 
 
@@ -249,10 +356,8 @@ static GB_ERROR nt_check_database_consistency() {
     CheckedConsistencies check(gb_main);
     GB_ERROR             err = NT_format_all_alignments(gb_main);
 
-    if (!err && !check.was_performed("fix gene_data")) {
-        err = NT_fix_gene_data(gb_main);
-        if (!err) check.register_as_performed("fix gene_data");
-    }
+    check.perform_check("fix gene_data",     NT_fix_gene_data,     err);
+    check.perform_check("del_mark_move_REF", NT_del_mark_move_REF, err);
 
     aw_closestatus();
     return err;
