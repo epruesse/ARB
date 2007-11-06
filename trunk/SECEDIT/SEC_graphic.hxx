@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : sec_graphic.hxx                                   //
 //   Purpose   : interface to structure GUI                        //
-//   Time-stamp: <Fri Sep/14/2007 09:47 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Oct/31/2007 12:16 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -31,7 +31,7 @@ using namespace AW;
 
 // names for database:
 #define NAME_OF_STRUCT_SEQ      "_STRUCT"
-#define NAME_OF_REF_SEQ         "REF"
+#define NAME_OF_REF_SEQ         "_REF"
 
 class SEC_root;
 
