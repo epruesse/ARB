@@ -123,59 +123,35 @@ char *ALI_ARBDB::get_extended(char *name)
 }
 
 
-int ALI_ARBDB::put_sequence_string(char *name, char *sequence, char *info)
-{
-    GBDATA         *gb_species_data;
-    GBDATA         *gb_seq;
-    GBDATA         *gb_ali;
-    GBDATA         *gb_data;
-    GBDATA        *gb_mark;
-    int                             sequence_len = strlen(sequence);
-
+int ALI_ARBDB::put_sequence_string(char *name, char *sequence) {
     GB_change_my_security(gb_main,6,"passwd");
-    gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
+    GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
 
-    gb_seq = GB_find(gb_species_data, "name", name, down_2_level);
+    GBDATA *gb_seq = GB_find(gb_species_data, "name", name, down_2_level);
     if (gb_seq) {
-        gb_ali = GB_find(gb_seq, alignment, 0, this_level);
+        GBDATA *gb_ali = GB_find(gb_seq, alignment, 0, this_level);
         if (gb_ali) {
-            gb_data = GB_search(gb_ali, "data", GB_STRING);
+            GBDATA *gb_data = GB_search(gb_ali, "data", GB_STRING);
             GB_write_string(gb_data,sequence);
-            free((char *) sequence);
-            if (info){
-                gb_mark = GB_search(gb_ali, "mark", GB_BITS);
-                GB_write_bits(gb_mark, info, sequence_len, ".");
-            }
+            free(sequence);
         }
     }
 
     return 0;
 }
 
-int ALI_ARBDB::put_sequence(char *name, ALI_SEQUENCE *sequence, char *info)
-{
-    GBDATA         *gb_species_data;
-    GBDATA         *gb_seq;
-    GBDATA         *gb_ali;
-    GBDATA         *gb_data;
-    GBDATA        *gb_mark;
-    char           *string;
-
+int ALI_ARBDB::put_sequence(char *name, ALI_SEQUENCE *sequence) {
     GB_change_my_security(gb_main,6,"passwd");
-    gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
+    GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
 
-    gb_seq = GB_find(gb_species_data, "name", name, down_2_level);
+    GBDATA *gb_seq = GB_find(gb_species_data, "name", name, down_2_level);
     if (gb_seq) {
-        gb_ali = GB_find(gb_seq, alignment, 0, this_level);
+        GBDATA *gb_ali = GB_find(gb_seq, alignment, 0, this_level);
         if (gb_ali) {
-            gb_data = GB_search(gb_ali, "data", GB_STRING);
-            string = sequence->string();
-            GB_write_string(gb_data,string);
-            free((char *) string);
-            if (info){
-                gb_mark = GB_search(gb_ali, "mark", GB_BITS);
-                GB_write_bits(gb_mark, info, sequence->length(), ".");
-            }
+            GBDATA *gb_data = GB_search(gb_ali, "data", GB_STRING);
+            char *String = sequence->string();
+            GB_write_string(gb_data,String);
+            free(String);
         }
     }
 
@@ -183,22 +159,12 @@ int ALI_ARBDB::put_sequence(char *name, ALI_SEQUENCE *sequence, char *info)
 }
 
 
-int ALI_ARBDB::put_extended(const char *name, char *sequence, char *info)
-{
-    GBDATA                      *gb_extended;
-    GBDATA         *gb_data;
-    GBDATA          *gb_mark;
- 
+int ALI_ARBDB::put_extended(const char *name, char *sequence) {
     GB_change_my_security(gb_main,6,"passwd");
- 
-    gb_extended = GBT_create_SAI(gb_main,name);
-    gb_data = GBT_add_data(gb_extended,alignment,"data",GB_STRING);
+
+    GBDATA *gb_extended = GBT_create_SAI(gb_main,name);
+    GBDATA *gb_data     = GBT_add_data(gb_extended,alignment,"data",GB_STRING);
     GB_write_string(gb_data,sequence);
-    if (info){
-        gb_mark = GB_find(gb_data,"mark",0,this_level);
-        if (!gb_mark) gb_mark = GB_create(GB_get_father(gb_data),"mark",GB_BITS);
-        GB_write_bits(gb_mark,info,strlen(sequence), ".");
-    }
- 
+    
     return 0;
 }
