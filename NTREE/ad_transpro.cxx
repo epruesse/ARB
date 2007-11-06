@@ -72,7 +72,7 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
 
     aw_openstatus("Translating");
 
-    int spec_count           = GBT_count_species(gbmain);
+    int spec_count           = GBT_get_species_count(gbmain);
     int spec_i               = 0;
     int spec_no_transl_table = 0;
     int spec_no_codon_start  = 0;

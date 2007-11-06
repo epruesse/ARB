@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : NT_trackAliChanges.cxx                            //
 //   Purpose   : Track alignment and sequences changes             // 
-//   Time-stamp: <Fri Jun/29/2007 21:00 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Oct/31/2007 13:31 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in June 2007      //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -68,7 +68,7 @@ static void trackAlignmentChanges(AW_window *aww) {
     long            ali_changed    = 0;
     long            seq_changed    = 0;
     long            unchanged      = 0;
-    long            species        = GBT_count_species(gb_main);
+    long            species        = GBT_get_species_count(gb_main);
     long            count          = 0;
     GB_ERROR        error          = 0;
     char           *stamp;

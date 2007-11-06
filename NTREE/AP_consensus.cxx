@@ -298,7 +298,7 @@ long CON_makestatistic(int **statistic,int *convtable,char *align,int onlymarked
     if (onlymarked) {
         nrofspecies = GBT_count_marked_species(gb_main);
     } else {
-        nrofspecies = GBT_count_species(gb_main);
+        nrofspecies = GBT_get_species_count(gb_main);
     }
 
     if (onlymarked) {
