@@ -272,22 +272,29 @@ const char *BI_helix::init(GBDATA *gb_main, const char *alignment_name, const ch
     return get_error();
 }
 
-const char *BI_helix::init(GBDATA *gb_main)
+const char *BI_helix::init(GBDATA *gb_main, const char *alignment_name)
 {
     GB_transaction ta(gb_main);
-    clear_error();
-    
+
     char *helix    = GBT_get_default_helix(gb_main);
     char *helix_nr = GBT_get_default_helix_nr(gb_main);
-    char *use      = GBT_get_default_alignment(gb_main);
 
-    init(gb_main,use,helix_nr,helix);
-    
+    const char *err = init(gb_main, alignment_name, helix_nr, helix);
+
     free(helix);
     free(helix_nr);
-    free(use);
 
-    return get_error();
+    return err;
+}
+
+const char *BI_helix::init(GBDATA *gb_main) {
+    GB_transaction ta(gb_main);
+    
+    char       *alignment_name = GBT_get_default_alignment(gb_main);
+    const char *err            = init(gb_main, alignment_name);
+
+    free(alignment_name);
+    return err;
 }
 
 extern "C" {

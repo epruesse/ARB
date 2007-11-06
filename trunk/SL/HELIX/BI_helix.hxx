@@ -68,6 +68,8 @@ class BI_helix {
 
     static char *helix_error;         // error occurring during init is stored here
     
+    const char *init(GBDATA *gb_main, const char *alignment_name, const char *helix_nr_name, const char *helix_name);
+    
 protected:
 
     char *pairs[HELIX_MAX];
@@ -85,7 +87,7 @@ public:
     ~BI_helix(void);
 
     const char *init(GBDATA *gb_main);
-    const char *init(GBDATA *gb_main, const char *alignment_name, const char *helix_nr_name = "HELIX_NR", const char *helix_name = "HELIX");
+    const char *init(GBDATA *gb_main, const char *alignment_name);
     const char *init(GBDATA *gb_helix_nr,GBDATA *gb_helix,size_t size);
     const char *initFromData(const char *helix_nr, const char *helix, size_t size);
 
