@@ -83,43 +83,20 @@
    return sequence;
 }
 
-// -----------------------------------------------------------------------------
-    int A3Arbdb::put_sequence_string ( char *name,
-                                       char *sequence,
-                                       char *info )
-// -----------------------------------------------------------------------------
-{
-    GBDATA  *gb_species_data;
-    GBDATA  *gb_seq;
-    GBDATA  *gb_ali;
-    GBDATA  *gb_data;
-    GBDATA  *gb_mark;
-    int      sequence_len = strlen(sequence);
-
+int A3Arbdb::put_sequence_string(char *name, char *sequence) {
     GB_change_my_security(gb_main,6,"passwd");
 
-    gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
+    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
+    GBDATA *gb_seq = GB_find(gb_species_data,"name",name,down_2_level);
 
-    gb_seq = GB_find(gb_species_data,"name",name,down_2_level);
+    if (gb_seq) {
+        GBDATA *gb_ali = GB_find(gb_seq,alignment,0,this_level);
 
-    if (gb_seq)
-    {
-        gb_ali = GB_find(gb_seq,alignment,0,this_level);
-
-        if (gb_ali)
-        {
-            gb_data = GB_search(gb_ali,"data",GB_STRING);
+        if (gb_ali) {
+            GBDATA *gb_data = GB_search(gb_ali,"data",GB_STRING);
 
             GB_write_string(gb_data,sequence);
-
             free((char *) sequence);
-
-            if (info)
-            {
-                gb_mark = GB_search(gb_ali,"mark",GB_BITS);
-
-                GB_write_bits(gb_mark,info,sequence_len,".");
-            }
         }
     }
 
