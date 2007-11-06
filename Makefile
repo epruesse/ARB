@@ -108,7 +108,7 @@ CPPreal=cpp
 
 ALLOWED_GCC_295_VERSIONS=2.95.3
 ALLOWED_GCC_3xx_VERSIONS=3.2 3.3.1 3.3.3 3.3.4 3.3.5 3.3.6 3.4.0 3.4.2 3.4.3
-ALLOWED_GCC_4xx_VERSIONS=4.0.0 4.0.2 4.0.3 4.1.1 4.1.2 4.1.3 4.2.0 4.2.1
+ALLOWED_GCC_4xx_VERSIONS=4.0.0 4.0.2 4.0.3 4.1.1 4.1.2 4.1.3 4.2.0 4.2.1 4.2.3
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_295_VERSIONS) $(ALLOWED_GCC_3xx_VERSIONS) $(ALLOWED_GCC_4xx_VERSIONS)
 
 GCC_VERSION_FOUND=$(shell $(GCC) -dumpversion)
@@ -1288,13 +1288,17 @@ bclean:
 libclean:
 	rm -f `find . -type f \( -name '*.a' ! -type l \) -print`
 
-clean: $(ARCHS:.a=.clean) \
+clean2: $(ARCHS:.a=.clean) \
 		GDEHELP/GDEHELP.clean \
 		HELP_SOURCE/HELP_SOURCE.clean \
 		SOURCE_TOOLS/SOURCE_TOOLS.clean \
 		bin/bin.clean \
 		perl_clean
 	rm -f *.last_gcc
+
+# links are needed for cleanup
+clean: links
+	$(MAKE) clean2
 
 # -----------------------------------
 
