@@ -35,9 +35,9 @@ public:
     char *get_sequence_string(char *name, int and_mark = 0);
     ALI_SEQUENCE *get_sequence(char *name, int and_mark = 0);
     char *get_extended(char *name);
-    int put_sequence_string(char *name, char *sequence, char *info = 0);
-    int put_sequence(char *name, ALI_SEQUENCE *sequence, char *info = 0);
-    int put_extended(const char *name, char *sequence, char *info = 0);
+    int put_sequence_string(char *name, char *sequence);
+    int put_sequence(char *name, ALI_SEQUENCE *sequence);
+    int put_extended(const char *name, char *sequence);
 };
 
 
