@@ -28,6 +28,6 @@ done
 # export names.dat:
 echo "****************************************"
 echo "exporting names.dat"
-echo gzip </usr/arb/lib/nas/names.dat >$dest/xtra/names.dat.gz
-gzip </usr/arb/lib/nas/names.dat >$dest/xtra/names.dat.gz
-
+ARBHOME=${ARBHOME:-"/usr/arb"}
+echo gzip <${ARBHOME}/lib/nas/names.dat >$dest/xtra/names.dat.gz
+gzip <${ARBHOME}/lib/nas/names.dat >$dest/xtra/names.dat.gz
