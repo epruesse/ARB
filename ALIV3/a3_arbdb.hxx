@@ -42,8 +42,7 @@ class A3Arbdb
                                       int   and_mark = 0 );
 
         int     put_sequence_string ( char *name,
-                                      char *sequence,
-                                      char *info = 0 );
+                                      char *sequence);
 };
 
 // -----------------------------------------------------------------------------
