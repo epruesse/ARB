@@ -1295,7 +1295,7 @@ treelistitemtype *gettreelistitem()
 {
 	treelistitemtype *tmpptr;
 	tmpptr = (treelistitemtype *)malloc(sizeof(treelistitemtype));
-	if (tmpptr == NULL) maerror("item of intermediate tree stuctures");
+	if (tmpptr == NULL) maerror("item of intermediate tree structures");
 	(*tmpptr).pred = NULL;
 	(*tmpptr).succ = NULL;
 	(*tmpptr).tree = NULL;
@@ -1453,7 +1453,7 @@ void sortbynum(treelistitemtype *list, treelistitemtype **sortlist)
 
 /**********/
 
-/* print puzzling step tree stuctures for checking */
+/* print puzzling step tree structures for checking */
 void printfpstrees(treelistitemtype *list)
 {
 	char ch;
@@ -1469,7 +1469,7 @@ void printfpstrees(treelistitemtype *list)
 
 /**********/
 
-/* print sorted puzzling step tree stucture with names */
+/* print sorted puzzling step tree structure with names */
 void fprintffullpstree(FILE *outf, char *treestr)
 {
 	int count = 0;
@@ -1499,7 +1499,7 @@ void fprintffullpstree(FILE *outf, char *treestr)
 
 /**********/
 
-/* print sorted puzzling step tree stuctures with names */
+/* print sorted puzzling step tree structures with names */
 void fprintfsortedpstrees(FILE *output, 
                           treelistitemtype *list,  /* tree list */
                           int itemnum,             /* order number */

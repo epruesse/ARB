@@ -2184,7 +2184,7 @@ void writeoutputfile(FILE *ofp, int part)
 				i+1, Rates[i], (1.0-fracinv)/(double) numcats);	
 	}
 	if (rhetmode == GAMMARATE || rhetmode == MIXEDRATE) {
-		fprintf(ofp, "\nCategories 1-%d approximate a continous ", numcats);
+		fprintf(ofp, "\nCategories 1-%d approximate a continuous ", numcats);
 		fprintf(ofp, "Gamma-distribution with expectation 1\n"); 
 		fprintf(ofp, "and variance ");
 		if (Geta == 1.0) fprintf(ofp, "infinity");
@@ -3374,7 +3374,7 @@ void recon_tree()
 							/*  check which two _leaves_ out of a, b, c
 							    are closer related to each other than
 							    to leaf i according to a least squares
-							    fit of the continous Baysian weights to the
+							    fit of the continuous Baysian weights to the
 							    seven trivial "attractive regions". We assign 
 							    a score of 1 to all edges between these two leaves
 							    chooseA and chooseB */

@@ -1206,11 +1206,11 @@ long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA 
 
     size = gbcm_read(socket, (char *)buffer, sizeof(long) * 3);
     if (size != sizeof(long) * 3) {
-        fprintf(stderr, "recieve failed header size\n");
+        fprintf(stderr, "receive failed header size\n");
         return GBCM_SERVER_FAULT;
     }
     if (buffer[0] != GBCM_COMMAND_SEND) {
-        fprintf(stderr, "recieve failed wrong command\n");
+        fprintf(stderr, "receive failed wrong command\n");
         return GBCM_SERVER_FAULT;
     }
     id = buffer[2];
@@ -1219,7 +1219,7 @@ long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA 
 
     size = gbcm_read(socket, (char *)buffer, i);
     if (size != i) {
-        GB_internal_error("recieve failed DB_NODE\n");
+        GB_internal_error("receive failed DB_NODE\n");
         return GBCM_SERVER_FAULT;
     }
 
@@ -1298,7 +1298,7 @@ long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA 
             buffer2 = (struct gb_header_flags *)GB_give_buffer2(realsize);
             size = gbcm_read(socket, (char *)buffer2, realsize);
             if (size != realsize) {
-                GB_internal_error("recieve failed data\n");
+                GB_internal_error("receive failed data\n");
                 return GBCM_SERVER_FAULT;
             }
             if (gb2 && mode >= -1) {
@@ -1382,7 +1382,7 @@ long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA 
             }
             size = gbcm_read(socket, data, memsize);
             if (size != memsize) {
-                fprintf(stderr, "recieve failed data\n");
+                fprintf(stderr, "receive failed data\n");
                 return GBCM_SERVER_FAULT;
             }
 
@@ -1397,7 +1397,7 @@ long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA 
 
             size = gbcm_read(socket, buffer2, memsize);
             if (size != memsize) {
-                GB_internal_error("recieve failed data\n");
+                GB_internal_error("receive failed data\n");
                 return GBCM_SERVER_FAULT;
             }
         }
@@ -1549,14 +1549,14 @@ GB_ERROR gbcmc_read_keys(int socket,GBDATA *gbd){
     long buffer[2];
 
     if (gbcm_read(socket,(char *)buffer,sizeof(long)*2) != sizeof(long)*2) {
-        return GB_export_error("ARB_DB CLIENT ERROR recieve failed 6336");
+        return GB_export_error("ARB_DB CLIENT ERROR receive failed 6336");
     }
     size = buffer[0];
     Main->first_free_key = buffer[1];
     gb_create_key_array(Main,(int)size);
     for (i=1;i<size;i++) {
         if (gbcm_read(socket,(char *)buffer,sizeof(long)*2) != sizeof(long)*2) {
-            return GB_export_error("ARB_DB CLIENT ERROR recieve failed 6253");
+            return GB_export_error("ARB_DB CLIENT ERROR receive failed 6253");
         }
         Main->keys[i].nref = buffer[0];         /* to control malloc_index */
         Main->keys[i].next_free_key = buffer[1];    /* to control malloc_index */
@@ -1590,12 +1590,12 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
         return GB_export_error("ARB_DB CLIENT ERROR send failed 1626");
     }
     if (gbcm_read_two(socket,GBCM_COMMAND_TRANSACTION_RETURN,0,clock)){
-        return GB_export_error("ARB_DB CLIENT ERROR recieve failed 3656");
+        return GB_export_error("ARB_DB CLIENT ERROR receive failed 3656");
     };
     Main->clock = clock[0];
     while (1){
         if (gbcm_read(socket,(char *)buffer,sizeof(long)*2) != sizeof(long)*2) {
-            return GB_export_error("ARB_DB CLIENT ERROR recieve failed 6435");
+            return GB_export_error("ARB_DB CLIENT ERROR receive failed 6435");
         }
         d = buffer[1];
         gb2 = (GBDATA *)GBS_read_hashi(Main->remote_hash,d);
@@ -1611,7 +1611,7 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
         switch(buffer[0]) {
             case GBCM_COMMAND_PUT_UPDATE_UPDATE:
                 if (gbcm_read_bin(socket,0,buffer, mode,gb2,0)){
-                    return GB_export_error("ARB_DB CLIENT ERROR recieve failed 2456");
+                    return GB_export_error("ARB_DB CLIENT ERROR receive failed 2456");
                 }
                 if (gb2 ){
                     GB_CREATE_EXT(gb2);
@@ -1620,7 +1620,7 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
                 break;
             case GBCM_COMMAND_PUT_UPDATE_CREATE:
                 if (gbcm_read_bin(socket, (GBCONTAINER *)gb2, buffer, mode, 0, 0)) {
-                    return GB_export_error("ARB_DB CLIENT ERROR recieve failed 4236");
+                    return GB_export_error("ARB_DB CLIENT ERROR receive failed 4236");
                 }
                 if (gb2 ) {
                     GB_CREATE_EXT(gb2);
@@ -1637,7 +1637,7 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
             case GBCM_COMMAND_PUT_UPDATE_END:
                 goto endof_gbcmc_begin_transaction;
             default:
-                return GB_export_error("ARB_DB CLIENT ERROR recieve failed 6574");
+                return GB_export_error("ARB_DB CLIENT ERROR receive failed 6574");
         }
     }
  endof_gbcmc_begin_transaction:
@@ -1662,17 +1662,17 @@ GB_ERROR gbcmc_init_transaction(GBCONTAINER *gbd)
     }
 
     if (gbcm_read_two(socket,GBCM_COMMAND_TRANSACTION_RETURN,0,clock)){
-        return GB_export_error("ARB_DB CLIENT ERROR recieve failed 3456");
+        return GB_export_error("ARB_DB CLIENT ERROR receive failed 3456");
     };
     Main->clock = clock[0];
 
     if (gbcm_read_two(socket,GBCM_COMMAND_TRANSACTION_RETURN,0,buffer)){
-        return GB_export_error("ARB_DB CLIENT ERROR recieve failed 3654");
+        return GB_export_error("ARB_DB CLIENT ERROR receive failed 3654");
     };
     gbd->server_id = buffer[0];
 
     if (gbcm_read_two(socket,GBCM_COMMAND_TRANSACTION_RETURN,0,buffer)){
-        return GB_export_error("ARB_DB CLIENT ERROR recieve failed 3654");
+        return GB_export_error("ARB_DB CLIENT ERROR receive failed 3654");
     };
     Main->this_user->userid = (int)buffer[0];
     Main->this_user->userbit = 1<<((int)buffer[0]);
@@ -1680,7 +1680,7 @@ GB_ERROR gbcmc_init_transaction(GBCONTAINER *gbd)
     GBS_write_hashi(Main->remote_hash,gbd->server_id,(long)gbd);
 
     if (gbcm_read(socket,(char *)buffer, 2 * sizeof(long)) !=  2 * sizeof(long)) {
-        return GB_export_error("ARB_DB CLIENT ERROR recieve failed 2336");
+        return GB_export_error("ARB_DB CLIENT ERROR receive failed 2336");
     }
     error = gbcmc_read_keys(socket,(GBDATA *)gbd);
     if (error) return error;
@@ -1781,7 +1781,7 @@ gbcmc_unfold_list(int socket, GBDATA * gbd)
     GB_ERROR error;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (!gbcm_read(socket, (char *) readvar, sizeof(long) * 2 )) {
-        return GB_export_error("recieve failed");
+        return GB_export_error("receive failed");
     }
     gb_client = (GBCONTAINER *) readvar[1];
     if (gb_client) {

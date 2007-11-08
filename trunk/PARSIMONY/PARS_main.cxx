@@ -1880,7 +1880,7 @@ int main(int argc, char **argv)
                "\n"
                "    -add_marked             add marked species   (without changing topology)\n"
                "    -add_selected           add selected species (without changing topology)\n"
-               "    -calc_branchlengths     calculate branch lenghts only\n"
+               "    -calc_branchlengths     calculate branch lengths only\n"
                "    -calc_bootstrap         estimate bootstrap values\n"
                "    -quit                   quit after performing operations\n"
                );

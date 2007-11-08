@@ -16,7 +16,7 @@ static void error(const char *msg) {
 int main(int argc, char **argv)
 {
     if (argc <= 2) {
-        fprintf(stderr,"arb_proto_2_xsub converts GB_prototyes to perl interface\n");
+        fprintf(stderr,"arb_proto_2_xsub converts GB_prototypes to perl interface\n");
         fprintf(stderr,"Usage: arb_proto_2_xsub <prototypes.h> <xs-header>\n");
         fprintf(stderr,"<xs-header> may contain prototypes. Those will not be overwritten!!!\n");
         return(-1);

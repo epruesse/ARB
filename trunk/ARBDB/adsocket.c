@@ -448,19 +448,19 @@ long gbcm_read_two(int socket, long a, long *b, long *c)
     long    size;
     size = gbcm_read(socket,(char *)&(ia[0]),sizeof(long)*3);
     if (size != sizeof(long) * 3) {
-        GB_internal_error("recieve failed: %i bytes expected, %li got, keyword %lX",
+        GB_internal_error("receive failed: %i bytes expected, %li got, keyword %lX",
                           sizeof(long) * 3,size, a );
         return GBCM_SERVER_FAULT;
     }
     if (ia[0] != a) {
-        GB_internal_error("recieved keyword failed %lx != %lx\n",ia[0],a);
+        GB_internal_error("received keyword failed %lx != %lx\n",ia[0],a);
         return GBCM_SERVER_FAULT;
     }
     if (b) {
         *b = ia[1];
     }else{
         if (ia[1]!=3) {
-            GB_internal_error("recieve failed: size not 3\n");
+            GB_internal_error("receive failed: size not 3\n");
             return GBCM_SERVER_FAULT;
         }
     }

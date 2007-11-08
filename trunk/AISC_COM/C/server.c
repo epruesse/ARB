@@ -660,7 +660,7 @@ long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object, int ob
         attribute	= code &0x0000ffff;
         type 		= code &0xff000000;
         if (attribute > AISC_MAX_ATTR) {
-            sprintf(error_buf,"ATTRIBUTE %li DONT EXIST",
+            sprintf(error_buf,"ATTRIBUTE %li DOESNT EXIST",
                     attribute);
             aisc_server_error = error_buf;
             attribute = 0;
@@ -672,7 +672,7 @@ long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object, int ob
             function = functions[attribute];
         }
         if (!function){
-            sprintf(error_buf,"ATTRIBUTE %li DONT EXIST",
+            sprintf(error_buf,"ATTRIBUTE %li DOESNT EXIST",
                     attribute);
             aisc_server_error = error_buf;
             break;
@@ -827,7 +827,7 @@ aisc_talking_create(long *in_buf, int size, long *out_buf, int max_size)
         type = code & 0xff000000;
         object_type = in_buf[in_pos++];
         if (!functions) {
-            sprintf(error_buf, "AISC_CREATE_SERVER_ERROR: FATHER %s DONT HAS TARGET-ATTRIBUTE %s",
+            sprintf(error_buf, "AISC_CREATE_SERVER_ERROR: FATHER %s DOESNT HAVE TARGET-ATTRIBUTE %s",
                     aisc_get_object_names(father_type), aisc_get_object_attribute(father_type,attribute));
             aisc_server_error = error_buf;
             break;
@@ -838,7 +838,7 @@ aisc_talking_create(long *in_buf, int size, long *out_buf, int max_size)
         }
         function = functions[attribute];
         if (!function) {
-            sprintf(error_buf, "AISC_CREATE_SERVER_ERROR: FATHER %s FATHER DONT HAS TARGET-ATTRIBUTE %s",
+            sprintf(error_buf, "AISC_CREATE_SERVER_ERROR: FATHER %s FATHER DOESNT HAVE TARGET-ATTRIBUTE %s",
                     aisc_get_object_names(father_type), aisc_get_object_attribute(father_type,attribute));
             aisc_server_error = error_buf;
             break;
@@ -893,7 +893,7 @@ aisc_talking_copy(long *in_buf, int size, long *out_buf, int max_size)
         attribute = code & 0x0000ffff;
         type = code & 0xff000000;
         if (!functions) {
-            aisc_server_error = "AISC_COPY_SERVER_ERROR: FATHER DONT HAS TARGET-ATTRIBUTES";
+            aisc_server_error = "AISC_COPY_SERVER_ERROR: FATHER DOESNT HAVE TARGET-ATTRIBUTES";
             break;
         }
         if (attribute > AISC_MAX_ATTR) {
@@ -902,7 +902,7 @@ aisc_talking_copy(long *in_buf, int size, long *out_buf, int max_size)
         }
         function = functions[attribute];
         if (!function) {
-            sprintf(error_buf, "AISC_COPY_SERVER_ERROR: FATHER %s DONT HAS TARGET-ATTRIBUTE %s",
+            sprintf(error_buf, "AISC_COPY_SERVER_ERROR: FATHER %s DOESNT HAVE TARGET-ATTRIBUTE %s",
                     aisc_get_object_names(father_type), aisc_get_object_attribute(father_type,attribute));
             aisc_server_error = error_buf;
             break;

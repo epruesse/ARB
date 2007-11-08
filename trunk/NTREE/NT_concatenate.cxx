@@ -139,7 +139,7 @@ conAlignStruct* createSelectionList(GBDATA *gb_main,AW_window *aws, const char *
     cas->db_id   = db_alignment_list;
     cas->seqType  = 0; if (ali_type) cas->seqType = strdup(ali_type);  //assigning the sequence type to struct cas
 
-    createSelectionList_callBack(cas); // calling callback to get the alingments in the database
+    createSelectionList_callBack(cas); // calling callback to get the alignments in the database
 
     GB_push_transaction(gb_main);
     gb_presets = GB_search(gb_main,"presets",GB_CREATE_CONTAINER);

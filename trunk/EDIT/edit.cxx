@@ -2257,7 +2257,7 @@ void aed_create_window(AED_root *aedr) {
     left_side->in_side = aed_window->show_dlist_left_side;
     aed_window->show_dlist_left_side->append( left_side );
 
-    left_side = new AED_left_side( aed_left_name, "Spezies Name" );
+    left_side = new AED_left_side( aed_left_name, "Species Name" );
     left_side->in_side = aed_window->show_dlist_left_side;
     aed_window->show_dlist_left_side->append( left_side );
 

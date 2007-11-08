@@ -679,7 +679,7 @@ genbank_verify_accession()
 				if(warning_out) fprintf(stderr,
 				"\nACCESSION: %s", data.gbk.accession);
 				warning(139,
-			"Accesssion numbers should be separated by a space.");
+			"Accession numbers should be separated by a space.");
 				data.gbk.accession[indi]=' ';
 			}
 			break;

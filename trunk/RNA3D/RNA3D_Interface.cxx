@@ -292,7 +292,7 @@ static void DisplayMoleculeMask(AW_root */*awr */){
 
 /*---------------------------- Creating WINDOWS ------------------------------ */
 static void AddCallBacks(AW_root *awr) {
-    // adding callbacks to the awars to refresh the display if recieved any changes
+    // adding callbacks to the awars to refresh the display if received any changes
 
     // General Molecule Display  Section
     awr->awar(AWAR_3D_MOL_BACKBONE)->add_callback(RefreshCanvas);

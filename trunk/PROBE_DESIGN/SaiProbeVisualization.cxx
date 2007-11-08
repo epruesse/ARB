@@ -175,7 +175,7 @@ static void createSaiProbeAwars(AW_root *aw_root) {
 }
 
 static void addCallBacks(AW_root *awr, AWT_canvas *ntw) {
-    // adding callbacks to the awars to refresh the display if recieved any changes
+    // adding callbacks to the awars to refresh the display if received any changes
     awr->awar(AWAR_SPV_DISP_SAI)      ->add_callback(refreshCanvas, (AW_CL)ntw);
     awr->awar(AWAR_SPV_SAI_2_PROBE)   ->add_callback(refreshCanvas, (AW_CL)ntw);
     awr->awar(AWAR_SPV_DB_FIELD_NAME) ->add_callback(refreshCanvas, (AW_CL)ntw);
