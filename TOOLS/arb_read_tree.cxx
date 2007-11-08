@@ -71,7 +71,7 @@ int main(int argc,char **argv)
     double scale_factor = 0.0;
 
     if (args>0 && strcmp("-scale",argv[0]) == 0) {
-        scale = 1;
+        scale = true;
         if (args<2) abort_with_usage(gb_main, "-scale expects a 2nd argument (scale factor)");
         scale_factor = atof(argv[1]);
         SHIFT_ARGS(2);
@@ -110,10 +110,20 @@ int main(int argc,char **argv)
 
     GBT_message(gb_main, GBS_global_string("Reading tree from '%s' ..", filename));
 
-    GBT_TREE *tree = GBT_load_tree(filename, sizeof(GBT_TREE), &comment_from_treefile, consense ? 0 : 1);
-    if (!tree) {
-        show_error(gb_main);
-        return -1;
+    GBT_TREE *tree;
+    {
+        char *scaleWarning = 0;
+        
+        tree = GBT_load_tree(filename, sizeof(GBT_TREE), &comment_from_treefile, (consense||scale) ? 0 : 1, &scaleWarning);
+        if (!tree) {
+            show_error(gb_main);
+            return -1;
+        }
+
+        if (scaleWarning) {
+            GBT_message(gb_main, scaleWarning);
+            free(scaleWarning);
+        }
     }
 
     if (scale) {
