@@ -52,7 +52,7 @@ AD_ERR *AD_MAIN::open(const char *path) {
         return 0;
     } else
     {
-        return new AD_ERR("database dont exists");
+        return new AD_ERR("database doesnt exist");
     }
 }
 
@@ -76,7 +76,7 @@ AD_ERR *AD_MAIN::open(const char *path,int cach = MAXCACH)
         gbdataptr = gbd;
         return 0;
     } else {
-        return new AD_ERR("database dont exists");
+        return new AD_ERR("database doesnt exist");
     }
 }
 

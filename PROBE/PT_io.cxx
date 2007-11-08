@@ -157,7 +157,7 @@ probe_read_alignment(int j, int *psize)
     gb_ali = GB_find(psg.data[j].gbd, psg.alignment_name, 0, down_level);
     if (!gb_ali)
         return 0;
-    /* this alignment dont exists */
+    /* this alignment doesnt exist */
     gb_data = GB_find(gb_ali, "data", 0, down_level);
     if (!gb_data) {
         return 0;

@@ -346,7 +346,7 @@ SeerInterfaceError *SeerInterface::abortTransaction(){return 0;};
 SeerInterfaceError *SeerInterface::beginReadOnlyTransaction(){return beginTransaction();};
 SeerInterfaceError *SeerInterface::commitReadOnlyTransaction(){return commitTransaction();};
     
-    /* ************** next functions are called only within the scope of a transacton *****/
+    /* ************** next functions are called only within the scope of a transaction *****/
 SeerInterfaceAlignment *SeerInterface::firstAlignment(){
     SeerInterfaceAlignment *ali = new SeerInterfaceAlignment("16s","this is my comment");
     ali->typeofAlignment = SIAT_RNA;

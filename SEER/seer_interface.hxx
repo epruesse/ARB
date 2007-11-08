@@ -278,7 +278,7 @@ public:
     virtual SeerInterfaceError *beginReadOnlyTransaction();
     virtual SeerInterfaceError *commitReadOnlyTransaction();
     
-    /* ************** next functions are called only within the scope of a transacton *****/
+    /* ************** next functions are called only within the scope of a transaction *****/
     virtual SeerInterfaceAlignment *firstAlignment(); // a list of all alignments in the database
     virtual SeerInterfaceAlignment *nextAlignment(); // a list of all alignments in the database
 

@@ -66,8 +66,8 @@ const char *ali_man_line[] = {
     "[-csub]           cost threshold for substitution (prealigner) (0.5)",
     "[-chel]           cost threshold for helix binding (prealigner) (2.0)",
     "[-ec]             error count (prealigner) (2)",
-    "[-ib]             intervall border (prealigner) (5)",
-    "[-ic]             intervall center (prealigner) (5)",
+    "[-ib]             interval border (prealigner) (5)",
+    "[-ic]             interval center (prealigner) (5)",
     0
 };
 

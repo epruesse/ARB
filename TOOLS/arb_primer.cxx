@@ -58,7 +58,7 @@ void arb_prm_menu()
 	fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
 	i = atoi(aprm.buffer);
 	aprm.prmanz = i;
-	printf( "Select minimum length of a primer, the maximum will be (mimimum + %i)\n",
+	printf( "Select minimum length of a primer, the maximum will be (minimum + %i)\n",
 		ADD_LEN);
 	fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
 	i = atoi(aprm.buffer);

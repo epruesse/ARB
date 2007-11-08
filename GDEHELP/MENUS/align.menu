@@ -122,7 +122,7 @@ argmax:10
 argvalue:6.66
 
 arg:MAXDIV
-arglabel:% indentidy for delay
+arglabel:% identity for delay
 argtype:slider
 argmin:0
 argmax:100
@@ -212,7 +212,7 @@ argmax:10
 argvalue:6.66
 
 arg:MAXDIV
-arglabel:% indentidy for delay
+arglabel:% identity for delay
 argtype:slider
 argmin:0
 argmax:100
@@ -313,7 +313,7 @@ argmax:10
 argvalue:0.2
 
 arg:MAXDIV
-arglabel:% indentidy for delay
+arglabel:% identity for delay
 argtype:slider
 argmin:0
 argmax:100
@@ -413,7 +413,7 @@ argmax:10
 argvalue:0.2
 
 arg:MAXDIV
-arglabel:% indentidy for delay
+arglabel:% identity for delay
 argtype:slider
 argmin:0
 argmax:100

@@ -253,7 +253,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
     if (!father && !key_name) {
         key_name = "<unknown quark - element w/o father>";
     }
-    else { // test if we need a transacton
+    else { // test if we need a transaction
         if (!GB_MAIN(gbd)->transaction) {
             GB_push_transaction(gbd);
             GB_dump_internal(gbd, lines_allowed);

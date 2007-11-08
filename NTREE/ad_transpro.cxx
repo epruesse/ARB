@@ -48,7 +48,7 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
     if (!gb_source) return "Please select a valid source alignment";
     gb_dest = GBT_get_alignment(gbmain,ali_dest);
     if (!gb_dest) {
-        const char *msg = GBS_global_string("You have not selected a destination alingment\n"
+        const char *msg = GBS_global_string("You have not selected a destination alignment\n"
                                             "May I create one ('%s_pro') for you?",ali_source);
         if (aw_message(msg,"CREATE,CANCEL")){
             return "Cancelled";

@@ -470,8 +470,8 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, con
     char         *to_free   = 0;
     
     if (Main->transaction>0){
-        GB_internal_error("Internal Error: Compress Sequences called during a running transacton");
-        return GB_export_error("Internal Error: Compress Sequences called during a running transacton");
+        GB_internal_error("Internal Error: Compress Sequences called during a running transaction");
+        return GB_export_error("Internal Error: Compress Sequences called during a running transaction");
     }
     
     GB_request_undo_type(gb_main,GB_UNDO_KILL);

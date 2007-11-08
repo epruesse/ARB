@@ -376,7 +376,7 @@ uli    nq;
                       /*      check which two _leaves_ out of a, b, c
                           are closer related to each other than
                           to leaf i according to a least squares
-                          fit of the continous Baysian weights to the
+                          fit of the continuous Baysian weights to the
                           seven trivial "attractive regions". We assign 
                           a score of 1 to all edges between these two leaves
                           chooseA and chooseB */
@@ -714,7 +714,7 @@ void PP_RecvSizes(int    *mspc,
 
 
 /*********************************************************************
-*  sending/receiving the data matrizes  (M->S)                       *
+*  sending/receiving the data matrices  (M->S)                       *
 *********************************************************************/
 
 void PP_RecvData(

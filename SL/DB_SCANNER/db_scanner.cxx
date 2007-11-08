@@ -83,7 +83,7 @@ static void awt_edit_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_CB_T
         cbs->gb_edit = 0;
     }
     if (cbs->gb_edit) {
-        if (awt_check_scanner_key_data(cbs,cbs->gb_edit)) {		// dont exist
+        if (awt_check_scanner_key_data(cbs,cbs->gb_edit)) {		// doesnt exist
             aws->get_root()->awar(cbs->def_dest)->write_string("");
         }else{
             char *data;

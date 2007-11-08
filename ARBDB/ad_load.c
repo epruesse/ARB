@@ -722,7 +722,7 @@ long gb_recover_corrupt_file(GBCONTAINER *gbd,FILE *in, GB_ERROR recovery_reason
         GB_export_error("Aborting recovery (because recovery mode is disabled)\n"
                         "Error causing recovery: '%s'\n"
                         "Part of data may be recovered using 'arb_repair yourDB.arb newName.arb'\n"
-                        "(Note: Recovery doen't work if the error occurs while loading a quick save file)",
+                        "(Note: Recovery doesn't work if the error occurs while loading a quick save file)",
                         recovery_reason);
         /*         GB_export_error("Your data file is corrupt.\n" */
         /*                         "   This may happen if \n" */
