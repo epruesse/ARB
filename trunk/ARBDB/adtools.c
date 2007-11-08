@@ -17,7 +17,7 @@
 #define GBT_PUT_DATA 1
 
 #define DEFAULT_LENGTH        0.1 /* default length of tree-edge w/o given length */
-#define DEFAULT_LENGTH_MARKER -1.0 /* tree-edges w/o length are marked with this value during read and corrected in GBT_scale_tree */
+#define DEFAULT_LENGTH_MARKER -1000.0 /* tree-edges w/o length are marked with this value during read and corrected in GBT_scale_tree */
 
 /********************************************************************************************
                     some alignment header functions
@@ -1295,50 +1295,55 @@ static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
     return node;
 }
 
-GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main,const char *tree_name, long structure_size, int *tree_size) /* read a tree */ {
-    GBDATA *gb_tree;
-    GBDATA *gb_nnodes;
-    GBDATA *gb_tree_data;
-    GB_ERROR error;
-    long size;
-    GBDATA *gb_ctree;
+GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main,const char *tree_name, long structure_size, int *tree_size) {
+    /* read a tree from DB */
+    GB_ERROR error = 0;
+
     if (!tree_name) {
-        GB_export_error("no treename given"); return 0;
+        error = "no treename given";
     }
-    error =GBT_check_tree_name(tree_name); if (error) return 0;
+    else {
+        error = GBT_check_tree_name(tree_name);
+        if (!error) {
+            GBDATA *gb_tree_data = GB_search(gb_main, "tree_data", GB_CREATE_CONTAINER);
+            GBDATA *gb_tree      = GB_find(gb_tree_data, tree_name, 0, down_level);
 
-    gb_tree_data = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
-    gb_tree = GB_find(gb_tree_data, tree_name, 0, down_level) ;
-    if (!gb_tree) {
-        GB_export_error("tree '%s' not found",tree_name);
-        return 0;
-    }
-    gb_nnodes = GB_find(gb_tree,"nnodes",0,down_level);
-    if (!gb_nnodes) {
-        GB_export_error("Empty tree '%s'",tree_name);
-        return 0;
-    }
-    size = GB_read_int(gb_nnodes);
-    if (!size) {
-        GB_export_error("zero sized tree '%s'",tree_name);
-        return 0;
-    }
-    gb_ctree = GB_search(gb_tree,"tree",GB_FIND);
-    if (gb_ctree) {             /* new style tree */
-        GB_ERROR  error = 0;
-        GBT_TREE *t     = read_tree_and_size_internal(gb_tree, gb_ctree, structure_size, size, &error);
+            if (!gb_tree) {
+                error = GBS_global_string("Could not find tree '%s'", tree_name);
+            }
+            else {
+                GBDATA *gb_nnodes = GB_find(gb_tree, "nnodes", 0, down_level);
+                if (!gb_nnodes) {
+                    error = GBS_global_string("Tree '%s' is empty", tree_name);
+                }
+                else {
+                    long size = GB_read_int(gb_nnodes);
+                    if (!size) {
+                        error = GBS_global_string("Tree '%s' has zero size", tree_name);
+                    }
+                    else {
+                        GBDATA *gb_ctree = GB_search(gb_tree, "tree", GB_FIND);
+                        if (!gb_ctree) {
+                            error = "Sorry - old tree format no longer supported";
+                        }
+                        else { /* "new" style tree */
+                            GBT_TREE *tree = read_tree_and_size_internal(gb_tree, gb_ctree, structure_size, size, &error);
+                            if (!error) {
+                                gb_assert(tree);
+                                if (tree_size) *tree_size = size; /* return size of tree */
+                                return tree;
+                            }
 
-        if (error) {
-            gb_assert(!t);
-            GB_export_error("Couldn't read tree '%s': %s", tree_name, error);
-            return 0;
+                            gb_assert(!tree);
+                        }
+                    }
+                }
+            }
         }
-
-        gb_assert(t);
-        if (tree_size) *tree_size = size; /* return size of tree */
-        return t;
     }
-    GB_export_error("Sorry old tree format not supported any more");
+
+    gb_assert(error);
+    GB_export_error("Couldn't read tree '%s' (Reason: %s)", tree_name, error);
     return 0;
 }
 
@@ -1721,13 +1726,15 @@ static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tr
 /* } */
 void GBT_scale_tree(GBT_TREE *tree, double length_scale, double bootstrap_scale) {
     if (tree->leftson) {
-        if (tree->leftlen<-0.01) tree->leftlen  = DEFAULT_LENGTH;
-        else                     tree->leftlen *= length_scale;
+        if (tree->leftlen <= DEFAULT_LENGTH_MARKER) tree->leftlen  = DEFAULT_LENGTH;
+        else                                        tree->leftlen *= length_scale;
+        
         GBT_scale_tree(tree->leftson, length_scale, bootstrap_scale);
     }
     if (tree->rightson) {
-        if (tree->rightlen<-0.01) tree->rightlen  = DEFAULT_LENGTH;
-        else                      tree->rightlen *= length_scale;
+        if (tree->rightlen <= DEFAULT_LENGTH_MARKER) tree->rightlen  = DEFAULT_LENGTH; 
+        else                                         tree->rightlen *= length_scale;
+        
         GBT_scale_tree(tree->rightson, length_scale, bootstrap_scale);
     }
 
@@ -1749,8 +1756,9 @@ void GBT_scale_tree(GBT_TREE *tree, double length_scale, double bootstrap_scale)
 /* Load a newick compatible tree from file 'path',
    structure size should be >0, see GBT_read_tree for more information
    if commentPtr != NULL -> set it to a malloc copy of all concatenated comments found in tree file
+   if warningPtr != NULL -> set it to a malloc copy auto-scale-warning (if autoscaling happens) 
 */
-GBT_TREE *GBT_load_tree(const char *path, int structuresize, char **commentPtr, int allow_length_scaling)
+GBT_TREE *GBT_load_tree(const char *path, int structuresize, char **commentPtr, int allow_length_scaling, char **warningPtr)
 {
     FILE        *input;
     GBT_TREE    *tree;
@@ -1779,10 +1787,28 @@ GBT_TREE *GBT_load_tree(const char *path, int structuresize, char **commentPtr, 
 
             if (max_found_bootstrap >= 101.0) { // bootstrap values were given in percent
                 bootstrap_scale = 0.01;
+                if (warningPtr) {
+                    *warningPtr = GBS_global_string_copy("Auto-scaling bootstrap values by factor %.2f (max. found bootstrap was %5.2f)",
+                                                         bootstrap_scale, max_found_bootstrap);
+                }
             }
-            if (max_found_branchlen >= 1.01) { // branchlengths had range [0;100]
+            if (max_found_branchlen >= 1.01) { // assume branchlengths have range [0;100]
                 if (allow_length_scaling) {
                     branchlen_scale = 0.01;
+                    if (warningPtr) {
+                        char *w = GBS_global_string_copy("Auto-scaling branchlengths by factor %.2f (max. found branchlength = %5.2f)",
+                                                         branchlen_scale, max_found_branchlen);
+                        if (*warningPtr) {
+                            char *w2 = GBS_global_string_copy("%s\n%s", *warningPtr, w);
+
+                            free(*warningPtr);
+                            free(w);
+                            *warningPtr = w2;
+                        }
+                        else {
+                            *warningPtr = w;
+                        }
+                    }
                 }
             }
 
