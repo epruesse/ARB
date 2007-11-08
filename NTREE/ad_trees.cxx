@@ -3,6 +3,7 @@
 #include <memory.h>
 // #include <malloc.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <arbdb.h>
 #include <arbdbt.h>
@@ -381,32 +382,44 @@ char *readXmlTree(char *fname) {
 }
 
 void tree_load_cb(AW_window *aww){
-    AW_root  *aw_root      = aww->get_root();
-    GB_ERROR  error        = 0;
-    char     *fname        = aw_root->awar(AWAR_TREE_IMPORT "/file_name")->read_string();
-    char     *tree_name    = aw_root->awar(AWAR_TREE_IMPORT "/tree_name")->read_string();
-    char     *tree_comment = 0;
-    char     *pcTreeFormat = aw_root->awar(AWAR_TREE_IMPORT "/filter")->read_string();
-    GBT_TREE *tree;
+    GB_ERROR  error     = 0;
+    AW_root  *aw_root   = aww->get_root();
+    char     *tree_name = aw_root->awar(AWAR_TREE_IMPORT "/tree_name")->read_string();
 
-    if(strcmp(pcTreeFormat,"xml")==0) {
-        char *tempFname = readXmlTree(fname);
-        tree = GBT_load_tree(tempFname,sizeof(GBT_TREE), &tree_comment, 1);
-        char *command = GBS_global_string_copy("rm %s", tempFname);
-        system(command); //deleting the temporary file
-        free(command);
-        free(tempFname);
-    }
-    else {
-        tree = GBT_load_tree(fname,sizeof(GBT_TREE), &tree_comment, 1);
-    }
+    {
+        char *pcTreeFormat = aw_root->awar(AWAR_TREE_IMPORT "/filter")->read_string();
+        char *fname        = aw_root->awar(AWAR_TREE_IMPORT "/file_name")->read_string();
+        char *scaleWarning = 0;
+        char *tree_comment = 0;
 
-    if (!tree) error = GB_get_error();
-    else {
-        GB_transaction dummy(gb_main);
-        if (!error)                  error = GBT_write_tree(gb_main,0,tree_name,tree);
-        if (!error && tree_comment) error = GBT_write_tree_rem(gb_main, tree_name, GBS_global_string("Loaded from '%s'\n%s", fname, tree_comment));
-        GBT_delete_tree(tree);
+        GBT_TREE *tree;
+        if (strcmp(pcTreeFormat,"xml") == 0) {
+            char *tempFname = readXmlTree(fname);
+            tree = GBT_load_tree(tempFname,sizeof(GBT_TREE), &tree_comment, 1, &scaleWarning);
+
+            if (unlink(tempFname) != 0) {
+                fprintf(stderr, "Couldn't unlink '%s'\n", tempFname);
+            }
+            free(tempFname);
+        }
+        else {
+            tree = GBT_load_tree(fname,sizeof(GBT_TREE), &tree_comment, 1, &scaleWarning);
+        }
+
+        if (!tree) error = GB_get_error();
+        else {
+            if (scaleWarning) GBT_message(gb_main, scaleWarning);
+        
+            GB_transaction ta(gb_main);
+            if (!error)                 error = GBT_write_tree(gb_main,0,tree_name,tree);
+            if (!error && tree_comment) error = GBT_write_tree_rem(gb_main, tree_name, GBS_global_string("Loaded from '%s'\n%s", fname, tree_comment));
+            GBT_delete_tree(tree);
+        }
+        
+        free(scaleWarning);
+        free(tree_comment);
+        free(fname);
+        free(pcTreeFormat);
     }
 
     if (error) aw_message(error);
@@ -415,9 +428,7 @@ void tree_load_cb(AW_window *aww){
         aw_root->awar(AWAR_TREE)->write_string(tree_name);  // show new tree
     }
 
-    free(fname);
     free(tree_name);
-    free(pcTreeFormat);
 }
 
 AW_window *create_tree_import_window(AW_root *root)
