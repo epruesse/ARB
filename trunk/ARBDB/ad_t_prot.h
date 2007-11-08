@@ -44,7 +44,7 @@ GB_ERROR GBT_link_tree_using_species_hash P_((GBT_TREE *tree, GBDATA *gb_main, G
 GB_ERROR GBT_link_tree P_((GBT_TREE *tree, GBDATA *gb_main, GB_BOOL show_status, int *zombies, int *duplicates));
 void GBT_unlink_tree P_((GBT_TREE *tree));
 void GBT_scale_tree P_((GBT_TREE *tree, double length_scale, double bootstrap_scale));
-GBT_TREE *GBT_load_tree P_((const char *path, int structuresize, char **commentPtr, int allow_length_scaling));
+GBT_TREE *GBT_load_tree P_((const char *path, int structuresize, char **commentPtr, int allow_length_scaling, char **warningPtr));
 GBDATA *GBT_get_tree P_((GBDATA *gb_main, const char *tree_name));
 long GBT_size_of_tree P_((GBDATA *gb_main, const char *tree_name));
 char *GBT_find_largest_tree P_((GBDATA *gb_main));
@@ -88,7 +88,6 @@ char *GBT_create_unique_species_name P_((GBDATA *gb_main, const char *default_na
 void GBT_mark_all P_((GBDATA *gb_main, int flag));
 void GBT_mark_all_that P_((GBDATA *gb_main, int flag, int (*condition )(GBDATA *, void *), void *cd));
 long GBT_count_marked_species P_((GBDATA *gb_main));
-long GBT_count_species P_((GBDATA *gb_main));
 char *GBT_store_marked_species P_((GBDATA *gb_main, int unmark_all));
 NOT4PERL GB_ERROR GBT_with_stored_species P_((GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata));
 GB_ERROR GBT_restore_marked_species P_((GBDATA *gb_main, const char *stored_marked));
