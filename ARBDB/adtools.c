@@ -1704,26 +1704,7 @@ static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tr
     }
     return nod;
 }
-/* ------------------------------------------------------------------ */
-/*      void GBT_scale_bootstraps(GBT_TREE *tree, double scale)       */
-/* ------------------------------------------------------------------ */
-/* void GBT_scale_bootstraps(GBT_TREE *tree, double scale) { */
-/*     if (tree->leftson) GBT_scale_bootstraps(tree->leftson, scale); */
-/*     if (tree->rightson) GBT_scale_bootstraps(tree->rightson, scale); */
-/*     if (tree->remark_branch) { */
-/*         const char *end          = 0; */
-/*         double      bootstrap    = strtod(tree->remark_branch, (char**)&end); */
-/*         GB_BOOL     is_bootstrap = end[0] == '%' && end[1] == 0; */
 
-/*         free(tree->remark_branch); */
-/*         tree->remark_branch = 0; */
-
-/*         if (is_bootstrap) { */
-/*             bootstrap = bootstrap*scale+0.5; */
-/*             tree->remark_branch  = GB_strdup(GBS_global_string("%i%%", (int)bootstrap)); */
-/*         } */
-/*     } */
-/* } */
 void GBT_scale_tree(GBT_TREE *tree, double length_scale, double bootstrap_scale) {
     if (tree->leftson) {
         if (tree->leftlen <= DEFAULT_LENGTH_MARKER) tree->leftlen  = DEFAULT_LENGTH;
