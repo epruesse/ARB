@@ -75,7 +75,7 @@ clean:
 .depends: depends.stamp
 	test -f ARB.c || $(MAKE) -f $(THIS) "AUTODEPENDS=0" ARB.c 
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) ARB.c 2>/dev/null | \
-		perl -ne "s/ARB.o/depends.stamp/g; print $$_;" > $@
+		perl -ne 's/ARB.o/depends.stamp/g; print $$_;' > $@
 
 depends.stamp:
 	touch $@
