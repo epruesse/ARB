@@ -216,8 +216,8 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
                     error = GBS_global_string("PT_server '%s' has not been created yet.\n"
                                               " To create it follow these steps:\n"
                                               " 1. Start ARB on the whole database you want to use for probe match/design\n"
-                                              " 2. Go to ARB_NT/Probes/PT_SERVER Admin\n"
-                                              " 3. Select '%s' and press UPDATE SERVER\n"
+                                              " 2. Go to ARB_NTREE/Probes/PT_SERVER Admin\n"
+                                              " 3. Select '%s' and press BUILD SERVER\n"
                                               " 4. Wait (up to hours, depending on your DB size)\n"
                                               " 5. Meanwhile read the help file: PT_SERVER: What Why and How",
                                               file, nameOnly);
@@ -237,7 +237,7 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, G
                         "I got some problems to start your server:\n"
                         "   Possible Reasons may be one or more of the following list:\n"
                         "   - there is no database in $ARBHOME/lib/pts/*\n"
-                        "     update server <ARB_NT/Probes/PT_SERVER Admin/UPDATE SERVER>\n"
+                        "     update server <ARB_NTREE/Probes/PT_SERVER Admin/BUILD SERVER>\n"
                         "   - you are not allowed to run 'ssh host pt_server ....&'\n"
                         "     check file '/etc/hosts.equiv' (read man pages for help)\n"
                         "   - the permissions of $ARBHOME/lib/pts/* do not allow read access\n"

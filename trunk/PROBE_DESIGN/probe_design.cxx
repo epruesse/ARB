@@ -506,7 +506,7 @@ void probe_design_event(AW_window *aww)
         if (design_gene_probes) { // updating sequences of missing genes is not possible with gene PT server
             aw_message(GBS_global_string("Your PT server is not up to date or wrongly chosen.\n"
                                          "The following genes are new to it: %s\n"
-                                         "You'll have to update the PT server.", unames));
+                                         "You'll have to re-build the PT server.", unames));
             abort = true;
         }
         else if (aw_message(GBS_global_string(
@@ -1860,7 +1860,7 @@ static void pd_export_pt_server(AW_window *aww)
         const char *ipPort = GBS_read_arb_tcp(pt_server);
         const char *file   = GBS_scan_arb_tcp_param(ipPort, "-d");
 
-        GBS_add_ptserver_logentry(GBS_global_string("Started update of '%s'", file));
+        GBS_add_ptserver_logentry(GBS_global_string("Started build of '%s'", file));
         {
             char *db_name = awr->awar(AWAR_DB_PATH)->read_string();
             GBS_add_ptserver_logentry(GBS_global_string("Exporting DB '%s'", db_name));
@@ -1973,7 +1973,7 @@ AW_window *create_probe_admin_window( AW_root *root, AW_CL cl_genome_db)  {
 
     aws->at( "export" );
     aws->callback(pd_export_pt_server);
-    aws->create_button("UPDATE_SERVER","Update server");
+    aws->create_button("UPDATE_SERVER","Build server");
 
     if (is_genom_db) {
         aws->at( "gene_server" );
