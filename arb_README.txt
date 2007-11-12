@@ -100,8 +100,8 @@ Welcome to the 'ARB' Sequence Database Tools
 	(by probe_design, probe_match and the automatic aligner)
 	and need a lot of disc space (up to several 100 mega bytes,
 	e.g. 4000 16S RNA sequences require about 40 MB).
-	This files are not created now, but later on by all users
-		<ARB_NT/etc/PT_SERVER admin/update server>
+	This files are not created now. They can be build by any user via
+		<ARB_NTREE/Probes/PT_SERVER admin/Build server>
 	You may define a special directory as the pt_server files location.
 	This prevents any loss of data installing a new version of
 	ARB.

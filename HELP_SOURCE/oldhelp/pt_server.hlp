@@ -59,14 +59,14 @@ DESCRIPTION	Probe design, probe matching, and searching the nearest relatives re
                     Remember: By adding 1 new sequence to the database, any previously validated
                     probe may become invalid.
 
-                          Update your PT-server frequently and re-evaluate any probes you've made
-                          before.
+                          Re-build your PT-server frequently and re-evaluate any probes
+                          you've made before.
 
 
 	Creating a new PT_SERVER template:
 
 	-	Edit the file $ARBHOME/lib/arb_tcp.dat.
-		<ARB_NT/ETC/PT_SERVER Admin/CREATE TEMPLATE>
+		<ARB_NTREE/Probes/PT_SERVER Admin/CREATE TEMPLATE>
 		Note: Make a copy of your changes because a new
 		ARB installation may reinstall $ARBHOME/lib/arb_tcp.dat.
 
@@ -75,9 +75,9 @@ DESCRIPTION	Probe design, probe matching, and searching the nearest relatives re
         Create a database for an existing template:
 
 	-	Start ARB with the database you want to send to the PT_SERVER.
-	-	Open the PT_SERVER ADMIN Window <ARB_NT/ETC/PT_SERVER Admin>.
+	-	Open the PT_SERVER ADMIN Window <ARB_NTREE/Probes/PT_SERVER Admin>.
 	-	Select a template
-	-	Press <UPDATE SERVER>: ARB will save the DB into
+	-	Press <BUILD SERVER>: ARB will save the DB into
                 $ARBHOME/lib/pts/name.arb
 	-	Wait (SUN Sparc 10: 10 minutes/megabyte_sequence_data)
                 ARB generates an index file $ARBHOME/lib/pts/name.arb.pt
@@ -96,7 +96,7 @@ NOTES      Once started a PT_SERVER never stops. The only ways to stop a
 
 			- SOFT KILL (everybody) (only idle PT_SERVERS):
 
-				- <ARB_NT/ETC/PT_SERVER Admin/KILL SERVER>
+				- <ARB_NTREE/Probes/PT_SERVER Admin/KILL SERVER>
 
 			- HARD KILL (supervisor) (all servers):
 
