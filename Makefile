@@ -71,8 +71,9 @@ else
 		dflags = -DDEBUG
 endif
 
+		cflags = -O0 $(dflag1) $(dflags) $(DEVEL_DEF)
 #		cflags = -O0 $(dflag1) $(dflags) $(DEVEL_DEF) -ftrapv
-		cflags = -O2 $(dflag1) $(dflags) $(DEVEL_DEF)
+#		cflags = -O2 $(dflag1) $(dflags) $(DEVEL_DEF)
 #		cflags = -O4 $(dflag1) $(dflags) $(DEVEL_DEF)
 
 		lflags = $(dflag1)
