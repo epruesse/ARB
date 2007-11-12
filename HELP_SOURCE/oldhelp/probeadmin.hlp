@@ -13,7 +13,7 @@ TITLE		PT_SERVER Administration
 
 OCCURRENCE	ARB_NT/ETC/PT Admin
 
-DESCRIPTION	Allows to start and kill 'PT_SERVER' and to update 'PT_SERVER'
+DESCRIPTION	Allows you to start/kill and build/update 'PT_SERVER'
 		databases.
 
 		Select a 'PT_SERVER' and database from the menu displayed after
@@ -22,7 +22,7 @@ DESCRIPTION	Allows to start and kill 'PT_SERVER' and to update 'PT_SERVER'
 		Start or kill the selected 'PT_SERVER' by pressing the
                 corresponding buttons.
 
-		Press the 'UPDATE SERVER' button to export the current database
+		Press the 'BUILD SERVER' button to export the current database
                 to the selected 'PT_SERVER' database.
 
                 In Genome Databases you may check the 'Gene server' toggle to
@@ -44,9 +44,11 @@ NOTES		Read PT_SERVER: What Why and How if you do not understand this
 
 		The probe designing and matching tools ('ARB_PROBE') and the
 		aligner of the editor ('ARB_EDIT') rely on 'PT_SERVER'
-		databases and servers. Update the 'PT_SERVER' databas when new
+		databases and servers.
+
+                Update (re-build) the 'PT_SERVER' database when new
 		sequence (species) entries or sequence modifications (base
-		changes) have been introduced into the current data base.
+		changes) have been introduced into the current database.
 
 EXAMPLES	None
 
