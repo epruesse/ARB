@@ -32,17 +32,14 @@ SECTION         PARAMETERS
 
 		Select a PT_SERVER:
 
-                                        Probe design is not run on your database
-					but on the pt_server's.
-					See 'PT_SERVER What Why and How'.
-					To work on a consistent database you
-					should
+                       Probe design is not run on your database but on the pt_server's
+                       (see 'PT_SERVER What Why and How').
+		       To work on a consistent database you should
 
-                                                1. update the pt_server or
+                          1. re-build the pt_server or
 
-						2. run arb on the databases used
-						   by the pt_server
-						   ($ARBHOME/lib/pts/*.arb)
+                          2. run arb on the same database as used
+                             by the pt_server ($ARBHOME/lib/pts/*.arb)
 
 		Length of output:
 
