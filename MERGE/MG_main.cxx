@@ -200,28 +200,39 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled) {
     GB_ERROR error = 0;
 
     mg_save_enabled = save_enabled;
-    GB_transaction dummy2(gb_merge);
 
-    GB_transaction dummy(gb_dest);
-    GBT_mark_all(gb_dest,0);
-
-    // test whether DB-type matches
-    // (sets default for old DBs)
     {
-        bool merge_is_genome = GEN_is_genome_db(gb_merge, 0);
-        bool dest_is_genome  = GEN_is_genome_db(gb_dest, 0);
+        GB_transaction ta_merge(gb_merge);
+        GB_transaction ta_dest(gb_dest);
+        GBT_mark_all(gb_dest,0);
 
-        if (merge_is_genome != dest_is_genome) {
-            error = "Can't merge a genome DB with a non-genome DB";
+        // test whether DB-type matches
+        // (sets default for old DBs)
+        {
+            bool merge_is_genome = GEN_is_genome_db(gb_merge, 0);
+            bool dest_is_genome  = GEN_is_genome_db(gb_dest, 0);
+
+            if (merge_is_genome != dest_is_genome) {
+                error = "Can't merge a genome DB with a non-genome DB";
+            }
         }
     }
 
     if (!error) {
+        GB_transaction ta_merge(gb_merge);
+        GB_transaction ta_dest(gb_dest);
+            
         GB_change_my_security(gb_dest,6,"passwd");
         GB_change_my_security(gb_merge,6,"passwd");
         if (aww) aww->hide();
 
         MG_create_db_dependent_awars(aw_root, gb_merge, gb_dest);
+    }
+
+    if (!error) {
+        GB_transaction ta_merge(gb_merge);
+        GB_transaction ta_dest(gb_dest);
+
         MG_set_renamed(false, aw_root, "Not renamed yet.");
 
         AW_window_simple_menu *awm = new AW_window_simple_menu();
