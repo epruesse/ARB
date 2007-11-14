@@ -57,40 +57,40 @@ struct awxkeymap_struct awxkeymap[] =
     {   XK_Control_L, XK_Up,    "Control-Up",   AW_KEYMODE_CONTROL, AW_KEY_UP,      0},
     {   XK_Control_L, XK_Down,  "Control-Down", AW_KEYMODE_CONTROL, AW_KEY_DOWN,    0},
 
-	{	0,	XK_Escape,	0,		AW_KEYMODE_NONE,	AW_KEY_ESCAPE , 0},
+    {       0,      XK_Escape,      0,              AW_KEYMODE_NONE,        AW_KEY_ESCAPE , 0},
 
-	{	0,	XK_Left,	"Left",		AW_KEYMODE_NONE,	AW_KEY_LEFT , 0},
-	{	0,	XK_Right,	"Right",	AW_KEYMODE_NONE,	AW_KEY_RIGHT , 0},
-	{	0,	XK_Up,		"Up",		AW_KEYMODE_NONE,	AW_KEY_UP , 0},
-	{	0,	XK_Down,	"Down",		AW_KEYMODE_NONE,	AW_KEY_DOWN , 0},
+    {       0,      XK_Left,        "Left",         AW_KEYMODE_NONE,        AW_KEY_LEFT , 0},
+    {       0,      XK_Right,       "Right",        AW_KEYMODE_NONE,        AW_KEY_RIGHT , 0},
+    {       0,      XK_Up,          "Up",           AW_KEYMODE_NONE,        AW_KEY_UP , 0},
+    {       0,      XK_Down,        "Down",         AW_KEYMODE_NONE,        AW_KEY_DOWN , 0},
 
-	{	0, XK_R7,       "Home",	AW_KEYMODE_NONE, AW_KEY_HOME , 0},
-	{	0, XK_R13,      "End",	AW_KEYMODE_NONE, AW_KEY_END , 0},
+    {       0, XK_R7,       "Home", AW_KEYMODE_NONE, AW_KEY_HOME , 0},
+    {       0, XK_R13,      "End",  AW_KEYMODE_NONE, AW_KEY_END , 0},
 
-	{	0,	XK_F1,		0,		AW_KEYMODE_NONE,	AW_KEY_F1 , 0},
-	{	0,	XK_F2,		0,		AW_KEYMODE_NONE,	AW_KEY_F2 , 0},
-	{	0,	XK_F3,		0,		AW_KEYMODE_NONE,	AW_KEY_F3 , 0},
-	{	0,	XK_F4,		0,		AW_KEYMODE_NONE,	AW_KEY_F4 , 0},
-	{	0,	XK_F5,		0,		AW_KEYMODE_NONE,	AW_KEY_F5 , 0},
-	{	0,	XK_F6,		0,		AW_KEYMODE_NONE,	AW_KEY_F6 , 0},
-	{	0,	XK_F7,		0,		AW_KEYMODE_NONE,	AW_KEY_F7 , 0},
-	{	0,	XK_F8,		0,		AW_KEYMODE_NONE,	AW_KEY_F8 , 0},
-	{	0,	XK_F9,		0,		AW_KEYMODE_NONE,	AW_KEY_F9 , 0},
-	{	0,	XK_F10,		0,		AW_KEYMODE_NONE,	AW_KEY_F10 , 0},
-	{	0,	XK_F11,		0,		AW_KEYMODE_NONE,	AW_KEY_F11 , 0},
-	{	0,	XK_F12,		0,		AW_KEYMODE_NONE,	AW_KEY_F12 , 0},
+    {       0,      XK_F1,          0,              AW_KEYMODE_NONE,        AW_KEY_F1 , 0},
+    {       0,      XK_F2,          0,              AW_KEYMODE_NONE,        AW_KEY_F2 , 0},
+    {       0,      XK_F3,          0,              AW_KEYMODE_NONE,        AW_KEY_F3 , 0},
+    {       0,      XK_F4,          0,              AW_KEYMODE_NONE,        AW_KEY_F4 , 0},
+    {       0,      XK_F5,          0,              AW_KEYMODE_NONE,        AW_KEY_F5 , 0},
+    {       0,      XK_F6,          0,              AW_KEYMODE_NONE,        AW_KEY_F6 , 0},
+    {       0,      XK_F7,          0,              AW_KEYMODE_NONE,        AW_KEY_F7 , 0},
+    {       0,      XK_F8,          0,              AW_KEYMODE_NONE,        AW_KEY_F8 , 0},
+    {       0,      XK_F9,          0,              AW_KEYMODE_NONE,        AW_KEY_F9 , 0},
+    {       0,      XK_F10,         0,              AW_KEYMODE_NONE,        AW_KEY_F10 , 0},
+    {       0,      XK_F11,         0,              AW_KEYMODE_NONE,        AW_KEY_F11 , 0},
+    {       0,      XK_F12,         0,              AW_KEYMODE_NONE,        AW_KEY_F12 , 0},
 
-	{	0,	XK_BackSpace,	0,		AW_KEYMODE_NONE,	AW_KEY_BACKSPACE , 0},
-	{	0,	XK_Delete,	0,		AW_KEYMODE_NONE,	AW_KEY_BACKSPACE , 0},
+    {       0,      XK_BackSpace,   0,              AW_KEYMODE_NONE,        AW_KEY_BACKSPACE , 0},
+    {       0,      XK_Delete,      0,              AW_KEYMODE_NONE,        AW_KEY_BACKSPACE , 0},
 
-	{	0,	XK_Help,	0,		AW_KEYMODE_NONE,	AW_KEY_HELP , 0},
-	{	0,	XK_Home,	0,		AW_KEYMODE_NONE,	AW_KEY_HOME , 0},
-	{	0,	XK_End,		0,		AW_KEYMODE_NONE,	AW_KEY_END , 0},
-	{	0,	XK_Return,	0,		AW_KEYMODE_NONE,	AW_KEY_RETURN , 0},
-	{	0,	XK_Tab,		0,		AW_KEYMODE_NONE,	AW_KEY_RETURN , 0},
+    {       0,      XK_Help,        0,              AW_KEYMODE_NONE,        AW_KEY_HELP , 0},
+    {       0,      XK_Home,        0,              AW_KEYMODE_NONE,        AW_KEY_HOME , 0},
+    {       0,      XK_End,         0,              AW_KEYMODE_NONE,        AW_KEY_END , 0},
+    {       0,      XK_Return,      0,              AW_KEYMODE_NONE,        AW_KEY_RETURN , 0},
+    {       0,      XK_Tab,         0,              AW_KEYMODE_NONE,        AW_KEY_RETURN , 0},
 
-	{	0,	0,		(char*)1,	AW_KEYMODE_NONE,	AW_KEY_NONE,	0}
-	};
+    {       0,      0,              (char*)1,       AW_KEYMODE_NONE,        AW_KEY_NONE,    0}
+};
 
 GB_HASH *_awxkeymap_string_2_key_hash;
 long _awxkeymap_xkey_2_key_hash;
@@ -123,13 +123,13 @@ void aw_install_xkeys(Display *display)
 
 const struct awxkeymap_struct *aw_xkey_2_awkey(XKeyEvent *xkeyevent) {
     struct awxkeymap_struct *result;
-	static struct awxkeymap_struct singlekey = { 0,0,0,AW_KEYMODE_NONE,AW_KEY_NONE,0};
+    static struct awxkeymap_struct singlekey = { 0,0,0,AW_KEYMODE_NONE,AW_KEY_NONE,0};
 
     xkeyevent->state &= ~AW_KEYMODE_NUMLOCK; // ignore NUMLOCK
 
-	static char    buffer[256];
-	KeySym         keysym;
-	XComposeStatus compose;
+    static char    buffer[256];
+    KeySym         keysym;
+    XComposeStatus compose;
     int            count = XLookupString(xkeyevent,buffer,256,&keysym,&compose);
     buffer[count]        = 0;
 
@@ -187,23 +187,3 @@ const struct awxkeymap_struct *aw_xkey_2_awkey(XKeyEvent *xkeyevent) {
     return result;
 }
 
-
-//     if (count == 0) { // detect modifier presses
-//         // printf("special key event: state=%i keycode=%i keysym=%u\n", xkeyevent->state, xkeyevent->keycode, (unsigned int)keysym);
-//         if (keysym == XK_Meta_R || keysym == XK_Meta_L) {
-//             // printf("single Meta detected\n");
-//             singlekey.awmod = AW_KEYMODE_META;
-//         }
-//         else if (keysym == XK_Alt_R || keysym == XK_Alt_L) {
-//             // printf("single Alt detected\n");
-//             singlekey.awmod = AW_KEYMODE_ALT;
-//         }
-//         else if (keysym == XK_Control_R || keysym == XK_Control_L) {
-//             // printf("single Control detected\n");
-//             singlekey.awmod = AW_KEYMODE_CONTROL;
-//         }
-//         else if (keysym == XK_Shift_R || keysym == XK_Shift_L) {
-//             // printf("single Shift detected\n");
-//             singlekey.awmod = AW_KEYMODE_SHIFT;
-//         }
-//     }
