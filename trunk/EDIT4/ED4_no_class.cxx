@@ -95,9 +95,6 @@ void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 
     ED4_ROOT->use_window(aww);
 
-    ED4_cursor& cursor         = ED4_ROOT->get_ed4w()->cursor;
-    int         cursor_seq_pos = cursor.get_sequence_pos();
-
     GB_push_transaction(gb_main);
 
     if (!dummy) {
@@ -144,9 +141,6 @@ void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     ED4_ROOT->get_device()->reset();
     ED4_ROOT->refresh_window(1);
 
-    if (cursor.owner_of_cursor) {
-        cursor.set_to_terminal(ED4_ROOT->get_aww(), cursor.owner_of_cursor->to_terminal(), cursor_seq_pos, ED4_JUMP_KEEP_POSITION);
-    }
     GB_pop_transaction(gb_main);
 }
 
@@ -277,7 +271,10 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
         return;
     }
 
-    if (event->keycode  == AW_KEY_UP || event->keycode  == AW_KEY_DOWN ) {
+    if (event->keycode == AW_KEY_UP || event->keycode == AW_KEY_DOWN ||
+        ((event->keymodifier & AW_KEYMODE_CONTROL) &&
+         (event->keycode == AW_KEY_HOME || event->keycode == AW_KEY_END)))
+    {
         GB_transaction dummy(gb_main);
         while (repeatCount--) {
             cursor->move_cursor(event);
