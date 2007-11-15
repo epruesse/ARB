@@ -1029,7 +1029,7 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
     else if (ev->xkey.type == KeyPress || ev->xkey.type == KeyRelease) {
         aww->event.time = ev->xbutton.time;
 
-        const struct awxkeymap_struct *mykey = aw_xkey_2_awkey(&(ev->xkey));
+        const awXKeymap *mykey = aw_xkey_2_awkey(&(ev->xkey));
 
         aww->event.keycode = mykey->awkey;
         aww->event.keymodifier = mykey->awmod;
