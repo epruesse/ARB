@@ -667,60 +667,60 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                     } // end-while
                     break;
                 }
-            case AW_KEY_DELETE:
+                
             case AW_KEY_BACKSPACE:
-                {
-                    if (is_consensus) { cannot_handle = 1; return 0; };
-                    if (keymod) { return 0; }
+                h = seq_pos;
 
-                    if (mode==AD_NOWRITE) { write_fault = 1; break; }
-
-                    h = seq_pos;
-
-                    if (direction>0) {
-                        seq_pos -= nrepeat;
-                    }else{
-                        seq_pos += nrepeat;
-                    }
-                    if (seq_pos <0 || seq_pos >= seq_len) {
-                        seq_pos = h;
-                        break;
-                    }
-
-                    h = seq_pos;
-
-                    switch (mode) {
-                        case AD_ALIGN:
-                            {
-                                int len;
-                                int offset;
-
-                                ad_err = 0;
-                                if (direction>=0)   offset = 0;
-                                else        offset = -nrepeat;
-
-                                for (len = nrepeat-1; len>=0; len--) {
-                                    if (!ADPP_IS_ALIGN_CHARACTER(seq[h+offset+len])){
-                                        ad_err = GBS_global_string("You cannot remove bases in align mode");
-                                        break;
-                                    }
-                                }
-                                if (ad_err) break;
-                            }
-                        case AD_REPLACE:
-                        case AD_INSERT:
-                            ad_err = remove(nrepeat, h, direction, !is_sequence);
-                            if (!ad_err) {
-                                changed_flag = 1;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-
-                    //      nrepeat_zero_requested = 1;
+                if (direction>0) {
+                    seq_pos -= nrepeat;
+                }else{
+                    seq_pos += nrepeat;
+                }
+                if (seq_pos <0 || seq_pos >= seq_len) {
+                    seq_pos = h;
                     break;
                 }
+                // fall-through
+
+            case AW_KEY_DELETE:
+                h = seq_pos;
+
+                if (is_consensus) { cannot_handle = 1; return 0; };
+                if (keymod) { return 0; }
+
+                if (mode==AD_NOWRITE) { write_fault = 1; break; }
+
+                switch (mode) {
+                    case AD_ALIGN:
+                        {
+                            int len;
+                            int offset;
+
+                            ad_err = 0;
+                            if (direction>=0)   offset = 0;
+                            else        offset = -nrepeat;
+
+                            for (len = nrepeat-1; len>=0; len--) {
+                                if (!ADPP_IS_ALIGN_CHARACTER(seq[h+offset+len])){
+                                    ad_err = GBS_global_string("You cannot remove bases in align mode");
+                                    break;
+                                }
+                            }
+                            if (ad_err) break;
+                        }
+                    case AD_REPLACE:
+                    case AD_INSERT:
+                        ad_err = remove(nrepeat, h, direction, !is_sequence);
+                        if (!ad_err) {
+                            changed_flag = 1;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                //      nrepeat_zero_requested = 1;
+                break;
             case AW_KEY_ASCII: {
 
                 //      Tastaturbelegung:
