@@ -314,6 +314,8 @@ extern int ED4_update_global_cursor_awars_allowed;
 //     class ED4_cursor
 // --------------------------------------------------------------------------------
 
+typedef bool (*ED4_TerminalTest)(ED4_base *terminal, int seqPos);
+
 class ED4_cursor
 {
     ED4_index                  cursor_abs_x; // absolute (to terminal) x-position of cursor (absolute world coordinate of edit window)
@@ -322,10 +324,10 @@ class ED4_cursor
     ED4_CursorType             ctype;
     ED4_CursorShape           *cursor_shape;
 
-    ED4_returncode  draw_cursor( AW_pos x, AW_pos y);
-    ED4_returncode  delete_cursor( AW_pos del_mark , ED4_base *target_terminal);
-    ED4_returncode  get_upper_lower_cursor_pos( ED4_manager *starting_point, ED4_base **terminal, ED4_cursor_move cursor_move, AW_pos actual_y, bool (*terminal_is_appropriate)(ED4_base *terminal));
-    void            updateAwars();
+    ED4_returncode  draw_cursor(AW_pos x, AW_pos y);
+    ED4_returncode  delete_cursor(AW_pos del_mark , ED4_base *target_terminal);
+    ED4_terminal *get_upper_lower_cursor_pos(ED4_manager *starting_point, ED4_cursor_move cursor_move, AW_pos current_y, bool isScreen, ED4_TerminalTest terminal_is_appropriate, int seq_pos);
+    void          updateAwars();
 
     ED4_cursor(const ED4_cursor&); // copy-constructor not allowed
 
