@@ -153,7 +153,7 @@ NOTES		The order of the entries cannot be saved to the database.
                 You may use the META key instead of ALT (especially if there is no ALT key :)
 
 WARNINGS	The key mappings may conflict with some window managers
-		(eg. olvwm). Disable the CNTRL-LEFT/RIGHT keys of the window
+		(eg. olvwm). Disable the CTRL-LEFT/RIGHT keys of the window
 		manager.
 
 		If you perform major database modifications such as
