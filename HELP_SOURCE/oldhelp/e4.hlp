@@ -182,11 +182,20 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 
 			CTRL+LEFT/RIGHT
 
-				Jumps to the start of the next gap.
+				Jumps to the start of the next gap-region or non-gap-region.
+                                You may configure whether it always jumps over gap-regions.
+
+                        CTRL+UP/DOWN
+
+                                Like Ctrl-Left/Right, but vertical.
 
 			HOME/END
 
 				Jumps to the start/end of sequence.
+
+			CTRL+HOME/END
+
+				Jumps to the first/last sequence.
 
 	Messages:
 
@@ -205,11 +214,8 @@ EXAMPLES	None
 NOTES           You may use the META key instead of ALT (especially if there is no ALT key :)
 
 WARNINGS	The key mappings may conflict with some window managers
-		(eg. olvwm). Disable the CNTRL-LEFT/RIGHT keys of the window
+		(eg. olvwm). Disable the CTRL-LEFT/RIGHT keys of the window
 		manager.
-
-                Please make sure NUM_LOCK is not active! Otherwise some of
-                the editor keys do not work.
 
 		If you perform major database modifications such as
 
