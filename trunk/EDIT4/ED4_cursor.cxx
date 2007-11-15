@@ -1024,8 +1024,6 @@ void ED4_cursor::jump_screen_pos(AW_window *aww, int screen_pos, ED4_CursorJumpT
         if (left_margin >= right_margin)    scroll_new_to = screen_width/2; // margins too big -> center
         else if (abs_x_new > right_margin)  scroll_new_to = screen_width-margin;
         else if (abs_x_new < left_margin)   scroll_new_to = margin;
-
-        
     }
 
     delete_cursor(cursor_abs_x, owner_of_cursor);
@@ -1068,22 +1066,15 @@ void ED4_cursor::jump_base_pos(AW_window *aww, int base_pos, ED4_CursorJumpType 
     jump_sequence_pos(aww, seq_pos, jump_type);
 }
 
-static int current_position = -1;
-
-static bool terminal_has_gap_or_base_at_current_position(ED4_base *terminal, bool test_for_base) {
+static bool has_gap_or_base_at(ED4_base *terminal, bool test_for_base, int seq_pos) {
     bool test_succeeded = false;
 
     if (terminal->is_sequence_terminal()) {
         ED4_sequence_terminal *seqTerm = terminal->to_sequence_terminal();
         int len;
-#if defined(DEVEL_RALF)
-#warning crashes when used on consensus - press ctrl down on consensus to provoke SIGSEGV
-#endif // DEVEL_RALF
         char *seq = seqTerm->resolve_pointer_to_string_copy(&len);
         if (seq) {
-            test_succeeded =
-                len>current_position &&
-                bool(ADPP_IS_ALIGN_CHARACTER(seq[current_position])) != test_for_base;
+            test_succeeded = len>seq_pos && bool(ADPP_IS_ALIGN_CHARACTER(seq[seq_pos]))!=test_for_base;
         }
         free(seq);
     }
@@ -1094,81 +1085,89 @@ static bool terminal_has_gap_or_base_at_current_position(ED4_base *terminal, boo
     return test_succeeded;
 }
 
-static bool terminal_has_base_at_current_position(ED4_base *terminal) { return terminal_has_gap_or_base_at_current_position(terminal, 1); }
-static bool terminal_has_gap_at_current_position(ED4_base *terminal) { return terminal_has_gap_or_base_at_current_position(terminal, 0); }
+static bool has_base_at(ED4_base *terminal, int seq_pos) { return has_gap_or_base_at(terminal, true,  seq_pos); }
+static bool has_gap_at(ED4_base *terminal, int seq_pos) { return has_gap_or_base_at(terminal, false, seq_pos); }
 
-ED4_returncode ED4_cursor::move_cursor( AW_event *event )	/* up down */
-{
-    AW_pos x, y, x_screen, y_screen; // , target_x, target_y, scroll_diff;
-    ED4_base *temp_parent, *target_terminal = NULL;
-    ED4_AREA_LEVEL area_level;
 
-    temp_parent = owner_of_cursor->parent;
-    while (temp_parent->parent) {
-        temp_parent = temp_parent->parent;
-
-        if (temp_parent->flag.hidden) {
-            return ED4_R_IMPOSSIBLE; // don't move cursor if terminal is flag.hidden
-        }
-    }
-
-    owner_of_cursor->calc_world_coords( &x, &y );
-    x_screen = cursor_abs_x;
-    y_screen = y;
-    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x_screen, &y_screen);
-    area_level = owner_of_cursor->get_area_level();
-
-    if (!is_partly_visible()) return ED4_R_BREAK; // @@@ maybe a bad idea
+ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
+    // move cursor up down
+    ED4_cursor_move dir     = ED4_C_NONE;
+    ED4_returncode result   = ED4_R_OK;
+    bool            endHome = false;
 
     switch (event->keycode) {
-        case AW_KEY_UP: {
-            if (event->keymodifier & AW_KEYMODE_CONTROL) {
-                current_position = get_sequence_pos();
-                bool has_base = terminal_has_base_at_current_position(owner_of_cursor);
+        case AW_KEY_UP:   dir = ED4_C_UP;   break;
+        case AW_KEY_DOWN: dir = ED4_C_DOWN; break;
+        case AW_KEY_HOME: dir = ED4_C_UP;   endHome = true; break;
+        case AW_KEY_END:  dir = ED4_C_DOWN; endHome = true; break;
+        default: e4_assert(0); break; // illegal call of move_cursor()
+    }
 
-                get_upper_lower_cursor_pos( ED4_ROOT->main_manager, &target_terminal, ED4_C_UP, y,
-                                            has_base ? terminal_has_gap_at_current_position : terminal_has_base_at_current_position);
-                if (!has_base && ED4_ROOT->aw_root->awar(ED4_AWAR_FAST_CURSOR_JUMP)->read_int())  { // if jump_over group
-                    get_upper_lower_cursor_pos( ED4_ROOT->main_manager, &target_terminal, ED4_C_DOWN, y_screen, terminal_has_gap_at_current_position);
+    if (dir != ED4_C_NONE) {
+        // don't move cursor if terminal is hidden
+        {
+            ED4_base *temp_parent = owner_of_cursor->parent;
+            while (temp_parent->parent && result == ED4_R_OK) {
+                if (temp_parent->flag.hidden) { result = ED4_R_IMPOSSIBLE; }
+                temp_parent = temp_parent->parent;
+            }
+        }
+
+        if (result == ED4_R_OK) {
+            AW_pos     x_dummy, y_world;
+            AW_window *aww      = ED4_ROOT->get_aww();
+
+            owner_of_cursor->calc_world_coords(&x_dummy, &y_world);
+
+            int       seq_pos         = get_sequence_pos();
+            ED4_base *target_terminal = 0;
+            
+            if (event->keymodifier & AW_KEYMODE_CONTROL) {
+                bool has_base = has_base_at(owner_of_cursor, seq_pos);
+
+                // stay in current area
+                ED4_manager *start_at_manager = 0;
+                if (owner_of_cursor->has_parent(ED4_ROOT->top_area_man)) {
+                    start_at_manager = ED4_ROOT->top_area_man;
+                }
+                else {
+                    start_at_manager = ED4_ROOT->middle_area_man;
+                }
+
+                if (!endHome) { // not End or Home
+                    target_terminal = get_upper_lower_cursor_pos(start_at_manager, dir, y_world, false, has_base ? has_gap_at : has_base_at, seq_pos);
+                    if (target_terminal && !has_base && ED4_ROOT->aw_root->awar(ED4_AWAR_FAST_CURSOR_JUMP)->read_int())  { // if jump_over group
+                        target_terminal->calc_world_coords(&x_dummy, &y_world);
+                        target_terminal = get_upper_lower_cursor_pos(start_at_manager, dir, y_world, false, has_gap_at, seq_pos);
+                    }
+                }
+
+                if (target_terminal == 0) {
+                    // either already in last group (or no space behind last group) -> jump to end (or start)
+                    target_terminal = get_upper_lower_cursor_pos(start_at_manager,
+                                                                 dir == ED4_C_UP ? ED4_C_DOWN : ED4_C_UP, // use opposite movement direction
+                                                                 dir == ED4_C_UP ? 0 : INT_MAX, false, // search for top-/bottom-most terminal
+                                                                 0, seq_pos); 
                 }
             }
             else {
-                get_upper_lower_cursor_pos( ED4_ROOT->main_manager, &target_terminal, ED4_C_UP, y, 0);
-            }
-
-            if (target_terminal) {
-                set_to_terminal(ED4_ROOT->get_aww(), target_terminal->to_terminal(), current_position, ED4_JUMP_KEEP_VISIBLE);
-            }
-            break;
-        }
-
-        case AW_KEY_DOWN: {
-            if (event->keymodifier & AW_KEYMODE_CONTROL) {
-                current_position = get_sequence_pos();
-                bool has_base = terminal_has_base_at_current_position(owner_of_cursor);
-
-                get_upper_lower_cursor_pos( ED4_ROOT->main_manager, &target_terminal, ED4_C_DOWN, y_screen,
-                                            has_base ? terminal_has_gap_at_current_position : terminal_has_base_at_current_position);
-                if (!has_base && ED4_ROOT->aw_root->awar(ED4_AWAR_FAST_CURSOR_JUMP)->read_int())  { // if jump_over group
-                    get_upper_lower_cursor_pos( ED4_ROOT->main_manager, &target_terminal, ED4_C_DOWN, y_screen, terminal_has_gap_at_current_position);
+                e4_assert(!endHome); // END and HOME w/o Ctrl should not call move_cursor() 
+                
+                bool isScreen = false;
+                if (dir == ED4_C_DOWN) {
+                    ED4_ROOT->world_to_win_coords(aww, &x_dummy, &y_world); // special handling to move cursor from top to bottom area
+                    isScreen = true;
                 }
-            }
-            else {
-                get_upper_lower_cursor_pos( ED4_ROOT->main_manager, &target_terminal, ED4_C_DOWN, y_screen, 0);
+                target_terminal = get_upper_lower_cursor_pos(ED4_ROOT->main_manager, dir, y_world, isScreen, 0, seq_pos);
             }
 
             if (target_terminal) {
-                set_to_terminal(ED4_ROOT->get_aww(), target_terminal->to_terminal(), current_position, ED4_JUMP_KEEP_VISIBLE);
+                set_to_terminal(aww, target_terminal->to_terminal(), seq_pos, ED4_JUMP_KEEP_VISIBLE);
             }
-            break;
-        }
-
-        default: {
-            break;
         }
     }
 
-    return ED4_R_OK;
+    return result;
 }
 
 void ED4_cursor::set_abs_x()
@@ -1258,26 +1257,31 @@ void ED4_terminal::scroll_into_view(AW_window *aww) { // scroll y-position only
     bool scroll = false;
     int slider_pos_y;
 
-    if ((termw_y-term_height) < coords->window_upper_clip_point) {
+    AW_pos termw_y_upper = termw_y - term_height; // upper border of terminal
+
+    if (termw_y_upper > coords->top_area_height) { // dont scroll if terminal is in top area (always visible)
+        if (termw_y_upper < coords->window_upper_clip_point) {
 #if defined(DEBUG) && 0
-        printf("termw_y(%i)-term_height(%i) < window_upper_clip_point(%i)\n",
-               int(termw_y), term_height, int(coords->window_upper_clip_point));
+            printf("termw_y(%i)-term_height(%i) < window_upper_clip_point(%i)\n",
+                   int(termw_y), term_height, int(coords->window_upper_clip_point));
 #endif // DEBUG
-        slider_pos_y = int(termw_y - coords->top_area_height - term_height);
-        scroll       = true;
-    }
-    else if (termw_y > coords->window_lower_clip_point) {
+            slider_pos_y = int(termw_y - coords->top_area_height - term_height);
+            scroll       = true;
+        }
+        else if (termw_y > coords->window_lower_clip_point) {
 #if defined(DEBUG) && 0
-        printf("termw_y(%i) > window_lower_clip_point(%i)\n",
-               int(termw_y), int(coords->window_lower_clip_point));
+            printf("termw_y(%i) > window_lower_clip_point(%i)\n",
+                   int(termw_y), int(coords->window_lower_clip_point));
 #endif // DEBUG
-        slider_pos_y = int(termw_y - coords->top_area_height - win_ysize);
-        scroll       = true;
+            slider_pos_y = int(termw_y - coords->top_area_height - win_ysize);
+            scroll       = true;
+        }
     }
+    
 #if defined(DEBUG) && 0
-    else {
-        printf("No scroll needed (termw_y=%i term_height=%i window_upper_clip_point=%i window_lower_clip_point=%i)\n",
-               int(termw_y), term_height,
+    if (!scroll) {
+        printf("No scroll needed (termw_y=%i termw_y_upper=%i term_height=%i window_upper_clip_point=%i window_lower_clip_point=%i)\n",
+               int(termw_y), int(termw_y_upper), term_height,
                int(coords->window_upper_clip_point), int(coords->window_lower_clip_point));
     }
 #endif // DEBUG
@@ -1373,66 +1377,75 @@ ED4_returncode ED4_cursor::show_clicked_cursor(AW_pos click_xpos, ED4_terminal *
     return show_cursor_at(target_terminal, scr_pos);
 }
 
-ED4_returncode  ED4_cursor::get_upper_lower_cursor_pos( ED4_manager *starting_point, ED4_base **terminal, ED4_cursor_move cursor_move, AW_pos actual_y, bool (*terminal_is_appropriate)(ED4_base *terminal) )
+ED4_terminal *ED4_cursor::get_upper_lower_cursor_pos(ED4_manager *starting_point, ED4_cursor_move cursor_move, AW_pos current_y, bool isScreen, ED4_TerminalTest terminal_is_appropriate, int seq_pos)
 {
-    AW_pos                     x, y, y_area;
-    int                        i;
-    ED4_AREA_LEVEL             level;
-    ED4_multi_species_manager *middle_area_mult_spec = NULL;
+    // current_y is y-position of terminal at which search starts.
+    // It may be in world or screen coordinates (isScreen marks which is used)
+    // This is needed to move the cursor from top- to middle-area w/o scrolling middle-area to top-position.
 
-    for (i=0; i < starting_point->children->members(); i++) {
+    ED4_terminal *result = 0;
+
+    for (int i=0; i<starting_point->children->members(); i++) {
         ED4_base *member = starting_point->children->member(i);
 
+        AW_pos x, y;
         member->calc_world_coords( &x, &y );
 
         switch (cursor_move) {
-            case ED4_C_UP: {
-                if (y < actual_y) {
+            case ED4_C_UP:
+                e4_assert(!isScreen); // use screen coordinates for ED4_C_DOWN only!
+                
+                if (y < current_y) {
                     if ((member->is_manager()) && !member->flag.hidden) {
-                        get_upper_lower_cursor_pos( member->to_manager(), terminal, cursor_move, actual_y, terminal_is_appropriate);
+                        ED4_terminal *result_in_manager = get_upper_lower_cursor_pos(member->to_manager(), cursor_move, current_y, isScreen, terminal_is_appropriate, seq_pos);
+                        if (result_in_manager) result   = result_in_manager;
                     }
 
                     if ((member->dynamic_prop & ED4_P_CURSOR_ALLOWED)) {
-                        if (terminal_is_appropriate==0 || terminal_is_appropriate(member)) {
-                            *terminal = member;
+                        if (terminal_is_appropriate==0 || terminal_is_appropriate(member, seq_pos)) {
+                            result = member->to_terminal(); // overwrite (i.e. take last matching terminal)
                         }
                     }
                 }
                 break;
-            }
-            case ED4_C_DOWN: {
-                if (!(*terminal)) {
+                
+            case ED4_C_DOWN:
+                if (!result) { // don't overwrite (i.e. take first matching terminal)
                     if ((member->is_manager()) && !member->flag.hidden) {
-                        get_upper_lower_cursor_pos(member->to_manager() ,terminal, cursor_move, actual_y, terminal_is_appropriate);
+                        result = get_upper_lower_cursor_pos(member->to_manager(), cursor_move, current_y, isScreen, terminal_is_appropriate, seq_pos);
                     }
-                    ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y);
-                    if ((member->dynamic_prop & ED4_P_CURSOR_ALLOWED) && y > actual_y) {
-                        level = member->get_area_level(&middle_area_mult_spec);		//probably multi_species_manager of middle_area, otherwise just a dummy
+
+                    if (isScreen) ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y); // if current_y is screen, convert x/y to screen-coordinates as well
+                    
+                    if ((member->dynamic_prop & ED4_P_CURSOR_ALLOWED) && y > current_y) {
+                        ED4_multi_species_manager *marea_man = NULL; // probably multi_species_manager of middle_area, otherwise just a dummy
+                        ED4_AREA_LEVEL level                 = member->get_area_level(&marea_man);
+
                         if (level != ED4_A_MIDDLE_AREA) {
-                            if (terminal_is_appropriate==0 || terminal_is_appropriate(member)) {
-                                *terminal = member;
+                            if (terminal_is_appropriate==0 || terminal_is_appropriate(member, seq_pos)) {
+                                result = member->to_terminal();
                             }
                         }
                         else if (level == ED4_A_MIDDLE_AREA) {
-                            y_area = middle_area_mult_spec->parent->extension.position[Y_POS];
+                            AW_pos y_area = marea_man->parent->extension.position[Y_POS];
                             if (y > y_area) {
                                 member = starting_point->children->member(i);
-                                if (terminal_is_appropriate==0 || terminal_is_appropriate(member)) {
-                                    *terminal = member;
+                                if (terminal_is_appropriate==0 || terminal_is_appropriate(member, seq_pos)) {
+                                    result = member->to_terminal();
                                 }
                             }
                         }
                     }
                 }
                 break;
-            }
-            default: {
+                
+            default:
                 e4_assert(0);
                 break;
-            }
         }
     }
-    return ED4_R_OK;
+    
+    return result;
 }
 
 /* --------------------------------------------------------------------------------
