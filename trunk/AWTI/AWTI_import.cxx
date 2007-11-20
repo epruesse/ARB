@@ -858,7 +858,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                     GB_begin_transaction(GB_MAIN);
 
                     // error_this_file = GI_importGenomeFile(gb_species_data, fnames[count], ali_name, und_species);
-                    error_this_file = GI_importGenomeFile(gb_species_data, fnames[count], ali_name);
+                    error_this_file = GI_importGenomeFile(GB_MAIN, fnames[count], ali_name);
 
                     if (!error_this_file) {
                         GB_commit_transaction(GB_MAIN);
