@@ -762,7 +762,7 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                             int basesLeftOf = 0;
                             int pos;
 
-                            for (pos=0; pos<seq_pos && pos<seq_len; pos++) {    // count # of bases left of cursorpos
+                            for (pos=0; pos < seq_pos && pos<seq_len; pos++) {    // count # of bases left of cursorpos
                                 if (!ADPP_IS_ALIGN_CHARACTER(seq[pos])) {
                                     basesLeftOf++;
                                 }
@@ -774,13 +774,33 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                             seq = aligned_seq;                  // set new sequence
                             changed_flag=1;                     // and mark changed
 
-                            for (pos=0; basesLeftOf>=0 && pos<seq_len; pos++) {
-                                if (!ADPP_IS_ALIGN_CHARACTER(seq[pos])) {
-                                    basesLeftOf--;
+                            {
+                                int basesLeftOf2   = 0;
+                                int lastCorrectPos = -1;
+                                for (pos=0; pos<seq_pos && pos<seq_len; pos++) {    // count # of bases left of cursorpos
+                                    if (!ADPP_IS_ALIGN_CHARACTER(seq[pos])) {
+                                        basesLeftOf2++;
+                                        if (basesLeftOf2 == basesLeftOf) lastCorrectPos = pos;
+                                    }
+                                }
+
+                                if (basesLeftOf != basesLeftOf2) { // old cursor-position has different basepos
+                                    if (lastCorrectPos != -1) { // already seen position with same basepos
+                                        seq_len = lastCorrectPos+1;
+                                    }
+                                    else {
+                                        for (; pos<seq_len; pos++) {
+                                            if (!ADPP_IS_ALIGN_CHARACTER(seq[pos])) {
+                                                basesLeftOf2++;
+                                                if (basesLeftOf2 == basesLeftOf) {
+                                                    seq_pos = pos+1;
+                                                    break; // stop after first matching position
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
-
-                            seq_pos = pos ? pos-1 : pos;
                             break;
                         }
                         case 'E': { // CTRL-E = Toggle Edit/Align-Mode
