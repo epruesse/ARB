@@ -1,0 +1,397 @@
+AUTODETECT	"LOCUS       *\nORIGIN*"
+	#Global settings:
+KEYWIDTH	12
+FILETAG		GB
+
+BEGIN	"LOCUS*"
+
+MATCH	"LOCUS *"
+	SRT "* *=*1"
+	WRITE "name"
+
+# set tagname for feature table to 'GB'
+MATCH	"LOCUS *"
+        SRT "*=GB"
+        SETVAR t
+
+MATCH	"LOCUS *"
+	SRT "* *=*1"
+	TAG	"GB"
+	WRITE "id"
+
+MATCH	"LOCUS *"
+	SRT "     = :    = :   = :  = :* * *=*2"
+	TAG	"GB"
+	WRITE "db_nuc"
+
+MATCH	"LOCUS *"
+	SRT "     = :    = :   = :  = :* * * * * * *=*7"
+	TAG	"GB"
+	WRITE "date"
+
+MATCH	"LOCUS *"
+	SRT "*=<uninitialized>"
+#	SRT "*="
+#	SETVAR x
+#	SETVAR y
+
+MATCH	"DEFINITION *"
+	TAG	"GB"
+	APPEND	"definition"
+
+MATCH	"ACCESSION *"
+	SRT "\"*\"=*1:No information="
+	ACI "extract_words("0123456789",4.0)"
+	WRITE "acc"
+
+MATCH	"ACCESSION *"
+	SRT "\"*\"=*1:No information="
+	ACI "extract_words("0123456789",4.0)"
+	TAG	"GB"
+	WRITE "db_acc"
+
+MATCH	"VERSION *"
+	TAG	"GB"
+	WRITE	"version"
+
+MATCH	"KEYWORDS *"
+	TAG	"GB"
+	WRITE	"source"
+
+MATCH	"SOURCE *"
+	TAG	"GB"
+	WRITE "source"
+
+MATCH	"  ORGANISM *"
+	TAG	"GB"
+	SRT	"*|*=*1"
+	WRITE	"db_name"
+
+MATCH	"  ORGANISM *"
+	TAG	"GB"
+	SRT	"*|*=*2"
+	WRITE	"tax"
+
+MATCH	"  ORGANISM *"
+	SRT	"* * *=*1 *2"
+	WRITE 	"full_name"
+
+MATCH	"REFERENCE *"
+	SRT	"* *=*1"
+   SETVAR x
+	TAG	"GB"
+	APPEND	"num_bib"
+
+MATCH	"REFERENCE *"
+	SRT	"(=:)=:?*=[?]*"
+	TAG	"GB"
+	APPEND	"nuc_rp"
+
+MATCH	"  AUTHORS *"
+	SRT	"*=[$x]\: *"
+	TAG	"GB"
+	APPEND "author"
+
+MATCH	"  TITLE *"
+	SRT	"*=[$x]\: *"
+	TAG	"GB"
+	APPEND	"title"
+
+MATCH	"  JOURNAL *"
+	SRT	"*=[$x]\: *"
+	TAG	"GB"
+	APPEND	"journal"
+
+MATCH	"  MEDLINE *"
+	SRT	"*=[$x]\: *"
+	TAG	"GB"
+	APPEND	"medline_id"
+
+MATCH	"   PUBMED *"
+	SRT	"*=[$x]\: *"
+	TAG	"GB"
+	APPEND	"pubmed_id"
+
+MATCH	"     Protein*note*"
+	SRT	"*/note\=\"*\"*=*2"
+	TAG	"GB"
+	APPEND	"description"
+
+MATCH	"     Protein*EC_number*"
+	SRT	"*/EC_number\=\"*\"*=*2"
+	TAG	"GB"
+	APPEND	"EC_number"
+
+MATCH	"     Protein*product=*"
+	SRT	"*/product\=\"*\"*=*2"
+	TAG	"GB"
+	APPEND	"gene_prod"
+
+# maybe works with FT prefix (untested):
+
+MATCH	"FTx*Protein*note*"
+	SRT	"*/note\=\"*\"*=*2"
+	TAG	"GB"
+	APPEND	"description"
+
+MATCH	"FTx*Protein*EC_number*"
+	SRT	"*/EC_number\=\"*\"*=*2"
+	TAG	"GB"
+	APPEND	"EC_number"
+
+MATCH	"FTx*Protein*product=*"
+	SRT	"*/product\=\"*\"*=*2"
+	TAG	"GB"
+	APPEND	"gene_prod"
+
+# ---------------------------------------------------------------
+# Start feature table (same in longebi.ift and longgenbank.ift!)
+
+MATCH	"FT  source*"
+	SRT "*source*=*2: ="
+	TAG	"$t"
+	APPEND	"nuc_region"
+
+MATCH	"FTx  source *mol_type*"
+	SRT "*mol_type*=*2:\==:\"=:"
+	TAG	"$t"
+	APPEND	"mol_type"
+
+MATCH	"FTx  source *citation*"
+	SRT "*citation*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"biblio"
+
+MATCH	"FTx source *cell_line*"
+	SRT "*cell_line*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"cell_line"
+
+MATCH	"FTx  source *cell_type*"
+	SRT "*cell_type*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"cell_type"
+
+MATCH	"FTx  source *clone*"
+	SRT "*clone*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"clone"
+
+MATCH	"FTx  source *cultivar*"
+	SRT "*cultivar*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"cultivar"
+
+MATCH	"FTx  source *db_xref=*"
+	SRT "*db_xref*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"db_ref"
+
+MATCH	"FTx  source *lab_host=*"
+	SRT "*lab_host*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"host"
+
+MATCH	"FTx  source *isolate=*"
+	SRT "*isolate*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"isolate"
+
+MATCH	"FTx  source *strain*"
+	SRT	"*/strain*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"strain"
+
+MATCH	"FTx  source *isolation_source*"
+	SRT	"*/isolation_source*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"isolation_source"
+
+MATCH	"FTx  source *country*"
+	SRT	"*/country*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"country"
+
+MATCH	"FTx  source *map*"
+	SRT	"*/map*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"map"
+
+MATCH	"FTx  source *lat_lon*"
+	SRT	"*/lat_lon*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"lat_lon"
+
+MATCH	"FTx  source *note*"
+	SRT	"*/note*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"note"
+
+MATCH	"FTx  source *organelle*"
+	SRT	"*/organelle*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"organelle"
+
+MATCH	"FTx  source *plasmid*"
+	SRT	"*/plasmid*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"plasmid"
+
+MATCH	"FTx  source *serotype*"
+	SRT	"*/serotype*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"serotype"
+
+MATCH	"FTx  source *serovar*"
+	SRT	"*/serovar*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"serovar"
+
+MATCH	"FTx  source *sub_species*"
+	SRT	"*/sub_species*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"subspec"
+
+MATCH	"FTx  source *specimen_voucher*"
+	SRT	"*/specimen_voucher*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"secimen_voucher"
+
+MATCH	"FTx  source *specific_host*"
+	SRT	"*/specific_host*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"specific_host"
+
+MATCH	"FTx  source *tissue_type*"
+	SRT	"*/tissue_type*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"tissue"
+
+MATCH	"FTx  source *variety*"
+	SRT	"*/variety*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"variety"
+
+MATCH	"FTx  source *collected_by*"
+	SRT	"*/collected_by*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"collected_by"
+
+MATCH	"FTx  source *collection_date*"
+	SRT	"*/collection_date*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"collection_date"
+
+MATCH	"FT   CDS*"
+	SRT	"<=:>=:*CDS*..*=*2: ="
+#	TAG	"$t"
+	APPEND  "start"
+
+MATCH	"FT   CDS*"
+	SRT	"<=:>=:*CDS*..*=*3: ="
+#	TAG	"$t"
+	APPEND  "stop"
+
+MATCH	"FT   CDS*"
+	SRT	"<=:>=:*CDS*=*2: ="
+    SETVAR z
+	TAG	"$t"
+	APPEND  "cds_pos"
+
+MATCH	"FTx  CDS *allele*
+	SRT	"*allele*=*2:\"=:\==:*=[$z]\: *"
+	TAG	"$t"
+	APPEND	"allele"
+
+MATCH	"FTx  CDS *citation*
+	SRT	"*citation*=*2:\"=:\==:*=[$z]\: *"
+	TAG	"$t"
+	APPEND	"citation"
+
+MATCH	"FTx  CDS *codon_start*"
+	SRT	"*codon_start*=*2:\"=:\==:*=[$z]\: *"
+	TAG	"$t"
+	APPEND	"codon_start"
+
+MATCH	"FTx  CDS *db_xref*"
+	SRT	"*db_xref*=*2:\"=:\==:*=[$z]\: *"
+	TAG	"$t"
+	APPEND	"db_ref2"
+
+MATCH	"FTx  CDS *function*
+	SRT	"*function*=*2:\"=:\==:*=[$z]\: *"
+	TAG	"$t"
+	APPEND	"function"
+
+MATCH	"FTx  CDS *EC_number*
+	SRT	"*EC_number*=*2:\"=:\==:*=[$z]\: *"
+	TAG	"$t"
+	APPEND	"EC_number"
+
+MATCH	"FTx  CDS *transl_table*"
+	SRT	"*transl_table*=*2:\"=:\==:*=[$z]\: *"
+	TAG	"$t"
+	APPEND	"transl_table"
+
+MATCH	"FTx  CDS *gene*"
+	SRT	"*gene*=*2:\"=:\==:*=[$z]\: *"
+	TAG	"$t"
+	APPEND	"gene"
+
+MATCH	"FTx  CDS *product*"
+	SRT	"*product*=*2:\"=:\==:*=[$z]\: *"
+	TAG	"$t"
+	APPEND	"product"
+
+MATCH	"FTx  CDS *operon*"
+	SRT	"*operon*=*2:\"=:\==:*=[$z]\: *"
+	TAG	"$t"
+	APPEND	"operon"
+
+MATCH	"FTx  CDS *protein_id*"
+	SRT	"*protein_id*=*2:\"=:\==:*=[$z]\: *"
+	TAG	"$t"
+	APPEND	"prot_id"
+
+#MATCH	"FTx  CDS *translation*"
+#	SRT	"*translation*=*2:\"=:\==:*=[$z]\: *"
+#	TAG	"$t"
+#	APPEND	"translation"
+
+MATCH	"FT   rRNA*"
+	SRT	"*rRNA*=*2: =:*..*=*1:<=:>="
+#	TAG	"$t"
+	APPEND	"start" 
+
+MATCH	"FT   rRNA *"
+	SRT	"*rRNA*=*2: =:*..*=*2:<=:>="
+#	TAG	"$t"
+	APPEND	"stop" 
+
+MATCH	"FTx  rRNA *gene*"
+	SRT	"*gene*=*2:\==:"="
+	TAG	"$t"
+	APPEND	"gene" 
+
+MATCH	"FTx  rRNA *product*"
+	SRT	"*product*=*2:\==:"="
+	TAG	"$t"
+	APPEND	"product" 
+
+#MATCH	"FT *"
+#	SRT	"FT   *=*"
+#	APPEND	"ebi_comment"
+
+
+# End feature table (same in longebi.ift and longgenbank.ift!)
+# ---------------------------------------------------------------
+
+
+SEQUENCEAFTER	"ORIGIN*"
+SEQUENCESRT	" =:~=.:*Check*..="
+SEQUENCEACI	"remove("0123456789 /")"
+SEQUENCECOLUMN	0
+SEQUENCEEND	"//"
+CREATE_ACC_FROM_SEQUENCE
+
+END	"//"
