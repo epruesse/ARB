@@ -5,16 +5,26 @@ FILETAG		"EBI"
 BEGIN	"ID*"
 
 MATCH	"ID *"
-	SRT "ID   * *=*1"
+	SRT "* *=*1"
 	WRITE "name"
 
+# set tagname for feature table to 'EBI'
 MATCH	"ID *"
-	SRT "ID   * *=*1"
+        SRT "*=EBI"
+        SETVAR t
+
+MATCH	"ID *"
+	SRT "*;*=*1"
 	TAG	"EBI"
 	WRITE "id"
 
 MATCH	"ID *"
-	SRT "*;*;*; * BP.=*4"
+	SRT "*; SV *;*=*2"
+	TAG	"EBI"
+	WRITE "version"
+
+MATCH	"ID *"
+	SRT "*;*;*;*;*;*;* * BP.=*8"
 	TAG	"EBI"
 	WRITE "db_nuc"
 
@@ -27,10 +37,10 @@ MATCH	"AC *"
 	ACI "extract_words("0123456789",4.0)"
 	WRITE "db_acc"
 
-MATCH	"SV *"
+MATCH	"PR *"
+	SRT "PR   *=*:*\:*=*2:;="
 	TAG	"EBI"
-	ACI "extract_words("0123456789",4.0)"
-	WRITE "version"
+	APPEND "insdc"
 
 MATCH	"DT *"
 	SRT "DT   *=*"
@@ -87,34 +97,33 @@ MATCH	"RX   MEDLINE*"
 	TAG	"EBI"
 	APPEND	"medline_id"
 
+MATCH	"RX   DOI*"
+	SRT	"*DOI*=*2:;=: =:*=[$x]\: *"
+	TAG	"EBI"
+	APPEND	"doi"
+
 MATCH	"RX   PUBMED*"
 	SRT	"*PUBMED*=*2:;=: =:.=:*=[$x]\: *"
 	TAG	"EBI"
 	APPEND	"pubmed_id"
 
 MATCH	"RG *"
-	SRT "*\;=*1:RG   *=[$x]\: *"
+	SRT "RG   *=*:*=[$x]\: *"
 	TAG	"EBI"
 	APPEND "refgrp"
 
-#MATCH	"RA *"
-#	SRT "*\;=*1:RA   *=*"
-#	TAG	"EBI"
-#	APPEND "author_$x"
-
 MATCH	"RA *"
-	SRT "*\;=*1:RA   *=[$x]\: *"
+	SRT "RA   *=*:;=:*=[$x]\: *"
 	TAG	"EBI"
 	APPEND "author"
 
 MATCH	"RT *"
-	SRT ";=:\"=:?*=?1*1:RT   *=[$x]\: *"
-#    ACI "caps"
+	SRT "RT   *=*:;=:"=:*=[$x]\: *"
 	TAG	"EBI"
 	APPEND	"title"
 
 MATCH	"RL *)."
-	SRT "RL   *=*"
+	SRT "RL   *=*:*=[$x]\: *"
 	TAG	"EBI"
 	APPEND	"journal"
 
@@ -128,11 +137,6 @@ MATCH	"RL  (er)*"
 	TAG	"EBI"
 	APPEND	"e_pub"
 
-#MATCH	"RL *"
-#	SRT "RL   *=*:*).=:Submitt*="
-#	TAG	"EBI"
-#	APPEND	"auth_submiss"
-
 MATCH	"DR *"
 	SRT	"DR   *; *=*1\: *2:;="
 	TAG	"EBI"
@@ -143,208 +147,248 @@ MATCH	"CC *"
 	TAG	"EBI"
 	APPEND	"auth_com2"
 
-MATCH	"FT   source*"
-	SRT "*=src"
-    SETVAR z
+# ---------------------------------------------------------------
+# Start feature table (same in longebi.ift and longgenbank.ift!)
 
-MATCH	"FT *mol_type*"
+MATCH	"FT  source*"
+	SRT "*source*=*2: ="
+	TAG	"$t"
+	APPEND	"nuc_region"
+
+MATCH	"FTx  source *mol_type*"
 	SRT "*mol_type*=*2:\==:\"=:"
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"mol_type"
 
-MATCH	"FT *citation*"
-	SRT "*citation*=*2:\"=:\==:*=($z)\: *"
-	TAG	"EBI"
+MATCH	"FTx  source *citation*"
+	SRT "*citation*=*2:\"=:\=="
+	TAG	"$t"
 	APPEND	"biblio"
 
-MATCH	"FT *cell_line*"
+MATCH	"FTx source *cell_line*"
 	SRT "*cell_line*=*2:\"=:\=="
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"cell_line"
 
-MATCH	"FT *cell_type*"
+MATCH	"FTx  source *cell_type*"
 	SRT "*cell_type*=*2:\"=:\=="
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"cell_type"
 
-MATCH	"FT *clone*"
+MATCH	"FTx  source *clone*"
 	SRT "*clone*=*2:\"=:\=="
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"clone"
 
-MATCH	"FT *cultivar*"
+MATCH	"FTx  source *cultivar*"
 	SRT "*cultivar*=*2:\"=:\=="
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"cultivar"
 
-MATCH	"FT *db_xref=*"
-	SRT "*db_xref*=*2:\"=:\==:*=($z)\ *"
-	TAG	"EBI"
+MATCH	"FTx  source *db_xref=*"
+	SRT "*db_xref*=*2:\"=:\=="
+	TAG	"$t"
 	APPEND	"db_ref"
 
-MATCH	"FT *lab_host=*"
+MATCH	"FTx  source *lab_host=*"
 	SRT "*lab_host*=*2:\"=:\=="
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"host"
 
-MATCH	"FT *isolate=*"
+MATCH	"FTx  source *isolate=*"
 	SRT "*isolate*=*2:\"=:\=="
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"isolate"
 
-MATCH	"FT *strain*"
+MATCH	"FTx  source *strain*"
 	SRT	"*/strain*=*2:\"=:\=="
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"strain"
 
-MATCH	"FT *isolation_source*"
+MATCH	"FTx  source *isolation_source*"
 	SRT	"*/isolation_source*=*2:\"=:\=="
-	TAG	"EBI"
-	APPEND	"isol_src"
+	TAG	"$t"
+	APPEND	"isolation_source"
 
-MATCH	"FT *source*/map*"
+MATCH	"FTx  source *country*"
+	SRT	"*/country*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"country"
+
+MATCH	"FTx  source *map*"
 	SRT	"*/map*=*2:\"=:\=="
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"map"
 
-MATCH	"FT *source*/note*"
-	SRT	"*/note*=*2:\"=:\==:*=($z)\: *"
-	TAG	"EBI"
+MATCH	"FTx  source *lat_lon*"
+	SRT	"*/lat_lon*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"lat_lon"
+
+MATCH	"FTx  source *note*"
+	SRT	"*/note*=*2:\"=:\=="
+	TAG	"$t"
 	APPEND	"note"
 
-MATCH	"FT *organelle*"
+MATCH	"FTx  source *organelle*"
 	SRT	"*/organelle*=*2:\"=:\=="
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"organelle"
 
-MATCH	"FT *plasmid*"
+MATCH	"FTx  source *plasmid*"
 	SRT	"*/plasmid*=*2:\"=:\=="
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"plasmid"
 
-MATCH	"FT *serotype*"
+MATCH	"FTx  source *serotype*"
 	SRT	"*/serotype*=*2:\"=:\=="
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"serotype"
 
-MATCH	"FT *serovar*"
+MATCH	"FTx  source *serovar*"
 	SRT	"*/serovar*=*2:\"=:\=="
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"serovar"
 
-MATCH	"FT *sub_species*"
+MATCH	"FTx  source *sub_species*"
 	SRT	"*/sub_species*=*2:\"=:\=="
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"subspec"
 
-MATCH	"FT *specimen_voucher*"
+MATCH	"FTx  source *specimen_voucher*"
 	SRT	"*/specimen_voucher*=*2:\"=:\=="
-	TAG	"EBI"
-	APPEND	"voucher"
+	TAG	"$t"
+	APPEND	"secimen_voucher"
 
-MATCH	"FT *specific_host*"
+MATCH	"FTx  source *specific_host*"
 	SRT	"*/specific_host*=*2:\"=:\=="
-	TAG	"EBI"
-	APPEND	"host"
+	TAG	"$t"
+	APPEND	"specific_host"
 
-MATCH	"FT *tissue_type*"
+MATCH	"FTx  source *tissue_type*"
 	SRT	"*/tissue_type*=*2:\"=:\=="
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"tissue"
 
-MATCH	"FT *variety*"
+MATCH	"FTx  source *variety*"
 	SRT	"*/variety*=*2:\"=:\=="
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"variety"
 
-#MATCH	"FT *source*/*"
-#	SRT	"*/\=\"*\"=*2"
-#	TAG	"EBI"
-#	APPEND	""
+MATCH	"FTx  source *collected_by*"
+	SRT	"*/collected_by*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"collected_by"
+
+MATCH	"FTx  source *collection_date*"
+	SRT	"*/collection_date*=*2:\"=:\=="
+	TAG	"$t"
+	APPEND	"collection_date"
+
+MATCH	"FT   CDS*"
+	SRT	"<=:>=:*CDS*..*=*2: ="
+#	TAG	"$t"
+	APPEND  "start"
+
+MATCH	"FT   CDS*"
+	SRT	"<=:>=:*CDS*..*=*3: ="
+#	TAG	"$t"
+	APPEND  "stop"
 
 MATCH	"FT   CDS*"
 	SRT	"<=:>=:*CDS*=*2: ="
     SETVAR z
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND  "cds_pos"
 
-#MATCH	"FT*"
-#	SRT	"CDS=:*=[$z]\: *"
-#	APPEND	"testwl"
-
-MATCH	"FT *allele*
+MATCH	"FTx  CDS *allele*
 	SRT	"*allele*=*2:\"=:\==:*=[$z]\: *"
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"allele"
 
-MATCH	"FT *citation*
+MATCH	"FTx  CDS *citation*
 	SRT	"*citation*=*2:\"=:\==:*=[$z]\: *"
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"citation"
 
-MATCH	"FT *codon_start*
+MATCH	"FTx  CDS *codon_start*"
 	SRT	"*codon_start*=*2:\"=:\==:*=[$z]\: *"
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"codon_start"
 
-MATCH	"*CDS*"
+MATCH	"FTx  CDS *db_xref*"
 	SRT	"*db_xref*=*2:\"=:\==:*=[$z]\: *"
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"db_ref2"
 
-MATCH	"FT *function*
+MATCH	"FTx  CDS *function*
 	SRT	"*function*=*2:\"=:\==:*=[$z]\: *"
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"function"
 
-MATCH	"FT *gene*
-	SRT	"*gene*=*2:\"=:\==:*=[$z]\: *"
-	TAG	"EBI"
-	APPEND	"gene"
-
-#MATCH	"FT *map*
-#	SRT	"*map*=*2:\"=:\==:*=[$z]\: *"
-#	TAG	"EBI"
-#	APPEND	"map"
-
-#MATCH	"FT *note*
-#	SRT	"*note*=*2:\"=:\==:*=[$z]\: *"
-#	TAG	"EBI"
-#	APPEND	"note"
-
-MATCH	"FT *EC_number*
+MATCH	"FTx  CDS *EC_number*
 	SRT	"*EC_number*=*2:\"=:\==:*=[$z]\: *"
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"EC_number"
+
+MATCH	"FTx  CDS *transl_table*"
+	SRT	"*transl_table*=*2:\"=:\==:*=[$z]\: *"
+	TAG	"$t"
+	APPEND	"transl_table"
+
+MATCH	"FTx  CDS *gene*"
+	SRT	"*gene*=*2:\"=:\==:*=[$z]\: *"
+	TAG	"$t"
+	APPEND	"gene"
 
 MATCH	"FTx  CDS *product*"
 	SRT	"*product*=*2:\"=:\==:*=[$z]\: *"
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"product"
 
-MATCH	"FT *operon*"
+MATCH	"FTx  CDS *operon*"
 	SRT	"*operon*=*2:\"=:\==:*=[$z]\: *"
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"operon"
 
-MATCH	"FT *protein_id"
+MATCH	"FTx  CDS *protein_id*"
 	SRT	"*protein_id*=*2:\"=:\==:*=[$z]\: *"
-	TAG	"EBI"
+	TAG	"$t"
 	APPEND	"prot_id"
 
-MATCH	"FT *translation*"
-	SRT	"*translation*=*2:\"=:\==:*=[$z]\: *"
-	TAG	"EBI"
-	APPEND	"translation"
+#MATCH	"FTx  CDS *translation*"
+#	SRT	"*translation*=*2:\"=:\==:*=[$z]\: *"
+#	TAG	"$t"
+#	APPEND	"translation"
 
-MATCH	"FT *transl_table*"
-	SRT	"*transl_table*=*2:\"=:\==:*=[$z]\: *"
-	TAG	"EBI"
-	APPEND	"transl_table"
+MATCH	"FT   rRNA*"
+	SRT	"*rRNA*=*2: =:*..*=*1:<=:>="
+#	TAG	"$t"
+	APPEND	"start" 
 
-MATCH	"FT *"
-	SRT	"FT   *=*"
-	APPEND	"ebi_comment"
+MATCH	"FT   rRNA *"
+	SRT	"*rRNA*=*2: =:*..*=*2:<=:>="
+#	TAG	"$t"
+	APPEND	"stop" 
+
+MATCH	"FTx  rRNA *gene*"
+	SRT	"*gene*=*2:\==:"="
+	TAG	"$t"
+	APPEND	"gene" 
+
+MATCH	"FTx  rRNA *product*"
+	SRT	"*product*=*2:\==:"="
+	TAG	"$t"
+	APPEND	"product" 
+
+#MATCH	"FT *"
+#	SRT	"FT   *=*"
+#	APPEND	"ebi_comment"
+
+
+# End feature table (same in longebi.ift and longgenbank.ift!)
+# ---------------------------------------------------------------
+
 
 SEQUENCEAFTER	"SQ*"
 SEQUENCESRT	"*Check*..*=*3"
