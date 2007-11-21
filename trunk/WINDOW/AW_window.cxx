@@ -949,10 +949,37 @@ void AW_window::window_fit(void){
 
 
 /*******************************    resize  ****************************************/
+
+// Predicate function: checks, if the given event is a ResizeEvent
+int is_resize_event(Display *display, XEvent *event, XPointer) {
+	if(event
+			&& (event->type == ResizeRequest || event->type == ConfigureNotify)
+			&& event->xany.display == display) {
+		return 1;
+	}
+	return 0;
+}
+
+// Removes redundant resize events from the x-event queue
+void cleanupResizeEvents(Display *display) {
+	if(display) {
+		XLockDisplay(display);
+		XEvent event;
+		if(XCheckIfEvent(display, &event, is_resize_event, 0)) {
+			// Some magic happens here... ;-) (removing redundant events from queue)
+			while(XCheckIfEvent(display, &event, is_resize_event, 0));
+			// Keep last Event in queue
+			XPutBackEvent(display, &event);
+		}
+		XUnlockDisplay(display);
+	}
+}
+
 static void AW_resizeCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
     AWUSE(wgt);AWUSE(call_data);
     AW_area_management *aram = (AW_area_management *) aw_cb_struct;
-    if (aram->resize_cb)    aram->resize_cb->run_callback();
+    cleanupResizeEvents(aram->common->display);
+    if (aram->resize_cb) aram->resize_cb->run_callback();
 }
 
 void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
