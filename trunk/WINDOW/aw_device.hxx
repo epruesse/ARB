@@ -220,13 +220,18 @@ public:
     int clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
     int box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
 
-
     void set_top_clip_border(int top, AW_BOOL allow_oversize = AW_FALSE);
     void set_bottom_clip_border(int bottom, AW_BOOL allow_oversize = AW_FALSE); // absolut
     void set_bottom_clip_margin(int bottom, AW_BOOL allow_oversize = AW_FALSE); // relativ
     void set_left_clip_border(int left, AW_BOOL allow_oversize = AW_FALSE);
     void set_right_clip_border(int right, AW_BOOL allow_oversize = AW_FALSE);
     void set_cliprect(AW_rectangle *rect, AW_BOOL allow_oversize = AW_FALSE);
+    void set_clipall() {
+        AW_rectangle rect;
+        rect.t = rect.b = rect.l = rect.r = 0;
+        set_cliprect(&rect);     // clip all -> nothing drawn afterwards
+    }
+
 
     void set_top_font_overlap(int val=1);
     void set_bottom_font_overlap(int val=1);
