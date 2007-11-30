@@ -938,7 +938,6 @@ int ED4_cursor::get_screen_relative_pos() {
 }
 void ED4_cursor::set_screen_relative_pos(AW_window *aww, int scroll_to_relpos) {
     int curr_rel_pos  = get_screen_relative_pos();
-    // int scroll_amount = scroll_to_relpos-curr_rel_pos;
     int scroll_amount = curr_rel_pos-scroll_to_relpos;
 
     int length_of_char = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
@@ -949,10 +948,7 @@ void ED4_cursor::set_screen_relative_pos(AW_window *aww, int scroll_to_relpos) {
 #if defined(DEBUG)
         printf("set_screen_relative_pos(%i) auto-scrolls %i\n", scroll_to_relpos, scroll_amount);
 #endif // DEBUG
-        // bool old_allowed_to_draw = allowed_to_draw;
-        // allowed_to_draw          = 0;
         ED4_horizontal_change_cb(aww, 0, 0);
-        // allowed_to_draw          = old_allowed_to_draw;
     }
 }
 
