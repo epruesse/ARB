@@ -11,7 +11,12 @@
 #define e4_assert(bed) arb_assert(bed)
 
 #ifdef DEBUG
-# define IMPLEMENT_DUMP // comment out this line to skip compilation of the dump() methods
+# define IMPLEMENT_DUMP         // comment out this line to skip compilation of the dump() methods
+#endif
+
+// #define LIMIT_TOP_AREA_SPACE // // if defined, top area is size-limited
+#ifdef LIMIT_TOP_AREA_SPACE
+#define MAX_TOP_AREA_SIZE 10    // size limit for top-area
 #endif
 
 #ifndef ED4_DEFS_HXX
