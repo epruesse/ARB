@@ -1029,10 +1029,9 @@ ED4_terminal *ED4_base::get_consensus_relevant_terminal()
 
 int ED4_multi_species_manager::count_visible_children() // is called by a multi_species_manager
 {
-    int 		counter = 0,
-        i;
+    int counter = 0;
 
-    for (i=0; i<children->members(); i++) {
+    for (int i=0; i<children->members(); i++) {
         ED4_base *member = children->member(i);
         if (member->is_species_manager()) {
             counter ++;
@@ -1259,41 +1258,39 @@ ED4_returncode ED4_manager::make_children_visible()
 
 ED4_returncode ED4_manager::unfold_group(char *bracket_ID_to_unfold)
 {
-    int i,
-        nr_of_visible_species = 0,
-        nr_of_children_in_group = 0;
-    ED4_base		*bracket_terminal;
-    ED4_manager		*temp_parent;
-    ED4_AREA_LEVEL		level;
-
-
-    bracket_terminal = search_ID(bracket_ID_to_unfold);
+    int i;
+    int nr_of_visible_species   = 0;
+    int nr_of_children_in_group = 0;
+    
+    ED4_base *bracket_terminal = search_ID(bracket_ID_to_unfold);
     if (!bracket_terminal) return ED4_R_WARNING;
 
-    temp_parent = bracket_terminal->parent;
+    ED4_manager *temp_parent = bracket_terminal->parent;
     if (!temp_parent) return ED4_R_WARNING;
 
     ED4_multi_species_manager *multi_species_manager = NULL;
 
-    level = temp_parent->get_area_level(&multi_species_manager);
+    ED4_AREA_LEVEL level = temp_parent->get_area_level(&multi_species_manager);
 
+#if defined(LIMIT_TOP_AREA_SPACE)
     if (level==ED4_A_TOP_AREA || level==ED4_A_BOTTOM_AREA) { // check if there are any unfolding restrictions
         nr_of_visible_species = multi_species_manager->count_visible_children();
 
-        if (nr_of_visible_species >= 10) {
-            aw_message("Top area limited to 10 species\n"
+        if (nr_of_visible_species >= MAX_TOP_AREA_SIZE) {
+            aw_message("Top area limited to " MAX_TOP_AREA_SIZE " species\n"
                        "Advice: Move group to main area and try again");
             return ED4_R_IMPOSSIBLE;
         }
 
         nr_of_children_in_group = temp_parent->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager()->count_visible_children();
 
-        if (nr_of_children_in_group + nr_of_visible_species - 1 > 10) {
-            aw_message("Top area limited to 10 species\n"
+        if (nr_of_children_in_group + nr_of_visible_species - 1 > MAX_TOP_AREA_SIZE) {
+            aw_message("Top area limited to " MAX_TOP_AREA_SIZE " species\n"
                        "Advice: Move group to main area and try again");
             return ED4_R_IMPOSSIBLE;
         }
     }
+#endif // LIMIT_TOP_AREA_SPACE
 
     for (i=0; i < temp_parent->children->members(); i++) {
         ED4_base *member = temp_parent->children->member(i);
