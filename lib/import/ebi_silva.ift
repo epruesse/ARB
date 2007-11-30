@@ -1,0 +1,152 @@
+AUTODETECT	"ID   *\nFT   rRNA *\nSQ*"
+# Global settings:
+KEYWIDTH	5
+FILETAG		"EBI"
+
+BEGIN	"ID*"
+
+MATCH	"ID *"
+	SRT "* *=*1"
+	WRITE "name"
+
+MATCH	"ID *"
+	SRT "*; SV *;*=*2"
+	WRITE "version"
+
+MATCH	"AC *"
+	ACI "extract_words("0123456789",4.0)"
+	WRITE "acc"
+
+MATCH	"PR *"
+	SRT "PR   *=*:*\:*=*2:;="
+	APPEND "insdc"
+
+MATCH	"DT *Created*"
+	SRT "DT   *=*:* \(*=*1;"
+	APPEND "date"
+
+MATCH	"DT *updated*"
+	SRT "DT   *=*:* \(*=*1:"
+	APPEND "date"
+
+MATCH	"DE *"
+	SRT	"DE   *=*:;="
+	APPEND	"description"
+
+MATCH	"OS *"
+	SRT "OS   *=*"
+	WRITE "full_name"
+
+MATCH	"OC *"
+	SRT "OC   *=*"
+	APPEND	"tax_embl"
+
+MATCH	"OC *."
+	SRT "OC   *=*:.="
+	WRITE	"tax_embl_name"
+
+MATCH	"RP *"
+	SRT	"RP   *=*"
+	APPEND	"nuc_rp"
+
+MATCH	"RX   DOI*"
+	SRT	"*DOI*=*2:;=: ="
+	WRITE	"publication_doi"
+
+MATCH	"RX   PUBMED*"
+	SRT	"*PUBMED*=*2:;=: =:.="
+	WRITE	"pubmed_id"
+
+MATCH	"RA *"
+	SRT "RA   *=*:;="
+	APPEND "author"
+
+MATCH	"RT *"
+	SRT "RT   *=*:;=:"="
+	APPEND	"title"
+
+MATCH	"RL *)."
+	SRT "RL   *=*:\).=)"
+	APPEND	"journal"
+
+MATCH	"RL *Submitted*"
+	SRT "RL   *=*:Submitted=:\(*\)*=*1"
+	WRITE	"submit_date"
+
+MATCH	"RL *"
+	SRT "*Submitted*bases.=:*.\n*=*2"
+	APPEND	"submit_author"
+
+MATCH	"FT   source*"
+	SRT "*source*=*2: ="
+	WRITE	"nuc_region"
+
+MATCH	"FT  *clone*"
+	SRT "*clone*=*2:\"=:\=="
+	APPEND	"clone"
+
+MATCH	"FT *db_xref=*taxon*"
+	SRT "*db_xref*=*2:*\:*=*2:\"=:\=="
+	APPEND	"tax_xref_embl"
+
+MATCH	"FT  *isolate=*"
+	SRT "*isolate*=*2:\"=:\=="
+	APPEND	"isolate"
+
+MATCH	"FT *strain*"
+	SRT	"*/strain*=*2:\"=:\=="
+	APPEND	"strain"
+
+MATCH	"FT *isolation_source*"
+	SRT	"*/isolation_source*=*2:\"=:\=="
+	APPEND	"isolation_source"
+
+MATCH	"FT  *country*"
+	SRT	"*/country*=*2:\"=:\=="
+	APPEND	"country"
+
+MATCH	"FT  *lat_lon*"
+	SRT	"*/lat_lon*=*2:\"=:\=="
+	APPEND	"lat_lon"
+
+MATCH	"FT  *specimen_voucher*"
+	SRT	"*/specimen_voucher*=*2:\"=:\=="
+	APPEND	"secimen_voucher"
+
+MATCH	"FT  *specific_host*"
+	SRT	"*/specific_host*=*2:\"=:\=="
+	APPEND	"specific_host"
+
+MATCH	"FT  *collected_by*"
+	SRT	"*/collected_by*=*2:\"=:\=="
+	APPEND	"collected_by"
+
+MATCH	"FT  *collection_date*"
+	SRT	"*/collection_date*=*2:\"=:\=="
+	APPEND	"collection_date"
+
+MATCH	"FT   rRNA*"
+	SRT	"*rRNA*=*2: =:*..*=*1:<=:>="
+
+	APPEND	"start" 
+
+MATCH	"FT   rRNA *"
+	SRT	"*rRNA*=*2: =:*..*=*2:<=:>="
+	APPEND	"stop" 
+
+MATCH	"FT  *gene*"
+	SRT	"*gene*=*2:\==:"="
+	APPEND	"gene" 
+
+MATCH	"FT  *product*"
+	SRT	"*product*=*2:\==:"="
+	APPEND	"product" 
+
+SEQUENCEAFTER	"SQ*"
+SEQUENCESRT	"*Check*..*=*3"
+SEQUENCEACI	"remove("0123456789 /")"
+SEQUENCEEND	"//"
+CREATE_ACC_FROM_SEQUENCE
+# DONT_GEN_NAMES
+
+END	"//"
