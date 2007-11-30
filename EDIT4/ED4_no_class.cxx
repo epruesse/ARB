@@ -85,6 +85,41 @@ void ED4_calc_terminal_extentions(){
 #endif // DEBUG
 }
 
+void ED4_expose_recalculations() {
+    ED4_ROOT->recalc_font_group();
+    ED4_calc_terminal_extentions();
+
+#if defined(DEBUG)
+#warning below calculations have to be done at startup as well - maybe call expose_cb once after create_hierarchy.
+#endif // DEBUG
+
+    ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[HEIGHT] = TERMINALHEIGHT;
+    ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[HEIGHT]      = TERMINALHEIGHT;
+    ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[WIDTH]  = MAXINFOWIDTH;
+
+    int screenwidth = ED4_ROOT->root_group_man->remap()->sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
+    while (1) {
+        ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[WIDTH] =
+            ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) *
+            (screenwidth+3);
+
+        ED4_terminal *top_middle_line_terminal = ED4_ROOT->main_manager->get_top_middle_line_terminal();
+
+        ED4_ROOT->main_manager->get_top_middle_spacer_terminal()->extension.size[HEIGHT] = TERMINALHEIGHT - top_middle_line_terminal->extension.size[HEIGHT];
+
+        ED4_ROOT->main_manager->route_down_hierarchy(NULL, NULL, &update_terminal_extension );
+        ED4_ROOT->resize_all(); // may change mapping
+
+        int new_screenwidth = ED4_ROOT->root_group_man->remap()->sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
+        if (new_screenwidth == screenwidth) { // mapping did not change
+            break;
+        }
+        screenwidth = new_screenwidth;
+    }
+
+    ED4_ROOT->get_ed4w()->update_scrolled_rectangle();
+}
+
 void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 {
     static bool dummy = 0;
@@ -100,40 +135,8 @@ void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     if (!dummy) {
         dummy = 1;
     }
-    else                                        // this case is needed every time, except the first
-    {
-        ED4_ROOT->recalc_font_group();
-        ED4_calc_terminal_extentions();
-
-#if defined(DEBUG)
-#warning below calculations have to be done at startup as well - maybe call expose_cb once after create_hierarchy
-#endif // DEBUG
-
-        ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[HEIGHT] = TERMINALHEIGHT;
-        ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[HEIGHT]      = TERMINALHEIGHT;
-        ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[WIDTH]  = MAXINFOWIDTH;
-
-        int screenwidth = ED4_ROOT->root_group_man->remap()->sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
-        while (1) {
-            ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[WIDTH] =
-                ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) *
-                (screenwidth+3);
-
-            ED4_terminal *top_middle_line_terminal = ED4_ROOT->main_manager->get_top_middle_line_terminal();
-
-            ED4_ROOT->main_manager->get_top_middle_spacer_terminal()->extension.size[HEIGHT] = TERMINALHEIGHT - top_middle_line_terminal->extension.size[HEIGHT];
-
-            ED4_ROOT->main_manager->route_down_hierarchy(NULL, NULL, &update_terminal_extension );
-            ED4_ROOT->resize_all(); // may change mapping
-
-            int new_screenwidth = ED4_ROOT->root_group_man->remap()->sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
-            if (new_screenwidth == screenwidth) { // mapping did not change
-                break;
-            }
-            screenwidth = new_screenwidth;
-        }
-
-        ED4_ROOT->get_ed4w()->update_scrolled_rectangle();
+    else {
+        ED4_expose_recalculations(); // this case is needed every time, except the first
     }
 
     ED4_ROOT->get_ed4w()->update_window_coords();
@@ -1420,14 +1423,23 @@ void ED4_compression_changed_cb(AW_root *awr){
     if (ED4_ROOT->root_group_man) {
         ED4_cursor& cursor  = ED4_ROOT->get_ed4w()->cursor;
         int         rel_pos = cursor.get_screen_relative_pos();
+        int         seq_pos = cursor.get_sequence_pos();
+        
+        AW_window *aww    = ED4_ROOT->get_aww();
+        AW_device *device = ED4_ROOT->get_device();
 
         ED4_remap *remap = ED4_ROOT->root_group_man->remap();
         remap->set_mode(mode, percent);
 
-        AW_window *aww = ED4_ROOT->get_aww();
-        ED4_expose_cb(aww, 0, 0);
+        device->push_clip_scale();
+        device->set_clipall();     // draw nothing
 
+        ED4_expose_recalculations();
+
+        cursor.jump_sequence_pos(aww, seq_pos, ED4_JUMP_KEEP_POSITION);
         cursor.set_screen_relative_pos(aww, rel_pos);
+        
+        ED4_expose_cb(aww, 0, 0); // does pop_clip_scale + refresh
     }
 }
 
