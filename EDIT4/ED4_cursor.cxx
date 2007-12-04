@@ -883,8 +883,9 @@ void ED4_cursor::updateAwars()
 
     // update awar for ecoli position:
 
-    {
-        long ecoli_pos = ED4_ROOT->ecoli_ref->abs_2_rel(seq_pos);
+    BI_ecoli_ref *ecoli = ED4_ROOT->ecoli_ref;
+    if (ecoli->gotData()) {
+        long ecoli_pos = ecoli->abs_2_rel(seq_pos);
         aw_root->awar(win->awar_path_for_Ecoli)->write_int(ecoli_pos+1);
     }
 
