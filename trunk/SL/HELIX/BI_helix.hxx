@@ -137,18 +137,20 @@ public:
     const char *init(GBDATA *gb_main,char *alignment_name, char *ref_name);
     const char *init(const char *seq, size_t size);
 
+    bool gotData() const { return abs2rel != 0; }
+    
     size_t abs_2_rel(size_t abs) const {
-        bi_assert(abs2rel); // call init!
+        bi_assert(gotData()); 
         if (abs >= absLen) abs = absLen-1;
         return abs2rel[abs];
     }
 
     size_t rel_2_abs(size_t rel) const {
-        bi_assert(abs2rel); // call init!
+        bi_assert(gotData()); 
         if (rel >= relLen) rel = relLen-1;
         return rel2abs[rel];
     }
-    
+
     size_t base_count() const { return relLen; }
 };
 
