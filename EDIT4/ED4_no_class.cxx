@@ -714,23 +714,30 @@ void ED4_remote_set_cursor_cb(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/)
 
 void ED4_jump_to_cursor_position(AW_window *aww, char *awar_name, bool /*callback_flag*/)           // callback function
 {
-    AW_root *root = aww->get_root();
-
     ED4_ROOT->use_window(aww);
 
     ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+    GB_ERROR    error  = 0;
 
-    long pos = root->awar(awar_name)->read_int();
+    long pos = aww->get_root()->awar(awar_name)->read_int();
     if (pos>0) pos--;           // user->real position (userpos is 1..n)
 
     if (strcmp(awar_name, ED4_ROOT->get_ed4w()->awar_path_for_Ecoli)==0) { // callback from ecoli
-        pos = ED4_ROOT->ecoli_ref->rel_2_abs(pos);
+        BI_ecoli_ref *ecoli = ED4_ROOT->ecoli_ref;
+
+        if (ecoli->gotData()) pos = ecoli->rel_2_abs(pos);
+        else error = "No ecoli reference";
     }
     else if (strcmp(awar_name, ED4_ROOT->get_ed4w()->awar_path_for_basePos)==0) { // callback from basePos
         pos = cursor->base2sequence_position(pos);
     }
 
-    cursor->jump_sequence_pos(aww, pos, ED4_JUMP_CENTERED);
+    if (error) {
+        aw_message(error);
+    }
+    else {
+        cursor->jump_sequence_pos(aww, pos, ED4_JUMP_CENTERED);
+    }
 }
 
 void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /*callback_flag*/)
@@ -740,13 +747,20 @@ void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /*callback_flag*/)
     if (cursor->owner_of_cursor) {
         AW_root    *root     = aww->get_root();
         const char *helix_nr = root->awar(awar_name)->read_string();
-        long        pos      = ED4_ROOT->helix->first_position(helix_nr);
+        BI_helix   *helix    = ED4_ROOT->helix;
 
-        if (pos == -1) {
-            aw_message(GBS_global_string("No helix '%s'", helix_nr));
+        if (helix->has_entries()) {
+            long pos = helix->first_position(helix_nr);
+
+            if (pos == -1) {
+                aw_message(GBS_global_string("No helix '%s' found", helix_nr));
+            }
+            else {
+                cursor->jump_sequence_pos(aww, pos, ED4_JUMP_CENTERED);
+            }
         }
         else {
-            cursor->jump_sequence_pos(aww, pos, ED4_JUMP_CENTERED);
+            aw_message("Got no helix information");
         }
     }
 }
