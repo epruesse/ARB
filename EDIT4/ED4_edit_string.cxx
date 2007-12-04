@@ -818,12 +818,15 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                         case 'J': { // CTRL-J = Jump to opposite helix position
                             AW_helix *helix = ED4_ROOT->helix;
 
-                            if (helix->pairtype(seq_pos) != HELIX_NONE) {
+                            if (!helix->has_entries()) {
+                                ad_err = GB_strdup("Got no helix information");
+                            }
+                            else if (helix->pairtype(seq_pos) != HELIX_NONE) {
                                 seq_pos = helix->opposite_position(seq_pos);
                                 cursor_jump = ED4_JUMP_KEEP_POSITION;
                             }
                             else {
-                                ad_err = GBS_global_string("No at helix position");
+                                ad_err = GB_strdup("Not at helix position");
                             }
                             break;
                         }
