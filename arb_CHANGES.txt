@@ -2,7 +2,8 @@ ARB change log
 
 Major changes for next version:
 
- - Sequence quality check 
+ - rewrote secondary structure editor
+ - Sequence quality check
  - Nameserver may use one field additional to 'acc' (useful to keep multiple species with same acc)
  - tweaked base frequency filter generation
  - Normal export (not using readseq) improved:
