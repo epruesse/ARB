@@ -76,7 +76,9 @@ prepend PATH			$ARBHOME/bin
 prepend LD_LIBRARY_PATH		$ARBHOME/lib
 append  LD_LIBRARY_PATH		/usr/dt/lib
 append  LD_LIBRARY_PATH		/usr/openwin/lib
+append  LD_LIBRARY_PATH		$ARBHOME/lib/addlibs
 prepend SHLIB_PATH		$ARBHOME/lib
+append  SHLIB_PATH		$ARBHOME/lib/addlibs
 
 # environment variables that this shell script sets/changes:
 export LD_LIBRARY_PATH MANPATH PATH ARBHOME SHLIB_PATH
