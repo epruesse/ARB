@@ -1,6 +1,0 @@
-AUTODETECT	"LOCUS       *\nORIGIN*"
-
-SYSTEM		"perl $ARBHOME/PERL_SCRIPTS/IFTHELP/genbank_gen_long_features.pl < $< > $>"
-
-NEW_FORMAT	"lib/import/nonformats/longgenbank.ift"
-
