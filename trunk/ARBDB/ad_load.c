@@ -1579,7 +1579,10 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
         Main->local_mode = GB_TRUE;
         GB_begin_transaction((GBDATA *)gbd);
     }
-    if (error) return 0;
+    if (error) {
+        GB_export_error(error);
+        return 0;
+    }
     GB_commit_transaction((GBDATA *)gbd);
     {               /* New Transaction, should be quicksaveable */
         GB_begin_transaction((GBDATA *)gbd);
