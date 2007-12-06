@@ -1,4 +1,4 @@
-AUTODETECT	"==== Secondary Structure Definition"
+AUTODETECT	"*Secondary Structure Definition by the program DSSP*"
 
 SYSTEM		"perl $ARBHOME/PERL_SCRIPTS/IFTHELP/dssp2fasta.pl < $< > $>"
 
