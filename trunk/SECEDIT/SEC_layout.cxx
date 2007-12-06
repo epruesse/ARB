@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_layout.cxx                                    //
 //   Purpose   : layout size and positions of structure            //
-//   Time-stamp: <Mon Sep/10/2007 10:55 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Thu Dec/06/2007 14:03 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -104,7 +104,9 @@ void SEC_helix::calculate_helix_size() {
 
     base_length = max(reg1->get_base_count(), reg2->get_base_count());
     if (base_length == 0) {
+#if defined(DEBUG)
         printf("Helix w/o size faking length=1\n");
+#endif // DEBUG
         base_length = 1;
     }
     setStandardSize(base_length-1);
