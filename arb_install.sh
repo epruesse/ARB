@@ -333,7 +333,7 @@ esac
 
 # install missing libraries
 seperator
-( cd lib/addlibs; ./install_libs.sh )
+( $ARBHOME/lib/addlibs/install_libs.sh )
 
 seperator
 echo ">>> Installation Complete"
