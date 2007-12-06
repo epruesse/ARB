@@ -41,8 +41,8 @@ MATCH	"OC *"
 	SRT "OC   *=*"
 	APPEND	"tax_embl"
 
-MATCH	"OC *."
-	SRT "OC   *=*:.="
+MATCH	"OS *"
+	SRT "OS   *=*"
 	WRITE	"tax_embl_name"
 
 MATCH	"RP *"
@@ -111,7 +111,7 @@ MATCH	"FT  *lat_lon*"
 
 MATCH	"FT  *specimen_voucher*"
 	SRT	"*/specimen_voucher*=*2:\"=:\=="
-	APPEND	"secimen_voucher"
+	APPEND	"specimen_voucher"
 
 MATCH	"FT  *specific_host*"
 	SRT	"*/specific_host*=*2:\"=:\=="
