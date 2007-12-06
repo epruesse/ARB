@@ -1,0 +1,6 @@
+AUTODETECT	"==== Secondary Structure Definition"
+
+SYSTEM		"perl $ARBHOME/PERL_SCRIPTS/IFTHELP/dssp2fasta.pl < $< > $>"
+
+NEW_FORMAT	"lib/import/fasta.ift"
+
