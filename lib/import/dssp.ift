@@ -2,5 +2,5 @@ AUTODETECT	"*Secondary Structure Definition by the program DSSP*"
 
 SYSTEM		"perl $ARBHOME/PERL_SCRIPTS/IFTHELP/dssp2fasta.pl < $< > $>"
 
-NEW_FORMAT	"lib/import/fasta.ift"
+NEW_FORMAT	"lib/import/fasta_wgap.ift"
 
