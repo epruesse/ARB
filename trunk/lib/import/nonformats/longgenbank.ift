@@ -24,43 +24,35 @@ MATCH	"LOCUS *"
 	TAG	"GB"
 	WRITE "db_nuc"
 
+MATCH	"ACCESSION *"
+	ACI "extract_words("0123456789",4.0)"
+	WRITE "acc"
+
+MATCH	"ACCESSION *"
+	ACI "extract_words("0123456789",4.0)"
+	TAG	"GB"
+	WRITE "db_acc"
+
+MATCH	"PROJECT"
+	TAG	"GB"
+	WRITE "insdc"
+
 MATCH	"LOCUS *"
 	SRT "     = :    = :   = :  = :* * * * * * *=*7"
 	TAG	"GB"
 	WRITE "date"
 
-MATCH	"LOCUS *"
-	SRT "*=<uninitialized>"
-#	SRT "*="
-#	SETVAR x
-#	SETVAR y
-
-MATCH	"DEFINITION *"
+MATCH	"DEFINITION"
 	TAG	"GB"
-	APPEND	"definition"
-
-MATCH	"ACCESSION *"
-	SRT "\"*\"=*1:No information="
-	ACI "extract_words("0123456789",4.0)"
-	WRITE "acc"
-
-MATCH	"ACCESSION *"
-	SRT "\"*\"=*1:No information="
-	ACI "extract_words("0123456789",4.0)"
-	TAG	"GB"
-	WRITE "db_acc"
-
-MATCH	"VERSION *"
-	TAG	"GB"
-	WRITE	"version"
+	WRITE "description"
 
 MATCH	"KEYWORDS *"
 	TAG	"GB"
-	WRITE	"source"
+	WRITE	"keywd"
 
-MATCH	"SOURCE *"
-	TAG	"GB"
-	WRITE "source"
+MATCH	"  ORGANISM *"
+	SRT	"* * *=*1 *2:*|*=*1"
+	WRITE 	"full_name"
 
 MATCH	"  ORGANISM *"
 	TAG	"GB"
@@ -72,10 +64,6 @@ MATCH	"  ORGANISM *"
 	SRT	"*|*=*2"
 	WRITE	"tax"
 
-MATCH	"  ORGANISM *"
-	SRT	"* * *=*1 *2"
-	WRITE 	"full_name"
-
 MATCH	"REFERENCE *"
 	SRT	"* *=*1"
    SETVAR x
@@ -83,10 +71,25 @@ MATCH	"REFERENCE *"
 	APPEND	"num_bib"
 
 MATCH	"REFERENCE *"
-	SRT	"(=:)=:?*=[?]*"
+	SRT	"*(*=*2:bases=:to=-: =:)=:*=[$x]\: *"
 	TAG	"GB"
 	APPEND	"nuc_rp"
 
+MATCH	"  MEDLINE *"
+	SRT	"*=[$x]\: *"
+	TAG	"GB"
+	APPEND	"medline_id"
+
+MATCH	"   PUBMED *"
+	SRT	"*=[$x]\: *"
+	TAG	"GB"
+	APPEND	"pubmed_id"
+
+MATCH	"  CONSRTM *"
+	SRT	"*=[$x]\: *"
+	TAG	"GB"
+	APPEND	"refgrp"
+	
 MATCH	"  AUTHORS *"
 	SRT	"*=[$x]\: *"
 	TAG	"GB"
@@ -102,15 +105,10 @@ MATCH	"  JOURNAL *"
 	TAG	"GB"
 	APPEND	"journal"
 
-MATCH	"  MEDLINE *"
-	SRT	"*=[$x]\: *"
-	TAG	"GB"
-	APPEND	"medline_id"
-
-MATCH	"   PUBMED *"
-	SRT	"*=[$x]\: *"
-	TAG	"GB"
-	APPEND	"pubmed_id"
+MATCH	"  JOURNAL *Submitted*"
+	SRT "*Submitted*=*2:\(*\)*=*1"
+	TAG	"EBI"
+	WRITE	"submit_date"
 
 MATCH	"     Protein*note*"
 	SRT	"*/note\=\"*\"*=*2"
@@ -147,7 +145,7 @@ MATCH	"FTx*Protein*product=*"
 # ---------------------------------------------------------------
 # Start feature table (same in longebi.ift and longgenbank.ift!)
 
-MATCH	"FT  source*"
+MATCH	"FT   source*"
 	SRT "*source*=*2: ="
 	TAG	"$t"
 	APPEND	"nuc_region"
@@ -186,6 +184,11 @@ MATCH	"FTx  source *db_xref=*"
 	SRT "*db_xref*=*2:\"=:\=="
 	TAG	"$t"
 	APPEND	"db_ref"
+
+MATCH	"FTx  source *db_xref="taxon*"
+	SRT "*db_xref*=*2:*\:*=*2:\"=:\=="
+#	TAG	"GB"
+	APPEND	"tax_xref_gb"
 
 MATCH	"FTx  source *lab_host=*"
 	SRT "*lab_host*=*2:\"=:\=="
