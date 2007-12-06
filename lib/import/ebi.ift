@@ -1,6 +1,0 @@
-AUTODETECT	"ID   *\nSQ*"
-
-SYSTEM		"perl $ARBHOME/PERL_SCRIPTS/IFTHELP/embl_gen_long_features.pl < $< > $>"
-
-NEW_FORMAT	"lib/import/nonformats/longebi.ift"
-
