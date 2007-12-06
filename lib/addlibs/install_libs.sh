@@ -1,45 +1,32 @@
 #!/bin/bash
 
-install_lib() {
-    # $1=libname $2=linknam $3=destdir
+ADDLIBDIR=$ARBHOME/lib/addlibs
 
-    if [ \! -r $1 ]; then
-        echo "Library $1 missing. Please contact authors at devel@arb-home.de"
+install_lib() {
+    # $1=libname $2=linknam
+
+    LIB=$ADDLIBDIR/$1
+    LINK=$ADDLIBDIR/$2
+
+    if [ \! -r $LIB ]; then
+        echo "Library $LIB missing. Please contact authors at devel@arb-home.de"
         false
     else
-        DESTLIB=$3/$1
-        DESTLINK=$3/$2
-        if [ \! -r $DESTLIB ]; then
-            echo "Required library $DESTLIB not present."
-            echo "Shall I install it? (y/n) [y]"
-            read VAR
-            case "$VAR" in
-              n)
-                echo "Skipped installation of $DESTLIB. ARB may not work properly"
-              ;;
-              *)
-                echo "Installing $1 into $3"
-                install $1 $3
-              ;;
-            esac
-        else
-            echo "$DESTLIB already installed"
-        fi
-
-        if [ \! -r $DESTLINK ]; then
-            if [ -r $DESTLIB ]; then
-                echo "Symlinking $DESTLINK -> $DESTLIB"
-                (cd $3; ln -s $1 $2 )
+        if [ \! -r $LINK ]; then
+            if [ -r $LIB ]; then
+                echo "Symlinking $LINK -> $LIB"
+                ln -s $1 $2
             fi
         else
-            echo "Symlink $DESTLINK already present (should link to $DESTLIB or newer version):"
-            ls -al $DESTLINK
+            echo "Symlink $LINK already present"
+            echo "(should link to $LIB or newer version):"
+            ls -al $2
+            echo ""
         fi
     fi
 }
 
-DEST=/usr/lib
-
-install_lib libGLEW.so.1.3.5 libGLEW.so.1   $DEST
-install_lib libGLEW.so.1.3.5 libGLEW.so.1.3 $DEST # simply does 2nd symlink
+cd $ADDLIBDIR
+install_lib libGLEW.so.1.3.5 libGLEW.so.1
+install_lib libGLEW.so.1.3.5 libGLEW.so.1.3
 
