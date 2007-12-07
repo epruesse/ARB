@@ -1,0 +1,12 @@
+item:Import sequences using Readseq (slow) ...
+itemmeta: R
+itemmethod:arb_readseq $INPUTFILE -a -f2 > OUTPUTFILE
+itemhelp:readseq.help
+
+arg:INPUTFILE
+argtype:text
+arglabel:Name of foreign file?
+
+out:OUTPUTFILE
+outformat:genbank
+

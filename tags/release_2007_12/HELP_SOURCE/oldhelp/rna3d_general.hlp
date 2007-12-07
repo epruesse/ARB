@@ -1,0 +1,32 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP  rna3d_manual.ps
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+SUB rna3d_dispMolecule.hlp
+SUB rna3d_dispBases.hlp
+SUB rna3d_dispHelices.hlp
+SUB rna3d_mapSeqData.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Visualization of Three-dimensional structure of small subunit (16S) rRNA
+
+
+OCCURRENCE	In Primary Sequnce Editor (ARB_EDIT4)
+
+DESCRIPTION  
+
+    This program (RNA3D) displays the three-dimensional structure of small subunit (16S) rRNA in OpenGL 3D environment. The annotation of RNA three-dimensional structures consists of a preprocessing of the information embedded in their 3D coordinates. It processes PDB structural information stored in the PDB file (1M5G) and used for further structural analysis and searches. To provide user with the more detatiled perspective of 16S rRNA structure, structural information corresponding to the ribosmal protiens were excluded during processing. The extracted structural informaion is then fed to OpenGL engine, where it is further transformed into a hierarchy of OpenGL objects, which encode molecule chains, residues and base positions. At this stage, further processing may occur, for example when the user requests the mapping of secondary structure information of rRNA onto the molecule in the form of loops and stems. Any information derived from the multiple alignments (phylogenetic information) is merged into the structural information or rRNA molecule in the post-processing step.     
+    
+NOTES		
+    More information regarding merging secondary structure infomation and mapping individual rRNA sequence,sequence associated data, oligonucleotide probes can be found in the respective help files. See "Subtopics" section.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

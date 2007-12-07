@@ -1,0 +1,49 @@
+Running RAxML: Recommendations
+
+RAxML is a non-deterministic program if you do not use a fixed starting tree (see README for details).
+Non-determinism means that each run on the same dataset "can" produce a distinct final result.
+
+Analyzing real dataset:
+
+- You should execute at least 10 distinct runs with the standard (slow) hill-climbing algorithm
+- About 5 runs with the simulated annealing algorithm
+  Note, that the simulated annealing algorithm has no stopping criterion, i.e. if you do not stop
+  the program by killing it, it will run forever. The recommendation is to avoid killing it by 
+  specifying an approximate execution time limit with the "-l" option ("-l NumberOfSeconds"). 
+  As a rule of thumb set NumberOfSeconds to the four-fold of the average running time of the 
+  hill-climbing algorithm.
+- You can perform a bootstrap analysis by specifying a random number seed with "-b RandomNumberSeed"
+
+
+CPU Architectures:
+
+- According to current results RAxML currently performs best on AMD Athlons and Opterons 
+  when compiled with gcc 3.3.3
+- Before using the OpenMP version think about the possibility to 
+  execute a greater number of sequential RAxML-inferences first
+- The optimzed MKL-implementation is available for substitution models
+  "-m GTRCAT" and "-m HKY85CAT" and will scale best on Intel architectures
+- The OpenMP-implementation scales best on extremely long 
+  alignments containing more than 5.000 base pairs and complex models,
+  i.e. "-m GTRCAT" and "-m HKY85CAT"
+- Superlinear speedups have been recorded on a 4-way AMD-Opteron
+  for very large alignments due to improved cache efficiency
+
+
+Operating Systems:
+
+- RAxML is currently available for Linux/Unix systems
+- A portation to Windows is in course of preparation
+- It runs out of the box on MAC G4 and G5 with gcc and gmake 
+  properly installed
+
+Support:
+
+In case of problems with RAxML contact Alexandros Stamatakis (stamatak@ics.forth.gr) and/or Michael Ott (ottmi@in.tum.de).
+
+IMPORTANT:
+
+If you do not have sufficient computing power to infer large trees with RAxML you may feel free
+to contact us (stamatak@ics.forth.gr, ottmi@in.tum.de) to compute the trees for you.
+
+

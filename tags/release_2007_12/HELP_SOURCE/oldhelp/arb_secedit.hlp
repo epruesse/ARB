@@ -1,0 +1,31 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	e4.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	sec_mode.hlp
+SUB	sec_keys.hlp
+SUB	sec_main.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		ARB_SECEDIT - Secondary structure editor
+
+OCCURRENCE	ARB_EDIT4/Edit/Edit secondary structure
+
+DESCRIPTION	ARB_SECEDIT is designed to maintain the structure and layout
+		information of secondary structures.
+
+		ARB_SECEDIT always displays the data of the species currently
+		selected in ARB_EDIT4.
+
+NOTES		If you start ARB_SECEDIT the first time with the current
+		alignment, you'll see a initial structure with one helix folded.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

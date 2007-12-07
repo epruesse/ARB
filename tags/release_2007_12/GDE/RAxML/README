@@ -1,0 +1,208 @@
+RAxML-V release by Alexandros Stamatakis
+
+In case you encounter problems with RAxML please send and Email to 
+stamatak@ics.forth.gr
+
+-------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------
+
+
+I. Compiling the program
+
+-------------------------------------------------------------------------------------------------
+
+1. To compile the sequential program with the gcc compiler type:
+
+"make" to compile with gcc
+
+This will generate one executable: 
+"raxml" (sequential)
+
+
+2. To compile the sequential, MKL-based and OpenMP program with the Intel compiler type:
+
+"make -f Makefile.intel" to compile with icc (Intel compiler)
+
+Note that you might need to modify the MKL-Path settings!!!!!!!!!!
+
+This will generate three executables: 
+"raxml.i" (sequential)
+"raxmlMKL.i" (sequential making use of the Intel Math Kernel Library)
+"raxmlOMP.i" (parallel based on OpenMP for SMP-type processors)
+
+
+3. To compile the sequential and OpenMP program with the PGI compiler:
+
+"make -f Makefile.pgi" to compile with pgcc (PGI compiler)
+
+This will generate two executables: 
+"raxml.p" (sequential)
+"raxmlOMP.p" (parallel based on OpenMP for SMP-type processors)
+
+------------------------------------------------------------------------------------------------------
+
+
+II. Running the program
+
+------------------------------------------------------------------------------------------------------
+
+Program options:
+
+raxml[OMP][.i][.p]  [-b randomNumberSeed] [-c numberOfCategories] [-d startTemperature] [-f c|e|f|s]  
+                    [-g repeats] [-i initialRearrangementSetting] [-k maximumRearrangementSetting] 
+                    [-l timeLimit] [-m ModelOfEvoluion] [-r minimumRearrangementSetting] 
+		    [-t userStartingTree] [-w workingDirectory] [-a weightFileName]
+		    -s sequenceFileName  -n outputFileName
+
+	-a 	Specify a column weight file name to assign individual wieghts to each column of 
+		the alignment. Those weights must be integers separated by any number and type 
+		of whitespaces whithin a separate file, see file "example_weights" for an example.
+
+	-b	Specify an integer number (random seed) for bootstrapping
+
+	-c 	Specify number of distinct rate catgories for raxml when ModelOfEvolution
+		is set to GTRCAT or HKY85CAT. 
+		Individual per-site rates are categorized into numberOfCategories rate 
+		categories to accelerate computations. (Default = 50)
+
+	-f	select search algorithm: c for normal hill-climbing search (Default)
+				           when -f option is omitted this algorithm will be
+					   used		
+					 e (evaluate) to optimize model+branch lengths for
+					   given input tree
+					 f (fast) for fast-less exhaustive hill climbing search
+					 s (simulated annealing) for simulated annealing search
+
+	-l  	specify integer time limit in seconds, program will abort after approximately
+		timeLimit seconds if in normal hill-climbing or simulated annealing mode
+
+	-g      SIMULATED ANNEALING MODE ONLY!!! specify integer number of moves after which 
+		temperature is lowered (Default == number of taxa in alignment)
+
+	-d      SIMULATED ANNEALING MODE ONLY!!! specify integer start temperature for chain
+		(Default = 3.0)
+					
+	-n	Specifies the name of the output file.	
+
+	-w 	Name of the working directory where RAxML-V will write its output files. 
+		(Default current directory)	
+
+	-r 	Minimum rearrangment setting. (Default = 5)
+
+	-k	Maximum rearrangement setting. (Default = 21)
+
+	-t      Specify a user starting tree file name in Newick format
+
+	-i  	Initial rearrangement setting for the subsequent application of topological 
+		changes phase
+
+	-s 	specify the name of the alignment data file
+
+	-m      Model of Nucleotide Substitution: 
+		-m HKY85: HKY85 + Optimization of Tr/Tv ratio
+		-m HKY85CAT: HKY85 + Optimization of Tr/Tv ratio + Optimization of site-specific
+		   evolutionary rates which are categorized into numberOfCategories distinct 
+		   rate categories for greater computational efficiency
+		-m GTR: GTR + Optimization of substitution rates
+		-m GTRCAT: GTR + Optimization of substitution rates +  Optimization of site-specific
+		   evolutionary rates which are categorized into numberOfCategories distinct 
+		   rate categories for greater computational efficiency
+
+
+For additional information or when problems occur send an email to stamatak@ics.forth.gr
+
+-------------------------------------------------------------------------------------------------------
+
+III. RAxML-V output files
+
+-------------------------------------------------------------------------------------------------------
+
+RAxML-V produces various output files of the form RAxML_fileType.outputFileName,
+where outputFileName is the name of the RAxML-V run:
+
+The various types of output files are listed below:
+
+fileType:
+
+	- RAxML_log.outputFileName : 	   	Log-File first column is the execution time second column the log 
+						likelihood at that time third column the number of the checkpoint 
+						file written at that time.
+
+	- RAxML_checkpoint.outputFileName.i :	Tree checkpoint in Newick format, written out after each iteration
+						(or each improvement of the log likelihood in simulated annealing)
+						.i is the checkpoint at the i-th iteration and corresponds to 
+						the third column of the Log-File.
+
+	- RAxML_result.outputFileName:		HILL-CLIMBING ONLY: Final tree in Newick format, will be printed out 
+						only after termination of hill-climbing algorithms.
+
+	- RAxML_info.outputFileName :		Prints out information about the program settings and evolutionary 
+						model used in the specific run.
+						In simulated annealing mode it also prints out the best and the 
+						worst log likelihood of the 100 trees used to build the i-th 
+						consensus tree (see below).
+
+	- RAxML_consensus.outputFileName.i:	SIMULATED ANNEALING ONLY: i-th Majority-rule consensus tree built out 
+						of the 100 best trees after every 2*N simulated annealing moves, where
+						N = Number of taxa in the alignment.
+
+	- RAxML_TreesForConsensus:		SIMULATED ANNEALING ONLY: the 100 best trees in Newick format used 
+						to build the most recent consensus tree.
+
+
+-------------------------------------------------------------------------------------------------------
+
+IV. IMPORTANT NOTES
+
+-------------------------------------------------------------------------------------------------------
+
+SIMULATED ANNEALING:
+
+The simulated annealing algoritm does not have a termination criterion, i.e. IT WILL RUN FOREVER
+IF NOT STOPPED. Moreover it will not write a RAxML_result-File when it is not run with a time limit
+specified by the "-l" option. 
+Simulated Annealing has to be STOPPED ON USERS DISCRETION and the resulting best tree
+has to be recovered from the most recent checkpoint file.
+See the file Recommended_use.txt for more details on how to reasonably use simulated annealing in 
+conjunction with hill-climbing.
+
+CONSENSUS TREE BUILDING:
+
+RAxML-V makes a system call to consense from the PHYLIP package to build  majority-rule consensus 
+trees. 
+When compiling RAxML-V you will obtain two executables: raxml[OMP][.i][.p] AND consense.
+RAXML AND CONSENSE EXECUTABLES MUST BE LOCATED IN THE SAME DIRECTORY FOR THE PROGRAM TO WORK PROPERLY,
+i.e. copy both to your "bin" directory. 
+
+CHECKPOINTS:
+
+If the many checkpoints RAxML writes are annoying you: just edit 
+file axml.h and set the global variable "int checkpoints = 0;"
+
+
+-------------------------------------------------------------------------------------------------------
+
+V. Citing RAxML-V
+
+-------------------------------------------------------------------------------------------------------
+
+
+When using RAxML-V please cite:
+
+Alexandros Stamatakis, Thomas Ludwig, and Harald Meier: 
+``RAxML-III: A Fast Program for Maximum Likelihood-based Inferrence of Large Phylogenetic Trees''. 
+In Bioinformatics, 21(4):456-463, 2005.
+.
+
+and
+
+Alexandros Stamatakis:
+``An Efficient Program for phylogenetic Inference Using Simulated Annealing''. 
+Proceedings of IPDPS2005, Denver, Colorado, April 2005.
+
+
+IMPORTANT NOTE:
+
+All papers are available on-line for download as PDF now at:
+
+www.ics.forth.gr/~stamatak

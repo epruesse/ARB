@@ -1,0 +1,145 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	parser.hlp
+SUB	commands.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Regular Expressions (REG)
+
+OCCURRENCE	Everywhere
+
+DESCRIPTION	Standart Regular Expressions:
+
+		There are two possibilities to use regular expressions:
+
+		[1]	/Search Regexpr/Replace String/
+		[2]	/Search Regexpr/
+
+		[1] searches the input for occurances of 'Search Regexpr' and
+                replaces every occurance with 'Replace String'.
+
+		[2] searches the input for the FIRST occurance of 'Search
+                Regexpr' - if not found it returns an empty string
+
+BUGS		No bugs known
+
+SECTION         Excerpt from UNIX man pages
+
+         Regular Expressions
+
+             supports a limited form of regular-expression notation,
+             which can be used in a line address to specify lines by con-
+             tent. A regular expression (RE) specifies a set of character
+             strings to match against - such as "any string containing
+             digits 5 through 9" or "only lines containing uppercase
+             letters." A member of this set of strings is said to be
+             matched by the regular expression.
+
+             Where multiple matches are present in a line, a regular
+             expression matches the longest of the leftmost matching
+             strings.
+
+         Regular expressions can be built up from the following
+         "single-character" RE's:
+
+             c    Any ordinary character not listed below.   An  ordinary
+                  character matches itself.
+             \    Backslash.  When followed by a special  character,  the
+                  RE  matches  the  "quoted" character.  A backslash fol-
+                  lowed by one of <, >, (, ),  {,  or  },  represents  an
+                  operator in a regular expression, as described below.
+             .    Dot.   Matches any single character except NEWLINE.
+             ^    As the leftmost character, a caret (or circumflex) con-
+                  strains the RE to match the leftmost portion of a line.
+                  A match of this type  is  called  an  "anchored  match"
+                  because  it  is  "anchored"  to a specific place in the
+                  line.  The ^ character loses its special meaning if  it
+                  appears in any position other than the start of the RE.
+             $    As the rightmost character, a  dollar  sign  constrains
+                  the RE to match the rightmost portion of a line.  The $
+                  character loses its special meaning if  it  appears  in
+                  any position other than at the end of the RE.
+             ^RE$ The construction ^RE$ constrains the RE  to  match  the
+                  entire line.
+             \<   The sequence \< in an RE constrains  the  one-character
+                  RE  immediately following it only to match something at
+                  the beginning of a  "word";  that  is,  either  at  the
+                  beginning of a line, or just before a letter, digit, or
+                  underline and after a character not one of these.
+             \>   The sequence \> in an RE constrains  the  one-character
+                  RE  immediately following it only to match something at
+                  the end of a "word."
+             [c...]
+                  A nonempty string of  characters,  enclosed  in  square
+                  brackets  matches  any  single character in the string.
+                  For example, [abcxyz] matches any single character from
+                  the  set  `abcxyz'.   When  the  first character of the
+                  string is a caret (^), then the RE matches any  charac-
+                  ter  except  NEWLINE  and those in the remainder of the
+                  string.  For example, `[^45678]' matches any  character
+                  except  `45678'.   A  caret  in  any  other position is
+                  interpreted as an ordinary character.
+             []c...]
+                  The  right  square  bracket  does  not  terminate   the
+                  enclosed  string if it is the first character (after an
+                  initial `^', if any), in the bracketed string.  In this
+                  position it is treated as an ordinary character.
+             [l-r]
+                  The minus sign, between  two  characters,  indicates  a
+                  range  of  consecutive  ASCII characters to match.  For
+                  example, the range `[0-9]' is equivalent to the  string
+                  `[0123456789]'.   Such a bracketed string of characters
+                  is known as a character class.  The `-' is  treated  as
+                  an  ordinary  character  if  it  occurs first (or first
+                  after an initial ^) or last in the string.
+             d    Delimiter character.  The character used to delimit  an
+                  RE  within  a  command is special for that command (for
+                  example, see how / is used in the g command, below).
+
+         The following rules and special characters allow for con-
+         structing RE's from single-character RE's:
+
+             A concatenation of RE's matches a concatenation of text
+             strings, each of which is a match for a successive RE
+             in the search pattern.
+
+             *    A single-character RE,  followed  by  an  asterisk  (*)
+                  matches   zero  or  more  occurrences  of  the  single-
+                  character RE. Such a pattern is called a closure.   For
+                  example,  [a-z][a-z]* matches any string of one or more
+                  lower case letters.
+             \{m\}
+             \{m,\}
+             \{m,n\}
+                  A  one-character  RE  followed  by  \{m\},  \{m,\},  or
+                  \{m,n\} is an RE that matches a range of occurrences of
+                  the one-character RE. The values of m  and  n  must  be
+                  nonnegative  integers  less  than  256;  \{m\}  matches
+                  exactly  m  occurrences;  \{m,\}  matches  at  least  m
+                  occurrences;  \{m,n\} matches any number of occurrences
+                  between  m  and  n,  inclusively.   Whenever  a  choice
+                  exists, the RE matches as many occurrences as possible.
+             \(...\)
+                  An RE enclosed between the character sequences  \(  and
+                  \) matches whatever the unadorned RE matches, but saves
+                  the string matched by the enclosed  RE  in  a  numbered
+                  substring  register.  There can be up to nine such sub-
+                  strings in an RE,  and  parenthesis  operators  can  be
+                  nested.
+             \n   Match the contents of the nth substring  register  from
+                  the  current RE. This provides a mechanism for extract-
+                  ing matched substrings.  For  example,  the  expression
+                  ^\(..*\)\1$  matches  a line consisting entirely of two
+                  adjacent non-null appearances of the same string.  When
+                  nested  parenthesized  substrings  are  present,  n  is
+                  determined by counting occurrences of \( starting  from
+                  the left.
+
+
+
+

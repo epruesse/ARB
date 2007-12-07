@@ -1,0 +1,78 @@
+AUTODETECT	"rdp.id*"
+
+BEGIN	"*"
+MATCH	"*"
+	WRITE "definition"
+MATCH	"*"
+	SRT	"*\t*=*1"
+	TAG	"BGY"
+	APPEND	"id"
+
+MATCH	"*"
+	SRT	"*\t*\t*=*2"
+	WRITE	"acc"
+
+MATCH	"*"
+	SRT	"*\t*\t*\t*=*3"
+	TAG	"BGY"
+	APPEND	"id"
+
+MATCH	"*"
+	SRT	"*\t*\t*\t*\t*=*4"
+	TAG	"BGY"
+	APPEND	"db_name"
+
+MATCH	"*"
+	SRT	"*\t*\t*\t*\t*=*4"
+	WRITE	"full_name"
+
+MATCH	"*"
+	SRT	"*\t*\t*\t*\t*\t*=*5"
+	TAG	"BGY"
+	WRITE	"domain"
+
+MATCH	"*"
+	SRT	"*\t*\t*\t*\t*\t*\t*=*6"
+	TAG	"BGY"
+	WRITE	"phylum"
+
+MATCH	"*"
+	SRT	"*\t*\t*\t*\t*\t*\t*\t*=*7"
+	TAG	"BGY"
+	WRITE	"class"
+
+MATCH	"*"
+	SRT	"*\t*\t*\t*\t*\t*\t*\t*\t*=*8"
+	TAG	"BGY"
+	WRITE	"order"
+
+MATCH	"*"
+	SRT	"*\t*\t*\t*\t*\t*\t*\t*\t*\t*=*9"
+	TAG	"BGY"
+	WRITE	"family"
+
+MATCH	"*"
+	SRT	"*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*=*10"
+	TAG	"BGY"
+	WRITE	"genus"
+
+MATCH	"*"
+	SRT	"*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*=*11"
+	TAG	"BGY"
+	WRITE	"genus_seq"
+
+MATCH	"*"
+	SRT	"*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*=*12"
+	TAG	"BGY"
+	WRITE	"taxon_seq"
+
+MATCH	"*"
+	SRT	"*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*\t*=*13"
+	TAG	"BGY"
+	WRITE	"status"
+
+SEQUENCESTART	"*"
+SEQUENCEEND	">*"
+
+END "//"
+

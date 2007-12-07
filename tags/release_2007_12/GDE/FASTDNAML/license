@@ -1,0 +1,43 @@
+fastDNAml, a program for estimation of phylogenetic trees from sequences.
+Copyright (C) 1998, 1999, 2000 by Gary J. Olsen
+
+This program is free software; you may redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2 of the License, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+For any other enquiries write to Gary J. Olsen, Department of Microbiology,
+University of Illinois, Urbana, IL  61801, USA
+
+Or send E-mail to gary@phylo.life.uiuc.edu
+
+
+fastDNAml is based in part on the program dnaml by Joseph Felsenstein.
+
+Copyright notice from dnaml:
+
+   version 3.3. (c) Copyright 1986, 1990 by the University of Washington
+   and Joseph Felsenstein.  Written by Joseph Felsenstein.  Permission is
+   granted to copy and use this program provided no fee is charged for it
+   and provided that this copyright notice is not removed.
+
+
+When publishing work that based on results from fastDNAml please cite:
+
+   Felsenstein, J.  1981.  Evolutionary trees from DNA sequences:
+   A maximum likelihood approach.  J. Mol. Evol. 17: 368-376.
+
+and
+
+   Olsen, G. J., Matsuda, H., Hagstrom, R., and Overbeek, R.  1994.
+   fastDNAml:  A tool for construction of phylogenetic trees of DNA
+   sequences using maximum likelihood.  Comput. Appl. Biosci. 10: 41-48.

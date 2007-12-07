@@ -1,0 +1,20 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		NOTES:   ae2 
+
+OCCURRENCE	ARB_IMPORT
+
+DESCRIPTION	This format allows to read old ae2 files into arb.
+
+NOTES		Uses the program 'convert_aln' written by RDP to convert to
+		rdp format, than ARB reads it's output (ad rdp file).
+
+		There is no ae2 output.	

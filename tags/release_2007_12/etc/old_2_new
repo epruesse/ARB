@@ -1,0 +1,93 @@
+arb_replace "get_extends_intern=get_area_size" */*.hxx */*.cxx *.cxx *.hxx
+
+arb_replace "set_expose_callback_info_area(=set_expose_callback (AW_INFO_AREA, " */*.cxx *.cxx
+arb_replace "set_expose_callback_bottom_area(=set_expose_callback (AW_BOTTOM_AREA, " */*.cxx *.cxx
+arb_replace "set_expose_callback(=set_expose_callback (AW_MIDDLE_AREA, " */*.cxx *.cxx
+
+
+arb_replace "get_device(=get_device (AW_MIDDLE_AREA" */*.cxx *.cxx
+arb_replace "get_info_device(=get_device (AW_INFO_AREA" */*.cxx *.cxx
+arb_replace "get_bottom_device(=get_device (AW_BOTTOM_AREA" */*.cxx *.cxx
+
+arb_replace "get_click_device(=get_click_device (AW_MIDDLE_AREA," */*.cxx *.cxx
+arb_replace "get_size_device(=get_size_device (AW_MIDDLE_AREA" */*.cxx *.cxx
+
+arb_replace "set_resize_callback_info_area(=set_resize_callback (AW_INFO_AREA," */*.cxx *.cxx
+
+arb_replace "set_resize_callback(=set_resize_callback (AW_MIDDLE_AREA," */*.cxx *.cxx
+arb_replace "set_input_callback(=set_input_callback (AW_MIDDLE_AREA," */*.cxx *.cxx
+arb_replace "set_motion_callback(=set_motion_callback (AW_MIDDLE_AREA," */*.cxx *.cxx
+
+arb_replace "get_motion_event=get_event " */*.cxx *.cxx
+
+arb_replace "AW_size_information=AW_rectangle" */*.cxx *.cxx
+
+arb_replace "push_clip_rectangle=push_clip_scale" */*.cxx *.cxx
+arb_replace "pop_clip_rectangle=pop_clip_scale" */*.cxx *.cxx
+arb_replace "get_extends=reset" */*.cxx *.cxx
+
+arb_replace "create_string=create_button" */*.cxx *.cxx
+
+arb_replace 'create_var( AW_STRING,=create_string(' */*.cxx *.cxx
+arb_replace 'create_var( AW_INT,=create_int(' */*.cxx *.cxx
+arb_replace 'create_var( AW_FLOAT,=create_float(' */*.cxx *.cxx
+arb_replace 'create_var(AW_STRING,=create_string(' */*.cxx *.cxx
+arb_replace 'create_var(AW_INT,=create_int(' */*.cxx *.cxx
+arb_replace 'create_var(AW_FLOAT,=create_float(' */*.cxx *.cxx
+
+
+arb_replace "gb_none=GB_NONE" */*.hxx */*.cxx *.cxx *.hxx */*.c */*.h
+arb_replace "gb_string_shrt=GB_STRING_SHRT" */*.hxx */*.cxx *.cxx *.hxx */*.c */*.h
+arb_replace "gb_ints=GB_INTS" */*.hxx */*.cxx *.cxx *.hxx */*.c */*.h
+arb_replace "gb_string=GB_STRING" */*.hxx */*.cxx *.cxx *.hxx */*.c */*.h
+arb_replace "gb_floats=GB_FLOATS" */*.hxx */*.cxx *.cxx *.hxx */*.c */*.h
+arb_replace "gb_bytes=GB_BYTES" */*.hxx */*.cxx *.cxx *.hxx */*.c */*.h
+arb_replace "gb_bits=GB_BITS" */*.hxx */*.cxx *.cxx *.hxx */*.c */*.h
+arb_replace "gb_float=GB_FLOAT" */*.hxx */*.cxx *.cxx *.hxx */*.c */*.h
+arb_replace "gb_int=GB_INT" */*.hxx */*.cxx *.cxx *.hxx */*.c */*.h
+arb_replace "gb_byte=GB_BYTE" */*.hxx */*.cxx *.cxx *.hxx */*.c */*.h
+arb_replace "gb_bit=GB_BIT" */*.hxx */*.cxx *.cxx *.hxx */*.c */*.h
+arb_replace "gb_db=GB_DB" */*.hxx */*.cxx *.cxx *.hxx */*.c */*.h
+arb_replace "gb_type_max=GB_TYPE_MAX" */*.hxx */*.cxx *.cxx *.hxx */*.c */*.h
+
+
+arb_replace "gbs_str=GBS_str:gbs_chr=GBS_chr" */*.[ch]xx *.[ch]xx */*.[ch] *.[ch]
+
+arb_replace 'GB_make_key=GB_create' AWTC/AWTC_import.cxx TREE/arb_tools.c
+arb_replace 'GB_find_path=GB_search' GEN/gen_silke.c ARBDB/adtools.c
+arb_replace 'GB_search_key=GB_find' AWT/*.cxx GEN/gen_io.c
+
+arb_replace '#include <aw_root.hxx>\n#include <aw_window.hxx>=#include <aw_root.hxx>\n#include <aw_device.hxx>\n#include <aw_window.hxx>' */*.cxx
+*************************************************
+find . -name "*.[ch]*" -exec grep -i sai {} \;
+arb_replace "extended=sai" *.hlp
+arb_replace "extended=sai:EXTENDED=SAI" */*.hxx */*.cxx */*.c */*.h
+
+
+
+
+arb_replace "create_label=create_button" */*.cxx *.cxx
+
+
+arb_replace -l "create_string(*,*,*,*)=awar_string(*1,*4,*3)" *.cxx */*.cxx
+arb_replace -l "create_int(*,*,*,*)=awar_int(*1,*4,*3)" *.cxx */*.cxx
+arb_replace -l "create_float(*,*,*,*)=awar_float(*1,*4,*3)" *.cxx */*.cxx
+
+arb_replace -l "get_int(*)=awar(*1)->read_int()" *.cxx */*.cxx
+arb_replace -l "get_string(*)=awar(*1)->read_string()" *.cxx */*.cxx
+arb_replace -l "get_as_string(*)=awar(*1)->read_as_string()" *.cxx */*.cxx
+arb_replace -l "get_float(*)=awar(*1)->read_float()" *.cxx */*.cxx
+
+arb_replace -l "set_int(*,*)=awar(*1)->write_int(*2)" *.cxx */*.cxx
+arb_replace -l "set_string(*,*)=awar(*1)->write_string(*2)" *.cxx */*.cxx
+arb_replace -l "set_as_string(*,*)=awar(*1)->write_as_string(*2)" *.cxx */*.cxx
+arb_replace -l "set_float(*,*)=awar(*1)->write_float(*2)" *.cxx */*.cxx
+arb_replace -l "set_var(*,*)=awar(*1)->write_string(*2)" *.cxx */*.cxx
+
+arb_replace -l "set_var_callback(*,*=awar(*1)->add_callback(*2" *.cxx */*.cxx
+
+arb_replace -l "->map_var(*,*=->awar(*1)->map(*2" *.cxx */*.cxx
+arb_replace -l "->unmap_var(*)=->awar(*1)->unmap()" *.cxx */*.cxx
+arb_replace -l "->touch_var(*)=->awar(*1)->touch()" *.cxx */*.cxx
+
+arb_replace -l "set_var_minmax(*,*,*)=awar(*1)->set_minmax(*2,*3)" *.cxx */*.cxx
