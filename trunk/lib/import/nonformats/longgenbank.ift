@@ -107,7 +107,7 @@ MATCH	"  JOURNAL *"
 
 MATCH	"  JOURNAL *Submitted*"
 	SRT "*Submitted*=*2:\(*\)*=*1"
-	TAG	"EBI"
+	TAG	"GB"
 	WRITE	"submit_date"
 
 MATCH	"     Protein*note*"
@@ -286,12 +286,12 @@ MATCH	"FTx  source *collection_date*"
 	APPEND	"collection_date"
 
 MATCH	"FT   CDS*"
-	SRT	"<=:>=:*CDS*..*=*2: ="
+	SRT	"*CDS*=*2:*..*=*1: =:<=:>="
 #	TAG	"$t"
 	APPEND  "start"
 
 MATCH	"FT   CDS*"
-	SRT	"<=:>=:*CDS*..*=*3: ="
+	SRT	"*CDS*=*2:*..*=*2: =:<=:>="
 #	TAG	"$t"
 	APPEND  "stop"
 
