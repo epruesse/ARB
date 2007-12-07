@@ -1,6 +1,10 @@
 ARB change log
 
-Major changes in ARB 07.12.06org:
+Major changes for next version:
+
+ - ...
+
+Major changes in ARB 07.12.07org:
 
  - rewrote secondary structure editor
  - Sequence quality check

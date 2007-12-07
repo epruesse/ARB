@@ -1,11 +1,11 @@
 
 Welcome to the 'ARB' Sequence Database Tools
 
-/*********** Hardware and System Requirements *************/
+/*********** System Requirements *************/
 
 	ARB is currently developed on Linux PCs only.
 
-        Compiling ARB using the gcc compiler (versions 2.95.3 and 3.x series)
+        Compiling ARB using the gcc compiler (versions 2.95.3, 3.x and 4.x series)
         as well works on Mac OSX and Sun OS - but we do not publish or support
         these versions.
 
@@ -13,34 +13,24 @@ Welcome to the 'ARB' Sequence Database Tools
         Hardware Requirements (Linux):
 
                                 Good                    We use
-        Real memory :           256 Mb                  1 Gb	
+        Real memory :           1 Gb                    4 Gb	
         Free discspace : 	1 Gb                    more	
-        Computer speed : 	Pentium III; 400 Mhz	Dual Pentium III; 650 Mhz	
-                                Ultra Sparc             Ultra Sparc	
+        Computer speed : 	2 GHz Cpu               2 GHz Dual Cpu
+                                
 
-        Note : Memory is more important than a fast processor; a 486dx width
-               64 mByte of RAM may be much faster than an Ultra Sparc with
-               32 mByte of RAM.
+        Note : Memory is more important than a fast processor!
 
 
 /*********** Files needed to install ARB *************/
 
-	File		FTP server location		// Comment
+	File		        
 
-	'arb_README.txt'	pub/ARB/		// this file
-	'arb_install.sh'	pub/ARB/$MACH		// install script
-	'arb.tgz'		pub/ARB/$MACH		// ARB program
-	'zcat'			pub/ARB/$MACH		// decompress (gzip)
-        ['arb_ale.tgz'		pub/ARB/$MACH		// optional Editor ]
-        ['***.arb'		pub/ARB/data/		// optional demo /
-      								   real rRNA data ]
+	'arb_install.sh'	// install script
+	'arb.tgz'		// ARB program
+	'zcat'			// decompress (gzip)
 
-	Notes:
-		- $MACH	should be replaced by your system type
-			( type uname -sr to find out your system type )
-		- enable binary mode for ftp transfer ( command 'bin' )
-		- do not uncompress and untar arb.tar.gz directly, use the
-			install script !!!
+	Note: do not uncompress and untar arb.tar.gz directly,
+              use the install script !!!
 
 /*********** Install/Update ARB *************/
 
@@ -56,12 +46,12 @@ Welcome to the 'ARB' Sequence Database Tools
 		'arb_README.txt'		//this file
 		'arb.tgz'			//all the libs and bin
 		'zcat'				//decompress
-	      [	'arb_ale.tgz'			//optional sequence editor ]
 
 	are located and type '/bin/sh arb_install.sh'
 
 	Answer all questions asked by the script.
-	Notes: -The script will ask about a pt_server directory. This is a
+
+	Notes:- The script will ask about a pt_server directory. This is a
 		directory where arb will store big index files.
 		You should enter a different path as you do not want to
 		recreate those files after an ARB update.
@@ -86,8 +76,6 @@ Welcome to the 'ARB' Sequence Database Tools
 
         * See arb_INSTALL.txt for additional software needed and/or useful
           together with ARB.
-
-        * 
 
 
 /*********** PT_server *************/
@@ -116,10 +104,10 @@ Welcome to the 'ARB' Sequence Database Tools
 	(about 50 Mbyte for 5000 Sequences, Length = 3000).
 	You can find out about installed swap space by typing:
 
+		Linux			'top'
 		SunOS 1.x:		'pstat -s'
 		System V / SGI		'swap -s'
 		OSF			'swapon -sv'
-		Linux			'top'
 
 	Call your system administrator or local guru to increase your
 	swap. (If you don't have such a nice person, try to read the
@@ -137,6 +125,9 @@ Welcome to the 'ARB' Sequence Database Tools
 	test the performance of your computer system as well as the
 	stability of ARB on your system.
 
+
+/*********** Bugs *************/
+
 	ARB is running properly and stably on our systems. However, it
 	may be that there are bugs never detected by us or never
 	appearing on our systems. Please don't hesitate to inform us
@@ -144,6 +135,9 @@ Welcome to the 'ARB' Sequence Database Tools
 	before the problem was evident and of the number and types of
 	modules running at the same time would extremely be helpful to
 	our computer scientists.
+
+        Please report bugs into our bug tracker at
+               http://bugs.arb-home.de/
 
 
 /*********** Support *************/
@@ -167,4 +161,8 @@ Welcome to the 'ARB' Sequence Database Tools
 	FOR THE SOFTWARE AND DOCUMENTATION PROVIDED, INCLUDING, BUT
 	NOT LIMITED TO WARRANTY OF MERCHANTABILITY AND WARRANTY OF
 	FITNESS FOR A PARTICULAR PURPOSE.
+
+
+Have fun!
+
 
