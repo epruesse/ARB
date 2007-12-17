@@ -62,14 +62,12 @@ static GLint MaxTextureSize = 0;
 
 /* screenGamma = displayGamma/viewingGamma
  * displayGamma = CRT has gamma of ~2.2
- * viewingGamma depends on platform. PC is 1.0, Mac is 1.45, SGI defaults
- * to 1.7, but this can be checked and changed w/ /usr/sbin/gamma command.
+ * viewingGamma depends on platform. PC is 1.0, Mac is 1.45, 
+ * but this can be checked and changed w/ /usr/sbin/gamma command.
  * If the environment variable VIEWING_GAMMA is set, adjust gamma per this value.
  */
 #ifdef _MAC
 	static double screenGamma = 2.2 / 1.45;
-#elif SGI
-	static double screenGamma = 2.2 / 1.7;
 #else /* PC/default */
 	static double screenGamma = 2.2 / 1.0;
 #endif
