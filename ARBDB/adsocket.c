@@ -1000,7 +1000,7 @@ GB_CSTR GB_getenvARB_GS(void) {
     static const char *gs = 0;
     if (!gs) {
         gs = getenv_executable("ARB_GS"); // doc in arb_envar.hlp
-        if (!gs) gs = GB_find_executable("Postscript viewer", "gv", "ghostview", 0); 
+        if (!gs) gs = GB_find_executable("Postscript viewer", "gv", "ghostview", NULL); 
     }
     return gs;
 }
@@ -1077,7 +1077,7 @@ GB_ULONG GB_get_physical_memory(void){
     long memsize        = (pagesize/1024) * pages;
     long nettomemsize   = memsize - 10240; /* reduce by 10Mb (for kernel etc.) */
     long maxmemsize4arb = (nettomemsize*95)/100; /* arb uses max. 95 % of available memory (was 70% in the past) */
-    long addressable    = (long)1<<((long)sizeof(void*)*(long)8-(long)10); /* e.g. 2^32 with 4byte-pointers; -10 because we calculate in kBytes */
+    long addressable    = 1L<<(sizeof(void*)*8-10); /* e.g. 2^32 with 4byte-pointers; -10 because we calculate in kBytes */
     long usedmemsize    = MIN(maxmemsize4arb, addressable); /* limit to max addressable memory */
 
 #if defined(DEBUG)
