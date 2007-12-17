@@ -65,12 +65,12 @@ static str CleanHelix ( str hel )
                          matrix.Set(back - left,pos - left,(vp)1)) error = 3;
                 {
                     if      (last < 0)                     last = mark.Add((vp)pos);
-                    else if ((back - (int)mark[last]) > 1) last = mark.Add((vp)pos);
+                    else if ((back - (long)mark[last]) > 1) last = mark.Add((vp)pos);
                 }
             }
             else if (increment < 0)
             {
-                int back    = (int)mark[last],
+                long back    = (long)mark[last],
                     backend = left,
                     tmp     = back;
                 
@@ -78,7 +78,7 @@ static str CleanHelix ( str hel )
                 
                 back = tmp - 1;
                 
-                if (last > 0) backend = (int)mark[last - 1] + 1;
+                if (last > 0) backend = (long)mark[last - 1] + 1;
 
                 while (back >= backend)
                 {
@@ -101,7 +101,7 @@ static str CleanHelix ( str hel )
                                 if (last >= 0) mark.Del(last--);
 
                                 if      (last < 0)                     last = mark.Add((vp)pos);
-                                else if ((back - (int)mark[last]) > 1) last = mark.Add((vp)pos);
+                                else if ((back - (long)mark[last]) > 1) last = mark.Add((vp)pos);
 
                                 break;
                             }
@@ -112,7 +112,7 @@ static str CleanHelix ( str hel )
                     {
                         if (last >= 0) mark.Del(last--);
                         
-                        if (last > 0) backend = (int)mark[last - 1] + 1;
+                        if (last > 0) backend = (long)mark[last - 1] + 1;
                         else          backend = left;
                     }
                     
