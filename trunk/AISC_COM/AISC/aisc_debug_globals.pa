@@ -49,7 +49,7 @@ CREATE $(keys)
 			POP
 			P $1return aisc_debug_local(link,$(OBJECT_KEY)_$(SKEY),object,
 			P $1"$(keys)undef",
-			P $1$(keys)0);
+			P $1$(keys)NULL);
 			P }$n
 		ENDIF
 	ENDFOR
@@ -60,7 +60,7 @@ P {
 P $1static int key;$n$1char *s;$n$1aisc_com *link;
 P $1link = aisc_client_link;aisc_core_on_error = 0;
 P $1if (aisc_get(link,$(OBJECT_KEY)_COMMON, (long)object,
-P $1COMMON_KEY,	&key,0))
+P $1COMMON_KEY,	&key,NULL))
 P $2{ aisc_core_on_error = 1;
 P $2return "unknown object";
 P $1};
