@@ -176,16 +176,16 @@ do {                                                \
 
 #define PT_READ_CHAR(ptr,my_int_i)  do { my_int_i = *(unsigned char *)(ptr); } while(0)
 
-#ifdef DIGITAL
 
-/* DIGITAL */
+
+#ifdef ARB_64
 
 # define PT_READ_PNTR(ptr,my_int_i)                                                 \
 do {                                                                                \
     if (sizeof(my_int_i)==4) GB_CORE;                                               \
     unsigned char *mycharp=(unsigned char *)ptr;                                    \
-    my_int_i= mycharp[0]<<56 | mycharp[1]<<48 | mycharp[2]<<40 | mycharp[3] << 32 | \
-        mycharp[4]<<24 | mycharp[5]<<16 | mycharp[6]<<8 | mycharp[7];               \
+    my_int_i= (long)mycharp[0]<<56 | (long)mycharp[1]<<48 | (long)mycharp[2]<<40 | (long)mycharp[3] << 32 | \
+        (long)mycharp[4]<<24 | (long)mycharp[5]<<16 | (long)mycharp[6]<<8 | (long)mycharp[7];               \
 } while(0)
 
 # define PT_WRITE_PNTR(ptr,my_int_i)                                                                \
@@ -203,8 +203,7 @@ do {                                                                            
 
 
 #else
-
-/* not DIGITAL */
+/* not ARB_64 */
 
 # define PT_READ_PNTR(ptr,my_int_i)  PT_READ_INT(ptr, my_int_i)
 # define PT_WRITE_PNTR(ptr,my_int_i) PT_WRITE_INT(ptr, my_int_i)
