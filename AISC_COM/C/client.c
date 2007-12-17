@@ -21,10 +21,6 @@
 #include "client_privat.h"
 #include "client.h"
 
-#ifdef SGI
-# include <bstring.h>
-#endif
-
 #include "../INCLUDE/SIG_PF.h"
 
 #include "trace.h"

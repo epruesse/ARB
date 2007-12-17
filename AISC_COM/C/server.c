@@ -14,11 +14,7 @@
 #include <sys/stat.h>
 #include <limits.h>
 
-#ifdef SGI
-# include <bstring.h>
-#endif
-
-#if defined(SUN4) || defined(SUN5) || defined(SGI)
+#if defined(SUN4) || defined(SUN5)
 # include <sys/filio.h>
 #endif
 

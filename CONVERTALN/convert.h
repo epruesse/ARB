@@ -4,10 +4,6 @@
 #include <FileBuffer.h>
 #endif
 
-#ifdef SGI
-#define char signed char
-#endif
-
 #define INITSEQ 6000
 #define RNA	0
 #define NONRNA	1
