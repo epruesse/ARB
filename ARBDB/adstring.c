@@ -24,9 +24,6 @@ int regerrno;
 #   define ERROR(c)    gbs_regerror(c)
 #   include "adregexp.h"
 #else
-#   ifdef SGI
-#   define _MODERN_C_
-#   endif
 #   include <regexpr.h>
 #endif
 
