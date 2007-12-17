@@ -1489,7 +1489,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
                                     "+-MISMATCHES$#FF9AFF", "-CURSOR$#FF0080",
                                     "+-MARKED$#f4f8e0",     "-SELECTED$#FFFF80",
 
-                                    0);
+                                    NULL);
 
     aw_gc_manager = win_gc_manager;
 
