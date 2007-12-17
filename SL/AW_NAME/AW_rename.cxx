@@ -167,7 +167,7 @@ private:
         char *field = 0;
         if (aisc_get(link, AN_MAIN, com,
                      MAIN_ADD_FIELD, &field,
-                     0)) {
+                     NULL)) {
             err = "Connection Problems with the NAME_SERVER";
             aw_assert(field == 0);
         }
@@ -342,12 +342,12 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
                       LOCAL_ACCESSION,  acc,
                       LOCAL_ADDID,      addid ? addid : "",
                       LOCAL_ADVICE,     "",
-                      0)){
+                      NULL)){
             err = "Connection Problems with the NAME_SERVER";
         }
         if (aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
                      LOCAL_GET_SHORT,   &shrt,
-                     0)){
+                     NULL)){
             err = "Connection Problems with the NAME_SERVER";
         }
     }
@@ -404,13 +404,13 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species, bool update_status) {
                       LOCAL_ACCESSION,  acc,
                       LOCAL_ADDID,      addid,
                       LOCAL_ADVICE,     "",
-                      0) != 0 ||
+                      NULL) != 0 ||
             aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
                      LOCAL_DEL_SHORT,   &deleted,
-                     0)  != 0 ||
+                     NULL)  != 0 ||
             aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
                      LOCAL_GET_SHORT,   &shrt,
-                     0)  !=0)
+                     NULL)  !=0)
         {
             error = "Connection Problems with the NAME_SERVER";
         }
@@ -518,12 +518,12 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status, bool *isWarningPtr)
                                   LOCAL_ACCESSION,  acc,
                                   LOCAL_ADDID,      addid,
                                   LOCAL_ADVICE,     name,
-                                  0)){
+                                  NULL)){
                         err = "Connection Problems with the NAME_SERVER";
                     }
                     if (aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
                                  LOCAL_GET_SHORT,   &shrt,
-                                 0)){
+                                 NULL)){
                         err = "Connection Problems with the NAME_SERVER";
                     }
                 }

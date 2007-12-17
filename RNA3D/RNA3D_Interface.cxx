@@ -255,7 +255,7 @@ static void SyncronizeColorsWithEditor(AW_window *aww) {
                 "RANGE_3", "RANGE_4", "RANGE_5",
                 "RANGE_6", "RANGE_7", "RANGE_8",
                 "RANGE_9",
-                0);
+                NULL);
 }
 
 static void Change3DMolecule_CB(AW_root *awr) {

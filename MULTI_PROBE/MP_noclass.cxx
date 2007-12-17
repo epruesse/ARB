@@ -1035,7 +1035,7 @@ int MP_probe_design_send_data(T_PT_PDC  pdc)
 {
     if (aisc_put(mp_pd_gl.link,PT_PDC, pdc,
                  PDC_CLIPRESULT,    P.DESIGNCPLIPOUTPUT,
-                 0)) return 1;
+                 NULL)) return 1;
     return 0;
 }
 

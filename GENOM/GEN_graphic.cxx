@@ -68,7 +68,7 @@ AW_gc_manager GEN_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                                                "Gene$#000000",
                                                "Marked$#ffff00",
                                                "Cursor$#ff0000",
-                                               0 );
+                                               NULL);
     return preset_window;
 }
 

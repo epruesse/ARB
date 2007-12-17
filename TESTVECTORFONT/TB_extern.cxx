@@ -17,6 +17,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.5  2007/12/17 23:06:05  boehnel
+ * "0 -> NULL"
+ *
  * Revision 1.4  2004/06/30 17:34:02  westram
  * - zoom.bitmap -> pzoom.bitmap
  *
@@ -139,7 +142,7 @@ AW_gc_manager AWT_graphic_testbed::init_devices(AW_window *window, AW_device * d
                              "SEL. & NOT",
                              "NOT SEL.",
                              "ETC",
-                             0 );
+                             NULL);
         return preset_window;
 }
 

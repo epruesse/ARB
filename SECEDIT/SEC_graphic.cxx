@@ -64,7 +64,7 @@ AW_gc_manager SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
 
                      // colors used to paint the skeleton of the structure
                      "+-SKELETON HELIX${HELIX}", "+-SKELETON LOOP${LOOP}", "-SKELETON NONHELIX${NONPAIRING HELIX}",
-                     0 );
+                     NULL );
 
     return preset_window;
 }

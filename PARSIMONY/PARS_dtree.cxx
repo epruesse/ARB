@@ -289,7 +289,7 @@ AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *device, AWT_canva
                      "--unused", "--unused",
                      "--unused", "--unused",
 
-                     0 );
+                     NULL);
     return preset_window;
 }
 

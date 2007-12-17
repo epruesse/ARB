@@ -109,14 +109,14 @@ GB_ERROR AWTC_FIND_FAMILY::find_family(char *sequence, int find_type, int max_hi
 
     if (aisc_put(link, PT_LOCS, locs,
                  LOCS_FIND_TYPE, find_type,
-                 LOCS_FIND_FAMILY, &bs,0)){
+                 LOCS_FIND_FAMILY, &bs,NULL)){
         return GB_export_error  ("Communication Error (2)");
     }
 
     /*
      * Read family list
      */
-    aisc_get(link,PT_LOCS, locs,LOCS_FAMILY_LIST, &f_list, 0);
+    aisc_get(link,PT_LOCS, locs,LOCS_FAMILY_LIST, &f_list, NULL);
 
     while (f_list){
         if (max_hits== 0) break;
@@ -128,7 +128,7 @@ GB_ERROR AWTC_FIND_FAMILY::find_family(char *sequence, int find_type, int max_hi
         aisc_get(link, PT_FAMILYLIST, f_list,
                  FAMILYLIST_NAME,&fl->name,
                  FAMILYLIST_MATCHES,&fl->matches,
-                 FAMILYLIST_NEXT, &f_list,0);
+                 FAMILYLIST_NEXT, &f_list,NULL);
     }
 
     free(compressed_sequence);

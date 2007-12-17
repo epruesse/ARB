@@ -166,7 +166,7 @@ bool PG_init_find_probes(int length, GB_ERROR& error) {
     if (!fpd.gl.link)               error = cant_contact_unknown;
     else if (init_local_com_struct(fpd.gl))     error = cant_contact_refused;
     else {
-        aisc_create(fpd.gl.link, PT_LOCS, fpd.gl.locs, LOCS_PROBE_FIND_CONFIG, PT_PEP, &fpd.pep, 0);
+        aisc_create(fpd.gl.link, PT_LOCS, fpd.gl.locs, LOCS_PROBE_FIND_CONFIG, PT_PEP, &fpd.pep, NULL);
 
 //         fpd.length = length;
 //         fpd.numget = 30;
@@ -176,7 +176,7 @@ bool PG_init_find_probes(int length, GB_ERROR& error) {
                            PEP_PLENGTH, long(length), // length of wanted probes
                            PEP_NUMGET, long(40), // no of probes in result
                            PEP_RESTART, long(1), // find from beginning
-                           0)==0;
+                           NULL)==0;
 
         if (!ok) error = connection_lost;
     }
@@ -203,13 +203,13 @@ bool PG_exit_find_probes() {
 static const char *PG_find_next_probe_internal(GB_ERROR& error) {
     pg_assert(initialized);     // forgot to call PG_init_find_probes
     error      = 0;
-    bool    ok = aisc_put(fpd.gl.link, PT_PEP, fpd.pep, PEP_FIND_PROBES, 0, 0) == 0;
+    bool    ok = aisc_put(fpd.gl.link, PT_PEP, fpd.pep, PEP_FIND_PROBES, 0, NULL) == 0;
 
     if (ok) {
         static char *result;
         if (result) { free(result); result = 0; }
 
-        ok = aisc_get(fpd.gl.link, PT_PEP, fpd.pep, PEP_RESULT, &result, 0)==0;
+        ok = aisc_get(fpd.gl.link, PT_PEP, fpd.pep, PEP_RESULT, &result, NULL)==0;
 
         if (ok) {
             if (result && result[0]) {
@@ -301,7 +301,7 @@ public:
             else {
                 aisc_create(my_pd_gl.link,PT_LOCS, my_pd_gl.locs,
                             LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc,
-                            0);
+                            NULL);
             }
         }
     }
@@ -327,7 +327,7 @@ static bool pg_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const pro
                  PDC_DTEDGE, para.dtedge,
                  PDC_DT,     para.dt,
                  PDC_SPLIT,  para.split,
-                 0
+                 NULL
                  )) return false;
 
     for (i=0;i<16;i++) {
@@ -336,7 +336,7 @@ static bool pg_init_probe_match(T_PT_PDC pdc, struct gl_struct& pd_gl, const pro
                      PT_PDC,        pdc,
                      PT_INDEX,      i,
                      PDC_BONDVAL,   para.bonds[i],
-                     0
+                     NULL
                      )) return false;
     }
 
@@ -378,7 +378,7 @@ GB_ERROR PG_probe_match(PG_Group& group, const probe_config_data& para, const ch
                   LOCS_MATCH_MAX_MISMATCHES,    0, // no mismatches
                   LOCS_MATCH_MAX_SPECIES,       MAX_SPECIES,
                   LOCS_SEARCHMATCH,             for_probe,
-                  0))
+                  NULL))
     {
         error = connection_lost;
     }
@@ -398,7 +398,7 @@ GB_ERROR PG_probe_match(PG_Group& group, const probe_config_data& para, const ch
                       LOCS_MATCH_LIST_CNT,  &match_list_cnt,
                       LOCS_MATCH_STRING,    &bs,
                       LOCS_ERROR,           &locs_error,
-                      0))
+                      NULL))
         {
             error = connection_lost;
         }

@@ -417,14 +417,14 @@ AW_window *create_phyl_main_window(AW_root *aw_root,AP_root *ap_root,AWT_graphic
                                            "#SEQUENCE$#000000",
                                            "#MARKER$#FF0000",
                                            "NOT_MARKER$#A270C0",
-                                           0 );
+                                           NULL);
     AW_gc_manager gcbottom = AW_manage_GC( awm,
                                            awm->get_device (AW_BOTTOM_AREA),
                                            PH_GC_0, PH_GC_0_DRAG, AW_GCM_WINDOW_AREA,
                                            resize_callb, 0,0,
                                            false, // no color groups
                                            "pink",
-                                           "#FOOTER",0 );
+                                           "#FOOTER",NULL);
 
     GBUSE(gcbottom);
 
