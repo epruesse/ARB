@@ -17,9 +17,6 @@
 #include <signal.h>
 #include <sys/time.h>
 
-#ifdef SGI
-# include <bstring.h>
-#endif
 #if defined(SUN4) || defined(SUN5)
 # ifndef __cplusplus
 #  define SIG_PF void (*)()
@@ -30,11 +27,7 @@
 # define SIG_PF void (*)(int )
 #endif
 
-#ifdef HP
-#   define FD_SET_TYPE
-#else
-#   define FD_SET_TYPE
-#endif
+#define FD_SET_TYPE
 
 #define debug_printf(a,b)
 

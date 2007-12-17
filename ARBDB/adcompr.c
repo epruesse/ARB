@@ -9,10 +9,6 @@
 #include "arbdbt.h"             /* sequence decompression */
 
 
-#ifdef HP
-#       define signed
-#endif
-
 #if defined(DEBUG)
 /* #define TEST_HUFFMAN_CODE */
 #endif /* DEBUG */
