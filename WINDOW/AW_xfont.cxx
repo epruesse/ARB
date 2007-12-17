@@ -507,8 +507,9 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
             }
             // @@@ what if nf->fstruct is 0 now ?
         }
-
+#ifndef DEVEL_JB
         aw_assert(nf->fname);
+#endif        
     } /* scalable */
 
     bool font_found = true;
