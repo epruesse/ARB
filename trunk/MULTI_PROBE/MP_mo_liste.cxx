@@ -57,7 +57,7 @@ void MO_Liste::get_all_species()
     }
 
 
-    if (aisc_put(mp_pd_gl.link,PT_LOCS, mp_pd_gl.locs, 0))
+    if (aisc_put(mp_pd_gl.link,PT_LOCS, mp_pd_gl.locs, NULL))
     {
         free(probe);
         aw_message ("Connection to PT_SERVER lost (4)");
@@ -70,7 +70,7 @@ void MO_Liste::get_all_species()
               LOCS_MP_ALL_SPECIES_STRING,       &bs,
               LOCS_MP_COUNT_ALL_SPECIES,    &nr_of_species,
               LOCS_ERROR,               &locs_error,
-              0);
+              NULL);
 
     if (*locs_error)
     {

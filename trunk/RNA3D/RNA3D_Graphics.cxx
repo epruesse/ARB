@@ -39,7 +39,7 @@ AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AW
                       "+-RANGE 9$#303030",    "+-Pseudoknots$#FFAAFF","-Triple Bases$#55FF00",
 
                       "+-Cursor$#FFFFFF",    "+-Comments$#808080",    "-MoleculeMask$#00FF00",
-                      0 );
+                      NULL);
 
     return preset_window;
 }

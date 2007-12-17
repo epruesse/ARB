@@ -97,7 +97,7 @@ void probe_match (	int server_nr, char *probe_seq, int max_mismatches,
 		LOCS_MATCH_MAX_MISMATCHES,	max_mismatches,
 		LOCS_MATCH_MAX_SPECIES,		max_hits,
 		LOCS_SEARCHMATCH,		probe_seq,
-		0)) {
+		NULL)) {
 		quit_with_error ("Connection to PT_SERVER lost (2)");
 	}
 
@@ -108,7 +108,7 @@ void probe_match (	int server_nr, char *probe_seq, int max_mismatches,
 		LOCS_MATCH_LIST_CNT,	&pt_result.match_list_cnt,	// count of species short names
 		LOCS_MATCH_STRING,	&pt_result.bs,			// output of pt_Server
 		LOCS_ERROR,		&locs_error,
-		0);
+		NULL);
 	if (*locs_error) {
 		quit_with_error(ORS_export_error("Error in PT_SERVER communication (5): %s",locs_error));
 	}
@@ -146,7 +146,7 @@ void probe_find (int server_nr, char *probe_seq)
 
 	if (aisc_nput(pd_gl.link,PT_LOCS, pd_gl.locs,
 		LOCS_PROBE_FIND,	probe_seq,
-		0)) {
+		NULL)) {
 		quit_with_error ("Connection to PT_SERVER lost (8)");
 	}
 
@@ -157,7 +157,7 @@ void probe_find (int server_nr, char *probe_seq)
 		LOCS_MATCH_LIST_CNT,	&pt_result.match_list_cnt,	// count of species short names
 		LOCS_MATCH_STRING,	&pt_result.bs,			// output of pt_Server
 		LOCS_ERROR,		&locs_error,
-		0);
+		NULL);
 	if (*locs_error) {
 		quit_with_error(ORS_export_error("Error in PT_SERVER communication (7): %s",locs_error));
 	}

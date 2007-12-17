@@ -231,7 +231,7 @@ public:
         else {
             aisc_create(my_pd_gl.link,PT_LOCS, my_pd_gl.locs,
                         LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc,
-                        0);
+                        NULL);
         }
     }
     virtual ~PT_server_connection() {
@@ -430,7 +430,7 @@ static int pgd_probe_design_send_data(const probe_config_data& probe_config) {
                  PDC_DT,            probe_config.dt*100.0,
                  PDC_SPLIT,         probe_config.split,
                  PDC_CLIPRESULT,    CLIPRESULT,
-                 0))
+                 NULL))
         return 1;
 
     for (int i=0;i<16;i++) {
@@ -438,7 +438,7 @@ static int pgd_probe_design_send_data(const probe_config_data& probe_config) {
                      PT_PDC,        my_server->pdc,
                      PT_INDEX,      i,
                      PDC_BONDVAL,   probe_config.bonds[i],
-                     0))
+                     NULL))
             return 1;
     }
     return 0;
@@ -459,12 +459,12 @@ static GB_ERROR PGD_probe_design_event(set<SpeciesName> *species,set<Probes> *pr
         aisc_put(my_server->get_pd_gl().link,PT_PDC,my_server->pdc,
                  PDC_NAMES,&bs,
                  PDC_CHECKSUMS,&check,
-                 0);
+                 NULL);
 
         // validate PT server (Get unknown names)
         bytestring unknown_names;
         if (aisc_get(my_server->get_pd_gl().link,PT_PDC,my_server->pdc,
-                     PDC_UNKNOWN_NAMES,&unknown_names, 0))
+                     PDC_UNKNOWN_NAMES,&unknown_names, NULL))
         {
             error = "Connection to PT_SERVER lost (2)";
         }
@@ -483,14 +483,14 @@ static GB_ERROR PGD_probe_design_event(set<SpeciesName> *species,set<Probes> *pr
     if (!error) {
         // calling the design
         aisc_put(my_server->get_pd_gl().link,PT_PDC,my_server->pdc,
-                 PDC_GO,0, 0);
+                 PDC_GO,0, NULL);
 
         //result
         // printf("Read the results from the server");
         {
             char *locs_error = 0;
             if (aisc_get(my_server->get_pd_gl().link,PT_LOCS,my_server->get_pd_gl().locs,
-                         LOCS_ERROR,&locs_error, 0))
+                         LOCS_ERROR,&locs_error, NULL))
             {
                 error = "Connection to PT_SERVER lost (3)";
             }
@@ -505,7 +505,7 @@ static GB_ERROR PGD_probe_design_event(set<SpeciesName> *species,set<Probes> *pr
 
     if (!error) {
         aisc_get(my_server->get_pd_gl().link,PT_PDC,my_server->pdc,
-                 PDC_TPROBE,&tprobe, 0);
+                 PDC_TPROBE,&tprobe, NULL);
     }
 
     if (!error) {
@@ -513,7 +513,7 @@ static GB_ERROR PGD_probe_design_event(set<SpeciesName> *species,set<Probes> *pr
             long tprobe_next;
             if(aisc_get(my_server->get_pd_gl().link,PT_TPROBE,tprobe,
                         TPROBE_NEXT,&tprobe_next,
-                        TPROBE_INFO,&match_info, 0))
+                        TPROBE_INFO,&match_info, NULL))
                 break;
 
             tprobe = tprobe_next;
@@ -748,7 +748,7 @@ public:
                         PDC_MINGC,                  probe_config.min_gccontent/100.0,
                         PDC_MAXGC,                  probe_config.max_gccontent/100.0,
                         PDC_MAXBOND,                double(probe_config.max_hairpin_bonds),
-                        0);
+                        NULL);
 
             aisc_put(my_server->get_pd_gl().link,
                      PT_PDC,            my_server->pdc,
@@ -756,7 +756,7 @@ public:
                      PDC_MAXPOS,        long(probe_config.ecoli_max_pos),
                      PDC_MISHIT,        long(MISHIT),
                      PDC_MINTARGETS,    double(MINTARGETS/100.0),
-                     0);
+                     NULL);
 
             if (pgd_probe_design_send_data(probe_config)) {
                 error        = "Connection to PT_SERVER lost (1)";

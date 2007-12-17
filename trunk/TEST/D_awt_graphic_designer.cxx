@@ -32,7 +32,7 @@ AW_gc_manager AWT_graphic_designer::init_devices(AW_window *aww, AW_device *devi
                      "SEL. & NOT",
                      "NOT SEL.",
                      "ETC",
-                     0 );
+                     NULL);
 
 	return preset_window;
 }

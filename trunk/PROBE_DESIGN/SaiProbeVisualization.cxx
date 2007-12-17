@@ -66,7 +66,7 @@ AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                       "+-COLOR 4$#909090", "-COLOR 5$#808080",
                       "+-COLOR 6$#707070", "-COLOR 7$#505050",
                       "+-COLOR 8$#404040", "-COLOR 9$#303030",
-                      0 );
+                      NULL);
 
     return preset_window;
 }

@@ -2103,7 +2103,7 @@ void aed_create_window(AED_root *aedr) {
                       "-CS_7$#888",
                       "-CS_8$#777",
                       "-CS_9$#666",
-                      0);
+                      NULL);
 
     char source[256];
     char dest[256];

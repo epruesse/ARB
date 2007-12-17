@@ -92,7 +92,7 @@ MO_Mismatch** Sonde::get_matching_species(BOOL match_kompl, int match_weight, in
         return NULL;
     }
 
-    aisc_create(mp_pd_gl.link,PT_LOCS, mp_pd_gl.locs,LOCS_PROBE_DESIGN_CONFIG, PT_PDC,  &pdc,   0);
+    aisc_create(mp_pd_gl.link,PT_LOCS, mp_pd_gl.locs,LOCS_PROBE_DESIGN_CONFIG, PT_PDC,  &pdc,   NULL);
 
     if (MP_probe_design_send_data(pdc)) {
         aw_message ("Connection to PT_SERVER lost (3)");
@@ -108,7 +108,7 @@ MO_Mismatch** Sonde::get_matching_species(BOOL match_kompl, int match_weight, in
                  LOCS_MATCH_MAX_MISMATCHES,     match_mis,      // Mismatches
                  LOCS_MATCH_MAX_SPECIES,        100000,         // ???
                  LOCS_SEARCHMATCH,          match_seq,      // Sequence
-                 0)){
+                 NULL)){
         free(probe);
         aw_message ("Connection to PT_SERVER lost (4)");
         return NULL;
@@ -120,7 +120,7 @@ MO_Mismatch** Sonde::get_matching_species(BOOL match_kompl, int match_weight, in
               LOCS_MATCH_LIST_CNT,  &match_list_cnt,
               LOCS_MP_MATCH_STRING, &bs,
               LOCS_ERROR,       &locs_error,
-              0);
+              NULL);
     if (*locs_error) {
         aw_message(locs_error);
     }

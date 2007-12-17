@@ -371,13 +371,13 @@ int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
                  PDC_DT,        (double)root->awar(AWAR_PD_DESIGN_EXP_DT)->read_float()*100.0,
                  PDC_SPLIT, (double)root->awar(AWAR_PD_DESIGN_EXP_SPLIT)->read_float(),
                  PDC_CLIPRESULT,    root->awar(AWAR_PD_DESIGN_CLIPRESULT)->read_int(),
-                 0)) return 1;
+                 NULL)) return 1;
     for (i=0;i<16;i++) {
         sprintf(buffer,AWAR_PD_DESIGN_EXP_BONDS "%i",i);
         if (aisc_put(pd_gl.link,PT_PDC, pdc,
                      PT_INDEX,  i,
                      PDC_BONDVAL,   (double)root->awar(buffer)->read_float(),
-                     0) ) return 1;
+                     NULL) ) return 1;
     }
 #if 0
     T_PT_SPECIALS specials;
@@ -399,7 +399,7 @@ int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
                         SPECIALS_CENTER, (double)root->awar(pdcc)->read_float(),
                         SPECIALS_RIGHT, (double)root->awar(pdcr)->read_float(),
                         SPECIALS_RRIGHT, (double)root->awar(pdcrr)->read_float(),
-                        0)) return 1;
+                        NULL)) return 1;
     }
 #endif
     return 0;
@@ -469,13 +469,13 @@ void probe_design_event(AW_window *aww)
                 PDC_MINGC,          (double)root->awar(AWAR_PD_DESIGN_MIN_GC)->read_float()/100.0,
                 PDC_MAXGC,          (double)root->awar(AWAR_PD_DESIGN_MAX_GC)->read_float()/100.0,
                 PDC_MAXBOND,    (double)root->awar(AWAR_PD_DESIGN_MAXBOND)->read_int(),
-                0);
+                NULL);
     aisc_put(pd_gl.link,PT_PDC, pdc,
              PDC_MINPOS,    root->awar(AWAR_PD_DESIGN_MIN_ECOLIPOS)->read_int(),
              PDC_MAXPOS,    root->awar(AWAR_PD_DESIGN_MAX_ECOLIPOS)->read_int(),
              PDC_MISHIT,    root->awar(AWAR_PD_DESIGN_MISHIT)->read_int(),
              PDC_MINTARGETS,    (double)root->awar(AWAR_PD_DESIGN_MINTARGETS)->read_float()/100.0,
-             0);
+             NULL);
 
     if (probe_design_send_data(root,pdc)) {
         aw_message ("Connection to PT_SERVER lost (1)");
@@ -486,14 +486,14 @@ void probe_design_event(AW_window *aww)
     aisc_put(pd_gl.link,PT_PDC, pdc,
              PDC_NAMES, &bs,
              PDC_CHECKSUMS, &check,
-             0);
+             NULL);
 
 
     /* Get the unknown names */
     bytestring unknown_names;
     if (aisc_get(pd_gl.link,PT_PDC, pdc,
                  PDC_UNKNOWN_NAMES, &unknown_names,
-                 0)){
+                 NULL)){
         aw_message ("Connection to PT_SERVER lost (1)");
         aw_closestatus();
         return;
@@ -547,7 +547,7 @@ void probe_design_event(AW_window *aww)
                         aisc_create(pd_gl.link, PT_PDC, pdc, PDC_SEQUENCE,
                                     PT_SEQUENCE, &pts,
                                     SEQUENCE_SEQUENCE, &bs_seq,
-                                    0);
+                                    NULL);
                     }
                 }
             }
@@ -558,12 +558,12 @@ void probe_design_event(AW_window *aww)
     if (!abort) {
         aisc_put(pd_gl.link,PT_PDC, pdc,
                  PDC_GO,0,
-                 0);
+                 NULL);
 
         aw_status("Read the results from the server");
         {
             char *locs_error = 0;
-            if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs, LOCS_ERROR, &locs_error, 0)) {
+            if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs, LOCS_ERROR, &locs_error, NULL)) {
                 aw_message ("Connection to PT_SERVER lost (1)");
                 abort = true;
             }
@@ -580,7 +580,7 @@ void probe_design_event(AW_window *aww)
     if (!abort) {
         aisc_get( pd_gl.link, PT_PDC, pdc,
                   PDC_TPROBE, &tprobe,
-                  0);
+                  NULL);
 
         probe_design_create_result_window(aww);
         pd_gl.pd_design->clear_selection_list(pd_gl.pd_design_id);
@@ -588,7 +588,7 @@ void probe_design_event(AW_window *aww)
         if (tprobe) {
             aisc_get( pd_gl.link, PT_TPROBE, tprobe,
                       TPROBE_INFO_HEADER,   &match_info,
-                      0);
+                      NULL);
             char *s = strtok(match_info,"\n");
             while (s) {
                 pd_gl.pd_design->insert_selection( pd_gl.pd_design_id, s, "" );
@@ -635,7 +635,7 @@ void probe_design_event(AW_window *aww)
                           TPROBE_SEQUENCE, &my_TPROBE_SEQUENCE,  // encoded probe sequence (2=A 3=C 4=G 5=U)
                           TPROBE_QUALITY, &my_TPROBE_QUALITY, // quality of probe ?
 #endif // TEST_PD
-                          0)) break;
+                          NULL)) break;
 
 
 #if defined(TEST_PD)
@@ -648,7 +648,7 @@ void probe_design_event(AW_window *aww)
                           TPROBE_MISHIT, &my_TPROBE_MISHIT, // Treffer ausserhalb von Gruppe ?
                           TPROBE_APOS, &my_TPROBE_APOS, // Alignment-Position
                           TPROBE_ECOLI_POS, &my_TPROBE_ECOLI_POS,
-                          0)) break;
+                          NULL)) break;
 #endif // TEST_PD
             tprobe = tprobe_next;
 
@@ -722,7 +722,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             if (init_local_com_struct() ) error = "Cannot contact PT-server (2)";
 
             if (!error) {
-                aisc_create(pd_gl.link,PT_LOCS, pd_gl.locs, LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc, 0);
+                aisc_create(pd_gl.link,PT_LOCS, pd_gl.locs, LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc, NULL);
                 if (probe_design_send_data(root,pdc)) error = "Connection to PT_SERVER lost (2)";
             }
         }
@@ -739,7 +739,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                           LOCS_MATCH_MAX_MISMATCHES, root->awar(AWAR_MAX_MISMATCHES)->read_int(),
                           LOCS_MATCH_MAX_SPECIES,    root->awar(AWAR_PD_MATCH_CLIPHITS)->read_int(),
                           LOCS_SEARCHMATCH,          probe,
-                          0))
+                          NULL))
             {
                 error = "Connection to PT_SERVER lost (2)";
             }
@@ -771,7 +771,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                           LOCS_MATCH_STRING,      &bs,
                           LOCS_MATCHES_TRUNCATED, &matches_truncated,
                           LOCS_ERROR,             &locs_error,
-                          0))
+                          NULL))
             {
                 error = "Connection to PT_SERVER lost (3)";
             }
