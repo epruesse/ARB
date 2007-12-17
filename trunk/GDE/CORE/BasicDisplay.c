@@ -91,28 +91,6 @@ NA_Alignment *DataSet;
 }
 
 
-#ifdef SGI /* for exit button */
-void bailout()
-{
-	if (xv_destroy_safe(frame) == XV_OK) {
-		exit(0);
-	}
-}
-
-/*
- * exit by button on front panel
- */
-/*ARGSUSED*/
-static void quit_main_proc(item, event)
-Panel_item item;
-Event *event;
-{
-	bailout();
-}
-#endif /* sgi */
-
-
-
 /*
 GenMenu():
 	Generate the menus described in the .GDEmenu file.  Link menu items
@@ -342,9 +320,7 @@ void MakeNAADisplay()
 	    CANVAS_AUTO_CLEAR,FALSE,
 	    CANVAS_REPAINT_PROC,DummyRepaint,
 	    CANVAS_MIN_PAINT_WIDTH,150,
-#ifndef SGI
 	    WIN_INHERIT_COLORS,TRUE,
-#endif
 	    0);
 
 	(void)xv_set(canvas_paint_window(EditNameCan),
@@ -427,10 +403,6 @@ void MakeNAADisplay()
 			    CMS_TYPE,XV_STATIC_CMS,
 			    CMS_SIZE,16,
 			    CMS_COLORS,Default_Colors,
-#ifdef SGI /* a hack to try and keep the frame colored in split canvas */
-			    CMS_FRAME_CMS,TRUE,
-#endif
-
 			    0);
 
 		xv_set(EditCan,
@@ -438,9 +410,7 @@ void MakeNAADisplay()
 		    WIN_CMS, colmap,
 		    WIN_FOREGROUND_COLOR,8,
 		    WIN_BACKGROUND_COLOR,15,
-#ifndef SGI
 		    WIN_INHERIT_COLORS,FALSE,
-#endif
 		    0);
 	}
 

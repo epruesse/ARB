@@ -591,10 +591,6 @@ Event *event;
 		  /* efficiency:  ignore if it is already picked */
 		  if(picked != fl_current_picked)
 		   {
-#ifdef SGI /* added refresh to get rid of old boxes*/
-            wmgr_refreshwindow(canvas_paint_window(fl_FileList));
-#endif /sgi */
-
 		    XSetFunction(dpy, fl_gc, GXclear);
 		    XDrawRectangle(dpy, xwin, fl_gc,
 			2, fl_current_picked*fl_cell_h,

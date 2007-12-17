@@ -19,10 +19,6 @@
 #include <awt.hxx>
 #include <SIG_PF.h>
 
-#ifdef SGI
-# include <bstring.h>
-#endif
-
 #define FD_SET_TYPE
 
 // Globals
