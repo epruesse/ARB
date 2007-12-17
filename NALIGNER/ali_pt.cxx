@@ -213,7 +213,7 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
 
         if (aisc_put(link, PT_LOCS, locs, 
                      LOCS_FIND_TYPE, find_type,
-                     LOCS_FIND_FAMILY, &bs,0)){
+                     LOCS_FIND_FAMILY, &bs, NULL)){
             ali_message ("Communication Error (2)");
             return -1;
         }
@@ -221,14 +221,14 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
         /*
          * Read family list
          */
-        aisc_get(link,PT_LOCS, locs,LOCS_FAMILY_LIST, &f_list, 0);
+        aisc_get(link,PT_LOCS, locs,LOCS_FAMILY_LIST, &f_list, NULL);
         if (f_list == 0)
             ali_error("Family not found in PT Server");
 
         aisc_get(link, PT_FAMILYLIST, f_list,
                  FAMILYLIST_NAME,&seq_name,
                  FAMILYLIST_MATCHES,&matches,
-                 FAMILYLIST_NEXT, &f_list,0);
+                 FAMILYLIST_NEXT, &f_list, NULL);
 
         while (strcmp(seq_name,sequence->name()) == 0) {
             free(seq_name);
@@ -237,7 +237,7 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
             aisc_get(link, PT_FAMILYLIST, f_list,
                      FAMILYLIST_NAME,&seq_name,
                      FAMILYLIST_MATCHES,&matches,
-                     FAMILYLIST_NEXT, &f_list,0);
+                     FAMILYLIST_NEXT, &f_list, NULL);
         }
         /* found the first element */
 
@@ -254,7 +254,7 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
                 aisc_get(link, PT_FAMILYLIST, f_list,
                          FAMILYLIST_NAME,&seq_name,
                          FAMILYLIST_MATCHES,&matches,
-                         FAMILYLIST_NEXT, &f_list,0);
+                         FAMILYLIST_NEXT, &f_list, NULL);
                 if (strcmp(seq_name,sequence->name()) == 0)
                     free(seq_name);
             } while (strcmp(seq_name,sequence->name()) == 0);
@@ -273,7 +273,7 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
                 aisc_get(link, PT_FAMILYLIST, f_list,
                          FAMILYLIST_NAME,&seq_name,
                          FAMILYLIST_MATCHES,&matches,
-                         FAMILYLIST_NEXT, &f_list,0);
+                         FAMILYLIST_NEXT, &f_list, NULL);
                 if (strcmp(seq_name,sequence->name()) == 0)
                     free(seq_name);
             } while (strcmp(seq_name,sequence->name()) == 0);
@@ -335,14 +335,14 @@ ALI_TLIST<ali_pt_member *> *ALI_PT::get_extension_list(void)
   int ALI_PT::first_family_(char **seq_name, int *matches)
   {
   if (mode == ServerMode) {
-  aisc_get(link,PT_LOCS, locs,LOCS_FAMILY_LIST, &f_list, 0);
+  aisc_get(link,PT_LOCS, locs,LOCS_FAMILY_LIST, &f_list, NULL);
   if (f_list == 0)
   return -1;
 
   aisc_get(link, PT_FAMILYLIST, f_list,
   FAMILYLIST_NAME,seq_name,
   FAMILYLIST_MATCHES,matches,
-  FAMILYLIST_NEXT, &f_list,0);
+  FAMILYLIST_NEXT, &f_list, NULL);
   }
   else {
   *seq_name = strdup(family_list.first());
@@ -363,7 +363,7 @@ ALI_TLIST<ali_pt_member *> *ALI_PT::get_extension_list(void)
   aisc_get(link, PT_FAMILYLIST, f_list,
   FAMILYLIST_NAME,seq_name,
   FAMILYLIST_MATCHES,matches,
-  FAMILYLIST_NEXT, &f_list,0);
+  FAMILYLIST_NEXT, &f_list, NULL);
   }
   else {
   if (family_list.is_next()) {
