@@ -43,14 +43,6 @@ extern "C" {
 int gbcm_sig_violation_flag;
 int gbcm_pipe_violation_flag;
 
-#if defined(HP)
-
-# include <codelibs/nap.h>
-void GB_usleep(long usec){
-    nap((int)(usec/1000)+1);
-}
-
-#else
 # if defined(SUN5)
 void GB_usleep(long usec){
     struct timespec timeout,time2;
@@ -70,7 +62,6 @@ void GB_usleep(long usec){
     usleep(usec);
 }
 # endif
-#endif
 
 long gbcm_sig_violation_end();
 

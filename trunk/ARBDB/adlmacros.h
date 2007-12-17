@@ -18,7 +18,7 @@
 
 #define GB_DELETE(a)        if (a) GB_FREE(a); a = 0
 
-#if defined(HP) || defined(DIGITAL) || defined(DARWIN)
+#if defined(DIGITAL) || defined(DARWIN)
 # undef GB_MEMALIGN
 # define GB_MEMALIGN(a,b) malloc(b)
 #endif

@@ -14,10 +14,6 @@
 
 GB_MAIN_TYPE *gb_main_array[GB_MAIN_ARRAY_SIZE];
 
-#ifdef HP
-#   define signed
-#endif
-
 /********************************************************************************************
             Versions:
         ASCII
