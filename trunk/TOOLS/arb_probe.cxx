@@ -83,7 +83,7 @@ int probe_design_send_data(T_PT_PDC  pdc) {
     //    int i;
     //    char buffer[256];
 
-    if (aisc_put(pd_gl.link,PT_PDC, pdc, PDC_CLIPRESULT, P.DESIGNCPLIPOUTPUT, 0))
+    if (aisc_put(pd_gl.link,PT_PDC, pdc, PDC_CLIPRESULT, P.DESIGNCPLIPOUTPUT, NULL))
         return 1;
 
     return 0;
@@ -122,13 +122,13 @@ void AP_probe_design_event() {
                 PDC_MINGC,  P.MINGC/100.0,
                 PDC_MAXGC,  P.MAXGC/100.0,
                 PDC_MAXBOND,    P.MAXBOND,
-                0);
+                NULL);
     aisc_put(pd_gl.link,PT_PDC, pdc,
              PDC_MINPOS,    P.MINPOS,
              PDC_MAXPOS,    P.MAXPOS,
              PDC_MISHIT,    P.MISHIT,
              PDC_MINTARGETS,    P.MINTARGETS/100.0,
-             0);
+             NULL);
 
     if (probe_design_send_data(pdc)) {
         aw_message ("Connection to PT_SERVER lost (1)");
@@ -143,19 +143,19 @@ void AP_probe_design_event() {
         aisc_create(pd_gl.link, PT_PDC, pdc,
                     PDC_SEQUENCE, PT_SEQUENCE, &pts,
                     SEQUENCE_SEQUENCE, &bs_seq,
-                    0);
+                    NULL);
     }
 
     aisc_put(pd_gl.link,PT_PDC, pdc,
              PDC_NAMES,&bs,
              PDC_GO, 0,
-             0);
+             NULL);
 
     {
         char *locs_error = 0;
         if (aisc_get( pd_gl.link, PT_LOCS, pd_gl.locs,
                       LOCS_ERROR    ,&locs_error,
-                      0)){
+                      NULL)){
             aw_message ("Connection to PT_SERVER lost (1)");
             return;
         }
@@ -167,13 +167,13 @@ void AP_probe_design_event() {
 
     aisc_get( pd_gl.link, PT_PDC, pdc,
               PDC_TPROBE, &tprobe,
-              0);
+              NULL);
 
 
     if (tprobe) {
         aisc_get( pd_gl.link, PT_TPROBE, tprobe,
                   TPROBE_INFO_HEADER,   &match_info,
-                  0);
+                  NULL);
         printf("%s\n",match_info);
         free(match_info);
     }
@@ -183,7 +183,7 @@ void AP_probe_design_event() {
         if (aisc_get( pd_gl.link, PT_TPROBE, tprobe,
                       TPROBE_NEXT,      &tprobe,
                       TPROBE_INFO,      &match_info,
-                      0)) break;
+                      NULL)) break;
         printf("%s\n",match_info);
     }
     aisc_close(pd_gl.link); pd_gl.link = 0;
@@ -215,7 +215,7 @@ void AP_probe_match_event()
 
     aisc_create(pd_gl.link,PT_LOCS, pd_gl.locs,
                 LOCS_PROBE_DESIGN_CONFIG, PT_PDC,   &pdc,
-                0);
+                NULL);
     if (probe_design_send_data(pdc)) {
         aw_message ("Connection to PT_SERVER lost (2)");
         return;
@@ -230,7 +230,7 @@ void AP_probe_match_event()
                   LOCS_MATCH_MAX_MISMATCHES,    P.MISMATCHES,
                   LOCS_MATCH_MAX_SPECIES,       100000,
                   LOCS_SEARCHMATCH,     P.SEQUENCE,
-                  0)){
+                  NULL)){
         free(probe);
         aw_message ("Connection to PT_SERVER lost (2)");
         return;
@@ -244,7 +244,7 @@ void AP_probe_match_event()
               LOCS_MATCH_LIST_CNT,  &match_list_cnt,
               LOCS_MATCH_STRING,    &bs,
               LOCS_ERROR,       &locs_error,
-              0);
+              NULL);
     if (*locs_error) {
         aw_message(locs_error);
     }
