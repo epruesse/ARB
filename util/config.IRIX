@@ -14,15 +14,6 @@
 #MACH = SUN5
 #SUN5 = 1
 
-#********* HP ****************
-#HPCC = 1
-#HPGCC = 1
-#MACH = HP
-
-#*******  SGI  ***********
-SGI = 1
-MACH = SGI
-
 #*******  DIGITAL OSF  ***********
 #DIGITAL = 1
 #MACH = DIGITAL
