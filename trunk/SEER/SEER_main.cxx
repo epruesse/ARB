@@ -343,7 +343,7 @@ AW_window *seer_login_and_create_arb_load_window(AW_root *awr){
 
     aws->at("logo");
 //    aws->create_button(0,"#seer/seer.bitmap");
-    aws->create_button(0,"#logo.bitmap");
+    aws->create_button(0,"#logo.xpm");
 
 
     aws->button_length(20);

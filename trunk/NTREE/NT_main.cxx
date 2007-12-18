@@ -516,7 +516,7 @@ AW_window *nt_create_intro_window(AW_root *awr)
     aws->button_length(0);
 
     aws->at("logo");
-    aws->create_button(0,"#logo.bitmap");
+    aws->create_button(0,"#logo.xpm");
 
     aws->at("version");
     aws->create_button(0, GBS_global_string("Version " ARB_VERSION), 0); // version
