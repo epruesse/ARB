@@ -350,7 +350,8 @@ public:
     // ************** Control window size  *********
     void set_window_size( int width, int height );
     void get_window_size( int& width, int& height );
-    void window_fit(void);      // Recalculate the size of a window with buttons
+    void window_fit(void); // Recalculate the size of a window with buttons
+    void align(void); // Position dialog in the center the screen
 
     // ************** ********************************************************************  *********
     // ************** Create buttons: First set modify flags and finally create the button  *********

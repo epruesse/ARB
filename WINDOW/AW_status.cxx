@@ -1007,6 +1007,7 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons, cons
         }
 
         aw_msg->window_fit();
+        aw_msg->align();
     }
     free(hindex);
     aw_msg->show_grabbed();

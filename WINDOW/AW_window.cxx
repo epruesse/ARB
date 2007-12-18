@@ -930,6 +930,7 @@ AW_BOOL AW_area_management::is_expose_callback(AW_window */*aww*/, void (*f)(AW_
         return AW_FALSE;
     return expose_cb->contains(f);
 }
+
 AW_BOOL AW_window::is_expose_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL)) {
     AW_area_management *aram= MAP_ARAM(area);
     if (!aram)
@@ -942,6 +943,7 @@ AW_BOOL AW_area_management::is_resize_callback(AW_window */*aww*/, void (*f)(AW_
         return AW_FALSE;
     return resize_cb->contains(f);
 }
+
 AW_BOOL AW_window::is_resize_callback(AW_area area, void (*f)(AW_window*,AW_CL,AW_CL)) {
     AW_area_management *aram= MAP_ARAM(area);
     if (!aram)
@@ -953,6 +955,7 @@ void AW_window::set_window_size(int width, int height) {
     XtVaSetValues(p_w->shell, XmNwidth, (int)width, XmNheight, (int)height,
             NULL);
 }
+
 void AW_window::get_window_size(int &width, int &height) {
     unsigned short hoffset = 0;
     if (p_w->menu_bar[0])
@@ -965,6 +968,16 @@ void AW_window::window_fit(void) {
     int width, height;
     get_window_size(width, height);
     set_window_size(width, height);
+}
+
+void AW_window::align(void) {
+    int width, height;
+    get_window_size(width, height);
+    int x = (WidthOfScreen(XtScreen(p_w->shell)) / 2) - (width / 2);
+    int y = (HeightOfScreen(XtScreen(p_w->shell)) / 4) - (height / 4);
+    if (x < 0) x= 0;
+    if (y < 0) y= 0;
+    XtVaSetValues(p_w->shell, XmNx, x, XmNy, y, NULL);
 }
 
 /*******************************    resize  ****************************************/
@@ -3281,6 +3294,7 @@ void AW_window::load_xfig(const char *file, AW_BOOL resize) {
         if (recalc_size_at_show == 0)
             recalc_size_at_show = 1;
         set_window_size(_at->max_x_size+1000, _at->max_y_size+1000);
+        align();
     }
 }
 
