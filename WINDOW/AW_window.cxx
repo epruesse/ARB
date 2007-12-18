@@ -2369,6 +2369,10 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
     window_defaults_name = GBS_string_2_key(wid);
 
     p_w->shell= aw_create_shell(this,AW_TRUE, AW_TRUE, width, height, posx, posy);
+
+    // disable resize or maximize in simple dialogs (avoids broken layouts)
+    XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE, NULL);
+
     Widget form1 = XtVaCreateManagedWidget( "forms",
                                             xmFormWidgetClass,
                                             p_w->shell,
@@ -2496,8 +2500,10 @@ void AW_window_message::init(AW_root *root_in, const char *windowname, bool allo
     window_defaults_name = GBS_string_2_key(window_name);
 
     // create shell for message box
-
     p_w->shell= aw_create_shell(this, AW_TRUE, allow_close, width, height, posx, posy);
+
+    // disable resize or maximize in simple dialogs (avoids broken layouts)
+    XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE, NULL);
 
     p_w->areas[AW_INFO_AREA] =
         new AW_area_management(root,p_w->shell, XtVaCreateManagedWidget( "info_area",
