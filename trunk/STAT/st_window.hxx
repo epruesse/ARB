@@ -18,7 +18,7 @@ class AP_tree;
 class AWT_csp;
 
 AW_window *st_create_main_window(AW_root * aw_root, ST_ML * st_ml,
-                                 AW_CB0 refresh_func, AW_window * win);
+        AW_CB0 refresh_func, AW_window * win);
 ST_ML *new_ST_ML(GBDATA * gb_main);
 int st_is_inited(ST_ML * st_ml);
 
@@ -29,28 +29,19 @@ enum st_report_enum {
     ST_QUALITY_REPORT_YES
 };
 
-
 AP_tree *st_ml_convert_species_name_to_node(ST_ML * st_ml,
-                                            const char *species_name);
+        const char *species_name);
 
 ST_ML_Color *st_ml_get_color_string(ST_ML * st_ml, char *species_name,
-                                    AP_tree * node, int start_ali_pos,
-                                    int end_ali_pos);
+        AP_tree * node, int start_ali_pos, int end_ali_pos);
 int st_ml_update_ml_likelihood(ST_ML * st_ml, char *result[4],
-                               int *latest_update, char *species_name,
-                               AP_tree * node);
+        int *latest_update, char *species_name, AP_tree * node);
 
-AW_window *st_create_quality_check_window(AW_root * aw_root,
-                                          GBDATA * gb_main);
+AW_window *st_create_quality_check_window(AW_root * aw_root, GBDATA * gb_main);
 
-GB_ERROR st_ml_check_sequence_quality(GBDATA * gb_main,
-                                      const char *tree_name,
-                                      const char *alignment_name,
-                                      AWT_csp * awt_csp,
-                                      int bucket_size, int marked_only,
-                                      st_report_enum report,
-                                      const char *filter_string,
-                                      const char *dest_field);
-
+GB_ERROR st_ml_check_sequence_quality(GBDATA * gb_main, const char *tree_name,
+        const char *alignment_name, AWT_csp * awt_csp, int bucket_size,
+        int marked_only, st_report_enum report, const char *filter_string,
+        const char *dest_field);
 
 #endif
