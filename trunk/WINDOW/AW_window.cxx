@@ -1292,7 +1292,7 @@ static void aw_root_create_color_map(AW_root *root) {
         }
         p_global->foreground= BlackPixelOfScreen( XtScreen(p_global->toplevel_widget) );
         XtVaGetValues(p_global->toplevel_widget,XmNbackground,
-        &p_global->background, 0);
+        &p_global->background, NULL);
     }
     // AW_WINDOW_DRAG see init_devices
 
@@ -1921,7 +1921,7 @@ void AW_window::set_icon(const char *icon, const char *default_icon) {
     const char *arbhome = GB_getenvARBHOME();
     sprintf( &path[0], "%s/lib/pixmaps/icons/%s.bitmap", arbhome, icon);
     sprintf( &path2[0], "%s/lib/pixmaps/icons/%s.bitmap", arbhome, default_icon);
-    XtVaGetValues(w, XmNforeground, &p_global->foreground, 0);
+    XtVaGetValues(w, XmNforeground, &p_global->foreground, NULL);
 
     Pixmap pixmap = XmGetPixmap(XtScreen(w), path, p_global->foreground,
             p_global->background);
@@ -2623,8 +2623,8 @@ void AW_window::select_mode(int mode) {
     Widget oldwidget = p_w->modes_widgets[p_w->selected_mode];
     p_w->selected_mode = mode;
     Widget widget = p_w->modes_widgets[p_w->selected_mode];
-    XtVaSetValues(oldwidget, XmNbackground, p_global->background, 0);
-    XtVaSetValues(widget, XmNbackground, p_global->foreground, 0);
+    XtVaSetValues(oldwidget, XmNbackground, p_global->background, NULL);
+    XtVaSetValues(widget, XmNbackground, p_global->foreground, NULL);
 }
 
 static void aw_mode_callback(AW_window *aww, long mode, AW_cb_struct *cbs) {
@@ -2656,7 +2656,7 @@ int AW_window::create_mode(const char *id, const char *pixmap,
             XmNbackground, _at->background_color, 
             NULL);
     XtVaSetValues(button, RES_CONVERT( XmNlabelPixmap, path ),NULL );
-    XtVaGetValues(button,XmNforeground, &p_global->foreground, 0);
+    XtVaGetValues(button,XmNforeground, &p_global->foreground, NULL);
 
     AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, 0);
     AW_cb_struct *cb2 = new AW_cb_struct(this, (AW_CB)aw_mode_callback, (AW_CL)p_w->number_of_modes, (AW_CL)cbs, help_text, cbs);
@@ -3145,7 +3145,7 @@ void AW_window::show(void) {
     }
 
     XtPopup(p_w->shell, XtGrabNone);
-    XtVaSetValues(p_w->shell, XmNiconic, False, 0);
+    XtVaSetValues(p_w->shell, XmNiconic, False, NULL);
     if (p_w->WM_top_offset == -1000) { // very bad hack
         set_expose_callback(AW_INFO_AREA, (AW_CB)aw_calculate_WM_offsets, 0, 0);
     }
