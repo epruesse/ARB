@@ -16,8 +16,7 @@
 
 AWT_dna_table awt_dna_table;
 
-AWT_dna_table::AWT_dna_table()
-{
+AWT_dna_table::AWT_dna_table() {
     int i;
     for (i = 0; i < 256; i++) {
         switch (toupper(i)) {
@@ -43,8 +42,7 @@ AWT_dna_table::AWT_dna_table()
     }
 }
 
-void ST_base_vector::set(char base, ST_base_vector * inv_frequencies)
-{
+void ST_base_vector::set(char base, ST_base_vector * inv_frequencies) {
     base = toupper(base);
     memset((char *) &b[0], 0, sizeof(b));
     const double k = 1.0 / ST_MAX_BASE;
@@ -66,17 +64,14 @@ void ST_base_vector::set(char base, ST_base_vector * inv_frequencies)
     lik = 1.0;
 }
 
-
-void ST_base_vector::print()
-{
+void ST_base_vector::print() {
     int i;
     for (i = 0; i < ST_MAX_BASE; i++) {
         printf("%.3G ", b[i]);
     }
 }
 
-void ST_rate_matrix::set(double dist, double /*TT_ratio */ )
-{
+void ST_rate_matrix::set(double dist, double /*TT_ratio */) {
     int i, j;
     double k = 1.0 / ST_MAX_BASE;
     for (i = 0; i < ST_MAX_BASE; i++) {
@@ -87,8 +82,7 @@ void ST_rate_matrix::set(double dist, double /*TT_ratio */ )
     }
 }
 
-void ST_rate_matrix::print()
-{
+void ST_rate_matrix::print() {
     int i, j;
     for (i = 0; i < ST_MAX_BASE; i++) {
         for (j = 0; j < ST_MAX_BASE; j++) {
@@ -100,9 +94,8 @@ void ST_rate_matrix::print()
 
 #if 0
 
-
 GB_INLINE void ST_rate_matrix::mult(ST_base_vector * in,
-                                    ST_base_vector * out)
+        ST_base_vector * out)
 {
     register int i, j;
     register float *pm = &m[0][0];
@@ -120,9 +113,7 @@ GB_INLINE void ST_rate_matrix::mult(ST_base_vector * in,
 
 #else
 
-
-inline void ST_base_vector::mult(ST_base_vector * other)
-{
+inline void ST_base_vector::mult(ST_base_vector * other) {
     register float *a = &b[0];
     register float *c = &other->b[0];
     register double a0 = a[0] * c[0];
@@ -139,12 +130,10 @@ inline void ST_base_vector::mult(ST_base_vector * other)
     lik *= other->lik;
 }
 
-
-inline void ST_rate_matrix::mult(ST_base_vector * in, ST_base_vector * out)
-{
+inline void ST_rate_matrix::mult(ST_base_vector * in, ST_base_vector * out) {
     register int i;
     register float *pm = &m[0][0];
-    for (i = ST_MAX_BASE - 1; i >= 0; i--) {    // calc revers
+    for (i = ST_MAX_BASE - 1; i >= 0; i--) { // calc revers
         register double sum0 = pm[4] * in->b[0];
         register double sum1 = pm[3] * in->b[1];
         register double sum2 = pm[2] * in->b[2];
@@ -158,10 +147,8 @@ inline void ST_rate_matrix::mult(ST_base_vector * in, ST_base_vector * out)
 }
 #endif
 
-
-ST_sequence_ml::ST_sequence_ml(AP_tree_root * rooti, ST_ML * st_mli):AP_sequence
-    (rooti)
-{
+ST_sequence_ml::ST_sequence_ml(AP_tree_root * rooti, ST_ML * st_mli) :
+    AP_sequence(rooti) {
     gb_data = 0;
     st_ml = st_mli;
     sequence = new ST_base_vector[ST_MAX_SEQ_PART];
@@ -170,37 +157,32 @@ ST_sequence_ml::ST_sequence_ml(AP_tree_root * rooti, ST_ML * st_mli):AP_sequence
     last_updated = 0;
 }
 
-void st_sequence_callback(GBDATA *, int *cl, gb_call_back_type)
-{
+void st_sequence_callback(GBDATA *, int *cl, gb_call_back_type) {
     ST_sequence_ml *seq = (ST_sequence_ml *) cl;
     seq->sequence_change();
 }
 
-void st_sequence_del_callback(GBDATA *, int *cl, gb_call_back_type)
-{
+void st_sequence_del_callback(GBDATA *, int *cl, gb_call_back_type) {
     ST_sequence_ml *seq = (ST_sequence_ml *) cl;
     seq->delete_sequence();
 }
 
-void ST_sequence_ml::delete_sequence()
-{
+void ST_sequence_ml::delete_sequence() {
     if (gb_data)
         GB_remove_callback(gb_data, GB_CB_CHANGED, st_sequence_callback,
-                           (int *) this);
+                (int *) this);
     if (gb_data)
         GB_remove_callback(gb_data, GB_CB_DELETE, st_sequence_del_callback,
-                           (int *) this);
+                (int *) this);
     gb_data = 0;
 }
 
-void ST_sequence_ml::sequence_change()
-{
+void ST_sequence_ml::sequence_change() {
     st_ml->clear_all();
 
 }
 
-ST_sequence_ml::~ST_sequence_ml()
-{
+ST_sequence_ml::~ST_sequence_ml() {
     delete[]sequence;
     delete color_out;
     delete color_out_valid_till;
@@ -208,30 +190,25 @@ ST_sequence_ml::~ST_sequence_ml()
     delete_sequence();
 }
 
-AP_sequence *ST_sequence_ml::dup()
-{
+AP_sequence *ST_sequence_ml::dup() {
     ST_sequence_ml *ns = new ST_sequence_ml(root, st_ml);
     return (AP_sequence *) ns;
 }
 
-void ST_sequence_ml::set_gb(GBDATA * gbd)
-{
+void ST_sequence_ml::set_gb(GBDATA * gbd) {
     delete_sequence();
     gb_data = gbd;
-    GB_add_callback(gb_data, GB_CB_CHANGED, st_sequence_callback,
-                    (int *) this);
+    GB_add_callback(gb_data, GB_CB_CHANGED, st_sequence_callback, (int *) this);
     GB_add_callback(gb_data, GB_CB_DELETE, st_sequence_del_callback,
-                    (int *) this);
+            (int *) this);
 }
 
-void ST_sequence_ml::set(char *)
-{
+void ST_sequence_ml::set(char *) {
 }
 
 /** Transform the sequence from character to vector, from st_ml->base to 'to' */
 
-void ST_sequence_ml::set_sequence()
-{
+void ST_sequence_ml::set_sequence() {
     register int i = st_ml->base;
     char *source_sequence = 0;
     int source_sequence_len = 0;
@@ -248,7 +225,7 @@ void ST_sequence_ml::set_sequence()
         for (; i < st_ml->to; i++) {
             int c = *(s++);
             if (!c)
-                break;          // end of sequence
+                break; // end of sequence
             dest->set(toupper(c), freq);
             dest++;
             freq++;
@@ -261,18 +238,15 @@ void ST_sequence_ml::set_sequence()
     }
 }
 
-
-AP_FLOAT ST_sequence_ml::combine(const AP_sequence *, const AP_sequence *)
-{
+AP_FLOAT ST_sequence_ml::combine(const AP_sequence *, const AP_sequence *) {
     return 0.0;
 }
 
 // void ST_sequence_ml::partial_match(const AP_sequence *part, long *overlap, long *penalty) const
-void ST_sequence_ml::partial_match(const AP_sequence *, long *, long *) const
-{
-    st_assert(0);               // should be unused
+void ST_sequence_ml::partial_match(const AP_sequence *, long *, long *) const {
+    st_assert(0);
+    // should be unused
 }
-
 
 GB_INLINE void ST_base_vector::check_overflow()
 {
@@ -281,10 +255,10 @@ GB_INLINE void ST_base_vector::check_overflow()
     for (i = 0; i < ST_MAX_BASE; i++) {
         sum += b[i];
     }
-    if (sum < .00001) {         // what happend no data, extremely unlikely
+    if (sum < .00001) { // what happend no data, extremely unlikely
         for (i = 0; i < ST_MAX_BASE; i++)
-            b[i] = .25;
-        ld_lik -= 5;            // ???
+        b[i] = .25;
+        ld_lik -= 5; // ???
     } else {
         while (sum < 0.25) {
             sum *= 4;
@@ -294,19 +268,17 @@ GB_INLINE void ST_base_vector::check_overflow()
             }
         }
     }
-    if (ld_lik > 10000) {
+    if (ld_lik> 10000) {
         printf("overflow\n");
     }
 }
 
-void ST_sequence_ml::ungo()
-{
+void ST_sequence_ml::ungo() {
     last_updated = 0;
 }
 
 void ST_sequence_ml::go(const ST_sequence_ml * lefts, double leftl,
-                        const ST_sequence_ml * rights, double rightl)
-{
+        const ST_sequence_ml * rights, double rightl) {
     register int pos;
 
     ST_base_vector hbv;
@@ -347,11 +319,11 @@ void ST_sequence_ml::go(const ST_sequence_ml * lefts, double leftl,
 ST_base_vector *ST_sequence_ml::tmp_out = 0;
 
 /** result will be in tmp_out */
-void ST_sequence_ml::calc_out(ST_sequence_ml * next_branch, double dist)
-{
+void ST_sequence_ml::calc_out(ST_sequence_ml * next_branch, double dist) {
 
     register int pos;
-    register ST_base_vector *out = tmp_out + st_ml->base;;
+    register ST_base_vector *out = tmp_out + st_ml->base;
+    ;
 
     double lc = dist / st_ml->step_size;
     ST_base_vector *lefts = next_branch->sequence;
@@ -374,9 +346,7 @@ void ST_sequence_ml::calc_out(ST_sequence_ml * next_branch, double dist)
     }
 }
 
-
-void ST_sequence_ml::print()
-{
+void ST_sequence_ml::print() {
     int i;
     for (i = 0; i < ST_MAX_SEQ_PART; i++) {
         printf("POS %3i  %c	", i, GB_read_char_pntr(gb_data)[i]);
@@ -384,15 +354,12 @@ void ST_sequence_ml::print()
     }
 }
 
-
-ST_ML::ST_ML(GBDATA * gb_maini)
-{
+ST_ML::ST_ML(GBDATA * gb_maini) {
     memset((char *) this, 0, sizeof(*this));
     gb_main = gb_maini;
 }
 
-ST_ML::~ST_ML()
-{
+ST_ML::~ST_ML() {
     delete tree_root->tree;
     tree_root->tree = 0;
     free(alignment_name);
@@ -410,15 +377,12 @@ ST_ML::~ST_ML()
     //delete awt_csp; // no sorry
 }
 
-void ST_ML::print()
-{
+void ST_ML::print() {
     ;
 }
 
-
 /** Translate characters to base frequencies */
-void ST_ML::create_frequencies()
-{
+void ST_ML::create_frequencies() {
     ST_base_vector *out = new ST_base_vector[alignment_len];
     base_frequencies = out;
     inv_base_frequencies = new ST_base_vector[alignment_len];
@@ -477,7 +441,7 @@ void ST_ML::create_frequencies()
         for (j = ST_A; j < ST_MAX_BASE; j++)
             sum += out[i].b[j];
         for (j = ST_A; j < ST_MAX_BASE; j++)
-            out[i].b[j] += sum * .01;   // smoothen frequencies to  avoid crazy values
+            out[i].b[j] += sum * .01; // smoothen frequencies to  avoid crazy values
         double min = out[i].b[ST_A];
         for (sum = 0, j = ST_A; j < ST_MAX_BASE; j++) {
             sum += out[i].b[j];
@@ -485,10 +449,10 @@ void ST_ML::create_frequencies()
                 min = out[i].b[j];
         }
         for (j = ST_A; j < ST_MAX_BASE; j++) {
-            if (sum > 0.01) {   // valid column ??
+            if (sum > 0.01) { // valid column ??
                 out[i].b[j] *= ST_MAX_BASE / sum;
             } else {
-                out[i].b[j] = 1.0;      // no
+                out[i].b[j] = 1.0; // no
             }
             inv_base_frequencies[i].b[j] = min / out[i].b[j];
         }
@@ -498,8 +462,7 @@ void ST_ML::create_frequencies()
     }
 }
 
-void ST_ML::insert_tree_into_hash_rek(AP_tree * node)
-{
+void ST_ML::insert_tree_into_hash_rek(AP_tree * node) {
     node->gr.gc = 0;
     if (node->is_leaf) {
         GBS_write_hash(hash_2_ap_tree, node->name, (long) node);
@@ -509,8 +472,7 @@ void ST_ML::insert_tree_into_hash_rek(AP_tree * node)
     }
 }
 
-void ST_ML::create_matrizes(double max_disti, int nmatrizes)
-{
+void ST_ML::create_matrizes(double max_disti, int nmatrizes) {
     max_dist = max_disti;
     if (rate_matrizes)
         delete rate_matrizes;
@@ -519,38 +481,31 @@ void ST_ML::create_matrizes(double max_disti, int nmatrizes)
     step_size = max_dist / max_matr;
     int i;
     for (i = 0; i < max_matr; i++) {
-        rate_matrizes[i].set((i + 1) * step_size, 0);   // ttratio[i]
+        rate_matrizes[i].set((i + 1) * step_size, 0); // ttratio[i]
     }
 }
 
 ST_ML *st_delete_species_st_ml = 0;
 
-long ST_ML::delete_species(const char *key, long val)
-{
+long ST_ML::delete_species(const char *key, long val) {
     if (GBS_read_hash(st_delete_species_st_ml->keep_species_hash, key))
         return val;
     AP_tree *leaf = (AP_tree *) val;
     AP_tree *father = leaf->father;
     leaf->remove();
-    delete father;              // deletes me also
+    delete father; // deletes me also
     return 0;
 }
 
-
 /** this is the real constructor, call only once */
-GB_ERROR ST_ML::init(const char *tree_name,
-                     const char *alignment_namei,
-                     const char *species_names,
-                     int marked_only, const char * /*filter_string */ ,
-                     AWT_csp * awt_cspi)
-{
+GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
+        const char *species_names, int marked_only,
+        const char * /*filter_string */, AWT_csp * awt_cspi) {
 
     GB_transaction dummy(gb_main);
     GB_ERROR error = 0;
     if (is_inited) {
-        return
-            GB_export_error
-            ("Sorry, once you selected a column statistic you cannot change parameters");
+        return GB_export_error("Sorry, once you selected a column statistic you cannot change parameters");
     }
     GB_ERROR awt_csp_error = 0;
     awt_csp = awt_cspi;
@@ -579,13 +534,13 @@ GB_ERROR ST_ML::init(const char *tree_name,
     hash_2_ap_tree = GBS_create_hash(1000, 0);
     // aw_status("Loading Tree");
     /* delete species */
-    if (species_names) {        // keep names
+    if (species_names) { // keep names
         error = tree_root->tree->remove_leafs(gb_main, AWT_REMOVE_DELETED);
         if (error)
             return error;
         char *l, *n;
-        keep_species_hash =
-            GBS_create_hash(GBT_get_species_hash_size(gb_main), 0);
+        keep_species_hash = GBS_create_hash(GBT_get_species_hash_size(gb_main),
+                0);
         for (l = (char *) species_names; l; l = n) {
             n = strchr(l, 1);
             if (n)
@@ -597,31 +552,24 @@ GB_ERROR ST_ML::init(const char *tree_name,
 
         st_delete_species_st_ml = this;
         insert_tree_into_hash_rek(tree_root->tree);
-        GBS_hash_do_loop(hash_2_ap_tree,
-                         (gb_hash_loop_type) delete_species);
+        GBS_hash_do_loop(hash_2_ap_tree, (gb_hash_loop_type) delete_species);
         GBS_free_hash(keep_species_hash);
         keep_species_hash = 0;
-        GBT_link_tree((GBT_TREE *) tree_root->tree, gb_main, GB_FALSE, 0,
-                      0);
-    } else {                    // keep marked
-        GBT_link_tree((GBT_TREE *) tree_root->tree, gb_main, GB_FALSE, 0,
-                      0);
+        GBT_link_tree((GBT_TREE *) tree_root->tree, gb_main, GB_FALSE, 0, 0);
+    } else { // keep marked
+        GBT_link_tree((GBT_TREE *) tree_root->tree, gb_main, GB_FALSE, 0, 0);
         if (marked_only) {
-            error =
-                tree_root->tree->remove_leafs(gb_main,
-                                              AWT_REMOVE_NOT_MARKED |
-                                              AWT_REMOVE_DELETED);
+            error = tree_root->tree->remove_leafs(gb_main,
+                    AWT_REMOVE_NOT_MARKED | AWT_REMOVE_DELETED);
         } else {
-            error =
-                tree_root->tree->remove_leafs(gb_main, AWT_REMOVE_DELETED);
+            error = tree_root->tree->remove_leafs(gb_main, AWT_REMOVE_DELETED);
         }
         if (error)
             return error;
         if (!tree_root->tree || tree_root->tree->is_leaf) {
-            return
-                GB_export_error
-                ("Too few species of the editor are in the tree '%s'",
-                 tree_name);
+            return GB_export_error(
+                    "Too few species of the editor are in the tree '%s'",
+                    tree_name);
         }
         insert_tree_into_hash_rek(tree_root->tree);
     }
@@ -649,8 +597,7 @@ GB_ERROR ST_ML::init(const char *tree_name,
 
     /* load sequences */
     // aw_status("load sequences");
-    tree_root->sequence_template =
-        (AP_sequence *) new ST_sequence_ml(tree_root, this);
+    tree_root->sequence_template = (AP_sequence *) new ST_sequence_ml(tree_root, this);
     tree_root->tree->load_sequences_rek(alignment_name, GB_TRUE, GB_TRUE);
 
     /* create matrizes */
@@ -663,8 +610,7 @@ GB_ERROR ST_ML::init(const char *tree_name,
 }
 
 /** go through the tree and calculate the ST_base_vector from bottom to top */
-ST_sequence_ml *ST_ML::do_tree(AP_tree * node)
-{
+ST_sequence_ml *ST_ML::do_tree(AP_tree * node) {
     ST_sequence_ml *seq = (ST_sequence_ml *) node->sequence;
     if (!seq) {
         seq = new ST_sequence_ml(tree_root, this);
@@ -672,7 +618,7 @@ ST_sequence_ml *ST_ML::do_tree(AP_tree * node)
     }
 
     if (seq->last_updated)
-        return seq;             // already valid !!!
+        return seq; // already valid !!!
 
     if (node->is_leaf) {
         seq->set_sequence();
@@ -685,15 +631,13 @@ ST_sequence_ml *ST_ML::do_tree(AP_tree * node)
     return seq;
 }
 
-void ST_ML::clear_all()
-{
+void ST_ML::clear_all() {
     GB_transaction dummy(gb_main);
     undo_tree(tree_root->tree);
     latest_modification = GB_read_clock(gb_main);
 }
 
-void ST_ML::undo_tree(AP_tree * node)
-{
+void ST_ML::undo_tree(AP_tree * node) {
     ST_sequence_ml *seq = (ST_sequence_ml *) node->sequence;
     if (!seq) {
         seq = new ST_sequence_ml(tree_root, this);
@@ -711,8 +655,7 @@ void ST_ML::undo_tree(AP_tree * node)
 // @@@ CAUTION!!! get_ml_vectors has a bug: it does not calculate the last value, if (end_ali_pos-start_ali_pos+1)==ST_MAX_SEQ_PART
 
 ST_sequence_ml *ST_ML::get_ml_vectors(char *species_name, AP_tree * node,
-                                      int start_ali_pos, int end_ali_pos)
-{
+        int start_ali_pos, int end_ali_pos) {
     if (!node) {
         if (!hash_2_ap_tree)
             return 0;
@@ -726,7 +669,7 @@ ST_sequence_ml *ST_ML::get_ml_vectors(char *species_name, AP_tree * node,
     ST_sequence_ml *seq = (ST_sequence_ml *) node->sequence;
 
     if (start_ali_pos != base || end_ali_pos > to) {
-        undo_tree(tree_root->tree);     // undo everything
+        undo_tree(tree_root->tree); // undo everything
         base = start_ali_pos;
         to = end_ali_pos;
     }
@@ -744,14 +687,14 @@ ST_sequence_ml *ST_ML::get_ml_vectors(char *species_name, AP_tree * node,
     AP_tree *brother = node->brother();
     ST_sequence_ml *seq_of_brother = do_tree(brother);
 
-    seq->calc_out(seq_of_brother,
-                  node->father->leftlen + node->father->rightlen);
+    seq->calc_out(seq_of_brother, node->father->leftlen
+            + node->father->rightlen);
     return seq;
 }
 
 int ST_ML::update_ml_likelihood(char *result[4], int *latest_update,
-                                char *species_name, AP_tree * node)
-    // calculates values for 'Detailed column statistics' in ARB_EDIT4
+        char *species_name, AP_tree * node)
+// calculates values for 'Detailed column statistics' in ARB_EDIT4
 {
     if (*latest_update >= latest_modification)
         return 1;
@@ -768,9 +711,9 @@ int ST_ML::update_ml_likelihood(char *result[4], int *latest_update,
     AWT_dna_base adb[4];
     int i;
 
-    if (!result[0]) {           // allocate Array-elements for result
+    if (!result[0]) { // allocate Array-elements for result
         for (i = 0; i < 4; i++) {
-            result[i] = (char *) GB_calloc(1, alignment_len + 1);       // 0..alignment_len
+            result[i] = (char *) GB_calloc(1, alignment_len + 1); // 0..alignment_len
         }
     }
 
@@ -778,8 +721,8 @@ int ST_ML::update_ml_likelihood(char *result[4], int *latest_update,
         adb[i] = awt_dna_table.char_to_enum("ACGU"[i]);
     }
 
-    for (int seq_start = 0; seq_start < alignment_len;
-         seq_start += (ST_MAX_SEQ_PART - 1)) {
+    for (int seq_start = 0; seq_start < alignment_len; seq_start
+            += (ST_MAX_SEQ_PART - 1)) {
         // ^^^^^^^^^^^^^^^^^^^ work-around for bug in get_ml_vectors
         int seq_end = alignment_len;
 
@@ -793,9 +736,8 @@ int ST_ML::update_ml_likelihood(char *result[4], int *latest_update,
 
     for (int pos = 0; pos < alignment_len; pos++) {
         ST_base_vector & vec = seq->tmp_out[pos];
-        double sum =
-            vec.b[ST_A] + vec.b[ST_C] + vec.b[ST_G] + vec.b[ST_T] +
-            vec.b[ST_GAP];
+        double sum = vec.b[ST_A] + vec.b[ST_C] + vec.b[ST_G] + vec.b[ST_T]
+                + vec.b[ST_GAP];
 
         if (sum == 0) {
             for (i = 0; i < 4; i++) {
@@ -814,10 +756,9 @@ int ST_ML::update_ml_likelihood(char *result[4], int *latest_update,
     return 1;
 }
 
-
 ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
-                                     int start_ali_pos, int end_ali_pos)
-    //  (Re-)Calculates the color string of a given node for sequence positions start_ali_pos..end_ali_pos
+        int start_ali_pos, int end_ali_pos)
+//  (Re-)Calculates the color string of a given node for sequence positions start_ali_pos..end_ali_pos
 {
 
     // if node isn't given search it using species name:
@@ -830,8 +771,7 @@ ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
     }
     // align start_ali_pos/end_ali_pos to previous/next pos divisible by ST_BUCKET_SIZE:
     start_ali_pos &= ~(ST_BUCKET_SIZE - 1);
-    end_ali_pos =
-        (end_ali_pos & ~(ST_BUCKET_SIZE - 1)) + ST_BUCKET_SIZE - 1;
+    end_ali_pos = (end_ali_pos & ~(ST_BUCKET_SIZE - 1)) + ST_BUCKET_SIZE - 1;
     if (end_ali_pos > alignment_len)
         end_ali_pos = alignment_len;
 
@@ -839,33 +779,31 @@ ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
     ST_sequence_ml *seq = (ST_sequence_ml *) node->sequence;
 
     register int pos;
-    if (!seq->color_out) {      // allocate mem for color_out if we not already have it
-        seq->color_out =
-            (ST_ML_Color *) GB_calloc(sizeof(ST_ML_Color), alignment_len);
-        seq->color_out_valid_till =
-            (int *) GB_calloc(sizeof(int),
-                              (alignment_len >> LD_BUCKET_SIZE) +
-                              ST_BUCKET_SIZE);
+    if (!seq->color_out) { // allocate mem for color_out if we not already have it
+        seq->color_out = (ST_ML_Color *) GB_calloc(sizeof(ST_ML_Color),
+                alignment_len);
+        seq->color_out_valid_till = (int *) GB_calloc(sizeof(int),
+                (alignment_len >> LD_BUCKET_SIZE) + ST_BUCKET_SIZE);
     }
     // search for first out-dated position:
     for (pos = start_ali_pos; pos <= end_ali_pos; pos += ST_BUCKET_SIZE) {
-        if (seq->color_out_valid_till[pos >> LD_BUCKET_SIZE] <
-            latest_modification)
+        if (seq->color_out_valid_till[pos >> LD_BUCKET_SIZE]
+                < latest_modification)
             break;
     }
-    if (pos > end_ali_pos) {    // all positions are up-to-date
-        return seq->color_out;  // => return existing result
+    if (pos > end_ali_pos) { // all positions are up-to-date
+        return seq->color_out; // => return existing result
     }
 
     ST_base_vector *vec;
     int start;
-    for (start = start_ali_pos; start <= end_ali_pos;
-         start += (ST_MAX_SEQ_PART - 1)) {
+    for (start = start_ali_pos; start <= end_ali_pos; start += (ST_MAX_SEQ_PART
+            - 1)) {
         // ^^^^^^^^^^^^^^^^^^^ work-around for bug in get_ml_vectors
         int end = end_ali_pos;
         if (end - start >= ST_MAX_SEQ_PART)
             end = start + (ST_MAX_SEQ_PART - 1);
-        get_ml_vectors(0, node, start, end);    // calculates tmp_out (see below)
+        get_ml_vectors(0, node, start, end); // calculates tmp_out (see below)
     }
 
     char *source_sequence = 0;
@@ -895,20 +833,19 @@ ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
         }
 
         {
-            AWT_dna_base b = awt_dna_table.char_to_enum(*source);       // convert seq-character to enum AWT_dna_base
+            AWT_dna_base b = awt_dna_table.char_to_enum(*source); // convert seq-character to enum AWT_dna_base
             *outs = 0;
             if (b != ST_UNKNOWN) {
-                val = max / (0.0001 + vec->b[b]);       // calc ratio of max/real base-char
-                if (val > 1.0) {        // if real base-char is NOT the max-likely base-char
-                    *outs = (int) (log(val));   // => insert color
+                val = max / (0.0001 + vec->b[b]); // calc ratio of max/real base-char
+                if (val > 1.0) { // if real base-char is NOT the max-likely base-char
+                    *outs = (int) (log(val)); // => insert color
                 }
             }
         }
         outs++;
         vec++;
         source++;
-        seq->color_out_valid_till[pos >> LD_BUCKET_SIZE] =
-            latest_modification;
+        seq->color_out_valid_till[pos >> LD_BUCKET_SIZE] = latest_modification;
     }
     return seq->color_out;
 }

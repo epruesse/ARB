@@ -17,8 +17,7 @@
 #include "st_window.hxx"
 #include "st_quality.hxx"
 
-st_cq_stat::st_cq_stat(int isize)
-{
+st_cq_stat::st_cq_stat(int isize) {
     size = isize;
     likelihoods = new double[size];
     square_liks = new double[size];
@@ -31,23 +30,20 @@ st_cq_stat::st_cq_stat(int isize)
     }
 }
 
-st_cq_stat::~st_cq_stat()
-{
+st_cq_stat::~st_cq_stat() {
     delete[]square_liks;
     delete[]likelihoods;
     delete[]n_elems;
 }
 
-void st_cq_stat::add(int pos, double lik)
-{
+void st_cq_stat::add(int pos, double lik) {
     assert(pos >= 0 && pos < size);
     likelihoods[pos] += lik;
     square_liks[pos] += lik * lik;
     n_elems[pos]++;
 }
 
-char *st_cq_stat::generate_string()
-{
+char *st_cq_stat::generate_string() {
     int i;
     double sum_lik = 0;
     double square_sum_lik = 0;
@@ -64,8 +60,7 @@ char *st_cq_stat::generate_string()
         return res;
     }
     double mean_lik = sum_lik / sum_elems;
-    double mean_sigma =
-        sqrt(square_sum_lik / sum_elems - mean_lik * mean_lik);
+    double mean_sigma = sqrt(square_sum_lik / sum_elems - mean_lik * mean_lik);
     for (i = 0; i < size; i++) {
         if (n_elems[i] <= 1)
             continue;
@@ -85,37 +80,28 @@ char *st_cq_stat::generate_string()
     return res;
 }
 
-st_cq_info::st_cq_info(int seq_len, int bucket_size):ss2(2), ss5(5), ssu(seq_len / bucket_size + 1),
-sscon(2)
-{
+st_cq_info::st_cq_info(int seq_len, int bucket_size) :
+    ss2(2), ss5(5), ssu(seq_len / bucket_size + 1), sscon(2) {
     ;
 }
 
-st_cq_info::~st_cq_info()
-{
+st_cq_info::~st_cq_info() {
     ;
 }
 
-void st_ml_add_sequence_part_to_stat(ST_ML * st_ml,
-                                     AWT_csp * /*awt_csp */ ,
-                                     const char *species_name, int seq_len,
-                                     int bucket_size,
-                                     GB_HASH * species_to_info_hash,
-                                     int start, int end)
-{
+void st_ml_add_sequence_part_to_stat(ST_ML * st_ml, AWT_csp * /*awt_csp */,
+        const char *species_name, int seq_len, int bucket_size,
+        GB_HASH * species_to_info_hash, int start, int end) {
 
-    AP_tree *node =
-        st_ml_convert_species_name_to_node(st_ml, species_name);
+    AP_tree *node = st_ml_convert_species_name_to_node(st_ml, species_name);
     if (!node)
         return;
     ST_sequence_ml *sml = st_ml->get_ml_vectors(0, node, start, end);
     if (!sml)
-        return;                 // no statistic available
+        return; // no statistic available
     st_cq_info *info;
     if (start > 0) {
-        info =
-            (st_cq_info *) GBS_read_hash(species_to_info_hash,
-                                         species_name);
+        info = (st_cq_info *) GBS_read_hash(species_to_info_hash, species_name);
     } else {
         info = new st_cq_info(seq_len, bucket_size);
         GBS_write_hash(species_to_info_hash, species_name, long (info));
@@ -142,9 +128,8 @@ void st_ml_add_sequence_part_to_stat(ST_ML * st_ml,
             if (v > max)
                 max = v;
         }
-        AWT_dna_base base =
-            awt_dna_table.char_to_enum(source_sequence[pos]);
-        if (base != ST_UNKNOWN && base != ST_GAP) {     // dont count gaps
+        AWT_dna_base base = awt_dna_table.char_to_enum(source_sequence[pos]);
+        if (base != ST_UNKNOWN && base != ST_GAP) { // dont count gaps
             double val = max / (0.0001 + vec->b[base]);
             double log_val = log(val);
             info->ss2.add(pos * 2 / seq_len, log_val);
@@ -155,18 +140,14 @@ void st_ml_add_sequence_part_to_stat(ST_ML * st_ml,
 }
 
 void st_ml_add_quality_string_to_species(GBDATA * gb_main,
-                                         const char *alignment_name,
-                                         const char *species_name,
-                                         int seq_len, int bucket_size,
-                                         GB_HASH * species_to_info_hash,
-                                         st_report_enum report,
-                                         const char *dest_field)
-{
+        const char *alignment_name, const char *species_name, int seq_len,
+        int bucket_size, GB_HASH * species_to_info_hash, st_report_enum report,
+        const char *dest_field) {
     GBDATA *gb_species = GBT_find_species(gb_main, species_name);
     if (!gb_species)
-        return;                 // invalid species
-    st_cq_info *info =
-        (st_cq_info *) GBS_read_hash(species_to_info_hash, species_name);
+        return; // invalid species
+    st_cq_info *info = (st_cq_info *) GBS_read_hash(species_to_info_hash,
+            species_name);
     if (!info)
         return;
     GBDATA *gb_dest = GB_search(gb_species, dest_field, GB_STRING);
@@ -184,9 +165,8 @@ void st_ml_add_quality_string_to_species(GBDATA * gb_main,
         error = GB_write_string(gb_dest, buffer);
 
         if (!error && report) {
-            GBDATA *gb_report =
-                GBT_add_data(gb_species, alignment_name, "quality",
-                             GB_STRING);
+            GBDATA *gb_report = GBT_add_data(gb_species, alignment_name,
+                    "quality", GB_STRING);
             if (!gb_report) {
                 error = GB_get_error();
             } else {
@@ -213,30 +193,24 @@ void st_ml_add_quality_string_to_species(GBDATA * gb_main,
 
 }
 
-GB_ERROR st_ml_check_sequence_quality(GBDATA * gb_main,
-                                      const char *tree_name,
-                                      const char *alignment_name,
-                                      AWT_csp * awt_csp,
-                                      int bucket_size, int marked_only,
-                                      st_report_enum report,
-                                      const char *filter_string,
-                                      const char *dest_field)
-{
+GB_ERROR st_ml_check_sequence_quality(GBDATA * gb_main, const char *tree_name,
+        const char *alignment_name, AWT_csp * awt_csp, int bucket_size,
+        int marked_only, st_report_enum report, const char *filter_string,
+        const char *dest_field) {
     AP_filter filter;
     int seq_len = GBT_get_alignment_len(gb_main, alignment_name);
     filter.init(filter_string, "0 ", seq_len);
     ST_ML st_ml(gb_main);
-    GB_ERROR error = st_ml.init(tree_name, alignment_name,
-                                0, marked_only,
-                                filter_string, awt_csp);
+    GB_ERROR error = st_ml.init(tree_name, alignment_name, 0, marked_only,
+            filter_string, awt_csp);
     if (error) {
         return error;
     }
 
-    GB_HASH *species_to_info_hash =
-        GBS_create_hash(GBT_get_species_count(gb_main), 1);
+    GB_HASH *species_to_info_hash = GBS_create_hash(
+            GBT_get_species_count(gb_main), 1);
     GB_CSTR *snames =
-        GBT_get_species_names_of_tree((GBT_TREE *) st_ml.tree_root->tree);
+            GBT_get_species_names_of_tree((GBT_TREE *) st_ml.tree_root->tree);
 
     int pos;
     aw_openstatus("Sequence Quality Check");
@@ -249,21 +223,16 @@ GB_ERROR st_ml_check_sequence_quality(GBDATA * gb_main,
         }
         const char **pspecies_name;
         for (pspecies_name = snames; *pspecies_name; pspecies_name++) {
-            st_ml_add_sequence_part_to_stat(&st_ml, awt_csp,
-                                            *pspecies_name,
-                                            seq_len, bucket_size,
-                                            species_to_info_hash, pos,
-                                            end);
+            st_ml_add_sequence_part_to_stat(&st_ml, awt_csp, *pspecies_name,
+                    seq_len, bucket_size, species_to_info_hash, pos, end);
         }
     }
     aw_status("Generating Result String");
     const char **pspecies_name;
     for (pspecies_name = snames; *pspecies_name; pspecies_name++) {
         st_ml_add_quality_string_to_species(gb_main, alignment_name,
-                                            *pspecies_name,
-                                            seq_len, bucket_size,
-                                            species_to_info_hash,
-                                            report, dest_field);
+                *pspecies_name, seq_len, bucket_size, species_to_info_hash,
+                report, dest_field);
     }
     aw_closestatus();
     free(snames);
