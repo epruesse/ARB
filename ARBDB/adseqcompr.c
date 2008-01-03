@@ -468,12 +468,12 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, con
     GB_UNDO_TYPE  undo_type = GB_get_requested_undo_type(gb_main);
     GB_MAIN_TYPE *Main      = GB_MAIN(gb_main);
     char         *to_free   = 0;
-    
+
     if (Main->transaction>0){
         GB_internal_error("Internal Error: Compress Sequences called during a running transaction");
         return GB_export_error("Internal Error: Compress Sequences called during a running transaction");
     }
-    
+
     GB_request_undo_type(gb_main,GB_UNDO_KILL);
     GB_begin_transaction(gb_main);
     GB_push_my_security(gb_main);
@@ -491,7 +491,7 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, con
         if (!error) error = GBT_compress_sequence_tree(gb_main,ctree,ali_name);
         GBT_delete_tree((GBT_TREE *)ctree);
     }
-    
+
     GB_pop_my_security(gb_main);
     if (error) {
         GB_abort_transaction(gb_main);
@@ -501,7 +501,7 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, con
         GB_disable_quicksave(gb_main,"Database optimized");
     }
     GB_request_undo_type(gb_main,undo_type);
-    
+
     if (to_free) free(to_free);
     return error;
 }
@@ -581,47 +581,14 @@ char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master
                 j += -i;
                 i = 0;
             }
-            if (c==0){
-                for (;j<-4;j+=4){ /* copy 4 bytes at a time */
-                    int a,b;
-                    a = m[0];
-                    b = m[1];   dest[0] = a;
-                    a = m[2];   dest[1] = b;
-                    b = m[3];   dest[2] = a;
-                    dest[3] = b;
-                    m+= 4;
-                    dest += 4;
-                }
-                for (;j;j++) *(dest++) = *(m++);
-            }else{
-                m -= j;
-                if (j<-16){     /* set multiple bytes */
-                    int k;
-                    c &= 0xff;  /* copy c to upper bytes */
-                    c |= (c<<8);
-                    c |= (c<<16);
-                    j = -j;
-                    if ( ((long)dest) & 1) {
-                        *(dest++) = c;
-                        j--;
-                    }
-                    if ( ((long)dest) &2){
-                        *((short *)dest) = c;
-                        dest += 2;
-                        j-=2;
-                    }
-
-                    k = j&3;
-                    j = j>>2;
-                    for (;j;j--){
-                        *((GB_UINT4 *)dest) = c;
-                        dest += sizeof(GB_UINT4);
-                    }
-                    j = k;
-                    for (;j;j--) *(dest++) = c;
-                }else{
-                    for (;j;j++) *(dest++) = c;
-                }
+            if (c==0) {
+                memcpy(dest, m, -j);
+                dest+= -j;
+                m+= -j;
+            } else {
+                memset(dest, c, -j);
+                dest+= -j;
+            	m+= -j;
             }
         }
     }
@@ -674,6 +641,6 @@ char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss,long size, GB_ERROR 
         }
         free(to_free);
     }
-    
+
     return dest;
 }
