@@ -291,7 +291,7 @@ static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_r
     static int  idx                             = 0;
     static char lifetime[GLOBAL_STRING_BUFFERS] = { };
     static char nextIdx[GLOBAL_STRING_BUFFERS] = { };
-    
+
     int my_idx;
     int psize;
 
@@ -1295,9 +1295,9 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
 
         *(arb_key)          is the value of the a database entry arb key
         *(arb_key#string)   value of the database entry or 'string' if the entry does not exist
-        *(arb_key\:SRT)     runs SRT recursively on the value of the database entry 
+        *(arb_key\:SRT)     runs SRT recursively on the value of the database entry
         *([arb_key]|ACI)    runs the ACI command interpreter on the value of the database entry (or on an empty string)
-        
+
      */
 
 {
@@ -1516,7 +1516,7 @@ char *GBS_eval_env(const char *p){
 char* GBS_find_lib_file(const char *filename,const char *libprefix, int warn_when_not_found)
 {
     /* Searches files in $CURRENTDIR, $HOME, $ARBHOME/lib */
-    
+
     char        buffer[256];
     const char *arbhome;
     const char *home;
@@ -1707,9 +1707,9 @@ long GB_checksum(const char *seq, long length, int ignore_case , const char *exc
       * if ignore_case == true -> treat all characters as uppercase-chars (applies to exclude too)
       */
 {
-    register unsigned long c = 0xffffffffL;
-    register long   n = length;
-    register int    i;
+    unsigned long c = 0xffffffffL;
+    long   n = length;
+    int    i;
     int tab[256];
 
     for (i=0;i<256;i++) {
@@ -2033,10 +2033,10 @@ char *GBS_regreplace(const char *in, const char *regexprin, GBDATA *gb_species){
     while (subs && subs > regexpr && subs[-1] == '\\') subs = strrchr(subs,'/');
     if (!subs || subs == regexpr){
         free(regexpr);
-        
+
         /* dont change this error message (or change it in adquery/GB_command_interpreter too) : */
         GB_export_error("no '/' found in regexpr");
-        
+
         return 0;
     }
     *(subs++) = 0;
