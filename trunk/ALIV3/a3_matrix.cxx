@@ -141,7 +141,7 @@ void A3Matrix::Init ( int xlen,
             int p = l + x;
             
             if (edump) edump(matrix[p]);
-            else cout << " " << (int)matrix[p];
+            else cout << " " << (long)matrix[p];
 
             x++;
         }
