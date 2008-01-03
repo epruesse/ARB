@@ -457,7 +457,7 @@ static format_props detect_format_props(PT_local *locs, bool show_gpos) {
     format.gpos_width         = 4; // 'gpos'
     format.ecoli_width        = 5; // 'ecoli'
 
-    for (PT_probematch *ml = locs->pm; ml; ml = ml->next) {
+    for (; ml; ml = ml->next) {
         set_max(virt_name(ml), format.name_width);
         set_max(virt_fullname(ml), format.gene_or_full_width);
         set_max(GBS_global_string("%i", ml->b_pos), format.pos_width);
@@ -580,16 +580,16 @@ static const char *get_match_info_formatted(PT_probematch  *ml, const format_pro
     GBS_strcat(memfile, ref);
 
     free(ref);
-    return GBS_strclose(memfile);
+
+    static char *result = 0;
+    if (result) free(result);
+    result = GBS_strclose(memfile);
+
+    return result;
 }
 
 static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_props& format) {
-    // Set header of result
-    const char *result = 0;
-    if (!ml) {
-        result = "There are no targets";
-    }
-    else {
+    if (ml) {
         void *memfile = GBS_stropen(500);
         GBS_strcat(memfile, "    "); // one space more than in get_match_info_formatted()
 
@@ -627,7 +627,9 @@ static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_pro
 
         return result;
     }
-    pt_assert(result);
+    // Else set header of result
+    const char *result = "There are no targets";
+    // pt_assert(result);
     return result;
 }
 
