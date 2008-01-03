@@ -97,25 +97,43 @@ POS_TREE *build_pos_tree (POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, u
     }
     return pt;
 }
+
 /* get the absolute alignment position */
 static GB_INLINE void get_abs_align_pos(char *seq, int &pos)
 {
-    register int c;
     int q_exists = 0;
-    while ( pos){
-        c = seq[pos];
-        if ( c== '.'){
-            q_exists = 1; pos--; continue;
+    if(pos > 3) {
+        pos-=3;
+        while(pos > 0) {
+            uint32_t c= *((uint32_t*)(seq+pos));
+            if(c == 0x2E2E2E2E) {
+                q_exists = 1;
+                pos-=4;
+                continue;
+            }
+            if(c == 0x2D2D2D2D) {
+                pos-=4;
+                continue;
+            }
+            break;
         }
-        if (c == '-'){
-            pos--; continue;
+        pos+=3;
+    }
+    while(pos) {
+        unsigned char c= seq[pos];
+        if(c == '.') {
+            q_exists = 1;
+            pos--;
+            continue;
+        }
+        if(c == '-') {
+            pos--;
+            continue;
         }
         break;
     }
-    pos += q_exists;
+    pos+=q_exists;
 }
-
-
 
 long PTD_save_partial_tree(FILE *out,PTM2 *ptmain,POS_TREE * node,char *partstring,int partsize,long pos, long *ppos)
 {
