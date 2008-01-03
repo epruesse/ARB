@@ -96,7 +96,7 @@ void probe_read_data_base(char *name)
 int probe_compress_sequence(char *seq)
 {
     static uchar *tab = 0;
-    if (!tab){
+    if (!tab) {
         tab = (uchar *)malloc(256);
         memset(tab,PT_N,256);
         tab['A'] = tab['a'] = PT_A;
@@ -107,30 +107,26 @@ int probe_compress_sequence(char *seq)
         tab['.'] = PT_QU;
     }
 
-    char *dest;
-    uchar c;
-    char *source;
-    int last_is_q = 0;
+    char *dest, *source;
     dest = source = seq;
-    while((c=(uchar)*(seq++)))
-    {
-        if (c == '-') continue;
-        c = tab[c];
-        if (c == PT_QU){
-            if (last_is_q) continue;
-            last_is_q = 1;
-        }else{
-            last_is_q = 0;
+    while(*seq) {
+        while ( *(uint32_t*)seq == 0x2D2D2D2D ) seq += 4;
+        while ( *seq == '-') seq++;
+
+        uchar c = tab[*seq++];
+        *dest++ = c;
+        if ( c == PT_QU ) { // TODO: *seq='.' ???
+            while ( *(uint32_t*)seq == 0x2D2D2D2D || *(uint32_t*)seq == 0x2E2E2E2E ) seq+= 4;
+            while ( *seq == '-' || *seq == '.' ) seq++;
         }
-        *(dest)++ = c;
     }
 
-    if (dest[-1] != PT_QU){
-        *(dest++) = PT_QU;
-        printf("error\n");
+    if (dest[-1] != PT_QU) {
+        *dest++ = PT_QU;
     }
     return dest-source;
 }
+
 char *probe_read_string_append_point(GBDATA *gb_data,int *psize)
 {
     char *data;
