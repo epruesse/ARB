@@ -49,7 +49,7 @@ private:
     static BI_helix *helix;
     static GBDATA *helix_gb_main;
     static std::string helix_ali_name;
-    static std::map < int, int> filterMap;
+    static std::map<int, int> filterMap;
     static bool has_filterMap;
 
     static BI_helix & getHelix(GBDATA * gb_main, const char *ali_name);
@@ -59,7 +59,7 @@ private:
 BI_helix *SQ_helix::helix = 0;
 GBDATA *SQ_helix::helix_gb_main = 0;
 std::string SQ_helix::helix_ali_name;
-std::map < int, int> SQ_helix::filterMap;
+std::map<int, int> SQ_helix::filterMap;
 bool SQ_helix::has_filterMap = false;
 
 // SQ_helix implementation
@@ -106,21 +106,21 @@ void SQ_helix::SQ_calc_helix_layout(const char *seq, GBDATA * gb_main,
         count_no_helix = 1;
     } else {
         // calculate the number of strong, weak and no helixes
+        std::map<int,int>::iterator it;
+
         for (int filter_pos = 0; filter_pos < filter->real_len; filter_pos++) {
             int seq_pos = filter->filterpos_2_seqpos[filter_pos];
 
             BI_PAIR_TYPE pair_type = helix->pairtype(seq_pos);
             if (pair_type == HELIX_PAIR) {
                 int v_seq_pos = helix->opposite_position(seq_pos);
+
                 if (v_seq_pos > seq_pos) { // ignore right helix positions
-                    int v_filter_pos = filterMap[v_seq_pos];
+                    it = filterMap.find(v_seq_pos);
 
-#warning v_filter_pos==0 indicates a 'not found' entry but it also can be a legal position
-                    seq_assert(v_filter_pos);
-
-                    if (v_filter_pos > 0) {
+                    if (it != filterMap.end()) {
                         char left = seq[filter_pos];
-                        char right = seq[v_filter_pos];
+                        char right = seq[it->second];
                         int check = helix->check_pair(left, right, pair_type);
 
                         switch (check) {
