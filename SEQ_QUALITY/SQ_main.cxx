@@ -6,7 +6,7 @@
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
-//  Coded by Kai Bader (baderk@in.tum.de) in 2007                        //
+//  Coded by Kai Bader (baderk@in.tum.de) in 2007 - 2008                 //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
@@ -37,7 +37,6 @@ extern GBDATA *gb_main;
 
 #define AWAR_SQ_PERM "seq_quality/"     // saved in properties
 #define AWAR_SQ_TEMP "tmp/seq_quality/" // not saved in properties
-
 #define AWAR_SQ_WEIGHT_BASES     AWAR_SQ_PERM "weight_bases"
 #define AWAR_SQ_WEIGHT_DEVIATION AWAR_SQ_PERM "weight_deviation"
 #define AWAR_SQ_WEIGHT_HELIX     AWAR_SQ_PERM "weight_helix"
@@ -55,8 +54,7 @@ extern GBDATA *gb_main;
 #define AWAR_FILTER_FILTER  AWAR_FILTER_PREFIX "filter"
 #define AWAR_FILTER_ALI     AWAR_FILTER_PREFIX "alignment"
 
-void SQ_create_awars(AW_root * aw_root, AW_default aw_def)
-{
+void SQ_create_awars(AW_root * aw_root, AW_default aw_def) {
     aw_root->awar_int(AWAR_SQ_WEIGHT_BASES, 5, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_DEVIATION, 15, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_HELIX, 15, aw_def);
@@ -77,16 +75,14 @@ void SQ_create_awars(AW_root * aw_root, AW_default aw_def)
 
 
 static void sq_calc_seq_quality_cb(AW_window * aww,
-                                   AW_CL res_from_awt_create_select_filter)
-{
+        AW_CL res_from_awt_create_select_filter) {
     AW_root *aw_root = aww->get_root();
     GB_ERROR error = 0;
     GBT_TREE *tree = 0;
     AP_tree *ap_tree = 0;
     AP_tree_root *ap_tree_root = 0;
-    bool marked_only =
-        (aw_root->awar(AWAR_SQ_MARK_ONLY_FLAG)->read_int() > 0);
-    char *treename = aw_root->awar(AWAR_TREE)->read_string();   // contains "????" if no tree is selected
+    bool marked_only = (aw_root->awar(AWAR_SQ_MARK_ONLY_FLAG)->read_int() > 0);
+    char *treename = aw_root->awar(AWAR_TREE)->read_string(); // contains "????" if no tree is selected
 
     if (treename && strstr(treename, "????") == 0) {
         ap_tree = new AP_tree(0);
@@ -96,39 +92,33 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
         if (error) {
             delete ap_tree;
             delete ap_tree_root;
-            aw_message(GBS_global_string
-                       ("Cannot read tree '%s' -- group specific calculations skipped.\n   Treating all available sequences as one group!",
-                        treename));
+            aw_message(GBS_global_string(
+                    "Cannot read tree '%s' -- group specific calculations skipped.\n   Treating all available sequences as one group!",
+                    treename));
             tree = 0;
         } else {
             ap_tree_root->tree = ap_tree;
 
             GB_push_transaction(gb_main);
-            GBT_link_tree((GBT_TREE *) ap_tree_root->tree, gb_main,
-                          GB_FALSE, 0, 0);
+            GBT_link_tree((GBT_TREE *) ap_tree_root->tree, gb_main, GB_FALSE,
+                    0, 0);
             GB_pop_transaction(gb_main);
 
             if (marked_only) {
-                error =
-                    ap_tree_root->tree->remove_leafs(gb_main,
-                                                     AWT_REMOVE_NOT_MARKED
-                                                     | AWT_REMOVE_DELETED);
+                error = ap_tree_root->tree->remove_leafs(gb_main,
+                        AWT_REMOVE_NOT_MARKED | AWT_REMOVE_DELETED);
             }
-            if (error || !ap_tree_root->tree
-                || ((GBT_TREE *) ap_tree_root->tree)->is_leaf) {
-                aw_message
-                    ("No tree selected -- group specific calculations skipped.");
+            if (error || !ap_tree_root->tree || ((GBT_TREE *) ap_tree_root->tree)->is_leaf) {
+                aw_message("No tree selected -- group specific calculations skipped.");
                 tree = 0;
             } else {
-                error =
-                    ap_tree_root->tree->remove_leafs(gb_main,
-                                                     AWT_REMOVE_DELETED);
+                error = ap_tree_root->tree->remove_leafs(gb_main,
+                        AWT_REMOVE_DELETED);
                 tree = ((GBT_TREE *) ap_tree_root->tree);
             }
         }
     } else {
-        aw_message
-            ("No tree selected -- group specific calculations skipped.");
+        aw_message("No tree selected -- group specific calculations skipped.");
         tree = 0;
     }
 
@@ -144,11 +134,9 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
         struct SQ_weights weights;
 
         weights.bases = aw_root->awar(AWAR_SQ_WEIGHT_BASES)->read_int();
-        weights.diff_from_average =
-            aw_root->awar(AWAR_SQ_WEIGHT_DEVIATION)->read_int();
+        weights.diff_from_average = aw_root->awar(AWAR_SQ_WEIGHT_DEVIATION)->read_int();
         weights.helix = aw_root->awar(AWAR_SQ_WEIGHT_HELIX)->read_int();
-        weights.consensus =
-            aw_root->awar(AWAR_SQ_WEIGHT_CONSENSUS)->read_int();
+        weights.consensus = aw_root->awar(AWAR_SQ_WEIGHT_CONSENSUS)->read_int();
         weights.iupac = aw_root->awar(AWAR_SQ_WEIGHT_IUPAC)->read_int();
         weights.gc = aw_root->awar(AWAR_SQ_WEIGHT_GC)->read_int();
 
@@ -157,15 +145,15 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
         int reevaluate = aw_root->awar(AWAR_SQ_REEVALUATE)->read_int();
 
         // Load and use Sequence-Filter
-        AP_filter *filter =
-            awt_get_filter(aw_root, res_from_awt_create_select_filter);
+        AP_filter *filter = awt_get_filter(aw_root,
+                res_from_awt_create_select_filter);
 
         /*
-           SQ_evaluate() generates the final estimation for the quality of an alignment.
-           It takes the values from the different containers, which are generated by the other functions, weights them
-           and calculates a final value. The final value is stored in "value_of_evaluation" (see options).
-           With the values stored in "weights" one can customise how important a value stored in a contaier becomes
-           for the final result.
+         SQ_evaluate() generates the final estimation for the quality of an alignment.
+         It takes the values from the different containers, which are generated by the other functions, weights them
+         and calculates a final value. The final value is stored in "value_of_evaluation" (see options).
+         With the values stored in "weights" one can customise how important a value stored in a contaier becomes
+         for the final result.
          */
 
         if (tree == 0) {
@@ -196,16 +184,13 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
             if ((check = SQ_check_tree_structure(tree)) != NONE) {
                 switch (check) {
                 case ZOMBIE:
-                    aw_message
-                        ("Found one or more zombies in the tree.\nPlease remove them or use another tree before running the quality check tool.");
+                    aw_message("Found one or more zombies in the tree.\nPlease remove them or use another tree before running the quality check tool.");
                     break;
                 case MISSING_NODE:
-                    aw_message
-                        ("Missing node(s) or unusable tree structure.\nPlease fix the tree before running the quality check tool.");
+                    aw_message("Missing node(s) or unusable tree structure.\nPlease fix the tree before running the quality check tool.");
                     break;
                 default:
-                    aw_message
-                        ("An error occured while traversing the tree.\nPlease fix the tree before running the quality check tool.");
+                    aw_message("An error occured while traversing the tree.\nPlease fix the tree before running the quality check tool.");
                     break;
                 }
                 aw_closestatus();
@@ -222,13 +207,11 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
                 aw_openstatus("Calculating pass 1 of 2...");
                 SQ_reset_counters(tree);
                 SQ_GroupData *globalData = new SQ_GroupData_RNA;
-                SQ_calc_and_apply_group_data(tree, gb_main, globalData,
-                                             filter);
+                SQ_calc_and_apply_group_data(tree, gb_main, globalData, filter);
                 aw_closestatus();
                 SQ_reset_counters(tree);
                 aw_openstatus("Calculating pass 2 of 2...");
-                SQ_calc_and_apply_group_data2(tree, gb_main, globalData,
-                                              filter);
+                SQ_calc_and_apply_group_data2(tree, gb_main, globalData, filter);
                 SQ_evaluate(gb_main, weights);
                 aw_closestatus();
                 SQ_reset_counters(tree);
@@ -252,10 +235,8 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
     delete ap_tree_root;
 }
 
-
 // create window for sequence quality calculation (called only once)
-AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL)
-{
+AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL) {
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init(aw_root, "CALC_SEQ_QUALITY", "CALCULATE SEQUENCE QUALITY");
@@ -297,14 +278,14 @@ AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL)
     aws->create_input_field(AWAR_SQ_MARK_BELOW, 3);
 
     aws->at("tree");
-    awt_create_selection_list_on_trees(gb_main, (AW_window *) aws,
-                                       AWAR_TREE);
+    awt_create_selection_list_on_trees(gb_main, (AW_window *) aws, 
+    AWAR_TREE);
 
     aws->at("filter");
-    AW_CL filtercd = awt_create_select_filter(aws->get_root(), gb_main,
-                                              AWAR_FILTER_NAME);
+    AW_CL filtercd = awt_create_select_filter(aws->get_root(), gb_main, 
+    AWAR_FILTER_NAME);
     aws->callback(AW_POPUP, (AW_CL) awt_create_select_filter_win,
-                  filtercd);
+    filtercd);
     aws->create_button("SELECT_FILTER", AWAR_FILTER_NAME);
 
     aws->at("go");
