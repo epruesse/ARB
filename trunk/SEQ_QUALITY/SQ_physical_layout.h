@@ -6,7 +6,7 @@
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
-//  Coded by Kai Bader (baderk@in.tum.de) in 2007                        //
+//  Coded by Kai Bader (baderk@in.tum.de) in 2007 - 2008                 //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
@@ -19,15 +19,14 @@
 #endif
 #define seq_assert(bed) arb_assert(bed)
 
-
 class SQ_physical_layout {
-  public:
+public:
     SQ_physical_layout();
     void SQ_calc_physical_layout(const char *sequence, int size,
-                                 GBDATA * gb_quality_ali);
+            GBDATA * gb_quality_ali);
     int SQ_get_number_of_bases() const;
     double SQ_get_gc_proportion() const;
-  private:
+private:
     int roundme(double value);
     double temp;
     double count_bases;
@@ -39,9 +38,7 @@ class SQ_physical_layout {
     int count_bases2;
 };
 
-
-SQ_physical_layout::SQ_physical_layout()
-{
+SQ_physical_layout::SQ_physical_layout() {
     temp = 0;
     count_bases = 0;
     count_scores = 0;
@@ -52,25 +49,20 @@ SQ_physical_layout::SQ_physical_layout()
     count_bases2 = 0;
 }
 
-
-int SQ_physical_layout::roundme(double value)
-{
+int SQ_physical_layout::roundme(double value) {
     int x;
     value += 0.5;
     x = (int) floor(value);
     return x;
 }
 
-
 void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence,
-                                                 int size,
-                                                 GBDATA * gb_quality_ali)
-{
+        int size, GBDATA * gb_quality_ali) {
     count_bases = size;
 
     for (int i = 0; i < size; i++) {
         switch (sequence[i]) {
-        case '-':              /*calculate number of dots and spaces */
+        case '-': /*calculate number of dots and spaces */
             count_bases--;
             count_scores++;
             break;
@@ -78,7 +70,7 @@ void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence,
             count_bases--;
             count_dots++;
             break;
-        case 'G':              /*calculate GC layout of sequence */
+        case 'G': /*calculate GC layout of sequence */
         case 'g':
             GC++;
             break;
@@ -97,33 +89,26 @@ void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence,
     percent_bases = roundme(temp);
     count_bases2 = roundme(count_bases);
 
-    GBDATA *gb_result1 =
-        GB_search(gb_quality_ali, "number_of_bases", GB_INT);
+    GBDATA *gb_result1 = GB_search(gb_quality_ali, "number_of_bases", GB_INT);
     seq_assert(gb_result1);
     GB_write_int(gb_result1, count_bases2);
 
-    GBDATA *gb_result2 =
-        GB_search(gb_quality_ali, "percent_of_bases", GB_INT);
+    GBDATA *gb_result2 = GB_search(gb_quality_ali, "percent_of_bases", GB_INT);
     seq_assert(gb_result2);
     GB_write_int(gb_result2, percent_bases);
 
-    GBDATA *gb_result3 =
-        GB_search(gb_quality_ali, "GC_proportion", GB_FLOAT);
+    GBDATA *gb_result3 = GB_search(gb_quality_ali, "GC_proportion", GB_FLOAT);
     seq_assert(gb_result3);
     GB_write_float(gb_result3, GC_proportion);
 }
 
-
-inline int SQ_physical_layout::SQ_get_number_of_bases() const
-{
+inline int SQ_physical_layout::SQ_get_number_of_bases() const {
     int i;
     i = count_bases2;
     return i;
 }
 
-
-inline double SQ_physical_layout::SQ_get_gc_proportion() const
-{
+inline double SQ_physical_layout::SQ_get_gc_proportion() const {
     double i;
     i = GC_proportion;
     return i;

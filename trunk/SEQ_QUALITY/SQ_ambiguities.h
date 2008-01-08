@@ -6,7 +6,7 @@
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
-//  Coded by Kai Bader (baderk@in.tum.de) in 2007                        //
+//  Coded by Kai Bader (baderk@in.tum.de) in 2007 - 2008                 //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
@@ -20,34 +20,30 @@
 #endif
 #define seq_assert(bed) arb_assert(bed)
 
-
 class SQ_ambiguities {
-  public:
+public:
     SQ_ambiguities();
-    void SQ_count_ambiguities(const char *iupac, int length,
-                              GBDATA * gb_quality);
+    void
+            SQ_count_ambiguities(const char *iupac, int length,
+                    GBDATA * gb_quality);
     int SQ_get_nr_ambiguities() const;
     int SQ_get_percent_ambiguities() const;
     int SQ_get_iupac_value() const;
 
-  private:
+private:
     int number;
     int percent;
     int iupac_value;
 };
 
-
-inline SQ_ambiguities::SQ_ambiguities()
-{
+inline SQ_ambiguities::SQ_ambiguities() {
     number = 0;
     percent = 0;
     iupac_value = 0;
 }
 
-
 void SQ_ambiguities::SQ_count_ambiguities(const char *iupac, int length,
-                                          GBDATA * gb_quality)
-{
+        GBDATA * gb_quality) {
     char c;
 
     for (int i = 0; i < length; i++) {
@@ -106,20 +102,14 @@ void SQ_ambiguities::SQ_count_ambiguities(const char *iupac, int length,
     GB_write_int(gb_result1, iupac_value);
 }
 
-
-inline int SQ_ambiguities::SQ_get_nr_ambiguities() const
-{
+inline int SQ_ambiguities::SQ_get_nr_ambiguities() const {
     return number;
 }
 
-
-inline int SQ_ambiguities::SQ_get_percent_ambiguities() const
-{
+inline int SQ_ambiguities::SQ_get_percent_ambiguities() const {
     return percent;
 }
 
-
-inline int SQ_ambiguities::SQ_get_iupac_value() const
-{
+inline int SQ_ambiguities::SQ_get_iupac_value() const {
     return iupac_value;
 }

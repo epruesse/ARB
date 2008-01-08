@@ -6,7 +6,7 @@
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
-//  Coded by Kai Bader (baderk@in.tum.de) in 2007                        //
+//  Coded by Kai Bader (baderk@in.tum.de) in 2007 - 2008                 //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
@@ -20,9 +20,7 @@
 
 using namespace std;
 
-
-SQ_GroupData::SQ_GroupData()
-{
+SQ_GroupData::SQ_GroupData() {
     size = 0;
     avg_bases = 0;
     nr_sequences = 0;
@@ -30,14 +28,10 @@ SQ_GroupData::SQ_GroupData()
     initialized = false;
 }
 
-
-SQ_GroupData::~SQ_GroupData()
-{
+SQ_GroupData::~SQ_GroupData() {
 }
 
-
-consensus_result SQ_GroupData_RNA::SQ_calc_consensus(const char *sequence) const
-{
+consensus_result SQ_GroupData_RNA::SQ_calc_consensus(const char *sequence) const {
     consensus_result cr;
     cr.conformity = 0;
     cr.deviation = 0;
@@ -137,21 +131,21 @@ consensus_result SQ_GroupData_RNA::SQ_calc_consensus(const char *sequence) const
             current[5] = 1;
             break;
         default:
-            seq_assert(0);      // unhandled character
+            seq_assert(0);
+            // unhandled character
             break;
 
-        }                       //end fill up current
+        } //end fill up current
 
         int *cs = consensus[i].i;
-        double sum =
-            (double) (cs[0] + cs[1] + cs[2] + cs[3] + cs[4] + cs[5]);
+        double sum = (double) (cs[0] + cs[1] + cs[2] + cs[3] + cs[4] + cs[5]);
 
         for (int j = 0; j < 6; j++) {
             int currentj = current[j];
             if (currentj > 0) {
                 if (cs[j] > currentj) {
                     cr.conformity += (double) (cs[j] - currentj) / sum;
-                } else          // == if ( cs[j] <= currentj )
+                } else // == if ( cs[j] <= currentj )
                 {
                     cr.deviation += current[j];
                 }
@@ -159,14 +153,12 @@ consensus_result SQ_GroupData_RNA::SQ_calc_consensus(const char *sequence) const
         }
     }
 
-    cr.conformity = cr.conformity / size;       //set conformity in relation to sequencelength
+    cr.conformity = cr.conformity / size; //set conformity in relation to sequencelength
     cr.deviation = cr.deviation / size; //set deviation in relation to sequencelength
     return cr;
 }
 
-
-void SQ_GroupData_RNA::SQ_add_sequence(const char *sequence)
-{
+void SQ_GroupData_RNA::SQ_add_sequence(const char *sequence) {
     for (int i = 0; i < size; i++) {
         int *cs = consensus[i].i;
         switch (sequence[i]) {
@@ -261,15 +253,14 @@ void SQ_GroupData_RNA::SQ_add_sequence(const char *sequence)
             break;
         default:
             fprintf(stderr, "Illegal character '%c'", sequence[i]);
-            seq_assert(0);      // unhandled character
+            seq_assert(0);
+            // unhandled character
             break;
         }
     }
 }
 
-
-consensus_result SQ_GroupData_PRO::SQ_calc_consensus(const char *) const
-{
+consensus_result SQ_GroupData_PRO::SQ_calc_consensus(const char *) const {
     // Warning: implementation missing
     consensus_result cr;
     cr.conformity = 0;
@@ -278,8 +269,6 @@ consensus_result SQ_GroupData_PRO::SQ_calc_consensus(const char *) const
     // dummy return values
 }
 
-
-void SQ_GroupData_PRO::SQ_add_sequence(const char *)
-{
+void SQ_GroupData_PRO::SQ_add_sequence(const char *) {
     // Warning: implementation missing
 }
