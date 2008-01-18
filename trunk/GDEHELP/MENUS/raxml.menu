@@ -1,17 +1,20 @@
 item:RAxML
 itemmeta: R
 itemmethod:(GOTO_LOCAL_DIR ; \
-            arb_export_rates "$RATES" "$QUICKADD" | \
-                arb_convert_aln -GenBank in1 -phylip2 infile; \
+            arb_export_rates "$RATES" "" | \
+            arb_convert_aln -GenBank in1 -phylip2 infile; \
             RUN_IN_WINDOW((cp infile last.infile; \
-			   time raxml -f $SEARCH \
+			   time raxml   -f $SEARCH \
+					-d $STARTTEMP \
 					-g $NUMOFMOVE \
-					-d $STARTTEMP -l $TIMELIMIT -r $MINREARRANG -k $MAXREARRANG \
+					-l $TIMELIMIT  \
+					-r $MINREARRANG \ 
+					-k $MAXREARRANG \
 	 			        -m $MODELOFNUCSUB -c $NUMOFCAT -s infile -n treefile; \
-			   cp RAxML_parsimonyTree.treefile treefile; \
+			   cp RAxML_result.treefile treefile; \
 			$DISPLAY_FUNC));RM_LOCAL_FILES(in1 last.infile) )&
 
-itemhelp:dnaml.help
+itemhelp:raxml.help
 
 arg:RATES
 argtype:weights
@@ -33,14 +36,13 @@ argtext:120
 
 arg:NUMOFMOVE
 argtype:text
-arglabel:Number of moves
+arglabel:Number of moves (for search algorithm "simulates annealing" only!!)
 argtext:10
 
 arg:STARTTEMP
 argtype:text
-arglabel:Start temperature for chain
+arglabel:Start temperature for chain (for search algorithm "simulates annealing" only!!)
 argtext:3.0
-
 
 arg:MODELOFNUCSUB
 argtype:choice_menu
@@ -65,17 +67,11 @@ argtype:text
 arglabel:Maximum rearrangement setting
 argtext:21
 
-
-
-
-
-
-
-arg:QUICKADD
-argtype:choice_menu
-arglabel:Use Quickadd
-argchoice:Yes:
-argchoice:No:Q
+//arg:QUICKADD
+//argtype:choice_menu
+//arglabel:Use Quickadd
+//argchoice:Yes:
+//argchoice:No:Q
 
 arg:DISPLAY_FUNC
 argtype:choice_menu
