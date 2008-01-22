@@ -1,25 +1,28 @@
-# Makefile May 2004 by Alexandros P. Stamatakis
-# modified for ARB 2005
+# Makefile August 2006 by Alexandros Stamatakis
+# Modified for compilation in ARB, Harald Meier 2008-01-21
 
 .SUFFIXES: .o .c .h .depend
 
-RAXML_OBJECTS=axml.o dnapars.o rev_functions.o
+RAXML_OBJECTS    = axml.o raxmlParsimony.o rev_functions.o optimizeModel.o multiple.o searchAlgo.o topologies.o parsePartitions.o treeIO.o models.o bipartitionList.o rapidBootstrap.o evaluatePartialGeneric.o evaluateGeneric.o newviewGeneric.o makenewzGeneric.o  evaluateGenericVector.o categorizeGeneric.o 
 OBJECTS = $(RAXML_OBJECTS)
-RM 	   = rm -f
+RM = rm -f
 
-CFLAGS_RAXML = -DNORMAL -fomit-frame-pointer -funroll-loops
+GLOBAL_DEPS = axml.h globalVariables.h
+CFLAGS_RAXML =  -fomit-frame-pointer -funroll-loops  
+#-Wall -pedantic -Wunused-parameter -Wredundant-decls  -Wreturn-type  -Wswitch-default -Wunused-value -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int -Wimport -pedantic-errors -Wunused  -Wunused-function  -Wunused-label -Wno-int-to-pointer-cast -Wbad-function-cast  -Wmissing-declarations -Wmissing-prototypes  -Wnested-externs  -Wold-style-definition -Wstrict-prototypes  -Wdeclaration-after-statement -Wpointer-sign -Wextra -Wmissing-noreturn -Wredundant-decls -Wunused -Wunused-function -Wunused-parameter -Wunused-value  -Wunused-variable
 
 # ----------------------------------------
 # normal compilation:
 ifndef ARB
-
 CC 		= gcc
 CFLAGS 	= -O3 $(CFLAGS_RAXML)
+
 TARGET  = .
 MAIN 	= $(EXE)
 #-xO5
 # -pg
 LDFLAGS = -lm
+
 
 # ----------------------------------------
 # compile for ARB:
@@ -34,22 +37,11 @@ $(MAIN) : all
 
 endif
 
-TARGETS = $(TARGET)/raxml # $(TARGET)/consense #$(TARGET)/raxmlOMP $(TARGET)/raxmlMKL
-
+TARGETS = $(TARGET)/raxmlHPC
 all : $(TARGETS)
 
-$(TARGET)/consense : consense.o cons.o phylip.o
-	$(CC) $(CFLAGS)	-o $(TARGET)/consense $(LDFLAGS) consense.o phylip.o cons.o
-
-$(TARGET)/raxml :  $(RAXML_OBJECTS)
-	$(CC) $(CFLAGS) -o  $(TARGET)/raxml $(RAXML_OBJECTS) $(LDFLAGS)
-
-$(TARGET)/raxmlOMP :axmlOMP.o dnaparsOMP.o rev_functions.o
-	$(CC) $(CFLAGS_OMP) -o $(TARGET)/raxmlOMP axmlOMP.o dnaparsOMP.o rev_functions.o $(LDFLAGS)
-
-$(TARGET)/raxmlMKL : axmlMKL.o dnapars.o rev_functions.o
-	$(CC) $(CFLAGS_MKL) -o  $(TARGET)/raxmlMKL axmlMKL.o dnapars.o rev_functions.o $(LDFLAGS)
-
+$(TARGET)/raxmlHPC :  $(RAXML_OBJECTS) $(GLOBAL_DEPS)
+	$(CC) $(CFLAGS) -o  $(TARGET)/raxmlHPC $(RAXML_OBJECTS) $(LDFLAGS)
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<
 
@@ -66,11 +58,5 @@ depend.init:
 .c.depend:
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
-# DO NOT DELETE
 
-# Do not add dependencies manually - use 'make depend' in $ARBHOME
-# For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-axml.o: axml.h
-
-dnapars.o: phylip2.h
