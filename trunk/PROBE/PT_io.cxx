@@ -3,6 +3,8 @@
 // #include <malloc.h>
 #include <memory.h>
 #include <string.h>
+#include <stdint.h>
+
 #include <PT_server.h>
 #include "probe.h"
 #include <arbdbt.h>

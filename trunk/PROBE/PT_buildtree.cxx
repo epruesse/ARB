@@ -3,6 +3,8 @@
 #include <string.h>
 // #include <malloc.h>
 #include <unistd.h>
+#include <stdint.h>
+
 #include <PT_server.h>
 #include <PT_server_prototypes.h>
 #include "probe.h"
