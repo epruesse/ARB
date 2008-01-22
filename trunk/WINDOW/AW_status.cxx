@@ -61,7 +61,7 @@ enum {
 };
 
 
-struct _aw_stg_ {
+struct aw_stg_struct {
     int        fd_to[2];
     int        fd_from[2];
     int        mode;
@@ -1437,7 +1437,7 @@ char *aw_file_selection( const char *title, const char *dir, const char *def_nam
 /**********************     HELP WINDOW ************************/
 /***********************************************************************/
 
-struct _aw_help_global_ {
+struct aw_help_global_struct {
     AW_window *aww;
     AW_selection_list   *upid;
     AW_selection_list   *downid;
