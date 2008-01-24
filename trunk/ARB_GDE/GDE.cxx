@@ -16,6 +16,7 @@
 #include "GDE_menu.h"
 #include "GDE_def.h"
 #include "GDE_extglob.h"
+#include "GDE_awars.h"
 
 #define META "" // default is 'no hotkey'
 
@@ -156,13 +157,17 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
     aws->init(aw_root,bf,bf);
 
     switch (gde_cgss.wt) {
-        case CGSS_WT_DEFAULT:
-            aws->load_xfig("gdeitem.fig");
+        case CGSS_WT_DEFAULT: {
+            const char *fig = (seqtype == '-') ? "gdeitem_simple.fig" : "gdeitem.fig";
+            aws->load_xfig(fig);
             break;
+        }
         case CGSS_WT_EDIT:
+            gde_assert(seqtype != '-');
             aws->load_xfig("gde2item.fig");
             break;
         case CGSS_WT_EDIT4:
+            gde_assert(seqtype != '-');
             aws->load_xfig("gde3item.fig");
             break;
         default:
@@ -190,20 +195,22 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
     if (AWinfo->gmenuitem->numinputs>0) {
         switch (gde_cgss.wt) {
             case CGSS_WT_DEFAULT: {
-                aws->at("which_alignment");
-                const char *ali_filter = seqtype == 'A' ? "pro=:ami=" : (seqtype == 'N' ? "dna=:rna=" : "*=");
-                awt_create_selection_list_on_ad(gb_main, (AW_window *)aws,"tmp/gde/alignment", ali_filter);
-                
-                aws->at( "which_species" );
-                aws->create_toggle_field( "gde/species" );
-                aws->insert_toggle( "all", "a", 0 );
-                aws->insert_default_toggle( "marked",  "m", 1 );
-                aws->update_toggle_field();
+                if (seqtype != '-') { // '-' means "skip sequence export"
+                    aws->at("which_alignment");
+                    const char *ali_filter = seqtype == 'A' ? "pro=:ami=" : (seqtype == 'N' ? "dna=:rna=" : "*=");
+                    awt_create_selection_list_on_ad(gb_main, (AW_window *)aws, AWAR_GDE_ALIGNMENT, ali_filter);
 
-                if (seqtype != 'N') {
-                    aws->at("stop_codon");
-                    aws->label("Cut stop-codon");
-                    aws->create_toggle("gde/cutoff_stop_codon");
+                    aws->at( "which_species" );
+                    aws->create_toggle_field(AWAR_GDE_SPECIES);
+                    aws->insert_toggle( "all", "a", 0 );
+                    aws->insert_default_toggle( "marked",  "m", 1 );
+                    aws->update_toggle_field();
+
+                    if (seqtype != 'N') {
+                        aws->at("stop_codon");
+                        aws->label("Cut stop-codon");
+                        aws->create_toggle(AWAR_GDE_CUTOFF_STOPCODON);
+                    }
                 }
                 break;
             }
@@ -228,18 +235,20 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
                 break;
         }
 
-        aws->at("compression");
-        aws->create_toggle_field( "gde/compression" );
-        aws->insert_toggle( "none", "n",0 );
-        aws->insert_default_toggle( "vertical gaps", "v", 1 );
-        aws->insert_toggle( "all gaps",  "g", 2 );
-        aws->update_toggle_field();
+        if (seqtype != '-') {
+            aws->at("compression");
+            aws->create_toggle_field(AWAR_GDE_COMPRESSION);
+            aws->insert_toggle( "none", "n",0 );
+            aws->insert_default_toggle( "vertical gaps", "v", 1 );
+            aws->insert_toggle( "all gaps",  "g", 2 );
+            aws->update_toggle_field();
 
-        aws->button_length(12);
-        aws->at("filtername");
-        agde_filtercd = awt_create_select_filter(aws->get_root(),gb_main,"gde/filter/name");
-        aws->callback((AW_CB2)AW_POPUP,(AW_CL)awt_create_select_filter_win,agde_filtercd);
-        aws->create_button("SELECT_FILTER", "gde/filter/name");
+            aws->button_length(12);
+            aws->at("filtername");
+            agde_filtercd = awt_create_select_filter(aws->get_root(),gb_main,AWAR_GDE_FILTER_NAME);
+            aws->callback((AW_CB2)AW_POPUP,(AW_CL)awt_create_select_filter_win,agde_filtercd);
+            aws->create_button("SELECT_FILTER", AWAR_GDE_FILTER_NAME);
+        }
 
         aws->at("paramsb");
     }
@@ -361,7 +370,7 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             aws->label(AWinfo->gmenuitem->arg[i].label);
             void *id = awt_create_selection_list_on_extendeds(gb_main,aws,newawar,gde_filter_weights);
             free(newawar);
-            aw_root->awar("tmp/gde/alignment")->add_callback((AW_RCB1)awt_create_selection_list_on_extendeds_update,(AW_CL)id);
+            aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback((AW_RCB1)awt_create_selection_list_on_extendeds_update,(AW_CL)id);
         }
 
         aws->at_newline();
@@ -443,8 +452,8 @@ void create_gde_var(AW_root  *aw_root, AW_default aw_def,
     gde_cgss.wt = wt;
     gde_cgss.THIS= THIS;
 
-    aw_root->awar_string("tmp/gde/helptext","help",aw_def);
-    aw_root->awar_string( "tmp/gde/alignment","" ,aw_def );
+    // aw_root->awar_string("tmp/gde/helptext", "help", aw_def); // only occurence
+    aw_root->awar_string(AWAR_GDE_ALIGNMENT, "", aw_def);
 
     switch (gde_cgss.wt)
     {
@@ -467,15 +476,18 @@ void create_gde_var(AW_root  *aw_root, AW_default aw_def,
             break;
     }
 
-    aw_root->awar_string( "presets/use","" ,gb_main );
-    aw_root->awar_string( "gde/filter/name","",aw_def);
-    aw_root->awar_string( "gde/filter/filter","",aw_def);
-    aw_root->awar_int( "gde/cutoff_stop_codon",0,aw_def);
-    aw_root->awar_int( "gde/species",1,aw_def);
-    aw_root->awar_int( "gde/compression",1,aw_def);
-    aw_root->awar_string( "gde/filter/alignment","",aw_def);
-    aw_root->awar("tmp/gde/alignment")->map("presets/use");
-    aw_root->awar("gde/filter/alignment")->map("presets/use");
+    aw_root->awar_string("presets/use",             "", gb_main);
+    
+    aw_root->awar_string(AWAR_GDE_FILTER_NAME,      "", aw_def);
+    aw_root->awar_string(AWAR_GDE_FILTER_FILTER,    "", aw_def);
+    aw_root->awar_string(AWAR_GDE_FILTER_ALIGNMENT, "", aw_def);
+
+    aw_root->awar_int(AWAR_GDE_CUTOFF_STOPCODON, 0, aw_def);
+    aw_root->awar_int(AWAR_GDE_SPECIES,          1, aw_def);
+    aw_root->awar_int(AWAR_GDE_COMPRESSION,      1, aw_def);
+
+    aw_root->awar(AWAR_GDE_ALIGNMENT)->map("presets/use");
+    aw_root->awar(AWAR_GDE_FILTER_ALIGNMENT)->map("presets/use");
 
     DataSet = (NA_Alignment *) Calloc(1,sizeof(NA_Alignment));
     DataSet->rel_offset = 0;
