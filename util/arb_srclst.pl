@@ -76,6 +76,7 @@ my %skipped_extensions = map { $_ => 1; } (
                                            'stamp',
                                            'list',
                                            'log',
+                                           'swp',
                                           );
 
 
@@ -105,6 +106,7 @@ my @used_when_matchesFull = (
                              qr/\/HGL_SRC\/plot\.icon$/o,
                              qr/\/PHYLIP\/doc\//o,
                              qr/\/GDE\/.*\.html$/o,
+                             qr/GDE\/.*\/Makefile\.[^\/]+$/io,
                              qr/\/GDEHELP\/GDE.*/o,
                              qr/\/GDEHELP\/Makefile\.helpfiles/o,
                              qr/\/GDEHELP\/DATA_FILES/o,
