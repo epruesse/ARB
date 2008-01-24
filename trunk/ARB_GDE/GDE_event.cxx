@@ -21,6 +21,7 @@
 #include "GDE_menu.h"
 #include "GDE_def.h"
 #include "GDE_extglob.h"
+#include "GDE_awars.h"
 
 #include <string>
 #include <set>
@@ -352,12 +353,12 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     AWUSE(cd);
     AW_root *aw_root=aw->get_root();
 
-    long       compress          = aw_root->awar("gde/compression")->read_int();
+    long       compress          = aw_root->awar(AWAR_GDE_COMPRESSION)->read_int();
     AP_filter *filter2           = awt_get_filter(aw_root,agde_filtercd);
-    char      *filter_name       = 0; // aw_root->awar("gde/filter/name")->read_string();
+    char      *filter_name       = 0; // aw_root->awar(AWAR_GDE_FILTER_NAME)->read_string();
     char      *alignment_name    = strdup("ali_unknown");
-    long       marked            = aw_root->awar("gde/species")->read_int();
-    long       cutoff_stop_codon = aw_root->awar("gde/cutoff_stop_codon")->read_int();
+    long       marked            = aw_root->awar(AWAR_GDE_SPECIES)->read_int();
+    long       cutoff_stop_codon = aw_root->awar(AWAR_GDE_CUTOFF_STOPCODON)->read_int();
 
     GmenuItem *current_item;
     current_item=AWinfo->gmenuitem;
