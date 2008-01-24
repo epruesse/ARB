@@ -8,7 +8,6 @@ All rights reserved.
 #define JUSTICE 2
 #define BEAUTY 3
 
-#define AWAR_GDE_FILTER "tmp/gde/filter/"
 /*
 *	Cursor directions
 */
