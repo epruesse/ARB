@@ -1,28 +1,36 @@
-item:RAXML (DNA)
-itemmeta: H
+item:RAxML (DNA)
+seqtype:N
+itemmeta: R
 itemmethod:(GOTO_LOCAL_DIR ; \
-            arb_export_rates "$RATES" "" | \
-                arb_convert_aln -GenBank in1 -phylip2 infile; \
+            arb_export_rates -r "$RATES" > weights; \
+            arb_convert_aln -GenBank in1 -phylip2 infile; \
+            arb_export_tree $TREE >> treefile.in ;\
             RUN_IN_WINDOW((cp infile last.infile; \
 			   time raxmlHPC -m $MODELOFNUCSUB \
 					 -f $SEARCH \
 			    		 -i $INITIALREARANGEMENT \
 					 -# $NUMBEROFRUNS \
 				         -s infile \
-					 -n treefile \ 
-					 $RANDOMSTART \ 
+                                         -a weights \
+					 -t treefile.in \
+					 -n treefile \
+					 $RANDOMSTART \
 					 $OPTIMIZEPARAMETERS \
 					 $INTERMEDIATETREES; \
-
-			   cp RAxML_result.treefile treefile; \
-			$DISPLAY_FUNC));RM_LOCAL_FILES(in1 last.infile) )&
-
+			   mv RAxML_result.treefile treefile; \
+			$DISPLAY_FUNC));RM_LOCAL_FILES(in1 last.infile treefile.in weights RAxML_info.treefile) )&
 itemhelp:dnaml.help
 
 arg:RATES
 argtype:weights
 arglabel:Select a Weighting Mask
 argchoice:POS_VAR_BY_PAR
+
+
+arg:TREE
+argtype:tree
+arglabel:Base Tree
+argchoice:
 
 
 arg:RANDOMSTART
@@ -94,7 +102,7 @@ argtext:1
 arg:DISPLAY_FUNC
 argtype:choice_menu
 arglabel:What to do with the tree:?
-argchoice:ARB ('tree_raxml_//'):arb_read_tree tree_raxml_$$ treefile "PRG=raxml FILTER=$FILTER RATE=$RATES"
+argchoice:ARB ('tree_raxml_//'):arb_read_tree tree_raxml_$$ treefile "PRG=raxml FILTER=$FILTER RATE=$RATES BASE=$TREE"
 argchoice:Treetool:treetool treefile
 
 in:in1
