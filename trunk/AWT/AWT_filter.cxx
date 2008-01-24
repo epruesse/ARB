@@ -301,7 +301,7 @@ AW_window *awt_create_2_filter_window(AW_root *aw_root,AW_CL res_of_create_selec
 
 char *AWT_get_combined_filter_name(AW_root *aw_root, GB_CSTR prefix) {
     char       *combined_name = aw_root->awar(GBS_global_string("%s/filter/name", prefix))->read_string(); // "gde/filter/name"
-    const char *awar_prefix   = "tmp/gde/filter";
+    const char *awar_prefix   = AWAR_GDE_FILTER;
     const char *awar_repeated = "/2filter";
     const char *awar_postfix  = "/name";
     int         prefix_len    = strlen(awar_prefix);
