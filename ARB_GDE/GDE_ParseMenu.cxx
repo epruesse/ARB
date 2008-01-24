@@ -178,7 +178,12 @@ void ParseMenu()
         else if(Find(in_line,"seqtype:"))
         {
             crop(in_line,head,temp);
-            thisitem->seqtype = toupper(temp[0]); /* 'A' -> amino acids, 'N' -> nucleotides, otherwise both */
+            thisitem->seqtype = toupper(temp[0]);
+            /* 'A' -> amino acids,
+             * 'N' -> nucleotides,
+             * '-' -> don't select sequences,
+             * otherwise any alignment
+             */
         }
         /*
          *  arg: defines the symbol for a command line arguement.
