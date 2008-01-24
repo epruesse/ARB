@@ -31,6 +31,7 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 GDE.o: gde.hxx
+GDE.o: GDE_awars.h
 GDE.o: GDE_def.h
 GDE.o: GDE_extglob.h
 GDE.o: GDE_menu.h
@@ -69,6 +70,7 @@ GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 
 GDE_event.o: gde.hxx
+GDE_event.o: GDE_awars.h
 GDE_event.o: GDE_def.h
 GDE_event.o: GDE_extglob.h
 GDE_event.o: GDE_menu.h
