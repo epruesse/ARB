@@ -25,11 +25,19 @@ int main(int argc, char **argv){
         return 1;
     }
     char *tree_name = argv[1];
+
     {
         GB_transaction dummy(gb_main);
         GBT_TREE *tree = GBT_read_tree(gb_main,tree_name, - sizeof(GBT_TREE));
-        if (tree){
+        if (tree) {
             GBT_export_tree(gb_main,stdout,tree,GB_TRUE);
+        }
+        else {
+            if (strcmp(tree_name, "????") != 0) {
+                char *err = GBS_global_string_copy("arb_export_tree: Tree '%s' does not exist in DB\n", tree_name);
+                GBT_message(gb_main, err);
+                free(err);
+            }
         }
         printf(";\n");
     }
