@@ -62,6 +62,8 @@ eval {
     # read species names from STDIN into hash
     my %marklist = ();
     while (<>) {
+	s/\n\r/\n/go; # mac -> unix
+	s/\r\n/\n/go; # dos -> unix
       chomp;
       if ($removeWhitespace==1) {
         $_ =~ s/^[ \t]+//go;
