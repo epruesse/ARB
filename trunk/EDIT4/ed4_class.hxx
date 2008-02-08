@@ -1959,6 +1959,7 @@ void ED4_get_and_jump_to_species     (GB_CSTR species_name);
 void ED4_get_marked_from_menu        (AW_window *, AW_CL, AW_CL);
 void ED4_selected_species_changed_cb     (AW_root *aw_root);
 void ED4_selected_SAI_changed_cb     (AW_root *aw_root);
+void ED4_set_active_protstruct_SAI   (AW_window *aww, AW_CL cd1, AW_CL cd2 );
 
 extern int  ED4_elements_in_species_container; // # of elements in species container
 void        ED4_undo_redo               (AW_window*, AW_CL undo_type);
@@ -1980,6 +1981,8 @@ extern "C" {
 
 struct AWTC_faligner_cd;
 void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data);
+
+char *ED4_find_protein_structure_SAI(GBDATA *gb_main, const char *alignment_name);
 
 #else
 #error ed4_class included twice

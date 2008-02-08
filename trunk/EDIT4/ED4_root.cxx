@@ -1544,6 +1544,8 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic( "load_actual", "Load current species [GET]","G","", AWM_ALL, ED4_get_and_jump_to_actual_from_menu, 0, 0 );
     awmm->insert_menu_topic( "load_marked", "Load marked species","m","", AWM_ALL, ED4_get_marked_from_menu, 0, 0 );
     SEP________________________SEP;
+    awmm->insert_menu_topic( "set_protstruct_SAI", "Activate current protein structure SAI","", 0, AWM_ALL, ED4_set_active_protstruct_SAI, 0, 0 );
+    SEP________________________SEP;
     awmm->insert_menu_topic( "refresh_ecoli", "Reload Ecoli Sequence", "E", 0, AWM_ALL, ED4_reload_ecoli_cb, 0, 0 );
     awmm->insert_menu_topic( "refresh_helix", "Reload Helix", "H", 0, AWM_ALL, ED4_reload_helix_cb, 0, 0 );
     awmm->insert_menu_topic( "helix_jump_opposite", "Jump helix opposite [Ctrl-J]", "J", 0, AWM_ALL, ED4_helix_jump_opposite, 0, 0);

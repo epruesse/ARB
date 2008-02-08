@@ -896,7 +896,9 @@ void ED4_cursor::updateAwars()
 
     // update awar for IUPAC:
 
-    char iupac[5];
+#define MAXIUPAC 6
+
+    char iupac[MAXIUPAC+1];
     strcpy(iupac, IUPAC_EMPTY);
 
     if (owner_of_cursor) {
@@ -920,11 +922,14 @@ void ED4_cursor::updateAwars()
             char base = seq[seq_pos];
             const char *i = ED4_decode_iupac(base, ED4_ROOT->alignment_type);
 
+	    e4_assert(strlen(i)<=MAXIUPAC);
             strcpy(iupac, i);
         }
 
         free(seq);
     }
+
+#undef MAXIUPAC
 
     aw_root->awar(win->awar_path_for_IUPAC)->write_string(iupac);
 

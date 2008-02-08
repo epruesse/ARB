@@ -7,9 +7,12 @@
 #include <fstream>
 #include <iomanip>
 
+#include <malloc.h>
+
 #include "arbdb.h"
 #include "ed4_protein_2nd_structure.hxx"
-
+#include "ed4_class.hxx"
+#include "ed4_awars.hxx"
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -18,50 +21,11 @@
 
 using namespace std;
 
-/*#define SHOW_PROGRESS
-  #define STEP_THROUGH_FIND_NS
-  #define STEP_THROUGH_EXT_NS*/
-#define NOCREATE_DISABLED
-#define NOREPLACE_DISABLED
-#define START_EXTENSION_INSIDE
-
-static char *directory;                     // working directory
-static const char *sequence;                        // pointer to sequence of protein
-static int length;                                // length of sequence
-static char *structures[4];                     // predicted structures
-static char *probabilities[2];                      // probabilities of prediction
-static double *parameters[7];                       // parameters for structure prediction
-
-static char amino_acids[] = "ARNDCQEGHILKMFPSTWYV";  // specifies the characters used for amino acid one letter code
-static bool isAA[256];                              // specifies the characters used for amino acid one letter code
-enum structure {three_turn = 4, four_turn = 5, five_turn = 6, helix = 0, sheet = 1, beta_turn = 2, summary = 3};
-
-// functions for structure prediction:
-static void printSeq();                         // prints sequence to screen
-static void getParameters(const char file[]);       // gets parameters for structure prediction specified in table
-static void findNucSites(const structure s);        // finds nucleation sites that initiate the specified structure (alpha-helix or beta-sheet)
-static void extNucSites(const structure s);     // extends the found nucleation sites in both directions
-static void findTurns();                            // finds beta-turns
-static void resOverlaps();                          // resolves overlaps of predicted structures and creates summary
-//static void getDSSPVal(const char file[]);            // gets sequence and structure from dssp file
-
-// functions for operating with files:
-static void setDir(const char *dir);                                    // sets working directory
-static int filelen(const char *file);                                   // gets filelength of file
-static void readFile(char *content, const char *file);                  // reads file and puts content into string
-static void writeFile(const char file[], const char *content);          // writes string to file
-static void waitukp();                                                  // waits until any key is pressed
-
-// functions for string manipulation:
-static int nol(const char *string);                                     // gets number of lines in string
-static void cropln(char *string, const int numberOfLines = 1);          // crops line/lines at the beginning of string
-static char* scat(const int num, char *str1, ...);                      // concatenates str1 with arbitrary number of strings (num specifies number of strings to append)
-static char* scat(char *str1, ...);                                     // concatenates str1 with arbitrary number of strings (list must be terminated by NULL)
-
-
 // GB_export_error
 
+
 GB_ERROR ED4_predict_summary(const char *seq, char *result_buffer, int length_) {
+    
     GB_ERROR error = 0;
 
     // assign sequence
@@ -69,30 +33,22 @@ GB_ERROR ED4_predict_summary(const char *seq, char *result_buffer, int length_) 
 
     // assign length of sequence
     length = length_;
-
     e4_assert(int(strlen(seq))==length);
 
     // specify the characters used for amino acid one letter code
     for (int i = 0; i < 255; i++) {
         isAA[i] = false;
     }
-
-    const unsigned char *AA_true = (unsigned char *)"ARNDCQEGHILKMFPSTWYV";
-    for (int i = 0; AA_true[i]; ++i) {
-        isAA[AA_true[i]] = true;
+    for (int i = 0; amino_acids[i]; ++i) {
+        isAA[(unsigned char)amino_acids[i]] = true;
     }
-
-    // isAA['A'] = true, isAA['R'] = true, isAA['N'] = true, isAA['D'] = true, isAA['C'] = true;
-    // isAA['Q'] = true, isAA['E'] = true, isAA['G'] = true, isAA['H'] = true, isAA['I'] = true;
-    // isAA['L'] = true, isAA['K'] = true, isAA['M'] = true, isAA['F'] = true, isAA['P'] = true;
-    // isAA['S'] = true, isAA['T'] = true, isAA['W'] = true, isAA['Y'] = true, isAA['V'] = true;
 
     // allocate memory for structures[] and initialize them
     for (int i = 0; i < 4; i++) {
         structures[i] = new char [length + 1];
         if (structures[i]) {
             for (int j = 0; j < length; j++) {
-                //          if (!(strchr(amino_acids, sequence[j]))) {
+                // if (!(strchr(amino_acids, sequence[j]))) {
                 if (!isAA[(unsigned char)sequence[j]]) {
                     structures[i][j] = sequence[j];
                 } else {
@@ -102,34 +58,30 @@ GB_ERROR ED4_predict_summary(const char *seq, char *result_buffer, int length_) 
             structures[i][length] = '\0';
         }
         else {
-//             cerr << "Allocation of memory failed.";
             error = "Out of memory";
-//             exit(1);
+            return error;
         }
     }
 
-    if (!error) {
-
-        // allocate memory for parameters[]
-        for (int i = 0; i < 7; i++) {
-            parameters[i] = new double [length];
-            if (!parameters[i]) {
-                cerr << "Allocation of memory failed.";
-                exit(1);
-            } /*else {
-                for (int j = 0; j < length; j++) {
-                parameters[i][j] = 0.0;
-                }
-                } */
-        }
+    // allocate memory for parameters[]
+    for (int i = 0; i < 7; i++) {
+        parameters[i] = new double [length];
+        if (!parameters[i]) {
+            error = "Out of memory";
+            return error;
+        } /*else {
+            for (int j = 0; j < length; j++) {
+            parameters[i][j] = 0.0;
+            }
+            } */
     }
 
     // allocate memory for probabilities[]
     for (int i = 0; i < 2; i++) {
         probabilities[i] = new char [length + 1];
         if (!probabilities[i]) {
-            cerr << "Allocation of memory failed.";
-            exit(1);
+            error = "Out of memory";
+            return error;
         } else {
             for (int j = 0; j < length; j++) {
                 probabilities[i][j] = ' ';
@@ -139,46 +91,247 @@ GB_ERROR ED4_predict_summary(const char *seq, char *result_buffer, int length_) 
     }
 
     // predict structure
-    setDir("../Markus/protein/");
-    getParameters("dat/CFParamNorm.dat");
+    //setDir("../lib/protein_2nd_structure/");
+    getParameters("lib/protein_2nd_structure/CFParamNorm.dat");
     findNucSites(helix);
     findNucSites(sheet);
     extNucSites(helix);
     extNucSites(sheet);
-    //  getParameters("dat/CFParam.dat");
-    //  findTurns();
+    getParameters("lib/protein_2nd_structure/CFParam.dat");
+    findTurns();
     resOverlaps();
 
     // write predicted summary to result_buffer
-    for (int i = 0; i < length; i++) {
-        result_buffer[i] = structures[summary][i];
+    if (result_buffer) {
+        e4_assert(int(strlen(result_buffer)) >= length);
+        for (int i = 0; i < length; i++) {
+            result_buffer[i] = structures[summary][i];
+        }
+        result_buffer[length] = '\0';
     }
-    result_buffer[length] = '\0';
 
     return error;
 }
 
 
-GB_ERROR ED4_calculate_summary_match(const char *summary, const char *global_summary, int start, int end, char *result_buffer) {
-    for (int i = start; i < end; i++) {
-        if (summary[i] == global_summary[i]) {
-            result_buffer[i] = ' ';
+//TODO: Ralf zeigen
+GB_ERROR ED4_calculate_secstruct_sequence_match(const char *secstruct, const char *seq, int start, int end, char *result_buffer, int strictness /*= 1*/) {
+    
+    e4_assert(start >= 0);
+    e4_assert(secstruct);
+    e4_assert(seq);
+    e4_assert(result_buffer);
+    e4_assert(strictness >= 0 && strictness <= 1); //TODO: wird parameter strictness noch benötigt?
+    int match_end = min( min(end, (int)strlen(secstruct)), (int)strlen(seq) );
+    
+    char *gap_chars = ED4_ROOT->aw_root->awar(ED4_AWAR_GAP_CHARS)->read_string();
+    char *pairs[MATCH_COUNT];
+    char pair_chars[MATCH_COUNT];
+
+    pair_chars[STRUCT_NONE] = ' ';
+    pair_chars[STRUCT_GOOD_MATCH] = ' ';
+    pair_chars[STRUCT_MEDIUM_MATCH] = '-';
+    pair_chars[STRUCT_BAD_MATCH] = '~';
+    pair_chars[STRUCT_NO_MATCH] = '#';
+    
+    pairs[STRUCT_NONE]=strdup("  ");
+    pairs[STRUCT_GOOD_MATCH]=strdup("HH HG HI HS EE EB ES TT TS");
+    pairs[STRUCT_MEDIUM_MATCH]=strdup("HT GT IT ET");
+    pairs[STRUCT_BAD_MATCH]=strdup("ET BT");
+    pairs[STRUCT_NO_MATCH]=strdup("HB EH EG EI");
+    
+    ED4_predict_summary(seq, 0, (int)strlen(seq));
+    
+    int i;
+    for (i = start; i < match_end; i++) {
+        result_buffer[i - start] = '?';
+        if ( strchr(gap_chars, secstruct[i]) || strchr(gap_chars, seq[i]) || 
+             (structures[helix][i] == ' ' && structures[sheet][i] == ' ' && structures[beta_turn][i] == ' ') ) {
+                result_buffer[i - start] = pair_chars[STRUCT_NONE];
         } else {
-            result_buffer[i] = '~';
+            // search for good match first
+            // if found: stop searching
+            // otherwise: continue searching for a less good match
+            for (int n_pt = 0; n_pt < MATCH_COUNT; n_pt++) {
+                int len = strlen(pairs[n_pt])-1;
+                char *p = pairs[n_pt];
+                for (int n_struct = 0; n_struct < 3; n_struct++) {
+                    for (int j = 0; j < len; j += 3) {
+                        if ( (p[j] == structures[n_struct][i] && p[j+1] == secstruct[i]) ||
+                                (p[j] == secstruct[i] && p[j+1] == structures[n_struct][i]) ) {
+                            result_buffer[i - start] = pair_chars[n_pt];
+                            n_struct = 3; // stop searching the structures
+                            n_pt = MATCH_COUNT; // stop searching the pair types
+                            break; // stop searching the pairs array
+                        }
+                    }
+                }
+            }
         }
     }
+
+    // fill the remaining buffer with spaces
+    while (i < end) {
+        i++;
+        result_buffer[i - start] = ' ';
+    }
+    
+    return 0;
+}
+//TODO: remove old functions if not needed anymore
+//GB_ERROR ED4_calculate_secstruct_sequence_match(const char *secstruct, const char *seq, int start, int end, char *result_buffer, int strictness /*= 1*/) {
+//    
+//    e4_assert(start >= 0);
+//    e4_assert(secstruct);
+//    e4_assert(seq);
+//    e4_assert(result_buffer);
+//    int match_end = min( min(end, (int)strlen(secstruct)), (int)strlen(seq) );
+//    
+//    //char *gap_chars = ED4_ROOT->aw_root->awar(ED4_AWAR_GAP_CHARS)->read_string();
+//    char *pairs[MATCH_COUNT];
+//    char pair_chars[MATCH_COUNT];
+//    char match[4] = {' '};
+//
+//    pair_chars[STRUCT_NONE] = ' ';
+//    pair_chars[STRUCT_GOOD_MATCH] = ' ';
+//    pair_chars[STRUCT_MEDIUM_MATCH] = '-';
+//    pair_chars[STRUCT_BAD_MATCH] = '~';
+//    pair_chars[STRUCT_NO_MATCH] = '#';
+//    
+//    if (strictness == 0) {
+//        pairs[STRUCT_NONE]=strdup("  ");
+//        pairs[STRUCT_GOOD_MATCH]=strdup("HH HG HI EE EB H- E- T-");
+//        pairs[STRUCT_MEDIUM_MATCH]=strdup("HS HT ET ES");
+//        pairs[STRUCT_BAD_MATCH]=strdup("HB");
+//        pairs[STRUCT_NO_MATCH]=strdup("EH EG EI");
+//    } else if (strictness == 1) {
+//        pairs[STRUCT_NONE]=strdup("  ");
+//        pairs[STRUCT_GOOD_MATCH]=strdup("HH HG HI EE EB");
+//        pairs[STRUCT_MEDIUM_MATCH]=strdup("HS ES H- E- T-");
+//        pairs[STRUCT_BAD_MATCH]=strdup("HB HT ET");
+//        pairs[STRUCT_NO_MATCH]=strdup("EH EG EI");
+//    } else if (strictness == 2) {
+//        pairs[STRUCT_NONE]=strdup("    ");
+//        pairs[STRUCT_GOOD_MATCH]=strdup("   -|H HH| EEE|HEHH|HEEE");
+//        pairs[STRUCT_MEDIUM_MATCH]=strdup("H HG|H HI|H HT| EES|HEHB|HEHG|HEHI|HEHT|HEEB|HEES");
+//        pairs[STRUCT_BAD_MATCH]=strdup("   H|   B|   E|   G|   I|   T|   S|H HB|H H-| EEB| EE-|HEHE|HEHS|HEH-|HEEH|HEEG|HEEI|HEET|HEE-");
+//        pairs[STRUCT_NO_MATCH]=strdup("H HE|H HS| EEH| EEG| EEI| EET");
+//    } else {
+//        const char *error = "Unallowed value for parameter strictness";
+//        return error;
+//    }
+//    
+//    ED4_predict_summary(seq, 0, (int)strlen(seq));
+//    
+//    int i = start;
+//    if (strictness == 2) {
+//        for (i = start; i < match_end; i++) {
+//            result_buffer[i - start] = ' ';
+//            match[0] = structures[helix][i];
+//            match[1] = structures[sheet][i];
+//            match[2] = structures[summary][i];
+//            match[3] = secstruct[i];
+//            for (int n_pt = 0; n_pt < MATCH_COUNT; n_pt++) {
+//                if (strstr(pairs[n_pt], match)) {
+//                    result_buffer[i - start] = pair_chars[n_pt];
+//                    break;
+//                }
+//            }
+//        }
+//    } else {
+//        for (i = start; i < match_end; i++) {
+//            result_buffer[i - start] = ' ';
+//            for (int n_pt = 0; n_pt < MATCH_COUNT; n_pt++) {
+//                int len = strlen(pairs[n_pt])-1;
+//                char *p = pairs[n_pt];
+//                for (int n_struct = 0; n_struct < 3; n_struct++) {
+//                    for (int j = 0; j < len; j += 3) {
+//                        if ( (p[j] == structures[n_struct][i] && p[j+1] == secstruct[i]) ||
+//                             (p[j] == secstruct[i] && p[j+1] == structures[n_struct][i]) ) {
+//                            result_buffer[i - start] = pair_chars[n_pt];
+//                            n_struct = 3; // stop searching the structures
+//                            n_pt = MATCH_COUNT; // stop searching the pair types
+//                            break; // stop searching the pairs array
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    
+//    while (i < end) {
+//        i++;
+//        result_buffer[i - start] = ' ';
+//    }
+//    
+//    return 0;
+//}
+
+
+//TODO: Ralf zeigen
+GB_ERROR ED4_calculate_secstruct_match(const char *secstruct1, const char *secstruct2, int start, int end, char *result_buffer) {
+    
+    e4_assert(start >= 0);
+    e4_assert(secstruct1);
+    e4_assert(secstruct2);
+    e4_assert(result_buffer);
+    int end_match = min( min(end, (int)strlen(secstruct1)), (int)strlen(secstruct2) );
+    
+    char *pairs[MATCH_COUNT];
+    char pair_chars[MATCH_COUNT];
+   
+    pairs[STRUCT_NONE]=strdup("  ");
+    pair_chars[STRUCT_NONE] = ' ';
+
+    pairs[STRUCT_GOOD_MATCH]=strdup("HH BB EE GG II TT SS --");
+    pair_chars[STRUCT_GOOD_MATCH] = ' ';
+    
+    pairs[STRUCT_MEDIUM_MATCH]=strdup("HG HI HT HS ES GI GT GS IT IS TS");
+    pair_chars[STRUCT_MEDIUM_MATCH] = '-';
+
+    pairs[STRUCT_BAD_MATCH]=strdup("BE BT BS ET H- B- E- G- I- T- S-");
+    pair_chars[STRUCT_BAD_MATCH] = '~';
+
+    pairs[STRUCT_NO_MATCH]=strdup("HB HE BG BI EG EI");
+    pair_chars[STRUCT_NO_MATCH] = '#';
+
+    int i;
+    for (i = start; i < end_match; i++) {
+        result_buffer[i - start] = ' ';
+        for (int n_pt = 0; n_pt < MATCH_COUNT; n_pt++) {
+            int len = strlen(pairs[n_pt])-1;
+            char *p = pairs[n_pt];
+            for (int j = 0; j < len; j += 3) {
+                if ( (p[j] == secstruct1[i] && p[j+1] == secstruct2[i]) ||
+                     (p[j] == secstruct2[i] && p[j+1] == secstruct1[i]) ) {
+                    result_buffer[i - start] = pair_chars[n_pt];
+                    n_pt = MATCH_COUNT; // stop searching the pair types 
+                    break; // stop searching the pairs array
+                }
+            }
+        }
+    }
+    
+    while (i < end) {
+        i++;
+        result_buffer[i - start] = ' ';
+    }
+    
     return 0;
 }
 
 
-static void printSeq() {
-
+void printSeq() {
     cout << "\nSequence:\n" << sequence << endl;
-
 }
 
 
-static void getParameters(const char file[]) {
+inline int round_sym(double d) {
+    return int(d + .5);
+}
+
+
+void getParameters(const char file[]) {
 
 #ifdef SHOW_PROGRESS
     cout << endl << "Getting Parameters: " << endl;
@@ -192,7 +345,8 @@ static void getParameters(const char file[]) {
         cropln(table, 3);
         //      cout << endl << table << endl;
     } else {
-        cerr << "Allocation of memory failed.";
+        //TODO: remove all exits and establish proper error handling
+        cerr << "Out of memory";
         exit(1);
     }
 
@@ -237,7 +391,7 @@ static void getParameters(const char file[]) {
 }
 
 
-static void findNucSites(const structure s) {
+void findNucSites(const structure s) {
 
 #ifdef SHOW_PROGRESS
     cout << endl << "Searching for nucleation sites";
@@ -348,7 +502,7 @@ static void findNucSites(const structure s) {
 }
 
 
-static void extNucSites(const structure s) {
+void extNucSites(const structure s) {
 
 #ifdef SHOW_PROGRESS
     cout << endl << "Extending nucleation sites";
@@ -626,7 +780,7 @@ static void extNucSites(const structure s) {
 }
 
 
-static void findTurns() {
+void findTurns() {
 
 #ifdef SHOW_PROGRESS
     cout << endl << "Searching for beta-turns: " << endl;
@@ -661,12 +815,8 @@ static void findTurns() {
 
 }
 
-inline double round(double d) {
-    return int(d+.5);
-}
 
-
-static void resOverlaps() {
+void resOverlaps() {
 
 #ifdef SHOW_PROGRESS
     cout << endl << "Resolving overlaps: " << endl;
@@ -688,19 +838,19 @@ static void resOverlaps() {
     //
     double maxProb;
 
-    // scan structures for overlaps:
-    // for lenght of sequence
+    // scan structures for overlaps
     for (int pos = 0; pos < length; pos++) {
 
-        //      cout << sequence << endl << structures[helix] << endl << structures[sheet] << endl << structures[beta_turn] << endl << structures[summary];
-        //      waitukp();
+//        cout << sequence << endl << structures[helix] << endl << structures[sheet] << endl << structures[beta_turn] << endl << structures[summary];
+//        waitukp();
 
         // if beta-turn is found at position pos
         if (structures[beta_turn][pos] == 'T') {
             // summary at position pos is beta-turn
+            //TODO: compare probabilities for turn, helix and sheet instead of just taking the turn? 
             structures[summary][pos] = 'T';
 
-            // if helix and sheet are overlapping and no beta-turn is found at position pos
+        // if helix and sheet are overlapping and no beta-turn is found at position pos
         } else if ((structures[helix][pos] == 'H') && (structures[sheet][pos] == 'E')) {
 
             // search start and end of overlap (as long as no beta-turn is found)
@@ -710,7 +860,7 @@ static void resOverlaps() {
                 end++;
             }
             end--;
-            //          cout << start << " " << end << endl;
+//            cout << start << " " << end << endl;
 
             // calculate P_a and P_b for overlap:
             for (int i = start; i <= end; i++) {
@@ -718,7 +868,7 @@ static void resOverlaps() {
                 P_b += parameters[sheet][i];
             }
 
-            //          cout << endl << P_a << "   " << P_b << endl;
+//            cout << endl << P_a << "   " << P_b << endl;
 
             // check which structure is more likely and define variables appropriately:
             if (P_a > P_b) {
@@ -745,18 +895,14 @@ static void resOverlaps() {
                 }
 
             // round probability and convert result to character
-            prob = round(prob * 10);
-            if (prob == 10) {
-                p = 'X';
-            } else {
-                p = char((int)prob + 48);
-            }
+            prob = round_sym(prob * 10);
+            p = (prob == 10) ? 'X' : char((int)prob + 48);
 
-            // set structure and probability for region containing the overlap:
+            // set structure and probability for region containing the overlap
             for (int i = start; i <= end; i++) {
                 structures[summary][i] = c;
                 probabilities[0][i] = p;
-                probabilities[1][i] = ((int)round((parameters[s][i] / maxProb) * 10) == 10) ? 'X' : (char((int)round((parameters[s][i] / maxProb) * 10) + 48));
+                probabilities[1][i] = (round_sym((parameters[s][i] / maxProb) * 10) == 10) ? 'X' : (char(round_sym((parameters[s][i] / maxProb) * 10) + 48));
 
             }
 
@@ -764,12 +910,12 @@ static void resOverlaps() {
             P_a = 0, P_b = 0;
             pos = end;
 
-            // if helix and sheet are not overlapping and no beta-turn is found at position pos
+        // if helix and sheet are not overlapping and no beta-turn is found at position pos
         } else {
             // summary at position pos is helix resp. sheet
-            if (structures[0][pos] == 'H') {
+            if (structures[helix][pos] == 'H') {
                 structures[summary][pos] = 'H';
-            } else if (structures[1][pos] == 'E'){
+            } else if (structures[sheet][pos] == 'E'){
                 structures[summary][pos] = 'E';
             }
         }
@@ -783,7 +929,7 @@ static void resOverlaps() {
 }
 
 
-static void setDir(const char *dir) {
+void setDir(const char *dir) {
 
 #ifdef SHOW_PROGRESS
     cout << "Setting working directory... ";
@@ -810,7 +956,7 @@ static void setDir(const char *dir) {
 }
 
 
-static int filelen(const char file[]) {
+int filelen(const char file[]) {
 
 #ifdef SHOW_PROGRESS
     cout << "Getting filelength... ";
@@ -818,7 +964,8 @@ static int filelen(const char file[]) {
 
     // concatenate file with working directory
     if (!directory) {
-        *directory = '\0';
+        directory = new char [1];
+        directory[0] = '\0';
     }
     char dir[(strlen(directory) + strlen(file))];
     dir[0] = '\0';
@@ -853,7 +1000,7 @@ static int filelen(const char file[]) {
 }
 
 
-static void readFile(char *content, const char file[]) {
+void readFile(char *content, const char file[]) {
 
     // concatenate file with working directory
     if (!directory) {
@@ -899,7 +1046,7 @@ static void readFile(char *content, const char file[]) {
 }
 
 
-static void writeFile(const char file[], const char *content) {
+void writeFile(const char file[], const char *content) {
 
     // definition of variables
     char c;
@@ -1020,117 +1167,107 @@ static void writeFile(const char file[], const char *content) {
     }
 
 #else
-} else {
-    // write content to file and close stream
-    ofstream ofl2(dir, ios::out);
-    while ((c = content[indCont]) != '\0') {
-        ofl2 << c;
-        indCont++;
-    }
-    ofl2.close();
-
+    } else {
+        // write content to file and close stream
+        ofstream ofl2(dir, ios::out);
+        while ((c = content[indCont]) != '\0') {
+            ofl2 << c;
+            indCont++;
+        }
+        ofl2.close();
 #ifdef SHOW_PROGRESS
     cout << "done." << endl;
 #endif
-
-}
-
-#endif
-
+    }
+#endif // NOREPLACE_DISABLED
 }
 
 
-static void waitukp(){
+void waitukp() {
 
 #ifdef SHOW_PROGRESS
-cout << endl << "Program stopped. Please press [ENTER] to continue. ";
+    cout << endl << "Program stopped. Please press [ENTER] to continue. ";
 #endif
-
-getchar();
-cout << endl;
-
+    getchar();
+    cout << endl;
 }
 
 
-static int nol(const char *string) {
+int nol(const char *string) {
 
-//  get number of lines
-int nol = 0;
-while (*string != '\0') {
-string++;
-while ((*string != '\n') && (*string != '\0')) {
-string++;
-}
-nol++;
-}
-//  while (*string != '\0') {
-//      while ((*string != '\n') && (*string != '\0')) {
-//          cout << *string;
-//          string++;
-//      }
-//      string++;
-//      nol++;
-//  }
+    //  get number of lines
+    int nol = 0;
+    while (*string != '\0') {
+        string++;
+        while ((*string != '\n') && (*string != '\0')) {
+            string++;
+        }
+        nol++;
+    }
+//    while (*string != '\0') {
+//        while ((*string != '\n') && (*string != '\0')) {
+//            cout << *string;
+//            string++;
+//        }
+//        string++;
+//        nol++;
+//    }
 
-return nol;
-
-}
-
-
-static void cropln(char *string, int numberOfLines) {
-
-//  crop lines
-int length = strlen(string) + 1;
-char *adr = string;
-char c = *adr;
-for (int i = 0; i < numberOfLines; i++) {
-while (c != '\n') {
-adr++;
-c = *adr;
-}
-adr++;
-c = *adr;
-}
-int l = length - (adr - string);
-for (int i = 0; i < l; i++) {
-*(string + i) = *adr;
-adr++;
-}
-for (int i = l; i < length; i++) {
-*(string + i) = '\0';
-}
-
+    return nol;
 }
 
 
-static char* scat(int num, char *str1, ...) {
+void cropln(char *string, int numberOfLines /*= 1*/) {
 
-va_list ap;
-va_start(ap, str1);
-
-for (int i = 0; i < num; i++) {
-strcat(str1, (va_arg(ap, char*)));
+    // crop lines
+    int len = strlen(string) + 1;
+    char *adr = string;
+    char c = *adr;
+    for (int i = 0; i < numberOfLines; i++) {
+        while (c != '\n') {
+            adr++;
+            c = *adr;
+        }
+        adr++;
+        c = *adr;
+    }
+    int l = len - (adr - string);
+    for (int i = 0; i < l; i++) {
+        *(string + i) = *adr;
+        adr++;
+    }
+    for (int i = l; i < len; i++) {
+        *(string + i) = '\0';
+    }
 }
 
-va_end(ap);
-return (str1);
 
+char* scat(int num, char *str1, ...) {
+
+    va_list ap;
+    va_start(ap, str1);
+
+    for (int i = 0; i < num; i++) {
+        strcat(str1, (va_arg(ap, char*)));
+    }
+
+    va_end(ap);
+    return (str1);
 }
 
 
-static char* scat(char *str1, ...) {
+char* scat(char *str1, ...) {
 
-va_list ap;
-va_start(ap, str1);
-char *p;
+    va_list ap;
+    va_start(ap, str1);
+    char *p;
 
-while ((p = va_arg(ap, char*))) {
-strcat(str1, p);
-//      cout << "app ";
-}
+    while ((p = va_arg(ap, char*))) {
+        strcat(str1, p);
+//        cout << "app ";
+    }
 
-//  cout << endl;
-va_end(ap);
-return (str1);
-
+//    cout << endl;
+    va_end(ap);
+    return (str1);
 }
