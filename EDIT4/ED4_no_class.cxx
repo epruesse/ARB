@@ -41,7 +41,7 @@ void ED4_calc_terminal_extentions(){
     int info_char_width = info_font_info->max_letter.width;
     int seq_term_descent;
 
-    if (ED4_ROOT->helix->is_enabled()) { // display helix ?
+    if (ED4_ROOT->helix->is_enabled() || ED4_ROOT->protstruct) { // display helix ?
         ED4_ROOT->helix_spacing =
             seq_font_info->this_letter.ascent // the ascent of '='
             + ED4_ROOT->helix_add_spacing; // xtra user-defined spacing
@@ -925,6 +925,95 @@ void ED4_set_reference_species( AW_window *aww, AW_CL disable, AW_CL cd2 ){
 
     ED4_refresh_window(aww,0,cd2);
 }
+
+//TODO: Ralf zeigen
+void ED4_set_active_protstruct_SAI (AW_window *aww, AW_CL disable, AW_CL cd2 ) {
+    GB_transaction dummy(gb_main);
+
+    if (disable) {
+        ED4_ROOT->reference->init();
+    }
+    else {
+        ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+
+        if (cursor->owner_of_cursor) {
+            ED4_terminal *terminal = cursor->owner_of_cursor->to_terminal();
+            ED4_manager *manager = terminal->parent->parent->to_manager();
+
+            if (manager->parent->flag.is_SAI) {
+                char *active_protstruct_SAI = terminal->get_name_of_species();
+                e4_assert(active_protstruct_SAI);
+                aww->get_root()->awar(ED4_AWAR_ACTIVE_PROTEIN_STRUCTURE_SAI)->write_string(active_protstruct_SAI);
+                ED4_ROOT->protstruct = ED4_find_protein_structure_SAI(gb_main, ED4_ROOT->alignment_name);
+                if (ED4_ROOT->protstruct) {
+                    ED4_ROOT->protstruct_len = strlen(ED4_ROOT->protstruct);
+                } else {
+                    aw_message("Error getting protein secondary structure SAI");
+                }
+                free(active_protstruct_SAI);
+            }
+            else {
+                aw_message("You have to select an SAI");
+            }
+        }
+        else {
+            aw_message("First you have to place your cursor");
+        }
+    }
+
+    ED4_refresh_window(aww,0,cd2);
+}
+
+//TODO: Ralf zeigen; alte Funktionen löschen, wenn sie nicht mehr gebraucht werden
+char *ED4_find_protein_structure_SAI(GBDATA *gbm, const char *alignment_name) {
+    char *SAI_name = ED4_ROOT->aw_root->awar(ED4_AWAR_ACTIVE_PROTEIN_STRUCTURE_SAI)->read_string();
+    GB_transaction dummy(gbm);
+    GBDATA *gb_protstruct = GBT_find_SAI(gbm, SAI_name);
+    free(SAI_name);
+    
+    if (gb_protstruct) {
+        GBDATA *gb_data = GBT_read_sequence(gb_protstruct, alignment_name);
+        if (gb_data) {
+            return GB_read_string(gb_data);
+        }
+    }
+    return 0;
+}
+//static char *ED4_find_protein_structure_SAI(GBDATA *_gb_main, const char *alignment_name) {
+//    //HACK: ED4_calculate_secstruct_match or ED4_calculate_sequence_secstruct_match
+////#ifdef SECSTRUCT_MATCH
+//    //const char *related_SAI = "sec_struct";
+////#else
+//    const char *related_SAI = "data";
+////#endif
+//    
+//    GB_transaction dummy(gb_main);
+//    GBDATA *gb_SAI = GBT_first_SAI(_gb_main);
+//    while (gb_SAI) {
+//        GBDATA *gb_ali = GB_find(gb_SAI, alignment_name, 0, down_level);
+//        if (gb_ali) {
+//            GBDATA *gb_sec_struct = GB_find(gb_ali, related_SAI, 0, down_level);
+//            if (gb_sec_struct) {
+//                return GB_read_string(gb_sec_struct);
+//            }
+//        }
+//        gb_SAI = GBT_next_SAI(gb_SAI);
+//    }
+//    return 0;
+//}
+//static char *ED4_find_protein_structure_SAI(GBDATA *gb_main, const char *alignment_name) {
+//    GB_transaction dummy(gb_main);
+//    GBDATA *gb_extended_data = GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
+//    GBDATA *gb_protstruct    = GBT_find_SAI_rel_exdata(gb_extended_data, "protstruct");
+//
+//    if (gb_protstruct) {
+//        GBDATA *gb_data = GBT_read_sequence(gb_protstruct, alignment_name);
+//        if (gb_data) {
+//            return GB_read_string(gb_data);
+//        }
+//    }
+//    return 0;
+//}
 
 static void show_detailed_column_stats_activated(AW_window *aww) {
     ED4_ROOT->column_stat_initialized = 1;

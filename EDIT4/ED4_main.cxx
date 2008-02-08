@@ -432,6 +432,8 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE, 0);
 
     ED4_createVisualizeSAI_Awars(root,AW_ROOT_DEFAULT);
+    
+    root->awar_string(ED4_AWAR_ACTIVE_PROTEIN_STRUCTURE_SAI, "PFOLD", AW_ROOT_DEFAULT);
 
     // Create Awars To Be Used In Protein Viewer
     if(ED4_ROOT->alignment_type == GB_AT_DNA) {
@@ -483,21 +485,7 @@ static void openProperties() {
     ED4_ROOT->aw_root->init_variables( ED4_ROOT->db); // pass defaults
 }
 
-static char *ED4_find_protein_structure_SAI(GBDATA *gb_main, const char *alignment_name) {
-    GB_transaction dummy(gb_main);
-    GBDATA *gb_extended_data = GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_protstruct    = GBT_find_SAI_rel_exdata(gb_extended_data, "protstruct");
-
-    if (gb_protstruct) {
-        GBDATA *gb_data = GBT_read_sequence(gb_protstruct, alignment_name);
-        if (gb_data) {
-            return GB_read_string(gb_data);
-        }
-    }
-    return 0;
-}
-
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
     const char *data_path = ":";
     const char *err = NULL;
@@ -581,7 +569,8 @@ int main(int argc,char **argv)
             }
             else {
 #if defined(DEBUG)
-                fprintf(stderr, "No SAI \"protstruct\" found. Protein structure information will not be displayed.\n");
+            	fprintf( stderr, "No SAI \"%s\" found. Protein structure information will not be displayed.\n", 
+                      	 ED4_ROOT->aw_root->awar(ED4_AWAR_ACTIVE_PROTEIN_STRUCTURE_SAI)->read_string() );
 #endif // DEBUG
             }
             break;
