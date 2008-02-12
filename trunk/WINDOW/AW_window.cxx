@@ -2408,9 +2408,9 @@ void AW_window_simple::init(AW_root *root_in, const char *wid,
     p_w->shell= aw_create_shell(this, AW_TRUE, AW_TRUE, width, height, posx,
             posy);
 
-    // disable resize or maximize in simple dialogs (avoids broken layouts)
-    XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE,
-            NULL);
+    // add this to disable resize or maximize in simple dialogs (avoids broken layouts)
+    // XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE,
+    //         NULL);
 
     Widget form1 = XtVaCreateManagedWidget("forms", xmFormWidgetClass,
             p_w->shell, 
