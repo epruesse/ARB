@@ -96,7 +96,9 @@ long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs)
                         {
                             GBDATA *gb_key = GB_search(gb_item,key,GB_FIND);
                             if (gb_key) {
-                                data = GB_read_as_string(gb_key);
+                                data        = GB_read_as_string(gb_key);
+                                long length = GB_read_string_count(gb_key);
+                                if (length>1000) strcpy(data+997, "..."); // truncate long data
                             }
                         }
                         const char *line = GBS_global_string("%c %-*s :%s",
