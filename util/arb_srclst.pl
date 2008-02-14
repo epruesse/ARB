@@ -21,6 +21,8 @@ my @skipped_directories = (
                            qr/^\.\/lib\/pts$/o,
                            qr/^\.\/lib\/help$/o,
                            qr/^\.\/lib\/help_html$/o,
+                           qr/^\.\/ARB_SOURCE_DOC/o,
+                           qr/\/ignore\./o,
                           );
 
 # first used/skipped match wins (exception see @3 below)
@@ -138,6 +140,7 @@ my @used_when_matchesFull = (
                              qr/^\.\/lib\/rna3d\/.*\.(pdb|data)$/o,
                              qr/^\.\/lib\/rna3d\/images\/.*\.png$/o,
                              qr/^\.\/lib\/sellists\/.*\.sellst$/o,
+                             qr/^\.\/lib\/protein_2nd_structure\/.*\.dat$/o,
                              qr/^\.\/lib\/submit\//o,
                              qr/^\.\/util\/arb_.*$/o,
                              qr/^\.\/util\/config\..*$/o,
@@ -163,6 +166,7 @@ my @skipped_when_matchesFull = (
                                 qr/^\.\/lib\/nas\/names\.dat$/o,
                                 qr/^\.\/lib\/arb_tcp\.dat$/o,
                                 qr/^\.\/arb.*\.tgz$/o,
+                                qr/^\.\/SOURCE_TOOLS\/valgrind2grep\.lst$/o,
                                );
 
 my @forced_when_matchesFull = (
