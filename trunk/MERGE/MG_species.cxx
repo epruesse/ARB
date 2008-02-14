@@ -443,79 +443,156 @@ GB_ERROR MG_transfer_sequence(MG_remaps *remaps, GBDATA *source_species, GBDATA 
 }
 
 
+static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap, 
+                                        GBDATA *gb_species_data1, GBDATA *gb_species_data2,
+                                        bool is_genome_db1, bool is_genome_db2, 
+                                        GBDATA  *gb_species1, const char *name1,
+                                        GB_HASH *source_organism_hash, GB_HASH *dest_species_hash,
+                                        GB_HASH *error_suppressor)
+{
+    // copies one species from source to destination DB
+    //
+    // either 'gb_species1' or 'name1' (and 'gb_species_data1') has to be given
+    // 'source_organism_hash' may be NULL, otherwise it's used to search for source organisms (when merging from genome DB)
+    // 'dest_species_hash' may be NULL, otherwise created species is stored there
+
+    GB_ERROR error = 0;
+    if (gb_species1) {
+        GBDATA *gb_name1 = GB_find(gb_species1,"name",0,down_level);
+        gb_assert(gb_name1);
+        name1             = GB_read_char_pntr(gb_name1);
+    }
+    else {
+        mg_assert(name1);
+        gb_species1 = GBT_find_species_rel_species_data(gb_species_data1, name1);
+        if (!gb_species1) {
+            error = GBS_global_string("Could not find species '%s'", name1);
+        }
+    }
+
+    bool transfer_fields = false;
+    if (is_genome_db1) {
+        if (is_genome_db2) { // genome -> genome
+            if (GEN_is_pseudo_gene_species(gb_species1)) {
+                const char *origin        = GEN_origin_organism(gb_species1);
+                GBDATA     *dest_organism = dest_species_hash
+                    ? (GBDATA*)GBS_read_hash(dest_species_hash, origin)
+                    : GEN_find_organism(gb_dest, origin);
+
+                if (dest_organism) transfer_fields = true;
+                else {
+                    error = GBS_global_string("Destination DB does not contain '%s's origin-organism '%s'",
+                                              name1, origin);
+                }
+            }
+            // else: merge organism ok
+        }
+        else { // genome -> non-genome
+            if (GEN_is_pseudo_gene_species(gb_species1)) transfer_fields = true;
+            else {
+                error = GBS_global_string("You can't merge organisms (%s) into a non-genome DB.\n"
+                                          "Only pseudo-species are possible", name1);
+            }
+        }
+    }
+    else {
+        if (is_genome_db2) { // non-genome -> genome
+            error = GBS_global_string("You can't merge non-genome species (%s) into a genome DB", name1);
+        }
+        // else: non-genome -> non-genome ok
+    }
+
+    GBDATA *gb_species2 = 0;
+    if (!error) {
+        gb_species2 = dest_species_hash
+            ? (GBDATA*)GBS_read_hash(dest_species_hash, name1)
+            : GBT_find_species_rel_species_data(gb_species_data2, name1);
+        
+        if (gb_species2) error = GB_delete(gb_species2);
+    }
+    if (!error) {
+        gb_species2 = GB_create_container(gb_species_data2, "species");
+        if (!gb_species2) error = GB_get_error();
+    }
+    if (!error) error = GB_copy(gb_species2, gb_species1);
+    if (!error && transfer_fields) {
+        mg_assert(is_genome_db1);
+        error = MG_export_fields(aw_root, gb_species1, gb_species2, error_suppressor, source_organism_hash);
+    }
+    if (!error) GB_write_flag(gb_species2, 1);
+    if (!error) error = MG_transfer_sequence(&remap, gb_species1, gb_species2);
+    if (!error && dest_species_hash) GBS_write_hash(dest_species_hash, name1, (long)gb_species2);
+
+    return error;
+}
+
+
 
 void MG_transfer_selected_species(AW_window *aww) {
     if (MG_check_alignment(aww,1)) return;
-    aw_openstatus("Transferring selected species");
-    GB_ERROR error = 0;
 
-    GB_begin_transaction(gb_merge);
-    GB_begin_transaction(gb_dest);
+    AW_root  *aw_root = aww->get_root();
+    char     *source  = aw_root->awar(AWAR_SPECIES1)->read_string();
+    GB_ERROR  error   = NULL;
 
-    bool is_genome_db = GEN_is_genome_db(gb_merge, -1);
-
-    GBDATA *gb_species_data1 = GB_search(gb_merge,"species_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_species_data2 = GB_search(gb_dest,"species_data",GB_CREATE_CONTAINER);
-
-    char *source = aww->get_root()->awar(AWAR_SPECIES1)->read_string();
-
-    GBDATA *gb_species1 = GBT_find_species_rel_species_data(gb_species_data1,source);
-    if (!gb_species1) {
-        error = "Error: please select one species in the left list";
-    }
-
-    GBDATA *gb_species2 = GBT_find_species_rel_species_data(gb_species_data2,source);
-    if (!error ) if (gb_species2) error = GB_delete(gb_species2);
-
-    if (!error) {
-        gb_species2 = GB_create_container(gb_species_data2,"species");
-        if (!gb_species2) error = GB_get_error();
-    }
-    if (!error) {
-        error = GB_copy(gb_species2,gb_species1);
-        if (!error && is_genome_db && GEN_is_pseudo_gene_species(gb_species1)) {
-            error = MG_export_fields(aww->get_root(), gb_species1, gb_species2, 0, 0);
-        }
-        GB_write_flag(gb_species2,1);
-    }
-    if (!error) {       // align sequence !!!!!!!!!
-        MG_remaps rm(gb_merge,gb_dest,aww->get_root());
-        error = MG_transfer_sequence(&rm,gb_species1,gb_species2);
-    }
-    if (error){
-        GB_abort_transaction(gb_merge);
-        GB_abort_transaction(gb_dest);
-        aw_message(error);
+    if (!source || !source[0]) {
+        error = "Please select a species in the left list";
     }
     else {
-        MG_transfer_fields_info();
-        GB_commit_transaction(gb_merge);
-        GB_commit_transaction(gb_dest);
+        aw_openstatus("Transferring selected species");
+        
+        GB_begin_transaction(gb_merge);
+        GB_begin_transaction(gb_dest);
+
+        MG_remaps rm(gb_merge,gb_dest,aw_root);
+
+        GBDATA *gb_species_data1 = GB_search(gb_merge,"species_data",GB_CREATE_CONTAINER);
+        GBDATA *gb_species_data2 = GB_search(gb_dest,"species_data",GB_CREATE_CONTAINER);
+
+        bool is_genome_db1 = GEN_is_genome_db(gb_merge, -1);
+        bool is_genome_db2 = GEN_is_genome_db(gb_dest, -1);
+
+        error = MG_transfer_one_species(aw_root, rm,
+                                        gb_species_data1, gb_species_data2,
+                                        is_genome_db1, is_genome_db2,
+                                        NULL, source,
+                                        NULL, NULL,
+                                        NULL);
+
+        if (error) {
+            GB_abort_transaction(gb_merge);
+            GB_abort_transaction(gb_dest);
+        }
+        else {
+            MG_transfer_fields_info();
+            GB_commit_transaction(gb_merge);
+            GB_commit_transaction(gb_dest);
+        }
+        aw_closestatus();
     }
-    aw_closestatus();
+
+    if (error) aw_message(error);
 }
 
 #undef IS_QUERIED
 #define IS_QUERIED(gb_species) (1 & GB_read_usr_private(gb_species))
 
-void MG_transfer_species_list(AW_window *aww)
-{
-    GB_ERROR error = 0 ;
+void MG_transfer_species_list(AW_window *aww) {
     if (MG_check_alignment(aww,1)) return;
 
+    GB_ERROR error = NULL;
     aw_openstatus("Transferring species");
     GB_begin_transaction(gb_merge);
     GB_begin_transaction(gb_dest);
 
-    GBDATA *gb_dest_species_data = GB_search(gb_dest,"species_data",GB_CREATE_CONTAINER);
+    bool is_genome_db1 = GEN_is_genome_db(gb_merge, -1);
+    bool is_genome_db2 = GEN_is_genome_db(gb_dest, -1);
 
-    bool is_genome_db = GEN_is_genome_db(gb_merge, -1);
+    GB_HASH *error_suppressor     = GBS_create_hash(50, 1);
+    GB_HASH *dest_species_hash    = GBT_create_species_hash(gb_dest);
+    GB_HASH *source_organism_hash = is_genome_db1 ? GBT_create_organism_hash(gb_merge) : 0;
 
-    GB_HASH   *error_suppressor     = GBS_create_hash(50, 1);
-    GB_HASH   *source_species_hash  = GBT_create_species_hash(gb_merge);
-    GB_HASH   *dest_species_hash    = GBT_create_species_hash(gb_dest);
-    GB_HASH   *source_organism_hash = is_genome_db ? GBT_create_organism_hash(gb_merge) : 0;
-    MG_remaps  rm(gb_merge,gb_dest,aww->get_root());
+    MG_remaps rm(gb_merge,gb_dest,aww->get_root());
 
     GBDATA *gb_species1;
     int     queried = 0;
@@ -524,38 +601,25 @@ void MG_transfer_species_list(AW_window *aww)
     for (gb_species1 = GBT_first_species(gb_merge); gb_species1; gb_species1 = GBT_next_species(gb_species1)) {
         if (IS_QUERIED(gb_species1)) queried++;
     }
-    
+
     for (gb_species1 = GBT_first_species(gb_merge); gb_species1; gb_species1 = GBT_next_species(gb_species1)) {
         if (IS_QUERIED(gb_species1)) {
-            GBDATA *gb_name1 = GB_find(gb_species1,"name",0,down_level);
-            gb_assert(gb_name1);
-            if (!gb_name1) continue;    // no name what happened ???
+            GBDATA *gb_species_data2 = GB_search(gb_dest,"species_data",GB_CREATE_CONTAINER);
 
-            const char *name        = GB_read_char_pntr(gb_name1);
-            GBDATA     *gb_species2 = (GBDATA*)GBS_read_hash(dest_species_hash, name);
-            if (gb_species2) error  = GB_delete(gb_species2);
-
-            if (!error) gb_species2 = GB_create_container(gb_dest_species_data,"species");
-            if (!error) error       = GB_copy(gb_species2,gb_species1);
-
-            if (!error && is_genome_db && GEN_is_pseudo_gene_species(gb_species1)) {
-                error = MG_export_fields(aww->get_root(), gb_species1, gb_species2, error_suppressor, source_organism_hash);
-            }
-
-            if (!error) error = MG_transfer_sequence(&rm,gb_species1,gb_species2);
-            if (error) break;
-            
-            GB_write_flag(gb_species2,1);
-            GBS_write_hash(dest_species_hash, name, (long)gb_species2);
+            error = MG_transfer_one_species(aww->get_root(), rm,
+                                            NULL, gb_species_data2,
+                                            is_genome_db1, is_genome_db2,
+                                            gb_species1, NULL,
+                                            source_organism_hash, dest_species_hash,
+                                            error_suppressor);
             aw_status(++count/double(queried));
         }
     }
 
     GBS_free_hash(dest_species_hash);
-    GBS_free_hash(source_species_hash);
     if (source_organism_hash) GBS_free_hash(source_organism_hash);
     GBS_free_hash(error_suppressor);
-
+    
     if (error) {
         GB_abort_transaction(gb_merge);
         GB_abort_transaction(gb_dest);
