@@ -666,12 +666,12 @@ int main(int argc, char **argv)
                 aw_message(GB_get_error(),"OK");
                 exit(0);
             }
-            AWT_announce_db_to_browser(gb_dest, "Current database (:)");
+            AWT_announce_db_to_browser(gb_merge, "Current database (:)");
 
             gb_dest = GBT_open("noname.arb","cw",0);
             AWT_announce_db_to_browser(gb_dest, "New database (noname.arb)");
 
-            MG_start_cb2(0,aw_root);
+            MG_start_cb2(NULL, aw_root, true, true);
             aw_root->main_loop();
         }
 
