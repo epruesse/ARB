@@ -1274,9 +1274,9 @@ static void mark_gene_species_of_marked_genes(AW_window */*aww*/, AW_CL cl_canva
 static void mark_organisms_with_marked_genes(AW_window */*aww*/, AW_CL /*cl_canvas*/, AW_CL) {
     GB_transaction dummy(gb_main);
 
-    for (GBDATA *gb_species = GBT_first_species(gb_main);
+    for (GBDATA *gb_species = GEN_first_organism(gb_main);
          gb_species;
-         gb_species = GBT_next_species(gb_species))
+         gb_species = GEN_next_organism(gb_species))
     {
         for (GBDATA *gb_gene = GEN_first_gene(gb_species);
              gb_gene;
