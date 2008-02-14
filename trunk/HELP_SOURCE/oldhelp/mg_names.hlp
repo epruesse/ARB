@@ -37,6 +37,11 @@ NOTES		Creates automatically unique names (=identifiers) for all
 		letters are taken from the genus designation, the remaining
 		letters from the species name.
 
+                In some cases where you are absolutely sure that both databases use
+                identical names for identical species, but renaming creates
+                different names (e.g. because one DB lacks accession numbers) 
+                you can override renaming by checking the 'Override' toggle.
+
 WARNINGS        If there are duplicated entries (same accession number -
 		different 'full_name'; no accession number - same 'full_name')
 		the different versions are indicated by appending running
@@ -51,5 +56,7 @@ WARNINGS        If there are duplicated entries (same accession number -
                     databases, cause there is no garantee, that duplicates with the
                     same .NUM suffix refer to the same species.
                     You may easily overwrite or duplicate your data!
+
+                Similar applies to the 'Override' toggle. Be careful!
 
 BUGS		No bugs known
