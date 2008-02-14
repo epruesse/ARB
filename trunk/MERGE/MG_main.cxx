@@ -37,7 +37,7 @@ void MG_exit(AW_window *aww, AW_CL cl_reload_db2, AW_CL) {
     }
 }
 
-int mg_save_enabled = 1;
+bool mg_save_enabled = true;
 
 void MG_save_merge_cb(AW_window *aww)
 {
@@ -196,7 +196,7 @@ static void MG_popup_if_renamed(AW_window *aww, AW_CL cl_create_window) {
 }
 
 // uses gb_dest and gb_merge
-void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled) {
+void MG_start_cb2(AW_window *aww,AW_root *aw_root, bool save_enabled, bool dest_is_new) {
     GB_ERROR error = 0;
 
     mg_save_enabled = save_enabled;
@@ -204,18 +204,13 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled) {
     {
         GB_transaction ta_merge(gb_merge);
         GB_transaction ta_dest(gb_dest);
-        GBT_mark_all(gb_dest,0);
 
-        // test whether DB-type matches
-        // (sets default for old DBs)
-        {
-            bool merge_is_genome = GEN_is_genome_db(gb_merge, 0);
-            bool dest_is_genome  = GEN_is_genome_db(gb_dest, 0);
+        GBT_mark_all(gb_dest,0); // unmark everything in dest DB
 
-            if (merge_is_genome != dest_is_genome) {
-                error = "Can't merge a genome DB with a non-genome DB";
-            }
-        }
+        // set DB-type to non-genome (compatibility to old DBs)
+        // when exporting to new DB (dest_is_new == true) -> use DB-type of merge-DB
+        bool merge_is_genome = GEN_is_genome_db(gb_merge, 0); 
+        GEN_is_genome_db(gb_dest, dest_is_new ? merge_is_genome : 0); 
     }
 
     if (!error) {
@@ -249,7 +244,7 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled) {
         }
 
         awm->insert_menu_topic("quit","Quit",               "Q","quit.hlp", AWM_ALL, MG_exit, 0, 0 );
-        if (save_enabled) {
+        if (mg_save_enabled) {
             awm->insert_menu_topic("quit","Quit & Start DB II", "D","quit.hlp", AWM_ALL, MG_exit, 1, 0 );
         }
 
@@ -292,7 +287,7 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, int save_enabled) {
         awm->help_text("mg_configs.hlp");
         awm->create_button("TRANSFER_CONFIGS", "Transfer Configurations ...");
 
-        if (save_enabled && GB_read_clients(gb_dest)>=0){       // No need to save when importing data
+        if (mg_save_enabled && GB_read_clients(gb_dest)>=0){       // No need to save when importing data
             awm->at("save");
             awm->callback(AW_POPUP,(AW_CL)MG_save_result_cb,(AW_CL)AWAR_MAIN_DB);
             awm->create_button("SAVE_WHOLE_DB2", "Save Whole DB II ...");
@@ -366,7 +361,7 @@ void MG_start_cb(AW_window *aww)
     }
 
     if (error) aw_message(error);
-    else MG_start_cb2(aww, awr);
+    else MG_start_cb2(aww, awr, true, false);
 }
 
 
