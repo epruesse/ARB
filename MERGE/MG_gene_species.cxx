@@ -3,7 +3,7 @@
 //    File      : MG_gene_species.cxx                                    //
 //    Purpose   : Transfer fields from organism and gene when            //
 //                tranferring gene species                               //
-//    Time-stamp: <Wed Feb/21/2007 13:26 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Feb/14/2008 09:53 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2002             //
@@ -185,6 +185,9 @@ static char *MG_create_field_content(GBDATA *gb_species, int method, const char 
 }
 
 GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, GB_HASH *error_suppressor, GB_HASH *source_organism_hash) {
+    // Export fields from pseudo-species' source-organism to exported destination-species
+    // error_suppressor and source_organism_hash may be NULL
+
     GB_ERROR error         = 0;
     int      export_fields = aw_root->awar(AWAR_MERGE_GENE_SPECIES_CREATE_FIELDS)->read_int();
 
@@ -221,7 +224,7 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
                     free(result);
                 }
                 else {
-                    long error_seen = GBS_read_hash(error_suppressor, error);
+                    long error_seen = error_suppressor ? GBS_read_hash(error_suppressor, error) : 0;
 #define MAX_EQUAL_WARNINGS 10
                     if (error_seen >= MAX_EQUAL_WARNINGS) {
                         if (error_seen == MAX_EQUAL_WARNINGS) {
@@ -234,7 +237,7 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
 
                         aw_message(GBS_global_string("'%s' when exporting %s (continuing)", error, name));
                     }
-                    GBS_incr_hash(error_suppressor, error);
+                    if (error_suppressor) GBS_incr_hash(error_suppressor, error);
                     error = 0;
                 }
 
