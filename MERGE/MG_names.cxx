@@ -17,6 +17,7 @@
 #define AWAR_ADDID_MATCH   "tmp/merge/addidmatch"
 #define AWAR_RENAME_STATUS "tmp/merge/renamestat"
 #define AWAR_ALLOW_DUPS    "tmp/merge/allowdups"
+#define AWAR_OVERRIDE      "tmp/merge/override"
 
 // --------------------------------------------------------------------------------
 
@@ -24,6 +25,7 @@ void MG_create_rename_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_ADDID_MATCH, "", aw_def);
     aw_root->awar_string(AWAR_RENAME_STATUS, "", aw_def);
     aw_root->awar_int(AWAR_ALLOW_DUPS, 0, aw_def);
+    aw_root->awar_int(AWAR_OVERRIDE, 0, aw_def);
 }
 
 // --------------------------------------------------------------------------------
@@ -155,6 +157,17 @@ static void rename_both_databases(AW_window *aww) {
     }
 }
 
+static void override_toggle_cb(AW_window *aww) {
+    AW_root *aw_root = aww->get_root();
+
+    if (aw_root->awar(AWAR_OVERRIDE)->read_int() == 1) {
+        MG_set_renamed(true, aw_root, "Overridden");
+    }
+    else {
+        MG_set_renamed(false, aw_root, "Not renamed");
+    }
+}
+
 AW_window *MG_merge_names_cb(AW_root *awr){
     static AW_window_simple *aws = 0;
     if (!aws) {
@@ -178,6 +191,11 @@ AW_window *MG_merge_names_cb(AW_root *awr){
         aws->at("dups");
         aws->label("Allow merging duplicates (dangerous! see HELP)");
         aws->create_toggle(AWAR_ALLOW_DUPS);
+
+        aws->at("override");
+        aws->label("Override (even more dangerous! see HELP)");
+        aws->callback(override_toggle_cb);
+        aws->create_toggle(AWAR_OVERRIDE);
 
         aws->at("match");
         aws->button_length(12);
