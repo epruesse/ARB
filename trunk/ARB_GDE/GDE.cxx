@@ -33,28 +33,14 @@ int num_menus = 0,repeat_cnt = 0;
 int DisplayType;
 GmenuItem *current_item;
 NA_Alignment *DataSet = NULL;
-//NA_Alignment *Clipboard = NULL;
-//char **TextClip;
-//int TextClipSize = 0,TextClipLength = 0;
 
 char GDEBLANK[] = "\0";
 
 #define SLIDERWIDTH 5           // input field width for numbers
 
-// enum {
-//  SLIDERWIDTH    = 5,
-//  TEXTFIELDWIDTH = 15
-//  };
-
 char *GDE_makeawarname(AWwindowinfo *AWinfo,long i);
 
-int GDE_odd(long a)
-{
-    if(((a/2)*2)==a) return 0;
-    return 1;
-}
-
-void GDE_showhelp_cb(AW_window *aw, AWwindowinfo *AWinfo, AW_CL /*cd*/) {
+static void GDE_showhelp_cb(AW_window *aw, AWwindowinfo *AWinfo, AW_CL /*cd*/) {
     const char *help_file = AWinfo->gmenuitem->help;
     if (help_file) {
         char *agde_help_file = GBS_string_eval(help_file, "*.help=agde_*1.hlp", 0);
@@ -81,14 +67,14 @@ char *GDE_makeawarname(AWwindowinfo *AWinfo,long i)
     return(strdup(name));
 }
 
-void GDE_slide_awar_int_cb(AW_window *aws, AW_CL cl_awar_name, AW_CL cd_diff)
+static void GDE_slide_awar_int_cb(AW_window *aws, AW_CL cl_awar_name, AW_CL cd_diff)
 {
     int      diff = (int)cd_diff;
     AW_awar *awar = aws->get_root()->awar((const char *)cl_awar_name);
 
     awar->write_int(awar->read_int()+diff);
 }
-void GDE_slide_awar_float_cb(AW_window *aws, AW_CL cl_awar_name, AW_CL cd_diff)
+static void GDE_slide_awar_float_cb(AW_window *aws, AW_CL cl_awar_name, AW_CL cd_diff)
 {
     double   diff    = *(double*)cd_diff;
     AW_awar *awar    = aws->get_root()->awar((const char *)cl_awar_name);
@@ -103,7 +89,7 @@ void GDE_slide_awar_float_cb(AW_window *aws, AW_CL cl_awar_name, AW_CL cd_diff)
     awar->write_float(new_val);
 }
 
-void GDE_create_infieldwithpm(AW_window *aws,char *newawar,long width)
+static void GDE_create_infieldwithpm(AW_window *aws,char *newawar,long width)
 {
     char *awar=strdup(newawar);
     aws->create_input_field(newawar,(int)width);
@@ -123,7 +109,7 @@ void GDE_create_infieldwithpm(AW_window *aws,char *newawar,long width)
     }
 }
 
-char *gde_filter_weights(GBDATA *gb_sai,AW_CL ){
+static char *gde_filter_weights(GBDATA *gb_sai,AW_CL ){
     char *ali_name = GBT_get_default_alignment(gb_main);
     GBDATA *gb_ali = GB_find(gb_sai,ali_name,0,down_level);
     delete ali_name;
@@ -143,7 +129,7 @@ char *gde_filter_weights(GBDATA *gb_sai,AW_CL ){
 
 
 
-AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
+static AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
 #define BUFSIZE 200
     char bf[BUFSIZE+1];
 #if defined(ASSERTION_USED)
@@ -237,11 +223,12 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
 
         if (seqtype != '-') {
             aws->at("compression");
-            aws->create_toggle_field(AWAR_GDE_COMPRESSION);
-            aws->insert_toggle( "none", "n",0 );
-            aws->insert_default_toggle( "vertical gaps", "v", 1 );
-            aws->insert_toggle( "all gaps",  "g", 2 );
-            aws->update_toggle_field();
+            aws->create_option_menu(AWAR_GDE_COMPRESSION, "", "");
+            aws->insert_option("none", "n", 0);
+            aws->insert_option("vertical gaps", "v", 1);
+            aws->insert_default_option("columns w/o info", "i", 3);
+            aws->insert_option("all gaps", "g", 2);
+            aws->update_option_menu();
 
             aws->button_length(12);
             aws->at("filtername");
@@ -257,15 +244,28 @@ AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
     }
 
 
-    long labellength=0,lablen;
-    //char *help;
-    labellength=1;
+    int labellength = 1;
     long i;
     for (i=0;i<AWinfo->gmenuitem->numargs;i++) {
-        //help=AWinfo->gmenuitem->help;
-        if(!(AWinfo->gmenuitem->arg[i].label)) AWinfo->gmenuitem->arg[i].label=GDEBLANK;
-        lablen=strlen(AWinfo->gmenuitem->arg[i].label);
-        if(lablen>labellength) labellength=lablen;
+        if(!(AWinfo->gmenuitem->arg[i].label)) AWinfo->gmenuitem->arg[i].label = GDEBLANK;
+
+        const char *label    = AWinfo->gmenuitem->arg[i].label;
+        const char *linefeed = strchr(label, '\n');
+
+        int lablen;
+        while (linefeed) {
+            lablen = linefeed-label;
+            if (lablen>labellength) {
+                labellength = lablen;
+            }
+            label    = linefeed+1;
+            linefeed = strchr(label, '\n');
+        }
+
+        lablen = strlen(label);
+        if (lablen>labellength) {
+            labellength = lablen;
+        }
     }
     aws->label_length((int)labellength);
     aws->auto_space(0,0);
@@ -484,7 +484,7 @@ void create_gde_var(AW_root  *aw_root, AW_default aw_def,
 
     aw_root->awar_int(AWAR_GDE_CUTOFF_STOPCODON, 0, aw_def);
     aw_root->awar_int(AWAR_GDE_SPECIES,          1, aw_def);
-    aw_root->awar_int(AWAR_GDE_COMPRESSION,      1, aw_def);
+    aw_root->awar_int(AWAR_GDE_COMPRESSION,      3, aw_def);
 
     aw_root->awar(AWAR_GDE_ALIGNMENT)->map("presets/use");
     aw_root->awar(AWAR_GDE_FILTER_ALIGNMENT)->map("presets/use");
@@ -494,14 +494,3 @@ void create_gde_var(AW_root  *aw_root, AW_default aw_def,
     ParseMenu();
 }
 
-AW_window *AP_open_gde_window(AW_root *aw_root)
-{
-    AW_window_menu_modes *awm = new AW_window_menu_modes;
-    awm->init(aw_root,"GDE","GDE",700,30);
-    awm->at(10,100);awm->callback((AW_CB0)AW_POPDOWN);
-    awm->create_button("CLOSE", "CLOSE","C");
-
-    GDE_load_menu(awm);
-
-    return (AW_window *)awm;
-}
