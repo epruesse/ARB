@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : GDE_awars.h                                       //
 //   Purpose   : Declare AWARS used by ARB-GDE-interface           //
-//   Time-stamp: <Tue Jan/22/2008 19:17 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Fri Feb/15/2008 12:01 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in January 2008   //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -18,7 +18,7 @@
 
 #define AWAR_GDE_CUTOFF_STOPCODON "gde/cutoff_stop_codon"
 #define AWAR_GDE_SPECIES          "gde/species"
-#define AWAR_GDE_COMPRESSION      "gde/compression"
+#define AWAR_GDE_COMPRESSION      "gde/compress"
 
 #define AWAR_GDE_FILTER_NAME      "gde/filter/name"
 #define AWAR_GDE_FILTER_FILTER    "gde/filter/filter"
