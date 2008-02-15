@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #include <malloc.h>
 #include <memory.h>
 
 #include <arbdb.h>
@@ -19,20 +18,7 @@
 #include "GDE_extglob.h"
 #include "AW_rename.hxx"
 
-long filter_true(char *filter)
-{
-    long aretrue = 0;
-    for (long i=0; filter[i]; i++) if (filter[i]=='1') aretrue++;
-    return aretrue;
-}
-
-long istrue_filter(char *filter,long col)
-{
-    if (filter[col]=='0') return(0);
-    else return(1);
-}
-
-int Arbdb_get_curelem(NA_Alignment *dataset)
+static int Arbdb_get_curelem(NA_Alignment *dataset)
 {
     int curelem;
     curelem = dataset->numelements++;
@@ -292,10 +278,10 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
 
 void ReadArbdb_plain(char *filename,NA_Alignment *dataset,int type) {
     AWUSE(filename); AWUSE(type);
-    ReadArbdb(dataset,(long)1,0,0, 0);
+    ReadArbdb(dataset, true, NULL, 0, false);
 }
 
-int ReadArbdb2(NA_Alignment *dataset,AP_filter *filter,long compress, bool cutoff_stop_codon) {
+int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, int compress, bool cutoff_stop_codon) {
     dataset->gb_main = gb_main;
     
     GBDATA **the_species;
@@ -328,7 +314,7 @@ int ReadArbdb2(NA_Alignment *dataset,AP_filter *filter,long compress, bool cutof
 
 
 
-int ReadArbdb(NA_Alignment *dataset,long marked,AP_filter *filter,long compress, bool cutoff_stop_codon) {
+int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, int compress, bool cutoff_stop_codon) {
     GBDATA *gb_species_data;
     GBDATA *gb_species;
 
@@ -345,12 +331,13 @@ int ReadArbdb(NA_Alignment *dataset,long marked,AP_filter *filter,long compress,
     long     numberspecies = 0;
     long     missingdata   = 0;
 
-    if (marked) gb_species=GBT_first_marked_species_rel_species_data(gb_species_data);
-    else gb_species=GBT_first_species_rel_species_data(gb_species_data);
+    if (marked) gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
+    else gb_species        = GBT_first_species_rel_species_data(gb_species_data);
 
     while(gb_species) {
         if (GBT_read_sequence(gb_species,dataset->alignment_name)) numberspecies++;
         else missingdata++;
+
         if (marked) gb_species = GBT_next_marked_species(gb_species);
         else gb_species        = GBT_next_species(gb_species);
     }
@@ -359,19 +346,20 @@ int ReadArbdb(NA_Alignment *dataset,long marked,AP_filter *filter,long compress,
         aw_message(GBS_global_string("Skipped %li species which did not contain data in '%s'", missingdata, dataset->alignment_name));
     }
 
-    the_species=(GBDATA**)calloc((unsigned int)numberspecies+1,sizeof(GBDATA*));
-
-    numberspecies=0;
-    if (marked) gb_species=GBT_first_marked_species_rel_species_data(gb_species_data);
-    else gb_species=GBT_first_species_rel_species_data(gb_species_data);
+    the_species   = (GBDATA**)calloc((unsigned int)numberspecies+1,sizeof(GBDATA*));
+    numberspecies = 0;
     
+    if (marked) gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
+    else gb_species        = GBT_first_species_rel_species_data(gb_species_data);
+
     while(gb_species) {
         if (GBT_read_sequence(gb_species,dataset->alignment_name)) {
             the_species[numberspecies]=gb_species;
             numberspecies++;
         }
-        if (marked) gb_species=GBT_next_marked_species(gb_species);
-        else gb_species=GBT_next_species(gb_species);
+
+        if (marked) gb_species = GBT_next_marked_species(gb_species);
+        else gb_species        = GBT_next_species(gb_species);
     }
 
     maxalignlen = GBT_get_alignment_len(gb_main,dataset->alignment_name);
@@ -399,57 +387,6 @@ int ReadArbdb(NA_Alignment *dataset,long marked,AP_filter *filter,long compress,
     return 0;
 }
 
-int WriteArbdb(NA_Alignment *aln,char *filename,int method,int maskable) {
-    filename = filename;
-    method   = method;
-    maskable = maskable;
-
-    size_t       j;
-    int          k;
-    GBDATA      *gb_data;
-    GBDATA      *gb_name;
-    GBDATA      *gb_species_data;
-    GBDATA      *gbd;
-    char        *buffer;
-    NA_Sequence *this_elem;
-
-    if (!aln->gb_main) {
-        Warning("You cannot create an ARBDB Database");
-        return (1);
-    }
-    GB_begin_transaction(aln->gb_main);
-    gb_species_data = GB_find(aln->gb_main,"species_data",0,down_level);
-    for (j = 0; j < aln->numelements; j++) {
-        this_elem = &(aln->element[j]);
-        if (!this_elem->gb_species) {
-            gb_name = GB_find(gb_species_data, "name", this_elem->short_name, down_2_level);
-            if (gb_name) {
-                this_elem->gb_species = GB_get_father(gb_name);
-            }
-            else {
-                this_elem->gb_species = GBT_create_species_rel_species_data(gb_species_data,
-                                                                            this_elem->short_name);
-            }
-        }
-        gb_data = GBT_add_data(this_elem->gb_species,aln->alignment_name, "data", GB_STRING);
-        buffer = (char *) calloc(sizeof(char), this_elem->seqlen + this_elem->offset+1);
-        for (k = 0; k < this_elem->seqlen + this_elem->offset; k++) {
-            buffer[k] = this_elem->tmatrix[getelem(this_elem, k)];
-        }
-        GB_write_string(gb_data, buffer);
-        free(buffer);
-        gbd = GB_search(this_elem->gb_species, "full_name", GB_STRING);
-        GB_write_string(gbd, this_elem->seq_name);
-        gbd = GB_search(this_elem->gb_species, "acc", GB_STRING);
-        GB_write_string(gbd, this_elem->id);
-    }
-    GB_commit_transaction(aln->gb_main);
-    if (GB_read_clients(aln->gb_main)>=0) {
-        GB_save(aln->gb_main,0,"b");
-    }
-    return 0;
-}
-
 int getelem(NA_Sequence *a,int b) {
     if (a->seqlen == 0) return -1;
     
@@ -466,27 +403,6 @@ int getelem(NA_Sequence *a,int b) {
 
     return a->sequence[b-a->offset];
 }
-/*------Added by Scott Ferguson, Exxon Research & Engineering Co. ---------*/
-int isagap(NA_Sequence *a,int b) {
-    int j,newsize;
-    newsize=0;
-    j=0;
-    NA_Base *temp;
-    temp=0;
-
-    if (b < a->offset) return 1;
-
-    /*  Check to see if base at given position is a gap */
-    switch (a->elementtype) {
-        case MASK:    return a->sequence[b-a->offset] == '0' ? 1 : 0;
-        case DNA:
-        case RNA:     return a->sequence[b-a->offset] == '\0' ? 1 : 0;
-        case PROTEIN: return a->sequence[b-a->offset] == '-' ? 1 : 0;
-        case TEXT:
-        default:      return a->sequence[b-a->offset] == ' ' ? 1 : 0;
-    }
-}
-/*-END:-Added by Scott Ferguson, Exxon Research & Engineering Co. ---------*/
 
 void putelem(NA_Sequence *a,int b,NA_Base c) {
     int      j;
@@ -531,8 +447,3 @@ void putelem(NA_Sequence *a,int b,NA_Base c) {
     }
 }
 
-void putcmask(NA_Sequence *a,int b,int c) {
-    if (b >= (a->offset) ) {
-        a->cmask[b-(a->offset)] = c;
-    }
-}
