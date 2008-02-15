@@ -31,7 +31,60 @@
 
 */
 
-int CheckType(char *seq,int len);
+/*
+ *   CheckType:  Check base composition to see if the sequence
+ *   appears to be an amino acid sequence.  If it is, pass back
+ *   TRUE, else FALSE.
+ */
+static int CheckType(char *seq,int len)
+{
+
+    int j,count1 = 0,count2 = 0;
+
+    for(j=0;j<len;j++)
+        if(((seq[j]|32) < 'z') && ((seq[j]|32) > 'a'))
+        {
+            count1++;
+            if(strchr("ACGTUNacgtun",seq[j]) == NULL)
+                count2++;
+        }
+
+    return( (count2 > count1/4)?TRUE:FALSE);
+}
+
+// ARB
+typedef struct ARB_TIME_STRUCT
+{
+    int yy;
+    int mm;
+    int dd;
+    int hr;
+    int mn;
+    int sc;
+} ARB_TIME;
+
+static void AsciiTime(void *b,char *asciitime)
+{
+    ARB_TIME *a=(ARB_TIME*)b;
+    int j;
+    char temp[GBUFSIZ];
+    //extern char month[12][6];
+
+    a->dd = 0;
+    a->yy = 0;
+    a->mm = 0;
+    sscanf(asciitime,"%d%5c%d",&(a->dd),temp,&(a->yy));
+    temp[5] = '\0';
+    for(j=0;j<12;j++)
+        if(strcmp(temp,GDEmonth[j]) == 0)
+            a->mm = j+1;
+    if(a->dd <0 || a->dd > 31 || a->yy < 0 || a->mm > 11)
+        SetTime(a);
+    return;
+}
+// ENDARB
+
+
 
 void ReadGen(char *filename,NA_Alignment *dataset,int type)
 {
@@ -246,38 +299,6 @@ void ReadGen(char *filename,NA_Alignment *dataset,int type)
     //return;
 }
 
-// ARB
-typedef struct ARB_TIME_STRUCT
-{
-    int yy;
-    int mm;
-    int dd;
-    int hr;
-    int mn;
-    int sc;
-} ARB_TIME;
-
-void AsciiTime(void *b,char *asciitime)
-{
-    ARB_TIME *a=(ARB_TIME*)b;
-    int j;
-    char temp[GBUFSIZ];
-    //extern char month[12][6];
-
-    a->dd = 0;
-    a->yy = 0;
-    a->mm = 0;
-    sscanf(asciitime,"%d%5c%d",&(a->dd),temp,&(a->yy));
-    temp[5] = '\0';
-    for(j=0;j<12;j++)
-        if(strcmp(temp,GDEmonth[j]) == 0)
-            a->mm = j+1;
-    if(a->dd <0 || a->dd > 31 || a->yy < 0 || a->mm > 11)
-        SetTime(a);
-    return;
-}
-// ENDARB
-
 int WriteGen(NA_Alignment *aln,char *filename,int method,int maskable)
 {
     int i;
@@ -456,23 +477,3 @@ void SetTime(void *b)
     return;
 }
 
-/*
- *   CheckType:  Check base composition to see if the sequence
- *   appears to be an amino acid sequence.  If it is, pass back
- *   TRUE, else FALSE.
- */
-int CheckType(char *seq,int len)
-{
-
-    int j,count1 = 0,count2 = 0;
-
-    for(j=0;j<len;j++)
-        if(((seq[j]|32) < 'z') && ((seq[j]|32) > 'a'))
-        {
-            count1++;
-            if(strchr("ACGTUNacgtun",seq[j]) == NULL)
-                count2++;
-        }
-
-    return( (count2 > count1/4)?TRUE:FALSE);
-}
