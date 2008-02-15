@@ -31,17 +31,158 @@ using namespace std;
 #define DEFAULT_COLOR 8
 extern AW_CL agde_filtercd;
 
-//char *ReplaceArgs(char *Action,GmenuItemArg arg);
-char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number);
+/*
+  ReplaceArgs():
+  Replace all command line arguements with the appropriate values
+  stored for the chosen menu item.
+
+  Copyright (c) 1989-1990, University of Illinois board of trustees.  All
+  rights reserved.  Written by Steven Smith at the Center for Prokaryote Genome
+  Analysis.  Design and implementation guidance by Dr. Gary Olsen and Dr.
+  Carl Woese.
+
+  Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
+  All rights reserved.
+
+*/
 
 
-long LMAX(long a,long b)
+static char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number)
+{
+    /*
+     *  The basic idea is to replace all of the symbols in the method
+     *  string with the values picked in the dialog box.  The method
+     *  is the general command line structure.  All arguements have three
+     *  parts, a label, a method, and a value.  The method never changes, and
+     *  is used to represent '-flag's for a given function.  Values are the
+     *  associated arguements that some flags require.  All symbols that
+     *  require argvalue replacement should have a '$' infront of the symbol
+     *  name in the itemmethod definition.  All symbols without the '$' will
+     *  be replaced by their argmethod.  There is currently no way to do a label
+     *  replacement, as the label is considered to be for use in the dialog
+     *  box only.  An example command line replacement would be:
+     *
+     *       itemmethod=>        "lpr arg1 $arg1 $arg2"
+     *
+     *       arglabel arg1=>     "To printer?"
+     *       argmethod arg1=>    "-P"
+     *       argvalue arg1=>     "lw"
+     *
+     *       arglabel arg2=>     "File name?"
+     *       argvalue arg2=>     "foobar"
+     *       argmethod arg2=>    ""
+     *
+     *   final command line:
+     *
+     *       lpr -P lw foobar
+     *
+     *   At this point, the chooser dialog type only supports the arglabel and
+     *   argmethod field.  So if an argument is of type chooser, and
+     *   its symbol is "this", then "$this" has no real meaning in the
+     *   itemmethod definition.  Its format in the .GDEmenu file is slighty
+     *   different as well.  A choice from a chooser field looks like:
+     *
+     *       argchoice:Argument_label:Argument_method
+     *
+     *
+     */
+    const char *symbol=0;
+    char *method=0;
+    char *textvalue=0;
+    char *temp;
+    int i,newlen,type;
+    symbol = AWinfo->gmenuitem->arg[number].symbol;
+    //method = AWinfo->gmenuitem->arg[number]->method;
+    //textvalue = AWinfo->gmenuitem->arg[number]->textvalue;
+    type = AWinfo->gmenuitem->arg[number].type;
+    if( (type == SLIDER) )
+    {
+        char *awarname = GDE_makeawarname(AWinfo,number);
+        textvalue      = (char*)malloc(GBUFSIZ);
+        char *awalue   = awr->awar(awarname)->read_as_string();
+        sprintf(textvalue,"%s",awalue);
+        free(awalue);
+    }
+    else if((type == CHOOSER) ||
+            (type == CHOICE_TREE) ||
+            (type == CHOICE_SAI) ||
+            (type == CHOICE_MENU) ||
+            (type == CHOICE_LIST) ||
+            (type == CHOICE_WEIGHTS) ||
+            (type == TEXTFIELD))
+    {
+        char *awarname=GDE_makeawarname(AWinfo,number);
+        method=awr->awar(awarname)->read_string();
+        textvalue=awr->awar(awarname)->read_string();
+    }
+
+    if(textvalue == NULL)   textvalue=(char *)calloc(1,sizeof(char));
+    if(method == NULL)      method=(char *)calloc(1,sizeof(char));
+    if(symbol == NULL)      symbol="";
+
+    set<string>warned_about;
+    int conversion_warning        = 0;
+    int j                         = 0;
+
+    for(; (i=Find2(Action+j,symbol)) != -1;)
+    {
+        i += j;
+        ++j;
+        if(i>0 && Action[i-1] == '$' )
+        {
+            newlen = strlen(Action)-strlen(symbol)
+                +strlen(textvalue);
+            temp = (char *)calloc(newlen,1);
+            if (temp == NULL)
+                Error("ReplaceArgs():Error in calloc");
+            strncat(temp,Action,i-1);
+            strncat(temp,textvalue,strlen(textvalue));
+            strcat( temp,&(Action[i+strlen(symbol)]) );
+            free(Action);
+            Action = temp;
+        }
+        else
+        {
+            if (warned_about.find(symbol) == warned_about.end()) {
+                fprintf(stderr,
+                        "old arb version converted '%s' to '%s' (now only '$%s' is converted)\n",
+                        symbol, textvalue, symbol);
+                conversion_warning++;
+                warned_about.insert(symbol);
+            }
+            //             newlen = strlen(Action)-strlen(symbol)
+            //                 +strlen(method)+1;
+            //             temp   = (char *)calloc(newlen,1);
+            //             if (temp == NULL)
+            //                 Error("ReplaceArgs():Error in calloc");
+            //             strncat(temp,Action,i);
+            //             strncat(temp,method,strlen(method));
+            //             strcat( temp,&(Action[i+strlen(symbol)]) );
+            //             free(Action);
+            //             Action = temp;
+        }
+    }
+
+    if (conversion_warning) {
+        fprintf(stderr,
+                "Conversion warnings occurred in Action:\n'%s'\n",
+                Action);
+    }
+
+    free(textvalue);
+    free(method);
+    return(Action);
+}
+
+
+
+static long LMAX(long a,long b)
 {
     if(a>b) return a;
     return b;
 }
 
-void GDE_free(void **p)
+static void GDE_free(void **p)
 {
     if(*p!=0)
     {
@@ -63,7 +204,7 @@ void GDE_free(void **p)
   GDE_free((void**)&mask->list);
   }*/
 
-char *ReplaceFile(char *Action,GfileFormat file)
+static char *ReplaceFile(char *Action,GfileFormat file)
 {
     char *symbol,*method,*temp;
     int i,newlen;
@@ -85,7 +226,7 @@ char *ReplaceFile(char *Action,GfileFormat file)
     return(Action);
 }
 
-char *ReplaceString(char *Action,const char *old,const char *news)
+static char *ReplaceString(char *Action,const char *old,const char *news)
 {
     const char *symbol;
     const char *method;
@@ -111,7 +252,7 @@ char *ReplaceString(char *Action,const char *old,const char *news)
 }
 
 
-void GDE_freesequ(NA_Sequence *sequ)
+static void GDE_freesequ(NA_Sequence *sequ)
 {
     if(sequ==0) return;
     GDE_free((void**)&sequ->comments);
@@ -127,7 +268,7 @@ void GDE_freesequ(NA_Sequence *sequ)
       }*/
 }
 
-void GDE_freeali(NA_Alignment *dataset)
+static void GDE_freeali(NA_Alignment *dataset)
 {
     if(dataset==0) return;
     GDE_free((void**)&dataset->id);
@@ -154,7 +295,7 @@ void GDE_freeali(NA_Alignment *dataset)
         GDE_freesequ(&(dataset->element[i]));
 }
 
-void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
+static void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
 {
     GB_begin_transaction(gb_main);
     long maxalignlen=GBT_get_alignment_len(gb_main,align);
@@ -357,7 +498,7 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     AP_filter *filter2           = awt_get_filter(aw_root,agde_filtercd);
     char      *filter_name       = 0; // aw_root->awar(AWAR_GDE_FILTER_NAME)->read_string();
     char      *alignment_name    = strdup("ali_unknown");
-    long       marked            = aw_root->awar(AWAR_GDE_SPECIES)->read_int();
+    bool       marked            = (aw_root->awar(AWAR_GDE_SPECIES)->read_int() != 0);
     long       cutoff_stop_codon = aw_root->awar(AWAR_GDE_CUTOFF_STOPCODON)->read_int();
 
     GmenuItem *current_item;
@@ -381,10 +522,10 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
         aw_status("reading database");
         int stop;
         if (gde_cgss.get_sequences) {
-            stop = ReadArbdb2(DataSet,filter2,compress, cutoff_stop_codon);
+            stop = ReadArbdb2(DataSet, filter2, compress, cutoff_stop_codon);
         }
         else {
-            stop = ReadArbdb(DataSet,marked,filter2,compress, cutoff_stop_codon);
+            stop = ReadArbdb(DataSet, marked, filter2, compress, cutoff_stop_codon);
         }
         GB_commit_transaction(DataSet->gb_main);
 
@@ -525,149 +666,5 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     DataSet->rel_offset = 0;
 
     //     aw->hide();
-}
-
-/*
-  ReplaceArgs():
-  Replace all command line arguements with the appropriate values
-  stored for the chosen menu item.
-
-  Copyright (c) 1989-1990, University of Illinois board of trustees.  All
-  rights reserved.  Written by Steven Smith at the Center for Prokaryote Genome
-  Analysis.  Design and implementation guidance by Dr. Gary Olsen and Dr.
-  Carl Woese.
-
-  Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
-  All rights reserved.
-
-*/
-
-
-//char *ReplaceArgs(char *Action,GmenuItemArg arg)
-char *ReplaceArgs(AW_root *awr,char *Action,AWwindowinfo *AWinfo,int number)
-{
-    /*
-     *  The basic idea is to replace all of the symbols in the method
-     *  string with the values picked in the dialog box.  The method
-     *  is the general command line structure.  All arguements have three
-     *  parts, a label, a method, and a value.  The method never changes, and
-     *  is used to represent '-flag's for a given function.  Values are the
-     *  associated arguements that some flags require.  All symbols that
-     *  require argvalue replacement should have a '$' infront of the symbol
-     *  name in the itemmethod definition.  All symbols without the '$' will
-     *  be replaced by their argmethod.  There is currently no way to do a label
-     *  replacement, as the label is considered to be for use in the dialog
-     *  box only.  An example command line replacement would be:
-     *
-     *       itemmethod=>        "lpr arg1 $arg1 $arg2"
-     *
-     *       arglabel arg1=>     "To printer?"
-     *       argmethod arg1=>    "-P"
-     *       argvalue arg1=>     "lw"
-     *
-     *       arglabel arg2=>     "File name?"
-     *       argvalue arg2=>     "foobar"
-     *       argmethod arg2=>    ""
-     *
-     *   final command line:
-     *
-     *       lpr -P lw foobar
-     *
-     *   At this point, the chooser dialog type only supports the arglabel and
-     *   argmethod field.  So if an argument is of type chooser, and
-     *   its symbol is "this", then "$this" has no real meaning in the
-     *   itemmethod definition.  Its format in the .GDEmenu file is slighty
-     *   different as well.  A choice from a chooser field looks like:
-     *
-     *       argchoice:Argument_label:Argument_method
-     *
-     *
-     */
-    const char *symbol=0;
-    char *method=0;
-    char *textvalue=0;
-    char *temp;
-    int i,newlen,type;
-    symbol = AWinfo->gmenuitem->arg[number].symbol;
-    //method = AWinfo->gmenuitem->arg[number]->method;
-    //textvalue = AWinfo->gmenuitem->arg[number]->textvalue;
-    type = AWinfo->gmenuitem->arg[number].type;
-    if( (type == SLIDER) )
-    {
-        char *awarname = GDE_makeawarname(AWinfo,number);
-        textvalue      = (char*)malloc(GBUFSIZ);
-        char *awalue   = awr->awar(awarname)->read_as_string();
-        sprintf(textvalue,"%s",awalue);
-        free(awalue);
-    }
-    else if((type == CHOOSER) ||
-            (type == CHOICE_TREE) ||
-            (type == CHOICE_SAI) ||
-            (type == CHOICE_MENU) ||
-            (type == CHOICE_LIST) ||
-            (type == CHOICE_WEIGHTS) ||
-            (type == TEXTFIELD))
-    {
-        char *awarname=GDE_makeawarname(AWinfo,number);
-        method=awr->awar(awarname)->read_string();
-        textvalue=awr->awar(awarname)->read_string();
-    }
-
-    if(textvalue == NULL)   textvalue=(char *)calloc(1,sizeof(char));
-    if(method == NULL)      method=(char *)calloc(1,sizeof(char));
-    if(symbol == NULL)      symbol="";
-
-    set<string>warned_about;
-    int conversion_warning        = 0;
-    int j                         = 0;
-
-    for(; (i=Find2(Action+j,symbol)) != -1;)
-    {
-        i += j;
-        ++j;
-        if(i>0 && Action[i-1] == '$' )
-        {
-            newlen = strlen(Action)-strlen(symbol)
-                +strlen(textvalue);
-            temp = (char *)calloc(newlen,1);
-            if (temp == NULL)
-                Error("ReplaceArgs():Error in calloc");
-            strncat(temp,Action,i-1);
-            strncat(temp,textvalue,strlen(textvalue));
-            strcat( temp,&(Action[i+strlen(symbol)]) );
-            free(Action);
-            Action = temp;
-        }
-        else
-        {
-            if (warned_about.find(symbol) == warned_about.end()) {
-                fprintf(stderr,
-                        "old arb version converted '%s' to '%s' (now only '$%s' is converted)\n",
-                        symbol, textvalue, symbol);
-                conversion_warning++;
-                warned_about.insert(symbol);
-            }
-            //             newlen = strlen(Action)-strlen(symbol)
-            //                 +strlen(method)+1;
-            //             temp   = (char *)calloc(newlen,1);
-            //             if (temp == NULL)
-            //                 Error("ReplaceArgs():Error in calloc");
-            //             strncat(temp,Action,i);
-            //             strncat(temp,method,strlen(method));
-            //             strcat( temp,&(Action[i+strlen(symbol)]) );
-            //             free(Action);
-            //             Action = temp;
-        }
-    }
-
-    if (conversion_warning) {
-        fprintf(stderr,
-                "Conversion warnings occurred in Action:\n'%s'\n",
-                Action);
-    }
-
-    free(textvalue);
-    free(method);
-    return(Action);
 }
 
