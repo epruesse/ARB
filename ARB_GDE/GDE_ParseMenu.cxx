@@ -17,6 +17,21 @@
 #include "GDE_global.h"
 #include "GDE_extglob.h"
 
+static int getline(FILE *file,char *string)
+{
+    int c;
+    int i;
+    for(i=0;(c=getc(file))!='\n';i++){
+        if (c== EOF) break;
+        if (i>= GBUFSIZ -2) break;
+        string[i]=c;
+    }
+    string[i] = '\0';
+    if (i==0 && c==EOF) return (EOF);
+    else return (0);
+}
+
+
 /*
   ParseMenus(): Read in the menu config file, and generate the internal
   menu structures used by the window system.
@@ -274,9 +289,7 @@ void ParseMenu()
         else if(Find(in_line,"arglabel:"))
         {
             crop(in_line,head,temp);
-            thisarg->label=(char*)calloc(strlen(temp)+1, sizeof(char));
-            if(thisarg->label == NULL) Error("Calloc");
-            (void)strcpy(thisarg->label,temp);
+            thisarg->label = GBS_string_eval(temp, "\\\\n=\\n", 0);
         }
         /*
          *  Argument choice values use the following notation:
@@ -497,28 +510,14 @@ int Find2(const char *target,const char *key)
 }
 
 
-void Error(const char *msg)
-{
+void Error(const char *msg) {
+    /* goes to header: __attribute__((noreturn))  */
     (void)fprintf(stderr,"Error in ARB_GDE: %s\n",msg);
     fflush(stderr);
     gde_assert(0);
     exit(1);
 }
 
-
-int getline(FILE *file,char *string)
-{
-    int c;
-    int i;
-    for(i=0;(c=getc(file))!='\n';i++){
-        if (c== EOF) break;
-        if (i>= GBUFSIZ -2) break;
-        string[i]=c;
-    }
-    string[i] = '\0';
-    if (i==0 && c==EOF) return (EOF);
-    else return (0);
-}
 
 /*
   Crop():
