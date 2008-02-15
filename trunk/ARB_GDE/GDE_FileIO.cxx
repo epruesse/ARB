@@ -133,6 +133,226 @@ char *String(char *str)
 }
 
 
+static void ReadNA_Flat(char *filename,char *dataset,int type)
+{
+    size_t j;
+    int i, jj, c, curelem=0,offset;
+    char buffer[GBUFSIZ];
+    char in_line[GBUFSIZ];
+    char curname[GBUFSIZ];
+    i=0;c=0;type=0;
+
+    NA_Sequence *this_elem;
+    NA_Alignment *data;
+
+    FILE *file;
+
+    curname[0] = '\0';
+    data = (NA_Alignment*)dataset;
+
+    file = fopen(filename,"r");
+    if(file == NULL)
+    {
+        fprintf(stderr,"Cannot open %s.\n",filename);
+        return;
+    }
+    for(;fgets(in_line,GBUFSIZ,file) !=0;)
+    {
+        if (in_line[0] == '#' ||
+            in_line[0] == '%' ||
+            in_line[0] == '"' ||
+            in_line[0] == '@')
+        {
+            offset = 0;
+            for(j=0;j<strlen(in_line);j++)
+            {
+                if(in_line[j] == '(')
+                {
+                    sscanf((char*)
+                           &(in_line[j+1]),"%d",&offset);
+                    in_line[j] = '\0';
+                }
+            }
+
+            curelem = data->numelements++;
+            if( curelem == 0 )
+            {
+                data->element=(NA_Sequence*)
+                    Calloc(5,sizeof(NA_Sequence));
+                data->maxnumelements = 5;
+            }
+            else if (curelem==data->maxnumelements)
+            {
+                (data->maxnumelements) *= 2;
+                data->element=
+                    (NA_Sequence*)Realloc((char*)data->element
+                                          ,data->maxnumelements*sizeof(NA_Sequence));
+            }
+
+            InitNASeq(&(data->element[curelem]),
+                      in_line[0] == '#'?DNA:
+                      in_line[0] == '%'?PROTEIN:
+                      in_line[0] == '"'?TEXT:
+                      in_line[0] == '@'?MASK:TEXT);
+            this_elem= &(data->element[curelem]);
+            if(in_line[strlen(in_line)-1] == '\n')
+                in_line[strlen(in_line)-1] = '\0';
+            strncpy(this_elem->short_name,(char*)&(in_line[1]),31);
+            this_elem->offset = offset;
+        }
+        else if(in_line[0] != '\n')
+        {
+            size_t strl = strlen(in_line);
+            for(j=0,jj=0;j<strl;j++)
+                if(in_line[j] != ' ' && in_line[j] != '\n' &&
+                   in_line[j] != '\t')
+                    buffer[jj++] = in_line[j];
+
+            if(data->element[curelem].rmatrix)
+                Ascii2NA(buffer,jj,data->element[curelem].rmatrix);
+            AppendNA((NA_Base*)buffer,jj,&(data->element[curelem]));
+        }
+    }
+
+    for(j=0;j<data->numelements;j++)
+        data->maxlen = MAX(data->maxlen,data->element[j].seqlen +
+                           data->element[j].offset);
+
+    for(j=0;j<data->numelements;j++)
+        if(data->element[j].seqlen==0)
+            data->element[j].protect =
+                PROT_BASE_CHANGES+ PROT_GREY_SPACE+
+                PROT_WHITE_SPACE+ PROT_TRANSLATION;
+
+    NormalizeOffset(data);
+    Regroup(data);
+    return;
+}
+
+/*
+  LoadFile():
+  Load the given filename into the given dataset.  Handle any
+  type conversion needed to get the data into the specified data type.
+  This routine is used in situations where the format and datatype is known.
+
+  Copyright (c) 1989-1990, University of Illinois board of trustees.  All
+  rights reserved.  Written by Steven Smith at the Center for Prokaryote Genome
+  Analysis.  Design and implementation guidance by Dr. Gary Olsen and Dr.
+  Carl Woese.
+
+  Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
+  All rights reserved.
+*/
+
+static void LoadFile(char *filename,NA_Alignment *dataset,int type,int format)
+{
+
+    if (DataType != type)
+        fprintf(stderr,"Warning, datatypes do not match.\n");
+    /*
+      Handle the overwrite/create/merge dialog here.
+    */
+    switch(format)
+    {
+        case NA_FLAT:
+            ReadNA_Flat(filename,(char*)dataset,type);
+            ((NA_Alignment*)dataset)->format = GDE;
+            break;
+
+        case GENBANK:
+            ReadGen(filename,dataset,type);
+            ((NA_Alignment*)dataset)->format = GENBANK;
+            break;
+
+        case ARBDB:
+            ReadArbdb_plain(filename,dataset,type);
+            ((NA_Alignment*)dataset)->format = ARBDB;
+            break;
+
+        case GDE:
+            ReadGDE(filename,dataset,type);
+            ((NA_Alignment*)dataset)->format = GDE;
+            break;
+        case COLORMASK:
+            ReadCMask(filename);
+
+        default:
+            break;
+    }
+    return;
+}
+
+static int FindType(char *name,int *dtype,int *ftype)
+{
+    FILE *file;
+    char in_line[GBUFSIZ];
+
+    file = fopen(name,"r");
+    *dtype=0;
+    *ftype=0;
+
+    if (file == NULL)
+        return(1);
+
+    /*
+     *   Is this a flat file?
+     *   Get the first non blank line, see if a type marker shows up.
+     */
+    if (fgets(in_line,GBUFSIZ,file) == 0) {
+        return 1;
+    }
+    for(;strlen(in_line)<2 && fgets(in_line,GBUFSIZ,file) != NULL;) ;
+
+    if (in_line[0] == '#' || in_line[0] == '%' ||
+       in_line[0]  == '"' || in_line[0] == '@' )
+    {
+        *dtype=NASEQ_ALIGN;
+        *ftype=NA_FLAT;
+    }
+
+    /*
+     *   Else, try genbank
+     */
+    else
+    {
+        fclose(file);
+        file = fopen(name,"r");
+        *dtype=0;
+        *ftype=0;
+
+        if (file == NULL)
+            return(1);
+
+        for(;fgets(in_line,GBUFSIZ,file) != NULL;)
+            if(Find(in_line,"LOCUS"))
+            {
+                *dtype=NASEQ_ALIGN;
+                *ftype=GENBANK;
+                fclose(file);
+                return(0);
+            }
+        /*
+         *   and last, try GDE
+         */
+            else if(Find(in_line,"sequence"))
+            {
+                *dtype = NASEQ_ALIGN;
+                *ftype = GDE;
+                fclose(file);
+                return(0);
+            }
+            else if(Find(in_line,"start:"))
+            {
+                *dtype = NASEQ_ALIGN;
+                *ftype = COLORMASK;
+                fclose(file);
+                return(0);
+            }
+    }
+
+    fclose(file);
+    return(0);
+}
 
 /*
   LoadData():
@@ -209,133 +429,6 @@ void LoadData(char *filen)
     return;
 }
 
-
-/*
-  LoadFile():
-  Load the given filename into the given dataset.  Handle any
-  type conversion needed to get the data into the specified data type.
-  This routine is used in situations where the format and datatype is known.
-
-  Copyright (c) 1989-1990, University of Illinois board of trustees.  All
-  rights reserved.  Written by Steven Smith at the Center for Prokaryote Genome
-  Analysis.  Design and implementation guidance by Dr. Gary Olsen and Dr.
-  Carl Woese.
-
-  Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.
-  All rights reserved.
-*/
-
-void LoadFile(char *filename,NA_Alignment *dataset,int type,int format)
-{
-
-    if (DataType != type)
-        fprintf(stderr,"Warning, datatypes do not match.\n");
-    /*
-      Handle the overwrite/create/merge dialog here.
-    */
-    switch(format)
-    {
-        case NA_FLAT:
-            ReadNA_Flat(filename,(char*)dataset,type);
-            ((NA_Alignment*)dataset)->format = GDE;
-            break;
-
-        case GENBANK:
-            ReadGen(filename,dataset,type);
-            ((NA_Alignment*)dataset)->format = GENBANK;
-            break;
-
-        case ARBDB:
-            ReadArbdb_plain(filename,dataset,type);
-            ((NA_Alignment*)dataset)->format = ARBDB;
-            break;
-
-        case GDE:
-            ReadGDE(filename,dataset,type);
-            ((NA_Alignment*)dataset)->format = GDE;
-            break;
-        case COLORMASK:
-            ReadCMask(filename);
-
-        default:
-            break;
-    }
-    return;
-}
-
-
-
-int FindType(char *name,int *dtype,int *ftype)
-{
-    FILE *file;
-    char in_line[GBUFSIZ];
-
-    file = fopen(name,"r");
-    *dtype=0;
-    *ftype=0;
-
-    if (file == NULL)
-        return(1);
-
-    /*
-     *   Is this a flat file?
-     *   Get the first non blank line, see if a type marker shows up.
-     */
-    if (fgets(in_line,GBUFSIZ,file) == 0) {
-        return 1;
-    }
-    for(;strlen(in_line)<2 && fgets(in_line,GBUFSIZ,file) != NULL;) ;
-
-    if (in_line[0] == '#' || in_line[0] == '%' ||
-       in_line[0]  == '"' || in_line[0] == '@' )
-    {
-        *dtype=NASEQ_ALIGN;
-        *ftype=NA_FLAT;
-    }
-
-    /*
-     *   Else, try genbank
-     */
-    else
-    {
-        fclose(file);
-        file = fopen(name,"r");
-        *dtype=0;
-        *ftype=0;
-
-        if (file == NULL)
-            return(1);
-
-        for(;fgets(in_line,GBUFSIZ,file) != NULL;)
-            if(Find(in_line,"LOCUS"))
-            {
-                *dtype=NASEQ_ALIGN;
-                *ftype=GENBANK;
-                fclose(file);
-                return(0);
-            }
-        /*
-         *   and last, try GDE
-         */
-            else if(Find(in_line,"sequence"))
-            {
-                *dtype = NASEQ_ALIGN;
-                *ftype = GDE;
-                fclose(file);
-                return(0);
-            }
-            else if(Find(in_line,"start:"))
-            {
-                *dtype = NASEQ_ALIGN;
-                *ftype = COLORMASK;
-                fclose(file);
-                return(0);
-            }
-    }
-
-    fclose(file);
-    return(0);
-}
 
 void AppendNA(NA_Base *buffer,int len,NA_Sequence *seq)
 {
@@ -773,103 +866,6 @@ void ReadCMask(const char *filename)
 
     }
     /*RepaintAll(AW_TRUE);*/
-    return;
-}
-
-
-void ReadNA_Flat(char *filename,char *dataset,int type)
-{
-    size_t j;
-    int i, jj, c, curelem=0,offset;
-    char buffer[GBUFSIZ];
-    char in_line[GBUFSIZ];
-    char curname[GBUFSIZ];
-    i=0;c=0;type=0;
-
-    NA_Sequence *this_elem;
-    NA_Alignment *data;
-
-    FILE *file;
-
-    curname[0] = '\0';
-    data = (NA_Alignment*)dataset;
-
-    file = fopen(filename,"r");
-    if(file == NULL)
-    {
-        fprintf(stderr,"Cannot open %s.\n",filename);
-        return;
-    }
-    for(;fgets(in_line,GBUFSIZ,file) !=0;)
-    {
-        if (in_line[0] == '#' ||
-            in_line[0] == '%' ||
-            in_line[0] == '"' ||
-            in_line[0] == '@')
-        {
-            offset = 0;
-            for(j=0;j<strlen(in_line);j++)
-            {
-                if(in_line[j] == '(')
-                {
-                    sscanf((char*)
-                           &(in_line[j+1]),"%d",&offset);
-                    in_line[j] = '\0';
-                }
-            }
-
-            curelem = data->numelements++;
-            if( curelem == 0 )
-            {
-                data->element=(NA_Sequence*)
-                    Calloc(5,sizeof(NA_Sequence));
-                data->maxnumelements = 5;
-            }
-            else if (curelem==data->maxnumelements)
-            {
-                (data->maxnumelements) *= 2;
-                data->element=
-                    (NA_Sequence*)Realloc((char*)data->element
-                                          ,data->maxnumelements*sizeof(NA_Sequence));
-            }
-
-            InitNASeq(&(data->element[curelem]),
-                      in_line[0] == '#'?DNA:
-                      in_line[0] == '%'?PROTEIN:
-                      in_line[0] == '"'?TEXT:
-                      in_line[0] == '@'?MASK:TEXT);
-            this_elem= &(data->element[curelem]);
-            if(in_line[strlen(in_line)-1] == '\n')
-                in_line[strlen(in_line)-1] = '\0';
-            strncpy(this_elem->short_name,(char*)&(in_line[1]),31);
-            this_elem->offset = offset;
-        }
-        else if(in_line[0] != '\n')
-        {
-            size_t strl = strlen(in_line);
-            for(j=0,jj=0;j<strl;j++)
-                if(in_line[j] != ' ' && in_line[j] != '\n' &&
-                   in_line[j] != '\t')
-                    buffer[jj++] = in_line[j];
-
-            if(data->element[curelem].rmatrix)
-                Ascii2NA(buffer,jj,data->element[curelem].rmatrix);
-            AppendNA((NA_Base*)buffer,jj,&(data->element[curelem]));
-        }
-    }
-
-    for(j=0;j<data->numelements;j++)
-        data->maxlen = MAX(data->maxlen,data->element[j].seqlen +
-                           data->element[j].offset);
-
-    for(j=0;j<data->numelements;j++)
-        if(data->element[j].seqlen==0)
-            data->element[j].protect =
-                PROT_BASE_CHANGES+ PROT_GREY_SPACE+
-                PROT_WHITE_SPACE+ PROT_TRANSLATION;
-
-    NormalizeOffset(data);
-    Regroup(data);
     return;
 }
 
