@@ -308,10 +308,21 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/st_window.hxx
 
+ED4_protein_2nd_structure.o: ed4_awars.hxx
+ED4_protein_2nd_structure.o: ed4_class.hxx
+ED4_protein_2nd_structure.o: ed4_defs.hxx
 ED4_protein_2nd_structure.o: ed4_protein_2nd_structure.hxx
+ED4_protein_2nd_structure.o: ed4_search.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arbdb.h
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
 ED4_ProteinViewer.o: ed4_class.hxx
 ED4_ProteinViewer.o: ed4_defs.hxx

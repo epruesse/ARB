@@ -60,3 +60,44 @@ depend.init:
 
 
 
+# DO NOT DELETE
+
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+axml.o: axml.h
+axml.o: globalVariables.h
+
+bipartitionList.o: axml.h
+
+categorizeGeneric.o: axml.h
+
+evaluateGeneric.o: axml.h
+
+evaluateGenericVector.o: axml.h
+
+evaluatePartialGeneric.o: axml.h
+
+makenewzGeneric.o: axml.h
+
+models.o: axml.h
+
+multiple.o: axml.h
+
+newviewGeneric.o: axml.h
+
+optimizeModel.o: axml.h
+
+parsePartitions.o: axml.h
+
+rapidBootstrap.o: axml.h
+
+raxmlParsimony.o: axml.h
+
+rev_functions.o: axml.h
+
+searchAlgo.o: axml.h
+
+topologies.o: axml.h
+
+treeIO.o: axml.h
