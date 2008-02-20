@@ -1070,23 +1070,44 @@ int GB_host_is_local(const char *hostname){
 /* Returns the physical memory size in k available for one process */
 GB_ULONG GB_get_physical_memory(void){
 #if defined(SUN5) || defined(LINUX)
-    long pagesize = sysconf(_SC_PAGESIZE);
-    long pages    = sysconf(_SC_PHYS_PAGES);
-    /*    long test = sysconf(_SC_AVPHYS_PAGES); */
+    ulong max_malloc = 0;
+    {
+        ulong step_size  = 4096;
+        void *head = 0;
 
-    long memsize        = (pagesize/1024) * pages;
-    long nettomemsize   = memsize - 10240; /* reduce by 10Mb (for kernel etc.) */
-    long maxmemsize4arb = (nettomemsize*95)/100; /* arb uses max. 95 % of available memory (was 70% in the past) */
-    long addressable    = 1L<<(sizeof(void*)*8-10); /* e.g. 2^32 with 4byte-pointers; -10 because we calculate in kBytes */
-    long usedmemsize    = MIN(maxmemsize4arb, addressable); /* limit to max addressable memory */
+        // detect max allocateable memory by ... allocating
+        do {
+            void **tmp;
+            while((tmp=malloc(step_size))) {
+                *tmp=head;
+                head=tmp;
+                max_malloc+=step_size;
+                step_size*=2;
+            }
+        } while((step_size=step_size/2) > sizeof(void*));
+
+        while(head) {
+            void *tmp;
+            tmp=*(void**)head;
+            free(head);
+            head=tmp;
+        }
+
+        max_malloc /= 1024;
+    }
+    
+    long  pagesize     = sysconf(_SC_PAGESIZE);
+    long  pages        = sysconf(_SC_PHYS_PAGES);
+    ulong memsize      = (pagesize/1024) * pages;
+    ulong nettomemsize = memsize - 10240; /* reduce by 10Mb (for kernel etc.) */
+    ulong usedmemsize  = (MIN(nettomemsize,max_malloc)*95)/100; /* arb uses max. 95 % of available memory (was 70% in the past) */
 
 #if defined(DEBUG)
-    printf("- memsize(real)        = %20li k\n", memsize);
-    printf("- memsize(netto)       = %20li k\n", nettomemsize);
-    printf("- memsize(95%%)         = %20li k\n", maxmemsize4arb);
-    printf("- memsize(addressable) = %20li k\n", addressable);
-    printf("- memsize(used by ARB) = %20li k\n", usedmemsize);
+    printf("- memsize(real)        = %20lu k\n", memsize);
+    printf("- memsize(netto)       = %20lu k\n", nettomemsize);
+    printf("- memsize(max_malloc)  = %20lu k\n", max_malloc);
 #endif /* DEBUG */
+    printf("- memsize(used by ARB) = %20lu k\n", usedmemsize);
     
     arb_assert(usedmemsize != 0);
     return usedmemsize;
