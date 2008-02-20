@@ -209,8 +209,19 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, bool save_enabled, bool dest_
 
         // set DB-type to non-genome (compatibility to old DBs)
         // when exporting to new DB (dest_is_new == true) -> use DB-type of merge-DB
-        bool merge_is_genome = GEN_is_genome_db(gb_merge, 0); 
-        GEN_is_genome_db(gb_dest, dest_is_new ? merge_is_genome : 0); 
+        bool merge_is_genome = GEN_is_genome_db(gb_merge, 0);
+
+        int dest_genome = 0;
+        if (dest_is_new) {
+            if (merge_is_genome) {
+                dest_genome = aw_message("Enter destination DB-type", "Normal,Genome");
+            }
+            else {
+                dest_genome = 0; // from non-genome -> to non-genome
+            }
+        }
+
+        GEN_is_genome_db(gb_dest, dest_genome); // does not change anything if type is already defined
     }
 
     if (!error) {
