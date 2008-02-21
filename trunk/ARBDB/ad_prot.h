@@ -246,8 +246,6 @@ GB_ERROR GB_install_link_follower P_((GBDATA *gb_main, const char *link_type, GB
 
 /* adsocket.c */
 void GB_usleep P_((long usec));
-void GB_usleep P_((long usec));
-void GB_usleep P_((long usec));
 GB_ULONG GB_time_of_file P_((const char *path));
 long GB_size_of_file P_((const char *path));
 long GB_mode_of_file P_((const char *path));
