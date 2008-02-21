@@ -43,25 +43,24 @@ extern "C" {
 int gbcm_sig_violation_flag;
 int gbcm_pipe_violation_flag;
 
-# if defined(SUN5)
+#if defined(DIGITAL)
+# if defined(__cplusplus)
+extern "C" {    extern void usleep(unsigned int );  }
+# else
+extern void usleep(unsigned int);
+# endif
+#endif // DIGITAL
+
 void GB_usleep(long usec){
+# if defined(SUN5)
     struct timespec timeout,time2;
     timeout.tv_sec  = 0;
     timeout.tv_nsec = usec*1000;
     nanosleep(&timeout,&time2);
-}
 # else
-#  if defined(DIGITAL)
-#   if defined(__cplusplus)
-extern "C" {    extern void usleep(unsigned int );  }
-#   else
-extern void usleep(unsigned int);
-#   endif
-#  endif // DIGITAL
-void GB_usleep(long usec){
     usleep(usec);
-}
 # endif
+}
 
 long gbcm_sig_violation_end();
 
