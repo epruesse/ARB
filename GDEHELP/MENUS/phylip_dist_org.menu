@@ -10,7 +10,7 @@ itemhelp:phylip_distance.help
 
 arg:DISPLAY_FUNC
 argtype:choice_menu
-arglabel:What to do with the tree:?
+arglabel:What to do with the tree?
 argchoice:ARB ('tree_ph_xxx'):(arb_read_tree tree_ph_$$ outtree "PRG=$PROGRAM FILTER=$FILTER PKG=phylip (Interactive)")
 argchoice:TextEdit:arb_textedit outtree
 argchoice:Treetool:treetool outtree

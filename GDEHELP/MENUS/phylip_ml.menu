@@ -10,7 +10,7 @@ itemhelp:phyml.help
 
 arg:DISPLAY_FUNC
 argtype:choice_menu
-arglabel:What to do with the tree:?
+arglabel:What to do with the tree?
 argchoice:ARB ('tree_phyml_'):arb_read_tree `/bin/cat arb_read_tree_args` tree_phyml_$$ outtree "PRG=phyml FILTER=$FILTER STYPE=DNA"
 argchoice:TextEdit:arb_textedit outfile &
 argchoice:Treetool:treetool outtree
@@ -75,7 +75,7 @@ itemhelp:phyml.help
 
 arg:DISPLAY_FUNC
 argtype:choice_menu
-arglabel:What to do with the tree:?
+arglabel:What to do with the tree?
 argchoice:ARB ('tree_phyml_'):arb_read_tree `/bin/cat arb_read_tree_args` tree_phyml_$$ outtree "PRG=phyml FILTER=$FILTER STYPE=AA"
 argchoice:TextEdit:arb_textedit outfile &
 argchoice:Treetool:treetool outtree
@@ -125,7 +125,7 @@ itemhelp:proml.help
 
 arg:DISPLAY_FUNC
 argtype:choice_menu
-arglabel:What to do with the tree:?
+arglabel:What to do with the tree?
 argchoice:ARB ('tree_proml_'):arb_read_tree `/bin/cat arb_read_tree_args` tree_proml_$$ outtree "PRG=proml FILTER=$FILTER PKG=phylip BOOT=$BOOTSTRAP MODEL=$MODEL ANALYSIS=$ANALYSIS"
 argchoice:TextEdit:arb_textedit outfile &
 argchoice:Treetool:treetool outtree
