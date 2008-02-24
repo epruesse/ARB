@@ -489,6 +489,7 @@ int aisc_get_message(aisc_com *link)
 
 
 
+int aisc_get(aisc_com *link, int o_type, long objekt, ...) __attribute__ ((sentinel));
 int aisc_get(aisc_com *link, int o_type, long objekt, ...)
 {
     static 	long *arg_pntr[MAX_AISC_SET_GET];
@@ -740,9 +741,8 @@ static int 	aisc_collect_sets(aisc_com *link,
     return mes_cnt;
 }
 
-int 	aisc_put(	aisc_com	*link,
-                    int o_type,
-                    long objekt, ...)
+int 	aisc_put(	aisc_com	*link, int o_type, long objekt, ...) __attribute__ ((sentinel));
+int 	aisc_put(	aisc_com	*link, int o_type, long objekt, ...)
 {
     int	mes_cnt,arg_cnt;
     va_list	parg;
@@ -769,9 +769,8 @@ int 	aisc_put(	aisc_com	*link,
     return 0;
 }
 
-int 	aisc_nput(	aisc_com	*link,
-                    int o_type,
-                    long objekt, ...)
+int 	aisc_nput(	aisc_com	*link, int o_type, long objekt, ...) __attribute__ ((sentinel));
+int 	aisc_nput(	aisc_com	*link, int o_type, long objekt, ...)
 {
     int	mes_cnt,arg_cnt;
     va_list	parg;
@@ -801,13 +800,10 @@ int 	aisc_nput(	aisc_com	*link,
     return 0;
 }
 
-int aisc_create(aisc_com *link,
-                int father_type,
-                long father,
-                int attribute,
-                int object_type,
-                long *object,
-                ...)
+int aisc_create(aisc_com *link, int father_type, long father, 
+                int attribute,  int object_type, long *object, ...) __attribute__ ((sentinel));
+int aisc_create(aisc_com *link, int father_type, long father, 
+                int attribute,  int object_type, long *object, ...)
 {
     int	mes_cnt;
     int	len;
@@ -852,15 +848,10 @@ int aisc_create(aisc_com *link,
     return 0;
 }
 
-int aisc_copy(	aisc_com *link,
-                int s_type,
-                long source,
-                int father_type,
-                long father,
-                int attribute,
-                int object_type,
-                long *object,
-                ...)
+int aisc_copy(	aisc_com *link, int s_type, long source, int father_type,
+                long father, int attribute, int object_type, long *object, ...) __attribute__ ((sentinel));
+int aisc_copy(	aisc_com *link, int s_type, long source, int father_type,
+                long father, int attribute, int object_type, long *object, ...)
 {
     int	mes_cnt;
     int	len;
