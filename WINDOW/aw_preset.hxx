@@ -20,7 +20,7 @@ AW_gc_manager AW_manage_GC(AW_window                                       *aww,
                            void (*changecb)(AW_window*,AW_CL,AW_CL), AW_CL  cd1, AW_CL cd2,
                            bool                                             define_color_groups,
                            const char                                      *default_background_color,
-                           ...);
+                           ...) __attribute__ ((sentinel));
 /* creates some GC pairs: one for normal operation,
                     the other for drag mode
         eg.
@@ -49,7 +49,7 @@ void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char 
 void AW_preset_create_scale_chooser(AW_window *aws, const char *awar, const char *label);
 void AW_preset_create_color_chooser(AW_window *aws, const char *awar, const char *label,bool message_reload = false, bool show_label = false);
 
-void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, AW_BOOL has_font_info, const char *id0, ...);
+void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, AW_BOOL has_font_info, const char *id0, ...) __attribute__ ((sentinel));
 
 #else
 #error aw_preset.hxx included twice
