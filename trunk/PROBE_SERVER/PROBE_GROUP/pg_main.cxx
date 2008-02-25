@@ -541,9 +541,9 @@ static string PG_SpeciesBag_Content(const SpeciesBag& species) {
     return result;
 }
 
-static GB_ERROR collectProbes(GBDATA *pb_main, const probe_config_data& probe_config, GB_alignment_type ali_type) {
+static GB_ERROR collectProbes(GBDATA *gb_main, GBDATA *pb_main, const probe_config_data& probe_config, GB_alignment_type ali_type) {
     GB_ERROR error = 0;
-    string pt_server_name = "localhost: "+para.pt_server_name;
+    string pt_server_name = para.pt_server_name;
     PG_init_pt_server(gb_main, pt_server_name.c_str(), my_output);
 
     size_t group_count = 0;
@@ -1319,7 +1319,7 @@ int main(int argc,char *argv[]) {
                     out.put("[skipping creation of probe database.. reusing existing database]");
                 }
                 else {
-                    error = collectProbes(pb_main, probe_config, ali_type);
+                    error = collectProbes(gb_main, pb_main, probe_config, ali_type);
                 }
             }
             if (!error) error = findExactSubtrees(gbt_tree, pb_main, pba_main, pbb_main);

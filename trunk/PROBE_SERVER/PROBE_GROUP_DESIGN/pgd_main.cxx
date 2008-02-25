@@ -272,7 +272,7 @@ static GB_ERROR pgd_scanArguments(int argc,char *argv[]){
 
     if (argc == 5 || argc == 7) {
         para.db_name        = argv[1];
-        para.pt_server_name = string("localhost: ")+argv[2];
+        para.pt_server_name = argv[2];
         para.pd_db_name     = string(argv[3])+argv[4];
         para.pb_length      = atoi(argv[4]);
         if (argc == 7) {
