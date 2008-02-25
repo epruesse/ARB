@@ -700,8 +700,8 @@ char *GB_map_FILE(FILE *in,int writeable){
     }else{
         buffer = (char*)mmap(0, (int)size, PROT_READ, MAP_SHARED, fi, 0);
     }
-    if (!buffer){
-        GB_export_error("GB_map_file: Error Out of Memory: mmap failes ");
+    if (buffer == MAP_FAILED){
+        GB_export_error("GB_map_file: Error Out of Memory: mmap failes (errno: %i)", errno);
         return 0;
     }
     return buffer;
