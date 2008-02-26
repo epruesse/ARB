@@ -829,8 +829,8 @@ static char *search_executable(GB_CSTR exe_name) {
     return found ? strdup(buffer) : 0;
 }
 
-char *GB_find_executable(GB_CSTR description_of_executable, ...) __attribute__ ((sentinel));
 char *GB_find_executable(GB_CSTR description_of_executable, ...) {
+    /* goes to header: __attribute__((sentinel))  */
     /* search the path for an executable with any of the given names (...)
      * if any is found, it's full path is returned
      * if none is found, a warning call is returned (which can be executed without harm)
