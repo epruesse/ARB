@@ -697,7 +697,7 @@ static GB_ERROR gbl_keep(GBL_command_arguments *args)
 }
 
 static char *binop_compare(const char *arg1, const char *arg2, void *client_data) {
-    int case_sensitive = (int)client_data;
+    long case_sensitive = (long)client_data;
     int result;
 
     if (case_sensitive) result = strcmp(arg1, arg2);
@@ -706,7 +706,7 @@ static char *binop_compare(const char *arg1, const char *arg2, void *client_data
     return GBS_global_string_copy("%i", result<0 ? -1 : (result>0 ? 1 : 0));
 }
 static char *binop_equals(const char *arg1, const char *arg2, void *client_data) {
-    int case_sensitive = (int)client_data;
+    long case_sensitive = (long)client_data;
     int result;
 
     if (case_sensitive) result = strcmp(arg1, arg2);
@@ -715,7 +715,7 @@ static char *binop_equals(const char *arg1, const char *arg2, void *client_data)
     return GBS_global_string_copy("%i", result == 0 ? 1 : 0);
 }
 static char *binop_contains(const char *arg1, const char *arg2, void *client_data) {
-    int         case_sensitive = (int)client_data;
+    long         case_sensitive = (long)client_data;
     const char *found          = 0;
 
     if (case_sensitive) found = strstr(arg1, arg2);
