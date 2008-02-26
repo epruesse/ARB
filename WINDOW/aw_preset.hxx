@@ -24,7 +24,7 @@ AW_gc_manager AW_manage_GC(AW_window                                       *aww,
 /* creates some GC pairs: one for normal operation,
                     the other for drag mode
         eg.
-        AW_manage_GC(aww,device,10,20,AW_GCM_DATA_AREA, my_expose_cb, cd1 ,cd2, "name","#sequence",0);
+        AW_manage_GC(aww,device,10,20,AW_GCM_DATA_AREA, my_expose_cb, cd1 ,cd2, "name","#sequence",NULL);
 
                 (see implementation for more details on parameter strings)
 
