@@ -75,7 +75,8 @@ char *PTM_get_mem(int size)
 /********************* malloc all small free blocks ***********************/
 int
 PTM_destroy_mem(void){  /* destroys all left memory sources */
-    register int    pos,i;
+    register int    pos;
+    register long   i;
     int sum;
     sum = 0;
     for (pos=0;pos<=PTM_MAX_TABLES;pos++) {
