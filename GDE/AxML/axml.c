@@ -2378,7 +2378,7 @@ printhq(long *hq, tree *tr)
 {
   int i;
   for(i = 0; i < tr->cdta->endsite; i++)
-    fprintf(stderr,"%d ", hq[i]);
+    fprintf(stderr,"%ld ", hq[i]);
   fprintf(stderr,"\n");
 }
 
@@ -4230,10 +4230,10 @@ void summarize (tree *tr)
     globTime = gettime() - globTime;
     fprintf(stderr, "Acc time global: %f\n", globTime);
     printf("Acc time global: %f\n", globTime);
-    fprintf(stderr, "FLOPBS: %d\n", flopBlocks);   
+    fprintf(stderr, "FLOPBS: %ld\n", flopBlocks);   
     fprintf(stderr,"depth: %d\n", tr->eqDepth);
-    printf("FLOPPBS: %d\n", flopBlocks);
-    fprintf(stderr,"countEQ: %d, countNEQ: %d\n", countEQ, countNEQ);
+    printf("FLOPPBS: %ld\n", flopBlocks);
+    fprintf(stderr,"countEQ: %ld, countNEQ: %ld\n", countEQ, countNEQ);
     
   } /* summarize */
 
