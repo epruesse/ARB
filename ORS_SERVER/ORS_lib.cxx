@@ -52,6 +52,7 @@ char *ORS_crypt(char *password) {
 *****************************************************************************/
 char *ORS_export_error(char *templat, ...)
 	{
+        /* goes to header: __attribute__((format(printf, 1, 2))) */
 	char buffer[10000];
 	char *p = buffer;
 	va_list	parg;
@@ -69,6 +70,7 @@ char *ORS_export_error(char *templat, ...)
 *****************************************************************************/
 char *ORS_sprintf(char *templat, ...)
 	{
+        /* goes to header: __attribute__((format(printf, 1, 2))) */
 	char buffer[10000];
 	char *p = buffer;
 	va_list	parg;
