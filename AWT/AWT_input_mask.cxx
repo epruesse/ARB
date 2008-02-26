@@ -1906,14 +1906,14 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
             if (!error) {
                 for (map<string, size_t>::const_iterator r = referenced_ids.begin(); r != referenced_ids.end(); ++r) {
                     if (declared_ids.find(r->first) == declared_ids.end()) {
-                        error = GB_export_error("ID '%s' used in line #%u was not declared", r->first.c_str(), r->second);
+                        error = GB_export_error("ID '%s' used in line #%lu was not declared", r->first.c_str(), r->second);
                         aw_message(error);
                     }
                 }
 
                 for (map<string, size_t>::const_iterator d = declared_ids.begin(); d != declared_ids.end(); ++d) {
                     if (referenced_ids.find(d->first) == referenced_ids.end()) {
-                        const char *warning = GBS_global_string("ID '%s' declared in line #%u is never used in %s",
+                        const char *warning = GBS_global_string("ID '%s' declared in line #%lu is never used in %s",
                                                                 d->first.c_str(), d->second, mask_name.c_str());
                         aw_message(warning);
                     }
@@ -1945,10 +1945,10 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                 ; // do not change error
             }
             else if (err_pos == 0) { // don't knows exact error position
-                error = GBS_global_string("%s in line #%u", error, lineNo);
+                error = GBS_global_string("%s in line #%lu", error, lineNo);
             }
             else if (err_pos == string::npos) {
-                error = GBS_global_string("%s at end of line #%u", error, lineNo);
+                error = GBS_global_string("%s at end of line #%lu", error, lineNo);
             }
             else {
                 int    wanted         = 35;
@@ -1968,7 +1968,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                     last_was_space = this_is_space;
                 }
 
-                error = GBS_global_string("%s in line #%u at '%s...'", error, lineNo, context.c_str());
+                error = GBS_global_string("%s in line #%lu at '%s...'", error, lineNo, context.c_str());
             }
         }
 
