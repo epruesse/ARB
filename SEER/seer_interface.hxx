@@ -80,8 +80,7 @@ public:
     enum SeerInterfaceErrorType	errorType;
     char *errorString;
     SeerInterfaceData *errorSource; // the [optional] reason for the error,
-    SeerInterfaceError(SeerInterfaceErrorType type,const char *templateString,...); // length of string is limited to
-				// maxErrorStringLength
+    SeerInterfaceError(SeerInterfaceErrorType type,const char *templateString,...) __attribute__((format(printf,2,3))); // length of string is limited to maxErrorStringLength
     ~SeerInterfaceError();
     void print() const;
 };
