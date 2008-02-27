@@ -47,6 +47,7 @@
 
 /* assert that raises SIGSEGV (recommended for DEBUG version!) */
 # define ASSERT_CRASH
+//# define ASSERT_PRINT_AND_CRASH
 /* test if a bug has to do with assertion code */
 /* # define ASSERT_NONE */
 
@@ -69,6 +70,11 @@
 #ifdef ASSERT_CRASH
 /* this assigns zero to zero-pointer (-> SIGSEGV) */
 # define arb_assert(cond) do { if (!(cond)) *(int *)0=0; } while (0)
+#endif
+
+#ifdef ASSERT_PRINT_AND_CRASH
+/* this assigns zero to zero-pointer (-> SIGSEGV) */
+# define arb_assert(cond) do { if (!(cond)) { fprintf(stderr, "assertion '%s' failed in %s #%i\n", #cond, __FILE__, __LINE__); fflush(stderr); *(int *)0=0; } } while (0)
 #endif
 
 #ifdef ASSERT_ERROR
