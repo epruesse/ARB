@@ -178,15 +178,15 @@ void PT_init_map(){
             err = true;
         }
         else {
-            fprintf(stderr, "Name map size = %u\n", list_size);
+            fprintf(stderr, "Name map size = %lu\n", list_size);
         }
         if (gene_struct_arb2internal.size() != list_size) {
-            fprintf(stderr, "Internal error - detected %i duplicated 'species/gene' combinations in name mapping.\n",
+            fprintf(stderr, "Internal error - detected %li duplicated 'species/gene' combinations in name mapping.\n",
                     list_size-gene_struct_arb2internal.size());
             err = true;
         }
         if (gene_struct_internal2arb.size() != list_size) {
-            fprintf(stderr, "Internal error - detected %i duplicated internal gene name in name mapping.\n",
+            fprintf(stderr, "Internal error - detected %li duplicated internal gene name in name mapping.\n",
                     list_size-gene_struct_internal2arb.size());
             err = true;
         }
