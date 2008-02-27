@@ -127,7 +127,9 @@ int probe_compress_sequence(char *seq)
         *dest++ = PT_QU;
     }
 
+#ifdef ARB_64
     arb_assert(!((dest - source) & 0xffffffff00000000));    // must fit into 32 bit
+#endif    
 
     return dest-source;
 }
