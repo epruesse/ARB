@@ -1452,7 +1452,7 @@ AW_window *MG_merge_species_cb(AW_root *awr){
         aws->at("transfield");
         aws->callback(AW_POPUP,(AW_CL)MG_transfer_fields,0);
         aws->create_button("TRANSFER_FIELD_OF_LISTED_DELETE_DUPLI",
-                           "TRANSFER\nFIELD\nOF LISTED\nIN SPECIES\n\nDELETE\nDUPLICATES\nIN DB II","T");
+                           "TRANSFER\nFIELD\nOF LISTED\nSPECIES\n\nDELETE\nDUPLICATES\nIN DB II","T");
 
         aws->shadow_width(1);
     }
