@@ -18,7 +18,7 @@ typedef void * PT_PNTR;
 extern struct PTM_struct {
     char         *data;
     int           size;
-    int           allsize;
+    long          allsize;
     char         *tables[PTM_MAX_TABLES+1];
 #ifdef PTM_DEBUG
     long          debug[PTM_MAX_TABLES+1];
