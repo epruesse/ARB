@@ -69,8 +69,8 @@ char *GBS_find_lib_file P_((const char *filename, const char *libprefix, int war
 char **GBS_read_dir P_((const char *dir, const char *filter));
 GB_ERROR GBS_free_names P_((char **names));
 long GBS_gcgchecksum P_((const char *seq));
-long GB_checksum P_((const char *seq, long length, int ignore_case, const char *exclude));
-long GBS_checksum P_((const char *seq, int ignore_case, const char *exclude));
+uint32_t GB_checksum P_((const char *seq, long length, int ignore_case, const char *exclude));
+uint32_t GBS_checksum P_((const char *seq, int ignore_case, const char *exclude));
 long GB_merge_sort_strcmp P_((void *v0, void *v1, char *not_used));
 char *GBS_extract_words P_((const char *source, const char *chars, float minlen, GB_BOOL sort_output));
 int GBS_do_core P_((void));
