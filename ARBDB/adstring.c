@@ -1350,7 +1350,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
         if (bar) {
             *(bar++) = 0;
         } else {
-            GB_export_error("SRT ERROR: no '=' found in command '%s' (position > %li)", icommand, (long)(doppelpunkt-command+1));
+            GB_export_error("SRT ERROR: no '=' found in command '%s' (position > %zi)", icommand, doppelpunkt-command+1);
             free(command);
             free(in);
             return 0;
