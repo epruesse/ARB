@@ -1646,7 +1646,7 @@ long GBS_gcgchecksum( const char *seq )
 }
 
 /* Table of CRC-32's of all single byte values (made by makecrc.c of ZIP source) */
-const unsigned long crctab[] = {
+const uint32_t crctab[] = {
     0x00000000L, 0x77073096L, 0xee0e612cL, 0x990951baL, 0x076dc419L,
     0x706af48fL, 0xe963a535L, 0x9e6495a3L, 0x0edb8832L, 0x79dcb8a4L,
     0xe0d5e91eL, 0x97d2d988L, 0x09b64c2bL, 0x7eb17cbdL, 0xe7b82d07L,
@@ -1701,7 +1701,7 @@ const unsigned long crctab[] = {
     0x2d02ef8dL
 };
 
-long GB_checksum(const char *seq, long length, int ignore_case , const char *exclude) /* RALF: 02-12-96 */
+uint32_t GB_checksum(const char *seq, long length, int ignore_case , const char *exclude) /* RALF: 02-12-96 */
      /*
       * CRC32checksum: modified from CRC-32 algorithm found in ZIP compression source
       * if ignore_case == true -> treat all characters as uppercase-chars (applies to exclude too)
@@ -1735,7 +1735,7 @@ long GB_checksum(const char *seq, long length, int ignore_case , const char *exc
     return c;
 }
 
-long GBS_checksum(const char *seq, int ignore_case, const char *exclude)
+uint32_t GBS_checksum(const char *seq, int ignore_case, const char *exclude)
      /* if 'ignore_case' == true -> treat all characters as uppercase-chars (applies to 'exclude' too) */
 {
     return GB_checksum(seq, strlen(seq), ignore_case, exclude);
