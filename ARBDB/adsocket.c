@@ -1087,7 +1087,7 @@ GB_ULONG GB_get_physical_memory(void){
                 *tmp        = head;
                 head        = tmp;
                 max_malloc += step_size;
-                if (max_malloc >= nettomemsize) break;
+                if (max_malloc/1024 >= nettomemsize) break;
                 step_size *= 2;
             }
         } while((step_size=step_size/2) > sizeof(void*));
