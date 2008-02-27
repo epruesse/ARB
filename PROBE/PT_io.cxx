@@ -126,6 +126,9 @@ int probe_compress_sequence(char *seq)
     if (dest[-1] != PT_QU) {
         *dest++ = PT_QU;
     }
+
+    arb_assert(!((dest - source) & 0xffffffff00000000));    // must fit into 32 bit
+
     return dest-source;
 }
 
@@ -133,8 +136,8 @@ char *probe_read_string_append_point(GBDATA *gb_data,int *psize)
 {
     char *data;
     char *buffer;
-    int len;
-    len = (int)GB_read_string_count(gb_data);
+    long len;
+    len = GB_read_string_count(gb_data);
     data = GB_read_string(gb_data);
     if (data[len-1] != '.') {
         buffer = (char *)calloc(sizeof(char),len+2);
