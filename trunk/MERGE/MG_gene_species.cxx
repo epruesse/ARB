@@ -3,7 +3,7 @@
 //    File      : MG_gene_species.cxx                                    //
 //    Purpose   : Transfer fields from organism and gene when            //
 //                tranferring gene species                               //
-//    Time-stamp: <Thu Feb/14/2008 09:53 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Feb/21/2008 15:26 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2002             //
@@ -122,7 +122,7 @@ static void create_awars_for_field(AW_root *aw_root, const char *cur_field) {
     aw_root->awar_string(field_awar(cur_field, "aci"), "", MG_props);
 }
 
-static char *MG_create_field_content(GBDATA *gb_species, int method, const char *origins_field, const char *aci, GB_ERROR& error, GB_HASH *organism_hash) {
+static char *MG_create_field_content(GBDATA *gb_species, CreationMethod method, const char *origins_field, const char *aci, GB_ERROR& error, GB_HASH *organism_hash) {
     // does not write to database (only creates the content)
     mg_assert(GEN_is_pseudo_gene_species(gb_species));
 
@@ -132,9 +132,16 @@ static char *MG_create_field_content(GBDATA *gb_species, int method, const char 
     switch (method) {
         case MG_CREATE_COPY_ORGANISM:
             gb_origin = GEN_find_origin_organism(gb_species, organism_hash);
+            if (!gb_origin) {
+                error = GBS_global_string("Origin-Organism '%s' not found", GEN_origin_organism(gb_species));
+            }
             break;
         case MG_CREATE_COPY_GENE:
             gb_origin = GEN_find_origin_gene(gb_species, organism_hash);
+            if (!gb_origin) {
+                error = GBS_global_string("Origin-Gene '%s/%s' not found",
+                                          GEN_origin_organism(gb_species), GEN_origin_gene(gb_species));
+            }
             break;
         case MG_CREATE_USING_ACI_ONLY:
             break;
@@ -161,12 +168,18 @@ static char *MG_create_field_content(GBDATA *gb_species, int method, const char 
         if (method == MG_CREATE_USING_ACI_ONLY) {
             mg_assert(!result);
             aci_result             = GB_command_interpreter(gb_merge, "", aci, gb_species, 0);
-            if (!aci_result) error = GB_get_error();
+            if (!aci_result) {
+                error = GB_get_error();
+                mg_assert(error);
+            }
         }
         else {
             if (aci && aci[0]) {
                 aci_result = GB_command_interpreter(gb_merge, result ? result : "", aci, gb_origin, 0);
-                if (!aci_result) error = GB_get_error();
+                if (!aci_result) {
+                    error = GB_get_error();
+                    mg_assert(error); 
+                }
             }
         }
 
@@ -181,6 +194,7 @@ static char *MG_create_field_content(GBDATA *gb_species, int method, const char 
         result = 0;
     }
 
+    mg_assert(result||error);
     return result;
 }
 
@@ -211,9 +225,9 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
             // export one field (start contains destination field name)
             {
                 create_awars_for_field(aw_root, start);
-                int   method = aw_root->awar(field_awar(start, "method"))->read_int();
-                char *source = aw_root->awar(field_awar(start, "source"))->read_string();
-                char *aci    = aw_root->awar(field_awar(start, "aci"))->read_string();
+                CreationMethod  method = (CreationMethod)aw_root->awar(field_awar(start, "method"))->read_int();
+                char           *source = aw_root->awar(field_awar(start, "source"))->read_string();
+                char           *aci    = aw_root->awar(field_awar(start, "aci"))->read_string();
 
                 char *result = MG_create_field_content(gb_source, method, source, aci, error, source_organism_hash);
                 mg_assert(result || error);
@@ -255,9 +269,9 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
 }
 
 static char *MG_create_current_field_content(AW_root *aw_root, GBDATA *gb_species, GB_ERROR& error) {
-    int   method        = aw_root->awar(AWAR_MERGE_GENE_SPECIES_METHOD)->read_int();
-    char *origins_field = aw_root->awar(AWAR_MERGE_GENE_SPECIES_SOURCE)->read_string();
-    char *aci           = aw_root->awar(AWAR_MERGE_GENE_SPECIES_ACI)->read_string();
+    CreationMethod  method        = (CreationMethod)aw_root->awar(AWAR_MERGE_GENE_SPECIES_METHOD)->read_int();
+    char           *origins_field = aw_root->awar(AWAR_MERGE_GENE_SPECIES_SOURCE)->read_string();
+    char           *aci           = aw_root->awar(AWAR_MERGE_GENE_SPECIES_ACI)->read_string();
 
     char *result = MG_create_field_content(gb_species, method, origins_field, aci, error, 0);
 
