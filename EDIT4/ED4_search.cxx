@@ -150,7 +150,12 @@ public:
 
     static void set_start_offset(int off)               { start_offset = off; }
     static void set_report(reportMatch r, int *u2r)     { report = r; uni2real = u2r; }
-    static void set_mismatches(int minMis, int maxMis)  { min_mismatches = minMis; max_mismatches = maxMis; }
+    static void set_mismatches(int minMis, int maxMis)  
+    { 
+        e4_assert(maxMis <= MAX_MISMATCHES);
+        min_mismatches = minMis; 
+        max_mismatches = maxMis; 
+    }
 };
 
 // --------------------------------------------------------------------------------
@@ -254,6 +259,7 @@ void SearchTreeNode::findMatches(int off, GB_CSTR seq, int len, int mismatches, 
             int seq_is_gap = seq[0]=='-' || seq[0]=='.';
 
             if (c_is_gap==seq_is_gap) {
+                e4_assert(mismatches < MAX_MISMATCHES);
                 mismatch_list[mismatches] = uni2real[off];
                 mismatches++;
                 use_mismatch = 1;
@@ -583,7 +589,7 @@ void SearchTree::findMatches(const char *seq, int len, reportMatch report)
     if (root) {
         int new_len;
         int *uni2real = (int*)malloc(len*sizeof(int));
-        char *uni_seq = uni2real ? unify_sequence(seq, len, &new_len, &uni2real) : 0;
+        char *uni_seq = uni2real ? unify_sequence(seq, len, &new_len, &uni2real) : NULL;
 
         if (uni_seq) {
             int off;
