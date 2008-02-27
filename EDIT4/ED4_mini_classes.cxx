@@ -875,7 +875,7 @@ int ED4_char_table::changed_range(const char *string1, const char *string2, int 
     for (i=0; i<l; i++) {	// search wordwise (it's faster)
         if (range1[i] != range2[i]) {
             k = i*step;
-            for (j=0; j<3; j++) {
+            for (j=0; j<step; j++) {
                 if (string1[k+j] != string2[k+j]) {
                     *start = *end = k+j;
                     break;
@@ -912,7 +912,7 @@ int ED4_char_table::changed_range(const char *string1, const char *string2, int 
         for (i=l-1; i>=m; i--) {
             if (range1[i] != range2[i]) {
                 k = i*step;
-                for (j=3; j>=0; j--) {
+                for (j=step-1; j>=0; j--) {
                     if (string1[k+j] != string2[k+j]) {
                         *end = k+j;
                         break;
