@@ -2,9 +2,12 @@
 #error Please do not include "arbdb.h" yourself when also including "adlocal.h"
 #endif
 
-
 #ifndef GBL_INCLUDED
 #define GBL_INCLUDED
+
+#ifndef _STDINT_H
+#include <stdint.h>
+#endif
 
 /* ================ Test memory @@@===================== */
 #if defined(DEBUG)
@@ -367,7 +370,7 @@ struct gb_local_data {
 };
 
 extern struct gb_local_data *gb_local;
-extern const unsigned long crctab[];
+extern const uint32_t crctab[];
 
 struct gb_header_flags {
     unsigned int flags:GB_MAX_USERS; /* public */
