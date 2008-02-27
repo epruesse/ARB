@@ -1070,6 +1070,11 @@ int GB_host_is_local(const char *hostname){
 /* Returns the physical memory size in k available for one process */
 GB_ULONG GB_get_physical_memory(void){
 #if defined(SUN5) || defined(LINUX)
+    long  pagesize     = sysconf(_SC_PAGESIZE);
+    long  pages        = sysconf(_SC_PHYS_PAGES);
+    ulong memsize      = (pagesize/1024) * pages;
+    ulong nettomemsize = memsize - 10240; /* reduce by 10Mb (for kernel etc.) */
+    
     ulong max_malloc = 0;
     {
         ulong step_size  = 4096;
@@ -1079,10 +1084,11 @@ GB_ULONG GB_get_physical_memory(void){
         do {
             void **tmp;
             while((tmp=malloc(step_size))) {
-                *tmp=head;
-                head=tmp;
-                max_malloc+=step_size;
-                step_size*=2;
+                *tmp        = head;
+                head        = tmp;
+                max_malloc += step_size;
+                if (max_malloc >= nettomemsize) break;
+                step_size *= 2;
             }
         } while((step_size=step_size/2) > sizeof(void*));
 
@@ -1096,10 +1102,6 @@ GB_ULONG GB_get_physical_memory(void){
         max_malloc /= 1024;
     }
     
-    long  pagesize     = sysconf(_SC_PAGESIZE);
-    long  pages        = sysconf(_SC_PHYS_PAGES);
-    ulong memsize      = (pagesize/1024) * pages;
-    ulong nettomemsize = memsize - 10240; /* reduce by 10Mb (for kernel etc.) */
     ulong usedmemsize  = (MIN(nettomemsize,max_malloc)*95)/100; /* arb uses max. 95 % of available memory (was 70% in the past) */
 
 #if defined(DEBUG)
