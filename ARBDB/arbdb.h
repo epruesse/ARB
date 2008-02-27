@@ -4,6 +4,9 @@
 #ifndef _STDIO_H
 #include <stdio.h>
 #endif
+#ifndef _STDINT_H
+#include <stdint.h>
+#endif
 
 #define NOT4PERL
 /* function definitions starting with NOT4PERL are not included into the ARB-perl-interface */
