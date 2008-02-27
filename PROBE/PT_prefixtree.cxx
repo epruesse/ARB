@@ -59,7 +59,7 @@ char *PTM_get_mem(int size)
 #ifdef PTM_DEBUG
             static int less  = 0;
             if ((less%10) == 0) {
-                printf("Memory usage: %i byte\n",PTM.allsize);
+                printf("Memory usage: %li byte\n",PTM.allsize);
             }
             ++less;
 #endif
