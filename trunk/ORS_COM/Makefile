@@ -9,8 +9,8 @@ PUBLIC_SOURCES = $(wildcard C/*.c)
 
 # Do you want to create save and load
 AISC_SAVE	= NO
-COMPILER = $(CPP) $(cflags)
-CLIENTCOMPILER = $(CPP) $(cflags)
+COMPILER = $(CPP) $(cflags) -I$(ARBHOME)/INCLUDE
+CLIENTCOMPILER = $(COMPILER)
 
 # DONT CHANGE THE NEXT LINES
 server.a:	$(MAIN_SOURCE)	$(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES)
