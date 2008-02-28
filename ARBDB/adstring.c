@@ -2420,10 +2420,10 @@ char *GB_read_as_tagged_string(GBDATA *gbd, const char *tagi){
 }
 
 
-GBDATA_SET *GB_create_set(int size){
+GBDATA_SET *GB_create_set(int tmp_size){
     GBDATA_SET *set = (GBDATA_SET *)GB_calloc(sizeof(GBDATA_SET),1);
     set->nitems = 0;
-    set->malloced_items = size;
+    set->malloced_items = tmp_size;
     set->items = (GBDATA **)GB_calloc(sizeof(GBDATA *),(size_t)set->malloced_items);
     return set;
 }

@@ -279,7 +279,7 @@ GB_HASH *GBS_create_hash(long user_size,int ignore_case) {
 #if defined(DEBUG)
 static void dump_access(const char *title, GB_HASH *hs, double mean_access) {
     fprintf(stderr,
-            "%s: size=%u elements=%u mean_access=%.2f hash-speed=%.1f%%\n",
+            "%s: size=%zu elements=%zu mean_access=%.2f hash-speed=%.1f%%\n",
             title, hs->size, hs->nelem, mean_access, 100.0/mean_access);
 }
 #endif /* DEBUG */
@@ -696,8 +696,8 @@ void GBS_calc_hash_statistic(GB_HASH *hs, const char *id, int print) {
 
     if (print != 0) {
         printf("Statistic for hash '%s':\n", id);
-        printf("- size       = %u\n", hs->size);
-        printf("- elements   = %u (fill ratio = %4.1f%%)\n", hs->nelem, fill_ratio*100.0);
+        printf("- size       = %zu\n", hs->size);
+        printf("- elements   = %zu (fill ratio = %4.1f%%)\n", hs->nelem, fill_ratio*100.0);
         printf("- collisions = %li (hash quality = %4.1f%%)\n", collisions, hash_quality*100.0);
     }
 

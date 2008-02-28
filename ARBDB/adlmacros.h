@@ -552,7 +552,8 @@ inline void _GB_CHECK_IN_UNDO_MODIFY(GB_MAIN_TYPE *Main, GBDATA *gbd) {
     if (Main->undo_type) gb_check_in_undo_modify(Main,gbd);
 }
 inline void STATIC_BUFFER(char*& strvar, int minlen) {
-    if (strvar && (long)strlen(strvar) < (minlen-1)) { free((void*)(strvar)); strvar=NULL; }
+    ad_assert(minlen > 0); 
+    if (strvar && (strlen(strvar) < (size_t)(minlen-1))) { free((void*)(strvar)); strvar=NULL; }
     if (!strvar) strvar=(char*)GB_calloc(minlen,1);
 }
 
@@ -574,11 +575,12 @@ do {                                                            \
     if ((Main)->undo_type) gb_check_in_undo_modify(Main,gbd);   \
 } while(0)
 
-#define STATIC_BUFFER(strvar,static_buffer_minlen)                                                  \
-do {                                                                                                \
-    size_t static_buffer_len = (static_buffer_minlen);                                                 \
-    if ((strvar) && (long)strlen(strvar) < (static_buffer_len-1)) { free(strvar); (strvar)=NULL; }  \
-    if (!(strvar)) (strvar)=(char*)GB_calloc(static_buffer_len,1);                                  \
+#define STATIC_BUFFER(strvar,static_buffer_minlen)                                              \
+do {                                                                                            \
+    ad_assert(static_buffer_minlen > 0);                                                        \ 
+    size_t static_buffer_len = (static_buffer_minlen);                                          \
+    if ((strvar) && (strlen(strvar) < (static_buffer_len-1))) { free(strvar); (strvar)=NULL; }  \
+    if (!(strvar)) (strvar)=(char*)GB_calloc(static_buffer_len,1);                              \
 } while(0)
 
 #endif
