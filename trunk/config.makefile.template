@@ -11,6 +11,7 @@ DEBUG_GRAPHICS = 0# force instant graphic update
 # SEER = 1
 OPENGL=1
 ARB_64=0# compile on 64 bit machine (has no effect yet)
+#BUILDHOST_64=1# whether build host is 64bit (value defaults to ARB_64). Uncomment for Cross-Compile
 
 # --------------------------------------------------------------------------------
 # target machine section
