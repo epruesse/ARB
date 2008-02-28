@@ -6,15 +6,16 @@
 #include <aisc_com.h>
 #include "client.h"
 #include "aisc_global.h"
+#include <attributes.h>
 
 #ifdef __cplusplus
 extern "C" {
-const char *aisc_debug_local(aisc_com	*link,int key,long object,char *str,...) __attribute__ ((sentinel));
+const char *aisc_debug_local(aisc_com	*link,int key,long object,char *str,...) __ATTR__SENTINEL;
 const char *aisc_debug_local(aisc_com	*link,int key,long object,char *str,...);
 }
 #endif
 
-const char *aisc_debug_local(aisc_com *link, int key, long object, char *str, ...) __attribute__ ((sentinel));
+const char *aisc_debug_local(aisc_com *link, int key, long object, char *str, ...) __ATTR__SENTINEL;
 const char *aisc_debug_local(aisc_com *link, int key, long object, char *str, ...) {
     static char buf[4096];
     static char *keystr;

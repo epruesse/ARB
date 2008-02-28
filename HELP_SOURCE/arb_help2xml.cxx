@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
-//    Time-stamp: <Thu Feb/03/2005 20:54 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Feb/27/2008 18:25 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
@@ -33,28 +33,17 @@
 
 using namespace std;
 
-/* hide GNU extensions for non-gnu compilers: */
-#ifndef GNU
-# ifndef __attribute__
-#  define __attribute__(x)
-# endif
-#endif
-
-string strf(const char *format, ...) __attribute__((format(printf, 1, 2)));
 
 // #define DUMP_DATA // use this to see internal data (class Helpfile)
 #define MAX_LINE_LENGTH 500     // maximum length of lines in input stream
 #define TABSIZE         8
 
-
 static const char *knownSections[] = { "OCCURRENCE", "DESCRIPTION", "NOTES", "EXAMPLES", "WARNINGS", "BUGS",
                                        "QUESTION", "ANSWER", "SECTION",
                                        0 };
 
-// #define X() do { printf("Line=%i\n", __LINE__); } while(0)
-// #define D(x) do { printf("%s='%s'\n", #x, x); } while(0)
-
-string vstrf(const char *format, va_list argPtr) {
+static string vstrf(const char *format, va_list argPtr) __ATTR__VFORMAT(1);
+static string vstrf(const char *format, va_list argPtr) {
     static size_t  buf_size = 256;
     static char   *buffer   = new char[buf_size];
 
@@ -78,6 +67,7 @@ string vstrf(const char *format, va_list argPtr) {
     return string(buffer, length);
 }
 
+string strf(const char *format, ...) __ATTR__FORMAT(1);
 string strf(const char *format, ...) {
     va_list argPtr;
     va_start(argPtr, format);

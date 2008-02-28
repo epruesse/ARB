@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2001
 // Ralf Westram
-// Time-stamp: <Fri Nov/08/2002 22:58 MET Coder@ReallySoft.de>
+// Time-stamp: <Wed Feb/27/2008 16:43 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -26,6 +26,11 @@
 #ifndef __CSTDIO__
 #include <cstdio>
 #endif
+
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
+
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -130,8 +135,8 @@ public:
     XML_Text(const std::string& content_) : XML_Node(false), content(content_) {}
     virtual ~XML_Text();
 
-    virtual void add_son(XML_Node *son_, bool son_is_tag);
-    virtual void remove_son(XML_Node *son_);
+    virtual void add_son(XML_Node *son_, bool son_is_tag) __ATTR__NORETURN;
+    virtual void remove_son(XML_Node *son_) __ATTR__NORETURN;
     virtual void open(FILE *);
     virtual void close(FILE *out);
 };
@@ -146,9 +151,9 @@ public:
     XML_Comment(const std::string& content_) : XML_Node(false), content(content_) {}
     virtual ~XML_Comment();
 
-    virtual void add_son(XML_Node *son_, bool son_is_tag);
-    virtual void remove_son(XML_Node *son_);
-    virtual void open(FILE *);
+    virtual void add_son(XML_Node *son_, bool son_is_tag) __ATTR__NORETURN;
+    virtual void remove_son(XML_Node *son_) __ATTR__NORETURN;
+    virtual void open(FILE *) ;
     virtual void close(FILE *out);
 };
 

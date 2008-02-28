@@ -491,7 +491,7 @@ int aisc_get_message(aisc_com *link)
 
 int aisc_get(aisc_com *link, int o_type, long objekt, ...)
 {
-    /* goes to header: __attribute__((sentinel))  */
+    /* goes to header: __ATTR__SENTINEL  */
     static 	long *arg_pntr[MAX_AISC_SET_GET];
     static 	long arg_types[MAX_AISC_SET_GET];
     long	mes_cnt;
@@ -743,7 +743,7 @@ static int 	aisc_collect_sets(aisc_com *link,
 
 int 	aisc_put(	aisc_com	*link, int o_type, long objekt, ...)
 {
-    /* goes to header: __attribute__((sentinel))  */
+    /* goes to header: __ATTR__SENTINEL  */
     int	mes_cnt,arg_cnt;
     va_list	parg;
     int	len;
@@ -771,7 +771,7 @@ int 	aisc_put(	aisc_com	*link, int o_type, long objekt, ...)
 
 int 	aisc_nput(	aisc_com	*link, int o_type, long objekt, ...)
 {
-    /* goes to header: __attribute__((sentinel))  */
+    /* goes to header: __ATTR__SENTINEL  */
     int	mes_cnt,arg_cnt;
     va_list	parg;
     int	len;
@@ -803,7 +803,7 @@ int 	aisc_nput(	aisc_com	*link, int o_type, long objekt, ...)
 int aisc_create(aisc_com *link, int father_type, long father, 
                 int attribute,  int object_type, long *object, ...)
 {
-    /* goes to header: __attribute__((sentinel))  */
+    /* goes to header: __ATTR__SENTINEL  */
     int	mes_cnt;
     int	len;
     va_list parg;
@@ -850,7 +850,7 @@ int aisc_create(aisc_com *link, int father_type, long father,
 int aisc_copy(	aisc_com *link, int s_type, long source, int father_type,
                 long father, int attribute, int object_type, long *object, ...)
 {
-    /* goes to header: __attribute__((sentinel))  */
+    /* goes to header: __ATTR__SENTINEL  */
     int	mes_cnt;
     int	len;
     va_list parg;

@@ -11,7 +11,7 @@ char *TRS_map_file(const char *path,int writeable);
 #include "tree_lib.hxx"
 #include "trs_proto.h"
 
-static void quit_with_error(char *error) __attribute__((noreturn));
+static void quit_with_error(char *error) __ATTR__NORETURN;
 static void quit_with_error(char *error) {
 	fprintf(stdout,"%s\n",error);
 	exit(-1);
