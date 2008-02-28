@@ -192,10 +192,10 @@ int AW_device_click::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos al
         else {                                 // non-monospaced font
             AW_GC_Xm *gcm = AW_MAP_GC(gc);
             position   = 0;
-            int offset = 0;
+            int tmp_offset = 0;
             while (position<=len) {
-                offset += gcm->width_of_chars[(unsigned char)str[position]];
-                if (mouse_x <= X0+offset) break;
+                tmp_offset += gcm->width_of_chars[(unsigned char)str[position]];
+                if (mouse_x <= X0+tmp_offset) break;
                 position++;
             }
         }

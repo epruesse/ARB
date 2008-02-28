@@ -812,7 +812,7 @@ bool ED4_base::has_parent(ED4_manager *Parent)
 }
 
 
-ED4_AREA_LEVEL	ED4_base::get_area_level(ED4_multi_species_manager **multi_species_manager)
+ED4_AREA_LEVEL	ED4_base::get_area_level(ED4_multi_species_manager **multi_species_manager) const
 {
 
     ED4_base *temp_manager;
@@ -1259,8 +1259,6 @@ ED4_returncode ED4_manager::make_children_visible()
 ED4_returncode ED4_manager::unfold_group(char *bracket_ID_to_unfold)
 {
     int i;
-    int nr_of_visible_species   = 0;
-    int nr_of_children_in_group = 0;
     
     ED4_base *bracket_terminal = search_ID(bracket_ID_to_unfold);
     if (!bracket_terminal) return ED4_R_WARNING;
@@ -1270,9 +1268,11 @@ ED4_returncode ED4_manager::unfold_group(char *bracket_ID_to_unfold)
 
     ED4_multi_species_manager *multi_species_manager = NULL;
 
-    ED4_AREA_LEVEL level = temp_parent->get_area_level(&multi_species_manager);
 
 #if defined(LIMIT_TOP_AREA_SPACE)
+    int nr_of_visible_species   = 0;
+    int nr_of_children_in_group = 0;
+    ED4_AREA_LEVEL level = temp_parent->get_area_level(&multi_species_manager);
     if (level==ED4_A_TOP_AREA || level==ED4_A_BOTTOM_AREA) { // check if there are any unfolding restrictions
         nr_of_visible_species = multi_species_manager->count_visible_children();
 
@@ -1290,7 +1290,9 @@ ED4_returncode ED4_manager::unfold_group(char *bracket_ID_to_unfold)
             return ED4_R_IMPOSSIBLE;
         }
     }
-#endif // LIMIT_TOP_AREA_SPACE
+#else // LIMIT_TOP_AREA_SPACE
+    temp_parent->get_area_level(&multi_species_manager);
+#endif 
 
     for (i=0; i < temp_parent->children->members(); i++) {
         ED4_base *member = temp_parent->children->member(i);

@@ -16,20 +16,20 @@ ADT_ALI::~ADT_ALI() {
 
 void ADT_ALI::init(AD_MAIN *ad_maini)
 	{
-	int 	len;
+	int 	tmp_len;
  	AD_ALI::init(ad_maini);
-	len = (int)(AD_ALI::len());
-	if (len<0) len = 0;
-	gapsequence = (char *) malloc(len+1);		// gap_init
-	gapshowoffset = (int *) calloc(len,sizeof(int));
-	gaprealoffset = (int *) calloc(len,sizeof(int));
+	tmp_len = (int)(AD_ALI::len());
+	if (tmp_len<0) tmp_len = 0;
+	gapsequence = (char *) malloc(tmp_len+1);		// gap_init
+	gapshowoffset = (int *) calloc(tmp_len,sizeof(int));
+	gaprealoffset = (int *) calloc(tmp_len,sizeof(int));
 	// testversion leerer gap
-	for (int i = 0; i < len; i++) {
+	for (int i = 0; i < tmp_len; i++) {
 		gapsequence[i] = NOGAP_SYMBOL;
 		gapshowoffset[i] = 0;
 		gaprealoffset[i] = 0;
 		}
-	gapshowoffset_len = len;
+	gapshowoffset_len = tmp_len;
 	inited = 1;
 }
 

@@ -765,7 +765,7 @@ void ReadCMask(const char *filename)
         else if(Find(in_line,"length:"))
         {
             crop(in_line,head,temp);
-            sscanf(temp,"%d",&curlen);
+            sscanf(temp,"%zu",&curlen);
         }
         else if(Find(in_line,"start:"))
         {

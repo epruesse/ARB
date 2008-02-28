@@ -99,12 +99,12 @@ AD_ERR *AD_ALI::first()
 }
 
 
-AD_ERR *AD_ALI::find(char* name)
+AD_ERR *AD_ALI::find(char* tmp_name)
 {
     // sucht nach name, eof wenn nicht gefunden !
     //
     release();
-    gb_ali = GBT_get_alignment(ad_main->gbd,  name);
+    gb_ali = GBT_get_alignment(ad_main->gbd,  tmp_name);
     initpntr();
     return 0;
 }

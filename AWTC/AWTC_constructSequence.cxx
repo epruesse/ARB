@@ -507,9 +507,7 @@ char *AWTC_constructSequence(int parts, const char **seqs, int minMatchingBases,
         }
     }
 
-    char *resultSeq = new char[sequenceLength+1];
     *refSeq = new char[sequenceLength+1];
-    int off = 0;
 
     for (s=0; s<w.length(); s++)    // construct sequence
     {

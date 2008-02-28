@@ -346,7 +346,7 @@ void ReadGDE(char *filename,NA_Alignment *dataset,int type)
         }
         else if(Find2(line,"group-ID")==0)
         {
-            sscanf(line,"%*s %d",&(this_elem->groupid));
+            sscanf(line,"%*s %zu",&(this_elem->groupid));
             dataset->numgroups =
                 MAX(this_elem->groupid, dataset->numgroups);
         }
@@ -633,8 +633,7 @@ int WriteGDE(NA_Alignment *aln,char *filename,int method,int maskable)
             if(this_elem->authority[0])
                 fprintf(file,"creator           \"%s\"\n",this_elem->authority);
             if(this_elem->groupid)
-                fprintf(file,"group-ID          %d\n",
-                        this_elem->groupid);
+                fprintf(file,"group-ID          %zu\n", this_elem->groupid);
             if(this_elem->offset+aln->rel_offset && method!=SELECT_REGION)
                 fprintf(file,"offset            %d\n",this_elem->offset+aln->rel_offset);
             if(method == SELECT_REGION)
