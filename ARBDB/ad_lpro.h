@@ -8,19 +8,15 @@
 # error P_ is not defined
 #endif
 
-/* hide GNU extensions for non-gnu compilers: */
-#ifndef GNU
-# ifndef __attribute__
-#  define __attribute__(x)
-# endif
+/* define ARB attributes: */
+#ifndef ATTRIBUTES_H
+# include <attributes.h>
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
-/* adsort.c */
 
 /* adlang1.c */
 void gbl_install_standard_commands P_((GBDATA *gb_main));
@@ -97,8 +93,6 @@ char *gb_abort_entry P_((GBDATA *gbd));
 int gb_abort_transaction_local_rek P_((GBDATA *gbd, long mode));
 GB_ERROR gb_commit_transaction_local_rek P_((GBDATA *gbd, long mode, int *pson_created));
 
-/* admath.c */
-
 /* adoptimize.c */
 GB_ERROR gb_convert_compression P_((GBDATA *source));
 GB_ERROR gb_convert_V2_to_V3 P_((GBDATA *gb_main));
@@ -134,8 +128,6 @@ void gb_check_in_undo_delete P_((GB_MAIN_TYPE *Main, GBDATA *gbd, int deep));
 
 /* adperl.c */
 GB_TYPES GBP_gb_types P_((char *type_name));
-
-/* adlink.c */
 
 /* adsocket.c */
 GB_ERROR gbcm_test_address P_((long *address, long key));
@@ -299,14 +291,6 @@ int gb_isMappedMemory P_((char *mem));
 
 /* adTest.c */
 void gb_testDB P_((GBDATA *gbd));
-
-/* adtune.c */
-
-/* adGene.c */
-
-/* adtcp.c */
-
-/* adhashtools.c */
 
 #ifdef __cplusplus
 }

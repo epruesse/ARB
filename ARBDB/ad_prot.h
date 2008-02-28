@@ -8,11 +8,9 @@
 # error P_ is not defined
 #endif
 
-/* hide GNU extensions for non-gnu compilers: */
-#ifndef GNU
-# ifndef __attribute__
-#  define __attribute__(x)
-# endif
+/* define ARB attributes: */
+#ifndef ATTRIBUTES_H
+# include <attributes.h>
 #endif
 
 #ifdef __cplusplus
@@ -33,14 +31,14 @@ int GB_get_ACISRT_trace P_((void));
 char *GB_find_all_files P_((const char *dir, const char *mask, GB_BOOL filename_only));
 char *GB_find_latest_file P_((const char *dir, const char *mask));
 void GB_raise_critical_error P_((const char *msg));
-GB_ERROR GB_export_error P_((const char *templat, ...)) __attribute__((format(printf, 1, 2)));
+GB_ERROR GB_export_error P_((const char *templat, ...)) __ATTR__FORMAT(1);
 GB_ERROR GB_export_IO_error P_((const char *action, const char *filename));
 GB_ERROR GB_print_error P_((void));
 GB_ERROR GB_get_error P_((void));
 void GB_clear_error P_((void));
 void GBS_reuse_buffer P_((GB_CSTR global_buffer));
-GB_CSTR GBS_global_string P_((const char *templat, ...)) __attribute__((format(printf, 1, 2)));
-char *GBS_global_string_copy P_((const char *templat, ...)) __attribute__((format(printf, 1, 2)));
+GB_CSTR GBS_global_string P_((const char *templat, ...)) __ATTR__FORMAT(1);
+char *GBS_global_string_copy P_((const char *templat, ...)) __ATTR__FORMAT(1);
 char *GBS_string_2_key_with_exclusions P_((const char *str, const char *additional));
 char *GBS_string_2_key P_((const char *str));
 GB_ERROR GB_check_key P_((const char *key));
@@ -59,7 +57,7 @@ long GBS_memoffset P_((void *strstruct));
 void GBS_str_cut_tail P_((void *strstruct, int byte_count));
 void GBS_strcat P_((void *strstruct, const char *ptr));
 void GBS_strncat P_((void *strstruct, const char *ptr, long len));
-void GBS_strnprintf P_((void *strstruct, long len, const char *templat, ...)) __attribute__((format(printf, 3, 4)));
+void GBS_strnprintf P_((void *strstruct, long len, const char *templat, ...)) __ATTR__FORMAT(3);
 void GBS_chrcat P_((void *strstruct, char ch));
 void GBS_intcat P_((void *strstruct, long val));
 void GBS_floatcat P_((void *strstruct, double val));
@@ -75,14 +73,14 @@ long GB_merge_sort_strcmp P_((void *v0, void *v1, char *not_used));
 char *GBS_extract_words P_((const char *source, const char *chars, float minlen, GB_BOOL sort_output));
 int GBS_do_core P_((void));
 NOT4PERL void GB_install_error_handler P_((gb_error_handler_type aw_message_handler));
-void GB_internal_error P_((const char *templat, ...)) __attribute__((format(printf, 1, 2)));
-void GB_warning P_((const char *templat, ...)) __attribute__((format(printf, 1, 2)));
+void GB_internal_error P_((const char *templat, ...)) __ATTR__FORMAT(1);
+void GB_warning P_((const char *templat, ...)) __ATTR__FORMAT(1);
 NOT4PERL void GB_install_warning P_((gb_warning_func_type warn));
-void GB_information P_((const char *templat, ...)) __attribute__((format(printf, 1, 2)));
+void GB_information P_((const char *templat, ...)) __ATTR__FORMAT(1);
 NOT4PERL void GB_install_information P_((gb_information_func_type info));
 int GB_status P_((double val));
 NOT4PERL void GB_install_status P_((gb_status_func_type func));
-int GB_status2 P_((const char *templat, ...)) __attribute__((format(printf, 1, 2)));
+int GB_status2 P_((const char *templat, ...)) __ATTR__FORMAT(1);
 NOT4PERL void GB_install_status2 P_((gb_status_func2_type func2));
 GB_CPNTR GBS_regsearch P_((const char *in, const char *regexprin));
 char *GBS_regreplace P_((const char *in, const char *regexprin, GBDATA *gb_species));
@@ -212,8 +210,6 @@ GB_ERROR GB_print_debug_information P_((void *dummy, GBDATA *gb_main));
 int GB_info P_((GBDATA *gbd));
 long GB_number_of_subentries P_((GBDATA *gbd));
 
-/* ad_core.c */
-
 /* admath.c */
 double GB_log_fak P_((int n));
 double GB_frandom P_((void));
@@ -221,8 +217,6 @@ int GB_random P_((int range));
 
 /* adoptimize.c */
 GB_ERROR GB_optimize P_((GBDATA *gb_main));
-
-/* adsystem.c */
 
 /* adindex.c */
 GB_ERROR GB_create_index P_((GBDATA *gbd, const char *key, long estimated_size));
@@ -272,7 +266,7 @@ void GB_textprint P_((const char *path));
 GB_CSTR GB_getcwd P_((void));
 void GB_xterm P_((void));
 void GB_xcmd P_((const char *cmd, GB_BOOL background, GB_BOOL wait_only_if_error));
-char *GB_find_executable P_((GB_CSTR description_of_executable, ...)) __attribute__((sentinel));
+char *GB_find_executable P_((GB_CSTR description_of_executable, ...)) __ATTR__SENTINEL;
 GB_CSTR GB_getenvUSER P_((void));
 GB_CSTR GB_getenvHOME P_((void));
 GB_CSTR GB_getenvARBHOME P_((void));
@@ -355,8 +349,6 @@ GB_ERROR GB_save_quick_as P_((GBDATA *gb_main, char *path));
 GB_ERROR GB_save_quick P_((GBDATA *gb, char *refpath));
 GB_ERROR GB_disable_path P_((GBDATA *gbd, const char *path));
 
-/* adcompr.c */
-
 /* admalloc.c */
 NOT4PERL void *GB_calloc P_((unsigned int nelem, unsigned int elsize));
 char *GB_strdup P_((const char *p));
@@ -372,8 +364,6 @@ GBDATA *GB_login P_((const char *path, const char *opent, const char *user));
 GBDATA *GB_open P_((const char *path, const char *opent));
 void GB_set_verbose P_((void));
 
-/* admap.c */
-
 /* adTest.c */
 const char *GB_get_type_name P_((GBDATA *gbd));
 const char *GB_get_db_path P_((GBDATA *gbd));
@@ -383,8 +373,6 @@ void GB_dump_no_limit P_((GBDATA *gbd));
 char *GB_ralfs_test P_((GBDATA *gb_main));
 char *GB_ralfs_menupoint P_((GBDATA *main_data));
 GB_ERROR GB_fix_database P_((GBDATA *gb_main));
-
-/* adtune.c */
 
 /* adGene.c */
 GB_BOOL GEN_is_genome_db P_((GBDATA *gb_main, int default_value));

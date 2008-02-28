@@ -4,8 +4,8 @@
  *
  */
 
-/* hide GNU extensions for non-gnu compilers: */
-#ifndef GNU
+/* hide __attribute__'s for non-gcc compilers: */
+#ifndef __GNUC__
 # ifndef __attribute__
 #  define __attribute__(x)
 # endif
@@ -19,8 +19,6 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree, const char *conf
 void NT_configuration_admin(AW_window *aw_main, AW_CL cl_GBT_TREE_ptr, AW_CL dummy_1x);
 AW_window *NT_extract_configuration(AW_root *awr);
 GB_ERROR NT_create_configuration_cb(AW_window *aww, AW_CL cl_GBT_TREE_ptr, AW_CL cl_use_species_aside);
-
-/* NT_join.cxx */
 
 /* NT_sort.cxx */
 char *NT_resort_data_base_by_tree(GBT_TREE *tree, GBDATA *gb_species_data);
@@ -77,8 +75,6 @@ void NT_deleteValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_1x);
 void NT_importValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_1x);
 void NT_suggestValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_1x);
 
-/* NT_validNameParser.cxx */
-
 /* NT_validManual.cxx */
 void NT_createValidNamesAwars(AW_root *aw_root, AW_default aw_def);
 AW_window *NT_searchManuallyNames(AW_root *aw_root);
@@ -86,8 +82,6 @@ AW_window *NT_searchManuallyNames(AW_root *aw_root);
 /* NT_MAUS.cxx */
 void NT_create_MAUS_awars(AW_root *aw_root, AW_default aw_def, AW_default gb_def);
 AW_window *NT_create_MAUS_window(AW_root *aw_root, AW_CL dummy_1x);
-
-/* NT_ins_col.cxx */
 
 /* NT_import.cxx */
 void NT_import_sequences(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_1x);
@@ -105,8 +99,6 @@ AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector);
 void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_AW_detach_information);
 AW_window *NT_create_species_window(AW_root *aw_root);
 AW_window *NT_create_organism_window(AW_root *aw_root);
-
-/* ad_trees.cxx */
 
 /* ad_ali.cxx */
 void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def);
@@ -132,8 +124,6 @@ AW_window *AP_open_cprofile_window(AW_root *aw_root);
 /* AP_pos_var_pars.cxx */
 void AP_calc_pos_var_pars(AW_window *aww);
 AW_window *AP_open_pos_var_pars_window(AW_root *root);
-
-/* ETC_check_gcg.cxx */
 
 /* AP_csp_2_gnuplot.cxx */
 void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode);

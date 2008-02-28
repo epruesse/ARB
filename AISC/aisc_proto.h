@@ -14,11 +14,9 @@
 # error P_ already defined elsewhere
 #endif
 
-/* hide GNU extensions for non-gnu compilers: */
-#ifndef GNU
-# ifndef __attribute__
-#  define __attribute__(x)
-# endif
+/* define ARB attributes: */
+#ifndef ATTRIBUTES_H
+# include <attributes.h>
 #endif
 
 #ifdef __cplusplus
@@ -50,7 +48,7 @@ CL *read_prog P_((char **in, char *file));
 
 /* aisc_commands.c */
 int print_error P_((const char *err));
-int printf_error P_((const char *format, ...)) __attribute__((format(printf, 1, 2)));
+int printf_error P_((const char *format, ...)) __ATTR__FORMAT(1);
 void memcopy P_((char *dest, const char *source, int len));
 char *find_string P_((const char *str, const char *key));
 char *calc_rest_line P_((char *str, int size, int presize));
