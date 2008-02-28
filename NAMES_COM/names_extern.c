@@ -8,7 +8,6 @@ struct sigcontext;
 #include <aisc_server_proto.h>
 #include <aisc_server_extern.h>
 #include <import_proto.h>
-#include <attributes.h>
 
 extern AN_main *aisc_main;
 void names_server_shutdown(void) __ATTR__NORETURN;
