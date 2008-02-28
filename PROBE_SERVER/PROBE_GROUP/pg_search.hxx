@@ -21,7 +21,7 @@ GBDATA *PG_find_probe_group_for_species(GBDATA *node, const SpeciesBag& species)
 GBDATA *PG_find_best_covering_probe_group_for_species(GBDATA *rootNode, const SpeciesBag& species, int min_non_matched, int max_non_matched, int& groupsize);
 
 // initialization (needed for all functions below):
-GB_ERROR PG_init_pt_server(GBDATA *gb_main, const char *servername, void (*print_function)(const char *format, ...));
+GB_ERROR PG_init_pt_server(GBDATA *gb_main, const char *servername, void (*print_function)(const char *format, ...) FUNCTION_TYPE_ATTR(__ATTR__FORMAT(1)));
 void     PG_exit_pt_server(void);
 
 // iterate through all probes:
