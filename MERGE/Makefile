@@ -36,6 +36,7 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MG_alignment.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -51,6 +52,7 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MG_checkfield.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -68,6 +70,7 @@ MG_configs.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MG_configs.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -82,6 +85,7 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MG_extendeds.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -99,6 +103,7 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/adGene.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MG_gene_species.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -116,6 +121,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MG_main.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_global.hxx
@@ -131,6 +137,7 @@ MG_names.o: merge.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_names.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_names.o: $(ARBHOME)/INCLUDE/arbdb.h
+MG_names.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_names.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -144,6 +151,7 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MG_preserves.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -160,6 +168,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/adGene.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_species.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_species.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MG_species.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_species.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -180,6 +189,7 @@ MG_trees.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_trees.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_trees.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_trees.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MG_trees.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_position.hxx

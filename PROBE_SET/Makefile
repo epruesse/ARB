@@ -138,6 +138,7 @@ ps_arb2asciipaths.o: ps_pg_tree_functions.cxx
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arbdb.h
+ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/attributes.h
 
 ps_convert_db.o: ps_database.hxx
 ps_convert_db.o: ps_defs.hxx
@@ -148,6 +149,7 @@ ps_convert_db.o: ps_tools.hxx
 ps_convert_db.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arbdb.h
+ps_convert_db.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ps_database.o: ps_database.hxx
@@ -197,6 +199,7 @@ ps_get_probes.o: ps_pg_tree_functions.cxx
 ps_get_probes.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arbdb.h
+ps_get_probes.o: $(ARBHOME)/INCLUDE/attributes.h
 
 ps_merge_my_dbs.o: ps_database.hxx
 ps_merge_my_dbs.o: ps_defs.hxx

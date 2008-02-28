@@ -33,6 +33,7 @@ depend.init:
 WETC_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arbdb.h
+WETC_main.o: $(ARBHOME)/INCLUDE/attributes.h
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx

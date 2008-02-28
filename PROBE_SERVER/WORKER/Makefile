@@ -42,4 +42,5 @@ psw_main.o: ../path_code.h
 psw_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 psw_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 psw_main.o: $(ARBHOME)/INCLUDE/arbdb.h
+psw_main.o: $(ARBHOME)/INCLUDE/attributes.h
 psw_main.o: $(ARBHOME)/INCLUDE/smartptr.h

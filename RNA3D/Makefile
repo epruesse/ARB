@@ -40,6 +40,7 @@ RNA3D_Graphics.o: RNA3D_Graphics.hxx
 RNA3D_Graphics.o: RNA3D_Interface.hxx
 RNA3D_Graphics.o: RNA3D_OpenGLEngine.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arb_assert.h
+RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -65,6 +66,7 @@ RNA3D_Interface.o: RNA3D_StructureData.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/ad_prot.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/arbdb.h
+RNA3D_Interface.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -82,6 +84,7 @@ RNA3D_Main.o: RNA3D_Main.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/arbdb.h
+RNA3D_Main.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -101,6 +104,7 @@ RNA3D_OpenGLEngine.o: RNA3D_Textures.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/ad_prot.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arbdb.h
+RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -127,6 +131,7 @@ RNA3D_OpenGLGraphics.o: RNA3D_Textures.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/ad_prot.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/arbdb.h
+RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -145,6 +150,7 @@ RNA3D_Renderer.o: RNA3D_Textures.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/ad_prot.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/arbdb.h
+RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -163,6 +169,7 @@ RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arbdb.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arbdbt.h
+RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -182,4 +189,5 @@ RNA3D_Textures.o: RNA3D_Textures.hxx
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/ad_prot.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/arbdb.h
+RNA3D_Textures.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/GL/glpng.h

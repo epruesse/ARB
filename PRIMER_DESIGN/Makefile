@@ -57,6 +57,7 @@ PRD_Design.o: PRD_SequenceIterator.hxx
 PRD_Design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arbdb.h
+PRD_Design.o: $(ARBHOME)/INCLUDE/attributes.h
 
 PRD_Item.o: PRD_Globals.hxx
 PRD_Item.o: PRD_Item.hxx
@@ -94,6 +95,7 @@ primer_design.o: $(ARBHOME)/INCLUDE/adGene.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdb.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
+primer_design.o: $(ARBHOME)/INCLUDE/attributes.h
 primer_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

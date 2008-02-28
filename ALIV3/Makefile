@@ -49,6 +49,7 @@ a3.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 a3.o: $(ARBHOME)/INCLUDE/arb_assert.h
 a3.o: $(ARBHOME)/INCLUDE/arbdb.h
 a3.o: $(ARBHOME)/INCLUDE/arbdbt.h
+a3.o: $(ARBHOME)/INCLUDE/attributes.h
 a3.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 
 a3_ali.o: a3_ali.hxx
@@ -64,6 +65,7 @@ a3_arbdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arbdb.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
+a3_arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
 
 a3_basen.o: a3_basen.h
 

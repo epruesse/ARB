@@ -41,6 +41,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arbdb.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arbdbt.h
+db_scanner.o: $(ARBHOME)/INCLUDE/attributes.h
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

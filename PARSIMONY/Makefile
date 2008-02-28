@@ -35,6 +35,7 @@ AP_buffer.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AP_buffer.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
@@ -48,6 +49,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AP_main.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
@@ -61,6 +63,7 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
@@ -75,6 +78,7 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
@@ -85,6 +89,7 @@ PARS_debug.o: pars_debug.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/arbdb.h
+PARS_debug.o: $(ARBHOME)/INCLUDE/attributes.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_debug.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -102,6 +107,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arbdb.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arbdbt.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/attributes.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -129,6 +135,7 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arbdb.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arbdbt.h
+PARS_klprops.o: $(ARBHOME)/INCLUDE/attributes.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -155,6 +162,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
+PARS_main.o: $(ARBHOME)/INCLUDE/attributes.h
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx

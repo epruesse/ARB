@@ -33,3 +33,4 @@ depend.init:
 
 xml.o: xml.hxx
 xml.o: $(ARBHOME)/INCLUDE/arb_assert.h
+xml.o: $(ARBHOME)/INCLUDE/attributes.h

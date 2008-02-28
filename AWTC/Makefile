@@ -39,6 +39,7 @@ AWTC_ClustalV.o: awtc_seq_search.hxx
 AWTC_ClustalV.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWTC_ClustalV.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_ClustalV.o: $(ARBHOME)/INCLUDE/arbdb.h
+AWTC_ClustalV.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTC_ClustalV.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 
 AWTC_constructSequence.o: awtc_constructSequence.hxx
@@ -49,6 +50,7 @@ AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_constructSequence.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -64,6 +66,7 @@ AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWTC_fast_aligner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -80,6 +83,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/PT_com.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/servercntrl.h
@@ -88,6 +92,7 @@ AWTC_seq_search.o: awtc_seq_search.hxx
 AWTC_seq_search.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWTC_seq_search.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_seq_search.o: $(ARBHOME)/INCLUDE/arbdb.h
+AWTC_seq_search.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTC_seq_search.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 
 AWTC_submission.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -95,6 +100,7 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AWTC_submission.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
