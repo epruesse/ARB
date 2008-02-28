@@ -183,7 +183,7 @@ const char *BI_helix::initFromData(const char *helix_nr, const char *helix, size
             stack = (struct helix_stack *)GBS_read_hash(hash,ident);
             if (!stack) {
                 bi_assert(!helix_error); // already have an error
-                helix_error = GBS_global_string_copy("Too many '%c' in Helix '%s' pos %i", c, ident, pos);
+                helix_error = GBS_global_string_copy("Too many '%c' in Helix '%s' pos %zu", c, ident, pos);
                 goto helix_end;
             }
             if (strchr(RIGHT_HELIX,c)) {
@@ -193,7 +193,7 @@ const char *BI_helix::initFromData(const char *helix_nr, const char *helix, size
                 c = tolower(c);
                 if (stack->c != c) {
                     bi_assert(!helix_error); // already have an error
-                    helix_error = GBS_global_string_copy("Character '%c' pos %li doesn't match character '%c' pos %i in Helix '%s'",
+                    helix_error = GBS_global_string_copy("Character '%c' pos %li doesn't match character '%c' pos %zu in Helix '%s'",
                                                          stack->c, stack->pos, c, pos, ident);
                     goto helix_end;
                 }
