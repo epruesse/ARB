@@ -125,15 +125,16 @@ symlink_maybe_no_target GENH/aisc.h               ORS_COM/ors_server.h &&
 
 # TEMPLATES directory
 
-symlink ../TEMPLATES/smartptr.h INCLUDE/smartptr.h &&
-symlink ../TEMPLATES/output.h INCLUDE/output.h &&
-symlink ../TEMPLATES/inline.h INCLUDE/inline.h &&
-symlink ../TEMPLATES/arbtools.h INCLUDE/arbtools.h &&
-symlink ../TEMPLATES/config_parser.h INCLUDE/config_parser.h &&
 symlink ../TEMPLATES/SIG_PF.h INCLUDE/SIG_PF.h &&
-symlink ../TEMPLATES/perf_timer.h INCLUDE/perf_timer.h &&
-symlink ../TEMPLATES/arb_version.h INCLUDE/arb_version.h &&
 symlink ../TEMPLATES/arb_debug.h INCLUDE/arb_debug.h &&
+symlink ../TEMPLATES/arb_version.h INCLUDE/arb_version.h &&
+symlink ../TEMPLATES/arbtools.h INCLUDE/arbtools.h &&
+symlink ../TEMPLATES/attributes.h INCLUDE/attributes.h &&
+symlink ../TEMPLATES/config_parser.h INCLUDE/config_parser.h &&
+symlink ../TEMPLATES/inline.h INCLUDE/inline.h &&
+symlink ../TEMPLATES/output.h INCLUDE/output.h &&
+symlink ../TEMPLATES/perf_timer.h INCLUDE/perf_timer.h &&
+symlink ../TEMPLATES/smartptr.h INCLUDE/smartptr.h &&
 symlink_maybe_no_target ../TEMPLATES/arb_build.h INCLUDE/arb_build.h &&
 
 # INCLUDE directory
