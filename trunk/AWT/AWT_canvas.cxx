@@ -820,9 +820,9 @@ void AWT_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
     AWUSE(ct);
 }
 
-void AWT_graphic::text(AW_device *device, char *text){
+void AWT_graphic::text(AW_device *device, char *tmp_text){
     AWUSE(device);
-    AWUSE(text);
+    AWUSE(tmp_text);
 }
 
 // --------------------------

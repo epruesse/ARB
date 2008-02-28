@@ -16,8 +16,8 @@ extern long global_combineCount;
 
 // start of implementation of class AP_sequence_protein:
 
-AP_sequence_protein::AP_sequence_protein(AP_tree_root *root)
-    : AP_sequence(root)
+AP_sequence_protein::AP_sequence_protein(AP_tree_root *tmp_root)
+    : AP_sequence(tmp_root)
 {
     sequence = 0;
 }

@@ -38,10 +38,10 @@ class XString : Noncopyable {
 
     void set_length(size_t len); // dealloc internal array if length grows
     
-    void addX(size_t abspos) { // add an X at pos
+    void addX(size_t abs_pos) { // add an X at pos
         initialized   = false;
-        sec_assert(abspos<x_string_len);
-        x_string[abspos] = 'x';
+        sec_assert(abs_pos<x_string_len);
+        x_string[abs_pos] = 'x';
     }
 
 public:

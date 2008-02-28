@@ -423,14 +423,14 @@ GB_ERROR SEC_root::read_data(const char *input_string, const char *x_string_in) 
             size_t exp_len = db->length();
 
             if (len != exp_len && len != (exp_len+1)) {
-                error = GBS_global_string("Wrong xstring-length (found=%u, expected=%u-%u)",
+                error = GBS_global_string("Wrong xstring-length (found=%zu, expected=%zu-%lu)",
                                           len, exp_len, exp_len+1);
             }
             else {
                 xString = new XString(x_string_in, len, db->length());
 #if defined(DEBUG)
                 size_t xlen = xString->getLength(); // internally one position longer than alignment length
-                printf("x_string_in len=%u\nxlen=%u\nali_length=%u\n", strlen(x_string_in), xlen, db->length());
+                printf("x_string_in len=%zu\nxlen=%zu\nali_length=%zu\n", strlen(x_string_in), xlen, db->length());
 #endif // DEBUG
             }
         }
@@ -443,18 +443,18 @@ GB_ERROR SEC_root::read_data(const char *input_string, const char *x_string_in) 
 #endif // DEBUG
 
             if (strncmp(string_buffer, "LOOP={", 6) == 0) {
-                SEC_loop *root_loop = new SEC_loop(this); // , NULL, 0, 0);
+                SEC_loop *tmp_root_loop = new SEC_loop(this); // , NULL, 0, 0);
 
-                set_root_loop(root_loop);
+                set_root_loop(tmp_root_loop);
                 set_under_construction(true);
-                error = root_loop->read(NULL, in, version, firstLoopAngle);
+                error = tmp_root_loop->read(NULL, in, version, firstLoopAngle);
 
                 if (!error) {
                     set_under_construction(false); // mark as "constructed"
                 }
                 else {
                     set_root_loop(0);
-                    delete root_loop;
+                    delete tmp_root_loop;
                 }
             }
             else {

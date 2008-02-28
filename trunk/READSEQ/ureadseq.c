@@ -22,6 +22,7 @@
 
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #define __NO_CTYPE
 #include <ctype.h>
@@ -228,7 +229,7 @@ Local void readLoop(short margin, boolean addfirst,
     getline(V);
     V->done = feof(V->f);
     V->done |= (*endTest)( &addend, &ungetend, V);
-    if (V->addit && (addend || !V->done) && (strlen(V->s) > margin)) {
+    if (V->addit && (addend || !V->done) && (strlen(V->s) > (unsigned)margin)) {
       addseq( (V->s)+margin, V);
     }
   } while (!V->done);
@@ -524,8 +525,8 @@ Local void readUWGCG(struct ReadSeqVars *V)
   strcpy(V->seqid, V->s);
   /*writeseq: "    %s  Length: %d  (today)  Check: %d  ..\n" */
   /*drop above or ".." from id*/
-  if (si = strstr(V->seqid,"  Length: ")) *si = 0;
-  else if (si = strstr(V->seqid,"..")) *si = 0;
+  if ((si = strstr(V->seqid,"  Length: "))) *si = 0;
+  else if ((si = strstr(V->seqid,".."))) *si = 0;
   do {
     V->done = feof(V->f);
     getline(V);
@@ -569,7 +570,7 @@ Local void readOlsen(struct ReadSeqVars *V)
         /* si = (V->s)+21; < was this before VMS CC wasted my time */
         si += 10;  /* use strstr index plus offset to outfox VMS CC bug */
 
-        if (sk = strstr(si, sid)) *(sk-2) = 0;
+        if ((sk = strstr(si, sid))) *(sk-2) = 0;
         for (sk = si; *sk != 0; sk++) {
            if (*sk == ' ') *sk = '.';
            /* 18aug92: !! some olsen masks are NUMBERS !! which addseq eats */
@@ -580,7 +581,7 @@ Local void readOlsen(struct ReadSeqVars *V)
         }
       }
 
-    else if (sk = strstr(V->s, "): ")) {  /* seq info header line */
+    else if ((sk = strstr(V->s, "): "))) {  /* seq info header line */
   /* 18aug92: correct for diff seqs w/ same name -- use number, e.g. */
   /*   3 (Agr.tume):  agrobacterium.prna  18-JUN-1987 16:12 */
   /* 328 (Agr.tume):  agrobacterium.prna XYZ  19-DEC-1992   */
@@ -624,7 +625,7 @@ Local void readMSF(struct ReadSeqVars *V)
 
   char    *si, *sj, sid[128];
   boolean indata = false;
-  int     atseq= 0, iline= 0;
+  int     iline= 0;
 
   V->addit = (V->choice > 0);
   if (V->addit) V->seqlen = 0;
@@ -687,7 +688,7 @@ Local void readPAUPinterleaved(struct ReadSeqVars *V)
 
   char    *si, *sj, *send, sid[40], sid1[40], saveseq[255];
   boolean first = true, indata = false, domatch;
-  int     atseq= 0, iline= 0, ifmc, saveseqlen=0;
+  int     iline= 0, ifmc, saveseqlen=0;
 
 #define fixmatchchar(s) { \
   for (ifmc=0; ifmc<saveseqlen; ifmc++) \
@@ -1167,7 +1168,7 @@ short seqFileFormatFp(
     long  *skiplines,   /* return #lines to skip any junk like mail header */
     short *error)       /* return any error value or 0 */
 {
-  boolean   foundDNA= false, foundIG= false, foundStrider= false,
+  boolean   foundIG= false, foundStrider= false,
             foundGB= false, foundPIR= false, foundEMBL= false, foundNBRF= false,
             foundPearson= false, foundFitch= false, foundPhylip= false, foundZuker= false,
             gotolsen= false, gotpaup = false, gotasn1 = false, gotuw= false, gotMSF= false,
@@ -1360,7 +1361,7 @@ short seqFileFormatFp(
     for (i=0; i < *skiplines; i++) ReadOneLine(sp);
     nlines= 0;
     ReadOneLine(sp);
-    sscanf( sp, "%d%d", &nspp, &nlen);
+    sscanf( sp, "%ld%ld", &nspp, &nlen);
     ReadOneLine(sp); /* 1st seq line */
     for (ps= sp+10, ilen=0; *ps!=0; ps++) if (isprint(*ps)) ilen++;
 
@@ -1610,7 +1611,7 @@ short writeSeq(FILE *outf, const char *seq, const long seqlen,
   seqname[l] = 0;
 
   sscanf( seqname, "%30s", idword);
-  sprintf(numform, "%d", seqlen);
+  sprintf(numform, "%ld", seqlen);
   numwidth= strlen(numform)+1;
   nameform[0]= '\0';
 
@@ -1639,8 +1640,8 @@ short writeSeq(FILE *outf, const char *seq, const long seqlen,
 
     case kOlsen:  /* Olsen seq. editor takes plain nucs OR Genbank  */
     case kGenBank:
-      fprintf(outf,"LOCUS       %s       %d bp\n", idword, seqlen);
-      fprintf(outf,"DEFINITION  %s, %d bases, %X checksum.\n", seqname, seqlen, checksum);
+      fprintf(outf,"LOCUS       %s       %ld bp\n", idword, seqlen);
+      fprintf(outf,"DEFINITION  %s, %ld bases, %lX checksum.\n", seqname, seqlen, checksum);
    /* fprintf(outf,"ACCESSION   %s\n", accnum); */
       fprintf(outf,"ORIGIN      \n");
       spacer = 11;
@@ -1654,7 +1655,7 @@ short writeSeq(FILE *outf, const char *seq, const long seqlen,
       /* somewhat like genbank... \\\*/
       /* fprintf(outf,"\\\\\\\n"); << only at top of file, not each entry... */
       fprintf(outf,"ENTRY           %s \n", idword);
-      fprintf(outf,"TITLE           %s, %d bases, %X checksum.\n", seqname, seqlen, checksum);
+      fprintf(outf,"TITLE           %s, %ld bases, %lX checksum.\n", seqname, seqlen, checksum);
    /* fprintf(outf,"ACCESSION       %s\n", accnum); */
       fprintf(outf,"SEQUENCE        \n");
       numwidth = 7;
@@ -1664,7 +1665,7 @@ short writeSeq(FILE *outf, const char *seq, const long seqlen,
       strcpy(endstr, "\n///");
       /* run a top number line for PIR */
       for (j=0; j<numwidth; j++) fputc(' ',outf);
-      for (j= 5; j<=width; j += 5) fprintf(outf,"%10d",j);
+      for (j= 5; j<=width; j += 5) fprintf(outf,"%10ld",j);
       fputc('\n',outf);
       linesout += 5;
       break;
@@ -1674,7 +1675,7 @@ short writeSeq(FILE *outf, const char *seq, const long seqlen,
         fprintf(outf,">P1;%s\n", idword);
       else
         fprintf(outf,">DL;%s\n", idword);
-      fprintf(outf,"%s, %d bases, %X checksum.\n", seqname, seqlen, checksum);
+      fprintf(outf,"%s, %ld bases, %lX checksum.\n", seqname, seqlen, checksum);
       spacer = 11;
       strcpy(endstr,"*\n");
       linesout += 3;
@@ -1683,8 +1684,8 @@ short writeSeq(FILE *outf, const char *seq, const long seqlen,
     case kEMBL:
       fprintf(outf,"ID   %s\n", idword);
   /*  fprintf(outf,"AC   %s\n", accnum); */
-      fprintf(outf,"DE   %s, %d bases, %X checksum.\n", seqname, seqlen, checksum);
-      fprintf(outf,"SQ             %d BP\n", seqlen);
+      fprintf(outf,"DE   %s, %ld bases, %lX checksum.\n", seqname, seqlen, checksum);
+      fprintf(outf,"SQ             %ld BP\n", seqlen);
       strcpy(endstr, "\n//"); /* 11Oct90: bug fix*/
       tab = 4;     /** added 31jan91 */
       spacer = 11; /** added 31jan91 */
@@ -1695,7 +1696,7 @@ short writeSeq(FILE *outf, const char *seq, const long seqlen,
     case kGCG:
       fprintf(outf,"%s\n", seqname);
    /* fprintf(outf,"ACCESSION   %s\n", accnum); */
-      fprintf(outf,"    %s  Length: %d  (today)  Check: %d  ..\n", idword, seqlen, checksum);
+      fprintf(outf,"    %s  Length: %ld  (today)  Check: %ld  ..\n", idword, seqlen, checksum);
       spacer = 11;
       numleft = true;
       strcpy(endstr, "\n");  /* this is insurance to help prevent misreads at eof */
@@ -1704,13 +1705,13 @@ short writeSeq(FILE *outf, const char *seq, const long seqlen,
 
     case kStrider: /* ?? map ?*/
       fprintf(outf,"; ### from DNA Strider ;-)\n");
-      fprintf(outf,"; DNA sequence  %s, %d bases, %X checksum.\n;\n", seqname, seqlen, checksum);
+      fprintf(outf,"; DNA sequence  %s, %ld bases, %lX checksum.\n;\n", seqname, seqlen, checksum);
       strcpy(endstr, "\n//");
       linesout += 3;
       break;
 
     case kFitch:
-      fprintf(outf,"%s, %d bases, %X checksum.\n", seqname, seqlen, checksum);
+      fprintf(outf,"%s, %ld bases, %lX checksum.\n", seqname, seqlen, checksum);
       spacer = 4;
       width = 60;
       linesout += 1;
@@ -1731,17 +1732,17 @@ short writeSeq(FILE *outf, const char *seq, const long seqlen,
     case kASN1:
       seqtype= getseqtype(seq, seqlen);
       switch (seqtype) {
-        case kDNA     : cp= "dna"; break;
-        case kRNA     : cp= "rna"; break;
-        case kNucleic : cp= "na"; break;
-        case kAmino   : cp= "aa"; break;
-        case kOtherSeq: cp= "not-set"; break;
+        case kDNA     : cp= (char*)"dna"; break;
+        case kRNA     : cp= (char*)"rna"; break;
+        case kNucleic : cp= (char*)"na"; break;
+        case kAmino   : cp= (char*)"aa"; break;
+        case kOtherSeq: cp= (char*)"not-set"; break;
         }
       fprintf(outf,"  seq {\n");
       fprintf(outf,"    id { local id %d },\n", gPretty.atseq);
       fprintf(outf,"    descr { title \"%s\" },\n", seqid);
       fprintf(outf,"    inst {\n");
-      fprintf(outf,"      repr raw, mol %s, length %d, topology linear,\n", cp, seqlen);
+      fprintf(outf,"      repr raw, mol %s, length %ld, topology linear,\n", cp, seqlen);
       fprintf(outf,"      seq-data\n");
       if (seqtype == kAmino)
         fprintf(outf,"        iupacaa \"");
@@ -1763,7 +1764,7 @@ short writeSeq(FILE *outf, const char *seq, const long seqlen,
       tab  = 0; /* 1; */
       /* strcpy(endstr,";\nend;"); << this is end of all seqs.. */
       /* do a header comment line for paup */
-      fprintf(outf,"[Name: %-16s  Len:%6d  Check: %8X]\n", idword, seqlen, checksum);
+      fprintf(outf,"[Name: %-16s  Len:%6ld  Check: %8lX]\n", idword, seqlen, checksum);
       linesout += 1;
       break;
 
@@ -1780,13 +1781,13 @@ short writeSeq(FILE *outf, const char *seq, const long seqlen,
       tab  = gPretty.tab;
       /* also add rtf formatting w/ font, size, style */
       if (gPretty.nametop) {
-        fprintf(outf,"Name: %-16s  Len:%6d  Check: %8X\n", idword, seqlen, checksum);
+        fprintf(outf,"Name: %-16s  Len:%6ld  Check: %8lX\n", idword, seqlen, checksum);
         linesout++;
         }
       break;
 
     case kMSF:
-      fprintf(outf," Name: %-16s Len:%6d  Check: %5d  Weight:  1.00\n",
+      fprintf(outf," Name: %-16s Len:%6ld  Check: %5ld  Weight:  1.00\n",
                     idword, seqlen, checksum);
       linesout++;
       nameleft= true;
@@ -1798,7 +1799,7 @@ short writeSeq(FILE *outf, const char *seq, const long seqlen,
       break;
 
     case kIG:
-      fprintf(outf,";%s, %d bases, %X checksum.\n", seqname, seqlen, checksum);
+      fprintf(outf,";%s, %ld bases, %lX checksum.\n", seqname, seqlen, checksum);
       fprintf(outf,"%s\n", idword);
       strcpy(endstr,"1"); /* == linear dna */
       linesout += 2;
@@ -1807,7 +1808,7 @@ short writeSeq(FILE *outf, const char *seq, const long seqlen,
     default :
     case kZuker: /* don't attempt Zuker's ftn format */
     case kPearson:
-      fprintf(outf,">%s, %d bases, %X checksum.\n", seqname, seqlen, checksum);
+      fprintf(outf,">%s, %ld bases, %lX checksum.\n", seqname, seqlen, checksum);
       linesout += 1;
       break;
     }
@@ -1848,7 +1849,7 @@ short writeSeq(FILE *outf, const char *seq, const long seqlen,
         s[l++] = ' ';
         }
       if (l1 % 10 == 1 || l1 == width) {
-        if (numline==1) fprintf(outf,"%-9d ",i+1);
+        if (numline==1) fprintf(outf,"%-9ld ",i+1);
         s[l++]= '|'; /* == put a number here */
         }
       else s[l++]= ' ';
