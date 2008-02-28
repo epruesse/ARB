@@ -8,11 +8,9 @@
 # error P_ is not defined
 #endif
 
-/* hide GNU extensions for non-gnu compilers: */
-#ifndef GNU
-# ifndef __attribute__
-#  define __attribute__(x)
-# endif
+/* define ARB attributes: */
+#ifndef ATTRIBUTES_H
+# include <attributes.h>
 #endif
 
 #ifdef __cplusplus
@@ -48,8 +46,6 @@ char *gb_uncompress_by_sequence P_((GBDATA *gbd, const char *ss, long size, GB_E
 
 /* adtables.c */
 GBDATA *gbt_table_link_follower P_((GBDATA *gb_main, GBDATA *gb_link, const char *link));
-
-/* adRevCompl.c */
 
 #ifdef __cplusplus
 }

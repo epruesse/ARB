@@ -14,11 +14,9 @@
 # error P_ already defined elsewhere
 #endif
 
-/* hide GNU extensions for non-gnu compilers: */
-#ifndef GNU
-# ifndef __attribute__
-#  define __attribute__(x)
-# endif
+/* define ARB attributes: */
+#ifndef ATTRIBUTES_H
+# include <attributes.h>
 #endif
 
 
@@ -39,7 +37,7 @@ long TRS_write_hashi P_((long hashi, long key, long val));
 long TRS_free_hashi P_((long hash));
 
 /* tree_lib.cxx */
-char *TRS_export_error P_((const char *templat, ...)) __attribute__((format(printf, 1, 2)));
+char *TRS_export_error P_((const char *templat, ...)) __ATTR__FORMAT(1);
 char *TRS_get_error P_((void));
 void *TRS_stropen P_((long init_size));
 char *TRS_strclose P_((void *strstruct, int optimize));

@@ -14,6 +14,11 @@
 # error P_ already defined elsewhere
 #endif
 
+/* define ARB attributes: */
+#ifndef ATTRIBUTES_H
+# include <attributes.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

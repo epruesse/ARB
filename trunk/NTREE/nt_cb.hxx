@@ -4,8 +4,8 @@
  *
  */
 
-/* hide GNU extensions for non-gnu compilers: */
-#ifndef GNU
+/* hide __attribute__'s for non-gcc compilers: */
+#ifndef __GNUC__
 # ifndef __attribute__
 #  define __attribute__(x)
 # endif

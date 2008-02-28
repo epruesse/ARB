@@ -8,11 +8,9 @@
 # error P_ is not defined
 #endif
 
-/* hide GNU extensions for non-gnu compilers: */
-#ifndef GNU
-# ifndef __attribute__
-#  define __attribute__(x)
-# endif
+/* define ARB attributes: */
+#ifndef ATTRIBUTES_H
+# include <attributes.h>
 #endif
 
 #ifdef __cplusplus

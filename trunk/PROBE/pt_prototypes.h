@@ -94,8 +94,6 @@ int get_clip_max_from_length P_((int length));
 void PT_init_base_string_counter P_((char *str, char initval, int size));
 void PT_inc_base_string_count P_((char *str, char initval, char maxval, int size));
 
-/* PT_secundaer.cxx */
-
 /* PT_buildtree.cxx */
 POS_TREE *build_pos_tree P_((POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, unsigned int end));
 long PTD_save_partial_tree P_((FILE *out, PTM2 *ptmain, POS_TREE *node, char *partstring, int partsize, long pos, long *ppos));

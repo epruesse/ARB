@@ -14,11 +14,9 @@
 # error P_ already defined elsewhere
 #endif
 
-/* hide GNU extensions for non-gnu compilers: */
-#ifndef GNU
-# ifndef __attribute__
-#  define __attribute__(x)
-# endif
+/* define ARB attributes: */
+#ifndef ATTRIBUTES_H
+# include <attributes.h>
 #endif
 
 #ifdef __cplusplus
@@ -62,7 +60,7 @@ int aisc_broadcast P_((struct Hs_struct *hs, int message_type, const char *messa
 int aisc_private_message P_((int socket, int message_type, char *message));
 int aisc_talking P_((int con));
 struct Hs_struct *aisc_accept_calls P_((struct Hs_struct *hs));
-void aisc_server_shutdown_and_exit P_((struct Hs_struct *hs, int exitcode)) __attribute__((noreturn));
+void aisc_server_shutdown_and_exit P_((struct Hs_struct *hs, int exitcode)) __ATTR__NORETURN;
 int aisc_get_key P_((int *obj));
 extern "C" int aisc_add_destroy_callback P_((aisc_callback_func callback, long clientdata));
 void aisc_remove_destroy_callback P_((void));
