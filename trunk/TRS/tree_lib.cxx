@@ -33,7 +33,7 @@ FILE *t2j_debug;
 char *TRS_error_buffer = 0;
 
 char *TRS_export_error(const char *templat, ...) {
-    /* goes to header: __attribute__((format(printf, 1, 2))) */
+    /* goes to header: __ATTR__FORMAT(1) */
     char buffer[10000];
     char *p = buffer;
     va_list	parg;

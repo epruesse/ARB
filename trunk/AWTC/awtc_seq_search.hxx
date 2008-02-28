@@ -17,7 +17,7 @@
 #define MAX_TRIPLES (SEQ_CHARS*SEQ_CHARS*SEQ_CHARS+1) // one faked triple for all non-char triples
 #define GAP_CHARS   ".-~?"      // Characters treated as gaps
 
-void AWTC_message(const char *format, ...) __attribute__((format(printf, 1, 2)));
+void AWTC_message(const char *format, ...) __ATTR__FORMAT(1);
 
 static inline int max(int i1, int i2) { return i1>i2 ? i1 : i2; }
 static inline int AWTC_is_gap(int c)  { return strchr(GAP_CHARS, c)!=0; }

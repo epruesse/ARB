@@ -1106,7 +1106,7 @@ static GB_ERROR server_load(AN_main *main)
     return error;
 }
 
-void names_server_shutdown(int exitcode) __attribute__((noreturn));
+void names_server_shutdown(int exitcode) __ATTR__NORETURN;
 void names_server_shutdown(int exitcode) {
     aisc_server_shutdown_and_exit(AN_global.server_communication, exitcode); // never returns
 }
@@ -1132,7 +1132,7 @@ extern "C" int server_shutdown(AN_main *pm, aisc_string passwd){
     return 0;
 }
 
-static void usage(const char *exeName, const char *err) __attribute__((noreturn));
+static void usage(const char *exeName, const char *err) __ATTR__NORETURN;
 static void usage(const char *exeName, const char *err) {
     printf("ARB nameserver v%i\n"
            "Usage: %s command server-parameters\n"

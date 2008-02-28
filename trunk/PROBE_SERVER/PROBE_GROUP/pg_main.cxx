@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Tue Jun/13/2006 19:31 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Feb/27/2008 19:43 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2004     //
@@ -163,6 +163,7 @@ public:
 
 // output-handler for other modules
 
+static void my_output(const char *format, ...) __ATTR__FORMAT(1);
 static void my_output(const char *format, ...) {
     va_list     parg;
     va_start(parg, format);

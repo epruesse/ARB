@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : output.h                                               //
 //    Purpose   : class for indented output to FILE                      //
-//    Time-stamp: <Fri Feb/13/2004 17:26 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Feb/27/2008 19:38 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -18,6 +18,10 @@
 
 #ifndef _STDARG_H
 #include <stdarg.h>
+#endif
+
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
 #endif
 
 //  ---------------------
@@ -71,13 +75,8 @@ public:
     void indent(int howMuch) { indentation   += howMuch; }
     void unindent(int howMuch) { indentation -= howMuch; }
 
-    void vput(const char *s, va_list argPtr) {
-        goto_indentation();
-        vfprintf(stdout, s, argPtr);
-        cr();
-    }
-
-    void put(const char *s, ...) __attribute__((format(printf, 2, 3)));
+    void vput(const char *s, va_list argPtr) __ATTR__VFORMAT_MEMBER(1);
+    void put(const char *s, ...) __ATTR__FORMAT_MEMBER(1);
 
     void put()  {
         goto_indentation();
@@ -102,6 +101,12 @@ public:
         fflush(stdout);
     }
 };
+
+inline void output::vput(const char *s, va_list argPtr) {
+    goto_indentation();
+    vfprintf(stdout, s, argPtr);
+    cr();
+}
 
 inline void output::put(const char *s, ...) {
     va_list parg;

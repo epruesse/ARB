@@ -1385,7 +1385,7 @@ struct Hs_struct *aisc_accept_calls(struct Hs_struct *hs)
 /************************** aisc_server_shutdown_and_exit *********************/
 
 void aisc_server_shutdown_and_exit(struct Hs_struct *hs, int exitcode) {
-    /* goes to header: __attribute__((noreturn))  */
+    /* goes to header: __ATTR__NORETURN  */
     struct Socinf *si;
 
     for(si=hs->soci; si; si=si->next){

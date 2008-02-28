@@ -511,7 +511,7 @@ int Find2(const char *target,const char *key)
 
 
 void Error(const char *msg) {
-    /* goes to header: __attribute__((noreturn))  */
+    /* goes to header: __ATTR__NORETURN  */
     (void)fprintf(stderr,"Error in ARB_GDE: %s\n",msg);
     fflush(stderr);
     gde_assert(0);

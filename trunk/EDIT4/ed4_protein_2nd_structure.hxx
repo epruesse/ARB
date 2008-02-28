@@ -56,7 +56,7 @@ void waitukp();                                          /// Waits until any key
 int nol(const char *string);                             /// Gets number of lines in string
 void cropln(char *string, const int numberOfLines = 1);  /// Crops line/lines at the beginning of string
 char* scat(const int num, char *str1, ...);              /// Concatenates str1 with arbitrary number of strings (num specifies number of strings to append)
-char* scat(char *str1, ...) __attribute__ ((sentinel));  /// Concatenates str1 with arbitrary number of strings (list must be terminated by NULL)
+char* scat(char *str1, ...) __ATTR__SENTINEL;            /// Concatenates str1 with arbitrary number of strings (list must be terminated by NULL)
 
 // helper functions
 inline int round_sym(double d); /// Symmetric arithmetic rounding of a double value to an integer value

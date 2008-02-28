@@ -1,6 +1,10 @@
 #ifndef AW_PRESET_HXX
 #define AW_PRESET_HXX
 
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
+
 #define AWP_COLORNAME_TEMPLATE "GCS/%s/MANAGE_GCS/%s/colorname"
 #define AWP_FONTNAME_TEMPLATE "GCS/%s/MANAGE_GCS/%s/font"
 #define AWP_FONTSIZE_TEMPLATE "GCS/%s/MANAGE_GCS/%s/size"
@@ -20,7 +24,7 @@ AW_gc_manager AW_manage_GC(AW_window                                       *aww,
                            void (*changecb)(AW_window*,AW_CL,AW_CL), AW_CL  cd1, AW_CL cd2,
                            bool                                             define_color_groups,
                            const char                                      *default_background_color,
-                           ...) __attribute__ ((sentinel));
+                           ...) __ATTR__SENTINEL;
 /* creates some GC pairs: one for normal operation,
                     the other for drag mode
         eg.
@@ -49,7 +53,7 @@ void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char 
 void AW_preset_create_scale_chooser(AW_window *aws, const char *awar, const char *label);
 void AW_preset_create_color_chooser(AW_window *aws, const char *awar, const char *label,bool message_reload = false, bool show_label = false);
 
-void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, AW_BOOL has_font_info, const char *id0, ...) __attribute__ ((sentinel));
+void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, AW_BOOL has_font_info, const char *id0, ...) __ATTR__SENTINEL;
 
 #else
 #error aw_preset.hxx included twice
