@@ -31,7 +31,9 @@ typedef struct S_cfgLine
 } *cfgLine;
 
 
-__PROTOTYPEN__
+#ifdef __cplusplus
+extern "C" {
+#endif    
 
     /* Das 'keyword' des letzten Elements des Arrays 'line' muá NULL sein! */
 
@@ -42,6 +44,8 @@ __PROTOTYPEN__
 
     void setCfgError (cstr message);
 
-__PROTOENDE__
+#ifdef __cplusplus
+}
+#endif    
 
 #endif

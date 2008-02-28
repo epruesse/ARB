@@ -5,10 +5,14 @@
 #include "defines.h"
 #endif
 
-__PROTOTYPEN__
+#ifdef __cplusplus
+extern "C" {
+#endif    
 
     void readSimCfg (cstr fname);
 
-__PROTOENDE__
+#ifdef __cplusplus
+}
+#endif    
 
 #endif

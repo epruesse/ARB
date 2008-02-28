@@ -35,10 +35,14 @@ extern int  basesArePairing[BASECHARS][BASECHARS], /* Kombination paarend? */
 
 #define char2BaseType(c)    ((BaseType)baseCharType[(int)c])
 
-__PROTOTYPEN__
+#ifdef __cplusplus
+extern "C" {
+#endif    
 
     void initBaseLookups (void);
 
-__PROTOENDE__
+#ifdef __cplusplus
+}
+#endif    
 
 #endif

@@ -64,7 +64,9 @@ typedef struct S_RNS
 
 } *RNS;
 
-__PROTOTYPEN__
+#ifdef __cplusplus
+extern "C" {
+#endif    
 
     RNS  createOriginRNS (void);
     void freeRNS         (RNS rns);
@@ -72,6 +74,8 @@ __PROTOTYPEN__
 
     void dumpDepths      (void);
 
-__PROTOENDE__
+#ifdef __cplusplus
+}
+#endif    
 
 #endif
