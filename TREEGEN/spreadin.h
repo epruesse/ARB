@@ -23,13 +23,17 @@ typedef struct S_Spreading
 
 } *Spreading;
 
-__PROTOTYPEN__
+#ifdef __cplusplus
+extern "C" {
+#endif    
 
     Spreading   newSpreading    (double *value, int values);
     void        freeSpreading   (Spreading s);
 
     int         spreadRand      (Spreading s);
 
-__PROTOENDE__
+#ifdef __cplusplus
+}
+#endif    
 
 #endif
