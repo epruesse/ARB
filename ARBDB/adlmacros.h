@@ -577,7 +577,7 @@ do {                                                            \
 
 #define STATIC_BUFFER(strvar,static_buffer_minlen)                                              \
 do {                                                                                            \
-    ad_assert(static_buffer_minlen > 0);                                                        \ 
+    ad_assert(static_buffer_minlen > 0);                                                        \
     size_t static_buffer_len = (static_buffer_minlen);                                          \
     if ((strvar) && (strlen(strvar) < (static_buffer_len-1))) { free(strvar); (strvar)=NULL; }  \
     if (!(strvar)) (strvar)=(char*)GB_calloc(static_buffer_len,1);                              \
