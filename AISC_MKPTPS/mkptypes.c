@@ -54,6 +54,7 @@ static void Version(void);
 #define MAXPARAM 20         /* max. number of parameters to a function */
 #define NEWBUFSIZ (20480*sizeof(char)) /* new buffer size */
 
+
 static int  dostatic            = 0;   /* include static functions? */
 static int  doinline            = 0;   /* include inline functions? */
 static int  donum               = 0;   /* print line numbers? */
@@ -69,12 +70,13 @@ static int  cansibycplus        = 0;   /* produce extern "C" */
 static int  promote_extern_c    = 0;   /* produce extern "C" into prototype */
 static int  extern_c_seen       = 0;   /* true if extern "C" was parsed */
 static int  search__attribute__ = 0;   /* search for gnu-extension __attribute__(()) ? */
+static int  search__ATTR__      = 0;   /* search for ARB-__attribute__-macros (__ATTR__) ? */
 static int  inquote             = 0;   /* in a quote?? */
 static int  newline_seen        = 1;   /* are we at the start of a line */
 static int  glastc              = ' '; /* last char. seen by getsym() */
 
 static char *current_file = 0;  /* name of current file */
-static char *current_dir = 0;  /* name of current directory */
+static char *current_dir  = 0;  /* name of current directory */
 static long  linenum      = 1L; /* line number in current file */
 
 static char const *macro_name = "P_";  /*   macro to use for prototypes */
@@ -105,7 +107,7 @@ typedef struct sym_part {
     struct sym_part *next;
 } SymPart;
 
-SymPart *symParts = 0; /* create only prototypes for parts in this list */
+static SymPart *symParts = 0; /* create only prototypes for parts in this list */
 
 static void addSymParts(const char *parts) {
     char *p = strdup(parts);
@@ -289,36 +291,70 @@ static int ngetc(FILE *f){
 static char  last_comment[MAX_COMMENT_SIZE];
 static int   lc_size            = 0;
 static char *found__attribute__ = 0;
+static char *found__ATTR__      = 0;
 
 static void clear_found_attribute() {
-    free(found__attribute__);
-    found__attribute__ = 0;
+    free(found__attribute__); found__attribute__ = 0;
+    free(found__ATTR__     ); found__ATTR__      = 0;
 }
 
 static void search_comment_for_attribute() {
     char *att;
 
-    if (found__attribute__) return; // only take first __attribute__
+    if (found__attribute__ || found__ATTR__) return; // only take first __attribute__
 
     last_comment[lc_size] = 0;  // close string
-    att                   = strstr(last_comment, "__attribute__");
-
+    
+    att = strstr(last_comment, "__attribute__");
     if (att != 0) {
         char *a  = att+13;
         int   parens = 1;
 
         while (*a && *a != '(') ++a; // search '('
         if (*a++ == '(')  {   // if '(' found
-            while (parens) {
+            while (parens && *a) {
+                switch (*a++) {
+                    case '(': parens++; break;
+                    case ')': parens--; break;
+                }
+            }
+            *a                 = 0;
+            DEBUG_PRINT("__attribute__ found!\n");
+            found__attribute__ = strdup(att);
+            if (search__ATTR__) { error("found '__attribute__' but expected '__ATTR__..'"); }
+        }
+    }
+
+    att = strstr(last_comment, "__ATTR__");
+    if (att != 0) {
+        char *a  = att+8;
+
+        while (*a && (isalnum(*a) || *a == '_')) ++a; // goto end of name
+
+        if (*a == '(') {
+            int parens = 1;
+            a++;
+            
+            while (parens && *a) {
                 switch (*a++) {
                     case '(': parens++; break;
                     case ')': parens--; break;
                 }
             }
             *a = 0;
-            DEBUG_PRINT("attribute found!\n");
-            found__attribute__ = strdup(att);
+            DEBUG_PRINT("__ATTR__ with parameters found!\n");
+            found__ATTR__ = strdup(att);
         }
+        else {
+            *a = 0;
+            DEBUG_PRINT("__ATTR__ w/o parameters found!\n");
+            found__ATTR__ = strdup(att);
+        }
+        if (search__attribute__) { error("found '__ATTR__..' but expected '__attribute__'"); }
+    }
+
+    if (found__attribute__ && found__ATTR__) {
+        error("Either specify __attribute__ or __ATTR__... - not both\n");
     }
 }
 
@@ -415,6 +451,9 @@ static void search_comment_for_promotion() {
  *
  * if a comment contains __attribute__ and search__attribute__ != 0
  * the attribute string is stored in found__attribute__
+ *
+ * if a comment contains __ATTR__ and search__ATTR__ != 0
+ * the attribute string is stored in found__ATTR__
  */
 
 
@@ -450,7 +489,7 @@ static int fnextch(FILE *f){
                     return c;
                 }
             }
-            if (search__attribute__) search_comment_for_attribute();
+            if (search__attribute__ || search__ATTR__) search_comment_for_attribute();
             if (promote_lines) search_comment_for_promotion();
             return fnextch(f);
         }
@@ -469,9 +508,11 @@ static int fnextch(FILE *f){
                 if (lastc != '\\' && c == '\n') incomment = 0;
                 else if (c < 0) break;
             }
-            if (search__attribute__) search_comment_for_attribute();
+            if (search__attribute__ || search__ATTR__) search_comment_for_attribute();
             if (promote_lines) search_comment_for_promotion();
-            return c;
+
+            if (c == '\n') return c;
+            return fnextch(f);
         }
         else {
             /* if we pre-fetched a linefeed, remember to adjust the line number */
@@ -654,7 +695,7 @@ static int getsym(char *buf, FILE *f){
 /*
  * skipit: skip until a ";" or the end of a function declaration is seen
  */
-int skipit(char *buf, FILE *f){
+static int skipit(char *buf, FILE *f){
     int i;
 
     do {
@@ -925,7 +966,7 @@ static Word *getparamlist(FILE *f){
  * are in wlist; the parameters are in plist.
  */
 
-static void emit(Word *wlist, Word *plist, long startline){
+static void emit(Word *wlist, Word *plist, long startline) {
     Word *w;
     int   count     = 0;
     int   needspace = 0;
@@ -1061,29 +1102,32 @@ static void emit(Word *wlist, Word *plist, long startline){
     if (use_macro)  PRINT("))");
     else            PRINT(")");
 
-    if (found__attribute__) {
-        PRINT(" ");
-        PRINT(found__attribute__);
-    }
+    if (found__attribute__) { PRINT(" "); PRINT(found__attribute__); }
+    if (found__ATTR__     ) { PRINT(" "); PRINT(found__ATTR__     ); }
+    
     PRINT(";\n");
 }
 
 /*
- * get all the function declarations
+ * parse all function declarations and print to STDOUT
  */
 
-static void getdecl(FILE *f){
-    Word *plist, *wlist = NULL;
-    char buf[80];
-    int sawsomething;
-    long startline;     /* line where declaration started */
-    int oktoprint;
+static void getdecl(FILE *f, const char *header) {
+    Word *plist, *wlist  = NULL;
+    char  buf[80];
+    int   sawsomething;
+    long  startline;            /* line where declaration started */
+    int   oktoprint;
+    int   header_printed = 0;
+
+    current_file = strdup(header);
+
  again:
     DEBUG_PRINT("again\n");
     word_free(wlist);
-    wlist = word_alloc("");
-    sawsomething = 0;
-    oktoprint = 1;
+    wlist         = word_alloc("");
+    sawsomething  = 0;
+    oktoprint     = 1;
     extern_c_seen = 0;
 
     for(;;) {
@@ -1172,6 +1216,11 @@ static void getdecl(FILE *f){
             }
 
             if (oktoprint) {
+                if (!header_printed) {
+                    if (aisc) printf("\n# %s\n", header);
+                    else printf("\n/* %s */\n", header);
+                    header_printed = 1;
+                }
                 emit(wlist, plist, startline);
             }
             clear_found_attribute();
@@ -1205,6 +1254,7 @@ static void Usage(void){
     fputs("   -E: promote 'extern \"C\"' to prototype\n", stderr);
     fputs("   -m: promote 'main()' (default is to skip it)\n", stderr);
     fputs("   -g: search for GNU extension __attribute__ in comment behind function header\n", stderr);
+    fputs("   -G: search for ARB macro     __ATTR__      in comment behind function header\n", stderr);
     fputs("   -P: promote /*AISC_MKPT_PROMOTE:forHeader*/ to header\n", stderr);
     exit(EXIT_FAILURE);
 }
@@ -1237,6 +1287,7 @@ int main(int argc, char **argv){
             else if (*t == 'W')         dont_promote        = 1;
             else if (*t == 'a')         aisc                = 1;
             else if (*t == 'g')         search__attribute__ = 1;
+            else if (*t == 'G')         search__ATTR__      = 1;
             else if (*t == 'n')         donum               = 1;
             else if (*t == 's')         dostatic            = 1;
             else if (*t == 'i')         doinline            = 1;
@@ -1266,6 +1317,11 @@ int main(int argc, char **argv){
             else Usage();
             t++;
         }
+    }
+
+    if (search__ATTR__ && search__attribute__) {
+        fprintf(stderr, "Either use option -g or -G (not both)");
+        exit(EXIT_FAILURE);
     }
 
     if (argc == 0 && exit_if_noargs) {
@@ -1306,11 +1362,17 @@ int main(int argc, char **argv){
             }
         }
         if (search__attribute__) {
-            printf("/* hide GNU extensions for non-gnu compilers: */\n");
-            printf("#ifndef GNU\n");
+            printf("/* hide __attribute__'s for non-gcc compilers: */\n");
+            printf("#ifndef __GNUC__\n");
             printf("# ifndef __attribute__\n");
             printf("#  define __attribute__(x)\n");
             printf("# endif\n");
+            printf("#endif\n\n");
+        }
+        if (search__ATTR__) {
+            printf("/* define ARB attributes: */\n");
+            printf("#ifndef ATTRIBUTES_H\n");
+            printf("# include <attributes.h>\n");
             printf("#endif\n\n");
         }
         if (cansibycplus) {
@@ -1322,8 +1384,7 @@ int main(int argc, char **argv){
     
     current_dir = strdup(getcwd(0,255));
     if (argc == 0) {
-        current_file = strdup("STDIN");
-        getdecl(stdin);
+        getdecl(stdin, "<from stdin>");
     }
     else {
         
@@ -1336,18 +1397,12 @@ int main(int argc, char **argv){
                 perror(*argv);
                 exit(EXIT_FAILURE);
             }
-
-            current_file = strdup(*argv);
-
             if (iobuf) setvbuf(f, iobuf, _IOFBF, NEWBUFSIZ);
-            if (aisc) printf("\n#%s\n", *argv);
-            else printf("\n/* %s */\n", *argv);
 
             linenum      = 1;
             newline_seen = 1;
             glastc       = ' ';
-            
-            getdecl(f);
+            getdecl(f, *argv);
             argc--; argv++;
             fclose(f);
 
@@ -1372,7 +1427,7 @@ int main(int argc, char **argv){
     free(current_file);
     free(current_dir);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 
