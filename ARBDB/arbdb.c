@@ -1359,7 +1359,7 @@ GB_ERROR GB_copy(GBDATA *dest, GBDATA *source)
                                         Get all subfield names
 ********************************************************************************************/
 
-static char *stpcpy(char *dest, const char *source)
+static char *gb_stpcpy(char *dest, const char *source)
 {
     while ((*dest++=*source++)) ;
     return dest-1; /* return pointer to last copied character (which is \0) */
@@ -1393,8 +1393,8 @@ char* GB_get_subfields(GBDATA *gbd)
                 char *neu_result = (char*)malloc(result_length+keylen+1+1);
 
                 if (neu_result) {
-                    char *p = stpcpy(neu_result, result);
-                    p = stpcpy(p, key);
+                    char *p = gb_stpcpy(neu_result, result);
+                    p = gb_stpcpy(p, key);
                     *p++ = ';';
                     p[0] = 0;
 
