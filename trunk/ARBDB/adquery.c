@@ -924,20 +924,20 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                         if (error) {
                             char *inputstreams = 0;
                             char *paramlist    = 0;
-                            int   i;
+                            int   j;
 
-                            for (i = 0; i<args.cparam; ++i) {
-                                if (!paramlist) paramlist = strdup(args.vparam[i].str);
+                            for (j = 0; j<args.cparam; ++j) {
+                                if (!paramlist) paramlist = strdup(args.vparam[j].str);
                                 else {
-                                    char *conc = GBS_global_string_copy("%s,%s", paramlist, args.vparam[i].str);
+                                    char *conc = GBS_global_string_copy("%s,%s", paramlist, args.vparam[j].str);
                                     free(paramlist);
                                     paramlist  = conc;
                                 }
                             }
-                            for (i = 0; i<args.cinput; ++i) {
-                                if (!inputstreams) inputstreams = strdup(args.vinput[i].str);
+                            for (j = 0; j<args.cinput; ++j) {
+                                if (!inputstreams) inputstreams = strdup(args.vinput[j].str);
                                 else {
-                                    char *conc   = GBS_global_string_copy("%s;%s", inputstreams, args.vinput[i].str);
+                                    char *conc   = GBS_global_string_copy("%s;%s", inputstreams, args.vinput[j].str);
                                     free(inputstreams);
                                     inputstreams = conc;
                                 }

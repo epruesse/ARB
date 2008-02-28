@@ -83,8 +83,8 @@ typedef int         bit;
 #define GBL_PARAM_BIT(   var, param_name, def, help_text) GBL_PARAM_TYPE(bit,    var, param_name, def, help_text)
 
 #define GBL_TRACE_PARAMS(argc,argv) { \
-        GB_ERROR error = trace_params(argc,argv,params,args->command); \
-        if (error) { GBL_END_PARAMS; return error; }; };
+        GB_ERROR def_error = trace_params(argc,argv,params,args->command); \
+        if (def_error) { GBL_END_PARAMS; return def_error; }; };
 
 #define GBL_END_PARAMS { struct gbl_param *_gblp; while (params) { \
                 _gblp = params; params = params->next; \
@@ -311,16 +311,16 @@ static GB_ERROR gbl_mid_streams(int arg_cinput, const GBL *arg_vinput,
 /* ***************************** trace ***************************** */
 
 static GB_ERROR gbl_trace(GBL_command_arguments *args) {
-    int trace;
+    int tmp_trace;
 
     if (args->cparam!=1) return "syntax: trace(0|1)";
 
-    trace = atoi(args->vparam[0].str);
-    if (trace<0 || trace>1) return GBS_global_string("Illegal value %i to trace", trace);
+    tmp_trace = atoi(args->vparam[0].str);
+    if (tmp_trace<0 || tmp_trace>1) return GBS_global_string("Illegal value %i to trace", tmp_trace);
 
-    if (trace != GB_get_ACISRT_trace()) {
-        printf("*** %sctivated ACI trace ***\n", trace ? "A" : "De-a");
-        GB_set_ACISRT_trace(trace);
+    if (tmp_trace != GB_get_ACISRT_trace()) {
+        printf("*** %sctivated ACI trace ***\n", tmp_trace ? "A" : "De-a");
+        GB_set_ACISRT_trace(tmp_trace);
     }
 
     return gbl_mid_streams(args->cinput, args->vinput,args->coutput, args->voutput, 0, 0, -1, 0); /* copy all streams */
@@ -721,7 +721,7 @@ static char *binop_contains(const char *arg1, const char *arg2, void *client_dat
     if (case_sensitive) found = strstr(arg1, arg2);
     else found                = gbl_stristr(arg1, arg2);
 
-    return GBS_global_string_copy("%i", found == 0 ? 0 : (found-arg1)+1);
+    return GBS_global_string_copy("%ti", found == 0 ? 0 : (found-arg1)+1);
 }
 static char *binop_partof(const char *arg1, const char *arg2, void *client_data) {
     return binop_contains(arg2, arg1, client_data);
@@ -2008,7 +2008,7 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
 
             result = malloc(needed_size);
             if (!result) {
-                error = GBS_global_string("Out of memory (tried to alloc %u bytes)", needed_size);
+                error = GBS_global_string("Out of memory (tried to alloc %zu bytes)", needed_size);
             }
             else {
                 char   *dst       = result;
@@ -2098,14 +2098,14 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
 
                     if (numleft) {
                         if (firsttab>0) {
-                            char *firstFormat = GBS_global_string_copy("%%-%iu ", firsttab-1);
+                            char *firstFormat = GBS_global_string_copy("%%-%zuu ", firsttab-1);
                             dst += sprintf(dst, firstFormat, (size_t)1);
                             free(firstFormat);
                         }
                         else {
-                            dst += sprintf(dst, "%u ", (size_t)1);
+                            dst += sprintf(dst, "%zu ", (size_t)1);
                         }
-                        format = tab>0 ? GBS_global_string_copy("%%-%iu ", tab-1) : strdup("%u ");
+                        format = tab>0 ? GBS_global_string_copy("%%-%zuu ", tab-1) : strdup("%u ");
                     }
                     else if (firsttab>0) {
                         memset(dst, ' ', firsttab);
