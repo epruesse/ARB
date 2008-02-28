@@ -37,14 +37,18 @@ depend.init:
 
 base.o: base.h
 base.o: defines.h
+base.o: $(ARBHOME)/INCLUDE/attributes.h
 
 defines.o: defines.h
+defines.o: $(ARBHOME)/INCLUDE/attributes.h
 
 frand.o: defines.h
 frand.o: frand.h
+frand.o: $(ARBHOME)/INCLUDE/attributes.h
 
 readcfg.o: defines.h
 readcfg.o: readcfg.h
+readcfg.o: $(ARBHOME)/INCLUDE/attributes.h
 
 rns.o: base.h
 rns.o: defines.h
@@ -52,12 +56,14 @@ rns.o: frand.h
 rns.o: rns.h
 rns.o: simcfg.h
 rns.o: spreadin.h
+rns.o: $(ARBHOME)/INCLUDE/attributes.h
 
 sim.o: base.h
 sim.o: defines.h
 sim.o: frand.h
 sim.o: rns.h
 sim.o: simcfg.h
+sim.o: $(ARBHOME)/INCLUDE/attributes.h
 
 simcfg.o: base.h
 simcfg.o: defines.h
@@ -65,6 +71,8 @@ simcfg.o: frand.h
 simcfg.o: readcfg.h
 simcfg.o: rns.h
 simcfg.o: simcfg.h
+simcfg.o: $(ARBHOME)/INCLUDE/attributes.h
 
 spreadin.o: defines.h
 spreadin.o: spreadin.h
+spreadin.o: $(ARBHOME)/INCLUDE/attributes.h

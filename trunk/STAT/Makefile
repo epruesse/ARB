@@ -36,6 +36,7 @@ ST_ml.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ST_ml.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -51,6 +52,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ST_quality.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -67,6 +69,7 @@ ST_window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ST_window.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_window.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_device.hxx

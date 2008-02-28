@@ -36,6 +36,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_design.o: $(ARBHOME)/INCLUDE/arbdb.h
 probe_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
 probe_design.o: $(ARBHOME)/INCLUDE/arbtools.h
+probe_design.o: $(ARBHOME)/INCLUDE/attributes.h
 probe_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -65,6 +66,7 @@ probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdb.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdbt.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbtools.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/attributes.h
 
 SaiProbeVisualization.o: probe_match_parser.hxx
 SaiProbeVisualization.o: SaiProbeVisualization.hxx
@@ -74,6 +76,7 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdb.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbtools.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/attributes.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device.hxx

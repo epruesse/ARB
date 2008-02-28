@@ -37,5 +37,6 @@ servercntrl.o: $(ARBHOME)/INCLUDE/ad_prot.h
 servercntrl.o: $(ARBHOME)/INCLUDE/aisc_global.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_assert.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arbdb.h
+servercntrl.o: $(ARBHOME)/INCLUDE/attributes.h
 servercntrl.o: $(ARBHOME)/INCLUDE/client.h
 servercntrl.o: $(ARBHOME)/INCLUDE/client_privat.h

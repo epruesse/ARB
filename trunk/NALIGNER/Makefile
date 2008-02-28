@@ -62,6 +62,7 @@ ali_aligner.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_aligner.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/client.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/server.h
@@ -77,6 +78,7 @@ ali_arbdb.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/server.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/servercntrl.h
@@ -100,6 +102,7 @@ ali_global.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_global.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_global.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_global.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_global.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_global.o: $(ARBHOME)/INCLUDE/client.h
 ali_global.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_global.o: $(ARBHOME)/INCLUDE/server.h
@@ -125,6 +128,7 @@ ali_main.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_main.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_main.o: $(ARBHOME)/INCLUDE/client.h
 ali_main.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_main.o: $(ARBHOME)/INCLUDE/server.h
@@ -134,6 +138,7 @@ ali_pathmap.o: ali_misc.hxx
 ali_pathmap.o: ali_pathmap.hxx
 ali_pathmap.o: ali_tarray.hxx
 ali_pathmap.o: ali_tlist.hxx
+ali_pathmap.o: $(ARBHOME)/INCLUDE/attributes.h
 
 ali_prealigner.o: ali_aligner.hxx
 ali_prealigner.o: ali_arbdb.hxx
@@ -154,6 +159,7 @@ ali_prealigner.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_prealigner.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/client.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/server.h
@@ -173,6 +179,7 @@ ali_profile.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_profile.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_profile.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ali_profile.o: $(ARBHOME)/INCLUDE/client.h
 ali_profile.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -190,6 +197,7 @@ ali_pt.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_pt.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_pt.o: $(ARBHOME)/INCLUDE/client.h
 ali_pt.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_pt.o: $(ARBHOME)/INCLUDE/server.h
@@ -197,6 +205,7 @@ ali_pt.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
 ali_sequence.o: ali_misc.hxx
 ali_sequence.o: ali_sequence.hxx
+ali_sequence.o: $(ARBHOME)/INCLUDE/attributes.h
 
 ali_solution.o: ali_arbdb.hxx
 ali_solution.o: ali_misc.hxx
@@ -212,6 +221,7 @@ ali_solution.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ali_solution.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_solution.o: $(ARBHOME)/INCLUDE/client.h
 ali_solution.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_solution.o: $(ARBHOME)/INCLUDE/server.h

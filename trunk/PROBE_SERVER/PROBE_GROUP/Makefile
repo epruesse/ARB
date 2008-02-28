@@ -43,6 +43,7 @@ pg_db.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 pg_db.o: $(ARBHOME)/INCLUDE/arb_assert.h
 pg_db.o: $(ARBHOME)/INCLUDE/arbdb.h
 pg_db.o: $(ARBHOME)/INCLUDE/arbdbt.h
+pg_db.o: $(ARBHOME)/INCLUDE/attributes.h
 
 pg_main.o: ../common.h
 pg_main.o: ../global_defs.h
@@ -56,6 +57,7 @@ pg_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 pg_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 pg_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 pg_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
+pg_main.o: $(ARBHOME)/INCLUDE/attributes.h
 pg_main.o: $(ARBHOME)/INCLUDE/config_parser.h
 pg_main.o: $(ARBHOME)/INCLUDE/output.h
 pg_main.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -67,6 +69,7 @@ pg_search.o: pg_search.hxx
 pg_search.o: $(ARBHOME)/INCLUDE/ad_prot.h
 pg_search.o: $(ARBHOME)/INCLUDE/arb_assert.h
 pg_search.o: $(ARBHOME)/INCLUDE/arbdb.h
+pg_search.o: $(ARBHOME)/INCLUDE/attributes.h
 pg_search.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 pg_search.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 pg_search.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

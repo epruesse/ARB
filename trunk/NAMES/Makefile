@@ -33,6 +33,7 @@ names.o: $(ARBHOME)/INCLUDE/ad_prot.h
 names.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 names.o: $(ARBHOME)/INCLUDE/arb_assert.h
 names.o: $(ARBHOME)/INCLUDE/arbdb.h
+names.o: $(ARBHOME)/INCLUDE/attributes.h
 names.o: $(ARBHOME)/INCLUDE/client.h
 names.o: $(ARBHOME)/INCLUDE/names_client.h
 names.o: $(ARBHOME)/INCLUDE/names_prototypes.h

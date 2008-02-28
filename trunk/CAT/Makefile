@@ -34,3 +34,4 @@ CAT_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 CAT_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 CAT_tree.o: $(ARBHOME)/INCLUDE/arbdb.h
 CAT_tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
+CAT_tree.o: $(ARBHOME)/INCLUDE/attributes.h

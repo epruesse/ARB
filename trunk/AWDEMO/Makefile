@@ -28,6 +28,7 @@ depend.init:
 
 demo.o: demo.hxx
 demo.o: $(ARBHOME)/INCLUDE/arb_assert.h
+demo.o: $(ARBHOME)/INCLUDE/attributes.h
 demo.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 demo.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 demo.o: $(ARBHOME)/INCLUDE/aw_position.hxx

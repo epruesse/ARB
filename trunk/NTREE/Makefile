@@ -54,6 +54,7 @@ ad_ali.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_ali.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ad_ali.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -68,6 +69,7 @@ ad_ext.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_ext.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ad_ext.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -85,6 +87,7 @@ ad_spec.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ad_spec.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -111,6 +114,7 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ad_transpro.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -129,6 +133,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_trees.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ad_trees.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_global.hxx
@@ -147,6 +152,7 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AP_consensus.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -161,6 +167,7 @@ AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -180,6 +187,7 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AP_cprofile.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_global.hxx
@@ -196,6 +204,7 @@ AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -216,6 +225,7 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -232,6 +242,7 @@ ETC_check_gcg.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arbdb.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ETC_check_gcg.o: $(ARBHOME)/INCLUDE/attributes.h
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 ETC_check_gcg.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -249,6 +260,7 @@ NT_cb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_cb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_cb.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_cb.o: $(ARBHOME)/INCLUDE/arbdbt.h
+NT_cb.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -271,6 +283,7 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arbtools.h
+NT_concatenate.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -295,6 +308,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arbdbt.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -333,6 +347,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/arb_build.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_version.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arbdbt.h
+NT_extern.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -378,6 +393,7 @@ NT_import.o: $(ARBHOME)/INCLUDE/adGene.h
 NT_import.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_import.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_import.o: $(ARBHOME)/INCLUDE/arbdbt.h
+NT_import.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_import.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -393,6 +409,7 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/arbdbt.h
+NT_ins_col.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -405,6 +422,7 @@ NT_join.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_join.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_join.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_join.o: $(ARBHOME)/INCLUDE/arbdbt.h
+NT_join.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_join.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -427,6 +445,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/arb_version.h
 NT_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_main.o: $(ARBHOME)/INCLUDE/arbtools.h
+NT_main.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -450,6 +469,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 NT_MAUS.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_MAUS.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_MAUS.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_MAUS.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_MAUS.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -463,6 +483,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arbdbt.h
+NT_sort.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -478,6 +499,7 @@ NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arbdbt.h
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -491,6 +513,7 @@ NT_validManual.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/arbdbt.h
+NT_validManual.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -507,6 +530,7 @@ NT_validNames.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/arbdbt.h
+NT_validNames.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx

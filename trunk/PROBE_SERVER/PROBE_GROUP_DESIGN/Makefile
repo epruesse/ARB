@@ -46,6 +46,7 @@ pgd_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 pgd_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 pgd_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 pgd_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
+pgd_main.o: $(ARBHOME)/INCLUDE/attributes.h
 pgd_main.o: $(ARBHOME)/INCLUDE/client.h
 pgd_main.o: $(ARBHOME)/INCLUDE/config_parser.h
 pgd_main.o: $(ARBHOME)/INCLUDE/output.h
