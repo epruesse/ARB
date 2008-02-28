@@ -17,19 +17,19 @@ proto:	pro tpro lproto
 lproto: lpro tlpro
 
 lpro: $(GB_O:.o=.c)
-	../MAKEBIN/aisc_mkpt -g -z -C -F gb $(GB_O:.o=.c) >ad_lpro.h.tmp
+	../MAKEBIN/aisc_mkpt -G -z -C -F gb $(GB_O:.o=.c) >ad_lpro.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_lpro.h.tmp ad_lpro.h
 
 tlpro: $(GB_T:.o=.c)
-	../MAKEBIN/aisc_mkpt -g -z -C -F gb $(GB_T:.o=.c) >ad_t_lpro.h.tmp
+	../MAKEBIN/aisc_mkpt -G -z -C -F gb $(GB_T:.o=.c) >ad_t_lpro.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_t_lpro.h.tmp ad_t_lpro.h
 
 pro: $(GB_O:.o=.c)
-	../MAKEBIN/aisc_mkpt -g -z -C -F GB,GEN $(GB_O:.o=.c) >ad_prot.h.tmp
+	../MAKEBIN/aisc_mkpt -G -z -C -F GB,GEN $(GB_O:.o=.c) >ad_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_prot.h.tmp ad_prot.h
 
 tpro: $(GB_T:.o=.c)
-	../MAKEBIN/aisc_mkpt -g -z -C -F GB,GEN $(GB_T:.o=.c) >ad_t_prot.h.tmp
+	../MAKEBIN/aisc_mkpt -G -z -C -F GB,GEN $(GB_T:.o=.c) >ad_t_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_t_prot.h.tmp ad_t_prot.h
 
 wc:
@@ -67,6 +67,7 @@ ad_config.o: ad_t_prot.h
 ad_config.o: arb_assert.h
 ad_config.o: arbdb.h
 ad_config.o: arbdbt.h
+ad_config.o: $(ARBHOME)/INCLUDE/attributes.h
 
 ad_core.o: ad_lpro.h
 ad_core.o: ad_prot.h
@@ -75,6 +76,7 @@ ad_core.o: adlocal.h
 ad_core.o: adtune.h
 ad_core.o: arb_assert.h
 ad_core.o: arbdb.h
+ad_core.o: $(ARBHOME)/INCLUDE/attributes.h
 
 ad_load.o: ad_lpro.h
 ad_load.o: ad_prot.h
@@ -87,6 +89,7 @@ ad_load.o: adtune.h
 ad_load.o: arb_assert.h
 ad_load.o: arbdb.h
 ad_load.o: arbdbt.h
+ad_load.o: $(ARBHOME)/INCLUDE/attributes.h
 
 ad_save_load.o: ad_lpro.h
 ad_save_load.o: ad_prot.h
@@ -96,6 +99,7 @@ ad_save_load.o: admap.h
 ad_save_load.o: adtune.h
 ad_save_load.o: arb_assert.h
 ad_save_load.o: arbdb.h
+ad_save_load.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adcomm.o: ad_lpro.h
 adcomm.o: ad_prot.h
@@ -104,6 +108,7 @@ adcomm.o: adlocal.h
 adcomm.o: adtune.h
 adcomm.o: arb_assert.h
 adcomm.o: arbdb.h
+adcomm.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adcompr.o: ad_lpro.h
 adcompr.o: ad_prot.h
@@ -115,6 +120,7 @@ adcompr.o: adtune.h
 adcompr.o: arb_assert.h
 adcompr.o: arbdb.h
 adcompr.o: arbdbt.h
+adcompr.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adGene.o: ad_prot.h
 adGene.o: ad_t_prot.h
@@ -122,6 +128,7 @@ adGene.o: adGene.h
 adGene.o: arb_assert.h
 adGene.o: arbdb.h
 adGene.o: arbdbt.h
+adGene.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adhash.o: ad_lpro.h
 adhash.o: ad_prot.h
@@ -130,6 +137,7 @@ adhash.o: adlocal.h
 adhash.o: adtune.h
 adhash.o: arb_assert.h
 adhash.o: arbdb.h
+adhash.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adhashtools.o: ad_lpro.h
 adhashtools.o: ad_prot.h
@@ -141,6 +149,7 @@ adhashtools.o: adtune.h
 adhashtools.o: arb_assert.h
 adhashtools.o: arbdb.h
 adhashtools.o: arbdbt.h
+adhashtools.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adindex.o: ad_lpro.h
 adindex.o: ad_prot.h
@@ -150,6 +159,7 @@ adindex.o: adlundo.h
 adindex.o: adtune.h
 adindex.o: arb_assert.h
 adindex.o: arbdb.h
+adindex.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adlang1.o: ad_lpro.h
 adlang1.o: ad_prot.h
@@ -162,6 +172,7 @@ adlang1.o: adtune.h
 adlang1.o: arb_assert.h
 adlang1.o: arbdb.h
 adlang1.o: arbdbt.h
+adlang1.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adlink.o: ad_lpro.h
 adlink.o: ad_prot.h
@@ -170,6 +181,7 @@ adlink.o: adlocal.h
 adlink.o: adtune.h
 adlink.o: arb_assert.h
 adlink.o: arbdb.h
+adlink.o: $(ARBHOME)/INCLUDE/attributes.h
 
 admalloc.o: ad_lpro.h
 admalloc.o: ad_prot.h
@@ -178,6 +190,7 @@ admalloc.o: adlocal.h
 admalloc.o: adtune.h
 admalloc.o: arb_assert.h
 admalloc.o: arbdb.h
+admalloc.o: $(ARBHOME)/INCLUDE/attributes.h
 
 admap.o: ad_lpro.h
 admap.o: ad_prot.h
@@ -187,6 +200,7 @@ admap.o: admap.h
 admap.o: adtune.h
 admap.o: arb_assert.h
 admap.o: arbdb.h
+admap.o: $(ARBHOME)/INCLUDE/attributes.h
 
 admath.o: ad_lpro.h
 admath.o: ad_prot.h
@@ -195,6 +209,7 @@ admath.o: adlocal.h
 admath.o: adtune.h
 admath.o: arb_assert.h
 admath.o: arbdb.h
+admath.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adoptimize.o: ad_lpro.h
 adoptimize.o: ad_prot.h
@@ -206,10 +221,12 @@ adoptimize.o: adtune.h
 adoptimize.o: arb_assert.h
 adoptimize.o: arbdb.h
 adoptimize.o: arbdbt.h
+adoptimize.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adperl.o: ad_prot.h
 adperl.o: arb_assert.h
 adperl.o: arbdb.h
+adperl.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adquery.o: ad_lpro.h
 adquery.o: ad_prot.h
@@ -218,12 +235,14 @@ adquery.o: adlocal.h
 adquery.o: adtune.h
 adquery.o: arb_assert.h
 adquery.o: arbdb.h
+adquery.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adRevCompl.o: ad_prot.h
 adRevCompl.o: ad_t_prot.h
 adRevCompl.o: arb_assert.h
 adRevCompl.o: arbdb.h
 adRevCompl.o: arbdbt.h
+adRevCompl.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adseqcompr.o: ad_lpro.h
 adseqcompr.o: ad_prot.h
@@ -236,6 +255,7 @@ adseqcompr.o: adtune.h
 adseqcompr.o: arb_assert.h
 adseqcompr.o: arbdb.h
 adseqcompr.o: arbdbt.h
+adseqcompr.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adsocket.o: ad_lpro.h
 adsocket.o: ad_prot.h
@@ -244,12 +264,14 @@ adsocket.o: adlocal.h
 adsocket.o: adtune.h
 adsocket.o: arb_assert.h
 adsocket.o: arbdb.h
+adsocket.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adsort.o: ad_prot.h
 adsort.o: ad_t_prot.h
 adsort.o: arb_assert.h
 adsort.o: arbdb.h
 adsort.o: arbdbt.h
+adsort.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adstring.o: ad_lpro.h
 adstring.o: ad_prot.h
@@ -261,6 +283,7 @@ adstring.o: adtune.h
 adstring.o: arb_assert.h
 adstring.o: arbdb.h
 adstring.o: arbdbt.h
+adstring.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adsystem.o: ad_lpro.h
 adsystem.o: ad_prot.h
@@ -272,6 +295,7 @@ adsystem.o: adtune.h
 adsystem.o: arb_assert.h
 adsystem.o: arbdb.h
 adsystem.o: arbdbt.h
+adsystem.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adtables.o: ad_lpro.h
 adtables.o: ad_prot.h
@@ -283,6 +307,7 @@ adtables.o: adtune.h
 adtables.o: arb_assert.h
 adtables.o: arbdb.h
 adtables.o: arbdbt.h
+adtables.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adtcp.o: ad_lpro.h
 adtcp.o: ad_prot.h
@@ -294,6 +319,7 @@ adtcp.o: adtune.h
 adtcp.o: arb_assert.h
 adtcp.o: arbdb.h
 adtcp.o: arbdbt.h
+adtcp.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adTest.o: ad_lpro.h
 adTest.o: ad_prot.h
@@ -303,6 +329,7 @@ adTest.o: admap.h
 adTest.o: adtune.h
 adTest.o: arb_assert.h
 adTest.o: arbdb.h
+adTest.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adtools.o: ad_config.h
 adtools.o: ad_lpro.h
@@ -316,6 +343,7 @@ adtools.o: adtune.h
 adtools.o: arb_assert.h
 adtools.o: arbdb.h
 adtools.o: arbdbt.h
+adtools.o: $(ARBHOME)/INCLUDE/attributes.h
 adtools.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 
 adtune.o: adtune.h
@@ -327,9 +355,11 @@ arbdb.o: adlocal.h
 arbdb.o: adtune.h
 arbdb.o: arb_assert.h
 arbdb.o: arbdb.h
+arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
 
 arbdbpp.o: ad_prot.h
 arbdbpp.o: ad_t_prot.h
 arbdbpp.o: arb_assert.h
 arbdbpp.o: arbdb.h
 arbdbpp.o: arbdbt.h
+arbdbpp.o: $(ARBHOME)/INCLUDE/attributes.h

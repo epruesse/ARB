@@ -27,7 +27,7 @@ clean:
 	rm -f $(OBJECTS) $(BINARY)
 
 proto:
-	../AISC_MKPTPS/aisc_mkpt -C -g *.c >aisc_proto.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -C -G *.c >aisc_proto.h.tmp
 	../SOURCE_TOOLS/mv_if_diff aisc_proto.h.tmp aisc_proto.h
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -37,12 +37,16 @@ proto:
 
 aisc.o: aisc.h
 aisc.o: aisc_proto.h
+aisc.o: $(ARBHOME)/INCLUDE/attributes.h
 
 aisc_commands.o: aisc.h
 aisc_commands.o: aisc_proto.h
+aisc_commands.o: $(ARBHOME)/INCLUDE/attributes.h
 
 aisc_mix.o: aisc.h
 aisc_mix.o: aisc_proto.h
+aisc_mix.o: $(ARBHOME)/INCLUDE/attributes.h
 
 aisc_var_ref.o: aisc.h
 aisc_var_ref.o: aisc_proto.h
+aisc_var_ref.o: $(ARBHOME)/INCLUDE/attributes.h

@@ -12,7 +12,7 @@ $(BINARY): $(OBJECTS)
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
 proto:
-	../MAKEBIN/aisc_mkpt -g $(OBJECTS:.o=.cxx) >trs_proto.h.tmp
+	../MAKEBIN/aisc_mkpt -G $(OBJECTS:.o=.cxx) >trs_proto.h.tmp
 	../SOURCE_TOOLS/mv_if_diff trs_proto.h.tmp trs_proto.h
 
 clean:
@@ -43,8 +43,10 @@ tree_lib.o: trs_proto.h
 tree_lib.o: $(ARBHOME)/INCLUDE/ad_prot.h
 tree_lib.o: $(ARBHOME)/INCLUDE/arb_assert.h
 tree_lib.o: $(ARBHOME)/INCLUDE/arbdb.h
+tree_lib.o: $(ARBHOME)/INCLUDE/attributes.h
 tree_lib.o: $(ARBHOME)/INCLUDE/cat_tree.hxx
 
 trs_server.o: tree_lib.hxx
 trs_server.o: trs_proto.h
+trs_server.o: $(ARBHOME)/INCLUDE/attributes.h
 trs_server.o: $(ARBHOME)/INCLUDE/cat_tree.hxx
