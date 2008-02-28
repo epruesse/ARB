@@ -830,7 +830,7 @@ static char *search_executable(GB_CSTR exe_name) {
 }
 
 char *GB_find_executable(GB_CSTR description_of_executable, ...) {
-    /* goes to header: __attribute__((sentinel))  */
+    /* goes to header: __ATTR__SENTINEL  */
     /* search the path for an executable with any of the given names (...)
      * if any is found, it's full path is returned
      * if none is found, a warning call is returned (which can be executed without harm)
@@ -1000,7 +1000,7 @@ GB_CSTR GB_getenvARB_GS(void) {
     static const char *gs = 0;
     if (!gs) {
         gs = getenv_executable("ARB_GS"); // doc in arb_envar.hlp
-        if (!gs) gs = GB_find_executable("Postscript viewer", "gv", "ghostview", NULL); 
+        if (!gs) gs = GB_find_executable("Postscript viewer", "gv", "ghostview", NULL);
     }
     return gs;
 }
@@ -1074,8 +1074,9 @@ GB_ULONG GB_get_physical_memory(void){
     long  pages        = sysconf(_SC_PHYS_PAGES);
     ulong memsize      = (pagesize/1024) * pages;
     ulong nettomemsize = memsize - 10240; /* reduce by 10Mb (for kernel etc.) */
-    
-    ulong max_malloc = 0;
+
+    ulong max_malloc_try = nettomemsize*1024;
+    ulong max_malloc     = 0;
     {
         ulong step_size  = 4096;
         void *head = 0;
@@ -1087,7 +1088,7 @@ GB_ULONG GB_get_physical_memory(void){
                 *tmp        = head;
                 head        = tmp;
                 max_malloc += step_size;
-                if (max_malloc/1024 >= nettomemsize) break;
+                if (max_malloc >= max_malloc_try) break;
                 step_size *= 2;
             }
         } while((step_size=step_size/2) > sizeof(void*));
