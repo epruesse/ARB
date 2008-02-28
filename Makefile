@@ -152,7 +152,7 @@ endif
 CROSS_LIB=lib$(CROSS_CPU_BITS)
 endif
 
-ifeq ($(CROSS_CPU_BITS),'')
+ifeq ('$(CROSS_CPU_BITS)','')
 MACH_BITS=
 else
 MACH_BITS=-m$(CROSS_CPU_BITS)
