@@ -2,10 +2,22 @@
 #ifndef _ALI_MISC_INC_
 #define _ALI_MISC_INC_
 
-#include <stdio.h>
-#include <stdlib.h>
+#ifndef _CPP_CSTDIO
+#include <cstdio>
+#endif
+#ifndef _CPP_CSTDLIB
+#include <cstdlib>
+#endif
+#ifndef _UNISTD_H
 #include <unistd.h>
+#endif
+#ifndef _MEMORY_H
 #include <memory.h>
+#endif
+
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
 
 #define ALI_A_CODE     0
 #define ALI_C_CODE     1
@@ -32,8 +44,8 @@ inline void ali_warning(const char *message, const char *func = "")
     fprintf(stderr,"WARNING %s: %s\n",func,message);
 }
 
-void ali_error(const char *message, const char *func = "") __attribute__((noreturn));
-void ali_fatal_error(const char *message, const char *func = "") __attribute__((noreturn));
+void ali_error(const char *message, const char *func = "") __ATTR__NORETURN;
+void ali_fatal_error(const char *message, const char *func = "") __ATTR__NORETURN;
 
 inline void *CALLOC(long i,long j)      {
     char *v = (char *)malloc(i*j);
