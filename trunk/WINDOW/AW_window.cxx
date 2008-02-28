@@ -1244,17 +1244,17 @@ void AW_root::init_variables(AW_default database) {
     awar("vectorfont/file_name")->add_callback( (AW_RCB0) aw_xfig_font_changefont_cb);
 }
 
-void *AW_root::get_aw_var_struct(char *awar) {
+void *AW_root::get_aw_var_struct(char *tmp_awar) {
     long vs;
-    vs = (long)GBS_read_hash(hash_table_for_variables, awar);
+    vs = (long)GBS_read_hash(hash_table_for_variables, tmp_awar);
     if (!vs) {
-        AW_ERROR("AW_root::get_aw_var_struct: Variable %s not defined", awar);
+        AW_ERROR("AW_root::get_aw_var_struct: Variable %s not defined", tmp_awar);
     }
     return (void *)vs;
 }
-void *AW_root::get_aw_var_struct_no_error(char *awar) {
+void *AW_root::get_aw_var_struct_no_error(char *tmp_awar) {
     long vs;
-    vs = (long)GBS_read_hash(hash_table_for_variables, awar);
+    vs = (long)GBS_read_hash(hash_table_for_variables, tmp_awar);
     return (void*)vs;
 }
 
@@ -1983,7 +1983,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid,
     //Widget frame;
     const char *help_button = "HELP";
     const char *help_mnemonic = "H";
-    AW_active mask = AWM_ALL;
+    AW_active tmp_mask = AWM_ALL;
 
 #if defined(DUMP_MENU_LIST)
     initMenuListing(windowname);
@@ -2030,7 +2030,7 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid,
                                           XmNsubMenuId, p_w->help_pull_down, NULL );
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     //insert help_label to button_list
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, help_button, mask, help_label );
+    AW_INSERT_BUTTON_IN_SENS_LIST ( root, help_button, tmp_mask, help_label );
 
     form1 = XtVaCreateManagedWidget( "form1",
     xmFormWidgetClass,
@@ -2199,7 +2199,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid,
     //Widget frame;
     const char *help_button = "HELP";
     const char *help_mnemonic = "H";
-    AW_active mask = AWM_ALL;
+    AW_active tmp_mask = AWM_ALL;
 
 #if defined(DUMP_MENU_LIST)
     initMenuListing(windowname);
@@ -2246,7 +2246,7 @@ void AW_window_menu::init(AW_root *root_in, const char *wid,
                                           XmNsubMenuId, p_w->help_pull_down, NULL );
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     //insert help_label to button_list
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, help_button, mask, help_label );
+    AW_INSERT_BUTTON_IN_SENS_LIST ( root, help_button, tmp_mask, help_label );
 
     form1 = XtVaCreateManagedWidget( "form1",
     xmFormWidgetClass,
@@ -2440,7 +2440,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid,
 
     const char *help_button = "HELP";
     const char *help_mnemonic = "H";
-    AW_active mask = AWM_ALL;
+    AW_active tmp_mask = AWM_ALL;
     window_name = strdup(windowname);
     window_defaults_name = GBS_string_2_key(wid);
 
@@ -2489,7 +2489,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid,
                                           XmNsubMenuId, p_w->help_pull_down, NULL );
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     //insert help_label to button_list
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, help_button, mask, help_label );
+    AW_INSERT_BUTTON_IN_SENS_LIST ( root, help_button, tmp_mask, help_label );
 
     form1 = XtVaCreateManagedWidget( "form1",
     xmFormWidgetClass,
@@ -2637,8 +2637,8 @@ inline int yoffset_for_mode_button(int button_number) {
     return button_number*MODE_BUTTON_OFFSET + (button_number/4)*8 + 2;
 }
 
-int AW_window::create_mode(const char *id, const char *pixmap,
-        const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+int AW_window::create_mode(const char *tmp_id, const char *pixmap,
+        const char *tmp_help_text, AW_active tmp_mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     Widget button;
 
     TuneBackground(p_w->mode_area, TUNE_BUTTON); // set background color for mode-buttons
@@ -2659,7 +2659,7 @@ int AW_window::create_mode(const char *id, const char *pixmap,
     XtVaGetValues(button,XmNforeground, &p_global->foreground, NULL);
 
     AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, 0);
-    AW_cb_struct *cb2 = new AW_cb_struct(this, (AW_CB)aw_mode_callback, (AW_CL)p_w->number_of_modes, (AW_CL)cbs, help_text, cbs);
+    AW_cb_struct *cb2 = new AW_cb_struct(this, (AW_CB)aw_mode_callback, (AW_CL)p_w->number_of_modes, (AW_CL)cbs, tmp_help_text, cbs);
     XtAddCallback(button, XmNactivateCallback,
     (XtCallbackProc) AW_server_callback,
     (XtPointer) cb2);
@@ -2675,7 +2675,7 @@ int AW_window::create_mode(const char *id, const char *pixmap,
         p_w->modes_widgets[p_w->number_of_modes] = button;
     }
 
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, id, mask, button );
+    AW_INSERT_BUTTON_IN_SENS_LIST ( root, tmp_id, tmp_mask, button );
     p_w->number_of_modes++;
 
     int ynext = yoffset_for_mode_button(p_w->number_of_modes);
@@ -2887,8 +2887,8 @@ static void exit_duplicate_mnemonic() {
 
 // --------------------------------------------------------------------------------
 
-void AW_window::create_menu(const char *id, AW_label name,
-        const char *mnemonic, const char *help_text, AW_active mask) {
+void AW_window::create_menu(const char *tmp_id, AW_label name,
+        const char *mnemonic, const char *tmp_help_text, AW_active tmp_mask) {
     p_w->menu_deep = 0;
 #ifdef DEBUG
     init_duplicate_mnemonic();
@@ -2896,7 +2896,7 @@ void AW_window::create_menu(const char *id, AW_label name,
 #if defined(DUMP_MENU_LIST)
     dumpCloseAllSubMenus();
 #endif // DUMP_MENU_LIST
-    insert_sub_menu(id, name, mnemonic, help_text, mask);
+    insert_sub_menu(tmp_id, name, mnemonic, tmp_help_text, tmp_mask);
 }
 
 void AW_window::all_menus_created() { // this is called by AW_window::show() (i.e. after all menus have been created)
@@ -2911,10 +2911,10 @@ void AW_window::all_menus_created() { // this is called by AW_window::show() (i.
 #endif // DEBUG
 }
 
-void AW_window::insert_sub_menu(const char *id, AW_label name,
-        const char *mnemonic, const char *help_text, AW_active mask) {
-    AWUSE(help_text);
-    Widget shell, label;
+void AW_window::insert_sub_menu(const char *tmp_id, AW_label name,
+        const char *mnemonic, const char *tmp_help_text, AW_active tmp_mask) {
+    AWUSE(tmp_help_text);
+    Widget shell, tmp_label;
 
     TuneBackground(p_w->menu_bar[p_w->menu_deep], TUNE_SUBMENU); // set background color for submenus
     // (Note: This must even be called if TUNE_SUBMENU is 0!
@@ -2947,7 +2947,7 @@ void AW_window::insert_sub_menu(const char *id, AW_label name,
     // create label in menu bar
     if (mnemonic && *mnemonic && strchr(name, mnemonic[0])) {
         // if mnemonic is "" -> Cannot convert string "" to type KeySym
-        label = XtVaCreateManagedWidget("menu1_top_b1",
+        tmp_label = XtVaCreateManagedWidget("menu1_top_b1",
                 xmCascadeButtonWidgetClass, p_w->menu_bar[p_w->menu_deep], 
                 RES_CONVERT( XmNlabelString, name ),
                                          RES_CONVERT( XmNmnemonic, mnemonic ), 
@@ -2955,7 +2955,7 @@ void AW_window::insert_sub_menu(const char *id, AW_label name,
                                          XmNbackground, _at->background_color, NULL );
     }
     else {
-        label = XtVaCreateManagedWidget( "menu1_top_b1",
+        tmp_label = XtVaCreateManagedWidget( "menu1_top_b1",
         xmCascadeButtonWidgetClass,
         p_w->menu_bar[p_w->menu_deep],
         RES_CONVERT( XmNlabelString, name ),
@@ -2966,7 +2966,7 @@ void AW_window::insert_sub_menu(const char *id, AW_label name,
 
     if (p_w->menu_deep < AW_MAX_MENU_DEEP-1) p_w->menu_deep++;
 
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, id, mask, label );
+    AW_INSERT_BUTTON_IN_SENS_LIST ( root, tmp_id, tmp_mask, tmp_label );
 }
 
 void AW_window::close_sub_menu(void) {
@@ -2980,11 +2980,11 @@ void AW_window::close_sub_menu(void) {
         p_w->menu_deep--;
 }
 
-void AW_window::insert_menu_topic(const char *id, AW_label name,
-        const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_window::insert_menu_topic(const char *tmp_id, AW_label name,
+        const char *mnemonic, const char *tmp_help_text, AW_active tmp_mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {
     Widget button;
-    if (!id)
-        id = name;
+    if (!tmp_id)
+        tmp_id = name;
 
     TuneBackground(p_w->menu_bar[p_w->menu_deep], TUNE_MENUTOPIC); // set background color for normal menu topics
 
@@ -3011,21 +3011,21 @@ void AW_window::insert_menu_topic(const char *id, AW_label name,
     }
 
     AW_label_in_awar_list(this,button,name);
-    AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, help_text);
+    AW_cb_struct *cbs = new AW_cb_struct(this, f, cd1, cd2, tmp_help_text);
     XtAddCallback(button, XmNactivateCallback,
     (XtCallbackProc) AW_server_callback,
     (XtPointer) cbs);
 
-    cbs->id = GBS_global_string_copy("%s",id);
-    GBS_write_hash(get_root()->prvt->action_hash,id,(long)cbs);
-    if(!(mask&get_root()->global_mask)) {
+    cbs->id = GBS_global_string_copy("%s",tmp_id);
+    GBS_write_hash(get_root()->prvt->action_hash,tmp_id,(long)cbs);
+    if(!(tmp_mask&get_root()->global_mask)) {
         XtSetSensitive( button, False );
     }
-    AW_INSERT_BUTTON_IN_SENS_LIST(root, id, mask, button);
+    AW_INSERT_BUTTON_IN_SENS_LIST(root, tmp_id, tmp_mask, button);
 }
 
-void AW_window::insert_help_topic(const char *id, AW_label name,
-        const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*, AW_CL , AW_CL ), AW_CL cd1, AW_CL cd2) {
+void AW_window::insert_help_topic(const char *tmp_id, AW_label name,
+        const char *mnemonic, const char *tmp_help_text, AW_active tmp_mask, void (*f)(AW_window*, AW_CL , AW_CL ), AW_CL cd1, AW_CL cd2) {
     Widget button;
 
     // create one help-sub-menu-point
@@ -3035,9 +3035,9 @@ void AW_window::insert_help_topic(const char *id, AW_label name,
                                       RES_CONVERT( XmNmnemonic, mnemonic ), NULL );
     XtAddCallback(button, XmNactivateCallback,
     (XtCallbackProc) AW_server_callback,
-    (XtPointer) new AW_cb_struct(this, f, cd1, cd2, help_text));
+    (XtPointer) new AW_cb_struct(this, f, cd1, cd2, tmp_help_text));
 
-    AW_INSERT_BUTTON_IN_SENS_LIST ( root, id, mask, button );
+    AW_INSERT_BUTTON_IN_SENS_LIST ( root, tmp_id, tmp_mask, button );
 }
 
 void AW_window::insert_separator(void) {
@@ -3124,9 +3124,9 @@ void AW_window::show(void) {
             // check whether user size is too small and increase to minimum (aka default)
             int default_width, default_height;
             get_window_size(default_width, default_height);
-            AW_root *root = get_root();
-            int user_width = root->awar(aw_awar_name_width(this))->read_int();
-            int user_height = root->awar(aw_awar_name_height(this))->read_int();
+            AW_root *tmp_root = get_root();
+            int user_width = tmp_root->awar(aw_awar_name_width(this))->read_int();
+            int user_height = tmp_root->awar(aw_awar_name_height(this))->read_int();
 
 #if defined(DEBUG)
             // printf("default size = %i/%i  user size = %i/%i\n", default_width, default_height, user_width, user_height);
@@ -3545,32 +3545,32 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,
     GB_push_transaction(gb_main);
     char *action = GBT_read_string2(gb_main, awar_action, "");
     char *value = GBT_read_string2(gb_main, awar_value, "");
-    char *awar = GBT_read_string2(gb_main, awar_awar, "");
-    if (awar[0]) {
+    char *tmp_awar = GBT_read_string2(gb_main, awar_awar, "");
+    if (tmp_awar[0]) {
         GB_ERROR error = 0;
         if (strcmp(action, "AWAR_REMOTE_READ") == 0) {
-            char *read_value = this->awar(awar)->read_as_string();
+            char *read_value = this->awar(tmp_awar)->read_as_string();
             GBT_write_string(gb_main, awar_value, read_value);
 #if defined(DUMP_REMOTE_ACTIONS)
-            printf("remote command 'AWAR_REMOTE_READ' awar='%s' value='%s'\n", awar, read_value);
+            printf("remote command 'AWAR_REMOTE_READ' awar='%s' value='%s'\n", tmp_awar, read_value);
 #endif // DUMP_REMOTE_ACTIONS
             free(read_value);
             // clear action (AWAR_REMOTE_READ is just a pseudo-action) :
             action[0] = 0;
             GBT_write_string(gb_main, awar_action, "");
         } else if (strcmp(action, "AWAR_REMOTE_TOUCH") == 0) {
-            this->awar(awar)->touch();
+            this->awar(tmp_awar)->touch();
 #if defined(DUMP_REMOTE_ACTIONS)
-            printf("remote command 'AWAR_REMOTE_TOUCH' awar='%s'\n", awar);
+            printf("remote command 'AWAR_REMOTE_TOUCH' awar='%s'\n", tmp_awar);
 #endif // DUMP_REMOTE_ACTIONS
             // clear action (AWAR_REMOTE_TOUCH is just a pseudo-action) :
             action[0] = 0;
             GBT_write_string(gb_main, awar_action, "");
         } else {
 #if defined(DUMP_REMOTE_ACTIONS)
-            printf("remote command (write awar) awar='%s' value='%s'\n", awar, value);
+            printf("remote command (write awar) awar='%s' value='%s'\n", tmp_awar, value);
 #endif // DUMP_REMOTE_ACTIONS
-            error = this->awar(awar)->write_as_string(value);
+            error = this->awar(tmp_awar)->write_as_string(value);
         }
         GBT_write_string(gb_main, awar_result, error ? error : "");
         GBT_write_string(gb_main, awar_awar, ""); // this works as READY-signal for perl-client (remote_awar and remote_read_awar)
@@ -3593,7 +3593,7 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,
         }
         GBT_write_string(gb_main, awar_action, ""); // this works as READY-signal for perl-client (remote_action)
     }
-    free(awar);
+    free(tmp_awar);
     free(value);
     free(action);
     return 0;

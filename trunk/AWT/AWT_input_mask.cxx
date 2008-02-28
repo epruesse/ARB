@@ -1294,7 +1294,7 @@ static void parse_CMD_RADIO(string& line, size_t& scan_pos, GB_ERROR& error, con
         error = GBS_global_string("Invalid default %i (must be index of ALLOW_EDIT: %i )", default_position, edit_position);
     }
     if (!error && (default_position<1 || size_t(default_position)>buttons.size())) {
-        error = GBS_global_string("Invalid default %i (valid: 1..%i)", default_position, buttons.size());
+        error = GBS_global_string("Invalid default %i (valid: 1..%zu)", default_position, buttons.size());
     }
 
     if (!error) {

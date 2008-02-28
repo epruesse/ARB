@@ -1030,7 +1030,6 @@ void ED4_cursor::jump_screen_pos(AW_window *aww, int screen_pos, ED4_CursorJumpT
 
     delete_cursor(cursor_abs_x, owner_of_cursor);
 
-    int old_allowed_to_draw = allowed_to_draw;
     if (scroll_new_to >= 0) {   // scroll
         int rel_x_new     = abs_x_new-coords->window_left_clip_point;
         int scroll_amount = rel_x_new-scroll_new_to;

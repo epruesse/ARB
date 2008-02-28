@@ -241,20 +241,20 @@ static void awt_fill_selection_box_recursive(const char *fulldir, int skipleft, 
                     long ksize    = (stt.st_size+512)/1024;
                     char typechar = AWT_is_link(nontruepath) ? 'L' : 'F';
 
-                    const char *entry = 0;
+                    const char *tmp_entry = 0;
                     switch (DIR_sort_order) {
                         case 0: // alpha
-                            entry = GBS_global_string("%c %-30s  %6lik  %s", typechar, nontruepath+skipleft, ksize, atime);
+                            tmp_entry = GBS_global_string("%c %-30s  %6lik  %s", typechar, nontruepath+skipleft, ksize, atime);
                             break;
                         case 1: // date
-                            entry = GBS_global_string("%c %s  %6lik  %s", typechar, atime, ksize, nontruepath+skipleft);
+                            tmp_entry = GBS_global_string("%c %s  %6lik  %s", typechar, atime, ksize, nontruepath+skipleft);
                             break;
                         case 2: // size
-                            entry = GBS_global_string("%c %6lik  %s  %s", typechar, ksize, atime, nontruepath+skipleft);
+                            tmp_entry = GBS_global_string("%c %6lik  %s  %s", typechar, ksize, atime, nontruepath+skipleft);
                             break;
                     }
 
-                    aws->insert_selection(selid, entry, nontruepath);
+                    aws->insert_selection(selid, tmp_entry, nontruepath);
                 }
             }
         }

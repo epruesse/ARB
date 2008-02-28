@@ -37,6 +37,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.4  2008/02/28 20:37:36  boehnel
+ * removing some compiler warnings
+ *
  * Revision 1.3  2007/03/29 16:53:48  westram
  * - changed call of AW_xfig
  *
@@ -539,7 +542,7 @@ int    AW_device::zoomtext1(int gc, const char *string, AW_pos x,AW_pos y, AW_po
    AW_xfig_line *pline;
    AW_pos x0, x1, y0, y1;
    AW_pos rx0, rx1, ry0, ry1; 
-   AW_pos offset=0;
+   AW_pos tmp_offset=0;
    int rc=0,rrc=0;
    int gx,gy, swap=0,l;
    AW_pos tx0,ty0,tx1,ty1;
@@ -636,15 +639,15 @@ int    AW_device::zoomtext1(int gc, const char *string, AW_pos x,AW_pos y, AW_po
          pline=aw_root->vectorfont_lines->lines[*pstring];
          while(pline) {
 	    if (swap) {
-	       x0=pline->x0+offset;
+	       x0=pline->x0+tmp_offset;
                y0=pline->y0-gy;
-               x1=pline->x1+offset;
+               x1=pline->x1+tmp_offset;
                y1=pline->y1-gy;
 	    } 
 	    else {
-	       x0=gx-pline->x0+offset;
+	       x0=gx-pline->x0+tmp_offset;
                y0=-pline->y0;
-               x1=gx-pline->x1+offset;
+               x1=gx-pline->x1+tmp_offset;
                y1=-pline->y1; 
 	    }
             // rotation to screen system               
@@ -658,7 +661,7 @@ int    AW_device::zoomtext1(int gc, const char *string, AW_pos x,AW_pos y, AW_po
       }
       if (!swap) pstring--;
       else pstring++;
-      offset+=gx;
+      tmp_offset+=gx;
    } 
    
    return rc;

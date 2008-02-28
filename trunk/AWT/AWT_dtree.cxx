@@ -727,13 +727,13 @@ AW_BOOL AWT_graphic_tree::create_group(AP_tree * at)
     return AW_TRUE;
 }
 
-void AWT_graphic_tree::key_command(AWT_COMMAND_MODE cmd, AW_key_mod key_modifier, char key_char,
-                                   AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct)
+void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /*cmd*/, AW_key_mod key_modifier, char key_char,
+                                   AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line *cl, AW_clicked_text *ct)
 {
     bool update_timer = true;
     bool calc_color   = true;
     bool refresh      = true;
-    bool save         = false;
+    bool tmp_save     = false;
     bool resize       = false;
     bool compute      = false;
 
@@ -879,7 +879,7 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE cmd, AW_key_mod key_modifier
                             /*int result = */
                             group_tree(at, next_group_mode, 0);
 
-                            save    = true;
+                            tmp_save    = true;
                             resize  = true;
                             compute = true;
                         }
@@ -906,7 +906,7 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE cmd, AW_key_mod key_modifier
                         /*int result = */
                         group_rest_tree(at, next_group_mode, 0);
 
-                        save    = true;
+                        tmp_save    = true;
                         resize  = true;
                         compute = true;
 
@@ -918,7 +918,7 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE cmd, AW_key_mod key_modifier
         }
     }
 
-    if (save) {
+    if (tmp_save) {
         update_timer = false;
         exports.save = 1;
     }
@@ -956,7 +956,7 @@ inline double discrete_ruler_lenght(double analog_ruler_lenth, double min_length
 }
 
 void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
-                               int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
+                               int button, AW_key_mod key_modifier, AW_key_code /*key_code*/, char key_char,
                                AW_event_type type, AW_pos x, AW_pos y,
                                AW_clicked_line *cl, AW_clicked_text *ct)
 {
@@ -1104,8 +1104,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
                             sprintf(awar,"ruler/size");
                             tree_awar = show_ruler(device, this->drag_gc);
-                            double h = GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
-                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(h, 0.1));
+                            double tmp_h = GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(tmp_h, 0.1));
                             tree_awar = show_ruler(device, this->drag_gc);
                         }
                         break;
@@ -1146,8 +1146,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         this->exports.refresh = 1;
                         if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
                             sprintf(awar,"ruler/size");
-                            double h = GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
-                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(h, 0.1));
+                            double tmp_h = GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(tmp_h, 0.1));
                         }
                         break;
                     default:

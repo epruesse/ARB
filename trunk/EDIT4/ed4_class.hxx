@@ -801,7 +801,7 @@ public:
     virtual ED4_returncode      set_width();
     ED4_base            *get_parent(ED4_level lev) const;
 
-    ED4_AREA_LEVEL      get_area_level(ED4_multi_species_manager **multi_species_manager=0); // returns area we belong to and the next multi species manager of the area
+    ED4_AREA_LEVEL      get_area_level(ED4_multi_species_manager **multi_species_manager=0) const; // returns area we belong to and the next multi species manager of the area
 
     bool has_parent(ED4_manager *Parent);
     bool is_child_of(ED4_manager *Parent) { return has_parent(Parent); }

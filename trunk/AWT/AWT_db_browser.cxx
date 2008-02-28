@@ -269,9 +269,9 @@ class DB_browser {
 public:
     DB_browser() : current_db(0), aww(0) {}
 
-    void add_db(GBDATA *gb_main, const char *description) {
+    void add_db(GBDATA *tmp_gb_main, const char *description) {
         awt_assert(!aww);       // now it's too late to announce!
-        known_databases.push_back(KnownDB(gb_main, description));
+        known_databases.push_back(KnownDB(tmp_gb_main, description));
     }
 
     AW_window *get_window(AW_root *aw_root);

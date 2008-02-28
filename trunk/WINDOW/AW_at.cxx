@@ -68,20 +68,20 @@ void AW_window::at_set_min_size(int xmin, int ymin) {
 /*******************************************************************************************************/
 /*******************************************************************************************************/
 
-void AW_window::id( const char *id ) {
+void AW_window::id( const char *tmp_id ) {
     delete _at->id_for_next_button;
-    _at->id_for_next_button     = strdup( id );
+    _at->id_for_next_button     = strdup( tmp_id );
 }
 
 
-void AW_window::help_text(const char *id ) {
+void AW_window::help_text(const char *tmp_id ) {
     delete _at->helptext_for_next_button;
-    _at->helptext_for_next_button   = strdup( id );
+    _at->helptext_for_next_button   = strdup( tmp_id );
 }
 
 
-void AW_window::mask( AW_active mask ) {
-    _at->mask_for_next_button       = mask;
+void AW_window::mask( AW_active tmp_mask ) {
+    _at->mask_for_next_button       = tmp_mask;
 }
 
 
@@ -115,9 +115,9 @@ void AW_window::d_callback( AW_cb_struct * /*owner*/awcbs ) {
     _d_callback = awcbs;
 }
 
-void AW_window::label( const char *label ) {
+void AW_window::label( const char *tmp_label ) {
     free(_at->label_for_inputfield);
-    _at->label_for_inputfield = strdup(label);
+    _at->label_for_inputfield = strdup(tmp_label);
 }
 
 
@@ -166,8 +166,8 @@ void AW_window::at_newline( void ) {
 }
 
 
-void AW_window::at( const char *id ) {
-    AWUSE(id);
+void AW_window::at( const char *tmp_id ) {
+    AWUSE(tmp_id);
     char to_position[100];memset(to_position,0,sizeof(to_position));
     _at->attach_y = _at->attach_x = AW_FALSE;
     _at->attach_ly = _at->attach_lx = AW_FALSE;
@@ -181,22 +181,22 @@ void AW_window::at( const char *id ) {
     AW_xfig *xfig = (AW_xfig *)xfig_data;
     AW_xfig_pos *pos;
     if (1){
-        pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,id);
+        pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,tmp_id);
     }
     if (!pos){
-        sprintf( to_position, "X:%s", id ); pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
+        sprintf( to_position, "X:%s", tmp_id ); pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
         if (pos) _at->attach_any = _at->attach_lx = AW_TRUE;
     }
     if (!pos){
-        sprintf( to_position, "Y:%s", id ); pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
+        sprintf( to_position, "Y:%s", tmp_id ); pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
         if (pos) _at->attach_any = _at->attach_ly = AW_TRUE;
     }
     if (!pos){
-        sprintf( to_position, "XY:%s", id );    pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
+        sprintf( to_position, "XY:%s", tmp_id );    pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
         if (pos) _at->attach_any = _at->attach_lx = _at->attach_ly = AW_TRUE;
     }
     if( !pos ) {
-        AW_ERROR(" ID '%s' does not exist in xfig file", id);
+        AW_ERROR(" ID '%s' does not exist in xfig file", tmp_id);
         return;
     }
 
@@ -204,18 +204,18 @@ void AW_window::at( const char *id ) {
     _at->correct_for_at_center = pos->center;
 
     if (1){
-        sprintf( to_position, "to:%s", id );    pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
+        sprintf( to_position, "to:%s", tmp_id );    pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
     }
     if (!pos) {
-        sprintf( to_position, "to:X:%s", id );  pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
+        sprintf( to_position, "to:X:%s", tmp_id );  pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
         if (pos) _at->attach_any = _at->attach_x = AW_TRUE;
     }
     if (!pos) {
-        sprintf( to_position, "to:Y:%s", id );  pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
+        sprintf( to_position, "to:Y:%s", tmp_id );  pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
         if (pos) _at->attach_any = _at->attach_y = AW_TRUE;
     }
     if (!pos) {
-        sprintf( to_position, "to:XY:%s", id ); pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
+        sprintf( to_position, "to:XY:%s", tmp_id ); pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash,to_position);
         if (pos) _at->attach_any = _at->attach_x = _at->attach_y = AW_TRUE;
     }
 
@@ -266,7 +266,7 @@ void AW_window::at_unset_to() {
     _at->attach_any = _at->attach_lx || _at->attach_ly;
 }
 
-AW_BOOL AW_window::at_ifdef(const  char *id) {
+AW_BOOL AW_window::at_ifdef(const  char *tmp_id) {
     if (!xfig_data) return AW_FALSE;
     AW_xfig *xfig = (AW_xfig *)xfig_data;
     char     buffer[100];
@@ -274,7 +274,7 @@ AW_BOOL AW_window::at_ifdef(const  char *id) {
 #if defined(DEBUG)
     int printed =
 #endif // DEBUG
-        sprintf(buffer,"XY:%s",id);
+        sprintf(buffer,"XY:%s",tmp_id);
 #if defined(DEBUG)
     aw_assert(printed<100);
 #endif // DEBUG

@@ -539,7 +539,7 @@ static GB_ERROR gb_parse_ascii_rek(Reader r, GBCONTAINER *gb_parent, const char 
 static GB_ERROR gb_parse_ascii(Reader r, GBCONTAINER *gb_parent) {
     GB_ERROR error = gb_parse_ascii_rek(r, gb_parent, 0);
     if (error) {
-        error = GBS_global_string("%s in line %u", error, r->line_number);
+        error = GBS_global_string("%s in line %zu", error, r->line_number);
     }
     return error;
 }
