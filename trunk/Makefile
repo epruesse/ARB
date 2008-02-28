@@ -97,7 +97,7 @@ endif
 endif
 
 ifeq ($(ARB_64),1)
-		cflags := -DARB_64
+		cflags := $(cflags) -DARB_64
 endif
 
 # ---------------------- compiler version detection
