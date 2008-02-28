@@ -25,6 +25,7 @@ P  *********************************************************************/$n
 #P #include <stdio.h>
 P #include <aisc_com.h>
 P #include <client.h>
+P #include <stdio.h>
 P extern int aisc_core_on_error;
 P extern aisc_com *aisc_client_link;
 P #ifdef __cplusplus
