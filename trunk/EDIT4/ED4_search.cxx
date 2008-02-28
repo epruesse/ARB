@@ -152,7 +152,8 @@ public:
     static void set_report(reportMatch r, int *u2r)     { report = r; uni2real = u2r; }
     static void set_mismatches(int minMis, int maxMis)  
     { 
-        e4_assert(maxMis <= MAX_MISMATCHES);
+        assert_or_exit(maxMis <= MAX_MISMATCHES);
+        assert_or_exit(minMis <= maxMis);
         min_mismatches = minMis; 
         max_mismatches = maxMis; 
     }
@@ -250,6 +251,7 @@ SearchTreeNode *SearchTreeNode::insert_unified_pattern(GB_CSTR pattern, GB_CSTR 
 
 void SearchTreeNode::findMatches(int off, GB_CSTR seq, int len, int mismatches, int mismatch_list[MAX_MISMATCHES])
 {
+    e4_assert(mismatches < MAX_MISMATCHES);
     if (len) {
         int matches = c=='?' || c==seq[0];
         int use_mismatch = 0;
@@ -259,7 +261,6 @@ void SearchTreeNode::findMatches(int off, GB_CSTR seq, int len, int mismatches, 
             int seq_is_gap = seq[0]=='-' || seq[0]=='.';
 
             if (c_is_gap==seq_is_gap) {
-                e4_assert(mismatches < MAX_MISMATCHES);
                 mismatch_list[mismatches] = uni2real[off];
                 mismatches++;
                 use_mismatch = 1;
