@@ -36,7 +36,7 @@ static void my_print(const char *, ...) {
 static bool  server_initialized  = false;
 static char *current_server_name = 0;
 
-static void (*print)(const char *format, ...) = my_print;
+static void (*print)(const char *format, ...) FUNCTION_TYPE_ATTR(__ATTR__FORMAT(1)) = my_print;
 
 static GB_ERROR connection_lost      = "connection to pt-server lost";
 static GB_ERROR cant_contact_unknown = "can't contact pt-server (unknown reason)";
