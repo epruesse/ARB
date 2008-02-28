@@ -10,20 +10,21 @@ include config.makefile
 #
 # The ARB source code is aware of the following defines
 #
-# GNU					activates __attribute__ definitions
-# HAVE_BOOL				should be true if compiler supports the type 'bool'
-# $(MACH)				name of the machine (LINUX,SUN4,SUN5,HP,SGI or DIGITAL; see config.makefile)
-# NO_REGEXPR			for machines w/o regular expression library
+# GNU                   activates __attribute__ definitions
+# HAVE_BOOL             should be true if compiler supports the type 'bool'
+# $(MACH)               name of the machine (LINUX,SUN4,SUN5,HP,SGI or DIGITAL; see config.makefile)
+# NO_REGEXPR            for machines w/o regular expression library
 #
-# DEBUG					compiles the DEBUG sections
-# NDEBUG				doesnt compile the DEBUG sections
-# DEBUG_GRAPHICS 		all X-graphics are flushed immediately (for debugging)
-# DEVEL_$(DEVELOPER)	developer-dependent flag (enables you to have private sections in code)
+# DEBUG                 compiles the DEBUG sections
+# NDEBUG                doesnt compile the DEBUG sections
+# DEBUG_GRAPHICS        all X-graphics are flushed immediately (for debugging)
+# DEVEL_$(DEVELOPER)    developer-dependent flag (enables you to have private sections in code)
 #                       DEVELOPER='ANY' (default setting) will be ignored
 #                       configurable in config.makefile
-# OPENGL=0/1			whether OPENGL is available
-# OPENWINHOME			whether openwin programs shall be compiled (arb_gde, gde)
-# ARB_64=0/1        	1=>compile 64 bit version
+# OPENGL=0/1            whether OPENGL is available
+# OPENWINHOME           whether openwin programs shall be compiled (arb_gde, gde)
+# ARB_64=0/1            1=>compile 64 bit version
+# BUILDHOST_64=0/1      1=>compile on 64 bit platform (defaults to ARB_64)
 #
 #
 #********************* Default set and gcc static enviroments *****************
@@ -129,6 +130,34 @@ extended_cpp_warnings := $(extended_cpp_warnings) $(extended_cpp_3xx_warnings) $
 endif
 endif
 
+#---------------------- 32 vs 64 bit
+
+ifdef ARB_64
+ifndef BUILDHOST_64
+BUILDHOST_64=$(ARB_64)
+endif
+endif
+
+ifeq ($(ARB_64),$(BUILDHOST_64))
+CROSS_CPU_BITS=# compiling native
+CROSS_LIB=lib
+else
+ifeq ($(ARB_64),0)
+CROSS_CPU_BITS=32# compiling 32bit on 64bit platform
+MACH_LIBS=-m elf_i386
+else
+CROSS_CPU_BITS=64# compiling 64bit on 32bit platform
+#MACH_LIBS=-m elf_whatever # unknown
+endif
+CROSS_LIB=lib$(CROSS_CPU_BITS)
+endif
+
+ifeq ($(CROSS_CPU_BITS),'')
+MACH_BITS=
+else
+MACH_BITS=-m$(CROSS_CPU_BITS)
+endif
+
 #---------------------- machine/OS specific definitions
 
 ifdef DEBIAN
@@ -138,23 +167,24 @@ else
 endif
 
    PREFIX =
-   LIBDIR = /usr/lib
+
+   LIBDIR = /usr/$(CROSS_LIB)
 
    GMAKE = gmake -r
-   CPP = $(GPP) -W -Wall $(enumequiv) -D$(MACH) $(havebool) -pipe#		# C++ Compiler /Linker
+   CPP = $(GPP) $(MACH_BITS) -W -Wall $(enumequiv) -D$(MACH) $(havebool) -pipe# C++ Compiler /Linker
    PP = $(CPPreal)
-   ACC = $(GCC) -W -Wall $(enumequiv) -D$(MACH) -pipe#				# Ansi C
+   ACC = $(GCC) $(MACH_BITS) -W -Wall $(enumequiv) -D$(MACH) -pipe# Ansi C
    CCLIB = $(ACC)#			# Ansi C. for shared libraries
    CCPLIB = $(CPP)#			# Same for c++
-   AR = ld -r -o#			# Archive Linker
-   ARLIB = ld -r -o#			# The same for shared libs.
+   AR = ld -r $(MACH_LIBS) -o#		# Archive Linker
+   ARLIB = ld -r $(MACH_LIBS) -o#	# The same for shared libs.
    XAR = $(AR)# 			# Linker for archives containing templates
    MAKEDEPEND = $(FORCEMASK);makedepend
    SHARED_LIB_SUFFIX = so#		# shared lib suffix
    F77 = f77
 
    CTAGS = etags
-   XMKMF = 	/usr/bin/X11/xmkmf
+   XMKMF = /usr/bin/X11/xmkmf
 
 ifdef SEER
     SEERLIB = SEER/SEER.a
@@ -185,11 +215,11 @@ ifdef DARWIN
    MOTIF_LIBNAME = libXm.3.dylib
    MOTIF_LIBPATH = $(LIBDIR)/$(MOTIF_LIBNAME)
    XINCLUDES = -I/usr/X11R6/include
-   XLIBS = -L$(XHOME)/lib -lXm -lXt -lX11 -lXext -lXp  -lc
+   XLIBS = -L$(XHOME)/$(CROSS_LIB) -lXm -lXt -lX11 -lXext -lXp  -lc
 
    PERLBIN = /usr/bin
-   PERLLIB = /usr/lib
-   CRYPTLIB = -L/usr/lib -lcrypt
+   PERLLIB = $(LIBDIR)
+   CRYPTLIB = -L$(LIBDIR) -lcrypt
 
 endif
 
@@ -206,8 +236,8 @@ ifdef LINUX
    f77_flags = $(fflags) -W -N9 -e
    F77LIB = -lU77
 
-   ARCPPLIB = $(GPP) -Wall -shared $(LINUX_SPECIALS) -o
-   ARLIB = $(GCC) -Wall -shared $(LINUX_SPECIALS) -o
+   ARCPPLIB = $(GPP) $(MACH_BITS) -Wall -shared $(LINUX_SPECIALS) -o
+   ARLIB = $(GCC) $(MACH_BITS) -Wall -shared $(LINUX_SPECIALS) -o
    GMAKE = make -j 3 -r
    SYSLIBS = -lm
 
@@ -236,22 +266,23 @@ else
 GL_LIB:=-lGL
 endif
 GL_PNGLIBS:= -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
-GLLIBS:=-L$(XHOME)/lib -lGLEW -lGLw -lglut $(GL_PNGLIBS)
+GLLIBS:=-L$(XHOME)/$(CROSS_LIB) -lGLEW -lGLw -lglut $(GL_PNGLIBS)
 endif
 
 
 ifeq ($(X11R6),1)
    XINCLUDES = -I/usr/X11R6/include
-   XLIBS = -L/usr/X11R6/lib -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc $(GL_LIB)
+   XLIBS = -L/usr/X11R6/$(CROSS_LIB) -lXm -lXpm -lXp -lXt -lXext -lX11 \
+	   -L$(XHOME)/$(CROSS_LIB) -lc $(GL_LIB)
 else
    XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I$(OPENWINHOME)/include
-   XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/lib -lc $(GL_LIB)
+   XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/$(CROSS_LIB) -lc $(GL_LIB)
 endif
 
-   OWLIBS =  -L${OPENWINHOME}/lib -lxview -lolgx -L$(XHOME)/lib -lX11  -lc
+   OWLIBS =  -L${OPENWINHOME}/$(CROSS_LIB) -lxview -lolgx -L$(XHOME)/$(CROSS_LIB) -lX11  -lc
    PERLBIN = /usr/bin
-   PERLLIB = /usr/lib
-   CRYPTLIB = -L/usr/lib -lcrypt
+   PERLLIB = /usr/$(CROSS_LIB)
+   CRYPTLIB = -L/usr/$(CROSS_LIB) -lcrypt
 
 endif
 
@@ -277,7 +308,7 @@ ifdef SUN5
    XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I$(OPENWINHOME)/include
 
    SYSLIBS = -lsocket -lm -lnsl -lgen -lposix4
-   XLIBS =  -L$(OPENWINHOME)/lib -L$(XHOME)/lib -lXm -lXt -lX11
+   XLIBS =  -L$(OPENWINHOME)/$(CROSS_LIB) -L$(XHOME)/$(CROSS_LIB) -lXm -lXt -lX11
 
 endif
 
@@ -369,6 +400,12 @@ ifndef dflags
 		@false
 endif
 
+check_ARB_64:
+ifndef ARB_64
+		@echo 'config.makefile:1: ARB_64 has to be defined. Valid values are 0 and 1'
+		@false
+endif
+
 # ---------------------------------------- check gcc version
 
 check_same_GCC_VERSION:
@@ -435,7 +472,7 @@ check_ENVIRONMENT : check_PATH
 
 # ---------------------
 
-checks: check_ENVIRONMENT check_DEBUG check_DEVELOPER check_GCC_VERSION
+checks: check_ENVIRONMENT check_DEBUG check_ARB_64 check_DEVELOPER check_GCC_VERSION
 		@echo Your setup seems to be ok.
 
 
