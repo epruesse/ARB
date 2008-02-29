@@ -297,16 +297,17 @@ static GB_ERROR deleteSuperfluousQuicksaves(GB_MAIN_TYPE *Main)
 
 long gb_ascii_2_bin(const char *source,GBDATA *gbd)
 {
-    long size,memsize;
+    const char *s = source;
+    
+    long len = 0;
+    char c   = *(s++);
 
-    register const char   *s;
-    register char *d,c;
-    register long   len,k;
-    register    long i;
-    len = 0;
-    s = source;
+    long  size;
+    long  memsize;
+    char *d;
+    long  k;
+    long  i;
 
-    c=*(s++);
     A_TO_I(c);
     gbd->flags.compressed_data = c;
 
@@ -339,7 +340,7 @@ long gb_ascii_2_bin(const char *source,GBDATA *gbd)
 
     memsize = len;
 
-    GB_SETSMDMALLOC(gbd,size,memsize,0);
+    GB_SETSMDMALLOC_UNINITIALIZED(gbd,size,memsize);
     d = GB_GETDATA(gbd);
     s = source;
     while ( (c = *(s++)) ) {
@@ -377,11 +378,11 @@ long gb_ascii_2_bin(const char *source,GBDATA *gbd)
 
 GB_CPNTR gb_bin_2_ascii(GBDATA *gbd)
 {
-    register signed char  *s, *out, c, mo;
-    register unsigned long    i;
-    register    int j;
-    char *buffer;
-    int k;
+    signed char   *s, *out, c, mo;
+    unsigned long  i;
+    int            j;
+    char          *buffer;
+    int            k;
 
     char *source = GB_GETDATA(gbd);
     long len = GB_GETMEMSIZE(gbd);
@@ -450,12 +451,12 @@ long gb_test_sub(GBDATA *gbd)
 /* only used for saving ASCII database */
 long gb_write_rek(FILE *out,GBCONTAINER *gbc,long deep,long big_hunk)
 {
-    register long i;
-    register char *s;
-    register char c;
-    register GBDATA *gb;
-    char    *strng;
-    char *key;
+    long    i;
+    char   *s;
+    char    c;
+    GBDATA *gb;
+    char   *strng;
+    char   *key;
     /*int index;*/
     for (gb = GB_find((GBDATA *)gbc,0,0,down_level);
          gb;
@@ -555,26 +556,27 @@ long gb_write_rek(FILE *out,GBCONTAINER *gbc,long deep,long big_hunk)
 
 long    gb_read_in_long(FILE *in,long reversed)
 {
-    long sdata = 0;
-    register char *p = (char *)&sdata;
+    long  sdata = 0;
+    char *p     = (char *)&sdata;
 
     if (!reversed) {
         *(p++) = getc(in);
         *(p++) = getc(in);
         *(p++) = getc(in);
         *(p) = getc(in);
-        return sdata;
     }
-    p[3] = getc(in);
-    p[2] = getc(in);
-    p[1] = getc(in);
-    p[0] = getc(in);
+    else {
+        p[3] = getc(in);
+        p[2] = getc(in);
+        p[1] = getc(in);
+        p[0] = getc(in);
+    }
     return sdata;
 }
 
 
 long gb_read_number(FILE *in) {
-    register unsigned int c0,c1,c2,c3,c4;
+    unsigned int c0,c1,c2,c3,c4;
     c0 = getc(in);
     if (c0 & 0x80){
         c1 = getc(in);
@@ -600,7 +602,7 @@ long gb_read_number(FILE *in) {
 }
 
 void gb_put_number(long i, FILE *out) {
-    register long j;
+    long j;
     if (i< 0x80 ){ putc((int)i,out);return; }
     if (i<0x4000) {
         j = (i>>8) | 0x80;
@@ -647,7 +649,7 @@ long gb_read_bin_error(FILE *in,GBDATA *gbd,const char *text)
 long    gb_write_out_long(long data, FILE *out)
 {
     long sdata[1];
-    register char *p = (char *)sdata,c;
+    char *p = (char *)sdata,c;
     sdata[0] = data;
     c = *(p++);
     putc(c,out);
@@ -681,7 +683,7 @@ int gb_is_writeable(struct gb_header_list_struct *header, GBDATA *gbd, long vers
 
 int gb_write_bin_sub_containers(FILE *out,GBCONTAINER *gbc,long version,long diff_save, int is_root){
     struct gb_header_list_struct *header;
-    register int i,index;
+    int i,index;
     int counter;
     header = GB_DATA_LIST_HEADER(gbc->d);
     for (i=0, index = 0; index < gbc->d.nheader; index++) {
@@ -729,10 +731,10 @@ int gb_write_bin_sub_containers(FILE *out,GBCONTAINER *gbc,long version,long dif
 
 long gb_write_bin_rek(FILE *out,GBDATA *gbd,long version, long diff_save, long index_of_master_file)
 {
-    register int i;
-    GBCONTAINER *gbc =0;
-    long    memsize =0;
-    int type;
+    int          i;
+    GBCONTAINER *gbc     = 0;
+    long         memsize = 0;
+    int          type;
 
     if ((type=GB_TYPE(gbd)) == GB_DB) {
         gbc = (GBCONTAINER *)gbd;
