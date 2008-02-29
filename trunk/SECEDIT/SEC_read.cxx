@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_read.cxx                                      //
 //   Purpose   : read structure from declaration string            //
-//   Time-stamp: <Wed Sep/19/2007 16:39 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Fri Feb/29/2008 13:55 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -443,18 +443,18 @@ GB_ERROR SEC_root::read_data(const char *input_string, const char *x_string_in) 
 #endif // DEBUG
 
             if (strncmp(string_buffer, "LOOP={", 6) == 0) {
-                SEC_loop *tmp_root_loop = new SEC_loop(this); // , NULL, 0, 0);
+                SEC_loop *rootLoop = new SEC_loop(this); // , NULL, 0, 0);
 
-                set_root_loop(tmp_root_loop);
+                set_root_loop(rootLoop);
                 set_under_construction(true);
-                error = tmp_root_loop->read(NULL, in, version, firstLoopAngle);
+                error = rootLoop->read(NULL, in, version, firstLoopAngle);
 
                 if (!error) {
                     set_under_construction(false); // mark as "constructed"
                 }
                 else {
                     set_root_loop(0);
-                    delete tmp_root_loop;
+                    delete rootLoop;
                 }
             }
             else {

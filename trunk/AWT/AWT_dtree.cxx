@@ -733,7 +733,7 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /*cmd*/, AW_key_mod key_modi
     bool update_timer = true;
     bool calc_color   = true;
     bool refresh      = true;
-    bool tmp_save     = false;
+    bool Save         = false;
     bool resize       = false;
     bool compute      = false;
 
@@ -879,7 +879,7 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /*cmd*/, AW_key_mod key_modi
                             /*int result = */
                             group_tree(at, next_group_mode, 0);
 
-                            tmp_save    = true;
+                            Save    = true;
                             resize  = true;
                             compute = true;
                         }
@@ -906,7 +906,7 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /*cmd*/, AW_key_mod key_modi
                         /*int result = */
                         group_rest_tree(at, next_group_mode, 0);
 
-                        tmp_save    = true;
+                        Save    = true;
                         resize  = true;
                         compute = true;
 
@@ -918,7 +918,7 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /*cmd*/, AW_key_mod key_modi
         }
     }
 
-    if (tmp_save) {
+    if (Save) {
         update_timer = false;
         exports.save = 1;
     }
@@ -1104,8 +1104,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
                             sprintf(awar,"ruler/size");
                             tree_awar = show_ruler(device, this->drag_gc);
-                            double tmp_h = GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
-                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(tmp_h, 0.1));
+                            double rulerSize = GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(rulerSize, 0.1));
                             tree_awar = show_ruler(device, this->drag_gc);
                         }
                         break;
@@ -1146,8 +1146,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         this->exports.refresh = 1;
                         if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
                             sprintf(awar,"ruler/size");
-                            double tmp_h = GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
-                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(tmp_h, 0.1));
+                            double rulerSize = GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                            GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(rulerSize, 0.1));
                         }
                         break;
                     default:

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_config_manager.cxx                                 //
 //    Purpose   :                                                        //
-//    Time-stamp: <Tue Aug/17/2004 14:29 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Feb/29/2008 13:41 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //
@@ -267,31 +267,31 @@ AWT_config::AWT_config(const char *config_char_ptr)
     // and put values into a map.
     // assumes that keys are unique
 
-    string      tmp_config_string(config_char_ptr);
+    string      configString(config_char_ptr);
     config_map& cmap  = mapping->cmap;
     size_t      pos   = 0;
 
     while (!parse_error) {
-        size_t equal = tmp_config_string.find('=', pos);
+        size_t equal = configString.find('=', pos);
         if (equal == string::npos) break;
 
-        if (tmp_config_string[equal+1] != '\'') {
+        if (configString[equal+1] != '\'') {
             parse_error = "expected quote \"'\"";
             break;
         }
         size_t start = equal+2;
-        size_t end   = tmp_config_string.find('\'', start);
+        size_t end   = configString.find('\'', start);
         while (end != string::npos) {
-            if (tmp_config_string[end-1] != '\\') break;
-            end = tmp_config_string.find('\'', end+1);
+            if (configString[end-1] != '\\') break;
+            end = configString.find('\'', end+1);
         }
         if (end == string::npos) {
             parse_error = "could not find matching quote \"'\"";
             break;
         }
 
-        string config_name = tmp_config_string.substr(pos, equal-pos);
-        string value       = tmp_config_string.substr(start, end-start);
+        string config_name = configString.substr(pos, equal-pos);
+        string value       = configString.substr(start, end-start);
 
         parse_error = decode_escapes(value);
         if (!parse_error) {

@@ -217,7 +217,6 @@ AD_ERR * AD_STAT::next() {
 
 
 AD_ERR * AD_STAT::next(AD_TYPES typus) {
-    AD_TYPES tmp_type;
     if (gb_markdata == 0 || last == 1) {
         return new AD_ERR("AD_STAT::next() not possible, no first or last!");
     }
@@ -225,8 +224,7 @@ AD_ERR * AD_STAT::next(AD_TYPES typus) {
     while (gb_markdata != 0) {
         gb_markdata = GB_find(gb_markdata,0,0,this_level | search_next );
         if (gb_markdata != 0) {
-            tmp_type = (AD_TYPES)GB_read_type(gb_markdata);
-            if (tmp_type == typus) {
+            if ((AD_TYPES)GB_read_type(gb_markdata) == typus) {
                 initpntr();
                 return 0;
             }
@@ -613,29 +611,29 @@ AD_ERR * AD_SEQ::insert(char *text,long position, int direction) {
     return 0;
 }
 
-AD_ERR  * AD_SEQ::remove(int tmp_len,long position, int direction) {
+AD_ERR  * AD_SEQ::remove(int charsToDelete,long position, int direction) {
     long new_len;
     long i;
-    if (direction<0) position -= tmp_len;
-    if ((position >= seq_len) || (tmp_len == 0) || (seq_len - tmp_len < 0)) {
+    if (direction<0) position -= charsToDelete;
+    if ((position >= seq_len) || (charsToDelete == 0) || (seq_len - charsToDelete < 0)) {
         return new AD_ERR("AD_SEQ::delete outside sequence !");
     }
-    if ((tmp_len + position) >= seq_len) {
-        tmp_len = (int)(seq_len-position);
+    if ((charsToDelete + position) >= seq_len) {
+        charsToDelete = (int)(seq_len-position);
     }
-    new_len = seq_len - tmp_len;
+    new_len = seq_len - charsToDelete;
     if (direction>=0){
         strncpy((char *)&seq[position],
-                (const char *)&seq[position+tmp_len],
+                (const char *)&seq[position+charsToDelete],
                 (int)(new_len-position));
         for (i = new_len; i<seq_len; i++) {
             seq[i] = SEQ_POINT;
         }
     }else{
-        for (i=position+tmp_len-1;i>=tmp_len;i--) {
-            seq[i] = seq[i-tmp_len];
+        for (i=position+charsToDelete-1;i>=charsToDelete;i--) {
+            seq[i] = seq[i-charsToDelete];
         }
-        for (i = 0; i<tmp_len; i++) {
+        for (i = 0; i<charsToDelete; i++) {
             seq[i] = SEQ_POINT;
         }
     }
@@ -781,7 +779,7 @@ AD_ERR  *AD_SEQ::command( AW_key_mod keymod, AW_key_code keycode, char key, int 
         return new AD_ERR("AD_SEQ.command ERROR ! Cursor out of sequence !");
     }
 
-    AD_EDITMODI tmp_mode = this->get_ad_main()->mode;
+    AD_EDITMODI edit_mode = this->get_ad_main()->mode;
     AD_ERR *ad_err = 0;
     long        h,offset;
 
@@ -797,7 +795,7 @@ AD_ERR  *AD_SEQ::command( AW_key_mod keymod, AW_key_code keycode, char key, int 
                 if (ADPP_IS_ALIGN_CHARACTER(r)) key = r;
                 str[0] = key;
             }
-            switch (tmp_mode) {
+            switch (edit_mode) {
                 case AD_allign:
                     if (isdigit(key)) {
                         nrepeat = nrepeat * 10 + (key - '0');
@@ -853,7 +851,7 @@ AD_ERR  *AD_SEQ::command( AW_key_mod keymod, AW_key_code keycode, char key, int 
         case AW_KEY_DELETE:
         case AW_KEY_BACKSPACE:
             if (!nrepeat) nrepeat = 1;
-            if (tmp_mode != AD_allign) nrepeat = 1;
+            if (edit_mode != AD_allign) nrepeat = 1;
             if (keycode == AW_KEY_DELETE || keymod ) {
                 h = cursorpos;
             }else{
@@ -873,16 +871,15 @@ AD_ERR  *AD_SEQ::command( AW_key_mod keymod, AW_key_code keycode, char key, int 
                 }
                 h = cursorpos;
             }
-            switch (tmp_mode) {
+            switch (edit_mode) {
                 case AD_allign:
                     {
-                        int tmp_len;
+                        int repeat;
                         ad_err = 0;
                         if (direction>=0) offset = 0; else offset = -nrepeat;
-                        for (tmp_len = nrepeat-1; tmp_len>=0; tmp_len--) {
-                            if (!ADPP_IS_ALIGN_CHARACTER(seq[h+offset+tmp_len])){
-                                ad_err = new AD_ERR(
-                                                    "You cannot remove bases in align mode");
+                        for (repeat = nrepeat-1; repeat>=0; repeat--) {
+                            if (!ADPP_IS_ALIGN_CHARACTER(seq[h+offset+repeat])){
+                                ad_err = new AD_ERR("You cannot remove bases in align mode");
                                 break;
                             }
                         }
