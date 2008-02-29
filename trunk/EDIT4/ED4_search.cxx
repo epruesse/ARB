@@ -453,7 +453,7 @@ SearchTree::SearchTree(const SearchSettings *s)
                 }
                 
                 if (s_complement) {
-                    GB_transaction dummy(gb_main);
+                    GB_transaction dummy(GLOBAL_gb_main);
 
                     if (T_or_U) {
                         if (!s_exact || !s_reverse) {
@@ -788,25 +788,25 @@ void ED4_create_search_awars(AW_root *root)
 
     int i;
     for (i=0; i<SEARCH_PATTERNS; i++) {
-        root->awar_string(awar_list[i].pattern, "", gb_main)                            ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
-        root->awar_int(awar_list[i].case_sensitive, ED4_SC_CASE_INSENSITIVE, gb_main)   ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
-        root->awar_int(awar_list[i].tu, ED4_ST_T_EQUAL_U, gb_main)                      ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
-        root->awar_int(awar_list[i].pat_gaps, ED4_SG_IGNORE_GAPS, gb_main)              ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
-        root->awar_int(awar_list[i].reverse, 0, gb_main)                                ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
-        root->awar_int(awar_list[i].complement, 0, gb_main)                             ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
-        root->awar_int(awar_list[i].exact, 0, gb_main)                                  ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
-        root->awar_int(awar_list[i].min_mismatches, 0, gb_main)                         ->cb(REFRESH_IF_SHOWN | TEST_MAX_MISMATCH | DO_AUTO_JUMP);
-        root->awar_int(awar_list[i].max_mismatches, 0, gb_main)                         ->cb(REFRESH_IF_SHOWN | TEST_MIN_MISMATCH | DO_AUTO_JUMP);
-        root->awar_int(awar_list[i].seq_gaps, ED4_SG_IGNORE_GAPS, gb_main)              ->cb(REFRESH_IF_SHOWN | DO_AUTO_JUMP);
-        root->awar_int(awar_list[i].show, 1, gb_main)                                   ->cb(REFRESH_ALWAYS);
-        root->awar_int(awar_list[i].openFolded, 1, gb_main)                             ->cb(0);
-        root->awar_int(awar_list[i].autoJump, 1, gb_main)                               ->cb(DO_AUTO_JUMP);
+        root->awar_string(awar_list[i].pattern, "", GLOBAL_gb_main)                            ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
+        root->awar_int(awar_list[i].case_sensitive, ED4_SC_CASE_INSENSITIVE, GLOBAL_gb_main)   ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
+        root->awar_int(awar_list[i].tu, ED4_ST_T_EQUAL_U, GLOBAL_gb_main)                      ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
+        root->awar_int(awar_list[i].pat_gaps, ED4_SG_IGNORE_GAPS, GLOBAL_gb_main)              ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
+        root->awar_int(awar_list[i].reverse, 0, GLOBAL_gb_main)                                ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
+        root->awar_int(awar_list[i].complement, 0, GLOBAL_gb_main)                             ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
+        root->awar_int(awar_list[i].exact, 0, GLOBAL_gb_main)                                  ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
+        root->awar_int(awar_list[i].min_mismatches, 0, GLOBAL_gb_main)                         ->cb(REFRESH_IF_SHOWN | TEST_MAX_MISMATCH | DO_AUTO_JUMP);
+        root->awar_int(awar_list[i].max_mismatches, 0, GLOBAL_gb_main)                         ->cb(REFRESH_IF_SHOWN | TEST_MIN_MISMATCH | DO_AUTO_JUMP);
+        root->awar_int(awar_list[i].seq_gaps, ED4_SG_IGNORE_GAPS, GLOBAL_gb_main)              ->cb(REFRESH_IF_SHOWN | DO_AUTO_JUMP);
+        root->awar_int(awar_list[i].show, 1, GLOBAL_gb_main)                                   ->cb(REFRESH_ALWAYS);
+        root->awar_int(awar_list[i].openFolded, 1, GLOBAL_gb_main)                             ->cb(0);
+        root->awar_int(awar_list[i].autoJump, 1, GLOBAL_gb_main)                               ->cb(DO_AUTO_JUMP);
 
         settings[i] = new SearchSettings(&awar_list[i]);
         tree[i] = new SearchTree(settings[i]);
     }
 
-    root->awar_int(ED4_AWAR_SEARCH_RESULT_CHANGED, 0, gb_main);
+    root->awar_int(ED4_AWAR_SEARCH_RESULT_CHANGED, 0, GLOBAL_gb_main);
 
 #undef cb
 
@@ -1446,7 +1446,7 @@ void ED4_mark_matching_species(AW_window */*aww*/, AW_CL cl_pattern) {
     ED4_SearchPositionType  pattern  = ED4_SearchPositionType(cl_pattern);
     ED4_terminal           *terminal = ED4_ROOT->root_group_man->get_first_terminal();
     GB_ERROR                error    = 0;
-    GB_transaction          ta(gb_main);
+    GB_transaction          ta(GLOBAL_gb_main);
 
     while (terminal && !error) {
         if (terminal->is_sequence_terminal()) {

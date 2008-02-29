@@ -18,7 +18,7 @@
 
 #define ap_assert(cond) arb_assert(cond)
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 
 AP_pos_var::AP_pos_var(GBDATA *gb_maini,char *ali_namei, long ali_leni, int isdna, char *tree_namei) {
@@ -273,7 +273,7 @@ char *AP_pos_var::save_sai( char *sai_name ){
 // Calculate the positional variability: window interface
 void AP_calc_pos_var_pars(AW_window *aww) {
     AW_root        *root  = aww->get_root();
-    GB_transaction  dummy(gb_main);
+    GB_transaction  dummy(GLOBAL_gb_main);
     char           *tree_name;
     GB_ERROR        error = 0;
 
@@ -282,29 +282,29 @@ void AP_calc_pos_var_pars(AW_window *aww) {
     GBT_TREE *tree;
     {           // get tree
         tree_name = root->awar(AWAR_PVP_TREE)->read_string();
-        tree = GBT_read_tree(gb_main,tree_name,sizeof(GBT_TREE));
+        tree = GBT_read_tree(GLOBAL_gb_main,tree_name,sizeof(GBT_TREE));
         if (!tree) {
             error = "Please select a valid tree";
         }
         else {
-            GBT_link_tree(tree,gb_main, GB_TRUE, 0, 0);
+            GBT_link_tree(tree,GLOBAL_gb_main, GB_TRUE, 0, 0);
         }
     }
 
     if (!error) {
         aw_status("Counting Mutations");
 
-        char *ali_name = GBT_get_default_alignment(gb_main);
-        long  ali_len  = GBT_get_alignment_len(gb_main,ali_name);
+        char *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
+        long  ali_len  = GBT_get_alignment_len(GLOBAL_gb_main,ali_name);
 
         if (ali_len <=0) {
             error = "Please select a valid alignment";
         }
         else {
-            GB_alignment_type  at       = GBT_get_alignment_type(gb_main, ali_name);
+            GB_alignment_type  at       = GBT_get_alignment_type(GLOBAL_gb_main, ali_name);
             int                isdna    = at==GB_AT_DNA || at==GB_AT_RNA;
             char              *sai_name = root->awar(AWAR_PVP_SAI)->read_string();
-            AP_pos_var         pv(gb_main, ali_name, ali_len, isdna, tree_name);
+            AP_pos_var         pv(GLOBAL_gb_main, ali_name, ali_len, isdna, tree_name);
 
             error             = pv.delete_old_sai(sai_name);
             if (!error) error = pv.retrieve( tree);
@@ -326,14 +326,14 @@ void AP_calc_pos_var_pars(AW_window *aww) {
 
 AW_window *AP_open_pos_var_pars_window( AW_root *root ){
 
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "CSP_BY_PARSIMONY", "Conservation Profile: Parsimony Method");
     aws->load_xfig("cpro/parsimony.fig");
 
     root->awar_string(AWAR_PVP_SAI, "POS_VAR_BY_PARSIMONY",AW_ROOT_DEFAULT);
-    char *largest_tree = GBT_find_largest_tree(gb_main);
+    char *largest_tree = GBT_find_largest_tree(GLOBAL_gb_main);
     root->awar_string(AWAR_PVP_TREE, "tree_full",AW_ROOT_DEFAULT);
     root->awar(AWAR_PVP_TREE)->write_string(largest_tree);
     free(largest_tree); largest_tree = 0;
@@ -348,10 +348,10 @@ AW_window *AP_open_pos_var_pars_window( AW_root *root ){
     aws->create_input_field(AWAR_PVP_SAI);
 
     aws->at("box");
-    awt_create_selection_list_on_extendeds(gb_main,aws,AWAR_PVP_SAI);
+    awt_create_selection_list_on_extendeds(GLOBAL_gb_main,aws,AWAR_PVP_SAI);
 
     aws->at("trees");
-    awt_create_selection_list_on_trees(gb_main,aws,AWAR_PVP_TREE);
+    awt_create_selection_list_on_trees(GLOBAL_gb_main,aws,AWAR_PVP_TREE);
 
     aws->at("go");
     aws->highlight();

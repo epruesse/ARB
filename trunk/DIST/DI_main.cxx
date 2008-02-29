@@ -24,7 +24,7 @@ void create_matrix_variables(AW_root *aw_root, AW_default aw_def);
     void bc_create_bc_variables(AW_root *awr, AW_default awd);
 #endif
 
-GBDATA *gb_main;
+GBDATA *GLOBAL_gb_main; // global gb_main for arb_dist
 
 
 // #if 0
@@ -58,8 +58,8 @@ int main(int argc, char **argv)
     if (argc==2) {
         params->db_server = argv[1];
     }
-    gb_main = GB_open(params->db_server,"rw");
-    if (!gb_main) {
+    GLOBAL_gb_main = GB_open(params->db_server,"rw");
+    if (!GLOBAL_gb_main) {
         aw_message(GB_get_error());
         fprintf(stderr,"%s\n",GB_get_error());
         exit(-1);
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 #ifdef FINDCORR
     bc_create_bc_variables(aw_root,aw_default);
 #endif
-    ARB_init_global_awars(aw_root, aw_default, gb_main);
+    ARB_init_global_awars(aw_root, aw_default, GLOBAL_gb_main);
 
     awd = (AWT_graphic *)0;
     aww = create_matrix_window(aw_root);

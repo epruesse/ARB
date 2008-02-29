@@ -29,7 +29,7 @@
 #include "ed4_class.hxx"
 #include "ed4_visualizeSAI.hxx"
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 static bool clrDefinitionsChanged       = false;
 static bool inCallback                  = false; // used to avoid multiple refreshs
@@ -265,7 +265,7 @@ static void saiChanged_callback(AW_root *awr) {
         static GBDATA *gb_last_SAI = 0;
 
         if (gb_last_SAI) {
-            GB_transaction dummy(gb_main);
+            GB_transaction dummy(GLOBAL_gb_main);
             GB_remove_callback(gb_last_SAI, GB_CB_CHANGED, refresh_display_cb, 0);
             gb_last_SAI = 0;
         }
@@ -281,8 +281,8 @@ static void saiChanged_callback(AW_root *awr) {
         }
 
         {
-            GB_transaction dummy(gb_main);
-            gb_last_SAI = GBT_find_SAI(gb_main, saiName);
+            GB_transaction dummy(GLOBAL_gb_main);
+            gb_last_SAI = GBT_find_SAI(GLOBAL_gb_main, saiName);
             if (gb_last_SAI) {
                 GB_add_callback(gb_last_SAI, GB_CB_CHANGED, refresh_display_cb, 0);
             }
@@ -525,9 +525,9 @@ const char *ED4_getSaiColorString(AW_root *awr, int start, int end) {
 
     char *saiSelected = awr->awar(AWAR_SAI_SELECT)->read_string();
 
-    GB_push_transaction(gb_main);
-    char   *alignment_name = GBT_get_default_alignment(gb_main);
-    GBDATA *gb_extended    = GBT_find_SAI(gb_main, saiSelected);
+    GB_push_transaction(GLOBAL_gb_main);
+    char   *alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
+    GBDATA *gb_extended    = GBT_find_SAI(GLOBAL_gb_main, saiSelected);
     bool    visualize      = false; // set to true if all goes fine
 
     if (gb_extended) {
@@ -581,7 +581,7 @@ const char *ED4_getSaiColorString(AW_root *awr, int start, int end) {
     }
     free(alignment_name);
     free(saiSelected);
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 
     lastVisualize = visualize;
     if (visualize) {
@@ -703,7 +703,7 @@ static AW_window *ED4_openSelectSAI_window(AW_root *aw_root){
 
     aws->at("selection");
     aws->callback((AW_CB0)AW_POPDOWN);
-    awt_create_selection_list_on_extendeds(gb_main,(AW_window *)aws,AWAR_SAI_SELECT);
+    awt_create_selection_list_on_extendeds(GLOBAL_gb_main,(AW_window *)aws,AWAR_SAI_SELECT);
 
     aws->at("close");
     aws->callback(AW_POPDOWN);

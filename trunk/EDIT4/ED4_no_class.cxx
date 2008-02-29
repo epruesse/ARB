@@ -130,7 +130,7 @@ void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 
     ED4_ROOT->use_window(aww);
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     if (!dummy) {
         dummy = 1;
@@ -144,7 +144,7 @@ void ED4_expose_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     ED4_ROOT->get_device()->reset();
     ED4_ROOT->refresh_window(1);
 
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 }
 
 void ED4_resize_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
@@ -155,7 +155,7 @@ void ED4_resize_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 
     ED4_ROOT->use_window(aww);
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     ED4_ROOT->get_device()->reset();
     //  ED4_ROOT->deselect_all();
@@ -165,7 +165,7 @@ void ED4_resize_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     ED4_ROOT->get_ed4w()->slider_pos_horizontal= aww->slider_pos_horizontal;
     ED4_ROOT->get_ed4w()->slider_pos_vertical  = aww->slider_pos_vertical;
 
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 }
 
 ED4_returncode call_edit( void **error, void **work_info_ptr, ED4_base *object )    // called after editing consensus to edit single sequences
@@ -278,7 +278,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
         ((event->keymodifier & AW_KEYMODE_CONTROL) &&
          (event->keycode == AW_KEY_HOME || event->keycode == AW_KEY_END)))
     {
-        GB_transaction dummy(gb_main);
+        GB_transaction dummy(GLOBAL_gb_main);
         while (repeatCount--) {
             cursor->move_cursor(event);
         }
@@ -337,7 +337,7 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
     ED4_species_manager *species_manager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
     char                *error           = NULL;
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     if (species_manager->flag.is_consensus) {
         ED4_group_manager *group_manager = terminal->get_parent(ED4_L_GROUP)->to_group_manager();
@@ -374,14 +374,14 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
 
     if (work_info->error || (error && *error == 1)) {
         aw_message(work_info->error);
-        GB_abort_transaction(gb_main); // hier evtl. nochmal route_down_hierarchy aufrufen ?!!
+        GB_abort_transaction(GLOBAL_gb_main); // hier evtl. nochmal route_down_hierarchy aufrufen ?!!
         ED4_ROOT->refresh_all_windows(0);
     }
     else {
-        GB_pop_transaction( gb_main );
+        GB_pop_transaction( GLOBAL_gb_main );
 
         if (work_info->refresh_needed) {
-            GB_transaction dummy(gb_main);
+            GB_transaction dummy(GLOBAL_gb_main);
 
             terminal->set_refresh();
             terminal->parent->refresh_requested_by_child();
@@ -491,7 +491,7 @@ void ED4_input_cb(AW_window *aww,AW_CL /*cd1*/, AW_CL /*cd2*/)
             }
 #endif
 
-            GB_transaction dummy(gb_main);
+            GB_transaction dummy(GLOBAL_gb_main);
             ED4_ROOT->main_manager->event_sent_by_parent( &event, aww );
             break;
         }
@@ -533,7 +533,7 @@ void ED4_vertical_change_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 
     ED4_ROOT->use_window(aww);
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     ED4_window *win = ED4_ROOT->get_ed4w();
     AW_pos old_slider_pos = win->slider_pos_vertical;
@@ -559,7 +559,7 @@ void ED4_vertical_change_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     win->scroll_rectangle(0, -slider_diff);
     win->slider_pos_vertical = aww->slider_pos_vertical;
 
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
     win->update_window_coords();
 }
 
@@ -570,7 +570,7 @@ void ED4_horizontal_change_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 
     ED4_ROOT->use_window(aww);
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     ED4_window *win = ED4_ROOT->get_ed4w();
     AW_pos old_slider_pos = win->slider_pos_horizontal;
@@ -594,7 +594,7 @@ void ED4_horizontal_change_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     win->scroll_rectangle(-slider_diff, 0);
     win->slider_pos_horizontal = aww->slider_pos_horizontal;
 
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
     win->update_window_coords();
 }
 
@@ -605,7 +605,7 @@ void ED4_scrollbar_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 
     ED4_ROOT->use_window(aww);
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     AW_pos old_hslider_pos = ED4_ROOT->get_ed4w()->slider_pos_horizontal;
     AW_pos old_vslider_pos = ED4_ROOT->get_ed4w()->slider_pos_vertical;
@@ -622,7 +622,7 @@ void ED4_scrollbar_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
     ED4_ROOT->get_ed4w()->slider_pos_vertical = aww->slider_pos_vertical;
     ED4_ROOT->get_ed4w()->slider_pos_horizontal = aww->slider_pos_horizontal;
 
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
     ED4_ROOT->get_ed4w()->update_window_coords();
     //    paintMarksOfSelectedObjects();
 }
@@ -695,7 +695,7 @@ void ED4_motion_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
         }
 #endif
 
-        GB_transaction dummy(gb_main);
+        GB_transaction dummy(GLOBAL_gb_main);
         ED4_ROOT->main_manager->event_sent_by_parent( &event, aww );
     }
 }
@@ -821,7 +821,7 @@ void ED4_quit_editor(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)          //Be
         while (ED4_ROOT->first_window)
             ED4_ROOT->first_window->delete_window(ED4_ROOT->first_window);
 
-        GB_close(gb_main);
+        GB_close(GLOBAL_gb_main);
         ::exit(0);
     }
     // case : in another window close has been pressed
@@ -849,10 +849,10 @@ void ED4_save_data( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 
 void ED4_timer_refresh()
 {
-    GB_begin_transaction(gb_main);                  // for callbacks from database
+    GB_begin_transaction(GLOBAL_gb_main);                  // for callbacks from database
     //    ED4_ROOT->refresh_all_windows(0);
-    GB_tell_server_dont_wait(gb_main);
-    GB_commit_transaction(gb_main);
+    GB_tell_server_dont_wait(GLOBAL_gb_main);
+    GB_commit_transaction(GLOBAL_gb_main);
 }
 
 void ED4_timer(AW_root *, AW_CL cd1, AW_CL cd2 )
@@ -864,7 +864,7 @@ void ED4_timer(AW_root *, AW_CL cd1, AW_CL cd2 )
 
 void ED4_refresh_window( AW_window *aww, AW_CL cd_called_from_menu, AW_CL /*cd2*/ )
 {
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     if (int(cd_called_from_menu)) {
         ED4_ROOT->use_window(aww);
@@ -883,7 +883,7 @@ void ED4_refresh_window( AW_window *aww, AW_CL cd_called_from_menu, AW_CL /*cd2*
 }
 
 void ED4_set_reference_species( AW_window *aww, AW_CL disable, AW_CL cd2 ){
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     if (disable) {
         ED4_ROOT->reference->init();
@@ -902,7 +902,7 @@ void ED4_set_reference_species( AW_window *aww, AW_CL disable, AW_CL cd2 ){
                 ED4_ROOT->reference->init("CONSENSUS", consensus, table->size());
             }
             else if (manager->parent->flag.is_SAI) {
-                char *name = GBT_read_string(gb_main,AWAR_SPECIES_NAME);
+                char *name = GBT_read_string(GLOBAL_gb_main,AWAR_SPECIES_NAME);
                 int   datalen;
                 char *data = terminal->resolve_pointer_to_string_copy(&datalen);
 
@@ -912,7 +912,7 @@ void ED4_set_reference_species( AW_window *aww, AW_CL disable, AW_CL cd2 ){
                 free(name);
             }
             else {
-                char *name = GBT_read_string(gb_main,AWAR_SPECIES_NAME);
+                char *name = GBT_read_string(GLOBAL_gb_main,AWAR_SPECIES_NAME);
 
                 ED4_ROOT->reference->init(name, ED4_ROOT->alignment_name);
                 delete name;
@@ -928,7 +928,7 @@ void ED4_set_reference_species( AW_window *aww, AW_CL disable, AW_CL cd2 ){
 
 //TODO: Ralf zeigen
 void ED4_set_active_protstruct_SAI (AW_window *aww, AW_CL disable, AW_CL cd2 ) {
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     if (disable) {
         ED4_ROOT->reference->init();
@@ -944,7 +944,7 @@ void ED4_set_active_protstruct_SAI (AW_window *aww, AW_CL disable, AW_CL cd2 ) {
                 char *active_protstruct_SAI = terminal->get_name_of_species();
                 e4_assert(active_protstruct_SAI);
                 aww->get_root()->awar(ED4_AWAR_ACTIVE_PROTEIN_STRUCTURE_SAI)->write_string(active_protstruct_SAI);
-                ED4_ROOT->protstruct = ED4_find_protein_structure_SAI(gb_main, ED4_ROOT->alignment_name);
+                ED4_ROOT->protstruct = ED4_find_protein_structure_SAI(GLOBAL_gb_main, ED4_ROOT->alignment_name);
                 if (ED4_ROOT->protstruct) {
                     ED4_ROOT->protstruct_len = strlen(ED4_ROOT->protstruct);
                 } else {
@@ -1242,7 +1242,7 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
 
 static void group_species(int use_field, AW_window *use_as_main_window) {
     GB_ERROR error = 0;
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     ED4_ROOT->use_window(use_as_main_window);
 
@@ -1329,10 +1329,10 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
 
     if (error) {
         aw_message(error);
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
     }
     else {
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
     }
 }
 
@@ -1357,7 +1357,7 @@ static AW_window *create_group_species_by_field_window(AW_root *aw_root, AW_wind
     aws->callback( (AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE","C");
 
-    awt_create_selection_list_on_scandb(gb_main, (AW_window*)aws, AWAR_FIELD_CHOSEN, -1, "source",0, &AWT_species_selector, 20, 10);
+    awt_create_selection_list_on_scandb(GLOBAL_gb_main, (AW_window*)aws, AWAR_FIELD_CHOSEN, -1, "source",0, &AWT_species_selector, 20, 10);
 
     return aws;
 }
@@ -1383,7 +1383,7 @@ void ED4_load_new_config(char *string)
     char *config_data_middle = NULL;
     
     ED4_window     *window;
-    GB_transaction  dummy(gb_main);
+    GB_transaction  dummy(GLOBAL_gb_main);
 
 
     ED4_ROOT->main_manager->clear_whole_background();
@@ -1421,13 +1421,13 @@ void ED4_load_new_config(char *string)
     ED4_ROOT->main_manager              = NULL;
     delete ED4_ROOT->ecoli_ref;
     {
-        GB_push_transaction(gb_main);
-        GBDATA *gb_configuration = GBT_find_configuration(gb_main, string);
+        GB_push_transaction(GLOBAL_gb_main);
+        GBDATA *gb_configuration = GBT_find_configuration(GLOBAL_gb_main, string);
         GBDATA *gb_middle_area = GB_search(gb_configuration, "middle_area", GB_FIND);
         GBDATA *gb_top_area = GB_search(gb_configuration, "top_area", GB_FIND);
         config_data_middle = GB_read_as_string(gb_middle_area);
         config_data_top = GB_read_as_string(gb_top_area);
-        GB_pop_transaction(gb_main);
+        GB_pop_transaction(GLOBAL_gb_main);
     }
 
     ED4_ROOT->first_window->reset_all_for_new_config();
@@ -1463,7 +1463,7 @@ void ed4_changesecurity(AW_root *root, AW_CL /*cd1*/)
 
     ED4_ROOT->aw_root->awar(AWAR_EDIT_SECURITY_LEVEL)->map(awar_name);
     level = ED4_ROOT->aw_root->awar(awar_name)->read_int();
-    GB_change_my_security (gb_main, level, "");
+    GB_change_my_security (GLOBAL_gb_main, level, "");
 }
 
 void ed4_change_edit_mode(AW_root *root, AW_CL cd1)
@@ -1521,7 +1521,7 @@ void ED4_start_editor_on_configuration(AW_window *aww){
 void ED4_compression_changed_cb(AW_root *awr){
     ED4_remap_mode mode = (ED4_remap_mode)awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->read_int();
     int percent = awr->awar(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT)->read_int();
-    GB_transaction transaction_var(gb_main);
+    GB_transaction transaction_var(GLOBAL_gb_main);
 
     if (ED4_ROOT->root_group_man) {
         ED4_cursor& cursor  = ED4_ROOT->get_ed4w()->cursor;
@@ -1737,7 +1737,7 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
 
 void ED4_create_consensus_awars(AW_root *aw_root)
 {
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     aw_root->awar_int(ED4_AWAR_CONSENSUS_COUNTGAPS, 1)->add_callback(ED4_consensus_definition_changed, 0, 0);
     aw_root->awar_int(ED4_AWAR_CONSENSUS_GAPBOUND, 60)->add_callback(ED4_consensus_definition_changed, 0, 0);
@@ -1766,7 +1766,7 @@ AW_window *ED4_start_editor_on_old_configuration(AW_root *awr)
     aws->init( awr, "LOAD_OLD_CONFIGURATION", "SELECT A CONFIGURATION");
     aws->at(10,10);
     aws->auto_space(0,0);
-    awt_create_selection_list_on_configurations(gb_main,(AW_window *)aws,AWAR_EDIT_CONFIGURATION);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_main,(AW_window *)aws,AWAR_EDIT_CONFIGURATION);
     aws->at_newline();
 
     aws->callback((AW_CB0)ED4_start_editor_on_configuration);
@@ -1807,7 +1807,7 @@ AW_window *ED4_save_configuration_as_open_window(AW_root *awr){
     aws->create_input_field(AWAR_EDIT_CONFIGURATION);
 
     aws->at("confs");
-    awt_create_selection_list_on_configurations(gb_main,aws,AWAR_EDIT_CONFIGURATION);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_main,aws,AWAR_EDIT_CONFIGURATION);
 
     aws->at("go");
     aws->callback(ED4_save_configuration, 1);
@@ -1851,7 +1851,7 @@ static GB_ERROR createDataFromConsensus(GBDATA *gb_species, ED4_group_manager *g
         }
     }
 
-    GB_CSTR ali = GBT_get_default_alignment(gb_main);
+    GB_CSTR ali = GBT_get_default_alignment(GLOBAL_gb_main);
     GBDATA *gb_ali = GB_search(gb_species, ali, GB_DB);
     if (gb_ali) {
         GBDATA *gb_data = GB_search(gb_ali, "data", GB_STRING);
@@ -1937,8 +1937,8 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
         error = GB_export_error("Please enter a full_name for the new species");
     }
     else {
-        error                    = GB_begin_transaction(gb_main);
-        GBDATA *gb_species_data  = GB_search(gb_main, "species_data",  GB_CREATE_CONTAINER);
+        error                    = GB_begin_transaction(GLOBAL_gb_main);
+        GBDATA *gb_species_data  = GB_search(GLOBAL_gb_main, "species_data",  GB_CREATE_CONTAINER);
         char   *new_species_name = 0;
         char   *acc              = 0;
         char   *addid            = 0;
@@ -1972,7 +1972,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                     GBDATA *gb_acc  = GB_search(gb_source, "acc", GB_FIND);
                     if (gb_acc) acc = GB_read_string(gb_acc); // if has accession
 
-                    const char *add_field = AW_get_nameserver_addid(gb_main);
+                    const char *add_field = AW_get_nameserver_addid(GLOBAL_gb_main);
                     GBDATA     *gb_addid  = add_field[0] ? GB_search(gb_source, add_field, GB_FIND) : 0;
                     if (gb_addid) addid   = GB_read_as_string(gb_addid);
                 }
@@ -1989,7 +1989,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
                 error = "It's no good idea to create the short-name for a new species using the nameserver! (has no acc yet)";
             }
             else {
-                error = AWTC_generate_one_name(gb_main, new_species_full_name, acc, addid, new_species_name, true, true);
+                error = AWTC_generate_one_name(GLOBAL_gb_main, new_species_full_name, acc, addid, new_species_name, true, true);
                 if (!error) {   // name was created
                     if (!nameIsUnique(new_species_name, gb_species_data)) {
                         if (!existingNames) existingNames = new UniqueNameDetector(gb_species_data);
@@ -2024,12 +2024,12 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
 
             if (!error) {
                 if (creation_mode==CREATE_NEW_SPECIES) {
-                    GBDATA *gb_created_species = GBT_create_species(gb_main, new_species_name);
+                    GBDATA *gb_created_species = GBT_create_species(GLOBAL_gb_main, new_species_name);
                     if (!gb_created_species) {
                         error = GB_export_error("Failed to create new species '%s'", new_species_name);
                     }
                     else {
-                        GB_CSTR ali = GBT_get_default_alignment(gb_main);
+                        GB_CSTR ali = GBT_get_default_alignment(GLOBAL_gb_main);
                         GBDATA *gb_ali = GB_search(gb_created_species, ali, GB_DB);
                         if (gb_ali) {
                             GBDATA *gb_data = GB_search(gb_ali, "data", GB_STRING);
@@ -2298,10 +2298,10 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
             }
 
             if (error) {
-                GB_abort_transaction(gb_main);
+                GB_abort_transaction(GLOBAL_gb_main);
             }
             else {
-                GB_pop_transaction(gb_main);
+                GB_pop_transaction(GLOBAL_gb_main);
 
                 ED4_get_and_jump_to_species(new_species_name);
                 ED4_ROOT->refresh_all_windows(1);

@@ -7,8 +7,8 @@
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <awt.hxx>
-extern GBDATA *gb_main;
 
+extern GBDATA *GLOBAL_gb_main;
 
 void fields_vars_callback(AW_root *aw_root)
 {

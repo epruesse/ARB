@@ -43,7 +43,7 @@
 
 using namespace std;
 
-extern GBDATA               *gb_main;
+extern GBDATA               *GLOBAL_gb_main;
 static AW_selection_list    *con_alignment_list;
 static AW_selection_list    *db_alignment_list;
 
@@ -67,7 +67,7 @@ void createSelectionList_callBack(struct conAlignStruct *cas){
     char   *alignment_name;
     char   *alignment_type;
 
-    GB_push_transaction(gb_main);  //opening a transaction if not opened yet
+    GB_push_transaction(GLOBAL_gb_main);  //opening a transaction if not opened yet
 
     AW_root *aw_root = cas->aws->get_root();
     char *ali_type   = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
@@ -75,7 +75,7 @@ void createSelectionList_callBack(struct conAlignStruct *cas){
 
     cas->aws->clear_selection_list(cas->db_id); //clearing the selection list
 
-    for (gb_alignment = GB_search(gb_main,"presets/alignment",GB_FIND);
+    for (gb_alignment = GB_search(GLOBAL_gb_main,"presets/alignment",GB_FIND);
          gb_alignment;
          gb_alignment = GB_find(gb_alignment,"alignment",0,this_level|search_next))
         {
@@ -95,7 +95,7 @@ void createSelectionList_callBack(struct conAlignStruct *cas){
     cas->aws->insert_default_selection( cas->db_id, "????", "????" );
     cas->aws->update_selection_list( cas->db_id );
 
-    GB_pop_transaction(gb_main); //closing a transaction
+    GB_pop_transaction(GLOBAL_gb_main); //closing a transaction
     free(ali_type);
 }
 
@@ -305,7 +305,7 @@ GB_ERROR displayAlignmentInfo(GBDATA *gb_main, GB_ERROR error, char *new_ali_nam
 /*---------------------------------------- Concatenation function ----------------------------------*/
 void concatenateAlignments(AW_window *aws) {
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
     AW_root  *aw_root = aws->get_root();
 
     int no_of_sel_alignments = aws->get_no_of_entries(con_alignment_list); //getting number of selected alignments
@@ -316,7 +316,7 @@ void concatenateAlignments(AW_window *aws) {
     long new_alignment_len     = 0;
 
     while(const_ali_name){   //computing the length for the new concatenated alignment
-        new_alignment_len += GBT_get_alignment_len(gb_main, const_ali_name);
+        new_alignment_len += GBT_get_alignment_len(GLOBAL_gb_main, const_ali_name);
         const_ali_name     = con_alignment_list->next_element();
     }
 
@@ -324,7 +324,7 @@ void concatenateAlignments(AW_window *aws) {
     GB_ERROR error     = GBT_check_alignment_name(new_ali_name);
 
     if (!error) { /// handle error
-        GBDATA *gb_presets          = GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
+        GBDATA *gb_presets          = GB_search(GLOBAL_gb_main, "presets", GB_CREATE_CONTAINER);
         GBDATA *gb_alignment_exists = GB_find(gb_presets, "alignment_name", new_ali_name, down_2_level);
         GBDATA *gb_new_alignment    = 0;
         char   *seq_type            = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
@@ -333,11 +333,11 @@ void concatenateAlignments(AW_window *aws) {
             int ans = aw_message(GBS_global_string("Existing data in alignment \"%s\" may be overwritten. Do you want to continue?", new_ali_name), "YES,NO", false);
             if (ans) error = "Alignment exists! Quitting function...!!!";
             else {
-                gb_new_alignment = GBT_get_alignment(gb_main,new_ali_name);
+                gb_new_alignment = GBT_get_alignment(GLOBAL_gb_main,new_ali_name);
                 if (!gb_new_alignment) error = GB_get_error();
             }
         } else {
-            gb_new_alignment = GBT_create_alignment(gb_main,new_ali_name,new_alignment_len,0,0,seq_type);
+            gb_new_alignment = GBT_create_alignment(GLOBAL_gb_main,new_ali_name,new_alignment_len,0,0,seq_type);
             if (!gb_new_alignment) error = GB_get_error();
         }
 
@@ -348,7 +348,7 @@ void concatenateAlignments(AW_window *aws) {
             char *alignment_separator = aw_root->awar(AWAR_CON_ALIGNMENT_SEPARATOR)->read_string();
             AW_repeated_question ask_about_missing_alignment;
 
-            for (GBDATA *gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)){
+            for (GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)){
                 void *str_seq = GBS_stropen(new_alignment_len+1000);            /* create output stream */
                 int ali_len = 0; int ali_ctr = 0;
                 const_ali_name = con_alignment_list->first_element();
@@ -365,7 +365,7 @@ void concatenateAlignments(AW_window *aws) {
                         char *question    = GBS_global_string_copy("\"%s\" alignment doesn`t exist in \"%s\"!", const_ali_name, speciesName);
                         int skip_ali      = ask_about_missing_alignment.get_answer(question, "Insert Gaps for Missing Alignment,Skip Missing Alignment", "all", true);
                         if (!skip_ali) {
-                            ali_len = GBT_get_alignment_len(gb_main, const_ali_name);
+                            ali_len = GBT_get_alignment_len(GLOBAL_gb_main, const_ali_name);
                             for ( int j = 0; j<ali_len; j++) {  GBS_strcat(str_seq,"."); }
                         }
                         ++missing[ali_ctr];
@@ -386,7 +386,7 @@ void concatenateAlignments(AW_window *aws) {
             }
 
             {    /*............. print missing alignments...........*/
-                aw_message(GBS_global_string("Concatenation of Alignments was performed for %ld species.",GBT_count_marked_species(gb_main)));
+                aw_message(GBS_global_string("Concatenation of Alignments was performed for %ld species.",GBT_count_marked_species(GLOBAL_gb_main)));
                 const_ali_name = con_alignment_list->first_element(); int i = 0;
                 while (const_ali_name) {
                     aw_message(GBS_global_string("%s : Found in %d species & Missing in %d species.",const_ali_name,found[i],missing[i]));
@@ -395,7 +395,7 @@ void concatenateAlignments(AW_window *aws) {
                 }
             }
 
-            error = displayAlignmentInfo(gb_main,error,new_ali_name,alignment_separator);
+            error = displayAlignmentInfo(GLOBAL_gb_main,error,new_ali_name,alignment_separator);
             free(alignment_separator);
         }
         free(seq_type);
@@ -403,11 +403,11 @@ void concatenateAlignments(AW_window *aws) {
 
     if (!error) {
         char *nfield = GB_strdup(GBS_global_string("%s/data",new_ali_name));
-        awt_add_new_changekey( gb_main,nfield,GB_STRING);
+        awt_add_new_changekey( GLOBAL_gb_main,nfield,GB_STRING);
         free(nfield);
-        GB_pop_transaction(gb_main);
+        GB_pop_transaction(GLOBAL_gb_main);
     } else {
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
         aw_message(error);
     }
     free(new_ali_name);
@@ -415,7 +415,7 @@ void concatenateAlignments(AW_window *aws) {
 
 static void addSpeciesToConcatenateList(void **speciesConcatenateListPtr,GB_CSTR species_name){
 
-    GBDATA *gb_species_data = GB_search(gb_main, "species_data",  GB_CREATE_CONTAINER);
+    GBDATA *gb_species_data = GB_search(GLOBAL_gb_main, "species_data",  GB_CREATE_CONTAINER);
     GBDATA *gb_species      = GBT_find_species_rel_species_data(gb_species_data, species_name);
 
     if (gb_species) {
@@ -601,10 +601,10 @@ GB_ERROR checkAndMergeFields( GBDATA *gb_new_species, GB_ERROR error, speciesCon
 }
 
 GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speciesConcatenateList scl){
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     GB_ERROR  error           = 0;
-    GBDATA   *gb_species_data = GB_search(gb_main, "species_data",  GB_CREATE_CONTAINER);
+    GBDATA   *gb_species_data = GB_search(GLOBAL_gb_main, "species_data",  GB_CREATE_CONTAINER);
 
     // data needed for name generation
     char *full_name = 0;
@@ -641,7 +641,7 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
     }
 
     if (!error) {
-        char **ali_names = GBT_get_alignment_names(gb_main);
+        char **ali_names = GBT_get_alignment_names(GLOBAL_gb_main);
         long   id        = 0;
 
         for (speciesConcatenateList speciesList = scl; speciesList; speciesList = speciesList->next) {
@@ -673,11 +673,11 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
     if (!error) {
         char *new_species_name = 0;
 
-        const char *add_field = AW_get_nameserver_addid(gb_main);
+        const char *add_field = AW_get_nameserver_addid(GLOBAL_gb_main);
         GBDATA     *gb_addid  = add_field[0] ? GB_find(gb_new_species, add_field, 0, down_level) : 0;
         if (gb_addid) addid = GB_read_string(gb_addid);
 
-        error = AWTC_generate_one_name(gb_main, full_name, acc, addid, new_species_name, false, true);
+        error = AWTC_generate_one_name(GLOBAL_gb_main, full_name, acc, addid, new_species_name, false, true);
         if (!error) {   // name was created
             if (GBT_find_species_rel_species_data(gb_species_data, new_species_name) != 0) { //if the name is not unique create unique name
                 UniqueNameDetector und(gb_species_data);
@@ -697,12 +697,12 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
     }
 
     if (error) {
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
         gb_new_species = 0;
         aw_message(error, "OK");
     }
     else {
-        GB_pop_transaction(gb_main);
+        GB_pop_transaction(GLOBAL_gb_main);
     }
 
     free(addid);
@@ -745,11 +745,11 @@ void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignme
     speciesConcatenateList scl            = 0; //to build list of similar species
     speciesConcatenateList newSpeciesList = 0;//new SPECIES_ConcatenateList;
 
-    GB_begin_transaction(gb_main);  //open database for transaction
+    GB_begin_transaction(GLOBAL_gb_main);  //open database for transaction
 
-    GB_ERROR error = checkAndCreateNewField(gb_main,new_field_name);
+    GB_ERROR error = checkAndCreateNewField(GLOBAL_gb_main,new_field_name);
 
-    for (GBDATA *gb_species = GBT_first_marked_species(gb_main); gb_species && !error; gb_species = GBT_next_marked_species(gb_species)) {
+    for (GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main); gb_species && !error; gb_species = GBT_next_marked_species(gb_species)) {
         GBDATA  *gb_species_field = GB_find(gb_species, merge_field_name, 0, down_level);
         if (gb_species_field) {
             char *gb_species_field_content = GB_read_string(gb_species_field);
@@ -804,7 +804,7 @@ void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignme
     }
 
     if(!error){
-        GBT_mark_all(gb_main,0); //unmark all species in the database
+        GBT_mark_all(GLOBAL_gb_main,0); //unmark all species in the database
         int newSpeciesCount = 0;
         for (; newSpeciesList; newSpeciesList = newSpeciesList->next) {    //mark only newly created species
             GB_write_flag(newSpeciesList->species, 1);
@@ -817,9 +817,9 @@ void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignme
     free(merge_field_name);
     free(new_field_name);
 
-    if (!error)  GB_commit_transaction(gb_main);
+    if (!error)  GB_commit_transaction(GLOBAL_gb_main);
     else {
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
         aw_message(error);
     }
 
@@ -850,7 +850,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root, AW_CL cl_ntw){
     aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("dbAligns");
-    conAlignStruct *cas = createSelectionList(gb_main, (AW_window *)aws, AWAR_CON_DB_ALIGNS);
+    conAlignStruct *cas = createSelectionList(GLOBAL_gb_main, (AW_window *)aws, AWAR_CON_DB_ALIGNS);
 
     aws->at("concatAligns");
     con_alignment_list = aws->create_selection_list(AWAR_CON_CONCAT_ALIGNS, "concatAligns","N");
@@ -932,7 +932,7 @@ static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, int option, 
     aws->at("field_select");
     aws->auto_space(0,0);
     aws->callback(AW_POPDOWN);
-    awt_create_selection_list_on_scandb(gb_main,aws, AWAR_CON_MERGE_FIELD, AWT_NDS_FILTER,"field_select", 0,  &AWT_species_selector, 20, 30,true,true,true);
+    awt_create_selection_list_on_scandb(GLOBAL_gb_main,aws, AWAR_CON_MERGE_FIELD, AWT_NDS_FILTER,"field_select", 0,  &AWT_species_selector, 20, 30,true,true,true);
 
     aws->at("store_sp_no");
     aws->label_length(20);

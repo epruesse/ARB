@@ -175,7 +175,7 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
 
 
 void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
-    GB_ERROR               error    = GB_begin_transaction(gb_main);
+    GB_ERROR               error    = GB_begin_transaction(GLOBAL_gb_main);
     ED4_sequence_terminal *err_term = 0;
     //    ED4_terminal *term        = ED4_ROOT->root_group_man->get_first_terminal();
 
@@ -225,10 +225,10 @@ void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
         sprintf(buffer, "Error in blockoperation: %s", error);
         aw_message(buffer);
 
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
     }
     else {
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
 
         if (base_pos != -1) {
             cursor->jump_base_pos(ED4_ROOT->get_aww(), base_pos, ED4_JUMP_KEEP_VISIBLE); // restore cursor at same base

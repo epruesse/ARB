@@ -16,7 +16,7 @@
 #endif
 #define nt_assert(bed) arb_assert(bed)
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 #define AWAR_SPECIES_JOIN_FIELD "/tmp/NT/species_join/field"
 #define AWAR_SPECIES_JOIN_SEP   "/tmp/NT/species_join/seperator"
@@ -110,17 +110,17 @@ void species_rename_join(AW_window *aww){
     char     *field = aww->get_root()->awar(AWAR_SPECIES_JOIN_FIELD)->read_string();
     char     *sep   = aww->get_root()->awar(AWAR_SPECIES_JOIN_SEP)->read_string();
     char     *sep2  = aww->get_root()->awar(AWAR_SPECIES_JOIN_SEP2)->read_string();
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
 
     GBDATA  *gb_species, *gb_next;
     GBDATA  *gb_field;
     GB_HASH *hash = GBS_create_hash(1000,0);
     aw_openstatus("Joining species");
 
-    long maxs = GBT_count_marked_species(gb_main);
+    long maxs = GBT_count_marked_species(GLOBAL_gb_main);
     long cnt  = 0;
 
-    for (gb_species = GBT_first_marked_species(gb_main);
+    for (gb_species = GBT_first_marked_species(GLOBAL_gb_main);
          gb_species;
          gb_species = gb_next)
     {
@@ -136,16 +136,16 @@ void species_rename_join(AW_window *aww){
             continue;
         }
 #if defined(DEBUG)
-        GB_commit_transaction(gb_main);
-        GB_begin_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
+        GB_begin_transaction(GLOBAL_gb_main);
 #endif // DEBUG
 
         error = nt_species_join(gb_old,gb_species,0,sep,sep2);
         if (error) break;
 
 #if defined(DEBUG)
-        GB_commit_transaction(gb_main);
-        GB_begin_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
+        GB_begin_transaction(GLOBAL_gb_main);
 #endif // DEBUG
 
         error = GB_delete(gb_species);
@@ -154,8 +154,8 @@ void species_rename_join(AW_window *aww){
 
     aw_closestatus();
 
-    if (!error) GB_commit_transaction(gb_main);
-    else GB_abort_transaction(gb_main);
+    if (!error) GB_commit_transaction(GLOBAL_gb_main);
+    else GB_abort_transaction(GLOBAL_gb_main);
 
     if (error) aw_message(error);
 
@@ -197,7 +197,7 @@ AW_window *create_species_join_window(AW_root *root)
     aws->help_text("species_join.hlp");
     aws->create_button("GO","GO","G");
 
-    awt_create_selection_list_on_scandb(gb_main,
+    awt_create_selection_list_on_scandb(GLOBAL_gb_main,
                                         (AW_window*)aws,AWAR_SPECIES_JOIN_FIELD,
                                         AWT_NDS_FILTER,
                                         "field",0, &AWT_species_selector, 20, 10);

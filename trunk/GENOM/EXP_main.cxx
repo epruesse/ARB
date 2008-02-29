@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_main.cxx                                           //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri Nov/04/2005 17:30 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Feb/28/2008 16:22 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -50,14 +50,14 @@ void EXP_update_combined_cb(AW_root *awr) {
 //      void EXP_create_awars(AW_root *aw_root, AW_default aw_def)
 //  -------------------------------------------------------------------
 void EXP_create_awars(AW_root *aw_root, AW_default /*aw_def*/) {
-    aw_root->awar_string(AWAR_EXPERIMENT_NAME, "" , gb_main)->add_callback((AW_RCB0)EXP_update_combined_cb);
-    aw_root->awar_string(AWAR_PROTEOM_NAME, "" , gb_main);
-    aw_root->awar_string(AWAR_PROTEIN_NAME, "" , gb_main);
-    aw_root->awar_string(AWAR_ORGANISM_NAME, "" ,   gb_main)->add_callback((AW_RCB0)EXP_update_combined_cb);
-    aw_root->awar_string(AWAR_COMBINED_EXPERIMENT_NAME, "" , gb_main);
+    aw_root->awar_string(AWAR_EXPERIMENT_NAME, "" , GLOBAL_gb_main)->add_callback((AW_RCB0)EXP_update_combined_cb);
+    aw_root->awar_string(AWAR_PROTEOM_NAME, "" , GLOBAL_gb_main);
+    aw_root->awar_string(AWAR_PROTEIN_NAME, "" , GLOBAL_gb_main);
+    aw_root->awar_string(AWAR_ORGANISM_NAME, "" ,   GLOBAL_gb_main)->add_callback((AW_RCB0)EXP_update_combined_cb);
+    aw_root->awar_string(AWAR_COMBINED_EXPERIMENT_NAME, "" , GLOBAL_gb_main);
 
-    aw_root->awar_string(AWAR_SPECIES_NAME,"",gb_main)->add_callback((AW_RCB0)EXP_species_name_changed_cb);
-    aw_root->awar_string(AWAR_EXPERIMENT_DEST, "" , gb_main);
+    aw_root->awar_string(AWAR_SPECIES_NAME,"",GLOBAL_gb_main)->add_callback((AW_RCB0)EXP_species_name_changed_cb);
+    aw_root->awar_string(AWAR_EXPERIMENT_DEST, "" , GLOBAL_gb_main);
 }
 
 //  -----------------------------------------------------------------------------
@@ -86,8 +86,8 @@ public:
         GBDATA *gb_experiment   = 0;
 
         if (species_name[0] && experiment_name[0]) {
-            GB_transaction dummy(gb_main);
-            GBDATA *gb_species = GBT_find_species(gb_main,species_name);
+            GB_transaction dummy(GLOBAL_gb_main);
+            GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,species_name);
             if (gb_species) {
                 gb_experiment = EXP_find_experiment(gb_species, experiment_name);
             }
@@ -112,7 +112,7 @@ static void EXP_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
     int                              id         = int(cl_id);
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
     exp_assert(descriptor);
-    if (descriptor) AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_experiment, descriptor->get_internal_maskname(), descriptor->is_local_mask());
+    if (descriptor) AWT_initialize_input_mask(aww->get_root(), GLOBAL_gb_main, &item_type_experiment, descriptor->get_internal_maskname(), descriptor->is_local_mask());
 }
 
 //  -----------------------------------------------------------------------
@@ -123,7 +123,7 @@ static void EXP_create_mask_submenu(AW_window_menu_modes *awm) {
 }
 
 static AW_window *EXP_create_experiment_colorize_window(AW_root *aw_root) {
-    return awt_create_item_colorizer(aw_root, gb_main, &EXP_item_selector);
+    return awt_create_item_colorizer(aw_root, GLOBAL_gb_main, &EXP_item_selector);
 }
 
 #define AWMIMT awm->insert_menu_topic

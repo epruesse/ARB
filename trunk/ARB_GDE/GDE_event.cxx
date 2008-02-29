@@ -297,20 +297,20 @@ static void GDE_freeali(NA_Alignment *dataset)
 
 static void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
 {
-    GB_begin_transaction(gb_main);
-    long maxalignlen=GBT_get_alignment_len(gb_main,align);
+    GB_begin_transaction(GLOBAL_gb_main);
+    long maxalignlen=GBT_get_alignment_len(GLOBAL_gb_main,align);
     long isdefaultalign=0;
     int load_all = 0;
     if(maxalignlen<=0)
     {
-        align=GBT_get_default_alignment(gb_main);
+        align=GBT_get_default_alignment(GLOBAL_gb_main);
         isdefaultalign=1;
     }
 
-    maxalignlen=GBT_get_alignment_len(gb_main,align);
+    maxalignlen=GBT_get_alignment_len(GLOBAL_gb_main,align);
     long lotyp=0;
     {
-        GB_alignment_type at = GBT_get_alignment_type(gb_main, align);
+        GB_alignment_type at = GBT_get_alignment_type(GLOBAL_gb_main, align);
 
         switch (at)
         {
@@ -346,17 +346,17 @@ static void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
         if (!issame)            /* save as extended */
         {
 
-            GBDATA *gb_extended =   GBT_create_SAI(gb_main,savename);
+            GBDATA *gb_extended =   GBT_create_SAI(GLOBAL_gb_main,savename);
             sequ->gb_species=gb_extended;
             GBDATA *gb_data = GBT_add_data(gb_extended, align,"data", GB_STRING);
             error = GBT_write_sequence(gb_data,align,maxalignlen,(char *)sequ->sequence);
         }
         else /* save as sequence */
         {
-            GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+            GBDATA *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
             GBDATA *gb_species;
             gb_species = GBT_find_species_rel_species_data(gb_species_data, savename);
-            GB_push_my_security(gb_main);
+            GB_push_my_security(GLOBAL_gb_main);
 
             if (gb_species) {   /* new element that already exists !!!!*/
                 int select_mode;
@@ -425,7 +425,7 @@ static void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
             }
 
             error = GBT_write_sequence(gb_data,align,maxalignlen,(char *)sequ->sequence);
-            GB_pop_my_security(gb_main);
+            GB_pop_my_security(GLOBAL_gb_main);
 
         }
         free(savename);
@@ -473,17 +473,17 @@ static void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
         *resstring='\0';
 
 
-        GBDATA *gb_extended =   GBT_create_SAI(gb_main,"COLMASK");
+        GBDATA *gb_extended =   GBT_create_SAI(GLOBAL_gb_main,"COLMASK");
         gb_color = GBT_add_data(gb_extended, align,"colmask", GB_BYTES);
         error = GB_write_bytes(gb_color,dummy,maxalignlen);
 
         delete dummy;
     }
     if (error) {
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
         aw_message(error);
     }else{
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
     }
     if(isdefaultalign) delete align;
 }
@@ -512,7 +512,7 @@ void GDE_startaction_cb(AW_window *aw,AWwindowinfo *AWinfo,AW_CL cd)
     char *Action,buffer[GBUFSIZ];
     i=0;k=0;
     if (current_item->numinputs>0) {
-        DataSet->gb_main = gb_main;
+        DataSet->gb_main = GLOBAL_gb_main;
         GB_begin_transaction(DataSet->gb_main);
         delete DataSet->alignment_name;
         DataSet->alignment_name = GBT_get_default_alignment(DataSet->gb_main);

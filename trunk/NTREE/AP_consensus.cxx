@@ -63,7 +63,7 @@
 #define AWAR_MAX_FREQ_SAI_NAME AWAR_MAX_FREQ "sai_name"
 
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 enum {
     BAS_GAP,
     BAS_A,  BAS_C,  BAS_G,  BAS_T, BAS_N,
@@ -289,22 +289,22 @@ int CON_makegrouptable(char **gf,char *groupnames,
 
 long CON_makestatistic(int **statistic,int *convtable,char *align,int onlymarked)
 {
-    long maxalignlen=GBT_get_alignment_len(gb_main,align);
+    long maxalignlen=GBT_get_alignment_len(GLOBAL_gb_main,align);
     GBDATA *gb_species,*alidata;
     int i,nrofspecies=0;
 
     aw_status("reading database");
 
     if (onlymarked) {
-        nrofspecies = GBT_count_marked_species(gb_main);
+        nrofspecies = GBT_count_marked_species(GLOBAL_gb_main);
     } else {
-        nrofspecies = GBT_get_species_count(gb_main);
+        nrofspecies = GBT_get_species_count(GLOBAL_gb_main);
     }
 
     if (onlymarked) {
-        gb_species = GBT_first_marked_species(gb_main);
+        gb_species = GBT_first_marked_species(GLOBAL_gb_main);
     }else{
-        gb_species = GBT_first_species(gb_main);
+        gb_species = GBT_first_species(GLOBAL_gb_main);
     }
 
     long count = 0;
@@ -402,9 +402,9 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
     const char *off="off";
     const char *on="on";
     char *buffer=(char *)GB_calloc(2000,sizeof(char));
-//     GB_push_transaction(gb_main);
+//     GB_push_transaction(GLOBAL_gb_main);
 
-    GBDATA *gb_extended = GBT_create_SAI(gb_main,savename);
+    GBDATA *gb_extended = GBT_create_SAI(GLOBAL_gb_main,savename);
     GBDATA *gb_data = GBT_add_data(gb_extended, align,"data", GB_STRING);
     err = GB_write_string(gb_data,result);
     GBDATA *gb_options= GBT_add_data(gb_extended, align,"_TYPE", GB_STRING);
@@ -435,9 +435,9 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
         void *strstruct = GBS_stropen(1000);
 
         if (onlymarked) {
-            gb_species = GBT_first_marked_species(gb_main);
+            gb_species = GBT_first_marked_species(GLOBAL_gb_main);
         } else {
-            gb_species = GBT_first_species(gb_main);
+            gb_species = GBT_first_species(GLOBAL_gb_main);
         }
         while(gb_species)
         {
@@ -610,13 +610,13 @@ void CON_calculate_cb(AW_window *aw )
     char     *align = awr->awar("tmp/con/alignment")->read_string();
     GB_ERROR  error = 0;
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
-    long maxalignlen = GBT_get_alignment_len(gb_main,align);
+    long maxalignlen = GBT_get_alignment_len(GLOBAL_gb_main,align);
     if (maxalignlen <= 0) error = GB_export_error("alignment '%s' doesn't exist", align);
 
     if (!error) {
-        int isamino         = GBT_is_alignment_protein(gb_main,align);
+        int isamino         = GBT_is_alignment_protein(GLOBAL_gb_main,align);
         int onlymarked      = 1;
         int resultiscomplex = 1;
 
@@ -700,19 +700,19 @@ void CON_calculate_cb(AW_window *aw )
     free(align);
 
     if (error){
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
         aw_message(error);
     }
     else{
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
     }
 }
 
 void create_consensus_var(AW_root *aw_root, AW_default aw_def)
 {
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     {
-        char *defali = GBT_get_default_alignment(gb_main);
+        char *defali = GBT_get_default_alignment(GLOBAL_gb_main);
         aw_root->awar_string( "tmp/con/alignment", defali ,aw_def);
         free(defali);
     }
@@ -772,7 +772,7 @@ AP_open_con_expert_window( AW_root *aw_root)
     aws->update_toggle_field();
 
     aws->at("which_alignment");
-    awt_create_selection_list_on_ad(gb_main,
+    awt_create_selection_list_on_ad(GLOBAL_gb_main,
                                     (AW_window *)aws,"tmp/con/alignment","*=");
 
     aws->button_length( 15 );
@@ -815,7 +815,7 @@ AP_open_con_expert_window( AW_root *aw_root)
     aws->update_toggle_field();
 
     aws->at("save_box");
-    awt_create_selection_list_on_extendeds(gb_main,aws,"tmp/con/name");
+    awt_create_selection_list_on_extendeds(GLOBAL_gb_main,aws,"tmp/con/name");
 
     return (AW_window *)aws;
 }
@@ -851,7 +851,7 @@ AP_open_consensus_window( AW_root *aw_root)
     aws->init( aw_root, "SIMPLE_CONSENSUS", "SIMPLE CONSENSUS");
     aws->load_xfig("consensus/main.fig");
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     aws->button_length( 6 );
 
@@ -873,7 +873,7 @@ AP_open_consensus_window( AW_root *aw_root)
     aws->update_toggle_field();
 
     aws->at("which_alignment");
-    awt_create_selection_list_on_ad(gb_main,
+    awt_create_selection_list_on_ad(GLOBAL_gb_main,
                                     (AW_window *)aws,"tmp/con/alignment","*=");
 
     aws->button_length( 15 );
@@ -895,9 +895,9 @@ AP_open_consensus_window( AW_root *aw_root)
     aws->create_input_field("tmp/con/name",10);
 
     aws->at("save_box");
-    awt_create_selection_list_on_extendeds(gb_main,aws,"tmp/con/name");
+    awt_create_selection_list_on_extendeds(GLOBAL_gb_main,aws,"tmp/con/name");
 
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 
     return (AW_window *)aws;
 }
@@ -923,19 +923,19 @@ void CON_calc_max_freq_cb(AW_window *aw){
     long no_gaps;
 
     GB_ERROR  error       = 0;
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
-    char *align = GBT_get_default_alignment(gb_main);
-    maxalignlen = GBT_get_alignment_len(gb_main,align);
+    char *align = GBT_get_default_alignment(GLOBAL_gb_main);
+    maxalignlen = GBT_get_alignment_len(GLOBAL_gb_main,align);
     no_gaps     = awr->awar(AWAR_MAX_FREQ_NO_GAPS)->read_int();
 
     if(maxalignlen<=0) {
-        GB_pop_transaction(gb_main);
+        GB_pop_transaction(GLOBAL_gb_main);
         aw_message("alignment doesn't exist!");
         delete align;
         return;
     }
-    isamino = GBT_is_alignment_protein(gb_main,align);
+    isamino = GBT_is_alignment_protein(GLOBAL_gb_main,align);
 
     aw_openstatus("Max. Frequency");
     long nrofspecies;
@@ -969,7 +969,7 @@ void CON_calc_max_freq_cb(AW_window *aw){
     }
 
     char   *savename    = awr->awar(AWAR_MAX_FREQ_SAI_NAME)->read_string();
-    GBDATA *gb_extended = GBT_create_SAI(gb_main,savename);
+    GBDATA *gb_extended = GBT_create_SAI(GLOBAL_gb_main,savename);
     free(savename);
     GBDATA *gb_data     = GBT_add_data(gb_extended, align,"data", GB_STRING);
     GBDATA *gb_data2    = GBT_add_data(gb_extended, align,"dat2", GB_STRING);
@@ -986,7 +986,7 @@ void CON_calc_max_freq_cb(AW_window *aw){
         error=GB_write_string(gb_options,buffer);
     }
 
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 
     CON_cleartables(statistic,isamino);
     aw_closestatus();
@@ -1001,7 +1001,7 @@ AP_open_max_freq_window( AW_root *aw_root)
     aws->init( aw_root, "MAX_FREQUENCY", "MAX FREQUENCY");
     aws->load_xfig("consensus/max_freq.fig");
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     aws->button_length( 6 );
 
@@ -1019,12 +1019,12 @@ AP_open_max_freq_window( AW_root *aw_root)
     aws->create_input_field(AWAR_MAX_FREQ_SAI_NAME,1);
 
     aws->at("sai");
-    awt_create_selection_list_on_extendeds(gb_main,aws,AWAR_MAX_FREQ_SAI_NAME);
+    awt_create_selection_list_on_extendeds(GLOBAL_gb_main,aws,AWAR_MAX_FREQ_SAI_NAME);
 
     aws->at("gaps");
     aws->create_toggle(AWAR_MAX_FREQ_NO_GAPS);
 
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 
     return (AW_window *)aws;
 }

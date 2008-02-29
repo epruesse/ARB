@@ -1,4 +1,4 @@
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 #define NT_RESORT_FILTER (1<<GB_STRING)|(1<<GB_INT)|(1<<GB_FLOAT)
 
 AW_window *NT_build_resort_window(AW_root *awr);

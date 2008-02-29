@@ -49,21 +49,21 @@ tree_init()
 void NT_tree_init(AWT_graphic_tree *agt) {
 
     AP_tree *tree = agt->tree_root;
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     if (!tree) {
         return;
     }
-    char *use = GBT_read_string(gb_main,AWAR_ALIGNMENT);
+    char *use = GBT_read_string(GLOBAL_gb_main,AWAR_ALIGNMENT);
 
-    long ali_len = GBT_get_alignment_len(gb_main,use);
+    long ali_len = GBT_get_alignment_len(GLOBAL_gb_main,use);
     if (ali_len <=1) {
         aw_message("No valid alignment selected ! Try again","OK");
         exit(0);
     }
 
 
-    GB_BOOL is_aa = GBT_is_alignment_protein(gb_main,use);
+    GB_BOOL is_aa = GBT_is_alignment_protein(GLOBAL_gb_main,use);
     //
     // filter & weights setup
     //
@@ -116,24 +116,24 @@ double funktion_quadratisch(double x,double *param_list,int param_anz) {
 
 void PARS_kernighan_cb(AP_tree *tree) {
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     global_combineCount = 0;
 
     AP_FLOAT pars_start, pars_prev;
     pars_prev  = pars_start = nt->tree->tree_root->costs();
 
-    int rek_deep_max = (int)GBT_read_int(gb_main,"genetic/kh/maxdepth");
+    int rek_deep_max = (int)GBT_read_int(GLOBAL_gb_main,"genetic/kh/maxdepth");
 
-    AP_KL_FLAG funktype = (AP_KL_FLAG)GBT_read_int(gb_main,"genetic/kh/function_type");
+    AP_KL_FLAG funktype = (AP_KL_FLAG)GBT_read_int(GLOBAL_gb_main,"genetic/kh/function_type");
 
     int param_anz;
     double param_list[3];
     double f_startx,f_maxy,f_maxx,f_max_deep;
     f_max_deep = (double)rek_deep_max;			 //		x2
-    f_startx = (double)GBT_read_int(gb_main,"genetic/kh/dynamic/start");
-    f_maxy = (double)GBT_read_int(gb_main,"genetic/kh/dynamic/maxy");
-    f_maxx = (double)GBT_read_int(gb_main,"genetic/kh/dynamic/maxx");
+    f_startx = (double)GBT_read_int(GLOBAL_gb_main,"genetic/kh/dynamic/start");
+    f_maxy = (double)GBT_read_int(GLOBAL_gb_main,"genetic/kh/dynamic/maxy");
+    f_maxx = (double)GBT_read_int(GLOBAL_gb_main,"genetic/kh/dynamic/maxx");
 
     double (*funktion)(double wert,double *param_list,int param_anz);
     switch (funktype) {
@@ -156,22 +156,22 @@ void PARS_kernighan_cb(AP_tree *tree) {
 
 
     AP_KL_FLAG searchflag=(AP_KL_FLAG)0;
-    if ( GBT_read_int(gb_main,"genetic/kh/dynamic/enable")){
+    if ( GBT_read_int(GLOBAL_gb_main,"genetic/kh/dynamic/enable")){
         searchflag = AP_DYNAMIK;
     }
-    if ( GBT_read_int(gb_main,"genetic/kh/static/enable")){
+    if ( GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/enable")){
         searchflag = (AP_KL_FLAG)(searchflag|AP_STATIC);
     }
 
     int rek_breite[8];
-    rek_breite[0] = (int)GBT_read_int(gb_main,"genetic/kh/static/depth0");
-    rek_breite[1] = (int)GBT_read_int(gb_main,"genetic/kh/static/depth1");
-    rek_breite[2] = (int)GBT_read_int(gb_main,"genetic/kh/static/depth2");
-    rek_breite[3] = (int)GBT_read_int(gb_main,"genetic/kh/static/depth3");
-    rek_breite[4] = (int)GBT_read_int(gb_main,"genetic/kh/static/depth4");
+    rek_breite[0] = (int)GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth0");
+    rek_breite[1] = (int)GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth1");
+    rek_breite[2] = (int)GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth2");
+    rek_breite[3] = (int)GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth3");
+    rek_breite[4] = (int)GBT_read_int(GLOBAL_gb_main,"genetic/kh/static/depth4");
     int rek_breite_anz = 5;
 
-    int anzahl = (int)(GBT_read_float(gb_main,"genetic/kh/nodes")*tree->arb_tree_leafsum2());
+    int anzahl = (int)(GBT_read_float(GLOBAL_gb_main,"genetic/kh/nodes")*tree->arb_tree_leafsum2());
     AP_tree **list;
     list = tree->getRandomNodes(anzahl);
     int i =0;
@@ -186,7 +186,7 @@ void PARS_kernighan_cb(AP_tree *tree) {
     }
     int abort_flag = AP_FALSE;
 
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 
     for (i=0;i<anzahl && ! abort_flag; i++) {
         abort_flag |= aw_status(i/(double)anzahl);
@@ -251,7 +251,7 @@ AWT_graphic_parsimony::AWT_graphic_parsimony(AW_root *root, GBDATA *gb_maini):AW
 AWT_graphic *
 PARS_generate_tree( AW_root *root )
 {
-    AWT_graphic_parsimony *apdt = new AWT_graphic_parsimony(root,gb_main);
+    AWT_graphic_parsimony *apdt = new AWT_graphic_parsimony(root,GLOBAL_gb_main);
     AP_tree_nlen *aptnl = new AP_tree_nlen(0);
     apdt->init((AP_tree *)aptnl);
     ap_main->tree_root = &apdt->tree_root;

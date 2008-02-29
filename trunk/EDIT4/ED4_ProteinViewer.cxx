@@ -52,7 +52,7 @@ enum {
 #define BUFFERSIZE            1000
 
 // Global Variables
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 static bool gTerminalsCreated       = false;
 static int  PV_AA_Terminals4Species = 0;
@@ -315,11 +315,11 @@ void PV_ManageTerminals(AW_root *root){
     int dispMarked = root->awar(AWAR_PV_MARKED)->read_int();
     if (dispMarked)
         {
-            GB_transaction dummy(gb_main);
-            int marked = GBT_count_marked_species(gb_main);
+            GB_transaction dummy(GLOBAL_gb_main);
+            int marked = GBT_count_marked_species(GLOBAL_gb_main);
             if (marked) {
                 GBDATA *gbSpecies;
-                for(gbSpecies = GBT_first_marked_species(gb_main);
+                for(gbSpecies = GBT_first_marked_species(GLOBAL_gb_main);
                     gbSpecies;
                     gbSpecies = GBT_next_marked_species(gbSpecies))
                     {
@@ -425,11 +425,11 @@ PV_ERROR PV_ComplementarySequence(char *sequence)
 }
 
 void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *spName/*, AW_repeated_question ASKtoOverWriteData*/){
-    GB_begin_transaction(gb_main);  //open database for transaction
+    GB_begin_transaction(GLOBAL_gb_main);  //open database for transaction
 
     GB_ERROR error = 0;
-    GBDATA    *gb_species = GBT_find_species(gb_main, spName);
-    char *defaultAlignment = GBT_get_default_alignment(gb_main);
+    GBDATA    *gb_species = GBT_find_species(GLOBAL_gb_main, spName);
+    char *defaultAlignment = GBT_get_default_alignment(GLOBAL_gb_main);
     GBDATA  *gb_SeqData = GBT_read_sequence(gb_species, defaultAlignment);
 
     char *str_SeqData = 0;
@@ -464,11 +464,11 @@ void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *s
                 sprintf(newAlignmentName, "ali_pro_ProtView_database_field_start_pos_%ld", (long int) aaStartPos); break;
             }
 
-            int stops = AWT_pro_a_nucs_convert(str_SeqData, len, aaStartPos-1, "false"); 
+            int stops = AWT_pro_a_nucs_convert(str_SeqData, len, aaStartPos-1, "false");
             AWUSE(stops);
 
-            // Create alignment data to store the translated sequence 
-            GBDATA *gb_presets             = GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
+            // Create alignment data to store the translated sequence
+            GBDATA *gb_presets          = GB_search(GLOBAL_gb_main, "presets", GB_CREATE_CONTAINER);
             GBDATA *gb_alignment_exists = GB_find(gb_presets, "alignment_name", newAlignmentName, down_2_level);
             GBDATA *gb_new_alignment    = 0;
 
@@ -485,12 +485,12 @@ void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *s
                     error = GBS_global_string_copy("%s You chose to skip this Species!", question);
                 }
                 else {
-                    gb_new_alignment = GBT_get_alignment(gb_main,newAlignmentName);
+                    gb_new_alignment = GBT_get_alignment(GLOBAL_gb_main,newAlignmentName);
                     if (!gb_new_alignment) error = GB_get_error();
                 }
             } else {
-                long aliLen = GBT_get_alignment_len(gb_main,defaultAlignment);
-                gb_new_alignment = GBT_create_alignment(gb_main,newAlignmentName,aliLen/3+1,0,1,"ami");
+                long aliLen = GBT_get_alignment_len(GLOBAL_gb_main,defaultAlignment);
+                gb_new_alignment = GBT_create_alignment(GLOBAL_gb_main,newAlignmentName,aliLen/3+1,0,1,"ami");
                 if (!gb_new_alignment) error = GB_get_error();
                 else                          giNewAlignments++;
             }
@@ -508,11 +508,11 @@ void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *s
         free(str_SeqData);
     }
     if (!error) {
-        GBT_check_data(gb_main,0);
-        GB_commit_transaction(gb_main);
+        GBT_check_data(GLOBAL_gb_main,0);
+        GB_commit_transaction(GLOBAL_gb_main);
     }
     else {
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
         aw_message(error);
     }
 }
@@ -528,9 +528,9 @@ void PV_SaveData(AW_window *aww){
     gbWritingData = true;
     if(gTerminalsCreated) {
         {        // set wanted tranlation code table and initialize
-            int translationTable = GBT_read_int(gb_main,AWAR_PROTEIN_TYPE);
-            GBT_write_int(gb_main, AWAR_PROTEIN_TYPE, translationTable);// set wanted protein table
-            awt_pro_a_nucs_convert_init(gb_main); // (re-)initialize codon tables for current translation table
+            int translationTable = GBT_read_int(GLOBAL_gb_main,AWAR_PROTEIN_TYPE);
+            GBT_write_int(GLOBAL_gb_main, AWAR_PROTEIN_TYPE, translationTable);// set wanted protein table
+            awt_pro_a_nucs_convert_init(GLOBAL_gb_main); // (re-)initialize codon tables for current translation table
         }
         
         ASKtoOverWriteData = new AW_repeated_question();
@@ -572,9 +572,9 @@ void PV_SaveData(AW_window *aww){
 
 // This function translates gene sequence to aminoacid sequence and stores into the respective AA_Sequence_terminal
 void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_terminal *seqTerm, char *speciesName, int startPos4Translation, int translationMode){
-    GBDATA    *gb_species = GBT_find_species(gb_main, speciesName);
-    char *defaultAlignment = GBT_get_default_alignment(gb_main);
-    GBDATA  *gb_SeqData = GBT_read_sequence(gb_species, defaultAlignment);
+    GBDATA *gb_species       = GBT_find_species(GLOBAL_gb_main, speciesName);
+    char   *defaultAlignment = GBT_get_default_alignment(GLOBAL_gb_main);
+    GBDATA *gb_SeqData       = GBT_read_sequence(gb_species, defaultAlignment);
 
     e4_assert(startPos4Translation>=0 && startPos4Translation<=2);
 
@@ -587,16 +587,16 @@ void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_termina
 
     GB_ERROR error = 0;
     PV_ERROR pvError;
-    int selectedTable = GBT_read_int(gb_main,AWAR_PROTEIN_TYPE);
+    int selectedTable = GBT_read_int(GLOBAL_gb_main,AWAR_PROTEIN_TYPE);
     int translationTable = 0;
 
     switch(translationMode) 
         {
         case FORWARD_STRAND:
-            translationTable  = GBT_read_int(gb_main,AWAR_PROTEIN_TYPE);
+            translationTable  = GBT_read_int(GLOBAL_gb_main,AWAR_PROTEIN_TYPE);
             break;
         case COMPLEMENTARY_STRAND:
-            translationTable  = GBT_read_int(gb_main,AWAR_PROTEIN_TYPE);
+            translationTable  = GBT_read_int(GLOBAL_gb_main,AWAR_PROTEIN_TYPE);
             // for complementary strand - get the complementary sequence and then perform translation
             pvError =  PV_ComplementarySequence(str_SeqData);
             if (pvError == PV_FAILED) {
@@ -613,7 +613,7 @@ void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_termina
             }
             else {   // use selected translation table as default (if 'transl_table' field is missing)
                 gMissingTransTable++;
-                translationTable  = GBT_read_int(gb_main,AWAR_PROTEIN_TYPE);
+                translationTable  = GBT_read_int(GLOBAL_gb_main,AWAR_PROTEIN_TYPE);
             }
             GBDATA *gb_codonStart = GB_find(gb_species, "codon_start", 0, down_level);
             if (gb_codonStart) {
@@ -633,8 +633,8 @@ void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_termina
     // set wanted tranlation code table and initialize
     // if the current table is different from the last table then set new table and initilize the same 
     if (translationTable != giLastTranlsationTable) {
-        GBT_write_int(gb_main, AWAR_PROTEIN_TYPE, translationTable);// set wanted protein table
-        awt_pro_a_nucs_convert_init(gb_main); // (re-)initialize codon tables for current translation table
+        GBT_write_int(GLOBAL_gb_main, AWAR_PROTEIN_TYPE, translationTable);// set wanted protein table
+        awt_pro_a_nucs_convert_init(GLOBAL_gb_main); // (re-)initialize codon tables for current translation table
         giLastTranlsationTable = translationTable;  // store the current table 
     }
     //AWT_pro_a_nucs_convert(char *seqdata, long seqlen, int startpos, bool translate_all)
@@ -690,7 +690,7 @@ void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_termina
     delete s;
     free(str_SeqData);
 
-    GBT_write_int(gb_main, AWAR_PROTEIN_TYPE, selectedTable);// restore the selected table
+    GBT_write_int(GLOBAL_gb_main, AWAR_PROTEIN_TYPE, selectedTable);// restore the selected table
 
     if (error) {
         cout<<"error during writing translated data.....!!!"<<endl;
@@ -700,17 +700,21 @@ void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_termina
 
 void PV_PrintMissingDBentryInformation(void){
     if(gMissingCodonStart>0){
-        aw_message(GBS_global_string("WARNING:  'codon start' entry not found in %d of %d species! Using 1st base as codon start...",gMissingCodonStart,  (int) GBT_count_marked_species(gb_main)));
+        aw_message(GBS_global_string("WARNING:  'codon start' entry not found in %d of %d species! Using 1st base as codon start...",
+                                     gMissingCodonStart,
+                                     (int)GBT_count_marked_species(GLOBAL_gb_main)));
         gMissingCodonStart = 0;
     }
     if(gMissingTransTable>0){
-        aw_message(GBS_global_string("WARNING:  'translation table' entry not found in %d of %d species! Using selected translation table  as a default table...",gMissingTransTable, (int) GBT_count_marked_species(gb_main)));
+        aw_message(GBS_global_string("WARNING:  'translation table' entry not found in %d of %d species! Using selected translation table  as a default table...",
+                                     gMissingTransTable,
+                                     (int)GBT_count_marked_species(GLOBAL_gb_main)));
         gMissingTransTable = 0;
     }
 }
 
 void PV_DisplayAminoAcidNames(AW_root *root) {
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     ED4_terminal *terminal = 0;
     for( terminal = ED4_ROOT->root_group_man->get_first_terminal();
@@ -766,7 +770,7 @@ void PV_AA_SequenceUpdate_CB(GB_CB_TYPE gbtype)
         (ED4_ROOT->alignment_type == GB_AT_DNA) && 
         !gbWritingData) 
         {
-            GB_transaction dummy(gb_main);
+            GB_transaction dummy(GLOBAL_gb_main);
         
             ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
             if (cursor->owner_of_cursor) {
@@ -869,11 +873,11 @@ void PV_AddCorrespondingAAseqTerminals(ED4_species_name_terminal *spNameTerm) {
 
 void PV_AddAAseqTerminalsToLoadedSpecies() {
    if(gTerminalsCreated) {
-       GB_transaction dummy(gb_main);
-            int marked = GBT_count_marked_species(gb_main);
+       GB_transaction dummy(GLOBAL_gb_main);
+            int marked = GBT_count_marked_species(GLOBAL_gb_main);
             if (marked) {
                 GBDATA *gbSpecies;
-                for(gbSpecies = GBT_first_marked_species(gb_main);
+                for(gbSpecies = GBT_first_marked_species(GLOBAL_gb_main);
                     gbSpecies;
                     gbSpecies = GBT_next_marked_species(gbSpecies))
                     {
@@ -909,7 +913,7 @@ void PV_CreateAllTerminals(AW_root *root) {
     // if terminals are already created then do nothing exit the function
     if(bTerminalsFound) return;
 
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     // Number of AA sequence terminals to be created = 3 forward strands + 3 complementary strands + 1 DB field strand
     // totally 7 strands has to be created
@@ -949,7 +953,7 @@ void PV_CallBackFunction(AW_root *root) {
     if(!gTerminalsCreated){
         // AWAR_PROTEIN_TYPE is not initilized if called from ED4_main before creating proteinViewer window
         // so, initilize it here
-        root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, gb_main);
+        root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, GLOBAL_gb_main);
         PV_CreateAllTerminals(root);
     }
 
@@ -1048,7 +1052,7 @@ void PV_CreateAwars(AW_root *root, AW_default aw_def){
 }
 
 AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     static AW_window_simple *aws = 0;
     if (aws) return aws;
@@ -1074,7 +1078,7 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
     aws->create_button("CLOSE","#close_text.xpm");
 
     {
-        aw_root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, gb_main);
+        aw_root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, GLOBAL_gb_main);
         aws->at("table");
         aws->create_option_menu(AWAR_PROTEIN_TYPE);
         for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {

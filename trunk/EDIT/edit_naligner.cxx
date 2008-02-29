@@ -11,7 +11,7 @@
 #include <iostream>
 #include <string.h>
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 void aed_start_naligning(AW_window *aw) {
     AW_root *root = aw->get_root();
@@ -23,8 +23,8 @@ void aed_start_naligning(AW_window *aw) {
     GBS_strcat(strstruct,GB_getenv("LD_LIBRARY_PATH"));
     GBS_strcat(strstruct,"\";export LD_LIBRARY_PATH;for i in ");
     if ( root->awar("naligner/what")->read_int() ) {
-        GB_transaction dummy(gb_main);
-        for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
+        GB_transaction dummy(GLOBAL_gb_main);
+        for (GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main);
              gb_species;
              gb_species = GBT_next_marked_species(gb_species)){
             char *name = GBT_read_name(gb_species);

@@ -23,7 +23,7 @@ extern void display_status(AW_window *,AW_CL,AW_CL);
 AW_HEADER_MAIN
 AW_window *create_tree_window(AW_root *aw_root);
 
-GBDATA *gb_main;
+GBDATA *GLOBAL_gb_main; // global gb_main for arb_phylo
 char **filter_text;
 
 GB_ERROR ph_check_initialized() {
@@ -53,16 +53,16 @@ void startup_sequence_cb(AW_window *aww,AW_CL cd1, AW_CL cl_aww)
     if(aww) aww->hide();
     aw_root=(AW_root *) cd1;
     // loading database
-    GB_push_transaction(gb_main);
-    if(GBT_get_alignment_len(gb_main,aw_root->awar("phyl/alignment")->read_string())<1) {
-        aw_root->awar("phyl/alignment")->write_string(GBT_get_default_alignment(gb_main));
+    GB_push_transaction(GLOBAL_gb_main);
+    if(GBT_get_alignment_len(GLOBAL_gb_main,aw_root->awar("phyl/alignment")->read_string())<1) {
+        aw_root->awar("phyl/alignment")->write_string(GBT_get_default_alignment(GLOBAL_gb_main));
     }
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 
     use = aw_root->awar("phyl/alignment")->read_string();
     load_what = aw_root->awar("phyl/which_species")->read_string();   // all, marked ...
     phd=new PHDATA(aw_root);
-    GB_set_cache_size(gb_main, PH_DB_CACHE_SIZE);
+    GB_set_cache_size(GLOBAL_gb_main, PH_DB_CACHE_SIZE);
     phd->load(use);
     phd->ROOT = phd;
     long len = PHDATA::ROOT->get_seq_len();
@@ -115,7 +115,7 @@ void resize_callb(AW_window *aw,AW_CL cd1,AW_CL cd2)
 //                            { if(PHDATA::ROOT->markerline[x]>=0.0)
 
 static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb_sai_ptr) {
-    GBDATA   *gb_sai = GBT_create_SAI(gb_main, sai_name);
+    GBDATA   *gb_sai = GBT_create_SAI(GLOBAL_gb_main, sai_name);
     GBDATA   *gbd, *gb2;
     GB_ERROR  error  = ph_check_initialized();
 
@@ -232,7 +232,7 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
 }
 
 void PH_save_ml_multiline_cb(AW_window *aww) {
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
     GB_ERROR error = 0;
     char *fname = aww->get_root()->awar("tmp/phylo/markerlinename")->read_string();
     int fname_len = strlen(fname);
@@ -254,19 +254,19 @@ void PH_save_ml_multiline_cb(AW_window *aww) {
     delete fname;
 
     if (error) {
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
         aw_message(error);
     }else{
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
     }
 }
 
 void PH_save_ml_cb(AW_window *aww) {
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
     GB_ERROR error = 0;
 
     char   *fname  = aww->get_root()->awar("tmp/phylo/markerlinename")->read_string();
-    GBDATA *gb_sai = GBT_create_SAI(gb_main,fname);
+    GBDATA *gb_sai = GBT_create_SAI(GLOBAL_gb_main,fname);
     GBDATA *gbd,*gb2;
 
     error = ph_check_initialized();
@@ -352,10 +352,10 @@ void PH_save_ml_cb(AW_window *aww) {
     delete fname;
 
     if (error) {
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
         aw_message(error);
     }else{
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
     }
 }
 
@@ -389,7 +389,7 @@ AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
     aws->create_input_field("tmp/phylo/markerlinename");
 
     aws->at("box");
-    awt_create_selection_list_on_extendeds(gb_main,aws,"tmp/phylo/markerlinename");
+    awt_create_selection_list_on_extendeds(GLOBAL_gb_main,aws,"tmp/phylo/markerlinename");
 
     aws->at("save");
     if (multi_line)     aws->callback(PH_save_ml_multiline_cb);
@@ -492,7 +492,7 @@ AW_window *create_select_alignment_window(AW_root *aw_root, AW_CL cl_aww)
     aws->create_button("DONE","DONE","D");
 
     aws->at("which_alignment");
-    awt_create_selection_list_on_ad(gb_main,(AW_window *)aws,"phyl/alignment","*=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main,(AW_window *)aws,"phyl/alignment","*=");
     return (AW_window *) aws;
 }
 
@@ -536,7 +536,7 @@ main(int argc, char **argv)
         db_server = argv[1];
     }
     apmain = new AP_root;
-    if ((error = apmain->open(db_server))) { // initializes global 'gb_main'
+    if ((error = apmain->open(db_server))) { // initializes global 'GLOBAL_gb_main'
         aw_message(error);
         exit(-1);
     }
@@ -544,10 +544,10 @@ main(int argc, char **argv)
     // create arb_phylo awars :
     create_filter_variables(aw_root, aw_default);
     create_matrix_variables(aw_root, aw_default);
-    ARB_init_global_awars(aw_root, aw_default, gb_main);
+    ARB_init_global_awars(aw_root, aw_default, GLOBAL_gb_main);
     AWT_create_db_browser_awars(aw_root, aw_default);
 
-    AWT_announce_db_to_browser(gb_main, GBS_global_string("ARB-database (%s)", db_server));
+    AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
 
     create_filter_text();
 
@@ -565,8 +565,8 @@ main(int argc, char **argv)
     apd->apdisplay = apd;
 
     //loading database
-    GB_push_transaction(gb_main);
-    alignment_names = GBT_get_alignment_names(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
+    alignment_names = GBT_get_alignment_names(GLOBAL_gb_main);
 
     for (num_alignments = 0; alignment_names[num_alignments] != 0; num_alignments++);
     if (num_alignments > 1) {
@@ -578,7 +578,7 @@ main(int argc, char **argv)
         startup_sequence_cb(0, (AW_CL)aw_root, (AW_CL)puw->phylo_main_window);
     }
     GBT_free_names(alignment_names);
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 
     aw_root->main_loop();
     return EXIT_SUCCESS;

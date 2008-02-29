@@ -11,7 +11,7 @@
 #include <awt.hxx>
 
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 #define ARCG_HASH_SIZE 1024
 #define MAX_EXCLUDE 8
@@ -46,7 +46,7 @@ GB_ERROR arb_arcg()
     char    *fetchbuffer = 0;
 
     hash = GBS_create_hash(ARCG_HASH_SIZE,0);
-    for (   gb_species_data = GB_find(gb_main,"species_data",0,down_level);
+    for (   gb_species_data = GB_find(GLOBAL_gb_main,"species_data",0,down_level);
             gb_species_data; gb_species_data = 0) {
         for (   gb_species = GB_find(gb_species_data,"species",0,down_level);
                 gb_species;
@@ -135,13 +135,13 @@ void etc_check_gcg_list_cb(AW_window *aww,char *filesuffix)
     delete arcg.fetchfile; arcg.fetchfile = GBS_string_eval(arcg.infile,"*=*.fetch",0);
     delete arcg.fetchcommand; arcg.fetchcommand = GBS_string_eval(arcg.fetch,"*=\\*\\=* \\*",0);
 
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
     error = arb_arcg();
     if (error) {
         aw_message(error);
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
     }else{
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
         char buffer[256];
         char *textedit = aww->get_root()->awar("etc_check_gcg/textedit")->read_string();
         sprintf(buffer,"%s %s.%s &",textedit,arcg.infile,filesuffix);

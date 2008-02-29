@@ -125,7 +125,7 @@ ED4_returncode ED4_root::refresh_all_windows(int redraw)
     }
 
     ED4_window *window = first_window;
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     while (window) {
         if (!window->next) last_window_reached = 1;
         use_window(window);
@@ -426,10 +426,10 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int */*cl*/, GB_CB_T
 
         MAXSEQUENCECHARACTERLENGTH = new_length;
 
-        const char *err = ED4_ROOT->helix->init(gb_main); // reload helix
+        const char *err = ED4_ROOT->helix->init(GLOBAL_gb_main); // reload helix
         if (err) { aw_message(err); err = 0; }
 
-        err = ED4_ROOT->ecoli_ref->init(gb_main); // reload ecoli
+        err = ED4_ROOT->ecoli_ref->init(GLOBAL_gb_main); // reload ecoli
         if (err) { aw_message(err); err = 0; }
 
         if (was_increased) {
@@ -441,18 +441,18 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int */*cl*/, GB_CB_T
 }
 
 ED4_returncode ED4_root::init_alignment() {
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
-    alignment_name = GBT_get_default_alignment(gb_main);
-    alignment_type = GBT_get_alignment_type(gb_main,alignment_name);
+    alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
+    alignment_type = GBT_get_alignment_type(GLOBAL_gb_main,alignment_name);
     if (alignment_type==GB_AT_UNKNOWN) aw_message("You have to select a valid alignment before you can start ARB_EDIT4", "EXIT");
 
-    GBDATA *gb_alignment = GBT_get_alignment(gb_main, alignment_name);
+    GBDATA *gb_alignment = GBT_get_alignment(GLOBAL_gb_main, alignment_name);
     if (!gb_alignment) aw_message("You can't edit without an existing alignment", "EXIT");
 
     GBDATA *gb_alignment_len = GB_search(gb_alignment,"alignment_len",GB_FIND);
     int alignment_length = GB_read_int(gb_alignment_len);
-    MAXSEQUENCECHARACTERLENGTH = alignment_length; // GBT_get_alignment_len(gb_main, ED4_ROOT->alignment_name);
+    MAXSEQUENCECHARACTERLENGTH = alignment_length; // GBT_get_alignment_len(GLOBAL_gb_main, ED4_ROOT->alignment_name);
 
     GB_add_callback(gb_alignment_len, (GB_CB_TYPE)GB_CB_CHANGED, (GB_CB)ED4_alignment_length_changed, 0);
 
@@ -497,10 +497,10 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     status_add_count = (double) (1.0 / (double) total_no_of_species);
     status_total_count = 0;
 
-    GB_push_transaction( gb_main );
+    GB_push_transaction( GLOBAL_gb_main );
 
     ecoli_ref = new BI_ecoli_ref();
-    ecoli_ref->init(gb_main);
+    ecoli_ref->init(GLOBAL_gb_main);
 
     // [former position of ali-init-code]
 
@@ -563,10 +563,10 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
             }
 
 
-            reference = new AWT_reference(gb_main);
+            reference = new AWT_reference(GLOBAL_gb_main);
             database->scan_string(top_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
                                   area_string_top, &index, &y);
-            GB_pop_transaction( gb_main );
+            GB_pop_transaction( GLOBAL_gb_main );
 
             const int TOP_MID_LINE_HEIGHT   = 3;
             int       TOP_MID_SPACER_HEIGHT = font_group.get_max_height()-TOP_MID_LINE_HEIGHT;
@@ -618,7 +618,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
             help = y;
             index = 0;
             {
-                GB_transaction dummy(gb_main);
+                GB_transaction dummy(GLOBAL_gb_main);
                 database->scan_string(mid_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
                                       area_string_middle, &index, &y);
             }
@@ -829,7 +829,7 @@ void ED4_root::copy_window_struct( ED4_window *source , ED4_window *destination 
 
 
 void ED4_reload_helix_cb(AW_window *aww,AW_CL cd1, AW_CL cd2) {
-    const char *err = ED4_ROOT->helix->init(gb_main);
+    const char *err = ED4_ROOT->helix->init(GLOBAL_gb_main);
     if (err) aw_message(err);
     ED4_refresh_window(aww,cd1,cd2);
 }
@@ -837,7 +837,7 @@ void ED4_reload_helix_cb(AW_window *aww,AW_CL cd1, AW_CL cd2) {
 
 void ED4_reload_ecoli_cb(AW_window *aww,AW_CL cd1, AW_CL cd2)
 {
-    const char *err = ED4_ROOT->ecoli_ref->init(gb_main);
+    const char *err = ED4_ROOT->ecoli_ref->init(GLOBAL_gb_main);
     if (err) aw_message(err);
     ED4_refresh_window(aww,cd1,cd2);
 }
@@ -859,7 +859,7 @@ ED4_returncode do_sth_with_species(void **arg1, void **arg2, ED4_base *base)
             char *species_name = GB_read_as_string(species_name_terminal->get_species_pointer());
 
             e4_assert(species_name);
-            GBDATA *species = GBT_find_species(gb_main, species_name);
+            GBDATA *species = GBT_find_species(GLOBAL_gb_main, species_name);
             if (species) do_sth_with_species_error = what_to_do_with_species(species, arg2);
             delete species_name;
         }
@@ -981,7 +981,7 @@ static GB_ERROR ED4_delete_temp_entries(GBDATA *species, void **alignment_char_p
 
 void ED4_remove_faligner_entries(AW_window *, AW_CL, AW_CL)
 {
-    GB_ERROR error = GB_begin_transaction(gb_main);
+    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
 
     if (!error) {
         error = ED4_with_all_loaded_species(ED4_delete_temp_entries, (void**)ED4_ROOT->alignment_name);
@@ -989,10 +989,10 @@ void ED4_remove_faligner_entries(AW_window *, AW_CL, AW_CL)
 
     if (error) {
         aw_message(error);
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
     }
     else {
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
     }
 }
 
@@ -1003,12 +1003,12 @@ void ED4_turnSpecies(AW_window *aw, AW_CL, AW_CL)
     GBDATA *species;
     GBDATA *gbd;
     char *data;
-    GB_ERROR error = GB_begin_transaction(gb_main);
+    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
     char *ali = ED4_ROOT->alignment_name;
 
     if (!error) {
         name = root->awar(AWAR_SPECIES_NAME)->read_string();
-        species = GBT_find_species(gb_main, name);
+        species = GBT_find_species(GLOBAL_gb_main, name);
 
         gbd = species ? GBT_read_sequence(species, ali) : (GBDATA*)NULL;
         data = gbd ? GB_read_string(gbd) : (char*)NULL;
@@ -1031,10 +1031,10 @@ void ED4_turnSpecies(AW_window *aw, AW_CL, AW_CL)
 
     if (error) {
         aw_message(error);
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
     }
     else {
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
     }
 }
 
@@ -1142,14 +1142,14 @@ static void title_mode_changed(AW_root *aw_root, AW_window *aww)
 
 void ED4_undo_redo(AW_window*, AW_CL undo_type)
 {
-    GB_ERROR error = GB_undo(gb_main,(GB_UNDO_TYPE)undo_type);
+    GB_ERROR error = GB_undo(GLOBAL_gb_main,(GB_UNDO_TYPE)undo_type);
 
     if (error) {
         aw_message(error);
     }
     else {
-        GB_begin_transaction(gb_main);
-        GB_commit_transaction(gb_main);
+        GB_begin_transaction(GLOBAL_gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
         ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
         if (cursor->owner_of_cursor) {
             ED4_terminal *terminal = cursor->owner_of_cursor->to_terminal();
@@ -1273,7 +1273,7 @@ typedef enum {
 } MenuSelectType;
 
 static void ED4_menu_select(AW_window *aww, AW_CL type,AW_CL) {
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     MenuSelectType select = MenuSelectType(type);
     ED4_multi_species_manager *middle_multi_man = ED4_ROOT->middle_area_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
@@ -1308,7 +1308,7 @@ static void ED4_menu_select(AW_window *aww, AW_CL type,AW_CL) {
             break;
         }
         case ED4_MS_UNMARK_ALL: {
-            GBT_mark_all(gb_main, 0);
+            GBT_mark_all(GLOBAL_gb_main, 0);
             break;
         }
         case ED4_MS_MARK_SELECTED: {
@@ -1374,14 +1374,14 @@ void ED4_no_dangerous_modes(void)
 }
 
 void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data) {
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     const char *err              = 0;
-    char       *helix_name       = GBT_get_default_helix(gb_main);
-    char       *alignment_name   = GBT_get_default_alignment(gb_main);
-    GBDATA     *gb_extended_data = GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
+    char       *helix_name       = GBT_get_default_helix(GLOBAL_gb_main);
+    char       *alignment_name   = GBT_get_default_alignment(GLOBAL_gb_main);
+    GBDATA     *gb_extended_data = GB_search(GLOBAL_gb_main,"extended_data",GB_CREATE_CONTAINER);
 
-    long size2        = GBT_get_alignment_len(gb_main,alignment_name);
+    long size2        = GBT_get_alignment_len(GLOBAL_gb_main,alignment_name);
     if (size2<=0) err = (char *)GB_get_error();
 
     if (!err) {
@@ -1402,7 +1402,7 @@ void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data) {
     free(helix_name);
     free(alignment_name);
 
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 }
 
 static void ED4_create_faligner_window(AW_root *awr, AW_CL cd) {
@@ -1574,7 +1574,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic("align_sequence","Old Aligner From ARB_EDIT", "O","ne_align_seq.hlp", AWM_ALL,AW_POPUP, (AW_CL)create_naligner_window, 0 );
     awmm->insert_menu_topic("del_ali_tmp", "Remove All Aligner Entries", "R", 0, AWM_ALL, ED4_remove_faligner_entries, 1, 0);
     SEP________________________SEP;
-    awmm->insert_menu_topic("sec_edit", "Edit Secondary Structure", "", 0, AWM_ALL, ED4_SECEDIT_start, (AW_CL)gb_main, 0);
+    awmm->insert_menu_topic("sec_edit", "Edit Secondary Structure", "", 0, AWM_ALL, ED4_SECEDIT_start, (AW_CL)GLOBAL_gb_main, 0);
 
     // ------------------------------
     //  View
@@ -1871,7 +1871,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
         awmm->button_length(0);
         
         awmm->at("secedit");
-        awmm->callback(ED4_SECEDIT_start, (AW_CL)gb_main, 0);
+        awmm->callback(ED4_SECEDIT_start, (AW_CL)GLOBAL_gb_main, 0);
         awmm->help_text("arb_secedit.hlp");
         awmm->create_button("SECEDIT", "#edit/secedit.xpm");
         

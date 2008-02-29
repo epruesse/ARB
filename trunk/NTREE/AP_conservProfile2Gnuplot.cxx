@@ -19,7 +19,7 @@
 #include "ap_conservProfile2Gnuplot.hxx"
 //#include "nt_cb.hxx"
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 void AP_conservProfile2Gnuplot_callback(AW_window *aww) {
 

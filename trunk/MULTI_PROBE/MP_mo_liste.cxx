@@ -99,11 +99,11 @@ void MO_Liste::get_all_species()
     {
 
         match_name = strtok(bs.data, toksep);
-        GB_push_transaction(gb_main);
+        GB_push_transaction(GLOBAL_gb_main);
         while (match_name)
         {
             i++;
-            if (!GBT_find_species(gb_main, match_name))
+            if (!GBT_find_species(GLOBAL_gb_main, match_name))
             {                               // Testen, ob Bakterium auch im Baum existiert, um
                 //             aw_message("Species differ in tree and chosen PT_Server");
                 pt_server_different = TRUE;
@@ -112,7 +112,7 @@ void MO_Liste::get_all_species()
             put_entry(match_name);
             match_name = strtok(0, toksep);
         }
-        GB_pop_transaction(gb_main);
+        GB_pop_transaction(GLOBAL_gb_main);
     }
     else
         aw_message("DB-query produced no species.\n");
@@ -133,8 +133,8 @@ positiontype MO_Liste::fill_marked_bakts()
     //    GBDATA        *gb_species_data;
 
 
-    GB_push_transaction(gb_main);
-    laenge = GBT_count_marked_species(gb_main);     // laenge ist immer zuviel oder gleich der Anzahl wirklick markierter. weil pT-Server nur
+    GB_push_transaction(GLOBAL_gb_main);
+    laenge = GBT_count_marked_species(GLOBAL_gb_main);     // laenge ist immer zuviel oder gleich der Anzahl wirklick markierter. weil pT-Server nur
     // die Bakterien mit Sequenz zurueckliefert.
 
     if (!laenge) {
@@ -153,7 +153,7 @@ positiontype MO_Liste::fill_marked_bakts()
     hashptr = GBS_create_hash(laenge,1);
 
 
-    for ( gb_species = GBT_first_marked_species(gb_main);
+    for ( gb_species = GBT_first_marked_species(GLOBAL_gb_main);
           gb_species;
           gb_species = GBT_next_marked_species(gb_species))
     {
@@ -162,7 +162,7 @@ positiontype MO_Liste::fill_marked_bakts()
         free(name);
     }
 
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 
     anz_elem_marked = laenge;
 

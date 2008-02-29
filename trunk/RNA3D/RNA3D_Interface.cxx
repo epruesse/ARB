@@ -680,7 +680,7 @@ static AW_window *CreateHelp_window(AW_root *aw_root) {
 
 AW_window *CreateRNA3DMainWindow(AW_root *awr){
     // Main Window - Canvas on which the actual painting is done
-    extern GBDATA *gb_main;
+    extern GBDATA *GLOBAL_gb_main;
     GB_transaction dummy(gb_main);
 
     awr->awar_int(AWAR_3D_SAI_SELECTED, 0, AW_ROOT_DEFAULT); 

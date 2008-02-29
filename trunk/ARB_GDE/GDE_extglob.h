@@ -1,7 +1,7 @@
 // ================================================================ //
 //                                                                  //
 //   File      : GDE_extglob.h                                      //
-//   Time-stamp: <Fri Feb/15/2008 12:48 MET Coder@ReallySoft.de>    //
+//   Time-stamp: <Thu Feb/28/2008 15:44 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Institute of Microbiology (Technical University Munich)        //
 //   http://www.arb-home.de/                                        //
@@ -28,7 +28,7 @@ class AP_filter;
 
 extern Gmenu menu[GDEMAXMENU];
 extern int num_menus;
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 /* global.h */
 extern int DataType;

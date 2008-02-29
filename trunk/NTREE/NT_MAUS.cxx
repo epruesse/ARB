@@ -2,7 +2,7 @@
 //                                                                  //
 //    File      : NT_MAUS.cxx                                       //
 //    Purpose   :                                                   //
-//    Time-stamp: <Wed Jan/05/2005 12:55 MET Coder@ReallySoft.de>   //
+//    Time-stamp: <Thu Feb/28/2008 16:04 MET Coder@ReallySoft.de>   //
 //                                                                  //
 //    Coded by Ralf Westram (coder@reallysoft.de) in July 2004      //
 //    Institute of Microbiology (Technical University Munich)       //
@@ -20,7 +20,7 @@
 #define AWAR_MAUS_INPUTNAME     "MAUS/inputname"
 #define AWAR_MAUS_EXCLUDED_ACCS "MAUS/excl_acc"
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 void NT_create_MAUS_awars(AW_root *aw_root, AW_default aw_def, AW_default gb_def) {
     aw_root->awar_string(AWAR_MAUS_INPUTNAME, "", aw_def) ;

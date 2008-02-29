@@ -24,8 +24,9 @@
 #include <awtc_fast_aligner.hxx>
 
 AW_HEADER_MAIN
+
 AD_MAIN *ad_main;
-GBDATA *gb_main;
+GBDATA  *GLOBAL_gb_main;
 ST_ML   *st_ml = 0;
 
 void AD_map_viewer(GBDATA *dummy,AD_MAP_VIEWER_TYPE )
@@ -125,8 +126,8 @@ static void set_security(AW_window *aw, AW_CL cd1, AW_CL cd2){
         aw_message("Please select a secuence first");
         return;
     }
-    GB_transaction dummy(gb_main);
-    GB_push_my_security(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
+    GB_push_my_security(GLOBAL_gb_main);
     GBDATA *gbd = aedw->selected_area_entry->adt_sequence->get_GBDATA();
     if (gbd) {
         GB_ERROR error = GB_write_security_write(gbd,cd2);
@@ -135,13 +136,13 @@ static void set_security(AW_window *aw, AW_CL cd1, AW_CL cd2){
         aw_message("Cannot change security level when there is no sequence");
     }
 
-    GB_pop_my_security(gb_main);
+    GB_pop_my_security(GLOBAL_gb_main);
     aedw->expose(aw);
 }
 static void set_mark_cb(AW_window *aw, AW_CL cd1, AW_CL cd2){
     AWUSE(aw);
     AED_window *aedw = (AED_window *)cd1;
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     AED_area_entry *ae;
     for (ae = aedw->area_top->first; ae ; ae = ae->next) {
         GBDATA *gbd  = ae->ad_species->get_GBDATA(); if (!gbd) continue;
@@ -160,7 +161,7 @@ static void set_mark_cb(AW_window *aw, AW_CL cd1, AW_CL cd2){
 
 static void set_smark_cb(AW_window *aw, AW_CL cd1, AW_CL cd2){
     AED_window *aedw = (AED_window *)cd1;
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     AED_area_entry *ae = aedw->selected_area_entry;
     if (!ae) return;
     GBDATA *gbd  = ae->ad_species->get_GBDATA(); if (!gbd) return;
@@ -292,8 +293,8 @@ int AED_window::load_data(void) {
     AD_SPECIES sp;
     AD_SAI ex;
     root->ad_main->begin_transaction();
-    area_top->create_hash(gb_main,"top_area_species");
-    area_bottom->create_hash(gb_main,"bottom_area_species");
+    area_top->create_hash(GLOBAL_gb_main,"top_area_species");
+    area_bottom->create_hash(GLOBAL_gb_main,"bottom_area_species");
     sp.init(root->ad_main);
     ex.init(root->ad_main);
     alignment->init(root->ad_main);
@@ -364,11 +365,11 @@ int AED_window::load_data(void) {
     }
     sp.exit();
     edg.helix = new AW_helix(root->aw_root);
-    const char *err = edg.helix->init(gb_main);
+    const char *err = edg.helix->init(GLOBAL_gb_main);
     if (err) aw_message(err);
 
     edg.ref = new BI_ecoli_ref();
-    err = edg.ref->init(gb_main);
+    err = edg.ref->init(GLOBAL_gb_main);
     if (err){
         AW_POPUP_HELP(aww,(AW_CL)"ecoliref.hlp");
         aw_message(err);
@@ -383,7 +384,7 @@ int AED_window::load_data(void) {
 static void reload_helix(AW_window *aww, AED_window *aedw)
 {
     AWUSE(aww);
-    const char *err = edg.helix->init((GBDATA *)gb_main);
+    const char *err = edg.helix->init(GLOBAL_gb_main);
     if (err)    aw_message(err);
     aedw->expose(aww);
 }
@@ -391,14 +392,14 @@ static void reload_helix(AW_window *aww, AED_window *aedw)
 static void reload_ref(AW_window *aww)
 {
     AWUSE(aww);
-    const char *err = edg.ref->init((GBDATA *)gb_main);
+    const char *err = edg.ref->init(GLOBAL_gb_main);
     if (err)    aw_message(err);
 }
 /****************************************************************************************************/
 
 static GB_ERROR species_copy_cb(const char *source, char *dest){
     GB_ERROR error = 0;
-    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
     GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data,source);
     GBDATA *gb_dest = GBT_find_species_rel_species_data(gb_species_data,dest);
 
@@ -422,7 +423,7 @@ static GB_ERROR species_copy_cb(const char *source, char *dest){
 /** searches a species and returns TRUE if species exists */
 
 static AW_BOOL does_species_exists(char *name) {
-    GBDATA *gb_species = GBT_find_species(gb_main,name);
+    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,name);
     if (gb_species) return AW_TRUE;
     return AW_FALSE;
 }
@@ -986,7 +987,7 @@ void AED_window::show_data( AW_device *device, AW_window *awmm, AW_BOOL visibili
     display_struct.picture_t            = awmm->picture->t;
 
     device->get_area_size( &screen );
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     this->show_top_data( device, awmm, display_struct );
     this->show_middle_data( device, awmm, display_struct );
     this->show_bottom_data( device, awmm, display_struct );
@@ -1017,11 +1018,11 @@ void AED_window::expose( AW_window *awmm ) {
 } // end: aed_expose
 
 void AED_undo_cb(AW_window *aw, AW_CL cd1, AW_CL undo_type){
-    GB_ERROR error = GB_undo(gb_main,(GB_UNDO_TYPE)undo_type);
+    GB_ERROR error = GB_undo(GLOBAL_gb_main,(GB_UNDO_TYPE)undo_type);
     if (error) aw_message(error);
     else{
-        GB_begin_transaction(gb_main);
-        GB_commit_transaction(gb_main);
+        GB_begin_transaction(GLOBAL_gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
         aed_expose(aw,cd1,0);
     }
 }
@@ -1152,7 +1153,7 @@ static void aed_vertical( AW_window *aw, AW_CL cd1, AW_CL cd2 ) {
     AW_device               *device;
     AW_device               *info_device;
     AW_rectangle            screen;
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     device = aw->get_device (AW_MIDDLE_AREA  );
     device->reset();
@@ -1261,7 +1262,7 @@ AW_BOOL AED_window::manage_cursor( AW_device *device, AW_window *awmm, AW_BOOL u
 
 void AED_window::show_single_area_entry( AW_device *device, AW_window *awmm, AED_area_entry *area_entry ) {
     AW_pos y = area_entry->in_line;
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     AED_area_display_struct display_struct;
     display_struct.clear                = AW_TRUE;
     display_struct.calc_size            = AW_FALSE;
@@ -1599,11 +1600,11 @@ static void change_insert_mode(AW_window *aww,AED_window *aedw)
 static void aed_double_click( AW_window *aw, AED_window         *aedw ) {
     AWUSE(aedw);
     AW_root *awr = aw->get_root();
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     char *name;
     name = awr->awar(AWAR_SPECIES_NAME_LOCAL)->read_string();
-    GBDATA *gb_species = GBT_find_species(gb_main,name);
+    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,name);
     if (gb_species){
         GB_write_flag(gb_species,1-GB_read_flag(gb_species));
     }
@@ -1872,9 +1873,9 @@ static void aed_timer( AW_root *ar, AW_CL cd1, AW_CL cd2 ) {
     AW_window *aw = (AW_window *)cd2;
     AW_window   *awmm = aedw->aww;
     AW_device *device;
-    if ( GB_read_transaction(gb_main) <=0){
+    if ( GB_read_transaction(GLOBAL_gb_main) <=0){
         aedw->root->ad_main->begin_transaction();
-        GB_tell_server_dont_wait(gb_main);
+        GB_tell_server_dont_wait(GLOBAL_gb_main);
         if ( aedw->owntimestamp != aedw->root->ad_main->time_stamp() ) {
             aedw->owntimestamp = aedw->root->ad_main->time_stamp();
             aedw->root->ad_main->commit_transaction();
@@ -1884,7 +1885,7 @@ static void aed_timer( AW_root *ar, AW_CL cd1, AW_CL cd2 ) {
             aed_expose((AW_window *)cd2,cd1,0);
         }
         else {
-            ar->check_for_remote_command((AW_default)gb_main,"ARB_EDIT");
+            ar->check_for_remote_command((AW_default)GLOBAL_gb_main,"ARB_EDIT");
             aedw->root->ad_main->commit_transaction();
         }
 
@@ -2009,9 +2010,9 @@ static void create_edit_variables(AW_root *root, AW_default awr, AED_window *aed
     AWUSE(awr);
     root->awar_string( AWAR_SPECIES_DEST,"",        AW_ROOT_DEFAULT);
     root->awar_string( AWAR_SPECIES_NAME_LOCAL, "",     AW_ROOT_DEFAULT);
-    root->awar_string( AWAR_SPECIES_NAME,   "",     gb_main);
+    root->awar_string( AWAR_SPECIES_NAME,   "",     GLOBAL_gb_main);
     root->awar_int( AWAR_CURSOR_POSITION_LOCAL, 0,      AW_ROOT_DEFAULT);
-    root->awar_int( AWAR_CURSOR_POSITION,   0,      gb_main);
+    root->awar_int( AWAR_CURSOR_POSITION,   0,      GLOBAL_gb_main);
     root->awar_int( AWAR_CURSER_POS_REF_ECOLI, 0,AW_ROOT_DEFAULT);
     root->awar_int( AWAR_LINE_SPACING,      7)  ->add_target_var(&aed_root.line_spacing);
     root->awar_int( AWAR_CENTER_SPACING,        -1) ->add_target_var(&aed_root.center_spacing);
@@ -2027,7 +2028,7 @@ static void create_edit_variables(AW_root *root, AW_default awr, AED_window *aed
 
     create_gde_var(root,awr, ED_create_sequences_for_gde,CGSS_WT_EDIT,(void *)aedw);
 
-    ARB_init_global_awars(root, awr, gb_main);
+    ARB_init_global_awars(root, awr, GLOBAL_gb_main);
 }
 
 static AW_window *create_edit_preset_window(AW_root *awr){
@@ -2062,7 +2063,7 @@ static AW_window *create_edit_preset_window(AW_root *awr){
 
 static void ED_focus_cb(AW_root *,GBDATA *)
 {
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 }
 
 void aed_create_window(AED_root *aedr) {
@@ -2074,7 +2075,7 @@ void aed_create_window(AED_root *aedr) {
     AW_window_menu  *awmm;
     char left_text[100];
     AED_left_side           *left_side;
-    int is_client = (GB_read_clients(gb_main)<0);
+    int is_client = (GB_read_clients(GLOBAL_gb_main)<0);
 
     aed_window = new AED_window;
     aed_window->init(aedr);
@@ -2115,7 +2116,7 @@ void aed_create_window(AED_root *aedr) {
     sprintf(dest,AWP_FONTSIZE_TEMPLATE,awmm->window_defaults_name,"SEQUENCES");
     awmm->get_root()->awar(source)->map(dest);
 
-    st_ml = new_ST_ML(gb_main);
+    st_ml = new_ST_ML(GLOBAL_gb_main);
 
     awmm->create_menu(       "1",   "File",     "F" );
 
@@ -2293,7 +2294,7 @@ void aed_create_window(AED_root *aedr) {
 
     awmm->set_expose_callback (AW_MIDDLE_AREA,          aed_expose,(AW_CL)aed_window,0);
     awmm->set_resize_callback (AW_MIDDLE_AREA,          aed_resize,(AW_CL)aed_window,0);
-    awmm->get_root()->set_focus_callback((AW_RCB)ED_focus_cb,(AW_CL)gb_main,0);
+    awmm->get_root()->set_focus_callback((AW_RCB)ED_focus_cb,(AW_CL)GLOBAL_gb_main,0);
 
     awmm->set_vertical_change_callback(     aed_vertical,(AW_CL)aed_window, (AW_CL)AW_TRUE );
     awmm->set_horizontal_change_callback(       aed_horizontal,(AW_CL)aed_window, (AW_CL)AW_TRUE );
@@ -2351,7 +2352,7 @@ int main(int argc,char **argv) {
         return EXIT_FAILURE;
     }
     ad_main = aed_root.ad_main;
-    gb_main = ad_main->get_GBDATA();
+    GLOBAL_gb_main = ad_main->get_GBDATA();
 
     aed_root.db = aed_root.aw_root->open_default( ".arb_prop/edit.arb" );
 

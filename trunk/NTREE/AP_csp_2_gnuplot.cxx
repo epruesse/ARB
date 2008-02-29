@@ -23,7 +23,7 @@
 #endif
 #define nt_assert(bed) arb_assert(bed)
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 
 // ------------------------------------------------------------------------------------------------------------------------------
@@ -213,7 +213,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
     // cl_mode = 1 -> write file and run gnuplot
     // cl_mode = 2 -> delete all files with same prefix
 
-    GB_transaction  dummy(gb_main);
+    GB_transaction  dummy(GLOBAL_gb_main);
     AWT_csp        *csp   = (AWT_csp *)cspcd;
     GB_ERROR        error = 0;
     AP_filter       filter;
@@ -222,7 +222,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
     if (mode != 2) {
         char *filterstring     = aww->get_root()->awar(AP_AWAR_FILTER_FILTER)->read_string();
         char *alignment_name   = aww->get_root()->awar(AP_AWAR_FILTER_ALIGNMENT)->read_string();
-        long  alignment_length = GBT_get_alignment_len(gb_main,alignment_name);
+        long  alignment_length = GBT_get_alignment_len(GLOBAL_gb_main,alignment_name);
         error                  = filter.init(filterstring,"0",alignment_length);
         free(alignment_name);
         free(filterstring);
@@ -407,13 +407,13 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
 
 AW_window *AP_open_csp_2_gnuplot_window( AW_root *root ){
 
-    GB_transaction dummy(gb_main);
-    AWT_csp *csp = new AWT_csp(gb_main,root,AP_AWAR_CSP_NAME);
+    GB_transaction dummy(GLOBAL_gb_main);
+    AWT_csp *csp = new AWT_csp(GLOBAL_gb_main,root,AP_AWAR_CSP_NAME);
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "EXPORT_CSP_TO_GNUPLOT", "Export Column statistic to GnuPlot");
     aws->load_xfig("cpro/csp_2_gnuplot.fig");
 
-    root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", gb_main);
+    root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", GLOBAL_gb_main);
 
     root->awar_int(AP_AWAR_CSP_SMOOTH);
     root->awar_int(AP_AWAR_CSP_GNUPLOT_OVERLAY_POSTFIX);
@@ -450,7 +450,7 @@ AW_window *AP_open_csp_2_gnuplot_window( AW_root *root ){
     aws->insert_default_selection(selid, "<select one>", "");
     aws->update_selection_list(selid);
 
-    AW_CL filter = awt_create_select_filter(root,gb_main,AP_AWAR_FILTER_NAME);
+    AW_CL filter = awt_create_select_filter(root,GLOBAL_gb_main,AP_AWAR_FILTER_NAME);
     aws->at("ap_filter");
     aws->callback(AW_POPUP,(AW_CL)awt_create_select_filter_win,filter);
     aws->create_button("SELECT_FILTER", AP_AWAR_FILTER_NAME);

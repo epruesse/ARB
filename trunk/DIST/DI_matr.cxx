@@ -103,7 +103,7 @@ static AW_window *create_dna_matrix_window(AW_root *aw_root){
 
 void create_matrix_variables(AW_root *aw_root, AW_default def)
 {
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     DI_dna_matrix.set_description("","");
     DI_dna_matrix.x_description[AP_A] = strdup("A");
     DI_dna_matrix.x_description[AP_C] = strdup("C");
@@ -129,7 +129,7 @@ void create_matrix_variables(AW_root *aw_root, AW_default def)
 
     aw_root->awar_string(AWAR_DIST_WHICH_SPECIES, "marked", def)->add_callback(delete_matrix_cb);
     {
-        char *default_ali = GBT_get_default_alignment(gb_main);
+        char *default_ali = GBT_get_default_alignment(GLOBAL_gb_main);
         aw_root->awar_string( AWAR_DIST_ALIGNMENT,"",def)      ->add_callback(delete_matrix_cb)->write_string(default_ali);
         free(default_ali);
     }
@@ -160,12 +160,12 @@ void create_matrix_variables(AW_root *aw_root, AW_default def)
     // aw_root->awar_string( "dist/compress/tree_name","tree_main",def);
     // aw_root->awar_float( "dist/alpha",1.0,def);
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
-    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
     GB_add_callback(gb_species_data,GB_CB_CHANGED,(GB_CB)delete_matrix_cb,0);
 
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 
 }
 
@@ -254,7 +254,7 @@ char *PHMATRIX::load(char *usei,AP_filter *filter,AP_weights *weights,AP_smatrix
     tree_root->filter = filter;
     tree_root->weights = weights;
     this->use = strdup(usei);
-    this->gb_main = ::gb_main;
+    this->gb_main = GLOBAL_gb_main;
     GB_push_transaction(gb_main);
 
     seq_len          = GBT_get_alignment_len(gb_main,use);
@@ -863,16 +863,16 @@ GB_ERROR PHMATRIX::calculate_pro(PH_TRANSFORMATION transformation){
 static GB_ERROR ph_calculate_matrix_cb(AW_window *aww, AW_CL bootstrap_flag, AW_CL cl_show_warnings) // returns "Aborted" if stopped by user
 {
     bool show_warnings = (bool)cl_show_warnings;
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
     if (PHMATRIX::ROOT){
-        GB_pop_transaction(gb_main);
+        GB_pop_transaction(GLOBAL_gb_main);
         return 0;
     }
     AW_root *aw_root = aww->get_root();
     char    *use = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
-    long ali_len = GBT_get_alignment_len(gb_main,use);
+    long ali_len = GBT_get_alignment_len(GLOBAL_gb_main,use);
     if (ali_len<=0) {
-        GB_pop_transaction(gb_main);
+        GB_pop_transaction(GLOBAL_gb_main);
         delete use;
         aw_message("Please select a valid alignment");
         return "Error";
@@ -882,7 +882,7 @@ static GB_ERROR ph_calculate_matrix_cb(AW_window *aww, AW_CL bootstrap_flag, AW_
         aw_status("Read the database");
     }
 
-    PHMATRIX *phm = new PHMATRIX(gb_main,aw_root);
+    PHMATRIX *phm = new PHMATRIX(GLOBAL_gb_main,aw_root);
     phm->matrix_type = PH_MATRIX_FULL;
     char    *cancel = aw_root->awar(AWAR_DIST_CANCEL_CHARS)->read_string();
 
@@ -902,7 +902,7 @@ static GB_ERROR ph_calculate_matrix_cb(AW_window *aww, AW_CL bootstrap_flag, AW_
     if (!strcmp(load_what,"all")) all_flag = 1;
     phm->load(use,ap_filter,ap_weights,ap_ratematrix,all_flag, sort_tree_name, show_warnings);
     free(sort_tree_name);
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
     if (aw_status()) {
         phm->unload();
         return "Aborted";
@@ -1179,10 +1179,10 @@ static void ph_calculate_tree_cb(AW_window *aww, AW_CL bootstrap_flag)
         if (bootstrap_flag) tree = get_ctree();
 
         char *tree_name = aw_root->awar(AWAR_DIST_TREE_STD_NAME)->read_string();
-        GB_begin_transaction(gb_main);
-        error = GBT_write_tree(gb_main,0,tree_name,tree);
+        GB_begin_transaction(GLOBAL_gb_main);
+        error = GBT_write_tree(GLOBAL_gb_main,0,tree_name,tree);
         if (error) {
-            GB_abort_transaction(gb_main);
+            GB_abort_transaction(GLOBAL_gb_main);
             aw_message(error);
         }
         else {
@@ -1192,8 +1192,8 @@ static void ph_calculate_tree_cb(AW_window *aww, AW_CL bootstrap_flag)
             const char *comment     = GBS_global_string("PRG=dnadist CORR=%s FILTER=%s PKG=ARB", enum_trans_to_string[transr], filter_name);
 
             free(filter_name);
-            GBT_write_tree_rem(gb_main,tree_name,comment);
-            GB_commit_transaction(gb_main);
+            GBT_write_tree_rem(GLOBAL_gb_main,tree_name,comment);
+            GB_commit_transaction(GLOBAL_gb_main);
         }
         free(tree_name);
     }
@@ -1220,16 +1220,16 @@ static void ph_calculate_tree_cb(AW_window *aww, AW_CL bootstrap_flag)
 
 static void ph_autodetect_callback(AW_window *aww)
 {
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
     if (PHMATRIX::ROOT){
         delete PHMATRIX::ROOT;
         PHMATRIX::ROOT = 0;
     }
     AW_root *aw_root = aww->get_root();
     char    *use = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
-    long ali_len = GBT_get_alignment_len(gb_main,use);
+    long ali_len = GBT_get_alignment_len(GLOBAL_gb_main,use);
     if (ali_len<=0) {
-        GB_pop_transaction(gb_main);
+        GB_pop_transaction(GLOBAL_gb_main);
         delete use;
         aw_message("Please select a valid alignment");
         return;
@@ -1238,7 +1238,7 @@ static void ph_autodetect_callback(AW_window *aww)
     aw_openstatus("Analysing data...");
     aw_status("Read the database");
 
-    PHMATRIX *phm = new PHMATRIX(gb_main,aw_root);
+    PHMATRIX *phm = new PHMATRIX(GLOBAL_gb_main,aw_root);
     char    *filter_str = aw_root->awar(AWAR_DIST_FILTER_FILTER)->read_string();
     char    *cancel = aw_root->awar(AWAR_DIST_CANCEL_CHARS)->read_string();
 
@@ -1269,7 +1269,7 @@ static void ph_autodetect_callback(AW_window *aww)
     phm->ROOT = 0;
     phm->load(use,ap_filter,ap_weights,ap_ratematrix,all_flag, sort_tree_name, true);
     free(sort_tree_name);
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 
     aw_status("Search Correction");
 
@@ -1297,7 +1297,7 @@ static void ph_autodetect_callback(AW_window *aww)
 static void ap_exit(AW_window *) __ATTR__NORETURN;
 static void ap_exit(AW_window *)
 {
-    if (gb_main) GB_exit(gb_main);
+    if (GLOBAL_gb_main) GB_exit(GLOBAL_gb_main);
     exit(0);
 }
 
@@ -1312,10 +1312,10 @@ static void ph_calculate_full_matrix_cb(AW_window *aww){
 }
 
 static void ph_compress_tree_cb(AW_window *aww){
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     char *treename = aww->get_root()->awar(AWAR_DIST_TREE_COMP_NAME)->read_string();
     GB_ERROR error = 0;
-    GBT_TREE *tree = GBT_read_tree(gb_main,treename,sizeof(GBT_TREE));
+    GBT_TREE *tree = GBT_read_tree(GLOBAL_gb_main,treename,sizeof(GBT_TREE));
     if (!tree) error = "Please select a valid tree first";
 
     if (PHMATRIX::ROOT && PHMATRIX::ROOT->matrix_type!=PH_MATRIX_COMPRESSED){
@@ -1406,7 +1406,7 @@ AW_window *create_matrix_window(AW_root *aw_root) {
     aws->create_button("HELP", "HELP","H");
 
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     //  aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
     //  aws->create_button("CLOSE","C");
@@ -1428,16 +1428,16 @@ AW_window *create_matrix_window(AW_root *aw_root) {
     aws->update_option_menu();
 
     aws->at("which_alignment");
-    awt_create_selection_list_on_ad(gb_main, (AW_window *)aws,AWAR_DIST_ALIGNMENT,"*=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws,AWAR_DIST_ALIGNMENT,"*=");
 
     aws->at("filter_select");
-    AW_CL filtercd = awt_create_select_filter(aws->get_root(),gb_main,AWAR_DIST_FILTER_NAME);
+    AW_CL filtercd = awt_create_select_filter(aws->get_root(),GLOBAL_gb_main,AWAR_DIST_FILTER_NAME);
     dist_filter_cl = filtercd;
     aws->callback(AW_POPUP,(AW_CL)awt_create_select_filter_win,filtercd);
     aws->create_button("SELECT_FILTER", AWAR_DIST_FILTER_NAME);
 
     aws->at("weights_select");
-    global_csp = new AWT_csp(gb_main,aws->get_root(),AWAR_DIST_COLUMN_STAT_NAME);
+    global_csp = new AWT_csp(GLOBAL_gb_main,aws->get_root(),AWAR_DIST_COLUMN_STAT_NAME);
     aws->callback(AW_POPUP,(AW_CL)create_csp_window, (AW_CL)global_csp);
     aws->create_button("SELECT_COL_STAT",AWAR_DIST_COLUMN_STAT_NAME);
 
@@ -1501,7 +1501,7 @@ AW_window *create_matrix_window(AW_root *aw_root) {
     aws->create_button("VIEW_MATRIX", "View matrix","V");
 
     aws->at("tree_list");
-    awt_create_selection_list_on_trees(gb_main,(AW_window *)aws,AWAR_DIST_TREE_LIST_NAME);
+    awt_create_selection_list_on_trees(GLOBAL_gb_main,(AW_window *)aws,AWAR_DIST_TREE_LIST_NAME);
 
     aws->button_length(18);
 
@@ -1541,6 +1541,6 @@ AW_window *create_matrix_window(AW_root *aw_root) {
     aws->callback(ph_define_save_tree_name_cb);
     aws->create_button("USE_NAME", "Use as new tree name", "");
 
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
     return (AW_window *)aws;
 }

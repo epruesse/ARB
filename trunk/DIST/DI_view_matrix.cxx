@@ -166,7 +166,7 @@ void PH_dmatrix::display(void)   // draw area
 #define BUFLEN 200
     char            buf[BUFLEN];
     long            x, y, xpos, ypos;
-    GB_transaction  dummy(gb_main);
+    GB_transaction  dummy(GLOBAL_gb_main);
     if (!device)    return;
     PHMATRIX       *m = get_matrix();
     if (!m) {

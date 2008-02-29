@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_main.cxx                                      //
 //   Purpose   : main part of SECEDIT                              //
-//   Time-stamp: <Fri Sep/14/2007 16:46 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Thu Feb/28/2008 16:04 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -30,9 +30,6 @@
 #ifndef sec_assert // happens in NDEBUG mode
 #define sec_assert(cond) arb_assert(cond)
 #endif
-
-// #warning remove ? 
-// extern GBDATA *gb_main;
 
 void SEC_root::invalidate_base_positions() {
     if (root_loop) {

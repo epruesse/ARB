@@ -84,7 +84,7 @@ enum {
 };
 
 
-extern GBDATA *gb_main;
+extern GBDATA        *GLOBAL_gb_main;
 extern class AP_root *ap_main;
 
 // make awars :
@@ -133,9 +133,6 @@ public:
 
 
 long AP_timer(void);
-
-extern GBDATA *gb_main;
-extern AP_root *ap_main;
 
 GBT_TREE *neighbourjoining(char **names, AP_FLOAT **m, long size, size_t structure_size);
 

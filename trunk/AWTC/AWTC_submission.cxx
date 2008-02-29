@@ -100,12 +100,12 @@ static void ed_submit_info_event_rm(char *string)
     }
 }
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 static void ed_submit_info_event(AW_window *aww)
 {
     AW_root *aw_root = aww->get_root();
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     char *key;
 
     GBDATA  *gb_species;
@@ -113,7 +113,7 @@ static void ed_submit_info_event(AW_window *aww)
 
     char    *parser;
     char    *species_name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
-    gb_species = GBT_find_species(gb_main,species_name);
+    gb_species = GBT_find_species(GLOBAL_gb_main,species_name);
     void *strstruct = GBS_stropen(1000);
 
     if (gb_species) {

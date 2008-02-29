@@ -57,4 +57,4 @@ public:
 
 } *ap_main;
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
