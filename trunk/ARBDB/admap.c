@@ -61,8 +61,8 @@ do {                        \
 
 static void downheap(struct gbdata_offset *heap, int idx, int num)
 {
-    register int idx2 = idx<<1;
-    register int idx21 = idx2+1;
+    int idx2  = idx<<1;
+    int idx21 = idx2+1;
     ad_assert(idx>=1);
 
     if (idx2>num)
@@ -121,8 +121,8 @@ static void sort_gbdata_offsets(struct gbdata_offset *gbdo, int num)
 }
 
 static struct gbdata_offset *find_gbdata_offset(int quark, GBDATA *gbd){
-    register struct gbdata_offset *gbdo = gb_gbk[quark].gbdoff;
-    register long l=0,
+    struct gbdata_offset *gbdo = gb_gbk[quark].gbdoff;
+    long l=0,
         h=gb_gbk[quark].cnt-1,
         m;
 
@@ -130,7 +130,7 @@ static struct gbdata_offset *find_gbdata_offset(int quark, GBDATA *gbd){
     ad_assert(gbdo!=NULL);
 
     while (1){
-        register long cmpres;
+        long cmpres;
 
         m = (l+h)>>1;
         cmpres = (long)gbd - (long)gbdo[m].gbd;
@@ -160,7 +160,7 @@ static long getrel_GBDATA(long rel_to, GBDATA *gbd)
     {
         unsigned int quark = gbd->rel_father ? GB_KEY_QUARK(gbd) : 0; /* cause Main->data->father==NULL !! */
         struct gbdata_offset *gbdo = gb_gbk[quark].gbdoff;
-        register int l=0,
+        int l=0,
             h=gb_gbk[quark].cnt-1,
             m;
 
@@ -169,7 +169,7 @@ static long getrel_GBDATA(long rel_to, GBDATA *gbd)
 
         while (1)
         {
-            register int cmpres;
+            int cmpres;
 
             m = (l+h)>>1;
             cmpres = (long)gbd - (long)gbdo[m].gbd;

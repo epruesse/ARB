@@ -70,7 +70,7 @@ void probe_combi_statistic::sort(long feld_laenge)
 
 inline void probe_combi_statistic::swap(probe **a, probe **b)
 {
-    register probe *help;
+    probe *help;
 
     help = *a;
     *a = *b;
@@ -79,7 +79,7 @@ inline void probe_combi_statistic::swap(probe **a, probe **b)
 
 void probe_combi_statistic::quicksort(long left, long right)        //Randomized Quicksort !!! wegen effizienz
 {                                   // Fuer den Fall, dass Feld sortiert !!!
-    register long   i = left,
+    long   i = left,
         j = right;
     int         x,
         help,
@@ -156,7 +156,7 @@ void probe_combi_statistic::print(probe **arr, int length)
 
 int probe_combi_statistic::sub_expected_children(double val)
 {
-    register double result;
+    double result;
 
     if (expected_children - val > 0)
         result = (double)MULTROULETTEFACTOR * val;
@@ -209,7 +209,7 @@ void probe_combi_statistic::mutate_Probe()
 
 int probe_combi_statistic::get_dupl_pos()
 {
-    register int length = mp_gl_awars.no_of_probes;
+    int length = mp_gl_awars.no_of_probes;
 
     for (int i=0; i<length-1; i++)      //auf duplikate in der Sondenkombi. pruefen
         if (probe_combi[i]->probe_index == probe_combi[i+1]->probe_index)
@@ -290,7 +290,7 @@ void probe_combi_statistic::init_stats()
 
 int probe_combi_statistic::calc_index_system3(int *field)
 {
-    register int i, result = 0;
+    int i, result = 0;
 
     for (i=0; i<mp_gl_awars.no_of_probes; i++)
         result += system3_tab[field[i]][i];     //Ergebnis von : (3^i) * field[i];

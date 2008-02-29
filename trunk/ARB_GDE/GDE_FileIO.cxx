@@ -463,7 +463,7 @@ void Ascii2NA(char *buffer,int len,int matrix[16])
      *   if the translation matrix exists, use it to
      *   encode the buffer.
      */
-    register int i;
+    int i;
     if(matrix != NULL)
         for(i=0;i<len;i++)
             buffer[i] = matrix[buffer[i]];

@@ -679,8 +679,8 @@ RETURN
 # ***************************** load a structure *******************************
 FUNCTION save_token
 	P int aisc_server_save_token(FILE *fd,char *buffer, int maxsize){
-	P $1register char *p;
-	P $1register int c;
+	P $1char *p;
+	P $1int c;
 	P $1putc('{',fd);
 	P $1p = buffer;
 	P $1while(maxsize-->0){
@@ -697,9 +697,9 @@ RETURN
 FUNCTION load_token
 	P int aisc_server_load_token(FILE *fd,char *buffer, int maxsize)
 	P $1{
-	P $1register char *p;
-	P $1register int c;
-	P $1register int in_brackets = 0;
+	P $1char *p;
+	P $1int c;
+	P $1int in_brackets = 0;
 	P $1p = buffer;
 	P $1while(maxsize-->0){
 	P $2c = getc(fd);

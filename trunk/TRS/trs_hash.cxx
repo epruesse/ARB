@@ -86,15 +86,14 @@ const unsigned long crctab[] = {
 /********************************************************************************************
 					Some Hash Procedures for [string,long]
 ********************************************************************************************/
-#define TRS_CALC_HASH_INDEX(string,index,size) {\
-		register const char *_ptr = string;\
-		register int _i; \
-		index = 0xffffffffL; while ( (_i = tolower(*(_ptr++)))){\
-			index = crctab[((int) index ^ _i) & 0xff] ^ (index >> 8);\
-		}\
-		index = index % size;\
-	}
-
+#define TRS_CALC_HASH_INDEX(string,index,size) {                        \
+        const char *_ptr = string;                                      \
+        int _i;                                                         \
+        index = 0xffffffffL; while ( (_i = tolower(*(_ptr++)))){        \
+            index = crctab[((int) index ^ _i) & 0xff] ^ (index >> 8);   \
+        }                                                               \
+        index = index % size;                                           \
+    }
 
 
 long TRS_create_hash(long size)
@@ -218,20 +217,21 @@ long TRS_incr_hash(long hash,const char *key)
 long
 TRS_free_hash_entries(long hash)
 {
-	struct trs_hash_struct *hs = (struct trs_hash_struct *) hash;
-	register long    i;
-	register long    e2;
-	struct trs_hash_entry *e, *ee;
-	e2 = hs->size;
-	for (i = 0; i < e2; i++) {
-		for (e = hs->entries[i]; e; e = ee) {
-			free(e->key);
-			ee = e->next;
-			free((char *)e);
-		}
-		hs->entries[i] = 0;
-	}
-	return 0;
+    struct trs_hash_struct *hs = (struct trs_hash_struct *) hash;
+    long                    i;
+    long                    e2;
+    struct trs_hash_entry  *e, *ee;
+    
+    e2 = hs->size;
+    for (i = 0; i < e2; i++) {
+        for (e = hs->entries[i]; e; e = ee) {
+            free(e->key);
+            ee = e->next;
+            free((char *)e);
+        }
+        hs->entries[i] = 0;
+    }
+    return 0;
 }
 
 long
@@ -246,21 +246,22 @@ TRS_free_hash(long hash)
 long
 TRS_free_hash_entries_free_pointer(long hash)
 {
-	struct trs_hash_struct *hs = (struct trs_hash_struct *) hash;
-	register long    i;
-	register long    e2;
-	struct trs_hash_entry *e, *ee;
-	e2 = hs->size;
-	for (i = 0; i < e2; i++) {
-		for (e = hs->entries[i]; e; e = ee) {
-			free(e->key);
-			if (e->val) free((char *)e->val);
-			ee = e->next;
-			free((char *)e);
-		}
-		hs->entries[i] = 0;
-	}
-	return 0;
+    struct trs_hash_struct *hs = (struct trs_hash_struct *) hash;
+    long                    i;
+    long                    e2;
+    struct trs_hash_entry  *e, *ee;
+    
+    e2 = hs->size;
+    for (i = 0; i < e2; i++) {
+        for (e = hs->entries[i]; e; e = ee) {
+            free(e->key);
+            if (e->val) free((char *)e->val);
+            ee = e->next;
+            free((char *)e);
+        }
+        hs->entries[i] = 0;
+    }
+    return 0;
 }
 long
 TRS_free_hash_free_pointer(long hash)
@@ -273,19 +274,20 @@ TRS_free_hash_free_pointer(long hash)
 }
 
 long TRS_hash_do_loop(long hash, long func(const char *key,long val) )
-	{
-	struct trs_hash_struct *hs = (struct trs_hash_struct *)hash;
-	register long i,e2;
-	struct trs_hash_entry *e;
-	e2 = hs->size;
-	for (i=0;i<e2;i++) {
-		for (e=hs->entries[i];e;e=e->next) {
-			if (e->val) {
-				e->val = func(e->key,e->val);
-			}
-		}
-	}
-	return 0;
+{
+    struct trs_hash_struct *hs = (struct trs_hash_struct *)hash;
+    long                    i,e2;
+    struct trs_hash_entry *e;
+    
+    e2 = hs->size;
+    for (i=0;i<e2;i++) {
+        for (e=hs->entries[i];e;e=e->next) {
+            if (e->val) {
+                e->val = func(e->key,e->val);
+            }
+        }
+    }
+    return 0;
 
 }
 
@@ -295,11 +297,11 @@ long TRS_hash_do_loop(long hash, long func(const char *key,long val) )
 ********************************************************************************************/
 
 static long trs_hashi_index(long key, long size)
-	{
-	register long x;
-	x = (key*97)%size;
-	if (x<0) x+= size;
-	return x;
+{
+    long x;
+    x = (key*97)%size;
+    if (x<0) x+= size;
+    return x;
 }
 
 
@@ -368,21 +370,22 @@ long TRS_write_hashi(long hashi,long key,long val)
 }
 
 long TRS_free_hashi(long hash)
-	{
-	struct trs_hashi_struct *hs = (struct trs_hashi_struct *)hash;
-	register long i;
-	register long e2;
-	struct trs_hashi_entry *e,*ee;
-	e2 = hs->size;
-	for (i=0;i<e2;i++) {
-		for (e=hs->entries[i];e;e=ee) {
-			ee = e->next;
-			free((char *)e);
-		}
-	}
-	free ((char *)hs->entries);
-	free ((char *)hs);
-	return 0;
+{
+    struct trs_hashi_struct *hs = (struct trs_hashi_struct *)hash;
+    long                     i;
+    long                     e2;
+    struct trs_hashi_entry  *e,*ee;
+    
+    e2 = hs->size;
+    for (i=0;i<e2;i++) {
+        for (e=hs->entries[i];e;e=ee) {
+            ee = e->next;
+            free((char *)e);
+        }
+    }
+    free ((char *)hs->entries);
+    free ((char *)hs);
+    return 0;
 }
 
 

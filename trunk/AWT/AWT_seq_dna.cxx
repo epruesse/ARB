@@ -58,7 +58,7 @@ is_set_flag is used by AP_tree_nlen::parsimony_rek()
 
 void AP_sequence_parsimony::set(char *isequence)
 {
-    //     register char *s,*d,*f1,c;
+    //      char *s,*d,*f1,c;
     sequence_len = root->filter->real_len;
     sequence     = new char[sequence_len+1];
     memset(sequence,AP_N,(size_t)sequence_len+1);
@@ -138,9 +138,9 @@ void AP_sequence_parsimony::set(char *isequence)
 long global_combineCount;
 
 AP_FLOAT AP_sequence_parsimony::combine( const AP_sequence *lefts, const AP_sequence *rights) {
-    //  register char *p1,*p2,*p;
-    //  register char c1,c2;
-    //  register long result;
+    //   char *p1,*p2,*p;
+    //   char c1,c2;
+    //   long result;
 
     const AP_sequence_parsimony *left = (const AP_sequence_parsimony *)lefts;
     const AP_sequence_parsimony *right = (const AP_sequence_parsimony *)rights;

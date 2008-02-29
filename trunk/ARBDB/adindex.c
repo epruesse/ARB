@@ -12,22 +12,23 @@
         if (ifs->key == quark) break;                                       \
     }
 
-#define GB_CALC_HASH_INDEX(string,index) {                                      \
-        register const char *_ptr = string;                                     \
-        register int _i;                                                        \
-        index = 0xffffffffL; while ((_i = *(_ptr++))){                          \
-            index = crctab[((int) index ^ toupper(_i)) & 0xff] ^ (index >> 8);  \
-        }                                                                       \
+#define GB_CALC_HASH_INDEX(string,index) {                              \
+        const char *_ptr = string;                                      \
+        int _i;                                                         \
+        index = 0xffffffffL; while ((_i = *(_ptr++))){                  \
+            index = crctab[((int) index ^ toupper(_i)) & 0xff] ^ (index >> 8); \
+        }                                                               \
     }
 
 /* write field in index table */
 char *gb_index_check_in(GBDATA *gbd)
 {
-    register struct gb_index_files_struct *ifs;
-    register GBQUARK quark;
-    register unsigned long index;
-    char *data;
-    GBCONTAINER *gfather;
+    struct gb_index_files_struct *ifs;
+    
+    GBQUARK        quark;
+    unsigned long  index;
+    char          *data;
+    GBCONTAINER   *gfather;
 
     gfather = GB_GRANDPA(gbd);
     if (!gfather)   return 0;
@@ -67,14 +68,15 @@ char *gb_index_check_in(GBDATA *gbd)
 /* remove entry from index table */
 char *gb_index_check_out(GBDATA *gbd)
 {
-    register struct gb_index_files_struct *ifs;
-    register GBQUARK quark;
-    GBCONTAINER *gfather;
-    char *data;
-    register unsigned long index;
-    register struct gb_if_entries *ifes;
-    struct gb_if_entries *ifes2;
-    GB_REL_IFES *entries;
+    struct gb_index_files_struct *ifs;
+    struct gb_if_entries         *ifes;
+    struct gb_if_entries         *ifes2;
+    GB_REL_IFES                  *entries;
+    
+    GBQUARK        quark;
+    GBCONTAINER   *gfather;
+    char          *data;
+    unsigned long  index;
 
     if (!gbd->flags2.is_indexed) return 0;
     gbd->flags2.is_indexed = 0;
@@ -118,11 +120,11 @@ char *gb_index_check_out(GBDATA *gbd)
    Collisions are avoided by using linked lists */
 GB_ERROR GB_create_index(GBDATA *gbd, const char *key, long estimated_size)
 {
-    GBQUARK key_quark;
-    register struct gb_index_files_struct *ifs;
+    struct gb_index_files_struct *ifs;
+    GBQUARK      key_quark;
     GBCONTAINER *gbc;
-    GBDATA *gbf;
-    register GBDATA *gb2;
+    GBDATA      *gbf;
+    GBDATA      *gb2;
 
     if (GB_TYPE(gbd) != GB_DB)
         return GB_export_error("GB_create_index used on non CONTAINER Type");
@@ -160,11 +162,11 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, long estimated_size)
 
 /* find an entry in an hash table */
 GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUARK quark, const char *val, int after_index){
-    register unsigned long index;
-    register char *data;
-    register struct gb_if_entries *ifes;
-    GBDATA *result = 0;
-    long    min_index;
+    unsigned long         index;
+    char                 *data;
+    struct gb_if_entries *ifes;
+    GBDATA               *result = 0;
+    long                  min_index;
 
     if (!ifs) {
         GB_INDEX_FIND(gbf,ifs,quark);

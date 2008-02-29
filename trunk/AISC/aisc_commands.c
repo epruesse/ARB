@@ -44,9 +44,9 @@ int printf_error(const char *format, ...) {
 
 void memcopy(char *dest, const char *source, int len)
 {
-    register int    i;
-    register const char  *s;
-    register char  *d;
+    int         i;
+    const char *s;
+    char       *d;
 
     i = len;
     s = source;
@@ -66,7 +66,7 @@ void memcopy(char *dest, const char *source, int len)
 
 char *find_string(const char *str,const char *key)
 {
-    register const char *p1,*p2;
+    const char *p1,*p2;
     for (p1=str,p2=key;*p1;) {
         if (!*p2) {
             return (char*)(str);
@@ -321,11 +321,12 @@ do_com_data(char *str)
 int
 do_com_write(FILE * out, char *str)
 {
-    register char  *p;
-    register char   c;
-    int             no_nl = 0;
-    int             pos;
-    int             lt, rt;
+    char *p;
+    char  c;
+    int   no_nl = 0;
+    int   pos;
+    int   lt, rt;
+
     p = str;
     while ( (c = *(p++)) ) {
         if (c == '$') {

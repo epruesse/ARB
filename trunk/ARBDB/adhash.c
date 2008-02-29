@@ -241,23 +241,23 @@ long GBS_get_a_prime(long above_or_equal_this) {
                     Some Hash Procedures for [string,long]
 ********************************************************************************************/
 
-#define GB_CALC_HASH_INDEX(string,index,size) do {                          \
-    register const char *local_ptr = (string);                              \
-    register int local_i;                                                   \
-    (index) = 0xffffffffL;                                                  \
-    while ((local_i=(*(local_ptr++)))) {                                    \
-        (index) = crctab[((int)(index)^local_i) & 0xff] ^ ((index) >> 8);   \
-    }                                                                       \
-    (index) = (index) % (size);                                             \
-} while(0)
+#define GB_CALC_HASH_INDEX(string,index,size) do {                      \
+        const char *local_ptr = (string);                               \
+        int local_i;                                                    \
+        (index) = 0xffffffffL;                                          \
+        while ((local_i=(*(local_ptr++)))) {                            \
+            (index) = crctab[((int)(index)^local_i) & 0xff] ^ ((index) >> 8); \
+        }                                                               \
+        (index) = (index) % (size);                                     \
+    } while(0)
 
-#define GB_CALC_HASH_INDEX_TO_UPPER(string,index,size) {                        \
-        register const char *_ptr = string;                                     \
-        register int _i;                                                        \
-        index = 0xffffffffL; while ( (_i = *(_ptr++))){                         \
-            index = crctab[((int) index ^ toupper(_i)) & 0xff] ^ (index >> 8);  \
-        }                                                                       \
-        index = index % size;                                                   \
+#define GB_CALC_HASH_INDEX_TO_UPPER(string,index,size) {                \
+        const char *_ptr = string;                                      \
+        int _i;                                                         \
+        index = 0xffffffffL; while ( (_i = *(_ptr++))){                 \
+            index = crctab[((int) index ^ toupper(_i)) & 0xff] ^ (index >> 8); \
+        }                                                               \
+        index = index % size;                                           \
     }
 
 GB_HASH *GBS_create_hash(long user_size,int ignore_case) {
@@ -559,8 +559,8 @@ double GBS_hash_mean_access_costs(GB_HASH *hs) {
 
 void GBS_free_hash_entries(GB_HASH *hs)
 {
-    register long          i;
-    register long          e2;
+    long i;
+    long e2;    
     struct gbs_hash_entry *e, *ee;
 
     e2 = hs->size;
@@ -706,8 +706,8 @@ void GBS_calc_hash_statistic(GB_HASH *hs, const char *id, int print) {
 
 void GBS_free_hash_entries_free_pointer(GB_HASH *hs)
 {
-    register long    i;
-    register long    e2;
+    long i;
+    long e2;
     struct gbs_hash_entry *e, *ee;
     e2 = hs->size;
     for (i = 0; i < e2; i++) {
@@ -729,7 +729,7 @@ void GBS_free_hash_free_pointer(GB_HASH *hs)
 
 void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func)
 {
-    register long i,e2;
+    long i,e2;
     struct gbs_hash_entry *e;
     e2 = hs->size;
     for (i=0;i<e2;i++) {
@@ -743,7 +743,7 @@ void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func)
 
 void GBS_hash_do_loop2(GB_HASH *hs, gb_hash_loop_type2 func, void *parameter)
 {
-    register long i,e2;
+    long i,e2;
     struct gbs_hash_entry *e;
     e2 = hs->size;
     for (i=0;i<e2;i++) {
@@ -775,7 +775,7 @@ long GBS_hash_count_elems(GB_HASH *hs) {
 
 void GBS_hash_next_element(GB_HASH *hs,const  char **key, long *val){
     struct gbs_hash_entry *e = hs->loop_entry;
-    register long i,e2;
+    long i,e2;
     if (!e){
         if (key) *key = 0;
         *val = 0;
@@ -803,7 +803,7 @@ void GBS_hash_next_element(GB_HASH *hs,const  char **key, long *val){
 
 void GBS_hash_first_element(GB_HASH *hs,const char **key, long *val){
     struct gbs_hash_entry *e;
-    register long i,e2;
+    long i,e2;
     e2 = hs->size;
     for (i=0;i<e2;i++) {
         e=hs->entries[i];
@@ -839,7 +839,7 @@ extern "C" {
 #endif
 
 void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_sort_func_type sorter) {
-    register long   i, j, e2;
+    long   i, j, e2;
     struct gbs_hash_entry *e, **mtab;
     e2 = hs->size;
     mtab = (struct gbs_hash_entry **)GB_calloc(sizeof(void *), hs->nelem);
@@ -864,7 +864,7 @@ void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_sort_
 
 long gbs_hashi_index(long key, long size)
 {
-    register long x;
+    long x;
     x = (key * (long long)97)%size;     // make one multiplier a (long long) to avoid
     if (x<0) x+= size;                  // int overflow and abort if compield with -ftrapv
     return x;
@@ -938,8 +938,8 @@ long GBS_write_hashi(long hashi,long key,long val)
 long GBS_free_hashi(long hash)
 {
     struct gbs_hashi_struct *hs = (struct gbs_hashi_struct *)hash;
-    register long i;
-    register long e2;
+    long i;
+    long e2;
     struct gbs_hashi_entry *e,*ee;
     e2 = hs->size;
     for (i=0;i<e2;i++) {
@@ -974,9 +974,9 @@ void gb_init_cache(GB_MAIN_TYPE *Main){
 
 char *gb_read_cache(GBDATA *gbd) {
     GB_MAIN_TYPE *Main;
-    register struct gb_cache_struct *cs;
-    register long i;
-    register long n,p;
+    struct gb_cache_struct *cs;
+    long i;
+    long n,p;
     if (!(i=gbd->cache_index)) return 0;
     Main = GB_MAIN(gbd);
     cs = &Main->cache;
@@ -1011,9 +1011,9 @@ char *gb_read_cache(GBDATA *gbd) {
 }
 
 void *gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd) {
-    register struct gb_cache_struct *cs;
-    register long i;
-    register long n,p;
+    struct gb_cache_struct *cs;
+    long i;
+    long n,p;
     if (!(i=gbd->cache_index)) return 0;
     cs = &Main->cache;
     n = cs->entries[i].next; p = cs->entries[i].prev;
@@ -1039,8 +1039,8 @@ void *gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd) {
 char *delete_old_cache_entries(struct gb_cache_struct *cs, long needed_size, long max_data_size)
      /* call with max_data_size==0 to flush cache */
 {
-    register long n,p;
-    register long i;
+    long n,p;
+    long i;
     char *data = 0;
 
     while ( ( (!cs->firstfree_entry) || ( needed_size + cs->sum_data_size >= max_data_size))
@@ -1072,7 +1072,7 @@ char *delete_old_cache_entries(struct gb_cache_struct *cs, long needed_size, lon
 char *gb_flush_cache(GBDATA *gbd)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    register struct gb_cache_struct *cs = &Main->cache;
+    struct gb_cache_struct *cs = &Main->cache;
 
     delete_old_cache_entries(cs, 0, 0);
     return 0;
@@ -1080,8 +1080,8 @@ char *gb_flush_cache(GBDATA *gbd)
 
 char *gb_alloc_cache_index(GBDATA *gbd,long size) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    register struct gb_cache_struct *cs = &Main->cache;
-    register long i;
+    struct gb_cache_struct *cs = &Main->cache;
+    long i;
     char *data = 0;
 
     data = delete_old_cache_entries(cs, size, cs->max_data_size); /* delete enough old memory */

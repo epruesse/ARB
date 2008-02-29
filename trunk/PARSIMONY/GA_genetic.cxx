@@ -177,11 +177,12 @@ AP_ERR * GA_genetic::read_presets() {
 
 double GA_genetic::AP_atof(char *str)
 {
-    double res = 0.0;
-    double val = 1.0;
-    register long neg = 0;
-    register char c;
-    register char *p = str;
+    double  res = 0.0;
+    double  val = 1.0;
+    long    neg = 0;
+    char    c;
+    char   *p   = str;
+
     while (c= *(p++)){
 	if (c == '.'){
 	    val = .1;

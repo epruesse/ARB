@@ -119,11 +119,11 @@ static void gb_dump_huffmann_list(struct gb_compress_list *bc, const char *prefi
 struct gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data,long short_flag, char **end)
 {
     struct gb_compress_tree *Main,*t;
-    register long           bits,mask,i;
+    long                     bits,mask,i;
     const unsigned  char    *p;
-    GB_ERROR                error;
-    Main = (struct gb_compress_tree *)gbm_get_mem(
-                                                  sizeof(struct gb_compress_tree),GBM_CB_INDEX);
+    GB_ERROR                 error;
+    
+    Main = (struct gb_compress_tree *)gbm_get_mem(sizeof(struct gb_compress_tree),GBM_CB_INDEX);
     for (p=data;*p;p+=3+short_flag) {
         bits = p[0];
         mask = 0x80;
@@ -194,12 +194,14 @@ void gb_free_compress_tree(struct gb_compress_tree *tree) {
 struct gb_compress_list *gb_build_compress_list(const unsigned char *data,long short_flag,long *size)
 {
     struct gb_compress_list *list;
-    register int            i,maxi,bitc;
-    int                     val,bits,mask,value;
+    int                      i,maxi,bitc;
+    int                      val,bits,mask,value;
     const unsigned  char    *p;
-    enum gb_compress_list_commands  command=(enum gb_compress_list_commands)0;
+    
+    enum gb_compress_list_commands command = (enum gb_compress_list_commands)0;
+
     maxi = 0;
-    val = bits = mask = value = bitc = 0;
+    val  = bits = mask = value = bitc = 0;
     for (p=data;*p;p+=3+short_flag) {
         i = (p[2]);
         if (short_flag) {
@@ -296,11 +298,11 @@ char *gb_compress_bits(const char *source, long size, const unsigned char *c_0, 
 
 GB_CPNTR gb_uncompress_bits(const char *source,long size, char c_0, char c_1)
 {
-    const char *s;
-    char *p,*buffer,ch =0,outc;
-    register long bitp,lastpos,pos;
+    const char              *s;
+    char                    *p,*buffer,ch = 0,outc;
+    long                     bitp,lastpos,pos;
     struct gb_compress_tree *Main,*t;
-    long command;
+    long                     command;
 
     Main = gb_local->bituncompress;
     bitp = 0;
@@ -369,8 +371,8 @@ GB_CPNTR g_b_write_run(char *dest, int scount, int lastbyte){
 
 #define GB_COPY_NONRUN(dest,source,len)         \
     while (len > 120) {                         \
-        register int _i = 120;                  \
-        register char *_p;                      \
+        int _i = 120;                           \
+        char *_p;                               \
         len -= _i;                              \
         *(dest++) = _i;                         \
         _p = dest; dest+=_i;                    \
@@ -379,8 +381,8 @@ GB_CPNTR g_b_write_run(char *dest, int scount, int lastbyte){
         }                                       \
     }                                           \
     if  (len >0 ) {                             \
-        register int _i = len;                  \
-        register char *_p;                      \
+        int _i = len;                           \
+        char *_p;                               \
         len = 0;                                \
         *(dest++) = _i;                         \
         _p = dest; dest+=_i;                    \
@@ -390,13 +392,13 @@ GB_CPNTR g_b_write_run(char *dest, int scount, int lastbyte){
     }
 
 void gb_compress_equal_bytes_2(const char *source, long size, long *msize, char *dest){
-    register long i;                        /* length counter */
-    register int    last,rbyte;     /* next and akt value */
-    register long   scount;         /* same count; count equal bytes */
-    char *buffer = dest;
-    const char *sourcenequal;       /* begin of non equal section */
-    long hi;                /* to temporary store i */
-    int hsize;
+    long        i;              /* length counter */
+    int         last,rbyte;     /* next and akt value */
+    long        scount;         /* same count; count equal bytes */
+    char       *buffer = dest;
+    const char *sourcenequal;   /* begin of non equal section */
+    long        hi;             /* to temporary store i */
+    int         hsize;
 
     sourcenequal = source;
     rbyte = *(source ++);
@@ -521,15 +523,15 @@ GB_CPNTR gb_compress_huffmann_rek(struct gb_compress_list *bc,int bits,int bitcn
 
 GB_CPNTR gb_compress_huffmann(const char *source, long size, long *msize, int last_flag)
 {
+    char          *buffer;
+    unsigned char *s;
+    char          *dest;
+    int            val,h_i, command;
+    long           id = 0,end, len;
 
-    char           *buffer;
-
-    unsigned        char  *s;
-    register char  *dest;
-    int             val,h_i, command;
-    long            id = 0,end, len;
-    struct gb_compress_list bitcompress[257],*pbc;
+    struct gb_compress_list  bitcompress[257],*pbc;
     struct gb_compress_list *pbid;
+
     memset((char *)(&bitcompress[0]), 0, sizeof(struct gb_compress_list)*257);
     end = 256;
 
@@ -604,7 +606,7 @@ GB_CPNTR gb_compress_huffmann(const char *source, long size, long *msize, int la
     pbid =  &bitcompress[id];
     s = (unsigned char *)source;
     {
-        register int    bitptr, bits, bitc;
+        int bitptr, bits, bitc;
 
         GB_INIT_WRITE_BITS(dest,bitptr);
         for (len = size; len; len--) {
@@ -644,12 +646,12 @@ GB_CPNTR gb_compress_huffmann(const char *source, long size, long *msize, int la
 
 GB_CPNTR gb_uncompress_equal_bytes(const char *s,long size)
 {
-    register const signed char *source = (signed char*)s;
-    register char *dest;
-    register unsigned int c;
-    register long j;
-    long i,k;
-    char *buffer;
+    const signed char *source = (signed char*)s;
+    char              *dest;
+    unsigned int       c;
+    long               j;
+    long               i,k;
+    char              *buffer;
 
     dest = buffer = GB_give_other_buffer((char *)source,size);
 
@@ -715,11 +717,13 @@ GB_CPNTR gb_uncompress_equal_bytes(const char *s,long size)
 GB_CPNTR gb_uncompress_huffmann(const char *source,long maxsize)
 {
     struct gb_compress_tree *un_tree, *t;
-    char    *data[1];
-    char           *p, *buffer;
-    register long    bitp;
-    register char   ch = 0, *s;
-    long            val,command;
+    
+    char *data[1];
+    char *p, *buffer;
+    long  bitp;
+    char  ch = 0, *s;
+    long  val,command;
+
     un_tree = gb_build_uncompress_tree((unsigned char *)source, 0, data);
     if (!un_tree) return 0;
 
@@ -790,9 +794,9 @@ GB_CPNTR gb_uncompress_longs(char *source, long size)
 
 
 GB_CPNTR gb_uncompress_longsnew(const char *data, long size){
-    register const char           *s0, *s1, *s2, *s3;
-    register char *p,*res;
-    long             mi, i;
+    const char *s0, *s1, *s2, *s3;
+    char       *p,*res;
+    long        mi, i;
 
     res = p = GB_give_other_buffer(data, size);
     mi = size / sizeof(GB_UINT4);
@@ -810,10 +814,10 @@ GB_CPNTR gb_uncompress_longsnew(const char *data, long size){
 }
 
 GB_CPNTR gb_compress_longs(const char *source, long size, int last_flag){
-    register long mi,i;
-    register const char *p;
-    register char *s0,*s1,*s2,*s3;
-    char *dest = GB_give_other_buffer(source,size+1);
+    long        mi,i;
+    const char *p;
+    char       *s0,*s1,*s2,*s3;
+    char       *dest = GB_give_other_buffer(source,size+1);
 
     mi = size/4;
     p = source;
@@ -838,7 +842,7 @@ GB_CPNTR gb_compress_longs(const char *source, long size, int last_flag){
 
 /*  Get Dictionary */
 GB_DICTIONARY * gb_get_dictionary(GB_MAIN_TYPE *Main, GBQUARK key){
-    register struct gb_key_struct *ks = &Main->keys[key];
+    struct gb_key_struct *ks = &Main->keys[key];
     if (ks->gb_key_disabled) return 0;
     if (!ks->gb_key){
         gb_load_single_key_data((GBDATA *)Main->data, key);

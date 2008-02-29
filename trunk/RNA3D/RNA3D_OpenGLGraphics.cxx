@@ -67,7 +67,7 @@ ColorRGBf OpenGLGraphics::ConvertGCtoRGB(int gc) {
     Widget w = RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
 
     AW_common *common = RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->common;
-    register class AW_GC_Xm *gcm = AW_MAP_GC( gc );
+    class AW_GC_Xm *gcm = AW_MAP_GC( gc );
  
     XGCValues xGCValues;
     XGetGCValues( XtDisplay( w ), gcm->gc, GCForeground, &xGCValues );

@@ -54,7 +54,7 @@
 
 # define GB_SETREL(struct_add,member_name,creator)                      \
 do {                                                                    \
-    register char *pntr = (char *)(creator);                            \
+    char *pntr = (char *)(creator);                                     \
     if (pntr)                                                           \
     {                                                                   \
         (struct_add)->member_name = (char*)(pntr)-(char*)(struct_add);  \

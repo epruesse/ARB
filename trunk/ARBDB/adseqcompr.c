@@ -32,12 +32,12 @@ void g_b_delete_Consensus(GB_Consensus *gcon){
 
 
 void g_b_Consensus_add(GB_Consensus *gcon, unsigned char *seq, long seq_len){
-    register int i;
-    register int li;
-    register int c;
-    register unsigned char *s;
-    register int last;
-    register unsigned char *p;
+    int i;
+    int li;
+    int c;
+    unsigned char *s;
+    int last;
+    unsigned char *p;
     int eq_count;
     const int max_priority = 255/MAX_SEQUENCE_PER_MASTER; /* No overflow possible */
 
@@ -78,9 +78,9 @@ void g_b_Consensus_add(GB_Consensus *gcon, unsigned char *seq, long seq_len){
 }
 
 char *g_b_Consensus_get_sequence(GB_Consensus *gcon){
-    register int pos;
-    register unsigned char *s;
-    register unsigned char *max = (unsigned char *)GB_calloc(sizeof(char), gcon->len);
+    int pos;
+    unsigned char *s;
+    unsigned char *max = (unsigned char *)GB_calloc(sizeof(char), gcon->len);
     int c;
     char *seq = (char *)GB_calloc(sizeof(char),gcon->len+1);
 
@@ -197,7 +197,7 @@ int g_b_set_masters_and_set_leafs(GB_CTREE *node,
 }
 
 static GB_INLINE long g_b_read_number2(const unsigned char **s) {
-    register unsigned int c0,c1,c2,c3,c4;
+    unsigned int c0,c1,c2,c3,c4;
     c0 = (*((*s)++));
     if (c0 & 0x80){
         c1 = (*((*s)++));
@@ -223,7 +223,7 @@ static GB_INLINE long g_b_read_number2(const unsigned char **s) {
 }
 
 static GB_INLINE void g_b_put_number2(int i, unsigned char **s) {
-    register int j;
+    int j;
     if (i< 0x80 ){ *((*s)++)=i;return; }
     if (i<0x4000) {
         j = (i>>8) | 0x80;
@@ -251,11 +251,12 @@ char *gb_compress_seq_by_master(const char *master,int master_len,int master_ind
                                 GBQUARK q, const char *seq, long seq_len,
                                 long *memsize, int old_flag){
     unsigned char *buffer;
-    int rest = 0;
-    register unsigned char *d;
-    register int i,cs,cm;
-    int last;
-    long len = seq_len;
+    int            rest = 0;
+    unsigned char *d;
+    int            i,cs,cm;
+    int            last;
+    long           len  = seq_len;
+    
     d = buffer = (unsigned char *)GB_give_other_buffer(seq,seq_len);
 
     if (seq_len > master_len){
@@ -546,13 +547,13 @@ void GBT_compression_test(void *dummy, GBDATA *gb_main) {
 /* ******************** Decompress Sequences ******************** */
 char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master, long size)
 {
-    register const signed char *source = (signed char *)s;
-    register char *dest;
-    register const char *m = master;
-    register unsigned int c;
-    register int j;
-    int i;
-    char *buffer;
+    const signed char *source = (signed char *)s;
+    char              *dest;
+    const char        *m      = master;
+    unsigned int       c;
+    int                j;
+    int                i;
+    char              *buffer;
 
     dest = buffer = GB_give_other_buffer((char *)source,size);
 

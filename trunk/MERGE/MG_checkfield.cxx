@@ -23,8 +23,8 @@
 
 
 int gbs_cmp_strings(char *str1,char *str2, int *tab){   /* returns 0 if strings are equal */
-    register char *s1,*s2;
-    register int c1,c2;
+    char *s1,*s2;
+    int c1,c2;
     s1 = str1;
     s2 = str2;
     int count = 10;
@@ -43,15 +43,15 @@ int gbs_cmp_strings(char *str1,char *str2, int *tab){   /* returns 0 if strings 
 char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, long correct,
                        char **res1, char **res2, long *corrrected){
 
-    char buffer1[256];
-    char buffer2[256];
+    char  buffer1[256];
+    char  buffer2[256];
     char *dest1 = buffer1;
     char *dest2 = buffer2;
-    register char *s1,*s2;
-    register int c1,c2;
-    int count = 3;
-    int tab[256];
-    int i;
+    char *s1,*s2;
+    int   c1,c2;
+    int   count = 3;
+    int   tab[256];
+    int   i;
 
     s1 = str1;
     s2 = str2;

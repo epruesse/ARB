@@ -271,7 +271,7 @@ void PT_init_base_string_counter(char *str,char initval,int size)
 
 void PT_inc_base_string_count(char *str,char initval, char maxval, int size)
 {
-    register int i;
+    int i;
     if (!size) {
         str[0]=255;
         return;

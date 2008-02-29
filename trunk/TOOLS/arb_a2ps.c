@@ -785,8 +785,8 @@ void
 cut_filename(old_name, new_name)
      char *old_name, *new_name;
 {
-    register char *p;
-    register int i;
+    char *p;
+    int   i;
     char *separator;
 
     if ((i = strlen(old_name)) <= MAXFILENAME) {
@@ -1200,7 +1200,7 @@ void
 print_file(name, header)
      char *name, *header;
 {
-    register int c;
+    int c;
     int nchars;
     int start_line, start_page;
     int continue_exit;
@@ -1396,15 +1396,15 @@ print_file(name, header)
 void
 print_prologue()
 {
-    register int c;
-    FILE *f;
-    char *datestring;
+    int             c;
+    FILE           *f;
+    char           *datestring;
 #if defined(SYSV) || defined(BSD)
-    char *logname, *host;
-    int rt;
+    char           *logname, *host;
+    int             rt;
 #endif
 #if defined(SYSV)
-    struct utsname snames;
+    struct utsname  snames;
 #endif
 
     /* Retrieve date and hour */
@@ -1747,11 +1747,11 @@ main(argc, argv)
      int argc;
      char *argv[];
 {
-    register int narg;
-    register char *arg;
-    int total;
+    int         narg;
+    char       *arg;
+    int         total;
 #if LPR_PRINT
-    int fd[2];
+    int         fd[2];
     const char *lpr_args[10];
 #endif
 

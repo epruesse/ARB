@@ -448,8 +448,8 @@ GB_ERROR PHMATRIX::calculate_rates(PH_MUT_MATR &hrates,PH_MUT_MATR &nrates,PH_MU
     if (nentries<=1) {
         return "There are no species selected";
     }
-    register long   row,col,pos,s_len;
-    register char *seq1,*seq2;
+    long   row,col,pos,s_len;
+    char *seq1,*seq2;
     s_len = tree_root->filter->real_len;
     this->clear(hrates);
     this->clear(nrates);
@@ -515,8 +515,8 @@ GB_ERROR PHMATRIX::haeschoe(const char *path)
     fprintf(out,"\nRatematrix non helical parts:\n");
     rate_write(temp2,out);
 
-    register long   row,col,pos,s_len;
-    register char *seq1,*seq2;
+    long   row,col,pos,s_len;
+    char *seq1,*seq2;
     s_len = tree_root->filter->real_len;
     fprintf(out,"\nDistanzmatrix (Helixdist Helixlen Nonhelixdist Nonhelixlen):");
     fprintf(out,"\n%li",nentries);
@@ -585,13 +585,13 @@ GB_ERROR PHMATRIX::haeschoe(const char *path)
 
 char *PHMATRIX::calculate_overall_freqs(double rel_frequencies[AP_MAX], char *cancel)
 {
-    long            hits2[AP_MAX];
-    long            sum = 0;
-    int     i,row;
-    register    char *seq1;
-    register    int pos;
-    register    int b;
-    register long s_len = tree_root->filter->real_len;
+    long  hits2[AP_MAX];
+    long  sum   = 0;
+    int   i,row;
+    char *seq1;
+    int   pos;
+    int   b;
+    long  s_len = tree_root->filter->real_len;
 
     memset((char *) &hits2[0], 0, sizeof(hits2));
     for (row = 0; row < nentries; row++) {
@@ -644,11 +644,11 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
 
     matrix = new AP_smatrix(nentries);
 
-    register long s_len = tree_root->filter->real_len;
-    long    hits[AP_MAX][AP_MAX];
-    int row;
-    int col;
-    size_t  i;
+    long   s_len = tree_root->filter->real_len;
+    long   hits[AP_MAX][AP_MAX];
+    int    row;
+    int    col;
+    size_t i;
 
     if (nentries<=1) {
         return "There are no species selected";
@@ -684,10 +684,10 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
             }
         }
         for (col=0; col<=row; col++) {
-            columns = 0;
-            register char *seq1 = entries[row]->sequence_parsimony->sequence;
-            register char *seq2= entries[col]->sequence_parsimony->sequence;
-            b = 0.0;
+            columns    = 0;
+            char *seq1 = entries[row]->sequence_parsimony->sequence;
+            char *seq2 = entries[col]->sequence_parsimony->sequence;
+            b          = 0.0;
             switch(transformation){
                 case  PH_TRANSFORMATION_JUKES_CANTOR:
                     b = 0.75;
@@ -715,8 +715,8 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
                         }
                         dist = diffsum / all_sum;
                     }else{
-                        register int pos;
-                        register int b1,b2;
+                        int pos;
+                        int b1,b2;
                         for (pos = s_len; pos >=0; pos--){
                             b1 =*(seq1++);
                             b2 =*(seq2++);
@@ -741,10 +741,11 @@ GB_ERROR PHMATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, PH_TR
                 case PH_TRANSFORMATION_KIMURA:
                 case PH_TRANSFORMATION_OLSEN:
                 case PH_TRANSFORMATION_FELSENSTEIN:{
-                    register int pos;
-                    double  dist = 0.0;
-                    long N,P,Q,M;
+                    int    pos;
+                    double dist = 0.0;
+                    long   N,P,Q,M;
                     double p,q;
+                    
                     memset((char *)hits,0,sizeof(long) * AP_MAX * AP_MAX);
                     for (pos = s_len; pos >=0; pos--){
                         hits[(unsigned char)*(seq1++)][(unsigned char)*(seq2++)]++;

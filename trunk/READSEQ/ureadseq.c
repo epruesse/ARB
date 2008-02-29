@@ -1421,7 +1421,7 @@ short seqFileFormatFp(
 unsigned long GCGchecksum( const char *seq, const long seqlen, unsigned long *checktotal)
 /* GCGchecksum */
 {
-  register long  i, check = 0, count = 0;
+    long  i, check = 0, count = 0;
 
   for (i = 0; i < seqlen; i++) {
     count++;
@@ -1493,8 +1493,8 @@ const unsigned long crctab[] = {
 unsigned long CRC32checksum(const char *seq, const long seqlen, unsigned long *checktotal)
 /*CRC32checksum: modified from CRC-32 algorithm found in ZIP compression source */
 {
-  register unsigned long c = 0xffffffffL;
-  register long n = seqlen;
+  unsigned long c = 0xffffffffL;
+  long n = seqlen;
 
   if (!seq) return 0;
   while (n--) {
@@ -1545,8 +1545,8 @@ short getseqtype( const char *seq, const long seqlen)
 
 char* compressSeq( const char gapc, const char *seq, const long seqlen, long *newlen)
 {
-  register char *a, *b;
-  register long i;
+  char *a, *b;
+  long i;
   char  *newseq;
 
   *newlen= 0;

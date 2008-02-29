@@ -132,10 +132,10 @@ int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, 
                              AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
                              AW_CL cduser, AW_CL real_sequence_length, AW_CL cd2){
     AWUSE(opt_ascent);AWUSE(opt_descent);AWUSE(opt_string_size);
-    AW_helix *helix = (AW_helix *)cduser;
-    const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
-    char *buffer = GB_give_buffer(size+1);
-    register long i,j,k;
+    AW_helix        *helix  = (AW_helix *)cduser;
+    const ED4_remap *rm     = ED4_ROOT->root_group_man->remap();
+    char            *buffer = GB_give_buffer(size+1);
+    long             i,j,k;
 
     for (k=0; size_t(k)<size; k++) {
         i = rm->screen_to_sequence(k+start);

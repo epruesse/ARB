@@ -174,8 +174,8 @@ search_lenstring (lenstring *string,
   const void *needle = substring;
   const size_t needle_len = strlen (substring);
 
-  register const char *begin;
-  register const char *last_possible
+  const char *begin;
+  const char *last_possible
     = (const char *) haystack + haystack_len - needle_len;
 
   if (needle_len == 0)

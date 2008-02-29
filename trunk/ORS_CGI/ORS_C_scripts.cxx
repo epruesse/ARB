@@ -107,7 +107,7 @@ GB_ERROR ORS_file_2_java(char *command, char *tree, FILE *fd){
 	void *memfile;			// First of all readin everything !!!!!
 	memfile = GBS_stropen(100000);	// start with 0.1 meg of memory
 	int i;
-	register int c;
+        int c;
 	while ( (c = getc(fd)) != EOF) GBS_chrcat(memfile,c);
 	int size = GBS_memoffset(memfile);		// sizeof data
 	char *data = GBS_strclose(memfile);
@@ -226,7 +226,7 @@ ORS_C_exec_script(char *tree, char *command)
 	FILE           *tfp;
 	struct stat     finfo;
 	int             pfd[2];
-	register int    n, x;
+        int             n, x;
 	int             pid;
 
 	char *select = strdup(cgi_var("selection"));

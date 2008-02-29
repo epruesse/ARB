@@ -154,14 +154,15 @@ void client_gap_compress::write(long rel, long abs) {
 		this->basic_write(rel,0,0);
 		return;
 	}
-	register long m,r;
-	register long *ml = master->rel_2_abs;
+        long  m,r;
+        long *ml = master->rel_2_abs;
+        
 	old_rel++;
 	old_m++;
-		// search ?:	rel_2_abs[?] <= abs	&& 	rel_2_abs[?+1] > abs
+        // search ?:	rel_2_abs[?] <= abs	&& 	rel_2_abs[?+1] > abs
 
 	if ( rel == old_rel  && old_m < master->len && (r=ml[old_m] ) >= abs ) {
-		if (r == abs) {
+            if (r == abs) {
 			m = old_m;
 		}else{
 			if (ml[ old_m -1 ] > abs) goto cgc_search_by_divide;
@@ -191,70 +192,72 @@ void client_gap_compress::write(long rel, long abs) {
 	//  eg.   (4,20,5) (5,21,5) -> delete second
 
 void client_gap_compress::optimize(int realloc_flag) {
-	if (!len) return;
-	register int i;
-	int newlen = 0;
-	register long old_x = -9999;
-	register long old_y = -9999;
-	register long old_dx = 0;
+    if (!len) return;
+    
+    int           i;
+    int           newlen = 0;
+    long old_x  = -9999;
+    long old_y  = -9999;
+    long old_dx = 0;
 
-	for (i=0; i<len; i++) {
-		if ( l[i].x != old_x || l[i].y != old_y ) {
-			if (i<len+1) {
-				old_dx = l[i+1].x - l[i].x;
-				if (old_dx < -1 ) old_dx = 0;
-				if (old_dx > 0 ) old_dx = 0;
-			}
-			old_x = l[i].x;
-			old_y = l[i].y;
-			l[i].dx = (short)old_dx;
-			l[newlen++] = l[i];
-		}
-		old_x += old_dx;
-		old_y -= old_dx;
-	}
-	if (realloc_flag) {
-		l = (struct client_gap_compress_data *)realloc((char *)l,
-			sizeof(struct client_gap_compress_data) * newlen);
-	}
-	len = memsize = newlen;
+    for (i=0; i<len; i++) {
+        if ( l[i].x != old_x || l[i].y != old_y ) {
+            if (i<len+1) {
+                old_dx = l[i+1].x - l[i].x;
+                if (old_dx < -1 ) old_dx = 0;
+                if (old_dx > 0 ) old_dx = 0;
+            }
+            old_x = l[i].x;
+            old_y = l[i].y;
+            l[i].dx = (short)old_dx;
+            l[newlen++] = l[i];
+        }
+        old_x += old_dx;
+        old_y -= old_dx;
+    }
+    if (realloc_flag) {
+        l = (struct client_gap_compress_data *)realloc((char *)l,
+                                                       sizeof(struct client_gap_compress_data) * newlen);
+    }
+    len = memsize = newlen;
 }
 
 
 long client_gap_compress::rel_2_abs(long rel){
-	register int left,right;
-	register int m;
-	long lrel;
-	right = len-1;
-	left = 0;
-	if (left>=right) {		// client is master
-		return master->read(rel,0);
-	}
-	while (left<right-1) {			// search the clients l[??].rel <= rel
+    int  left,right;
+    int  m;
+    long lrel;
+    
+    right = len-1;
+    left  = 0;
+    if (left>=right) {		// client is master
+        return master->read(rel,0);
+    }
+    while (left<right-1) {			// search the clients l[??].rel <= rel
 						// && l[??+1] > rel
-		m = (left+right)>>1;
-		lrel  = l[m].rel;
-		if ( lrel <= rel ) {
-			left = m;
-			continue;
-		}
-		right = m;
-	}
-	if ( l[right].rel <= rel) m = right; else m = left;
-	long master_pos = l[m].rel;
-	long pos;
-	if (!l[m].dx) {		// substitution or deletion
-		master_pos += l[m].x;		// masterpos offset
-		master_pos += (rel - l[m].rel); // compressed data offset
-		pos = master->read(master_pos	,0)	// read master at rel+offset
-		+ l[m].y;
-	}else{			// insertion
-		master_pos += l[m].x;
-		pos = master->read(master_pos	,0)	// read master at rel+offset
-			 + (rel - l[m].rel)		// + offset (missing data in compressed )
-			 + l[m].y;
-	}
-	return pos;
+        m = (left+right)>>1;
+        lrel  = l[m].rel;
+        if ( lrel <= rel ) {
+            left = m;
+            continue;
+        }
+        right = m;
+    }
+    if ( l[right].rel <= rel) m = right; else m = left;
+    long master_pos = l[m].rel;
+    long pos;
+    if (!l[m].dx) {		// substitution or deletion
+        master_pos += l[m].x;		// masterpos offset
+        master_pos += (rel - l[m].rel); // compressed data offset
+        pos = master->read(master_pos	,0)	// read master at rel+offset
+            + l[m].y;
+    }else{			// insertion
+        master_pos += l[m].x;
+        pos = master->read(master_pos	,0)	// read master at rel+offset
+            + (rel - l[m].rel)		// + offset (missing data in compressed )
+            + l[m].y;
+    }
+    return pos;
 }
 
 gap_compress::gap_compress(void) {

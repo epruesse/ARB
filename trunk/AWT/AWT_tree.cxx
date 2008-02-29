@@ -160,7 +160,7 @@ void AP_filter::enable_bootstrap(int random_seed){
 void AP_rates::print(void)
 {
     AP_FLOAT max;
-    register int i;
+    int i;
 
     max = 0.0;
     for (i=0;i<rate_len; i++) {
@@ -179,7 +179,7 @@ AP_rates::AP_rates(void) {
 
 char *AP_rates::init(AP_filter *fil)
 {
-    register int i;
+    int i;
     if (fil->update<= this->update) return 0;
 
     rate_len = fil->real_len;
@@ -194,7 +194,7 @@ char *AP_rates::init(AP_filter *fil)
 
 char *AP_rates::init(AP_FLOAT * ra, AP_filter *fil)
 {
-    register int i,j;
+    int i,j;
     if (fil->update<= this->update) return 0;
 
     rate_len = fil->real_len;
@@ -222,7 +222,7 @@ AP_weights::AP_weights(void) {
 
 char *AP_weights::init(AP_filter *fil)
 {
-    register int i;
+    int i;
     if (fil->update<= this->update) return 0;
 
     weight_len = fil->real_len;
@@ -238,7 +238,7 @@ char *AP_weights::init(AP_filter *fil)
 
 char *AP_weights::init(GB_UINT4 *w, AP_filter *fil)
 {
-    register int i,j;
+    int i,j;
     if (fil->update<= this->update) return 0;
 
     weight_len = fil->real_len;

@@ -47,10 +47,10 @@ AW_DEVICE_TYPE AW_device_Xm::type(void) { return AW_DEVICE_SCREEN; }
 
 
 int AW_device_Xm::line(int gc, AW_pos x0,AW_pos y0, AW_pos x1,AW_pos y1, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
-    register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
-    AW_pos X0,Y0,X1,Y1; // Transformed pos
-    AW_pos CX0,CY0,CX1,CY1; // Clipped line
-    int drawflag = 0;
+    class AW_GC_Xm *gcm      = AW_MAP_GC(gc);
+    AW_pos          X0,Y0,X1,Y1; // Transformed pos
+    AW_pos          CX0,CY0,CX1,CY1; // Clipped line
+    int             drawflag = 0;
 
     if(filteri & filter) {
         this->transform(x0,y0,X0,Y0);
@@ -94,12 +94,12 @@ int AW_device_Xm::text(int gc, const char *str,AW_pos x,AW_pos y, AW_pos alignme
 
 int AW_device_Xm::box(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     AWUSE(cd1);AWUSE(cd2);
-    register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
-    AW_pos x1,y1;
-    AW_pos X0,Y0,X1,Y1; // Transformed pos
-    AW_pos CX0,CY0,CX1,CY1; // Clipped line
-    int drawflag = 0;
-    // short greylevel = (short)(gcm->grey_level*22);
+    class AW_GC_Xm *gcm            = AW_MAP_GC(gc);
+    AW_pos          x1,y1;
+    AW_pos          X0,Y0,X1,Y1; // Transformed pos
+    AW_pos          CX0,CY0,CX1,CY1; // Clipped line
+    int             drawflag       = 0;
+    // short greylevel             = (short)(gcm->grey_level*22);
     // if (greylevel>21) greylevel = 21;
 
     if(filteri & filter) {
@@ -141,12 +141,12 @@ int AW_device_Xm::circle(int gc, AW_BOOL filled, AW_pos x0, AW_pos y0, AW_pos wi
 
 int AW_device_Xm::arc(int gc, AW_BOOL filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     AWUSE(cd1);AWUSE(cd2);
-    register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
-    AW_pos X0,Y0,X1,Y1; // Transformed pos
-    AW_pos XL,YL;   // Left edge of circle pos
-    AW_pos CX0,CY0,CX1,CY1; // Clipped line
-    int drawflag = 0;
-    // short greylevel = (short)(gcm->grey_level*22);
+    class AW_GC_Xm *gcm            = AW_MAP_GC(gc);
+    AW_pos          X0,Y0,X1,Y1; // Transformed pos
+    AW_pos          XL,YL;      // Left edge of circle pos
+    AW_pos          CX0,CY0,CX1,CY1; // Clipped line
+    int             drawflag       = 0;
+    // short greylevel             = (short)(gcm->grey_level*22);
     // if (greylevel>21) greylevel = 21;
 
     if(filteri & filter) {
@@ -216,15 +216,16 @@ void AW_device_Xm::clear_part( AW_pos x0, AW_pos y0, AW_pos width, AW_pos height
 
 void AW_device_Xm::clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     AWUSE(filteri);AWUSE(cd1);AWUSE(cd2);
-    register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
-    register XFontStruct    *xfs = &gcm->curfont;
-    AW_pos                      X,Y;            // Transformed pos
-    AW_pos                      width, height;
-    long textlen = strlen(string);
+    class AW_GC_Xm *gcm     = AW_MAP_GC(gc);
+    XFontStruct    *xfs     = &gcm->curfont;
+    AW_pos          X,Y;        // Transformed pos
+    AW_pos          width, height;
+    long            textlen = strlen(string);
+    
     this->transform(x,y,X,Y);
-    width = get_string_size(gc,string,textlen);
+    width  = get_string_size(gc,string,textlen);
     height = xfs->max_bounds.ascent + xfs->max_bounds.descent;
-    X = common->x_alignment(X,width,alignment);
+    X      = common->x_alignment(X,width,alignment);
 
     if (X > this->clip_rect.r) return;
     if (X < this->clip_rect.l) {

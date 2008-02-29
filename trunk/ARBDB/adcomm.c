@@ -298,9 +298,9 @@ int gbcms_write_updated(int socket,GBDATA *gbd,long hsin,long client_clock, long
     }else{      /* send clients first */
         if (GB_TYPE(gbd) == GB_DB)
         {
-            GBDATA *gb2;
+            GBDATA      *gb2;
             GBCONTAINER *gbc = ((GBCONTAINER *)gbd);
-            register int index,end;
+            int          index,end;
 
             end = (int)gbc->d.nheader;
             if ( gbc->header_update_date > client_clock) send_header = 1;
@@ -354,13 +354,14 @@ int gbcms_write_keys(int socket,GBDATA *gbd)
 ***************************************************************************************/
 int gbcms_talking_unfold(int socket,long *hsin,void *sin, GBDATA *gb_in)
 {
-    register GBCONTAINER *gbc = (GBCONTAINER *)gb_in;
-    GB_ERROR error;
-    GBDATA *gb2;
-    char    *buffer;
-    long deep[1];
-    long index_pos[1];
-    int index,start,end;
+    GBCONTAINER *gbc = (GBCONTAINER *)gb_in;
+    GB_ERROR     error;
+    GBDATA      *gb2;
+    char        *buffer;
+    long         deep[1];
+    long         index_pos[1];
+    int          index,start,end;
+
     GBUSE(hsin);GBUSE(sin);
     if ( (error = gbcm_test_address((long *)gbc,GBTUM_MAGIC_NUMBER))) {
         return GBCM_SERVER_FAULT;
@@ -1101,8 +1102,8 @@ GB_ERROR gbcm_write_bin(int socket,GBDATA *gbd, long *buffer, long mode, long de
         send_headera = 1 -> if type = GB_DB send flag and key_quark array
      */
 {
-    register GBCONTAINER *gbc;
-    long    i;
+    GBCONTAINER *gbc;
+    long         i;
 
     buffer[0] = GBCM_COMMAND_SEND;
     i = 2;
@@ -1133,8 +1134,9 @@ GB_ERROR gbcm_write_bin(int socket,GBDATA *gbd, long *buffer, long mode, long de
         }
 
         if (send_headera) {
-            register struct gb_header_list_struct *hdl = GB_DATA_LIST_HEADER(gbc->d);
-            struct gb_header_flags *buf2= (struct gb_header_flags *)GB_give_buffer2(gbc->d.nheader * sizeof(struct gb_header_flags));
+            struct gb_header_list_struct *hdl  = GB_DATA_LIST_HEADER(gbc->d);
+            struct gb_header_flags       *buf2 = (struct gb_header_flags *)GB_give_buffer2(gbc->d.nheader * sizeof(struct gb_header_flags));
+
             for (index = 0; index < end; index++) {
                 buf2[index] = hdl[index].flags;
             }
@@ -1183,18 +1185,19 @@ GB_ERROR gbcm_write_bin(int socket,GBDATA *gbd, long *buffer, long mode, long de
                 read an entry into gbd
 ***************************************************************************************/
 long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA *gb_source,void *cs_main)
-     /* mode == 1   server reads data       */
+     /* mode ==  1   server reads data       */
      /* mode ==  0  client read all data        */
      /* mode == -1  client read but do not read subobjects -> folded cont   */
      /* mode == -2  client dummy read       */
 {
-    register GBDATA *gb2;
-    long        index_pos;
-    long             size;
-    long             id;
-    long             i;
-    struct gb_flag_types flags;
+    GBDATA *gb2;
+    long    index_pos;
+    long    size;
+    long    id;
+    long    i;
     int     type;
+
+    struct gb_flag_types  flags;
     struct gb_flag_types3 flags3;
 
     size = gbcm_read(socket, (char *)buffer, sizeof(long) * 3);
@@ -1287,7 +1290,7 @@ long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA 
 
         if (nheader > 0) {
             long realsize = nheader* sizeof(struct gb_header_flags);
-            register struct gb_header_flags *buffer2;
+            struct gb_header_flags *buffer2;
             buffer2 = (struct gb_header_flags *)GB_give_buffer2(realsize);
             size = gbcm_read(socket, (char *)buffer2, realsize);
             if (size != realsize) {
@@ -1296,7 +1299,7 @@ long gbcm_read_bin(int socket,GBCONTAINER *gbd, long *buffer, long mode, GBDATA 
             }
             if (gb2 && mode >= -1) {
                 GBCONTAINER *gbc = (GBCONTAINER*)gb2;
-                register struct gb_header_list_struct *hdl;
+                struct gb_header_list_struct *hdl;
                 GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gbc);
 
                 gb_create_header_array(gbc,(int)nheader);

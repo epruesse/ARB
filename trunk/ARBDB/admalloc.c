@@ -425,10 +425,11 @@ static char *gbb_get_memblk(size_t size)
 
 char *gbm_get_mem(size_t size, long index)
 {
-    register unsigned long    nsize, pos;
-    char           *erg;
+    unsigned long           nsize, pos;
+    char                   *erg;
     struct gbm_data_struct *gds;
-    struct gbm_struct *ggi;
+    struct gbm_struct      *ggi;
+
     if (size < sizeof(struct gbm_data_struct)) size = sizeof(struct gbm_data_struct);
     index &= GBM_MAX_INDEX-1;
     ggi = & gbm_global[index];
@@ -484,7 +485,7 @@ char *gbm_get_mem(size_t size, long index)
 
 void gbm_free_mem(char *data, size_t size, long index)
 {
-    register long    nsize, pos;
+    long               nsize, pos;
     struct gbm_struct *ggi;
 
     if (size < sizeof(struct gbm_data_struct)) size = sizeof(struct gbm_data_struct);

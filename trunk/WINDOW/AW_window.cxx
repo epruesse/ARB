@@ -258,9 +258,10 @@ AW_toggle_struct::AW_toggle_struct(float variable_valuei, Widget toggle_widgeti)
 }
 char *AW_select_table_struct::copy_string(const char *str) {
     char *out = strdup(str);
-    register char *p=out;
-    register int ch;
-    while ((ch=*(p++))!=0) {
+    char *p   = out;
+    int   ch;
+    
+    while ((ch=*(p++)) != 0) {
         if (ch==',')
             p[-1] = ';';
         if (ch=='\n')

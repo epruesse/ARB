@@ -429,7 +429,7 @@ static void init_myers(long max_seq_length)
 
 static void make_pamo(int nv)
 {
-    register int i,c;
+    int i,c;
 
     little_pam=big_pam=matptr[0];
     for(i=0;i<210;++i) {
@@ -450,7 +450,7 @@ static void make_pamo(int nv)
 
 static void fill_pam()
 {
-    register int i,j,pos;
+    int i,j,pos;
 
     pos=0;
 

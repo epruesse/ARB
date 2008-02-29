@@ -294,7 +294,7 @@ static void t2j_write_byte(int value){
 }
 
 static char *t2j_write_int2(unsigned int value){
-    register int i;
+    int i;
     i = (value >>24) & 0xff; t2j_write_byte(i);
     i = (value >>16) & 0xff; t2j_write_byte(i);
     i = (value >>8) & 0xff; t2j_write_byte(i);
@@ -304,7 +304,7 @@ static char *t2j_write_int2(unsigned int value){
 
 static char *t2j_write_uint(unsigned int value, int or_cmd){
     t2j_write_nibble(0);		// attention
-    register int i;
+    int i;
     if (value >= 0x1000000) {
 	t2j_write_nibble(4 | or_cmd);		// how many bytes !!!!
 	i = (value >>24) & 0xff; t2j_write_byte(i);

@@ -66,7 +66,7 @@ static void AdjustGroups(NA_Alignment *aln)
 
 static void StripSpecial(char *string)
 {
-    register int i,j,len;
+    int i,j,len;
     i=0;
 
     len = strlen(string);
@@ -85,7 +85,7 @@ static void StripSpecial(char *string)
 
 static void RemoveQuotes(char *string)
 {
-    register int i, j, len;
+    int i, j, len;
 
     len = strlen(string);
     for(j=0;j<len;j++)
@@ -194,15 +194,16 @@ static int OverWrite(NA_Sequence *thiss,NA_Alignment *aln)
 
 void ReadGDE(char *filename,NA_Alignment *dataset,int type)
 {
-    register int done = FALSE;
-    register size_t len = 0, j=0;
-    int success,count,temp = 0;
-    char in_line[GBUFSIZ],c;
-    char *buffer,*line;
-    size_t buflen = GBUFSIZ;
-    int genclen = 0,curelem = 0;
-    NA_Sequence *this_elem = NULL,temp_elem;
-    FILE *file;
+    int          done               = FALSE;
+    size_t       len                = 0, j=0;
+    int          success,count,temp = 0;
+    char         in_line[GBUFSIZ],c;
+    char        *buffer,*line;
+    size_t       buflen             = GBUFSIZ;
+    int          genclen            = 0,curelem = 0;
+    NA_Sequence *this_elem          = NULL,temp_elem;
+    FILE        *file;
+
     type=0;count=0;c=0;
 
     ErrorOut5(0!=(file = fopen(filename,"r")),"No such file");

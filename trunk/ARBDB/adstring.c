@@ -16,12 +16,12 @@
 
 #ifdef NO_REGEXPR
 int regerrno;
-#   define INIT   register char *sp = instring;
-#   define GETC() (*sp++)
-#   define PEEKC()     (*sp)
-#   define UNGETC(c)   (--sp)
-#   define RETURN(c)   return c;
-#   define ERROR(c)    gbs_regerror(c)
+#   define INIT      char *sp = instring;
+#   define GETC()    (*sp++)
+#   define PEEKC()   (*sp)
+#   define UNGETC(c) (--sp)
+#   define RETURN(c) return c;
+#   define ERROR(c)  gbs_regerror(c)
 #   include "adregexp.h"
 #else
 #   include <regexpr.h>
@@ -431,7 +431,7 @@ char *GBS_string_2_key(const char *str) /* converts any string to a valid key */
 
 void gbs_uppercase(char *str)
 {
-    register char c;
+    char c;
     while( (c=*str) )   {
         if ( (c<='z') && (c>='a')) *str = c - 'a' + 'A';
         str++;
@@ -469,9 +469,9 @@ int gbs_strnicmp(const char *s1, const char *s2, size_t len) {
 
 void gbs_memcopy(char *dest, const char *source, long len)
 {
-    register long    i;
-    register const char  *s;
-    register char  *d;
+    long        i;
+    const char *s;
+    char       *d;
 
     i = len;
     s = source;
@@ -626,8 +626,9 @@ GB_ERROR GB_check_hkey(const char *key)
 
 GB_CPNTR GBS_find_string(const char *str, const char *key, long match_mode)
 {
-    register const char  *p1, *p2;
-    register char b;
+    const char *p1, *p2;
+    char        b;
+    
     switch (match_mode) {
 
         case 0: /* exact match */
@@ -720,11 +721,12 @@ long GBS_string_cmp(const char *str,const char *search,long upper_case)
      /* if uppercase    change all letters to uppercase */
      /* returns 0 if strings are equal
         -int/+int if left string is less/greater than right string */
+
 {
-    register const char *p1,*p2;
-    register char a,b,*d;
-    register long i;
-    char fsbuf[256];
+    const char *p1,*p2;
+    char        a,b,*d;
+    long        i;
+    char        fsbuf[256];
 
     p1 = str;
     p2 = search;
@@ -814,8 +816,8 @@ char *gbs_compress_command(const char *com) /* replaces all '=' by GBS_SET
                                                \ is the escape charakter
                                             */
 {
-    register char *result,*s,*d;
-    int ch;
+    char *result,*s,*d;
+    int   ch;
 
     s = d = result = GB_STRDUP(com);
     while ( (ch = *(s++)) ){
@@ -850,8 +852,8 @@ char *gbs_compress_command(const char *com) /* replaces all '=' by GBS_SET
 char *GBS_remove_escape(char *com)  /* \ is the escape charakter
                                      */
 {
-    register char *result,*s,*d;
-    int ch;
+    char *result,*s,*d;
+    int   ch;
 
     s = d = result = GB_STRDUP(com);
     while ( (ch = *(s++)) ){
@@ -1150,16 +1152,15 @@ GB_ERROR gbs_build_replace_string(void *strstruct,
                                   char *bar,char *wildcards, long max_wildcard,
                                   char **mwildcards, long max_mwildcard, GBDATA *gb_container)
 {
-    register char *p,c,d;
-    int wildcardcnt = 0;
-    int mwildcardcnt = 0;
-    int wildcard_num;
+    char *p,c,d;
+    int   wildcardcnt  = 0;
+    int   mwildcardcnt = 0;
+    int   wildcard_num;
+    char *entry;
 
-    char    *entry;
     p = bar;
 
-
-    wildcardcnt = 0;
+    wildcardcnt  = 0;
     mwildcardcnt = 0;
 
     p = bar;
@@ -1301,32 +1302,31 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
      */
 
 {
-    register char *source;      /* pointer into the current string when parsed */
-    register char *search;      /* pointer into the current command when parsed */
-    register char *p;       /* short live pointer */
-    register char c;
-    register char *already_transferred; /* point into 'in' string to non parsed position */
+    char *source;               /* pointer into the current string when parsed */
+    char *search;               /* pointer into the current command when parsed */
+    char *p;                    /* short live pointer */
+    char  c;
+    char *already_transferred;  /* point into 'in' string to non parsed position */
 
-    char    wildcard[40];
-    char    *mwildcard[10];
-    GB_ERROR error;
+    char      wildcard[40];
+    char     *mwildcard[10];
+    GB_ERROR  error;
 
-    long    i;
-    long    max_wildcard;
-    long    max_mwildcard;
+    long i;
+    long max_wildcard;
+    long max_mwildcard;
 
+    char *start_of_wildcard;
+    char  what_wild_card;
 
-    char    *start_of_wildcard;
-    char    what_wild_card;
+    char *start_match;
 
-    char    *start_match;
+    char *doppelpunkt;
 
-    char    *doppelpunkt;
-
-    char    *bar;
-    char    *in;
-    char    *nextdp;
-    void    *strstruct;
+    char *bar;
+    char *in;
+    char *nextdp;
+    void *strstruct;
     char *command;
 
     if (!icommand || !icommand[0]) return GB_STRDUP(insource);
@@ -1631,10 +1631,13 @@ GB_ERROR GBS_free_names(char **names)
 }
 
 long GBS_gcgchecksum( const char *seq )
-     /* GCGchecksum */
+/* GCGchecksum */
 {
-    register long  i, check = 0, count = 0;
+    long i;
+    long check  = 0;
+    long count  = 0;
     long seqlen = strlen(seq);
+
     for (i = 0; i < seqlen; i++) {
         count++;
         check += count * toupper(seq[i]);
@@ -1756,17 +1759,17 @@ long GB_merge_sort_strcmp(void *v0, void *v1, char *not_used) {
 }
 
 char *GBS_extract_words( const char *source,const char *chars, float minlen, GB_BOOL sort_output ) {
-    char *s = GB_STRDUP(source);
-    char **ps = (char **)GB_calloc(sizeof(char *), (strlen(source)>>1) + 1);
-    void *strstruct = GBS_stropen(1000);
-    char *f = s;
-    int count = 0;
-    char *p;
-    register char *h;
-    register int cnt;
-    int len;
-
-    int iminlen = (int) (minlen+.5);
+    char  *s         = GB_STRDUP(source);
+    char **ps        = (char **)GB_calloc(sizeof(char *), (strlen(source)>>1) + 1);
+    void  *strstruct = GBS_stropen(1000);
+    char  *f         = s;
+    int    count     = 0;
+    char  *p;
+    char  *h;
+    int    cnt;
+    int    len;
+    int    iminlen   = (int) (minlen+.5);
+    
     while ( (p = strtok(f," \t,;:|")) ) {
         f = 0;
         cnt = 0;
@@ -2450,8 +2453,9 @@ void GB_delete_set(GBDATA_SET *set){
  * versions of this function. They MUST load proper!!!
  */
 GB_ERROR GBS_fwrite_string(const char *strngi,FILE *out){
-    register unsigned char *strng = (unsigned char *)strngi;
-    register int c;
+    unsigned char *strng = (unsigned char *)strngi;
+    int            c;
+    
     putc('"',out);
 
     while ( (c= *strng++) ) {
@@ -2488,8 +2492,8 @@ GB_ERROR GBS_fwrite_string(const char *strngi,FILE *out){
  */
 
 char *GBS_fread_string(FILE *in) {
-    void         *strstr = GBS_stropen(1024);
-    register int  x;
+    void *strstr = GBS_stropen(1024);
+    int   x;
 
     while ((x = getc(in)) != '"' ) if (x == EOF) break; /* Search first '"' */
 
@@ -2530,9 +2534,9 @@ char *GBS_fread_string(FILE *in) {
  * returns NULL if a 0-character is found
  */
 char *GBS_fconvert_string(char *buffer) {
-    char         *t = buffer;
-    char         *f = buffer;
-    register int  x;
+    char *t = buffer;
+    char *f = buffer;
+    int   x;
 
     ad_assert(f[-1] == '"');
     /* the opening " has already been read */

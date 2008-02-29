@@ -367,12 +367,12 @@ static void CPRO_maketables(char isamino,char countgaps)
 
 static void CPRO_entryinstatistic(char **speciesdata, long elemx,long elemy, unsigned char which_statistic)
 {
-    register unsigned char value1, value2 =0;
-    register char *firstseq=speciesdata[elemx];
-    register char *secondseq=speciesdata[elemy];
-    register float rate=0.0;
-    register long numofcolumns=0;
-    float distance=0.0;
+    unsigned char  value1, value2 = 0;
+    char          *firstseq       = speciesdata[elemx];
+    char          *secondseq      = speciesdata[elemy];
+    float          rate           = 0.0;
+    long           numofcolumns   = 0;
+    float          distance       = 0.0;
 
 
     if(elemx==elemy) return;
@@ -381,7 +381,7 @@ static void CPRO_entryinstatistic(char **speciesdata, long elemx,long elemy, uns
     if((CPRO.agonist[elemy])&&(CPRO.antagonist[elemx])&&(elemy<elemx)) return;
 
     //add similarities (added 1.0 means equal, 0.0 means different)
-    register long counter;
+    long counter;
     for(counter=0;counter<CPRO.result[which_statistic].maxalignlen;counter++)
     {
         if((value1=*firstseq)&&(value2=*secondseq))
@@ -405,14 +405,12 @@ static void CPRO_entryinstatistic(char **speciesdata, long elemx,long elemy, uns
 
     if (column < 0 || column>= CPRO.result[which_statistic].resolution) return;
 
-    register STATTYPE *equalentry=
-        CPRO.result[which_statistic].statistic[3*column];
-    register STATTYPE *samegroupentry=
-        CPRO.result[which_statistic].statistic[3*column+1];
-    register STATTYPE *differententry=
-        CPRO.result[which_statistic].statistic[3*column+2];
-    firstseq=speciesdata[elemx];
-    secondseq=speciesdata[elemy];
+    STATTYPE *equalentry     = CPRO.result[which_statistic].statistic[3*column];
+    STATTYPE *samegroupentry = CPRO.result[which_statistic].statistic[3*column+1];
+    STATTYPE *differententry = CPRO.result[which_statistic].statistic[3*column+2];
+    
+    firstseq  = speciesdata[elemx];
+    secondseq = speciesdata[elemy];
 
     for(counter=0;counter<CPRO.result[which_statistic].maxalignlen;counter++)
     {

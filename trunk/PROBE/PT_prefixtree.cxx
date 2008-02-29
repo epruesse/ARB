@@ -35,9 +35,10 @@ void PT_init_count_bits(void){
 
 char *PTM_get_mem(int size)
 {
-    register int    nsize, pos;
-    long i;
-    char           *erg;
+    int   nsize, pos;
+    long  i;
+    char *erg;
+
     nsize = (size + (PTM_ALIGNED - 1)) & (-PTM_ALIGNED);
     if (nsize > PTM_MAX_SIZE) {
         return (char *) calloc(1, size);
@@ -75,9 +76,10 @@ char *PTM_get_mem(int size)
 /********************* malloc all small free blocks ***********************/
 int
 PTM_destroy_mem(void){  /* destroys all left memory sources */
-    register int    pos;
-    register long   i;
-    int sum;
+    int  pos;
+    long i;
+    int  sum;
+    
     sum = 0;
     for (pos=0;pos<=PTM_MAX_TABLES;pos++) {
         while (PTM.tables[pos]) {
@@ -90,8 +92,8 @@ PTM_destroy_mem(void){  /* destroys all left memory sources */
 }
 void PTM_free_mem(char *data, int size)
 {
-    register int    nsize, pos;
-    long        i;
+    int  nsize, pos;
+    long i;
     nsize = (size + (PTM_ALIGNED - 1)) & (-PTM_ALIGNED);
     if (nsize > PTM_MAX_SIZE) {
         free(data);
@@ -229,7 +231,7 @@ POS_TREE *PT_add_to_chain(PTM2 *ptmain, POS_TREE *node, int name, int apos, int 
         data += 2;
     }
     PT_READ_PNTR(data,old_first);   // create a new list element
-    register char *p;
+    char *p;
     p = buffer;
     PT_WRITE_PNTR(p,old_first);
     p+= sizeof(PT_PNTR);
@@ -399,7 +401,7 @@ void PTD_clear_fathers(PTM2 *ptmain, POS_TREE * node)       /* stage 1*/
 
 void PTD_put_int(FILE * out, ulong i)
 {
-    register int io;
+    int io;
     static unsigned char buf[4];
     PT_WRITE_INT(buf,i);
     io = buf[0]; putc(io,out);
@@ -410,7 +412,7 @@ void PTD_put_int(FILE * out, ulong i)
 
 void PTD_put_short(FILE * out, ulong i)
 {
-    register int io;
+    int io;
     static unsigned char buf[2];
     PT_WRITE_SHORT(buf,i);
     io = buf[0]; putc(io,out);
@@ -429,8 +431,8 @@ void PTD_set_object_to_saved_status(POS_TREE * node, long pos, int size){
 
 long PTD_write_tip_to_disk(FILE * out, PTM2 */*ptmain*/,POS_TREE * node,long pos)
 {
-    register int size,i,cnt;
-    register char *data;
+    int size,i,cnt;
+    char *data;
     putc(node->flags,out);          /* save type */
     size = PT_LEAF_SIZE(node);
     // write 4 bytes when not in stage 2 save mode
@@ -476,7 +478,7 @@ void ptd_write_chain_entries(FILE * out, long *ppos, PTM2 */*ptmain*/ , char ** 
     while (n_entries>0){
         char *entry = entry_tab[n_entries-1];
         n_entries --;
-        register char *rp = entry;
+        char *rp = entry;
         rp+= sizeof(PT_PNTR);
 
         PT_READ_NAT(rp,name);
@@ -501,7 +503,7 @@ void ptd_write_chain_entries(FILE * out, long *ppos, PTM2 */*ptmain*/ , char ** 
 
 
 long PTD_write_chain_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node,long pos) {
-    register char *data;
+    char *data;
     long oldpos = pos;
     putc(node->flags,out);          /* save type */
     pos++;
@@ -547,8 +549,8 @@ void PTD_debug_nodes(void)
 }
 
 long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_poss,long pos){
-    register int i,size;    // Save node after all descendends are already saved
-    register POS_TREE *sons;
+    int i,size;    // Save node after all descendends are already saved
+    POS_TREE *sons;
 
     ulong   max_diff = 0;
     int lasti = 0;
@@ -645,11 +647,11 @@ PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos, lon
     // returns new pos when son is written 0 otherwise
     // pnodepos is set to last object
 
-    POS_TREE       *sons;
-    long             r_pos,r_poss[PT_B_MAX],son_size[PT_B_MAX],o_pos;
-    int     block[10];          /* dummy [10] to force cc not to use register */
-    int i;
-    PT_NODE_TYPE    type = PT_read_type(node);
+    POS_TREE     *sons;
+    long          r_pos,r_poss[PT_B_MAX],son_size[PT_B_MAX],o_pos;
+    int           block[10];
+    int           i;
+    PT_NODE_TYPE  type = PT_read_type(node);
 
 
     if (type == PT_NT_SAVED) {          // already saved
