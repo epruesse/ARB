@@ -580,6 +580,8 @@ ARCHS_COMMUNICATION =	NAMES_COM/server.a\
 			PROBE_COM/server.a\
 			ORS_COM/server.a
 
+
+
 # communication libs need aisc and aisc_mkpts:
 $(ARCHS_COMMUNICATION:.a=.dummy) : $(ARCHS_MAKEBIN:.a=.dummy)
 
@@ -1005,8 +1007,10 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 
 # rule to generate main target (normally a library):
 %.dummy:
-	@echo $(SEP) Make everything in $(@D)
-	@$(MAKE) -C $(@D) -r \
+	@( export ID=$$$$; \
+	((( \
+	    echo "$(SEP) Make everything in $(@D)"; \
+	    $(MAKE) -C $(@D) -r \
 		"AUTODEPENDS=1" \
 		"ARBHOME = $(ARBHOME)" \
 		"cflags = $(cflags) -D_ARB_$(subst /,_,$(@D))" \
@@ -1034,15 +1038,13 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
 		"OPENGL  = $(OPENGL)" \
 		"POST_COMPILE = $(POST_COMPILE)" \
-		"MAIN = $(@F:.dummy=.a)"
+		"MAIN = $(@F:.dummy=.a)" \
+	) >$(@D).$$ID.log 2>&1 && cat $(@D).$$ID.log) || (cat $(@D).$$ID.log; false)) && (rm $(@D).$$ID.log))
 
 
 # Additional dependencies for subtargets:
 
 comtools: $(ARCHS_MAKEBIN:.a=.dummy)
-
-TOOLS/TOOLS.dummy : shared_libs SERVERCNTRL/SERVERCNTRL.dummy CAT/CAT.dummy PROBE_COM/PROBE_COM.dummy
-AWTC/AWTC.dummy : NAMES_COM/NAMES_COM.dummy PROBE_COM/PROBE_COM.dummy
 
 PROBE_COM/PROBE_COM.dummy : comtools
 PROBE_COM/server.dummy : comtools
@@ -1055,6 +1057,23 @@ NAMES_COM/client.dummy : comtools
 ORS_COM/ORS_COM.dummy : comtools
 ORS_COM/server.dummy : comtools
 ORS_COM/client.dummy : comtools
+
+com_probe: PROBE_COM/PROBE_COM.dummy 
+com_names: NAMES_COM/NAMES_COM.dummy 
+
+TOOLS/TOOLS.dummy : shared_libs SERVERCNTRL/SERVERCNTRL.dummy CAT/CAT.dummy com_probe
+
+AWTC/AWTC.dummy :   			com_names com_probe
+
+NAMES/NAMES.dummy : 			com_names
+SL/AW_NAME/AW_NAME.dummy : 		com_names
+
+PROBE/PROBE.dummy : 			com_probe
+MULTI_PROBE/MULTI_PROBE.dummy : 	com_probe
+PROBE_DESIGN/PROBE_DESIGN.dummy : 	com_probe
+NALIGNER/NALIGNER.dummy : 		com_probe
+
+ARB_GDE/ARB_GDE.dummy : 		proto_tools
 
 
 #***************************************************************************************
@@ -1119,14 +1138,16 @@ mbin:	$(ARCHS_MAKEBIN:.a=.dummy)
 
 com:	$(ARCHS_COMMUNICATION:.a=.dummy)
 
-help:   menus xml HELP_SOURCE/dummy.dummy
+help:   menus xml HELP_SOURCE/HELP_SOURCE.dummy
+
+HELP_SOURCE/HELP_SOURCE.dummy: GDE/GDE.dummy# need to create some files in GDE-subtree first
 
 dball:	db dbs db2 dp
-db:		ARBDB/libARBDB.dummy
+db:	ARBDB/libARBDB.dummy
 dbs:	ARBDBS/libARBDB.dummy
 db2:	ARBDB2/libARBDB.dummy
-dp:		ARBDBPP/libARBDBPP.dummy
-aw:		WINDOW/libAW.dummy
+dp:	ARBDBPP/libARBDBPP.dummy
+aw:	WINDOW/libAW.dummy
 awt:	AWT/libAWT.dummy
 awtc:	AWTC/AWTC.dummy
 awti:	AWTI/AWTI.dummy
@@ -1134,7 +1155,7 @@ awti:	AWTI/AWTI.dummy
 ih:	ISLAND_HOPPING/ISLAND_HOPPING.dummy
 
 mp: 	MULTI_PROBE/MULTI_PROBE.dummy
-mg:		MERGE/MERGE.dummy
+mg:	MERGE/MERGE.dummy
 ge: 	GENOM/GENOM.dummy
 prd: 	PRIMER_DESIGN/PRIMER_DESIGN.dummy
 
@@ -1152,13 +1173,14 @@ tg:	$(TREEGEN)
 
 3d:	RNA3D/RNA3D.dummy
 gl:	GL/GL.dummy
-sl:	SL/SL.dummy
+sl:	NAMES_COM/NAMES_COM.dummy
+	$(MAKE) SL/SL.dummy
 
 ds:	$(DBSERVER)
 pt:	$(PROBE)
 ps:	PROBE_SERVER/PROBE_SERVER.dummy
 pc:	PROBE_WEB/PROBE_WEB.dummy
-pst: PROBE_SET/PROBE_SET.dummy
+pst: 	PROBE_SET/PROBE_SET.dummy
 pd:	PROBE_DESIGN/PROBE_DESIGN.dummy
 na:	$(NAMES)
 os:	$(ORS_SERVER)
@@ -1189,7 +1211,9 @@ up: depends proto tags valgrind_update
 depends: $(ARCHS:.a=.depends) \
 		HELP_SOURCE/HELP_SOURCE.depends \
 
-proto: AISC_MKPTPS/AISC_MKPTPS.dummy TOOLS/TOOLS.dummy 
+proto_tools: AISC_MKPTPS/AISC_MKPTPS.dummy
+
+proto: proto_tools TOOLS/TOOLS.dummy 
 		$(MAKE) \
 				AISC/AISC.proto \
 				ARBDB/ARBDB.proto \
@@ -1392,18 +1416,24 @@ arbapplications: nt pa ed e4 we pt na al nal di ph ds trs pgt
 arbxtras: tg ps pc pst a3
 
 tryxtras:
-		@echo $(SEP)
-		@( $(MAKE) arbxtras || ( \
-				echo $(SEP) ;\
-				echo "If make process seems to abort here, one of the optional tools failed to build." ;\
-				echo "ARB will work nevertheless!" ) )
+	@echo $(SEP)
+	@( $(MAKE) arbxtras || ( \
+		echo $(SEP) ;\
+		echo "One of the optional tools failed to build (see error somewhere above)" ;\
+		echo "ARB will work nevertheless!" ) )
 
 arb: arbbasic arbshared arbapplications help
 
-all: checks arb libs convert tools gde readseq openwinprogs binlink $(SITE_DEPENDEND_TARGETS)
-		-$(MAKE) tryxtras
-		@echo $(SEP)
-		@echo "made 'all' with success."
-		@echo "to start arb enter 'arb'"
+all: checks
+	$(MAKE) com
+	$(MAKE) arb
+	$(MAKE) libs
+	$(MAKE) convert tools gde readseq openwinprogs
+	$(MAKE) binlink
+	$(MAKE) $(SITE_DEPENDEND_TARGETS)
+	-$(MAKE) tryxtras
+	@echo $(SEP)
+	@echo "made 'all' with success."
+	@echo "to start arb enter 'arb'"
 
 # DO NOT DELETE
