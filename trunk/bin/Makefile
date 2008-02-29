@@ -7,10 +7,11 @@ help:
 	@echo	'  cleanlinks:  remove all links'
 
 all: cleanlinks
-	/bin/ln -s `find ../SH ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
+	/bin/ln -s -f `find ../SH ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
+	/bin/ln -s -f `find ../SH ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
 
 develall: all
-	/bin/ln -s `find ../SOURCE_TOOLS -name "arb_*" -perm -100 ! -type d -print` .
+	/bin/ln -s -f `find ../SOURCE_TOOLS -name "arb_*" -perm -100 ! -type d -print` .
 
 
 clean: realclean
@@ -21,5 +22,4 @@ realclean:
 
 
 cleanlinks:
-	ln -s dummy dummy
-	rm -f dummy `find . -type l -print`
+	find . -type l -exec rm {} \;
