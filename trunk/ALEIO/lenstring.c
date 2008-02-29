@@ -22,9 +22,9 @@ extern char *progname;
    Return value same as for stdio's fwrite.  */
 size_t
 write_lenstring (lenstring *string,
-		 FILE *stream)
+                 FILE *stream)
 {
-  return fwrite (string->text, sizeof (*string->text), string->len, stream);
+    return fwrite (string->text, sizeof (*string->text), string->len, stream);
 }
 
 
@@ -34,18 +34,18 @@ write_lenstring (lenstring *string,
 void
 display_clipped_lenstring (lenstring *string, int field, FILE *stream)
 {
-  if (string->len >= field)
-    fwrite (string->text, sizeof (*string->text), field, stream);
-  else
+    if (string->len >= field)
+        fwrite (string->text, sizeof (*string->text), field, stream);
+    else
     {
-      write_lenstring (string, stream);
+        write_lenstring (string, stream);
 
-      {
-	int pad = field - string->len;
+        {
+            int pad = field - string->len;
 
-	while (pad-- > 0)
-	  putc (' ', stream);
-      }
+            while (pad-- > 0)
+                putc (' ', stream);
+        }
     }
 }
 
@@ -67,75 +67,75 @@ display_clipped_lenstring (lenstring *string, int field, FILE *stream)
    and exit.  */
 int read_delimited_lenstring (lenstring *string, const char *delimiter, FILE *stream)
 {
-  size_t delimiter_len = strlen (delimiter);
-  char delimiter_last_char;
+    size_t delimiter_len = strlen (delimiter);
+    char delimiter_last_char;
 
-  size_t buf_len = INITIAL_BUF_LEN;
-  char *buf = (char *) xmalloc (buf_len);
+    size_t buf_len = INITIAL_BUF_LEN;
+    char *buf = (char *) xmalloc (buf_len);
 
-  size_t i = 0;
-  int c;
+    size_t i = 0;
+    int c;
 
-  if (delimiter_len == 0)
+    if (delimiter_len == 0)
     {
-      /* If there are other reasonable ways to handle this case,
-         perhaps we should just abort here.  */
-      string->len = 0;
-      string->text = buf;
-      return 0;
+        /* If there are other reasonable ways to handle this case,
+           perhaps we should just abort here.  */
+        string->len = 0;
+        string->text = buf;
+        return 0;
     }
 
-  delimiter_last_char = delimiter[delimiter_len - 1];
+    delimiter_last_char = delimiter[delimiter_len - 1];
 
-  while ((c = getc (stream)) != EOF)
+    while ((c = getc (stream)) != EOF)
     {
-      /* Do we need to enlarge the buffer?  */
-      if (i >= buf_len-1)
+        /* Do we need to enlarge the buffer?  */
+        if (i >= buf_len-1)
         {
-          buf_len *= 2;
-          buf = (char *) xrealloc (buf, buf_len);
+            buf_len *= 2;
+            buf = (char *) xrealloc (buf, buf_len);
         }
 
-      buf[i++] = c;
+        buf[i++] = c;
 
-      /* Have we read the delimiter?  We check to see if we just
-         stored delim_last_char; this is a quick, false-positive test.
-         Then we check for the whole string; this is a slow but
-         correct test.  */
-      if (c == delimiter_last_char
-          && i >= delimiter_len
-          && ! memcmp (&buf[i - delimiter_len], delimiter, delimiter_len))
-	break;
+        /* Have we read the delimiter?  We check to see if we just
+           stored delim_last_char; this is a quick, false-positive test.
+           Then we check for the whole string; this is a slow but
+           correct test.  */
+        if (c == delimiter_last_char
+            && i >= delimiter_len
+            && ! memcmp (&buf[i - delimiter_len], delimiter, delimiter_len))
+            break;
     }
 
-  if (ferror (stream))
+    if (ferror (stream))
     {
-      perror (progname);
-      exit (2);
+        perror (progname);
+        exit (2);
     }
 
-  if (c == EOF)
+    if (c == EOF)
     {
-      /* Special case, as documented.  */
-      if (i == 0)
-	{
-	  free (buf);
-	  string->text = 0;
-	  string->len = 0;
-	  return EOF;
-	}
-      else
-	{
-	  string->text = buf;
-	  string->len = i;
-	  return 1;
-	}
+        /* Special case, as documented.  */
+        if (i == 0)
+        {
+            free (buf);
+            string->text = 0;
+            string->len = 0;
+            return EOF;
+        }
+        else
+        {
+            string->text = buf;
+            string->len = i;
+            return 1;
+        }
     }
-  else
+    else
     {
-      string->text = buf;
-      string->len = i - delimiter_len;
-      return 0;
+        string->text = buf;
+        string->len = i - delimiter_len;
+        return 0;
     }
 }
 
@@ -145,49 +145,49 @@ int read_delimited_lenstring (lenstring *string, const char *delimiter, FILE *st
    a substring of STRING.  */
 size_t
 search_lenstring (lenstring *string,
-		  const char *substring,
-		  size_t start)
+                  const char *substring,
+                  size_t start)
 {
-  /* Based on the memmem implementation in the GNU C library.
-     This implementation's copyright is:
+    /* Based on the memmem implementation in the GNU C library.
+       This implementation's copyright is:
 
-     Copyright (C) 1991, 1992 Free Software Foundation, Inc.
-     This file is part of the GNU C Library.
+       Copyright (C) 1991, 1992 Free Software Foundation, Inc.
+       This file is part of the GNU C Library.
 
-     The GNU C Library is free software; you can redistribute it and/or
-     modify it under the terms of the GNU Library General Public License as
-     published by the Free Software Foundation; either version 2 of the
-     License, or (at your option) any later version.
+       The GNU C Library is free software; you can redistribute it and/or
+       modify it under the terms of the GNU Library General Public License as
+       published by the Free Software Foundation; either version 2 of the
+       License, or (at your option) any later version.
 
-     The GNU C Library is distributed in the hope that it will be useful,
-     but WITHOUT ANY WARRANTY; without even the implied warranty of
-     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     Library General Public License for more details.
+       The GNU C Library is distributed in the hope that it will be useful,
+       but WITHOUT ANY WARRANTY; without even the implied warranty of
+       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+       Library General Public License for more details.
 
-     You should have received a copy of the GNU Library General Public
-     License along with the GNU C Library; see the file COPYING.LIB.  If
-     not, write to the Free Software Foundation, Inc., 675 Mass Ave,
-     Cambridge, MA 02139, USA.  */
+       You should have received a copy of the GNU Library General Public
+       License along with the GNU C Library; see the file COPYING.LIB.  If
+       not, write to the Free Software Foundation, Inc., 675 Mass Ave,
+       Cambridge, MA 02139, USA.  */
 
-  const void *haystack = string->text + start;
-  const size_t haystack_len = string->len - start;
-  const void *needle = substring;
-  const size_t needle_len = strlen (substring);
+    const void *haystack = string->text + start;
+    const size_t haystack_len = string->len - start;
+    const void *needle = substring;
+    const size_t needle_len = strlen (substring);
 
-  const char *begin;
-  const char *last_possible
-    = (const char *) haystack + haystack_len - needle_len;
+    const char *begin;
+    const char *last_possible
+        = (const char *) haystack + haystack_len - needle_len;
 
-  if (needle_len == 0)
-    return start;
+    if (needle_len == 0)
+        return start;
 
-  for (begin = (const char *) haystack;
-       begin <= last_possible;
-       ++begin)
-    if (!memcmp ((void *) begin, needle, needle_len))
-      return (begin - (const char *) haystack) + start;
+    for (begin = (const char *) haystack;
+         begin <= last_possible;
+         ++begin)
+        if (!memcmp ((void *) begin, needle, needle_len))
+            return (begin - (const char *) haystack) + start;
 
-  return -1;
+    return -1;
 }
 
 
@@ -196,14 +196,14 @@ search_lenstring (lenstring *string,
 void
 strip_newlines (lenstring *out, lenstring *in)
 {
-  char *p = in->text;
-  char *p_end = in->text + in->len;
+    char *p = in->text;
+    char *p_end = in->text + in->len;
 
-  while (p < p_end && *p == '\n')
-    p++;
+    while (p < p_end && *p == '\n')
+        p++;
 
-  out->text = p;
-  out->len  = p_end - p;
+    out->text = p;
+    out->len  = p_end - p;
 }
 
 
@@ -212,6 +212,6 @@ strip_newlines (lenstring *out, lenstring *in)
 void
 append_lenstring (lenstring *str1, lenstring *str2)
 {
-  memcpy (str1->text + str1->len, str2->text, str2->len);
-  str1->len += str2->len;
+    memcpy (str1->text + str1->len, str2->text, str2->len);
+    str1->len += str2->len;
 }

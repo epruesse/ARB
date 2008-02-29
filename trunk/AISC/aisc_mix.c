@@ -7,13 +7,12 @@
 #include "aisc_proto.h"
 
 
-CL             *
-aisc_calc_blocks(CL * co, CL * afor, CL * aif, int up)
-{
-    CL             *oif;
-    CL             *ofor;
-    CL             *aelse;
-    CL             *anext;
+CL *aisc_calc_blocks(CL * co, CL * afor, CL * aif, int up) {
+    CL *oif;
+    CL *ofor;
+    CL *aelse;
+    CL *anext;
+    
     while (co) {
         while (co &&(!co->command)) {
             gl->pc = co;
@@ -117,7 +116,7 @@ aisc_calc_blocks(CL * co, CL * afor, CL * aif, int up)
                     afor->ENDFOR=co;
                     anext->ENDFOR=co;
 
-                } else 	if (co->command == ENDFOR) {
+                } else  if (co->command == ENDFOR) {
                     afor->ENDFOR=co;
                     afor->NEXT=co;
                     co->command = NEXT;
@@ -276,7 +275,7 @@ char *read_hash_local(char *key,struct hash_struct **hs)
         for(e=ss->hs->entries[i];e;e=e->next)
         {
             if (!strcmp(e->key,key)) {
-                if (hs)	*hs = ss->hs;
+                if (hs) *hs = ss->hs;
                 return e->val;
             }
         }
@@ -321,7 +320,7 @@ char *write_hash(struct hash_struct *hs,const char *key,const char *val)
     e = (struct hash_entry *)calloc(sizeof(struct hash_entry),1);
     e->next = hs->entries[i];
     e->key = strdup(key);
-    if (val)	e->val = strdup(val);
+    if (val)    e->val = strdup(val);
     hs->entries[i] = e;
 
     return 0;

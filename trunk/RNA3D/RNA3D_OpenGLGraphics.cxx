@@ -37,8 +37,8 @@ OpenGLGraphics::~OpenGLGraphics(void){
 // Sets the Background Color for the OpenGL Window
 void OpenGLGraphics::SetOpenGLBackGroundColor() {
 
-	unsigned long bgColor;
-	XtVaGetValues( RNA3D->glw, XmNbackground, &bgColor, NULL );
+    unsigned long bgColor;
+    XtVaGetValues( RNA3D->glw, XmNbackground, &bgColor, NULL );
 
     Widget w = RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area;
 
@@ -77,11 +77,11 @@ ColorRGBf OpenGLGraphics::ConvertGCtoRGB(int gc) {
     xcolor.pixel = color;
 
     Colormap colormap = DefaultColormapOfScreen( XtScreen( w ) );
-	XQueryColor( XtDisplay( w ), colormap, &xcolor );
-	
-	r = (float) xcolor.red / 65535.0;
-	g = (float) xcolor.green / 65535.0;
-	b = (float) xcolor.blue / 65535.0;
+    XQueryColor( XtDisplay( w ), colormap, &xcolor );
+        
+    r = (float) xcolor.red / 65535.0;
+    g = (float) xcolor.green / 65535.0;
+    b = (float) xcolor.blue / 65535.0;
 
     clr = ColorRGBf(r,g,b);
     return clr;
@@ -123,60 +123,60 @@ static GLuint font_base;
 
 void OpenGLGraphics::init_font(GLuint base, char* f)
 {
-   Display* display;
-   XFontStruct* font_info;
-   int first;
-   int last;
+    Display* display;
+    XFontStruct* font_info;
+    int first;
+    int last;
 
-   /* Need an X Display before calling any Xlib routines. */
-   //  display = XOpenDisplay(0); // glxFont problem : changed XOpenDisplay(0) to glXGetCurrentDisplay() 
-   display = glXGetCurrentDisplay();
-   if (display == 0) {
-      fprintf(stderr, "XOpenDisplay() failed.  Exiting.\n");
-      exit(-1);
-   } 
-   else {
-      /* Load the font. */
-      font_info = XLoadQueryFont(display, f);
-      if (!font_info) {
-         fprintf(stderr, "XLoadQueryFont() failed - Exiting.\n");
-         exit(-1);
-      }
-      else {
-         /* Tell GLX which font & glyphs to use. */
-         first = font_info->min_char_or_byte2;
-         last  = font_info->max_char_or_byte2;
-         glXUseXFont(font_info->fid, first, last-first+1, base+first);
-      }
-      //XCloseDisplay(display); // glxFont problem 
-       display = 0;
-   }
+    /* Need an X Display before calling any Xlib routines. */
+    //  display = XOpenDisplay(0); // glxFont problem : changed XOpenDisplay(0) to glXGetCurrentDisplay() 
+    display = glXGetCurrentDisplay();
+    if (display == 0) {
+        fprintf(stderr, "XOpenDisplay() failed.  Exiting.\n");
+        exit(-1);
+    } 
+    else {
+        /* Load the font. */
+        font_info = XLoadQueryFont(display, f);
+        if (!font_info) {
+            fprintf(stderr, "XLoadQueryFont() failed - Exiting.\n");
+            exit(-1);
+        }
+        else {
+            /* Tell GLX which font & glyphs to use. */
+            first = font_info->min_char_or_byte2;
+            last  = font_info->max_char_or_byte2;
+            glXUseXFont(font_info->fid, first, last-first+1, base+first);
+        }
+        //XCloseDisplay(display); // glxFont problem 
+        display = 0;
+    }
 }
 
 void OpenGLGraphics::print_string(GLuint base, char* s)
 {
-   if (!glIsList(font_base)) {
-      fprintf(stderr, "print_string(): Bad display list. - Exiting.\n");
-      exit (-1);
-   }
-   else if (s && strlen(s)) {
-      glPushAttrib(GL_LIST_BIT);
-      glListBase(base);
-      glCallLists(strlen(s), GL_UNSIGNED_BYTE, (GLubyte *)s);
-      glPopAttrib();
-   }
+    if (!glIsList(font_base)) {
+        fprintf(stderr, "print_string(): Bad display list. - Exiting.\n");
+        exit (-1);
+    }
+    else if (s && strlen(s)) {
+        glPushAttrib(GL_LIST_BIT);
+        glListBase(base);
+        glCallLists(strlen(s), GL_UNSIGNED_BYTE, (GLubyte *)s);
+        glPopAttrib();
+    }
 }
 
 void OpenGLGraphics::InitMainFont(char* f)
 {
     font_base = glGenLists(256);
-   if (!glIsList(font_base)) {
-      fprintf(stderr, "InitMainFont(): Out of display lists. - Exiting.\n");
-      exit (-1);
-   }
-   else {
-      init_font(font_base, f);
-   }
+    if (!glIsList(font_base)) {
+        fprintf(stderr, "InitMainFont(): Out of display lists. - Exiting.\n");
+        exit (-1);
+    }
+    else {
+        init_font(font_base, f);
+    }
 }
 
 void OpenGLGraphics::PrintString(float x, float y, float z, char *s, void * /*font */) {
@@ -189,26 +189,26 @@ void OpenGLGraphics::PrintString(float x, float y, float z, char *s, void * /*fo
 
 void OpenGLGraphics::PrintComment(float /* x */, float /* y */, float /* z */, char */*s */){
     // if comments are longer break them and display in next line
-//     int col  = 35;
+    //     int col  = 35;
 
-//         glRasterPos3f(x, y, z);
-//         for (unsigned int i = 0; i < strlen(s); i++) {
-//             if(i%col==0) {
-//                 y -= 10;
-//                 glRasterPos3f(x, y, z);
-//             }
-//             glutBitmapCharacter(GLUT_BITMAP_8_BY_13, s[i]);
-//         }
+    //         glRasterPos3f(x, y, z);
+    //         for (unsigned int i = 0; i < strlen(s); i++) {
+    //             if(i%col==0) {
+    //                 y -= 10;
+    //                 glRasterPos3f(x, y, z);
+    //             }
+    //             glutBitmapCharacter(GLUT_BITMAP_8_BY_13, s[i]);
+    //         }
 }
 
 //===============================================================================
 
 void  OpenGLGraphics::DrawBox(float x, float y,  float w, float h)
 {
-	glBegin(GL_QUADS);		
-        glVertex2f(x-w/2, y-h/2);
-        glVertex2f(x+w/2, y-h/2);
-        glVertex2f(x+w/2, y+h/2);
-        glVertex2f(x-w/2, y+h/2);
+    glBegin(GL_QUADS);              
+    glVertex2f(x-w/2, y-h/2);
+    glVertex2f(x+w/2, y-h/2);
+    glVertex2f(x+w/2, y+h/2);
+    glVertex2f(x-w/2, y+h/2);
     glEnd();
 }
