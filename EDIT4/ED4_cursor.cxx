@@ -509,7 +509,7 @@ void ED4_selected_SAI_changed_cb(AW_root */*aw_root*/)
     ED4_update_global_cursor_awars_allowed = false;
 
     if (!ignore_selected_SAI_changes_cb) {
-        char *name = GBT_read_string(gb_main,AWAR_SAI_NAME);
+        char *name = GBT_read_string(GLOBAL_gb_main,AWAR_SAI_NAME);
 
         if (name && name[0]) {
 #if defined(DEBUG)
@@ -529,7 +529,7 @@ void ED4_selected_species_changed_cb(AW_root */*aw_root*/)
     ED4_update_global_cursor_awars_allowed = false;
 
     if (!ignore_selected_species_changes_cb) {
-        char *name = GBT_read_string(gb_main,AWAR_SPECIES_NAME);
+        char *name = GBT_read_string(GLOBAL_gb_main,AWAR_SPECIES_NAME);
         if (name && name[0]) {
 #if defined(DEBUG) && 1
             printf("Selected species is '%s'\n", name);
@@ -549,9 +549,9 @@ void ED4_selected_species_changed_cb(AW_root */*aw_root*/)
 
 void ED4_jump_to_current_species(AW_window */*aw*/, AW_CL)
 {
-    char *name = GBT_read_string(gb_main, AWAR_SPECIES_NAME);
+    char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
     if (name && name[0]) {
-        GB_transaction dummy(gb_main);
+        GB_transaction dummy(GLOBAL_gb_main);
 #if defined(DEBUG) && 1
         printf("Jump to selected species (%s)\n", name);
 #endif
@@ -597,7 +597,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
 {
     e4_assert(species_name && species_name[0]);
 
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(species_name);
     int loaded = 0;
 
@@ -627,7 +627,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
         }
 
         {
-            GBDATA *gb_species = GBT_find_species(gb_main, species_name);
+            GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, species_name);
             GBDATA *gbd = GBT_read_sequence(gb_species, ED4_ROOT->alignment_name);
 
             if (gbd) {
@@ -662,7 +662,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
 
 void ED4_get_and_jump_to_actual(AW_window *, AW_CL)
 {
-    char *name = GBT_read_string(gb_main, AWAR_SPECIES_NAME);
+    char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
     if (name && name[0]) {
         ED4_get_and_jump_to_species(name);
         ED4_ROOT->refresh_all_windows(0);
@@ -679,11 +679,11 @@ void ED4_get_and_jump_to_actual_from_menu(AW_window *aw, AW_CL cl, AW_CL) {
 
 void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
 #define BUFFERSIZE 1000
-    GB_transaction dummy(gb_main);
-    int marked = GBT_count_marked_species(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
+    int marked = GBT_count_marked_species(GLOBAL_gb_main);
 
     if (marked) {
-        GBDATA *gb_species = GBT_first_marked_species(gb_main);
+        GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main);
         int count = 0;
         char *buffer = new char[BUFFERSIZE+1];
         char *bp = buffer;
@@ -695,7 +695,7 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
         ED4_index y = 0;
         ED4_index lot = 0;
         int inserted = 0;
-        char *default_alignment = GBT_get_default_alignment(gb_main);
+        char *default_alignment = GBT_get_default_alignment(GLOBAL_gb_main);
 
         aw_openstatus("ARB_EDIT4");
         aw_status("Loading species...");
@@ -836,7 +836,7 @@ void ED4_cursor::updateAwars()
                         last_set_SAI = strdup(species_name);
 
                         ignore_selected_SAI_changes_cb = true;
-                        GBT_write_string(gb_main, AWAR_SAI_NAME, species_name);
+                        GBT_write_string(GLOBAL_gb_main, AWAR_SAI_NAME, species_name);
                         ignore_selected_SAI_changes_cb = false;
                     }
                 }
@@ -847,7 +847,7 @@ void ED4_cursor::updateAwars()
                         last_set_species = strdup(species_name);
 
                         ignore_selected_species_changes_cb = true;
-                        GBT_write_string(gb_main, AWAR_SPECIES_NAME, species_name);
+                        GBT_write_string(GLOBAL_gb_main, AWAR_SPECIES_NAME, species_name);
                         ignore_selected_species_changes_cb = false;
                     }
                 }
@@ -1325,7 +1325,7 @@ void ED4_cursor::set_to_terminal(AW_window *aww, ED4_terminal *terminal, int seq
         }
     }
 
-    GB_transaction ta(gb_main);
+    GB_transaction ta(GLOBAL_gb_main);
     updateAwars();
 }
 
@@ -1364,7 +1364,7 @@ ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_ind
 
     draw_cursor(win_x, win_y);
 
-    GB_transaction gb_dummy(gb_main);
+    GB_transaction gb_dummy(GLOBAL_gb_main);
     updateAwars();
 
     return ED4_R_OK;
@@ -1638,7 +1638,7 @@ CursorPos *CursorPos::head = 0;
 
 void ED4_store_curpos(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)
 {
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     ED4_ROOT->use_window(aww);
     ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
     if (!cursor->owner_of_cursor) {
@@ -1651,7 +1651,7 @@ void ED4_store_curpos(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)
 
 void ED4_restore_curpos(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)
 {
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     ED4_ROOT->use_window(aww);
     ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
 
@@ -1676,7 +1676,7 @@ void ED4_clear_stored_curpos(AW_window */*aww*/, AW_CL /*cd1*/, AW_CL /*cd2*/)
 
 void ED4_helix_jump_opposite(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/)
 {
-    GB_transaction  dummy(gb_main);
+    GB_transaction  dummy(GLOBAL_gb_main);
     ED4_ROOT->use_window(aww);
     ED4_cursor     *cursor = &ED4_ROOT->get_ed4w()->cursor;
 
