@@ -31,7 +31,7 @@ AP_FLOAT PH_NEIGHBOURJOINING::get_max_di(AP_FLOAT **m)  // O(n*2)
 void PH_NEIGHBOURJOINING::remove_taxa_from_dist_list(long i)    // O(n/2)
 {
     long a,j;
-    register PH_NEIGHBOUR_DIST *nd;
+    PH_NEIGHBOUR_DIST *nd;
     for (a=0;a<swap_size;a++) {
         j= swap_tab[a];
         if (i==j) continue;
@@ -47,8 +47,8 @@ void PH_NEIGHBOURJOINING::remove_taxa_from_dist_list(long i)    // O(n/2)
 void PH_NEIGHBOURJOINING::add_taxa_to_dist_list(long i) // O(n/2)
 {
     long a;
-    register long pos,j;
-    register PH_NEIGHBOUR_DIST *nd;
+    long pos,j;
+    PH_NEIGHBOUR_DIST *nd;
     AP_FLOAT my_nd = 0.0;
     for (a=0;a<swap_size;a++) {
         j= swap_tab[a];
@@ -148,9 +148,9 @@ PH_NEIGHBOURJOINING::~PH_NEIGHBOURJOINING(void)
 void PH_NEIGHBOURJOINING::get_min_ij(long& mini, long& minj)    // O(n*n/speedup)
 {
     AP_FLOAT maxri = get_max_net_divergence();  // O(n/2)
-    register PH_NEIGHBOUR_DIST *dl;
-    register long stat = 0;
-    register AP_FLOAT x;
+    PH_NEIGHBOUR_DIST *dl;
+    long stat = 0;
+    AP_FLOAT x;
     AP_FLOAT minval;
     minval = 100000.0;
     AP_FLOAT N_1 = 1.0/(swap_size-2.0);
@@ -180,8 +180,8 @@ void PH_NEIGHBOURJOINING::get_min_ij(long& mini, long& minj)    // O(n*n/speedup
 
 void PH_NEIGHBOURJOINING::join_nodes(long i,long j,AP_FLOAT &leftl,AP_FLOAT& rightl)
 {
-    register PH_NEIGHBOUR_DIST **d = dist_matrix;
-    register AP_FLOAT dji;
+    PH_NEIGHBOUR_DIST **d = dist_matrix;
+    AP_FLOAT dji;
 
     AP_FLOAT dist = get_dist(i,j);
 

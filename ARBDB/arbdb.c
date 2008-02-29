@@ -29,11 +29,12 @@ char *GB_rel(void *struct_adress,long rel_adress)
 
 double GB_atof(const char *str)
 {
-    double res = 0.0;
-    double val = 1.0;
-    register long neg = 0;
-    register char c;
-    register char *p = (char *)str;
+    double  res = 0.0;
+    double  val = 1.0;
+    long    neg = 0;
+    char    c;
+    char   *p   = (char *)str;
+    
     while ( (c= *(p++)) ){
         if (c == '.'){
             val = 0.1;
@@ -516,11 +517,12 @@ GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
     if ( 0x01020304 == htonl((u_long)0x01020304) ) {
         return res;
     }else{
-        register long i;
-        int size = GB_GETSIZE(gbd);
-        char *buf2 = GB_give_other_buffer((char *)res,size<<2);
-        register GB_UINT4 *s = (GB_UINT4 *)res;
-        register GB_UINT4 *d = (GB_UINT4 *)buf2;
+        long      i;
+        int       size = GB_GETSIZE(gbd);
+        char     *buf2 = GB_give_other_buffer((char *)res,size<<2);
+        GB_UINT4 *s    = (GB_UINT4 *)res;
+        GB_UINT4 *d    = (GB_UINT4 *)buf2;
+
         for (i=size;i;i--) {
             *(d++) = htonl(*(s++));
         }
@@ -554,11 +556,11 @@ GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd)
     }
     if (!res) return 0;
     {
-        XDR xdrs;
-        register float *d;
-        register long i;
-        long size = GB_GETSIZE(gbd);
-        long full_size = size*sizeof(float);
+        XDR    xdrs;
+        float *d;
+        long   i;
+        long   size      = GB_GETSIZE(gbd);
+        long   full_size = size*sizeof(float);
 
         xdrmem_create(&xdrs, res,(int)(full_size),XDR_DECODE);
         buf2 = GB_give_other_buffer(res,full_size);
@@ -834,10 +836,11 @@ GB_ERROR GB_write_ints(GBDATA *gbd,const GB_UINT4 *i,long size)
     GB_TEST_NON_BUFFER((char *)i,"GB_write_ints");      /* compress will destroy the other buffer */
 
     if ( 0x01020304 != htonl((GB_UINT4)0x01020304) ) {
-        register long j;
-        char *buf2 = GB_give_other_buffer((char *)i,size<<2);
-        register GB_UINT4 *s = (GB_UINT4 *)i;
-        register GB_UINT4 *d = (GB_UINT4 *)buf2;
+        long      j;
+        char     *buf2 = GB_give_other_buffer((char *)i,size<<2);
+        GB_UINT4 *s    = (GB_UINT4 *)i;
+        GB_UINT4 *d    = (GB_UINT4 *)buf2;
+        
         for (j=size;j;j--) {
             *(d++) = htonl(*(s++));
         }
@@ -853,10 +856,10 @@ GB_ERROR GB_write_floats(GBDATA *gbd,const float *f,long size)
     GB_TEST_NON_BUFFER((char *)f,"GB_write_floats");
 
     {
-        XDR xdrs;
-        register long i;
-        char *buf2 = GB_give_other_buffer((char *)f,fullsize);
-        register float *s = (float *)f;
+        XDR    xdrs;
+        long   i;
+        char  *buf2 = GB_give_other_buffer((char *)f,fullsize);
+        float *s    = (float *)f;
 
         xdrmem_create(&xdrs, buf2 ,(int)fullsize ,XDR_ENCODE);
         for (i=size;i;i--) {
@@ -1025,8 +1028,9 @@ GB_CSTR gb_read_key_pntr(GBDATA *gbd){
 
 
 GBQUARK GB_key_2_quark(GBDATA *gbd, const char *s) {
-    register long index;
-    register GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+    long          index;
+    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+
     if (!s) return -1;
     index = GBS_read_hash(Main->key_2_index_hash,s);
     if (!index) {   /* create new index */
@@ -1040,7 +1044,7 @@ GBQUARK GB_get_quark(GBDATA *gbd) {
 }
 
 GBQUARK gb_key_2_quark(GB_MAIN_TYPE *Main, const char *s) {
-    register long index;
+    long index;
     if (!s) return 0;
     index = GBS_read_hash(Main->key_2_index_hash,s);
     if (!index) {   /* create new index */
@@ -2141,7 +2145,7 @@ long GB_read_usr_public(GBDATA *gbd)
 ********************************************************************************************/
 
 long GB_read_usr_private(GBDATA *gbd) {
-    register GBCONTAINER *gbc = (GBCONTAINER *)gbd;
+    GBCONTAINER *gbc = (GBCONTAINER *)gbd;
     if (GB_TYPE(gbc) != GB_DB) {
         GB_ERROR error =
             GB_export_error("GB_write_usr_private: not a container (%s)",GB_read_key_pntr(gbd));
@@ -2152,7 +2156,7 @@ long GB_read_usr_private(GBDATA *gbd) {
 }
 
 GB_ERROR GB_write_usr_private(GBDATA *gbd,long ref) {
-    register GBCONTAINER *gbc = (GBCONTAINER *)gbd;
+    GBCONTAINER *gbc = (GBCONTAINER *)gbd;
     if (GB_TYPE(gbc) != GB_DB) {
         GB_ERROR error =
             GB_export_error("GB_write_usr_private: not a container (%s)",GB_read_key_pntr(gbd));
@@ -2169,9 +2173,10 @@ GB_ERROR GB_write_usr_private(GBDATA *gbd,long ref) {
 
 GB_ERROR GB_write_flag(GBDATA *gbd,long flag)
 {
-    register GBCONTAINER *gbc = (GBCONTAINER *)gbd;
-    int prev;
-    int ubit = GB_MAIN(gbd)->users[0]->userbit;
+    GBCONTAINER *gbc  = (GBCONTAINER *)gbd;
+    int          prev;
+    int          ubit = GB_MAIN(gbd)->users[0]->userbit;
+
     GB_TEST_TRANSACTION(gbd);
 
     prev = GB_ARRAY_FLAGS(gbc).flags;

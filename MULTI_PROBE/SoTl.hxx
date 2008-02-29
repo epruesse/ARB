@@ -335,7 +335,7 @@ template <class Type> inline list_elem<Type> *List<Type>::get_list_elem_at_pos( 
 template <class Type> inline list_elem<Type> *List<Type>::get_list_elem_at_pos_simple( positiontype pos )
 {
 	list_elem<Type>		*elem;
-	register positiontype	counter = 1;
+        positiontype	counter = 1;
 
 	if (pos < 1 || pos > no_of_members)
 		return NULL;

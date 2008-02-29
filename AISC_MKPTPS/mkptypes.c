@@ -726,7 +726,7 @@ static int is_type_word(char *s){
         "void",     "volatile", (char *)0
     };
 
-    register const char **ss;
+    const char **ss;
 
     for (ss = typewords; *ss; ++ss)
         if (strcmp(s, *ss) == 0)

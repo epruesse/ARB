@@ -29,10 +29,10 @@ AW_DEVICE_TYPE AW_device_print::type(void) { return AW_DEVICE_PRINTER; }
 
 
 int AW_device_print::line(int gc, AW_pos x0,AW_pos y0, AW_pos x1,AW_pos y1, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
-    register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
-    AW_pos X0,Y0,X1,Y1;	// Transformed pos
-    AW_pos CX0,CY0,CX1,CY1;	// Clipped line
-    int	drawflag = 0;
+    class AW_GC_Xm *gcm      = AW_MAP_GC(gc);
+    AW_pos          X0,Y0,X1,Y1; // Transformed pos
+    AW_pos          CX0,CY0,CX1,CY1; // Clipped line
+    int	            drawflag = 0;
 
     if(filteri & filter) {
         this->transform(x0,y0,X0,Y0);
@@ -62,10 +62,10 @@ int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str, size_
                               AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
                               AW_CL cduser, AW_CL cd1, AW_CL cd2)
 {
-    AW_pos X,Y;
+    AW_pos           X,Y;
     AW_device_print *device = (AW_device_print *)devicei;
-    AW_common *common = device->common;
-    register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
+    AW_common       *common = device->common;
+    class AW_GC_Xm  *gcm    = AW_MAP_GC(gc);
 
     AWUSE(cd1);AWUSE(cd2);AWUSE(opt_ascent);AWUSE(opt_descent);AWUSE(cduser);
     device->transform(x,y,X,Y);
@@ -178,10 +178,10 @@ int AW_device_print::box(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos widt
 
 int AW_device_print::circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     AWUSE(cd1);AWUSE(cd2);
-    register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
-    AW_pos x1,y1;
-    AW_pos X0,Y0,X1,Y1;	// Transformed pos
-    AW_pos CX0,CY0,CX1,CY1;	// Clipped line
+    AW_GC_Xm *gcm = AW_MAP_GC(gc);
+    AW_pos    x1,y1;
+    AW_pos    X0,Y0,X1,Y1;      // Transformed pos
+    AW_pos    CX0,CY0,CX1,CY1;  // Clipped line
 
     if(filteri & filter) {
         width *= get_scale();
@@ -228,11 +228,12 @@ int AW_device_print::filled_area(int gc, int npoints, AW_pos *points, AW_bitset 
     erg |= AW_device::filled_area(gc,npoints,points,filteri,cd1,cd2);
     if (!erg) return 0;				// no line visible -> no area fill
 
-    register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
-    AW_pos x,y;
-    AW_pos X,Y;	// Transformed pos
-    AW_pos CX0,CY0,CX1,CY1;	// Clipped line
-    short greylevel = (short)(gcm->grey_level*22);
+    AW_GC_Xm *gcm = AW_MAP_GC(gc);
+    AW_pos    x,y;
+    AW_pos    X,Y;	        // Transformed pos
+    AW_pos    CX0,CY0,CX1,CY1;	// Clipped line
+    
+    short greylevel             = (short)(gcm->grey_level*22);
     if (greylevel>21) greylevel = 21;
 
     int line_width = gcm->line_width;

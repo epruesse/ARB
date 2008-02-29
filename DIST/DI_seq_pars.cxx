@@ -115,8 +115,8 @@ void AP_sequence_parsimony::build_table(void)
 	
 	
 void AP_sequence_parsimony::set(char *isequence)
-	{
-	register char *s,*d,*f,c;
+{
+    char *s,*d,*f,c;
 	sequence_len = filter->real_len;
 	sequence = new char[sequence_len+1];
 	memset(sequence,AP_N,(size_t)sequence_len);

@@ -264,7 +264,7 @@ AD_ERR * ADT_SEQUENCE::make_sequence_buffer(ADT_SEARCH
 
 	seq_anfang = ptr_adt_search->seq_anfang;
 
-	register char source;
+        char source;
 
 	//------------------------------------------memory for sequence-buffer
 	seq_buffer_start = (char *)calloc(strlen(seq_anfang)+1,sizeof(char));
@@ -367,23 +367,20 @@ AD_ERR * ADT_SEQUENCE::rewrite_from_sequence_buffer(ADT_SEARCH
 		seq_index_start  = ptr_adt_search->seq_index_start;
 		seq_anfang = get();
 
-		long	buffer_index = 0;		//zaehlvariable
- 		register char source;
+		long buffer_index = 0; //zaehlvariable
+                char source;
 
-		for( ; (source = seq_buffer_start[buffer_index]) ;
-							     buffer_index++ ) {
-			*(seq_anfang + seq_index_start[buffer_index]) = source;
+		for( ; (source = seq_buffer_start[buffer_index]) ; buffer_index++ ) {
+                    *(seq_anfang + seq_index_start[buffer_index]) = source;
 		}
 		ptr_adt_search->seq_anfang = seq_anfang;
 		//-------------------------------------------------end rewrite
 
-		char	*replace_anfang	= ptr_adt_search->replace_string;
-		long	var_start_cursor_pos =
-				       ptr_adt_search->replace_start_cursor_pos;
+		char *replace_anfang	   = ptr_adt_search->replace_string;
+		long  var_start_cursor_pos = ptr_adt_search->replace_start_cursor_pos;
 
 		//--------------------------------------------cursorpos_editor
-		long  buffer_end_replace =
-			var_start_cursor_pos + strlen(replace_anfang);
+		long  buffer_end_replace = var_start_cursor_pos + strlen(replace_anfang);
 
 		ptr_adt_edit->actual_cursorpos_editor =
 			ptr_adt_search->seq_index_start[buffer_end_replace-1];
@@ -904,7 +901,7 @@ AD_ERR * ADT_SEQUENCE::show_edit_complement(ADT_COMPLEMENT *ptr_adt_complement,
 
 AD_ERR * ADT_SEQUENCE::show_edit_invert(ADT_COMPLEMENT *ptr_adt_complement,
 										 ADT_EDIT *ptr_adt_edit) {
-	register	char  source;
+    char  source;
 
 	char		*right_border;
 	char		*sequence_loop_start, *sequence_loop, *sequence;

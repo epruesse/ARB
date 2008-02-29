@@ -85,8 +85,8 @@ AC_SEQUENCE_ALIGNED::~AC_SEQUENCE_ALIGNED()  {
 //*********************************************************************
 double AC_SEQUENCE_ALIGNED::get_distance(AC_SEQUENCE *that)  {
 
-	register long	distance, equals;
-	register char	*revptr, *seqptr;
+    long	distance, equals;
+    char	*revptr, *seqptr;
 
 	revptr = that->sequence;		// Reverenzsequenz
 
@@ -95,7 +95,7 @@ double AC_SEQUENCE_ALIGNED::get_distance(AC_SEQUENCE *that)  {
 //	seqptr = this->sequence;		// aktuelle Sequenz
 	distance = 0;
 	equals = 0;
-	register char	reg1, reg2;
+        char	reg1, reg2;
 	for( ; (reg1 = *revptr) && (reg2 = *seqptr); revptr++, seqptr++ ) {
 		if( (!isalpha(reg1)) || !isalpha(reg2))  continue;
 		if (reg1==reg2) {

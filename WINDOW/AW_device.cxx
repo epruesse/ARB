@@ -317,17 +317,17 @@ const AW_font_information *AW_gc::get_font_information(int gc, unsigned char c) 
 **********************************************************************************************/
 
 int	AW_gc::get_string_size(int gc, const char *str, long textlen)
-    // get the size of the string
+// get the size of the string
 {
-    register XFontStruct *xfs = &common->gcs[gc]->curfont;
-    register short *size_per_char = common->gcs[gc]->width_of_chars;
+    XFontStruct *xfs           = &common->gcs[gc]->curfont;
+    short       *size_per_char = common->gcs[gc]->width_of_chars;
     if (!textlen)
     {
         if (!str) return 0;
         textlen = strlen(str);
     }
-    register int c;
-    register long l_width;
+    int  c;
+    long l_width;
 
     if (xfs->max_bounds.width == xfs->min_bounds.width || !str) {
         // monospaced font
@@ -670,10 +670,10 @@ void AW_device::get_clicked_text(AW_clicked_text */*ptr*/) { forbidden("get_clic
 void AW_device::get_size_information(AW_world */*ptr*/) { forbidden("get_size_information"); }
 
 int AW_device::cursor(int gc, AW_pos x0,AW_pos y0, AW_cursor_type cur_type, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
-    register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
-    register XFontStruct *xfs = &gcm->curfont;
-    AW_pos x1,x2,y1,y2;
-    AW_pos X0,Y0;				// Transformed pos
+    class AW_GC_Xm *gcm = AW_MAP_GC(gc);
+    XFontStruct    *xfs = &gcm->curfont;
+    AW_pos          x1,x2,y1,y2;
+    AW_pos          X0,Y0;	// Transformed pos
 
     //  cursor insert         cursor overwrite
     //     (X0,Y0)
@@ -711,19 +711,19 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len,	// eithe
                                       AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
                                       AW_CL cduser, AW_CL cd1, AW_CL cd2))
 {
-    long	textlen;
-    class AW_GC_Xm *gcm = AW_MAP_GC(gc);
-    register XFontStruct *xfs = &gcm->curfont;
-    register short *size_per_char = common->gcs[gc]->width_of_chars;
-    register int 	xi, yi;
-    register int	h;
-    int		start;
-    int		l;
-    int		c =0;
-    AW_pos		X0,Y0;					// Transformed pos
-    AW_BOOL		inside_clipping_left = AW_TRUE;		// clipping at the left edge of the screen is different
+    long	 textlen;
+    AW_GC_Xm    *gcm                   = AW_MAP_GC(gc);
+    XFontStruct *xfs                   = &gcm->curfont;
+    short       *size_per_char         = common->gcs[gc]->width_of_chars;
+    int 	 xi, yi;
+    int	         h;
+    int		 start;
+    int		 l;
+    int		 c                     = 0;
+    AW_pos	 X0,Y0;	        // Transformed pos
+    AW_BOOL	 inside_clipping_left  = AW_TRUE; // clipping at the left edge of the screen is different
     //	from clipping right of the left edge.
-    AW_BOOL		inside_clipping_right = AW_TRUE;
+    AW_BOOL	 inside_clipping_right = AW_TRUE;
 
     // es gibt 4 clipping Moeglichkeiten:
     // 1. man will fuer den Fall clippen, dass man vom linken display-Rand aus druckt	=> clipping rechts vom 1. Buchstaben

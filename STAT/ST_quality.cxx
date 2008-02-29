@@ -121,8 +121,9 @@ void st_ml_add_sequence_part_to_stat(ST_ML * st_ml, AWT_csp * /*awt_csp */,
     ST_base_vector *vec = sml->tmp_out + start;
     for (pos = start; pos < end; vec++, pos++) {
         double max = 0;
-        register double v;
-        register int b;
+        double v;
+        int    b;
+        
         for (b = ST_A; b < ST_MAX_BASE; b++) {
             v = vec->b[b];
             if (v > max)

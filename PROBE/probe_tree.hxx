@@ -294,7 +294,7 @@ GB_INLINE const char *PT_READ_CHAIN_ENTRY(const char* ptr,int mainapos,int *name
 /* stage 1 */
 GB_INLINE char *PT_WRITE_CHAIN_ENTRY(const char * const ptr,const int mainapos,int name,const int apos,const int rpos)
 {
-    register unsigned char *wcep = (unsigned char *)ptr;
+    unsigned char *wcep = (unsigned char *)ptr;
     int  isapos;
     if (name < 0x7f) {      /* write the name */
         *(wcep++) = name;
@@ -344,9 +344,9 @@ GB_INLINE char *PT_WRITE_CHAIN_ENTRY(const char * const ptr,const int mainapos,i
 
 GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
 {
-    register long i;
-    register uint sec;
-    register uint offset;
+    long i;
+    uint sec;
+    uint offset;
     if (ptmain->stage3) {       // stage 3  no father
         if (node->flags & IS_SINGLE_BRANCH_NODE){
             if (base != (node->flags & 0x7)) return 0;  // no son
@@ -385,7 +385,7 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
 
 GB_INLINE POS_TREE *PT_read_son_stage_1(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
 {
-    register long i;
+    long i;
     if (!( (1<<base) & node->flags)) return 0;  /* bit not set */
     base = (PT_BASES)PT_count_bits[base][node->flags];
     PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+ptmain->mode,i);

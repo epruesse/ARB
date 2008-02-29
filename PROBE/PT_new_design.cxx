@@ -790,9 +790,10 @@ static void ptnd_check_probepart(PT_pdc *pdc)
 inline int ptnd_check_tprobe(PT_pdc *pdc, char *probe, int len)
 {
     double temp;
-    int	gc;
-    int	at;
-    register int	a,t,c,g,i;
+    int	   gc;
+    int	   at;
+    int	   a,t,c,g,i;
+
     a = t = c= g = 0;
     while (( i=*(probe++) )) {
         switch(i) {
@@ -828,9 +829,9 @@ extern "C" {
     }
 }
 
-static void ptnd_add_sequence_to_hash(PT_pdc *pdc, GB_HASH *hash, register char *sequence, int seq_len, register int probe_len, char *prefix, int prefix_len) {
-    register int pos;
-    register int c;
+static void ptnd_add_sequence_to_hash(PT_pdc *pdc, GB_HASH *hash, char *sequence, int seq_len, int probe_len, char *prefix, int prefix_len) {
+    int pos;
+    int c;
     //printf ("Size of sequence %i\n",seq_len);
     if (*prefix) {
         for (pos = seq_len-probe_len; pos >= 0; pos--, sequence++) {

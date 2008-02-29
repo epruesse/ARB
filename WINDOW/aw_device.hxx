@@ -199,7 +199,7 @@ protected:
     int compoutcode(AW_pos xx, AW_pos yy) {
         /* calculate outcode for clipping the current line */
         /* order - top,bottom,right,left */
-        register int code = 0;
+        int code = 0;
         if (clip_rect.b - yy < 0)       code = 4;
         else if (yy - clip_rect.t < 0)  code = 8;
         if (clip_rect.r - xx < 0)       code |= 2;

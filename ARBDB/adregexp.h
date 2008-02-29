@@ -61,14 +61,14 @@ extern "C" {
     compile(char *instring, char *ep, const char *endbuf, int seof)
 #else
         compile(instring, ep, endbuf, seof)
-        register char *ep;
+        char *ep;
     char *instring, *endbuf;
     int seof;
 #endif
     {
         INIT    /* Dependent declarations and initializations */
-            register int c;
-        register int eof = seof;
+            int c;
+        int eof = seof;
         char *lastep = instring;
         int cclcnt;
         char bracket[NBRA], *bracketp;
@@ -292,7 +292,7 @@ extern "C" {
 #else
         int
     step(p1, p2)
-        register char *p1, *p2;
+        char *p1, *p2;
 #endif
     {
         char c;
@@ -330,17 +330,17 @@ extern "C" {
     advance(const char *lp, const char *ep)
 #else
         advance(lp, ep)
-        register char *lp, *ep;
+        char *lp, *ep;
 #endif
     {
 #ifdef  __STDC__
         const char *curlp;
 #else
-        register char *curlp;
+        char *curlp;
 #endif
         int c;
         char *bbeg;
-        register char neg;
+        char neg;
         int ct;
 
         while (1) {
@@ -534,7 +534,7 @@ extern "C" {
     getrnge(const char *str)
 #else
         getrnge(str)
-        register char *str;
+        char *str;
 #endif
     {
         low = *str++ & 0377;

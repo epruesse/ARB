@@ -88,15 +88,16 @@ static void AsciiTime(void *b,char *asciitime)
 
 void ReadGen(char *filename,NA_Alignment *dataset,int type)
 {
-    register int done = FALSE;
-    size_t len = 0;
-    size_t j = 0;
-    int count,IS_REALLY_AA = FALSE;
-    char in_line[GBUFSIZ],c;
-    char *buffer=0,*gencomments = NULL,fields[8][GBUFSIZ];
-    size_t buflen = 0;
-    int genclen = 0,curelem = 0,n = 0;
-    int start_col = -1;
+    int     done               = FALSE;
+    size_t  len                = 0;
+    size_t  j                  = 0;
+    int     count,IS_REALLY_AA = FALSE;
+    char    in_line[GBUFSIZ],c;
+    char   *buffer             = 0,*gencomments = NULL,fields[8][GBUFSIZ];
+    size_t  buflen             = 0;
+    int     genclen            = 0,curelem = 0,n = 0;
+    int     start_col          = -1;
+
     type=0;count=0;
 
     NA_Sequence *this_elem =0;

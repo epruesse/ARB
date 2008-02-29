@@ -28,20 +28,20 @@ AP_sequence *AP_sequence_simple_protein::dup(void)
 
 
 void AP_sequence_simple_protein::set(char *isequence)
-    {
-    register char *s,c;
-    register ap_pro *d;
+{
+    char *s,c;
+    ap_pro *d;
     if (!awt_pro_a_nucs) {
         awt_pro_a_nucs_gen_dist (this->root->gb_main);
     }
 
-    register struct arb_r2a_pro_2_nuc **s2str = &awt_pro_a_nucs->s2str[0];
+    struct arb_r2a_pro_2_nuc **s2str = &awt_pro_a_nucs->s2str[0];
     sequence_len = root->filter->real_len;
     sequence = new ap_pro[sequence_len+1];
     memset(sequence,s2str['.']->index,(size_t)(sizeof(ap_pro) * sequence_len));
     s = isequence;
     d = sequence;
-    register const uchar *simplify = root->filter->simplify;
+    const uchar *simplify = root->filter->simplify;
     int sindex = s2str['s']->index;
     if (root->filter->bootstrap){
         int iseqlen = strlen(isequence);
@@ -58,8 +58,8 @@ void AP_sequence_simple_protein::set(char *isequence)
         d[i] = ind;
         }
     }else{
-        register char *f = root->filter->filter_mask;
-        register int i = root->filter->filter_len;
+        char *f = root->filter->filter_mask;
+        int i = root->filter->filter_len;
         while ( (c = (*s++)) ) {
         if (!i) break;
         i--;

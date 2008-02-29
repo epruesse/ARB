@@ -16,8 +16,9 @@ void AWT_automata::set_gaps(char *ga) {
 void AWT_automata::get_fwd(char *str,int pos) {
 	AWT_auto_states *state = this;
 	AW_CL	last_value = 0;
-	register unsigned char *p = (unsigned char *)str + pos;
-	register int b;
+        unsigned char *p = (unsigned char *)str + pos;
+        int b;
+        
 	for ( ; b=*p;p++) {
 		if (gaps[b]) continue;				// do not read gaps
 		if (state->value) last_value = state->value;

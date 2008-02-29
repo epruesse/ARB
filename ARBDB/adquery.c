@@ -103,9 +103,9 @@ NOT4PERL GBDATA *GB_find_sub_by_quark(GBDATA *father, int key_quark, GB_TYPES ty
        if key_quark<0 search everything
     */
 
-    register int end, index;
-    register GBCONTAINER *gbf = (GBCONTAINER*)father;
-    register struct gb_header_list_struct *header;
+    int end, index;
+    GBCONTAINER *gbf = (GBCONTAINER*)father;
+    struct gb_header_list_struct *header;
     GBDATA *gb;
 
     end  = gbf->d.nheader;
@@ -167,9 +167,9 @@ NOT4PERL GBDATA *GB_find_sub_by_quark(GBDATA *father, int key_quark, GB_TYPES ty
 }
 
 static GBDATA *GB_find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_key_quark, GB_TYPES type, const char *val, GBDATA *after){
-    register int end, index;
-    register struct gb_header_list_struct *header;
-    register GBCONTAINER *gbf = (GBCONTAINER*)father;
+    int end, index;
+    struct gb_header_list_struct *header;
+    GBCONTAINER *gbf = (GBCONTAINER*)father;
     GBDATA *gb;
     GBDATA *res;
     struct gb_index_files_struct *ifs=0;
@@ -301,8 +301,8 @@ GBDATA *GB_next(GBDATA *brother) {
    Warning: This subentry must exists, otherwise internal error */
 
 GBDATA *gb_find_by_nr(GBDATA *father, int index){
-    register GBCONTAINER *gbf = (GBCONTAINER*)father;
-    register struct gb_header_list_struct *header;
+    GBCONTAINER *gbf = (GBCONTAINER*)father;
+    struct gb_header_list_struct *header;
     GBDATA *gb;
     if (GB_TYPE(father) != GB_DB) {
         GB_internal_error("type is not GB_DB");
@@ -568,7 +568,7 @@ long GB_number_of_marked_subentries(GBDATA *gbd){
 }
 
 GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring){
-    register GBCONTAINER *gbc = (GBCONTAINER *)gbd;
+    GBCONTAINER *gbc = (GBCONTAINER *)gbd;
     GBQUARK key_quark;
     if (keystring) {
         key_quark = GB_key_2_quark(gbd,keystring);
@@ -582,7 +582,7 @@ GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring){
 
 GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring)
 {
-    register GBCONTAINER *gbc = GB_FATHER(gbd);
+    GBCONTAINER *gbc = GB_FATHER(gbd);
     GBQUARK key_quark;
 
     if (keystring) {
@@ -616,7 +616,7 @@ void gb_install_command_table(GBDATA *gb_main,struct GBL_command_table *table)
 
 char *gbs_search_second_x(const char *str)
 {
-    register int c;
+    int c;
     for (;(c=*str);str++) {
         if (c=='\\') {      /* escaped characters */
             str++;
@@ -630,7 +630,7 @@ char *gbs_search_second_x(const char *str)
 
 char *gbs_search_second_bracket(const char *source)
 {
-    register int c;
+    int c;
     int deep = 0;
     if (*source != '(') deep --;    /* first bracket */
     for (;(c=*source);source++){
@@ -656,8 +656,8 @@ char *gbs_search_next_seperator(const char *source,const char *seps){
     /* search the next seperator */
     static char tab[256];
     static int flag = 0;
-    register int c;
-    register const char *p;
+    int c;
+    const char *p;
     if (!flag) {
         flag = 1;
         memset(tab,0,256);
@@ -783,7 +783,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
         s1 = commands;
         s2 = buffer;
         {
-            register int c;
+            int c;
             for (; (c= *s1); s1++){
                 if (c=='\\') {
                     *(s2++) = c;

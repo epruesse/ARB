@@ -58,12 +58,12 @@ void AWT_species_set_root::add(AWT_species_set *set){
 
 AWT_species_set *AWT_species_set_root::search(AWT_species_set *set,long *best_co){
     AWT_species_set *result = 0;
-    register long i;
+    long i;
     long best_cost = 0x7fffffff;
     unsigned char *sbs = set->bitstring;
     for (i=nsets-1;i>=0;i--){
-        register long j;
-        register long sum = 0;
+        long j;
+        long sum = 0;
         unsigned char *rsb = sets[i]->bitstring;
         for (j=nspecies/8 -1 + 1; j>=0;j--){
             sum += diff_bits[ (sbs[j]) ^ (rsb[j]) ];
@@ -121,9 +121,9 @@ AWT_species_set::AWT_species_set(AP_tree *nodei,AWT_species_set_root *ssr,AWT_sp
     this->node = node;
     long j = ssr->nspecies/8+1;
     bitstring = (unsigned char *)GB_calloc(sizeof(char),size_t(ssr->nspecies/8)+5);
-    register long *lbits = (long *)l->bitstring;
-    register long *rbits = (long *)r->bitstring;
-    register long *dest = (long *)bitstring;
+    long *lbits = (long *)l->bitstring;
+    long *rbits = (long *)r->bitstring;
+    long *dest = (long *)bitstring;
     for (j = ssr->nspecies/8/sizeof(long) - 1 + 1;j>=0;j--){
         dest[j] = lbits[j] | rbits[j];
     }

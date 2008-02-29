@@ -242,9 +242,9 @@ int aisc_calc_special_commands(void)
 
 int hash_index(const char *key, int size)
 {
-    register int x;
-    register const char *p;
-    register char c;
+    int         x;
+    const char *p;
+    char        c;
 
     p = key;
     x = 1;
@@ -328,8 +328,8 @@ char *write_hash(struct hash_struct *hs,const char *key,const char *val)
 }
 int free_hash(struct hash_struct *hs)
 {
-    register int i;
-    register int e2;
+    int i;
+    int e2;
     struct hash_entry *e,*ee;
     e2 = hs->size;
     for (i=0;i<e2;i++) {

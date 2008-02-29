@@ -17,8 +17,8 @@ void ad_use(int dummy, ...)  {
                     GB data manangement
 ********************************************************************************************/
 void gb_touch_entry(GBDATA * gbd, GB_CHANGED val) {
-    register GBCONTAINER *gbc;
-    register GBCONTAINER *gbc_father;
+    GBCONTAINER *gbc;
+    GBCONTAINER *gbc_father;
 
     gbd->flags2.update_in_server = 0;
     if ( val > (GB_CHANGED)(int)GB_ARRAY_FLAGS(gbd).changed) {
@@ -65,9 +65,10 @@ void gb_touch_header(GBCONTAINER *gbc)
 void
 gb_untouch_children(GBCONTAINER * gbc)
 {
-    register GBDATA *gbd;
-    register int    index, start, end;
-    register GB_CHANGED changed;
+    GBDATA     *gbd;
+    int         index, start, end;
+    GB_CHANGED  changed;
+
     struct gb_header_list_struct *header = GB_DATA_LIST_HEADER(gbc->d);
 
     if (gbc->index_of_touched_one_son > 0) {
@@ -302,11 +303,11 @@ gb_rename_entry(GBCONTAINER *gbc, const char *new_key) {
 GBDATA         *
 gb_make_entry(GBCONTAINER * father, const char *key, long index_pos, GBQUARK keyq, GB_TYPES type)
 {
-    GBDATA         *gbd;
-    long            gbm_index;
-    static char *buffer = 0;
-    register char *p;
-    GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(father);
+    GBDATA       *gbd;
+    long          gbm_index;
+    static char  *buffer = 0;
+    char         *p;
+    GB_MAIN_TYPE *Main   = GBCONTAINER_MAIN(father);
 
     if (!keyq) keyq = gb_key_2_quark(Main,key);
     gbm_index = GB_QUARK_2_GBMINDEX(Main, keyq);
@@ -632,8 +633,8 @@ char *gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index)
 
 char *gb_write_key(GBDATA *gbd,const char *s)
 {
-    GBQUARK new_index = 0;
-    register GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+    GBQUARK       new_index = 0;
+    GB_MAIN_TYPE *Main      = GB_MAIN(gbd);
 
     if (s){
         new_index = (int)GBS_read_hash(Main->key_2_index_hash,s);
@@ -759,7 +760,7 @@ gb_abort_transaction_local_rek(GBDATA *gbd, long mode)
             type = (GB_TYPES)GB_TYPE(gbd);
             if (type == GB_DB)
             {
-                register int index;
+                int index;
                 GBCONTAINER *gbc = (GBCONTAINER *)gbd;
                 struct gb_header_list_struct *hls = GB_DATA_LIST_HEADER(gbc->d);
 

@@ -537,7 +537,7 @@ char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA *gbd, *
     dest = buffer = (u_str)GB_give_other_buffer(s_source,size+2);
 
     while (size && !done) {
-        register int c;
+        int c;
 
         if ((c=*source++)&128)	/* compressed data */ {
             int indexLen = GETVAL(c,INDEX_LEN);
@@ -568,7 +568,7 @@ char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA *gbd, *
 #endif
 
                 {
-                    register u_str d = dest;
+                    u_str d = dest;
                     while (c--) *d++ = *word++;
                     dest = d;
                 }

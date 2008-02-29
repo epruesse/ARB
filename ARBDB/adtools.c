@@ -630,14 +630,14 @@ char *gbt_insert_delete(const char *source, long len, long destlen, long *newsiz
 }
 
 GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, long len, long pos, long nchar, const char *delete_chars, const char *species_name){
-    GB_TYPES type;
-    long    size =0,l;
-    register long i;
-    long    dlen;
-    const char  *cchars;
-    char    *chars;
-    GB_ERROR error = 0;
-    GBDATA *gb;
+    GB_TYPES    type;
+    long        size  = 0,l;
+    long        i;
+    long        dlen;
+    const char *cchars;
+    char       *chars;
+    GB_ERROR    error = 0;
+    GBDATA     *gb;
 
     ad_assert(pos>=0);
     type = GB_read_type(gb_data);

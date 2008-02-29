@@ -584,18 +584,18 @@ GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbd) {
 
 long gb_read_bin_rek(FILE *in,GBCONTAINER *gbd,long nitems,long version,long reversed)
 {
-    long item;
-    long type,type2;
-    GBQUARK key;
-    register char *p;
-    register long i;
-    register int c;
-    long size;
-    long memsize;
-    GBDATA *gb2;
-    GBCONTAINER *gbc =0 ;
-    long security;
-    char *buff;
+    long          item;
+    long          type,type2;
+    GBQUARK       key;
+    char         *p;
+    long          i;
+    int           c;
+    long          size;
+    long          memsize;
+    GBDATA       *gb2;
+    GBCONTAINER  *gbc  = 0;
+    long          security;
+    char         *buff;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
 
     gb_create_header_array(gbd,(int)nitems);
@@ -761,19 +761,20 @@ long gb_recover_corrupt_file(GBCONTAINER *gbd,FILE *in, GB_ERROR recovery_reason
 
 long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long reversed,long deep)
 {
-    long item;
-    long type,type2;
-    GBQUARK key;
-    register char *p;
-    register long i;
-    long size;
-    long memsize;
-    int index;
-    GBDATA *gb2;
-    GBCONTAINER *gbc;
-    long security;
-    char *buff;
+    long          item;
+    long          type,type2;
+    GBQUARK       key;
+    char         *p;
+    long          i;
+    long          size;
+    long          memsize;
+    int           index;
+    GBDATA       *gb2;
+    GBCONTAINER  *gbc;
+    long          security;
+    char         *buff;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+    
     struct gb_header_list_struct *header;
 
     gb_create_header_array(gbd,(int)nitems);
@@ -1009,15 +1010,16 @@ void gb_search_system_folder(GBDATA *gb_main){
 
 long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
 {
-    register int c = 1;
-    long i;
-    long    error;
-    long    j,k;
-    long    version;
-    long    reversed;
-    long    nodecnt;
-    long    first_free_key;
-    char    *buffer,*p;
+    int   c = 1;
+    long  i;
+    long  error;
+    long  j,k;
+    long  version;
+    long  reversed;
+    long  nodecnt;
+    long  first_free_key;
+    char *buffer,*p;
+    
     GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gbd);
 
     while ( c && c!= EOF ) {

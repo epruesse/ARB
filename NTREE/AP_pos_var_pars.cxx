@@ -48,8 +48,8 @@ long    AP_pos_var::getsize(GBT_TREE *tree){
 const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tbases){
     GB_ERROR error = 0;
     timer ++;
-    register long i;
-    register long l,r;
+    long i;
+    long l,r;
 
     if (tree->is_leaf) {
         unsigned char *sequence;

@@ -95,11 +95,12 @@ void ST_rate_matrix::print() {
 #if 0
 
 GB_INLINE void ST_rate_matrix::mult(ST_base_vector * in,
-        ST_base_vector * out)
+                                    ST_base_vector * out)
 {
-    register int i, j;
-    register float *pm = &m[0][0];
-    register double sum;
+    int     i, j;
+    float  *pm = &m[0][0];
+    double  sum;
+
     for (i = ST_MAX_BASE - 1; i >= 0; i--) {
         sum = 0;
         for (j = ST_MAX_BASE - 1; j >= 0; j--) {
@@ -114,33 +115,36 @@ GB_INLINE void ST_rate_matrix::mult(ST_base_vector * in,
 #else
 
 inline void ST_base_vector::mult(ST_base_vector * other) {
-    register float *a = &b[0];
-    register float *c = &other->b[0];
-    register double a0 = a[0] * c[0];
-    register double a1 = a[1] * c[1];
-    register double a2 = a[2] * c[2];
-    register double a3 = a[3] * c[3];
-    register double a4 = a[4] * c[4];
-    b[0] = a0;
-    b[1] = a1;
-    b[2] = a2;
-    b[3] = a3;
-    b[4] = a4;
+    float  *a  = &b[0];
+    float  *c  = &other->b[0];
+    double  a0 = a[0] * c[0];
+    double  a1 = a[1] * c[1];
+    double  a2 = a[2] * c[2];
+    double  a3 = a[3] * c[3];
+    double  a4 = a[4] * c[4];
+    
+    b[0]    = a0;
+    b[1]    = a1;
+    b[2]    = a2;
+    b[3]    = a3;
+    b[4]    = a4;
     ld_lik += other->ld_lik;
-    lik *= other->lik;
+    lik    *= other->lik;
 }
 
 inline void ST_rate_matrix::mult(ST_base_vector * in, ST_base_vector * out) {
-    register int i;
-    register float *pm = &m[0][0];
+    int    i;
+    float *pm = &m[0][0];
+
     for (i = ST_MAX_BASE - 1; i >= 0; i--) { // calc revers
-        register double sum0 = pm[4] * in->b[0];
-        register double sum1 = pm[3] * in->b[1];
-        register double sum2 = pm[2] * in->b[2];
-        register double sum3 = pm[1] * in->b[3];
-        register double sum4 = pm[0] * in->b[4];
-        pm += ST_MAX_BASE;
-        out->b[i] = (sum0 + sum1) + sum4 + (sum2 + sum3);
+        double sum0 = pm[4] * in->b[0];
+        double sum1 = pm[3] * in->b[1];
+        double sum2 = pm[2] * in->b[2];
+        double sum3 = pm[1] * in->b[3];
+        double sum4 = pm[0] * in->b[4];
+        
+        pm        += ST_MAX_BASE;
+        out->b[i]  = (sum0 + sum1) + sum4 + (sum2 + sum3);
     }
     out->ld_lik = in->ld_lik;
     out->lik = in->lik;
@@ -209,9 +213,9 @@ void ST_sequence_ml::set(char *) {
 /** Transform the sequence from character to vector, from st_ml->base to 'to' */
 
 void ST_sequence_ml::set_sequence() {
-    register int i = st_ml->base;
-    char *source_sequence = 0;
-    int source_sequence_len = 0;
+    int   i                   = st_ml->base;
+    char *source_sequence     = 0;
+    int   source_sequence_len = 0;
 
     if (gb_data) {
         source_sequence_len = (int) GB_read_string_count(gb_data);
@@ -251,7 +255,8 @@ void ST_sequence_ml::partial_match(const AP_sequence *, long *, long *) const {
 GB_INLINE void ST_base_vector::check_overflow()
 {
     double sum = 0.0;
-    register int i;
+    int    i;
+    
     for (i = 0; i < ST_MAX_BASE; i++) {
         sum += b[i];
     }
@@ -277,17 +282,15 @@ void ST_sequence_ml::ungo() {
     last_updated = 0;
 }
 
-void ST_sequence_ml::go(const ST_sequence_ml * lefts, double leftl,
-        const ST_sequence_ml * rights, double rightl) {
-    register int pos;
-
-    ST_base_vector hbv;
-    double lc = leftl / st_ml->step_size;
-    double rc = rightl / st_ml->step_size;
-    int maxm = st_ml->max_matr - 1;
-    register ST_base_vector *lb = lefts->sequence;
-    register ST_base_vector *rb = rights->sequence;
-    register ST_base_vector *dest = sequence;
+void ST_sequence_ml::go(const ST_sequence_ml * lefts, double leftl, const ST_sequence_ml * rights, double rightl) {
+    int             pos;
+    ST_base_vector  hbv;
+    double          lc   = leftl / st_ml->step_size;
+    double          rc   = rightl / st_ml->step_size;
+    int             maxm = st_ml->max_matr - 1;
+    ST_base_vector *lb   = lefts->sequence;
+    ST_base_vector *rb   = rights->sequence;
+    ST_base_vector *dest = sequence;
 
     for (pos = st_ml->base; pos < st_ml->to; pos++) {
         if (lb->lik != 1 || rb->lik != 1) {
@@ -321,13 +324,11 @@ ST_base_vector *ST_sequence_ml::tmp_out = 0;
 /** result will be in tmp_out */
 void ST_sequence_ml::calc_out(ST_sequence_ml * next_branch, double dist) {
 
-    register int pos;
-    register ST_base_vector *out = tmp_out + st_ml->base;
-    ;
-
-    double lc = dist / st_ml->step_size;
+    int             pos;
+    ST_base_vector *out   = tmp_out + st_ml->base;
+    double          lc    = dist / st_ml->step_size;
     ST_base_vector *lefts = next_branch->sequence;
-    int maxm = st_ml->max_matr - 1;
+    int             maxm  = st_ml->max_matr - 1;
 
     for (pos = st_ml->base; pos < st_ml->to; pos++) {
         int distl = (int) (st_ml->rates[pos] * lc);
@@ -383,11 +384,12 @@ void ST_ML::print() {
 
 /** Translate characters to base frequencies */
 void ST_ML::create_frequencies() {
-    ST_base_vector *out = new ST_base_vector[alignment_len];
-    base_frequencies = out;
+    ST_base_vector  *out       = new ST_base_vector[alignment_len];
+    int              i, j;
+    float          **frequency = 0;
+    
+    base_frequencies     = out;
     inv_base_frequencies = new ST_base_vector[alignment_len];
-    register int i, j;
-    register float **frequency = 0;
 
     if (awt_csp)
         frequency = awt_csp->frequency;
@@ -775,13 +777,13 @@ ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
     if (end_ali_pos > alignment_len)
         end_ali_pos = alignment_len;
 
-    register double val;
+    double          val;
     ST_sequence_ml *seq = (ST_sequence_ml *) node->sequence;
-
-    register int pos;
-    if (!seq->color_out) { // allocate mem for color_out if we not already have it
+    int             pos;
+    
+    if (!seq->color_out) {      // allocate mem for color_out if we not already have it
         seq->color_out = (ST_ML_Color *) GB_calloc(sizeof(ST_ML_Color),
-                alignment_len);
+                                                   alignment_len);
         seq->color_out_valid_till = (int *) GB_calloc(sizeof(int),
                 (alignment_len >> LD_BUCKET_SIZE) + ST_BUCKET_SIZE);
     }
@@ -814,17 +816,17 @@ ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
         source_sequence = GB_read_char_pntr(seq->gb_data);
     }
     // create color string in 'outs':
-    register ST_ML_Color *outs = seq->color_out + start_ali_pos;
-    vec = seq->tmp_out + start_ali_pos; // tmp_out was calculated by get_ml_vectors above
-    char *source = source_sequence + start_ali_pos;
+    ST_ML_Color *outs   = seq->color_out + start_ali_pos;
+    vec                 = seq->tmp_out + start_ali_pos; // tmp_out was calculated by get_ml_vectors above
+    char        *source = source_sequence + start_ali_pos;
 
     for (pos = start_ali_pos; pos <= end_ali_pos; pos++) {
 
         // search max vec for pos:
         double max = 0;
-        register double v;
+        double v;
         {
-            register int b;
+            int b;
             for (b = ST_A; b < ST_MAX_BASE; b++) {
                 v = vec->b[b];
                 if (v > max)
