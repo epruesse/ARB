@@ -669,7 +669,7 @@ void AW_device::get_clicked_line(AW_clicked_line */*ptr*/) { forbidden("get_clic
 void AW_device::get_clicked_text(AW_clicked_text */*ptr*/) { forbidden("get_clicked_text"); }
 void AW_device::get_size_information(AW_world */*ptr*/) { forbidden("get_size_information"); }
 
-int AW_device::cursor(int gc, AW_pos x0,AW_pos y0, AW_cursor_type tmp_type, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
+int AW_device::cursor(int gc, AW_pos x0,AW_pos y0, AW_cursor_type cur_type, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
     register class AW_GC_Xm *gcm = AW_MAP_GC(gc);
     register XFontStruct *xfs = &gcm->curfont;
     AW_pos x1,x2,y1,y2;
@@ -683,7 +683,7 @@ int AW_device::cursor(int gc, AW_pos x0,AW_pos y0, AW_cursor_type tmp_type, AW_b
     // (X1,Y1)(X2,Y2)
 
     if(filteri & filter) {
-        if( tmp_type == AW_cursor_insert ) {
+        if( cur_type == AW_cursor_insert ) {
             transform(x0,y0,X0,Y0);
 
             if (X0 > clip_rect.r) return 0;

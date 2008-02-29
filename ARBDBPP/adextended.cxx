@@ -80,11 +80,11 @@ AD_ERR * AD_SAI::find(char *path)
 
 
 
-AD_ERR * AD_SAI::create(char *tmp_name) {
+AD_ERR * AD_SAI::create(char *sai_name) {
     GBDATA *extended;
-    if (strlen(tmp_name) < 2)
+    if (strlen(sai_name) < 2)
         return new AD_ERR("AD_SAI::create ungueltige Parameter");
-    extended = GBT_create_SAI(gb_main,tmp_name);
+    extended = GBT_create_SAI(gb_main,sai_name);
     gb_species = extended;
     initpntr();
     return 0;

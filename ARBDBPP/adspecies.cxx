@@ -203,11 +203,11 @@ int AD_SPECIES_name_change(GBDATA *gb_name,AD_SPECIES *ad_species)
     return 0;
 }
 
-AD_ERR * AD_SPECIES::create(const char *tmp_name) {
+AD_ERR * AD_SPECIES::create(const char *species_name) {
     GBDATA *species;
-    if (strlen(tmp_name) < 2)
+    if (strlen(species_name) < 2)
         return new AD_ERR("AD_SPECIES::too short name");
-    species = GBT_create_species_rel_species_data(gb_spdata,tmp_name);
+    species = GBT_create_species_rel_species_data(gb_spdata,species_name);
     gb_species = species;
     initpntr();
     return 0;
