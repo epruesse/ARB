@@ -90,7 +90,7 @@ char *GBS_regmatch P_((const char *in, const char *regexprin));
 char *GBS_merge_tagged_strings P_((const char *s1, const char *tag1, const char *replace1, const char *s2, const char *tag2, const char *replace2));
 char *GBS_string_eval_tagged_string P_((GBDATA *gb_main, const char *s, const char *dt, const char *tag, const char *srt, const char *aci, GBDATA *gbd));
 char *GB_read_as_tagged_string P_((GBDATA *gbd, const char *tagi));
-GBDATA_SET *GB_create_set P_((int size));
+GBDATA_SET *GB_create_set P_((int items));
 void GB_add_set P_((GBDATA_SET *set, GBDATA *item));
 void GB_delete_set P_((GBDATA_SET *set));
 GB_ERROR GBS_fwrite_string P_((const char *strngi, FILE *out));
