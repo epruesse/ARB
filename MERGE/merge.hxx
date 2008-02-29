@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : merge.hxx                                              //
 //    Purpose   : Local header for usage inside directory MERGE          //
-//    Time-stamp: <Thu Jul/05/2007 16:47 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Feb/28/2008 15:44 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Copyright Department of Microbiology (Technical University Munich)   //
@@ -84,4 +84,4 @@ public:
 
 extern GBDATA *gb_merge;
 extern GBDATA *gb_dest;
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;

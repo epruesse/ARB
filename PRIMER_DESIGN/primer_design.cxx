@@ -16,7 +16,7 @@
 #include "PRD_Design.hxx"
 #include "PRD_SequenceIterator.hxx"
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 using std::string;
 
@@ -104,15 +104,15 @@ void primer_design_event_go(AW_window *aww) {
     }
 
     {
-        GB_transaction  dummy(gb_main);
+        GB_transaction  dummy(GLOBAL_gb_main);
         char           *selected_species = root->awar(AWAR_SPECIES_NAME)->read_string();
-        GBDATA         *gb_species       = GBT_find_species(gb_main,selected_species);
+        GBDATA         *gb_species       = GBT_find_species(GLOBAL_gb_main,selected_species);
 
         if ( !gb_species ) {
             error = "you have to select a species!";
         }
         else {
-            const char *alignment = GBT_get_default_alignment(gb_main);
+            const char *alignment = GBT_get_default_alignment(GLOBAL_gb_main);
             GBDATA     *gb_seq    = GBT_read_sequence(gb_species, alignment);
 
             if (!gb_seq) {
@@ -267,7 +267,7 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
     GB_ERROR  error     = 0;
 
 
-    GB_transaction  dummy(gb_main);
+    GB_transaction  dummy(GLOBAL_gb_main);
     char           *selected_species = 0;
     char           *selected_gene    = 0;
     GBDATA         *gb_species       = 0;
@@ -275,7 +275,7 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
     GBDATA         *gb_seq           = 0;
     long            gene_start       = -1;
     long            gene_end         = -1;
-    bool            is_genom_db      = GEN_is_genome_db(gb_main, -1);
+    bool            is_genom_db      = GEN_is_genome_db(GLOBAL_gb_main, -1);
 
     if (is_genom_db && from_gene) {
         selected_species = root->awar( AWAR_ORGANISM_NAME )->read_string();
@@ -287,13 +287,13 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
         selected_species = root->awar( AWAR_SPECIES_NAME )->read_string();
     }
 
-    gb_species = GBT_find_species( gb_main, selected_species );
+    gb_species = GBT_find_species( GLOBAL_gb_main, selected_species );
 
     if ( !gb_species ) {
         error = "You have to select a species!";
     }
     else {
-        const char *alignment = GBT_get_default_alignment( gb_main );
+        const char *alignment = GBT_get_default_alignment( GLOBAL_gb_main );
         gb_seq                = GBT_read_sequence( gb_species, alignment );
         if (!gb_seq) {
             error = GB_export_error("Species '%s' has no data in alignment '%s'", selected_species, alignment);
@@ -509,16 +509,16 @@ AW_window *create_primer_design_window( AW_root *root,AW_default def )
     GB_ERROR error       = 0;
     bool     is_genome_db;
     {
-        GB_transaction  dummy( gb_main );
+        GB_transaction  dummy( GLOBAL_gb_main );
         char           *selected_species = root->awar( AWAR_SPECIES_NAME )->read_string();
-        GBDATA         *gb_species       = GBT_find_species( gb_main,selected_species );
+        GBDATA         *gb_species       = GBT_find_species( GLOBAL_gb_main,selected_species );
 
         if ( !gb_species ) {
             error = "You have to select a species!";
             aw_message( error );
         }
 
-        is_genome_db = GEN_is_genome_db(gb_main, -1);
+        is_genome_db = GEN_is_genome_db(GLOBAL_gb_main, -1);
     }
 
     AWUSE( def );

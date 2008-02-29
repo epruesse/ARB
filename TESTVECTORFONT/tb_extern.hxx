@@ -12,6 +12,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.3  2008/02/29 14:56:34  westram
+ * - replaced global gb_main by GLOBAL_gb_main
+ *
  * Revision 1.2  2007/09/19 13:33:01  westram
  * - fixed command()
  *
@@ -34,7 +37,7 @@
 #define F_ALL ((AW_active)-1)
 
 // global variable for database
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 // visible prototypes
 void tb_exit(AW_window *aw_window);

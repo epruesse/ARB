@@ -121,11 +121,11 @@ void ED4_manager::changed_by_database(void) {
 
 void ED4_terminal::changed_by_database(void)
 {
-    if (GB_read_clock(gb_main) > actual_timestamp) { // only if timer_cb occurred after last change by EDIT4
+    if (GB_read_clock(GLOBAL_gb_main) > actual_timestamp) { // only if timer_cb occurred after last change by EDIT4
 
         // test if alignment length has changed:
         {
-            GBDATA *gb_alignment = GBT_get_alignment(gb_main,ED4_ROOT->alignment_name);
+            GBDATA *gb_alignment = GBT_get_alignment(GLOBAL_gb_main,ED4_ROOT->alignment_name);
             e4_assert(gb_alignment);
             GBDATA *gb_alignment_len = GB_search(gb_alignment,"alignment_len",GB_FIND);
             int alignment_length = GB_read_int(gb_alignment_len);
@@ -246,10 +246,10 @@ void ED4_manager::deleted_from_database()
         ED4_multi_species_manager *multi_man = species_man->parent->to_multi_species_manager();
 
         multi_man->children->delete_member(species_man);
-        GB_push_transaction(gb_main);
+        GB_push_transaction(GLOBAL_gb_main);
         multi_man->update_consensus(multi_man, 0, species_man);
         multi_man->rebuild_consensi(species_man, ED4_U_UP);
-        GB_pop_transaction(gb_main);
+        GB_pop_transaction(GLOBAL_gb_main);
 
         ED4_device_manager *device_manager = ED4_ROOT->main_manager
             ->get_defined_level(ED4_L_GROUP)->to_group_manager()
@@ -339,15 +339,15 @@ ED4_species_pointer::~ED4_species_pointer()
 }
 void ED4_species_pointer::add_callback(int *clientdata)
 {
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
     GB_add_callback(species_pointer, (GB_CB_TYPE ) (GB_CB_CHANGED|GB_CB_DELETE), (GB_CB)ED4_sequence_changed_cb, clientdata);
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 }
 void ED4_species_pointer::remove_callback(int *clientdata)
 {
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
     GB_remove_callback(species_pointer, (GB_CB_TYPE ) (GB_CB_CHANGED|GB_CB_DELETE), (GB_CB)ED4_sequence_changed_cb, clientdata);
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 }
 void ED4_species_pointer::set_species_pointer(GBDATA *gbd, int *clientdata)
 {
@@ -951,12 +951,12 @@ void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager)	//cre
         status_total_count += status_add_count;
         if (aw_status(status_total_count) == 1)	{								// Kill has been Pressed
             aw_closestatus();
-            GB_close(gb_main);
+            GB_close(GLOBAL_gb_main);
             while (ED4_ROOT->first_window) {
                 ED4_ROOT->first_window->delete_window(ED4_ROOT->first_window);
             }
-            GB_commit_transaction( gb_main );
-            GB_close(gb_main);
+            GB_commit_transaction( GLOBAL_gb_main );
+            GB_close(GLOBAL_gb_main);
             delete ED4_ROOT->main_manager;
             ::exit(0);
         }
@@ -1064,7 +1064,7 @@ ED4_base *ED4_base::get_parent(ED4_level lev) const
 }
 
 char *ED4_base::get_name_of_species(){
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     ED4_species_manager *temp_species_manager 	= get_parent( ED4_L_SPECIES )->to_species_manager();
     if (!temp_species_manager) return 0;
     ED4_species_name_terminal *species_name = 0;

@@ -23,10 +23,10 @@
 #endif
 #define nt_assert(bed) arb_assert(bed)
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 static void init_config_awars(AW_root *root) {
-    root->awar_string(AWAR_CONFIGURATION,"default_configuration",gb_main);
+    root->awar_string(AWAR_CONFIGURATION,"default_configuration",GLOBAL_gb_main);
 }
 
 //  ---------------------------
@@ -278,7 +278,7 @@ extern "C" {
 
 /** collect all Sais, place some SAI in top area, rest in middle */
 void nt_build_sai_string(void *topfile, void *middlefile){
-    GBDATA *gb_sai_data = GB_search(gb_main,"extended_data",GB_FIND);
+    GBDATA *gb_sai_data = GB_search(GLOBAL_gb_main,"extended_data",GB_FIND);
     if (!gb_sai_data) return;
 
     GB_HASH *hash = GBS_create_hash(100,1);
@@ -334,7 +334,7 @@ void nt_build_conf_marked(GB_HASH *used, void *file){
     GBS_chrcat(file,1);             // Seperated by 1
     GBS_strcat(file,"FMore Sequences");
     GBDATA *gb_species;
-    for (gb_species = GBT_first_marked_species(gb_main);
+    for (gb_species = GBT_first_marked_species(GLOBAL_gb_main);
          gb_species;
          gb_species = GBT_next_marked_species(gb_species)){
         char *name = GBT_read_string(gb_species,"name");
@@ -358,19 +358,19 @@ void nt_start_editor_on_configuration(AW_window *aww){
     aww->hide();
     char *cn = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
     char *com = (char *)GBS_global_string("arb_edit4 -c '%s' &",cn);
-    GBCMC_system(gb_main, com);
+    GBCMC_system(GLOBAL_gb_main, com);
     delete cn;
 }
 
 AW_window *NT_start_editor_on_old_configuration(AW_root *awr){
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
-    awr->awar_string(AWAR_CONFIGURATION,"default_configuration",gb_main);
+    awr->awar_string(AWAR_CONFIGURATION,"default_configuration",GLOBAL_gb_main);
     aws = new AW_window_simple;
     aws->init( awr, "SELECT_CONFIFURATION", "SELECT A CONFIGURATION");
     aws->at(10,10);
     aws->auto_space(0,0);
-    awt_create_selection_list_on_configurations(gb_main,(AW_window *)aws,AWAR_CONFIGURATION);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_main,(AW_window *)aws,AWAR_CONFIGURATION);
     aws->at_newline();
 
     aws->callback((AW_CB0)nt_start_editor_on_configuration);
@@ -386,7 +386,7 @@ AW_window *NT_start_editor_on_old_configuration(AW_root *awr){
 void NT_start_editor_on_tree(AW_window *, GBT_TREE **ptree, int use_species_aside){
     GB_ERROR error = NT_create_configuration(0,ptree,CONFNAME, use_species_aside);
     if (!error) {
-        GBCMC_system(gb_main, "arb_edit4 -c "CONFNAME" &");
+        GBCMC_system(GLOBAL_gb_main, "arb_edit4 -c "CONFNAME" &");
     }
 }
 
@@ -399,9 +399,9 @@ enum extractType {
 };
 
 void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
-    GB_transaction  dummy2(gb_main); // open close transaction
+    GB_transaction  dummy2(GLOBAL_gb_main); // open close transaction
     char           *cn               = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
-    GBDATA         *gb_configuration = GBT_find_configuration(gb_main,cn);
+    GBDATA         *gb_configuration = GBT_find_configuration(GLOBAL_gb_main,cn);
     if (!gb_configuration){
         aw_message(GBS_global_string("Configuration '%s' not found in the database",cn));
     }
@@ -415,12 +415,12 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
 
             switch (ext_type) {
                 case CONF_EXTRACT:
-                    GBT_mark_all(gb_main,0); // unmark all for extract
+                    GBT_mark_all(GLOBAL_gb_main,0); // unmark all for extract
                     break;
                 case CONF_COMBINE: {
                     // store all marked species in hash and unmark them
-                    was_marked = GBS_create_hash(GBT_get_species_hash_size(gb_main), 1);
-                    for (GBDATA *gbd = GBT_first_marked_species(gb_main); gbd; gbd = GBT_next_marked_species(gbd)) {
+                    was_marked = GBS_create_hash(GBT_get_species_hash_size(GLOBAL_gb_main), 1);
+                    for (GBDATA *gbd = GBT_first_marked_species(GLOBAL_gb_main); gbd; gbd = GBT_next_marked_species(gbd)) {
                         int marked = GB_read_flag(gbd);
                         if (marked) {
                             char *name = GBT_read_name(gbd);
@@ -446,7 +446,7 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
                 tokens[1] = 0;
                 for ( p = strtok(md,tokens); p; p = strtok(NULL,tokens)){
                     if (p[0] != 'L') continue;
-                    GBDATA *gb_species = GBT_find_species(gb_main,p+1);
+                    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,p+1);
                     if (gb_species){
                         int mark = GB_read_flag(gb_species);
                         switch (ext_type) {
@@ -474,9 +474,9 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
 }
 
 void nt_delete_configuration(AW_window *aww){
-    GB_transaction transaction_var(gb_main);
+    GB_transaction transaction_var(GLOBAL_gb_main);
     char *cn = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
-    GBDATA *gb_configuration = GBT_find_configuration(gb_main,cn);
+    GBDATA *gb_configuration = GBT_find_configuration(GLOBAL_gb_main,cn);
     if (gb_configuration){
         GB_ERROR error = GB_delete(gb_configuration);
         if (error) aw_message(error);
@@ -490,7 +490,7 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
     char     *to_free = 0;
 
     if (!conf_name) {
-        char *existing_configs = awt_create_string_on_configurations(gb_main);
+        char *existing_configs = awt_create_string_on_configurations(GLOBAL_gb_main);
         conf_name              = to_free = aw_string_selection("CREATE CONFIGURATION", "Enter name of configuration:", AWAR_CONFIGURATION, "default_configuration", existing_configs, 0, 0);
         free(existing_configs);
     }
@@ -510,8 +510,8 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
         last_used_species_aside = use_species_aside; // remember for next time
     }
 
-    GB_transaction dummy2(gb_main);     // open close transaction
-    GB_HASH *used = GBS_create_hash(GBT_get_species_hash_size(gb_main), 0);
+    GB_transaction dummy2(GLOBAL_gb_main);     // open close transaction
+    GB_HASH *used = GBS_create_hash(GBT_get_species_hash_size(GLOBAL_gb_main), 0);
     void *topfile = GBS_stropen(1000);
     void *topmid = GBS_stropen(10000);
     {
@@ -541,7 +541,7 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
     char *middle = GBS_strclose(topmid);
     char *top = GBS_strclose(topfile);
 
-    GBDATA *gb_configuration = GBT_create_configuration(gb_main,conf_name);
+    GBDATA *gb_configuration = GBT_create_configuration(GLOBAL_gb_main,conf_name);
     GB_ERROR error = 0;
     if (!gb_configuration){
         error = GB_get_error();
@@ -572,16 +572,16 @@ void nt_rename_configuration(AW_window *aww) {
     char     *old_name      = awar_curr_cfg->read_string();
     GB_ERROR  err           = 0;
 
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     char *new_name = aw_input("Rename selection", "Enter the new name of the selection", 0, old_name);
     if (new_name) {
-        GBDATA *gb_existing_cfg = GBT_find_configuration(gb_main, new_name);
+        GBDATA *gb_existing_cfg = GBT_find_configuration(GLOBAL_gb_main, new_name);
         if (gb_existing_cfg) {
             err = GBS_global_string("There is already a selection named '%s'", new_name);
         }
         else {
-            GBDATA *gb_old_cfg = GBT_find_configuration(gb_main, old_name);
+            GBDATA *gb_old_cfg = GBT_find_configuration(GLOBAL_gb_main, old_name);
             if (gb_old_cfg) {
                 GBDATA *gb_name = GB_find(gb_old_cfg, "name", 0, down_level);
                 if (gb_name) {
@@ -626,7 +626,7 @@ AW_window *create_configuration_admin_window(AW_root *root, GBT_TREE **ptree) {
     aws->create_button("HELP","HELP","H");
 
     aws->at("list");
-    awt_create_selection_list_on_configurations(gb_main, aws, AWAR_CONFIGURATION);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_main, aws, AWAR_CONFIGURATION);
 
     aws->at("store");
     aws->callback(nt_store_configuration, (AW_CL)ptree);

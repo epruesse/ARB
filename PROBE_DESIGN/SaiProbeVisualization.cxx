@@ -31,7 +31,7 @@ using namespace std;
 #define PROBE_PREFIX_LENGTH 9
 #define PROBE_SUFFIX_LENGTH 9
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 saiProbeData  *g_pbdata                    = 0;
 static char   *saiValues                   = 0;
 static bool    in_colorDefChanged_callback = false; // used to avoid colorDef correction
@@ -205,9 +205,9 @@ static const char *translateSAItoColors(AW_root *awr, int start, int end, int sp
 
     char *saiSelected = awr->awar(AWAR_SPV_SAI_2_PROBE)->read_string();
 
-    GB_push_transaction(gb_main);
-    char   *alignment_name = GBT_get_default_alignment(gb_main);
-    GBDATA *gb_extended    = GBT_find_SAI(gb_main, saiSelected);
+    GB_push_transaction(GLOBAL_gb_main);
+    char   *alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
+    GBDATA *gb_extended    = GBT_find_SAI(GLOBAL_gb_main, saiSelected);
     int     positions      = 0;
 
     if (gb_extended) {
@@ -231,7 +231,7 @@ static const char *translateSAItoColors(AW_root *awr, int start, int end, int sp
                 }
 
                 const char *species_name = g_pbdata->probeSpecies[speciesNo];
-                GBDATA *gb_species       = GBT_find_species(gb_main, species_name);
+                GBDATA *gb_species       = GBT_find_species(GLOBAL_gb_main, species_name);
                 GBDATA *gb_seq_data      = GBT_read_sequence(gb_species,alignment_name);
                 if (gb_seq_data) seqData = GB_read_char_pntr(gb_seq_data);
             }
@@ -278,7 +278,7 @@ static const char *translateSAItoColors(AW_root *awr, int start, int end, int sp
 
     free(alignment_name);
     free(saiSelected);
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 
     return saiColors;
 }
@@ -292,10 +292,10 @@ static int calculateEndPosition(int startPos, int speciesNo, int mode, int probe
     endPos = -2;
     *err   = 0;
 
-    GB_push_transaction(gb_main);
-    char       *alignment_name = GBT_get_default_alignment(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
+    char       *alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
     const char *species_name   = g_pbdata->probeSpecies[speciesNo];
-    GBDATA     *gb_species     = GBT_find_species(gb_main, species_name);
+    GBDATA     *gb_species     = GBT_find_species(GLOBAL_gb_main, species_name);
     if (gb_species) {
         GBDATA *gb_seq_data      = GBT_read_sequence(gb_species,alignment_name);
         if (gb_seq_data) {
@@ -336,7 +336,7 @@ static int calculateEndPosition(int startPos, int speciesNo, int mode, int probe
         *err = "species not found";
     }
     free(alignment_name);
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 
     return endPos;
 }
@@ -383,8 +383,8 @@ static char *GetDisplayInfo(AW_root *root, const char *speciesName, size_t displ
 {
     GB_ERROR        error       = 0;
     char           *displayInfo = 0;
-    GB_transaction  ta(gb_main);
-    GBDATA         *gb_Species  = GBT_find_species(gb_main, speciesName);
+    GB_transaction  ta(GLOBAL_gb_main);
+    GBDATA         *gb_Species  = GBT_find_species(GLOBAL_gb_main, speciesName);
 
     if (!gb_Species) {
         error = GB_get_error();
@@ -406,7 +406,7 @@ static char *GetDisplayInfo(AW_root *root, const char *speciesName, size_t displ
 
         if (!error) {
             char *aciCommand        = root->awar_string(AWAR_SPV_ACI_COMMAND)->read_string();
-            displayInfo             = GB_command_interpreter(gb_main, field_content, aciCommand, gb_Species, default_tree_name);
+            displayInfo             = GB_command_interpreter(GLOBAL_gb_main, field_content, aciCommand, gb_Species, default_tree_name);
             if (!displayInfo) error = GB_get_error();
             free(aciCommand);
         }
@@ -680,7 +680,7 @@ static AW_window *createSelectSAI_window(AW_root *aw_root){
 
     aws->at("selection");
     aws->callback((AW_CB0)AW_POPDOWN);
-    awt_create_selection_list_on_extendeds(gb_main,(AW_window *)aws,AWAR_SPV_SAI_2_PROBE);
+    awt_create_selection_list_on_extendeds(GLOBAL_gb_main,(AW_window *)aws,AWAR_SPV_SAI_2_PROBE);
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
@@ -701,7 +701,7 @@ static AW_window *createDisplayField_window(AW_root *aw_root){
 
     aws->at("dbField");
     aws->button_length(20);
-    aws->callback(AWT_popup_select_species_field_window, (AW_CL) AWAR_SPV_DB_FIELD_NAME,  (AW_CL) gb_main);
+    aws->callback(AWT_popup_select_species_field_window, (AW_CL) AWAR_SPV_DB_FIELD_NAME,  (AW_CL) GLOBAL_gb_main);
     aws->create_button("SELECT_DB_FIELD", AWAR_SPV_DB_FIELD_NAME);
 
     aws->at("aciSelect");
@@ -732,16 +732,16 @@ static AW_window *createSaiColorWindow(AW_root *aw_root, AW_CL cl_gc_manager) {
 
 AW_window *createSaiProbeMatchWindow(AW_root *awr){
     // Main Window - Canvas on which the actual painting is done
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     createSaiProbeAwars(awr); // creating awars for colors ( 0 to 9)
 
     AW_window_menu *awm = new AW_window_menu();
     awm->init(awr,"MATCH_SAI", "PROBE AND SAI",200,300);
     AW_gc_manager aw_gc_manager;
-    SAI_graphic *saiProbeGraphic = new SAI_graphic(awr,gb_main);
+    SAI_graphic *saiProbeGraphic = new SAI_graphic(awr,GLOBAL_gb_main);
 
-    AWT_canvas *ntw = new AWT_canvas(gb_main,awm, saiProbeGraphic, aw_gc_manager,AWAR_TARGET_STRING);
+    AWT_canvas *ntw = new AWT_canvas(GLOBAL_gb_main,awm, saiProbeGraphic, aw_gc_manager,AWAR_TARGET_STRING);
     ntw->recalc_size();
 
     awm->insert_help_topic("saiProbe_help_how", "How to Visualize SAI`s ?", "H", "saiProbeHelp.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"saiProbeHelp.hlp", 0);

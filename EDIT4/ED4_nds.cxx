@@ -21,7 +21,7 @@ char *ED4_get_NDS_text(ED4_species_manager *species_man) {
     e4_assert(gbd);
 
     e4_assert(NDS_command);
-    char *result = GB_command_interpreter(gb_main, "", NDS_command, gbd, 0);
+    char *result = GB_command_interpreter(GLOBAL_gb_main, "", NDS_command, gbd, 0);
     if (!result) {
         result = strdup("<error>");
     }
@@ -57,7 +57,7 @@ static void NDS_changed(AW_root *root, AW_CL refresh)
 void ED4_create_NDS_awars(AW_root *root)
 {
     int i;
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     root->awar_int(ED4_AWAR_NDS_SELECT, 0)->add_callback(NDS_changed,1);
     root->awar_int(ED4_AWAR_NDS_BRACKETS, 6)->set_minmax(0,99)->add_callback(NDS_changed,1);

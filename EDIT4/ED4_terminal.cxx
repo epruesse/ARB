@@ -156,7 +156,7 @@ const char *ED4_terminal::resolve_pointer_to_char_pntr(int *str_len) const
         return id; // if we don't have a link to the database we have to use our id
     }
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     const char *copy_of = 0; // if set, return a copy of this string
 
@@ -215,7 +215,7 @@ const char *ED4_terminal::resolve_pointer_to_char_pntr(int *str_len) const
         if (str_len) *str_len = len;
     }
 
-    GB_pop_transaction( gb_main );
+    GB_pop_transaction( GLOBAL_gb_main );
 
     return db_pointer;
 }
@@ -226,7 +226,7 @@ ED4_ERROR *ED4_terminal::write_sequence(const char *seq, int seq_len)
     GBDATA *gbd = get_species_pointer();
     e4_assert(gbd); // we must have a link to the database!
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     int   old_seq_len;
     char *old_seq = resolve_pointer_to_string_copy(&old_seq_len);
@@ -264,11 +264,11 @@ ED4_ERROR *ED4_terminal::write_sequence(const char *seq, int seq_len)
         }
     }
 
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 
     if (!err && dynamic_prop&ED4_P_CONSENSUS_RELEVANT) {
         if (old_seq) {
-            actual_timestamp = GB_read_clock(gb_main);
+            actual_timestamp = GB_read_clock(GLOBAL_gb_main);
 
             get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager()
                 ->check_bases_and_rebuild_consensi(old_seq, old_seq_len, get_parent(ED4_L_SPECIES)->to_species_manager(), ED4_U_UP); // bases_check
@@ -329,19 +329,19 @@ ED4_returncode ED4_terminal::kill_object()
         parent_manager = group_manager->parent;
         parent_manager->children->delete_member( group_manager );
 
-        GB_push_transaction ( gb_main );
+        GB_push_transaction ( GLOBAL_gb_main );
         parent_manager->update_consensus( parent_manager ,NULL , group_manager );
         parent_manager->rebuild_consensi( parent_manager , ED4_U_UP );
-        GB_pop_transaction ( gb_main );
+        GB_pop_transaction ( GLOBAL_gb_main );
         species_manager = NULL;
     }
     else
     {
         parent_manager->children->delete_member( species_manager );
-        GB_push_transaction (gb_main );
+        GB_push_transaction (GLOBAL_gb_main );
         parent_manager->update_consensus( parent_manager , NULL, species_manager );
         parent_manager->rebuild_consensi( species_manager, ED4_U_UP );
-        GB_pop_transaction (gb_main);
+        GB_pop_transaction (GLOBAL_gb_main);
     }
 
     ED4_device_manager *device_manager = ED4_ROOT->main_manager

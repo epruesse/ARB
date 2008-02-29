@@ -36,7 +36,7 @@ char *PHDATA::load(char *usei)
     struct PHENTRY *phentry,*hentry;
 
     this->use = strdup(usei);
-    this->gb_main = ::gb_main;
+    this->gb_main = GLOBAL_gb_main;
     last_key_number=0;
   
     GB_push_transaction(gb_main);

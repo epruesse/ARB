@@ -21,7 +21,7 @@
 #endif
 #define nt_assert(bed) arb_assert(bed)
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int selected_startpos,
                         bool    translate_all, const char *ali_source, const char *ali_dest)
@@ -79,7 +79,7 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
 
     bool table_used[AWT_CODON_TABLES];
     memset(table_used, 0, sizeof(table_used));
-    int  selected_ttable = GBT_read_int(gb_main,AWAR_PROTEIN_TYPE); // read selected table
+    int  selected_ttable = GBT_read_int(GLOBAL_gb_main,AWAR_PROTEIN_TYPE); // read selected table
 
     if (use_entries) {
         for (gb_species = GBT_first_marked_species(gbmain);
@@ -117,8 +117,8 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
     for (int table = 0; table<AWT_CODON_TABLES && !error; ++table) {
         if (!table_used[table]) continue;
 
-        GBT_write_int(gb_main, AWAR_PROTEIN_TYPE, table); // set wanted protein table
-        awt_pro_a_nucs_convert_init(gb_main); // (re-)initialize codon tables for current translation table
+        GBT_write_int(GLOBAL_gb_main, AWAR_PROTEIN_TYPE, table); // set wanted protein table
+        awt_pro_a_nucs_convert_init(GLOBAL_gb_main); // (re-)initialize codon tables for current translation table
 
         for (   gb_species = GBT_first_marked_species(gbmain);
                 gb_species && !error;
@@ -210,7 +210,7 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
         }
     }
 
-    GBT_write_int(gb_main, AWAR_PROTEIN_TYPE, selected_ttable); // restore old value
+    GBT_write_int(GLOBAL_gb_main, AWAR_PROTEIN_TYPE, selected_ttable); // restore old value
 
     aw_closestatus();
     if (!error) {
@@ -248,12 +248,12 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
 void transpro_event(AW_window *aww){
     AW_root *aw_root = aww->get_root();
     GB_ERROR error;
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
 
 #if defined(DEBUG) && 0
     test_AWT_get_codons();
 #endif
-    awt_pro_a_nucs_convert_init(gb_main);
+    awt_pro_a_nucs_convert_init(GLOBAL_gb_main);
 
     char *ali_source    = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
     char *ali_dest      = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
@@ -262,13 +262,13 @@ void transpro_event(AW_window *aww){
     bool  save2fields   = aw_root->awar(AWAR_TRANSPRO_WRITE)->read_int();
     bool  translate_all = aw_root->awar(AWAR_TRANSPRO_XSTART)->read_int();
 
-    error = arb_r2a(gb_main, strcmp(mode, "fields") == 0, save2fields, startpos, translate_all, ali_source, ali_dest);
+    error = arb_r2a(GLOBAL_gb_main, strcmp(mode, "fields") == 0, save2fields, startpos, translate_all, ali_source, ali_dest);
     if (error) {
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
         aw_message(error);
     }else{
-        GBT_check_data(gb_main,0);
-        GB_commit_transaction(gb_main);
+        GBT_check_data(GLOBAL_gb_main,0);
+        GB_commit_transaction(GLOBAL_gb_main);
     }
 
     free(mode);
@@ -284,7 +284,7 @@ void nt_trans_cursorpos_changed(AW_root *awr) {
 
 AW_window *NT_create_dna_2_pro_window(AW_root *root) {
     AWUSE(root);
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "TRANSLATE_DNA_TO_PRO", "TRANSLATE DNA TO PRO");
@@ -302,12 +302,12 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
     aws->create_button("HELP","HELP","H");
 
     aws->at("source");
-    awt_create_selection_list_on_ad(gb_main,(AW_window *)aws, AWAR_TRANSPRO_SOURCE,"dna=:rna=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main,(AW_window *)aws, AWAR_TRANSPRO_SOURCE,"dna=:rna=");
 
     aws->at("dest");
-    awt_create_selection_list_on_ad(gb_main,(AW_window *)aws, AWAR_TRANSPRO_DEST,"pro=:ami=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main,(AW_window *)aws, AWAR_TRANSPRO_DEST,"pro=:ami=");
 
-    root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, gb_main);
+    root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, GLOBAL_gb_main);
     aws->at("table");
     aws->create_option_menu(AWAR_PROTEIN_TYPE);
     for (int code_nr=0; code_nr<AWT_CODON_TABLES; code_nr++) {
@@ -735,21 +735,21 @@ void transdna_event(AW_window *aww)
     bool      retrying     = false;
 
     retry :
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
 
-    error = arb_transdna(gb_main,ali_source,ali_dest, &neededLength);
+    error = arb_transdna(GLOBAL_gb_main,ali_source,ali_dest, &neededLength);
     if (error) {
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
         aw_message(error,"OK");
     }else{
-        // GBT_check_data(gb_main,ali_dest); // done by arb_transdna()
-        GB_commit_transaction(gb_main);
+        // GBT_check_data(GLOBAL_gb_main,ali_dest); // done by arb_transdna()
+        GB_commit_transaction(GLOBAL_gb_main);
     }
 
     if (!retrying && neededLength) {
         if (aw_message(GBS_global_string("Increase length of '%s' to %li?", ali_dest, neededLength), "Yes,No") == 0) {
-            GB_transaction dummy(gb_main);
-            GBT_set_alignment_len(gb_main, ali_dest, neededLength); // @@@ has no effect ? ? why ?
+            GB_transaction dummy(GLOBAL_gb_main);
+            GBT_set_alignment_len(GLOBAL_gb_main, ali_dest, neededLength); // @@@ has no effect ? ? why ?
             aw_message(GBS_global_string("Alignment length of '%s' set to %li\nrunning re-aligner again!", ali_dest, neededLength));
             retrying = true;
             goto retry;
@@ -776,9 +776,9 @@ AW_window *NT_create_realign_dna_window(AW_root *root) {
     aws->create_button("HELP","HELP","H");
 
     aws->at("source");
-    awt_create_selection_list_on_ad(gb_main,(AW_window *)aws, AWAR_TRANSPRO_SOURCE,"dna=:rna=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main,(AW_window *)aws, AWAR_TRANSPRO_SOURCE,"dna=:rna=");
     aws->at("dest");
-    awt_create_selection_list_on_ad(gb_main,(AW_window *)aws, AWAR_TRANSPRO_DEST,"pro=:ami=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main,(AW_window *)aws, AWAR_TRANSPRO_DEST,"pro=:ami=");
 
     aws->at("realign");
     aws->callback(transdna_event);

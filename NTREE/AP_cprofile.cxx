@@ -58,7 +58,7 @@
 #include <awt_sel_boxes.hxx>
 
 typedef GB_UINT4  STATTYPE;
-extern GBDATA    *gb_main;
+extern GBDATA    *GLOBAL_gb_main;
 enum {
     GAP = 1,
     BAS_A = 2,
@@ -142,7 +142,7 @@ struct CPRO_struct {
 static void CPRO_readandallocate(char **&speciesdata,GBDATA **&speciesdatabase,
                                  char versus,char *align)
 {
-    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
+    GBDATA *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_FIND);
     GBDATA *gb_species;
 
     aw_status("reading database");
@@ -622,23 +622,22 @@ static void CPRO_calculate_cb(AW_window *aw,AW_CL which_statistic)
     else if(versus==2) strcpy(CPRO.result[which_statistic].which_species, "m vs all");
     else strcpy(CPRO.result[which_statistic].which_species,"all vs all");
 
-    if( (faultmessage=GB_push_transaction(gb_main)) )
+    if( (faultmessage=GB_push_transaction(GLOBAL_gb_main)) )
     {
         aw_message(faultmessage,"OK,EXIT");
         delete   align;
         return;
     }
 
-    CPRO.result[which_statistic].maxalignlen=
-        GBT_get_alignment_len(gb_main,align);
+    CPRO.result[which_statistic].maxalignlen = GBT_get_alignment_len(GLOBAL_gb_main,align);
     if(CPRO.result[which_statistic].maxalignlen<=0) {
-        GB_pop_transaction(gb_main);
+        GB_pop_transaction(GLOBAL_gb_main);
         aw_message("Error: Select an alignment !");
         delete   align;
         return;
     }
 
-    char isamino= GBT_is_alignment_protein(gb_main,align);
+    char isamino= GBT_is_alignment_protein(GLOBAL_gb_main,align);
     aw_openstatus("calculating");aw_status((double)0);
 
     GBDATA **speciesdatabase; // array of GBDATA-pointers to the species
@@ -669,7 +668,7 @@ static void CPRO_calculate_cb(AW_window *aw,AW_CL which_statistic)
 
     CPRO_deallocate(speciesdata,speciesdatabase);
     free(align);
-    if( (faultmessage=GB_pop_transaction(gb_main)) )
+    if( (faultmessage=GB_pop_transaction(GLOBAL_gb_main)) )
     {
         aw_message(faultmessage,"OK,EXIT");
         return;
@@ -718,16 +717,16 @@ static void CPRO_memrequirement_cb(AW_root *aw_root)
         aw_root->awar("tmp/cpro/memfor2")->write_string(buf);
     }
 
-    if( (faultmessage=GB_push_transaction(gb_main)) ) {
+    if( (faultmessage=GB_push_transaction(GLOBAL_gb_main)) ) {
         aw_message(faultmessage,"OK,EXIT");
         free(align);
         return;
     }
 
-    long len=GBT_get_alignment_len(gb_main,align);
+    long len=GBT_get_alignment_len(GLOBAL_gb_main,align);
 
     if(len<=0) {
-        GB_pop_transaction(gb_main);
+        GB_pop_transaction(GLOBAL_gb_main);
         aw_root->awar("tmp/cpro/mempartition")->write_string("???");
         aw_root->awar("tmp/cpro/memstatistic")->write_string("???");
         free(align);
@@ -767,7 +766,7 @@ static void CPRO_memrequirement_cb(AW_root *aw_root)
     aw_root->awar("tmp/cpro/memstatistic")->write_string(buf);
 
     free(align);
-    if( (faultmessage=GB_pop_transaction(gb_main)) )
+    if( (faultmessage=GB_pop_transaction(GLOBAL_gb_main)) )
     {
         aw_message(faultmessage,"OK,EXIT");
         return;
@@ -782,7 +781,7 @@ void create_cprofile_var(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_string( "cpro/countgaps", "",aw_def);
     aw_root->awar_string( "cpro/condensename", "PVD",aw_def);
     aw_root->awar_float( "cpro/transratio",0.5,aw_def);
-    aw_root->awar_int( AWAR_CURSOR_POSITION,1,gb_main);
+    aw_root->awar_int( AWAR_CURSOR_POSITION,1,GLOBAL_gb_main);
     aw_root->awar_int( "cpro/maxdistance",100,aw_def);
     aw_root->awar_int( "cpro/resolution",100,aw_def);
     aw_root->awar_int( "cpro/partition",100,aw_def);
@@ -1449,9 +1448,9 @@ void CPRO_condense_cb( AW_window *aw,AW_CL which_statistic )
 
     aw_status("exporting result");
 
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
 
-    GBDATA *gb_extended = GBT_create_SAI(gb_main,savename);
+    GBDATA *gb_extended = GBT_create_SAI(GLOBAL_gb_main,savename);
 
     GBDATA *gb_param;
     const char *typestring = GBS_global_string("RATES BY DISTANCE:  [%s] [UPPER_CASE%% %li]"
@@ -1469,10 +1468,10 @@ void CPRO_condense_cb( AW_window *aw,AW_CL which_statistic )
     error = GB_write_string(gb_data,result);
     aw_closestatus();
     if (error){
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
         aw_message(error);
     }else{
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
     }
 
     free(result);
@@ -1505,7 +1504,7 @@ AW_window *CPRO_condensewindow_cb( AW_root *aw_root,AW_CL which_statistic )
     aws->at("name");aws->create_input_field("cpro/condensename",11);
 
     aws->at("save_box");
-    awt_create_selection_list_on_extendeds(gb_main,aws,"cpro/condensename");
+    awt_create_selection_list_on_extendeds(GLOBAL_gb_main,aws,"cpro/condensename");
 
     return( AW_window *)aws;
 }
@@ -1643,8 +1642,7 @@ AW_window *CPRO_calculatewin_cb(AW_root *aw_root,AW_CL which_statistic)
     aws->create_input_field("cpro/transratio",8);
 
     aws->at("which_alignment");
-    awt_create_selection_list_on_ad(gb_main,
-                                    (AW_window *)aws,"cpro/alignment","*=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws,"cpro/alignment","*=");
 
     aws->button_length(10);
     aws->at("xpert");aws->callback(AW_POPUP,(AW_CL)CPRO_xpert_cb,0);
@@ -1706,7 +1704,7 @@ AP_open_cprofile_window( AW_root *aw_root)
     aws->load_xfig("cpro/main.fig");
     aws->button_length( 10 );
 
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE","CLOSE","C");
@@ -1760,7 +1758,7 @@ AP_open_cprofile_window( AW_root *aw_root)
     aw_root->awar("cpro/resolution")->add_callback(CPRO_memrequirement_cb);
     aw_root->awar("cpro/which_species")->add_callback(CPRO_memrequirement_cb);
 
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 
     CPRO_memrequirement_cb(aw_root);
 

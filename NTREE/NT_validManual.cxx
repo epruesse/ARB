@@ -29,7 +29,7 @@
 #define AWAR_SELECTED_VALNAME "tmp/validNames/selectedName"
 #define AWAR_INPUT_INITIALS   "tmp/validNames/inputInitials"
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 struct selectValidNameStruct{
     GBDATA            *gb_main;
@@ -50,9 +50,9 @@ void fillSelNamList(struct selectValidNameStruct* svnp) {
     size_t length = strlen(searchstr);
     svnp-> aws-> clear_selection_list(svnp->validNamesList);
 
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
 
-    GBDATA* GB_validNamesCont = GB_find(gb_main, "VALID_NAMES", 0, down_level);
+    GBDATA* GB_validNamesCont = GB_find(GLOBAL_gb_main, "VALID_NAMES", 0, down_level);
     if (!GB_validNamesCont){std::cout << "validNames Container not found" << std:: cout; }
 
     GB_ERROR err = 0;
@@ -87,11 +87,11 @@ void fillSelNamList(struct selectValidNameStruct* svnp) {
     }
 
     if (err) {
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
         aw_message(err);
     }
     else {
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
 
         svnp->aws->insert_default_selection(svnp->validNamesList , "????", "????" );
         svnp->aws->sort_selection_list(svnp->validNamesList, 0, 1);
@@ -145,11 +145,11 @@ void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
         aw_message(GBS_global_string("current marked species is %s", selectedSpeciesName));
 #endif
 
-        GB_begin_transaction(gb_main);
+        GB_begin_transaction(GLOBAL_gb_main);
         GB_ERROR err = 0;
 
         // begin own code
-        GBDATA* GB_selectedSpecies = GBT_find_species(gb_main, selectedSpeciesName);
+        GBDATA* GB_selectedSpecies = GBT_find_species(GLOBAL_gb_main, selectedSpeciesName);
 
 #if 0
         const char * test = GB_read_string(GB_find(GB_selectedSpecies,"full_name",0,down_level));
@@ -179,11 +179,11 @@ void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
         }
         // end own code
         if (err) {
-            GB_abort_transaction(gb_main);
+            GB_abort_transaction(GLOBAL_gb_main);
             aw_message(err);
         }
         else {
-            GB_commit_transaction(gb_main);
+            GB_commit_transaction(GLOBAL_gb_main);
 
         }
 #ifdef DEBUG
@@ -216,7 +216,7 @@ AW_window *NT_searchManuallyNames(AW_root *aw_root /*, AW_CL*/ )
     aws->at("nameList");
     // creates the selection list and asign AWAR_SELECTED_VALNAME
 
-    struct selectValidNameStruct *vns = createValNameList(gb_main, aws, AWAR_SELECTED_VALNAME);
+    struct selectValidNameStruct *vns = createValNameList(GLOBAL_gb_main, aws, AWAR_SELECTED_VALNAME);
 
     aws->at("select");
     aws->callback( selectValidNameFromList,0,0); // (... 0,0)

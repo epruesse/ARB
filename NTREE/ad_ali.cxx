@@ -14,14 +14,14 @@
 #include <awt_changekey.hxx>
 #include <awt_sel_boxes.hxx>
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 
 void alignment_vars_callback(AW_root *aw_root)
 {
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
     char    *use = aw_root->awar("presets/use")->read_string();
-    GBDATA *ali_cont = GBT_get_alignment(gb_main,use);
+    GBDATA *ali_cont = GBT_get_alignment(GLOBAL_gb_main,use);
     if (!ali_cont) {
         aw_root->awar("presets/alignment_name")->unmap();
         aw_root->awar("presets/alignment_type")->unmap();
@@ -48,16 +48,16 @@ void alignment_vars_callback(AW_root *aw_root)
         aw_root->awar("presets/auto_format")->map((void*)ali_auto_format);
         aw_root->awar("presets/security")->map((void*)ali_security);
     }
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
     free(use);
 }
 
 void NT_create_alignment_vars(AW_root *aw_root,AW_default aw_def)
 {
     aw_root->awar_string( "presets/use", "" ,   aw_def);
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
-    GBDATA *use = GB_search(gb_main,"presets/use",GB_STRING);
+    GBDATA *use = GB_search(GLOBAL_gb_main,"presets/use",GB_STRING);
     aw_root->awar("presets/use")->map(use);
 
     aw_root->awar_string( "presets/alignment_name", "" , aw_def) ->set_srt( GBT_ALI_AWAR_SRT);
@@ -72,7 +72,7 @@ void NT_create_alignment_vars(AW_root *aw_root,AW_default aw_def)
 
     aw_root->awar("presets/use")->add_callback( alignment_vars_callback);
     alignment_vars_callback(aw_root);
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 }
 
 void ad_al_delete_cb(AW_window *aww)
@@ -82,12 +82,12 @@ void ad_al_delete_cb(AW_window *aww)
     GB_ERROR error = 0;
     char *source = aww->get_root()->awar("presets/use")->read_string();
 
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
 
-    error = GBT_rename_alignment(gb_main,source,0,0,1);
+    error = GBT_rename_alignment(GLOBAL_gb_main,source,0,0,1);
 
-    if (!error) GB_commit_transaction(gb_main);
-    else    GB_abort_transaction(gb_main);
+    if (!error) GB_commit_transaction(GLOBAL_gb_main);
+    else    GB_abort_transaction(GLOBAL_gb_main);
 
     if (error) aw_message(error);
     free(source);
@@ -106,9 +106,9 @@ void ed_al_check_len_cb(AW_window *aww)
 {
     char *error = 0;
     char *use = aww->get_root()->awar("presets/use")->read_string();
-    GB_begin_transaction(gb_main);
-    if (!error) error = (char *)GBT_check_data(gb_main,use);
-    GB_commit_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
+    if (!error) error = (char *)GBT_check_data(GLOBAL_gb_main,use);
+    GB_commit_transaction(GLOBAL_gb_main);
     if (error) aw_message(error);
     free(use);
 }
@@ -120,9 +120,9 @@ void ed_al_export_sec_cb(AW_window *aww)
 void ed_al_align_cb(AW_window *aww)
 {
     char     *use = aww->get_root()->awar("presets/use")->read_string();
-    GB_begin_transaction(gb_main);
-    GB_ERROR  err = GBT_format_alignment(gb_main, use);
-    GB_commit_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
+    GB_ERROR  err = GBT_format_alignment(GLOBAL_gb_main, use);
+    GB_commit_transaction(GLOBAL_gb_main);
     if (err) aw_message(err);
     free(use);
     ed_al_check_len_cb(aww);
@@ -134,17 +134,17 @@ void aa_copy_delete_rename(AW_window *aww,AW_CL copy, AW_CL dele)
     char *source = aww->get_root()->awar("presets/use")->read_string();
     char *dest = aww->get_root()->awar("presets/alignment_dest")->read_string();
 
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
 
-    error = GBT_rename_alignment(gb_main,source,dest,(int)copy,(int)dele);
+    error = GBT_rename_alignment(GLOBAL_gb_main,source,dest,(int)copy,(int)dele);
 
     if (!error){
         char *nfield = GBS_global_string_copy("%s/data",dest);
-        awt_add_new_changekey( gb_main,nfield,GB_STRING);
+        awt_add_new_changekey( GLOBAL_gb_main,nfield,GB_STRING);
         free(nfield);
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
     }else{
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
     }
     if (error) aw_message(error);
     free(source);
@@ -202,18 +202,18 @@ void aa_create_alignment(AW_window *aww)
     GB_ERROR error = 0;
     GBDATA *gb_alignment;
     char *name = aww->get_root()->awar("presets/alignment_dest")->read_string();
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
 
-    gb_alignment = GBT_create_alignment(gb_main,name,0,0,0,"dna");
+    gb_alignment = GBT_create_alignment(GLOBAL_gb_main,name,0,0,0,"dna");
     if (!gb_alignment) error = GB_get_error();
 
     if (!error){
         char *nfield = strdup(GBS_global_string("%s/data",name));
-        awt_add_new_changekey( gb_main,nfield,GB_STRING);
+        awt_add_new_changekey( GLOBAL_gb_main,nfield,GB_STRING);
         free(nfield);
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
     }else{
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
     }
     if (error) aw_message(error);
     free(name);
@@ -293,7 +293,7 @@ AW_window *NT_create_alignment_window(AW_root *root, AW_CL popmedown)
     aws->create_button("FORMAT","FORMAT","F");
 
     aws->at("list");
-    awt_create_selection_list_on_ad(gb_main,(AW_window *)aws,"presets/use","*=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main,(AW_window *)aws,"presets/use","*=");
 
     aws->at("aligned");
     aws->create_option_menu("presets/aligned");

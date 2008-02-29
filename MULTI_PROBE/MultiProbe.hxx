@@ -117,9 +117,9 @@ extern int      get_random(int min, int max);       //gibt eine Zufallszahl x mi
 
 //********************************************************
 
-extern GBDATA   *gb_main;               //global gb_main
-extern MP_Main  *mp_main;
-extern      awar_vars mp_gl_awars;          //globale Variable, die manuell eingegebene Sequenz enthaelt
+extern GBDATA    *GLOBAL_gb_main; //global gb_main
+extern MP_Main   *mp_main;
+extern awar_vars  mp_gl_awars;  //globale Variable, die manuell eingegebene Sequenz enthaelt
 
 //********************************************************
 

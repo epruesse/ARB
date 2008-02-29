@@ -30,7 +30,7 @@ typedef enum ad_edit_modus {
 
 
 //global variables
-extern GBDATA       *gb_main;
+extern GBDATA       *GLOBAL_gb_main;
 extern ED4_root     *ED4_ROOT;
 extern ED4_database *main_db;
 

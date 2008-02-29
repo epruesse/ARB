@@ -110,7 +110,7 @@ static void GDE_create_infieldwithpm(AW_window *aws,char *newawar,long width)
 }
 
 static char *gde_filter_weights(GBDATA *gb_sai,AW_CL ){
-    char *ali_name = GBT_get_default_alignment(gb_main);
+    char *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
     GBDATA *gb_ali = GB_find(gb_sai,ali_name,0,down_level);
     delete ali_name;
     if (!gb_ali) return 0;
@@ -184,7 +184,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
                 if (seqtype != '-') { // '-' means "skip sequence export"
                     aws->at("which_alignment");
                     const char *ali_filter = seqtype == 'A' ? "pro=:ami=" : (seqtype == 'N' ? "dna=:rna=" : "*=");
-                    awt_create_selection_list_on_ad(gb_main, (AW_window *)aws, AWAR_GDE_ALIGNMENT, ali_filter);
+                    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws, AWAR_GDE_ALIGNMENT, ali_filter);
 
                     aws->at( "which_species" );
                     aws->create_toggle_field(AWAR_GDE_SPECIES);
@@ -232,7 +232,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
 
             aws->button_length(12);
             aws->at("filtername");
-            agde_filtercd = awt_create_select_filter(aws->get_root(),gb_main,AWAR_GDE_FILTER_NAME);
+            agde_filtercd = awt_create_select_filter(aws->get_root(),GLOBAL_gb_main,AWAR_GDE_FILTER_NAME);
             aws->callback((AW_CB2)AW_POPUP,(AW_CL)awt_create_select_filter_win,agde_filtercd);
             aws->create_button("SELECT_FILTER", AWAR_GDE_FILTER_NAME);
         }
@@ -352,7 +352,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             char *newawar=GDE_makeawarname(AWinfo,i);
             aw_root->awar_string(newawar,defopt,AW_ROOT_DEFAULT);
             aws->label(AWinfo->gmenuitem->arg[i].label);
-            awt_create_selection_list_on_trees(gb_main,aws,newawar);
+            awt_create_selection_list_on_trees(GLOBAL_gb_main,aws,newawar);
             free(newawar);
         }
         else if(itemarg.type==CHOICE_SAI) {
@@ -360,7 +360,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             char *newawar=GDE_makeawarname(AWinfo,i);
             aw_root->awar_string(newawar,defopt,AW_ROOT_DEFAULT);
             aws->label(AWinfo->gmenuitem->arg[i].label);
-            awt_create_selection_list_on_extendeds(gb_main,aws,newawar);
+            awt_create_selection_list_on_extendeds(GLOBAL_gb_main,aws,newawar);
             free(newawar);
         }
         else if(itemarg.type==CHOICE_WEIGHTS) {
@@ -368,7 +368,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             char *newawar=GDE_makeawarname(AWinfo,i);
             aw_root->awar_string(newawar,defopt,AW_ROOT_DEFAULT);
             aws->label(AWinfo->gmenuitem->arg[i].label);
-            void *id = awt_create_selection_list_on_extendeds(gb_main,aws,newawar,gde_filter_weights);
+            void *id = awt_create_selection_list_on_extendeds(GLOBAL_gb_main,aws,newawar,gde_filter_weights);
             free(newawar);
             aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback((AW_RCB1)awt_create_selection_list_on_extendeds_update,(AW_CL)id);
         }
@@ -476,7 +476,7 @@ void create_gde_var(AW_root  *aw_root, AW_default aw_def,
             break;
     }
 
-    aw_root->awar_string("presets/use",             "", gb_main);
+    aw_root->awar_string("presets/use",             "", GLOBAL_gb_main);
     
     aw_root->awar_string(AWAR_GDE_FILTER_NAME,      "", aw_def);
     aw_root->awar_string(AWAR_GDE_FILTER_FILTER,    "", aw_def);

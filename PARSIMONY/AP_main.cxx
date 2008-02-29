@@ -91,8 +91,8 @@ char *AP_main::open(char *db_server)
 {
     char *error = 0 ;
 
-    gb_main = GB_open(db_server,"rwt");
-    if (!gb_main) return (char *)GB_get_error();
+    GLOBAL_gb_main = GB_open(db_server,"rwt");
+    if (!GLOBAL_gb_main) return (char *)GB_get_error();
     if (error) return error;
 
     return 0;

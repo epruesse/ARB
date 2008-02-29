@@ -7,11 +7,11 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 
-extern GBDATA *gb_main;     /* muss existieren */
+extern GBDATA *GLOBAL_gb_main;     /* muss existieren */
 
 void create_insertchar_variables(AW_root *root,AW_default db1)
 {
-    root->awar_int( AWAR_CURSOR_POSITION, 0  ,    (void*)gb_main);
+    root->awar_int( AWAR_CURSOR_POSITION, 0  ,    (void*)GLOBAL_gb_main);
     root->awar_int( "insertchar/nchar", 0  ,    db1);
     root->awar("insertchar/nchar")->set_minmax( 0, 999000);
     root->awar_string( "insertchar/characters", ""  ,    db1);
@@ -30,22 +30,22 @@ void awt_inserchar_event(AW_window *aws,AW_CL awcl_mode)
     nchar = root->awar("insertchar/nchar")->read_int() * mode;
     deletes = root->awar("insertchar/characters")->read_string();
 
-    GB_begin_transaction(gb_main);
-    alignment = GBT_get_default_alignment(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
+    alignment = GBT_get_default_alignment(GLOBAL_gb_main);
 
     if (alignment) {
-        GB_ERROR error = GBT_insert_character(gb_main,alignment,pos,nchar,deletes);
+        GB_ERROR error = GBT_insert_character(GLOBAL_gb_main,alignment,pos,nchar,deletes);
 
         if (error) {
-            GB_abort_transaction(gb_main);
+            GB_abort_transaction(GLOBAL_gb_main);
             aw_message(error);
         }else{
-            GBT_check_data(gb_main,0);
-            GB_commit_transaction(gb_main);
+            GBT_check_data(GLOBAL_gb_main,0);
+            GB_commit_transaction(GLOBAL_gb_main);
         }
     }else{
         printf("ERROR no alignment found\n");
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
     }
 
     free(deletes);

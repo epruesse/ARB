@@ -26,7 +26,7 @@
 #endif
 #define nt_assert(bed) arb_assert(bed)
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 #define AD_F_ALL (AW_active)(-1)
 
 void create_species_var(AW_root *aw_root, AW_default aw_def)
@@ -45,10 +45,10 @@ void create_species_var(AW_root *aw_root, AW_default aw_def)
 static void move_species_to_extended(AW_window *aww){
     GB_ERROR error = 0;
     char *source = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
 
-    GBDATA *gb_extended_data = GB_search(gb_main,"extended_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_species = GBT_find_species(gb_main,source);
+    GBDATA *gb_extended_data = GB_search(GLOBAL_gb_main,"extended_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,source);
     GBDATA *gb_dest = GBT_find_SAI_rel_exdata(gb_extended_data,source);
     if (gb_dest) {
         error = "Sorry: SAI already exists";
@@ -65,8 +65,8 @@ static void move_species_to_extended(AW_window *aww){
         error = "Please select a species first";
     }
 
-    if (!error) GB_commit_transaction(gb_main);
-    else    GB_abort_transaction(gb_main);
+    if (!error) GB_commit_transaction(GLOBAL_gb_main);
+    else    GB_abort_transaction(GLOBAL_gb_main);
     if (error) aw_message(error);
     free(source);
 }
@@ -75,8 +75,8 @@ static void move_species_to_extended(AW_window *aww){
 static void species_create_cb(AW_window *aww){
     GB_ERROR error = 0;
     char *dest = aww->get_root()->awar(AWAR_SPECIES_DEST)->read_string();
-    GB_begin_transaction(gb_main);
-    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    GB_begin_transaction(GLOBAL_gb_main);
+    GBDATA *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
     GBDATA *gb_dest = GBT_find_species_rel_species_data(gb_species_data,dest);
     if (gb_dest) {
         error = "Sorry: species already exists";
@@ -87,8 +87,8 @@ static void species_create_cb(AW_window *aww){
             aww->get_root()->awar(AWAR_SPECIES_NAME)->write_string(dest);
         }
     }
-    if (!error) GB_commit_transaction(gb_main);
-    else    GB_abort_transaction(gb_main);
+    if (!error) GB_commit_transaction(GLOBAL_gb_main);
+    else    GB_abort_transaction(GLOBAL_gb_main);
     if (error) aw_message(error);
     free(dest);
 }
@@ -117,9 +117,9 @@ static AW_window *create_species_create_window(AW_root *root)
 }
 
 static GBDATA *expect_species_selected(AW_root *aw_root, char **give_name = 0) {
-    GB_transaction  ta(gb_main);
+    GB_transaction  ta(GLOBAL_gb_main);
     char           *name       = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
-    GBDATA         *gb_species = GBT_find_species(gb_main, name);
+    GBDATA         *gb_species = GBT_find_species(GLOBAL_gb_main, name);
 
     if (!gb_species) {
         if (name && name[0]) aw_message(GBS_global_string("Species '%s' does not exist.", name));
@@ -137,7 +137,7 @@ static void ad_species_copy_cb(AW_window *aww, AW_CL, AW_CL) {
     char    *name;
     GBDATA  *gb_species = expect_species_selected(aw_root, &name);
     if (gb_species) {
-        GB_transaction  ta(gb_main);
+        GB_transaction  ta(GLOBAL_gb_main);
         GBDATA         *gb_species_data = GB_get_father(gb_species);
         UniqueNameDetector und(gb_species_data);
         char           *copy_name       = AWTC_makeUniqueShortName(GBS_global_string("c%s", name), und);
@@ -169,7 +169,7 @@ static void ad_species_rename_cb(AW_window *aww, AW_CL, AW_CL) {
     AW_root *aw_root    = aww->get_root();
     GBDATA  *gb_species = expect_species_selected(aw_root);
     if (gb_species) {
-        GB_transaction  ta(gb_main);
+        GB_transaction  ta(GLOBAL_gb_main);
         GBDATA         *gb_full_name  = GB_search(gb_species, "full_name", GB_STRING);
         const char     *full_name     = gb_full_name ? GB_read_char_pntr(gb_full_name) : "";
         char           *new_full_name = aw_input("Enter new 'full_name' of species:", 0, full_name);
@@ -212,7 +212,7 @@ static void ad_species_delete_cb(AW_window *aww, AW_CL, AW_CL) {
         error = "Please select a species first";
     }
     else if (aw_message(GBS_global_string("Are you sure to delete the species '%s'", name), "OK,CANCEL") == 0) {
-        GB_transaction ta(gb_main);
+        GB_transaction ta(GLOBAL_gb_main);
         error = GB_delete(gb_species);
         if (error) ta.abort();
         else aw_root->awar(AWAR_SPECIES_NAME)->write_string("");
@@ -232,22 +232,22 @@ void AD_set_default_root(AW_root *aw_root) {
 
 static void AD_map_species(AW_root *aw_root, AW_CL scannerid, AW_CL mapOrganism)
 {
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
     char *source = aw_root->awar((bool)mapOrganism ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME)->read_string();
-    GBDATA *gb_species = GBT_find_species(gb_main,source);
+    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,source);
     if (gb_species) {
         awt_map_arbdb_scanner(scannerid,gb_species,0, CHANGE_KEY_PATH);
     }
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
     free(source);
 }
 void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type)
 {
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
 
     char *species_name = strdup("");
     {
-        GBDATA *gb_species_data        = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+        GBDATA *gb_species_data        = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
         if (gbd && GB_get_father(gbd) == gb_species_data) {
             // I got a species !!!!!!
             GBDATA *gb_name            = GB_find(gbd,"name",0,down_level);
@@ -283,11 +283,11 @@ void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type)
             delete name;
             name = GB_read_string(gb_name);
         }
-        GB_ERROR error = awt_openURL_by_gbd(nt.awr,gb_main,gbd, name);
+        GB_ERROR error = awt_openURL_by_gbd(nt.awr,GLOBAL_gb_main,gbd, name);
         if (error) aw_message(error);
         break;
     }
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 }
 
 static int count_key_data_elements(GBDATA *gb_key_data) {
@@ -303,7 +303,7 @@ static int count_key_data_elements(GBDATA *gb_key_data) {
 }
 
 static void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
     char     *source  = aws->get_root()->awar(AWAR_FIELD_REORDER_SOURCE)->read_string();
     char     *dest    = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_string();
     GB_ERROR  warning = 0;
@@ -311,8 +311,8 @@ static void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
     const adawcbstruct     *cbs1        = (const adawcbstruct*)cl_cbs1;
     const adawcbstruct     *cbs2        = (const adawcbstruct*)cl_cbs2;
     const ad_item_selector *selector    = cbs1->selector;
-    GBDATA                 *gb_source   = awt_get_key(gb_main,source, selector->change_key_path);
-    GBDATA                 *gb_dest     = awt_get_key(gb_main,dest, selector->change_key_path);
+    GBDATA                 *gb_source   = awt_get_key(GLOBAL_gb_main,source, selector->change_key_path);
+    GBDATA                 *gb_dest     = awt_get_key(GLOBAL_gb_main,dest, selector->change_key_path);
 
     int left_index  = aws->get_index_of_current_element(cbs1->id, AWAR_FIELD_REORDER_SOURCE);
     int right_index = aws->get_index_of_current_element(cbs2->id, AWAR_FIELD_REORDER_DEST);
@@ -326,7 +326,7 @@ static void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
     else if (gb_dest !=gb_source) {
         nt_assert(left_index != right_index);
 
-        GBDATA  *gb_key_data = GB_search(gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
+        GBDATA  *gb_key_data = GB_search(GLOBAL_gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
         int      nitems      = count_key_data_elements(gb_key_data);
         GBDATA **new_order   = new GBDATA *[nitems];
 
@@ -342,7 +342,7 @@ static void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
                 new_order[nitems++] = gb_source;
             }
         }
-        warning = GB_resort_data_base(gb_main,new_order,nitems);
+        warning = GB_resort_data_base(GLOBAL_gb_main,new_order,nitems);
         delete [] new_order;
 
         if (left_index>right_index) { left_index++; right_index++; } // in one case increment indices
@@ -351,7 +351,7 @@ static void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
     free(source);
     free(dest);
 
-    GB_commit_transaction(gb_main);
+    GB_commit_transaction(GLOBAL_gb_main);
 
     if (warning) {
         aw_message(warning);
@@ -363,7 +363,7 @@ static void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
 }
 
 static void ad_list_reorder_cb2(AW_window *aws, AW_CL cl_cbs2, AW_CL cl_dir) {
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
     int                 dir  = (int)cl_dir;
     const adawcbstruct *cbs2 = (const adawcbstruct*)cl_cbs2;
 
@@ -371,13 +371,13 @@ static void ad_list_reorder_cb2(AW_window *aws, AW_CL cl_cbs2, AW_CL cl_dir) {
 
     char                   *field_name = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_string();
     const ad_item_selector *selector   = cbs2->selector;
-    GBDATA                 *gb_field   = awt_get_key(gb_main, field_name, selector->change_key_path);
+    GBDATA                 *gb_field   = awt_get_key(GLOBAL_gb_main, field_name, selector->change_key_path);
 
     if (!gb_field) {
         warning = "Please select an item to move (right box)";
     }
     else {
-        GBDATA  *gb_key_data = GB_search(gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
+        GBDATA  *gb_key_data = GB_search(GLOBAL_gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
         int      nitems      = count_key_data_elements(gb_key_data);
         GBDATA **new_order   = new GBDATA *[nitems];
 
@@ -408,13 +408,13 @@ static void ad_list_reorder_cb2(AW_window *aws, AW_CL cl_cbs2, AW_CL cl_dir) {
                 new_order[new_index] = gb_field;
             }
 
-            warning = GB_resort_data_base(gb_main,new_order,nitems);
+            warning = GB_resort_data_base(GLOBAL_gb_main,new_order,nitems);
         }
 
         delete [] new_order;
     }
 
-    GB_commit_transaction(gb_main);
+    GB_commit_transaction(GLOBAL_gb_main);
     if (warning) aw_message(warning);
 }
 
@@ -435,8 +435,8 @@ AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector)
     aws->at("close");
     aws->create_button("CLOSE","CLOSE","C");
 
-    AW_CL cbs1 = awt_create_selection_list_on_scandb(gb_main, (AW_window*)aws, AWAR_FIELD_REORDER_SOURCE, AWT_NDS_FILTER, "source", 0, selector, 20, 10);
-    AW_CL cbs2 = awt_create_selection_list_on_scandb(gb_main, (AW_window*)aws, AWAR_FIELD_REORDER_DEST,   AWT_NDS_FILTER, "dest",   0, selector, 20, 10);
+    AW_CL cbs1 = awt_create_selection_list_on_scandb(GLOBAL_gb_main, (AW_window*)aws, AWAR_FIELD_REORDER_SOURCE, AWT_NDS_FILTER, "source", 0, selector, 20, 10);
+    AW_CL cbs2 = awt_create_selection_list_on_scandb(GLOBAL_gb_main, (AW_window*)aws, AWAR_FIELD_REORDER_DEST,   AWT_NDS_FILTER, "dest",   0, selector, 20, 10);
 
     aws->button_length(0);
 
@@ -461,13 +461,13 @@ AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector)
 static void ad_hide_field(AW_window *aws, AW_CL cl_cbs, AW_CL cl_hide)
 {
     AWUSE(aws);
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
 
     char                   *source    = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
     GB_ERROR                error     = 0;
     const adawcbstruct     *cbs       = (const adawcbstruct*)cl_cbs;
     const ad_item_selector *selector  = cbs->selector;
-    GBDATA                 *gb_source = awt_get_key(gb_main,source, selector->change_key_path);
+    GBDATA                 *gb_source = awt_get_key(GLOBAL_gb_main,source, selector->change_key_path);
 
     if (!gb_source) {
         aw_message("Please select the field you want to (un)hide");
@@ -480,10 +480,10 @@ static void ad_hide_field(AW_window *aws, AW_CL cl_cbs, AW_CL cl_hide)
     free(source);
 
     if (error) {
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
         if (error) aw_message(error);
     }else{
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
         aws->move_selection(cbs->id, AWAR_FIELD_DELETE, 1);
     }
 }
@@ -492,13 +492,13 @@ static void ad_field_delete(AW_window *aws, AW_CL cl_cbs)
 {
     AWUSE(aws);
 
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
 
     char                   *source    = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
     GB_ERROR                error     = 0;
     const adawcbstruct     *cbs       = (const adawcbstruct*)cl_cbs;
     const ad_item_selector *selector  = cbs->selector;
-    GBDATA                 *gb_source = awt_get_key(gb_main,source, selector->change_key_path);
+    GBDATA                 *gb_source = awt_get_key(GLOBAL_gb_main,source, selector->change_key_path);
 
     int curr_index = aws->get_index_of_current_element(cbs->id, AWAR_FIELD_DELETE);
 
@@ -508,7 +508,7 @@ static void ad_field_delete(AW_window *aws, AW_CL cl_cbs)
         error = GB_delete(gb_source);
     }
 
-    for (GBDATA *gb_item_container = selector->get_first_item_container(gb_main, aws->get_root(), AWT_QUERY_ALL_SPECIES);
+    for (GBDATA *gb_item_container = selector->get_first_item_container(GLOBAL_gb_main, aws->get_root(), AWT_QUERY_ALL_SPECIES);
          !error && gb_item_container;
          gb_item_container = selector->get_next_item_container(gb_item_container, AWT_QUERY_ALL_SPECIES))
     {
@@ -524,10 +524,10 @@ static void ad_field_delete(AW_window *aws, AW_CL cl_cbs)
     free(source);
 
     if (error) {
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
         if (error) aw_message(error);
     }else{
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
     }
 
     aws->select_index(cbs->id, AWAR_FIELD_DELETE, curr_index); // current(deleted) item has disappeared, so this selects the next one
@@ -554,7 +554,7 @@ AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector)
     aws->at("help");aws->callback( AW_POPUP_HELP,(AW_CL)"spaf_delete.hlp");
     aws->create_button("HELP","HELP","H");
 
-    AW_CL cbs = awt_create_selection_list_on_scandb(gb_main,
+    AW_CL cbs = awt_create_selection_list_on_scandb(GLOBAL_gb_main,
                                                     (AW_window*)aws,AWAR_FIELD_DELETE,
                                                     -1,
                                                     "source",0, selector, 20, 10,
@@ -581,7 +581,7 @@ AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector)
 
 static void ad_field_create_cb(AW_window *aws, AW_CL cl_item_selector)
 {
-    GB_push_transaction(gb_main);
+    GB_push_transaction(GLOBAL_gb_main);
     char *name = aws->get_root()->awar(AWAR_FIELD_CREATE_NAME)->read_string();
     GB_ERROR error = GB_check_key(name);
     GB_ERROR error2 = GB_check_hkey(name);
@@ -594,14 +594,14 @@ static void ad_field_create_cb(AW_window *aws, AW_CL cl_item_selector)
     int type = (int)aws->get_root()->awar(AWAR_FIELD_CREATE_TYPE)->read_int();
 
     const ad_item_selector *selector = (const ad_item_selector*)cl_item_selector;
-    if(!error) error = awt_add_new_changekey_to_keypath(gb_main, name, type, selector->change_key_path);
+    if(!error) error = awt_add_new_changekey_to_keypath(GLOBAL_gb_main, name, type, selector->change_key_path);
     if (error) {
         aw_message(error);
     }else{
         aws->hide();
     }
     free(name);
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(GLOBAL_gb_main);
 }
 
 AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector)
@@ -646,11 +646,11 @@ void ad_spec_create_field_items(AW_window *aws) {
     aws->insert_menu_topic("delete_field",   "Delete/Hide fields ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&AWT_species_selector); 
     aws->insert_menu_topic("create_field",   "Create fields ...",      "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&AWT_species_selector); 
     aws->insert_separator(); 
-    aws->insert_menu_topic("unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER); 
+    aws->insert_menu_topic("unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_unhide_all_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
     aws->insert_separator(); 
-    aws->insert_menu_topic("scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_scan_unknown_cb,  (AW_CL)gb_main, AWT_NDS_FILTER); 
-    aws->insert_menu_topic("del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER); 
-    aws->insert_menu_topic("refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_update_cb,        (AW_CL)gb_main, AWT_NDS_FILTER); 
+    aws->insert_menu_topic("scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_scan_unknown_cb,  (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
+    aws->insert_menu_topic("del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_delete_unused_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
+    aws->insert_menu_topic("refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)awt_selection_list_update_cb,        (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
 }
 
 #include <probe_design.hxx>
@@ -658,12 +658,12 @@ void ad_spec_create_field_items(AW_window *aws) {
 static void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs) {
     struct adaqbsstruct *cbs        = (struct adaqbsstruct *)_cbs;
     nt_assert(cbs->selector->type == AWT_QUERY_ITEM_SPECIES);
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
     int                  pts        = aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
     char                *dest_field = aww->get_root()->awar("next_neighbours/dest_field")->read_string();
     char                *ali_name   = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
     GB_ERROR             error      = 0;
-    GB_TYPES             dest_type  = awt_get_type_of_changekey(gb_main,dest_field, CHANGE_KEY_PATH);
+    GB_TYPES             dest_type  = awt_get_type_of_changekey(GLOBAL_gb_main,dest_field, CHANGE_KEY_PATH);
     if (!dest_type){
         error = GB_export_error("Please select a valid field");
     }
@@ -681,7 +681,7 @@ static void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs) {
     aw_openstatus("Finding next neighbours");
     long count = 0;
     GBDATA *gb_species;
-    for (gb_species = GBT_first_species(gb_main);
+    for (gb_species = GBT_first_species(GLOBAL_gb_main);
          !error && gb_species;
          gb_species = GBT_next_species(gb_species)){
         if (!IS_QUERIED(gb_species,cbs)) continue;
@@ -700,7 +700,7 @@ static void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs) {
         }
         {
             char *sequence = GB_read_string(gb_data);
-            AWTC_FIND_FAMILY ff(gb_main);
+            AWTC_FIND_FAMILY ff(GLOBAL_gb_main);
             error = ff.go(pts,sequence,GB_TRUE,1);
             if (error) break;
             {
@@ -719,23 +719,23 @@ static void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs) {
     }
     aw_closestatus();
     if (error){
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
         aw_message(error);
     }else{
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
     }
     delete dest_field;
     delete ali_name;
 }
 
 static void awtc_nn_search(AW_window *aww,AW_CL id) { 
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     int pts = aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
     int max_hits = aww->get_root()->awar("next_neighbours/max_hits")->read_int();
     char *sequence = 0;
     {
         char *sel_species =     aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
-        GBDATA *gb_species =    GBT_find_species(gb_main,sel_species);
+        GBDATA *gb_species =    GBT_find_species(GLOBAL_gb_main,sel_species);
 
         if (!gb_species){
             delete sel_species;
@@ -753,7 +753,7 @@ static void awtc_nn_search(AW_window *aww,AW_CL id) {
         sequence = GB_read_string(gb_data);
     }
 
-    AWTC_FIND_FAMILY ff(gb_main);
+    AWTC_FIND_FAMILY ff(GLOBAL_gb_main);
     GB_ERROR error = ff.go(pts,sequence,GB_TRUE,max_hits);
     free(sequence);
     AW_selection_list* sel = (AW_selection_list *)id;
@@ -801,7 +801,7 @@ static AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root,AW_CL c
     awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, AW_TRUE);
 
     aws->at("field");
-    awt_create_selection_list_on_scandb(gb_main,aws,"next_neighbours/dest_field",
+    awt_create_selection_list_on_scandb(GLOBAL_gb_main,aws,"next_neighbours/dest_field",
                                         (1<<GB_INT) | (1<<GB_STRING), "field",0, &AWT_species_selector, 20, 10);
 
 
@@ -915,7 +915,7 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     aws->callback(AW_POPUP_HELP, (AW_CL)"sp_info.hlp");
     aws->create_button("HELP","HELP","H");
 
-    AW_CL scannerid = awt_create_arbdb_scanner(gb_main, aws, "box",0,"field","enable",AWT_VIEWER,0,"mark",AWT_NDS_FILTER,
+    AW_CL scannerid = awt_create_arbdb_scanner(GLOBAL_gb_main, aws, "box",0,"field","enable",AWT_VIEWER,0,"mark",AWT_NDS_FILTER,
                                                organismWindow ? &AWT_organism_selector : &AWT_species_selector);
     ad_global_scannerid = scannerid;
     ad_global_scannerroot = aws->get_root();
@@ -984,7 +984,7 @@ AW_window *ad_create_query_window(AW_root *aw_root)
 
     awt_query_struct awtqs;
 
-    awtqs.gb_main             = gb_main;
+    awtqs.gb_main             = GLOBAL_gb_main;
     awtqs.species_name        = AWAR_SPECIES_NAME;
     awtqs.tree_name           = AWAR_TREE;
     awtqs.select_bit          = 1;

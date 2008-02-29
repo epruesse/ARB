@@ -32,14 +32,14 @@ using namespace std;
 #define DUMP
 #endif // DEVEL_LOTHAR
 
-extern GBDATA* gb_main;
+extern GBDATA* GLOBAL_gb_main;
 
 void NT_deleteValidNames(AW_window*, AW_CL, AW_CL)
 {
     GB_ERROR error;
 
-    GB_begin_transaction(gb_main);
-    GBDATA* namesCont = GB_search(gb_main, "VALID_NAMES",GB_CREATE_CONTAINER);
+    GB_begin_transaction(GLOBAL_gb_main);
+    GBDATA* namesCont = GB_search(GLOBAL_gb_main, "VALID_NAMES",GB_CREATE_CONTAINER);
     GB_write_security_delete(namesCont,6);
     error = GB_delete(namesCont);
     if (error != 0) {
@@ -48,7 +48,7 @@ void NT_deleteValidNames(AW_window*, AW_CL, AW_CL)
     else{
         aw_message("Valid Names container was removed from database\nThink again before saving");
     }
-    GB_commit_transaction(gb_main);
+    GB_commit_transaction(GLOBAL_gb_main);
 
 #if defined(DUMP)
     std::cout << "DeleteValidNames was selected" << std::endl;
@@ -128,13 +128,13 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
         GBDATA* descType;
         DescList::iterator di;
         const char* typeStr;
-        GB_begin_transaction(gb_main);
-        namesCont = GB_find(gb_main, "VALID_NAMES", 0, down_level);
+        GB_begin_transaction(GLOBAL_gb_main);
+        namesCont = GB_find(GLOBAL_gb_main, "VALID_NAMES", 0, down_level);
         if(namesCont != NULL){
             aw_message("Container for Valid Names already exists\n Please delete old Valid Names first");
         }
         else {
-            namesCont = GB_create_container(gb_main, "VALID_NAMES");
+            namesCont = GB_create_container(GLOBAL_gb_main, "VALID_NAMES");
             for ( di = myDescs.begin(); di != myDescs.end(); di++){
                 if((*di).getType() < 10){
                     pair = GB_create_container(namesCont,"pair");
@@ -163,7 +163,7 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
                 }
             }
         }
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
     }
     catch (string& err) { aw_message(err.c_str()); }
     catch (...) { aw_message("Unknown exception"); }
@@ -174,14 +174,14 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
 
 void NT_suggestValidNames(AW_window*, AW_CL, AW_CL) {
     vector<string> speciesNames;
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
 
-    GBDATA*  GB_validNamesCont = GB_find(gb_main, "VALID_NAMES", 0, down_level);
+    GBDATA*  GB_validNamesCont = GB_find(GLOBAL_gb_main, "VALID_NAMES", 0, down_level);
     GB_ERROR err               = 0;
 
     if (!GB_validNamesCont) err = "No valid names imported yet";
 
-    for (GBDATA *GBT_species=GBT_first_species(gb_main);
+    for (GBDATA *GBT_species=GBT_first_species(GLOBAL_gb_main);
          !err && GBT_species;
          GBT_species=GBT_next_species(GBT_species)){
         // retrieve species names
@@ -241,10 +241,10 @@ void NT_suggestValidNames(AW_window*, AW_CL, AW_CL) {
     }
 
     if (err) {
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
         aw_message(err);
     }
     else {
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
     }
 }

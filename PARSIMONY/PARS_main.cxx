@@ -34,11 +34,13 @@
 using namespace std;
 
 AW_HEADER_MAIN
-GBDATA *gb_main;
-AP_main *ap_main;
+
+GBDATA    *GLOBAL_gb_main;      // global gb_main for arb_pars
+AP_main   *ap_main;
 NT_global *nt;
-AWT_csp *awt_csp = 0;
-AW_CL pars_global_filter = 0;
+AWT_csp   *awt_csp            = 0;
+AW_CL      pars_global_filter = 0;
+
 AW_window *create_kernighan_window(AW_root *aw_root);
 
 void PARS_export_tree(void){
@@ -57,7 +59,7 @@ void PARS_export_cb(AW_window *, AWT_canvas *, AW_CL mode){
     }
     if (mode &2) {
         //quit
-        GB_exit(gb_main);
+        GB_exit(GLOBAL_gb_main);
         exit(0);
     }
 }
@@ -75,7 +77,7 @@ void AP_user_pop_cb(AW_window *aww,AWT_canvas *ntw)
         return;
     }
     ap_main->user_pop();
-    (*ap_main->tree_root)->compute_tree(gb_main);
+    (*ap_main->tree_root)->compute_tree(GLOBAL_gb_main);
     ntw->zoom_reset();
     ntw->refresh();
     (*ap_main->tree_root)->test_tree();
@@ -107,7 +109,7 @@ extern "C" {
         AP_tree *tree = (*ap_main->tree_root);
         GBDATA *gb_node = (GBDATA *)val;
 
-        GB_begin_transaction (gb_main);
+        GB_begin_transaction(GLOBAL_gb_main);
 
         GBDATA *gb_data = GBT_read_sequence(gb_node,ap_main->use);
         if (!gb_data)
@@ -115,7 +117,7 @@ extern "C" {
             sprintf(AW_ERROR_BUFFER,"Warning Species '%s' has no sequence '%s'",
                     key,ap_main->use);
             aw_message();
-            GB_commit_transaction (gb_main);
+            GB_commit_transaction(GLOBAL_gb_main);
             return val;
         }
 
@@ -126,7 +128,7 @@ extern "C" {
 
         leaf->sequence = leaf->tree_root->sequence_template->dup();
         leaf->sequence->set(GB_read_char_pntr(gb_data));
-        GB_commit_transaction (gb_main);
+        GB_commit_transaction (GLOBAL_gb_main);
 
         if (leaf->sequence->real_len() < MIN_SEQUENCE_LENGTH)
         {
@@ -451,7 +453,7 @@ extern "C" {
 
 static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int test)
 {
-    GB_begin_transaction (gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
     GB_HASH *hash = 0;
     GB_ERROR error = 0;
     AP_tree *oldrootleft = (*ap_main->tree_root)->leftson;
@@ -460,10 +462,10 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
 
     if (what)
     {
-        char *name = GBT_read_string2(gb_main,AWAR_SPECIES_NAME,"");
+        char *name = GBT_read_string2(GLOBAL_gb_main,AWAR_SPECIES_NAME,"");
         if (strlen(name))
         {
-            GBDATA *gb_species = GBT_find_species(gb_main,name);
+            GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,name);
             if (gb_species)
             {
                 hash = GBS_create_hash(10,0);
@@ -483,10 +485,10 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
     }
     else
     {
-        hash = GBT_create_marked_species_hash(gb_main);
+        hash = GBT_create_marked_species_hash(GLOBAL_gb_main);
         if (!hash) error = GB_get_error();
     }
-    GB_commit_transaction (gb_main);
+    GB_commit_transaction (GLOBAL_gb_main);
 
     if (!error)
     {
@@ -500,9 +502,9 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
             GBS_hash_do_loop(hash,insert_species_in_tree_test);
         }else{
             aw_status("reading database");
-            GB_begin_transaction(gb_main);
+            GB_begin_transaction(GLOBAL_gb_main);
             GBS_hash_do_loop(hash,transform_gbd_to_leaf);
-            GB_commit_transaction(gb_main);
+            GB_commit_transaction(GLOBAL_gb_main);
             GBS_hash_do_sorted_loop(hash, hash_insert_species_in_tree, sort_sequences_by_length);
         }
         if (!quick )
@@ -515,7 +517,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
         rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1, GB_FALSE ,AP_BL_BL_ONLY);
 
         rootNode()->test_tree();
-        rootNode()->compute_tree(gb_main);
+        rootNode()->compute_tree(GLOBAL_gb_main);
 
         if (oldrootleft->father == oldrootright) oldrootleft->set_root();
         else                     oldrootright->set_root();
@@ -686,7 +688,7 @@ static AP_tree *find_least_deep_leaf(AP_tree *at, int depth, int *min_depth) {
 }
 
 static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
     GB_ERROR error                 = 0;
     int      full_marked_sequences = 0;
 
@@ -695,10 +697,10 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
     {
         list<PartialSequence> partial;
         {
-            GB_HASH *partial_hash = GBS_create_hash(GBT_get_species_hash_size(gb_main), 0);
+            GB_HASH *partial_hash = GBS_create_hash(GBT_get_species_hash_size(GLOBAL_gb_main), 0);
             int      marked_found = 0;
 
-            for (GBDATA *gb_marked = GBT_first_marked_species(gb_main);
+            for (GBDATA *gb_marked = GBT_first_marked_species(GLOBAL_gb_main);
                  !error && gb_marked;
                  gb_marked = GBT_next_marked_species(gb_marked))
             {
@@ -877,10 +879,10 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
 
     if (error) {
         aw_message(error);
-        GB_abort_transaction(gb_main);
+        GB_abort_transaction(GLOBAL_gb_main);
     }
     else {
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
     }
 
 //     AWT_TREE(ntw)->resort_tree(0);
@@ -1022,7 +1024,7 @@ static void NT_optimize(AW_window *, AWT_canvas *ntw)
     isits.abort_flag = AP_FALSE;
     rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1, GB_FALSE,AP_BL_BL_ONLY);
     AWT_TREE(ntw)->resort_tree(0);
-    rootNode()->compute_tree(gb_main);
+    rootNode()->compute_tree(GLOBAL_gb_main);
     aw_closestatus();
     ntw->zoom_reset();
     ntw->refresh();
@@ -1050,7 +1052,7 @@ static void NT_recursiveNNI(AW_window *,AWT_canvas *ntw)
     rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1, GB_FALSE,AP_BL_BL_ONLY);
     AWT_TREE(ntw)->resort_tree(0);
 
-    rootNode()->compute_tree(gb_main);
+    rootNode()->compute_tree(GLOBAL_gb_main);
     aw_closestatus();
     ntw->zoom_reset();
     ntw->refresh();
@@ -1362,11 +1364,11 @@ static GB_ERROR pars_check_size(AW_root *awr){
         }
     }else{
         char *ali_name = awr->awar(AWAR_ALIGNMENT)->read_string();
-        ali_len = GBT_get_alignment_len(gb_main,ali_name);
+        ali_len = GBT_get_alignment_len(GLOBAL_gb_main,ali_name);
         delete ali_name;
     }
 
-    long tree_size = GBT_size_of_tree(gb_main,tree_name);
+    long tree_size = GBT_size_of_tree(GLOBAL_gb_main,tree_name);
     if (tree_size == -1) {
         error = GB_export_error("Please select an existing tree");
     }
@@ -1395,7 +1397,7 @@ static void pars_reset_optimal_parsimony(AW_window *aww, AW_CL *cl_ntw) {
 static void pars_start_cb(AW_window *aww)
 {
     AW_root *awr = aww->get_root();
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
     {
         GB_ERROR error = pars_check_size(awr);
         if (error){
@@ -1403,7 +1405,7 @@ static void pars_start_cb(AW_window *aww)
                            "Do you want to continue ?\n"
                            "    (Hint: the use of a filter often helps)",
                            "Continue,Abort")){
-                GB_commit_transaction(gb_main);
+                GB_commit_transaction(GLOBAL_gb_main);
                 return;
             }
         }
@@ -1420,7 +1422,7 @@ static void pars_start_cb(AW_window *aww)
     {
         AP_tree_sort  old_sort_type = nt->tree->tree_sort;
         nt->tree->set_tree_type(AP_LIST_SIMPLE); // avoid NDS warnings during startup
-        ntw = new AWT_canvas(gb_main,(AW_window *)awm,nt->tree, aw_gc_manager,AWAR_TREE) ;
+        ntw = new AWT_canvas(GLOBAL_gb_main,(AW_window *)awm,nt->tree, aw_gc_manager,AWAR_TREE) ;
         nt->tree->set_tree_type(old_sort_type);
     }
 
@@ -1445,7 +1447,7 @@ static void pars_start_cb(AW_window *aww)
             aw_message(error, "EXIT", true);
         }
 
-        GB_commit_transaction(gb_main);
+        GB_commit_transaction(ntw->gb_main);
         aw_status("Calculating inner nodes");
         nt->tree->tree_root->costs();
 
@@ -1467,15 +1469,15 @@ static void pars_start_cb(AW_window *aww)
         NT_bootstrap(awm,ntw,0);
     }
     if (ap_main->commands.quit){
-        GB_exit(gb_main);
+        GB_exit(ntw->gb_main);
         GB_usleep(3000000); // wait three seconds, there might be error messages !!!!
         exit(0);
     }
 
 
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(ntw->gb_main);
 
-    GBDATA *gb_arb_presets = GB_search(gb_main,"arb_presets", GB_CREATE_CONTAINER);
+    GBDATA *gb_arb_presets = GB_search(ntw->gb_main,"arb_presets", GB_CREATE_CONTAINER);
     GB_add_callback(gb_arb_presets,GB_CB_CHANGED, (GB_CB)AWT_expose_cb,(int *)ntw);
 
     awm->create_menu(       0,   "File",     "F", "pars_file.hlp",  AWM_ALL );
@@ -1496,7 +1498,7 @@ static void pars_start_cb(AW_window *aww)
     awm->create_menu( 0,   "Tree", "T", "nt_tree.hlp",  AWM_ALL );
     {
 
-        awm->insert_menu_topic( "nds",      "NDS ( Select Node Information ) ...",      "N","props_nds.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AWT_open_nds_window, (AW_CL)gb_main );
+        awm->insert_menu_topic( "nds",      "NDS ( Select Node Information ) ...",      "N","props_nds.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AWT_open_nds_window, (AW_CL)ntw->gb_main );
 
         awm->insert_separator();
         awm->insert_menu_topic("tree_2_xfig", "Edit Tree View using XFIG ...",  "E", "tree2file.hlp", AWM_ALL, AWT_popup_tree_export_window, (AW_CL)ntw, 0);
@@ -1678,7 +1680,7 @@ static void pars_start_cb(AW_window *aww)
     awm->set_info_area_height( db_treey+6 );
 
     awm->set_bottom_area_height( 0 );
-    awm->set_focus_callback((AW_CB)PA_focus_cb,(AW_CL)gb_main,0);
+    awm->set_focus_callback((AW_CB)PA_focus_cb,(AW_CL)ntw->gb_main,0);
 
     aww->hide();
     awm->show();
@@ -1708,18 +1710,18 @@ static AW_window *create_pars_init_window(AW_root *awr)
     aws->create_button("HELP","HELP","H");
 
     aws->at("filter");
-    AW_CL filtercd = awt_create_select_filter(aws->get_root(),gb_main,AWAR_FILTER_NAME);
+    AW_CL filtercd = awt_create_select_filter(aws->get_root(),GLOBAL_gb_main,AWAR_FILTER_NAME);
     pars_global_filter = filtercd;
     aws->callback(AW_POPUP,(AW_CL)awt_create_select_filter_win,filtercd);
     aws->create_button("SELECT_FILTER",AWAR_FILTER_NAME);
 
     aws->at("alignment");
-    awt_create_selection_list_on_ad(gb_main,(AW_window *)aws,AWAR_ALIGNMENT,"*=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main,(AW_window *)aws,AWAR_ALIGNMENT,"*=");
 
     aws->at("tree");
-    awt_create_selection_list_on_trees(gb_main,(AW_window *)aws,AWAR_TREE);
+    awt_create_selection_list_on_trees(GLOBAL_gb_main,(AW_window *)aws,AWAR_TREE);
 
-    awt_csp = new AWT_csp(gb_main,awr,"tmp/pars/csp/name");
+    awt_csp = new AWT_csp(GLOBAL_gb_main,awr,"tmp/pars/csp/name");
 
     aws->at("weights");
     aws->callback(AW_POPUP,(AW_CL)create_csp_window,(AW_CL)awt_csp);
@@ -1778,27 +1780,27 @@ static void create_parsimony_variables(AW_root *aw_root, AW_default def)
 
 static void create_all_awars(AW_root *awr, AW_default aw_def)
 {
-    GB_transaction dummy(gb_main);
-    char *dali = GBT_get_default_alignment(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
+    char *dali = GBT_get_default_alignment(GLOBAL_gb_main);
 
-    awr->awar_string( AWAR_SPECIES_NAME,"" ,gb_main );
+    awr->awar_string( AWAR_SPECIES_NAME,"" ,GLOBAL_gb_main );
 
     awr->awar_string( AWAR_FOOTER, "",aw_def);
-    awr->awar_string( AWAR_ALIGNMENT,dali ,gb_main )->write_string(dali);
-    awr->awar_string( AWAR_FILTER_NAME,"none" ,gb_main );
+    awr->awar_string( AWAR_ALIGNMENT,dali ,GLOBAL_gb_main )->write_string(dali);
+    awr->awar_string( AWAR_FILTER_NAME,"none" ,GLOBAL_gb_main );
 
-    awt_set_awar_to_valid_filter_good_for_tree_methods(gb_main,awr,AWAR_FILTER_NAME);
+    awt_set_awar_to_valid_filter_good_for_tree_methods(GLOBAL_gb_main,awr,AWAR_FILTER_NAME);
 
-    awr->awar_string( AWAR_FILTER_FILTER,"" ,gb_main );
+    awr->awar_string( AWAR_FILTER_FILTER,"" ,GLOBAL_gb_main );
     awr->awar_string( AWAR_FILTER_ALIGNMENT,"" ,aw_def );
     awr->awar(AWAR_FILTER_ALIGNMENT)->map(AWAR_ALIGNMENT);
 
     awr->awar_string( "tmp/pars/csp/alignment",0 ,aw_def );
     awr->awar("tmp/pars/csp/alignment")->map(AWAR_ALIGNMENT);
 
-    awr->awar_int( AWAR_PARS_TYPE,PARS_WAGNER ,gb_main );
+    awr->awar_int( AWAR_PARS_TYPE,PARS_WAGNER ,GLOBAL_gb_main );
 
-    GBDATA *gb_tree_name = GB_search(gb_main,AWAR_TREE,GB_STRING);
+    GBDATA *gb_tree_name = GB_search(GLOBAL_gb_main,AWAR_TREE,GB_STRING);
     char *tree_name = GB_read_string(gb_tree_name);
     awr->awar_string( AWAR_TREE,0 ,aw_def )->write_string(tree_name);
     free(tree_name);
@@ -1808,10 +1810,10 @@ static void create_all_awars(AW_root *awr, AW_default aw_def)
     awr->awar_int( AWAR_BEST_PARSIMONY,0 ,aw_def );
     awr->awar_int( AWAR_STACKPOINTER,0 ,aw_def );
 
-    create_parsimony_variables(awr, gb_main);
-    create_nds_vars(awr,aw_def,gb_main);
+    create_parsimony_variables(awr, GLOBAL_gb_main);
+    create_nds_vars(awr,aw_def,GLOBAL_gb_main);
 
-    ARB_init_global_awars(awr, aw_def, gb_main);
+    ARB_init_global_awars(awr, aw_def, GLOBAL_gb_main);
     AWT_create_db_browser_awars(awr, aw_def);
 
     free(dali);
@@ -1893,12 +1895,12 @@ int main(int argc, char **argv)
         db_server = argv[1];
     }
 
-    gb_main = GBT_open(db_server,"rw",0);
-    if (!gb_main) {
+    GLOBAL_gb_main = GBT_open(db_server,"rw",0);
+    if (!GLOBAL_gb_main) {
         aw_message(GB_get_error(),"OK");
         exit(EXIT_FAILURE);
     }
-    AWT_announce_db_to_browser(gb_main, GBS_global_string("ARB-database (%s)", db_server));
+    AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
 
     create_all_awars(aw_root,aw_default);
 

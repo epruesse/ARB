@@ -35,7 +35,7 @@
 AW_HEADER_MAIN
 
 ED4_root     *ED4_ROOT;
-GBDATA       *gb_main = NULL;
+GBDATA       *GLOBAL_gb_main = NULL; // global gb_main for arb_edit4
 ED4_database *main_db;
 
 int  TERMINALHEIGHT;            // this variable replaces the define
@@ -346,20 +346,20 @@ static void ed4_bind_mainDB_awar_callbacks(AW_root *root) {
 static void ed4_create_mainDB_awars(AW_root *root, const char *config_name) {
     // WARNING: do not bind callbacks here -> do it in ed4_bind_mainDB_awar_callbacks()
 
-    root->awar_string(AWAR_ITARGET_STRING, "", gb_main);
+    root->awar_string(AWAR_ITARGET_STRING, "", GLOBAL_gb_main);
 
-    root->awar_int(AWAR_CURSOR_POSITION, 1, gb_main);
-    root->awar_int( AWAR_CURSOR_POSITION_LOCAL, 0, gb_main);
-    root->awar_int(AWAR_SET_CURSOR_POSITION, 1, gb_main);
+    root->awar_int(AWAR_CURSOR_POSITION, 1, GLOBAL_gb_main);
+    root->awar_int( AWAR_CURSOR_POSITION_LOCAL, 0, GLOBAL_gb_main);
+    root->awar_int(AWAR_SET_CURSOR_POSITION, 1, GLOBAL_gb_main);
 
-    root->awar_string(AWAR_FIELD_CHOSEN, "", gb_main);
+    root->awar_string(AWAR_FIELD_CHOSEN, "", GLOBAL_gb_main);
 
-    root->awar_string(AWAR_SPECIES_NAME, "", gb_main);
-    root->awar_string(AWAR_SAI_NAME, "", gb_main);
-    root->awar_string(AWAR_SAI_GLOBAL, "", gb_main);
-    //    root->awar_string(AWAR_SAI_COLOR_STR, "", gb_main); //sai visualization in probe match
+    root->awar_string(AWAR_SPECIES_NAME, "", GLOBAL_gb_main);
+    root->awar_string(AWAR_SAI_NAME, "", GLOBAL_gb_main);
+    root->awar_string(AWAR_SAI_GLOBAL, "", GLOBAL_gb_main);
+    //    root->awar_string(AWAR_SAI_COLOR_STR, "", GLOBAL_gb_main); //sai visualization in probe match
 
-    root->awar_string(AWAR_EDIT_CONFIGURATION, config_name, gb_main);
+    root->awar_string(AWAR_EDIT_CONFIGURATION, config_name, GLOBAL_gb_main);
 
     ED4_create_search_awars(root);
 }
@@ -368,7 +368,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     // Note: cursor awars are created in window constructor
 
     ed4_create_mainDB_awars(root, config_name);
-    ARB_init_global_awars(root, AW_ROOT_DEFAULT, gb_main);
+    ARB_init_global_awars(root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
     
     AWT_create_db_browser_awars(root, AW_ROOT_DEFAULT);
 
@@ -457,9 +457,9 @@ const char *ED4_propertyName(int mode) {
     static char *result = 0;
 
     if (!ali_name) {
-        GB_transaction dummy(gb_main);
-        ali_name = GBT_get_default_alignment(gb_main);
-        ali_type = GBT_get_alignment_type_string(gb_main, ali_name);
+        GB_transaction dummy(GLOBAL_gb_main);
+        ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
+        ali_type = GBT_get_alignment_type_string(GLOBAL_gb_main, ali_name);
         result   = new char[21+strlen(ali_name)];
     }
 
@@ -525,14 +525,14 @@ int main(int argc, char **argv)
         argc--; argv++;
     }
 
-    gb_main = GB_open(data_path, "rwt");
-    if (!gb_main)
+    GLOBAL_gb_main = GB_open(data_path, "rwt");
+    if (!GLOBAL_gb_main)
     {
         GB_print_error();
         exit (-1);
     }
 
-    AWT_announce_db_to_browser(gb_main, GBS_global_string("ARB database (%s)", data_path));
+    AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB database (%s)", data_path));
     ED4_ROOT = new ED4_root;
 
     openProperties(); // open properties database
@@ -543,7 +543,7 @@ int main(int argc, char **argv)
     ED4_ROOT->init_alignment();
     ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
-    ED4_ROOT->st_ml = new_ST_ML(gb_main);
+    ED4_ROOT->st_ml = new_ST_ML(GLOBAL_gb_main);
     ED4_ROOT->sequence_colors = new AWT_seq_colors((GBDATA *)ED4_ROOT->aw_root->application_database,(int)ED4_G_SEQUENCES, ED4_refresh_window, 0,0);
 
     ED4_ROOT->edk = new ed_key;
@@ -559,11 +559,11 @@ int main(int argc, char **argv)
     switch (ED4_ROOT->alignment_type) {
         case GB_AT_RNA:
         case GB_AT_DNA:
-            err = ED4_ROOT->helix->init(gb_main);
+            err = ED4_ROOT->helix->init(GLOBAL_gb_main);
             break;
 
         case GB_AT_AA:
-            ED4_ROOT->protstruct = ED4_find_protein_structure_SAI(gb_main, ED4_ROOT->alignment_name);
+            ED4_ROOT->protstruct = ED4_find_protein_structure_SAI(GLOBAL_gb_main, ED4_ROOT->alignment_name);
             if (ED4_ROOT->protstruct) {
                 ED4_ROOT->protstruct_len = strlen(ED4_ROOT->protstruct);
             }
@@ -589,8 +589,8 @@ int main(int argc, char **argv)
 
         if (config_name)
         {
-            GB_begin_transaction(gb_main);
-            GBDATA *gb_configuration = GBT_find_configuration(gb_main, config_name);
+            GB_begin_transaction(GLOBAL_gb_main);
+            GBDATA *gb_configuration = GBT_find_configuration(GLOBAL_gb_main, config_name);
 
             if (gb_configuration) {
                 GBDATA *gb_middle_area = GB_search(gb_configuration, "middle_area", GB_FIND);
@@ -608,7 +608,7 @@ int main(int argc, char **argv)
                 aw_message(GBS_global_string("Could not find configuration '%s'", config_name));
             }
 
-            GB_commit_transaction(gb_main);
+            GB_commit_transaction(GLOBAL_gb_main);
         }
 
         if (!found_config) {
@@ -628,8 +628,8 @@ int main(int argc, char **argv)
 
     ed4_bind_mainDB_awar_callbacks(ED4_ROOT->aw_root);
     {
-        GB_transaction dummy(gb_main);
-        GBDATA *species_container = GB_search(gb_main, "species_data", GB_FIND);
+        GB_transaction dummy(GLOBAL_gb_main);
+        GBDATA *species_container = GB_search(GLOBAL_gb_main, "species_data", GB_FIND);
         GB_add_callback(species_container, (GB_CB_TYPE)GB_CB_CHANGED, (GB_CB)ED4_species_container_changed_cb, 0); // callback if species_data changes
 
         ED4_elements_in_species_container = GB_number_of_subentries(species_container); // store # of species

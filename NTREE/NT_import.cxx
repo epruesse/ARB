@@ -19,11 +19,11 @@
 #define nt_assert(bed) arb_assert(bed)
 
 void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL){
-    gb_dest          = gb_main;
+    gb_dest          = GLOBAL_gb_main;
     AW_window *aww   = ad_create_query_window(awr);
     ad_unquery_all();
     GB_ERROR   error = MG_simple_merge(awr);
-    if (!error) error = NT_format_all_alignments(gb_main);
+    if (!error) error = NT_format_all_alignments(GLOBAL_gb_main);
     ad_query_update_list();
     if (!error) aww->show();
 }
@@ -43,16 +43,16 @@ void NT_import_sequences(AW_window *aww,AW_CL,AW_CL){
 
     awr->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // value is overwritten below
 
-    gb_merge = open_AWTC_import_window(aww->get_root(), "", false, gb_main, (AW_RCB)nt_seq_load_cb, 0, 0);
+    gb_merge = open_AWTC_import_window(aww->get_root(), "", false, GLOBAL_gb_main, (AW_RCB)nt_seq_load_cb, 0, 0);
 
     // change awar values (import window just opened!)
 
     int gb_main_is_genom_db, gb_merge_is_genom_db;
     {
-        GB_transaction t1(gb_main);
+        GB_transaction t1(GLOBAL_gb_main);
         GB_transaction t2(gb_merge);
 
-        gb_main_is_genom_db  = GEN_is_genome_db(gb_main, 0);
+        gb_main_is_genom_db  = GEN_is_genome_db(GLOBAL_gb_main, 0);
         gb_merge_is_genom_db = GEN_is_genome_db(gb_merge, gb_main_is_genom_db);
     }
 
@@ -61,11 +61,11 @@ void NT_import_sequences(AW_window *aww,AW_CL,AW_CL){
     awr->awar(AWAR_READ_GENOM_DB)->write_int(gb_main_is_genom_db ? IMP_GENOME_FLATFILE : IMP_PLAIN_SEQUENCE);
     
     {
-        GB_transaction dummy(gb_main);
-        char *ali_name = GBT_get_default_alignment(gb_main);
-        char *ali_type = GBT_get_alignment_type_string(gb_main, ali_name);
+        GB_transaction dummy(GLOBAL_gb_main);
+        char *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
+        char *ali_type = GBT_get_alignment_type_string(GLOBAL_gb_main, ali_name);
 
-        AWTC_import_set_ali_and_type(awr, ali_name, ali_type, gb_main);
+        AWTC_import_set_ali_and_type(awr, ali_name, ali_type, GLOBAL_gb_main);
 
         free(ali_type);
         free(ali_name);

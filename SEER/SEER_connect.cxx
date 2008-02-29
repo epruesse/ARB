@@ -8,7 +8,7 @@
 #include <seer.hxx>
 #include <seer_interface.hxx>
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 SeerInterfaceCreator *seerInterfaceCreator = 0;
 
 char *sequences_to_load_every_time[] = {

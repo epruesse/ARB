@@ -34,7 +34,7 @@
 
 using namespace std;
 
-extern GBDATA *gb_main;
+extern GBDATA *GLOBAL_gb_main;
 
 // -----------------------------
 //      class GEN_map_window
@@ -171,7 +171,7 @@ static void reinit_NDS_4_window(GEN_map_window *win) {
 }
 
 static void GEN_NDS_changed(GBDATA *, int *, gb_call_back_type) {
-    GEN_make_node_text_init(gb_main);
+    GEN_make_node_text_init(GLOBAL_gb_main);
     GEN_map_manager::with_all_mapped_windows(reinit_NDS_4_window);
 
     // GEN_GRAPHIC->gen_root->reinit_NDS();
@@ -480,7 +480,7 @@ static void GEN_create_genemap_global_awars(AW_root *aw_root,AW_default def) {
 
     aw_root->awar_int(AWAR_GENMAP_AUTO_JUMP, 1);
 
-    GEN_create_nds_vars(aw_root, def, gb_main, GEN_NDS_changed);
+    GEN_create_nds_vars(aw_root, def, GLOBAL_gb_main, GEN_NDS_changed);
 }
 
 static void GEN_add_global_awar_callbacks(AW_root *awr) {
@@ -538,13 +538,13 @@ void GEN_mode_event( AW_window *aws, AW_CL cl_win, AW_CL cl_mode) {
 }
 
 void GEN_undo_cb(AW_window *, AW_CL undo_type) {
-    GB_ERROR error = GB_undo(gb_main,(GB_UNDO_TYPE)undo_type);
+    GB_ERROR error = GB_undo(GLOBAL_gb_main,(GB_UNDO_TYPE)undo_type);
     if (error) {
         aw_message(error);
     }
     else{
-        GB_begin_transaction(gb_main);
-        GB_commit_transaction(gb_main);
+        GB_begin_transaction(GLOBAL_gb_main);
+        GB_commit_transaction(GLOBAL_gb_main);
         // ntw->refresh();
     }
 }
@@ -765,7 +765,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
 
         // test if this gene has been already extracted to a gene-species
 
-        GBDATA   *gb_exist_geneSpec       = GEN_find_pseudo_species(gb_main, species_name, gene_name, eg2ps->pseudo_hash);
+        GBDATA   *gb_exist_geneSpec       = GEN_find_pseudo_species(GLOBAL_gb_main, species_name, gene_name, eg2ps->pseudo_hash);
         bool      create_new_gene_species = true;
         char     *short_name              = 0;
         GB_ERROR  error                   = 0;
@@ -824,7 +824,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
         if (!error) {
             if (create_new_gene_species) {
                 if (!short_name) { // create a new name
-                    error = AWTC_generate_one_name(gb_main, full_name, acc, 0, short_name, false, false);
+                    error = AWTC_generate_one_name(GLOBAL_gb_main, full_name, acc, 0, short_name, false, false);
                     if (!error) { // name has been created
                         if (eg2ps->existing.name_known(short_name)) { // nameserver-generated name is already in use
                             const char *other_acc    = readACC(eg2ps->gb_species_data, short_name);
@@ -877,7 +877,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
 
                 if (!error) { // create the species
                     gen_assert(short_name);
-                    gb_exist_geneSpec = GBT_create_species(gb_main, short_name);
+                    gb_exist_geneSpec = GBT_create_species(GLOBAL_gb_main, short_name);
                     if (!gb_exist_geneSpec) error = GB_export_error("Failed to create pseudo-species '%s'", short_name);
                     else eg2ps->existing.add_name(short_name);
                 }
@@ -1041,11 +1041,11 @@ static void  GEN_perform_command(AW_window *aww, GEN_PERFORM_MODE pmode,
                                  void (*do_command)(int cmode, GBDATA *gb_species, AW_CL cl_user), int mode, AW_CL cl_user) {
     GB_ERROR error = 0;
 
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
 
     switch (pmode) {
         case GEN_PERFORM_ALL_ORGANISMS: {
-            for (GBDATA *gb_organism = GEN_first_organism(gb_main);
+            for (GBDATA *gb_organism = GEN_first_organism(GLOBAL_gb_main);
                  gb_organism;
                  gb_organism = GEN_next_organism(gb_organism))
             {
@@ -1054,7 +1054,7 @@ static void  GEN_perform_command(AW_window *aww, GEN_PERFORM_MODE pmode,
             break;
         }
         case GEN_PERFORM_MARKED_ORGANISMS: {
-            for (GBDATA *gb_organism = GEN_first_marked_organism(gb_main);
+            for (GBDATA *gb_organism = GEN_first_marked_organism(GLOBAL_gb_main);
                  gb_organism;
                  gb_organism = GEN_next_marked_organism(gb_organism))
             {
@@ -1064,9 +1064,9 @@ static void  GEN_perform_command(AW_window *aww, GEN_PERFORM_MODE pmode,
         }
         case GEN_PERFORM_ALL_BUT_CURRENT_ORGANISM: {
             AW_root *aw_root          = aww->get_root();
-            GBDATA  *gb_curr_organism = GEN_get_current_organism(gb_main, aw_root);
+            GBDATA  *gb_curr_organism = GEN_get_current_organism(GLOBAL_gb_main, aw_root);
 
-            for (GBDATA *gb_organism = GEN_first_organism(gb_main);
+            for (GBDATA *gb_organism = GEN_first_organism(GLOBAL_gb_main);
                  gb_organism;
                  gb_organism = GEN_next_organism(gb_organism))
             {
@@ -1076,7 +1076,7 @@ static void  GEN_perform_command(AW_window *aww, GEN_PERFORM_MODE pmode,
         }
         case GEN_PERFORM_CURRENT_ORGANISM: {
             AW_root *aw_root     = aww->get_root();
-            GBDATA  *gb_organism = GEN_get_current_organism(gb_main, aw_root);
+            GBDATA  *gb_organism = GEN_get_current_organism(GLOBAL_gb_main, aw_root);
 
             if (!gb_organism) {
                 error = "First you have to select a species.";
@@ -1092,8 +1092,8 @@ static void  GEN_perform_command(AW_window *aww, GEN_PERFORM_MODE pmode,
         }
     }
 
-    if (!error) GB_commit_transaction(gb_main);
-    else GB_abort_transaction(gb_main);
+    if (!error) GB_commit_transaction(GLOBAL_gb_main);
+    else GB_abort_transaction(GLOBAL_gb_main);
 
     if (error) aw_message(error);
 
@@ -1124,10 +1124,10 @@ void gene_extract_cb(AW_window *aww, AW_CL cl_pmode){
     GB_ERROR  error = GBT_check_alignment_name(ali);
 
     if (!error) {
-        GB_transaction  dummy(gb_main);
-        GBDATA         *gb_ali = GBT_get_alignment(gb_main, ali);
+        GB_transaction  dummy(GLOBAL_gb_main);
+        GBDATA         *gb_ali = GBT_get_alignment(GLOBAL_gb_main, ali);
 
-        if (!gb_ali && !GBT_create_alignment(gb_main,ali,0,0,0,"dna")) {
+        if (!gb_ali && !GBT_create_alignment(GLOBAL_gb_main,ali,0,0,0,"dna")) {
             error = GB_get_error();
         }
     }
@@ -1146,8 +1146,8 @@ void gene_extract_cb(AW_window *aww, AW_CL cl_pmode){
                 gen_count_marked_genes = 0;
                 GEN_perform_command(aww, (GEN_PERFORM_MODE)cl_pmode, do_mark_command_for_one_species, GEN_COUNT_MARKED, 0);
                 
-                GB_transaction  ta(gb_main);
-                GBDATA         *gb_species_data = GB_search(gb_main, "species_data",  GB_CREATE_CONTAINER);
+                GB_transaction  ta(GLOBAL_gb_main);
+                GBDATA         *gb_species_data = GB_search(GLOBAL_gb_main, "species_data",  GB_CREATE_CONTAINER);
                 eg2ps                           = new EG2PS_data(ali, gb_species_data, gen_count_marked_genes);
             }
 
@@ -1198,15 +1198,15 @@ static void mark_organisms(AW_window */*aww*/, AW_CL cl_mark, AW_CL cl_canvas) {
     // cl_mark == 1 -> mark
     // cl_mark == 2 -> invert mark
     // cl_mark == 3 -> mark organisms, unmark rest
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     int            mark = (int)cl_mark;
 
     if (mark == 3) {
-        GBT_mark_all(gb_main, 0); // unmark all species
+        GBT_mark_all(GLOBAL_gb_main, 0); // unmark all species
         mark = 1;
     }
 
-    for (GBDATA *gb_org = GEN_first_organism(gb_main);
+    for (GBDATA *gb_org = GEN_first_organism(GLOBAL_gb_main);
          gb_org;
          gb_org = GEN_next_organism(gb_org))
     {
@@ -1228,15 +1228,15 @@ static void mark_gene_species(AW_window */*aww*/, AW_CL cl_mark, AW_CL cl_canvas
     //  cl_mark == 1 -> mark
     //  cl_mark == 2 -> invert mark
     //  cl_mark == 3 -> mark gene-species, unmark rest
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
     int            mark = (int)cl_mark;
 
     if (mark == 3) {
-        GBT_mark_all(gb_main, 0); // unmark all species
+        GBT_mark_all(GLOBAL_gb_main, 0); // unmark all species
         mark = 1;
     }
 
-    for (GBDATA *gb_pseudo = GEN_first_pseudo_species(gb_main);
+    for (GBDATA *gb_pseudo = GEN_first_pseudo_species(GLOBAL_gb_main);
          gb_pseudo;
          gb_pseudo = GEN_next_pseudo_species(gb_pseudo))
     {
@@ -1252,9 +1252,9 @@ static void mark_gene_species(AW_window */*aww*/, AW_CL cl_mark, AW_CL cl_canvas
     if (canvas) canvas->refresh();
 }
 static void mark_gene_species_of_marked_genes(AW_window */*aww*/, AW_CL cl_canvas, AW_CL) {
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
-    for (GBDATA *gb_species = GBT_first_species(gb_main);
+    for (GBDATA *gb_species = GBT_first_species(GLOBAL_gb_main);
          gb_species;
          gb_species = GBT_next_species(gb_species))
     {
@@ -1272,9 +1272,9 @@ static void mark_gene_species_of_marked_genes(AW_window */*aww*/, AW_CL cl_canva
     if (canvas) canvas->refresh();
 }
 static void mark_organisms_with_marked_genes(AW_window */*aww*/, AW_CL /*cl_canvas*/, AW_CL) {
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
-    for (GBDATA *gb_species = GEN_first_organism(gb_main);
+    for (GBDATA *gb_species = GEN_first_organism(GLOBAL_gb_main);
          gb_species;
          gb_species = GEN_next_organism(gb_species))
     {
@@ -1290,10 +1290,10 @@ static void mark_organisms_with_marked_genes(AW_window */*aww*/, AW_CL /*cl_canv
     }
 }
 static void mark_gene_species_using_current_alignment(AW_window */*aww*/, AW_CL /*cl_canvas*/, AW_CL) {
-    GB_transaction  dummy(gb_main);
-    char           *ali = GBT_get_default_alignment(gb_main);
+    GB_transaction  dummy(GLOBAL_gb_main);
+    char           *ali = GBT_get_default_alignment(GLOBAL_gb_main);
 
-    for (GBDATA *gb_pseudo = GEN_first_pseudo_species(gb_main);
+    for (GBDATA *gb_pseudo = GEN_first_pseudo_species(GLOBAL_gb_main);
          gb_pseudo;
          gb_pseudo = GEN_next_pseudo_species(gb_pseudo))
     {
@@ -1307,10 +1307,10 @@ static void mark_gene_species_using_current_alignment(AW_window */*aww*/, AW_CL 
     }
 }
 static void mark_genes_of_marked_gene_species(AW_window */*aww*/, AW_CL, AW_CL) {
-    GB_transaction  dummy(gb_main);
-    GB_HASH        *organism_hash = GBT_create_organism_hash(gb_main);
+    GB_transaction  dummy(GLOBAL_gb_main);
+    GB_HASH        *organism_hash = GBT_create_organism_hash(GLOBAL_gb_main);
 
-    for (GBDATA *gb_pseudo = GEN_first_pseudo_species(gb_main);
+    for (GBDATA *gb_pseudo = GEN_first_pseudo_species(GLOBAL_gb_main);
          gb_pseudo;
          gb_pseudo = GEN_next_pseudo_species(gb_pseudo))
     {
@@ -1452,8 +1452,8 @@ public:
         GBDATA *gb_gene      = 0;
 
         if (species_name[0] && gene_name[0]) {
-            GB_transaction dummy(gb_main);
-            GBDATA *gb_species = GBT_find_species(gb_main,species_name);
+            GB_transaction dummy(GLOBAL_gb_main);
+            GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,species_name);
             if (gb_species) {
                 gb_gene = GEN_find_gene(gb_species, gene_name);
             }
@@ -1475,7 +1475,7 @@ static void GEN_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
     int                              id         = int(cl_id);
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
     gen_assert(descriptor);
-    if (descriptor) AWT_initialize_input_mask(aww->get_root(), gb_main, &item_type_gene, descriptor->get_internal_maskname(), descriptor->is_local_mask());
+    if (descriptor) AWT_initialize_input_mask(aww->get_root(), GLOBAL_gb_main, &item_type_gene, descriptor->get_internal_maskname(), descriptor->is_local_mask());
 }
 
 static void GEN_create_mask_submenu(AW_window_menu_modes *awm) {
@@ -1483,11 +1483,11 @@ static void GEN_create_mask_submenu(AW_window_menu_modes *awm) {
 }
 
 static AW_window *GEN_create_gene_colorize_window(AW_root *aw_root) {
-    return awt_create_item_colorizer(aw_root, gb_main, &GEN_item_selector);
+    return awt_create_item_colorizer(aw_root, GLOBAL_gb_main, &GEN_item_selector);
 }
 
 static AW_window *GEN_create_organism_colorize_window(AW_root *aw_root) {
-    return awt_create_item_colorizer(aw_root, gb_main, &AWT_organism_selector);
+    return awt_create_item_colorizer(aw_root, GLOBAL_gb_main, &AWT_organism_selector);
 }
 
 // used to avoid that the organisms info window is stored in a menu (or with a button)
@@ -1638,15 +1638,15 @@ void GEN_map_window::init(AW_root *awr) {
 
     GEN_create_genemap_local_awars(awr, AW_ROOT_DEFAULT, window_nr);
 
-    gen_graphic = new GEN_graphic(awr, gb_main, GEN_gene_container_cb_installer, window_nr);
+    gen_graphic = new GEN_graphic(awr, GLOBAL_gb_main, GEN_gene_container_cb_installer, window_nr);
 
     AW_gc_manager aw_gc_manager;
-    gen_canvas = new AWT_canvas(gb_main, this, gen_graphic, aw_gc_manager, AWAR_SPECIES_NAME);
+    gen_canvas = new AWT_canvas(GLOBAL_gb_main, this, gen_graphic, aw_gc_manager, AWAR_SPECIES_NAME);
 
     GEN_add_local_awar_callbacks(awr, AW_ROOT_DEFAULT, this);
 
     {
-        GB_transaction ta(gb_main);
+        GB_transaction ta(GLOBAL_gb_main);
         gen_graphic->reinit_gen_root(gen_canvas, false);
     }
 
@@ -1679,7 +1679,7 @@ void GEN_map_window::init(AW_root *awr) {
     // @@@ FIXME: replace AW_create_gc_window by local function returning same window for all mapped views
     insert_menu_topic("gene_layout",       "Layout",   "L", "gene_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_layout_window, 0);
     insert_menu_topic("gene_options",      "Options",  "O", "gene_options.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_options_window, 0);
-    insert_menu_topic("gene_nds",          "NDS ( Select Gene Information ) ...",      "N","props_nds.hlp",    AWM_ALL, AW_POPUP, (AW_CL)GEN_open_nds_window, (AW_CL)gb_main );
+    insert_menu_topic("gene_nds",          "NDS ( Select Gene Information ) ...",      "N","props_nds.hlp",    AWM_ALL, AW_POPUP, (AW_CL)GEN_open_nds_window, (AW_CL)GLOBAL_gb_main );
     insert_menu_topic("gene_save_props",   "Save Defaults (in ~/.arb_prop/ntree.arb)", "D","savedef.hlp",  AWM_ALL, (AW_CB) AW_save_defaults, 0, 0 );
 
     // ---------------------
@@ -1821,8 +1821,8 @@ AW_window *GEN_map(AW_root *aw_root, int window_number) {
         GEN_create_genemap_global_awars(aw_root, AW_ROOT_DEFAULT);
         GEN_add_global_awar_callbacks(aw_root);
         {
-            GB_transaction dummy(gb_main);
-            GEN_make_node_text_init(gb_main);
+            GB_transaction dummy(GLOBAL_gb_main);
+            GEN_make_node_text_init(GLOBAL_gb_main);
         }
     }
     else {

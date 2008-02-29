@@ -65,11 +65,11 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
 
     switch (datamode) {
         case ED4_D_EXTENDED: {
-            gb_datamode = GBT_find_SAI(gb_main, str);
+            gb_datamode = GBT_find_SAI(GLOBAL_gb_main, str);
             break;
         }
         case ED4_D_SPECIES: {
-            gb_datamode = GBT_find_species(gb_main, str);
+            gb_datamode = GBT_find_species(GLOBAL_gb_main, str);
             break;
         }
     }
@@ -402,8 +402,8 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
                     ED4_ROOT->first_window->delete_window(ED4_ROOT->first_window);
                 }
 
-                GB_commit_transaction( gb_main );
-                GB_close(gb_main);
+                GB_commit_transaction( GLOBAL_gb_main );
+                GB_close(GLOBAL_gb_main);
                 delete ship;
                 delete ED4_ROOT->main_manager;
                 ::exit(0);
@@ -613,14 +613,14 @@ char *EDB_root_bact::generate_config_string(char *confname)                 // a
 
     for (i=0; i<device_manager->children->members(); i++) {
         if (device_manager->children->member(i)->is_area_manager()) {
-            GB_begin_transaction( gb_main );
+            GB_begin_transaction( GLOBAL_gb_main );
             device_manager->children->member(i)->generate_configuration_string( &generated_string );
 
             string_length = strlen(generated_string);
             if (generated_string[string_length - 1] == 1)
                 generated_string[string_length - 1] = '\0';
 
-            GBDATA *gb_configuration = GBT_create_configuration(gb_main,confname);
+            GBDATA *gb_configuration = GBT_create_configuration(GLOBAL_gb_main,confname);
 
             if (counter == 0) {
                 gb_area = GB_search(gb_configuration,"top_area",GB_STRING);
@@ -634,7 +634,7 @@ char *EDB_root_bact::generate_config_string(char *confname)                 // a
             error = GB_write_string(gb_area, generated_string);
             if (error) aw_message(error);
 
-            GB_commit_transaction( gb_main );
+            GB_commit_transaction( GLOBAL_gb_main );
 
             //          printf("AREA:\n%s\n\n\n",generated_string);
 

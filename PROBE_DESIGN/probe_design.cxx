@@ -81,7 +81,7 @@ void NT_group_not_marked_cb(void *dummy, AWT_canvas *ntw); // real prototype is 
 
 saiProbeData *g_spd = 0;
 
-extern GBDATA *gb_main;     /* must exist */
+extern GBDATA *GLOBAL_gb_main;     /* must exist */
 
 struct gl_struct {
     aisc_com *link;
@@ -221,7 +221,7 @@ static const char *PD_probe_pt_look_for_server(AW_root *root)
     char choice[256];
     sprintf(choice, "ARB_PT_SERVER%li", root->awar(AWAR_PT_SERVER)->read_int());
     GB_ERROR error;
-    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, choice, gb_main);
+    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, choice, GLOBAL_gb_main);
     if (error) {
         aw_message(error);
         return 0;
@@ -257,11 +257,11 @@ GB_ERROR pd_get_the_names(bytestring &bs, bytestring &checksum) {
     void     *checksums = GBS_stropen(1024);
     GB_ERROR  error     = 0;
 
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
 
-    char *use = GBT_get_default_alignment(gb_main);
+    char *use = GBT_get_default_alignment(GLOBAL_gb_main);
 
-    for (GBDATA *gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)) {
+    for (GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)) {
         GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
         if (!gb_name) { error = species_requires(gb_species, "name"); break; }
 
@@ -285,7 +285,7 @@ GB_ERROR pd_get_the_names(bytestring &bs, bytestring &checksum) {
     checksum.data = GBS_strclose(checksums);
     checksum.size = strlen(checksum.data)+1;
 
-    GB_commit_transaction(gb_main);
+    GB_commit_transaction(GLOBAL_gb_main);
 
     return error;
 }
@@ -295,10 +295,10 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
     void     *checksums = GBS_stropen(1024);
     GB_ERROR  error     = 0;
 
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
     const char *use = GENOM_ALIGNMENT; // gene pt server is always build on 'ali_genom'
 
-    for (GBDATA *gb_species = GEN_first_organism(gb_main); gb_species && !error; gb_species = GEN_next_organism(gb_species)) {
+    for (GBDATA *gb_species = GEN_first_organism(GLOBAL_gb_main); gb_species && !error; gb_species = GEN_next_organism(gb_species)) {
         const char *sequence     = 0;
         const char *species_name = 0;
         {
@@ -358,7 +358,7 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
     checksum.data = GBS_strclose(checksums);
     checksum.size = strlen(checksum.data)+1;
 
-    GB_commit_transaction(gb_main);
+    GB_commit_transaction(GLOBAL_gb_main);
     return error;
 }
 
@@ -440,8 +440,8 @@ void probe_design_event(AW_window *aww)
 
     bool design_gene_probes = root->awar(AWAR_PD_DESIGN_GENE)->read_int();
     if (design_gene_probes) {
-        GB_transaction ta(gb_main);
-        if (!GEN_is_genome_db(gb_main, -1)) design_gene_probes = false;
+        GB_transaction ta(GLOBAL_gb_main);
+        if (!GEN_is_genome_db(GLOBAL_gb_main, -1)) design_gene_probes = false;
     }
 
     if (!error){
@@ -520,15 +520,15 @@ void probe_design_event(AW_window *aww)
             abort = true;
         }
         else {
-            GB_transaction dummy(gb_main);
+            GB_transaction dummy(GLOBAL_gb_main);
 
             char *h;
-            char *ali_name = GBT_get_default_alignment(gb_main);
+            char *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
 
             for (; unames && !abort; unames = h) {
                 h = strchr(unames,'#');
                 if (h) *(h++) = 0;
-                GBDATA *gb_species = GBT_find_species(gb_main,unames);
+                GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,unames);
                 if (!gb_species) {
                     aw_message(GBS_global_string("Species '%s' not found", unames));
                     abort = true;
@@ -686,7 +686,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
         int                extras       = 1; // mark species and write to temp fields,
         GB_ERROR           error        = 0;
 
-        if (!gb_main) {
+        if (!GLOBAL_gb_main) {
             error = "No database";
         }
 
@@ -829,9 +829,9 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             int mark        = extras && (int)root->awar(AWAR_PD_MATCH_MARKHITS)->read_int();
             int write_2_tmp = extras && (int)root->awar(AWAR_PD_MATCH_WRITE2TMP)->read_int();
 
-            GB_push_transaction(gb_main);
+            GB_push_transaction(GLOBAL_gb_main);
 
-            GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+            GBDATA *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
             if (mark && !error) {
                 if (show_status) aw_status(gene_flag ? "Unmarking all species and genes" : "Unmarking all species");
                 for (GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
@@ -888,7 +888,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                 g_spd->probeSeq.clear();
 
                 if (gene_flag) {
-                    if (!GEN_is_genome_db(gb_main, -1)) {
+                    if (!GEN_is_genome_db(GLOBAL_gb_main, -1)) {
                         error = "Wrong PT-Server chosen (selected one is built for genes)";
                     }
                 }
@@ -1011,7 +1011,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
             delete parser;
             free(result);
 
-            GB_pop_transaction(gb_main);
+            GB_pop_transaction(GLOBAL_gb_main);
         }
 
         if (error) {
@@ -1564,8 +1564,8 @@ static void modify_target_string(AW_window *aww, AW_CL cl_mod_mode) {
         target_string[0] = 0;
     }
     else {
-        GB_transaction dummy(gb_main);
-        GB_alignment_type ali_type = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
+        GB_transaction dummy(GLOBAL_gb_main);
+        GB_alignment_type ali_type = GBT_get_alignment_type(GLOBAL_gb_main, GBT_get_default_alignment(GLOBAL_gb_main));
         if (mod_mode == TS_MOD_REV_COMPL) {
             char T_or_U;
             error = GBT_determine_T_or_U(ali_type, &T_or_U, "reverse-complement");
@@ -1614,8 +1614,8 @@ AW_window *create_IUPAC_resolve_window(AW_root *root) {
 
     // automatically resolve AWAR_ITARGET_STRING:
     {
-        GB_transaction dummy(gb_main);
-        ali_used_for_resolvement = GBT_get_alignment_type(gb_main, GBT_get_default_alignment(gb_main));
+        GB_transaction dummy(GLOBAL_gb_main);
+        ali_used_for_resolvement = GBT_get_alignment_type(GLOBAL_gb_main, GBT_get_default_alignment(GLOBAL_gb_main));
     }
     root->awar(AWAR_ITARGET_STRING)->add_callback(resolve_IUPAC_target_string, AW_CL(aws), AW_CL(iselection_id));
 
@@ -1738,7 +1738,7 @@ void pd_start_pt_server(AW_window *aww)
     GB_ERROR error;
     aw_openstatus("Start a server");
     aw_status("Look for server or start one");
-    error = arb_look_and_start_server(AISC_MAGIC_NUMBER,pt_server,gb_main);
+    error = arb_look_and_start_server(AISC_MAGIC_NUMBER,pt_server,GLOBAL_gb_main);
     if (error) {
         aw_message(error);
     }
@@ -1823,20 +1823,20 @@ static void pd_export_pt_server(AW_window *aww)
 
     bool create_gene_server = awr->awar(AWAR_PROBE_CREATE_GENE_SERVER)->read_int();
     {
-        GB_transaction ta(gb_main);
-        if (create_gene_server && !GEN_is_genome_db(gb_main, -1)) create_gene_server = false;
+        GB_transaction ta(GLOBAL_gb_main);
+        if (create_gene_server && !GEN_is_genome_db(GLOBAL_gb_main, -1)) create_gene_server = false;
 
         // check alignment first
         if (create_gene_server) {
-            GBDATA *gb_ali = GBT_get_alignment(gb_main, GENOM_ALIGNMENT);
+            GBDATA *gb_ali = GBT_get_alignment(GLOBAL_gb_main, GENOM_ALIGNMENT);
             if (!gb_ali) {
                 error             = GB_get_error();
                 if (!error) error = "cannot find alignment '" GENOM_ALIGNMENT "'";
             }
         }
         else { // normal pt server
-            char              *use     = GBT_get_default_alignment(gb_main);
-            GB_alignment_type  alitype = GBT_get_alignment_type(gb_main, use);
+            char              *use     = GBT_get_default_alignment(GLOBAL_gb_main);
+            GB_alignment_type  alitype = GBT_get_alignment_type(GLOBAL_gb_main, use);
             if (alitype == GB_AT_AA) error = "The PT-server does only support RNA/DNA sequence data";
             free(use);
         }
@@ -1873,7 +1873,7 @@ static void pd_export_pt_server(AW_window *aww)
 
             if (create_gene_server) {
                 char *temp_server_name = GBS_string_eval(file, "*.arb=*_temp.arb", 0);
-                error = GB_save_as(gb_main, temp_server_name, mode);
+                error = GB_save_as(GLOBAL_gb_main, temp_server_name, mode);
 
                 if (!error) {
                     // convert database (genes -> species)
@@ -1890,7 +1890,7 @@ static void pd_export_pt_server(AW_window *aww)
                 free(temp_server_name);
             }
             else { // normal pt_server
-                error = GB_save_as(gb_main, file, mode);
+                error = GB_save_as(GLOBAL_gb_main, file, mode);
             }
         }
 
@@ -1907,7 +1907,7 @@ static void pd_export_pt_server(AW_window *aww)
 
         if (!error ) {
             aw_status("Start PT-server (builds in background)");
-            error = arb_start_server(pt_server,gb_main, 1);
+            error = arb_start_server(pt_server,GLOBAL_gb_main, 1);
         }
         aw_closestatus();
 
@@ -1968,7 +1968,7 @@ AW_window *create_probe_admin_window( AW_root *root, AW_CL cl_genome_db)  {
     aws->create_button("KILL_ALL_SERVERS","Stop all servers");
 
     aws->at( "edit" );
-    aws->callback(pd_edit_arb_tcp, (AW_CL)gb_main);
+    aws->callback(pd_edit_arb_tcp, (AW_CL)GLOBAL_gb_main);
     aws->create_button("CREATE_TEMPLATE","Configure");
 
     aws->at( "export" );
@@ -2012,11 +2012,11 @@ static void pg_result_selected(AW_window */*aww*/) {
         long i = 1;
 
         GB_transaction dummy(pg_global.pg_main);
-        GB_transaction dummy2(gb_main);
+        GB_transaction dummy2(GLOBAL_gb_main);
 
-        GBT_mark_all(gb_main, 0); // unmark all species
+        GBT_mark_all(GLOBAL_gb_main, 0); // unmark all species
 
-        GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
+        GBDATA *gb_species_data = GB_search(GLOBAL_gb_main, "species_data", GB_FIND);
         gb_assert(gb_species_data);
         GBDATA *pg_group = GB_search(pg_global.pg_main, "probe_groups/group", GB_FIND);
         long count = 0;

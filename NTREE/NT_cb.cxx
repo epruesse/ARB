@@ -30,7 +30,7 @@ NT_delete_mark_all_cb(void *dummy, AWT_canvas *ntw) {
                    "This will destroy primary data !!!","YES,NO")) return;
     GB_begin_transaction(ntw->gb_main);
     GBDATA *gb_species,*gb_next;
-    for (gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = gb_next ) {
+    for (gb_species = GBT_first_marked_species(ntw->gb_main); gb_species; gb_species = gb_next ) {
         gb_next = GBT_next_marked_species(gb_species);
         if (!error) error = GB_delete(gb_species);
         else    break;
@@ -56,7 +56,7 @@ NT_open_select_tree_window(AW_root *awr,char *awar_tree)
 
     aws->at("selection");
 //  aws->callback((AW_CB0)AW_POPDOWN);
-    awt_create_selection_list_on_trees(gb_main,(AW_window *)aws,awar_tree);
+    awt_create_selection_list_on_trees(GLOBAL_gb_main,(AW_window *)aws,awar_tree);
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
@@ -71,8 +71,8 @@ NT_open_select_tree_window(AW_root *awr,char *awar_tree)
 }
 
 void NT_select_last_tree(AW_window *aww,char *awar_tree){
-    GB_transaction dummy(gb_main);
-    char *ltree = GBT_find_latest_tree(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
+    char *ltree = GBT_find_latest_tree(GLOBAL_gb_main);
     if (ltree){
         aww->get_root()->awar(awar_tree)->write_string(ltree);
         free(ltree);
@@ -92,7 +92,7 @@ AW_window *NT_open_select_alignment_window(AW_root *awr)
     //  aws->at(10,10);
     aws->auto_space(0,0);
     aws->callback((AW_CB0)AW_POPDOWN);
-    awt_create_selection_list_on_ad(gb_main,(AW_window *)aws,AWAR_DEFAULT_ALIGNMENT,"*=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main,(AW_window *)aws,AWAR_DEFAULT_ALIGNMENT,"*=");
     //  aws->at_newline();
 
     aws->at("close");
@@ -114,7 +114,7 @@ void NT_system_cb(AW_window *aww, AW_CL command, AW_CL auto_help_file)
     if (auto_help_file) {
         AW_POPUP_HELP(aww,auto_help_file);
     }
-    GBCMC_system(gb_main,sys);
+    GBCMC_system(GLOBAL_gb_main,sys);
 }
 
 void NT_system_cb2(AW_window *aww, AW_CL command, AW_CL auto_help_file)

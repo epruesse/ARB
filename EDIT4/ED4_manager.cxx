@@ -659,11 +659,11 @@ ED4_returncode	ED4_manager::handle_move( ED4_move_info *mi )					// handles a mo
         object->parent = this;
 
         if (old_parent != this) { // check whether consensus has to be calculated new or not
-            GB_push_transaction( gb_main );
+            GB_push_transaction( GLOBAL_gb_main );
             update_consensus( old_parent, this, object );
             rebuild_consensi( old_parent, ED4_U_UP );
             rebuild_consensi( this, ED4_U_UP );
-            GB_pop_transaction( gb_main );
+            GB_pop_transaction( GLOBAL_gb_main );
         }
 
         if ((i_am_consensus && object->parent != old_parent) || !i_am_consensus) {
