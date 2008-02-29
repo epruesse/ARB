@@ -479,6 +479,7 @@ inline void GB_SETSMD(GBDATA *gbd, long siz, long memsiz, char *dat) {
 }
 
 inline void GB_SETSMDMALLOC(GBDATA *gbd, long siz, long memsiz, char *dat) {
+    gb_assert(dat);
     if (GB_CHECKINTERN(siz,memsiz)) {
         GB_SETINTERN(gbd);
         gbd->info.istr.size = (unsigned char)siz;
@@ -492,6 +493,22 @@ inline void GB_SETSMDMALLOC(GBDATA *gbd, long siz, long memsiz, char *dat) {
         exData = gbm_get_mem((size_t)memsiz,GB_GBM_INDEX(gbd));
         SET_GB_EXTERN_DATA_DATA(gbd->info.ex,exData);
         if (dat) GB_MEMCPY(exData, (char *)dat, (size_t)(memsiz));
+    }
+    GB_INDEX_CHECK_IN(gbd);
+}
+
+inline void GB_SETSMDMALLOC_UNINITIALIZED(GBDATA *gbd, long siz, long memsiz) {
+    if (GB_CHECKINTERN(siz,memsiz)) {
+        GB_SETINTERN(gbd);
+        gbd->info.istr.size = (unsigned char)siz;
+        gbd->info.istr.memsize = (unsigned char)memsiz;
+    }else{
+        char *exData;
+        GB_SETEXTERN(gbd);
+        gbd->info.ex.size = siz;
+        gbd->info.ex.memsize = memsiz;
+        exData = gbm_get_mem((size_t)memsiz,GB_GBM_INDEX(gbd));
+        SET_GB_EXTERN_DATA_DATA(gbd->info.ex,exData);
     }
     GB_INDEX_CHECK_IN(gbd);
 }
@@ -511,9 +528,10 @@ do {                                                        \
     GB_INDEX_CHECK_IN(gbd);                                 \
 } while(0)
 
-    /** copies any data into any db field */
+/** copies any data into any db field */
 #define GB_SETSMDMALLOC(gbd,siz,memsiz,dat)                                                 \
 do {                                                                                        \
+    gb_assert(dat);                                                                         \
     if (GB_CHECKINTERN(siz,memsiz)) {                                                       \
         GB_SETINTERN(gbd);                                                                  \
         (gbd)->info.istr.size = (unsigned char)(siz);                                       \
@@ -531,13 +549,31 @@ do {                                                                            
     GB_INDEX_CHECK_IN(gbd);                                                                 \
 }while(0)
 
+/** allocate data  */
+#define GB_SETSMDMALLOC_UNINITIALIZED(gbd,siz,memsiz)                                       \
+do {                                                                                        \
+    if (GB_CHECKINTERN(siz,memsiz)) {                                                       \
+        GB_SETINTERN(gbd);                                                                  \
+        (gbd)->info.istr.size = (unsigned char)(siz);                                       \
+        (gbd)->info.istr.memsize = (unsigned char)(memsiz);                                 \
+    }else{                                                                                  \
+        char *exData;                                                                       \
+        GB_SETEXTERN(gbd);                                                                  \
+        (gbd)->info.ex.size = (siz);                                                        \
+        (gbd)->info.ex.memsize = (memsiz);                                                  \
+        exData = gbm_get_mem((size_t)(memsiz),GB_GBM_INDEX(gbd));                           \
+        SET_GB_EXTERN_DATA_DATA((gbd)->info.ex,exData);                                     \
+    }                                                                                       \
+    GB_INDEX_CHECK_IN(gbd);                                                                 \
+}while(0)
 
-    /**     copy all info + external data mem
-        to an one step undo buffer (to abort a transaction */
+
 
 #endif
 
 /********************* UNDO  ******************/
+/** copy all info + external data mem
+    to an one step undo buffer (to abort a transaction */
 
 #ifdef __cplusplus
 
