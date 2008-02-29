@@ -998,7 +998,6 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 		proto
 
 %.clean:
-	@echo "$(ARBHOME)/$(@D)/Makefile:1: here"
 	@$(MAKE) -C $(@D) \
 		"AUTODEPENDS=0" \
 		"MACH=$(MACH)" \
