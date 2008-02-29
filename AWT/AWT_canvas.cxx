@@ -806,23 +806,12 @@ void AWT_graphic::push_transaction(GBDATA *gb_main) {
     GB_push_transaction(gb_main);
 }
 
-void AWT_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod key_modifier, AW_key_code /*key_code*/, char key_char, AW_event_type type,AW_pos x, AW_pos y,
-                          AW_clicked_line *cl, AW_clicked_text *ct){
-    AWUSE(device);
-    AWUSE(type);
-    AWUSE(button);
-    AWUSE(key_modifier);
-    AWUSE(key_char);
-    AWUSE(cmd);
-    AWUSE(x);
-    AWUSE(y);
-    AWUSE(cl);
-    AWUSE(ct);
+void AWT_graphic::command(AW_device *, AWT_COMMAND_MODE, int, AW_key_mod, AW_key_code, char,
+                          AW_event_type, AW_pos, AW_pos, AW_clicked_line *, AW_clicked_text *)
+{
 }
 
-void AWT_graphic::text(AW_device *device, char *tmp_text){
-    AWUSE(device);
-    AWUSE(tmp_text);
+void AWT_graphic::text(AW_device */*device*/, char */*text*/) {
 }
 
 // --------------------------
