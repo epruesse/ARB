@@ -169,7 +169,7 @@ void PrimerDesign::run ( int print_stages_ )
     }
 
 #if defined(DEBUG)
-    printf("sizeof(Node) = %i\n", sizeof(Node));
+    printf("sizeof(Node) = %zu\n", sizeof(Node));
 #endif // DEBUG
 
     show_status("searching possible primers");

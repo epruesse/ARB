@@ -85,7 +85,7 @@ Boolean read_tree(int *n,double *s,int *a,int *b,int *ptr)
  
 	if(fgets(line,MAXLINE+1,tree)==NULL) return FALSE;
 
-	sscanf(line,"%f%d%d%d",s,a,b,n);
+	sscanf(line,"%lf%d%d%d",s,a,b,n);
 	for(i=MAXLINE, seq_no=nseqs; seq_no>0; i--) {
 			if(line[i] == '0') {
 				ptr[seq_no] = 0;

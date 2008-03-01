@@ -410,7 +410,7 @@ namespace {
                     error = "probe group with zero members (internal error)";
                 }
                 else {
-                    fprintf(out, "result=ok\nmembercount=%i\n", members.size());
+                    fprintf(out, "result=ok\nmembercount=%zu\n", members.size());
                     int c = 1;
                     for (list<string>::iterator m = members.begin(); m != members.end(); ++m, ++c) {
                         fprintf(out, "m%i=%s\n", c, m->c_str());
@@ -471,11 +471,11 @@ namespace {
                             error          = extractProbes(group_id, exactProbes);
 
                             if (!error && (exactProbes.size() != exact)) {
-                                error = GBS_global_string("Expected to find %i probes (found: %i)", exact, exactProbes.size());
+                                error = GBS_global_string("Expected to find %zu probes (found: %zu)", exact, exactProbes.size());
                             }
 
                             if (!error) {
-                                fprintf(out, "result=ok\nfound=%i\n", exact);
+                                fprintf(out, "result=ok\nfound=%zu\n", exact);
                                 int count = 0;
 
                                 for (list<const char*>::iterator p = exactProbes.begin(); p != exactProbes.end(); ++p, ++count) {
@@ -532,7 +532,7 @@ namespace {
                         }
 
                         if (!error) {
-                            fprintf(out, "result=ok\nfound=%i\n", coverageProbes.size()+nonGroupHitProbes.size());
+                            fprintf(out, "result=ok\nfound=%zu\n", coverageProbes.size()+nonGroupHitProbes.size());
                             int count = 0;
 
                             for (list<const char*>::iterator p = coverageProbes.begin(); p != coverageProbes.end(); ++p, ++count) {

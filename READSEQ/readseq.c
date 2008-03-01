@@ -911,9 +911,9 @@ long      outindexmax= 0, noutindex= 0, *outindex = NULL;
         if (manyout) {
           if ( whichSeq == 1 ) erralert(eOneFormat);
           else if (closeout) {
-            sprintf( stemp,"%s_%d", oname, whichSeq);
+            sprintf( stemp,"%s_%ld", oname, whichSeq);
             freopen( stemp, "w", fout);
-            fprintf( stderr,"Writing sequence %d to file %s\n", whichSeq, stemp);
+            fprintf( stderr,"Writing sequence %ld to file %s\n", whichSeq, stemp);
             }
           }
 
@@ -955,7 +955,7 @@ long      outindexmax= 0, noutindex= 0, *outindex = NULL;
         if (outform == kMSF) checksum= GCGchecksum(seq, seqlen, &checkall);
         else if (verbose) checksum= seqchecksum(seq, seqlen, &checkall);
         if (verbose)
-          fprintf( stderr, "Sequence %d, length= %d, checksum= %X, format= %s, id= %s\n",
+          fprintf( stderr, "Sequence %ld, length= %ld, checksum= %lX, format= %s, id= %s\n",
                 whichSeq, seqlen, checksum, formatstr(format), seqidptr);
 
         if (err != 0) erralert(err);
@@ -973,8 +973,8 @@ long      outindexmax= 0, noutindex= 0, *outindex = NULL;
               if (seqout == 0) {
                 if (!interleaved) {  /*  bug, nseq is for 1st infile only */
                   if (chooseall) i= nseq; else i=1;
-                  if (phylvers >= 4) fprintf(foo," %d %d\n", i, seqlen);
-                  else fprintf(foo," %d %d YF\n", i, seqlen);
+                  if (phylvers >= 4) fprintf(foo," %ld %ld\n", i, seqlen);
+                  else fprintf(foo," %ld %ld YF\n", i, seqlen);
                   }
                 seqlen0 = seqlen;
                 }
@@ -1082,7 +1082,7 @@ fini:
 
   if (outform == kMSF) {
     if (*oname) cp= oname; else cp= inputfile;
-    fprintf(foo,"\n %s  MSF: %d  Type: N  January 01, 1776  12:00  Check: %d ..\n\n",
+    fprintf(foo,"\n %s  MSF: %ld  Type: N  January 01, 1776  12:00  Check: %lu ..\n\n",
                   cp, seqlen, checkall);
     }
 
@@ -1094,8 +1094,8 @@ fini:
     }
 
   if (outform==kPhylip && interleaved) {
-    if (phylvers >= 4) fprintf(foo," %d %d\n", seqout, seqlen);
-    else fprintf(foo," %d %d YF\n", seqout, seqlen);
+    if (phylvers >= 4) fprintf(foo," %d %ld\n", seqout, seqlen);
+    else fprintf(foo," %d %ld YF\n", seqout, seqlen);
     }
 
   if (interleaved) {
@@ -1119,7 +1119,7 @@ fini:
           case kOtherSeq: cp= "dna"; break;
           }
         fprintf(foo,"\nbegin data;\n");
-        fprintf(foo," dimensions ntax=%d nchar=%d;\n", seqout, seqlen);
+        fprintf(foo," dimensions ntax=%d nchar=%ld;\n", seqout, seqlen);
         /* fix by Ralf Westram (ARB): '-' means 'gap' ('.' means 'missing') */
         fprintf(foo," format datatype=%s interleave=yes missing=. gap=%c", cp, gPretty.gapchar);
         if (gPretty.domatch) fprintf(foo," matchchar=%c", gPretty.matchchar);

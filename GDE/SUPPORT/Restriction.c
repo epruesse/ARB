@@ -38,7 +38,7 @@ char **av;
 		if(numseqs>1)
 */
 		printf("name:%s\n",data[i].name);
-		printf("length:%d\n",strlen(data[i].nuc));
+		printf("length:%zu\n",strlen(data[i].nuc));
 		if(numseqs>1)
 			printf("nodash:\n");
 		printf("start:\n");

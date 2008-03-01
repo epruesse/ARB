@@ -126,7 +126,7 @@ public:
         }
 
         if (size_t(filter->filter_len) < max_ali_len) {
-            aw_message(GBS_global_string("Warning: Your filter is shorter than the alignment (%li<%u)",
+            aw_message(GBS_global_string("Warning: Your filter is shorter than the alignment (%li<%zu)",
                                          filter->filter_len, max_ali_len));
             max_ali_len = filter->filter_len;
         }

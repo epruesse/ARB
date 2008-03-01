@@ -188,10 +188,10 @@ static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /
     }
     else {
         if (deleted_gene_datas) {
-            aw_message(GBS_global_string("Deleted %u useless empty 'gene_data' entries.", deleted_gene_datas));
+            aw_message(GBS_global_string("Deleted %zu useless empty 'gene_data' entries.", deleted_gene_datas));
         }
         if (generated_gene_datas) {
-            aw_message(GBS_global_string("Re-created %u missing 'gene_data' entries.\nThese organisms have no genes yet!", generated_gene_datas));
+            aw_message(GBS_global_string("Re-created %zu missing 'gene_data' entries.\nThese organisms have no genes yet!", generated_gene_datas));
         }
     }
     return error;
@@ -274,7 +274,7 @@ static GB_ERROR NT_del_mark_move_REF(GBDATA *gb_main, size_t species_count, size
     }
     else {
         if (removed) {
-            aw_message(GBS_global_string("Deleted %u useless 'mark' entries.", removed));
+            aw_message(GBS_global_string("Deleted %zu useless 'mark' entries.", removed));
         }
     }
 

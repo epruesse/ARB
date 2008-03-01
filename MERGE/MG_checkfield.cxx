@@ -127,8 +127,8 @@ char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, lo
                 }
             }
             if (count >=0){
-                sprintf(dest1,"%i ",s1-str1-1);
-                sprintf(dest2,"%i ",s2-str2-1);
+                sprintf(dest1,"%ti ",s1-str1-1);
+                sprintf(dest2,"%ti ",s2-str2-1);
                 dest1 += strlen(dest1);
                 dest2 += strlen(dest2);
             }
@@ -137,8 +137,8 @@ char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, lo
     } while (c1 && c2);
 
     if (c1 || c2) {
-        sprintf(dest1,"... %i ",s1-str1-1);
-        sprintf(dest2,"... %i ",s2-str2-1);
+        sprintf(dest1,"... %ti ",s1-str1-1);
+        sprintf(dest2,"... %ti ",s2-str2-1);
         dest1 += strlen(dest1);
         dest2 += strlen(dest2);
     }
