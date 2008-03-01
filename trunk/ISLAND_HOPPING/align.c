@@ -9,12 +9,6 @@
 #define EXTERN
 #include "i-hopper.h"
 
-#define P    align_P
-#define S    align_S
-#define E    align_E
-
-#define U    align_U
-
 #define MSIZE          512
 #define ESIZE          36
 
@@ -47,28 +41,28 @@ typedef struct island {
     struct fragment *fragments;
 } Island;
 
-double **P,**S;
+static double **GP,**GS;
 /*
   #define TEST
 */
 #ifdef TEST
 
 #define TELEN 193
-double TE[TELEN][TELEN];
+static double TE[TELEN][TELEN];
 
-int te=TRUE;
+static int te=TRUE;
 
 #endif
 
-Score **U;
+static Score **U;
 
-double Thres,LogThres,Supp,GapA,GapB,GapC,expectedScore,**E;
+static double Thres,LogThres,Supp,GapA,GapB,GapC,expectedScore,**GE;
 
-Island *Z,**ZB,**ZE;
+static Island *Z,**ZB,**ZE;
 
 /*============================================================================*/
 
-void initScore(double ***pP,double ***pS) {
+static void initScore(double ***pP,double ***pS) {
 
     *pP=newDoubleMatrix(N,N);
     *pS=newDoubleMatrix(N1,N1);
@@ -77,7 +71,7 @@ void initScore(double ***pP,double ***pS) {
 
 /*............................................................................*/
 
-void uninitScore(double ***pP,double ***pS) {
+static void uninitScore(double ***pP,double ***pS) {
 
     freeMatrix(pS);
     freeMatrix(pP);
@@ -86,7 +80,7 @@ void uninitScore(double ***pP,double ***pS) {
 
 /*............................................................................*/
 
-void updateScore(
+static void updateScore(
                  double **P,double **S,
                  double F[N],double X[6],double dist
                  ) {
@@ -131,19 +125,78 @@ void updateScore(
 
 /*============================================================================*/
 
-void initEntropy(double ***EE) {
+static void initEntropy(double ***EE) {
     *EE=newDoubleMatrix(ESIZE+1,MSIZE);
 }
 
 /*............................................................................*/
 
-void uninitEntropy(double ***EE) {
+static void uninitEntropy(double ***EE) {
     freeMatrix(EE);
 }
 
 /*............................................................................*/
 
-void updateEntropy(double **P,double **S,double **E) {
+static double getEntropy(double **E,double m,int l) {
+    int k,ia,ib,ja,jb;
+    double *M,mmin,idm,la,lb,ma,mb;
+
+    M=E[0]; ma=0.5*(M[1]-M[0]); mmin=M[0]-ma; idm=0.5/ma;
+
+    k=floor((m-mmin)*idm);
+    if(k>=MSIZE) k=MSIZE-1; else if(k<0) k=0;
+
+    if(k==0)       {ja=k;   jb=k+1;} else
+        if(k==MSIZE-1) {ja=k-1; jb=k;  } else
+            if(m>M[k])     {ja=k;   jb=k+1;} else
+            {ja=k-1; jb=k;  }
+
+    ma=M[ja]; mb=M[jb];
+
+    if(l<=16) {
+        return(
+               ((mb-m)*E[l][ja]+(m-ma)*E[l][jb])/(mb-ma)
+               );
+    } else {
+        if(l<=32) {
+            if(l<=18) {la=16; lb=18; ia=16; ib=17;} else
+                if(l<=20) {la=18; lb=20; ia=17; ib=18;} else
+                    if(l<=22) {la=20; lb=22; ia=18; ib=19;} else
+                        if(l<=24) {la=22; lb=24; ia=19; ib=20;} else
+                            if(l<=26) {la=24; lb=26; ia=20; ib=21;} else
+                                if(l<=28) {la=26; lb=28; ia=21; ib=22;} else
+                                    if(l<=30) {la=28; lb=30; ia=22; ib=23;} else
+                                        if(l<=32) {la=30; lb=32; ia=23; ib=24;}
+        } else
+            if(l<=64) {
+                if(l<=36) {la=32; lb=36; ia=24; ib=25;} else
+                    if(l<=40) {la=36; lb=40; ia=25; ib=26;} else
+                        if(l<=44) {la=40; lb=44; ia=26; ib=27;} else
+                            if(l<=48) {la=44; lb=48; ia=27; ib=28;} else
+                                if(l<=52) {la=48; lb=52; ia=28; ib=29;} else
+                                    if(l<=56) {la=52; lb=56; ia=29; ib=30;} else
+                                        if(l<=60) {la=56; lb=60; ia=30; ib=31;} else
+                                            if(l<=64) {la=60; lb=64; ia=31; ib=32;}
+            } else {
+                if(l<= 128) {la=  64; lb= 128; ia=32; ib=33;} else
+                    if(l<= 256) {la= 128; lb= 256; ia=33; ib=34;} else
+                        if(l<= 512) {la= 256; lb= 512; ia=34; ib=35;} else
+                        {la= 512; lb=1024; ia=35; ib=36;}
+            }
+        return(
+               (
+                +(lb-l)*((mb-m)*E[ia][ja]+(m-ma)*E[ia][jb])
+                +(l-la)*((mb-m)*E[ib][ja]+(m-ma)*E[ib][jb])
+                )
+               /((lb-la)*(mb-ma))
+               );
+    }
+
+}
+
+/*............................................................................*/
+
+static void updateEntropy(double **P,double **S,double **E) {
     int i,j,k,l,ll,lll;
     double *M,m,dm,idm,mmin,mmax;
 
@@ -232,15 +285,18 @@ void updateEntropy(double **P,double **S,double **E) {
     for(i=1;i<=ESIZE;i++)
         for(j=0;j<MSIZE;j++) E[i][j]=(E[i][j]>REAL_MIN)?log(E[i][j]):LOG_REAL_MIN;
 
-    {FILE *fp; double getEntropy(double **E,double m,int l); int nbp; double m0,dm;
+    {
+        FILE *fp;
+        int nbp;
+        double m0,dm2;
 
         nbp=22;
         fp=fopen("distrib.txt","wt");
         fprintf(fp,"\n(* score per basepair distribution for gap-less random path 1=Smin 100=Smax *)\nListPlot3D[({");
-        m0=M[0]; dm=(M[MSIZE-1]-M[0])/99.;
+        m0=M[0]; dm2=(M[MSIZE-1]-M[0])/99.;
         for(i=1;i<=nbp;i++) {
             fprintf(fp,"\n{%f",exp(getEntropy(E,m0,i)));
-            for(j=1;j<=99;j++) fprintf(fp,",%f",exp(getEntropy(E,m0+dm*j,i)));
+            for(j=1;j<=99;j++) fprintf(fp,",%f",exp(getEntropy(E,m0+dm2*j,i)));
             fprintf(fp,"}"); if(i<nbp) fprintf(fp,",");
         }
         fprintf(fp,"}),PlotRange->{{1,100},{1,%d},{0,1}},ViewPoint->{1.5,1.1,0.8}]\n",nbp);
@@ -250,68 +306,9 @@ void updateEntropy(double **P,double **S,double **E) {
 
 }
 
-/*............................................................................*/
-
-double getEntropy(double **E,double m,int l) {
-    int k,ia,ib,ja,jb;
-    double *M,mmin,idm,la,lb,ma,mb;
-
-    M=E[0]; ma=0.5*(M[1]-M[0]); mmin=M[0]-ma; idm=0.5/ma;
-
-    k=floor((m-mmin)*idm);
-    if(k>=MSIZE) k=MSIZE-1; else if(k<0) k=0;
-
-    if(k==0)       {ja=k;   jb=k+1;} else
-        if(k==MSIZE-1) {ja=k-1; jb=k;  } else
-            if(m>M[k])     {ja=k;   jb=k+1;} else
-            {ja=k-1; jb=k;  }
-
-    ma=M[ja]; mb=M[jb];
-
-    if(l<=16) {
-        return(
-               ((mb-m)*E[l][ja]+(m-ma)*E[l][jb])/(mb-ma)
-               );
-    } else {
-        if(l<=32) {
-            if(l<=18) {la=16; lb=18; ia=16; ib=17;} else
-                if(l<=20) {la=18; lb=20; ia=17; ib=18;} else
-                    if(l<=22) {la=20; lb=22; ia=18; ib=19;} else
-                        if(l<=24) {la=22; lb=24; ia=19; ib=20;} else
-                            if(l<=26) {la=24; lb=26; ia=20; ib=21;} else
-                                if(l<=28) {la=26; lb=28; ia=21; ib=22;} else
-                                    if(l<=30) {la=28; lb=30; ia=22; ib=23;} else
-                                        if(l<=32) {la=30; lb=32; ia=23; ib=24;}
-        } else
-            if(l<=64) {
-                if(l<=36) {la=32; lb=36; ia=24; ib=25;} else
-                    if(l<=40) {la=36; lb=40; ia=25; ib=26;} else
-                        if(l<=44) {la=40; lb=44; ia=26; ib=27;} else
-                            if(l<=48) {la=44; lb=48; ia=27; ib=28;} else
-                                if(l<=52) {la=48; lb=52; ia=28; ib=29;} else
-                                    if(l<=56) {la=52; lb=56; ia=29; ib=30;} else
-                                        if(l<=60) {la=56; lb=60; ia=30; ib=31;} else
-                                            if(l<=64) {la=60; lb=64; ia=31; ib=32;}
-            } else {
-                if(l<= 128) {la=  64; lb= 128; ia=32; ib=33;} else
-                    if(l<= 256) {la= 128; lb= 256; ia=33; ib=34;} else
-                        if(l<= 512) {la= 256; lb= 512; ia=34; ib=35;} else
-                        {la= 512; lb=1024; ia=35; ib=36;}
-            }
-        return(
-               (
-                +(lb-l)*((mb-m)*E[ia][ja]+(m-ma)*E[ia][jb])
-                +(l-la)*((mb-m)*E[ib][ja]+(m-ma)*E[ib][jb])
-                )
-               /((lb-la)*(mb-ma))
-               );
-    }
-
-}
-
 /*============================================================================*/
 
-Island *newIsland(char *X,char *Y,int i,int j,int d) {
+static Island *newIsland(char *X,char *Y,int i,int j,int d) {
     Island *p; Fragment *f,**ff,*L; int k,ii,jj,iii,jjj,l; double s;
 
     p=newBlock(sizeof(Island));
@@ -321,7 +318,7 @@ Island *newIsland(char *X,char *Y,int i,int j,int d) {
     if(d>0) {
         ff=&L;
         for(;;) {
-            s+=S[(int)X[ii]][(int)Y[jj]];
+            s+=GS[(int)X[ii]][(int)Y[jj]];
             if(++l==1) {iii=ii; jjj=jj;}
             k=U[ii][jj].up;
             if(k) {
@@ -338,7 +335,7 @@ Island *newIsland(char *X,char *Y,int i,int j,int d) {
     } else {
         L=NULL;
         for(;;) {
-            s+=S[(int)X[ii]][(int)Y[jj]];
+            s+=GS[(int)X[ii]][(int)Y[jj]];
             if(++l==1) {iii=ii; jjj=jj;}
             k=U[ii][jj].down;
             if(k) {
@@ -362,7 +359,7 @@ Island *newIsland(char *X,char *Y,int i,int j,int d) {
 
 /*............................................................................*/
 
-void freeIsland(Island **pp) {
+static void freeIsland(Island **pp) {
     Island *p; Fragment *q;
 
     p=*pp;
@@ -375,7 +372,7 @@ void freeIsland(Island **pp) {
 
 /*............................................................................*/
 
-void registerIsland(Island *f) {
+static void registerIsland(Island *f) {
     Island **pli;
 
     f->next=Z; Z=f;
@@ -390,7 +387,7 @@ void registerIsland(Island *f) {
 
 /*............................................................................*/
 
-Island *selectUpperIslands(Island *f,int nX,int nY,int *incomplete) {
+static Island *selectUpperIslands(Island *f,int nX,int nY,int *incomplete) {
     int i,j; Island *l,*g;
 
     l=NULL;
@@ -409,7 +406,7 @@ Island *selectUpperIslands(Island *f,int nX,int nY,int *incomplete) {
 
 /*............................................................................*/
 
-Island *selectLowerIslands(Island *f,int *incomplete) {
+static Island *selectLowerIslands(Island *f,int *incomplete) {
     int i; Island *l,*g;
 
     l=NULL;
@@ -428,7 +425,7 @@ Island *selectLowerIslands(Island *f,int *incomplete) {
 
 /*............................................................................*/
 
-int areEqual(Island *a,Island *b) {
+static int areEqual(Island *a,Island *b) {
     Fragment *fa,*fb;
 
     if( a->beginX != b->beginX ) return(FALSE);
@@ -450,7 +447,7 @@ int areEqual(Island *a,Island *b) {
 
 /*............................................................................*/
 
-int isUnique(Island *f) {
+static int isUnique(Island *f) {
     Island *v;
 
     for(v=ZB[f->beginX+f->beginY];v;v=v->nextBeginIndex)
@@ -461,7 +458,7 @@ int isUnique(Island *f) {
 
 /*............................................................................*/
 
-int isSignificant(Island *f) {
+static int isSignificant(Island *f) {
     int l;
     Fragment *q;
 
@@ -469,7 +466,7 @@ int isSignificant(Island *f) {
 
     if(l<MINLENGTH) return(FALSE);
 
-    if(getEntropy(E,f->score/l,l)<=LogThres) return(TRUE);
+    if(getEntropy(GE,f->score/l,l)<=LogThres) return(TRUE);
 
     return(FALSE);
 }
@@ -480,7 +477,7 @@ int I,J,K;
 
 /*....*/
 
-void drawLowerPath(Island *f,int nX,char *X,char *XX,int nY,char *Y,char *YY) {
+static void drawLowerPath(Island *f,int nX,char *X,char *XX,int nY,char *Y,char *YY) {
     int k;
     Fragment *q;
 
@@ -497,7 +494,7 @@ void drawLowerPath(Island *f,int nX,char *X,char *XX,int nY,char *Y,char *YY) {
 
 /*....*/
 
-void drawPath(Island *f,int nX,char *X,char *XX,int nY,char *Y,char *YY) {
+static void drawPath(Island *f,int nX,char *X,char *XX,int nY,char *Y,char *YY) {
     int k;
     Island *p;
     Fragment *q;
@@ -524,7 +521,7 @@ void drawPath(Island *f,int nX,char *X,char *XX,int nY,char *Y,char *YY) {
 
 /*............................................................................*/
 
-void drawIsland(Island *f) {
+static void drawIsland(Island *f) {
     int i,j,k;
     Fragment *q;
 
@@ -552,19 +549,19 @@ void drawIsland(Island *f) {
 
 /*============================================================================*/
 
-double secS(int i,int j,char X[],int secX[],char Y[],int secY[]) {
+static double secS(int i,int j,char X[],int secX[],char Y[],int secY[]) {
 
     if(secX[i]||secY[j]) {
-        if(secX[i]&&secY[j]) return(S[(int)X[i]][(int)Y[j]]-Supp*expectedScore);
+        if(secX[i]&&secY[j]) return(GS[(int)X[i]][(int)Y[j]]-Supp*expectedScore);
         return(-1.e34);
     }
 
-    return(S[(int)X[i]][(int)Y[j]]);
+    return(GS[(int)X[i]][(int)Y[j]]);
 }
 
 /*============================================================================*/
 
-void AlignTwo(
+static void AlignTwo(
               int nX,char X[],int secX[],char XX[],int nY,char Y[],int secY[],char YY[]
               ) {
     int r,changed,i,j,k,ii,jj,startx,stopx,starty,stopy;
@@ -847,19 +844,19 @@ void Align(
     ZB=(Island **)newVector(2*maxlen,sizeof(Island *));
     ZE=(Island **)newVector(2*maxlen,sizeof(Island *));
 
-    initScore(&P,&S);
-    initEntropy(&E);
+    initScore(&GP,&GS);
+    initEntropy(&GE);
 
-    updateScore(P,S,F,R,dist);
-    updateEntropy(P,S,E);
+    updateScore(GP,GS,F,R,dist);
+    updateEntropy(GP,GS,GE);
 
     expectedScore=0.;
-    for(i=0;i<N;i++) for(j=0;j<N;j++) expectedScore+=P[i][j]*S[i][j];
+    for(i=0;i<N;i++) for(j=0;j<N;j++) expectedScore+=GP[i][j]*GS[i][j];
 
     AlignTwo(nX,X,secX,*XX,nY,Y,secY,*YY);
 
-    uninitEntropy(&E);
-    uninitScore(&P,&S);
+    uninitEntropy(&GE);
+    uninitScore(&GP,&GS);
 
     freeBlock(&ZE);
     freeBlock(&ZB);
