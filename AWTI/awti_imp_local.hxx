@@ -21,9 +21,9 @@ struct input_format_per_line {
 
     struct input_format_per_line *next;
 
-    struct input_format_per_line *reverse(struct input_format_per_line *append) {
+    struct input_format_per_line *reverse(struct input_format_per_line *to_append) {
         struct input_format_per_line *rest = next;
-        next = append;
+        next = to_append;
         return rest ? rest->reverse(this) : this;
     }
 };

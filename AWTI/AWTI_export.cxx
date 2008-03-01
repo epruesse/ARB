@@ -161,26 +161,26 @@ public:
     const char *get_export_sequence(GBDATA *gb_species, size_t& seq_len, GB_ERROR& error);
 };
 
-const char *export_sequence_data::get_seq_data(GBDATA *gb_species, size_t& slen, GB_ERROR& error) const {
+const char *export_sequence_data::get_seq_data(GBDATA *gb_species, size_t& slen, GB_ERROR& err) const {
     const char *data   = 0;
     GBDATA     *gb_seq = GBT_read_sequence(gb_species, ali);
     if (!gb_seq) {
         GBDATA     *gb_name = GB_find(gb_species, "name", 0, down_level);
         const char *name    = gb_name ? GB_read_char_pntr(gb_name) : "<unknown species>";
-        error               = GBS_global_string_copy("No data in alignment '%s' of species '%s'", ali, name);
+        err                 = GBS_global_string_copy("No data in alignment '%s' of species '%s'", ali, name);
         slen                = 0;
     }
     else {
-        data  = GB_read_char_pntr(gb_seq);
-        slen  = GB_read_count(gb_seq);
-        error = 0;
+        data = GB_read_char_pntr(gb_seq);
+        slen = GB_read_count(gb_seq);
+        err  = 0;
     }
     return data;
 }
 
 
 GB_ERROR export_sequence_data::detectVerticalGaps() {
-    GB_ERROR error = 0;
+    GB_ERROR err = 0;
 
     filter->calc_filter_2_seq();
     if (compress == 1) {        // compress vertical gaps!
@@ -189,8 +189,8 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
         memcpy(gap_column, filter->filterpos_2_seqpos, gap_columns*sizeof(*gap_column));
         gap_column[gap_columns] = max_ali_len;
 
-        size_t species_count = count_species();
-        size_t stat_update   = species_count/1000;
+        size_t spec_count  = count_species();
+        size_t stat_update = spec_count/1000;
 
         if (stat_update == 0) stat_update = 1;
 
@@ -201,13 +201,13 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
         aw_status(0.0);
 
         for (GBDATA *gb_species = first_species();
-             gb_species && !error;
+             gb_species && !err;
              gb_species = next_species(gb_species))
         {
             size_t      slen;
-            const char *sdata = get_seq_data(gb_species, slen, error);
+            const char *sdata = get_seq_data(gb_species, slen, err);
 
-            if (!error) {
+            if (!err) {
                 int j = 0;
                 int i;
                 for (i = 0; i<gap_columns; ++i) {
@@ -223,14 +223,14 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
             }
             ++count;
             if (count >= next_stat) {
-                if (aw_status(count/double(species_count))) error = "User abort";
+                if (aw_status(count/double(spec_count))) err = "User abort";
                 next_stat = count+stat_update;
             }
         }
 
         aw_status(1.0);
 
-        if (!error) {
+        if (!err) {
             columns       = filter->real_len - gap_columns;
             export_column = new int[columns];
 
@@ -268,7 +268,7 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
 
     seq = new char[columns+1];
 
-    return error;
+    return err;
 }
 
 const char *export_sequence_data::get_export_sequence(GBDATA *gb_species, size_t& seq_len, GB_ERROR& err) {
