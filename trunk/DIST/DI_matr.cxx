@@ -449,7 +449,7 @@ GB_ERROR PHMATRIX::calculate_rates(PH_MUT_MATR &hrates,PH_MUT_MATR &nrates,PH_MU
         return "There are no species selected";
     }
     long   row,col,pos,s_len;
-    char *seq1,*seq2;
+    unsigned char *seq1,*seq2;
     s_len = tree_root->filter->real_len;
     this->clear(hrates);
     this->clear(nrates);
@@ -458,8 +458,8 @@ GB_ERROR PHMATRIX::calculate_rates(PH_MUT_MATR &hrates,PH_MUT_MATR &nrates,PH_MU
         double gauge = (double)row/(double)nentries;
         if (aw_status(gauge*gauge)) return "Aborted";
         for (col=0; col<row; col++) {
-            seq1 = entries[row]->sequence_parsimony->sequence;
-            seq2= entries[col]->sequence_parsimony->sequence;
+            seq1 = (unsigned char *)entries[row]->sequence_parsimony->sequence;
+            seq2 = (unsigned char *)entries[col]->sequence_parsimony->sequence;
             for (pos = 0; pos < s_len; pos++){
                 if(filter[pos]>=0) {
                     hrates[*seq1][*seq2]++;
@@ -471,7 +471,7 @@ GB_ERROR PHMATRIX::calculate_rates(PH_MUT_MATR &hrates,PH_MUT_MATR &nrates,PH_MU
         }
     }
     for (row = 0; row<nentries;row++){
-        seq1 = entries[row]->sequence_parsimony->sequence;
+        seq1 = (unsigned char *)entries[row]->sequence_parsimony->sequence;
         for (pos = 0; pos < s_len; pos++){
             if(filter[pos]>=0) {
                 pairs[seq1[pos]][seq1[filter[pos]]]++;
