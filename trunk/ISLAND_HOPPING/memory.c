@@ -1,25 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define M memory_M
-#define D memory_D
-#define A memory_A
-
 #define MINSIZE 72 /* >= sizeof(Node) */
 
-void *M=NULL,*D=NULL;
-size_t A=0;
-
-/* ========================================================================== */
-
-void undispose(void) { void *v; size_t s;
-    while(D) {
-        v=D; D=((void **)v)[0];
-        s=(size_t)(((void **)v)[2]);
-        A-=((s<=MINSIZE)?MINSIZE:s)+3*sizeof(void *);
-        free(v);
-    }
-}
+static void *M=NULL,*D=NULL;
+static size_t A=0;
 
 /* ========================================================================== */
 
@@ -30,16 +15,10 @@ void clearUp(void) { void *v;
 
 /* ========================================================================== */
 
-void outOfMemory(void) {
+static void outOfMemory(void) {
     fprintf(stdout,"\n!!! Out of Memory\n");
     clearUp();
     exit(EXIT_FAILURE);
-}
-
-/* ========================================================================== */
-
-size_t allocated(void) {
-    return(A);
 }
 
 /* ========================================================================== */
