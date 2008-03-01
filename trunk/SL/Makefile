@@ -56,7 +56,7 @@ clean: $(ARCHS:.dummy=.clean)
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
 
 %.dummy:
-	@((($(MAKE) -C $(@D) -r \
+	@(($(MAKE) -C $(@D) -r \
 		"MAKE = $(MAKE)" \
 		"ARBHOME = $(ARBHOME)" "cflags = $(cflags) -D_ARB_$(@D:/=)" "lflags = $(lflags)" \
 		"CPPINCLUDES = $(CPPINCLUDES)" "AINCLUDES = $(AINCLUDES)" \
@@ -69,7 +69,7 @@ clean: $(ARCHS:.dummy=.clean)
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
 		"ARB  = yes" \
 		"MAIN = $(@F:.dummy=.a)" \
-		>$(@D).log 2>&1 && cat $(@D).log) || (cat $(@D).log; rm $(@D).log; false)) && (rm $(@D).log))
+		>$(@D).log 2>&1 && (cat $(@D).log;rm $(@D).log)) || (cat $(@D).log;rm $(@D).log;false))
 
 %.clean:
 	@echo "$(ARBHOME)/SL/$(@D)/Makefile:1: here"
