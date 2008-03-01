@@ -1007,7 +1007,7 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 # rule to generate main target (normally a library):
 %.dummy:
 	@( export ID=$$$$; \
-	((( \
+	(( \
 	    echo "$(SEP) Make everything in $(@D)"; \
 	    $(MAKE) -C $(@D) -r \
 		"AUTODEPENDS=1" \
@@ -1038,7 +1038,7 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 		"OPENGL  = $(OPENGL)" \
 		"POST_COMPILE = $(POST_COMPILE)" \
 		"MAIN = $(@F:.dummy=.a)" \
-	) >$(@D).$$ID.log 2>&1 && cat $(@D).$$ID.log) || (cat $(@D).$$ID.log; false)) && (rm $(@D).$$ID.log))
+	) >$(@D).$$ID.log 2>&1 && (cat $(@D).$$ID.log;rm $(@D).$$ID.log)) || (cat $(@D).$$ID.log;rm $(@D).$$ID.log;false))
 
 
 # Additional dependencies for subtargets:
