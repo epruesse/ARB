@@ -1137,9 +1137,9 @@ mbin:	$(ARCHS_MAKEBIN:.a=.dummy)
 
 com:	$(ARCHS_COMMUNICATION:.a=.dummy)
 
-help:   menus xml HELP_SOURCE/HELP_SOURCE.dummy
+help:   HELP_SOURCE/HELP_SOURCE.dummy
 
-HELP_SOURCE/HELP_SOURCE.dummy: GDE/GDE.dummy# need to create some files in GDE-subtree first
+HELP_SOURCE/HELP_SOURCE.dummy: xml menus# need to create some files in GDE-subtree first
 
 dball:	db dbs db2 dp
 db:	ARBDB/libARBDB.dummy
