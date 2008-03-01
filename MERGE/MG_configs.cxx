@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_configs.cxx                                         //
 //    Purpose   : Merge editor configurations                            //
-//    Time-stamp: <Wed May/25/2005 17:23 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sat Mar/01/2008 12:24 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -90,7 +90,7 @@ AW_window *MG_create_config_rename_window1(AW_root *root) {
     aws->create_input_field(AWAR_CONFIG_DEST1,15);
 
     aws->at("ok");
-    aws->callback((AW_CB)MG_config_rename_cb,(AW_CL)gb_merge,1);
+    aws->callback((AW_CB)MG_config_rename_cb,(AW_CL)GLOBAL_gb_merge,1);
     aws->create_button("GO","GO","G");
 
     return (AW_window *)aws;
@@ -112,7 +112,7 @@ AW_window *MG_create_config_rename_window2(AW_root *root) {
     aws->create_input_field(AWAR_CONFIG_DEST2,15);
 
     aws->at("ok");
-    aws->callback((AW_CB)MG_config_rename_cb,(AW_CL)gb_dest,2);
+    aws->callback((AW_CB)MG_config_rename_cb,(AW_CL)GLOBAL_gb_dest,2);
     aws->create_button("GO","GO","G");
 
     return (AW_window *)aws;
@@ -148,11 +148,11 @@ void MG_transfer_config(AW_window *aww) {
     char     *source = awr->awar(AWAR_CONFIG_NAME1)->read_string();
     char     *dest   = awr->awar(AWAR_CONFIG_NAME1)->read_string();
     GB_ERROR  error  = 0;
-    GB_begin_transaction(gb_dest);
-    GB_begin_transaction(gb_merge);
+    GB_begin_transaction(GLOBAL_gb_dest);
+    GB_begin_transaction(GLOBAL_gb_merge);
 
-    GBDATA *gb_config_data1 = GB_search(gb_merge, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
-    GBDATA *gb_config_data2 = GB_search(gb_dest,  AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
+    GBDATA *gb_config_data1 = GB_search(GLOBAL_gb_merge, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
+    GBDATA *gb_config_data2 = GB_search(GLOBAL_gb_dest,  AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
     GBDATA *gb_cfgname_1    = GB_find(gb_config_data1, "name", source, down_2_level);
     GBDATA *gb_cfgname_2    = GB_find(gb_config_data2, "name", dest, down_2_level);
 
@@ -169,11 +169,11 @@ void MG_transfer_config(AW_window *aww) {
     }
 
     if (!error) {
-        GB_commit_transaction(gb_dest);
-        GB_commit_transaction(gb_merge);
+        GB_commit_transaction(GLOBAL_gb_dest);
+        GB_commit_transaction(GLOBAL_gb_merge);
     }else{
-        GB_abort_transaction(gb_dest);
-        GB_abort_transaction(gb_merge);
+        GB_abort_transaction(GLOBAL_gb_dest);
+        GB_abort_transaction(GLOBAL_gb_merge);
     }
     if (error) aw_message(error);
     free(source);
@@ -198,17 +198,17 @@ AW_window *MG_merge_configs_cb(AW_root *awr) {
     aws->create_button("HELP","HELP","H");
 
     aws->at("configs1");
-    awt_create_selection_list_on_configurations(gb_merge,(AW_window *)aws,AWAR_CONFIG_NAME1);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_merge,(AW_window *)aws,AWAR_CONFIG_NAME1);
 
     aws->at("configs2");
-    awt_create_selection_list_on_configurations(gb_dest,(AW_window *)aws,AWAR_CONFIG_NAME2);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_dest,(AW_window *)aws,AWAR_CONFIG_NAME2);
 
     aws->at("delete1");
-    aws->callback((AW_CB)MG_config_delete_cb,(AW_CL)gb_merge,1);
+    aws->callback((AW_CB)MG_config_delete_cb,(AW_CL)GLOBAL_gb_merge,1);
     aws->create_button("DELETE CONFIG_DB1", "Delete Config");
 
     aws->at("delete2");
-    aws->callback((AW_CB)MG_config_delete_cb,(AW_CL)gb_dest,2);
+    aws->callback((AW_CB)MG_config_delete_cb,(AW_CL)GLOBAL_gb_dest,2);
     aws->create_button("DELETE_CONFIG_DB2", "Delete Config");
 
     aws->at("rename1");

@@ -140,8 +140,8 @@ static void rename_both_databases(AW_window *aww) {
     bool      allowDups = aw_root->awar(AWAR_ALLOW_DUPS)->read_int();
 
     if (strcmp(match, "Ok") == 0) {
-        error = renameDB("source", gb_merge, allowDups);
-        if (!error) error = renameDB("destination", gb_dest, allowDups);
+        error = renameDB("source", GLOBAL_gb_merge, allowDups);
+        if (!error) error = renameDB("destination", GLOBAL_gb_dest, allowDups);
     }
     else {
         error = "Denying rename - additional fields have to match!";

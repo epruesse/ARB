@@ -72,7 +72,7 @@ AW_window *MG_create_extended_rename_window1(AW_root *root)
     aws->create_input_field(AWAR_EX_DEST1,15);
 
     aws->at("ok");
-    aws->callback((AW_CB)MG_extended_rename_cb,(AW_CL)gb_merge,1);
+    aws->callback((AW_CB)MG_extended_rename_cb,(AW_CL)GLOBAL_gb_merge,1);
     aws->create_button("GO","GO","G");
 
     return (AW_window *)aws;
@@ -95,7 +95,7 @@ AW_window *MG_create_extended_rename_window2(AW_root *root)
     aws->create_input_field(AWAR_EX_DEST2,15);
 
     aws->at("ok");
-    aws->callback((AW_CB)MG_extended_rename_cb,(AW_CL)gb_dest,2);
+    aws->callback((AW_CB)MG_extended_rename_cb,(AW_CL)GLOBAL_gb_dest,2);
     aws->create_button("GO","GO","G");
 
     return (AW_window *)aws;
@@ -127,11 +127,11 @@ void MG_transfer_extended(AW_window *aww, AW_CL force){
     char *source = awr->awar(AWAR_EX_NAME1)->read_string();
     char *dest = awr->awar(AWAR_EX_NAME1)->read_string();
     GB_ERROR error = 0;
-    GB_begin_transaction(gb_dest);
-    GB_begin_transaction(gb_merge);
+    GB_begin_transaction(GLOBAL_gb_dest);
+    GB_begin_transaction(GLOBAL_gb_merge);
 
-    GBDATA *gb_source = GBT_find_SAI(gb_merge,dest);
-    GBDATA *gb_extended_data2 = GB_search(gb_dest,"extended_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_source = GBT_find_SAI(GLOBAL_gb_merge,dest);
+    GBDATA *gb_extended_data2 = GB_search(GLOBAL_gb_dest,"extended_data",GB_CREATE_CONTAINER);
     GBDATA *gb_dest_sai = GBT_find_SAI_rel_exdata(gb_extended_data2,dest);
 
     if (!gb_source) error = "Please select an SAI you want to transfer !!!";
@@ -148,11 +148,11 @@ void MG_transfer_extended(AW_window *aww, AW_CL force){
     }
 
     if (!error) {
-        GB_commit_transaction(gb_dest);
-        GB_commit_transaction(gb_merge);
+        GB_commit_transaction(GLOBAL_gb_dest);
+        GB_commit_transaction(GLOBAL_gb_merge);
     }else{
-        GB_abort_transaction(gb_dest);
-        GB_abort_transaction(gb_merge);
+        GB_abort_transaction(GLOBAL_gb_dest);
+        GB_abort_transaction(GLOBAL_gb_merge);
     }
     if (error) aw_message(error);
     delete source;
@@ -162,19 +162,19 @@ void MG_transfer_extended(AW_window *aww, AW_CL force){
 void MG_map_extended1(AW_root *aw_root, AW_CL scannerid)
 {
     char *source = aw_root->awar(AWAR_EX_NAME1)->read_string();
-    GB_push_transaction(gb_merge);
-    GBDATA *gb_extended = GBT_find_SAI(gb_merge,source);
+    GB_push_transaction(GLOBAL_gb_merge);
+    GBDATA *gb_extended = GBT_find_SAI(GLOBAL_gb_merge,source);
     awt_map_arbdb_scanner(scannerid,gb_extended,0, CHANGE_KEY_PATH);
-    GB_pop_transaction(gb_merge);
+    GB_pop_transaction(GLOBAL_gb_merge);
     delete source;
 }
 void MG_map_extended2(AW_root *aw_root, AW_CL scannerid)
 {
     char *source = aw_root->awar(AWAR_EX_NAME2)->read_string();
-    GB_push_transaction(gb_dest);
-    GBDATA *gb_extended = GBT_find_SAI(gb_dest,source);
+    GB_push_transaction(GLOBAL_gb_dest);
+    GBDATA *gb_extended = GBT_find_SAI(GLOBAL_gb_dest,source);
     awt_map_arbdb_scanner(scannerid,gb_extended,0, CHANGE_KEY_PATH);
-    GB_pop_transaction(gb_dest);
+    GB_pop_transaction(GLOBAL_gb_dest);
     delete source;
 }
 
@@ -195,23 +195,23 @@ AW_window *MG_merge_extendeds_cb(AW_root *awr){
     aws->create_button("HELP","HELP","H");
 
     aws->at("ex1");
-    awt_create_selection_list_on_extendeds(gb_merge,(AW_window *)aws,AWAR_EX_NAME1);
-    AW_CL scannerid = awt_create_arbdb_scanner(gb_merge, aws, "info1",0,0,0,AWT_SCANNER,0,0,0, &AWT_species_selector);
+    awt_create_selection_list_on_extendeds(GLOBAL_gb_merge,(AW_window *)aws,AWAR_EX_NAME1);
+    AW_CL scannerid = awt_create_arbdb_scanner(GLOBAL_gb_merge, aws, "info1",0,0,0,AWT_SCANNER,0,0,0, &AWT_species_selector);
     aws->get_root()->awar(AWAR_EX_NAME1)->add_callback(MG_map_extended1,scannerid);
 
     aws->at("ex2");
-    awt_create_selection_list_on_extendeds(gb_dest,(AW_window *)aws,AWAR_EX_NAME2);
-    scannerid = awt_create_arbdb_scanner(gb_dest, aws, "info2",0,0,0,AWT_SCANNER,0,0,0, &AWT_species_selector);
+    awt_create_selection_list_on_extendeds(GLOBAL_gb_dest,(AW_window *)aws,AWAR_EX_NAME2);
+    scannerid = awt_create_arbdb_scanner(GLOBAL_gb_dest, aws, "info2",0,0,0,AWT_SCANNER,0,0,0, &AWT_species_selector);
     aws->get_root()->awar(AWAR_EX_NAME2)->add_callback(MG_map_extended2,scannerid);
 
     aws->button_length(20);
 
     aws->at("delete1");
-    aws->callback((AW_CB)MG_extended_delete_cb,(AW_CL)gb_merge,1);
+    aws->callback((AW_CB)MG_extended_delete_cb,(AW_CL)GLOBAL_gb_merge,1);
     aws->create_button("DELETE_SAI_DB1", "Delete SAI");
 
     aws->at("delete2");
-    aws->callback((AW_CB)MG_extended_delete_cb,(AW_CL)gb_dest,2);
+    aws->callback((AW_CB)MG_extended_delete_cb,(AW_CL)GLOBAL_gb_dest,2);
     aws->create_button("DELETE_SAI_DB2", "Delete SAI");
 
     aws->at("rename1");

@@ -661,15 +661,15 @@ int main(int argc, char **argv)
 
         if ( strcmp(argv[1],"-export")==0) {
             MG_create_all_awars(aw_root,aw_default,":","noname.arb");
-            gb_merge = GBT_open(":","rw",0);
-            if (!gb_merge) {
+            GLOBAL_gb_merge = GBT_open(":","rw",0);
+            if (!GLOBAL_gb_merge) {
                 aw_message(GB_get_error(),"OK");
                 exit(0);
             }
-            AWT_announce_db_to_browser(gb_merge, "Current database (:)");
+            AWT_announce_db_to_browser(GLOBAL_gb_merge, "Current database (:)");
 
-            gb_dest = GBT_open("noname.arb","cw",0);
-            AWT_announce_db_to_browser(gb_dest, "New database (noname.arb)");
+            GLOBAL_gb_dest = GBT_open("noname.arb","cw",0);
+            AWT_announce_db_to_browser(GLOBAL_gb_dest, "New database (noname.arb)");
 
             MG_start_cb2(NULL, aw_root, true, true);
             aw_root->main_loop();

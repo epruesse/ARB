@@ -90,24 +90,24 @@ int MG_check_alignment(AW_window *aww,int fast)
         aw_openstatus("Checking alignments");
         sleep(1);
     }
-    GB_begin_transaction(gb_dest);
-    GB_begin_transaction(gb_merge);
-    char **names = GBT_get_alignment_names(gb_merge);
+    GB_begin_transaction(GLOBAL_gb_dest);
+    GB_begin_transaction(GLOBAL_gb_merge);
+    char **names = GBT_get_alignment_names(GLOBAL_gb_merge);
     char **name;
     GBDATA *gb_ali1;
     GBDATA *gb_ali2;
     GBDATA *gb_presets2;
 
     for (name = names; *name; name++) {
-        if (! (gb_ali2 = GBT_get_alignment(gb_dest,*name)) ) {
-            gb_ali1 = GBT_get_alignment(gb_merge,*name);
-            gb_presets2 = GB_search(gb_dest,"presets",GB_CREATE_CONTAINER);
+        if (! (gb_ali2 = GBT_get_alignment(GLOBAL_gb_dest,*name)) ) {
+            gb_ali1 = GBT_get_alignment(GLOBAL_gb_merge,*name);
+            gb_presets2 = GB_search(GLOBAL_gb_dest,"presets",GB_CREATE_CONTAINER);
             gb_ali2 = GB_create_container(gb_presets2,"alignment");
             GB_copy(gb_ali2,gb_ali1);
-            awt_add_new_changekey( gb_dest, (char *)GBS_global_string("%s/data",*name),GB_STRING);
+            awt_add_new_changekey( GLOBAL_gb_dest, (char *)GBS_global_string("%s/data",*name),GB_STRING);
         }
-        char *type1 = GBT_get_alignment_type_string(gb_merge,*name);
-        char *type2 = GBT_get_alignment_type_string(gb_dest,*name);
+        char *type1 = GBT_get_alignment_type_string(GLOBAL_gb_merge,*name);
+        char *type2 = GBT_get_alignment_type_string(GLOBAL_gb_dest,*name);
         if (strcmp(type1,type2)) {
             sprintf(result,"The alignments '%s' have different types (%s != %s)", *name,type1,type2);
             break;
@@ -116,8 +116,8 @@ int MG_check_alignment(AW_window *aww,int fast)
         delete(type2);
     }
     GBT_free_names(names);
-    GB_commit_transaction(gb_dest);
-    GB_commit_transaction(gb_merge);
+    GB_commit_transaction(GLOBAL_gb_dest);
+    GB_commit_transaction(GLOBAL_gb_merge);
     if (strlen(result)) aw_message(result);
     if (!fast){
         aw_closestatus();
@@ -130,13 +130,11 @@ void MG_ad_al_delete_cb(AW_window *aww,AW_CL db_nr)
     if (aw_message("Are you sure to delete all data belonging to this alignment","OK,CANCEL"))return;
 
     GB_ERROR error = 0;
-    char buffer[256];
+    char     buffer[256];
     sprintf(buffer,"tmp/merge%li/alignment_name",db_nr);
-    GBDATA *gbd;
-    if (db_nr == 1) gbd = gb_merge;
-    else        gbd = gb_dest;
 
-    char *source = aww->get_root()->awar(buffer)->read_string();
+    GBDATA *gbd    = (db_nr == 1) ? GLOBAL_gb_merge : GLOBAL_gb_dest;
+    char   *source = aww->get_root()->awar(buffer)->read_string();
 
     GB_begin_transaction(gbd);
 
@@ -155,13 +153,11 @@ void MG_ad_al_delete_cb(AW_window *aww,AW_CL db_nr)
 void MG_ed_al_check_len_cb(AW_window *aww,AW_CL db_nr)
 {
     char *error = 0;
-    char buffer[256];
+    char  buffer[256];
     sprintf(buffer,"tmp/merge%li/alignment_name",db_nr);
-    GBDATA *gbd;
-    if (db_nr == 1) gbd = gb_merge;
-    else        gbd = gb_dest;
 
-    char *use = aww->get_root()->awar(buffer)->read_string();
+    GBDATA *gbd = (db_nr == 1) ? GLOBAL_gb_merge : GLOBAL_gb_dest;
+    char   *use = aww->get_root()->awar(buffer)->read_string();
 
     GB_begin_transaction(gbd);
     if (!error) error = (char *)GBT_check_data(gbd,use);
@@ -172,11 +168,9 @@ void MG_ed_al_check_len_cb(AW_window *aww,AW_CL db_nr)
 
 void MG_copy_delete_rename(AW_window *aww,AW_CL db_nr, AW_CL dele)
 {
-    GB_ERROR error = 0;
-    char buffer[256];
-    GBDATA *gbd;
-    if (db_nr == 1) gbd = gb_merge;
-    else        gbd = gb_dest;
+    GB_ERROR  error = 0;
+    char      buffer[256];
+    GBDATA   *gbd   = (db_nr == 1) ? GLOBAL_gb_merge : GLOBAL_gb_dest;
 
     sprintf(buffer,"tmp/merge%li/alignment_name",db_nr);
     char *source = aww->get_root()->awar(buffer)->read_string();
@@ -254,11 +248,9 @@ AW_window *MG_create_alignment_rename_window(AW_root *root,AW_CL db_nr)
 
 void MG_aa_create_alignment(AW_window *aww,AW_CL db_nr)
 {
-    GB_ERROR error = 0;
-    char buffer[256];
-    GBDATA *gbd;
-    if (db_nr == 1) gbd = gb_merge;
-    else        gbd = gb_dest;
+    GB_ERROR  error = 0;
+    char      buffer[256];
+    GBDATA   *gbd   = (db_nr == 1) ? GLOBAL_gb_merge : GLOBAL_gb_dest;
 
     sprintf(buffer,"tmp/merge%li/alignment_dest",db_nr);
     char *name = aww->get_root()->awar(buffer)->read_string();
@@ -305,14 +297,11 @@ AW_window *MG_create_alignment_create_window(AW_root *root,AW_CL db_nr)
 
 AW_window *MG_create_alignment_window(AW_root *root,AW_CL db_nr)
 {
-    char buffer[256];
-    GBDATA *gbd;
-    if (db_nr == 1) gbd = gb_merge;
-    else        gbd = gb_dest;
-
-
+    char              buffer[256];
+    GBDATA           *gbd = (db_nr == 1) ? GLOBAL_gb_merge : GLOBAL_gb_dest;
     AW_window_simple *aws = new AW_window_simple;
-    char header[80];
+    char              header[80];
+    
     sprintf(header,"ALIGNMENT CONTROL %li",db_nr);
     aws->init( root, header, header);
     aws->load_xfig("merge/ad_align.fig");
@@ -391,8 +380,8 @@ AW_window *MG_merge_alignment_cb(AW_root *awr){
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
 
-    awr->awar(AWAR_ALI1)->add_callback( (AW_RCB)MG_alignment_vars_callback,(AW_CL)gb_merge,1);
-    awr->awar(AWAR_ALI2)->add_callback( (AW_RCB)MG_alignment_vars_callback,(AW_CL)gb_dest,2);
+    awr->awar(AWAR_ALI1)->add_callback( (AW_RCB)MG_alignment_vars_callback,(AW_CL)GLOBAL_gb_merge,1);
+    awr->awar(AWAR_ALI2)->add_callback( (AW_RCB)MG_alignment_vars_callback,(AW_CL)GLOBAL_gb_dest,2);
 
     aws = new AW_window_simple;
     aws->init( awr, "MERGE_ALIGNMENTS", "MERGE ALIGNMENTS");
@@ -410,10 +399,10 @@ AW_window *MG_merge_alignment_cb(AW_root *awr){
     aws->create_button("CHECK","Check");
 
     aws->at("ali1");
-    awt_create_selection_list_on_ad(gb_merge,(AW_window *)aws,AWAR_ALI1,"*=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_merge,(AW_window *)aws,AWAR_ALI1,"*=");
 
     aws->at("ali2");
-    awt_create_selection_list_on_ad(gb_dest,(AW_window *)aws,AWAR_ALI2,"*=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_dest,(AW_window *)aws,AWAR_ALI2,"*=");
 
     aws->at("modify1");
     aws->callback(AW_POPUP,(AW_CL)MG_create_alignment_window,1);

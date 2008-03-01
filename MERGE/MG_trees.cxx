@@ -80,7 +80,7 @@ AW_window *MG_create_tree_rename_window1(AW_root *root)
     aws->create_input_field(AWAR_TREE_DEST1,15);
 
     aws->at("ok");
-    aws->callback((AW_CB)MG_tree_rename_cb,(AW_CL)gb_merge,1);
+    aws->callback((AW_CB)MG_tree_rename_cb,(AW_CL)GLOBAL_gb_merge,1);
     aws->create_button("GO","GO","G");
 
     return (AW_window *)aws;
@@ -103,7 +103,7 @@ AW_window *MG_create_tree_rename_window2(AW_root *root)
     aws->create_input_field(AWAR_TREE_DEST2,15);
 
     aws->at("ok");
-    aws->callback((AW_CB)MG_tree_rename_cb,(AW_CL)gb_dest,2);
+    aws->callback((AW_CB)MG_tree_rename_cb,(AW_CL)GLOBAL_gb_dest,2);
     aws->create_button("GO","GO","G");
 
     return (AW_window *)aws;
@@ -134,11 +134,11 @@ void MG_transfer_tree(AW_window *aww){
     char *source = awr->awar(AWAR_TREE_NAME1)->read_string();
     char *dest = awr->awar(AWAR_TREE_NAME1)->read_string();
     GB_ERROR error = 0;
-    GB_begin_transaction(gb_dest);
-    GB_begin_transaction(gb_merge);
+    GB_begin_transaction(GLOBAL_gb_dest);
+    GB_begin_transaction(GLOBAL_gb_merge);
 
-    GBDATA *gb_tree_data1 = GB_search(gb_merge,"tree_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_tree_data2 = GB_search(gb_dest,"tree_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_tree_data1 = GB_search(GLOBAL_gb_merge,"tree_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_tree_data2 = GB_search(GLOBAL_gb_dest,"tree_data",GB_CREATE_CONTAINER);
     GBDATA *gb_source     = GB_find(gb_tree_data1, source, 0, down_level);
     GBDATA *gb_dest_tree  = GB_find(gb_tree_data2, dest,   0, down_level);
 
@@ -151,12 +151,12 @@ void MG_transfer_tree(AW_window *aww){
     }
 
     if (!error) {
-        GB_commit_transaction(gb_dest);
-        GB_commit_transaction(gb_merge);
+        GB_commit_transaction(GLOBAL_gb_dest);
+        GB_commit_transaction(GLOBAL_gb_merge);
     }
     else {
-        GB_abort_transaction(gb_dest);
-        GB_abort_transaction(gb_merge);
+        GB_abort_transaction(GLOBAL_gb_dest);
+        GB_abort_transaction(GLOBAL_gb_merge);
     }
     if (error) aw_message(error);
     free(source);
@@ -181,17 +181,17 @@ AW_window *MG_merge_trees_cb(AW_root *awr){
     aws->create_button("HELP","HELP","H");
 
     aws->at("trees1");
-    awt_create_selection_list_on_trees(gb_merge,(AW_window *)aws,AWAR_TREE_NAME1);
+    awt_create_selection_list_on_trees(GLOBAL_gb_merge,(AW_window *)aws,AWAR_TREE_NAME1);
 
     aws->at("trees2");
-    awt_create_selection_list_on_trees(gb_dest,(AW_window *)aws,AWAR_TREE_NAME2);
+    awt_create_selection_list_on_trees(GLOBAL_gb_dest,(AW_window *)aws,AWAR_TREE_NAME2);
 
     aws->at("delete1");
-    aws->callback((AW_CB)MG_tr_delete_cb,(AW_CL)gb_merge,1);
+    aws->callback((AW_CB)MG_tr_delete_cb,(AW_CL)GLOBAL_gb_merge,1);
     aws->create_button("DELETE TREE_DB1", "Delete Tree");
 
     aws->at("delete2");
-    aws->callback((AW_CB)MG_tr_delete_cb,(AW_CL)gb_dest,2);
+    aws->callback((AW_CB)MG_tr_delete_cb,(AW_CL)GLOBAL_gb_dest,2);
     aws->create_button("DELETE_TREE_DB2", "Delete Tree");
 
     aws->at("rename1");

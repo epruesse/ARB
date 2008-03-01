@@ -3,7 +3,7 @@
 //    File      : MG_gene_species.cxx                                    //
 //    Purpose   : Transfer fields from organism and gene when            //
 //                tranferring gene species                               //
-//    Time-stamp: <Thu Feb/21/2008 15:26 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sat Mar/01/2008 12:24 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2002             //
@@ -167,7 +167,7 @@ static char *MG_create_field_content(GBDATA *gb_species, CreationMethod method, 
 
         if (method == MG_CREATE_USING_ACI_ONLY) {
             mg_assert(!result);
-            aci_result             = GB_command_interpreter(gb_merge, "", aci, gb_species, 0);
+            aci_result = GB_command_interpreter(GLOBAL_gb_merge, "", aci, gb_species, 0);
             if (!aci_result) {
                 error = GB_get_error();
                 mg_assert(error);
@@ -175,7 +175,7 @@ static char *MG_create_field_content(GBDATA *gb_species, CreationMethod method, 
         }
         else {
             if (aci && aci[0]) {
-                aci_result = GB_command_interpreter(gb_merge, result ? result : "", aci, gb_origin, 0);
+                aci_result = GB_command_interpreter(GLOBAL_gb_merge, result ? result : "", aci, gb_origin, 0);
                 if (!aci_result) {
                     error = GB_get_error();
                     mg_assert(error); 
@@ -293,8 +293,8 @@ static void MG_update_example(AW_root *aw_root) {
         error = "No species selected.";
     }
     else {
-        GB_transaction  dummy(gb_merge);
-        GBDATA         *gb_species = GBT_find_species(gb_merge, curr_species);
+        GB_transaction  dummy(GLOBAL_gb_merge);
+        GBDATA         *gb_species = GBT_find_species(GLOBAL_gb_merge, curr_species);
 
         if (!gb_species)                                    error = GB_export_error("No such species: '%s'", curr_species);
         else if (!GEN_is_pseudo_gene_species(gb_species))   error = "Selected species is no gene-species";
