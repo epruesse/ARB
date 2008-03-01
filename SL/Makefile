@@ -72,7 +72,6 @@ clean: $(ARCHS:.dummy=.clean)
 		>$(@D).log 2>&1 && (cat $(@D).log;rm $(@D).log)) || (cat $(@D).log;rm $(@D).log;false))
 
 %.clean:
-	@echo "$(ARBHOME)/SL/$(@D)/Makefile:1: here"
 	@$(MAKE) -C $(@D) \
 		"OPENGL=$(OPENGL)" \
 		clean
