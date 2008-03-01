@@ -329,7 +329,7 @@ void gbb_put_memblk(char *memblk, size_t size) /* gives any memory block (alloca
 
     if (size<(GBB_HEADER_SIZE+GBB_MINSIZE))
     {
-        GB_internal_error("gmb_put_memblk() called with size below %lu bytes",
+        GB_internal_error("gmb_put_memblk() called with size below %zu bytes",
                           GBB_HEADER_SIZE+GBB_MINSIZE);
         return;
     }
@@ -609,7 +609,7 @@ void gbm_debug_mem(GB_MAIN_TYPE *Main)
 
     {
         char *topofmem = (char *)sbrk(0);
-        printf("spbrk %lx old %lx size %li\n",
+        printf("spbrk %lx old %lx size %ti\n",
                (long)topofmem,
                (long)gbm_global2.old_sbrk,
                topofmem-gbm_global2.old_sbrk);

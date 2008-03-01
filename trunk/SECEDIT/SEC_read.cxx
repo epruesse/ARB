@@ -423,7 +423,7 @@ GB_ERROR SEC_root::read_data(const char *input_string, const char *x_string_in) 
             size_t exp_len = db->length();
 
             if (len != exp_len && len != (exp_len+1)) {
-                error = GBS_global_string("Wrong xstring-length (found=%zu, expected=%zu-%lu)",
+                error = GBS_global_string("Wrong xstring-length (found=%zu, expected=%zu-%zu)",
                                           len, exp_len, exp_len+1);
             }
             else {
