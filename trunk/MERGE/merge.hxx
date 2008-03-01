@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : merge.hxx                                              //
 //    Purpose   : Local header for usage inside directory MERGE          //
-//    Time-stamp: <Thu Feb/28/2008 15:44 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sat Mar/01/2008 12:28 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Copyright Department of Microbiology (Technical University Munich)   //
@@ -10,6 +10,9 @@
 //  Visit our web site at: http://www.arb-home.de/                       //
 //                                                                       //
 //  ==================================================================== //
+
+#ifndef MERGE_HXX
+#define MERGE_HXX
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -82,6 +85,10 @@ public:
     ~MG_remaps();
 };
 
-extern GBDATA *gb_merge;
-extern GBDATA *gb_dest;
-extern GBDATA *GLOBAL_gb_main;
+#ifndef MG_MERGE_HXX
+#include "mg_merge.hxx"
+#endif
+
+#else
+#error merge.hxx included twice
+#endif // MERGE_HXX

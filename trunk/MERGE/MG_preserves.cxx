@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_preserves.cxx                                       //
 //    Purpose   : find candidates for alignment preservation             //
-//    Time-stamp: <Mon Jul/09/2007 13:21 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Sat Mar/01/2008 12:26 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -45,8 +45,8 @@ struct preserve_para {
 
 // get all alignment names available in both databases
 static char **get_global_alignments() {
-    char   **src_ali_names = GBT_get_alignment_names(gb_merge);
-    GBDATA  *gb_presets    = GB_search(gb_dest, "presets", GB_CREATE_CONTAINER);
+    char   **src_ali_names = GBT_get_alignment_names(GLOBAL_gb_merge);
+    GBDATA  *gb_presets    = GB_search(GLOBAL_gb_dest, "presets", GB_CREATE_CONTAINER);
     int      i;
 
     for (i = 0; src_ali_names[i]; ++i) {
@@ -185,9 +185,7 @@ public:
 
     const char *get_name() const { return name.c_str(); }
     const char *get_entry() const {
-        const char *name  = get_name();
-        bool        isSAI = memcmp(name, "SAI:", 4) == 0;
-
+        bool isSAI = memcmp(get_name(), "SAI:", 4) == 0;
         return GBS_global_string(isSAI ? "%-24s %i %li %f" : "%-8s %i %li %f",
                                  get_name(), found_alignments, base_count_diff, score);
     }
@@ -215,13 +213,13 @@ static void find_species_candidates(Candidates& candidates, const char **ali_nam
     aw_status(0.0);
 
     // collect names of all species in source database
-    GB_HASH *src_species = GBT_create_species_hash(gb_merge/*, 1*/); // Note: changed to ignore case (ralf 2007-07-06)
+    GB_HASH *src_species = GBT_create_species_hash(GLOBAL_gb_merge/*, 1*/); // Note: changed to ignore case (ralf 2007-07-06)
     long     src_count   = GBS_hash_count_elems(src_species);
     long     found       = 0;
     bool     aborted     = false;
 
     // find existing species in destination database
-    for (GBDATA *gb_dst_species = GBT_first_species(gb_dest);
+    for (GBDATA *gb_dst_species = GBT_first_species(GLOBAL_gb_dest);
          gb_dst_species && !aborted;
          gb_dst_species = GBT_next_species(gb_dst_species))
     {
@@ -257,12 +255,12 @@ static void find_SAI_candidates(Candidates& candidates, const char **ali_names) 
     aw_status(0.0);
 
     // collect names of all SAIs in source database
-    GB_HASH *src_SAIs  = GBT_create_SAI_hash(gb_merge);
+    GB_HASH *src_SAIs  = GBT_create_SAI_hash(GLOBAL_gb_merge);
     long     src_count = GBS_hash_count_elems(src_SAIs);
     long     found       = 0;
 
     // find existing SAIs in destination database
-    for (GBDATA *gb_dst_SAI = GBT_first_SAI(gb_dest);
+    for (GBDATA *gb_dst_SAI = GBT_first_SAI(GLOBAL_gb_dest);
          gb_dst_SAI;
          gb_dst_SAI = GBT_next_SAI(gb_dst_SAI))
     {
@@ -294,8 +292,8 @@ static void find_SAI_candidates(Candidates& candidates, const char **ali_names) 
 // FIND button
 // (rebuild candidates list)
 static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
-    GB_transaction ta1(gb_merge);
-    GB_transaction ta2(gb_dest);
+    GB_transaction ta1(GLOBAL_gb_merge);
+    GB_transaction ta2(GLOBAL_gb_dest);
 
     preserve_para *para = (preserve_para*)cl_para;
     clear_candidates(para);
@@ -392,8 +390,8 @@ static void clear_references_cb(AW_window *aww) {
 
 // SELECT PRESERVES window
 AW_window *MG_select_preserves_cb(AW_root *aw_root) {
-    aw_root->awar_string(AWAR_REMAP_ALIGNMENT, "", gb_dest);
-    aw_root->awar_string(AWAR_REMAP_CANDIDATE, "", gb_dest);
+    aw_root->awar_string(AWAR_REMAP_ALIGNMENT, "", GLOBAL_gb_dest);
+    aw_root->awar_string(AWAR_REMAP_CANDIDATE, "", GLOBAL_gb_dest);
 
     AW_window_simple *aws = new AW_window_simple;
 
@@ -428,8 +426,8 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
     aws->create_autosize_button("FIND", "Find candidates", "F", 1);
 
     {
-        GB_transaction ta1(gb_merge);
-        GB_transaction ta2(gb_dest);
+        GB_transaction ta1(GLOBAL_gb_merge);
+        GB_transaction ta2(GLOBAL_gb_dest);
 
         init_alignments(para);
         clear_candidates(para);

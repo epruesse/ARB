@@ -188,11 +188,11 @@ void mg_check_field_cb(AW_window *aww){
         return;
     }
     aw_openstatus("Checking fields");
-    GB_begin_transaction(gb_merge);
-    GB_begin_transaction(gb_dest);
+    GB_begin_transaction(GLOBAL_gb_merge);
+    GB_begin_transaction(GLOBAL_gb_dest);
 
-    GBDATA *gb_species_data1 = GB_search(gb_merge,"species_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_species_data2 = GB_search(gb_dest,"species_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_species_data1 = GB_search(GLOBAL_gb_merge,"species_data",GB_CREATE_CONTAINER);
+    GBDATA *gb_species_data2 = GB_search(GLOBAL_gb_dest,"species_data",GB_CREATE_CONTAINER);
 
     GBDATA *gb_species1;
     GBDATA *gb_species2;
@@ -285,13 +285,13 @@ void mg_check_field_cb(AW_window *aww){
     }
     aw_closestatus();
     if (error){
-        GB_abort_transaction(gb_merge);
-        GB_abort_transaction(gb_dest);
+        GB_abort_transaction(GLOBAL_gb_merge);
+        GB_abort_transaction(GLOBAL_gb_dest);
         aw_message(error);
         error = 0;
     }else{
-        GB_commit_transaction(gb_merge);
-        GB_commit_transaction(gb_dest);
+        GB_commit_transaction(GLOBAL_gb_merge);
+        GB_commit_transaction(GLOBAL_gb_dest);
     }
     delete tag;
     delete source;
@@ -334,11 +334,15 @@ AW_window *create_mg_check_fields(AW_root *aw_root){
     aws->at("tag");
     aws->create_input_field(AWAR_ETAG,6);
 
-    awt_create_selection_list_on_scandb(gb_dest,aws,AWAR_SOURCE_FIELD,
+    awt_create_selection_list_on_scandb(GLOBAL_gb_dest,aws,AWAR_SOURCE_FIELD,
                                         AWT_STRING_FILTER, "source",0, &AWT_species_selector, 20, 10);
 
-    awt_create_selection_list_on_scandb(gb_dest,aws,AWAR_DEST_FIELD,
+    awt_create_selection_list_on_scandb(GLOBAL_gb_dest,aws,AWAR_DEST_FIELD,
                                         (1<<GB_STRING)|(1<<GB_INT), "dest",0, &AWT_species_selector, 20, 10);
+
+#if defined(DEVEL_RALF)
+#warning check code above. Maybe one call has to get GLOBAL_gb_merge ? 
+#endif // DEVEL_RALF
 
 
     aws->at("go");

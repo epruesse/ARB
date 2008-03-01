@@ -14,10 +14,9 @@
 #include <AW_rename.hxx>
 
 #include "merge.hxx"
-#include "mg_merge.hxx"
 
-GBDATA *gb_merge = NULL;
-GBDATA *gb_dest = NULL;
+GBDATA *GLOBAL_gb_merge = NULL;
+GBDATA *GLOBAL_gb_dest  = NULL;
 
 void MG_exit(AW_window *aww, AW_CL cl_reload_db2, AW_CL) {
     int reload_db2 = (int)cl_reload_db2;
@@ -42,10 +41,10 @@ bool mg_save_enabled = true;
 void MG_save_merge_cb(AW_window *aww)
 {
     char *name = aww->get_root()->awar(AWAR_MERGE_DB"/file_name")->read_string();
-    GB_begin_transaction(gb_merge);
-    GBT_check_data(gb_merge,0);
-    GB_commit_transaction(gb_merge);
-    GB_ERROR error = GB_save(gb_merge, name, "b");
+    GB_begin_transaction(GLOBAL_gb_merge);
+    GBT_check_data(GLOBAL_gb_merge,0);
+    GB_commit_transaction(GLOBAL_gb_merge);
+    GB_ERROR error = GB_save(GLOBAL_gb_merge, name, "b");
     if (error) aw_message(error);
     else awt_refresh_selection_box(aww->get_root(), AWAR_MERGE_DB);
     delete name;
@@ -80,10 +79,10 @@ void MG_save_cb(AW_window *aww)
     char *name = aww->get_root()->awar(AWAR_MAIN_DB"/file_name")->read_string();
     char *type = aww->get_root()->awar(AWAR_MAIN_DB"/type")->read_string();
     aw_openstatus("Saving database");
-    GB_begin_transaction(gb_dest);
-    GBT_check_data(gb_dest,0);
-    GB_commit_transaction(gb_dest);
-    GB_ERROR error = GB_save(gb_dest, name, type);
+    GB_begin_transaction(GLOBAL_gb_dest);
+    GBT_check_data(GLOBAL_gb_dest,0);
+    GB_commit_transaction(GLOBAL_gb_dest);
+    GB_ERROR error = GB_save(GLOBAL_gb_dest, name, type);
     aw_closestatus();
     if (error) aw_message(error);
     else    awt_refresh_selection_box(aww->get_root(), AWAR_MAIN_DB);
@@ -95,7 +94,7 @@ AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
 {
     static AW_window_simple *aws = 0;
     if (aws) return (AW_window *)aws;
-    aw_root->awar_string( AWAR_DB_COMMENT, "<no description>", gb_dest);
+    aw_root->awar_string( AWAR_DB_COMMENT, "<no description>", GLOBAL_gb_dest);
 
     aws = new AW_window_simple;
     aws->init( aw_root, "MERGE_SAVE_WHOLE_DB", "SAVE WHOLE DATABASE");
@@ -141,10 +140,10 @@ MG_save_quick_cb(AW_window *aww)
 {
     char *name = aww->get_root()->awar(AWAR_MAIN_DB"/file_name")->read_string();
     aw_openstatus("Saving database");
-    GB_begin_transaction(gb_dest);
-    GBT_check_data(gb_dest,0);
-    GB_commit_transaction(gb_dest);
-    GB_ERROR error = GB_save_quick_as(gb_dest, name);
+    GB_begin_transaction(GLOBAL_gb_dest);
+    GBT_check_data(GLOBAL_gb_dest,0);
+    GB_commit_transaction(GLOBAL_gb_dest);
+    GB_ERROR error = GB_save_quick_as(GLOBAL_gb_dest, name);
     aw_closestatus();
     if (error) aw_message(error);
     else    awt_refresh_selection_box(aww->get_root(), AWAR_MAIN_DB);
@@ -202,14 +201,14 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, bool save_enabled, bool dest_
     mg_save_enabled = save_enabled;
 
     {
-        GB_transaction ta_merge(gb_merge);
-        GB_transaction ta_dest(gb_dest);
+        GB_transaction ta_merge(GLOBAL_gb_merge);
+        GB_transaction ta_dest(GLOBAL_gb_dest);
 
-        GBT_mark_all(gb_dest,0); // unmark everything in dest DB
+        GBT_mark_all(GLOBAL_gb_dest,0); // unmark everything in dest DB
 
         // set DB-type to non-genome (compatibility to old DBs)
         // when exporting to new DB (dest_is_new == true) -> use DB-type of merge-DB
-        bool merge_is_genome = GEN_is_genome_db(gb_merge, 0);
+        bool merge_is_genome = GEN_is_genome_db(GLOBAL_gb_merge, 0);
 
         int dest_genome = 0;
         if (dest_is_new) {
@@ -221,23 +220,23 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, bool save_enabled, bool dest_
             }
         }
 
-        GEN_is_genome_db(gb_dest, dest_genome); // does not change anything if type is already defined
+        GEN_is_genome_db(GLOBAL_gb_dest, dest_genome); // does not change anything if type is already defined
     }
 
     if (!error) {
-        GB_transaction ta_merge(gb_merge);
-        GB_transaction ta_dest(gb_dest);
+        GB_transaction ta_merge(GLOBAL_gb_merge);
+        GB_transaction ta_dest(GLOBAL_gb_dest);
             
-        GB_change_my_security(gb_dest,6,"passwd");
-        GB_change_my_security(gb_merge,6,"passwd");
+        GB_change_my_security(GLOBAL_gb_dest,6,"passwd");
+        GB_change_my_security(GLOBAL_gb_merge,6,"passwd");
         if (aww) aww->hide();
 
-        MG_create_db_dependent_awars(aw_root, gb_merge, gb_dest);
+        MG_create_db_dependent_awars(aw_root, GLOBAL_gb_merge, GLOBAL_gb_dest);
     }
 
     if (!error) {
-        GB_transaction ta_merge(gb_merge);
-        GB_transaction ta_dest(gb_dest);
+        GB_transaction ta_merge(GLOBAL_gb_merge);
+        GB_transaction ta_dest(GLOBAL_gb_dest);
 
         MG_set_renamed(false, aw_root, "Not renamed yet.");
 
@@ -250,7 +249,7 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, bool save_enabled, bool dest_
         awm->insert_menu_topic("db_browser", "Browse loaded database(s)", "", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWT_create_db_browser, 0);
         awm->insert_separator();
 #endif // DEBUG
-        if (mg_save_enabled && GB_read_clients(gb_merge)>=0) {
+        if (mg_save_enabled && GB_read_clients(GLOBAL_gb_merge)>=0) {
             awm->insert_menu_topic("save_DB1","Save Data Base I ...",       "S","save_as.hlp",AWM_ALL, AW_POPUP, (AW_CL)MG_save_source_cb,(AW_CL)AWAR_MERGE_DB );
         }
 
@@ -263,7 +262,7 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, bool save_enabled, bool dest_
 
         awm->button_length(30);
 
-        if (GB_read_clients(gb_merge)>=0){ // merge 2 database
+        if (GB_read_clients(GLOBAL_gb_merge)>=0){ // merge 2 database
             awm->at("alignment");
             awm->callback((AW_CB1)AW_POPUP,(AW_CL)MG_merge_alignment_cb);
             awm->help_text("mg_alignment.hlp");
@@ -298,7 +297,7 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, bool save_enabled, bool dest_
         awm->help_text("mg_configs.hlp");
         awm->create_button("TRANSFER_CONFIGS", "Transfer Configurations ...");
 
-        if (mg_save_enabled && GB_read_clients(gb_dest)>=0){       // No need to save when importing data
+        if (mg_save_enabled && GB_read_clients(GLOBAL_gb_dest)>=0){       // No need to save when importing data
             awm->at("save");
             awm->callback(AW_POPUP,(AW_CL)MG_save_result_cb,(AW_CL)AWAR_MAIN_DB);
             awm->create_button("SAVE_WHOLE_DB2", "Save Whole DB II ...");
@@ -347,21 +346,21 @@ void MG_start_cb(AW_window *aww)
                 aw_openstatus("Loading databases");
                 
                 aw_status("DATABASE I");
-                gb_merge = GBT_open(merge,"rw","$(ARBHOME)/lib/pts/*");
-                if (!gb_merge) {
+                GLOBAL_gb_merge = GBT_open(merge,"rw","$(ARBHOME)/lib/pts/*");
+                if (!GLOBAL_gb_merge) {
                     error = GB_get_error();
                 }
                 else {
-                    AWT_announce_db_to_browser(gb_merge, GBS_global_string("Database I (source; %s)", merge));
+                    AWT_announce_db_to_browser(GLOBAL_gb_merge, GBS_global_string("Database I (source; %s)", merge));
 
                     aw_status("DATABASE II");
-                    gb_dest = GBT_open(main,"rwc","$(ARBHOME)/lib/pts/*");
+                    GLOBAL_gb_dest = GBT_open(main,"rwc","$(ARBHOME)/lib/pts/*");
 
-                    if (!gb_dest) {
+                    if (!GLOBAL_gb_dest) {
                         error = GB_get_error();
                     }
                     else {
-                        AWT_announce_db_to_browser(gb_dest, GBS_global_string("Database II (destination; %s)", main));
+                        AWT_announce_db_to_browser(GLOBAL_gb_dest, GBS_global_string("Database II (destination; %s)", main));
                     }
                 }
                 aw_closestatus();
