@@ -164,26 +164,26 @@ GB_ERROR IslandHopping::do_align() {
 
     if(!Error) {
         int nXY                 = strlen(XX);
-        int i;
+        int o;
         output_alignment_length = nXY;
 
         {
             FILE *fp;
             fp = fopen("alignment.txt","w");
-            for(i=0;i<nXY;i++) fprintf(fp,"%c",XX[i]); fprintf(fp,"\n");
-            for(i=0;i<nXY;i++) fprintf(fp,"%c",YY[i]); fprintf(fp,"\n");
+            for(o=0;o<nXY;o++) fprintf(fp,"%c",XX[o]); fprintf(fp,"\n");
+            for(o=0;o<nXY;o++) fprintf(fp,"%c",YY[o]); fprintf(fp,"\n");
             fclose(fp);
         }
 
         aligned_ref_sequence = new char[nXY+1];
         output_sequence      = new char[nXY+1];
 
-        for (i = 0;i<nXY;++i) {
-            aligned_ref_sequence[i] = XX[i] == '-' ? '-' : '*';
-            output_sequence[i]      = YY[i] == '-' ? '-' : '*';
+        for (o = 0;o<nXY;++o) {
+            aligned_ref_sequence[o] = XX[o] == '-' ? '-' : '*';
+            output_sequence[o]      = YY[o] == '-' ? '-' : '*';
         }
-        aligned_ref_sequence[i] = 0;
-        output_sequence[i]      = 0;
+        aligned_ref_sequence[o] = 0;
+        output_sequence[o]      = 0;
 
 
         //         memcpy(aligned_ref_sequence, XX, nXY+1);
