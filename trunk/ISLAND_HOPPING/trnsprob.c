@@ -10,7 +10,7 @@
 
 /*============================================================================*/
 
-void identity(double **i) {
+static void identity(double **i) {
     i[T][T]=1; i[T][C]=0; i[T][A]=0; i[T][G]=0;
     i[C][T]=0; i[C][C]=1; i[C][A]=0; i[C][G]=0;
     i[A][T]=0; i[A][C]=0; i[A][A]=1; i[A][G]=0;
@@ -19,7 +19,7 @@ void identity(double **i) {
 
 /*............................................................................*/
 
-void copy(double **i,double **j) {
+static void copy(double **i,double **j) {
     i[T][T]=j[T][T]; i[T][C]=j[T][C]; i[T][A]=j[T][A]; i[T][G]=j[T][G];
     i[C][T]=j[C][T]; i[C][C]=j[C][C]; i[C][A]=j[C][A]; i[C][G]=j[C][G];
     i[A][T]=j[A][T]; i[A][C]=j[A][C]; i[A][A]=j[A][A]; i[A][G]=j[A][G];
@@ -28,7 +28,7 @@ void copy(double **i,double **j) {
 
 /*............................................................................*/
 
-void ipol(double **i,double **j,double **k,double f) { double g; g=1.0-f;
+static void ipol(double **i,double **j,double **k,double f) { double g; g=1.0-f;
     i[T][T]=g*j[T][T]+f*k[T][T]; i[T][C]=g*j[T][C]+f*k[T][C]; i[T][A]=g*j[T][A]+f*k[T][A]; i[T][G]=g*j[T][G]+f*k[T][G];
     i[C][T]=g*j[C][T]+f*k[C][T]; i[C][C]=g*j[C][C]+f*k[C][C]; i[C][A]=g*j[C][A]+f*k[C][A]; i[C][G]=g*j[C][G]+f*k[C][G];
     i[A][T]=g*j[A][T]+f*k[A][T]; i[A][C]=g*j[A][C]+f*k[A][C]; i[A][A]=g*j[A][A]+f*k[A][A]; i[A][G]=g*j[A][G]+f*k[A][G];
@@ -37,7 +37,7 @@ void ipol(double **i,double **j,double **k,double f) { double g; g=1.0-f;
 
 /*............................................................................*/
 
-void addmul(double **i,double **j,double f) {
+static void addmul(double **i,double **j,double f) {
     i[T][T]+=j[T][T]*f; i[T][C]+=j[T][C]*f; i[T][A]+=j[T][A]*f; i[T][G]+=j[T][G]*f;
     i[C][T]+=j[C][T]*f; i[C][C]+=j[C][C]*f; i[C][A]+=j[C][A]*f; i[C][G]+=j[C][G]*f;
     i[A][T]+=j[A][T]*f; i[A][C]+=j[A][C]*f; i[A][A]+=j[A][A]*f; i[A][G]+=j[A][G]*f;
@@ -46,7 +46,7 @@ void addmul(double **i,double **j,double f) {
 
 /*............................................................................*/
 
-void dot(double **i,double **j,double **k) {
+static void dot(double **i,double **j,double **k) {
     i[T][T]=j[T][T]*k[T][T]+j[T][C]*k[C][T]+j[T][A]*k[A][T]+j[T][G]*k[G][T];
     i[T][C]=j[T][T]*k[T][C]+j[T][C]*k[C][C]+j[T][A]*k[A][C]+j[T][G]*k[G][C];
     i[T][A]=j[T][T]*k[T][A]+j[T][C]*k[C][A]+j[T][A]*k[A][A]+j[T][G]*k[G][A];
