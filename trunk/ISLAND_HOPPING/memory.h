@@ -1,6 +1,4 @@
-void     undispose(void);
 void     clearUp(void);
-size_t   allocated(void);
 void    *newBlock(size_t s);
 void     freeBlock(void **v);
 void   **newMatrix(size_t nrow,size_t ncol,size_t s);
