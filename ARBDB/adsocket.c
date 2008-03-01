@@ -438,7 +438,7 @@ long gbcm_read_two(int socket, long a, long *b, long *c)
     long    size;
     size = gbcm_read(socket,(char *)&(ia[0]),sizeof(long)*3);
     if (size != sizeof(long) * 3) {
-        GB_internal_error("receive failed: %lu bytes expected, %li got, keyword %lX",
+        GB_internal_error("receive failed: %zu bytes expected, %li got, keyword %lX",
                           sizeof(long) * 3,size, a );
         return GBCM_SERVER_FAULT;
     }
