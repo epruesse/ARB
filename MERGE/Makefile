@@ -31,6 +31,7 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 MG_alignment.o: merge.hxx
+MG_alignment.o: mg_merge.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -47,6 +48,7 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 MG_checkfield.o: merge.hxx
+MG_checkfield.o: mg_merge.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -64,6 +66,7 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/awt_changekey.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 MG_configs.o: merge.hxx
+MG_configs.o: mg_merge.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/ad_config.h
 MG_configs.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_configs.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -80,6 +83,7 @@ MG_configs.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 MG_extendeds.o: merge.hxx
+MG_extendeds.o: mg_merge.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -97,6 +101,7 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_extendeds.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 
 MG_gene_species.o: merge.hxx
+MG_gene_species.o: mg_merge.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/adGene.h
@@ -134,6 +139,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 
 MG_names.o: merge.hxx
+MG_names.o: mg_merge.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_names.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_names.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -146,6 +152,7 @@ MG_names.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 
 MG_preserves.o: merge.hxx
+MG_preserves.o: mg_merge.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -162,6 +169,7 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 MG_species.o: merge.hxx
+MG_species.o: mg_merge.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_species.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_species.o: $(ARBHOME)/INCLUDE/adGene.h
@@ -184,6 +192,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/GEN.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/inline.h
 
 MG_trees.o: merge.hxx
+MG_trees.o: mg_merge.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_trees.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_trees.o: $(ARBHOME)/INCLUDE/arb_assert.h
