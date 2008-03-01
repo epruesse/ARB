@@ -93,7 +93,7 @@ void ResizeOpenGLWindow( Widget /* w*/, XtPointer /*client_data*/, XEvent *event
     RefreshOpenGLDisplay();
 }
 
-void KeyReleaseEventHandler(Widget /* w*/, XtPointer /*client_data*/, XEvent *event, char* /*x*/ )  {
+void KeyReleaseEventHandler(Widget /* w*/, XtPointer /*client_data*/, XEvent */*event*/, char* /*x*/ )  {
     RefreshOpenGLDisplay();
 }
 
@@ -681,7 +681,7 @@ static AW_window *CreateHelp_window(AW_root *aw_root) {
 AW_window *CreateRNA3DMainWindow(AW_root *awr){
     // Main Window - Canvas on which the actual painting is done
     extern GBDATA *GLOBAL_gb_main;
-    GB_transaction dummy(gb_main);
+    GB_transaction dummy(GLOBAL_gb_main);
 
     awr->awar_int(AWAR_3D_SAI_SELECTED, 0, AW_ROOT_DEFAULT); 
 
@@ -691,11 +691,11 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
     awm->init(awr,"RNA3D", "RNA3D: 3D Structure of Ribosomal RNA", WINDOW_WIDTH, WINDOW_HEIGHT);
 
     AW_gc_manager   aw_gc_manager;
-    RNA3D_Graphics *rna3DGraphics = new RNA3D_Graphics(awr,gb_main);
+    RNA3D_Graphics *rna3DGraphics = new RNA3D_Graphics(awr,GLOBAL_gb_main);
 
-    Structure3D::gb_main = gb_main;
+    Structure3D::gb_main = GLOBAL_gb_main;
 
-    RNA3D->gl_Canvas = new AWT_canvas(gb_main,awm, rna3DGraphics, aw_gc_manager,AWAR_SPECIES_NAME);
+    RNA3D->gl_Canvas = new AWT_canvas(Structure3D::gb_main,awm, rna3DGraphics, aw_gc_manager,AWAR_SPECIES_NAME);
 
     RNA3D->gl_Canvas->recalc_size();
     RNA3D->gl_Canvas->refresh();
