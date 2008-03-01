@@ -42,9 +42,9 @@ typedef struct island {
 } Island;
 
 static double **GP,**GS;
-/*
-  #define TEST
-*/
+
+/* #define TEST */
+
 #ifdef TEST
 
 #define TELEN 193
@@ -729,8 +729,8 @@ static void AlignTwo(
         fp=fopen("subst.txt","wt");
         fprintf(fp,"\n(* substitution matrix *)\nListDensityPlot[{");
         for(i=0;i<N;i++) {
-            fprintf(fp,"\n{%f",S[i][0]);
-            for(j=1;j<N;j++) fprintf(fp,",%f",S[i][j]);
+            fprintf(fp,"\n{%f",GS[i][0]);
+            for(j=1;j<N;j++) fprintf(fp,",%f",GS[i][j]);
             fprintf(fp,"}"); if(i<N-1) fprintf(fp,",");
         }
         fprintf(fp,"}]\n");
