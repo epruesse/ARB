@@ -70,7 +70,7 @@ const char *PHMATRIX::save(char *filename,enum PH_SAVE_TYPE type)
                 }
 
 #if defined(DEBUG)
-                fprintf(out, "maxnds=%i\n", maxnds);
+                fprintf(out, "maxnds=%zu\n", maxnds);
 #endif // DEBUG
 
                 // print column headers :
