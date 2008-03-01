@@ -68,7 +68,6 @@ clean: $(ARCHS:.dummy=.clean)
 		"MAIN = $(@F:.dummy=.a)"
 
 %.clean:
-	@echo "$(ARBHOME)/GL/$(@D)/Makefile:1: here"
 	@$(MAKE) -C $(@D) \
 		"OPENGL=$(OPENGL)" \
 		clean

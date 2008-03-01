@@ -123,7 +123,6 @@ clean: $(SUBS:.dummy=.clean)
 		>$(@D).log 2>&1 && (cat $(@D).log;rm $(@D).log)) || (cat $(@D).log;rm $(@D).log;false))
 
 %.clean:
-	@echo "$(ARBHOME)/PROBE_SERVER/$(@D)/Makefile:1: here"
 	@$(MAKE) -C $(@D) \
 		"OPENGL=$(OPENGL)" \
 		clean
