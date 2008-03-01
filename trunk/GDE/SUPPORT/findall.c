@@ -61,7 +61,7 @@ char **av;
 					data[i].nuc[j] = 'U';
 			}
 		printf("name:%s\n",data[i].name);
-		printf("length:%d\n",strlen(data[i].nuc));
+		printf("length:%zu\n",strlen(data[i].nuc));
 		printf("start:\n");
 		for(j=0;j<data[i].length;j++)
 		{

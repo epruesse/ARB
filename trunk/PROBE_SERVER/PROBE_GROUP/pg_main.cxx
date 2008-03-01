@@ -564,7 +564,7 @@ static GB_ERROR collectProbes(GBDATA *gb_main, GBDATA *pb_main, const probe_conf
 
     if (!error) {
         indent i(out);
-        out.put("Probes found: %i", probe_count);
+        out.put("Probes found: %zu", probe_count);
     }
 
     char T_or_U;
@@ -641,7 +641,7 @@ static GB_ERROR collectProbes(GBDATA *gb_main, GBDATA *pb_main, const probe_conf
     }
 
     PG_exit_pt_server();
-    out.put("Overall groups found: %i (of %i possible groups)", group_count, max_possible_groups);
+    out.put("Overall groups found: %zu (of %zu possible groups)", group_count, max_possible_groups);
 
     return error;
 }

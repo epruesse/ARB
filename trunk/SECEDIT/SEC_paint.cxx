@@ -241,7 +241,7 @@ void SEC_root::paintPosAnnotation(AW_device *device, int gc, size_t absPos, cons
         }
     }
 
-    if (!text) text = GBS_global_string("%u", absPos);
+    if (!text) text = GBS_global_string("%zu", absPos);
     
     paintAnnotation(device, gc, pos, pos1, pos2, vec12.length(), text, lineToBase, false, boxText, 0, absPos);
 }
@@ -253,7 +253,7 @@ void SEC_root::paintEcoliPositions(AW_device *device) {
     const BI_ecoli_ref *ecoli = db->ecoli();
     for (size_t ep = 99; ep < ecoli->base_count(); ep += 100) {
         abspos = ecoli->rel_2_abs(ep);
-        paintPosAnnotation(device, SEC_GC_ECOLI, size_t(abspos), GBS_global_string("%u", ep+1), true, true);
+        paintPosAnnotation(device, SEC_GC_ECOLI, size_t(abspos), GBS_global_string("%zu", ep+1), true, true);
     }
 }
 

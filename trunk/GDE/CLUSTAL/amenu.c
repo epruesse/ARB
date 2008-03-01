@@ -1858,7 +1858,7 @@ static void gcg_out(FILE *gcgout)
 		fprintf(gcgout,"N");
 	else
 		fprintf(gcgout,"P");
-	fprintf(gcgout,"    Check:%6d   .. \n\n", grand_checksum);
+	fprintf(gcgout,"    Check:%6ld   .. \n\n", grand_checksum);
 	for(i=1; i<=nseqs; i++) 
 /*		for(j=0; j<MAXNAMES; j++) 
 			if(names[i][j] == ' ')  names[i][j] = '_';     */
