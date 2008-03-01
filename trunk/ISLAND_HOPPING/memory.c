@@ -13,19 +13,19 @@ size_t A=0;
 /* ========================================================================== */
 
 void undispose(void) { void *v; size_t s;
- while(D) {
-     v=D; D=((void **)v)[0];
-     s=(size_t)(((void **)v)[2]);
-     A-=((s<=MINSIZE)?MINSIZE:s)+3*sizeof(void *);
-     free(v);
- }
+    while(D) {
+        v=D; D=((void **)v)[0];
+        s=(size_t)(((void **)v)[2]);
+        A-=((s<=MINSIZE)?MINSIZE:s)+3*sizeof(void *);
+        free(v);
+    }
 }
 
 /* ========================================================================== */
 
 void clearUp(void) { void *v;
- while(D) {v=D; D=((void **)v)[0]; free(v);}
- while(M) {v=M; M=((void **)v)[0]; free(v);}
+    while(D) {v=D; D=((void **)v)[0]; free(v);}
+    while(M) {v=M; M=((void **)v)[0]; free(v);}
 }
 
 /* ========================================================================== */
