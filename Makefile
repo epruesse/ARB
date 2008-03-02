@@ -236,8 +236,8 @@ ifdef LINUX
    f77_flags = $(fflags) -W -N9 -e
    F77LIB = -lU77
 
-   ARCPPLIB = $(GPP) $(MACH_BITS) -Wall -shared $(LINUX_SPECIALS) -o
-   ARLIB = $(GCC) $(MACH_BITS) -Wall -shared $(LINUX_SPECIALS) -o
+   ARCPPLIB = $(GPP) $(MACH_BITS) -W -Wall -shared $(LINUX_SPECIALS) -o
+   ARLIB = $(GCC) $(MACH_BITS) -W -Wall -shared $(LINUX_SPECIALS) -o
    GMAKE = make -j 3 -r
    SYSLIBS = -lm
 
@@ -1279,8 +1279,10 @@ rtc_patch:
 	rtc_patch_area -so LIBLINK/libRTC8M.so
 
 menus: binlink
-	@echo $(SEP) Make everything in GDEHELP
-	$(MAKE) -C GDEHELP -r "PP=$(PP)" all
+	@(( \
+		echo $(SEP) Make everything in GDEHELP; \
+		$(MAKE) -C GDEHELP -r "PP=$(PP)" all \
+	) > GDEHELP.log 2>&1 && (cat GDEHELP.log;rm GDEHELP.log)) || (cat GDEHELP.log;rm GDEHELP.log;false)
 
 ifeq ($(DEBUG),1)
 BIN_TARGET=develall
