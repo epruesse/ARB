@@ -754,47 +754,47 @@ void embl_out(fp)
  *		Print EMBL entry and wrap around if line over
  *			EMBLMAXCHAR.
  */
-void embl_print_lines(fp, key, data, flag, separators)
+void embl_print_lines(fp, key, Data, flag, separators)
      FILE       *fp;
      const char *key;
-     char       *data;
+     char       *Data;
      int         flag;
      const char *separators;
 {
 	int	indi, indj, indk, len;
 	int	ibuf;
 
-	len = Lenstr(data)-1;
+	len = Lenstr(Data)-1;
 	/* indi: first char of the line */
 	/* indj: num of char, excluding the first char, of the line */
 	for(indi=0; indi<len; indi+=(indj+1))	{
 		indj=EMBLMAXCHAR;
-		if((Lenstr(data+indi))>EMBLMAXCHAR) {
+		if((Lenstr(Data+indi))>EMBLMAXCHAR) {
 
 			ibuf = indj;
 
 			/* searching for proper termination of a line */
 			for(;indj>0
-			&&((!flag&&!last_word(data[indi+indj]))
+			&&((!flag&&!last_word(Data[indi+indj]))
 			||(flag&&!is_separator
-			(data[indi+indj], separators)));
+			(Data[indi+indj], separators)));
 			indj--)	;
 
 			if(indj==0)	indj=ibuf;
-			else if(data[indi+indj+1]==' ') indj++;
+			else if(Data[indi+indj+1]==' ') indj++;
 
 			fprintf(fp, "%s   ", key);
 
 			for(indk=0; indk<indj; indk++)
-				fprintf(fp, "%c", data[indi+indk]);
+				fprintf(fp, "%c", Data[indi+indk]);
 
 		/* leave out the last space, if there is any */
-			if(data[indi+indj]!=' ')
-				fprintf(fp, "%c", data[indi+indj]);
+			if(Data[indi+indj]!=' ')
+				fprintf(fp, "%c", Data[indi+indj]);
 
 			fprintf(fp, "\n");
 
-		} else fprintf(fp, "%s   %s", key, data+indi);
+		} else fprintf(fp, "%s   %s", key, Data+indi);
 	}
 }
 /* -------------------------------------------------------
@@ -1057,9 +1057,8 @@ int etom()	{
 *		Print out EMBL data.
 */
 void
-embl_to_embl(inf, outf, format)
+embl_to_embl(inf, outf)
      char	*inf, *outf;
-     int	format;
 {
 	FILE	    *IFP, *ofp;
     FILE_BUFFER  ifp;
@@ -1103,9 +1102,8 @@ embl_to_embl(inf, outf, format)
 *		Convert from EMBL format to genbank format.
 */
 void
-embl_to_genbank(inf, outf, format)
+embl_to_genbank(inf, outf)
      char	*inf, *outf;
-     int	format;
 {
 	FILE	    *IFP, *ofp;
     FILE_BUFFER  ifp;
