@@ -46,17 +46,24 @@ endif
 
 RAISE_WARNINGS=0
 
-ifeq ($(RAISE_WARNINGS),1)
+ifeq ('$(RAISE_WARNINGS)','0')
+SUB_CPP=$(subst -W -Wall,-w,$(CPP))
+SUB_ACC=$(subst -W -Wall,-w,$(ACC))
+else
 SUB_CPP=$(CPP)
 SUB_ACC=$(ACC)
-else
-SUB_CPP=$(CPP:-W -Wall=-w)
-SUB_ACC=$(ACC:-W -Wall=-w)
 endif
 
 # --------------------------------------------------------------------------------
 
-$(MAIN): $(ARCHS)
+$(MAIN):
+ifeq ('$(RAISE_WARNINGS)','0')
+	@echo ----------------- non-ARB code: warnings disabled
+endif
+	$(MAKE) $(ARCHS)
+ifeq ('$(RAISE_WARNINGS)','0')
+	@echo ----------------- warnings enabled again
+endif
 
 proto:
 	$(MAKE) -C CORE proto
@@ -83,18 +90,26 @@ clean: $(ARCHS:.dummy=.clean)
 %.dummy:
 	@(( \
 	    $(MAKE) -C $(@D) -r \
-		"MAKE = $(MAKE)" \
-		"ARBHOME = $(ARBHOME)" "cflags = $(cflags) -D_ARB_$(@D:/=)" "lflags = $(lflags)" \
-		"CPPINCLUDES = $(CPPINCLUDES)" "AINCLUDES = $(AINCLUDES)" \
-		"CPP = $(SUB_CPP)" "ACC = $(SUB_ACC)" \
-		"CCLIB = $(CCLIB)" "CCPLIB = $(CCPLIB)" \
-		"AR = $(AR)" "ARLIB = $(ARLIB)" \
-		"LIBPATH = $(LIBPATH)" "SYSLIBS = $(SYSLIBS)" \
-		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
-		"XHOME = $(XHOME)" "XLIBS = $(XLIBS)" \
-		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
+		"ACC = $(SUB_ACC)" \
+		"AINCLUDES = $(AINCLUDES)" \
+		"AR = $(AR)" \
 		"ARB  = yes" \
+		"ARBHOME = $(ARBHOME)" \
+		"ARLIB = $(ARLIB)" \
+		"CCLIB = $(CCLIB)" \
+		"CCPLIB = $(CCPLIB)" \
+		"CPP = $(SUB_CPP)" \
+		"CPPINCLUDES = $(CPPINCLUDES)" \
+		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
+		"LIBPATH = $(LIBPATH)" \
 		"MAIN = $(@F:.dummy=.a)" \
+		"MAKE = $(MAKE)" \
+		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
+		"SYSLIBS = $(SYSLIBS)" \
+		"XHOME = $(XHOME)" \
+		"XLIBS = $(XLIBS)" \
+		"cflags = $(cflags) -D_ARB_$(@D:/=)" \
+		"lflags = $(lflags)" \
 		>$(@D).log 2>&1 && (cat $(@D).log;rm $(@D).log)) || (cat $(@D).log;rm $(@D).log;false))
 
 %.clean:
