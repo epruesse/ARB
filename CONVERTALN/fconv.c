@@ -99,13 +99,13 @@ void convert(inf, outf, intype, outype)
 	} else if(intype==PROTEIN&&outype==PRINTABLE)	{
 		to_printable(inf, outf, PROTEIN);
 	} else if(intype==EMBL&&outype==EMBL)	{
-		embl_to_embl(inf, outf, EMBL);
+		embl_to_embl(inf, outf);
 	} else if(intype==EMBL&&outype==GENBANK)	{
-		embl_to_genbank(inf, outf, EMBL);
+		embl_to_genbank(inf, outf);
 	} else if(intype==EMBL&&outype==MACKE)	{
 		embl_to_macke(inf, outf, EMBL);
 	} else if(intype==EMBL&&outype==PROTEIN)	{
-		embl_to_embl(inf, outf, EMBL);
+		embl_to_embl(inf, outf);
 	} else if(intype==EMBL&&outype==PAUP)	{
 		to_paup(inf, outf, EMBL);
 	} else if(intype==EMBL&&outype==PHYLIP)	{
