@@ -109,7 +109,7 @@ clean: $(SUBS:.dummy=.clean)
 %.dummy:
 	@(($(MAKE) -C $(@D) -r \
 		"MAKE = $(MAKE)" \
-		"ARBHOME = $(ARBHOME)" "cflags = $(cflags) -D_ARB_$(@D:/=)" "lflags = $(lflags)" \
+		"ARBHOME = $(ARBHOME)" "cflags = $(cflags) -DIN_ARB_$(@D:/=)" "lflags = $(lflags)" \
 		"CPPINCLUDES = $(CPPINCLUDES)" "AINCLUDES = $(AINCLUDES)" \
 		"CPP = $(CPP)" "ACC = $(ACC)" \
 		"CCLIB = $(CCLIB)" "CCPLIB = $(CCPLIB)" \

@@ -1012,7 +1012,7 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 	    $(MAKE) -C $(@D) -r \
 		"AUTODEPENDS=1" \
 		"ARBHOME = $(ARBHOME)" \
-		"cflags = $(cflags) -D_ARB_$(subst /,_,$(@D))" \
+		"cflags = $(cflags) -DIN_ARB_$(subst /,_,$(@D))" \
 		"lflags = $(lflags)" \
 		"CPPINCLUDES = $(CPPINCLUDES)" \
 		"AINCLUDES = $(AINCLUDES)" \

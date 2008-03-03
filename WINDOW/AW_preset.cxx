@@ -4,6 +4,12 @@
 //      (AWT/AWT_preset.cxx is just a link)
 //  ----------------------------------------------------
 
+#ifndef IN_ARB_AWT
+#ifndef IN_ARB_WINDOW
+#error MODULE_... is not known
+#endif
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <memory.h>
@@ -16,10 +22,8 @@
 //#include <aw_xfig.hxx>
 //#include <aw_xfigfont.hxx>
 
-// #ifdef _ARB_AWT
 #include "awt.hxx"
 #include "awt_advice.hxx"
-// #endif
 
 #include <stdarg.h>
 #include <stdlib.h>
@@ -27,7 +31,7 @@
 #include "aw_preset.hxx"
 #include "aw_def.hxx" 
 
-#ifdef _ARB_WINDOW
+#ifdef IN_ARB_WINDOW
 
 void AW_save_defaults( AW_window *aw ) {
     aw->get_root()->save_default(  "window/font" );
@@ -1038,10 +1042,11 @@ AW_window *AW_create_gc_window(AW_root * aw_root, AW_gc_manager id_par)
 {
     return AW_create_gc_window_named(aw_root, id_par, "PROPS_GC", "Colors and Fonts");
 }
-#endif //ifdef _ARB_WINDOW
+#endif // IN_ARB_WINDOW
 
 
-#ifdef _ARB_AWT
+#ifdef IN_ARB_AWT
+
 // callback to reset to default font
 void awt_xfig_font_resetfont_cb(AW_window *aws){
     AW_root *aw_root = aws->get_root();
@@ -1068,10 +1073,15 @@ void awt_xfig_font_create_filerequest(AW_window *aw) {
     aw_root->awar("vectorfont/file_name")->write_string(aw_root->vectorfont_name);
     aws->show();
 }
+
 AW_window *AWT_preset_window( AW_root *root )
-#else
+
+#else // IN_ARB_WINDOW : 
+
     AW_window *AW_preset_window( AW_root *root )
+    
 #endif
+    
 {
     AW_window_simple *aws = new AW_window_simple;
     const int   tabstop = 400;
@@ -1093,9 +1103,9 @@ AW_window *AWT_preset_window( AW_root *root )
 
     //PJ vectorfont stuff
     aws->label("Vectorfont Resource");
-#ifdef _ARB_AWT
+#ifdef IN_ARB_AWT
     aws->callback( (AW_CB0) awt_xfig_font_create_filerequest);
-#endif
+#endif // IN_ARB_AWT
     aws->create_button( "SELECT VECTORFONT", "Vectorfont Select", "V" );
     aws->at_x(tabstop);
     aws->create_input_field( "vectorfont/file_name",20);
