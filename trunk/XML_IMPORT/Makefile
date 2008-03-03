@@ -35,7 +35,7 @@ depends: $(ARCHS:.dummy=.depend)
 %.dummy:
 	@$(MAKE) -C $(@D) -r \
 		"MAKE = $(MAKE)" \
-		"ARBHOME = $(ARBHOME)" "cflags = $(SUB_CFLAGS) -D_ARB_$(@D:/=)" "lflags = $(SUB_LFLAGS)" \
+		"ARBHOME = $(ARBHOME)" "cflags = $(SUB_CFLAGS) -DIN_ARB_$(@D:/=)" "lflags = $(SUB_LFLAGS)" \
 		"CPPINCLUDES = $(CPPINCLUDES)" "AINCLUDES = $(AINCLUDES)" \
 		"CPP = $(CPP)" "ACC = $(ACC)" \
 		"CCLIB = $(CCLIB)" "CCPLIB = $(CCPLIB)" \

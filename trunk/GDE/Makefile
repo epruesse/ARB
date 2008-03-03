@@ -108,7 +108,7 @@ clean: $(ARCHS:.dummy=.clean)
 		"SYSLIBS = $(SYSLIBS)" \
 		"XHOME = $(XHOME)" \
 		"XLIBS = $(XLIBS)" \
-		"cflags = $(cflags) -D_ARB_$(@D:/=)" \
+		"cflags = $(cflags) -DIN_ARB_$(@D:/=)" \
 		"lflags = $(lflags)" \
 		>$(@D).log 2>&1 && (cat $(@D).log;rm $(@D).log)) || (cat $(@D).log;rm $(@D).log;false))
 
