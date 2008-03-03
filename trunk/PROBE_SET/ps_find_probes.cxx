@@ -397,12 +397,12 @@ void PS_find_probes( const PS_NodePtr      _root_node,
     __MIN_SETS_ID = (*__SOURCE_ID_SET.begin()  < *__TARGET_ID_SET.begin())  ? *__SOURCE_ID_SET.begin()  : *__TARGET_ID_SET.begin();
     __MAX_SETS_ID = (*__SOURCE_ID_SET.rbegin() < *__TARGET_ID_SET.rbegin()) ? *__SOURCE_ID_SET.rbegin() : *__TARGET_ID_SET.rbegin();
     printf( "PS_find_probes(%i) : source match %10.3f .. %10.3f   target match %10.3f .. %10.3f\n", _round, __SOURCE_MIN_MATCH_COUNT, __SOURCE_MAX_MATCH_COUNT, __TARGET_MIN_MATCH_COUNT, __TARGET_MAX_MATCH_COUNT ); fflush( stdout );
-    int c = 0;
+    // int c = 0;
     struct tms before;
     times( &before );
     for ( PS_NodeMapConstIterator i = _root_node->getChildrenBegin();
           (i != _root_node->getChildrenEnd()) && (i->first < __MAX_SETS_ID);
-          ++i,++c ) {
+          ++i/*,++c*/ ) {
         //if (c % 100 == 0) printf( "PS_find_probe_for_sets( %i ) : %i/%i 1st level nodes -> %li/%li candidates of %li probes looked at\n", i->first, c+1, _root_node->countChildren(), __CANDIDATES_COUNTER, __CANDIDATES_TOTAL_COUNTER, __PROBES_TOTAL_COUNTER );
         __PATH.clear();
         PS_find_probe_for_sets( i->second, _candidate_parent );
@@ -1218,8 +1218,8 @@ int main( int   argc,
     __BITS_IN_MAP = ((__MAX_ID+1)*__MAX_ID)/2 + __MAX_ID+1;
     __MAP         = new PS_BitMap_Counted( result_file );
     __PRESET_MAP  = new PS_BitMap_Counted( false, __MAX_ID+1 );
-    for ( SpeciesID id1 = 0; id1 < __MIN_ID; ++id1 ) {
-        for ( SpeciesID id2 = 0; id2 <= __MAX_ID; ++id2 ) {
+    for (id1 = 0; id1 < __MIN_ID; ++id1 ) {
+        for (id2 = 0; id2 <= __MAX_ID; ++id2 ) {
             if (id1 > id2) {
                 __MAP->setTrue( id1,id2 );
             } else {

@@ -429,14 +429,14 @@ void getyspace ()
 } /* getyspace */
 
 
-void setuptree (tr, numsp)
+void setuptree (tr, numSp)
      tree  *tr;
-     int    numsp;
+     int    numSp;
 { /* setuptree */
     int     i, j;
     nodeptr p = 0, q;
 
-    for (i = 1; i <= numsp; i++) {   /*  Set-up tips */
+    for (i = 1; i <= numSp; i++) {   /*  Set-up tips */
         if ((anerror = !(p = (nodeptr) malloc((unsigned) sizeof(node))))) break;
         p->x      = (xarray *) NULL;
         p->tip    = (char *) NULL;
@@ -446,7 +446,7 @@ void setuptree (tr, numsp)
         tr->nodep[i] = p;
     }
 
-    for (i = numsp+1; i <= 2*numsp-1 && ! anerror; i++) { /* Internal nodes */  /* was : 2*numsp-2 (ralf) */
+    for (i = numSp+1; i <= 2*numSp-1 && ! anerror; i++) { /* Internal nodes */  /* was : 2*numSp-2 (ralf) */
         q = (node *) NULL;
         for (j = 1; j <= 3; j++) {
             if ((anerror = !(p = (nodeptr) malloc((unsigned) sizeof(node))))) break;
@@ -464,7 +464,7 @@ void setuptree (tr, numsp)
 
     tr->likelihood = unlikely;
     tr->start      = tr->nodep[1];
-    tr->mxtips     = numsp;
+    tr->mxtips     = numSp;
     tr->ntips      = 0;
     tr->nextnode   = 0;
     tr->opt_level  = 0;
@@ -1687,13 +1687,13 @@ double  treeLength(tr)
 } /* treeLength */
 
 
-void categorize (sites, categs, weight, pattern, patrate,
+void categorize (Sites, Categs, Weight, Pattern, Patrate,
                  categrate, sitecateg)
-     int     sites;
-     int     categs;
-     int     weight[];      /* one based */
-     int     pattern[];     /* one based */
-     double  patrate[];     /* zero based */
+     int     Sites;
+     int     Categs;
+     int     Weight[];      /* one based */
+     int     Pattern[];     /* one based */
+     double  Patrate[];     /* zero based */
      double  categrate[];   /* zero based */
      int     sitecateg[];   /* one based */
 { /* categorize */
@@ -1704,9 +1704,9 @@ void categorize (sites, categs, weight, pattern, patrate,
     min_2 = 1.0E37;
     max_1 = 0.0;
     max_2 = 0.0;
-    for (i = 1; i <= sites; i++) {
-        if (weight[i] > 0) {
-            ki = patrate[pattern[i]];
+    for (i = 1; i <= Sites; i++) {
+        if (Weight[i] > 0) {
+            ki = Patrate[Pattern[i]];
             if (ki < min_2) {
                 if (ki < min_1) {
                     if (ki < 0.995 * min_1)  min_2 = min_1;
@@ -1728,22 +1728,22 @@ void categorize (sites, categs, weight, pattern, patrate,
         }
     }
 
-    a = (categs - 3.0)/log(max_2/min_2);
+    a = (Categs - 3.0)/log(max_2/min_2);
     b = - a * log(min_2) + 2.0;
 
     categrate[0] = min_1;
-    for (k = 1; k <= categs-2; k++)  categrate[k] = min_2 * exp((k-1)/a);
-    categrate[categs-1] = max_1;
+    for (k = 1; k <= Categs-2; k++)  categrate[k] = min_2 * exp((k-1)/a);
+    categrate[Categs-1] = max_1;
 
-    for (i = 1; i <= sites; i++) {
-        if (weight[i] > 0) {
-            ki = patrate[pattern[i]];
+    for (i = 1; i <= Sites; i++) {
+        if (Weight[i] > 0) {
+            ki = Patrate[Pattern[i]];
             if      (ki < 0.99 * min_2) sitecateg[i] = 1;
-            else if (ki > 1.00 * max_2) sitecateg[i] = categs;
-            else sitecateg[i] = nint(a * log(patrate[pattern[i]]) + b);
+            else if (ki > 1.00 * max_2) sitecateg[i] = Categs;
+            else sitecateg[i] = nint(a * log(Patrate[Pattern[i]]) + b);
         }
         else
-            sitecateg[i] = categs;
+            sitecateg[i] = Categs;
     }
 } /* categorize */
 
@@ -1847,11 +1847,11 @@ void closeArb(){
     GB_close(gb_main);
 }
 
-void wrfile (outfile, sites, categs, weight, categrate, sitecateg)
+void wrfile (outfile, Sites, Categs, Weight, categrate, sitecateg)
      FILE   *outfile;
-     int     sites;
-     int     categs;
-     int     weight[];      /* one based */
+     int     Sites;
+     int     Categs;
+     int     Weight[];      /* one based */
      double  categrate[];   /* zero based */
      int     sitecateg[];   /* one based */
 { /* wrfile */
@@ -1860,22 +1860,22 @@ void wrfile (outfile, sites, categs, weight, categrate, sitecateg)
     int  i, k, l;
 
 
-    for (k = 1; k <= sites; k += 60) {
+    for (k = 1; k <= Sites; k += 60) {
         l = k + 59;
-        if (l > sites)  l = sites;
+        if (l > Sites)  l = Sites;
         fprintf(outfile, "%s  ", k == 1 ? "Weights   " : "          ");
 
         for (i = k; i <= l; i++) {
-            putc(itobase36(weight[i]), outfile);
+            putc(itobase36(Weight[i]), outfile);
             if (((i % 10) == 0) && ((i % 60) != 0)) putc(' ', outfile);
         }
 
         putc('\n', outfile);
     }
-    for (k = 1; k <= categs; k += 7) {
+    for (k = 1; k <= Categs; k += 7) {
         l = k + 6;
-        if (l > categs)  l = categs;
-        if (k == 1)  fprintf(outfile, "C %2d", categs);
+        if (l > Categs)  l = Categs;
+        if (k == 1)  fprintf(outfile, "C %2d", Categs);
         else         fprintf(outfile, "    ");
 
         for (i = k-1; i < l; i++)  fprintf(outfile, " %9.5f", categrate[i]);
@@ -1883,9 +1883,9 @@ void wrfile (outfile, sites, categs, weight, categrate, sitecateg)
         putc('\n', outfile);
     }
 
-    for (k = 1; k <= sites; k += 60) {
+    for (k = 1; k <= Sites; k += 60) {
         l = k + 59;
-        if (l > sites)  l = sites;
+        if (l > Sites)  l = Sites;
         fprintf(outfile, "%s  ", k == 1 ? "Categories" : "          ");
 
         for (i = k; i <= l; i++) {
