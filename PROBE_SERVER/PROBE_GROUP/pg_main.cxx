@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Wed Feb/27/2008 19:43 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon Mar/03/2008 17:57 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2004     //
@@ -72,11 +72,6 @@ typedef SmartPtr<SpeciesBag, Counted<SpeciesBag, auto_delete_ptr<SpeciesBag> > >
 typedef deque<SpeciesBagPtr> SpeciesBagStack;
 
 typedef enum { TS_LINKED_TO_SPECIES, TS_LINKED_TO_SUBTREES } TreeState;
-
-// ----------------------------------------
-// globals
-
-GBDATA *gb_main = 0;
 
 // ----------------------------------------
 // module globals
@@ -423,7 +418,7 @@ static GB_ERROR openDatabases(GBDATA*& gb_main, GBDATA*& pb_main, GBDATA*& pba_m
 
 static GB_ERROR probeDatabaseWriteCounters(GBDATA *pba_main, int subtreeCounter, int exactProbeGroupCounter, int probeSubtreeCounter) {
     GB_ERROR error = 0;
-    GB_transaction dummy(pba_main);
+    GB_transaction ta(pba_main);
 
     {
         GBDATA *stCounter    = GB_search(pba_main,"subtree_counter",GB_INT);
@@ -448,7 +443,7 @@ static GB_ERROR probeDatabaseWriteCounters(GBDATA *pba_main, int subtreeCounter,
 
 static GB_ERROR probeDatabaseFinalizeCounters(GBDATA *pba_main, int better_covering_groups_counter, int less_mishit_groups_counter) {
     GB_ERROR error = 0;
-    GB_transaction dummy(pba_main);
+    GB_transaction ta(pba_main);
 
     {
         GBDATA *stCounter    = GB_search(pba_main,"coverage_group_counter",GB_INT);
@@ -495,7 +490,7 @@ static GB_ERROR pathMappingWriteGlobals(GBDATA *pm_main, int depth) {
 }
 
 static GBT_TREE *readAndLinkTree(GBDATA *gb_main, GB_ERROR& error) {
-    GB_transaction dummy(gb_main);
+    GB_transaction ta(gb_main);
 
     if (para.tree_name == "DEFAULT") {
         GBDATA *gb_tree_name = GB_search(gb_main, "focus/tree_name", GB_FIND);
@@ -730,13 +725,13 @@ static GB_ERROR findExactSubtrees(GBT_TREE *gbt_tree, GBDATA *pb_main, GBDATA *p
     unsigned      depth                  = 0;
 
     out.put("Extracting groups for subtrees:");
-    indent i(out);
+    indent ind(out);
 
     for (int i=0; i<statistic_size; ++i) statistic[i] = 0;
 
-    GB_transaction dummya(pba_main);
-    GB_transaction dummyb(pbb_main);
-    GB_transaction dummy(pb_main);
+    GB_transaction ta1(pba_main);
+    GB_transaction ta2(pbb_main);
+    GB_transaction ta3(pb_main);
 
     GBDATA *pb_tree = GB_search(pb_main,"group_tree",GB_FIND);
 
@@ -892,7 +887,7 @@ static GBT_TREE *PG_find_subtree_by_path(GBT_TREE *node, const char *path) {
 
 static GB_ERROR linkTreeToSubtrees(GBT_TREE *tree, GBDATA *pba_main) {
     GB_ERROR error = 0;
-    GB_transaction dummy(pba_main);
+    GB_transaction ta(pba_main);
 
     unlinkTreeAndFreeNodeInfo(tree);
 
@@ -1165,8 +1160,8 @@ static GB_ERROR searchBetterCoverage(GBT_TREE *tree, GBDATA *pb_main, GBDATA *pb
     TreeTraversal tt(tree, TS_LINKED_TO_SUBTREES);
     GB_ERROR      error = 0;
 
-    GB_transaction dummy(pb_main);
-    GB_transaction dummya(pba_main);
+    GB_transaction ta1(pb_main);
+    GB_transaction ta2(pba_main);
 
     GBDATA *pb_tree          = GB_search(pb_main,"group_tree",GB_FIND);
     GBDATA *pba_probe_groups = GB_search(pba_main, "probe_groups", GB_CREATE_CONTAINER);
@@ -1279,7 +1274,7 @@ int main(int argc,char *argv[]) {
     if (!error) error = scanArguments(argc, argv);
 
     {
-        indent i(out);
+        indent i1(out);
 
         GBDATA   *gb_main  = 0;
         GBDATA   *pb_main  = 0;
@@ -1295,14 +1290,14 @@ int main(int argc,char *argv[]) {
 
             GBT_TREE *gbt_tree = readAndLinkTree(gb_main, error);
             if (!error) {
-                GB_transaction dummy(pb_main);
+                GB_transaction ta(pb_main);
                 error = GBT_write_plain_tree(pb_main, pb_main, 0, gbt_tree);
             }
 
             GB_alignment_type ali_type = GB_AT_UNKNOWN;
             if (!error) {
-                GB_transaction dummy(gb_main);
-                GB_transaction dummy2(pba_main);
+                GB_transaction ta1(gb_main);
+                GB_transaction ta2(pba_main);
 
                 char *ali_name = GBT_get_default_alignment(gb_main);
                 ali_type       = GBT_get_alignment_type(gb_main, ali_name);
@@ -1325,17 +1320,17 @@ int main(int argc,char *argv[]) {
             }
             if (!error) error = findExactSubtrees(gbt_tree, pb_main, pba_main, pbb_main);
             if (!error) {
-                GB_transaction dummy(gb_main);
+                GB_transaction ta1(gb_main);
                 error = PG_tree_change_node_info(gbt_tree); // exchange species-names against species ids in tree
                 if (!error) {
-                    GB_transaction dummy(pba_main);
+                    GB_transaction ta2(pba_main);
                     error = GBT_write_plain_tree(pba_main, pba_main, 0, gbt_tree);
                 }
             }
 
             if (!error) error = PG_transfer_root_string_field(pb_main, pba_main, "species_mapping"); // copy species_mapping
             if (!error) {
-                GB_transaction dummy(pba_main);
+                GB_transaction ta(pba_main);
 
                 // From here gbt_tree is not linked to species.
                 // Instead it is linked to subtree containers of pba_main!
@@ -1350,7 +1345,7 @@ int main(int argc,char *argv[]) {
 
                 if (!error) {
                     out.put("Searching better groups for non-exact subtrees ..");
-                    indent i(out);
+                    indent i2(out);
 
                     error = searchBetterCoverage_repeated(gbt_tree, pb_main, pba_main);
                     if (!error) {
@@ -1376,7 +1371,7 @@ int main(int argc,char *argv[]) {
 
         if (!error) {
             out.put("Saving databases..");
-            indent i(out);
+            indent i2(out);
             if (!error) error = save(pb_main, para.db_out_name, "complete");
             if (!error) error = save(pba_main, para.db_out_alt_name, "complete");
             if (!error) error = save(pbb_main, para.db_out_alt_name2, "complete");

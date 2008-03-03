@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Wed Feb/11/2004 15:52 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon Mar/03/2008 17:24 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -114,12 +114,12 @@ namespace {
 
     GB_ERROR init_path_cache(GBDATA *gb_main) {
         GB_transaction  dummy(gb_main);
-        GBDATA         *gb_subtrees = GB_search(gb_main, "subtree_counter", GB_FIND);
+        GBDATA         *gb_subtrees_cnt = GB_search(gb_main, "subtree_counter", GB_FIND);
 
 //         gb_is_inner_node = gb_subtrees; // the pointer is only used as flag!
 
-        if (gb_subtrees) {
-            int subtrees = GB_read_int(gb_subtrees);
+        if (gb_subtrees_cnt) {
+            int subtrees = GB_read_int(gb_subtrees_cnt);
             path_cache   = GBS_create_hash(subtrees, 1);
 
             GBDATA *gb_subtrees = GB_search(gb_main, "subtrees", GB_FIND);
@@ -492,8 +492,8 @@ namespace {
                     }
 
                     if (error) {
-                        GB_ERROR dummy;
-                        error = GBS_global_string("%s (in subtree '%s'='%s')", error, enc_path, decodePath(enc_path, dummy));
+                        GB_ERROR ignore;
+                        error = GBS_global_string("%s (in subtree '%s'='%s')", error, enc_path, decodePath(enc_path, ignore));
                     }
                 }
                 else {
@@ -770,7 +770,7 @@ namespace {
         }
     }
 
-    void Worker::findRequests(int probe_length) {
+    void Worker::findRequests(int probeLength) {
         const char *dirname = working_directory.c_str();
         DIR        *dirp    = opendir(dirname);
 
@@ -783,7 +783,7 @@ namespace {
                 unsigned long  found_length = strtoul(filename, 0, 10);
                 bool           is_request   = false;
 
-                if (found_length == (unsigned long)probe_length) { // for this worker?
+                if (found_length == (unsigned long)probeLength) { // for this worker?
                     const char *ext = strrchr(filename, '.');
                     if (ext && strcmp(ext, ".req") == 0) { // is it a request?
                         is_request = true;
