@@ -1056,6 +1056,7 @@ void ED4_cursor::jump_screen_pos(AW_window *aww, int screen_pos, ED4_CursorJumpT
     else {
         ShowCursor(cursor_diff*length_of_char, ED4_C_LEFT, ABS(cursor_diff));
     }
+    allowed_to_draw = old_allowed_to_draw;
 }
 
 void ED4_cursor::jump_sequence_pos(AW_window *aww, int seq_pos, ED4_CursorJumpType jump_type) {

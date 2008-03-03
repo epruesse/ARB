@@ -11,9 +11,11 @@
 #include "ed4_RNA3D.hxx"
 
 void ED4_RNA3D_Start(AW_window *aw, AW_CL, AW_CL)
-{    
+{
 #if defined(ARB_OPENGL)
     RNA3D_StartApplication(aw->get_root());
+#else
+    aw = aw; // avoid warning
 #endif // ARB_OPENGL
 }
 
