@@ -2,7 +2,7 @@
 //                                                                      //
 //   File      : attributes.h                                           //
 //   Purpose   : declare attribute macros                               //
-//   Time-stamp: <Wed Feb/27/2008 19:38 MET Coder@ReallySoft.de>        //
+//   Time-stamp: <Mon Mar/03/2008 11:44 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in June 2005             //
@@ -33,8 +33,8 @@
 #ifndef __GNUC__
 #error You have to use the gnu compiler!
 #endif
-#if (__GNUC__ < 2 || (__GNUC__==2 && __GNUC_MINOR__<95))
-#error You have to use gcc 2.95 or above
+#if (__GNUC__ < 3)
+#error You have to use gcc 3.xx or above
 #endif
 
 #if (__GNUC__ >= 4) // gcc 4.x and above
@@ -43,14 +43,9 @@
 #endif
 
 #if (__GNUC__ == 3) // gcc 3.x
-#if (__GNUC_MINOR__ >= 4)
+#if (__GNUC_MINOR__ >= 4) 
 #define HAS_FUNCTION_TYPE_ATTRIBUTES
 #endif
-#endif
-
-#if (__GNUC__ > 2 || (__GNUC__==2 && __GNUC_MINOR__>=96)) // gcc 2.96 or above
-#define __ATTR__PURE       __attribute__((pure))
-#define __ATTR__DEPRECATED __attribute__((deprecated))
 #endif
 
 // ------------------------------------------------------------
@@ -69,30 +64,21 @@
 #define __ATTR__SENTINEL
 #endif
 
-#ifndef __ATTR__PURE
-#define __ATTR__PURE
-#endif
-
-#ifndef __ATTR__DEPRECATED
-#define __ATTR__DEPRECATED
-#endif
-
 // ------------------------------------------------------------
-// valid for any gcc above 2.95
+// valid for any gcc above 3.xx
 
-#define __ATTR__CONST    __attribute__((const))
-#define __ATTR__NORETURN __attribute__((noreturn))
+#define __ATTR__PURE       __attribute__((pure))
+#define __ATTR__DEPRECATED __attribute__((deprecated))
+#define __ATTR__CONST      __attribute__((const))
+#define __ATTR__NORETURN   __attribute__((noreturn))
 
 #define __ATTR__FORMAT(pos)         __attribute__((format(__printf__, pos, (pos)+1)))
 #define __ATTR__VFORMAT(pos)        __attribute__((format(__printf__, pos, 0)))
 #define __ATTR__FORMAT_MEMBER(pos)  __attribute__((format(__printf__, (pos)+1, (pos)+2)))
 #define __ATTR__VFORMAT_MEMBER(pos) __attribute__((format(__printf__, (pos)+1, 0)))
-// when used for member functions, start with pos+1 (pos = 1 seems to be the class-pointer?)
+// when used for member functions, start with pos+1 (pos = 1 seems to be the this-pointer!?)
 // ------------------------------------------------------------
 
-#define SENTINEL ((char*)0) // used as terminator of sentinel argument lists
-
-// ------------------------------------------------------------
 #else
 #error attributes.h included twice
 #endif // ATTRIBUTES_H
