@@ -366,12 +366,12 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
          ++i) {
         printf( "\nPair (%i,%i) Setsize (%d)", i->first.first, i->first.second, i->second.size() );
         PS_NodePtr current_node = _root_node;
-        long c = 0;
+        long c2 = 0;
         for (IDSetCIter path_id=i->second.begin();
              path_id !=i->second.end();
-             ++path_id,++c) {
+             ++path_id,++c2) {
             current_node = current_node->getChild( *path_id ).second;
-            if (c % 10 == 0) printf( "\n" );
+            if (c2 % 10 == 0) printf( "\n" );
             printf( "%6i%s ", *path_id, (current_node->hasProbes()) ? ((current_node->hasInverseProbes()) ? "*" : "+") : "-" );
         }
         printf( "\nFinal Node : %p ", &(*current_node) );
