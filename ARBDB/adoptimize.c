@@ -528,7 +528,7 @@ int look(GB_DICTIONARY *dict, GB_CSTR source) {
 
 char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA *gbd, */GB_CSTR s_source, long size, GB_BOOL append_zero) {
     cu_str source = (cu_str)s_source;
-    u_str dest;
+    u_str __restrict__ dest;
     u_str buffer;
     cu_str text = dict->text;
 /*     GB_NINT *offset = dict->offsets; */
@@ -569,6 +569,7 @@ char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA *gbd, *
 
                 {
                     u_str d = dest;
+                    ad_assert(((d + c) <= word) || (d >= (word + c)));
                     while (c--) *d++ = *word++;
                     dest = d;
                 }
@@ -583,6 +584,7 @@ char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA *gbd, *
             size -= c;
             {
                 u_str d = dest;
+                ad_assert(((d + c) <= source) || (d >= (source + c)));
                 while (c--) *d++ = *source++;
                 dest=d;
             }
