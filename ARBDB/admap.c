@@ -169,7 +169,7 @@ static long getrel_GBDATA(long rel_to, GBDATA *gbd)
 
         while (1)
         {
-            int cmpres;
+            long cmpres;
 
             m = (l+h)>>1;
             cmpres = (long)gbd - (long)gbdo[m].gbd;
