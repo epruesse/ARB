@@ -108,23 +108,23 @@ CPPreal=cpp
 
 # supported compiler versions:
 
-ALLOWED_GCC_295_VERSIONS=2.95.3
 ALLOWED_GCC_3xx_VERSIONS=3.2 3.3.1 3.3.3 3.3.4 3.3.5 3.3.6 3.4.0 3.4.2 3.4.3
 ALLOWED_GCC_4xx_VERSIONS=4.0.0 4.0.2 4.0.3 4.1.1 4.1.2 4.1.3 4.2.0 4.2.1 4.2.3
-ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_295_VERSIONS) $(ALLOWED_GCC_3xx_VERSIONS) $(ALLOWED_GCC_4xx_VERSIONS)
+ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_3xx_VERSIONS) $(ALLOWED_GCC_4xx_VERSIONS)
 
 GCC_VERSION_FOUND=$(shell $(GCC) -dumpversion)
 GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring ___$(version)___,___$(GCC_VERSION_FOUND)___))))
 
-#---------------------- depending on gcc version add extra warnings
-
-ifeq ($(DEBUG),1)
 USING_GCC_3XX=$(strip $(foreach version,$(ALLOWED_GCC_3xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
 USING_GCC_4XX=$(strip $(foreach version,$(ALLOWED_GCC_4xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
 
+#---------------------- depending on gcc version add extra warnings
+
+ifeq ($(DEBUG),1)
 ifneq ('$(USING_GCC_3XX)','')
 extended_cpp_warnings := $(extended_cpp_warnings) $(extended_cpp_3xx_warnings)
 endif
+
 ifneq ('$(USING_GCC_4XX)','')
 extended_cpp_warnings := $(extended_cpp_warnings) $(extended_cpp_3xx_warnings) $(extended_cpp_4xx_warnings)
 endif
@@ -1426,6 +1426,7 @@ tryxtras:
 arb: arbbasic arbshared arbapplications help
 
 all: checks
+	$(MAKE) links
 	$(MAKE) com
 	$(MAKE) arb
 	$(MAKE) libs
