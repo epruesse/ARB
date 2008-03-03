@@ -510,11 +510,11 @@ static bool path_is_subset_of(const char *path, SpeciesBagIter start, SpeciesBag
     return true;
 }
 
-static GBDATA *best_covering_probe_group(GBDATA *pb_tree_or_path, SpeciesBagIter start, SpeciesBagIter end, int size, int allowed_mismatches, int& used_mismatches) {
+static GBDATA *best_covering_probe_group(GBDATA *pb_tree_or_path, SpeciesBagIter start, SpeciesBagIter end, int size, int allowed_mismatches, int& usedMismatches) {
     pg_assert(allowed_mismatches >= 0);
 
     if (start == end) {
-        used_mismatches = 0;
+        usedMismatches = 0;
         return GB_find(pb_tree_or_path, "probes", 0, down_level);
     }
 
@@ -557,7 +557,7 @@ static GBDATA *best_covering_probe_group(GBDATA *pb_tree_or_path, SpeciesBagIter
 
     }
 
-    used_mismatches = min_used_mismatches;
+    usedMismatches = min_used_mismatches;
     return best_covering_group;
 }
 

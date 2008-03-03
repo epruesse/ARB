@@ -71,8 +71,8 @@ struct InputParameter {
 // ----------------------------------------
 // module globals
 
-static GBDATA            *gb_main = 0; //ARB-database
-static GBDATA            *pd_main = 0; //probe-design-database
+static GBDATA            *GLOBAL_gb_main = 0; //ARB-database
+static GBDATA            *GLOBAL_pd_main = 0; //probe-design-database
 static InputParameter     para;
 
 // static float bondval[16]={0.0,0.0,0.5,1.1,
@@ -88,7 +88,7 @@ static GB_HASH *path2subtree        = 0; // uses encoded paths
 static long     no_of_subtrees      = 0;
 static int      max_subtree_pathlen = 0;
 static char    *pathbuffer          = 0;
-static output   out;
+static output   GLOBAL_out;
 
 // ----------------------------------------
 
@@ -151,7 +151,7 @@ static const char *PGD_probe_pt_look_for_server(GBDATA *gb_main, const char *ser
 
         if (strcmp(aServer, servername) == 0) { // wanted server
             serverNum = i;
-            out.put("Found pt-server: %s", aServer);
+            GLOBAL_out.put("Found pt-server: %s", aServer);
         }
         free(aServer);
     }
@@ -178,8 +178,8 @@ static GB_ERROR PG_init_pt_server(GBDATA *gb_main, const char *servername) {
         error = "pt-server initialized twice";
     }
     else {
-        out.put("Search a free running pt-server..");
-        indent i(out);
+        GLOBAL_out.put("Search a free running pt-server..");
+        indent i(GLOBAL_out);
         current_server_name            = GB_strdup(PGD_probe_pt_look_for_server(gb_main,servername,error));
         if (!error) server_initialized = true;
     }
@@ -394,10 +394,10 @@ static char *pgd_get_the_names(set<SpeciesName> *species, bytestring &bs, bytest
     void *names = GBS_stropen(1024);
     void *checksums = GBS_stropen(1024);
 
-    GB_begin_transaction(gb_main);
+    GB_begin_transaction(GLOBAL_gb_main);
 //     char *use = GBT_get_default_alignment(gb_main);
 
-    gb_species=GB_search(gb_main,"species_data",GB_FIND);
+    gb_species=GB_search(GLOBAL_gb_main,"species_data",GB_FIND);
     if(!gb_species) return 0;
 
     for(set<SpeciesName>::const_iterator i=(*species).begin();i!=(*species).end();++i){
@@ -419,7 +419,7 @@ static char *pgd_get_the_names(set<SpeciesName> *species, bytestring &bs, bytest
     checksum.data = GBS_strclose(checksums);
     checksum.size = strlen(checksum.data)+1;
 
-    GB_commit_transaction(gb_main);
+    GB_commit_transaction(GLOBAL_gb_main);
     return 0;
 }
 
@@ -679,18 +679,18 @@ static GBT_TREE *PGD_find_subtree_by_path(GBT_TREE *node, const char *path) {
 
 static GB_ERROR pgd_openDatabases() {
     GB_ERROR error = 0;
-    indent   i(out);
+    indent   i(GLOBAL_out);
 
     //Open arb database:
     const char *db_name = para.db_name.c_str();
-    out.put("Opening ARB-database '%s' ..",db_name);
+    GLOBAL_out.put("Opening ARB-database '%s' ..",db_name);
 
     // @@@ FIXME:  I think this program should be able to run w/o the main database
     // it only uses the db to open the pt-server connection and does
     // some unneeded species checking..
 
-    gb_main = GBT_open(db_name,"rwt",0);
-    if (!gb_main) {
+    GLOBAL_gb_main = GBT_open(db_name,"rwt",0);
+    if (!GLOBAL_gb_main) {
         error             = GB_get_error();
         if (!error) error = GB_export_error("Can't open database '%s'",db_name);
     }
@@ -699,15 +699,15 @@ static GB_ERROR pgd_openDatabases() {
         //Open probe design database:
         string      pd_nameS = para.pd_db_name+".arb";
         const char *pd_name  = pd_nameS.c_str();
-        out.put("Opening probe-group-design-database '%s' .." ,pd_name);
+        GLOBAL_out.put("Opening probe-group-design-database '%s' .." ,pd_name);
 
-        pd_main = GB_open(pd_name,"rwcN");
-        if (!pd_main) {
+        GLOBAL_pd_main = GB_open(pd_name,"rwcN");
+        if (!GLOBAL_pd_main) {
             error            = GB_get_error();
             if(!error) error = GB_export_error("Can't open database '%s'",pd_name);
         }
         else {
-            error = checkDatabaseType(pd_main, pd_name, "probe_group_subtree_db", "complete");
+            error = checkDatabaseType(GLOBAL_pd_main, pd_name, "probe_group_subtree_db", "complete");
         }
     }
 
@@ -717,8 +717,10 @@ static GB_ERROR pgd_openDatabases() {
 static GB_ERROR saveDatabase() {
     string      savenameS = para.pd_db_name+"_design.arb";
     const char *savename  = savenameS.c_str();
-    out.put("Saving %s ..", savename);
-    return GB_save(pd_main, savename, SAVE_MODE);
+
+    GLOBAL_out.put("Saving %s ..", savename);
+    
+    return GB_save(GLOBAL_pd_main, savename, SAVE_MODE);
 }
 
 class ConnectServer {
@@ -728,7 +730,7 @@ class ConnectServer {
 
 public:
     ConnectServer(const probe_config_data& probe_config) {
-        PG_init_pt_server(gb_main,para.pt_server_name.c_str());
+        PG_init_pt_server(GLOBAL_gb_main, para.pt_server_name.c_str());
         my_server = new PT_server_connection();
         error     = my_server->get_error();
 
@@ -846,8 +848,8 @@ static GB_ERROR designProbesForGroup(GBDATA *pd_probe_group, const char *use) {
     else {
         // get species
         std::set<SpeciesName> species; //set of species for probe design
-        GB_ERROR              error = pgd_init_species(pd_probe_group, &species);
-
+        
+        error = pgd_init_species(pd_probe_group, &species);
         if (!error && species.empty()) error = "No species detected for probe group.";
         if (!error) {
             std::set<Probes> designedProbes; //set of probes from the design
@@ -936,15 +938,15 @@ static GB_ERROR designProbesForGroup(GBDATA *pd_probe_group, const char *use) {
 
 static GB_ERROR designProbes(const probe_config_data &probe_config) {
     GB_ERROR error = 0;
-    GB_begin_transaction(pd_main);
+    GB_begin_transaction(GLOBAL_pd_main);
 
-    GBDATA *pd_subtree_cont    = GB_find(pd_main,"subtrees",0,down_level);
-    GBDATA *pd_probegroup_cont = GB_find(pd_main,"probe_groups",0,down_level);
+    GBDATA *pd_subtree_cont    = GB_find(GLOBAL_pd_main,"subtrees",0,down_level);
+    GBDATA *pd_probegroup_cont = GB_find(GLOBAL_pd_main,"probe_groups",0,down_level);
 
     if (!pd_subtree_cont) error         = "Can't find container 'subtrees'";
     else if (!pd_probegroup_cont) error = "Can't find container 'probe_groups'";
     else {
-        GBDATA *pd_subtree_counter = GB_find(pd_main, "subtree_counter", 0, down_level);
+        GBDATA *pd_subtree_counter = GB_find(GLOBAL_pd_main, "subtree_counter", 0, down_level);
         if (!pd_subtree_counter) {
             error = "Can't find 'subtree_counter'";
         }
@@ -956,7 +958,7 @@ static GB_ERROR designProbes(const probe_config_data &probe_config) {
 
     long probe_group_counter;
     if (!error) {
-        GBDATA *pd_probe_group_counter = GB_find(pd_main, "probe_group_counter", 0, down_level);
+        GBDATA *pd_probe_group_counter = GB_find(GLOBAL_pd_main, "probe_group_counter", 0, down_level);
         if (!pd_probe_group_counter) error = "Can't find 'probe_group_counter'";
         else {
             probe_group_counter = GB_read_int(pd_probe_group_counter);
@@ -967,17 +969,17 @@ static GB_ERROR designProbes(const probe_config_data &probe_config) {
         ConnectServer connect(probe_config);  // initialize pt-server connection
         error = connect.getError();
         if (!error) {
-            out.put("Designing probes for %li used probe groups:", probe_group_counter);
-            indent i(out);
-            out.setMaxPoints(probe_group_counter);
+            GLOBAL_out.put("Designing probes for %li used probe groups:", probe_group_counter);
+            indent i(GLOBAL_out);
+            GLOBAL_out.setMaxPoints(probe_group_counter);
 
             // design probes
             long count = 0;
 
             char *use;
             {
-                GB_transaction dummy(gb_main);
-                use = GBT_get_default_alignment(gb_main);
+                GB_transaction dummy(GLOBAL_gb_main);
+                use = GBT_get_default_alignment(GLOBAL_gb_main);
             }
 
             for (GBDATA *pd_probe_group = GB_find(pd_probegroup_cont,"probe_group",0,down_level);
@@ -985,7 +987,7 @@ static GB_ERROR designProbes(const probe_config_data &probe_config) {
                  pd_probe_group = GB_find(pd_probe_group,"probe_group",0,this_level|search_next))
             {
                 ++count;
-                out.point();
+                GLOBAL_out.point();
 
 //                 if (count%60) fputc('.', stdout);
 //                 else printf(". %i%%\n", int((double(count)/probe_group_counter)*100+0.5));
@@ -1000,8 +1002,8 @@ static GB_ERROR designProbes(const probe_config_data &probe_config) {
         }
     }
 
-    if (error) GB_abort_transaction(pd_main);
-    else GB_commit_transaction(pd_main);
+    if (error) GB_abort_transaction(GLOBAL_pd_main);
+    else GB_commit_transaction(GLOBAL_pd_main);
 
     return error;
 }
@@ -1062,16 +1064,16 @@ static GB_ERROR saveTreefile() {
     GB_ERROR error = 0;
 
     if (para.gen_treefile == TF_CREATE) { // create treefile ?
-        GB_transaction dummy(pd_main);
+        GB_transaction dummy(GLOBAL_pd_main);
 
         // load the tree
         GBT_TREE *tree    = 0;
-        GBDATA   *pd_tree = GB_find(pd_main, "tree", 0, down_level);
+        GBDATA   *pd_tree = GB_find(GLOBAL_pd_main, "tree", 0, down_level);
         if (!pd_tree) {
             error = "'tree' missing";
         }
         else {
-            tree = GBT_read_plain_tree(pd_main, pd_tree, sizeof(*tree), &error);
+            tree = GBT_read_plain_tree(GLOBAL_pd_main, pd_tree, sizeof(*tree), &error);
             if (error) {
                 pgd_assert(!tree);
                 error = GBS_global_string("Error reading tree: %s", error);
@@ -1082,7 +1084,7 @@ static GB_ERROR saveTreefile() {
             }
         }
 
-        GBDATA *pd_subtree_cont = GB_find(pd_main, "subtrees", 0, down_level);
+        GBDATA *pd_subtree_cont = GB_find(GLOBAL_pd_main, "subtrees", 0, down_level);
         if (!pd_subtree_cont) error = "Can't find container 'subtrees'";
 
         for (GBDATA *pd_subtree = GB_find(pd_subtree_cont,"subtree",0,down_level);
@@ -1113,7 +1115,7 @@ static GB_ERROR saveTreefile() {
             PGD_encodeBranchNames(tree);
 
             const char *treefilename = para.treefile.c_str();
-            out.put("Saving %s ..", treefilename);
+            GLOBAL_out.put("Saving %s ..", treefilename);
 
             FILE *out = fopen(treefilename, "wt");
             if (!out) {
@@ -1163,7 +1165,7 @@ static GB_ERROR convertTargetsToProbes(GBDATA *pd_main) {
     // till here the database contains probe-targets (not the probes themselves)
 
     GB_begin_transaction(pd_main);
-    out.put("Converting targets to probes ..");
+    GLOBAL_out.put("Converting targets to probes ..");
 
     GB_ERROR  error              = 0;
     GBDATA   *pd_probegroup_cont = GB_find(pd_main,"probe_groups",0,down_level);
@@ -1197,10 +1199,10 @@ static GB_ERROR convertTargetsToProbes(GBDATA *pd_main) {
 }
 
 int main(int argc,char *argv[]) {
-    out.put("arb_probe_group_design v1.0 -- (C) 2001-2003 by Tina Lai & Ralf Westram");
+    GLOBAL_out.put("arb_probe_group_design v1.0 -- (C) 2001-2003 by Tina Lai & Ralf Westram");
     GB_ERROR error = 0;
     {
-        indent            ig(out);
+        indent            ig(GLOBAL_out);
         probe_config_data probe_config;
         {
             Config config("probe_parameters.conf", probe_config);
@@ -1209,7 +1211,7 @@ int main(int argc,char *argv[]) {
 
         if (!error) error = pgd_scanArguments(argc, argv); // Check and init Parameters
         if (!error) error = pgd_openDatabases();
-        if (!error) error = PM_initSpeciesMaps(pd_main);
+        if (!error) error = PM_initSpeciesMaps(GLOBAL_pd_main);
         if (!error) {
             initDecodeTable();
             error = designProbes(probe_config);
@@ -1217,14 +1219,14 @@ int main(int argc,char *argv[]) {
 #if defined(SKIP_PROBES_TO_TARGET_CONVERSION)
 #warning probe to target conversion skipped for debugging
 #else
-        if (!error) error = convertTargetsToProbes(pd_main);
+        if (!error) error = convertTargetsToProbes(GLOBAL_pd_main);
 #endif // SKIP_PROBES_TO_TARGET_CONVERSION
         if (!error) {
-            out.put("Saving ..");
-            indent i(out);
+            GLOBAL_out.put("Saving ..");
+            indent i(GLOBAL_out);
             error = saveTreefile();
             if (!error) {
-                error = setDatabaseState(pd_main, "probe_group_design_db", "complete"); // adjust database type
+                error = setDatabaseState(GLOBAL_pd_main, "probe_group_design_db", "complete"); // adjust database type
                 if (!error) error = saveDatabase();
             }
         }
@@ -1234,7 +1236,7 @@ int main(int argc,char *argv[]) {
         fprintf(stderr, "Error in probe_group_design: %s\n", error);
         return EXIT_FAILURE;
     }
-    out.put("arb_probe_group_design done.");
+    GLOBAL_out.put("arb_probe_group_design done.");
     return EXIT_SUCCESS;
 }
 
