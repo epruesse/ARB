@@ -523,21 +523,23 @@ ED4_base* ED4_manager::get_competent_clicked_child( AW_pos x, AW_pos y, ED4_prop
 
 ED4_returncode	ED4_manager::handle_move( ED4_move_info *mi )					// handles a move request with target world
 {												// coordinates within current object's borders
-    AW_pos	          	rel_x, rel_y, x_off, y_off;
-    ED4_base             	*object;
-    ED4_manager 		*old_parent;
-    ED4_manager          	*manager;
-    ED4_level            	 mlevel;
-    ED4_terminal         	*sel_object;
-    ED4_selection_entry  	*sel_info;
-    ED4_list_elem        	*list_elem;
-    bool			i_am_consensus = 0;
-    ED4_AREA_LEVEL		level;
-    int 			nr_of_visible_species = 0,
-        nr_of_children_in_group = 0;
-
-    ED4_base		*found_member = NULL;
-    ED4_extension		loc;
+    AW_pos	         rel_x, rel_y, x_off, y_off;
+    ED4_base            *object;
+    ED4_manager 	*old_parent;
+    ED4_manager         *manager;
+    ED4_level            mlevel;
+    ED4_terminal        *sel_object;
+    ED4_selection_entry *sel_info;
+    ED4_list_elem       *list_elem;
+    bool		 i_am_consensus = 0;
+    ED4_AREA_LEVEL	 level;
+    ED4_base	        *found_member   = NULL;
+    ED4_extension        loc;
+    
+#if defined(LIMIT_TOP_AREA_SPACE)
+    int nr_of_visible_species   = 0;
+    int nr_of_children_in_group = 0;
+#endif
 
     if ((mi == NULL) || (mi->object->spec->level <= spec->level)) {
         return ( ED4_R_IMPOSSIBLE );
