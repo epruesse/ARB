@@ -783,7 +783,7 @@ long GBS_string_cmp(const char *str,const char *search,long upper_case)
 char *gbs_add_path(char *path,char *name)
 {
     long i,len,found;
-    char * __restrict__ erg;
+    char *erg;
     if (!name) return name;
     if (!path) {
         return 0;
