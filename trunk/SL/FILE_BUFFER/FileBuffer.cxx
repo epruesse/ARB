@@ -2,7 +2,7 @@
 //                                                                  //
 //   File      : FileBuffer.cxx                                     //
 //   Purpose   :                                                    //
-//   Time-stamp: <Tue Mar/20/2007 23:52 MET Coder@ReallySoft.de>    //
+//   Time-stamp: <Mon Mar/03/2008 11:45 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in December 2006   //
 //   Institute of Microbiology (Technical University Munich)        //
@@ -13,11 +13,6 @@
 
 
 using namespace std;
-
-#if (__GNUC__ < 2 || (__GNUC__==2 && __GNUC_MINOR__<96)) // gcc 2.95 or below
-template <typename T>
-inline void swap(T& c1, T& c2) { T c = c1; c1 = c2; c2 = c; }
-#endif
 
 void FileBuffer::fillBuffer()
 {
