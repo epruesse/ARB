@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : AWT_db_browser.cxx                                     // 
 //    Purpose   : Simple database viewer                                 // 
-//    Time-stamp: <Fri Feb/29/2008 13:42 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Sat Mar/01/2008 18:35 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2004              // 
@@ -286,7 +286,7 @@ public:
     const char *get_path() const { return known_databases[current_db].get_path().c_str(); }
     void set_path(const char *new_path) { known_databases[current_db].set_path(new_path); }
 
-    GBDATA *gb_main() const { return const_cast<GBDATA*>(known_databases[current_db].get_db()); }
+    GBDATA *get_db() const { return const_cast<GBDATA*>(known_databases[current_db].get_db()); }
 };
 
 
@@ -376,7 +376,7 @@ static GB_ERROR browse_cmd_goto_valid_node(AW_window *aww) {
     AW_awar *awar_path = aw_root->awar(AWAR_DBB_PATH);
     char    *path      = awar_path->read_string();
     int      len       = strlen(path);
-    GBDATA  *gb_main   = get_the_browser()->gb_main();
+    GBDATA  *gb_main   = get_the_browser()->get_db();
 
     {
         GB_transaction t(gb_main);
@@ -454,7 +454,7 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
     GBDATA            *node;
 
     {
-        GBDATA         *gb_main = browser->gb_main();
+        GBDATA         *gb_main = browser->get_db();
         GB_transaction  ta(gb_main);
 
         is_root = (strcmp(path, "/") == 0);
@@ -485,7 +485,7 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
     }
     else {
         map<string, counterPair> child_count;
-        GB_transaction           ta(browser->gb_main());
+        GB_transaction           ta(browser->get_db());
 
         for (GBDATA *child = GB_find(node, 0, 0, down_level);
              child;
@@ -640,7 +640,7 @@ static void child_changed_cb(AW_root *aw_root) {
             }
 
             DB_browser     *browser          = get_the_browser();
-            GBDATA         *gb_main          = browser->gb_main();
+            GBDATA         *gb_main          = browser->get_db();
             GB_transaction  dummy(gb_main);
             GBDATA         *gb_selected_node = GB_search_numbered(gb_main, fullpath, GB_FIND);
 
@@ -755,7 +755,7 @@ static void path_changed_cb(AW_root *aw_root) {
         char       *goto_child  = 0;
 
         {
-            GBDATA         *gb_main   = browser->gb_main();
+            GBDATA         *gb_main   = browser->get_db();
             GB_transaction  t(gb_main);
             AW_awar        *awar_path = aw_root->awar(AWAR_DBB_PATH);
             char           *path      = awar_path->read_string();

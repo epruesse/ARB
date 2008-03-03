@@ -81,7 +81,6 @@ ALI_SEQUENCE *ALI_MAP::sequence(ALI_NORM_SEQUENCE *ref_seq)
     int ins_counter;
     int begin_flag = 0, undefined_flag;
     unsigned long map_pos, seq_pos;
-    ALI_SEQUENCE *sequence;
     unsigned char *seq, *seq_buffer;
 
     seq_buffer = (unsigned char *) CALLOC((unsigned int)
@@ -124,17 +123,14 @@ ALI_SEQUENCE *ALI_MAP::sequence(ALI_NORM_SEQUENCE *ref_seq)
             *seq++ = ALI_GAP_CODE;
     }
 
-    sequence = new ALI_SEQUENCE(ref_seq->name(),seq_buffer,
-                                last_ref_base - first_ref_base + insert_counter + 1);
-
-    return sequence;
+    return new ALI_SEQUENCE(ref_seq->name(),seq_buffer,
+                            last_ref_base - first_ref_base + insert_counter + 1);
 }
 
 ALI_SEQUENCE *ALI_MAP::sequence_without_inserts(ALI_NORM_SEQUENCE *ref_seq)
 {
     int begin_flag = 0, undefined_flag;
     unsigned long map_pos, seq_pos;
-    ALI_SEQUENCE *sequence;
     unsigned char *seq, *seq_buffer;
 
     seq_buffer = (unsigned char *) CALLOC((unsigned int)
@@ -172,10 +168,8 @@ ALI_SEQUENCE *ALI_MAP::sequence_without_inserts(ALI_NORM_SEQUENCE *ref_seq)
             *seq++ = ALI_GAP_CODE;
     }
 
-    sequence = new ALI_SEQUENCE(ref_seq->name(),seq_buffer,
-                                last_ref_base - first_ref_base + 1);
-
-    return sequence;
+    return new ALI_SEQUENCE(ref_seq->name(),seq_buffer,
+                            last_ref_base - first_ref_base + 1);
 }
 
 ALI_MAP *ALI_MAP::inverse_without_inserts(void)

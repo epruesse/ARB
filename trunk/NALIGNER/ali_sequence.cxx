@@ -54,7 +54,7 @@ char *ALI_SEQUENCE::string(void)
  *
  *****************************************************************************/
 
-ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(char *name, char *string)
+ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(char *Name, char *String)
 {
     unsigned long counter;
     unsigned char *s;
@@ -64,7 +64,7 @@ ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(char *name, char *string)
     /*
      * Count only _BASES_
      */
-    for (counter = 0, str = string; *str != '\0'; str++)
+    for (counter = 0, str = String; *str != '\0'; str++)
         if (ali_is_base(*str))
             counter++;
     seq_len = counter;
@@ -72,14 +72,14 @@ ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(char *name, char *string)
     seq = (unsigned char*) CALLOC((unsigned int) seq_len,sizeof(unsigned char));
     dots = (unsigned char **) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
     //dots = (unsigned char (*) [1]) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
-    seq_name = strdup(name);
+    seq_name = strdup(Name);
     if (seq == 0 || dots == 0 || seq_name == 0) {
         ali_fatal_error("Out of memory");
     }
 
     dot_flag = 0;
     (*dots)[0] |= (unsigned char) (1<<7);
-    for (counter = 0, str = string, s = seq; *str != '\0'; str++) {
+    for (counter = 0, str = String, s = seq; *str != '\0'; str++) {
         if (ali_is_base(*str)) {
             *s++ = ali_base_to_number(*str);
             dot_flag = 0;
@@ -94,15 +94,15 @@ ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(char *name, char *string)
     }
 }
 
-ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(ALI_SEQUENCE *sequence)
+ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(ALI_SEQUENCE *SEQ)
 {
     unsigned long counter, pos;
     unsigned char *s;
     int dot_flag;
     unsigned char *str;
 
-    for (counter = pos = 0, str = sequence->sequence();
-         pos < sequence->length(); pos++, str++)
+    for (counter = pos = 0, str = SEQ->sequence();
+         pos < SEQ->length(); pos++, str++)
         if (ali_is_base(*str))
             counter++;
     seq_len = counter;
@@ -110,15 +110,15 @@ ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(ALI_SEQUENCE *sequence)
     seq = (unsigned char*) CALLOC((unsigned int) seq_len,sizeof(unsigned char));
     dots = (unsigned char **) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
     //dots = (unsigned char (*) [1]) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
-    seq_name = strdup(sequence->name());
+    seq_name = strdup(SEQ->name());
     if (seq == 0 || dots == 0 || seq_name == 0) {
         ali_fatal_error("Out of memory");
     }
 
     dot_flag = 0;
     (*dots)[0] |= (unsigned char) (1<<7);
-    for (counter = pos = 0, str = sequence->sequence(), s = seq;
-         pos < sequence->length(); str++, pos++) {
+    for (counter = pos = 0, str = SEQ->sequence(), s = seq;
+         pos < SEQ->length(); str++, pos++) {
         if (ali_is_base(*str)) {
             *s++ = *str;
             dot_flag = 0;

@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_graphic.cxx                                   //
 //   Purpose   : GUI for structure window                          //
-//   Time-stamp: <Wed Sep/19/2007 16:41 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Sat Mar/01/2008 18:47 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -325,7 +325,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                     exports.save = 1;
                 }
                 else {
-                    static Angle start; // angle between fixpoint (of loop or helix) and first-click
+                    static Angle startClick; // angle between fixpoint (of loop or helix) and first-click
                     static bool  rotateSubStructure; // whether to rotate the substructure below
                     static vector<Angle> old; // old angles
 
@@ -334,7 +334,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                     Angle fix2world(fixpoint, world);
 
                     if (event == AW_Mouse_Press) {
-                        start = fix2world;
+                        startClick = fix2world;
                         old.clear();
                         rotateSubStructure = (button == AWT_M_LEFT);
                             
@@ -355,7 +355,7 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
                     }
                     else {
                         sec_assert(event == AW_Mouse_Drag);
-                        Angle diff = fix2world-start;
+                        Angle diff = fix2world-startClick;
 
                         if (loop) {
                             loop->set_abs_angle(old[0]+diff);
@@ -801,7 +801,7 @@ void SEC_graphic::update(GBDATA *) {
 }
 
 void SEC_graphic::show(AW_device *device) {
-    const char *text = 0;
+    const char *textToDisplay = 0;
 
     sec_assert(sec_root);
     sec_root->clear_last_drawed_cursor_position();
@@ -809,23 +809,23 @@ void SEC_graphic::show(AW_device *device) {
     if (sec_root->canDisplay()) {
         if (sec_root->get_root_loop())  {
             GB_ERROR paint_error = sec_root->paint(device);
-            if (paint_error) text = GBS_global_string("Error: %s", paint_error);
+            if (paint_error) textToDisplay = GBS_global_string("Error: %s", paint_error);
         }
         else {
-            if (load_error)     text = GBS_global_string("Load error: %s", load_error);
-            else                text = "No structure loaded (yet)";
+            if (load_error)     textToDisplay = GBS_global_string("Load error: %s", load_error);
+            else                textToDisplay = "No structure loaded (yet)";
         }
     }
     else {
         const SEC_db_interface *db = sec_root->get_db();
 
-        if (!db)                text = "Not connected to database";
-        else if (!db->helix())  text = "No helix info";
-        else                    text = "No species selected";
+        if (!db)                textToDisplay = "Not connected to database";
+        else if (!db->helix())  textToDisplay = "No helix info";
+        else                    textToDisplay = "No species selected";
     }
 
-    if (text) { // no structure
-        device->text(SEC_GC_ECOLI, text, 0, 0, 0, 1, 0, 0, 0);
+    if (textToDisplay) { // no structure
+        device->text(SEC_GC_ECOLI, textToDisplay, 0, 0, 0, 1, 0, 0, 0);
         sec_root->set_last_drawed_cursor_position(LineVector(Origin, ZeroVector));
     }
 }

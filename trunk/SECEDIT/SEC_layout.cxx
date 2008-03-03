@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_layout.cxx                                    //
 //   Purpose   : layout size and positions of structure            //
-//   Time-stamp: <Thu Dec/06/2007 14:03 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Mon Mar/03/2008 08:28 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -64,13 +64,13 @@ void SEC_segment::calculate_segment_size() {
 }
 
 void SEC_loop::compute_circumferance(void) {  // Calculates the circumferance of the loop by counting the bases of the loop
-    SEC_root *root = get_root();
-    double    dbs  = root->display_params().distance_between_strands;
+    SEC_root *sroot = get_root();
+    double    dbs   = sroot->display_params().distance_between_strands;
 
     Circumferance = 0;
     for (SEC_segment_iterator seg(this); seg; ++seg) {
         SEC_region *reg = seg->get_region();
-        reg->update_base_count(root);
+        reg->update_base_count(sroot);
         Circumferance += reg->get_base_count() + 1 + dbs;
     }
 }
@@ -93,14 +93,14 @@ void SEC_loop::calculate_loop_size() {
 }
 
 void SEC_helix::calculate_helix_size() {
-    SEC_region *reg1 = strandToRoot()->get_region();
-    SEC_region *reg2 = strandToOutside()->get_region();
-    SEC_root   *root = get_root();
+    SEC_region *reg1  = strandToRoot()->get_region();
+    SEC_region *reg2  = strandToOutside()->get_region();
+    SEC_root   *sroot = get_root();
 
-    reg1->update_base_count(root);
-    reg2->update_base_count(root);
+    reg1->update_base_count(sroot);
+    reg2->update_base_count(sroot);
 
-    reg1->align_helix_strands(root, reg2); // aligns both strands
+    reg1->align_helix_strands(sroot, reg2); // aligns both strands
 
     base_length = max(reg1->get_base_count(), reg2->get_base_count());
     if (base_length == 0) {
@@ -115,8 +115,8 @@ void SEC_helix::calculate_helix_size() {
 }
 
 void SEC_root::calculate_size() {
-    SEC_loop *root_loop = get_root_loop();
-    if (root_loop) root_loop->calculate_loop_size();
+    SEC_loop *rootLoop = get_root_loop();
+    if (rootLoop) rootLoop->calculate_loop_size();
 }
 
 // -------------------------------------------
@@ -215,23 +215,23 @@ void SEC_helix::calculate_helix_coordinates() {
 }
 
 void SEC_root::calculate_coordinates() {
-    SEC_loop *root_loop = get_root_loop();
+    SEC_loop *rootLoop = get_root_loop();
     
-    if (root_loop) {
-        root_loop->set_center(Origin);
-        root_loop->mark_angle_absolute(); // mark angle as absolute
+    if (rootLoop) {
+        rootLoop->set_center(Origin);
+        rootLoop->mark_angle_absolute(); // mark angle as absolute
 
-        SEC_helix *primary_helix = root_loop->get_fixpoint_helix();
+        SEC_helix *primary_helix = rootLoop->get_fixpoint_helix();
 
         // calculate the coordinates of the primary helix
-        const Angle& loopAngle = root_loop->get_abs_angle();
-        Position     rootside  = Origin + loopAngle.normal() * root_loop->drawnSize();
+        const Angle& loopAngle = rootLoop->get_abs_angle();
+        Position     rootside  = Origin + loopAngle.normal() * rootLoop->drawnSize();
         Position     outside   = rootside + Angle(loopAngle + primary_helix->get_abs_angle()).normal() * primary_helix->drawnSize();
 
         primary_helix->setFixpoints(rootside, outside);
         primary_helix->calculate_helix_coordinates();
 
-        root_loop->calculate_loop_coordinates(); // does not calculate for the primary helix
+        rootLoop->calculate_loop_coordinates(); // does not calculate for the primary helix
     }
 }
 

@@ -68,10 +68,12 @@ namespace validNames{
         TokLPtr tokenLP =  new TokL;
         tokenLP = tokenize(descriptionString, tokenLP);
         // remove all tokens in parentheses
-        TokL::iterator it = tokenLP->begin();
-        while( it != tokenLP->end()){
-            if(((*it).at(0) == '(') && *it != string("(corrig.)")) it = tokenLP->erase(it);
-            else ++it;
+        {
+            TokL::iterator it = tokenLP->begin();
+            while( it != tokenLP->end()){
+                if(((*it).at(0) == '(') && *it != string("(corrig.)")) it = tokenLP->erase(it);
+                else ++it;
+            }
         }
 
         // check first word for upper case letters

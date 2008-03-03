@@ -14,10 +14,10 @@ class ALI_TARRAY {
     unsigned long size_of_array;
 
 public:
-    ALI_TARRAY(unsigned long size) {
-        size_of_array = size;
-        array = (T **) calloc((unsigned int) size, sizeof(T));
-        //array = (T (*) [1]) calloc((unsigned int) size, sizeof(T));
+    ALI_TARRAY(unsigned long Size) {
+        size_of_array = Size;
+        array = (T **) calloc((unsigned int) Size, sizeof(T));
+        //array = (T (*) [1]) calloc((unsigned int) Size, sizeof(T));
         if (array == 0)
             ali_fatal_error("Out of memory");
     }

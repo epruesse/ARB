@@ -659,7 +659,7 @@ generate_solution(ALI_MAP * map)
 void            ALI_PREALIGNER::
 generate_result_mask(ALI_TSTACK < unsigned char >*stack)
 {
-    ALI_SEQUENCE   *sequence;
+    ALI_SEQUENCE   *seq;
     float           cost_of_bindings;
     ALI_MAP        *map;
     unsigned long   seq_pos, dest_pos;
@@ -700,9 +700,9 @@ generate_result_mask(ALI_TSTACK < unsigned char >*stack)
     if (result_mask_counter > 0)
         result_mask_counter--;
 
-    sequence = map->sequence_without_inserts(profile->sequence());
-    cost_of_bindings = profile->w_binding(map->first_reference_base(), sequence);
-    delete          sequence;
+    seq = map->sequence_without_inserts(profile->sequence());
+    cost_of_bindings = profile->w_binding(map->first_reference_base(), seq);
+    delete          seq;
 
     /*
      * make the intersection
@@ -1185,7 +1185,7 @@ void            ALI_PREALIGNER::
 generate_approximation(ALI_SUB_SOLUTION * work_sol)
 {
     ALI_MAP        *map;
-    ALI_SEQUENCE   *sequence;
+    ALI_SEQUENCE   *seq;
     char           *ins_marker;
     float           binding_costs;
 
@@ -1194,9 +1194,9 @@ generate_approximation(ALI_SUB_SOLUTION * work_sol)
         ali_fatal_error("Can't make one map",
                         "ALI_PREALIGNER::generate_approximation()");
 
-    sequence = map->sequence_without_inserts(profile->sequence());
-    binding_costs = profile->w_binding(map->first_base(), sequence);
-    delete          sequence;
+    seq = map->sequence_without_inserts(profile->sequence());
+    binding_costs = profile->w_binding(map->first_base(), seq);
+    delete          seq;
 
     ins_marker = map->insert_marker();
 

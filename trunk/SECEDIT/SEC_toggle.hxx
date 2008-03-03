@@ -2,7 +2,7 @@
 //                                                                   //
 //   File      : SEC_toggle.hxx                                      //
 //   Purpose   : Support for multiple structure                      //
-//   Time-stamp: <Fri Sep/14/2007 16:45 MET Coder@ReallySoft.de>     //
+//   Time-stamp: <Sat Mar/01/2008 18:37 MET Coder@ReallySoft.de>     //
 //                                                                   //
 //   Coded by Ralf Westram (coder@reallysoft.de) in September 2007   //
 //   Institute of Microbiology (Technical University Munich)         //
@@ -23,7 +23,7 @@ class SEC_structure_toggler {
     GBDATA      *gb_structures; // contains all structures
     GBDATA      *gb_current;    // contains current structure
     SEC_graphic *gfx;           // needed to trigger refresh
-    GB_ERROR     error;
+    GB_ERROR     st_error;;
     int          Count;
 
     int  current();
@@ -40,7 +40,7 @@ class SEC_structure_toggler {
 public:
     SEC_structure_toggler(GBDATA *gb_main, const char *ali_name, SEC_graphic *Gfx); // might set error
 
-    GB_ERROR get_error() const { return error; }
+    GB_ERROR get_error() const { return st_error; }
     
     GB_ERROR next();
     GB_ERROR copyTo(const char *name);

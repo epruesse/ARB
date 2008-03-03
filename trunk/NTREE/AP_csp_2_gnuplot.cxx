@@ -304,13 +304,6 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                     if (!csp->weights[j]) continue;
                     fprintf(out,"%i ",j);
 
-                    //                     if (plot_type == PT_ALL_FREQUENCIES) {
-                    //                         fprintf(out," %f %f %f %f\n",
-                    //                                 csp->frequency['A'][j], csp->frequency['C'][j],
-                    //                                 csp->frequency['G'][j], csp->frequency['U'][j]);
-                    //                     }
-                    //                     else {
-
                     double amount =
                         csp->frequency[(unsigned char)'A'][j] + csp->frequency[(unsigned char)'C'][j] +
                         csp->frequency[(unsigned char)'G'][j] + csp->frequency[(unsigned char)'U'][j] ;
@@ -343,11 +336,14 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                     }
                     smoothed = val/smooth + smoothed *(smooth-1)/(smooth);
                     fprintf(out,"%f\n",smoothed);
-                    //                     }
                 }
 
                 free(type);
                 fclose(out);
+                out = 0;
+            }
+            
+            if (!error) {
                 aww->get_root()->awar(AP_AWAR_CSP_DIRECTORY)->touch(); // reload file selection box
 
                 if (mode == 1) { // run gnuplot ?
@@ -359,7 +355,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                     nt_assert(printed<100);
 
                     char *smooth  = aww->get_root()->awar(AP_AWAR_CSP_SMOOTH_GNUPLOT)->read_string();
-                    FILE *out = fopen(command_file, "wt");
+                    out = fopen(command_file, "wt");
                     if (!out) {
                         error = GB_export_error("Can't create gnuplot command file '%s'", command_file);
                     }
@@ -383,6 +379,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                         fprintf(out, "%s \"%s\" %s title \"%s\"\n", plot_command[int(plotted)], fname, smooth, makeTitle(fname));
                         fprintf(out, "pause -1 \"Press RETURN to close gnuplot\"\n");
                         fclose(out);
+                        out = 0;
 
                         if (mode == 1) {
                             printf("command_file='%s'\n", command_file);
