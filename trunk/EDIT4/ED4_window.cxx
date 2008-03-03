@@ -94,7 +94,7 @@ void ED4_window::update_window_coords()
     coords.window_width         = area_size.r;
     coords.window_height        = area_size.b;
                                                             // world coordinates
-    coords.window_upper_clip_point  = coords.middle_area_y + (long) aww->slider_pos_vertical; //coordinate of upper clipping point of middle area
+    coords.window_upper_clip_point  = coords.middle_area_y + aww->slider_pos_vertical; //coordinate of upper clipping point of middle area
     coords.window_lower_clip_point  = coords.window_upper_clip_point + coords.window_height - coords.middle_area_y;
 
     if (ED4_ROOT->scroll_links.link_for_hor_slider)
@@ -218,9 +218,7 @@ ED4_returncode ED4_window::update_scrolled_rectangle( void )
     width,
     height,
     dummy,
-    dim,
-    delta;
-//      ED4_properties  scroll_prop;
+    dim;
     AW_world        rect;
     AW_rectangle    area_size;
 
@@ -288,7 +286,7 @@ ED4_returncode ED4_window::update_scrolled_rectangle( void )
     aww->tell_scrolled_picture_size( rect );
     aww->calculate_scrollbars();
 
-    delta = aww->slider_pos_horizontal - slider_pos_horizontal;     // update dimension and window position of folding lines at
+    int delta = aww->slider_pos_horizontal - slider_pos_horizontal;     // update dimension and window position of folding lines at
     scrolled_rect.scroll_left->dimension += delta;                  // the borders of scrolled rectangle
     delta = aww->slider_pos_vertical - slider_pos_vertical;
     scrolled_rect.scroll_top->dimension += delta;
