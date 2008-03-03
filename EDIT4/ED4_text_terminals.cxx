@@ -222,8 +222,8 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
     calc_world_coords(&world_x, &world_y);
     ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &world_x, &world_y);
 
-    text_x    = world_x + CHARACTEROFFSET; // don't change
-    text_y    = world_y + SEQ_TERM_TEXT_YOFFSET;
+    text_x = world_x + CHARACTEROFFSET; // don't change
+    text_y = world_y + SEQ_TERM_TEXT_YOFFSET;
 
     const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
 
@@ -267,64 +267,68 @@ ED4_returncode ED4_AA_sequence_terminal::draw( int /*only_text*/ )
 
     //    int    iDisplayAminoAcids = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_AA)->read_int();
     int iDisplayMode = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->read_int();
-    unsigned char *aaSequence = (unsigned char *) strdup(this->aaSequence);
+    {
+        unsigned char *aaSequence_copy = (unsigned char *) strdup(aaSequence);
 
-    {     // transform strings, compress if needed
-        AWT_reference *ref        = ED4_ROOT->reference;
-        ref->expand_to_length(seq_end);
-        char *char_2_char = ED4_ROOT->sequence_colors->char_2_char_aa;
-        char *char_2_gc   = ED4_ROOT->sequence_colors->char_2_gc_aa;
-        int scr_pos;
+        {     // transform strings, compress if needed
+            AWT_reference *ref = ED4_ROOT->reference;
+            ref->expand_to_length(seq_end);
+            
+            char *char_2_char = ED4_ROOT->sequence_colors->char_2_char_aa;
+            char *char_2_gc   = ED4_ROOT->sequence_colors->char_2_gc_aa;
+            int   scr_pos;
 
-        for (scr_pos=left; scr_pos <= right; scr_pos++) {
-            int seq_pos = rm->screen_to_sequence(scr_pos);
-            int c = aaSequence[seq_pos];
-            int gc = char_2_gc[c];
+            for (scr_pos=left; scr_pos <= right; scr_pos++) {
+                int seq_pos = rm->screen_to_sequence(scr_pos);
+                int c       = aaSequence_copy[seq_pos];
+                int gc      = char_2_gc[c];
 
-            color_is_used[gc] = scr_pos+1;
-            colored_strings[gc][scr_pos] = char_2_char[aaSequence[seq_pos]];
+                color_is_used[gc] = scr_pos+1;
+                colored_strings[gc][scr_pos] = char_2_char[aaSequence_copy[seq_pos]];
+            }
         }
-    }
 
-    // painting background
-    if((iDisplayMode == PV_AA_CODE) || (iDisplayMode == PV_AA_BOX)) {
-        {
-            AW_pos       width = ED4_ROOT->font_group.get_width(ED4_G_HELIX);
-            int          real_left  = left;
-            int        real_right  = right;
-            AW_pos           x2  = text_x + width*real_left;
-            AW_pos            x1 = x2;
-            AW_pos           y1  = world_y;
-            AW_pos           y2  = text_y+1;
-            AW_pos       height = y2-y1+1;
-            int                color  = ED4_G_STANDARD;
-            char *char_2_gc_aa = ED4_ROOT->sequence_colors->char_2_gc_aa;
+        // painting background
+        if((iDisplayMode == PV_AA_CODE) || (iDisplayMode == PV_AA_BOX)) {
+            {
+                AW_pos  width        = ED4_ROOT->font_group.get_width(ED4_G_HELIX);
+                int     real_left    = left;
+                int     real_right   = right;
+                AW_pos  x2           = text_x + width*real_left;
+                AW_pos  x1           = x2;
+                AW_pos  y1           = world_y;
+                AW_pos  y2           = text_y+1;
+                AW_pos  height       = y2-y1+1;
+                int     color        = ED4_G_STANDARD;
+                char   *char_2_gc_aa = ED4_ROOT->sequence_colors->char_2_gc_aa;
 
-            int i;
-            for ( i = real_left; i <= real_right; i++,x2 += width) {
-                int new_pos = rm->screen_to_sequence(i);  //getting the real position of the base in the sequence
-                int       c = aaSequence[new_pos];
-                char    base = aaSequence[new_pos];
-                if (is_upper(base) || (base=='*')) {
-                    x1   = x2-width;         // store current x pos to x1
-                    x2 += width*2; // add 2 char width to x2
-                    i    += 2;         //jump two pos 
+                int i;
+                for ( i = real_left; i <= real_right; i++,x2 += width) {
+                    int  new_pos = rm->screen_to_sequence(i); //getting the real position of the base in the sequence
+                    int  c       = aaSequence_copy[new_pos];
+                    char base    = aaSequence_copy[new_pos];
 
-                    int gcChar =  char_2_gc_aa[c];
-                    if ((gcChar>=0) && (gcChar<ED4_G_DRAG)) {
-                        color = gcChar;  
-                        if (iDisplayMode == PV_AA_BOX) {
-                            device->box(color, AW_TRUE, x1, y1, width*3, height, -1, 0,0);
-                        }
-                        else {
-                            device->arc(ED4_G_STANDARD, false, x1+(width*3)/2, y1, (width*3)/2, height/2, 0, -180, -1, 0, 0);
+                    if (is_upper(base) || (base=='*')) {
+                        x1  = x2-width; // store current x pos to x1
+                        x2 += width*2; // add 2 char width to x2
+                        i  += 2; //jump two pos
+
+                        int gcChar =  char_2_gc_aa[c];
+                        if ((gcChar>=0) && (gcChar<ED4_G_DRAG)) {
+                            color = gcChar;
+                            if (iDisplayMode == PV_AA_BOX) {
+                                device->box(color, AW_TRUE, x1, y1, width*3, height, -1, 0,0);
+                            }
+                            else {
+                                device->arc(ED4_G_STANDARD, false, x1+(width*3)/2, y1, (width*3)/2, height/2, 0, -180, -1, 0, 0);
+                            }
                         }
                     }
                 }
             }
         }
+        free(aaSequence_copy);
     }
-    free(aaSequence);
 
     device->top_font_overlap    = 1;
     device->bottom_font_overlap = 1;

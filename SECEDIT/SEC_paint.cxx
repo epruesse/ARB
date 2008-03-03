@@ -517,7 +517,7 @@ void SEC_bond_def::paint(AW_device *device, char base1, char base2, const Positi
     }
 }
 
-void SEC_bond_def::paint(AW_device *device, int GC, char bond, const Position& p1, const Position& p2, const Vector& toNextBase, const double& char_radius, AW_CL cd1, AW_CL cd2) const {
+void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Position& p1, const Position& p2, const Vector& toNextBase, const double& char_radius, AW_CL cd1, AW_CL cd2) const {
     Vector v12(p1, p2);
     double oppoDist = v12.length();
     double bondLen  = oppoDist-2*char_radius;
@@ -533,7 +533,7 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bond, const Position& p
 
     Vector aside = toNextBase*0.15; // 15% towards next base position
 
-    switch (bond) {
+    switch (bondChar) {
         case '-':               // single line
             device->line(GC, b1, b2, -1, cd1, cd2);
             break;
@@ -543,7 +543,7 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bond, const Position& p
             device->line(GC, b1+aside, b2+aside, -1, cd1, cd2);
             device->line(GC, b1-aside, b2-aside, -1, cd1, cd2);
             
-            if (bond == '#') {
+            if (bondChar == '#') {
                 Vector   outside = v12*(bondLen/oppoDist/4);
                 Position c1      = center+outside;
                 Position c2      = center-outside;
@@ -592,7 +592,7 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bond, const Position& p
         case 'o':
         case '.': {             // circles
             double radius            = aside.length();
-            if (bond == 'o') radius *= 2;
+            if (bondChar == 'o') radius *= 2;
             device->circle(GC, false, center, radius, radius, -1, cd1, cd2);
             break;
         }
@@ -963,9 +963,9 @@ void SEC_loop::paint(AW_device *device) {
         if (strand->isRootsideFixpoint()) strand->paint(device);
     }
 
-    SEC_root *root = get_root();
+    SEC_root *sroot = get_root();
 #if defined(DEBUG)
-    if (root->display_params().show_debug) {
+    if (sroot->display_params().show_debug) {
         SEC_helix_strand *fixpoint_strand = get_fixpoint_strand();
         int               abspos          = fixpoint_strand->startAttachAbspos();
 
@@ -976,7 +976,7 @@ void SEC_loop::paint(AW_device *device) {
         paintDebugInfo(device, SEC_GC_CURSOR, get_center(), "LC", self(), abspos);
     }
 #endif // DEBUG
-    if (root->get_show_constraints() & SEC_LOOP) paint_constraints(device);
+    if (sroot->get_show_constraints() & SEC_LOOP) paint_constraints(device);
 }
 
 // ---------------------------------------------------------
@@ -984,8 +984,8 @@ void SEC_loop::paint(AW_device *device) {
 // ---------------------------------------------------------
 
 GB_ERROR SEC_root::paint(AW_device *device) {
-    SEC_loop *root_loop = get_root_loop();
-    sec_assert(root_loop);
+    SEC_loop *rootLoop = get_root_loop();
+    sec_assert(rootLoop);
     clear_announced_positions(); // reset positions next to cursor
 
     const BI_helix *helix = get_helix();
@@ -1019,19 +1019,19 @@ GB_ERROR SEC_root::paint(AW_device *device) {
         device->set_line_attributes(SEC_SKELE_LOOP, displayParams.skeleton_thickness, AW_SOLID);
         device->set_line_attributes(SEC_GC_BONDS, displayParams.bond_thickness, AW_SOLID);
 
-        // mark the root_loop with a box and print stucture number
+        // mark the rootLoop with a box and print stucture number
         {
-            const Position&  loop_center = root_loop->get_center();
+            const Position&  loop_center = rootLoop->get_center();
             const char      *structId    = db->structure()->name();
 
             // Vector textAdjust = center_char[SEC_GC_DEFAULT];
             // textAdjust.setx(0); // // only adjust y
 
-            AW_CL cd1 = root_loop->self();
+            AW_CL cd1 = rootLoop->self();
             AW_CL cd2 = -1;
 
             Vector center2corner(-1, -1);
-            center2corner.set_length(root_loop->drawnSize()*0.33);
+            center2corner.set_length(rootLoop->drawnSize()*0.33);
             
             Position upperleft_corner = loop_center+center2corner;
             Vector   diagonal         = -2*center2corner;
@@ -1046,7 +1046,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
         check_integrity(CHECK_ALL);
 #endif // CHECK_INTEGRITY
 
-        root_loop->paint(device);
+        rootLoop->paint(device);
 
         // paint ecoli positions:
         if (displayParams.show_ecoli_pos) paintEcoliPositions(device);

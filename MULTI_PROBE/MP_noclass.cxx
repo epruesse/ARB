@@ -17,15 +17,14 @@
 #include "MultiProbe.hxx"
 #include "mp_proto.hxx"
 
-BOOL        MP_is_probe(char *seq);
-extern AW_selection_list*   result_probes_list;
-int     get_random(int min, int max);       //gibt eine Zufallszahl x mit der Eigenschaft : min <= x <= max
+BOOL MP_is_probe(char *seq);
+int  get_random(int min, int max); //gibt eine Zufallszahl x mit der Eigenschaft : min <= x <= max
+void init_system3_tab();
 
 char *glob_old_seq = NULL;
 
 int        **system3_tab      = NULL;
 static int   system3_tab_size = 0;
-void init_system3_tab();
 
 unsigned char **hamming_tab   = NULL;
 BOOL            new_pt_server = TRUE;
@@ -450,12 +449,12 @@ void MP_cache_sonden2(AW_root *) { new_pt_server = TRUE; }
 
 void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_result_probes_list) {
     bool               backward           = bool(cl_backward);
-    AW_selection_list *result_probes_list = (AW_selection_list*)cl_result_probes_list;
+    AW_selection_list *resultProbesList = (AW_selection_list*)cl_result_probes_list;
 
     //     aw_message(GBS_global_string("backward='%i'", int(backward)));
 
-    //     aww->move_selection(result_probes_list, mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES), backward ? -1 : 1);
-    aww->move_selection(result_probes_list, MP_AWAR_RESULTPROBES, backward ? -1 : 1);
+    //     aww->move_selection(resultProbesList, mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES), backward ? -1 : 1);
+    aww->move_selection(resultProbesList, MP_AWAR_RESULTPROBES, backward ? -1 : 1);
 
     MP_show_probes_in_tree(aww);
 }

@@ -13,17 +13,17 @@ class ALI_SEQUENCE {
     char *seq_name;
     unsigned long seq_len;
 public:
-    ALI_SEQUENCE(char *name, char *str) {
+    ALI_SEQUENCE(char *Name, char *str) {
         seq = (unsigned char *) str;
         seq_len = strlen(str);
-        seq_name = strdup(name);
+        seq_name = strdup(Name);
         ali_string_to_sequence(str);
         if (seq_name == 0) ali_fatal_error("Out of memory");
     }
-    ALI_SEQUENCE(char *name, unsigned char *str, unsigned long str_len) {
+    ALI_SEQUENCE(char *Name, unsigned char *str, unsigned long str_len) {
         seq = str;
         seq_len = str_len;
-        seq_name = strdup(name);
+        seq_name = strdup(Name);
     }
     ~ALI_SEQUENCE(void) {
         if (seq)

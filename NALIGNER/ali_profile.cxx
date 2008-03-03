@@ -18,7 +18,7 @@ GB_INLINE int ALI_PROFILE::is_binding_marker(char c) {
 /*
  * find the family in the pt server
  */
-ALI_TLIST<ali_family_member *> *ALI_PROFILE::find_family(ALI_SEQUENCE *sequence,
+ALI_TLIST<ali_family_member *> *ALI_PROFILE::find_family(ALI_SEQUENCE *Sequence,
                                                          ALI_PROFILE_CONTEXT *context)
 {
     char message_buffer[100];
@@ -39,7 +39,7 @@ ALI_TLIST<ali_family_member *> *ALI_PROFILE::find_family(ALI_SEQUENCE *sequence,
     family_list = new ALI_TLIST<ali_family_member *>;
 
     ali_message("Searching for the family");
-    pt.find_family(sequence,context->find_family_mode);
+    pt.find_family(Sequence,context->find_family_mode);
     ali_message("Family found");
 
     pt_fam_list = pt.get_family_list();
@@ -128,7 +128,7 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
     float       *g;
     unsigned char **seq;
     long        *seq_len;
-    float (*w_del)[], (*percent)[];
+    float (*w_Del)[], (*percent)[];
 
     /*
      * allocate temporary memory
@@ -320,27 +320,27 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
             lmin[p] = lmax[p] = p;
         }
 
-        w_del = (float (*) []) CALLOC((unsigned int) (lmax[p]-lmin[p]+2),               sizeof(float));
+        w_Del = (float (*) []) CALLOC((unsigned int) (lmax[p]-lmin[p]+2),               sizeof(float));
         percent = (float (*) []) CALLOC((unsigned int) (lmax[p]-lmin[p]+2),     sizeof(float));
-        if (w_del == 0 || percent == 0)
+        if (w_Del == 0 || percent == 0)
             ali_fatal_error("Out of memory");
-        (*gap_costs)[p] = (float *) w_del;
+        (*gap_costs)[p] = (float *) w_Del;
         (*gap_percents)[p] = (float *) percent;
 
         /*
          * Calculate dynamic deletion costs
          */
         for (j = 0; j <= lmax[p] - lmin[p] + 1; j++) {
-            (*w_del)[j] = 0;
+            (*w_Del)[j] = 0;
             for (i = 0; i < members; i++) {
                 /*
                  * Normal case
                  */
                 if (p < size_t(seq_len[i]) /* && !ali_is_dot(seq[i][p]) */) {
                     if (l[i] == prof_len + 1 || l[i] >= j + lmin[p]) {
-                        (*w_del)[j] += g[i] * sm[seq[i][p]][4] * context->multi_gap_factor;
+                        (*w_Del)[j] += g[i] * sm[seq[i][p]][4] * context->multi_gap_factor;
                     }else{
-                        (*w_del)[j] += g[i] * sm[seq[i][p]][4];
+                        (*w_Del)[j] += g[i] * sm[seq[i][p]][4];
                     }
                 }
                 /*
@@ -348,13 +348,13 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
                  */
                 else {
                     if (l[i] >= j + lmin[p] && l[i] < prof_len+1) {
-                        (*w_del)[j] += g[i] * sm[ALI_DOT_CODE][4] * context->multi_gap_factor;
+                        (*w_Del)[j] += g[i] * sm[ALI_DOT_CODE][4] * context->multi_gap_factor;
                     }else{
-                        (*w_del)[j] += g[i] * sm[ALI_DOT_CODE][4];
+                        (*w_Del)[j] += g[i] * sm[ALI_DOT_CODE][4];
                     }
                 }
             }
-            (*w_del)[j] /= members;
+            (*w_Del)[j] /= members;
         }
 
         /*
@@ -386,7 +386,6 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
     free((char *) seq);
     free((char *) seq_len);
 }
-
 
 /*
  * find the next helix
@@ -516,19 +515,19 @@ void ALI_PROFILE::initialize_helix(ALI_PROFILE_CONTEXT *context)
 }
 
 
-ALI_PROFILE::ALI_PROFILE(ALI_SEQUENCE *sequence, ALI_PROFILE_CONTEXT *context)
+ALI_PROFILE::ALI_PROFILE(ALI_SEQUENCE *seq, ALI_PROFILE_CONTEXT *context)
 {
     char message_buffer[100];
     ali_family_member *family_member;
     ALI_TLIST<ali_family_member *> *family_list;
 
-    norm_sequence = new ALI_NORM_SEQUENCE(sequence);
+    norm_sequence = new ALI_NORM_SEQUENCE(seq);
 
     multi_gap_factor = context->multi_gap_factor;
 
     initialize_helix(context);
 
-    family_list = find_family(sequence,context);
+    family_list = find_family(seq,context);
     if (family_list->is_empty()) {
         ali_error("Family not found (maybe incompatible PT and DB Servers)");
     }
@@ -739,20 +738,20 @@ char *ALI_PROFILE::cheapest_sequence(void)
  * calculate the costs of a binding
  */
 float ALI_PROFILE::w_binding(unsigned long first_seq_pos,
-                             ALI_SEQUENCE *sequence)
+                             ALI_SEQUENCE *seq)
 {
     unsigned long pos_1_seq, pos_2_seq, last_seq_pos;
     long pos_compl;
     float costs = 0;
 
-    last_seq_pos = first_seq_pos + sequence->length() - 1;
+    last_seq_pos = first_seq_pos + seq->length() - 1;
     for (pos_1_seq = first_seq_pos; pos_1_seq <= last_seq_pos; pos_1_seq++) {
         pos_compl = (*helix)[pos_1_seq];
         if (pos_compl >= 0) {
             pos_2_seq = (unsigned long) pos_compl;
             if (pos_2_seq > pos_1_seq && pos_2_seq <= last_seq_pos)
-                costs += w_bind(pos_1_seq, sequence->base(pos_1_seq),
-                                pos_2_seq, sequence->base(pos_2_seq));
+                costs += w_bind(pos_1_seq, seq->base(pos_1_seq),
+                                pos_2_seq, seq->base(pos_2_seq));
             else
                 if (pos_2_seq < first_seq_pos || pos_2_seq > last_seq_pos)
                     costs += w_bind_maximum;

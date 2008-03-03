@@ -1631,9 +1631,9 @@ void GEN_set_display_style(AW_window *aww, AW_CL cl_style) {
 
 void GEN_map_window::init(AW_root *awr) {
     {
-        char *window_name = (window_nr == 0) ? strdup("ARB Gene Map") : GBS_global_string_copy("ARB Gene Map %i", window_nr);
-        AW_window_menu_modes::init(awr, "ARB_GENE_MAP", window_name, 200, 200);
-        free(window_name);
+        char *windowName = (window_nr == 0) ? strdup("ARB Gene Map") : GBS_global_string_copy("ARB Gene Map %i", window_nr);
+        AW_window_menu_modes::init(awr, "ARB_GENE_MAP", windowName, 200, 200);
+        free(windowName);
     }
 
     GEN_create_genemap_local_awars(awr, AW_ROOT_DEFAULT, window_nr);

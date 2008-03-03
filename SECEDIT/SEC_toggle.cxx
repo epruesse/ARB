@@ -2,7 +2,7 @@
 //                                                                   //
 //   File      : SEC_toggle.cxx                                      //
 //   Purpose   :                                                     //
-//   Time-stamp: <Fri Sep/14/2007 17:01 MET Coder@ReallySoft.de>     //
+//   Time-stamp: <Sat Mar/01/2008 18:45 MET Coder@ReallySoft.de>     //
 //                                                                   //
 //   Coded by Ralf Westram (coder@reallysoft.de) in September 2007   //
 //   Institute of Microbiology (Technical University Munich)         //
@@ -90,17 +90,17 @@ GBDATA *SEC_structure_toggler::find(int num) {
     return gb_found;
 }
 
-GBDATA *SEC_structure_toggler::create(const char *name) {
-    sec_assert(!error);
-    if (error) return 0;
+GBDATA *SEC_structure_toggler::create(const char *structure_name) {
+    sec_assert(!st_error);
+    if (st_error) return 0;
     
     GBDATA *gb_new = GB_create_container(gb_structures, "struct");
 
     if (gb_new) {
-        error = setName(gb_new, name);
+        st_error = setName(gb_new, structure_name);
 
-        if (!error) error = store(gb_new);
-        if (!error) {
+        if (!st_error) st_error = store(gb_new);
+        if (!st_error) {
             set_current(Count);
             gb_current = gb_new;
             
@@ -108,7 +108,7 @@ GBDATA *SEC_structure_toggler::create(const char *name) {
             Count++;
         }
     }
-    else error = GB_get_error();
+    else st_error = GB_get_error();
 
     return gb_new;
 }
@@ -118,13 +118,13 @@ GBDATA *SEC_structure_toggler::create(const char *name) {
 
 SEC_structure_toggler::SEC_structure_toggler(GBDATA *gb_main, const char *ali_name, SEC_graphic *Gfx)
     : gfx(Gfx)
-    , error(0)
+    , st_error(0)
     , Count(0)
 {
     GB_transaction ta(gb_main);
     gb_structures = GB_search(gb_main, GBS_global_string("secedit/structs/%s", ali_name), GB_CREATE_CONTAINER);
     if (!gb_structures) {
-        error      = GB_get_error();
+        st_error   = GB_get_error();
         gb_current = 0;
     }
     else {
@@ -155,18 +155,18 @@ GB_ERROR SEC_structure_toggler::next() {
         error = "No other structure in DB";
     }
     else {
-        int next = current()+1;
-        if (next >= Count) next = 0;
+        int nextNum = current()+1;
+        if (nextNum >= Count) nextNum = 0;
 
         sec_assert(find(current()) == gb_current);
         
         error = store(gb_current);
 
         if (!error) {
-            set_current(next);
-            gb_current = find(next);
+            set_current(nextNum);
+            gb_current = find(nextNum);
             if (!gb_current) {
-                error = GBS_global_string("Failed to find structure #%i", next);
+                error = GBS_global_string("Failed to find structure #%i", nextNum);
             }
             else {
                 error = restore(gb_current);
@@ -177,7 +177,7 @@ GB_ERROR SEC_structure_toggler::next() {
     return error;
 }
 
-GB_ERROR SEC_structure_toggler::copyTo(const char *name) {
+GB_ERROR SEC_structure_toggler::copyTo(const char *structure_name) {
     GB_ERROR err = 0;
     GB_transaction ta(gb_structures);
 
@@ -186,10 +186,10 @@ GB_ERROR SEC_structure_toggler::copyTo(const char *name) {
     err = store(gb_current);
 
     if (!err) {
-        GBDATA *gb_new = create(name);
+        GBDATA *gb_new = create(structure_name);
         if (!gb_new) {
-            sec_assert(error);
-            err = error;
+            sec_assert(st_error);
+            err = st_error;
         }
         else {
             gb_current = gb_new;
@@ -225,15 +225,15 @@ GB_ERROR SEC_structure_toggler::remove() {
 }
 
 const char *SEC_structure_toggler::name() {
-    const char     *name = 0;
+    const char     *structure_name = 0;
     GB_transaction  ta(gb_structures);
 
-    GBDATA *gb_name   = GB_search(gb_current, "name", GB_FIND);
-    if (gb_name) name = GB_read_char_pntr(gb_name);
-    if (!name) error  = GB_get_error();
+    GBDATA *gb_name               = GB_search(gb_current, "name", GB_FIND);
+    if (gb_name) structure_name   = GB_read_char_pntr(gb_name);
+    if (!structure_name) st_error = GB_get_error();
 
-    if (error) ta.abort();
-    return name;
+    if (st_error) ta.abort();
+    return structure_name;
 }
 
 GB_ERROR SEC_structure_toggler::setName(GBDATA *gb_struct, const char *new_name) {
