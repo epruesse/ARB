@@ -393,8 +393,8 @@ class ED4_window
 public:
     AW_window              *aww; //Points to Window
     ED4_window             *next;
-    AW_pos                  slider_pos_horizontal;
-    AW_pos                  slider_pos_vertical;
+    int                     slider_pos_horizontal;
+    int                     slider_pos_vertical;
     ED4_folding_line       *horizontal_fl;
     ED4_folding_line       *vertical_fl;
     ED4_scrolled_rectangle  scrolled_rect;

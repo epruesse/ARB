@@ -498,7 +498,7 @@ void ED4_input_cb(AW_window *aww,AW_CL /*cd1*/, AW_CL /*cd2*/)
     }
 }
 
-static AW_pos get_max_slider_xpos() {
+static int get_max_slider_xpos() {
     AW_rectangle rect;
     ED4_ROOT->get_device()->get_area_size(&rect); // screensize
 
@@ -507,12 +507,13 @@ static AW_pos get_max_slider_xpos() {
     horizontal_link->calc_world_coords(&x, &y);
 
     AW_pos max_xpos = horizontal_link->extension.size[WIDTH] // overall width of virtual scrolling area
-        - (rect.r + 1.0 - x); // minus width of visible scroll-area (== relative width of horizontal scrollbar)
+        - (rect.r - x); // minus width of visible scroll-area (== relative width of horizontal scrollbar)
 
-    return max_xpos;
+    e4_assert(max_xpos >= 0); // if fails, add code to restrict max_xpos
+    return int(max_xpos+0.5);
 }
 
-static AW_pos get_max_slider_ypos() {
+static int get_max_slider_ypos() {
     AW_rectangle rect;
     ED4_ROOT->get_device()->get_area_size(&rect); // screensize
 
@@ -521,9 +522,10 @@ static AW_pos get_max_slider_ypos() {
     vertical_link->calc_world_coords(&x, &y);
 
     AW_pos max_ypos = vertical_link->extension.size[HEIGHT] // overall width of virtual scrolling area
-        - (rect.b + 1.0 - y); // minus width of visible scroll-area (== relative width of horizontal scrollbar)
+        - (rect.b - y); // minus width of visible scroll-area (== relative width of horizontal scrollbar)
 
-    return max_ypos;
+    e4_assert(max_ypos >= 0); // if fails, add code to restrict max_ypos
+    return int(max_ypos+0.5);
 }
 
 void ED4_vertical_change_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
@@ -536,22 +538,16 @@ void ED4_vertical_change_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     GB_push_transaction(GLOBAL_gb_main);
 
     ED4_window *win = ED4_ROOT->get_ed4w();
-    AW_pos old_slider_pos = win->slider_pos_vertical;
-
-    //    e4_assert(aww->slider_pos_vertical>=0);
+    int old_slider_pos = win->slider_pos_vertical;
 
     { // correct slider_pos if neccessary
-        AW_pos max_slider_ypos = get_max_slider_ypos();
+        int max_slider_ypos = get_max_slider_ypos();
 
-        if (aww->slider_pos_vertical>max_slider_ypos) {
-            aww->set_vertical_scrollbar_position(max_slider_ypos);
-        }
-        if (aww->slider_pos_vertical<0) {
-            aww->set_vertical_scrollbar_position(0);
-        }
+        if (aww->slider_pos_vertical>max_slider_ypos) aww->set_vertical_scrollbar_position(max_slider_ypos);
+        if (aww->slider_pos_vertical<0)               aww->set_vertical_scrollbar_position(0);
     }
 
-    int slider_diff = (int)aww->slider_pos_vertical - (int)old_slider_pos;
+    int slider_diff = aww->slider_pos_vertical - old_slider_pos;
 
     win->coords.window_upper_clip_point += slider_diff;
     win->coords.window_lower_clip_point += slider_diff;
@@ -573,20 +569,16 @@ void ED4_horizontal_change_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
     GB_push_transaction(GLOBAL_gb_main);
 
     ED4_window *win = ED4_ROOT->get_ed4w();
-    AW_pos old_slider_pos = win->slider_pos_horizontal;
-
-    if (aww->slider_pos_horizontal<0) aww->slider_pos_horizontal = 0;
-    //    e4_assert(aww->slider_pos_horizontal>=0);
+    int old_slider_pos = win->slider_pos_horizontal;
 
     { // correct slider_pos if neccessary
-        AW_pos max_slider_xpos = get_max_slider_xpos();
+        int max_slider_xpos = get_max_slider_xpos();
 
-        if (aww->slider_pos_horizontal>max_slider_xpos) {
-            aww->set_horizontal_scrollbar_position(max_slider_xpos);
-        }
+        if (aww->slider_pos_horizontal>max_slider_xpos) aww->set_horizontal_scrollbar_position(max_slider_xpos);
+        if (aww->slider_pos_horizontal<0)               aww->set_horizontal_scrollbar_position(0);
     }
 
-    int slider_diff = (int)aww->slider_pos_horizontal - (int)old_slider_pos;
+    int slider_diff = aww->slider_pos_horizontal - old_slider_pos;
 
     win->coords.window_left_clip_point  += slider_diff;
     win->coords.window_right_clip_point += slider_diff;
@@ -607,23 +599,38 @@ void ED4_scrollbar_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 
     GB_push_transaction(GLOBAL_gb_main);
 
-    AW_pos old_hslider_pos = ED4_ROOT->get_ed4w()->slider_pos_horizontal;
-    AW_pos old_vslider_pos = ED4_ROOT->get_ed4w()->slider_pos_vertical;
+    ED4_window *win = ED4_ROOT->get_ed4w();
 
-    ED4_coords *coords = &ED4_ROOT->get_ed4w()->coords;
+    int old_hslider_pos = win->slider_pos_horizontal;
+    int old_vslider_pos = win->slider_pos_vertical;
 
-    coords->window_upper_clip_point += (long) aww->slider_pos_vertical   - (long) old_vslider_pos;
-    coords->window_lower_clip_point += (long) aww->slider_pos_vertical   - (long) old_vslider_pos;
-    coords->window_left_clip_point  += (long) aww->slider_pos_horizontal - (long) old_hslider_pos;
-    coords->window_right_clip_point += (long) aww->slider_pos_horizontal - (long) old_hslider_pos;
+    { // correct slider_pos if neccessary
+        int max_slider_xpos = get_max_slider_xpos();
+        int max_slider_ypos = get_max_slider_ypos();
 
-    ED4_ROOT->get_ed4w()->scroll_rectangle( -(aww->slider_pos_horizontal - old_hslider_pos), -(aww->slider_pos_vertical - old_vslider_pos));
+        if (aww->slider_pos_horizontal>max_slider_xpos) aww->set_horizontal_scrollbar_position(max_slider_xpos);
+        if (aww->slider_pos_horizontal<0)               aww->set_horizontal_scrollbar_position(0);
+        
+        if (aww->slider_pos_vertical>max_slider_ypos) aww->set_vertical_scrollbar_position(max_slider_ypos);
+        if (aww->slider_pos_vertical<0)               aww->set_vertical_scrollbar_position(0);
+    }
 
-    ED4_ROOT->get_ed4w()->slider_pos_vertical = aww->slider_pos_vertical;
-    ED4_ROOT->get_ed4w()->slider_pos_horizontal = aww->slider_pos_horizontal;
+    int slider_hdiff = aww->slider_pos_horizontal - old_hslider_pos;
+    int slider_vdiff = aww->slider_pos_vertical   - old_vslider_pos;
+
+    ED4_coords *coords = &win->coords;
+    coords->window_left_clip_point  += slider_hdiff;
+    coords->window_right_clip_point += slider_hdiff;
+    coords->window_upper_clip_point += slider_vdiff;
+    coords->window_lower_clip_point += slider_vdiff;
+
+    win->scroll_rectangle( -slider_hdiff, -slider_vdiff);
+
+    win->slider_pos_vertical   = aww->slider_pos_vertical;
+    win->slider_pos_horizontal = aww->slider_pos_horizontal;
 
     GB_pop_transaction(GLOBAL_gb_main);
-    ED4_ROOT->get_ed4w()->update_window_coords();
+    win->update_window_coords();
     //    paintMarksOfSelectedObjects();
 }
 
@@ -639,16 +646,16 @@ void ED4_motion_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
 
     if (event.type == AW_Mouse_Drag && event.button == ED4_B_MIDDLE_BUTTON) {
         if (ED4_ROOT->scroll_picture.scroll) {
-            int xdiff = ED4_ROOT->scroll_picture.old_x - event.x;
-            int ydiff = ED4_ROOT->scroll_picture.old_y - event.y;
-            AW_pos new_xpos = aww->slider_pos_horizontal + xdiff*ED4_ROOT->aw_root->awar(ED4_AWAR_SCROLL_SPEED_X)->read_int()/10;
-            AW_pos new_ypos = aww->slider_pos_vertical   + ydiff*ED4_ROOT->aw_root->awar(ED4_AWAR_SCROLL_SPEED_Y)->read_int()/10;
+            int xdiff    = ED4_ROOT->scroll_picture.old_x - event.x;
+            int ydiff    = ED4_ROOT->scroll_picture.old_y - event.y;
+            int new_xpos = aww->slider_pos_horizontal + (xdiff*ED4_ROOT->aw_root->awar(ED4_AWAR_SCROLL_SPEED_X)->read_int())/10;
+            int new_ypos = aww->slider_pos_vertical   + (ydiff*ED4_ROOT->aw_root->awar(ED4_AWAR_SCROLL_SPEED_Y)->read_int())/10;
 
             if (xdiff<0) { // scroll left
                 if (new_xpos<0) new_xpos = 0;
             }
             else if (xdiff>0) { // scroll right
-                AW_pos max_xpos = get_max_slider_xpos();
+                int max_xpos = get_max_slider_xpos();
                 if (max_xpos<0) max_xpos = 0;
                 if (new_xpos>max_xpos) new_xpos = max_xpos;
             }
@@ -657,19 +664,19 @@ void ED4_motion_cb( AW_window *aww, AW_CL cd1, AW_CL cd2 )
                 if (new_ypos<0) new_ypos = 0;
             }
             else if (ydiff>0) { // scroll right
-                AW_pos max_ypos = get_max_slider_ypos();
+                int max_ypos = get_max_slider_ypos();
                 if (max_ypos<0) max_ypos = 0;
                 if (new_ypos>max_ypos) new_ypos = max_ypos;
             }
 
             if (new_xpos!=aww->slider_pos_horizontal) {
-                aww->set_horizontal_scrollbar_position(int(new_xpos));
+                aww->set_horizontal_scrollbar_position(new_xpos);
                 ED4_horizontal_change_cb(aww, cd1, cd2 );
                 ED4_ROOT->scroll_picture.old_x = event.x;
             }
 
             if (new_ypos!=aww->slider_pos_vertical) {
-                aww->set_vertical_scrollbar_position(int(new_ypos));
+                aww->set_vertical_scrollbar_position(new_ypos);
                 ED4_vertical_change_cb(aww, cd1, cd2 );
                 ED4_ROOT->scroll_picture.old_y = event.y;
             }
