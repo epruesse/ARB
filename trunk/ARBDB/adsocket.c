@@ -689,16 +689,16 @@ char *GB_read_file(const char *path)
 
 char *GB_map_FILE(FILE *in,int writeable){
     int fi = fileno(in);
-    long size = GB_size_of_FILE(in);
+    size_t size = GB_size_of_FILE(in);
     char *buffer;
     if (size<=0) {
         GB_export_error("GB_map_file: sorry file not found");
         return 0;
     }
     if (writeable){
-        buffer = (char*)mmap(0, (int)size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fi, 0);
+        buffer = (char*)mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fi, 0);
     }else{
-        buffer = (char*)mmap(0, (int)size, PROT_READ, MAP_SHARED, fi, 0);
+        buffer = (char*)mmap(0, size, PROT_READ, MAP_SHARED, fi, 0);
     }
     if (buffer == MAP_FAILED){
         GB_export_error("GB_map_file: Error Out of Memory: mmap failes (errno: %i)", errno);
