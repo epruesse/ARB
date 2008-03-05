@@ -1,0 +1,39 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	help.hlp
+UP	glossary.hlp
+UP	arb.hlp
+UP  arb_edit4.hlp
+UP  e4.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+
+#************* Title of helpfile !! and start of real strunk ********
+TITLE		Protein Structure Alignment
+
+OCCURRENCE	ARB_EDIT4
+
+DESCRIPTION	Description...
+
+SECTION		SECTION1
+
+	Text...
+
+SECTION     SECTION2
+
+	HEADLINE1
+
+		Text...
+
+	HEADLINE1
+
+		Text...
+
+NOTES		Notes...
+
+EXAMPLES 	None
+
+WARNINGS	!!! Warning1 !!!
+
+			!!! Warning2 !!!
+
+BUGS		No bugs known

@@ -18,6 +18,7 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow);
 void       ad_unquery_all();
 void       ad_query_update_list();
 void       ad_spec_create_field_items(AW_window *aws);
+void       create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL cd2);
 
 AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector);
 AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector);

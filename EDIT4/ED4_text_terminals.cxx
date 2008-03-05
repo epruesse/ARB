@@ -154,12 +154,6 @@ int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, 
     return device->text(gc,buffer,x,y,0.0,(AW_bitset)-1,0,cd2);
 }
 
-//TODO: not needed anymore? (Markus)
-//struct show_summary_parameters {
-//    const char *global_protstruct;
-//    const char *protstruct;
-//};
-
 //TODO: Ralf zeigen: Richtige Verwendung von rm?
 int ED4_show_protein_match_on_device(AW_device *device, int gc, const char *protstruct, size_t /*protstruct_len*/, size_t start, size_t size,
                                      AW_pos x,AW_pos y, AW_pos /*opt_ascent*/,AW_pos /*opt_descent*/,
@@ -168,13 +162,14 @@ int ED4_show_protein_match_on_device(AW_device *device, int gc, const char *prot
     const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
     char *buffer = GB_give_buffer(size+1);
 
-    //HACK: ED4_calculate_secstruct_match or ED4_calculate_secstruct_sequence_match
-//#ifdef SECSTRUCT_MATCH
-    //ED4_calculate_secstruct_match((const char *) global_protstruct, protstruct, rm->screen_to_sequence(start), rm->screen_to_sequence(start + size), buffer);
-//#else
-    ED4_calculate_secstruct_sequence_match((const char *)global_protstruct, protstruct, rm->screen_to_sequence(start), rm->screen_to_sequence(start + size), buffer);
-//#endif
-    
+//    GB_ERROR error = ED4_calculate_secstruct_sequence_match((const char *)global_protstruct, protstruct, 
+//            start, start + size, buffer,
+//            (PFOLD_MATCH_METHOD) ED4_ROOT->aw_root->awar(PFOLD_AWAR_MATCH_METHOD)->read_int());
+    GB_ERROR error = ED4_pfold_calculate_secstruct_match((const char *)global_protstruct, protstruct, 
+            rm->screen_to_sequence(start), rm->screen_to_sequence(start + size), buffer,
+            (PFOLD_MATCH_METHOD) ED4_ROOT->aw_root->awar(PFOLD_AWAR_MATCH_METHOD)->read_int());
+
+    if (error) aw_message(error);
     buffer[size] = 0;
     return device->text(gc,buffer,x,y,0.0,(AW_bitset)-1,0,cd2);
 }
@@ -565,10 +560,13 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
         }
     }
 
-    //TODO: Ralf zeigen. 
+    //TODO: Ralf zeigen: Remap?
     // output protein structure match
     ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
-    if (!spec_man->flag.is_SAI && ED4_ROOT->protstruct) {   // should do a remap
+    //TODO: HACK: exclude species that contain _pfold
+    if ( ED4_ROOT->protstruct && !spec_man->flag.is_SAI && 
+         ED4_ROOT->aw_root->awar(PFOLD_AWAR_ENABLE)->read_int()
+         /*&& !strstr(species_name, "_pfold")*/ ) { // should do a remap
         int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->protstruct_len);
         if ((right+1) < screen_length) {
             screen_length = right+1;

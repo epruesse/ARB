@@ -206,7 +206,6 @@
 //      Other internal awars
 
 #define ED4_AWAR_SPECIES_TO_CREATE ED4_TEMP_AWAR "species_to_create"
-#define ED4_AWAR_ACTIVE_PROTEIN_STRUCTURE_SAI    "active_protstruct_sai"
 
 #else
 #error ed4_awars.hxx included twice

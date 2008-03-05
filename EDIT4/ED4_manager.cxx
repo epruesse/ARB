@@ -19,6 +19,7 @@
 #include "ed4_edit_string.hxx"
 #include "ed4_tools.hxx"
 #include "ed4_ProteinViewer.hxx"
+#include "ed4_protein_2nd_structure.hxx"
 
 //#define TEST_REFRESH_FLAG
 
@@ -281,13 +282,17 @@ ED4_returncode ED4_manager::check_bases_and_rebuild_consensi(const char *old_seq
     ED4_returncode result2 = rebuild_consensi(new_base, update_flag);
     ED4_returncode result  = (result1 != ED4_R_OK) ? result1 : result2;
 
-    free(new_sequence);
-
-    // Refresh aminoacid  sequence terminals in Protein Viewer
+    // Refresh aminoacid sequence terminals in Protein Viewer or protstruct
     if(ED4_ROOT->alignment_type == GB_AT_DNA) {
         PV_AA_SequenceUpdate_CB(GB_CB_CHANGED);
+    } else if(ED4_ROOT->alignment_type == GB_AT_AA) {
+        GB_ERROR err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len);
+        if (err) { aw_message(err); result = ED4_R_WARNING; }
+        ED4_ROOT->refresh_all_windows(0);
+        ED4_expose_all_windows();
     }
 
+    free(new_sequence);
     return result;
 }
 

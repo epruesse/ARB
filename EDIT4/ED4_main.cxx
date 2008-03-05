@@ -29,6 +29,7 @@
 #include "ed4_nds.hxx"
 #include "ed4_visualizeSAI.hxx"
 #include "ed4_ProteinViewer.hxx"
+#include "ed4_protein_2nd_structure.hxx"
 
 #include "edit_naligner.hxx"
 
@@ -432,12 +433,28 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE, 0);
 
     ED4_createVisualizeSAI_Awars(root,AW_ROOT_DEFAULT);
-    
-    root->awar_string(ED4_AWAR_ACTIVE_PROTEIN_STRUCTURE_SAI, "PFOLD", AW_ROOT_DEFAULT);
 
     // Create Awars To Be Used In Protein Viewer
     if(ED4_ROOT->alignment_type == GB_AT_DNA) {
         PV_CreateAwars(root,AW_ROOT_DEFAULT);
+    }
+    
+    // create awars to be used for protein secondary structure match
+    if(ED4_ROOT->alignment_type == GB_AT_AA) {
+        root->awar_int(PFOLD_AWAR_ENABLE, 1);
+        root->awar_string(PFOLD_AWAR_SELECTED_SAI, "PFOLD");
+        root->awar_int(PFOLD_AWAR_MATCH_METHOD, SECSTRUCT_SEQUENCE);
+        int pt;
+        char awar[256];
+        for (int i = 0; pfold_match_type_awars[i].awar; i++){
+            pt = pfold_match_type_awars[i].match_type;
+            sprintf(awar, PFOLD_AWAR_PAIR_TEMPLATE, pfold_match_type_awars[i].awar);
+            root->awar_string(awar, pfold_pairs[pt])->add_target_var(&pfold_pairs[pt]);
+            sprintf(awar, PFOLD_AWAR_SYMBOL_TEMPLATE, pfold_match_type_awars[i].awar);
+            root->awar_string(awar, pfold_pair_chars[pt])->add_target_var(&pfold_pair_chars[pt]);
+        }
+        root->awar_string(PFOLD_AWAR_SYMBOL_TEMPLATE_2, pfold_pair_chars_2);
+        root->awar_string(PFOLD_AWAR_SAI_FILTER, "pfold");
     }
 }
 
@@ -563,16 +580,7 @@ int main(int argc, char **argv)
             break;
 
         case GB_AT_AA:
-            ED4_ROOT->protstruct = ED4_find_protein_structure_SAI(GLOBAL_gb_main, ED4_ROOT->alignment_name);
-            if (ED4_ROOT->protstruct) {
-                ED4_ROOT->protstruct_len = strlen(ED4_ROOT->protstruct);
-            }
-            else {
-#if defined(DEBUG)
-            	fprintf( stderr, "No SAI \"%s\" found. Protein structure information will not be displayed.\n", 
-                      	 ED4_ROOT->aw_root->awar(ED4_AWAR_ACTIVE_PROTEIN_STRUCTURE_SAI)->read_string() );
-#endif // DEBUG
-            }
+            err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len);
             break;
 
         default :
