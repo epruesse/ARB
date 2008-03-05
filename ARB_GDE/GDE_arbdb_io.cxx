@@ -38,7 +38,7 @@ extern int Default_PROColor_LKUP[],Default_NAColor_LKUP[];
 
 static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned char **the_names,
                            unsigned char **the_sequences, unsigned long numberspecies,
-                           unsigned long maxalignlen,AP_filter *filter, long compress,
+                           unsigned long maxalignlen, AP_filter *filter, GapCompression compress,
                            bool cutoff_stop_codon)
 {
     GBDATA      *gb_name;
@@ -71,7 +71,6 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
         }
     }
 
-    // added by RALF : 
     if (cutoff_stop_codon) {
         unsigned long i;
         for (i=0;i<numberspecies;i++) {
@@ -85,58 +84,88 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
         }
     }
 
-    uchar **sequfilt=(uchar**)calloc((unsigned int)numberspecies+1,sizeof(uchar*));
-    if (compress==2) { // compress all gaps and filter positions
+    // store (compressed) sequence data in array:
+    uchar **sequfilt = (uchar**)calloc((unsigned int)numberspecies+1,sizeof(uchar*));
+
+    if (compress==COMPRESS_ALL) { // compress all gaps and filter positions
         long          len = filter->real_len;
         unsigned long i;
-        
+
         for (i=0;i<numberspecies;i++) {
-            sequfilt[i]=(uchar*)calloc((unsigned int)len+1,sizeof(uchar));
-            char c;
-            long newcount=0;
+            sequfilt[i]   = (uchar*)calloc((unsigned int)len+1,sizeof(uchar));
+            long newcount = 0;
             for (unsigned long col=0;(col<maxalignlen);col++) {
-                if (!(c=the_sequences[i][col])) break;
-                if ( (filter->filter_mask[col]) && (c!='-') && (c!='.') ) {
-                    sequfilt[i][newcount++]=the_sequences[i][col];
+                char c = the_sequences[i][col];
+                if (!c) break;
+                if ((filter->filter_mask[col]) && (c!='-') && (c!='.')) {
+                    sequfilt[i][newcount++] = c;
                 }
             }
         }
     }
     else {
-        if (compress==1) {  // compress vertical gaps (and '.')
-            long allaregaps;
-            unsigned long i;
-            for (i=0;i<maxalignlen;i++)  {
+        if (compress==COMPRESS_VERTICAL_GAPS || // compress vertical gaps (and '.')
+            compress == COMPRESS_NONINFO_COLUMNS) // and additionally all columns containing no info (only N or X)
+        {
+            size_t i;
+            bool   isInfo[256];
+
+            for (i=0; i<256; i++) isInfo[i] = true;
+            isInfo[uint('-')] = false;
+            isInfo[uint('.')] = false;
+            if (compress == COMPRESS_NONINFO_COLUMNS) {
+                GB_alignment_type type = GBT_get_alignment_type(dataset->gb_main, dataset->alignment_name);
+                switch (type) {
+                    case GB_AT_RNA:
+                    case GB_AT_DNA:
+                        isInfo[uint('N')] = false;
+                        isInfo[uint('n')] = false;
+                        break;
+                    case GB_AT_AA:
+                        isInfo[uint('X')] = false;
+                        isInfo[uint('x')] = false;
+                        break;
+                    default:
+                        gde_assert(0);
+                        break;
+                }
+            }
+
+            for (i=0; i<maxalignlen; i++) {
                 if (filter->filter_mask[i]) {
-                    allaregaps=1;
-                    for (size_t n=0;n<numberspecies;n++) {
-                        if (i >= seqlen[n]) continue; // end of sequence exceeded
-                        char c=the_sequences[n][i];
-                        if ((c!='-')&&(c!='.')) {
-                            allaregaps=0;
-                            break;
+                    bool wantColumn = false;
+
+                    for (size_t n=0; n<numberspecies; n++) {
+                        if (i < seqlen[n]) {
+                            if (isInfo[uint(the_sequences[n][i])]) {
+                                wantColumn = true; // have info -> take column
+                                break;
+                            }
                         }
                     }
-                    if (allaregaps) {
-                        filter->filter_mask[i]=0;
+                    if (!wantColumn) {
+                        filter->filter_mask[i] = 0;
                         filter->real_len--;
                     }
                 }
             }
         }
-        long len=filter->real_len;
+
+        long   len = filter->real_len;
         size_t i;
+
         for (i=0;i<numberspecies;i++) {
-            int c;
-            long newcount=0;
-            sequfilt[i]=(uchar*)malloc((unsigned int)len+1);
+            int  c;
+            long newcount = 0;
+            
+            sequfilt[i]      = (uchar*)malloc((unsigned int)len+1);
             sequfilt[i][len] = 0;
-            memset(sequfilt[i],'.',len);                // Generate empty sequences
+            memset(sequfilt[i],'.',len); // Generate empty sequences
 
             size_t col;
-            for (col=0;(col<maxalignlen)&&(c=the_sequences[i][col]);col++) {
-                if ( filter->filter_mask[col] ) {
-                    sequfilt[i][newcount++]=filter->simplify[c];
+            for (col=0; (col<maxalignlen) && (c=the_sequences[i][col]); col++) {
+                if (filter->filter_mask[col]) {
+                    sequfilt[i][newcount++] = filter->simplify[c];
                 }
             }
         }
@@ -278,10 +307,10 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
 
 void ReadArbdb_plain(char *filename,NA_Alignment *dataset,int type) {
     AWUSE(filename); AWUSE(type);
-    ReadArbdb(dataset, true, NULL, 0, false);
+    ReadArbdb(dataset, true, NULL, COMPRESS_NONE, false);
 }
 
-int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, int compress, bool cutoff_stop_codon) {
+int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon) {
     dataset->gb_main = GLOBAL_gb_main;
     
     GBDATA **the_species;
@@ -314,7 +343,7 @@ int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, int compress, bool cuto
 
 
 
-int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, int compress, bool cutoff_stop_codon) {
+int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon) {
     GBDATA *gb_species_data;
     GBDATA *gb_species;
 
