@@ -373,15 +373,35 @@ int AW_window::calculate_string_height( int rows , int offset ) {
 }
 
 
-char *AW_window::align_string( const char *string, int columns ) {
-    char *help_label;
+char *AW_window::align_string(const char *label_text, int columns) {
+    // shortens or expands 'label_text' to 'columns' columns
+    // if label_text contains '\n', each "line" is handled separately
 
-    help_label = new char[200];
-    strcpy( help_label, string );
-    strcat( help_label,"                                                                               " );
-    help_label[columns] = '\0';
+    const char *lf     = strchr(label_text, '\n');
+    char       *result = 0;
 
-    return help_label;
+    if (!lf) {
+        result = (char*)malloc(columns+1);
+        
+        int len              = strlen(label_text);
+        if (len>columns) len = columns;
+
+        memcpy(result, label_text, len);
+        if (len<columns) memset(result+len, ' ', columns-len);
+        result[columns] = 0;
+    }
+    else {
+        char *part1    = GB_strpartdup(label_text, lf-1);
+        char *aligned1 = align_string(part1, columns);
+        char *aligned2 = align_string(lf+1, columns);
+
+        result = GBS_global_string_copy("%s\n%s", aligned1, aligned2);
+
+        free(aligned2);
+        free(aligned1);
+        free(part1);
+    }
+    return result;
 }
 
 /*******************************************************************************************************/
