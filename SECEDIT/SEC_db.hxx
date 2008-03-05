@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : sec_db.hxx                                        //
 //   Purpose   : DB interface                                      //
-//   Time-stamp: <Fri Sep/14/2007 13:19 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Mar/05/2008 18:30 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -178,7 +178,7 @@ public:
     SEC_bond_def *bonds() const { return bonddef; }
     SEC_structure_toggler *structure() const { return toggler; }
 
-    GB_ERROR init_toggler() const;
+    void init_toggler() const;
 };
 
 

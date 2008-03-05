@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_graphic.cxx                                   //
 //   Purpose   : GUI for structure window                          //
-//   Time-stamp: <Sat Mar/01/2008 18:47 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Mar/05/2008 18:28 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -654,7 +654,7 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
 
             // on first load init structure toggler:
             if (!err) {
-                err = sec_root->get_db()->init_toggler();
+                sec_root->get_db()->init_toggler();
             }
         }
         else {

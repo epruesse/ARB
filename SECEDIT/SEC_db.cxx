@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_db.cxx                                        //
 //   Purpose   : db interface                                      //
-//   Time-stamp: <Fri Sep/14/2007 17:04 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Mar/05/2008 18:28 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -535,12 +535,8 @@ void SEC_db_interface::update_shown_positions() {
     }
 }
 
-GB_ERROR SEC_db_interface::init_toggler() const {
-    GB_ERROR error = 0;
-    if (!toggler) {
-        toggler = new SEC_structure_toggler(gb_main, aliname, gfx);
-    }
-    return error;
+void SEC_db_interface::init_toggler() const {
+    if (!toggler) toggler = new SEC_structure_toggler(gb_main, aliname, gfx);
 }
 
 void SEC_root::update_shown_positions() {
