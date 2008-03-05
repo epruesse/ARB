@@ -4,7 +4,7 @@
 #   File      : raxml2arb.pl                                      #
 #   Purpose   : Import XX best of YY calculated raxml trees into  #
 #               ARB and generate comment containing likelyhood    #
-#   Time-stamp: <Tue Mar/04/2008 19:36 MET Coder@ReallySoft.de>   #
+#   Time-stamp: <Wed Mar/05/2008 12:03 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Coded by Ralf Westram (coder@reallysoft.de) in March 2008     #
 #   Institute of Microbiology (Technical University Munich)       #
@@ -101,7 +101,7 @@ sub main() {
       $TAKETREES = $createdTrees;
     }
 
-    my @sortedTrees = sort { $likelyhood{$a} <=> $likelyhood{$b}; } keys %likelyhood;
+    my @sortedTrees = sort { $likelyhood{$b} <=> $likelyhood{$a}; } keys %likelyhood;
     foreach (@sortedTrees) { print "  $_ = ".$likelyhood{$_}."\n"; }
 
     my @treesToImport = splice(@sortedTrees,0,$TAKETREES);
