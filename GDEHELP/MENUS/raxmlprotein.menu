@@ -4,20 +4,13 @@ itemmeta: P
 itemmethod:(GOTO_LOCAL_DIR ; \
             arb_export_rates -r "$RATES" > weights; \
             arb_convert_aln -GenBank in1 -phylip2 infile; \
-            arb_export_tree $TREE >> treefile.in ;\
-            RUN_IN_WINDOW((cp infile last.infile; \
-			   time raxmlHPC -m $RATEMODEL$MATRIXNAME\
-					 -f $SEARCH \
-			    		 -i $INITIALREARANGEMENT \
-					 -# $NUMBEROFRUNS \
-				         -s infile \
-					 -t treefile.in \
-					 -n treefile \
-					 $RANDOMSTART \
-					 $OPTIMIZEPARAMETERS \
-					 $INTERMEDIATETREES; \
-			   mv RAxML_result.treefile treefile; \
-			$DISPLAY_FUNC));RM_LOCAL_FILES(in1 last.infile treefile.in weights RAxML_info.treefile) )&
+            RUN_IN_WINDOW((arb_raxml PROTEIN infile weights $TREE \
+                           $RANDOMSTART $OPTIMIZEPARAMETERS $SEARCH \
+                           $INTERMEDIATETREES $INITIALREARANGEMENT \
+                           $NUMBEROFRUNS $TAKETREES \
+                           $RATEMODEL $MATRIXNAME \
+                           )); \
+            RM_LOCAL_FILES(in1 last.infile treefile.in weights RAxML_info.treefile) )&
 itemhelp:dnaml.help
 
 arg:RATES
@@ -34,9 +27,9 @@ argchoice:
 
 arg:RANDOMSTART
 argtype:choice_menu
-arglabel:Generate random starting tree
-argchoice:No:
-argchoice:Yes:-d
+arglabel:Generate random starting tree\n(if no tree selected)
+argchoice:No:0
+argchoice:Yes:1
 
 
 arg:RATEMODEL
@@ -49,7 +42,7 @@ argchoice:PROTMIX:PROTMIX
 argchoice:PROTCAT_GAMMA:PROTCAT_GAMMA
 argchoice:PROTGAMMAI:PROTGAMMAI
 argchoice:PROTMIXI:PROTMIXI
-argchoice:PROTCAT_GAMMAI
+argchoice:PROTCAT_GAMMAI:PROTCAT_GAMMAI
 
 arg:MATRIXNAME
 argtype:choice_menu
@@ -69,18 +62,19 @@ argchoice:GTR:GTR
 
 arg:OPTIMIZEPARAMETERS
 argtype:choice_menu
-arglabel:Optimize branches / parameters (PROTMIX / PROTGAMMA only)
-argchoice:No:
-argchoice:Yes:-k
-
+arglabel:Optimize branches / parameters\n(PROTMIX / PROTGAMMA only)
+argchoice:No:0
+argchoice:Yes:1
 
 arg:SEARCH
 argtype:choice_menu
 arglabel:Select search algorithm
 argchoice:new rapid hill climbing:d
-argchoice:optimize input tree (GAMMA/GAMMAI only):e
+// argchoice:optimize input tree (GAMMA/GAMMAI only):e
+argchoice:optimize input tree:e
 argchoice:rapid bootstrap analysis:a
-argchoice:advanced bootstrap + refinement of BS tree (GAMMA):i
+// argchoice:advanced bootstrap + refinement of BS tree (GAMMA):i
+argchoice:advanced bootstrap + refinement of BS tree:i
 argchoice:old hill climbing:o
 argchoice:add new sequences to input tree (MP):p
 argchoice:randomized tree searches on one fixed starting tree:t
@@ -92,9 +86,9 @@ argchoice:randomized tree searches on one fixed starting tree:t
 
 arg:INTERMEDIATETREES
 argtype:choice_menu
-arglabel:Save intermediate trees after each iteration
-argchoice:No:
-argchoice:Yes:-j
+arglabel:Save intermediate trees\n(after each iteration)
+argchoice:No:0
+argchoice:Yes:1
 
 
 arg:INITIALREARANGEMENT
@@ -107,6 +101,11 @@ argtype:text
 arglabel:Number of runs
 argtext:1
 
+arg:TAKETREES
+argtype:text
+arglabel:Number of trees to import\n(takes best trees)
+argtext:1
+
 
 //arg:QUICKADD
 //argtype:choice_menu
@@ -114,11 +113,11 @@ argtext:1
 //argchoice:Yes:
 //argchoice:No:Q
 
-arg:DISPLAY_FUNC
-argtype:choice_menu
-arglabel:What to do with the tree:?
-argchoice:ARB ('tree_raxml_//'):arb_read_tree tree_raxml_$$ treefile "PRG=raxml FILTER=$FILTER RATE=$RATES BASE=$TREE"
-argchoice:Treetool:treetool treefile
+//arg:DISPLAY_FUNC
+//argtype:choice_menu
+//arglabel:What to do with the tree?
+//argchoice:ARB ('tree_raxml_//'):arb_read_tree tree_raxml_$$ treefile "PRG=raxml FILTER=$FILTER RATE=$RATES BASE=$TREE"
+//argchoice:Treetool:treetool treefile
 
 in:in1
 informat:genbank
