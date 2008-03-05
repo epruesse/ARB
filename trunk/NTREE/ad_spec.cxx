@@ -20,6 +20,7 @@
 #include <awtc_next_neighbours.hxx>
 #include <AW_rename.hxx>
 #include <ntree.hxx>
+#include <nt_internal.h>
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -71,6 +72,96 @@ static void move_species_to_extended(AW_window *aww){
     free(source);
 }
 
+void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
+    GB_ERROR error = 0;
+    GB_begin_transaction(GLOBAL_gb_main);
+    char *sai_name = 0;
+    char *sec_struct = 0;
+    bool canceled = false;
+
+    // get the selected species
+    char *species_name = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
+    GBDATA *gb_species = 0;
+    if ( !strcmp(species_name, "") || !(gb_species = GBT_find_species(GLOBAL_gb_main, species_name)) ) {
+        error = "Please select a species first.";
+    } else {
+        // search for the field "sec_struct"
+        GBDATA *gb_species_sec_struct = GB_find(gb_species, "sec_struct", 0, down_level);
+        if (!gb_species_sec_struct) {
+            error = "Field \"sec_struct\" not found or empty. Please select another species.";
+        } else if ( !(sec_struct = GB_read_string(gb_species_sec_struct)) ) {
+            error = "Couldn't read field \"sec_struct\". Is it empty?";
+        } else {
+            // generate default name and name input field for the new SAI 
+            char sai_default_name[256];
+            assert_or_exit(strlen(species_name) + strlen("_pfold") < 256);
+            strcpy(sai_default_name, species_name);
+            if (!strstr(sai_default_name, "_pfold")) strcat(sai_default_name, "_pfold");
+            sai_name = aw_input("Name of SAI to create:", 0, sai_default_name);
+
+            if (!sai_name) {
+                canceled = true;
+            } else if (strspn(sai_name, " ") == strlen(sai_name)) {
+                error = "Name of SAI is empty. Please enter a valid name.";
+            } else {
+                GBDATA *gb_extended_data = GB_search(GLOBAL_gb_main, "extended_data", GB_CREATE_CONTAINER);
+                GBDATA *gb_sai = GBT_find_SAI_rel_exdata(gb_extended_data, sai_name);
+                char *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
+
+                if (gb_sai) {
+                    error = "SAI with the same name already exists. Please enter another name.";
+                } else {
+                    // create SAI container and copy fields from the species to the SAI
+                    gb_sai = GB_create_container(gb_extended_data, "extended");
+                    GBDATA *gb_species_field = GB_first(gb_species);
+                    while (gb_species_field && !error) {
+                        char *key = GB_read_key(gb_species_field);
+                        GBDATA *gb_sai_field = GB_search(gb_sai, GB_read_key(gb_species_field), GB_read_type(gb_species_field));
+                        if (!strcmp(key, "name")) { // write the new name
+                            error = GB_write_string(gb_sai_field, sai_name);                                                    
+                        } else if (!strcmp(key, "sec_struct")) { // write contents from the field "sec_struct" to the alignment data
+                            GBDATA *gb_sai_ali = GB_search(gb_sai, ali_name, GB_CREATE_CONTAINER);
+                            GBDATA *gb_sai_data = GB_search(gb_sai_ali, "data", GB_STRING);
+                            error = GB_write_string(gb_sai_data, sec_struct);
+                        } else if (strcmp(key, "acc") && strcmp(key, ali_name)) { // don't copy "acc" and the old alignment data
+                            error = GB_copy(gb_sai_field, gb_species_field);
+                        }
+                        gb_species_field = GB_next(gb_species_field);
+                        free(key);
+                    }
+
+                    // generate accession number and delete field "sec_struct" from the SAI
+                    if (!error) {
+                        GBDATA *gb_sai_acc = GB_search(gb_sai, "acc", GB_FIND);
+                        if (gb_sai_acc) {
+                            GB_delete(gb_sai_acc);
+                            GBT_gen_accession_number(gb_sai, ali_name);
+                        }
+                        GBDATA *gb_sai_sec_struct = GB_search(gb_sai, "sec_struct", GB_FIND);
+                        if (gb_sai_sec_struct) GB_delete(gb_sai_sec_struct);
+                        aww->get_root()->awar(AWAR_SAI_NAME)->write_string(sai_name);
+                    }
+                }
+            }
+        }
+    }
+
+    if (!error && !canceled) {
+        GB_commit_transaction(GLOBAL_gb_main);
+        AW_window *sai_info = NT_create_extendeds_window(aww->get_root());
+        //TODO: Ralf zeigen: warum zeigt Info Box nichts an beim ersten öffnen des fensters?
+        sai_info->show();
+        ((AWT_canvas *)ntw)->refresh(); //TODO: Refresh doesn't work, I guess... 
+        //AWT_expose_cb(sai_info, sai_info->, 0);
+    } else {
+        GB_abort_transaction(GLOBAL_gb_main);
+        if (error) aw_message(error);
+    }
+
+    if (species_name) free(species_name);
+    if (sai_name)     free(sai_name);
+    if (sec_struct)   free(sec_struct);
+}
 
 static void species_create_cb(AW_window *aww){
     GB_ERROR error = 0;
