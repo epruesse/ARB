@@ -224,10 +224,10 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
         if (seqtype != '-') {
             aws->at("compression");
             aws->create_option_menu(AWAR_GDE_COMPRESSION, "", "");
-            aws->insert_option("none", "n", 0);
-            aws->insert_option("vertical gaps", "v", 1);
-            aws->insert_default_option("columns w/o info", "i", 3);
-            aws->insert_option("all gaps", "g", 2);
+            aws->insert_option("none", "n", COMPRESS_NONE);
+            aws->insert_option("vertical gaps", "v", COMPRESS_VERTICAL_GAPS);
+            aws->insert_default_option("columns w/o info", "i", COMPRESS_NONINFO_COLUMNS);
+            aws->insert_option("all gaps", "g", COMPRESS_ALL);
             aws->update_option_menu();
 
             aws->button_length(12);
@@ -267,7 +267,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             labellength = lablen;
         }
     }
-    aws->label_length((int)labellength);
+    aws->label_length(labellength);
     aws->auto_space(0,0);
 
     for (i=0;i<AWinfo->gmenuitem->numargs;i++) {
@@ -484,7 +484,8 @@ void create_gde_var(AW_root  *aw_root, AW_default aw_def,
 
     aw_root->awar_int(AWAR_GDE_CUTOFF_STOPCODON, 0, aw_def);
     aw_root->awar_int(AWAR_GDE_SPECIES,          1, aw_def);
-    aw_root->awar_int(AWAR_GDE_COMPRESSION,      3, aw_def);
+    
+    aw_root->awar_int(AWAR_GDE_COMPRESSION, COMPRESS_NONINFO_COLUMNS, aw_def);
 
     aw_root->awar(AWAR_GDE_ALIGNMENT)->map("presets/use");
     aw_root->awar(AWAR_GDE_FILTER_ALIGNMENT)->map("presets/use");
