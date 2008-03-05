@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_main.cxx                                      //
 //   Purpose   : main part of SECEDIT                              //
-//   Time-stamp: <Thu Feb/28/2008 16:04 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Mar/05/2008 18:28 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -486,8 +486,15 @@ static void SEC_rename_structure(AW_window *, AW_CL cl_db, AW_CL) {
 static void SEC_new_structure(AW_window *, AW_CL cl_db, AW_CL) {
     SEC_db_interface      *db        = (SEC_db_interface*)cl_db;
     SEC_structure_toggler *structure = db->structure();
-    GB_ERROR               error     = 0;
-    bool                   done      = false;
+
+    if (!structure) {
+        db->init_toggler();
+        structure = db->structure();
+        sec_assert(structure);
+    }
+
+    GB_ERROR error = 0;
+    bool     done  = false;
 
     switch (aw_message("Create new structure?", "Default bone,Copy current,Abort")) {
         case 0:                 // default bone
