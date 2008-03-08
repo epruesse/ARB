@@ -349,12 +349,12 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
     uint offset;
     if (ptmain->stage3) {       // stage 3  no father
         if (node->flags & IS_SINGLE_BRANCH_NODE){
-            if (base != (node->flags & 0x7)) return 0;  // no son
+            if (base != (node->flags & 0x7)) return NULL;  // no son
             i = (node->flags >> 3)&0x7;         // this son
             if (!i) i = 1; else i+=2;           // offset mapping
             return (POS_TREE *)(((char *)node)-i);
         }
-        if (!( (1<<base) & node->flags)) return 0;  /* bit not set */
+        if (!( (1<<base) & node->flags)) return NULL;  /* bit not set */
         sec = (uchar)node->data;    // read second byte for charshort/shortlong info
         i = PT_count_bits[base][node->flags];
         i+= PT_count_bits[base][sec];
@@ -376,7 +376,7 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
         return (POS_TREE *)(((ulong)node)-i);
 
     }else{          // stage 1 or 2 ->father
-        if (!( (1<<base) & node->flags)) return 0;  /* bit not set */
+        if (!( (1<<base) & node->flags)) return NULL;  /* bit not set */
         base = (PT_BASES)PT_count_bits[base][node->flags];
         PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+ptmain->mode,i);
         return (POS_TREE *)(i+ptmain->base);
@@ -386,7 +386,7 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
 GB_INLINE POS_TREE *PT_read_son_stage_1(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
 {
     long i;
-    if (!( (1<<base) & node->flags)) return 0;  /* bit not set */
+    if (!( (1<<base) & node->flags)) return NULL;  /* bit not set */
     base = (PT_BASES)PT_count_bits[base][node->flags];
     PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+ptmain->mode,i);
     return (POS_TREE *)(i+ptmain->base);

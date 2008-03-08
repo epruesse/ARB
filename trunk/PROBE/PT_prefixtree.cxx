@@ -243,7 +243,7 @@ POS_TREE *PT_add_to_chain(PTM2 *ptmain, POS_TREE *node, int name, int apos, int 
     memcpy(p,buffer,size);
     PT_WRITE_PNTR(data,p);
     psg.stat.cut_offs ++;
-    return 0;
+    return NULL;
 }
 
 
@@ -291,7 +291,7 @@ POS_TREE *PT_leaf_to_chain(PTM2 *ptmain, POS_TREE *node)        /* stage 1*/
         PT_WRITE_SHORT(data,apos);
         data+=2;
     }
-    PT_WRITE_PNTR(data,0);      // first element
+    PT_WRITE_PNTR(data,NULL);      // first element
     PT_add_to_chain(ptmain, new_elem,name,apos,rpos);
     return new_elem;
 }
@@ -389,7 +389,7 @@ void PTD_clear_fathers(PTM2 *ptmain, POS_TREE * node)       /* stage 1*/
     int i;
     PT_NODE_TYPE    type = PT_read_type(node);
     if (type == PT_NT_SAVED) return;
-    PT_WRITE_PNTR((&node->data), 0);
+    PT_WRITE_PNTR((&node->data), NULL);
     if (type == PT_NT_NODE) {
         for (i = PT_QU; i < PT_B_MAX; i++) {
             sons = PT_read_son(ptmain,node, (enum PT_bases_enum)i);
@@ -401,6 +401,7 @@ void PTD_clear_fathers(PTM2 *ptmain, POS_TREE * node)       /* stage 1*/
 
 void PTD_put_int(FILE * out, ulong i)
 {
+    arb_assert(i == (unsigned int) i);
     int io;
     static unsigned char buf[4];
     PT_WRITE_INT(buf,i);
@@ -412,6 +413,7 @@ void PTD_put_int(FILE * out, ulong i)
 
 void PTD_put_short(FILE * out, ulong i)
 {
+    arb_assert(i == (unsigned short) i);
     int io;
     static unsigned char buf[2];
     PT_WRITE_SHORT(buf,i);
