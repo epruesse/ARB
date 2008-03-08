@@ -210,7 +210,7 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
     psg.ptmain = PT_init(PT_B_MAX);
     psg.ptmain->stage1 = 1;             /* enter stage 1 */
 
-    pt = PT_create_leaf(psg.ptmain,0,PT_N,0,0,0);       /* create main node */
+    pt = PT_create_leaf(psg.ptmain,NULL,PT_N,0,0,0);       /* create main node */
     pt = PT_change_leaf_to_node(psg.ptmain,pt);
     psg.stat.cut_offs = 0;                  /* statistic information */
     GB_begin_transaction(psg.gb_main);
@@ -274,7 +274,7 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
         PT_inc_base_string_count(partstring,PT_N,PT_B_MAX,partsize);
     }
     if (partsize){
-        pos = PTD_save_partial_tree(out, psg.ptmain, pt, 0, 0, pos, &last_obj);
+        pos = PTD_save_partial_tree(out, psg.ptmain, pt, NULL, 0, pos, &last_obj);
 #ifdef PTM_DEBUG
         PTM_debug_mem();
         PTD_debug_nodes();
