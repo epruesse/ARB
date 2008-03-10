@@ -59,7 +59,7 @@ void ptd_write_chain_entries P_((FILE *out, long *ppos, PTM2 *, char **entry_tab
 long PTD_write_chain_to_disk P_((FILE *out, PTM2 *ptmain, POS_TREE *node, long pos));
 void PTD_debug_nodes P_((void));
 long PTD_write_node_to_disk P_((FILE *out, PTM2 *ptmain, POS_TREE *node, long *r_poss, long pos));
-int PTD_write_leafs_to_disk P_((FILE *out, PTM2 *ptmain, POS_TREE *node, long pos, long *pnodepos, int *pblock));
+long PTD_write_leafs_to_disk P_((FILE *out, PTM2 *ptmain, POS_TREE *node, long pos, long *pnodepos, int *pblock));
 void PTD_read_leafs_from_disk P_((char *fname, PTM2 *ptmain, POS_TREE **pnode));
 
 /* PT_main.cxx */

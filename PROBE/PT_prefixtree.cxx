@@ -88,10 +88,12 @@ PTM_destroy_mem(void){  /* destroys all left memory sources */
             PTM.tables[pos] = (char *)i;
         }
     }
+    arb_assert(sum >= 0);
     return sum;
 }
 void PTM_free_mem(char *data, int size)
 {
+    arb_assert(size > 0);
     int  nsize, pos;
     long i;
     nsize = (size + (PTM_ALIGNED - 1)) & (-PTM_ALIGNED);
@@ -183,7 +185,7 @@ int PTD(POS_TREE * node)
             break;
         case PT_NT_NODE:
             for (i = 0; i < PT_B_MAX; i++) {
-                printf("%6li:0x%lx\n", i, (ulong)PT_read_son(ptmain,node, (enum PT_bases_enum)i));
+                printf("%6li:0x%p\n", i, PT_read_son(ptmain,node, (enum PT_bases_enum)i));
             }
             break;
         case PT_NT_CHAIN:
@@ -446,6 +448,7 @@ long PTD_write_tip_to_disk(FILE * out, PTM2 */*ptmain*/,POS_TREE * node,long pos
     }
     PTD_set_object_to_saved_status(node,pos,size);
     pos += size-sizeof(PT_PNTR);                /* no father */
+    arb_assert(pos >= 0);
     return pos;
 }
 
@@ -457,6 +460,7 @@ int ptd_count_chain_entries(char * entry){
         PT_READ_PNTR(entry,next);
         entry = (char *)next;
     }
+    arb_assert(counter >= 0);
     return counter;
 }
 
@@ -535,6 +539,7 @@ long PTD_write_chain_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node,long pos) 
     putc(PT_CHAIN_END,out);
     pos++;
     PTD_set_object_to_saved_status(node,oldpos,data+sizeof(PT_PNTR)-(char*)node);
+    arb_assert(pos >= 0);
     return pos;
 }
 
@@ -554,10 +559,10 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
     int i,size;    // Save node after all descendends are already saved
     POS_TREE *sons;
 
-    ulong   max_diff = 0;
-    int lasti = 0;
-    int count = 0;
-    int mysize;
+    long max_diff = 0;
+    int  lasti = 0;
+    int  count = 0;
+    int  mysize;
 
     size = PT_EMPTY_NODE_SIZE;
     mysize = PT_EMPTY_NODE_SIZE;
@@ -566,7 +571,8 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
         sons = PT_read_son(ptmain, node, (enum PT_bases_enum)i);
         if (sons) {
             int memsize;
-            ulong   diff = pos - r_poss[i];
+            long   diff = pos - r_poss[i];
+            arb_assert(diff >= 0);
             if (diff>max_diff) {
                 max_diff = diff;
                 lasti = i;
@@ -606,6 +612,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
         for (i = PT_QU; i < PT_B_MAX; i++) {    /* set the flag2 */
             if (r_poss[i]){
                 /*u*/ long  diff = pos - r_poss[i];
+                arb_assert(diff >= 0);
                 if (diff>level) flags2 |= 1<<i;
             }
         }
@@ -614,6 +621,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
         for (i = PT_QU; i < PT_B_MAX; i++) {    /* write the data */
             if (r_poss[i]){
                 /*u*/ long  diff = pos - r_poss[i];
+                arb_assert(diff >= 0);
                 if (max_diff) {
                     if (diff>level) {
                         PTD_put_int(out,diff);
@@ -641,10 +649,11 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
 
     PTD_set_object_to_saved_status(node,pos,mysize);
     pos += size-sizeof(PT_PNTR);                /* no father */
+    arb_assert(pos >= 0);
     return pos;
 }
-int
-PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos, long *pnodepos, int *pblock)
+
+long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos, long *pnodepos, int *pblock)
 {
     // returns new pos when son is written 0 otherwise
     // pnodepos is set to last object
@@ -700,6 +709,7 @@ PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos, lon
             pos = PTD_write_node_to_disk(out,ptmain,node,r_poss,pos);
         }
     }
+    arb_assert(pos >= 0);
     return pos;
 }
 
