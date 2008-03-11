@@ -6,13 +6,13 @@
 CPP_OBJECTS =  eispack.o d_sign.o
 
 $(MAIN): $(CPP_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
 
 .cxx.o:
-	$(CPP) -O -c $< $(CPPINCLUDES)
+	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)

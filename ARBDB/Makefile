@@ -5,10 +5,10 @@ include AD_MOBJECTS.h
 OBJECTS = $(GB_O) $(GB_T) $(GB_PP) $(GB_X)
 
 $(MAIN): $(OBJECTS)
-	$(ARCPPLIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
+	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
 	touch $@
 .c.o:
-	$(CCLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(ACCLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 .cxx.o:
 	$(CCPLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
@@ -279,6 +279,7 @@ adstring.o: ad_t_lpro.h
 adstring.o: ad_t_prot.h
 adstring.o: adlmacros.h
 adstring.o: adlocal.h
+adstring.o: adregexp.h
 adstring.o: adtune.h
 adstring.o: arb_assert.h
 adstring.o: arbdb.h

@@ -6,10 +6,10 @@ include AD_MOBJECTS.h
 ACC_OBJECTS = $(GB_O) $(GB_T) $(GB_X)
 
 $(MAIN): $(ACC_OBJECTS)
-	$(ARLIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(ACC_OBJECTS)
+	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(ACC_OBJECTS)
 	touch $@
 .c.o:
-	$(CCLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+	$(ACCLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(ACC_OBJECTS) *.a *.so
@@ -250,6 +250,7 @@ adstring.o: ad_t_lpro.h
 adstring.o: ad_t_prot.h
 adstring.o: adlmacros.h
 adstring.o: adlocal.h
+adstring.o: adregexp.h
 adstring.o: adtune.h
 adstring.o: arbdb.h
 adstring.o: arbdbt.h
