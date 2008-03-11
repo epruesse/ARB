@@ -1,181 +1,189 @@
+.SUFFIXES: .c .cxx .depend .o
 
-LIB = $(LIBPATH) -lARBDO $(SYSLIBS)
+TOOLS := \
+	arb_2_ascii \
+	arb_2_bin \
+	arb_a2ps \
+	arb_count_chars \
+	arb_dnarates \
+	arb_export_rates \
+	arb_export_tree \
+	arb_gene_probe \
+	arb_message \
+	arb_newick_2_otb \
+	arb_notify \
+	arb_primer \
+	arb_probe \
+	arb_proto_2_xsub \
+	arb_read_tree \
+	arb_replace \
+	arb_swap_rnastr \
+	arb_test \
 
-#LIB2 = $(LIBPATH) -lARBDB $(SYSLIBS) $(CCPLIBS) -lCrun
-LIB2 = $(LIBPATH) -lARBDB $(SYSLIBS) $(CCPLIBS)
+ifeq ($(DEBUG),1)
+TOOLS += \
+	arb_perf_test \
 
-.SUFFIXES: .c .cxx .depend
+endif
 
-TOOLS = \
-    arb_a2ps arb_primer arb_swap_rnastr arb_2_ascii \
-	arb_newick_2_otb arb_dnarates \
-	arb_2_bin arb_replace arb_read_tree \
-	arb_proto_2_xsub arb_probe arb_test arb_export_rates arb_export_tree arb_count_chars \
-	arb_perf_test arb_message arb_gene_probe arb_notify
+LIB_ARBDB = $(LIBPATH) -lARBDB
 
-BINARIES = $(addprefix $(ARBHOME)/bin/,$(TOOLS))
+OBJECTS:=$(addsuffix .o,$(TOOLS))
+BINARIES:=$(addprefix $(ARBHOME)/bin/,$(TOOLS))
 
-#all: $(OBJECT:%.o=$(ARBHOME)/bin/%)
 all: $(BINARIES)
 
-$(ARBHOME)/bin/arb_probe: arb_probe.cxx
-	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a $(LIB2) $(POST_COMPILE)
+.cxx.o:
+	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 
-$(ARBHOME)/bin/arb_newick_2_otb: arb_newick_2_otb.cxx
-	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) ../CAT/CAT.a ../LIBLINK/libARBDB.a $(SYSLIBS) $(POST_COMPILE)
+.c.o:
+	$(ACC) $(cflags) -c $< $(CPPINCLUDES)
 
-$(ARBHOME)/bin/arb_dnarates: arb_dnarates.c
-	$(ACC) $(cflags) -o $@ $< $(AINCLUDES) $(LIB) $(POST_COMPILE)
+*.o: Makefile
 
-$(ARBHOME)/bin/%: %.c
-	$(ACC) $(cflags) -o $@ $< $(AINCLUDES) $(POST_COMPILE)
+$(ARBHOME)/bin/arb_probe: arb_probe.o
+	$(LINK_EXECUTABLE) $@ $< ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a $(LIB_ARBDB)
 
-$(ARBHOME)/bin/%: %.cxx
-	$(CPP) $(cflags) -o $@ $< $(CPPINCLUDES) $(LIB2) $(POST_COMPILE)
+$(ARBHOME)/bin/arb_newick_2_otb: arb_newick_2_otb.o
+	$(LINK_EXECUTABLE) $@ $< ../CAT/CAT.a $(LIB_ARBDB)
 
+$(ARBHOME)/bin/%: %.o
+	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB)
 
 clean:
 	rm -f $(BINARIES)
+	rm -f $(OBJECTS)
 
-#DEPENDS = $(OBJECT:.o=.depend)
-DEPENDS = $(addsuffix .depend,$(TOOLS))
-
-depends: $(DEPENDS)
+DEPENDS = $(OBJECTS:.o=.depend)
+depends: $(DEPENDS) 
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile
 	@rm $(DEPENDS)
 $(DEPENDS): depend.init
 depend.init:
 	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
-.c.depend:
-	$(MAKEDEPEND) -f- -p$(ARBHOME)/bin/ -o "" $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 .cxx.depend:
-	$(MAKEDEPEND) -f- -p$(ARBHOME)/bin/ -o "" $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+.c.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-$(ARBHOME)/bin/arb_2_ascii: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_2_ascii: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_2_ascii: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_2_ascii: $(ARBHOME)/INCLUDE/attributes.h
+arb_2_ascii.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_2_ascii.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_2_ascii.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_2_ascii.o: $(ARBHOME)/INCLUDE/attributes.h
 
-$(ARBHOME)/bin/arb_2_bin: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_2_bin: $(ARBHOME)/INCLUDE/ad_t_prot.h
-$(ARBHOME)/bin/arb_2_bin: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_2_bin: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_2_bin: $(ARBHOME)/INCLUDE/arbdbt.h
-$(ARBHOME)/bin/arb_2_bin: $(ARBHOME)/INCLUDE/attributes.h
+arb_2_bin.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_2_bin.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_2_bin.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_2_bin.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_2_bin.o: $(ARBHOME)/INCLUDE/arbdbt.h
+arb_2_bin.o: $(ARBHOME)/INCLUDE/attributes.h
 
-$(ARBHOME)/bin/arb_count_chars: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_count_chars: $(ARBHOME)/INCLUDE/ad_t_prot.h
-$(ARBHOME)/bin/arb_count_chars: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_count_chars: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_count_chars: $(ARBHOME)/INCLUDE/arbdbt.h
-$(ARBHOME)/bin/arb_count_chars: $(ARBHOME)/INCLUDE/attributes.h
+arb_count_chars.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_count_chars.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_count_chars.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_count_chars.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_count_chars.o: $(ARBHOME)/INCLUDE/arbdbt.h
+arb_count_chars.o: $(ARBHOME)/INCLUDE/attributes.h
 
-$(ARBHOME)/bin/arb_dnarates: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_dnarates: $(ARBHOME)/INCLUDE/ad_t_prot.h
-$(ARBHOME)/bin/arb_dnarates: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_dnarates: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_dnarates: $(ARBHOME)/INCLUDE/arbdbt.h
-$(ARBHOME)/bin/arb_dnarates: $(ARBHOME)/INCLUDE/attributes.h
-$(ARBHOME)/bin/arb_dnarates: $(ARBHOME)/INCLUDE/aw_awars.hxx
-$(ARBHOME)/bin/arb_dnarates: DNAml_rates_1_0.h
+arb_dnarates.o: DNAml_rates_1_0.h
+arb_dnarates.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_dnarates.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_dnarates.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_dnarates.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_dnarates.o: $(ARBHOME)/INCLUDE/arbdbt.h
+arb_dnarates.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_dnarates.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 
-$(ARBHOME)/bin/arb_export_rates: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_export_rates: $(ARBHOME)/INCLUDE/ad_t_prot.h
-$(ARBHOME)/bin/arb_export_rates: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_export_rates: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_export_rates: $(ARBHOME)/INCLUDE/arbdbt.h
-$(ARBHOME)/bin/arb_export_rates: $(ARBHOME)/INCLUDE/attributes.h
-$(ARBHOME)/bin/arb_export_rates: $(ARBHOME)/INCLUDE/aw_awars.hxx
+arb_export_rates.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_export_rates.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_export_rates.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_export_rates.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_export_rates.o: $(ARBHOME)/INCLUDE/arbdbt.h
+arb_export_rates.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_export_rates.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 
-$(ARBHOME)/bin/arb_export_tree: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_export_tree: $(ARBHOME)/INCLUDE/ad_t_prot.h
-$(ARBHOME)/bin/arb_export_tree: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_export_tree: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_export_tree: $(ARBHOME)/INCLUDE/arbdbt.h
-$(ARBHOME)/bin/arb_export_tree: $(ARBHOME)/INCLUDE/attributes.h
+arb_export_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_export_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_export_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_export_tree.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_export_tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
+arb_export_tree.o: $(ARBHOME)/INCLUDE/attributes.h
 
-$(ARBHOME)/bin/arb_gene_probe: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_gene_probe: $(ARBHOME)/INCLUDE/ad_t_prot.h
-$(ARBHOME)/bin/arb_gene_probe: $(ARBHOME)/INCLUDE/adGene.h
-$(ARBHOME)/bin/arb_gene_probe: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_gene_probe: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_gene_probe: $(ARBHOME)/INCLUDE/arbdbt.h
-$(ARBHOME)/bin/arb_gene_probe: $(ARBHOME)/INCLUDE/attributes.h
+arb_gene_probe.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_gene_probe.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_gene_probe.o: $(ARBHOME)/INCLUDE/adGene.h
+arb_gene_probe.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_gene_probe.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_gene_probe.o: $(ARBHOME)/INCLUDE/arbdbt.h
+arb_gene_probe.o: $(ARBHOME)/INCLUDE/attributes.h
 
-$(ARBHOME)/bin/arb_message: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_message: $(ARBHOME)/INCLUDE/ad_t_prot.h
-$(ARBHOME)/bin/arb_message: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_message: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_message: $(ARBHOME)/INCLUDE/arbdbt.h
-$(ARBHOME)/bin/arb_message: $(ARBHOME)/INCLUDE/attributes.h
+arb_message.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_message.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_message.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_message.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_message.o: $(ARBHOME)/INCLUDE/arbdbt.h
+arb_message.o: $(ARBHOME)/INCLUDE/attributes.h
 
-$(ARBHOME)/bin/arb_newick_2_otb: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_newick_2_otb: $(ARBHOME)/INCLUDE/ad_t_prot.h
-$(ARBHOME)/bin/arb_newick_2_otb: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_newick_2_otb: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_newick_2_otb: $(ARBHOME)/INCLUDE/arbdbt.h
-$(ARBHOME)/bin/arb_newick_2_otb: $(ARBHOME)/INCLUDE/attributes.h
-$(ARBHOME)/bin/arb_newick_2_otb: $(ARBHOME)/INCLUDE/cat_tree.hxx
+arb_newick_2_otb.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_newick_2_otb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_newick_2_otb.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_newick_2_otb.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_newick_2_otb.o: $(ARBHOME)/INCLUDE/arbdbt.h
+arb_newick_2_otb.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_newick_2_otb.o: $(ARBHOME)/INCLUDE/cat_tree.hxx
 
-$(ARBHOME)/bin/arb_notify: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_notify: $(ARBHOME)/INCLUDE/ad_t_prot.h
-$(ARBHOME)/bin/arb_notify: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_notify: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_notify: $(ARBHOME)/INCLUDE/arbdbt.h
-$(ARBHOME)/bin/arb_notify: $(ARBHOME)/INCLUDE/attributes.h
+arb_notify.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_notify.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_notify.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_notify.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_notify.o: $(ARBHOME)/INCLUDE/arbdbt.h
+arb_notify.o: $(ARBHOME)/INCLUDE/attributes.h
 
-$(ARBHOME)/bin/arb_perf_test: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_perf_test: $(ARBHOME)/INCLUDE/ad_t_prot.h
-$(ARBHOME)/bin/arb_perf_test: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_perf_test: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_perf_test: $(ARBHOME)/INCLUDE/arbdbt.h
-$(ARBHOME)/bin/arb_perf_test: $(ARBHOME)/INCLUDE/attributes.h
+arb_primer.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_primer.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_primer.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_primer.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_primer.o: $(ARBHOME)/INCLUDE/arbdbt.h
+arb_primer.o: $(ARBHOME)/INCLUDE/attributes.h
 
-$(ARBHOME)/bin/arb_primer: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_primer: $(ARBHOME)/INCLUDE/ad_t_prot.h
-$(ARBHOME)/bin/arb_primer: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_primer: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_primer: $(ARBHOME)/INCLUDE/arbdbt.h
-$(ARBHOME)/bin/arb_primer: $(ARBHOME)/INCLUDE/attributes.h
+arb_probe.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_probe.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_probe.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_probe.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_probe.o: $(ARBHOME)/INCLUDE/client.h
+arb_probe.o: $(ARBHOME)/INCLUDE/PT_com.h
+arb_probe.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
-$(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/attributes.h
-$(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/client.h
-$(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/PT_com.h
-$(ARBHOME)/bin/arb_probe: $(ARBHOME)/INCLUDE/servercntrl.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/attributes.h
 
-$(ARBHOME)/bin/arb_proto_2_xsub: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_proto_2_xsub: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_proto_2_xsub: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_proto_2_xsub: $(ARBHOME)/INCLUDE/attributes.h
+arb_read_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_read_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_read_tree.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_read_tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
+arb_read_tree.o: $(ARBHOME)/INCLUDE/attributes.h
 
-$(ARBHOME)/bin/arb_read_tree: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_read_tree: $(ARBHOME)/INCLUDE/ad_t_prot.h
-$(ARBHOME)/bin/arb_read_tree: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_read_tree: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_read_tree: $(ARBHOME)/INCLUDE/arbdbt.h
-$(ARBHOME)/bin/arb_read_tree: $(ARBHOME)/INCLUDE/attributes.h
+arb_replace.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_replace.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_replace.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_replace.o: $(ARBHOME)/INCLUDE/attributes.h
 
-$(ARBHOME)/bin/arb_replace: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_replace: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_replace: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_replace: $(ARBHOME)/INCLUDE/attributes.h
+arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arbdbt.h
+arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/attributes.h
 
-$(ARBHOME)/bin/arb_swap_rnastr: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_swap_rnastr: $(ARBHOME)/INCLUDE/ad_t_prot.h
-$(ARBHOME)/bin/arb_swap_rnastr: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_swap_rnastr: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_swap_rnastr: $(ARBHOME)/INCLUDE/arbdbt.h
-$(ARBHOME)/bin/arb_swap_rnastr: $(ARBHOME)/INCLUDE/attributes.h
-
-$(ARBHOME)/bin/arb_test: $(ARBHOME)/INCLUDE/ad_prot.h
-$(ARBHOME)/bin/arb_test: $(ARBHOME)/INCLUDE/arb_assert.h
-$(ARBHOME)/bin/arb_test: $(ARBHOME)/INCLUDE/arbdb.h
-$(ARBHOME)/bin/arb_test: $(ARBHOME)/INCLUDE/attributes.h
+arb_test.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_test.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_test.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_test.o: $(ARBHOME)/INCLUDE/attributes.h
