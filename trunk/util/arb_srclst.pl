@@ -46,6 +46,7 @@ my %skipped_files = map { $_ => 1; } (
                                       'helpfiles.lst',
                                       '_index.html',
                                       'nt_date.h',
+                                      'GDE_proto.h',
                                       'TAGS',
                                      );
 
