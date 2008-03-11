@@ -12,17 +12,22 @@ depends:
 
 %.dummy:
 	@$(MAKE) -C $(@D) -r \
-		"MAKE = $(MAKE)" \
-		"ARBHOME = $(ARBHOME)" "cflags = $(cflags) -DIN_ARB_$(@D:/=)" "lflags = $(lflags)" \
-		"CPPINCLUDES = $(CPPINCLUDES)" "AINCLUDES = $(AINCLUDES)" \
-		"CPP = $(CPP)" "ACC = $(ACC)" \
-		"CCLIB = $(CCLIB)" "CCPLIB = $(CCPLIB)" \
-		"AR = $(AR)" "ARLIB = $(ARLIB)" \
-		"LIBPATH = $(LIBPATH)" "SYSLIBS = $(SYSLIBS)" \
-		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
-		"XHOME = $(XHOME)" \
-		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
+		"ACC = $(ACC)" \
+		"AINCLUDES = $(AINCLUDES)" \
 		"ARB  = yes" \
-		"MAIN = $(@F:.dummy=.a)"
+		"ARBHOME = $(ARBHOME)" \
+		"CCPLIB = $(CCPLIB)" \
+		"CPP = $(CPP)" \
+		"CPPINCLUDES = $(CPPINCLUDES)" \
+		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
+		"LIBPATH = $(LIBPATH)" \
+		"LINK_STATIC_LIB = $(LINK_STATIC_LIB)" \
+		"MAIN = $(@F:.dummy=.a)" \
+		"MAKE = $(MAKE)" \
+		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
+		"SYSLIBS = $(SYSLIBS)" \
+		"XHOME = $(XHOME)" \
+		"cflags = $(cflags) -DIN_ARB_$(@D:/=)" \
+
 
 # DO NOT DELETE

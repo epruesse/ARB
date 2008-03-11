@@ -57,18 +57,23 @@ clean: $(ARCHS:.dummy=.clean)
 
 %.dummy:
 	@(($(MAKE) -C $(@D) -r \
-		"MAKE = $(MAKE)" \
-		"ARBHOME = $(ARBHOME)" "cflags = $(cflags) -DIN_ARB_$(@D:/=)" "lflags = $(lflags)" \
-		"CPPINCLUDES = $(CPPINCLUDES)" "AINCLUDES = $(AINCLUDES)" \
-		"CPP = $(SUB_CPP)" "ACC = $(SUB_ACC)" \
-		"CCLIB = $(CCLIB)" "CCPLIB = $(CCPLIB)" \
-		"AR = $(AR)" "ARLIB = $(ARLIB)" \
-		"LIBPATH = $(LIBPATH)" "SYSLIBS = $(SYSLIBS)" \
-		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
-		"XHOME = $(XHOME)" "XLIBS = $(XLIBS)" \
-		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
+		"ACC = $(SUB_ACC)" \
+		"AINCLUDES = $(AINCLUDES)" \
 		"ARB  = yes" \
+		"ARBHOME = $(ARBHOME)" \
+		"CCPLIB = $(CCPLIB)" \
+		"CPP = $(SUB_CPP)" \
+		"CPPINCLUDES = $(CPPINCLUDES)" \
+		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
+		"LIBPATH = $(LIBPATH)" \
+		"LINK_STATIC_LIB = $(LINK_STATIC_LIB)" \
 		"MAIN = $(@F:.dummy=.a)" \
+		"MAKE = $(MAKE)" \
+		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
+		"SYSLIBS = $(SYSLIBS)" \
+		"XHOME = $(XHOME)" \
+		"XLIBS = $(XLIBS)" \
+		"cflags = $(cflags) -DIN_ARB_$(@D:/=)" \
 		>$(@D).log 2>&1 && (cat $(@D).log;rm $(@D).log)) || (cat $(@D).log;rm $(@D).log;false))
 
 %.clean:
