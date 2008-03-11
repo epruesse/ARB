@@ -2,7 +2,7 @@
 .SUFFIXES: .o .c .cxx .depend
 OBJECTS = servercntrl.o
 $(MAIN): $(OBJECTS)
-	$(AR) $(@) $(OBJECTS)
+	$(LINK_STATIC_LIB) $(@) $(OBJECTS)
 .c.o:
 	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 .cxx.o:

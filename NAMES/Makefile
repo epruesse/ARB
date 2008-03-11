@@ -2,7 +2,7 @@
 .SUFFIXES: .o .cxx .c .depend
 OBJECTS = names.o
 $(MAIN): $(OBJECTS)
-	$(AR) $(MAIN) $(OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 .c.o:
 	$(ACC) $(cflags) -c $<  $(AINCLUDES)
 .cxx.o:

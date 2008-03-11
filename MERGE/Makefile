@@ -5,7 +5,7 @@ CPP_OBJECTS =   MG_checkfield.o MG_main.o MG_trees.o MG_alignment.o \
 	MG_configs.o MG_preserves.o
 
 $(MAIN): $(CPP_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)

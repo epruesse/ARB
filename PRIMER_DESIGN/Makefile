@@ -15,10 +15,10 @@ CPP_OBJECTS =   \
 	primer_design.o \
 
 $(MAIN): $(CPP_OBJECTS)
-	$(XAR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 ./prd_test: $(MAIN) PRD_main.o
-	$(CPP) $(lflags) -o $@ PRD_main.o $(MAIN)
+	$(LINK_EXECUTABLE) $@ PRD_main.o $(MAIN)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)

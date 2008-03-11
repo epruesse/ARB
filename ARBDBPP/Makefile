@@ -2,7 +2,7 @@
 .SUFFIXES: .o .c .cxx .depend
 CPP_OBJECTS = adtsequence.o adt_edit.o adtali.o adextended.o adseq.o adspecies.o admain.o adali.o  liste.o
 $(MAIN): $(CPP_OBJECTS)
-	$(ARLIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(CPP_OBJECTS)
+	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(CPP_OBJECTS)
 	touch $@
 .cxx.o:
 	$(CCPLIB) $(cflags) -c $< $(CPPINCLUDES)

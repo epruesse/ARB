@@ -10,7 +10,7 @@ TARGET=$(ARBHOME)/bin/xml2newick
 $(MAIN): $(TARGET)
 
 $(TARGET) : $(CPP_OBJECTS)
-	$(CPP) $(lflags) -o $@ $(CPP_OBJECTS) # @@@ should use $AR
+	$(LINK_EXECUTABLE) $@ $(CPP_OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c -o $@ $<  $(CPPINCLUDES)

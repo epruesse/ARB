@@ -14,7 +14,7 @@ OBJECTS =	\
 		AWT_attributes.o AWT_changekey.o AWT_item_sel_list.o AWT_macro.o AWT_translate.o
 
 $(MAIN): $(OBJECTS)
-	$(ARCPPLIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
+	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
 	touch $@
 
 .cxx.o:

@@ -6,7 +6,7 @@
 CPP_OBJECTS =  SEER_main.o SEER_interface.o SEER_connect.o SEER_arb.o SEER_to_seer.o
 
 $(MAIN): $(CPP_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)

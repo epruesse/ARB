@@ -7,7 +7,7 @@ OBJECT=  main.o fconv.o mg.o genbank.o macke.o phylip.o paup.o \
 BINARY=$(ARBHOME)/bin/arb_convert_aln
 
 $(BINARY): $(OBJECT)
-	$(CPP) $(lflags) -o $@ $(OBJECT) ../SL/FILE_BUFFER/FILE_BUFFER.a
+	$(LINK_EXECUTABLE) $@ $(OBJECT) ../SL/FILE_BUFFER/FILE_BUFFER.a
 
 .c.o:
 	$(ACC) $(cflags) -Wstrict-prototypes -c $< $(AINCLUDES) $(POST_COMPILE)

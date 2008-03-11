@@ -6,7 +6,7 @@ C_OBJECTS = # BI_helix.o
 OBJECTS = $(CPP_OBJECTS) $(C_OBJECTS)
 
 $(MAIN): $(OBJECTS) 
-	$(AR) $(MAIN) $(OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .c.o:
 	$(ACC) $(cflags) -c $< $(AINCLUDES)  -I./../probe_bank/COM

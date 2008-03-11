@@ -5,7 +5,7 @@
 C_OBJECTS = glpng.o
 
 $(MAIN): $(C_OBJECTS)
-	$(AR) $(MAIN) $(C_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(C_OBJECTS)
 
 .c.o:
 	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)

@@ -8,7 +8,7 @@ CPP_OBJECTS =   GDE_ParseMenu.o GDE.o GDE_event.o \
 CPP_FILES=$(CPP_OBJECTS:.o=.cxx)
 
 $(MAIN): $(CPP_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
 

@@ -4,7 +4,7 @@
 CPP_OBJECTS = island_hopping.o i-hopper.o align.o memory.o trnsprob.o
 
 $(MAIN): $(CPP_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .c.o:
 	$(ACC) $(cflags) -DARB -c $<  $(CPPINCLUDES)
 .cpp.o:
