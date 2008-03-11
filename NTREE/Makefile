@@ -17,9 +17,8 @@ CPP_SOURCES = $(CPP_OBJECTS:.o=.cxx)
 
 $(MAIN): $(CPP_OBJECTS)
 	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $(MAIN) $(CPP_OBJECTS) || ( \
-		echo "Link $(MAIN)" ; \
-		echo $(AR) $(MAIN) $(CPP_OBJECTS) ; \
-		$(AR) $(MAIN) $(CPP_OBJECTS) ; \
+		echo "$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)"; \
+		$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS) ; \
 	)
 
 proto:
@@ -81,6 +80,7 @@ ad_ext.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 
 ad_spec.o: ad_spec.hxx
+ad_spec.o: nt_internal.h
 ad_spec.o: ntree.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_spec.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
