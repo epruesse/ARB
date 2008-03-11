@@ -45,21 +45,17 @@ void AWT_graphic_exports::init() {
     dont_scroll      = 0;
 }
 
-void
-AWT_canvas::set_horizontal_scrollbar_position(AW_window *dummy, int pos)
-{
-    AWUSE(dummy);
-    if(pos>worldsize.r - rect.r - 1.0) pos = (int)(worldsize.r - rect.r - 2.0);
-    if(pos<0) pos = 0;
+void AWT_canvas::set_horizontal_scrollbar_position(AW_window *, int pos) {
+    int maxpos = int(worldsize.r-rect.r)-1;
+    if (pos>maxpos) pos = maxpos;
+    if (pos<0) pos = 0;
     aww->set_horizontal_scrollbar_position(pos);
 }
 
-void
-AWT_canvas::set_vertical_scrollbar_position(AW_window *dummy, int pos)
-{
-    AWUSE(dummy);
-    if(pos>worldsize.b - rect.b - 1.0 ) pos = (int)(worldsize.b - rect.b - 2.0);
-    if(pos<0) pos = 0;
+void AWT_canvas::set_vertical_scrollbar_position(AW_window *, int pos) {
+    int maxpos = int(worldsize.b-rect.b)-1;
+    if (pos>maxpos) pos = maxpos;
+    if (pos<0) pos = 0;
     aww->set_vertical_scrollbar_position(pos);
 }
 
@@ -219,8 +215,11 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
         }
     }
 
-    awt_assert(takex||takey); // illegal fit combination ?
-    
+    if (!takex && !takey) {
+        aw_message("Zoom does not work in this mode");
+        return;
+    }
+
     Rectangle current(device->rtransform(current_part));
     Rectangle wanted;
 
@@ -264,17 +263,35 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
 
     if (!zoomIn) {
         // calculate big rectangle (outside of viewport), which is zoomed into viewport
-        double    factor = current.diagonal().length()/wanted.diagonal().length();
-        Vector    curr2wanted(current.start(), wanted.start());
-        Rectangle big(current.start()+(curr2wanted*-factor), current.diagonal()*factor);
 
-        wanted = big;
+        if (takex && takey) {
+            double    factor = current.diagonal().length()/wanted.diagonal().length();
+            Vector    curr2wanted(current.upper_left_corner(), wanted.upper_left_corner());
+            Rectangle big(current.upper_left_corner()+(curr2wanted*-factor), current.diagonal()*factor);
+
+            wanted = big;
+        }
+        else {
+            double factor;
+            if (takex) {
+                factor = current.width()/wanted.width();
+            }
+            else {
+                factor = current.height()/wanted.height();
+                awt_assert(takey);
+            }
+            Vector    curr2wanted_start(current.upper_left_corner(), wanted.upper_left_corner());
+            Vector    curr2wanted_end(current.lower_right_corner(), wanted.lower_right_corner());
+            Rectangle big(current.upper_left_corner()+(curr2wanted_start*-factor),
+                          current.lower_right_corner()+(curr2wanted_end*-factor));
+
+            wanted = big;
+        }
     }
 
     // scroll
-    
-    shift_x_to_fit = takex ? -wanted.start().xpos() : 0;
-    shift_y_to_fit = takey ? -wanted.start().ypos() : 0;
+    shift_x_to_fit = takex ? -wanted.start().xpos() : (shift_x_to_fit+worldinfo.l)*trans_to_fit;
+    shift_y_to_fit = takey ? -wanted.start().ypos() : (shift_y_to_fit+worldinfo.t)*trans_to_fit;
 
     // scale
     if ((rect.r-rect.l)<EPS) rect.r = rect.l+1;
@@ -298,6 +315,10 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
     if (trans_to_fit > max_trans_to_fit) {
         trans_to_fit = max_trans_to_fit;
     }
+
+    // correct scrolling for "dont_fit"-direction
+    if (takex == 0) shift_x_to_fit = (shift_x_to_fit/trans_to_fit)-worldinfo.l;
+    if (takey == 0) shift_y_to_fit = (shift_y_to_fit/trans_to_fit)-worldinfo.t;
 
     set_scrollbars();
 }
@@ -508,12 +529,12 @@ void AWT_canvas::set_dragEndpoint(int dragx, int dragy) {
 
         if (dont_fit_y) {
             zoom_drag_sy = rect.t;
-            zoom_drag_ey = rect.b;
+            zoom_drag_ey = rect.b-1;
             zoom_drag_ex = dragx;
         }
         else if (dont_fit_x) {
             zoom_drag_sx = rect.l;
-            zoom_drag_ex = rect.r;
+            zoom_drag_ex = rect.r-1;
             zoom_drag_ey = dragy;
         }
         else {
@@ -553,18 +574,17 @@ void AWT_canvas::set_dragEndpoint(int dragx, int dragy) {
         }
 
         if (correct_x) {
-            int width    = int(scr_sx*factor);
+            int width    = int(scr_sx*factor) * ((drag_sx*drag_sy) < 0 ? -1 : 1);
             zoom_drag_ex = zoom_drag_sx+width;
         }
         else if (correct_y) {
-            int height   = int(scr_sy*factor);
+            int height = int(scr_sy*factor) * ((drag_sx*drag_sy) < 0 ? -1 : 1);            
             zoom_drag_ey = zoom_drag_sy+height;
         }
     }
 }
 
-void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
-{
+void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
     AWUSE(cd2);
     AW_event event;
     AW_device *device,*click_device;
@@ -649,9 +669,7 @@ void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
     if (ntw->gb_main) ntw->tree_disp->pop_transaction(ntw->gb_main);
 }
 
-void
-AWT_canvas::scroll( AW_window *dummy, int dx, int dy,AW_BOOL dont_update_scrollbars)
-{
+void AWT_canvas::scroll( AW_window *dummy, int dx, int dy,AW_BOOL dont_update_scrollbars) {
     AWUSE(dummy);
 
     int csx, cdx, cwidth, csy, cdy, cheight;
