@@ -1,110 +1,56 @@
+# =============================================================== #
+#                                                                 #
+#   File      : Makefile                                          #
+#   Time-stamp: <Tue Mar/11/2008 19:11 MET Coder@ReallySoft.de>   #
+#                                                                 #
+#   Institute of Microbiology (Technical University Munich)       #
+#   http://www.arb-home.de/                                       #
+#                                                                 #
+# =============================================================== #
 
-#********************* Start of user defined Section
-
-# get the machine type
-# (first call make all once to generate this file)
-
-include config.makefile
-
-# ********************************************************************************
+# -----------------------------------------------------
+# The ARB Makefile is aware of the following defines:
 #
-# The ARB source code is aware of the following defines
+# BUILDHOST_64=0/1      1=>compile on 64 bit platform (defaults to ARB_64)
+# DEVELOPER=name	special compilation (values: ANY,RELEASE,your name)
+# OPENGL=0/1            whether OPENGL is available
 #
-# GNU                   activates __attribute__ definitions
-# HAVE_BOOL             should be true if compiler supports the type 'bool'
+# -----------------------------------------------------
+# ARB Makefile and ARB source code are aware of the following defines:
+#
 # $(MACH)               name of the machine (LINUX,SUN4,SUN5,HP,SGI or DIGITAL; see config.makefile)
-# NO_REGEXPR            for machines w/o regular expression library
-#
 # DEBUG                 compiles the DEBUG sections
-# NDEBUG                doesnt compile the DEBUG sections
 # DEBUG_GRAPHICS        all X-graphics are flushed immediately (for debugging)
+# ARB_64=0/1            1=>compile 64 bit version
+#
+# -----------------------------------------------------
+# The ARB source code is aware of the following defines:
+#
+# HAVE_BOOL             should be true if compiler supports the type 'bool'
+# NO_REGEXPR            for machines w/o regular expression library
+# NDEBUG                doesnt compile the DEBUG sections
 # DEVEL_$(DEVELOPER)    developer-dependent flag (enables you to have private sections in code)
 #                       DEVELOPER='ANY' (default setting) will be ignored
 #                       configurable in config.makefile
-# OPENGL=0/1            whether OPENGL is available
-# OPENWINHOME           whether openwin programs shall be compiled (arb_gde, gde)
-# ARB_64=0/1            1=>compile 64 bit version
-# BUILDHOST_64=0/1      1=>compile on 64 bit platform (defaults to ARB_64)
 #
-#
-#********************* Default set and gcc static enviroments *****************
-#
+# -----------------------------------------------------
+# Read configuration 
+include config.makefile
+
 FORCEMASK = umask 002
 
-#---------------------- Some compiler-specific defaults
+# ---------------------- [unconditionally used options]
 
-ifdef ECGS
-dflag1 = -g -g3
-enumequiv =
-havebool = -DHAVE_BOOL
-else
-dflag1 = -g
-enumequiv = -fenum-int-equiv
-havebool =
-endif
+GCC:=gcc
+GPP:=g++ -fmessage-length=0
+CPPreal:=cpp
 
-#---------------------- developer specific settings
-
-DEVEL_DEF=-DDEVEL_$(DEVELOPER)
-
-ifeq ($(DEVELOPER),ANY) # default setting (skip all developer specific code)
-DEVEL_DEF=
-endif
-
-ifeq ($(DEVELOPER),RALFX) # special settings for RALFX
-DEVEL_DEF=-DDEVEL_RALF
-endif
-
-ifeq ($(DEVELOPER),HARALDX) # special settings for HARALDX
-DEVEL_DEF=-DDEVEL_HARALD
-endif
-
-ifeq ($(OPENGL),1) # activate OPENGL code
-DEVEL_DEF:=$(DEVEL_DEF) -DARB_OPENGL
-endif
-
-#----------------------
-
-ifeq ($(DEBUG),1)
-ifeq ($(DEBUG_GRAPHICS),1)
-		dflags = -DDEBUG -DDEBUG_GRAPHICS
-else
-		dflags = -DDEBUG
-endif
-
-		cflags = -O0 $(dflag1) $(dflags) $(DEVEL_DEF)
-#		cflags = -O0 $(dflag1) $(dflags) $(DEVEL_DEF) -ftrapv
-#		cflags = -O2 $(dflag1) $(dflags) $(DEVEL_DEF)
-#		cflags = -O4 $(dflag1) $(dflags) $(DEVEL_DEF)
-
-		lflags = $(dflag1)
-		fflags = $(dflag1) -C
-		extended_warnings         = -Wwrite-strings -Wunused -Wno-aggregate-return -Wshadow
-		extended_cpp_warnings     = -Wnon-virtual-dtor -Wreorder -Wpointer-arith 
-		extended_cpp_3xx_warnings = -Wdisabled-optimization -Wmissing-format-attribute -Wmissing-noreturn # -Wfloat-equal  
-		extended_cpp_4xx_warnings =
-		POST_COMPILE= 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
-else
-ifeq ($(DEBUG),0)
-		dflags = -DNDEBUG
-		cflags = -O4 $(dflags) $(DEVEL_DEF)
-		lflags =
-		fflags =
-		extended_warnings =
-		extended_cpp_warnings =
-		POST_COMPILE=
-endif
-endif
-
-ifeq ($(ARB_64),1)
-		cflags := $(cflags) -DARB_64
+ifdef DARWIN
+	GCC:=gcc2
+	GPP:=g++2
 endif
 
 # ---------------------- compiler version detection
-
-GCC=gcc
-GPP=g++ -fmessage-length=0
-CPPreal=cpp
 
 # supported compiler versions:
 
@@ -118,145 +64,125 @@ GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSION
 USING_GCC_3XX=$(strip $(foreach version,$(ALLOWED_GCC_3xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
 USING_GCC_4XX=$(strip $(foreach version,$(ALLOWED_GCC_4xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
 
-#---------------------- depending on gcc version add extra warnings
+#----------------------
+
+shared_cflags :=# flags for shared lib compilation
+
+ifeq ($(DEBUG),0)
+	dflags := -DNDEBUG# defines
+	cflags := -O4# compiler flags (C and C++)
+	lflags := -O99 --strip-all# linker flags
+endif
 
 ifeq ($(DEBUG),1)
-ifneq ('$(USING_GCC_3XX)','')
-extended_cpp_warnings := $(extended_cpp_warnings) $(extended_cpp_3xx_warnings)
+	dflags := -DDEBUG
+	cflags := -O0 -g -g3
+	lflags := -g
+
+	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
+
+# Enable several warnings
+	extended_warnings     := -Wwrite-strings -Wunused -Wno-aggregate-return -Wshadow
+	extended_cpp_warnings := -Wnon-virtual-dtor -Wreorder -Wpointer-arith 
+ ifneq ('$(USING_GCC_3XX)','')
+		extended_cpp_warnings += -Wdisabled-optimization -Wmissing-format-attribute
+		extended_cpp_warnings += -Wmissing-noreturn # -Wfloat-equal 
+ endif
+ ifneq ('$(USING_GCC_4XX)','')
+# 		extended_cpp_warnings += -Wwhatever
+ endif
+
+ ifeq ($(DEBUG_GRAPHICS),1)
+		dflags += -DDEBUG_GRAPHICS
+ endif
 endif
 
-ifneq ('$(USING_GCC_4XX)','')
-extended_cpp_warnings := $(extended_cpp_warnings) $(extended_cpp_3xx_warnings) $(extended_cpp_4xx_warnings)
+#---------------------- developer 
+
+ifneq ($(DEVELOPER),ANY) # ANY=default setting (skip all developer specific code)
+ifdef dflags
+	dflags += -DDEVEL_$(DEVELOPER)# activate developer/release specific code
 endif
 endif
 
-#---------------------- 32 vs 64 bit
+#---------------------- 32 or 64 bit
 
-ifdef ARB_64
+ifndef ARB_64
+	ARB_64=0#default to 32bit
+endif
 ifndef BUILDHOST_64
-BUILDHOST_64=$(ARB_64)
-endif
+	BUILDHOST_64:=$(ARB_64)# assume build host is same as version (see config.makefile)
 endif
 
-ifeq ($(ARB_64),$(BUILDHOST_64))
-CROSS_CPU_BITS=# compiling native
-CROSS_LIB=lib
+ifeq ($(ARB_64),1)
+	dflags += -DARB_64 #-fPIC 
+	lflags +=
+	shared_cflags += -fPIC
+
+	ifeq ($(BUILDHOST_64),1)
+#		build 64-bit ARB version on 64-bit host
+		CROSS_LIB:=# empty = autodetect below
+	else
+#		build 64-bit ARB version on 32-bit host
+		CROSS_LIB:=/lib64
+		cflags += -m64
+		lflags += -m64 -m elf_x86_64
+	endif
 else
-ifeq ($(ARB_64),0)
-CROSS_CPU_BITS=32# compiling 32bit on 64bit platform
-MACH_LIBS=-m elf_i386
-else
-CROSS_CPU_BITS=64# compiling 64bit on 32bit platform
-#MACH_LIBS=-m elf_whatever # unknown
-endif
-CROSS_LIB=lib$(CROSS_CPU_BITS)
-endif
-
-ifeq ('$(CROSS_CPU_BITS)','')
-MACH_BITS=
-else
-MACH_BITS=-m$(CROSS_CPU_BITS)
+	ifeq ($(BUILDHOST_64),1)
+#		build 32-bit ARB version on 64-bit host
+		CROSS_LIB:=# empty = autodetect below
+		cflags += -m32
+		lflags += -m32 -m elf_i386 
+	else
+#		build 32-bit ARB version on 32-bit host
+		CROSS_LIB:=/lib
+	endif
 endif
 
-#---------------------- machine/OS specific definitions
-
-ifdef DEBIAN
-   XHOME = /usr/X11R6
-else
-   XHOME = /usr/X11
+ifeq ('$(CROSS_LIB)','')
+# autodetect libdir
+	ifeq ($(ARB_64),1)
+		CROSS_LIB:=`(test -d /lib64 && echo lib64) || echo lib`
+	else
+		CROSS_LIB:=`(test -d /lib32 && echo lib32) || echo lib`
+	endif
 endif
 
-   PREFIX =
+#---------------------- other flags
 
-   LIBDIR = /usr/$(CROSS_LIB)
+dflags += -D$(MACH) # define machine
+dflags += -DHAVE_BOOL # all have bool [@@@ TODO: remove dependent code from ARB source]
+dflags += -DNO_REGEXPR # for machines w/o regular expression library
 
-   GMAKE = gmake -r
-   CPP = $(GPP) $(MACH_BITS) -W -Wall $(enumequiv) -D$(MACH) $(havebool) -pipe# C++ Compiler /Linker
-   PP = $(CPPreal)
-   ACC = $(GCC) $(MACH_BITS) -W -Wall $(enumequiv) -D$(MACH) -pipe# Ansi C
-   CCLIB = $(ACC)#			# Ansi C. for shared libraries
-   CCPLIB = $(CPP)#			# Same for c++
-   AR = ld -r $(MACH_LIBS) -o#		# Archive Linker
-   ARLIB = ld -r $(MACH_LIBS) -o#	# The same for shared libs.
-   XAR = $(AR)# 			# Linker for archives containing templates
-   MAKEDEPEND = $(FORCEMASK);makedepend
-   SHARED_LIB_SUFFIX = so#		# shared lib suffix
-   F77 = f77
-
-   CTAGS = etags
-   XMKMF = /usr/bin/X11/xmkmf
-
-ifdef SEER
-    SEERLIB = SEER/SEER.a
-else
-    SEERLIB =
-endif
-
-#********************* Darwin gcc enviroments *****************
 ifdef DARWIN
-
-   XHOME = /usr/X11R6
-   havebool = -DHAVE_BOOL
-   lflags = $(LDFLAGS) -force_flat_namespace -Wl,-stack_size -Wl,10000000 -Wl,-stack_addr -Wl,c0000000
-   DARWIN_SPECIALS = -DNO_REGEXPR  -no-cpp-precomp -DHAVE_BOOL
-   CPP = g++2 -D$(MACH) $(DARWIN_SPECIALS)
-   ACC = gcc2 -D$(MACH) $(DARWIN_SPECIALS)
-   CCLIB = gcc2 -fno-common -D$(MACH) $(DARWIN_SPECIALS)
-   CCPLIB = g++2 -fno-common -D$(MACH) $(DARWIN_SPECIALS)
-   AR = ld -r -o#                 # Archive Linker
-   ARLIB = $(AR)#                 # Archive Linker shared libs.
-#  ARLIB = gcc2 -bundle -flat_namespace -undefined suppress -o
-   SHARED_LIB_SUFFIX = a#
-# .. Just building shared libraries static, i was having problems otherwise
-
-   GMAKE = make -j 3 -r
-   SYSLIBS = -lstdc++
-
-   MOTIF_LIBNAME = libXm.3.dylib
-   MOTIF_LIBPATH = $(LIBDIR)/$(MOTIF_LIBNAME)
-   XINCLUDES = -I/usr/X11R6/include
-   XLIBS = -L$(XHOME)/$(CROSS_LIB) -lXm -lXt -lX11 -lXext -lXp  -lc
-
-   PERLBIN = /usr/bin
-   PERLLIB = $(LIBDIR)
-   CRYPTLIB = -L$(LIBDIR) -lcrypt
-
+	cflags += -no-cpp-precomp 
+	shared_cflags += -fno-common
+	dflags +=
+	lflags += $(LDFLAGS) -force_flat_namespace -Wl,-stack_size -Wl,10000000 -Wl,-stack_addr -Wl,c0000000
 endif
 
-#********************* Linux and gcc enviroments *****************
-ifdef LINUX
+cflags += -pipe
 
-   LINUX_SPECIALS = -DNO_REGEXPR -DGNU
-   SITE_DEPENDEND_TARGETS = perl
-   CPP := $(CPP) $(LINUX_SPECIALS) $(extended_warnings) $(extended_cpp_warnings)
-   ACC := $(ACC) $(LINUX_SPECIALS) $(extended_warnings)
-   CCLIB = $(ACC) -fPIC
-   CCPLIB = $(CPP) -fPIC#			# Same for c++
+#---------------------- X11 location
 
-   f77_flags = $(fflags) -W -N9 -e
-   F77LIB = -lU77
+X11R6=1# we use X11R6
 
-   ARCPPLIB = $(GPP) $(MACH_BITS) -W -Wall -shared $(LINUX_SPECIALS) -o
-   ARLIB = $(GCC) $(MACH_BITS) -W -Wall -shared $(LINUX_SPECIALS) -o
-   GMAKE = make -j 3 -r
-   SYSLIBS = -lm
-
-ifdef DEBIAN
-   X11R6=1
+ifeq ($(X11R6),1)
+	XHOME:=/usr/X11R6
+	XINCLUDES:=-I$(XHOME)/include
 else
-ifdef REDHAT
-   X11R6=1
-else
-   X11R6=0
-endif
+	XHOME:=/usr/X11
+	XINCLUDES:=-I$(XHOME)/include -I$(XHOME)/include/Xm
 endif
 
-# OPENGL specials:
+XLIBS:=-L$(XHOME)/$(CROSS_LIB) -lXm -lXpm -lXp -lXt -lXext -lX11
 
-GL=
-GL_LIB=
-GL_PNGLIBS=
-GLLIBS=
+#---------------------- open GL
+
+ifeq ($(OPENGL),1) 
+	cflags += -DARB_OPENGL # activate OPENGL code
+endif
 
 ifeq ($(OPENGL),1)
 GL:=gl # this is the name of the OPENGL base target
@@ -266,60 +192,62 @@ else
 GL_LIB:=-lGL
 endif
 GL_PNGLIBS:= -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
-GLLIBS:=-L$(XHOME)/$(CROSS_LIB) -lGLEW -lGLw -lglut $(GL_PNGLIBS)
+GLLIBS:=-lGLEW -lGLw -lglut $(GL_PNGLIBS)
 endif
 
+XLIBS += $(GL_LIB)
 
-ifeq ($(X11R6),1)
-   XINCLUDES = -I/usr/X11R6/include
-   XLIBS = -L/usr/X11R6/$(CROSS_LIB) -lXm -lXpm -lXp -lXt -lXext -lX11 \
-	   -L$(XHOME)/$(CROSS_LIB) -lc $(GL_LIB)
+#---------------------- basic libs:
+
+SYSLIBS := -lm
+ifdef DARWIN
+SYSLIBS += -lstdc++
+endif
+
+ifdef SEER
+    SEERLIB = SEER/SEER.a # @@@ not compiled for very long time. Dunno what SEER is.. 
 else
-   XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I$(OPENWINHOME)/include
-   XLIBS = -lXm -lXpm -lXp -lXt -lXext -lX11 -L$(XHOME)/$(CROSS_LIB) -lc $(GL_LIB)
+    SEERLIB =
 endif
 
-   OWLIBS =  -L${OPENWINHOME}/$(CROSS_LIB) -lxview -lolgx -L$(XHOME)/$(CROSS_LIB) -lX11  -lc
-   PERLBIN = /usr/bin
-   PERLLIB = /usr/$(CROSS_LIB)
-   CRYPTLIB = -L/usr/$(CROSS_LIB) -lcrypt
+# ------------------------------------------------------------------------- 
+#	Don't put any machine/version/etc conditionals below!
+#	(instead define variables above)
+# -------------------------------------------------------------------------
 
-endif
+cflags += -W -Wall $(dflags) $(extended_warnings)
+cppflags := $(extended_cpp_warnings)
 
-#********************* SUN5  CC enviroments  *****************
-#********************* SUN5  ****
-ifdef SUN5
-   SITE_DEPENDEND_TARGETS = perl
+# compiler settings:
 
-   # gcc on solaris:
-   SUN5_ECGS_SPECIALS=-DNO_REGEXPR
+ACC := $(GCC)# compile C
+CPP := $(GPP) $(cppflags)# compile C++
+ACCLIB := $(ACC) $(shared_cflags)# compile C (shared libs)
+CCPLIB := $(CPP) $(shared_cflags)# compile C++ (shared libs)
 
-   CPP = $(GPP) -W -Wall $(enumequiv) -D$(MACH)_ECGS $(havebool) -pipe $(SUN5_ECGS_SPECIALS)#		# C++ Compiler /Linker
-   ACC = $(GCC) -Wall $(enumequiv) -D$(MACH)_ECGS -pipe $(SUN5_ECGS_SPECIALS)#				# Ansi C
+PP := $(CPPreal)# preprocessor
 
-   CCLIB = $(ACC) -fPIC
-   CCPLIB = $(CPP) -fPIC#			# Same for c++
+SHARED_LIB_SUFFIX = so# shared lib suffix (can be set to 'a' to link statically)
 
-   ARCPPLIB = $(GPP) -Wall -shared $(SUN5_ECGS_SPECIALS) -o
-   ARLIB = $(GCC) -Wall -shared $(SUN5_ECGS_SPECIALS) -o
+LINK_STATIC_LIB := ld $(lflags) -r -o# link static lib
+LINK_SHARED_LIB := $(GPP) $(lflags) -shared -o# link shared lib
+LINK_EXECUTABLE := $(GPP) $(lflags) -o# link executable (c++)
 
-   XAR = $(AR)# 			# Linker for archives containing templates
+# other used tools
 
-   XINCLUDES = -I/usr/X11/include -I/usr/X11/include/Xm -I$(OPENWINHOME)/include
-
-   SYSLIBS = -lsocket -lm -lnsl -lgen -lposix4
-   XLIBS =  -L$(OPENWINHOME)/$(CROSS_LIB) -L$(XHOME)/$(CROSS_LIB) -lXm -lXt -lX11
-
-endif
-
-#********************* End of user defined Section *******************
-
-#********************* Main dependences *******************
-ifndef ARCPPLIB
-	ARCPPLIB = $(ARLIB)
-endif
+CTAGS := etags
+XMKMF := /usr/bin/X11/xmkmf
+MAKEDEPEND = $(FORCEMASK);makedepend
 
 SEP=--------------------------------------------------------------------------------
+
+# delete variables unused below
+
+lflags:=
+
+# ------------------------- 
+#     Main arb targets:     
+# ------------------------- 
 
 first_target:
 		$(MAKE) checks
@@ -478,8 +406,6 @@ checks: check_ENVIRONMENT check_DEBUG check_ARB_64 check_DEVELOPER check_GCC_VER
 
 # end test section ------------------------------
 
-DIR = $(ARBHOME)
-
 ARBDB_LIB=-lARBDB
 ARBDBPP_LIB=-lARBDBPP
 
@@ -491,9 +417,9 @@ LIBPATH = -L$(ARBHOME)/LIBLINK
 DEST_LIB = lib
 DEST_BIN = bin
 
-AINCLUDES = 	-I. -I$(DIR)/INCLUDE $(XINCLUDES)
-CPPINCLUDES =	-I. -I$(DIR)/INCLUDE $(XINCLUDES)
-MAKEDEPENDFLAGS = -- $(cflags) -DARB_OPENGL -I. -Y$(DIR)/INCLUDE --
+AINCLUDES = 	-I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
+CPPINCLUDES =	-I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
+MAKEDEPENDFLAGS = -- $(cflags) -DARB_OPENGL -I. -Y$(ARBHOME)/INCLUDE --
 
 ifeq ($(VTABLE_INFRONTOF_CLASS),1)
 # Some code in ARB depends on the location of the vtable pointer
@@ -541,9 +467,6 @@ ARCHS = \
 			NAMES/NAMES.a \
 			NAMES_COM/server.a \
 			NTREE/NTREE.a \
-			ORS_CGI/ORS_CGI.a \
-			ORS_COM/server.a \
-			ORS_SERVER/ORS_SERVER.a \
 			PARSIMONY/PARSIMONY.a \
 			PGT/PGT.a \
 			PHYLO/PHYLO.a \
@@ -574,13 +497,10 @@ ARCHS = \
 ARCHS_CLIENT_PROBE = PROBE_COM/client.a
 ARCHS_CLIENT_NAMES = NAMES_COM/client.a
 #ARCHS_CLIENT = $(ARCHS_CLIENT_NAMES)
-ARCHS_MAKEBIN =		AISC_MKPTPS/dummy.a AISC/dummy.a
+ARCHS_MAKEBIN = AISC_MKPTPS/dummy.a AISC/dummy.a
 
-ARCHS_COMMUNICATION =	NAMES_COM/server.a\
-			PROBE_COM/server.a\
-			ORS_COM/server.a
-
-
+ARCHS_COMMUNICATION =	NAMES_COM/server.a \
+			PROBE_COM/server.a
 
 # communication libs need aisc and aisc_mkpts:
 $(ARCHS_COMMUNICATION:.a=.dummy) : $(ARCHS_MAKEBIN:.a=.dummy)
@@ -618,8 +538,8 @@ ARCHS_NTREE = \
 $(NTREE): $(ARCHS_NTREE:.a=.dummy) NAMES_COM/server.dummy shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NTREE) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS)  \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS)  \
 		)
 
 #*********************************** arb_rna3d **************************************
@@ -647,14 +567,14 @@ ARCHS_EDIT = \
 $(EDIT): $(ARCHS_EDIT:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT) -lARBDBPP $(GUI_LIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT) -lARBDBPP $(GUI_LIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT) -lARBDBPP $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT) -lARBDBPP $(GUI_LIBS) ; \
 		)
 
 #***********************************	arb_edit4 **************************************
 EDIT4 = bin/arb_edit4
 
-ARCHS_EDIT4_GENERAL = \
+ARCHS_EDIT4 := \
 		NAMES_COM/client.a \
 		AWTC/AWTC.a \
 		EDIT4/EDIT4.a \
@@ -669,21 +589,16 @@ ARCHS_EDIT4_GENERAL = \
 		SL/FILE_BUFFER/FILE_BUFFER.a \
 		XML/XML.a \
 
-ifeq ($(OPENGL),0)
-ARCHS_EDIT4 = $(ARCHS_EDIT4_GENERAL)
-LIBS_EDIT4 =
-else
-ARCHS_EDIT4 =  \
-		RNA3D/RNA3D.a \
-		$(ARCHS_EDIT4_GENERAL)
-LIBS_EDIT4 = $(GLLIBS)
+ifeq ($(OPENGL),1)
+ARCHS_EDIT4 += RNA3D/RNA3D.a
 endif
+LIBS_EDIT4 := $(GLLIBS)
 
 $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4) \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4) \
 		)
 
 #***********************************	arb_pgt **************************************
@@ -697,8 +612,8 @@ PGT_SYS_LIBS=$(XLIBS) -ltiff $(LIBS)
 $(PGT) : $(ARCHS_PGT:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PGT) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS); \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS); \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS)"; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS); \
 		)
 
 
@@ -712,8 +627,8 @@ ARCHS_WETC = \
 $(WETC): $(ARCHS_WETC:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_WETC) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) ; \
 		)
 
 #***********************************	arb_dist **************************************
@@ -730,8 +645,8 @@ ARCHS_DIST = \
 $(DIST): $(ARCHS_DIST:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DIST) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS) ; \
 		)
 
 #***********************************	arb_pars **************************************
@@ -747,8 +662,8 @@ ARCHS_PARSIMONY = \
 $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PARSIMONY) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS) ; \
 		)
 
 #*********************************** arb_treegen **************************************
@@ -759,8 +674,8 @@ ARCHS_TREEGEN =	\
 $(TREEGEN) :  $(ARCHS_TREEGEN:.a=.dummy)
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_TREEGEN) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_TREEGEN) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_TREEGEN) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TREEGEN)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TREEGEN) ; \
 		)
 
 #***********************************	arb_naligner **************************************
@@ -774,8 +689,8 @@ ARCHS_NALIGNER = \
 $(NALIGNER): $(ARCHS_NALIGNER:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NALIGNER) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NALIGNER) $(LIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NALIGNER) $(LIBS) \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NALIGNER) $(LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NALIGNER) $(LIBS) \
 		)
 
 #***********************************	arb_secedit **************************************
@@ -799,8 +714,8 @@ ARCHS_PHYLO = \
 $(PHYLO): $(ARCHS_PHYLO:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PHYLO) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) ; \
 		)
 
 #***************************************************************************************
@@ -816,8 +731,8 @@ ARCHS_DBSERVER = \
 $(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DBSERVER) $(ARBDB_LIB) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) ; \
 		)
 
 #***********************************	arb_pt_server **************************************
@@ -831,8 +746,8 @@ ARCHS_PROBE = \
 $(PROBE): $(ARCHS_PROBE:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) ; \
 		)
 
 #***********************************	arb_name_server **************************************
@@ -845,41 +760,9 @@ ARCHS_NAMES = \
 $(NAMES): $(ARCHS_NAMES:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) || ( \
 		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) ; \
 		)
-
-#***********************************	ors **************************************
-ORS_SERVER = tb/ors_server
-ARCHS_ORS_SERVER = \
-		ORS_COM/server.a \
-		ORS_SERVER/ORS_SERVER.a \
-		SERVERCNTRL/SERVERCNTRL.a \
-
-$(ORS_SERVER): $(ARCHS_ORS_SERVER:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) ORS_SERVER/ORS_SERVER.a SERVERCNTRL/SERVERCNTRL.a ORS_COM/server.a ORS_COM/client.a $(STATIC) $(ARBDB_LIB) $(DYNAMIC) $(SYSLIBS) $(CCPLIBS) $(CRYPTLIB)
-
-ORS_CGI = tb/ors_cgi
-ARCHS_ORS_CGI = \
-		ORS_COM/server.a \
-		ORS_CGI/ORS_CGI.a \
-		SERVERCNTRL/SERVERCNTRL.a \
-
-$(ORS_CGI): $(ARCHS_ORS_CGI:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) ORS_CGI/ORS_CGI.a SERVERCNTRL/SERVERCNTRL.a ORS_COM/client.a $(STATIC) $(ARBDB_LIB) $(DYNAMIC) $(SYSLIBS) $(CCPLIBS)
-
-
-EDITDB = tb/editDB
-ARCHS_EDITDB = \
-		EDITDB/EDITDB.a \
-		XML/XML.a \
-
-$(EDITDB): $(ARCHS_EDITDB:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(ARCHS_EDITDB) $(ARBDB_LIB) -lAWT $(LIBS)
-
 
 #***********************************	TEST SECTION  **************************************
 AWDEMO = tb/awdemo
@@ -888,7 +771,7 @@ ARCHS_AWDEMO = \
 
 $(AWDEMO): $(ARCHS_AWDEMO:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(ARCHS_AWDEMO) $(LIBS)
+	$(LINK_EXECUTABLE) $@ $(ARCHS_AWDEMO) $(LIBS)
 
 TEST = tb/dbtest
 ARCHS_TEST = \
@@ -897,7 +780,7 @@ ARCHS_TEST = \
 
 $(TEST): $(ARCHS_TEST:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_TEST)  -lAWT $(LIBS)
+	$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TEST)  -lAWT $(LIBS)
 
 ALIV3 = bin/aliv3
 ARCHS_ALIV3 = \
@@ -906,7 +789,7 @@ ARCHS_ALIV3 = \
 
 $(ALIV3): $(ARCHS_ALIV3:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS) $(CCPLIBS)
+	$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS) $(CCPLIBS)
 
 
 ACORR = tb/acorr
@@ -920,7 +803,7 @@ ARCHS_ACORR = \
 
 $(ACORR): $(ARCHS_ACORR:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_ACORR) -lAWT $(ARBDBPP_LIB) $(LIBS)
+	$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ACORR) -lAWT $(ARBDBPP_LIB) $(LIBS)
 
 
 ARBDB_COMPRESS = tb/arbdb_compress
@@ -929,48 +812,28 @@ ARCHS_ARBDB_COMPRESS = \
 
 $(ARBDB_COMPRESS): $(ARCHS_ARBDB_COMPRESS:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
-	$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_ARBDB_COMPRESS) $(ARBDB_LIB)
+	$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ARBDB_COMPRESS) $(ARBDB_LIB)
 
 #***********************************	OTHER EXECUTABLES   ********************************************
 
 
 #***********************************	SHARED LIBRARIES SECTION  **************************************
 
-# the following lib is not provided with the source
-# you need to install Motif (NOT lesstif) and correct
-# MOTIF_LIBPATH
-
-ifndef MOTIF_LIBNAME
-MOTIF_LIBNAME=libXm.so.2
-endif
-ifndef MOTIF_LIBPATH
-MOTIF_LIBPATH=Motif/$(MOTIF_LIBNAME)
-endif
-
 shared_libs: dball aw awt
 		@echo -------------------- Updating shared libraries
 		$(MAKE) libs
 
-ifdef DEBIAN
 libs:	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
 	lib/libARBDBPP.$(SHARED_LIB_SUFFIX) \
 	lib/libARBDO.$(SHARED_LIB_SUFFIX) \
 	lib/libAW.$(SHARED_LIB_SUFFIX) \
 	lib/libAWT.$(SHARED_LIB_SUFFIX)
-else
-libs:	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
-	lib/libARBDBPP.$(SHARED_LIB_SUFFIX) \
-	lib/libARBDO.$(SHARED_LIB_SUFFIX) \
-	lib/libAW.$(SHARED_LIB_SUFFIX) \
-	lib/libAWT.$(SHARED_LIB_SUFFIX) \
-#	lib/$(MOTIF_LIBNAME)
-endif
 
 lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
 	cp $< $@
 
-lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
-	cp $< $@
+# lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
+# 	cp $< $@
 
 #***************************************************************************************
 #			Rekursiv calls to submakefiles
@@ -1010,36 +873,31 @@ lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
 	(( \
 	    echo "$(SEP) Make everything in $(@D)"; \
 	    $(MAKE) -C $(@D) -r \
-		"AUTODEPENDS=1" \
-		"ARBHOME = $(ARBHOME)" \
-		"cflags = $(cflags) -DIN_ARB_$(subst /,_,$(@D))" \
-		"lflags = $(lflags)" \
-		"CPPINCLUDES = $(CPPINCLUDES)" \
-		"AINCLUDES = $(AINCLUDES)" \
-		"F77 = $(F77)" \
-		"f77_flags = $(f77_flags)" \
-		"F77LIB = $(F77LIB)" \
-		"CPP = $(CPP)" \
 		"ACC = $(ACC)" \
-		"CCLIB = $(CCLIB)" \
+		"ACCLIB = $(ACCLIB)" \
+		"AINCLUDES = $(AINCLUDES)" \
+		"ARBHOME = $(ARBHOME)" \
+		"ARLIB = $(ARLIB)" \
+		"AUTODEPENDS=1" \
 		"CCPLIB = $(CCPLIB)" \
 		"CCPLIBS = $(CCPLIBS)" \
-		"AR = $(AR)" \
-		"XAR = $(XAR)" \
-		"ARLIB = $(ARLIB)" \
-		"ARCPPLIB = $(ARCPPLIB)" \
+		"CPP = $(CPP)" \
+		"CPPINCLUDES = $(CPPINCLUDES)" \
+		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
 		"LIBPATH = $(LIBPATH)" \
+		"LINK_EXECUTABLE = $(LINK_EXECUTABLE)" \
+		"LINK_STATIC_LIB = $(LINK_STATIC_LIB)" \
+		"LINK_SHARED_LIB = $(LINK_SHARED_LIB)" \
+		"MAIN = $(@F:.dummy=.a)" \
+		"OPENGL  = $(OPENGL)" \
+		"POST_COMPILE = $(POST_COMPILE)" \
+		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
+		"STATIC = $(STATIC)"\
 		"SYSLIBS = $(SYSLIBS)" \
 		"XHOME = $(XHOME)" \
 		"XLIBS = $(XLIBS)" \
-		"STATIC = $(STATIC)"\
-		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
-		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
-		"OPENGL  = $(OPENGL)" \
-		"POST_COMPILE = $(POST_COMPILE)" \
-		"MAIN = $(@F:.dummy=.a)" \
+		"cflags = $(cflags) -DIN_ARB_$(subst /,_,$(@D))" \
 	) >$(@D).$$ID.log 2>&1 && (cat $(@D).$$ID.log;rm $(@D).$$ID.log)) || (cat $(@D).$$ID.log;rm $(@D).$$ID.log;false))
-
 
 # Additional dependencies for subtargets:
 
@@ -1052,10 +910,6 @@ PROBE_COM/client.dummy : comtools
 NAMES_COM/NAMES_COM.dummy : comtools
 NAMES_COM/server.dummy : comtools
 NAMES_COM/client.dummy : comtools
-
-ORS_COM/ORS_COM.dummy : comtools
-ORS_COM/server.dummy : comtools
-ORS_COM/client.dummy : comtools
 
 com_probe: PROBE_COM/PROBE_COM.dummy 
 com_names: NAMES_COM/NAMES_COM.dummy 
@@ -1182,8 +1036,6 @@ pc:	PROBE_WEB/PROBE_WEB.dummy
 pst: 	PROBE_SET/PROBE_SET.dummy
 pd:	PROBE_DESIGN/PROBE_DESIGN.dummy
 na:	$(NAMES)
-os:	$(ORS_SERVER)
-oc:	$(ORS_CGI)
 
 ac:	$(ARBDB_COMPRESS) # unused? does not compile
 
@@ -1218,8 +1070,6 @@ proto: proto_tools TOOLS/TOOLS.dummy
 				ARBDB/ARBDB.proto \
 				CONVERTALN/CONVERTALN.proto \
 				NTREE/NTREE.proto \
-				ORS_CGI/ORS_CGI.proto \
-				ORS_SERVER/ORS_SERVER.proto \
 				PROBE/PROBE.proto \
 				SERVERCNTRL/SERVERCNTRL.proto \
 				TRS/TRS.proto \
@@ -1244,16 +1094,16 @@ tags_SUN5: tags1
 
 tags1:
 # first search class definitions
-		$(CTAGS) -f $(TAGFILE_TMP)         --language=none "--regex=/^[ \t]*class[ \t]+\([^ \t]+\)/" `find . -name '*.[ch]xx' -type f`
-		$(CTAGS) -f $(TAGFILE_TMP) --append --language=none "--regex=/\([^ \t]+\)::/" `find . -name '*.[ch]xx' -type f`
+	$(CTAGS) -f $(TAGFILE_TMP)          --language=none "--regex=/^[ \t]*class[ \t]+\([^ \t]+\)/" `find . -name '*.[ch]xx' -type f`
+	$(CTAGS) -f $(TAGFILE_TMP) --append --language=none "--regex=/\([^ \t]+\)::/" `find . -name '*.[ch]xx' -type f`
 # then append normal tags (headers first)
-		$(CTAGS) -f $(TAGFILE_TMP) --append --members ARBDB/*.h `find . -name '*.[h]xx' -type f`
-		$(CTAGS) -f $(TAGFILE_TMP) --append ARBDB/*.c `find . -name '*.[c]xx' -type f`
+	$(CTAGS) -f $(TAGFILE_TMP) --append --members ARBDB/*.h `find . -name '*.[h]xx' -type f`
+	$(CTAGS) -f $(TAGFILE_TMP) --append ARBDB/*.c `find . -name '*.[c]xx' -type f`
 
 # if the above tag creation does not work -> try tags2:
 tags2:
-		ctags -f $(TAGFILE_TMP)    -e --c-types=cdt --sort=no `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5`
-		ctags -f $(TAGFILE_TMP) -a -e --c-types=f-tvx --sort=no `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5`
+	ctags -f $(TAGFILE_TMP)    -e --c-types=cdt --sort=no `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5`
+	ctags -f $(TAGFILE_TMP) -a -e --c-types=f-tvx --sort=no `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5`
 
 #********************************************************************************
 
@@ -1267,9 +1117,10 @@ gde:		GDE/GDE.dummy
 GDE:		gde
 agde: 		ARB_GDE/ARB_GDE.dummy
 tools:		TOOLS/TOOLS.dummy
-nf77:		NIELS_F77/NIELS_F77.dummy
 trs:		TRS/TRS.dummy
-convert:	CONVERTALN/CONVERTALN.dummy
+convert:	SL/FILE_BUFFER/FILE_BUFFER.dummy
+	$(MAKE) CONVERTALN/CONVERTALN.dummy
+
 readseq:	READSEQ/READSEQ.dummy
 
 #***************************************************************************************
@@ -1300,14 +1151,8 @@ bin/%:	DEPOT2/%
 	cp $< $@
 
 
-ifdef OPENWINHOME
-openwinprogs:	gde	$(DEST_BIN)/arb_gde
-else
-openwinprogs:
-endif
-
 preplib:
-		(cd lib;$(MAKE) all)
+	(cd lib;$(MAKE) all)
 
 # ---------------------------------------- perl
 
@@ -1423,16 +1268,17 @@ tryxtras:
 		echo "One of the optional tools failed to build (see error somewhere above)" ;\
 		echo "ARB will work nevertheless!" ) )
 
-arb: arbbasic arbshared arbapplications help
+arb: arbbasic
+	$(MAKE) arbshared arbapplications help
 
 all: checks
 	$(MAKE) links
 	$(MAKE) com
 	$(MAKE) arb
 	$(MAKE) libs
-	$(MAKE) convert tools gde readseq openwinprogs
+	$(MAKE) convert tools gde readseq
 	$(MAKE) binlink
-	$(MAKE) $(SITE_DEPENDEND_TARGETS)
+	$(MAKE) perl
 	-$(MAKE) tryxtras
 	@echo $(SEP)
 	@echo "made 'all' with success."
