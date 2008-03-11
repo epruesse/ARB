@@ -31,7 +31,7 @@ CPP_OBJECTS = \
 
 
 $(MAIN): $(CPP_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES) $(POST_COMPILE)
@@ -184,6 +184,7 @@ ED4_main.o: ed4_defs.hxx
 ED4_main.o: ed4_edit_string.hxx
 ED4_main.o: ed4_extern.hxx
 ED4_main.o: ed4_nds.hxx
+ED4_main.o: ed4_protein_2nd_structure.hxx
 ED4_main.o: ed4_ProteinViewer.hxx
 ED4_main.o: ed4_search.hxx
 ED4_main.o: ed4_visualizeSAI.hxx
@@ -217,6 +218,7 @@ ED4_manager.o: ed4_awars.hxx
 ED4_manager.o: ed4_class.hxx
 ED4_manager.o: ed4_defs.hxx
 ED4_manager.o: ed4_edit_string.hxx
+ED4_manager.o: ed4_protein_2nd_structure.hxx
 ED4_manager.o: ed4_ProteinViewer.hxx
 ED4_manager.o: ed4_search.hxx
 ED4_manager.o: ed4_tools.hxx
@@ -326,8 +328,10 @@ ED4_protein_2nd_structure.o: ed4_defs.hxx
 ED4_protein_2nd_structure.o: ed4_protein_2nd_structure.hxx
 ED4_protein_2nd_structure.o: ed4_search.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arbdb.h
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -383,6 +387,7 @@ ED4_root.o: ed4_class.hxx
 ED4_root.o: ed4_defs.hxx
 ED4_root.o: ed4_extern.hxx
 ED4_root.o: ed4_nds.hxx
+ED4_root.o: ed4_protein_2nd_structure.hxx
 ED4_root.o: ed4_ProteinViewer.hxx
 ED4_root.o: ed4_RNA3D.hxx
 ED4_root.o: ed4_search.hxx
