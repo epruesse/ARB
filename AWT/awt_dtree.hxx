@@ -24,7 +24,7 @@ void awt_create_dtree_awars(AW_root *aw_root,AW_default def);
 
 
 typedef enum {
-    AP_TREE_NORMAL, // normal tree display
+    AP_TREE_NORMAL, // normal tree display (dendogram)
     AP_TREE_RADIAL, // radial tree display
     AP_TREE_IRS, // like AP_TREE_NORMAL, with folding line
     AP_LIST_NDS,
