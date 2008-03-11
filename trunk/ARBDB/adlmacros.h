@@ -4,17 +4,10 @@
 
 #   define GB_MEMALIGN(a,b)     memalign(a,b)
 
-#if defined(SUN5) || defined(ECGS)
 # define GB_MEMCPY(d,s,n)       memcpy(d,s,n)
 # define GB_FREE(d)             free(d)
 # define GB_STRDUP(s)           strdup(s)
 # define GB_MEMSET(d,v,n)       memset(d,v,n)
-#else
-# define GB_MEMCPY(d,s,n)       memcpy((char *)(d),(char*)(s),(size_t)(n))
-# define GB_FREE(d)             free((char*)(d))
-# define GB_STRDUP(s)           strdup((char *)(s))
-# define GB_MEMSET(d,v,n)       memset((char*)(d),v,(size_t)(n))
-#endif
 
 #define GB_DELETE(a)        if (a) GB_FREE(a); a = 0
 
