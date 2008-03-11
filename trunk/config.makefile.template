@@ -4,46 +4,35 @@
 # --------------------------------------------------------------------------------
 
 # Enter your name (upper case, no spaces) here, to enable '#ifdef DEVEL_YOURNAME #endif' sections
+# (Release version uses 'RELEASE')
 DEVELOPER=ANY
 
 DEBUG=0# build with debug information
-DEBUG_GRAPHICS = 0# force instant graphic update
-# SEER = 1
+DEBUG_GRAPHICS=0# force instant graphic update
+
+#SEER=1
 OPENGL=1
-ARB_64=0# compile on 64 bit machine (has no effect yet)
+
+ARB_64=0# compile 64bit ARB version (still very buggy!)
 #BUILDHOST_64=1# whether build host is 64bit (value defaults to ARB_64). Uncomment for Cross-Compile
 
 # --------------------------------------------------------------------------------
 # target machine section
 # [Note: Uncomment one section, depending on your machine type and compiler options]
 
-# ********* LINUX / gcc g++ / static ********
+# ------------
+# Section: Linux
+
 MACH  = LINUX# Linux g++  and gcc
 LINUX = 1
-ECGS  = 1# use GCC? (always 1 for LINUX)
 
-# ******** Debian GNU/Linux and (K)Ubuntu system ********
-# DEBIAN = 1
+# DEBIAN = 1 # uncomment for DEBIAN systems
+# REDHAT = 1 # uncomment for REDHAT systems
 
-# uncomment next line for REDHAT systems
-# REDHAT = 1
-
-# ********* Mac OSX ********
+# ------------
+# Section: Max OSX
 
 # MACH   = DARWIN#
 # DARWIN = 1
 
-# ********* SUN4 / acc CC / dynamic ********
-
-# MACH = SUN4#
-# SUN4 = 1#                              # Exportable Version
-
-# MACH = SUN5#
-# SUN5 = 1
-# ECGS  = 1# use GCC? 
-# SUN_WS_50 = 1 # compile with Workshop 5.0
-
-# *******  DIGITAL OSF  ***********
-# DIGITAL = 1
-# MACH = DIGITAL#
-
+# ------------
