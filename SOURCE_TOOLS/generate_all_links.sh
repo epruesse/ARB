@@ -95,7 +95,6 @@ symlink_maybe_no_target ../WINDOW/libAW.so.2.0 LIBLINK/libAW.so.2.0 &&
 
 # Motif stuff
 (test -z $MOTIF_LIBPATH || symlink $MOTIF_LIBPATH LIBLINK/libXm.so.3) &&
-# symlink $LIBDIR/libXm.1.dylib LIBLINK/libXm.sl
 
 # Links in bin directory
 ( cd bin ; make all; cd .. ) &&
