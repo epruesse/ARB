@@ -4,7 +4,7 @@
 OBJECTS = AC_main.o AC_tree.o AC_sequence.o DEBUG_tools.o AC_toys_n_tools.o
 
 $(MAIN): $(OBJECTS)
-	$(AR) $(MAIN) $(OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 AC_sequence.o: AC_sequence.cxx
 	CC -O $(cflags) -c $< $(CPPINCLUDES)

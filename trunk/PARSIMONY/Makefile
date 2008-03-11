@@ -3,7 +3,7 @@
 CPP_OBJECTS =  PARS_main.o PARS_dtree.o PARS_debug.o PARS_klprops.o AP_buffer.o AP_main.o AP_tree_nlen.o AP_tree_edge.o
 
 $(MAIN): $(CPP_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)

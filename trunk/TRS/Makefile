@@ -6,7 +6,7 @@ OBJECTS = trs_hash.o tree_lib.o trs_server.o
 BINARY=$(ARBHOME)/bin/trs_server
 
 $(BINARY): $(OBJECTS)
-	$(CPP) -o $@ $(STATIC) $(OBJECTS)
+	$(LINK_EXECUTABLE) $@ $(STATIC) $(OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)

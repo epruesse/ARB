@@ -9,7 +9,7 @@ CPP_OBJECTS =  MP_main.o MP_Window.o MP_noclass.o MP_sonde.o MP_sondentopf.o MP_
 
 
 $(MAIN): $(CPP_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)

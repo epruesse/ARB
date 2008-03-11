@@ -5,7 +5,7 @@ CPP_OBJECTS = edit.o edit_naligner.o edit_tools.o ed_conf.o
 # edit_mgr_client.o
 
 $(MAIN): $(CPP_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
 	$(CPP) $(cflags) -c $(@:.o=.cxx) $(CPPINCLUDES)
 

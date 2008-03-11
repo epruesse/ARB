@@ -3,7 +3,7 @@
 CPP_OBJECTS = TB_main.o TB_extern.o
 
 $(MAIN): $(CPP_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .cxx.o: 
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
 NT_cb.hxx: NT_cb.cxx NT_extern.cxx

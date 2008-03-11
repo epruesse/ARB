@@ -11,7 +11,7 @@ CPP_OBJECTS = 	RNA3D_Main.o \
 				RNA3D_Renderer.o 
 
 $(MAIN): $(CPP_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
 	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES)
 

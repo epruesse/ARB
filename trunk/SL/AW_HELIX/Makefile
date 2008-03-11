@@ -7,7 +7,7 @@ CPP_OBJECTS = AW_helix.o
 OBJECTS=$(C_OBJECTS) $(CPP_OBJECTS)
 
 $(MAIN): $(OBJECTS)
-	$(AR) $(MAIN) $(OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)

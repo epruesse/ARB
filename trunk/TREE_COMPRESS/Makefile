@@ -4,7 +4,7 @@
 OBJECTS = TC_main.o BI_helix.o
 
 $(MAIN): $(OBJECTS)
-	$(AR) $(MAIN) $(OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 .cxx.o: 
 	$(CPP) $(cflags) -c -o $@ $< $(CPPINCLUDES)
 depend:

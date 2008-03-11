@@ -3,7 +3,7 @@
 OBJECTS = db_server.o
 
 $(MAIN): $(OBJECTS)
-	$(AR) $(MAIN) $(OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 $(OBJECTS): $(LOCALS) $(ARBDBH) $(SERVERCNTRLH)
 
 .cxx.o:

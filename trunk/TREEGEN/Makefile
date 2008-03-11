@@ -7,7 +7,7 @@ C_OBJECTS = base.o defines.o frand.o readcfg.o rns.o sim.o simcfg.o spreadin.o
 OBJECTS = $(CPP_OBJECTS) $(C_OBJECTS)
 
 $(MAIN): $(CPP_OBJECTS) $(C_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS) $(C_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS) $(C_OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)

@@ -5,7 +5,7 @@
 CPP_OBJECTS = DI_mldist.o DI_protdist.o DI_compress_matrix.o DI_view_matrix.o DI_save_matr.o DI_main.o DI_matr.o distanalyse.o
 
 $(MAIN): $(CPP_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
 

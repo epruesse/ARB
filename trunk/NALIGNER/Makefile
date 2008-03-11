@@ -19,7 +19,7 @@ CPP_OBJECTS = \
 	ali_solution.o \
 
 $(MAIN): $(CPP_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
 	$(CPP) $(CFLAGS) -c -o $@ $< $(CPPINCLUDES)

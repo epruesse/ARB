@@ -11,7 +11,7 @@ CPP_OBJECTS = pgd_main.o
 all : $(MAIN)
 
 $(MAIN): $(CPP_OBJECTS)
-	$(XAR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES)

@@ -3,7 +3,7 @@
 OBJS = CT_part.o CT_hash.o CT_ntree.o CT_rbtree.o CT_dtree.o CT_ctree.o CT_mem.o
 
 $(MAIN): $(OBJS)
-	$(AR) $(MAIN) $(OBJS)
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)

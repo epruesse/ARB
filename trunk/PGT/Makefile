@@ -19,7 +19,7 @@ image_dialog.o plot.o analyze_window.o entry_sel_dialog.o \
 config_dialog.o help_dialog.o msgbox.o
 
 $(MAIN): $(CPP_OBJECTS)
-	$(AR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES)

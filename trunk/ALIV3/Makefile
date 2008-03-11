@@ -9,7 +9,7 @@ C_OBJECTS=
 OBJECTS = $(CPP_OBJECTS) $(C_OBJECTS)
 
 $(MAIN): $(OBJECTS)
-	$(AR) $(MAIN) $(OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)

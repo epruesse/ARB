@@ -11,7 +11,7 @@ CPP_OBJECTS = pg_db.o pg_main.o pg_search.o
 all : $(MAIN)
 
 $(MAIN): $(CPP_OBJECTS)
-	$(XAR) $(MAIN) $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES)
