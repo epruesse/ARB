@@ -7,7 +7,7 @@ include AD_MOBJECTS.h
 OBJECTS = $(GB_O) $(GB_T) $(GB_PP) $(GB_X)
 
 $(MAIN): $(OBJECTS)
-	$(AR) $(MAIN) $(OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 .c.o:
 	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 .cxx.o:
@@ -254,6 +254,7 @@ adstring.o: ad_t_lpro.h
 adstring.o: ad_t_prot.h
 adstring.o: adlmacros.h
 adstring.o: adlocal.h
+adstring.o: adregexp.h
 adstring.o: adtune.h
 adstring.o: arbdb.h
 adstring.o: arbdbt.h
