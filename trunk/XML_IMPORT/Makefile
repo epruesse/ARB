@@ -10,10 +10,16 @@ SAX_LIBRARY_NAME    = -lxerces-c
 SUB_CFLAGS=$(cflags) $(SAX_INCLUDES) -DXML_USE_PTHREADS
 SUB_LFLAGS=$(lflags) $(SAX_LIB_SEARCH_PATH) $(SAX_LIBRARY_NAME)
 
+# currently this is not compiled (ask yadhu why?)
+
+kaputt:
+	@echo "lflags no longer supported. directly change linker commands above"
+	false
+
 # --------------------------------------------------------------------------------
 
 
-$(MAIN): $(ARCHS)
+$(MAIN): $(ARCHS) kaputt
 
 depends: $(ARCHS:.dummy=.depend)
 
@@ -34,17 +40,25 @@ depends: $(ARCHS:.dummy=.depend)
 
 %.dummy:
 	@$(MAKE) -C $(@D) -r \
-		"MAKE = $(MAKE)" \
-		"ARBHOME = $(ARBHOME)" "cflags = $(SUB_CFLAGS) -DIN_ARB_$(@D:/=)" "lflags = $(SUB_LFLAGS)" \
-		"CPPINCLUDES = $(CPPINCLUDES)" "AINCLUDES = $(AINCLUDES)" \
-		"CPP = $(CPP)" "ACC = $(ACC)" \
-		"CCLIB = $(CCLIB)" "CCPLIB = $(CCPLIB)" \
-		"AR = $(AR)" "ARLIB = $(ARLIB)" \
-		"LIBPATH = $(LIBPATH)" "SYSLIBS = $(SYSLIBS)" \
-		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
-		"XHOME = $(XHOME)" \
-		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
+		"ACC = $(ACC)" \
+		"AINCLUDES = $(AINCLUDES)" \
 		"ARB  = yes" \
-		"MAIN = $(@F:.dummy=.a)"
+		"ARBHOME = $(ARBHOME)" \
+		"CCPLIB = $(CCPLIB)" \
+		"CPP = $(CPP)" \
+		"CPPINCLUDES = $(CPPINCLUDES)" \
+		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
+		"LIBPATH = $(LIBPATH)" \
+		"LINK_EXECUTABLE = $(LINK_EXECUTABLE)" \
+		"LINK_STATIC_LIB = $(LINK_STATIC_LIB)" \
+		"MAIN = $(@F:.dummy=.a)" \
+		"MAKE = $(MAKE)" \
+		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
+		"SYSLIBS = $(SYSLIBS)" \
+		"XHOME = $(XHOME)" \
+		"cflags = $(SUB_CFLAGS) -DIN_ARB_$(@D:/=)" \
+
+#		"lflags = $(SUB_LFLAGS)" 
+
 
 # DO NOT DELETE
