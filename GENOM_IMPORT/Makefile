@@ -15,24 +15,10 @@ CPP_OBJECTS =   \
 		GASourceFileSwitcher.o \
 		GAGenomImport.o \
 
-
-CREATE_TEST_EXECUTABLE=0
-
 # --------------------------------------------------------------------------------
 
-ifeq ($(CREATE_TEST_EXECUTABLE),0)
-
 $(MAIN): $(CPP_OBJECTS)
-	$(XAR) $(MAIN) $(CPP_OBJECTS)
-
-else
-
-$(MAIN): $(CPP_OBJECTS) Makefile
-	$(XAR) $(MAIN) $(CPP_OBJECTS)
-	$(CPP) $(lflags) $(MAIN) $(EXE_CPP_OBJECTS)
-
-endif
-
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cpp.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
