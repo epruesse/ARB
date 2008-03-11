@@ -30,13 +30,13 @@ OBJECTS=$(STD_OBJECTS)
 endif
 
 $(MAIN): $(OBJECTS)
-	$(ARCPPLIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
+	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
 	touch $@
 .cxx.o:
 	$(CCPLIB) $(cflags) -c $< $(CPPINCLUDES)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(CPPINCLUDES)
+	$(ACCLIB) $(cflags) -c $< $(CPPINCLUDES)
 
 clean:
 	rm -f $(OBJECTS) *.a *.so
