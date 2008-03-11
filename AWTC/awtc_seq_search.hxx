@@ -6,13 +6,6 @@
 #endif
 #define awtc_assert(bed) arb_assert(bed)
 
-/* hide GNU extensions for non-gnu compilers: */
-#ifndef GNU
-# ifndef __attribute__
-#  define __attribute__(x)
-# endif
-#endif
-
 #define SEQ_CHARS   26
 #define MAX_TRIPLES (SEQ_CHARS*SEQ_CHARS*SEQ_CHARS+1) // one faked triple for all non-char triples
 #define GAP_CHARS   ".-~?"      // Characters treated as gaps
