@@ -4,18 +4,10 @@
 #include <arbdb.h>
 #include <arbdbt.h>
 
-void show_error(GBDATA *gb_main) {
-    GBT_message(gb_main, GB_get_error());
-    GB_print_error();
-}
-
-// ---------------------------------------
-//      int main(int argc,char **argv)
-// ---------------------------------------
 int main(int argc,char **argv)
 {
     if (argc == 1)  {
-        fprintf(stderr, "Usage: arb_message \"the message\"");
+        fprintf(stderr, "Usage: arb_message \"the message\"\n");
         return -1;
     }
 
