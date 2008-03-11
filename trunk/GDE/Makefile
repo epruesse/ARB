@@ -10,10 +10,10 @@ ARCHS_ALL = \
 # --------------------------------------------------------------------------------
 # All packages using xview go here:
 
-ARCHS_XVIEW = \
-	CORE/CORE.dummy \
+#ARCHS_XVIEW = \
 
 # deprecated:
+#	CORE/CORE.dummy \
 #	HGL_SRC/HGL_SRC.dummy
 #	LOOPTOOL/LOOPTOOL.dummy
 
@@ -31,14 +31,10 @@ ARCHS_NON_DEBIAN = \
 
 # --------------------------------------------------------------------------------
 
-ifdef OPENWINHOME
-ARCHS = $(ARCHS_ALL) $(ARCHS_NON_DEBIAN) $(ARCHS_XVIEW)
-else
 ifdef DEBIAN
-ARCHS = $(ARCHS_ALL) $(ARCHS_XVIEW)
+ARCHS = $(ARCHS_ALL)
 else
 ARCHS = $(ARCHS_ALL) $(ARCHS_NON_DEBIAN)
-endif
 endif
 
 # --------------------------------------------------------------------------------
@@ -47,11 +43,9 @@ endif
 RAISE_WARNINGS=0
 
 ifeq ('$(RAISE_WARNINGS)','0')
-SUB_CPP=$(subst -W -Wall,-w,$(CPP))
-SUB_ACC=$(subst -W -Wall,-w,$(ACC))
+sub_cflags:=$(subst -W -Wall,-w,$(cflags))
 else
-SUB_CPP=$(CPP)
-SUB_ACC=$(ACC)
+sub_cflags:=$(cflags)
 endif
 
 # --------------------------------------------------------------------------------
@@ -66,7 +60,7 @@ ifeq ('$(RAISE_WARNINGS)','0')
 endif
 
 proto:
-	$(MAKE) -C CORE proto
+	@echo "Nothing to be done for proto"
 
 depends: $(ARCHS:.dummy=.depend)
 
@@ -90,26 +84,23 @@ clean: $(ARCHS:.dummy=.clean)
 %.dummy:
 	@(( \
 	    $(MAKE) -C $(@D) -r \
-		"ACC = $(SUB_ACC)" \
+		"ACC = $(ACC)" \
 		"AINCLUDES = $(AINCLUDES)" \
-		"AR = $(AR)" \
 		"ARB  = yes" \
 		"ARBHOME = $(ARBHOME)" \
-		"ARLIB = $(ARLIB)" \
-		"CCLIB = $(CCLIB)" \
 		"CCPLIB = $(CCPLIB)" \
-		"CPP = $(SUB_CPP)" \
+		"CPP = $(CPP)" \
 		"CPPINCLUDES = $(CPPINCLUDES)" \
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
 		"LIBPATH = $(LIBPATH)" \
+		"LINK_STATIC_LIB = $(LINK_STATIC_LIB)" \
 		"MAIN = $(@F:.dummy=.a)" \
 		"MAKE = $(MAKE)" \
 		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
 		"SYSLIBS = $(SYSLIBS)" \
 		"XHOME = $(XHOME)" \
 		"XLIBS = $(XLIBS)" \
-		"cflags = $(cflags) -DIN_ARB_$(@D:/=)" \
-		"lflags = $(lflags)" \
+		"cflags = $(sub_cflags) -DIN_ARB_$(@D:/=)" \
 		>$(@D).log 2>&1 && (cat $(@D).log;rm $(@D).log)) || (cat $(@D).log;rm $(@D).log;false))
 
 %.clean:
