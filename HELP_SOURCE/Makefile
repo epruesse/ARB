@@ -121,7 +121,7 @@ $(XML_LOCATION)/%.xml : $(HLP_SOURCE)/%.hlp
 				  echo $(HLP_GENERATED)/$(<F):1: other occurance \
 				  && false )
 		arb_help2xml $< $@
-		$(VALIDATE) $@
+		@$(VALIDATE) $@
 
 $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp
 		@test \! -f $(HLP_SOURCE)/$(<F) || \
@@ -129,7 +129,7 @@ $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp
 				  echo $(HLP_SOURCE)/$(<F):1: other occurance \
 				  && false )
 		arb_help2xml $< $@
-		$(VALIDATE) $@
+		@$(VALIDATE) $@
 
 else
 
@@ -190,7 +190,7 @@ STYLE_HELP=to_help.xsl
 $(HELP) : $(STYLE_HELP) $(DTD)
 
 $(HLP_DEST)/%.hlp : $(XML_LOCATION)/%.xml
-		@-test -f $@ && rm $@
+		@((test -f $@ && rm $@) || true)
 		$(XSLT) $(STYLE_HELP) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' || rm $@
 		@test -f $@
 
@@ -205,7 +205,7 @@ $(HTML_LOCATION)/Logo_25wht.gif : Logo_25wht.gif
 		@test -f $@
 
 $(HTML_LOCATION)/%.html : $(XML_LOCATION)/%.xml
-		@-test -f $@ && rm $@
+		@((test -f $@ && rm $@) || true)
 		$(XSLT) $(STYLE_HTML) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' || (rm $@ && test -f $@)
 		@test -f $@
 
