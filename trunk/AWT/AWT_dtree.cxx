@@ -1726,14 +1726,14 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
             exports.dont_fit_x      = 1;
             exports.dont_fit_y      = 1;
             exports.dont_fit_larger = 0;
-            exports.left_offset     = 0;
+            exports.left_offset     = 2*NT_SELECTED_WIDTH;
             exports.right_offset    = 300;
             exports.top_offset      = 30;
             exports.bottom_offset   = 30;
             exports.dont_scroll     = 0;
             break;
 
-        case AP_TREE_IRS:
+        case AP_TREE_IRS: // folded dendogram
             exports.dont_fit_x      = 1;
             exports.dont_fit_y      = 1;
             exports.dont_fit_larger = 0;
@@ -1744,7 +1744,7 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
             exports.dont_scroll     = 1;
             break;
 
-        case AP_TREE_NORMAL:
+        case AP_TREE_NORMAL: // normal dendogram
             exports.dont_fit_x      = 0;
             exports.dont_fit_y      = 1;
             exports.dont_fit_larger = 0;
