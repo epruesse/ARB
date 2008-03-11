@@ -54,39 +54,27 @@ makedestdir:
 
 $(DEST)/arb_probe_group:
 	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_GROUP) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS) || ( \
-		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS) ; \
 		)
-#		@echo Link $@
-#		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS)
 
 $(DEST)/arb_probe_group_design:
 	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_GROUP_DESIGN) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS) || ( \
-		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP_DESIGN) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP_DESIGN) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_GROUP_DESIGN) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_GROUP_DESIGN) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS) ; \
 		)
-#		@echo Link $@
-#		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_GROUP_DESIGN) $(LIBS) $(SYSLIBS) $(CLIENT_SERVER_LIBS)
 
 $(DEST)/arb_probe_server_worker:
 	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_SERVER_WORKER) $(LIBS) $(SYSLIBS) || ( \
-		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_SERVER_WORKER) $(LIBS) $(SYSLIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_SERVER_WORKER) $(LIBS) $(SYSLIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_SERVER_WORKER) $(LIBS) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_SERVER_WORKER) $(LIBS) $(SYSLIBS) ; \
 		)
-#		@echo Link $@
-#		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PROBE_SERVER_WORKER) $(LIBS) $(SYSLIBS)
 
 $(DEST)/pgd_tree_merge:
 	@$(ARBHOME)/SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PGD_TREE_MERGE) $(LIBS) $(SYSLIBS) || ( \
-		echo Link $@ ; \
-		echo $(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PGD_TREE_MERGE) $(LIBS) $(SYSLIBS) ; \
-		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PGD_TREE_MERGE) $(LIBS) $(SYSLIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGD_TREE_MERGE) $(LIBS) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGD_TREE_MERGE) $(LIBS) $(SYSLIBS) ; \
 		)
-#		@echo Link $@
-#		$(CPP) $(lflags) -o $@ $(LIBPATH) $(ARCHS_PGD_TREE_MERGE) $(LIBS) $(SYSLIBS)
 
 depends: $(SUBS:.dummy=.depend)
 clean: $(SUBS:.dummy=.clean)
@@ -108,18 +96,22 @@ clean: $(SUBS:.dummy=.clean)
 
 %.dummy:
 	@(($(MAKE) -C $(@D) -r \
-		"MAKE = $(MAKE)" \
-		"ARBHOME = $(ARBHOME)" "cflags = $(cflags) -DIN_ARB_$(@D:/=)" "lflags = $(lflags)" \
-		"CPPINCLUDES = $(CPPINCLUDES)" "AINCLUDES = $(AINCLUDES)" \
-		"CPP = $(CPP)" "ACC = $(ACC)" \
-		"CCLIB = $(CCLIB)" "CCPLIB = $(CCPLIB)" \
-		"AR = $(AR)" "ARLIB = $(ARLIB)" \
-		"LIBPATH = $(LIBPATH)" "SYSLIBS = $(SYSLIBS)" \
-		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
-		"XHOME = $(XHOME)" \
-		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
+		"ACC = $(ACC)" \
+		"AINCLUDES = $(AINCLUDES)" \
 		"ARB  = yes" \
+		"ARBHOME = $(ARBHOME)" \
+		"CCPLIB = $(CCPLIB)" \
+		"CPP = $(CPP)" \
+		"CPPINCLUDES = $(CPPINCLUDES)" \
+		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
+		"LIBPATH = $(LIBPATH)" \
+		"LINK_STATIC_LIB = $(LINK_STATIC_LIB)" \
 		"MAIN = $(@F:.dummy=.a)" \
+		"MAKE = $(MAKE)" \
+		"SHARED_LIB_SUFFIX = $(SHARED_LIB_SUFFIX)" \
+		"SYSLIBS = $(SYSLIBS)" \
+		"XHOME = $(XHOME)" \
+		"cflags = $(cflags) -DIN_ARB_$(@D:/=)" \
 		>$(@D).log 2>&1 && (cat $(@D).log;rm $(@D).log)) || (cat $(@D).log;rm $(@D).log;false))
 
 %.clean:
