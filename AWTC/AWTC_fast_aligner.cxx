@@ -1522,8 +1522,6 @@ static void appendName(char **toString, GBDATA *gb_species) {
     char *name      = GBT_read_name(gb_species);
     if (!name) name = strdup("-unnamed-");
 
-    fprintf(stderr, "appendName(%s, %s)\n", *toString, name);
-
     char *newString = 0;
     if (*toString) {
         newString = GBS_global_string_copy("%s, %s", *toString, name);
