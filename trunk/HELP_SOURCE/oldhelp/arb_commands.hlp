@@ -37,7 +37,7 @@ SECTION         COMMANDS
 		the /tmp directory.
 		It does not kill non-arb processes. That means if you start
 		programs via the GDE interface you have to stop them yourself:
-		(phylip, desoete, gde, mapview ...)
+		(phylip, desoete, ...)
 
 			enter 'ps -ux'   or 'ps -f'
 			search the process-id PID and kill it with
