@@ -693,16 +693,16 @@ char *GB_map_FILE(FILE *in,int writeable){
     char *buffer;
     if (size<=0) {
         GB_export_error("GB_map_file: sorry file not found");
-        return 0;
+        return NULL;
     }
     if (writeable){
-        buffer = (char*)mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fi, 0);
+        buffer = (char*)mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fi, 0);
     }else{
-        buffer = (char*)mmap(0, size, PROT_READ, MAP_SHARED, fi, 0);
+        buffer = (char*)mmap(NULL, size, PROT_READ, MAP_SHARED, fi, 0);
     }
     if (buffer == MAP_FAILED){
         GB_export_error("GB_map_file: Error Out of Memory: mmap failes (errno: %i)", errno);
-        return 0;
+        return NULL;
     }
     return buffer;
 }
@@ -713,7 +713,7 @@ char *GB_map_file(const char *path,int writeable){
     in = fopen(path,"r");
     if (!in) {
         GB_export_error("GB_map_file: sorry file '%s' not readable",path);
-        return 0;
+        return NULL;
     }
     buffer = GB_map_FILE(in,writeable);
     fclose(in);
