@@ -147,7 +147,8 @@ only few functions can be used, when the tree is reloaded (stage 3):
 
 #define PT_READ_INT(ptr,my_int_i) do {                                      \
     unsigned char *mycharp=(unsigned char *)ptr;                            \
-    my_int_i= mycharp[0]<<24 | mycharp[1]<<16 | mycharp[2]<<8 | mycharp[3]; \
+    my_int_i= (long)mycharp[0]<<24 | (long)mycharp[1]<<16 \
+            | (long)mycharp[2]<<8 | (long)mycharp[3];     \
 } while(0)
 
 #define PT_WRITE_INT(ptr,my_int_i) do {                 \
@@ -162,7 +163,8 @@ only few functions can be used, when the tree is reloaded (stage 3):
 #define PT_READ_SHORT(ptr,my_int_i)                 \
 do {                                                \
     unsigned char *mycharp=(unsigned char *)ptr;    \
-    my_int_i= mycharp[0]<<8 | mycharp[1];           \
+    my_int_i= (long)mycharp[0]<<8          \
+            | (long)mycharp[1];            \
 } while(0)
 
 #define PT_WRITE_SHORT(ptr,my_int_i) do {           \
@@ -352,6 +354,7 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
             if (base != (node->flags & 0x7)) return NULL;  // no son
             i = (node->flags >> 3)&0x7;         // this son
             if (!i) i = 1; else i+=2;           // offset mapping
+            arb_assert(i >= 0);
             return (POS_TREE *)(((char *)node)-i);
         }
         if (!( (1<<base) & node->flags)) return NULL;  /* bit not set */
@@ -373,7 +376,8 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
                 PT_READ_CHAR((&node->data+1)+offset,i);
             }
         }
-        return (POS_TREE *)(((ulong)node)-i);
+        arb_assert(i >= 0);
+        return (POS_TREE *)(((char*)node)-i);
 
     }else{          // stage 1 or 2 ->father
         if (!( (1<<base) & node->flags)) return NULL;  /* bit not set */
@@ -405,6 +409,7 @@ GB_INLINE int PT_read_name(PTM2 *ptmain,POS_TREE *node)
     }else{
         PT_READ_SHORT((&node->data)+ptmain->mode,i);
     }
+    arb_assert(i >= 0);
     return i;
 }
 
@@ -418,6 +423,7 @@ GB_INLINE int PT_read_rpos(PTM2 *ptmain,POS_TREE *node)
     }else{
         PT_READ_SHORT(data,i);
     }
+    arb_assert(i >= 0);
     return i;
 }
 
@@ -432,6 +438,7 @@ GB_INLINE int PT_read_apos(PTM2 *ptmain,POS_TREE *node)
     }else{
         PT_READ_SHORT(data,i);
     }
+    arb_assert(i >= 0);
     return i;
 }
 
