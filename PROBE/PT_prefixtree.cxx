@@ -718,7 +718,7 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
 void PTD_read_leafs_from_disk(char *fname,PTM2 *ptmain, POS_TREE **pnode)
 {
     char *buffer;
-    int i;
+    long i;
     char    *main;
     buffer = GB_map_file(fname,0);
     if (!buffer){
@@ -731,6 +731,7 @@ void PTD_read_leafs_from_disk(char *fname,PTM2 *ptmain, POS_TREE **pnode)
 
     main = &(buffer[size-4]);
     PT_READ_INT(main, i);
+    arb_assert((i >= 0) && (i == (unsigned int)i));
     *pnode = (POS_TREE *)(i+buffer);
     ptmain->mode = 0;
     ptmain->base = buffer;
