@@ -56,10 +56,6 @@ makedir NAMES_COM/GENC &&
 makedir NAMES_COM/GENH &&
 makedir NAMES_COM/O &&
 
-makedir ORS_COM/GENC &&
-makedir ORS_COM/GENH &&
-makedir ORS_COM/O &&
-
 makedir PROBE_COM/GENC &&
 makedir PROBE_COM/GENH &&
 makedir PROBE_COM/O &&
@@ -115,13 +111,6 @@ symlink_maybe_no_target GENH/aisc_com.h           PROBE_COM/PT_com.h &&
 symlink_maybe_no_target GENH/aisc_server_proto.h  PROBE_COM/PT_server_prototypes.h &&
 symlink_maybe_no_target GENH/aisc.h               PROBE_COM/PT_server.h &&
 
-symlink ../AISC_COM/AISC          ORS_COM/AISC &&
-symlink ../AISC_COM/C             ORS_COM/C &&
-
-symlink_maybe_no_target GENH/aisc_com.h           ORS_COM/ors_client.h &&
-symlink_maybe_no_target GENH/aisc_server_proto.h  ORS_COM/ors_prototypes.h &&
-symlink_maybe_no_target GENH/aisc.h               ORS_COM/ors_server.h &&
-
 # TEMPLATES directory
 
 symlink ../TEMPLATES/SIG_PF.h INCLUDE/SIG_PF.h &&
@@ -141,11 +130,6 @@ symlink_maybe_no_target ../TEMPLATES/arb_build.h INCLUDE/arb_build.h &&
 symlink_maybe_no_target ../NAMES_COM/names_client.h         INCLUDE/names_client.h &&
 symlink_maybe_no_target ../NAMES_COM/names_prototypes.h     INCLUDE/names_prototypes.h &&
 symlink_maybe_no_target ../NAMES_COM/names_server.h         INCLUDE/names_server.h &&
-
-symlink_maybe_no_target ../ORS_CGI/ors_lib.h                INCLUDE/ors_lib.h &&
-symlink_maybe_no_target ../ORS_COM/ors_client.h             INCLUDE/ors_client.h &&
-symlink_maybe_no_target ../ORS_COM/ors_prototypes.h         INCLUDE/ors_prototypes.h &&
-symlink_maybe_no_target ../ORS_COM/ors_server.h             INCLUDE/ors_server.h &&
 
 symlink_maybe_no_target ../PROBE_COM/PT_com.h               INCLUDE/PT_com.h &&
 symlink_maybe_no_target ../PROBE_COM/PT_server.h            INCLUDE/PT_server.h &&
