@@ -84,7 +84,7 @@ void tree_import_callback(AW_root *aw_root) {
         treename_nopath = treename;
     }
 
-    char *fname = GBS_string_eval(treename_nopath,"*.tree=tree_*1:*.ntree=tree_*1:*.xml=tree_*1",0);
+    char *fname = GBS_string_eval(treename_nopath,"*.tree=tree_*1:*.ntree=tree_*1:*.xml=tree_*1:.=",0);
     aw_root->awar(AWAR_TREE_IMPORT "/tree_name")->write_string(fname);
 
     free(fname);
@@ -451,7 +451,7 @@ AW_window *create_tree_import_window(AW_root *root)
     aws->label("tree_name:");
     aws->create_input_field(AWAR_TREE_IMPORT "/tree_name",15);
 
-    awt_create_selection_box((AW_window *)aws,AWAR_TREE_IMPORT "");
+    awt_create_selection_box(aws, AWAR_TREE_IMPORT "");
 
     aws->at("save2");
     aws->callback(tree_load_cb);
