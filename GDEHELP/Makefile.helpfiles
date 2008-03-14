@@ -7,6 +7,7 @@
 HELP_NAMES=$(shell cat $(HELPFILELIST))
 HELP_TARGETS=$(addprefix $(GENHELPDEST)/,$(HELP_NAMES))
 HELP_PLAIN=./HELP_PLAIN
+HELP_WRITTEN=./HELP_WRITTEN
 HEADER=arb_help.head
 
 all: info forcedoc $(HELP_TARGETS)
@@ -92,12 +93,17 @@ FORCED_DOCS=$(addsuffix .doc,$(addprefix $(GENDOCDEST)/,$(FORCED_DOC_NAMES)))
 forcedoc: $(FORCED_DOCS)
 
 # ------------------------------------------------------------
-# default rule to raise error if no rule is given to generate a helpfile
+# default rule to raise error if no rule is given to generate a helpfile.
+# dont warn if there's a help file in HELP_WRITTEN
+# (files there are processed by ../HELP_SOURCE/genhelp/Makefile )
 
 $(GENHELPDEST)/%.help:
-	@echo "Makefile.helpfiles:18: Error: No rule to make $(notdir $@) (to which is referred to in a GDE menu)"
-	grep -n $(notdir $@) MENUS/*.menu
-#	false
+	@( test -f $(HELP_WRITTEN)/$(notdir $@) ) \
+	|| \
+	( \
+		echo "Makefile.helpfiles:18: Error: No rule to make $(notdir $@) (to which is referred to in a GDE menu)" ; \
+		grep -n $(notdir $@) MENUS/*.menu ; \
+		false )
 
 clean:
 	rm -f $(GENHELPDEST)/*.help
