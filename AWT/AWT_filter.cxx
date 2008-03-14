@@ -388,26 +388,39 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root,AW_CL res_of_create_sel
 
 AP_filter *awt_get_filter(AW_root *aw_root,AW_CL res_of_create_select_filter)
 {
-    struct adfiltercbstruct *acbs = (struct adfiltercbstruct *) res_of_create_select_filter;
-    AP_filter *filter = new AP_filter;
-    if (!acbs) {
-        filter->init("","0",10);
-        return filter;
+    adfiltercbstruct *acbs        = (adfiltercbstruct *) res_of_create_select_filter;
+    AP_filter        *filter      = new AP_filter;
+    bool              initialized = false;
+
+    if (acbs) {
+        GB_push_transaction(acbs->gb_main);
+
+        char *filter_string = aw_root->awar(acbs->def_filter)->read_string();
+        long  len           = 0;
+
+        {
+            char *use = aw_root->awar(acbs->def_alignment)->read_string();
+
+            len = GBT_get_alignment_len(acbs->gb_main,use);
+            free(use);
+        }
+
+        if (len != -1) { // have alignment
+            filter->init(filter_string,"0",len);
+            initialized = true;
+
+            int sim = aw_root->awar(acbs->def_simplify)->read_int();
+            filter->enable_simplify((AWT_FILTER_SIMPLIFY)sim);
+            free(filter_string);
+        }
+            
+        GB_pop_transaction(acbs->gb_main);
     }
-    GB_push_transaction(acbs->gb_main);
 
-    char *filter_string = aw_root->awar(acbs->def_filter)->read_string();
-    long len = 0;
-    char *use = aw_root->awar(acbs->def_alignment)->read_string();
-    len = GBT_get_alignment_len(acbs->gb_main,use);
-    free(use);
-    filter->init(filter_string,"0",len);
+    if (!initialized) {
+        filter->init("","0",10);
+    }
 
-    int sim = aw_root->awar(acbs->def_simplify)->read_int();
-    filter->enable_simplify((AWT_FILTER_SIMPLIFY)sim);
-    free(filter_string);
-
-    GB_pop_transaction(acbs->gb_main);
     return filter;
 }
 
