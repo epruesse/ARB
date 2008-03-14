@@ -13,8 +13,9 @@
 int main(int argc, char **argv){
     //  GB_ERROR error;
     if (argc <= 1) {
-        GB_export_error(    "\narb_export_tree:     export tree to stdout"
-                            "       syntax: arb_export_tree TREE_NAME");
+        GB_export_error("arb_export_tree: export tree to stdout\n"
+                        "         syntax: arb_export_tree TREE_NAME\n"
+                        "         Note: If TREE_NAME is '\?\?\?\?' or '' an empty tree is written.");
         GB_print_error();
         exit(-1);
     }
@@ -33,7 +34,8 @@ int main(int argc, char **argv){
             GBT_export_tree(gb_main,stdout,tree,GB_TRUE);
         }
         else {
-            if (strcmp(tree_name, "????") != 0) {
+            if (tree_name[0] && strcmp(tree_name, "????") != 0) // ignore tree names '????' and '' (no error, just export empty tree)
+            {
                 char *err = GBS_global_string_copy("arb_export_tree: Tree '%s' does not exist in DB\n", tree_name);
                 GBT_message(gb_main, err);
                 free(err);
