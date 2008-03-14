@@ -115,6 +115,7 @@ my @used_when_matchesFull = (
                              qr/\/GDEHELP\/DATA_FILES/o,
                              qr/\/GDEHELP\/FASTA/o,
                              qr/\/GDEHELP\/HELP_PLAIN/o,
+                             qr/\/GDEHELP\/HELP_WRITTEN/o,
                              qr/\/HELP_SOURCE\/.*\.gif$/o,
                              qr/\/HELP_SOURCE\/oldhelp\/.*\.hlp$/o,
                              qr/\/HELP_SOURCE\/oldhelp\/.*\.(ps|pdf)\.gz$/o,
