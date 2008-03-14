@@ -1216,8 +1216,6 @@ rebuild: clean
 relink: bclean libclean
 	$(MAKE) all
 
-save: sourcetarfile 
-
 savedepot: rmbak
 	util/arb_save_depot
 
@@ -1227,17 +1225,24 @@ tarfile: rebuild
 tarfile_quick: all
 	util/arb_compress
 
+save: sourcetarfile 
+
+# test early whether save will work 
+testsave:
+	@util/arb_srclst.pl >/dev/null
+
 sourcetarfile: rmbak
 	util/arb_save
 
 save2: rmbak
 		util/arb_save ignore
 
-release:
+release: 
 	@echo Making release
 	@echo PATH=$(PATH)
 	@echo ARBHOME=$(ARBHOME)
 	-rm arb.tgz arbsrc.tgz
+	$(MAKE) testsave
 	$(MAKE) tarfile sourcetarfile
 
 release_quick:
