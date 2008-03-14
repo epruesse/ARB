@@ -40,8 +40,12 @@ menu:Phylogeny_MaxParsimony
 
 menu:Phylogeny_MaxLikelyhood
 #include <fastdnaml.genmenu>
-#include <raxmldna.genmenu>
-#include <raxmlprotein.genmenu>
+
+#define RAXML_DNA
+#include <raxml.genmenu>
+#undef RAXML_DNA
+#include <raxml.genmenu>
+
 #include <phylip_ml.genmenu>
 #include <molphy.genmenu>
 
