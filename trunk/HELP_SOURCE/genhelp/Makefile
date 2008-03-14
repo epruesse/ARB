@@ -5,8 +5,9 @@ AUTOTITLE = sed -e '1 s/^SECTION/TITLE/'
 ARBHOME=../..
 
 GDEBASE=$(ARBHOME)/GDEHELP
-GDEDIR=$(GDEBASE)/HELP_GEN
-GDE_HELP=$(wildcard $(GDEDIR)/*.help)
+GDEGENDIR=$(GDEBASE)/HELP_GEN
+GDEWRITTENDIR=$(GDEBASE)/HELP_WRITTEN
+GDE_HELP=$(wildcard $(GDEGENDIR)/*.help) $(wildcard $(GDEWRITTENDIR)/*.help)
 GDE_HLP=$(addprefix agde_,$(subst .help,.hlp,$(notdir $(GDE_HELP))))
 
 # --------------------------------------------------------------------------------
@@ -34,12 +35,20 @@ changes.hlp : $(ARBHOME)/arb_CHANGES.txt
 	@echo "# BUILD FROM: $<" >>$@
 	@cat $< | $(AUTOSECTION) | $(AUTOTITLE) >> $@
 
-agde_%.hlp : $(GDEDIR)/%.help
+agde_%.hlp : $(GDEGENDIR)/%.help
 	@echo Updating $@ from $< 
 	@cp $(STD) $@
 	@echo "# BUILD FROM: $< (which is generated itself)" >>$@
 	@echo "#       see $(GDEBASE)/HELP_PLAIN " >>$@
 	@echo "#       or else see $(GDEBASE)/Makefile.helpfiles for special rules" >>$@
+	@echo "" >>$@
+	@echo "UP agde.hlp" >>$@
+	@cat $< | $(AUTOSECTION) | $(AUTOTITLE) >> $@
+
+agde_%.hlp : $(GDEWRITTENDIR)/%.help
+	@echo Updating $@ from $< 
+	@cp $(STD) $@
+	@echo "# BUILD FROM: $<" >>$@
 	@echo "" >>$@
 	@echo "UP agde.hlp" >>$@
 	@cat $< | $(AUTOSECTION) | $(AUTOTITLE) >> $@
