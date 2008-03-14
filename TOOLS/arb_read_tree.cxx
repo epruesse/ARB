@@ -3,6 +3,8 @@
 #include <string.h>
 #include <arbdb.h>
 #include <arbdbt.h>
+#include <time.h>
+
 
 void show_error(GBDATA *gb_main) {
     GBT_message(gb_main, GB_get_error());
@@ -47,7 +49,7 @@ void add_bootstrap(GBT_TREE *node, double hundred) {
 
 static void abort_with_usage(GBDATA *gb_main, const char *error) __ATTR__NORETURN;
 static void abort_with_usage(GBDATA *gb_main, const char *error) {
-    printf("Usage: arb_read_tree [-scale factor] [-consense #ofTrees] tree_name treefile [comment]\n");
+    printf("Usage: arb_read_tree [-scale factor] [-consense #ofTrees] tree_name treefile [comment] [-commentFromFile file]\n");
     if (error) {
         printf("Error: %s\n", error);
         GBT_message(gb_main, GBS_global_string("Error running arb_read_tree (%s)", error));
@@ -65,14 +67,14 @@ int main(int argc,char **argv)
 
 #define SHIFT_ARGS(off) do { argc -= off; argv += off; } while(0)
 
-    int args = argc-1; argv++; // position onto first argument
+    SHIFT_ARGS(1);              // position onto first argument
 
     bool   scale        = false;
     double scale_factor = 0.0;
 
-    if (args>0 && strcmp("-scale",argv[0]) == 0) {
+    if (argc>0 && strcmp("-scale",argv[0]) == 0) {
         scale = true;
-        if (args<2) abort_with_usage(gb_main, "-scale expects a 2nd argument (scale factor)");
+        if (argc<2) abort_with_usage(gb_main, "-scale expects a 2nd argument (scale factor)");
         scale_factor = atof(argv[1]);
         SHIFT_ARGS(2);
     }
@@ -80,9 +82,9 @@ int main(int argc,char **argv)
     bool consense         = false;
     int  calculated_trees = 0;
 
-    if (args>0 && strcmp("-consense",argv[0]) == 0) {
+    if (argc>0 && strcmp("-consense",argv[0]) == 0) {
         consense = true;
-        if (args<2) abort_with_usage(gb_main, "-consense expects a 2nd argument (number of trees)");
+        if (argc<2) abort_with_usage(gb_main, "-consense expects a 2nd argument (number of trees)");
 
         calculated_trees = atoi(argv[1]);
         if (calculated_trees < 1) {
@@ -92,22 +94,41 @@ int main(int argc,char **argv)
         SHIFT_ARGS(2);
     }
 
-    if (!args) abort_with_usage(gb_main, "Missing argument 'tree_name'");
+    if (!argc) abort_with_usage(gb_main, "Missing argument 'tree_name'");
     const char *tree_name = argv[0];
     SHIFT_ARGS(1);
 
-    if (!args) abort_with_usage(gb_main, "Missing argument 'treefile'");
+    if (!argc) abort_with_usage(gb_main, "Missing argument 'treefile'");
     const char *filename = argv[0];
     SHIFT_ARGS(1);
 
     const char *comment = 0;
-    if (args>0) {
+    if (argc>0) {
         comment = argv[0];
         SHIFT_ARGS(1);
     }
 
-    char *comment_from_treefile = 0;
+    const char *commentFile = 0;
+    if (argc>0 && strcmp("-commentFromFile", argv[0]) == 0) {
+        if (argc<2) abort_with_usage(gb_main, "-commentFromFile expects a 2nd argument (file containing comment)");
+        commentFile = argv[1];
+        SHIFT_ARGS(2);
+    }
 
+    // end of argument parsing!
+    if (argc>0) abort_with_usage(gb_main, GBS_global_string("unexpected argument(s): %s ..", argv[0]));
+
+    // --------------------------------------------------------------------------------
+
+    char *comment_from_file = 0;
+    if (commentFile) {
+        comment_from_file = GB_read_file(commentFile);
+        if (!comment_from_file) {
+            comment_from_file = GBS_global_string_copy("Error reading from comment-file '%s':\n%s", commentFile, GB_get_error());
+        }
+    }
+
+    char *comment_from_treefile = 0;
     GBT_message(gb_main, GBS_global_string("Reading tree from '%s' ..", filename));
 
     GBT_TREE *tree;
@@ -165,18 +186,45 @@ int main(int argc,char **argv)
 
     // write tree comment:
     {
-        const char *cmt = 0;
-        if (comment) {
-            if (comment_from_treefile)  cmt = GBS_global_string("%s\n%s", comment, comment_from_treefile);
-            else                        cmt = comment;
+        const char *datestring;
+        {
+            time_t date;
+
+            if (time(&date) == -1) {
+                fprintf(stderr, "Error calculating time\n");
+                exit(EXIT_FAILURE);
+            }
+            datestring = ctime(&date);
         }
-        else {
-            if (comment_from_treefile)  cmt = comment_from_treefile;
-            else                        cmt = GBS_global_string("loaded from '%s'", filename);
+
+        char *load_info = GBS_global_string_copy("Tree loaded from '%s' on %s", filename, datestring);
+
+#define COMMENT_SOURCES 4
+        const char *comments[COMMENT_SOURCES] = {
+            comment,
+            comment_from_file,
+            comment_from_treefile,
+            load_info, 
+        };
+
+        void *buf   = GBS_stropen(5000);
+        bool  empty = true;
+
+        for (int c = 0; c<COMMENT_SOURCES; c++) {
+            if (comments[c]) {
+                if (!empty) GBS_chrcat(buf, '\n');
+                GBS_strcat(buf, comments[c]);
+                empty = false;
+            }
         }
+
+        char *cmt = GBS_strclose(buf);
         GBT_write_tree_rem(gb_main, tree_name, cmt);
+        free(cmt);
+        free(load_info);
     }
 
+    free(comment_from_file);
     free(comment_from_treefile);
 
     char buffer[256];
