@@ -446,11 +446,11 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
         root->awar_int(PFOLD_AWAR_MATCH_METHOD, SECSTRUCT_SEQUENCE);
         int pt;
         char awar[256];
-        for (int i = 0; pfold_match_type_awars[i].awar; i++){
-            pt = pfold_match_type_awars[i].match_type;
-            sprintf(awar, PFOLD_AWAR_PAIR_TEMPLATE, pfold_match_type_awars[i].awar);
+        for (int i = 0; pfold_match_type_awars[i].name; i++){
+            pt = pfold_match_type_awars[i].value;
+            sprintf(awar, PFOLD_AWAR_PAIR_TEMPLATE, pfold_match_type_awars[i].name);
             root->awar_string(awar, pfold_pairs[pt])->add_target_var(&pfold_pairs[pt]);
-            sprintf(awar, PFOLD_AWAR_SYMBOL_TEMPLATE, pfold_match_type_awars[i].awar);
+            sprintf(awar, PFOLD_AWAR_SYMBOL_TEMPLATE, pfold_match_type_awars[i].name);
             root->awar_string(awar, pfold_pair_chars[pt])->add_target_var(&pfold_pair_chars[pt]);
         }
         root->awar_string(PFOLD_AWAR_SYMBOL_TEMPLATE_2, pfold_pair_chars_2);
