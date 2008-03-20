@@ -30,8 +30,10 @@ DESCRIPTION	ARB (ARBor, Latin: tree): A software environment for maintaining
 		The programs have primarily been developed for ribosomal
 		ribonucleic acid (rRNA) sequences and, therefore, contain
 		special tools for alignment and analysis of these structures.
-		However, other molecular sequence data can also be handled. Protein gene sequences and predicted protein
-		primary structures can be stored in the same database.
+		However, other molecular sequence data can also be handled.
+		Protein gene sequences and predicted protein primary structures
+		as well as protein secondary structures can be stored in the same
+		database.
 
 		The ARB package is designed for graphical user
 		interface. Program control and data display are available in

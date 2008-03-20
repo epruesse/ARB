@@ -433,7 +433,7 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int */*cl*/, GB_CB_T
         err = ED4_ROOT->ecoli_ref->init(GLOBAL_gb_main); // reload ecoli
         if (err) { aw_message(err); err = 0; }
         
-        //TODO: Ralf zeigen: Wird das hier benötigt?
+        //TODO: is this needed here?
         err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len); // reload protstruct
         if (err) { aw_message(err); err = 0; }
         //ED4_ROOT->refresh_all_windows(0);
@@ -1682,7 +1682,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic( "props_data", "Change Colors & Fonts "  ,  "C", 0,     AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)win_gc_manager );
     awmm->insert_menu_topic( "props_seq_colors", "Set Sequence Colors "  , "S", "no help",   AWM_ALL, AW_POPUP, (AW_CL)create_seq_colors_window, (AW_CL)sequence_colors);
     SEP________________________SEP;
-    if (alignment_type == GB_AT_AA) awmm->insert_menu_topic( "props_pfold", "Protein Match Settings ","P","pfold.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_pfold_create_props_window, (AW_CL)new AW_cb_struct(awmm,(AW_CB)ED4_expose_cb,0,0) );
+    if (alignment_type == GB_AT_AA) awmm->insert_menu_topic( "props_pfold", "Protein Match Settings ","P","pfold_props.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_pfold_create_props_window, (AW_CL)new AW_cb_struct(awmm,(AW_CB)ED4_expose_cb,0,0) );
     else                            awmm->insert_menu_topic( "props_helix_sym", "Helix Settings ","H","helixsym.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_helix_props_window, (AW_CL)new AW_cb_struct(awmm,(AW_CB)ED4_expose_cb,0,0) );
     awmm->insert_menu_topic( "props_key_map", "Key Mappings ", "K","nekey_map.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_key_map_window, 0 );
     awmm->insert_menu_topic( "props_nds", "Select visible info (NDS) ", "D","e4_nds.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_create_nds_window, 0 );

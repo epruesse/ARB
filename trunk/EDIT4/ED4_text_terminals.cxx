@@ -154,47 +154,31 @@ int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, 
     return device->text(gc,buffer,x,y,0.0,(AW_bitset)-1,0,cd2);
 }
 
-//TODO: Ralf zeigen: Richtige Verwendung von rm?
+/** \brief Calls ED4_pfold_calculate_secstruct_match() for the visible area in the
+ *         editor to compute the protein secondary structure match and outputs the
+ *         result to the device.
+ *  \param[in] protstruct        The protein structure (primary or secondary) that should be compared to \a global_protstruct
+ *  \param[in] global_protstruct The reference protein secondary structure SAI
+ */
 int ED4_show_protein_match_on_device(AW_device *device, int gc, const char *protstruct, size_t /*protstruct_len*/, size_t start, size_t size,
-                                     AW_pos x,AW_pos y, AW_pos /*opt_ascent*/,AW_pos /*opt_descent*/,
+                                     AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,
                                      AW_CL global_protstruct, AW_CL /*real_sequence_length*/, AW_CL cd2)
 {
+    GB_ERROR error = 0;
+    //TODO: proper use of ED4_remap?
     const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
     char *buffer = GB_give_buffer(size+1);
-
-//    GB_ERROR error = ED4_calculate_secstruct_sequence_match((const char *)global_protstruct, protstruct, 
-//            start, start + size, buffer,
-//            (PFOLD_MATCH_METHOD) ED4_ROOT->aw_root->awar(PFOLD_AWAR_MATCH_METHOD)->read_int());
-    GB_ERROR error = ED4_pfold_calculate_secstruct_match((const char *)global_protstruct, protstruct, 
-            rm->screen_to_sequence(start), rm->screen_to_sequence(start + size), buffer,
-            (PFOLD_MATCH_METHOD) ED4_ROOT->aw_root->awar(PFOLD_AWAR_MATCH_METHOD)->read_int());
-
+    if (!buffer) {
+        error = GB_export_error("Out of memory.");
+    } else {
+        error = ED4_pfold_calculate_secstruct_match((const char *)global_protstruct, protstruct, 
+                rm->screen_to_sequence(start), rm->screen_to_sequence(start + size), buffer,
+                (PFOLD_MATCH_METHOD) ED4_ROOT->aw_root->awar(PFOLD_AWAR_MATCH_METHOD)->read_int());
+    }
     if (error) aw_message(error);
     buffer[size] = 0;
     return device->text(gc,buffer,x,y,0.0,(AW_bitset)-1,0,cd2);
 }
-//int ED4_show_protein_match_on_device(AW_device *device, int gc, const char *secstruct, size_t /*secstruct_size*/, size_t start, size_t size,
-//                                     AW_pos x,AW_pos y, AW_pos /*opt_ascent*/,AW_pos /*opt_descent*/,
-//                                     AW_CL cd_summary_paramters, AW_CL /*real_sequence_length*/, AW_CL cd2)
-//{
-//    show_summary_parameters *ssp    = (show_summary_parameters*)cd_summary_paramters;
-//    const ED4_remap         *rm     = ED4_ROOT->root_group_man->remap();
-//    char                    *buffer = GB_give_buffer(size+1);
-//
-//    for (long k=0; size_t(k)<size; k++) {
-//        long i = rm->screen_to_sequence(k+start);
-//
-//        if (ssp->protstruct[i] == ssp->global_protstruct[i]) {
-//            buffer[k] = ' ';
-//        }
-//        else {
-//            buffer[k] = '#';
-//        }
-//    }
-//    
-//    buffer[size] = 0;
-//    return device->text(gc,buffer,x,y,0.0,(AW_bitset)-1,0,cd2);
-//}
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //  ProteinViewer: Drawing AminoAcid sequence parallel to the DNA sequence
@@ -560,13 +544,10 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
         }
     }
 
-    //TODO: Ralf zeigen: Remap?
     // output protein structure match
     ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
-    //TODO: HACK: exclude species that contain _pfold
     if ( ED4_ROOT->protstruct && !spec_man->flag.is_SAI && 
-         ED4_ROOT->aw_root->awar(PFOLD_AWAR_ENABLE)->read_int()
-         /*&& !strstr(species_name, "_pfold")*/ ) { // should do a remap
+         ED4_ROOT->aw_root->awar(PFOLD_AWAR_ENABLE)->read_int() ) { // should do a remap
         int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->protstruct_len);
         if ((right+1) < screen_length) {
             screen_length = right+1;
@@ -576,59 +557,14 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
             char *protstruct = resolve_pointer_to_string_copy();
             if (protstruct) {
                 device->text_overlay( ED4_G_HELIX,
-                        protstruct, screen_length,//(long)strlen(protstruct),
+                        protstruct, screen_length,
                         text_x , text_y + ED4_ROOT->helix_spacing , 0.0 , -1,
                         (AW_CL)ED4_ROOT->protstruct, (AW_CL)max_seq_len, 0,
                         1.0,1.0, ED4_show_protein_match_on_device);
                 free(protstruct);
             }
-//            // get protein secondary structure from the species
-//            char *prot_sec_struct = 0;
-//            GB_transaction dummy(gb_main);
-//            GBDATA *gb_species = GB_get_father(get_species_pointer());
-//            e4_assert(gb_species);
-//            GBDATA *gb_sec_struct = GB_find(gb_species, "sec_struct", 0, down_level);
-//            if (gb_sec_struct) {
-//                prot_sec_struct = GB_read_string(gb_sec_struct);
-//                if (prot_sec_struct) {
-//                    device->text_overlay( ED4_G_HELIX,
-//                                          prot_sec_struct, screen_length,
-//                                          text_x , text_y + ED4_ROOT->helix_spacing , 0.0 , -1,
-//                                          (AW_CL)ED4_ROOT->protstruct, (AW_CL)max_seq_len, 0,
-//                                          1.0,1.0, ED4_show_protein_match_on_device);
-//                    free(prot_sec_struct);
-//                }
-//            }
         }
     }
-//    // output protein structure match
-//    if (ED4_ROOT->protstruct)
-//    {   // should do a remap
-//        int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->protstruct_len);
-//        if ((right+1) < screen_length) {
-//            screen_length = right+1;
-//        }
-//        if (screen_length) {
-//            char *db_pointer = resolve_pointer_to_string_copy();
-//
-//            show_summary_parameters ssp;
-//            //char *predicted_summary = (char*)GB_calloc(max_seq_len+1, 1); // @@@ FIXME: cache predicted_summary in terminal
-//            //ED4_predict_summary(db_pointer, predicted_summary, max_seq_len);
-//
-//            ssp.global_protstruct = ED4_ROOT->protstruct;
-//            ssp.protstruct        = db_pointer;
-//            //ssp.protstruct        = predicted_summary;
-//
-//            device->text_overlay( ED4_G_HELIX,
-//                                  (char *)db_pointer, screen_length,
-//                                  text_x , text_y + ED4_ROOT->helix_spacing , 0.0 , -1,
-//                                  (AW_CL)&ssp, (AW_CL)max_seq_len, 0,
-//                                  1.0,1.0, ED4_show_protein_match_on_device);
-//
-//            free(db_pointer);
-//            //free(predicted_summary);
-//        }
-//    }
 
     // output strings
     {
