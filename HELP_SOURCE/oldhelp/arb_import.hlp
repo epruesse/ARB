@@ -11,6 +11,7 @@ SUB	rdp_ift.hlp
 SUB	ebi_ift.hlp
 
 SUB	fasta_ift.hlp
+SUB	dssp_ift.hlp
 SUB	gde_ift.hlp
 SUB	gde_flat_ift.hlp
 SUB	ae2_ift.hlp
@@ -54,7 +55,7 @@ DESCRIPTION	Reads foreign data(base) formats, creates a new ARB database,
 		Press the 'GO' button.
 
 NOTES		Following file formats currently can be detected and loaded:
-		GENBANK, RDP: GENBANK and AE2, GCG used by GENIUS, FastA.
+		GENBANK, RDP: GENBANK and AE2, GCG used by GENIUS, FastA, DSSP.
 
 		To import big new databases into an existing ARB database, convert it
 		to the ARB format first, save and merge it with the

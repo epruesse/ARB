@@ -15,7 +15,7 @@ SUB	e4_replace.hlp
 SUB 	e4_block.hlp
 SUB	nekey_map.hlp
 SUB	helixsym.hlp
-SUB pfold.hlp
+SUB	pfold.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 

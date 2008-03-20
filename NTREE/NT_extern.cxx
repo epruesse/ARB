@@ -1457,6 +1457,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
                 AWMIMT("sai_consensus", "Consensus",                                                    "C", "consensus.hlp",    AWM_ALL,   AW_POPUP, (AW_CL)AP_open_con_expert_window, 0  );
                 AWMIMT("pos_var_pars",  "Positional variability + Column statistic (parsimony method)", "a", "pos_var_pars.hlp", AWM_TREE2, AW_POPUP, (AW_CL)AP_open_pos_var_pars_window, 0);
                 AWMIMT("arb_phyl",      "Filter by base frequency",                                     "F", "phylo.hlp",        AWM_TREE2, (AW_CB)NT_system_cb,  (AW_CL)"arb_phylo &",   0);
+                AWMIMT("sai_pfold",     "Protein secondary structure (field \"sec_struct\")",           "P", "pfold.hlp",        AWM_ALL,   (AW_CB)create_sai_from_pfold, (AW_CL)ntw,     0);
 
                 GDE_load_menu(awm,"SAI");
             }

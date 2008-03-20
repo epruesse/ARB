@@ -72,6 +72,29 @@ static void move_species_to_extended(AW_window *aww){
     free(source);
 }
 
+/** \file   ad_spec.cxx
+ *  \brief Functions for creating and modifying species and SAIs.
+*/
+/** \brief Creates an SAI from protein secondary structure of a selected species.
+ *
+ *  \param[in] aww AW_window
+ *  \param[in] ntw AWT_canvas
+ *
+ *  The function takes the currently selected species and searches for the field
+ *  "sec_struct". A new SAI is created using the data in this field. A simple input
+ *  window allows the user to change the default name ([species name]_pfold) for
+ *  the new SAI.
+ * 
+ *  \note The import filter "dssp_all.ift" allows for importing the amino acid sequence
+ *        as well as the protein secondary structure from a dssp file and the structure
+ *        is stored in the field "sec_struct". That way, secondary structure can be
+ *        aligned along with the sequence manually and can later be extracted to create
+ *        an SAI.  
+ * 
+ *  \attention The import filter "dssp_2nd_struct.ift" extracts only the protein
+ *             secondary structure which is stored as alignment data. SAIs can simply
+ *             be created from these species via move_species_to_extended().
+ */
 void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
     GB_ERROR error = 0;
     GB_begin_transaction(GLOBAL_gb_main);
@@ -132,6 +155,7 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
 
                     // generate accession number and delete field "sec_struct" from the SAI
                     if (!error) {
+                        //TODO: is it necessary that a new acc is generated here?
                         GBDATA *gb_sai_acc = GB_search(gb_sai, "acc", GB_FIND);
                         if (gb_sai_acc) {
                             GB_delete(gb_sai_acc);
@@ -149,18 +173,17 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
     if (!error && !canceled) {
         GB_commit_transaction(GLOBAL_gb_main);
         AW_window *sai_info = NT_create_extendeds_window(aww->get_root());
-        //TODO: Ralf zeigen: warum zeigt Info Box nichts an beim ersten öffnen des fensters?
+        //TODO: why doesn't info box show anything on first startup? proper refresh needed?
         sai_info->show();
-        ((AWT_canvas *)ntw)->refresh(); //TODO: Refresh doesn't work, I guess... 
-        //AWT_expose_cb(sai_info, sai_info->, 0);
+        ((AWT_canvas *)ntw)->refresh(); // refresh doesn't work, I guess... 
     } else {
         GB_abort_transaction(GLOBAL_gb_main);
         if (error) aw_message(error);
     }
 
-    if (species_name) free(species_name);
-    if (sai_name)     free(sai_name);
-    if (sec_struct)   free(sec_struct);
+    free(species_name);
+    free(sai_name);
+    free(sec_struct);
 }
 
 static void species_create_cb(AW_window *aww){

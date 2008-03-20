@@ -1,12 +1,11 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cstdarg>
+/** \file   ED4_protein_2nd_structure.cxx
+ *  \brief  Implements the functions defined in ed4_protein_2nd_structure.hxx.
+ *  \author Markus Urban
+ *  \date   2008-02-08
+ *  \sa     Refer to ed4_protein_2nd_structure.hxx for details, please.
+*/
 
 #include <iostream>
-#include <fstream>
-#include <iomanip>
-
 #include <malloc.h>
 
 #include "arbdb.h"
@@ -37,102 +36,87 @@ void ED4_pfold_init_statics() {
 }
 
 
-//TODO: remove all exits and establish proper error handling
-
-GB_ERROR ED4_pfold_init_memory(const char *sequence_) {
+GB_ERROR ED4_pfold_predict_structure(const char *sequence, char *structure, int length) {
     GB_ERROR error = 0;
     
-    // assign sequence pointer and length
-    e4_assert(sequence_);
-    sequence = sequence_;
-    length = strlen(sequence);
-    e4_assert(int(strlen(sequence_)) == length);
-    
-    // allocate memory for structures and initialize it
+    // allocate memory
+    char *structures[4];
     for (int i = 0; i < 4; i++) {
-        if (structures[i]) {
-            delete[] structures[i];
-            structures[i] = 0;
-        }
         structures[i] = new char [length + 1];
         if (!structures[i]) {
-            error = "Out of memory";
-        } else {
-            for (int j = 0; j < length; j++) {
-                structures[i][j] = ' ';
-            }
-            structures[i][length] = '\0';
+            error = GB_export_error("Out of memory.");
+            return error;
         }
+        for (int j = 0; j < length; j++) {
+            structures[i][j] = ' ';
+        }
+        structures[i][length] = '\0';
     }
     
-    // allocate memory for probabilities
-    for (int i = 0; i < 2; i++) {
-        if (probabilities[i]) {
-            delete[] probabilities[i];
-            probabilities[i] = 0;
+    // predict structure
+    error = ED4_pfold_predict_structure(sequence, structures, length);
+    
+    // write predicted summary to result_buffer
+    if (structure) {
+        for (int i = 0; i < length; i++) {
+            structure[i] = structures[STRUCTURE_SUMMARY][i];
         }
-        probabilities[i] = new char [length + 1];
-        if (!probabilities[i]) {
-            error = "Out of memory";
-        } else {
-            for (int j = 0; j < length; j++) {
-                probabilities[i][j] = ' ';
-            }
-            probabilities[i][length] = '\0';
-        }
+        structure[length] = '\0';
     }
     
+    // free buffer and return
+    for (int i = 0; i < 4; i++) {
+        if (structures[i]) {
+            delete structures[i];
+            structures[i] = 0;
+        }
+    }
     return error;
 }
 
 
-GB_ERROR ED4_pfold_predict_summary(const char *sequence_, char *result_buffer, int result_buffer_size) {
+GB_ERROR ED4_pfold_predict_structure(const char *sequence, char *structures[4], int length) {
+#ifdef SHOW_PROGRESS
+    cout << endl << "Predicting secondary structure for sequence:" << endl << sequence << endl;
+#endif
     GB_ERROR error = 0;
+    e4_assert((int) strlen(sequence) == length);
     
     // init memory
     ED4_pfold_init_statics();
-    error = ED4_pfold_init_memory(sequence_);
-    if (error) return error;
+    e4_assert(char2AA);
     
     // predict structure
-    ED4_pfold_find_nucleation_sites(helix);
-    ED4_pfold_find_nucleation_sites(sheet);
-    ED4_pfold_extend_nucleation_sites(helix);
-    ED4_pfold_extend_nucleation_sites(sheet);
-    ED4_pfold_find_turns();
-    ED4_pfold_resolve_overlaps();
-    
-    // write predicted summary to result_buffer
-    if (result_buffer) {
-        e4_assert(int(strlen(result_buffer)) == result_buffer_size);
-        e4_assert(result_buffer_size > length);
-        for (int i = 0; i < length; i++) {
-            result_buffer[i] = structures[summary][i];
-        }
-        result_buffer[length] = '\0';
-    }
+    ED4_pfold_find_nucleation_sites(sequence, structures[ALPHA_HELIX], length, ALPHA_HELIX);
+    ED4_pfold_find_nucleation_sites(sequence, structures[BETA_SHEET], length, BETA_SHEET);
+    ED4_pfold_extend_nucleation_sites(sequence, structures[ALPHA_HELIX], length, ALPHA_HELIX);
+    ED4_pfold_extend_nucleation_sites(sequence, structures[BETA_SHEET], length, BETA_SHEET);
+    ED4_pfold_find_turns(sequence, structures[BETA_TURN], length);
+    ED4_pfold_resolve_overlaps(sequence, structures, length);
     
     return error;
 }
 
 
-GB_ERROR ED4_pfold_calculate_secstruct_match(const char *structure_sai, const char *structure_cmp, int start, int end, char *result_buffer, PFOLD_MATCH_METHOD match_type /*= SECSTRUCT_SEQUENCE*/) {
+GB_ERROR ED4_pfold_calculate_secstruct_match(const char *structure_sai, const char *structure_cmp, int start, int end, char *result_buffer, PFOLD_MATCH_METHOD match_method /*= SECSTRUCT_SEQUENCE*/) {
     GB_ERROR error = 0;
     e4_assert(structure_sai);
     e4_assert(structure_cmp);
     e4_assert(start >= 0);
     e4_assert(result_buffer);
-    e4_assert(match_type >= 0 && match_type < PFOLD_MATCH_METHOD_COUNT);
+    e4_assert(match_method >= 0 && match_method < PFOLD_MATCH_METHOD_COUNT);
     ED4_pfold_init_statics();
-    int match_end = min( min(end - start, (int)strlen(structure_sai)), (int)strlen(structure_cmp) );
+    e4_assert(char2AA);
+    int length = (int) strlen(structure_sai);
+    int match_end = min( min(end - start, length), (int) strlen(structure_cmp) );
     
-    enum {bend = 3, nostruct = 4};
+    enum {BEND = 3, NOSTRUCT = 4};
     char *struct_chars[] = {
-        strdup("HGI"),  // helical structures (enum helix)
-        strdup("EB"),   // sheet-like structures (enum sheet)
-        strdup("T"),    // beta turn (enum beta_turn)
-        strdup("S"),    // bends (enum bend)
-        strdup("")      // no structure (enum nostruct)
+        strdup("HGI"),  // helical structures (enum ALPHA_HELIX)
+        strdup("EB"),   // sheet-like structures (enum BETA_SHEET)
+        strdup("T"),    // beta-turn (enum BETA_TURN)
+        strdup("S"),    // bends (enum BEND)
+        strdup("")      // no structure (enum NOSTRUCT)
     };
     
     // init awars
@@ -141,11 +125,10 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const char *structure_sai, const ch
     char *pair_chars[PFOLD_MATCH_TYPE_COUNT] = {0};
     char *pair_chars_2 = ED4_ROOT->aw_root->awar(PFOLD_AWAR_SYMBOL_TEMPLATE_2)->read_string();
     char awar[256];
-    //TODO: check if this is neccessary or if static variables already contain the current values
-    for (int i = 0; pfold_match_type_awars[i].awar; i++) {
-        sprintf(awar, PFOLD_AWAR_PAIR_TEMPLATE, pfold_match_type_awars[i].awar);
+    for (int i = 0; pfold_match_type_awars[i].name; i++) {
+        sprintf(awar, PFOLD_AWAR_PAIR_TEMPLATE, pfold_match_type_awars[i].name);
         pairs[i] = strdup(ED4_ROOT->aw_root->awar(awar)->read_string());
-        sprintf(awar, PFOLD_AWAR_SYMBOL_TEMPLATE, pfold_match_type_awars[i].awar);
+        sprintf(awar, PFOLD_AWAR_SYMBOL_TEMPLATE, pfold_match_type_awars[i].name);
         pair_chars[i] = strdup(ED4_ROOT->aw_root->awar(awar)->read_string());
     }
     
@@ -158,16 +141,16 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const char *structure_sai, const ch
     
     //TODO: move this check to callback for the corresponding field?
     if (strlen(pair_chars_2) != 10) {
-        error = "You have to define 10 match symbols.";
+        error = GB_export_error("You have to define 10 match symbols.");
     }
     
     if (!error) {
-        switch (match_type) {
+        switch (match_method) {
         
-        case SECSTRUCT:
+        case SECSTRUCT_SECSTRUCT:
             //TODO: one could try to find out, if structure_cmp is really a secondary structure and not a sequence (define awar for allowed symbols in secondary structure)
             for (count = 0; count < match_end; count++) {
-                result_buffer[count] = ' ';
+                result_buffer[count] = *pair_chars[STRUCT_UNKNOWN];
                 for (int n_pt = 0; n_pt < PFOLD_MATCH_TYPE_COUNT; n_pt++) {
                     int len = strlen(pairs[n_pt])-1;
                     char *p = pairs[n_pt];
@@ -205,7 +188,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const char *structure_sai, const ch
             for (current_struct = 0; current_struct < 4 && !strchr(struct_chars[current_struct], structure_sai[struct_start]); current_struct++) {
                 ;
             }
-            if (current_struct != bend && current_struct != nostruct) {
+            if (current_struct != BEND && current_struct != NOSTRUCT) {
                 struct_start--; // check structure left of start
                 while (struct_start >= 0) {
                     // skip gaps
@@ -218,7 +201,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const char *structure_sai, const ch
                     if (struct_start == 0 && aa == -1) { // nothing was found
                         break;
                     } else if (strchr(struct_chars[current_struct], structure_sai[struct_start]) && aa != -1) {
-                        prob += cf_former(current_struct, aa) - cf_breaker(current_struct, aa); // sum up probabilities
+                        prob += cf_former(aa, current_struct) - cf_breaker(aa, current_struct); // sum up probabilities
                         struct_start--;
                         count++;
                     } else {
@@ -239,15 +222,15 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const char *structure_sai, const ch
             struct_end = struct_start;
             while (struct_end < end ) {
                 aa = char2AA[structure_cmp[struct_end]];
-                if (current_struct == nostruct) { // no structure found -> move on
+                if (current_struct == NOSTRUCT) { // no structure found -> move on
                     struct_end++;
                 } else if (aa == -1) { // structure found but no corresponding amino acid -> doesn't fit at all 
                     result_buffer[struct_end - start] = pair_chars_2[0];
                     struct_end++;
-                } else if (current_struct == bend) { // bend found -> fits perfectly everywhere
+                } else if (current_struct == BEND) { // bend found -> fits perfectly everywhere
                     result_buffer[struct_end - start] = pair_chars_2[9];
                     struct_end++;
-                } else { // helix, sheet or beta turn found -> while structure doesn't change: sum up probabilities
+                } else { // helix, sheet or beta-turn found -> while structure doesn't change: sum up probabilities
                     while (structure_sai[struct_end] != '\0') {
                         // skip gaps
                         while ( strchr(gap_chars, structure_sai[struct_end]) && 
@@ -258,7 +241,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const char *structure_sai, const ch
                         aa = char2AA[structure_cmp[struct_end]];
                         if ( structure_sai[struct_end] != '\0' && structure_cmp[struct_end] != '\0' &&
                              strchr(struct_chars[current_struct], structure_sai[struct_end]) && aa != -1 ) {
-                            prob += cf_former(current_struct, aa) - cf_breaker(current_struct, aa); // sum up probabilities
+                            prob += cf_former(aa, current_struct) - cf_breaker(aa, current_struct); // sum up probabilities
                             struct_end++;
                             count++;
                         } else {
@@ -269,7 +252,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const char *structure_sai, const ch
                     if (count != 0) {
                         // compute average and normalize probability
                         prob /= count;
-                        prob = (prob + maxProbBreak[current_struct] - minProb[current_struct]) / (maxProbBreak[current_struct] + maxProb[current_struct] - minProb[current_struct]);
+                        prob = (prob + max_breaker_value[current_struct] - min_former_value[current_struct]) / (max_breaker_value[current_struct] + max_former_value[current_struct] - min_former_value[current_struct]);
                         
                         // map to match characters and store in result_buffer
                         int prob_normalized = ED4_pfold_round_sym(prob * 9);
@@ -300,14 +283,26 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const char *structure_sai, const ch
             
         case SECSTRUCT_SEQUENCE_PREDICT:
             // predict structures from structure_cmp and compare with structure_sai
-            error = ED4_pfold_predict_summary(structure_cmp, 0, 0);
+            char *structures[4];
+            for (int i = 0; i < 4; i++) {
+                structures[i] = new char [length + 1];
+                if (!structures[i]) {
+                    error = GB_export_error("Out of memory.");
+                    return error;
+                }
+                for (int j = 0; j < length; j++) {
+                    structures[i][j] = ' ';
+                }
+                structures[i][length] = '\0';
+            }
+            error = ED4_pfold_predict_structure(structure_cmp, structures, length);
             if (!error) {
                 for (count = 0; count < match_end; count++) {
                     result_buffer[count] = *pair_chars[STRUCT_UNKNOWN];
                     if (!strchr(gap_chars, structure_sai[count + start]) && strchr(gap_chars, structure_cmp[count + start])) {
                         result_buffer[count] = *pair_chars[STRUCT_NO_MATCH];
                     } else if ( strchr(gap_chars, structure_sai[count + start]) || 
-                                (structures[helix][count + start] == ' ' && structures[sheet][count + start] == ' ' && structures[beta_turn][count + start] == ' ') ) {
+                                (structures[ALPHA_HELIX][count + start] == ' ' && structures[BETA_SHEET][count + start] == ' ' && structures[BETA_TURN][count + start] == ' ') ) {
                         result_buffer[count] = *pair_chars[STRUCT_PERFECT_MATCH];
                     } else {
                         // search for good match first
@@ -330,50 +325,54 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const char *structure_sai, const ch
                         }
                     }
                 }
-                
                 // fill the remaining buffer with spaces
                 while (count <= end - start) {
                     result_buffer[count] = ' ';
                     count++;
                 }
             }
+            // free buffer
+            for (int i = 0; i < 4; i++) {
+                if (structures[i]) {
+                    delete structures[i];
+                    structures[i] = 0;
+                }
+            }
             break;
             
         default:
+            e4_assert(0); // function called with invalid argument for 'match_method'
             break;
         }
     }
     
     free(gap_chars);
     free(pair_chars_2);
-    for (int i = 0; pfold_match_type_awars[i].awar; i++) {
-        if (pairs[i]) free(pairs[i]);
-        if (pair_chars[i]) free(pair_chars[i]);
+    for (int i = 0; pfold_match_type_awars[i].name; i++) {
+        free(pairs[i]);
+        free(pair_chars[i]);
     }
     if (error) for (int i = 0; i <= end - start; i++) result_buffer[i] = ' '; // clear result buffer
     return error;
 }
 
 
-//TODO: Ralf zeigen; alte Funktionen löschen, wenn sie nicht mehr gebraucht werden
-char *ED4_pfold_find_protein_structure_SAI(const char *SAI_name, GBDATA *gbm, const char *alignment_name) {
-    GB_transaction dummy(gbm);
-    GBDATA *gb_protstruct = GBT_find_SAI(gbm, SAI_name);
+GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *alignment_name, long *protstruct_len /*= 0*/) {
+    GB_ERROR error = 0;
+    GB_transaction dummy(gb_main);
+    char *SAI_name = ED4_ROOT->aw_root->awar(PFOLD_AWAR_SELECTED_SAI)->read_string();
+    GBDATA *gb_protstruct = GBT_find_SAI(gb_main, SAI_name);
+    
+    free(*protstruct);
+    *protstruct = 0;
+    
     if (gb_protstruct) {
         GBDATA *gb_data = GBT_read_sequence(gb_protstruct, alignment_name);
         if (gb_data) {
-            return GB_read_string(gb_data);
+            *protstruct = GB_read_string(gb_data);
         }
     }
-    return 0;
-}
-
-
-GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gbm, const char *alignment_name, long *protstruct_len /*= 0*/) {
-    GB_ERROR error = 0;
-    char *SAI_name = ED4_ROOT->aw_root->awar(PFOLD_AWAR_SELECTED_SAI)->read_string();
     
-    *protstruct = ED4_pfold_find_protein_structure_SAI(SAI_name, gbm, alignment_name);
     if (*protstruct) {
         if (protstruct_len) *protstruct_len = (long)strlen(*protstruct);
     } else {
@@ -381,13 +380,15 @@ GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gbm, const char *alignment
         error = GB_export_error( "No SAI \"%s\" found. Protein structure information will not be displayed. "
                                  "Check \"Properties -> Protein Match Settings\".", SAI_name );
     }
+    
+    free(SAI_name);
     return error;
 }
 
 
 AW_window *ED4_pfold_create_props_window(AW_root *awr, AW_cb_struct *awcbs) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init( awr, "PFOLD_PROPS", "PROTEIN_STRUCTURE_PROPERTIES");
+    aws->init( awr, "PFOLD_PROPS", "PROTEIN_MATCH_SETTINGS");
     
     // create close button
     aws->at(10, 10);
@@ -396,7 +397,7 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, AW_cb_struct *awcbs) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     // create help button
-    aws->callback(AW_POPUP_HELP, (AW_CL)"pfold.hlp");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"pfold_props.hlp");
     aws->create_button("HELP", "HELP");
     aws->at_newline();
 
@@ -414,8 +415,8 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, AW_cb_struct *awcbs) {
     aws->label_length(30);
     AW_option_menu_struct *oms_sai = aws->create_option_menu(PFOLD_AWAR_SELECTED_SAI, "Selected Protein Structure SAI", "");
     ED4_pfold_select_SAI_and_update_option_menu(aws, (AW_CL)oms_sai, 0);
-    aws->label_length(9);
-    aws->label("Filter for");
+    aws->at_newline();
+    aws->label("-> Filter SAI names for");
     aws->callback(ED4_pfold_select_SAI_and_update_option_menu, (AW_CL)oms_sai, 0);
     aws->create_input_field(PFOLD_AWAR_SAI_FILTER, 10);
     aws->at_newline();
@@ -424,37 +425,41 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, AW_cb_struct *awcbs) {
     PFOLD_MATCH_METHOD match_method = (PFOLD_MATCH_METHOD) ED4_ROOT->aw_root->awar(PFOLD_AWAR_MATCH_METHOD)->read_int();
     aws->label_length(12);
     aws->create_option_menu(PFOLD_AWAR_MATCH_METHOD, "Match Method", "");
-    for (int i = 0; const char *mm_aw = pfold_match_method_awars[i].awar; i++) {
+    for (int i = 0; const char *mm_aw = pfold_match_method_awars[i].name; i++) {
         aws->callback(awcbs);
-        if (match_method == pfold_match_method_awars[i].match_method) {
+        if (match_method == pfold_match_method_awars[i].value) {
             aws->insert_default_option(mm_aw, "", match_method);
         } else {
-            aws->insert_option(mm_aw, "", pfold_match_method_awars[i].match_method);
+            aws->insert_option(mm_aw, "", pfold_match_method_awars[i].value);
         }
     }
     aws->update_option_menu();
     aws->at_newline();
     
-    // create match symbols input field
-    aws->label_length(40);
-    aws->label("Match Symbols (Range 0-100% in steps of 10%)");
-    aws->callback(awcbs);
-    aws->create_input_field(PFOLD_AWAR_SYMBOL_TEMPLATE_2, 10);
-    aws->at_newline();
-    
-    // create match type and symbols input fields 
-    for (int i = 0; pfold_match_type_awars[i].awar; i++) {
-        aws->label_length(12);
-        sprintf(awar, PFOLD_AWAR_PAIR_TEMPLATE, pfold_match_type_awars[i].awar);
-        aws->label(pfold_match_type_awars[i].awar);
+    // create match symbols and/or match types input fields
+    //TODO: show only fields that are relevant for current match method -> bind to callback function?
+    //if (match_method == SECSTRUCT_SEQUENCE) {
+        aws->label_length(40);
+        aws->label("Match Symbols (Range 0-100% in steps of 10%)");
         aws->callback(awcbs);
-        aws->create_input_field(awar, 30);
-        if (!i) aws->get_at_position(&ex,&ey);
-        sprintf(awar, PFOLD_AWAR_SYMBOL_TEMPLATE, pfold_match_type_awars[i].awar);
-        aws->callback(awcbs);
-        aws->create_input_field(awar, 3);
+        aws->create_input_field(PFOLD_AWAR_SYMBOL_TEMPLATE_2, 10);
         aws->at_newline();
-    }
+    //} else {
+        for (int i = 0; pfold_match_type_awars[i].name; i++) {
+            aws->label_length(12);
+            sprintf(awar, PFOLD_AWAR_PAIR_TEMPLATE, pfold_match_type_awars[i].name);
+            aws->label(pfold_match_type_awars[i].name);
+            aws->callback(awcbs);
+            aws->create_input_field(awar, 30);
+            //TODO: is it possible to disable input field for STRUCT_UNKNOWN?
+            //if (pfold_match_type_awars[i].value == STRUCT_UNKNOWN)
+            if (!i) aws->get_at_position(&ex, &ey);
+            sprintf(awar, PFOLD_AWAR_SYMBOL_TEMPLATE, pfold_match_type_awars[i].name);
+            aws->callback(awcbs);
+            aws->create_input_field(awar, 3);
+            aws->at_newline();
+        }
+    //}
     
     aws->window_fit();
     return (AW_window *)aws;
@@ -486,51 +491,38 @@ void ED4_pfold_select_SAI_and_update_option_menu(AW_window *aww, AW_CL oms, AW_C
         sai = GBT_next_SAI(sai);
     }
     
-    if (selected_sai) free(selected_sai);
-    if (sai_filter)   free(sai_filter);
+    free(selected_sai);
+    free(sai_filter);
     aww->update_option_menu();
     ED4_expose_all_windows();
 }
 
 
-inline int ED4_pfold_round_sym(double d) {
-    return int(d + .5);
+void ED4_pfold_find_structure(const char *sequence, char *structure, int length, const PFOLD_STRUCTURE s) {
+    e4_assert(s == ALPHA_HELIX || s == BETA_SHEET || s == BETA_TURN); // incorrect value for s
+    e4_assert(char2AA); // char2AA not initialized; ED4_pfold_init_statics() failed or hasn't been called yet
+    if (s == BETA_TURN) {
+        ED4_pfold_find_turns(sequence, structure, length);
+    } else {
+        ED4_pfold_find_nucleation_sites(sequence, structure, length, s);
+        ED4_pfold_extend_nucleation_sites(sequence, structure, length, s);
+    }
 }
 
 
-void ED4_pfold_find_nucleation_sites(const structure s) {
+void ED4_pfold_find_nucleation_sites(const char *sequence, char *structure, int length, const PFOLD_STRUCTURE s) {
 #ifdef SHOW_PROGRESS
-    cout << endl << "Searching for nucleation sites";
+    cout << endl << "Searching for nucleation sites:" << endl;
 #endif
-
+    e4_assert(s == ALPHA_HELIX || s == BETA_SHEET); // incorrect value for s
+    e4_assert(char2AA); // char2AA not initialized; ED4_pfold_init_statics() failed or hasn't been called yet
+    
     char *gap_chars = ED4_ROOT->aw_root->awar(ED4_AWAR_GAP_CHARS)->read_string(); // gap characters
-    char c; // character representing the structure (H for helix or E for beta sheet)
-    int windowSize; // window size used for finding nucleation sites
+    int windowSize = (s == ALPHA_HELIX ? 6 : 5); // window size used for finding nucleation sites
     double sumOfFormVal = 0, sumOfBreakVal = 0; // sum of former resp. breaker values in window
     int pos; // current position in sequence
     int count; // number of amino acids found in window
-    int aa;
-
-    // check structure and set parameters
-    switch (s) {
-        case helix:
-#ifdef SHOW_PROGRESS
-            cout << " (helix):" << endl;
-#endif
-            windowSize = 6;
-            c = 'H';
-            break;
-        case sheet:
-#ifdef SHOW_PROGRESS
-            cout << " (sheet):" << endl;
-#endif
-            windowSize = 5;
-            c = 'E';
-            break;
-        default:
-            e4_assert(0); // incorrect value for structure: possible candidates are 'helix' and 'sheet'
-            return;
-    }
+    int aa; // amino acid
 
     for (int i = 0; i < ((length + 1) - windowSize); i++) {
         pos = i;
@@ -547,301 +539,138 @@ void ED4_pfold_find_nucleation_sites(const structure s) {
             sumOfFormVal += cf_parameters[aa][s];
             sumOfBreakVal += cf_parameters[aa][s+2];
         }
+        
+        // assign sequence and save start and end of nucleation site for later extension
         if ((sumOfFormVal > (windowSize - 2)) && (sumOfBreakVal < 2)) {
             for (int j = i; j < (pos + count); j++) {
-                if (char2AA[sequence[j]] != -1) structures[s][j] = c;
+                if (char2AA[sequence[j]] != -1) structure[j] = structure_chars[s];
             }
         }
         if (aa == -1) i = pos + count; // skip unknown character
         sumOfFormVal = 0, sumOfBreakVal = 0;
     }
 
+    free(gap_chars);
 #ifdef SHOW_PROGRESS
-    cout << structures[s] << endl;
+    cout << structure << endl;
 #endif
 }
 
 
-//TODO: check this function again and simplify it
-void ED4_pfold_extend_nucleation_sites(const structure s) {
+void ED4_pfold_extend_nucleation_sites(const char *sequence, char *structure, int length, const PFOLD_STRUCTURE s) {
 #ifdef SHOW_PROGRESS
-    cout << endl << "Extending nucleation sites";
+    cout << endl << "Extending nucleation sites:" << endl;
 #endif
+    e4_assert(s == ALPHA_HELIX || s == BETA_SHEET); // incorrect value for s
+    e4_assert(char2AA); // char2AA not initialized; ED4_pfold_init_statics() failed or hasn't been called yet
 
-    // definition of local variables:
-    // c specifies the character representing a particular structure
-    char c;
-    // specifies the breakers for the particular structure
-    char breakers[7];
-    // specifies the indifferent amino acids for the particular structure
-    char indiff[5];
-    // indicates if breaker is found at current position (index 0) resp. at neighbouring position (index 1)
-    bool structBreak[2];
-    // indicates if indifferen amino acid is found at neighbouring position
-    bool structIndiff;
-    // indicates if structure breaks (two consecutive breakers resp. breaker followed by indifferent amino acid)
-    bool breakStruct;
-    // indicates if structure is continued (breakStruct == false and no occurence of special amino acids)
-    bool contStruct = true;
-    // specify start and end of nucleation site
-    int start = 0, end = 0;
-    // neighbour of end
-    int neighbour;
-    // just for testing...
-#ifdef STEP_THROUGH_EXT_NS
-    char temp;
-#endif
+    bool break_structure;   // break the current structure    
+    int start = 0, end = 0; // start and end of nucleation site
+    int neighbor = 0;       // neighbor of start or end
+    char *gap_chars = ED4_ROOT->aw_root->awar(ED4_AWAR_GAP_CHARS)->read_string(); // gap characters
 
-    // check which structure is specified and set variables appropriately
-    switch (s) {
-        case helix:
-#ifdef SHOW_PROGRESS
-            cout << " (helix):" << endl;
-#endif
-            c = 'H';
-            strcpy(breakers, "NYPG");
-            strcpy(indiff, "RTSC");
-            break;
-        case sheet:
-#ifdef SHOW_PROGRESS
-            cout << " (sheet):" << endl;
-#endif
-            c = 'E';
-            strcpy(breakers, "PDESGK");
-            strcpy(indiff, "RNHA");
-            break;
-        default:
-#ifdef SHOW_PROGRESS
-            cout << ":" << endl;
-#endif
-            e4_assert(0); // incorrect value for structure: possible candidates are 'helix' and 'sheet'
-            return;
-    }
-
-    // find nucleation sites and extend them in both directions:
-    // for whole structure
+    // find nucleation sites and extend them in both directions (for whole sequence)
     for (int indStruct = 0; indStruct < length; indStruct++) {
-        //  while (structures[s][indStruct] != '\0') {
-
-        // search beginning of sequence
-        while (!(strchr(amino_acids, sequence[indStruct])) && (sequence[indStruct] != '\0')){
-#ifdef STEP_THROUGH_EXT_NS
-            cout << "\nSearching beginning of sequence:\n";
-            temp = structures[s][indStruct];
-            structures[s][indStruct] = 'X';
-            cout << sequence << endl << structures[s] << endl;
-            structures[s][indStruct] = temp;
-            waitukp();
-#endif
+        
+        // search start and end of nucleated region
+        while ( indStruct < length && 
+                (structure[indStruct] == ' ') || strchr(gap_chars, sequence[indStruct])) {
             indStruct++;
         }
-
-        // first search nucleated region and set start/end
-        while (structures[s][indStruct] == ' ' || !(strchr(amino_acids, sequence[indStruct]))) {
-#ifdef STEP_THROUGH_EXT_NS
-            cout << "\nSearching nucleation site:\n";
-            temp = structures[s][indStruct];
-            structures[s][indStruct] = 'X';
-            cout << sequence << endl << structures[s] << endl;
-            structures[s][indStruct] = temp;
-            waitukp();
-#endif
+        if (indStruct >= length) break;
+        // get next amino acid that is not included in nucleation site
+        start = indStruct - 1;
+        while ( indStruct < length && 
+                (structure[indStruct] != ' ' || strchr(gap_chars, sequence[indStruct])) ) {
             indStruct++;
         }
-        start = indStruct;
-        if (start >= length) {
-#ifdef SHOW_PROGRESS
-            cout << structures[s] << endl;
-#endif
-#ifdef STEP_THROUGH_EXT_NS
-            waitukp();
-#endif
-            return;
-        }
-        while (structures[s][indStruct] == c || !(strchr(amino_acids, sequence[indStruct]))) {
-            indStruct++;
-        }
-        end = indStruct - 1;
+        // get next amino acid that is not included in nucleation site
+        end = indStruct;
 
-        // then extend nucleated region in both directions
+        // extend nucleated region in both directions
         // left side:
-#ifndef START_EXTENSION_INSIDE
-        do {
-            start--;
-//#ifdef STEP_THROUGH_EXT_NS
-//            cout << "\nFinding next amino acid::\n";
-//            temp = structures[s][start];
-//            structures[s][start] = 'X';
-//            cout << sequence << endl << structures[s] << endl;
-//            structures[s][start] = temp;
-//            waitukp();
-//#endif
-        } while ((start > 0) && !(strchr(amino_acids, sequence[start])));
-        while (contStruct && (start > 1) && (structures[s][start] != c)) {
-#else
-            do {
-#endif
-#ifdef STEP_THROUGH_EXT_NS
-                cout << "\nExtending left side:\n";
-                temp = structures[s][start];
-                structures[s][start] = 'X';
-                cout << sequence << endl << structures[s] << endl;
-                structures[s][start] = temp;
-                waitukp();
-#endif
-                structBreak[0] = strchr(breakers, sequence[start]) ? true : false;
-                neighbour = start - 1;
-                while (!(neighbour < 0) && !(strchr(amino_acids, sequence[neighbour]))) {
-#ifdef STEP_THROUGH_EXT_NS
-                    cout << "\nSearching neighbour:\n";
-                    temp = structures[s][neighbour];
-                    structures[s][neighbour] = 'X';
-                    cout << sequence << endl << structures[s] << endl;
-                    structures[s][neighbour] = temp;
-                    waitukp();
-#endif
-                    neighbour--;
-                }
-                if (neighbour < 0) {
-                    break;
-                }
-                structBreak[1] = strchr(breakers, sequence[neighbour]) ? true : false;
-                structIndiff = strchr(indiff, sequence[neighbour]) ? true : false;
-                breakStruct = (structBreak[0] && structBreak[1]) || (structBreak[0] && structIndiff);
-
-                switch (s) {
-                    case helix:
-                        contStruct = !breakStruct && (sequence[start] != 'P');
-                        break;
-                    case sheet:
-                        contStruct = !breakStruct && (sequence[start] != 'P') && (sequence[start] != 'E');
-                        break;
-                    default:
-                        break;
-                }
-                if (contStruct) {
-                    structures[s][start] = c;
-                    start = neighbour;
-                }
-#ifdef START_EXTENSION_INSIDE
-                else {
-                    structures[s][start] = ' ';
-                }
-
-            } while (contStruct && (start > 0) && (structures[s][start] != c));
-#else
+        while (start > 1 && strchr(gap_chars, sequence[start])) {
+            start--; // skip gaps
         }
-#endif
-
-        contStruct = true;
+        // break if no amino acid is found
+        if (start >= 0) break_structure = (char2AA[sequence[start]] == -1);
+        while (!break_structure && (start > 1) && (structure[start] == ' ')) {
+            // break if absolute breaker (P or E) is found
+            break_structure = (sequence[start] == 'P');
+            if (s == BETA_SHEET) break_structure |= (sequence[start] == 'E');
+            if (break_structure) break;
+            // check for breaker at current position
+            break_structure = strchr(structure_breaker[s], sequence[start]);
+            neighbor = start - 1; // get neighbor
+            while (neighbor > 0 && strchr(gap_chars, sequence[neighbor])) {
+                neighbor--; // skip gaps
+            }
+            // break if out of bounds or no amino acid is found
+            if (neighbor <= 0 || char2AA[sequence[neighbor]] == -1) {
+                break;
+            }
+            // break if another breaker or indifferent amino acid is found
+            break_structure &= strchr(structure_breaker[s], sequence[neighbor]) ||
+                               strchr(structure_indifferent[s], sequence[neighbor]);
+            if (!break_structure) {
+                structure[start] = structure_chars[s];
+            }
+            start = neighbor;  // continue with neigbor
+        }
 
         // right side:
-#ifndef START_EXTENSION_INSIDE
-        end++;
-        while (contStruct && (end < (length - 2))) {
-#else
-            do {
-#endif
-#ifdef STEP_THROUGH_EXT_NS
-                cout << "\nExtending right side:\n";
-                temp = structures[s][end];
-                structures[s][end] = 'X';
-                cout << sequence << endl << structures[s] << endl;
-                structures[s][end] = temp;
-                waitukp();
-#endif
-                strchr(breakers, sequence[end]) ? structBreak[0] = true : structBreak[0] = false;
-                neighbour = end + 1;
-                while (!(strchr(amino_acids, sequence[neighbour]))) {
-#ifdef STEP_THROUGH_EXT_NS
-                    cout << "\nSearching neighbour:\n";
-                    temp = structures[s][neighbour];
-                    structures[s][neighbour] = 'X';
-                    cout << sequence << endl << structures[s] << endl;
-                    structures[s][neighbour] = temp;
-                    waitukp();
-#endif
-                    neighbour++;
-                    if (neighbour >= (length - 1)) {
-#ifdef SHOW_PROGRESS
-                        cout << structures[s] << endl;
-#endif
-#ifdef STEP_THROUGH_EXT_NS
-                        waitukp();
-#endif
-                        return;
-                    }
-                }
-                strchr(breakers, sequence[neighbour]) ? structBreak[1] = true : structBreak[1] = false;
-                strchr(indiff, sequence[neighbour]) ? structIndiff = true : structIndiff = false;
-                breakStruct = (structBreak[0] && structBreak[1]) || (structBreak[0] && structIndiff);
-
-                switch (s) {
-                    case helix:
-                        contStruct = !breakStruct && (sequence[end] != 'P');
-                        break;
-                    case sheet:
-                        contStruct = !breakStruct && (sequence[end] != 'P') && (sequence[end] != 'E');
-                        break;
-                    default:
-                        break;
-                }
-                if (contStruct) {
-                    structures[s][end] = c;
-                    end = neighbour;
-                    if (structures[s][end] == c) {
-                        while (structures[s][end] == c || !(strchr(amino_acids, sequence[end]))) {
-#ifdef STEP_THROUGH_EXT_NS
-                            cout << "\nSearching end of nucleation site:\n";
-                            temp = structures[s][end];
-                            structures[s][end] = 'X';
-                            cout << sequence << endl << structures[s] << endl;
-                            structures[s][end] = temp;
-                            waitukp();
-#endif
-                            end++;
-                        }
-#ifdef START_EXTENSION_INSIDE
-                        end--;
-#endif
-                    }
-                }
-#ifdef START_EXTENSION_INSIDE
-                else {
-                    structures[s][end] = ' ';
-                }
-                indStruct = end;
-            } while (contStruct && (end < (length - 1)));
-#else
-            indStruct = end;
+        while (end < (length - 2) && strchr(gap_chars, sequence[end])) {
+            end++; // skip gaps
         }
-#endif
-        contStruct = true;
+        // break if no amino acid is found
+        if (end <= (length - 1)) break_structure = (char2AA[sequence[end]] == -1);
+        while (!break_structure && (end < (length - 2))) {
+            // break if absolute breaker (P or E) is found
+            break_structure = (sequence[end] == 'P');
+            if (s == BETA_SHEET) break_structure |= (sequence[end] == 'E');
+            if (break_structure) break;
+            // check for breaker at current position
+            break_structure = strchr(structure_breaker[s], sequence[end]);
+            neighbor = end + 1; // get neighbor
+            while (neighbor < (length - 2) && strchr(gap_chars, sequence[neighbor])) {
+                neighbor++; // skip gaps
+            }
+            // break if out of bounds or no amino acid is found
+            if (neighbor >= (length - 1) || char2AA[sequence[neighbor]] == -1) {
+                end = neighbor;
+                break;
+            }
+            // break if another breaker or indifferent amino acid is found
+            break_structure &= strchr(structure_breaker[s], sequence[neighbor]) ||
+                               strchr(structure_indifferent[s], sequence[neighbor]);
+            if (!break_structure) {
+                structure[end] = structure_chars[s];
+            }
+            end = neighbor; // continue with neigbor
+        }
+        indStruct = end; // continue with end
     }
 
+    free(gap_chars);
 #ifdef SHOW_PROGRESS
-    cout << structures[s] << endl;
-#endif
-
-#ifdef STEP_THROUGH_EXT_NS
-    waitukp();
+    cout << structure << endl;
 #endif
 }
 
 
-void ED4_pfold_find_turns() {
+void ED4_pfold_find_turns(const char *sequence, char *structure, int length) {
 #ifdef SHOW_PROGRESS
     cout << endl << "Searching for beta-turns: " << endl;
 #endif
+    e4_assert(char2AA); // char2AA not initialized; ED4_pfold_init_statics() failed or hasn't been called yet
 
-    char *gap_chars = ED4_ROOT->aw_root->awar(ED4_AWAR_GAP_CHARS)->read_string();
-    const char c = 'T';
-    const int windowSize = 4;
-    double P_a = 0, P_b = 0, P_turn = 0;
-    double p_t = 1;
-    int pos;
-    int count;
-    int aa;
+    char *gap_chars = ED4_ROOT->aw_root->awar(ED4_AWAR_GAP_CHARS)->read_string(); // gap characters
+    const int windowSize = 4; // window size
+    double P_a = 0, P_b = 0, P_turn = 0; // former values for helix, sheet and beta-turn
+    double p_t = 1; // probability for beta-turn
+    int pos;        // position in sequence
+    int count;      // position in window
+    int aa;         // amino acid
 
     for (int i = 0; i < ((length + 1) - windowSize); i++) {
         pos = i;
@@ -854,20 +683,20 @@ void ED4_pfold_find_turns() {
             aa = char2AA[sequence[pos + count]];
             if (aa == -1) break; // unknown character found
             
-            // compute probabilities
+            // compute former values and turn probability
             P_a    += cf_parameters_norm[aa][0];
             P_b    += cf_parameters_norm[aa][1];
             P_turn += cf_parameters_norm[aa][2];
             p_t    *= cf_parameters_norm[aa][3 + count];
         }
         if (count != 0) {
-//        if (count == 4) {
+        //if (count == 4) {
             P_a /= count;
             P_b /= count;
             P_turn /= count;
             if ((p_t > 0.000075) && (P_turn > 100) && (P_turn > P_a) && (P_turn > P_b)) {
                 for (int j = i; j < (pos + count); j++) {
-                    if (char2AA[sequence[j]] != -1) structures[beta_turn][j] = c;
+                    if (char2AA[sequence[j]] != -1) structure[j] = structure_chars[BETA_TURN];
                 }
             }
         }
@@ -877,116 +706,85 @@ void ED4_pfold_find_turns() {
 
     free(gap_chars);
 #ifdef SHOW_PROGRESS
-    cout << structures[beta_turn] << endl;
+    cout << structure << endl;
 #endif
 }
 
 
-//TODO: check this functions again. something seems to be wrong!
-void ED4_pfold_resolve_overlaps() {
+void ED4_pfold_resolve_overlaps(const char *sequence, char *structures[4], int length) {
 #ifdef SHOW_PROGRESS
     cout << endl << "Resolving overlaps: " << endl;
 #endif
+    e4_assert(char2AA); // char2AA not initialized; ED4_pfold_init_statics() failed or hasn't been called yet
 
-    // index of first amino acid included in overlap, end = index of last amino acid included in overlap
-    int start = -1, end = -1;
-    // P_a and P_b specify probabilities of alpha-helix resp. beta-sheet in overlapping regions
-    double P_a = 0, P_b = 0;
-    // character representing the structure
-    char c = '?';
-    //
-    structure s;
-    // probability of the predicted structure
-    double prob;
-    // character representing the probability
-    char p = '?';
-    // gap characters
-    char *gap_chars = ED4_ROOT->aw_root->awar(ED4_AWAR_GAP_CHARS)->read_string();
+    int start = -1;    // start of overlap
+    int end   = -1;    // end of overlap
+    double P_a = 0;    // sum of former values for alpha-helix in overlapping regions
+    double P_b = 0;    // sum of former values for beta-sheet in overlapping regions
+    PFOLD_STRUCTURE s; // structure with the highest former values
+    char *gap_chars = ED4_ROOT->aw_root->awar(ED4_AWAR_GAP_CHARS)->read_string(); // gap characters
 
     // scan structures for overlaps
     for (int pos = 0; pos < length; pos++) {
 
-        // if beta-turn is found at position pos
-        if (structures[beta_turn][pos] == 'T') {
-            // summary at position pos is beta-turn
-            //TODO: compare probabilities for turn, helix and sheet instead of just taking the turn? 
-            structures[summary][pos] = 'T';
+        // if beta-turn is found at position pos -> summary is beta-turn
+        if (structures[BETA_TURN][pos] != ' ') {
+            structures[STRUCTURE_SUMMARY][pos] = structure_chars[BETA_TURN];
 
-        // if helix and sheet are overlapping and no beta-turn is found at position pos
-        } else if ((structures[helix][pos] == 'H') && (structures[sheet][pos] == 'E')) {
+        // if helix and sheet are overlapping and no beta-turn is found -> check which structure has the highest sum of former values
+        } else if ((structures[ALPHA_HELIX][pos] != ' ') && (structures[BETA_SHEET][pos] != ' ')) {
 
             // search start and end of overlap (as long as no beta-turn is found)
             start = pos;
             end = pos;
-            while ((structures[helix][end] == 'H') && (structures[sheet][end] == 'E') && (structures[beta_turn][end] != 'T')) {
+            while ( structures[ALPHA_HELIX][end] != ' ' && structures[BETA_SHEET][end] != ' ' && 
+                    structures[BETA_TURN][end] == ' ' ) {
                 end++;
             }
-            end--;
 
             // calculate P_a and P_b for overlap
-            for (int i = start; i <= end; i++) {
+            for (int i = start; i < end; i++) {
                 // skip gaps
                 while (i < end && strchr(gap_chars, sequence[i])) {
                     i++;
                 }
                 int aa = char2AA[sequence[i]];
                 if (aa != -1) {
-                    P_a += cf_parameters[aa][helix];
-                    P_b += cf_parameters[aa][sheet];
+                    P_a += cf_parameters[aa][ALPHA_HELIX];
+                    P_b += cf_parameters[aa][BETA_SHEET];
                 }
             }
 
-            // check which structure is more likely and define variables appropriately:
-            if (P_a > P_b) {
-                c = 'H';
-                s = helix;
-            } else if (P_b > P_a) {
-                c = 'E';
-                s = sheet;
-            } else {
-                c = '?';
+            // check which structure is more likely and set s appropriately
+            s = (P_a > P_b) ? ALPHA_HELIX : BETA_SHEET;
+            
+            // set structure for overlapping region
+            for (int i = start; i < end; i++) {
+                structures[STRUCTURE_SUMMARY][i] = structure_chars[s];
             }
-
-//            //TODO: compute probability of structure
-//            prob = (P_a - P_b) / (end - start + 1);
-//            if (prob > 0) {
-//                prob /= 1.42;
-//            } else
-//                if (prob < 0) {
-//                    prob /= (-1.40);
-//                } else {
-//                    prob = 0;
-//                }
-//
-//            // round probability and convert result to character
-//            prob = round_sym(prob * 10);
-//            p = (prob == 10) ? 'X' : char((int)prob + 48);
-//
-//            // set structure and probability for region containing the overlap
-//            for (int i = start; i <= end; i++) {
-//                structures[summary][i] = c;
-//                probabilities[0][i] = p;
-//                probabilities[1][i] = (round_sym((parameters[s][i] / maxProb[s]) * 10) == 10) ? 'X' : (char(round_sym((parameters[s][i] / maxProb[s]) * 10) + 48));
-//            }
 
             // set variables for next pass of loop resp. end of loop
             P_a = 0, P_b = 0;
-            pos = end;
+            pos = end - 1;
 
-        // if helix and sheet are not overlapping and no beta-turn is found at position pos
+        // if helix and sheet are not overlapping and no beta-turn is found -> set structure accordingly
         } else {
             // summary at position pos is helix resp. sheet
-            if (structures[helix][pos] == 'H') {
-                structures[summary][pos] = 'H';
-            } else if (structures[sheet][pos] == 'E'){
-                structures[summary][pos] = 'E';
+            if (structures[ALPHA_HELIX][pos] != ' ') {
+                structures[STRUCTURE_SUMMARY][pos] = structure_chars[ALPHA_HELIX];
+            } else if (structures[BETA_SHEET][pos] != ' ') {
+                structures[STRUCTURE_SUMMARY][pos] = structure_chars[BETA_SHEET];
             }
         }
-
     }
     
     free(gap_chars);
 #ifdef SHOW_PROGRESS
     cout << structures[summary] << endl;
 #endif
+}
+
+
+inline int ED4_pfold_round_sym(double d) {
+    return int(d + .5);
 }
