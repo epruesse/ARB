@@ -39,6 +39,7 @@ my %used_files = map { $_ => 1; } (
 
 my %skipped_files = map { $_ => 1; } (
                                       '.cvsignore',
+                                      '.build.lst',
                                       '.depends',
                                       'config.makefile',
                                       'ChangeLog',
