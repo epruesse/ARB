@@ -39,15 +39,6 @@ FILE   *INFILE;
 
 int Thorough = 0;
 
-#ifdef _USE_PTHREADS
-volatile int multiBranch = 0;
-volatile int numBranches = 1;
-#else
-int multiBranch = 0;
-int numBranches = 1;
-#endif
-
-
 char run_id[128] = "", 
   workdir[1024] = "", 
   seq_file[1024] = "", 
@@ -67,7 +58,8 @@ char run_id[128] = "",
   ratesFileName[1024] = "", 
   perSiteLLsFileName[1024] = "", 
   lengthFileName[1024] = "", 
-  lengthFileNameModel[1024] = "";
+  lengthFileNameModel[1024] = "",
+  proteinModelFileName[1024] = "";
 
 char *likelihood_key   = "likelihood",
   *ntaxa_key        = "ntaxa",
@@ -77,7 +69,6 @@ char inverseMeaningDNA[16] = {'_', 'A', 'C', 'M', 'G', 'R', 'S', 'V', 'T', 'W', 
 char inverseMeaningPROT[23] = {'A','R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 
 			       'T', 'W', 'Y', 'V', 'B', 'Z', '-'};
 double masterTime;
-int allocCount = 0;
 
 const int protTipParsimonyValue[23] = {1 /* A*/, 2 /*R*/, 4/*N*/, 8/*D*/, 16/*C*/, 32/*Q*/, 64/*E*/, 128/*G*/, 
 				       256/*H*/, 512 /*I*/, 1024/*L*/, 2048/*K*/, 4096/*M*/, 
@@ -99,9 +90,4 @@ volatile double          *reductionBuffer;
 volatile double          *reductionBufferTwo;
 volatile int             *reductionBufferParsimony;
 volatile int             *barrierBuffer;
-#ifdef _LOCAL_DATA
-/* TODO-PTHREADS-LOCAL 
-   volatile double          **sumBufferAddresses;
-*/
-#endif
 #endif

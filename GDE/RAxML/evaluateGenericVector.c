@@ -42,8 +42,7 @@
 
 
 
-extern int multiBranch;
-extern int numBranches;
+
 
 static void evaluateGTRCAT_VECTOR (int *ex2, int *cptr,
 				   double *x2_start, double *v, double *EIGN, double *rptr, double *tipVector, 
@@ -96,7 +95,7 @@ static void evaluateGTRCAT_VECTOR (int *ex2, int *cptr,
 static void evaluateGTRCATMULT_VECTOR (int *ex2, int *cptr, int *modelptr, 
 				       double *x2_start, double *v, double *EIGN, double *rptr, 
 				       double *tipVector, double *pz, 
-				       char *tipX1, int lower, int n, int numberOfCategories, int numberOfModels)
+				       char *tipX1, int lower, int n, int numberOfCategories, int numberOfModels, int multiBranch)
 {
   double   z, lz = 0.0, ki, lz1, lz2, lz3, term;    
   int     i;
@@ -242,7 +241,7 @@ static void evaluateGTRCATPROT_VECTOR (int *ex2, int *cptr,
 static void evaluateGTRCATPROTMULT_VECTOR (int *ex2, int *cptr, int *modelptr, 
 					   double *x2,  double *v, double *EIGN, double *rptr, double *tipVector, 
 					   double *pz, 
-					   char *tipX1, int lower, int n, int numberOfCategories, int numberOfModels)
+					   char *tipX1, int lower, int n, int numberOfCategories, int numberOfModels, int multiBranch)
 {
   double   z, lz = 0.0, ki, lza[19];       
   int     i, l; 
@@ -407,7 +406,7 @@ static void evaluateGTRGAMMA_VECTOR (int *ex2,
 static void evaluateGTRGAMMAMULT_VECTOR(int *ex2, int *modelptr, 
 					double *x2_start, double *v, double *EIGN, double *gammaRates, 
 					double *tipVector, double *pz, 
-					char *tipX1, int lower, int n, int numberOfModels)
+					char *tipX1, int lower, int n, int numberOfModels, int multiBranch)
 {
   double   z, lz = 0.0, term, ki;    
   int     i;
@@ -493,7 +492,7 @@ static void evaluateGTRGAMMAMULT_VECTOR(int *ex2, int *modelptr,
 static void evaluateGTRGAMMAMULTINVAR_VECTOR(int *ex2, int *modelptr, int *iptr,
 					     double *x2_start, double *v, double *EIGN, double *gammaRates, 
 					     double *tipVector, double *tFreqs, double *invariants, double *pz, 
-					     char *tipX1, int lower, int n, int numberOfModels)
+					     char *tipX1, int lower, int n, int numberOfModels, int multiBranch)
 {
   double   z, lz = 0.0, term, ki;    
   int     i, model; 
@@ -816,7 +815,7 @@ static void evaluateGTRGAMMAPROTINVAR_VECTOR(int *ex2, int *iptr,
 static void evaluateGTRGAMMAPROTMULT_VECTOR (int *ex2, int *modelptr,
 					     double *x2,  double *v, double *EIGN, double *gammaRates, 
 					     double *tipVector, double *pz, 
-					     char *tipX1, int lower, int n, int numberOfModels)
+					     char *tipX1, int lower, int n, int numberOfModels, int multiBranch)
 {
   double   z, lz = 0.0, term, ki;    
   int     i, j;  
@@ -899,7 +898,7 @@ static void evaluateGTRGAMMAPROTMULT_VECTOR (int *ex2, int *modelptr,
 static void evaluateGTRGAMMAPROTMULTINVAR_VECTOR(int *ex2, int *modelptr, int *iptr,
 						 double *x2,  double *v, double *EIGN, double *gammaRates, 
 						 double *tipVector, double *tFreqs, double *invariants, double *pz, 
-						 char *tipX1, int lower, int n, int numberOfModels)
+						 char *tipX1, int lower, int n, int numberOfModels, int multiBranch)
 {
   double   z, lz = 0.0, term, ki;    
   int     i, j;  
@@ -997,10 +996,114 @@ static void evaluateGTRGAMMAPROTMULTINVAR_VECTOR(int *ex2, int *modelptr, int *i
        
     
 
+#ifdef _LOCAL_DATA
+  
+void evaluateGenericVectorIterative(tree *localTree, int startIndex, int endIndex)    
+{
+  double *x2_start, *pz, *v;
+  char *tip;
+  int *ex2;
+  int pNumber, qNumber;
 
-    
+  v = localTree->strided_siteLL_Vector;
 
-void evaluateGenericVectorIterative(tree *tr, tree *localTree, int startIndex, int endIndex)    
+  pNumber = localTree->td[0].ti[0].pNumber;
+  qNumber = localTree->td[0].ti[0].qNumber;
+  pz      = localTree->td[0].ti[0].qz;
+
+  newviewIterative(localTree, startIndex, endIndex);
+
+
+  x2_start = getLikelihoodArray(qNumber,  localTree->mxtips, localTree->xVector); 
+  ex2      = getScalingArray(qNumber, localTree->cdta->endsite, localTree->mxtips, localTree->expArray); 
+
+  tip   = localTree->strided_yVector[pNumber];
+
+
+  if(localTree->mixedData)
+    {
+      assert(0);
+    }
+  else
+    {
+      switch(localTree->likelihoodFunction)
+	{
+	case GTRCAT:
+	  evaluateGTRCAT_VECTOR(ex2, localTree->strided_rateCategory, 
+				x2_start, v, localTree->EIGN_DNA, localTree->strided_patrat, localTree->tipVectorDNA, pz[0], 
+				tip, startIndex, endIndex, localTree->NumberOfCategories);    
+	  break;
+	case GTRCATMULT:
+	  evaluateGTRCATMULT_VECTOR(ex2, localTree->strided_rateCategory, localTree->strided_model,
+				    x2_start, v, localTree->EIGN_DNA, localTree->strided_patrat, localTree->tipVectorDNA, pz, 
+				    tip, startIndex, endIndex, localTree->NumberOfCategories, localTree->NumberOfModels, 
+				    localTree->multiBranch);
+	  break;
+	case PROTCAT:
+	  evaluateGTRCATPROT_VECTOR(ex2, localTree->strided_rateCategory,
+				    x2_start, v, localTree->EIGN_AA, localTree->strided_patrat, localTree->tipVectorAA, pz[0], 
+				    tip, startIndex, endIndex, localTree->NumberOfCategories);
+	  break;
+	case PROTCATMULT:
+	  evaluateGTRCATPROTMULT_VECTOR(ex2, localTree->strided_rateCategory, localTree->strided_model, 
+					x2_start, v, localTree->EIGN_AA, localTree->strided_patrat, localTree->tipVectorAA, pz, 
+					tip, startIndex, endIndex, localTree->NumberOfCategories, localTree->NumberOfModels, localTree->multiBranch);
+	  break;
+	case GTRGAMMA:
+	  evaluateGTRGAMMA_VECTOR(ex2, 
+				  x2_start, v, localTree->EIGN_DNA, localTree->gammaRates, localTree->tipVectorDNA, pz[0], 
+				  tip, startIndex, endIndex); 
+	  break;
+	case GTRGAMMAI:
+	  evaluateGTRGAMMAINVAR_VECTOR(ex2, localTree->strided_invariant,
+				       x2_start, v, localTree->EIGN_DNA, localTree->gammaRates, 
+				       localTree->tipVectorDNA, localTree->frequencies_DNA, localTree->invariants[0], pz[0], 
+				       tip, startIndex, endIndex);
+	  break;
+	case GTRGAMMAMULT:
+	  evaluateGTRGAMMAMULT_VECTOR(ex2, localTree->strided_model,
+				      x2_start, v, localTree->EIGN_DNA, localTree->gammaRates, localTree->tipVectorDNA, pz, 
+				      tip, startIndex, endIndex, localTree->NumberOfModels, localTree->multiBranch);
+	  break;
+	case GTRGAMMAMULTI:
+	  evaluateGTRGAMMAMULTINVAR_VECTOR(ex2, localTree->strided_model,  localTree->strided_invariant,
+					   x2_start, v, localTree->EIGN_DNA, localTree->gammaRates, 
+					   localTree->tipVectorDNA, localTree->frequencies_DNA, localTree->invariants, pz, 
+					   tip, startIndex, endIndex, localTree->NumberOfModels, localTree->multiBranch); 
+	  break;
+	case PROTGAMMA:
+	  evaluateGTRGAMMAPROT_VECTOR(ex2,
+				      x2_start, v, localTree->EIGN_AA, localTree->gammaRates, localTree->tipVectorAA, pz[0], 
+				      tip, startIndex, endIndex);
+	  break;
+	case PROTGAMMAI:
+	  evaluateGTRGAMMAPROTINVAR_VECTOR(ex2,  localTree->strided_invariant,
+					   x2_start, v, localTree->EIGN_AA, localTree->gammaRates, 
+					   localTree->tipVectorAA, localTree->frequencies_AA, localTree->invariants[0], pz[0], 
+					   tip, startIndex, endIndex);
+	  break;
+	case PROTGAMMAMULT:
+	  evaluateGTRGAMMAPROTMULT_VECTOR(ex2, localTree->strided_model,
+					  x2_start, v, localTree->EIGN_AA, localTree->gammaRates, localTree->tipVectorAA, pz, 
+					  tip, startIndex, endIndex, localTree->NumberOfModels, localTree->multiBranch);
+	  break;
+	case PROTGAMMAMULTI:
+	  evaluateGTRGAMMAPROTMULTINVAR_VECTOR(ex2, localTree->strided_model,  localTree->strided_invariant,
+					       x2_start, v, localTree->EIGN_AA, localTree->gammaRates, 
+					       localTree->tipVectorAA, localTree->frequencies_AA, localTree->invariants, pz, 
+					       tip, startIndex, endIndex, localTree->NumberOfModels, localTree->multiBranch
+					       );
+	  break;
+	default:
+	  assert(0);
+	} 
+    }
+
+}
+  
+#else
+
+void evaluateGenericVectorIterative(tree *tr, int startIndex, int endIndex)    
 {
   double *x2_start, *pz, *v;
   char *tip;
@@ -1009,11 +1112,11 @@ void evaluateGenericVectorIterative(tree *tr, tree *localTree, int startIndex, i
 
   v = tr->siteLL_Vector;
 
-  pNumber = tr->ti[0].pNumber;
-  qNumber = tr->ti[0].qNumber;
-  pz      = tr->ti[0].qz;
+  pNumber = tr->td[0].ti[0].pNumber;
+  qNumber = tr->td[0].ti[0].qNumber;
+  pz      = tr->td[0].ti[0].qz;
 
-  newviewIterative(tr, localTree, 0, tr->cdta->endsite);
+  newviewIterative(tr, 0, tr->cdta->endsite);
 
 
   x2_start = getLikelihoodArray(qNumber,  tr->mxtips, tr->xVector); 
@@ -1028,7 +1131,7 @@ void evaluateGenericVectorIterative(tree *tr, tree *localTree, int startIndex, i
 
       for(model = 0; model < tr->NumberOfModels; model++)
 	{
-	  if(multiBranch)
+	  if(tr->multiBranch)
 	    branchIndex = model;
 	  else
 	    branchIndex = 0;
@@ -1123,7 +1226,7 @@ void evaluateGenericVectorIterative(tree *tr, tree *localTree, int startIndex, i
 	case GTRCATMULT:
 	  evaluateGTRCATMULT_VECTOR(ex2, tr->cdta->rateCategory, tr->model,
 				    x2_start, v, tr->EIGN_DNA, tr->cdta->patrat, tr->tipVectorDNA, pz, 
-				    tip, startIndex, endIndex, tr->NumberOfCategories, tr->NumberOfModels);
+				    tip, startIndex, endIndex, tr->NumberOfCategories, tr->NumberOfModels, tr->multiBranch);
 	  break;
 	case PROTCAT:
 	  evaluateGTRCATPROT_VECTOR(ex2, tr->cdta->rateCategory,
@@ -1133,7 +1236,7 @@ void evaluateGenericVectorIterative(tree *tr, tree *localTree, int startIndex, i
 	case PROTCATMULT:
 	  evaluateGTRCATPROTMULT_VECTOR(ex2, tr->cdta->rateCategory, tr->model, 
 					x2_start, v, tr->EIGN_AA, tr->cdta->patrat, tr->tipVectorAA, pz, 
-					tip, startIndex, endIndex, tr->NumberOfCategories, tr->NumberOfModels);
+					tip, startIndex, endIndex, tr->NumberOfCategories, tr->NumberOfModels, tr->multiBranch);
 	  break;
 	case GTRGAMMA:
 	  evaluateGTRGAMMA_VECTOR(ex2, 
@@ -1149,13 +1252,13 @@ void evaluateGenericVectorIterative(tree *tr, tree *localTree, int startIndex, i
 	case GTRGAMMAMULT:
 	  evaluateGTRGAMMAMULT_VECTOR(ex2, tr->model,
 				      x2_start, v, tr->EIGN_DNA, tr->gammaRates, tr->tipVectorDNA, pz, 
-				      tip, startIndex, endIndex, tr->NumberOfModels);
+				      tip, startIndex, endIndex, tr->NumberOfModels, tr->multiBranch);
 	  break;
 	case GTRGAMMAMULTI:
 	  evaluateGTRGAMMAMULTINVAR_VECTOR(ex2, tr->model,  tr->invariant,
 					   x2_start, v, tr->EIGN_DNA, tr->gammaRates, 
 					   tr->tipVectorDNA, tr->frequencies_DNA, tr->invariants, pz, 
-					   tip, startIndex, endIndex, tr->NumberOfModels); 
+					   tip, startIndex, endIndex, tr->NumberOfModels, tr->multiBranch); 
 	  break;
 	case PROTGAMMA:
 	  evaluateGTRGAMMAPROT_VECTOR(ex2,
@@ -1171,13 +1274,13 @@ void evaluateGenericVectorIterative(tree *tr, tree *localTree, int startIndex, i
 	case PROTGAMMAMULT:
 	  evaluateGTRGAMMAPROTMULT_VECTOR(ex2, tr->model,
 					  x2_start, v, tr->EIGN_AA, tr->gammaRates, tr->tipVectorAA, pz, 
-					  tip, startIndex, endIndex, tr->NumberOfModels);
+					  tip, startIndex, endIndex, tr->NumberOfModels, tr->multiBranch);
 	  break;
 	case PROTGAMMAMULTI:
 	  evaluateGTRGAMMAPROTMULTINVAR_VECTOR(ex2, tr->model,  tr->invariant,
 					       x2_start, v, tr->EIGN_AA, tr->gammaRates, 
 					       tr->tipVectorAA, tr->frequencies_AA, tr->invariants, pz, 
-					       tip, startIndex, endIndex, tr->NumberOfModels
+					       tip, startIndex, endIndex, tr->NumberOfModels, tr->multiBranch
 					       );
 	  break;
 	default:
@@ -1187,7 +1290,7 @@ void evaluateGenericVectorIterative(tree *tr, tree *localTree, int startIndex, i
 
 }
 
-
+#endif
 
 void evaluateGenericVector (tree *tr, nodeptr p, double *v)
 {
@@ -1203,21 +1306,21 @@ void evaluateGenericVector (tree *tr, nodeptr p, double *v)
       q = tmp;	      
     }   
   
-  tr->ti[0].pNumber = p->number;
-  tr->ti[0].qNumber = q->number;
+  tr->td[0].ti[0].pNumber = p->number;
+  tr->td[0].ti[0].qNumber = q->number;
 
-  for(i = 0; i < numBranches; i++)    
-    tr->ti[0].qz[i] =  q->z[i];
+  for(i = 0; i < tr->numBranches; i++)    
+    tr->td[0].ti[0].qz[i] =  q->z[i];
 
   tr->siteLL_Vector = v;
 
-  tr->traversalCount = 1;
+  tr->td[0].count = 1;
   if(!q->x)
-    computeTraversalInfo(q, &(tr->ti[0]), &(tr->traversalCount), tr->rdta->numsp); 
+    computeTraversalInfo(q, &(tr->td[0].ti[0]), &(tr->td[0].count), tr->rdta->numsp, tr->numBranches); 
  
 #ifdef _USE_PTHREADS
   masterBarrier(THREAD_EVALUATE_VECTOR, tr);
 #else
-  evaluateGenericVectorIterative(tr, tr, 0, tr->cdta->endsite); 
+  evaluateGenericVectorIterative(tr, 0, tr->cdta->endsite); 
 #endif
 }

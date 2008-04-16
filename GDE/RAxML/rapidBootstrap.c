@@ -47,7 +47,6 @@
 #include "axml.h"
 
 extern int Thorough;
-extern int numBranches;
 extern infoList iList;
 extern char inverseMeaningDNA[16];
 extern char seq_file[1024];
@@ -174,7 +173,13 @@ void optimizeRAPID(tree *tr, analdef *adef)
   while(impr)
     {              
       recallBestTree(bestT, 1, tr);     
-      treeEvaluate(tr, 1);	 	                    
+      treeEvaluate(tr, 1);
+
+#ifdef _DEBUG_AA
+      printf("TreeEVAL optRAPID %f\n", tr->likelihood);
+      assert(!isnan(tr->likelihood));
+#endif
+	 	                    
       /*drawBipartitionsOnTree(tr, adef, rl, n);*/
       saveBestTree(bestT, tr);     
          
@@ -188,7 +193,12 @@ void optimizeRAPID(tree *tr, analdef *adef)
 	{	    		  	   
 	  recallBestTree(bt, i, tr);	    
 	  treeEvaluate(tr, 0.25);	    	 	
-	      
+
+#ifdef _DEBUG_AA	      
+	  printf("%d %f\n", i, tr->likelihood);
+	  assert(!isnan(tr->likelihood));
+#endif
+
 	  difference = ((tr->likelihood > previousLh)? 
 			tr->likelihood - previousLh: 
 			previousLh - tr->likelihood); 	    
@@ -314,12 +324,12 @@ static boolean qupdate (tree *tr, nodeptr p)
   int i;
       
   q = p->back;
-  for(i = 0; i < numBranches; i++)
+  for(i = 0; i < tr->numBranches; i++)
     z0[i] = q->z[i];
       
   makenewzGeneric(tr, p, q, z0, 1, z); 	 
       
-  for(i = 0; i < numBranches; i++)
+  for(i = 0; i < tr->numBranches; i++)
     p->z[i] = q->z[i] = z[i]; 
         
   return TRUE;    

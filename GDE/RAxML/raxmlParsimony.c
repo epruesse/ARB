@@ -48,7 +48,6 @@
 #include "axml.h"
 
 extern double masterTime;
-extern int allocCount;
 extern const int protTipParsimonyValue[23];
 
 #ifdef _USE_PTHREADS
@@ -371,12 +370,12 @@ static int evalPROT(char *right, parsimonyVector *rightVector, parsimonyVector *
 
 #ifdef _LOCAL_DATA
 
-void newviewParsimonyIterative(tree *tr, tree *localTree, int startIndex, int endIndex)
+void newviewParsimonyIterative(tree *localTree, int startIndex, int endIndex)
 {  
-  traversalInfo *ti   = tr->ti;
+  traversalInfo *ti   = localTree->td[0].ti;
   int i;  
 
-  for(i = 1; i < localTree->traversalCount; i++)
+  for(i = 1; i < localTree->td[0].count; i++)
     {    
       traversalInfo *tInfo = &ti[i];
       char 
@@ -390,12 +389,12 @@ void newviewParsimonyIterative(tree *tr, tree *localTree, int startIndex, int en
       switch(tInfo->tipCase)
 	{
 	case TIP_TIP:
-	  left       = &localTree->yVector[tInfo->qNumber][startIndex];
-	  right      = &localTree->yVector[tInfo->rNumber][startIndex];
+	  left       = &localTree->strided_yVector[tInfo->qNumber][startIndex];
+	  right      = &localTree->strided_yVector[tInfo->rNumber][startIndex];
 	  thisVector = &(localTree->parsimonyData[localTree->mySpan * (tInfo->pNumber - localTree->mxtips - 1)]);
 	  break;
 	case TIP_INNER:
-	  left        = &localTree->yVector[tInfo->qNumber][startIndex];
+	  left        = &localTree->strided_yVector[tInfo->qNumber][startIndex];
 	  rightVector = &(localTree->parsimonyData[localTree->mySpan * (tInfo->rNumber - localTree->mxtips - 1)]);
 	  thisVector  = &(localTree->parsimonyData[localTree->mySpan * (tInfo->pNumber - localTree->mxtips - 1)]); 
 	  break;
@@ -447,34 +446,31 @@ void newviewParsimonyIterative(tree *tr, tree *localTree, int startIndex, int en
     }
 }
 
-int evaluateParsimonyIterative(tree *tr, tree *localTree, int lower, int upper)
+int evaluateParsimonyIterative(tree *localTree, int lower, int upper)
 {
   int pNumber, qNumber, result;   
   char *right = (char *)NULL; 
   parsimonyVector 
     *rightVector = (parsimonyVector *)NULL, 
-    *leftVector  = (parsimonyVector *)NULL;   
-  
-  /*pNumber = localTree->ti[0].pNumber;
-    qNumber = localTree->ti[0].qNumber;*/
+    *leftVector  = (parsimonyVector *)NULL;      
 
-  pNumber = tr->ti[0].pNumber;
-  qNumber = tr->ti[0].qNumber;
+  pNumber = localTree->td[0].ti[0].pNumber;
+  qNumber = localTree->td[0].ti[0].qNumber;
 
  
-  newviewParsimonyIterative(tr, localTree, lower, upper);
+  newviewParsimonyIterative(localTree, lower, upper);
 
   if(isTip(pNumber, localTree->mxtips) || isTip(qNumber, localTree->mxtips))
     {	        	    
       if(isTip(qNumber, localTree->mxtips))
 	{	
 	  leftVector = &(localTree->parsimonyData[localTree->mySpan * (pNumber - localTree->mxtips - 1)]);
-	  right = &localTree->yVector[qNumber][lower];
+	  right = &localTree->strided_yVector[qNumber][lower];
 	}           
       else
 	{
 	  leftVector = &(localTree->parsimonyData[localTree->mySpan * (qNumber - localTree->mxtips - 1)]);
-	  right = &localTree->yVector[pNumber][lower];
+	  right = &localTree->strided_yVector[pNumber][lower];
 	}
     }
   else
@@ -495,10 +491,10 @@ int evaluateParsimonyIterative(tree *tr, tree *localTree, int lower, int upper)
 	  switch(localTree->partitionData[i].dataType)
 	    {       	
 	    case AA_DATA: 
-	      partialResult += evalPROT(right, rightVector, leftVector, l, u, localTree->cdta->aliaswgt);
+	      partialResult += evalPROT(right, rightVector, leftVector, l, u, localTree->strided_aliaswgt);
 	      break;
-	    case DNA_DATA:
-	      partialResult += evalDNA(right, rightVector, leftVector, l, u, localTree->cdta->aliaswgt);
+	    case DNA_DATA:	      
+	      partialResult += evalDNA(right, rightVector, leftVector, l, u, localTree->strided_aliaswgt);	      	    
 	      break;
 	    default:
 	      assert(0);
@@ -511,10 +507,10 @@ int evaluateParsimonyIterative(tree *tr, tree *localTree, int lower, int upper)
       switch(localTree->partitionData[0].dataType)
 	{
 	case AA_DATA: 
-	  result = evalPROT(right, rightVector, leftVector, 0, (upper - lower), &(localTree->cdta->aliaswgt[lower]));
+	  result = evalPROT(right, rightVector, leftVector, 0, (upper - lower), &(localTree->strided_aliaswgt[lower]));
 	  break;
 	case DNA_DATA:
-	  result = evalDNA(right, rightVector, leftVector, 0, (upper - lower), &(localTree->cdta->aliaswgt[lower]));
+	  result = evalDNA(right, rightVector, leftVector, 0, (upper - lower), &(localTree->strided_aliaswgt[lower]));
 	  break;
 	default:
 	  assert(0);
@@ -526,12 +522,12 @@ int evaluateParsimonyIterative(tree *tr, tree *localTree, int lower, int upper)
 
 #else
 
-void newviewParsimonyIterative(tree *tr, tree *localTree, int startIndex, int endIndex)
+void newviewParsimonyIterative(tree *tr, int startIndex, int endIndex)
 {  
-  traversalInfo *ti   = tr->ti;
+  traversalInfo *ti   = tr->td[0].ti;
   int i;
 
-  for(i = 1; i < tr->traversalCount; i++)
+  for(i = 1; i < tr->td[0].count; i++)
     {    
       traversalInfo *tInfo = &ti[i];
       char 
@@ -602,7 +598,7 @@ void newviewParsimonyIterative(tree *tr, tree *localTree, int startIndex, int en
     }
 }
 
-int evaluateParsimonyIterative(tree *tr, tree *localTree, int lower, int upper)
+int evaluateParsimonyIterative(tree *tr, int lower, int upper)
 {
   int pNumber, qNumber, result;   
   char *right = (char *)NULL; 
@@ -610,10 +606,10 @@ int evaluateParsimonyIterative(tree *tr, tree *localTree, int lower, int upper)
     *rightVector = (parsimonyVector *)NULL, 
     *leftVector  = (parsimonyVector *)NULL;   
   
-  pNumber = tr->ti[0].pNumber;
-  qNumber = tr->ti[0].qNumber;
+  pNumber = tr->td[0].ti[0].pNumber;
+  qNumber = tr->td[0].ti[0].qNumber;
 
-  newviewParsimonyIterative(tr, localTree, lower, upper);
+  newviewParsimonyIterative(tr, lower, upper);
 
   if(isTip(pNumber, tr->rdta->numsp) || isTip(qNumber, tr->rdta->numsp))
     {	        	    
@@ -682,24 +678,27 @@ static int evaluateParsimony(tree *tr, nodeptr p)
 {
   int result;
   nodeptr q = p->back;
-  tr->ti[0].pNumber = p->number;
-  tr->ti[0].qNumber = q->number;
+  tr->td[0].ti[0].pNumber = p->number;
+  tr->td[0].ti[0].qNumber = q->number;
 
-  tr->traversalCount = 1;
+  tr->td[0].count = 1;
+
   if(!p->x)
-    computeTraversalInfo(p, &(tr->ti[0]), &(tr->traversalCount), tr->rdta->numsp);
+    computeTraversalInfoParsimony(p, &(tr->td[0].ti[0]), &(tr->td[0].count), tr->rdta->numsp);
   if(!q->x)
-    computeTraversalInfo(q, &(tr->ti[0]), &(tr->traversalCount), tr->rdta->numsp); 
+    computeTraversalInfoParsimony(q, &(tr->td[0].ti[0]), &(tr->td[0].count), tr->rdta->numsp); 
 
 #ifdef _USE_PTHREADS
   {
     int i;    
+
     masterBarrier(THREAD_EVALUATE_PARSIMONY, tr);    
+    
     for(i = 0, result = 0; i < NumberOfThreads; i++)
       result += reductionBufferParsimony[i]; 
   }
 #else
-  result = evaluateParsimonyIterative(tr, tr, 0, tr->parsimonyLength);
+  result = evaluateParsimonyIterative(tr, 0, tr->parsimonyLength);
 #endif
 
   return result;
@@ -711,15 +710,15 @@ static void newviewParsimony(tree *tr, nodeptr  p)
   if(isTip(p->number, tr->rdta->numsp))
     return;
   
-  tr->traversalCount = 1;
-  computeTraversalInfoParsimony(p, &(tr->ti[0]), &(tr->traversalCount), tr->rdta->numsp);              
+  tr->td[0].count = 1;
+  computeTraversalInfoParsimony(p, &(tr->td[0].ti[0]), &(tr->td[0].count), tr->rdta->numsp);              
 
-  if(tr->traversalCount > 1)
+  if(tr->td[0].count > 1)
     {
 #ifdef _USE_PTHREADS
       masterBarrier(THREAD_NEWVIEW_PARSIMONY, tr); 
 #else
-      newviewParsimonyIterative(tr, tr, 0, tr->parsimonyLength);    
+      newviewParsimonyIterative(tr, 0, tr->parsimonyLength);    
 #endif
     }
 }
@@ -777,20 +776,20 @@ static void insertParsimony (tree *tr, nodeptr p, nodeptr q)
   
   r = q->back;
   
-  hookupDefault(p->next,       q);
-  hookupDefault(p->next->next, r); 
+  hookupDefault(p->next,       q, tr->numBranches);
+  hookupDefault(p->next->next, r, tr->numBranches); 
    
   newviewParsimony(tr, p);     
 } 
 
-static void insertRandom (nodeptr p, nodeptr q)
+static void insertRandom (nodeptr p, nodeptr q, int numBranches)
 {
   nodeptr  r;
   
   r = q->back;
   
-  hookupDefault(p->next,       q);
-  hookupDefault(p->next->next, r); 
+  hookupDefault(p->next,       q, numBranches);
+  hookupDefault(p->next->next, r, numBranches); 
 } 
 
 
@@ -799,7 +798,7 @@ static nodeptr buildNewTip (tree *tr, nodeptr p)
   nodeptr  q;
 
   q = tr->nodep[(tr->nextnode)++];
-  hookupDefault(p, q);
+  hookupDefault(p, q, tr->numBranches);
   return  q;
 } 
 
@@ -813,7 +812,7 @@ static void buildSimpleTree (tree *tr, int ip, int iq, int ir)
   tr->start = tr->nodep[i];
   tr->ntips = 3;
   p = tr->nodep[ip];
-  hookupDefault(p, tr->nodep[iq]);
+  hookupDefault(p, tr->nodep[iq], tr->numBranches);
   s = buildNewTip(tr, tr->nodep[ir]);
   insertParsimony(tr, s, p);
 }
@@ -829,9 +828,9 @@ static void buildSimpleTreeRandom (tree *tr, int ip, int iq, int ir)
   tr->start = tr->nodep[i];
   tr->ntips = 3;
   p = tr->nodep[ip];
-  hookupDefault(p, tr->nodep[iq]);
+  hookupDefault(p, tr->nodep[iq], tr->numBranches);
   s = buildNewTip(tr, tr->nodep[ir]);
-  insertRandom( s, p);
+  insertRandom( s, p, tr->numBranches);
 }
 
 int checker(tree *tr, nodeptr p)
@@ -906,7 +905,7 @@ static void testInsertParsimony (tree *tr, nodeptr p, nodeptr q)
 	  tr->removeNode = p;
 	}
       
-      hookupDefault(q, r);
+      hookupDefault(q, r, tr->numBranches);
       p->next->next->back = p->next->back = (nodeptr) NULL;
 
     }      
@@ -1045,14 +1044,14 @@ static void initravDISTParsimony (tree *tr, nodeptr p, int distance)
 }
 
 
-static nodeptr  removeNodeParsimony (nodeptr p)
+static nodeptr  removeNodeParsimony (nodeptr p, int numBranches)
 { 
   nodeptr  q, r;         
 
   q = p->next->back;
   r = p->next->next->back;   
     
-  hookupDefault(q, r);
+  hookupDefault(q, r, numBranches);
 
   p->next->next->back = p->next->back = (node *) NULL;
   
@@ -1104,7 +1103,7 @@ static int rearrangeParsimony(tree *tr, nodeptr p, int mintrav, int maxtrav)
       
       if (! isTip(p1->number, tr->rdta->numsp) || ! isTip(p2->number, tr->rdta->numsp)) 
 	{	  	  
-	  removeNodeParsimony(p);
+	  removeNodeParsimony(p, tr->numBranches);
 	  
 	  if (! isTip(p1->number, tr->rdta->numsp)) 
 	    {
@@ -1119,8 +1118,8 @@ static int rearrangeParsimony(tree *tr, nodeptr p, int mintrav, int maxtrav)
 	    }
 	    
 	   
-	  hookupDefault(p->next,       p1); 
-	  hookupDefault(p->next->next, p2);	   	    	    
+	  hookupDefault(p->next,       p1, tr->numBranches); 
+	  hookupDefault(p->next->next, p2, tr->numBranches);	   	    	    
 	  initravDISTParsimony(tr, p, 1);   
 	}
     }  
@@ -1143,7 +1142,7 @@ static int rearrangeParsimony(tree *tr, nodeptr p, int mintrav, int maxtrav)
 	  )
 	{	   
 
-	  removeNodeParsimony(q);
+	  removeNodeParsimony(q, tr->numBranches);
 	  
 	  mintrav2 = mintrav > 2 ? mintrav : 2;
 
@@ -1159,8 +1158,8 @@ static int rearrangeParsimony(tree *tr, nodeptr p, int mintrav, int maxtrav)
 	      addTraverseParsimony(tr, q, q2->next->next->back, mintrav2 , maxtrav);          
 	    }	   
 	   
-	  hookupDefault(q->next,       q1); 
-	  hookupDefault(q->next->next, q2);
+	  hookupDefault(q->next,       q1, tr->numBranches); 
+	  hookupDefault(q->next->next, q2, tr->numBranches);
 	   
 	  initravDISTParsimony(tr, q, 1); 	   
 	}
@@ -1172,7 +1171,7 @@ static int rearrangeParsimony(tree *tr, nodeptr p, int mintrav, int maxtrav)
 
 static void restoreTreeRearrangeParsimony(tree *tr)
 {    
-  removeNodeParsimony(tr->removeNode);  
+  removeNodeParsimony(tr->removeNode, tr->numBranches);  
   restoreTreeParsimony(tr, tr->removeNode, tr->insertNode);  
 }
 
@@ -1182,7 +1181,7 @@ static void allocNodexParsimony(tree *tr)
   int  i;  
 
 #ifdef _LOCAL_DATA
-  masterBarrier(THREAD_PREPARE_PARSIMONY, tr);   
+  masterBarrier(THREAD_PREPARE_PARSIMONY, tr);  
 #else
   tr->parsimonyData = (parsimonyVector *)malloc(sizeof(parsimonyVector) * tr->mxtips * tr->parsimonyLength); 
 #endif
@@ -1218,8 +1217,13 @@ static void freeNodexParsimony (tree *tr)
     }
 }
 
+#ifdef WIN32
+static void switchTipEntries(int number, int position1, int position2, 
+			     char *y0, int originalCrunchedLength, int numsp)
+#else
 static inline void switchTipEntries(int number, int position1, int position2, 
 				    char *y0, int originalCrunchedLength, int numsp)
+#endif
 {
   char buf;
   char *ref = &y0[originalCrunchedLength * (number - 1)];
@@ -1424,7 +1428,7 @@ void makeRandomTree(tree *tr, analdef *adef)
       
       randomBranch = branches[randomInt(branchCounter)];
       
-      insertRandom(p->back, randomBranch);
+      insertRandom(p->back, randomBranch, tr->numBranches);
       
     }
   free(perm);            
@@ -1574,7 +1578,7 @@ void makeParsimonyTree(tree *tr, analdef *adef)
     }
   while(randomMP < startMP);
       
-  /* printf("REARRANGEMENT MP Score %d Time %f\n", tr->bestParsimony, gettime() - masterTime); */   
+  /* printf("REARRANGEMENT MP Score %d Time %f\n", tr->bestParsimony, gettime() - masterTime); */
    
   nodeRectifier(tr);       
     
@@ -1616,7 +1620,7 @@ void makeParsimonyTreeIncomplete(tree *tr, analdef *adef)
   int *perm, *informative, *aliaswgt, *model, *dataVector;
   char *parsimonyBuffer;     
 
-  /* stuff for informative sites */
+  /* stuff for informative sites */  
 
   informative = (int *)malloc(sizeof(int) * tr->cdta->endsite);
   
@@ -1803,8 +1807,7 @@ void makeParsimonyTreeIncomplete(tree *tr, analdef *adef)
   free(dataVector);
   free(aliaswgt); 
   
-  if(!tr->constrained && !tr->grouped)
-    free(tr->constraintVector);
+  
 
   freeNodexParsimony(tr);              
 } 

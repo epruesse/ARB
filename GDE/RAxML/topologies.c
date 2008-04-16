@@ -45,7 +45,6 @@
 
 #include "axml.h"
 
-extern int numBranches;
 
 topolRELL *initTopolRELL(tree *tr)
 {
@@ -60,10 +59,10 @@ topolRELL *initTopolRELL(tree *tr)
 
 
 
-static void saveTopolRELLRec(nodeptr p, topolRELL *tpl, int *i, int numsp)
+static void saveTopolRELLRec(nodeptr p, topolRELL *tpl, int *i, int numsp, int numBranches)
 {
   int k;
-  if(/*p->tip*/ isTip(p->number, numsp))
+  if(isTip(p->number, numsp))
     return;
   else
     {
@@ -76,7 +75,7 @@ static void saveTopolRELLRec(nodeptr p, topolRELL *tpl, int *i, int numsp)
 	    tpl->connect[*i].z[k] = q->z[k];
 	  *i = *i + 1;
 	  
-	  saveTopolRELLRec(q->back, tpl, i, numsp);
+	  saveTopolRELLRec(q->back, tpl, i, numsp, numBranches);
 	  q = q->next;
 	}
     }
@@ -93,11 +92,11 @@ void saveTopolRELL(tree *tr, topolRELL *tpl)
   tpl->connect[i].p = p;
   tpl->connect[i].q = p->back;
   
-  for(k = 0; k < numBranches; k++)
+  for(k = 0; k < tr->numBranches; k++)
     tpl->connect[i].z[k] = p->z[k];
   i++;
       
-  saveTopolRELLRec(p->back, tpl, &i, tr->rdta->numsp);      
+  saveTopolRELLRec(p->back, tpl, &i, tr->rdta->numsp, tr->numBranches);      
 }
 
 
@@ -115,7 +114,7 @@ void restoreTopolRELL(tree *tr, topolRELL *tpl)
   }
 
   for (i = 0; i < 2 * tr->mxtips - 3; i++)        
-    hookup(tpl->connect[i].p, tpl->connect[i].q, tpl->connect[i].z);    
+    hookup(tpl->connect[i].p, tpl->connect[i].q, tpl->connect[i].z,  tr->numBranches);    
   
 
   tr->likelihood = tpl->likelihood;
@@ -176,8 +175,8 @@ void freeTL(topolRELL_LIST *rl)
 
 void restoreTL(topolRELL_LIST *rl, tree *tr, int n)
 {
-  assert(n >= 0 && n < rl->max);
-  
+  assert(n >= 0 && n < rl->max);    
+
   restoreTopolRELL(tr, rl->t[n]); 
 }
 
@@ -285,7 +284,7 @@ void  freeTopol (topol *tpl)
   } /* freeTopol */
 
 
-static int saveSubtree (nodeptr p, topol *tpl, int numsp)  
+static int saveSubtree (nodeptr p, topol *tpl, int numsp, int numBranches)  
 {
   connptr  r, r0;
   nodeptr  q, s;
@@ -310,7 +309,7 @@ static int saveSubtree (nodeptr p, topol *tpl, int numsp)
       s = q->next;                      /* First child */
       do 
 	{
-	  t = saveSubtree(s, tpl, numsp);        /* Generate child's subtree */
+	  t = saveSubtree(s, tpl, numsp, numBranches);        /* Generate child's subtree */
 
 	  t0 = 0;                         /* Merge child into list */
 	  t1 = r->descend;
@@ -371,7 +370,7 @@ void saveTree (tree *tr, topol *tpl)
     connptr  r;  
 
     tpl->nextlink = 0;                             /* Reset link pointer */
-    r = tpl->links + saveSubtree(minTreeTip(tr->start, tr->rdta->numsp), tpl, tr->rdta->numsp);  /* Save tree */
+    r = tpl->links + saveSubtree(minTreeTip(tr->start, tr->rdta->numsp), tpl, tr->rdta->numsp, tr->numBranches);  /* Save tree */
     r->sibling = 0;
 
     tpl->likelihood = tr->likelihood;
@@ -383,43 +382,6 @@ void saveTree (tree *tr, topol *tpl)
    
   } /* saveTree */
 
-
-void copyTopol (topol *tpl1, topol *tpl2)
-{   
-  connptr  r1, r2, r10, r20;	
-  int  i, k;
-	
-  r10 = tpl1->links;
-  r20 = tpl2->links;
-  tpl2->nextlink = tpl1->nextlink; 
-	
-  r1 = r10;
-  r2 = r20;
-  i = 2 * tpl1->ntips - 3;
-  while (--i >= 0) 
-    {
-      for(k = 0; k < numBranches; k++)
-	r2->z[k] = r1->z[k];
-
-      r2->p = r1->p;
-      r2->q = r1->q;
-      r2->valptr = r1->valptr;
-      r2->descend = r1->descend; 
-      r2->sibling = r1->sibling; 
-      r1++;
-      r2++;
-    }
-
-    
-  tpl2->likelihood = tpl1->likelihood;
-  tpl2->start      = tpl1->start;
-  tpl2->ntips      = tpl1->ntips;
-  tpl2->nextnode   = tpl1->nextnode;   
-  tpl2->prelabeled = tpl1->prelabeled;
-  tpl2->scrNum     = tpl1->scrNum;
-  tpl2->tplNum     = tpl1->tplNum;
-  tpl2->smoothed   = tpl1->smoothed;
-}
 
 
 
@@ -448,7 +410,7 @@ boolean restoreTree (topol *tpl, tree *tr)
   /*  Copy connections from topology */
 
   for (r = tpl->links, i = 0; i < tpl->nextlink; r++, i++)     
-    hookup(r->p, r->q, r->z);      
+    hookup(r->p, r->q, r->z, tr->numBranches);      
 
   tr->likelihood = tpl->likelihood;
   tr->start      = tpl->start;
@@ -458,12 +420,9 @@ boolean restoreTree (topol *tpl, tree *tr)
   tr->prelabeled = tpl->prelabeled;
   tr->smoothed   = tpl->smoothed;  
 
-#ifdef _STANDARD_INITRAV
-  return  (initrav(tr, tr->start) && initrav(tr, tr->start->back));       
-#else
+
   onlyInitrav(tr, tr->start);
   return TRUE;
-#endif 
 }
 
 
@@ -474,7 +433,7 @@ boolean restoreTopology (topol *tpl, tree *tr)
 
     for (r = tpl->links, i = 0; i < tpl->nextlink; r++, i++) 
       {
-	hookup(r->p, r->q, r->z);
+	hookup(r->p, r->q, r->z, tr->numBranches);
       }
 
     tr->likelihood = tpl->likelihood;
@@ -485,12 +444,9 @@ boolean restoreTopology (topol *tpl, tree *tr)
     tr->prelabeled = tpl->prelabeled;
     tr->smoothed   = tpl->smoothed;
     
-#ifdef _STANDARD_INITRAV
-    return  (initrav(tr, tr->start) && initrav(tr, tr->start->back));       
-#else
+
     onlyInitrav(tr, tr->start);
-    return TRUE;
-#endif    
+    return TRUE;  
   } /* restoreTree */
 
 

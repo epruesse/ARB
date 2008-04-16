@@ -41,16 +41,14 @@
 #include <string.h>
 #include "axml.h"
 
-
-
-extern int multiBranch;
-extern int numBranches;
-
 #ifdef _USE_PTHREADS
 extern double *reductionBuffer;
 extern double *reductionBufferTwo;
 extern int NumberOfThreads;
 #endif
+
+
+
 
 /*******************/
 
@@ -74,7 +72,7 @@ static void sumCAT(int tipCase, double *sum, double *x1_start, double *x2_start,
 	  sum[i * 4 + 3] = x1[3] * x2[3];		    	    	  
 	}    
       break;
-    case TIP_INNER:   
+    case TIP_INNER:         
       for (i = lower; i < n; i++) 
 	{    
 	  x1 = &(tipVector[4 * tipX1[i]]);
@@ -791,7 +789,8 @@ static void sumGAMMA(int tipCase, double *sumtable, double *x1_start, double *x2
 
   switch(tipCase)
     {
-    case TIP_TIP:         
+    case TIP_TIP:   
+#pragma omp parallel for private(x1, x2, sum)      
       for (i = lower; i < n; i++) 
 	{     
 	  x1 = &(tipVector[4 * tipX1[i]]);
@@ -819,7 +818,8 @@ static void sumGAMMA(int tipCase, double *sumtable, double *x1_start, double *x2
 	  sum[15] = x1[3] * x2[3];	         
 	}    
       break;
-    case TIP_INNER:          
+    case TIP_INNER: 
+#pragma omp parallel for private(x1, x2, sum)
       for (i = lower; i < n; i++) 
 	{     
 	  x1  = &(tipVector[4 * tipX1[i]]);
@@ -847,7 +847,8 @@ static void sumGAMMA(int tipCase, double *sumtable, double *x1_start, double *x2
 	  sum[15] = x1[3] * x2[15];	  	
 	}   
       break;
-    case INNER_INNER:	  
+    case INNER_INNER:
+#pragma omp parallel for private(x1, x2, sum)
       for (i = lower; i < n; i++) 
 	{     	      
 	  x1  = &x1_start[16 * i];
@@ -891,6 +892,8 @@ static void coreGTRGAMMA(int lower, int upper, double *sumtable,
     dlnLdlz = 0.0,
     d2lnLdlz2 = 0.0;
 
+
+
   diagptable = diagptable_start = (double *)malloc(sizeof(double) * 36);    
 		 
   for(i = 0; i < 4; i++)
@@ -912,6 +915,7 @@ static void coreGTRGAMMA(int lower, int upper, double *sumtable,
       *diagptable++ = EIGN[2] * EIGN[2] * kisqr;
     }
 
+#pragma omp parallel for private(diagptable, sum, inv_Li, tmp_1, tmp_2, tmp_3, dlnLidlz, d2lnLidlz2) reduction(+ : dlnLdlz) reduction( + : d2lnLdlz2)
   for (i = lower; i < upper; i++) 
     {	   	    	   	    
       diagptable = diagptable_start;
@@ -974,6 +978,8 @@ static void coreGTRGAMMA(int lower, int upper, double *sumtable,
       
       dlnLidlz   += tmp_3 * *diagptable++;
       d2lnLidlz2 += tmp_3 * *diagptable++;
+
+
       
       inv_Li = 1.0 / inv_Li;
       
@@ -984,6 +990,7 @@ static void coreGTRGAMMA(int lower, int upper, double *sumtable,
       d2lnLdlz2 += wrptr[i] * (d2lnLidlz2 - dlnLidlz * dlnLidlz);
     }
   
+
   *d1 = dlnLdlz;
   *d2 = d2lnLdlz2;
 
@@ -2018,7 +2025,7 @@ static void makenewzMixedData(int model, int pNumber, int qNumber, tree *tr)
       x2_start = &x2_start[offset];
     }
 
-  switch(/*tr->dataType[model]*/ tr->partitionData[model].dataType)
+  switch(tr->partitionData[model].dataType)
     { 
     case DNA_DATA:
       switch(tr->rateHetModel)
@@ -2065,14 +2072,14 @@ static void makenewzMixedData(int model, int pNumber, int qNumber, tree *tr)
 
 #ifdef _LOCAL_DATA
 
-void makenewzIterative(tree *tr, tree *localTree, int startIndex, int endIndex)
+void makenewzIterative(tree *localTree, int startIndex, int endIndex)
 {  
   int pNumber, qNumber; 
        
-  pNumber = tr->ti[0].pNumber;
-  qNumber = tr->ti[0].qNumber;
+  pNumber = localTree->td[0].ti[0].pNumber;
+  qNumber = localTree->td[0].ti[0].qNumber;
 
-  newviewIterative(tr, localTree, startIndex, endIndex);
+  newviewIterative(localTree, startIndex, endIndex);
  
   if(localTree->mixedData)
     {
@@ -2080,8 +2087,8 @@ void makenewzIterative(tree *tr, tree *localTree, int startIndex, int endIndex)
       
       assert(0);
 
-      for(model = 0; model < tr->NumberOfModels; model++)
-	makenewzMixedData(model, pNumber, qNumber, tr);
+      for(model = 0; model < localTree->NumberOfModels; model++)
+	makenewzMixedData(model, pNumber, qNumber, localTree);
     }
   else
     {
@@ -2100,21 +2107,21 @@ void makenewzIterative(tree *tr, tree *localTree, int startIndex, int endIndex)
 	       tipCase = TIP_INNER;
 	       if(isTip(qNumber, localTree->mxtips))
 		 {	
-		   tipX1 = &(localTree->yVector[qNumber][startIndex]);	      
+		   tipX1 = &(localTree->strided_yVector[qNumber][startIndex]);	      
 		   x2_start = getLikelihoodArray(pNumber, localTree->mxtips, localTree->xVector); 
 		   
 		 }	    
 	       else
 		 {
-		   tipX1 = &(localTree->yVector[pNumber][startIndex]);	     
+		   tipX1 = &(localTree->strided_yVector[pNumber][startIndex]);	     
 		   x2_start = getLikelihoodArray(qNumber, localTree->mxtips, localTree->xVector); 
 		 }
 	     }
 	   else
 	     {
 	       tipCase = TIP_TIP;
-	       tipX1 = &(localTree->yVector[pNumber][startIndex]);
-	       tipX2 = &(localTree->yVector[qNumber][startIndex]);
+	       tipX1 = &(localTree->strided_yVector[pNumber][startIndex]);
+	       tipX2 = &(localTree->strided_yVector[qNumber][startIndex]);
 	     }
 	 }
        else
@@ -2138,36 +2145,34 @@ void makenewzIterative(tree *tr, tree *localTree, int startIndex, int endIndex)
 	  break;
 	case GTRGAMMAMULT:
 	case GTRGAMMAMULTI:
-	  if(multiBranch)
-	    sumGAMMAMULT(tipCase, &(tr->sumBuffer[startIndex * 16]), x1_start, x2_start, 
-			 &(localTree->tipVectorDNA[0]), tipX1, tipX2,  &(localTree->model[startIndex]),
+	  if(localTree->multiBranch)
+	    sumGAMMAMULT(tipCase, &(localTree->sumBuffer[startIndex * 16]), x1_start, x2_start, 
+			 &(localTree->tipVectorDNA[0]), tipX1, tipX2,  &(localTree->strided_model[startIndex]),
 			 0, (endIndex - startIndex));
 	  else
 	    sumGAMMAMULT(tipCase, &(localTree->sumBuffer[startIndex * 16]), x1_start, x2_start, 
 			 &(localTree->tipVectorDNA[0]), tipX1, tipX2,  
-			 &(localTree->model[startIndex]), 0, (endIndex - startIndex));
+			 &(localTree->strided_model[startIndex]), 0, (endIndex - startIndex));
 	  break;
-	case GTRCATMULT: 
-	  /* TODO-PTHREADS-LOCAL I hate this, it is so ugly */
-
-	  if(multiBranch)
-	    sumCATMULT(tipCase, &(tr->sumBuffer[startIndex * 4]), x1_start, x2_start, &(localTree->tipVectorDNA[0]),
-		       tipX1, tipX2, &(localTree->model[startIndex]), 0, (endIndex - startIndex));
+	case GTRCATMULT: 	 	  
+	  if(localTree->multiBranch)
+	    sumCATMULT(tipCase, &(localTree->sumBuffer[startIndex * 4]), x1_start, x2_start, &(localTree->tipVectorDNA[0]),
+		       tipX1, tipX2, &(localTree->strided_model[startIndex]), 0, (endIndex - startIndex));
 	  else
 	    sumCATMULT(tipCase, &(localTree->sumBuffer[startIndex * 4]), x1_start, x2_start, &(localTree->tipVectorDNA[0]),
-		       tipX1, tipX2, &(localTree->model[startIndex]), 0, (endIndex - startIndex));
+		       tipX1, tipX2, &(localTree->strided_model[startIndex]), startIndex, endIndex);
 	  break;
 	case PROTCAT:
 	  sumGTRCATPROT(tipCase, &(localTree->sumBuffer[startIndex * 20]), x1_start, x2_start,  &(localTree->tipVectorAA[0]), 
 			tipX1, tipX2, 0, (endIndex - startIndex));
 	  break;
 	case PROTCATMULT:
-	  if(multiBranch)
-	    sumGTRCATPROTMULT(tipCase, &(tr->sumBuffer[startIndex * 20]), x1_start, x2_start,  &(localTree->tipVectorAA[0]), 
-			      tipX1, tipX2, &(localTree->model[startIndex]), 0, (endIndex - startIndex));
+	  if(localTree->multiBranch)
+	    sumGTRCATPROTMULT(tipCase, &(localTree->sumBuffer[startIndex * 20]), x1_start, x2_start,  &(localTree->tipVectorAA[0]), 
+			      tipX1, tipX2, &(localTree->strided_model[startIndex]), 0, (endIndex - startIndex));
 	  else
 	    sumGTRCATPROTMULT(tipCase, &(localTree->sumBuffer[startIndex * 20]), x1_start, x2_start,  &(localTree->tipVectorAA[0]), 
-			      tipX1, tipX2, &(localTree->model[startIndex]), 0, (endIndex - startIndex));
+			      tipX1, tipX2, &(localTree->strided_model[startIndex]), 0, (endIndex - startIndex));
 	  break;
 	case PROTGAMMA:
 	case PROTGAMMAI:
@@ -2176,12 +2181,12 @@ void makenewzIterative(tree *tr, tree *localTree, int startIndex, int endIndex)
 	  break;
 	case PROTGAMMAMULT:
 	case PROTGAMMAMULTI:
-	  if(multiBranch)
-	    sumGAMMAPROTMULT(tipCase,  &(tr->sumBuffer[startIndex * 80]), x1_start, x2_start,  &(localTree->tipVectorAA[0]), 
-			     tipX1, tipX2, &(localTree->model[startIndex]), 0, (endIndex - startIndex));
+	  if(localTree->multiBranch)
+	    sumGAMMAPROTMULT(tipCase,  &(localTree->sumBuffer[startIndex * 80]), x1_start, x2_start,  &(localTree->tipVectorAA[0]), 
+			     tipX1, tipX2, &(localTree->strided_model[startIndex]), 0, (endIndex - startIndex));
 	  else
 	    sumGAMMAPROTMULT(tipCase,  &(localTree->sumBuffer[startIndex * 80]), x1_start, x2_start,  &(localTree->tipVectorAA[0]), 
-			     tipX1, tipX2, &(localTree->model[startIndex]), 0, (endIndex - startIndex));
+			     tipX1, tipX2, &(localTree->strided_model[startIndex]), 0, (endIndex - startIndex));
 	  break;
 	default:
 	  assert(0);
@@ -2192,14 +2197,14 @@ void makenewzIterative(tree *tr, tree *localTree, int startIndex, int endIndex)
 
 #else
 
-void makenewzIterative(tree *tr, tree *localTree, int startIndex, int endIndex)
+void makenewzIterative(tree *tr, int startIndex, int endIndex)
 {  
   int pNumber, qNumber; 
        
-  pNumber = tr->ti[0].pNumber;
-  qNumber = tr->ti[0].qNumber;
+  pNumber = tr->td[0].ti[0].pNumber;
+  qNumber = tr->td[0].ti[0].qNumber;
 
-  newviewIterative(tr, localTree, startIndex, endIndex);
+  newviewIterative(tr, startIndex, endIndex);
  
   if(tr->mixedData)
     {
@@ -2365,16 +2370,16 @@ static void coreMixedData(tree *tr, int model, double *dlnLdlz, double *d2lnLdlz
 
 #ifdef _LOCAL_DATA
 
-void execCore(tree *tr, tree *localTree, double *dlnLdlz, double *d2lnLdlz2, int lower, int upper, int model)
+void execCore(tree *localTree, double *dlnLdlz, double *d2lnLdlz2, int lower, int upper, int model)
 {
-  double lz = tr->coreLZ;
+  double lz = localTree->coreLZ;
 
   if(localTree->mixedData)
     {         
       assert(0);
      
-      if(multiBranch)	
-	coreMixedData(tr, model, dlnLdlz, d2lnLdlz2, lz);	      
+      if(localTree->multiBranch)	
+	coreMixedData(localTree, model, dlnLdlz, d2lnLdlz2, lz);	      
       else
 	{
 	  int i;
@@ -2386,9 +2391,9 @@ void execCore(tree *tr, tree *localTree, double *dlnLdlz, double *d2lnLdlz2, int
 	  *dlnLdlz   = 0.0;
 	  *d2lnLdlz2 = 0.0;
 
-	  for(i = 0; i < tr->NumberOfModels; i++)
+	  for(i = 0; i < localTree->NumberOfModels; i++)
 	    {
-	      coreMixedData(tr, i, &local_dlnLdlz, &local_d2lnLdlz2, lz);
+	      coreMixedData(localTree, i, &local_dlnLdlz, &local_d2lnLdlz2, lz);
 	     
 	      *dlnLdlz   += local_dlnLdlz;
 	      *d2lnLdlz2 += local_d2lnLdlz2;
@@ -2401,103 +2406,102 @@ void execCore(tree *tr, tree *localTree, double *dlnLdlz, double *d2lnLdlz2, int
 	{
 	case GTRCAT:
 	  coreGTRCAT(lower, upper, localTree->NumberOfCategories, localTree->sumBuffer, 
-		     dlnLdlz, d2lnLdlz2, &(localTree->cdta->wr[0]), &(localTree->cdta->wr2[0]),
-		     &(localTree->cdta->patrat[0]), &(localTree->EIGN_DNA[0]),  &(localTree->cdta->rateCategory[0]), lz);
+		     dlnLdlz, d2lnLdlz2, &(localTree->strided_wr[0]), &(localTree->strided_wr2[0]),
+		     &(localTree->strided_patrat[0]), &(localTree->EIGN_DNA[0]),  &(localTree->strided_rateCategory[0]), lz);
 	  break;
-	case GTRCATMULT:      
-	  /* TODO-PTHREADS-LOCAL this is just so ugly to have to do that here and use global tr->sumBuffer*/
-	  if(multiBranch)
-	    coreGTRCAT(lower, upper, localTree->NumberOfCategories, tr->sumBuffer, 
-		       dlnLdlz, d2lnLdlz2, &(localTree->cdta->wr[0]), &(localTree->cdta->wr2[0]),
-		       &(localTree->cdta->patrat[0]), &(localTree->EIGN_DNA[model * 3]),  &(localTree->cdta->rateCategory[0]), lz);
+	case GTRCATMULT:      	
+	  if(localTree->multiBranch)
+	    coreGTRCAT(lower, upper, localTree->NumberOfCategories, localTree->sumBuffer, 
+		       dlnLdlz, d2lnLdlz2, &(localTree->strided_wr[0]), &(localTree->strided_wr2[0]),
+		       &(localTree->strided_patrat[0]), &(localTree->EIGN_DNA[model * 3]),  &(localTree->strided_rateCategory[0]), lz);
 	  else
 	    coreGTRCATMULT(lower, upper, localTree->NumberOfCategories, localTree->NumberOfModels, localTree->sumBuffer, 
-			   dlnLdlz, d2lnLdlz2, &(localTree->cdta->wr[0]), &(localTree->cdta->wr2[0]),
-			   &(localTree->cdta->patrat[0]), localTree->EIGN_DNA,  &(localTree->cdta->rateCategory[0]), 
-			   localTree->model, lz);
+			   dlnLdlz, d2lnLdlz2, &(localTree->strided_wr[0]), &(localTree->strided_wr2[0]),
+			   &(localTree->strided_patrat[0]), localTree->EIGN_DNA,  &(localTree->strided_rateCategory[0]), 
+			   localTree->strided_model, lz);
 	  break;
 	case PROTCAT: 
-	  coreGTRCATPROT(localTree->EIGN_AA, lz, localTree->NumberOfCategories,  &(localTree->cdta->patrat[0]), 
-			 &(localTree->cdta->rateCategory[0]), lower, upper,
-			 &(localTree->cdta->wr[0]), &(localTree->cdta->wr2[0]), dlnLdlz, d2lnLdlz2, 
+	  coreGTRCATPROT(localTree->EIGN_AA, lz, localTree->NumberOfCategories,  &(localTree->strided_patrat[0]), 
+			 &(localTree->strided_rateCategory[0]), lower, upper,
+			 &(localTree->strided_wr[0]), &(localTree->strided_wr2[0]), dlnLdlz, d2lnLdlz2, 
 			 localTree->sumBuffer);
 	  break;
 	case PROTCATMULT:
-	  if(multiBranch)
-	    coreGTRCATPROT(&(localTree->EIGN_AA[model * 19]), lz, localTree->NumberOfCategories,  &(localTree->cdta->patrat[0]), 
-			   &(localTree->cdta->rateCategory[0]), lower, upper,
-			   &(localTree->cdta->wr[0]), &(localTree->cdta->wr2[0]), dlnLdlz, d2lnLdlz2, 
-			   tr->sumBuffer);
+	  if(localTree->multiBranch)
+	    coreGTRCATPROT(&(localTree->EIGN_AA[model * 19]), lz, localTree->NumberOfCategories,  &(localTree->strided_patrat[0]), 
+			   &(localTree->strided_rateCategory[0]), lower, upper,
+			   &(localTree->strided_wr[0]), &(localTree->strided_wr2[0]), dlnLdlz, d2lnLdlz2, 
+			   localTree->sumBuffer);
 	  else
-	    coreGTRCATPROTMULT(localTree->EIGN_AA, lz, localTree->NumberOfCategories,  &(localTree->cdta->patrat[0]), 
-			       &(localTree->cdta->rateCategory[0]), lower, upper,
-			       &(localTree->cdta->wr[0]), &(localTree->cdta->wr2[0]), dlnLdlz, d2lnLdlz2, 
-			       localTree->sumBuffer, localTree->NumberOfModels, localTree->model);
+	    coreGTRCATPROTMULT(localTree->EIGN_AA, lz, localTree->NumberOfCategories,  &(localTree->strided_patrat[0]), 
+			       &(localTree->strided_rateCategory[0]), lower, upper,
+			       &(localTree->strided_wr[0]), &(localTree->strided_wr2[0]), dlnLdlz, d2lnLdlz2, 
+			       localTree->sumBuffer, localTree->NumberOfModels, localTree->strided_model);
 	  break;
 	case GTRGAMMA:
 	  coreGTRGAMMA(lower, upper, localTree->sumBuffer, 
 		       dlnLdlz, d2lnLdlz2, localTree->EIGN_DNA, localTree->gammaRates, lz, 
-		       localTree->cdta->aliaswgt);
+		       localTree->strided_aliaswgt);
 	  break;
 	case GTRGAMMAI:
 	  coreGTRGAMMAINVAR(localTree->invariants, localTree->frequencies_DNA, localTree->gammaRates, localTree->EIGN_DNA,
 			    localTree->sumBuffer, dlnLdlz, d2lnLdlz2,
-			    localTree->invariant, localTree->cdta->aliaswgt, lower, upper, lz);
+			    localTree->strided_invariant, localTree->strided_aliaswgt, lower, upper, lz);
 	  break; 
 	case GTRGAMMAMULT:
-	  if(multiBranch)
-	    coreGTRGAMMA(lower, upper, tr->sumBuffer, 
+	  if(localTree->multiBranch)
+	    coreGTRGAMMA(lower, upper, localTree->sumBuffer, 
 			 dlnLdlz, d2lnLdlz2, &(localTree->EIGN_DNA[model * 3]), &(localTree->gammaRates[model * 4]), lz, 
-			 localTree->cdta->aliaswgt);
+			 localTree->strided_aliaswgt);
 	  else
 	    coreGTRGAMMAMULT(lower, upper, localTree->sumBuffer, 
 			     dlnLdlz,  d2lnLdlz2, localTree->EIGN_DNA, localTree->gammaRates, 
-			     lz, localTree->cdta->aliaswgt,
-			     localTree->NumberOfModels, localTree->model);
+			     lz, localTree->strided_aliaswgt,
+			     localTree->NumberOfModels, localTree->strided_model);
 	  
 	  break;
 	case GTRGAMMAMULTI:
-	  if(multiBranch)
+	  if(localTree->multiBranch)
 	    coreGTRGAMMAINVAR(&(localTree->invariants[model]), &(localTree->frequencies_DNA[model * 4]), 
 			      &(localTree->gammaRates[model * 4]), &(localTree->EIGN_DNA[model * 3]),
-			      tr->sumBuffer, dlnLdlz, d2lnLdlz2,
-			      localTree->invariant, localTree->cdta->aliaswgt, lower, upper, lz);
+			      localTree->sumBuffer, dlnLdlz, d2lnLdlz2,
+			      localTree->strided_invariant, localTree->strided_aliaswgt, lower, upper, lz);
 	  else
 	    coreGTRGAMMAMULTINVAR(lower, upper, localTree->sumBuffer, 
 				  dlnLdlz, d2lnLdlz2, localTree->EIGN_DNA, localTree->gammaRates, lz, 
-				  localTree->cdta->aliaswgt,
-				  localTree->NumberOfModels, localTree->model, localTree->frequencies_DNA, localTree->invariants, 
-				  localTree->invariant);
+				  localTree->strided_aliaswgt,
+				  localTree->NumberOfModels, localTree->strided_model, localTree->frequencies_DNA, localTree->invariants, 
+				  localTree->strided_invariant);
 	  break;
 	case PROTGAMMA:
-	  coreGTRGAMMAPROT(localTree->gammaRates, localTree->EIGN_AA, localTree->sumBuffer, lower, upper, localTree->cdta->aliaswgt,
+	  coreGTRGAMMAPROT(localTree->gammaRates, localTree->EIGN_AA, localTree->sumBuffer, lower, upper, localTree->strided_aliaswgt,
 			   dlnLdlz, d2lnLdlz2, lz);
 	  break;
 	case PROTGAMMAI:
-	  coreGTRGAMMAPROTINVAR(localTree->gammaRates, localTree->EIGN_AA, localTree->sumBuffer, lower, upper, localTree->cdta->aliaswgt,
+	  coreGTRGAMMAPROTINVAR(localTree->gammaRates, localTree->EIGN_AA, localTree->sumBuffer, lower, upper, localTree->strided_aliaswgt,
 				dlnLdlz, d2lnLdlz2, lz, localTree->frequencies_AA,
-				localTree->invariants, localTree->invariant);
+				localTree->invariants, localTree->strided_invariant);
 	  break;
 	case PROTGAMMAMULT:
-	  if(multiBranch)
+	  if(localTree->multiBranch)
 	    coreGTRGAMMAPROT(&(localTree->gammaRates[model * 4]), &(localTree->EIGN_AA[model * 19]), 
-			     tr->sumBuffer, lower, upper, localTree->cdta->aliaswgt,
+			     localTree->sumBuffer, lower, upper, localTree->strided_aliaswgt,
 			     dlnLdlz, d2lnLdlz2, lz);
 	  else
-	    coreGTRGAMMAPROTMULT(localTree->gammaRates, localTree->EIGN_AA, localTree->sumBuffer, lower, upper, localTree->cdta->aliaswgt,
-				 dlnLdlz, d2lnLdlz2, lz, localTree->NumberOfModels, localTree->model);
+	    coreGTRGAMMAPROTMULT(localTree->gammaRates, localTree->EIGN_AA, localTree->sumBuffer, lower, upper, localTree->strided_aliaswgt,
+				 dlnLdlz, d2lnLdlz2, lz, localTree->NumberOfModels, localTree->strided_model);
 	  break;
 	case PROTGAMMAMULTI:
-	  if(multiBranch)
+	  if(localTree->multiBranch)
 	    coreGTRGAMMAPROTINVAR(&(localTree->gammaRates[model * 4]), &(localTree->EIGN_AA[model * 19]), 
-				  tr->sumBuffer, lower, upper, localTree->cdta->aliaswgt,
+				  localTree->sumBuffer, lower, upper, localTree->strided_aliaswgt,
 				  dlnLdlz, d2lnLdlz2, lz, &(localTree->frequencies_AA[model * 20]),
-				  &(localTree->invariants[model]), localTree->invariant);
+				  &(localTree->invariants[model]), localTree->strided_invariant);
 	  else
 	    coreGTRGAMMAPROTMULTINVAR(localTree->gammaRates, localTree->EIGN_AA, localTree->sumBuffer, lower, upper, 
-				      localTree->cdta->aliaswgt, dlnLdlz, d2lnLdlz2, lz, 
-				      localTree->NumberOfModels, localTree->model,
-				      localTree->invariants, localTree->frequencies_AA, localTree->invariant);      
+				      localTree->strided_aliaswgt, dlnLdlz, d2lnLdlz2, lz, 
+				      localTree->NumberOfModels, localTree->strided_model,
+				      localTree->invariants, localTree->frequencies_AA, localTree->strided_invariant);      
 	  break;
 	default:
 	  assert(0);
@@ -2509,13 +2513,13 @@ void execCore(tree *tr, tree *localTree, double *dlnLdlz, double *d2lnLdlz2, int
 #else
 
 
-void execCore(tree *tr, tree *localTree, double *dlnLdlz, double *d2lnLdlz2, int lower, int upper, int model)
+void execCore(tree *tr, double *dlnLdlz, double *d2lnLdlz2, int lower, int upper, int model)
 {
   double lz = tr->coreLZ;
 
   if(tr->mixedData)
     {              
-      if(multiBranch)	
+      if(tr->multiBranch)	
 	coreMixedData(tr, model, dlnLdlz, d2lnLdlz2, lz);	      
       else
 	{
@@ -2547,7 +2551,7 @@ void execCore(tree *tr, tree *localTree, double *dlnLdlz, double *d2lnLdlz2, int
 		     &(tr->cdta->patrat[0]), &(tr->EIGN_DNA[0]),  &(tr->cdta->rateCategory[0]), lz);
 	  break;
 	case GTRCATMULT:      
-	  if(multiBranch)
+	  if(tr->multiBranch)
 	    coreGTRCAT(lower, upper, tr->NumberOfCategories, tr->sumBuffer, 
 		       dlnLdlz, d2lnLdlz2, &(tr->cdta->wr[0]), &(tr->cdta->wr2[0]),
 		       &(tr->cdta->patrat[0]), &(tr->EIGN_DNA[model * 3]),  &(tr->cdta->rateCategory[0]), lz);
@@ -2564,7 +2568,7 @@ void execCore(tree *tr, tree *localTree, double *dlnLdlz, double *d2lnLdlz2, int
 			 tr->sumBuffer);
 	  break;
 	case PROTCATMULT:
-	  if(multiBranch)
+	  if(tr->multiBranch)
 	    coreGTRCATPROT(&(tr->EIGN_AA[model * 19]), lz, tr->NumberOfCategories,  &(tr->cdta->patrat[0]), 
 			   &(tr->cdta->rateCategory[0]), lower, upper,
 			   &(tr->cdta->wr[0]), &(tr->cdta->wr2[0]), dlnLdlz, d2lnLdlz2, 
@@ -2586,7 +2590,7 @@ void execCore(tree *tr, tree *localTree, double *dlnLdlz, double *d2lnLdlz2, int
 			    tr->invariant, tr->cdta->aliaswgt, lower, upper, lz);
 	  break; 
 	case GTRGAMMAMULT:
-	  if(multiBranch)
+	  if(tr->multiBranch)
 	    coreGTRGAMMA(lower, upper, tr->sumBuffer, 
 			 dlnLdlz, d2lnLdlz2, &(tr->EIGN_DNA[model * 3]), &(tr->gammaRates[model * 4]), lz, 
 			 tr->cdta->aliaswgt);
@@ -2598,7 +2602,7 @@ void execCore(tree *tr, tree *localTree, double *dlnLdlz, double *d2lnLdlz2, int
 	  
 	  break;
 	case GTRGAMMAMULTI:
-	  if(multiBranch)
+	  if(tr->multiBranch)
 	    coreGTRGAMMAINVAR(&(tr->invariants[model]), &(tr->frequencies_DNA[model * 4]), 
 			      &(tr->gammaRates[model * 4]), &(tr->EIGN_DNA[model * 3]),
 			      tr->sumBuffer, dlnLdlz, d2lnLdlz2,
@@ -2620,7 +2624,7 @@ void execCore(tree *tr, tree *localTree, double *dlnLdlz, double *d2lnLdlz2, int
 				tr->invariants, tr->invariant);
 	  break;
 	case PROTGAMMAMULT:
-	  if(multiBranch)
+	  if(tr->multiBranch)
 	    coreGTRGAMMAPROT(&(tr->gammaRates[model * 4]), &(tr->EIGN_AA[model * 19]), 
 			     tr->sumBuffer, lower, upper, tr->cdta->aliaswgt,
 			     dlnLdlz, d2lnLdlz2, lz);
@@ -2629,7 +2633,7 @@ void execCore(tree *tr, tree *localTree, double *dlnLdlz, double *d2lnLdlz2, int
 				 dlnLdlz, d2lnLdlz2, lz, tr->NumberOfModels, tr->model);
 	  break;
 	case PROTGAMMAMULTI:
-	  if(multiBranch)
+	  if(tr->multiBranch)
 	    coreGTRGAMMAPROTINVAR(&(tr->gammaRates[model * 4]), &(tr->EIGN_AA[model * 19]), 
 				  tr->sumBuffer, lower, upper, tr->cdta->aliaswgt,
 				  dlnLdlz, d2lnLdlz2, lz, &(tr->frequencies_AA[model * 20]),
@@ -2693,7 +2697,7 @@ static void topLevelMakenewz(tree *tr, int lower, int upper, int model, double z
 	      }
 	  }
 #else
-	  execCore(tr, tr, &dlnLdlz, &d2lnLdlz2, lower, upper, model);
+	  execCore(tr, &dlnLdlz, &d2lnLdlz2, lower, upper, model);
 #endif
 
 	    	
@@ -2737,23 +2741,8 @@ static void switchAndAssign(tree *tr)
 {
 #ifdef _USE_PTHREADS        
   masterBarrier(THREAD_SUM_MAKENEWZ, tr);         
-#ifdef _LOCAL_DATA
-  /*
-    TODO-PTHREADS-LOCAL:
-
-    This would be very ugly, but if we want to have the data strictly local this is one possible solution. 
-    The alternative is to assign per-processor/thread strides per-model and not over the entire alignment
-    as it is done now. A change to per-model strides will be an awful pain in the ass due to indexing
-    issues. A third alternative will be to have a strict modulo-based per-site distribution of everything, 
-    columns, weights etc... but this will screw up numeric stability wrt to adding up log likelihoods in function 
-    evaluate()....
- 
-    if(multiBranch)
-    masterBarrier(THREAD_EXCHANGE_LOCAL_SUM_BUFFERS, tr);
-  */  
-#endif
 #else  
-  makenewzIterative(tr, tr, 0, tr->cdta->endsite);	
+  makenewzIterative(tr, 0, tr->cdta->endsite);	
 #endif
 
 }
@@ -2763,18 +2752,20 @@ void makenewzGeneric(tree *tr, nodeptr p, nodeptr q, double *z0, int maxiter, do
 {      
   int i, l, u, modelCounter;
   
-  tr->ti[0].pNumber = p->number;
-  tr->ti[0].qNumber = q->number;        
-  for(i = 0; i < numBranches; i++)      
+  tr->td[0].ti[0].pNumber = p->number;
+  tr->td[0].ti[0].qNumber = q->number;        
+  for(i = 0; i < tr->numBranches; i++)      
     {
-      tr->ti[0].qz[i] =  z0[i];      
+      tr->td[0].ti[0].qz[i] =  z0[i];      
     }
 
-  tr->traversalCount = 1;
+  tr->td[0].count = 1;
+
+
   if(!p->x)
-    computeTraversalInfo(p, &(tr->ti[0]), &(tr->traversalCount), tr->rdta->numsp);
+    computeTraversalInfo(p, &(tr->td[0].ti[0]), &(tr->td[0].count), tr->rdta->numsp, tr->numBranches);
   if(!q->x)
-    computeTraversalInfo(q, &(tr->ti[0]), &(tr->traversalCount), tr->rdta->numsp);        
+    computeTraversalInfo(q, &(tr->td[0].ti[0]), &(tr->td[0].count), tr->rdta->numsp, tr->numBranches);        
 
   if(tr->mixedData)
     { 
@@ -2837,11 +2828,9 @@ void makenewzGeneric(tree *tr, nodeptr p, nodeptr q, double *z0, int maxiter, do
     }
 
 
-  if(multiBranch)         	  			
+  if(tr->multiBranch)         	  			
     for(modelCounter = 0; modelCounter < tr->NumberOfModels; modelCounter++)
       {
-	/*l = tr->modelIndices[modelCounter][0];
-	  u = tr->modelIndices[modelCounter][1];*/
 	l = tr->partitionData[modelCounter].lower;
 	u = tr->partitionData[modelCounter].upper;
 
@@ -2856,7 +2845,7 @@ void makenewzGeneric(tree *tr, nodeptr p, nodeptr q, double *z0, int maxiter, do
 
 /********************************************************************************************************/
 
-void execCorePartition(tree *tr, tree *localTree, double *dlnLdlz, double *d2lnLdlz2, int lower, int upper, int model)
+void execCorePartition(tree *tr, double *dlnLdlz, double *d2lnLdlz2, int lower, int upper, int model)
 {
   double lz = tr->coreLZ;
 
@@ -2895,7 +2884,7 @@ void execCorePartition(tree *tr, tree *localTree, double *dlnLdlz, double *d2lnL
 }
 
 
-void makenewzIterativePartition(tree *tr, tree *localTree, int startIndex, int endIndex, int model)
+void makenewzIterativePartition(tree *tr, int startIndex, int endIndex, int model)
 {
   double   
     *x1_start = (double*)NULL, 
@@ -2906,10 +2895,20 @@ void makenewzIterativePartition(tree *tr, tree *localTree, int startIndex, int e
   int tipCase;
   int pNumber, qNumber; 
 
-  pNumber = tr->ti[0].pNumber;
-  qNumber = tr->ti[0].qNumber;  
+#ifdef _MULTI_GENE
+  if(tr->doMulti)
+    {
+      pNumber = tr->td[model].ti[0].pNumber;
+      qNumber = tr->td[model].ti[0].qNumber; 
+    }
+  else
+#endif
+    {
+      pNumber = tr->td[0].ti[0].pNumber;
+      qNumber = tr->td[0].ti[0].qNumber;  
+    }
 
-  newviewIterativePartition(tr, localTree, startIndex, endIndex, model);
+  newviewIterativePartition(tr, startIndex, endIndex, model);
 
   if(isTip(pNumber, tr->rdta->numsp) || isTip(qNumber, tr->rdta->numsp))
     {	    	    	   	               
@@ -2970,7 +2969,7 @@ static void switchAndAssignPartition(tree *tr, int lower, int upper, int model)
   tr->modelNumber = model;
   masterBarrier(THREAD_SUM_MAKENEWZ_PARTITION, tr);         
 #else
-  makenewzIterativePartition(tr, tr, lower, upper, model);	
+  makenewzIterativePartition(tr, lower, upper, model);	
 #endif
 }
 
@@ -2981,6 +2980,7 @@ static void topLevelMakenewzPartition(tree *tr, int lower, int upper, int model,
               
   z = z0;
   
+
   do 
     {
       int curvatOK = FALSE;
@@ -3018,7 +3018,7 @@ static void topLevelMakenewzPartition(tree *tr, int lower, int upper, int model,
 	      }
 	  }
 #else
-	  execCorePartition(tr, tr, &dlnLdlz, &d2lnLdlz2, lower, upper, model);	  
+	  execCorePartition(tr, &dlnLdlz, &d2lnLdlz2, lower, upper, model);	  
 #endif
 
 	    	
@@ -3053,7 +3053,7 @@ static void topLevelMakenewzPartition(tree *tr, int lower, int upper, int model,
     } 
   while ((--maxiter > 0) && (ABS(z - zprev) > zstep));	
    
-  result[0] = z;
+  *result = z;
 }
 			  
 
@@ -3063,52 +3063,65 @@ double makenewzPartitionGeneric(tree *tr, nodeptr p, nodeptr q, double z0, int m
   int i, l, u;
   double result;
   
-  assert(!tr->mixedData);
-
-  /* l = tr->modelIndices[model][0];
-     u = tr->modelIndices[model][1];*/
+  assert(!tr->mixedData);  
 
   l = tr->partitionData[model].lower;
-  u = tr->partitionData[model].upper;
-
-  tr->ti[0].pNumber = p->number;
-  tr->ti[0].qNumber = q->number;
-  for(i = 0; i < numBranches; i++)    
-    tr->ti[0].qz[i] =  q->z[i];  
+  u = tr->partitionData[model].upper;   
 
   assert(!tr->mixedData);
   /* should not be called when using mixed DNA/AA data */
 
-  /*printf("Model %d %d %d\n", model, l, u);*/
+#ifdef _MULTI_GENE
+  if(tr->doMulti)
+    {
+      tr->td[model].ti[0].pNumber = p->number;
+      tr->td[model].ti[0].qNumber = q->number;	  
+      tr->td[model].ti[0].qz[model] =  q->z[model];	  
+      tr->td[model].count = 1;	       
 
-  tr->traversalCount = 1;
-  if(!p->x)
-    computeTraversalInfo(p, &(tr->ti[0]), &(tr->traversalCount), tr->rdta->numsp);
-  if(!q->x)
-    computeTraversalInfo(q, &(tr->ti[0]), &(tr->traversalCount), tr->rdta->numsp);        
+      if(!p->xs[model])
+	computeMultiTraversalInfo(p, &(tr->td[model].ti[0]), &(tr->td[model].count), tr->rdta->numsp, model);  
+      if(!q->xs[model])
+	computeMultiTraversalInfo(q, &(tr->td[model].ti[0]), &(tr->td[model].count), tr->rdta->numsp, model);
+      
+      printf("%d\n", tr->td[model].count);
 
-  switch(tr->likelihoodFunction)
-    {  
-    case GTRGAMMA: /* needed for rate opt*/   
-    case GTRGAMMAMULT:
-      switchAndAssignPartition(tr, l, u, model);            
-      break;
-    case GTRGAMMAI: /* needed for rate opt*/
-    case GTRGAMMAMULTI:
-      switchAndAssignPartition(tr, l, u, model);     
-      break;    
-    case PROTGAMMA: /* needed for rate opt*/
-    case PROTGAMMAMULT:
-      switchAndAssignPartition(tr, l, u, model);      
-      break;
-    case PROTGAMMAI: /* needed for rate opt*/
-    case PROTGAMMAMULTI:
-      switchAndAssignPartition(tr, l, u, model);     
-      break;
-    default:
-      assert(0);
-    }   
-   	
+	/*
+	  if(!p->xs[model])
+	  computeFullMultiTraversalInfo(p, &(tr->td[model].ti[0]), &(tr->td[model].count), tr->rdta->numsp, model);
+	  if(!q->xs[model])
+	  computeFullMultiTraversalInfo(q, &(tr->td[model].ti[0]), &(tr->td[model].count), tr->rdta->numsp, model);
+	*/
+
+      /*printf("MAMA\n");*/
+
+      if(!isTip(p->number, tr->mxtips))
+	assert(p->xs[model]);
+      
+      if(!isTip(q->number, tr->mxtips))    
+	assert(q->xs[model]);          
+      
+      /*printf("PAPA\n");*/
+    }
+  else
+#endif
+    {
+      tr->td[0].ti[0].pNumber = p->number;
+      tr->td[0].ti[0].qNumber = q->number;
+
+      for(i = 0; i < tr->numBranches; i++)    
+	tr->td[0].ti[0].qz[i] =  q->z[i]; 
+
+      tr->td[0].count = 1;
+      
+      if(!p->x)
+	computeTraversalInfo(p, &(tr->td[0].ti[0]), &(tr->td[0].count), tr->rdta->numsp, tr->numBranches);
+      if(!q->x)
+	computeTraversalInfo(q, &(tr->td[0].ti[0]), &(tr->td[0].count), tr->rdta->numsp, tr->numBranches);       
+    }
+ 
+  switchAndAssignPartition(tr, l, u, model);            
+        	
   topLevelMakenewzPartition(tr, l, u, model, z0, maxiter, &result);
       
   /*free(tr->sumBuffer);*/

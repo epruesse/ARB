@@ -2,7 +2,7 @@
 # Makefile cleanup October 2006, Courtesy of Peter Cordes <peter@cordes.ca>
 
 CC = gcc 
-CFLAGS =  -O3 -fomit-frame-pointer -funroll-loops  
+CFLAGS =  -O3 -fomit-frame-pointer -funroll-loops
 #-Wall -pedantic -Wunused-parameter -Wredundant-decls  -Wreturn-type  -Wswitch-default -Wunused-value -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int -Wimport -pedantic-errors -Wunused  -Wunused-function  -Wunused-label -Wno-int-to-pointer-cast -Wbad-function-cast  -Wmissing-declarations -Wmissing-prototypes  -Wnested-externs  -Wold-style-definition -Wstrict-prototypes  -Wdeclaration-after-statement -Wpointer-sign -Wextra -Wmissing-noreturn -Wredundant-decls -Wunused -Wunused-function -Wunused-parameter -Wunused-value  -Wunused-variable
 
 LIBRARIES = -lm 
