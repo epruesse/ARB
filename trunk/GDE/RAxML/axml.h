@@ -69,7 +69,7 @@
 
 #define badRear         -1
 
-#define NUM_BRANCHES   16
+#define NUM_BRANCHES   128
 
 #define TRUE             1
 #define FALSE            0
@@ -135,8 +135,8 @@
 #define PointGamma(prob,alpha,beta)  PointChi2(prob,2.0*(alpha))/(2.0*(beta))
 
 #define programName        "RAxML"
-#define programVersion     "7.0.0"
-#define programDate        "JANUARY 2008"
+#define programVersion     "7.0.3"
+#define programDate        "March 2008"
 
 #define  TREE_EVALUATION            0
 #define  BIG_RAPID_MODE             1
@@ -147,23 +147,25 @@
 #define  OPTIMIZE_RATES             6
 #define  PARSIMONY_ADDITION         7
 #define  SEQUENCE_SIMILARITY_FILTER 8
+#define  MEHRING_ALGO               9
+#define  ARNDT_MODE                 10
 
 #define M_GTRCAT      1
 #define M_GTRGAMMA    2
 #define M_PROTCAT     5
 #define M_PROTGAMMA   6
 
-#define DAYHOFF  0
-#define DCMUT    1
-#define JTT      2
-#define MTREV    3
-#define WAG      4
-#define RTREV    5
-#define CPREV    6
-#define VT       7
-#define BLOSUM62 8
-#define MTMAM    9
-#define GTR      10
+#define DAYHOFF    0
+#define DCMUT      1
+#define JTT        2
+#define MTREV      3
+#define WAG        4
+#define RTREV      5
+#define CPREV      6
+#define VT         7
+#define BLOSUM62   8
+#define MTMAM      9
+#define GTR        10
 
 #define BITS_BYTE 8
 
@@ -258,6 +260,11 @@ typedef struct
   double rz[NUM_BRANCHES];
 } traversalInfo;
   
+typedef struct 
+{
+  traversalInfo *ti;
+  int count;
+} traversalData;
 
 
 /********** BOOTSTOPPING */
@@ -286,7 +293,7 @@ typedef struct {
 
 typedef  struct noderec 
 {
-#ifdef _MULTI_GENE
+#ifdef _MULTI_GENE  
   struct noderec  *backs[NUM_BRANCHES];
   char            xs[NUM_BRANCHES];
 #endif
@@ -366,7 +373,20 @@ typedef struct {
 } pInfo;
 
 
+typedef struct 
+{
+  nodeptr p;
+  int freq;  
+} insertionBranch;
 
+typedef struct
+{
+  insertionBranch *ib; 
+  int max;
+  int reference;
+} insertionPoints;
+
+  
 typedef  struct  {       
   pInfo            *partitionData;
   
@@ -375,11 +395,19 @@ typedef  struct  {
 
   parsimonyVector  *parsimonyData; 
 
-  traversalInfo    *ti;
-  int              traversalCount;
+#ifdef _MULTI_GENE
+  double        perPartitionLH[NUM_BRANCHES];
+  int           doMulti;
+  traversalData td[NUM_BRANCHES];
+#else
+  traversalData td[NUM_BRANCHES];
+#endif    
  
   int              *dataVector;
   
+  insertionBranch  *ib;
+  insertionPoints  *ip;
+  int numberOfTipsForInsertion;
   /* model-dependent stuff */ 
 
   
@@ -388,6 +416,32 @@ typedef  struct  {
   double           *siteLL_Vector;
   double           coreLZ;
   int              modelNumber;
+  int              multiBranch;
+  int              numBranches;
+
+#ifdef _LOCAL_DATA
+      
+  pInfo            *strided_partitionData;
+  char             **strided_yVector;
+  char             *strided_y0;
+
+  
+  int strideLength;
+  int *strided_aliaswgt;  
+  int *strided_invariant;
+  int *strided_model;
+  int *strided_rateCategory;
+  int *strided_dataVector;
+
+  double *strided_wr;
+  double *strided_wr2;
+  double *strided_patrat;
+  double *strided_patratStored;
+  double *strided_lhs;
+  double *strided_siteLL_Vector;
+#endif
+
+
 #ifdef _MULTI_GENE
   nodeptr  *startVector;
   char    **tipMissing;
@@ -467,6 +521,9 @@ typedef  struct  {
   int              *model; 
 
   int              *constraintVector;
+
+  
+
   int              ntips;
   int              nextnode;
   int              NumberOfCategories;
@@ -621,13 +678,16 @@ typedef  struct {
   boolean        generateBS;
   boolean        bootStopping;
   boolean        useExcludeFile;
+  boolean        userProteinModel;
+  boolean        rapidML_Addition;
+  boolean        computeELW;
   int            bootStopOnly;
   double         likelihoodEpsilon;  
   double         sequenceSimilarity;    
   double         gapyness;
   int            similarityFilterMode;
   double         bootstopCutoff;
-
+  double        *externalAAMatrix;
 } analdef;
 
 
@@ -645,8 +705,8 @@ extern double gettime ( void );
 extern int gettimeSrand ( void );
 extern double randum ( long *seed );
 extern void getxnode ( nodeptr p );
-extern void hookup ( nodeptr p, nodeptr q, double *z );
-extern void hookupDefault ( nodeptr p, nodeptr q );
+extern void hookup ( nodeptr p, nodeptr q, double *z, int numBranches);
+extern void hookupDefault ( nodeptr p, nodeptr q, int numBranches);
 extern boolean whitechar ( int ch );
 extern void makeboot ( analdef *adef, tree *tr );
 extern void allocNodex ( tree *tr, analdef *adef );
@@ -717,9 +777,9 @@ extern void freeInfoList ( void );
 extern void insertInfoList ( nodeptr node, double likelihood );
 extern boolean smoothRegion ( tree *tr, nodeptr p, int region );
 extern boolean regionalSmooth ( tree *tr, nodeptr p, int maxtimes, int region );
-extern nodeptr removeNodeBIG ( tree *tr, nodeptr p );
+extern nodeptr removeNodeBIG ( tree *tr, nodeptr p, int numBranches);
 extern nodeptr removeNodeRestoreBIG ( tree *tr, nodeptr p );
-extern boolean insertBIG ( tree *tr, nodeptr p, nodeptr q );
+extern boolean insertBIG ( tree *tr, nodeptr p, nodeptr q, int numBranches);
 extern boolean insertRestoreBIG ( tree *tr, nodeptr p, nodeptr q );
 extern void restoreTopologyOnly ( tree *tr, bestlist *bt );
 extern boolean testInsertBIG ( tree *tr, nodeptr p, nodeptr q );
@@ -747,7 +807,6 @@ extern int cmpTipVal ( void *v1, void *v2 );
 extern topol *setupTopol ( int maxtips );
 extern void freeTopol ( topol *tpl );
 extern void saveTree ( tree *tr, topol *tpl );
-extern void copyTopol ( topol *tpl1, topol *tpl2 );
 extern boolean restoreTreeRecursive ( topol *tpl, tree *tr );
 extern boolean restoreTree ( topol *tpl, tree *tr );
 extern boolean restoreTopology ( topol *tpl, tree *tr );
@@ -790,7 +849,7 @@ extern double treeLength(tree *tr, int model);
 extern void restoreTL_Light(topolRELL_LIST *rl, tree *tr, int n);
 extern void computeBootStopOnly(tree *tr, analdef *adef, char *bootStrapFileName);
 extern boolean bootStop(tree *tr, BL *b, int numberOfTrees, double *pearsonAverage, double bootstopCutoff);
-extern double evaluatePartialGeneric (tree *tr, tree *localTree, int i, double ki);
+extern double evaluatePartialGeneric (tree *, int i, double ki);
 extern double evaluateGeneric (tree *tr, nodeptr p);
 extern void newviewGeneric (tree *tr, nodeptr p);
 extern void makenewzGeneric(tree *tr, nodeptr p, nodeptr q, double *z0, int maxiter, double *result);
@@ -802,23 +861,30 @@ extern double makenewzPartitionGeneric(tree *tr, nodeptr p, nodeptr q, double z0
 extern boolean isTip(int number, int maxTips);
 extern double *getLikelihoodArray(int number, int mxtips, double **xVector);
 extern int *getScalingArray(int number, int endsite, int mxtips, int *scalingArray);
-extern void computeTraversalInfo(nodeptr p, traversalInfo *ti, int *counter, int maxTips);
-extern void newviewIterative(tree *tr, tree *localTree, int startIndex, int endIndex);
-extern double  evaluateIterative(tree *tr, tree *localTree, int startIndex, int endIndex);
-extern double evaluateIterativePartition(tree *tr,  tree *localTree, int lower, int upper, int model);
-extern void newviewIterativePartition(tree *tr,  tree *localTree, int lower, int upper, int model);
-extern void makenewzIterative(tree *tr,  tree *localTree, int startIndex, int endIndex);
-extern void execCore(tree *tr,  tree *localTree, double *dlnLdlz, double *d2lnLdlz2, int lower, int upper, int model);
-extern void makenewzIterativePartition(tree *tr,  tree *localTree, int startIndex, int endIndex, int model);
-extern void execCorePartition(tree *tr,  tree *localTree, double *dlnLdlz, double *d2lnLdlz2, int lower, int upper, int model);
+extern void computeTraversalInfo(nodeptr p, traversalInfo *ti, int *counter, int maxTips, int numBranches);
+
+
+extern void   newviewIterative(tree *, int startIndex, int endIndex);
+
+extern double evaluateIterative(tree *, int startIndex, int endIndex);
+extern double evaluateIterativePartition(tree *, int lower, int upper, int model);
+
+extern void newviewIterativePartition(tree *, int lower, int upper, int model);
+
+extern void makenewzIterative(tree *, int startIndex, int endIndex);
+extern void execCore(tree *, double *dlnLdlz, double *d2lnLdlz2, int lower, int upper, int model);
+extern void makenewzIterativePartition(tree *, int startIndex, int endIndex, int model);
+extern void execCorePartition(tree *, double *dlnLdlz, double *d2lnLdlz2, int lower, int upper, int model);
 extern void determineFullTraversal(nodeptr p, tree *tr);
-extern void optRateCat(tree *tr, tree *localTree, int i, double lower_spacing, double upper_spacing, double *lhs);
-extern int evaluateParsimonyIterative(tree *tr, tree *localTree, int lower, int upper);
-extern void newviewParsimonyIterative(tree *tr, tree *localTree, int startIndex, int endIndex);
+extern void optRateCat(tree *, int i, double lower_spacing, double upper_spacing, double *lhs);
+
+extern int evaluateParsimonyIterative(tree *, int lower, int upper);
+extern void newviewParsimonyIterative(tree *, int startIndex, int endIndex);
+
 extern double evaluateGenericInitrav (tree *tr, nodeptr p);
 extern double evaluateGenericInitravPartition(tree *tr, nodeptr p, int model);
-extern void evaluateGenericVectorIterative(tree *tr,  tree *localTree, int startIndex, int endIndex);
-extern void categorizeIterative(tree *tr,  tree *localTree, int startIndex, int endIndex);
+extern void evaluateGenericVectorIterative(tree *, int startIndex, int endIndex);
+extern void categorizeIterative(tree *, int startIndex, int endIndex);
 extern void onlyInitrav(tree *tr, nodeptr p);
 extern void onlyInitravPartition(tree *tr, nodeptr p, int model);
 
@@ -829,6 +895,30 @@ extern void catToGamma(tree *tr, analdef *adef);
 extern void handleExcludeFile(tree *tr, analdef *adef, rawdata *rdta);
 
 extern nodeptr findAnyTip(nodeptr p, int numsp);
+extern void determineSequencePosition(tree *tr, analdef *adef);
+
+extern void parseProteinModel(analdef *adef);
+
+extern void computeFullTraversalInfo(nodeptr p, traversalInfo *ti, int *counter, int maxTips, int numBranches);
+
+extern void optimizeArndt(tree *tr, analdef *adef);
+
+extern void rapidML_Addition(tree *tr, analdef *adef);
+
+extern void quickOpt(tree *tr, analdef *adef);
+
+extern void computeNextReplicate(tree *tr, analdef *adef, int *originalRateCategories, int *originalInvariant);
+
+extern void reductionCleanup(tree *tr, analdef *adef, int *originalRateCategories, int *originalInvariant);
+
+#ifdef _MULTI_GENE
+extern  boolean treeEvaluateMulti(tree *tr, double smoothFactor);
+extern  void determineFullMultiTraversal(tree *tr);
+extern  void computeMultiTraversalInfo(nodeptr p, traversalInfo *ti, int *counter, int maxTips, int model);
+extern  void getxsnode (nodeptr p, int model);
+extern  void computeFullMultiTraversalInfo(nodeptr p, traversalInfo *ti, int *counter, int maxTips, int model);
+#endif
+
 
 #ifdef _USE_PTHREADS
 
@@ -858,9 +948,11 @@ extern nodeptr findAnyTip(nodeptr p, int numsp);
 #define THREAD_COPY_INVARIANTS          20
 #define THREAD_COPY_INIT_MODEL          21
 #define THREAD_NEXT_REPLICATE           22
-#define THREAD_REDUCTION_CLEANUP        23
-#define THREAD_COPY_CATEGORIZE          24
 
+
+
+
+extern void optRateCat_LOCAL(tree *localTree, int lower, int upper, double lower_spacing, double upper_spacing, double *lhs);
 #endif
 
 extern void masterBarrier(int jobType, tree *tr);

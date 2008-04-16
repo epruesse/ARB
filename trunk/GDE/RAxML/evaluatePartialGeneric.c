@@ -41,8 +41,7 @@
 #include "axml.h"
 
 
-extern int multiBranch;
-extern int numBranches;
+
 
 
 /********************** GTRCAT ***************************************/
@@ -50,10 +49,15 @@ extern int numBranches;
 
 
 
-
+#ifdef WIN32
+static void computeVectorGTRCATPROT(double *lVector, int *eVector, double ki, int i, double qz, double rz,
+				    traversalInfo *ti, double *EIGN, double *EI, double *EV, double *tipVector, 
+				    char **yVector, int mxtips)
+#else
 static inline void computeVectorGTRCATPROT(double *lVector, int *eVector, double ki, int i, double qz, double rz,
 					   traversalInfo *ti, double *EIGN, double *EI, double *EV, double *tipVector, 
 					   char **yVector, int mxtips)
+#endif
 {       
   double   *x1, *x2, *x3;  
   int ex3,
@@ -251,10 +255,15 @@ static inline void computeVectorGTRCATPROT(double *lVector, int *eVector, double
   }
 }
 
-
+#ifdef WIN32
+static void computeVectorGTRCAT(double *lVector, int *eVector, double ki, int i, double qz, double rz,
+				traversalInfo *ti, double *EIGN, double *EI, double *EV, double *tipVector, 
+				char **yVector, int mxtips)
+#else
 static inline void computeVectorGTRCAT(double *lVector, int *eVector, double ki, int i, double qz, double rz,
 				       traversalInfo *ti, double *EIGN, double *EI, double *EV, double *tipVector, 
 				       char **yVector, int mxtips)
+#endif
 {       
   double  d1[3], d2[3],  ump_x1_1, ump_x1_2, ump_x1_3, ump_x1_0, 
     ump_x2_0, ump_x2_1, ump_x2_2, ump_x2_3, x1px2, lz1, lz2; 
@@ -534,7 +543,7 @@ static double evaluatePartialGTRCATPROT(int i, double ki, int counter,  traversa
 
 
 
-static void computeFullTraversalInfo(nodeptr p, traversalInfo *ti, int *counter, int maxTips)
+void computeFullTraversalInfo(nodeptr p, traversalInfo *ti, int *counter, int maxTips, int numBranches)
 {
   if(isTip(p->number, maxTips))
     return; 
@@ -583,7 +592,7 @@ static void computeFullTraversalInfo(nodeptr p, traversalInfo *ti, int *counter,
 		q = tmp;
 	      }
 	    
-	    computeFullTraversalInfo(r, ti, counter, maxTips);	
+	    computeFullTraversalInfo(r, ti, counter, maxTips, numBranches);	
 	    	   
 	    ti[*counter].tipCase = TIP_INNER; 
 	    ti[*counter].pNumber = p->number;
@@ -606,8 +615,8 @@ static void computeFullTraversalInfo(nodeptr p, traversalInfo *ti, int *counter,
 	  }
 	else
 	  {	 	  
-	    computeFullTraversalInfo(q, ti, counter, maxTips);	       
-	    computeFullTraversalInfo(r, ti, counter, maxTips);
+	    computeFullTraversalInfo(q, ti, counter, maxTips, numBranches);	       
+	    computeFullTraversalInfo(r, ti, counter, maxTips, numBranches);
 	   
 	    ti[*counter].tipCase = INNER_INNER; 
 	    ti[*counter].pNumber = p->number;
@@ -636,29 +645,175 @@ void determineFullTraversal(nodeptr p, tree *tr)
   nodeptr q = p->back;
   int k;
 
-  tr->ti[0].pNumber = p->number;
-  tr->ti[0].qNumber = q->number;
+  tr->td[0].ti[0].pNumber = p->number;
+  tr->td[0].ti[0].qNumber = q->number;
 
-  for(k = 0; k < numBranches; k++)        
-    tr->ti[0].qz[k] = q->z[k];    
+  for(k = 0; k < tr->numBranches; k++)        
+    tr->td[0].ti[0].qz[k] = q->z[k];    
 
   assert(isTip(p->number, tr->rdta->numsp));
 
-  tr->traversalCount = 1; 
-  computeFullTraversalInfo(q, &(tr->ti[0]),  &(tr->traversalCount), tr->rdta->numsp); 
-  computeFullTraversalInfo(p, &(tr->ti[0]),  &(tr->traversalCount), tr->rdta->numsp);
+  tr->td[0].count = 1; 
+  computeFullTraversalInfo(q, &(tr->td[0].ti[0]),  &(tr->td[0].count), tr->rdta->numsp, tr->numBranches); 
+  computeFullTraversalInfo(p, &(tr->td[0].ti[0]),  &(tr->td[0].count), tr->rdta->numsp, tr->numBranches);
+
+
 }
+
+
+#ifdef _MULTI_GENE
+
+void computeFullMultiTraversalInfo(nodeptr p, traversalInfo *ti, int *counter, int maxTips, int model)
+{
+  if(isTip(p->number, maxTips))
+    return; 
+
+  {        
+    /* set xnode info at this point */
+
+    /*p->x = 1;
+    p->next->x = 0;
+    p->next->next->x = 0;       */
+
+    if(p->backs[model])
+      {
+	nodeptr q = p->next->backs[model];
+	nodeptr r = p->next->next->backs[model];
+	assert(p == p->next->next->next);
+	p->xs[model] = 1;
+	p->next->xs[model] = 0;
+	p->next->next->xs[model] = 0;
+	
+	if(isTip(r->number, maxTips) && isTip(q->number, maxTips))
+	  {	  
+	    ti[*counter].tipCase = TIP_TIP; 
+	    ti[*counter].pNumber = p->number;
+	    ti[*counter].qNumber = q->number;
+	    ti[*counter].rNumber = r->number;
+	    	    
+	    {
+	      double z;
+	      z = q->z[model];
+	      z = (z > zmin) ? log(z) : log(zmin);
+	      ti[*counter].qz[model] = z;
+	      
+	      z = r->z[model];
+	      z = (z > zmin) ? log(z) : log(zmin);
+	      ti[*counter].rz[model] = z;	    
+	    }     
+
+	    *counter = *counter + 1;
+	  }  
+	else
+	  {
+	    if(isTip(r->number, maxTips) || isTip(q->number, maxTips))
+	      {		
+		nodeptr tmp;
+		
+		if(isTip(r->number, maxTips))
+		  {
+		    tmp = r;
+		    r = q;
+		    q = tmp;
+		  }
+		
+		computeFullMultiTraversalInfo(r, ti, counter, maxTips, model);	
+		
+		ti[*counter].tipCase = TIP_INNER; 
+		ti[*counter].pNumber = p->number;
+		ti[*counter].qNumber = q->number;
+		ti[*counter].rNumber = r->number;
+		
+	      
+		{
+		  double z;
+		  z = q->z[model];
+		  z = (z > zmin) ? log(z) : log(zmin);
+		  ti[*counter].qz[model] = z;
+		  
+		  z = r->z[model];
+		  z = (z > zmin) ? log(z) : log(zmin);
+		  ti[*counter].rz[model] = z;		
+		}   
+		
+		*counter = *counter + 1;
+	      }
+	    else
+	      {	 	  
+		computeFullMultiTraversalInfo(q, ti, counter, maxTips, model);	       
+		computeFullMultiTraversalInfo(r, ti, counter, maxTips, model);
+		
+		ti[*counter].tipCase = INNER_INNER; 
+		ti[*counter].pNumber = p->number;
+		ti[*counter].qNumber = q->number;
+		ti[*counter].rNumber = r->number;
+	
+		{
+		  double z;
+		  z = q->z[model];
+		  z = (z > zmin) ? log(z) : log(zmin);
+		  ti[*counter].qz[model] = z;
+		  
+		  z = r->z[model];
+		  z = (z > zmin) ? log(z) : log(zmin);
+		  ti[*counter].rz[model] = z;		
+		}   
+		
+		*counter = *counter + 1;
+	      }
+	  }          
+      }
+    else
+      {	
+	p->xs[model] = 0;
+	p->next->xs[model] = 0;
+	p->next->next->xs[model] = 0;
+	assert(p == p->next->next->next);
+
+	computeFullMultiTraversalInfo(p->next->back, ti, counter, maxTips, model);
+	computeFullMultiTraversalInfo(p->next->next->back, ti, counter, maxTips, model);
+      }
+  }
+}
+
+
+void determineFullMultiTraversal(tree *tr)
+{
+  int model;
+
+  for(model = 0; model < tr->NumberOfModels; model++)
+    {
+      nodeptr p = tr->startVector[model];
+
+      nodeptr q = p->backs[model];     
+      
+      tr->td[model].ti[0].pNumber = p->number;
+      tr->td[model].ti[0].qNumber = q->number;
+           
+      tr->td[model].ti[0].qz[model] = q->z[model];    
+      
+      assert(isTip(p->number, tr->rdta->numsp));           
+
+      tr->td[model].count = 1;
+
+      computeFullMultiTraversalInfo(q, &(tr->td[model].ti[0]),  &(tr->td[model].count), tr->rdta->numsp, model); 
+      computeFullMultiTraversalInfo(p, &(tr->td[model].ti[0]),  &(tr->td[model].count), tr->rdta->numsp, model);
+
+      /*printf("%d %d\n", model,  tr->td[model].count);*/
+    }
+}
+#endif
 
 #ifdef _LOCAL_DATA
 
-double evaluatePartialGeneric (tree *tr, tree *localTree, int i, double ki)
+double evaluatePartialGeneric (tree *localTree, int i, double ki)
 {
   double result;
   int model, branchReference;   
  
-  model = localTree->model[i];
+  model = localTree->strided_model[i];
   
-  if(multiBranch)
+  if(localTree->multiBranch)
     branchReference = model;
   else
     branchReference = 0;
@@ -670,14 +825,14 @@ double evaluatePartialGeneric (tree *tr, tree *localTree, int i, double ki)
       /*switch(tr->partitionData[model].dataType)
 	{
 	case DNA_DATA:
-	result = evaluatePartialGTRCAT(i, ki, tr->traversalCount, tr->ti, tr->ti[0].qz[branchReference], 
+	result = evaluatePartialGTRCAT(i, ki, tr->td[0].count, tr->td[0].ti, tr->td[0].ti[0].qz[branchReference], 
 	tr->cdta->aliaswgt[i],
 	&(tr->EIGN_DNA[model * 3]), &(tr->EI_DNA[model * 12]), &(tr->EV_DNA[model * 16]),
 	&(tr->tipVectorDNA[model * 64]),
 	tr->yVector, branchReference, tr->mxtips);
 	break;
 	case AA_DATA:
-	result = evaluatePartialGTRCATPROT(i, ki, tr->traversalCount, tr->ti, tr->ti[0].qz[branchReference], 
+	result = evaluatePartialGTRCATPROT(i, ki, tr->td[0].count, tr->td[0].ti, tr->td[0].ti[0].qz[branchReference], 
 	tr->cdta->aliaswgt[i],
 	&(tr->EIGN_AA[model * 19]), &(tr->EI_AA[model * 380]), 
 	&(tr->EV_AA[model * 400]),
@@ -695,34 +850,34 @@ double evaluatePartialGeneric (tree *tr, tree *localTree, int i, double ki)
       switch(localTree->likelihoodFunction)
 	{
 	case GTRCAT:
-	  result = evaluatePartialGTRCAT(i, ki, localTree->traversalCount, localTree->ti, localTree->ti[0].qz[0], 
-					 localTree->cdta->aliaswgt[i],
+	  result = evaluatePartialGTRCAT(i, ki, localTree->td[0].count, localTree->td[0].ti, localTree->td[0].ti[0].qz[0], 
+					 localTree->strided_aliaswgt[i],
 					 &(localTree->EIGN_DNA[0]), &(localTree->EI_DNA[0]), &(localTree->EV_DNA[0]),
 					 &(localTree->tipVectorDNA[0]), 
-					 localTree->yVector, 0, localTree->mxtips);     
+					 localTree->strided_yVector, 0, localTree->mxtips);     
 	  break;
 	case GTRCATMULT:
-	  result = evaluatePartialGTRCAT(i, ki, localTree->traversalCount, localTree->ti, localTree->ti[0].qz[branchReference], 
-					 localTree->cdta->aliaswgt[i],
+	  result = evaluatePartialGTRCAT(i, ki, localTree->td[0].count, localTree->td[0].ti, localTree->td[0].ti[0].qz[branchReference], 
+					 localTree->strided_aliaswgt[i],
 					 &(localTree->EIGN_DNA[model * 3]), &(localTree->EI_DNA[model * 12]), 
 					 &(localTree->EV_DNA[model * 16]),
 					 &(localTree->tipVectorDNA[model * 64]), 
-					 localTree->yVector, branchReference, localTree->mxtips);
+					 localTree->strided_yVector, branchReference, localTree->mxtips);
 	  break;     
 	case PROTCAT:
-	  result = evaluatePartialGTRCATPROT(i, ki, localTree->traversalCount, localTree->ti, 
-					     localTree->ti[0].qz[0], localTree->cdta->aliaswgt[i],
+	  result = evaluatePartialGTRCATPROT(i, ki, localTree->td[0].count, localTree->td[0].ti, 
+					     localTree->td[0].ti[0].qz[0], localTree->strided_aliaswgt[i],
 					     &(localTree->EIGN_AA[0]), &(localTree->EI_AA[0]), &(localTree->EV_AA[0]),
 					     &(localTree->tipVectorAA[0]), 
-					     localTree->yVector, 0, localTree->mxtips);     
+					     localTree->strided_yVector, 0, localTree->mxtips);     
 	  break;
 	case PROTCATMULT:
-	  result = evaluatePartialGTRCATPROT(i, ki, localTree->traversalCount, localTree->ti, localTree->ti[0].qz[branchReference], 
-					     localTree->cdta->aliaswgt[i],
+	  result = evaluatePartialGTRCATPROT(i, ki, localTree->td[0].count, localTree->td[0].ti, localTree->td[0].ti[0].qz[branchReference], 
+					     localTree->strided_aliaswgt[i],
 					     &(localTree->EIGN_AA[model * 19]), &(localTree->EI_AA[model * 380]), 
 					     &(localTree->EV_AA[model * 400]),
 					     &(localTree->tipVectorAA[model * 460]), 
-					     localTree->yVector, branchReference, localTree->mxtips);  
+					     localTree->strided_yVector, branchReference, localTree->mxtips);  
 	  break;
 	default:
 	  assert(0);
@@ -734,14 +889,14 @@ double evaluatePartialGeneric (tree *tr, tree *localTree, int i, double ki)
 
 #else
 
-double evaluatePartialGeneric (tree *tr, tree *localTree, int i, double ki)
+double evaluatePartialGeneric (tree *tr, int i, double ki)
 {
   double result;
   int model, branchReference;   
  
   model = tr->model[i];
   
-  if(multiBranch)
+  if(tr->multiBranch)
     branchReference = model;
   else
     branchReference = 0;
@@ -750,17 +905,17 @@ double evaluatePartialGeneric (tree *tr, tree *localTree, int i, double ki)
     {
     
 
-      switch(/*tr->dataType[model]*/ tr->partitionData[model].dataType)
+      switch(tr->partitionData[model].dataType)
 	{
 	case DNA_DATA:
-	  result = evaluatePartialGTRCAT(i, ki, tr->traversalCount, tr->ti, tr->ti[0].qz[branchReference], 
+	  result = evaluatePartialGTRCAT(i, ki, tr->td[0].count, tr->td[0].ti, tr->td[0].ti[0].qz[branchReference], 
 					 tr->cdta->aliaswgt[i],
 					 &(tr->EIGN_DNA[model * 3]), &(tr->EI_DNA[model * 12]), &(tr->EV_DNA[model * 16]),
 					 &(tr->tipVectorDNA[model * 64]),
 					 tr->yVector, branchReference, tr->mxtips);
 	  break;
 	case AA_DATA:
-	  result = evaluatePartialGTRCATPROT(i, ki, tr->traversalCount, tr->ti, tr->ti[0].qz[branchReference], 
+	  result = evaluatePartialGTRCATPROT(i, ki, tr->td[0].count, tr->td[0].ti, tr->td[0].ti[0].qz[branchReference], 
 					     tr->cdta->aliaswgt[i],
 					     &(tr->EIGN_AA[model * 19]), &(tr->EI_AA[model * 380]), 
 					     &(tr->EV_AA[model * 400]),
@@ -777,26 +932,26 @@ double evaluatePartialGeneric (tree *tr, tree *localTree, int i, double ki)
       switch(tr->likelihoodFunction)
 	{
 	case GTRCAT:
-	  result = evaluatePartialGTRCAT(i, ki, tr->traversalCount, tr->ti, tr->ti[0].qz[0], tr->cdta->aliaswgt[i],
+	  result = evaluatePartialGTRCAT(i, ki, tr->td[0].count, tr->td[0].ti, tr->td[0].ti[0].qz[0], tr->cdta->aliaswgt[i],
 					 &(tr->EIGN_DNA[0]), &(tr->EI_DNA[0]), &(tr->EV_DNA[0]),
 					 &(tr->tipVectorDNA[0]), 
 					 tr->yVector, 0, tr->mxtips);     
 	  break;
 	case GTRCATMULT:
-	  result = evaluatePartialGTRCAT(i, ki, tr->traversalCount, tr->ti, tr->ti[0].qz[branchReference], 
+	  result = evaluatePartialGTRCAT(i, ki, tr->td[0].count, tr->td[0].ti, tr->td[0].ti[0].qz[branchReference], 
 					 tr->cdta->aliaswgt[i],
 					 &(tr->EIGN_DNA[model * 3]), &(tr->EI_DNA[model * 12]), &(tr->EV_DNA[model * 16]),
 					 &(tr->tipVectorDNA[model * 64]), 
 					 tr->yVector, branchReference, tr->mxtips);
 	  break;     
 	case PROTCAT:
-	  result = evaluatePartialGTRCATPROT(i, ki, tr->traversalCount, tr->ti, tr->ti[0].qz[0], tr->cdta->aliaswgt[i],
+	  result = evaluatePartialGTRCATPROT(i, ki, tr->td[0].count, tr->td[0].ti, tr->td[0].ti[0].qz[0], tr->cdta->aliaswgt[i],
 					     &(tr->EIGN_AA[0]), &(tr->EI_AA[0]), &(tr->EV_AA[0]),
 					     &(tr->tipVectorAA[0]), 
 					     tr->yVector, 0, tr->mxtips);     
 	  break;
 	case PROTCATMULT:
-	  result = evaluatePartialGTRCATPROT(i, ki, tr->traversalCount, tr->ti, tr->ti[0].qz[branchReference], 
+	  result = evaluatePartialGTRCATPROT(i, ki, tr->td[0].count, tr->td[0].ti, tr->td[0].ti[0].qz[branchReference], 
 					     tr->cdta->aliaswgt[i],
 					     &(tr->EIGN_AA[model * 19]), &(tr->EI_AA[model * 380]), &(tr->EV_AA[model * 400]),
 					     &(tr->tipVectorAA[model * 460]), 

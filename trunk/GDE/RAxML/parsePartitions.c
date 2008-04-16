@@ -54,8 +54,8 @@
 
 extern char modelFileName[1024];
 extern char excludeFileName[1024];
-extern int multiBranch;
-extern int numBranches;
+extern char proteinModelFileName[1024];
+
 
 extern char inverseMeaningDNA[16];
 extern char inverseMeaningPROT[23];
@@ -583,8 +583,8 @@ void parsePartitions(analdef *adef, rawdata *rdta, tree *tr)
 	}
       else
 	{
-	  multiBranch = 1;
-	  numBranches = tr->NumberOfModels;
+	  tr->multiBranch = 1;
+	  tr->numBranches = tr->NumberOfModels;
 	}
     }
 }
@@ -917,6 +917,70 @@ void handleExcludeFile(tree *tr, analdef *adef, rawdata *rdta)
 }
 
 
+void parseProteinModel(analdef *adef)
+{
+  FILE *f; 
+  int doublesRead = 0;
+  int result = 0;
+  int i, j;
+  double acc = 0.0;
 
+  assert(adef->userProteinModel);
+  printf("User-defined prot mod %s\n", proteinModelFileName);
 
+  adef->externalAAMatrix = (double*)malloc(420 * sizeof(double));
 
+  f = fopen(proteinModelFileName, "r");
+  
+  if (!f)
+    {
+      printf( "Could not open external AA subsitution model file: %s\n", proteinModelFileName);
+      exit(-1);
+    }
+
+  while(doublesRead < 420)
+    {     
+      result = fscanf(f, "%lf", &(adef->externalAAMatrix[doublesRead++]));           
+
+      if(result == EOF)
+	{
+	  printf("Error protein model file must consist of exactly 420 entries \n");
+	  printf("The first 400 entries are for the rates of the AA matrix, while the\n");
+	  printf("last 20 should contain the empirical base frequencies\n");
+	  printf("Reached End of File after %d entries\n", (doublesRead - 1));
+	  exit(-1);
+	}    
+    }
+       
+  fclose(f);
+
+  /* CHECKS */
+  for(i = 0; i < 20; i++)
+    for(j = 0; j < 20; j++)
+      {
+	if(i != j)
+	  {
+	    if(adef->externalAAMatrix[i * 20 + j] != adef->externalAAMatrix[j * 20 + i])
+	      {
+		printf("Error user-defined Protein model matrix must be symmetric\n");
+		printf("Entry P[%d][%d]=%f at position %d is not equal to P[%d][%d]=%f at position %d\n", 
+		       i, j,  adef->externalAAMatrix[i * 20 + j], (i * 20 + j),
+		       j, i,  adef->externalAAMatrix[j * 20 + i], (j * 20 + i));
+		exit(-1);
+	      }
+	  }
+      }
+
+  acc = 0.0;
+
+  for(i = 400; i < 420; i++)    
+    acc += adef->externalAAMatrix[i];         
+
+  if((acc > 1.0 + 1.0E-6) || (acc <  1.0 - 1.0E-6))
+    {
+      printf("Base frequencies in user-defined AA substitution matrix do not sum to 1.0\n");
+      printf("the sum is %1.80f\n", acc);
+      exit(-1);
+    }
+
+}

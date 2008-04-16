@@ -41,9 +41,7 @@
 #include "axml.h"
 
 
-
-extern int multiBranch;
-extern int numBranches;
+extern int NumberOfThreads;
 
 static void categorizeGTRGAMMA(char *tipX1, double *x2_start, int *ex2, double *EIGN, double *pz,
 			       double *gammaRates, double *tipVector, int *rateCategory, int lower, int upper)
@@ -278,7 +276,8 @@ static void categorizeGTRGAMMAINVAR(char *tipX1, double *x2_start, int *ex2, dou
 }
 
 static void categorizeGTRGAMMAMULT (char *tipX1, double *x2_start, int *ex2, double *pz, double *gammaRates, double *EIGN, 
-				    double *tipVector, int *rateCategory, int lower, int upper, int *modelptr, int NumberOfModels) 
+				    double *tipVector, int *rateCategory, int lower, int upper, int *modelptr, int NumberOfModels,
+				    int multiBranch) 
 {
   double   z, lz = 0.0, term[4], ki;     
   int     i, index = 0;  
@@ -403,7 +402,7 @@ static void categorizeGTRGAMMAMULT (char *tipX1, double *x2_start, int *ex2, dou
   
 static void categorizeGTRGAMMAMULTINVAR (char *tipX1, double *x2_start, int *ex2, double *pz, double *gammaRates, double *EIGN,
 					 double *tipVector, int *rateCategory, int lower, int upper, int *modelptr, int NumberOfModels,
-					 int *iptr, double *invariants, double *frequencies) 
+					 int *iptr, double *invariants, double *frequencies, int multiBranch) 
 {
   double   z, lz = 0.0, term[4], ki;    
   int     i, index = 0;  
@@ -555,98 +554,98 @@ static void categorizeGTRGAMMAMULTINVAR (char *tipX1, double *x2_start, int *ex2
   
 static void categorizeGTRGAMMAPROT (char *tipX1, double *x2, int *ex2, double *pz, double *gammaRates, double *EIGN, 
 				    double *tipVector, int *rateCategory, int lower, int upper)
-  {
-    double   z, lz, term[4], ki, min, allSum;    
-     int     i, j, index = 0;     
-    double  *diagptable, *diagptable_start;
-    double  *left, *right;           
+{
+  double   z, lz, term[4], ki, min, allSum;    
+  int     i, j, index = 0;     
+  double  *diagptable, *diagptable_start;
+  double  *left, *right;           
     
-    z = pz[0];
+  z = pz[0];
    
-    if (z < zmin) z = zmin;
-    lz = log(z);
+  if (z < zmin) z = zmin;
+  lz = log(z);
        
-    diagptable = diagptable_start = (double *)malloc(sizeof(double) * 4 * 19);
+  diagptable = diagptable_start = (double *)malloc(sizeof(double) * 4 * 19);
 
-    for(i = 0; i < 4; i++)
-      {
-	ki = gammaRates[i];	 
+  for(i = 0; i < 4; i++)
+    {
+      ki = gammaRates[i];	 
 
-	for(j = 0; j < 19; j++)
-	  *diagptable++ = exp (EIGN[j] * ki * lz);	
-      }
-	    
-   
-    for (i = lower; i < upper; i++) 
-      {
-	left = &(tipVector[20 * tipX1[i]]);
-	diagptable = diagptable_start;
+      for(j = 0; j < 19; j++)
+	*diagptable++ = exp (EIGN[j] * ki * lz);	
+    }
+	       
+  for (i = lower; i < upper; i++) 
+    {
+      left = &(tipVector[20 * tipX1[i]]);
+      diagptable = diagptable_start;
 	    	 	
-	for(j = 0; j < 4; j++)
-	  {
-	    right = &(x2[80 * i + 20 * j]);
-	    term[j] = 0;
-	    term[j] +=  left[0] * right[0];
-	    term[j] +=  left[1] * right[1] * *diagptable++;
-	    term[j] +=  left[2] * right[2] * *diagptable++;
-	    term[j] +=  left[3] * right[3] * *diagptable++;
-	    term[j] +=  left[4] * right[4] * *diagptable++;
-	    term[j] +=  left[5] * right[5] * *diagptable++;
-	    term[j] +=  left[6] * right[6] * *diagptable++;	
-	    term[j] +=  left[7] * right[7] * *diagptable++;
-	    term[j] +=  left[8] * right[8] * *diagptable++;
-	    term[j] +=  left[9] * right[9] * *diagptable++;
-	    term[j] +=  left[10] * right[10] * *diagptable++;
-	    term[j] +=  left[11] * right[11] * *diagptable++;
-	    term[j] +=  left[12] * right[12] * *diagptable++;
-	    term[j] +=  left[13] * right[13] * *diagptable++;
-	    term[j] +=  left[14] * right[14] * *diagptable++;
-	    term[j] +=  left[15] * right[15] * *diagptable++;
-	    term[j] +=  left[16] * right[16] * *diagptable++;
-	    term[j] +=  left[17] * right[17] * *diagptable++;
-	    term[j] +=  left[18] * right[18] * *diagptable++;	
-	    term[j] +=  left[19] * right[19] * *diagptable++;
-
-	    term[j] = log(term[j]) +  ex2[i] * log(minlikelihood);
-	  }	  
+      for(j = 0; j < 4; j++)
+	{
+	  right = &(x2[80 * i + 20 * j]);
+	  term[j]  =  0.0;
+	  term[j] +=  left[0] * right[0];
+	  term[j] +=  left[1] * right[1] * *diagptable++;
+	  term[j] +=  left[2] * right[2] * *diagptable++;
+	  term[j] +=  left[3] * right[3] * *diagptable++;
+	  term[j] +=  left[4] * right[4] * *diagptable++;
+	  term[j] +=  left[5] * right[5] * *diagptable++;
+	  term[j] +=  left[6] * right[6] * *diagptable++;	
+	  term[j] +=  left[7] * right[7] * *diagptable++;
+	  term[j] +=  left[8] * right[8] * *diagptable++;
+	  term[j] +=  left[9] * right[9] * *diagptable++;
+	  term[j] +=  left[10] * right[10] * *diagptable++;
+	  term[j] +=  left[11] * right[11] * *diagptable++;
+	  term[j] +=  left[12] * right[12] * *diagptable++;
+	  term[j] +=  left[13] * right[13] * *diagptable++;
+	  term[j] +=  left[14] * right[14] * *diagptable++;
+	  term[j] +=  left[15] * right[15] * *diagptable++;
+	  term[j] +=  left[16] * right[16] * *diagptable++;
+	  term[j] +=  left[17] * right[17] * *diagptable++;
+	  term[j] +=  left[18] * right[18] * *diagptable++;	
+	  term[j] +=  left[19] * right[19] * *diagptable++;
+	  
+	  term[j] = log(term[j]) +  ex2[i] * log(minlikelihood);
+	}	  
 	    
-	allSum = 0.25 * (term[0] + term[1] + term[2] + term[3]);
+      allSum = 0.25 * (term[0] + term[1] + term[2] + term[3]);
       
-	allSum = 1.0 / allSum;
+      allSum = 1.0 / allSum;
 	
-	term[0] = 0.25 * term[0] * allSum;
-	term[1] = 0.25 * term[1] * allSum;
-	term[2] = 0.25 * term[2] * allSum;
-	term[3] = 0.25 * term[3] * allSum;
+      term[0] = 0.25 * term[0] * allSum;
+      term[1] = 0.25 * term[1] * allSum;
+      term[2] = 0.25 * term[2] * allSum;
+      term[3] = 0.25 * term[3] * allSum;
     
-	min = largeDouble;
-	if(term[0] < min)
-	  {
-	    min   = term[0];
-	    index = 0;
-	  }	
-	if(term[1] < min)
-	  {
-	    min   = term[1];
-	    index = 1;
-	  }
-	if(term[2] < min)
-	  {
-	    min   = term[2];
-	    index = 2;
-	  }
-	if(term[3] < min)
-	  {
-	    min   = term[3];
-	    index = 3;
-	  }
+      min = largeDouble;
+      
+      if(term[0] < min)
+	{
+	  min   = term[0];
+	  index = 0;
+	}	
+      if(term[1] < min)
+	{
+	  min   = term[1];
+	  index = 1;
+	}
+      if(term[2] < min)
+	{
+	  min   = term[2];
+	  index = 2;
+	}
+      if(term[3] < min)
+	{
+	  min   = term[3];
+	  index = 3;
+	}
 	
-	rateCategory[i] = index;
-      }
-    
-    free(diagptable_start); 
-    return;
-  }	
+      rateCategory[i] = index;
+    }
+  
+  free(diagptable_start); 
+  return;
+}	
 
 static void categorizeGTRGAMMAPROTINVAR (char *tipX1, double *x2, int *ex2, double *pz, double *gammaRates, double *EIGN, 
 					 double *tipVector, int *rateCategory, int lower, int upper,
@@ -753,7 +752,8 @@ static void categorizeGTRGAMMAPROTINVAR (char *tipX1, double *x2, int *ex2, doub
   }
 	
 static void categorizeGTRGAMMAPROTMULT (char *tipX1, double *x2, int *ex2, double *pz, double *gammaRates, double *EIGN, 
-					double *tipVector, int *rateCategory, int lower, int upper, int *modelptr, int NumberOfModels)
+					double *tipVector, int *rateCategory, int lower, int upper, int *modelptr, int NumberOfModels, 
+					int multiBranch)
   {
     double   z, lz = 0.0, term[4], ki, min, allSum;    
     int     i, j, index = 0;     
@@ -868,7 +868,7 @@ static void categorizeGTRGAMMAPROTMULT (char *tipX1, double *x2, int *ex2, doubl
 
 static void categorizeGTRGAMMAPROTMULTINVAR (char *tipX1, double *x2, int *ex2, double *pz, double *gammaRates, double *EIGN,
 					     double *tipVector, int *rateCategory, int lower, int upper, int *modelptr, 
-					     int NumberOfModels, int *iptr, double *invariants, double *frequencies)
+					     int NumberOfModels, int *iptr, double *invariants, double *frequencies, int multiBranch)
   {
     double   z, lz = 0.0, term[4], ki, min, allSum;    
     int     i, j, index = 0;     
@@ -995,21 +995,24 @@ static void categorizeGTRGAMMAPROTMULTINVAR (char *tipX1, double *x2, int *ex2, 
 
 #ifdef _LOCAL_DATA
 
-void categorizeIterative(tree *tr, tree *localTree, int startIndex, int endIndex)
+void categorizeIterative(tree *localTree, int startIndex, int endIndex)
 {
   double *x2_start, *pz;
   char *tipX1;
   int *ex2;
   int pNumber, qNumber;
 
-  pNumber = tr->ti[0].pNumber;
-  qNumber = tr->ti[0].qNumber;
-  pz      = tr->ti[0].qz;
+  pNumber = localTree->td[0].ti[0].pNumber;
+  qNumber = localTree->td[0].ti[0].qNumber;
+  pz      = localTree->td[0].ti[0].qz;
    
+  if(localTree->td[0].count > 1)    
+    newviewIterative(localTree, 0, (endIndex - startIndex));   
+
   x2_start = getLikelihoodArray(qNumber, localTree->mxtips, localTree->xVector);
   ex2      = getScalingArray(qNumber,    localTree->mySpan, localTree->mxtips, localTree->expArray);  
 
-  tipX1   = &localTree->yVector[pNumber][startIndex];
+  tipX1   = &localTree->strided_yVector[pNumber][startIndex];
 
   if(localTree->mixedData)
     {
@@ -1021,55 +1024,55 @@ void categorizeIterative(tree *tr, tree *localTree, int startIndex, int endIndex
 	{   
 	case GTRGAMMA:
 	  categorizeGTRGAMMA(tipX1, x2_start, ex2, localTree->EIGN_DNA, pz, localTree->gammaRates, 
-			     localTree->tipVectorDNA, &(tr->cdta->rateCategory[startIndex]), 
+			     localTree->tipVectorDNA, &(localTree->strided_rateCategory[startIndex]), 
 			     0, (endIndex - startIndex)); 
 	  break;
 	case GTRGAMMAI:
 	  categorizeGTRGAMMAINVAR(tipX1, x2_start, ex2, pz, localTree->gammaRates, localTree->EIGN_DNA, 
-				  localTree->tipVectorDNA, &(tr->cdta->rateCategory[startIndex]),
+				  localTree->tipVectorDNA, &(localTree->strided_rateCategory[startIndex]),
 				  0, (endIndex - startIndex), &(localTree->invariant[startIndex]), 
 				  localTree->invariants, localTree->frequencies_DNA); 
 	  break;
 	case GTRGAMMAMULT:
 	  categorizeGTRGAMMAMULT(tipX1, x2_start, ex2, pz, localTree->gammaRates, localTree->EIGN_DNA, 
-				 localTree->tipVectorDNA, &(tr->cdta->rateCategory[startIndex]),
-				 0, (endIndex - startIndex), &(localTree->model[startIndex]), 
-				 localTree->NumberOfModels); 
+				 localTree->tipVectorDNA, &(localTree->strided_rateCategory[startIndex]),
+				 0, (endIndex - startIndex), &(localTree->strided_model[startIndex]), 
+				 localTree->NumberOfModels, localTree->multiBranch); 
 	  break;
 	case GTRGAMMAMULTI:
 	  categorizeGTRGAMMAMULTINVAR(tipX1, x2_start, ex2, pz, localTree->gammaRates, localTree->EIGN_DNA, 
-				      localTree->tipVectorDNA, &(tr->cdta->rateCategory[startIndex]),
-				      0, (endIndex - startIndex), &(localTree->model[startIndex]), 
+				      localTree->tipVectorDNA, &(localTree->strided_rateCategory[startIndex]),
+				      0, (endIndex - startIndex), &(localTree->strided_model[startIndex]), 
 				      localTree->NumberOfModels, 
-				      &(localTree->invariant[startIndex]), localTree->invariants, 
-				      localTree->frequencies_DNA); 
+				      &(localTree->strided_invariant[startIndex]), localTree->invariants, 
+				      localTree->frequencies_DNA, localTree->multiBranch); 
 	  break;
 	case PROTGAMMA:	  
 	  categorizeGTRGAMMAPROT(tipX1, x2_start, ex2, pz, localTree->gammaRates, localTree->EIGN_AA, 
 				 localTree->tipVectorAA, 
-				 &(tr->cdta->rateCategory[startIndex]),
+				 &(localTree->strided_rateCategory[startIndex]),
 				 0, (endIndex - startIndex)); 
 	  break;
 	case PROTGAMMAI:
 	  categorizeGTRGAMMAPROTINVAR(tipX1, x2_start, ex2, pz, localTree->gammaRates, localTree->EIGN_AA, 
-				      localTree->tipVectorAA, &(tr->cdta->rateCategory[startIndex]),
-				      0, (endIndex - startIndex), &(localTree->invariant[startIndex]), 
+				      localTree->tipVectorAA, &(localTree->strided_rateCategory[startIndex]),
+				      0, (endIndex - startIndex), &(localTree->strided_invariant[startIndex]), 
 				      localTree->invariants, 
 				      localTree->frequencies_AA); 
 	  break;
 	case PROTGAMMAMULT:
 	  categorizeGTRGAMMAPROTMULT(tipX1, x2_start, ex2, pz, localTree->gammaRates, localTree->EIGN_AA, 
-				     localTree->tipVectorAA, &(tr->cdta->rateCategory[startIndex]),
-				     0, (endIndex - startIndex), &(localTree->model[startIndex]), 
-				     localTree->NumberOfModels); 
+				     localTree->tipVectorAA, &(localTree->strided_rateCategory[startIndex]),
+				     0, (endIndex - startIndex), &(localTree->strided_model[startIndex]), 
+				     localTree->NumberOfModels, localTree->multiBranch); 
 	  break;
 	case PROTGAMMAMULTI:
 	  categorizeGTRGAMMAPROTMULTINVAR(tipX1, x2_start, ex2, pz, localTree->gammaRates, localTree->EIGN_AA, 
-					  localTree->tipVectorAA, &(tr->cdta->rateCategory[startIndex]),
-					  0, (endIndex - startIndex), &(localTree->model[startIndex]), 
+					  localTree->tipVectorAA, &(localTree->strided_rateCategory[startIndex]),
+					  0, (endIndex - startIndex), &(localTree->strided_model[startIndex]), 
 					  localTree->NumberOfModels, 
-					  &(localTree->invariant[startIndex]), 
-					  localTree->invariants, localTree->frequencies_AA); 
+					  &(localTree->strided_invariant[startIndex]), 
+					  localTree->invariants, localTree->frequencies_AA, localTree->multiBranch); 
 	  break;
 	default:
 	  assert(0);
@@ -1079,16 +1082,16 @@ void categorizeIterative(tree *tr, tree *localTree, int startIndex, int endIndex
 
 #else
 
-void categorizeIterative(tree *tr, tree *localTree, int startIndex, int endIndex)
+void categorizeIterative(tree *tr, int startIndex, int endIndex)
 {
   double *x2_start, *pz;
   char *tipX1;
   int *ex2;
   int pNumber, qNumber;
 
-  pNumber = tr->ti[0].pNumber;
-  qNumber = tr->ti[0].qNumber;
-  pz      = tr->ti[0].qz;
+  pNumber = tr->td[0].ti[0].pNumber;
+  qNumber = tr->td[0].ti[0].qNumber;
+  pz      = tr->td[0].ti[0].qz;
    
   x2_start = getLikelihoodArray(qNumber, tr->mxtips, tr->xVector);
   ex2      = getScalingArray(qNumber, tr->cdta->endsite, tr->mxtips, tr->expArray);  
@@ -1101,7 +1104,7 @@ void categorizeIterative(tree *tr, tree *localTree, int startIndex, int endIndex
 
       for(model = 0; model < tr->NumberOfModels; model++)
 	{
-	  if(multiBranch)
+	  if(tr->multiBranch)
 	    branchIndex = model;
 	  else
 	    branchIndex = 0;
@@ -1184,12 +1187,12 @@ void categorizeIterative(tree *tr, tree *localTree, int startIndex, int endIndex
 	  break;
 	case GTRGAMMAMULT:
 	  categorizeGTRGAMMAMULT(tipX1, x2_start, ex2, pz, tr->gammaRates, tr->EIGN_DNA, tr->tipVectorDNA, tr->cdta->rateCategory,
-				 startIndex, endIndex, tr->model, tr->NumberOfModels); 
+				 startIndex, endIndex, tr->model, tr->NumberOfModels, tr->multiBranch); 
 	  break;
 	case GTRGAMMAMULTI:
 	  categorizeGTRGAMMAMULTINVAR(tipX1, x2_start, ex2, pz, tr->gammaRates, tr->EIGN_DNA, tr->tipVectorDNA, tr->cdta->rateCategory,
 				      startIndex, endIndex, tr->model, tr->NumberOfModels, tr->invariant, tr->invariants, 
-				      tr->frequencies_DNA); 
+				      tr->frequencies_DNA, tr->multiBranch); 
 	  break;
 	case PROTGAMMA:
 	  categorizeGTRGAMMAPROT(tipX1, x2_start, ex2, pz, tr->gammaRates, tr->EIGN_AA, tr->tipVectorAA, tr->cdta->rateCategory,
@@ -1201,12 +1204,12 @@ void categorizeIterative(tree *tr, tree *localTree, int startIndex, int endIndex
 	  break;
 	case PROTGAMMAMULT:
 	  categorizeGTRGAMMAPROTMULT(tipX1, x2_start, ex2, pz, tr->gammaRates, tr->EIGN_AA, tr->tipVectorAA, tr->cdta->rateCategory,
-				     startIndex, endIndex, tr->model, tr->NumberOfModels); 
+				     startIndex, endIndex, tr->model, tr->NumberOfModels, tr->multiBranch); 
 	  break;
 	case PROTGAMMAMULTI:
 	  categorizeGTRGAMMAPROTMULTINVAR(tipX1, x2_start, ex2, pz, tr->gammaRates, tr->EIGN_AA, tr->tipVectorAA, tr->cdta->rateCategory,
 					  startIndex, endIndex, tr->model, tr->NumberOfModels, 
-					  tr->invariant, tr->invariants, tr->frequencies_AA); 
+					  tr->invariant, tr->invariants, tr->frequencies_AA, tr->multiBranch); 
 	  break;
 	default:
 	  assert(0);
@@ -1230,28 +1233,30 @@ void categorizeGeneric (tree *tr, nodeptr p)
       p = tmp;
     }         
   
-  tr->ti[0].pNumber = p->number;
-  tr->ti[0].qNumber = q->number;
+  tr->td[0].ti[0].pNumber = p->number;
+  tr->td[0].ti[0].qNumber = q->number;
 
-  for(i = 0; i < numBranches; i++)    
-    tr->ti[0].qz[i] =  q->z[i];
+  for(i = 0; i < tr->numBranches; i++)    
+    tr->td[0].ti[0].qz[i] =  q->z[i];
 
-  tr->traversalCount = 1;
+  tr->td[0].count = 1;
 
   if(!q->x)
-    computeTraversalInfo(q, &(tr->ti[0]), &(tr->traversalCount), tr->rdta->numsp);
+    computeTraversalInfo(q, &(tr->td[0].ti[0]), &(tr->td[0].count), tr->rdta->numsp, tr->numBranches);
 
-  if(tr->traversalCount > 1)
-    {
-      printf("schnauze\n");
+#ifdef _LOCAL_DATA
+  masterBarrier(THREAD_CATEGORIZE, tr); 
+#else
+
+  if(tr->td[0].count > 1)
+    {    
 #ifdef _USE_PTHREADS  
       masterBarrier(THREAD_NEWVIEW, tr);       
 #else
-      newviewIterative(tr, tr, 0, tr->cdta->endsite);   
+      newviewIterative(tr, 0, tr->cdta->endsite);   
 #endif
     }
  
-#ifndef _LOCAL_DATA
   for(i = 0; i < tr->NumberOfModels; i++)
     {      
       tr->cdta->patrat[i * 4]     = tr->gammaRates[i * 4];
@@ -1261,12 +1266,11 @@ void categorizeGeneric (tree *tr, nodeptr p)
     }
   
   tr->NumberOfCategories = 4 * tr->NumberOfModels;
-#endif
 
 #ifdef _USE_PTHREADS 
   masterBarrier(THREAD_CATEGORIZE, tr); 
 #else
-  categorizeIterative(tr, tr, 0,  tr->cdta->endsite);  
+  categorizeIterative(tr, 0,  tr->cdta->endsite);  
 #endif  
  
   for(i = 0; i < tr->cdta->endsite; i++)
@@ -1276,8 +1280,5 @@ void categorizeGeneric (tree *tr, nodeptr p)
       tr->cdta->wr[i]  = wtemp = temp * tr->cdta->aliaswgt[i];
       tr->cdta->wr2[i] = temp * wtemp;
     }
- 
-#ifdef _LOCAL_DATA 
-  masterBarrier(THREAD_COPY_CATEGORIZE, tr);
-#endif
+#endif 
 }

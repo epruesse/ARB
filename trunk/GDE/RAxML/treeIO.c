@@ -53,9 +53,6 @@ extern char *smoothed_key;
 extern int partCount;
 extern double masterTime;
 
-extern int multiBranch;
-extern int numBranches;
-
 
 
 
@@ -97,110 +94,189 @@ int lookupBipartition(tree *tr, nodeptr p)
   return -1;
 }
 
+static int inIB(nodeptr p, tree *tr)
+{
+  int 
+    i       = 0,
+    entries = 2 * tr->mxtips - 5;  
+
+  while(i < entries)
+    {
+      if(p == tr->ib[i].p || p->back == tr->ib[i].p)
+	{
+	  assert(tr->ib[i].freq > 0);
+	  return tr->ib[i].freq;
+	}
+      i++;
+    }
+  
+  return 0;
+}
+
+
+
+
 static char *Tree2StringREC(char *treestr, tree *tr, nodeptr p, boolean printBranchLengths, boolean printNames, 
 			    boolean printLikelihood, boolean rellTree, boolean finalPrint, int perGene)
 {
   double  x, z;
   char  *nameptr;
-
-  if (/*p->tip*/ isTip(p->number, tr->rdta->numsp)) 
-    {	     
-      if(printNames)
+  int   insertionFrequency = 0;   
+  
+  if(tr->ib &&  p != tr->start)    
+    insertionFrequency = inIB(p, tr);  
+  else        
+    insertionFrequency = 0;           
+      
+  if(isTip(p->number, tr->rdta->numsp)) 
+    {	 
+      if(insertionFrequency > 0)
 	{
 	  nameptr = tr->nameList[p->number];     
-	  sprintf(treestr, "%s", nameptr);
+	  sprintf(treestr, "(%s,%s)", tr->nameList[tr->outgroupNums[0]], nameptr);
 	}
       else
-	sprintf(treestr, "%d", p->number);
-      
+	{	  
+	  if(printNames)
+	    {
+	      nameptr = tr->nameList[p->number];     
+	      sprintf(treestr, "%s", nameptr);
+	    }
+	  else
+	    sprintf(treestr, "%d", p->number);
+	}
+	
       while (*treestr) treestr++;
     }
   else 
-    {
-      *treestr++ = '(';
-      treestr = Tree2StringREC(treestr, tr, p->next->back, printBranchLengths, printNames, printLikelihood, rellTree, finalPrint, perGene);
-      *treestr++ = ',';
-      treestr = Tree2StringREC(treestr, tr, p->next->next->back, printBranchLengths, printNames, printLikelihood, rellTree, finalPrint, perGene);
-      if (p == tr->start->back) 
+    {           
+      if(insertionFrequency > 0)
 	{
+	  *treestr++ = '(';
+	  sprintf(treestr,"%s", tr->nameList[tr->outgroupNums[0]]);
+	  while (*treestr) treestr++;
 	  *treestr++ = ',';
-	  treestr = Tree2StringREC(treestr, tr, p->back, printBranchLengths, printNames, printLikelihood, rellTree, finalPrint, perGene);
-        }
-      *treestr++ = ')';            
-      }
+	  *treestr++ = '(';
+	  treestr = Tree2StringREC(treestr, tr, p->next->back, printBranchLengths, printNames, printLikelihood, rellTree, 
+				   finalPrint, perGene);
+	  *treestr++ = ',';
+	  treestr = Tree2StringREC(treestr, tr, p->next->next->back, printBranchLengths, printNames, printLikelihood, rellTree, 
+				   finalPrint, perGene);
+	  if(p == tr->start->back) 
+	    {
+	      *treestr++ = ',';
+	      treestr = Tree2StringREC(treestr, tr, p->back, printBranchLengths, printNames, printLikelihood, rellTree, 
+				       finalPrint, perGene);
+	    }
+	  *treestr++ = ')'; 
+	  *treestr++ = ')'; 
+	}
+      else
+	{	 
+	  *treestr++ = '(';
+	  treestr = Tree2StringREC(treestr, tr, p->next->back, printBranchLengths, printNames, printLikelihood, rellTree, 
+				   finalPrint, perGene);
+	  *treestr++ = ',';
+	  treestr = Tree2StringREC(treestr, tr, p->next->next->back, printBranchLengths, printNames, printLikelihood, rellTree, 
+				   finalPrint, perGene);
+	  if(p == tr->start->back) 
+	    {
+	      *treestr++ = ',';
+	      treestr = Tree2StringREC(treestr, tr, p->back, printBranchLengths, printNames, printLikelihood, rellTree, 
+				       finalPrint, perGene);
+	    }
+	  *treestr++ = ')';                
+	}    
+    }
 
-    if (p == tr->start->back) 
-      {	
-	if(printBranchLengths && !rellTree)
-	  sprintf(treestr, ":0.0;\n");
-	else
-	  sprintf(treestr, ";\n");	 
-      }
-    else 
-      {      
-	if(rellTree)
-	  {
-	    if((/*!p->tip*/ ! isTip(p->number, tr->rdta->numsp)) && 
-	       (/*!p->back->tip*/ !isTip(p->back->number, tr->rdta->numsp)))
-	      {
-		/*int value = round(p->z * 100.0);*/		
-		/*sprintf(treestr, ":%f", (p->z));*/
-		int value = lookupBipartition(tr, p);
-		sprintf(treestr, "%d:%8.20f", value, p->z[0]);
-	      }
-	    else
-	      {
-		/*sprintf(treestr, ":1.000000");*/
-		sprintf(treestr, ":%8.20f", p->z[0]);
-	      }
-	  }
-	else
-	  {
-	    if(printBranchLengths)
-	      {
-		assert(perGene != NO_BRANCHES);
+  if(p == tr->start->back) 
+    {	
+      if(insertionFrequency > 0)
+	{
+	  sprintf(treestr, "%d;\n", insertionFrequency);
+	}
+      else
+	{
+	 
+	  if(printBranchLengths && !rellTree)
+	    sprintf(treestr, ":0.0;\n");
+	  else
+	    sprintf(treestr, ";\n");	 
+	  
+	}
+    }
+  else 
+    {      
+      if(insertionFrequency > 0)
+	{
+	  sprintf(treestr, "%d", insertionFrequency);
+	}
+      else
+	{	 
+	  if(rellTree)
+	    {
+	      if(( !isTip(p->number, tr->rdta->numsp)) && 
+		 ( !isTip(p->back->number, tr->rdta->numsp)))
+		{		
+		  int value = lookupBipartition(tr, p);
+		  sprintf(treestr, "%d:%8.20f", value, p->z[0]);
+		}
+	      else
+		{	
+		  sprintf(treestr, ":%8.20f", p->z[0]);
+		}
+	    }
+	  else
+	    {
+	      if(printBranchLengths)
+		{
+		  assert(perGene != NO_BRANCHES);
+		  
+		  if(!tr->multiBranch)
+		    {
+		      assert(tr->fracchange != -1.0);
+		      z = p->z[0];
+		      if (z < zmin) z = zmin;      	 
+		      x = -log(z) * tr->fracchange;
+		      sprintf(treestr, ":%8.20f", x);	
+		    }
+		  else
+		    {
+		      if(perGene == SUMMARIZE_LH)
+			{
+			  int i;
+			  double avgX = 0;
+			  
+			  for(i = 0; i < tr->numBranches; i++)
+			    {
+			      assert(tr->partitionContributions[i] != -1.0);
+			      assert(tr->fracchanges[i] != -1.0);
+			      z = p->z[i];
+			      if (z < zmin) z = zmin;      	 
+			      x = -log(z) * tr->fracchanges[i];
+			      avgX += x * tr->partitionContributions[i];
+			    }
+			  sprintf(treestr, ":%8.20f", avgX);
+			}
+		      else
+			{	
+			  assert(tr->fracchanges[perGene] != -1.0);
+			  assert(perGene >= 0 && perGene < tr->numBranches);
+			  z = p->z[perGene];
+			  if (z < zmin) z = zmin;      	 
+			  x = -log(z) * tr->fracchanges[perGene];
+			  sprintf(treestr, ":%8.20f", x);
+			}
+		    }
+		}
+	      else
+		sprintf(treestr, "%s", "\0");	    
+	    }
+	}
+    }
 
-		if(!multiBranch)
-		  {
-		    z = p->z[0];
-		    if (z < zmin) z = zmin;      	 
-		    x = -log(z) * tr->fracchange;
-		    sprintf(treestr, ":%8.20f", x);	
-		  }
-		else
-		  {
-		    if(perGene == SUMMARIZE_LH)
-		      {
-			int i;
-			double avgX = 0;
-			
-			for(i = 0; i < numBranches; i++)
-			  {
-			    assert(tr->partitionContributions[i] != -1.0);
-			    z = p->z[i];
-			    if (z < zmin) z = zmin;      	 
-			    x = -log(z) * tr->fracchanges[i];
-			    avgX += x * tr->partitionContributions[i];
-			  }
-			sprintf(treestr, ":%8.20f", avgX);
-		      }
-		    else
-		      {			
-			assert(perGene >= 0 && perGene < numBranches);
-			z = p->z[perGene];
-			if (z < zmin) z = zmin;      	 
-			x = -log(z) * tr->fracchanges[perGene];
-			sprintf(treestr, ":%8.20f", x);
-		      }
-		  }
-	      }
-	    else
-	      sprintf(treestr, "%s", "\0");
-	  }
-      }
-
-    while (*treestr) treestr++;
-    return  treestr;
+  while (*treestr) treestr++;
+  return  treestr;
 }
 
 
@@ -299,8 +375,9 @@ static char *rootedTreeREC(char *treestr, tree *tr, nodeptr p, boolean printBran
 	{	  
 	  assert(perGene != NO_BRANCHES);
 
-	  if(!multiBranch)
+	  if(!tr->multiBranch)
 	    {
+	      assert(tr->fracchange != -1.0);
 	      z = p->z[0];
 	      if (z < zmin) z = zmin;      	 
 	      x = -log(z) * tr->fracchange;
@@ -313,8 +390,9 @@ static char *rootedTreeREC(char *treestr, tree *tr, nodeptr p, boolean printBran
 		  int i;
 		  double avgX = 0;
 		  
-		  for(i = 0; i < numBranches; i++)
+		  for(i = 0; i < tr->numBranches; i++)
 		    {
+		      assert(tr->fracchanges[i] != -1.0);
 		      assert(tr->partitionContributions[i] != -1.0);
 		      z = p->z[i];
 		      if (z < zmin) z = zmin;      	 
@@ -324,8 +402,9 @@ static char *rootedTreeREC(char *treestr, tree *tr, nodeptr p, boolean printBran
 		  sprintf(treestr, ":%8.20f", avgX);
 		}
 	      else
-		{			
-		  assert(perGene >= 0 && perGene < numBranches);
+		{
+		  assert(tr->fracchanges[perGene] != -1.0);
+		  assert(perGene >= 0 && perGene < tr->numBranches);
 		  z = p->z[perGene];
 		  if (z < zmin) z = zmin;      	 
 		  x = -log(z) * tr->fracchanges[perGene];
@@ -348,7 +427,7 @@ static char *rootedTree(char *treestr, tree *tr, nodeptr p, boolean printBranchL
   double oldz[NUM_BRANCHES];
   int i;
   
-  for(i = 0; i < numBranches; i++)
+  for(i = 0; i < tr->numBranches; i++)
     oldz[i] = p->z[i];
 
   if(rellTree)    
@@ -363,8 +442,9 @@ static char *rootedTree(char *treestr, tree *tr, nodeptr p, boolean printBranchL
 	  double rz, z;
 	  assert(perGene != NO_BRANCHES);
 
-	  if(!multiBranch)
+	  if(!tr->multiBranch)
 	    {
+	      assert(tr->fracchange != -1.0);
 	      z = -log(p->z[0]) * tr->fracchange;
 	      rz = exp(-(z * 0.5)/ tr->fracchange);
 	      p->z[0] = p->back->z[0] = rz;
@@ -375,16 +455,18 @@ static char *rootedTree(char *treestr, tree *tr, nodeptr p, boolean printBranchL
 		{				  		
 		  int i;	      
 		  
-		  for(i = 0; i < numBranches; i++)
-		    {		    
+		  for(i = 0; i < tr->numBranches; i++)
+		    {	
+		      assert(tr->fracchanges[i] != -1.0);
 		      z    = -log(p->z[i]) * tr->fracchanges[i];	    	      
 		      rz   = exp(-(z * 0.5)/ tr->fracchanges[i]);
 		      p->z[i] = p->back->z[i] = rz;		    
 		    }		 
 		}	     	     
 	      else
-		{			
-		  assert(perGene >= 0 && perGene < numBranches);
+		{		
+		  assert(tr->fracchanges[perGene] != -1.0);
+		  assert(perGene >= 0 && perGene < tr->numBranches);
 		  z = -log(p->z[perGene]) * tr->fracchanges[perGene];
 		  rz = exp(-(z * 0.5)/ tr->fracchanges[perGene]);
 		  p->z[perGene] = p->back->z[perGene] = rz;	       	      	      
@@ -403,7 +485,7 @@ static char *rootedTree(char *treestr, tree *tr, nodeptr p, boolean printBranchL
   while (*treestr) treestr++;
 
 
-  for(i = 0; i < numBranches; i++)
+  for(i = 0; i < tr->numBranches; i++)
     p->z[i] = p->back->z[i] = oldz[i];  
     
   return  treestr;
@@ -411,7 +493,8 @@ static char *rootedTree(char *treestr, tree *tr, nodeptr p, boolean printBranchL
 
 
 
-char *Tree2String(char *treestr, tree *tr, nodeptr p, boolean printBranchLengths, boolean printNames, boolean printLikelihood, boolean rellTree, 
+char *Tree2String(char *treestr, tree *tr, nodeptr p, boolean printBranchLengths, boolean printNames, boolean printLikelihood, 
+		  boolean rellTree, 
 		  boolean finalPrint, analdef *adef, int perGene)
 { 
   if(finalPrint && adef->outgroup)
@@ -540,7 +623,7 @@ void printTreePerGene(tree *tr, analdef *adef, char *fileName, char *permission)
 
   assert(adef->perGeneBranchLengths);
      
-  for(i = 0; i < numBranches; i++)	
+  for(i = 0; i < tr->numBranches; i++)	
     {
       strcpy(extendedTreeFileName, fileName);
       sprintf(buf,"%d", i);
@@ -853,14 +936,14 @@ boolean addElementLen (FILE *fp, tree *tr, nodeptr p, boolean readBranchLengths)
 	if (! treeProcessLength(fp, &branch))            return FALSE;
 	
 	/*printf("Branch %8.20f\n", branch);*/
-	hookup(p, q, &branch);
+	hookup(p, q, &branch, tr->numBranches);
       }
     else
       {
 	fres = treeFlushLen(fp);
 	if(!fres) return FALSE;
     
-	hookupDefault(p, q);
+	hookupDefault(p, q, tr->numBranches);
       }
     return TRUE;          
   } 
@@ -960,13 +1043,13 @@ static nodeptr uprootTree (tree *tr, nodeptr p, boolean readBranchLengths)
     {
       double b[NUM_BRANCHES];
       int i;
-      for(i = 0; i < numBranches; i++)
+      for(i = 0; i < tr->numBranches; i++)
 	b[i] = (r->z[i] + q->z[i]);
-      hookup (q, r, b);
+      hookup (q, r, b, tr->numBranches);
     }
   else
     {
-      hookupDefault(q, r);
+      hookupDefault(q, r, tr->numBranches);
     }
 
   if(tr->grouped)
@@ -994,9 +1077,9 @@ static nodeptr uprootTree (tree *tr, nodeptr p, boolean readBranchLengths)
 	  tr->constraintVector[p->number] = tr->constraintVector[q->number];
 	}
       
-      hookup(p,             q->back, q->z);   /* move connections to p */
-      hookup(p->next,       r->back, r->z);
-      hookup(p->next->next, s->back, s->z);
+      hookup(p,             q->back, q->z, tr->numBranches);   /* move connections to p */
+      hookup(p->next,       r->back, r->z, tr->numBranches);
+      hookup(p->next->next, s->back, s->z, tr->numBranches);
       if (start->number == q->number) 
 	start = start->back->back;
       q->back = r->back = s->back = (nodeptr) NULL;
@@ -1091,11 +1174,18 @@ boolean treeReadLen (FILE *fp, tree *tr, analdef *adef)
   if(tr->ntips < tr->mxtips)
     {
 
-      /*printf("You provided an incomplete starting tree %d alignmnet has %d taxa\n", tr->ntips, tr->mxtips);*/
-
-      freeNodex(tr);         
-      makeParsimonyTreeIncomplete(tr, adef);
-      allocNodex(tr, adef); 	
+      if(adef->rapidML_Addition)
+	{
+	  printf("You provided an incomplete starting tree %d alignmnet has %d taxa\n", tr->ntips, tr->mxtips);
+	  rapidML_Addition(tr, adef);	  
+	}
+      else
+	{
+	  /*printf("You provided an incomplete starting tree %d alignmnet has %d taxa\n", tr->ntips, tr->mxtips);*/
+	  freeNodex(tr);         
+	  makeParsimonyTreeIncomplete(tr, adef);
+	  allocNodex(tr, adef); 	
+	}
     }
   else
     {
@@ -1107,12 +1197,9 @@ boolean treeReadLen (FILE *fp, tree *tr, analdef *adef)
 	}
     }
 
-#ifdef _STANDARD_INITRAV
-  return  (initrav(tr, tr->start) && initrav(tr, tr->start->back));       
-#else
+
   onlyInitrav(tr, tr->start);
   return TRUE;
-#endif 
 }
 
 
@@ -1250,7 +1337,7 @@ boolean  addElementLenMULT (FILE *fp, tree *tr, nodeptr p, int partitionCounter)
       if (! treeNeedCh(fp, ',', "in"))             return FALSE;
       if (! addElementLenMULT(fp, tr, q->next->next, old))  return FALSE;
                  
-      hookupDefault(p, q);
+      hookupDefault(p, q, tr->numBranches);
 
       while((ch = treeGetCh(fp)) == ',')
 	{ 
@@ -1323,7 +1410,7 @@ boolean  addElementLenMULT (FILE *fp, tree *tr, nodeptr p, int partitionCounter)
 #endif
       if (tr->start->number > n)  tr->start = q;
       (tr->ntips)++;
-      hookupDefault(p, q);
+      hookupDefault(p, q, tr->numBranches);
     }
   
   fres = treeFlushLen(fp);
@@ -1467,12 +1554,9 @@ boolean treeReadLenMULT (FILE *fp, tree *tr, analdef *adef)
       allocNodex(tr, adef);     
    }
 
-#ifdef _STANDARD_INITRAV
-  return  (initrav(tr, tr->start) && initrav(tr, tr->start->back));       
-#else
+
   onlyInitrav(tr, tr->start);
-  return TRUE;
-#endif 
+  return TRUE; 
 }
 
 void getStartingTree(tree *tr, analdef *adef)
@@ -1505,8 +1589,14 @@ void getStartingTree(tree *tr, analdef *adef)
       if(adef->mode == PARSIMONY_ADDITION)
 	return; 
 
-      treeEvaluate(tr, 1);   
+#ifdef _MULTI_GENE
+      evaluateGenericInitrav(tr, tr->start); 
+#endif
+
+#ifndef _MULTI_GENE    
       
+      treeEvaluate(tr, 1);                
+#endif      
       fclose(INFILE);
     }
   else
@@ -1529,19 +1619,16 @@ void getStartingTree(tree *tr, analdef *adef)
      	         
       allocNodex(tr, adef);
              
-#ifdef _STANDARD_INITRAV
-      initrav(tr, tr->start);    
-      initrav(tr, tr->start->back);   
-      evaluateGeneric(tr, tr->start);     
-#else
-      evaluateGenericInitrav(tr, tr->start);     
-#endif                                   
+      evaluateGenericInitrav(tr, tr->start);                                       
 
-      /*printf("%f \n", tr->likelihood);*/
-
+      /*printf("%f \n", tr->likelihood); */
+     
+#ifndef _MULTI_GENE     
       treeEvaluate(tr, 1); 
-
-      /* printf("%f \n", tr->likelihood);     */
+#endif
+      
+      /*printf("%f \n", tr->likelihood); */
+      
     }         
 
   tr->start = tr->nodep[1];

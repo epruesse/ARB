@@ -45,14 +45,10 @@
 #ifdef _USE_PTHREADS
 #include <pthread.h>
 extern int NumberOfThreads;
-extern int allReady;
 extern pthread_mutex_t jobMutex;
 extern pthread_cond_t  jobCond;
 #endif
 
-
-extern int multiBranch;
-extern int numBranches;
 
 
 static void newviewGTRCAT( traversalInfo *ti,  double *EV,  double *EI,  double *EIGN, 
@@ -396,11 +392,11 @@ static void newviewGTRCAT( traversalInfo *ti,  double *EV,  double *EI,  double 
 
 
 static void newviewGTRCATMULT(traversalInfo *ti,  double *extEV,  double *extEI,  double *EIGN, 
-				 double *rptr,  int *cptr, 
-				 double *x1_start,  double *x2_start,  double *x3_start,  double *tipVector,
-				 int    *ex1,  int *ex2,  int *ex3, char *tipX1, char *tipX2, int *modelptr,
-				 int lower, int n,  int numberOfCategories, int numberOfModels
-				 )
+			      double *rptr,  int *cptr, 
+			      double *x1_start,  double *x2_start,  double *x3_start,  double *tipVector,
+			      int    *ex1,  int *ex2,  int *ex3, char *tipX1, char *tipX2, int *modelptr,
+			      int lower, int n,  int numberOfCategories, int numberOfModels, int multiBranch
+			      )
 {       
   double  
     *left, *left_start,
@@ -496,6 +492,7 @@ static void newviewGTRCATMULT(traversalInfo *ti,  double *extEV,  double *extEI,
 	    EV = &(extEV[model * 16]);
 	    x1 = &(tipVector[model * 64 + 4 * tipX1[i]]);
 	    x2 = &(tipVector[model * 64 + 4 * tipX2[i]]);
+	    
 	    x3 = &x3_start[4 * i];
 	    left = &left_start[model * 24 * numberOfCategories + cptr[i] * 24];
 	    
@@ -576,7 +573,8 @@ static void newviewGTRCATMULT(traversalInfo *ti,  double *extEV,  double *extEI,
 	    EV = &(extEV[model * 16]);
 	    x1 = &(tipVector[model * 64 + 4 * tipX1[i]]);     
 	    x2 = &x2_start[4 * i];
-	    x3 = &x3_start[4 * i];
+	    x3 = &x3_start[4 * i];	    
+	   
 	    left = &left_start[model * 24 * numberOfCategories + cptr[i] * 24];	    
   	    	     
 	    ump_x1_0 = x1[0];
@@ -1062,7 +1060,7 @@ static void newviewGTRGAMMA(traversalInfo *ti,
 	    *uX2++ = ump_x2_3;	       
 	  }			
 	 	
-
+#pragma omp parallel for private(x3, uX1, uX2, x1px2)
 	for (i = lower; i < n; i++) 
 	  {		     
 	     uX1 = &umpX1[16 * tipX1[i]];
@@ -1301,7 +1299,7 @@ static void newviewGTRGAMMA(traversalInfo *ti,
 	     *uX1++ = ump_x1_3;	    
 	   }	            	    	       	
 	 
-
+#pragma omp parallel for private(x2, x3, uX1, right, ump_x2_0, ump_x2_1, ump_x2_2, ump_x2_3)
 	 for (i = lower; i < n; i++) 
 	   {	
 	     right = right_start;
@@ -1519,7 +1517,7 @@ static void newviewGTRGAMMA(traversalInfo *ti,
       break;
     case INNER_INNER:
         
-     
+#pragma omp parallel for private(x1, x2, x3, left, right, ump_x2_0, ump_x2_1, ump_x2_2, ump_x2_3,ump_x1_0, ump_x1_1, ump_x1_2, ump_x1_3)    
      for (i = lower; i < n; i++) 
        {	
 	 left = left_start;
@@ -1836,7 +1834,7 @@ static void newviewGTRGAMMAMULT(traversalInfo *ti,
 				   double *x1_start, double *x2_start, double *x3_start,
 				   double *extEIGN, double *extEV, double *extEI, double *gammaRates, double *tipVector,
 				   int    *ex1, int *ex2, int *ex3, char *tipX1, char *tipX2, int *modelptr,
-				   int lower, int n, int numberOfModels
+				int lower, int n, int numberOfModels, int multiBranch
 				   )
 { 
   double  
@@ -3465,7 +3463,7 @@ static void newviewGTRCATPROTMULT(traversalInfo *ti, double *extEV,  double *ext
 				     double *rptr,  int *cptr,
 				     double *x1, double *x2, double *x3, double *tipVector,				
 				     int    *ex1, int *ex2, int *ex3, char *tipX1, char *tipX2, int *modelptr,
-				     int lower, int n,  int numberOfCategories, int numberOfModels)
+				     int lower, int n,  int numberOfCategories, int numberOfModels, int multiBranch)
 {   
   double  *left, *left_start, *right, *right_start,  *EI, *EV, *v;
   double      
@@ -4335,7 +4333,7 @@ static void newviewGTRGAMMAPROTMULT(traversalInfo *ti,
 				       double *x1, double *x2, double *x3,
 				       double *extEIGN, double *extEV, double *extEI, double *gammaRates, double *tipVector,
 				       int    *ex1, int *ex2, int *ex3, char *tipX1, char *tipX2, int *modelptr,
-				       int lower, int n, int numberOfModels)
+				       int lower, int n, int numberOfModels, int multiBranch)
 { 
   double  *left, *right, *left_start, *right_start, *uX1, *uX2, *v, *EV, *EI, *EIGN;
   double x1px2;   
@@ -4736,7 +4734,137 @@ static void newviewGTRGAMMAPROTMULT(traversalInfo *ti,
   free(right_start);  
 }
 
-void computeTraversalInfo(nodeptr p, traversalInfo *ti, int *counter, int maxTips)
+
+#ifdef _MULTI_GENE
+void computeMultiTraversalInfo(nodeptr p, traversalInfo *ti, int *counter, int maxTips, int model)
+{
+  if(isTip(p->number, maxTips)) 
+    {
+      assert(p->backs[model]);
+      return;   
+    }
+
+  if(!p->backs[model])
+    {
+      assert(0);     
+    }
+  else
+    {       
+      nodeptr q = p->next->backs[model];
+      nodeptr r = p->next->next->backs[model];
+
+      assert(p == p->next->next->next);
+      
+      assert(q && r);
+      
+      if(isTip(r->number, maxTips) && isTip(q->number, maxTips))
+	{	  
+	  while (! p->xs[model])
+	    {
+	      if (! p->xs[model])
+		getxsnode(p, model); 	   
+	    }
+
+	  assert(p->xs[model]);
+	  
+	  ti[*counter].tipCase = TIP_TIP; 
+	  ti[*counter].pNumber = p->number;
+	  ti[*counter].qNumber = q->number;
+	  ti[*counter].rNumber = r->number;
+	  
+	  {
+	    double z;
+	    z = q->z[model];
+	    z = (z > zmin) ? log(z) : log(zmin);
+	    ti[*counter].qz[model] = z;
+	    
+	    z = r->z[model];
+	    z = (z > zmin) ? log(z) : log(zmin);
+	    ti[*counter].rz[model] = z;	    
+	  }     
+	  
+	  *counter = *counter + 1;	  
+	}  
+      else
+	{
+	  if(isTip(r->number, maxTips) || isTip(q->number, maxTips))
+	    {		
+	      nodeptr tmp;
+	      
+	      if(isTip(r->number, maxTips))
+		{
+		  tmp = r;
+		  r = q;
+		  q = tmp;
+		}
+	      
+	      while ((! p->xs[model]) || (! r->xs[model])) 
+		{	 	    
+		  if (! r->xs[model]) 
+		    computeMultiTraversalInfo(r, ti, counter, maxTips, model);
+		  if (! p->xs[model]) 
+		    getxsnode(p, model);	
+		}
+	      
+	      assert(p->xs[model] && r->xs[model]);
+
+	      ti[*counter].tipCase = TIP_INNER; 
+	      ti[*counter].pNumber = p->number;
+	      ti[*counter].qNumber = q->number;
+	      ti[*counter].rNumber = r->number;
+	      
+	      {
+		double z;
+		z = q->z[model];
+		z = (z > zmin) ? log(z) : log(zmin);
+		ti[*counter].qz[model] = z;
+		
+		z = r->z[model];
+		z = (z > zmin) ? log(z) : log(zmin);
+		ti[*counter].rz[model] = z;		
+	      }   
+	      
+	      *counter = *counter + 1;	      
+	    }
+	  else
+	    {	 
+	      
+	      while ((! p->xs[model]) || (! q->xs[model]) || (! r->xs[model])) 
+		{
+		  if (! q->xs[model]) 
+		    computeMultiTraversalInfo(q, ti, counter, maxTips, model);
+		  if (! r->xs[model]) 
+		    computeMultiTraversalInfo(r, ti, counter, maxTips, model);
+		  if (! p->xs[model]) 
+		    getxsnode(p, model);	
+		}
+	      assert(p->xs[model] && r->xs[model] && q->xs[model]);
+	      ti[*counter].tipCase = INNER_INNER; 
+	      ti[*counter].pNumber = p->number;
+	      ti[*counter].qNumber = q->number;
+	      ti[*counter].rNumber = r->number;
+	      
+	      {
+		double z;
+		z = q->z[model];
+		z = (z > zmin) ? log(z) : log(zmin);
+		ti[*counter].qz[model] = z;
+		
+		z = r->z[model];
+		z = (z > zmin) ? log(z) : log(zmin);
+		ti[*counter].rz[model] = z;		
+	      }   
+	      
+	      *counter = *counter + 1;	      
+	    }
+	}
+    }
+}
+
+
+#endif
+
+void computeTraversalInfo(nodeptr p, traversalInfo *ti, int *counter, int maxTips, int numBranches)
 {
   if(isTip(p->number, maxTips))
     return;
@@ -4787,7 +4915,7 @@ void computeTraversalInfo(nodeptr p, traversalInfo *ti, int *counter, int maxTip
 	    while ((! p->x) || (! r->x)) 
 	      {	 	    
 		if (! r->x) 
-		  computeTraversalInfo(r, ti, counter, maxTips);
+		  computeTraversalInfo(r, ti, counter, maxTips, numBranches);
 		if (! p->x) 
 		  getxnode(p);	
 	      }
@@ -4816,9 +4944,9 @@ void computeTraversalInfo(nodeptr p, traversalInfo *ti, int *counter, int maxTip
 	    while ((! p->x) || (! q->x) || (! r->x)) 
 	      {
 		if (! q->x) 
-		  computeTraversalInfo(q, ti, counter, maxTips);
+		  computeTraversalInfo(q, ti, counter, maxTips, numBranches);
 		if (! r->x) 
-		  computeTraversalInfo(r, ti, counter, maxTips);
+		  computeTraversalInfo(r, ti, counter, maxTips, numBranches);
 		if (! p->x) 
 		  getxnode(p);	
 	      }
@@ -4843,6 +4971,7 @@ void computeTraversalInfo(nodeptr p, traversalInfo *ti, int *counter, int maxTip
 	  }
       }    
   }
+
 }
 
 
@@ -4871,7 +5000,7 @@ static void newviewMixedData(int model, tree *tr, traversalInfo *tInfo)
   /*int offset = tr->modelOffsets[model]; */
   int offset = tr->partitionData[model].modelOffset;
   
-  if(multiBranch)
+  if(tr->multiBranch)
     branchIndex = model;
   else
     branchIndex = 0;
@@ -4988,12 +5117,14 @@ static void newviewMixedData(int model, tree *tr, traversalInfo *tInfo)
 
 #ifdef _LOCAL_DATA
 
-void newviewIterative (tree *tr, tree *localTree, int startIndex, int endIndex)
+void newviewIterative (tree *localTree, int startIndex, int endIndex)
 {	   
-  traversalInfo *ti   = tr->ti;
+  /* LTD */
+
+  traversalInfo *ti   = localTree->td[0].ti;
   int i;  
    
-  for(i = 1; i < tr->traversalCount; i++)
+  for(i = 1; i < localTree->td[0].count; i++)
     {    
       traversalInfo *tInfo = &ti[i];
       
@@ -5003,8 +5134,8 @@ void newviewIterative (tree *tr, tree *localTree, int startIndex, int endIndex)
 	  
 	  assert(0);
 
-	  for(model = 0; model < tr->NumberOfModels; model++)
-	    newviewMixedData(model, tr, tInfo);	     
+	  for(model = 0; model < localTree->NumberOfModels; model++)
+	    newviewMixedData(model, localTree, tInfo);	     
 	}
       else
 	{
@@ -5023,15 +5154,15 @@ void newviewIterative (tree *tr, tree *localTree, int startIndex, int endIndex)
 	  switch(tInfo->tipCase)
 	    {
 	    case TIP_TIP:
-	      tipX1    = &localTree->yVector[tInfo->qNumber][startIndex];	      
-	      tipX2    = &localTree->yVector[tInfo->rNumber][startIndex];
+	      tipX1    = &localTree->strided_yVector[tInfo->qNumber][startIndex];	      
+	      tipX2    = &localTree->strided_yVector[tInfo->rNumber][startIndex];
 	      
 	      x3_start = getLikelihoodArray(tInfo->pNumber,  localTree->mxtips, localTree->xVector);
 	      ex3      = getScalingArray(tInfo->pNumber,     localTree->mySpan, localTree->mxtips, localTree->expArray);
 	      
 	      break;
 	    case TIP_INNER:
-	      tipX1    = &localTree->yVector[tInfo->qNumber][startIndex];
+	      tipX1    = &localTree->strided_yVector[tInfo->qNumber][startIndex];
 	      
 	      x2_start = getLikelihoodArray(tInfo->rNumber,  localTree->mxtips, localTree->xVector);	  
 	      ex2      = getScalingArray(tInfo->rNumber,     localTree->mySpan, localTree->mxtips, localTree->expArray);
@@ -5059,32 +5190,35 @@ void newviewIterative (tree *tr, tree *localTree, int startIndex, int endIndex)
 	    {
 	    case GTRCAT:	 
 	      newviewGTRCAT(tInfo,  localTree->EV_DNA, localTree->EI_DNA, localTree->EIGN_DNA, 
-			    localTree->cdta->patrat, &(localTree->cdta->rateCategory[startIndex]), 
+			    localTree->strided_patrat, &(localTree->strided_rateCategory[startIndex]), 
 			    x1_start, x2_start, x3_start, localTree->tipVectorDNA,
 			    ex1, ex2, ex3, tipX1, tipX2,
 			    0, (endIndex - startIndex), localTree->NumberOfCategories, tInfo->qz[0], tInfo->rz[0]
 			    );   
 	      break;
-	    case GTRCATMULT:	   
-	      newviewGTRCATMULT(tInfo,  localTree->EV_DNA, localTree->EI_DNA, localTree->EIGN_DNA, localTree->cdta->patrat, 
-				&(localTree->cdta->rateCategory[startIndex]), 
+	    case GTRCATMULT:		     	     
+	      newviewGTRCATMULT(tInfo,  localTree->EV_DNA, localTree->EI_DNA, localTree->EIGN_DNA, 
+				localTree->strided_patrat, 
+				&(localTree->strided_rateCategory[startIndex]), 
 				x1_start, x2_start, x3_start, localTree->tipVectorDNA,
-				ex1, ex2, ex3, tipX1, tipX2, &(localTree->model[startIndex]),
-				0, (endIndex - startIndex), localTree->NumberOfCategories, localTree->NumberOfModels);
+				ex1, ex2, ex3, tipX1, tipX2, &(localTree->strided_model[startIndex]),
+				0, (endIndex - startIndex), localTree->NumberOfCategories, localTree->NumberOfModels, 
+				localTree->multiBranch);
 	      break;
 	    case PROTCAT:	    
-	      newviewGTRCATPROT(tInfo,  localTree->EV_AA, localTree->EI_AA, localTree->EIGN_AA, localTree->cdta->patrat, 
-				&(localTree->cdta->rateCategory[startIndex]), 
+	      newviewGTRCATPROT(tInfo,  localTree->EV_AA, localTree->EI_AA, localTree->EIGN_AA, localTree->strided_patrat, 
+				&(localTree->strided_rateCategory[startIndex]), 
 				x1_start, x2_start, x3_start, localTree->tipVectorAA,
 				ex1, ex2, ex3, tipX1, tipX2,
 				0, (endIndex - startIndex), localTree->NumberOfCategories, tInfo->qz[0], tInfo->rz[0]);
 	      break;
 	    case PROTCATMULT:
-	      newviewGTRCATPROTMULT(tInfo,  localTree->EV_AA, localTree->EI_AA, localTree->EIGN_AA, localTree->cdta->patrat, 
-				    &(localTree->cdta->rateCategory[startIndex]), 
+	      newviewGTRCATPROTMULT(tInfo,  localTree->EV_AA, localTree->EI_AA, localTree->EIGN_AA, localTree->strided_patrat, 
+				    &(localTree->strided_rateCategory[startIndex]), 
 				    x1_start, x2_start, x3_start, localTree->tipVectorAA,
-				    ex1, ex2, ex3, tipX1, tipX2, &(localTree->model[startIndex]),
-				    0, (endIndex - startIndex), localTree->NumberOfCategories, localTree->NumberOfModels); 
+				    ex1, ex2, ex3, tipX1, tipX2, &(localTree->strided_model[startIndex]),
+				    0, (endIndex - startIndex), localTree->NumberOfCategories, localTree->NumberOfModels, 
+				    localTree->multiBranch); 
 	      break;
 	    case GTRGAMMA:
 	    case GTRGAMMAI:
@@ -5101,8 +5235,8 @@ void newviewIterative (tree *tr, tree *localTree, int startIndex, int endIndex)
 				  x1_start, x2_start, x3_start,
 				  localTree->EIGN_DNA, localTree->EV_DNA, localTree->EI_DNA, localTree->gammaRates, 
 				  localTree->tipVectorDNA,
-				  ex1, ex2, ex3, tipX1, tipX2, &(localTree->model[startIndex]),
-				  0, (endIndex - startIndex), localTree->NumberOfModels);      
+				  ex1, ex2, ex3, tipX1, tipX2, &(localTree->strided_model[startIndex]),
+				  0, (endIndex - startIndex), localTree->NumberOfModels, localTree->multiBranch);      
 	      break;
 	    case PROTGAMMA:
 	    case PROTGAMMAI:
@@ -5119,8 +5253,8 @@ void newviewIterative (tree *tr, tree *localTree, int startIndex, int endIndex)
 				      x1_start, x2_start, x3_start,
 				      localTree->EIGN_AA, localTree->EV_AA, localTree->EI_AA, localTree->gammaRates, 
 				      localTree->tipVectorAA,
-				      ex1, ex2, ex3, tipX1, tipX2, &(localTree->model[startIndex]),
-				      0, (endIndex - startIndex), localTree->NumberOfModels);       
+				      ex1, ex2, ex3, tipX1, tipX2, &(localTree->strided_model[startIndex]),
+				      0, (endIndex - startIndex), localTree->NumberOfModels, localTree->multiBranch);       
 	      break;
 	    default:
 	      assert(0);
@@ -5132,13 +5266,12 @@ void newviewIterative (tree *tr, tree *localTree, int startIndex, int endIndex)
 
 #else
 
-
-void newviewIterative (tree *tr, tree *localTree, int startIndex, int endIndex)
+void newviewIterative (tree *tr, int startIndex, int endIndex)
 {	   
-  traversalInfo *ti   = tr->ti;
+  traversalInfo *ti   = tr->td[0].ti;
   int i;  
    
-  for(i = 1; i < tr->traversalCount; i++)
+  for(i = 1; i < tr->td[0].count; i++)
     {    
       traversalInfo *tInfo = &ti[i];
       
@@ -5213,7 +5346,7 @@ void newviewIterative (tree *tr, tree *localTree, int startIndex, int endIndex)
 	      newviewGTRCATMULT(tInfo,  tr->EV_DNA, tr->EI_DNA, tr->EIGN_DNA, tr->cdta->patrat, tr->cdta->rateCategory, 
 				x1_start, x2_start, x3_start, tr->tipVectorDNA,
 				ex1, ex2, ex3, tipX1, tipX2, tr->model,
-				startIndex, endIndex, tr->NumberOfCategories, tr->NumberOfModels);
+				startIndex, endIndex, tr->NumberOfCategories, tr->NumberOfModels, tr->multiBranch);
 	      break;
 	    case PROTCAT:	    
 	      newviewGTRCATPROT(tInfo,  tr->EV_AA, tr->EI_AA, tr->EIGN_AA, tr->cdta->patrat, tr->cdta->rateCategory, 
@@ -5225,7 +5358,7 @@ void newviewIterative (tree *tr, tree *localTree, int startIndex, int endIndex)
 	      newviewGTRCATPROTMULT(tInfo,  tr->EV_AA, tr->EI_AA, tr->EIGN_AA, tr->cdta->patrat, tr->cdta->rateCategory, 
 				    x1_start, x2_start, x3_start, tr->tipVectorAA,
 				    ex1, ex2, ex3, tipX1, tipX2, tr->model,
-				    startIndex, endIndex, tr->NumberOfCategories, tr->NumberOfModels); 
+				    startIndex, endIndex, tr->NumberOfCategories, tr->NumberOfModels, tr->multiBranch); 
 	      break;
 	    case GTRGAMMA:
 	    case GTRGAMMAI:
@@ -5241,7 +5374,7 @@ void newviewIterative (tree *tr, tree *localTree, int startIndex, int endIndex)
 				  x1_start, x2_start, x3_start,
 				  tr->EIGN_DNA, tr->EV_DNA, tr->EI_DNA, tr->gammaRates, tr->tipVectorDNA,
 				  ex1, ex2, ex3, tipX1, tipX2, tr->model,
-				  startIndex, endIndex, tr->NumberOfModels);      
+				  startIndex, endIndex, tr->NumberOfModels, tr->multiBranch);      
 	      break;
 	    case PROTGAMMA:
 	    case PROTGAMMAI:
@@ -5257,7 +5390,7 @@ void newviewIterative (tree *tr, tree *localTree, int startIndex, int endIndex)
 				      x1_start, x2_start, x3_start,
 				      tr->EIGN_AA, tr->EV_AA, tr->EI_AA, tr->gammaRates, tr->tipVectorAA,
 				      ex1, ex2, ex3, tipX1, tipX2, tr->model,
-				      startIndex, endIndex, tr->NumberOfModels);       
+				      startIndex, endIndex, tr->NumberOfModels, tr->multiBranch);       
 	      break;
 	    default:
 	      assert(0);
@@ -5272,16 +5405,32 @@ void newviewGeneric (tree *tr, nodeptr p)
   if(isTip(p->number, tr->rdta->numsp)) 
     return;
 
-  { 	           
-    tr->traversalCount = 1;
-    computeTraversalInfo(p, &(tr->ti[0]), &(tr->traversalCount), tr->rdta->numsp);   
+#ifdef _MULTI_GENE
+  if(tr->doMulti)
+    {
+      int model;
 
-    if(tr->traversalCount > 1)
+      for(model = 0; model < tr->numBranches; model++)
+	{
+	  tr->td[model].count = 1;
+	  computeMultiTraversalInfo(p, &(tr->td[model].ti[0]), &(tr->td[model].count), tr->rdta->numsp, model);   
+	  if(tr->td[model].count > 1)
+	    newviewIterativePartition(tr, tr->partitionData[model].lower, tr->partitionData[model].lower, model);
+	}
+      
+    }
+  else
+#endif
+  { 	           
+    tr->td[0].count = 1;
+    computeTraversalInfo(p, &(tr->td[0].ti[0]), &(tr->td[0].count), tr->rdta->numsp, tr->numBranches);   
+
+    if(tr->td[0].count > 1)
       {
 #ifdef _USE_PTHREADS  
 	masterBarrier(THREAD_NEWVIEW, tr);         
 #else
-	newviewIterative(tr, tr, 0, tr->cdta->endsite);   
+	newviewIterative(tr, 0, tr->cdta->endsite);   
 #endif
       }   
   }
@@ -5292,24 +5441,25 @@ void newviewGeneric (tree *tr, nodeptr p)
 
 #ifdef _LOCAL_DATA
 
-void newviewIterativePartition(tree *tr, tree *localTree, int lower, int upper, int model)
+void newviewIterativePartition(tree *localTree, int lower, int upper, int model)
 {	   
-  traversalInfo *ti   = tr->ti;
+  traversalInfo *ti   = localTree->td[0].ti;
   int i, branchIndex;  
        
-  if(multiBranch)
+  if(localTree->multiBranch)
     branchIndex = model;
   else
     branchIndex = 0;
+ 
 
-  for(i = 1; i < tr->traversalCount; i++)
+  for(i = 1; i < localTree->td[0].count; i++)
     {    
       traversalInfo *tInfo = &ti[i];
 
       if(localTree->mixedData)
 	{
 	  assert(0);
-	  newviewMixedData(model, tr, tInfo);
+	  newviewMixedData(model, localTree, tInfo);
 	}
       else
 	{
@@ -5328,15 +5478,15 @@ void newviewIterativePartition(tree *tr, tree *localTree, int lower, int upper, 
 	  switch(tInfo->tipCase)
 	    {
 	    case TIP_TIP:
-	      tipX1    = &localTree->yVector[tInfo->qNumber][lower];	      
-	      tipX2    = &localTree->yVector[tInfo->rNumber][lower];
+	      tipX1    = localTree->strided_yVector[tInfo->qNumber];	      
+	      tipX2    = localTree->strided_yVector[tInfo->rNumber];
 	      
 	      x3_start = getLikelihoodArray(tInfo->pNumber,  localTree->mxtips, localTree->xVector);
 	      ex3      = getScalingArray(tInfo->pNumber,     localTree->mySpan, localTree->mxtips, localTree->expArray);
 	      
 	      break;
 	    case TIP_INNER:
-	      tipX1    = &localTree->yVector[tInfo->qNumber][lower];
+	      tipX1    = localTree->strided_yVector[tInfo->qNumber];
 	      
 	      x2_start = getLikelihoodArray(tInfo->rNumber,  localTree->mxtips, localTree->xVector);	  
 	      ex2      = getScalingArray(tInfo->rNumber,     localTree->mySpan, localTree->mxtips, localTree->expArray);
@@ -5366,10 +5516,10 @@ void newviewIterativePartition(tree *tr, tree *localTree, int lower, int upper, 
 	    case GTRCATMULT:
 	      newviewGTRCAT(tInfo,  &(localTree->EV_DNA[model * 16]), &(localTree->EI_DNA[model * 12]), 
 			    &(localTree->EIGN_DNA[model * 3]), 
-			    localTree->cdta->patrat, &(localTree->cdta->rateCategory[lower]), 
+			    localTree->strided_patrat, localTree->strided_rateCategory, 
 			    x1_start, x2_start, x3_start, &(localTree->tipVectorDNA[model * 64]),
 			    ex1, ex2, ex3, tipX1, tipX2,
-			    0, (upper - lower), localTree->NumberOfCategories, tInfo->qz[branchIndex], tInfo->rz[branchIndex]
+			    lower, upper, localTree->NumberOfCategories, tInfo->qz[branchIndex], tInfo->rz[branchIndex]
 			    );   
 	      break;
 	    case GTRGAMMA:  /* needed for rate opt*/
@@ -5382,7 +5532,7 @@ void newviewIterativePartition(tree *tr, tree *localTree, int lower, int upper, 
 			      &(localTree->EI_DNA[model * 12]), &(localTree->gammaRates[model * 4]), 
 			      &(localTree->tipVectorDNA[model * 64]),
 			      ex1, ex2, ex3, tipX1, tipX2,
-			      0, (upper - lower), tInfo->qz[branchIndex], tInfo->rz[branchIndex]);
+			      lower, upper, tInfo->qz[branchIndex], tInfo->rz[branchIndex]);
 	      break;
 	    case PROTGAMMA:  /* needed for rate opt*/
 	    case PROTGAMMAI: /* needed for rate opt*/
@@ -5394,7 +5544,7 @@ void newviewIterativePartition(tree *tr, tree *localTree, int lower, int upper, 
 				  &(localTree->EI_AA[model * 380]), &(localTree->gammaRates[model * 4]), 
 				  &(localTree->tipVectorAA[model * 460]),
 				  ex1, ex2, ex3, tipX1, tipX2,
-				  0, (upper - lower), tInfo->qz[branchIndex], tInfo->rz[branchIndex]);     
+				  lower, upper, tInfo->qz[branchIndex], tInfo->rz[branchIndex]);     
 	      break;	 
 	    default:
 	      assert(0);
@@ -5406,17 +5556,33 @@ void newviewIterativePartition(tree *tr, tree *localTree, int lower, int upper, 
 
 #else
 
-void newviewIterativePartition(tree *tr, tree *localTree, int lower, int upper, int model)
+void newviewIterativePartition(tree *tr, int lower, int upper, int model)
 {	   
-  traversalInfo *ti   = tr->ti;
-  int i, branchIndex;  
+  traversalInfo *ti;
+  int i, branchIndex, count;  
        
-  if(multiBranch)
+#ifdef _MULTI_GENE
+  if(tr->doMulti)
+    {
+      assert(multiBranch);
+      count = tr->td[model].count;
+      ti  = &(tr->td[model].ti[0]);
+    }
+  else    
+#endif
+    {
+      count = tr->td[0].count;    
+      ti    = tr->td[0].ti;
+    }
+
+      
+
+  if(tr->multiBranch)
     branchIndex = model;
   else
     branchIndex = 0;
 
-  for(i = 1; i < tr->traversalCount; i++)
+  for(i = 1; i < count; i++)
     {    
       traversalInfo *tInfo = &ti[i];
 
@@ -5436,9 +5602,17 @@ void newviewIterativePartition(tree *tr, tree *localTree, int lower, int upper, 
 	    *tipX1 = (char *)NULL,
 	    *tipX2 = (char *)NULL;
 	  
+#ifdef _MULTI_GENE
+	  /*if(tr->doMulti)
+	    printf("Doing %d %d into %d\n", tInfo->qNumber, tInfo->rNumber, tInfo->pNumber);*/
+#endif
+
 	  switch(tInfo->tipCase)
 	    {
 	    case TIP_TIP:
+#ifdef _MULTI_GENE
+	      /*printf("TIP_TIP %d %d\n", tInfo->qNumber, tInfo->rNumber);*/
+#endif
 	      tipX1    = tr->yVector[tInfo->qNumber];
 	      
 	      tipX2    = tr->yVector[tInfo->rNumber];
@@ -5448,6 +5622,9 @@ void newviewIterativePartition(tree *tr, tree *localTree, int lower, int upper, 
 	      
 	      break;
 	    case TIP_INNER:
+#ifdef _MULTI_GENE
+	      /*printf("TIP_INNER %d %d\n", tInfo->qNumber, tInfo->rNumber);*/
+#endif
 	      tipX1    = tr->yVector[tInfo->qNumber];	 
 	      
 	      x2_start = getLikelihoodArray(tInfo->rNumber,  tr->mxtips, tr->xVector);	  
@@ -5457,7 +5634,10 @@ void newviewIterativePartition(tree *tr, tree *localTree, int lower, int upper, 
 	      ex3      = getScalingArray(tInfo->pNumber, tr->cdta->endsite, tr->mxtips, tr->expArray);
 	      
 	      break;
-	    case INNER_INNER:	 
+	    case INNER_INNER:
+#ifdef _MULTI_GENE
+	      /*printf("INNER_INNER %d %d\n", tInfo->qNumber, tInfo->rNumber);*/
+#endif	 
 	      x1_start = getLikelihoodArray(tInfo->qNumber,  tr->mxtips, tr->xVector);
 	      ex1      = getScalingArray(tInfo->qNumber, tr->cdta->endsite, tr->mxtips, tr->expArray);	 
 	      
@@ -5531,16 +5711,16 @@ void newviewPartitionGeneric (tree *tr, nodeptr p, int model)
     int upper = tr->partitionData[model].upper;
 #endif
    
-    tr->traversalCount = 1;
+    tr->td[0].count = 1;
     tr->modelNumber    = model;
-    computeTraversalInfo(p, &(tr->ti[0]), &(tr->traversalCount), tr->rdta->numsp);   
+    computeTraversalInfo(p, &(tr->td[0].ti[0]), &(tr->td[0].count), tr->rdta->numsp, tr->numBranches);   
 
-    if(tr->traversalCount > 1)
+    if(tr->td[0].count > 1)
       {
 #ifdef _USE_PTHREADS  
 	masterBarrier(THREAD_NEWVIEW_PARTITION, tr);  	 
 #else
-	newviewIterativePartition(tr, tr, lower, upper, model);   
+	newviewIterativePartition(tr, lower, upper, model);   
 #endif
       }  
   }

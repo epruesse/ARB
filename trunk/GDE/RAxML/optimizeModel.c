@@ -58,7 +58,7 @@ extern char run_id[128];
 extern char lengthFileName[1024];
 extern char lengthFileNameModel[1024];
 
-extern int numBranches;
+
 
 #ifdef _USE_PTHREADS
 extern int rateCategoryJobs;
@@ -66,55 +66,6 @@ extern int rateCategoryJobs;
 
 /*********************FUNCTIONS FOOR EXACT MODEL OPTIMIZATION UNDER GTRGAMMA ***************************************/
 
-static void updateFracChange(tree *tr, analdef *adef)
-{  
-  int model, i;
-  double *modelWeights = (double *)calloc(tr->NumberOfModels, sizeof(double));
-  double wgtsum = 0.0;
-  double partialLH;
-  double overallLH;
-
-  assert(tr->rateHetModel == GAMMA || tr->rateHetModel == GAMMA_I);
-
-  tr->fracchange = 0;	         
-      
-  for(i = 0; i < tr->cdta->endsite; i++)
-    {
-      modelWeights[tr->model[i]]  += (double)tr->cdta->aliaswgt[i];
-      wgtsum                      += (double)tr->cdta->aliaswgt[i];
-    }
-
-#ifdef _STANDARD_INITRAV
-  initrav(tr, tr->start);    
-  initrav(tr, tr->start->back);   
-  evaluateGeneric(tr, tr->start);   
-#else
-  evaluateGenericInitrav(tr, tr->start);
-#endif      
-
-  overallLH = tr->likelihood;
-	        
-  for(model = 0; model < tr->NumberOfModels; model++)      
-    {	
-      partialLH = evaluatePartitionGeneric(tr, tr->start, model);	
-      
-      if(adef->perGeneBranchLengths)
-	{
-	  /* tr->partitionContributions[model] = partialLH / overallLH;	 
-	     old one for relative LLs */
-	  
-	  tr->partitionContributions[model] = modelWeights[model] / wgtsum;
-	}
-
-      /*printf("Partition %d %f %f\n", model, partialLH, tr->partitionContributions[model]);*/
-      tr->fracchange += tr->fracchanges[model] * fabs(partialLH);	 
-    }
-	      
-  tr->fracchange /= fabs(overallLH);
-  
-  tr->likelihood = overallLH;
-  free(modelWeights);
-}
 
 static double evaluateInvar(tree *tr, double invar, int model)
 {
@@ -331,12 +282,10 @@ static void optInvar(tree *tr, analdef *adef, double modelEpsilon, int model)
   double lim_sup = INVAR_MAX;
   double startLH;
   double startInvar = tr->invariants[model];
-  double endInvar;
+  double endInvar;  
 
-
-
-  if(adef->useMultipleModel)          
-    startLH = evaluatePartitionGeneric(tr, tr->start, model);    
+  if(adef->useMultipleModel)         
+    startLH = evaluatePartitionGeneric(tr, tr->start, model);             
   else
     startLH = tr->likelihood;
 
@@ -699,12 +648,12 @@ static double evaluateRate(tree *tr, int i, double rate, analdef *adef, int mode
 
   setRateModel(tr, model, rate, i);  
   initReversibleGTR(tr, adef, model);
-#ifdef _LOCAL_DATA
-  masterBarrier(THREAD_COPY_REVERSIBLE, tr);
+#ifdef _LOCAL_DATA 
+  masterBarrier(THREAD_COPY_REVERSIBLE, tr);  
 #endif
   
-  result = evaluateGenericInitravPartition(tr, tr->start, model);
- 
+  result = evaluateGenericInitravPartition(tr, tr->start, model);   
+
   return result; 
 }
 
@@ -984,13 +933,7 @@ static double optRates(tree *tr, analdef *adef, double modelEpsilon, int model)
 	    startLH = evaluateGenericInitravPartition(tr, tr->start, model);
 	  else
 	    {
-#ifdef _STANDARD_INITRAV
-	      initrav(tr, tr->start);    
-	      initrav(tr, tr->start->back);   
-	      evaluateGeneric(tr, tr->start);   
-#else
 	      evaluateGenericInitrav(tr, tr->start);
-#endif	   
 	      startLH = tr->likelihood;
 	    }
 	}
@@ -1014,13 +957,13 @@ void resetBranches(tree *tr)
   p = tr->nodep[1];
   while (nodes-- > 0) 
     {   
-      for(i = 0; i < numBranches; i++)
+      for(i = 0; i < tr->numBranches; i++)
 	p->z[i] = defaultz;
 	
       q = p->next;
       while(q != p)
 	{	
-	  for(i = 0; i < numBranches; i++)
+	  for(i = 0; i < tr->numBranches; i++)
 	    q->z[i] = defaultz;	    
 	  q = q->next;
 	}
@@ -1038,8 +981,8 @@ static void cacheZs(tree *tr, double *zs)
   p = tr->nodep[1];
   while (nodes-- > 0) 
     {
-      for(i = 0; i <  numBranches; i++)	
-	zs[nodes * numBranches + i] = p->z[i]; 	
+      for(i = 0; i <  tr->numBranches; i++)	
+	zs[nodes * tr->numBranches + i] = p->z[i]; 	
       p++;
     }
 } 
@@ -1054,10 +997,10 @@ static void restoreZs(tree *tr, double *zs)
   p = tr->nodep[1];
   while (nodes-- > 0) 
     {
-      for(i = 0; i <  numBranches; i++)
+      for(i = 0; i <  tr->numBranches; i++)
 	{
-	  p->z[i]       = zs[nodes * numBranches + i]; 
-	  p->back->z[i] = zs[nodes * numBranches + i]; 
+	  p->z[i]       = zs[nodes * tr->numBranches + i]; 
+	  p->back->z[i] = zs[nodes * tr->numBranches + i]; 
 	}
       p++;
     }
@@ -1116,21 +1059,23 @@ void modOpt(tree *tr, analdef *adef)
     }
 
   resetBranches(tr);
-  tr->start = tr->nodep[1];
+
+  if(adef->mode != MEHRING_ALGO && !adef->rapidML_Addition)
+    tr->start = tr->nodep[1];
 
   /* no need for individual models here, just an init on params equal for all partitions*/
-
-#ifdef _STANDARD_INITRAV
-  initrav(tr, tr->start);    
-  initrav(tr, tr->start->back);   
-  evaluateGeneric(tr, tr->start);   
-#else  
+  
+  
   evaluateGenericInitrav(tr, tr->start);
-#endif 
+
+  /*printf("1 %f\n", tr->likelihood);*/
 
   treeEvaluate(tr, 1.0);    
 
- 
+#ifdef _DEBUG_AA
+  printf("I %f\n", tr->likelihood);
+#endif
+  /*printf("2 %f\n", tr->likelihood); */
 
   do
     {       
@@ -1142,52 +1087,36 @@ void modOpt(tree *tr, analdef *adef)
 	  {
 	  case AA_DATA:
 	    break;
-	  case DNA_DATA:
-	    optRates(tr, adef, modelEpsilon, model);   			
+	  case DNA_DATA:	   
+	    optRates(tr, adef, modelEpsilon, model); 	    
 	    break;
 	  default:
 	    assert(0);
 	  }
 	}           
-
+      
+   
       for(model = 0; model < tr->NumberOfModels; model++)
 	optAlpha(tr, adef, modelEpsilon, model); 
-    
+       
       if(adef->useInvariant)
 	{	      
 	  /* Need to execute initrav() here because it is not executed by evalInvar */
-#ifdef _LOCAL_DATA
-	  if(tr->NumberOfModels == 1)
-	    onlyInitrav(tr, tr->start);
-#else	  
-#ifdef _STANDARD_INITRAV
-	  initrav(tr, tr->start);
-	  initrav(tr, tr->start->back);
-#else
 	  onlyInitrav(tr, tr->start);
-#endif
-#endif
 	  
 	  for(model = 0; model < tr->NumberOfModels; model++)
-	    {
-#ifdef _LOCAL_DATA
-	      if(tr->NumberOfModels > 1)
-		onlyInitravPartition(tr, tr->start, model);
-#endif	      
+	    {	      
 	      optInvar(tr, adef, modelEpsilon, model); 	      
 	    }
 	}   
 
-#ifdef _STANDARD_INITRAV
-      initrav(tr, tr->start);
-      initrav(tr, tr->start->back);
-#else
       onlyInitrav(tr, tr->start);
-#endif
-    
+      /* printf("4 %f\n", tr->likelihood); */
       treeEvaluate(tr, 0.25);    
-                 
-     
+      /* printf("5 %f\n", tr->likelihood); */
+#ifdef _DEBUG_AA           
+      printf("O %f\n", tr->likelihood);
+#endif
 
       modelEpsilon /= 10.0;
       if(modelEpsilon < LIKELIHOOD_EPSILON)
@@ -1195,10 +1124,6 @@ void modOpt(tree *tr, analdef *adef)
     }
   while(fabs(currentLikelihood - tr->likelihood) > adef->likelihoodEpsilon);      
 
-  
-
-  if(tr->NumberOfModels > 1)
-    updateFracChange(tr, adef);
 }
 
 static void modOptSpecial(tree *tr, analdef *adef)
@@ -1269,13 +1194,7 @@ static void modOptSpecial(tree *tr, analdef *adef)
 
   /* no need for individual models here, just an init on params equal for all partitions*/
 
-#ifdef _STANDARD_INITRAV
-  initrav(tr, tr->start);    
-  initrav(tr, tr->start->back);   
-  evaluateGeneric(tr, tr->start);   
-#else
   evaluateGenericInitrav(tr, tr->start);
-#endif
  
 
   /*printf("INIT %1.20f\n", tr->likelihood);*/
@@ -1299,23 +1218,11 @@ static void modOptSpecial(tree *tr, analdef *adef)
 	  if(adef->useInvariant)
 	    {	      
 	      /* Need to execute initrav() here because it is not executed by evalInvar */
-#ifdef _LOCAL_DATA
-	      if(tr->NumberOfModels == 1)
-		onlyInitrav(tr, tr->start);
-#else
-#ifdef _STANDARD_INITRAV
-	      initrav(tr, tr->start);
-	      initrav(tr, tr->start->back);
-#else
+
 	      onlyInitrav(tr, tr->start);
-#endif	      
-#endif	      
+
 	      for(model = 0; model < tr->NumberOfModels; model++)
-		{
-#ifdef _LOCAL_DATA
-		  if(tr->NumberOfModels > 1)
-		    onlyInitravPartition(tr, tr->start, model);
-#endif		  
+		{		  
 		  optInvar(tr, adef, modelEpsilon, model); 	      
 		}
 	    }
@@ -1339,24 +1246,11 @@ static void modOptSpecial(tree *tr, analdef *adef)
 	      if(adef->useInvariant)
 		{		 	
 		  /* Need to execute initrav() here because it is not executed by evalInvar */
-#ifdef _LOCAL_DATA
-		  if(tr->NumberOfModels == 1)
-		    onlyInitrav(tr, tr->start);
-#else
-#ifdef _STANDARD_INITRAV
-		  initrav(tr, tr->start);
-		  initrav(tr, tr->start->back);
-#else
+
 		  onlyInitrav(tr, tr->start);
-#endif		
-#endif
 
 		  for(model = 0; model < tr->NumberOfModels; model++)	      
 		    {
-#ifdef _LOCAL_DATA
-		      if(tr->NumberOfModels > 1)
-			onlyInitravPartition(tr, tr->start, model);
-#endif 
 		      optInvar(tr, adef, modelEpsilon, model); 	     		    		    
 		    }
 		}
@@ -1375,12 +1269,8 @@ static void modOptSpecial(tree *tr, analdef *adef)
 	    } 
 	}
       
-#ifdef _STANDARD_INITRAV
-      initrav(tr, tr->start);
-      initrav(tr, tr->start->back);
-#else
+
       onlyInitrav(tr, tr->start);
-#endif
       
       treeEvaluate(tr, 0.25);      
 
@@ -1391,9 +1281,6 @@ static void modOptSpecial(tree *tr, analdef *adef)
 	modelEpsilon = LIKELIHOOD_EPSILON;           
     }
   while(fabs(currentLikelihood - tr->likelihood) > adef->likelihoodEpsilon);      
-
-  if(tr->NumberOfModels > 1)
-    updateFracChange(tr, adef);
 }
 
 
@@ -1447,13 +1334,9 @@ void modOptModel(tree *tr, analdef *adef, int model)
   
   tr->start = tr->nodep[1];  
 
-#ifdef _STANDARD_INITRAV  
-  initravPartition(tr, tr->start, model);
-  initravPartition(tr, tr->start->back, model); 
-  evaluatePartitionGeneric(tr, tr->start, model);
-#else
+
   evaluateGenericInitravPartition(tr, tr->start, model);
-#endif
+
 
   treeEvaluatePartition(tr, 1.0, model);
   /*printf("Partition %d likelihood %f\n", model, tr->likelihood);      */
@@ -1464,13 +1347,7 @@ void modOptModel(tree *tr, analdef *adef, int model)
       currentLikelihood = globalLikelihood;	
       globalLikelihood = 0;
 
-#ifdef _STANDARD_INITRAV  
-      initravPartition(tr, tr->start, model);
-      initravPartition(tr, tr->start->back, model); 
-      evaluatePartitionGeneric(tr, tr->start, model);
-#else
-      evaluateGenericInitravPartition(tr, tr->start, model);
-#endif     
+      evaluateGenericInitravPartition(tr, tr->start, model);  
 	  	  
       if(adef->model == M_GTRGAMMA)
 	{	       	           	     
@@ -1528,10 +1405,7 @@ void modOptModel(tree *tr, analdef *adef, int model)
     }
   while(fabs(currentLikelihood - globalLikelihood) > adef->likelihoodEpsilon);     
   
-  /* 
-     This function is not required here...
-     updateFracChangeModel(tr, adef, model);
-  */ 
+
 }
 
 
@@ -1753,13 +1627,7 @@ static void optimizeRates(tree *tr, analdef *adef)
 	}           
     }
 
-#ifdef _STANDARD_INITRAV
-  initrav(tr, tr->start);    
-  initrav(tr, tr->start->back);   
-  evaluateGeneric(tr, tr->start);   
-#else
   evaluateGenericInitrav(tr, tr->start);
-#endif       
          
   optimizeRatesInvocations++;
 }
@@ -1830,7 +1698,7 @@ static void categorize(tree *tr, rateCategorize *rc)
 
 
 
-void optRateCat(tree *tr, tree *localTree, int i, double lower_spacing, double upper_spacing, double *lhs)
+void optRateCat(tree *tr, int i, double lower_spacing, double upper_spacing, double *lhs)
 {
   double initialRate, initialLikelihood, 
     leftLH, rightLH, leftRate, rightRate, v;
@@ -1840,7 +1708,7 @@ void optRateCat(tree *tr, tree *localTree, int i, double lower_spacing, double u
   tr->cdta->patrat[i] = tr->cdta->patratStored[i];     
   initialRate = tr->cdta->patrat[i];
       
-  initialLikelihood = evaluatePartialGeneric(tr, localTree, i, initialRate); 
+  initialLikelihood = evaluatePartialGeneric(tr, i, initialRate); 
     
 
   leftLH = rightLH = initialLikelihood;
@@ -1849,12 +1717,14 @@ void optRateCat(tree *tr, tree *localTree, int i, double lower_spacing, double u
   k = 1;
   
   while((initialRate - k * lower_spacing > 0.0001) && 
-	((v = evaluatePartialGeneric(tr, localTree, i, initialRate - k * lower_spacing)) 
+	((v = evaluatePartialGeneric(tr, i, initialRate - k * lower_spacing)) 
 	 > leftLH) && 
 	(fabs(leftLH - v) > epsilon))  
     {	  
+#ifndef WIN32
       if(isnan(v))
 	assert(0);
+#endif
       
       leftLH = v;
       leftRate = initialRate - k * lower_spacing;
@@ -1863,12 +1733,13 @@ void optRateCat(tree *tr, tree *localTree, int i, double lower_spacing, double u
   
   k = 1;
   
-  while(((v = evaluatePartialGeneric(tr, localTree, i, initialRate + k * upper_spacing)) > rightLH) &&
+  while(((v = evaluatePartialGeneric(tr, i, initialRate + k * upper_spacing)) > rightLH) &&
 	(fabs(rightLH - v) > epsilon))    	
     {
+#ifndef WIN32
       if(isnan(v))
 	assert(0);
-      
+#endif     
       rightLH = v;
       rightRate = initialRate + k * upper_spacing;	 
       k++;
@@ -1892,6 +1763,87 @@ void optRateCat(tree *tr, tree *localTree, int i, double lower_spacing, double u
   
   tr->cdta->patratStored[i] = tr->cdta->patrat[i];     
 }
+
+#ifdef _LOCAL_DATA
+
+void optRateCat_LOCAL(tree *localTree, int lower, int upper, double lower_spacing, double upper_spacing, double *lhs)
+{
+  double initialRate, initialLikelihood, 
+    leftLH, rightLH, leftRate, rightRate, v;
+  const double epsilon = 0.00001;
+  int k, i; 
+
+  /* double sum = 0.0; */
+
+  for(i = lower; i < upper; i++)
+    {
+      localTree->strided_patrat[i] = localTree->strided_patratStored[i];     
+      initialRate = localTree->strided_patrat[i];
+      
+      initialLikelihood = evaluatePartialGeneric(localTree, i, initialRate); 
+            
+      leftLH = rightLH = initialLikelihood;
+      leftRate = rightRate = initialRate;
+      
+      k = 1;
+      
+      while((initialRate - k * lower_spacing > 0.0001) && 
+	    ((v = evaluatePartialGeneric(localTree, i, initialRate - k * lower_spacing)) 
+	     > leftLH) && 
+	    (fabs(leftLH - v) > epsilon))  
+	{	  
+#ifndef WIN32
+	  if(isnan(v))
+	    assert(0);
+#endif
+	  
+	  leftLH = v;
+	  leftRate = initialRate - k * lower_spacing;
+	  k++;	  
+	}      
+      
+      k = 1;
+      
+      while(((v = evaluatePartialGeneric(localTree, i, initialRate + k * upper_spacing)) > rightLH) &&
+	    (fabs(rightLH - v) > epsilon))    	
+	{
+#ifndef WIN32
+	  if(isnan(v))
+	    assert(0);
+#endif     
+	  rightLH = v;
+	  rightRate = initialRate + k * upper_spacing;	 
+	  k++;
+	}           
+      
+      if(rightLH > initialLikelihood || leftLH > initialLikelihood)
+	{
+	  if(rightLH > leftLH)	    
+	    {	     
+	      localTree->strided_patrat[i] = rightRate;
+	      lhs[i] = rightLH;
+	    }
+	  else
+	    {	      
+	      localTree->strided_patrat[i] = leftRate;
+	      lhs[i] = leftLH;
+	    }
+	}
+      else
+	lhs[i] = initialLikelihood;            
+
+      /* sum += lhs[i]; */
+
+      localTree->strided_patratStored[i] = localTree->strided_patrat[i];     
+    }
+
+  /* printf("%f \n", sum); */
+}
+
+
+
+#endif
+
 
 void optimizeRateCategories(tree *tr, int _maxCategories)
 {
@@ -1948,8 +1900,19 @@ void optimizeRateCategories(tree *tr, int _maxCategories)
   masterBarrier(THREAD_RATE_CATS, tr);
 #else
   for(i = 0; i < tr->cdta->endsite; i++)      
-    optRateCat(tr, tr, i, lower_spacing, upper_spacing, lhs);
+    optRateCat(tr, i, lower_spacing, upper_spacing, lhs);
 #endif
+
+  /* {
+    double sum = 0.0;
+
+    for (i = 0; i < tr->cdta->endsite; i++) 
+      {
+	printf("%d %f %f %f\n", i, lhs[i],  tr->cdta->patrat[i], tr->cdta->patratStored[i]);
+	sum += lhs[i];
+      }
+    printf("LH %f\n", sum);
+    }*/
   
        
   {     
@@ -2011,22 +1974,22 @@ void optimizeRateCategories(tree *tr, int _maxCategories)
 	tr->cdta->wr2[i] = temp * wtemp;
       }     
 
+
+   
+
 #ifdef _LOCAL_DATA
     /* TODO this could actually be merged with evaluateGenericInitrav */
     /* will help to reduce sync points */
     /* same holds for many other model opt procedures of type change model 
        param and then execute initrav */
+    
     masterBarrier(THREAD_COPY_RATE_CATS, tr);
 #endif
 
 
-#ifdef _STANDARD_INITRAV
-    initrav(tr, tr->start);    
-    initrav(tr, tr->start->back);   
-    evaluateGeneric(tr, tr->start);   
-#else
     evaluateGenericInitrav(tr, tr->start);
-#endif
+
+    /* printf("%f\n", tr->likelihood); */
 
     if(tr->likelihood < initialLH)
       {	
@@ -2038,22 +2001,14 @@ void optimizeRateCategories(tree *tr, int _maxCategories)
 	      tr->cdta->patrat[i] = oldRat[i];	    
 	      tr->cdta->wr[i]  = oldwr[i];
 	      tr->cdta->wr2[i] = oldwr2[i];
-
 	    }       
 
 #ifdef _LOCAL_DATA
 	masterBarrier(THREAD_COPY_RATE_CATS, tr);
 #endif
 
-#ifdef _STANDARD_INITRAV
-	initrav(tr, tr->start);    
-	initrav(tr, tr->start->back);   
-	evaluateGeneric(tr, tr->start);   
-#else
+
 	evaluateGenericInitrav(tr, tr->start);
-#endif
-
-
       }
     }
   
@@ -2076,13 +2031,8 @@ static void optimizeAlphas(tree *tr, analdef *adef)
   for(model = 0; model < tr->NumberOfModels; model++)       
     optimizeAlphaMULT(tr, model, adef);	  
 	    
-#ifdef _STANDARD_INITRAV
-  initrav(tr, tr->start);    
-  initrav(tr, tr->start->back);   
-  evaluateGeneric(tr, tr->start);   
-#else
-  evaluateGenericInitrav(tr, tr->start);
-#endif     
+
+  evaluateGenericInitrav(tr, tr->start);    
 
   optimizeAlphaInvocations++;
 }
@@ -2178,37 +2128,14 @@ static void optimizeInvariants(tree *tr, analdef *adef)
   
   /* Don't need full tree traversal for invar ! just do it once at this point*/
 
-#ifdef _LOCAL_DATA
-  if(tr->NumberOfModels == 1)
-    onlyInitrav(tr, tr->start);
-#else
-#ifdef _STANDARD_INITRAV
-  initrav(tr, tr->start);
-  initrav(tr, tr->start->back);
-#else
   onlyInitrav(tr, tr->start);
-#endif
-#endif
-
      
   for(model = 0; model < tr->NumberOfModels; model++) 
     {
-#ifdef _LOCAL_DATA
-      if(tr->NumberOfModels > 1)
-	onlyInitravPartition(tr, tr->start, model);
-#endif
       optimizeInvariantMULT(tr, model, adef);
     }
 
-#ifdef _LOCAL_DATA
-  /* TODO PTHREADS this is ugly, only solution is modulo assignment of sites :-( */
-  if(tr->NumberOfModels > 1)
-    evaluateGenericInitrav(tr, tr->start);  
-  else
-    evaluateGeneric(tr, tr->start);
-#else
   evaluateGeneric(tr, tr->start);        
-#endif
 
   optimizeInvarInvocations++;
 }
@@ -2271,10 +2198,10 @@ void quickAndDirtyOptimization(tree *tr, analdef *adef)
 	  initialLH = tr->likelihood;
 	  optimizeRates(tr, adef);       
 	}
-      while(tr->likelihood > initialLH && optimizeRatesInvocations < oldInv + 10);          
+      while(tr->likelihood > initialLH && optimizeRatesInvocations < oldInv + 10);
     }
 
-  /*printf("%f \n", tr->likelihood);*/
+  /* printf("ONE %f \n", tr->likelihood); */
 
 
   if(tr->rateHetModel == GAMMA || tr->rateHetModel == GAMMA_I)
@@ -2287,7 +2214,9 @@ void quickAndDirtyOptimization(tree *tr, analdef *adef)
 	}
       while((fabs(tr->likelihood - initialLH) > adef->likelihoodEpsilon) && optimizeAlphaInvocations < oldInv + 10);
     }
-  /*printf("%f \n", tr->likelihood);*/
+
+  /* printf("%f \n", tr->likelihood); */
+
   if(tr->rateHetModel == GAMMA_I)
     {            
       oldInv = optimizeInvarInvocations;
@@ -2300,12 +2229,12 @@ void quickAndDirtyOptimization(tree *tr, analdef *adef)
       while((fabs(tr->likelihood - initialLH) > adef->likelihoodEpsilon) && optimizeInvarInvocations < oldInv + 10);
     }   
   
-  /*printf("%f \n", tr->likelihood);*/
+  /* printf("%f \n", tr->likelihood); */
 
   if(tr->rateHetModel == CAT)   
     optimizeRateCategories(tr, adef->categories);             
 
-  /* printf("EXIT %1.80f\n", tr->likelihood); */
+  /* printf("EXIT %1.80f\n", tr->likelihood);*/
 }
 
 int optimizeModel (tree *tr, analdef *adef)
@@ -2355,13 +2284,8 @@ int optimizeModel (tree *tr, analdef *adef)
 		for(j = 0; j < tr->cdta->endsite; j++)
 		  tr->cdta->wr[j] = tr->cdta->aliaswgt[j];
 		
-#ifdef _STANDARD_INITRAV
-		initrav(tr, tr->start);    
-		initrav(tr, tr->start->back);   
-		evaluateGeneric(tr, tr->start);   
-#else
-		evaluateGenericInitrav(tr, tr->start);
-#endif	 
+
+		evaluateGenericInitrav(tr, tr->start);	 
 		
 		/*printf("GAMMA-ENTRY %f\n", tr->likelihood);*/
 		
@@ -2373,15 +2297,8 @@ int optimizeModel (tree *tr, analdef *adef)
 		
 		
 		gammaToCat(tr, adef);
-	
-		
-#ifdef _STANDARD_INITRAV
-		initrav(tr, tr->start);    
-		initrav(tr, tr->start->back);   
-		evaluateGeneric(tr, tr->start);   
-#else
-		evaluateGenericInitrav(tr, tr->start);
-#endif	
+			
+		evaluateGenericInitrav(tr, tr->start);	
 	     
 		/*printf("CAT exit %f\n", tr->likelihood);*/
 		
@@ -2404,13 +2321,8 @@ int optimizeModel (tree *tr, analdef *adef)
 		    masterBarrier(THREAD_COPY_REVERSIBLE, tr);
 #endif
 		    
-#ifdef _STANDARD_INITRAV
-		    initrav(tr, tr->start);    
-		    initrav(tr, tr->start->back);   
-		    evaluateGeneric(tr, tr->start);   
-#else
-		    evaluateGenericInitrav(tr, tr->start);
-#endif	     
+
+		    evaluateGenericInitrav(tr, tr->start);     
 	      
 		    /*printf("Roll Back %f\n", tr->likelihood);*/
 		  }
@@ -2499,7 +2411,7 @@ void optimizeAllRateCategories(tree *tr)
   masterBarrier(THREAD_RATE_CATS, tr);
 #else
   for(i = 0; i < tr->cdta->endsite; i++)      
-    optRateCat(tr, tr, i, lower_spacing, upper_spacing, lhs);
+    optRateCat(tr, i, lower_spacing, upper_spacing, lhs);
 #endif
 
      
@@ -2521,13 +2433,9 @@ void optimizeAllRateCategories(tree *tr)
   masterBarrier(THREAD_COPY_RATE_CATS, tr);
 #endif
 
-#ifdef _STANDARD_INITRAV
-  initrav(tr, tr->start);    
-  initrav(tr, tr->start->back);   
-  evaluateGeneric(tr, tr->start);   
-#else
+
   evaluateGenericInitrav(tr, tr->start);
-#endif  
+
   
   if(tr->likelihood < initialLH)
     {	
@@ -2550,14 +2458,8 @@ void optimizeAllRateCategories(tree *tr)
       masterBarrier(THREAD_COPY_RATE_CATS, tr);
 #endif
 
-#ifdef _STANDARD_INITRAV
-      initrav(tr, tr->start);    
-      initrav(tr, tr->start->back);   
-      evaluateGeneric(tr, tr->start);   
-#else
-      evaluateGenericInitrav(tr, tr->start);
-#endif     
-      
+
+      evaluateGenericInitrav(tr, tr->start);         
     }
   
   free(oldCategory);
@@ -2696,13 +2598,8 @@ void optimizeRatesOnly(tree *tr, analdef *adef)
 	  for(i = 0; i < tr->cdta->endsite; i++)
 	    tr->cdta->wr[i] = tr->cdta->aliaswgt[i];
 
-#ifdef _STANDARD_INITRAV
-	  initrav(tr, tr->start);    
-	  initrav(tr, tr->start->back);   
-	  evaluateGeneric(tr, tr->start);   
-#else
+
 	  evaluateGenericInitrav(tr, tr->start);
-#endif	
 	  
 	  /*printf("GAMMA %f\n", tr->likelihood);*/
 	  cacheZ(tr, branches, 0);
@@ -2721,13 +2618,8 @@ void optimizeRatesOnly(tree *tr, analdef *adef)
 	      tr->partitionData[0].upper = upper;
 	      tr->start = tr->nodep[1];
 
-#ifdef _STANDARD_INITRAV  
-	      initravPartition(tr, tr->start, 0);
-	      initravPartition(tr, tr->start->back, 0); 
-	      evaluatePartitionGeneric(tr, tr->start, 0);
-#else
-	      evaluateGenericInitravPartition(tr, tr->start, 0);
-#endif	      	      
+
+	      evaluateGenericInitravPartition(tr, tr->start, 0);   	      
 
 	      /*printf("Winodw %d to %d : %f ->", lower, upper, tr->likelihood);*/
 	      treeEvaluatePartition(tr, 1.0, 0);
@@ -2753,13 +2645,9 @@ void optimizeRatesOnly(tree *tr, analdef *adef)
 
 	      tr->start = tr->nodep[1];
 
-#ifdef _STANDARD_INITRAV  
-	      initravPartition(tr, tr->start, 0);
-	      initravPartition(tr, tr->start->back, 0); 
-	      evaluatePartitionGeneric(tr, tr->start, 0);
-#else
+
 	      evaluateGenericInitravPartition(tr, tr->start, 0);
-#endif	      
+      
 	      /*printf("W-M-OPT %d to %d : %f ->", lower, upper, tr->likelihood);*/
 	      modOptModel(tr, adef, 0);
 	      tl = treeLength(tr, 0);
@@ -2784,3 +2672,153 @@ void optimizeRatesOnly(tree *tr, analdef *adef)
 
   fclose(out);
 }
+
+
+
+/************************* ARNDT_MODE *************************************/
+
+void optimizeArndt(tree *tr, analdef *adef)
+{  
+  int model;
+
+  modOpt(tr, adef);
+    
+  printf("\nFinal ML Optimization Likelihood: %f\n", tr->likelihood); 
+  printf("\nModel Information:\n\n");
+ 
+
+  for(model = 0; model < tr->NumberOfModels; model++)		    		    
+    {
+      double tl;
+      char typeOfData[1024];
+      
+      switch(tr->partitionData[model].dataType)
+	{
+	case AA_DATA:
+	  strcpy(typeOfData,"AA");
+	  break;
+	case DNA_DATA:
+	  strcpy(typeOfData,"DNA");
+	  break;
+	default:
+	  assert(0);
+	}     
+
+      printf("Model Parameters of Partition %d, Name: %s, Type of Data: %s\n", 
+	     model, tr->partitionData[model].partitionName, typeOfData);
+      printf("alpha: %f\n", tr->alphas[model]);
+      
+      if(adef->useInvariant)      
+	printf("invar: %f\n", tr->invariants[model]);    	
+                 
+      if(adef->perGeneBranchLengths)
+	tl = treeLength(tr, model);
+      else
+	tl = treeLength(tr, 0);
+     
+      printf("Tree-Length: %f\n", tl);       
+      
+      switch(tr->partitionData[model].dataType)
+	{
+	case AA_DATA:
+	  break;
+	case DNA_DATA:
+	  {
+	    int k;
+	    char *names[6] = {"a<->c", "a<->g", "a<->t", "c<->g", "c<->t", "g<->t"};	 
+	    for(k = 0; k < DNA_RATES; k++)			    	     		    
+	      printf("rate %s: %f\n", names[k], tr->initialRates_DNA[model * DNA_RATES + k]);	      
+		   
+	    printf("rate %s: %f\n", names[5], 1.0);
+	  }      
+	  break;
+	default:
+	  assert(0);
+	}
+     
+      printf("\n");
+    }		    		    
+  
+
+  {
+    FILE *of;
+    char outName[1024];
+    int count = 0;
+    int billig = (int)(-1.0 * tr->likelihood);
+    strcpy(outName, workdir);
+    strcat(outName, "RAxML_arndt.");
+    strcat(outName,  run_id);
+    
+
+    of = fopen(outName, "w");
+
+    if(adef->useInvariant)
+      {
+	double invar = INVAR_MIN;
+
+	while(invar <= 0.9999)
+	  {
+
+	    double alpha =  ALPHA_MIN;
+	    tr->invariants[0] = invar;
+
+	    while(alpha <= 5.0)
+	      {      	
+		double lh, rho, eta;
+		
+		lh = evaluateAlpha(tr, alpha, 0);
+			       
+		/* fprintf(of, "%1.10f %1.10f %f\n", invar, alpha, lh);	 */
+
+		if(billig == (int)(-1.0 * lh))
+		  printf("%1.10f %1.10f\n", invar, alpha);
+
+		eta = 1.0 / (1.0 + alpha);
+
+		rho = invar + eta - eta * invar;
+
+		fprintf(of, "%1.10f %f\n", rho, lh);
+
+		alpha += 0.01;
+		/*if(count % 10000 == 0)
+		  printf("%f %f\n", alpha, invar);*/
+		count++;
+	      }
+	    invar += 0.01;
+	  }
+      }
+    else
+      {
+	double alpha =  ALPHA_MIN;
+	
+	while(alpha < 5.0)
+	  {      	
+	    double lh, eta;
+	    
+	    lh = evaluateAlpha(tr, alpha, 0);
+
+	    eta = 1.0 / (1.0 + alpha);
+
+	    /*fprintf(of, "%1.10f %f\n", alpha, lh);*/
+	    fprintf(of, "%1.10f %f\n", eta, lh);
+
+	    if(billig == (int)(-1.0 * lh))
+	      printf("0.0 %1.10f\n", alpha);
+
+	    alpha += 0.01;
+
+	    /*if(count % 10000 == 0)
+	      printf("%f\n", alpha);*/
+	    count++;
+	  }	
+
+
+      }
+
+    printf("Result written to: %s\n", outName);
+
+    fclose(of);
+    exit(0);
+  }
+}
+

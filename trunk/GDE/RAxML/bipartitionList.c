@@ -56,6 +56,7 @@ extern char workdir[1024];
 extern char bootStrapFile[1024];
 extern char tree_file[1024];
 extern char infoFileName[1024];
+extern char resultFileName[1024];
 
 
 int countTips(nodeptr p, int numsp)
@@ -426,12 +427,20 @@ void drawBipartitionsOnTree(tree *tr, analdef *adef, topolRELL_LIST *rl, int num
 
 static const unsigned char bitmask[8] = {1, 2, 4, 8, 16, 32, 64, 128};
 
+#ifdef WIN32
+static void set_bit(unsigned char *vector, int pos)
+#else
 static inline void set_bit(unsigned char *vector, int pos)
+#endif
 {
    vector[pos / BITS_BYTE] |= bitmask[pos % BITS_BYTE];
 }
 
+#ifdef WIN32
+static int get_bit(unsigned char *vector, int pos)
+#else
 static inline int get_bit(unsigned char *vector, int pos)
+#endif
 {
   if(vector[pos / BITS_BYTE] == 0)
     return 0;
@@ -483,11 +492,13 @@ static double testFreq(double *vect1, double *vect2, int n)
 
   corr = sum_xy / (sqrt(sum_x) * sqrt(sum_y));
    
+#ifndef WIN32
   if(isnan(corr))
     {
       printf("Numerical Error pearson correlation is not a number\n");
       assert(0);
     }
+#endif
 
   return corr;
 }
@@ -563,12 +574,13 @@ static double testFreq2(double *vect1, double *vect2, int n, int reps, double bo
      
 
       corr = sum_xy / (sqrt(sum_x) * sqrt(sum_y));            
-
+#ifndef WIN32
       if(isnan(corr))
 	{
 	  printf("Numerical Error pearson correlation is not a number\n");
 	  assert(0);
 	}
+#endif
        
       return corr;
     }
@@ -593,13 +605,13 @@ static double testFreq2(double *vect1, double *vect2, int n, int reps, double bo
      
 
       corr = sum_xy / (sqrt(sum_x) * sqrt(sum_y));
-
+#ifndef WIN32
       if(isnan(corr))
 	{
 	  printf("Numerical Error pearson correlation is not a number\n");
 	  assert(0);
 	}
-
+#endif
       return corr;
     }
 }
@@ -723,9 +735,11 @@ static void computeAllLHs(tree *tr, analdef *adef, char *bootStrapFileName)
   double 
     bestLH = unlikely;    
   bestlist *bestT;
-  FILE *infoFile; 
+  FILE *infoFile, *result;
+  
 
   infoFile = fopen(infoFileName, "a");
+  result   = fopen(resultFileName, "w");
 
   bestT = (bestlist *) malloc(sizeof(bestlist));
   bestT->ninit = 0;
@@ -754,9 +768,15 @@ static void computeAllLHs(tree *tr, analdef *adef, char *bootStrapFileName)
 	  printf("Model optimization, first Tree: %f\n", tr->likelihood);
 	  fprintf(infoFile, "Model optimization, first Tree: %f\n", tr->likelihood);
 	  bestLH = tr->likelihood;
+	  resetBranches(tr);
 	}
       
       treeEvaluate(tr, 2);
+      Tree2String(tr->tree_string, tr, tr->start->back, TRUE, TRUE, FALSE, FALSE, 
+		  TRUE, adef, SUMMARIZE_LH);
+                 
+      fprintf(result, "%s", tr->tree_string);
+      
       saveBestTree(bestT, tr);
 
       if(tr->likelihood > bestLH)		
@@ -774,8 +794,12 @@ static void computeAllLHs(tree *tr, analdef *adef, char *bootStrapFileName)
   printf("Model optimization, %f <-> %f\n", bestLH, tr->likelihood);
   fprintf(infoFile, "Model optimization, %f <-> %f\n", bestLH, tr->likelihood); 
 
+  printf("\nAll evaluated trees with branch lengths written to File: %s\n", resultFileName);
+  fprintf(infoFile, "\nAll evaluated trees with branch lengths written to File: %s\n", resultFileName);
+
   fclose(INFILE); 
   fclose(infoFile);
+  fclose(result);
   exit(0);
 }
 

@@ -261,13 +261,8 @@ static void multipleBootstrap(tree *tr, int i, analdef *adef, rawdata *rdta, cru
       if(tr->rateHetModel == CAT && (adef->model == M_GTRCAT || adef->model == M_PROTCAT))
 	gammaToCat(tr, adef);	 
 
-#ifdef _STANDARD_INITRAV
-      initrav(tr, tr->start);    
-      initrav(tr, tr->start->back);   
-      evaluateGeneric(tr, tr->start);   
-#else
+
       evaluateGenericInitrav(tr, tr->start);
-#endif 
           
 
       computeBIGRAPIDMULTIBOOT(tr, adef);
@@ -288,13 +283,8 @@ static void multipleBootstrap(tree *tr, int i, analdef *adef, rawdata *rdta, cru
     {      
       restoreTL(rl, tr, l);
 
-#ifdef _STANDARD_INITRAV
-      initrav(tr, tr->start);    
-      initrav(tr, tr->start->back);   
-      evaluateGeneric(tr, tr->start);   
-#else
+
       evaluateGenericInitrav(tr, tr->start);
-#endif       
 
       treeEvaluate(tr, 0.5);
       rl->t[l]->likelihood = unlikely;
@@ -311,13 +301,8 @@ static void multipleBootstrap(tree *tr, int i, analdef *adef, rawdata *rdta, cru
   
   restoreTL(rl, tr, max);  
 
-#ifdef _STANDARD_INITRAV
-  initrav(tr, tr->start);    
-  initrav(tr, tr->start->back);   
-  evaluateGeneric(tr, tr->start);   
-#else
+
   evaluateGenericInitrav(tr, tr->start);
-#endif 
   
   /* printf("Best under GAMMA: %f\n", tr->likelihood); */
 
@@ -325,13 +310,8 @@ static void multipleBootstrap(tree *tr, int i, analdef *adef, rawdata *rdta, cru
     {
       treeOptimizeThorough(tr, 1, 10);
 
-#ifdef _STANDARD_INITRAV
-      initrav(tr, tr->start);    
-      initrav(tr, tr->start->back);   
-      evaluateGeneric(tr, tr->start);   
-#else
+
       evaluateGenericInitrav(tr, tr->start);
-#endif 
     
       /* printf("AFTER THOROUGH: %f\n", tr->likelihood); */
     }
@@ -409,12 +389,9 @@ void fixModelIndices(tree *tr, analdef *adef, int endsite)
 
   if(tr->mixedData)    
     calculateModelOffsets(tr);   
-#ifdef _LOCAL_DATA
-  masterBarrier(THREAD_NEXT_REPLICATE, tr);
-#endif
 }
 
-static void reductionCleanup(tree *tr, analdef *adef, int *originalRateCategories)
+void reductionCleanup(tree *tr, analdef *adef, int *originalRateCategories, int *originalInvariant)
 {
   int j;
 
@@ -423,7 +400,9 @@ static void reductionCleanup(tree *tr, analdef *adef, int *originalRateCategorie
   memcpy(tr->cdta->aliaswgt, tr->originalWeights, sizeof(int) * tr->cdta->endsite);
   memcpy(tr->model, tr->originalModel, sizeof(int) * tr->cdta->endsite);
   memcpy(tr->dataVector, tr->originalDataVector,  sizeof(int) * tr->cdta->endsite);
+
   memcpy(tr->cdta->rateCategory, originalRateCategories, sizeof(int) * tr->cdta->endsite);
+  memcpy(tr->invariant,          originalInvariant,      sizeof(int) * tr->cdta->endsite); 
   
   for (j = 0; j < tr->originalCrunchedLength; j++) 
     {	
@@ -433,11 +412,16 @@ static void reductionCleanup(tree *tr, analdef *adef, int *originalRateCategorie
       tr->cdta->wr2[j] = temp * wtemp;
     }                     
       
-  assert(adef->model == M_GTRCAT || adef->model == M_PROTCAT);
+  if(!adef->computeELW)
+    assert(adef->model == M_GTRCAT || adef->model == M_PROTCAT);
       
   memcpy(tr->rdta->y0, tr->rdta->yBUF, tr->rdta->numsp * tr->cdta->endsite * sizeof(char));  
       
-  fixModelIndices(tr, adef, tr->originalCrunchedLength);        
+  tr->cdta->endsite = tr->originalCrunchedLength;
+  fixModelIndices(tr, adef, tr->originalCrunchedLength);    
+#ifdef _LOCAL_DATA
+  masterBarrier(THREAD_NEXT_REPLICATE, tr);
+#endif
 }
 
 
@@ -548,18 +532,23 @@ void makeboot (analdef *adef, tree *tr)
 	}
     }
 
-  fixModelIndices(tr, adef, endsite);
-  tr->cdta->endsite = endsite;             
+  tr->cdta->endsite = endsite; 
+  fixModelIndices(tr, adef, endsite);   
+#ifdef _LOCAL_DATA
+  masterBarrier(THREAD_NEXT_REPLICATE, tr);
+#endif  
 }
 
 
 
 
-static void computeNextReplicate(tree *tr, analdef *adef, int *originalRateCategories)
+void computeNextReplicate(tree *tr, analdef *adef, int *originalRateCategories, int *originalInvariant)
 { 
   int pos, nonzero, j, model, w;   
   int *weightBuffer, endsite;                
   int *weights, i, l;  
+
+  assert(adef->rapidBoot != 0);
 
   for(j = 0; j < tr->originalCrunchedLength; j++)
     tr->cdta->aliaswgt[j] = 0;
@@ -632,7 +621,8 @@ static void computeNextReplicate(tree *tr, analdef *adef, int *originalRateCateg
   weights = tr->cdta->aliaswgt;
 
 #ifndef _VINCENT  
-  assert(adef->model == M_GTRCAT || adef->model == M_PROTCAT);
+  if(!adef->computeELW && !(adef->mode == MEHRING_ALGO))
+    assert(adef->model == M_GTRCAT || adef->model == M_PROTCAT);
 #endif      
 
   for(i = 0; i < tr->rdta->numsp; i++)
@@ -656,21 +646,24 @@ static void computeNextReplicate(tree *tr, analdef *adef, int *originalRateCateg
 	  tr->model[l]              = tr->originalModel[j];
 	  tr->dataVector[l]         = tr->originalDataVector[j];
 	  tr->cdta->rateCategory[l] = originalRateCategories[j];           
+	  tr->invariant[l]          = originalInvariant[j];
 	  l++;
 	}
     }
- 
-  fixModelIndices(tr, adef, endsite);
 
-  tr->cdta->endsite = endsite;             
+  tr->cdta->endsite = endsite;
+  fixModelIndices(tr, adef, endsite);
+#ifdef _LOCAL_DATA
+  masterBarrier(THREAD_NEXT_REPLICATE, tr);
+#endif              
 }
 
-static void quickOpt(tree *tr, analdef *adef)
+void quickOpt(tree *tr, analdef *adef)
 {	   	  	    
   int l;	  
   double sl, ol;	  	 
     	  
-  /*printf("START %f\n", tr->likelihood);*/
+  /* printf("START %f\n", tr->likelihood); */
 	   
   l = 0;
 	  
@@ -679,20 +672,107 @@ static void quickOpt(tree *tr, analdef *adef)
       sl = tr->likelihood;
       quickAndDirtyOptimization(tr, adef);
       treeEvaluate(tr, 0.25);
-      /*printf("%d %f\n", l, tr->likelihood);*/
+      /* printf("%d %f\n", l, tr->likelihood); */
       ol = tr->likelihood;
       l++;
     }
   while((ol > sl) && (ol - sl > 1.0));  
 } 
   
+
+
+typedef struct {
+  double *tipVectorDNA;
+  double *tipVectorAA;    
+  double *EV_DNA;         
+  double *EV_AA;           	  
+  double *EI_DNA;
+  double *EI_AA;           	  
+  double *EIGN_DNA;       
+  double *EIGN_AA;        	  
+  double *frequencies_DNA;
+  double *frequencies_AA;  	  
+  double *initialRates_DNA;
+  double *initialRates_AA;    
+} modelParams;
+
+
+static void allocParams(modelParams *params, tree *tr)
+{
+  params->tipVectorDNA    = (double *)malloc(tr->NumberOfModels * 64 * sizeof(double));
+  params->tipVectorAA     = (double *)malloc(tr->NumberOfModels * 460 * sizeof(double));
+  params->EV_DNA          = (double *)malloc(tr->NumberOfModels * 16 * sizeof(double));
+  params->EV_AA           = (double *)malloc(tr->NumberOfModels * 400 * sizeof(double));	  
+  params->EI_DNA          = (double *)malloc(tr->NumberOfModels * 12 * sizeof(double));
+  params->EI_AA           = (double *)malloc(tr->NumberOfModels * 380 * sizeof(double));  	  
+  params->EIGN_DNA        = (double *)malloc(tr->NumberOfModels * 3 * sizeof(double));
+  params->EIGN_AA         = (double *)malloc(tr->NumberOfModels * 19  * sizeof(double));
+  params->frequencies_DNA = (double *)malloc(tr->NumberOfModels * 4 * sizeof(double));
+  params->frequencies_AA  = (double *)malloc(tr->NumberOfModels * 20  * sizeof(double));
+  params->initialRates_DNA = (double *)malloc(tr->NumberOfModels * 5 * sizeof(double));
+  params->initialRates_AA  = (double *)malloc(tr->NumberOfModels * 190 * sizeof(double));	    
+}
+
+static void freeParams(modelParams *params)
+{
+  free(params->tipVectorDNA);
+  free(params->tipVectorAA);
+  free(params->EV_DNA);
+  free(params->EV_AA);
+  free(params->EI_DNA);
+  free(params->EI_AA);
+  free(params->EIGN_DNA);
+  free(params->EIGN_AA);
+  free(params->frequencies_DNA);
+  free(params->frequencies_AA);
+  free(params->initialRates_DNA);
+  free(params->initialRates_AA);
+}
+
+static void storeParams(modelParams *params, tree *tr)
+{
+   memcpy(params->tipVectorDNA,     tr->tipVectorDNA,     tr->NumberOfModels * 64 * sizeof(double));
+   memcpy(params->tipVectorAA,      tr->tipVectorAA,      tr->NumberOfModels * 460 * sizeof(double));
+   memcpy(params->EV_DNA,           tr->EV_DNA,           tr->NumberOfModels * 16 * sizeof(double));
+   memcpy(params->EV_AA,            tr->EV_AA,            tr->NumberOfModels * 400 * sizeof(double));
+   memcpy(params->EI_DNA,           tr->EI_DNA,           tr->NumberOfModels * 12 * sizeof(double));
+   memcpy(params->EI_AA,            tr->EI_AA,            tr->NumberOfModels * 380 * sizeof(double));
+   memcpy(params->EIGN_DNA,         tr->EIGN_DNA,         tr->NumberOfModels * 3 * sizeof(double));
+   memcpy(params->EIGN_AA,          tr->EIGN_AA,          tr->NumberOfModels * 19  * sizeof(double));
+   memcpy(params->frequencies_DNA,  tr->frequencies_DNA,  tr->NumberOfModels * 4 * sizeof(double));
+   memcpy(params->frequencies_AA,   tr->frequencies_AA,   tr->NumberOfModels * 20  * sizeof(double));	  
+   memcpy(params->initialRates_DNA, tr->initialRates_DNA, tr->NumberOfModels * 5 * sizeof(double));
+   memcpy(params->initialRates_AA,  tr->initialRates_AA,  tr->NumberOfModels * 190 * sizeof(double));
+}
+
+static void loadParams(modelParams *params, tree *tr)
+{
+   memcpy(tr->tipVectorDNA,     params->tipVectorDNA,     tr->NumberOfModels * 64 * sizeof(double));
+   memcpy(tr->tipVectorAA,      params->tipVectorAA,      tr->NumberOfModels * 460 * sizeof(double));
+   memcpy(tr->EV_DNA,           params->EV_DNA,           tr->NumberOfModels * 16 * sizeof(double));
+   memcpy(tr->EV_AA,            params->EV_AA,            tr->NumberOfModels * 400 * sizeof(double));
+   memcpy(tr->EI_DNA,           params->EI_DNA,           tr->NumberOfModels * 12 * sizeof(double));
+   memcpy(tr->EI_AA,            params->EI_AA,            tr->NumberOfModels * 380 * sizeof(double));
+   memcpy(tr->EIGN_DNA,         params->EIGN_DNA,         tr->NumberOfModels * 3 * sizeof(double));
+   memcpy(tr->EIGN_AA,          params->EIGN_AA,          tr->NumberOfModels * 19  * sizeof(double));
+   memcpy(tr->frequencies_DNA,  params->frequencies_DNA,  tr->NumberOfModels * 4 * sizeof(double));
+   memcpy(tr->frequencies_AA,   params->frequencies_AA,   tr->NumberOfModels * 20  * sizeof(double));	  
+   memcpy(tr->initialRates_DNA, params->initialRates_DNA, tr->NumberOfModels * 5 * sizeof(double));
+   memcpy(tr->initialRates_AA,  params->initialRates_AA,  tr->NumberOfModels * 190 * sizeof(double));
+}
+
+
 #ifndef PARALLEL
+
+
+
 
 void doAllInOne(tree *tr, analdef *adef)
 {
   int i, j, n, sites, bestIndex, model, bootstrapsPerformed;
   double loopTime; 
   int      *originalRateCategories;
+  int      *originalInvariant;
   int      slowSearches, fastEvery = 5;
   topolRELL_LIST *rl;  
   double bestLH, mlTime, overallTime;  
@@ -702,6 +782,11 @@ void doAllInOne(tree *tr, analdef *adef)
   BL *b = (BL *)NULL;
   boolean bootStopIt = FALSE;
   double pearsonAverage = 0.0;
+  modelParams *catParams   = (modelParams *)malloc(sizeof(modelParams));
+  modelParams *gammaParams = (modelParams *)malloc(sizeof(modelParams));
+
+  allocParams(catParams,   tr);
+  allocParams(gammaParams, tr);
 
   n = adef->multipleRuns;
 
@@ -720,13 +805,13 @@ void doAllInOne(tree *tr, analdef *adef)
 	  b->b[i].isSet = (unsigned char*)calloc(b->treeVectorLength, sizeof(unsigned char));
 	  b->b[i].entries = (int *)NULL;
 	}  
-
     }
 
   rl = (topolRELL_LIST *)malloc(sizeof(topolRELL_LIST));
   initTL(rl, tr, n);
      
   originalRateCategories = (int*)malloc(tr->cdta->endsite * sizeof(int));      
+  originalInvariant      = (int*)malloc(tr->cdta->endsite * sizeof(int));
 
   sites = tr->cdta->endsite;             
 
@@ -772,7 +857,7 @@ void doAllInOne(tree *tr, analdef *adef)
 	  if(i > 0)
 	    {
 	      freeNodex(tr);
-	      reductionCleanup(tr, adef, originalRateCategories);
+	      reductionCleanup(tr, adef, originalRateCategories, originalInvariant);
 	    }
 
 	  makeParsimonyTree(tr, adef);
@@ -782,45 +867,84 @@ void doAllInOne(tree *tr, analdef *adef)
 	    {
 	      double t;
 	          
-#ifdef _STANDARD_INITRAV
-	      initrav(tr, tr->start);
-	      initrav(tr, tr->start->back);
-#else
+
 	      onlyInitrav(tr, tr->start);
-#endif
 
+	      /* debug */
 
-	      treeEvaluate(tr, 1);	     	     
+	      /*evaluateGeneric(tr, tr->start);
+		printf("LH %f\n", tr->likelihood);*/
+	      
+	      /* debug-end */
+
+	      treeEvaluate(tr, 1);	     	
+	      /*printf("LH2 %f\n", tr->likelihood);*/
+	      
 
 	      t = gettime();    
 
 	      quickOpt(tr, adef);	    
-#ifndef PARALLEL 
+ 
 	      printf("\nTime for BS model parameter optimization %f\n", gettime() - t);
 	      infoFile = fopen(infoFileName, "a");
 	      fprintf(infoFile, "\nTime for BS model parameter optimization %f\n", gettime() - t);
 	      fclose(infoFile);
-#endif
+	      
 	      memcpy(originalRateCategories, tr->cdta->rateCategory, sizeof(int) * tr->cdta->endsite);
+	      memcpy(originalInvariant,      tr->invariant,          sizeof(int) * tr->cdta->endsite);
+
+	      if(adef->bootstrapBranchLengths)
+		{
+		  storeParams(catParams, tr);
+		  assert(tr->cdta->endsite == tr->originalCrunchedLength);
+		  catToGamma(tr, adef);
+		  modOpt(tr, adef);
+		  storeParams(gammaParams, tr);
+		  gammaToCat(tr, adef);
+		  loadParams(catParams, tr);		  
+		}
 	    }	  	  
 	}
 
-      computeNextReplicate(tr, adef, originalRateCategories); 
+      computeNextReplicate(tr, adef, originalRateCategories, originalInvariant); 
       resetBranches(tr);
 
-#ifdef _STANDARD_INITRAV
-      initrav(tr, tr->start);    
-      initrav(tr, tr->start->back);   
-      evaluateGeneric(tr, tr->start);   
-#else
       evaluateGenericInitrav(tr, tr->start);
-#endif       
     
       treeEvaluate(tr, 1);    	             
 
       computeBOOTRAPID(tr, adef, &radiusSeed);                        	  
       saveTL(rl, tr, i);
+
+      if(adef->bootstrapBranchLengths)
+	{
+	  double lh = tr->likelihood;
+	  int    endsite;
+	 
+	  loadParams(gammaParams, tr);
+     
+	  
+	  endsite = tr->cdta->endsite;
+	  tr->cdta->endsite = tr->originalCrunchedLength;
+	  catToGamma(tr, adef);
+	  tr->cdta->endsite = endsite;
+
+	  resetBranches(tr);
+	  treeEvaluate(tr, 2.0);
+	  
+	  endsite = tr->cdta->endsite;
+	  tr->cdta->endsite = tr->originalCrunchedLength;
+	  gammaToCat(tr, adef);
+	  tr->cdta->endsite = endsite;	 	    
+	
+	  loadParams(catParams, tr);
+
+	 
+	  tr->likelihood = lh;
+	}
+      
       printBootstrapResult(tr, adef, TRUE); 
+
       loopTime = gettime() - loopTime; 
       writeInfoFile(adef, tr, loopTime); 
      
@@ -829,6 +953,12 @@ void doAllInOne(tree *tr, analdef *adef)
     }   
 
   bootstrapsPerformed = i;
+
+  freeParams(catParams);
+  free(catParams);
+
+  freeParams(gammaParams);
+  free(gammaParams);
 
   if(adef->bootStopping)
     {
@@ -908,39 +1038,46 @@ void doAllInOne(tree *tr, analdef *adef)
 
   /***CLEAN UP reduction stuff */  
 
-  reductionCleanup(tr, adef, originalRateCategories); 
-#ifdef _LOCAL_DATA
-  masterBarrier(THREAD_REDUCTION_CLEANUP, tr);
-#endif
+  reductionCleanup(tr, adef, originalRateCategories, originalInvariant);  
 
   /****/
  
   catToGamma(tr, adef);     	   
   
   restoreTL(rl, tr, 0);
-  
-#ifdef _STANDARD_INITRAV
-  initrav(tr, tr->start);    
-  initrav(tr, tr->start->back);   
-  evaluateGeneric(tr, tr->start);   
-#else
-  evaluateGenericInitrav(tr, tr->start);
-#endif    
+
+  resetBranches(tr);
+
+  evaluateGenericInitrav(tr, tr->start);   
   
   modOpt(tr, adef);
  
-#ifdef _STANDARD_INITRAV
-  initrav(tr, tr->start);    
-  initrav(tr, tr->start->back);   
-  evaluateGeneric(tr, tr->start);   
-#else
-  evaluateGenericInitrav(tr, tr->start);
-#endif   
-  
+  evaluateGenericInitrav(tr, tr->start);   
 
   categorizeGeneric(tr, tr->start);        
 
   gammaToCat(tr, adef);      
+
+#ifdef _DEBUG_AA
+  {
+    double *vector = (double *)malloc(sizeof(double) * tr->cdta->endsite);
+
+    for(i = 0; i < tr->NumberOfCategories; i++)
+      printf("%d: %f\n", i, tr->cdta->patrat[i]);
+
+   
+    evaluateGenericInitrav(tr, tr->start);
+    
+    printf("INITRAV %f\n", tr->likelihood);
+    
+    evaluateGenericVector (tr, tr->start, vector);
+    for(i = 0; i < tr->cdta->endsite; i++)
+      printf("%d %f %f %f %d\n", tr->cdta->rateCategory[i], vector[i], tr->cdta->wr[i], tr->cdta->wr2[i], 
+	     tr->cdta->aliaswgt[i]);
+   
+  }
+#endif
+
 
   if(adef->bootStopping)
     {
@@ -952,26 +1089,39 @@ void doAllInOne(tree *tr, analdef *adef)
   else    
     fastEvery = 5;    
 
+
+
+#ifdef _DEBUG_AA
+  for(i = 0; i < bootstrapsPerformed; i++)
+    {
+      restoreTL(rl, tr, i);
+      resetBranches(tr);	 
+      evaluateGenericInitrav(tr, tr->start);
+      printf("INI %d %f\n", i, tr->likelihood);
+      treeEvaluate(tr, 1); 	
+      assert(!isnan(tr->likelihood));
+      printf("EVAL %d %f\n", i, tr->likelihood);
+    }
+#endif
+
   for(i = 0; i < bootstrapsPerformed; i++)
     {            
       rl->t[i]->likelihood = unlikely;
     
       if(i % fastEvery == 0)
-	{	 
-	  restoreTL(rl, tr, i); 	 	    	   
+	{	  	 
+	  restoreTL(rl, tr, i); 	 	    	   	
+	  
+	  /* DEBUG: does that help? */
+	  resetBranches(tr);	 
 
-#ifdef _STANDARD_INITRAV
-	  initrav(tr, tr->start);    
-	  initrav(tr, tr->start->back);   
-	  evaluateGeneric(tr, tr->start);   
-#else
 	  evaluateGenericInitrav(tr, tr->start);
-#endif 	  
-
+	  
 	  treeEvaluate(tr, 1); 		 
-    	  	  
-	  optimizeRAPID(tr, adef);	  		
-	  saveTL(rl, tr, i);      
+	  
+	  optimizeRAPID(tr, adef);	  			         
+
+	  saveTL(rl, tr, i);   	 
 	}    
     }     
 
@@ -982,25 +1132,24 @@ void doAllInOne(tree *tr, analdef *adef)
   qsort(&(rl->t[0]), bootstrapsPerformed, sizeof(topolRELL*), compareTopolRell);
      
   catToGamma(tr, adef);  
-
+  
   restoreTL(rl, tr, 0);
-#ifdef _STANDARD_INITRAV
-  initrav(tr, tr->start);    
-  initrav(tr, tr->start->back);   
-  evaluateGeneric(tr, tr->start);   
-#else
+
+  resetBranches(tr);
+
   evaluateGenericInitrav(tr, tr->start);
-#endif   
+
+#ifdef _DEBUG_AA  
+  printf("I1: %f\n", tr->likelihood);
+#endif
 
   modOpt(tr, adef);
 
-#ifdef _STANDARD_INITRAV
-  initrav(tr, tr->start);    
-  initrav(tr, tr->start->back);   
-  evaluateGeneric(tr, tr->start);   
-#else
+#ifdef _DEBUG_AA
+  printf("I2: %f\n", tr->likelihood);
+#endif
+
   evaluateGenericInitrav(tr, tr->start);
-#endif 
   
   categorizeGeneric(tr, tr->start);   
        	  	 	      
@@ -1016,18 +1165,25 @@ void doAllInOne(tree *tr, analdef *adef)
   for(i = 0; i < slowSearches; i++)
     {           
       restoreTL(rl, tr, i);     
-      rl->t[i]->likelihood = unlikely;
+      rl->t[i]->likelihood = unlikely;  
 
-#ifdef _STANDARD_INITRAV
-      initrav(tr, tr->start);    
-      initrav(tr, tr->start->back);   
-      evaluateGeneric(tr, tr->start);   
-#else
       evaluateGenericInitrav(tr, tr->start);
-#endif       
+
+#ifdef _DEBUG_AA
+      printf("S1: %f\n", tr->likelihood);
+#endif
 
       treeEvaluate(tr, 1.0);   
-      thoroughOptimization(tr, adef, rl, i);             
+
+#ifdef _DEBUG_AA
+      printf("S2: %f\n", tr->likelihood);
+#endif
+
+      thoroughOptimization(tr, adef, rl, i);    
+         
+#ifdef _DEBUG_AA
+      printf("S3: %f\n", tr->likelihood);
+#endif
    }
 
   infoFile = fopen(infoFileName, "a");
@@ -1043,19 +1199,33 @@ void doAllInOne(tree *tr, analdef *adef)
   bestLH = unlikely;
     
   for(i = 0; i < slowSearches; i++)
-    {      
+    { 
+     
+#ifdef _DEBUG_AA
+      printf("TL: rlMax %d rlmembers %d\n", rl->max, rl->members);
+#endif
+
       restoreTL(rl, tr, i);
+      resetBranches(tr);
 
-#ifdef _STANDARD_INITRAV
-      initrav(tr, tr->start);    
-      initrav(tr, tr->start->back);   
-      evaluateGeneric(tr, tr->start);   
-#else
       evaluateGenericInitrav(tr, tr->start);
-#endif       
 
-      treeEvaluate(tr, 1);
+#ifdef _DEBUG_AA
+      printf("R1: %f\n", tr->likelihood);
+#endif
+
+      treeEvaluate(tr, 2);
+
+#ifdef _DEBUG_AA
+      printf("R2: %f\n", tr->likelihood);
+#endif
+
       infoFile = fopen(infoFileName, "a"); 
+
+#ifdef _DEBUG_AA
+      printf("R3: %f\n", tr->likelihood);
+#endif
+
       printf("Slow ML Search %d Likelihood: %f\n", i, tr->likelihood);
       fprintf(infoFile, "Slow ML Search %d Likelihood: %f\n", i, tr->likelihood);     
       fclose(infoFile);
@@ -1067,24 +1237,19 @@ void doAllInOne(tree *tr, analdef *adef)
     }
   
   restoreTL(rl, tr, bestIndex);
-#ifdef _STANDARD_INITRAV
-  initrav(tr, tr->start);    
-  initrav(tr, tr->start->back);   
-  evaluateGeneric(tr, tr->start);   
-#else
-  evaluateGenericInitrav(tr, tr->start);
-#endif  
+  resetBranches(tr);
 
-  treeEvaluate(tr, 1); 
+  evaluateGenericInitrav(tr, tr->start);
+ 
+
+  treeEvaluate(tr, 2); 
          
   Thorough = 1;
   tr->doCutoff = FALSE;  
   
   treeOptimizeThorough(tr, 1, 10);
   modOpt(tr, adef);
-
  
-
 
   infoFile = fopen(infoFileName, "a"); 
   printf("\nFinal ML Optimization Likelihood: %f\n", tr->likelihood);
@@ -1264,16 +1429,24 @@ void doAllInOneVincent(tree *tr, analdef *adef)
 
       computeNextReplicate(tr, adef, originalRateCategories);           
 
-      freeNodex(tr);	       
-
-      makeParsimonyTree(tr, adef);
-      allocNodex(tr, adef);	     
+      
+      if(i % 10 == 0)
+	{	 
+	  freeNodex(tr);	       
+	  makeParsimonyTree(tr, adef);
+	  allocNodex(tr, adef);	     
+	}
+      else
+	{
+	  freeNodex(tr);	       	  
+	  allocNodex(tr, adef);
+	}
            
       if(optimizeModel)
 	{	  	 
 	  initModel(tr, tr->rdta, tr->cdta, adef);
 	  modOpt(tr, adef);       
-	  printf("Bootstrap[%d]: Intermediate Model Optimization: %f\n", i, tr->likelihood);
+	  /*printf("Bootstrap[%d]: Intermediate Model Optimization: %f\n", i, tr->likelihood);*/
 	}
       else
 	{
@@ -1281,7 +1454,7 @@ void doAllInOneVincent(tree *tr, analdef *adef)
 	  tr->likelihood = unlikely;
 	  onlyInitrav(tr, tr->start);
 	  treeEvaluate(tr, 1);
-	  printf("Bootstrap[%d]: Without Model Optimization: %f\n", i, tr->likelihood);
+	  /*printf("Bootstrap[%d]: Without Model Optimization: %f\n", i, tr->likelihood);*/
 	}
 
       computeBOOTRAPID(tr, adef, &radiusSeed);                        	        
@@ -1289,7 +1462,7 @@ void doAllInOneVincent(tree *tr, analdef *adef)
  
       loopTime = gettime() - loopTime; 
 
-      /*writeInfoFile(adef, tr, loopTime);            */
+      writeInfoFile(adef, tr, loopTime);            
     }   
 
   bootstrapsPerformed = i;
@@ -1438,7 +1611,7 @@ static void sendTree(tree *tr, analdef *adef, double t, boolean finalPrint, int 
     buffer[bufCount++] = tr->invariants[i];
     
     
-  if(adef->boot)
+  if(adef->boot || adef->rapidBoot)
     {
      if(adef->bootstrapBranchLengths)
        Tree2String(tr->tree_string, tr, tr->start->back, TRUE, TRUE, FALSE, FALSE, finalPrint, adef, SUMMARIZE_LH);
@@ -1949,20 +2122,26 @@ static void allInOneWorker(tree *tr, analdef *adef)
     int i, n, sites, bestIndex, model, bootstrapsPerformed;
     double loopTime = 0.0; 
     int      *originalRateCategories;
+    int      *originalInvariant;
     int      slowSearches, fastEvery = 5;
     topolRELL_LIST *rl;  
     double bestLH, mlTime;  
     long radiusSeed = adef->rapidBoot;
     FILE *infoFile, *f;
     char bestTreeFileName[1024];  
-   
+    modelParams *catParams   = (modelParams *)malloc(sizeof(modelParams));
+    modelParams *gammaParams = (modelParams *)malloc(sizeof(modelParams));
+
+    allocParams(catParams,   tr);
+    allocParams(gammaParams, tr);
    
     n = NumberOfLocalTrees;   
 
     rl = (topolRELL_LIST *)malloc(sizeof(topolRELL_LIST));
     initTL(rl, tr, n);
      
-    originalRateCategories = (int*)malloc(tr->cdta->endsite * sizeof(int));      
+    originalRateCategories = (int*)malloc(tr->cdta->endsite * sizeof(int));
+    originalInvariant      = (int*)malloc(tr->cdta->endsite * sizeof(int));
 
     sites = tr->cdta->endsite;             
 
@@ -2000,7 +2179,7 @@ static void allInOneWorker(tree *tr, analdef *adef)
 	    if(i > 0)
 	      {
 		freeNodex(tr);
-		reductionCleanup(tr, adef, originalRateCategories);
+		reductionCleanup(tr, adef, originalRateCategories, originalInvariant);
 	      }
 	    
 	    makeParsimonyTree(tr, adef);
@@ -2018,10 +2197,22 @@ static void allInOneWorker(tree *tr, analdef *adef)
 		
 		quickOpt(tr, adef);	     		
 		memcpy(originalRateCategories, tr->cdta->rateCategory, sizeof(int) * tr->cdta->endsite);
+		memcpy(originalInvariant,      tr->invariant,          sizeof(int) * tr->cdta->endsite);
+
+		if(adef->bootstrapBranchLengths)
+		  {
+		    storeParams(catParams, tr);
+		    assert(tr->cdta->endsite == tr->originalCrunchedLength);
+		    catToGamma(tr, adef);
+		    modOpt(tr, adef);
+		    storeParams(gammaParams, tr);
+		    gammaToCat(tr, adef);
+		    loadParams(catParams, tr);		  
+		  }
 	      }	  	  
 	  }
 	
-	computeNextReplicate(tr, adef, originalRateCategories); 
+	computeNextReplicate(tr, adef, originalRateCategories, originalInvariant); 
 	resetBranches(tr);
 	
 	evaluateGenericInitrav(tr, tr->start);    
@@ -2031,6 +2222,33 @@ static void allInOneWorker(tree *tr, analdef *adef)
 	computeBOOTRAPID(tr, adef, &radiusSeed);                        	  
 	saveTL(rl, tr, i);
       
+	if(adef->bootstrapBranchLengths)
+	  {
+	    double lh = tr->likelihood;
+	    int    endsite;
+	    
+	    loadParams(gammaParams, tr);
+	    
+	    
+	    endsite = tr->cdta->endsite;
+	    tr->cdta->endsite = tr->originalCrunchedLength;
+	    catToGamma(tr, adef);
+	    tr->cdta->endsite = endsite;
+	    
+	    resetBranches(tr);
+	    treeEvaluate(tr, 2.0);
+	    
+	    endsite = tr->cdta->endsite;
+	    tr->cdta->endsite = tr->originalCrunchedLength;
+	    gammaToCat(tr, adef);
+	    tr->cdta->endsite = endsite;	 	    
+	    
+	    loadParams(catParams, tr);
+	    	    
+	    tr->likelihood = lh;
+	  }
+      
+
 	loopTime = gettime() - loopTime;
 	sendTree(tr, adef, loopTime, TRUE, BS_TREE);	
      
@@ -2050,7 +2268,12 @@ static void allInOneWorker(tree *tr, analdef *adef)
 	MPI_Finalize();	 
 	exit(0);
       }
- 
+    
+    freeParams(catParams);
+    free(catParams);
+
+    freeParams(gammaParams);
+    free(gammaParams);
 
     tr->treeID = NumberOfLocalTrees * (numOfWorkers - 1) + (processID - 1);
    
@@ -2060,11 +2283,13 @@ static void allInOneWorker(tree *tr, analdef *adef)
     printf("\nWorker %d Starting ML Search ...\n\n", processID);   
 #endif
 
-    reductionCleanup(tr, adef, originalRateCategories);    
+    reductionCleanup(tr, adef, originalRateCategories, originalInvariant);    
  
     catToGamma(tr, adef);     	   
     
     restoreTL(rl, tr, 0);
+
+    resetBranches(tr);
     
     evaluateGenericInitrav(tr, tr->start);   
     
@@ -2086,6 +2311,8 @@ static void allInOneWorker(tree *tr, analdef *adef)
 	  {	 
 	    restoreTL(rl, tr, i); 	 	    	   
 	    
+	    resetBranches(tr);
+
 	    evaluateGenericInitrav(tr, tr->start);
 	    
 	    treeEvaluate(tr, 1); 		 
@@ -2104,6 +2331,8 @@ static void allInOneWorker(tree *tr, analdef *adef)
     catToGamma(tr, adef);  
     
     restoreTL(rl, tr, 0);
+
+    resetBranches(tr);
     
     evaluateGenericInitrav(tr, tr->start); 
     
@@ -2143,10 +2372,11 @@ static void allInOneWorker(tree *tr, analdef *adef)
     for(i = 0; i < slowSearches; i++)
       {      
 	restoreTL(rl, tr, i);
-	
+	resetBranches(tr);
+
 	evaluateGenericInitrav(tr, tr->start);
 	
-	treeEvaluate(tr, 1);
+	treeEvaluate(tr, 2);
 #ifdef DEBUG	
 	printf("Worker %d Slow ML Search %d Likelihood: %f\n", processID, i, tr->likelihood);
 #endif	
@@ -2158,10 +2388,11 @@ static void allInOneWorker(tree *tr, analdef *adef)
       }
     
     restoreTL(rl, tr, bestIndex);
-    
+    resetBranches(tr);
+
     evaluateGenericInitrav(tr, tr->start);
     
-    treeEvaluate(tr, 1); 
+    treeEvaluate(tr, 2); 
     
     Thorough = 1;
     tr->doCutoff = FALSE;  
