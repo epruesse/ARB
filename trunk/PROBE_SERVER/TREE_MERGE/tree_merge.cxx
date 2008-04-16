@@ -39,7 +39,7 @@ using namespace std;
 typedef SmartPtr<ifstream> ifstreamPtr;
 typedef map<string, string> TokMap;
 
-#define MAXLINELENGTH 500
+#define MAXLINELENGTH 4096
 
 // --------------------------------------------------------------------------------
 // globals
@@ -330,12 +330,12 @@ static GB_ERROR mergeTrees(deque<ifstreamPtr>& in, ofstream& out) {
             ifstreamPtr ip = *i;
             if (!ip->eof()) {
                 if (!ip->good()) {
-                    error = "error reading input";
+                    error = "error reading input #1";
                 }
                 else {
                     ip->getline(linebuffer, MAXLINELENGTH);
                     if (!ip->eof() && !ip->good()) {
-                        error = "error reading input";
+                        error = "error reading input #2";
                     }
                     lines.push_back(linebuffer);
                 }
