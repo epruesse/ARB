@@ -10,8 +10,8 @@ static void to_stderr(const char *msg) {
 int main(int argc, char **argv)
 {
     GB_ERROR    error;
-    char       *in;
-    char       *out;
+    char       *in= NULL;
+    char       *out= NULL;
     const char *readflags      = "rw";
     const char *saveflags      = "a";
     GBDATA     *gb_main;
@@ -34,14 +34,14 @@ int main(int argc, char **argv)
     }
 
     in = argv[1];
-    if (argc == 1) {
+    if (argc == 2) {
         out = in;
     }
     else {
         readflags = "rwR";	/* try to recover corrupt data */
         out       = argv[2];
 
-        if (strcmp(out, "-") == 0) {
+        if (!out || strcmp(out, "-") == 0) {
             saveflags      = "aS";
             GB_install_information(to_stderr);
             GB_install_warning(to_stderr);
