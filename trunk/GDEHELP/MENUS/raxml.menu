@@ -15,12 +15,12 @@
 
 #ifdef RAXML_DNA
         item:RAxML (DNA)
-        itemmethod: RAXML_CODE(DNA,$MODELOFNUCSUB $NUMCATEGORIES)
+        itemmethod: RAXML_CODE(DNA,$RATEMODELNUC $NUMCATEGORIES)
         seqtype:N
         itemmeta:R
 #else
         item:RAxML (Protein)
-        itemmethod: RAXML_CODE(PROTEIN,"$RATEMODEL" "$MATRIXNAME$EMPBFREQ")
+        itemmethod: RAXML_CODE(PROTEIN,"$RATEMODELPROT" "$MATRIXNAME$EMPBFREQ")
         seqtype:A
         itemmeta:P
 #endif
@@ -48,12 +48,14 @@ arglabel:Generate random starting tree\n(if no tree selected)
 argchoice:No:0
 argchoice:Yes:1
 
+
+
 #ifdef RAXML_DNA
 
-        arg:MODELOFNUCSUB
+        arg:RATEMODELNUC
         argtype:choice_menu
-        arglabel: Nucleotide Substitution Model
-        argchoice:GTRCAT:GTRCAT
+        arglabel: Rate Distribution Model
+        argchoice:GTRCAT:GTRCAT../PERL_SCRIPTS/ARBTOOLS/raxml2arb.pl
         argchoice:GTRMIX:GTRMIX
         argchoice:GTRGAMMA:GTRGAMMA
         argchoice:GTRCAT_GAMMA:GTRCAT_GAMMA
@@ -63,12 +65,12 @@ argchoice:Yes:1
         
         arg:NUMCATEGORIES
         argtype:text
-        arglabel:Number of rate categories\n(GTRCAT only)
+        arglabel: # rate categories (GTRCAT only)
         argtext:25
 
 #else
 
-        arg:RATEMODEL
+        arg:RATEMODELPROT
         argtype:choice_menu
         arglabel:Rate Distribution Model
         argchoice:PROTCAT:PROTCAT
