@@ -4,8 +4,9 @@
 usage() {
     arb_message "arb_raxml called with wrong parameters (look @ console for errors)"
     echo "Usage:"
-    echo "   arb_raxml 'DNA'     SEQFILE WEIGHTS TREE CONSTRAINT RANDOMSTART OPTIMIZEPARAMETERS SEARCH INITIALREARRANGEMENT SEED NUMBEROFRUNS TAKETREES [import|consense] MODELOFNUCSUB NUMCATEGORIES"
-    echo "   arb_raxml 'PROTEIN' SEQFILE WEIGHTS TREE CONSTRAINT RANDOMSTART OPTIMIZEPARAMETERS SEARCH INITIALREARRANGEMENT SEED NUMBEROFRUNS TAKETREES [import|consense] RATEMODEL MATRIXNAME"
+    echo "   arb_raxml 'DNA'     SEQFILE WEIGHTS TREE CONSTRAINT RANDOMSTART OPTIMIZEPARAMETERS SEARCH INITIALREARRANGEMENT SEED NUMBEROFRUNS TAKETREES [import|consense] RATEMODELNUC
+     NUMCATEGORIES"
+    echo "   arb_raxml 'PROTEIN' SEQFILE WEIGHTS TREE CONSTRAINT RANDOMSTART OPTIMIZEPARAMETERS SEARCH INITIALREARRANGEMENT SEED NUMBEROFRUNS TAKETREES [import|consense] RATEMODELPROT MATRIXNAME"
     exit 1
 }
 
@@ -37,14 +38,14 @@ else
         if [ -z "$1" ]; then
             usage
         fi
-        MODELOFNUCSUB=$1
+        RATEMODELNUC=$1
         NUMCATEGORIES=$2
     else
         if [ "$DATA" == "PROTEIN" ]; then
             # if [ -z "$2" ]; then
                 # usage
             # fi
-            RATEMODEL=$1
+            RATEMODELPROT=$1
             MATRIXNAME=$2
         else
             arb_message "Unknown datatype '$DATA'"
@@ -93,7 +94,7 @@ else
     DEPENDENT_PARAMS=
     if [ "$OPTIMIZEPARAMETERS" == "1" ]; then
         if [ "$DATA" == "DNA" ]; then
-            case "$MODELOFNUCSUB" in
+            case "$RATEMODELNUC" in
                 GTRMIX | GTRGAMMA )
                     DEPENDENT_PARAMS="$DEPENDENT_PARAMS -k"
                     ;;
@@ -102,7 +103,7 @@ else
                     ;;
             esac
         else
-            case "$RATEMODEL" in
+            case "$RATEMODELPROT" in
                 "PROTMIX" | "PROTGAMMA" )
                     DEPENDENT_PARAMS="$DEPENDENT_PARAMS -k"
                     ;;
@@ -114,7 +115,7 @@ else
     fi
     
     if [ "$DATA" == "DNA" ]; then
-        if [ "$MODELOFNUCSUB" == "GTRCAT" ]; then
+        if [ "$RATEMODELNUC" == "GTRCAT" ]; then
             DEPENDENT_PARAMS="$DEPENDENT_PARAMS -c $NUMCATEGORIES"
         fi
     fi
@@ -171,7 +172,7 @@ else
 
     if [ "$NEEDGAMMA" == "1" ]; then
         if [ "$DATA" == "DNA" ]; then
-            case "$MODELOFNUCSUB" in
+            case "$RATEMODELNUC" in
                 "GTRGAMMA" | "GTRGAMMAI" )
                     ;;
                 * )
@@ -180,7 +181,7 @@ else
                     ;;
             esac
         else
-            case "$RATEMODEL" in
+            case "$RATEMODELPROT" in
                 "PROTGAMMA" | "PROTGAMMAI" )
                     ;;
                 * )
@@ -193,9 +194,9 @@ else
 
     MODELPARAMS=
     if [ "$DATA" == "DNA" ]; then
-        MODELPARAMS="-m $MODELOFNUCSUB"
+        MODELPARAMS="-m $RATEMODELNUC"
     else
-        MODELPARAMS="-m $RATEMODEL$MATRIXNAME"
+        MODELPARAMS="-m $RATEMODELPROT$MATRIXNAME"
     fi
 
     # build parameters for raxml
