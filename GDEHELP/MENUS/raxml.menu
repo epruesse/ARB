@@ -55,9 +55,9 @@ argchoice:Yes:1
         arg:RATEMODELNUC
         argtype:choice_menu
         arglabel: Rate Distribution Model
-        argchoice:GTRCAT:GTRCAT../PERL_SCRIPTS/ARBTOOLS/raxml2arb.pl
         argchoice:GTRMIX:GTRMIX
         argchoice:GTRGAMMA:GTRGAMMA
+        argchoice:GTRCAT:GTRCAT
         argchoice:GTRCAT_GAMMA:GTRCAT_GAMMA
         argchoice:GTRGAMMAI:GTRGAMMAI
         argchoice:GTRMIXI:GTRMIXI
@@ -73,9 +73,9 @@ argchoice:Yes:1
         arg:RATEMODELPROT
         argtype:choice_menu
         arglabel:Rate Distribution Model
-        argchoice:PROTCAT:PROTCAT
-        argchoice:PROTGAMMA:PROTGAMMA
         argchoice:PROTMIX:PROTMIX
+        argchoice:PROTGAMMA:PROTGAMMA
+        argchoice:PROTCAT:PROTCAT
         argchoice:PROTCAT_GAMMA:PROTCAT_GAMMA
         argchoice:PROTGAMMAI:PROTGAMMAI
         argchoice:PROTMIXI:PROTMIXI
