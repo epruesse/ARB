@@ -509,7 +509,7 @@ static int get_max_slider_xpos() {
     AW_pos max_xpos = horizontal_link->extension.size[WIDTH] // overall width of virtual scrolling area
         - (rect.r - x); // minus width of visible scroll-area (== relative width of horizontal scrollbar)
 
-    e4_assert(max_xpos >= 0); // if fails, add code to restrict max_xpos
+    if (max_xpos<0) max_xpos = 0; // happens when window-content is smaller then window (e.g. if ARB_EDIT4 is not filled)
     return int(max_xpos+0.5);
 }
 
@@ -524,7 +524,7 @@ static int get_max_slider_ypos() {
     AW_pos max_ypos = vertical_link->extension.size[HEIGHT] // overall width of virtual scrolling area
         - (rect.b - y); // minus width of visible scroll-area (== relative width of horizontal scrollbar)
 
-    e4_assert(max_ypos >= 0); // if fails, add code to restrict max_ypos
+    if (max_ypos<0) max_ypos = 0; // happens when window-content is smaller then window (e.g. if ARB_EDIT4 is not filled)
     return int(max_ypos+0.5);
 }
 
