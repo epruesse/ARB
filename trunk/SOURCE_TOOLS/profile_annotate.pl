@@ -17,7 +17,7 @@ sub scanLine($) {
 
 sub prefix_percent($$$) {
   my ($line,$total,$partial) = @_;
-  if ($partial>$total) { die "Invalid partial=$partial (total=$total)"; }
+  if ($partial>$total) { print "Invalid partial=$partial (total=$total)\n"; }
   my $percent = int($partial/$total*1000+0.5)/10;
   return sprintf("%5.1f",$percent).'% | '.$line;
 }
