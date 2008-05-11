@@ -757,6 +757,18 @@ long gb_recover_corrupt_file(GBCONTAINER *gbd,FILE *in, GB_ERROR recovery_reason
     return -1;          /* no short string found */
 }
 
+/* #define DEBUG_READ */
+#if defined(DEBUG_READ)
+
+static void DEBUG_DUMP_INDENTED(long deep, const char *s) {
+    printf("%*s%s\n", (int)deep, "", s);
+}
+
+#else
+
+#define DEBUG_DUMP_INDENTED(d, s)
+
+#endif /* DEBUG_READ */
 
 
 long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long reversed,long deep)
@@ -777,6 +789,8 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
     
     struct gb_header_list_struct *header;
 
+    DEBUG_DUMP_INDENTED(deep, GBS_global_string("Reading container with %li items", nitems));
+
     gb_create_header_array(gbd,(int)nitems);
     header = GB_DATA_LIST_HEADER(gbd->d);
     if (deep == 0 && GBCONTAINER_MAIN(gbd)->allow_corrupt_file_recovery) {
@@ -787,6 +801,7 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
     for (item = 0;item<nitems;item++)
     {
         type = getc(in);
+        DEBUG_DUMP_INDENTED(deep, GBS_global_string("Item #%li/%li type=%02lx (filepos=%08lx)", item+1, nitems, type, ftell(in)-1));
         if (type == EOF){
             GB_export_error("Unexpected end of file seen");
             return -1;
@@ -829,6 +844,8 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
             GB_export_error("Inconsistent Database: Changing field identifier to 'main'");
             key = 0;
         }
+
+        DEBUG_DUMP_INDENTED(deep, GBS_global_string("key='%s' type2=%li", Main->keys[key].key, type2));
 
         gb2 = NULL;
         gbc = NULL;
@@ -926,6 +943,7 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
             case GB_FLOATS:
                 size = gb_read_number(in);
                 memsize =  gb_read_number(in);
+                DEBUG_DUMP_INDENTED(deep, GBS_global_string("size=%li memsize=%li", size, memsize));
                 if (GB_CHECKINTERN(size,memsize) ){
                     GB_SETINTERN(gb2);
                     p = &(gb2->info.istr.data[0]);
@@ -1436,7 +1454,7 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
             Main->clock                 = 0; /* start clock */
 
             if (read_from_stdin) input = stdin;
-            else input                 = fopen(path, "r");
+            else input                 = fopen(path, "rb");
 
             if (!input && ignoreMissingMaster){
                 goto load_quick_save_file_only;
@@ -1471,7 +1489,7 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
 #endif /* DEBUG */
                         }
                         path  = free_path;
-                        input = fopen(path, "r");
+                        input = fopen(path, "rb");
                     }else{
                         printf(" database %s created\n", path);
                         GB_commit_transaction((GBDATA *)gbd);
@@ -1509,7 +1527,7 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
                     err     = 0;
                     err_msg = 0;
 
-                    input = fopen(quickFile,"r");
+                    input = fopen(quickFile,"rb");
 
                     if (input){
                         time_of_quick_file = GB_time_of_file(quickFile);
