@@ -132,20 +132,20 @@ typedef char GB_BOOL;
 typedef int GB_COMPRESSION_MASK;
 
 typedef enum gb_key_types {
-    GB_NONE     = 0,
-    GB_BIT      = 1,
-    GB_BYTE     = 2,
-    GB_INT      = 3,
-    GB_FLOAT    = 4,
-    GB_BITS     = 6,
-    GB_BYTES    = 8,
-    GB_INTS     = 9,
-    GB_FLOATS   = 10,
-    GB_LINK     = 11,
-    GB_STRING   = 12,
-    GB_STRING_SHRT  = 13, /* not working and not used anywhere */
-    GB_DB       = 15,
-    GB_TYPE_MAX = 16
+    GB_NONE        = 0,
+    GB_BIT         = 1,
+    GB_BYTE        = 2,
+    GB_INT         = 3,
+    GB_FLOAT       = 4,
+    GB_BITS        = 6,
+    GB_BYTES       = 8,
+    GB_INTS        = 9,
+    GB_FLOATS      = 10,
+    GB_LINK        = 11,
+    GB_STRING      = 12,
+    GB_STRING_SHRT = 13,        /* used automatically during save */
+    GB_DB          = 15,
+    GB_TYPE_MAX    = 16
 } GB_TYPES;
 
 enum gb_search_enum {
