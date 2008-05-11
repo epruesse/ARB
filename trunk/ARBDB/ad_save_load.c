@@ -733,15 +733,20 @@ long gb_write_bin_rek(FILE *out,GBDATA *gbd,long version, long diff_save, long i
 {
     int          i;
     GBCONTAINER *gbc     = 0;
-    long         memsize = 0;
-    int          type;
+    long         size    = 0;
+    int          type    = GB_TYPE(gbd);
 
-    if ((type=GB_TYPE(gbd)) == GB_DB) {
+    if (type == GB_DB) {
         gbc = (GBCONTAINER *)gbd;
-    }else   if (    ( type == GB_STRING) &&
-                    !gbd->flags.compressed_data &&
-                    (memsize = GB_GETMEMSIZE(gbd)) < GBTUM_SHORT_STRING_SIZE){
-        type = GB_STRING_SHRT;
+    }
+    else if (type == GB_STRING || type == GB_STRING_SHRT) {
+        size = GB_GETSIZE(gbd);
+        if (!gbd->flags.compressed_data && size < GBTUM_SHORT_STRING_SIZE) {
+            type = GB_STRING_SHRT;
+        }
+        else {
+            type = GB_STRING;
+        }
     }
 
     i =     (type<<4)
@@ -765,47 +770,60 @@ long gb_write_bin_rek(FILE *out,GBDATA *gbd,long version, long diff_save, long i
     i = gbd->flags2.last_updated;
     putc(i,out);
 
-    switch(type) {
-        case    GB_STRING_SHRT:
-            if (memsize) {
-                i = fwrite(GB_GETDATA(gbd),(size_t)memsize,1,out);
-                if (i<=0){
-                    return -1;
-                }
-            }else{
-                putc(0,out);
-            }
-            return 0;
+    if (type == GB_STRING_SHRT) {
+        const char *data = GB_GETDATA(gbd);
+        size_t      len  = strlen(data); // w/o zero-byte!
 
-        case    GB_DB:
+        if (len == (long)size) {
+            i = fwrite(data, (size_t)size+1, 1, out);
+
+            return i <= 0 ? -1 : 0;
+        }
+#if defined(DEVEL_RALF)
+        else {
+            fprintf(stderr, "GB_STRING_SHRT problem (len=%li, size=%z), please check!", len, size);
+            gb_assert(0);       // just a test, whether size includes 0-byte (shall be removed again)
+        }
+#endif /* DEVEL_RALF */
+
+        // string contains or misses 0-byte
+        type = GB_STRING; // fallback to safer type
+    }
+
+    switch(type) {
+        case GB_DB:
             i = gb_write_bin_sub_containers(out,gbc,version,diff_save,0);
             return i;
 
-        case    GB_INT:{
+        case GB_INT:{
             GB_UINT4 buffer = (GB_UINT4)htonl(gbd->info.i);
             if (!fwrite((char *)&buffer,sizeof(float),1,out)) return -1;
             return 0;
         }
-        case    GB_FLOAT:
+        case GB_FLOAT:
             if (!fwrite((char *)&gbd->info.i,sizeof(float),1,out)) return -1;
             return 0;
-        case    GB_STRING:
-        case    GB_LINK:
-        case    GB_BITS:
-        case    GB_BYTES:
-        case    GB_INTS:
-        case    GB_FLOATS:
-            memsize = GB_GETMEMSIZE(gbd);
-            gb_put_number(GB_GETSIZE(gbd),out);
+        case GB_LINK:
+        case GB_BITS:
+        case GB_BYTES:
+        case GB_INTS:
+        case GB_FLOATS:
+            size = GB_GETSIZE(gbd);
+            // fall-through
+        case GB_STRING: {
+            long memsize = GB_GETMEMSIZE(gbd);
+            gb_put_number(size,out);
             gb_put_number(memsize,out);
             i = fwrite(GB_GETDATA(gbd),(size_t)memsize,1,out);
-            if (memsize && !i ) return -1;
+            if (memsize && !i) return -1;
             return 0;
-        case    GB_BYTE:
+        }
+        case GB_BYTE:
             putc((int)(gbd->info.i),out);
             return 0;
         default:
-            return 0;
+            gb_assert(0); // unknown type
+            return -1;
     }
 }
 
