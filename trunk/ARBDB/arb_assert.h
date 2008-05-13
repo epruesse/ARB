@@ -2,7 +2,7 @@
 
     File      : arb_assert.h
     Purpose   : Global assert macro
-    Time-stamp: <Fri Aug/10/2007 13:00 MET Coder@ReallySoft.de>
+    Time-stamp: <Wed Apr/30/2008 19:27 MET Coder@ReallySoft.de>
 
 
   Coded by Ralf Westram (coder@reallysoft.de) in August 2002
@@ -43,7 +43,7 @@
 
 /* only use ONE of the following ASSERT_xxx defines : */
 
-#ifdef DEBUG
+#if defined(DEBUG) && !defined(DEVEL_RELEASE)
 
 /* assert that raises SIGSEGV (recommended for DEBUG version!) */
 # define ASSERT_CRASH
