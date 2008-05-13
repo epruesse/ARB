@@ -43,8 +43,8 @@ extern "C" {
     static int  nodelim;
 
     int circf;
-    static int  low;
-    static int  size;
+    static int AR_low;
+    static int AR_size;
 
     static unsigned char    bittab[] = { 1, 2, 4, 8, 16, 32, 64, 128 };
 
@@ -396,46 +396,46 @@ extern "C" {
                 case CCHR | RNGE:
                     c = *ep++;
                     getrnge(ep);
-                    while (low--)
+                    while (AR_low--)
                         if (*lp++ != c)
                             return (0);
                     curlp = lp;
-                    while (size--)
+                    while (AR_size--)
                         if (*lp++ != c)
                             break;
-                    if (size < 0)
+                    if (AR_size < 0)
                         lp++;
                     ep += 2;
                     goto star;
 
                 case CDOT | RNGE:
                     getrnge(ep);
-                    while (low--)
+                    while (AR_low--)
                         if (*lp++ == '\0')
                             return (0);
                     curlp = lp;
-                    while (size--)
+                    while (AR_size--)
                         if (*lp++ == '\0')
                             break;
-                    if (size < 0)
+                    if (AR_size < 0)
                         lp++;
                     ep += 2;
                     goto star;
 
                 case CXCL | RNGE:
                     getrnge(ep + 32);
-                    while (low--) {
+                    while (AR_low--) {
                         c = (unsigned char)*lp++;
                         if (!ISTHERE(c))
                             return (0);
                     }
                     curlp = lp;
-                    while (size--) {
+                    while (AR_size--) {
                         c = (unsigned char)*lp++;
                         if (!ISTHERE(c))
                             break;
                     }
-                    if (size < 0)
+                    if (AR_size < 0)
                         lp++;
                     ep += 34;       /* 32 + 2 */
                     goto star;
@@ -445,18 +445,18 @@ extern "C" {
 
                 case CCL | RNGE:
                     getrnge(ep + 16);
-                    while (low--) {
+                    while (AR_low--) {
                         c = *lp++;
                         if (((c & 0200) || !ISTHERE(c)) ^ neg)
                             return (0);
                     }
                     curlp = lp;
-                    while (size--) {
+                    while (AR_size--) {
                         c = *lp++;
                         if (((c & 0200) || !ISTHERE(c)) ^ neg)
                             break;
                     }
-                    if (size < 0)
+                    if (AR_size < 0)
                         lp++;
                     ep += 18;       /* 16 + 2 */
                     goto star;
@@ -537,8 +537,8 @@ extern "C" {
         char *str;
 #endif
     {
-        low = *str++ & 0377;
-        size = ((*str & 0377) == 255)? 20000: (*str &0377) - low;
+        AR_low = *str++ & 0377;
+        AR_size = ((*str & 0377) == 255)? 20000: (*str &0377) - AR_low;
     }
 
 #ifdef  __cplusplus
