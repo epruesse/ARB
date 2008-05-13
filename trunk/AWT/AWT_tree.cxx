@@ -1735,7 +1735,7 @@ long AP_timer(void)
     return ++time;
 }
 
-void ap_mark_species_rek(AP_tree *at){
+static void ap_mark_species_rek(AP_tree *at){
     if (at->is_leaf){
         if (at->gb_node) GB_write_flag(at->gb_node,1);
         return;
@@ -1744,7 +1744,7 @@ void ap_mark_species_rek(AP_tree *at){
     ap_mark_species_rek(at->rightson);
 }
 
-double ap_search_strange_species_rek(AP_tree *at,double diff_eps,double max_diff){
+static double ap_search_strange_species_rek(AP_tree *at,double diff_eps,double max_diff){
     if (at->is_leaf) return 0.0;
     int max_is_left = 1;
     double max = ap_search_strange_species_rek(at->leftson,diff_eps,max_diff) + at->leftlen;
@@ -1769,6 +1769,107 @@ void AP_tree::mark_long_branches(GBDATA *gb_main,double diff){
     double diff_eps = max_deep * 0.05;
     GB_transaction dummy(gb_main);
     ap_search_strange_species_rek(this,diff_eps,diff);
+}
+
+static int ap_mark_degenerated(AP_tree *at, double degeneration_factor, double& max_degeneration)  {
+    // returns number of species in subtree
+
+    if (at->is_leaf) return 1;
+
+    int lSons = ap_mark_degenerated(at->leftson, degeneration_factor, max_degeneration);
+    int rSons = ap_mark_degenerated(at->rightson, degeneration_factor, max_degeneration);
+
+    double this_degeneration = 0;
+
+    if (lSons<rSons) {
+        this_degeneration = rSons/double(lSons);
+        if (this_degeneration >= degeneration_factor) {
+            ap_mark_species_rek(at->leftson);
+        }
+
+    }
+    else if (rSons<lSons) {
+        this_degeneration = lSons/double(rSons);
+        if (this_degeneration >= degeneration_factor) {
+            ap_mark_species_rek(at->rightson);
+        }
+    }
+
+    if (this_degeneration >= max_degeneration) {
+        max_degeneration = this_degeneration;
+    }
+
+    return lSons+rSons;
+}
+
+void AP_tree::mark_degenerated_branches(GBDATA *gb_main,double degeneration_factor){
+    // marks all species in degenerated branches.
+    // For all nodes, where one branch contains 'degeneration_factor' more species than the
+    // other branch, the smaller branch is considered degenerated.
+
+    double max_degeneration = 0;
+    ap_mark_degenerated(this, degeneration_factor, max_degeneration);
+    aw_message(GBS_global_string("Maximum degeneration = %.2f", max_degeneration));
+}
+
+static void ap_mark_below_depth(AP_tree *at, int mark_depth, long *marked, long *marked_depthsum) {
+    if (at->is_leaf) {
+        if (mark_depth <= 0) {
+            if (at->gb_node) {
+                GB_write_flag(at->gb_node, 1);
+                (*marked)++;
+                (*marked_depthsum) += mark_depth;
+            }
+        }
+    }
+    else {
+        ap_mark_below_depth(at->leftson,  mark_depth-1, marked, marked_depthsum);
+        ap_mark_below_depth(at->rightson, mark_depth-1, marked, marked_depthsum);
+    }
+}
+
+static void ap_check_depth(AP_tree *at, int depth, long *depthsum, long *leafs, long *maxDepth) {
+    if (at->is_leaf) {
+        (*leafs)++;
+        (*depthsum) += depth;
+        if (depth>*maxDepth) *maxDepth = depth;
+    }
+    else {
+        ap_check_depth(at->leftson,  depth+1, depthsum, leafs, maxDepth);
+        ap_check_depth(at->rightson, depth+1, depthsum, leafs, maxDepth);
+    }
+}
+
+void AP_tree::mark_deep_branches(GBDATA *gb_main,int mark_depth){
+    // mark all species below mark_depth
+
+    long depthsum  = 0;
+    long leafs     = 0;
+    long max_depth = 0;
+
+    ap_check_depth(this, 0, &depthsum, &leafs, &max_depth);
+
+    int balanced_depth = log10(leafs)/log10(2); // log2(leafs)
+
+    long marked_depthsum = 0;
+    long marked          = 0;
+    ap_mark_below_depth(this, mark_depth, &marked, &marked_depthsum);
+    
+    marked_depthsum = -marked_depthsum + marked*mark_depth;
+
+    aw_message(GBS_global_string(
+                                 "optimal depth would be %i\n"
+                                 "mean depth = %f\n"
+                                 "max depth  = %li\n"
+                                 "marked species  = %li\n"
+                                 "mean depth of marked  = %f\n"
+                                 ,
+                                 balanced_depth,
+                                 depthsum/(double)leafs,
+                                 max_depth,
+                                 marked,
+                                 marked_depthsum/(double)marked
+                                 ));
 }
 
 static int ap_mark_duplicates_rek(AP_tree *at, GB_HASH *seen_species) {
