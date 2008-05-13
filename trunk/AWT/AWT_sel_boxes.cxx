@@ -92,12 +92,16 @@ void awt_create_selection_list_on_trees_cb(GBDATA *dummy, struct adawcbstruct *c
     cbs->aws->clear_selection_list(cbs->id);
     char **tree_names = GBT_get_tree_names(cbs->gb_main);
     if (tree_names) {
+        int maxTreeNameLen = 0;
         for (char **tree= tree_names ; *tree; tree++){
-            char *info = GBT_tree_info_string(cbs->gb_main, *tree);
+            int len = strlen(*tree);
+            if (len>maxTreeNameLen) maxTreeNameLen = len;
+        }
+        for (char **tree= tree_names ; *tree; tree++){
+            const char *info = GBT_tree_info_string(cbs->gb_main, *tree, maxTreeNameLen);
             if (info) {
                 cbs->aws->insert_selection( cbs->id, info, *tree );
-                free(info);
-            }else{
+            } else {
                 cbs->aws->insert_selection( cbs->id, *tree, *tree );
             }
         }
