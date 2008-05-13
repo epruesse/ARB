@@ -44,16 +44,19 @@
 
 // ARB_LOGGING should always be undefined in CVS version!
 // #define ARB_LOGGING
-// #define TRACE_STATUS // enable debug output for status window (which runs forked!)
-// #define PIPE_DEBUGGING // enable debug output for pipes (for write commands)
+// #define TRACE_STATUS // // // enable debug output for status window (which runs forked!)
+// #define TRACE_STATUS_MORE // // enable more debug output
+// #define PIPE_DEBUGGING // // enable debug output for pipes (for write commands)
 
 #endif // DEBUG
 
 enum {
-    AW_STATUS_OK,           // status to main
-    AW_STATUS_ABORT,        // status to main
-    AW_STATUS_CMD_INIT,     // main to status
-    AW_STATUS_CMD_OPEN,     // main to status
+    // messages send from status-process to main-process :
+    AW_STATUS_OK    = 0,
+    AW_STATUS_ABORT = 1,
+    // messages send from main-process to status-process :
+    AW_STATUS_CMD_INIT,
+    AW_STATUS_CMD_OPEN,
     AW_STATUS_CMD_CLOSE,
     AW_STATUS_CMD_TEXT,
     AW_STATUS_CMD_GAUGE,
@@ -377,45 +380,71 @@ static void aw_status_hide(AW_window *aws)
 }
 
 
-static void aw_status_timer_event(AW_root *, AW_CL, AW_CL)
+static void aw_status_timer_event(AW_root *awr, AW_CL, AW_CL)
 {
-#if defined(TRACE_STATUS)
+#if defined(TRACE_STATUS_MORE)
     fprintf(stderr, "in aw_status_timer_event\n"); fflush(stdout);
-#endif // TRACE_STATUS
+#endif // TRACE_STATUS_MORE
     if (aw_stg.mode == AW_STATUS_ABORT) {
-        if (aw_message("Couldn't quit properly in time.\n"
-                       "Do you prefer to wait for the abortion or shall I kill the calculating process?",
-                       "WAIT,KILL") == 0)
-        {
-            return;
-        }
-        else {
-            char buf[255];
-            sprintf(buf, "kill -9 %i", aw_stg.pid);
-            system(buf);
-            exit(0);
+        int action = aw_message("Couldn't quit properly in time.\n"
+                                "Either wait again for the abortion,\n"
+                                "kill the calculating process or\n"
+                                "continue the calculation.", 
+                                "Wait again,Kill,Continue");
+
+        switch (action) {
+            case 0:
+                return;
+            case 1: {
+                char buf[255];
+                sprintf(buf, "kill -9 %i", aw_stg.pid);
+                system(buf);
+                exit(0);
+            }
+            case 2: {
+                char *title    = awr->awar(AWAR_STATUS_TITLE)->read_string();
+                char *subtitle = awr->awar(AWAR_STATUS_TEXT)->read_string();
+
+                aw_message(GBS_global_string("If you think the process should be made abortable,\n"
+                                             "please send the following information to devel@arb-home.de:\n"
+                                             "\n"
+                                             "Calculation not abortable from status window.\n"
+                                             "Title:    %s\n"
+                                             "Subtitle: %s\n",
+                                             title, subtitle));
+                aw_stg.mode = AW_STATUS_OK;
+                
+                free(subtitle);
+                free(title);
+                break;
+            }
         }
     }
 }
 
 static void aw_status_kill(AW_window *aws)
 {
-    if(aw_stg.mode == AW_STATUS_ABORT){
+    if (aw_stg.mode == AW_STATUS_ABORT){
         aw_status_timer_event( aws->get_root(), 0, 0);
-        return;
+        if (aw_stg.mode == AW_STATUS_OK) { // continue
+            return;
+        }
     }
-
-    if( aw_message("Are you sure to abort running calculation?","YES,NO")==1){
-        return;
+    else {
+        if (aw_message("Are you sure to abort running calculation?","Yes,No")==1) {
+            return; 
+        }
+        aw_stg.mode = AW_STATUS_ABORT;
     }
-    aw_status_write(aw_stg.fd_from[1], AW_STATUS_ABORT);
-    aw_stg.mode = AW_STATUS_ABORT;
+    aw_status_write(aw_stg.fd_from[1], aw_stg.mode);
 
     /** install timer event **/
-#if defined(TRACE_STATUS)
-    fprintf(stderr, "add aw_status_timer_event with delay = %i\n", AW_STATUS_KILL_DELAY); fflush(stdout);
-#endif // TRACE_STATUS
-    aws->get_root()->add_timed_callback(AW_STATUS_KILL_DELAY, aw_status_timer_event, 0, 0);
+    if (aw_stg.mode == AW_STATUS_ABORT) {
+#if defined(TRACE_STATUS_MORE)
+        fprintf(stderr, "add aw_status_timer_event with delay = %i\n", AW_STATUS_KILL_DELAY); fflush(stdout);
+#endif // TRACE_STATUS_MORE
+        aws->get_root()->add_timed_callback(AW_STATUS_KILL_DELAY, aw_status_timer_event, 0, 0);
+    }
 }
 
 static void aw_refresh_tmp_message_display(AW_root *awr) {
@@ -537,9 +566,9 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
     char       *str        = 0;
     int         gaugeValue = 0;
 
-#if defined(TRACE_STATUS)
+#if defined(TRACE_STATUS_MORE)
     fprintf(stderr, "in aw_status_timer_listen_event (aw_stg.is_child=%i)\n", (int)aw_stg.is_child); fflush(stdout);
-#endif // TRACE_STATUS
+#endif // TRACE_STATUS_MORE
 
     if (aw_stg.need_refresh && aw_stg.last_refresh_time != aw_stg.last_message_time) {
         aw_refresh_tmp_message_display(awr); // force refresh each second
@@ -613,9 +642,15 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                     off      += sprintf(buffer+off, "Rest: %s ", sec2disp(sec_estimated));
 
                     awr->awar(AWAR_STATUS_ELAPSED)->write_string(buffer);
+#if defined(TRACE_STATUS)
+                    fprintf(stderr, "gauge=%i\n", gaugeValue); fflush(stdout);
+#endif // TRACE_STATUS
                 }
                 else if (gaugeValue == 0) { // restart timer
                     aw_stg.last_start = time(0);
+#if defined(TRACE_STATUS)
+                fprintf(stderr, "reset status timer (gauge=0)\n"); fflush(stdout);
+#endif // TRACE_STATUS
                 }
                 break;
             }
@@ -634,12 +669,12 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                 break;
         }
         free(str);
-        cmd = aw_status_read_command( aw_stg.fd_to[0],1,str);
+        cmd = aw_status_read_command( aw_stg.fd_to[0],1,str, &gaugeValue);
     }
 
-#if defined(TRACE_STATUS)
+#if defined(TRACE_STATUS_MORE)
     fprintf(stderr, "exited while loop\n"); fflush(stdout);
-#endif // TRACE_STATUS
+#endif // TRACE_STATUS_MORE
 
     if (gauge){
         awr->awar(AWAR_STATUS_GAUGE)->write_string(gauge);
@@ -647,9 +682,9 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
     }
     if (delay>AW_STATUS_LISTEN_DELAY) delay = AW_STATUS_LISTEN_DELAY;
     else if (delay<0) delay                 = 0;
-#if defined(TRACE_STATUS)
+#if defined(TRACE_STATUS_MORE)
     fprintf(stderr, "add aw_status_timer_listen_event with delay = %i\n", delay); fflush(stdout);
-#endif // TRACE_STATUS
+#endif // TRACE_STATUS_MORE
     awr->add_timed_callback_never_disabled(delay,aw_status_timer_listen_event, 0, 0);
 }
 
@@ -736,11 +771,11 @@ void aw_initstatus( void )
 
         aws->at("Hide");
         aws->callback(aw_status_hide);
-        aws->create_button("HIDE", "HIDE", "h");
+        aws->create_button("HIDE", "Hide", "h");
 
         aws->at("Kill");
         aws->callback(aw_status_kill);
-        aws->create_button("KILL", "KILL", "k");
+        aws->create_button("ABORT", "Abort", "k");
 
         aw_stg.hide = 0;
         aw_stg.aws = (AW_window *)aws;
@@ -754,15 +789,15 @@ void aw_initstatus( void )
 
         awm->at("Hide");
         awm->callback(AW_POPDOWN);
-        awm->create_button("HIDE","HIDE", "h");
+        awm->create_button("HIDE","Hide", "h");
 
         awm->at("Clear");
         awm->callback(aw_clear_message_cb);
-        awm->create_button("CLEAR", "CLEAR","C");
+        awm->create_button("CLEAR", "Clear","C");
 
         awm->at("HideNClear");
         awm->callback(aw_clear_and_hide_message_cb);
-        awm->create_button("HIDE_CLEAR", "OK","O");
+        awm->create_button("HIDE_CLEAR", "Ok","O");
 
         aw_stg.awm = (AW_window *)awm;
 
@@ -819,10 +854,12 @@ extern "C" {
         int        val      = (int)(gauge*AW_GAUGE_GRANULARITY);
 
         if (val != last_val) {
-            aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_GAUGE);
-            safe_write(aw_stg.fd_to[1], (char*)&val, sizeof(int));
+            if (val>0 || gauge == 0.0) { // dont write 0 on low gauge (cause 0 resets the timer)
+                aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_GAUGE);
+                safe_write(aw_stg.fd_to[1], (char*)&val, sizeof(int));
+            }
+            last_val = val;
         }
-        last_val = val;
         return aw_status();
     }
 
@@ -864,9 +901,9 @@ void message_cb( AW_window *aw, AW_CL cd1 ) {
 
 void aw_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2)
 {
-#if defined(TRACE_STATUS)
+#if defined(TRACE_STATUS_MORE)
     fprintf(stderr, "in aw_message_timer_listen_event\n"); fflush(stdout);
-#endif // TRACE_STATUS
+#endif // TRACE_STATUS_MORE
 
     AW_window *aww = ((AW_window *)cl1);
     if (aww->get_show()){
@@ -1015,9 +1052,9 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons, cons
     free(button_list);
     aw_message_cb_result = -13;
 
-#if defined(TRACE_STATUS)
+#if defined(TRACE_STATUS_MORE)
     fprintf(stderr, "add aw_message_timer_listen_event with delay = %i\n", AW_MESSAGE_LISTEN_DELAY); fflush(stdout);
-#endif // TRACE_STATUS
+#endif // TRACE_STATUS_MORE
     root->add_timed_callback_never_disabled(AW_MESSAGE_LISTEN_DELAY, aw_message_timer_listen_event, (AW_CL)aw_msg, 0);
     root->disable_callbacks = AW_TRUE;
     while (aw_message_cb_result == -13) {
