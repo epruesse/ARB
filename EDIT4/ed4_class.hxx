@@ -573,7 +573,7 @@ public:
 
 typedef ED4_bases_table *ED4_bases_table_ptr;
 
-#if defined(DEBUG)
+#if defined(DEBUG) && !defined(DEVEL_RELEASE)
 # define TEST_CHAR_TABLE_INTEGRITY // uncomment to remove tests for ED4_char_table
 #endif // DEBUG
 

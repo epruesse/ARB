@@ -983,7 +983,7 @@ void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager)	//cre
             sub_group->create_consensus(sub_group);
             e4_assert(sub_group!=upper_group_manager);
             upper_group_manager->table().add(sub_group->table());
-#ifdef DEBUG
+#if defined(TEST_CHAR_TABLE_INTEGRITY)
             if (!sub_group->table().empty() && !sub_group->table().is_ignored()) {
                 e4_assert(!upper_group_manager->table().empty());
             }
