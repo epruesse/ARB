@@ -2,7 +2,7 @@
 /*                                                                 */
 /*   File      : adhashtools.c                                     */
 /*   Purpose   : convenience functions for hashes                  */
-/*   Time-stamp: <Mon Jul/09/2007 14:05 MET Coder@ReallySoft.de>   */
+/*   Time-stamp: <Tue May/06/2008 13:20 MET Coder@ReallySoft.de>   */
 /*                                                                 */
 /*   Coded by Ralf Westram (coder@reallysoft.de) in July 2007      */
 /*   Institute of Microbiology (Technical University Munich)       */
@@ -14,7 +14,7 @@
 #include "adlocal.h"
 #include "arbdbt.h"
 
-#define ITEMS2HASHSIZE(entries) (2*(entries)) /* hash size = 2 * number of species */
+#define ITEMS2HASHSIZE(entries) (2*(entries)) /* hash size = 2 * number of entries */
 
 long GBT_get_species_hash_size(GBDATA *gb_main) {
     return ITEMS2HASHSIZE(GBT_get_species_count(gb_main));
