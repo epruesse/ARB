@@ -780,7 +780,7 @@ void ap_check_leaf_bl(AP_tree_nlen *node){
     }
 }
 
-AP_FLOAT AP_tree_edge::nni_rek(AP_BOOL openclosestatus, int &Abort, int deep, GB_BOOL skip_hidden,
+AP_FLOAT AP_tree_edge::nni_rek(AP_BOOL useStatus, int &Abort, int deep, GB_BOOL skip_hidden,
                                AP_BL_MODE mode, AP_tree_nlen *skipNode)
 {
     if (!rootNode())        return 0.0;
@@ -788,7 +788,7 @@ AP_FLOAT AP_tree_edge::nni_rek(AP_BOOL openclosestatus, int &Abort, int deep, GB
 
     AP_tree_edge *oldRootEdge = rootEdge();
 
-    if (openclosestatus) aw_openstatus("Calculating NNI");
+    if (useStatus) aw_openstatus("Recursive NNI");
     if (deep>=0) set_root();
 
     AP_FLOAT old_parsimony = rootNode()->costs();
@@ -800,18 +800,20 @@ AP_FLOAT AP_tree_edge::nni_rek(AP_BOOL openclosestatus, int &Abort, int deep, GB
     long count = 0;
     { // set all branch lengths to undef
         for (follow = this;follow; follow = follow->next){
-            follow->node[0]->leftlen = ap_undef_bl;
-            follow->node[0]->rightlen = ap_undef_bl;
-            follow->node[1]->leftlen = ap_undef_bl;
-            follow->node[1]->rightlen = ap_undef_bl;
-            follow->node[0]->father->leftlen = ap_undef_bl;
+            follow->node[0]->leftlen          = ap_undef_bl;
+            follow->node[0]->rightlen         = ap_undef_bl;
+            follow->node[1]->leftlen          = ap_undef_bl;
+            follow->node[1]->rightlen         = ap_undef_bl;
+            follow->node[0]->father->leftlen  = ap_undef_bl;
             follow->node[0]->father->rightlen = ap_undef_bl;
         }
-        rootNode()->leftlen = ap_undef_bl *.5;
+        rootNode()->leftlen  = ap_undef_bl *.5;
         rootNode()->rightlen = ap_undef_bl *.5;
     }
-    for (follow = this;follow; follow = follow->next){
-        if (aw_status(count++/(double)cs)) { Abort = 1; break;}
+
+    if (useStatus) aw_status(0.0);
+
+    for (follow = this; follow && Abort == 0; follow = follow->next){
         AP_tree_nlen *son = follow->sonNode();
         AP_tree_nlen *fath = son;
 
@@ -833,14 +835,23 @@ AP_FLOAT AP_tree_edge::nni_rek(AP_BOOL openclosestatus, int &Abort, int deep, GB
         if (mode & AP_BL_BOOTSTRAP_LIMIT){
             ap_calc_bootstrap_remark(son,mode);
         }
+        if (useStatus ? aw_status(++count/(double)cs) : aw_status()) { Abort = 1; break; }
     }
-    for (follow = this;follow; follow = follow->next){
+
+    if (useStatus) {
+        aw_status("Recalc modified branches");
+        aw_status(0.0);
+        count = 0;
+    }
+
+    for (follow = this; follow && Abort == 0; follow = follow->next){
         ap_check_leaf_bl(follow->node[0]);
         ap_check_leaf_bl(follow->node[1]);
+        if (useStatus ? aw_status(++count/(double)cs) : aw_status()) { Abort = 1; break; }
     }
     oldRootEdge->set_root();
     new_parsimony = rootNode()->costs();
-    if (openclosestatus) aw_closestatus();
+    if (useStatus) aw_closestatus();
 
     return new_parsimony;
 }
