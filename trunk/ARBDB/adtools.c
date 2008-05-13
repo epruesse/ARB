@@ -1395,9 +1395,11 @@ static GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, struct link_tree_data 
             GBDATA *gbd = (GBDATA*)GBS_read_hash(ltd->species_hash, tree->name);
             if (gbd) tree->gb_node = gbd;
             else ltd->zombies++;
-            
-            if (GBS_read_hash(ltd->seen_species, tree->name)) ltd->duplicates++;
-            else GBS_write_hash(ltd->seen_species, tree->name, 1);
+
+            if (ltd->seen_species) {
+                if (GBS_read_hash(ltd->seen_species, tree->name)) ltd->duplicates++;
+                else GBS_write_hash(ltd->seen_species, tree->name, 1);
+            }
         }
     }
     else {
@@ -1407,26 +1409,31 @@ static GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, struct link_tree_data 
     return error;
 }
 
-GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, GBDATA *gb_main, GB_BOOL show_status, GB_HASH *species_hash, int *zombies, int *duplicates) {
-    GB_ERROR               error;
-    struct link_tree_data  ltd;
+GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, GB_BOOL show_status, GB_HASH *species_hash, int *zombies, int *duplicates) {
+    GB_ERROR              error;
+    struct link_tree_data ltd;
+    long                  leafs = 0;
 
+    if (duplicates || show_status) {
+        leafs = GBT_count_nodes(tree);
+    }
+    
     ltd.species_hash = species_hash;
-    ltd.seen_species = GBS_create_hash(2*GBT_get_species_hash_size(gb_main),1);
+    ltd.seen_species = leafs ? GBS_create_hash(2*leafs,1) : 0;
     ltd.zombies      = 0;
     ltd.duplicates   = 0;
     ltd.counter      = 0;
 
     if (show_status) {
         GB_status2("Relinking tree to database");
-        ltd.nodes = GBT_count_nodes(tree) + 1;
+        ltd.nodes = leafs;
     }
     else {
         ltd.nodes = 0;
     }
 
     error = gbt_link_tree_to_hash_rek(tree, &ltd);
-    GBS_free_hash(ltd.seen_species);
+    if (ltd.seen_species) GBS_free_hash(ltd.seen_species);
 
     if (zombies) *zombies = ltd.zombies;
     if (duplicates) *duplicates = ltd.duplicates;
@@ -1441,7 +1448,7 @@ GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, GBDATA *gb_main, GB_BO
 GB_ERROR GBT_link_tree(GBT_TREE *tree,GBDATA *gb_main,GB_BOOL show_status, int *zombies, int *duplicates)
 {
     GB_HASH  *species_hash = GBT_create_species_hash(gb_main);
-    GB_ERROR  error        = GBT_link_tree_using_species_hash(tree, gb_main, show_status, species_hash, zombies, duplicates);
+    GB_ERROR  error        = GBT_link_tree_using_species_hash(tree, show_status, species_hash, zombies, duplicates);
 
     GBS_free_hash(species_hash);
 
@@ -1858,36 +1865,47 @@ char *GBT_find_latest_tree(GBDATA *gb_main){
     return name;
 }
 
-char *GBT_tree_info_string(GBDATA *gb_main,const  char *tree_name)
-{
-    char buffer[1024];
-    GBDATA *gb_tree;
-    GBDATA *gb_rem;
-    GBDATA *gb_nnodes;
-    long    size;
-    memset(buffer,0,1024);
+const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int maxTreeNameLen) {
+    /* maxTreeNameLen shall be the max len of the longest tree name (or -1 -> do not format) */
 
-    gb_tree = GBT_get_tree(gb_main,tree_name);
+    const char *result  = 0;
+    GBDATA     *gb_tree = GBT_get_tree(gb_main,tree_name);
+    
     if (!gb_tree) {
         GB_export_error("tree '%s' not found",tree_name);
-        return 0;
     }
+    else {
+        GBDATA *gb_nnodes = GB_find(gb_tree,"nnodes",0,down_level);
+        if (!gb_nnodes) {
+            GB_export_error("nnodes not found in tree '%s'",tree_name);
+        }
+        else {
+            const char *sizeInfo = GBS_global_string("(%li:%i)", GB_read_int(gb_nnodes), GB_read_security_write(gb_tree));
+            GBDATA     *gb_rem   = GB_find(gb_tree,"remark",0,down_level);
+            int         len;
 
-    gb_nnodes = GB_find(gb_tree,"nnodes",0,down_level);
-    if (!gb_nnodes) {
-        GB_export_error("nnodes not found in tree '%s'",tree_name);
-        return 0;
+            if (maxTreeNameLen == -1) {
+                result = GBS_global_string("%s %11s", tree_name, sizeInfo);
+                len    = strlen(tree_name);
+            }
+            else {
+                result = GBS_global_string("%-*s %11s", maxTreeNameLen, tree_name, sizeInfo);
+                len    = maxTreeNameLen;
+            }
+            if (gb_rem) {
+                const char *remark    = GB_read_char_pntr(gb_rem);
+                const int   remarkLen = 800;
+                char       *res2      = GB_give_other_buffer(remark, len+1+11+2+remarkLen+1);
+
+                strcpy(res2, result);
+                strcat(res2, "  ");
+                strncat(res2, remark, remarkLen);
+
+                result = res2;
+            }
+        }
     }
-
-    size = GB_read_int(gb_nnodes);
-
-    sprintf(buffer,"%-15s (%4i:%i)",tree_name,(int)size+1,GB_read_security_write(gb_tree));
-    gb_rem = GB_find(gb_tree,"remark",0,down_level);
-    if (gb_rem) {
-        strcat(buffer,"    ");
-        strncat(buffer,GB_read_char_pntr(gb_rem), 500-strlen(buffer));
-    }
-    return GB_STRDUP(buffer);
+    return result;
 }
 
 GB_ERROR GBT_check_tree_name(const char *tree_name)
@@ -2866,7 +2884,14 @@ void GBT_install_message_handler(GBDATA *gb_main) {
 
 
 void GBT_message(GBDATA *gb_main, const char *msg) {
-    // when called in client(or server) this always causes the DB server to show the message (as GB_warning)
+    // When called in client(or server) this causes the DB server to show the message.
+    // Message is showed via GB_warning (which uses aw_message in GUIs)
+    //
+    // Note: The message is not shown before the transaction ends.
+    // If the transaction is aborted, the message is never shown!
+    // 
+    // see also : GB_warning
+
     GBDATA *gb_pending_messages;
     GBDATA *gb_msg;
 
