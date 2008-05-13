@@ -91,7 +91,8 @@ void AP_user_pop_cb(AW_window *aww,AWT_canvas *ntw)
 
 static struct {
     AP_BOOL quick_add_flag;
-    int abort_flag;
+    AP_BOOL singlestatus; // update status for single species addition
+    int     abort_flag;
     long    maxspecies;
     long    currentspecies;
 } isits;
@@ -142,12 +143,17 @@ extern "C" {
             return val;
         }
 
-        sprintf(AW_ERROR_BUFFER,
-                "Inserting Species %s (%li:%li)",
-                key,
-                ++isits.currentspecies,
-                isits.maxspecies);
-        aw_openstatus(AW_ERROR_BUFFER);
+        if (isits.singlestatus) {
+            sprintf(AW_ERROR_BUFFER,
+                    "Inserting Species %s (%li:%li)",
+                    key,
+                    ++isits.currentspecies,
+                    isits.maxspecies);
+            aw_openstatus(AW_ERROR_BUFFER);
+        }
+        else {
+            isits.abort_flag = aw_status(++isits.currentspecies/(double)isits.maxspecies);
+        }
 
         {
             AP_FLOAT best_val = 9999999999999.0;
@@ -199,8 +205,7 @@ extern "C" {
 
         for (counter = 0;!isits.abort_flag && blist[counter];counter += 2)
         {
-            if ((counter & 0xf) == 0)
-            {
+            if (isits.singlestatus && (counter & 0xf) == 0) {
                 isits.abort_flag = (AP_BOOL)aw_status(counter/(bsum*2.0));
             }
 
@@ -357,9 +362,12 @@ static AP_tree *insert_species_in_tree(const char *key,AP_tree *leaf)
         return 0;
     }
 
-    sprintf(AW_ERROR_BUFFER,"Inserting Species %s (%li:%li)",key,
-            ++isits.currentspecies,isits.maxspecies);
-    aw_openstatus(AW_ERROR_BUFFER);
+    ++isits.currentspecies;
+    if (isits.singlestatus) {
+        sprintf(AW_ERROR_BUFFER, "Inserting Species %s (%li:%li)",
+                key, isits.currentspecies,isits.maxspecies);
+        aw_openstatus(AW_ERROR_BUFFER);
+    }
     aw_status("Searching best position");
 
     AP_tree **blist;
@@ -378,7 +386,7 @@ static AP_tree *insert_species_in_tree(const char *key,AP_tree *leaf)
     best_parsimony = akt_parsimony = (*ap_main->tree_root)->costs();
 
     for (counter = 0;!isits.abort_flag && blist[counter];counter += 2) {
-        if ((counter & 0xf) == 0) {
+        if (isits.singlestatus && (counter & 0xf) == 0) {
             isits.abort_flag = (AP_BOOL)aw_status(counter/(bsum*2.0));
         }
         bl = (AP_tree_nlen *)blist[counter];
@@ -428,6 +436,10 @@ static AP_tree *insert_species_in_tree(const char *key,AP_tree *leaf)
         label = GBS_global_string_copy("shortseq:%s",brother->name);
         insert_species_in_tree(label,brother);  // reinsert short sequence
         delete label;
+    }
+
+    if (!isits.singlestatus) {
+        isits.abort_flag |= aw_status(isits.currentspecies/(double)isits.maxspecies);
     }
 
     return leaf;
@@ -493,11 +505,17 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
     if (!error)
     {
         NT_remove_species_in_tree_from_hash(*ap_main->tree_root,hash);
+
         isits.quick_add_flag = quick;
-        isits.abort_flag = AP_FALSE;
-        isits.maxspecies = 0;
+        isits.abort_flag     = AP_FALSE;
+        isits.singlestatus   = AP_FALSE;
+        isits.maxspecies     = 0;
         isits.currentspecies = 0;
+
         GBS_hash_do_loop(hash,count_hash_elements);
+
+        aw_openstatus(GBS_global_string("Adding %i species", isits.maxspecies));
+
         if (test){
             GBS_hash_do_loop(hash,insert_species_in_tree_test);
         }else{
@@ -1036,15 +1054,14 @@ static void NT_recursiveNNI(AW_window *,AWT_canvas *ntw)
     aw_openstatus("Recursive NNI");
     isits.abort_flag = AP_FALSE;
 
-    AP_FLOAT thisPars = 1;
-    AP_FLOAT lastPars = 0;
+    AP_FLOAT thisPars = rootNode()->costs();
+    AP_FLOAT lastPars = -1.0;
 
-    while (thisPars!=lastPars)
-    {
-        lastPars = thisPars;
-        thisPars = rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1,GB_TRUE);
-        sprintf(AW_ERROR_BUFFER,"New Parsimony: %f",thisPars);
-        aw_status(AW_ERROR_BUFFER);
+    aw_status(GBS_global_string("Old parsimony: %f", thisPars));
+    while (thisPars!=lastPars && isits.abort_flag == AP_FALSE) {
+        lastPars          = thisPars;
+        thisPars          = rootEdge()->nni_rek(AP_FALSE,isits.abort_flag,-1,GB_TRUE);
+        isits.abort_flag |= aw_status(GBS_global_string("New Parsimony: %f",thisPars));
     }
 
     aw_status("Calculating Branch Lengths");
