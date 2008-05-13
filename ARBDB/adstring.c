@@ -1871,6 +1871,10 @@ void GB_internal_error(const char *templat, ...) {
 void GB_warning( const char *templat, ...) {    /* max 4000 characters */
     /* goes to header: __ATTR__FORMAT(1)  */
 
+    /* If program uses GUI, the message is printed via aw_message, otherwise it goes to stdout
+     * see also : GB_information
+     */
+
     va_list parg;
 
     if ( gb_warning_func ) {
@@ -1891,6 +1895,10 @@ NOT4PERL void GB_install_warning(gb_warning_func_type warn){
 
 void GB_information( const char *templat, ...) {    /* max 4000 characters */
     /* goes to header: __ATTR__FORMAT(1)  */
+
+    /* this message is always printed to stdout (regardless whether program uses GUI or not)
+     * see also : GB_warning
+     */
 
     va_list parg;
 
@@ -1913,6 +1921,13 @@ NOT4PERL void GB_install_information(gb_information_func_type info){
 
 int GB_status( double val) {
     int result = 0;
+
+    /* if program uses GUI this uses aw_status(),
+     * otherwise it uses simple status to stdout
+     *
+     * return value : 0 = ok, 1 = userAbort
+     */
+
     if ( gb_status_func ) {
         result = gb_status_func(val);
     }
@@ -1938,11 +1953,13 @@ NOT4PERL void GB_install_status(gb_status_func_type func){
 
 int GB_status2( const char *templat, ... ) {
     /* goes to header: __ATTR__FORMAT(1)  */
+    
+    /* return value : 0 = ok, 1 = userAbort */
 
     va_list parg;
 
     if ( gb_status_func2 ) {
-char    buffer[4000];memset(&buffer[0],0,4000);
+        char    buffer[4000];memset(&buffer[0],0,4000);
         va_start(parg,templat);
         vsprintf(buffer,templat,parg);
         return gb_status_func2(buffer);
@@ -2609,3 +2626,27 @@ int GBS_strscmp(const char *s1, const char *s2) {
     }
     return cmp;
 }
+
+const char *GBS_readable_size(unsigned long long size) {
+    /* return human readable size information */
+    /* returned string is maximal 7 characters long */
+
+    if (size<1000) return GBS_global_string("%llu b", size);
+
+    const char *units = "kMGTPEZY"; // kilo, Mega, Giga, Tera, ... should be enough forever
+    int i;
+
+    for (i = 0; units[i]; ++i) {
+        char unit = units[i];
+        if (size<1000*1024) {
+            double amount = size/(double)1024;
+            if (amount<10.0)  return GBS_global_string("%4.2f %cb", amount+0.005, unit);
+            if (amount<100.0) return GBS_global_string("%4.1f %cb", amount+0.05, unit);
+            return GBS_global_string("%i %cb", (int)(amount+0.5), unit);
+        }
+        size /= 1024; // next unit
+    }
+    ad_assert(0);
+    return "<much>";
+}
+
