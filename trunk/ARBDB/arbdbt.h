@@ -62,14 +62,6 @@ typedef struct gbt_tree_struct {
     GBT_TREE_ELEMENTS(struct gbt_tree_struct);
 } GBT_TREE;
 
-typedef struct gb_seq_compr_tree {
-#ifdef FAKE_VTAB_PTR
-    virtualTable *dummy_virtual; /* simulate pointer to virtual-table used in AP_tree */
-#endif
-    GBT_TREE_ELEMENTS(struct gb_seq_compr_tree);
-    int index;          /* either master/sequence index */
-} GB_CTREE;             /* @@@ OLI */
-
 #define GBT_TREE_AWAR_SRT       " =:\n=:*=tree_*1:tree_tree_*=tree_*1"
 #define GBT_ALI_AWAR_SRT        " =:\n=:*=ali_*1:ali_ali_*=ali_*1"
 
