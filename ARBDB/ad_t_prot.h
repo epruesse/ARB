@@ -38,7 +38,7 @@ GBT_TREE *GBT_read_tree_and_size P_((GBDATA *gb_main, const char *tree_name, lon
 GBT_TREE *GBT_read_tree P_((GBDATA *gb_main, const char *tree_name, long structure_size));
 GBT_TREE *GBT_read_plain_tree P_((GBDATA *gb_main, GBDATA *gb_ctree, long structure_size, GB_ERROR *error));
 long GBT_count_nodes P_((GBT_TREE *tree));
-GB_ERROR GBT_link_tree_using_species_hash P_((GBT_TREE *tree, GBDATA *gb_main, GB_BOOL show_status, GB_HASH *species_hash, int *zombies, int *duplicates));
+GB_ERROR GBT_link_tree_using_species_hash P_((GBT_TREE *tree, GB_BOOL show_status, GB_HASH *species_hash, int *zombies, int *duplicates));
 GB_ERROR GBT_link_tree P_((GBT_TREE *tree, GBDATA *gb_main, GB_BOOL show_status, int *zombies, int *duplicates));
 void GBT_unlink_tree P_((GBT_TREE *tree));
 void GBT_scale_tree P_((GBT_TREE *tree, double length_scale, double bootstrap_scale));
@@ -47,7 +47,7 @@ GBDATA *GBT_get_tree P_((GBDATA *gb_main, const char *tree_name));
 long GBT_size_of_tree P_((GBDATA *gb_main, const char *tree_name));
 char *GBT_find_largest_tree P_((GBDATA *gb_main));
 char *GBT_find_latest_tree P_((GBDATA *gb_main));
-char *GBT_tree_info_string P_((GBDATA *gb_main, const char *tree_name));
+const char *GBT_tree_info_string P_((GBDATA *gb_main, const char *tree_name, int maxTreeNameLen));
 GB_ERROR GBT_check_tree_name P_((const char *tree_name));
 char **GBT_get_tree_names_and_count P_((GBDATA *Main, int *countPtr));
 char **GBT_get_tree_names P_((GBDATA *Main));
@@ -137,7 +137,6 @@ GB_ERROR GB_remove_last_notification P_((GBDATA *gb_main));
 GB_ERROR GB_notify P_((GBDATA *gb_main, int id, const char *message));
 
 /* adseqcompr.c */
-NOT4PERL GB_ERROR GBT_compress_sequence_tree P_((GBDATA *gb_main, GB_CTREE *tree, const char *ali_name));
 GB_ERROR GBT_compress_sequence_tree2 P_((GBDATA *gb_main, const char *tree_name, const char *ali_name));
 void GBT_compression_test P_((void *dummy, GBDATA *gb_main));
 

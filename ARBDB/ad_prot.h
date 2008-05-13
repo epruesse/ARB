@@ -98,6 +98,7 @@ char *GBS_fread_string P_((FILE *in));
 char *GBS_fconvert_string P_((char *buffer));
 char *GBS_replace_tabs_by_spaces P_((const char *text));
 int GBS_strscmp P_((const char *s1, const char *s2));
+const char *GBS_readable_size P_((unsigned long long size));
 
 /* arbdb.c */
 char *GB_rel P_((void *struct_adress, long rel_adress));
