@@ -774,19 +774,19 @@ long gb_write_bin_rek(FILE *out,GBDATA *gbd,long version, long diff_save, long i
         const char *data = GB_GETDATA(gbd);
         size_t      len  = strlen(data); // w/o zero-byte!
 
-        if (len == (long)size) {
-            i = fwrite(data, (size_t)size+1, 1, out);
+        if ((long)len == size) {
+            i = fwrite(data, len+1, 1, out);
 
             return i <= 0 ? -1 : 0;
         }
 #if defined(DEVEL_RALF)
         else {
-            fprintf(stderr, "GB_STRING_SHRT problem (len=%li, size=%z), please check!", len, size);
+            fprintf(stderr, "GB_STRING_SHRT problem (len=%zu, size=%li), please check!", len, size);
             gb_assert(0);       // just a test, whether size includes 0-byte (shall be removed again)
         }
 #endif /* DEVEL_RALF */
 
-        // string contains or misses 0-byte
+        // string contains zero-byte inside data or misses trailing zero-byte
         type = GB_STRING; // fallback to safer type
     }
 
