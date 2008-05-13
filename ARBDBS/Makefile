@@ -225,7 +225,6 @@ adseqcompr.o: ad_t_lpro.h
 adseqcompr.o: ad_t_prot.h
 adseqcompr.o: adlmacros.h
 adseqcompr.o: adlocal.h
-adseqcompr.o: adseqcompr.h
 adseqcompr.o: adtune.h
 adseqcompr.o: arbdb.h
 adseqcompr.o: arbdbt.h
