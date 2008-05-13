@@ -319,8 +319,9 @@ void NT_database_optimization(AW_window *aww){
     GB_ERROR error = 0;
     GB_push_my_security(GLOBAL_gb_main);
 
+    if (0) // test, remove!
     {
-        aw_openstatus("Optimizing Database, Please Wait");
+        aw_openstatus("Optimizing sequence data");
         char *tree_name = aww->get_root()->awar("tmp/nt/arbdb/optimize_tree_name")->read_string();
         GB_begin_transaction(GLOBAL_gb_main);
         char **ali_names = GBT_get_alignment_names(GLOBAL_gb_main);
@@ -339,25 +340,20 @@ void NT_database_optimization(AW_window *aww){
         aw_closestatus();
     }
 
-    int errors = 0;
-    if (error) {
-        errors++;
-        aw_message(error);
+    if (!error) {
+        aw_openstatus("Optimizing non-sequence data");
+        error = GB_optimize(GLOBAL_gb_main);
+        aw_closestatus();
     }
-
-    aw_openstatus("(Re-)Compressing database, Please Wait");
-    error = GB_optimize(GLOBAL_gb_main);
-    aw_closestatus();
 
     GB_pop_my_security(GLOBAL_gb_main);
 
     if (error) {
-        errors++;
         aw_message(error);
     }
-
-    if (!errors) aww->hide();
-
+    else {
+        aww->hide();
+    }
 }
 
 AW_window *NT_create_database_optimization_window(AW_root *aw_root){
@@ -684,11 +680,41 @@ void NT_set_compression(AW_window *, AW_CL dis_compr, AW_CL){
     if (error) aw_message(error);
 }
 
+
+void NT_mark_degenerated_branches(AW_window *aww, AW_CL ntwcl) {
+    char *val = aw_input("Enter degeneration factor [ 1 .. ]", 0);
+    if (val) {
+        AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
+        GB_transaction  dummy(ntw->gb_main);
+        
+        NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
+        AWT_TREE(ntw)->tree_root->mark_degenerated_branches(ntw->gb_main,atof(val));
+        AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+        free(val);
+        ntw->refresh();
+    }
+}
+
+void NT_mark_deep_branches(AW_window *aww, AW_CL ntwcl) {
+    char *val = aw_input("Enter depth [ 1 .. ]", 0);
+    if (val) {
+        AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
+        GB_transaction  dummy(ntw->gb_main);
+        
+        NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
+        AWT_TREE(ntw)->tree_root->mark_deep_branches(ntw->gb_main,atoi(val));
+        AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
+        free(val);
+        ntw->refresh();
+    }
+}
+
 void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl){
-    AWT_canvas *ntw = (AWT_canvas *)ntwcl;
-    GB_transaction dummy(ntw->gb_main);
     char *val = aw_input("Enter relativ diff [0 .. 5.0]",0);
     if (val) {
+        AWT_canvas     *ntw = (AWT_canvas *)ntwcl;
+        GB_transaction  dummy(ntw->gb_main);
+        
         NT_mark_all_cb(aww,(AW_CL)ntw, (AW_CL)0);
         AWT_TREE(ntw)->tree_root->mark_long_branches(ntw->gb_main,atof(val));
         AWT_TREE(ntw)->tree_root->compute_tree(ntw->gb_main);
@@ -1584,6 +1610,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         }
         awm->close_sub_menu();
         AWMIMT("mark_long_branches", "Mark long branches", "k", "mark_long_branches.hlp", AWM_EXP, (AW_CB)NT_mark_long_branches, (AW_CL)ntw, 0);
+        AWMIMT("mark_deep_branches", "Mark deep branches", "d", "mark_deep_branches.hlp", AWM_EXP, (AW_CB)NT_mark_deep_branches, (AW_CL)ntw, 0);
+        AWMIMT("mark_degen_branches", "Mark degenerated branches", "d", "mark_degen_branches.hlp", AWM_EXP, (AW_CB)NT_mark_degenerated_branches, (AW_CL)ntw, 0);
         AWMIMT("mark_duplicates", "Mark duplicates", "u", "mark_duplicates.hlp", AWM_EXP, (AW_CB)NT_mark_duplicates, (AW_CL)ntw, 0);
 
         SEP________________________SEP();
