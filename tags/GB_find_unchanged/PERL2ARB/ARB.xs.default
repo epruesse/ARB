@@ -1,0 +1,121 @@
+/* ARB.xs is generated from the following files:
+
+    ARB.xs.default
+    ../ARBDB/ad_prot.h
+    ../ARBDB/ad_t_prot.h
+    ../ARBDB/adGene.h
+
+*/
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "EXTERN.h"
+#include "perl.h"
+#include "XSUB.h"
+#include "debug.h"
+#include "arbdb.h"
+#include "arbdbt.h"
+#include "adGene.h"
+#include "ARB_ext.c"
+#ifdef __cplusplus
+}
+#endif
+
+
+MODULE = ARB		PACKAGE = ARB	 PREFIX = P2A_
+
+PROTOTYPES: ENABLE
+
+GBDATA *
+P2A_search(gbd,str,type_of_entry)
+	GBDATA *gbd
+	char *str
+	char *type_of_entry
+
+	CODE:
+	if (str[0] == 0) str = 0;
+	RETVAL = GB_search(gbd,str,GBP_gb_types(type_of_entry));
+	OUTPUT:
+	RETVAL
+
+
+GBDATA*
+P2A_find(gbd,key,str,gbs)
+        GBDATA *gbd
+        char *key
+        char *str
+        char *gbs
+
+        CODE:
+        RETVAL = GB_find(gbd,key,str,GBP_search_mode(gbs));
+        OUTPUT:
+        RETVAL
+
+
+GBDATA *
+P2A_create(father,key,type)
+	GBDATA *father
+	char *key
+	char *type
+
+	CODE:
+	RETVAL = GB_create(father,key,GBP_gb_types(type));
+	OUTPUT:
+	RETVAL
+
+char *
+P2A_request_undo_type(gb_main,type)
+	GBDATA *gb_main
+	char *type
+
+	CODE:
+	RETVAL = (char *)GB_request_undo_type(gb_main,GBP_undo_types(type));
+	OUTPUT:
+	RETVAL
+
+char *
+P2A_undo(gb_main,type)
+	GBDATA *gb_main
+	char *type
+
+	CODE:
+	RETVAL = (char *)GB_undo(gb_main,GBP_undo_types(type));
+	OUTPUT:
+	RETVAL
+
+char *
+P2A_undo_info(gb_main,type)
+	GBDATA *gb_main
+	char *type
+
+	CODE:
+	if (static_pntr) free(static_pntr);
+	static_pntr = GB_undo_info(gb_main,GBP_undo_types(type));
+	RETVAL = static_pntr;
+	OUTPUT:
+	RETVAL
+
+GBDATA *
+P2AT_open_table_field(gb_table,key,type)
+	GBDATA *gb_table
+	char *key
+	char *type
+
+	CODE:
+	RETVAL = GBT_open_table_field(gb_table,key,GBP_gb_types(type));
+	OUTPUT:
+	RETVAL
+
+
+char
+P2AT_complementNucleotide(c,T_or_U)
+	char c
+	char T_or_U
+
+	CODE:
+	RETVAL = GBT_complementNucleotide(c,T_or_U);
+	OUTPUT:
+	RETVAL
+

@@ -1,0 +1,48 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP  rna3d_general.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Display options for the Residues / Bases
+
+OCCURRENCE	In ARB primary structure editor (ARB_EDIT4) -> RNA3D
+
+DESCRIPTION    
+    To achieve more performance and dynamic overlay of any sequence associated information, rendering (drawing) was simplified to chain display with the capacity to display residues in the form nucleotides - Adenosine (A), Guanine (G), Cytosine (C) and Uracil (U) at the respective coordinates in the molecule. Also viewing the entire chemical structure in the molecule’s 3D structure is less readable. 
+
+    Display Bases
+    By enabling the check box the corresponding residues in the rRNA sequence can be displayed on the rRNA 3D structure. Disabling this check box will display the molecule skeleton without residues.
+
+    Helix Region
+    Enabling this check box will display residues that are participating in Helix formation in the secondary structure models of small subunit rRNA. 
+
+    Unpaired Helix Region
+    Enabling this check box will display residues that are participating in bulge (unpaired helix) formation in the secondary structure models of small subunit rRNA. 
+
+    Non-Helix Region
+    Enabling this check box will display residues that are participating in loop (non-helix) formation in the secondary structure models of small subunit rRNA. 
+
+    Display Size
+    The size of the residues displayed can be changed by specifying the desired size in “Display size” box.
+
+    CHARACTERS
+    The corresponding residues are displayed with the actual nucleotides - Adenosine (A), Guanine (G), Cytosine (C) and Uracil (U). 
+
+    SHAPES
+    The corresponding residues are displayed with the respective shapes specified for different structural motifs. 
+
+    By setting different colors for the secondary structural motifs (loops, stems and bulges) using “Color Settings”, the respective regions can be easily recognized in the rRNA 3D structure.
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

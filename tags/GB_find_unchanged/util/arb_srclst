@@ -1,0 +1,79 @@
+#!/bin/sh
+#watch out for DEPOT and DEPOT2 [they are no longer in use]
+
+(   ls -d   ./load  ./demo.arb ./README ./arb_* ;\
+    find . \
+    -name DEPOT -prune \
+    -o -name DEPOT2 -prune \
+    -o  \( \
+        -name "Makefile" -o -name "config.makefile.template" \
+            -o -name "Imakefile" -o -name "*.script" \
+            -o -name "*.[chf]" -o -name "*.[ch]xx" -o -name "*.[ch]pp" \
+            -o -name "*.inc" \
+            -o -name "*.bitmap" -o -name "*.icon" \
+            -o -name "*.aisc" -o -name "*.header" \
+            -o -name "*.pa" \
+            -o -name "*.README" -o -name "Readme" -o -name "README" \
+            -o -name "*.txt" -o -name "*.doc" \
+            -o -name "*.pl" -o -name "*.PL" \
+            -o -name "*.sh" -o -name "*.dat" \
+            -o -name "*.pod" -o -name "*.POD" \
+            -o -name "*.pm" \
+            -o -name "*.html" -o -name "*.gif" \
+            -o -name "*.dtd" -o -name "*.xsl" \
+            -o -name "*.footer" -o -name "*.header" \
+            -o -name "*.java" \
+            -o -name "typemap" \
+    \) \! -type l -print; \
+    find \
+        ./lib/*.dat \
+        ./lib/arb_default \
+        ./lib/config.* \
+        ./lib/export \
+        ./lib/import \
+        ./lib/inputMasks \
+        ./lib/macro.head \
+        ./lib/macros \
+        ./lib/rna3d \
+        ./lib/nas/names.dat.template \
+        ./lib/pictures \
+        ./lib/pixmaps \
+        ./lib/sellists \
+        ./lib/submit \
+        ./lib/Makefile \
+        ./*/LIBLINK \
+        ./GDEHELP \
+        ./GDE/CLUSTALW/clustalw_help \
+        ./HELP_SOURCE/oldhelp \
+        ./SOURCE_TOOLS/arb_valgrind \
+        ./SOURCE_TOOLS/valgrind2grep \
+        ./SOURCE_TOOLS/mv_if_diff \
+        ./PERL2ARB/ARB.xs.default \
+        ./PROBE_WEB/CLIENT/mymanifest \
+        ./READSEQ/Formats \
+        ./READSEQ/*.help \
+        ./LIBLINK \
+        ./MAKEBIN \
+        ./SH \
+        ./etc \
+        ./util \
+        \! -type l \! -type d -print; \
+    ) \
+    |grep -v '/CVS/' \
+    |grep -v '/CVS$' \
+    |grep -v '/ARB_SOURCE_DOC/' \
+    |grep -v '/GEN[CH]/' \
+    |grep -v '/HELP_SOURCE/_index\.html$' \
+    |grep -v '/PERL5/' \
+    |grep -v '/PERL2ARB/ARB\.c' \
+    |grep -v '/PERL2ARB/ARB\.xs$' \
+    |grep -v '/lib/help_html/' \
+    |grep -v '/lib/help/' \
+    |grep -v '/lib/nas/names\.dat$' \
+    |grep -v '\.xvpics' \
+    |grep -v '\ARB_GDEmenus$' \
+    |grep -v '\.genmenu$' \
+    |grep -v '\.cvsignore$' \
+    |grep -v '\ChangeLog$' \
+    |sort|uniq 
+
