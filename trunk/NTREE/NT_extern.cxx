@@ -319,26 +319,23 @@ void NT_database_optimization(AW_window *aww){
     GB_ERROR error = 0;
     GB_push_my_security(GLOBAL_gb_main);
 
-    if (0) // test, remove!
-    {
-        aw_openstatus("Optimizing sequence data");
-        char *tree_name = aww->get_root()->awar("tmp/nt/arbdb/optimize_tree_name")->read_string();
-        GB_begin_transaction(GLOBAL_gb_main);
-        char **ali_names = GBT_get_alignment_names(GLOBAL_gb_main);
-        aw_status("Checking Sequence Lengths");
-        GBT_check_data(GLOBAL_gb_main,0);
-        GB_commit_transaction(GLOBAL_gb_main);
+    aw_openstatus("Optimizing sequence data");
+    char *tree_name = aww->get_root()->awar("tmp/nt/arbdb/optimize_tree_name")->read_string();
+    GB_begin_transaction(GLOBAL_gb_main);
+    char **ali_names = GBT_get_alignment_names(GLOBAL_gb_main);
+    aw_status("Checking Sequence Lengths");
+    GBT_check_data(GLOBAL_gb_main,0);
+    GB_commit_transaction(GLOBAL_gb_main);
 
-        char **ali_name;
-        for (ali_name = ali_names;*ali_name; ali_name++){
-            aw_status(*ali_name);
-            error = GBT_compress_sequence_tree2(GLOBAL_gb_main,tree_name,*ali_name);
-            if (error) break;
-        }
-        GBT_free_names(ali_names);
-        free(tree_name);
-        aw_closestatus();
+    char **ali_name;
+    for (ali_name = ali_names;*ali_name; ali_name++){
+        aw_status(*ali_name);
+        error = GBT_compress_sequence_tree2(GLOBAL_gb_main,tree_name,*ali_name);
+        if (error) break;
     }
+    GBT_free_names(ali_names);
+    free(tree_name);
+    aw_closestatus();
 
     if (!error) {
         aw_openstatus("Optimizing non-sequence data");
