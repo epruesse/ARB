@@ -264,7 +264,6 @@ arbdb_symlink adperl.c &&
 arbdb_symlink adquery.c &&
 arbdb_symlink adregexp.h &&
 arbdb_symlink adseqcompr.c &&
-arbdb_symlink adseqcompr.h &&
 arbdb_symlink adsocket.c &&
 arbdb_symlink adsort.c &&
 arbdb_symlink adstring.c &&
