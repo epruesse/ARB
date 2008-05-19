@@ -791,12 +791,12 @@ int gbcms_talking_undo(int socket,long *hsin,void *sin,GBDATA *gbd)
                 do a query in the server
                 GBCM_COMMAND_FIND
 ***************************************************************************************/
-int
-gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd)
+int gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd)
 {
     GB_ERROR  error;
     char     *key;
     char     *val1 = 0;
+    GB_BOOL   sens;
     long      val2 = 0;
     GB_TYPES  type;
     void     *buffer[2];
@@ -814,8 +814,11 @@ gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd)
     type = gbcm_read_long(socket);
 
     switch (type) {
+        case GB_NONE:
+            break;
         case GB_STRING:
-            val1  = gbcm_read_string(socket);
+            val1 = gbcm_read_string(socket);
+            sens = gbcm_read_long(socket);;
             break;
         case GB_INT:
             val2 = gbcm_read_long(socket);
@@ -831,8 +834,11 @@ gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd)
         enum gb_search_types gbs = gbcm_read_long(socket);
         gbcm_read_flush(socket);
 
-        if (type == GB_STRING) {
-            gbd = GB_find(gbd, key, val1, gbs);
+        if (type == GB_NONE) {
+            gbd = GB_find(gbd, key, gbs);
+        }
+        else if (type == GB_STRING) {
+            gbd = GB_find_string(gbd, key, val1, sens, gbs);
             free(val1);
         }
         else if (type == GB_INT) {
@@ -1787,7 +1793,7 @@ gbcmc_unfold_list(int socket, GBDATA * gbd)
     return 0;
 }
 
-GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str, enum gb_search_types gbs) {
+GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str, GB_BOOL case_sensitive, enum gb_search_types gbs) {
     /* perform search in DB server (from DB client) */
     union {
         GBDATA *gbd;
@@ -1812,8 +1818,11 @@ GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str,
     gbcm_write_string(socket,key);
     gbcm_write_long(socket, type);
     switch (type) {
+        case GB_NONE:
+            break;
         case GB_STRING:
             gbcm_write_string(socket,str);
+            gbcm_write_long(socket, case_sensitive);
             break;
         case GB_INT:
             gbcm_write_long(socket, *(long*)str);
