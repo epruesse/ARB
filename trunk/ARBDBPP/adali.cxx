@@ -9,6 +9,8 @@
 
 #include "arbdb++.hxx"
 
+#define ad_assert(cond) arb_assert(cond)
+
 // --------------------------------------------------------------------------------
 // class: AD_ALI
 
@@ -67,14 +69,16 @@ AD_ERR *AD_ALI::initpntr()
         return 0;
     }
     last = 0;
-    gb_name = GB_find(gb_ali,"alignment_name",NULL,down_level);
-    gb_aligned = GB_find(gb_ali,"aligned",NULL,down_level);
-    gb_len =  GB_find(gb_ali,"alignment_len",NULL,down_level);
-    gb_type = GB_find(gb_ali,"alignment_type",NULL,down_level);
-    ad_name = GB_read_string(gb_name);
-    ad_type = GB_read_string(gb_type);
-    ad_len = GB_read_int(gb_len);
+
+    gb_name    = GB_entry(gb_ali,"alignment_name");
+    gb_aligned = GB_entry(gb_ali,"aligned");
+    gb_len     = GB_entry(gb_ali,"alignment_len");
+    gb_type    = GB_entry(gb_ali,"alignment_type");
+    ad_name    = GB_read_string(gb_name);
+    ad_type    = GB_read_string(gb_type);
+    ad_len     = GB_read_int(gb_len);
     ad_aligned = GB_read_int(gb_aligned);
+
     AD_READWRITE::gbdataptr = gb_ali;
     return 0;
 }
@@ -93,7 +97,7 @@ AD_ERR *AD_ALI::first()
     // initialisiert das Objekt mit dem ersten gefundenen
     // Alignment, eof falls keins existiert
     release();
-    gb_ali = GB_find(ad_main->gbd,"alignment",NULL,down_level);
+    gb_ali = GB_entry(ad_main->gbd,"alignment");
     initpntr();
     return 0;
 }
@@ -120,7 +124,8 @@ AD_ERR *AD_ALI::next()
         return 0;
     } else {
         release();
-        gbptr = GB_find(gb_ali,"alignment",0,this_level | search_next);
+        ad_assert(GB_has_key(gb_ali, "alignment"));
+        gbptr = GB_nextEntry(gb_ali);
         gb_ali = gbptr;
         initpntr();
     }

@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : AWT_translate.cxx                                 //
 //   Purpose   :                                                   //
-//   Time-stamp: <Tue Jun/20/2006 15:37 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Fri May/16/2008 11:03 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in June 2006      //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -28,14 +28,14 @@ GB_ERROR AWT_findTranslationTable(GBDATA *gb_species, int& arb_transl_table) {
 
     arb_transl_table          = -1; // not found yet
     GB_ERROR  error           = 0;
-    GBDATA   *gb_transl_table = GB_find(gb_species, "transl_table", 0, down_level);
+    GBDATA   *gb_transl_table = GB_entry(gb_species, "transl_table");
 
     if (gb_transl_table) {
         int embl_table   = atoi(GB_read_char_pntr(gb_transl_table));
         arb_transl_table = AWT_embl_transl_table_2_arb_code_nr(embl_table);
         if (arb_transl_table == -1) { // ill. table
             const char *name    = "<unnamed>";
-            GBDATA     *gb_name = GB_find(gb_species, "name", 0, down_level);
+            GBDATA     *gb_name = GB_entry(gb_species, "name");
             if (gb_name) name = GB_read_char_pntr(gb_name);
 
             error = GBS_global_string("Illegal (or unsupported) value (%i) in 'transl_table' (species=%s)", embl_table, name);

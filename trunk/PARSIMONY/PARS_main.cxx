@@ -514,7 +514,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
 
         GBS_hash_do_loop(hash,count_hash_elements);
 
-        aw_openstatus(GBS_global_string("Adding %i species", isits.maxspecies));
+        aw_openstatus(GBS_global_string("Adding %li species", isits.maxspecies));
 
         if (test){
             GBS_hash_do_loop(hash,insert_species_in_tree_test);
@@ -567,7 +567,7 @@ class PartialSequence {
     AP_tree *get_self() const {
         if (!self) {
             ap_assert(!released); // request not possible, because leaf has already been released!
-            GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+            GBDATA *gb_name = GB_entry(gb_species, "name");
             self            = (AP_tree*)transform_gbd_to_leaf(GB_read_char_pntr(gb_name), (long)gb_species);
             ap_assert(self);
         }
@@ -725,7 +725,7 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
                 ++marked_found;
 
                 const char *name    = "<unknown>";
-                GBDATA     *gb_name = GB_find(gb_marked, "name", 0, down_level);
+                GBDATA     *gb_name = GB_entry(gb_marked, "name");
                 if (gb_name) name   = GB_read_char_pntr(gb_name);
 
                 switch (GBT_is_partial(gb_marked, 1, true)) { // marks undef as 'partial sequence'
@@ -1840,7 +1840,7 @@ static AW_root *AD_map_viewer_aw_root = 0;
 void AD_map_viewer(GBDATA *gb_species, AD_MAP_VIEWER_TYPE vtype)
 {
     if (vtype == ADMVT_SELECT && AD_map_viewer_aw_root) {
-        GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+        GBDATA *gb_name = GB_entry(gb_species, "name");
         if (gb_name) {
             const char *species_name = GB_read_char_pntr(gb_name);
             AD_map_viewer_aw_root->awar(AWAR_SPECIES_NAME)->write_string(species_name);

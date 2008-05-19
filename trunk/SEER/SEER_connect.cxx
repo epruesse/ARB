@@ -121,7 +121,7 @@ void seer_retrieve_sequences(GBDATA *gb_species,const char *arb_alignment_name,S
 
 void seer_put_species_into_arb(const char *arb_alignment_name, const char */*alignmentname*/, SeerInterfaceSequenceData *sd,int load_sequence_flag){
     GBDATA *gb_species = GBT_create_species(gb_main,sd->uniqueID);
-    if (GB_find(gb_species,SEER_KEY_FLAG,0,down_level)){
+    if (GB_entry(gb_species,SEER_KEY_FLAG)){
 	GB_warning("Species '%s' not loaded, 'cause already in the database",sd->uniqueID);
 	return;
     }
@@ -188,8 +188,8 @@ void SEER_load_marked(const char *alignmentname,int load_sequence_flag){
     for (gb_species = GBT_first_marked_species(gb_main);
 	 gb_species;
 	 gb_species = GBT_next_marked_species(gb_species)){
-	if (GB_find(gb_species,SEER_KEY_FLAG,0,down_level)) continue; // already loaded
-	GBDATA *gb_name = GB_find(gb_species,"name",0,down_level);
+        if (GB_entry(gb_species,SEER_KEY_FLAG)) continue; // already loaded
+        GBDATA *gb_name = GB_entry(gb_species,"name");
 	if (!gb_name) continue;
 	char *name = GB_read_string(gb_name);
 	seer_load_single_sequence_data(arb_alignment_name,alignmentname,name,load_sequence_flag);

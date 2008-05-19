@@ -120,12 +120,13 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
     GB_ERROR  error  = ph_check_initialized();
 
     if (!error) {
-        for (gbd = GB_find(gb_sai,0,0,down_level); gbd; gbd = gb2) {
+        for (gbd = GB_child(gb_sai); gbd; gbd = gb2) {
+            gb2 = GB_nextChild(gbd);
 
-            gb2             = GB_find(gbd,0,0,this_level|search_next);
             const char *key = GB_read_key_pntr(gbd);
             if (!strcmp(key,"name")) continue;
             if (!strncmp(key,"ali_",4)) continue;
+            
             error = GB_delete(gbd);
             if (error) break;
         }
@@ -134,11 +135,13 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
     if (!error) {
         GBDATA *gb_ali = GB_search(gb_sai,PHDATA::ROOT->use,GB_FIND);
         if (gb_ali) {
-            for (gbd = GB_find(gb_ali,0,0,down_level); gbd; gbd = gb2) {
-                gb2 = GB_find(gbd,0,0,this_level|search_next);
+            for (gbd = GB_child(gb_ali); gbd; gbd = gb2) {
+                gb2 = GB_nextChild(gbd);
+
                 const char *key = GB_read_key_pntr(gbd);
                 if (!strcmp(key,"data")) continue;
                 if (!strcmp(key,"_TYPE")) continue;
+                
                 error = GB_delete(gbd);
                 if (error) break;
             }
@@ -272,12 +275,14 @@ void PH_save_ml_cb(AW_window *aww) {
     error = ph_check_initialized();
 
     if (!error) {
-        for (gbd = GB_find(gb_sai,0,0,down_level); gbd; gbd = gb2) {
-            gb2                                             = GB_find(gbd,0,0,this_level|search_next);
-            const char *key                                 = GB_read_key_pntr(gbd);
+        for (gbd = GB_child(gb_sai); gbd; gbd = gb2) {
+            gb2 = GB_nextChild(gbd);
+
+            const char *key = GB_read_key_pntr(gbd);
             if (!strcmp(key,"name")) continue;
             if (!strncmp(key,"ali_",4)) continue;
-            error                                           = GB_delete(gbd);
+            
+            error = GB_delete(gbd);
             if (error) break;
         }
     }
@@ -285,11 +290,13 @@ void PH_save_ml_cb(AW_window *aww) {
     if (!error) {
         GBDATA *gb_ali = GB_search(gb_sai,PHDATA::ROOT->use,GB_FIND);
         if (gb_ali) {
-            for (gbd = GB_find(gb_ali,0,0,down_level); gbd; gbd = gb2) {
-                gb2 = GB_find(gbd,0,0,this_level|search_next);
+            for (gbd = GB_child(gb_ali); gbd; gbd = gb2) {
+                gb2 = GB_nextChild(gbd);
+
                 const char *key = GB_read_key_pntr(gbd);
                 if (!strcmp(key,"bits")) continue;
                 if (!strcmp(key,"_TYPE")) continue;
+                
                 error = GB_delete(gbd);
                 if (error) break;
             }

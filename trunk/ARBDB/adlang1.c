@@ -1483,7 +1483,7 @@ static void build_taxonomy_rek(GBT_TREE *node, GB_HASH *tax_hash, const char *pa
     if (node->is_leaf) {
         GBDATA *gb_species = node->gb_node;
         if (gb_species) { /* not zombie */
-            GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+            GBDATA *gb_name = GB_entry(gb_species, "name");
             if (gb_name) {
                 const char *name       = GB_read_char_pntr(gb_name);
                 const char *hash_entry = GBS_global_string("!%s", name);
@@ -1608,11 +1608,11 @@ static void flush_taxonomy_if_new_group_cb(GBDATA *gb_tree, int *cd_ct, GB_CB_TY
         int     groups = 0;
         GBDATA *gb_group_node;
 
-        for (gb_group_node = GB_find(gb_tree, "node", 0, down_level);
+        for (gb_group_node = GB_entry(gb_tree, "node");
              gb_group_node;
-             gb_group_node = GB_find(gb_group_node, "node", 0, this_level|search_next))
+             gb_group_node = GB_nextEntry(gb_group_node))
         {
-            if (GB_find(gb_group_node, "group_name", 0, down_level)) {
+            if (GB_entry(gb_group_node, "group_name")) {
                 groups++; /* count named groups only */
             }
         }
@@ -1673,7 +1673,7 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
                 GB_add_callback(gb_tree, GB_CB_SON_CREATED, flush_taxonomy_if_new_group_cb, (int*)ct);
 
                 {
-                    GBDATA *gb_tree_entry = GB_find(gb_tree, "tree", 0, down_level);
+                    GBDATA *gb_tree_entry = GB_entry(gb_tree, "tree");
                     GBDATA *gb_group_node;
 
                     if (gb_tree_entry) {
@@ -1682,11 +1682,11 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
                     }
 
                     /* add callbacks for all node/group_name subentries */
-                    for (gb_group_node = GB_find(gb_tree, "node", 0, down_level);
+                    for (gb_group_node = GB_entry(gb_tree, "node");
                          gb_group_node;
-                         gb_group_node = GB_find(gb_group_node, "node", 0, this_level|search_next))
+                         gb_group_node = GB_nextEntry(gb_group_node))
                     {
-                        GBDATA *gb_group_name = GB_find(gb_group_node, "group_name", 0, down_level);
+                        GBDATA *gb_group_name = GB_entry(gb_group_node, "group_name");
                         if (gb_group_name) { /* group with id = 0 has no name */
                             GB_remove_callback(gb_group_name, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, 0); // remove all
                             GB_add_callback(gb_group_name, (GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE), flush_taxonomy_cb, (int*)ct);
@@ -1754,8 +1754,8 @@ static const char *get_taxonomy(GBDATA *gb_species_or_group, const char *tree_na
     const char             *result  = 0;
 
     if (tax) {
-        GBDATA *gb_name       = GB_find(gb_species_or_group, "name", 0, down_level);
-        GBDATA *gb_group_name = GB_find(gb_species_or_group, "group_name", 0, down_level);
+        GBDATA *gb_name       = GB_entry(gb_species_or_group, "name");
+        GBDATA *gb_group_name = GB_entry(gb_species_or_group, "group_name");
 
         if (gb_name && !gb_group_name) { /* it's a species */
             char *name = GB_read_string(gb_name);
@@ -2178,11 +2178,11 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args)
 static GBDATA *gbl_search_sai_species(const char *species, const char *sai) {
     GBDATA *gbd;
     if (sai) {
-        GBDATA *gb_cont = GB_find(gb_local->gbl.gb_main,"extended_data",0,down_level);
+        GBDATA *gb_cont = GB_entry(gb_local->gbl.gb_main, "extended_data");
         if (!gb_cont) return 0;
         gbd = GBT_find_SAI_rel_exdata(gb_cont,sai);
     }else{
-        GBDATA *gb_cont = GB_find(gb_local->gbl.gb_main,"species_data",0,down_level);
+        GBDATA *gb_cont = GB_entry(gb_local->gbl.gb_main, "species_data");
         if (!gb_cont) return 0;
         gbd = GBT_find_species_rel_species_data(gb_cont,species);
     }
@@ -2215,16 +2215,14 @@ static GB_ERROR gbl_filter(GBL_command_arguments *args)
     if (!gb_species) return "SAI/Species not found";
 
     {   char *use = GBT_get_default_alignment(gb_local->gbl.gb_main);
-    gb_ali = GB_find(gb_species,use,0,down_level);
+    gb_ali = GB_entry(gb_species,use);
     free(use);
     if (!gb_ali) {
         return GB_export_error( "Your filter has no alignment '%s'",use);
     }
     }
 
-    for (       gb_seq = GB_find(gb_ali,0,0,down_level);
-            gb_seq;
-            gb_seq = GB_find(gb_seq,0,0,search_next|this_level)){
+    for (gb_seq = GB_child(gb_ali); gb_seq; gb_seq = GB_nextChild(gb_seq)) {
         long type = GB_read_type(gb_seq);
         if (type == GB_BITS) {
             flen = GB_read_bits_count(gb_seq);

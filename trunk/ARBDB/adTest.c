@@ -324,7 +324,7 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
         GBDATA *gbp;
 
         if (gbd->flags2.folded_container) gb_unfold(gbc, -1, -1);
-        for (gbp = GB_find(gbd, 0, 0, down_level); gbp; gbp = GB_find(gbp, 0, 0, this_level|search_next)) {
+        for (gbp = GB_child(gbd); gbp; gbp = GB_nextChild(gbp)) {
             ++indent;
             GB_dump_internal(gbp, lines_allowed);
             --indent;
@@ -384,7 +384,7 @@ static GB_ERROR gb_fix_recursive(GBDATA *gbd) {
     int     type = GB_TYPE(gbd);
 
     if (type == GB_DB) {
-        for (gbp = GB_find(gbd, 0, 0, down_level); gbp; gbp = GB_find(gbp, 0, 0, this_level|search_next)) {
+        for (gbp = GB_child(gbd); gbp; gbp = GB_nextChild(gbp)) {
             gb_fix_recursive(gbp);
         }
     }

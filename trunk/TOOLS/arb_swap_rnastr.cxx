@@ -97,16 +97,16 @@ int main(int argc, char **/*argv*/)
 		printf("please mark exactly one sequence\n");
 		exit(0);
 	}
-	gb_name = GB_find(gb_species,"name",0,down_level);
+	gb_name = GB_entry(gb_species,"name");
 	asrs.sp_name = GB_read_string(gb_name);
 	gb_use = GB_search(asrs.gb_main,"presets/use",GB_FIND);
 	use = GB_read_string(gb_use);
-	gb_ali = GB_find(gb_species,use,0,down_level);
+        gb_ali = GB_entry(gb_species,use);
 	if (!gb_ali) {
 		printf("the selected species dont have the selected sequence\n");
 		exit(0);
 	}
-	gb_data = GB_find(gb_ali,"data",0,down_level);
+        gb_data = GB_entry(gb_ali,"data");
 	asrs.sequence = GB_read_string(gb_data);
 	GB_commit_transaction(asrs.gb_main);
 	GB_close(asrs.gb_main);

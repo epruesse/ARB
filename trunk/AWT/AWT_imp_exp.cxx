@@ -168,7 +168,7 @@ static const char *awt_export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tre
             awt_assert(buf);
             groupname = GB_strdup(buf);
 
-            GBDATA *gb_grouped = GB_find(tree->gb_node, "grouped", 0, down_level);
+            GBDATA *gb_grouped = GB_entry(tree->gb_node, "grouped");
             if (gb_grouped) {
                 folded = GB_read_byte(gb_grouped);
             }
@@ -264,7 +264,7 @@ GB_ERROR AWT_export_XML_tree(GBDATA *gb_main, const char *db_name, const char *t
 
             if (!error) {
                 GBDATA *tree_cont   = GBT_get_tree(gb_main,tree_name);
-                GBDATA *tree_remark = GB_find(tree_cont, "remark", 0, down_level);
+                GBDATA *tree_remark = GB_entry(tree_cont, "remark");
 
                 XML_Document xml_doc("ARB_TREE", "arb_tree.dtd", output);
 
@@ -310,7 +310,7 @@ GB_ERROR AWT_export_tree(GBDATA *gb_main, char *tree_name, AW_BOOL use_NDS, AW_B
                 char   *remark      = 0;
                 int     i;
                 GBDATA *tree_cont   = GBT_get_tree(gb_main,tree_name);
-                GBDATA *tree_remark = GB_find(tree_cont, "remark", 0, down_level);
+                GBDATA *tree_remark = GB_entry(tree_cont, "remark");
 
                 if (tree_remark) remark = GB_read_string(tree_remark);
                 else remark             = GB_strdup(GBS_global_string("ARB-tree '%s'", tree_name));

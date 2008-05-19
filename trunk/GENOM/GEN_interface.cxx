@@ -45,11 +45,11 @@ void GEN_select_gene(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_nam
 }
 
 static char *gen_get_gene_id(GBDATA */*gb_main*/, GBDATA *gb_gene) {
-    GBDATA *gb_name = GB_find(gb_gene, "name", 0, down_level);
+    GBDATA *gb_name = GB_entry(gb_gene, "name");
     if (!gb_name) return 0;     // gene w/o name -> skip
 
     GBDATA *gb_species = GB_get_father(GB_get_father(gb_gene));
-    GBDATA *gb_sp_name = GB_find(gb_species, "name", 0, down_level);
+    GBDATA *gb_sp_name = GB_entry(gb_species, "name");
     if (!gb_sp_name) return 0;  // species w/o name -> skip
 
     char *species_name = GB_read_as_string(gb_sp_name);
@@ -234,7 +234,7 @@ static void auto_select_pseudo_species(AW_root *awr, GBDATA *gb_main, const char
     GBDATA         *gb_pseudo = GEN_find_pseudo_species(gb_main, organism, gene, 0); // search for pseudo species..
 
     if (gb_pseudo) {
-        GBDATA *gb_name     = GB_find(gb_pseudo, "name", 0, down_level);
+        GBDATA *gb_name     = GB_entry(gb_pseudo, "name");
         char   *pseudo_name = GB_read_string(gb_name);
 
         awr->awar(AWAR_SPECIES_NAME)->write_string(pseudo_name); // ..and select it if found

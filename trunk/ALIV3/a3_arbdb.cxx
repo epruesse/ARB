@@ -57,22 +57,18 @@
 // -----------------------------------------------------------------------------
 {
    char   *sequence = NULL;
-   GBDATA *gb_species_data;
-   GBDATA *gb_seq;
-
-   gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
-
-   gb_seq = GB_find(gb_species_data,"name",name,down_2_level);
+   GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
+   GBDATA *gb_seq          = GB_find_string(gb_species_data,"name",name,GB_FALSE,down_2_level);
 
    if (gb_seq)
    {
        if (and_mark) GB_write_flag(GB_get_father(gb_seq),1);
 
-       gb_seq = GB_find(gb_seq,alignment,0,this_level);
+       gb_seq = GB_brother(gb_seq,alignment);
 
        if (gb_seq)
        {
-           gb_seq = GB_find(gb_seq,"data",0,down_level);
+           gb_seq = GB_entry(gb_seq,"data");
 
            if (gb_seq) sequence = GB_read_string(gb_seq);
        }
@@ -87,10 +83,10 @@ int A3Arbdb::put_sequence_string(char *name, char *sequence) {
     GB_change_my_security(gb_main,6,"passwd");
 
     GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
-    GBDATA *gb_seq = GB_find(gb_species_data,"name",name,down_2_level);
+    GBDATA *gb_seq = GB_find_string(gb_species_data,"name",name,GB_FALSE,down_2_level);
 
     if (gb_seq) {
-        GBDATA *gb_ali = GB_find(gb_seq,alignment,0,this_level);
+        GBDATA *gb_ali = GB_brother(gb_seq,alignment);
 
         if (gb_ali) {
             GBDATA *gb_data = GB_search(gb_ali,"data",GB_STRING);

@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <arbdb.h>
 
+# move to an example directory which is build separately
+
 int main(int argc, char **argv) {
     int i, cmp;
     char *path;
@@ -17,12 +19,12 @@ int main(int argc, char **argv) {
 
     if(!(gbali=GB_search(gbmain, "presets/allignment", GB_FIND))) GB_abort_transaction(gbmain);
 
-    for (gbrnali=GB_find(gbali, "allignment_type", "%rna%",down_level); gbrnali; gbrnali=GB_find(gbrnali, 0,"%rna%", this_level+search_next))
+    for (gbrnali=GB_find(gbali, "alignment_type", "%rna%",down_level); gbrnali; gbrnali=GB_find(gbrnali, 0,"%rna%", this_level+search_next))
     {
         gbseqname = GB_read_string(GB_search(GB_get_father(gbrnali), "allignment_name", GB_FIND));
         gbspec = GB_search(gbmain, "species_data/species", GB_FIND);
 
-        for (gbname = GB_find(gbspec, "name", 0, down_level); gbname; gbname = GB_find(gbname, 0, 0, this_level+search_next)) {
+        for (gbname = GB_entry(gbspec, "name"); gbname; gbname = GB_nextEntry(gbname)) {
             if(strcmp(GB_read_char_pntr(gbname), gbseqname)) {
                 gbdata = GB_search(GB_get_father(gbname), "ali_xxx/data", GB_find);
                 fprintf(stdout, "%20s: %50s\n", GB_read_char_pntr(gbseqname), GB_read_char_pntr(gbdata));

@@ -165,7 +165,7 @@ const char *export_sequence_data::get_seq_data(GBDATA *gb_species, size_t& slen,
     const char *data   = 0;
     GBDATA     *gb_seq = GBT_read_sequence(gb_species, ali);
     if (!gb_seq) {
-        GBDATA     *gb_name = GB_find(gb_species, "name", 0, down_level);
+        GBDATA     *gb_name = GB_entry(gb_species, "name");
         const char *name    = gb_name ? GB_read_char_pntr(gb_name) : "<unknown species>";
         err                 = GBS_global_string_copy("No data in alignment '%s' of species '%s'", ali, name);
         slen                = 0;
@@ -389,7 +389,7 @@ static GB_ERROR AWTI_XML_recursive(GBDATA *gbd) {
     else {
         tag = new XML_Tag(key_name);
 
-        GBDATA *gb_name = GB_find(gbd, "name", 0, down_level);
+        GBDATA *gb_name = GB_entry(gbd, "name");
         if (gb_name) {
             tag->add_attribute("name", GB_read_char_pntr(gb_name));
         }
@@ -398,10 +398,7 @@ static GB_ERROR AWTI_XML_recursive(GBDATA *gbd) {
     if (descend) {
         switch (GB_read_type(gbd)) {
             case GB_DB: {
-                for (GBDATA *gb_child = GB_find(gbd, 0, 0, down_level);
-                     gb_child && !error;
-                     gb_child = GB_find(gb_child, 0, 0, this_level|search_next))
-                {
+                for (GBDATA *gb_child = GB_child(gbd); gb_child && !error; gb_child = GB_nextChild(gb_child)) {
                     const char *sub_key_name = GB_read_key_pntr(gb_child);
 
                     if (strcmp(sub_key_name, "name") != 0) { // do not recurse for "name" (is handled above)

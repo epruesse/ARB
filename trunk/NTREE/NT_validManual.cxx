@@ -52,22 +52,22 @@ void fillSelNamList(struct selectValidNameStruct* svnp) {
 
     GB_begin_transaction(GLOBAL_gb_main);
 
-    GBDATA* GB_validNamesCont = GB_find(GLOBAL_gb_main, "VALID_NAMES", 0, down_level);
+    GBDATA* GB_validNamesCont = GB_entry(GLOBAL_gb_main, "VALID_NAMES");
     if (!GB_validNamesCont){std::cout << "validNames Container not found" << std:: cout; }
 
     GB_ERROR err = 0;
 
     // search validNames
 
-    for (GBDATA *GB_validNamePair = GB_find(GB_validNamesCont, "pair", 0, down_level);
+    for (GBDATA *GB_validNamePair = GB_entry(GB_validNamesCont, "pair");
          GB_validNamePair && !err;
-         GB_validNamePair = GB_find(GB_validNamePair,"pair" ,0,this_level|search_next)) {
-
+         GB_validNamePair = GB_nextEntry(GB_validNamePair))
+    {
         // retrieve list of all species names
-        GBDATA* actDesc = GB_find(GB_validNamePair, "DESCTYPE", 0, down_level);
+        GBDATA* actDesc = GB_entry(GB_validNamePair, "DESCTYPE");
         char* typeString = GB_read_string(actDesc);
         if (strcmp(typeString, "NOTYPE") != 0){
-            GBDATA* newName = GB_find(GB_validNamePair, "NEWNAME", 0, down_level);
+            GBDATA* newName = GB_entry(GB_validNamePair, "NEWNAME");
             char* validName = newName ? GB_read_string(newName) : 0;
 
             if (!validName) {
@@ -152,7 +152,7 @@ void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
         GBDATA* GB_selectedSpecies = GBT_find_species(GLOBAL_gb_main, selectedSpeciesName);
 
 #if 0
-        const char * test = GB_read_string(GB_find(GB_selectedSpecies,"full_name",0,down_level));
+        const char * test = GB_read_string(GB_entry(GB_selectedSpecies,"full_name"));
         aw_message(GBS_global_string("species %s in database found", test ));
         aw_message("----test----");
 #endif
@@ -167,10 +167,10 @@ void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
                 err = "could not create Valid Name container in database";
             }
             else {
-                GBDATA* GB_valName = GB_find(GB_nameCont,"NameString",0,down_level);
+                GBDATA* GB_valName = GB_entry(GB_nameCont,"NameString");
                 if(! GB_valName){GB_valName = GB_create(GB_nameCont, "NameString", GB_STRING);}
 
-                GBDATA* GB_valType = GB_find(GB_nameCont,"DescType",0,down_level);
+                GBDATA* GB_valType = GB_entry(GB_nameCont,"DescType");
                 if(! GB_valType){GB_valType = GB_create(GB_nameCont, "DescType", GB_STRING);}
 
                 GB_write_string(GB_valName, selectedValName);

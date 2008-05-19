@@ -17,6 +17,8 @@
 #include "math.h"
 #include <X11/cursorfont.h>
 
+#define ai_assert(cond) arb_assert(cond)
+
 #define LEFT_MOUSE_BUTTON   1
 #define MIDDLE_MOUSE_BUTTON 2
 #define RIGHT_MOUSE_BUTTON  3
@@ -965,7 +967,7 @@ bool imageDialog::setAllMarker(int state)
     ARB_begin_transaction();
 
     // BROWSE ALL PROTEIN ENTRIES...
-    gb_protein= GB_find(gb_proteine_data, "protein", 0, down_level);
+    gb_protein= GB_entry(gb_proteine_data, "protein");
 
     while(gb_protein)
     {
@@ -986,7 +988,8 @@ bool imageDialog::setAllMarker(int state)
         }
 
         // FETCH NEXT PROTEIN FROM LIST
-        gb_protein= GB_find(gb_protein, "protein", 0, this_level|search_next);
+        ai_assert(GB_has_key(gb_protein, "protein"));
+        gb_protein= GB_nextEntry(gb_protein);
     }
 
     // CLOSE THE ARB TRANSACTION
@@ -1158,7 +1161,7 @@ char *imageDialog::get_ARB_image_path()
     {
         ARB_begin_transaction();
 
-        GBDATA *gb_imagepath= GB_find(gb_proteom, "image_path", 0, down_level);
+        GBDATA *gb_imagepath= GB_entry(gb_proteom, "image_path");
 
         if(gb_imagepath) path= GB_read_string(gb_imagepath);
 
@@ -1779,12 +1782,12 @@ void imageDialog::markSpotAtPos(int button, int x, int y)
     ARB_begin_transaction();
 
     // BROWSE ALL PROTEIN ENTRIES...
-    gb_protein= GB_find(gb_proteine_data, "protein", 0, down_level);
+    gb_protein= GB_entry(gb_proteine_data, "protein");
     while(gb_protein)
     {
         // FETCH COORDINATE CONTAINER
-        gb_protein_x= GB_find(gb_protein, m_x_container, 0, down_level);
-        gb_protein_y= GB_find(gb_protein, m_y_container, 0, down_level);
+        gb_protein_x= GB_entry(gb_protein, m_x_container);
+        gb_protein_y= GB_entry(gb_protein, m_y_container);
 
         if(gb_protein_x && gb_protein_y)
         {
@@ -1802,13 +1805,14 @@ void imageDialog::markSpotAtPos(int button, int x, int y)
                 gb_nearest_protein= gb_protein;
                 nearest_delta= delta;
 
-                gb_protein_name= GB_find(gb_protein, m_id_container, 0, down_level);
+                gb_protein_name= GB_entry(gb_protein, m_id_container);
                 protein_name= GB_read_string(gb_protein_name);
             }
         }
 
         // FETCH NEXT PROTEIN FROM LIST
-        gb_protein= GB_find(gb_protein, "protein", 0, this_level|search_next);
+        ai_assert(GB_has_key(gb_protein, "protein"));
+        gb_protein= GB_nextEntry(gb_protein);
     }
 
     // IF MOUSE CLICK IS TOO FAR AWAY FROM THE CENTER -> IGNORE
@@ -1911,11 +1915,11 @@ void imageDialog::ARB_gene_callback()
         // INIT AN ARB TRANSACTION
         ARB_begin_transaction();
 
-        gb_gene= GB_find(gb_genome, "gene", 0, down_level);
+        gb_gene= GB_entry(gb_genome, "gene");
 
         while(gb_gene)
         {
-            gb_gene_name= GB_find(gb_gene, "name", 0, down_level);
+            gb_gene_name= GB_entry(gb_gene, "name");
 
             if(gb_gene_name)
             {
@@ -1923,7 +1927,7 @@ void imageDialog::ARB_gene_callback()
 
                 if(name && (!strcmp(name, awar_selected_gene)))
                 {
-                    gb_gene_id= GB_find(gb_gene, config_gene_id, 0, down_level);
+                    gb_gene_id= GB_entry(gb_gene, config_gene_id);
 
                     if(gb_gene_id)
                     {
@@ -1934,7 +1938,8 @@ void imageDialog::ARB_gene_callback()
                 }
             }
 
-            gb_gene= GB_find(gb_gene, "gene", 0, this_level|search_next);
+            ai_assert(GB_has_key(gb_gene, "gene"));
+            gb_gene= GB_nextEntry(gb_gene);
         }
 
         // CLOSE THE ARB TRANSACTION
@@ -2084,7 +2089,7 @@ bool imageDialog::createSpotList()
     ARB_begin_transaction();
 
     // BROWSE ALL PROTEIN ENTRIES...
-    gb_protein= GB_find(gb_proteine_data, "protein", 0, down_level);
+    gb_protein= GB_entry(gb_proteine_data, "protein");
     while(gb_protein)
     {
         // PREDEFINE SPOT
@@ -2099,10 +2104,10 @@ bool imageDialog::createSpotList()
         spot.gbdata=   gb_protein;
 
         // FETCH NECESSARY ENTRIES
-        gb_protein_x=    GB_find(gb_protein, awar_protein_x, 0, down_level);
-        gb_protein_y=    GB_find(gb_protein, awar_protein_y, 0, down_level);
-        gb_protein_area= GB_find(gb_protein, awar_protein_area, 0, down_level);
-        gb_protein_id=   GB_find(gb_protein, awar_protein_id, 0, down_level);
+        gb_protein_x=    GB_entry(gb_protein, awar_protein_x);
+        gb_protein_y=    GB_entry(gb_protein, awar_protein_y);
+        gb_protein_area= GB_entry(gb_protein, awar_protein_area);
+        gb_protein_id=   GB_entry(gb_protein, awar_protein_id);
 
         // FETCH PROTEIN IDENTIFIER IF AVAILABLE
         if(gb_protein_id) spot.id= GB_read_string(gb_protein_id);
@@ -2137,7 +2142,8 @@ bool imageDialog::createSpotList()
         m_spotList.push_back(spot);
 
         // FETCH NEXT PROTEIN FROM LIST
-        gb_protein= GB_find(gb_protein, "protein", 0, this_level|search_next);
+        ai_assert(GB_has_key(gb_protein, "protein"));
+        gb_protein= GB_nextEntry(gb_protein);
     }
 
     // CLOSE THE ARB TRANSACTION
@@ -2210,10 +2216,10 @@ bool imageDialog::createDescriptions()
     m_gene_GBDATA_map.clear();
 
     // CREATE GENE IDENTIFIER AND GBDATA* HASH (AVOIDS RECURSIONS)
-    gb_gene= GB_find(gb_genome, "gene", 0, down_level);
+    gb_gene= GB_entry(gb_genome, "gene");
     while(gb_gene)
     {
-        gb_gene_id= GB_find(gb_gene, awar_gene_id, 0, down_level);
+        gb_gene_id= GB_entry(gb_gene, awar_gene_id);
 
         if(gb_gene_id)
         {
@@ -2222,11 +2228,12 @@ bool imageDialog::createDescriptions()
             if(content && (strlen(content) > 0)) m_gene_GBDATA_map[content] = gb_gene;
         }
 
-        gb_gene= GB_find(gb_gene, "gene", 0, this_level|search_next);
+        ai_assert(GB_has_key(gb_gene, "gene"));
+        gb_gene= GB_nextEntry(gb_gene);
     }
 
     // BROWSE ALL PROTEIN ENTRIES...
-    gb_protein= GB_find(gb_proteine_data, "protein", 0, down_level);
+    gb_protein= GB_entry(gb_proteine_data, "protein");
     while(gb_protein)
     {
         // CLEAN BUFFER
@@ -2237,9 +2244,9 @@ bool imageDialog::createDescriptions()
         first_token= true;
 
         // FETCH PROTEIN IDENTIFIER
-        gb_protein_id= GB_find(gb_protein, awar_protein_id, 0, down_level);
-        gb_protein_x= GB_find(gb_protein, awar_protein_x, 0, down_level);
-        gb_protein_y= GB_find(gb_protein, awar_protein_y, 0, down_level);
+        gb_protein_id= GB_entry(gb_protein, awar_protein_id);
+        gb_protein_x= GB_entry(gb_protein, awar_protein_x);
+        gb_protein_y= GB_entry(gb_protein, awar_protein_y);
 
         // GET IDENTIFIER FIELD CONTENT
         if(gb_protein_id) id= GB_read_string(gb_protein_id);
@@ -2253,7 +2260,7 @@ bool imageDialog::createDescriptions()
             token= strtok(buf, ",; ");
             while(token)
             {
-                gb_entry= GB_find(gb_protein, token, 0, down_level);
+                gb_entry= GB_entry(gb_protein, token);
 
                 // DO WE HAVE THE SELECTED CONTAINER?
                 if(gb_entry)
@@ -2291,7 +2298,7 @@ bool imageDialog::createDescriptions()
                 token= strtok(buf, ",; ");
                 while(token)
                 {
-                    gb_entry= GB_find(gb_gene, token, 0, down_level);
+                    gb_entry= GB_entry(gb_gene, token);
 
                     // DO WE HAVE THE SELECTED CONTAINER?
                     if(gb_entry)
@@ -2342,7 +2349,8 @@ bool imageDialog::createDescriptions()
         // free(id);
 
         // FETCH NEXT PROTEIN FROM LIST
-        gb_protein= GB_find(gb_protein, "protein", 0, this_level|search_next);
+        ai_assert(GB_has_key(gb_protein, "protein"));
+        gb_protein= GB_nextEntry(gb_protein);
     }
 
     // CLOSE THE ARB TRANSACTION
@@ -2380,7 +2388,7 @@ bool imageDialog::updateSelectedGene()
     {
         ARB_begin_transaction();
 
-        gb_name= GB_find(gb_gene, "name", 0, down_level);
+        gb_name= GB_entry(gb_gene, "name");
         name= GB_read_string(gb_name);
 
         ARB_commit_transaction();
@@ -2413,10 +2421,10 @@ bool imageDialog::mark_Spots2Genes()
     ARB_begin_transaction();
 
     // TRAVERSE GENES
-    gb_gene= GB_find(gb_genome, "gene", 0, down_level);
+    gb_gene= GB_entry(gb_genome, "gene");
     while(gb_gene)
     {
-        gb_gene_id= GB_find(gb_gene, "locus_tag" , 0, down_level);
+        gb_gene_id= GB_entry(gb_gene, "locus_tag");
 
         if(gb_gene_id)
         {
@@ -2435,7 +2443,8 @@ bool imageDialog::mark_Spots2Genes()
             }
         }
 
-        gb_gene= GB_find(gb_gene, "gene", 0, this_level|search_next);
+        ai_assert(GB_has_key(gb_gene, "gene"));
+        gb_gene= GB_nextEntry(gb_gene);
     }
 
     // CLOSE THE ARB TRANSACTION
@@ -2465,14 +2474,14 @@ bool imageDialog::mark_Genes2Spots()
     ARB_begin_transaction();
 
     // TRAVERSE GENES
-    gb_gene= GB_find(gb_genome, "gene", 0, down_level);
+    gb_gene= GB_entry(gb_genome, "gene");
     while(gb_gene)
     {
         // GET ACTUAL STATE
         flag= GB_read_flag(gb_gene);
 
         // FETCH GENE ID
-        gb_gene_id= GB_find(gb_gene, "locus_tag" , 0, down_level);
+        gb_gene_id= GB_entry(gb_gene, "locus_tag");
 
         if(gb_gene_id)
         {
@@ -2488,7 +2497,8 @@ bool imageDialog::mark_Genes2Spots()
         }
 
         // FIND NEXT GENE
-        gb_gene= GB_find(gb_gene, "gene", 0, this_level|search_next);
+        ai_assert(GB_has_key(gb_gene, "gene"));
+        gb_gene= GB_nextEntry(gb_gene);
     }
 
     // CLOSE THE ARB TRANSACTION
@@ -2619,10 +2629,10 @@ void imageDialog::markWithInfo()
     ARB_begin_transaction();
 
     // BROWSE ALL PROTEIN ENTRIES...
-    gb_protein= GB_find(gb_proteine_data, "protein", 0, down_level);
+    gb_protein= GB_entry(gb_proteine_data, "protein");
     while(gb_protein)
     {
-        gb_protein_id=  GB_find(gb_protein, awar_protein_id, 0, down_level);
+        gb_protein_id=  GB_entry(gb_protein, awar_protein_id);
 
         // FETCH PROTEIN IDENTIFIER IF AVAILABLE
         if(gb_protein_id) id= GB_read_string(gb_protein_id);
@@ -2632,7 +2642,8 @@ void imageDialog::markWithInfo()
         else GB_write_flag(gb_protein, 0);
 
         // FETCH NEXT PROTEIN FROM LIST
-        gb_protein= GB_find(gb_protein, "protein", 0, this_level|search_next);
+        ai_assert(GB_has_key(gb_protein, "protein"));
+        gb_protein= GB_nextEntry(gb_protein);
     }
 
     // CLOSE THE ARB TRANSACTION

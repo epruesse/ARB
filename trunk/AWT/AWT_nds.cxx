@@ -119,9 +119,7 @@ void create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main) {
     GBDATA *gb_arb_presets = GB_search(gb_main,"arb_presets",GB_CREATE_CONTAINER);
 
     for (int i = 0; i<NDS_COUNT; ++i) {
-        gb_viewkey = gb_viewkey
-            ? GB_find(gb_viewkey,"viewkey",0,this_level|search_next)
-            : GB_find(gb_arb_presets,"viewkey",0,down_level);
+        gb_viewkey = !gb_viewkey ? GB_entry(gb_arb_presets,"viewkey") : GB_nextEntry(gb_viewkey);
 
         if (!gb_viewkey) gb_viewkey = GB_create_container(gb_arb_presets,"viewkey");
 
@@ -131,7 +129,7 @@ void create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main) {
             bool was_group_name    = false;
             int  default_len       = 30;
 
-            GBDATA *gb_key_text = GB_find(gb_viewkey, "key_text", 0, down_level);
+            GBDATA *gb_key_text = GB_entry(gb_viewkey, "key_text");
             if (!gb_key_text) {
                 gb_key_text        = GB_create(gb_viewkey,"key_text",GB_STRING);
                 const char *wanted = "";
@@ -150,8 +148,8 @@ void create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main) {
                 was_group_name = true; // means: change group/leaf + add 'taxonomy(1)' to ACI
             }
 
-            GBDATA *gb_len1  = GB_find( gb_viewkey, "len1",  0, down_level);
-            GBDATA *gb_pars  = GB_find( gb_viewkey, "pars",  0, down_level);
+            GBDATA *gb_len1  = GB_entry(gb_viewkey, "len1");
+            GBDATA *gb_pars  = GB_entry(gb_viewkey, "pars");
 
             if (!gb_len1)  { gb_len1 = GB_create(gb_viewkey, "len1",  GB_INT   ); GB_write_int(gb_len1, default_len); }
             if (!gb_pars ) { gb_pars  = GB_create(gb_viewkey, "pars",  GB_STRING); GB_write_string(gb_pars, ""); }
@@ -171,7 +169,7 @@ void create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main) {
             }
 
             {
-                GBDATA *gb_flag1 = GB_find( gb_viewkey, "flag1", 0, down_level);
+                GBDATA *gb_flag1 = GB_entry(gb_viewkey, "flag1");
                 if (gb_flag1) {
                     if (GB_read_int(gb_flag1)) { // obsolete
                         leaf = 1;
@@ -182,7 +180,7 @@ void create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main) {
             }
 
             {
-                GBDATA *gb_inherit = GB_find(gb_viewkey, "inherit", 0, down_level);
+                GBDATA *gb_inherit = GB_entry(gb_viewkey, "inherit");
                 if (gb_inherit) { // 'inherit' is old NDS style -> convert & delete
                     if (was_group_name && GB_read_int(gb_inherit)) leaf = 1;
                     GB_ERROR error = GB_delete(gb_inherit);
@@ -190,8 +188,8 @@ void create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main) {
                 }
             }
 
-            GBDATA *gb_group = GB_find(gb_viewkey, "group", 0, down_level);
-            GBDATA *gb_leaf  = GB_find(gb_viewkey, "leaf", 0, down_level);
+            GBDATA *gb_group = GB_entry(gb_viewkey, "group");
+            GBDATA *gb_leaf  = GB_entry(gb_viewkey, "leaf");
             if (!gb_group) { gb_group = GB_create(gb_viewkey, "group", GB_INT); GB_write_int(gb_group, group ); }
             if (!gb_leaf)  { gb_leaf = GB_create(gb_viewkey, "leaf",  GB_INT); GB_write_int(gb_leaf,  leaf ); }
 
@@ -208,7 +206,8 @@ void create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main) {
 
     // delete any additional viewkeys (should not occur)
     GBDATA *gb_next;
-    while ( (gb_next = GB_find(gb_viewkey,"viewkey",0,this_level|search_next)) ) {
+    awt_assert(GB_has_key(gb_viewkey, "viewkey"));
+    while ((gb_next = GB_nextEntry(gb_viewkey))) {
         GB_ERROR error = GB_delete(gb_next);
         if (error) { aw_message(error); break; }
     }
@@ -506,25 +505,22 @@ void make_node_text_init(GBDATA *gb_main){
     GBDATA *gb_arb_presets = GB_search(gb_main,"arb_presets",GB_CREATE_CONTAINER);
     count                  = 0;
 
-    for (gbz = GB_find(gb_arb_presets, "viewkey", NULL, down_level);
-         gbz != NULL;
-         gbz  = GB_find(gbz, "viewkey", NULL, this_level + search_next))
-    {
+    for (gbz = GB_entry(gb_arb_presets, "viewkey"); gbz; gbz  = GB_nextEntry(gbz)) {
         /* toggle set ? */
-        bool at_leaf = GB_read_int(GB_find(gbz, "leaf", NULL, down_level));
-        bool at_group = GB_read_int(GB_find(gbz, "group", NULL, down_level));
+        bool at_leaf = GB_read_int(GB_entry(gbz, "leaf"));
+        bool at_group = GB_read_int(GB_entry(gbz, "group"));
 
 
         if (at_leaf || at_group) {
             if (awt_nds_ms->dkeys[count]) free(awt_nds_ms->dkeys[count]);
-            awt_nds_ms->dkeys[count] = GB_read_string(GB_find(gbz, "key_text", NULL, down_level));
+            awt_nds_ms->dkeys[count] = GB_read_string(GB_entry(gbz, "key_text"));
 
             awt_nds_ms->rek[count]      = (GB_first_non_key_char(awt_nds_ms->dkeys[count]) != 0);
-            awt_nds_ms->lengths[count]  = GB_read_int(GB_find(gbz, "len1", NULL, down_level));
+            awt_nds_ms->lengths[count]  = GB_read_int(GB_entry(gbz, "len1"));
             awt_nds_ms->at_leaf[count]  = at_leaf;
             awt_nds_ms->at_group[count] = at_group;
 
-            gbe = GB_find(gbz, "pars", NULL, down_level);
+            gbe = GB_entry(gbz, "pars");
             if (awt_nds_ms->parsing[count]) {
                 free(awt_nds_ms->parsing[count]);
                 awt_nds_ms->parsing[count] = 0;
@@ -547,7 +543,7 @@ enum { MNTN_COMPRESSED = 0, MNTN_SPACED = 1, MNTN_TABBED = 2 };
 //         if (!gbe && awt_nds_ms->inherit[i] && species ) {
 //             for (   father = species->father; father && !gbe; father = father->father) {
 //                 if (father->gb_node){
-//                     gbe = GB_find(father->gb_node, awt_nds_ms->dkeys[i], NULL, down_level);
+//                     gbe = GB_entry(father->gb_node, awt_nds_ms->dkeys[i]);
 //                 }
 //             }
 //         }
@@ -695,7 +691,7 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE
                     gbe = GB_search(gbd,awt_nds_ms->dkeys[i],0);
                 }
                 else {              /* flat entry */
-                    gbe = GB_find(gbd, awt_nds_ms->dkeys[i], NULL, down_level);
+                    gbe = GB_entry(gbd, awt_nds_ms->dkeys[i]);
                 }
                 // silently ignore missing fields (and leave apply_aci false!)
                 if (gbe) {
@@ -825,13 +821,13 @@ char *make_node_text_list(GBDATA * gbd, FILE *fp)
         return awt_nds_ms->buf;
     }
 
-    fprintf(fp,"\n------------------- %s\n",GB_read_char_pntr(GB_find(gbd, "name", 0, down_level)));
+    fprintf(fp,"\n------------------- %s\n",GB_read_char_pntr(GB_entry(gbd, "name")));
 
     for (i = 0; i < awt_nds_ms->count; i++) {
         if (awt_nds_ms->rek[i]) {       /* hierarchical key */
             gbe = GB_search(gbd,awt_nds_ms->dkeys[i],0);
         }else{              /* flat entry */
-            gbe = GB_find(gbd, awt_nds_ms->dkeys[i], NULL, down_level);
+            gbe = GB_entry(gbd, awt_nds_ms->dkeys[i]);
         }
         if (!gbe) continue;
         /*** get field info ***/

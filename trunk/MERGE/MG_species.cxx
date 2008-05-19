@@ -293,27 +293,18 @@ void AD_map_species2(AW_root *aw_root)
 
 void MG_transfer_fields_info(char *fieldname)
 {
-    GBDATA *gb_key_data;
-    gb_key_data = GB_search(GLOBAL_gb_merge,CHANGE_KEY_PATH,GB_CREATE_CONTAINER);
-    GBDATA *gb_key_datam;
-    gb_key_datam = GB_search(GLOBAL_gb_dest,CHANGE_KEY_PATH,GB_CREATE_CONTAINER);
-    GBDATA *gb_key;
-    GBDATA *gb_key_name;
-    GBDATA *gb_key_type;
-    for (   gb_key = GB_find(gb_key_data,CHANGEKEY,0,down_level);
-            gb_key;
-            gb_key = GB_find(gb_key,CHANGEKEY,0,this_level|search_next))
-    {
-        gb_key_name = GB_find(gb_key,CHANGEKEY_NAME,0,down_level);
-        gb_key_type = GB_find(gb_key,CHANGEKEY_TYPE,0,down_level);
-        if (!gb_key_name) continue;
-        if (!gb_key_type) continue;
-        char *name = GB_read_string(gb_key_name);
-        if (fieldname && strcmp(fieldname,name)) {
-            delete name;
-            continue;
+    GBDATA *gb_key_data = GB_search(GLOBAL_gb_merge, CHANGE_KEY_PATH, GB_CREATE_CONTAINER);
+
+    GB_search(GLOBAL_gb_dest, CHANGE_KEY_PATH, GB_CREATE_CONTAINER);
+
+    for (GBDATA *gb_key = GB_entry(gb_key_data,CHANGEKEY); gb_key; gb_key = GB_nextEntry(gb_key)) {
+        GBDATA *gb_key_name = GB_entry(gb_key, CHANGEKEY_NAME); if (!gb_key_name) continue;
+        GBDATA *gb_key_type = GB_entry(gb_key, CHANGEKEY_TYPE); if (!gb_key_type) continue;
+        char   *name        = GB_read_string(gb_key_name);
+
+        if (!fieldname || strcmp(fieldname,name) == 0) {
+            awt_add_new_changekey(GLOBAL_gb_dest,name,(int)GB_read_int(gb_key_type));
         }
-        awt_add_new_changekey(GLOBAL_gb_dest,name,(int)GB_read_int(gb_key_type));
         free(name);
     }
 }
@@ -458,7 +449,7 @@ static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
 
     GB_ERROR error = 0;
     if (gb_species1) {
-        GBDATA *gb_name1 = GB_find(gb_species1,"name",0,down_level);
+        GBDATA *gb_name1 = GB_entry(gb_species1,"name");
         gb_assert(gb_name1);
         name1             = GB_read_char_pntr(gb_name1);
     }
@@ -674,9 +665,9 @@ void MG_transfer_fields_cb(AW_window *aww){
          gb_species1 = GBT_next_species(gb_species1))
     {
         if (IS_QUERIED(gb_species1)) {
-            gb_name1 = GB_find(gb_species1,"name",0,down_level);
+            gb_name1 = GB_entry(gb_species1,"name");
             if (!gb_name1) continue;    // no name what happend ???
-            gb_species2 = GB_find(gb_dest_species_data,"name", GB_read_char_pntr(gb_name1),down_2_level);
+            gb_species2 = GB_find_string(gb_dest_species_data,"name", GB_read_char_pntr(gb_name1), GB_FALSE, down_2_level);
 
             if (!gb_species2) {
                 gb_species2 = GB_create_container(gb_dest_species_data,"species");
@@ -934,7 +925,7 @@ void MG_merge_tagged_field_cb(AW_window *aww){
          gb_species1;
          gb_species1 = GBT_next_species(gb_species1)){
         if (IS_QUERIED(gb_species1)) {
-            gb_name1 = GB_find(gb_species1,"name",0,down_level);
+            gb_name1 = GB_entry(gb_species1,"name");
             if (!gb_name1) continue;    // no name what happend ???
             delete name;
             name = GB_read_string(gb_name1);
@@ -1176,10 +1167,7 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
         D_species_hash = GBT_create_species_hash_sized(GLOBAL_gb_dest, M_species_count+D_species_count);
     }
 
-    for (M_species = GB_find(M_species_data,"species",0,down_level);
-         M_species;
-         M_species = GB_find(M_species,"species",0,this_level | search_next))
-    {
+    for (M_species = GB_entry(M_species_data,"species"); M_species; M_species = GB_nextEntry(M_species)) {
         GBDATA *M_name       = GB_search(M_species,"name",GB_STRING);
         free(m_name); m_name = GB_read_string(M_name);
 

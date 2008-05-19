@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_preserves.cxx                                       //
 //    Purpose   : find candidates for alignment preservation             //
-//    Time-stamp: <Sat Mar/01/2008 12:26 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri May/16/2008 11:03 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -50,7 +50,7 @@ static char **get_global_alignments() {
     int      i;
 
     for (i = 0; src_ali_names[i]; ++i) {
-        GBDATA *gb_ali_name = GB_find(gb_presets, "alignment_name", src_ali_names[i], down_2_level);
+        GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", src_ali_names[i], GB_FALSE, down_2_level);
         if (!gb_ali_name) {
             free(src_ali_names[i]);
             src_ali_names[i] = 0;
@@ -223,7 +223,7 @@ static void find_species_candidates(Candidates& candidates, const char **ali_nam
          gb_dst_species && !aborted;
          gb_dst_species = GBT_next_species(gb_dst_species))
     {
-        GBDATA     *gb_name = GB_find(gb_dst_species, "name", 0, down_level);
+        GBDATA     *gb_name = GB_entry(gb_dst_species, "name");
         const char *name    = GB_read_char_pntr(gb_name);
 
         if (GBDATA *gb_src_species = (GBDATA*)GBS_read_hash(src_species, name)) {
@@ -264,7 +264,7 @@ static void find_SAI_candidates(Candidates& candidates, const char **ali_names) 
          gb_dst_SAI;
          gb_dst_SAI = GBT_next_SAI(gb_dst_SAI))
     {
-        GBDATA     *gb_name = GB_find(gb_dst_SAI, "name", 0, down_level);
+        GBDATA     *gb_name = GB_entry(gb_dst_SAI, "name");
         const char *name    = GB_read_char_pntr(gb_name);
 
         if (GBDATA *gb_src_SAI = (GBDATA*)GBS_read_hash(src_SAIs, name)) {

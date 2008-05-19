@@ -425,9 +425,8 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
 
     err=GB_write_string(gb_options,buffer);
 
-    GBDATA *gb_names=GB_search(GB_get_father(gb_options),
-                               "_SPECIES",GB_FIND);
-    if(gb_names) GB_delete(gb_names);   /* delete old entry */
+    GBDATA *gb_names = GB_search(GB_get_father(gb_options), "_SPECIES",GB_FIND);
+    if(gb_names) GB_delete(gb_names); /* delete old entry */
 
     if(nrofspecies<20)
     {
@@ -454,13 +453,13 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
                 gb_species = GBT_next_species(gb_species);
             }
         }
-        gb_names=GB_search(GB_get_father(gb_options),"_SPECIES",GB_STRING);
+        gb_names       = GB_search(GB_get_father(gb_options),"_SPECIES",GB_STRING);
         char *allnames = GBS_strclose(strstruct);
-        err=GB_write_string(gb_names,allnames);
+        err            = GB_write_string(gb_names,allnames);
         delete allnames;
     }
     {   char buffer2[256];
-    sprintf(buffer2,"%s/FREQUENCIES", align);
+        sprintf(buffer2,"%s/FREQUENCIES", align);
     GBDATA *gb_graph = GB_search(gb_extended, buffer2, GB_FIND);
     if(gb_graph) GB_delete(gb_graph);   /* delete old entry */
     }

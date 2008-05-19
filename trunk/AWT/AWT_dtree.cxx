@@ -379,7 +379,7 @@ int AWT_graphic_tree::group_tree(AP_tree *at, int mode, int color_group)    // r
 
     if (!flag) { // no son requests to be shown
         if (at->gb_node) { // i am a group
-            GBDATA *gn = GB_find(at->gb_node, "group_name",NULL,down_level);
+            GBDATA *gn = GB_entry(at->gb_node, "group_name");
             if (gn) {
                 if (strlen(GB_read_char_pntr(gn))>0){ // and I have a name
                     at->gr.grouped     = 1;
@@ -2435,7 +2435,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA * dummy, bool use_nds)
     {
         y_position += scaled_branch_distance;
 
-        GBDATA     *gb_name = GB_find(gb_species, "name", 0, down_level);
+        GBDATA     *gb_name = GB_entry(gb_species, "name");
         const char *name    = 0;
 
         if (gb_name) {

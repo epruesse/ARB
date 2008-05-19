@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Mon Mar/03/2008 17:24 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri May/16/2008 11:16 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -125,9 +125,9 @@ namespace {
             GBDATA *gb_subtrees = GB_search(gb_main, "subtrees", GB_FIND);
             if (gb_subtrees) {
                 GB_ERROR error  = 0;
-                for (GBDATA *gb_subtree = GB_find(gb_subtrees, "subtree", 0, down_level);
+                for (GBDATA *gb_subtree = GB_entry(gb_subtrees, "subtree");
                      gb_subtree && !error;
-                     gb_subtree = GB_find(gb_subtree, "subtree", 0, this_level|search_next))
+                     gb_subtree = GB_nextEntry(gb_subtree))
                 {
                     GBDATA *gb_path = GB_search(gb_subtree, "path", GB_FIND);
                     if (!gb_path) {
@@ -158,9 +158,9 @@ namespace {
             GBDATA *gb_probe_groups = GB_search(gb_main, "probe_groups", GB_FIND);
             if (gb_probe_groups) {
                 GB_ERROR error  = 0;
-                for (GBDATA *gb_probe_group = GB_find(gb_probe_groups, "probe_group", 0, down_level);
+                for (GBDATA *gb_probe_group = GB_entry(gb_probe_groups, "probe_group");
                      gb_probe_group && !error;
-                     gb_probe_group = GB_find(gb_probe_group, "probe_group", 0, this_level|search_next))
+                     gb_probe_group = GB_nextEntry(gb_probe_group))
                 {
                     GBDATA *gb_id = GB_search(gb_probe_group, "id", GB_FIND);
                     if (gb_id) {
@@ -243,7 +243,7 @@ namespace {
                                             const char *entry_name, const char *group_id)
     {
         GB_ERROR  error    = 0;
-        GBDATA   *gb_entry = GB_find(gb_father, entry_name, 0, down_level);
+        GBDATA   *gb_entry = GB_entry(gb_father, entry_name);
 
         if (gb_entry) {
             char *probe_string = GB_read_string(gb_entry);
@@ -286,9 +286,9 @@ namespace {
                 // error = "no 'probe_group_common' entry found";
             }
             else {
-                for (GBDATA *gb_probe = GB_find(gb_probe_group_common, "probe", 0, down_level);
+                for (GBDATA *gb_probe = GB_entry(gb_probe_group_common, "probe");
                      gb_probe;
-                     gb_probe = GB_find(gb_probe, "probe", 0, this_level|search_next))
+                     gb_probe = GB_nextEntry(gb_probe))
                 {
                     probes.push_back(GB_read_char_pntr(gb_probe));
                 }
@@ -312,7 +312,7 @@ namespace {
                 error = GBS_global_string("unknown subtree '%s'", decoded_path);
             }
             else {
-                GBDATA *gb_member = GB_find(gb_subtree, "member", 0, down_level);
+                GBDATA *gb_member = GB_entry(gb_subtree, "member");
 
                 if (gb_member) { // leaf node
                     SpeciesID     id   = GB_read_int(gb_member);
@@ -341,7 +341,7 @@ namespace {
             error = GBS_global_string("Can't find probe group '%s'", group_id);
         }
         else {
-            GBDATA *gb_members = GB_find(gb_probe_group, "members", 0, down_level);
+            GBDATA *gb_members = GB_entry(gb_probe_group, "members");
 
             if (!gb_members) {
                 error = GBS_global_string("group '%s' has no 'members' (internal error)", group_id);
@@ -505,15 +505,15 @@ namespace {
                         const char         *covering_group_id   = 0;
                         const char         *ngh_group_id        = 0;
 
-                        if (GBDATA *gb_coverage = GB_find(gb_subtree, "coverage", 0, down_level)) {
+                        if (GBDATA *gb_coverage = GB_entry(gb_subtree, "coverage")) {
                             int     coverage       = GB_read_int(gb_coverage);
-                            GBDATA *gb_coverage_id = GB_find(gb_subtree, "coverage_id", 0, down_level);
+                            GBDATA *gb_coverage_id = GB_entry(gb_subtree, "coverage_id");
 
                             if (!gb_coverage_id) {
                                 error = "'coverage_id' expected";
                             }
                             else {
-                                GBDATA *gb_speccount = GB_find(gb_subtree, "speccount", 0, down_level);
+                                GBDATA *gb_speccount = GB_entry(gb_subtree, "speccount");
                                 if (!gb_speccount) {
                                     error = "'speccount' expected";
                                 }

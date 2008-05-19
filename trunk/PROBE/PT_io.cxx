@@ -84,7 +84,7 @@ void probe_read_data_base(char *name)
         exit(EXIT_FAILURE);
     }
     GB_begin_transaction(gb_main);
-    gb_species_data = GB_find(gb_main,"species_data",0,down_level);
+    gb_species_data = GB_entry(gb_main,"species_data");
     if (!gb_species_data){
         printf("Database %s is empty\n",name);
         exit(EXIT_FAILURE);
@@ -157,11 +157,11 @@ probe_read_alignment(int j, int *psize)
     static char    *buffer = 0;
     GBDATA  *gb_ali,*gb_data;
     buffer = 0;
-    gb_ali = GB_find(psg.data[j].gbd, psg.alignment_name, 0, down_level);
+    gb_ali = GB_entry(psg.data[j].gbd, psg.alignment_name);
     if (!gb_ali)
         return 0;
     /* this alignment doesnt exist */
-    gb_data = GB_find(gb_ali, "data", 0, down_level);
+    gb_data = GB_entry(gb_ali, "data");
     if (!gb_data) {
         return 0;
     }
@@ -212,12 +212,12 @@ void probe_read_alignments()
          gb_species;
          gb_species = GBT_next_species(gb_species) )
     {
-        gb_name = GB_find(gb_species,"name",0,down_level);
+        gb_name = GB_entry(gb_species,"name");
         if (!gb_name) continue;
 
         psg.data[count].name = GB_read_string(gb_name);
 
-        gb_name = GB_find(gb_species,"full_name",0,down_level);
+        gb_name = GB_entry(gb_species,"full_name");
         if (gb_name) {
             psg.data[count].fullname = GB_read_string(gb_name);
         }
@@ -228,10 +228,10 @@ void probe_read_alignments()
         psg.data[count].is_group = 1;
         psg.data[count].gbd = gb_species;
         /* get alignments */
-        gb_ali = GB_find(gb_species, psg.alignment_name, 0, down_level);
+        gb_ali = GB_entry(gb_species, psg.alignment_name);
         if (!gb_ali) continue;
         /* this alignment doesnt exist */
-        gb_data = GB_find(gb_ali,"data",0,down_level);
+        gb_data = GB_entry(gb_ali,"data");
         if (!gb_data) {
             fprintf(stderr,"Species '%s' has no data in '%s'\n", psg.data[count].name, psg.alignment_name);
             data_missing++;

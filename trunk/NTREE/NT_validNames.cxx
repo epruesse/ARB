@@ -129,7 +129,7 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
         DescList::iterator di;
         const char* typeStr;
         GB_begin_transaction(GLOBAL_gb_main);
-        namesCont = GB_find(GLOBAL_gb_main, "VALID_NAMES", 0, down_level);
+        namesCont = GB_entry(GLOBAL_gb_main, "VALID_NAMES");
         if(namesCont != NULL){
             aw_message("Container for Valid Names already exists\n Please delete old Valid Names first");
         }
@@ -176,7 +176,7 @@ void NT_suggestValidNames(AW_window*, AW_CL, AW_CL) {
     vector<string> speciesNames;
     GB_begin_transaction(GLOBAL_gb_main);
 
-    GBDATA*  GB_validNamesCont = GB_find(GLOBAL_gb_main, "VALID_NAMES", 0, down_level);
+    GBDATA*  GB_validNamesCont = GB_entry(GLOBAL_gb_main, "VALID_NAMES");
     GB_ERROR err               = 0;
 
     if (!GB_validNamesCont) err = "No valid names imported yet";
@@ -185,23 +185,24 @@ void NT_suggestValidNames(AW_window*, AW_CL, AW_CL) {
          !err && GBT_species;
          GBT_species=GBT_next_species(GBT_species)){
         // retrieve species names
-        GBDATA* GBT_fullName = GB_find(GBT_species,"full_name",0,down_level); // gb_fullname
+        GBDATA* GBT_fullName = GB_entry(GBT_species,"full_name"); // gb_fullname
         char *fullName =  GBT_fullName ? GB_read_string(GBT_fullName) : 0;
         if (!fullName) err = "Species has no fullname";
 
         // search validNames
 
-        for (GBDATA *GB_validNamePair = GB_find(GB_validNamesCont, "pair", 0, down_level);
+        for (GBDATA *GB_validNamePair = GB_entry(GB_validNamesCont, "pair");
              GB_validNamePair && !err;
-             GB_validNamePair = GB_find(GB_validNamePair,"pair" ,0,this_level|search_next)) {
+             GB_validNamePair = GB_nextEntry(GB_validNamePair))
+        {
             // retrieve list of all species names
 
-            GBDATA* actDesc = GB_find(GB_validNamePair, "DESCTYPE", 0, down_level);
+            GBDATA* actDesc = GB_entry(GB_validNamePair, "DESCTYPE");
             char* typeString = GB_read_string(actDesc);
             if (strcmp(typeString, "NOTYPE") != 0){
-                GBDATA* newName = GB_find(GB_validNamePair, "NEWNAME", 0, down_level);
+                GBDATA* newName = GB_entry(GB_validNamePair, "NEWNAME");
                 char* validName = newName ? GB_read_string(newName) : 0;
-                GBDATA* oldName = GB_find(GB_validNamePair, "OLDNAME", 0, down_level);
+                GBDATA* oldName = GB_entry(GB_validNamePair, "OLDNAME");
                 if (!oldName) { std::cout << "oldName not found" << std:: cout; return; }
                 char* depName = GB_read_string(oldName);
                 if (!depName){std::cout << "deprecatedName not found" << std:: cout; return; }
@@ -215,14 +216,14 @@ void NT_suggestValidNames(AW_window*, AW_CL, AW_CL) {
                 if(!err && ( (strcmp(fullName, validName) == 0)||(strcmp(fullName, depName) == 0))) {
                     //insert new database fields if necessary
 
-                    GBDATA* GB_speciesValidNameCont = GB_find(GBT_species,"Valid_Name",0, down_level);
+                    GBDATA* GB_speciesValidNameCont = GB_entry(GBT_species,"Valid_Name");
                     if (GB_speciesValidNameCont == 0){GB_speciesValidNameCont = GB_create_container(GBT_species, "Valid_Name");}
 
-                    GBDATA* GB_speciesValidName = GB_find(GB_speciesValidNameCont, "NameString", 0, down_level);
+                    GBDATA* GB_speciesValidName = GB_entry(GB_speciesValidNameCont, "NameString");
                     if (GB_speciesValidName == 0){GB_speciesValidName = GB_create(GB_speciesValidNameCont, "NameString", GB_STRING);}
                     GB_write_string(GB_speciesValidName, validName);
 
-                    GBDATA* GB_speciesDescType = GB_find(GB_speciesValidNameCont, "DescType", 0, down_level);
+                    GBDATA* GB_speciesDescType = GB_entry(GB_speciesValidNameCont, "DescType");
                     if (GB_speciesDescType == 0){GB_speciesDescType = GB_create(GB_speciesValidNameCont, "DescType", GB_STRING);}
                     GB_write_string(GB_speciesDescType, typeString);
 

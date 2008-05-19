@@ -39,8 +39,8 @@ void MG_tree_rename_cb(AW_window *aww,GBDATA *gbd, int tree_nr){
     if (!error) {
         GB_begin_transaction(gbd);
         GBDATA *gb_tree_data = GB_search(gbd,"tree_data",GB_CREATE_CONTAINER);
-        GBDATA *gb_tree_name = GB_find(gb_tree_data,source,0,down_level);
-        GBDATA *gb_dest_tree = GB_find(gb_tree_data,dest,0,down_level);
+        GBDATA *gb_tree_name = GB_entry(gb_tree_data,source);
+        GBDATA *gb_dest_tree = GB_entry(gb_tree_data,dest);
 
         if (gb_dest_tree) {
             error = "Sorry: Tree already exists";
@@ -115,7 +115,7 @@ void MG_tr_delete_cb(AW_window *aww,GBDATA *gbd, long tree_nr){
 
     GB_begin_transaction(gbd);
     GBDATA *gb_tree_data = GB_search(gbd,"tree_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_tree_name = GB_find(gb_tree_data,source,0,down_level);
+    GBDATA *gb_tree_name = GB_entry(gb_tree_data,source);
 
     if (gb_tree_name) {
         error = GB_delete(gb_tree_name);
@@ -139,8 +139,8 @@ void MG_transfer_tree(AW_window *aww){
 
     GBDATA *gb_tree_data1 = GB_search(GLOBAL_gb_merge,"tree_data",GB_CREATE_CONTAINER);
     GBDATA *gb_tree_data2 = GB_search(GLOBAL_gb_dest,"tree_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_source     = GB_find(gb_tree_data1, source, 0, down_level);
-    GBDATA *gb_dest_tree  = GB_find(gb_tree_data2, dest,   0, down_level);
+    GBDATA *gb_source     = GB_entry(gb_tree_data1, source);
+    GBDATA *gb_dest_tree  = GB_entry(gb_tree_data2, dest);
 
     if (!gb_source) error = "Please select a tree you want to transfer !!!";
     else if (gb_dest_tree) {

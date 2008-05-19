@@ -36,10 +36,10 @@ static void awt_create_selection_list_on_ad_cb(GBDATA *dummy, struct adawcbstruc
 
     for (gb_alignment = GB_search(cbs->gb_main,"presets/alignment",GB_FIND);
          gb_alignment;
-         gb_alignment = GB_find(gb_alignment,"alignment",0,this_level|search_next))
+         gb_alignment = GB_nextEntry(gb_alignment))
     {
-        gb_alignment_type = GB_find(gb_alignment,"alignment_type",0,down_level);
-        gb_alignment_name = GB_find(gb_alignment,"alignment_name",0,down_level);
+        gb_alignment_type = GB_entry(gb_alignment,"alignment_type");
+        gb_alignment_name = GB_entry(gb_alignment,"alignment_name");
         alignment_type    = GB_read_string(gb_alignment_type);
         alignment_name    = GB_read_string(gb_alignment_name);
 
@@ -331,7 +331,7 @@ void awt_create_selection_list_on_tables_cb(GBDATA *dummy, struct awt_sel_list_f
          gb_table;
          gb_table = GBT_next_table(gb_table)){
 
-        GBDATA *gb_name = GB_find(gb_table,"name",0,down_level);
+        GBDATA *gb_name = GB_entry(gb_table,"name");
         GBDATA *gb_description = GB_search(gb_table,"description",GB_STRING);
         if (!gb_name) continue;
         char *table_name = GB_read_string(gb_name);
@@ -376,7 +376,7 @@ void awt_create_selection_list_on_table_fields_cb(GBDATA *dummy, struct awt_sel_
          gb_table_field;
          gb_table_field = GBT_next_table_field(gb_table_field))
     {
-        GBDATA *gb_name = GB_find(gb_table_field,"name",0,down_level);
+        GBDATA *gb_name = GB_entry(gb_table_field,"name");
         GBDATA *gb_description = GB_search(gb_table_field,"description",GB_STRING);
         if (!gb_name) continue;
         char *table_name = GB_read_string(gb_name);
@@ -426,11 +426,8 @@ void awt_create_selection_list_on_configurations_cb(GBDATA *dummy, struct adawcb
 #endif // DEVEL_RALF
 
 
-    for (gb_config = GB_find(gb_configuration_data,0,0,down_level);
-         gb_config;
-         gb_config = GB_find(gb_config,0,0,this_level | search_next))
-    {
-        GBDATA *gb_name = GB_find(gb_config,"name",0,down_level);
+    for (gb_config = GB_child(gb_configuration_data); gb_config; gb_config = GB_nextChild(gb_config)) {
+        GBDATA *gb_name = GB_entry(gb_config,"name");
         if (!gb_name){
             aw_message("internal error: unnamed configuration (now renamed to 'unnamed_config')");
             gb_name = GB_create(gb_config, "name", GB_STRING);
@@ -493,11 +490,8 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
 #warning use GBT_get_configuration_names here and skip renaming here
 #endif // DEVEL_RALF
 
-    for (gb_config = GB_find(gb_configuration_data,0,0,down_level);
-         gb_config;
-         gb_config = GB_find(gb_config,0,0,this_level | search_next))
-    {
-        GBDATA *gb_name = GB_find(gb_config,"name",0,down_level);
+    for (gb_config = GB_child(gb_configuration_data); gb_config; gb_config = GB_nextChild(gb_config)) {
+        GBDATA *gb_name = GB_entry(gb_config,"name");
         if (!gb_name){
             aw_message("internal error: unnamed configuration (now renamed to 'unnamed_config')");
             gb_name = GB_create(gb_config, "name", GB_STRING);
@@ -545,7 +539,7 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
          gb_extended;
          gb_extended = GBT_next_SAI(gb_extended))
     {
-        GBDATA *gb_name = GB_find(gb_extended,"name",0,down_level);
+        GBDATA *gb_name = GB_entry(gb_extended,"name");
         if (!gb_name) continue;
         if (cbs->filter_poc) {
             char *res = cbs->filter_poc(gb_extended,cbs->filter_cd);
@@ -557,7 +551,7 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
         }
         else {
             const char *name     = GB_read_char_pntr(gb_name);
-            GBDATA     *gb_group = GB_find(gb_extended, "sai_group", 0, down_level);
+            GBDATA     *gb_group = GB_entry(gb_extended, "sai_group");
             if (gb_group) {
                 const char *group          = GB_read_char_pntr(gb_group);
                 char       *group_and_name = GBS_global_string_copy("[%s] %s", group, name);

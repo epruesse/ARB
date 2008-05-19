@@ -31,8 +31,8 @@ resort_data_by_customsub(GBDATA *first, GBDATA *second)
     int cmp;
 
     /* first key */
-    gb_0 = GB_find(first,custom_s_struct.key1,0,down_level);
-    gb_1 = GB_find(second,custom_s_struct.key1,0,down_level);
+    gb_0 = GB_entry(first,custom_s_struct.key1);
+    gb_1 = GB_entry(second,custom_s_struct.key1);
     if (gb_0 && !gb_1) return -1;
     if (!gb_0 && gb_1) return 1;
     if (gb_0 && gb_1) {
@@ -63,8 +63,8 @@ resort_data_by_customsub(GBDATA *first, GBDATA *second)
 
     }
     /* second key */
-    gb_0 = GB_find(first,custom_s_struct.key2,0,down_level);
-    gb_1 = GB_find(second,custom_s_struct.key2,0,down_level);
+    gb_0 = GB_entry(first,custom_s_struct.key2);
+    gb_1 = GB_entry(second,custom_s_struct.key2);
     if (gb_0 && !gb_1) return -1;
     if (!gb_0 && gb_1) return 1;
     if (gb_0 && gb_1) {
@@ -95,8 +95,8 @@ resort_data_by_customsub(GBDATA *first, GBDATA *second)
 
     }
     /* third key */
-    gb_0 = GB_find(first,custom_s_struct.key3,0,down_level);
-    gb_1 = GB_find(second,custom_s_struct.key3,0,down_level);
+    gb_0 = GB_entry(first,custom_s_struct.key3);
+    gb_1 = GB_entry(second,custom_s_struct.key3);
     if (gb_0 && !gb_1) return -1;
     if (!gb_0 && gb_1) return 1;
     if (gb_0 && gb_1) {

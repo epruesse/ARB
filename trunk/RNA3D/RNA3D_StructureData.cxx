@@ -104,8 +104,8 @@ int Structure3D::FindTypeOfRNA(){
     }
     else {
         char   *ali_name          = GBT_get_default_alignment(gb_main);
-        GBDATA *gbAlignment       = GB_find(gbTemplate, ali_name, 0, down_level);
-        GBDATA *gbTemplateSeqData = gbAlignment ? GB_find(gbAlignment, "data", 0, down_level) : 0;
+        GBDATA *gbAlignment       = GB_entry(gbTemplate, ali_name);
+        GBDATA *gbTemplateSeqData = gbAlignment ? GB_entry(gbAlignment, "data") : 0;
                  
         if (!gbTemplateSeqData) {
           aw_message("Could not find species in the database!");
@@ -1399,8 +1399,8 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
             GBDATA *gbSpecies = GBT_find_species(gb_main, pSpeciesName);
             if(gbSpecies) {
                 char   *ali_name          = GBT_get_default_alignment(gb_main);
-                GBDATA *gbAlignment       = GB_find(gbTemplate, ali_name, 0, down_level);
-                GBDATA *gbTemplateSeqData = gbAlignment ? GB_find(gbAlignment, "data", 0, down_level) : 0;
+                GBDATA *gbAlignment       = GB_entry(gbTemplate, ali_name);
+                GBDATA *gbTemplateSeqData = gbAlignment ? GB_entry(gbAlignment, "data") : 0;
                 
                 if (!gbTemplateSeqData) {
                     aw_message(GBS_global_string("Mapping impossible, since SAI:ECOLI has no data in alignment '%s'", ali_name));
@@ -1415,7 +1415,7 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr){
                     }
 
                     char buf[100];
-                    char *pSpFullName = GB_read_string(GB_find(gbSpecies, "full_name", 0, down_level));
+                    char *pSpFullName = GB_read_string(GB_entry(gbSpecies, "full_name"));
                     sprintf(buf, "%s : %s", pSpeciesName, pSpFullName);
                     awr->awar(AWAR_3D_SELECTED_SPECIES)->write_string(buf); 
 

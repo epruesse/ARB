@@ -63,9 +63,9 @@ int main(int argc, char **argv){
          gb_species = GBT_next_marked_species(gb_species)){
         if ((slider++)%10 == 0) printf("%i:%i\n",slider,all_marked);
 
-        GBDATA *gb_ali = GB_find(gb_species, alignment_name, 0, down_level); // search the sequence database entry ( ali_xxx/data )
+        GBDATA *gb_ali = GB_entry(gb_species, alignment_name); // search the sequence database entry ( ali_xxx/data )
         if (!gb_ali) continue;
-        GBDATA *gb_data = GB_find(gb_ali, "data", 0, down_level);
+        GBDATA *gb_data = GB_entry(gb_ali, "data");
         if(!gb_data) continue;
 
         const char *seq = GB_read_char_pntr(gb_data);

@@ -660,7 +660,7 @@ inline bool nameIsUnique(const char *short_name, GBDATA *gb_species_data) {
 static GB_ERROR GEN_species_add_entry(GBDATA *gb_pseudo, const char *key, const char *value) {
     GB_ERROR  error = 0;
     GB_clear_error();
-    GBDATA   *gbd   = GB_find(gb_pseudo, key, 0, down_level);
+    GBDATA   *gbd   = GB_entry(gb_pseudo, key);
 
     if (!gbd) { // key does not exist yet -> create
         gbd   = GB_create(gb_pseudo, key, GB_STRING);
@@ -723,15 +723,15 @@ static const char* readACC(GBDATA *gb_species_data, const char *name) {
     const char *other_acc    = 0;
     GBDATA *gb_other_species = GBT_find_species_rel_species_data(gb_species_data, name);
     if (gb_other_species) {
-        GBDATA *gb_other_acc = GB_find(gb_other_species, "acc", 0, down_level);
+        GBDATA *gb_other_acc = GB_entry(gb_other_species, "acc");
         if (gb_other_acc) other_acc = GB_read_char_pntr(gb_other_acc);
     }
     return other_acc;
 }
 
 static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene, EG2PS_data *eg2ps) {
-    GBDATA *gb_sp_name         = GB_find(gb_species,"name",0,down_level);
-    GBDATA *gb_sp_fullname     = GB_find(gb_species,"full_name",0,down_level);
+    GBDATA *gb_sp_name         = GB_entry(gb_species,"name");
+    GBDATA *gb_sp_fullname     = GB_entry(gb_species,"full_name");
     char   *species_name       = gb_sp_name ? GB_read_string(gb_sp_name) : 0;
     char   *full_species_name  = gb_sp_fullname ? GB_read_string(gb_sp_fullname) : species_name;
     // GBDATA *gb_species_data = GB_search(gb_main, "species_data",  GB_CREATE_CONTAINER);
@@ -741,7 +741,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
         return;
     }
 
-    GBDATA *gb_ge_name = GB_find(gb_gene,"name",0,down_level);
+    GBDATA *gb_ge_name = GB_entry(gb_gene,"name");
     char   *gene_name  = gb_sp_name ? GB_read_string(gb_ge_name) : 0;
 
     if (!gene_name) {
@@ -771,7 +771,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
         GB_ERROR  error                   = 0;
 
         if (gb_exist_geneSpec) {
-            GBDATA *gb_name       = GB_find(gb_exist_geneSpec, "name", 0, down_level);
+            GBDATA *gb_name       = GB_entry(gb_exist_geneSpec, "name");
             char   *existing_name = GB_read_string(gb_name);
 
             gen_assert(ask_about_existing_gene_species);
@@ -790,7 +790,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
                     break;
                 }
                 case 1: {     // Insert new alignment or overwrite alignment
-                    GBDATA     *gb_ali = GB_find(gb_exist_geneSpec, ali, 0, down_level);
+                    GBDATA     *gb_ali = GB_entry(gb_exist_geneSpec, ali);
                     if (gb_ali) { // the alignment already exists
                         char *question2        = GBS_global_string_copy("Gene-species '%s' already has data in '%s'", existing_name, ali);
                         int   overwrite_answer = ask_to_overwrite_alignment->get_answer(question2, "Overwrite data,Skip", "all", true);
@@ -921,8 +921,8 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
             const char *transl_table = 0;
 
             {
-                GBDATA *gb_codon_start  = GB_find(gb_gene, "codon_start", 0, down_level);
-                GBDATA *gb_transl_table = GB_find(gb_gene, "transl_table", 0, down_level);
+                GBDATA *gb_codon_start  = GB_entry(gb_gene, "codon_start");
+                GBDATA *gb_transl_table = GB_entry(gb_gene, "transl_table");
 
                 if (gb_codon_start)  codon_start  = GB_read_char_pntr(gb_codon_start);
                 if (gb_transl_table) transl_table = GB_read_char_pntr(gb_transl_table);
@@ -981,7 +981,7 @@ static void do_mark_command_for_one_species(int imode, GBDATA *gb_species, AW_CL
                 //                 break;
                 //             }
             default: {
-                GBDATA *gb_hidden = GB_find(gb_gene, ARB_HIDDEN, 0, down_level);
+                GBDATA *gb_hidden = GB_entry(gb_gene, ARB_HIDDEN);
                 bool    hidden    = gb_hidden ? GB_read_byte(gb_hidden) != 0 : false;
                 //                 long    myColor   = AW_find_color_group(gb_gene, true);
 
@@ -1016,7 +1016,7 @@ static void do_hide_command_for_one_species(int imode, GBDATA *gb_species, AW_CL
     {
         bool marked = GB_read_flag(gb_gene) != 0;
 
-        GBDATA *gb_hidden  = GB_find(gb_gene, ARB_HIDDEN, 0, down_level);
+        GBDATA *gb_hidden  = GB_entry(gb_gene, ARB_HIDDEN);
         bool    hidden     = gb_hidden ? (GB_read_byte(gb_hidden) != 0) : false;
         bool    org_hidden = hidden;
 
@@ -1168,9 +1168,9 @@ void gene_extract_cb(AW_window *aww, AW_CL cl_pmode){
 
 GBDATA *GEN_find_pseudo(GBDATA *gb_organism, GBDATA *gb_gene) {
     GBDATA *gb_species_data = GB_get_father(gb_organism);
-    GBDATA *gb_name         = GB_find(gb_organism, "name", 0, down_level);
+    GBDATA *gb_name         = GB_entry(gb_organism, "name");
     char   *organism_name   = GB_read_string(gb_name);
-    gb_name                 = GB_find(gb_gene, "name", 0, down_level);
+    gb_name                 = GB_entry(gb_gene, "name");
     char   *gene_name       = GB_read_string(gb_name);
     GBDATA *gb_pseudo       = 0;
 
@@ -1297,9 +1297,9 @@ static void mark_gene_species_using_current_alignment(AW_window */*aww*/, AW_CL 
          gb_pseudo;
          gb_pseudo = GEN_next_pseudo_species(gb_pseudo))
     {
-        GBDATA *gb_ali = GB_find(gb_pseudo, ali, 0, down_level);
+        GBDATA *gb_ali = GB_entry(gb_pseudo, ali);
         if (gb_ali) {
-            GBDATA *gb_data = GB_find(gb_ali, "data", 0, down_level);
+            GBDATA *gb_data = GB_entry(gb_ali, "data");
             if (gb_data) {
                 GB_write_flag(gb_pseudo, 1);
             }

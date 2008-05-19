@@ -85,11 +85,11 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
     GBDATA *gb_ali = 0;
     GBDATA *gb_freqs = 0;
     if (!error) {
-        gb_ali = GB_find(gb_sai,alignment_name,0,down_level);
+        gb_ali = GB_entry(gb_sai,alignment_name);
         if (!gb_ali) error = GB_export_error("Please select a valid Column Statist");
     }
     if (!error) {
-        gb_freqs = GB_find(gb_ali,"FREQUENCIES",0,down_level);
+        gb_freqs = GB_entry(gb_ali,"FREQUENCIES");
         if (!gb_ali) error = GB_export_error("Please select a valid Column Statist");
     }
     if (error) {
@@ -149,9 +149,7 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
     GB_UINT4 *freqi[256];
     for (i=0;i<256; i++) freqi[i] = 0;
     int wf;                 // ********* read the frequence statistic
-    for (   gb_freq = GB_find(gb_freqs, 0, 0, down_level);
-            gb_freq;
-            gb_freq = GB_find(gb_freq, 0, 0, this_level | search_next) ) {
+    for (gb_freq = GB_child(gb_freqs); gb_freq; gb_freq = GB_nextChild(gb_freq)) {
         char *key = GB_read_key(gb_freq);
         if (key[0] == 'N' && key[1] && !key[2]) {
             wf = key[1];
@@ -161,11 +159,11 @@ GB_ERROR AWT_csp::go(AP_filter *filter){
     }
 
     GB_UINT4 *minmut = 0;
-    GBDATA *gb_minmut = GB_find(gb_freqs,"TRANSITIONS",0,down_level);
+    GBDATA *gb_minmut = GB_entry(gb_freqs,"TRANSITIONS");
     if (gb_minmut) minmut = GB_read_ints(gb_minmut);
 
     GB_UINT4 *transver = 0;
-    GBDATA *gb_transver = GB_find(gb_freqs,"TRANSVERSIONS",0,down_level);
+    GBDATA *gb_transver = GB_entry(gb_freqs,"TRANSVERSIONS");
     if (gb_transver) transver = GB_read_ints(gb_transver);
     unsigned long max_freq_sum = 0;
     for (wf = 0; wf<256;wf++) {     // ********* calculate sum of mutations
@@ -268,7 +266,7 @@ char *awt_csp_sai_filter(GBDATA *gb_extended, AW_CL csp_cd) {
     GBDATA *gb_type = GB_search(gb_extended, csp->type_path,GB_FIND);
     if (!gb_type) return 0;
     if (GBS_string_cmp( GB_read_char_pntr(gb_type),"PV?:*",0) == 0) {
-        GBDATA *gb_name = GB_find(gb_extended,"name",0,down_level);
+        GBDATA *gb_name = GB_entry(gb_extended,"name");
         void *strstruct = GBS_stropen(1024);
         GBS_strcat(strstruct,GB_read_char_pntr(gb_name));
         GBS_strcat(strstruct,":      <");

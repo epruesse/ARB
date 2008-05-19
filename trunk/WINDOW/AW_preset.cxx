@@ -517,14 +517,14 @@ long AW_find_color_group(GBDATA *gbd, AW_BOOL ignore_usage_flag) {
     aw_assert(color_groups_initialized);
     if (!use_color_groups && !ignore_usage_flag) return 0;
 
-    GBDATA *gb_group = GB_find(gbd, AW_COLOR_GROUP_ENTRY, 0, down_level);
+    GBDATA *gb_group = GB_entry(gbd, AW_COLOR_GROUP_ENTRY);
     if (gb_group) return GB_read_int(gb_group);
     return 0;                   /* no color group */
 }
 
 GB_ERROR AW_set_color_group(GBDATA *gbd, long color_group) {
     GB_ERROR  error    = 0;
-    GBDATA   *gb_group = GB_find(gbd, AW_COLOR_GROUP_ENTRY, 0, down_level);
+    GBDATA   *gb_group = GB_entry(gbd, AW_COLOR_GROUP_ENTRY);
 
     if (!gb_group) gb_group = GB_create(gbd, AW_COLOR_GROUP_ENTRY, GB_INT);
 

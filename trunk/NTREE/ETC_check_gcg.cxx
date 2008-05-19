@@ -32,42 +32,47 @@ struct arb_arcg_struct {
 
 GB_ERROR arb_arcg()
 {
-    GB_ERROR error = 0;
-    GB_HASH *hash;
-    GBDATA  *gb_species_data;
-    GBDATA  *gb_species;
-    GBDATA  *gb_acc;
-    char    *acc;
-    char    *ac,*p;
-    FILE    *in = 0,*out = 0,*fetch = 0;
-    char    c;
-    int bp;
-    int i;
-    char    *fetchbuffer = 0;
+    GB_ERROR  error       = 0;
+    char     *ac,*p;
+    FILE     *in          = 0;
+    FILE     *out         = 0;
+    FILE     *fetch       = 0;
+    char      c;
+    int       bp;
+    int       i;
+    char     *fetchbuffer = 0;
 
-    hash = GBS_create_hash(ARCG_HASH_SIZE,0);
-    for (   gb_species_data = GB_find(GLOBAL_gb_main,"species_data",0,down_level);
-            gb_species_data; gb_species_data = 0) {
-        for (   gb_species = GB_find(gb_species_data,"species",0,down_level);
-                gb_species;
-                gb_species = GB_find(gb_species,"species",0,search_next|this_level)){
-            gb_acc = GB_find(gb_species,"acc",0,down_level);
+    GB_HASH *hash            = GBS_create_hash(ARCG_HASH_SIZE,0);
+    GBDATA  *gb_species_data = GB_entry(GLOBAL_gb_main,"species_data");
+    
+    if (gb_species_data) {
+        for (GBDATA *gb_species = GB_entry(gb_species_data,"species"); !error && gb_species; gb_species = GB_nextEntry(gb_species)) {
+            GBDATA *gb_acc = GB_entry(gb_species,"acc");
             if (gb_acc) {
-                acc = GB_read_string(gb_acc);
-                if (!acc) return GB_get_error();
-                for (ac = acc; *ac; ) {
-                    for (p = ac; *p==' '; p++) ;
-                    ac = p;
-                    while (*p && *p!=' ' && *p!=';') p++;
-                    if (*p) *(p++) = 0;
-                    GBS_write_hash(hash,ac,(long)gb_species);
-                    ac = p;
+                char *acc = GB_read_string(gb_acc);
+
+                if (!acc) {
+                    error = GB_get_error();
+                }
+                else {
+                    for (ac = acc; *ac; ) {
+                        for (p = ac; *p==' '; p++) ;
+                        ac = p;
+                        while (*p && *p!=' ' && *p!=';') p++;
+                        if (*p) *(p++) = 0;
+                        GBS_write_hash(hash,ac,(long)gb_species);
+                        ac = p;
+                    }
+                    free(acc);
                 }
             }
         }
     }
-    in = fopen(arcg.infile,"r");
-    if (!in) error = GB_export_error("file '%s' not found",arcg.infile) ;
+
+    if (!error) {
+        in = fopen(arcg.infile,"r");
+        if (!in) error = GB_export_error("file '%s' not found",arcg.infile) ;
+    }
 
     if (!error ) {
         out = fopen(arcg.outfile,"w");

@@ -1130,7 +1130,7 @@ static GB_ERROR writeStringToAlignment(GBDATA *gb_species, GB_CSTR alignment, GB
     }
     else
     {
-        GBDATA *gb_species_name = GB_find(gb_species, "name", 0, down_level);
+        GBDATA *gb_species_name = GB_entry(gb_species, "name");
 
         error = GB_export_error("Cannot create entry '%s' for '%s'",
                                 data_name,

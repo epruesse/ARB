@@ -751,7 +751,7 @@ static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_
         if (GEN_is_pseudo_gene_species(ref_gb_node)) {
             GBDATA *gb_organism = GEN_find_origin_organism(ref_gb_node, organism_hash);
             if (gb_organism) {
-                GBDATA *gb_name = GB_find(gb_organism, "name", 0, down_level);
+                GBDATA *gb_name = GB_entry(gb_organism, "name");
                 if (gb_name) {
                     char *name  = GB_read_string(gb_name);
                     free(ref_name);
@@ -909,7 +909,7 @@ void NT_rename_test(AW_window *, AW_CL cl_gb_main, AW_CL) {
     GB_ERROR  error   = 0;
 
     if (gbd) {
-        GBDATA *gb_remark = GB_find(gbd, "ali_16s", 0, down_level);
+        GBDATA *gb_remark = GB_entry(gbd, "ali_16s");
         if (gb_remark) {
             if (GB_rename(gb_remark, "ali_16s_new") != 0) {
                 error = GB_get_error();

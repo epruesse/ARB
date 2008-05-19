@@ -458,9 +458,7 @@ long gb_write_rek(FILE *out,GBCONTAINER *gbc,long deep,long big_hunk)
     char   *strng;
     char   *key;
     /*int index;*/
-    for (gb = GB_find((GBDATA *)gbc,0,0,down_level);
-         gb;
-         gb = GB_find(gb,0,0,this_level|search_next)) {
+    for (gb = GB_child((GBDATA *)gbc); gb; gb = GB_nextChild(gb)) {
         if (gb->flags.temporary) continue;
         key = GB_KEY(gb);
         if (!strcmp(key,GB_SYSTEM_FOLDER)) continue;    /* do not save system folder */

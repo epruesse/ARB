@@ -182,8 +182,8 @@ void tree_rename_cb(AW_window *aww){
     if (!error) {
         GB_begin_transaction(GLOBAL_gb_main);
         GBDATA *gb_tree_data = GB_search(GLOBAL_gb_main,"tree_data",GB_CREATE_CONTAINER);
-        GBDATA *gb_tree_name = GB_find(gb_tree_data,source,0,down_level);
-        GBDATA *gb_dest = GB_find(gb_tree_data,dest,0,down_level);
+        GBDATA *gb_tree_name = GB_entry(gb_tree_data,source);
+        GBDATA *gb_dest      = GB_entry(gb_tree_data,dest);
         if (gb_dest) {
             error = "Sorry: Tree already exists";
         }
@@ -224,8 +224,8 @@ void tree_copy_cb(AW_window *aww){
     if (!error) {
         GB_begin_transaction(GLOBAL_gb_main);
         GBDATA *gb_tree_data = GB_search(GLOBAL_gb_main,"tree_data",GB_CREATE_CONTAINER);
-        GBDATA *gb_tree_name = GB_find(gb_tree_data,source,0,down_level);
-        GBDATA *gb_dest      = GB_find(gb_tree_data,dest,0,down_level);
+        GBDATA *gb_tree_name = GB_entry(gb_tree_data,source);
+        GBDATA *gb_dest      = GB_entry(gb_tree_data,dest);
         if (gb_dest) {
             error = "Sorry: Tree already exists";
         }
@@ -619,7 +619,7 @@ void ad_tr_delete_cb(AW_window *aww){
     char *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
     GB_begin_transaction(GLOBAL_gb_main);
     GBDATA *gb_tree_data =  GB_search(GLOBAL_gb_main,"tree_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_tree_name =  GB_find(gb_tree_data,source,0,down_level);
+    GBDATA *gb_tree_name =  GB_entry(gb_tree_data,source);
     if (gb_tree_name) {
         char *newname = GBT_get_next_tree_name(GLOBAL_gb_main,source);
         error = GB_delete(gb_tree_name);
@@ -645,7 +645,7 @@ static void create_tree_last_window(AW_window *aww) {
     GB_begin_transaction(GLOBAL_gb_main);
 
     GBDATA *gb_tree_data = GB_search(GLOBAL_gb_main,"tree_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_tree_name = GB_find(gb_tree_data,source,0,down_level);
+    GBDATA *gb_tree_name = GB_entry(gb_tree_data,source);
 
     if (!gb_tree_name) {
         error = GB_export_error("No tree selected.");

@@ -125,9 +125,9 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
         GBDATA *gb_key_name;
         char   *key_name = 0;
         if (awt_check_scanner_key_data(cbs,gbd)) { // not exist, create new element
-            gb_key_name = GB_find(gbd,CHANGEKEY_NAME,0,down_level);
-            key_name = GB_read_string(gb_key_name);
-            GBDATA *gb_key_type = GB_find(gbd,CHANGEKEY_TYPE,0,down_level);
+            gb_key_name         = GB_entry(gbd,CHANGEKEY_NAME);
+            key_name            = GB_read_string(gb_key_name);
+            GBDATA *gb_key_type = GB_entry(gbd,CHANGEKEY_TYPE);
             if (strlen(value)) {
                 GBDATA *gb_new = GB_search(cbs->gb_user, key_name,GB_read_int(gb_key_type));
                 if (!gb_new) {
@@ -145,7 +145,7 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
                 const struct ad_item_selector *selector = cbs->selector;
 
                 if (selector->type == AWT_QUERY_ITEM_SPECIES) { // species
-                    GBDATA *gb_name = GB_find(cbs->gb_user, "name", 0, down_level);
+                    GBDATA *gb_name = GB_entry(cbs->gb_user, "name");
                     if (gb_name) {
                         char *name = GB_read_string(gb_name);
                         aw_openstatus("Renaming species");
@@ -178,7 +178,7 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
                              gb_exists;
                              gb_exists = selector->get_next_item(gb_exists))
                         {
-                            GBDATA *gb_name = GB_find(gb_exists, "name", 0, down_level);
+                            GBDATA *gb_name = GB_entry(gb_exists, "name");
                             if (gb_name) {
                                 const char *name = GB_read_char_pntr(gb_name);
                                 if (ARB_stricmp(name, value) == 0) break;
@@ -404,9 +404,7 @@ static void awt_scanner_scan_rek(GBDATA *gbd,struct adawcbstruct *cbs,int deep, 
         case GB_DB:
             sprintf(p,"<CONTAINER>:");
             cbs->aws->insert_selection( cbs->id, buffer, (long)gbd );
-            for (	gb2 = GB_find(gbd,0,0,down_level);
-                    gb2;
-                    gb2 = GB_find(gb2,0,0,this_level|search_next)){
+            for (gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {
                 awt_scanner_scan_rek(gb2,cbs, deep+1,id);
             }
             break;
@@ -415,9 +413,7 @@ static void awt_scanner_scan_rek(GBDATA *gbd,struct adawcbstruct *cbs,int deep, 
             cbs->aws->insert_selection( cbs->id, buffer, (long)gbd );
             GBDATA *gb_al = GB_follow_link(gbd);
             if (gb_al){
-                for (	gb2 = GB_find(gbd,0,0,down_level);
-                        gb2;
-                        gb2 = GB_find(gb2,0,0,this_level|search_next)){
+                for (gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {
                     awt_scanner_scan_rek(gb2,cbs, deep+1,id);
                 }
             }
@@ -460,17 +456,14 @@ refresh_again:
     GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
 
     for (int existing = 1; existing >= 0; --existing) {
-        for (GBDATA *gb_key = GB_find(gb_key_data,CHANGEKEY,0,down_level);
-             gb_key;
-             gb_key = GB_find(gb_key,CHANGEKEY,0,this_level|search_next))
-        {
-            GBDATA *gb_key_hidden = GB_find(gb_key,CHANGEKEY_HIDDEN,0,down_level);
+        for (GBDATA *gb_key = GB_entry(gb_key_data,CHANGEKEY); gb_key; gb_key = GB_nextEntry(gb_key)) {
+            GBDATA *gb_key_hidden = GB_entry(gb_key,CHANGEKEY_HIDDEN);
             if (gb_key_hidden && GB_read_int(gb_key_hidden)) continue; // dont show hidden fields in 'species information' window
 
-            GBDATA *gb_key_name = GB_find(gb_key,CHANGEKEY_NAME,0,down_level);
+            GBDATA *gb_key_name = GB_entry(gb_key,CHANGEKEY_NAME);
             if (!gb_key_name) continue;
 
-            GBDATA *gb_key_type = GB_find(gb_key,CHANGEKEY_TYPE,0,down_level);
+            GBDATA *gb_key_type = GB_entry(gb_key,CHANGEKEY_TYPE);
 
             const char *name = GB_read_char_pntr(gb_key_name);
             GBDATA     *gbd  = GB_search(cbs->gb_user,name,GB_FIND);

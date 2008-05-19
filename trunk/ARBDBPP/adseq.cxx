@@ -158,11 +158,11 @@ AD_ERR * AD_STAT::first() {
     char *key = 0;
     if (gb_mark != 0) {
         release();
-        gb_markdata = GB_find(gb_mark, 0, 0, down_level);
+        gb_markdata = GB_child(gb_mark);
         if (gb_markdata != 0) {
             key = GB_read_key(gb_markdata);
             if (strcmp(key, "data") == 0) {
-                gb_markdata = GB_find(gb_markdata, 0, 0, this_level | search_next);
+                gb_markdata = GB_nextChild(gb_markdata);
                 if (gb_markdata != 0) {
                     key = GB_read_key(gb_markdata);
                 }
@@ -184,10 +184,10 @@ AD_ERR * AD_STAT::first(AD_TYPES typus) {
     AD_TYPES adtype;
     if (gb_mark != 0) {
         release();
-        gb_markdata = GB_find(gb_mark, 0, 0, down_level);
+        gb_markdata = GB_child(gb_mark);
 
         while (last != 0) {
-            gb_markdata = GB_find(gb_mark, 0, 0, down_level);
+            gb_markdata = GB_child(gb_mark);
             if (gb_markdata != 0) {
                 adtype = (AD_TYPES) GB_read_type(gb_markdata);
                 if (adtype == typus) {
@@ -196,7 +196,7 @@ AD_ERR * AD_STAT::first(AD_TYPES typus) {
                     return 0;
                 }
                 else {
-                    gb_markdata = GB_find(gb_markdata,0,0,this_level | search_next );
+                    gb_markdata = GB_nextChild(gb_markdata);
                 }
             }
         }
@@ -210,7 +210,7 @@ AD_ERR * AD_STAT::next() {
         return new AD_ERR("AD_STAT::next() not possible, no first or last!");
     }
     release();
-    gb_markdata = GB_find(gb_markdata,0,0,this_level | search_next );
+    gb_markdata = GB_nextChild(gb_markdata);
     initpntr();
     return 0;
 }
@@ -222,7 +222,7 @@ AD_ERR * AD_STAT::next(AD_TYPES typus) {
     }
     release();
     while (gb_markdata != 0) {
-        gb_markdata = GB_find(gb_markdata,0,0,this_level | search_next );
+        gb_markdata = GB_nextChild(gb_markdata);
         if (gb_markdata != 0) {
             if ((AD_TYPES)GB_read_type(gb_markdata) == typus) {
                 initpntr();
@@ -461,11 +461,11 @@ AD_ERR * AD_SEQ::update()
 
     seq_len = ad_cont->ad_ali->len();
     if (!gb_seq){
-        gb_seq = GB_find(ad_cont->gb_ali,"data",0,down_level);
+        gb_seq = GB_entry(ad_cont->gb_ali,"data");
         if (gb_seq) nseq_but_filter = 0;
     }
     if (!gb_seq) {
-        gb_seq = GB_find(ad_cont->gb_ali,"bits",0,down_level);
+        gb_seq = GB_entry(ad_cont->gb_ali,"bits");
         if (gb_seq && GB_read_type(gb_seq) == GB_BITS) nseq_but_filter = 1;
         else    gb_seq = 0;
     }
@@ -996,7 +996,7 @@ AD_ERR * AD_CONT::init(AD_SPECIES * adptr1,AD_ALI * adptr2)
     ad_species = adptr1;
     ad_ali      = adptr2;
     gb_species = ad_species->gb_species;
-    gb_ali = GB_find(gb_species,ad_ali->name(),0,down_level);
+    gb_ali = GB_entry(gb_species,ad_ali->name());
     if (gb_ali) {
         (ad_species->count) ++; // in species eintragen
         (ad_ali->count) ++;

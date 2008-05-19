@@ -2,7 +2,7 @@
 //                                                                      //
 //   File      : AWT_item_sel_list.cxx                                  //
 //   Purpose   : selection lists for items (ad_item_selector)           //
-//   Time-stamp: <Mon May/23/2005 20:04 MET Coder@ReallySoft.de>        //
+//   Time-stamp: <Fri May/16/2008 11:16 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in May 2005              //
@@ -39,18 +39,15 @@ static void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbs
     GBDATA *gb_key;
     GBDATA *gb_key_name;
     
-    for (gb_key = GB_find(gb_key_data,CHANGEKEY,0,down_level);
-         gb_key;
-         gb_key = GB_find(gb_key,CHANGEKEY,0,this_level|search_next))
-    {
-        GBDATA *key_type = GB_find(gb_key,CHANGEKEY_TYPE,0,down_level);
+    for (gb_key = GB_entry(gb_key_data,CHANGEKEY); gb_key; gb_key = GB_nextEntry(gb_key)) {
+        GBDATA *key_type = GB_entry(gb_key,CHANGEKEY_TYPE);
         if ( !( ((long)cbs->def_filter) & (1<<GB_read_int(key_type)))) continue; // type does not match filter
 
-        gb_key_name = GB_find(gb_key,CHANGEKEY_NAME,0,down_level);
+        gb_key_name = GB_entry(gb_key,CHANGEKEY_NAME);
         if (!gb_key_name) continue; // key w/o name -> don't show
         char *name  = GB_read_char_pntr(gb_key_name);
 
-        GBDATA *gb_hidden = GB_find(gb_key, CHANGEKEY_HIDDEN, 0, down_level);
+        GBDATA *gb_hidden = GB_entry(gb_key, CHANGEKEY_HIDDEN);
         if (!gb_hidden) { // it's an older db version w/o hidden flag -> add it
             gb_hidden = GB_create(gb_key, CHANGEKEY_HIDDEN, GB_INT);
             GB_write_int(gb_hidden, 0); // default is non-hidden

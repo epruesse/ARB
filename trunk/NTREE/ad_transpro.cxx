@@ -94,7 +94,7 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
                 table_used[arb_table] = true;
             }
 
-//             GBDATA *gb_transl_table = GB_find(gb_species, "transl_table", 0, down_level);
+//             GBDATA *gb_transl_table = GB_entry(gb_species, "transl_table");
 //             int     arb_table       = 0; // use 'Standard Code' if no 'transl_table' entry was found
 
 //             if (gb_transl_table) {
@@ -102,7 +102,7 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
 //                 arb_table  = AWT_embl_transl_table_2_arb_code_nr(embl_table);
 
 //                 if (arb_table == -1) {
-//                     GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+//                     GBDATA *gb_name = GB_entry(gb_species, "name");
 //                     return GB_export_error("Illegal (or unsupported) value for 'transl_table' in '%s'", GB_read_char_pntr(gb_name));
 //                 }
 //             }
@@ -129,7 +129,7 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
             int  startpos          = selected_startpos;
 
             if (use_entries) {  // if entries are used, test if field 'transl_table' matches current table
-                GBDATA *gb_transl_table = GB_find(gb_species, "transl_table", 0, down_level);
+                GBDATA *gb_transl_table = GB_entry(gb_species, "transl_table");
                 int     sp_arb_table    = selected_ttable; // use selected translation table as default (if 'transl_table' field is missing)
 
                 if (gb_transl_table) {
@@ -146,13 +146,13 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
                     ++spec_no_transl_table; // count species w/o transl_table entry
                 }
 
-                GBDATA *gb_codon_start = GB_find(gb_species, "codon_start", 0, down_level);
+                GBDATA *gb_codon_start = GB_entry(gb_species, "codon_start");
                 int     sp_codon_start = selected_startpos+1; // default codon startpos (if 'codon_start' field is missing)
 
                 if (gb_codon_start) {
                     sp_codon_start = atoi(GB_read_char_pntr(gb_codon_start));
                     if (sp_codon_start<1 || sp_codon_start>3) {
-                        GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+                        GBDATA *gb_name = GB_entry(gb_species, "name");
                         error = GB_export_error("'%s' has invalid codon_start entry %i (allowed: 1..3)",
                                                 GB_read_char_pntr(gb_name), sp_codon_start);
                         break;
@@ -169,9 +169,9 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
                 error = "Aborted";
                 break;
             }
-            gb_source = GB_find(gb_species,ali_source,0,down_level);
+            gb_source = GB_entry(gb_species,ali_source);
             if (!gb_source) continue;
-            gb_source_data = GB_find(gb_source,"data",0,down_level);
+            gb_source_data = GB_entry(gb_source,"data");
             if (!gb_source_data) continue;
             data = GB_read_string(gb_source_data);
             if (!data) {
@@ -407,10 +407,10 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest, long *ne
             aw_status(stat);
         }
 
-        gb_source = GB_find(gb_species,ali_source,0,down_level);    if (!gb_source) continue;
-        GBDATA *gb_source_data = GB_find(gb_source,"data",0,down_level);if (!gb_source_data) continue;
-        gb_dest = GB_find(gb_species,ali_dest,0,down_level);        if (!gb_dest) continue;
-        GBDATA *gb_dest_data = GB_find(gb_dest,"data",0,down_level);    if (!gb_dest_data) continue;
+        gb_source=              GB_entry(gb_species, ali_source); if(!gb_source)     continue;
+        GBDATA *gb_source_data= GB_entry(gb_source,  "data")    ; if(!gb_source_data)continue;
+        gb_dest=                GB_entry(gb_species, ali_dest)  ; if(!gb_dest)       continue;
+        GBDATA *gb_dest_data=   GB_entry(gb_dest,    "data")    ; if(!gb_dest_data)  continue;
 
         char *source = GB_read_string(gb_source_data);          if (!source) { GB_print_error(); continue; }
         char *dest = GB_read_string(gb_dest_data);          if (!dest) { GB_print_error(); continue; }
@@ -691,7 +691,7 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest, long *ne
             // re-alignment sucessfull
             error = GB_write_string(gb_dest_data,buffer);
             if (!error) {
-                GBDATA *gb_codon_start = GB_find(gb_species, "codon_start", 0, down_level);
+                GBDATA *gb_codon_start = GB_entry(gb_species, "codon_start");
                 if (gb_codon_start) {
                     // overwrite existing 'codon_start' entries
                     error = GB_write_string(gb_codon_start, "1"); // after re-alignment codon_start is always 1

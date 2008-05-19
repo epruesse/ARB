@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : mapping.cxx                                            //
 //    Purpose   : simple species mapping                                 //
-//    Time-stamp: <Tue Oct/07/2003 14:31 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri May/16/2008 11:03 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -38,7 +38,7 @@ GB_ERROR PM_initSpeciesMaps(GBDATA *pb_main) {
         error = "initSpeciesMaps called twice";
     }
     else {
-        GBDATA *pb_mapping = GB_find(pb_main, "species_mapping", 0, down_level);
+        GBDATA *pb_mapping = GB_entry(pb_main, "species_mapping");
 
         if (!pb_mapping) {
             error = GB_get_error();

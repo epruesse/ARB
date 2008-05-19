@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : NT_trackAliChanges.cxx                            //
 //   Purpose   : Track alignment and sequences changes             // 
-//   Time-stamp: <Thu Feb/28/2008 17:44 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Fri May/16/2008 11:03 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in June 2007      //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -30,7 +30,7 @@ extern GBDATA *GLOBAL_gb_main;
 static GB_ERROR writeHistory(GBDATA *gb_species, const char *stamp, const char *entry) {
     char     *newContent = GBS_global_string_copy("%s %s", stamp, entry);
     GB_ERROR  error      = 0;
-    GBDATA   *gb_history = GB_find(gb_species, "seq_history", 0, down_level);
+    GBDATA   *gb_history = GB_entry(gb_species, "seq_history");
 
     if (!gb_history) {
         gb_history = GB_create(gb_species, "seq_history", GB_STRING);
@@ -100,7 +100,7 @@ static void trackAlignmentChanges(AW_window *aww) {
             char       *ali_entry    = GBS_global_string_copy("%lx", ali_cs);
             const char *save_comment = 0;
 
-            GBDATA *gb_checksum = GB_find(gb_species, checksum_field, 0, down_level);
+            GBDATA *gb_checksum = GB_entry(gb_species, checksum_field);
             if (!gb_checksum) {
                 newSpecies++;
                 gb_checksum = GB_create(gb_species, checksum_field, GB_STRING);

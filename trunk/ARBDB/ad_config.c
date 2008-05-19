@@ -2,7 +2,7 @@
 /*                                                                      */
 /*   File      : ad_config.c                                            */
 /*   Purpose   : handle editor configurations                           */
-/*   Time-stamp: <Tue May/24/2005 18:38 MET Coder@ReallySoft.de>        */
+/*   Time-stamp: <Fri May/16/2008 11:16 MET Coder@ReallySoft.de>        */
 /*                                                                      */
 /*                                                                      */
 /* Coded by Ralf Westram (coder@reallysoft.de) in May 2005              */
@@ -40,9 +40,9 @@ char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
 #warning auto-rename unnamed configurations here
 #endif /* DEVEL_RALF */
 
-        for (gb_config = GB_find(gb_configuration_data, AWAR_CONFIG, 0, down_level);
+        for (gb_config = GB_entry(gb_configuration_data, AWAR_CONFIG);
              gb_config;
-             gb_config = GB_find(gb_config, AWAR_CONFIG, 0, this_level|search_next))
+             gb_config = GB_nextEntry(gb_config))
         {
             count++;
         }
@@ -51,11 +51,11 @@ char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
             configNames = (char **)GB_calloc(sizeof(char *),(size_t)count+1);
             count       = 0;
 
-            for (gb_config = GB_find(gb_configuration_data, AWAR_CONFIG, 0, down_level);
+            for (gb_config = GB_entry(gb_configuration_data, AWAR_CONFIG);
                  gb_config;
-                 gb_config = GB_find(gb_config, AWAR_CONFIG, 0, this_level|search_next))
+                 gb_config = GB_nextEntry(gb_config))
             {
-                GBDATA *gb_name = GB_find(gb_config, "name", 0, down_level);
+                GBDATA *gb_name = GB_entry(gb_config, "name");
                 if (gb_name) {
                     configNames[count++] = GB_read_string(gb_name);
                 }
@@ -77,7 +77,7 @@ char **GBT_get_configuration_names(GBDATA *gb_main) {
 GBDATA *GBT_find_configuration(GBDATA *gb_main,const char *name){
     GBDATA *gb_configuration_data = GB_search(gb_main,AWAR_CONFIG_DATA,GB_DB);
     GBDATA *gb_configuration_name;
-    gb_configuration_name = GB_find(gb_configuration_data,"name",name,down_2_level);
+    gb_configuration_name = GB_find_string(gb_configuration_data,"name",name,GB_FALSE,down_2_level);
     if (!gb_configuration_name) return 0;
     return GB_get_father(gb_configuration_name);
 }

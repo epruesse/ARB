@@ -16,6 +16,8 @@
 #include "arb_interface.hxx"
 #include "xm_defs.hxx"
 
+#define ai_assert(cond) arb_assert(cond)
+
 #define MAX_ENTRY_NAMES_COUNTER 10
 
 /****************************************************************************
@@ -197,7 +199,7 @@ bool ARB_connected() { return global_ARB_available; }
 // {
 //     char *key;
 //
-//     GBDATA *gb_next_level= GB_find(gb_level, 0, 0, down_level);
+//     GBDATA *gb_next_level= GB_child(gb_level);
 //
 //     while(gb_next_level)
 //     {
@@ -210,7 +212,7 @@ bool ARB_connected() { return global_ARB_available; }
 //
 //         ARB_dump_helper(gb_next_level, tabcount + 1);
 //
-//         gb_next_level= GB_find(gb_next_level, 0, 0, this_level|search_next);
+//         gb_next_level= GB_nextChild(gb_next_level);
 //     }
 // }
 
@@ -250,10 +252,10 @@ GBDATA *find_species(char *name)
 
     ARB_begin_transaction();
 
-    gb_sp= GB_find(GBT_get_species_data(global_gbData), "species", 0, down_level);
+    gb_sp= GB_entry(GBT_get_species_data(global_gbData), "species");
     while(gb_sp && !found)
     {
-        gb_sp_name= GB_find(gb_sp, "name", 0, down_level);
+        gb_sp_name= GB_entry(gb_sp, "name");
 
         if(gb_sp_name)
         {
@@ -264,7 +266,8 @@ GBDATA *find_species(char *name)
             }
             else
             {
-                gb_sp= GB_find(gb_sp, "species", 0, this_level|search_next);
+                ai_assert(GB_has_key(gb_sp, "species"));
+                gb_sp= GB_nextEntry(gb_sp);
             }
         }
     }
@@ -300,7 +303,7 @@ GBDATA *find_genome(GBDATA *gb_sp_entry)
 
     ARB_begin_transaction();
 
-    gb_gene_data= GB_find(gb_sp_entry, "gene_data", 0, down_level);
+    gb_gene_data= GB_entry(gb_sp_entry, "gene_data");
 
     ARB_commit_transaction();
 
@@ -335,13 +338,13 @@ GBDATA *find_experiment(GBDATA *gb_sp_entry, char *name)
 
     ARB_begin_transaction();
 
-    gb_exp_data= GB_find(gb_sp_entry, "experiment_data", 0, down_level);
+    gb_exp_data= GB_entry(gb_sp_entry, "experiment_data");
     if(gb_exp_data)
     {
-        gb_exp= GB_find(gb_exp_data, "experiment", 0, down_level);
+        gb_exp= GB_entry(gb_exp_data, "experiment");
         while(gb_exp && !found)
         {
-            gb_exp_name= GB_find(gb_exp, "name", 0, down_level);
+            gb_exp_name= GB_entry(gb_exp, "name");
 
             if(gb_exp_name)
             {
@@ -353,7 +356,8 @@ GBDATA *find_experiment(GBDATA *gb_sp_entry, char *name)
                 }
                 else
                 {
-                    gb_exp= GB_find(gb_exp, "experiment", 0, this_level|search_next);
+                    ai_assert(GB_has_key(gb_exp, "experiment"));
+                    gb_exp= GB_nextEntry(gb_exp);
                 }
 
                 free(exp_name);
@@ -394,13 +398,13 @@ GBDATA *find_proteome(GBDATA *gb_exp_entry, char *name)
 
     ARB_begin_transaction();
 
-    gb_prot_data= GB_find(gb_exp_entry, "proteome_data", 0, down_level);
+    gb_prot_data= GB_entry(gb_exp_entry, "proteome_data");
     if(gb_prot_data)
     {
-        gb_prot= GB_find(gb_prot_data, "proteome", 0, down_level);
+        gb_prot= GB_entry(gb_prot_data, "proteome");
         while(gb_prot && !found)
         {
-            gb_prot_name= GB_find(gb_prot, "name", 0, down_level);
+            gb_prot_name= GB_entry(gb_prot, "name");
 
             if(gb_prot_name)
             {
@@ -411,7 +415,8 @@ GBDATA *find_proteome(GBDATA *gb_exp_entry, char *name)
                 }
                 else
                 {
-                    gb_prot= GB_find(gb_prot, "proteome", 0, this_level|search_next);
+                    ai_assert(GB_has_key(gb_prot, "proteome"));
+                    gb_prot= GB_nextEntry(gb_prot);
                 }
             }
         }
@@ -435,7 +440,7 @@ GBDATA *find_proteine_data(char *sp_name, char *exp_name, char *prot_name)
     ARB_begin_transaction();
 
     // SEARCH PROTEINE DATA ENTRY
-    GBDATA *gb_protein_data= GB_find(gb_proteome, "proteine_data", 0, down_level);
+    GBDATA *gb_protein_data= GB_entry(gb_proteome, "proteine_data");
 
     ARB_commit_transaction();
 
@@ -468,11 +473,11 @@ void getSpeciesList(Widget list, bool clear= false)
     ARB_begin_transaction();
 
     // FETCH SPECIES ENTRIES
-    gb_sp= GB_find(GBT_get_species_data(global_gbData), "species", 0, down_level);
+    gb_sp= GB_entry(GBT_get_species_data(global_gbData), "species");
     while(gb_sp)
     {
         // FETCH SPECIES NAME ENTRY
-        gb_sp_name= GB_find(gb_sp, "name", 0, down_level);
+        gb_sp_name= GB_entry(gb_sp, "name");
 
         // IF A NAME IS AVAILABLE, ...
         if(gb_sp_name)
@@ -486,7 +491,8 @@ void getSpeciesList(Widget list, bool clear= false)
             // INCREASE POSITION COUNTER
             pos++;
         }
-        gb_sp= GB_find(gb_sp, "species", 0, this_level|search_next);
+        ai_assert(GB_has_key(gb_sp, "species"));
+        gb_sp= GB_nextEntry(gb_sp);
     }
 
     // CLOSE THE ARB TRANSACTION
@@ -525,17 +531,17 @@ void getExperimentList(Widget list, char *species, bool clear= false)
     ARB_begin_transaction();
 
     // FETCH EXPERIMENT DATA ENTRY
-    gb_exp_data= GB_find(gb_sp, "experiment_data", 0, down_level);
+    gb_exp_data= GB_entry(gb_sp, "experiment_data");
 
     if(gb_exp_data)
     {
         // BROWSE EXPERIMENTS AND FETCH ENTRY NAMES
-        gb_exp= GB_find(gb_exp_data, "experiment", 0, down_level);
+        gb_exp= GB_entry(gb_exp_data, "experiment");
 
         while(gb_exp)
         {
             // FETCH SPECIES NAME ENTRY
-            gb_exp_name= GB_find(gb_exp, "name", 0, down_level);
+            gb_exp_name= GB_entry(gb_exp, "name");
 
             // IF A NAME IS AVAILABLE, ...
             if(gb_exp_name)
@@ -549,7 +555,8 @@ void getExperimentList(Widget list, char *species, bool clear= false)
                 // INCREASE POSITION COUNTER
                 pos++;
             }
-            gb_exp= GB_find(gb_exp, "experiment", 0, this_level|search_next);
+            ai_assert(GB_has_key(gb_exp, "experiment"));
+            gb_exp= GB_nextEntry(gb_exp);
         }
     }
 
@@ -589,16 +596,16 @@ void getProteomeList(Widget list, char *species, char *experiment, bool clear= f
     ARB_begin_transaction();
 
     // FETCH EXPERIMENT DATA ENTRY
-    gb_prot_data= GB_find(gb_exp, "proteome_data", 0, down_level);
+    gb_prot_data= GB_entry(gb_exp, "proteome_data");
 
     if(gb_prot_data)
     {
         // BROWSE EXPERIMENTS AND FETCH ENTRY NAMES
-        gb_prot= GB_find(gb_prot_data, "proteome", 0, down_level);
+        gb_prot= GB_entry(gb_prot_data, "proteome");
         while(gb_prot)
         {
             // FETCH SPECIES NAME ENTRY
-            gb_prot_name= GB_find(gb_prot, "name", 0, down_level);
+            gb_prot_name= GB_entry(gb_prot, "name");
 
             // IF A NAME IS AVAILABLE, ...
             if(gb_prot_name)
@@ -612,7 +619,8 @@ void getProteomeList(Widget list, char *species, char *experiment, bool clear= f
                 // INCREASE POSITION COUNTER
                 pos++;
             }
-            gb_prot= GB_find(gb_prot, "proteome", 0, this_level|search_next);
+            ai_assert(GB_has_key(gb_prot, "proteome"));
+            gb_prot= GB_nextEntry(gb_prot);
         }
     }
 
@@ -638,28 +646,28 @@ void getEntryNamesList(Widget list, bool clear= false)
     ARB_begin_transaction();
 
     // FETCH SPECIES ENTRIES
-    gb_sp= GB_find(GBT_get_species_data(global_gbData), "species", 0, down_level);
+    gb_sp= GB_entry(GBT_get_species_data(global_gbData), "species");
     while(gb_sp)
     {
         // FIND EXPERIMENT
-        gb_exp= GB_find(gb_sp, "experiment", 0, down_2_level);
+        gb_exp= GB_find(gb_sp, "experiment", down_2_level);
         while(gb_exp)
         {
             // FIND PROTEIN
-            gb_prot_data= GB_find(gb_exp, "proteome_data", 0, down_level);
+            gb_prot_data= GB_entry(gb_exp, "proteome_data");
 
             // FIND PROTEOME
-            gb_prot= GB_find(gb_prot_data, "proteome", 0, down_level);
+            gb_prot= GB_entry(gb_prot_data, "proteome");
             while(gb_prot)
             {
                 int entry_name_counter= MAX_ENTRY_NAMES_COUNTER;
 
                 // FIND PROTEIN
-                gb_protein= GB_find(gb_prot, "protein", 0, down_level);
+                gb_protein= GB_entry(gb_prot, "protein");
                 while(gb_protein && entry_name_counter)
                 {
                     // TRAVERSE ALL ENTRIES
-                    gb_keys= GB_find(gb_protein, 0, 0, down_level);
+                    gb_keys= GB_child(gb_protein);
 
                     while(gb_keys)
                     {
@@ -671,21 +679,25 @@ void getEntryNamesList(Widget list, bool clear= false)
                         if(!XmListItemExists(list, xm_str))
                             XmListAddItemUnselected(list, xm_str, 0);
 
-                        gb_keys= GB_find(gb_keys, 0, 0, this_level|search_next);
+                        gb_keys = GB_nextChild(gb_keys);
                     }
 
                     entry_name_counter--;
 
-                    gb_protein= GB_find(gb_protein, "protein", 0, this_level|search_next);
+                    ai_assert(GB_has_key(gb_protein, "protein"));
+                    gb_protein = GB_nextEntry(gb_protein);
                 }
 
-                gb_prot= GB_find(gb_prot, "proteome", 0, this_level|search_next);
+                ai_assert(GB_has_key(gb_prot, "proteome"));
+                gb_prot = GB_nextEntry(gb_prot);
             }
 
-            gb_exp= GB_find(gb_exp, "experiment", 0, this_level|search_next);
+            ai_assert(GB_has_key(gb_exp, "experiment"));
+            gb_exp= GB_nextEntry(gb_exp);
         }
 
-        gb_sp= GB_find(gb_sp, "species", 0, this_level|search_next);
+        ai_assert(GB_has_key(gb_sp, "species"));
+        gb_sp= GB_nextEntry(gb_sp);
     }
 
     // CLOSE THE ARB TRANSACTION

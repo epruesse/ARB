@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_db.cxx                                             //
 //    Purpose   : database access for experiments                        //
-//    Time-stamp: <Thu Mar/11/2004 13:43 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri May/16/2008 11:16 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -19,10 +19,12 @@
 #include <aw_root.hxx>
 #include "EXP.hxx"
 
+#define exp_assert(bed) arb_assert(bed)
+
 using namespace std;
 
 GBDATA* EXP_find_experiment_rel_experiment_data(GBDATA *gb_experiment_data, const char *name) {
-    GBDATA *gb_name = GB_find(gb_experiment_data, "name", name, down_2_level);
+    GBDATA *gb_name = GB_find_string(gb_experiment_data, "name", name, GB_FALSE, down_2_level);
 
     if (gb_name) return GB_get_father(gb_name); // found existing experiment
     return 0;
@@ -34,17 +36,18 @@ GBDATA* EXP_find_experiment(GBDATA *gb_species, const char *name) {
 
 
 GBDATA* EXP_first_experiment_rel_experiment_data(GBDATA *gb_experiment_data) {
-    return GB_find(gb_experiment_data, "experiment", 0, down_level);
+    return GB_entry(gb_experiment_data, "experiment");
 }
 
 GBDATA* EXP_next_experiment(GBDATA *gb_experiment) {
-    return GB_find(gb_experiment, "experiment", 0, this_level|search_next);
+    exp_assert(GB_has_key(gb_experiment, "experiment"));
+    return GB_nextEntry(gb_experiment);
 }
 
 
 GBDATA* EXT_create_experiment_rel_experiment_data(GBDATA *gb_experiment_data, const char *name) {
     /* Search for a experiment, when experiment does not exist create it */
-    GBDATA *gb_name = GB_find(gb_experiment_data, "name", name, down_2_level);
+    GBDATA *gb_name = GB_find_string(gb_experiment_data, "name", name, GB_FALSE, down_2_level);
 
     if (gb_name) return GB_get_father(gb_name); // found existing experiment
 

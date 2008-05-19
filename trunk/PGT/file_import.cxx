@@ -247,7 +247,7 @@ int importCSV(importTable *table, importData *data)
     ARB_begin_transaction();
 
     // ENTER EXPERIMENT DATA ENTRY
-    gb_proteom_data= GB_find(gb_experiment, "proteome_data", 0, down_level);
+    gb_proteom_data= GB_entry(gb_experiment, "proteome_data");
 
     // IF THERE IS NO PROETOME_DATA ENTRY, CREATE A NEW ONE
     if(!gb_proteom_data) gb_proteom_data=

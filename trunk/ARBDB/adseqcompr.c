@@ -659,9 +659,9 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                     // count size of old master data
                     if (!error) {
                         GBDATA *gb_omaster;
-                        for (gb_omaster = GB_find(old_gb_master_ali, "@master", 0, down_level);
+                        for (gb_omaster = GB_entry(old_gb_master_ali, "@master");
                              gb_omaster;
-                             gb_omaster = GB_find(gb_omaster, "@master", 0, this_level|search_next))
+                             gb_omaster = GB_nextEntry(gb_omaster))
                         {
                             long size  = GB_read_memuse(gb_omaster);
                             sumold    += size;

@@ -100,11 +100,11 @@ static GB_ERROR init_path2subtree_hash(GBDATA *pd_father, long expected_no_of_su
 
         char length_buf[] = "xxxx"; // first 4 bytes of path is the pathlen
 
-        for (GBDATA *pd_subtree = GB_find(pd_father,"subtree",0,down_level);
+        for (GBDATA *pd_subtree = GB_entry(pd_father,"subtree");
              pd_subtree && !error;
-             pd_subtree = GB_find(pd_subtree,"subtree",0,this_level|search_next))
+             pd_subtree = GB_nextEntry(pd_subtree))
         {
-            GBDATA *pd_path = GB_find(pd_subtree, "path", 0, down_level);
+            GBDATA *pd_path = GB_entry(pd_subtree, "path");
             if (!pd_path) {
                 error = "Missing 'path' entry";
             }
@@ -313,7 +313,7 @@ static GB_ERROR pgd_add_species(int len, set<SpeciesName> *species) {
                 // error occurred -> we are a leaf
                 pathbuffer[len] = 0;
 
-                GBDATA *gb_member = GB_find(pd_subtree, "member", 0, down_level);
+                GBDATA *gb_member = GB_entry(pd_subtree, "member");
                 if (!gb_member) {
                     return GBS_global_string("'member' expected in '%s'", pathbuffer);
                 }
@@ -338,7 +338,7 @@ static GB_ERROR pgd_add_species(int len, set<SpeciesName> *species) {
 
 static GB_ERROR pgd_init_species(GBDATA *pd_probe_group, set<SpeciesName> *species) {
     GB_ERROR  error       = 0;
-    GBDATA   *pd_group_id = GB_find(pd_probe_group, "id", 0, down_level);
+    GBDATA   *pd_group_id = GB_entry(pd_probe_group, "id");
 
     if (!pd_group_id) {
         error = "entry 'id' expected";
@@ -356,7 +356,7 @@ static GB_ERROR pgd_init_species(GBDATA *pd_probe_group, set<SpeciesName> *speci
             }
         }
         else if (group_id[0] == 'g') { // subtree independent probe-group
-            GBDATA *pd_members = GB_find(pd_probe_group, "members", 0, down_level);
+            GBDATA *pd_members = GB_entry(pd_probe_group, "members");
             if (pd_members) {
                 const char *members = GB_read_char_pntr(pd_members);
                 const char *number   = members;
@@ -401,10 +401,10 @@ static char *pgd_get_the_names(set<SpeciesName> *species, bytestring &bs, bytest
     if(!gb_species) return 0;
 
     for(set<SpeciesName>::const_iterator i=(*species).begin();i!=(*species).end();++i){
-        gb_name=GB_find(gb_species,"name",(*i).c_str(),down_2_level);
+        gb_name=GB_find_string(gb_species,"name",(*i).c_str(),GB_FALSE,down_2_level);
         if(gb_name){
-            gb_data=GB_find(gb_name,use,0,this_level);
-            if(gb_data) gb_data=GB_find(gb_data,"data",0,down_level);
+            gb_data=GB_brother(gb_name,use);
+            if(gb_data) gb_data=GB_entry(gb_data,"data");
             if(!gb_data) return (char*)GB_export_error("Species '%s' has no sequence '%s'",GB_read_char_pntr(gb_name),use);
             GBS_intcat(checksums, GBS_checksum(GB_read_char_pntr(gb_data), 1, ".-"));
             GBS_strcat(names, GB_read_char_pntr(gb_name));
@@ -787,7 +787,7 @@ static GB_ERROR loadProbeSetFromString(std::set<Probes>& probes, GBDATA *gb_fath
                                        const char *entry_name, bool error_if_missing)
 {
     GB_ERROR  error    = 0;
-    GBDATA   *gb_entry = GB_find(gb_father, entry_name, 0, down_level);
+    GBDATA   *gb_entry = GB_entry(gb_father, entry_name);
 
     if (gb_entry) {
         char *probe_string = GB_read_string(gb_entry);
@@ -813,13 +813,13 @@ static GB_ERROR loadProbeSetFromString(std::set<Probes>& probes, GBDATA *gb_fath
 
 static GB_ERROR designProbesForGroup(GBDATA *pd_probe_group, const char *use) {
     {
-        GBDATA *pd_pgd = GB_find(pd_probe_group,"designed_probes",0,down_level);
+        GBDATA *pd_pgd = GB_entry(pd_probe_group,"designed_probes");
         if (pd_pgd) GB_delete(pd_pgd); // erase existing data
     }
 
 #if defined(DEBUG) && 0
     {
-        GBDATA     *pd_id = GB_find(pd_probe_group, "id", 0, down_level);
+        GBDATA     *pd_id = GB_entry(pd_probe_group, "id");
         const char *id    = GB_read_char_pntr(pd_id);
 
         if (strcmp(id, "g15_8") == 0) {
@@ -833,7 +833,7 @@ static GB_ERROR designProbesForGroup(GBDATA *pd_probe_group, const char *use) {
 
     if (skip_design) {
         // move 'matched_probes' -> 'common_probes' (fake design)
-        GBDATA *pd_matched_probes     = GB_find(pd_probe_group, "matched_probes", 0, down_level);
+        GBDATA *pd_matched_probes     = GB_entry(pd_probe_group, "matched_probes");
         if (!pd_matched_probes) error = GB_get_error();
         else {
             GBDATA *pd_common_probes = GB_create(pd_probe_group, "common_probes", GB_STRING);
@@ -887,7 +887,7 @@ static GB_ERROR designProbesForGroup(GBDATA *pd_probe_group, const char *use) {
 
                     if (!error) {
                         if (matchedProbes.empty()) {
-                            GBDATA *gb_matched_probes = GB_find(pd_probe_group, "matched_probes", 0, down_level);
+                            GBDATA *gb_matched_probes = GB_entry(pd_probe_group, "matched_probes");
                             if (gb_matched_probes) {
                                 error = GB_delete(gb_matched_probes);
                             }
@@ -906,7 +906,7 @@ static GB_ERROR designProbesForGroup(GBDATA *pd_probe_group, const char *use) {
 
             // update 'exact' entry for real subtrees
             if (!error) {
-                GBDATA *pd_group_id = GB_find(pd_probe_group, "id", 0, down_level);
+                GBDATA *pd_group_id = GB_entry(pd_probe_group, "id");
                 if (pd_group_id) {
                     const char *group_id     = GB_read_char_pntr(pd_group_id);
                     if (group_id[0] == 'p') { // if this is a subtree-group -> update number of found probes
@@ -914,7 +914,7 @@ static GB_ERROR designProbesForGroup(GBDATA *pd_probe_group, const char *use) {
                         GBDATA     *pd_subtree   = (GBDATA*)GBS_read_hash(path2subtree, encoded_path);
 
                         if (pd_subtree) {
-                            GBDATA *pd_exact = GB_find(pd_subtree, "exact", 0, down_level);
+                            GBDATA *pd_exact = GB_entry(pd_subtree, "exact");
                             if (!both_count) {
                                 if (pd_exact) error = GB_delete(pd_exact);
                             }
@@ -940,13 +940,13 @@ static GB_ERROR designProbes(const probe_config_data &probe_config) {
     GB_ERROR error = 0;
     GB_begin_transaction(GLOBAL_pd_main);
 
-    GBDATA *pd_subtree_cont    = GB_find(GLOBAL_pd_main,"subtrees",0,down_level);
-    GBDATA *pd_probegroup_cont = GB_find(GLOBAL_pd_main,"probe_groups",0,down_level);
+    GBDATA *pd_subtree_cont    = GB_entry(GLOBAL_pd_main,"subtrees");
+    GBDATA *pd_probegroup_cont = GB_entry(GLOBAL_pd_main,"probe_groups");
 
     if (!pd_subtree_cont) error         = "Can't find container 'subtrees'";
     else if (!pd_probegroup_cont) error = "Can't find container 'probe_groups'";
     else {
-        GBDATA *pd_subtree_counter = GB_find(GLOBAL_pd_main, "subtree_counter", 0, down_level);
+        GBDATA *pd_subtree_counter = GB_entry(GLOBAL_pd_main, "subtree_counter");
         if (!pd_subtree_counter) {
             error = "Can't find 'subtree_counter'";
         }
@@ -958,7 +958,7 @@ static GB_ERROR designProbes(const probe_config_data &probe_config) {
 
     long probe_group_counter;
     if (!error) {
-        GBDATA *pd_probe_group_counter = GB_find(GLOBAL_pd_main, "probe_group_counter", 0, down_level);
+        GBDATA *pd_probe_group_counter = GB_entry(GLOBAL_pd_main, "probe_group_counter");
         if (!pd_probe_group_counter) error = "Can't find 'probe_group_counter'";
         else {
             probe_group_counter = GB_read_int(pd_probe_group_counter);
@@ -982,9 +982,9 @@ static GB_ERROR designProbes(const probe_config_data &probe_config) {
                 use = GBT_get_default_alignment(GLOBAL_gb_main);
             }
 
-            for (GBDATA *pd_probe_group = GB_find(pd_probegroup_cont,"probe_group",0,down_level);
+            for (GBDATA *pd_probe_group = GB_entry(pd_probegroup_cont,"probe_group");
                  pd_probe_group && !error;
-                 pd_probe_group = GB_find(pd_probe_group,"probe_group",0,this_level|search_next))
+                 pd_probe_group = GB_nextEntry(pd_probe_group))
             {
                 ++count;
                 GLOBAL_out.point();
@@ -1025,7 +1025,7 @@ static GB_ERROR setNodeInfo(GBDATA *pd_subtree, GBT_TREE *node) {
 //     int min_nongrouphits = 0;
     int speccount;
 
-    GBDATA *pd_speccount = GB_find(pd_subtree, "speccount", 0, down_level);
+    GBDATA *pd_speccount = GB_entry(pd_subtree, "speccount");
     if (pd_speccount) { // inner node
         speccount = GB_read_int(pd_speccount);
     }
@@ -1033,14 +1033,14 @@ static GB_ERROR setNodeInfo(GBDATA *pd_subtree, GBT_TREE *node) {
         speccount = 1;
     }
 
-    GBDATA *pd_exact = GB_find(pd_subtree, "exact", 0, down_level);
+    GBDATA *pd_exact = GB_entry(pd_subtree, "exact");
     if (pd_exact) { // has exact probes
         int exact_matches = GB_read_int(pd_exact);
         pgd_assert(exact_matches != 0);
         node->name        = appendNodeInfo(node->name, "em", exact_matches);
     }
     else {
-        GBDATA *pd_coverage = GB_find(pd_subtree, "coverage", 0, down_level);
+        GBDATA *pd_coverage = GB_entry(pd_subtree, "coverage");
         if (pd_coverage) {
             int covered_species = GB_read_int(pd_coverage);
             int max_coverage    = int(double(covered_species)/speccount*100.0+.5);
@@ -1068,7 +1068,7 @@ static GB_ERROR saveTreefile() {
 
         // load the tree
         GBT_TREE *tree    = 0;
-        GBDATA   *pd_tree = GB_find(GLOBAL_pd_main, "tree", 0, down_level);
+        GBDATA   *pd_tree = GB_entry(GLOBAL_pd_main, "tree");
         if (!pd_tree) {
             error = "'tree' missing";
         }
@@ -1084,14 +1084,14 @@ static GB_ERROR saveTreefile() {
             }
         }
 
-        GBDATA *pd_subtree_cont = GB_find(GLOBAL_pd_main, "subtrees", 0, down_level);
+        GBDATA *pd_subtree_cont = GB_entry(GLOBAL_pd_main, "subtrees");
         if (!pd_subtree_cont) error = "Can't find container 'subtrees'";
 
-        for (GBDATA *pd_subtree = GB_find(pd_subtree_cont,"subtree",0,down_level);
+        for (GBDATA *pd_subtree = GB_entry(pd_subtree_cont,"subtree");
              pd_subtree && !error;
-             pd_subtree = GB_find(pd_subtree,"subtree",0,this_level|search_next))
+             pd_subtree = GB_nextEntry(pd_subtree))
         {
-            GBDATA *pd_path = GB_find(pd_subtree, "path", 0, down_level);
+            GBDATA *pd_path = GB_entry(pd_subtree, "path");
             if (!pd_path) {
                 error = "no 'path' in 'subtree'";
             }
@@ -1136,16 +1136,16 @@ static GB_ERROR saveTreefile() {
 }
 
 static GB_ERROR convertTargetsToProbesContainer(GBDATA *pd_probe_group, const char *subgroupname, GB_alignment_type ali_type) {
-    GBDATA *pd_sub_cont = GB_find(pd_probe_group, subgroupname, 0, down_level);
+    GBDATA *pd_sub_cont = GB_entry(pd_probe_group, subgroupname);
     if (!pd_sub_cont) return 0; //  some exist some not
 
     char     T_or_U;
     GB_ERROR error        = GBT_determine_T_or_U(ali_type, &T_or_U, "reverse-complement");
     bool     probes_found = false;
 
-    for (GBDATA *pd_probe = GB_find(pd_sub_cont, "probe", 0, down_level);
+    for (GBDATA *pd_probe = GB_entry(pd_sub_cont, "probe");
          pd_probe && !error;
-         pd_probe = GB_find(pd_probe, "probe", 0, this_level|search_next))
+         pd_probe = GB_nextEntry(pd_probe))
     {
         probes_found = true;
         char *probe  = GB_read_string(pd_probe);
@@ -1168,22 +1168,22 @@ static GB_ERROR convertTargetsToProbes(GBDATA *pd_main) {
     GLOBAL_out.put("Converting targets to probes ..");
 
     GB_ERROR  error              = 0;
-    GBDATA   *pd_probegroup_cont = GB_find(pd_main,"probe_groups",0,down_level);
+    GBDATA   *pd_probegroup_cont = GB_entry(pd_main,"probe_groups");
 
     if (!pd_probegroup_cont) {
         error = "Can't find container 'probe_groups'";
     }
     else {
-        GBDATA *pd_ali_type = GB_find(pd_main, "alignment_type", 0, down_level);
+        GBDATA *pd_ali_type = GB_entry(pd_main, "alignment_type");
         if (!pd_ali_type) {
             error = "'alignment_type' not found";
         }
         else {
             GB_alignment_type ali_type = (GB_alignment_type)GB_read_int(pd_ali_type);
 
-            for (GBDATA *pd_probe_group = GB_find(pd_probegroup_cont,"probe_group",0,down_level);
+            for (GBDATA *pd_probe_group = GB_entry(pd_probegroup_cont,"probe_group");
                  pd_probe_group && !error;
-                 pd_probe_group = GB_find(pd_probe_group,"probe_group",0,this_level|search_next))
+                 pd_probe_group = GB_nextEntry(pd_probe_group))
             {
                 error             = convertTargetsToProbesContainer(pd_probe_group, "probe_group_design", ali_type);
                 if (!error) error = convertTargetsToProbesContainer(pd_probe_group, "probe_matches", ali_type);

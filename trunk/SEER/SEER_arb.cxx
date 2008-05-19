@@ -22,16 +22,10 @@ void SEER_strip_arb_file(){
     GB_push_my_security(gb_main);
     {/* ********** strip species **************/
         int cnt = 0;
-        GBDATA *gb_species;
-        for ( gb_species = GBT_first_species(gb_main);
-              gb_species;
-              gb_species = GBT_next_species(gb_species)){
-            GBDATA *gb_elem;
+        for (GBDATA *gb_species = GBT_first_species(gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
             GBDATA *gb_next;
-            for (gb_elem = GB_find(gb_species,0,0,down_level);
-                 gb_elem;
-                 gb_elem = gb_next){
-                gb_next = GB_find(gb_elem,0,0,this_level | search_next);
+            for (GBDATA *gb_elem = GB_child(gb_species); gb_elem; gb_elem = gb_next) {
+                gb_next = GB_nextChild(gb_elem);
                 const char *key = GB_read_key(gb_elem);
                 if (strcmp(key,"name")){
                     GB_delete(gb_elem);
@@ -43,9 +37,9 @@ void SEER_strip_arb_file(){
     }
     {/* ********** delete sai **************/
         int cnt = 0;
-        GBDATA *gb_sai_data = GB_find(gb_main,"extended_data",0,down_level);
+        GBDATA *gb_sai_data = GB_entry(gb_main,"extended_data");
         GBDATA *gb_sai;
-        while ( (gb_sai = GB_find(gb_sai_data,0,0,down_level) ) ){
+        while ((gb_sai = GB_child(gb_sai_data))){
             GB_delete(gb_sai);
             cnt++;
         }
