@@ -1,7 +1,7 @@
 # =============================================================== #
 #                                                                 #
 #   File      : Makefile                                          #
-#   Time-stamp: <Wed May/14/2008 12:17 MET Coder@ReallySoft.de>   #
+#   Time-stamp: <Mon May/19/2008 13:09 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Institute of Microbiology (Technical University Munich)       #
 #   http://www.arb-home.de/                                       #
@@ -1069,6 +1069,7 @@ proto: proto_tools TOOLS/TOOLS.dummy
 		$(MAKE) \
 				AISC/AISC.proto \
 				ARBDB/ARBDB.proto \
+				ARB_GDE/ARB_GDE.proto \
 				CONVERTALN/CONVERTALN.proto \
 				NTREE/NTREE.proto \
 				PROBE/PROBE.proto \
