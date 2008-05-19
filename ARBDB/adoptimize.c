@@ -220,10 +220,8 @@ GB_ERROR gb_convert_compression(GBDATA *source)
 
     type = GB_TYPE(source);
     if (type == GB_DB){
-        for (	gb_p = GB_find(source,0,0,down_level);
-                gb_p;
-                gb_p = GB_find(gb_p,0,0,this_level|search_next)){
-            if (gb_p->flags.compressed_data || GB_TYPE(gb_p) == GB_DB ){
+        for (gb_p = GB_child(source); gb_p; gb_p = GB_nextChild(gb_p)) {
+            if (gb_p->flags.compressed_data || GB_TYPE(gb_p) == GB_DB){
                 error = gb_convert_compression(gb_p);
                 if (error) break;
             }
@@ -283,7 +281,7 @@ GB_ERROR gb_convert_V2_to_V3(GBDATA *gb_main){
         return error;
     }
     gb_system = GB_create_container(gb_main, GB_SYSTEM_FOLDER);
-    gb_extended_data = GB_find(gb_main,"extended_data",0,down_level);
+    gb_extended_data = GB_entry(gb_main,"extended_data");
     if (gb_extended_data){
         GB_warning("Converting data from old V2.0 to V2.1 Format:\n"
                    " Please Wait (may take some time)");
@@ -2458,9 +2456,9 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
         printf("Creating dictionaries..\n");
 
 #ifdef DEBUG
-        /* #define TEST_ONE */               /* test only key specified below */
-        /*#define TEST_SOME*/ 	/* test some keys starting with key specified below */
-#if defined(TEST_ONE) || defined(TEST_SOME)
+        /* #define TEST_ONE */  /* test only key specified below */
+        /* #define TEST_SOME */ /* test only some keys specified below */
+#if defined(TEST_ONE)
         /* select wanted index */
         for (idx=0; idx<gbdByKey_cnt; idx++) { /* title author dew_author ebi_journal name ua_tax date full_name ua_title */
             if (gbk[idx].cnt && strcmp(Main->keys[idx].key, "tree")==0) break;
@@ -2472,13 +2470,9 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 #ifdef TEST_ONE
         /* only create dictionary for index selected above (no loop) */
 #else
-#ifdef TEST_SOME
-        /* only create dictionaries for some indices, starting with index selected above */
-        for (       ; idx<gbdByKey_cnt && !error; ++idx)
-#else
         /* create dictionaries for all indices (this is the normal operation) */
-        for (idx = 1; idx<gbdByKey_cnt && !error; ++idx)
-#endif
+        for (idx = gbdByKey_cnt-1; idx >= 1 && !error; --idx)
+        /* for (idx = 1; idx<gbdByKey_cnt && !error; ++idx) */
 #endif
 
         {
@@ -2487,6 +2481,13 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
             GB_CSTR        key_name = Main->keys[idx].key;
             int            type;
             GBDATA        *gb_main  = (GBDATA*)Main->data;
+
+#ifdef TEST_SOME
+            if (!( /* add all wanted keys here */
+                  strcmp(key_name, "REF") == 0 ||
+                  strcmp(key_name, "ref") == 0
+                  )) continue;
+#endif                          /* TEST_SOME */
 
 #ifndef TEST_ONE
             GB_status(idx/(double)gbdByKey_cnt);
