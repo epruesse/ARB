@@ -18,11 +18,11 @@ TOOLS := \
 	arb_read_tree \
 	arb_replace \
 	arb_swap_rnastr \
-	arb_test \
 
 ifeq ($(DEBUG),1)
 TOOLS += \
 	arb_perf_test \
+	arb_test \
 
 endif
 
@@ -33,13 +33,11 @@ BINARIES:=$(addprefix $(ARBHOME)/bin/,$(TOOLS))
 
 all: $(BINARIES)
 
-.cxx.o:
-	$(CPP) $(cflags) -c $< $(CPPINCLUDES)
+%.o: %.cxx 
+	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
-.c.o:
-	$(ACC) $(cflags) -c $< $(CPPINCLUDES)
-
-*.o: Makefile
+%.o: %.c
+	$(ACC) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 $(ARBHOME)/bin/arb_probe: arb_probe.o
 	$(LINK_EXECUTABLE) $@ $< ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a $(LIB_ARBDB)
