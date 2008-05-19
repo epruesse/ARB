@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : AWT_db_browser.cxx                                     // 
 //    Purpose   : Simple database viewer                                 // 
-//    Time-stamp: <Sat Mar/01/2008 18:35 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Fri May/16/2008 16:09 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2004              // 
@@ -187,9 +187,9 @@ GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, long /*enum gb_search_e
                             char *key_name     = (char*)malloc(key_name_len+1); memcpy(key_name, previous_slash+1, key_name_len); key_name[key_name_len] = 0;
                             int   c            = 0;
 
-                            gb_son = GB_find(gb_parent, key_name, 0, down_level);
+                            gb_son = GB_entry(gb_parent, key_name);
                             while (c<count && gb_son) {
-                                gb_son = GB_find(gb_son, key_name, 0, this_level|search_next);
+                                gb_son = GB_nextEntry(gb_son);
                                 if (gb_son) ++c;
                             }
 
@@ -487,10 +487,7 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
         map<string, counterPair> child_count;
         GB_transaction           ta(browser->get_db());
 
-        for (GBDATA *child = GB_find(node, 0, 0, down_level);
-             child;
-             child = GB_find(child, 0, 0, this_level|search_next))
-        {
+        for (GBDATA *child = GB_child(node); child; child = GB_nextChild(child)) {
             const char *key_name   = GB_read_key_pntr(child);
             child_count[key_name].occur++;
         }
@@ -511,7 +508,7 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
             }
 
             {
-                GBDATA     *child     = GB_find(node, i->first.c_str(), 0, down_level); // find first child
+                GBDATA     *child     = GB_entry(node, i->first.c_str()); // find first child
                 const char *type_name = GB_get_type_name(child);
                 int         typelen   = strlen(type_name);
 
@@ -525,10 +522,7 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
 
         vector<list_entry> sorted_childs;
 
-        for (GBDATA *child = GB_find(node, 0, 0, down_level);
-             child;
-             child = GB_find(child, 0, 0, this_level|search_next))
-        {
+        for (GBDATA *child = GB_child(node); child; child = GB_nextChild(child)) {
             list_entry entry;
             entry.key_name   = GB_read_key_pntr(child);
             entry.childCount = -1;
@@ -546,11 +540,9 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
                 // the childs listed here are displayed behind the container entry
                 const char *known_childs[] = { "@name", "name", "key_name", "alignment_name", "group_name", "key_text", 0 };
                 for (int i = 0; known_childs[i]; ++i) {
-                    GBDATA *gb_known = GB_find(entry.gbd, known_childs[i], 0, down_level);
+                    GBDATA *gb_known = GB_entry(entry.gbd, known_childs[i]);
 
-                    if (gb_known && GB_read_type(gb_known) != GB_DB &&
-                        GB_find(gb_known, known_childs[i], 0, this_level|search_next) == 0) // exactly one child exits
-                    {
+                    if (gb_known && GB_read_type(gb_known) != GB_DB && GB_nextEntry(gb_known) == 0) { // exactly one child exits
                         content = GBS_global_string_copy("[%s=%s]", known_childs[i], GB_read_as_string(gb_known));
                         break;
                     }
@@ -654,6 +646,7 @@ static void child_changed_cb(AW_root *aw_root) {
             }
             else {
                 info += GBS_global_string("Node exists [address=%p]\n", gb_selected_node);
+                info += GBS_global_string("key index=%i\n", GB_get_quark(gb_selected_node));
 
                 if (GB_read_type(gb_selected_node) == GB_DB) {
                     info += "Node type: container\n";
