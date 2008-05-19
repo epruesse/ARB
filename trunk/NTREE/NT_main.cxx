@@ -58,14 +58,11 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
     err = GBT_check_data(gb_main, 0);
 
     AW_repeated_question  question;
-    GBDATA               *gb_presets = GB_find(gb_main,"presets", 0, down_level);
+    GBDATA               *gb_presets = GB_entry(gb_main,"presets");
 
     question.add_help("prompt/format_alignments.hlp");
 
-    for (GBDATA *gb_ali = GB_find(gb_presets,"alignment",0,down_level);
-         gb_ali && !err;
-         gb_ali = GB_find(gb_ali,"alignment",0,this_level|search_next) )
-    {
+    for (GBDATA *gb_ali = GB_entry(gb_presets,"alignment"); gb_ali && !err; gb_ali = GB_nextEntry(gb_ali)) {
         GBDATA *gb_aligned = GB_search(gb_ali, "aligned", GB_INT);
 
         if (GB_read_int(gb_aligned) == 0) { // sequences in alignment are not formatted
@@ -74,12 +71,12 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
             // 1 -> format automatically w/o asking
             // 2 -> skip automatically w/o asking
 
-            GBDATA     *gb_ali_name  = GB_find(gb_ali,"alignment_name",0,down_level);
+            GBDATA     *gb_ali_name  = GB_entry(gb_ali,"alignment_name");
             const char *ali_name     = GB_read_char_pntr(gb_ali_name);
 
             {
                 bool    is_ali_genom   = strcmp(ali_name, GENOM_ALIGNMENT) == 0;
-                GBDATA *gb_auto_format = GB_find(gb_ali, "auto_format", 0, down_level);
+                GBDATA *gb_auto_format = GB_entry(gb_ali, "auto_format");
                 if (gb_auto_format) {
                     format_action = GB_read_int(gb_auto_format);
 
@@ -155,7 +152,7 @@ static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /
          gb_species && !error;
          gb_species = GBT_next_species(gb_species))
     {
-        bool    is_organism  = (GB_find(gb_species, GENOM_ALIGNMENT, 0, down_level) != 0); // same test as GEN_is_organism, but w/o genome-db-assertion
+        bool    is_organism  = (GB_entry(gb_species, GENOM_ALIGNMENT) != 0); // same test as GEN_is_organism, but w/o genome-db-assertion
         GBDATA *gb_gene_data = GEN_find_gene_data(gb_species);
 
         if (is_organism && !gb_gene_data) {
@@ -163,14 +160,14 @@ static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /
             generated_gene_datas++;
         }
         else if (!is_organism && gb_gene_data) {
-            GBDATA *gb_child = GB_find(gb_gene_data, 0, 0, down_level);
+            GBDATA *gb_child = GB_child(gb_gene_data);
             if (!gb_child) {
                 error = GB_delete(gb_gene_data);
                 if (!error) deleted_gene_datas++;
             }
             else {
                 const char *name    = "<unknown species>";
-                GBDATA     *gb_name = GB_find(gb_species, "name", 0, down_level);
+                GBDATA     *gb_name = GB_entry(gb_species, "name");
                 if (gb_name) name = GB_read_char_pntr(gb_name);
 
                 error = GBS_global_string("Non-empty 'gene_data' found for species '%s',\n"
@@ -214,9 +211,9 @@ static GB_ERROR NT_del_mark_move_REF(GBDATA *gb_main, size_t species_count, size
              gb_item = (pass == 0) ? GBT_next_species(gb_item) : GBT_next_SAI(gb_item))
         {
             for (int ali = 0; ali_names[ali] && !error; ++ali) {
-                GBDATA *gb_ali = GB_find(gb_item, ali_names[ali], 0, down_level);
+                GBDATA *gb_ali = GB_entry(gb_item, ali_names[ali]);
                 if (gb_ali) {
-                    GBDATA *gb_mark = GB_find(gb_ali, "mark", 0, down_level);
+                    GBDATA *gb_mark = GB_entry(gb_ali, "mark");
                     if (gb_mark) {
                         error = GB_delete(gb_mark);
                         removed++;
@@ -234,9 +231,9 @@ static GB_ERROR NT_del_mark_move_REF(GBDATA *gb_main, size_t species_count, size
 
         if (gb_helix) {
             for (int ali = 0; ali_names[ali] && !error; ++ali) {
-                GBDATA *gb_ali     = GB_find(gb_helix, ali_names[ali], 0, down_level);
-                GBDATA *gb_old_ref = GB_find(gb_ali, "REF", 0, down_level);
-                GBDATA *gb_new_ref = GB_find(gb_ali, "_REF", 0, down_level);
+                GBDATA *gb_ali     = GB_entry(gb_helix, ali_names[ali]);
+                GBDATA *gb_old_ref = GB_entry(gb_ali, "REF");
+                GBDATA *gb_new_ref = GB_entry(gb_ali, "_REF");
 
                 if (gb_old_ref) {
                     if (gb_new_ref) {
@@ -296,10 +293,7 @@ public:
         GB_transaction ta(gb_main);
         GBDATA *gb_checks = GB_search(gb_main, "checks", GB_CREATE_CONTAINER);
 
-        for (GBDATA *gb_check = GB_find(gb_checks, "check", 0, down_level);
-             gb_check;
-             gb_check = GB_find(gb_check, "check", 0, this_level|search_next))
-        {
+        for (GBDATA *gb_check = GB_entry(gb_checks, "check"); gb_check; gb_check = GB_nextEntry(gb_check)) {
             consistencies.insert(GB_read_char_pntr(gb_check));
         }
 
@@ -428,9 +422,23 @@ int main_load_and_startup_main_window(AW_root *aw_root) // returns 0 when succes
         return -1;
     }
 
+    aw_root->awar(AWAR_DB_PATH)->write_string(db_server);
+
+#define MAXNAMELEN 35    
+    int len = strlen(db_server);
+    if (len>MAXNAMELEN) {
+        char *nameOnly = strrchr(db_server, '/');
+        if (nameOnly) {
+            nameOnly++;
+            len -= (nameOnly-db_server);
+            memmove(db_server, nameOnly+1, len+1);
+            if (len>MAXNAMELEN) {
+                strcpy(db_server+MAXNAMELEN-3, "...");
+            }
+        }
+    }
     AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB database (%s)", db_server));
 
-    aw_root->awar(AWAR_DB_PATH)->write_string(db_server);
     free(db_server);
     nt_main_startup_main_window(aw_root);
 
