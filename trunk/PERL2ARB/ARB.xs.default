@@ -42,14 +42,13 @@ P2A_search(gbd,str,type_of_entry)
 
 
 GBDATA*
-P2A_find(gbd,key,str,gbs)
+P2A_find(gbd,key,gbs)
         GBDATA *gbd
         char *key
-        char *str
         char *gbs
 
         CODE:
-        RETVAL = GB_find(gbd,key,str,GBP_search_mode(gbs));
+        RETVAL = GB_find(gbd,key,GBP_search_mode(gbs));
         OUTPUT:
         RETVAL
 
