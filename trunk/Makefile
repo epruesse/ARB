@@ -1,7 +1,7 @@
 # =============================================================== #
 #                                                                 #
 #   File      : Makefile                                          #
-#   Time-stamp: <Tue Mar/11/2008 19:11 MET Coder@ReallySoft.de>   #
+#   Time-stamp: <Wed May/14/2008 12:17 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Institute of Microbiology (Technical University Munich)       #
 #   http://www.arb-home.de/                                       #
@@ -883,6 +883,7 @@ lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
 		"CCPLIBS = $(CCPLIBS)" \
 		"CPP = $(CPP)" \
 		"CPPINCLUDES = $(CPPINCLUDES)" \
+		"DEBUG=$(DEBUG)" \
 		"LD_LIBRARY_PATH  = $(LD_LIBRARY_PATH)" \
 		"LIBPATH = $(LIBPATH)" \
 		"LINK_EXECUTABLE = $(LINK_EXECUTABLE)" \
