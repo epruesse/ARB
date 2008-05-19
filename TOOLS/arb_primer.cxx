@@ -97,10 +97,10 @@ char *arb_prm_read(int /*prmanz*/)
 	char	*hdata;
 	//	int	size;
 
-	gb_presets = GB_find(aprm.gb_main,"presets",0,down_level);
+        gb_presets = GB_entry(aprm.gb_main,"presets");
 
-	gb_source = GB_find(gb_presets,"alignment_name",aprm.source,down_2_level);
-	gb_len = GB_find(gb_source,"alignment_len",0,this_level);
+        gb_source = GB_find_string(gb_presets,"alignment_name",aprm.source,GB_FALSE,down_2_level);
+        gb_len = GB_brother(gb_source,"alignment_len");
 	aprm.al_len = GB_read_int(gb_len);
 
 
@@ -112,9 +112,9 @@ char *arb_prm_read(int /*prmanz*/)
 		gb_species;
 		gb_species = GBT_next_marked_species(gb_species) ){
 
-		gb_source = GB_find(gb_species,aprm.source,0,down_level);
+            gb_source = GB_entry(gb_species,aprm.source);
 		if (!gb_source) continue;
-		gb_source_data = GB_find(gb_source,"data",0,down_level);
+                gb_source_data = GB_entry(gb_source,"data");
 		if (!gb_source_data) continue;
 		data = (char *)calloc(sizeof(char),aprm.al_len+1);
 		hdata = GB_read_char_pntr(gb_source_data);

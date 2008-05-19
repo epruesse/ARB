@@ -225,7 +225,7 @@ void mg_check_field_cb(AW_window *aww){
         gbd = GB_search(gb_species1,dest,GB_FIND);
         if (gbd) GB_delete(gbd);
 
-        gb_name1 = GB_find(gb_species1,"name",0,down_level);
+        gb_name1 = GB_entry(gb_species1,"name");
         if (!gb_name1) continue;    // no name what happend ???
 
         if (!IS_QUERIED(gb_species1)) continue;
@@ -233,8 +233,7 @@ void mg_check_field_cb(AW_window *aww){
         if ( (species_count & 0xf) == 0 ){
             aw_status(species_count/ (double)sum_species);
         }
-        gb_species2 = GB_find(gb_species_data2,"name",
-                              GB_read_char_pntr(gb_name1),down_2_level);
+        gb_species2 = GB_find_string(gb_species_data2, "name", GB_read_char_pntr(gb_name1), GB_FALSE, down_2_level);
 
         if (!gb_species2) {
             sprintf(AW_ERROR_BUFFER,"WARNING: Species %s not found in DB II",

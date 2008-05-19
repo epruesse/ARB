@@ -309,8 +309,8 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
             error = GB_export_error("Species '%s' has no gene named '%s'", selected_species, selected_gene);
         }
         else {
-            GBDATA *gb_pos_begin = GB_find(gb_gene, "pos_begin", 0, down_level);
-            GBDATA *gb_pos_end   = GB_find(gb_gene, "pos_end", 0, down_level);
+            GBDATA *gb_pos_begin = GB_entry(gb_gene, "pos_begin");
+            GBDATA *gb_pos_end   = GB_entry(gb_gene, "pos_end");
 
             if (!gb_pos_begin || !gb_pos_end) {
                 error = GB_export_error("Error in position entries of '%s/%s'", selected_species, selected_gene);

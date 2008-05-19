@@ -35,14 +35,14 @@ GB_ERROR nt_species_join(GBDATA *dest, GBDATA *source, int deep, char *sep, char
             const char *source_field;
             GBDATA     *gb_dest_field;
 
-            for (gb_source_field = GB_find(source,0,0,down_level);
+            for (gb_source_field = GB_child(source);
                  !error && gb_source_field;
-                 gb_source_field = GB_find(gb_source_field,0,0,this_level|search_next))
+                 gb_source_field = GB_nextChild(gb_source_field))
             {
                 source_field = GB_read_key_pntr(gb_source_field);
                 if (!strcmp(source_field,"name")) continue;
 
-                gb_dest_field = GB_find(dest,source_field,0,down_level);
+                gb_dest_field = GB_entry(dest,source_field);
                 if (gb_dest_field) { // if destination exists -> recurse
                     error = nt_species_join(gb_dest_field,gb_source_field,0,sep,sep2);
                 }
@@ -127,7 +127,7 @@ void species_rename_join(AW_window *aww){
         gb_next = GBT_next_marked_species(gb_species);
         cnt ++;
         aw_status(cnt/(double)maxs);
-        gb_field = GB_find(gb_species,field,0,down_level);
+        gb_field = GB_entry(gb_species,field);
         if (!gb_field) continue;
         char *fv = GB_read_char_pntr(gb_field);
         GBDATA *gb_old = (GBDATA *)GBS_read_hash(hash, fv);

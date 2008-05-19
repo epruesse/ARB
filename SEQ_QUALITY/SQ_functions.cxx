@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.cxx                                       //
 //    Purpose   : Implementation of SQ_functions.h                       //
-//    Time-stamp: <Fri Oct/01/2004 17:52 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri May/16/2008 11:10 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -53,7 +53,7 @@ void SQ_clear_group_dictionary() {
 }
 
 static GB_ERROR no_data_error(GBDATA * gb_species, const char *ali_name) {
-    GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+    GBDATA *gb_name = GB_entry(gb_species, "name");
     const char *name = "<unknown>";
     if (gb_name)
         name = GB_read_char_pntr(gb_name);
@@ -127,16 +127,14 @@ int SQ_get_value(GBDATA * gb_main, const char *option) {
 
     for (gb_species = getFirst(gb_main); gb_species; gb_species
             = getNext(gb_species)) {
-        gb_name = GB_find(gb_species, "name", 0, down_level);
+        gb_name = GB_entry(gb_species, "name");
 
         if (gb_name) {
-            GBDATA *gb_quality = GB_find(gb_species, "quality", 0, down_level);
+            GBDATA *gb_quality = GB_entry(gb_species, "quality");
             if (gb_quality) {
-                GBDATA *gb_quality_ali = GB_find(gb_quality, alignment_name, 0,
-                        down_level);
+                GBDATA *gb_quality_ali = GB_entry(gb_quality, alignment_name);
                 if (gb_quality_ali) {
-                    GBDATA *gb_result1 = GB_search(gb_quality_ali, option,
-                            GB_INT);
+                    GBDATA *gb_result1 = GB_search(gb_quality_ali, option, GB_INT);
                     result = GB_read_int(gb_result1);
                 }
             }
@@ -169,12 +167,12 @@ int SQ_get_value_no_tree(GBDATA * gb_main, const char *option) {
 
     for (gb_species = getFirst(gb_main); gb_species; gb_species
             = getNext(gb_species)) {
-        gb_name = GB_find(gb_species, "name", 0, down_level);
+        gb_name = GB_entry(gb_species, "name");
         if (gb_name) {
 
-            GBDATA *gb_ali = GB_find(gb_species, alignment_name, 0, down_level);
+            GBDATA *gb_ali = GB_entry(gb_species, alignment_name);
             if (gb_ali)
-                read_sequence = GB_find(gb_ali, "data", 0, down_level);
+                read_sequence = GB_entry(gb_ali, "data");
 
             GBDATA *gb_quality = GB_search(gb_species, "quality",
                     GB_CREATE_CONTAINER);
@@ -217,35 +215,31 @@ GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights) {
 
     for (gb_species = getFirst(gb_main); gb_species && !error; gb_species
             = getNext(gb_species)) {
-        gb_name = GB_find(gb_species, "name", 0, down_level);
+        gb_name = GB_entry(gb_species, "name");
 
         if (!gb_name)
             error = GB_get_error();
         else {
-            GBDATA *gb_quality = GB_find(gb_species, "quality", 0, down_level);
+            GBDATA *gb_quality = GB_entry(gb_species, "quality");
             if (gb_quality) {
+                GBDATA *gb_quality_ali = GB_entry(gb_quality, alignment_name);
 
-                GBDATA *gb_quality_ali = GB_find(gb_quality, alignment_name, 0,
-                        down_level);
-
-                if (!gb_quality_ali)
-                    error = GBS_global_string(
-                            "No alignment entry '%s' in quality data",
-                            alignment_name);
+                if (!gb_quality_ali) {
+                    error = GBS_global_string("No alignment entry '%s' in quality data", alignment_name);
+                }
                 else {
-                    int bases = 0;
-                    int dfa = 0;
-                    int noh = 0;
-                    int cos = 0;
-                    int iupv = 0;
-                    int gcprop = 0;
-                    int value2 = 0;
-                    double value = 0;
+                    int    bases  = 0;
+                    int    dfa    = 0;
+                    int    noh    = 0;
+                    int    cos    = 0;
+                    int    iupv   = 0;
+                    int    gcprop = 0;
+                    int    value2 = 0;
+                    double value  = 0;
                     double result = 0;
 
                     //evaluate the percentage of bases the actual sequence consists of
-                    GBDATA *gb_result1 = GB_search(gb_quality_ali,
-                            "percent_of_bases", GB_INT);
+                    GBDATA *gb_result1 = GB_search(gb_quality_ali, "percent_of_bases", GB_INT);
                     bases = GB_read_int(gb_result1);
                     if (bases < 4)
                         result = 0;
@@ -432,12 +426,12 @@ GB_ERROR SQ_pass1(SQ_GroupData * globalData, GBDATA * gb_main, GBT_TREE * node,
     gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
     alignment_name = GBT_get_default_alignment(gb_main);seq_assert(alignment_name);
     gb_species = node->gb_node;
-    gb_name = GB_find(gb_species, "name", 0, down_level);
+    gb_name = GB_entry(gb_species, "name");
 
     if (!gb_name)
         error = GB_get_error();
     else {
-        GBDATA *gb_ali = GB_find(gb_species, alignment_name, 0, down_level);
+        GBDATA *gb_ali = GB_entry(gb_species, alignment_name);
 
         if (!gb_ali) {
             error = no_data_error(gb_species, alignment_name);
@@ -449,7 +443,7 @@ GB_ERROR SQ_pass1(SQ_GroupData * globalData, GBDATA * gb_main, GBT_TREE * node,
                 error = GB_get_error();
             }
 
-            read_sequence = GB_find(gb_ali, "data", 0, down_level);
+            read_sequence = GB_entry(gb_ali, "data");
 
             GBDATA *gb_quality_ali = GB_search(gb_quality, alignment_name,
                     GB_CREATE_CONTAINER);
@@ -536,12 +530,12 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData * globalData, GBDATA * gb_main,
     for (gb_species = getFirst(gb_main); gb_species && !error; gb_species
             = getNext(gb_species)) {
 
-        gb_name = GB_find(gb_species, "name", 0, down_level);
+        gb_name = GB_entry(gb_species, "name");
 
         if (!gb_name)
             error = GB_get_error();
         else {
-            GBDATA *gb_ali = GB_find(gb_species, alignment_name, 0, down_level);
+            GBDATA *gb_ali = GB_entry(gb_species, alignment_name);
 
             if (!gb_ali) {
                 error = no_data_error(gb_species, alignment_name);
@@ -552,7 +546,7 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData * globalData, GBDATA * gb_main,
                     error = GB_get_error();
                 }
 
-                read_sequence = GB_find(gb_ali, "data", 0, down_level);
+                read_sequence = GB_entry(gb_ali, "data");
 
                 GBDATA *gb_quality_ali = GB_search(gb_quality, alignment_name,
                         GB_CREATE_CONTAINER);
@@ -631,12 +625,12 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
     gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
     alignment_name = GBT_get_default_alignment(gb_main);seq_assert(alignment_name);
     gb_species = node->gb_node;
-    gb_name = GB_find(gb_species, "name", 0, down_level);
+    gb_name = GB_entry(gb_species, "name");
 
     if (!gb_name)
         error = GB_get_error();
     else {
-        GBDATA *gb_ali = GB_find(gb_species, alignment_name, 0, down_level);
+        GBDATA *gb_ali = GB_entry(gb_species, alignment_name);
 
         if (!gb_ali) {
             error = no_data_error(gb_species, alignment_name);
@@ -651,7 +645,7 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
             if (!gb_quality_ali)
                 error = GB_get_error();
 
-            read_sequence = GB_find(gb_ali, "data", 0, down_level);
+            read_sequence = GB_entry(gb_ali, "data");
 
             /*real calculations start here */
             if (read_sequence) {
@@ -881,12 +875,12 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData, GBDATA * gb_main,
     /*second pass operations */
     for (gb_species = getFirst(gb_main); gb_species && !error; gb_species
             = getNext(gb_species)) {
-        gb_name = GB_find(gb_species, "name", 0, down_level);
+        gb_name = GB_entry(gb_species, "name");
 
         if (!gb_name)
             error = GB_get_error();
         else {
-            GBDATA *gb_ali = GB_find(gb_species, alignment_name, 0, down_level);
+            GBDATA *gb_ali = GB_entry(gb_species, alignment_name);
             if (!gb_ali) {
                 error = no_data_error(gb_species, alignment_name);
             } else {
@@ -900,7 +894,7 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData, GBDATA * gb_main,
                 if (!gb_quality_ali)
                     error = GB_get_error();
 
-                read_sequence = GB_find(gb_ali, "data", 0, down_level);
+                read_sequence = GB_entry(gb_ali, "data");
 
                 /*real calculations start here */
                 if (read_sequence) {
@@ -1122,12 +1116,12 @@ GB_ERROR SQ_count_nr_of_species(GBDATA * gb_main) {
     for (gb_species = getFirst(gb_main); gb_species && !error; gb_species
             = getNext(gb_species)) {
 
-        gb_name = GB_find(gb_species, "name", 0, down_level);
+        gb_name = GB_entry(gb_species, "name");
 
         if (!gb_name)
             error = GB_get_error();
         else {
-            GBDATA *gb_ali = GB_find(gb_species, alignment_name, 0, down_level);
+            GBDATA *gb_ali = GB_entry(gb_species, alignment_name);
 
             if (!gb_ali) {
                 error = no_data_error(gb_species, alignment_name);
@@ -1136,7 +1130,7 @@ GB_ERROR SQ_count_nr_of_species(GBDATA * gb_main) {
                         GB_CREATE_CONTAINER);
                 if (!gb_quality)
                     error = GB_get_error();
-                read_sequence = GB_find(gb_ali, "data", 0, down_level);
+                read_sequence = GB_entry(gb_ali, "data");
 
                 if (read_sequence) {
                     globalcounter_notree++;
@@ -1264,13 +1258,13 @@ GB_ERROR SQ_mark_species(GBDATA * gb_main, int condition, bool marked_only) {
 
     for (gb_species = getFirst(gb_main); gb_species; gb_species
             = getNext(gb_species)) {
-        GBDATA *gb_ali = GB_find(gb_species, alignment_name, 0, down_level);
+        GBDATA *gb_ali = GB_entry(gb_species, alignment_name);
         bool marked = false;
         if (gb_ali) {
             GBDATA *gb_quality = GB_search(gb_species, "quality",
                     GB_CREATE_CONTAINER);
             if (gb_quality) {
-                read_sequence = GB_find(gb_ali, "data", 0, down_level);
+                read_sequence = GB_entry(gb_ali, "data");
                 if (read_sequence) {
                     GBDATA *gb_quality_ali = GB_search(gb_quality,
                             alignment_name, GB_CREATE_CONTAINER);

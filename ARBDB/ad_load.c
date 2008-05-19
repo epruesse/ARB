@@ -986,14 +986,10 @@ long gb_read_bin_rek_V2(FILE *in,GBCONTAINER *gbd,long nitems,long version,long 
     return 0;
 }
 
-GBDATA *gb_search_system_folder_rek(GBDATA *gbd){
-
-
+GBDATA *gb_search_system_folder_rek(GBDATA *gbd) {
     GBDATA *gb2;
     GBDATA *gb_result = 0;
-    for (gb2 = GB_find(gbd,0,0,down_level);
-         gb2;
-         gb2 = GB_find(gb2,0,0,this_level|search_next)){
+    for (gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {
         int type = GB_read_type(gb2);
         if (type != GB_DB) continue;
         if (!strcmp(GB_SYSTEM_FOLDER, GB_read_key_pntr(gb2))){
@@ -1010,7 +1006,7 @@ void gb_search_system_folder(GBDATA *gb_main){
      *  and copy it to main level */
     GBDATA *gb_oldsystem;
     GB_ERROR error;
-    GBDATA *gb_system = GB_find(gb_main,GB_SYSTEM_FOLDER,0,down_level);
+    GBDATA *gb_system = GB_entry(gb_main,GB_SYSTEM_FOLDER);
     if (gb_system) return;
 
     GB_warning("Searching system information");

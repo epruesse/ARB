@@ -41,13 +41,13 @@ AD_ERR *AD_MAIN::open(const char *path) {
     }
     if (gbd) {  //  DB geoeffnet
         GB_begin_transaction(gbd); // Zeiger initialisieren
-        species_data =
-            GB_find(gbd,"species_data",NULL,down_level);
-        extended_data =
-            GB_find(gbd,"extended_data",NULL,down_level);
-        presets =
-            GB_find(gbd,"presets",NULL,down_level);
+        
+        species_data  = GB_entry(gbd,"species_data");
+        extended_data = GB_entry(gbd,"extended_data");
+        presets       = GB_entry(gbd,"presets");
+
         GB_commit_transaction(gbd);
+
         gbdataptr = gbd;
         return 0;
     } else
@@ -56,28 +56,10 @@ AD_ERR *AD_MAIN::open(const char *path) {
     }
 }
 
-AD_ERR *AD_MAIN::open(const char *path,int cach = MAXCACH)
+AD_ERR *AD_MAIN::open(const char *path,int cach/* = MAXCACH*/)
 {
     AD_fast = cach;
-    if (AD_fast) {
-        gbd = GB_open(path,"rw");
-    } else {
-        gbd = GB_open(path,"rwt"); // tiny speichersparend
-    }
-    if (gbd) {  //  DB geoeffnet
-        GB_begin_transaction(gbd); // Zeiger initialisieren
-        species_data =
-            GB_find(gbd,"species_data",NULL,down_level);
-        extended_data =
-            GB_find(gbd,"extended_data",NULL,down_level);
-        presets =
-            GB_find(gbd,"presets",NULL,down_level);
-        GB_commit_transaction(gbd);
-        gbdataptr = gbd;
-        return 0;
-    } else {
-        return new AD_ERR("database doesnt exist");
-    }
+    return open(path);
 }
 
 AD_ERR * AD_MAIN::save(const char *modus)
@@ -208,7 +190,7 @@ char *AD_READWRITE::readstring(char *feld) {
     GBDATA *gbptr = 0;
     GB_TYPES type;
     if (gbdataptr != 0) {
-        gbptr = GB_find(gbdataptr,feld,NULL,down_level);
+        gbptr = GB_entry(gbdataptr,feld);
     }
     if (gbptr != 0) {
         type = GB_read_type(gbptr);
@@ -225,7 +207,7 @@ int AD_READWRITE::readint(char *feld) {
     GBDATA *gbptr = 0;
     GB_TYPES type;
     if (gbdataptr != 0) {
-        gbptr = GB_find(gbdataptr,feld,NULL,down_level);
+        gbptr = GB_entry(gbdataptr,feld);
     }
     if (gbptr != 0) {
         type = GB_read_type(gbptr); 
@@ -243,7 +225,7 @@ float AD_READWRITE::readfloat(char *feld) {
     GBDATA *gbptr = 0;
     GB_TYPES type;
     if (gbdataptr != 0) {
-        gbptr = GB_find(gbdataptr,feld,NULL,down_level);
+        gbptr = GB_entry(gbdataptr,feld);
     }
     if (gbptr != 0) {
         type = GB_read_type(gbptr); 
@@ -261,7 +243,7 @@ AD_ERR *AD_READWRITE::writestring(char *feld,char *eintrag) {
     GB_TYPES type;
     GB_ERROR error;
     if (gbdataptr != 0) {
-        gbptr = GB_find(gbdataptr,feld,NULL,down_level);
+        gbptr = GB_entry(gbdataptr,feld);
     }
     if (gbptr != 0) {
         type = GB_read_type(gbptr); 
@@ -282,7 +264,7 @@ AD_ERR *AD_READWRITE::writeint(char *feld,int eintrag) {
     GB_TYPES type;
     GB_ERROR error;
     if (gbdataptr != 0) {
-        gbptr = GB_find(gbdataptr,feld,NULL,down_level);
+        gbptr = GB_entry(gbdataptr,feld);
     }
     if (gbptr != 0) {
         type = GB_read_type(gbptr); 
@@ -303,7 +285,7 @@ AD_ERR *AD_READWRITE::writefloat(char *feld,float eintrag) {
     GB_TYPES type;
     GB_ERROR error;
     if (gbdataptr != 0) {
-        gbptr = GB_find(gbdataptr,feld,NULL,down_level);
+        gbptr = GB_entry(gbdataptr,feld);
     }
     if (gbptr != 0) {
         type = GB_read_type(gbptr); 
@@ -337,7 +319,7 @@ AD_ERR *AD_READWRITE::create_entry(char *key, AD_TYPES type) {
 AD_TYPES AD_READWRITE::read_type(char *key) {
     GBDATA *gbptr =0;
     if (gbdataptr != 0) {
-        gbptr = GB_find(gbdataptr,key,NULL,down_level);
+        gbptr = GB_entry(gbdataptr,key);
     }
     if (gbptr != 0) {
         return (AD_TYPES)GB_read_type(gbptr); 

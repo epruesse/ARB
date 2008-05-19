@@ -44,20 +44,21 @@ char *PHDATA::load(char *usei)
     entries=NULL;
     phentry=NULL;
     nentries = 0;
-    for (	gb_species = GBT_first_marked_species(gb_main);
-            gb_species;
-            gb_species = GBT_next_marked_species(gb_species)) {
-        gb_ali = GB_find(gb_species, use, 0, down_level);
+    for (gb_species = GBT_first_marked_species(gb_main);
+         gb_species;
+         gb_species = GBT_next_marked_species(gb_species))
+    {
+        gb_ali = GB_entry(gb_species, use);
         if (!gb_ali)	continue;
         //no existing alignmnet for this species
         hentry = new PHENTRY;
         hentry->next = NULL;
-        hentry->gb_species_data_ptr = GB_find(gb_ali, "data", 0, down_level);
+        hentry->gb_species_data_ptr = GB_entry(gb_ali, "data");
         hentry->key = last_key_number++;
         if (hentry->gb_species_data_ptr) {
-            gb_name = GB_find(gb_species, "name", 0, down_level);
+            gb_name = GB_entry(gb_species, "name");
             hentry->name = GB_read_string(gb_name);
-            gb_full_name = GB_find(gb_species, "full_name", 0, down_level);
+            gb_full_name = GB_entry(gb_species, "full_name");
             if (gb_full_name)	hentry->full_name = GB_read_string(gb_full_name);
             else			hentry->full_name = NULL;
             if (!entries) {

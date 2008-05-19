@@ -1262,33 +1262,21 @@ void CPRO_loadstatistic_cb(AW_window *aw,AW_CL which_statistic)
 
     CPRO.result[which_statistic].statistic=(STATTYPE **)calloc((size_t)CPRO.result[which_statistic].resolution*3+3, sizeof(STATTYPE *));
 
+    for (long column=0;column<CPRO.result[which_statistic].resolution;column++) {
+        GBDATA *gb_colrescontainer = (column == 0)
+            ? GB_entry(oldbase, "column")
+            : GB_nextEntry(gb_colrescontainer);
 
-    GBDATA *gb_colrescontainer=0;
-    GBDATA *gb_colentry;
-    for(long column=0;column<CPRO.result[which_statistic].resolution;column++)
-    {
-        if(column) gb_colrescontainer=
-                       GB_find(gb_colrescontainer,"column",0,search_next+this_level);
-        else gb_colrescontainer=GB_search(oldbase,"column",GB_FIND);
-        if( (gb_colentry=GB_search(gb_colrescontainer,"equal",GB_FIND)) )
-        {
-            CPRO.result[which_statistic].statistic[column*3+0]=
-                (STATTYPE*)GB_read_ints(gb_colentry);
-        }
-        if( (gb_colentry=GB_search(gb_colrescontainer,"group",GB_FIND)) )
-        {
-            CPRO.result[which_statistic].statistic[column*3+1]=
-                (STATTYPE*)GB_read_ints(gb_colentry);
-        }
-        if( (gb_colentry=GB_search(gb_colrescontainer,"different",GB_FIND)) )
-        {
-            CPRO.result[which_statistic].statistic[column*3+2]=
-                (STATTYPE*)GB_read_ints(gb_colentry);
+        const char *field[] = { "equal", "group", "different" };
+        for (int i = 0; i<3; i++) {
+            GBDATA *gb_colentry = GB_entry(gb_colrescontainer, field[i]);
+            if (gb_colentry) {
+                CPRO.result[which_statistic].statistic[column*3+i] = (STATTYPE*)GB_read_ints(gb_colentry);
+            }
         }
     }
 
-    if( (error=GB_commit_transaction(oldbase)) )
-    {
+    if ((error=GB_commit_transaction(oldbase))) {
         aw_message(error);
         GB_close(oldbase);
         return;

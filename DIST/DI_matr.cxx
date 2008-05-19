@@ -174,9 +174,9 @@ PHENTRY::PHENTRY(GBDATA *gbd,class PHMATRIX *phmatri)
     memset((char *)this,0,sizeof(PHENTRY));
     phmatrix = phmatri;
 
-    GBDATA *gb_ali = GB_find(gbd,phmatrix->use,0,down_level);
+    GBDATA *gb_ali = GB_entry(gbd,phmatrix->use);
     if (!gb_ali) return;
-    GBDATA *gb_data = GB_find(gb_ali,"data",0,down_level);
+    GBDATA *gb_data = GB_entry(gb_ali,"data");
     if (!gb_data) return;
 
     char *seq = GB_read_char_pntr(gb_data);
@@ -187,10 +187,10 @@ PHENTRY::PHENTRY(GBDATA *gbd,class PHMATRIX *phmatri)
     }
     sequence->set(seq);
 
-    GBDATA *gb_name = GB_find(gbd,"name",0,down_level);
+    GBDATA *gb_name = GB_entry(gbd,"name");
     name = GB_read_string(gb_name);
 
-    GBDATA *gb_full_name = GB_find(gbd,"full_name",0,down_level);
+    GBDATA *gb_full_name = GB_entry(gbd,"full_name");
     if (gb_full_name) full_name = GB_read_string(gb_full_name);
 
 }
@@ -341,7 +341,7 @@ char *PHMATRIX::load(char *usei,AP_filter *filter,AP_weights *weights,AP_smatrix
 
             if (in_tree_species) { // test if species already loaded
                 char *species_name = 0;
-                GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+                GBDATA *gb_name = GB_entry(gb_species, "name");
                 if (gb_name) {
                     species_name = GB_read_string(gb_name);
                     if (bsearch(&species_name, species_in_sort_tree, tree_size, sizeof(*species_in_sort_tree), qsort_strcmp)==0) {

@@ -38,7 +38,7 @@ int PHMATRIX::search_group(GBT_TREE *node,GB_HASH *hash, long *groupcnt,char *gr
     else{
         myname = 0;
         if (node->gb_node && node->name){       // but we are a group
-            GBDATA *gb_grouped = GB_find(node->gb_node, "grouped",0,down_level);
+            GBDATA *gb_grouped = GB_entry(node->gb_node, "grouped");
             if (gb_grouped && GB_read_byte(gb_grouped)) {
                 myname = node->name;
             }

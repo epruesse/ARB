@@ -24,8 +24,8 @@ int main(int argc, char **argv) {
 		return (-1);
 	}
 
-	for (; gbspec; gbspec = GB_find(gbspec, "species", 0, this_level + search_next)) {
-		gbspecname = GB_find(gbspec, "name", 0, down_level);
+        for (; gbspec; gbspec = GB_nextEntry(gbspec)) {
+            gbspecname = GB_entry(gbspec, "name");
 		fprintf(stdout, "%s\n", GB_read_char_pntr(gbspecname));
 	}
 

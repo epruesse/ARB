@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.c                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Tue Oct/30/2007 11:43 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Fri May/16/2008 11:16 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -27,7 +27,7 @@
 //               == -1 -> assume that type is already defined
 
 GB_BOOL GEN_is_genome_db(GBDATA *gb_main, int default_value) {
-    GBDATA *gb_genom_db = GB_find(gb_main, GENOM_DB_TYPE, 0, down_level);
+    GBDATA *gb_genom_db = GB_entry(gb_main, GENOM_DB_TYPE);
 
     if (!gb_genom_db) {         // no DB-type entry -> create one with default
         if (default_value == -1) {
@@ -62,7 +62,7 @@ GBDATA* GEN_expect_gene_data(GBDATA *gb_species) {
 }
 
 GBDATA* GEN_find_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
-    GBDATA *gb_name = GB_find(gb_gene_data, "name", name, down_2_level);
+    GBDATA *gb_name = GB_find_string(gb_gene_data, "name", name, GB_FALSE, down_2_level); 
 
     if (gb_name) return GB_get_father(gb_name); // found existing gene
     return 0;
@@ -82,7 +82,7 @@ GBDATA* GEN_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
         GB_export_error("Missing gene name");
     }
     else {
-        GBDATA *gb_name = GB_find(gb_gene_data, "name", name, down_2_level);
+        GBDATA *gb_name = GB_find_string(gb_gene_data, "name", name, GB_FALSE, down_2_level);
 
         if (gb_name) return GB_get_father(gb_name); // found existing gene
 
@@ -98,15 +98,16 @@ GBDATA* GEN_create_gene(GBDATA *gb_species, const char *name) {
 }
 
 GBDATA* GEN_first_gene(GBDATA *gb_species) {
-    return GB_find(GEN_expect_gene_data(gb_species), "gene", 0, down_level);
+    return GB_entry(GEN_expect_gene_data(gb_species), "gene");
 }
 
 GBDATA* GEN_first_gene_rel_gene_data(GBDATA *gb_gene_data) {
-    return GB_find(gb_gene_data, "gene", 0, down_level);
+    return GB_entry(gb_gene_data, "gene");
 }
 
 GBDATA* GEN_next_gene(GBDATA *gb_gene) {
-    return GB_find(gb_gene, "gene", 0, this_level|search_next);
+    gb_assert(GB_has_key(gb_gene, "gene"));
+    return GB_nextEntry(gb_gene);
 }
 
 GBDATA *GEN_first_marked_gene(GBDATA *gb_species) {
@@ -121,11 +122,11 @@ GBDATA *GEN_next_marked_gene(GBDATA *gb_gene) {
 //  -----------------------------------------
 
 const char *GEN_origin_organism(GBDATA *gb_pseudo) {
-    GBDATA *gb_origin = GB_find(gb_pseudo, "ARB_origin_species", 0, down_level);
+    GBDATA *gb_origin = GB_entry(gb_pseudo, "ARB_origin_species");
     return gb_origin ? GB_read_char_pntr(gb_origin) : 0;
 }
 const char *GEN_origin_gene(GBDATA *gb_pseudo) {
-    GBDATA *gb_origin = GB_find(gb_pseudo, "ARB_origin_gene", 0, down_level);
+    GBDATA *gb_origin = GB_entry(gb_pseudo, "ARB_origin_gene");
     return gb_origin ? GB_read_char_pntr(gb_origin) : 0;
 }
 
@@ -144,7 +145,7 @@ GB_ERROR GEN_organism_not_found(GBDATA *gb_pseudo) {
     gb_assert(GEN_is_pseudo_gene_species(gb_pseudo));
     gb_assert(GEN_find_origin_organism(gb_pseudo, 0) == 0);
 
-    gb_name = GB_find(gb_pseudo, "name", 0, down_level);
+    gb_name = GB_entry(gb_pseudo, "name");
 
     error = GB_export_error("The gene-species '%s' refers to an unknown organism (%s)\n"
                             "This occurs if you rename or delete the organism or change the entry\n"
@@ -317,7 +318,7 @@ GB_BOOL GEN_is_organism(GBDATA *gb_species) {
     gb_assert(GEN_is_genome_db(GB_get_root(gb_species), -1)); /* assert this is a genome db */
     /* otherwise it is an error to use GEN_is_organism (or its callers)!!!! */
     
-    return GB_find(gb_species, GENOM_ALIGNMENT, 0, down_level) != 0;
+    return GB_entry(gb_species, GENOM_ALIGNMENT) != 0;
 }
 
 GBDATA *GEN_find_organism(GBDATA *gb_main, const char *name) {

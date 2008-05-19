@@ -39,10 +39,10 @@ void MG_alignment_vars_callback(AW_root *aw_root,GBDATA *gbd, long ali_nr)
         aw_root->awar(buffer)->unmap();
     }else{
 
-        GBDATA *ali_len = GB_find(ali_cont,"alignment_len",0,down_level);
-        GBDATA *ali_aligned = GB_find(ali_cont,"aligned",0,down_level);
-        GBDATA *ali_type = GB_find(ali_cont,"alignment_type",0,down_level);
-        GBDATA *ali_security = GB_find(ali_cont,"alignment_write_security",0,down_level);
+        GBDATA *ali_len      = GB_entry(ali_cont,"alignment_len");
+        GBDATA *ali_aligned  = GB_entry(ali_cont,"aligned");
+        GBDATA *ali_type     = GB_entry(ali_cont,"alignment_type");
+        GBDATA *ali_security = GB_entry(ali_cont,"alignment_write_security");
 
         sprintf(buffer,"tmp/merge%li/alignment_type",ali_nr);
         aw_root->awar(buffer)->map((void*)ali_type);

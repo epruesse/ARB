@@ -26,7 +26,7 @@ void PS_detect_probe_length( GBDATA *_ARB_node ) {
 
     // search for a probe
     while (__PROBE_LENGTH < 0) {
-        GBDATA *ARB_group = GB_find( _ARB_node, "group", 0, down_level );
+        GBDATA *ARB_group = GB_entry(_ARB_node, "group");
         if (ARB_group) {                                    // ps_node has probes
             GBDATA *probe = PG_get_first_probe( ARB_group );
             __PROBE_LENGTH = strlen(PG_read_probe(probe));
@@ -144,7 +144,7 @@ void PS_extract_probe_data( GBDATA *_ARB_node,               // position in ARB 
     //
     // get SpeciesID
     //
-    GBDATA     *data   = GB_find( _ARB_node, "num", 0, down_level );
+    GBDATA     *data   = GB_entry(_ARB_node, "num");
     const char *buffer = GB_read_char_pntr( data );
     SpeciesID   id     = atoi( buffer );
 
@@ -152,7 +152,7 @@ void PS_extract_probe_data( GBDATA *_ARB_node,               // position in ARB 
     // get probe(s)
     //
     PS_ProbeSetPtr  probes    = 0;
-    GBDATA         *ARB_group = GB_find( _ARB_node, "group", 0, down_level ); // access probe-group
+    GBDATA         *ARB_group = GB_entry(_ARB_node, "group"); // access probe-group
     if (ARB_group) {
         data = PG_get_first_probe( ARB_group );                       // get first probe if exists
 
@@ -256,7 +256,7 @@ int main(  int  _argc,
 //  getchar();
 
     GB_transaction dummy( ARB_main );
-    GBDATA *group_tree = GB_find( ARB_main, "group_tree", 0, down_level );
+    GBDATA *group_tree = GB_entry(ARB_main, "group_tree");
     if (!group_tree) {
         printf( "no 'group_tree' in database\n" );
         error = GB_export_error( "no 'group_tree' in database" );

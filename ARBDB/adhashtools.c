@@ -2,7 +2,7 @@
 /*                                                                 */
 /*   File      : adhashtools.c                                     */
 /*   Purpose   : convenience functions for hashes                  */
-/*   Time-stamp: <Tue May/06/2008 13:20 MET Coder@ReallySoft.de>   */
+/*   Time-stamp: <Fri May/16/2008 11:03 MET Coder@ReallySoft.de>   */
 /*                                                                 */
 /*   Coded by Ralf Westram (coder@reallysoft.de) in July 2007      */
 /*   Institute of Microbiology (Technical University Munich)       */
@@ -21,7 +21,7 @@ long GBT_get_species_hash_size(GBDATA *gb_main) {
 }
 
 void GBT_add_item_to_hash(GBDATA *gb_item, GB_HASH *item_hash) {
-    GBDATA     *gb_name = GB_find(gb_item, "name", 0, down_level);
+    GBDATA     *gb_name = GB_entry(gb_item, "name");
     const char *name;
 
     gb_assert(gb_name);

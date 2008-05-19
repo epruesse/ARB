@@ -147,13 +147,12 @@ static void parse_names_into_gene_struct(const char *map_str, gene_struct_list& 
 
 void PT_init_map(){
     GB_push_transaction(psg.gb_main);
-    GBDATA *map_ptr_idp = GB_find(psg.gb_main,"gene_map",0,down_level);
+    GBDATA *map_ptr_idp = GB_entry(psg.gb_main,"gene_map");
 
     if (map_ptr_idp != NULL) {
         gene_flag               = 1;
-        GBDATA *    map_ptr_str = GB_find(map_ptr_idp,"map_string",0,down_level);
-        const char *map_str;
-        map_str                 = GB_read_char_pntr(map_ptr_str);
+        GBDATA     *map_ptr_str = GB_entry(map_ptr_idp,"map_string");
+        const char *map_str     = GB_read_char_pntr(map_ptr_str);
 
         parse_names_into_gene_struct(map_str, all_gene_structs);
 

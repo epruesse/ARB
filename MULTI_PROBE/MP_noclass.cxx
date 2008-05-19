@@ -665,13 +665,10 @@ void MP_mark_probes_in_tree(AW_window *aww)
     mp_main->get_stc()->sondentopf->gen_color_hash(mp_gl_awars.no_of_probes);
 
     {
-
         GB_push_transaction(ntw->gb_main);
         GB_HASH *col_hash = mp_main->get_stc()->sondentopf->get_color_hash();
-        for (   gb_species = GBT_first_species(ntw->gb_main);
-                gb_species;
-                gb_species = GBT_next_species(gb_species) ){
-            gb_name = GB_find( gb_species, "name", 0, down_level);
+        for (gb_species = GBT_first_species(ntw->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
+            gb_name = GB_entry(gb_species, "name");
             const char *name = GB_read_char_pntr(gb_name);
             if (GBS_read_hash( col_hash, name)> AWT_GC_BLACK)
             {

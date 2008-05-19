@@ -443,11 +443,11 @@ void awt_do_query(void *dummy, struct adaqbsstruct *cbs,AW_CL ext_query)
                                 gb_key = GB_search(gb_item,this_query->getKey(),GB_FIND);
                             }
                             else if (this_query->query_all_fields()) {
-                                gb_key     = GB_find(gb_item, 0, 0, down_level);
+                                gb_key     = GB_child(gb_item);
                                 all_fields = 1;
                             }
                             else {
-                                gb_key = GB_find_sub_by_quark(gb_item, this_query->getKeyquark(), GB_NONE, 0, 0);
+                                gb_key = GB_find_sub_by_quark(gb_item, this_query->getKeyquark(), 0);
                             }
 
                             while (gb_key) {
@@ -520,12 +520,7 @@ void awt_do_query(void *dummy, struct adaqbsstruct *cbs,AW_CL ext_query)
                                     break;
                                 }
 
-                                if (all_fields) {
-                                    gb_key = GB_find(gb_key, 0, 0, this_level|search_next);
-                                }
-                                else {
-                                    gb_key = 0;
-                                }
+                                gb_key = all_fields ? GB_nextChild(gb_key) : 0;
                             }
 
                             if (abortQuery) {
@@ -736,7 +731,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
     GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
     GBDATA *gb_key_name;
 
-    while (!(gb_key_name  = GB_find(gb_key_data,CHANGEKEY_NAME,key,down_2_level))) {
+    while (!(gb_key_name  = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_FALSE,down_2_level))) {
         sprintf(AW_ERROR_BUFFER,"The destination field '%s' does not exists",key);
         if (aw_message(AW_ERROR_BUFFER,"Create Field (Type STRING),Cancel")){
             GB_abort_transaction(cbs->gb_main);
@@ -754,7 +749,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
         }
     }
 
-    GBDATA *gb_key_type = GB_find(gb_key_name,CHANGEKEY_TYPE,0,this_level);
+    GBDATA *gb_key_type = GB_brother(gb_key_name,CHANGEKEY_TYPE);
     bool aborted = false;
     {
         if (GB_read_int(gb_key_type)!=GB_STRING) {
@@ -1086,11 +1081,11 @@ static void update_colorset_selection_list(const color_save_data *csd) {
     aww->clear_selection_list(csd->sel_id);
     GBDATA *gb_item_root = get_colorset_root(csd);
 
-    for (GBDATA *gb_colorset = GB_find(gb_item_root, "colorset", 0, down_level);
+    for (GBDATA *gb_colorset = GB_entry(gb_item_root, "colorset");
          gb_colorset;
-         gb_colorset = GB_find(gb_colorset, "colorset", 0, this_level|search_next))
+         gb_colorset = GB_nextEntry(gb_colorset))
     {
-        GBDATA *gb_name = GB_find(gb_colorset, "name", 0, down_level);
+        GBDATA *gb_name = GB_entry(gb_colorset, "name");
         if (gb_name) {
             const char *name = GB_read_char_pntr(gb_name);
             aww->insert_selection(csd->sel_id, name, name);
@@ -1238,7 +1233,7 @@ static void awt_loadsave_colorset(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
         GBDATA *gb_colorset_root = get_colorset_root(csd);
         awt_assert(gb_colorset_root);
 
-        GBDATA *gb_colorset_name = GB_find(gb_colorset_root, "name", name, down_2_level);
+        GBDATA *gb_colorset_name = GB_find_string(gb_colorset_root, "name", name, GB_FALSE, down_2_level);
         GBDATA *gb_colorset      = gb_colorset_name ? GB_get_father(gb_colorset_name) : 0;
         if (mode == 0) {        // save-mode
             if (!gb_colorset) { // create new (otherwise overwrite w/o comment)
@@ -1266,7 +1261,7 @@ static void awt_loadsave_colorset(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
             }
             else {
                 if (mode == 1 || mode == 2) { // load- and overlay-mode
-                    GBDATA *gb_set = GB_find(gb_colorset, "color_set", 0, down_level);
+                    GBDATA *gb_set = GB_entry(gb_colorset, "color_set");
                     if (!gb_set) {
                         error = "colorset is empty (oops)";
                     }
@@ -1606,7 +1601,7 @@ void awt_do_set_list(void *dummy, struct adaqbsstruct *cbs, long append)
 
     GB_begin_transaction(cbs->gb_main);
     GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
-    GBDATA *gb_key_name = GB_find(gb_key_data,CHANGEKEY_NAME,key,down_2_level);
+    GBDATA *gb_key_name = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_FALSE,down_2_level);
     if (!gb_key_name) {
         sprintf(AW_ERROR_BUFFER,"The destination field '%s' does not exists",key);
         aw_message();
@@ -1616,7 +1611,7 @@ void awt_do_set_list(void *dummy, struct adaqbsstruct *cbs, long append)
         return;
     }
 
-    GBDATA *gb_key_type = GB_find(gb_key_name,CHANGEKEY_TYPE,0,this_level);
+    GBDATA *gb_key_type = GB_brother(gb_key_name,CHANGEKEY_TYPE);
 
 
     for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, cbs->aws->get_root(), AWT_QUERY_ALL_SPECIES);
@@ -1756,7 +1751,7 @@ void awt_do_set_protection(void *dummy, struct adaqbsstruct *cbs)
 
     GB_begin_transaction(cbs->gb_main);
     GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
-    GBDATA *gb_key_name = GB_find(gb_key_data,CHANGEKEY_NAME,key,down_2_level);
+    GBDATA *gb_key_name = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_FALSE,down_2_level);
     if (!gb_key_name) {
         sprintf(AW_ERROR_BUFFER,"The destination field '%s' does not exists",key);
         aw_message();
@@ -1896,7 +1891,7 @@ static GBDATA* awt_get_selected_species(GBDATA *gb_main, AW_root *aw_root) {
 
 static char* awt_get_species_id(GBDATA *, GBDATA *gb_species) {
     // awt_get_species_id creates the label that occurs in the search and query result list
-    GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+    GBDATA *gb_name = GB_entry(gb_species, "name");
     if (!gb_name) return 0;     // species w/o name -> skip
     return GB_read_as_string(gb_name);
 }

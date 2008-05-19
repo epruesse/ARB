@@ -84,7 +84,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
     }
 
     // check whether sequence has data in desired alignment
-    bool has_alignment = 0 != GB_find(gb_datamode,ED4_ROOT->alignment_name,0,down_level);
+    bool has_alignment = 0 != GB_entry(gb_datamode,ED4_ROOT->alignment_name);
     if (!has_alignment) {
         if (datamode == ED4_D_SPECIES) { // only warn about species w/o data (SAIs are skipped silently)
             char dummy[150];
@@ -127,7 +127,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
     species_name_terminal = new ED4_species_name_terminal( namebuffer, 0, 0, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH), terminal_height, name_manager );
     species_name_terminal->set_properties( (ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE) );
     species_name_terminal->set_links( NULL, ref_sequence_terminal );
-    species_name_terminal->set_species_pointer(GB_find( gb_datamode, "name", 0, down_level));
+    species_name_terminal->set_species_pointer(GB_entry(gb_datamode, "name"));
     name_manager->children->append_member( species_name_terminal );
 
     name_coords += terminal_height;
@@ -168,7 +168,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
     device = ED4_ROOT->first_window->aww->get_device(AW_MIDDLE_AREA);
 
     if (alignment_flag == ED4_A_DEFAULT) {
-        gb_ali_xxx = GB_find(gb_datamode,ED4_ROOT->alignment_name,0,down_level);
+        gb_ali_xxx = GB_entry(gb_datamode,ED4_ROOT->alignment_name);
     }
     else if (alignment_flag == ED4_A_CONTAINER) {
         gb_ali_xxx = gb_datamode;
@@ -176,10 +176,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
     if (!gb_ali_xxx) return ED4_R_OK;
 
     j=0;
-    for (gb_alignment = GB_find(gb_ali_xxx, 0, 0, down_level);
-         gb_alignment;
-         gb_alignment = GB_find(gb_alignment, 0, 0, this_level|search_next))
-    {
+    for (gb_alignment = GB_child(gb_ali_xxx); gb_alignment; gb_alignment = GB_nextChild(gb_alignment)) {
         GB_TYPES type = GB_read_type(gb_alignment);
 
         if (type == GB_INTS || type == GB_FLOATS) {

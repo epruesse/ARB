@@ -370,12 +370,12 @@ static GB_ERROR create_splitted_gene(GBDATA *gb_species_data2, PositionPairList&
 
 static GB_ERROR read_PositionPair(GBDATA *gb_gene, const char *pos_begin, const char *pos_end, PositionPair& pp) {
     GB_ERROR  error        = 0;
-    GBDATA   *gb_pos_begin = GB_find(gb_gene, pos_begin, 0, down_level);
+    GBDATA   *gb_pos_begin = GB_entry(gb_gene, pos_begin);
     if (!gb_pos_begin) {
         error = GBS_global_string("entry '%s' not found", pos_begin);
     }
     else {
-        GBDATA *gb_pos_end = GB_find(gb_gene, pos_end, 0, down_level);
+        GBDATA *gb_pos_end = GB_entry(gb_gene, pos_end);
         if (!gb_pos_end) {
             error = GBS_global_string("entry '%s' not found", pos_end);
         }
@@ -393,7 +393,7 @@ static GB_ERROR scan_gene_positions(GBDATA *gb_gene, PositionPairList& part_list
 
     if (!error) {
         part_list.push_back(pp);
-        GBDATA *gb_pos_joined = GB_find(gb_gene, "pos_joined", 0, down_level);
+        GBDATA *gb_pos_joined = GB_entry(gb_gene, "pos_joined");
         if (gb_pos_joined) { // splitted gene
             int parts = GB_read_int(gb_pos_joined);
             gp_assert(parts >= 2);
@@ -419,7 +419,7 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
     // into new 'species_data' (gb_species_data2)
 
     GB_ERROR    error            = 0;
-    GBDATA     *gb_organism_name = GB_find(gb_organism,"name",0,down_level); // Name der Spezies
+    GBDATA     *gb_organism_name = GB_entry(gb_organism,"name"); // Name der Spezies
     const char *organism_name    = 0;
 
     if (!gb_organism_name) error = GBS_global_string("Organism w/o name entry");
@@ -444,7 +444,7 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
          gb_gene && !error;
          gb_gene = GEN_next_gene(gb_gene))
     {
-        GBDATA     *gb_gene_name = GB_find(gb_gene,"name",0,down_level);
+        GBDATA     *gb_gene_name = GB_entry(gb_gene,"name");
         const char *gene_name     = 0;
 
         if (!gb_gene_name) error = "Gene w/o name entry";
@@ -552,7 +552,7 @@ int main(int argc, char* argv[]) {
         GB_request_undo_type(gb_main, GB_UNDO_NONE); // disable arbdb builtin undo
         GB_begin_transaction(gb_main);
 
-        GBDATA *gb_species_data     = GB_find(gb_main,"species_data",0,down_level);
+        GBDATA *gb_species_data     = GB_entry(gb_main,"species_data");
         GBDATA *gb_species_data_new = GB_create_container(gb_main,"species_data"); // introducing a second 'species_data' container
 
         if (!gb_species_data || ! gb_species_data_new) {

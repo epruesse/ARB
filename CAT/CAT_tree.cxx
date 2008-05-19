@@ -137,7 +137,7 @@ long cat_convert_tree_2_cat_rek(GBT_TREE *tree, CAT_tree *cat_tree, int deep, do
 			start = 0;
 			end = 1000000;
 			f = CAT_field_names[i];
-			gbd = GB_find(tree->gb_node,f,0,down_level);
+                        gbd = GB_entry(tree->gb_node,f);
 			if (gbd){
 				char * s= GB_read_as_string(gbd);
 				if (s && strlen(s)){		// append text to output stream
@@ -148,7 +148,7 @@ long cat_convert_tree_2_cat_rek(GBT_TREE *tree, CAT_tree *cat_tree, int deep, do
 				}
 			}
 		}
-		gbd = GB_find(tree->gb_node,"grouped",0,down_level);
+                gbd = GB_entry(tree->gb_node,"grouped");
 		if (gbd) {
 			node->is_grouped_in = GB_read_byte(gbd);
 		}

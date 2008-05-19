@@ -386,10 +386,10 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species, bool update_status) {
         const char *add_field = AW_get_nameserver_addid(gb_main);
         char       *ali_name  = GBT_get_default_alignment(gb_main);
 
-        GBDATA *gb_name      = GB_find(gb_species, "name", 0, down_level);
-        GBDATA *gb_full_name = GB_find(gb_species, "full_name", 0, down_level);
+        GBDATA *gb_name      = GB_entry(gb_species, "name");
+        GBDATA *gb_full_name = GB_entry(gb_species, "full_name");
         GBDATA *gb_acc       = GBT_gen_accession_number(gb_species, ali_name);
-        GBDATA *gb_addfield  = add_field[0] ? GB_find(gb_species, add_field, 0, down_level) : 0;
+        GBDATA *gb_addfield  = add_field[0] ? GB_entry(gb_species, add_field) : 0;
 
         char *name      = gb_name?      GB_read_string   (gb_name)     : strdup("");
         char *full_name = gb_full_name? GB_read_string   (gb_full_name): strdup("");
@@ -500,10 +500,10 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status, bool *isWarningPtr)
             {
                 if (update_status) aw_status(count++/(double)spcount);
 
-                GBDATA *gb_name      = GB_find(gb_species,"name",0,down_level);
-                GBDATA *gb_full_name = GB_find(gb_species,"full_name",0,down_level);
+                GBDATA *gb_name      = GB_entry(gb_species,"name");
+                GBDATA *gb_full_name = GB_entry(gb_species,"full_name");
                 GBDATA *gb_acc       = GBT_gen_accession_number(gb_species, ali_name);
-                GBDATA *gb_addfield  = add_field[0] ? GB_find(gb_species, add_field, 0, down_level) : 0;
+                GBDATA *gb_addfield  = add_field[0] ? GB_entry(gb_species, add_field) : 0;
 
                 char *name      = gb_name      ? GB_read_string   (gb_name)     : strdup("");
                 char *full_name = gb_full_name ? GB_read_string   (gb_full_name): strdup("");
@@ -634,11 +634,8 @@ void AWTC_create_rename_awars(AW_root *root,AW_default db1){
 UniqueNameDetector::UniqueNameDetector(GBDATA *gb_item_data, int additionalEntries) {
     hash = GBS_create_hash(2*(GB_number_of_subentries(gb_item_data)+additionalEntries), 1);
 
-    for (GBDATA *gb_item = GB_find(gb_item_data, 0, 0, down_level);
-         gb_item;
-         gb_item = GB_find(gb_item, 0, 0, this_level|search_next))
-    {
-        GBDATA *gb_name = GB_find(gb_item, "name", 0, down_level);
+    for (GBDATA *gb_item = GB_child(gb_item_data); gb_item; gb_item = GB_nextChild(gb_item)) {
+        GBDATA *gb_name = GB_entry(gb_item, "name");
         if (gb_name) { // item has name -> insert to hash
             GBS_write_hash(hash, GB_read_char_pntr(gb_name), 1);
         }

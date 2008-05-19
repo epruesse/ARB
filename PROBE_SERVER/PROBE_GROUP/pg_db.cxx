@@ -35,7 +35,7 @@ GB_ERROR PG_initSpeciesMaps(GBDATA* gb_main, GBDATA *pb_main) {
     pg_assert(!species_maps_initialized);
 
     // look for existing mapping in pb-db:
-    GBDATA *pb_mapping = GB_find(pb_main, "species_mapping", 0, down_level);
+    GBDATA *pb_mapping = GB_entry(pb_main, "species_mapping");
     if (!pb_mapping) {          // none found
         if (!gb_main) return GB_export_error("Need ARB-database!"); // in this case we need arb-db!
 
@@ -44,7 +44,7 @@ GB_ERROR PG_initSpeciesMaps(GBDATA* gb_main, GBDATA *pb_main) {
              gb_species;
              gb_species         = GBT_next_species(gb_species))
         {
-            GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+            GBDATA *gb_name = GB_entry(gb_species, "name");
             if (!gb_name) return GB_export_error("species w/o name");
 
             string name = GB_read_char_pntr(gb_name);
@@ -102,7 +102,7 @@ GB_ERROR PG_transfer_root_string_field(GBDATA *pb_src, GBDATA *pb_dest, const ch
     GB_push_transaction(pb_src);
     GB_push_transaction(pb_dest);
 
-    GBDATA *pb_src_mapping = GB_find(pb_src, field_name, 0, down_level);
+    GBDATA *pb_src_mapping = GB_entry(pb_src, field_name);
     if (!pb_src_mapping) {
         error = GBS_global_string("no such entry '%s'", field_name);
     }
@@ -314,11 +314,8 @@ static GBDATA *groupEntry_recursive(GBDATA *pb_father, SpeciesBagIter start, Spe
     GBDATA   *pb_probes = 0;    // result
     GB_ERROR  error     = 0;
 
-    for (GBDATA *pb_path = GB_find(pb_father, "path", 0, down_level);
-         pb_path && !error;
-         pb_path = GB_find(pb_path, "path", 0, this_level|search_next))
-    {
-        GBDATA     *pb_members = GB_find(pb_path, "members", 0, down_level);
+    for (GBDATA *pb_path = GB_entry(pb_father, "path"); pb_path && !error; pb_path = GB_nextEntry(pb_path)) {
+        GBDATA     *pb_members = GB_entry(pb_path, "members");
         const char *members    = GB_read_char_pntr(pb_members);
 
         SpeciesBagIter  last_match;
@@ -348,7 +345,7 @@ static GBDATA *groupEntry_recursive(GBDATA *pb_father, SpeciesBagIter start, Spe
                     GB_write_string(pb_sub_members, mismatch);
                     GB_write_string(pb_members, common_path.c_str());
 
-                    GBDATA *pb_old_probes = GB_find(pb_path, "probes", 0, down_level);
+                    GBDATA *pb_old_probes = GB_entry(pb_path, "probes");
                     if (pb_old_probes) {
                         GBDATA *pb_sub_probes = GB_create(pb_sub, "probes", GB_STRING);
 
@@ -358,20 +355,20 @@ static GBDATA *groupEntry_recursive(GBDATA *pb_father, SpeciesBagIter start, Spe
 #if defined(DEBUG)
                     else {
                         // group w/o "probes" entry should have at least two "path" entries
-                        GBDATA *pb_first_path = GB_find(pb_path, "path", 0, down_level);
+                        GBDATA *pb_first_path = GB_entry(pb_path, "path");
 
                         pg_assert(pb_first_path != 0);
-                        pg_assert(GB_find(pb_first_path, "path", 0, this_level|search_next) != 0);
+                        pg_assert(GB_nextEntry(pb_first_path) != 0);
                     }
 #endif // DEBUG
 
                     // copy all other path-entries
 
-                    for (GBDATA *pb_sub_path = GB_find(pb_path, "path", 0, down_level), *pb_next_sub = 0;
+                    for (GBDATA *pb_sub_path = GB_entry(pb_path, "path"), *pb_next_sub = 0;
                          pb_sub_path && !error;
                          pb_sub_path = pb_next_sub)
                     {
-                        pb_next_sub = GB_find(pb_sub_path, "path", 0, this_level|search_next);
+                        pb_next_sub = GB_nextEntry(pb_sub_path);
 
                         if (pb_sub_path != pb_sub) { // do not copy NEW sub-path
                             GBDATA *pb_sub_path_copy = GB_create_container(pb_sub, "path");
@@ -399,7 +396,7 @@ static GBDATA *groupEntry_recursive(GBDATA *pb_father, SpeciesBagIter start, Spe
             if (pb_dest_path) {
                 pg_assert(!pb_probes);
 
-                pb_probes    = GB_find(pb_dest_path, "probes", 0, down_level);
+                pb_probes    = GB_entry(pb_dest_path, "probes");
                 if (!pb_probes) {
                     pb_probes = GB_create(pb_dest_path, "probes", GB_STRING);
                     pg_assert(pb_probes);

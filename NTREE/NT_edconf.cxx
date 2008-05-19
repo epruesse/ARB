@@ -214,7 +214,7 @@ int nt_build_conf_string_rek(GB_HASH *used,GBT_TREE *tree, void *memfile,
 
     long oldpos = GBS_memoffset(memfile);
     if (tree->gb_node && tree->name){       // but we are a group
-        GBDATA *gb_grouped = GB_find(tree->gb_node,"grouped",0,down_level);
+        GBDATA *gb_grouped = GB_entry(tree->gb_node,"grouped");
         GBS_chrcat(memfile,1);              // Seperated by 1
         if (gb_grouped && GB_read_byte(gb_grouped)) {
             GBS_strcat(memfile,"F");
@@ -583,7 +583,7 @@ void nt_rename_configuration(AW_window *aww) {
         else {
             GBDATA *gb_old_cfg = GBT_find_configuration(GLOBAL_gb_main, old_name);
             if (gb_old_cfg) {
-                GBDATA *gb_name = GB_find(gb_old_cfg, "name", 0, down_level);
+                GBDATA *gb_name = GB_entry(gb_old_cfg, "name");
                 if (gb_name) {
                     err = GB_write_string(gb_name, new_name);
                     if (!err) awar_curr_cfg->write_string(new_name);

@@ -997,7 +997,7 @@ GB_INLINE short PH_tree_read_byte(GBDATA *tree,const char *key, int init)
 {
     GBDATA *gbd;
     if (!tree) return init;
-    gbd = GB_find(tree,key,0,down_level);
+    gbd = GB_entry(tree,key);
     if (!gbd) return init;
     return (short)GB_read_byte(gbd);
 }
@@ -1006,7 +1006,7 @@ GB_INLINE float PH_tree_read_float(GBDATA *tree,const char *key, double init)
 {
     GBDATA *gbd;
     if (!tree) return (float)init;
-    gbd = GB_find(tree,key,0,down_level);
+    gbd = GB_entry(tree,key);
     if (!gbd) return (float)init;
     return (float)GB_read_float(gbd);
 }
@@ -1068,7 +1068,7 @@ GB_ERROR PH_tree_write_byte(GBDATA *gb_tree, AP_tree *node,short i,const char *k
     GB_ERROR error= 0;
     if (i==init) {
         if (node->gb_node){
-            gbd = GB_find(node->gb_node,key,0,down_level);
+            gbd = GB_entry(node->gb_node,key);
             if (gbd) {
 #if defined(DEBUG_PH_tree_write_byte)
                 printf("[PH_tree_write_byte] deleting db entry %p\n", gbd);
@@ -1083,7 +1083,7 @@ GB_ERROR PH_tree_write_byte(GBDATA *gb_tree, AP_tree *node,short i,const char *k
             printf("[PH_tree_write_byte] created node-container %p\n", node->gb_node);
 #endif // DEBUG_PH_tree_write_byte
         }
-        gbd = GB_find(node->gb_node,key,0,down_level);
+        gbd = GB_entry(node->gb_node,key);
         if (!gbd) {
             gbd = GB_create(node->gb_node,key,GB_BYTE);
 #if defined(DEBUG_PH_tree_write_byte)
@@ -1101,14 +1101,14 @@ GB_ERROR PH_tree_write_float(GBDATA *gb_tree, AP_tree *node,float f,const char *
     GB_ERROR error= 0;
     if (f==init) {
         if (node->gb_node){
-            gbd = GB_find(node->gb_node,key,0,down_level);
+            gbd = GB_entry(node->gb_node,key);
             if (gbd) GB_delete(gbd);
         }
     }else{
         if (!node->gb_node){
             node->gb_node = GB_create_container(gb_tree,"node");
         }
-        gbd = GB_find(node->gb_node,key,0,down_level);
+        gbd = GB_entry(node->gb_node,key);
         if (!gbd) gbd = GB_create(node->gb_node,key,GB_FLOAT);
         error = GB_write_float(gbd,f);
     }
@@ -1193,7 +1193,7 @@ GB_ERROR AP_tree::move_group_info(AP_tree *new_group){
 
         {
             GBDATA *gb_group_name;
-            gb_group_name = GB_find(new_group->gb_node, "group_name", 0, down_level);
+            gb_group_name = GB_entry(new_group->gb_node, "group_name");
             if (gb_group_name) GB_touch(gb_group_name); // force taxonomy reload
         }
     }

@@ -2,7 +2,7 @@
 //                                                                   //
 //   File      : SEC_toggle.cxx                                      //
 //   Purpose   :                                                     //
-//   Time-stamp: <Sat Mar/01/2008 18:45 MET Coder@ReallySoft.de>     //
+//   Time-stamp: <Fri May/16/2008 11:16 MET Coder@ReallySoft.de>     //
 //                                                                   //
 //   Coded by Ralf Westram (coder@reallysoft.de) in September 2007   //
 //   Institute of Microbiology (Technical University Munich)         //
@@ -80,11 +80,11 @@ void SEC_structure_toggler::set_current(int idx) {
 
 GBDATA *SEC_structure_toggler::find(int num) {
     int     cnt      = 0;
-    GBDATA *gb_found = GB_find(gb_structures, "struct", 0, down_level);
+    GBDATA *gb_found = GB_entry(gb_structures, "struct");
     while (gb_found && num>0) {
         cnt++;
         num--;
-        gb_found = GB_find(gb_found, "struct", 0, this_level|search_next);
+        gb_found = GB_nextEntry(gb_found);
     }
     if (!gb_found) Count = cnt;  // seen all -> set count
     return gb_found;

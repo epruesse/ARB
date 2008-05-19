@@ -47,14 +47,14 @@ bool PS_get_probe_for_path( IDSet        &_path,
 
         // search for arb-node with num == id
         arb_node = PS_get_first_node( arb_node ); if (!arb_node) break;
-        data     = GB_find( arb_node, "num", 0, down_level );
+        data     = GB_entry(arb_node, "num");
         num      = atoi( GB_read_char_pntr( data ) );
         while (num != *id) {
             // get next node
             arb_node = PS_get_next_node( arb_node );
             if (!arb_node) break;
             // get num of arb-node
-            data = GB_find( arb_node, "num", 0, down_level );
+            data = GB_entry(arb_node, "num");
             num = atoi( GB_read_char_pntr( data ) );
         }
         if (!arb_node) break;
@@ -65,7 +65,7 @@ bool PS_get_probe_for_path( IDSet        &_path,
     }
 
     // search for probe with GC-content == _GC_content
-    arb_group = GB_find( arb_node, "group", 0, down_level );
+    arb_group = GB_entry(arb_node, "group");
     if (!arb_group) {
         printf( "  ERROR : failed to get group of node" );
         return false;
@@ -202,7 +202,7 @@ int main( int   argc,
                     return 1;
                 }
                 GB_transaction dummy( __ARB_DB );
-                __ARB_GROUP_TREE = GB_find( __ARB_DB, "group_tree", 0, down_level );
+                __ARB_GROUP_TREE = GB_entry(__ARB_DB, "group_tree");
                 if (!__ARB_GROUP_TREE) {
                     printf( "no 'group_tree' in database\n" );
                     return 1;

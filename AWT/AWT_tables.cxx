@@ -32,24 +32,19 @@ void ad_table_field_reorder_cb(AW_window *aws,awt_table *awtt) {
     GBDATA *gb_dest = GBT_find_table_field(gb_table,dest);
     if (!gb_source|| !gb_dest){
         aw_message("Please select two valid fields");
-        goto end;
     }
-    GBDATA *gb_fields; gb_fields = GB_get_father(gb_source);
-
-    if (gb_source && gb_dest && (gb_dest !=gb_source) ) {
-        GBDATA **new_order;
-        int nitems = 0;
+    else if (gb_source && gb_dest && (gb_dest !=gb_source) ) {
+        GBDATA *gb_fields = GB_get_father(gb_source);
+        int     nitems    = 0;
         GBDATA *gb_cnt;
-        for (   gb_cnt  = GB_find(gb_fields,0,0,down_level);
-                gb_cnt;
-                gb_cnt = GB_find(gb_cnt,0,0,this_level|search_next)){
+
+        for (gb_cnt  = GB_child(gb_fields); gb_cnt; gb_cnt = GB_nextChild(gb_cnt)) {
             nitems++;
         }
-        new_order = new GBDATA *[nitems];
-        nitems = 0;
-        for (   gb_cnt  = GB_find(gb_fields,0,0,down_level);
-                gb_cnt;
-                gb_cnt = GB_find(gb_cnt,0,0,this_level|search_next)){
+        
+        GBDATA **new_order = new GBDATA *[nitems];
+        nitems             = 0;
+        for (gb_cnt  = GB_child(gb_fields); gb_cnt; gb_cnt = GB_nextChild(gb_cnt)) {
             if (gb_cnt == gb_source) continue;
             new_order[nitems++] = gb_cnt;
             if (gb_cnt == gb_dest) {
@@ -57,9 +52,9 @@ void ad_table_field_reorder_cb(AW_window *aws,awt_table *awtt) {
             }
         }
         warning = GB_resort_data_base(awtt->gb_main,new_order,nitems);
-        delete new_order;
+        delete [] new_order;
     }
- end:
+    
     delete source;
     delete dest;
     GB_commit_transaction(awtt->gb_main);
@@ -412,7 +407,7 @@ void table_copy_cb(AW_window *aww,GBDATA *gb_main){
     }else{
         GBDATA *gb_table = GBT_open_table(gb_main,source,1);
         if (gb_table){
-            GBDATA *gb_table_data = GB_find(gb_main,"table_data",0,down_level);
+            GBDATA *gb_table_data = GB_entry(gb_main,"table_data");
             gb_table_dest = GB_create_container(gb_table_data,"table");
             error = GB_copy(gb_table_dest,gb_table);
             if (!error){

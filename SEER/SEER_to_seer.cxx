@@ -21,9 +21,7 @@ long seer_upload_species_attributes_rek(SeerInterfaceDataSet *sd, GBDATA *gb_spe
     // return the number of items actually new
     GBDATA *gbd;
     int items_read = 0;
-    for (gbd = GB_find(gb_species,0,0,down_level);
-	 gbd;
-	 gbd = GB_find(gbd,0,0,this_level | search_next)){
+    for (gbd = GB_child(gb_species); gbd; gbd = GB_nextChild(gbd)) {
 	const char *key = GB_read_key_pntr(gbd);
 	sprintf(end_of_prefix,GB_read_key_pntr(gbd));
 
@@ -61,16 +59,14 @@ long seer_upload_species_attributes_rek(SeerInterfaceDataSet *sd, GBDATA *gb_spe
 }
 
 long seer_upload_species_sequence(SeerInterfaceDataStringSet *ss, GBDATA *gb_species, int transaction_limit, const char *arb_alignment_name ){
-    GBDATA *gb_ali = GB_find(gb_species, arb_alignment_name,0,down_level);
+    GBDATA *gb_ali = GB_entry(gb_species, arb_alignment_name);
     if (!gb_ali) return 0;
     if (GB_read_type(gb_ali) != GB_DB) return 0;
     GBDATA *gb_data;
     int count_exported_items = 0;
     if (GB_read_clock(gb_ali) <= transaction_limit) return 0;
 
-    for (gb_data = GB_find(gb_ali,0,0,down_level);
-	 gb_data;
-	 gb_data = GB_find(gb_data,0,0,this_level|search_next)){
+    for (gb_data = GB_child(gb_ali); gb_data; gb_data = GB_nextChild(gb_data)) {
 	if (GB_read_clock(gb_data) < transaction_limit) continue;
 	GB_TYPES type = GB_read_type(gb_data);
 	const char *key = GB_read_key_pntr(gb_data);
@@ -172,7 +168,7 @@ void seer_upload_all_species(AW_root *awr,int sequence_flag, int SAI_flag){
 	    gb_next_species = GBT_next_marked_species(gb_species);
 	}
 	if (aw_status(double(i++)/double(max_i))) break; // user break requested
-	GBDATA *gb_key = GB_find(gb_species, SEER_KEY_FLAG,0,down_level);
+        GBDATA *gb_key = GB_entry(gb_species, SEER_KEY_FLAG);
 	int transaction_limit;
 	if (!gb_key){		// source of data is not SEER
 	    if (save_type == SST_SINCE_LOGIN) continue;
@@ -182,7 +178,7 @@ void seer_upload_all_species(AW_root *awr,int sequence_flag, int SAI_flag){
 	}
 	if (GB_read_clock(gb_species) <= transaction_limit) continue; // whole species not changed
 
-	GBDATA *gb_name = GB_find(gb_species,"name",0,down_level);
+        GBDATA *gb_name = GB_entry(gb_species,"name");
 	if (!gb_name) continue;	// name not set
 	SeerInterfaceSequenceData *sd = new SeerInterfaceSequenceData(GB_read_char_pntr(gb_name));
 	GB_ERROR error = seer_upload_one_species(sd,gb_species,transaction_limit,arb_alignment_name,alignment_name,sequence_flag,SAI_flag);
@@ -324,9 +320,7 @@ void seer_check_upload_attribute_list(AW_window *aws){
 	gb_key_data = GB_search(gb_main,CHANGE_KEY_PATH,GB_CREATE_CONTAINER);
 
 	int i = 0;
-	for (	gb_key = GB_find(gb_key_data,CHANGEKEY,0,down_level);
-		gb_key;
-		gb_key = GB_find(gb_key,CHANGEKEY,0,this_level|search_next)){
+        for (gb_key = GB_entry(gb_key_data,CHANGEKEY); gb_key; gb_key = GB_nextEntry(gb_key)) {
 	    GBDATA *gb_type = GB_search(gb_key,CHANGEKEY_TYPE,GB_INT);
 	    if (GB_read_int(gb_type) != GB_STRING) continue;
 	    at = new SeerInterfaceAttribute();

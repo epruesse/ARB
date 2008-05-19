@@ -88,7 +88,7 @@ AD_ERR  *AD_SPECIES::first()
     //erstes spezies initialisieren
 
     if (ad_main) {
-        gb_species = GB_find(gb_spdata, "species", 0, down_level);
+        gb_species = GB_entry(gb_spdata, "species");
         //erstes species
         AD_SPECIES::initpntr();
         return 0;
@@ -109,7 +109,7 @@ void  AD_SPECIES::initpntr()
         //kein spezies gefunden
     } else {
         last = 0;
-        gb_name = GB_find(gb_species, "name", 0, down_level);
+        gb_name = GB_entry(gb_species, "name");
         //name und flag cachen
         spname = GB_read_string(gb_name);
         if (ad_main->AD_fast == MINCACH) {
@@ -232,7 +232,7 @@ int AD_SPECIES::flag()
 const char * AD_SPECIES::fullname()
 {
     GBDATA *gb_ptr;
-    gb_ptr = GB_find(gb_spdata,"full_name",NULL,down_level);
+    gb_ptr = GB_entry(gb_spdata,"full_name");
     if (gb_ptr) // fullname existiert
         return GB_read_char_pntr(gb_ptr);
     return 0;
@@ -247,7 +247,7 @@ AD_ERR * AD_SPECIES::next()
     if (!gb_species && last == 0)
         first();
     AD_SPECIES::release();      // speicherplatz freigeben
-    gb_species = GB_find(gb_species,"species",0,this_level | search_next);
+    gb_species = GB_nextEntry(gb_species);
     AD_SPECIES::initpntr();
     return 0;
 }

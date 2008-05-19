@@ -641,7 +641,7 @@ static void gene_rel_2_abs(PT_probematch *ml) {
 
     for (; ml; ml = ml->next) {
         probe_input_data&  pid    = psg.data[ml->name];
-        GBDATA            *gb_pos = GB_find(pid.gbd, "abspos", 0, down_level);
+        GBDATA            *gb_pos = GB_entry(pid.gbd, "abspos");
 
         if (gb_pos) {
             long gene_pos  = GB_read_int(gb_pos);

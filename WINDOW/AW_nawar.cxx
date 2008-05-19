@@ -563,7 +563,7 @@ AW_error *AW_root::save_default(AW_default aw_default, const char *file_name)
     GBDATA *gb_tmp;
     GBDATA *gb_main = GB_get_root((GBDATA *)aw_default);
     GB_push_transaction(gb_main);
-    gb_tmp = GB_find(gb_main,"tmp",0,down_level);
+    gb_tmp = GB_entry(gb_main,"tmp");
     if (gb_tmp) GB_set_temporary(gb_tmp);
     aw_update_awar_window_geometry(this);
     GB_pop_transaction(gb_main);

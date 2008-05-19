@@ -50,7 +50,7 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
         aw_root->awar(cbs->def_len)   ->write_int(-1);  // export filter
     }else{
         GBDATA *gb_name = GB_get_father(gbd);   // ali_xxxx
-        gb_name = GB_find(gb_name,"name",0,this_level);
+        gb_name = GB_brother(gb_name,"name");
         char *name2 = GB_read_string(gb_name);
         aw_root->awar(cbs->def_name)->write_string(name2);
         free(name2);
@@ -125,21 +125,18 @@ static void awt_add_sequences_to_list(struct adfiltercbstruct *cbs, const char *
     GBDATA *gb_data;
     int count;
 
-    gb_ali = GB_find(gb_extended,use,0,down_level);
+    gb_ali = GB_entry(gb_extended,use);
     if (!gb_ali) return;
     count = 0;
-    GBDATA *gb_type = GB_find(gb_ali,"_TYPE",0,down_level);
+    GBDATA *gb_type = GB_entry(gb_ali,"_TYPE");
     char *TYPE = strdup("");
     if (gb_type) TYPE = GB_read_string(gb_type);
 
-    gb_name = GB_find(gb_extended,"name",0,down_level);
+    gb_name = GB_entry(gb_extended,"name");
     if (!gb_name) return;
     char *name = GB_read_string(gb_name);
 
-    for (   gb_data = GB_find(gb_ali,0,0,down_level);
-            gb_data;
-            gb_data = GB_find(gb_data,0,0,search_next|this_level)){
-
+    for (gb_data = GB_child(gb_ali); gb_data; gb_data = GB_nextChild(gb_data)) {
         if (GB_read_key_pntr(gb_data)[0] == '_') continue;
         long type = GB_read_type(gb_data);
         if (type == GB_BITS || type == GB_STRING) {

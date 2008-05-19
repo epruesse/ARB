@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Mon Mar/03/2008 17:57 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri May/16/2008 11:16 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2004     //
@@ -105,7 +105,7 @@ private:
             id = PG_SpeciesName2SpeciesID(currentSubTree->name);
         }
         else {
-            GBDATA *pb_member = GB_find(currentSubTree->gb_node, "member", 0, down_level);
+            GBDATA *pb_member = GB_entry(currentSubTree->gb_node, "member");
             pg_assert(pb_member);
             id                = GB_read_int(pb_member);
         }
@@ -298,7 +298,7 @@ GB_ERROR PG_tree_change_node_info(GBT_TREE *node) {
     char *acc      = 0;
 
     if (node->gb_node) {
-        GBDATA *gb_fullname = GB_find(node->gb_node, "full_name", 0, down_level);
+        GBDATA *gb_fullname = GB_entry(node->gb_node, "full_name");
         if (gb_fullname) {
             fullname = GB_read_string(gb_fullname);
             convert_commas_to_underscores(fullname);
@@ -308,7 +308,7 @@ GB_ERROR PG_tree_change_node_info(GBT_TREE *node) {
         }
 
         if (!error) {
-            GBDATA *gb_acc = GB_find(node->gb_node, "acc", 0, down_level);
+            GBDATA *gb_acc = GB_entry(node->gb_node, "acc");
             if (gb_acc) {
                 acc = GB_read_string(gb_acc);
                 convert_commas_to_underscores(acc);
@@ -690,7 +690,7 @@ static GB_ERROR getSpeciesInGroup(GBDATA *pb_group, SpeciesBag& species) {
                 pb_path = 0; // exit loop
             }
             else {
-                GBDATA *pb_members = GB_find(pb_path, "members", 0, down_level);
+                GBDATA *pb_members = GB_entry(pb_path, "members");
                 if (pb_members) {
                     const char *members = GB_read_char_pntr(pb_members);
                     while (members) {
@@ -891,16 +891,16 @@ static GB_ERROR linkTreeToSubtrees(GBT_TREE *tree, GBDATA *pba_main) {
 
     unlinkTreeAndFreeNodeInfo(tree);
 
-    GBDATA *pba_subtrees = GB_find(pba_main, "subtrees", 0, down_level);
+    GBDATA *pba_subtrees = GB_entry(pba_main, "subtrees");
     if (!pba_subtrees) {
         error = "cannot find 'subtrees'";
     }
     else {
-        for (GBDATA *pba_subtree = GB_find(pba_subtrees, "subtree", 0, down_level);
+        for (GBDATA *pba_subtree = GB_entry(pba_subtrees, "subtree");
              pba_subtree && !error;
-             pba_subtree = GB_find(pba_subtree, "subtree", 0, this_level|search_next))
+             pba_subtree = GB_nextEntry(pba_subtree))
         {
-            GBDATA *pba_path = GB_find(pba_subtree, "path", 0, down_level);
+            GBDATA *pba_path = GB_entry(pba_subtree, "path");
             if (!pba_path) {
                 error = "cannot find 'path'";
             }
@@ -989,10 +989,10 @@ static GB_ERROR setSubtreeCoverage(GBT_TREE *node, int group_hits, const char *g
 
     GB_ERROR  error      = 0;
     GBDATA   *pb_subtree = node->gb_node;
-    bool      update     = GB_find(pb_subtree, "exact", 0, down_level) == 0; // stop when subtree has exact probes
+    bool      update     = GB_entry(pb_subtree, "exact") == 0; // stop when subtree has exact probes
 
     if (update) {
-        GBDATA *pb_coverage = GB_find(pb_subtree, "coverage", 0, down_level);
+        GBDATA *pb_coverage = GB_entry(pb_subtree, "coverage");
         if (pb_coverage) {
             int current_coverage = GB_read_int(pb_coverage);
             if (current_coverage >= group_hits) {
@@ -1016,7 +1016,7 @@ static GB_ERROR setSubtreeCoverage(GBT_TREE *node, int group_hits, const char *g
             if (!error) {
                 // calculate no of combinations needed to test in order to find a better coverage
 
-                GBDATA *pb_speccount = GB_find(pb_subtree, "speccount", 0, down_level);
+                GBDATA *pb_speccount = GB_entry(pb_subtree, "speccount");
                 pg_assert(pb_speccount); // all inner nodes must have 'speccount'
                 int     species      = GB_read_int(pb_speccount);
                 int     comb         = 0; // 0 means 'none possible'
@@ -1051,19 +1051,19 @@ static GB_ERROR setSubtreeCoverage(GBT_TREE *node, int group_hits, const char *g
 static GB_ERROR propagateExactSubtrees(GBT_TREE *node, int& group_hits, const char*& path) {
     GB_ERROR  error      = 0;
     GBDATA   *pb_subtree = node->gb_node;
-    GBDATA   *pb_exact   = GB_find(pb_subtree, "exact", 0, down_level);
+    GBDATA   *pb_exact   = GB_entry(pb_subtree, "exact");
 
     if (pb_exact) {             // have an exact probe_group here
         if (node->is_leaf) {
             group_hits = 1;
         }
         else {
-            GBDATA *pb_speccount = GB_find(pb_subtree, "speccount", 0, down_level);
+            GBDATA *pb_speccount = GB_entry(pb_subtree, "speccount");
             pg_assert(pb_speccount); // all inner nodes must have 'speccount'
             group_hits                 = GB_read_int(pb_speccount);
         }
 
-        GBDATA *gb_path = GB_find(pb_subtree, "path", 0, down_level);
+        GBDATA *gb_path = GB_entry(pb_subtree, "path");
         path            = GB_read_char_pntr(gb_path);
 
         // recurse into exact subtrees (search for non-exact subbranches)
@@ -1172,14 +1172,14 @@ static GB_ERROR searchBetterCoverage(GBT_TREE *tree, GBDATA *pb_main, GBDATA *pb
     {
         if (!node->is_leaf) {
             GBDATA *pb_subtree = node->gb_node;
-            GBDATA *pb_comb    = GB_find(pb_subtree, "comb", 0, down_level);
+            GBDATA *pb_comb    = GB_entry(pb_subtree, "comb");
 
             if (pb_comb) {
                 int comb = GB_read_int(pb_comb);
                 if (comb != 0) {
                     if (comb <= max_comb) {
                         const SpeciesBag&  species      = tt.getSpecies();
-                        GBDATA            *pb_coverage  = GB_find(pb_subtree, "coverage", 0, down_level);
+                        GBDATA            *pb_coverage  = GB_entry(pb_subtree, "coverage");
                         int                old_coverage = GB_read_int(pb_coverage);
                         int                subtree_size = species.size();
 

@@ -111,10 +111,10 @@ static void GDE_create_infieldwithpm(AW_window *aws,char *newawar,long width)
 
 static char *gde_filter_weights(GBDATA *gb_sai,AW_CL ){
     char *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
-    GBDATA *gb_ali = GB_find(gb_sai,ali_name,0,down_level);
+    GBDATA *gb_ali = GB_entry(gb_sai,ali_name);
     delete ali_name;
     if (!gb_ali) return 0;
-    GBDATA *gb_type = GB_find(gb_ali, "_TYPE",0,down_level);
+    GBDATA *gb_type = GB_entry(gb_ali, "_TYPE");
     if (!gb_type) return 0;
     char *type = GB_read_char_pntr(gb_type);
     if (GBS_string_cmp( type,"PV?:*",0)) {

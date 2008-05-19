@@ -109,7 +109,7 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
         error = "Please select a species first.";
     } else {
         // search for the field "sec_struct"
-        GBDATA *gb_species_sec_struct = GB_find(gb_species, "sec_struct", 0, down_level);
+        GBDATA *gb_species_sec_struct = GB_entry(gb_species, "sec_struct");
         if (!gb_species_sec_struct) {
             error = "Field \"sec_struct\" not found or empty. Please select another species.";
         } else if ( !(sec_struct = GB_read_string(gb_species_sec_struct)) ) {
@@ -136,7 +136,7 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
                 } else {
                     // create SAI container and copy fields from the species to the SAI
                     gb_sai = GB_create_container(gb_extended_data, "extended");
-                    GBDATA *gb_species_field = GB_first(gb_species);
+                    GBDATA *gb_species_field = GB_child(gb_species);
                     while (gb_species_field && !error) {
                         char *key = GB_read_key(gb_species_field);
                         GBDATA *gb_sai_field = GB_search(gb_sai, GB_read_key(gb_species_field), GB_read_type(gb_species_field));
@@ -149,7 +149,7 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
                         } else if (strcmp(key, "acc") && strcmp(key, ali_name)) { // don't copy "acc" and the old alignment data
                             error = GB_copy(gb_sai_field, gb_species_field);
                         }
-                        gb_species_field = GB_next(gb_species_field);
+                        gb_species_field = GB_nextChild(gb_species_field);
                         free(key);
                     }
 
@@ -301,7 +301,7 @@ static void ad_species_rename_cb(AW_window *aww, AW_CL, AW_CL) {
                     aw_status(0.0);
                     error = AWTC_recreate_name(gb_species, true);
                     if (!error) {
-                        GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+                        GBDATA *gb_name = GB_entry(gb_species, "name");
                         if (gb_name) aw_root->awar(AWAR_SPECIES_NAME)->write_string(GB_read_char_pntr(gb_name)); // set focus
                     }
                     aw_closestatus();
@@ -364,7 +364,7 @@ void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type)
         GBDATA *gb_species_data        = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
         if (gbd && GB_get_father(gbd) == gb_species_data) {
             // I got a species !!!!!!
-            GBDATA *gb_name            = GB_find(gbd,"name",0,down_level);
+            GBDATA *gb_name            = GB_entry(gbd,"name");
             if (gb_name) {
                 free(species_name);
                 species_name = GB_read_string(gb_name);
@@ -391,8 +391,8 @@ void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type)
 
     while (gbd && type == ADMVT_WWW){
         char *name = strdup("noname");
-        GBDATA *gb_name = GB_find(gbd,"name",0,down_level);
-        if (!gb_name) gb_name = GB_find(gbd,"group_name",0,down_level); // bad hack, should work
+        GBDATA *gb_name = GB_entry(gbd,"name");
+        if (!gb_name) gb_name = GB_entry(gbd,"group_name"); // bad hack, should work
         if (gb_name){
             delete name;
             name = GB_read_string(gb_name);
@@ -406,10 +406,7 @@ void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type)
 
 static int count_key_data_elements(GBDATA *gb_key_data) {
     int nitems  = 0;
-    for (GBDATA *gb_cnt  = GB_find(gb_key_data,0,0,down_level);
-         gb_cnt;
-         gb_cnt = GB_find(gb_cnt,0,0,this_level|search_next))
-    {
+    for (GBDATA *gb_cnt = GB_child(gb_key_data); gb_cnt; gb_cnt = GB_nextChild(gb_cnt)) {
         ++nitems;
     }
 
@@ -422,11 +419,11 @@ static void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
     char     *dest    = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_string();
     GB_ERROR  warning = 0;
 
-    const adawcbstruct     *cbs1        = (const adawcbstruct*)cl_cbs1;
-    const adawcbstruct     *cbs2        = (const adawcbstruct*)cl_cbs2;
-    const ad_item_selector *selector    = cbs1->selector;
-    GBDATA                 *gb_source   = awt_get_key(GLOBAL_gb_main,source, selector->change_key_path);
-    GBDATA                 *gb_dest     = awt_get_key(GLOBAL_gb_main,dest, selector->change_key_path);
+    const adawcbstruct     *cbs1      = (const adawcbstruct*)cl_cbs1;
+    const adawcbstruct     *cbs2      = (const adawcbstruct*)cl_cbs2;
+    const ad_item_selector *selector  = cbs1->selector;
+    GBDATA                 *gb_source = awt_get_key(GLOBAL_gb_main,source, selector->change_key_path);
+    GBDATA                 *gb_dest   = awt_get_key(GLOBAL_gb_main,dest, selector->change_key_path);
 
     int left_index  = aws->get_index_of_current_element(cbs1->id, AWAR_FIELD_REORDER_SOURCE);
     int right_index = aws->get_index_of_current_element(cbs2->id, AWAR_FIELD_REORDER_DEST);
@@ -446,10 +443,7 @@ static void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
 
         nitems = 0;
 
-        for (GBDATA *gb_key  = GB_find(gb_key_data,0,0,down_level);
-             gb_key;
-             gb_key = GB_find(gb_key,0,0,this_level|search_next))
-        {
+        for (GBDATA *gb_key = GB_child(gb_key_data); gb_key; gb_key = GB_nextChild(gb_key)) {
             if (gb_key == gb_source) continue;
             new_order[nitems++] = gb_key;
             if (gb_key == gb_dest) {
@@ -498,10 +492,7 @@ static void ad_list_reorder_cb2(AW_window *aws, AW_CL cl_cbs2, AW_CL cl_dir) {
         nitems         = 0;
         int curr_index = -1;
 
-        for (GBDATA *gb_key = GB_find(gb_key_data, 0, 0, down_level);
-             gb_key;
-             gb_key = GB_find(gb_key, 0, 0, this_level|search_next))
-        {
+        for (GBDATA *gb_key = GB_child(gb_key_data); gb_key; gb_key = GB_nextChild(gb_key)) {
             if (gb_key == gb_field) curr_index = nitems;
             new_order[nitems++] = gb_key;
         }

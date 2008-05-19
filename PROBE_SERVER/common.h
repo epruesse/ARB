@@ -3,7 +3,7 @@
 //    File      : common.h                                               //
 //    Purpose   : Common code for all tools                              //
 //    Note      : include only once in each executable!!!                //
-//    Time-stamp: <Fri Oct/01/2004 20:19 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri May/16/2008 11:03 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -184,7 +184,7 @@ template <typename C>
 static GB_ERROR saveProbeContainerToString(GBDATA *gb_father, const char *entry_name, bool allow_overwrite,
                                            typename C::const_iterator start, typename C::const_iterator end) {
     GB_ERROR  error    = 0;
-    GBDATA   *gb_entry = GB_find(gb_father, entry_name, 0, down_level);
+    GBDATA   *gb_entry = GB_entry(gb_father, entry_name);
 
     if (gb_entry && !allow_overwrite) {
         error = "tried to overwrite entry!";

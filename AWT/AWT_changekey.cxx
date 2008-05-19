@@ -2,7 +2,7 @@
 //                                                                      //
 //   File      : AWT_changekey.cxx                                      //
 //   Purpose   : changekey management                                   //
-//   Time-stamp: <Mon May/23/2005 20:04 MET Coder@ReallySoft.de>        //
+//   Time-stamp: <Mon May/19/2008 12:02 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in May 2005              //
@@ -27,8 +27,11 @@ GBDATA *awt_get_key(GBDATA *gb_main, const char *key, const char *change_key_pat
 // get the container of a species key description
 {
     GBDATA *gb_key_data = GB_search(gb_main, change_key_path, GB_CREATE_CONTAINER);
-    GBDATA *gb_key_name = GB_find(gb_key_data, CHANGEKEY_NAME, key, down_2_level);
-    GBDATA *gb_key = 0;
+#if defined(DEVEL_RALF)
+#warning check if search for CHANGEKEY_NAME should be case-sensitive!
+#endif // DEVEL_RALF
+    GBDATA *gb_key_name     = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_FALSE, down_2_level);
+    GBDATA *gb_key          = 0;
     if (gb_key_name) gb_key = GB_get_father(gb_key_name);
     return gb_key;
 }
@@ -36,7 +39,7 @@ GBDATA *awt_get_key(GBDATA *gb_main, const char *key, const char *change_key_pat
 GB_TYPES awt_get_type_of_changekey(GBDATA *gb_main,const char *field_name, const char *change_key_path) {
     GBDATA *gbd = awt_get_key(gb_main,field_name, change_key_path);
     if(!gbd) return GB_NONE;
-    GBDATA *gb_key_type = GB_find(gbd,CHANGEKEY_TYPE,0,down_level);
+    GBDATA *gb_key_type = GB_entry(gbd,CHANGEKEY_TYPE);
     if (!gb_key_type) return GB_NONE;
     return (GB_TYPES) GB_read_int(gb_key_type);
 }
@@ -50,10 +53,7 @@ GB_ERROR awt_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name, int 
     GBDATA *gb_key_data;
     gb_key_data = GB_search(gb_main,keypath,GB_CREATE_CONTAINER);
 
-    for (gb_key = GB_find(gb_key_data,CHANGEKEY,0,down_level);
-         gb_key;
-         gb_key = GB_find(gb_key,CHANGEKEY,0,this_level|search_next))
-    {
+    for (gb_key = GB_entry(gb_key_data,CHANGEKEY); gb_key; gb_key = GB_nextEntry(gb_key)) {
         key_name = GB_search(gb_key,CHANGEKEY_NAME,GB_STRING);
         if (!strcmp(GB_read_char_pntr(key_name),name)) break;
     }
@@ -116,7 +116,7 @@ inline bool is_in_reserved_path(const char *fieldpath)  {
 static void awt_delete_unused_changekeys(GBDATA *gb_main, const char **names, const char *change_key_path) {
     // deletes all keys from 'change_key_path' which are not listed in 'names'
     GBDATA *gb_key_data = GB_search(gb_main, change_key_path, GB_CREATE_CONTAINER);
-    GBDATA *gb_key      = GB_find(gb_key_data, CHANGEKEY, 0, down_level);
+    GBDATA *gb_key      = GB_entry(gb_key_data, CHANGEKEY);
 
     while (gb_key) {
         bool        found = false;
@@ -124,10 +124,10 @@ static void awt_delete_unused_changekeys(GBDATA *gb_main, const char **names, co
         const char *key_name;
 
         {
-            GBDATA *gb_key_type = GB_find(gb_key, CHANGEKEY_TYPE, 0, down_level);
+            GBDATA *gb_key_type = GB_entry(gb_key, CHANGEKEY_TYPE);
             key_type            = GB_read_int(gb_key_type);
 
-            GBDATA *gb_key_name = GB_find(gb_key, CHANGEKEY_NAME, 0, down_level);
+            GBDATA *gb_key_name = GB_entry(gb_key, CHANGEKEY_NAME);
             key_name            = GB_read_char_pntr(gb_key_name);
         }
 
@@ -141,7 +141,8 @@ static void awt_delete_unused_changekeys(GBDATA *gb_main, const char **names, co
             }
         }
 
-        GBDATA *gb_next_key = GB_find(gb_key, CHANGEKEY, 0, this_level|search_next);
+        awt_assert(GB_has_key(gb_key, CHANGEKEY));
+        GBDATA *gb_next_key = GB_nextEntry(gb_key);
 
         if (!found) {
             if (key_type == GB_DB) { // it's a container
@@ -168,11 +169,8 @@ static void awt_delete_unused_changekeys(GBDATA *gb_main, const char **names, co
 
 static void awt_show_all_changekeys(GBDATA *gb_main, const char *change_key_path) {
     GBDATA *gb_key_data = GB_search(gb_main, change_key_path, GB_CREATE_CONTAINER);
-    for (GBDATA *gb_key = GB_find(gb_key_data, CHANGEKEY, 0, down_level);
-         gb_key;
-         gb_key = GB_find(gb_key, CHANGEKEY, 0, this_level|search_next))
-    {
-        GBDATA *gb_key_hidden = GB_find(gb_key, CHANGEKEY_HIDDEN, 0, down_level);
+    for (GBDATA *gb_key = GB_entry(gb_key_data, CHANGEKEY); gb_key; gb_key = GB_nextEntry(gb_key)) {
+        GBDATA *gb_key_hidden = GB_entry(gb_key, CHANGEKEY_HIDDEN);
         if (gb_key_hidden) {
             if (GB_read_int(gb_key_hidden)) GB_write_int(gb_key_hidden, 0); // unhide
         }

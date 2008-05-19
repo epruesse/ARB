@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_configs.cxx                                         //
 //    Purpose   : Merge editor configurations                            //
-//    Time-stamp: <Sat Mar/01/2008 12:24 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu May/15/2008 18:40 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -50,8 +50,8 @@ void MG_config_rename_cb(AW_window *aww, GBDATA *gbd, int config_nr) {
     if (!error) {
         GB_begin_transaction(gbd);
         GBDATA *gb_config_data = GB_search(gbd, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
-        GBDATA *gb_source_name = GB_find(gb_config_data, "name", source, down_2_level);
-        GBDATA *gb_dest_name   = GB_find(gb_config_data, "name", dest, down_2_level);
+        GBDATA *gb_source_name = GB_find_string(gb_config_data, "name", source, GB_FALSE, down_2_level);
+        GBDATA *gb_dest_name   = GB_find_string(gb_config_data, "name", dest,   GB_FALSE, down_2_level);
 
         if (gb_dest_name) {
             error = "Sorry: Configuration already exists";
@@ -126,7 +126,7 @@ void MG_config_delete_cb(AW_window *aww,GBDATA *gbd, long config_nr) {
     GB_begin_transaction(gbd);
 
     GBDATA *gb_config_data = GB_search(gbd, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
-    GBDATA *gb_config_name = GB_find(gb_config_data, "name", config_name, down_2_level);
+    GBDATA *gb_config_name = GB_find_string(gb_config_data, "name", config_name, GB_FALSE, down_2_level);
 
     if (gb_config_name) {
         GBDATA *gb_config = GB_get_father(gb_config_name);
@@ -153,8 +153,8 @@ void MG_transfer_config(AW_window *aww) {
 
     GBDATA *gb_config_data1 = GB_search(GLOBAL_gb_merge, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
     GBDATA *gb_config_data2 = GB_search(GLOBAL_gb_dest,  AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
-    GBDATA *gb_cfgname_1    = GB_find(gb_config_data1, "name", source, down_2_level);
-    GBDATA *gb_cfgname_2    = GB_find(gb_config_data2, "name", dest, down_2_level);
+    GBDATA *gb_cfgname_1    = GB_find_string(gb_config_data1, "name", source, GB_FALSE, down_2_level);
+    GBDATA *gb_cfgname_2    = GB_find_string(gb_config_data2, "name", dest,   GB_FALSE, down_2_level);
 
     if (!gb_cfgname_1) {
         error = "Please select the configuration you want to transfer";

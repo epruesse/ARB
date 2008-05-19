@@ -435,11 +435,11 @@ GB_ERROR PG_probe_match(PG_Group& group, const probe_config_data& para, const ch
 }
 
 static GBDATA *PG_find_probe_group_for_species(GBDATA *pb_tree_or_path, SpeciesBagIter start, SpeciesBagIter end, size_t size) {
-    for (GBDATA *pb_path = GB_find(pb_tree_or_path, "path", 0, down_level);
+    for (GBDATA *pb_path = GB_entry(pb_tree_or_path, "path");
          pb_path;
-         pb_path = GB_find(pb_path, "path", 0, this_level|search_next))
+         pb_path = GB_nextEntry(pb_path))
     {
-        GBDATA *pb_members = GB_find(pb_path, "members", 0, down_level);
+        GBDATA *pb_members = GB_entry(pb_path, "members");
         pg_assert(pb_members);
 
         const char     *members = GB_read_char_pntr(pb_members);
@@ -454,7 +454,7 @@ static GBDATA *PG_find_probe_group_for_species(GBDATA *pb_tree_or_path, SpeciesB
             }
 
             if (same == size) { // perfect match
-                GBDATA *pb_probes = GB_find(pb_path, "probes", 0, down_level);
+                GBDATA *pb_probes = GB_entry(pb_path, "probes");
                 return pb_probes;
             }
 
@@ -515,18 +515,18 @@ static GBDATA *best_covering_probe_group(GBDATA *pb_tree_or_path, SpeciesBagIter
 
     if (start == end) {
         usedMismatches = 0;
-        return GB_find(pb_tree_or_path, "probes", 0, down_level);
+        return GB_entry(pb_tree_or_path, "probes");
     }
 
     int     min_used_mismatches = INT_MAX;
     GBDATA *best_covering_group = 0;
 
     // test all existing paths
-    for (GBDATA *pb_path = GB_find(pb_tree_or_path, "path", 0, down_level);
+    for (GBDATA *pb_path = GB_entry(pb_tree_or_path, "path");
          pb_path;
-         pb_path = GB_find(pb_path, "path", 0, this_level|search_next))
+         pb_path = GB_nextEntry(pb_path))
     {
-        GBDATA         *pb_members = GB_find(pb_path, "members", 0, down_level);
+        GBDATA         *pb_members = GB_entry(pb_path, "members");
         pg_assert(pb_members);
         const char     *members    = GB_read_char_pntr(pb_members);
         SpeciesBagIter  nextToMatch;

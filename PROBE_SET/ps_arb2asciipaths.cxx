@@ -27,12 +27,12 @@ IDVector *__PATH = new IDVector;
 void PS_print_paths( GBDATA *_pb_node ) {
 
     // number and species name
-    GBDATA     *data   = GB_find( _pb_node, "num", 0, down_level );
+    GBDATA     *data   = GB_entry( _pb_node, "num");
     const char *buffer = GB_read_char_pntr( data );
     SpeciesID   id     = atoi( buffer );
   
     // probe(s)
-    GBDATA *pb_group = GB_find( _pb_node, "group", 0, down_level );
+    GBDATA *pb_group = GB_entry( _pb_node, "group");
     if (!pb_group) {
         id = -id;
     }
@@ -90,7 +90,7 @@ int main( int argc,
 //  getchar();
 
     GB_transaction dummy(pb_main);
-    GBDATA *group_tree = GB_find( pb_main, "group_tree", 0, down_level );
+    GBDATA *group_tree = GB_entry( pb_main, "group_tree");
     if (!group_tree) {
         printf( "no 'group_tree' in database\n" );
         error = GB_export_error( "no 'group_tree' in database" );

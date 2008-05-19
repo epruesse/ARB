@@ -48,10 +48,10 @@ void GEN_gene::init(GBDATA *gb_gene_, GEN_root *root_) {
     gb_gene = gb_gene_;
     root    = root_;
 
-    GBDATA *gbd = GB_find(gb_gene, "name", 0, down_level);
+    GBDATA *gbd = GB_entry(gb_gene, "name");
     name        = string(gbd ? GB_read_char_pntr(gbd) : "<noGeneName>");
 
-    gbd        = GB_find(gb_gene, "complement", 0, down_level);
+    gbd        = GB_entry(gb_gene, "complement");
     complement = gbd ? GB_read_byte(gbd) == 1 : false;
 
 }
@@ -62,11 +62,11 @@ GB_ERROR GEN_gene::load_positions(int part) {
     const char *pos_begin_name = GEN_pos_begin_entry_name(part);
     const char *pos_end_name   = GEN_pos_end_entry_name(part);
 
-    GBDATA *gb_begin = GB_find(gb_gene, pos_begin_name, 0, down_level);
+    GBDATA *gb_begin = GB_entry(gb_gene, pos_begin_name);
     if (!gb_begin) return GBS_global_string("'%s' entry missing", pos_begin_name);
     pos1             = GB_read_int(gb_begin);
 
-    GBDATA *gb_end = GB_find(gb_gene, pos_end_name, 0, down_level);
+    GBDATA *gb_end = GB_entry(gb_gene, pos_end_name);
     if (!gb_end) return GBS_global_string("'%s' entry missing", pos_end_name);
     pos2           = GB_read_int(gb_end);
 
@@ -143,7 +143,7 @@ GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *g
                     bool show_this = show_hidden;
 
                     if (!show_this) {
-                        GBDATA *gbd = GB_find(gb_gene, ARB_HIDDEN, 0, down_level);
+                        GBDATA *gbd = GB_entry(gb_gene, ARB_HIDDEN);
 
                         if (!gbd || !GB_read_byte(gbd)) { // gene is not hidden
                             show_this = true;
@@ -151,7 +151,7 @@ GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *g
                     }
 
                     if (show_this) {
-                        GBDATA   *gbd     = GB_find(gb_gene, "pos_joined", 0, down_level);
+                        GBDATA   *gbd     = GB_entry(gb_gene, "pos_joined");
                         int       joined  = gbd ? GB_read_int(gbd) : 0;
                         GB_ERROR  warning = 0;
 
@@ -168,7 +168,7 @@ GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *g
                         }
 
                         if (warning) {
-                            GBDATA     *gb_name = GB_find(gb_gene, "name", 0, down_level);
+                            GBDATA     *gb_name = GB_entry(gb_gene, "name");
                             const char *name    = gb_name ? GB_read_char_pntr(gb_name) : "<unnamed>";
                             aw_message(GBS_global_string("%s in gene '%s'", warning, name));
                         }

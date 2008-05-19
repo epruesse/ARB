@@ -459,7 +459,7 @@ static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *t
     str[len+1] = 0;
     if (!str[0]) return;
 
-    gbk = GB_find(gbd,key,NULL,down_level);
+    gbk = GB_entry(gbd,key);
     if (!gbk || !append){
         if (!gbk) gbk=GB_create(gbd,key,GB_STRING);
 
@@ -1017,7 +1017,7 @@ void AWTC_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char
         int             protection_to_use = 4; // default protection
 
         if (gb_ali) {
-            GBDATA *gb_write_security = GB_find(gb_ali,"alignment_write_security",0,down_level);
+            GBDATA *gb_write_security = GB_entry(gb_ali,"alignment_write_security");
             if (gb_write_security) {
                 protection_to_use = GB_read_int(gb_write_security);
             }

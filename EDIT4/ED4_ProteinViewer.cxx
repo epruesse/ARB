@@ -469,7 +469,7 @@ void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *s
 
             // Create alignment data to store the translated sequence
             GBDATA *gb_presets          = GB_search(GLOBAL_gb_main, "presets", GB_CREATE_CONTAINER);
-            GBDATA *gb_alignment_exists = GB_find(gb_presets, "alignment_name", newAlignmentName, down_2_level);
+            GBDATA *gb_alignment_exists = GB_find_string(gb_presets, "alignment_name", newAlignmentName, GB_FALSE, down_2_level);
             GBDATA *gb_new_alignment    = 0;
 
             if (gb_alignment_exists) {
@@ -606,7 +606,7 @@ void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_termina
             break;
         case DB_FIELD_STRAND:
             // for use database field options - fetch codon start and translation table from the respective species data     
-            GBDATA *gb_translTable = GB_find(gb_species, "transl_table", 0, down_level);
+            GBDATA *gb_translTable = GB_entry(gb_species, "transl_table");
             if (gb_translTable) {
                 int sp_embl_table = atoi(GB_read_char_pntr(gb_translTable));
                 translationTable      = AWT_embl_transl_table_2_arb_code_nr(sp_embl_table);
@@ -615,7 +615,7 @@ void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_termina
                 gMissingTransTable++;
                 translationTable  = GBT_read_int(GLOBAL_gb_main,AWAR_PROTEIN_TYPE);
             }
-            GBDATA *gb_codonStart = GB_find(gb_species, "codon_start", 0, down_level);
+            GBDATA *gb_codonStart = GB_entry(gb_species, "codon_start");
             if (gb_codonStart) {
                 startPos4Translation = atoi(GB_read_char_pntr(gb_codonStart))-1;
                 if (startPos4Translation<0 || startPos4Translation>2) {

@@ -193,7 +193,7 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
                     return 1;
                 }
             }
-            gb_name = GB_find(gb_species,"name",0,down_level);
+            gb_name = GB_entry(gb_species,"name");
 
             curelem = Arbdb_get_curelem(dataset);
             this_elem = &(dataset->element[curelem]);
@@ -205,11 +205,11 @@ static int InsertDatainGDE(NA_Alignment *dataset,GBDATA **the_species,unsigned c
 
             if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
 
-            gbd = GB_find(gb_species,"author",0,down_level);
+            gbd = GB_entry(gb_species,"author");
             if (gbd)    strncpy(this_elem->authority,GB_read_char_pntr(gbd),79);
-            gbd = GB_find(gb_species,"full_name",0,down_level);
+            gbd = GB_entry(gb_species,"full_name");
             if (gbd)    strncpy(this_elem->seq_name,GB_read_char_pntr(gbd),79);
-            gbd = GB_find(gb_species,"acc",0,down_level);
+            gbd = GB_entry(gb_species,"acc");
             if (gbd) {
                 strncpy(this_elem->id,GB_read_char_pntr(gbd),79);
             }
@@ -352,7 +352,7 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
 
     /* Alignment choosen ? */
 
-    gb_species_data = GB_find(dataset->gb_main,"species_data",0,down_level);
+    gb_species_data = GB_entry(dataset->gb_main,"species_data");
     ErrorOut5(gb_species_data!=0,"species_data not found");
 
     long     maxalignlen   = GBT_get_alignment_len(GLOBAL_gb_main,dataset->alignment_name);

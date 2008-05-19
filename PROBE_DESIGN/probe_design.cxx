@@ -230,7 +230,7 @@ static const char *PD_probe_pt_look_for_server(AW_root *root)
 }
 
 static GB_ERROR species_requires(GBDATA *gb_species, const char *whats_required) {
-    GBDATA     *gb_species_name = GB_find(gb_species, "name", 0, down_level);
+    GBDATA     *gb_species_name = GB_entry(gb_species, "name");
     const char *name            = "unnamed (which is a dangerous error)";
     if (gb_species_name) name   = GB_read_char_pntr(gb_species_name);
 
@@ -238,14 +238,14 @@ static GB_ERROR species_requires(GBDATA *gb_species, const char *whats_required)
 }
 
 static GB_ERROR gene_requires(GBDATA *gb_gene, const char *whats_required) {
-    GBDATA     *gb_gene_name    = GB_find(gb_gene, "name", 0, down_level);
+    GBDATA     *gb_gene_name    = GB_entry(gb_gene, "name");
     const char *gene_name       = "unnamed (which is a dangerous error)";
     if (gb_gene_name) gene_name = GB_read_char_pntr(gb_gene_name);
 
     GBDATA *gb_species = GB_get_father(GB_get_father(gb_gene));
     pd_assert(gb_species);
 
-    GBDATA     *gb_species_name       = GB_find(gb_species, "name", 0, down_level);
+    GBDATA     *gb_species_name       = GB_entry(gb_species, "name");
     const char *species_name          = "unnamed (which is a dangerous error)";
     if (gb_species_name) species_name = GB_read_char_pntr(gb_species_name);
 
@@ -262,7 +262,7 @@ GB_ERROR pd_get_the_names(bytestring &bs, bytestring &checksum) {
     char *use = GBT_get_default_alignment(GLOBAL_gb_main);
 
     for (GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)) {
-        GBDATA *gb_name = GB_find(gb_species, "name", 0, down_level);
+        GBDATA *gb_name = GB_entry(gb_species, "name");
         if (!gb_name) { error = species_requires(gb_species, "name"); break; }
 
         GBDATA *gb_data = GBT_read_sequence(gb_species, use);
@@ -314,17 +314,17 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
         for (GBDATA *gb_gene = GEN_first_marked_gene(gb_species); gb_gene; gb_gene = GEN_next_marked_gene(gb_gene)) {
             const char *gene_name = 0;
             {
-                GBDATA *gb_gene_name = GB_find(gb_gene, "name", 0, down_level);
+                GBDATA *gb_gene_name = GB_entry(gb_gene, "name");
                 if (!gb_gene_name) { error = gene_requires(gb_gene, "name"); break; }
                 gene_name = GB_read_char_pntr(gb_gene_name);
             }
 
             long CheckSum;
             {
-                GBDATA *gb_gene_pos_begin = GB_find(gb_gene, "pos_begin", 0, down_level);
+                GBDATA *gb_gene_pos_begin = GB_entry(gb_gene, "pos_begin");
                 if (!gb_gene_pos_begin) { error = gene_requires(gb_gene, "pos_begin"); break; }
 
-                GBDATA *gb_gene_pos_end = GB_find(gb_gene,"pos_end",0,down_level);
+                GBDATA *gb_gene_pos_end = GB_entry(gb_gene,"pos_end");
                 if (!gb_gene_pos_end) { error = gene_requires(gb_gene, "pos_end"); break; }
 
                 int pos_begin = GB_read_int(gb_gene_pos_begin)-1;
@@ -865,14 +865,14 @@ void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr
                      gb_species;
                      gb_species = GBT_next_species(gb_species) )
                 {
-                    GBDATA *gb_tmp = GB_find(gb_species,"tmp",0,down_level);
+                    GBDATA *gb_tmp = GB_entry(gb_species,"tmp");
                     if (gb_tmp) GB_delete(gb_tmp);
                     if (gene_flag) {
                         for (GBDATA *gb_gene = GEN_first_gene(gb_species);
                              gb_gene;
                              gb_gene = GEN_next_gene(gb_species))
                         {
-                            gb_tmp = GB_find(gb_gene, "tmp", 0, down_level);
+                            gb_tmp = GB_entry(gb_gene, "tmp");
                             if (gb_tmp) GB_delete(gb_tmp);
                         }
                     }
@@ -2021,12 +2021,12 @@ static void pg_result_selected(AW_window */*aww*/) {
         GBDATA *pg_group = GB_search(pg_global.pg_main, "probe_groups/group", GB_FIND);
         long count = 0;
         long marked = 0;
-        for (; pg_group;pg_group=GB_find(pg_group, 0, 0, this_level+search_next), ++i) {
+        for (; pg_group; pg_group=GB_nextChild(pg_group),++i) {
             if (i==position) {
                 GBDATA *pg_species = GB_search(pg_group, "species/name", GB_FIND);
-                for (; pg_species; pg_species=GB_find(pg_species, 0, 0, this_level+search_next), count++)  {
-                    const char *name = GB_read_char_pntr(pg_species);
-                    GBDATA *gb_speciesname = GB_find(gb_species_data, "name", name, down_2_level);
+                for (; pg_species; pg_species=GB_nextChild(pg_species),count++)  {
+                    const char *name           = GB_read_char_pntr(pg_species);
+                    GBDATA     *gb_speciesname = GB_find_string(gb_species_data, "name", name, GB_FALSE, down_2_level);
                     if (gb_speciesname) {
                         GBDATA *gb_species = GB_get_father(gb_speciesname);
                         gb_assert(gb_species);
@@ -2106,7 +2106,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws) 
         GB_transaction dummy(pg_global.pg_main);
         GBDATA *pg_group = GB_search(pg_global.pg_main, "probe_groups/group", GB_FIND);
         if (pg_group) {
-            for (; pg_group;pg_group=GB_find(pg_group, 0, 0, this_level+search_next), ++i) {
+            for (; pg_group; pg_group=GB_nextChild(pg_group),++i) {
 
                 double fitness=-1, quality=-1, min_targets=-1;
                 int mishit=-1, probelength=-1, birth=-1;
@@ -2115,18 +2115,18 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws) 
 
                 GBDATA *field;
 
-                field = GB_find(pg_group, "fitness", 0, down_level);        if (field) fitness = GB_read_float(field);
-                field = GB_find(pg_group, "quality", 0, down_level);        if (field) quality = GB_read_float(field);
-                field = GB_find(pg_group, "min_targets", 0, down_level);    if (field) min_targets = GB_read_float(field);
-                field = GB_find(pg_group, "mishit", 0, down_level);         if (field) mishit = GB_read_int(field);
-                field = GB_find(pg_group, "probelength", 0, down_level);    if (field) probelength = GB_read_int(field);
-                field = GB_find(pg_group, "birth", 0, down_level);          if (field) birth = GB_read_int(field);
+                field = GB_entry(pg_group, "fitness");        if (field) fitness     = GB_read_float(field);
+                field = GB_entry(pg_group, "quality");        if (field) quality     = GB_read_float(field);
+                field = GB_entry(pg_group, "min_targets");    if (field) min_targets = GB_read_float(field);
+                field = GB_entry(pg_group, "mishit");         if (field) mishit      = GB_read_int(field);
+                field = GB_entry(pg_group, "probelength");    if (field) probelength = GB_read_int(field);
+                field = GB_entry(pg_group, "birth");          if (field) birth       = GB_read_int(field);
 
                 GBDATA *species = GB_search(pg_group, "species/name", GB_FIND);
-                for (; species; species=GB_find(species, 0, 0, this_level+search_next)) member_count++;
+                for (; species; species=GB_nextChild(species)) member_count++;
 
                 GBDATA *probe = GB_search(pg_group, "probes/data", GB_FIND);
-                for (; probe; probe=GB_find(probe, 0, 0, this_level+search_next)) probe_count++;
+                for (; probe; probe=GB_nextChild(probe)) probe_count++;
 
                 char entry[200];
 

@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_graphic.cxx                                   //
 //   Purpose   : GUI for structure window                          //
-//   Time-stamp: <Wed Mar/05/2008 18:28 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Fri May/16/2008 11:16 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -670,7 +670,8 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
 
             GBDATA *gb_add = gb_struct;
             do {
-                gb_add = GB_find(gb_add, NAME_OF_STRUCT_SEQ, 0, this_level|search_next);
+                sec_assert(GB_has_key(gb_add, NAME_OF_STRUCT_SEQ));
+                gb_add = GB_nextEntry(gb_add);
                 if (gb_add) {
                     err = GB_delete(gb_add);
                     printf("* Deleting duplicated entry '%s' (%p)\n", NAME_OF_STRUCT_SEQ, gb_add);

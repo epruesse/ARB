@@ -531,18 +531,18 @@ const char *ED4_getSaiColorString(AW_root *awr, int start, int end) {
     bool    visualize      = false; // set to true if all goes fine
 
     if (gb_extended) {
-        GBDATA *gb_ali = GB_find(gb_extended, alignment_name, 0, down_level);
+        GBDATA *gb_ali = GB_entry(gb_extended, alignment_name);
         if (gb_ali) {
             const char *saiData      = 0;
             bool        free_saiData = false;
 
             {
-                GBDATA *saiSequence = GB_find(gb_ali, "data", 0, down_level); // search "data" entry (normal SAI)
+                GBDATA *saiSequence = GB_entry(gb_ali, "data"); // search "data" entry (normal SAI)
                 if (saiSequence) {
                     saiData = GB_read_char_pntr(saiSequence); // not allocated
                 }
                 else {
-                    saiSequence = GB_find(gb_ali, "bits", 0, down_level); // search "bits" entry (binary SAI)
+                    saiSequence = GB_entry(gb_ali, "bits"); // search "bits" entry (binary SAI)
                     if (saiSequence) {
                         saiData      = GB_read_as_string(saiSequence); // allocated
                         free_saiData = true; // free saiData below
