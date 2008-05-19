@@ -117,9 +117,7 @@ static void ed_submit_info_event(AW_window *aww)
     void *strstruct = GBS_stropen(1000);
 
     if (gb_species) {
-        for (   gb_entry = GB_find(gb_species,0,0,down_level);
-                gb_entry;
-                gb_entry = GB_find(gb_entry,0,0,this_level | search_next) ) {
+        for (gb_entry = GB_child(gb_species); gb_entry; gb_entry = GB_nextChild(gb_entry)) {
             int type = GB_read_type(gb_entry);
             switch (type) {
                 case GB_STRING:
@@ -189,8 +187,7 @@ static void ed_submit_parse_event(AW_window *aww)
 
     for (d = p = parser; *p; p++) {
         if ((c=*p)==':') {
-            if (p[1] == '\n');
-            p++;            /* skip newline */
+            if (p[1] == '\n') p++; // skip newline 
         }
         *(d++) = c;
     }
@@ -210,8 +207,7 @@ static void ed_submit_parse_event(AW_window *aww)
     privat = aw_root->awar("submission/privat")->read_string();
     for (d = p = privat; *p; p++) {
         if ((c=*p)==':') {
-            if (p[1] == '\n');
-            p++;            /* skip newline */
+            if (p[1] == '\n') p++; // skip newline 
         }
         *(d++) = c;
     }
