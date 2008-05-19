@@ -255,8 +255,7 @@ GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
     return GB_error_buffer;
 }
 
-GB_ERROR GB_print_error()
-{
+GB_ERROR GB_print_error() {
     if (GB_error_buffer){
         fflush(stdout);
         fprintf(stderr,"%s\n",GB_error_buffer);
@@ -264,9 +263,14 @@ GB_ERROR GB_print_error()
     return GB_error_buffer;
 }
 
-GB_ERROR GB_get_error()
-{
+GB_ERROR GB_get_error() {
     return GB_error_buffer;
+}
+
+GB_ERROR GB_expect_error() {
+    return GB_error_buffer
+        ? GB_error_buffer
+        : "Expected error, but no error message found (program logic error)";
 }
 
 void GB_clear_error() {         /* clears the error buffer */
