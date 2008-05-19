@@ -57,6 +57,8 @@ void NT_focus_cb(AW_window *aww);
 void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2);
 void NT_primer_cb(void);
 void NT_set_compression(AW_window *, AW_CL dis_compr, AW_CL dummy_1x);
+void NT_mark_degenerated_branches(AW_window *aww, AW_CL ntwcl);
+void NT_mark_deep_branches(AW_window *aww, AW_CL ntwcl);
 void NT_mark_long_branches(AW_window *aww, AW_CL ntwcl);
 void NT_mark_duplicates(AW_window *aww, AW_CL ntwcl);
 void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL dummy_1x);
