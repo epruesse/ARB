@@ -1043,6 +1043,11 @@ GBQUARK GB_get_quark(GBDATA *gbd) {
     return GB_KEY_QUARK(gbd);
 }
 
+GB_BOOL GB_has_key(GBDATA *gbd, const char *key) {
+    GBQUARK quark = GB_key_2_quark(gbd, key);
+    return (quark == GB_get_quark(gbd));
+}
+
 GBQUARK gb_key_2_quark(GB_MAIN_TYPE *Main, const char *s) {
     long index;
     if (!s) return 0;
@@ -1089,10 +1094,11 @@ GBDATA *GB_get_root(GBDATA *gbd) {  /* Get the root entry (gb_main) */
 GB_BOOL GB_check_father(GBDATA *gbd, GBDATA *gb_maybefather) {
     /* Test whether an entry is a subentry of another */
     GBDATA *gbfather;
-    for (   gbfather = GB_get_father(gbd);
-            gbfather;
-            gbfather = GB_get_father(gbfather)){
-        if (gbfather ==     gb_maybefather) return GB_TRUE;
+    for (gbfather = GB_get_father(gbd);
+         gbfather;
+         gbfather = GB_get_father(gbfather))
+    {
+        if (gbfather == gb_maybefather) return GB_TRUE;
     }
     return GB_FALSE;
 }
@@ -1324,10 +1330,7 @@ GB_ERROR GB_copy(GBDATA *dest, GBDATA *source)
             if (source->flags2.folded_container)    gb_unfold((GBCONTAINER *)source,-1,-1);
             if (dest->flags2.folded_container)  gb_unfold((GBCONTAINER *)dest,0,-1);
 
-            for (gb_p = GB_find(source,0,0,down_level);
-                 gb_p;
-                 gb_p = GB_find(gb_p,0,0,this_level|search_next))
-            {
+            for (gb_p = GB_child(source); gb_p; gb_p = GB_nextChild(gb_p)) {
                 GB_TYPES type2 = (GB_TYPES)GB_TYPE(gb_p);
 
                 key = GB_read_key_pntr(gb_p);
@@ -1386,10 +1389,7 @@ char* GB_get_subfields(GBDATA *gbd)
             gb_unfold(gbc, -1, -1);
         }
 
-        for (gbp = GB_find(gbd, 0, 0, down_level);
-             gbp;
-             gbp = GB_find(gbp, 0, 0, this_level|search_next))
-        {
+        for (gbp = GB_child(gbd); gbp; gbp = GB_nextChild(gbp)) {
             const char *key = GB_read_key_pntr(gbp);
             int keylen = strlen(key);
 
@@ -1453,9 +1453,7 @@ GB_ERROR gb_set_compression(GBDATA *source)
         case GB_FLOATS:
             break;
         case GB_DB:
-            for (   gb_p = GB_find(source,0,0,down_level);
-                    gb_p;
-                    gb_p = GB_find(gb_p,0,0,this_level|search_next)){
+            for (gb_p = GB_child(source); gb_p; gb_p = GB_nextChild(gb_p)) {
                 error = gb_set_compression(gb_p);
                 if (error) break;
             }
@@ -2097,8 +2095,8 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
 }
 
 GB_ERROR GB_resort_system_folder_to_top(GBDATA *gb_main){
-    GBDATA *gb_system = GB_find(gb_main,GB_SYSTEM_FOLDER,0,down_level);
-    GBDATA *gb_first = GB_find(gb_main,0,0,down_level);
+    GBDATA *gb_system = GB_entry(gb_main,GB_SYSTEM_FOLDER);
+    GBDATA *gb_first = GB_child(gb_main);
     GBDATA **new_order_list;
     GB_ERROR error = 0;
     int i,len;
@@ -2113,7 +2111,7 @@ GB_ERROR GB_resort_system_folder_to_top(GBDATA *gb_main){
     for (i=1;i<len;i++){
         new_order_list[i] = gb_first;
         do {
-            gb_first = GB_find(gb_first,0,0,this_level | search_next);
+            gb_first = GB_nextChild(gb_first);
         } while(gb_first == gb_system);
     }
     error = GB_resort_data_base(gb_main,new_order_list,len);
