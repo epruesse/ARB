@@ -72,11 +72,12 @@ clean:
 	(test -f Makefile && $(MAKE) clean) || true
 	rm -f Makefile.old proto.h debug.h ARB.xs .depends depends.stamp Makefile.PL $(TARGETS)
 
-.depends: depends.stamp
+.depends: depends.stamp Makefile.main
 	test -f ARB.c || $(MAKE) -f $(THIS) "AUTODEPENDS=0" ARB.c 
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) ARB.c 2>/dev/null | \
-		perl -ne 's/ARB.o/depends.stamp/g; print $$_;' | \
+		perl -ne 's/ARB.o:/depends.stamp:/g; print $$_;' | \
 		../SOURCE_TOOLS/fix_depends.pl > $@
+
 
 depends.stamp:
 	touch $@
