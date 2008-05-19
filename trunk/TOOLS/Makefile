@@ -180,8 +180,3 @@ arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/attributes.h
-
-arb_test.o: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_test.o: $(ARBHOME)/INCLUDE/arb_assert.h
-arb_test.o: $(ARBHOME)/INCLUDE/arbdb.h
-arb_test.o: $(ARBHOME)/INCLUDE/attributes.h
