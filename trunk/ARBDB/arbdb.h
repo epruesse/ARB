@@ -16,17 +16,13 @@
 #endif
 #define gb_assert(bed) arb_assert(bed)
 
-typedef const char *GB_CSTR;        /* local memory mgrment */
-typedef const char *GB_ERROR;       /* memory management is controlled by the ARBDB lib */
-typedef char    *GB_CPNTR;      /* points into a piece of mem */
+typedef const char *GB_CSTR;    /* this is read-only! */
+typedef const char *GB_ERROR;   /* memory management is controlled by the ARBDB lib */
+typedef char       *GB_BUFFER;  /* points to a piece of mem (writeable, but don't free!)*/
+typedef const char *GB_CBUFFER; /* points to a piece of mem (readable only)*/
 
 #define GB_PATH_MAX 1024
 #define GBS_GLOBAL_STRING_SIZE 64000
-
-// #define GBS_SPECIES_HASH_SIZE 100000L (now calculated on the fly)
-
-// #ifndef GB_INCLUDED
-// #define GB_INCLUDED
 
 #define GB_CORE *(long *)0 =0
 #define GB_KEY_LEN_MAX  64 /* max. length of a key (a whole key path may be longer) */
@@ -36,18 +32,16 @@ typedef char    *GB_CPNTR;      /* points into a piece of mem */
 
 #ifndef GBL_INCLUDED
 typedef enum gb_call_back_type {
-    GB_CB_DELETE = 1,
-    GB_CB_CHANGED = 2,
+    GB_CB_DELETE      = 1,
+    GB_CB_CHANGED     = 2,
     GB_CB_SON_CREATED = 4,
-    GB_CB_ALL  = 7
+    GB_CB_ALL         = 7
 } GB_CB_TYPE;
 
 typedef struct gb_data_base_type GBDATA;
 typedef void (*GB_CB)(GBDATA *,int *clientdata, GB_CB_TYPE gbtype);
-/*#define  GB_CB void (*)(GBDATA *,int *clientdata, GB_CB_TYPE gbtype)*/
 
 #endif /*GBL_INCLUDED*/
-
 
 #define GBUSE(a) a=a
 
@@ -290,6 +284,15 @@ extern "C" {
 #endif
 
 #ifdef __cplusplus
+
+// --------------------------------------------------------------------------------
+// some const wrappers:
+
+inline char *GBS_find_string(char *str, GB_CSTR key, long match_mode) {
+    return const_cast<char*>(GBS_find_string(const_cast<GB_CSTR>(str), key, match_mode));
+}
+
+// --------------------------------------------------------------------------------
 
 struct gb_data_base_type2;
 class GB_transaction {
