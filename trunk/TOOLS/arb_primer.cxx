@@ -92,10 +92,8 @@ char *arb_prm_read(int /*prmanz*/)
 	GBDATA	*gb_source_data;
 	GBDATA	*gb_len;
 	int	sp_count;
-	//	char	*flag;
 	char	*data;
-	char	*hdata;
-	//	int	size;
+	const char	*hdata;
 
         gb_presets = GB_entry(aprm.gb_main,"presets");
 

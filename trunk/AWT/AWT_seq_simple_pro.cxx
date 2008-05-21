@@ -9,28 +9,25 @@
 
 #define awt_assert(bed) arb_assert(bed)
 
-AP_sequence_simple_protein::AP_sequence_simple_protein(AP_tree_root *rooti) : AP_sequence(rooti)
-    {
+AP_sequence_simple_protein::AP_sequence_simple_protein(AP_tree_root *rooti) : AP_sequence(rooti) {
     sequence = 0;
 }
 
-AP_sequence_simple_protein::~AP_sequence_simple_protein(void)
-{
+AP_sequence_simple_protein::~AP_sequence_simple_protein(void) {
     delete sequence;
     sequence = 0;
 }
 
-AP_sequence *AP_sequence_simple_protein::dup(void)
-    {
-    return (AP_sequence *)new AP_sequence_simple_protein(root);
+AP_sequence *AP_sequence_simple_protein::dup(void) {
+    return new AP_sequence_simple_protein(root);
 }
 
 
 
-void AP_sequence_simple_protein::set(char *isequence)
-{
-    char *s,c;
-    ap_pro *d;
+void AP_sequence_simple_protein::set(const char *isequence) {
+    const char *s;
+    char        c;
+    ap_pro     *d;
     if (!awt_pro_a_nucs) {
         awt_pro_a_nucs_gen_dist (this->root->gb_main);
     }

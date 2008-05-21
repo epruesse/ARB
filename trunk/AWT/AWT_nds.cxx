@@ -808,10 +808,11 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE
 char *make_node_text_list(GBDATA * gbd, FILE *fp)
 {
     /* if mode==0 screen else file */
-    char           *bp, *p;
-    GBDATA         *gbe;
-    long             i;
-    long             cp;
+    char       *bp;
+    const char *p;
+    GBDATA     *gbe;
+    long        i;
+    long        cp;
     char        c = 0;
     char        fieldname[50];
 

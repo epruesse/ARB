@@ -186,7 +186,7 @@ public:
 
     virtual AP_sequence *dup(void) = 0;             // used to get the real new element
     virtual void set_gb(GBDATA *gb_sequence ); // by default calls set((char *))
-    virtual void set(   char *sequence )  = 0;
+    virtual void set(const char *sequence) = 0;
     /* seq = acgtututu   */
     virtual AP_FLOAT combine(const AP_sequence* lefts, const AP_sequence *rights) = 0;
     virtual void partial_match(const AP_sequence* part, long *overlap, long *penalty) const = 0;

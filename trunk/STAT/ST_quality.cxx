@@ -107,7 +107,7 @@ void st_ml_add_sequence_part_to_stat(ST_ML * st_ml, AWT_csp * /*awt_csp */,
         GBS_write_hash(species_to_info_hash, species_name, long (info));
     }
     int pos;
-    char *source_sequence = 0;
+    const char *source_sequence = 0;
     int source_sequence_len = 0;
 
     if (sml->gb_data) {

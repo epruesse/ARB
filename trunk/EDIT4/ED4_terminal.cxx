@@ -144,9 +144,9 @@ char *ED4_terminal::resolve_pointer_to_string_copy(int *str_len) const {
 
 const char *ED4_terminal::resolve_pointer_to_char_pntr(int *str_len) const
 {
-    GB_TYPES  gb_type;
-    char     *db_pointer = NULL;
-    GBDATA   *gbd        = get_species_pointer();
+    GB_TYPES    gb_type;
+    const char *db_pointer = NULL;
+    GBDATA     *gbd        = get_species_pointer();
 
     if (!gbd) {
         if (str_len) {

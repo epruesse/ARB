@@ -10,8 +10,8 @@
 /*#include "arbdb.h"*/
 #include "arbdbt.h"
 
-const char *gb_read_dict_data(GBDATA *gb_dict, long *size) {
-    char *data = 0;
+static GB_CSTR gb_read_dict_data(GBDATA *gb_dict, long *size) {
+    GB_CSTR data = 0;
     if (gb_dict->flags.compressed_data) {
         GB_internal_error("Dictionary is compressed");
         data = GB_read_bytes(gb_dict);

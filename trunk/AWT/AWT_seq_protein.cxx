@@ -30,7 +30,7 @@ AP_sequence_protein::~AP_sequence_protein()
 
 AP_sequence *AP_sequence_protein::dup()
 {
-    return (AP_sequence *)new AP_sequence_protein(root);
+    return new AP_sequence_protein(root);
 }
 
 static AP_PROTEINS prot2AP_PROTEIN[26] = {
@@ -144,7 +144,7 @@ static void update_min_mutations() {
 // #define SHOW_SEQ
 #endif // DEBUG
 
-void AP_sequence_protein::set(char *isequence)
+void AP_sequence_protein::set(const char *isequence)
 {
     if (!awt_pro_a_nucs) awt_pro_a_nucs_gen_dist(this->root->gb_main);
     if (awt_pro_a_nucs->time_stamp != min_mutations_initialized_time_stamp) update_min_mutations();

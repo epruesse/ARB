@@ -440,7 +440,7 @@ static void CPRO_readneededdata(char **speciesdata,GBDATA **speciesdatabase,
                                 long elemx1,long elemx2,long elemy1,long elemy2,unsigned char which_statistic)
 {
     long i=0,j=0;
-    char *tempdata;
+    const char *tempdata;
     for(i=0;i<CPRO.numspecies;i++) {
         if ( (speciesdata[i]) && (i<elemy1) && (i>elemy2) && (i<elemx1) && (i>elemx2) ) {
             delete(speciesdata[i]); speciesdata[i]=0;

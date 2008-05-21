@@ -450,7 +450,7 @@ static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *t
 {
     GBDATA *gbk;
     int len, taglen;
-    char *strin,*buf;
+    char *buf;
     if (!gbd) return;
     while (str[0] == ' '|| str[0] == '\t'|| str[0] == '|') str++;
     len = strlen(str) -1;
@@ -484,7 +484,7 @@ static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *t
         return;
     }
 
-    strin  = GB_read_char_pntr(gbk);
+    const char *strin  = GB_read_char_pntr(gbk);
     len    = strlen(str) + strlen(strin);
     taglen = tag ? (strlen(tag)+2) : 0;
     buf    = (char *)GB_calloc(sizeof(char),len+2+taglen+1);

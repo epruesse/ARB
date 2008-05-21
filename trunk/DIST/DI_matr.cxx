@@ -179,7 +179,7 @@ PHENTRY::PHENTRY(GBDATA *gbd,class PHMATRIX *phmatri)
     GBDATA *gb_data = GB_entry(gb_ali,"data");
     if (!gb_data) return;
 
-    char *seq = GB_read_char_pntr(gb_data);
+    const char *seq = GB_read_char_pntr(gb_data);
     if (phmatrix->is_AA) {
         sequence = (AP_sequence *)(sequence_protein = new AP_sequence_simple_protein(phmatrix->tree_root));
     }else{

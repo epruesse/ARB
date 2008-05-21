@@ -542,7 +542,7 @@ void probe_design_event(AW_window *aww)
                     else {
                         T_PT_SEQUENCE pts;
                         bytestring    bs_seq;
-                        bs_seq.data = GB_read_char_pntr(data);
+                        bs_seq.data = (char*)GB_read_char_pntr(data);
                         bs_seq.size = GB_read_string_count(data)+1;
                         aisc_create(pd_gl.link, PT_PDC, pdc, PDC_SEQUENCE,
                                     PT_SEQUENCE, &pts,

@@ -12,8 +12,8 @@
 /* #define TEST_DICT */
 #endif /* DEBUG */
 
-typedef unsigned char unsigned_char;
-typedef unsigned char *u_str;
+typedef unsigned char        unsigned_char;
+typedef unsigned char       *u_str;
 typedef const unsigned char *cu_str;
 
 struct S_GB_FULL_DICT_TREE;
@@ -81,10 +81,10 @@ typedef struct S_GB_SINGLE_DICT_TREE
 
 /******************** Tool functions *******************/
 
-static GB_INLINE u_str get_data_n_size(GBDATA *gbd, long *size)
+static GB_INLINE cu_str get_data_n_size(GBDATA *gbd, long *size)
 {
-    char *data;
-    int type = GB_TYPE(gbd);
+    GB_CSTR data;
+    int     type = GB_TYPE(gbd);
 
     switch (type)
     {
@@ -127,7 +127,7 @@ static GB_INLINE u_str get_data_n_size(GBDATA *gbd, long *size)
         data = gb_uncompress_data(gbd,(GB_CSTR)data,*size);
 #endif
 
-    return (u_str)data;
+    return (cu_str)data;
 }
 
 static GB_INLINE long min(long a, long b)
@@ -1810,9 +1810,9 @@ static GB_DICT_TREE build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, 
             int type =  GB_TYPE(gbd);
 
             if (COMPRESSABLE(type)) {
-                long size;
-                u_str data = get_data_n_size(gbd, &size);
-                u_str lastWord;
+                long   size;
+                cu_str data = get_data_n_size(gbd, &size);
+                cu_str lastWord;
 
                 if (type==GB_STRING || type == GB_LINK) size--;
                 if (size<minwordlen) continue;

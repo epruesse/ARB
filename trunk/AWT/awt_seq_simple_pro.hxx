@@ -16,7 +16,7 @@ public:
     AP_sequence_simple_protein(AP_tree_root *rooti);
     ~AP_sequence_simple_protein(void);
     AP_sequence     *dup(void);     // used to get the real new element
-    void set( char *sequence);
+    void set(const char *sequence);
     double combine( const AP_sequence *lefts, const AP_sequence *rights);
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
 };

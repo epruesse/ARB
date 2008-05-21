@@ -129,7 +129,7 @@ void species_rename_join(AW_window *aww){
         aw_status(cnt/(double)maxs);
         gb_field = GB_entry(gb_species,field);
         if (!gb_field) continue;
-        char *fv = GB_read_char_pntr(gb_field);
+        const char *fv = GB_read_char_pntr(gb_field);
         GBDATA *gb_old = (GBDATA *)GBS_read_hash(hash, fv);
         if (!gb_old) {
             GBS_write_hash(hash,fv,(long)gb_species);

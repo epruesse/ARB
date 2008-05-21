@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : SQ_functions.cxx                                       //
 //    Purpose   : Implementation of SQ_functions.h                       //
-//    Time-stamp: <Fri May/16/2008 11:10 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed May/21/2008 19:10 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //
@@ -395,7 +395,7 @@ char *SQ_fetch_filtered_sequence(GBDATA * read_sequence, AP_filter * filter) {
     if (!read_sequence)
         return 0;
 
-    char *rawSequence = GB_read_char_pntr(read_sequence);
+    const char *rawSequence = GB_read_char_pntr(read_sequence);
     int filteredLength = filter->real_len;
 
     if (filter->filterpos_2_seqpos == 0)

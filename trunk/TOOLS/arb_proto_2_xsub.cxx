@@ -53,7 +53,7 @@ int main(int argc, char **argv)
                            ":const ="
                            ":GB_CSTR =char \\*"
                            ":GB_ERROR =char \\*"
-                           ":GB_CPNTR =char \\*"
+                           ":GB_BUFFER =char \\*"
                            ":GB_ULONG =long "
                            ":enum gb_call_back_type =char \\*"
                            ":GB_TYPES =char \\*"

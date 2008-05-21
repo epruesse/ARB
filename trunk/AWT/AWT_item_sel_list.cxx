@@ -2,7 +2,7 @@
 //                                                                      //
 //   File      : AWT_item_sel_list.cxx                                  //
 //   Purpose   : selection lists for items (ad_item_selector)           //
-//   Time-stamp: <Fri May/16/2008 11:16 MET Coder@ReallySoft.de>        //
+//   Time-stamp: <Wed May/21/2008 15:54 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in May 2005              //
@@ -45,7 +45,7 @@ static void awt_create_selection_list_on_scandb_cb(GBDATA *dummy, struct adawcbs
 
         gb_key_name = GB_entry(gb_key,CHANGEKEY_NAME);
         if (!gb_key_name) continue; // key w/o name -> don't show
-        char *name  = GB_read_char_pntr(gb_key_name);
+        const char *name  = GB_read_char_pntr(gb_key_name);
 
         GBDATA *gb_hidden = GB_entry(gb_key, CHANGEKEY_HIDDEN);
         if (!gb_hidden) { // it's an older db version w/o hidden flag -> add it
