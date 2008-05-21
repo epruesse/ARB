@@ -628,7 +628,7 @@ GB_ERROR GB_check_hkey(const char *key)
     match_mode == else  -> a==A && a==?
 */
 
-GB_CPNTR GBS_find_string(const char *str, const char *key, long match_mode)
+GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR key, long match_mode)
 {
     const char *p1, *p2;
     char        b;
@@ -1041,7 +1041,7 @@ char *GBS_strclose(void *strstruct)
     /*     return str; */
 }
 
-GB_CPNTR GBS_mempntr(void *strstruct)   /* returns the memory file */
+GB_BUFFER GBS_mempntr(void *strstruct)   /* returns the memory file */
 {
     struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
     return strstr->GBS_strcat_data;
@@ -1072,8 +1072,8 @@ void gbs_strensure_mem(void *strstruct,long len){
     }
 }
 
-void GBS_strcat(void *strstruct,const char *ptr)    /* this function adds many strings. first create a strstruct with gbs_open */
-{
+void GBS_strcat(void *strstruct,const char *ptr) {
+    /* append string to strstruct */
     struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
     long                  len    = strlen(ptr);
 
@@ -1083,8 +1083,10 @@ void GBS_strcat(void *strstruct,const char *ptr)    /* this function adds many s
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos]  = 0;
 }
 
-void GBS_strncat(void *strstruct,const char *ptr,long len)  /* this function adds many strings. first create a strstruct with gbs_open */
-{
+void GBS_strncat(void *strstruct,const char *ptr,long len) {
+    /* append some bytes string to strstruct
+     * (caution : copies zero byte and things behind!)
+     */
     struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
     gbs_strensure_mem(strstruct,len+2);
     GB_MEMCPY(strstr->GBS_strcat_data+strstr->GBS_strcat_pos,ptr,(int)len);
@@ -1306,11 +1308,11 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
      */
 
 {
-    char *source;               /* pointer into the current string when parsed */
-    char *search;               /* pointer into the current command when parsed */
-    char *p;                    /* short live pointer */
-    char  c;
-    char *already_transferred;  /* point into 'in' string to non parsed position */
+    GB_CSTR  source;            /* pointer into the current string when parsed */
+    char    *search;            /* pointer into the current command when parsed */
+    GB_CSTR  p;                 /* short live pointer */
+    char     c;
+    GB_CSTR  already_transferred; /* point into 'in' string to non parsed position */
 
     char      wildcard[40];
     char     *mwildcard[10];
@@ -1323,7 +1325,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
     char *start_of_wildcard;
     char  what_wild_card;
 
-    char *start_match;
+    GB_CSTR start_match;
 
     char *doppelpunkt;
 
@@ -1395,9 +1397,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
                             goto gbs_pars_unsuccessfull;
                         }
                         c = *p;                     /* set wildcard */
-                        *p = 0;
-                        mwildcard[max_mwildcard++] = GB_STRDUP(source);
-                        *p = c;
+                        mwildcard[max_mwildcard++] = GB_strpartdup(source, p-1);
                         source = p + strlen(start_of_wildcard);         /* we parsed it */
                         *search = what_wild_card;
                         break;
@@ -1469,52 +1469,46 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
         }
         max_wildcard = 0; max_mwildcard = 0;
 
-        p = GBS_strclose(strstruct);
-        if (!strcmp(p,in)){ /* nothing changed */
-            free(p);
-        }else{
-            free(in);
-            if (nextdp) {       /* new command in line */
-                in = p;
-            }else{
-                in = GB_STRDUP(p);
-                free(p);
-            }
-        }
+        free(in);
+        in = GBS_strclose(strstruct);
     }
     free(command);
     return in;
 }
 
-char *GBS_eval_env(const char *p){
-    char *ka;
-    char *kz;
-    const char *genv;
-    char *h;
-    char *p2 = GB_STRDUP(p);
-    char *eval;
+char *GBS_eval_env(GB_CSTR p){
+    GB_ERROR  error = 0;
+    GB_CSTR   ka;
+    void     *out   = GBS_stropen(1000);
 
-    while ( (ka = GBS_find_string(p2,"$(",0)) ){
-        kz = strchr(ka,')');
+    while ((ka = GBS_find_string(p,"$(",0))) {
+        GB_CSTR kz = strchr(ka,')');
         if (!kz) {
-            GB_export_error("missing ')' for enviroment '%s'",p2);
-            return 0;
+            error = GBS_global_string("missing ')' for envvar '%s'", p);
+            break;
         }
-        *kz = 0;
-        genv = GB_getenv(ka+2);
-        if (!genv) {
-            genv = "";
+        else {
+            char *envvar = GB_strpartdup(ka+2, kz-1);
+            int   len    = ka-p;
+
+            if (len) GBS_strncat(out, p, len);
+
+            GB_CSTR genv = GB_getenv(envvar);
+            if (genv) GBS_strcat(out, genv);
+
+            p = kz+1;
+            free(envvar);
         }
-        eval = (char *)GB_calloc(sizeof(char),strlen(genv) + strlen(ka) + 10);
-        sprintf(eval,"%s)=%s",ka,genv);
-        *kz = ')';
-        h=GBS_string_eval(p2,eval,0);
-        free(eval);
-        free(p2);
-        p2 = h;
     }
 
-    return p2;
+    if (error) {
+        GB_export_error(error);
+        free(GBS_strclose(out));
+        return 0;
+    }
+
+    GBS_strcat(out, p);         // copy rest
+    return GBS_strclose(out);
 }
 
 char* GBS_find_lib_file(const char *filename,const char *libprefix, int warn_when_not_found)
@@ -2008,7 +2002,8 @@ void gbs_regerror(int en){
 #ifdef NO_REGEXPR
 /** regexpr = '/regexpr/' */
 
-GB_CPNTR GBS_regsearch(const char *in, const char *regexprin){
+
+GB_CSTR GBS_regsearch(GB_CSTR in, const char *regexprin){
     /* search the beginning first match */
     static char  expbuf[8000];
     static char *regexpr = 0;
@@ -2096,10 +2091,13 @@ char *GBS_regreplace(const char *in, const char *regexprin, GBDATA *gb_species){
     free ( regexpr);
     return GBS_strclose(out);
 }
+
 #else
 
+#error sorry.. got no system with regexp.h to fix code below -- ralf May 2008
+
 /** regexpr = '/regexpr/' */
-GB_CPNTR gb_compile_regexpr(const char *regexprin,char **subsout){
+static GB_CSTR gb_compile_regexpr(GB_CSTR regexprin,char **subsout){
     static char *expbuf = 0;
     static char *old_reg_expr = 0;
     char *regexpr;
@@ -2144,7 +2142,7 @@ GB_CPNTR gb_compile_regexpr(const char *regexprin,char **subsout){
     return expbuf;
 }
 
-GB_CPNTR GBS_regsearch(const char *in, const char *regexprin){
+GB_CSTR GBS_regsearch(GB_CSTR in, GB_CSTR regexprin){
     char *expbuf;
 
     expbuf = gb_compile_regexpr(regexprin,0);
@@ -2196,12 +2194,11 @@ char *GBS_regreplace(const char *in, const char *regexprin, GBDATA *gb_species){
     return GBS_strclose(out);
 }
 
-
 #endif
 
 char *GBS_regmatch(const char *in, const char *regexprin) {
     /* returns the first match */
-    GB_CPNTR found = GBS_regsearch(in, regexprin);
+    GB_CSTR found = GBS_regsearch(in, regexprin);
     if (found) {
         int   length   = loc2-loc1;
         char *result   = (char*)malloc(length+1);
