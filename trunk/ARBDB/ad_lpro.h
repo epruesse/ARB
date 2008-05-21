@@ -33,12 +33,11 @@ char *gbs_compress_command P_((const char *com));
 void gbs_strensure_mem P_((void *strstruct, long len));
 GB_ERROR gbs_build_replace_string P_((void *strstruct, char *bar, char *wildcards, long max_wildcard, char **mwildcards, long max_mwildcard, GBDATA *gb_container));
 void gbs_regerror P_((int en));
-GB_CPNTR gb_compile_regexpr P_((const char *regexprin, char **subsout));
 
 /* arbdb.c */
 void gb_init_gb P_((void));
-GB_CPNTR gb_increase_buffer P_((long size));
-char *gb_check_out_buffer P_((const char *buffer));
+GB_BUFFER gb_increase_buffer P_((long size));
+char *gb_check_out_buffer P_((GB_CBUFFER buffer));
 GB_ERROR gb_unfold P_((GBCONTAINER *gbd, long deep, int index_pos));
 int gb_read_nr P_((GBDATA *gbd));
 GB_ERROR gb_write_compressed_pntr P_((GBDATA *gbd, const char *s, long memsize, long stored_size));
@@ -56,7 +55,7 @@ GB_ERROR gb_add_changed_callback_list P_((GBDATA *gbd, struct gb_transaction_sav
 GB_ERROR gb_add_delete_callback_list P_((GBDATA *gbd, struct gb_transaction_save *old, GB_CB func, int *clientdata));
 GB_ERROR gb_do_callback_list P_((GBDATA *gbd));
 GB_MAIN_TYPE *gb_get_main_during_cb P_((void));
-GB_CPNTR gb_read_pntr_ts P_((GBDATA *gbd, struct gb_transaction_save *ts));
+GB_CSTR gb_read_pntr_ts P_((GBDATA *gbd, struct gb_transaction_save *ts));
 int gb_info P_((GBDATA *gbd, int deep));
 
 /* ad_core.c */
@@ -102,7 +101,6 @@ char *gb_compress_by_dictionary P_((GB_DICTIONARY *dict, GB_CSTR s_source, long 
 GB_ERROR gb_create_dictionaries P_((GB_MAIN_TYPE *Main, long maxmem));
 
 /* adsystem.c */
-const char *gb_read_dict_data P_((GBDATA *gb_dict, long *size));
 GB_ERROR gb_load_dictionary_data P_((GBDATA *gb_main, const char *key, char **dict_data, long *size));
 GB_DICTIONARY *gb_create_dict P_((GBDATA *gb_dict));
 void delete_gb_dictionary P_((GB_DICTIONARY *dict));
@@ -214,7 +212,7 @@ char *gbs_search_second_bracket P_((const char *source));
 char *gbs_search_next_seperator P_((const char *source, const char *seps));
 
 /* ad_save_load.c */
-GB_CPNTR gb_findExtension P_((GB_CSTR path));
+char *gb_findExtension P_((char *path));
 GB_CSTR gb_oldQuicksaveName P_((GB_CSTR path, int nr));
 GB_CSTR gb_quicksaveName P_((GB_CSTR path, int nr));
 GB_CSTR gb_mapfile_name P_((GB_CSTR path));
@@ -226,7 +224,7 @@ GB_ERROR gb_add_reference P_((char *master, char *changes));
 GB_ERROR gb_remove_quick_saved P_((GB_MAIN_TYPE *Main, const char *path));
 GB_ERROR gb_remove_all_but_main P_((GB_MAIN_TYPE *Main, const char *path));
 long gb_ascii_2_bin P_((const char *source, GBDATA *gbd));
-GB_CPNTR gb_bin_2_ascii P_((GBDATA *gbd));
+GB_BUFFER gb_bin_2_ascii P_((GBDATA *gbd));
 long gb_test_sub P_((GBDATA *gbd));
 long gb_write_rek P_((FILE *out, GBCONTAINER *gbc, long deep, long big_hunk));
 long gb_read_in_long P_((FILE *in, long reversed));
@@ -248,22 +246,22 @@ struct gb_compress_tree *gb_build_uncompress_tree P_((const unsigned char *data,
 void gb_free_compress_tree P_((struct gb_compress_tree *tree));
 struct gb_compress_list *gb_build_compress_list P_((const unsigned char *data, long short_flag, long *size));
 char *gb_compress_bits P_((const char *source, long size, const unsigned char *c_0, long *msize));
-GB_CPNTR gb_uncompress_bits P_((const char *source, long size, char c_0, char c_1));
+GB_BUFFER gb_uncompress_bits P_((const char *source, long size, char c_0, char c_1));
 void gb_compress_equal_bytes_2 P_((const char *source, long size, long *msize, char *dest));
-GB_CPNTR gb_compress_equal_bytes P_((const char *source, long size, long *msize, int last_flag));
+GB_BUFFER gb_compress_equal_bytes P_((const char *source, long size, long *msize, int last_flag));
 void gb_compress_huffmann_add_to_list P_((long val, struct gb_compress_list *element));
 long gb_compress_huffmann_pop P_((long *val, struct gb_compress_list **element));
-GB_CPNTR gb_compress_huffmann_rek P_((struct gb_compress_list *bc, int bits, int bitcnt, char *dest));
-GB_CPNTR gb_compress_huffmann P_((const char *source, long size, long *msize, int last_flag));
-GB_CPNTR gb_uncompress_equal_bytes P_((const char *s, long size));
-GB_CPNTR gb_uncompress_huffmann P_((const char *source, long maxsize));
-GB_CPNTR gb_uncompress_bytes P_((const char *source, long size));
-GB_CPNTR gb_uncompress_longs P_((char *source, long size));
-GB_CPNTR gb_uncompress_longsnew P_((const char *data, long size));
-GB_CPNTR gb_compress_longs P_((const char *source, long size, int last_flag));
+char *gb_compress_huffmann_rek P_((struct gb_compress_list *bc, int bits, int bitcnt, char *dest));
+GB_BUFFER gb_compress_huffmann P_((GB_CBUFFER source, long size, long *msize, int last_flag));
+GB_BUFFER gb_uncompress_equal_bytes P_((GB_CBUFFER s, long size));
+GB_BUFFER gb_uncompress_huffmann P_((GB_CBUFFER source, long maxsize));
+GB_BUFFER gb_uncompress_bytes P_((GB_CBUFFER source, long size));
+GB_BUFFER gb_uncompress_longs P_((GB_CBUFFER source, long size));
+GB_BUFFER gb_uncompress_longsnew P_((GB_CBUFFER data, long size));
+GB_BUFFER gb_compress_longs P_((GB_CBUFFER source, long size, int last_flag));
 GB_DICTIONARY *gb_get_dictionary P_((GB_MAIN_TYPE *Main, GBQUARK key));
-GB_CPNTR gb_compress_data P_((GBDATA *gbd, int key, const char *source, long size, long *msize, GB_COMPRESSION_MASK max_compr, GB_BOOL pre_compressed));
-GB_CPNTR gb_uncompress_data P_((GBDATA *gbd, const char *source, long size));
+GB_BUFFER gb_compress_data P_((GBDATA *gbd, int key, GB_CBUFFER source, long size, long *msize, GB_COMPRESSION_MASK max_compr, GB_BOOL pre_compressed));
+GB_BUFFER gb_uncompress_data P_((GBDATA *gbd, GB_CBUFFER source, long size));
 
 /* admalloc.c */
 void gbm_init_mem P_((void));
