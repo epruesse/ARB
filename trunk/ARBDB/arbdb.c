@@ -177,7 +177,7 @@ void gb_init_gb(void)
                     local buffer management
 ********************************************************************************************/
 /* return a pointer to a static piece of memory at least size bytes long */
-GB_CPNTR GB_give_buffer(long size)
+GB_BUFFER GB_give_buffer(long size)
 {
 #if (MEMORY_TEST==1)
     if (gb_local->buffer) free(gb_local->buffer);
@@ -192,7 +192,7 @@ GB_CPNTR GB_give_buffer(long size)
     return  gb_local->buffer;
 }
 
-GB_CPNTR gb_increase_buffer(long size){
+GB_BUFFER gb_increase_buffer(long size){
     char *old_buffer;
     if (size < gb_local->bufsize) return    gb_local->buffer;
     old_buffer = gb_local->buffer;
@@ -207,7 +207,7 @@ int GB_give_buffer_size(){
     return gb_local->bufsize;
 }
 
-GB_CPNTR GB_give_buffer2(long size)
+GB_BUFFER GB_give_buffer2(long size)
 {
 #if (MEMORY_TEST==1)
     if (gb_local->buffer2) free(gb_local->buffer2);
@@ -221,25 +221,26 @@ GB_CPNTR GB_give_buffer2(long size)
 #endif
     return  gb_local->buffer2;
 }
-/* Check a piece of memory out of the buffer management
-                 * after it is checked out, the user has the full control to use and free it*/
-char *gb_check_out_buffer(const char *buffer){
-    char *old;
+char *gb_check_out_buffer(GB_CBUFFER buffer){
+    /* Check a piece of memory out of the buffer management
+     * after it is checked out, the user has the full control to use and free it
+     * Returns a pointer to the start of the buffer (even if 'buffer' points inside the buffer!)
+    */
+    char *old = 0;
     if (buffer >= gb_local->buffer && buffer< gb_local->buffer + gb_local->bufsize){
         old = gb_local->buffer;
         gb_local->buffer = 0;
         gb_local->bufsize = 0;
-    }else if (buffer >= gb_local->buffer2 && buffer< gb_local->buffer2 + gb_local->bufsize2){
+    }
+    else if (buffer >= gb_local->buffer2 && buffer< gb_local->buffer2 + gb_local->bufsize2){
         old = gb_local->buffer2;
         gb_local->buffer2 = 0;
         gb_local->bufsize2 = 0;
-    }else{
-        return 0;       /* Nothing to check out */
     }
     return old;
 }
 
-GB_CPNTR GB_give_other_buffer(const char *buffer, long size)
+GB_BUFFER GB_give_other_buffer(GB_CBUFFER buffer, long size)
 {
     if (buffer >= gb_local->buffer && buffer< gb_local->buffer + gb_local->bufsize){
         return GB_give_buffer2(size);
@@ -366,7 +367,7 @@ long GB_read_memuse(GBDATA *gbd) {
     return GB_GETMEMSIZE(gbd);
 }
 
-GB_CPNTR GB_read_pntr(GBDATA *gbd){
+GB_CSTR GB_read_pntr(GBDATA *gbd) {
     char *data;
     long size;
     int type;
@@ -399,7 +400,7 @@ int gb_read_nr(GBDATA *gbd){
     return gbd->index;
 }
 
-GB_CPNTR GB_read_char_pntr(GBDATA *gbd) /* @@@ change return type to const char * */
+GB_CSTR GB_read_char_pntr(GBDATA *gbd)
 {
     GB_TEST_READ(gbd,GB_STRING,"GB_read_char_pntr");
     return GB_read_pntr(gbd);
@@ -420,7 +421,7 @@ long GB_read_string_count(GBDATA *gbd)
     return GB_GETSIZE(gbd);
 }
 
-GB_CPNTR GB_read_link_pntr(GBDATA *gbd)
+GB_CSTR GB_read_link_pntr(GBDATA *gbd)
 {
     GB_TEST_READ(gbd,GB_LINK,"GB_read_link_pntr");
     return GB_read_pntr(gbd);
@@ -448,7 +449,7 @@ long GB_read_bits_count(GBDATA *gbd)
     return GB_GETSIZE(gbd);
 }
 
-GB_CPNTR GB_read_bits_pntr(GBDATA *gbd,char c_0, char c_1)
+GB_CSTR GB_read_bits_pntr(GBDATA *gbd,char c_0, char c_1)
 {
     char *data;
     long size;
@@ -471,17 +472,13 @@ GB_CPNTR GB_read_bits_pntr(GBDATA *gbd,char c_0, char c_1)
     }
 }
 
-char *GB_read_bits(GBDATA *gbd, char c_0, char c_1)
-{
-    char *d;
-    d = GB_read_bits_pntr(gbd,c_0,c_1);
-    if (!d) return 0;
-    d = gbs_malloc_copy(d,GB_GETSIZE(gbd)+1);
-    return d;
+char *GB_read_bits(GBDATA *gbd, char c_0, char c_1) {
+    GB_CSTR d = GB_read_bits_pntr(gbd,c_0,c_1);
+    return d ? gbs_malloc_copy(d,GB_GETSIZE(gbd)+1) : 0;
 }
 
 
-GB_CPNTR GB_read_bytes_pntr(GBDATA *gbd)
+GB_CSTR GB_read_bytes_pntr(GBDATA *gbd)
 {
     GB_TEST_READ(gbd,GB_BYTES,"GB_read_bytes_pntr");
     return GB_read_pntr(gbd);
@@ -493,13 +490,9 @@ long GB_read_bytes_count(GBDATA *gbd)
     return GB_GETSIZE(gbd);
 }
 
-char *GB_read_bytes(GBDATA *gbd)
-{
-    char *d;
-    d = GB_read_bytes_pntr(gbd);
-    if (!d) return 0;
-    d = gbs_malloc_copy(d,GB_GETSIZE(gbd));
-    return d;
+char *GB_read_bytes(GBDATA *gbd) {
+    GB_CSTR d = GB_read_bytes_pntr(gbd);
+    return d ? gbs_malloc_copy(d,GB_GETSIZE(gbd)) : 0;
 }
 
 GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
@@ -1815,7 +1808,7 @@ GB_MAIN_TYPE *gb_get_main_during_cb(){
     return g_b_old_main;
 }
 
-GB_CPNTR gb_read_pntr_ts(GBDATA *gbd, struct gb_transaction_save *ts){
+GB_CSTR gb_read_pntr_ts(GBDATA *gbd, struct gb_transaction_save *ts){
     char *data;
     long size;
     int type;
@@ -1831,7 +1824,7 @@ GB_CPNTR gb_read_pntr_ts(GBDATA *gbd, struct gb_transaction_save *ts){
 }
 
 /* get last array value in callbacks */
-NOT4PERL void *GB_read_old_value(){
+NOT4PERL const void *GB_read_old_value(){
     char *data;
 
     if (!g_b_old_callback_list) {
