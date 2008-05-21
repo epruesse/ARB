@@ -93,7 +93,7 @@ void GEN_make_node_text_init(GBDATA *gb_main) {
 char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
 {
     /* if mode ==0 compress info else format info */
-    char     *bp, *p;
+    char     *bp;
     GBDATA   *gbe;
     long      i, j;
     long      first;
@@ -154,44 +154,47 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
                     }
                     bp += strlen(bp);
                     break;
-                case GB_STRING:
-                    {
-                        long            post;
-                        long        dlen;
-                        char *pars = 0;
-                        if (gen_nds_ms->parsing[i]) {
-                            p = GB_read_string(gbe);
-                            pars = GB_command_interpreter(gb_main,p, gen_nds_ms->parsing[i],gbd, 0);
-                            free(p);
-                            if (!pars){
-                                pars = strdup("<error>");
-                                if (!gen_nds_ms->errorclip++) {
-                                    aw_message(GB_get_error());
-                                }
-                            }
-                            p = pars;
-                        }else{
-                            p = GB_read_char_pntr(gbe);
-                        }
+                case GB_STRING: {
+                    long        post;
+                    long        dlen;
+                    char       *pars = 0;
+                    const char *p    = 0;
 
-                        dlen = gen_nds_ms->lengths[i];
-                        if (dlen + (bp - gen_nds_ms->buf) +256 > GEN_NDS_STRING_SIZE) {
-                            dlen = GEN_NDS_STRING_SIZE - 256 - (bp - gen_nds_ms->buf);
-                        }
-
-                        if (dlen> 0){
-                            int len = strlen(p);
-                            j = len;
-                            if (j > dlen)   j = dlen;
-                            for (; j; j--) *bp++ = *p++;
-                            if (mode){
-                                post = dlen - len;
-                                while (post-- > 0) *(bp++) = ' ';
+                    if (gen_nds_ms->parsing[i]) {
+                        char *p2 = GB_read_string(gbe);
+                        pars     = GB_command_interpreter(gb_main, p2, gen_nds_ms->parsing[i],gbd, 0);
+                        free(p2);
+                        
+                        if (!pars){
+                            pars = strdup("<error>");
+                            if (!gen_nds_ms->errorclip++) {
+                                aw_message(GB_get_error());
                             }
                         }
-                        if (pars) free(pars);
+                        p = pars;
                     }
+                    else {
+                        p = GB_read_char_pntr(gbe);
+                    }
+
+                    dlen = gen_nds_ms->lengths[i];
+                    if (dlen + (bp - gen_nds_ms->buf) +256 > GEN_NDS_STRING_SIZE) {
+                        dlen = GEN_NDS_STRING_SIZE - 256 - (bp - gen_nds_ms->buf);
+                    }
+
+                    if (dlen> 0){
+                        int len = strlen(p);
+                        j = len;
+                        if (j > dlen)   j = dlen;
+                        for (; j; j--) *bp++ = *p++;
+                        if (mode){
+                            post = dlen - len;
+                            while (post-- > 0) *(bp++) = ' ';
+                        }
+                    }
+                    if (pars) free(pars);
                     break;
+                }
                 case GB_FLOAT:
                     sprintf(bp, "%4.4f", GB_read_float(gbe));
                     bp += strlen(bp);

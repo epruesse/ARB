@@ -195,8 +195,7 @@ ST_sequence_ml::~ST_sequence_ml() {
 }
 
 AP_sequence *ST_sequence_ml::dup() {
-    ST_sequence_ml *ns = new ST_sequence_ml(root, st_ml);
-    return (AP_sequence *) ns;
+    return new ST_sequence_ml(root, st_ml);
 }
 
 void ST_sequence_ml::set_gb(GBDATA * gbd) {
@@ -204,25 +203,26 @@ void ST_sequence_ml::set_gb(GBDATA * gbd) {
     gb_data = gbd;
     GB_add_callback(gb_data, GB_CB_CHANGED, st_sequence_callback, (int *) this);
     GB_add_callback(gb_data, GB_CB_DELETE, st_sequence_del_callback,
-            (int *) this);
+                    (int *) this);
 }
 
-void ST_sequence_ml::set(char *) {
+void ST_sequence_ml::set(const char *) {
+    st_assert(0); // function does nothing, so i assert it wont be called -- ralf may 2008
 }
 
 /** Transform the sequence from character to vector, from st_ml->base to 'to' */
 
 void ST_sequence_ml::set_sequence() {
-    int   i                   = st_ml->base;
-    char *source_sequence     = 0;
-    int   source_sequence_len = 0;
+    int         i                   = st_ml->base;
+    const char *source_sequence     = 0;
+    int         source_sequence_len = 0;
 
     if (gb_data) {
         source_sequence_len = (int) GB_read_string_count(gb_data);
         source_sequence = GB_read_char_pntr(gb_data);
     }
 
-    char *s = source_sequence + st_ml->base;
+    const char *s = source_sequence + st_ml->base;
     ST_base_vector *dest = sequence;
     ST_base_vector *freq = st_ml->inv_base_frequencies + st_ml->base;
     if (st_ml->base < source_sequence_len) {
@@ -599,7 +599,7 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
 
     /* load sequences */
     // aw_status("load sequences");
-    tree_root->sequence_template = (AP_sequence *) new ST_sequence_ml(tree_root, this);
+    tree_root->sequence_template = new ST_sequence_ml(tree_root, this);
     tree_root->tree->load_sequences_rek(alignment_name, GB_TRUE, GB_TRUE);
 
     /* create matrizes */
@@ -613,7 +613,7 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
 
 /** go through the tree and calculate the ST_base_vector from bottom to top */
 ST_sequence_ml *ST_ML::do_tree(AP_tree * node) {
-    ST_sequence_ml *seq = (ST_sequence_ml *) node->sequence;
+    ST_sequence_ml *seq = static_cast<ST_sequence_ml*>(node->sequence);
     if (!seq) {
         seq = new ST_sequence_ml(tree_root, this);
         node->sequence = (AP_sequence *) seq;
@@ -640,7 +640,7 @@ void ST_ML::clear_all() {
 }
 
 void ST_ML::undo_tree(AP_tree * node) {
-    ST_sequence_ml *seq = (ST_sequence_ml *) node->sequence;
+    ST_sequence_ml *seq = static_cast<ST_sequence_ml*>(node->sequence);
     if (!seq) {
         seq = new ST_sequence_ml(tree_root, this);
         node->sequence = (AP_sequence *) seq;
@@ -808,7 +808,7 @@ ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
         get_ml_vectors(0, node, start, end); // calculates tmp_out (see below)
     }
 
-    char *source_sequence = 0;
+    const char *source_sequence = 0;
     int source_sequence_len = 0;
 
     if (seq->gb_data) {
@@ -818,7 +818,7 @@ ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
     // create color string in 'outs':
     ST_ML_Color *outs   = seq->color_out + start_ali_pos;
     vec                 = seq->tmp_out + start_ali_pos; // tmp_out was calculated by get_ml_vectors above
-    char        *source = source_sequence + start_ali_pos;
+    const char  *source = source_sequence + start_ali_pos;
 
     for (pos = start_ali_pos; pos <= end_ali_pos; pos++) {
 

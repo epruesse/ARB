@@ -74,13 +74,12 @@ public:
     void delete_sequence(); // remove link to database
     void sequence_change(); // sequence has changed in db
     AP_FLOAT combine(const AP_sequence* lefts, const AP_sequence *rights);
-    void
-            partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
+    void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
     ST_sequence_ml(AP_tree_root *rooti, ST_ML *st_ml);
     ~ST_sequence_ml();
     AP_sequence *dup(void);
 
-    void set(char *sequence);
+    void set(const char *sequence);
     void set_gb(GBDATA *gbd);
 
     void set_sequence(); // start at st_ml->base

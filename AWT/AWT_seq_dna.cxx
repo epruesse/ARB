@@ -36,7 +36,7 @@ AP_sequence_parsimony::~AP_sequence_parsimony(void)
 
 AP_sequence *AP_sequence_parsimony::dup(void)
 {
-    return (AP_sequence *)new AP_sequence_parsimony(root);
+    return new AP_sequence_parsimony(root);
 }
 
 void AP_sequence_parsimony::build_table(void)
@@ -56,7 +56,7 @@ is_set_flag is used by AP_tree_nlen::parsimony_rek()
 
 // #define SHOW_SEQ
 
-void AP_sequence_parsimony::set(char *isequence)
+void AP_sequence_parsimony::set(const char *isequence)
 {
     //      char *s,*d,*f1,c;
     sequence_len = root->filter->real_len;

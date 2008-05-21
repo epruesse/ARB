@@ -1280,14 +1280,15 @@ static void aw_root_create_color_map(AW_root *root) {
     } else { // Color monitor
         const char **awar_2_color;
         int color;
-        for (color = 0, awar_2_color = aw_awar_2_color; *awar_2_color;
-                awar_2_color++, color++) {
-            char *name_of_color = GB_read_char_pntr(GB_search(gbd,
-                    *awar_2_color, GB_FIND));
-            if (XAllocNamedColor(p_global->display,p_global->colormap,name_of_color,
-            &xcolor_returned,&xcolor_exakt) == 0) {
+        for (color = 0, awar_2_color = aw_awar_2_color;
+             *awar_2_color;
+             awar_2_color++, color++)
+        {
+            const char *name_of_color = GB_read_char_pntr(GB_search(gbd, *awar_2_color, GB_FIND));
+            if (XAllocNamedColor(p_global->display,p_global->colormap,name_of_color, &xcolor_returned,&xcolor_exakt) == 0) {
                 fprintf(stderr,"XAllocColor failed: %s\n",name_of_color);
-            } else {
+            }
+            else {
                 p_global->color_table[color] = xcolor_returned.pixel;
             }
         }
@@ -1357,7 +1358,7 @@ void AW_root::init(const char *programmname, AW_BOOL no_exit) {
     }
     {
         GBDATA *gbd = (GBDATA*)application_database;
-        char *font = GB_read_char_pntr(GB_search(gbd, "window/font", GB_FIND));
+        const char *font = GB_read_char_pntr(GB_search(gbd, "window/font", GB_FIND));
         if ( !(fontstruct = XLoadQueryFont( p_r->display, font))) {
             if ( !(fontstruct = XLoadQueryFont( p_r->display, "fixed"))) {
                 printf("can not load font\n");

@@ -48,7 +48,7 @@ public:
     virtual ~AP_sequence_protein();
 
     AP_sequence *dup();     // used to get the real new element
-    void         set(char *isequence);
+    void         set(const char *isequence);
     AP_FLOAT     combine(const AP_sequence * lefts, const AP_sequence *rights) ;
     AP_FLOAT     real_len();
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;

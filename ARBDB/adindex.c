@@ -24,10 +24,10 @@
 char *gb_index_check_in(GBDATA *gbd)
 {
     struct gb_index_files_struct *ifs;
-    
+
     GBQUARK        quark;
     unsigned long  index;
-    char          *data;
+    GB_CSTR        data;
     GBCONTAINER   *gfather;
 
     gfather = GB_GRANDPA(gbd);
@@ -72,10 +72,10 @@ char *gb_index_check_out(GBDATA *gbd)
     struct gb_if_entries         *ifes;
     struct gb_if_entries         *ifes2;
     GB_REL_IFES                  *entries;
-    
+
     GBQUARK        quark;
     GBCONTAINER   *gfather;
-    char          *data;
+    GB_CSTR        data;
     unsigned long  index;
 
     if (!gbd->flags2.is_indexed) return 0;
@@ -163,7 +163,7 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, long estimated_size)
 /* find an entry in an hash table */
 GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUARK quark, const char *val, int after_index){
     unsigned long         index;
-    char                 *data;
+    GB_CSTR               data;
     struct gb_if_entries *ifes;
     GBDATA               *result = 0;
     long                  min_index;

@@ -400,7 +400,7 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
         the_sequences[i]= (char *)malloc((size_t)maxalignlen+1);
         the_sequences[i][maxalignlen] = 0;
         memset(the_sequences[i],'.',(size_t)maxalignlen);
-        char *data = GB_read_char_pntr( GBT_read_sequence(the_species[i],dataset->alignment_name));
+        const char *data = GB_read_char_pntr( GBT_read_sequence(the_species[i],dataset->alignment_name));
         int size = strlen(data);
         if (size > maxalignlen) size = (int)maxalignlen;
         strncpy(the_sequences[i],data,size);

@@ -296,7 +296,7 @@ char *gb_compress_bits(const char *source, long size, const unsigned char *c_0, 
 }
 
 
-GB_CPNTR gb_uncompress_bits(const char *source,long size, char c_0, char c_1)
+GB_BUFFER gb_uncompress_bits(const char *source,long size, char c_0, char c_1)
 {
     const char              *s;
     char                    *p,*buffer,ch = 0,outc;
@@ -340,7 +340,7 @@ GB_CPNTR gb_uncompress_bits(const char *source,long size, char c_0, char c_1)
     0                       end
 */
 
-GB_CPNTR g_b_write_run(char *dest, int scount, int lastbyte){
+char *g_b_write_run(char *dest, int scount, int lastbyte){
     while (scount> 0xffff) {
         *(dest++) = 0x100-122 ;
         *(dest++) = 0xff;
@@ -445,7 +445,7 @@ void gb_compress_equal_bytes_2(const char *source, long size, long *msize, char 
     if (*msize >size*9/8) printf("ssize %d, dsize %d\n",(int)size,(int)*msize);
 }
 
-GB_CPNTR gb_compress_equal_bytes(const char *source, long size, long *msize, int last_flag){
+GB_BUFFER gb_compress_equal_bytes(const char *source, long size, long *msize, int last_flag){
     char *dest;                     /* destination pointer */
     char *buffer;
 
@@ -503,7 +503,7 @@ long gb_compress_huffmann_pop(long *val,struct gb_compress_list **element)
     }
 }
 
-GB_CPNTR gb_compress_huffmann_rek(struct gb_compress_list *bc,int bits,int bitcnt,char *dest)
+char *gb_compress_huffmann_rek(struct gb_compress_list *bc,int bits,int bitcnt,char *dest)
 {
     if(bc->command == gb_cd_node) {
         dest = gb_compress_huffmann_rek(bc->son[0],(bits<<1),bitcnt+1,dest);
@@ -521,7 +521,7 @@ GB_CPNTR gb_compress_huffmann_rek(struct gb_compress_list *bc,int bits,int bitcn
     }
 }
 
-GB_CPNTR gb_compress_huffmann(const char *source, long size, long *msize, int last_flag)
+GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int last_flag)
 {
     char          *buffer;
     unsigned char *s;
@@ -644,7 +644,7 @@ GB_CPNTR gb_compress_huffmann(const char *source, long size, long *msize, int la
                                         Uncompress  bytes
 ********************************************************************************************/
 
-GB_CPNTR gb_uncompress_equal_bytes(const char *s,long size)
+GB_BUFFER gb_uncompress_equal_bytes(GB_CBUFFER s,long size)
 {
     const signed char *source = (signed char*)s;
     char              *dest;
@@ -714,7 +714,7 @@ GB_CPNTR gb_uncompress_equal_bytes(const char *s,long size)
     return buffer;
 }
 
-GB_CPNTR gb_uncompress_huffmann(const char *source,long maxsize)
+GB_BUFFER gb_uncompress_huffmann(GB_CBUFFER source,long maxsize)
 {
     struct gb_compress_tree *un_tree, *t;
     
@@ -749,7 +749,7 @@ GB_CPNTR gb_uncompress_huffmann(const char *source,long maxsize)
     return buffer;
 }
 
-GB_CPNTR gb_uncompress_bytes(const char *source, long size)
+GB_BUFFER gb_uncompress_bytes(GB_CBUFFER source, long size)
 {
     char *data;
     data = gb_uncompress_huffmann(source,size*9/8);
@@ -769,20 +769,22 @@ GB_CPNTR gb_uncompress_bytes(const char *source, long size)
 /********************************************************************************************
                                 Compress  long and floats (4 byte values)
 ********************************************************************************************/
-GB_CPNTR gb_uncompress_longs(char *source, long size)
+GB_BUFFER gb_uncompress_longs(GB_CBUFFER source, long size)
 {                               /* size is byte value */
-    char           *data;
-    char           *res, *p, *s0, *s1, *s2, *s3;
-    GB_UINT4                mi, i;
+    char     *data;
+    char     *res, *p, *s0, *s1, *s2, *s3;
+    GB_UINT4  mi, i;
+
     data = gb_uncompress_huffmann(source, size * 9 / 8);
     if (!data) return 0;
+    
     data = gb_uncompress_equal_bytes(data, size);
-    res = p = GB_give_other_buffer(data, size);
-    mi = (GB_UINT4)(size / sizeof(GB_UINT4));
-    s0 = data + 0 * mi;
-    s1 = data + 1 * mi;
-    s2 = data + 2 * mi;
-    s3 = data + 3 * mi;
+    res  = p = GB_give_other_buffer(data, size);
+    mi   = (GB_UINT4)(size / sizeof(GB_UINT4));
+    s0   = data + 0 * mi;
+    s1   = data + 1 * mi;
+    s2   = data + 2 * mi;
+    s3   = data + 3 * mi;
     for (i = 0; i < mi; i++) {
         *(p++) = *(s0++);
         *(p++) = *(s1++);
@@ -793,7 +795,7 @@ GB_CPNTR gb_uncompress_longs(char *source, long size)
 }
 
 
-GB_CPNTR gb_uncompress_longsnew(const char *data, long size){
+GB_BUFFER gb_uncompress_longsnew(GB_CBUFFER data, long size){
     const char *s0, *s1, *s2, *s3;
     char       *p,*res;
     long        mi, i;
@@ -813,7 +815,7 @@ GB_CPNTR gb_uncompress_longsnew(const char *data, long size){
     return res;
 }
 
-GB_CPNTR gb_compress_longs(const char *source, long size, int last_flag){
+GB_BUFFER gb_compress_longs(GB_CBUFFER source, long size, int last_flag){
     long        mi,i;
     const char *p;
     char       *s0,*s1,*s2,*s3;
@@ -858,7 +860,7 @@ GB_DICTIONARY * gb_get_dictionary(GB_MAIN_TYPE *Main, GBQUARK key){
 /********************** Overall Compression Algorithms **************************/
 /**** Compresses a data string, returns 0 if no compression makes sense ****/
 
-GB_CPNTR gb_compress_data(GBDATA *gbd, int key, const char *source, long size, long *msize, GB_COMPRESSION_MASK max_compr, GB_BOOL pre_compressed){
+GB_BUFFER gb_compress_data(GBDATA *gbd, int key, GB_CBUFFER source, long size, long *msize, GB_COMPRESSION_MASK max_compr, GB_BOOL pre_compressed){
     char *data;
     int last_flag = GB_COMPRESSION_LAST;
 
@@ -918,7 +920,7 @@ GB_CPNTR gb_compress_data(GBDATA *gbd, int key, const char *source, long size, l
     return (char *)source;
 }
 
-GB_CPNTR gb_uncompress_data(GBDATA *gbd, const char *source, long size){
+GB_BUFFER gb_uncompress_data(GBDATA *gbd, GB_CBUFFER source, long size){
     int last = 0;
     int c;
     char *data = (char *)source;

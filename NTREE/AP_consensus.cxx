@@ -312,8 +312,8 @@ long CON_makestatistic(int **statistic,int *convtable,char *align,int onlymarked
     {
         if( (alidata=GBT_read_sequence(gb_species,align)) )
         {
-            char *data,c;
-            data=GB_read_char_pntr(alidata);
+            char c;
+            const char *data=GB_read_char_pntr(alidata);
             aw_status( (double)count++/(double)nrofspecies);
             i=0;
             while( (c=data[i]) ){
@@ -443,7 +443,7 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
             if(GBT_read_sequence(gb_species,align))
             {
                 gb_speciesname=GB_search(gb_species,"name",GB_FIND);
-                char *name=GB_read_char_pntr(gb_speciesname);
+                const char *name=GB_read_char_pntr(gb_speciesname);
                 GBS_strcat(strstruct,name);
                 GBS_chrcat(strstruct,' ');
             }

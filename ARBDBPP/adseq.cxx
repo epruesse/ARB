@@ -391,10 +391,10 @@ int AD_SEQ_updatecall(GBDATA *gb_seq,AD_SEQ *ad_seq)
         }
     }
     return 0;
-    char *old = (char *)GB_read_old_value();
+    GB_CSTR old = (GB_CSTR)GB_read_old_value();
     if (!old) return 0;
     printf("old:        %40s\n",old);
-    char *n = GB_read_char_pntr(gb_seq);
+    GB_CSTR n = GB_read_char_pntr(gb_seq);
     printf("old:        %40s\n",n);
     return 0;
 }

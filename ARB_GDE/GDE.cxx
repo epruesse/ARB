@@ -116,7 +116,7 @@ static char *gde_filter_weights(GBDATA *gb_sai,AW_CL ){
     if (!gb_ali) return 0;
     GBDATA *gb_type = GB_entry(gb_ali, "_TYPE");
     if (!gb_type) return 0;
-    char *type = GB_read_char_pntr(gb_type);
+    const char *type = GB_read_char_pntr(gb_type);
     if (GBS_string_cmp( type,"PV?:*",0)) {
         return 0;
     }

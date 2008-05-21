@@ -145,8 +145,8 @@ int g_b_count_leafs(GB_CTREE *node){
 void g_b_put_sequences_in_container(GB_CTREE *ctree,GB_Sequence *seqs,GB_Master **masters,GB_Consensus *gcon){
     if (ctree->is_leaf){
         if (ctree->index >= 0) {
-            char *data = GB_read_char_pntr(seqs[ctree->index].gbd);
-            long  len  = GB_read_string_count(seqs[ctree->index].gbd);
+            GB_CSTR data = GB_read_char_pntr(seqs[ctree->index].gbd);
+            long    len  = GB_read_string_count(seqs[ctree->index].gbd);
             g_b_Consensus_add(gcon,(unsigned char *)data,len);
         }
     }
@@ -155,8 +155,8 @@ void g_b_put_sequences_in_container(GB_CTREE *ctree,GB_Sequence *seqs,GB_Master 
         g_b_put_sequences_in_container(ctree->rightson,seqs,masters,gcon);
     }
     else {
-        char *data = GB_read_char_pntr(masters[ctree->index]->gbd);
-        long  len  = GB_read_string_count(masters[ctree->index]->gbd);
+        GB_CSTR data = GB_read_char_pntr(masters[ctree->index]->gbd);
+        long    len  = GB_read_string_count(masters[ctree->index]->gbd);
         g_b_Consensus_add(gcon,(unsigned char *)data,len);
     }
 }

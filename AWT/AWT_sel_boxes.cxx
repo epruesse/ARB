@@ -446,7 +446,7 @@ void awt_create_selection_list_on_configurations_cb(GBDATA *dummy, struct adawcb
             }
             GB_write_string(gb_name, "unnamed_config");
         }
-        char *name = GB_read_char_pntr(gb_name);
+        const char *name = GB_read_char_pntr(gb_name);
         cbs->aws->insert_selection( cbs->id, name, name );
     }
 
@@ -510,7 +510,7 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
             }
             GB_write_string(gb_name, "unnamed_config");
         }
-        char *name = GB_read_char_pntr(gb_name);
+        const char *name = GB_read_char_pntr(gb_name);
         if (result) {
             char *neu = GB_strdup(GBS_global_string("%s;%s", result, name));
             free(result);
@@ -544,7 +544,7 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
         if (cbs->filter_poc) {
             char *res = cbs->filter_poc(gb_extended,cbs->filter_cd);
             if (res) {
-                char *name = GB_read_char_pntr(gb_name);
+                const char *name = GB_read_char_pntr(gb_name);
                 cbs->aws->insert_selection( cbs->id, res, name );
                 free(res);
             }

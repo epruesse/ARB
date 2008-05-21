@@ -658,30 +658,32 @@ GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, long len, long pos, long ncha
             break;
 
         case GB_STRING:
-            chars = GB_read_char_pntr(gb_data);
-            if (!chars) return GB_get_error();
+            cchars = GB_read_char_pntr(gb_data);
+            if (!cchars) return GB_get_error();
 
             if (pos>len) break;
 
             if (nchar > 0) {            /* insert character */
-                if (        (pos >0 && chars[pos-1] == '.')     /* @@@@ */
-                            ||  chars[pos]  == '.') {
-                    chars = gbt_insert_delete( chars,size,len, &dlen, pos, nchar, sizeof(char), '.' ,'.' );
-                }else{
-                    chars = gbt_insert_delete( chars,size,len, &dlen, pos, nchar, sizeof(char), '-', '.' );
+                if ( (pos >0 && chars[pos-1] == '.')     /* @@@@ */
+                     ||  cchars[pos]  == '.')
+                {
+                    chars = gbt_insert_delete(cchars,size,len, &dlen, pos, nchar, sizeof(char), '.' ,'.' );
+                }
+                else {
+                    chars = gbt_insert_delete(cchars,size,len, &dlen, pos, nchar, sizeof(char), '-', '.' );
                 }
 
             }else{
                 l = pos+(-nchar);
                 if (l>size) l = size;
                 for (i = pos; i<l; i++){
-                    if (delete_chars[((unsigned char *)chars)[i]]) {
+                    if (delete_chars[((const unsigned char *)cchars)[i]]) {
                         return GB_export_error(
                                                "You tried to delete '%c' in species %s position %li  -> Operation aborted",
-                                               chars[i],species_name,i);
+                                               cchars[i],species_name,i);
                     }
                 }
-                chars = gbt_insert_delete( (char *)chars,size,len, &dlen, pos, nchar, sizeof(char), '-', '.' );
+                chars = gbt_insert_delete(cchars,size,len, &dlen, pos, nchar, sizeof(char), '-', '.' );
             }
             if (chars) {
                 error = GB_write_string(gb_data,chars);
@@ -691,7 +693,7 @@ GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, long len, long pos, long ncha
         case GB_BITS:
             cchars = GB_read_bits_pntr(gb_data,'-','+');
             if (!cchars) return GB_get_error();
-            chars = gbt_insert_delete( cchars,size,len, &dlen, pos, nchar, sizeof(char), '-','-' );
+            chars = gbt_insert_delete(cchars,size,len, &dlen, pos, nchar, sizeof(char), '-','-' );
             if (chars) { error = GB_write_bits(gb_data,chars,dlen,"-");
             free(chars);
             }
@@ -699,7 +701,7 @@ GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, long len, long pos, long ncha
         case GB_BYTES:
             cchars = GB_read_bytes_pntr(gb_data);
             if (!cchars) return GB_get_error();
-            chars = gbt_insert_delete( cchars,size,len, &dlen, pos, nchar, sizeof(char), 0,0 );
+            chars = gbt_insert_delete(cchars,size,len, &dlen, pos, nchar, sizeof(char), 0,0 );
             if (chars) {
                 error = GB_write_bytes(gb_data,chars,dlen);
                 free(chars);
@@ -1002,8 +1004,7 @@ long gbt_write_tree_nodes(GBDATA *gb_tree,GBT_TREE *node,long startid)
     return startid;
 }
 
-GB_CPNTR gbt_write_tree_rek_new(GBDATA *gb_tree, GBT_TREE *node, char *dest, long mode)
-{
+char *gbt_write_tree_rek_new(GBDATA *gb_tree, GBT_TREE *node, char *dest, long mode) {
     char buffer[40];        /* just real numbers */
     char    *c1;
 
@@ -2198,7 +2199,7 @@ GB_ERROR GBT_write_sequence(GBDATA *gb_data, const char *ali_name, long ali_len,
 GBDATA *GBT_gen_accession_number(GBDATA *gb_species,const char *ali_name){
     GBDATA *gb_acc;
     GBDATA *gb_data;
-    char *sequence;
+    GB_CSTR sequence;
     char buf[100];
     long id;
 
