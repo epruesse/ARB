@@ -23,13 +23,13 @@ GB_MAIN_TYPE *gb_main_array[GB_MAIN_ARRAY_SIZE];
         V2  Differential save
 ********************************************************************************************/
 
-GB_CPNTR gb_findExtension(GB_CSTR path)
-{
+char *gb_findExtension(char *path) {
     char *punkt = strrchr(path, '.');
-    char *slash;
-    if (!punkt) return 0;
-    slash = strchr(punkt,'/');
-    return slash? 0:punkt;
+    if (punkt) {
+        char *slash = strchr(punkt,'/');
+        if (slash) punkt = 0;   //  slash after '.' -> no extension
+    }
+    return punkt;
 }
 
 
@@ -44,18 +44,17 @@ GB_CPNTR gb_findExtension(GB_CSTR path)
  *
  */
 
-
-
 GB_CSTR gb_oldQuicksaveName(GB_CSTR path, int nr)
 {
     static char *qname = 0;
-    char *ext;
+    char        *ext;
+    size_t       len   = strlen(path);
 
-    STATIC_BUFFER(qname,strlen(path)+10);
+    STATIC_BUFFER(qname,len+15);
 
     strcpy(qname,path);
     ext = gb_findExtension(qname);
-    if (!ext) ext = qname + strlen(qname);
+    if (!ext) ext = qname + len;
 
     if (nr==-1) sprintf(ext,".arb.quick?");
     else    sprintf(ext,".arb.quick%i", nr);
@@ -87,7 +86,7 @@ GB_CSTR gb_mapfile_name(GB_CSTR path)
     static char *mapname = 0;
     char *ext;
 
-    STATIC_BUFFER(mapname,strlen(path)+4);
+    STATIC_BUFFER(mapname,strlen(path)+4+1);
 
     strcpy(mapname,path);
     ext = gb_findExtension(mapname);
@@ -113,7 +112,7 @@ GB_CSTR gb_overwriteName(GB_CSTR path)
 GB_CSTR gb_reffile_name(GB_CSTR path){
     static char *refname = 0;
     char *ext;
-    STATIC_BUFFER(refname,  strlen(path)+4+1);
+    STATIC_BUFFER(refname, strlen(path)+4+1);
 
     strcpy(refname,path);
     ext = gb_findExtension(refname);
@@ -376,7 +375,7 @@ long gb_ascii_2_bin(const char *source,GBDATA *gbd)
 
 #define GB_PUT(c,out) if(c>=10) c+='A'-10; else c+= '0'; *(out++) = (char)c;
 
-GB_CPNTR gb_bin_2_ascii(GBDATA *gbd)
+GB_BUFFER gb_bin_2_ascii(GBDATA *gbd)
 {
     signed char   *s, *out, c, mo;
     unsigned long  i;
@@ -451,13 +450,13 @@ long gb_test_sub(GBDATA *gbd)
 /* only used for saving ASCII database */
 long gb_write_rek(FILE *out,GBCONTAINER *gbc,long deep,long big_hunk)
 {
-    long    i;
-    char   *s;
-    char    c;
-    GBDATA *gb;
-    char   *strng;
-    char   *key;
-    /*int index;*/
+    long     i;
+    char    *s;
+    char     c;
+    GBDATA  *gb;
+    GB_CSTR  strng;
+    char    *key;
+    
     for (gb = GB_child((GBDATA *)gbc); gb; gb = GB_nextChild(gb)) {
         if (gb->flags.temporary) continue;
         key = GB_KEY(gb);
