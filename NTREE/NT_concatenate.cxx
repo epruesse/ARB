@@ -648,11 +648,10 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
             for (int no_of_alignments = 0; ali_names[no_of_alignments]!=0; no_of_alignments++) {
                 GBDATA *gb_seq_data = GBT_read_sequence(speciesList->species, ali_names[no_of_alignments]);
                 if (gb_seq_data) {
-                    char *seq_data  = GB_read_char_pntr(gb_seq_data);
+                    const char *seq_data  = GB_read_char_pntr(gb_seq_data);
                     GBDATA *gb_data = GBT_add_data(gb_new_species, ali_names[no_of_alignments], "data", GB_STRING);
                     error           = GB_write_string(gb_data, seq_data);
                     if (!error) id += GBS_checksum(seq_data,1,".-");  //creating checksum of the each aligned sequence to generate new accession number
-                    free(seq_data);
                 }
                 if (error) error = GB_export_error("Can't create alignment '%s'", ali_names[no_of_alignments]);
             }
