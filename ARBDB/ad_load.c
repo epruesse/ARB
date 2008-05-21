@@ -1315,7 +1315,7 @@ GB_ERROR    gb_login_remote(struct gb_main_type *gb_main,const char *path,const 
     return 0;
 }
 
-GBDATA *GB_login(const char *path,const char *opent,const char *user)
+GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
      /* opent char :
         'r' read
         'w' write (w/o 'r' it overwrites existing database)
@@ -1337,14 +1337,14 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
     GBCONTAINER         *gbd;
     FILE                *input;
     long                 i;
-    char                *free_path           = 0;
     struct gb_main_type *Main;
     enum gb_open_types   opentype;
     GB_CSTR              quickFile           = NULL;
     int                  ignoreMissingMaster = 0;
     int                  loadedQuickIndex    = -1;
     GB_ERROR             error               = 0;
-
+    char                *path                = strdup(cpath);
+    GB_BOOL              dbCreated           = GB_FALSE;
 
     if (!opent) opentype = gb_open_all;
     else if (strchr(opent, 'w')) opentype = gb_open_all;
@@ -1452,177 +1452,179 @@ GBDATA *GB_login(const char *path,const char *opent,const char *user)
             if (read_from_stdin) input = stdin;
             else input                 = fopen(path, "rb");
 
-            if (!input && ignoreMissingMaster){
+            if (!input && ignoreMissingMaster) {
                 goto load_quick_save_file_only;
             }
 
-            if ( !input )
-            {
-                GB_disable_quicksave((GBDATA *)gbd,"Database Created");
+            if (!input ) {
+                if (strchr(opent, 'c') ) {
+                    GB_disable_quicksave((GBDATA *)gbd,"Database Created");
 
-                if (strchr(opent, 'c') )
-                {
-                    if (strchr(opent, 'd')||strchr(opent, 'D')){
+                    if (strchr(opent, 'd')||strchr(opent, 'D')) {
                         /* use default settings */
                         const char *pre;
+                        char       *found_path;
+                        
                         GB_clear_error(); // with default-files gb_scan_directory (used above)
                         // creates an error, cause the path is a fake path
 
                         if (strchr(opent, 'd')) pre = "";
                         else                    pre = "arb_default/";
 
-                        free_path = GBS_find_lib_file(path,pre, 0);
-                        if (!free_path) {
+                        found_path = GBS_find_lib_file(path,pre, 0);
+                        if (!found_path) {
                             fprintf(stderr,"file %s not found\n", path);
-                            /* fprintf(stderr,"Looking for default file %s, but not found in $ARBHOME/lib/%s\n",path,pre); */
-                            fprintf(stderr," database %s created\n", path);
-                            GB_commit_transaction((GBDATA *)gbd);
-                            return (GBDATA *)gbd;
+                            dbCreated = GB_TRUE;
                         }
                         else {
 #if defined(DEBUG)
-                            fprintf(stderr, "Using properties from %s\n", free_path);
+                            fprintf(stderr, "Using properties from %s\n", found_path);
 #endif /* DEBUG */
+                            free(path);
+                            path  = found_path;
+                            input = fopen(path, "rb");
                         }
-                        path  = free_path;
-                        input = fopen(path, "rb");
-                    }else{
-                        printf(" database %s created\n", path);
-                        GB_commit_transaction((GBDATA *)gbd);
-                        return (GBDATA *)gbd;
                     }
-                }else{
+                    else {
+                        dbCreated = GB_TRUE;
+                    }
+
+                    if (dbCreated) printf(" database %s created\n", path);
+                }
+                else {
                     GB_export_error("ERROR Database '%s' not found",path);
-                    return 0;
+                    gbd = 0;
                 }
             }
-            time_of_main_file = GB_time_of_file(path);
+            if (input) {
+                time_of_main_file = GB_time_of_file(path);
 
-            if (input != stdin) i = gb_read_in_long(input, 0);
-            else i                = 0;
+                if (input != stdin) i = gb_read_in_long(input, 0);
+                else i                = 0;
 
-            if ((i== 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED))    {
-                i = gb_read_bin(input, gbd,0);      /* read or map whole db */
-                gbd = Main->data;
-                fclose(input);
+                if ((i== 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED))    {
+                    i = gb_read_bin(input, gbd,0);      /* read or map whole db */
+                    gbd = Main->data;
+                    fclose(input);
 
-                /* gb_testDB((GBDATA*)gbd); */
-
-                if (i ){
-                    if (Main->allow_corrupt_file_recovery) {
-                        GB_print_error();
-                    }else{
-                        return 0;
-                    }
-                }
-
-                if (quickFile){
-                    long     err;
-                    GB_ERROR err_msg;
-                load_quick_save_file_only:
-                    err     = 0;
-                    err_msg = 0;
-
-                    input = fopen(quickFile,"rb");
-
-                    if (input){
-                        time_of_quick_file = GB_time_of_file(quickFile);
-                        if (time_of_main_file && time_of_quick_file < time_of_main_file){
-                            GB_export_error("Your main database file '%s' is newer than\n"
-                                            "   the changes file '%s'\n"
-                                            "   That is very strange and happens only if files where\n"
-                                            "   moved/copied by hand\n"
-                                            "   Your file '%s' may be an old relict,\n"
-                                            "   if you ran into problems now,delete it",
-                                            path,quickFile,quickFile);
+                    if (i) {
+                        if (Main->allow_corrupt_file_recovery) {
                             GB_print_error();
-                            GB_warning(GB_get_error());
-                        }
-                        i = gb_read_in_long(input, 0);
-                        if ((i== 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED))
-                        {
-                            err = gb_read_bin(input, gbd, 1);
-                            fclose (input);
-
-                            if (err) {
-                                GB_ERROR suberr = GB_get_error();
-                                if (!suberr) { suberr = "<no specified reason>"; }
-
-                                err_msg = GBS_global_string("Loading failed (file corrupt?)\n"
-                                                            "[Fail-Reason: '%s']\n", 
-                                                            suberr);
-                            }
                         }
                         else {
-                            err_msg = "Wrong file format (not a quicksave file)";
+                            gbd = 0;
+                        }
+                    }
+
+                    if (gbd && quickFile) {
+                        long     err;
+                        GB_ERROR err_msg;
+                    load_quick_save_file_only:
+                        err     = 0;
+                        err_msg = 0;
+
+                        input = fopen(quickFile,"rb");
+
+                        if (input){
+                            time_of_quick_file = GB_time_of_file(quickFile);
+                            if (time_of_main_file && time_of_quick_file < time_of_main_file){
+                                GB_export_error("Your main database file '%s' is newer than\n"
+                                                "   the changes file '%s'\n"
+                                                "   That is very strange and happens only if files where\n"
+                                                "   moved/copied by hand\n"
+                                                "   Your file '%s' may be an old relict,\n"
+                                                "   if you ran into problems now,delete it",
+                                                path,quickFile,quickFile);
+                                GB_print_error();
+                                GB_warning(GB_get_error());
+                            }
+                            i = gb_read_in_long(input, 0);
+                            if ((i== 0x56430176) || (i == GBTUM_MAGIC_NUMBER) || (i == GBTUM_MAGIC_REVERSED))
+                            {
+                                err = gb_read_bin(input, gbd, 1);
+                                fclose (input);
+
+                                if (err) {
+                                    GB_ERROR suberr = GB_get_error();
+                                    if (!suberr) { suberr = "<no specified reason>"; }
+
+                                    err_msg = GBS_global_string("Loading failed (file corrupt?)\n"
+                                                                "[Fail-Reason: '%s']\n", 
+                                                                suberr);
+                                }
+                            }
+                            else {
+                                err_msg = "Wrong file format (not a quicksave file)";
+                                err     = 1;
+                            }
+                        }
+                        else  {
+                            err_msg = "Can't open file";
                             err     = 1;
                         }
-                    }
-                    else  {
-                        err_msg = "Can't open file";
-                        err     = 1;
-                    }
 
-                    if (err){
-                        GB_export_error("I cannot load your quick file '%s'\n"
-                                        "Reason: %s\n"
-                                        "\n"
-                                        "Note: you MAY restore an older version by running arb with:\n"
-                                        "      arb <name of quicksave-file>",
-                                        quickFile, err_msg);
-                        GB_print_error();
+                        if (err){
+                            error = GBS_global_string("I cannot load your quick file '%s'\n"
+                                                      "Reason: %s\n"
+                                                      "\n"
+                                                      "Note: you MAY restore an older version by running arb with:\n"
+                                                      "      arb <name of quicksave-file>",
+                                                      quickFile, err_msg);
 
-                        if (!Main->allow_corrupt_file_recovery) {
-                            return 0;
+                            if (!Main->allow_corrupt_file_recovery) {
+                                gbd = 0;
+                            }
+                            else {
+                                GB_export_error(error);
+                                GB_print_error();
+                                GB_clear_error();
+                                error = 0;
+                                GB_disable_quicksave((GBDATA*)gbd, "Couldn't load last quicksave (your latest changes are NOT included)");
+                            }
                         }
-
-                        GB_disable_quicksave((GBDATA*)gbd, "Couldn't load last quicksave (your latest changes are NOT included)");
-                        // return (GBDATA *)(gbd); // if we return here, no dictionaries get loaded and decompression won't work
                     }
+                    Main->qs.last_index = loadedQuickIndex; /* determines which # will be saved next */
                 }
-                Main->qs.last_index = loadedQuickIndex; /* determines which # will be saved next */
-
-            } else {
-                if (input != stdin) fclose(input);
-                error = gb_read_ascii(path, gbd);
-                if (error) GB_warning("%s", error);
-                GB_disable_quicksave((GBDATA *)gbd,"Sorry, I cannot save differences to ascii files\n"
-                                     "  Save whole database in binary mode first");
+                else {
+                    if (input != stdin) fclose(input);
+                    error = gb_read_ascii(path, gbd);
+                    if (error) GB_warning("%s", error);
+                    GB_disable_quicksave((GBDATA *)gbd,"Sorry, I cannot save differences to ascii files\n"
+                                         "  Save whole database in binary mode first");
+                }
             }
         }
-    }else{
+    }
+    else {
         GB_disable_quicksave((GBDATA *)gbd,"Database not part of this process");
         Main->local_mode = GB_TRUE;
         GB_begin_transaction((GBDATA *)gbd);
     }
+    
     if (error) {
         GB_export_error(error);
-        return 0;
+        gbd = 0;
     }
-    GB_commit_transaction((GBDATA *)gbd);
-    {               /* New Transaction, should be quicksaveable */
-        GB_begin_transaction((GBDATA *)gbd);
-        if (!strchr(opent,'N')){    /* new format */
-            gb_convert_V2_to_V3((GBDATA *)gbd);     /* Compression conversion */
-        }
-        error = gb_load_key_data_and_dictionaries((GBDATA *)Main->data);
-        if (!error){
-            error = GB_resort_system_folder_to_top((GBDATA *)Main->data);
-        }
+    else {
         GB_commit_transaction((GBDATA *)gbd);
-    }
-    Main->security_level = 0;
-    gbl_install_standard_commands((GBDATA *)gbd);
+        {               /* New Transaction, should be quicksaveable */
+            GB_begin_transaction((GBDATA *)gbd);
+            if (!strchr(opent,'N')){    /* new format */
+                gb_convert_V2_to_V3((GBDATA *)gbd);     /* Compression conversion */
+            }
+            error = gb_load_key_data_and_dictionaries((GBDATA *)Main->data);
+            if (!error) error = GB_resort_system_folder_to_top((GBDATA *)Main->data);
+            GB_commit_transaction((GBDATA *)gbd);
+        }
+        Main->security_level = 0;
+        gbl_install_standard_commands((GBDATA *)gbd);
     
-    if (Main->local_mode == GB_TRUE) { // i am the server
-        GBT_install_message_handler((GBDATA *)gbd);
+        if (Main->local_mode == GB_TRUE) { // i am the server
+            GBT_install_message_handler((GBDATA *)gbd);
+        }
+        if (gb_verbose_mode && !dbCreated) GB_information("ARB: Loading '%s' done\n", path);
     }
-
-    if (gb_verbose_mode)    {
-        GB_information("ARB: Loading '%s' done\n", path);
-/*         fprintf(stdout, "   ARB:    Loading '%s' done\n", path); */
-    }
-    if (free_path) free(free_path);
+    free(path);
     return (GBDATA *)gbd;
 }
 
