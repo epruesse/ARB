@@ -1712,8 +1712,7 @@ static void aw_help_new_helpfile(AW_root *awr) {
                 h2 = GBS_find_string(h2+1,"\nSUB",0);
                 tok = strtok(h+4," \n\t");  // now I got SUB
                 char *title = aw_ref_to_title(tok);
-                if (tok) aw_help_global.aww->insert_selection(
-                                                              aw_help_global.downid,    title,tok);
+                if (tok) aw_help_global.aww->insert_selection(aw_help_global.downid, title,tok);
                 free(title);
             }
             free(ptr);
