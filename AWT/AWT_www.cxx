@@ -48,15 +48,17 @@ GB_ERROR awt_openURL(AW_root *aw_root, GBDATA *gb_main, const char *url) {
     // if gb_main == 0 -> normal system call is used
 
     GB_ERROR  error   = 0;
-    char     *ka;
+    GB_CSTR   ka;
     char     *browser = aw_root->awar(AWAR_WWW_BROWSER)->read_string();
 
     while ( (ka = GBS_find_string(browser,"$(URL)",0)) ) {
-        char *nb = (char *)GB_calloc(sizeof(char), strlen(browser) + strlen(url));
-        *ka = 0;
-        sprintf(nb,"%s%s%s",browser,url,ka + 6);
+        char *start       = GB_strpartdup(browser, ka-1);
+        char *new_browser = GBS_global_string_copy("%s%s%s", start, url, ka+6);
+
+        free(start);
         free(browser);
-        browser = nb;
+        
+        browser = new_browser;
     }
 
     if (gb_main) {
