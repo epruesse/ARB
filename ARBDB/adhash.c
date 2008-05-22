@@ -775,7 +775,6 @@ long GBS_hash_count_elems(GB_HASH *hs) {
 
 void GBS_hash_next_element(GB_HASH *hs,const  char **key, long *val){
     struct gbs_hash_entry *e = hs->loop_entry;
-    long i,e2;
     if (!e){
         if (key) *key = 0;
         *val = 0;
@@ -783,32 +782,35 @@ void GBS_hash_next_element(GB_HASH *hs,const  char **key, long *val){
     }
     if (key) *key = e->key;
     *val = e->val;
-    e2 = hs->size;
 
     if (e->next){
         hs->loop_entry = e->next;
-    }else{
-        for (i=hs->loop_pos+1;i<e2;i++) {
-            e=hs->entries[i];
+    }
+    else {
+        long i  = hs->loop_pos+1;
+        long e2 = hs->size;
+
+        for (;i<e2;i++) {
+            e = hs->entries[i];
             if (e){
-                hs->loop_pos = i;
+                hs->loop_pos   = i;
                 hs->loop_entry = e;
-/*                 GBS_hash_next_element(hs,key,val); */
                 return;
             }
         }
+        hs->loop_entry = 0; /* reached end */
     }
-    hs->loop_entry = 0;
 }
 
 void GBS_hash_first_element(GB_HASH *hs,const char **key, long *val){
     struct gbs_hash_entry *e;
-    long i,e2;
-    e2 = hs->size;
+    long i;
+    long e2 = hs->size;
+
     for (i=0;i<e2;i++) {
-        e=hs->entries[i];
+        e = hs->entries[i];
         if (e){
-            hs->loop_pos = i;
+            hs->loop_pos   = i;
             hs->loop_entry = e;
             GBS_hash_next_element(hs,key,val);
 
@@ -817,6 +819,7 @@ void GBS_hash_first_element(GB_HASH *hs,const char **key, long *val){
     }
     if (key) *key = 0;
     *val = 0;
+    hs->loop_entry = 0;
     return;
 }
 
