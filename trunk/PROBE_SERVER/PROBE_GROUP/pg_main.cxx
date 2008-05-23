@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Fri May/16/2008 11:16 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu May/22/2008 13:30 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2004     //
@@ -519,7 +519,7 @@ static GBT_TREE *readAndLinkTree(GBDATA *gb_main, GB_ERROR& error) {
     else {
         indent i(out);
         out.put("Linking tree..");
-        GBT_link_tree(gbt_tree,gb_main,true, 0, 0);
+        GBT_link_tree(gbt_tree,gb_main,GB_TRUE, 0, 0);
     }
 
     return gbt_tree;

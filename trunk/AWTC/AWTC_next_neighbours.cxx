@@ -143,7 +143,7 @@ void AWTC_FIND_FAMILY::print(){
     }
 }
 
-GB_ERROR AWTC_FIND_FAMILY::go(int server_id,char *sequence,GB_BOOL fast,int max_hits){
+GB_ERROR AWTC_FIND_FAMILY::go(int server_id,char *sequence,bool fast,int max_hits){
     char buffer[256];
     sprintf(buffer,"ARB_PT_SERVER%i",server_id);
     GB_ERROR error;

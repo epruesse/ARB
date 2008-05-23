@@ -384,7 +384,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                         if (mode == 1) {
                             printf("command_file='%s'\n", command_file);
                             char *script = GB_strdup(GBS_global_string("gnuplot %s && rm -f %s", command_file, command_file));
-                            GB_xcmd(script, true, true);
+                            GB_xcmd(script, GB_TRUE, GB_TRUE);
                             free(script);
                         }
                         else {

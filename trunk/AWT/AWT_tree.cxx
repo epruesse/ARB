@@ -530,7 +530,7 @@ AP_tree::AP_tree(AP_tree_root   *tree_rooti)
     if (!vtable_ptr_check_done) {
         vtable_ptr_check_done = true;
         GBT_TREE *tree        = get_gbt_tree(); // hack-warning: points to part of this!
-        bool      was_leaf    = tree->is_leaf;
+        GB_BOOL   was_leaf    = tree->is_leaf;
 
         // if one of the assertions below fails, then there is a problem with the
         // vtable-pointer position (grep for FAKE_VTAB_PTR for more info)
@@ -786,7 +786,7 @@ GB_ERROR AP_tree::swap_assymetric(AP_TREE_SIDE mode){
     AP_tree        *pntr_father;
     AP_tree        *pntr_brother;
 
-    if (this->is_leaf == AP_TRUE) {
+    if (this->is_leaf == GB_TRUE) {
         return (char *)GB_export_error("swap not allowed at leaf  !!");
     }
     if (this->father == 0) {
@@ -794,7 +794,7 @@ GB_ERROR AP_tree::swap_assymetric(AP_TREE_SIDE mode){
     }
     if (this->father->father == 0) {
         pntr_brother = this->brother();
-        if (pntr_brother->is_leaf == AP_TRUE) {
+        if (pntr_brother->is_leaf == GB_TRUE) {
             // no swap needed !
             return 0;
         }
@@ -1502,7 +1502,7 @@ void AP_tree::load_sequences_rek(char *use,GB_BOOL set_by_gbdata,GB_BOOL show_st
 
 char *buildLeafList_rek(AP_tree *THIS, AP_tree **list,long& num) {
     // builds a list of all species
-    if (THIS->is_leaf == AP_FALSE) {
+    if (THIS->is_leaf == GB_FALSE) {
         char *error = 0;
         if (!error) error = buildLeafList_rek(THIS->leftson,list,num);
         if (!error) error = buildLeafList_rek(THIS->rightson,list,num);

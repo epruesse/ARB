@@ -362,11 +362,11 @@ char *readXmlTree(char *fname) {
 
         // linking arb_tree.dtd file to the Path from where xml file is loaded
         char *command = GBS_global_string_copy("ln -s %s/lib/dtd/arb_tree.dtd %s/.", GB_getenvARBHOME(), path);
-        GB_xcmd(command,false, true);
+        GB_xcmd(command, GB_FALSE, GB_TRUE);
 
         //execute xml2newick to convert xml format tree to newick format tree
         command = GBS_global_string_copy("xml2newick %s %s", fname, tempFile);
-        GB_xcmd(command,false, true);
+        GB_xcmd(command, GB_FALSE, GB_TRUE);
 
         free(command);
         free(path);

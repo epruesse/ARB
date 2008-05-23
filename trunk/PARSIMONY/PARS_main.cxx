@@ -125,7 +125,7 @@ extern "C" {
         AP_tree *leaf = tree->dup();
         leaf->gb_node = gb_node;
         leaf->name = strdup(key);
-        leaf->is_leaf = AW_TRUE;
+        leaf->is_leaf = GB_TRUE;
 
         leaf->sequence = leaf->tree_root->sequence_template->dup();
         leaf->sequence->set(GB_read_char_pntr(gb_data));
@@ -337,7 +337,7 @@ extern "C" {
         AP_tree *leaf = tree->dup();
         leaf->gb_node = gb_node;
         leaf->name = strdup(key);
-        leaf->is_leaf = AW_TRUE;
+        leaf->is_leaf = GB_TRUE;
         leaf->sequence = leaf->tree_root->sequence_template->dup();
         leaf->sequence->set(GB_read_char_pntr(gb_data));
         return (long)leaf;

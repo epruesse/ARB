@@ -28,7 +28,7 @@ public:
     
     AWTC_FIND_FAMILY(GBDATA *gb_maini);
 
-    GB_ERROR go(int server_id,char *sequence, GB_BOOL fast_flag, int max_hits);
+    GB_ERROR go(int server_id,char *sequence, bool fast_flag, int max_hits);
     
     void print();
     ~AWTC_FIND_FAMILY();

@@ -239,7 +239,7 @@ GBT_TREE *neighbourjoining(char **names, AP_FLOAT **m, long size, size_t structu
     for (i=0;i<size;i++) {
         nodes[i] = (GBT_TREE *)calloc(structure_size,1);
         nodes[i]->name = strdup(names[i]);
-        nodes[i]->is_leaf = AP_TRUE;
+        nodes[i]->is_leaf = GB_TRUE;
     }
 
     for (i=0;i<size-2;i++) {
