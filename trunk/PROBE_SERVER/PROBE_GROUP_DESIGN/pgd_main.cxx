@@ -401,7 +401,7 @@ static char *pgd_get_the_names(set<SpeciesName> *species, bytestring &bs, bytest
     if(!gb_species) return 0;
 
     for(set<SpeciesName>::const_iterator i=(*species).begin();i!=(*species).end();++i){
-        gb_name=GB_find_string(gb_species,"name",(*i).c_str(),GB_FALSE,down_2_level);
+        gb_name=GB_find_string(gb_species,"name",(*i).c_str(),GB_IGNORE_CASE,down_2_level);
         if(gb_name){
             gb_data=GB_brother(gb_name,use);
             if(gb_data) gb_data=GB_entry(gb_data,"data");

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_preserves.cxx                                       //
 //    Purpose   : find candidates for alignment preservation             //
-//    Time-stamp: <Fri May/16/2008 11:03 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu May/22/2008 15:51 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -50,7 +50,7 @@ static char **get_global_alignments() {
     int      i;
 
     for (i = 0; src_ali_names[i]; ++i) {
-        GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", src_ali_names[i], GB_FALSE, down_2_level);
+        GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", src_ali_names[i], GB_IGNORE_CASE, down_2_level);
         if (!gb_ali_name) {
             free(src_ali_names[i]);
             src_ali_names[i] = 0;

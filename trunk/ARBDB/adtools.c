@@ -113,7 +113,7 @@ GBDATA *GBT_create_alignment(GBDATA *gbd,
         error = GB_export_error("Unknown alignment type '%s'",type);
         return 0;
     }
-    gbn = GB_find_string(gb_presets,"alignment_name",name,GB_FALSE,down_2_level);
+    gbn = GB_find_string(gb_presets,"alignment_name",name,GB_IGNORE_CASE,down_2_level);
     if (gbn) {
         error = GB_export_error("Alignment '%s' already exists",name);
         return 0;
@@ -495,7 +495,7 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
     GBT_find_or_create(Main,"tree_data",7);
 
     if (alignment_name) {
-        GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", alignment_name, GB_FALSE, down_2_level);
+        GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", alignment_name, GB_IGNORE_CASE, down_2_level);
         if (!gb_ali_name) {
             error = GBS_global_string("Alignment '%s' does not exist - it can't be checked.", alignment_name);
         }
@@ -506,7 +506,7 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
         GBDATA *gb_use = GB_entry(gb_presets, "use");
         if (!gb_use) {
             // if we have no default alignment -> look for any alignment
-            GBDATA *gb_ali_name = GB_find_string(gb_presets,"alignment_name",alignment_name,GB_FALSE,down_2_level);
+            GBDATA *gb_ali_name = GB_find_string(gb_presets,"alignment_name",alignment_name,GB_IGNORE_CASE,down_2_level);
 
             if (gb_ali_name) {
                 // use first alignment found
@@ -793,7 +793,7 @@ GB_ERROR GBT_check_lengths(GBDATA *Main,const char *alignment_name)
          gb_ali;
          gb_ali = GB_nextEntry(gb_ali))
     {
-        gbd    = GB_find_string(gb_ali,"alignment_name",alignment_name,GB_FALSE,down_level);
+        gbd    = GB_find_string(gb_ali,"alignment_name",alignment_name,GB_IGNORE_CASE,down_level);
         gb_len = GB_entry(gb_ali,"alignment_len");
         if (gbd) {
             error = gbt_insert_character(gb_extended_data,"extended",
@@ -864,7 +864,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main,char *alignment_name, long pos, long 
 
     for (gb_ali = GB_entry(gb_presets, "alignment"); gb_ali; gb_ali = GB_nextEntry(gb_ali)) {
         char *use;
-        gbd = GB_find_string(gb_ali, "alignment_name", alignment_name, GB_FALSE, down_level);
+        gbd = GB_find_string(gb_ali, "alignment_name", alignment_name, GB_IGNORE_CASE, down_level);
         if (gbd) {
             gb_len = GB_entry(gb_ali, "alignment_len");
             len = GB_read_int(gb_len);
@@ -2089,7 +2089,7 @@ GBDATA *GBT_create_species(GBDATA *gb_main,const char *name)
     GBDATA *species;
     GBDATA *gb_name;
     GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
-    species = GB_find_string(gb_species_data,"name",name,GB_FALSE,down_2_level);
+    species = GB_find_string(gb_species_data,"name",name,GB_IGNORE_CASE,down_2_level);
     if (species) return GB_get_father(species);
     if ((int)strlen(name) <2) {
         GB_export_error("create species failed: too short name '%s'",name);
@@ -2106,7 +2106,7 @@ GBDATA *GBT_create_species_rel_species_data(GBDATA *gb_species_data,const char *
     /* Search for a species, when species do not exist create it */
     GBDATA *species;
     GBDATA *gb_name;
-    species = GB_find_string(gb_species_data,"name",name,GB_FALSE,down_2_level);
+    species = GB_find_string(gb_species_data,"name",name,GB_IGNORE_CASE,down_2_level);
     if (species) return GB_get_father(species);
     if ((int)strlen(name) <2) {
         GB_export_error("create species failed: too short name '%s'",name);
@@ -2125,7 +2125,7 @@ GBDATA *GBT_create_SAI(GBDATA *gb_main,const char *name)
     GBDATA *extended;
     GBDATA *gb_name;
     GBDATA *gb_extended_data = GB_search(gb_main, "extended_data", GB_CREATE_CONTAINER);
-    extended = GB_find_string(gb_extended_data,"name",name,GB_FALSE,down_2_level);
+    extended = GB_find_string(gb_extended_data,"name",name,GB_IGNORE_CASE,down_2_level);
     if (extended) return GB_get_father(extended);
     if ((int)strlen(name) <2) {
         GB_export_error("create SAI failed: too short name '%s'",name);
@@ -2287,7 +2287,7 @@ GBDATA *GBT_next_species(GBDATA *gb_species) {
 }
 
 GBDATA *GBT_find_species_rel_species_data(GBDATA *gb_species_data,const char *name) {
-    GBDATA *gb_species_name = GB_find_string(gb_species_data,"name",name,GB_FALSE,down_2_level);
+    GBDATA *gb_species_name = GB_find_string(gb_species_data,"name",name,GB_IGNORE_CASE,down_2_level);
     return gb_species_name ? GB_get_father(gb_species_name) : 0;
 }
 GBDATA *GBT_find_species(GBDATA *gb_main,const char *name) {
@@ -2587,7 +2587,7 @@ char *GBT_get_default_ref(GBDATA *gb_main)
 
 GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname) {
     GBDATA *gb_presets        = GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
-    GBDATA *gb_alignment_name = GB_find_string(gb_presets,"alignment_name",aliname,GB_FALSE,down_2_level);
+    GBDATA *gb_alignment_name = GB_find_string(gb_presets,"alignment_name",aliname,GB_IGNORE_CASE,down_2_level);
     
     if (!gb_alignment_name) {
         GB_export_error("alignment '%s' not found", aliname);
@@ -3357,12 +3357,12 @@ GBDATA *GBT_open(const char *path,const char *opent,const char *disabled_path)
         if (species_data){
             hash_size = GB_number_of_subentries(species_data);
             if (hash_size < GBT_SPECIES_INDEX_SIZE) hash_size = GBT_SPECIES_INDEX_SIZE;
-            GB_create_index(species_data,"name",hash_size);
+            GB_create_index(species_data,"name",GB_IGNORE_CASE,hash_size);
 
             extended_data = GB_search(gbd, "extended_data", GB_CREATE_CONTAINER);
             hash_size = GB_number_of_subentries(extended_data);
             if (hash_size < GBT_SAI_INDEX_SIZE) hash_size = GBT_SAI_INDEX_SIZE;
-            GB_create_index(extended_data,"name",hash_size);
+            GB_create_index(extended_data,"name",GB_IGNORE_CASE,hash_size);
         }
     }
     gb_tmp = GB_search(gbd,"tmp",GB_CREATE_CONTAINER);

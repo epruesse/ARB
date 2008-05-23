@@ -268,7 +268,7 @@ void awtc_check_input_format(AW_window *aww)
             pclose(in);
             if (size>=0){
                 buffer[size] = 0;
-                if (!GBS_string_cmp(buffer,autodetect,0)){  // format found
+                if (GBS_string_matches(buffer,autodetect,GB_MIND_CASE)){  // format found
                     free(autodetect);
                     break;
                 }
@@ -406,7 +406,7 @@ char *awtc_read_line(int tab,char *sequencestart, char *sequenceend){
         strncpy(ifo->b2+b2offset, in_queue, BUFSIZE - 4- b2offset);
         b2offset += strlen(ifo->b2+b2offset);
         in_queue = 0;
-        if (!GBS_string_cmp(ifo->b2,sequencestart,0)) return ifo->b2;
+        if (GBS_string_matches(ifo->b2,sequencestart,GB_MIND_CASE)) return ifo->b2;
     }
     while (1) {
         p = awtc_fgets(ifo->b1, BUFSIZE-3, awtcig.in);
@@ -421,7 +421,7 @@ char *awtc_read_line(int tab,char *sequencestart, char *sequenceend){
         }
 
 
-        if (!GBS_string_cmp(ifo->b1,sequencestart,0)){
+        if (GBS_string_matches(ifo->b1,sequencestart,GB_MIND_CASE)){
             in_queue = ifo->b1;
             return ifo->b2;
         }
@@ -493,7 +493,7 @@ static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *t
         char *regexp = (char*)GB_calloc(sizeof(char), taglen+3);
         sprintf(regexp, "*[%s]*", tag);
 
-        if (GBS_string_cmp(strin, regexp, 1) != 0) { // if tag does not exist yet
+        if (!GBS_string_matches(strin, regexp, GB_IGNORE_CASE)) { // if tag does not exist yet
             sprintf(buf,"%s [%s] %s", strin, tag, str); // prefix with tag
         }
         free(regexp);
@@ -560,7 +560,7 @@ GB_ERROR awtc_read_data(char *ali_name)
 
     while (1){              // go to the start
         p = awtc_read_line(0,ifo->sequencestart,ifo->sequenceend);
-        if (!p || !ifo->begin || !GBS_string_cmp(p,ifo->begin,0)) break;
+        if (!p || !ifo->begin || GBS_string_matches(p,ifo->begin,GB_MIND_CASE)) break;
     }
     if (!p) return "Cannot find start of file: Wrong format or empty file";
 
@@ -611,7 +611,7 @@ GB_ERROR awtc_read_data(char *ali_name)
             if (strlen(p) > ifo->tab){
                 for (pl = ifo->pl; !error && pl; pl=pl->next) {
                     const char *what_error = 0;
-                    if (!GBS_string_cmp(p,pl->match,0)){
+                    if (GBS_string_matches(p,pl->match,GB_MIND_CASE)){
                         char *dup = p+ifo->tab;
                         while (*dup == ' ' || *dup == '\t') dup++;
 
@@ -688,7 +688,7 @@ GB_ERROR awtc_read_data(char *ali_name)
                 return GBS_global_string("\"%s\" at line #%i of species #%i", error, line, counter);
             }
 
-            if (!GBS_string_cmp(p,ifo->sequencestart,0)) goto read_sequence;
+            if (GBS_string_matches(p,ifo->sequencestart,GB_MIND_CASE)) goto read_sequence;
 
             p = awtc_read_line(ifo->tab,ifo->sequencestart,ifo->sequenceend);
             if (!p) break;
@@ -705,7 +705,7 @@ GB_ERROR awtc_read_data(char *ali_name)
                     p = awtc_read_line(0,ifo->sequencestart,ifo->sequenceend);
                 }
                 if (!p) break;
-                if (ifo->sequenceend && !GBS_string_cmp(p,ifo->sequenceend,0)) break;
+                if (ifo->sequenceend && GBS_string_matches(p,ifo->sequenceend,GB_MIND_CASE)) break;
                 if (strlen(p) <= ifo->sequencecolumn) continue;
                 GBS_strcat(strstruct,p+ifo->sequencecolumn);
             }
@@ -740,7 +740,7 @@ GB_ERROR awtc_read_data(char *ali_name)
             free(sequence);
         }
         while (1){              // go to the start of an species
-            if (!p || !ifo->begin || !GBS_string_cmp(p,ifo->begin,0)) break;
+            if (!p || !ifo->begin || GBS_string_matches(p,ifo->begin,GB_MIND_CASE)) break;
             p = awtc_read_line(0,ifo->sequencestart,ifo->sequenceend);
         }
     }

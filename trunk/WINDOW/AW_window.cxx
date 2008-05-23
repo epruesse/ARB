@@ -813,11 +813,13 @@ void AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data)
         p_global->help_active = 0;
         p_global->normal_cursor();
 
-        if (cbs->help_text && ( (!GBS_string_cmp(cbs->help_text, "*.ps", 0))
-                || (!GBS_string_cmp(cbs->help_text, "*.hlp", 0))
-                || (!GBS_string_cmp(cbs->help_text, "*.help", 0)) )) {
+        if (cbs->help_text && ((GBS_string_matches(cbs->help_text, "*.ps", GB_IGNORE_CASE)) ||
+                               (GBS_string_matches(cbs->help_text, "*.hlp", GB_IGNORE_CASE)) ||
+                               (GBS_string_matches(cbs->help_text, "*.help", GB_IGNORE_CASE))))
+        {
             AW_POPUP_HELP(cbs->aw, (AW_CL)cbs->help_text);
-        } else {
+        }
+        else {
             aw_message("Sorry no help available");
         }
         return;

@@ -2,7 +2,7 @@
 /*                                                                 */
 /*   File      : adtcp.c                                           */
 /*   Purpose   : arb_tcp.dat handling                              */
-/*   Time-stamp: <Fri May/04/2007 17:56 MET Coder@ReallySoft.de>   */
+/*   Time-stamp: <Fri May/23/2008 16:07 MET Coder@ReallySoft.de>   */
 /*                                                                 */
 /*   Coded by Ralf Westram (coder@reallysoft.de) in April 2007     */
 /*   Institute of Microbiology (Technical University Munich)       */
@@ -356,7 +356,7 @@ const char *GBS_read_arb_tcp(const char *env) {
 
 const char * const *GBS_get_arb_tcp_entries(const char *matching) {
     /* returns a list of all matching non-user-specific entries found in arb_tcp.dat
-     * match is performed by GBS_string_cmp (e.g. use "ARB_PT_SERVER*")
+     * match is performed by GBS_string_matches (e.g. use "ARB_PT_SERVER*")
      */
     static const char **matchingEntries     = 0;
     static int          matchingEntriesSize = 0;
@@ -381,7 +381,7 @@ const char * const *GBS_get_arb_tcp_entries(const char *matching) {
             const char *id = ATD_content[c];
 
             if (strchr(id, ':') == 0) { /* not user-specific */
-                if (GBS_string_cmp(id, matching, 0) == 0) { /* matches */
+                if (GBS_string_matches(id, matching, GB_MIND_CASE)) { /* matches */
                     matchingEntries[matched++] = id;
                 }
             }

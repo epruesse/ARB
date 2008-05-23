@@ -42,7 +42,7 @@ GB_ERROR gb_load_dictionary_data(GBDATA *gb_main,const char *key, char **dict_da
         GBDATA *gb_name;
 
         GB_push_my_security(gb_main);
-        gb_name = GB_find_string(gb_key_data,"@name",key,GB_TRUE,down_2_level);
+        gb_name = GB_find_string(gb_key_data,"@name",key,GB_MIND_CASE,down_2_level);
 
         if (gb_name){
             GBDATA *gb_key  = GB_get_father(gb_name);
@@ -127,7 +127,7 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
         GBDATA *gb_key_data = Main->gb_key_data;
         GBDATA *gb_key,*gb_name,*gb_dict;
         GB_push_my_security(gb_main);
-        gb_name = GB_find_string(gb_key_data,"@name",key,GB_TRUE,down_2_level);
+        gb_name = GB_find_string(gb_key_data,"@name",key,GB_MIND_CASE,down_2_level);
         if (gb_name){
             gb_key= GB_get_father(gb_name);
         }else{
@@ -173,7 +173,7 @@ GB_ERROR gb_save_dictionary_data(GBDATA *gb_main,const char *key,const char *dic
         GBDATA *gb_key_data = Main->gb_key_data;
         GBDATA *gb_key,*gb_name,*gb_dict;
         GB_push_my_security(gb_main);
-        gb_name = GB_find_string(gb_key_data,"@name",key,GB_TRUE,down_2_level);
+        gb_name = GB_find_string(gb_key_data,"@name",key,GB_MIND_CASE,down_2_level);
         if (gb_name){
             gb_key= GB_get_father(gb_name);
         }else{
@@ -226,7 +226,7 @@ GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main){
             continue;
         }
     }
-    GB_create_index(gb_key_data,"@name",Main->sizeofkeys *2);
+    GB_create_index(gb_key_data, "@name", GB_MIND_CASE, Main->sizeofkeys*2);
 
     gb_key_2_quark(Main,"@name");
     gb_key_2_quark(Main,"@key");

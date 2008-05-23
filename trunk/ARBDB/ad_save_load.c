@@ -1331,7 +1331,7 @@ GB_ERROR gb_check_saveable(GBDATA *gbd,const char *path,const char *flags){
 
     fullpath = gb_full_path(path);
     if (Main->disabled_path && !strchr(flags,'f') ) {
-        if( ! GBS_string_cmp(fullpath,Main->disabled_path,0) ) {
+        if (GBS_string_matches(fullpath,Main->disabled_path,GB_MIND_CASE)) {
             free(fullpath);
             return GB_export_error(
                                    "You are not allowed to save your database in this directory,\n"

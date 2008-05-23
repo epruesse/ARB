@@ -2026,7 +2026,7 @@ static void pg_result_selected(AW_window */*aww*/) {
                 GBDATA *pg_species = GB_search(pg_group, "species/name", GB_FIND);
                 for (; pg_species; pg_species=GB_nextChild(pg_species),count++)  {
                     const char *name           = GB_read_char_pntr(pg_species);
-                    GBDATA     *gb_speciesname = GB_find_string(gb_species_data, "name", name, GB_FALSE, down_2_level);
+                    GBDATA     *gb_speciesname = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, down_2_level);
                     if (gb_speciesname) {
                         GBDATA *gb_species = GB_get_father(gb_speciesname);
                         gb_assert(gb_species);

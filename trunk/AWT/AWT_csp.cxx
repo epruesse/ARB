@@ -265,7 +265,7 @@ char *awt_csp_sai_filter(GBDATA *gb_extended, AW_CL csp_cd) {
     AWT_csp *csp = (AWT_csp *)csp_cd;
     GBDATA *gb_type = GB_search(gb_extended, csp->type_path,GB_FIND);
     if (!gb_type) return 0;
-    if (GBS_string_cmp( GB_read_char_pntr(gb_type),"PV?:*",0) == 0) {
+    if (GBS_string_matches( GB_read_char_pntr(gb_type),"PV?:*",GB_MIND_CASE)) {
         GBDATA *gb_name = GB_entry(gb_extended,"name");
         void *strstruct = GBS_stropen(1024);
         GBS_strcat(strstruct,GB_read_char_pntr(gb_name));
