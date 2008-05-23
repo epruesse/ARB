@@ -110,21 +110,28 @@ static void GDE_create_infieldwithpm(AW_window *aws,char *newawar,long width)
 }
 
 static char *gde_filter_weights(GBDATA *gb_sai,AW_CL ){
-    char *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
-    GBDATA *gb_ali = GB_entry(gb_sai,ali_name);
-    delete ali_name;
-    if (!gb_ali) return 0;
-    GBDATA *gb_type = GB_entry(gb_ali, "_TYPE");
-    if (!gb_type) return 0;
-    const char *type = GB_read_char_pntr(gb_type);
-    if (GBS_string_cmp( type,"PV?:*",0)) {
-        return 0;
+    char   *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
+    GBDATA *gb_ali   = GB_entry(gb_sai,ali_name);
+    char   *result   = 0;
+
+    if (gb_ali) {
+        GBDATA *gb_type = GB_entry(gb_ali, "_TYPE");
+        if (gb_type) {
+            const char *type = GB_read_char_pntr(gb_type);
+
+            if (GBS_string_matches( type,"PV?:*",GB_MIND_CASE)) {
+                char *name = GBT_read_name(gb_sai);
+                
+                result = GBS_global_string_copy("%s: %s",name,type);
+                free(name);
+            }
+
+        }
     }
 
-    char *name = GBT_read_name(gb_sai);
-    const char *res = GBS_global_string("%s: %s",name,type);
-    delete name;
-    return strdup(res);
+    free(ali_name);
+    return result;
+
 }
 
 
@@ -296,8 +303,8 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             bool     curr_value_legal = false;
 
             aws->label(AWinfo->gmenuitem->arg[i].label);
-            if (    (! GBS_string_cmp(itemarg.choice[0].label,"no",1)) ||
-                    (! GBS_string_cmp(itemarg.choice[0].label,"yes",1)))
+            if ((GBS_stricmp(itemarg.choice[0].label,"no") == 0) ||
+                (GBS_stricmp(itemarg.choice[0].label,"yes") == 0))
             {
                 aws->create_toggle_field(newawar,1);
             }
@@ -412,7 +419,7 @@ void GDE_load_menu(AW_window *awm,const char *menulabel,const char *menuitemlabe
         for(nitem=0;nitem<num_items;nitem++)
         {
             menuitem=&menu[nmenu].item[nitem];
-            if (!menuitemlabel || !GBS_string_cmp(menuitem->label,menuitemlabel,0)){
+            if (!menuitemlabel || strcmp(menuitem->label,menuitemlabel) == 0){
                 AWwindowinfo *AWinfo=new AWwindowinfo;
                 AWinfo->gmenu=&menu[nmenu];
                 AWinfo->gmenuitem=menuitem;
