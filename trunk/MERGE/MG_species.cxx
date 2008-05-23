@@ -656,7 +656,7 @@ void MG_transfer_fields_cb(AW_window *aww){
     int type2;
     GB_ERROR error = 0;
     GB_BOOL transfer_of_alignment = GB_FALSE;
-    if (GBS_string_cmp(field,"ali_*/data",0)){
+    if (GBS_string_matches(field,"ali_*/data",GB_MIND_CASE)){
         transfer_of_alignment = GB_TRUE;
     }
     MG_remaps rm(GLOBAL_gb_merge,GLOBAL_gb_dest,aww->get_root());
@@ -667,7 +667,7 @@ void MG_transfer_fields_cb(AW_window *aww){
         if (IS_QUERIED(gb_species1)) {
             gb_name1 = GB_entry(gb_species1,"name");
             if (!gb_name1) continue;    // no name what happend ???
-            gb_species2 = GB_find_string(gb_dest_species_data,"name", GB_read_char_pntr(gb_name1), GB_FALSE, down_2_level);
+            gb_species2 = GB_find_string(gb_dest_species_data,"name", GB_read_char_pntr(gb_name1), GB_IGNORE_CASE, down_2_level);
 
             if (!gb_species2) {
                 gb_species2 = GB_create_container(gb_dest_species_data,"species");
