@@ -2,7 +2,7 @@
 /*                                                                      */
 /*   File      : ad_config.c                                            */
 /*   Purpose   : handle editor configurations                           */
-/*   Time-stamp: <Fri May/16/2008 11:16 MET Coder@ReallySoft.de>        */
+/*   Time-stamp: <Thu May/22/2008 15:49 MET Coder@ReallySoft.de>        */
 /*                                                                      */
 /*                                                                      */
 /* Coded by Ralf Westram (coder@reallysoft.de) in May 2005              */
@@ -77,7 +77,7 @@ char **GBT_get_configuration_names(GBDATA *gb_main) {
 GBDATA *GBT_find_configuration(GBDATA *gb_main,const char *name){
     GBDATA *gb_configuration_data = GB_search(gb_main,AWAR_CONFIG_DATA,GB_DB);
     GBDATA *gb_configuration_name;
-    gb_configuration_name = GB_find_string(gb_configuration_data,"name",name,GB_FALSE,down_2_level);
+    gb_configuration_name = GB_find_string(gb_configuration_data,"name",name,GB_IGNORE_CASE,down_2_level);
     if (!gb_configuration_name) return 0;
     return GB_get_father(gb_configuration_name);
 }

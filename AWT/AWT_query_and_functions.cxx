@@ -461,7 +461,7 @@ void awt_do_query(void *dummy, struct adaqbsstruct *cbs,AW_CL ext_query)
                                             switch (query_string[0]) {
                                             case '>': if (atoi(data)> atoi(query_string+1)) this_hit   = 1; break;
                                             case '<': if (atoi(data) < atoi(query_string+1)) this_hit  = 1; break;
-                                            default: if (GBS_string_cmp(data,query_string,1) == 0) this_hit = 1; break;
+                                            default: if (GBS_string_matches(data,query_string,GB_IGNORE_CASE)) this_hit = 1; break;
                                             }
                                             free(data);
                                         }
@@ -731,7 +731,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
     GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
     GBDATA *gb_key_name;
 
-    while (!(gb_key_name  = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_FALSE,down_2_level))) {
+    while (!(gb_key_name  = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_IGNORE_CASE,down_2_level))) {
         sprintf(AW_ERROR_BUFFER,"The destination field '%s' does not exists",key);
         if (aw_message(AW_ERROR_BUFFER,"Create Field (Type STRING),Cancel")){
             GB_abort_transaction(cbs->gb_main);
@@ -1233,7 +1233,7 @@ static void awt_loadsave_colorset(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
         GBDATA *gb_colorset_root = get_colorset_root(csd);
         awt_assert(gb_colorset_root);
 
-        GBDATA *gb_colorset_name = GB_find_string(gb_colorset_root, "name", name, GB_FALSE, down_2_level);
+        GBDATA *gb_colorset_name = GB_find_string(gb_colorset_root, "name", name, GB_IGNORE_CASE, down_2_level);
         GBDATA *gb_colorset      = gb_colorset_name ? GB_get_father(gb_colorset_name) : 0;
         if (mode == 0) {        // save-mode
             if (!gb_colorset) { // create new (otherwise overwrite w/o comment)
@@ -1601,7 +1601,7 @@ void awt_do_set_list(void *dummy, struct adaqbsstruct *cbs, long append)
 
     GB_begin_transaction(cbs->gb_main);
     GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
-    GBDATA *gb_key_name = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_FALSE,down_2_level);
+    GBDATA *gb_key_name = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_IGNORE_CASE,down_2_level);
     if (!gb_key_name) {
         sprintf(AW_ERROR_BUFFER,"The destination field '%s' does not exists",key);
         aw_message();
@@ -1751,7 +1751,7 @@ void awt_do_set_protection(void *dummy, struct adaqbsstruct *cbs)
 
     GB_begin_transaction(cbs->gb_main);
     GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
-    GBDATA *gb_key_name = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_FALSE,down_2_level);
+    GBDATA *gb_key_name = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_IGNORE_CASE,down_2_level);
     if (!gb_key_name) {
         sprintf(AW_ERROR_BUFFER,"The destination field '%s' does not exists",key);
         aw_message();

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_db.cxx                                             //
 //    Purpose   : database access for experiments                        //
-//    Time-stamp: <Fri May/16/2008 11:16 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu May/22/2008 15:48 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -24,7 +24,7 @@
 using namespace std;
 
 GBDATA* EXP_find_experiment_rel_experiment_data(GBDATA *gb_experiment_data, const char *name) {
-    GBDATA *gb_name = GB_find_string(gb_experiment_data, "name", name, GB_FALSE, down_2_level);
+    GBDATA *gb_name = GB_find_string(gb_experiment_data, "name", name, GB_IGNORE_CASE, down_2_level);
 
     if (gb_name) return GB_get_father(gb_name); // found existing experiment
     return 0;
@@ -47,7 +47,7 @@ GBDATA* EXP_next_experiment(GBDATA *gb_experiment) {
 
 GBDATA* EXT_create_experiment_rel_experiment_data(GBDATA *gb_experiment_data, const char *name) {
     /* Search for a experiment, when experiment does not exist create it */
-    GBDATA *gb_name = GB_find_string(gb_experiment_data, "name", name, GB_FALSE, down_2_level);
+    GBDATA *gb_name = GB_find_string(gb_experiment_data, "name", name, GB_IGNORE_CASE, down_2_level);
 
     if (gb_name) return GB_get_father(gb_name); // found existing experiment
 

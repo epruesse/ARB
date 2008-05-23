@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.c                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Fri May/16/2008 11:16 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Thu May/22/2008 15:49 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -62,7 +62,7 @@ GBDATA* GEN_expect_gene_data(GBDATA *gb_species) {
 }
 
 GBDATA* GEN_find_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
-    GBDATA *gb_name = GB_find_string(gb_gene_data, "name", name, GB_FALSE, down_2_level); 
+    GBDATA *gb_name = GB_find_string(gb_gene_data, "name", name, GB_IGNORE_CASE, down_2_level); 
 
     if (gb_name) return GB_get_father(gb_name); // found existing gene
     return 0;
@@ -82,7 +82,7 @@ GBDATA* GEN_create_gene_rel_gene_data(GBDATA *gb_gene_data, const char *name) {
         GB_export_error("Missing gene name");
     }
     else {
-        GBDATA *gb_name = GB_find_string(gb_gene_data, "name", name, GB_FALSE, down_2_level);
+        GBDATA *gb_name = GB_find_string(gb_gene_data, "name", name, GB_IGNORE_CASE, down_2_level);
 
         if (gb_name) return GB_get_father(gb_name); // found existing gene
 

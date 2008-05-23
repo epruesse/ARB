@@ -233,7 +233,7 @@ void mg_check_field_cb(AW_window *aww){
         if ( (species_count & 0xf) == 0 ){
             aw_status(species_count/ (double)sum_species);
         }
-        gb_species2 = GB_find_string(gb_species_data2, "name", GB_read_char_pntr(gb_name1), GB_FALSE, down_2_level);
+        gb_species2 = GB_find_string(gb_species_data2, "name", GB_read_char_pntr(gb_name1), GB_IGNORE_CASE, down_2_level);
 
         if (!gb_species2) {
             sprintf(AW_ERROR_BUFFER,"WARNING: Species %s not found in DB II",

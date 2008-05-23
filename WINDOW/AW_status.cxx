@@ -1609,7 +1609,7 @@ static void aw_help_edit_help(AW_window *aww) {
 static char *aw_ref_to_title(char *ref) {
     if (!ref) return 0;
 
-    if (!GBS_string_cmp(ref,"*.ps",0) ){    // Postscript file
+    if (GBS_string_matches(ref,"*.ps",GB_IGNORE_CASE)) {    // Postscript file
         return GBS_global_string_copy("Postscript: %s",ref);
     }
 
@@ -1643,7 +1643,7 @@ static void aw_help_new_helpfile(AW_root *awr) {
     if (!strlen(help_file)) {
         awr->awar("tmp/aw_window/helptext")->write_string("no help\0");
     }
-    else if (!GBS_string_cmp(help_file,"*.ps",0) ){ // Postscript file
+    else if (GBS_string_matches(help_file,"*.ps",GB_IGNORE_CASE) ){ // Postscript file
         struct stat st;
         char        sys[1024];
 
@@ -1912,7 +1912,7 @@ void AW_POPUP_HELP(AW_window *aw,AW_CL /*char */ helpcd)
 
     awr->awar("tmp/aw_window/helpfile")->write_string("");
     if(help_file) awr->awar("tmp/aw_window/helpfile")->write_string(help_file);
-    if (!GBS_string_cmp(help_file,"*.ps",0)) return;// dont open help if postscript file
+    if (GBS_string_matches(help_file,"*.ps",GB_IGNORE_CASE)) return;// dont open help if postscript file
     helpwindow->show();
 }
 

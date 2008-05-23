@@ -2,7 +2,7 @@
 //                                                                      //
 //   File      : AWT_changekey.cxx                                      //
 //   Purpose   : changekey management                                   //
-//   Time-stamp: <Mon May/19/2008 12:02 MET Coder@ReallySoft.de>        //
+//   Time-stamp: <Thu May/22/2008 15:36 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in May 2005              //
@@ -30,7 +30,7 @@ GBDATA *awt_get_key(GBDATA *gb_main, const char *key, const char *change_key_pat
 #if defined(DEVEL_RALF)
 #warning check if search for CHANGEKEY_NAME should be case-sensitive!
 #endif // DEVEL_RALF
-    GBDATA *gb_key_name     = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_FALSE, down_2_level);
+    GBDATA *gb_key_name     = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, down_2_level);
     GBDATA *gb_key          = 0;
     if (gb_key_name) gb_key = GB_get_father(gb_key_name);
     return gb_key;

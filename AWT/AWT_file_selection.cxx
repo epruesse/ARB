@@ -228,7 +228,7 @@ static void awt_fill_selection_box_recursive(const char *fulldir, int skipleft, 
             }
         }
         else {
-            if (GBS_string_cmp(entry, mask, 0) == 0) { // entry matches mask
+            if (GBS_string_matches(entry, mask, GB_IGNORE_CASE)) { // entry matches mask
                 if ((entry[0] != '.' || DIR_show_hidden) && AWT_is_file(fullname)) { // regular existing file
                     struct stat stt;
 

@@ -91,9 +91,9 @@ GBDATA *GBT_open_table(GBDATA *gb_table_root,const char *table_name, GB_BOOL rea
     if (gb_table) return gb_table;
 
     gb_table_data = GB_search(gb_table_root,"table_data",GB_CREATE_CONTAINER);
-    GB_create_index(gb_table_data,"name",256);
+    GB_create_index(gb_table_data,"name",GB_IGNORE_CASE,256);
 
-    gb_table_name = GB_find_string(gb_table_data,"name",table_name,GB_FALSE,down_2_level);
+    gb_table_name = GB_find_string(gb_table_data,"name",table_name,GB_IGNORE_CASE,down_2_level);
     if (gb_table_name) return GB_get_father(gb_table_name);
     if (read_only) return 0;
 
@@ -114,7 +114,7 @@ GBDATA *GBT_first_table(GBDATA *gb_main){
     GBDATA *gb_table_data;
     GBDATA *gb_table;
     gb_table_data = GB_search(gb_main,"table_data",GB_CREATE_CONTAINER);
-    GB_create_index(gb_table_data,"name",256);
+    GB_create_index(gb_table_data,"name",GB_IGNORE_CASE,256);
     gb_table = GB_entry(gb_table_data,"table");
     return gb_table;
 }
@@ -147,14 +147,14 @@ GBDATA *GBT_next_marked_table_entry(GBDATA *gb_table_entry){
 
 GBDATA *GBT_find_table_entry(GBDATA *gb_table,const char *id){
     GBDATA *gb_entries = GB_entry(gb_table,"entries");
-    GBDATA *gb_entry_name = GB_find_string(gb_entries,"name",id,GB_FALSE,down_2_level);
+    GBDATA *gb_entry_name = GB_find_string(gb_entries,"name",id,GB_IGNORE_CASE,down_2_level);
     if (!gb_entry_name) return 0;
     return GB_get_father(gb_entry_name);
 }
 
 GBDATA *GBT_open_table_entry(GBDATA *gb_table, const char *id){
     GBDATA *gb_entries = GB_entry(gb_table,"entries");
-    GBDATA *gb_entry_name = GB_find_string(gb_entries,"name",id,GB_FALSE,down_2_level);
+    GBDATA *gb_entry_name = GB_find_string(gb_entries,"name",id,GB_IGNORE_CASE,down_2_level);
     GBDATA *gb_entry;
     if (gb_entry_name) GB_get_father(gb_entry_name);
     gb_entry = GB_create_container(gb_entries,"entry");
@@ -183,14 +183,14 @@ GBDATA *GBT_next_marked_table_field(GBDATA *gb_table_field){
 
 GBDATA *GBT_find_table_field(GBDATA *gb_table,const char *id){
     GBDATA *gb_fields = GB_entry(gb_table,"fields");
-    GBDATA *gb_field_name = GB_find_string(gb_fields,"name",id,GB_FALSE,down_2_level);
+    GBDATA *gb_field_name = GB_find_string(gb_fields,"name",id,GB_IGNORE_CASE,down_2_level);
     if (!gb_field_name) return 0;
     return GB_get_father(gb_field_name);
 }
 
 GB_TYPES GBT_get_type_of_table_entry_field(GBDATA *gb_table,const char *fieldname){
     GBDATA *gb_fields = GB_entry(gb_table,"fields");
-    GBDATA *gb_field_name = GB_find_string(gb_fields,"name",fieldname,GB_FALSE,down_2_level);
+    GBDATA *gb_field_name = GB_find_string(gb_fields,"name",fieldname,GB_IGNORE_CASE,down_2_level);
     GBDATA *gb_field_type;
     if (!gb_field_name) return GB_NONE;
     gb_field_type = GB_entry(gb_field_name,"type");

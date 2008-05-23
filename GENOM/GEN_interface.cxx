@@ -254,7 +254,7 @@ void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
     bool            clear   = true;
 
     if (gb_gene) {
-        char *gene_content = GBT_read_gene_sequence(gb_gene, false); // ignore complement here (to highlight gene in ARB_EDIT4)
+        char *gene_content = GBT_read_gene_sequence(gb_gene, GB_FALSE); // ignore complement here (to highlight gene in ARB_EDIT4)
 
         awr->awar(AWAR_GENE_CONTENT)->write_string(gene_content);
         clear = false;

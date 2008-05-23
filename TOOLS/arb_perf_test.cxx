@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 
     GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
     for (i= 0; i<10; i++){
-	GB_find_string(gb_species_data,"full_name","asdfasdf", GB_FALSE, down_2_level);
+	GB_find_string(gb_species_data,"full_name","asdfasdf", GB_IGNORE_CASE, down_2_level);
     }
     GB_commit_transaction(gb_main);
     print_speed("Transacionts",i);

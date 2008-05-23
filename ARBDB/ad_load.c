@@ -1196,16 +1196,15 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
                     ok=1;
                 }
             }
-            else
-            {
-                GB_export_error("FastLoad-File index conflict -- please save one\n"
-                                "of the loaded databases as\n"
-                                "'Bin (with FastLoad File)' again");
+            else {
+                GB_export_error("FastLoad-File index conflict (%s)", map_path);
             }
-        }else{
-            if (!merror){
+        }
+        else {
+            if (!merror) {
                 GB_warning("%s",GB_get_error());
-            }else{
+            }
+            else {
                 GB_information("ARB: no FastLoad File '%s' found: loading entire database",map_path);
             }
         }
@@ -1353,7 +1352,7 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
 
     if (strchr(path,':')){
         ; /* remote access */
-    }else if (GBS_string_cmp(path,"*.quick?",0)==0){
+    }else if (GBS_string_matches(path,"*.quick?",GB_MIND_CASE)){
         char *ext = gb_findExtension(path);
         ad_assert(ext!=0);
         if (isdigit(ext[6]))
@@ -1363,7 +1362,7 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
             quickFile = gb_oldQuicksaveName(path, loadedQuickIndex);
             if (strchr(opent,'R'))      ignoreMissingMaster = 1;
         }
-    }else if (GBS_string_cmp(path,"*.a??",0)==0){
+    }else if (GBS_string_matches(path,"*.a??",GB_MIND_CASE)){
 
         char *extension = gb_findExtension(path);
 
