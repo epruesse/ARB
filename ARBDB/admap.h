@@ -7,7 +7,7 @@
 
 #define ADMAP_ID      "ARBDB Mapfile"
 #define ADMAP_ID_LEN  13
-#define ADMAP_VERSION 4
+#define ADMAP_VERSION 5
 
 struct gb_map_header
 {
