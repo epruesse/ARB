@@ -28,21 +28,6 @@ typedef const char *GB_CBUFFER; /* points to a piece of mem (readable only)*/
 #define GB_KEY_LEN_MAX  64 /* max. length of a key (a whole key path may be longer) */
 #define GB_KEY_LEN_MIN  2
 
-/* ---------------------------------------- need some stuff if adlocal.h is not included */
-
-#ifndef GBL_INCLUDED
-typedef enum gb_call_back_type {
-    GB_CB_DELETE      = 1,
-    GB_CB_CHANGED     = 2,
-    GB_CB_SON_CREATED = 4,
-    GB_CB_ALL         = 7
-} GB_CB_TYPE;
-
-typedef struct gb_data_base_type GBDATA;
-typedef void (*GB_CB)(GBDATA *,int *clientdata, GB_CB_TYPE gbtype);
-
-#endif /*GBL_INCLUDED*/
-
 #define GBUSE(a) a=a
 
 typedef char *MALLOC_T;
@@ -54,9 +39,18 @@ typedef unsigned int GB_UINT4;
 typedef const unsigned int GB_CUINT4;
 typedef const float GB_CFLOAT;
 
-/* ---------------------------------------- if adlocal.h not included */
+/* ---------------------------------------- need some stuff if adlocal.h is not included */
 
 #ifndef GBL_INCLUDED
+typedef enum gb_call_back_type {
+    GB_CB_DELETE = 1,
+    GB_CB_CHANGED = 2,
+    GB_CB_SON_CREATED = 4,
+    GB_CB_ALL  = 7
+} GB_CB_TYPE;
+
+typedef struct gb_data_base_type GBDATA;
+typedef void (*GB_CB)(GBDATA *,int *clientdata, GB_CB_TYPE gbtype);
 
 #if defined(DEBUG)
 #define MEMORY_TEST 1
@@ -115,14 +109,15 @@ typedef enum {
     GB_UNDO_UNDO_REDO   /* internal makes undo redoable */
 }   GB_UNDO_TYPE;
 
+typedef enum { GB_IGNORE_CASE = 0 , GB_MIND_CASE = 1, GB_CASE_UNDEFINED = 2 } GB_CASE;
 
 struct gb_transaction_save;
 
 #endif /*GBL_INCLUDED*/
+// --------------------------------------------------------------------------------
 
-enum {GB_FALSE = 0 , GB_TRUE = 1 };
+typedef enum { GB_FALSE = 0 , GB_TRUE = 1 } GB_BOOL;
 
-typedef char GB_BOOL;
 typedef int GB_COMPRESSION_MASK;
 
 typedef enum gb_key_types {
@@ -288,7 +283,7 @@ extern "C" {
 // --------------------------------------------------------------------------------
 // some const wrappers:
 
-inline char *GBS_find_string(char *str, GB_CSTR key, long match_mode) {
+inline char *GBS_find_string(char *str, GB_CSTR key, int match_mode) {
     return const_cast<char*>(GBS_find_string(const_cast<GB_CSTR>(str), key, match_mode));
 }
 
