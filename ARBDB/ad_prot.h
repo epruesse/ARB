@@ -45,9 +45,9 @@ char *GBS_string_2_key P_((const char *str));
 GB_ERROR GB_check_key P_((const char *key));
 GB_ERROR GB_check_link_name P_((const char *key));
 GB_ERROR GB_check_hkey P_((const char *key));
-GB_CSTR GBS_find_string P_((GB_CSTR str, GB_CSTR key, long match_mode));
-long GBS_string_scmp P_((const char *str, const char *search, long upper_case));
-long GBS_string_cmp P_((const char *str, const char *search, long upper_case));
+GB_CSTR GBS_find_string P_((GB_CSTR str, GB_CSTR key, int match_mode));
+GB_BOOL GBS_string_matches_regexp P_((const char *str, const char *search, GB_CASE case_sens));
+GB_BOOL GBS_string_matches P_((const char *str, const char *search, GB_CASE case_sens));
 char *GBS_remove_escape P_((char *com));
 char *GBS_escape_string P_((const char *str, const char *chars_to_escape, char escape_char));
 char *GBS_unescape_string P_((const char *str, const char *escaped_chars, char escape_char));
@@ -99,6 +99,7 @@ char *GBS_fread_string P_((FILE *in));
 char *GBS_fconvert_string P_((char *buffer));
 char *GBS_replace_tabs_by_spaces P_((const char *text));
 int GBS_strscmp P_((const char *s1, const char *s2));
+int GBS_stricmp P_((const char *s1, const char *s2));
 const char *GBS_readable_size P_((unsigned long long size));
 
 /* arbdb.c */
@@ -222,7 +223,7 @@ int GB_random P_((int range));
 GB_ERROR GB_optimize P_((GBDATA *gb_main));
 
 /* adindex.c */
-GB_ERROR GB_create_index P_((GBDATA *gbd, const char *key, long estimated_size));
+GB_ERROR GB_create_index P_((GBDATA *gbd, const char *key, GB_CASE case_sens, long estimated_size));
 GB_ERROR GB_request_undo_type P_((GBDATA *gb_main, GB_UNDO_TYPE type));
 GB_UNDO_TYPE GB_get_requested_undo_type P_((GBDATA *gb_main));
 GB_ERROR GB_undo P_((GBDATA *gb_main, GB_UNDO_TYPE type));
@@ -291,7 +292,7 @@ GB_BOOL GBCMS_accept_calls P_((GBDATA *gbd, GB_BOOL wait_extra_time));
 long GB_read_clients P_((GBDATA *gbd));
 GB_BOOL GB_is_server P_((GBDATA *gbd));
 GB_BOOL GB_is_client P_((GBDATA *gbd));
-GBDATA *GBCMC_find P_((GBDATA *gbd, const char *key, GB_TYPES type, const char *str, GB_BOOL case_sensitive, enum gb_search_types gbs));
+GBDATA *GBCMC_find P_((GBDATA *gbd, const char *key, GB_TYPES type, const char *str, GB_CASE case_sens, enum gb_search_types gbs));
 int GBCMC_system P_((GBDATA *gbd, const char *ss));
 GB_ERROR GB_tell_server_dont_wait P_((GBDATA *gbd));
 GB_CSTR GBC_get_hostname P_((void));
@@ -330,9 +331,9 @@ char *GB_set_cache_size P_((GBDATA *gbd, long size));
 /* adquery.c */
 const char *GB_get_GBDATA_path P_((GBDATA *gbd));
 GBDATA *GB_find_sub_by_quark P_((GBDATA *father, int key_quark, GBDATA *after));
-NOT4PERL GBDATA *GB_find_subcontent_by_quark P_((GBDATA *father, int key_quark, GB_TYPES type, const char *val, GB_BOOL case_sensitive, GBDATA *after));
+NOT4PERL GBDATA *GB_find_subcontent_by_quark P_((GBDATA *father, int key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after));
 GBDATA *GB_find P_((GBDATA *gbd, const char *key, long gbs));
-GBDATA *GB_find_string P_((GBDATA *gbd, const char *key, const char *str, GB_BOOL case_sensitive, long gbs));
+GBDATA *GB_find_string P_((GBDATA *gbd, const char *key, const char *str, GB_CASE case_sens, long gbs));
 NOT4PERL GBDATA *GB_find_int P_((GBDATA *gbd, const char *key, long val, long gbs));
 GBDATA *GB_child P_((GBDATA *father));
 GBDATA *GB_nextChild P_((GBDATA *child));

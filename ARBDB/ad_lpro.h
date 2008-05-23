@@ -113,7 +113,7 @@ GB_ERROR gb_load_key_data_and_dictionaries P_((GBDATA *gb_main));
 /* adindex.c */
 char *gb_index_check_in P_((GBDATA *gbd));
 char *gb_index_check_out P_((GBDATA *gbd));
-GBDATA *gb_index_find P_((GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUARK quark, const char *val, int after_index));
+GBDATA *gb_index_find P_((GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUARK quark, const char *val, GB_CASE case_sens, int after_index));
 char *gb_set_undo_type P_((GBDATA *gb_main, GB_UNDO_TYPE type));
 void gb_init_undo_stack P_((struct gb_main_type *Main));
 void gb_free_undo_stack P_((struct gb_main_type *Main));
