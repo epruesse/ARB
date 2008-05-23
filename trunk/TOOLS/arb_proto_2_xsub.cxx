@@ -58,6 +58,7 @@ int main(int argc, char **argv)
                            ":enum gb_call_back_type =char \\*"
                            ":GB_TYPES =char \\*"
                            ":GB_BOOL =int "
+                           ":GB_CASE =int "
                            ":GB_UNDO_TYPE =char \\*"
                            ,0);
 
@@ -133,7 +134,7 @@ int main(int argc, char **argv)
         if (strstr(tok,"GB_COMPRESSION_MASK")) continue;
         if (strstr(tok,"float *")) continue;
         if (strstr(tok,"**")) continue;
-        if (!GBS_string_cmp(tok,"*(*(*)(*",0)) continue; // no function parameters
+        if (GBS_string_matches(tok,"*(*(*)(*",GB_MIND_CASE)) continue; // no function parameters
         if (strstr(tok,"GB_CB")) continue; // this is a function parameter as well
 
 #if defined(DUMP)
