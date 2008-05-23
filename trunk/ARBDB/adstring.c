@@ -114,6 +114,9 @@ char *GB_find_all_files(const char *dir,const char *mask, GB_BOOL filename_only)
        The single filenames are seperated by '*'.
        if 'filename_only' is true -> string contains only filenames w/o path
        returns 0 if no files found (or directory not found)
+
+       'mask' may contain wildcards (*?) or
+       it may be a regular expression ('/regexp/')
     */
 
     DIR           *dirp;
@@ -125,7 +128,7 @@ char *GB_find_all_files(const char *dir,const char *mask, GB_BOOL filename_only)
     dirp = opendir(dir);
     if (dirp) {
         for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)) {
-            if (!GBS_string_scmp(dp->d_name,mask,0)) {
+            if (GBS_string_matches_regexp(dp->d_name,mask,0)) {
                 sprintf(buffer,"%s/%s",dir,dp->d_name);
                 if (stat(buffer,&st) == 0  && S_ISREG(st.st_mode)) { // regular file ?
                     if (filename_only) strcpy(buffer, dp->d_name);
@@ -146,7 +149,9 @@ char *GB_find_all_files(const char *dir,const char *mask, GB_BOOL filename_only)
     return result;
 }
 
-char *GB_find_latest_file(const char *dir,const char *mask){
+char *GB_find_latest_file(const char *dir,const char *mask) {
+    /* 'mask' may contain wildcards (*?) or it may be a regular expression ('/regexp/') */
+    
     DIR           *dirp;
     struct dirent *dp;
     char           buffer[GB_PATH_MAX];
@@ -157,7 +162,7 @@ char *GB_find_latest_file(const char *dir,const char *mask){
     dirp = opendir(dir);
     if (dirp) {
         for (dp = readdir(dirp); dp != NULL; dp = readdir(dirp)){
-            if (!GBS_string_scmp(dp->d_name,mask,0)){
+            if (GBS_string_matches_regexp(dp->d_name,mask,0)){
                 sprintf(buffer,"%s/%s",dir,dp->d_name);
                 if (stat(buffer,&st) == 0){
                     if ((GB_ULONG)st.st_mtime > newest){
@@ -628,8 +633,7 @@ GB_ERROR GB_check_hkey(const char *key)
     match_mode == else  -> a==A && a==?
 */
 
-GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR key, long match_mode)
-{
+GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR key, int match_mode) {
     const char *p1, *p2;
     char        b;
     
@@ -704,27 +708,26 @@ GB_CSTR GBS_find_string(GB_CSTR str, GB_CSTR key, long match_mode)
     }
     return 0;
 }
-/* @@@ OLI */
-/** same as GBS_string_cmp except /regexpr/ matches regexpr */
-long GBS_string_scmp(const char *str,const char *search,long upper_case){
+
+GB_BOOL GBS_string_matches_regexp(const char *str,const char *search,GB_CASE case_sens) {
+    /* same as GBS_string_matches except '/regexpr/' matches regexpr  */
     if (search[0] == '/') {
         if (search[strlen(search)-1] == '/'){
-            if (GBS_regsearch(str,search)){
-                return 0;
-            }
-            return 1;
+#if defined(DEVEL_RALF)
+#warning check case-handling in GBS_regsearch
+#endif /* DEVEL_RALF */
+            return GBS_regsearch(str,search) ? GB_TRUE : GB_FALSE;
         }
     }
-    return GBS_string_cmp(str,search,upper_case);
+    return GBS_string_matches(str,search,case_sens);
 }
 
-
-long GBS_string_cmp(const char *str,const char *search,long upper_case)
-     /* *   Wildcard in search string */
-     /* ?   any Charakter   */
-     /* if uppercase    change all letters to uppercase */
-     /* returns 0 if strings are equal
-        -int/+int if left string is less/greater than right string */
+GB_BOOL GBS_string_matches(const char *str, const char *search, GB_CASE case_sens)
+/* *   Wildcard in search string */
+/* ?   any Charakter   */
+/* if 'ignore_case' == GB_TRUE change all letters to uppercase */
+/* returns 0 if strings are equal
+   -int/+int if left string is less/greater than right string */
 
 {
     const char *p1,*p2;
@@ -738,7 +741,7 @@ long GBS_string_cmp(const char *str,const char *search,long upper_case)
         a = *p1;
         b = *p2;
         if (b == '*')   {
-            if (!p2[1]) break; /* -> return 0; */
+            if (!p2[1]) break; /* '*' also matches nothing */
             i = 0;
             d = fsbuf;
             for (p2++; (b=*p2)&&(b!='*'); ) {
@@ -749,39 +752,36 @@ long GBS_string_cmp(const char *str,const char *search,long upper_case)
             }
             if (*p2 != '*' ) {
                 p1 += strlen(p1)-i;     /* check the end of the string */
-                if (p1 < str) return -1;    /* neither less or greater */
+                if (p1 < str) return GB_FALSE;
                 p2 -= i;
             }
             else {
-                *d=0;
-                p1 = GBS_find_string(p1,fsbuf,upper_case+2);
-                if (!p1) return -1;
+                *d  = 0;
+                p1  = GBS_find_string(p1,fsbuf,2+(case_sens == GB_IGNORE_CASE)); // match with '?' wildcard
+                if (!p1) return GB_FALSE;
                 p1 += i;
             }
             continue;
         }
-        else {
-            if (!a) return -b;  /* return 0 or -int */
-            if (a != b) {
-                if (b != '?') {
-                    if (!b) return a; /* return +int */
-                    if (upper_case) {
-                        a = toupper(a);
-                        b = toupper(b);
-                        if (a != b) {
-                            return a-b; /* return -int if a<b, +int otherwise */
-                        }
-                    }
-                    else {
-                        return a-b; /* return -int if a<b, +int otherwise */
-                    }
+
+        if (!a) return b ? GB_FALSE : GB_TRUE;
+        if (a != b) {
+            if (b != '?') {
+                if (!b) return a ? GB_FALSE : GB_TRUE;
+                if (case_sens == GB_IGNORE_CASE) {
+                    a = toupper(a);
+                    b = toupper(b);
+                    if (a != b) return GB_FALSE;
+                }
+                else {
+                    return GB_FALSE;
                 }
             }
         }
         p1++;
         p2++;
     }
-    return 0;
+    return GB_TRUE;
 }
 
 char *gbs_add_path(char *path,char *name)
@@ -2004,13 +2004,16 @@ void gbs_regerror(int en){
 
 
 GB_CSTR GBS_regsearch(GB_CSTR in, const char *regexprin){
-    /* search the beginning first match */
+    /* search the beginning first match
+     * returns the position or NULL
+     */
     static char  expbuf[8000];
     static char *regexpr = 0;
     char        *res;
     int          rl      = strlen(regexprin)-2;
     if (regexprin[0] != '/' || regexprin[rl+1] != '/') {
         GB_export_error("RegExprSyntax: '/searchterm/'");
+        GB_print_error();
         return 0;
     }
     if (regexpr && !strncmp( regexpr, regexprin+1, rl))
@@ -2055,7 +2058,6 @@ char *GBS_regreplace(const char *in, const char *regexprin, GBDATA *gb_species){
 
         /* dont change this error message (or change it in adquery/GB_command_interpreter too) : */
         GB_export_error("no '/' found in regexpr");
-
         return 0;
     }
     *(subs++) = 0;
@@ -2214,10 +2216,11 @@ GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char *tag, c
     char    *p;
     GB_HASH *sh;
     char    *to_free = 0;
-    if (rtag && GBS_string_cmp(tag,rtag,0) == 0){
+    if (rtag && strcmp(tag,rtag) == 0){ 
         if (srt) {
             value = to_free = GBS_string_eval(value,srt,gbd);
-        }else if (aci){
+        }
+        else if (aci) {
             value = to_free = GB_command_interpreter(gb_main,value,aci,gbd, 0);
         }
         if (!value) return GB_get_error();
@@ -2270,8 +2273,8 @@ GB_ERROR g_bs_convert_string_to_tagged_hash(GB_HASH *hash, char *s,char *default
             *(se++) = 0;
         }
         for (t = strtok(ts,","); t; t = strtok(0,",")){
-            if (del && !GBS_string_cmp(t,del,0)) continue; /* test, whether to delete */
-            if (strlen(sa) == 0) continue;
+            if (del && strcmp(t,del) == 0) continue; /* test, whether to delete */
+            if (sa[0] == 0) continue;
             error = g_bs_add_value_tag_to_hash(gb_main,hash,t,sa,rtag,srt,aci,gbd); /* tag found, use  tag */
             if (error) return error;
         }
@@ -2424,7 +2427,7 @@ char *GB_read_as_tagged_string(GBDATA *gbd, const char *tagi){
             *(se++) = 0;
         }
         for (t = strtok(ts,","); t; t = strtok(0,",")){
-            if (!GBS_string_cmp(t,tag,0)) {
+            if (strcmp(t,tag) == 0) {
                 s = strdup(sa);
                 free(buf);
                 goto found;
@@ -2626,6 +2629,16 @@ int GBS_strscmp(const char *s1, const char *s2) {
         ++idx;
     }
     return cmp;
+}
+
+int GBS_stricmp(const char *s1, const char *s2) {
+    /* case insensitive strcmp */
+    int p;
+    for (p = 0; ; ++p) {
+        int d = tolower(s1[p])-tolower(s2[p]);
+        if (d) return d;
+        if (!s1[p]) return 0;
+    }
 }
 
 const char *GBS_readable_size(unsigned long long size) {
