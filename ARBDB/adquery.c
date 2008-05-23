@@ -47,7 +47,7 @@ const char *GB_get_GBDATA_path(GBDATA *gbd) {
                     QUERIES
 ********************************************************************************************/
 
-static GB_BOOL gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_BOOL case_sensitive) {
+static GB_BOOL gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_CASE case_sens) {
     GB_BOOL equal = GB_FALSE;
 
 #if defined(DEBUG)
@@ -64,8 +64,9 @@ static GB_BOOL gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, G
     switch (type) {
         case GB_STRING:
         case GB_LINK:
-            if (GBS_string_cmp(GB_read_char_pntr(gb), val, !case_sensitive) == 0) equal = GB_TRUE;
+            equal = GBS_string_matches(GB_read_char_pntr(gb), val, case_sens);
             break;
+            
         case GB_INT: {
             int i                      = GB_read_int(gb);
             if (i == *(int*)val) equal = GB_TRUE;
@@ -86,7 +87,7 @@ static GB_BOOL gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, G
     return equal;
 }
 
-static GBDATA *find_sub_by_quark(GBDATA *father, int key_quark, GB_TYPES type, const char *val, GB_BOOL case_sensitive, GBDATA *after) {
+static GBDATA *find_sub_by_quark(GBDATA *father, int key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) {
     /* search an entry with a key 'key_quark' below a container 'father'
        after position 'after'
 
@@ -156,7 +157,7 @@ static GBDATA *find_sub_by_quark(GBDATA *father, int key_quark, GB_TYPES type, c
                         continue;
                     }
                     else {
-                        if (!gb_find_value_equal(gb, type, val, case_sensitive)) continue;
+                        if (!gb_find_value_equal(gb, type, val, case_sens)) continue;
                     }
                 }
                 return gb;
@@ -167,14 +168,14 @@ static GBDATA *find_sub_by_quark(GBDATA *father, int key_quark, GB_TYPES type, c
 }
 
 GBDATA *GB_find_sub_by_quark(GBDATA *father, int key_quark, GBDATA *after) {
-    return find_sub_by_quark(father, key_quark, GB_NONE, 0, GB_FALSE, after);
+    return find_sub_by_quark(father, key_quark, GB_NONE, 0, GB_MIND_CASE, after);
 }
 
-NOT4PERL GBDATA *GB_find_subcontent_by_quark(GBDATA *father, int key_quark, GB_TYPES type, const char *val, GB_BOOL case_sensitive, GBDATA *after) {
-    return find_sub_by_quark(father, key_quark, type, val, case_sensitive, after);
+NOT4PERL GBDATA *GB_find_subcontent_by_quark(GBDATA *father, int key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) {
+    return find_sub_by_quark(father, key_quark, type, val, case_sens, after);
 }
 
-static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_key_quark, GB_TYPES type, const char *val, GB_BOOL case_sensitive, GBDATA *after){
+static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after){
     int end, index;
     struct gb_header_list_struct *header;
     GBCONTAINER *gbf = (GBCONTAINER*)father;
@@ -200,8 +201,8 @@ static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_ke
             }
         }
         if (gbf->d.size > GB_MAX_LOCAL_SEARCH && val) {
-            if (after) res = GBCMC_find(after,  key, type, val, case_sensitive, (enum gb_search_types)(down_level|search_next));
-            else       res = GBCMC_find(father, key, type, val, case_sensitive, down_2_level);
+            if (after) res = GBCMC_find(after,  key, type, val, case_sens, (enum gb_search_types)(down_level|search_next));
+            else       res = GBCMC_find(father, key, type, val, case_sens, down_2_level);
             return res;
         }
     }
@@ -213,7 +214,7 @@ static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_ke
         for (; ifs; ifs = GB_INDEX_FILES_NEXT(ifs)) {
             if (ifs->key != sub_key_quark) continue;
             /****** We found the index table ******/
-            res = gb_index_find(gbf, ifs, sub_key_quark, val, index);
+            res = gb_index_find(gbf, ifs, sub_key_quark, val, case_sens, index);
             return res;
         }
     }
@@ -227,8 +228,8 @@ static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_ke
         if ( (int)header[index].flags.changed >= gb_deleted) continue;
         if (!gbn) {
             if (!Main->local_mode) {
-                if (gb) res = GBCMC_find(gb,     key, type, val, case_sensitive, (enum gb_search_types)(down_level|search_next));
-                else    res = GBCMC_find(father, key, type, val, case_sensitive, down_2_level);
+                if (gb) res = GBCMC_find(gb,     key, type, val, case_sens, (enum gb_search_types)(down_level|search_next));
+                else    res = GBCMC_find(father, key, type, val, case_sens, down_2_level);
                 return res;
             }
             GB_internal_error("Empty item in server");
@@ -236,18 +237,18 @@ static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_ke
         }
         gb = gbn;
         if (GB_TYPE(gb) != GB_DB) continue;
-        res = GB_find_subcontent_by_quark(gb, sub_key_quark, type, val, case_sensitive, 0);
+        res = GB_find_subcontent_by_quark(gb, sub_key_quark, type, val, case_sens, 0);
         if (res) return res;
     }
     return 0;
 }
 
 
-static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, const char *val, GB_BOOL case_sensitive, long /*enum gb_search_types*/ gbs)
+static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, const char *val, GB_CASE case_sens, long /*enum gb_search_types*/ gbs)
 /* searches from 'gdb' for the first entry 'key'
  * if 'val' != 0 then we search for the first entry 'key' that is equal to 'val'
  * Test depends on 'type' :
- * GB_STRING -> string compare (as well works for GB_LINK). case handling depends on 'case_sensitive'
+ * GB_STRING -> string compare (as well works for GB_LINK). case handling depends on 'case_sens'
  * GB_INT -> compare integers
  */
 {
@@ -282,8 +283,8 @@ static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, con
     key_quark = key ? GB_key_2_quark(gbd,key) : -1;
 
     switch (gbs) {
-        case down_level:    return GB_find_subcontent_by_quark((GBDATA*)gbc, key_quark, type, val, case_sensitive, after);
-        case down_2_level:  return find_sub_sub_by_quark((GBDATA*)gbc, key, key_quark, type, val, case_sensitive, after);
+        case down_level:    return GB_find_subcontent_by_quark((GBDATA*)gbc, key_quark, type, val, case_sens, after);
+        case down_2_level:  return find_sub_sub_by_quark((GBDATA*)gbc, key, key_quark, type, val, case_sens, after);
         default:            GB_internal_error("Unknown seach type %li",gbs); return 0;
     }
 }
@@ -292,24 +293,24 @@ GBDATA *GB_find(GBDATA *gbd, const char *key, long /*enum gb_search_types*/ gbs)
     // normally you should not need to use GB_find!
     // better use one of the replacement functions
     // (GB_find_string, GB_find_int, GB_child, GB_nextChild, GB_entry, GB_nextEntry, GB_brother)
-    return gb_find_internal(gbd, key, GB_NONE, 0, GB_FALSE, gbs);
+    return gb_find_internal(gbd, key, GB_NONE, 0, GB_CASE_UNDEFINED, gbs);
 }
 
-GBDATA *GB_find_string(GBDATA *gbd, const char *key, const char *str, GB_BOOL case_sensitive, long /*enum gb_search_types*/ gbs) {
+GBDATA *GB_find_string(GBDATA *gbd, const char *key, const char *str, GB_CASE case_sens, long /*enum gb_search_types*/ gbs) {
     // search for a subentry of 'gbd' that has 
     // - fieldname 'key'
     // - type GB_STRING and
     // - content matching 'str'
     // if 'case_sensitive' is GB_TRUE, content is matched case sensitive.
-    // GBS_string_cmp is used to compare (supports wildcards)
-    return gb_find_internal(gbd, key, GB_STRING, str, case_sensitive, gbs);
+    // GBS_string_matches is used to compare (supports wildcards)
+    return gb_find_internal(gbd, key, GB_STRING, str, case_sens, gbs);
 }
 NOT4PERL GBDATA *GB_find_int(GBDATA *gbd, const char *key, long val, long gbs) {
     // search for a subentry of 'gbd' that has
     // - fieldname 'key'
     // - type GB_INT
     // - and value 'val'
-    return gb_find_internal(gbd, key, GB_INT, (const char *)&val, GB_TRUE, gbs);
+    return gb_find_internal(gbd, key, GB_INT, (const char *)&val, GB_CASE_UNDEFINED, gbs);
 }
 
 /* ---------------------------------------------------- */
