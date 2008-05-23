@@ -76,7 +76,7 @@ void AP_tree_nlen::copy(AP_tree_nlen *tree)
         this->name = NULL;
     }
 
-    if (is_leaf == AP_TRUE) {
+    if (is_leaf == GB_TRUE) {
         if (tree->sequence) {
             this->sequence = tree->sequence;
         }
@@ -375,7 +375,7 @@ GB_ERROR AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode)
 
     //    cout << "swap" << *this << '\n';
 
-    if (is_leaf == AP_TRUE) return AP_tree::swap_assymetric(mode);
+    if (is_leaf == GB_TRUE) return AP_tree::swap_assymetric(mode);
     if (father == 0)        return AP_tree::swap_assymetric(mode);
 
     oldBrother = Brother();
@@ -390,7 +390,7 @@ GB_ERROR AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode)
         //son of root case
         //take leftson of brother to exchange with
 
-        if (oldBrother->is_leaf == AP_TRUE) return 0; // no swap needed !
+        if (oldBrother->is_leaf == GB_TRUE) return 0; // no swap needed !
 
         AP_tree_nlen *nephew = oldBrother->Leftson();
 
@@ -962,9 +962,9 @@ kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek
     cout << "\nSchwellwert  " << schwellwert << "\n";
     cout.flush();
 #endif
-    if (rek_deep >= rek_deep_max)       return;
-    if (is_leaf == AP_TRUE)         return;
-    if (*abort_flag == AP_TRUE)     return;
+    if (rek_deep >= rek_deep_max) return;
+    if (is_leaf == GB_TRUE)       return;
+    if (*abort_flag == AP_TRUE)   return;
 
     //
     //Referenzzeiger auf die vier Kanten und
@@ -976,23 +976,23 @@ kernighan_rek(int rek_deep, int *rek_2_width, int rek_2_width_max, const int rek
             pars_side_ref[i] = AP_LEFT;
             pars_side_ref[i+1] = AP_RIGHT;
         }
-        pars_refpntr[0] = pars_refpntr[1] = (AP_tree_nlen *) this;
+        pars_refpntr[0] = pars_refpntr[1] = static_cast<AP_tree_nlen *>(this);
         pars_refpntr[2] = pars_refpntr[3] = 0;
         pars_refpntr[4] = pars_refpntr[5] = 0;
         pars_refpntr[6] = pars_refpntr[7] = 0;
         //      cout << "NEW REKURSION\n\n";
     }else{
-        pars_refpntr[0] = pars_refpntr[1] = (AP_tree_nlen *) this->leftson;
-        pars_refpntr[2] = pars_refpntr[3] = (AP_tree_nlen *) this->rightson;
+        pars_refpntr[0] = pars_refpntr[1] = static_cast<AP_tree_nlen *>(this->leftson);
+        pars_refpntr[2] = pars_refpntr[3] = static_cast<AP_tree_nlen *>(this->rightson);
         if (father->father != 0) {
             //Referenzzeiger falls nicht an der Wurzel
-            pars_refpntr[4] = pars_refpntr[5] = (AP_tree_nlen *) this->father;
-            pars_refpntr[6] = pars_refpntr[7] = (AP_tree_nlen *) this_brother;
+            pars_refpntr[4] = pars_refpntr[5] = static_cast<AP_tree_nlen *>(this->father);
+            pars_refpntr[6] = pars_refpntr[7] = static_cast<AP_tree_nlen *>(this_brother);
         } else {
             //an der Wurzel nehme linken und rechten Sohns des Bruders
-            if (this->brother()->is_leaf == AP_FALSE) {
-                pars_refpntr[4] = pars_refpntr[5] = (AP_tree_nlen *) this_brother->leftson;
-                pars_refpntr[6] = pars_refpntr[7] = (AP_tree_nlen *) this_brother->rightson;
+            if (this->brother()->is_leaf == GB_FALSE) {
+                pars_refpntr[4] = pars_refpntr[5] = static_cast<AP_tree_nlen *>(this_brother->leftson);
+                pars_refpntr[6] = pars_refpntr[7] = static_cast<AP_tree_nlen *>(this_brother->rightson);
             } else {
                 pars_refpntr[4] = pars_refpntr[5] = 0;
                 pars_refpntr[6] = pars_refpntr[7] = 0;
