@@ -116,52 +116,63 @@ char *gb_index_check_out(GBDATA *gbd)
     return 0;
 }
 
-/* Create an index for a big database, in this version hash tables are used,
-   Collisions are avoided by using linked lists */
-GB_ERROR GB_create_index(GBDATA *gbd, const char *key, long estimated_size)
-{
-    struct gb_index_files_struct *ifs;
-    GBQUARK      key_quark;
-    GBCONTAINER *gbc;
-    GBDATA      *gbf;
-    GBDATA      *gb2;
+GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long estimated_size) {
+    /* Create an index for a database.
+     * Uses hash tables - collisions are avoided by using linked lists.
+     */
+    GB_ERROR error = 0;
 
-    if (GB_TYPE(gbd) != GB_DB)
-        return GB_export_error("GB_create_index used on non CONTAINER Type");
-    gbc = (GBCONTAINER *)gbd;
-    if (GB_read_clients(gbd) <0) return GB_export_error("No index tables in clients allowed");
+    if (GB_TYPE(gbd) != GB_DB) {
+        error = GB_export_error("GB_create_index used on non CONTAINER Type");
+    }
+    else if (GB_read_clients(gbd)<0) {
+        error = GB_export_error("No index tables in DB clients allowed");
+    }
+    else {
+        GBCONTAINER *gbc       = (GBCONTAINER *)gbd;
+        GBQUARK      key_quark = GB_key_2_quark(gbd,key);
 
-    key_quark = GB_key_2_quark(gbd,key);
-    GB_INDEX_FIND(gbc,ifs,key_quark);
-    if (ifs) return 0;
-    ifs = (struct gb_index_files_struct *)GB_calloc(sizeof(struct gb_index_files_struct),1);
-    SET_GB_INDEX_FILES_NEXT(ifs,GBCONTAINER_IFS(gbc));
-    SET_GBCONTAINER_IFS(gbc,ifs);
-    ifs->key= key_quark;
-    ifs->hash_table_size = estimated_size;
-    ifs->nr_of_elements = 0;
-    SET_GB_INDEX_FILES_ENTRIES(ifs, (struct gb_if_entries **)GB_calloc(sizeof(void *),(int)ifs->hash_table_size));
+        struct gb_index_files_struct *ifs;
 
-    for (gbf = GB_find_sub_by_quark(gbd,-1,0);
-         gbf;
-         gbf = GB_find_sub_by_quark(gbd,-1,gbf))
-    {
-        if (GB_TYPE(gbf) != GB_DB) continue;
+        GB_INDEX_FIND(gbc,ifs,key_quark);
 
-        for (   gb2 = GB_find_sub_by_quark(gbf,key_quark,0);
-                gb2;
-                gb2 = GB_find_sub_by_quark(gbf,key_quark,gb2))
-        {
-            if (GB_TYPE(gb2) != GB_STRING && GB_TYPE(gb2) != GB_LINK) continue;
-            gb_index_check_in(gb2);
+        if (!ifs) { /* if not already have index (e.g. if fast-loaded) */
+            GBDATA *gbf;
+
+            ifs = (struct gb_index_files_struct *)GB_calloc(sizeof(struct gb_index_files_struct),1);
+            SET_GB_INDEX_FILES_NEXT(ifs,GBCONTAINER_IFS(gbc));
+            SET_GBCONTAINER_IFS(gbc,ifs);
+
+            ifs->key             = key_quark;
+            ifs->hash_table_size = GBS_get_a_prime(estimated_size);
+            ifs->nr_of_elements  = 0;
+            ifs->case_sens       = case_sens;
+
+            SET_GB_INDEX_FILES_ENTRIES(ifs, (struct gb_if_entries **)GB_calloc(sizeof(void *),(int)ifs->hash_table_size));
+
+            for (gbf = GB_find_sub_by_quark(gbd,-1,0);
+                 gbf;
+                 gbf = GB_find_sub_by_quark(gbd,-1,gbf))
+            {
+                if (GB_TYPE(gbf) == GB_DB) {
+                    GBDATA *gb2;
+
+                    for (gb2 = GB_find_sub_by_quark(gbf,key_quark,0);
+                         gb2;
+                         gb2 = GB_find_sub_by_quark(gbf,key_quark,gb2))
+                    {
+                        if (GB_TYPE(gb2) != GB_STRING && GB_TYPE(gb2) != GB_LINK) continue;
+                        gb_index_check_in(gb2);
+                    }
+                }
+            }
         }
     }
-
-    return 0;
+    return error;
 }
 
 /* find an entry in an hash table */
-GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUARK quark, const char *val, int after_index){
+GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUARK quark, const char *val, GB_CASE case_sens, int after_index){
     unsigned long         index;
     GB_CSTR               data;
     struct gb_if_entries *ifes;
@@ -174,6 +185,11 @@ GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUA
             GB_internal_error("gb_index_find called, but no index table found");
             return 0;
         }
+    }
+
+    if (ifs->case_sens != case_sens) {
+        GB_internal_error("case mismatch between index and search");
+        return 0;
     }
 
     GB_CALC_HASH_INDEX(val,index);
@@ -190,7 +206,7 @@ GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUA
         if ( ifather->index < after_index) continue;
         if ( ifather->index >= min_index) continue;
         data = GB_read_char_pntr(igbd);
-        if (!GBS_string_cmp(data,val,1) ) {     /* entry found */
+        if (GBS_string_matches(data, val, case_sens)) { /* entry found */
             result    = igbd;
             min_index = ifather->index;
         }
