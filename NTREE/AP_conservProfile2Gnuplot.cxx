@@ -77,7 +77,7 @@ void AP_conservProfile2Gnuplot_callback(AW_window *aww) {
 
     printf("command_file='%s'\n", command_file);
     char *script = GB_strdup(GBS_global_string("gnuplot %s && rm -f %s", command_file, command_file));
-    GB_xcmd(script, true, true);          // execute GNUPLOT using command_file
+    GB_xcmd(script, GB_TRUE, GB_TRUE);          // execute GNUPLOT using command_file
 
     free(script);
     free(smooth);

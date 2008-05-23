@@ -112,12 +112,16 @@ protected:
     friend class AP_sequence_parsimony;
     friend class AP_sequence_protein;
     friend class AP_sequence_protein_old;
+
     GB_UINT4 *weights;
+
 public:
-    long weight_len;
+    
+    long       weight_len;
     AP_filter *filter;
-    long    update;
-    GB_BOOL dummy_weights; // if true all weights are == 1
+    long       update;
+    bool       dummy_weights;   // if true all weights are == 1
+
     AP_weights(void);
     char *init(AP_filter *fil); // init weights
     char *init(GB_UINT4 *w, AP_filter *fil);

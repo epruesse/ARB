@@ -667,8 +667,8 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE
     // *bp++ = '\'';
 #endif // QUOTE_NDS_STRING
 
-    bool  field_was_printed = false;
-    bool  is_leaf           = species ? species->is_leaf : true;
+    bool    field_was_printed = false;
+    GB_BOOL is_leaf           = species ? species->is_leaf : GB_TRUE;
 
     for (int i = 0; i < awt_nds_ms->count; i++) {
         if (is_leaf) { if (!awt_nds_ms->at_leaf[i]) continue; }

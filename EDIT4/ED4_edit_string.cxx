@@ -447,10 +447,10 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
 
     ED4_ERROR *ad_err = 0;
     long h;
-    GB_BOOL reinterpret_key = 1;
+    bool reinterpret_key = true;
 
     while (reinterpret_key) {
-        reinterpret_key = 0;
+        reinterpret_key = false;
 
         switch (keycode) {
             case AW_KEY_HOME:
@@ -865,13 +865,13 @@ ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, cha
                         case 'O': { //  for ALT-left
                             keycode = AW_KEY_LEFT;
                             keymod = AW_KEYMODE_ALT;
-                            reinterpret_key = 1;
+                            reinterpret_key = true;
                             break;
                         }
                         case 'P': { // for ALT-right
                             keycode = AW_KEY_RIGHT;
                             keymod = AW_KEYMODE_ALT;
-                            reinterpret_key = 1;
+                            reinterpret_key = true;
                             break;
                         }
                     }
