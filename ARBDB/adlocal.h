@@ -339,7 +339,8 @@ typedef struct gb_main_type {
 extern GB_MAIN_TYPE *gb_main_array[];
 
 
-typedef enum trans_type {   ARB_COMMIT, ARB_ABORT, ARB_TRANS } ARB_TRANS_TYPE;
+typedef enum { ARB_COMMIT, ARB_ABORT, ARB_TRANS } ARB_TRANS_TYPE;
+typedef enum { GB_IGNORE_CASE = 0 , GB_MIND_CASE = 1, GB_CASE_UNDEFINED = 2 } GB_CASE;
 
 
 /** global data structure that is valid for all databases*/
@@ -433,7 +434,7 @@ struct gb_if_entries
     GB_REL_GBDATA rel_ie_gbd;   /* Typ: (struct gb_data_base_type *)    */
 };
 
-/** hash index to speed up GB_find(x,x,x,down_2_level) ***/
+/** hash index to speed up GB_find(x,x,down_2_level) ***/
 
 struct gb_index_files_struct
 {
@@ -442,6 +443,7 @@ struct gb_index_files_struct
     GBQUARK key;
     long    hash_table_size;
     long    nr_of_elements;
+    GB_CASE case_sens;
 
     GB_REL_PIFES  rel_entries;  /* Typ: (struct gb_if_entries **) */
 };
