@@ -198,7 +198,7 @@ char *MG_remap::remap(const char *sequence){
     const char *gap_chars = "- .";
     int slen = strlen(sequence);
     int len = slen;
-    void *outs = GBS_stropen(slen- in_length + out_length + 100);
+    GBS_strstruct *outs = GBS_stropen(slen- in_length + out_length + 100);
 
     if (in_length < len) {
         len = in_length;
@@ -1068,9 +1068,9 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
             free(type2);
         }
 
-        void *str;
-        char *b;
-        int   aliid;
+        GBS_strstruct *str;
+        char          *b;
+        int            aliid;
 
         switch (d) {
             case 0:

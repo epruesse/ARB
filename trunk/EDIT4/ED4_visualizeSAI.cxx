@@ -143,7 +143,7 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
             }
 
             {
-                void *clrDefStr = GBS_stropen(500);            /* create output stream */
+                GBS_strstruct *clrDefStr = GBS_stropen(500);            /* create output stream */
                 for(int i=0; i<10; i++){
                     awr->awar_string(getAwarName(i))->write_string((char *)s[i]);
 
@@ -466,9 +466,9 @@ static void deleteColorTranslationTable(AW_window *aws){
     char *clrTabName = aw_root->awar_string(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
 
     if (clrTabName[0]) {
-        AW_awar *awar_tabNames    = aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES);
-        char    *clrTransTabNames = awar_tabNames->read_string();
-        void    *newTransTabName  = GBS_stropen(strlen(clrTransTabNames));
+        AW_awar       *awar_tabNames    = aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES);
+        char          *clrTransTabNames = awar_tabNames->read_string();
+        GBS_strstruct *newTransTabName  = GBS_stropen(strlen(clrTransTabNames));
 
         for (const char *tok = strtok(clrTransTabNames,"\n"); tok; tok = strtok(0,"\n")) {
             if (strcmp(clrTabName, tok) != 0) { // merge all not to delete

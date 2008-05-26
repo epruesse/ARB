@@ -99,9 +99,9 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
 //      extern "C" int PT_find_exProb(PT_exProb *pep)
 //  ------------------------------------------------------
 extern "C" int PT_find_exProb(PT_exProb *pep) {
-    POS_TREE    *pt      = psg.pt; // start search at root
-    void        *gbs_str = GBS_stropen(pep->numget*(pep->plength+1)+1);
-    bool         first   = true;
+    POS_TREE      *pt      = psg.pt; // start search at root
+    GBS_strstruct *gbs_str = GBS_stropen(pep->numget*(pep->plength+1)+1);
+    bool           first   = true;
 
     for (int c=0; c<pep->numget; ++c) {
         bool found = false;

@@ -102,10 +102,11 @@ int main(int argc, char **argv)
             }
 
             if (linemode) {
-                char *p = data;
-                char *nextp;
-                char *h;
-                void *strstruct = GBS_stropen(1024);
+                char          *p         = data;
+                char          *nextp;
+                char          *h;
+                GBS_strstruct *strstruct = GBS_stropen(1024);
+                
                 while ((nextp = strchr(p,'\n'))) {
                     nextp[0] = 0;			// remove '\n'
                     h = GBS_string_eval(p,eval,0);

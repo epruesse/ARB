@@ -38,19 +38,19 @@ extern int TERMINALHEIGHT;      // this variable replaces the define
 extern int INFO_TERM_TEXT_YOFFSET;
 extern int SEQ_TERM_TEXT_YOFFSET;
 
-extern int           MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
-extern int           MAXSPECIESWIDTH;
-extern int           MAXINFOWIDTH;
-extern long          ED4_counter;
-extern long          all_found; // nr of species which haven't been found
-extern long          species_read; // nr of species read; important during loading
-extern void         *not_found_message;
-extern long          max_seq_terminal_length; // global maximum of sequence terminal length
-extern ED4_EDITMODI  awar_edit_modus;
-extern long          awar_edit_direction;
-extern bool          move_cursor; //only needed for editing in consensus
-extern bool          DRAW;
-extern bool          last_window_reached; //only needed for refreshing all windows
+extern int            MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
+extern int            MAXSPECIESWIDTH;
+extern int            MAXINFOWIDTH;
+extern long           ED4_counter;
+extern long           all_found; // nr of species which haven't been found
+extern long           species_read; // nr of species read; important during loading
+extern GBS_strstruct *not_found_message;
+extern long           max_seq_terminal_length; // global maximum of sequence terminal length
+extern ED4_EDITMODI   awar_edit_modus;
+extern long           awar_edit_direction;
+extern bool           move_cursor; //only needed for editing in consensus
+extern bool           DRAW;
+extern bool           last_window_reached; //only needed for refreshing all windows
 
 extern double           status_add_count;                   //only needed for loading configuration
 extern double           status_total_count;

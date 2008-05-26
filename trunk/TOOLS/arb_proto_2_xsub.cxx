@@ -63,11 +63,11 @@ int main(int argc, char **argv)
                            ,0);
 
 
-    char *tok;
-    void *gb_out    = GBS_stropen(100000);
-    void *gbt_out   = GBS_stropen(100000);
-    bool  inComment = false;
-    char *type      = 0;
+    char          *tok;
+    GBS_strstruct *gb_out    = GBS_stropen(100000);
+    GBS_strstruct *gbt_out   = GBS_stropen(100000);
+    bool           inComment = false;
+    char          *type      = 0;
 
     for (tok = strtok(data,";\n");tok;tok = strtok(0,";\n")) {
         if (type) { free(type); type = 0; }
@@ -238,7 +238,7 @@ int main(int argc, char **argv)
 
         // translate prefixes
 
-        void *out = 0;
+        GBS_strstruct *out = 0;
         if (!strncmp(func_name,"GB_",3)) out = gb_out;
         if (!strncmp(func_name,"GBT_",4)) out = gbt_out;
         if (!strncmp(func_name,"GEN_",4)) out = gbt_out;
@@ -253,8 +253,8 @@ int main(int argc, char **argv)
 #endif // DUMP
 
         char *p;
-        void *params = GBS_stropen(1000);
-        void *args   = GBS_stropen(1000);
+        GBS_strstruct *params = GBS_stropen(1000);
+        GBS_strstruct *args   = GBS_stropen(1000);
         for (p=arguments; arguments; arguments=p ){
             p = strchr(arguments,',');
             if (p) *(p++) = 0;

@@ -1629,7 +1629,7 @@ void awt_do_set_list(void *dummy, struct adaqbsstruct *cbs, long append)
                                 if (append){
                                     char *old = GB_read_as_string(gb_new);
                                     if (old){
-                                        void *strstr = GBS_stropen(strlen(old)+strlen(value)+2);
+                                        GBS_strstruct *strstr = GBS_stropen(strlen(old)+strlen(value)+2);
                                         GBS_strcat(strstr,old);
                                         GBS_strcat(strstr,value);
                                         char *v = GBS_strclose(strstr);

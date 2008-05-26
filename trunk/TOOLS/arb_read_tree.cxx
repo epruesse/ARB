@@ -204,11 +204,11 @@ int main(int argc,char **argv)
             comment,
             comment_from_file,
             comment_from_treefile,
-            load_info, 
+            load_info,
         };
 
-        void *buf   = GBS_stropen(5000);
-        bool  empty = true;
+        GBS_strstruct *buf   = GBS_stropen(5000);
+        bool           empty = true;
 
         for (int c = 0; c<COMMENT_SOURCES; c++) {
             if (comments[c]) {

@@ -464,7 +464,7 @@ static void awtc_write_entry(GBDATA *gbd,const char *key,char *str,const char *t
         if (!gbk) gbk=GB_create(gbd,key,GB_STRING);
 
         if (tag){
-            void *s = GBS_stropen(10000);
+            GBS_strstruct *s = GBS_stropen(10000);
             GBS_chrcat(s,'[');
             GBS_strcat(s,tag);
             GBS_strcat(s,"] ");
@@ -697,9 +697,10 @@ GB_ERROR awtc_read_data(char *ali_name)
 
     read_sequence:
         {
-            char *sequence;
-            void *strstruct = GBS_stropen(5000);
-            int linecnt;
+            char          *sequence;
+            GBS_strstruct *strstruct = GBS_stropen(5000);
+            int            linecnt;
+            
             for(linecnt = 0;;linecnt++) {
                 if (linecnt || !ifo->read_this_sequence_line_too){
                     p = awtc_read_line(0,ifo->sequencestart,ifo->sequenceend);

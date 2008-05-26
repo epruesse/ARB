@@ -346,8 +346,9 @@ char *readXmlTree(char *fname) {
     int createTempFile = mkstemp(tempFile);
 
     if(createTempFile) {
-        char *tmpFname = strdup(fname); char *tmp = 0;
-        void *buf  = GBS_stropen(strlen(fname));
+        char          *tmpFname = strdup(fname);
+        char          *tmp      = 0;
+        GBS_strstruct *buf      = GBS_stropen(strlen(fname));
 
         // extract path from fname inorder to place a copy of dtd file required to validate xml file
         for (char *tok = strtok(tmpFname,"/"); tok; ) {

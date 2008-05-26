@@ -102,39 +102,36 @@ static void ed_submit_info_event_rm(char *string)
 
 extern GBDATA *GLOBAL_gb_main;
 
-static void ed_submit_info_event(AW_window *aww)
-{
-    AW_root *aw_root = aww->get_root();
-    GB_transaction dummy(GLOBAL_gb_main);
-    char *key;
-
-    GBDATA  *gb_species;
-    GBDATA  *gb_entry;
-
-    char    *parser;
-    char    *species_name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
-    gb_species = GBT_find_species(GLOBAL_gb_main,species_name);
-    void *strstruct = GBS_stropen(1000);
+static void ed_submit_info_event(AW_window *aww) {
+    AW_root        *aw_root      = aww->get_root();
+    GB_transaction  dummy(GLOBAL_gb_main);
+    char           *species_name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
+    GBDATA         *gb_species   = GBT_find_species(GLOBAL_gb_main,species_name);
+    GBS_strstruct  *strstruct    = GBS_stropen(1000);
 
     if (gb_species) {
-        for (gb_entry = GB_child(gb_species); gb_entry; gb_entry = GB_nextChild(gb_entry)) {
+        for (GBDATA *gb_entry = GB_child(gb_species); gb_entry; gb_entry = GB_nextChild(gb_entry)) {
             int type = GB_read_type(gb_entry);
             switch (type) {
                 case GB_STRING:
                 case GB_INT:
                 case GB_BITS:
-                case GB_FLOAT:
-                    key  = GB_read_key(gb_entry);
+                case GB_FLOAT: {
+                    char *key = GB_read_key(gb_entry);
+
                     GBS_strcat(strstruct,"$(");
                     GBS_strcat(strstruct,key);
                     GBS_strcat(strstruct,")=");
                     free(key);
+
                     key = GB_read_as_string(gb_entry);
                     ed_submit_info_event_rm(key);
                     GBS_strcat(strstruct,key);
                     free(key);
+                    
                     GBS_strcat(strstruct,":\n");
                     break;
+                }
                 default:
                     break;
             }
@@ -157,7 +154,8 @@ static void ed_submit_info_event(AW_window *aww)
     }else{
         GBS_strcat(strstruct,"Species not found");
     }
-    parser = GBS_strclose(strstruct);
+    
+    char *parser = GBS_strclose(strstruct);
     aw_root->awar(AWAR_PARSER)->write_string(parser);
 
     free(parser);

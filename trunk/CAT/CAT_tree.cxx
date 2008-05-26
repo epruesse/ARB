@@ -47,7 +47,7 @@ CAT_tree *new_CAT_tree(int size)
 }
 
 
-void *cat_mem_files[CAT_FIELD_MAX];
+GBS_strstruct *cat_mem_files[CAT_FIELD_MAX];
 
 
 GB_ERROR cat_write_cat_tree(CAT_tree *cat_tree, FILE *out){

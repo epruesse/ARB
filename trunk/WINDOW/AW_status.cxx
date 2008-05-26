@@ -448,7 +448,8 @@ static void aw_status_kill(AW_window *aws)
 }
 
 static void aw_refresh_tmp_message_display(AW_root *awr) {
-    void *stru = GBS_stropen(AW_MESSAGE_LINES*60); // guessed size
+    GBS_strstruct *stru = GBS_stropen(AW_MESSAGE_LINES*60); // guessed size
+
     for (int i = AW_MESSAGE_LINES-1; i>=0; i--){
         if (aw_stg.lines[i]) {
             GBS_strcat(stru,aw_stg.lines[i]);
