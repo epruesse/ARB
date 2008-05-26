@@ -303,8 +303,8 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root,AWwindowinfo *AWinfo) {
             bool     curr_value_legal = false;
 
             aws->label(AWinfo->gmenuitem->arg[i].label);
-            if ((GBS_stricmp(itemarg.choice[0].label,"no") == 0) ||
-                (GBS_stricmp(itemarg.choice[0].label,"yes") == 0))
+            if ((strcasecmp(itemarg.choice[0].label,"no") == 0) ||
+                (strcasecmp(itemarg.choice[0].label,"yes") == 0))
             {
                 aws->create_toggle_field(newawar,1);
             }

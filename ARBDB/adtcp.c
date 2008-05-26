@@ -2,7 +2,7 @@
 /*                                                                 */
 /*   File      : adtcp.c                                           */
 /*   Purpose   : arb_tcp.dat handling                              */
-/*   Time-stamp: <Fri May/23/2008 16:07 MET Coder@ReallySoft.de>   */
+/*   Time-stamp: <Mon May/26/2008 12:43 MET Coder@ReallySoft.de>   */
 /*                                                                 */
 /*   Coded by Ralf Westram (coder@reallysoft.de) in April 2007     */
 /*   Institute of Microbiology (Technical University Munich)       */
@@ -274,7 +274,7 @@ const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam) 
         size_t      wplen = strlen(wantedParam);
 
         while (plen) {
-            if (gbs_strnicmp(param, wantedParam, wplen) == 0) { /* starts with wantedParam */
+            if (strncasecmp(param, wantedParam, wplen) == 0) { /* starts with wantedParam */
                 result = param+wplen;
                 break;
             }
