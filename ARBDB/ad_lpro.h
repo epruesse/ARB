@@ -30,7 +30,6 @@ void gbs_memcopy P_((char *dest, const char *source, long len));
 char *gbs_malloc_copy P_((const char *source, long len));
 char *gbs_add_path P_((char *path, char *name));
 char *gbs_compress_command P_((const char *com));
-void gbs_strensure_mem P_((void *strstruct, long len));
 GB_ERROR gbs_build_replace_string P_((void *strstruct, char *bar, char *wildcards, long max_wildcard, char **mwildcards, long max_mwildcard, GBDATA *gb_container));
 void gbs_regerror P_((int en));
 
