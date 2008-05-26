@@ -253,9 +253,9 @@ static GB_ERROR gene_requires(GBDATA *gb_gene, const char *whats_required) {
 }
 
 GB_ERROR pd_get_the_names(bytestring &bs, bytestring &checksum) {
-    void     *names     = GBS_stropen(1024);
-    void     *checksums = GBS_stropen(1024);
-    GB_ERROR  error     = 0;
+    GBS_strstruct *names     = GBS_stropen(1024);
+    GBS_strstruct *checksums = GBS_stropen(1024);
+    GB_ERROR       error     = 0;
 
     GB_begin_transaction(GLOBAL_gb_main);
 
@@ -291,9 +291,9 @@ GB_ERROR pd_get_the_names(bytestring &bs, bytestring &checksum) {
 }
 
 GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum){
-    void     *names     = GBS_stropen(1024);
-    void     *checksums = GBS_stropen(1024);
-    GB_ERROR  error     = 0;
+    GBS_strstruct *names     = GBS_stropen(1024);
+    GBS_strstruct *checksums = GBS_stropen(1024);
+    GB_ERROR       error     = 0;
 
     GB_begin_transaction(GLOBAL_gb_main);
     const char *use = GENOM_ALIGNMENT; // gene pt server is always build on 'ali_genom'
@@ -1796,7 +1796,7 @@ void pd_query_pt_server(AW_window *aww)
     char     pt_server[256];
     sprintf(pt_server,"ARB_PT_SERVER%li",awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
 
-    void       *strstruct = GBS_stropen(1024);
+    GBS_strstruct *strstruct = GBS_stropen(1024);
     GBS_strcat(strstruct,   "echo Contents of directory ARBHOME/lib/pts:;echo;"
                "(cd $ARBHOME/lib/pts; ls -l);"
                "echo; echo Disk Space for PT_server files:; echo;"

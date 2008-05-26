@@ -103,7 +103,7 @@ char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, lo
                     char *toinspos = s2-1;
                     if (toinspos > str2) toinspos--;
                     if (tab[(unsigned char)toinspos[0]]> 0) { /* real insertion */
-                        void *str = GBS_stropen(strlen(str2+10));
+                        GBS_strstruct *str = GBS_stropen(strlen(str2+10));
                         int pos = s2-str2-1;
                         GBS_strncat(str,str2,pos);
                         GBS_chrcat(str,toins);

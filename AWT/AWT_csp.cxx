@@ -262,17 +262,21 @@ void AWT_csp::print(void) {
 }
 
 char *awt_csp_sai_filter(GBDATA *gb_extended, AW_CL csp_cd) {
-    AWT_csp *csp = (AWT_csp *)csp_cd;
-    GBDATA *gb_type = GB_search(gb_extended, csp->type_path,GB_FIND);
-    if (!gb_type) return 0;
-    if (GBS_string_matches( GB_read_char_pntr(gb_type),"PV?:*",GB_MIND_CASE)) {
-        GBDATA *gb_name = GB_entry(gb_extended,"name");
-        void *strstruct = GBS_stropen(1024);
-        GBS_strcat(strstruct,GB_read_char_pntr(gb_name));
-        GBS_strcat(strstruct,":      <");
-        GBS_strcat(strstruct,GB_read_char_pntr(gb_type));
-        GBS_strcat(strstruct,">");
-        return GBS_strclose(strstruct);
+    AWT_csp *csp     = (AWT_csp *)csp_cd;
+    GBDATA  *gb_type = GB_search(gb_extended, csp->type_path, GB_FIND);
+
+    if (gb_type) {
+        if (GBS_string_matches( GB_read_char_pntr(gb_type),"PV?:*",GB_MIND_CASE)) {
+            GBDATA        *gb_name   = GB_entry(gb_extended,"name");
+            GBS_strstruct *strstruct = GBS_stropen(1024);
+
+            GBS_strcat(strstruct,GB_read_char_pntr(gb_name));
+            GBS_strcat(strstruct,":      <");
+            GBS_strcat(strstruct,GB_read_char_pntr(gb_type));
+            GBS_strcat(strstruct,">");
+            
+            return GBS_strclose(strstruct);
+        }
     }
     return 0;
 }

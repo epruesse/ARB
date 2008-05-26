@@ -158,9 +158,10 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
         return 0;
     }
 
-    int   noff      = 0;
-    int   coff      = 0;
-    void *not_found = 0;
+    int noff = 0;
+    int coff = 0;
+    
+    GBS_strstruct *not_found = 0;
 
     while (noff >= 0) {
         pt_assert(coff >= 0);   // otherwise 'checksums' contains less elements than 'names_list'

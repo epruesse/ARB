@@ -18,7 +18,7 @@ void aed_start_naligning(AW_window *aw) {
     char	*buffer;
     int	i,j;
 
-    void *strstruct = GBS_stropen(1000);
+    GBS_strstruct *strstruct = GBS_stropen(1000);
     GBS_strcat(strstruct,"xterm -sl 1000 -sb -e sh -c 'LD_LIBRARY_PATH=\"");
     GBS_strcat(strstruct,GB_getenv("LD_LIBRARY_PATH"));
     GBS_strcat(strstruct,"\";export LD_LIBRARY_PATH;for i in ");

@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_helix.cxx                                     //
 //   Purpose   : helix related things                              //
-//   Time-stamp: <Fri Sep/07/2007 09:01 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Fri May/23/2008 20:06 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -50,9 +50,8 @@ const size_t *SEC_root::getHelixPositions(const char *helixNr) const {
 // segment start-positions are saved as '!num'
 
 char *SEC_xstring_to_foldedHelixList(const char *x_string, size_t xlength, const BI_helix *helix) {
-    void *out = GBS_stropen(1000);
-
-    bool next_is_start = true;
+    GBS_strstruct *out           = GBS_stropen(1000);
+    bool           next_is_start = true;
 
     for (size_t pos = 0; pos<xlength; ++pos) {
         if (x_string[pos] == 'x') {

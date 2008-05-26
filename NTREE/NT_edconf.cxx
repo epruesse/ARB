@@ -139,7 +139,7 @@ GBT_TREE *left_neighbour_leaf(GBT_TREE *node) {
     return 0;
 }
 
-int nt_build_conf_string_rek(GB_HASH *used,GBT_TREE *tree, void *memfile,
+int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfile,
                              Store_species **extra_marked_species, // all extra marked species are inserted here
                              int use_species_aside, // # of species to mark left and right of marked species
                              int *auto_mark, // # species to extra-mark (if not already marked)
@@ -241,8 +241,9 @@ int nt_build_conf_string_rek(GB_HASH *used,GBT_TREE *tree, void *memfile,
     return nspecies;
 }
 
-static void *nt_build_sai_middle_file;
-static const char *nt_build_sai_last_group_name;
+static GBS_strstruct *nt_build_sai_middle_file;
+static const char    *nt_build_sai_last_group_name;
+
 long nt_build_sai_sort_strings(const char *k0,long v0,const char *k1,long v1){
     AWUSE(v0); AWUSE(v1);
     return strcmp(k0,k1);
@@ -277,7 +278,7 @@ extern "C" {
 #endif
 
 /** collect all Sais, place some SAI in top area, rest in middle */
-void nt_build_sai_string(void *topfile, void *middlefile){
+void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile){
     GBDATA *gb_sai_data = GB_search(GLOBAL_gb_main,"extended_data",GB_FIND);
     if (!gb_sai_data) return;
 
@@ -330,7 +331,7 @@ void nt_build_sai_string(void *topfile, void *middlefile){
     GBS_free_hash(hash);
 }
 
-void nt_build_conf_marked(GB_HASH *used, void *file){
+void nt_build_conf_marked(GB_HASH *used, GBS_strstruct *file){
     GBS_chrcat(file,1);             // Seperated by 1
     GBS_strcat(file,"FMore Sequences");
     GBDATA *gb_species;
@@ -510,12 +511,12 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
         last_used_species_aside = use_species_aside; // remember for next time
     }
 
-    GB_transaction dummy2(GLOBAL_gb_main);     // open close transaction
-    GB_HASH *used = GBS_create_hash(GBT_get_species_hash_size(GLOBAL_gb_main), 0);
-    void *topfile = GBS_stropen(1000);
-    void *topmid = GBS_stropen(10000);
+    GB_transaction  dummy2(GLOBAL_gb_main); // open close transaction
+    GB_HASH        *used    = GBS_create_hash(GBT_get_species_hash_size(GLOBAL_gb_main), 0);
+    GBS_strstruct  *topfile = GBS_stropen(1000);
+    GBS_strstruct  *topmid  = GBS_stropen(10000);
     {
-        void *middlefile = GBS_stropen(10000);
+        GBS_strstruct *middlefile = GBS_stropen(10000);
         nt_build_sai_string(topfile,topmid);
 
         if (use_species_aside) {

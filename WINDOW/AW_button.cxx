@@ -1888,10 +1888,9 @@ const char *AW_selection_list::first_selected(){
 
 char *AW_window::get_selection_list_contents( AW_selection_list * selection_list, long number_of_lines) {
     // number_of_lines == 0     -> print all
-    AW_select_table_struct *list_table;
-    void *fd;
 
-    fd = GBS_stropen(10000);
+    AW_select_table_struct *list_table;
+    GBS_strstruct          *fd = GBS_stropen(10000);
 
     for ( list_table = selection_list->list_table; list_table; list_table = list_table->next ) {
         number_of_lines--;

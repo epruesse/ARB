@@ -253,7 +253,7 @@ char *AP_pos_var::save_sai( char *sai_name ){
     GB_write_string(gb_data,data);
 
     {       // Generate Categories
-        void *strstruct = GBS_stropen(1000);
+        GBS_strstruct *strstruct = GBS_stropen(1000);
         for (i = 0; i<max_categ; i++) {
             GBS_floatcat(strstruct, pow(1.0/logbase, i) );
             GBS_chrcat(strstruct,' ');

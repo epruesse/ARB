@@ -468,7 +468,7 @@ static format_props detect_format_props(PT_local *locs, bool show_gpos) {
     return format;
 }
 
-inline void cat_internal(void *memfile, int len, const char *text, int width, char spacer, bool align_left) {
+inline void cat_internal(GBS_strstruct *memfile, int len, const char *text, int width, char spacer, bool align_left) {
     if (len == width) {
         GBS_strcat(memfile, text); // text has exact len
     }
@@ -496,10 +496,10 @@ inline void cat_internal(void *memfile, int len, const char *text, int width, ch
     }
     GBS_chrcat(memfile, ' '); // one space behind each column
 }
-inline void cat_spaced_left (void *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, ' ', true); }
-inline void cat_spaced_right(void *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, ' ', false); }
-inline void cat_dashed_left (void *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', true); }
-inline void cat_dashed_right(void *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', false); }
+inline void cat_spaced_left (GBS_strstruct *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, ' ', true); }
+inline void cat_spaced_right(GBS_strstruct *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, ' ', false); }
+inline void cat_dashed_left (GBS_strstruct *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', true); }
+inline void cat_dashed_right(GBS_strstruct *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', false); }
 
 static const char *get_match_info_formatted(PT_probematch  *ml, const format_props& format)
 {
@@ -557,7 +557,7 @@ static const char *get_match_info_formatted(PT_probematch  *ml, const format_pro
     ref[10+pr_len] = '-';
     PT_base_2_string(ref,0);
 
-    void *memfile = GBS_stropen(256);
+    GBS_strstruct *memfile = GBS_stropen(256);
     GBS_strcat(memfile, "  ");
 
     cat_spaced_left(memfile, virt_name(ml), format.name_width);
@@ -590,7 +590,7 @@ static const char *get_match_info_formatted(PT_probematch  *ml, const format_pro
 
 static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_props& format) {
     if (ml) {
-        void *memfile = GBS_stropen(500);
+        GBS_strstruct *memfile = GBS_stropen(500);
         GBS_strcat(memfile, "    "); // one space more than in get_match_info_formatted()
 
         cat_dashed_left(memfile, gene_flag ? "organism" : "name", format.name_width);
@@ -658,7 +658,7 @@ static void gene_rel_2_abs(PT_probematch *ml) {
 /* Create a big output string:	header\001name\001info\001name\001info....\000 */
 extern "C" bytestring *match_string(PT_local *locs) {
     static bytestring bs = {0,0};
-    void          *memfile;
+    GBS_strstruct *memfile;
     PT_probematch *ml;
 
     free(bs.data);
@@ -694,9 +694,10 @@ extern "C" bytestring *match_string(PT_local *locs) {
 /* Create a big output string:	header\001name\001#mismatch\001name\001#mismatch....\000 */
 extern "C" bytestring *MP_match_string(PT_local *locs){
     static bytestring bs = {0,0};
-    char buffer[50];
-    char buffer1[50];
-    void *memfile;
+    
+    char           buffer[50];
+    char           buffer1[50];
+    GBS_strstruct *memfile;
     PT_probematch *ml;
 
     delete bs.data;
@@ -723,8 +724,9 @@ extern "C" bytestring *MP_match_string(PT_local *locs){
 /* Create a big output string:	001name\001name\....\000 */
 extern "C" bytestring *MP_all_species_string(PT_local *){
     static bytestring bs = {0,0};
-    void *memfile;
-    int i;
+    
+    GBS_strstruct *memfile;
+    int            i;
 
     delete bs.data;
     bs.data = 0;

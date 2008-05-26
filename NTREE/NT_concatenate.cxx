@@ -278,10 +278,10 @@ void shiftAlignment(AW_window *aws, long int direction){
 /*----------  Create SAI to display alignments that were concatenated --------------*/
 
 GB_ERROR displayAlignmentInfo(GBDATA *gb_main, GB_ERROR error, char *new_ali_name, char *alignment_separator){
-    GBDATA *gb_extended        = GBT_create_SAI(gb_main,"Alignment Information");
-    GBDATA *gb_data            = GBT_add_data(gb_extended, new_ali_name,"data", GB_STRING);
-    void *ali_str              = GBS_stropen(GBT_get_alignment_len(gb_main,new_ali_name));
-    const char *const_ali_name = con_alignment_list->first_element();
+    GBDATA        *gb_extended    = GBT_create_SAI(gb_main,"Alignment Information");
+    GBDATA        *gb_data        = GBT_add_data(gb_extended, new_ali_name,"data", GB_STRING);
+    GBS_strstruct *ali_str        = GBS_stropen(GBT_get_alignment_len(gb_main,new_ali_name));
+    const char    *const_ali_name = con_alignment_list->first_element();
 
     while (const_ali_name){
         int alignment_len = GBT_get_alignment_len(gb_main,const_ali_name);
@@ -349,8 +349,10 @@ void concatenateAlignments(AW_window *aws) {
             AW_repeated_question ask_about_missing_alignment;
 
             for (GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)){
-                void *str_seq = GBS_stropen(new_alignment_len+1000);            /* create output stream */
-                int ali_len = 0; int ali_ctr = 0;
+                GBS_strstruct *str_seq = GBS_stropen(new_alignment_len+1000); /* create output stream */
+                int            ali_len = 0;
+                int            ali_ctr = 0;
+
                 const_ali_name = con_alignment_list->first_element();
 
                 while(const_ali_name){             // concatenation of the selected alignments in the database

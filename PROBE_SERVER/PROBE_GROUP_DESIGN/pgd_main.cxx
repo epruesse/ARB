@@ -391,11 +391,10 @@ static char *pgd_get_the_names(set<SpeciesName> *species, bytestring &bs, bytest
     GBDATA *gb_name;
     GBDATA *gb_data;
 
-    void *names = GBS_stropen(1024);
-    void *checksums = GBS_stropen(1024);
+    GBS_strstruct *names     = GBS_stropen(1024);
+    GBS_strstruct *checksums = GBS_stropen(1024);
 
     GB_begin_transaction(GLOBAL_gb_main);
-//     char *use = GBT_get_default_alignment(gb_main);
 
     gb_species=GB_search(GLOBAL_gb_main,"species_data",GB_FIND);
     if(!gb_species) return 0;

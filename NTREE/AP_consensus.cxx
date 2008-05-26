@@ -430,8 +430,8 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
 
     if(nrofspecies<20)
     {
-        GBDATA *gb_species,*gb_speciesname;
-        void *strstruct = GBS_stropen(1000);
+        GBDATA        *gb_species;
+        GBS_strstruct *strstruct = GBS_stropen(1000);
 
         if (onlymarked) {
             gb_species = GBT_first_marked_species(GLOBAL_gb_main);
@@ -442,8 +442,9 @@ GB_ERROR CON_export(char *savename,char *align,int **statistic,char *result,int 
         {
             if(GBT_read_sequence(gb_species,align))
             {
-                gb_speciesname=GB_search(gb_species,"name",GB_FIND);
-                const char *name=GB_read_char_pntr(gb_speciesname);
+                GBDATA     *gb_speciesname = GB_search(gb_species,"name",GB_FIND);
+                const char *name           = GB_read_char_pntr(gb_speciesname);
+                
                 GBS_strcat(strstruct,name);
                 GBS_chrcat(strstruct,' ');
             }
