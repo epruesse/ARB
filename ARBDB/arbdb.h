@@ -97,6 +97,7 @@ struct gb_flag_types2 {     /* private flags */
 
 /********************* public ******************/
 
+struct GBS_strstruct;
 
 typedef int GBQUARK;
 
