@@ -29,7 +29,7 @@ ST_Container::ST_Container(int anz_sonden)      // ist ein define das auf 1000 s
 
     anzahl_basissonden =  anz_sonden;
 
-    cachehash = GBS_create_hash(anzahl_basissonden + 1,1);
+    cachehash = GBS_create_hash(anzahl_basissonden + 1, GB_IGNORE_CASE);
     // hashlaenge darf nicht 0 sein, groesser schadet nicht
 
     sondentopf = new Sondentopf(Bakterienliste,Auswahlliste);
@@ -96,7 +96,7 @@ Sonde* ST_Container::get_cached_sonde(char* name)
 Sondentopf::Sondentopf(MO_Liste *BL, MO_Liste *AL)
 {
     Listenliste = new List<void*>;
-    color_hash  = GBS_create_hash((long)(BL->get_laenge()/0.8)+1,1);
+    color_hash  = GBS_create_hash((long)(BL->get_laenge()/0.8)+1, GB_IGNORE_CASE);
     if (!BL)
     {
         aw_message("List of species is empty. Terminating program");

@@ -95,7 +95,7 @@ static output   GLOBAL_out;
 static GB_ERROR init_path2subtree_hash(GBDATA *pd_father, long expected_no_of_subtrees) {
     GB_ERROR error = 0;
     if (!path2subtree) {
-        path2subtree   = GBS_create_hash(expected_no_of_subtrees, 1);
+        path2subtree   = GBS_create_hash(expected_no_of_subtrees, GB_IGNORE_CASE);
         no_of_subtrees = 0;
 
         char length_buf[] = "xxxx"; // first 4 bytes of path is the pathlen

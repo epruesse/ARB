@@ -70,7 +70,7 @@ extern "C" {
         GBUSE(gbtype);
         GBUSE(clientdata);
         GBS_free_hash(Main->table_hash);
-        Main->table_hash = GBS_create_hash(256,0);
+        Main->table_hash = GBS_create_hash(256, GB_MIND_CASE);
     }
 
 #ifdef __cplusplus

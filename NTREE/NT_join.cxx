@@ -114,7 +114,7 @@ void species_rename_join(AW_window *aww){
 
     GBDATA  *gb_species, *gb_next;
     GBDATA  *gb_field;
-    GB_HASH *hash = GBS_create_hash(1000,0);
+    GB_HASH *hash = GBS_create_hash(1000, GB_MIND_CASE);
     aw_openstatus("Joining species");
 
     long maxs = GBT_count_marked_species(GLOBAL_gb_main);

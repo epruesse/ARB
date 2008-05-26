@@ -34,9 +34,9 @@ const char *SEER_open(const char *username, const char *userpasswd){
     if (si_error){
 	return si_error->errorString;
     }
-    seer_global.alignment_hash = GBS_create_hash(256,0);
-    seer_global.attribute_hash = GBS_create_hash(256,0);
-    seer_global.table_hash = GBS_create_hash(256,0);
+    seer_global.alignment_hash = GBS_create_hash(256, GB_MIND_CASE);
+    seer_global.attribute_hash = GBS_create_hash(256, GB_MIND_CASE);
+    seer_global.table_hash = GBS_create_hash(256, GB_MIND_CASE);
     
     return 0;
 }

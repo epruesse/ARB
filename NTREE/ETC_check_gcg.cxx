@@ -42,7 +42,7 @@ GB_ERROR arb_arcg()
     int       i;
     char     *fetchbuffer = 0;
 
-    GB_HASH *hash            = GBS_create_hash(ARCG_HASH_SIZE,0);
+    GB_HASH *hash            = GBS_create_hash(ARCG_HASH_SIZE, GB_MIND_CASE);
     GBDATA  *gb_species_data = GB_entry(GLOBAL_gb_main,"species_data");
     
     if (gb_species_data) {

@@ -243,7 +243,7 @@ struct gb_main_type *gb_make_gb_main_type(const char *path)
 
     Main = (struct gb_main_type *)gbm_get_mem(sizeof(struct gb_main_type),0);
     if (path) Main->path = GB_STRDUP((char*)path);
-    Main->key_2_index_hash = GBS_create_hash(20000,0);
+    Main->key_2_index_hash = GBS_create_hash(20000, GB_MIND_CASE);
     Main->compression_mask = -1;        /* allow all compressions */
     gb_init_cache(Main);
     gb_init_undo_stack(Main);

@@ -62,7 +62,7 @@ int PHMATRIX::search_group(GBT_TREE *node,GB_HASH *hash, long *groupcnt,char *gr
 }
 
 char *PHMATRIX::compress(GBT_TREE *tree){
-    GB_HASH *hash = GBS_create_hash(nentries*2, 1);
+    GB_HASH *hash = GBS_create_hash(nentries*2, GB_IGNORE_CASE);
     int i,j;            // create a hash table of species
     char *error = 0;
     for (i=0;i<nentries;i++) {

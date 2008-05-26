@@ -222,7 +222,7 @@ void arb_prm_primer(int /*prmanz*/)
 
 	for (pos = 0; pos < aprm.al_len; pos++) {
 		prmlen = aprm.prmlen + ADD_LEN;
-		mhash = GBS_create_hash(PRM_HASH_SIZE,0);
+		mhash = GBS_create_hash(PRM_HASH_SIZE, GB_MIND_CASE);
 		pspecies = 0;
 		if (pos % 50 == 0) printf("Pos. %i (%i)\n",pos,aprm.al_len);
 		cutoff_cnt = aprm.prmanz+1;
@@ -234,7 +234,7 @@ void arb_prm_primer(int /*prmanz*/)
 		}
 		if (pspecies*100 >= aprm.prmsmin * aprm.sp_count ) {	/* reduce primer length */
 			for (hash = mhash; prmlen >= aprm.prmlen; prmlen-=aprm.reduce) {
-				hash = GBS_create_hash(aprm.prmanz*2,0);
+				hash = GBS_create_hash(aprm.prmanz*2, GB_MIND_CASE);
 				aprm.hash = hash;
 
 				aprm.key_cnt = 0;

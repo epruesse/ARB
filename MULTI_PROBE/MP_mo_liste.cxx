@@ -90,7 +90,7 @@ void MO_Liste::get_all_species()
 
     // Initialisieren der Hashtabelle
 
-    hashptr = GBS_create_hash(laenge + 1,1);
+    hashptr = GBS_create_hash(laenge + 1, GB_IGNORE_CASE);
 
 
     toksep[0] = 1;
@@ -150,7 +150,7 @@ positiontype MO_Liste::fill_marked_bakts()
     }
     current = 1;    // ACHTUNG, CURRENT beginnt bei 1, da Hash bei 1 beginnt, d.h. Array[0] ist NULL
 
-    hashptr = GBS_create_hash(laenge,1);
+    hashptr = GBS_create_hash(laenge, GB_IGNORE_CASE);
 
 
     for ( gb_species = GBT_first_marked_species(GLOBAL_gb_main);

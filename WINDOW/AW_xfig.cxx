@@ -16,6 +16,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.11  2008/05/26 11:04:52  westram
+ * - fixed calls to GBS_create_hash
+ *
  * Revision 1.10  2007/07/31 15:38:03  westram
  * - simpler and straight-forward error handling for AW_xfig-ctor
  * - sometimes xfig-files are stored with magnification != 100.00
@@ -266,7 +269,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
             }
 
             if (!error) {
-                hash = GBS_create_hash(100,0);
+                hash = GBS_create_hash(100, GB_MIND_CASE);
                 maxx = maxy = 0;
                 minx = miny = INT_MAX;
 
@@ -608,7 +611,7 @@ void AW_xfig::create_gcs(AW_device *device, int depth)
     GB_HASH *gchash;
     int gc;
     char fontstring[100];
-    gchash = GBS_create_hash(100,0);
+    gchash = GBS_create_hash(100, GB_MIND_CASE);
 
     struct AW_xfig_text *xtext;
     gc = 0;

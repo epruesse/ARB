@@ -119,7 +119,7 @@ const char *BI_helix::initFromData(const char *helix_nr, const char *helix, size
 {
     clear_error();
     
-    GB_HASH *hash = GBS_create_hash(256,1);
+    GB_HASH *hash = GBS_create_hash(256, GB_IGNORE_CASE);
     size_t pos;
     char c;
     char ident[256];

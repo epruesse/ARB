@@ -246,7 +246,7 @@ void awt_pro_a_nucs_convert_init(GBDATA *gb_main)
     awt_pro_a_nucs               = new arb_r2a_struct;
     awt_pro_a_nucs->time_stamp   = ++awt_pro_a_nucs_convert_init_time_stamp;
     awt_pro_a_nucs->nuc_2_bitset = AP_create_dna_to_ap_bases();
-    awt_pro_a_nucs->t2i_hash     = GBS_create_hash(1024,1); // case insensitive
+    awt_pro_a_nucs->t2i_hash     = GBS_create_hash(1024, GB_IGNORE_CASE); // case insensitive
 
     AWT_initialize_codon_tables();
 

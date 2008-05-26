@@ -264,7 +264,7 @@ void   awt_map_table_field_rem(AW_root *aw_root,awt_table *awtt){
 }
 
 void create_ad_table_field_admin(AW_window *aww,GBDATA *gb_main,const char *tname){
-    static GB_HASH *table_to_win_hash = GBS_create_hash(256,0);
+    static GB_HASH *table_to_win_hash = GBS_create_hash(256, GB_MIND_CASE);
     AW_root *aw_root = aww->get_root();
     char *table_name;
     if (tname){

@@ -490,7 +490,7 @@ static GB_ERROR gbl_define(GBL_command_arguments *args) {
         char       *cmd  = unEscapeString(args->vparam[1].str);
         char       *oldcmd;
 
-        if (!definedCommands) definedCommands = GBS_create_hash(100, 0);
+        if (!definedCommands) definedCommands = GBS_create_hash(100, GB_MIND_CASE);
 
         oldcmd = (char*)GBS_read_hash(definedCommands, name);
         if (oldcmd) free(oldcmd);
@@ -1639,7 +1639,7 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
     long cached;
     *error = 0;
     if (!cached_taxonomies) {
-        cached_taxonomies = GBS_create_hash(20, 1);
+        cached_taxonomies = GBS_create_hash(20, GB_IGNORE_CASE);
     }
     cached = GBS_read_hash(cached_taxonomies, tree_name);
     if (!cached) {
@@ -1662,7 +1662,7 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
                 int                     group_counter = 0;
 
                 ct->tree_name = strdup(tree_name);
-                ct->taxonomy  = GBS_create_hash((int)(nodes*2), 1);
+                ct->taxonomy  = GBS_create_hash((int)(nodes*2), GB_IGNORE_CASE);
                 ct->groups    = 0; // counted below
 
                 build_taxonomy_rek(tree, ct->taxonomy, "<root>", &group_counter);

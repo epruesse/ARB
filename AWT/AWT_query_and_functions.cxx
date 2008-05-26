@@ -218,7 +218,7 @@ void awt_delete_species_in_list(void *dummy, struct adaqbsstruct *cbs)
 
 GB_HASH *awt_create_species_hash(GBDATA *gb_main, char *key,int split)
 {
-    GB_HASH *hash = GBS_create_hash(GBT_get_species_hash_size(gb_main),1);
+    GB_HASH *hash = GBS_create_hash(GBT_get_species_hash_size(gb_main), GB_IGNORE_CASE);
     GBDATA  *gb_species;
     GBDATA  *gb_name;
     char    *keyas;
@@ -621,7 +621,7 @@ void awt_search_equal_entries(AW_window *,struct adaqbsstruct *cbs,int tokenize)
     }
 
     if (hashsize) {
-        GB_HASH *hash    = GBS_create_hash(hashsize, 1);
+        GB_HASH *hash    = GBS_create_hash(hashsize, GB_IGNORE_CASE);
         AW_root *aw_root = cbs->aws->get_root();
 
         for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);

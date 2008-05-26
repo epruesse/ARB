@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Fri May/16/2008 11:16 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon May/26/2008 12:05 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -120,7 +120,7 @@ namespace {
 
         if (gb_subtrees_cnt) {
             int subtrees = GB_read_int(gb_subtrees_cnt);
-            path_cache   = GBS_create_hash(subtrees, 1);
+            path_cache   = GBS_create_hash(subtrees, GB_IGNORE_CASE);
 
             GBDATA *gb_subtrees = GB_search(gb_main, "subtrees", GB_FIND);
             if (gb_subtrees) {
@@ -153,7 +153,7 @@ namespace {
 
         if (gb_probegroups) {
             int probegroups = GB_read_int(gb_probegroups);
-            group_cache     = GBS_create_hash(probegroups, 1);
+            group_cache     = GBS_create_hash(probegroups, GB_IGNORE_CASE);
 
             GBDATA *gb_probe_groups = GB_search(gb_main, "probe_groups", GB_FIND);
             if (gb_probe_groups) {
