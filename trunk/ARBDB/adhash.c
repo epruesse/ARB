@@ -21,9 +21,9 @@ struct gbs_hash_entry {
     struct gbs_hash_entry *next;
 };
 typedef struct gbs_hash_struct {
-    size_t size;
-    size_t nelem;
-    int    upper_case;
+    size_t  size;
+    size_t  nelem;
+    GB_CASE case_sens;
 
     size_t loop_pos;
     struct gbs_hash_entry *loop_entry;
@@ -241,26 +241,7 @@ long GBS_get_a_prime(long above_or_equal_this) {
                     Some Hash Procedures for [string,long]
 ********************************************************************************************/
 
-#define GB_CALC_HASH_INDEX(string,index,size) do {                      \
-        const char *local_ptr = (string);                               \
-        int local_i;                                                    \
-        (index) = 0xffffffffL;                                          \
-        while ((local_i=(*(local_ptr++)))) {                            \
-            (index) = crctab[((int)(index)^local_i) & 0xff] ^ ((index) >> 8); \
-        }                                                               \
-        (index) = (index) % (size);                                     \
-    } while(0)
-
-#define GB_CALC_HASH_INDEX_TO_UPPER(string,index,size) {                \
-        const char *_ptr = string;                                      \
-        int _i;                                                         \
-        index = 0xffffffffL; while ( (_i = *(_ptr++))){                 \
-            index = crctab[((int) index ^ toupper(_i)) & 0xff] ^ (index >> 8); \
-        }                                                               \
-        index = index % size;                                           \
-    }
-
-GB_HASH *GBS_create_hash(long user_size,int ignore_case) {
+GB_HASH *GBS_create_hash(long user_size, GB_CASE case_sens) {
     /* Create a hash of size size, this hash is using linked list to avoid collisions,
      *  ignore_case == 0 -> 'a != A'
      *  ignore_case != 0 -> 'a == A'
@@ -268,11 +249,11 @@ GB_HASH *GBS_create_hash(long user_size,int ignore_case) {
     struct gbs_hash_struct *hs;
     long                    size    = GBS_get_a_prime(user_size); // use next prime number for hash size
 
-    hs             = (struct gbs_hash_struct *)GB_calloc(sizeof(struct gbs_hash_struct),1);
-    hs->size       = size;
-    hs->nelem      = 0;
-    hs->upper_case = ignore_case;
-    hs->entries    = (struct gbs_hash_entry **)GB_calloc(sizeof(struct gbs_hash_entry *), size);
+    hs            = (struct gbs_hash_struct *)GB_calloc(sizeof(struct gbs_hash_struct),1);
+    hs->size      = size;
+    hs->nelem     = 0;
+    hs->case_sens = case_sens;
+    hs->entries   = (struct gbs_hash_entry **)GB_calloc(sizeof(struct gbs_hash_entry *), size);
     return hs;
 }
 
@@ -308,8 +289,7 @@ void GBS_optimize_hash(GB_HASH *hs) {
                     long new_idx;
                     next = e->next;
 
-                    if (hs->upper_case) { GB_CALC_HASH_INDEX_TO_UPPER(e->key, new_idx, new_size); }
-                    else { GB_CALC_HASH_INDEX(e->key, new_idx, new_size); }
+                    GB_CALC_HASH_INDEX(e->key, new_idx, new_size, hs->case_sens);
 
                     e->next              = new_entries[new_idx];
                     new_entries[new_idx] = e;
@@ -392,138 +372,113 @@ char *GBS_string_2_hashtab(GB_HASH *hash, char *data){  /* destroys data */
     return error;
 }
 
-long GBS_read_hash(GB_HASH *hs,const char *key)
-{
+static struct gbs_hash_entry *find_hash_entry(GB_HASH *hs, const char *key, unsigned long *index) {
     struct gbs_hash_entry *e;
-    unsigned long i;
-    if (hs->upper_case){
-        GB_CALC_HASH_INDEX_TO_UPPER(key,i,hs->size);
-        for(e=hs->entries[i];e;e=e->next){
-            if (!strcasecmp(e->key,key)) return e->val;
+    if (hs->case_sens == GB_IGNORE_CASE) {
+        GB_CALC_HASH_INDEX_CASE_IGNORED(key,*index,hs->size);
+        for(e=hs->entries[*index];e;e=e->next){
+            if (!strcasecmp(e->key,key)) return e;
         }
-        return 0;
-    }else{
-        GB_CALC_HASH_INDEX(key,i,hs->size);
-        for(e=hs->entries[i];e;e=e->next){
-            if (!strcmp(e->key,key)) return e->val;
-        }
-        return 0;
     }
+    else {
+        GB_CALC_HASH_INDEX_CASE_SENSITIVE(key,*index,hs->size);
+        for(e=hs->entries[*index];e;e=e->next){
+            if (!strcmp(e->key,key)) return e;
+        }
+    }
+    return 0;
 }
 
+long GBS_read_hash(GB_HASH *hs,const char *key) {
+    unsigned long          i;
+    struct gbs_hash_entry *e = find_hash_entry(hs, key, &i);
 
-long GBS_write_hash(GB_HASH *hs,const char *key,long val)
-{
-    /* returns the previous value */
-    struct gbs_hash_entry *e;
-    long i2;
-    unsigned long i;
-    if (hs->upper_case){
-        GB_CALC_HASH_INDEX_TO_UPPER(key,i,hs->size);
-        for(e=hs->entries[i];e;e=e->next){
-            if (!strcasecmp(e->key,key)) break;
-        }
-    }else{
-        GB_CALC_HASH_INDEX(key,i,hs->size);
-        for(e=hs->entries[i];e;e=e->next){
-            if (!strcmp(e->key,key)) break;
-        }
-    }
-    if (e){
-        i2 = e->val;
+    return e ? e->val : 0;
+}
+
+static long write_hash(GB_HASH *hs, char *key, GB_BOOL copyKey, long val) {
+    /* returns the old value (or 0 if key had no entry)
+     * if 'copyKey' == GB_FALSE, 'key' will be freed (now or later) and may be invalid!
+     * if 'copyKey' == GB_TRUE, 'key' will not be touched in any way!
+     */
+    unsigned long          i;
+    struct gbs_hash_entry *e       = find_hash_entry(hs, key, &i);
+    long                   oldval  = 0;
+
+    if (e) {
+        oldval = e->val;
         if (!val) {
+            // delete the hash entry
+            // (val == 0 is not stored, cause 0 is the default value)
             hs->nelem--;
             if (hs->entries[i] == e) {
                 hs->entries[i] = e->next;
-            }else{
+            }
+            else {
                 struct gbs_hash_entry *ee;
-                for (ee = hs->entries[i]; ee->next != e; ee= ee->next);
-                if (ee->next ==e) {
+                for (ee = hs->entries[i]; ee->next != e; ee = ee->next);
+                if (ee->next == e) {
                     ee->next = e->next;
-                } else{
+                }
+                else {
                     GB_internal_error("Database may be corrupt, hash tables error");
                 }
             }
-            free( e->key );
+            free(e->key);
             gbm_free_mem((char *)e,sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
-        }else{
+        }
+        else {
             e->val = val;
         }
-        return i2;
+        if (!copyKey) free(key); // already had an entry -> delete usused mem
     }
+    else if (val != 0) {        // don't store 0
+        // create new hash entry
+        e       = (struct gbs_hash_entry *)gbm_get_mem(sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
+        e->next = hs->entries[i];
+        e->key  = copyKey ? GB_STRDUP(key) : key;
+        e->val  = val;
 
-    if (val == 0) return 0;
-
-    e = (struct gbs_hash_entry *)gbm_get_mem(sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
-    e->next = hs->entries[i];
-    e->key = GB_STRDUP(key);
-    e->val = val;
-    hs->entries[i] = e;
-    hs->nelem++;
-    return 0;
+        hs->entries[i] = e;
+        hs->nelem++;
+    }
+    else {
+        if (!copyKey) free(key); // don't need an entry -> delete usused mem
+    }
+    return oldval;
 }
 
-long GBS_write_hash_no_strdup(GB_HASH *hs,char *key,long val)
-     /* does no GB_STRDUP, but the string is freed later in GBS_free_hash,
-    so the user has to 'malloc' the string and give control to the hash functions !!!! */
-{
-    struct gbs_hash_entry *e;
-    long i2;
-    unsigned long i;
-    if (hs->upper_case){
-        GB_CALC_HASH_INDEX_TO_UPPER(key,i,hs->size);
-        for(e=hs->entries[i];e;e=e->next){
-            if (!strcasecmp(e->key,key)) break;
-        }
-    }else{
-        GB_CALC_HASH_INDEX(key,i,hs->size);
-        for(e=hs->entries[i];e;e=e->next){
-            if (!strcmp(e->key,key)) break;
-        }
-    }
-    if (e){
-
-        i2 = e->val;
-        e->val = val;
-        return i2;
-    }
-
-    e = (struct gbs_hash_entry *)gbm_get_mem(sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
-    e->next = hs->entries[i];
-    e->key = key;
-    e->val = val;
-    hs->entries[i] = e;
-    hs->nelem++;
-    return 0;
+long GBS_write_hash(GB_HASH *hs, const char *key, long val) {
+    /* returns the old value (or 0 if key had no entry) */
+    return write_hash(hs, (char*)key, GB_TRUE, val);
 }
 
-long GBS_incr_hash(GB_HASH *hs,const char *key)
-{
-    struct gbs_hash_entry *e;
-    unsigned long i;
-    if (hs->upper_case){
-        GB_CALC_HASH_INDEX_TO_UPPER(key,i,hs->size);
-        for(e=hs->entries[i];e;e=e->next){
-            if (!strcasecmp(e->key,key)) break;
-        }
-    }else{
-        GB_CALC_HASH_INDEX(key,i,hs->size);
-        for(e=hs->entries[i];e;e=e->next){
-            if (!strcmp(e->key,key)) break;
-        }
-    }
+long GBS_write_hash_no_strdup(GB_HASH *hs, char *key, long val) {
+    /* same as GBS_write_hash, but does no GB_STRDUP. 'key' is freed later in GBS_free_hash,
+     * so the user has to 'malloc' the string and give control to the hash.
+     * Note: after calling this function 'key' may be invalid!
+    */
+    return write_hash(hs, key, GB_FALSE, val);
+}
+
+long GBS_incr_hash(GB_HASH *hs,const char *key) {
+    /* returns new value */
+    unsigned long          i;
+    struct gbs_hash_entry *e = find_hash_entry(hs, key, &i);
+
     if (e) {
         e->val++;
-        return e->val;
     }
-    
-    e = (struct gbs_hash_entry *)gbm_get_mem(sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
-    e->next = hs->entries[i];
-    e->key = (char *)GB_STRDUP(key);
-    e->val = 1;
-    hs->entries[i] = e;
-    hs->nelem++;
-    return 1;
+    else {
+        e       = (struct gbs_hash_entry *)gbm_get_mem(sizeof(struct gbs_hash_entry),GBM_HASH_INDEX);
+        e->next = hs->entries[i];
+        e->key  = (char *)GB_STRDUP(key);
+        e->val  = 1;
+        
+        hs->entries[i] = e;
+        hs->nelem++;
+    }
+    return e->val;
 }
 
 #if defined(DEVEL_RALF)
@@ -628,7 +583,7 @@ static void init_hash_statistic_summary(gbs_hash_statistic_summary *stat) {
 
 static gbs_hash_statistic_summary *get_stat_summary(const char *id) {
     long found;
-    if (!stat_hash) stat_hash = GBS_create_hash(10, 0);
+    if (!stat_hash) stat_hash = GBS_create_hash(10, GB_MIND_CASE);
     found                     = GBS_read_hash(stat_hash, id);
     if (!found) {
         gbs_hash_statistic_summary *stat = GB_calloc(1, sizeof(*stat));
