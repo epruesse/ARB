@@ -977,7 +977,7 @@ struct GBS_strstruct {
 
 static struct GBS_strstruct *last_used = 0;
 
-void *GBS_stropen(long init_size)   { /* opens a memory file */
+struct GBS_strstruct *GBS_stropen(long init_size)   { /* opens a memory file */
     struct GBS_strstruct *strstr;
 
     if (last_used && last_used->GBS_strcat_data_size >= init_size) {
@@ -996,15 +996,14 @@ void *GBS_stropen(long init_size)   { /* opens a memory file */
     strstr->GBS_strcat_pos     = 0;
     strstr->GBS_strcat_data[0] = 0;
 
-    return (void *)strstr;
+    return strstr;
 }
 
-char *GBS_strclose(void *strstruct)
-     /* returns a char* copy of the memory file */
-{
-    struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
-    long                  length = strstr->GBS_strcat_pos;
-    char                 *str    = (char*)malloc(length+1);
+char *GBS_strclose(struct GBS_strstruct *strstr) {
+    /* returns a char* copy of the memory file */
+    
+    long  length = strstr->GBS_strcat_pos;
+    char *str    = (char*)malloc(length+1);
 
     gb_assert(str);
 
@@ -1027,42 +1026,26 @@ char *GBS_strclose(void *strstruct)
     }
 
     return str;
-
-    /*     old version: */
-    /*     char                 *str; */
-    /*     struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct; */
-    /*     if (optimize) { */
-    /*         str = GB_STRDUP(strstr->GBS_strcat_data); */
-    /*         free(strstr->GBS_strcat_data); */
-    /*     }else{ */
-    /*         str = strstr->GBS_strcat_data; */
-    /*     } */
-    /*     free((char *)strstr); */
-    /*     return str; */
 }
 
-GB_BUFFER GBS_mempntr(void *strstruct)   /* returns the memory file */
-{
-    struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
+GB_BUFFER GBS_mempntr(struct GBS_strstruct *strstr) {
+    /* returns the memory file */
     return strstr->GBS_strcat_data;
 }
 
-long GBS_memoffset(void *strstruct) /* returns the memory file */
-{
-    struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
+long GBS_memoffset(struct GBS_strstruct *strstr) {
+    /* returns the offset into the memory file */
     return strstr->GBS_strcat_pos;
 }
 
-/** Removes byte_count characters at the tail of a memfile */
-void GBS_str_cut_tail(void *strstruct, int byte_count){
-    struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
+void GBS_str_cut_tail(struct GBS_strstruct *strstr, int byte_count){
+    /* Removes byte_count characters at the tail of a memfile */
     strstr->GBS_strcat_pos -= byte_count;
     if (strstr->GBS_strcat_pos < 0) strstr->GBS_strcat_pos = 0;
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos] = 0;
 }
 
-void gbs_strensure_mem(void *strstruct,long len){
-    struct GBS_strstruct *strstr     = (struct GBS_strstruct *)strstruct;
+static void gbs_strensure_mem(struct GBS_strstruct *strstr,long len) {
     if (strstr->GBS_strcat_pos + len + 2 >= strstr->GBS_strcat_data_size) {
         strstr->GBS_strcat_data_size = (strstr->GBS_strcat_pos+len+2)*3/2;
         strstr->GBS_strcat_data      = (char *)realloc((MALLOC_T)strstr->GBS_strcat_data,(size_t)strstr->GBS_strcat_data_size);
@@ -1072,23 +1055,21 @@ void gbs_strensure_mem(void *strstruct,long len){
     }
 }
 
-void GBS_strcat(void *strstruct,const char *ptr) {
+void GBS_strcat(struct GBS_strstruct *strstr,const char *ptr) {
     /* append string to strstruct */
-    struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
-    long                  len    = strlen(ptr);
+    long len = strlen(ptr);
 
-    gbs_strensure_mem(strstruct,len);
+    gbs_strensure_mem(strstr,len);
     GB_MEMCPY(strstr->GBS_strcat_data+strstr->GBS_strcat_pos,ptr,(int)len);
     strstr->GBS_strcat_pos += len;
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos]  = 0;
 }
 
-void GBS_strncat(void *strstruct,const char *ptr,long len) {
+void GBS_strncat(struct GBS_strstruct *strstr,const char *ptr,long len) {
     /* append some bytes string to strstruct
      * (caution : copies zero byte and things behind!)
      */
-    struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
-    gbs_strensure_mem(strstruct,len+2);
+    gbs_strensure_mem(strstr,len+2);
     GB_MEMCPY(strstr->GBS_strcat_data+strstr->GBS_strcat_pos,ptr,(int)len);
     strstr->GBS_strcat_pos += len;
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos] = 0;
@@ -1096,16 +1077,14 @@ void GBS_strncat(void *strstruct,const char *ptr,long len) {
 
 
 
-void GBS_strnprintf(void *strstruct, long len, const char *templat, ...) {
+void GBS_strnprintf(struct GBS_strstruct *strstr, long len, const char *templat, ...) {
     /* goes to header: __ATTR__FORMAT(3)  */
-
-    struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
-    char                 *buffer;
-    int                   psize;
-
-    va_list parg;
+    char    *buffer;
+    int      psize;
+    va_list  parg;
+    
     va_start(parg,templat);
-    gbs_strensure_mem(strstruct,len+2);
+    gbs_strensure_mem(strstr,len+2);
 
     buffer = strstr->GBS_strcat_data+strstr->GBS_strcat_pos;
 
@@ -1122,32 +1101,23 @@ void GBS_strnprintf(void *strstruct, long len, const char *templat, ...) {
     strstr->GBS_strcat_pos += strlen(buffer);
 }
 
-
-
-void GBS_chrcat(void *strstruct,char ch)    /* this function adds many strings.
-                                               The first call should be a null pointer */
-{
-    struct GBS_strstruct *strstr = (struct GBS_strstruct *)strstruct;
-    gbs_strensure_mem(strstruct, 1);
+void GBS_chrcat(struct GBS_strstruct *strstr,char ch) {
+    gbs_strensure_mem(strstr, 1);
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos++] = ch;
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos] = 0;
 }
 
-void GBS_intcat(void *strstruct,long val)
-{
+void GBS_intcat(struct GBS_strstruct *strstr,long val) {
     char buffer[200];
     long len = sprintf(buffer,"%li",val);
-    GBS_strncat(strstruct,buffer, len);
+    GBS_strncat(strstr, buffer, len);
 }
 
-void GBS_floatcat(void *strstruct,double val)
-{
+void GBS_floatcat(struct GBS_strstruct *strstr,double val) {
     char buffer[200];
     long len = sprintf(buffer,"%f",val);
-    GBS_strncat(strstruct,buffer, len);
+    GBS_strncat(strstr, buffer, len);
 }
-
-
 
 /********************************************************************************************
                     String Replace
