@@ -31,7 +31,7 @@ AWT_species_set_root::AWT_species_set_root(GBDATA *gb_maini,long nspeciesi){
         }
         diff_bits[i] = count;
     }
-    species_hash = GBS_create_hash(nspecies,GB_TRUE);
+    species_hash = GBS_create_hash(nspecies, GB_IGNORE_CASE);
     species_counter = 1;
 }
 

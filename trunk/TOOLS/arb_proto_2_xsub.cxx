@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     char *head = GB_read_file(argv[2]);
     printf("%s",head); /* inserting the *.xs.default in the output *.xs file*/
 
-    GB_HASH *exclude_hash = GBS_create_hash(1024,0); /*prepare list for excluded functions from xs header*/
+    GB_HASH *exclude_hash = GBS_create_hash(1024, GB_MIND_CASE); /*prepare list for excluded functions from xs header*/
     {
         char *tok;
         /*   initializer            cond  updater                */

@@ -36,7 +36,7 @@ GB_ERROR GB_install_link_follower(GBDATA *gb_main, const char *link_type, GB_Lin
     GB_ERROR error =0;
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     if (!Main->resolve_link_hash){
-        Main->resolve_link_hash = GBS_create_hash(256,0);
+        Main->resolve_link_hash = GBS_create_hash(256, GB_MIND_CASE);
     }
     error = GB_check_link_name(link_type);
     if (error) return error;

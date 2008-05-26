@@ -2,7 +2,7 @@
 /*                                                                 */
 /*   File      : adhashtools.c                                     */
 /*   Purpose   : convenience functions for hashes                  */
-/*   Time-stamp: <Fri May/16/2008 11:03 MET Coder@ReallySoft.de>   */
+/*   Time-stamp: <Mon May/26/2008 12:05 MET Coder@ReallySoft.de>   */
 /*                                                                 */
 /*   Coded by Ralf Westram (coder@reallysoft.de) in July 2007      */
 /*   Institute of Microbiology (Technical University Munich)       */
@@ -32,7 +32,7 @@ void GBT_add_item_to_hash(GBDATA *gb_item, GB_HASH *item_hash) {
 typedef GBDATA *(*item_iterator)(GBDATA *);
 
 static GB_HASH *create_item_hash(long size, GBDATA *gb_start, item_iterator getFirst, item_iterator getNext) {
-    GB_HASH *item_hash = GBS_create_hash(size, 1);
+    GB_HASH *item_hash = GBS_create_hash(size, GB_IGNORE_CASE);
     GBDATA  *gb_item;
 
     for (gb_item = getFirst(gb_start); gb_item; gb_item = getNext(gb_item)) {

@@ -100,7 +100,7 @@ static void map_awXKey(Display *display, const awXKeymap *awxk) {
 void aw_install_xkeys(Display *display) {
     int i;
     
-    awxkeymap_string_2_key_hash = GBS_create_hash(KEYMAX, 0);
+    awxkeymap_string_2_key_hash = GBS_create_hash(KEYMAX, GB_MIND_CASE);
     awxkeymap_xkey_2_key_hash   = GBS_create_hashi(KEYMAX);
 
     // auto-generate all key/modifier combinations for keys in awxkeymap_modfree

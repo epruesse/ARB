@@ -964,7 +964,7 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons, cons
         msg         = GBS_global_string_copy("%s\n(Program error - Unsure what happens when you click ok)", msg);
     }
 
-    if (!hash_windows) hash_windows = GBS_create_hash(256,0);
+    if (!hash_windows) hash_windows = GBS_create_hash(256, GB_MIND_CASE);
     if (!msg) msg                   = "Unknown Message";
     char *hindex                    = (char *)calloc(sizeof(char),strlen(msg) + strlen(button_list) + 3);
     sprintf(hindex,"%s&&%s",msg,button_list);

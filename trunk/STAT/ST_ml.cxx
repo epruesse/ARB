@@ -533,7 +533,7 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
 
     // aw_openstatus("Initializing Online Statistic");
     /* send species into hash table */
-    hash_2_ap_tree = GBS_create_hash(1000, 0);
+    hash_2_ap_tree = GBS_create_hash(1000, GB_MIND_CASE);
     // aw_status("Loading Tree");
     /* delete species */
     if (species_names) { // keep names
@@ -541,15 +541,12 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
         if (error)
             return error;
         char *l, *n;
-        keep_species_hash = GBS_create_hash(GBT_get_species_hash_size(gb_main),
-                0);
+        keep_species_hash = GBS_create_hash(GBT_get_species_hash_size(gb_main), GB_MIND_CASE);
         for (l = (char *) species_names; l; l = n) {
             n = strchr(l, 1);
-            if (n)
-                *n = 0;
+            if (n) *n = 0;
             GBS_write_hash(keep_species_hash, l, 1);
-            if (n)
-                *(n++) = 1;
+            if (n) *(n++) = 1;
         }
 
         st_delete_species_st_ml = this;

@@ -282,7 +282,7 @@ void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile){
     GBDATA *gb_sai_data = GB_search(GLOBAL_gb_main,"extended_data",GB_FIND);
     if (!gb_sai_data) return;
 
-    GB_HASH *hash = GBS_create_hash(100,1);
+    GB_HASH *hash = GBS_create_hash(100, GB_IGNORE_CASE);
     GBDATA  *gb_sai;
 
     for (gb_sai = GBT_first_SAI_rel_exdata(gb_sai_data); gb_sai; gb_sai = GBT_next_SAI(gb_sai)) {
@@ -420,7 +420,7 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
                     break;
                 case CONF_COMBINE: {
                     // store all marked species in hash and unmark them
-                    was_marked = GBS_create_hash(GBT_get_species_hash_size(GLOBAL_gb_main), 1);
+                    was_marked = GBS_create_hash(GBT_get_species_hash_size(GLOBAL_gb_main), GB_IGNORE_CASE);
                     for (GBDATA *gbd = GBT_first_marked_species(GLOBAL_gb_main); gbd; gbd = GBT_next_marked_species(gbd)) {
                         int marked = GB_read_flag(gbd);
                         if (marked) {
@@ -512,7 +512,7 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE **ptree,const char *conf_
     }
 
     GB_transaction  dummy2(GLOBAL_gb_main); // open close transaction
-    GB_HASH        *used    = GBS_create_hash(GBT_get_species_hash_size(GLOBAL_gb_main), 0);
+    GB_HASH        *used    = GBS_create_hash(GBT_get_species_hash_size(GLOBAL_gb_main), GB_MIND_CASE);
     GBS_strstruct  *topfile = GBS_stropen(1000);
     GBS_strstruct  *topmid  = GBS_stropen(10000);
     {

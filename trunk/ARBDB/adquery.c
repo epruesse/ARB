@@ -656,7 +656,7 @@ GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring)
 void gb_install_command_table(GBDATA *gb_main,struct GBL_command_table *table)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    if (!Main->command_hash) Main->command_hash = GBS_create_hash(1024,1);
+    if (!Main->command_hash) Main->command_hash = GBS_create_hash(1024, GB_IGNORE_CASE);
 
     for (; table->command_identifier; table++) {
         GBS_write_hash(Main->command_hash,table->command_identifier,(long)table->function);

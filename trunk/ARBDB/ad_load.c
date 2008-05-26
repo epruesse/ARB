@@ -1080,7 +1080,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
         return 1;
     }
 
-    if (!Main->key_2_index_hash) Main->key_2_index_hash = GBS_create_hash(30000,0);
+    if (!Main->key_2_index_hash) Main->key_2_index_hash = GBS_create_hash(30000, GB_MIND_CASE);
 
     first_free_key = 0;
     gb_free_all_keys(Main);

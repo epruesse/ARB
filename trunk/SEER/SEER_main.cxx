@@ -259,7 +259,7 @@ AW_window *SEER_load_arb_and_create_selector_panel(AW_root *aw_root,SEER_OPENS_A
 		aw_root->awar_int(awar_buffer,1);
 		aws->create_toggle(awar_buffer);
 		GBS_write_hash(seer_global.table_hash,td->tablename,(long)td);
-		td->attribute_hash = GBS_create_hash(256,0);
+		td->attribute_hash = GBS_create_hash(256, GB_MIND_CASE);
 		SeerInterfaceAttribute *at;		
 		
 		for (at = td->firstAttribute();

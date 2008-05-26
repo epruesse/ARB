@@ -312,7 +312,7 @@ void seer_check_upload_attribute_list(AW_window *aws){
 	    GBS_hash_do_loop(seer_global.arb_attribute_hash,seer_free_attribute_pointers);
 	    GBS_free_hash(seer_global.arb_attribute_hash);
 	}
-	seer_global.arb_attribute_hash = GBS_create_hash(256,0);
+	seer_global.arb_attribute_hash = GBS_create_hash(256, GB_MIND_CASE);
 	GBDATA *gb_key;
 	GBDATA *key_name;
 	GB_ERROR error = 0;

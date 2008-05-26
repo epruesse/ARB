@@ -115,7 +115,7 @@ static GB_HASH *an_get_prefix_hash() {
         size_t     elems     = an_shorts_elems(sin);
         if (elems<100) elems = 100;
         
-        GB_HASH *hash = GBS_create_hash(2*elems, 1);
+        GB_HASH *hash = GBS_create_hash(2*elems, GB_IGNORE_CASE);
 
         while (sin) {
             GBS_write_hash_no_strdup(hash, GB_strndup(sin->shrt, PREFIXLEN), (long)sin);
@@ -765,7 +765,7 @@ extern "C" aisc_string get_short(AN_local *locs)
         gb_assert(second_len>=5 && second_len <= 8);
 
         if (lookup_an_revers(aisc_main, test_short)) {
-            if (!nameModHash) nameModHash = GBS_create_hash(100, 1);
+            if (!nameModHash) nameModHash = GBS_create_hash(100, GB_IGNORE_CASE);
 
             char *test_short_dup = strdup(test_short);
             long  count          = GBS_read_hash(nameModHash, test_short);

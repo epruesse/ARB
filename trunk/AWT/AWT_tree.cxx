@@ -1898,7 +1898,7 @@ static int ap_mark_duplicates_rek(AP_tree *at, GB_HASH *seen_species) {
 
 void AP_tree::mark_duplicates(GBDATA *gb_main) {
     GB_transaction  ta(gb_main);
-    GB_HASH        *seen_species = GBS_create_hash(GBT_get_species_hash_size(gb_main), 1);
+    GB_HASH        *seen_species = GBS_create_hash(GBT_get_species_hash_size(gb_main), GB_IGNORE_CASE);
 
     int dup_zombies = ap_mark_duplicates_rek(this, seen_species);
     if (dup_zombies) {

@@ -1222,9 +1222,9 @@ void AW_root::init_variables(AW_default database) {
 
     application_database = database;
 
-    hash_table_for_variables = GBS_create_hash(1000, 0);
-    hash_for_windows = GBS_create_hash(100, 0);
-    prvt->action_hash = GBS_create_hash(1000, 0);
+    hash_table_for_variables = GBS_create_hash(1000, GB_MIND_CASE);
+    hash_for_windows = GBS_create_hash(100, GB_MIND_CASE);
+    prvt->action_hash = GBS_create_hash(1000, GB_MIND_CASE);
     int i;
     for (i=0; i<1000; i++) {
         if (aw_fb[i].awar == 0)

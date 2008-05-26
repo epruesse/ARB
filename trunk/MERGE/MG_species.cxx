@@ -579,7 +579,7 @@ void MG_transfer_species_list(AW_window *aww) {
     bool is_genome_db1 = GEN_is_genome_db(GLOBAL_gb_merge, -1);
     bool is_genome_db2 = GEN_is_genome_db(GLOBAL_gb_dest, -1);
 
-    GB_HASH *error_suppressor     = GBS_create_hash(50, 1);
+    GB_HASH *error_suppressor     = GBS_create_hash(50, GB_IGNORE_CASE);
     GB_HASH *dest_species_hash    = GBT_create_species_hash(GLOBAL_gb_dest);
     GB_HASH *source_organism_hash = is_genome_db1 ? GBT_create_organism_hash(GLOBAL_gb_merge) : 0;
 

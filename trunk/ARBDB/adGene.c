@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.c                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Thu May/22/2008 15:49 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Mon May/26/2008 12:05 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -181,7 +181,7 @@ void GEN_add_pseudo_species_to_hash(GBDATA *gb_pseudo, GB_HASH *pseudo_hash) {
 }
 
 GB_HASH *GEN_create_pseudo_species_hash(GBDATA *gb_main, int additionalSize) {
-    GB_HASH *pseudo_hash = GBS_create_hash(GBT_get_species_hash_size(gb_main)+2*additionalSize, 1);
+    GB_HASH *pseudo_hash = GBS_create_hash(GBT_get_species_hash_size(gb_main)+2*additionalSize, GB_IGNORE_CASE);
     GBDATA  *gb_pseudo;
 
     for (gb_pseudo = GEN_first_pseudo_species(gb_main);
