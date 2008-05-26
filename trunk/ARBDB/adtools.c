@@ -396,7 +396,7 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
                 GBDATA *gbh = GBT_get_alignment(gbMain, dest);
                 if (gbh) {
                     error         = GBS_global_string("destination alignment '%s' already exists", dest);
-                    is_case_error = (gbs_stricmp(source, dest) == 0); // test for case-only difference
+                    is_case_error = (strcasecmp(source, dest) == 0); // test for case-only difference
                 }
                 else {
                     error = GBT_check_alignment_name(dest);
@@ -523,7 +523,7 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
         // if all alignments are checked -> use species_name_hash to detect duplicated species and species w/o data
         GBDATA *gb_species;
         long    duplicates = 0;
-        species_name_hash  = GBS_create_hash(GBT_get_species_hash_size(Main), 1);
+        species_name_hash  = GBS_create_hash(GBT_get_species_hash_size(Main), GB_IGNORE_CASE);
 
         for (gb_species = GBT_first_species_rel_species_data(gb_sd);
              gb_species && !error;
@@ -1410,7 +1410,7 @@ GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, GB_BOOL show_status, G
     }
     
     ltd.species_hash = species_hash;
-    ltd.seen_species = leafs ? GBS_create_hash(2*leafs,1) : 0;
+    ltd.seen_species = leafs ? GBS_create_hash(2*leafs, GB_IGNORE_CASE) : 0;
     ltd.zombies      = 0;
     ltd.duplicates   = 0;
     ltd.counter      = 0;
@@ -2779,7 +2779,7 @@ char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
        if datapath              != 0, only keys with prefix datapath are scanned and
        the prefix is removed from the resulting key_names
     */
-    gbs_scan_db_data.hash_table  = GBS_create_hash(1024,0);
+    gbs_scan_db_data.hash_table  = GBS_create_hash(1024, GB_MIND_CASE);
     gbs_scan_db_data.buffer      = (char *)malloc(GBT_SUM_LEN);
     strcpy(gbs_scan_db_data.buffer,"");
     gbt_scan_db_rek(gbd, gbs_scan_db_data.buffer,0);
@@ -2902,13 +2902,13 @@ GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag)
         if (!all_flag) { // this is meant to be used for single or few species
             int hash_size = 256;
 
-            gbtrst.renamed_hash     = GBS_create_hash(hash_size, 0);
+            gbtrst.renamed_hash     = GBS_create_hash(hash_size, GB_MIND_CASE);
             gbtrst.old_species_hash = 0;
         }
         else {
             int hash_size = GBT_get_species_hash_size(gb_main);
 
-            gbtrst.renamed_hash     = GBS_create_hash(hash_size, 0);
+            gbtrst.renamed_hash     = GBS_create_hash(hash_size, GB_MIND_CASE);
             gbtrst.old_species_hash = GBT_create_species_hash(gb_main);
         }
         gbtrst.all_flag = all_flag;
@@ -3369,7 +3369,7 @@ GBDATA *GBT_open(const char *path,const char *opent,const char *disabled_path)
     GB_set_temporary(gb_tmp);
     {               /* install link followers */
         GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-        Main->table_hash = GBS_create_hash(256,0);
+        Main->table_hash = GBS_create_hash(256, GB_MIND_CASE);
         GB_install_link_follower(gbd,"REF",GB_test_link_follower);
     }
     GBT_install_table_link_follower(gbd);
