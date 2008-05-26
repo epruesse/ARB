@@ -447,35 +447,6 @@ void gbs_uppercase(char *str)
     }
 }
 
-int gbs_stricmp(const char *s1, const char *s2) {
-    int c1, c2, cmp;
-
-    do {
-        c1  = *s1++;
-        c2  = *s2++;
-        cmp = toupper(c1)-toupper(c2);
-    }
-    while (cmp == 0 && c1 != 0);
-
-    return cmp;
-}
-
-int gbs_strnicmp(const char *s1, const char *s2, size_t len) {
-    int c1, c2, cmp = 0;
-
-    if (len>0) {
-        do {
-            --len;
-            c1  = *s1++;
-            c2  = *s2++;
-            cmp = toupper(c1)-toupper(c2);
-        }
-        while (cmp == 0 && c1 != 0 && len>0);
-    }
-
-    return cmp;
-}
-
 void gbs_memcopy(char *dest, const char *source, long len)
 {
     long        i;
@@ -2201,7 +2172,7 @@ GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char *tag, c
 
     sh = (GB_HASH *)GBS_read_hash(hash,value);
     if (!sh){
-        sh = GBS_create_hash(10,1); /* Tags are case independent */
+        sh = GBS_create_hash(10, GB_IGNORE_CASE); /* Tags are case independent */
         GBS_write_hash(hash,value,(long)sh);
     }
 
@@ -2306,7 +2277,7 @@ extern "C" {
 
 static char *g_bs_get_string_of_tag_hash(GB_HASH *tag_hash){
     g_bs_merge_result = GBS_stropen(256);
-    g_bs_collect_tags_hash = GBS_create_hash(1024,1);
+    g_bs_collect_tags_hash = GBS_create_hash(1024, GB_IGNORE_CASE);
 
     GBS_hash_do_sorted_loop(tag_hash,g_bs_read_tagged_hash,g_bs_sort_fields_of_hash); /* move everything into g_bs_collect_tags_hash */
     GBS_hash_do_sorted_loop(g_bs_collect_tags_hash,g_bs_read_final_hash,g_bs_sort_fields_of_hash);
@@ -2327,7 +2298,7 @@ char *GBS_merge_tagged_strings(const char *s1, const char *tag1, const char *rep
     char *t2 = GBS_string_2_key(tag2);
     char *result = 0;
     GB_ERROR error = 0;
-    GB_HASH *hash = GBS_create_hash(16,0);
+    GB_HASH *hash = GBS_create_hash(16, GB_MIND_CASE);
     if (!strlen(s1)) replace2 = 0;
     if (!strlen(s2)) replace1 = 0;
     if (replace1 && replace1[0] == 0) replace1 = 0;
@@ -2348,7 +2319,7 @@ char *GBS_merge_tagged_strings(const char *s1, const char *tag1, const char *rep
 char *GBS_string_eval_tagged_string(GBDATA *gb_main,const char *s, const char *dt, const char *tag, const char *srt, const char *aci, GBDATA *gbd){
     char *str = GB_STRDUP(s);
     char *default_tag = GBS_string_2_key(dt);
-    GB_HASH *hash = GBS_create_hash(16,0);
+    GB_HASH *hash = GBS_create_hash(16, GB_MIND_CASE);
     GB_ERROR error = 0;
     char *result = 0;
     error = g_bs_convert_string_to_tagged_hash(hash,str,default_tag,0,gb_main,tag,srt,aci,gbd);
@@ -2599,16 +2570,6 @@ int GBS_strscmp(const char *s1, const char *s2) {
         ++idx;
     }
     return cmp;
-}
-
-int GBS_stricmp(const char *s1, const char *s2) {
-    /* case insensitive strcmp */
-    int p;
-    for (p = 0; ; ++p) {
-        int d = tolower(s1[p])-tolower(s2[p]);
-        if (d) return d;
-        if (!s1[p]) return 0;
-    }
 }
 
 const char *GBS_readable_size(unsigned long long size) {
