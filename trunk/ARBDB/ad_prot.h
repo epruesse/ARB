@@ -99,7 +99,6 @@ char *GBS_fread_string P_((FILE *in));
 char *GBS_fconvert_string P_((char *buffer));
 char *GBS_replace_tabs_by_spaces P_((const char *text));
 int GBS_strscmp P_((const char *s1, const char *s2));
-int GBS_stricmp P_((const char *s1, const char *s2));
 const char *GBS_readable_size P_((unsigned long long size));
 
 /* arbdb.c */
@@ -300,7 +299,7 @@ GB_ERROR GB_install_pid P_((int mode));
 
 /* adhash.c */
 long GBS_get_a_prime P_((long above_or_equal_this));
-GB_HASH *GBS_create_hash P_((long user_size, int ignore_case));
+GB_HASH *GBS_create_hash P_((long user_size, GB_CASE case_sens));
 void GBS_optimize_hash P_((GB_HASH *hs));
 char *GBS_hashtab_2_string P_((GB_HASH *hash));
 char *GBS_string_2_hashtab P_((GB_HASH *hash, char *data));
