@@ -709,13 +709,13 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
                  search for name in group dictionary
                  evaluate sequence with group consensus
                  */
-                GBDATA *gb_con_con = GB_search(gb_quality_ali,
+                GBDATA *gb_con = GB_search(gb_quality_ali,
                         "consensus_conformity", GB_CREATE_CONTAINER);
-                if (!gb_con_con)
+                if (!gb_con)
                     error = GB_get_error();
-                GBDATA *gb_con_dev = GB_search(gb_quality_ali,
+                GBDATA *gb_dev = GB_search(gb_quality_ali,
                         "consensus_deviation", GB_CREATE_CONTAINER);
-                if (!gb_con_dev)
+                if (!gb_dev)
                     error = GB_get_error();
 
                 GBT_TREE *backup = node; // needed?
@@ -733,38 +733,28 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
                             value2 = cr.deviation;
                             value3 = GD_ptr->SQ_get_nr_sequences();
 
-                            GBDATA *gb_con_node = GB_create_container(
-                                    gb_con_con, "node");
-                            if (!gb_con_node)
-                                error = GB_get_error();
-
-                            GBDATA *gb_dev_node = GB_create_container(
-                                    gb_con_dev, "node");
-                            if (!gb_dev_node)
-                                error = GB_get_error();
-
-                            GBDATA *gb_node_entry = GB_search(gb_con_node,
+                            GBDATA *gb_node_entry = GB_search(gb_con,
                                     "name", GB_STRING);
                             seq_assert(gb_node_entry);
                             GB_write_string(gb_node_entry, backup->name);
 
-                            gb_node_entry = GB_search(gb_con_node, "value",
+                            gb_node_entry = GB_search(gb_con, "value",
                                     GB_FLOAT);seq_assert(gb_node_entry);
                             GB_write_float(gb_node_entry, value1);
 
-                            gb_node_entry = GB_search(gb_con_node,
+                            gb_node_entry = GB_search(gb_con,
                                     "num_species", GB_INT);seq_assert(gb_node_entry);
                             GB_write_int(gb_node_entry, value3);
 
-                            gb_node_entry = GB_search(gb_dev_node, "name",
+                            gb_node_entry = GB_search(gb_dev, "name",
                                     GB_STRING);seq_assert(gb_node_entry);
                             GB_write_string(gb_node_entry, backup->name);
 
-                            gb_node_entry = GB_search(gb_dev_node, "value",
+                            gb_node_entry = GB_search(gb_dev, "value",
                                     GB_FLOAT);seq_assert(gb_node_entry);
                             GB_write_float(gb_node_entry, value2);
 
-                            gb_node_entry = GB_search(gb_dev_node,
+                            gb_node_entry = GB_search(gb_dev,
                                     "num_species", GB_INT);seq_assert(gb_node_entry);
                             GB_write_int(gb_node_entry, value3);
 
@@ -958,13 +948,13 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData, GBDATA * gb_main,
                      search for name in group dictionary
                      evaluate sequence with group consensus
                      */
-                    GBDATA *gb_con_con = GB_search(gb_quality_ali,
+                    GBDATA *gb_con = GB_search(gb_quality_ali,
                             "consensus_conformity", GB_CREATE_CONTAINER);
-                    if (!gb_con_con)
+                    if (!gb_con)
                         error = GB_get_error();
-                    GBDATA *gb_con_dev = GB_search(gb_quality_ali,
+                    GBDATA *gb_dev = GB_search(gb_quality_ali,
                             "consensus_deviation", GB_CREATE_CONTAINER);
-                    if (!gb_con_dev)
+                    if (!gb_dev)
                         error = GB_get_error();
 
                     consensus_result cr =
@@ -973,35 +963,25 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData, GBDATA * gb_main,
                     value2 = cr.deviation;
                     value3 = globalData->SQ_get_nr_sequences();
 
-                    GBDATA *gb_con_node = GB_create_container(gb_con_con,
-                            "node");
-                    if (!gb_con_node)
-                        error = GB_get_error();
-
-                    GBDATA *gb_dev_node = GB_create_container(gb_con_dev,
-                            "node");
-                    if (!gb_dev_node)
-                        error = GB_get_error();
-
-                    GBDATA *gb_node_entry = GB_search(gb_con_node, "name",
+                    GBDATA *gb_node_entry = GB_search(gb_con, "name",
                             GB_STRING);
                     seq_assert(gb_node_entry);
                     GB_write_string(gb_node_entry, "one global consensus");
 
-                    gb_node_entry = GB_search(gb_con_node, "value", GB_FLOAT);seq_assert(gb_node_entry);
+                    gb_node_entry = GB_search(gb_con, "value", GB_FLOAT);seq_assert(gb_node_entry);
                     GB_write_float(gb_node_entry, value1);
 
-                    gb_node_entry = GB_search(gb_con_node, "num_species",
+                    gb_node_entry = GB_search(gb_con, "num_species",
                             GB_INT);seq_assert(gb_node_entry);
                     GB_write_int(gb_node_entry, value3);
 
-                    gb_node_entry = GB_search(gb_dev_node, "name", GB_STRING);seq_assert(gb_node_entry);
+                    gb_node_entry = GB_search(gb_dev, "name", GB_STRING);seq_assert(gb_node_entry);
                     GB_write_string(gb_node_entry, "one global consensus");
 
-                    gb_node_entry = GB_search(gb_dev_node, "value", GB_FLOAT);seq_assert(gb_node_entry);
+                    gb_node_entry = GB_search(gb_dev, "value", GB_FLOAT);seq_assert(gb_node_entry);
                     GB_write_float(gb_node_entry, value2);
 
-                    gb_node_entry = GB_search(gb_dev_node, "num_species",
+                    gb_node_entry = GB_search(gb_dev, "num_species",
                             GB_INT);seq_assert(gb_node_entry);
                     GB_write_int(gb_node_entry, value3);
 
