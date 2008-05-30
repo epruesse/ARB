@@ -541,9 +541,13 @@ GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int la
     {
         long level;
         long i;
-        long    restcount;
-        long vali[2];
-        struct gb_compress_list *element1[1], *element2[1], *bc = 0;
+        long restcount;
+
+        long vali[2] = {0, 0};
+        
+        struct gb_compress_list *element1 = 0;
+        struct gb_compress_list *element2 = 0;
+        struct gb_compress_list *bc       = 0;
 
         s = (unsigned char *)source;
         for (len = size; len; len--) {
@@ -569,21 +573,21 @@ GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int la
         gb_compress_huffmann_add_to_list(restcount,&bitcompress[id]);
         gb_compress_huffmann_add_to_list(1,&bitcompress[end]);
         while (gb_compress_huffmann_list->next) {
-            gb_compress_huffmann_pop(&(vali[0]),element1);
-            gb_compress_huffmann_pop(&(vali[1]),element2);
+            gb_compress_huffmann_pop(&(vali[0]),&element1);
+            gb_compress_huffmann_pop(&(vali[1]),&element2);
 
             bc          = (struct gb_compress_list *)gbm_get_mem(sizeof(struct gb_compress_list),GBM_CB_INDEX);
             bc->command = gb_cd_node;
-            bc->son[0]  = element1[0];
-            bc->son[1]  = element2[0];
+            bc->son[0]  = element1;
+            bc->son[1]  = element2;
 
-            if (element1[0]->command == gb_cd_node) {
-                bc->bits = element1[0]->bits+1;
-                if (element2[0]->command == gb_cd_node && element2[0]->bits >= bc->bits) bc->bits = element2[0]->bits+1;
+            if (element1->command == gb_cd_node) {
+                bc->bits = element1->bits+1;
+                if (element2->command == gb_cd_node && element2->bits >= bc->bits) bc->bits = element2->bits+1;
             }
             else {
-                if (element2[0]->command == gb_cd_node) {
-                    bc->bits = element2[0]->bits+1;
+                if (element2->command == gb_cd_node) {
+                    bc->bits = element2->bits+1;
                 }
                 else {
                     bc->bits = 1;
@@ -595,7 +599,7 @@ GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int la
             // if already 6 bits used -> put to end of list; otherwise sort in
             gb_compress_huffmann_add_to_list(bc->bits >= 6 ? LONG_MAX : vali[0]+vali[1], bc);
         }
-        gb_compress_huffmann_pop(&(vali[0]),element1);
+        gb_compress_huffmann_pop(&(vali[0]),&element1);
 #if defined(TEST_HUFFMAN_CODE)
         printf("huffman list:\n");
         gb_dump_huffmann_list(bc, "");
