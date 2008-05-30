@@ -53,6 +53,7 @@ char *GBS_escape_string P_((const char *str, const char *chars_to_escape, char e
 char *GBS_unescape_string P_((const char *str, const char *escaped_chars, char escape_char));
 struct GBS_strstruct *GBS_stropen P_((long init_size));
 char *GBS_strclose P_((struct GBS_strstruct *strstr));
+void GBS_strforget P_((struct GBS_strstruct *strstr));
 GB_BUFFER GBS_mempntr P_((struct GBS_strstruct *strstr));
 long GBS_memoffset P_((struct GBS_strstruct *strstr));
 void GBS_str_cut_tail P_((struct GBS_strstruct *strstr, int byte_count));
@@ -221,6 +222,11 @@ int GB_random P_((int range));
 /* adoptimize.c */
 GB_ERROR GB_optimize P_((GBDATA *gb_main));
 
+/* adsystem.c */
+struct DictData *GB_get_dictionary P_((GBDATA *gb_main, const char *key));
+GB_ERROR GB_set_dictionary P_((GBDATA *gb_main, const char *key, const struct DictData *dd));
+void GB_free_dictionary P_((struct DictData *dd));
+
 /* adindex.c */
 GB_ERROR GB_create_index P_((GBDATA *gbd, const char *key, GB_CASE case_sens, long estimated_size));
 GB_ERROR GB_request_undo_type P_((GBDATA *gb_main, GB_UNDO_TYPE type));
@@ -318,6 +324,7 @@ void GBS_free_hash_free_pointer P_((GB_HASH *hs));
 void GBS_hash_do_loop P_((GB_HASH *hs, gb_hash_loop_type func));
 void GBS_hash_do_loop2 P_((GB_HASH *hs, gb_hash_loop_type2 func, void *parameter));
 long GBS_hash_count_elems P_((GB_HASH *hs));
+long GBS_hash_count_value P_((GB_HASH *hs, long val));
 void GBS_hash_next_element P_((GB_HASH *hs, const char **key, long *val));
 void GBS_hash_first_element P_((GB_HASH *hs, const char **key, long *val));
 void GBS_hash_do_sorted_loop P_((GB_HASH *hs, gb_hash_loop_type func, gbs_hash_sort_func_type sorter));
@@ -356,6 +363,9 @@ GB_ERROR GB_delete_database P_((GB_CSTR filename));
 GB_ERROR GB_save_quick_as P_((GBDATA *gb_main, char *path));
 GB_ERROR GB_save_quick P_((GBDATA *gb, char *refpath));
 GB_ERROR GB_disable_path P_((GBDATA *gbd, const char *path));
+
+/* adcompr.c */
+GB_BOOL GB_is_directory_compressed P_((GBDATA *gbd));
 
 /* admalloc.c */
 NOT4PERL void *GB_calloc P_((unsigned int nelem, unsigned int elsize));
