@@ -327,11 +327,9 @@ void NT_database_optimization(AW_window *aww){
     GBT_check_data(GLOBAL_gb_main,0);
     GB_commit_transaction(GLOBAL_gb_main);
 
-    char **ali_name;
-    for (ali_name = ali_names;*ali_name; ali_name++){
+    for (char **ali_name = ali_names; !error && *ali_name; ali_name++) {
         aw_status(*ali_name);
         error = GBT_compress_sequence_tree2(GLOBAL_gb_main,tree_name,*ali_name);
-        if (error) break;
     }
     GBT_free_names(ali_names);
     free(tree_name);
