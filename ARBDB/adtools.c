@@ -636,7 +636,7 @@ GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, long len, long pos, long ncha
     long        i;
     long        dlen;
     const char *cchars;
-    char       *chars;
+    char       *chars = 0;
     GB_ERROR    error = 0;
     GBDATA     *gb;
 
@@ -664,9 +664,7 @@ GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, long len, long pos, long ncha
             if (pos>len) break;
 
             if (nchar > 0) {            /* insert character */
-                if ( (pos >0 && chars[pos-1] == '.')     /* @@@@ */
-                     ||  cchars[pos]  == '.')
-                {
+                if ( (pos >0 && cchars[pos-1] == '.') ||  cchars[pos]  == '.') {
                     chars = gbt_insert_delete(cchars,size,len, &dlen, pos, nchar, sizeof(char), '.' ,'.' );
                 }
                 else {
