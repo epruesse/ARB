@@ -1802,7 +1802,7 @@ static int ap_mark_degenerated(AP_tree *at, double degeneration_factor, double& 
     return lSons+rSons;
 }
 
-void AP_tree::mark_degenerated_branches(GBDATA *gb_main,double degeneration_factor){
+void AP_tree::mark_degenerated_branches(GBDATA *,double degeneration_factor){
     // marks all species in degenerated branches.
     // For all nodes, where one branch contains 'degeneration_factor' more species than the
     // other branch, the smaller branch is considered degenerated.
@@ -1840,7 +1840,7 @@ static void ap_check_depth(AP_tree *at, int depth, long *depthsum, long *leafs, 
     }
 }
 
-void AP_tree::mark_deep_branches(GBDATA *gb_main,int mark_depth){
+void AP_tree::mark_deep_branches(GBDATA *,int mark_depth){
     // mark all species below mark_depth
 
     long depthsum  = 0;
