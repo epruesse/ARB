@@ -90,10 +90,8 @@ int gb_abort_transaction_local_rek P_((GBDATA *gbd, long mode));
 GB_ERROR gb_commit_transaction_local_rek P_((GBDATA *gbd, long mode, int *pson_created));
 
 /* adoptimize.c */
-GB_ERROR gb_convert_compression P_((GBDATA *source));
 GB_ERROR gb_convert_V2_to_V3 P_((GBDATA *gb_main));
-char *gb_uncompress_by_dictionary_internal P_((GB_DICTIONARY *dict, GB_CSTR s_source, long size, GB_BOOL append_zero));
-char *gb_uncompress_by_dictionary P_((GBDATA *gbd, GB_CSTR s_source, long size));
+char *gb_uncompress_by_dictionary P_((GBDATA *gbd, GB_CSTR s_source, long size, long *new_size));
 char *gb_compress_by_dictionary P_((GB_DICTIONARY *dict, GB_CSTR s_source, long size, long *msize, int last_flag, int search_backward, int search_forward));
 GB_ERROR gb_create_dictionaries P_((GB_MAIN_TYPE *Main, long maxmem));
 
@@ -250,15 +248,12 @@ void gb_compress_huffmann_add_to_list P_((long val, struct gb_compress_list *ele
 long gb_compress_huffmann_pop P_((long *val, struct gb_compress_list **element));
 char *gb_compress_huffmann_rek P_((struct gb_compress_list *bc, int bits, int bitcnt, char *dest));
 GB_BUFFER gb_compress_huffmann P_((GB_CBUFFER source, long size, long *msize, int last_flag));
-GB_BUFFER gb_uncompress_equal_bytes P_((GB_CBUFFER s, long size));
-GB_BUFFER gb_uncompress_huffmann P_((GB_CBUFFER source, long maxsize));
-GB_BUFFER gb_uncompress_bytes P_((GB_CBUFFER source, long size));
-GB_BUFFER gb_uncompress_longs P_((GB_CBUFFER source, long size));
-GB_BUFFER gb_uncompress_longsnew P_((GB_CBUFFER data, long size));
+GB_BUFFER gb_uncompress_bytes P_((GB_CBUFFER source, long size, long *new_size));
+GB_BUFFER gb_uncompress_longs_old P_((GB_CBUFFER source, long size, long *new_size));
 GB_BUFFER gb_compress_longs P_((GB_CBUFFER source, long size, int last_flag));
 GB_DICTIONARY *gb_get_dictionary P_((GB_MAIN_TYPE *Main, GBQUARK key));
 GB_BUFFER gb_compress_data P_((GBDATA *gbd, int key, GB_CBUFFER source, long size, long *msize, GB_COMPRESSION_MASK max_compr, GB_BOOL pre_compressed));
-GB_BUFFER gb_uncompress_data P_((GBDATA *gbd, GB_CBUFFER source, long size));
+GB_CBUFFER gb_uncompress_data P_((GBDATA *gbd, GB_CBUFFER source, long size));
 
 /* admalloc.c */
 void gbm_init_mem P_((void));
