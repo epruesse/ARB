@@ -320,6 +320,19 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awtlocal.hxx
 
+NT_dbrepair.o: NT_dbrepair.hxx
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/ad_prot.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/adGene.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/arb_assert.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbdb.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbdbt.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbtools.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/attributes.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/inline.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/smartptr.h
+
 NT_edconf.o: nt_edconf.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_config.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -454,6 +467,7 @@ NT_join.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 
 NT_main.o: nt_cb.hxx
 NT_main.o: nt_concatenate.hxx
+NT_main.o: NT_dbrepair.hxx
 NT_main.o: ntree.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
