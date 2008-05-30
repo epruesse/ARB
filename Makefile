@@ -1,7 +1,7 @@
 # =============================================================== #
 #                                                                 #
 #   File      : Makefile                                          #
-#   Time-stamp: <Mon May/19/2008 13:09 MET Coder@ReallySoft.de>   #
+#   Time-stamp: <Fri May/30/2008 09:02 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Institute of Microbiology (Technical University Munich)       #
 #   http://www.arb-home.de/                                       #
@@ -76,7 +76,7 @@ endif
 
 ifeq ($(DEBUG),1)
 	dflags := -DDEBUG
-	cflags := -O0 -g -g3
+	cflags := -O0 -g -g3 -ggdb -ggdb3
 	lflags := -g
 
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
