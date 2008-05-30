@@ -644,8 +644,7 @@ GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int la
                                         Uncompress  bytes
 ********************************************************************************************/
 
-GB_BUFFER gb_uncompress_equal_bytes(GB_CBUFFER s,long size)
-{
+static GB_BUFFER gb_uncompress_equal_bytes(GB_CBUFFER s, long size, long *new_size) {
     const signed char *source = (signed char*)s;
     char              *dest;
     unsigned int       c;
@@ -711,11 +710,14 @@ GB_BUFFER gb_uncompress_equal_bytes(GB_CBUFFER s,long size)
             }
         }
     }
+
+    *new_size = dest-buffer;
+    ad_assert(size >= *new_size); // buffer overflow
+
     return buffer;
 }
 
-GB_BUFFER gb_uncompress_huffmann(GB_CBUFFER source,long maxsize)
-{
+static GB_BUFFER gb_uncompress_huffmann(GB_CBUFFER source, long maxsize, long *new_size) {
     struct gb_compress_tree *un_tree, *t;
     
     char *data[1];
@@ -746,72 +748,81 @@ GB_BUFFER gb_uncompress_huffmann(GB_CBUFFER source,long maxsize)
         *(p++) = (int)val;
     }
     gb_free_compress_tree(un_tree);
+
+    *new_size = p-buffer;
+    ad_assert(maxsize >= *new_size); // buffer overflow
+
     return buffer;
 }
 
-GB_BUFFER gb_uncompress_bytes(GB_CBUFFER source, long size)
-{
-    char *data;
-    data = gb_uncompress_huffmann(source,size*9/8);
-    if (!data){
-        data = strdup (GB_get_error());
-        GB_warning(data);
-        return data;
-    }
-    data = gb_uncompress_equal_bytes((char *)data,size);
-    if (!data){
-        data = strdup (GB_get_error());
-        GB_warning(data);
-    }
+GB_BUFFER gb_uncompress_bytes(GB_CBUFFER source, long size, long *new_size) {
+    char *data = gb_uncompress_huffmann(source, size, new_size);
+    if (data) data = gb_uncompress_equal_bytes(data, size, new_size);
+    ad_assert(!data || size >= *new_size); // buffer overflow
     return data;
 }
 
 /********************************************************************************************
                                 Compress  long and floats (4 byte values)
 ********************************************************************************************/
-GB_BUFFER gb_uncompress_longs(GB_CBUFFER source, long size)
-{                               /* size is byte value */
-    char     *data;
-    char     *res, *p, *s0, *s1, *s2, *s3;
-    GB_UINT4  mi, i;
 
-    data = gb_uncompress_huffmann(source, size * 9 / 8);
-    if (!data) return 0;
-    
-    data = gb_uncompress_equal_bytes(data, size);
-    res  = p = GB_give_other_buffer(data, size);
-    mi   = (GB_UINT4)(size / sizeof(GB_UINT4));
-    s0   = data + 0 * mi;
-    s1   = data + 1 * mi;
-    s2   = data + 2 * mi;
-    s3   = data + 3 * mi;
-    for (i = 0; i < mi; i++) {
-        *(p++) = *(s0++);
-        *(p++) = *(s1++);
-        *(p++) = *(s2++);
-        *(p++) = *(s3++);
+GB_BUFFER gb_uncompress_longs_old(GB_CBUFFER source, long size, long *new_size)
+{                               /* size is byte value */
+    char *res  = 0;
+    char *data = gb_uncompress_huffmann(source, (size*9)/8, new_size);
+    if (data) {
+        char *p, *s0, *s1, *s2, *s3;
+        GB_UINT4  mi, i;
+
+        data = gb_uncompress_equal_bytes(data, size, new_size);
+
+        ad_assert(*new_size == size);
+        res = p = GB_give_other_buffer(data, size);
+        
+        ad_assert(sizeof(GB_UINT4) == 4);
+
+        mi = (GB_UINT4)(size / 4);
+        s0 = data + 0 * mi;
+        s1 = data + 1 * mi;
+        s2 = data + 2 * mi;
+        s3 = data + 3 * mi;
+        
+        for (i = 0; i < mi; i++) {
+            *(p++) = *(s0++);
+            *(p++) = *(s1++);
+            *(p++) = *(s2++);
+            *(p++) = *(s3++);
+        }
+
+        *new_size = mi*4;
     }
     return res;
 }
 
 
-GB_BUFFER gb_uncompress_longsnew(GB_CBUFFER data, long size){
+static GB_BUFFER gb_uncompress_longs(GB_CBUFFER data, long size, long *new_size) {
     const char *s0, *s1, *s2, *s3;
     char       *p,*res;
     long        mi, i;
 
     res = p = GB_give_other_buffer(data, size);
-    mi = size / sizeof(GB_UINT4);
+
+    ad_assert(sizeof(GB_UINT4) == 4);
+
+    mi = size / 4;
     s0 = data + 0 * mi;
     s1 = data + 1 * mi;
     s2 = data + 2 * mi;
     s3 = data + 3 * mi;
+    
     for (i = 0; i < mi; i++) {
         *(p++) = *(s0++);
         *(p++) = *(s1++);
         *(p++) = *(s2++);
         *(p++) = *(s3++);
     }
+
+    *new_size = mi*4;
     return res;
 }
 
@@ -920,36 +931,94 @@ GB_BUFFER gb_compress_data(GBDATA *gbd, int key, GB_CBUFFER source, long size, l
     return (char *)source;
 }
 
-GB_BUFFER gb_uncompress_data(GBDATA *gbd, GB_CBUFFER source, long size){
-    int last = 0;
-    int c;
-    char *data = (char *)source;
+GB_CBUFFER gb_uncompress_data(GBDATA *gbd, GB_CBUFFER source, long size){
+    int         last     = 0;
+    const char *data     = (char *)source;
+    long        new_size = -1;
+    GB_ERROR    error    = 0;
+
     while (!last){
-        GB_ERROR error = 0;
-        c= *((unsigned char *)(data++));
+        int c = *((unsigned char *)(data++));
         if (c & GB_COMPRESSION_LAST) {
             last = 1;
             c &= ~GB_COMPRESSION_LAST;
         }
         if (c == GB_COMPRESSION_HUFFMANN) {
-            data = gb_uncompress_huffmann(data,size + GB_COMPRESSION_TAGS_SIZE_MAX);
+            data = gb_uncompress_huffmann(data,size + GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
         }else if (c == GB_COMPRESSION_RUNLENGTH) {
-            data = gb_uncompress_equal_bytes(data,size + GB_COMPRESSION_TAGS_SIZE_MAX);
+            data = gb_uncompress_equal_bytes(data,size + GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
         }else if (c == GB_COMPRESSION_DICTIONARY) {
-            data = gb_uncompress_by_dictionary(gbd, data, size + GB_COMPRESSION_TAGS_SIZE_MAX);
+            data = gb_uncompress_by_dictionary(gbd, data, size + GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
         }else if (c == GB_COMPRESSION_SEQUENCE) {
-            data = gb_uncompress_by_sequence(gbd,data,size,&error);
+            data = gb_uncompress_by_sequence(gbd,data,size,&error, &new_size);
         }else if (c == GB_COMPRESSION_SORTBYTES) {
-            data = gb_uncompress_longsnew(data,size);
+            data = gb_uncompress_longs(data,size, &new_size);
         }else{
-            error = GB_export_error("Internal Error: Cannot uncompress data of field '%s'",GB_read_key_pntr(gbd));
+            error = GBS_global_string("Internal Error: Cannot uncompress data of field '%s'",GB_read_key_pntr(gbd));
         }
 
-        if (error) {
-            GB_internal_error(error);
-            return GB_give_buffer(size);
-        }
+        if (!data && !error) error = GB_get_error();
+        if (error) last = 1; // sth went wrong, stop
     }
+
+    if (!error && new_size != size) {
+        error = GBS_global_string("Wrong decompressed size (expected=%li, got=%li)", size, new_size);
+    }
+
+    if (error) {
+        GB_export_error(error);
+        data = 0;
+    }
+
     return data;
 }
 
+GB_BOOL GB_is_directory_compressed(GBDATA *gbd) {
+    int         type = GB_TYPE(gbd);
+    const char *data = GB_GETDATA(gbd);
+
+    if (data) {
+        if (gbd->flags.compressed_data) {
+            long     size     = GB_UNCOMPRESSED_SIZE(gbd, type);
+            int      last     = 0;
+            GB_ERROR error    = 0;
+            long     new_size = -1; // dummy
+
+            while (!last){
+                int c = *((unsigned char *)(data++));
+
+                if (c & GB_COMPRESSION_LAST) {
+                    last = 1;
+                    c &= ~GB_COMPRESSION_LAST;
+                }
+
+                if (c == GB_COMPRESSION_DICTIONARY) {
+                    return GB_TRUE;
+                }
+                
+                if (c == GB_COMPRESSION_HUFFMANN) {
+                    data = gb_uncompress_huffmann(data,size + GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
+                }
+                else if (c == GB_COMPRESSION_RUNLENGTH) {
+                    data = gb_uncompress_equal_bytes(data,size + GB_COMPRESSION_TAGS_SIZE_MAX, &new_size);
+                }
+                else if (c == GB_COMPRESSION_SEQUENCE) {
+                    data = gb_uncompress_by_sequence(gbd, data, size, &error, &new_size);
+                }
+                else if (c == GB_COMPRESSION_SORTBYTES) {
+                    data = gb_uncompress_longs(data, size, &new_size);
+                }
+                else{
+                    error = GB_export_error("Internal Error: Cannot uncompress data of field '%s'",GB_read_key_pntr(gbd));
+                }
+
+                if (error) {
+                    GB_internal_error(error);
+                    break;
+                }
+            }
+        }
+    }
+
+    return GB_FALSE;
+}
