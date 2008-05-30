@@ -98,6 +98,7 @@ struct gb_flag_types2 {     /* private flags */
 /********************* public ******************/
 
 struct GBS_strstruct;
+struct DictData;
 
 typedef int GBQUARK;
 
