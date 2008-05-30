@@ -1262,11 +1262,8 @@ void CPRO_loadstatistic_cb(AW_window *aw,AW_CL which_statistic)
 
     CPRO.result[which_statistic].statistic=(STATTYPE **)calloc((size_t)CPRO.result[which_statistic].resolution*3+3, sizeof(STATTYPE *));
 
-    for (long column=0;column<CPRO.result[which_statistic].resolution;column++) {
-        GBDATA *gb_colrescontainer = (column == 0)
-            ? GB_entry(oldbase, "column")
-            : GB_nextEntry(gb_colrescontainer);
-
+    GBDATA *gb_colrescontainer = GB_entry(oldbase, "column");
+    for (long column=0; column<CPRO.result[which_statistic].resolution; column++) {
         const char *field[] = { "equal", "group", "different" };
         for (int i = 0; i<3; i++) {
             GBDATA *gb_colentry = GB_entry(gb_colrescontainer, field[i]);
@@ -1274,6 +1271,7 @@ void CPRO_loadstatistic_cb(AW_window *aw,AW_CL which_statistic)
                 CPRO.result[which_statistic].statistic[column*3+i] = (STATTYPE*)GB_read_ints(gb_colentry);
             }
         }
+        gb_colrescontainer = GB_nextEntry(gb_colrescontainer);
     }
 
     if ((error=GB_commit_transaction(oldbase))) {
