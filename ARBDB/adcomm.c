@@ -795,9 +795,9 @@ int gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd)
 {
     GB_ERROR  error;
     char     *key;
-    char     *val1 = 0;
-    GB_CASE   case_sens;
-    long      val2 = 0;
+    char     *val1      = 0;
+    GB_CASE   case_sens = GB_CASE_UNDEFINED;
+    long      val2      = 0;
     GB_TYPES  type;
     void     *buffer[2];
 

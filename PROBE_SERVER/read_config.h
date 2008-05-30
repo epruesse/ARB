@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : read_config.h                                          //
 //    Purpose   : reads and provides probe_parameters.conf               //
-//    Time-stamp: <Fri Oct/01/2004 20:27 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri May/30/2008 12:29 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2003          //
@@ -29,7 +29,7 @@ namespace {
             const std::string *val = parser.getValue(key, error);
             if (val) {
                 char *range = strdup(val->c_str());
-                char *b1, *b2, *b3, *b4;
+                char *b1    = 0, *b2 = 0, *b3 = 0, *b4 = 0;
 
                 error             = ConfigParser::splitText(range, ',', b1, b2);
                 if (!error) error = ConfigParser::splitText(b2, ',', b2, b3);
