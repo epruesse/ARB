@@ -413,7 +413,8 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
     int      main_clock = GB_read_clock(gb_main);
 
     if (ali_len<0){
-        error = GB_export_error("Alignment '%s' is not a valid alignment (len=%li)", ali_name, ali_len);
+        GB_ERROR warning = GBS_global_string("Skipping alignment '%s' (not a valid alignment; len=%li).", ali_name, ali_len);
+        GB_information(warning);
     }
     else {
         int leafcount = g_b_count_leafs(tree);
@@ -791,10 +792,8 @@ void GBT_compression_test(void *dummy, GBDATA *gb_main) {
 
 
 /* ******************** Decompress Sequences ******************** */
-/* ******************** Decompress Sequences ******************** */
-/* ******************** Decompress Sequences ******************** */
-char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master, long size)
-{
+
+char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master, long size, long *new_size) {
     const signed char *source = (signed char *)s;
     char              *dest;
     const char        *m      = master;
@@ -841,12 +840,15 @@ char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master
             }
         }
     }
-    *(dest++) = 0;      /* NULL of NULL terminated string */
-    ad_assert(dest - buffer == size);
+    *(dest++) = 0;              /* NULL of NULL terminated string */
+
+    *new_size = dest-buffer;
+    ad_assert(size == *new_size); // buffer overflow
+
     return buffer;
 }
 
-char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss,long size, GB_ERROR *error){
+char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss,long size, GB_ERROR *error, long *new_size) {
     char *dest = 0;
 
     *error = 0;
@@ -878,14 +880,14 @@ char *gb_uncompress_by_sequence(GBDATA *gbd, const char *ss,long size, GB_ERROR 
         }
         else {
             GBDATA *gb_master = gb_find_by_nr(Main->keys[quark].gb_master_ali,index);
-            if (!gb_master){
-                dest = (char*)GB_get_error();
+            if (gb_master){
+                const char *master = GB_read_char_pntr(gb_master); /* make sure that this is not a buffer !!! */
+
+                ad_assert((GB_read_string_count(gb_master)+1) == size); // size mismatch between master and slave
+                dest = g_b_uncompress_single_sequence_by_master(ss, master, size, new_size);
             }
             else {
-                long        master_size = GB_read_string_count(gb_master); // @@@ why unused ?
-                const char *master      = GB_read_char_pntr(gb_master); /* make sure that this is not a buffer !!! */
-
-                dest = g_b_uncompress_single_sequence_by_master(ss, master, size);
+                *error = GB_get_error();
             }
         }
         free(to_free);
