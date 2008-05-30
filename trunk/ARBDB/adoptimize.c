@@ -81,57 +81,29 @@ typedef struct S_GB_SINGLE_DICT_TREE
 
 /******************** Tool functions *******************/
 
-static GB_INLINE cu_str get_data_n_size(GBDATA *gbd, long *size)
-{
+static GB_INLINE cu_str get_data_n_size(GBDATA *gbd, long *size) {
     GB_CSTR data;
     int     type = GB_TYPE(gbd);
 
-    switch (type)
-    {
-        case GB_STRING:
-            data = GB_read_char_pntr(gbd);
-            *size = GB_read_string_count(gbd);
-            break;
-        case GB_LINK:
-            data = GB_read_link_pntr(gbd);
-            *size = GB_read_link_count(gbd);
-            break;
-        case GB_BYTES:
-            data = GB_read_bytes_pntr(gbd);
-            *size = GB_read_bytes_count(gbd);
-            break;
-        case GB_INTS:
-            data = (char*)GB_read_ints_pntr(gbd);
-            *size = GB_read_ints_count(gbd);
-            break;
-        case GB_FLOATS:
-            data = (char*)GB_read_floats_pntr(gbd);
-            *size = GB_read_floats_count(gbd);
-            break;
+    *size = 0;
+
+    switch (type) {
+        case GB_STRING: data = GB_read_char_pntr(gbd); break;
+        case GB_LINK:   data = GB_read_link_pntr(gbd); break;
+        case GB_BYTES:  data = GB_read_bytes_pntr(gbd); break;
+        case GB_INTS:   data = (char*)GB_read_ints_pntr(gbd); break;
+        case GB_FLOATS: data = (char*)GB_read_floats_pntr(gbd); break;
         default:
             data = 0;
             ad_assert(0);
             break;
     }
 
-    if (!data)
-    {
-        *size = 0;
-        return NULL;
-    }
-
-    *size = *size * gb_convert_type_2_sizeof[type] + gb_convert_type_2_appendix_size[type];
-
-#if 0
-    if (gbd->flags.compressed_data)
-        data = gb_uncompress_data(gbd,(GB_CSTR)data,*size);
-#endif
-
+    if (data) *size = GB_UNCOMPRESSED_SIZE(gbd, type);
     return (cu_str)data;
 }
 
-static GB_INLINE long min(long a, long b)
-{
+static GB_INLINE long min(long a, long b) {
     return a<b ? a : b;
 }
 
@@ -210,64 +182,85 @@ static void g_b_opti_freeGbdByKey(GB_MAIN_TYPE *Main, O_gbdByKey *gbk)
 
 /******************** Convert old compression style to new style *******************/
 
-GB_ERROR gb_convert_compression(GBDATA *source)
-{
-    long type;
+static GB_ERROR gb_convert_compression(GBDATA *source) {
     GB_ERROR error = 0;
-    GBDATA *gb_p;
-    char *string;
-    long	size;
+    long     type  = GB_TYPE(source);
 
-    type = GB_TYPE(source);
     if (type == GB_DB){
+        GBDATA *gb_p;
         for (gb_p = GB_child(source); gb_p; gb_p = GB_nextChild(gb_p)) {
             if (gb_p->flags.compressed_data || GB_TYPE(gb_p) == GB_DB){
                 error = gb_convert_compression(gb_p);
                 if (error) break;
             }
         }
-        return error;
     }
+    else {
+        char *string     = 0;
+        long  elems      = GB_GETSIZE(source);
+        long  data_size  = GB_UNCOMPRESSED_SIZE(source, type);
+        long  new_size   = -1;
+        int   expectData = 1;
 
-    switch (type) {
-        case GB_STRING:
-            size = GB_GETSIZE(source)+1;
-            string = gbs_malloc_copy(gb_uncompress_bytes(GB_GETDATA(source),size),size);
-            GB_write_string(source,"");
-            GB_write_string(source,string);
-            break;
-        case GB_LINK:
-            size = GB_GETSIZE(source)+1;
-            string = gbs_malloc_copy(gb_uncompress_bytes(GB_GETDATA(source),size),size);
-            GB_write_link(source,"");
-            GB_write_link(source,string);
-            break;
-        case GB_BYTES:
-            size = GB_GETSIZE(source);
-            string = gbs_malloc_copy(gb_uncompress_bytes(GB_GETDATA(source),size),size);
-            GB_write_bytes(source,"",0);
-            GB_write_bytes(source,string,size);
-            free(string);
-            break;
+        switch (type) {
+            case GB_STRING:
+            case GB_LINK:
+            case GB_BYTES:
+                string = gb_uncompress_bytes(GB_GETDATA(source), data_size, &new_size);
+                if (string) {
+                    ad_assert(new_size == data_size);
+                    string = gbs_malloc_copy(string, data_size);
+                }
+                break;
 
-        case GB_INTS:
-        case GB_FLOATS: {
-            char zero_string[] = "";
-            size = GB_GETSIZE(source);
-            string = gb_uncompress_longs(GB_GETDATA(source),size*4);
-            if (!string){
-                string = zero_string; size = 0;
-                GB_warning("Cannot uncompress '%s'",GB_read_key_pntr(source));
-            }
-            string = gbs_malloc_copy(string,size*4);
-            error = GB_write_pntr(source,string,size*4,size);
+            case GB_INTS:
+            case GB_FLOATS:
+                string = gb_uncompress_longs_old(GB_GETDATA(source), elems, &new_size);
+                if (string) {
+                    ad_assert(new_size == data_size);
+                    string = gbs_malloc_copy(string, data_size);
+                }
+                break;
 
-            free(string);
-            break;
+            default:
+                expectData = 0;
+                break;
         }
 
-        default:
-            break;
+        if (!string) {
+            if (expectData) {
+                error = GBS_global_string("Can't read old data to convert compression (Reason: %s)", GB_expect_error());
+            }
+        }
+        else {
+            switch (type) {
+                case GB_STRING:
+                    error             = GB_write_string(source, "");
+                    if (!error) error = GB_write_string(source, string);
+                    break;
+                    
+                case GB_LINK:
+                    error             = GB_write_link(source, "");
+                    if (!error) error = GB_write_link(source, string);
+                    break;
+
+                case GB_BYTES:
+                    error             = GB_write_bytes(source, "", 0);
+                    if (!error) error = GB_write_bytes(source, string, data_size);
+                    break;
+
+                case GB_INTS:
+                case GB_FLOATS:
+                    error = GB_write_pntr(source, string, data_size, elems);
+                    break;
+                    
+                default:
+                    ad_assert(0);
+                    break;
+            }
+
+            free(string);
+        }
     }
     return error;
 }
@@ -524,17 +517,18 @@ int look(GB_DICTIONARY *dict, GB_CSTR source) {
 
 
 
-char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA *gbd, */GB_CSTR s_source, long size, GB_BOOL append_zero) {
-    cu_str source = (cu_str)s_source;
-    u_str dest;
-    u_str buffer;
-    cu_str text = dict->text;
-/*     GB_NINT *offset = dict->offsets; */
-    int done = 0;
+static char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA *gbd, */GB_CSTR s_source, const long size, GB_BOOL append_zero, long *new_size) {
+    cu_str source   = (cu_str)s_source;
+    u_str  dest;
+    u_str  buffer;
+    cu_str text     = dict->text;
+    /*     GB_NINT *offset = dict->offsets; */
+    int    done     = 0;
+    long   left = size;
 
     dest = buffer = (u_str)GB_give_other_buffer(s_source,size+2);
 
-    while (size && !done) {
+    while (left && !done) {
         int c;
 
         if ((c=*source++)&128)	/* compressed data */ {
@@ -579,7 +573,7 @@ char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA *gbd, *
                 c ^= LAST_COMPRESSED_BIT;
             }
 
-            size -= c;
+            left -= c;
             {
                 u_str d = dest;
                 ad_assert(((d + c) <= source) || (d >= (source + c)));
@@ -589,27 +583,26 @@ char *gb_uncompress_by_dictionary_internal(GB_DICTIONARY *dict, /*GBDATA *gbd, *
         }
     }
 
-    if (append_zero == GB_TRUE) *dest = 0;
-    /* if (GB_TYPE(gbd)==GB_STRING || GB_TYPE(gbd) == GB_LINK) *dest = 0; */
+    if (append_zero == GB_TRUE) *dest++ = 0;
+
+    *new_size = dest-buffer;
+    ad_assert(size >= *new_size); // buffer overflow
 
     return (char *)buffer;
 }
 
-char *gb_uncompress_by_dictionary(GBDATA *gbd, GB_CSTR s_source, long size)
+char *gb_uncompress_by_dictionary(GBDATA *gbd, GB_CSTR s_source, long size, long *new_size)
 {
     GB_DICTIONARY *dict        = gb_get_dictionary(GB_MAIN(gbd), GB_KEY_QUARK(gbd));
     GB_BOOL        append_zero = GB_TYPE(gbd)==GB_STRING || GB_TYPE(gbd) == GB_LINK;
 
     if (!dict) {
-        fprintf(stderr, "Cannot decompress db-entry '%s' (no dictionary found)\n", GB_get_db_path(gbd));
-        if (GB_KEY_QUARK(gbd) == 0) { // illegal key
-            static char corrupt[] = "<data corrupted>";
-            return corrupt;
-        }
-        GB_CORE;
+        GB_ERROR error = GBS_global_string("Cannot decompress db-entry '%s' (no dictionary found)\n", GB_get_db_path(gbd));
+        GB_export_error(error);
+        return 0;
     }
 
-    return gb_uncompress_by_dictionary_internal(dict, s_source, size, append_zero);
+    return gb_uncompress_by_dictionary_internal(dict, s_source, size, append_zero, new_size);
 }
 
 char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size, long *msize, int last_flag, int search_backward, int search_forward)
@@ -619,9 +612,10 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
     u_str  buffer;
     cu_str unknown          = source; /* start of uncompressable bytes */
     u_str  lastUncompressed = NULL; /* ptr to start of last block of uncompressable bytes (in dest) */
+    
 #if defined(ASSERTION_USED)
-    long   org_size         = size;
-#endif /* ASSERTION_USED */
+    const long org_size = size;
+#endif                          /* ASSERTION_USED */
 
     ad_assert(size>0); /* compression of zero-length data fails! */
 
@@ -771,13 +765,14 @@ char *gb_compress_by_dictionary(GB_DICTIONARY *dict, GB_CSTR s_source, long size
 
 #if defined(ASSERTION_USED)
     {
-        char *test = gb_uncompress_by_dictionary_internal(dict, (GB_CSTR)buffer+1, org_size + GB_COMPRESSION_TAGS_SIZE_MAX, GB_TRUE);
+        long  new_size = -1;
+        char *test     = gb_uncompress_by_dictionary_internal(dict, (GB_CSTR)buffer+1, org_size + GB_COMPRESSION_TAGS_SIZE_MAX, GB_TRUE, &new_size);
 
         ad_assert(memcmp(test, s_source, org_size) == 0);
+        ad_assert((org_size+1) == new_size);
     }
 #endif /* ASSERTION_USED */
 
-    ad_assert(1);
     return (char*)buffer;
 }
 
