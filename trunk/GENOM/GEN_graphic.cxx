@@ -86,7 +86,7 @@ void GEN_graphic::show(AW_device *device) {
     }
 }
 
-int GEN_graphic::check_update(GBDATA *gbdummy) {
+int GEN_graphic::check_update(GBDATA *) {
     // if check_update returns >0 -> zoom_reset is done
     int do_zoom_reset = want_zoom_reset;
     want_zoom_reset   = false;
