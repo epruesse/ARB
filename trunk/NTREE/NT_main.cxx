@@ -26,10 +26,9 @@
 #include "nt_concatenate.hxx"
 #include "ntree.hxx"
 #include "nt_cb.hxx"
-#include <arb_version.h>
+#include "NT_dbrepair.hxx"
 
-#include <set>
-#include <string>
+#include <arb_version.h>
 
 using namespace std;
 
@@ -141,205 +140,9 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
     return err;
 }
 
-static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /*sai_count*/) {
-    GB_transaction ta(gb_main);
-    size_t         deleted_gene_datas   = 0;
-    size_t         generated_gene_datas = 0;
-    GB_ERROR       error                = 0;
-    size_t         count                = 0;
 
-    for (GBDATA *gb_species = GBT_first_species(gb_main);
-         gb_species && !error;
-         gb_species = GBT_next_species(gb_species))
-    {
-        bool    is_organism  = (GB_entry(gb_species, GENOM_ALIGNMENT) != 0); // same test as GEN_is_organism, but w/o genome-db-assertion
-        GBDATA *gb_gene_data = GEN_find_gene_data(gb_species);
+// --------------------------------------------------------------------------------
 
-        if (is_organism && !gb_gene_data) {
-            gb_gene_data = GEN_findOrCreate_gene_data(gb_species);
-            generated_gene_datas++;
-        }
-        else if (!is_organism && gb_gene_data) {
-            GBDATA *gb_child = GB_child(gb_gene_data);
-            if (!gb_child) {
-                error = GB_delete(gb_gene_data);
-                if (!error) deleted_gene_datas++;
-            }
-            else {
-                const char *name    = "<unknown species>";
-                GBDATA     *gb_name = GB_entry(gb_species, "name");
-                if (gb_name) name = GB_read_char_pntr(gb_name);
-
-                error = GBS_global_string("Non-empty 'gene_data' found for species '%s',\n"
-                                          "which has no alignment '" GENOM_ALIGNMENT "',\n"
-                                          "i.e. which is not regarded as full-genome organism.\n"
-                                          "This causes problems - please fix!", name);
-            }
-        }
-        
-        aw_status(double(++count)/species_count);
-    }
-
-    if (error) {
-        ta.abort();
-    }
-    else {
-        if (deleted_gene_datas) {
-            aw_message(GBS_global_string("Deleted %zu useless empty 'gene_data' entries.", deleted_gene_datas));
-        }
-        if (generated_gene_datas) {
-            aw_message(GBS_global_string("Re-created %zu missing 'gene_data' entries.\nThese organisms have no genes yet!", generated_gene_datas));
-        }
-    }
-    return error;
-}
-
-static GB_ERROR NT_del_mark_move_REF(GBDATA *gb_main, size_t species_count, size_t sai_count) {
-    GB_transaction ta(gb_main);
-    GB_ERROR       error   = 0;
-    size_t         count   = 0;
-    size_t         all     = species_count+sai_count;
-    size_t         removed = 0;
-
-    // delete 'mark' entries from all alignments of species/SAIs
-
-    char **ali_names = GBT_get_alignment_names(gb_main);
-
-    for (int pass = 0; pass < 2 && !error; ++pass) {
-        for (GBDATA *gb_item = (pass == 0) ? GBT_first_species(gb_main) : GBT_first_SAI(gb_main);
-             gb_item && !error;
-             gb_item = (pass == 0) ? GBT_next_species(gb_item) : GBT_next_SAI(gb_item))
-        {
-            for (int ali = 0; ali_names[ali] && !error; ++ali) {
-                GBDATA *gb_ali = GB_entry(gb_item, ali_names[ali]);
-                if (gb_ali) {
-                    GBDATA *gb_mark = GB_entry(gb_ali, "mark");
-                    if (gb_mark) {
-                        error = GB_delete(gb_mark);
-                        removed++;
-                    }
-                }
-            }
-
-            aw_status(double(++count)/all);
-        }
-    }
-
-    {
-        char   *helix_name = GBT_get_default_helix(gb_main);
-        GBDATA *gb_helix   = GBT_find_SAI(gb_main, helix_name);
-
-        if (gb_helix) {
-            for (int ali = 0; ali_names[ali] && !error; ++ali) {
-                GBDATA *gb_ali     = GB_entry(gb_helix, ali_names[ali]);
-                GBDATA *gb_old_ref = GB_entry(gb_ali, "REF");
-                GBDATA *gb_new_ref = GB_entry(gb_ali, "_REF");
-
-                if (gb_old_ref) {
-                    if (gb_new_ref) {
-                        error = GBS_global_string("SAI:%s has 'REF' and '_REF' in '%s' (data corrupt?!)",
-                                                  helix_name, ali_names[ali]);
-                    }
-                    else { // move info from REF -> _REF
-                        char *content = GB_read_string(gb_old_ref);
-                        if (content) {
-                            gb_new_ref = GB_create(gb_ali, "_REF", GB_STRING);
-                            if (!gb_new_ref) {
-                                error = GB_get_error();
-                            }
-                            else {
-                                error = GB_write_string(gb_new_ref, content);
-                                if (!error) error = GB_delete(gb_old_ref);
-                            }
-                            free(content);
-                        }
-                        else {
-                            error = GB_get_error();
-                        }
-                    }
-                }
-            }
-        }
-
-        free(helix_name);
-    }
-
-    GBT_free_names(ali_names);
-
-    if (error) {
-        ta.abort();
-    }
-    else {
-        if (removed) {
-            aw_message(GBS_global_string("Deleted %zu useless 'mark' entries.", removed));
-        }
-    }
-
-    return error;
-}
-
-// CheckedConsistencies provides an easy way to automatically correct flues in the database
-// by calling a check routine exactly one.
-// For an example see nt_check_database_consistency()
-
-class CheckedConsistencies {
-    GBDATA      *gb_main;
-    size_t       species_count;
-    size_t       sai_count;
-    set<string>  consistencies;
-
-public:
-    CheckedConsistencies(GBDATA *gb_main_) : gb_main(gb_main_) {
-        GB_transaction ta(gb_main);
-        GBDATA *gb_checks = GB_search(gb_main, "checks", GB_CREATE_CONTAINER);
-
-        for (GBDATA *gb_check = GB_entry(gb_checks, "check"); gb_check; gb_check = GB_nextEntry(gb_check)) {
-            consistencies.insert(GB_read_char_pntr(gb_check));
-        }
-
-        species_count = GBT_get_species_count(gb_main);
-        sai_count = GBT_get_SAI_count(gb_main);
-    }
-
-    bool was_performed(const string& check_name) const {
-        return consistencies.find(check_name) != consistencies.end();
-    }
-
-    GB_ERROR register_as_performed(const string& check_name) {
-        GB_ERROR error = 0;
-        if (was_performed(check_name)) {
-            printf("check '%s' already has been registered before. Duplicated check name?\n", check_name.c_str());
-        }
-        else {
-            GB_transaction ta(gb_main);
-            GBDATA *gb_checks = GB_search(gb_main, "checks", GB_CREATE_CONTAINER);
-            GBDATA *gb_check  = GB_create(gb_checks, "check", GB_STRING);
-
-            if (!gb_check) {
-                error = GB_get_error();
-            }
-            else {
-                error = GB_write_string(gb_check, check_name.c_str());
-            }
-
-            if (!error) consistencies.insert(check_name);
-        }
-        return error;
-    }
-
-    void perform_check(const string& check_name,
-                       GB_ERROR (*do_check)(GBDATA *gb_main, size_t species, size_t sais),
-                       GB_ERROR& error)
-    {
-        if (!error && !was_performed(check_name)) {
-            aw_status(check_name.c_str());
-            aw_status(0.0);
-            error = do_check(gb_main, species_count, sai_count);
-            aw_status(1.0);
-            if (!error) register_as_performed(check_name);
-        }
-    }
-};
 
 
 // called once on ARB_NTREE startup
@@ -347,11 +150,8 @@ public:
 static GB_ERROR nt_check_database_consistency() {
     aw_openstatus("Checking database...");
 
-    CheckedConsistencies check(GLOBAL_gb_main);
-    GB_ERROR             err = NT_format_all_alignments(GLOBAL_gb_main);
-
-    check.perform_check("fix gene_data",     NT_fix_gene_data,     err);
-    check.perform_check("del_mark_move_REF", NT_del_mark_move_REF, err);
+    GB_ERROR err = NT_format_all_alignments(GLOBAL_gb_main);
+    if (!err) err = NT_repair_DB(GLOBAL_gb_main);
 
     aw_closestatus();
     return err;
@@ -431,7 +231,7 @@ int main_load_and_startup_main_window(AW_root *aw_root) // returns 0 when succes
         if (nameOnly) {
             nameOnly++;
             len -= (nameOnly-db_server);
-            memmove(db_server, nameOnly+1, len+1);
+            memmove(db_server, nameOnly, len+1);
             if (len>MAXNAMELEN) {
                 strcpy(db_server+MAXNAMELEN-3, "...");
             }
