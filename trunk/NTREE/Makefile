@@ -3,14 +3,33 @@
 .SUFFIXES: .o .cxx .depend
 
 
-CPP_OBJECTS =  NT_edconf.o NT_join.o NT_sort.o NT_cb.o NT_main.o NT_extern.o\
-	NT_validNames.o NT_validNameParser.o \
-	NT_validManual.o  NT_MAUS.o \
-	NT_ins_col.o NT_import.o NT_concatenate.o\
-	ad_spec.o ad_trees.o  ad_ali.o ad_ext.o ad_transpro.o \
-	AP_consensus.o AP_cprofile.o AP_pos_var_pars.o \
-	ETC_check_gcg.o AP_csp_2_gnuplot.o AP_conservProfile2Gnuplot.o \
+CPP_OBJECTS = \
+	AP_consensus.o \
+	AP_conservProfile2Gnuplot.o \
+	AP_cprofile.o \
+	AP_csp_2_gnuplot.o \
+	AP_pos_var_pars.o \
+	ETC_check_gcg.o \
+	NT_MAUS.o \
+	NT_cb.o \
+	NT_concatenate.o \
+	NT_dbrepair.o \
+	NT_edconf.o \
+	NT_extern.o \
+	NT_import.o \
+	NT_ins_col.o \
+	NT_join.o \
+	NT_main.o \
+	NT_sort.o \
 	NT_trackAliChanges.o \
+	NT_validManual.o \
+	NT_validNameParser.o \
+	NT_validNames.o \
+	ad_ali.o \
+	ad_ext.o \
+	ad_spec.o \
+	ad_transpro.o \
+	ad_trees.o \
 
 
 CPP_SOURCES = $(CPP_OBJECTS:.o=.cxx)
