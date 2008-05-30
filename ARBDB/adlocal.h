@@ -179,6 +179,8 @@ extern int gb_convert_type_2_sizeof[];
 extern int gb_convert_type_2_appendix_size[];
 extern int gb_verbose_mode;
 
+#define GB_UNCOMPRESSED_SIZE(gbd, type) (GB_GETSIZE(gbd) * gb_convert_type_2_sizeof[type] + gb_convert_type_2_appendix_size[type])
+
 struct gb_compress_tree {
     char    leave;
     struct gb_compress_tree *son[2];
