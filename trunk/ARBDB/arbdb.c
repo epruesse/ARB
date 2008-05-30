@@ -64,59 +64,63 @@ double GB_atof(const char *str)
                     compression tables
 ********************************************************************************************/
 int gb_convert_type_2_compression_flags[] = {
-    /* GB_NONE 0 */ GB_COMPRESSION_NONE,
-    /* GB_BIT  1 */ GB_COMPRESSION_NONE,
-    /* GB_BYTE 2 */ GB_COMPRESSION_NONE,
-    /* GB_INT  3 */ GB_COMPRESSION_NONE,
-    /* GB_FLOAT4 */ GB_COMPRESSION_NONE,
-    /* GB_??   5 */ GB_COMPRESSION_NONE,
-    /* GB_BITS 6 */ GB_COMPRESSION_BITS,
-    /* GB_??   7 */ GB_COMPRESSION_NONE,
-    /* GB_BYTES8 */ GB_COMPRESSION_RUNLENGTH | GB_COMPRESSION_HUFFMANN,
-    /* GB_INTS 9 */ GB_COMPRESSION_RUNLENGTH | GB_COMPRESSION_HUFFMANN | GB_COMPRESSION_SORTBYTES,
+    /* GB_NONE  0 */    GB_COMPRESSION_NONE,
+    /* GB_BIT   1 */    GB_COMPRESSION_NONE,
+    /* GB_BYTE  2 */    GB_COMPRESSION_NONE,
+    /* GB_INT   3 */    GB_COMPRESSION_NONE,
+    /* GB_FLOAT 4 */    GB_COMPRESSION_NONE,
+    /* GB_??    5 */    GB_COMPRESSION_NONE,
+    /* GB_BITS  6 */    GB_COMPRESSION_BITS,
+    /* GB_??    7 */    GB_COMPRESSION_NONE,
+    /* GB_BYTES 8 */    GB_COMPRESSION_RUNLENGTH | GB_COMPRESSION_HUFFMANN,
+    /* GB_INTS  9 */    GB_COMPRESSION_RUNLENGTH | GB_COMPRESSION_HUFFMANN | GB_COMPRESSION_SORTBYTES,
     /* GB_FLTS 10 */    GB_COMPRESSION_RUNLENGTH | GB_COMPRESSION_HUFFMANN | GB_COMPRESSION_SORTBYTES,
-    /* GB_??   11 */    GB_COMPRESSION_NONE,
+    /* GB_LINK 11 */    GB_COMPRESSION_NONE,
     /* GB_STR  12 */    GB_COMPRESSION_RUNLENGTH | GB_COMPRESSION_HUFFMANN | GB_COMPRESSION_DICTIONARY,
     /* GB_STRS 13 */    GB_COMPRESSION_NONE,
     /* GB??    14 */    GB_COMPRESSION_NONE,
     /* GB_DB   15 */    GB_COMPRESSION_NONE
 };
 
-int gb_convert_type_2_sizeof[] = {
-    /* GB_NONE 0 */ 0,
-    /* GB_BIT  1 */ 0,
-    /* GB_BYTE 2 */ sizeof(char),
-    /* GB_INT  3 */ sizeof(int),
-    /* GB_FLOAT4 */ sizeof(float),
-    /* GB_??   5 */ 0,
-    /* GB_BITS 6 */ 0,
-    /* GB_??   7 */ 0,
-    /* GB_BYTES8 */ sizeof(char),
-    /* GB_INTS 9 */ sizeof(int),
+int gb_convert_type_2_sizeof[] = { /* contains the unit-size of data stored in DB,
+                                    * i.e. realsize = unit_size * GB_GETSIZE()
+                                    */
+    /* GB_NONE  0 */    0,
+    /* GB_BIT   1 */    0,
+    /* GB_BYTE  2 */    sizeof(char),
+    /* GB_INT   3 */    sizeof(int),
+    /* GB_FLOAT 4 */    sizeof(float),
+    /* GB_??    5 */    0,
+    /* GB_BITS  6 */    0,
+    /* GB_??    7 */    0,
+    /* GB_BYTES 8 */    sizeof(char),
+    /* GB_INTS  9 */    sizeof(int),
     /* GB_FLTS 10 */    sizeof(float),
-    /* GB_??   11 */    0,
+    /* GB_LINK 11 */    sizeof(char),
     /* GB_STR  12 */    sizeof(char),
     /* GB_STRS 13 */    sizeof(char),
-    /* GB??    14 */    0,
+    /* GB_??   14 */    0,
     /* GB_DB   15 */    0,
 };
 
-int gb_convert_type_2_appendix_size[] = {
-    /* GB_NONE 0 */ 0,
-    /* GB_BIT  1 */ 0,
-    /* GB_BYTE 2 */ 0,
-    /* GB_INT  3 */ 0,
-    /* GB_FLOAT4 */ 0,
-    /* GB_??   5 */ 0,
-    /* GB_BITS 6 */ 0,
-    /* GB_??   7 */ 0,
-    /* GB_BYTES8 */ 0,
-    /* GB_INTS 9 */ 0,
+int gb_convert_type_2_appendix_size[] = { /* contains the size of the suffix (aka terminator element)
+                                           * size is in bytes
+                                           */
+    /* GB_NONE  0 */    0,
+    /* GB_BIT   1 */    0,
+    /* GB_BYTE  2 */    0,
+    /* GB_INT   3 */    0,
+    /* GB_FLOAT 4 */    0,
+    /* GB_??    5 */    0,
+    /* GB_BITS  6 */    0,
+    /* GB_??    7 */    0,
+    /* GB_BYTES 8 */    0,
+    /* GB_INTS  9 */    0,
     /* GB_FLTS 10 */    0,
-    /* GB_??   11 */    0,
-    /* GB_STR  12 */    1,      /* '\0' termination */
-    /* GB_STRS 13 */    1,
-    /* GB??    14 */    0,
+    /* GB_LINK 11 */    1, /* '\0' termination */
+    /* GB_STR  12 */    1, /* '\0' termination */
+    /* GB_STRS 13 */    1, /* '\0' termination */
+    /* GB_??   14 */    0,
     /* GB_DB   15 */    0,
 };
 
@@ -368,30 +372,24 @@ long GB_read_memuse(GBDATA *gbd) {
 }
 
 GB_CSTR GB_read_pntr(GBDATA *gbd) {
-    char *data;
-    long size;
-    int type;
-    type = GB_TYPE(gbd);
-    data = GB_GETDATA(gbd);
+    int   type = GB_TYPE(gbd);
+    char *data = GB_GETDATA(gbd);
+    
     if (data) {
-        if (gbd->flags.compressed_data) {   /* uncompressed data return pntr to
-                                               database entry   */
+        if (gbd->flags.compressed_data) {   /* uncompressed data return pntr to database entry   */
             char *ca = gb_read_cache(gbd);
 
             if (!ca) {
-                char *da;
-                size = GB_GETSIZE(gbd) * gb_convert_type_2_sizeof[type] + gb_convert_type_2_appendix_size[type];
-                ca = gb_alloc_cache_index(gbd,size);
-                da = gb_uncompress_data(gbd,data,size);
-                GB_MEMCPY(ca,da,size);
+                long        size = GB_UNCOMPRESSED_SIZE(gbd, type);
+                const char *da   = gb_uncompress_data(gbd,data,size);
+                
+                if (da) {
+                    ca = gb_alloc_cache_index(gbd,size);
+                    GB_MEMCPY(ca,da,size);
+                }
             }
             data = ca;
         }
-
-#if defined(DEVEL_RALF)
-#warning test create species from consensus with this assertion
-#endif /* DEVEL_RALF */
-        gb_assert((int)strlen(data) <= GB_GETSIZE(gbd)); // seems to fail sometimes (e.g. during create species from consensus)
     }
     return data;
 }
@@ -1809,16 +1807,13 @@ GB_MAIN_TYPE *gb_get_main_during_cb(){
 }
 
 GB_CSTR gb_read_pntr_ts(GBDATA *gbd, struct gb_transaction_save *ts){
-    char *data;
-    long size;
-    int type;
-    type = GB_TYPE_TS(ts);
-    data = GB_GETDATA_TS(ts);
-    if (!data) return 0;
-    if (ts->flags.compressed_data) {    /* uncompressed data return pntr to
-                                           database entry   */
-        size = GB_GETSIZE_TS(ts) * gb_convert_type_2_sizeof[type] + gb_convert_type_2_appendix_size[type];
-        data = gb_uncompress_data(gbd,data,size);
+    int         type = GB_TYPE_TS(ts);
+    const char *data = GB_GETDATA_TS(ts);
+    if (data) {
+        if (ts->flags.compressed_data) {    /* uncompressed data return pntr to database entry   */
+            long size = GB_GETSIZE_TS(ts) * gb_convert_type_2_sizeof[type] + gb_convert_type_2_appendix_size[type];
+            data = gb_uncompress_data(gbd,data,size);
+        }
     }
     return data;
 }
