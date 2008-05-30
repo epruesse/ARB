@@ -979,7 +979,12 @@ char *GBS_strclose(struct GBS_strstruct *strstr) {
     gb_assert(str);
 
     memcpy(str, strstr->GBS_strcat_data, length+1); /* copy with 0 */
+    GBS_strforget(strstr);
 
+    return str;
+}
+
+void GBS_strforget(struct GBS_strstruct *strstr) {
     if (last_used) {
         if (last_used->GBS_strcat_data_size < strstr->GBS_strcat_data_size) { /* last_used is smaller -> keep this */
             struct GBS_strstruct *tmp = last_used;
@@ -996,7 +1001,6 @@ char *GBS_strclose(struct GBS_strstruct *strstr) {
         last_used = strstr;
     }
 
-    return str;
 }
 
 GB_BUFFER GBS_mempntr(struct GBS_strstruct *strstr) {
