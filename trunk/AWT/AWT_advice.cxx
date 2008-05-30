@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : awt_advice.cpp                                         //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri Jun/25/2004 14:24 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri May/30/2008 12:21 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2002              //
@@ -124,7 +124,9 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
         understood->write_int(0);
 
         if (corresponding_help) type = AWT_Advice_Type(type|AWT_ADVICE_HELP);
+#if defined(ASSERTION_USED)
         else awt_assert((type & AWT_ADVICE_HELP) == 0);
+#endif // ASSERTION_USED
 
         AW_window_simple *aws = new AW_window_simple; // do not delete (ARB will crash)
 

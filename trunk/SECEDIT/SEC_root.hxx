@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_root.hxx                                      //
 //   Purpose   : secondary structure representation                //
-//   Time-stamp: <Wed Sep/19/2007 16:36 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Fri May/30/2008 12:26 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -719,12 +719,15 @@ class SEC_root {
 
     static bool hasBase(int pos, const char *seq, int len) {
         sec_assert(pos<len);
-        char c = seq[pos];
-        return c != '-' && c != '.';
+        if (pos<len) {
+            char c = seq[pos];
+            return c != '-' && c != '.';
+        }
+        return false;
     }
 
 public:
-    
+
     SEC_root();
     ~SEC_root();
 

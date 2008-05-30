@@ -16,6 +16,9 @@
  * $Header$
  *
  * $Log$
+ * Revision 1.12  2008/05/30 10:36:48  westram
+ * - warnings fixed
+ *
  * Revision 1.11  2008/05/26 11:04:52  westram
  * - fixed calls to GBS_create_hash
  *
@@ -401,8 +404,8 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
 
                     else if (ret[0]=='4') { // text
                         int align;
-                        int fontnr;
-                        int fontsize;
+                        int fontnr   = -1;
+                        int fontsize = -1;
 
                         // old format: 4 align font  fontsize   depth   color ???       angle justi flags width x y text
                         // new format: 4 align color depth      ???     font  fontsize  angle justi flags width x y text

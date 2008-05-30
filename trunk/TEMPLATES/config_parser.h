@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : config_parser.h                                        //
 //    Purpose   : reads config files                                     //
-//    Time-stamp: <Fri Oct/01/2004 20:27 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri May/30/2008 12:29 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2003          //
@@ -81,8 +81,8 @@ namespace {
                     ++lineno;
                     char *content = unwhite(buffer);
                     if (content[0] && content[0] != '#') { // skip empty and comment lines
-                        char *key, *value;
-                        error = splitText(content, '=', key, value);
+                        char *key = 0, *value = 0;
+                        error     = splitText(content, '=', key, value);
                         if (!error && value[0] == 0) {
                             error = "content missing behind '='";
                         }
@@ -225,7 +225,7 @@ namespace {
         }
 
         void parseBool(const std::string& key, bool& boolean) {
-            int b;
+            int b = 0;
             parseInt(key, b);
             if (!error) {
                 error            = check_bool_range(b);

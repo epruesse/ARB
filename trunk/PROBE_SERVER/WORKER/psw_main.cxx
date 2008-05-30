@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Mon May/26/2008 12:05 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri May/30/2008 12:28 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -385,7 +385,7 @@ namespace {
 
     // returns a list of species for a specific probe-group
     GB_ERROR CMD_getmembers(GBDATA *gb_main, const Arguments& args, FILE *out) {
-        const char     *id;
+        const char     *id    = 0;
         GB_ERROR        error = expectArgument(args, "id", id);
         GB_transaction  dummy(gb_main);
 
@@ -424,7 +424,7 @@ namespace {
     // returns a list of probes for a specific node
     // (Note: Not a real command - used by CMD_getexactprobes and CMD_getnonexactprobes)
     GB_ERROR CMD_getprobes(GBDATA *gb_main, const Arguments& args, FILE *out, bool get_exact) {
-        const char     *path;
+        const char     *path  = 0;
         GB_ERROR        error = expectArgument(args, "path", path);
         GB_transaction  dummy(gb_main);
 

@@ -3,7 +3,7 @@
 //    File      : common.h                                               //
 //    Purpose   : Common code for all tools                              //
 //    Note      : include only once in each executable!!!                //
-//    Time-stamp: <Fri May/16/2008 11:03 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri May/30/2008 12:29 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -83,7 +83,7 @@ static GB_ERROR getDatabaseState(GBDATA *gb_main, const char **typePtr, const ch
 }
 
 static GB_ERROR checkDatabaseType(GBDATA *gb_main, const char *db_name, const char *expectedType, const char *expectedState) {
-    const char *type, *state;
+    const char *type  = 0, *state = 0;
     GB_ERROR    error = getDatabaseState(gb_main, &type, &state);
 
     if (!error) {

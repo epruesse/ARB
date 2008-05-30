@@ -230,9 +230,9 @@ void mp_load_list( AW_window *aww, AW_selection_list *selection_list, char *base
                 }
             }
             else {
-                char *probe_string;
-                int   ecoli_position;
-                error = parse_probe_list_entry(line, probe_string, ecoli_position);
+                char *probe_string   = 0;
+                int   ecoli_position = -1;
+                error                = parse_probe_list_entry(line, probe_string, ecoli_position);
 
                 if (error) {
                     next_line = 0;

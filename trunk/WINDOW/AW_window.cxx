@@ -3732,17 +3732,15 @@ void AW_window::TuneBackground(Widget w, int modStrength) {
         break;
     }
 
+    aw_assert(preferredDir == 1 || preferredDir == -1); // no direction chosen above
+    
     if (preferredDir == 1) {
-        for (int i=0; i<3; ++i)
-            col[i] += (incPossible[i] ? mod : 0);
-    } else if (preferredDir == -1) {
-        for (int i=0; i<3; ++i)
-            col[i] -= (decPossible[i] ? mod : 0);
-    } else
-        aw_assert(0);
-    // no direction chosen above
-
-    aw_assert(preferredDir == 1 || preferredDir == -1);
+        for (int i=0; i<3; ++i) col[i] += (incPossible[i] ? mod : 0);
+    }
+    else if (preferredDir == -1) {
+        for (int i=0; i<3; ++i) col[i] -= (decPossible[i] ? mod : 0);
+    }
+    
 
     char hex_color[50];
     sprintf(hex_color, "#%2.2X%2.2X%2.2X", col[0], col[1], col[2]);

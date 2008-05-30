@@ -347,7 +347,9 @@ awt_query::awt_query(struct adaqbsstruct *cbs) {
 
             if (strcmp(opstr, "and")      == 0) next_op = AND;
             else if (strcmp(opstr, "or")  == 0) next_op = OR;
+#if defined(ASSERTION_USED)
             else aw_assert(0);
+#endif // ASSERTION_USED
 
             if (next_op != ILLEGAL) {
                 awt_query *next_query = new awt_query();
