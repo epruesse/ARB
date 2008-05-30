@@ -727,6 +727,24 @@ long GBS_hash_count_elems(GB_HASH *hs) {
     return count;
 }
 
+long GBS_hash_count_value(GB_HASH *hs, long val) {
+    long e2    = hs->size;
+    long count = 0;
+    long i;
+    struct gbs_hash_entry *e;
+
+    ad_assert(val != 0); // counting zero values makes no sense (cause these are not stored in the hash)
+
+    for (i = 0; i<e2; ++i) {
+        for (e=hs->entries[i]; e; e=e->next) {
+            if (e->val == val) {
+                ++count;
+            }
+        }
+    }
+
+    return count;
+}
 
 void GBS_hash_next_element(GB_HASH *hs,const  char **key, long *val){
     struct gbs_hash_entry *e = hs->loop_entry;
