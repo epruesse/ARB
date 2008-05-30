@@ -138,16 +138,16 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
 
         GB_ensure_callback(gb_key,(GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE),gb_system_key_changed_cb,(int *)q);
 
-        ks->compression_mask = (int)GBT_read_int2(gb_key,"compression_mask",-1);
-        gb_dict = GB_entry(gb_key,"@dictionary");
-        if (gb_dict){
-            if (ks->dictionary) delete_gb_dictionary(ks->dictionary);
-            ks->dictionary = gb_create_dict(gb_dict);
-        }else{
-            if (ks->dictionary) GB_internal_error("Uups Dictionary deleted");
+        if (ks->dictionary) {
+            delete_gb_dictionary(ks->dictionary);
             ks->dictionary = 0;
         }
-        ks->gb_key = gb_key;
+
+        ks->compression_mask = (int)GBT_read_int2(gb_key,"compression_mask",-1);
+        gb_dict              = GB_entry(gb_key,"@dictionary");
+        ks->dictionary       = gb_dict ? gb_create_dict(gb_dict) : 0;
+        ks->gb_key           = gb_key;
+
         {
             char buffer[256];
             memset(buffer,0,256);
@@ -163,9 +163,10 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
 }
 
 GB_ERROR gb_save_dictionary_data(GBDATA *gb_main,const char *key,const char *dict, int size) {
-    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    GB_ERROR error = 0;
-    gb_main = (GBDATA *)Main->data;
+    /* if 'dict' is NULL, an existing directory gets deleted */
+    GB_MAIN_TYPE *Main  = GB_MAIN(gb_main);
+    GB_ERROR      error = 0;
+    gb_main             = (GBDATA *)Main->data;
     if (key[0] == '@') {
         error = GB_export_error("No dictionaries for system fields");
     }
@@ -210,20 +211,20 @@ GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main){
     if (!Main->local_mode) return 0;	/* do not create anything at the client side */
 
     GB_push_my_security(gb_main);
-    /* First step: delete unused key  */
+    
+    /* First step: search unused keys and delete them */
     for (gb_key = GB_entry(gb_key_data,"@key");
          gb_key;
          gb_key = gb_next_key)
     {
-        GBDATA *gb_name = GB_entry(gb_key,"@name");
-        char *name = GB_read_string(gb_name);
-        GBQUARK quark = gb_key_2_quark(Main,name);
-        free(name);
+        GBDATA     *gb_name = GB_entry(gb_key,"@name");
+        const char *name    = GB_read_char_pntr(gb_name);
+        GBQUARK     quark   = gb_key_2_quark(Main,name);
+        
         gb_next_key = GB_nextEntry(gb_key);
 
         if (quark<=0 || quark >= Main->sizeofkeys || !Main->keys[quark].key){
-            GB_delete(gb_key);	/* unused key */
-            continue;
+            GB_delete(gb_key);	/* delete unused key */
         }
     }
     GB_create_index(gb_key_data, "@name", GB_MIND_CASE, Main->sizeofkeys*2);
@@ -243,3 +244,48 @@ GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main){
     GB_pop_my_security(gb_main);
     return 0;
 }
+
+/* gain access to allow repair of broken compression
+ * (see NT_fix_dict_compress)
+ */
+
+struct DictData {
+    char *data;
+    long  size;
+};
+
+struct DictData *GB_get_dictionary(GBDATA *gb_main, const char *key) {
+    /* return DictData or
+     * NULL if no dictionary or error occurred
+     */
+    struct DictData *dd    = (struct DictData*)GB_calloc(1, sizeof(*dd));
+    GB_ERROR         error = gb_load_dictionary_data(gb_main, key, &dd->data, &dd->size);
+
+    if (error || !dd->data) {
+        GB_free_dictionary(dd);
+        dd = NULL;
+        if (error) GB_export_error(error);
+    }
+
+    return dd;
+}
+
+GB_ERROR GB_set_dictionary(GBDATA *gb_main, const char *key, const struct DictData *dd) {
+    /* if 'dd' == NULL -> delete dictionary */
+    GB_ERROR error;
+    if (dd) {
+        error = gb_save_dictionary_data(gb_main, key, dd->data, dd->size);
+    }
+    else {
+        error = gb_save_dictionary_data(gb_main, key, NULL, 0);
+    }
+    return error;
+}
+
+void GB_free_dictionary(struct DictData *dd) {
+    if (dd) {
+        if (dd->data) gbm_free_mem(dd->data, dd->size, GBM_DICT_INDEX);
+        free(dd);
+    }
+}
+
