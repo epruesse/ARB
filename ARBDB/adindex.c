@@ -38,7 +38,7 @@ char *gb_index_check_in(GBDATA *gbd)
     }
 
     data = GB_read_char_pntr(gbd);
-    GB_CALC_HASH_INDEX_CASE_IGNORED(data,index,ifs->hash_table_size);
+    GB_CALC_HASH_INDEX(data,index,ifs->hash_table_size, ifs->case_sens);
     ifs->nr_of_elements++;
     {
         struct gb_if_entries *ifes;
@@ -80,7 +80,7 @@ char *gb_index_check_out(GBDATA *gbd)
         return 0;       /* This key is not indexed */
     }
     data = GB_read_char_pntr(gbd);
-    GB_CALC_HASH_INDEX_CASE_IGNORED(data,index,ifs->hash_table_size);
+    GB_CALC_HASH_INDEX(data,index,ifs->hash_table_size,ifs->case_sens);
     ifes2 = 0;
     entries = GB_INDEX_FILES_ENTRIES(ifs);
 
@@ -182,7 +182,7 @@ GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUA
         return 0;
     }
 
-    GB_CALC_HASH_INDEX_CASE_IGNORED(val, index, ifs->hash_table_size);
+    GB_CALC_HASH_INDEX(val, index, ifs->hash_table_size, ifs->case_sens);
     min_index = gbf->d.nheader;
 
     for (   ifes = GB_ENTRIES_ENTRY(GB_INDEX_FILES_ENTRIES(ifs),index);
