@@ -1,7 +1,7 @@
 # =============================================================== #
 #                                                                 #
 #   File      : Makefile                                          #
-#   Time-stamp: <Fri May/30/2008 09:02 MET Coder@ReallySoft.de>   #
+#   Time-stamp: <Fri Jun/06/2008 14:08 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Institute of Microbiology (Technical University Munich)       #
 #   http://www.arb-home.de/                                       #
@@ -398,10 +398,22 @@ endif
 
 check_ENVIRONMENT : check_PATH
 
+check_tabs: check_setup
+ifeq ($(DEBUG),1)
+	@SOURCE_TOOLS/tabBrake.pl
+endif
+
+force_tab_check:
+	touch -t 198001010000 SOURCE_TOOLS/tabBrake.stamp
+	$(MAKE) check_tabs
+
+
 # ---------------------
 
-checks: check_ENVIRONMENT check_DEBUG check_ARB_64 check_DEVELOPER check_GCC_VERSION
+check_setup: check_ENVIRONMENT check_DEBUG check_ARB_64 check_DEVELOPER check_GCC_VERSION 
 		@echo Your setup seems to be ok.
+
+checks: check_setup check_tabs
 
 
 # end test section ------------------------------
