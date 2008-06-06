@@ -5,9 +5,6 @@ UP	pfold.hlp
 UP	glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	arb_import.hlp
-SUB	dssp_ift.hlp
-SUB	sp_sp_2_ext.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
