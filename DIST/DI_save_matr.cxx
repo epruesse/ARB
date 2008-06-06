@@ -43,8 +43,8 @@ const char *PHMATRIX::save(char *filename,enum PH_SAVE_TYPE type)
         case PH_SAVE_TABBED:
             {
                 GB_transaction  dummy(gb_main);
-                size_t	        app_size = 200; // maximum width for NDS output (and max. height for vertical one)
-                size_t	        maxnds   = 0;
+                size_t          app_size = 200; // maximum width for NDS output (and max. height for vertical one)
+                size_t          maxnds   = 0;
                 bool            tabbed   = (type == PH_SAVE_TABBED);
                 double          min      = matrix->get(1,0) * 100.0;
                 double          max      = min;

@@ -1,5 +1,5 @@
 /*
-	dgg addition for new arb_readseq, 24 dec 92
+        dgg addition for new arb_readseq, 24 dec 92
 */
 
 item:Pretty print sequences (slow) ...

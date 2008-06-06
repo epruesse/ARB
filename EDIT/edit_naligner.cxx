@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>	// system
+#include <stdlib.h>     // system
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>
@@ -15,8 +15,8 @@ extern GBDATA *GLOBAL_gb_main;
 
 void aed_start_naligning(AW_window *aw) {
     AW_root *root = aw->get_root();
-    char	*buffer;
-    int	i,j;
+    char    *buffer;
+    int      i,j;
 
     GBS_strstruct *strstruct = GBS_stropen(1000);
     GBS_strcat(strstruct,"xterm -sl 1000 -sb -e sh -c 'LD_LIBRARY_PATH=\"");
@@ -47,7 +47,7 @@ void aed_start_naligning(AW_window *aw) {
 
     if ( root->awar("naligner/against")->read_int() ) {
         GBS_strcat(strstruct," -PARB_PT_SERVER");
-        GBS_intcat(strstruct,	root->awar( "naligner/pt_server" )->read_int()	);
+        GBS_intcat(strstruct,   root->awar( "naligner/pt_server" )->read_int()  );
     }else{
         GBS_strcat(strstruct," \"-f");
         char *family = root->awar("naligner/sagainst")->read_string();
@@ -60,27 +60,27 @@ void aed_start_naligning(AW_window *aw) {
     if (root->awar( "naligner/mark_profile" )->read_int() ) GBS_strcat(strstruct," -mf");
     if (root->awar( "naligner/unmark_sequence" )->read_int() ) GBS_strcat(strstruct," -us");
 
-    GBS_strcat(strstruct," -minf"); 	GBS_intcat(strstruct,root->awar("naligner/minf")->read_int());
-    GBS_strcat(strstruct," -maxf"); 	GBS_intcat(strstruct,root->awar("naligner/maxf")->read_int());
-    GBS_strcat(strstruct," -minw"); 	GBS_floatcat(strstruct,root->awar("naligner/minw")->read_float());
-    GBS_strcat(strstruct," -maxew"); 	GBS_floatcat(strstruct,root->awar("naligner/maxew")->read_float());
-    GBS_strcat(strstruct," -ib"); 	GBS_intcat(strstruct,root->awar("naligner/det/ib")->read_int());
-    GBS_strcat(strstruct," -ic"); 	GBS_intcat(strstruct,root->awar("naligner/det/ic")->read_int());
+    GBS_strcat(strstruct," -minf");     GBS_intcat(strstruct,root->awar("naligner/minf")->read_int());
+    GBS_strcat(strstruct," -maxf");     GBS_intcat(strstruct,root->awar("naligner/maxf")->read_int());
+    GBS_strcat(strstruct," -minw");     GBS_floatcat(strstruct,root->awar("naligner/minw")->read_float());
+    GBS_strcat(strstruct," -maxew");    GBS_floatcat(strstruct,root->awar("naligner/maxew")->read_float());
+    GBS_strcat(strstruct," -ib");       GBS_intcat(strstruct,root->awar("naligner/det/ib")->read_int());
+    GBS_strcat(strstruct," -ic");       GBS_intcat(strstruct,root->awar("naligner/det/ic")->read_int());
 
-    GBS_strcat(strstruct," -cl"); 	GBS_floatcat(strstruct,	root->awar("naligner/det/cl")->read_float());
-
-
+    GBS_strcat(strstruct," -cl");       GBS_floatcat(strstruct, root->awar("naligner/det/cl")->read_float());
 
 
-    GBS_strcat(strstruct," -cm"); 	GBS_floatcat(strstruct,root->awar("naligner/det/cm")->read_float());
-    GBS_strcat(strstruct," -ch"); 	GBS_floatcat(strstruct,root->awar("naligner/det/ch")->read_float());
-    GBS_strcat(strstruct," -mgf"); 	GBS_floatcat(strstruct,root->awar("naligner/igap_panelty")->read_float());
+
+
+    GBS_strcat(strstruct," -cm");       GBS_floatcat(strstruct,root->awar("naligner/det/cm")->read_float());
+    GBS_strcat(strstruct," -ch");       GBS_floatcat(strstruct,root->awar("naligner/det/ch")->read_float());
+    GBS_strcat(strstruct," -mgf");      GBS_floatcat(strstruct,root->awar("naligner/igap_panelty")->read_float());
     GBS_strcat(strstruct," -mma1");
     GBS_strcat(strstruct," -msub");
     for (i=0;i<5;i++){
         for (j=0;j<5;j++) {
             char var[100];
-            if ( i==4 || j==4 ) {		/* gap panelty */
+            if ( i==4 || j==4 ) {               /* gap panelty */
                 if (i==4 && j==4) {
                     GBS_floatcat(strstruct,0.0);
                 }else{
@@ -89,7 +89,7 @@ void aed_start_naligning(AW_window *aw) {
                 }
             }else{
                 if (i<j) sprintf(var,"naligner/%c%c","acgt-"[i],"acgt-"[j]);
-                else	sprintf(var,"naligner/%c%c","acgt-"[j],"acgt-"[i]);
+                else    sprintf(var,"naligner/%c%c","acgt-"[j],"acgt-"[i]);
                 GBS_floatcat(strstruct,root->awar(var)->read_float());
                 if (i<4 || j<4) GBS_chrcat(strstruct,',');
             }
@@ -128,20 +128,20 @@ void create_naligner_variables(AW_root *root,AW_default db1)
     root->awar_float(   "naligner/gg", 0.0 ,    db1);
     root->awar_float(   "naligner/gt", 3.0 ,    db1);
     root->awar_float(   "naligner/tt", 0.0 ,    db1);
-    root->awar_float(   "naligner/gap_panelty", 5.0	 ,    db1);
+    root->awar_float(   "naligner/gap_panelty", 5.0      ,    db1);
     root->awar_float(   "naligner/igap_panelty", 0.2 ,    db1);
-    root->awar_int(	"naligner/minf", 3 ,    db1);
-    root->awar_int(	"naligner/maxf", 30 ,    db1);
+    root->awar_int(     "naligner/minf", 3 ,    db1);
+    root->awar_int(     "naligner/maxf", 30 ,    db1);
 
 
-    root->awar_float(	"naligner/minw", .7 ,    db1);
-    root->awar_float(	"naligner/maxew", .2 ,    db1);
+    root->awar_float(   "naligner/minw", .7 ,    db1);
+    root->awar_float(   "naligner/maxew", .2 ,    db1);
 
-    root->awar_float(	"naligner/det/cl", .25 ,    db1);
-    root->awar_float(	"naligner/det/cm", .5 ,    db1);
-    root->awar_float(	"naligner/det/ch", .8 ,    db1);
-    root->awar_int(	"naligner/det/ib", 5 ,    db1);
-    root->awar_int(	"naligner/det/ic", 5 ,    db1);
+    root->awar_float(   "naligner/det/cl", .25 ,    db1);
+    root->awar_float(   "naligner/det/cm", .5 ,    db1);
+    root->awar_float(   "naligner/det/ch", .8 ,    db1);
+    root->awar_int(     "naligner/det/ib", 5 ,    db1);
+    root->awar_int(     "naligner/det/ic", 5 ,    db1);
 
 }
 
@@ -153,7 +153,7 @@ void ed_nalign_save(AW_window *aww)
 
 AW_window *create_expert_naligner_window(AW_root *root)
 {
-    const	int	mwidth = 5;
+    const       int     mwidth = 5;
     AW_window_simple *aws = new AW_window_simple;
     aws->init( root, "ALIGNER_V2_EXPERT2", "ALIGNER V2.0 EXPERT 2");
     aws->load_xfig("ed_al_ex.fig");
@@ -193,7 +193,7 @@ AW_window *create_expert_naligner_window(AW_root *root)
 AW_window *create_special_naligner_window(AW_root *root, AW_CL cd2)
 {
     AW_window_simple *aws = new AW_window_simple;
-    const	int	mwidth = 3;
+    const       int     mwidth = 3;
     aws->init( root, "ALIGNER_V2_EXPERT", "ALIGNER V2.0 EXPERT");
     aws->load_xfig("ed_al_sp.fig");
 
@@ -322,4 +322,3 @@ AW_window *create_naligner_window( AW_root *root, AW_CL cd2 ) {
 
     return (AW_window *)aws;
 }
-

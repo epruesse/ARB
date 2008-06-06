@@ -26,10 +26,10 @@ ARB-Input-Mask
 
 @MASK_BEGIN
 
-	NEW_SECTION()
-	TEXT("ID       ") SELF()
-	TEXTFIELD("Full name ", "full_name", 30)
-	TEXTFIELD("Acc.number", "acc", 30)
+    NEW_SECTION()
+    TEXT("ID       ") SELF()
+    TEXTFIELD("Full name ", "full_name", 30)
+    TEXTFIELD("Acc.number", "acc", 30)
 
     OPENMASK("Sequence information","main_seq_info.mask")
 

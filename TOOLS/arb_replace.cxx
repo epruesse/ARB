@@ -7,23 +7,23 @@
 int main(int argc, char **argv)
 {
 
-    char	   *data;
-    char	   *ndata;
-    FILE	   *out;
-    int	        arg;
-    char	   *eval;
+    char       *data;
+    char       *ndata;
+    FILE       *out;
+    int         arg;
+    char       *eval;
     const char *fname;
-    int	        linemode           = GB_FALSE;
-    int	        delete_empty_lines = GB_FALSE;
-    int	        startarg;
-    int	        patchmode          = GB_FALSE;
+    int         linemode           = GB_FALSE;
+    int         delete_empty_lines = GB_FALSE;
+    int         startarg;
+    int         patchmode          = GB_FALSE;
 
     if (argc <=1 || (argc >= 2 && strcmp(argv[1], "--help") == 0)) {
         printf("syntax: arb_replace [-l/L/p] \"old=newdata\" [filepattern]\n");
-        //         printf("	%s %s %s %s",argv[0],argv[1],argv[2],argv[3]);
-        printf("	-l	linemode, parse each line seperatedly\n");
-        printf("	-L	linemode, parse each line seperatedly, delete empty lines\n");
-        printf("	-p	patchmode, (no wildcards allowed, rightside<leftside)\n");
+        //         printf("     %s %s %s %s",argv[0],argv[1],argv[2],argv[3]);
+        printf("        -l      linemode, parse each line seperatedly\n");
+        printf("        -L      linemode, parse each line seperatedly, delete empty lines\n");
+        printf("        -p      patchmode, (no wildcards allowed, rightside<leftside)\n");
         return -1;
     }
     if (!strcmp(argv[1],"-l")) {
@@ -46,9 +46,9 @@ int main(int argc, char **argv)
         eval     = argv[1];
         startarg = 2;
     }
-    int	usestdin = GB_FALSE;
+    int usestdin = GB_FALSE;
     if (startarg==argc) {
-        usestdin = GB_TRUE;		// stdin stdout
+        usestdin = GB_TRUE;             // stdin stdout
         argc++;
     }
 
@@ -106,9 +106,9 @@ int main(int argc, char **argv)
                 char          *nextp;
                 char          *h;
                 GBS_strstruct *strstruct = GBS_stropen(1024);
-                
+
                 while ((nextp = strchr(p,'\n'))) {
-                    nextp[0] = 0;			// remove '\n'
+                    nextp[0] = 0;                       // remove '\n'
                     h = GBS_string_eval(p,eval,0);
                     if (!h){
                         h = strdup (p);
@@ -122,12 +122,12 @@ int main(int argc, char **argv)
                         }
                     }else{
                         GBS_strcat(strstruct,h);
-                        if (h[0] || !delete_empty_lines) {	// delete empty lines
-                            GBS_chrcat(strstruct,'\n');		// insert '\n'
+                        if (h[0] || !delete_empty_lines) {      // delete empty lines
+                            GBS_chrcat(strstruct,'\n');         // insert '\n'
                         }
                     }
                     p = nextp+1;
-                    nextp[0] = '\n';		// reinsert '\n'
+                    nextp[0] = '\n';            // reinsert '\n'
                     free(h);
                 }
                 h = GBS_string_eval(p,eval,0);

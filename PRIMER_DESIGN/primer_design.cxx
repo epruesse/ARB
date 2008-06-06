@@ -60,25 +60,25 @@ void primer_design_event_update_memory( AW_window *aww ) {
 //
 void create_primer_design_variables( AW_root *aw_root, AW_default aw_def, AW_default global )
 {
-    aw_root->awar_int( AWAR_PRIMER_DESIGN_LEFT_POS,		    0, aw_def);
-    aw_root->awar_int( AWAR_PRIMER_DESIGN_LEFT_LENGTH,		  100, aw_def);
-    aw_root->awar_int( AWAR_PRIMER_DESIGN_RIGHT_POS,		 1000, aw_def);
-    aw_root->awar_int( AWAR_PRIMER_DESIGN_RIGHT_LENGTH,		  100, aw_def);
-    aw_root->awar_int( AWAR_PRIMER_DESIGN_LENGTH_MIN,		   10, aw_def);
-    aw_root->awar_int( AWAR_PRIMER_DESIGN_LENGTH_MAX,		   20, aw_def);
-    aw_root->awar_int( AWAR_PRIMER_DESIGN_DIST_MIN,		 1050, aw_def);
-    aw_root->awar_int( AWAR_PRIMER_DESIGN_DIST_MAX,		 1200, aw_def);
-    aw_root->awar_int( AWAR_PRIMER_DESIGN_GCRATIO_MIN,		   10, aw_def);
-    aw_root->awar_int( AWAR_PRIMER_DESIGN_GCRATIO_MAX,		   50, aw_def);
-    aw_root->awar_int( AWAR_PRIMER_DESIGN_TEMPERATURE_MIN,	   30, aw_def);
-    aw_root->awar_int( AWAR_PRIMER_DESIGN_TEMPERATURE_MAX,	   80, aw_def);
+    aw_root->awar_int( AWAR_PRIMER_DESIGN_LEFT_POS,                 0, aw_def);
+    aw_root->awar_int( AWAR_PRIMER_DESIGN_LEFT_LENGTH,            100, aw_def);
+    aw_root->awar_int( AWAR_PRIMER_DESIGN_RIGHT_POS,             1000, aw_def);
+    aw_root->awar_int( AWAR_PRIMER_DESIGN_RIGHT_LENGTH,           100, aw_def);
+    aw_root->awar_int( AWAR_PRIMER_DESIGN_LENGTH_MIN,              10, aw_def);
+    aw_root->awar_int( AWAR_PRIMER_DESIGN_LENGTH_MAX,              20, aw_def);
+    aw_root->awar_int( AWAR_PRIMER_DESIGN_DIST_MIN,              1050, aw_def);
+    aw_root->awar_int( AWAR_PRIMER_DESIGN_DIST_MAX,              1200, aw_def);
+    aw_root->awar_int( AWAR_PRIMER_DESIGN_GCRATIO_MIN,             10, aw_def);
+    aw_root->awar_int( AWAR_PRIMER_DESIGN_GCRATIO_MAX,             50, aw_def);
+    aw_root->awar_int( AWAR_PRIMER_DESIGN_TEMPERATURE_MIN,         30, aw_def);
+    aw_root->awar_int( AWAR_PRIMER_DESIGN_TEMPERATURE_MAX,         80, aw_def);
     aw_root->awar_int( AWAR_PRIMER_DESIGN_ALLOWED_MATCH_MIN_DIST,     0, aw_def);
-    aw_root->awar_int( AWAR_PRIMER_DESIGN_EXPAND_IUPAC,		    1, aw_def);
-    aw_root->awar_int( AWAR_PRIMER_DESIGN_MAX_PAIRS,		   25, aw_def);
-    aw_root->awar_int( AWAR_PRIMER_DESIGN_GC_FACTOR,		   50, aw_def);
-    aw_root->awar_int( AWAR_PRIMER_DESIGN_TEMP_FACTOR,		   50, aw_def);
+    aw_root->awar_int( AWAR_PRIMER_DESIGN_EXPAND_IUPAC,             1, aw_def);
+    aw_root->awar_int( AWAR_PRIMER_DESIGN_MAX_PAIRS,               25, aw_def);
+    aw_root->awar_int( AWAR_PRIMER_DESIGN_GC_FACTOR,               50, aw_def);
+    aw_root->awar_int( AWAR_PRIMER_DESIGN_TEMP_FACTOR,             50, aw_def);
 
-    aw_root->awar_string( AWAR_PRIMER_DESIGN_APROX_MEM,		   "", aw_def);
+    aw_root->awar_string( AWAR_PRIMER_DESIGN_APROX_MEM,            "", aw_def);
 
     aw_root->awar_string( AWAR_PRIMER_TARGET_STRING,                 "", global);
 }
@@ -153,7 +153,7 @@ void primer_design_event_go(AW_window *aww) {
         }
 
 #ifdef DARWIN
-		// This seems to generate an internal compiler error with gcc 2.95 on OSX
+        // This seems to generate an internal compiler error with gcc 2.95 on OSX
 #else
         catch (string& s) {
             error = GBS_global_string(s.c_str());
@@ -329,7 +329,7 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
         PRD_Sequence_Pos  right_min, right_max;
         PRD_Sequence_Pos  add_offset = 0; // offset to add to positions (used for genes)
         long int          dist_min, dist_max;
-//         long int          length_min, length_max;
+        //         long int          length_min, length_max;
         char             *sequence   = 0;
 
         sequence = GB_read_string(gb_seq);
@@ -368,7 +368,7 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
 
         // right pos ('right_len'th base from end)
         i->restart( length, 0, right_len, SequenceIterator::BACKWARD );
-        i->nextBase();			// find last base
+        i->nextBase();                  // find last base
         right_max             = i->pos; // store pos. of last base
         while (i->nextBase() != SequenceIterator::EOS ) ; // step to 'right_len'th base from end
         right_min             = i->pos; // store pos of 'right_len'th base from end
@@ -383,7 +383,7 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
             while (i->nextBase()   != SequenceIterator::EOS) ++bases_between;
             dist_min = bases_between;                                   // take bases between as min distance
         }
-        else {							      // overlapping ranges
+        else {                                                        // overlapping ranges
             dist_min = right_min - left_min +1;
         }
         dist_max = right_max - left_min;
@@ -391,16 +391,16 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
         root->awar(AWAR_PRIMER_DESIGN_DIST_MAX)->write_int(dist_max);
 
         // primer length
-//         length_min = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->read_int();
-//         length_max = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->read_int();
-//         if ( length_max > 100 ) length_max = 100;
-//         if ( length_min >= length_max ) length_min = length_max >> 2;
-//         root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->write_int(length_min);
-//         root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->write_int(length_max);
+        //         length_min = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->read_int();
+        //         length_max = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->read_int();
+        //         if ( length_max > 100 ) length_max = 100;
+        //         if ( length_min >= length_max ) length_min = length_max >> 2;
+        //         root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->write_int(length_min);
+        //         root->awar(AWAR_PRIMER_DESIGN_LENGTH_MAX)->write_int(length_max);
 
         // GC-ratio/temperature - factors
-//         root->awar(AWAR_PRIMER_DESIGN_GC_FACTOR)->write_int(50);
-//         root->awar(AWAR_PRIMER_DESIGN_TEMP_FACTOR)->write_int(50);
+        //         root->awar(AWAR_PRIMER_DESIGN_GC_FACTOR)->write_int(50);
+        //         root->awar(AWAR_PRIMER_DESIGN_TEMP_FACTOR)->write_int(50);
 
         // update mem-info
         primer_design_event_update_memory(aww);
@@ -413,8 +413,8 @@ void primer_design_event_init( AW_window *aww, AW_CL cl_from_gene) {
         printf ( "primer_design_event_init : left_max   %7li\n",left_max );
         printf ( "primer_design_event_init : right_min  %7li\n",right_min );
         printf ( "primer_design_event_init : right_max  %7li\n",right_max );
-//         printf ( "primer_design_event_init : length_min %7li\n",length_min );
-//         printf ( "primer_design_event_init : length_max %7li\n",length_max );
+        //         printf ( "primer_design_event_init : length_min %7li\n",length_min );
+        //         printf ( "primer_design_event_init : length_max %7li\n",length_max );
         printf ( "primer_design_event_init : dist_min   %7li\n",dist_min );
         printf ( "primer_design_event_init : dist_max   %7li\n\n",dist_max );
 #endif
@@ -464,22 +464,22 @@ void create_primer_design_result_window( AW_window *aww )
 }
 
 static AWT_config_mapping_def primer_design_config_mapping[] = {
-    { AWAR_PRIMER_DESIGN_LEFT_POS,               "lpos" },         
-    { AWAR_PRIMER_DESIGN_LEFT_LENGTH,            "llen" },         
-    { AWAR_PRIMER_DESIGN_RIGHT_POS,              "rpos" },         
-    { AWAR_PRIMER_DESIGN_RIGHT_LENGTH,           "rlen" },         
-    { AWAR_PRIMER_DESIGN_LENGTH_MIN,             "lenmin" },       
-    { AWAR_PRIMER_DESIGN_LENGTH_MAX,             "lenmax" },       
-    { AWAR_PRIMER_DESIGN_DIST_MIN,               "distmin" },      
-    { AWAR_PRIMER_DESIGN_DIST_MAX,               "distmax" },      
-    { AWAR_PRIMER_DESIGN_GCRATIO_MIN,            "gcmin" },      
-    { AWAR_PRIMER_DESIGN_GCRATIO_MAX,            "gcmax" },      
-    { AWAR_PRIMER_DESIGN_TEMPERATURE_MIN,        "tempmin" },      
-    { AWAR_PRIMER_DESIGN_TEMPERATURE_MAX,        "tempmax" },      
-    { AWAR_PRIMER_DESIGN_ALLOWED_MATCH_MIN_DIST, "minmatchdist" }, 
-    { AWAR_PRIMER_DESIGN_EXPAND_IUPAC,           "iupac" },        
-    { AWAR_PRIMER_DESIGN_MAX_PAIRS,              "maxpairs" },     
-    { AWAR_PRIMER_DESIGN_GC_FACTOR,              "gcfactor" },     
+    { AWAR_PRIMER_DESIGN_LEFT_POS,               "lpos" },
+    { AWAR_PRIMER_DESIGN_LEFT_LENGTH,            "llen" },
+    { AWAR_PRIMER_DESIGN_RIGHT_POS,              "rpos" },
+    { AWAR_PRIMER_DESIGN_RIGHT_LENGTH,           "rlen" },
+    { AWAR_PRIMER_DESIGN_LENGTH_MIN,             "lenmin" },
+    { AWAR_PRIMER_DESIGN_LENGTH_MAX,             "lenmax" },
+    { AWAR_PRIMER_DESIGN_DIST_MIN,               "distmin" },
+    { AWAR_PRIMER_DESIGN_DIST_MAX,               "distmax" },
+    { AWAR_PRIMER_DESIGN_GCRATIO_MIN,            "gcmin" },
+    { AWAR_PRIMER_DESIGN_GCRATIO_MAX,            "gcmax" },
+    { AWAR_PRIMER_DESIGN_TEMPERATURE_MIN,        "tempmin" },
+    { AWAR_PRIMER_DESIGN_TEMPERATURE_MAX,        "tempmax" },
+    { AWAR_PRIMER_DESIGN_ALLOWED_MATCH_MIN_DIST, "minmatchdist" },
+    { AWAR_PRIMER_DESIGN_EXPAND_IUPAC,           "iupac" },
+    { AWAR_PRIMER_DESIGN_MAX_PAIRS,              "maxpairs" },
+    { AWAR_PRIMER_DESIGN_GC_FACTOR,              "gcfactor" },
     { AWAR_PRIMER_DESIGN_TEMP_FACTOR,            "temp_factor" },
     { 0, 0 }
 };
@@ -539,7 +539,7 @@ AW_window *create_primer_design_window( AW_root *root,AW_default def )
 
     aws->at( "minleft" );   aws->create_input_field( AWAR_PRIMER_DESIGN_LEFT_POS,    7 );
     aws->callback( primer_design_event_update_memory );
-    aws->at( "maxleft" );	  aws->create_input_field( AWAR_PRIMER_DESIGN_LEFT_LENGTH, 9 );
+    aws->at( "maxleft" );         aws->create_input_field( AWAR_PRIMER_DESIGN_LEFT_LENGTH, 9 );
 
     aws->at( "minright" );  aws->create_input_field( AWAR_PRIMER_DESIGN_RIGHT_POS,    7 );
     aws->callback( primer_design_event_update_memory );
@@ -572,4 +572,3 @@ AW_window *create_primer_design_window( AW_root *root,AW_default def )
 
     return aws;
 }
-

@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,16 +33,16 @@ static double ptnd_get_wmismatch(PT_pdc *pdc, char *probe, int pos, char ref)
 int PT_chain_print(int name, int apos, int rpos, long ilocs)
 {
     PT_probematch *ml;
-    char *probe = psg.probe;
-    int mismatches = psg.mismatches;
-    double wmismatches = psg.wmismatches;
-    double	h;
-    int N_mismatches = psg.N_mismatches;
-    PT_local *locs = (PT_local *)ilocs;
-    int	height;
-    int	base;
-    int	ref;
-    int	pos;
+    char          *probe        = psg.probe;
+    int            mismatches   = psg.mismatches;
+    double         wmismatches  = psg.wmismatches;
+    double         h;
+    int            N_mismatches = psg.N_mismatches;
+    PT_local      *locs         = (PT_local *)ilocs;
+    int            height;
+    int            base;
+    int            ref;
+    int            pos;
     if (psg.probe) {
         pos = rpos+psg.height;
         height = psg.height;
@@ -92,8 +91,8 @@ int PT_chain_print(int name, int apos, int rpos, long ilocs)
 int read_names_and_pos(PT_local *locs, POS_TREE *pt)
 {
     int base;
-    int	error;
-    int	name, pos, rpos;
+    int error;
+    int name, pos, rpos;
     PT_probematch *ml;
 
     if (pt == NULL)
@@ -142,15 +141,15 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt)
 
 /* search down the tree to find matching species for the given probe */
 int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatches, double wmismatches, int N_mismatches, int height){
-    int	name, pos;
-    int	i;
-    int	base;
-    POS_TREE	*pthelp;
-    int	newmis;
-    double	newwmis;
-    double	h;
-    int	new_N_mis;
-    int	error;
+    int       name, pos;
+    int       i;
+    int       base;
+    POS_TREE *pthelp;
+    int       newmis;
+    double    newwmis;
+    double    h;
+    int       new_N_mis;
+    int       error;
     if (!pt) return 0;
     if (locs->sort_by != PT_MATCH_TYPE_INTEGER) {
         if (psg.w_N_mismatches[N_mismatches] + (int)(wmismatches+ 0.5) > psg.deep) return 0;
@@ -192,7 +191,7 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
         if (PT_read_type(pt) == PT_NT_LEAF) {
             pos = PT_read_rpos(psg.ptmain,pt) + height;
             name = PT_read_name(psg.ptmain,pt);
-            if (pos + (int)(strlen(probe+height)) >= psg.data[name].size)	/* end of sequence */
+            if (pos + (int)(strlen(probe+height)) >= psg.data[name].size)       /* end of sequence */
                 return 0;
 
             while ((base = probe[height])) {
@@ -211,7 +210,7 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
                 pos++;
                 height++;
             }
-        } else {		/* chain */
+        } else {                /* chain */
             psg.probe = probe;
             psg.height = height;
             PT_read_chain(psg.ptmain,pt, PT_chain_print, (long)locs);
@@ -262,18 +261,20 @@ extern "C" {
 
 void pt_sort_match_list(PT_local * locs)
 {
-    PT_probematch	**my_list;
-    int 		list_len;
-    PT_probematch	*match;
-    int		i;
+    PT_probematch **my_list;
+    int             list_len;
+    PT_probematch  *match;
+    int             i;
+
     if (!locs->pm) return;
     psg.sort_by = locs->sort_by;
     list_len = get_MATCHLIST_CNT(locs->pm);
     if (list_len <= 1) return;
     my_list = (PT_probematch **)calloc(sizeof(void *),list_len);
-    for (	i=0,	match = locs->pm;
-            match;
-            i++,match=match->next	){
+    for (i=0, match = locs->pm;
+         match;
+         i++,match=match->next)
+    {
         my_list[i] = match;
     }
     GB_mergesort((void **)my_list,0,list_len,pt_sort_compare_match,0 );
@@ -286,8 +287,8 @@ void pt_sort_match_list(PT_local * locs)
 /* mirror a probe */
 char *reverse_probe(char *probe, int probe_length)
 {
-    int	i,j;
-    char	*rev_probe;
+    int i,j;
+    char        *rev_probe;
     if (!probe_length) probe_length = strlen(probe);
     rev_probe = (char *)malloc(probe_length * sizeof(char)+1);
     j = probe_length - 1;
@@ -299,17 +300,17 @@ char *reverse_probe(char *probe, int probe_length)
 int PT_complement(int base)
 {
     switch(base) {
-        case PT_A:	return PT_T;
-        case PT_C:	return PT_G;
-        case PT_G:	return PT_C;
-        case PT_T:	return PT_A;
-        default:	return base;
+        case PT_A:      return PT_T;
+        case PT_C:      return PT_G;
+        case PT_G:      return PT_C;
+        case PT_T:      return PT_A;
+        default:        return base;
     }
 }
 /* build the complement of a probe */
 void complement_probe(char *probe, int probe_length)
 {
-    int	i;
+    int i;
     if (!probe_length) probe_length = strlen(probe);
     for (i=0; i< probe_length; i++){
         probe[i] = PT_complement(probe[i]);
@@ -398,7 +399,7 @@ extern "C" int probe_match(PT_local * locs, aisc_string probestring)
     if (psg.deep >=0 ){
         get_info_about_probe(locs, probestring, psg.pt, 0, 0.0, 0, 0);
     }else{
-        ptnd_new_match(locs,	probestring);
+        ptnd_new_match(locs,    probestring);
     }
     if (locs->pm_reversed) {
         psg.reversed = 1;
@@ -409,7 +410,7 @@ extern "C" int probe_match(PT_local * locs, aisc_string probestring)
         if (psg.deep >=0 ){
             get_info_about_probe(locs, rev_pro, psg.pt, 0, 0.0, 0, 0);
         }else{
-            ptnd_new_match(locs,	rev_pro);
+            ptnd_new_match(locs,        rev_pro);
         }
         free(rev_pro);
     }
@@ -655,7 +656,7 @@ static void gene_rel_2_abs(PT_probematch *ml) {
     }
 }
 
-/* Create a big output string:	header\001name\001info\001name\001info....\000 */
+/* Create a big output string:  header\001name\001info\001name\001info....\000 */
 extern "C" bytestring *match_string(PT_local *locs) {
     static bytestring bs = {0,0};
     GBS_strstruct *memfile;
@@ -691,10 +692,10 @@ extern "C" bytestring *match_string(PT_local *locs) {
 
 
 
-/* Create a big output string:	header\001name\001#mismatch\001name\001#mismatch....\000 */
+/* Create a big output string:  header\001name\001#mismatch\001name\001#mismatch....\000 */
 extern "C" bytestring *MP_match_string(PT_local *locs){
     static bytestring bs = {0,0};
-    
+
     char           buffer[50];
     char           buffer1[50];
     GBS_strstruct *memfile;
@@ -721,10 +722,10 @@ extern "C" bytestring *MP_match_string(PT_local *locs){
 }
 
 
-/* Create a big output string:	001name\001name\....\000 */
+/* Create a big output string:  001name\001name\....\000 */
 extern "C" bytestring *MP_all_species_string(PT_local *){
     static bytestring bs = {0,0};
-    
+
     GBS_strstruct *memfile;
     int            i;
 
@@ -749,6 +750,3 @@ extern "C" int MP_count_all_species(PT_local *)
 {
     return psg.data_count;
 }
-
-
-

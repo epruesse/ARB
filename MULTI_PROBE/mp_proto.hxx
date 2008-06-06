@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : mp_proto.hxx                                           //
 //    Purpose   : Provide some prototypes                                //
-//    Time-stamp: <Thu May/15/2003 13:08 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jun/04/2008 13:28 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2003              //
@@ -32,9 +32,8 @@ void MP_mark_probes_in_tree(AW_window *aww);
 void MP_gen_singleprobe(AW_root *awr,AW_CL cd1,AW_CL cd2);
 void MP_modify_selected(AW_root *awr,AW_CL cd1,AW_CL cd2);
 
-extern char	*glob_old_seq;
+extern char *glob_old_seq;
 
 #else
 #error mp_proto.hxx included twice
 #endif // MP_PROTO_HXX
-

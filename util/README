@@ -1,14 +1,14 @@
-														edit file before use
-./arb_compress		make tar archive of all ARB binaries
-./arb_compress_emacs	make special ale emacs tar archive
-./arb_export		remote copy archive to strunk@ftp.mikro.biologie.tu-muenchen.de:/usr2/ftp/pub/ARB/$HOSTTYPE
-./arb_patch_export	like arb_export but into experimental subdirectory: strunk@ftp.mikro.biologie.tu-muenchen.de:/usr2/ftp/pub/ARB/experimental/$HOSTTYPE
-./arb_update		tar souce code changes in master sources $(ARBHOME)/../source to $(ARBHOME)/../xxxx	X
-./arb_updateall		like arb_update but remote copy to remote hosts						X
-./arb_tohp		copy sources to strunk@hphalle.tu-muenchen.de
-./arb_save		cpio and gzip  all ARB source into arbsrc*
-./arb_find_latest_updates	finds all source code changes newer (file timestamp) than arbsrc_.cgz
-./arb_save_depot	cpio the DEPOT and DEPOT2 subdirectory: NOT TESTED (external binaries)
+                                                                                                                edit file before use
+./arb_compress          make tar archive of all ARB binaries
+./arb_compress_emacs    make special ale emacs tar archive
+./arb_export            remote copy archive to strunk@ftp.mikro.biologie.tu-muenchen.de:/usr2/ftp/pub/ARB/$HOSTTYPE
+./arb_patch_export      like arb_export but into experimental subdirectory: strunk@ftp.mikro.biologie.tu-muenchen.de:/usr2/ftp/pub/ARB/experimental/$HOSTTYPE
+./arb_update            tar souce code changes in master sources $(ARBHOME)/../source to $(ARBHOME)/../xxxx     X
+./arb_updateall         like arb_update but remote copy to remote hosts                                         X
+./arb_tohp              copy sources to strunk@hphalle.tu-muenchen.de
+./arb_save              cpio and gzip  all ARB source into arbsrc*
+./arb_find_latest_updates       finds all source code changes newer (file timestamp) than arbsrc_.cgz
+./arb_save_depot        cpio the DEPOT and DEPOT2 subdirectory: NOT TESTED (external binaries)
 
 internals
-./arb_update_copy	used by arb_update
+./arb_update_copy       used by arb_update

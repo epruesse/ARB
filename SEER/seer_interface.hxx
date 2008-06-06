@@ -1,22 +1,21 @@
-
-/* Conventions:	All firstXxxx functions may return NULL, if no elements is available
- *			all nextXxxxx	functions return NULL, if no more elements are available
+/* Conventions: All firstXxxx functions may return NULL, if no elements is available
+ *                      all nextXxxxx   functions return NULL, if no more elements are available
  */
 
 const int maxErrorStringLength = 4000;
 typedef int Boolean;
 class SeerInterfaceData;
 
-int aw_message( const char *msg, char *buttons );
+int  aw_message( const char *msg, char *buttons );
 void aw_message(const char *msg);
 
 /* ******************** Show a slider *********************************/
-void aw_openstatus( const char *title );	// show status
-void aw_closestatus( void );		// hide status
+void aw_openstatus( const char *title ); // show status
+void aw_closestatus( void );             // hide status
 
-int aw_status( const char *text );		// return 1 if exit button is pressed + set statustext
-int aw_status( double gauge );	// return 1 if exit button is pressed + set statusslider
-int aw_status( void );		// return 1 if exit button is pressed
+int aw_status( const char *text ); // return 1 if exit button is pressed + set statustext
+int aw_status( double gauge );     // return 1 if exit button is pressed + set statusslider
+int aw_status( void );             // return 1 if exit button is pressed
 
 
 
@@ -56,8 +55,8 @@ enum SeerImportQualityLevel {
 
 enum SeerInterfaceSequenceDataType {
     SISDT_REAL_SEQUENCE,
-    SISDT_CONSENSUS,	// can be used as filter ...
-    SISDT_FILTER,	// 0100101010001 string
+    SISDT_CONSENSUS,    // can be used as filter ...
+    SISDT_FILTER,       // 0100101010001 string
     SISDT_RATES,
     SISDT_ETC
 };
@@ -65,8 +64,8 @@ enum SeerInterfaceSequenceDataType {
 enum SeerInterfaceAttributeType {
     SIAT_STRING,
     SIAT_LINK
-//    SIAT_INTEGER_ARRAY,
-//    SIAT_FLOAT_ARRAY
+    //    SIAT_INTEGER_ARRAY,
+    //    SIAT_FLOAT_ARRAY
 };
 
 enum SeerInterfaceAlignmentType {
@@ -77,7 +76,7 @@ enum SeerInterfaceAlignmentType {
 
 class SeerInterfaceError {
 public:
-    enum SeerInterfaceErrorType	errorType;
+    enum SeerInterfaceErrorType errorType;
     char *errorString;
     SeerInterfaceData *errorSource; // the [optional] reason for the error,
     SeerInterfaceError(SeerInterfaceErrorType type,const char *templateString,...) __attribute__((format(printf,2,3))); // length of string is limited to maxErrorStringLength
@@ -104,7 +103,7 @@ public:
     char *key;
     enum SeerExportQualityLevel exportQualityLevel;
     enum SeerImportQualityLevel importQualityLevel;
-    
+
     virtual void print() const = 0;
     virtual SeerInterfaceDataType type() = 0;
     virtual ~SeerInterfaceData();
@@ -112,8 +111,8 @@ public:
     virtual SeerInterfaceDataSet *toDataSet(); //
     virtual SeerInterfaceDataLink *toDataLink(); //
 
-  virtual void accept(SeerDataVisitor&); // <<<<<<<<<<<<<<<<<<< <<<<<<<<<<new function!!!!
-  
+    virtual void accept(SeerDataVisitor&); // <<<<<<<<<<<<<<<<<<< <<<<<<<<<<new function!!!!
+
 };
 
 class SeerInterfaceDataString: public SeerInterfaceData {
@@ -127,8 +126,8 @@ public:
     virtual void print() const ;
     ~SeerInterfaceDataString();
 
-  virtual void accept(SeerDataVisitor&); // <<<<<<<<<<<<<<<<<<< <<<<<<<<<<new function!!!!
-  
+    virtual void accept(SeerDataVisitor&); // <<<<<<<<<<<<<<<<<<< <<<<<<<<<<new function!!!!
+
 };
 
 class SeerInterfaceDataLink: public SeerInterfaceData {
@@ -143,8 +142,8 @@ public:
     virtual void print() const;
     ~SeerInterfaceDataLink();
 
-  virtual void accept(SeerDataVisitor&); // <<<<<<<<<<<<<<<<<<< <<<<<<<<<<new function!!!!
-  
+    virtual void accept(SeerDataVisitor&); // <<<<<<<<<<<<<<<<<<< <<<<<<<<<<new function!!!!
+
 };
 
 class SeerInterfaceDataSet: public SeerInterfaceData {
@@ -154,53 +153,53 @@ class SeerInterfaceDataSet: public SeerInterfaceData {
 public:
     virtual SeerInterfaceDataSet *toDataSet(); //
     virtual SeerInterfaceDataType type();
-    SeerInterfaceData 	*firstData();
-    SeerInterfaceData	*nextData();
-    void		addData(SeerInterfaceData *data);
-    void		removeData(SeerInterfaceData *data);
-    SeerInterfaceData	*findData(const char *key);
-    const SeerInterfaceData	*findData(const char *key)const ;
-    virtual void	print() const; // for debugging
+    SeerInterfaceData   *firstData();
+    SeerInterfaceData   *nextData();
+    void                addData(SeerInterfaceData *data);
+    void                removeData(SeerInterfaceData *data);
+    SeerInterfaceData   *findData(const char *key);
+    const SeerInterfaceData     *findData(const char *key)const ;
+    virtual void        print() const; // for debugging
     SeerInterfaceDataSet();
     ~SeerInterfaceDataSet();
 
-  virtual void accept(SeerDataVisitor&); // <<<<<<<<<<<<<<<<<<< <<<<<<<<<<new function!!!!
-  
+    virtual void accept(SeerDataVisitor&); // <<<<<<<<<<<<<<<<<<< <<<<<<<<<<new function!!!!
+
 };
 
 class SeerInterfaceDataStringSet: public SeerInterfaceDataSet {
 public:
     virtual SeerInterfaceDataType type();
-    SeerInterfaceDataString 	*firstData() { return (SeerInterfaceDataString *)SeerInterfaceDataSet::firstData();};
-    SeerInterfaceDataString 	*nextData() { return (SeerInterfaceDataString *)SeerInterfaceDataSet::nextData();};
-//    void 			addData(SeerInterfaceDataString *data) { SeerInterfaceDataSet::addData(data);};
-    SeerInterfaceDataString	*findData(const char *searchKey) { return (SeerInterfaceDataString *)SeerInterfaceDataSet::findData(searchKey);};
-    const SeerInterfaceDataString	*findData(const char *searchKey)const { return (const SeerInterfaceDataString *)SeerInterfaceDataSet::findData(searchKey);};
+    SeerInterfaceDataString     *firstData() { return (SeerInterfaceDataString *)SeerInterfaceDataSet::firstData();};
+    SeerInterfaceDataString     *nextData() { return (SeerInterfaceDataString *)SeerInterfaceDataSet::nextData();};
+    //    void                      addData(SeerInterfaceDataString *data) { SeerInterfaceDataSet::addData(data);};
+    SeerInterfaceDataString     *findData(const char *searchKey) { return (SeerInterfaceDataString *)SeerInterfaceDataSet::findData(searchKey);};
+    const SeerInterfaceDataString       *findData(const char *searchKey)const { return (const SeerInterfaceDataString *)SeerInterfaceDataSet::findData(searchKey);};
 
-  virtual void accept(SeerDataVisitor&); // <<<<<<<<<<<<<<<<<<< <<<<<<<<<<new function!!!!
-  
+    virtual void accept(SeerDataVisitor&); // <<<<<<<<<<<<<<<<<<< <<<<<<<<<<new function!!!!
+
 };
 
 class SeerDataVisitor {  // <<<<<<<<<<<<< <<<<<<<<<<<<<<<<<<<<<<<<< <<<<<<< <<<< new Class!!!
 public:
-  virtual void visitSeerInterfaceData(SeerInterfaceData&);
-  virtual void visitSeerInterfaceDataString(SeerInterfaceDataString&);
-  virtual void visitSeerInterfaceDataLink(SeerInterfaceDataLink&);
-  virtual void visitSeerInterfaceDataSet(SeerInterfaceDataSet&);
-  virtual void visitSeerInterfaceDataStringSet(SeerInterfaceDataStringSet&);
+    virtual void visitSeerInterfaceData(SeerInterfaceData&);
+    virtual void visitSeerInterfaceDataString(SeerInterfaceDataString&);
+    virtual void visitSeerInterfaceDataLink(SeerInterfaceDataLink&);
+    virtual void visitSeerInterfaceDataSet(SeerInterfaceDataSet&);
+    virtual void visitSeerInterfaceDataStringSet(SeerInterfaceDataStringSet&);
 protected:
-  virtual ~SeerDataVisitor() = 0;
+    virtual ~SeerDataVisitor() = 0;
 };
 
 
 class SeerInterfaceSequenceData {
     SeerInterfaceSequenceData(); // no public default constructur
 public:
-    char *uniqueID;			// rdpSid ????
-    SeerInterfaceSequenceDataType sequenceType;			// filter or real sequences
-    SeerInterfaceDataStringSet	sequences;	// ??? whats the key of the real sequence ?????
-    SeerInterfaceDataSet 	attributes;
-    void	print()const; // for debugging
+    char *uniqueID;                     // rdpSid ????
+    SeerInterfaceSequenceDataType sequenceType;                 // filter or real sequences
+    SeerInterfaceDataStringSet  sequences;      // ??? whats the key of the real sequence ?????
+    SeerInterfaceDataSet        attributes;
+    void        print()const; // for debugging
     SeerInterfaceSequenceData(const char *id);
     ~SeerInterfaceSequenceData();
 };
@@ -210,8 +209,8 @@ class SeerInterfaceTableData {
     SeerInterfaceTableData();
 public:
     char *uniqueID;
-    SeerInterfaceDataSet 	attributes;
-    void	print()const; // for debugging
+    SeerInterfaceDataSet        attributes;
+    void        print()const; // for debugging
     SeerInterfaceTableData(const char *id);
     ~SeerInterfaceTableData();
 };
@@ -220,13 +219,13 @@ class SeerInterfaceAttribute {
 public:
     char *name;
     char *pubCmnt;
-    enum SeerInterfaceAttributeType	type;
-    Boolean	changeable;
-    Boolean	deleteable;
-    Boolean	queryable;
-    Boolean	requested;	// needed by the arb side
-    Boolean	element_for_upload; // in arb: at least one element has changes
-    int		sortindex;
+    enum SeerInterfaceAttributeType     type;
+    Boolean     changeable;
+    Boolean     deleteable;
+    Boolean     queryable;
+    Boolean     requested;      // needed by the arb side
+    Boolean     element_for_upload; // in arb: at least one element has changes
+    int         sortindex;
     void print()const;
     SeerInterfaceAttribute();
     ~SeerInterfaceAttribute();
@@ -248,11 +247,11 @@ public:
 class SeerInterfaceTableDescription {
     SeerInterfaceTableDescription();
 public:
-    GB_HASH 			*attribute_hash; // used by arb
-    int sort_key;		// attributes are sorted according to this entry
-    char *tablename;		// should be a very short string like REF NOM GBT
-    char *tabledescription;	// one user readable word
-    
+    GB_HASH                     *attribute_hash; // used by arb
+    int sort_key;               // attributes are sorted according to this entry
+    char *tablename;            // should be a very short string like REF NOM GBT
+    char *tabledescription;     // one user readable word
+
     virtual SeerInterfaceAttribute *firstAttribute(); // retrieve attribute_name - attribute_description
     virtual SeerInterfaceAttribute *nextAttribute();
 
@@ -264,38 +263,38 @@ public:
 
 class SeerInterface {
 public:
-    
+
     virtual SeerInterfaceError *beginSession(const char *username, const char *userpasswd);
     virtual SeerInterfaceError *endSession();
-    
+
     virtual SeerInterfaceError *writeToArbDirectly(GBDATA *gb_main); // called after arb is fully loaded
 
     virtual SeerInterfaceError *beginTransaction();
     virtual SeerInterfaceError *commitTransaction();
     virtual SeerInterfaceError *abortTransaction();
-    
+
     virtual SeerInterfaceError *beginReadOnlyTransaction();
     virtual SeerInterfaceError *commitReadOnlyTransaction();
-    
+
     /* ************** next functions are called only within the scope of a transaction *****/
     virtual SeerInterfaceAlignment *firstAlignment(); // a list of all alignments in the database
     virtual SeerInterfaceAlignment *nextAlignment(); // a list of all alignments in the database
 
     virtual SeerInterfaceTableDescription *firstTableDescription();
     virtual SeerInterfaceTableDescription *nextTableDescription();
-    
+
     virtual SeerInterfaceAttribute *firstAttribute(); // retrieve attribute_name - attribute_description
     virtual SeerInterfaceAttribute *nextAttribute();
     /* a list of all available datas
-     *	if an data is not directly attached to the sequenceData
+     *  if an data is not directly attached to the sequenceData
      * but seperated by a 1->n link, concatenate data names using the '/'
      * delimiter, example
-     *	'reference/authors',  'reference/journal' 'gb_origin/from', 'gb_origin/acc' ...
+     *  'reference/authors',  'reference/journal' 'gb_origin/from', 'gb_origin/acc' ...
      */
 
 
     /* ****************** query database and retrieve data ************************/
-    
+
     virtual SeerInterfaceError *queryDatabase(const char *alignmentName, const char *attributeName=0,const char *attributeValue=0);
     virtual SeerInterfaceSequenceData *querySingleSequence(const char *alignmentName, const char *uniqueId);
     // query for an optional alignment and optional data=value
@@ -304,13 +303,13 @@ public:
     virtual long numberofMatchingSequences();
     virtual SeerInterfaceError *setAttributeFilter(SeerInterfaceDataStringSet *requestedAttributes);// default is to get everything
     virtual void setOutputFormat(SeerInterfaceOutputFormat format);
-    
+
     virtual SeerInterfaceSequenceData *firstSequenceData(); // fills in a SeerInterfaceSequence according to filter
     virtual SeerInterfaceSequenceData *nextSequenceData(); // fills in a SeerInterfaceSequence according to filter
 
     /******************** table read/write **********************************************/
     virtual SeerInterfaceTableData *querySingleTableData(const char *tablename,const char *tableEntryId); // extra tables, like Nomenclature, References, Strains
-    
+
     virtual SeerInterfaceError *queryTableData(const char *alignmentname, const char *tablename);
     virtual long numberofMatchingTableData(); // called after queryTableData
     virtual SeerInterfaceTableData *firstTableData(); // extra tables, like Nomenclature, References, Strains
@@ -318,7 +317,7 @@ public:
 
     virtual SeerInterfaceError *checkTableData(const SeerInterfaceTableData *tableData);
     virtual SeerInterfaceError *storeTableData(const SeerInterfaceTableData *tableData);
-    
+
     /* ****************** storing data in the database ***********************
      * first check then store
      * check should return very detailed error messages !!!!
@@ -347,6 +346,6 @@ class SeerInstallInterfaceCreator{
     int dummy;
 public:
     SeerInstallInterfaceCreator( SeerInterfaceCreator *ic ){
-	seerInterfaceCreator = ic;
+        seerInterfaceCreator = ic;
     };
 };

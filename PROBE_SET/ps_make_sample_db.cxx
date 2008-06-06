@@ -51,11 +51,11 @@ int main( int argc,  char *argv[] ) {
     }
 
     for (PS_NodeMapIterator child = root->getChildrenBegin(); child != root->getChildrenEnd(); ++child ) {
-    
+
         for (int id = child->second->getNum()*100; id < (child->second->getNum()*100)+10; ++id) {
 
             PS_NodePtr new_child( new PS_Node( id ) );
-		
+
             if (random() % 3 != 0) {
                 for (int pnr = 0; pnr < 50; ++pnr ) {
                     PS_ProbePtr new_probe( new PS_Probe );

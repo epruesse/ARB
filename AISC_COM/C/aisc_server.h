@@ -7,10 +7,10 @@
 extern "C" {
 #endif
 #include <string.h>
-// #include <malloc.h>
+    // #include <malloc.h>
 #include <memory.h>
-int aisc_make_sets(long *obj);	/* sets in a create request */
-int aisc_talking_get_index (int u, int o);
+    int aisc_make_sets(long *obj);  /* sets in a create request */
+    int aisc_talking_get_index (int u, int o);
 
 #include <aisc_server_proto.h>
 #include <aisc_server_extern.h>
@@ -26,5 +26,4 @@ int aisc_talking_get_index (int u, int o);
 
 #ifdef AISC_SAVE_YES
 #include <math.h>
-#endif			/* for atof */
-
+#endif                  /* for atof */

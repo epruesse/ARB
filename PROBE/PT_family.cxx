@@ -31,7 +31,7 @@ int mark_all_matches( PT_local  *locs,
                       int       length,
                       int       mismatches,
                       int       height,
-                      int	max_mismatches)
+                      int       max_mismatches)
 {
     int             ref_pos, ref2_pos, ref_name;
     int        base;
@@ -156,16 +156,16 @@ int make_PT_family_list(PT_local *locs)
      * Sort the data
      */
     my_list = (struct probe_input_data**) calloc(sizeof(void *),psg.data_count);
-    for (i = 0; i < psg.data_count; i++)	my_list[i] = &psg.data[i];
+    for (i = 0; i < psg.data_count; i++)        my_list[i] = &psg.data[i];
     if (locs->sort_type == 0){
         GB_mergesort((void **) my_list,0,psg.data_count, compare_probe_input_data0,0);
     }else{
         GB_mergesort((void **) my_list,0,psg.data_count, compare_probe_input_data1,0);
     }
-	/*
-	 * destroy old list
-	 */
-    while(locs->fl)	destroy_PT_family_list(locs->fl);
+    /*
+     * destroy old list
+     */
+    while(locs->fl)     destroy_PT_family_list(locs->fl);
     /*
      * build new list
      */
@@ -206,26 +206,26 @@ extern "C" int find_family(PT_local *locs, bytestring *species)
     /*
      * search for sorted probes
      */
-	/*
-	 * find all "*"
-	 */
-	if (locs->find_type == 0) {
-		for (first_c = PT_A; first_c <= PT_T; first_c++)
-			for (second_c = PT_A; second_c <= PT_T; second_c++)
-				for (probe=sequence;probe<sequence+sequence_len-probe_len;probe++)
-					if (probe_is_ok(probe,probe_len,first_c,second_c))
-						mark_all_matches(locs,psg.pt,probe,probe_len,0,0,mismatch_nr);
-	}
-	/*
-	 * find only "a*"
-	 */
-	else {
-		first_c = PT_A;
-		for (second_c = PT_A; second_c <= PT_T; second_c++)
-			for (probe=sequence;probe<sequence+sequence_len-probe_len;probe++)
-				if (probe_is_ok(probe,probe_len,first_c,second_c))
-					mark_all_matches(locs,psg.pt,probe,probe_len,0,0,mismatch_nr);
-	}
+    /*
+     * find all "*"
+     */
+    if (locs->find_type == 0) {
+        for (first_c = PT_A; first_c <= PT_T; first_c++)
+            for (second_c = PT_A; second_c <= PT_T; second_c++)
+                for (probe=sequence;probe<sequence+sequence_len-probe_len;probe++)
+                    if (probe_is_ok(probe,probe_len,first_c,second_c))
+                        mark_all_matches(locs,psg.pt,probe,probe_len,0,0,mismatch_nr);
+    }
+    /*
+     * find only "a*"
+     */
+    else {
+        first_c = PT_A;
+        for (second_c = PT_A; second_c <= PT_T; second_c++)
+            for (probe=sequence;probe<sequence+sequence_len-probe_len;probe++)
+                if (probe_is_ok(probe,probe_len,first_c,second_c))
+                    mark_all_matches(locs,psg.pt,probe,probe_len,0,0,mismatch_nr);
+    }
 
     make_match_statistic(locs->pr_len);
     make_PT_family_list(locs);

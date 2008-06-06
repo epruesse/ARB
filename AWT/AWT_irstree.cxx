@@ -21,29 +21,31 @@
 /* *********************** paint sub tree ************************ */
 #define IS_HIDDEN(node) (type == AWT_IRS_HIDDEN_TREE && node->gr.gc>0)
 
-const int	MAXSHOWNNODES = 5000;		// Something like max screen height/minimum font size
-const int	tipBoxSize = 4;
-const int	nodeBoxWidth = 5;
+const int MAXSHOWNNODES = 5000;       // Something like max screen height/minimum font size
+const int tipBoxSize    = 4;
+const int nodeBoxWidth  = 5;
 
 static struct {
-    GB_BOOL ftrst_species;
-    int y;
-    int min_y;
-    int max_y;
-    int ruler_y;
-    int min_x;
-    int max_x;
-    int step_y;
-    double x_scale;
+    GB_BOOL    ftrst_species;
+    int        y;
+    int        min_y;
+    int        max_y;
+    int        ruler_y;
+    int        min_x;
+    int        max_x;
+    int        step_y;
+    double     x_scale;
     AW_device *device;
-    int	nodes_xpos[MAXSHOWNNODES];	// needed for Query results drawing
-    int	nodes_ypos[MAXSHOWNNODES];
-    AP_tree	*nodes_id[MAXSHOWNNODES];
-    int	nodes_ntip;			// counts the tips stored in nodes_xx
-    int	nodes_nnnodes;			// counts the inner nodes (reverse counter !!!)
-    int font_height_2;
+    
+    int      nodes_xpos[MAXSHOWNNODES];   // needed for Query results drawing
+    int      nodes_ypos[MAXSHOWNNODES];
+    AP_tree *nodes_id[MAXSHOWNNODES];
+    int      nodes_ntip;                  // counts the tips stored in nodes_xx
+    int      nodes_nnnodes;               // counts the inner nodes (reverse counter !!!)
+
+    int                  font_height_2;
     enum IRS_PRUNE_LEVEL pruneLevel;
-    int is_size_device;
+    int                  is_size_device;
 } irs_gl;
 
 void draw_top_seperator(){
@@ -66,7 +68,7 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
 
 
     // if (irs_gl.y > irs_gl.max_clipped_y) irs_gl.max_clipped_y = irs_gl.max_y; // @@@ ralf
-    
+
     /* *********************** Check clipping rectangle ************************ */
     if (!irs_gl.is_size_device){
         if (irs_gl.y > irs_gl.max_y) {
@@ -94,8 +96,8 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
 
 
         if (node->name && node->name[0] == this->species_name[0] &&
-			!strcmp(node->name,this->species_name)) {
-			x_cursor = x; y_cursor = irs_gl.y;
+            !strcmp(node->name,this->species_name)) {
+            x_cursor = x; y_cursor = irs_gl.y;
         }
 
         const char *str = 0;
@@ -124,11 +126,11 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
             node_string = "0123456789";
         }
     }
-    if (node->gr.grouped) {		// no recursion here	just a group symbol !!!
+    if (node->gr.grouped) {             // no recursion here    just a group symbol !!!
         int vsize = node->gr.view_sum * irs_gl.step_y;
         int y_center = irs_gl.y + (vsize>>1) + irs_gl.step_y;
         if ( irs_gl.y >= irs_gl.min_y) {
-            if (irs_gl.ftrst_species) {	// A name of a group just under the seperator
+            if (irs_gl.ftrst_species) { // A name of a group just under the seperator
                 draw_top_seperator();
             }
             int topy = irs_gl.y+irs_gl.step_y - 2;
@@ -167,11 +169,11 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
     }
 
     /* *********************** i'm a labeled node ************************ */
-    /*	If I have only one child + pruneLevel != MAXPRUNE -> no labeling */
+    /*  If I have only one child + pruneLevel != MAXPRUNE -> no labeling */
 
-    if (node_string != NULL) {		//  A node name should be displayed
+    if (node_string != NULL) {          //  A node name should be displayed
         if (last_y >= irs_gl.min_y) {
-            if (irs_gl.ftrst_species) {	// A name of a group just under the seperator
+            if (irs_gl.ftrst_species) { // A name of a group just under the seperator
                 draw_top_seperator();
             }
             last_y = irs_gl.y + irs_gl.step_y;
@@ -228,7 +230,7 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
     irs_gl.device->line(node->rightson->gr.gc,x_offset,y_center,x_offset, right_y, -1, (AW_CL)node,0);
     irs_gl.ruler_y = y_center;
 
-    if (node_string != 0) {		//  A node name should be displayed
+    if (node_string != 0) {             //  A node name should be displayed
         irs_gl.y+=irs_gl.step_y /2;
         int gc = AWT_GC_GROUPS;
         irs_gl.device->line(gc,x_offset-1,irs_gl.y, x_offset+400,  irs_gl.y, -1,(AW_CL)node,0);
@@ -280,20 +282,21 @@ void AWT_graphic_tree::show_irs(AP_tree *at,AW_device *device, int height){
     device->rtransform(device->clip_rect.l,device->clip_rect.t,clipped_l,clipped_t);
     device->rtransform(device->clip_rect.r,device->clip_rect.b,clipped_r,clipped_b);
 
-    irs_gl.nodes_nnnodes = MAXSHOWNNODES;
-    irs_gl.nodes_ntip = 0;
-    irs_gl.font_height_2 = font_info->max_letter.ascent/2;
-    irs_gl.device = device;
-    irs_gl.ftrst_species = GB_TRUE;
-    irs_gl.y = 0;
-    irs_gl.min_x = x;
-    irs_gl.max_x = 100;
-    irs_gl.min_y = y;
-    irs_gl.max_y = clipped_b;
-    irs_gl.ruler_y = 0;
-    irs_gl.step_y = height;
-    irs_gl.x_scale = 600.0 / at->gr.tree_depth;
+    irs_gl.nodes_nnnodes  = MAXSHOWNNODES;
+    irs_gl.nodes_ntip     = 0;
+    irs_gl.font_height_2  = font_info->max_letter.ascent/2;
+    irs_gl.device         = device;
+    irs_gl.ftrst_species  = GB_TRUE;
+    irs_gl.y              = 0;
+    irs_gl.min_x          = x;
+    irs_gl.max_x          = 100;
+    irs_gl.min_y          = y;
+    irs_gl.max_y          = clipped_b;
+    irs_gl.ruler_y        = 0;
+    irs_gl.step_y         = height;
+    irs_gl.x_scale        = 600.0 / at->gr.tree_depth;
     irs_gl.is_size_device = 0;
+    
     if (irs_gl.device->type() == AW_DEVICE_SIZE){
         irs_gl.is_size_device = 1;
     }

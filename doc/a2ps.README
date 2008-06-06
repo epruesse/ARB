@@ -14,15 +14,15 @@ Some notes on the distribution:
 
     Installation is done by modifying and executing Makefile included
     in this distribution. You must give a value to the following variable:
-    - compiler	compiler name, actually one of BSD, SYSV.
-		Turbo C and Microsoft C are considered Ansi C compilers
-		(don't define the variable compiler in this case).
+    - compiler  compiler name, actually one of BSD, SYSV.
+                Turbo C and Microsoft C are considered Ansi C compilers
+                (don't define the variable compiler in this case).
 
     You could also give your own values to following variables:
     a) Default physical page dimension. Dimensions must be real constants,
        specifying inch values.
-       - HEIGHT	 sheet height
-       - WIDTH	 sheet width
+       - HEIGHT  sheet height
+       - WIDTH   sheet width
        Default values correspond to A4 format (11.64 x 8.27). In USA, you use
        use in general 11.0 x 8.5.
     b) Total lateral (left+right) or vertical (top+bottom) margins. It must
@@ -53,10 +53,10 @@ Some notes on the distribution:
 
 The a2ps distribution consists of the following files:
 
-	README		This message
-	Makefile
-	a2ps.c		a2ps source
-	a2ps.1		a troff manual (man file)
+        README          This message
+        Makefile
+        a2ps.c          a2ps source
+        a2ps.1          a troff manual (man file)
 
 Decide where you want to keep these files and move it there.
 Edit "Makefile" and change the definition of compiler name.

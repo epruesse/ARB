@@ -10,7 +10,7 @@ but:
 
         example:
             original file:      mod_fields.sellst
-		    your file:	        mod_fields_your_name.sellst
+            your file:          mod_fields_your_name.sellst
 
 
 Format of sellst files:

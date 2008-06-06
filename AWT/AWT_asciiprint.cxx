@@ -27,7 +27,7 @@ double awt_aps_get_xy_ratio(AW_root *awr){
             break;
     }
     if (psize == AWT_APRINT_PAPERSIZE_US) {
-        //res = res *.96;		// ?????
+        //res = res *.96;               // ?????
     }
     return res;
 }
@@ -215,7 +215,7 @@ void awt_aps_go(AW_window *aww){
                     char *next_line = strchr(line,'\n');
                     int line_length;
                     if (next_line){
-                        line_length = next_line - line;	// exclusive '\n'
+                        line_length = next_line - line; // exclusive '\n'
                         next_line ++;
                     }else{
                         line_length = strlen(line);
@@ -236,7 +236,7 @@ void awt_aps_go(AW_window *aww){
 
     char *a2ps_call = 0;
     {
-        //	AWT_asciiprint_paper_size psize = (AWT_asciiprint_paper_size)awr->awar(AWAR_APRINT_PAPER_SIZE)->read_int();
+        //      AWT_asciiprint_paper_size psize = (AWT_asciiprint_paper_size)awr->awar(AWAR_APRINT_PAPER_SIZE)->read_int();
         AWT_asciiprint_orientation ori = AWT_asciiprint_orientation(awr->awar(AWAR_APRINT_ORIENTATION)->read_int());
         const char *oristring = "";
         switch (ori){
@@ -265,13 +265,13 @@ void awt_aps_go(AW_window *aww){
             scall = GBS_global_string("%s |%s; rm -f %s",a2ps_call,printer,tmp_file);
             delete printer;
         }
-        break;
+            break;
         case AWT_APRINT_DEST_FILE:{
             char *file = awr->awar(AWAR_APRINT_FILE)->read_string();
             scall = GBS_global_string("%s >%s;rm -f %s",a2ps_call,file,tmp_file);
             delete file;
         }
-        break;
+            break;
         case AWT_APRINT_DEST_PREVIEW:
             scall = GBS_global_string("rm -f %s;%s >%s;(%s %s;rm -f %s %s)&",tmp_file2,
                                       a2ps_call,tmp_file2,
@@ -311,10 +311,10 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print,const
     aws->init(awr,"PRINT","PRINT");
     aws->load_xfig("awt/ascii_print.fig");
     awr->awar_string(AWAR_APRINT_TITLE);
-    awr->awar_string(AWAR_APRINT_TEXT)					->add_callback(awt_aps_text_changed);
+    awr->awar_string(AWAR_APRINT_TEXT)                                  ->add_callback(awt_aps_text_changed);
 
-    awr->awar_int(AWAR_APRINT_PAPER_SIZE,(int)AWT_APRINT_PAPERSIZE_A4)	->add_callback(awt_aps_set_magnification_to_fit_xpage);
-    awr->awar_int(AWAR_APRINT_MAGNIFICATION,100)			->add_callback(awt_aps_calc_pages_needed);
+    awr->awar_int(AWAR_APRINT_PAPER_SIZE,(int)AWT_APRINT_PAPERSIZE_A4)  ->add_callback(awt_aps_set_magnification_to_fit_xpage);
+    awr->awar_int(AWAR_APRINT_MAGNIFICATION,100)                        ->add_callback(awt_aps_calc_pages_needed);
     awr->awar_int(AWAR_APRINT_PAGES,1);
     awr->awar_int(AWAR_APRINT_SX,1);
     awr->awar_int(AWAR_APRINT_SY,1);

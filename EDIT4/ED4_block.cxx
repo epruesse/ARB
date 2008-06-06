@@ -375,7 +375,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
         int do_below = 1; // we have to update terminals between term2 and last_term2
 
         ED4_terminal *term = term1;
-        //	ED4_terminal *start_term = term1;
+        //      ED4_terminal *start_term = term1;
         int xRangeChanged = last_pos1!=range_col1 || last_pos2!=range_col2;
 
         while (term) {
@@ -447,7 +447,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
 }
 
 // static inline double fabs(double d) {
-    // return d<0 ? -d : d;
+// return d<0 ? -d : d;
 // }
 
 void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) {
@@ -582,7 +582,7 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
 }
 
 // --------------------------------------------------------------------------------
-// 	Replace
+//      Replace
 // --------------------------------------------------------------------------------
 
 static int strncmpWithJoker(GB_CSTR s1, GB_CSTR s2, int len) { // s2 contains '?' as joker
@@ -707,7 +707,7 @@ AW_window *ED4_create_replace_window(AW_root *root) {
 }
 
 // --------------------------------------------------------------------------------
-//	Other block operations
+//      Other block operations
 // --------------------------------------------------------------------------------
 
 static char *sequence_to_upper_case(const char *seq, int len, int /*repeat*/, int *new_len, GB_ERROR*) {
@@ -795,7 +795,7 @@ static char *unalign_sequence_internal(const char *seq, int len, int *new_len, b
         if (!ADPP_IS_ALIGN_CHARACTER(seq[o])) new_seq[n++] = seq[o];
         o++;
     }
-    
+
     if (n<len) {                // (move and) dot rest
         int gapcount = len-n;
         if (to_the_right) {
@@ -909,5 +909,3 @@ void ED4_perform_block_operation(ED4_blockoperation_type operationType) {
         }
     }
 }
-
-

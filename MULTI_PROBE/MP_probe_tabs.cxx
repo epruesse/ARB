@@ -25,9 +25,9 @@ void probe_tabs::print()
 
 probe_tabs *probe_tabs::duplicate()
 {
-    int i;
-    int			*new_group_field = new int[length_of_group_tabs];
-    int			*new_non_group_field = new int[length_of_group_tabs];
+    int  i;
+    int *new_group_field     = new int[length_of_group_tabs];
+    int *new_non_group_field = new int[length_of_group_tabs];
 
     for (i=0; i< length_of_group_tabs; i++)
         new_group_field[i] = group_tab[i];
@@ -45,7 +45,7 @@ probe_tabs::probe_tabs(int *new_group_field, int *new_non_group_field, int len_g
     int length;
     memset(this,0, sizeof(probe_tabs));
 
-    if (new_group_field)				// Duplicate !!!
+    if (new_group_field)                                // Duplicate !!!
     {
         group_tab = new_group_field;
         non_group_tab = new_non_group_field;

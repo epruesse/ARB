@@ -1,18 +1,18 @@
-AUTODETECT	"#*"
-	#Global settings:
-KEYWIDTH	1
+AUTODETECT      "#*"
+                #Global settings:
+KEYWIDTH        1
 
-BEGIN	"#??*"
+BEGIN           "#??*"
 
-MATCH	"#*"
-	SRT "* *=*1:*(*=*1"
-	WRITE "name"
+MATCH           "#*"
+                SRT "* *=*1:*(*=*1"
+                WRITE "name"
 
-SEQUENCEAFTER	"*"
-SEQUENCESRT	""
-SEQUENCEEND	"#*"
+SEQUENCEAFTER   "*"
+SEQUENCESRT     ""
+SEQUENCEEND     "#*"
 
 # DONT_GEN_NAMES
 CREATE_ACC_FROM_SEQUENCE
 
-END	"//"
+END             "//"

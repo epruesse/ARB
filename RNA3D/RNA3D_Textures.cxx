@@ -52,7 +52,7 @@ static char* GetImageFile(int ImageId){
 }
 
 // Load Bitmaps And Convert To Textures
-void Texture2D::LoadGLTextures(void) {	
+void Texture2D::LoadGLTextures(void) {
 
     for (int i = 0; i < SHAPE_MAX; i++)
     {
@@ -66,12 +66,12 @@ void Texture2D::LoadGLTextures(void) {
             throw string(GBS_global_string("Error loading %s", ImageFile));
         }
 
-    if (!RNA3D->bPointSpritesSupported) {
-       glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
-    }
-    else {
-       glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-    }
+        if (!RNA3D->bPointSpritesSupported) {
+            glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
+        }
+        else {
+            glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+        }
 
 #ifdef DEBUG
         cout<<ImageFile<<" : Size = "<<info.Width<<" x "<<info.Height <<", Depth = "
@@ -82,4 +82,3 @@ void Texture2D::LoadGLTextures(void) {
     }
 
 }
-

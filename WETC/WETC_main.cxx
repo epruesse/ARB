@@ -12,11 +12,11 @@ AW_HEADER_MAIN
 
 int main(int argc,char **argv){
     if (argc <1){
-	GB_export_error("Syntax: arb_wetc [-fileedit]");
-	GB_print_error();
-	exit(-1);
+        GB_export_error("Syntax: arb_wetc [-fileedit]");
+        GB_print_error();
+        exit(-1);
     }
-    
+
     const char *com  = argv[1];
     AW_root *aw_root;
     AW_default aw_default;
@@ -26,11 +26,11 @@ int main(int argc,char **argv){
     aw_root->init("ARB_NT");
 
     if (!strcmp(com,"-fileedit")){
-	AWT_show_file(aw_root, argv[2]);
+        AWT_show_file(aw_root, argv[2]);
     }else{
-	GB_export_error("wrong parameter, allowed: [-fileedit] file");
-	GB_print_error();
-	exit(-1);
+        GB_export_error("wrong parameter, allowed: [-fileedit] file");
+        GB_print_error();
+        exit(-1);
     }
     aw_root->window_hide();
     aw_root->main_loop();
@@ -38,6 +38,6 @@ int main(int argc,char **argv){
 }
 
 void AD_map_viewer(GBDATA *,AD_MAP_VIEWER_TYPE)
-	{
-	    ;
+{
+    ;
 }

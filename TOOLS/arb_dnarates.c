@@ -1,4 +1,3 @@
-
 #define programName     "DNAml_rates"
 #define programVersion  "1.0.0"
 #define programDate     "April 11, 1992"
@@ -191,7 +190,7 @@ int findch (c)
 
 
 void inputweights ()
-     /* input the character weights 0, 1, 2 ... 9, A, B, ... Y, Z */
+/* input the character weights 0, 1, 2 ... 9, A, B, ... Y, Z */
 { /* inputweights */
     int i, ch, wi;
 
@@ -681,7 +680,7 @@ void getdata (tr)
 
 
 void sitesort ()
-     /* Shell sort keeping sites, weights in same order */
+/* Shell sort keeping sites, weights in same order */
 { /* sitesort */
     int  gap, i, j, jj, jg, k;
     boolean  flip, tied;
@@ -712,7 +711,7 @@ void sitesort ()
 
 
 void sitecombcrunch ()
-     /* combine sites that have identical patterns (and nonzero weight) */
+/* combine sites that have identical patterns (and nonzero weight) */
 { /* sitecombcrunch */
     int  i, sitei, j, sitej, k;
     boolean  tied;
@@ -747,7 +746,7 @@ void sitecombcrunch ()
 
 
 void makeweights ()
-     /* make up weights vector to avoid duplicate computations */
+/* make up weights vector to avoid duplicate computations */
 { /* makeweights */
     int  i;
 
@@ -1068,38 +1067,38 @@ void newview (p)                      /*  Update likelihoods at node */
 
     { double  *rptr;
 
-    rptr = &(patrate[0]);
-    for (i = 0; i < endsite; i++) {
-        ki = *rptr++;
+        rptr = &(patrate[0]);
+        for (i = 0; i < endsite; i++) {
+            ki = *rptr++;
 
-        zz1 = exp(ki *   lz1);
-        zv1 = exp(ki * xvlz1);
-        fx1r = freqa * *x1a + freqg * *x1g;
-        fx1y = freqc * *x1c + freqt * *x1t;
-        fx1n = fx1r + fx1y;
-        tempi = fx1r * invfreqr;
-        tempj = zv1 * (tempi-fx1n) + fx1n;
-        suma1 = zz1 * (*x1a++ - tempi) + tempj;
-        sumg1 = zz1 * (*x1g++ - tempi) + tempj;
-        tempi = fx1y * invfreqy;
-        tempj = zv1 * (tempi-fx1n) + fx1n;
-        sumc1 = zz1 * (*x1c++ - tempi) + tempj;
-        sumt1 = zz1 * (*x1t++ - tempi) + tempj;
+            zz1 = exp(ki *   lz1);
+            zv1 = exp(ki * xvlz1);
+            fx1r = freqa * *x1a + freqg * *x1g;
+            fx1y = freqc * *x1c + freqt * *x1t;
+            fx1n = fx1r + fx1y;
+            tempi = fx1r * invfreqr;
+            tempj = zv1 * (tempi-fx1n) + fx1n;
+            suma1 = zz1 * (*x1a++ - tempi) + tempj;
+            sumg1 = zz1 * (*x1g++ - tempi) + tempj;
+            tempi = fx1y * invfreqy;
+            tempj = zv1 * (tempi-fx1n) + fx1n;
+            sumc1 = zz1 * (*x1c++ - tempi) + tempj;
+            sumt1 = zz1 * (*x1t++ - tempi) + tempj;
 
-        zz2 = exp(ki *   lz2);
-        zv2 = exp(ki * xvlz2);
-        fx2r = freqa * *x2a + freqg * *x2g;
-        fx2y = freqc * *x2c + freqt * *x2t;
-        fx2n = fx2r + fx2y;
-        tempi = fx2r * invfreqr;
-        tempj = zv2 * (tempi-fx2n) + fx2n;
-        *x3a++ = suma1 * (zz2 * (*x2a++ - tempi) + tempj);
-        *x3g++ = sumg1 * (zz2 * (*x2g++ - tempi) + tempj);
-        tempi = fx2y * invfreqy;
-        tempj = zv2 * (tempi-fx2n) + fx2n;
-        *x3c++ = sumc1 * (zz2 * (*x2c++ - tempi) + tempj);
-        *x3t++ = sumt1 * (zz2 * (*x2t++ - tempi) + tempj);
-    }
+            zz2 = exp(ki *   lz2);
+            zv2 = exp(ki * xvlz2);
+            fx2r = freqa * *x2a + freqg * *x2g;
+            fx2y = freqc * *x2c + freqt * *x2t;
+            fx2n = fx2r + fx2y;
+            tempi = fx2r * invfreqr;
+            tempj = zv2 * (tempi-fx2n) + fx2n;
+            *x3a++ = suma1 * (zz2 * (*x2a++ - tempi) + tempj);
+            *x3g++ = sumg1 * (zz2 * (*x2g++ - tempi) + tempj);
+            tempi = fx2y * invfreqy;
+            tempj = zv2 * (tempi-fx2n) + fx2n;
+            *x3c++ = sumc1 * (zz2 * (*x2c++ - tempi) + tempj);
+            *x3t++ = sumt1 * (zz2 * (*x2t++ - tempi) + tempj);
+        }
     }
 } /* newview */
 
@@ -1147,7 +1146,7 @@ int treeFinishCom ()
 
 
 int treeGetCh ()
-     /* get next nonblank, noncomment character */
+/* get next nonblank, noncomment character */
 { /* treeGetCh */
     int  ch;
 
@@ -1174,7 +1173,7 @@ void treeFlushLabel()
     if (!done) {
         boolean quoted = (ch == '\'');
         if (quoted) ch = getc(INFILE);
-        
+
         while (! done) {
             if (quoted) {
                 if ((ch = findch('\'')) == EOF)  return;      /* find close quote */
@@ -1298,7 +1297,7 @@ void  treeNeedCh (c1, where)
     int c2, i;
 
     if ((c2 = treeGetCh()) == c1)  return;
-     /* assert(c2 == c1); */ /* stop here with debugger  */
+    /* assert(c2 == c1); */ /* stop here with debugger  */
 
     printf("ERROR: Missing '%c' %s tree; ", c1, where);
     if (c2 == EOF)
@@ -1689,13 +1688,13 @@ double  treeLength(tr)
 
 void categorize (Sites, Categs, Weight, Pattern, Patrate,
                  categrate, sitecateg)
-     int     Sites;
-     int     Categs;
-     int     Weight[];      /* one based */
-     int     Pattern[];     /* one based */
-     double  Patrate[];     /* zero based */
-     double  categrate[];   /* zero based */
-     int     sitecateg[];   /* one based */
+     int Sites;
+     int Categs;
+     int Weight[];                                        /* one based */
+int      Pattern[];                                       /* one based */
+double   Patrate[];                                       /* zero based */
+double   categrate[];                                     /* zero based */
+int      sitecateg[];                                     /* one based */
 { /* categorize */
     double  ki, min_1, min_2, max_1, max_2, a, b;
     int  i, k;
@@ -1761,15 +1760,15 @@ void getArbFilter(){
 }
 
 void writeToArb(){
-    char sai_name[1024];
-    char type_info[1024];
-    char category_string[1024];
-    char *p;
-    long ali_len;
-    int i,k;
-    int ali_pos;
-    float *rates;		/* rates to export */
-    char *cats;			/* categories */
+    char    sai_name[1024];
+    char    type_info[1024];
+    char    category_string[1024];
+    char   *p;
+    long    ali_len;
+    int     i,k;
+    int     ali_pos;
+    float  *rates;              /* rates to export */
+    char   *cats;               /* categories */
     GBDATA *gb_sai;
     GBDATA *gb_data;
 
@@ -1790,7 +1789,7 @@ void writeToArb(){
 
         categorize(sites, categs, weight, pattern, patrate,categrate, sitecateg);
 
-        i = 1;			/* thanks to pascal */
+        i = 1;                  /* thanks to pascal */
         for ( ali_pos = 0; ali_pos < ali_len; ali_pos++){
             if (arb_filter[ali_pos] == '0'){
                 cats[ali_pos] = '.';
@@ -1801,7 +1800,7 @@ void writeToArb(){
                 rates[ali_pos] = patrate[pattern[i]];
                 cats[ali_pos] = itobase36(categs - sitecateg[i]);
             }else{
-                rates[i] = KI_MAX;	/* infinite rate */
+                rates[i] = KI_MAX;      /* infinite rate */
                 cats[ali_pos] = '.';
             }
             i++;
@@ -1852,8 +1851,8 @@ void wrfile (outfile, Sites, Categs, Weight, categrate, sitecateg)
      int     Sites;
      int     Categs;
      int     Weight[];      /* one based */
-     double  categrate[];   /* zero based */
-     int     sitecateg[];   /* one based */
+double  categrate[];   /* zero based */
+int     sitecateg[];   /* one based */
 { /* wrfile */
 
 
@@ -2023,5 +2022,3 @@ int main ()
 
     return 0;
 } /* Maximum Likelihood Site Rate */
-
-

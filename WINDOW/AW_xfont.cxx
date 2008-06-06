@@ -55,7 +55,7 @@ appresStruct appres = {
 
 #if defined(DEVEL_RALF)
 #if defined(PREFER_ISO10646)
-// #warning current iso setting: prefer ISO10646 (this is recommended) 
+// #warning current iso setting: prefer ISO10646 (this is recommended)
 #else
 #warning current iso setting: prefer ISO8859
 #endif // PREFER_ISO10646
@@ -72,11 +72,11 @@ struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
     {"-adobe-times-medium-i-*--",                  (struct xfont*) NULL}, // #1
     {"-adobe-times-bold-r-*--",                    (struct xfont*) NULL}, // #2
     {"-adobe-times-bold-i-*--",                    (struct xfont*) NULL}, // #3
-    {"-schumacher-clean-medium-r-*--",             (struct xfont*) NULL},	/* closest to Avant-Garde */
+    {"-schumacher-clean-medium-r-*--",             (struct xfont*) NULL},       /* closest to Avant-Garde */
     {"-schumacher-clean-medium-i-*--",             (struct xfont*) NULL}, // #5
     {"-schumacher-clean-bold-r-*--",               (struct xfont*) NULL}, // #6
     {"-schumacher-clean-bold-i-*--",               (struct xfont*) NULL}, // #7
-    {"-adobe-times-medium-r-*--",                  (struct xfont*) NULL},	/* closest to Bookman */
+    {"-adobe-times-medium-r-*--",                  (struct xfont*) NULL},       /* closest to Bookman */
     {"-adobe-times-medium-i-*--",                  (struct xfont*) NULL}, // #9
     {"-adobe-times-bold-r-*--",                    (struct xfont*) NULL}, // #10
     {"-adobe-times-bold-i-*--",                    (struct xfont*) NULL}, // #11
@@ -88,7 +88,7 @@ struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
     {"-adobe-helvetica-medium-o-*--",              (struct xfont*) NULL}, // #17
     {"-adobe-helvetica-bold-r-*--",                (struct xfont*) NULL}, // #18
     {"-adobe-helvetica-bold-o-*--",                (struct xfont*) NULL}, // #19
-    {"-adobe-helvetica-medium-r-*--",              (struct xfont*) NULL},	/* closest to Helv-nar. */
+    {"-adobe-helvetica-medium-r-*--",              (struct xfont*) NULL},       /* closest to Helv-nar. */
     {"-adobe-helvetica-medium-o-*--",              (struct xfont*) NULL}, // #21
     {"-adobe-helvetica-bold-r-*--",                (struct xfont*) NULL}, // #22
     {"-adobe-helvetica-bold-o-*--",                (struct xfont*) NULL}, // #23
@@ -96,7 +96,7 @@ struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
     {"-adobe-new century schoolbook-medium-i-*--", (struct xfont*) NULL}, // #25
     {"-adobe-new century schoolbook-bold-r-*--",   (struct xfont*) NULL}, // #26
     {"-adobe-new century schoolbook-bold-i-*--",   (struct xfont*) NULL}, // #27
-    {"-*-lucidabright-medium-r-*--",               (struct xfont*) NULL},	/* closest to Palatino */
+    {"-*-lucidabright-medium-r-*--",               (struct xfont*) NULL},       /* closest to Palatino */
     {"-*-lucidabright-medium-i-*--",               (struct xfont*) NULL}, // #29
     {"-*-lucidabright-demibold-r-*--",             (struct xfont*) NULL}, // #30
     {"-*-lucidabright-demibold-i-*--",             (struct xfont*) NULL}, // #31
@@ -119,8 +119,8 @@ struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
 };
 
 struct _fstruct ps_fontinfo[AW_NUM_FONTS + 1] = {
-                                // map window fonts to postscript fonts
-                                // negative values indicate monospaced fonts
+    // map window fonts to postscript fonts
+    // negative values indicate monospaced fonts
     {"Default",                         -1},
     {"Times-Roman",                     0},
     {"Times-Italic",                    1},
@@ -236,7 +236,7 @@ void aw_root_init_font(Display *tool_d)
 
     /*
      * Now initialize the font structure for the X fonts corresponding to the
-     * Postscript fonts for the canvas.	 OpenWindows can use any LaserWriter
+     * Postscript fonts for the canvas.  OpenWindows can use any LaserWriter
      * fonts at any size, so we don't need to load anything if we are using
      * it.
      */
@@ -249,7 +249,7 @@ void aw_root_init_font(Display *tool_d)
         int    count;
 
 #if defined(DUMP_FONT_LOOKUP)
-	printf("Searching for SCALABLEFONTS\n");
+        printf("Searching for SCALABLEFONTS\n");
 #endif // DUMP_FONT_LOOKUP
 
         /* first look for OpenWindow style font names (e.g. times-roman) */
@@ -268,7 +268,7 @@ void aw_root_init_font(Display *tool_d)
             strcat(templat,"0-0-*-*-*-*-*-*");
             if ((fontlist = XListFonts(tool_d, templat, 1, &count))!=0){
 #if defined(DUMP_FONT_LOOKUP)
-        	printf("Using SCALABLEFONTS!\n");
+                printf("Using SCALABLEFONTS!\n");
 #endif // DUMP_FONT_LOOKUP
                 XFreeFontNames(fontlist);
             }else{
@@ -497,19 +497,19 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
                     break;
                 }
 
-//                 if (fontst) {
-//                     XFreeFontInfo(fontst); // only did query -- loading done below
-//                     // nf->fstruct = fontst;
-//                     nf->fname      = fontname;
-//                     break;
-//                 }
+                //                 if (fontst) {
+                //                     XFreeFontInfo(fontst); // only did query -- loading done below
+                //                     // nf->fstruct = fontst;
+                //                     nf->fname      = fontname;
+                //                     break;
+                //                 }
                 free(fontname);
             }
             // @@@ what if nf->fstruct is 0 now ?
         }
 #ifndef DEVEL_JB
         aw_assert(nf->fname);
-#endif        
+#endif
     } /* scalable */
 
     bool font_found = true;
@@ -550,9 +550,9 @@ static int get_available_fontsizes(Display *tool_d, int f, int *available_sizes)
     for (int size = MAX_FONTSIZE; size >= MIN_FONTSIZE; --size) {
         int      found_size;
         PIX_FONT fontst;
-        
+
 #if defined(DEBUG)
-        bool     was_found = 
+        bool     was_found =
 #endif // DEBUG
             lookfont(tool_d, f, size, found_size, false, true, &fontst);
 
@@ -744,8 +744,8 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
     curfont = *xfs;
 
     const XCharStruct *cs;
-    const XCharStruct *def;           /* info about default char */
-    Bool         singlerow = (xfs->max_byte1 == 0); /* optimization */
+    const XCharStruct *def;     /* info about default char */
+    bool               singlerow = (xfs->max_byte1 == 0); /* optimization */
 
     if (singlerow) {    /* optimization */
         CI_GetDefaultInfo_1D(xfs, def);
@@ -797,4 +797,3 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
 int AW_GC_Xm::get_available_fontsizes(AW_font font_nr, int *available_sizes) {
     return ::get_available_fontsizes(common->display, font_nr, available_sizes);
 }
-

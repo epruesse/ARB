@@ -4,7 +4,7 @@
 
 #define AWAR_FIELD_CREATE_NAME "tmp/adfield/name"
 #define AWAR_FIELD_CREATE_TYPE "tmp/adfield/type"
-#define AWAR_FIELD_DELETE	   "tmp/adfield/source"
+#define AWAR_FIELD_DELETE      "tmp/adfield/source"
 
 
 #define AWAR_FIELD_REORDER_SOURCE "tmp/ad_reorder/source"

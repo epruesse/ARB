@@ -2,31 +2,34 @@
 #define AW_AWAR_HXX
 
 
-#define AW_INSERT_BUTTON_IN_AWAR_LIST(vs,cd1,widget,type,aww) { AW_widget_list_for_variable *awibsldummy = \
-	new AW_widget_list_for_variable(vs,cd1,(int*)widget,type,aww);awibsldummy = awibsldummy;};
+#define AW_INSERT_BUTTON_IN_AWAR_LIST(vs,cd1,widget,type,aww)           \
+do {                                                                    \
+    new AW_widget_list_for_variable(vs,cd1,(int*)widget,type,aww);      \
+} while(0)
+
 #define AWAR_EPS 0.00000001
 
 typedef enum {
-	AW_WIDGET_INPUT_FIELD,
-	AW_WIDGET_TEXT_FIELD,
-	AW_WIDGET_LABEL_FIELD,
-	AW_WIDGET_CHOICE_MENU,
-	AW_WIDGET_TOGGLE_FIELD,
-	AW_WIDGET_SELECTION_LIST,
-	AW_WIDGET_TOGGLE
+    AW_WIDGET_INPUT_FIELD,
+    AW_WIDGET_TEXT_FIELD,
+    AW_WIDGET_LABEL_FIELD,
+    AW_WIDGET_CHOICE_MENU,
+    AW_WIDGET_TOGGLE_FIELD,
+    AW_WIDGET_SELECTION_LIST,
+    AW_WIDGET_TOGGLE
 } AW_widget_type;
 
 /*************************************************************************/
 struct AW_widget_list_for_variable {
 
-	AW_widget_list_for_variable( AW_awar *vs, AW_CL cd1, int *widgeti, AW_widget_type type, AW_window *awi );
+    AW_widget_list_for_variable( AW_awar *vs, AW_CL cd1, int *widgeti, AW_widget_type type, AW_window *awi );
 
-	AW_CL				cd;
-	AW_awar				*awar;
-	int				*widget;
-	AW_widget_type			widget_type;
-	AW_window			*aw;
-	AW_widget_list_for_variable	*next;
+    AW_CL                        cd;
+    AW_awar                     *awar;
+    int                         *widget;
+    AW_widget_type               widget_type;
+    AW_window                   *aw;
+    AW_widget_list_for_variable *next;
 };
 
 
@@ -35,11 +38,13 @@ struct AW_widget_list_for_variable {
 struct AW_var_callback {
     AW_var_callback( void (*vc_cb)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 );
     AW_var_callback( void (*vc_cb)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2, AW_var_callback *nexti );
-    
-    void                        (*value_changed_cb)(AW_root*,AW_CL,AW_CL);
-    AW_CL                       value_changed_cb_cd1;
-    AW_CL                       value_changed_cb_cd2;
-    AW_var_callback             *next;
+
+    void (*value_changed_cb)(AW_root*,AW_CL,AW_CL);
+
+    AW_CL            value_changed_cb_cd1;
+    AW_CL            value_changed_cb_cd2;
+    AW_var_callback *next;
+
     void run_callback(AW_root *root);
 };
 

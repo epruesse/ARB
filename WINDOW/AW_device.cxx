@@ -12,7 +12,7 @@
 
 
 void AW_clip::set_cliprect(AW_rectangle *rect, AW_BOOL allow_oversize) {
-    clip_rect = *rect;	// coordintes : (0,0) = top-left-corner
+    clip_rect = *rect;  // coordintes : (0,0) = top-left-corner
     if (!allow_oversize){
         if (clip_rect.t < common->screen.t) clip_rect.t = common->screen.t;
         if (clip_rect.b > common->screen.b) clip_rect.b = common->screen.b;
@@ -20,10 +20,10 @@ void AW_clip::set_cliprect(AW_rectangle *rect, AW_BOOL allow_oversize) {
         if (clip_rect.r > common->screen.r) clip_rect.r = common->screen.r;
     }
 
-    top_font_overlap = 0;
+    top_font_overlap    = 0;
     bottom_font_overlap = 0;
-    left_font_overlap = 0;
-    right_font_overlap = 0;
+    left_font_overlap   = 0;
+    right_font_overlap  = 0;
 
     if (allow_oversize) { // added 21.6.02 --ralf
         if (clip_rect.t < common->screen.t) set_top_font_overlap(true);
@@ -94,7 +94,7 @@ void AW_clip::set_left_clip_border(int left, AW_BOOL allow_oversize) {
 }
 
 void AW_clip::reduce_right_clip_border(int right) {
-    if (right < clip_rect.r)	clip_rect.r = right;
+    if (right < clip_rect.r)    clip_rect.r = right;
 }
 
 void AW_clip::set_right_clip_border(int right, AW_BOOL allow_oversize) {
@@ -145,7 +145,7 @@ int AW_clip::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out,
     x1out = clip_in_range(clip_rect.l, x1, clip_rect.r);
     y0out = clip_in_range(clip_rect.t, y0, clip_rect.b);
     y1out = clip_in_range(clip_rect.t, y1, clip_rect.b);
-    
+
     return 1;
 }
 /**********************************************************************/
@@ -194,7 +194,7 @@ int AW_clip::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_
                 x = clip_rect.l;
             }
 
-            // set corrected point and iterate : 
+            // set corrected point and iterate :
             if (outcode0 > 0) {
                 x0 = x;
                 y0 = y;
@@ -205,7 +205,7 @@ int AW_clip::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_
             }
         }
     }
-    
+
     return is_visible;
 }
 
@@ -220,20 +220,21 @@ void AW_matrix::reset(void) {
 }
 
 /**********************************************************************************************
-						GC_XM
+                                                GC_XM
 **********************************************************************************************/
-AW_GC_Xm::AW_GC_Xm(class AW_common	*commoni) {
-    common = commoni;
-    XGCValues	val;
-    unsigned long value_mask;
-    val.line_width = 1;
-    value_mask = GCLineWidth;
+AW_GC_Xm::AW_GC_Xm(AW_common *commoni) {
+    common     = commoni;
     line_width = 1;
-    style = AW_SOLID;
-    function = AW_COPY;
-    color = 0;
+    style      = AW_SOLID;
+    function   = AW_COPY;
+    color      = 0;
     grey_level = 0;
-    gc 	= XCreateGC(common->display,common->window_id,value_mask,&val);
+
+    XGCValues val;
+    val.line_width = 1;
+    unsigned long value_mask = GCLineWidth;
+
+    gc = XCreateGC(common->display,common->window_id,value_mask,&val);
 }
 
 
@@ -242,7 +243,7 @@ AW_GC_Xm::~AW_GC_Xm(void) {
 }
 
 
-void AW_GC_Xm::set_fill(AW_grey_level grey_leveli) {	// <0 dont fill	 0.0 white 1.0 black
+void AW_GC_Xm::set_fill(AW_grey_level grey_leveli) {    // <0 dont fill  0.0 white 1.0 black
     grey_level = grey_leveli;
 }
 
@@ -260,7 +261,7 @@ void AW_GC_Xm::set_lineattributes(AW_pos width,AW_linestyle stylei) {
             break;
         default:
             break;
-    };
+    }
     line_width = lwidth;
     style = style;
 }
@@ -313,16 +314,14 @@ const AW_font_information *AW_gc::get_font_information(int gc, unsigned char c) 
 
 
 /**********************************************************************************************
-						GC
+                                                GC
 **********************************************************************************************/
 
-int	AW_gc::get_string_size(int gc, const char *str, long textlen)
-// get the size of the string
-{
+int AW_gc::get_string_size(int gc, const char *str, long textlen) {
+    // get the size of the string
     XFontStruct *xfs           = &common->gcs[gc]->curfont;
     short       *size_per_char = common->gcs[gc]->width_of_chars;
-    if (!textlen)
-    {
+    if (!textlen) {
         if (!str) return 0;
         textlen = strlen(str);
     }
@@ -332,7 +331,8 @@ int	AW_gc::get_string_size(int gc, const char *str, long textlen)
     if (xfs->max_bounds.width == xfs->min_bounds.width || !str) {
         // monospaced font
         l_width = textlen * xfs->max_bounds.width;
-    }else {		// non-monospaced font
+    }
+    else {             // non-monospaced font
         l_width = 0;
         for (c = *(str++); c; c = *(str++)) {
             l_width += size_per_char[c];
@@ -357,7 +357,7 @@ void AW_gc::set_fill(int gc,AW_grey_level grey_level){
 
 
 void AW_gc::set_font(int gc,AW_font font_nr, int size, int *found_size) {
-    // if found_size != 0 -> return value for used font size 
+    // if found_size != 0 -> return value for used font size
     aw_assert(common->gcs[gc]);
     common->gcs[gc]->set_font(font_nr, size, found_size);
 }
@@ -404,48 +404,51 @@ void AW_gc::set_background_color(int gc, AW_color color) {
 
 
 /**********************************************************************************************
-						COMMON
+                                                COMMON
 **********************************************************************************************/
 void AW_get_common_extends_cb(AW_window *aww,AW_common *common) {
     AWUSE(aww);
-    Window	root;
+    Window       root;
     unsigned int width,height;
     unsigned int depth, borderwidth;
+    
     XGetGeometry(common->display,common->window_id,
                  &root,
-                 &common->screen_x_offset,	// xoffset
-                 &common->screen_y_offset,	// yoffset
+                 &common->screen_x_offset, // xoffset
+                 &common->screen_y_offset, // yoffset
                  &width,
                  &height,
-                 &borderwidth,		// border width
-                 &depth);		// depth of display
+                 &borderwidth,  // border width
+                 &depth);       // depth of display
 
-    common->screen.t = 0;		// set clipping coordinates
+    common->screen.t = 0;               // set clipping coordinates
     common->screen.b = height;
     common->screen.l = 0;
     common->screen.r = width;
 }
 
-AW_common::AW_common(AW_window *aww, AW_area area,	Display *display_in,
-		     XID window_id_in,unsigned long *fcolors,
-		     unsigned int **dcolors, long *data_colors_size_in)
+AW_common::AW_common(AW_window *aww, AW_area area, Display *display_in,
+                     XID window_id_in,unsigned long *fcolors,
+                     unsigned int **dcolors, long *data_colors_size_in)
 {
     memset((char *)this,0,sizeof(AW_common));
-    root = aww->get_root();
-    window_id = window_id_in;
-    display = display_in;
-    frame_colors = fcolors;
-    data_colors = (unsigned long **)dcolors;
+
+    root             = aww->get_root();
+    window_id        = window_id_in;
+    display          = display_in;
+    frame_colors     = fcolors;
+    data_colors      = (unsigned long **)dcolors;
     data_colors_size = data_colors_size_in;
-    ngcs = 8;
-    gcs = (AW_GC_Xm **)malloc(sizeof(void *)*ngcs);
+    ngcs             = 8;
+    gcs              = (AW_GC_Xm **)malloc(sizeof(void *)*ngcs);
+    
     memset((char *)gcs,0,sizeof(void *)*ngcs);
     aww->set_resize_callback(area,(AW_CB2)AW_get_common_extends_cb,(AW_CL)this,0);
     AW_get_common_extends_cb(aww,this);
 }
 
 /**********************************************************************************************
-						DEVICE and GCS
+                                                DEVICE and GCS
 **********************************************************************************************/
 
 // ----------------------------
@@ -457,7 +460,7 @@ AW_common::AW_common(AW_window *aww, AW_area area,	Display *display_in,
 #endif // DEBUG
 
 class AW_clip_scale_stack {
-    // completely private, but accessible by AW_device 
+    // completely private, but accessible by AW_device
     friend class AW_device;
 
     AW_rectangle clip_rect;
@@ -468,7 +471,7 @@ class AW_clip_scale_stack {
     int right_font_overlap;
 
     AW::Vector offset;
-    AW_pos scale;
+    AW_pos     scale;
 
     class AW_clip_scale_stack *next;
 };
@@ -477,9 +480,9 @@ class AW_clip_scale_stack {
 static const char *clipstatestr(AW_device *device) {
     static char   buffer[1024];
     AW_rectangle& clip_rect = device->clip_rect;
+    
     sprintf(buffer, "clip_rect={t=%i, b=%i, l=%i, r=%i}",
-            clip_rect.t, clip_rect.b, clip_rect.l, clip_rect.r
-            );
+            clip_rect.t, clip_rect.b, clip_rect.l, clip_rect.r);
 
     return buffer;
 }
@@ -501,7 +504,7 @@ void AW_device::push_clip_scale(void)
     stack->bottom_font_overlap = bottom_font_overlap;
     stack->left_font_overlap   = left_font_overlap;
     stack->right_font_overlap  = right_font_overlap;
-    
+
     stack->clip_rect = clip_rect;
 
 #if defined(SHOW_CLIP_STACK_CHANGES)
@@ -540,11 +543,11 @@ void AW_device::pop_clip_scale(void){
 
 // --------------------------------------------------------------------------------
 
-void AW_device::get_area_size(AW_rectangle *rect) {	//get the extends from the class AW_device
+void AW_device::get_area_size(AW_rectangle *rect) {     //get the extends from the class AW_device
     *rect = common->screen;
 }
 
-void AW_device::get_area_size(AW_world *rect) {	//get the extends from the class AW_device
+void AW_device::get_area_size(AW_world *rect) { //get the extends from the class AW_device
     rect->t = common->screen.t;
     rect->b = common->screen.b;
     rect->l = common->screen.l;
@@ -556,10 +559,7 @@ AW::Rectangle AW_device::get_area_size() {
     return AW::Rectangle(scr.l, scr.t, scr.r, scr.b);
 }
 
-void AW_device::privat_reset()
-{
-    ;
-}
+void AW_device::privat_reset() {}
 
 void AW_device::reset(){
     while (clip_scale_stack){
@@ -576,11 +576,10 @@ AW_device::AW_device(class AW_common *commoni) : AW_gc(){
     filter = (AW_bitset)-1;
 }
 
-AW_gc::AW_gc() : AW_clip(){
-    ;
-}
+AW_gc::AW_gc() : AW_clip() {}
+
 /**********************************************************************************************
-						DEVICE and OUTPUT
+                                                DEVICE and OUTPUT
 **********************************************************************************************/
 
 bool AW_device::invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
@@ -604,11 +603,12 @@ bool AW_device::ready_to_draw(int gc) {
 int AW_device::box(int gc, AW_BOOL /*filled*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
 {
     int erg = 0;
-    if ( !(filteri & filter) ) return 0;
-    erg |= line(gc,x0,y0,x0+width,y0,filteri,cd1,cd2);
-    erg |= line(gc,x0,y0,x0,y0+height,filteri,cd1,cd2);
-    erg |= line(gc,x0+width,y0+height,x0+width,y0+height,filteri,cd1,cd2);
-    erg |= line(gc,x0+width,y0+height,x0+width,y0+height,filteri,cd1,cd2);
+    if (filteri & filter) {
+        erg |= line(gc,x0,y0,x0+width,y0,filteri,cd1,cd2);
+        erg |= line(gc,x0,y0,x0,y0+height,filteri,cd1,cd2);
+        erg |= line(gc,x0+width,y0+height,x0+width,y0+height,filteri,cd1,cd2);
+        erg |= line(gc,x0+width,y0+height,x0+width,y0+height,filteri,cd1,cd2);
+    }
     return erg;
 }
 
@@ -619,34 +619,37 @@ int AW_device::box(int gc, AW_BOOL /*filled*/, AW_pos x0,AW_pos y0,AW_pos width,
 int AW_device::circle(int gc, AW_BOOL /*filled has no effect here*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
 {
     int erg = 0;
-    if (	!(filteri & filter) ) return 0;
-    erg |= line(gc,x0,y0+height,x0+width,y0,filteri,cd1,cd2);
-    erg |= line(gc,x0,y0+height,x0-width,y0,filteri,cd1,cd2);
-    erg |= line(gc,x0,y0-height,x0+width,y0,filteri,cd1,cd2);
-    erg |= line(gc,x0,y0-height,x0-width,y0,filteri,cd1,cd2);
+    if (filteri & filter) {
+        erg |= line(gc,x0,y0+height,x0+width,y0,filteri,cd1,cd2);
+        erg |= line(gc,x0,y0+height,x0-width,y0,filteri,cd1,cd2);
+        erg |= line(gc,x0,y0-height,x0+width,y0,filteri,cd1,cd2);
+        erg |= line(gc,x0,y0-height,x0-width,y0,filteri,cd1,cd2);
+    }
     return erg;
 }
 
 int AW_device::arc(int gc, AW_BOOL /*filled has no effect here*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, int /*start_degrees*/, int /*arc_degrees*/, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
 {
     int erg = 0;
-    if (	!(filteri & filter) ) return 0;
-    erg |= line(gc,x0,y0+height,x0+width,y0,filteri,cd1,cd2);
-    erg |= line(gc,x0,y0+height,x0-width,y0,filteri,cd1,cd2);
-    erg |= line(gc,x0,y0-height,x0+width,y0,filteri,cd1,cd2);
-    erg |= line(gc,x0,y0-height,x0-width,y0,filteri,cd1,cd2);
+    if (filteri & filter) {
+        erg |= line(gc,x0,y0+height,x0+width,y0,filteri,cd1,cd2);
+        erg |= line(gc,x0,y0+height,x0-width,y0,filteri,cd1,cd2);
+        erg |= line(gc,x0,y0-height,x0+width,y0,filteri,cd1,cd2);
+        erg |= line(gc,x0,y0-height,x0-width,y0,filteri,cd1,cd2);
+    }
     return erg;
 }
 int AW_device::filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2){
     int erg = 0;
-    if (	!(filteri & filter) ) return 0;
-    npoints--;
-    erg |= line(gc,points[0],points[1],points[npoints*2],points[npoints*2+1],filteri,cd1,cd2);
-    while (	npoints>0) {
-        AW_pos x = *(points++);
-        AW_pos y = *(points++);
-        erg |= line(gc,x,y,points[0],points[1],filteri,cd1,cd2);
+    if (filteri & filter) {
         npoints--;
+        erg |= line(gc,points[0],points[1],points[npoints*2],points[npoints*2+1],filteri,cd1,cd2);
+        while (npoints>0) {
+            AW_pos x = *(points++);
+            AW_pos y = *(points++);
+            erg |= line(gc,x,y,points[0],points[1],filteri,cd1,cd2);
+            npoints--;
+        }
     }
     return erg;
 }
@@ -660,7 +663,7 @@ void AW_device::fast(void) {}
 void AW_device::slow(void) {}
 void AW_device::flush(void) {}
 
-// forbidden operations: 
+// forbidden operations:
 static void forbidden(const char *toUse) { AW_ERROR("It's not allowed to use '%s' with this device", toUse); }
 const char *AW_device::open(const char */*path*/) { forbidden("open"); return 0; }
 void AW_device::close(void) { forbidden("close"); }
@@ -673,7 +676,7 @@ int AW_device::cursor(int gc, AW_pos x0,AW_pos y0, AW_cursor_type cur_type, AW_b
     class AW_GC_Xm *gcm = AW_MAP_GC(gc);
     XFontStruct    *xfs = &gcm->curfont;
     AW_pos          x1,x2,y1,y2;
-    AW_pos          X0,Y0;	// Transformed pos
+    AW_pos          X0,Y0;      // Transformed pos
 
     //  cursor insert         cursor overwrite
     //     (X0,Y0)
@@ -704,32 +707,32 @@ int AW_device::cursor(int gc, AW_pos x0,AW_pos y0, AW_cursor_type cur_type, AW_b
     return 1;
 }
 
-int AW_device::text_overlay( int gc, const char *opt_str, long opt_len,	// either string or strlen != 0
+int AW_device::text_overlay( int gc, const char *opt_str, long opt_len, // either string or strlen != 0
                              AW_pos x,AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cduser, AW_CL cd1, AW_CL cd2,
-                             AW_pos opt_ascent,AW_pos opt_descent, 		// optional height (if == 0 take font height)
+                             AW_pos opt_ascent,AW_pos opt_descent,              // optional height (if == 0 take font height)
                              int (*f)(AW_device *device, int gc, const char *opt_string, size_t opt_string_len,size_t start, size_t size,
                                       AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
                                       AW_CL cduser, AW_CL cd1, AW_CL cd2))
 {
-    long	 textlen;
-    AW_GC_Xm    *gcm                   = AW_MAP_GC(gc);
-    XFontStruct *xfs                   = &gcm->curfont;
-    short       *size_per_char         = common->gcs[gc]->width_of_chars;
-    int 	 xi, yi;
-    int	         h;
-    int		 start;
-    int		 l;
-    int		 c                     = 0;
-    AW_pos	 X0,Y0;	        // Transformed pos
-    AW_BOOL	 inside_clipping_left  = AW_TRUE; // clipping at the left edge of the screen is different
-    //	from clipping right of the left edge.
-    AW_BOOL	 inside_clipping_right = AW_TRUE;
+    long         textlen;
+    AW_GC_Xm    *gcm           = AW_MAP_GC(gc);
+    XFontStruct *xfs           = &gcm->curfont;
+    short       *size_per_char = common->gcs[gc]->width_of_chars;
+    int          xi, yi;
+    int          h;
+    int          start;
+    int          l;
+    int          c             = 0;
+    AW_pos       X0,Y0;         // Transformed pos
+    
+    AW_BOOL inside_clipping_left  = AW_TRUE; // clipping at the left edge of the screen is different from clipping right of the left edge.
+    AW_BOOL inside_clipping_right = AW_TRUE;
 
     // es gibt 4 clipping Moeglichkeiten:
-    // 1. man will fuer den Fall clippen, dass man vom linken display-Rand aus druckt	=> clipping rechts vom 1. Buchstaben
-    // 2. man will fuer den Fall clippen, dass man mitten im Bildschirm ist			=> clipping links vom 1. Buchstaben
-    // 3. man will fuer den Fall clippen, dass man mitten im Bildschirm ist			=> clipping links vom letzten Buchstaben
-    // 4. man will fuer den Fall clippen, dass man bis zum rechten display-Rand druckt	=> clipping rechts vom letzten Buchstaben
+    // 1. man will fuer den Fall clippen, dass man vom linken display-Rand aus druckt   => clipping rechts vom 1. Buchstaben
+    // 2. man will fuer den Fall clippen, dass man mitten im Bildschirm ist             => clipping links vom 1. Buchstaben
+    // 3. man will fuer den Fall clippen, dass man mitten im Bildschirm ist             => clipping links vom letzten Buchstaben
+    // 4. man will fuer den Fall clippen, dass man bis zum rechten display-Rand druckt  => clipping rechts vom letzten Buchstaben
 
     if (!(filter & filteri)) return 0;
 
@@ -745,16 +748,16 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len,	// eithe
     transform(x,y,X0,Y0);
 
 
-    if (top_font_overlap || clip_rect.t == 0) { 						// check clip border inside screen
+    if (top_font_overlap || clip_rect.t == 0) {                                                 // check clip border inside screen
         if (Y0+(AW_pos)(xfs->max_bounds.descent) < clip_rect.t) return 0; // draw outside screen
     }else {
         if (Y0-(AW_pos)(xfs->max_bounds.ascent) < clip_rect.t) return 0; // dont cross the clip border
     }
 
-    if (bottom_font_overlap || clip_rect.b == common->screen.b) { 				// check clip border inside screen drucken
-        if (Y0-(AW_pos)(xfs->max_bounds.ascent) > clip_rect.b) return 0;	     // draw outside screen
+    if (bottom_font_overlap || clip_rect.b == common->screen.b) {                               // check clip border inside screen drucken
+        if (Y0-(AW_pos)(xfs->max_bounds.ascent) > clip_rect.b) return 0;             // draw outside screen
     }else {
-        if (Y0+(AW_pos)(xfs->max_bounds.descent)> clip_rect.b) return 0;	     // dont cross the clip border
+        if (Y0+(AW_pos)(xfs->max_bounds.descent)> clip_rect.b) return 0;             // dont cross the clip border
     }
 
     if (!opt_len) {
@@ -772,17 +775,17 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len,	// eithe
     }
     xi = AW_INT(X0);
     yi = AW_INT(Y0);
-    if (X0 > clip_rect.r) return 0;			      // right of screen
+    if (X0 > clip_rect.r) return 0;                           // right of screen
 
     l = (int)clip_rect.l;
-    if (xi + textlen*xfs->max_bounds.width < l) return 0;		// left of screen
+    if (xi + textlen*xfs->max_bounds.width < l) return 0;               // left of screen
 
     start = 0;
-    if (xi < l) {								// now clip left side
-        if (xfs->max_bounds.width == xfs->min_bounds.width) {		//  monospaced font
+    if (xi < l) {                                                               // now clip left side
+        if (xfs->max_bounds.width == xfs->min_bounds.width) {           //  monospaced font
             h = (l - xi)/xfs->max_bounds.width;
             if (inside_clipping_left) {
-                if ( (l-xi)%xfs->max_bounds.width  >0 )	h += 1;
+                if ( (l-xi)%xfs->max_bounds.width  >0 ) h += 1;
             }
             if (h >= textlen) return 0;
             start    = h;
@@ -791,7 +794,7 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len,	// eithe
 
             if (textlen < 0) return 0;
             aw_assert(int(strlen(opt_str)) >= textlen);
-        }else {								// non-monospaced font
+        }else {                                                         // non-monospaced font
             for (h=0; xi < l; h++) {
                 if (!(c = opt_str[h])) return 0;
                 xi += size_per_char[c];
@@ -809,7 +812,7 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len,	// eithe
     }
 
     // now clipp right side
-    if (xfs->max_bounds.width == xfs->min_bounds.width) {			// monospaced font
+    if (xfs->max_bounds.width == xfs->min_bounds.width) {                       // monospaced font
         h = ((int)clip_rect.r - xi) / xfs->max_bounds.width;
         if (h < textlen) {
             if (inside_clipping_right) {
@@ -822,7 +825,7 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len,	// eithe
         if (textlen < 0) return 0;
         aw_assert(int(strlen(opt_str)) >= textlen);
     }
-    else {									// non-monospaced font
+    else {                                                                      // non-monospaced font
         l = (int)clip_rect.r - xi;
         for (h = start; l >= 0 && textlen > 0 ; h++, textlen--) { // was textlen >= 0
             l -= size_per_char[opt_str[h]];
@@ -845,7 +848,7 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len,	// eithe
 }
 
 /**********************************************************************************************
-						DEVICE and ETC
+                                                DEVICE and ETC
 **********************************************************************************************/
 
 void AW_device::set_filter(AW_bitset filteri) { filter = filteri; }

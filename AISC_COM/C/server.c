@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 /* #include <malloc.h> */
@@ -54,11 +53,11 @@ extern "C" {
 #endif
 
     struct Socinf {
-        struct Socinf *next;
-        int socket;
-        aisc_callback_func destroy_callback;
-        long	destroy_clientdata;
-        int lasttime;
+        struct Socinf      *next;
+        int                 socket;
+        aisc_callback_func  destroy_callback;
+        long                destroy_clientdata;
+        int                 lasttime;
     };
 
 #ifdef __cplusplus
@@ -67,32 +66,33 @@ extern "C" {
 
 struct pollfd;
 struct Hs_struct {
-    int hso;
+    int            hso;
     struct Socinf *soci;
     struct pollfd *fds;
-    unsigned long nfds;
-    int nsoc;
-    int timeout;
-    int fork;
-    char	*unix_name;
+    unsigned long  nfds;
+    int            nsoc;
+    int            timeout;
+    int            fork;
+    char          *unix_name;
 };
 
 struct aisc_bytes_list {
     char *data;
-    int	size;
+    int   size;
+    
     struct aisc_bytes_list *next;
 } *aisc_server_bytes_first,*aisc_server_bytes_last;
 
 
-extern char *aisc_object_names[];
+extern char  *aisc_object_names[];
 extern char **aisc_attribut_names_list[];
 
-extern aisc_talking_func_long *aisc_talking_functions_get[];
-extern aisc_talking_func_long *aisc_talking_functions_set[];
+extern aisc_talking_func_long  *aisc_talking_functions_get[];
+extern aisc_talking_func_long  *aisc_talking_functions_set[];
 extern aisc_talking_func_longp *aisc_talking_functions_copy[];
 extern aisc_talking_func_longp *aisc_talking_functions_find[];
 extern aisc_talking_func_longp *aisc_talking_functions_create[];
-extern aisc_talking_func_long aisc_talking_functions_delete[];
+extern aisc_talking_func_long   aisc_talking_functions_delete[];
 
 /* extern long ((**(aisc_talking_functions_get[]))(...)); */
 /* extern long ((**(aisc_talking_functions_set[]))(...)); */
@@ -104,8 +104,8 @@ extern aisc_talking_func_long aisc_talking_functions_delete[];
 const char *aisc_server_error;
 int         mdba_make_core = 1;
 
-static char error_buf[256];
-static int aisc_server_con;
+static char              error_buf[256];
+static int               aisc_server_con;
 static struct Hs_struct *aisc_server_hs;
 
 /******************************************* valid memory tester *******************************************/
@@ -114,7 +114,7 @@ static int my_sig_violation_flag;
 static int my_pipe_violation_flag;
 /* int my_sig_violation_end(); */
 
-char 	*test_address_valid(void *address,long key)
+char    *test_address_valid(void *address,long key)
 {
     /* tested ob die Addresse address erlaubt ist,
        falls ja, dann return NULL, sonst Fehlerstring */
@@ -160,7 +160,7 @@ void *my_sig_violation(int sig, int code, struct sigcontext *scp,char * addr)
     e = (long)test_address_valid_end;
 
     if ( (scp->sc_pc<a) || (scp->sc_pc>e) ){
-        signal(SIGSEGV,SIG_DFL);		/* make core */
+        signal(SIGSEGV,SIG_DFL);                /* make core */
         return 0;
     }
     scp->sc_pc = scp->sc_npc;
@@ -181,7 +181,7 @@ void *aisc_server_sigpipe()
 
 int aisc_s_read(int socket,char *ptr,int size)
 {
-    int	leftsize,readsize;
+    int leftsize,readsize;
     leftsize = size;
     readsize = 0;
     while (leftsize) {
@@ -194,13 +194,13 @@ int aisc_s_read(int socket,char *ptr,int size)
 #if defined(DUMP_COMMUNICATION)
     aisc_dump_hex("aisc_s_read: ", ptr-size, size);
 #endif /* DUMP_COMMUNICATION */
-    
+
     return size;
 }
 
 int aisc_s_write(int socket,char *ptr,int size)
 {
-    int	leftsize,writesize;
+    int leftsize,writesize;
     leftsize = size;
     writesize = 0;
     my_pipe_violation_flag = 0;
@@ -216,11 +216,11 @@ int aisc_s_write(int socket,char *ptr,int size)
         if (leftsize) usleep(10000);
 #endif
     }
-    
+
 #if defined(DUMP_COMMUNICATION)
     aisc_dump_hex("aisc_s_write: ", ptr-size, size);
 #endif /* DUMP_COMMUNICATION */
-    
+
     return 0;
 }
 
@@ -271,7 +271,7 @@ const char *aisc_get_m_id(const char *path, char **m_name, int *id)
         if (!path) return "ENVIROMENT SOCKET NOT FOUNT";
     }
     p = (char *) strchr(path, ':');
-    if (path[0] == '*' || path[0] == ':'){	/* UNIX MODE */
+    if (path[0] == '*' || path[0] == ':'){      /* UNIX MODE */
         char buffer[128];
         if (!p) {
             return "OPEN_ARB_DB_CLIENT ERROR: missing ':' in *:socketid";
@@ -308,7 +308,7 @@ const char *aisc_get_m_id(const char *path, char **m_name, int *id)
 const char *aisc_open_socket(const char *path, int delay, int do_connect, int *psocket, char **unix_name) {
 
     char buffer[128];
-    struct in_addr addr;	/* union -> u_long  */
+    struct in_addr addr;        /* union -> u_long  */
     struct hostent *he;
     const char *err;
     static int socket_id;
@@ -319,7 +319,7 @@ const char *aisc_open_socket(const char *path, int delay, int do_connect, int *p
     if (err) {
         return err;
     }
-    if (socket_id >= 0) {	/* UNIX */
+    if (socket_id >= 0) {       /* UNIX */
         struct sockaddr_in so_ad;
         memset((char *)&so_ad,0,sizeof(struct sockaddr_in));
         *psocket = socket(PF_INET, SOCK_STREAM, 0);
@@ -334,7 +334,7 @@ const char *aisc_open_socket(const char *path, int delay, int do_connect, int *p
         addr.s_addr = *(int *) (he->h_addr);
         so_ad.sin_addr = addr;
         so_ad.sin_family = AF_INET;
-        so_ad.sin_port = htons(socket_id);	/* @@@ = pb_socket  */
+        so_ad.sin_port = htons(socket_id);      /* @@@ = pb_socket  */
         if (do_connect){
             if (connect(*psocket, (struct sockaddr*)&so_ad, 16)) {
                 return "";
@@ -467,10 +467,10 @@ aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size)
     aisc_talking_func_long function;
     aisc_talking_func_long *functions;
     aisc_talking_func_double dfunction;
-/*     long             (*function)(...); */
-/*     typedef		long (*tfunction)(...); */
-/*     tfunction       *functions; */
-/*      double          (*dfunction)(...);  */
+    /*     long             (*function)(...); */
+    /*     typedef          long (*tfunction)(...); */
+    /*     tfunction       *functions; */
+    /*      double          (*dfunction)(...);  */
 
     long             len;
     long             erg = 0;
@@ -494,7 +494,7 @@ aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size)
 
     AISC_DUMP_SEP();
     AISC_DUMP(aisc_talking_get, int, object_type);
-    
+
     while (!aisc_server_error && (in_pos < size)) {
         code = in_buf[in_pos];
         attribute = code & 0x0000ffff;
@@ -537,7 +537,7 @@ aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size)
                 AISC_DUMP(aisc_talking_get, int, erg);
                 out_buf[out_pos++] = erg;
                 break;
-                
+
             case AISC_ATTR_DOUBLE:
                 AISC_DUMP(aisc_talking_get, double, derg);
                 out_buf[out_pos++] = ((int *) &derg)[0];
@@ -553,7 +553,7 @@ aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size)
                 }
 
                 AISC_DUMP(aisc_talking_get, charPtr, (char*)erg);
-                
+
                 len += 1;
                 len /= sizeof(long);
                 len++;
@@ -572,7 +572,7 @@ aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size)
 
                     if (bs->data && bs->size)
                         aisc_s_add_to_bytes_queue(bs->data,bs->size);
-                    out_buf[out_pos++] = bs->size;		/* size */
+                    out_buf[out_pos++] = bs->size;              /* size */
                     break;
                 }
             default:
@@ -625,13 +625,13 @@ long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object, int ob
 
     aisc_talking_func_long function;
     aisc_talking_func_long *functions;
-/*     long	(*function)(...); */
-/*     typedef		long (*tfunction)(...); */
-/*     tfunction       *functions; */
+    /*     long     (*function)(...); */
+    /*     typedef          long (*tfunction)(...); */
+    /*     tfunction       *functions; */
     in_pos = out_pos = 0;
     aisc_server_index = -1;
-    aisc_server_error	= NULL;
-    object_type 	= (object_type &0x00ff0000);
+    aisc_server_error   = NULL;
+    object_type         = (object_type &0x00ff0000);
 
     attribute = 0;
     if (object_type > (AISC_MAX_OBJECT*0x10000)) {
@@ -641,8 +641,8 @@ long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object, int ob
         aisc_server_error = test_address_valid((void *)object,object_type);
     }
     object_type = object_type>>(16);
-    functions	= aisc_talking_functions_set[object_type];
-    if (!functions)	{
+    functions   = aisc_talking_functions_set[object_type];
+    if (!functions)     {
         sprintf(error_buf,"OBJECT %x HAS NO ATTRIBUTES",
                 object_type);
         aisc_server_error = error_buf;
@@ -650,11 +650,11 @@ long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object, int ob
 
     AISC_DUMP_SEP();
     AISC_DUMP(aisc_talking_sets, int, object_type);
-    
+
     while (!aisc_server_error &&(in_pos<size)) {
-        code		= in_buf[in_pos++];
-        attribute	= code &0x0000ffff;
-        type 		= code &0xff000000;
+        code            = in_buf[in_pos++];
+        attribute       = code &0x0000ffff;
+        type            = code &0xff000000;
         if (attribute > AISC_MAX_ATTR) {
             sprintf(error_buf,"ATTRIBUTE %li DOESNT EXIST",
                     attribute);
@@ -678,14 +678,14 @@ long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object, int ob
         AISC_DUMP(aisc_talking_sets, int, type);
 
         switch(type){
-            case	AISC_ATTR_INT:
-            case	AISC_ATTR_COMMON:
+            case        AISC_ATTR_INT:
+            case        AISC_ATTR_COMMON:
 
                 AISC_DUMP(aisc_talking_sets, long, in_buf[in_pos]);
-                
+
                 function((long)object,in_buf[in_pos++]);
                 break;
-            case	AISC_ATTR_DOUBLE:
+            case        AISC_ATTR_DOUBLE:
                 {
                     double dummy;
                     ptr = (long*)&dummy;
@@ -693,25 +693,25 @@ long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object, int ob
                     *ptr++ = (long)in_buf[in_pos++];
 
                     AISC_DUMP(aisc_talking_sets, double, dummy);
-                    
+
                     function((long)object, dummy );
                     break;
                 }
-            case	AISC_ATTR_STRING:
+            case        AISC_ATTR_STRING:
                 {
                     char *str = strdup((char *)&(in_buf[in_pos+1]));
 
                     AISC_DUMP(aisc_talking_sets, charPtr, str);
-                    
+
                     function((long)object, str);
                     in_pos    += in_buf[in_pos]+1;
                     break;
                 }
-            case	AISC_ATTR_BYTES:
+            case        AISC_ATTR_BYTES:
                 bsize = (int)in_buf[in_pos++];
 
                 AISC_DUMP(aisc_talking_sets, int, bsize);
-                
+
                 if (bsize){
                     ptr = (long*)calloc(sizeof(char),bsize);
                     blen = aisc_s_read(aisc_server_con,(char *)ptr,bsize);
@@ -748,31 +748,31 @@ long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object, int ob
 }
 
 long aisc_talking_set(long *in_buf,int size, long *out_buf,int max_size)
-{	int in_pos,out_pos;
- int	object_type;
- long	object;
- in_pos = out_pos = 0;
- aisc_server_error	= NULL;
- max_size = 0;
- object = in_buf[in_pos++];
- object_type 	= ((int)in_buf[in_pos++])& 0x00ff0000;
- return aisc_talking_sets(&(in_buf[in_pos]),
-                          size-in_pos,out_buf,(long *)object,object_type);
+{       int in_pos,out_pos;
+    int    object_type;
+    long   object;
+    in_pos = out_pos = 0;
+    aisc_server_error      = NULL;
+    max_size = 0;
+    object = in_buf[in_pos++];
+    object_type    = ((int)in_buf[in_pos++])& 0x00ff0000;
+    return aisc_talking_sets(&(in_buf[in_pos]),
+                             size-in_pos,out_buf,(long *)object,object_type);
 }
 
 long aisc_talking_nset(long *in_buf,int size, long *out_buf,int max_size)
-{	int in_pos,out_pos;
- long	error;
- int	object_type;
- long	object;
- in_pos = out_pos = 0;
- aisc_server_error	= NULL;
- max_size = 0;
- object = in_buf[in_pos++];
- object_type 	= (int)(in_buf[in_pos++]& 0x00ff0000);
- error =  aisc_talking_sets(&(in_buf[in_pos]),
-                            size-in_pos,out_buf,(long *)object,object_type);
- return AISC_NO_ANSWER;
+{       int in_pos,out_pos;
+    long   error;
+    int    object_type;
+    long   object;
+    in_pos = out_pos = 0;
+    aisc_server_error      = NULL;
+    max_size = 0;
+    object = in_buf[in_pos++];
+    object_type    = (int)(in_buf[in_pos++]& 0x00ff0000);
+    error =  aisc_talking_sets(&(in_buf[in_pos]),
+                               size-in_pos,out_buf,(long *)object,object_type);
+    return AISC_NO_ANSWER;
 }
 
 static struct aisc_static_set_mem {
@@ -862,7 +862,7 @@ aisc_talking_copy(long *in_buf, int size, long *out_buf, int max_size)
 
     aisc_talking_func_longp function;
     aisc_talking_func_longp *functions;
-/*     long             *(**functions)(...), *(*function)(...); */
+    /*     long             *(**functions)(...), *(*function)(...); */
 
     int             i;
     long            *erg =0 ;
@@ -985,7 +985,7 @@ aisc_talking_find(long *in_buf, int size, long *out_buf, int max_size)
     }
 }
 
-extern int	 *aisc_main;
+extern int       *aisc_main;
 
 long
 aisc_talking_init(long *in_buf, int size, long *out_buf, int max_size)
@@ -1055,16 +1055,16 @@ long
 aisc_talking_debug_info(long *in_buf,int  size,long *out_buf,int  max_size)
 {
     int             in_pos, out_pos;
-    long		object_type, attribute;
+    long                object_type, attribute;
 
     aisc_talking_func_long *functionsg;
     aisc_talking_func_long *functionss;
     aisc_talking_func_longp *functions;
 
-/*     typedef		long (*tfunction)(...); */
-/*     typedef		long *(*tfunction2)(...); */
-/*     tfunction       *functionsg; */
-/*     tfunction       *functionss; */
+    /*     typedef          long (*tfunction)(...); */
+    /*     typedef          long *(*tfunction2)(...); */
+    /*     tfunction       *functionsg; */
+    /*     tfunction       *functionss; */
     /*     tfunction2      *functions; */
 
     int             i;
@@ -1092,31 +1092,31 @@ aisc_talking_debug_info(long *in_buf,int  size,long *out_buf,int  max_size)
         if (!(functionsg=aisc_talking_functions_get[object_type])) {
             out_buf[1] = 2;
         }else{
-            if (!functionsg[attribute]) 	out_buf[1] = 1;
+            if (!functionsg[attribute])         out_buf[1] = 1;
         };
 
         if (!(functionss=aisc_talking_functions_set[object_type])) {
             out_buf[2] = 2;
         }else{
-            if (!functionss[attribute]) 	out_buf[2] = 1;
+            if (!functionss[attribute])         out_buf[2] = 1;
         };
 
         if (!(functions=aisc_talking_functions_find[object_type])) {
             out_buf[3] = 2;
         }else{
-            if (!functions[attribute]) 	out_buf[3] = 1;
+            if (!functions[attribute])  out_buf[3] = 1;
         };
 
         if (!(functions=aisc_talking_functions_create[object_type])) {
             out_buf[4] = 2;
         }else{
-            if (!functions[attribute]) 	out_buf[4] = 1;
+            if (!functions[attribute])  out_buf[4] = 1;
         };
 
         if (!(functions=aisc_talking_functions_copy[object_type])) {
             out_buf[5] = 2;
         }else{
-            if (!functions[attribute]) 	out_buf[5] = 1;
+            if (!functions[attribute])  out_buf[5] = 1;
         };
 
     }
@@ -1165,8 +1165,8 @@ int aisc_broadcast(struct Hs_struct *hs, int message_type, const char *message)
 
 int aisc_private_message(int socket, int message_type, char *message)
 {
-    int	len;
-    int	size;
+    int len;
+    int size;
     long *out_buf;
     len = 1;
     if (!message) size = 0; else size = strlen(message);
@@ -1355,7 +1355,7 @@ struct Hs_struct *aisc_accept_calls(struct Hs_struct *hs)
                 }
 
                 hs->nsoc--;
-                if (si == hs->soci) {	/* first one */
+                if (si == hs->soci) {   /* first one */
                     hs->soci = si->next;
                 } else {
                     si_last->next = si->next;
@@ -1410,7 +1410,7 @@ int aisc_get_key(int *obj)
     return *obj;
 }
 
-extern "C" int aisc_add_destroy_callback(aisc_callback_func callback, long clientdata) {	/* call from server function */
+extern "C" int aisc_add_destroy_callback(aisc_callback_func callback, long clientdata) {        /* call from server function */
     struct Socinf  *si;
     int             socket = aisc_server_con;
     struct Hs_struct *hs = aisc_server_hs;
@@ -1425,7 +1425,7 @@ extern "C" int aisc_add_destroy_callback(aisc_callback_func callback, long clien
     return socket;
 }
 
-void aisc_remove_destroy_callback() {	/* call from server
+void aisc_remove_destroy_callback() {   /* call from server
                                          * function */
     struct Socinf  *si;
     int             socket = aisc_server_con;

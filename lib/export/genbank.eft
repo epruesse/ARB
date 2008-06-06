@@ -1,4 +1,4 @@
-SUFFIX		gb
+SUFFIX          gb
 BEGIN
 *(|define(formatMeta, "split(\\\"[\\\",1)|split(\\\"|\\\",0)|crop(\\\" \\\")|dropempty|merge(\\\"\n\\\")|format(firsttab=0;tab=12;width=70;forcenl=\\\"\n\\\")"))\
 LOCUS       *(name|tab(10))*(|export_sequence|len(.-)|pretab(7)) bp ss-*(|sequence_type|upper|tab(5))           *(|sequence_type|upper) *(date:* *=*1)

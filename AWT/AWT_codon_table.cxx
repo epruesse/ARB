@@ -12,128 +12,128 @@
 
 
 struct AWT_Codon_Code_Definition AWT_codon_def[AWT_CODON_TABLES+1] =
-{
-    //   0000000001111111111222222222233333333334444444444555555555566666
-    //   1234567890123456789012345678901234567890123456789012345678901234
+    {
+        //   0000000001111111111222222222233333333334444444444555555555566666
+        //   1234567890123456789012345678901234567890123456789012345678901234
 
-    //	"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",  base1
-    //	"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",  base2
-    //	"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"   base3
-    {
-        " (1) Standard Code",
-        "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG", // The first code in this table has to be 'Standard Code'!
-        "---M---------------M---------------M----------------------------",
-        1
-    },
-    {
-        " (2) Vertebrate Mitochondrial Code",
-        "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG",
-        "--------------------------------MMMM---------------M------------",
-        2
-    },
-    {
-        " (3) Yeast Mitochondrial Code",
-        "FFLLSSSSYY**CCWWTTTTPPPPHHQQRRRRIIMMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "-----------------------------------M----------------------------",
-        3
-    },
-    {
-    //   0000000001111111111222222222233333333334444444444555555555566666
-    //   1234567890123456789012345678901234567890123456789012345678901234
-    //	"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",  base1
-    //	"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",  base2
-    //	"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"   base3
-        " (4) Mold/Protozoan/Coelenterate Mitochondrial Code",
-        "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "--MM---------------M------------MMMM---------------M------------",
-        4
-    },
-    {
-        " (5) Invertebrate Mitochondrial Code",
-        "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSSSVVVVAAAADDEEGGGG",
-        "---M----------------------------MMMM---------------M------------",
-        5
-    },
-    {
-        " (6) Ciliate Macronuclear and Dasycladacean",
-        "FFLLSSSSYYQQCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "-----------------------------------M----------------------------",
-        6
-    },
-    {
-        " (9) Echinoderm Mitochondrial Code",
-        "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
-        "-----------------------------------M----------------------------",
-        9
-    },
-    {
-        "(10) Euplotid Nuclear Code",
-        "FFLLSSSSYY**CCCWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "-----------------------------------M----------------------------",
-        10
-    },
-    {
-    //   0000000001111111111222222222233333333334444444444555555555566666
-    //   1234567890123456789012345678901234567890123456789012345678901234
-    //	"TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",  base1
-    //	"TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",  base2
-    //	"TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"   base3
-        "(11) Bacterial and Plant Plastid Code",
-        "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "---M---------------M------------MMMM---------------M------------",
-        11
-    },
-    {
-        "(12) Alternative Yeast Nuclear Code",
-        "FFLLSSSSYY**CC*WLLLSPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "-------------------M---------------M----------------------------",
-        12
-    },
-    {
-        "(13) Ascidian Mitochondrial Code",
-        "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSGGVVVVAAAADDEEGGGG",
-        "-----------------------------------M----------------------------",
-        13
-    },
-    {
-        "(14) Flatworm Mitochondrial Code",
-        "FFLLSSSSYYY*CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
-        "-----------------------------------M----------------------------",
-        14
-    },
-    {
-        "(15) Blepharisma Nuclear Code",
-        "FFLLSSSSYY*QCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "-----------------------------------M----------------------------",
-        15
-    },
-    {
-        "(16) Chlorophycean Mitochondrial Code",
-        "FFLLSSSSYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "-----------------------------------M----------------------------",
-        16
-    },
-    {
-        "(21) Trematode Mitochondrial Code",
-        "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
-        "-----------------------------------M---------------M------------",
-        21
-    },
-    {
-        "(22) Scenedesmus obliquus mitochondrial Code",
-        "FFLLSS*SYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "-----------------------------------M----------------------------",
-        22
-    },
-    {
-        "(23) Thraustochytrium Mitochondrial Code",
-        "FF*LSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
-        "--------------------------------M--M---------------M------------",
-        23
-    },
+        //  "TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",  base1
+        //  "TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",  base2
+        //  "TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"   base3
+        {
+            " (1) Standard Code",
+            "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG", // The first code in this table has to be 'Standard Code'!
+            "---M---------------M---------------M----------------------------",
+            1
+        },
+        {
+            " (2) Vertebrate Mitochondrial Code",
+            "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG",
+            "--------------------------------MMMM---------------M------------",
+            2
+        },
+        {
+            " (3) Yeast Mitochondrial Code",
+            "FFLLSSSSYY**CCWWTTTTPPPPHHQQRRRRIIMMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
+            "-----------------------------------M----------------------------",
+            3
+        },
+        {
+            //   0000000001111111111222222222233333333334444444444555555555566666
+            //   1234567890123456789012345678901234567890123456789012345678901234
+            //  "TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",  base1
+            //  "TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",  base2
+            //  "TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"   base3
+            " (4) Mold/Protozoan/Coelenterate Mitochondrial Code",
+            "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
+            "--MM---------------M------------MMMM---------------M------------",
+            4
+        },
+        {
+            " (5) Invertebrate Mitochondrial Code",
+            "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSSSVVVVAAAADDEEGGGG",
+            "---M----------------------------MMMM---------------M------------",
+            5
+        },
+        {
+            " (6) Ciliate Macronuclear and Dasycladacean",
+            "FFLLSSSSYYQQCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
+            "-----------------------------------M----------------------------",
+            6
+        },
+        {
+            " (9) Echinoderm Mitochondrial Code",
+            "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
+            "-----------------------------------M----------------------------",
+            9
+        },
+        {
+            "(10) Euplotid Nuclear Code",
+            "FFLLSSSSYY**CCCWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
+            "-----------------------------------M----------------------------",
+            10
+        },
+        {
+            //   0000000001111111111222222222233333333334444444444555555555566666
+            //   1234567890123456789012345678901234567890123456789012345678901234
+            //  "TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",  base1
+            //  "TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",  base2
+            //  "TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"   base3
+            "(11) Bacterial and Plant Plastid Code",
+            "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
+            "---M---------------M------------MMMM---------------M------------",
+            11
+        },
+        {
+            "(12) Alternative Yeast Nuclear Code",
+            "FFLLSSSSYY**CC*WLLLSPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
+            "-------------------M---------------M----------------------------",
+            12
+        },
+        {
+            "(13) Ascidian Mitochondrial Code",
+            "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSGGVVVVAAAADDEEGGGG",
+            "-----------------------------------M----------------------------",
+            13
+        },
+        {
+            "(14) Flatworm Mitochondrial Code",
+            "FFLLSSSSYYY*CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
+            "-----------------------------------M----------------------------",
+            14
+        },
+        {
+            "(15) Blepharisma Nuclear Code",
+            "FFLLSSSSYY*QCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
+            "-----------------------------------M----------------------------",
+            15
+        },
+        {
+            "(16) Chlorophycean Mitochondrial Code",
+            "FFLLSSSSYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
+            "-----------------------------------M----------------------------",
+            16
+        },
+        {
+            "(21) Trematode Mitochondrial Code",
+            "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNNKSSSSVVVVAAAADDEEGGGG",
+            "-----------------------------------M---------------M------------",
+            21
+        },
+        {
+            "(22) Scenedesmus obliquus mitochondrial Code",
+            "FFLLSS*SYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
+            "-----------------------------------M----------------------------",
+            22
+        },
+        {
+            "(23) Thraustochytrium Mitochondrial Code",
+            "FF*LSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
+            "--------------------------------M--M---------------M------------",
+            23
+        },
 
-    { 0, 0, 0, 0 } // end of table-marker
-};
+        { 0, 0, 0, 0 } // end of table-marker
+    };
 
 #define MAX_EMBL_TRANSL_TABLE_VALUE 23 // maximum known EMBL transl_table value
 
@@ -161,12 +161,12 @@ int AWT_embl_transl_table_2_arb_code_nr(int embl_index) {
     if (embl_index<0 || embl_index>MAX_EMBL_TRANSL_TABLE_VALUE) return -1;
 
     int arb_code_nr = arb_code_nr_table[embl_index];
-#ifdef DEBUG    
-    if (arb_code_nr != -1) {    
+#ifdef DEBUG
+    if (arb_code_nr != -1) {
         awt_assert(arb_code_nr >= 0 && arb_code_nr < AWT_CODON_TABLES);
         awt_assert(AWT_arb_code_nr_2_embl_transl_table(arb_code_nr) == embl_index);
     }
-#endif    
+#endif
     return arb_code_nr;
 }
 
@@ -272,33 +272,33 @@ const char* AWT_get_codon_code_name(int code) {
 
 static const char *protein_name[26+1] = {
     "Ala", // A
-        "Asx", // B
-        "Cys", // C
-        "Asp", // D
-        "Glu", // E
-        "Phe", // F
-        "Gly", // G
-        "His", // H
-        "Ile", // I
-        0,     // J
-        "Lys", // K
-        "Leu", // L
-        "Met", // M
-        "Asn", // N
-        0,     // O
-        "Pro", // P
-        "Gln", // Q
-        "Arg", // R
-        "Ser", // S
-        "Thr", // T
-        0,     // U
-        "Val", // V
-        "Trp", // W
-        "Xxx", // X
-        "Tyr", // Y
-        "Glx", // Z
-        0
-        };
+    "Asx", // B
+    "Cys", // C
+    "Asp", // D
+    "Glu", // E
+    "Phe", // F
+    "Gly", // G
+    "His", // H
+    "Ile", // I
+    0,     // J
+    "Lys", // K
+    "Leu", // L
+    "Met", // M
+    "Asn", // N
+    0,     // O
+    "Pro", // P
+    "Gln", // Q
+    "Arg", // R
+    "Ser", // S
+    "Thr", // T
+    0,     // U
+    "Val", // V
+    "Trp", // W
+    "Xxx", // X
+    "Tyr", // Y
+    "Glx", // Z
+    0
+};
 
 const char *AWT_get_protein_name(char protein) {
     if (protein=='*') return "End";
@@ -466,7 +466,7 @@ bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_
                         fail_reason = GBS_global_string("Not all IUPAC-combinations of '%s' translate", dna_copy);
                     }
 #if defined(DEBUG) && 0
-                    printf("result 	= %i\n", all_are_codons);
+                    printf("result      = %i\n", all_are_codons);
 #endif
                 }
             }

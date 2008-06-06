@@ -1,4 +1,4 @@
-SUFFIX		embl
+SUFFIX          embl
 BEGIN
 *(|define(formatMeta,"split(\\"[\\",1)|crop(\\" \\")|dropempty|format(firsttab=0;tab=0;width=73;forcenl=\\"|\n\\")|merge(\\"\n\\")"))\
 ID   *(name)   *(|sequence_type); *(|export_sequence|len(.-)) BP.

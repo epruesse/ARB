@@ -14,30 +14,30 @@
 
 
 /* Make NODE into a singleton ring.  */
-#define RING_SINGLETON(node, link)		\
-  ((node)->link ## _prev = (node),		\
-   (node)->link ## _next = (node))
+#define RING_SINGLETON(node, link)              \
+    ((node)->link ## _prev = (node),            \
+     (node)->link ## _next = (node))
 
 /* Return non-zero iff NODE forms a singleton ring.  */
-#define RING_IS_SINGLETON(node, link)		\
-  ((node)->link ## _prev == (node))
+#define RING_IS_SINGLETON(node, link)           \
+    ((node)->link ## _prev == (node))
 
 /* Insert NEW after NODE.  */
-#define RING_INSERT_AFTER(new, node, link)		\
-  ((new)->link ## _prev = (node),			\
-   (new)->link ## _next = (node)->link ## _next,	\
-   (node)->link ## _next->link ## _prev = (new),	\
-   (node)->link ## _next = (new))
+#define RING_INSERT_AFTER(new, node, link)              \
+    ((new)->link ## _prev = (node),                     \
+     (new)->link ## _next = (node)->link ## _next,      \
+     (node)->link ## _next->link ## _prev = (new),      \
+     (node)->link ## _next = (new))
 
 /* Insert NEW before NODE.  */
-#define RING_INSERT_BEFORE(new, node, link)		\
-  ((new)->link ## _next = (node),			\
-   (new)->link ## _prev = (node)->link ## _prev,	\
-   (node)->link ## _prev->link ## _next = (new),	\
-   (node)->link ## _prev = (new))
+#define RING_INSERT_BEFORE(new, node, link)             \
+    ((new)->link ## _next = (node),                     \
+     (new)->link ## _prev = (node)->link ## _prev,      \
+     (node)->link ## _prev->link ## _next = (new),      \
+     (node)->link ## _prev = (new))
 
 /* Remove NODE from whatever ring it's in.  This affects NODE's
    immediate neighbors; NODE itself is left unchanged.  */
-#define RING_REMOVE(node, link)						\
-  ((node)->link ## _prev->link ## _next = (node)->link ## _next,	\
-   (node)->link ## _next->link ## _prev = (node)->link ## _prev)
+#define RING_REMOVE(node, link)                                         \
+    ((node)->link ## _prev->link ## _next = (node)->link ## _next,      \
+     (node)->link ## _next->link ## _prev = (node)->link ## _prev)

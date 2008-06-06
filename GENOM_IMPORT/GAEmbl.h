@@ -43,28 +43,28 @@
 
 namespace gellisary
 {
-	class GAEmbl : public GAFile
-	{
-		private:
-			bool check_line_identifier(const std::string &);
-			void dissectGenomeSequenceLine(const std::string &);
-			void dissectMetaLine(const std::string &);
-			void dissectTableFeatureLine(const std::string &);
-			bool line_examination(const std::string &);
-			void emptyMeta();
-			void emptyTable();
-			void emptySequence();
-			void dissectLocation(const std::string &);
-			
-		public:
-	#if defined(DEBUG)
-			GAEmbl(GALogger &, GAARB &, std::string &);
-	#else
-			GAEmbl(GAARB &, std::string &);
-	#endif
-			virtual ~GAEmbl();
-			virtual void parse();
-	};
+    class GAEmbl : public GAFile
+    {
+    private:
+        bool check_line_identifier(const std::string &);
+        void dissectGenomeSequenceLine(const std::string &);
+        void dissectMetaLine(const std::string &);
+        void dissectTableFeatureLine(const std::string &);
+        bool line_examination(const std::string &);
+        void emptyMeta();
+        void emptyTable();
+        void emptySequence();
+        void dissectLocation(const std::string &);
+
+    public:
+#if defined(DEBUG)
+        GAEmbl(GALogger &, GAARB &, std::string &);
+#else
+        GAEmbl(GAARB &, std::string &);
+#endif
+        virtual ~GAEmbl();
+        virtual void parse();
+    };
 };
 
 #else

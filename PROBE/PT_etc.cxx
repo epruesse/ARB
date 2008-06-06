@@ -30,7 +30,7 @@ void pt_export_error(PT_local *locs, const char *error)
 
 static const gene_struct *get_gene_struct_by_internal_gene_name(const char *gene_name) {
     gene_struct to_search(gene_name, "", "");
-    
+
     gene_struct_index_internal::const_iterator found = gene_struct_internal2arb.find(&to_search);
     return (found == gene_struct_internal2arb.end()) ? 0 : *found;
 }
@@ -85,8 +85,8 @@ extern "C" const char *virt_fullname(PT_probematch * ml)
 /* copy one mismatch table to a new one allocating memory */
 int *table_copy(int *mis_table, int length)
 {
-    int	*result_table;
-    int	i;
+    int *result_table;
+    int i;
 
     result_table = (int *)calloc(length, sizeof(int));
     for (i=0; i<length; i++)
@@ -104,7 +104,7 @@ void table_add(int *mis_tabled, int *mis_tables, int length)
 #define MAX_LIST_PART_SIZE 50
 
 static const char *get_list_part(const char *list, int& offset) {
-    // scans strings with format "xxxx#yyyy#zzzz" 
+    // scans strings with format "xxxx#yyyy#zzzz"
     // your first call should be with offset == 0
     //
     // returns : static copy of each part or 0 when done
@@ -160,7 +160,7 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
 
     int noff = 0;
     int coff = 0;
-    
+
     GBS_strstruct *not_found = 0;
 
     while (noff >= 0) {
@@ -281,7 +281,7 @@ void PT_inc_base_string_count(char *str,char initval, char maxval, int size)
         str[i]++;
         if (str[i] >= maxval) {
             str[i] = initval;
-            if (!i) str[i]=255;	/* end flag */
+            if (!i) str[i]=255; /* end flag */
         }else{
             break;
         }

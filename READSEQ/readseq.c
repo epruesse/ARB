@@ -89,9 +89,9 @@ const char *title
    1Feb93
               = revert GenBank output to a fixed left number width which
                other software depends on.
-	      = fix for MSF input to handle symbols in names
-	      = fix bug for possible memory overrun when truncating seqs for
-		Phylip or Paup formats (thanks Anthony Persechini)
+              = fix for MSF input to handle symbols in names
+              = fix bug for possible memory overrun when truncating seqs for
+                Phylip or Paup formats (thanks Anthony Persechini)
 
  */
 
@@ -264,7 +264,7 @@ char *formatstr( short format)
 }
 
 int rs_isdigit(int c){
-	return isdigit(c);
+        return isdigit(c);
 }
 
 int parseformat( char *name2)
@@ -1008,9 +1008,9 @@ long      outindexmax= 0, noutindex= 0, *outindex = NULL;
           else if (dolower)
             for (i = 0; i<seqlen; i++) seq[i] = to_lower(seq[i]);
 
-	  if (outform==kPhylip){
+          if (outform==kPhylip){
             for (i = 0; i<seqlen; i++) if (seq[i] == '.') seq[i] = '?';
-	  }
+          }
 
           if (doreverse) {
             long  j, k;
@@ -1024,9 +1024,9 @@ long      outindexmax= 0, noutindex= 0, *outindex = NULL;
 
           if ((gPretty.isactive || outform==kPAUP) && gPretty.domatch && firstseq != NULL) {
             for (i=0; i<seqlen; i++){
-		if (seq[i] == gPretty.matchchar) seq[i] = 'o';
+                if (seq[i] == gPretty.matchchar) seq[i] = 'o';
               if (seq[i]==firstseq[i]) seq[i]= gPretty.matchchar;
-	    }
+            }
           }
 
 

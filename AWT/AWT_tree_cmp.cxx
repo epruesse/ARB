@@ -25,7 +25,7 @@ AWT_species_set_root::AWT_species_set_root(GBDATA *gb_maini,long nspeciesi){
     for (i=0;i<256;i++){
         int j = i;
         int count = 0;
-        while (j) {		// count bits
+        while (j) {             // count bits
             if (j&1) count ++;
             j = j>>1;
         }
@@ -141,7 +141,7 @@ AWT_species_set *AWT_species_set_root::move_tree_2_ssr(AP_tree *node){
     if (node->is_leaf){
         this->add(node->name);
         ss = new AWT_species_set(node,this,node->name);
-        // 	ssr->add(ss);
+        //      ssr->add(ss);
     }else{
         AWT_species_set *ls = this->move_tree_2_ssr(node->leftson);
         AWT_species_set *rs = this->move_tree_2_ssr(node->rightson);
@@ -154,9 +154,9 @@ AWT_species_set *AWT_species_set_root::move_tree_2_ssr(AP_tree *node){
 // --------------------------------------------------------------------------------
 //     AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_source,FILE *log,AW_BOOL compare_node_info)
 // --------------------------------------------------------------------------------
-/*	Go through all node of the source tree and search for the best
- *	matching node in dest_tree (meaning searching ssr->sets)
- *	If a match is found, set ssr->sets to this match)
+/*      Go through all node of the source tree and search for the best
+ *      matching node in dest_tree (meaning searching ssr->sets)
+ *      If a match is found, set ssr->sets to this match)
  */
 
 AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_source,FILE *log,AW_BOOL compare_node_info){
@@ -172,7 +172,7 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_sour
 
     ss = new AWT_species_set(tree_source,this,ls,rs); // Generate new bitstring
     if (compare_node_info){
-        int mismatches = this->search(ss,log);	// Search optimal position
+        int mismatches = this->search(ss,log);  // Search optimal position
         delete ss->node->remark_branch;
         ss->node->remark_branch = 0;
         if (mismatches){
@@ -182,12 +182,12 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_sour
         }
     }else{
         if(tree_source->name){
-            this->search(ss,log);	// Search optimal position
+            this->search(ss,log);       // Search optimal position
         }
     }
     delete rs;
     delete ls;
-    return ss;			// return bitstring for this node
+    return ss;                  // return bitstring for this node
 }
 
 // --------------------------------------------------------------------------------
@@ -220,15 +220,15 @@ GB_ERROR AWT_species_set_root::copy_node_infos(FILE *log, AW_BOOL delete_old_nod
         }
 
         if (set->node->gb_node && (delete_old_nodes || insert_new_node)) { // There is already a node, delete old
-	    if (set->node->name == 0) {
-		GBDATA *gb_name = GB_entry(set->node->gb_node, "group_name");
-		if (gb_name) {
-		    set->node->name = GB_read_string(gb_name);
-		}
-		else {
-		    set->node->name = strdup("<gb_node w/o name>");
-		}
-	    }	
+            if (set->node->name == 0) {
+                GBDATA *gb_name = GB_entry(set->node->gb_node, "group_name");
+                if (gb_name) {
+                    set->node->name = GB_read_string(gb_name);
+                }
+                else {
+                    set->node->name = strdup("<gb_node w/o name>");
+                }
+            }
 
             old_group_name = strdup(set->node->name); // store old_group_name to rename new inserted node
 #if defined(DEBUG)
@@ -299,7 +299,7 @@ GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree
         error = source->load(rsource, 1, GB_FALSE, GB_FALSE, 0, 0); // link to database
         if (error) break;
         aw_status("Load Tree 2");
-        error = dest->load(rdest, 1, GB_FALSE, GB_FALSE, 0, 0);	// link also
+        error = dest->load(rdest, 1, GB_FALSE, GB_FALSE, 0, 0); // link also
         if (error) break;
 
         long nspecies = dest->arb_tree_leafsum2();
@@ -327,8 +327,8 @@ GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree
         AWT_species_set *new_root_setr = ssr->search(root_setr,&dummy);
         AP_tree *new_rootl = (AP_tree *)new_root_setl->node;
         AP_tree *new_rootr = (AP_tree *)new_root_setr->node;
-        new_rootl->set_root();	// set root correctly
-        new_rootr->set_root();	// set root correctly
+        new_rootl->set_root();  // set root correctly
+        new_rootr->set_root();  // set root correctly
         aw_status("Save Tree");
         AP_tree *root = new_rootr;
         while (root->father) root = root->father;

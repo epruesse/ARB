@@ -217,7 +217,7 @@ void AP_LIST::push(void *elem) {
     return;
 }
 
-void *	AP_LIST::pop() {
+void *AP_LIST::pop() {
     AP_list_elem * pntr = first;
     if (!first) return 0;
     void * node = first->node;
@@ -286,4 +286,3 @@ void AP_tree_stack::print() {
     }
     return;
 }
-

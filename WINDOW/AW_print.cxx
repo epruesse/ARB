@@ -9,30 +9,26 @@
 #include "aw_commn.hxx"
 #include "aw_print.hxx"
 
-//*****************************************************************************************
-//			device_print
-//*****************************************************************************************
-
+// ------------------------
+//      AW_device_print
+// ------------------------
 AW_device_print::AW_device_print(AW_common *commoni) : AW_device(commoni) {
     out = 0;
 }
 
-void AW_device_print::init() {
-    ;
-}
+void AW_device_print::init() {}
 
 AW_DEVICE_TYPE AW_device_print::type(void) { return AW_DEVICE_PRINTER; }
 
-/******************************************************************************************/
-/* line  text  zoomtext  box *******************************************************************************************/
-/******************************************************************************************/
-
+// ----------------------------------
+//      line  text  zoomtext  box
+// ----------------------------------
 
 int AW_device_print::line(int gc, AW_pos x0,AW_pos y0, AW_pos x1,AW_pos y1, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     class AW_GC_Xm *gcm      = AW_MAP_GC(gc);
     AW_pos          X0,Y0,X1,Y1; // Transformed pos
     AW_pos          CX0,CY0,CX1,CY1; // Clipped line
-    int	            drawflag = 0;
+    int             drawflag = 0;
 
     if(filteri & filter) {
         this->transform(x0,y0,X0,Y0);
@@ -112,12 +108,12 @@ const char *AW_device_print::open(const char *path)
             "Landscape\n"       // "Portrait"
             "Center\n"          // "Flush Left"
             "Metric\n"          // "Inches"
-            "A4\n" 
+            "A4\n"
             "100.0\n"           // export&print magnification %
             "Single\n"          // Single/Multiple Pages
             "-3\n");            // background=transparent for gif export
-    fprintf(out,"80 2\n");	// 80dbi, 2: origin in upper left corner
-    
+    fprintf(out,"80 2\n");      // 80dbi, 2: origin in upper left corner
+
     if (color_mode) {
         for (int i=0; i<*common->data_colors_size; i++) {
             fprintf(out, "0 %d #%06lx\n", i+32, common->data_colors[0][i]);
@@ -156,12 +152,12 @@ int AW_device_print::box(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos widt
     int res;
     if (filled) {
         AW_pos q[8];
-        
+
         q[0] = x0;          q[1] = y0;
         q[2] = x0 + width;  q[3] = y0;
         q[4] = x0 + width;  q[5] = y0 + height;
         q[6] = x0;          q[7] = y0 + height;
-        
+
         res = this->filled_area(gc,4,q,filteri,cd1,cd2);
     }
     else {
@@ -196,7 +192,7 @@ int AW_device_print::circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos w
             AWUSE(cd1);
             AWUSE(cd2);
 
-            // Don't know how to use greylevel --ralf 
+            // Don't know how to use greylevel --ralf
             // short greylevel             = (short)(gcm->grey_level*22);
             // if (greylevel>21) greylevel = 21;
 
@@ -211,7 +207,7 @@ int AW_device_print::circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos w
                     line_width,
                     colorIdx, // before greylevel has been used here
                     filled ? colorIdx : -1,
-                    filled ? 20 : -1, 
+                    filled ? 20 : -1,
                     (int)CX0,(int)CY0,
                     (int)width,(int)height,
                     (int)CX0,(int)CY0,
@@ -224,15 +220,15 @@ int AW_device_print::circle(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos w
 int AW_device_print::filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2){
     int erg = 0;
     int i;
-    if (	!(filteri & this->filter) ) return 0;
+    if (        !(filteri & this->filter) ) return 0;
     erg |= AW_device::filled_area(gc,npoints,points,filteri,cd1,cd2);
-    if (!erg) return 0;				// no line visible -> no area fill
+    if (!erg) return 0;                         // no line visible -> no area fill
 
     AW_GC_Xm *gcm = AW_MAP_GC(gc);
     AW_pos    x,y;
-    AW_pos    X,Y;	        // Transformed pos
-    AW_pos    CX0,CY0,CX1,CY1;	// Clipped line
-    
+    AW_pos    X,Y;              // Transformed pos
+    AW_pos    CX0,CY0,CX1,CY1;  // Clipped line
+
     short greylevel             = (short)(gcm->grey_level*22);
     if (greylevel>21) greylevel = 21;
 
@@ -247,13 +243,13 @@ int AW_device_print::filled_area(int gc, int npoints, AW_pos *points, AW_bitset 
         y = points[2*i+1];
         this->transform(x,y,X,Y);
         this->box_clip(X,Y,0,0,CX0,CY0,CX1,CY1);
-        fprintf(out,"	%d %d\n",(int)CX0,(int)CY0);
+        fprintf(out,"   %d %d\n",(int)CX0,(int)CY0);
     }
     x = points[0];
     y = points[1];
     this->transform(x,y,X,Y);
     this->box_clip(X,Y,0,0,CX0,CY0,CX1,CY1);
-    fprintf(out,"	%d %d\n",(int)CX0,(int)CY0);
+    fprintf(out,"       %d %d\n",(int)CX0,(int)CY0);
 
     return 1;
 }

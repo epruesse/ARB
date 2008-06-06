@@ -21,9 +21,9 @@ typedef void (*AW_CB2)(AW_window*,AW_CL,AW_CL);
 typedef AW_window *(*AW_Window_Creator)(AW_root*,AW_CL);
 
 //--------------------------------------------------------------------------------
-// For Applications Using OpenGL Windows 
-// Variable "AW_alpha_Size_Supported" says whether the hardware (Graphics Card) 
-// supports alpha channel or not. Alpha channel is used for shading/ multi textures 
+// For Applications Using OpenGL Windows
+// Variable "AW_alpha_Size_Supported" says whether the hardware (Graphics Card)
+// supports alpha channel or not. Alpha channel is used for shading/ multi textures
 // in OpenGL applications.
 
 extern bool AW_alpha_Size_Supported;
@@ -35,7 +35,7 @@ extern bool AW_alpha_Size_Supported;
 #define AW_MESSAGE_TIME 2000
 #define AW_HEADER_MAIN  extern "C" { int XtAppInitialize(); } void aw_never_called_main(void) { XtAppInitialize(); }
 
-//======= Used in Tune background function ================================= 
+//======= Used in Tune background function =================================
 #define TUNE_BUTTON    8
 #define TUNE_INPUT     (-TUNE_BUTTON)
 #define TUNE_SUBMENU   0
@@ -112,9 +112,9 @@ void AW_normal_cursor(AW_root *);
 class AW_cb_struct {
 private:
 
-    AW_CL               cd1;
-    AW_CL               cd2;
-    class AW_cb_struct *next;
+    AW_CL         cd1;
+    AW_CL         cd2;
+    AW_cb_struct *next;
 
 public:
     // ************ This is not the public section *************
@@ -189,14 +189,14 @@ class AW_window {
 private:
     void all_menus_created();
     void create_toggle(const char *var_name, aw_toggle_data *tdata);
-    
+
 protected:
     AW_root *root;
 
     void check_at_pos( void );
     void create_devices(void);
     void set_background(const char *colorname, Widget w);
-    
+
 public:
 
     // ************ This is not the public section *************
@@ -252,13 +252,15 @@ public:
     // Converts GC to RGB float values to the range (0 - 1.0)
     const char *GC_to_RGB_float(AW_device *device, int gc, float& red, float& green, float& blue);
     void        _get_area_size(AW_area area, AW_rectangle *square);
-    int         label_widget( void *wgt, AW_label str, char *mnemonic=0 , int width =0 , int alignment =0 );
-    //***************************** *********************** ***********************************
-    //***************************** The read only   section ***********************************
-    //***************************** *********************** ***********************************
-    char       *window_name;    // window title
-    char       *window_defaults_name;
-    AW_BOOL     window_is_shown;
+    int         label_widget(void *wgt, AW_label str, char *mnemonic=0, int width =0, int alignment =0);
+
+    // ------------------------------
+    //      The read only section
+    // ------------------------------
+    
+    char    *window_name;       // window title
+    char    *window_defaults_name;
+    AW_BOOL  window_is_shown;
 
     int left_indent_of_horizontal_scrollbar;
     int top_indent_of_vertical_scrollbar;
@@ -270,9 +272,10 @@ public:
     AW_rectangle *picture;      // the result of tell scrolled
                                 // picture size
 
-    //***************************** *********************** ***********************************
-    //***************************** The real public section ***********************************
-    //***************************** *********************** ***********************************
+    // --------------------------------
+    //      The real public section
+    // --------------------------------
+    
     AW_root *get_root(void) { return root; };
 
     //******************* Global layout functions **********************
@@ -311,15 +314,15 @@ public:
 
     //******************* Get the devices **********************
     AW_device *get_device (AW_area area);
-    AW_device *get_click_device     (AW_area area, int mousex,int mousey, AW_pos max_distance_linei,
-                                     AW_pos max_distance_texti, AW_pos radi);
+    AW_device *get_click_device(AW_area area, int mousex,int mousey, AW_pos max_distance_linei,
+                                AW_pos max_distance_texti, AW_pos radi);
     AW_device *get_size_device  (AW_area area);
     AW_device *get_print_device (AW_area area);
 
     // ************** Create the menu buttons *********
-    void create_menu(   const char *id, AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = -1);
-    void insert_sub_menu(   const char *id, AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = -1);
-    void insert_menu_topic( const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+    void create_menu(const char *id, AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = -1);
+    void insert_sub_menu(const char *id, AW_label name, const char *mnemonic, const char *help_text = 0, AW_active mask = -1);
+    void insert_menu_topic(const char *id, AW_label name, const char *mnemonic, const char *help_text, AW_active mask, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
     void close_sub_menu(void);
 
     void insert_separator(void);
@@ -442,15 +445,15 @@ private:
     void insert_option_internal( AW_label choice_label, const char *mnemonic,const char *var_value,  const char *name_of_color, bool default_option);
     void insert_option_internal( AW_label choice_label, const char *mnemonic,int var_value,          const char *name_of_color, bool default_option);
     void insert_option_internal( AW_label choice_label, const char *mnemonic,float var_value,        const char *name_of_color, bool default_option);
-public: 
-    
+public:
+
     void insert_option         ( AW_label choice_label, const char *mnemonic, const char *var_value, const char *name_of_color = 0); // for string
     void insert_default_option ( AW_label choice_label, const char *mnemonic, const char *var_value, const char *name_of_color = 0 );
     void insert_option         ( AW_label choice_label, const char *mnemonic, int var_value,         const char *name_of_color = 0 ); // for int
     void insert_default_option ( AW_label choice_label, const char *mnemonic, int var_value,         const char *name_of_color = 0 );
     void insert_option         ( AW_label choice_label, const char *mnemonic, float var_value,       const char *name_of_color = 0 ); // for float
     void insert_default_option ( AW_label choice_label, const char *mnemonic, float var_value,       const char *name_of_color = 0 );
-    
+
     void update_option_menu( void );
     void update_option_menu( AW_option_menu_struct *); // dont use this
 
@@ -533,22 +536,11 @@ public:
 /// Extended by Daniel Koitzsch & Christian Becker 19-05-04
 class AW_window_menu_modes_opengl : public AW_window_menu_modes {
 private:
-    void    *AW_window_menu_modes_private;    // Do not use !!!
+    void *AW_window_menu_modes_private; // Do not use !!!
 public:
     AW_window_menu_modes_opengl(void);
     ~AW_window_menu_modes_opengl(void);
     virtual void init(AW_root *root, const char *wid, const char *windowname, int width, int height);
-	//void create_window_variables( void ) {
-	//}
-
-    /*void calculate_scrollbars(void) {}
-    void set_vertical_scrollbar_position(int position) {}
-    void set_horizontal_scrollbar_position(int position) {}
-    void set_vertical_change_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {}
-    void set_horizontal_change_callback(void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2) {}
-    void set_horizontal_scrollbar_left_indent(int indent) {}
-    void set_vertical_scrollbar_top_indent(int indent){}
-    void set_vertical_scrollbar_bottom_indent(int indent) {}*/
 };
 
 

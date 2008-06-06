@@ -4,7 +4,7 @@
 /* #include <malloc.h> */
 
 #include <sys/types.h>
-#include <netinet/in.h>		/* hton ntoh */
+#include <netinet/in.h>         /* hton ntoh */
 
 #include "adlocal.h"
 /*#include "arbdb.h"*/
@@ -205,13 +205,13 @@ GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main){
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     GBDATA *gb_key_data = gb_search(gb_main,GB_SYSTEM_FOLDER "/" GB_SYSTEM_KEY_DATA, GB_CREATE_CONTAINER,1);
     GBDATA *gb_key,*gb_next_key=0;
-    int	key;
+    int key;
 
     Main->gb_key_data = gb_key_data;
-    if (!Main->local_mode) return 0;	/* do not create anything at the client side */
+    if (!Main->local_mode) return 0;    /* do not create anything at the client side */
 
     GB_push_my_security(gb_main);
-    
+
     /* First step: search unused keys and delete them */
     for (gb_key = GB_entry(gb_key_data,"@key");
          gb_key;
@@ -220,11 +220,11 @@ GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main){
         GBDATA     *gb_name = GB_entry(gb_key,"@name");
         const char *name    = GB_read_char_pntr(gb_name);
         GBQUARK     quark   = gb_key_2_quark(Main,name);
-        
+
         gb_next_key = GB_nextEntry(gb_key);
 
         if (quark<=0 || quark >= Main->sizeofkeys || !Main->keys[quark].key){
-            GB_delete(gb_key);	/* delete unused key */
+            GB_delete(gb_key);  /* delete unused key */
         }
     }
     GB_create_index(gb_key_data, "@name", GB_MIND_CASE, Main->sizeofkeys*2);
@@ -288,4 +288,3 @@ void GB_free_dictionary(struct DictData *dd) {
         free(dd);
     }
 }
-

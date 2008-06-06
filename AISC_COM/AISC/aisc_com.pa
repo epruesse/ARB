@@ -1,7 +1,7 @@
 
 IF $(argc) = 4
 ELSE
-	ERROR	Falsche Parameteranzahl: Syntax aisc xxx.pa xxx.aisc outfile
+        ERROR   Falsche Parameteranzahl: Syntax aisc xxx.pa xxx.aisc outfile
 ENDIF
 
 DATA AISC { $(#FILE $(argv[2])) };
@@ -9,20 +9,20 @@ OPEN save $(argv[3])
 MOVETO $(AISC/PROJECT)
 
 IF $(MYTABSTOP)
-	TABSTOP $(MYTABSTOP)
+        TABSTOP $(MYTABSTOP)
 ELSE
-	TABSTOP 8
-ENDIF	
-TAB	0	0
-TAB	1	8
-TAB	2	16
-TAB	3	24
-TAB	4	32
-TAB	5	40
-TAB	6	48
-TAB	7	56
-TAB	8	64
-TAB	9	70
+        TABSTOP 8
+ENDIF   
+TAB     0       0
+TAB     1       8
+TAB     2       16
+TAB     3       24
+TAB     4       32
+TAB     5       40
+TAB     6       48
+TAB     7       56
+TAB     8       64
+TAB     9       70
 
 OUT save
 MOVETO $(DATA/.)
@@ -78,52 +78,52 @@ P $1AISC_COPY$3= AISC_MAGIC_NUMBER$6+ 5,
 P $1AISC_DELETE$3= AISC_MAGIC_NUMBER$6+ 6,
 P $1AISC_INIT$3= AISC_MAGIC_NUMBER$6+ 7,
 P $1AISC_DEBUG_INFO$3= AISC_MAGIC_NUMBER$6+ 8,
-P 	};
+P       };
 P #endif
 
 P #ifdef __cplusplus
-P 	const int $1AISC_CCOM_OK$3= AISC_MAGIC_NUMBER$6+ 0;
-P 	const int $1AISC_CCOM_ERROR$3= AISC_MAGIC_NUMBER$6+ 1;
-P 	const int $1AISC_CCOM_MESSAGE$3= AISC_MAGIC_NUMBER$6+ 2;
+P       const int $1AISC_CCOM_OK$3= AISC_MAGIC_NUMBER$6+ 0;
+P       const int $1AISC_CCOM_ERROR$3= AISC_MAGIC_NUMBER$6+ 1;
+P       const int $1AISC_CCOM_MESSAGE$3= AISC_MAGIC_NUMBER$6+ 2;
 P #else
-P 	$nenum aisc_client_command_list {
-P 		AISC_CCOM_OK$3= AISC_MAGIC_NUMBER$6+ 0,
-P 		AISC_CCOM_ERROR$3= AISC_MAGIC_NUMBER$6+ 1,
-P 		AISC_CCOM_MESSAGE$3= AISC_MAGIC_NUMBER$6+ 2,
-P 	};
+P       $nenum aisc_client_command_list {
+P               AISC_CCOM_OK$3= AISC_MAGIC_NUMBER$6+ 0,
+P               AISC_CCOM_ERROR$3= AISC_MAGIC_NUMBER$6+ 1,
+P               AISC_CCOM_MESSAGE$3= AISC_MAGIC_NUMBER$6+ 2,
+P       };
 P #endif
 P #endif
 
 FOR $(ENUM)
-	IF $(SKEY)
-		CREATE $(my_attribute[$(ENUM)]) $(OBJECT_KEY)_ATTR_$(SKEY)
-	ENDIF
-#	P	typedef enum enum_$(ENUM) {
-#	FOR $({/VAR)
-#		IF $(VAL)
-#			P $2$(VAR)$3=$4 $(VAL),$\
-#		ELSE
-#			P $2$(VAR),$\
-#		ENDIF
-#		P $6/* $(DOCU)$8*/
-#	ENDFOR
-#	P	} $(ENUM);
+        IF $(SKEY)
+                CREATE $(my_attribute[$(ENUM)]) $(OBJECT_KEY)_ATTR_$(SKEY)
+        ENDIF
+#       P       typedef enum enum_$(ENUM) {
+#       FOR $({/VAR)
+#               IF $(VAL)
+#                       P $2$(VAR)$3=$4 $(VAL),$\
+#               ELSE
+#                       P $2$(VAR),$\
+#               ENDIF
+#               P $6/* $(DOCU)$8*/
+#       ENDFOR
+#       P       } $(ENUM);
 ENDFOR
 P $n
 
 
 FOR $(STRUCT)
-	IF $(JOINED)
-	ELSEIF $(SKEY)
-		P typedef long T_$(OBJECT_KEY)_$(SKEY);
-	ENDIF
+        IF $(JOINED)
+        ELSEIF $(SKEY)
+                P typedef long T_$(OBJECT_KEY)_$(SKEY);
+        ENDIF
 ENDFOR
 P $n$n
 P #define $(OBJECT_KEY)_ATTR_INT(a,b)$6( (a+b) | 0x1000000 )
 FOR $(ENUM)
-	IF $(SKEY)
-		P #define $(OBJECT_KEY)_ATTR_$(SKEY)(a,b)$6( (a+b) | 0x1000000 )
-	ENDIF
+        IF $(SKEY)
+                P #define $(OBJECT_KEY)_ATTR_$(SKEY)(a,b)$6( (a+b) | 0x1000000 )
+        ENDIF
 ENDFOR
 
 P #define $(OBJECT_KEY)_ATTR_DOUBLE(a,b)$6( (a+b) | 0x2000000 )
@@ -137,24 +137,24 @@ CREATE $(my_attribute[double]) $(OBJECT_KEY)_ATTR_DOUBLE
 CREATE $(my_attribute[aisc_string]) $(OBJECT_KEY)_ATTR_STRING
 CREATE $(my_attribute[bytestring]) $(OBJECT_KEY)_ATTR_BYTES
 FOR $(STRUCT)
-	IF $(JOINED)
-	ELSEIF $(SKEY)
-		P #define $(OBJECT_KEY)_ATTR_$(SKEY)(a,b)$6( (a+b) | 0x4000000 )
-		CREATE $(my_attribute[$(STRUCT)]) $(OBJECT_KEY)_ATTR_$(SKEY)
-	ENDIF
+        IF $(JOINED)
+        ELSEIF $(SKEY)
+                P #define $(OBJECT_KEY)_ATTR_$(SKEY)(a,b)$6( (a+b) | 0x4000000 )
+                CREATE $(my_attribute[$(STRUCT)]) $(OBJECT_KEY)_ATTR_$(SKEY)
+        ENDIF
 ENDFOR
 P #define $(OBJECT_KEY)_ATTR_BYTES(a,b)$6( (a+b) | 0x5000000 )
 
 P $n$ntypedef enum Attributes_Header_List {
 FOR $(STRUCT)
-	IF $(JOINED)
-	ELSEIF $(SKEY)
-		P $1$(OBJECT_KEY)_$(SKEY)$5=$6$(SKEYC)*0x10000,
-	ENDIF
+        IF $(JOINED)
+        ELSEIF $(SKEY)
+                P $1$(OBJECT_KEY)_$(SKEY)$5=$6$(SKEYC)*0x10000,
+        ENDIF
 ENDFOR
-P	$1$(OBJECT_KEY)_MAX$5=$6$(MAX_OBJECT)*0x10000,
-P	$1$(OBJECT_KEY)_INDEX$5=$60x1ff0000
-P	} Aisc_Objekt_Type;$n$n
+P       $1$(OBJECT_KEY)_MAX$5=$6$(MAX_OBJECT)*0x10000,
+P       $1$(OBJECT_KEY)_INDEX$5=$60x1ff0000
+P       } Aisc_Objekt_Type;$n$n
 
 CREATE $(A)
 CREATE $(add) 0
@@ -162,81 +162,81 @@ CREATE $(str) 0
 CREATE $(skey) 0
 CREATE $(struct) 0
 CREATE $(com)
-	FOR $(STRUCT)
-		IF $(SKEY)
-			PUSH
-			IF $(JOINED)
-			ELSE
-				P	/************$2$(SKEY)$4*************/
-				P	typedef enum {
-			ENDIF
-			SET $(skey) $(SKEY)
-			SET $(struct) $(STRUCT)
-			CALL struct_attr,0,$1$(SKEY)_,/* 
-			IF $(JOIN_NEXT)
-			ELSE
-				P $1$(SKEY)_LASTATTR$4= 0
-				P } $(OBJECT_KEY)_$(SKEY)_Attribute;$n
-			ENDIF
-			POP
-		ENDIF
-	ENDFOR
+        FOR $(STRUCT)
+                IF $(SKEY)
+                        PUSH
+                        IF $(JOINED)
+                        ELSE
+                                P       /************$2$(SKEY)$4*************/
+                                P       typedef enum {
+                        ENDIF
+                        SET $(skey) $(SKEY)
+                        SET $(struct) $(STRUCT)
+                        CALL struct_attr,0,$1$(SKEY)_,/* 
+                        IF $(JOIN_NEXT)
+                        ELSE
+                                P $1$(SKEY)_LASTATTR$4= 0
+                                P } $(OBJECT_KEY)_$(SKEY)_Attribute;$n
+                        ENDIF
+                        POP
+                ENDIF
+        ENDFOR
 CLOSE save
 
 EXIT
 
 FUNCTION struct_attr,a,s,c
-	FOR $({/TYPE)
-		IF $(KEY)
-			IF $(TYPE) = dllh
-				P $(s)PRED$4= $\
- 				P $(my_attribute[$(struct)])$\
-				P $6($(OBJECT_KEY)_$(skey),$8$(+ $(a)+$(KEYC))),$9/* DO */
-				P $(s)NEXT$4= $\
- 				P $(my_attribute[$(struct)])$\
-				P $6($(OBJECT_KEY)_$(skey),$8$(+ 1+$(+ $(a)+$(KEYC)))),$9$(c) */
+        FOR $({/TYPE)
+                IF $(KEY)
+                        IF $(TYPE) = dllh
+                                P $(s)PRED$4= $\
+                                P $(my_attribute[$(struct)])$\
+                                P $6($(OBJECT_KEY)_$(skey),$8$(+ $(a)+$(KEYC))),$9/* DO */
+                                P $(s)NEXT$4= $\
+                                P $(my_attribute[$(struct)])$\
+                                P $6($(OBJECT_KEY)_$(skey),$8$(+ 1+$(+ $(a)+$(KEYC)))),$9$(c) */
 
-				SET $(add) $(+ $(a)+$(KEYC))
-				SET $(add) $(+ 2+$(add))
-				SET $(str) $(s)$(KEY)
-				PUSH
-				MOVETO $(/AISC/DATA/STRUCT.dll_header)
-				CALL struct_attr,$(add),$(str),$(c) H
-				POP
+                                SET $(add) $(+ $(a)+$(KEYC))
+                                SET $(add) $(+ 2+$(add))
+                                SET $(str) $(s)$(KEY)
+                                PUSH
+                                MOVETO $(/AISC/DATA/STRUCT.dll_header)
+                                CALL struct_attr,$(add),$(str),$(c) H
+                                POP
 
-			ELSEIF $(REF) ~ s
-				SET $(add) $(+ $(a),$(KEYC))
-				SET $(str) $(s)$(KEY)
-				SET $(com) $(c) S
-				PUSH
-				MOVETO $(/AISC/DATA/STRUCT.$(TYPE))
-				CALL struct_attr,$(add),$(str),$(com)
-				POP
-			ELSE
-				IF $(REF) ~ d
-					SET $(com) $(c) DL
-				ELSEIF $(REF) ~ v
-					SET $(com) $(c) [$(SIZE)]
-				ELSEIF $(REF) ~ *
-					SET $(com) $(c) []
-				ELSEIF $(TYPE) = func
-					SET $(com) $(c) FUNC
-				ELSE
-					SET $(com) $(c)
-				ENDIF
-				IF $(my_attribute[$(TYPE)])
-					P $(s)$(KEY)$4= $\
- 					P $(my_attribute[$(TYPE)])$\
-					P $6($(OBJECT_KEY)_$(skey),$8$(+ $(a)+$(KEYC))),$9$(com) */
-				ELSE
-					ERROR TYPE $(TYPE) unknown, no key build
-				ENDIF
-				IF $(REF) ~ d
-					P $(s)$(KEY)_CNT$4= $\
- 					P $(my_attribute[int])$\
-					P $6($(OBJECT_KEY)_$(skey),$8$(+ 1,$(+ $(a)+$(KEYC)))),$9$(com) */
-				ENDIF
-			ENDIF
-		ENDIF
-	ENDFOR
+                        ELSEIF $(REF) ~ s
+                                SET $(add) $(+ $(a),$(KEYC))
+                                SET $(str) $(s)$(KEY)
+                                SET $(com) $(c) S
+                                PUSH
+                                MOVETO $(/AISC/DATA/STRUCT.$(TYPE))
+                                CALL struct_attr,$(add),$(str),$(com)
+                                POP
+                        ELSE
+                                IF $(REF) ~ d
+                                        SET $(com) $(c) DL
+                                ELSEIF $(REF) ~ v
+                                        SET $(com) $(c) [$(SIZE)]
+                                ELSEIF $(REF) ~ *
+                                        SET $(com) $(c) []
+                                ELSEIF $(TYPE) = func
+                                        SET $(com) $(c) FUNC
+                                ELSE
+                                        SET $(com) $(c)
+                                ENDIF
+                                IF $(my_attribute[$(TYPE)])
+                                        P $(s)$(KEY)$4= $\
+                                        P $(my_attribute[$(TYPE)])$\
+                                        P $6($(OBJECT_KEY)_$(skey),$8$(+ $(a)+$(KEYC))),$9$(com) */
+                                ELSE
+                                        ERROR TYPE $(TYPE) unknown, no key build
+                                ENDIF
+                                IF $(REF) ~ d
+                                        P $(s)$(KEY)_CNT$4= $\
+                                        P $(my_attribute[int])$\
+                                        P $6($(OBJECT_KEY)_$(skey),$8$(+ 1,$(+ $(a)+$(KEYC)))),$9$(com) */
+                                ENDIF
+                        ENDIF
+                ENDIF
+        ENDFOR
 RETURN

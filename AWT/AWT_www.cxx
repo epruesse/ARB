@@ -41,7 +41,7 @@ void awt_create_aww_vars(AW_root *aw_root,AW_default aw_def){
     aw_root->awar_int(AWAR_WWW_SELECT,0,aw_def);
 
     awt_assert(ARB_global_awars_initialized());
-//     aw_root->awar_string(AWAR_WWW_BROWSER, "(netscape -remote 'openURL($(URL))' || netscape '$(URL)') &", aw_def);
+    //     aw_root->awar_string(AWAR_WWW_BROWSER, "(netscape -remote 'openURL($(URL))' || netscape '$(URL)') &", aw_def);
 }
 
 GB_ERROR awt_openURL(AW_root *aw_root, GBDATA *gb_main, const char *url) {
@@ -57,7 +57,7 @@ GB_ERROR awt_openURL(AW_root *aw_root, GBDATA *gb_main, const char *url) {
 
         free(start);
         free(browser);
-        
+
         browser = new_browser;
     }
 
@@ -133,19 +133,19 @@ void awt_www_select_change(AW_window *aww,AW_CL selected){
 static void www_init_config(AWT_config_definition& cdef) {
     for (int i=0;i<WWW_COUNT; i++) {
         char buf[256];
-        sprintf(buf, AWAR_WWW_SELECT_TEMPLATE, i); cdef.add(buf, "active",     i); 
-        sprintf(buf, AWAR_WWW_DESC_TEMPLATE,   i); cdef.add(buf, "desciption", i); 
-        sprintf(buf, AWAR_WWW_TEMPLATE,        i); cdef.add(buf, "template",   i); 
-    }    
+        sprintf(buf, AWAR_WWW_SELECT_TEMPLATE, i); cdef.add(buf, "active",     i);
+        sprintf(buf, AWAR_WWW_DESC_TEMPLATE,   i); cdef.add(buf, "desciption", i);
+        sprintf(buf, AWAR_WWW_TEMPLATE,        i); cdef.add(buf, "template",   i);
+    }
 }
 static char *www_store_config(AW_window *aww, AW_CL /*cl1*/, AW_CL /*cl2*/) {
     AWT_config_definition cdef(aww->get_root());
-    www_init_config(cdef);    
+    www_init_config(cdef);
     return cdef.read();
 }
 static void www_restore_config(AW_window *aww, const char *stored_string, AW_CL /*cl1*/, AW_CL /*cl2*/) {
     AWT_config_definition cdef(aww->get_root());
-    www_init_config(cdef);    
+    www_init_config(cdef);
     cdef.write(stored_string);
 }
 
@@ -178,7 +178,7 @@ AW_window *AWT_open_www_window(AW_root *aw_root,AW_CL cgb_main){
 
     aws->at_newline();
 
-    int	fieldselectx,srtx,descx;
+    int fieldselectx,srtx,descx;
 
 
     int i;

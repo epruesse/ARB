@@ -32,7 +32,7 @@ int main(int argc, char **argv)
                 "Syntax:  arb_2_bin [-m] [-r] [-c][tree_xxx] database [newdatabase]\n"
                 "Options: -m            create map file too\n"
                 "         -r            try to repair destroyed database\n"
-                "         -c[tree_xxx]	optimize database using tree_xxx or largest tree\n"
+                "         -c[tree_xxx]  optimize database using tree_xxx or largest tree\n"
                 "\n"
                 "database my be '-' in which case arb_2_bin reads from stdin.\n"
                 "\n"

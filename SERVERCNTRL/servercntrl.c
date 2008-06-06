@@ -21,14 +21,14 @@
 /* AISC_MKPT_PROMOTE:    char *alignment;*/
 /* AISC_MKPT_PROMOTE:    char *default_file;*/
 /* AISC_MKPT_PROMOTE:    char *field;*/
-/* AISC_MKPT_PROMOTE:*/ 
+/* AISC_MKPT_PROMOTE:*/
 /* AISC_MKPT_PROMOTE:    int  read_only;*/
-/* AISC_MKPT_PROMOTE:*/ 
+/* AISC_MKPT_PROMOTE:*/
 /* AISC_MKPT_PROMOTE:    char *job_server;*/
 /* AISC_MKPT_PROMOTE:    char *db_server;*/
 /* AISC_MKPT_PROMOTE:    char *mgr_server;*/
 /* AISC_MKPT_PROMOTE:    char *pt_server;*/
-/* AISC_MKPT_PROMOTE:*/ 
+/* AISC_MKPT_PROMOTE:*/
 /* AISC_MKPT_PROMOTE:    char *tcp;*/
 /* AISC_MKPT_PROMOTE:};*/
 
@@ -303,7 +303,7 @@ void arb_print_server_params() {
 struct arb_params *arb_trace_argv(int *argc, char **argv)
 {
     struct arb_params *erg;
-    int	s,d;
+    int s,d;
 
     erg             = (struct arb_params *)calloc(sizeof(struct arb_params),1);
     erg->db_server  = GB_strdup(":");
@@ -314,17 +314,17 @@ struct arb_params *arb_trace_argv(int *argc, char **argv)
     for (s=d=0; s<*argc; s++) {
         if (argv[s][0] == '-') {
             switch (argv[s][1]) {
-                case 's':	erg->species_name  = strdup(argv[s]+2);break;
-                case 'e':	erg->extended_name = strdup(argv[s]+2);break;
-                case 'a':	erg->alignment     = strdup(argv[s]+2);break;
-                case 'd':	erg->default_file  = strdup(argv[s]+2);break;
-                case 'f':	erg->field         = strdup(argv[s]+2);break;
-                case 'r':	erg->read_only     = 1;break;
-                case 'J':	erg->job_server    = strdup(argv[s]+2);break;
-                case 'D':	erg->db_server     = strdup(argv[s]+2);break;
-                case 'M':	erg->mgr_server    = strdup(argv[s]+2);break;
-                case 'P':	erg->pt_server     = strdup(argv[s]+2);break;
-                case 'T':	{
+                case 's': erg->species_name  = strdup(argv[s]+2);break;
+                case 'e': erg->extended_name = strdup(argv[s]+2);break;
+                case 'a': erg->alignment     = strdup(argv[s]+2);break;
+                case 'd': erg->default_file  = strdup(argv[s]+2);break;
+                case 'f': erg->field         = strdup(argv[s]+2);break;
+                case 'r': erg->read_only     = 1;break;
+                case 'J': erg->job_server    = strdup(argv[s]+2);break;
+                case 'D': erg->db_server     = strdup(argv[s]+2);break;
+                case 'M': erg->mgr_server    = strdup(argv[s]+2);break;
+                case 'P': erg->pt_server     = strdup(argv[s]+2);break;
+                case 'T': {
                     char *ipport = argv[s]+2;
                     if (ipport[0] == ':') { /* port only -> assume localhost */
                         erg->tcp = GBS_global_string_copy("localhost%s", ipport);
@@ -334,12 +334,15 @@ struct arb_params *arb_trace_argv(int *argc, char **argv)
                     }
                     break;
                 }
-                default:	argv[d++]          = argv[s];
+                default:
+                    argv[d++] = argv[s];
+                    break;
             }
-        }else{
+        }
+        else {
             argv[d++] = argv[s];
         }
     }
-    *argc=d;
+    *argc = d;
     return erg;
 }

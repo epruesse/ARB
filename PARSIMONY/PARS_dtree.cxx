@@ -40,10 +40,10 @@ char *AWT_graphic_parsimony_root_changed(void *cd, AP_tree *old, AP_tree *newroo
 /**************************
 tree_init()
 
-	Filter & weights setup
-	loads sequences at the leafs and
-	initalize filters & weights for the tree
-	( AP_tree_nlen expected )
+        Filter & weights setup
+        loads sequences at the leafs and
+        initalize filters & weights for the tree
+        ( AP_tree_nlen expected )
 
 **************************/
 void NT_tree_init(AWT_graphic_tree *agt) {
@@ -92,7 +92,7 @@ void NT_tree_init(AWT_graphic_tree *agt) {
         }else{
             tr->weights->init(tr->filter);
         }
-        tree->load_sequences_rek(use,GB_FALSE,GB_TRUE);   	// load with sequences
+        tree->load_sequences_rek(use,GB_FALSE,GB_TRUE);         // load with sequences
     }
     tree->tree_root->root_changed_cd = (void*)agt;
     tree->tree_root->root_changed = AWT_graphic_parsimony_root_changed;
@@ -130,7 +130,7 @@ void PARS_kernighan_cb(AP_tree *tree) {
     int param_anz;
     double param_list[3];
     double f_startx,f_maxy,f_maxx,f_max_deep;
-    f_max_deep = (double)rek_deep_max;			 //		x2
+    f_max_deep = (double)rek_deep_max;                   //             x2
     f_startx = (double)GBT_read_int(GLOBAL_gb_main,"genetic/kh/dynamic/start");
     f_maxy = (double)GBT_read_int(GLOBAL_gb_main,"genetic/kh/dynamic/maxy");
     f_maxx = (double)GBT_read_int(GLOBAL_gb_main,"genetic/kh/dynamic/maxx");
@@ -145,7 +145,7 @@ void PARS_kernighan_cb(AP_tree *tree) {
             param_list[0] = (f_startx - f_maxy) / (f_maxx * f_maxx);
             param_list[1] = -2.0 * param_list[0] * f_maxx;
             break;
-        case AP_QUADRAT_MAX:	// parameter liste fuer quadratische gleichung (y =ax^2 +bx +c)
+        case AP_QUADRAT_MAX:    // parameter liste fuer quadratische gleichung (y =ax^2 +bx +c)
             funktion = funktion_quadratisch;
             param_anz = 3;
             param_list[0] =  - f_maxy / (( f_max_deep -  f_maxx) * ( f_max_deep - f_maxx));
@@ -196,7 +196,7 @@ void PARS_kernighan_cb(AP_tree *tree) {
 
         if (tree_elem->gr.hidden ||
             (tree_elem->father && tree_elem->father->gr.hidden)){
-            continue;	// within a folded group
+            continue;   // within a folded group
         }
         {
             AP_BOOL better_tree_found = AP_FALSE;
@@ -321,7 +321,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
 
     //GBDATA *gb_main = this->tree_static->gb_main;
     switch(cmd){
-        case AWT_MODE_MOVE:				// two point commands !!!!!
+        case AWT_MODE_MOVE:                             // two point commands !!!!!
             if(button==AWT_M_MIDDLE){
                 break;
             }
@@ -366,10 +366,10 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                             aw_message("Please drag mouse from source to destination");
                             break;
                         }
-//                         if ( dest->is_son(source)) {
-//                             aw_message("This operation is only allowed with two independent subtrees");
-//                             break;
-//                         }
+                        //                         if ( dest->is_son(source)) {
+                        //                             aw_message("This operation is only allowed with two independent subtrees");
+                        //                             break;
+                        //                         }
                         const char *error = 0;
 
                         //                         switch(cmd){
@@ -512,4 +512,3 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
         this->exports.refresh = 1;
     }
 }
-

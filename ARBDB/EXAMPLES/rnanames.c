@@ -4,14 +4,14 @@
 # move to an example directory which is build separately
 
 int main(int argc, char **argv) {
-    int i, cmp;
-    char *path;
+    int     i, cmp;
+    char   *path;
     GBDATA *gbmain, *gbdata, *gbname;
     GBDATA *gbali, *gbrnali, *gbspec;
-    char *gbseqname; 
+    char   *gbseqname;
 
     if (argc<2) path = ":";
-    else 	path = argv[1];
+    else        path = argv[1];
 
     if (!(gbmain=GB_open(path,"r"))) return (-1);
 
@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
                 else /* > */ break;
             }
         }
-	
+
     }
 
     GB_commit_transaction(gbmain);
