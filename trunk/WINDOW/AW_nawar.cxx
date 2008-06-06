@@ -16,21 +16,20 @@
 #endif // DEBUG
 
 AW_var_target::AW_var_target(void* pntr, AW_var_target *nexti){
-    next = nexti;
+    next    = nexti;
     pointer = pntr;
 }
 
 AW_var_callback::AW_var_callback( void (*vc_cb)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2, AW_var_callback *nexti ) {
-
-    value_changed_cb		= vc_cb;
-    value_changed_cb_cd1		= cd1;
-    value_changed_cb_cd2		= cd2;
-    next				= nexti;
+    value_changed_cb     = vc_cb;
+    value_changed_cb_cd1 = cd1;
+    value_changed_cb_cd2 = cd2;
+    next                 = nexti;
 }
 
 
 void AW_var_callback::run_callback(AW_root *root) {
-    if (this->next) this->next->run_callback(root);	// callback the whole list
+    if (this->next) this->next->run_callback(root);     // callback the whole list
     if (!this->value_changed_cb) return;
     this->value_changed_cb(root,this->value_changed_cb_cd1,this->value_changed_cb_cd2);
 }
@@ -52,14 +51,13 @@ void AW_var_gbdata_callback_delete(GBDATA *gbd, int *cl, GB_CB_TYPE) {
     AW_var_gbdata_callback_delete_intern(gbd, cl);
 }
 
-#define AW_MSG_UNMAPPED_AWAR "Sorry (Unmapped AWAR):\n"\
-		"	you cannot write to this field because it is either deleted or\n"\
-		"	unmapped. In the last case you should select a different item and\n"\
-		"	reselect this."
+GB_ERROR AW_MSG_UNMAPPED_AWAR = "Error (unmapped AWAR):\n"
+    "You cannot write to this field because it is either deleted or\n"
+    "unmapped. Try to select a different item, reselect this and retry.";
 
 char *AW_awar::read_as_string( void ) {
     char *rt;
-    if (!gb_var) 	return strdup("?????");
+    if (!gb_var) return strdup("?????");
     GB_push_transaction(gb_var);
     rt = GB_read_as_string( gb_var );
     GB_pop_transaction(gb_var);
@@ -67,7 +65,7 @@ char *AW_awar::read_as_string( void ) {
 }
 
 char *AW_awar::read_string(){
-    if (!gb_var) 	return strdup("?????");
+    if (!gb_var) return strdup("?????");
     GB_transaction dummy(gb_var);
     return GB_read_as_string( gb_var );
 }
@@ -101,7 +99,7 @@ void AW_awar::get( double *p_double ) {
 
 void AW_awar::get( float *p_float ) {
     if (!gb_var){
-        *p_float = 0.0;		return;
+        *p_float = 0.0;         return;
     }
     *p_float =  read_float( );
 }
@@ -115,21 +113,21 @@ void AW_awar::get( float *p_float ) {
 #define concat(x, y) x##y
 
 #define WRITE_SKELETON(self, type, format, func)        \
-GB_ERROR AW_awar::self(type para) {                     \
-    if (!gb_var) return AW_MSG_UNMAPPED_AWAR;           \
-    GB_transaction ta(gb_var);                          \
-    AWAR_CHANGE_DUMP(awar_name, #self, format);         \
-    if ( func(gb_var, para)) return GB_get_error();     \
-    return 0;                                           \
-}                                                       \
-GB_ERROR AW_awar::concat(re, self)(type para) {         \
-    if (!gb_var) return AW_MSG_UNMAPPED_AWAR;           \
-    GB_transaction ta(gb_var);                          \
-    AWAR_CHANGE_DUMP(awar_name, #self, format);         \
-    if (func(gb_var, para)) return GB_get_error();      \
-    GB_touch(gb_var);                                   \
-    return 0;                                           \
-}
+    GB_ERROR AW_awar::self(type para) {                 \
+        if (!gb_var) return AW_MSG_UNMAPPED_AWAR;       \
+        GB_transaction ta(gb_var);                      \
+        AWAR_CHANGE_DUMP(awar_name, #self, format);     \
+        if ( func(gb_var, para)) return GB_get_error(); \
+        return 0;                                       \
+    }                                                   \
+    GB_ERROR AW_awar::concat(re, self)(type para) {     \
+        if (!gb_var) return AW_MSG_UNMAPPED_AWAR;       \
+        GB_transaction ta(gb_var);                      \
+        AWAR_CHANGE_DUMP(awar_name, #self, format);     \
+        if (func(gb_var, para)) return GB_get_error();  \
+        GB_touch(gb_var);                               \
+        return 0;                                       \
+    }
 
 WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewrite_string
     WRITE_SKELETON(write_int, long, "%li", GB_write_int) // defines rewrite_int
@@ -141,7 +139,7 @@ WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewr
 #undef AWAR_CHANGE_DUMP
 
 
-void AW_awar::touch( void ) {
+    void AW_awar::touch( void ) {
     if (!gb_var) {
         return;
     }
@@ -166,7 +164,7 @@ AW_default aw_check_default_file(AW_default root_default, AW_default default_fil
 AW_awar *AW_root::awar_string( const char *var_name, const char *default_value, AW_default default_file ) {
     AW_awar *vs;
     vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
-    if (vs) return vs;	/* already defined */
+    if (vs) return vs;  /* already defined */
     default_file = aw_check_default_file(this->application_database,default_file,var_name);
 
     vs = new AW_awar( AW_STRING, var_name, default_value, 0, default_file, this );
@@ -179,7 +177,7 @@ AW_awar *AW_root::awar_string( const char *var_name, const char *default_value, 
 AW_awar *AW_root::awar_int( const char *var_name, long default_value, AW_default default_file ) {
     AW_awar *vs;
     vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
-    if (vs) return vs;	/* already defined */
+    if (vs) return vs;  /* already defined */
     default_file = aw_check_default_file(this->application_database,default_file,var_name);
 
     vs = new AW_awar( AW_INT, var_name, (char *)default_value, 0, default_file, this );
@@ -192,7 +190,7 @@ AW_awar *AW_root::awar_int( const char *var_name, long default_value, AW_default
 AW_awar *AW_root::awar_float( const char *var_name, float default_value, AW_default default_file ) {
     AW_awar *vs;
     vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
-    if (vs) return vs;	/* already defined */
+    if (vs) return vs;  /* already defined */
     default_file = aw_check_default_file(this->application_database,default_file,var_name);
 
     vs = new AW_awar( AW_FLOAT, var_name, "", (double)default_value, default_file, this );
@@ -207,7 +205,7 @@ AW_awar *AW_root::awar_no_error( const char *var_name){
 
 AW_awar *AW_root::awar( const char *var_name){
     AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
-    if (vs) return vs;	/* already defined */
+    if (vs) return vs;  /* already defined */
     AW_ERROR("AWAR %s not defined",var_name);
     return this->awar_string(var_name);
 }
@@ -245,21 +243,21 @@ AW_awar *AW_awar::remove_callback( void (*f)(AW_root*,AW_CL,AW_CL), AW_CL cd1, A
 AW_awar *AW_awar::remove_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) { return remove_callback((AW_RCB) f, cd1, 0); }
 AW_awar *AW_awar::remove_callback(void (*f)(AW_root*)) { return remove_callback((AW_RCB) f, 0, 0); }
 
-GB_ERROR	AW_awar::toggle_toggle(){
+GB_ERROR        AW_awar::toggle_toggle(){
     char *var = this->read_as_string();
-    GB_ERROR	error =0;
+    GB_ERROR    error =0;
     if (var[0] == '0' || var[0] == 'n') {
         switch (this->variable_type) {
-            case AW_STRING:	error = this->write_string("yes");break;
-            case AW_INT:	error = this->write_int(1);break;
-            case AW_FLOAT:	error = this->write_float(1.0);break;
+            case AW_STRING:     error = this->write_string("yes");break;
+            case AW_INT:        error = this->write_int(1);break;
+            case AW_FLOAT:      error = this->write_float(1.0);break;
             default: break;
         }
     }else{
         switch (this->variable_type) {
-            case AW_STRING:	error = this->write_string("no");break;
-            case AW_INT:	error = this->write_int(0);break;
-            case AW_FLOAT:	error = this->write_float(0.0);break;
+            case AW_STRING:     error = this->write_string("no");break;
+            case AW_INT:        error = this->write_int(0);break;
+            case AW_FLOAT:      error = this->write_float(0.0);break;
             default: break;
         }
     }
@@ -325,7 +323,7 @@ AW_awar *AW_awar::set_srt(const char *srt)
 
 AW_awar *AW_awar::map( AW_default gbd) {
     if (gbd) GB_push_transaction((GBDATA *)gbd);
-    if (gb_var) {		/* old map */
+    if (gb_var) {               /* old map */
         GB_remove_callback((GBDATA *)gb_var, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this);
         GB_remove_callback((GBDATA *)gb_var, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this);
     }
@@ -333,7 +331,7 @@ AW_awar *AW_awar::map( AW_default gbd) {
         GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this );
         GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this );
     }
-    gb_var 	= (GBDATA *)gbd;
+    gb_var      = (GBDATA *)gbd;
     this->update();
     if (gbd) GB_pop_transaction((GBDATA *)gbd);
     return this;
@@ -373,7 +371,7 @@ void AW_awar::update(void)
                 if (out_of_range) {
                     if (root) root->changer_of_variable = 0;
                     this->write_int(lo);
-                    return;		// returns update !!!!
+                    return;             // returns update !!!!
                 }
                 break;
             }
@@ -389,7 +387,7 @@ void AW_awar::update(void)
                 }
                 if (out_of_range) {
                     if (root) root->changer_of_variable = 0;
-                    this->write_float(fl);		// returns update !!!!
+                    this->write_float(fl);              // returns update !!!!
                     return;
                 }
                 break;
@@ -496,7 +494,7 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
                 break;
         }
     }
-    variable_type		= var_type;
+    variable_type               = var_type;
     this->gb_origin = gb_def;
     this->map(gb_def);
 }
@@ -572,7 +570,7 @@ AW_error *AW_root::save_default(AW_default aw_default, const char *file_name)
 }
 
 AW_default AW_root::get_default(const char *varname) {
-    GBDATA	*gbd;
+    GBDATA      *gbd;
     AW_awar *vs;
     if ( (vs = this->awar( varname )) ) {
         gbd = vs->gb_var;
@@ -584,7 +582,7 @@ AW_default AW_root::get_default(const char *varname) {
 }
 
 AW_default AW_root::get_gbdata( const char *varname) {
-    GBDATA	*gbd;
+    GBDATA      *gbd;
     AW_awar *vs;
     if ( (vs = this->awar( varname )) ) {
         gbd = vs->gb_var;
@@ -683,4 +681,3 @@ void aw_create_selection_box_awars(AW_root *awr, const char *awar_base,
 
     delete [] awar_name;
 }
-

@@ -44,7 +44,7 @@ int Bitvector::gen_id()
 Bitvector* Bitvector::merge(Bitvector* x)
 {
     int lthis, lx, lback;
-    int i;				// Zaehler
+    int i;                              // Zaehler
 
     lthis = num_of_bits;
     lx    = x->get_num_of_bits();

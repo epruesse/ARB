@@ -1,6 +1,6 @@
 #include "RNA3D_GlobalHeader.hxx"
 
-// The following includes are needed to use AW_window_Motif 
+// The following includes are needed to use AW_window_Motif
 #include <aw_root.hxx>
 #include <aw_window.hxx>
 #include "../WINDOW/aw_awar.hxx"
@@ -37,7 +37,7 @@ static GLboolean                    Spinning = GL_FALSE;
 // => Sets the Rotation speed to 0.05 : default speed in Rotation Mode.
 // => Calls RefreshOpenGLDisplay() : to calculate new rotate matrix
 //    and then, redraws the entire scene.
-// => Returns False : so that the work proc remains registered and  
+// => Returns False : so that the work proc remains registered and
 //    the animation will continue.
 //===============================================================================//
 
@@ -50,7 +50,7 @@ Boolean SpinMolecule(XtPointer /*clientData*/) {
 //========== RotateMoleculeStateChanged(void)==================================//
 // => if Spinning, removes the WorkProc routine and sets Spinning & bAutoRotate to false.
 // => if not, adds the WorkProc routine [SpinMolecule()] and sets Spinning & bAutoRotate to true.
-// bAutoRotate is used in recalculation of Rotation Matrix 
+// bAutoRotate is used in recalculation of Rotation Matrix
 // in RenderOpenGLScene() ==> defined in RNA3D_OpenGLEngine.cxx.
 //===============================================================================//
 
@@ -58,18 +58,18 @@ static void RotateMoleculeStateChanged(void) {
 
     if(Spinning) {
         XtRemoveWorkProc(workId);
-        Spinning = GL_FALSE; 
+        Spinning = GL_FALSE;
         RNA3D->bAutoRotate = false;
     } else {
         workId = XtAppAddWorkProc(appContext, SpinMolecule, NULL);
-        Spinning = GL_TRUE; 
+        Spinning = GL_TRUE;
         RNA3D->bAutoRotate = true;
     }
 }
 
 //============ RotateMoleculeStateChanged_cb(AW_root *awr)===========================//
 // Callback bound to Rotatation Awar (AWAR_3D_MOL_ROTATE)
-// Is called when the 
+// Is called when the
 // 1. Rotation Awar is changed.
 // 2. Also when the Spacebar is pressed in KeyBoardEventHandler().
 //===============================================================================//
@@ -81,14 +81,14 @@ static void RotateMoleculeStateChanged_cb(AW_root *awr) {
 }
 
 void ResizeOpenGLWindow( Widget /* w*/, XtPointer /*client_data*/, XEvent *event, char* /*x*/ ) {
-	XConfigureEvent *evt;
-	evt = (XConfigureEvent*) event;
-	
-	if ( RNA3D->OpenGLEngineState == NOT_CREATED ) {
-		return;
-	}
-	
-	ReshapeOpenGLWindow( (GLint) evt->width, (GLint) evt->height );
+    XConfigureEvent *evt;
+    evt = (XConfigureEvent*) event;
+
+    if ( RNA3D->OpenGLEngineState == NOT_CREATED ) {
+        return;
+    }
+
+    ReshapeOpenGLWindow( (GLint) evt->width, (GLint) evt->height );
 
     RefreshOpenGLDisplay();
 }
@@ -104,67 +104,67 @@ void KeyPressEventHandler(Widget /* w*/, XtPointer /*client_data*/, XEvent *even
     char   buffer[1];
     KeySym keysym;
     int    count;
-    
+
     // Converting keycode to keysym
     count = XLookupString((XKeyEvent *) event, buffer, 1, &keysym, NULL);
 
     switch(keysym) {
-    case XK_space:
-        RNA3D->iRotateMolecule = !RNA3D->iRotateMolecule;
-        RNA3D->root->awar(AWAR_3D_MOL_ROTATE)->write_int(RNA3D->iRotateMolecule);
-        break;
-    case XK_Escape:
-        RNA3D->bDisplayComments = !RNA3D->bDisplayComments;
-        break;
-    case XK_Tab:
-        RNA3D->bDisplayMask = !RNA3D->bDisplayMask;
-        break;
-    case XK_Up:
-        RNA3D->Center.y -= 0.1;
-        break;
-    case XK_Down:
-        RNA3D->Center.y += 0.1;
-        break;
-    case XK_Left:
-        RNA3D->Center.x -= 0.1;
-        break;
-    case XK_Right:
-        RNA3D->Center.x += 0.1;
-        break;
+        case XK_space:
+            RNA3D->iRotateMolecule = !RNA3D->iRotateMolecule;
+            RNA3D->root->awar(AWAR_3D_MOL_ROTATE)->write_int(RNA3D->iRotateMolecule);
+            break;
+        case XK_Escape:
+            RNA3D->bDisplayComments = !RNA3D->bDisplayComments;
+            break;
+        case XK_Tab:
+            RNA3D->bDisplayMask = !RNA3D->bDisplayMask;
+            break;
+        case XK_Up:
+            RNA3D->Center.y -= 0.1;
+            break;
+        case XK_Down:
+            RNA3D->Center.y += 0.1;
+            break;
+        case XK_Left:
+            RNA3D->Center.x -= 0.1;
+            break;
+        case XK_Right:
+            RNA3D->Center.x += 0.1;
+            break;
     }
 
     RefreshOpenGLDisplay();
 }
 
 void ButtonReleaseEventHandler(Widget /* w*/, XtPointer /*client_data*/, XEvent *event, char* /*x*/ ) {
-	XButtonEvent *xr;
-	xr = (XButtonEvent*) event;
+    XButtonEvent *xr;
+    xr = (XButtonEvent*) event;
 
-    switch(xr->button) 
-        {
+    switch(xr->button)
+    {
         case LEFT_BUTTON:
-            RNA3D->bRotateMolecule = false;   
+            RNA3D->bRotateMolecule = false;
             break;
-            
+
         case MIDDLE_BUTTON:
             break;
-            
+
         case RIGHT_BUTTON:
             break;
-        }
-    
+    }
+
     RefreshOpenGLDisplay();
 }
 
 void ButtonPressEventHandler( Widget /* w*/, XtPointer /*client_data*/, XEvent *event, char* /*x*/ ){
 
-	XButtonEvent *xp;
-	xp = (XButtonEvent*) event;
+    XButtonEvent *xp;
+    xp = (XButtonEvent*) event;
 
-    switch(xp->button) 
-        {
+    switch(xp->button)
+    {
         case LEFT_BUTTON:
-            RNA3D->bRotateMolecule = true;   
+            RNA3D->bRotateMolecule = true;
             RNA3D->saved_x = xp->x;
             RNA3D->saved_y = xp->y;
             break;
@@ -183,16 +183,16 @@ void ButtonPressEventHandler( Widget /* w*/, XtPointer /*client_data*/, XEvent *
         case WHEEL_DOWN:
             RNA3D->scale -= ZOOM_FACTOR;
             break;
-	}
-    
+    }
+
     RefreshOpenGLDisplay();
 }
 
 void MouseMoveEventHandler(Widget /* w*/, XtPointer /*client_data*/, XEvent *event, char* /*x*/ ) {
-	
-	XMotionEvent *xp;
-	xp = (XMotionEvent*) event;
-	
+
+    XMotionEvent *xp;
+    xp = (XMotionEvent*) event;
+
     if (!RNA3D->bAutoRotate) {
         RNA3D->ROTATION_SPEED = 0.5;
     }
@@ -208,14 +208,14 @@ void MouseMoveEventHandler(Widget /* w*/, XtPointer /*client_data*/, XEvent *eve
 void ExposeOpenGLWindow( Widget  w, XtPointer /*client_data*/, XEvent *event, char* /*x*/ ) {
     static bool ok = false;
 
-	if ( RNA3D->OpenGLEngineState == NOT_CREATED ) {
-		// extern GBDATA* OpenGL_gb_main;
-		// OpenGL_gb_main = gb_main;
-		
-		InitializeOpenGLWindow( w );
+    if ( RNA3D->OpenGLEngineState == NOT_CREATED ) {
+        // extern GBDATA* OpenGL_gb_main;
+        // OpenGL_gb_main = gb_main;
 
-		XExposeEvent *evt;
-		evt = (XExposeEvent*) event;
+        InitializeOpenGLWindow( w );
+
+        XExposeEvent *evt;
+        evt = (XExposeEvent*) event;
 
         try {
             InitializeOpenGLEngine( (GLint) evt->height, (GLint) evt->height );
@@ -233,8 +233,8 @@ void ExposeOpenGLWindow( Widget  w, XtPointer /*client_data*/, XEvent *event, ch
 }
 
 void RefreshOpenGLDisplay() {
-    
-	if ( RNA3D->OpenGLEngineState == CREATED ) {
+
+    if ( RNA3D->OpenGLEngineState == CREATED ) {
         RenderOpenGLScene(RNA3D->glw);
     }
 }
@@ -272,7 +272,7 @@ static void Change3DMolecule_CB(AW_root *awr) {
     // recaluculate the mapping information
     awr->awar(AWAR_SPECIES_NAME)->touch();
 
-    // recaluculate helix numbering  
+    // recaluculate helix numbering
     awr->awar(AWAR_3D_HELIX_FROM)->touch();
 
     // render new structure in OpenGL window
@@ -285,7 +285,7 @@ static void Change3DMolecule(AW_window *aww, long int molID) {
 }
 
 static void DisplayMoleculeMask(AW_root */*awr */){
-   RNA3D->bDisplayMask = !RNA3D->bDisplayMask;
+    RNA3D->bDisplayMask = !RNA3D->bDisplayMask;
     RefreshOpenGLDisplay();
 }
 
@@ -347,16 +347,16 @@ static void AddCallBacks(AW_root *awr) {
 
 static void RefreshMappingDisplay(AW_window */*aw */) {
     // Refreshes the SAI Display if and when ...
-    // 1.Changes made to SAI related settings in EDIT4 and not updated automatically 
+    // 1.Changes made to SAI related settings in EDIT4 and not updated automatically
     // 2.Colors related to SAI Display changed in RNA3D Application
     MapSaiToEcoliTemplateChanged_CB(RNA3D->root);
 
-    // Refreshes the Search Strings Display if 
-    // Colors related to Search Strings changed in RNA3D Application 
+    // Refreshes the Search Strings Display if
+    // Colors related to Search Strings changed in RNA3D Application
     // and not updated automatically
     MapSearchStringsToEcoliTemplateChanged_CB(RNA3D->root);
 
-    // Resetting the Molecule Transformations 
+    // Resetting the Molecule Transformations
     // 1.Reset the Molecule view to Center of the viewer (default view).
     // 2.Zoom the Molecule to fit to window (default zoom).
     RNA3D->Center = Vector3(0.0, 0.0, 0.0);
@@ -430,7 +430,7 @@ static AW_window *CreateDisplayBases_window(AW_root *aw_root) {
         aws->insert_toggle("#star.bitmap",      "S", 3);
         aws->insert_toggle("#rectangle.bitmap", "R", 4);
         aws->update_toggle_field();
-   }
+    }
 
     aws->show();
 
@@ -479,11 +479,11 @@ static AW_window *CreateDisplayHelices_window(AW_root *aw_root) {
 #warning s is not initialized here
 #endif // DEVEL_RALF
             int rnaType = s->FindTypeOfRNA();
-            
+
             switch (rnaType) {
-            case LSU_23S: helixRange = "[1-101]"; break;
-            case SSU_16S: helixRange = "[1-50]";  break;
-            case LSU_5S:  helixRange = "[1-5]";   break;
+                case LSU_23S: helixRange = "[1-101]"; break;
+                case SSU_16S: helixRange = "[1-50]";  break;
+                case LSU_5S:  helixRange = "[1-5]";   break;
             }
             aws->at("rangeLabel");
             aws->create_autosize_button(0,helixRange);
@@ -491,7 +491,7 @@ static AW_window *CreateDisplayHelices_window(AW_root *aw_root) {
 
         aws->at("dispTI");
         aws->create_toggle(AWAR_3D_DISPLAY_TERTIARY_INTRACTIONS);
-   }
+    }
     aws->show();
     return (AW_window *)aws;
 }
@@ -530,7 +530,7 @@ static AW_window *CreateDisplayOptions_window(AW_root *aw_root) {
         aws->create_input_field(AWAR_3D_MOL_SIZE, 5);
         aws->at("cp");
         aws->create_toggle(AWAR_3D_CURSOR_POSITION);
-   }
+    }
     aws->show();
     return (AW_window *)aws;
 }
@@ -554,7 +554,7 @@ static AW_window *CreateMapSequenceData_window(AW_root *aw_root) {
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->button_length(0);
     aws->create_button("CLOSE","#closeText.xpm");
-    
+
     aws->callback(SyncronizeColorsWithEditor);
     aws->at("sync");
     aws->button_length(35);
@@ -563,7 +563,7 @@ static AW_window *CreateMapSequenceData_window(AW_root *aw_root) {
     {  // Display Map Current Species Section
         aws->at("en");
         aws->create_toggle(AWAR_3D_MAP_ENABLE);
-        
+
         aws->at("src");
         aws->create_toggle(AWAR_3D_MAP_SEARCH_STRINGS);
 
@@ -589,7 +589,7 @@ static AW_window *CreateMapSequenceData_window(AW_root *aw_root) {
         aws->create_toggle(AWAR_3D_MAP_SPECIES_DISP_INSERTIONS);
         aws->at("bs");
         aws->create_toggle(AWAR_3D_MAP_SPECIES_DISP_INSERTIONS_INFO);
-   }
+    }
     aws->show();
     return (AW_window *)aws;
 }
@@ -683,10 +683,10 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
     extern GBDATA *GLOBAL_gb_main;
     GB_transaction dummy(GLOBAL_gb_main);
 
-    awr->awar_int(AWAR_3D_SAI_SELECTED, 0, AW_ROOT_DEFAULT); 
+    awr->awar_int(AWAR_3D_SAI_SELECTED, 0, AW_ROOT_DEFAULT);
 
     RNA3D_init_global_data();
-    
+
     awm = new AW_window_menu_modes_opengl();
     awm->init(awr,"RNA3D", "RNA3D: 3D Structure of Ribosomal RNA", WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -699,13 +699,13 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
 
     RNA3D->gl_Canvas->recalc_size();
     RNA3D->gl_Canvas->refresh();
-    RNA3D->gl_Canvas->set_mode(AWT_MODE_NONE); 
+    RNA3D->gl_Canvas->set_mode(AWT_MODE_NONE);
 
     awm->create_menu( 0, "File", "F", 0,  AWM_ALL );
-    {    
+    {
         Structure3D *s;
         int rnaType = s->FindTypeOfRNA();
-        if (rnaType == LSU_23S) 
+        if (rnaType == LSU_23S)
             awm->insert_menu_topic( "changeMolecule", "Change Molecule", "M","rna3d_changeMolecule.hlp", AWM_ALL, AW_POPUP, (AW_CL)CreateChangeMolecule_window, 0);
     }
     awm->insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 1,0);
@@ -783,27 +783,27 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr){
     appContext = awr->prvt->context;
 
     RNA3D->OpenGLEngineState = NOT_CREATED;
-		
+
     /** Add event handlers */
-		
+
     XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
                        StructureNotifyMask , 0, (XtEventHandler) ResizeOpenGLWindow, (XtPointer) 0 );
-		
+
     XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
                        ExposureMask, 0, (XtEventHandler) ExposeOpenGLWindow, (XtPointer) 0 );
-		
+
     XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
                        KeyPressMask, 0, (XtEventHandler) KeyPressEventHandler, (XtPointer) 0 );
 
     XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
                        KeyReleaseMask, 0, (XtEventHandler) KeyReleaseEventHandler, (XtPointer) 0 );
-		
+
     XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
                        ButtonPressMask, 0, (XtEventHandler) ButtonPressEventHandler, (XtPointer) 0 );
-		
+
     XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
                        ButtonReleaseMask, 0, (XtEventHandler) ButtonReleaseEventHandler, (XtPointer) 0 );
-		
+
     XtAddEventHandler( RNA3D->gl_Canvas->aww->p_w->areas[ AW_MIDDLE_AREA ]->area,
                        PointerMotionMask, 0, (XtEventHandler) MouseMoveEventHandler, (XtPointer) 0 );
 

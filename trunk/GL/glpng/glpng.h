@@ -30,33 +30,33 @@ extern "C" {
 #endif
 
 #ifdef _MSC_VER
-	#ifdef _DEBUG
-		#pragma comment (lib, "glpngd.lib")
-	#else
-		#pragma comment (lib, "glpng.lib")
-	#endif
+#ifdef _DEBUG
+#pragma comment (lib, "glpngd.lib")
+#else
+#pragma comment (lib, "glpng.lib")
+#endif
 #endif
 
-/* XXX This is from Win32's <windef.h> */
+    /* XXX This is from Win32's <windef.h> */
 #ifndef APIENTRY
-	#if (_MSC_VER >= 800) || defined(_STDCALL_SUPPORTED)
-		#define APIENTRY    __stdcall
-	#else
-		#define APIENTRY
-	#endif
+#if (_MSC_VER >= 800) || defined(_STDCALL_SUPPORTED)
+#define APIENTRY    __stdcall
+#else
+#define APIENTRY
+#endif
 #endif
 
-/* Mipmapping parameters */
+    /* Mipmapping parameters */
 #define PNG_NOMIPMAPS      0 /* No mipmapping                        */
 #define PNG_BUILDMIPMAPS  -1 /* Calls a clone of gluBuild2DMipmaps() */
 #define PNG_SIMPLEMIPMAPS -2 /* Generates mipmaps without filtering  */
 
-/* Who needs an "S" anyway? */
+    /* Who needs an "S" anyway? */
 #define PNG_NOMIPMAP     PNG_NOMIPMAPS
 #define PNG_BUILDMIPMAP  PNG_BUILDMIPMAPS
 #define PNG_SIMPLEMIPMAP PNG_SIMPLEMIPMAPS
 
-/* Transparency parameters */
+    /* Transparency parameters */
 #define PNG_CALLBACK  -3 /* Call the callback function to generate alpha   */
 #define PNG_ALPHA     -2 /* Use alpha channel in PNG file, if there is one */
 #define PNG_SOLID     -1 /* No transparency                                */
@@ -70,37 +70,37 @@ extern "C" {
 #define PNG_BLEND7     7 /* a = (r*r+g*g+b*b)/4                            */
 #define PNG_BLEND8     8 /* a = sqrt(r*r+g*g+b*b)                          */
 
-typedef struct {
-	unsigned int Width;
-	unsigned int Height;
-	unsigned int Depth;
-	unsigned int Alpha;
-} pngInfo;
+    typedef struct {
+        unsigned int Width;
+        unsigned int Height;
+        unsigned int Depth;
+        unsigned int Alpha;
+    } pngInfo;
 
-typedef struct {
-	unsigned int Width;
-	unsigned int Height;
-	unsigned int Depth;
-	unsigned int Alpha;
+    typedef struct {
+        unsigned int Width;
+        unsigned int Height;
+        unsigned int Depth;
+        unsigned int Alpha;
 
-	unsigned int Components;
-	unsigned char *Data;
-	unsigned char *Palette;
-} pngRawInfo;
+        unsigned int Components;
+        unsigned char *Data;
+        unsigned char *Palette;
+    } pngRawInfo;
 
-extern int APIENTRY pngLoadRaw(const char *filename, pngRawInfo *rawinfo);
-extern int APIENTRY pngLoadRawF(FILE *file, pngRawInfo *rawinfo);
+    extern int APIENTRY pngLoadRaw(const char *filename, pngRawInfo *rawinfo);
+    extern int APIENTRY pngLoadRawF(FILE *file, pngRawInfo *rawinfo);
 
-extern int APIENTRY pngLoad(const char *filename, int mipmap, int trans, pngInfo *info);
-extern int APIENTRY pngLoadF(FILE *file, int mipmap, int trans, pngInfo *info);
+    extern int APIENTRY pngLoad(const char *filename, int mipmap, int trans, pngInfo *info);
+    extern int APIENTRY pngLoadF(FILE *file, int mipmap, int trans, pngInfo *info);
 
-extern unsigned int APIENTRY pngBind(const char *filename, int mipmap, int trans, pngInfo *info, int wrapst, int minfilter, int magfilter);
-extern unsigned int APIENTRY pngBindF(FILE *file, int mipmap, int trans, pngInfo *info, int wrapst, int minfilter, int magfilter);
+    extern unsigned int APIENTRY pngBind(const char *filename, int mipmap, int trans, pngInfo *info, int wrapst, int minfilter, int magfilter);
+    extern unsigned int APIENTRY pngBindF(FILE *file, int mipmap, int trans, pngInfo *info, int wrapst, int minfilter, int magfilter);
 
-extern void APIENTRY pngSetStencil(unsigned char red, unsigned char green, unsigned char blue);
-extern void APIENTRY pngSetAlphaCallback(unsigned char (*callback)(unsigned char red, unsigned char green, unsigned char blue));
-extern void APIENTRY pngSetViewingGamma(double viewingGamma);
-extern void APIENTRY pngSetStandardOrientation(int standardorientation);
+    extern void APIENTRY pngSetStencil(unsigned char red, unsigned char green, unsigned char blue);
+    extern void APIENTRY pngSetAlphaCallback(unsigned char (*callback)(unsigned char red, unsigned char green, unsigned char blue));
+    extern void APIENTRY pngSetViewingGamma(double viewingGamma);
+    extern void APIENTRY pngSetStandardOrientation(int standardorientation);
 
 #ifdef __cplusplus
 }

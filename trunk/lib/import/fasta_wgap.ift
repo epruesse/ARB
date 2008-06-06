@@ -1,23 +1,23 @@
-AUTODETECT	">*"
-	#Global settings:
-KEYWIDTH	1
+AUTODETECT      ">*"
+                #Global settings:
+KEYWIDTH        1
 
-BEGIN	">??*"
+BEGIN           ">??*"
 
-MATCH	">*"
-	SRT "* *=*1:*\t*=*1"
-	WRITE "name"
+MATCH           ">*"
+                SRT "* *=*1:*\t*=*1"
+                WRITE "name"
 
-MATCH	">*"
-	SRT "*|*=*1"
-	WRITE "full_name"
+MATCH           ">*"
+                SRT "*|*=*1"
+                WRITE "full_name"
 
-SEQUENCEAFTER	"*"
-SEQUENCESRT	""
-SEQUENCECOLUMN	0
-SEQUENCEEND	">*"
+SEQUENCEAFTER   "*"
+SEQUENCESRT     ""
+SEQUENCECOLUMN  0
+SEQUENCEEND     ">*"
 
 # DONT_GEN_NAMES
 CREATE_ACC_FROM_SEQUENCE
 
-END	"//"
+END             "//"

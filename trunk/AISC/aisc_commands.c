@@ -31,7 +31,7 @@ int printf_error(const char *format, ...) {
         fprintf(stderr, "%s:%i: Error buffer overflow!\n", __FILE__, __LINE__);
         vfprintf(stderr, format, argPtr);
         fputc('\n', stderr);
-        
+
         va_end(argPtr);
         exit(EXIT_FAILURE);
     }
@@ -84,7 +84,7 @@ char *find_string(const char *str,const char *key)
 }
 
 char *calc_rest_line(/*const*/ char *str, int size, int presize)
-{				/* wertet einen Puffer str aus , str[-1] muss exestieren !!! */
+{                               /* wertet einen Puffer str aus , str[-1] muss exestieren !!! */
     char *ld;
     char *p;
     char *br;
@@ -117,9 +117,9 @@ char *calc_rest_line(/*const*/ char *str, int size, int presize)
     }
     *br = 0;
     br++;
-    if (*p == 0) {		/* empty $() */
+    if (*p == 0) {              /* empty $() */
         fi = strdup("");
-    }else if (presize && (str[-1] == '$')) {	/* quoted */
+    }else if (presize && (str[-1] == '$')) {    /* quoted */
         br[-1] = ')';
         c = *br; *br = 0;
         fi = strdup(str+1);
@@ -226,7 +226,7 @@ calc_line(char *str, char *buf)
 
 int
 calc_line2(char *str, char *buf)
-{				/* erstes $( nicht auswerten ) !!! */
+{                               /* erstes $( nicht auswerten ) !!! */
     char           *ld;
     char           *lb;
     int             len;
@@ -662,7 +662,7 @@ do_com_if(char *str)
     char           *kom;
     char           *la;
     char           *kom2;
-    int		op = 0;	/* 0=	1~ 2< 3> !+8 */
+    int         op = 0; /* 0=   1~ 2< 3> !+8 */
     for (equ = str;*equ;equ++) {
         if (*equ =='=') { op = 0; break;}
         if (*equ =='~') { op = 1; break;}
@@ -685,13 +685,13 @@ do_com_if(char *str)
         }
         /* printf("- str='%s' equ='%s'\n", str, equ); */
         switch (op) {
-            case 0:	if (!strcmp(str, equ)) return 0; break;
-            case 8:	if ( strcmp(str, equ)) return 0; break;
-            case 1:	if ( find_string(str, equ)) return 0; break;
-            case 9:	if (!find_string(str, equ)) return 0; break;
-            case 2:	if (strcmp(str, equ)< 0) return 0; break;
+            case 0:     if (!strcmp(str, equ)) return 0; break;
+            case 8:     if ( strcmp(str, equ)) return 0; break;
+            case 1:     if ( find_string(str, equ)) return 0; break;
+            case 9:     if (!find_string(str, equ)) return 0; break;
+            case 2:     if (strcmp(str, equ)< 0) return 0; break;
             case 10:if (strcmp(str, equ)>=0) return 0; break;
-            case 3:	if (strcmp(str, equ)> 0) return 0; break;
+            case 3:     if (strcmp(str, equ)> 0) return 0; break;
             case 11:if (strcmp(str, equ)<=0) return 0; break;
         }
         equ = kom2;
@@ -778,7 +778,7 @@ int do_com_gosub(char *str)
     gl->pc = fun = (CL *)atol(fn);
 
     err = calc_line(gl->pc->str, gl->linebuf);
-    if (err)	return err;
+    if (err)    return err;
     fpara = gl->linebuf;
     READ_SPACES(fpara);
     for (para = params; *para;para=npara,fpara=nfpara){
@@ -794,9 +794,9 @@ int do_com_gosub(char *str)
         if (*s) {nfpara = s+1;READ_SPACES(nfpara);} else nfpara = s;
         *s = 0;
         s = read_hash( gl->st->hs,para);
-        if (s) {	sprintf(error_buf,"duplikated formal parameter %s",para);
-        print_error(error_buf);
-        return 1;
+        if (s) {        sprintf(error_buf,"duplikated formal parameter %s",para);
+            print_error(error_buf);
+            return 1;
         }
         write_hash(gl->st->hs, fpara, para);
     }
@@ -932,15 +932,15 @@ int do_com_next(const char *str)
     str = str;
     return 0;
 }
-#define COMMAND(str,string,len,func) if ( string[0]==str[0]\
-		&&!strncmp(string,str,len)) { char *s=str+len;\
-		READ_SPACES(s); if (func(s)) break; continue;}
-#define COMMAND2(str,string,len,func) if ( string[0]==str[0]\
-		&&!strncmp(string,str,len)) { char *s=str+len;\
-		if (func(s)) break; continue;}
-#define COMMAND2_NOFAIL(str,string,len,func) if ( string[0]==str[0]\
-		&&!strncmp(string,str,len)) { char *s=str+len;\
-		if (func(s)) { return -1; } continue;}
+#define COMMAND(str,string,len,func) if ( string[0]==str[0]             \
+                                          &&!strncmp(string,str,len)) { char *s=str+len; \
+        READ_SPACES(s); if (func(s)) break; continue;}
+#define COMMAND2(str,string,len,func) if ( string[0]==str[0]            \
+                                           &&!strncmp(string,str,len)) { char *s=str+len; \
+        if (func(s)) break; continue;}
+#define COMMAND2_NOFAIL(str,string,len,func) if ( string[0]==str[0]     \
+                                                  &&!strncmp(string,str,len)) { char *s=str+len; \
+        if (func(s)) { return -1; } continue;}
 int
 run_prg(void)
 {

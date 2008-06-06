@@ -1,22 +1,22 @@
 IF $(argc) = 5,6
 ELSE
-	ERROR	Falsche Parameteranzahl: Syntax aisc xxx.pa xxx.aisc outfile extern_file
+        ERROR   Falsche Parameteranzahl: Syntax aisc xxx.pa xxx.aisc outfile extern_file
 ENDIF
 
 DATA AISC { $(#FILE $(argv[2])) };
 OPEN save $(argv[3])
 
 TABSTOP 8
-TAB	0	0
-TAB	1	8
-TAB	2	16
-TAB	3	24
-TAB	4	32
-TAB	5	40
-TAB	6	48
-TAB	7	56
-TAB	8	64
-TAB	9	72
+TAB     0       0
+TAB     1       8
+TAB     2       16
+TAB     3       24
+TAB     4       32
+TAB     5       40
+TAB     6       48
+TAB     7       56
+TAB     8       64
+TAB     9       72
 
 
 MOVETO $(AISC/PROJECT)
@@ -45,19 +45,19 @@ P #endif
 ########### generate object names struct ###########
 CREATE $(i)
 FOR $(i) = 0 TO $(max_obj)
-	CREATE $(list2[$(i)]) = $10, 
+        CREATE $(list2[$(i)]) = $10, 
 ENDFOR
 FOR $(i) = 0 TO $(max_key)
-	CREATE $(list[$(i)]) = $10, 
+        CREATE $(list[$(i)]) = $10, 
 ENDFOR
 P const char *aisc_object_names[] = {
 FOR $(STRUCT)
-	IF $(SKEY)
-		SET $(list2[$(SKEYC)]) = $1"$(pre)$(SKEY)",
-	ENDIF
+        IF $(SKEY)
+                SET $(list2[$(SKEYC)]) = $1"$(pre)$(SKEY)",
+        ENDIF
 ENDFOR
 FOR $(i) = 0 TO $(max_obj)
-	P $(list2[$(i)])
+        P $(list2[$(i)])
 ENDFOR
 P $10$n};$n
 
@@ -65,15 +65,15 @@ P $10$n};$n
 CREATE $(nummer)
 CREATE $(aisc_string)
 FOR $(STRUCT)
-	IF $(SKEY)
-		GOSUB clearlist
-		SET $(nummer) = 0
-		SET $(aisc_string) = $(pre)$(SKEY)_
-		P static const char *$(pre)$(STRUCT)_attribut_names[] = {
-		GOSUB make_attr_names
-		GOSUB printlist
-		P $10$n};$n
-	ENDIF
+        IF $(SKEY)
+                GOSUB clearlist
+                SET $(nummer) = 0
+                SET $(aisc_string) = $(pre)$(SKEY)_
+                P static const char *$(pre)$(STRUCT)_attribut_names[] = {
+                GOSUB make_attr_names
+                GOSUB printlist
+                P $10$n};$n
+        ENDIF
 ENDFOR
 P $n
 
@@ -81,9 +81,9 @@ P $n
 GOSUB clearobjlist
 P const char *aisc_attribut_names_list[] = {
 FOR $(STRUCT)
-	IF $(SKEY)
-	     SET $(list2[$(SKEYC)]) = $1(const char *)$(pre)$(STRUCT)_attribut_names
-	ENDIF
+        IF $(SKEY)
+             SET $(list2[$(SKEYC)]) = $1(const char *)$(pre)$(STRUCT)_attribut_names
+        ENDIF
 ENDFOR
 GOSUB printobjlist
 P $10$n};$n
@@ -106,81 +106,81 @@ ENDFOR
 ################## generate d flags #####################
 P int aisc_d_flags[] = {
 FOR $(i) = 0 TO $(max_key)
-	SET $(list[$(i)]) = $10,
+        SET $(list[$(i)]) = $10,
 ENDFOR
 FOR $(STRUCT)
-	IF $(SKEY)
-		SET $(i) = 0
-		FOR $({/TYPE)
-			IF $(TYPE) = dllh
-				SET $(i) = 1
-			ENDIF
-		ENDFOR
-		SET $(list[$(SKEYC)]) = $1$(i),$6/* $(SKEY) */
-	ENDIF
+        IF $(SKEY)
+                SET $(i) = 0
+                FOR $({/TYPE)
+                        IF $(TYPE) = dllh
+                                SET $(i) = 1
+                        ENDIF
+                ENDFOR
+                SET $(list[$(SKEYC)]) = $1$(i),$6/* $(SKEY) */
+        ENDIF
 ENDFOR
 FOR $(i) = 0 TO $(max_key)
-	P $(list[$(i)])
+        P $(list[$(i)])
 ENDFOR
 P $10$n};$n
 
 ################## generate get tables #####################
 P int *((**(aisc_talking_functions_get[]))()) = {
 FOR $(i) = 0 TO $(max_key)
-	SET $(list[$(i)]) = $10,
+        SET $(list[$(i)]) = $10,
 ENDFOR
 FOR $(STRUCT)
-	IF $(SKEY)
-		SET $(list[$(SKEYC)]) = $1aisc_talking_functions_get_$(STRUCT),
-	ENDIF
+        IF $(SKEY)
+                SET $(list[$(SKEYC)]) = $1aisc_talking_functions_get_$(STRUCT),
+        ENDIF
 ENDFOR
 FOR $(i) = 0 TO $(max_key)
-	P $(list[$(i)])
+        P $(list[$(i)])
 ENDFOR
 P $10$n};$n
 
 ################## generate set tables #####################
 P int ((**(aisc_talking_functions_set[]))()) = {
 FOR $(i) = 0 TO $(max_key)
-	SET $(list[$(i)]) = $10,
+        SET $(list[$(i)]) = $10,
 ENDFOR
 FOR $(STRUCT)
-	IF $(SKEY)
-		SET $(list[$(SKEYC)]) = $1aisc_talking_functions_set_$(STRUCT),
-	ENDIF
+        IF $(SKEY)
+                SET $(list[$(SKEYC)]) = $1aisc_talking_functions_set_$(STRUCT),
+        ENDIF
 ENDFOR
 FOR $(i) = 0 TO $(max_key)
-	P $(list[$(i)])
+        P $(list[$(i)])
 ENDFOR
 P $10$n};$n
 
 ################## generate find tables #####################
 P int *((**(aisc_talking_functions_find[]))()) = {
 FOR $(i) = 0 TO $(max_key)
-	SET $(list[$(i)]) = $10,
+        SET $(list[$(i)]) = $10,
 ENDFOR
 FOR $(STRUCT)
-	IF $(SKEY)
-	SET $(list[$(SKEYC)]) = $1aisc_talking_functions_find_$(STRUCT),
-	ENDIF
+        IF $(SKEY)
+        SET $(list[$(SKEYC)]) = $1aisc_talking_functions_find_$(STRUCT),
+        ENDIF
 ENDFOR
 FOR $(i) = 0 TO $(max_key)
-	P $(list[$(i)])
+        P $(list[$(i)])
 ENDFOR
 P $10$n};$n
 
 ################## generate copy tables #####################
 P int *((**(aisc_talking_functions_copy[]))()) = {
 FOR $(i) = 0 TO $(max_key)
-	SET $(list[$(i)]) = $10,
+        SET $(list[$(i)]) = $10,
 ENDFOR
 FOR $(STRUCT)
-	IF $(SKEY)
-	SET $(list[$(SKEYC)]) = $1aisc_talking_functions_copy_$(STRUCT),
-	ENDIF
+        IF $(SKEY)
+        SET $(list[$(SKEYC)]) = $1aisc_talking_functions_copy_$(STRUCT),
+        ENDIF
 ENDFOR
 FOR $(i) = 0 TO $(max_key)
-	P $(list[$(i)])
+        P $(list[$(i)])
 ENDFOR
 P $10$n};$n
 
@@ -188,15 +188,15 @@ P $10$n};$n
 #P int *((**(aisc_talking_functions_create[]))()) = {
 P talking_function* aisc_talking_functions_create[] = {
 FOR $(i) = 0 TO $(max_key)
-	SET $(list[$(i)]) = $10,
+        SET $(list[$(i)]) = $10,
 ENDFOR
 FOR $(STRUCT)
-	IF $(SKEY)
-	SET $(list[$(SKEYC)]) = $1aisc_talking_functions_create_$(STRUCT),
-	ENDIF
+        IF $(SKEY)
+        SET $(list[$(SKEYC)]) = $1aisc_talking_functions_create_$(STRUCT),
+        ENDIF
 ENDFOR
 FOR $(i) = 0 TO $(max_key)
-	P $(list[$(i)])
+        P $(list[$(i)])
 ENDFOR
 P $10$n};$n
 
@@ -204,15 +204,15 @@ P $10$n};$n
 #P int ((*(aisc_talking_functions_delete[]))()) = {
 P aisc_callback_func aisc_talking_functions_delete[] = {
 FOR $(i) = 0 TO $(max_key)
-	SET $(list[$(i)]) = $10,
+        SET $(list[$(i)]) = $10,
 ENDFOR
 FOR $(STRUCT) 
- 	IF $(SKEY)
-	SET $(list[$(SKEYC)]) = $1destroy_$(STRUCT),
-	ENDIF
+        IF $(SKEY)
+        SET $(list[$(SKEYC)]) = $1destroy_$(STRUCT),
+        ENDIF
 ENDFOR
 FOR $(i) = 0 TO $(max_key)
-	P $(list[$(i)])
+        P $(list[$(i)])
 ENDFOR
 P $10$n};$n
 
@@ -229,59 +229,59 @@ EXIT
 
 ################ make_attr_names (rek.) ####################
 FUNCTION make_attr_names
-	CREATE $(nr) = $(nummer)
-	CREATE $(s) = $(aisc_string)
-	FOR $({/TYPE)
-		IF $(KEY)
-		  IF $(REF) ~ s
-			PUSH
-			SET $(nummer) = $(+ $(nr)+$(KEYC) )
-			SET $(aisc_string) = $(s)$(KEY)_
-			MOVETO $(/AISC/DATA/STRUCT.$(TYPE))
-			GOSUB make_attr_names
-			POP
-		  ELSEIF $(REF) ~ d
-			SET $(list[$(+ $(+ $(nr)+1)+$(KEYC))])=$1"$(s)$(KEY)CNT" 
-			SET $(list[$(+ $(nr)+$(KEYC))]) = $1"$(s)$(KEY)" 
-		  ELSEIF $(TYPE) = dllh
-			PUSH
-			SET $(nummer) = $(+ 2+$(+ $(nr)+$(KEYC) ))
-			SET $(aisc_string) = $(s)$(KEY)
-			MOVETO $(/AISC/DATA/STRUCT.dll_header)
-			GOSUB make_attr_names
-			POP
-			SET $(list[$(+ $(nr)+0)]) = $1"$(s)PREVIOUS" 
-			SET $(list[$(+ $(nr)+1)]) = $1"$(s)NEXT" 
-		  ELSE
-			SET $(list[$(+ $(nr)+$(KEYC))]) = $1"$(s)$(KEY)" 
-		  ENDIF
-		ENDIF
-	ENDFOR
+        CREATE $(nr) = $(nummer)
+        CREATE $(s) = $(aisc_string)
+        FOR $({/TYPE)
+                IF $(KEY)
+                  IF $(REF) ~ s
+                        PUSH
+                        SET $(nummer) = $(+ $(nr)+$(KEYC) )
+                        SET $(aisc_string) = $(s)$(KEY)_
+                        MOVETO $(/AISC/DATA/STRUCT.$(TYPE))
+                        GOSUB make_attr_names
+                        POP
+                  ELSEIF $(REF) ~ d
+                        SET $(list[$(+ $(+ $(nr)+1)+$(KEYC))])=$1"$(s)$(KEY)CNT" 
+                        SET $(list[$(+ $(nr)+$(KEYC))]) = $1"$(s)$(KEY)" 
+                  ELSEIF $(TYPE) = dllh
+                        PUSH
+                        SET $(nummer) = $(+ 2+$(+ $(nr)+$(KEYC) ))
+                        SET $(aisc_string) = $(s)$(KEY)
+                        MOVETO $(/AISC/DATA/STRUCT.dll_header)
+                        GOSUB make_attr_names
+                        POP
+                        SET $(list[$(+ $(nr)+0)]) = $1"$(s)PREVIOUS" 
+                        SET $(list[$(+ $(nr)+1)]) = $1"$(s)NEXT" 
+                  ELSE
+                        SET $(list[$(+ $(nr)+$(KEYC))]) = $1"$(s)$(KEY)" 
+                  ENDIF
+                ENDIF
+        ENDFOR
 RETURN
 
 ############### SUB CLEAR LIST #########################
 FUNCTION clearlist
-		FOR $(i) = 0 TO $(max_key)
-			SET $(list[$(i)]) = $10
-		ENDFOR
+                FOR $(i) = 0 TO $(max_key)
+                        SET $(list[$(i)]) = $10
+                ENDFOR
 RETURN
 ############### SUB PRINT LIST #########################
 FUNCTION printlist
-	FOR $(i) = 0 TO $(max_key)
-		P $1$(list[$(i)]), 
-	ENDFOR
+        FOR $(i) = 0 TO $(max_key)
+                P $1$(list[$(i)]), 
+        ENDFOR
 RETURN
 
 ############### SUB CLEAR LIST #########################
 FUNCTION clearobjlist
-		FOR $(i) = 0 TO $(max_obj)
-			SET $(list2[$(i)]) = $10
-		ENDFOR
+                FOR $(i) = 0 TO $(max_obj)
+                        SET $(list2[$(i)]) = $10
+                ENDFOR
 RETURN
 ############### SUB PRINT OBJ LIST #########################
 FUNCTION printobjlist
-	FOR $(i) = 0 TO $(max_obj)
-		P $1$(list2[$(i)]), 
-	ENDFOR
+        FOR $(i) = 0 TO $(max_obj)
+                P $1$(list2[$(i)]), 
+        ENDFOR
 RETURN
 

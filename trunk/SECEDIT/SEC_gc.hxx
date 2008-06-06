@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : sec_gc.hxx                                        //
 //   Purpose   : GC definitions                                    //
-//   Time-stamp: <Thu Sep/06/2007 12:39 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Thu Jun/05/2008 14:07 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in July 2007      //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -22,7 +22,7 @@ enum {
     SEC_GC_ECOLI,          SEC_GC_LAST_FONT  = SEC_GC_ECOLI,
     SEC_GC_HELIX_NO,
 
-    SEC_GC_CBACK_0,	// Ranges for SAI visualization
+    SEC_GC_CBACK_0,     // Ranges for SAI visualization
     SEC_GC_CBACK_1,
     SEC_GC_CBACK_2,
     SEC_GC_CBACK_3,

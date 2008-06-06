@@ -15,7 +15,7 @@
 
 
 // --------------------------------------------------------------------------------
-// 		ED4_folding_line::
+//              ED4_folding_line::
 // --------------------------------------------------------------------------------
 
 ED4_folding_line::ED4_folding_line()
@@ -27,7 +27,7 @@ ED4_folding_line::~ED4_folding_line()
 }
 
 // --------------------------------------------------------------------------------
-// 		ED4_bases_table::
+//              ED4_bases_table::
 // --------------------------------------------------------------------------------
 
 #ifdef DEBUG
@@ -476,10 +476,10 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
 
     char *consensus_string = fill_id;
 
-#define PERCENT(part, all)	((100*(part))/(all))
+#define PERCENT(part, all)      ((100*(part))/(all))
 #define MAX_BASES_TABLES 41     //25
 
-    e4_assert(used_bases_tables<=MAX_BASES_TABLES);	// this is correct for DNA/RNA -> build_consensus_string() must be corrected for AMI/PRO
+    e4_assert(used_bases_tables<=MAX_BASES_TABLES);     // this is correct for DNA/RNA -> build_consensus_string() must be corrected for AMI/PRO
 
     if (sequences) {
         for (i=left_idx; i<=right_idx; i++) {
@@ -566,7 +566,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
                     }
                 }
                 else {
-                    e4_assert(max_base); // expect at least one base to occur  
+                    e4_assert(max_base); // expect at least one base to occur
                     kchar = index_to_upperChar(max_j);
                     kcount = max_base;
                 }
@@ -600,7 +600,7 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
 }
 
 // --------------------------------------------------------------------------------
-//		ED4_char_table::
+//              ED4_char_table::
 // --------------------------------------------------------------------------------
 
 // bool ED4_char_table::tables_are_valid = true;
@@ -872,7 +872,7 @@ int ED4_char_table::changed_range(const char *string1, const char *string2, int 
     int j;
     int k;
 
-    for (i=0; i<l; i++) {	// search wordwise (it's faster)
+    for (i=0; i<l; i++) {       // search wordwise (it's faster)
         if (range1[i] != range2[i]) {
             k = i*step;
             for (j=0; j<step; j++) {
@@ -887,7 +887,7 @@ int ED4_char_table::changed_range(const char *string1, const char *string2, int 
     }
 
     k = l*step;
-    if (i==l) {		// no difference found in word -> look at rest
+    if (i==l) {         // no difference found in word -> look at rest
         for (j=0; j<r; j++) {
             if (string1[k+j] != string2[k+j]) {
                 *start = *end = k+j;
@@ -895,19 +895,19 @@ int ED4_char_table::changed_range(const char *string1, const char *string2, int 
             }
         }
 
-        if (j==r) {	// the strings are equal
+        if (j==r) {     // the strings are equal
             return 0;
         }
     }
 
-    for (j=r-1; j>=0; j--) {	// search rest backwards
+    for (j=r-1; j>=0; j--) {    // search rest backwards
         if (string1[k+j] != string2[k+j]) {
             *end = k+j;
             break;
         }
     }
 
-    if (j==-1) {		// not found in rest -> search words backwards
+    if (j==-1) {                // not found in rest -> search words backwards
         int m = *start/step;
         for (i=l-1; i>=m; i--) {
             if (range1[i] != range2[i]) {
@@ -1068,21 +1068,21 @@ void ED4_char_table::change_table_length(int new_length)
 {
     int c;
 
-//     int bases1, gaps1;
-//     bases_and_gaps_at(0, &bases1, &gaps1);
+    //     int bases1, gaps1;
+    //     bases_and_gaps_at(0, &bases1, &gaps1);
 
-//     int table_thickness = bases1+gaps1;
-//     bool gaps_inserted = false;
+    //     int table_thickness = bases1+gaps1;
+    //     bool gaps_inserted = false;
 
     // test(); fails because MAXSEQUENCECHARACTERLENGTH is already incremented
 
     for (c=0; c<used_bases_tables; c++) {
-//         int default_entry = 0;
-//         if (!gaps_inserted && ADPP_IS_ALIGN_CHARACTER(upper_index_chars[c])) {
-//             default_entry = table_thickness;
-//             gaps_inserted = true;
-//         }
-//         linear_table(c).change_table_length(new_length, default_entry);
+        //         int default_entry = 0;
+        //         if (!gaps_inserted && ADPP_IS_ALIGN_CHARACTER(upper_index_chars[c])) {
+        //             default_entry = table_thickness;
+        //             gaps_inserted = true;
+        //         }
+        //         linear_table(c).change_table_length(new_length, default_entry);
         linear_table(c).change_table_length(new_length, 0);
     }
 
@@ -1125,7 +1125,7 @@ bool ED4_char_table::ok() const
 
         if (!bases && !gaps) { // this occurs after insert column
             int j;
-            for (j=i+1; j<MAXSEQUENCECHARACTERLENGTH; j++) {	// test if we find any bases till end of table !!!
+            for (j=i+1; j<MAXSEQUENCECHARACTERLENGTH; j++) {    // test if we find any bases till end of table !!!
 
                 bases_and_gaps_at(j, &bases, 0);
                 if (bases) { // bases found -> empty position was illegal
@@ -1161,10 +1161,3 @@ void ED4_char_table::test() const {
 }
 
 #endif // TEST_CHAR_TABLE_INTEGRITY
-
-
-
-
-
-
-

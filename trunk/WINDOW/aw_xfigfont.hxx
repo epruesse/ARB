@@ -4,17 +4,20 @@
 /* -----------------------------------------------------------------
  * Module:                        WINDOW/aw_xfigfont.hxx
  *
- * Global Functions:		  AW_read_xfigfont
+ * Global Functions:              AW_read_xfigfont
  *
  * Description:                   implementing simple vector fonts
- * 
+ *
  * -----------------------------------------------------------------
  */
 
-/*  
+/*
  * $Header$
  *
  * $Log$
+ * Revision 1.3  2008/06/06 12:23:34  westram
+ * - TAB-Ex
+ *
  * Revision 1.2  2005/01/05 11:25:40  westram
  * - changed include wrapper
  *
@@ -54,17 +57,18 @@
 /* includes */
 
 /* exported constants */
-const int XFIG_FONT_ELEMS = 256;
+const int XFIG_FONT_ELEMS          = 256;
 const int XFIG_FONT_VISIBLE_HEIGHT = 6;
-typedef struct AW_xfig_vectorfont{
-        short gridsizex,gridsizey;
-	// address of the default symbol: NOTE: undefined characters point to this one, too!
-        AW_xfig_line *default_symbol;
-	AW_xfig_line **lines;
-} AW_vectorfont;
+
+struct AW_xfig_vectorfont {
+    short gridsizex,gridsizey;
+    // address of the default symbol: NOTE: undefined characters point to this one, too!
+    AW_xfig_line *default_symbol;
+    AW_xfig_line **lines;
+};
 
 /* prototypes */
-AW_vectorfont *aw_read_xfigfont(char *filename);
+AW_xfig_vectorfont *aw_read_xfigfont(char *filename);
 void aw_xfig_font_deletefont(AW_root *aw_root);
 void aw_xfig_font_changefont_cb(AW_root *aw_root);
 // #endif

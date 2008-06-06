@@ -17,12 +17,12 @@ extern int  bcmp ();
 char *progname;
 
 typedef struct
-  {
+{
     lenstring locus_name;
     lenstring annotation;
     lenstring sequence;
-  }
-gb_entry;
+}
+    gb_entry;
 
 
 /* Utilities.  */
@@ -30,11 +30,11 @@ gb_entry;
 
 /* Printing usage messages.  */
 
-void 
+void
 get_help ()
 {
 
-  fputs ("\
+    fputs ("\
 Written by Pavel Slavin, pavel@darwin.life.uiuc.edu\n\
        and Jim Blandy, jimb@gnu.ai.mit.edu\n\
 $Id$ \n\
@@ -48,9 +48,9 @@ locus/value pairs.  Calling sequence, with [defaults]:\n\
 [ --annotation-out FILE ]        ; write entire annotation to FILE [stdout]\n\
 [ --sequence-out FILE ]          ; write sequence data to FILE [stdout]\n\
 [ -h | --help ]                  ; Displays this text\n",
-         stderr);
+           stderr);
 
-  exit (0);
+    exit (0);
 }
 
 
@@ -65,26 +65,26 @@ struct string_hash *index_table;
 void
 read_index_file (char *index_file_name)
 {
-  FILE *index_file;
-  lenstring buf;
+    FILE *index_file;
+    lenstring buf;
 
-  index_file = careful_open (index_file_name, "r", 0);
-  index_table = new_hash_table ();
+    index_file = careful_open (index_file_name, "r", 0);
+    index_table = new_hash_table ();
 
-  while (read_delimited_lenstring (&buf, "\n", index_file) != EOF)
+    while (read_delimited_lenstring (&buf, "\n", index_file) != EOF)
     {
-      lookup_hash_table (index_table, buf.text, buf.len);
-      free (buf.text);
+        lookup_hash_table (index_table, buf.text, buf.len);
+        free (buf.text);
     }
 
-  careful_close (index_file, index_file_name);
+    careful_close (index_file, index_file_name);
 }
 
 /* Return non-zero iff INDEX is in the hash table.  */
 int
 present_p (lenstring *index)
 {
-  return lookup_hash_table_soft (index_table, index->text, index->len) != 0;
+    return lookup_hash_table_soft (index_table, index->text, index->len) != 0;
 }
 
 
@@ -95,20 +95,20 @@ present_p (lenstring *index)
 char *
 find_header (lenstring *buffer, const char *header)
 {
-  int pos = 0;
+    int pos = 0;
 
-  for (;;)
+    for (;;)
     {
-      pos = search_lenstring (buffer, header, pos);
-      if (pos <= 0 || buffer->text[pos - 1] == '\n')
-	break;
-      pos++;
+        pos = search_lenstring (buffer, header, pos);
+        if (pos <= 0 || buffer->text[pos - 1] == '\n')
+            break;
+        pos++;
     }
 
-  if (pos == -1)
-    return NULL;
-  else
-    return buffer->text + pos;
+    if (pos == -1)
+        return NULL;
+    else
+        return buffer->text + pos;
 }
 
 
@@ -118,173 +118,173 @@ find_header (lenstring *buffer, const char *header)
 void
 gb_to_tabl_sequence (lenstring *seq)
 {
-  char *source     = seq->text;
-  char *source_end = seq->text + seq->len;
-  char *dest = source;
+    char *source     = seq->text;
+    char *source_end = seq->text + seq->len;
+    char *dest = source;
 
-  do
+    do
     {
-      char c;
-      
-      /* Skip zero or more blanks, zero or more digits, and then zero
-         or more blanks.  Consume the largest such prefix possible.  */
-      while (source < source_end
-	     && (*source == ' ' || *source == '\t'))
-	source++;
-      while (source < source_end
-	     && isascii (*source)
-	     && isdigit (*source))
-	source++;
-      while (source < source_end
-	     && (*source == ' ' || *source == '\t'))
-	source++;
+        char c;
 
-      /* Since we skip sections of text, we might not notice
-	 terminator characters in odd places, so we check against
-	 the ending address instead.  */
-      while (source < source_end && (c = *source++) != '\n')
-	{
-	  if (c != ' ')
-	    *dest++ = c;
-	}
+        /* Skip zero or more blanks, zero or more digits, and then zero
+           or more blanks.  Consume the largest such prefix possible.  */
+        while (source < source_end
+               && (*source == ' ' || *source == '\t'))
+            source++;
+        while (source < source_end
+               && isascii (*source)
+               && isdigit (*source))
+            source++;
+        while (source < source_end
+               && (*source == ' ' || *source == '\t'))
+            source++;
+
+        /* Since we skip sections of text, we might not notice
+           terminator characters in odd places, so we check against
+           the ending address instead.  */
+        while (source < source_end && (c = *source++) != '\n')
+        {
+            if (c != ' ')
+                *dest++ = c;
+        }
     }
-  while (source < source_end);
+    while (source < source_end);
 
-  /* Make seq point to the area we've re-formatted.  */
-  seq->len = dest - seq->text;
+    /* Make seq point to the area we've re-formatted.  */
+    seq->len = dest - seq->text;
 }
 
 
 /*  This function reads GenBank file ( entry-by-entry ). */
-void 
+void
 read_GenBank (char *GenBank_filename,
-	      char *locus_name_filename,
-	      char *annotation_filename,
-	      char *sequence_filename,
-	      int include)
+              char *locus_name_filename,
+              char *annotation_filename,
+              char *sequence_filename,
+              int include)
 {
-  gb_entry entry;         /* entry is a var of type gb_entry (see above) */
-  FILE *GenBank_file;
-  FILE *locus_name_file;
-  FILE *annotation_file;
-  FILE *sequence_file;
+    gb_entry entry;         /* entry is a var of type gb_entry (see above) */
+    FILE *GenBank_file;
+    FILE *locus_name_file;
+    FILE *annotation_file;
+    FILE *sequence_file;
 
-  /* Buffer containing GenBank entry.  */
-  lenstring buffer;
-  lenstring unstripped_buffer;
+    /* Buffer containing GenBank entry.  */
+    lenstring buffer;
+    lenstring unstripped_buffer;
 
-  GenBank_file    = careful_open (GenBank_filename,    "r", stdin);
-  locus_name_file = careful_open (locus_name_filename, "w+", stdout);
-  annotation_file = careful_open (annotation_filename, "w+", stdout);
-  sequence_file   = careful_open (sequence_filename,   "w+", stdout);
+    GenBank_file    = careful_open (GenBank_filename,    "r", stdin);
+    locus_name_file = careful_open (locus_name_filename, "w+", stdout);
+    annotation_file = careful_open (annotation_filename, "w+", stdout);
+    sequence_file   = careful_open (sequence_filename,   "w+", stdout);
 
-  while (read_delimited_lenstring (&unstripped_buffer, "//", GenBank_file)
-	 != EOF)
+    while (read_delimited_lenstring (&unstripped_buffer, "//", GenBank_file)
+           != EOF)
     {
-      /* start of line after ORIGIN line.  */
-      char *sequence_start;
+        /* start of line after ORIGIN line.  */
+        char *sequence_start;
 
-      /* First address after the buffer.  */
-      char *buffer_end;
+        /* First address after the buffer.  */
+        char *buffer_end;
 
-      strip_newlines (&buffer, &unstripped_buffer);
+        strip_newlines (&buffer, &unstripped_buffer);
 
-      /* Ignore newlines before EOF.  */
-      if (buffer.len == 0 && feof (GenBank_file))
-	{
-	  free (unstripped_buffer.text);
-	  break;
-	}
+        /* Ignore newlines before EOF.  */
+        if (buffer.len == 0 && feof (GenBank_file))
+        {
+            free (unstripped_buffer.text);
+            break;
+        }
 
-      buffer_end = buffer.text + buffer.len;
+        buffer_end = buffer.text + buffer.len;
 
-      /* sequence_start is the first line after the ORIGIN record.  */
-      sequence_start = find_header (&buffer, "ORIGIN");
-      if (sequence_start)
-	sequence_start = (char *) memchr (sequence_start, '\n',
-					  buffer_end - sequence_start);
-      if (! sequence_start)
-	{
-	  fprintf (stderr, "%s: entry lacks a correct ORIGIN line\n",
-		   GenBank_filename ? GenBank_filename : "stdin");
-	  exit (1);
-	}
+        /* sequence_start is the first line after the ORIGIN record.  */
+        sequence_start = find_header (&buffer, "ORIGIN");
+        if (sequence_start)
+            sequence_start = (char *) memchr (sequence_start, '\n',
+                                              buffer_end - sequence_start);
+        if (! sequence_start)
+        {
+            fprintf (stderr, "%s: entry lacks a correct ORIGIN line\n",
+                     GenBank_filename ? GenBank_filename : "stdin");
+            exit (1);
+        }
 
-      /* sequence_start should really sit *after* the newline.  */
-      sequence_start ++;
+        /* sequence_start should really sit *after* the newline.  */
+        sequence_start ++;
 
-      /* Make entry.annotation point at the annotation section of the
-         buffer.  */
-      entry.annotation.text = buffer.text;
-      entry.annotation.len  = sequence_start - buffer.text;
+        /* Make entry.annotation point at the annotation section of the
+           buffer.  */
+        entry.annotation.text = buffer.text;
+        entry.annotation.len  = sequence_start - buffer.text;
 
-      /* Find the locus field.  */
-      {
-	char *p;
-	char *start;
+        /* Find the locus field.  */
+        {
+            char *p;
+            char *start;
 
-	if (! (p = find_header (&entry.annotation, "LOCUS")))
-	  {
-	    fprintf (stderr,
-		     "%s: entry lacks a correct LOCUS line\n",
-		     GenBank_filename ? GenBank_filename : "stdin");
-	    exit (1);
-	  }
+            if (! (p = find_header (&entry.annotation, "LOCUS")))
+            {
+                fprintf (stderr,
+                         "%s: entry lacks a correct LOCUS line\n",
+                         GenBank_filename ? GenBank_filename : "stdin");
+                exit (1);
+            }
 
-	/* Find the name on the LOCUS line.  We assume it's the
-	   first string of non-spaces after the "LOCUS" string.  */
-	p += 12;
-	while (p < buffer_end && *p != '\n' && isspace (*p))
-	  p++;
-	start = p;
-	while (p < buffer_end && ! isspace (*p))
-	  p++;
-	entry.locus_name.text = start;
-	entry.locus_name.len  = p - start;
-      }
-
-
-      /* Convert sequence to GenBank format.  */
-      entry.sequence.text = sequence_start;
-      entry.sequence.len  = buffer_end - sequence_start;
-      gb_to_tabl_sequence (&entry.sequence);
+            /* Find the name on the LOCUS line.  We assume it's the
+               first string of non-spaces after the "LOCUS" string.  */
+            p += 12;
+            while (p < buffer_end && *p != '\n' && isspace (*p))
+                p++;
+            start = p;
+            while (p < buffer_end && ! isspace (*p))
+                p++;
+            entry.locus_name.text = start;
+            entry.locus_name.len  = p - start;
+        }
 
 
-      /* Write this entry's data.  */
-      {
-        lenstring *locus = &entry.locus_name;
+        /* Convert sequence to GenBank format.  */
+        entry.sequence.text = sequence_start;
+        entry.sequence.len  = buffer_end - sequence_start;
+        gb_to_tabl_sequence (&entry.sequence);
 
-        /* If we're including or excluding, only write the appropriate
-           stuff.  */
-        if (include == 0
-            || (include == -1 && ! present_p (locus))
-            || (include ==  1 &&   present_p (locus)))
-          {
-            /* what to print out and where */
-            write_lenstring (&entry.locus_name, locus_name_file);
-            putc ('\n', locus_name_file);
-	    check_file (locus_name_file, locus_name_filename,
-			"writing GenBank locus names");
 
-	    write_lenstring (&entry.annotation, annotation_file);
-	    putc ('\f', annotation_file);
-	    check_file (annotation_file, annotation_filename,
-			"writing GenBank annotations");
+        /* Write this entry's data.  */
+        {
+            lenstring *locus = &entry.locus_name;
 
-	    write_lenstring (&entry.sequence, sequence_file);
-	    putc ('\n', sequence_file);
-	    check_file (sequence_file, sequence_filename,
-			"writing GenBank sequence data");
-          }
-      }
+            /* If we're including or excluding, only write the appropriate
+               stuff.  */
+            if (include == 0
+                || (include == -1 && ! present_p (locus))
+                || (include ==  1 &&   present_p (locus)))
+            {
+                /* what to print out and where */
+                write_lenstring (&entry.locus_name, locus_name_file);
+                putc ('\n', locus_name_file);
+                check_file (locus_name_file, locus_name_filename,
+                            "writing GenBank locus names");
 
-      free (unstripped_buffer.text);
+                write_lenstring (&entry.annotation, annotation_file);
+                putc ('\f', annotation_file);
+                check_file (annotation_file, annotation_filename,
+                            "writing GenBank annotations");
+
+                write_lenstring (&entry.sequence, sequence_file);
+                putc ('\n', sequence_file);
+                check_file (sequence_file, sequence_filename,
+                            "writing GenBank sequence data");
+            }
+        }
+
+        free (unstripped_buffer.text);
     }
 
-  careful_close (GenBank_file, GenBank_filename);
-  careful_close (locus_name_file, locus_name_filename);
-  careful_close (annotation_file, annotation_filename);
-  careful_close (sequence_file, sequence_filename);
+    careful_close (GenBank_file, GenBank_filename);
+    careful_close (locus_name_file, locus_name_filename);
+    careful_close (annotation_file, annotation_filename);
+    careful_close (sequence_file, sequence_filename);
 }
 
 
@@ -293,84 +293,84 @@ read_GenBank (char *GenBank_filename,
 int
 main (int argc, char *argv[])
 {
-  char *GenBank_file = NULL;	/* Name of gen_bank file */
-  char *index_file = NULL; /* file of indices to extract */
-  char include = 0;             /* should exclude named indices, or include */
-  char *locus_name_file = NULL;	/* Name of output file for loci */
-  char *annotation_file = NULL; /* name of output file for annotations */
-  char *sequence_file = NULL;	/* name of output file for sequences */
-  int i = 0;			/* counter for first for loop */
+    char *GenBank_file = NULL;    /* Name of gen_bank file */
+    char *index_file = NULL; /* file of indices to extract */
+    char include = 0;             /* should exclude named indices, or include */
+    char *locus_name_file = NULL; /* Name of output file for loci */
+    char *annotation_file = NULL; /* name of output file for annotations */
+    char *sequence_file = NULL;   /* name of output file for sequences */
+    int i = 0;                    /* counter for first for loop */
 
-  progname = careful_prog_name (argv[0]);
+    progname = careful_prog_name (argv[0]);
 
-  for (i = 1; i < argc; i++)
+    for (i = 1; i < argc; i++)
     {
-      if (!strcmp (argv[i], "--include-loci"))
-	{
-          if (include != 0)
+        if (!strcmp (argv[i], "--include-loci"))
+        {
+            if (include != 0)
             {
-              fputs ("gb-tabl: "
-                     "`--include-loci' and `--exclude-loci' may not be\n"
-                     "gb-tabl: combined or repeated\n",
-                     stderr);
-              exit (1);
+                fputs ("gb-tabl: "
+                       "`--include-loci' and `--exclude-loci' may not be\n"
+                       "gb-tabl: combined or repeated\n",
+                       stderr);
+                exit (1);
             }
-	  i++;
-	  index_file = argv[i];
-          include = 1;
-	}
-      else if (!strcmp (argv[i], "--exclude-loci"))
-	{
-          if (include != 0)
+            i++;
+            index_file = argv[i];
+            include = 1;
+        }
+        else if (!strcmp (argv[i], "--exclude-loci"))
+        {
+            if (include != 0)
             {
-              fputs ("gb-tabl: "
-                     "`--include-loci' and `--exclude-loci' may not be\n"
-                     "gb-tabl: combined or repeated\n",
-                     stderr);
-              exit (1);
+                fputs ("gb-tabl: "
+                       "`--include-loci' and `--exclude-loci' may not be\n"
+                       "gb-tabl: combined or repeated\n",
+                       stderr);
+                exit (1);
             }
-	  i++;
-          index_file = argv[i];
-          include = -1;
-	}
-      else if (!strcmp (argv[i], "--gb-file"))
-	{
-	  i++;
-	  GenBank_file = argv[i];
-	}
-      else if (!strcmp (argv[i], "--locus-name-out"))
-	{
-	  i++;
-	  locus_name_file = argv[i];
-	}
-      else if (!strcmp (argv[i], "--annotation-out"))
-	{
-	  i++;
-	  annotation_file = argv[i];
-	}
-      else if (!strcmp (argv[i], "--sequence-out"))
-	{
-	  i++;
-	  sequence_file = argv[i];
-	}
-      else if (!strcmp (argv[i], "-h") || !strcmp (argv[i], "--help"))
-	{
-	  get_help ();
-	  return 1;
-	}
-      else
-	{
-	  fputs ("\nYour calling sequence is incorrect.  Try gb-tabl --help\n",
-                 stderr);
-	  return 1;
-	}
+            i++;
+            index_file = argv[i];
+            include = -1;
+        }
+        else if (!strcmp (argv[i], "--gb-file"))
+        {
+            i++;
+            GenBank_file = argv[i];
+        }
+        else if (!strcmp (argv[i], "--locus-name-out"))
+        {
+            i++;
+            locus_name_file = argv[i];
+        }
+        else if (!strcmp (argv[i], "--annotation-out"))
+        {
+            i++;
+            annotation_file = argv[i];
+        }
+        else if (!strcmp (argv[i], "--sequence-out"))
+        {
+            i++;
+            sequence_file = argv[i];
+        }
+        else if (!strcmp (argv[i], "-h") || !strcmp (argv[i], "--help"))
+        {
+            get_help ();
+            return 1;
+        }
+        else
+        {
+            fputs ("\nYour calling sequence is incorrect.  Try gb-tabl --help\n",
+                   stderr);
+            return 1;
+        }
     }
 
-  if (include != 0)
-    read_index_file (index_file);
+    if (include != 0)
+        read_index_file (index_file);
 
-  read_GenBank (GenBank_file, locus_name_file, annotation_file, sequence_file, 
-		include);
+    read_GenBank (GenBank_file, locus_name_file, annotation_file, sequence_file,
+                  include);
 
-  return 0;
+    return 0;
 }

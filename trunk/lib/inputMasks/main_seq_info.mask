@@ -26,12 +26,12 @@ ARB-Input-Mask
 
 @MASK_BEGIN
 
-	TEXT("You are editing") SELF()
-	NEW_SECTION()
-	TEXTFIELD("G+C content                    ", "GC", 30)
-	TEXTFIELD("G+C content (helical parts)    ", "GCH", 30)
-	TEXTFIELD("G+C content (non-helical parts)", "GCN", 30)
-	NEW_SECTION()
+    TEXT("You are editing") SELF()
+    NEW_SECTION()
+    TEXTFIELD("G+C content                    ", "GC", 30)
+    TEXTFIELD("G+C content (helical parts)    ", "GCH", 30)
+    TEXTFIELD("G+C content (non-helical parts)", "GCN", 30)
+    NEW_SECTION()
     TEXT("See 'Species/Search/More functions/Modify fields'")
     TEXT("about how to calculate these fields")
 

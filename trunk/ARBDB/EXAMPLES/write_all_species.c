@@ -3,13 +3,15 @@
 #include <arbdb.h>
 int main(int argc,char **argv)
 {
-    GBDATA *gb_main,*gb_species,*gb_speciesname;
-    char *path;
-    GB_ERROR fehler;
-	char *species_name;
-    if(argc==1) path=":";
-    else path=argv[1];
-    gb_main=GB_open(path,"r");
+    GBDATA   *gb_main,*gb_species,*gb_speciesname;
+    char     *path;
+    GB_ERROR  fehler;
+    char     *species_name;
+
+    if(argc==1) path = ":";
+    else path        = argv[1];
+
+    gb_main = GB_open(path,"r");
     if(!gb_main)
     {
         printf("konnte Datenbank nicht oeffnen\n");
@@ -39,5 +41,3 @@ int main(int argc,char **argv)
     }
     GB_commit_transaction(gb_main);
 }
-
-

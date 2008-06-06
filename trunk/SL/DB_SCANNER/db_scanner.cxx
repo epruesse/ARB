@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -26,14 +25,14 @@
 
 
 /**************************************************************************
-	create a database scanner
-		the scanned database is displayed in a selection list
-		the gbdata pointer can be read
+    create a database scanner
+        the scanned database is displayed in a selection list
+        the gbdata pointer can be read
 ***************************************************************************/
 
 
 /* return the selected GBDATA pntr the should be no !!! running transaction and
-	this function will begin a transaction */
+   this function will begin a transaction */
 
 static GBDATA *awt_get_arbdb_scanner_gbd_and_begin_trans(AW_CL arbdb_scanid)
 {
@@ -42,9 +41,9 @@ static GBDATA *awt_get_arbdb_scanner_gbd_and_begin_trans(AW_CL arbdb_scanid)
     cbs->may_be_an_error = 0;
     GB_push_transaction(cbs->gb_main);
     GBDATA *gbd = (GBDATA *)aw_root->awar(cbs->def_gbd)->read_int();
-    if (	!cbs->gb_user ||
+    if (    !cbs->gb_user ||
             !gbd ||
-            cbs->may_be_an_error) {		// something changed in the database
+            cbs->may_be_an_error) {     // something changed in the database
         return 0;
     }
     return gbd;
@@ -65,7 +64,7 @@ static void awt_arbdb_scanner_delete(void *dummy, struct adawcbstruct *cbs)
     GBDATA *gbd = awt_get_arbdb_scanner_gbd_and_begin_trans((AW_CL)cbs);
     if (!gbd) {
         aw_message("Sorry, cannot perform your operation, please redo it");
-    }else if (awt_check_scanner_key_data(cbs,gbd)) {		// already deleted
+    }else if (awt_check_scanner_key_data(cbs,gbd)) {        // already deleted
         ;
     }else{
         GB_ERROR error = GB_delete(gbd);
@@ -83,7 +82,7 @@ static void awt_edit_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_CB_T
         cbs->gb_edit = 0;
     }
     if (cbs->gb_edit) {
-        if (awt_check_scanner_key_data(cbs,cbs->gb_edit)) {		// doesnt exist
+        if (awt_check_scanner_key_data(cbs,cbs->gb_edit)) {     // doesnt exist
             aws->get_root()->awar(cbs->def_dest)->write_string("");
         }else{
             char *data;
@@ -104,7 +103,7 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
 {
     char *value = cbs->aws->get_root()->awar(cbs->def_dest)->read_string();
     int   vlen  = strlen(value);
-    
+
     while (vlen>0 && value[vlen-1] == '\n') vlen--; // remove trailing newlines
     value[vlen]     = 0;
 
@@ -115,7 +114,7 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
 
     if (!gbd) {
         error = "Sorry, cannot perform your operation, please redo it\n(Hint: No item or fields selected or 'enable edit' is unchecked)";
-        if (!cbs->aws->get_root()->awar(cbs->def_filter)->read_int()) {	// edit disabled
+        if (!cbs->aws->get_root()->awar(cbs->def_filter)->read_int()) { // edit disabled
             cbs->aws->get_root()->awar(cbs->def_dest)->write_string("");
         }
     }
@@ -152,7 +151,7 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
 
                         if (strlen(value)) {
                             GBT_begin_rename_session(cbs->gb_main,0);
-                            
+
                             error = GBT_rename_species(name, value, GB_FALSE);
 
                             if (error) GBT_abort_rename_session();
@@ -201,19 +200,19 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
                 }
                 else {
                     GBDATA *gb_key = awt_get_key(cbs->gb_main, key_name, cbs->selector->change_key_path);
-                    
+
                     error = GB_delete(gbd);
                     if (!error) {
                         cbs->aws->get_root()->awar(cbs->def_gbd)->write_int( (long) gb_key);
                     }
                 }
             }
-            
+
             // if (error) awt_edit_changed_cb(0, cbs, GB_CB_CHANGED); // refresh old value
         }
         free(key_name);
     }
-    
+
     awt_edit_changed_cb(0, cbs, GB_CB_CHANGED); // refresh edit field
 
     if (error){
@@ -221,13 +220,13 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
         GB_abort_transaction(cbs->gb_main);
     }
     else {
-        GB_touch(cbs->gb_user);	// change of linked object does not change source of link, so do it by hand
+        GB_touch(cbs->gb_user); // change of linked object does not change source of link, so do it by hand
         GB_commit_transaction(cbs->gb_main);
     }
 
     if (update_self) { // if the name changed -> rewrite awars AFTER transaction was closed
         GB_transaction ta(cbs->gb_main);
-        
+
         char *my_id = cbs->selector->generate_item_id(cbs->gb_main, cbs->gb_user);
         cbs->selector->update_item_awars(cbs->gb_main, cbs->awr, my_id); // update awars (e.g. AWAR_SPECIES_NAME)
         free(my_id);
@@ -243,7 +242,7 @@ static void awt_mark_changed_cb(AW_window *aws, struct adawcbstruct *cbs, char *
     cbs->may_be_an_error = 0;
     long flag = aws->get_root()->awar(awar_name)->read_int();
     GB_push_transaction(cbs->gb_main);
-    if ( (!cbs->gb_user) || cbs->may_be_an_error) {		// something changed in the database
+    if ( (!cbs->gb_user) || cbs->may_be_an_error) {     // something changed in the database
     }
     else{
         GB_write_flag(cbs->gb_user,flag);
@@ -257,7 +256,7 @@ static void awt_map_arbdb_edit_box(GBDATA *dummy, struct adawcbstruct *cbs)
     GBDATA *gbd;
     cbs->may_be_an_error = 0;
     GB_push_transaction(cbs->gb_main);
-    if (cbs->may_be_an_error) {		// sorry
+    if (cbs->may_be_an_error) {     // sorry
         cbs->aws->get_root()->awar(cbs->def_gbd)->write_int((long)0);
     }
     gbd = (GBDATA *)cbs->aws->get_root()->awar(cbs->def_gbd)->read_int();
@@ -267,10 +266,10 @@ static void awt_map_arbdb_edit_box(GBDATA *dummy, struct adawcbstruct *cbs)
                            (GB_CB)awt_edit_changed_cb, (int *)cbs);
     }
 
-    if (cbs->aws->get_root()->awar(cbs->def_filter)->read_int()) {		// edit enabled
+    if (cbs->aws->get_root()->awar(cbs->def_filter)->read_int()) {      // edit enabled
         cbs->gb_edit = gbd;
     }else{
-        cbs->gb_edit = 0;		// disable map
+        cbs->gb_edit = 0;       // disable map
     }
     if (cbs->gb_edit) {
         GB_add_callback(cbs->gb_edit,(GB_CB_TYPE)(GB_CB_CHANGED|GB_CB_DELETE),
@@ -441,7 +440,7 @@ static void awt_scanner_scan_rek(GBDATA *gbd,struct adawcbstruct *cbs,int deep, 
 static void awt_scanner_scan_list(GBDATA *dummy, struct adawcbstruct *cbs)
 {
 #define INFO_WIDTH 1000
-refresh_again:
+ refresh_again:
     char buffer[INFO_WIDTH+1];
     memset(buffer,0,INFO_WIDTH+1);
 
@@ -549,7 +548,7 @@ static void awt_scanner_changed_cb(GBDATA *dummy, struct adawcbstruct *cbs, GB_C
     }
 }
 /************ Unmap edit field if 'key_data' has been changed (maybe entries deleted)
-	*********/
+ *********/
 static void awt_scanner_changed_cb2(GBDATA *dummy, struct adawcbstruct *cbs, GB_CB_TYPE gbtype)
 {
     cbs->aws->get_root()->awar(cbs->def_gbd)->write_int((long)0);
@@ -585,4 +584,3 @@ void awt_map_arbdb_scanner(AW_CL arbdb_scanid, GBDATA *gb_pntr, int show_only_ma
 
     GB_pop_transaction(cbs->gb_main);
 }
-

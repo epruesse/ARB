@@ -27,7 +27,7 @@ AP_ERR::~AP_ERR()
 
 
 AP_ERR::AP_ERR (const char *pntr)
-    // setzt den Fehlertext und zeigt ihn an
+// setzt den Fehlertext und zeigt ihn an
 {
     text = pntr;
     if (modus == 0) {
@@ -54,13 +54,13 @@ AP_ERR::AP_ERR (const char *pntr,const char *pntr2,const int core)
 }
 
 AP_ERR::AP_ERR (const char *pntr, const int core)
-    // setzt den Fehlertext
-    // bricht ab
+// setzt den Fehlertext
+// bricht ab
 {
     text = pntr;
     cout << "\n*** FATAL ERROR *** " << core << "\n" << text << "\n";
     cout.flush();
-    GB_CORE;	// -segmantation Fault
+    GB_CORE;    // -segmantation Fault
 }
 
 const char *AP_ERR::show()
@@ -106,7 +106,7 @@ void AP_main::user_push(void) {
 void AP_main::user_pop(void) {
     // checks if user_pop possible
     if (user_push_counter == stack_level) {
-        this->pop();	// changes user_push_counter if user pop
+        this->pop();    // changes user_push_counter if user pop
     } else {
         new AP_ERR("AP_main::user_pop()","No user pop possible");
     }
@@ -200,10 +200,10 @@ void AP_main::clear(void) {
 
 void AP_main::push_node(AP_tree * node,AP_STACK_MODE mode) {
     //
-    //	stores node
+    //  stores node
     //
     if (!stack) {
-        if (mode & SEQUENCE) 	node->unhash_sequence();
+        if (mode & SEQUENCE)    node->unhash_sequence();
         return;
     }
 
@@ -212,7 +212,7 @@ void AP_main::push_node(AP_tree * node,AP_STACK_MODE mode) {
         return;
     }
 
-    if (node->push(mode,stack_level)) 	stack->push(node);
+    if (node->push(mode,stack_level))   stack->push(node);
 }
 
 
@@ -221,4 +221,3 @@ void AP_main::set_tree_root(AP_tree *new_root) {
     // to the father of the new_root
     *ap_main->tree_root = new_root;
 }
-

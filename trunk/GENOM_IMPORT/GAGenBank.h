@@ -43,27 +43,27 @@
 
 namespace gellisary
 {
-	class GAGenBank : public GAFile
-	{
-		private:
-			bool check_line_identifier(const std::string &);
-			void dissectGenomeSequenceLine(const std::string &);
-			void dissectMetaLine(const std::string &);
-			void dissectTableFeatureLine(const std::string &);
-			bool line_examination(const std::string &);
-			void dissectLocation(const std::string &);
-			void emptySequence();
-			void check_and_write_metadata_line();
-			
-		public:
-	#if defined(DEBUG)
-			GAGenBank(GALogger &, GAARB &, std::string &);
-	#else
-			GAGenBank(GAARB &, std::string &);
-	#endif
-			virtual ~GAGenBank();
-			virtual void parse();
-	};
+    class GAGenBank : public GAFile
+    {
+    private:
+        bool check_line_identifier(const std::string &);
+        void dissectGenomeSequenceLine(const std::string &);
+        void dissectMetaLine(const std::string &);
+        void dissectTableFeatureLine(const std::string &);
+        bool line_examination(const std::string &);
+        void dissectLocation(const std::string &);
+        void emptySequence();
+        void check_and_write_metadata_line();
+
+    public:
+#if defined(DEBUG)
+        GAGenBank(GALogger &, GAARB &, std::string &);
+#else
+        GAGenBank(GAARB &, std::string &);
+#endif
+        virtual ~GAGenBank();
+        virtual void parse();
+    };
 };
 
 #else

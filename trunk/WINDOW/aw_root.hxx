@@ -169,7 +169,7 @@ public:
     char  *vectorfont_name;     // name of font
     int    vectorfont_zoomtext; // zoomtext calls: 0 = Xfont, 1 = vectorfont
     
-    struct AW_xfig_vectorfont *vectorfont_lines; // graphic data of the font
+    AW_xfig_vectorfont *vectorfont_lines; // graphic data of the font
 
     /************************* the real public section *************************/
 

@@ -2,7 +2,6 @@
 #include "adlocal.h"
 #include "string.h"
 
-
 /* this module is currently not used */
 
 
@@ -18,7 +17,7 @@ static char *referencePath(GB_CSTR arbpath)
 {
     char *copy = GB_STRDUP(arbpath);
     char *ext =
-}
+        }
 
 static Reffile addReference(Reffile ref, GB_CSTR quickpath, GB_CSTR user)
 {
@@ -26,28 +25,28 @@ static Reffile addReference(Reffile ref, GB_CSTR quickpath, GB_CSTR user)
 }
 static Reffile removeReference(Reffile ref, GB_CSTR quickpath)
 {
-    
+
 }
 
 static Reffile readReferences(GB_CSTR refpath)
 {
-    
+
 }
 static void writeReferences(Reffile ref, GB_CSTR refpath)
 {
-    
+
 }
 static void freeReferences(Reffile ref)
 {
     while (ref)
     {
-	Reffile next = ref->next;
+        Reffile next = ref->next;
 
-	free(ref->quickpath);
-	free(ref->user);
-	free(ref);
+        free(ref->quickpath);
+        free(ref->user);
+        free(ref);
 
-	ref = next;
+        ref = next;
     }
 }
 
@@ -55,11 +54,11 @@ int gb_announceReference(GB_CSTR arbpath, GB_CSTR quickpath, GB_CSTR user)
 {
     char *refpath = referencePath(arbpath);
     Reffile ref = readReferences(refpath);
-    
-    if (!ref || removeReference(ref,quickpath)==NULL) 
+
+    if (!ref || removeReference(ref,quickpath)==NULL)
     {
-	ref = addReference(ref,quickpath,user);
-	writeReferences(ref,refpath);
+        ref = addReference(ref,quickpath,user);
+        writeReferences(ref,refpath);
     }
 
     freeReferences(ref);
@@ -74,9 +73,7 @@ int gb_deleteReference(GB_CSTR arbpath, GB_CSTR quickpath)
 
     ...
 
-    freeReferences(ref);
-    free(refpath);
-    return 0;
+        freeReferences(ref);
+        free(refpath);
+        return 0;
 }
-
-

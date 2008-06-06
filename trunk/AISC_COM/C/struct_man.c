@@ -231,14 +231,14 @@ long aisc_find_lib(dllpublic_ext *parent, char *ident)
 /*************************************** AISC P_MOVE *********************************/
 struct trf_dest_struct {
     struct trf_dest_struct *next;
-    long	*dest;
+    long                   *dest;
 };
 
-struct trf_struct	{
-    struct trf_struct *next;
-    long	new_item;
-    long	old;
-    struct trf_dest_struct	*dests;
+struct trf_struct       {
+    struct trf_struct      *next;
+    long                    new_item;
+    long                    old;
+    struct trf_dest_struct *dests;
 };
 
 int trf_hash(long p)
@@ -257,7 +257,7 @@ long trf_create(long old, long new_item)
     if (!trf_sp) return 0;
     i = trf_hash(old);
     for (ts = trf_sp[i]; ts; ts = ts->next) {
-        if (ts->old == old)	{
+        if (ts->old == old)     {
             if (ts->new_item && (ts->new_item != new_item)) {
                 fprintf(stderr, "ERROR IN trf_commit:\n");
                 *(int *) NULL = 0;
@@ -289,7 +289,7 @@ void trf_link(long old, long *dest)
     i = trf_hash(old);
     fts = 0;
     for (ts = trf_sp[i]; ts; ts = ts->next) {
-        if (ts->old == old)	{ fts = ts; break;}
+        if (ts->old == old)     { fts = ts; break;}
     }
     if (!fts) {
         ts = (struct trf_struct *)calloc(sizeof(struct trf_struct),1);
@@ -313,7 +313,7 @@ int trf_begin(void)
     return 0;
 }
 
-int trf_commit(int errors)	/* if errors == 1 then print errors and CORE */
+int trf_commit(int errors)      /* if errors == 1 then print errors and CORE */
 {
     int i;
     struct trf_dest_struct *tds,*ntds;
@@ -347,7 +347,7 @@ int trf_commit(int errors)	/* if errors == 1 then print errors and CORE */
 
 int aisc_server_dllint_2_bytestring(dllpublic_ext * pb,bytestring *bs,int offset)
 {
-    int	*ptr;
+    int *ptr;
     dllheader_ext * mh;
     if (bs->data) free(bs->data);
     bs->data = 0;
@@ -366,11 +366,11 @@ int aisc_server_dllint_2_bytestring(dllpublic_ext * pb,bytestring *bs,int offset
 
 int aisc_server_dllstring_2_bytestring(dllpublic_ext * pb,bytestring *bs,int offset)
 {
-    int 	size;
-    int	*ptr;
+    int         size;
+    int *ptr;
     dllheader_ext * mh;
-    char	*strptr,*str;
-    int	stringlenghts;
+    char        *strptr,*str;
+    int stringlenghts;
 
     if (bs->data) free(bs->data);
     bs->data = 0;

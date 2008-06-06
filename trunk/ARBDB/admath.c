@@ -10,20 +10,21 @@
 
 double GB_log_fak(int n){
     /* returns log(n!) */
-    static int max_n = 0;
-    static double *res = 0;
-    if (n<=1) return 0.0;	/* log 1 = 0 */
+    static int     max_n = 0;
+    static double *res   = 0;
+    
+    if (n<=1) return 0.0;       /* log 1 = 0 */
 
     if (n >= max_n){
-	double sum = 0;
-	int i;
-	GB_DELETE(res);
-	max_n = n + 100;
-	res = (double *)GB_calloc(sizeof(double),max_n);
-	for (i=1;i<max_n;i++){
-	    sum += log((double)i);
-	    res[i] = sum;
-	}
+        double sum = 0;
+        int i;
+        GB_DELETE(res);
+        max_n = n + 100;
+        res = (double *)GB_calloc(sizeof(double),max_n);
+        for (i=1;i<max_n;i++){
+            sum += log((double)i);
+            res[i] = sum;
+        }
     }
     return res[n];
 }
@@ -33,7 +34,7 @@ double GB_log_fak(int n){
 /* ---------------------------------- */
 
 #if defined(DEVEL_RALF)
-#warning TODO: replace all occurrances of rand / srand in ARB code by calls to GB_random/GB_frandom  
+#warning TODO: replace all occurrances of rand / srand in ARB code by calls to GB_random/GB_frandom
 #endif /* DEVEL_RALF */
 
 
@@ -57,5 +58,3 @@ int GB_random(int range) {
 
     return (int)(rand()*((double)range) / (RAND_MAX+1.0));
 }
-
-

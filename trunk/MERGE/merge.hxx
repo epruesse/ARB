@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : merge.hxx                                              //
 //    Purpose   : Local header for usage inside directory MERGE          //
-//    Time-stamp: <Sat Mar/01/2008 12:28 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Jun/05/2008 11:26 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Copyright Department of Microbiology (Technical University Munich)   //
@@ -70,7 +70,7 @@ public:
     MG_remap();
     ~MG_remap();
     GB_ERROR set(const char *in_reference, const char *out_reference); // returns only warnings
-    GB_ERROR compile();		// after last set
+    GB_ERROR compile();         // after last set
     char *remap(const char *sequence); // returns 0 on error, else copy of sequence
 };
 

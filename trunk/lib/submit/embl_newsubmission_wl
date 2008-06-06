@@ -372,7 +372,7 @@ exon             region that codes for part of spliced mRNA
 GC_signal        eukaryotic promoter element; consensus=GGGCGG 
 intron           transcribed region excised by mRNA splicing
 J_segment        joining segment of immunoglobulin light and heavy chains, 
-		 T-cell receptor alpha, beta and gamma-chains
+                 T-cell receptor alpha, beta and gamma-chains
 LTR              long terminal repeat
 mat_peptide      mature peptide coding region (does not include stop codon)
                  or signal peptide
@@ -400,17 +400,17 @@ TATA_signal      eukaryotic promoter element; consensus=TATA(A or T)A(A or T)
 terminator       transcription termination signal
 transit_peptide  transit peptide coding region
 tRNA             transfer RNA
-V_region	 variable region of immunoglobulin light and heavy chains, 
+V_region         variable region of immunoglobulin light and heavy chains, 
                  and T-cell receptor alpha, beta, and gamma chains
-V_segment	 variable segment of immunoglobulin light and heavy chains, 
-		 and T-cell receptor alpha, beta, and gamma chains.
+V_segment        variable segment of immunoglobulin light and heavy chains, 
+                 and T-cell receptor alpha, beta, and gamma chains.
 variation        a related strain contains stable mutations from the same
                  gene (e.g., RFLPs, polymorphisms) 
 3'UTR            region at the 3' end of a mature transcript, following the
                  stop codon
 5'UTR            region at the 5' end of a mature transcript, preceding the
                  initiation
--10_signal	 prokaryotic promoter element, consensus=TAtAaT 
+-10_signal       prokaryotic promoter element, consensus=TAtAaT 
 -35_signal       prokaryotic promoter element, consensus=TTGACa or TGTTGACA
 
 (Last change: 08-DEC-1998) 

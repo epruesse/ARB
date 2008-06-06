@@ -54,7 +54,7 @@ void SEER_strip_arb_file(){
         }
         aw_message(GBS_global_string("%i tables deleted",cnt));
     }
-    {	/* ***************** delete alignments *****************/
+    {   /* ***************** delete alignments *****************/
         GBDATA *gb_ali;
         while ( (gb_ali = GB_search(gb_main,"presets/alignment",GB_FIND))){
             GB_delete(gb_ali);
@@ -89,7 +89,7 @@ const char *SEER_opens_arb(AW_root *awr, SEER_OPENS_ARB_TYPE type){
     if (gb_main) return 0;
     {
         GB_transaction var(gb_main);
-        seer_global.transaction_counter_at_login = GB_read_clock(gb_main);	// needed to save
+        seer_global.transaction_counter_at_login = GB_read_clock(gb_main);      // needed to save
     }
     return GB_get_error();
 }
@@ -184,7 +184,7 @@ GBDATA *seer_table_link_follower(GBDATA *gb_main_local,GBDATA */*gb_link*/, cons
     SeerInterfaceTableDescription *td = (SeerInterfaceTableDescription *)GBS_read_hash(seer_global.table_hash,table_name);
     if (!td){
         aw_message(GB_export_error("Table '%s' is not supported by SEER",link));
-        return 0;		// this table is not supported by SEER
+        return 0;               // this table is not supported by SEER
     }
 
     // load table on demand ???? transaction ???

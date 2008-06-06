@@ -13,11 +13,11 @@ SeerInterfaceError::SeerInterfaceError(SeerInterfaceErrorType type,const char *t
     char buffer[maxErrorStringLength * 2];
     errorType = type;
     char *p = buffer;
-    va_list	parg;
+    va_list     parg;
     memset(buffer,0,maxErrorStringLength);
     sprintf (buffer,"Error: ");
     p += strlen(p);
-    va_start(parg,templateString);	
+    va_start(parg,templateString);
 
     vsprintf(p,templateString,parg);
     errorString = strdup(buffer);
@@ -60,7 +60,7 @@ SeerInterfaceDataLink *SeerInterfaceData::toDataLink(){
 
 void SeerInterfaceData::accept(SeerDataVisitor& visitor) // <<<<<<<<<<<<<<<<<<< <<<<<<<<<<new function!!!!
 {
-  visitor.visitSeerInterfaceData(*this);
+    visitor.visitSeerInterfaceData(*this);
 }
 
 
@@ -98,7 +98,7 @@ void SeerInterfaceDataString::print()const{
 
 void SeerInterfaceDataString::accept(SeerDataVisitor& visitor) // <<<<<<<<<<<<<<<<<<< <<<<<<<<<<new function!!!!
 {
-  visitor.visitSeerInterfaceDataString(*this);
+    visitor.visitSeerInterfaceDataString(*this);
 }
 
 /******************* LINK *********************/
@@ -124,7 +124,7 @@ void SeerInterfaceDataLink::set(const char *ikey, const char *table, const char 
 
 SeerInterfaceDataLink::~SeerInterfaceDataLink(){
     delete linktoTableName;
-    delete linktoTableId;    
+    delete linktoTableId;
 };
 
 SeerInterfaceDataLink *SeerInterfaceDataLink::toDataLink(){
@@ -141,7 +141,7 @@ void SeerInterfaceDataLink::print()const{
 
 void SeerInterfaceDataLink::accept(SeerDataVisitor& visitor) // <<<<<<<<<<<<<<<<<<< <<<<<<<<<<new function!!!!
 {
-  visitor.visitSeerInterfaceDataLink(*this);
+    visitor.visitSeerInterfaceDataLink(*this);
 }
 
 /******************* SET *********************/
@@ -153,7 +153,7 @@ SeerInterfaceDataSet::SeerInterfaceDataSet(){
 
 SeerInterfaceDataSet::~SeerInterfaceDataSet(){
     while(firstElement){
-	delete firstElement;
+        delete firstElement;
     }
 }
 
@@ -179,13 +179,13 @@ SeerInterfaceData *SeerInterfaceDataSet::nextData(){
 
 void SeerInterfaceDataSet::addData(SeerInterfaceData *data){
     if (firstElement){
-	data->prev = lastElement;
-	data->next = 0;
-	lastElement->next = data;
-	lastElement = data;
+        data->prev = lastElement;
+        data->next = 0;
+        lastElement->next = data;
+        lastElement = data;
     }else{
-	firstElement = lastElement = data;
-	data->prev = data->next = 0;
+        firstElement = lastElement = data;
+        data->prev = data->next = 0;
     }
     data->father = this;
 }
@@ -193,14 +193,14 @@ void SeerInterfaceDataSet::addData(SeerInterfaceData *data){
 void SeerInterfaceDataSet::removeData(SeerInterfaceData *data){
     assert (data->father == this);
     if (data->prev){
-	data->prev->next = data->next;
+        data->prev->next = data->next;
     }else{
-	firstElement = data->next;
+        firstElement = data->next;
     }
     if (data->next){
-	data->next->prev = data->prev;
+        data->next->prev = data->prev;
     }else{
-	lastElement = data->prev;
+        lastElement = data->prev;
     }
     data->next = data->prev = 0;
     data->father = 0;
@@ -209,29 +209,29 @@ void SeerInterfaceDataSet::removeData(SeerInterfaceData *data){
 SeerInterfaceData *SeerInterfaceDataSet::findData(const char *ikey){
     SeerInterfaceData *l;
     for (l=firstElement; l; l=l->next){
-	if (!strcmp(l->key,ikey) ) return l;
+        if (!strcmp(l->key,ikey) ) return l;
     }
     return 0;
 }
 const SeerInterfaceData *SeerInterfaceDataSet::findData(const char *ikey)const {
     SeerInterfaceData *l;
     for (l=firstElement; l; l=l->next){
-	if (!strcmp(l->key,ikey) ) return l;
+        if (!strcmp(l->key,ikey) ) return l;
     }
     return 0;
 }
 void SeerInterfaceDataSet::print()const{
     SeerInterfaceData *l;
     int i = 0;
-    for (l=firstElement; l; l=l->next){ 
-	printf("\t%i:",i++);
-	l->print();
+    for (l=firstElement; l; l=l->next){
+        printf("\t%i:",i++);
+        l->print();
     }
 }
 
 void SeerInterfaceDataSet::accept(SeerDataVisitor& visitor) // <<<<<<<<<<<<<<<<<<< <<<<<<<<<<new function!!!!
 {
-  visitor.visitSeerInterfaceDataSet(*this);
+    visitor.visitSeerInterfaceDataSet(*this);
 }
 
 
@@ -241,7 +241,7 @@ SeerInterfaceDataType SeerInterfaceDataStringSet::type(){
 
 void SeerInterfaceDataStringSet::accept(SeerDataVisitor& visitor) // <<<<<<<<<<<<<<<<<<< <<<<<<<<<<new function!!!!
 {
-  visitor.visitSeerInterfaceDataStringSet(*this);
+    visitor.visitSeerInterfaceDataStringSet(*this);
 }
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< new Class!!
@@ -292,8 +292,8 @@ void SeerInterfaceTableData::print()const{
 
 void SeerInterfaceAttribute::print()const{
     printf("****************** Attribute Description *********");
-    printf("Name '%s'	Description '%s'\n",name,(pubCmnt)?pubCmnt:"");
-    printf("type %i	changeable %i deleteable %i\n",type,changeable,deleteable);
+    printf("Name '%s'   Description '%s'\n",name,(pubCmnt)?pubCmnt:"");
+    printf("type %i     changeable %i deleteable %i\n",type,changeable,deleteable);
 }
 
 SeerInterfaceAlignment::SeerInterfaceAlignment(const char *iname,const char *pub){
@@ -323,7 +323,7 @@ SeerInterfaceTableDescription::~SeerInterfaceTableDescription(){
 
 void SeerInterfaceTableDescription::print(){
     printf("***** TABLE DESCRIPTION *****\n");
-    printf("Name '%s'	Desc '%s'\n",tablename,tabledescription);
+    printf("Name '%s'   Desc '%s'\n",tablename,tabledescription);
 }
 
 
@@ -338,21 +338,21 @@ SeerInterfaceError *SeerInterface::beginSession(const char *username, const char
 SeerInterfaceError *SeerInterface::endSession(){
     return 0;
 };
-    
+
 SeerInterfaceError *SeerInterface::beginTransaction(){return 0;};
 SeerInterfaceError *SeerInterface::commitTransaction(){return 0;};
 SeerInterfaceError *SeerInterface::abortTransaction(){return 0;};
-    
+
 SeerInterfaceError *SeerInterface::beginReadOnlyTransaction(){return beginTransaction();};
 SeerInterfaceError *SeerInterface::commitReadOnlyTransaction(){return commitTransaction();};
-    
-    /* ************** next functions are called only within the scope of a transaction *****/
+
+/* ************** next functions are called only within the scope of a transaction *****/
 SeerInterfaceAlignment *SeerInterface::firstAlignment(){
     SeerInterfaceAlignment *ali = new SeerInterfaceAlignment("16s","this is my comment");
     ali->typeofAlignment = SIAT_RNA;
     return ali;
 }
-    
+
 SeerInterfaceAlignment *SeerInterface::nextAlignment(){ return 0; };
 
 SeerInterfaceTableDescription *SeerInterface::firstTableDescription(){
@@ -375,7 +375,7 @@ SeerInterfaceAttribute *SeerInterface::firstAttribute(){
     at->changeable = 1;
     at->sortindex = seer_attribut_counter;
     if (seer_attribut_counter>5){
-	at->changeable = 0;
+        at->changeable = 0;
     }
     at->deleteable = 1;
     at->queryable = seer_attribut_counter & 1;
@@ -396,7 +396,7 @@ SeerInterfaceAttribute *SeerInterfaceTableDescription::firstAttribute(){
     at->changeable = 1;
     at->sortindex = seer_tattribut_counter;
     if (seer_tattribut_counter>5){
-	at->changeable = 0;
+        at->changeable = 0;
     }
     at->deleteable = 1;
     at->queryable = seer_attribut_counter & 1;
@@ -421,9 +421,9 @@ SeerInterfaceSequenceData *SeerInterface::firstSequenceData(){
     SeerInterfaceSequenceData *sd = new SeerInterfaceSequenceData(buffer);
     int i;
     for (i = 0;i<8;i++){
-	sprintf(attr_name,"attribute_%i",i);
-	sprintf(buffer,"value %i",i);
-	sd->attributes.addData(new SeerInterfaceDataString(attr_name,buffer));
+        sprintf(attr_name,"attribute_%i",i);
+        sprintf(buffer,"value %i",i);
+        sd->attributes.addData(new SeerInterfaceDataString(attr_name,buffer));
     }
     sd->sequences.addData(new SeerInterfaceDataString("16s","akjshxiuoqcbuyoerttyvuewcrtycerussvyuksztbq3b789"));
     sd->sequenceType = SISDT_REAL_SEQUENCE;
@@ -449,9 +449,9 @@ SeerInterfaceSequenceData *SeerInterface::querySingleSequence(const char *alignm
     SeerInterfaceSequenceData *sd = new SeerInterfaceSequenceData(buffer);
     int i;
     for (i = 0;i<8;i++){
-	sprintf(attr_name,"attribute_%i",i);
-	sprintf(buffer,"atrribut number %i",i);
-	sd->attributes.addData(new SeerInterfaceDataString(attr_name,buffer));
+        sprintf(attr_name,"attribute_%i",i);
+        sprintf(buffer,"atrribut number %i",i);
+        sd->attributes.addData(new SeerInterfaceDataString(attr_name,buffer));
     }
     sd->sequences.addData(new SeerInterfaceDataString("16s","akjshxiuoqcbuyoerttyvuewcrtycerussvyuksztbq3b789"));
     sd->sequenceType = SISDT_FILTER;
@@ -459,7 +459,7 @@ SeerInterfaceSequenceData *SeerInterface::querySingleSequence(const char *alignm
 }
 
 
-    
+
 SeerInterfaceError *SeerInterface::queryTableData(const char *alignmentname, const char *tablename){
     return 0;
 }
@@ -476,21 +476,21 @@ SeerInterfaceTableData *SeerInterface::firstTableData(){
     SeerInterfaceTableData *sd = new SeerInterfaceTableData(buffer);
     int i;
     for (i = 0;i<8;i++){
-	sprintf(attr_name,"field_%i",i);
-	sprintf(buffer,"value %i",i);
-	sd->attributes.addData(new SeerInterfaceDataString(attr_name,buffer));
+        sprintf(attr_name,"field_%i",i);
+        sprintf(buffer,"value %i",i);
+        sd->attributes.addData(new SeerInterfaceDataString(attr_name,buffer));
     }
     return sd;
 }
 
 SeerInterfaceTableData *SeerInterface::nextTableData(){
     return firstTableData();
-}    
+}
 
-    /* ****************** storing data in the database ***********************
-     * first check then store
-     * check should return very detailed error messages !!!!
-     */
+/* ****************** storing data in the database ***********************
+ * first check then store
+ * check should return very detailed error messages !!!!
+ */
 
 SeerInterfaceError *SeerInterface::checkAttributeName(const SeerInterfaceAttribute *attribute,SeerImportQualityLevel qLevel){
     return 0;
@@ -499,7 +499,7 @@ SeerInterfaceError *SeerInterface::checkAttributeName(const SeerInterfaceAttribu
 
 SeerInterfaceError *SeerInterface::checkTableData(const SeerInterfaceTableData *){ return 0;}
 SeerInterfaceError *SeerInterface::storeTableData(const SeerInterfaceTableData *){ return 0;}
-    
+
 
 SeerInterfaceError *SeerInterface::storeAttributeName(const SeerInterfaceAttribute *attribute,SeerImportQualityLevel qLevel){ attribute->print();return 0;};
 
@@ -507,7 +507,7 @@ SeerInterfaceError *SeerInterface::resortAttributeList(const SeerInterfaceDataSt
 
 SeerInterfaceError *SeerInterface::checkAlignmentName(const SeerInterfaceAlignment *alignment, SeerImportQualityLevel qLevel){ return 0; }
 SeerInterfaceError *SeerInterface::storeAlignmentName(const SeerInterfaceAlignment *alignment, SeerImportQualityLevel qLevel){ alignment->print();return 0; }
-    /* store sequences, SeerQualityLevel is taken from the datas !!! */
+/* store sequences, SeerQualityLevel is taken from the datas !!! */
 SeerInterfaceError *SeerInterface::checkSequence(const char *alignmentname, const SeerInterfaceSequenceData *sequence){ return 0; }
 SeerInterfaceError *SeerInterface::storeSequence(const char *alignmentname, const SeerInterfaceSequenceData *sequence){ sequence->print(); return 0; }
 
@@ -542,9 +542,9 @@ int main(int argc, char **argv){
 
     SeerInterfaceData *l;
     for (l = sd.attributes.firstData(); l; l = sd.attributes.nextData()){
-	l->print();
+        l->print();
     }
-    
+
     return 0;
 }
 #endif

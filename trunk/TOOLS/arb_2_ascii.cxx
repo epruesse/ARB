@@ -38,7 +38,7 @@ int main(int argc, char **argv)
         out = in;
     }
     else {
-        readflags = "rwR";	/* try to recover corrupt data */
+        readflags = "rwR";      /* try to recover corrupt data */
         out       = argv[2];
 
         if (!out || strcmp(out, "-") == 0) {

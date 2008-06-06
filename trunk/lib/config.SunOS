@@ -2,28 +2,28 @@ OPENWINHOME='/usr/openwin'
 CDEHOME='/usr/dt'
 
 if test -f $OPENWINHOME/bin/textedit; then
-	ARB_TEXTEDIT='textedit'
+        ARB_TEXTEDIT='textedit'
 else
-	if test -f $CDEHOME/bin/dtpad; then
-		ARB_TEXTEDIT="$CDEHOME/bin/dtpad"
-	else
-		ARB_TEXTEDIT='xedit'
-	fi
+        if test -f $CDEHOME/bin/dtpad; then
+                ARB_TEXTEDIT="$CDEHOME/bin/dtpad"
+        else
+                ARB_TEXTEDIT='xedit'
+        fi
 fi
 export ARB_TEXTEDIT
 
 
 if test -f $OPENWINHOME/bin/cmdtool; then
-	ARB_XTERM='cmdtool'
-	ARB_XCMD='cmdtool'
+        ARB_XTERM='cmdtool'
+        ARB_XCMD='cmdtool'
 else
-	if test -f $CDEHOME/bin/dtterm; then
-		ARB_XTERM="$CDEHOME/bin/dtterm -sl 1000 -sb"
-		ARB_XCMD="$CDEHOME/bin/dtterm -sl 1000 -sb -e"
-	else
-		ARB_XTERM='xterm -sl 1000 -sb'
-		ARB_XCMD='xterm -sl 1000 -sb -e'
-	fi
+        if test -f $CDEHOME/bin/dtterm; then
+                ARB_XTERM="$CDEHOME/bin/dtterm -sl 1000 -sb"
+                ARB_XCMD="$CDEHOME/bin/dtterm -sl 1000 -sb -e"
+        else
+                ARB_XTERM='xterm -sl 1000 -sb'
+                ARB_XCMD='xterm -sl 1000 -sb -e'
+        fi
 fi
 ARB_GS=ghostview
 export ARB_GS

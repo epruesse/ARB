@@ -73,7 +73,7 @@ void g_b_Consensus_add(GB_Consensus *gcon, unsigned char *seq, long seq_len){
     int            eq_count;
     const int      max_priority = 255/MAX_SEQUENCE_PER_MASTER; /* No overflow possible */
 
-    ad_assert(max_priority >= 1); 
+    ad_assert(max_priority >= 1);
 
     if (seq_len > gcon->len) seq_len = gcon->len;
 
@@ -168,7 +168,7 @@ void g_b_create_master(GB_CTREE *node, GB_Sequence *seqs, GB_Master **masters,
     if (*aborted) {
         return;
     }
-    
+
     if (node->is_leaf){
         if (node->index >= 0) {
             GBDATA *gb_data = GBT_read_sequence(node->gb_node, ali_name);
@@ -192,7 +192,7 @@ void g_b_create_master(GB_CTREE *node, GB_Sequence *seqs, GB_Master **masters,
             g_b_put_sequences_in_container(node->rightson,seqs,masters,gcon);
 
             data = g_b_Consensus_get_sequence(gcon);
-            
+
             GB_write_string(masters[node->index]->gbd,data);
             GB_write_security_write(masters[node->index]->gbd,7);
 
@@ -277,7 +277,7 @@ static int init_indices_and_count_sons(GB_CTREE *node, int *scount, const char *
     }
     else {
         node->index = -1;
-        node->sons  = 
+        node->sons  =
             init_indices_and_count_sons(node->leftson, scount, ali_name) +
             init_indices_and_count_sons(node->rightson, scount, ali_name);
     }
@@ -358,7 +358,7 @@ char *gb_compress_seq_by_master(const char *master,int master_len,int master_ind
     int            i,cs,cm;
     int            last;
     long           len  = seq_len;
-    
+
     d = buffer = (unsigned char *)GB_give_other_buffer(seq,seq_len);
 
     if (seq_len > master_len){
@@ -500,7 +500,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                         /* create a master container, the old is deleted as soon as all sequences are compressed by the new method*/
                         gb_master_ali = gb_create_container(gb_master_data, master_name);
                         GB_write_security_delete(gb_master_ali,7);
-                
+
                         free(master_name);
                         free(master_data_name);
                     }
@@ -546,7 +546,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                             sumnew += sizes;
                             sumold += sizen;
                             sumorg += seq_len;
-                            
+
                             GB_FREE(seqm);
                             GB_FREE(seq);
                         }
@@ -590,7 +590,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                                 GB_FREE(data);
 
                                 sumold += size;
-                                
+
                                 size = GB_read_memuse(gbd);
                                 sumnew += size;
                                 sumorg += seq_len;
@@ -621,7 +621,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
 
                         if (mi>0) { /*  master available */
                             GBDATA *gbd = masters[si]->gbd;
-                            
+
                             ad_assert(mi>si); /* we don't want a rekursion, because we cannot uncompress sequence compressed masters, Main->gb_master_data is wrong */
 
                             if (gb_read_nr(gbd) != si) { /* Check database */
@@ -653,7 +653,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                         }
                         else { // count size of top master
                             GBDATA *gbd  = masters[si]->gbd;
-                            sumnew      += GB_read_memuse(gbd); 
+                            sumnew      += GB_read_memuse(gbd);
                         }
                     }
 
@@ -697,7 +697,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, GB_CTREE *tree, const ch
                 }
 
                 // free data
-                GB_FREE(seqs);                
+                GB_FREE(seqs);
                 for (si=0;si<mastercount;si++)GB_FREE(masters[si]);
                 GB_FREE(masters);
             }
@@ -836,7 +836,7 @@ char *g_b_uncompress_single_sequence_by_master(const char *s, const char *master
             } else {
                 memset(dest, c, -j);
                 dest+= -j;
-            	m+= -j;
+                m+= -j;
             }
         }
     }

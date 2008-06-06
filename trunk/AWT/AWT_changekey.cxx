@@ -2,7 +2,7 @@
 //                                                                      //
 //   File      : AWT_changekey.cxx                                      //
 //   Purpose   : changekey management                                   //
-//   Time-stamp: <Thu May/22/2008 15:36 MET Coder@ReallySoft.de>        //
+//   Time-stamp: <Thu Jun/05/2008 14:52 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in May 2005              //
@@ -181,7 +181,7 @@ void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode 
     GB_push_transaction(gb_main);
     char   **names;
     char   **name;
-    GBDATA 	*gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
+    GBDATA  *gb_species_data = GB_search(gb_main,"species_data",GB_CREATE_CONTAINER);
 
     names = GBT_scan_db(gb_species_data, 0);
 
@@ -196,7 +196,7 @@ void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode 
         awt_add_new_changekey(gb_main,"tmp",GB_STRING);
 
         for (name = names; *name; name++) {
-            if ( (1<<(**name)) & bitfilter ) {	// look if already exists
+            if ( (1<<(**name)) & bitfilter ) {  // look if already exists
                 if (!is_in_reserved_path((*name)+1)) { // ignore gene, experiment, ... entries
                     awt_add_new_changekey(gb_main,(*name)+1,(int)*name[0]);
                 }
@@ -236,8 +236,8 @@ void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_r
         awt_add_new_gene_changekey(gb_main,"complement", GB_BYTE);
 
         for (name = names; *name; name++) {
-            if ( (1<<(**name)) & bitfilter ) {		// look if already exists
-		awt_add_new_gene_changekey(gb_main,(*name)+1,(int)*name[0]);
+            if ( (1<<(**name)) & bitfilter ) {          // look if already exists
+                awt_add_new_gene_changekey(gb_main,(*name)+1,(int)*name[0]);
             }
         }
     }
@@ -287,6 +287,3 @@ void awt_experiment_field_selection_list_scan_unknown_cb(AW_window *,GBDATA *gb_
 void awt_experiment_field_selection_list_delete_unused_cb(AW_window *,GBDATA *gb_main, long bitfilter)  { awt_experiment_field_selection_list_rescan(gb_main,bitfilter, AWT_RS_DELETE_UNUSED_FIELDS); }
 void awt_experiment_field_selection_list_unhide_all_cb(AW_window *,GBDATA *gb_main, long bitfilter)  { awt_experiment_field_selection_list_rescan(gb_main,bitfilter, AWT_RS_SHOW_ALL); }
 void awt_experiment_field_selection_list_update_cb(AW_window *,GBDATA *gb_main, long bitfilter)         { awt_experiment_field_selection_list_rescan(gb_main,bitfilter, AWT_RS_UPDATE_FIELDS); }
-
-
-

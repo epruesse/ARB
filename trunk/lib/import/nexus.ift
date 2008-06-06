@@ -1,5 +1,5 @@
-AUTODETECT	"#NEXUS*Matrix*"
+AUTODETECT      "#NEXUS*Matrix*"
 
-SYSTEM		"cat $< |tr -s ' ' >$>;arb_replace '*Matrix=' $>; arb_replace -l '*>*=>*1\nSQ *2' $>"
+SYSTEM          "cat $< |tr -s ' ' >$>;arb_replace '*Matrix=' $>; arb_replace -l '*>*=>*1\nSQ *2' $>"
 
-NEW_FORMAT	"lib/import/nexus2.ift2"
+NEW_FORMAT      "lib/import/nexus2.ift2"

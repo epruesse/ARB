@@ -5,50 +5,17 @@
 
 ************ Hardware and System Requirements **************
 
-	As ARB is still under construction, there are only a limited number of
-	operating systems which can run ARB.
+        As ARB is still under construction, there are only a limited number of
+        operating systems which can run ARB.
 
-	Today it is available for:
+        Today it is available for:
 
-		SUN Solaris >2.4
-		Linux for PC
-        Max OS              (not supplied by ARB-Team)
+                Linux for PC
+                Max OS              (not supplied by ARB-Team)
 
-    Older versions availiable for:
-
-		SUN OS 4.1.x
-		Silicon Graphics >5.0
-		HP UX			        (not working properly)
-		Digital OSF
 
 ************************* Please read ****************************
-		********************************
-		****       arb_README       ****
-		********************************
-
-
-******************* The most often question ever asked ***************
-********************** Should I buy a SUN or PC ??? *********************
-
-	If you have already a network of old SUN computers buy a sun. In all
-	other cases buy a PC. We are just building our own PC network so we can
-	test the PC version very carefully. A PC is faster and cheaper than a SUN.
-	You should buy: A pentium pro board, min. 128 mByte better 256mByte of RAM,
-	17/21 inch Monitor + graphics card, which should be linux compatible
-	and can show an effective resolution of 1280x1040 at 70hz. Without the RAM
-	and the montitor you may test ARB but it won't be fun using it. Linux is
-	a public domain unix and should not costs more than 50USD. You should find
-	a PC seller who can preinstall Linux on your PC.
-
-****************************   Directories  *********************************
-
-	data:		officially released databases
-	raw_data:	not administrated databases, don't expect perfect alignment ...
-	documentation:	A postscript documentation (more an overview)
-	linux:		All linux specific files
-	solaris:	Solaris 2.5 specific files
-	...
-	src		Source Code, a history of source codes, if you intend to modify
-			it, ask for the very latest release and send changes back as
-			soon as possible.
+                ********************************
+                ****       arb_README       ****
+                ********************************
 

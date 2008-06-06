@@ -87,10 +87,10 @@ static void initialize_IUPAC_add()
             }
         }
         else {
-            IUPAC_add[c1][c1] = char(c1);	// add char to same char
+            IUPAC_add[c1][c1] = char(c1);       // add char to same char
 
             for (c2=0; c2<c1; c2++) {
-                if (strchr(decoded1, 'A'+c2)!=0) {	// char is already contained in this IUPAC
+                if (strchr(decoded1, 'A'+c2)!=0) {      // char is already contained in this IUPAC
                     IUPAC_add[c1][c2] = char(c1);
                 }
                 else {
@@ -234,4 +234,3 @@ const char* AWT_decode_iupac(char iupac, GB_alignment_type ali, int decode_amino
 
     return decoded ? decoded : IUPAC_EMPTY;
 }
-

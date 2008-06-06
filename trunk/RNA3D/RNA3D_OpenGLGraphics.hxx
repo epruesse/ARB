@@ -2,9 +2,9 @@ typedef struct ColorRGBf {
 public:
     float red, green, blue;
     ColorRGBf() {}
-	ColorRGBf(float r, float g, float b) { red = r; green = g; blue = b; }
+    ColorRGBf(float r, float g, float b) { red = r; green = g; blue = b; }
 
-	bool operator==(ColorRGBf c) { 
+    bool operator==(ColorRGBf c) {
         if((red == c.red) && (green == c.green) && (blue == c.blue)) {
             return true;
         }
@@ -33,11 +33,10 @@ public:
     void print_string(GLuint base, char* s);
     void InitMainFont(char* f);
 
-    void SetOpenGLBackGroundColor();    
+    void SetOpenGLBackGroundColor();
     ColorRGBf ConvertGCtoRGB(int gc);
     void SetColor(int gc);
     ColorRGBf GetColor(int gc);
 
     void DrawBox(float x, float y, float width, float height);
 };
-

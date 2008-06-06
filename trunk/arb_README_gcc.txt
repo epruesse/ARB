@@ -12,33 +12,33 @@ Here a short howto (using gcc.2.95.3 as example):
 
 - download (i.e.)
 
-	- ftp://ftp.leo.org/pub/comp/os/unix/gnu/gcc/gcc-2.95.3/gcc-core-2.95.3.tar.gz  (8.5 Mb)
-	- ftp://ftp.leo.org/pub/comp/os/unix/gnu/gcc/gcc-2.95.3/gcc-g++-2.95.3.tar.gz	(1.5 Mb)
+        - ftp://ftp.leo.org/pub/comp/os/unix/gnu/gcc/gcc-2.95.3/gcc-core-2.95.3.tar.gz  (8.5 Mb)
+        - ftp://ftp.leo.org/pub/comp/os/unix/gnu/gcc/gcc-2.95.3/gcc-g++-2.95.3.tar.gz   (1.5 Mb)
 
-	or
+        or
 
-	- http://gd.tuwien.ac.at/gnu/sourceware/gcc/releases/gcc-2.95.3/gcc-core-2.95.3.tar.gz
-	- http://gd.tuwien.ac.at/gnu/sourceware/gcc/releases/gcc-2.95.3/gcc-g++-2.95.3.tar.gz
+        - http://gd.tuwien.ac.at/gnu/sourceware/gcc/releases/gcc-2.95.3/gcc-core-2.95.3.tar.gz
+        - http://gd.tuwien.ac.at/gnu/sourceware/gcc/releases/gcc-2.95.3/gcc-g++-2.95.3.tar.gz
 
 - unpack into directory 'your-gcc-source'
 - create directory 'your-gcc-objects'
 
 - configure gcc:
 
-	cd your-gcc-objects
-	../your-gcc-source/configure --prefix=/opt/gcc-2.95
+        cd your-gcc-objects
+        ../your-gcc-source/configure --prefix=/opt/gcc-2.95
 
         [If you'd like to see english error messages use '--disable-nls' ]
 
 - build gcc:
 
-	make bootstrap
+        make bootstrap
 
-	su
-	make install
+        su
+        make install
 
 - prefix
-	/opt/gcc-2.95/bin
+        /opt/gcc-2.95/bin
   to your PATH environment variable.
 
 - compile ARB

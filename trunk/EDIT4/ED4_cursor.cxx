@@ -85,10 +85,10 @@ public:
         xmin = ymin = INT_MAX;
         xmax = ymax = INT_MIN;
         for (int p=0; p<points; p++) {
-            if (xpos[p]<xmin) 		{ xmin = xpos[p]; }
-            else if (xpos[p]>xmax) 	{ xmax = xpos[p]; }
-            if (ypos[p]<ymin) 		{ ymin = ypos[p]; }
-            else if (ypos[p]>ymax) 	{ ymax = ypos[p]; }
+            if (xpos[p]<xmin)      { xmin = xpos[p]; }
+            else if (xpos[p]>xmax) { xmax = xpos[p]; }
+            if (ypos[p]<ymin)      { ymin = ypos[p]; }
+            else if (ypos[p]>ymax) { ymax = ypos[p]; }
         }
 
         xmin += x; xmax +=x;
@@ -109,15 +109,15 @@ ED4_CursorShape::ED4_CursorShape(ED4_CursorType typ, /*int x, int y, */int term_
     int y = 0;
 
     switch (typ) {
-#define UPPER_OFFSET	(-1)
-#define LOWER_OFFSET 	(term_height-1)
-#define CWIDTH 		(character_width)
+#define UPPER_OFFSET    (-1)
+#define LOWER_OFFSET    (term_height-1)
+#define CWIDTH          (character_width)
 
         case ED4_RIGHT_ORIENTED_CURSOR_THIN:
         case ED4_RIGHT_ORIENTED_CURSOR: {
             // --CWIDTH--
             //
-            // 0--------1 		UPPER_OFFSET (from top)
+            // 0--------1               UPPER_OFFSET (from top)
             // |3-------4
             // ||
             // ||
@@ -125,7 +125,7 @@ ED4_CursorShape::ED4_CursorShape(ED4_CursorType typ, /*int x, int y, */int term_
             // ||
             // ||
             // ||
-            // 25			LOWER_OFFSET (from top)
+            // 25                       LOWER_OFFSET (from top)
             //
             //
             //  x
@@ -155,21 +155,21 @@ ED4_CursorShape::ED4_CursorShape(ED4_CursorType typ, /*int x, int y, */int term_
             int small_version = (term_height <= 10) ? 1 : 0;
 
 
-#define UPPER_OFFSET	0
-#define LOWER_OFFSET 	(term_height-1)
-#define CWIDTH 		3
+#define UPPER_OFFSET    0
+#define LOWER_OFFSET    (term_height-1)
+#define CWIDTH          3
 
             //  -----2*CWIDTH----
             //
-            //	0---------------1 	UPPER_OFFSET (from top)
-            //	   4---------5
-            //	      8---9
+            //  0---------------1       UPPER_OFFSET (from top)
+            //     4---------5
+            //        8---9
             //         C/C
             //
-            //	       D/D
-            //	      A---B
-            //	   6---------7
-            //	2---------------3	LOWER_OFFSET (from top)
+            //         D/D
+            //        A---B
+            //     6---------7
+            //  2---------------3       LOWER_OFFSET (from top)
 
             bool draw_upper = typ != ED4_TRADITIONAL_CURSOR_BOTTOM;
 
@@ -205,26 +205,26 @@ ED4_CursorShape::ED4_CursorShape(ED4_CursorType typ, /*int x, int y, */int term_
         }
         case ED4_FUCKING_BIG_CURSOR: {
 
-#define OUTER_HEIGHT	(term_height/4)
-#define INNER_HEIGHT	(term_height-1)
-#define CWIDTH	    	12
-#define STEPS 		6
-#define THICKNESS	2
+#define OUTER_HEIGHT    (term_height/4)
+#define INNER_HEIGHT    (term_height-1)
+#define CWIDTH          12
+#define STEPS           6
+#define THICKNESS       2
 
 #if (2*STEPS+THICKNESS > MAXLINES)
 #error Bad definitions!
 #endif
 
-            //		2		3 		|
-            //		  \	      /			| OUTER_HEIGHT
-            //		     \     /			|
-            //			0  		|       |
-            //			|		| INNER_HEIGHT
-            //			|		|
-            //			1		|
-            //		      /    \                    --
-            //		   /	      \                 --
-            //		4		5
+            //          2               3               |
+            //            \           /                 | OUTER_HEIGHT
+            //               \     /                    |
+            //                  0               |       |
+            //                  |               | INNER_HEIGHT
+            //                  |               |
+            //                  1               |
+            //                /    \                    --
+            //             /          \                 --
+            //          4               5
             //
             //          -----------------
             //                2*WIDTH
@@ -233,8 +233,8 @@ ED4_CursorShape::ED4_CursorShape(ED4_CursorType typ, /*int x, int y, */int term_
             for (s=0; s<STEPS; s++) {
                 int size = ((STEPS-s)*CWIDTH)/STEPS;
 
-                horizontal_line(x, y-OUTER_HEIGHT+s, 			size);
-                horizontal_line(x, y+INNER_HEIGHT+OUTER_HEIGHT-s, 	size);
+                horizontal_line(x, y-OUTER_HEIGHT+s,                    size);
+                horizontal_line(x, y+INNER_HEIGHT+OUTER_HEIGHT-s,       size);
             }
 
             int y_upper = ypos[s-4];
@@ -280,7 +280,7 @@ ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y)
 
     cursor_shape->draw(ED4_ROOT->get_device(), int(x), int(y));
 
-#if defined(DEBUG) && 0 
+#if defined(DEBUG) && 0
     printf("draw_cursor(%i, %i)\n", int(x), int(y));
 #endif // DEBUG
 
@@ -352,7 +352,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
     cursor_shape->get_bounding_box(int(x), int(y), xmin, ymin, xmax, ymax);
 
     dev->clear_part(xmin, ymin, xmax-xmin+1, ymax-ymin+1, (AW_bitset)-1);
-    
+
 #if defined(DEBUG) && 0
     printf("delete_cursor(%i, %i)\n", int(x), int(y));
 #endif // DEBUG
@@ -687,7 +687,7 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
         int count = 0;
         char *buffer = new char[BUFFERSIZE+1];
         char *bp = buffer;
-        //	int inbuf = 0; // # of names in buffer
+        //      int inbuf = 0; // # of names in buffer
         ED4_multi_species_manager *insert_into_manager = ED4_new_species_multi_species_manager();
         ED4_group_manager *group_man = insert_into_manager->get_parent(ED4_L_GROUP)->to_group_manager();
         int group_depth = insert_into_manager->calc_group_depth();
@@ -768,7 +768,7 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
             if (ED4_ROOT->alignment_type == GB_AT_DNA) {
                 PV_AddAAseqTerminalsToLoadedSpecies();
             }
-     
+
             ED4_ROOT->main_manager->update_info.set_resize(1);
             ED4_ROOT->main_manager->resize_requested_by_parent();
         }
@@ -817,9 +817,9 @@ int ED4_update_global_cursor_awars_allowed = true;
 
 void ED4_cursor::updateAwars()
 {
-    AW_root	*aw_root = ED4_ROOT->aw_root;
+    AW_root     *aw_root = ED4_ROOT->aw_root;
     ED4_window  *win = ED4_ROOT->get_ed4w();
-    int 	seq_pos = get_sequence_pos();
+    int         seq_pos = get_sequence_pos();
 
     if (ED4_update_global_cursor_awars_allowed) {
         if (owner_of_cursor) {
@@ -859,7 +859,7 @@ void ED4_cursor::updateAwars()
 
     aw_root->awar(win->awar_path_for_cursor)->write_int(seq_pos+1);
     if (ED4_update_global_cursor_awars_allowed) {
-        aw_root->awar(AWAR_CURSOR_POSITION)->write_int(seq_pos+1);	// this supports last cursor position for all applications
+        aw_root->awar(AWAR_CURSOR_POSITION)->write_int(seq_pos+1);      // this supports last cursor position for all applications
     }
 
     // look if we have a commented search result under the cursor:
@@ -922,7 +922,7 @@ void ED4_cursor::updateAwars()
             char base = seq[seq_pos];
             const char *i = ED4_decode_iupac(base, ED4_ROOT->alignment_type);
 
-	    e4_assert(strlen(i)<=MAXIUPAC);
+            e4_assert(strlen(i)<=MAXIUPAC);
             strcpy(iupac, i);
         }
 
@@ -1124,7 +1124,7 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
 
             int       seq_pos         = get_sequence_pos();
             ED4_base *target_terminal = 0;
-            
+
             if (event->keymodifier & AW_KEYMODE_CONTROL) {
                 bool has_base = has_base_at(owner_of_cursor, seq_pos);
 
@@ -1150,12 +1150,12 @@ ED4_returncode ED4_cursor::move_cursor(AW_event *event) {
                     target_terminal = get_upper_lower_cursor_pos(start_at_manager,
                                                                  dir == ED4_C_UP ? ED4_C_DOWN : ED4_C_UP, // use opposite movement direction
                                                                  dir == ED4_C_UP ? 0 : INT_MAX, false, // search for top-/bottom-most terminal
-                                                                 0, seq_pos); 
+                                                                 0, seq_pos);
                 }
             }
             else {
-                e4_assert(!endHome); // END and HOME w/o Ctrl should not call move_cursor() 
-                
+                e4_assert(!endHome); // END and HOME w/o Ctrl should not call move_cursor()
+
                 bool isScreen = false;
                 if (dir == ED4_C_DOWN) {
                     ED4_ROOT->world_to_win_coords(aww, &x_dummy, &y_world); // special handling to move cursor from top to bottom area
@@ -1280,7 +1280,7 @@ void ED4_terminal::scroll_into_view(AW_window *aww) { // scroll y-position only
             scroll       = true;
         }
     }
-    
+
 #if defined(DEBUG) && 0
     if (!scroll) {
         printf("No scroll needed (termw_y=%i termw_y_upper=%i term_height=%i window_upper_clip_point=%i window_lower_clip_point=%i)\n",
@@ -1295,7 +1295,7 @@ void ED4_terminal::scroll_into_view(AW_window *aww) { // scroll y-position only
 
         if (slider_pos_y>slider_pos_yrange) slider_pos_y = slider_pos_yrange;
         if (slider_pos_y<0) slider_pos_y                 = 0;
-        
+
         aww->set_vertical_scrollbar_position(slider_pos_y);
         ED4_scrollbar_change_cb(aww, 0, 0);
     }
@@ -1304,7 +1304,7 @@ void ED4_terminal::scroll_into_view(AW_window *aww) { // scroll y-position only
 void ED4_cursor::set_to_terminal(AW_window *aww, ED4_terminal *terminal, int seq_pos, ED4_CursorJumpType jump_type)
 {
     if (seq_pos == -1) seq_pos = get_sequence_pos();
-    
+
     if (owner_of_cursor == terminal) {
         jump_sequence_pos(aww, seq_pos, jump_type);
     }
@@ -1345,7 +1345,7 @@ ED4_returncode ED4_cursor::show_cursor_at(ED4_terminal *target_terminal, ED4_ind
     }
 
     target_terminal->scroll_into_view(ED4_ROOT->get_aww());
-    
+
     AW_pos termw_x, termw_y;
     target_terminal->calc_world_coords( &termw_x, &termw_y );
 
@@ -1397,7 +1397,7 @@ ED4_terminal *ED4_cursor::get_upper_lower_cursor_pos(ED4_manager *starting_point
         switch (cursor_move) {
             case ED4_C_UP:
                 e4_assert(!isScreen); // use screen coordinates for ED4_C_DOWN only!
-                
+
                 if (y < current_y) {
                     if ((member->is_manager()) && !member->flag.hidden) {
                         ED4_terminal *result_in_manager = get_upper_lower_cursor_pos(member->to_manager(), cursor_move, current_y, isScreen, terminal_is_appropriate, seq_pos);
@@ -1411,7 +1411,7 @@ ED4_terminal *ED4_cursor::get_upper_lower_cursor_pos(ED4_manager *starting_point
                     }
                 }
                 break;
-                
+
             case ED4_C_DOWN:
                 if (!result) { // don't overwrite (i.e. take first matching terminal)
                     if ((member->is_manager()) && !member->flag.hidden) {
@@ -1419,7 +1419,7 @@ ED4_terminal *ED4_cursor::get_upper_lower_cursor_pos(ED4_manager *starting_point
                     }
 
                     if (isScreen) ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y); // if current_y is screen, convert x/y to screen-coordinates as well
-                    
+
                     if ((member->dynamic_prop & ED4_P_CURSOR_ALLOWED) && y > current_y) {
                         ED4_multi_species_manager *marea_man = NULL; // probably multi_species_manager of middle_area, otherwise just a dummy
                         ED4_AREA_LEVEL level                 = member->get_area_level(&marea_man);
@@ -1441,13 +1441,13 @@ ED4_terminal *ED4_cursor::get_upper_lower_cursor_pos(ED4_manager *starting_point
                     }
                 }
                 break;
-                
+
             default:
                 e4_assert(0);
                 break;
         }
     }
-    
+
     return result;
 }
 
@@ -1574,14 +1574,14 @@ int ED4_base_position::get_sequence_position(const ED4_base *base, int base_pos)
 
 int ED4_get_base_position(const ED4_sequence_terminal *seq_term, int seq_position) {
     static ED4_base_position *base_pos = 0;
-    
+
     if (!base_pos) base_pos = new ED4_base_position;
     return base_pos->get_base_position(seq_term, seq_position);
 }
 
 
 /* --------------------------------------------------------------------------------
-             Store/Restore Cursorpositions
+   Store/Restore Cursorpositions
    -------------------------------------------------------------------------------- */
 
 class CursorPos
@@ -1596,43 +1596,43 @@ class CursorPos
 public:
 
     static void clear()
-        {
-            while (head) {
-                CursorPos *p = head->next;
+    {
+        while (head) {
+            CursorPos *p = head->next;
 
-                delete head;
-                head = p;
-            }
+            delete head;
+            head = p;
         }
+    }
     static CursorPos *get_head() { return head; }
 
     CursorPos(ED4_terminal *t, int p)
-        {
-            terminal = t;
-            seq_pos = p;
-            next = head;
-            head = this;
-        }
+    {
+        terminal = t;
+        seq_pos = p;
+        next = head;
+        head = this;
+    }
     ~CursorPos() {}
 
     ED4_terminal *get_terminal() const { return terminal; }
     int get_seq_pos() const { return seq_pos; }
 
     void moveToEnd()
-        {
-            e4_assert(this==head);
+    {
+        e4_assert(this==head);
 
-            if (next) {
-                CursorPos *p = head = next;
+        if (next) {
+            CursorPos *p = head = next;
 
-                while (p->next) {
-                    p = p->next;
-                }
-
-                p->next = this;
-                this->next = 0;
+            while (p->next) {
+                p = p->next;
             }
+
+            p->next = this;
+            this->next = 0;
         }
+    }
 };
 
 CursorPos *CursorPos::head = 0;
@@ -1705,4 +1705,3 @@ void ED4_change_cursor(AW_window */*aww*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
 
     cursor->changeType((ED4_CursorType)((typ+1)%ED4_CURSOR_TYPES));
 }
-

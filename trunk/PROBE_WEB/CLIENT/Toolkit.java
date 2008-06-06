@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : Toolkit.java                                           //
 //    Purpose   : Functions uses in all classes go here                  //
-//    Time-stamp: <Fri Mar/19/2004 15:09 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jun/04/2008 13:08 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -99,7 +99,7 @@ class Toolkit
     // dialogs
 
     private static Frame getFrame() {
-        if (theClient == null) {            
+        if (theClient == null) {
             Toolkit.showError("Can't get frame.");
             return null;
         }
@@ -107,7 +107,7 @@ class Toolkit
     }
 
     public static String askUser(String title, String text, String buttonlist) {
-	Vector buttons = new Vector();
+        Vector buttons = new Vector();
 
         int start = 0;
         int len   = buttonlist.length();
@@ -123,7 +123,7 @@ class Toolkit
             }
         }
 
- 	DialogWrapper dw = new DialogWrapper(getFrame(), title, text, buttons);
+        DialogWrapper dw = new DialogWrapper(getFrame(), title, text, buttons);
         return dw.getResult();
     }
 
@@ -131,7 +131,7 @@ class Toolkit
         Vector buttons = new Vector();
         buttons.add(button);
 
- 	DialogWrapper dw     = new DialogWrapper(getFrame(), title, text, buttons);
+        DialogWrapper dw     = new DialogWrapper(getFrame(), title, text, buttons);
         String        answer = dw.getResult();
     }
     public static void clickOK(String title, String text) {
@@ -162,14 +162,14 @@ class Toolkit
             if (path.charAt(position) == '1') {
                 value += bitmask[position%4];
 
-//                 switch (position%4) {
-//                     case 0: value += 8; break;
-//                     case 1: value += 4; break;
-//                     case 2: value += 2; break;
-//                     case 3: value += 1; break;
-//                     default:
-//                         Toolkit.InternalError("logical error in encodePath");
-//                 }
+                //                 switch (position%4) {
+                //                     case 0: value += 8; break;
+                //                     case 1: value += 4; break;
+                //                     case 2: value += 2; break;
+                //                     case 3: value += 1; break;
+                //                     default:
+                //                         Toolkit.InternalError("logical error in encodePath");
+                //                 }
             }
             if ((position%4) == 3) {
                 coded.append(hexToken[value]);

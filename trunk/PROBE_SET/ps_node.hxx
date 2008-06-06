@@ -14,46 +14,46 @@
 using namespace std;
 
 //***********************************************
-//* PS_Probe
-//***********************************************
-typedef struct {
-           short int quality;                      // negative quality <=> matches inverse path
-  unsigned short int length;
-  unsigned short int GC_content;
-} PS_Probe;
+  //* PS_Probe
+    //***********************************************
+  typedef struct {
+      short int quality;                      // negative quality <=> matches inverse path
+      unsigned short int length;
+      unsigned short int GC_content;
+  } PS_Probe;
 
 typedef SmartPtr<PS_Probe> PS_ProbePtr;
 
 inline void PS_printProbe( const PS_Probe *p ) {
-  printf("%+i_%u_%u",p->quality,p->length,p->GC_content);
+    printf("%+i_%u_%u",p->quality,p->length,p->GC_content);
 }
 
 inline void PS_printProbe( const PS_ProbePtr p ) {
-  printf("%+i_%u_%u",p->quality,p->length,p->GC_content);
+    printf("%+i_%u_%u",p->quality,p->length,p->GC_content);
 }
 
 struct lt_probe
 {
-  bool operator()(const PS_ProbePtr& p1, const PS_ProbePtr& p2) const
-  {
-    //printf("\t");PS_printProbe(p1);printf(" < ");PS_printProbe(p2);printf(" ?\n");
-    if (abs(p1->quality) == abs(p2->quality)) {
-      if (p1->length == p2->length) {
-        return (p1->GC_content < p2->GC_content); // equal quality & length => sort by GC-content
-      } else {
-        return (p1->length < p2->length);         // equal quality => sort by length
-      }
-    } else {
-      return ((p1->quality < p2->quality));       // sort by quality
+    bool operator()(const PS_ProbePtr& p1, const PS_ProbePtr& p2) const
+    {
+        //printf("\t");PS_printProbe(p1);printf(" < ");PS_printProbe(p2);printf(" ?\n");
+        if (abs(p1->quality) == abs(p2->quality)) {
+            if (p1->length == p2->length) {
+                return (p1->GC_content < p2->GC_content); // equal quality & length => sort by GC-content
+            } else {
+                return (p1->length < p2->length);         // equal quality => sort by length
+            }
+        } else {
+            return ((p1->quality < p2->quality));       // sort by quality
+        }
     }
-  }
 };
 
 
 //***********************************************
-//* PS_ProbeSet
-//***********************************************
-typedef set<PS_ProbePtr,lt_probe>   PS_ProbeSet;
+  //* PS_ProbeSet
+    //***********************************************
+  typedef set<PS_ProbePtr,lt_probe>   PS_ProbeSet;
 typedef PS_ProbeSet*                PS_ProbeSetPtr;
 typedef PS_ProbeSet::iterator       PS_ProbeSetIter;
 typedef PS_ProbeSet::const_iterator PS_ProbeSetCIter;
@@ -107,13 +107,13 @@ public:
     }
 
     pair<bool,PS_NodePtr> getChild( SpeciesID id ) {
-	PS_NodeMapIterator it = children.find(id);
-	return pair<bool,PS_NodePtr>(it!=children.end(),it->second);
+        PS_NodeMapIterator it = children.find(id);
+        return pair<bool,PS_NodePtr>(it!=children.end(),it->second);
     }
 
     pair<bool,const PS_NodePtr> getChild( SpeciesID id ) const {
-	PS_NodeMapConstIterator it = children.find(id);
-	return pair<bool,const PS_NodePtr>(it!=children.end(),it->second);
+        PS_NodeMapConstIterator it = children.find(id);
+        return pair<bool,const PS_NodePtr>(it!=children.end(),it->second);
     }
 
     size_t countChildren() const { return children.size(); }
@@ -132,21 +132,21 @@ public:
     // *** probes ***
     //
     bool addProbe( const PS_ProbePtr& probe ) {
-	//printf("addProbe(");PS_printProbe(probe);printf(")\n");
-	if (!probes) {
-	    //printf( "creating new ProbeSet at node #%u (%p)\n",num,this );
-	    probes = new PS_ProbeSet;
-	    probes->insert(probe);
-	    return true;
-	} else {
-	    pair<PS_ProbeSetCIter,bool> p = probes->insert(probe);
-// 	    if (!p.second) {
-// 		printf( "probe " ); PS_printProbe(probe);
-// 		printf( " already exists\n" );
-// 	    }
+        //printf("addProbe(");PS_printProbe(probe);printf(")\n");
+        if (!probes) {
+            //printf( "creating new ProbeSet at node #%u (%p)\n",num,this );
+            probes = new PS_ProbeSet;
+            probes->insert(probe);
+            return true;
+        } else {
+            pair<PS_ProbeSetCIter,bool> p = probes->insert(probe);
+            //          if (!p.second) {
+            //              printf( "probe " ); PS_printProbe(probe);
+            //              printf( " already exists\n" );
+            //          }
 
-	    return p.second;
-	}
+            return p.second;
+        }
     }
 
     void addProbes( PS_ProbeSetCIter _begin, PS_ProbeSetCIter _end ) {
@@ -154,7 +154,7 @@ public:
         if (_begin == _end) return;
         //printf( "check for probeset...\n" );
         if (!probes) probes = new PS_ProbeSet;
-	for (PS_ProbeSetCIter probe = _begin; probe != _end; ++probe) {
+        for (PS_ProbeSetCIter probe = _begin; probe != _end; ++probe) {
             //printf( "inserting new probe...\n" );
             probes->insert( *probe );
         }
@@ -165,7 +165,7 @@ public:
         if (_begin == _end) return;
         //printf( "check for probeset...\n" );
         if (!probes) probes = new PS_ProbeSet;
-	for (PS_ProbeSetCIter probe = _begin; probe != _end; ++probe) {
+        for (PS_ProbeSetCIter probe = _begin; probe != _end; ++probe) {
             //printf( "making new probe...\n" );
             PS_ProbePtr new_probe(new PS_Probe);
             new_probe->length     = (*probe)->length;
@@ -195,14 +195,14 @@ public:
     }
 
     PS_ProbeSetCIter getProbesBegin() const {
-	ps_assert(probes);
-	return probes->begin();
+        ps_assert(probes);
+        return probes->begin();
     }
     PS_ProbeSetCIter getProbesEnd() const {
-	ps_assert(probes);
-	return probes->end();
+        ps_assert(probes);
+        return probes->end();
     }
-    
+
     void   removeProbe( PS_ProbeSetCIter it ) {
         ps_assert(probes);
         probes->erase( it );
@@ -216,29 +216,29 @@ public:
     // *** output **
     //
     void print() {
-	printf( "\nN[%d] P[ ", num );
-	if (probes) {
-	    for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
-		PS_printProbe(*i);
-		printf(" ");
-	    }
-	}
-	printf( "] C[" );
+        printf( "\nN[%d] P[ ", num );
+        if (probes) {
+            for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
+                PS_printProbe(*i);
+                printf(" ");
+            }
+        }
+        printf( "] C[" );
         for (PS_NodeMapIterator i=children.begin(); i!=children.end(); ++i) {
             i->second->print();
         }
-	printf( "]" );
+        printf( "]" );
     }
 
     void printOnlyMe() const {
-	printf( "N[%d] P[ ", num );
-	if (probes) {
-	    for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
-		PS_printProbe(*i);
-		printf(" ");
-	    }
-	}
-	printf( "] C[ %i ]", children.size() );
+        printf( "N[%d] P[ ", num );
+        if (probes) {
+            for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
+                PS_printProbe(*i);
+                printf(" ");
+            }
+        }
+        printf( "] C[ %i ]", children.size() );
     }
 
     //
@@ -259,9 +259,9 @@ public:
     // *** destructor ***
     //
     ~PS_Node() {
-	//printf("destroying node #%d (%d)\n",num,int(this));
-	if (probes) delete probes;
-	children.clear();
+        //printf("destroying node #%d (%d)\n",num,int(this));
+        if (probes) delete probes;
+        children.clear();
     }
 
 private:

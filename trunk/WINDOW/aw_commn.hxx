@@ -25,7 +25,7 @@ public:
 
     AW_function function;
     AW_pos      grey_level;
-    
+
     AW_GC_Xm(class AW_common *common);
     ~AW_GC_Xm();
     void set_fill(AW_grey_level grey_level); // <0 dont fill  0.0 white 1.0 black
@@ -42,9 +42,9 @@ public:
 class AW_common {
 public:
     AW_common(AW_window *aww, AW_area area, Display *display_in,
-	      XID window_id_in,unsigned long *fcolors,
-	      unsigned int **dcolors, long *data_colors_size);
-    
+              XID window_id_in,unsigned long *fcolors,
+              unsigned int **dcolors, long *data_colors_size);
+
     unsigned long  *frame_colors;
     unsigned long **data_colors;
     long           *data_colors_size;

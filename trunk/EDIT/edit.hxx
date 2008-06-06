@@ -1,4 +1,3 @@
-
 #define AWAR_CURSER_POS_REF_ECOLI "tmp/edit/curser_ref_ecoli"
 #define AWAR_SPECIES_DEST "tmp/edit/species_name_dest"
 #define AWAR_LINE_SPACING "edit/line_spacing"
@@ -21,7 +20,7 @@ enum {
     AED_GC_SEQUENCE,
     AED_GC_HELIX,
 
-    AED_GC_0,			// @@@
+    AED_GC_0,                   // @@@
     AED_GC_1,
     AED_GC_2,
     AED_GC_3,
@@ -40,40 +39,41 @@ enum {
 
 
 typedef enum {
-    AED_F_ALLWAYS = 0,
-    AED_F_NAME = 1,
-    AED_F_NAME_SELECTED = 2,
-    AED_F_SEQUENCE = 4,
+    AED_F_ALLWAYS           = 0,
+    AED_F_NAME              = 1,
+    AED_F_NAME_SELECTED     = 2,
+    AED_F_SEQUENCE          = 4,
     AED_F_SEQUENCE_SELECTED = 8,
-    AED_F_INFO = 16,
-    AED_F_INFO_SEPARATOR = 32,
-    AED_F_WINFO = 64,
-    AED_F_CURSOR = 128,
-    AED_F_HELIX = 256,
-    AED_F_TEXT_1 = 512,
-    AED_F_TEXT_2 = 1024,
-    AED_F_TEXT_3 = 2048,
-    AED_F_FRAME = 4096,
-    AED_F_ALL = -1
-}	AED_filters;
+    AED_F_INFO              = 16,
+    AED_F_INFO_SEPARATOR    = 32,
+    AED_F_WINFO             = 64,
+    AED_F_CURSOR            = 128,
+    AED_F_HELIX             = 256,
+    AED_F_TEXT_1            = 512,
+    AED_F_TEXT_2            = 1024,
+    AED_F_TEXT_3            = 2048,
+    AED_F_FRAME             = 4096,
+    AED_F_ALL               = -1
+} AED_filters;
 
 
 extern class AED_root {
 public:
-    AD_MAIN				*ad_main;
-    AW_root				*aw_root;
+    AD_MAIN *ad_main;
+    AW_root *aw_root;
+
     AED_root(void);
 
-    AW_default			db;
-    long				center_spacing;
-    long				line_spacing;
-    long				helix_at_extendeds;
+    AW_default db;
+    long       center_spacing;
+    long       line_spacing;
+    long       helix_at_extendeds;
 } aed_root;
 
 
 typedef enum   {
-    AED_ALIGN = 0,
-    AED_INSERT = 1,
+    AED_ALIGN   = 0,
+    AED_INSERT  = 1,
     AED_REPLACE = 2
 } AED_modi;
 
@@ -81,41 +81,42 @@ class AED_dlist;
 class AED_area_entry {
 public:
 
-    AD_SPECIES				*ad_species;
-    AD_SAI					*ad_extended;
-    AD_CONT					*ad_container;
-    ADT_SEQUENCE				*adt_sequence;
-    AD_STAT					*ad_stat;
-		
-    AW_BOOL					is_selected;
-    AW_pos					in_line;
-    AW_pos					absolut_x;
-    AW_pos					absolut_y;
-    AED_area_entry				*previous;
-    AED_area_entry				*next;
-    class AED_dlist				*in_area;
+    AD_SPECIES   *ad_species;
+    AD_SAI       *ad_extended;
+    AD_CONT      *ad_container;
+    ADT_SEQUENCE *adt_sequence;
+    AD_STAT      *ad_stat;
 
-    AED_area_entry() {	is_selected = AW_FALSE;
-    previous = NULL; next = NULL;};
+    AW_BOOL         is_selected;
+    AW_pos          in_line;
+    AW_pos          absolut_x;
+    AW_pos          absolut_y;
+    AED_area_entry *previous;
+    AED_area_entry *next;
+    AED_dlist      *in_area;
+
+    AED_area_entry() { is_selected = AW_FALSE; previous = NULL; next = NULL; }
     ~AED_area_entry() {};
 };
 
 class AED_window;
 class AED_dummy { class AED_window *dummy; };
 
-
 class AED_dlist {
     GB_HASH *hash;
-    GBDATA *gb_main;
-    char *hash_awar;
-    int hash_level;
+    GBDATA  *gb_main;
+    char    *hash_awar;
+    int      hash_level;
+
 public:
-    int size;
-    AED_area_entry				*first;
-    AED_area_entry				*last;
-    AED_area_entry				*current;
+    int             size;
+    AED_area_entry *first;
+    AED_area_entry *last;
+    AED_area_entry *current;
+
     AED_dlist();
-    ~AED_dlist() {};
+    ~AED_dlist() {}
+
     void create_hash(GBDATA *gb_main,const char *awar_suffix);
     void insert_hash(const char *name);
     void remove_hash(const char *name);
@@ -133,15 +134,17 @@ class AED_dlist_left_side;
 
 class AED_left_side {
 public:
-    char	*text;
-    char	text_for_dragging[100];
-    void	(*make_text)( class AED_window *aedw, AED_area_entry *area_entry, char *text );
-    AW_BOOL		is_selected;
-    AW_pos		absolut_x;
-    AW_pos		absolut_y;
-    AED_left_side	*previous;
-    AED_left_side	*next;
-    class AED_dlist_left_side	*in_side;
+    char *text;
+    char  text_for_dragging[100];
+
+    void        (*make_text)( class AED_window *aedw, AED_area_entry *area_entry, char *text );
+
+    AW_BOOL              is_selected;
+    AW_pos               absolut_x;
+    AW_pos               absolut_y;
+    AED_left_side       *previous;
+    AED_left_side       *next;
+    AED_dlist_left_side *in_side;
 
     AED_left_side( void(*f)(class AED_window *aedw,AED_area_entry *area_entry, char *text), const char *string );
     ~AED_left_side();
@@ -150,12 +153,14 @@ public:
 
 class AED_dlist_left_side {
 public:
-    int size;
-    AED_left_side				*first;
-    AED_left_side				*last;
-    AED_left_side				*current;
-    AED_dlist_left_side() {size = 0; first = NULL; last = NULL; current = NULL;};
-    ~AED_dlist_left_side() {};
+    int            size;
+    AED_left_side *first;
+    AED_left_side *last;
+    AED_left_side *current;
+
+    AED_dlist_left_side() { size = 0; first = NULL; last = NULL; current = NULL; }
+    ~AED_dlist_left_side() {}
+    
     void remove_entry( AED_left_side *to_be_removed );
     void append( AED_left_side *to_be_inserted );
     void insert_after_entry( AED_left_side *add_after_this, AED_left_side *to_be_inserted );
@@ -165,16 +170,16 @@ public:
 
 
 typedef struct {
-    AW_BOOL	clear;
-    AW_BOOL	calc_size;
-    AW_BOOL	visible_control;
-    int	top_indent;
-    int	bottom_indent;
-    int	left_indent;
-    int		slider_pos_horizontal;
-    int		slider_pos_vertical;
-    int	picture_l;
-    int	picture_t;
+    AW_BOOL clear;
+    AW_BOOL calc_size;
+    AW_BOOL visible_control;
+    int     top_indent;
+    int     bottom_indent;
+    int     left_indent;
+    int     slider_pos_horizontal;
+    int     slider_pos_vertical;
+    int     picture_l;
+    int     picture_t;
 
 } AED_area_display_struct;
 
@@ -182,71 +187,70 @@ typedef struct {
 class AED_window {
 public:
 
-    AW_BOOL				config_window_created;
-    AW_window_menu			*config_window;
+    AW_BOOL         config_window_created;
+    AW_window_menu *config_window;
 
-    AED_dlist_left_side		*show_dlist_left_side;
-    AED_dlist_left_side		*hide_dlist_left_side;
-    AED_left_side		*selected_entry_of_dlist_left_side;
-    AW_BOOL			one_entry_dlist_left_side_is_selected;
+    AED_dlist_left_side *show_dlist_left_side;
+    AED_dlist_left_side *hide_dlist_left_side;
+    AED_left_side       *selected_entry_of_dlist_left_side;
+    AW_BOOL              one_entry_dlist_left_side_is_selected;
 
-    AED_root					*root;
-    AW_window					*aww;
-    ADT_ALI						*alignment;
+    AED_root  *root;
+    AW_window *aww;
+    ADT_ALI   *alignment;
 
-    AW_BOOL						global_focus_use;
+    AW_BOOL global_focus_use;
 
-    AED_dlist		*area_top;
-    AED_dlist		*area_middle;
-    AED_dlist		*area_bottom;		
-    AED_area_entry		*selected_area_entry;
-    AW_BOOL			one_area_entry_is_selected;
-    AW_BOOL			selected_area_entry_is_visible;
+    AED_dlist      *area_top;
+    AED_dlist      *area_middle;
+    AED_dlist      *area_bottom;
+    AED_area_entry *selected_area_entry;
+    AW_BOOL         one_area_entry_is_selected;
+    AW_BOOL         selected_area_entry_is_visible;
 
-    int			selected_info_area_text;
-    int			info_area_height;
-    AW_BOOL						edit_info_area;
+    int     selected_info_area_text;
+    int     info_area_height;
+    AW_BOOL edit_info_area;
 
-    AW_world		size_information;
-    int			last_slider_position;
-    AW_BOOL			quickdraw;
-    int			quickdraw_left_indent;
-    int			quickdraw_right_indent;
-    AW_cursor_type		cursor_type;
-    int			cursor;
-    AW_BOOL			cursor_is_managed;
-    AW_BOOL			drag;
-    int			drag_x, drag_y;
-    AW_pos		drag_x_correcting, drag_y_correcting;
+    AW_world       size_information;
+    int            last_slider_position;
+    AW_BOOL        quickdraw;
+    int            quickdraw_left_indent;
+    int            quickdraw_right_indent;
+    AW_cursor_type cursor_type;
+    int            cursor;
+    AW_BOOL        cursor_is_managed;
+    AW_BOOL        drag;
+    int            drag_x, drag_y;
+    AW_pos         drag_x_correcting, drag_y_correcting;
 
-    long			edit_modus;
-    long			edit_direction;
-    int 			owntimestamp;
-
-
+    long edit_modus;
+    long edit_direction;
+    int  owntimestamp;
 
     // modes ....
     AED_window( void );
     ~AED_window( void );
-    int	load_data( void );
-    void 	show_data( AW_device *device, AW_window *awmm, AW_BOOL visibility_control );
-    void	show_top_data( AW_device *device, AW_window *awmm, AED_area_display_struct& display_struct );
-    void	show_single_top_data(AW_device *device, AW_window *awmm, AED_area_entry *area_entry, AED_area_display_struct& display_struct, AW_pos *y );
-    void	show_middle_data( AW_device *device, AW_window *awmm, AED_area_display_struct& display_struct );
-    void	show_single_middle_data(AW_device *device, AW_window *awmm, AED_area_entry *area_entry, AED_area_display_struct& display_struct, AW_pos *y );
-    void	show_bottom_data( AW_device *device, AW_window *awmm, AED_area_display_struct& display_struct );
-    void	show_single_bottom_data(AW_device *device, AW_window *awmm, AED_area_entry *area_entry, AED_area_display_struct& display_struct, AW_pos *y );
-    void  hide_cursor( AW_device *device, AW_window *awmm );
-    void  show_cursor( AW_device *device, AW_window *awmm );
-    AW_BOOL  manage_cursor( AW_device *device, AW_window *awmm, AW_BOOL use_last_slider_position );
-    void	show_single_area_entry( AW_device *device, AW_window *awmm, AED_area_entry *area_entry );
-    void	calculate_size(AW_window *awmm);
-    void	expose(AW_window *awmm);
+    
+    int     load_data( void );
+    void    show_data( AW_device *device, AW_window *awmm, AW_BOOL visibility_control );
+    void    show_top_data( AW_device *device, AW_window *awmm, AED_area_display_struct& display_struct );
+    void    show_single_top_data(AW_device *device, AW_window *awmm, AED_area_entry *area_entry, AED_area_display_struct& display_struct, AW_pos *y );
+    void    show_middle_data( AW_device *device, AW_window *awmm, AED_area_display_struct& display_struct );
+    void    show_single_middle_data(AW_device *device, AW_window *awmm, AED_area_entry *area_entry, AED_area_display_struct& display_struct, AW_pos *y );
+    void    show_bottom_data( AW_device *device, AW_window *awmm, AED_area_display_struct& display_struct );
+    void    show_single_bottom_data(AW_device *device, AW_window *awmm, AED_area_entry *area_entry, AED_area_display_struct& display_struct, AW_pos *y );
+    void    hide_cursor( AW_device *device, AW_window *awmm );
+    void    show_cursor( AW_device *device, AW_window *awmm );
+    AW_BOOL manage_cursor( AW_device *device, AW_window *awmm, AW_BOOL use_last_slider_position );
+    void    show_single_area_entry( AW_device *device, AW_window *awmm, AED_area_entry *area_entry );
+    void    calculate_size(AW_window *awmm);
+    void    expose(AW_window *awmm);
 
-    void	init( AED_root *rootin );
-    void	select_area_entry( AED_area_entry *area_entry, AW_pos cursor_position );
-    void	deselect_area_entry( void );
-    void	make_left_text( char *string, AED_area_entry *area_entry );
+    void init( AED_root *rootin );
+    void select_area_entry( AED_area_entry *area_entry, AW_pos cursor_position );
+    void deselect_area_entry( void );
+    void make_left_text( char *string, AED_area_entry *area_entry );
 };
 
 void aed_create_window(AED_root *aedr);
@@ -258,7 +262,7 @@ void aed_resize(AW_window *aw, AW_CL cd1, AW_CL cd2);
 
 
 AW_window *create_naligner_window( AW_root *root, AW_CL cd2 );
-void create_naligner_variables(AW_root *root,AW_default db1);
+void       create_naligner_variables(AW_root *root,AW_default db1);
 
 void create_tool_variables(AW_root *root,AW_default db1);
 //void create_submission_variables(AW_root *root,AW_default db1);

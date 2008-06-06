@@ -4,41 +4,40 @@
 #include <stdlib.h>
 #include <string.h>
 
-PHDATA::PHDATA(AW_root *awr)
-{ memset((char *)this,0,sizeof(PHDATA));
- aw_root = awr;
+PHDATA::PHDATA(AW_root *awr) {
+    memset((char *)this,0,sizeof(PHDATA));
+    aw_root = awr;
 }
 
-char *PHDATA::unload(void)
-{ struct PHENTRY *phentry;
+char *PHDATA::unload(void) {
+    struct PHENTRY *phentry;
 
- free(use);
- use = 0;
- for(phentry=entries;phentry;phentry=phentry->next) 
- { free(phentry->name);
- free(phentry->full_name);
- free((char *) phentry);  
- }
- entries = 0;
- nentries = 0;
- return 0;	
+    free(use);
+    use = 0;
+    for(phentry=entries;phentry;phentry=phentry->next)
+    { free(phentry->name);
+        free(phentry->full_name);
+        free((char *) phentry);
+    }
+    entries = 0;
+    nentries = 0;
+    return 0;
 }
 
-PHDATA::~PHDATA(void)
-{ unload();
- delete matrix;
+PHDATA::~PHDATA(void) {
+    unload();
+    delete matrix;
 }
 
 
-char *PHDATA::load(char *usei)
-{
+char *PHDATA::load(char *usei) {
     GBDATA *gb_species,*gb_ali,*gb_name,*gb_full_name;
     struct PHENTRY *phentry,*hentry;
 
     this->use = strdup(usei);
     this->gb_main = GLOBAL_gb_main;
     last_key_number=0;
-  
+
     GB_push_transaction(gb_main);
     seq_len = GBT_get_alignment_len(gb_main,use);
     entries=NULL;
@@ -49,7 +48,7 @@ char *PHDATA::load(char *usei)
          gb_species = GBT_next_marked_species(gb_species))
     {
         gb_ali = GB_entry(gb_species, use);
-        if (!gb_ali)	continue;
+        if (!gb_ali)    continue;
         //no existing alignmnet for this species
         hentry = new PHENTRY;
         hentry->next = NULL;
@@ -59,8 +58,8 @@ char *PHDATA::load(char *usei)
             gb_name = GB_entry(gb_species, "name");
             hentry->name = GB_read_string(gb_name);
             gb_full_name = GB_entry(gb_species, "full_name");
-            if (gb_full_name)	hentry->full_name = GB_read_string(gb_full_name);
-            else			hentry->full_name = NULL;
+            if (gb_full_name)   hentry->full_name = GB_read_string(gb_full_name);
+            else                        hentry->full_name = NULL;
             if (!entries) {
                 entries = hentry;
                 entries->prev = NULL;
@@ -89,8 +88,7 @@ char *PHDATA::load(char *usei)
     return 0;
 }
 
-GB_ERROR PHDATA::save(char *filename)
-{
+GB_ERROR PHDATA::save(char *filename) {
     FILE *out;
 
     out = fopen(filename,"w");
@@ -110,8 +108,7 @@ GB_ERROR PHDATA::save(char *filename)
     return 0;
 }
 
-void PHDATA::print()
-{
+void PHDATA::print() {
     unsigned row,col;
     printf("    %i\n",nentries);
     for (row = 0; row<nentries;row++){
@@ -125,10 +122,9 @@ void PHDATA::print()
 }
 
 
-GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRANSFORMATION /*transformation*/)
-{
+GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRANSFORMATION /*transformation*/) {
     if(nentries<=1) return "There are no species selected";
-  
+
     char *filter;
     matrix = new AP_smatrix(nentries);
     long i,j,column,reference_table[256];
@@ -149,7 +145,7 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
         real_chars="ACGTU";
         low_chars="acgtu";
         rest_chars="MRWSYKVHDBXNmrwsykvhdbxn";
-	
+
         strcpy(all_chars,real_chars);
         strcat(all_chars,low_chars);
         strcat(all_chars,rest_chars);
@@ -158,7 +154,7 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
         real_chars="ABCDEFGHIKLMNPQRSTVWYZ";
         low_chars=0;
         rest_chars="X";
-	
+
         strcpy(all_chars,real_chars);
         strcat(all_chars,rest_chars);
     }
@@ -175,7 +171,7 @@ GB_ERROR PHDATA::calculate_matrix(const char */*cancel*/,double /*alpha*/,PH_TRA
     for(i=0;i<256;i++) compare[i]=AW_FALSE;
     for(i=0;i<long(strlen(real_chars));i++) compare[(unsigned char)real_chars[i]]=AW_TRUE;
     for(i=0;i<long(strlen(all_chars));i++) reference_table[(unsigned char)all_chars[i]]=i;
-    
+
     // rna or dna sequence: set synonymes
     if(bases_used) {
         reference_table[(unsigned char)'U'] = reference_table[(unsigned char)'T']; /* T=U */

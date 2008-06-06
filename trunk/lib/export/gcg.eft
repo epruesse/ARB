@@ -1,4 +1,4 @@
-SUFFIX		seq
+SUFFIX          seq
 BEGIN
 !!NA_SEQUENCE 1.0
 

@@ -2,24 +2,12 @@
 
 #include <MultiProbe.hxx>
 
-
-// #include <arbdb.h>
-// #include <aw_root.hxx>
-// #include <aw_window.hxx>
-
-// #include <ED4_class.hxx>
-
-//*****************************************
-//* MP_list Methods		beginning *
-//*****************************************
-
-
 void MP_list::append_elem_backwards( void *elem )
 {
     MP_list_elem       *new_list_elem;
 
     if ( elem == NULL )
-		return;
+        return;
 
     new_list_elem = new MP_list_elem;
 
@@ -27,15 +15,15 @@ void MP_list::append_elem_backwards( void *elem )
     new_list_elem->next = NULL;
 
     if ( this->first == NULL)
-	{
+    {
         this->first = new_list_elem;
         this->last = new_list_elem;
         this->no_of_entries++;
 
         return;
-	}
+    }
 
-	new_list_elem->next = this->first;
+    new_list_elem->next = this->first;
     this->first = new_list_elem;
     this->no_of_entries++;
 
@@ -48,7 +36,7 @@ void MP_list::append_elem( void *elem )
     MP_list_elem       *new_list_elem;
 
     if ( elem == NULL )
-		return;
+        return;
 
     new_list_elem = new MP_list_elem;
 
@@ -56,13 +44,13 @@ void MP_list::append_elem( void *elem )
     new_list_elem->next = NULL;
 
     if ( this->first == NULL)
-	{
+    {
         this->first = new_list_elem;
         this->last = new_list_elem;
         this->no_of_entries++;
 
         return;
-	}
+    }
 
     this->last->next = new_list_elem;
     this->last = new_list_elem;
@@ -82,28 +70,28 @@ void MP_list::delete_elem( void *elem )
     previous_list_elem = NULL;
 
     while ( (current_list_elem!= NULL)  && (current_list_elem->elem != elem) )
-	{
-	   	previous_list_elem = current_list_elem;
+    {
+        previous_list_elem = current_list_elem;
         current_list_elem  = current_list_elem->next;
-	}
+    }
 
     if ( current_list_elem == NULL )
-		return;
+        return;
 
     if ( current_list_elem == this->first )
-	{
+    {
         if ( current_list_elem == this->last )
-			this->last = NULL;
+            this->last = NULL;
 
         this->first = current_list_elem->next;
-	}
+    }
     else
-	{
+    {
         previous_list_elem->next = current_list_elem->next;
 
         if ( current_list_elem == this->last )
-			this->last = previous_list_elem;
-	}
+            this->last = previous_list_elem;
+    }
 
     this->no_of_entries--;
     delete current_list_elem;
@@ -114,15 +102,15 @@ void MP_list::delete_elem( void *elem )
 
 short MP_list::is_elem( void *elem )
 {
-	MP_list_elem	*current_list_elem = this->first;
+    MP_list_elem    *current_list_elem = this->first;
 
-	if ( elem == NULL )
-		return ( FALSE );
+    if ( elem == NULL )
+        return ( FALSE );
 
-	while (current_list_elem && current_list_elem->elem != elem)
-		current_list_elem = current_list_elem->next;
+    while (current_list_elem && current_list_elem->elem != elem)
+        current_list_elem = current_list_elem->next;
 
-	return (current_list_elem) ? TRUE : FALSE;
+    return (current_list_elem) ? TRUE : FALSE;
 }
 
 
@@ -137,9 +125,4 @@ MP_list::MP_list()
 MP_list::~MP_list()
 {
 }
-
-
-//*******************************************
-//* MP_list Methods			end *
-//*******************************************
 

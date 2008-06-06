@@ -48,7 +48,7 @@ eval {
   }
 
   my $field = $ARGV[0];
-  shift @ARGV; # needed (otherwise PERL spits some strange error: implicit open..)
+  shift @ARGV;                  # needed (otherwise PERL spits some strange error: implicit open..)
 
   my $gb_main = ARB::open(":","rw"); # connect to running ARB
   if (!$gb_main) { die "No running ARB found\n"; }
@@ -62,8 +62,8 @@ eval {
     # read species names from STDIN into hash
     my %marklist = ();
     while (<>) {
-	s/\n\r/\n/go; # mac -> unix
-	s/\r\n/\n/go; # dos -> unix
+      s/\n\r/\n/go;             # mac -> unix
+      s/\r\n/\n/go;             # dos -> unix
       chomp;
       if ($removeWhitespace==1) {
         $_ =~ s/^[ \t]+//go;
@@ -129,7 +129,7 @@ eval {
     print "Error in markSpecies.pl (aborting transaction):\n$@\n";
   }
 
-  ARB::close($gb_main); # close connection to ARBDB
+  ARB::close($gb_main);         # close connection to ARBDB
 };
 if ($@) {
   print "Error in markSpecies.pl: $@\n";

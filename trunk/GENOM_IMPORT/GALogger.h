@@ -41,23 +41,23 @@
 
 namespace gellisary
 {
-	class GALogger
-	{
-		private:
-			std::vector<std::string> entries;
-			std::ofstream log_file;
-			std::string log_file_name;
-			
-		public:
-			GALogger();
-			virtual ~GALogger();
-			void openLogFile();
-			void closeLogFile();
-			void openNewLogFile();
-			void add_log_entry(std::string, int, int);
-			bool hasLogEntries();
-			bool isLogFileOpen();
-	};
+    class GALogger
+    {
+    private:
+        std::vector<std::string> entries;
+        std::ofstream log_file;
+        std::string log_file_name;
+
+    public:
+        GALogger();
+        virtual ~GALogger();
+        void openLogFile();
+        void closeLogFile();
+        void openNewLogFile();
+        void add_log_entry(std::string, int, int);
+        bool hasLogEntries();
+        bool isLogFileOpen();
+    };
 
 };
 

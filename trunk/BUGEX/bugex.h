@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : bugex.h                                                //
 //    Purpose   : Debugging code                                         //
-//    Time-stamp: <Fri Apr/16/2004 12:28 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jun/04/2008 13:19 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in April 2003            //
@@ -72,7 +72,7 @@
 
 #if defined(BUGEX_DUMPS)
 
-#ifndef	_CTYPE_H
+#ifndef _CTYPE_H
 #include <ctype.h>
 #endif
 

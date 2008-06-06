@@ -14,38 +14,38 @@
 
 /* ---------------------------------------------------------------- */
 
-#define MASTER_GAP_OPEN			50
-#define CHEAP_GAP_OPEN			20	// penalty for creating a gap (if we have gaps in master)
+#define MASTER_GAP_OPEN                 50
+#define CHEAP_GAP_OPEN                  20      // penalty for creating a gap (if we have gaps in master)
 
-#define DEFAULT_GAP_OPEN 		30	// penalty for creating a gap
+#define DEFAULT_GAP_OPEN                30      // penalty for creating a gap
 
-#define MASTER_GAP_EXTEND		18
-#define CHEAP_GAP_EXTEND		5 	// penalty for extending a gap (if we have gaps in master)
+#define MASTER_GAP_EXTEND               18
+#define CHEAP_GAP_EXTEND                5       // penalty for extending a gap (if we have gaps in master)
 
-#define DEFAULT_GAP_EXTEND 	 	10	// penalty for extending a gap
+#define DEFAULT_GAP_EXTEND              10      // penalty for extending a gap
 
-#define DEFAULT_IMPROBABLY_MUTATION	10	// penalty for mutations
-#define DEFAULT_PROBABLY_MUTATION 	4	// penalty for special mutations (A<->G,C<->U/T)	(only if 'weighted')
+#define DEFAULT_IMPROBABLY_MUTATION     10      // penalty for mutations
+#define DEFAULT_PROBABLY_MUTATION       4       // penalty for special mutations (A<->G,C<->U/T)        (only if 'weighted')
 
-#define DYNAMIC_PENALTIES			// otherwise you get FIXED PENALTIES	(=no cheap penalties)
+#define DYNAMIC_PENALTIES                       // otherwise you get FIXED PENALTIES    (=no cheap penalties)
 
 /* ---------------------------------------------------------------- */
 
-#define MAX_GAP_OPEN_DISCOUNT		(DEFAULT_GAP_OPEN-CHEAP_GAP_OPEN)	// maximum subtracted from DEFAULT_GAP_OPEN
-#define MAX_GAP_EXTEND_DISCOUNT	  	(DEFAULT_GAP_EXTEND-CHEAP_GAP_EXTEND)	// maximum subtracted from DEFAULT_GAP_EXTEND
+#define MAX_GAP_OPEN_DISCOUNT           (DEFAULT_GAP_OPEN-CHEAP_GAP_OPEN)       // maximum subtracted from DEFAULT_GAP_OPEN
+#define MAX_GAP_EXTEND_DISCOUNT         (DEFAULT_GAP_EXTEND-CHEAP_GAP_EXTEND)   // maximum subtracted from DEFAULT_GAP_EXTEND
 
-#define MAXN	2     	/* Maximum number of sequences (both groups) */
+#define MAXN    2       /* Maximum number of sequences (both groups) */
 
 #if (MAXN==2)
-#define MAXN_2(xxx)		xxx
-#define MAXN_2_assert(xxx) 	awtc_assert(xxx)
+#define MAXN_2(xxx)             xxx
+#define MAXN_2_assert(xxx)      awtc_assert(xxx)
 #else
 #define MAXN_2(xxx)
 #define MAXN_2_assert(xxx)
 #endif
 
-#define TRUE 	1
-#define FALSE 	0
+#define TRUE    1
+#define FALSE   0
 
 static GB_ERROR error;
 static int module_initialized = 0;
@@ -63,22 +63,22 @@ static int pam[21][21];
 
 static int pos1;
 static int pos2;
-static int **naa1;		// naa1[basetype][position]   	counts bases for each position of all sequences in group1
-static int **naa2;		// naa2[basetype][position]   	same for group2
-static int **naas;		//
+static int **naa1;              // naa1[basetype][position]     counts bases for each position of all sequences in group1
+static int **naa2;              // naa2[basetype][position]     same for group2
+static int **naas;              //
 static int seqlen_array[MAXN+1];// length of all sequences
 static char *seq_array[MAXN+1]; // the sequences
-static int group[MAXN+1];    	// group of sequence
-static int alist[MAXN+1];	// indices of sequences to be aligned
+static int group[MAXN+1];       // group of sequence
+static int alist[MAXN+1];       // indices of sequences to be aligned
 static int fst_list[MAXN+1];
 static int snd_list[MAXN+1];
-static int nseqs;		// # of sequences
-static int weights[21][21];	// weights[b1][b2] : penalty for mutation from base 'b1' to base 'b2'
-static int *displ;		// displ==0 -> base in both , displ<0 -> displ gaps in slave, displ>0 -> displ gaps in master
-static int *zza,		// column (left->right) of align matrix (minimum of all paths to this matrix element)
-    *zzb,			// -------------- " -------------------	(minimum of all paths, where gap inserted into slave)
-    *zzc,			// column (left<-right) of align matrix (minimum of all paths to this matrix element)
-    *zzd;			// -------------- " -------------------	(minimum of all paths, where gap inserted into slave)
+static int nseqs;               // # of sequences
+static int weights[21][21];     // weights[b1][b2] : penalty for mutation from base 'b1' to base 'b2'
+static int *displ;              // displ==0 -> base in both , displ<0 -> displ gaps in slave, displ>0 -> displ gaps in master
+static int *zza,                // column (left->right) of align matrix (minimum of all paths to this matrix element)
+    *zzb,                       // -------------- " ------------------- (minimum of all paths, where gap inserted into slave)
+    *zzc,                       // column (left<-right) of align matrix (minimum of all paths to this matrix element)
+    *zzd;                       // -------------- " ------------------- (minimum of all paths, where gap inserted into slave)
 /*static int gap_open;
   static int gap_extend;*/
 static int print_ptr;
@@ -88,13 +88,13 @@ static const int *gapsBeforePosition;
 //#define MATRIX_DUMP
 
 #ifdef MATRIX_DUMP
-# define IF_MATRIX_DUMP(xxx)	xxx
-# define DISPLAY_MATRIX_SIZE 	500
-static int vertical		[DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
-static int verticalOpen		[DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
-static int diagonal		[DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
-static int horizontal		[DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
-static int horizontalOpen	[DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
+# define IF_MATRIX_DUMP(xxx)    xxx
+# define DISPLAY_MATRIX_SIZE    500
+static int vertical             [DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
+static int verticalOpen         [DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
+static int diagonal             [DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
+static int horizontal           [DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
+static int horizontalOpen       [DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
 #else
 # define IF_MATRIX_DUMP(xxx)
 #endif
@@ -194,22 +194,22 @@ static const char *nucleic_maybe_U    = "-----U--U-UU-UUUU";
 static const char *nucleic_maybe[6]   = { NULL, nucleic_maybe_A, nucleic_maybe_C, nucleic_maybe_G, nucleic_maybe_T, nucleic_maybe_U };
 
 /*
- * 	M = A or C		S = G or C		V = A or G or C		N = A or C or G or T
- * 	R = A or G		Y = C or T		H = A or C or T
- * 	W = A or T		K = G or T		D = A or G or T
+ *      M = A or C              S = G or C              V = A or G or C         N = A or C or G or T
+ *      R = A or G              Y = C or T              H = A or C or T
+ *      W = A or T              K = G or T              D = A or G or T
  */
 
-#define cheap_if(cond)	((cond) ? 1 : 2)
-static int baseCmp(char c1, char c2)	// c1,c2 == 1=A,2=C (==index of character in nucleic_acid_order[])
-    // returns 	0 for equal
-    //		1 for probably mutations
-    //		2 for improbably mutations
+#define cheap_if(cond)  ((cond) ? 1 : 2)
+static int baseCmp(char c1, char c2)    // c1,c2 == 1=A,2=C (==index of character in nucleic_acid_order[])
+// returns  0 for equal
+//          1 for probably mutations
+//          2 for improbably mutations
 {
 #define COMPARABLE_BASES 5
 
     if (c1==c2) return 0;
 
-    if (c2<c1)		// swap
+    if (c2<c1)          // swap
     {
         int c3 = c1;
 
@@ -224,12 +224,12 @@ static int baseCmp(char c1, char c2)	// c1,c2 == 1=A,2=C (==index of character i
         switch(c1)
         {
             case 0: return 2;
-            case 1: return cheap_if(c2==3);			// A->G
-            case 2: return cheap_if(c2==4 || c2==5);		// C->T/U
-            case 3: return cheap_if(c2==1);			// G->A
-            case 4: if (c2==5) return 0;			// T->U
-            case 5: if (c2==4) return 0;			// U->T
-                return cheap_if(c2==2);				// T/U->C
+            case 1: return cheap_if(c2==3);                     // A->G
+            case 2: return cheap_if(c2==4 || c2==5);            // C->T/U
+            case 3: return cheap_if(c2==1);                     // G->A
+            case 4: if (c2==5) return 0;                        // T->U
+            case 5: if (c2==4) return 0;                        // U->T
+                return cheap_if(c2==2);                         // T/U->C
             default: awtc_assert(0);
         }
     }
@@ -241,7 +241,7 @@ static int baseCmp(char c1, char c2)	// c1,c2 == 1=A,2=C (==index of character i
     {
         for (i=1; i<=COMPARABLE_BASES; i++)
         {
-            if (isalpha(nucleic_maybe[i][c2]))		// 'c2' maybe a 'i'
+            if (isalpha(nucleic_maybe[i][c2]))          // 'c2' maybe a 'i'
             {
                 int match = baseCmp(c1,i);
                 if (match<bestMatch) bestMatch = match;
@@ -252,7 +252,7 @@ static int baseCmp(char c1, char c2)	// c1,c2 == 1=A,2=C (==index of character i
     {
         for (i=1; i<=COMPARABLE_BASES; i++)
         {
-            if (isalpha(nucleic_maybe[i][c1]))		// 'c1' maybe a 'i'
+            if (isalpha(nucleic_maybe[i][c1]))          // 'c1' maybe a 'i'
             {
                 int match = baseCmp(i,c2);
                 if (match<bestMatch) bestMatch = match;
@@ -265,11 +265,11 @@ static int baseCmp(char c1, char c2)	// c1,c2 == 1=A,2=C (==index of character i
 }
 #undef cheap_if
 
-int AWTC_baseMatch(char c1, char c2)	// c1,c2 == ACGUTRS...
-    // returns 	0 for equal
-    //		1 for probably mutations
-    //		2 for improbably mutations
-    //		-1 if one char is illegal
+int AWTC_baseMatch(char c1, char c2)    // c1,c2 == ACGUTRS...
+// returns  0 for equal
+//          1 for probably mutations
+//          2 for improbably mutations
+//          -1 if one char is illegal
 {
     char *p1 = strchr(nucleic_acid_order, c1);
     char *p2 = strchr(nucleic_acid_order, c2);
@@ -293,7 +293,7 @@ static int getPenalty(char c1, char c2) /* c1,c2 = A=0,C=1,... s.o. */
     return 0;
 }
 
-static char *result[3];		// result buffers
+static char *result[3];         // result buffers
 
 static char pam250mt[]={
     12,
@@ -513,7 +513,7 @@ void exit_show_pair(void)
     free(displ); displ = 0;
 }
 
-static inline void add(int v)		// insert 'v' gaps into master ???
+static inline void add(int v)           // insert 'v' gaps into master ???
 {
     if (last_print<0 && print_ptr>0) {
         displ[print_ptr-1] = v;
@@ -618,12 +618,12 @@ static inline void dumpMatrix(int x0, int y0, int breite, int hoehe, int mitte_v
 #endif
 
 static int diff(int v1,int v2,int v3,int v4, int st,int en)
-    /* v1,v3	master sequence	(v1=offset, v3=length)
-     * v2,v4	slave sequence (v2=offset, v4=length)
-     * st,en 	gap_open-penalties for start and end of the sequence
-     *
-     * returns 	costs for inserted gaps
-     */
+/* v1,v3    master sequence (v1=offset, v3=length)
+ * v2,v4    slave sequence (v2=offset, v4=length)
+ * st,en    gap_open-penalties for start and end of the sequence
+ *
+ * returns  costs for inserted gaps
+ */
 {
     int ctrc,ctri,ctrj=0,
         i,j,k,l,m,n,p,
@@ -633,8 +633,8 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
 # ifdef MATRIX_DUMP
     int display_matrix = 0;
 
-    awtc_assert(v3<=(DISPLAY_MATRIX_SIZE+2));	// width
-    awtc_assert(v4<=(DISPLAY_MATRIX_SIZE));		// height
+    awtc_assert(v3<=(DISPLAY_MATRIX_SIZE+2));   // width
+    awtc_assert(v4<=(DISPLAY_MATRIX_SIZE));             // height
 
 # define DISPLAY_MATRIX_ELEMENTS ((DISPLAY_MATRIX_SIZE+2)*(DISPLAY_MATRIX_SIZE+2))
 
@@ -666,15 +666,15 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
     }
 #endif
 
-    // q  = gap_open + gap_extend;		// q is replaced for local positions
+    // q  = gap_open + gap_extend;              // q is replaced for local positions
 
-    if(v4<=0) {							// if slave sequence is empty
+    if(v4<=0) {                                                 // if slave sequence is empty
         if(v3>0) {
             if(last_print<0 ) {
-                last_print = displ[print_ptr-1] -= v3;		// add ..
+                last_print = displ[print_ptr-1] -= v3;          // add ..
             }
             else {
-                last_print = displ[print_ptr++] = -(v3);	// .. or insert gap of length 'v3' into slave
+                last_print = displ[print_ptr++] = -(v3);        // .. or insert gap of length 'v3' into slave
             }
         }
 
@@ -683,8 +683,8 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
     }
 
     if(v3<=1) {
-        if(v3<=0) {						// if master sequence is empty
-            add(v4);						// ??? insert gap length 'v4' into master ???
+        if(v3<=0) {                                             // if master sequence is empty
+            add(v4);                                            // ??? insert gap length 'v4' into master ???
             deep--;
             return slave_gapAt(v2,v4);
         }
@@ -765,28 +765,28 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
         for(j=1; j<=v4; j++)
         {
             // from above (gap in master (behind position i))
-            IF_MATRIX_DUMP(verticalOpen[i][j]=) 	k += master_gap_open(v1+i+AF)+master_gap_extend(v1+i+AF);	// (1)
-            IF_MATRIX_DUMP(vertical[i][j]=) 		l += master_gap_extend(v1+i+AF);				// (2)
-            if(k<l) l = k;	// l=min((1),(2))
+            IF_MATRIX_DUMP(verticalOpen[i][j]=)         k += master_gap_open(v1+i+AF)+master_gap_extend(v1+i+AF);       // (1)
+            IF_MATRIX_DUMP(vertical[i][j]=)             l += master_gap_extend(v1+i+AF);                                // (2)
+            if(k<l) l = k;      // l=min((1),(2))
 
             // from left (gap in slave (behind position j))
-            IF_MATRIX_DUMP(horizontalOpen[i][j]=) 	k = zza[j] + slave_gap_open(v2+j+AF)+slave_gap_extend(v2+j+AF);		// (3)
-            IF_MATRIX_DUMP(horizontal[i][j]=) 		m = zzb[j] + slave_gap_extend(v2+j+AF);					// (4)
-            if(k<m) m = k;	// m=min((3),(4))
+            IF_MATRIX_DUMP(horizontalOpen[i][j]=)       k = zza[j] + slave_gap_open(v2+j+AF)+slave_gap_extend(v2+j+AF);         // (3)
+            IF_MATRIX_DUMP(horizontal[i][j]=)           m = zzb[j] + slave_gap_extend(v2+j+AF);                                 // (4)
+            if(k<m) m = k;      // m=min((3),(4))
 
             // diagonal (no gaps)
-            IF_MATRIX_DUMP(diagonal[i][j]=) 		k = n + calc_weight(i,j,v1,v2);					// (5)
+            IF_MATRIX_DUMP(diagonal[i][j]=)             k = n + calc_weight(i,j,v1,v2);                                 // (5)
             if(l<k) k = l;
-            if(m<k) k = m;	// k = minimum of all paths
+            if(m<k) k = m;      // k = minimum of all paths
 
-            n = zza[j];		// minimum of same row; one column to the left
-            zza[j] = k;		// minimum of all paths to this matrix position
-            zzb[j] = m;		// minimum of those two paths, where gap was inserted into slave
+            n = zza[j];         // minimum of same row; one column to the left
+            zza[j] = k;         // minimum of all paths to this matrix position
+            zzb[j] = m;         // minimum of those two paths, where gap was inserted into slave
         }
     }
 
-# define MHO 1	// X-Offset for second half of matrix-arrays (only used to insert MID-column into dumpMatrix())
-# define BO  1	// Offset for second half of matrix (cause now the indices i and j are smaller as above)
+# define MHO 1  // X-Offset for second half of matrix-arrays (only used to insert MID-column into dumpMatrix())
+# define BO  1  // Offset for second half of matrix (cause now the indices i and j are smaller as above)
 
     // last column of matrix:
 
@@ -817,23 +817,23 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
         for(j=v4-1; j>=0; j--)
         {
             // from below (gap in master (in front of position (i+BO)))
-            IF_MATRIX_DUMP(verticalOpen[i+BO+MHO][j+BO]=)   	k += master_gap_open(v1+i)+master_gap_extend(v1+i);	// (1)
-            IF_MATRIX_DUMP(vertical[i+BO+MHO][j+BO]=)       	l += master_gap_extend(v1+i);				// (2)
-            if(k<l) l = k;	// l=min((1),(2))
+            IF_MATRIX_DUMP(verticalOpen[i+BO+MHO][j+BO]=)       k += master_gap_open(v1+i)+master_gap_extend(v1+i);     // (1)
+            IF_MATRIX_DUMP(vertical[i+BO+MHO][j+BO]=)           l += master_gap_extend(v1+i);                           // (2)
+            if(k<l) l = k;      // l=min((1),(2))
 
             // from right (gap in slave (in front of position (j+BO)))
-            IF_MATRIX_DUMP(horizontalOpen[i+BO+MHO][j+BO]=) 	k = zzc[j] + slave_gap_open(v2+j) + slave_gap_extend(v2+j);	// (3)
-            IF_MATRIX_DUMP(horizontal[i+BO+MHO][j+BO]=)     	m = zzd[j] + slave_gap_extend(v2+j);				// (4)
-            if(k<m) m = k;	// m=min((3),(4))
+            IF_MATRIX_DUMP(horizontalOpen[i+BO+MHO][j+BO]=)     k = zzc[j] + slave_gap_open(v2+j) + slave_gap_extend(v2+j);     // (3)
+            IF_MATRIX_DUMP(horizontal[i+BO+MHO][j+BO]=)         m = zzd[j] + slave_gap_extend(v2+j);                            // (4)
+            if(k<m) m = k;      // m=min((3),(4))
 
             // diagonal (no gaps)
-            IF_MATRIX_DUMP(diagonal[i+BO+MHO][j+BO]=) 		k = n + calc_weight(i+BO,j+BO,v1,v2);			// (5)
+            IF_MATRIX_DUMP(diagonal[i+BO+MHO][j+BO]=)           k = n + calc_weight(i+BO,j+BO,v1,v2);                   // (5)
             if(l<k) k = l;
-            if(m<k) k = m;	// k = minimum of all paths
+            if(m<k) k = m;      // k = minimum of all paths
 
-            n = zzc[j];		// minimum of same row; one column to the right
-            zzc[j] = k;		// minimum of all paths to this matrix position
-            zzd[j] = m;		// minimum of those two paths, where gap was inserted into slave
+            n = zzc[j];         // minimum of same row; one column to the right
+            zzc[j] = k;         // minimum of all paths to this matrix position
+            zzd[j] = m;         // minimum of those two paths, where gap was inserted into slave
         }
     }
 
@@ -847,10 +847,10 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
     ctrc = INT_MAX;
     flag = 0;
 
-    for(j=(ctri?0:1);j<=v4;j++)	// was j=0;...	(this was erroneous cause it splitted zero-length subsequences)
+    for(j=(ctri?0:1);j<=v4;j++) // was j=0;...  (this was erroneous cause it splitted zero-length subsequences)
     {
         IF_MATRIX_DUMP(vertical[ctri+MHO][j]=)
-            k = zza[j] + zzc[j];		// sum up both calculations (=diagonal=no gaps)
+            k = zza[j] + zzc[j];                // sum up both calculations (=diagonal=no gaps)
 
         if (k<ctrc || ((k==ctrc) && (zza[j]!=zzb[j]) && (zzc[j]==zzd[j])))
         {
@@ -863,8 +863,8 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
     for(j=v4;j>=(ctri?0:1);j--)
     {
         IF_MATRIX_DUMP(verticalOpen[ctri+MHO][j]=)
-            k = zzb[j] + zzd[j]			// paths where gaps were inserted into slave (left and right side!)
-            - slave_gap_open(j);		// subtract gap_open-penalty which was added twice (at left and right end of gap)
+            k = zzb[j] + zzd[j]                 // paths where gaps were inserted into slave (left and right side!)
+            - slave_gap_open(j);                // subtract gap_open-penalty which was added twice (at left and right end of gap)
 
         if(k<ctrc)
         {
@@ -885,14 +885,14 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
 
     /* Conquer recursively around midpoint  */
 
-    if(flag==1)		        /* Type 1 gaps  */
+    if(flag==1)                 /* Type 1 gaps  */
     {
-        diff(v1,v2,ctri,ctrj,st,master_gap_open(v1+ctri));			// includes midpoint ctri and ctrj
+        diff(v1,v2,ctri,ctrj,st,master_gap_open(v1+ctri));                      // includes midpoint ctri and ctrj
         diff(v1+ctri,v2+ctrj,v3-ctri,v4-ctrj,master_gap_open(v1+ctri),en);
     }
     else
     {
-        diff(v1,v2,ctri-1,ctrj,st,0);						// includes midpoint ctrj
+        diff(v1,v2,ctri-1,ctrj,st,0);                                           // includes midpoint ctrj
 
         if(last_print<0)                         /* Delete 2 */
             last_print = displ[print_ptr-1] -= 2;
@@ -968,7 +968,7 @@ static void do_align( /*int v1,*/ int *score, long act_seq_length)
     }
     else
     {
-        MAXN_2_assert(0);	// should never occur if MAXN==2
+        MAXN_2_assert(0);       // should never occur if MAXN==2
 #if (MAXN!=2)
         for(i=1;i<=pos1;++i) alist[i]=fst_list[i];
         for(n=1;n<=l2;++n)
@@ -986,7 +986,7 @@ static void do_align( /*int v1,*/ int *score, long act_seq_length)
 #endif
     }
 
-    *score=diff(1,1,l1,l2,master_gap_open(1),master_gap_open(l1+1)/*v1,v1*/);	/* Myers and Miller alignment now */
+    *score=diff(1,1,l1,l2,master_gap_open(1),master_gap_open(l1+1)/*v1,v1*/);   /* Myers and Miller alignment now */
 }
 
 /*
@@ -1019,7 +1019,7 @@ static int add_ggaps(long /*max_seq_length*/)
     pos=1;
     to_do=print_ptr;
 
-    for(i=0;i<to_do;++i)	// was: 1 .. <=to_do
+    for(i=0;i<to_do;++i)        // was: 1 .. <=to_do
     {
         if(displ[i]==0)
         {
@@ -1099,9 +1099,9 @@ static GB_ERROR p_encode(const char *seq, char *naseq, int l) /* code seq as int
 }
 
 static GB_ERROR n_encode(const char *seq,char *naseq,int l)
-{					/* code seq as ints .. use -2 for gap */
+{                                       /* code seq as ints .. use -2 for gap */
     int i;
-    /*	static char *nucs="ACGTU";	*/
+    /*  static char *nucs="ACGTU";      */
     int warned = 0;
 
     for(i=1; i<=l; i++) {
@@ -1137,7 +1137,7 @@ GB_ERROR AWTC_ClustalV_align(int is_dna, int weighted,
     error = 0;
     gapsBeforePosition = gapsBefore1;
 
-    if (!module_initialized)		// initialize only once
+    if (!module_initialized)            // initialize only once
     {
         dnaflag = is_dna;
         is_weight = weighted;
@@ -1164,7 +1164,7 @@ GB_ERROR AWTC_ClustalV_align(int is_dna, int weighted,
         {
             return "Please call AWTC_ClustalV_align_exit() between calls that differ in\n"
                 "one of the following parameters:\n"
-                "	is_dna, weighted";
+                "       is_dna, weighted";
         }
     }
 
@@ -1219,8 +1219,3 @@ void AWTC_ClustalV_align_exit(void)
         exit_myers();
     }
 }
-
-
-
-
-

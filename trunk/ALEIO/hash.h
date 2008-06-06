@@ -24,8 +24,8 @@ extern void **lookup_hash_table_soft (struct string_hash *TABLE,
 extern void map_hash_table (struct string_hash *TABLE,
                             void (*func) (char *STRING, size_t STRING_LEN,
                                           void **CELL,
-					  void *CLOSURE),
-			    void *CLOSURE);
+                                          void *CLOSURE),
+                            void *CLOSURE);
 
 /* Free all memory associated with TABLE.
    This frees everything except what the value cells point to (since

@@ -7,7 +7,7 @@
 // Awars for SAI
 #define AWAR_3D_SAI_SELECTED "rna3d/sai_selected"
 
-// Awars for Helix 
+// Awars for Helix
 #define AWAR_3D_DISPLAY_HELIX   "rna3d/display_helix"
 #define AWAR_3D_HELIX_BACKBONE  "rna3d/helix_backbone"
 #define AWAR_3D_HELIX_MIDPOINT  "rna3d/helix_midpoint"
@@ -57,24 +57,24 @@
 
 typedef struct Vector3 {
 public:
-    float x, y, z;						
+    float x, y, z;
 
-	Vector3() {}  	// A default constructor
-	Vector3(float X, float Y, float Z) { x = X; y = Y; z = Z; }
+    Vector3() {}    // A default constructor
+    Vector3(float X, float Y, float Z) { x = X; y = Y; z = Z; }
 
-	// Overloading Operator(+,-,*,/) functions
+    // Overloading Operator(+,-,*,/) functions
 
-    // adding 2 vectors    
-	Vector3 operator+(Vector3 v) { return Vector3(v.x + x, v.y + y, v.z + z); }
+    // adding 2 vectors
+    Vector3 operator+(Vector3 v) { return Vector3(v.x + x, v.y + y, v.z + z); }
 
     // substracting 2 vectors
-	Vector3 operator-(Vector3 v) { return Vector3(x - v.x, y - v.y, z - v.z); }
+    Vector3 operator-(Vector3 v) { return Vector3(x - v.x, y - v.y, z - v.z); }
 
-	//multiply by scalars
-	Vector3 operator*(float num) { return Vector3(x * num, y * num, z * num); }
+    //multiply by scalars
+    Vector3 operator*(float num) { return Vector3(x * num, y * num, z * num); }
 
     // divide by scalars
-	Vector3 operator/(float num) { return Vector3(x / num, y / num, z / num); }
+    Vector3 operator/(float num) { return Vector3(x / num, y / num, z / num); }
 };
 
 
@@ -130,4 +130,3 @@ extern RNA3D_Global *RNA3D;
 extern char          globalComment[1000];
 
 void RNA3D_init_global_data();
-

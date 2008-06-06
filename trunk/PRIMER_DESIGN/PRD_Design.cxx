@@ -203,32 +203,32 @@ int PrimerDesign::insertNode ( Node *current_, unsigned char base_, PRD_Sequence
     int  index     = CHAR2CHILD.INDEX[ base_ ];
     bool is_primer = primer_length.includes( delivered_ ); // new child is primer if true
 
-  //
-  // create new node if necessary or update existing node if its a primer
-  //
-  if ( current_->child[index] == NULL ) {
-    total_node_counter_left  += left_;
-    total_node_counter_right += right_;
+    //
+    // create new node if necessary or update existing node if its a primer
+    //
+    if ( current_->child[index] == NULL ) {
+        total_node_counter_left  += left_;
+        total_node_counter_right += right_;
 
-    if ( is_primer ) {
-        current_->child[index]     = new Node ( current_,base_,pos_,offset_ ); // primer => new child with positive last_base_index
-        primer_node_counter_left  += left_;
-        primer_node_counter_right += right_;
-    } else {
-        current_->child[index] = new Node ( current_,base_,0 ); // no primer => new child with zero position
+        if ( is_primer ) {
+            current_->child[index]     = new Node ( current_,base_,pos_,offset_ ); // primer => new child with positive last_base_index
+            primer_node_counter_left  += left_;
+            primer_node_counter_right += right_;
+        } else {
+            current_->child[index] = new Node ( current_,base_,0 ); // no primer => new child with zero position
 
+        }
+        current_->child_bits |= CHAR2BIT.FIELD[ base_ ];                            // update child_bits of current node
     }
-    current_->child_bits |= CHAR2BIT.FIELD[ base_ ];				// update child_bits of current node
-  }
-  else {
-    if ( is_primer ) {
-      current_->child[index]->last_base_index = -pos_;				// primer, but already exists => set pos to negative
-      primer_node_counter_left  -= left_;
-      primer_node_counter_right -= right_;
+    else {
+        if ( is_primer ) {
+            current_->child[index]->last_base_index = -pos_;                          // primer, but already exists => set pos to negative
+            primer_node_counter_left  -= left_;
+            primer_node_counter_right -= right_;
+        }
     }
-  }
 
-  return index;
+    return index;
 }
 
 // check if (sub)tree contains a valid primer
@@ -248,22 +248,22 @@ bool PrimerDesign::treeContainsPrimer ( Node *start )
 // remove non-primer-leaves and branches from the tree
 void PrimerDesign::clearTree ( Node *start, int left_, int right_ )
 {
-  // check children
-  for ( int i = 0; i < 4; i++ )
-    if ( start->child[i] != NULL ) clearTree( start->child[i], left_, right_ );
+    // check children
+    for ( int i = 0; i < 4; i++ )
+        if ( start->child[i] != NULL ) clearTree( start->child[i], left_, right_ );
 
-  // check self
-  if ( start->isLeaf() && (!start->isValidPrimer()) && (start->parent != NULL) ) {
-    total_node_counter_left   -= left_;
-    total_node_counter_right  -= right_;
+    // check self
+    if ( start->isLeaf() && (!start->isValidPrimer()) && (start->parent != NULL) ) {
+        total_node_counter_left   -= left_;
+        total_node_counter_right  -= right_;
 
-    // remove self from parent
-    start->parent->child[ CHAR2CHILD.INDEX[ start->base ] ] = NULL;
-    start->parent->child_bits &= ~CHAR2BIT.FIELD[ start->base ];
+        // remove self from parent
+        start->parent->child[ CHAR2CHILD.INDEX[ start->base ] ] = NULL;
+        start->parent->child_bits &= ~CHAR2BIT.FIELD[ start->base ];
 
-    // erase node
-    delete start;
-  }
+        // erase node
+        delete start;
+    }
 }
 
 void PrimerDesign::buildPrimerTrees ()
@@ -301,8 +301,8 @@ void PrimerDesign::buildPrimerTrees ()
     //
     // init. offset-counter
     //
-    sequence_iterator->restart( 0,primer1.min(),SequenceIterator::IGNORE,SequenceIterator::FORWARD );	// start at 1st absolute pos in aligned seq.
-    while ( sequence_iterator->nextBase() != SequenceIterator::EOS )					// count bases till left range
+    sequence_iterator->restart( 0,primer1.min(),SequenceIterator::IGNORE,SequenceIterator::FORWARD );   // start at 1st absolute pos in aligned seq.
+    while ( sequence_iterator->nextBase() != SequenceIterator::EOS )                                    // count bases till left range
         offset++;
 
     //
@@ -346,20 +346,20 @@ void PrimerDesign::buildPrimerTrees ()
     // clear left tree
     //
 #if defined(DEBUG)
-    printf ("		%li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right );
-    printf ("		clearing left tree\n" );
+    printf ("           %li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right );
+    printf ("           clearing left tree\n" );
 #endif
     show_status("clearing left primertree");
     clearTree( root1, 1, 0 );
 #if defined(DEBUG)
-    printf ("		%li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right );
+    printf ("           %li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right );
 #endif
 
     //
     // count bases till right range
     //
     sequence_iterator->restart( sequence_iterator->pos, primer2.min(),SequenceIterator::IGNORE,SequenceIterator::FORWARD ); // run from current pos
-    while ( sequence_iterator->nextBase() != SequenceIterator::EOS )							  // till begin of right range
+    while ( sequence_iterator->nextBase() != SequenceIterator::EOS )                                                      // till begin of right range
         offset++;
 
     if ( !treeContainsPrimer( root1 ) ) {
@@ -415,13 +415,13 @@ void PrimerDesign::buildPrimerTrees ()
     // clear left tree
     //
 #if defined(DEBUG)
-    printf ("		%li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right );
-    printf ("		clearing right tree\n" );
+    printf ("           %li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right );
+    printf ("           clearing right tree\n" );
 #endif
     show_status("clearing right primertree");
     clearTree( root2, 0, 1 );
 #if defined(DEBUG)
-    printf ("		%li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right );
+    printf ("           %li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right );
 #endif
 }
 
@@ -455,28 +455,28 @@ void PrimerDesign::findNextPrimer( Node *start_at_, int depth_, int *counter_, i
         //     (*counter_)++;
         //     printf( "findNextPrimer : %3i",depth_ );
 
-//     // print last_base_indizes
-//     if ( direction_ == FORWARD ) printf( "%7li           ",start_at_->last_base_index );
-//                             else printf( "      0           " );
+        //     // print last_base_indizes
+        //     if ( direction_ == FORWARD ) printf( "%7li           ",start_at_->last_base_index );
+        //                             else printf( "      0           " );
 
-//     // print bases
-//     deque<char> primer;
-//     if ( direction_ == FORWARD )
-//     {
-//       printf( "%7li               '",followUp( start_at_, &primer, direction_ ) );
-//       primer.pop_front();                                                     // erase 'base' of root-node
-//     }
-//     else
-//     {
-//       printf( "%7li               '",start_at_->last_base_index );
-//       followUp( start_at_, &primer, direction_ );
-//       primer.pop_back();                                                      // erase 'base' of root-node
-//     }
-//     copy( primer.begin(), primer.end(), ostream_iterator<char>(cout) );
-//     printf( "'\n" );
-//   }
+        //     // print bases
+        //     deque<char> primer;
+        //     if ( direction_ == FORWARD )
+        //     {
+        //       printf( "%7li               '",followUp( start_at_, &primer, direction_ ) );
+        //       primer.pop_front();                                                     // erase 'base' of root-node
+        //     }
+        //     else
+        //     {
+        //       printf( "%7li               '",start_at_->last_base_index );
+        //       followUp( start_at_, &primer, direction_ );
+        //       primer.pop_back();                                                      // erase 'base' of root-node
+        //     }
+        //     copy( primer.begin(), primer.end(), ostream_iterator<char>(cout) );
+        //     printf( "'\n" );
+        //   }
 
-  // children
+        // children
         depth_++;
     for ( int i=0; i < 4; i++ )
         if ( start_at_->child[i] != NULL ) findNextPrimer( start_at_->child[i],  depth_, counter_, direction_ );
@@ -491,7 +491,7 @@ void PrimerDesign::printPrimerTrees ()
     findNextPrimer( root1,0, &primer_counter, FORWARD );
     cout << "printPrimerTrees : " << primer_counter << " primer found" << endl << endl;
 
-  // start at root2 with zero depth
+    // start at root2 with zero depth
     primer_counter = 0;
     cout << "findNextPrimer : depth  last_base:index  first_base:index  base" << endl;
     findNextPrimer( root2,0, &primer_counter, BACKWARD );
@@ -817,19 +817,19 @@ void PrimerDesign::convertTreesToLists ()
 
                 if ( cur_item == list1 ) {
                     // 'to delete'-item is first in list
-                    list1 = list1->next;				// list 1 starts with next item
-                    delete cur_item;				// delete former first item
-                    cur_item = list1;				// new first item is next to be examined
+                    list1 = list1->next;                                // list 1 starts with next item
+                    delete cur_item;                            // delete former first item
+                    cur_item = list1;                           // new first item is next to be examined
                 }
                 else {
                     // run through list till 'next' is to delete
-                    to_remove = cur_item;				// remember 'to delete'-item
-                    cur_item  = list1;                       	// start at first
-                    while ( cur_item ->next != to_remove )    	// run till 'next' is 'to delete'
+                    to_remove = cur_item;                               // remember 'to delete'-item
+                    cur_item  = list1;                          // start at first
+                    while ( cur_item ->next != to_remove )      // run till 'next' is 'to delete'
                         cur_item = cur_item->next;
-                    cur_item->next = cur_item->next->next;    	// unlink 'next' from list
-                    cur_item = cur_item->next;                	// 'next' of 'to delete' is next to be examined
-                    delete to_remove;                         	// ...
+                    cur_item->next = cur_item->next->next;      // unlink 'next' from list
+                    cur_item = cur_item->next;                  // 'next' of 'to delete' is next to be examined
+                    delete to_remove;                           // ...
                 }
             }
             else
@@ -1005,8 +1005,8 @@ void PrimerDesign::printPrimerPairs ()
 //  ------------------------------------------------------------
 const char *PrimerDesign::get_result( int num, const char *&primers, int max_primer_length, int max_position_length, int max_length_length )  const
 {
-    if ( (num < 0) || (num >= max_count_primerpairs) ) return 0;		// check for valid index
-    if ( !pairs[num].one || !pairs[num].two )          return 0;		// check for valid items at given index
+    if ( (num < 0) || (num >= max_count_primerpairs) ) return 0;                // check for valid index
+    if ( !pairs[num].one || !pairs[num].two )          return 0;                // check for valid items at given index
 
     primers = pairs[num].get_primers( sequence );
     return pairs[num].get_result( sequence,  max_primer_length,  max_position_length,  max_length_length );
