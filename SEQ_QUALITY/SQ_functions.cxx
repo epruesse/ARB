@@ -72,7 +72,7 @@ static int sq_round(double value) {
 GB_ERROR SQ_reset_quality_calcstate(GBDATA * gb_main) {
     GB_push_transaction(gb_main);
 
-    GB_ERROR error = 0;
+    GB_ERROR error = NULL;
     char *alignment_name = GBT_get_default_alignment(gb_main);
 
     for (GBDATA * gb_species = GBT_first_species(gb_main); gb_species && !error; gb_species
@@ -104,6 +104,23 @@ GB_ERROR SQ_reset_quality_calcstate(GBDATA * gb_main) {
     else
         GB_pop_transaction(gb_main);
 
+    return error;
+}
+
+GB_ERROR SQ_remove_quality_entries(GBDATA *gb_main) {
+    GB_push_transaction(gb_main);
+    GB_ERROR error= NULL;
+
+    for (GBDATA *gb_species = GBT_first_species(gb_main); gb_species && !error; gb_species
+    = GBT_next_species(gb_species)) {
+        GBDATA *gb_quality = GB_search(gb_species, "quality", GB_FIND);
+        if (gb_quality)
+            error = GB_delete(gb_quality);
+    }
+    if (error)
+        GB_abort_transaction(gb_main);
+    else
+        GB_pop_transaction(gb_main);
     return error;
 }
 

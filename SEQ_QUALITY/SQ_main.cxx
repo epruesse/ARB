@@ -235,6 +235,10 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
     delete ap_tree_root;
 }
 
+static void sq_remove_quality_entries_cb(AW_window * /*aww*/) {
+    SQ_remove_quality_entries(GLOBAL_gb_main);
+}
+
 // create window for sequence quality calculation (called only once)
 AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL) {
     AW_window_simple *aws = new AW_window_simple;
@@ -289,6 +293,10 @@ AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL) {
     aws->callback(sq_calc_seq_quality_cb, filtercd);
     aws->highlight();
     aws->create_button("GO", "GO", "G");
+
+    aws->at("remove");
+    aws->callback(sq_remove_quality_entries_cb);
+    aws->create_button("Remove", "Remove", "R");
 
     aws->at("reevaluate");
     aws->label("Re-Evaluate only");
