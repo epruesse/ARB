@@ -37,6 +37,8 @@ typedef std::map < std::string, SQ_GroupDataPtr> SQ_GroupDataDictionary;
 
 GB_ERROR SQ_reset_quality_calcstate(GBDATA * gb_main);
 
+GB_ERROR SQ_remove_quality_entries(GBDATA *gb_main);
+
 char *SQ_fetch_filtered_sequence(GBDATA * read_sequence, AP_filter * filter);
 
 GB_ERROR SQ_pass1(SQ_GroupData * globalData, GBDATA * gb_main, GBT_TREE * node,
