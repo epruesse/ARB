@@ -4,42 +4,42 @@
 #define AWAR_DIST_SAVE_MATRIX_BASE "tmp/" AWAR_DIST_PREFIX "save_matrix"
 
 typedef enum {
-    PH_TRANSFORMATION_NONE,
-    PH_TRANSFORMATION_SIMILARITY,
-    PH_TRANSFORMATION_JUKES_CANTOR,
-    PH_TRANSFORMATION_FELSENSTEIN,
+    DI_TRANSFORMATION_NONE,
+    DI_TRANSFORMATION_SIMILARITY,
+    DI_TRANSFORMATION_JUKES_CANTOR,
+    DI_TRANSFORMATION_FELSENSTEIN,
 
-    PH_TRANSFORMATION_PAM,
-    PH_TRANSFORMATION_CATEGORIES_HALL,
-    PH_TRANSFORMATION_CATEGORIES_BARKER,
-    PH_TRANSFORMATION_CATEGORIES_CHEMICAL,
+    DI_TRANSFORMATION_PAM,
+    DI_TRANSFORMATION_CATEGORIES_HALL,
+    DI_TRANSFORMATION_CATEGORIES_BARKER,
+    DI_TRANSFORMATION_CATEGORIES_CHEMICAL,
 
-    PH_TRANSFORMATION_HAESCH,
-    PH_TRANSFORMATION_KIMURA,
-    PH_TRANSFORMATION_OLSEN,
-    PH_TRANSFORMATION_FELSENSTEIN_VOIGT,
-    PH_TRANSFORMATION_OLSEN_VOIGT,
-    PH_TRANSFORMATION_ML
-} PH_TRANSFORMATION;
+    DI_TRANSFORMATION_HAESCH,
+    DI_TRANSFORMATION_KIMURA,
+    DI_TRANSFORMATION_OLSEN,
+    DI_TRANSFORMATION_FELSENSTEIN_VOIGT,
+    DI_TRANSFORMATION_OLSEN_VOIGT,
+    DI_TRANSFORMATION_ML
+} DI_TRANSFORMATION;
 
-enum PH_MATRIX_TYPE {
-    PH_MATRIX_FULL,
-    PH_MATRIX_COMPRESSED };
+enum DI_MATRIX_TYPE {
+    DI_MATRIX_FULL,
+    DI_MATRIX_COMPRESSED };
 
-class PHMATRIX;
+class DI_MATRIX;
 class AW_root;
 
-class ph_dummy {
-    PHMATRIX *dummy;
+class di_dummy {
+    DI_MATRIX *dummy;
 };
 
-class PHENTRY {
+class DI_ENTRY {
 public:
-    PHENTRY(GBDATA *gbd,class PHMATRIX *phmatri);
-    PHENTRY(char *namei,class PHMATRIX *phmatri);
-    ~PHENTRY();
+    DI_ENTRY(GBDATA *gbd,class DI_MATRIX *phmatri);
+    DI_ENTRY(char *namei,class DI_MATRIX *phmatri);
+    ~DI_ENTRY();
 
-    PHMATRIX                   *phmatrix;
+    DI_MATRIX                   *phmatrix;
     AP_sequence                *sequence;
     AP_sequence_parsimony      *sequence_parsimony; // if exist ok
     AP_sequence_simple_protein *sequence_protein;
@@ -51,19 +51,19 @@ public:
     // to group number xxxx
 };
 
-typedef long PH_MUT_MATR[AP_MAX][AP_MAX];
+typedef long DI_MUT_MATR[AP_MAX][AP_MAX];
 
-enum PH_SAVE_TYPE {
-    PH_SAVE_PHYLIP_COMP,
-    PH_SAVE_READABLE,
-    PH_SAVE_TABBED
+enum DI_SAVE_TYPE {
+    DI_SAVE_PHYLIP_COMP,
+    DI_SAVE_READABLE,
+    DI_SAVE_TABBED
 };
 
 class BI_helix;
 
-class PHMATRIX {
+class DI_MATRIX {
 private:
-    friend class PHENTRY;
+    friend class DI_ENTRY;
     GBDATA *gb_main;
     GBDATA *gb_species_data;
     char    *use;
@@ -77,33 +77,33 @@ private:
 
 public:
     GB_BOOL is_AA;
-    PHENTRY **entries;
+    DI_ENTRY **entries;
     long    nentries;
-    static PHMATRIX *ROOT;
+    static DI_MATRIX *ROOT;
     AP_smatrix *matrix;
-    enum PH_MATRIX_TYPE matrix_type;
+    enum DI_MATRIX_TYPE matrix_type;
 
-    PHMATRIX(GBDATA *gb_main,AW_root *awr);
-    ~PHMATRIX(void);
+    DI_MATRIX(GBDATA *gb_main,AW_root *awr);
+    ~DI_MATRIX(void);
 
     char *load(char *use,AP_filter *filter,AP_weights *weights,AP_smatrix *ratematrix, int all, GB_CSTR sort_tree_name, bool show_warnings);
     char *unload(void);
-    const char *save(char *filename,enum PH_SAVE_TYPE type);
+    const char *save(char *filename,enum DI_SAVE_TYPE type);
 
-    void    clear(PH_MUT_MATR &hits);
-    void    make_sym(PH_MUT_MATR &hits);
-    void    rate_write(PH_MUT_MATR &hits,FILE *out);
+    void    clear(DI_MUT_MATR &hits);
+    void    make_sym(DI_MUT_MATR &hits);
+    void    rate_write(DI_MUT_MATR &hits,FILE *out);
     long    *create_helix_filter(BI_helix *helix,AP_filter *filter);
     // 0 non helix 1 helix; compressed filter
-    GB_ERROR calculate_rates(PH_MUT_MATR &hrates,PH_MUT_MATR &nrates,PH_MUT_MATR &pairs,long *filter);
+    GB_ERROR calculate_rates(DI_MUT_MATR &hrates,DI_MUT_MATR &nrates,DI_MUT_MATR &pairs,long *filter);
     GB_ERROR haeschoe(const char *path);
     double  corr(double dist, double b, double & sigma);
-    GB_ERROR calculate(AW_root *awr, char *cancel, double alpha, PH_TRANSFORMATION transformation);
+    GB_ERROR calculate(AW_root *awr, char *cancel, double alpha, DI_TRANSFORMATION transformation);
     char *calculate_overall_freqs(double rel_frequencies[AP_MAX],char *cancel_columns);
-    GB_ERROR calculate_pro(PH_TRANSFORMATION transformation);
+    GB_ERROR calculate_pro(DI_TRANSFORMATION transformation);
     char *analyse(AW_root *aw_root);
 
-    int search_group(GBT_TREE *node,GB_HASH *hash, long *groupcnt,char *groupname, PHENTRY **groups);       // @@ OLIVER
+    int search_group(GBT_TREE *node,GB_HASH *hash, long *groupcnt,char *groupname, DI_ENTRY **groups);       // @@ OLIVER
     char *compress(GBT_TREE *tree);
 };
 

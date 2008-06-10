@@ -1,16 +1,16 @@
 #define SPECIES_NAME_LEN 10    // only for displaying speciesnames
 
 typedef enum  {
-    PH_G_STANDARD,
-    PH_G_NAMES,
-    PH_G_RULER,
-    PH_G_RULER_DISPLAY,
-    PH_G_BELOW_DIST,
-    PH_G_ABOVE_DIST,
-    PH_G_LAST                   // must be last
-} PH_gc;
+    DI_G_STANDARD,
+    DI_G_NAMES,
+    DI_G_RULER,
+    DI_G_RULER_DISPLAY,
+    DI_G_BELOW_DIST,
+    DI_G_ABOVE_DIST,
+    DI_G_LAST                   // must be last
+} DI_gc;
 
-class PH_dmatrix {
+class DI_dmatrix {
     AW_pos screen_width;          // dimensions of main screen
     AW_pos screen_height;
     long   cell_width;            // width and height of one cell
@@ -34,9 +34,9 @@ class PH_dmatrix {
 public:
     AW_window *awm;
     AW_device *device;          // device to draw in
-    PHMATRIX  *ph_matrix;       // the Matrix
+    DI_MATRIX  *di_matrix;       // the Matrix
 
-    PHMATRIX *get_matrix();
+    DI_MATRIX *get_matrix();
 
     void monitor_vertical_scroll_cb(AW_window *);   // vertical and horizontal
     void monitor_horizontal_scroll_cb(AW_window *); // scrollbar movements
@@ -47,10 +47,10 @@ public:
     void set_slider_min(double d) { min_view_dist = d; };
     void set_slider_max(double d) { max_view_dist = d; };
 
-    PH_dmatrix(void);              // constructor
-    void init(PHMATRIX *matrix=0); // set the output matrix
+    DI_dmatrix(void);              // constructor
+    void init(DI_MATRIX *matrix=0); // set the output matrix
     
-    // if matrix == 0, use PHMATRIX::root
+    // if matrix == 0, use DI_MATRIX::root
 };
 
-AW_window *PH_create_view_matrix_window(AW_root *awr, PH_dmatrix *dmatrix);
+AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix);

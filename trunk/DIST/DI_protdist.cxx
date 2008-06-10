@@ -24,7 +24,7 @@
 
 #define epsilon         0.000001/* a small number */
 
-double   ph_protdist::pameigs[20] = {
+double   di_protdist::pameigs[20] = {
     -0.022091252, -0.019297602, 0.000004760, -0.017477817,
     -0.016575549, -0.015504543, -0.002112213, -0.002685727,
     -0.002976402, -0.013440755, -0.012926992, -0.004293227,
@@ -32,7 +32,7 @@ double   ph_protdist::pameigs[20] = {
     -0.007142318, -0.007381851, -0.007806557, -0.008127024
 };
 
-double   ph_protdist::pamprobs[20][20] = {
+double   di_protdist::pamprobs[20][20] = {
     {
         -0.01522976, -0.00746819, -0.13934468, 0.11755315, -0.00212101,
         0.01558456, -0.07408235, -0.00322387, 0.01375826, 0.00448826,
@@ -155,7 +155,7 @@ double   ph_protdist::pamprobs[20][20] = {
     }
 };
 
-void ph_protdist::cats(ph_cattype      wcat)
+void di_protdist::cats(di_cattype      wcat)
 {
     /* define categories of amino acids */
     aas             b;
@@ -216,7 +216,7 @@ void ph_protdist::cats(ph_cattype      wcat)
 }                               /* cats */
 
 
-void ph_protdist::maketrans()
+void di_protdist::maketrans()
 {
     /* 
      * Make up transition probability matrix from code and category
@@ -300,7 +300,7 @@ void ph_protdist::maketrans()
     /* computes pi^(1/2)*B*pi^(-1/2)  */
 }                               /* maketrans */
 
-void ph_protdist::code()
+void di_protdist::code()
 {
     /* make up table of the code 0 = u, 1 = c, 2 = a, 3 = g */
 
@@ -388,7 +388,7 @@ void ph_protdist::code()
     }
 }                               /* code */
 
-void ph_protdist::transition()
+void di_protdist::transition()
 {
     /* calculations related to transition-transversion ratio */
     double          aa, bb, freqr, freqy, freqgr, freqty;
@@ -410,7 +410,7 @@ void ph_protdist::transition()
     }
 }                               /* transition */
 
-void ph_protdist::givens(ph_aa_matrix a,long i,long j,long n,double ctheta,double stheta,GB_BOOL left)
+void di_protdist::givens(di_aa_matrix a,long i,long j,long n,double ctheta,double stheta,GB_BOOL left)
 {
     /* Givens transform at i,j for 1..n with angle theta */
     long            k;
@@ -429,7 +429,7 @@ void ph_protdist::givens(ph_aa_matrix a,long i,long j,long n,double ctheta,doubl
     }
 }                               /* givens */
 
-void ph_protdist::coeffs(double x,double y,double *c,double *s,double accuracy)
+void di_protdist::coeffs(double x,double y,double *c,double *s,double accuracy)
 {
     /* compute cosine and sine of theta */
     double          root;
@@ -444,7 +444,7 @@ void ph_protdist::coeffs(double x,double y,double *c,double *s,double accuracy)
     }
 }                               /* coeffs */
 
-void ph_protdist::tridiag(ph_aa_matrix a,long n,double accuracy)
+void di_protdist::tridiag(di_aa_matrix a,long n,double accuracy)
 {
     /* Givens tridiagonalization */
     long            i, j;
@@ -460,7 +460,7 @@ void ph_protdist::tridiag(ph_aa_matrix a,long n,double accuracy)
     }
 }                               /* tridiag */
 
-void ph_protdist::shiftqr(ph_aa_matrix a, long n, double accuracy)
+void di_protdist::shiftqr(di_aa_matrix a, long n, double accuracy)
 {
     /* QR eigenvalue-finder */
     long            i, j;
@@ -491,7 +491,7 @@ void ph_protdist::shiftqr(ph_aa_matrix a, long n, double accuracy)
 }                               /* shiftqr */
 
 
-void ph_protdist::qreigen(ph_aa_matrix proba,long n)
+void di_protdist::qreigen(di_aa_matrix proba,long n)
 {
     /* QR eigenvector/eigenvalue method for symmetric matrix */
     double          accuracy;
@@ -515,7 +515,7 @@ void ph_protdist::qreigen(ph_aa_matrix proba,long n)
 }                               /* qreigen */
 
 
-void ph_protdist::pameigen()
+void di_protdist::pameigen()
 {
     /* eigenanalysis for PAM matrix, precomputed */
     memcpy(prob, pamprobs, sizeof(pamprobs));
@@ -523,14 +523,14 @@ void ph_protdist::pameigen()
     fracchange = 0.01;
 }                               /* pameigen */
 
-void ph_protdist::build_exptteig(double tt){
+void di_protdist::build_exptteig(double tt){
     int m;
     for (m = 0; m <= 19; m++) {
         exptteig[m] = exp(tt * eig[m]);
     }
 }
 
-void ph_protdist::predict(double /*tt*/, long nb1,long  nb2)
+void di_protdist::predict(double /*tt*/, long nb1,long  nb2)
 {
     /* make contribution to prediction of this aa pair */
     long            m;
@@ -545,15 +545,15 @@ void ph_protdist::predict(double /*tt*/, long nb1,long  nb2)
     }
 }                               /* predict */
 
-void            ph_protdist::build_predikt_table(int pos){
+void            di_protdist::build_predikt_table(int pos){
     int             b1, b2;
     double tt = pos_2_tt(pos);
     build_exptteig(tt);
-    akt_slopes = slopes[pos] = (ph_paa_matrix *) calloc(sizeof(ph_paa_matrix), 1);
-    akt_curves = curves[pos] = (ph_paa_matrix *) calloc(sizeof(ph_paa_matrix), 1);
-    akt_infs = infs[pos] = (ph_bool_matrix *) calloc(sizeof(ph_bool_matrix), 1);
+    akt_slopes = slopes[pos] = (di_paa_matrix *) calloc(sizeof(di_paa_matrix), 1);
+    akt_curves = curves[pos] = (di_paa_matrix *) calloc(sizeof(di_paa_matrix), 1);
+    akt_infs = infs[pos] = (di_bool_matrix *) calloc(sizeof(di_bool_matrix), 1);
 
-    for (b1 = ala; b1 < ph_max_paa; b1++) {
+    for (b1 = ala; b1 < di_max_paa; b1++) {
         for (b2 = ala; b2 <= b1; b2++) {
             if (b1 != stop && b1 != del && b1 != quest && b1 != unk &&
                 b2 != stop && b2 != del && b2 != quest && b2 != unk) {
@@ -630,21 +630,21 @@ void            ph_protdist::build_predikt_table(int pos){
     } //for b1
 }
 
-int ph_protdist::tt_2_pos(double tt) {
-    int pos = (int)(tt * fracchange * ph_resolution);
-    if (pos >= ph_resolution * ph_max_dist )
-        pos = ph_resolution * ph_max_dist - 1;
+int di_protdist::tt_2_pos(double tt) {
+    int pos = (int)(tt * fracchange * di_resolution);
+    if (pos >= di_resolution * di_max_dist )
+        pos = di_resolution * di_max_dist - 1;
     if (pos < 0)
         pos = 0;
     return pos;
 }
 
-double ph_protdist::pos_2_tt(int pos) {
-    double tt =  pos / (fracchange * ph_resolution);
+double di_protdist::pos_2_tt(int pos) {
+    double tt =  pos / (fracchange * di_resolution);
     return tt+epsilon;
 }
 
-void            ph_protdist::build_akt_predikt(double tt)
+void            di_protdist::build_akt_predikt(double tt)
 {
     /* take an aktual slope from the hash table, else calculate a new one */
     int             pos = tt_2_pos(tt);
@@ -658,7 +658,7 @@ void            ph_protdist::build_akt_predikt(double tt)
 
 }
 
-const char *ph_protdist::makedists()
+const char *di_protdist::makedists()
 {
     /* compute the distances */
     long            i, j, k, m, n, iterations;
@@ -786,10 +786,10 @@ const char *ph_protdist::makedists()
 }                               /* makedists */
 
 
-void ph_protdist::clean_slopes(){
+void di_protdist::clean_slopes(){
     int i;
     if (slopes) {
-        for (i=0;i<ph_resolution*ph_max_dist;i++) {
+        for (i=0;i<di_resolution*di_max_dist;i++) {
             delete slopes[i]; slopes[i] = 0;
             delete curves[i]; curves[i] = 0;
             delete infs[i]; infs[i] = 0;
@@ -800,12 +800,12 @@ void ph_protdist::clean_slopes(){
     akt_infs = 0;
 }
 
-ph_protdist::~ph_protdist(){
+di_protdist::~di_protdist(){
     clean_slopes();
 }
 
-ph_protdist::ph_protdist(ph_codetype codei, ph_cattype cati, long nentries, PHENTRY     **entriesi, long seq_len, AP_smatrix *matrixi){
-    memset((char *)this,0,sizeof(ph_protdist));
+di_protdist::di_protdist(di_codetype codei, di_cattype cati, long nentries, DI_ENTRY     **entriesi, long seq_len, AP_smatrix *matrixi){
+    memset((char *)this,0,sizeof(di_protdist));
     entries = entriesi;
     matrix = matrixi;
     freqa = .25;

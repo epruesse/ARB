@@ -25,7 +25,7 @@
 #define epsilon         0.000001/* a small number */
 
 
-void ph_mldist::givens(ph_ml_matrix a,long i,long j,long n,double ctheta,double stheta,GB_BOOL left)
+void di_mldist::givens(di_ml_matrix a,long i,long j,long n,double ctheta,double stheta,GB_BOOL left)
 {
     /* Givens transform at i,j for 1..n with angle theta */
     long            k;
@@ -44,7 +44,7 @@ void ph_mldist::givens(ph_ml_matrix a,long i,long j,long n,double ctheta,double 
     }
 }                               /* givens */
 
-void ph_mldist::coeffs(double x,double y,double *c,double *s,double accuracy)
+void di_mldist::coeffs(double x,double y,double *c,double *s,double accuracy)
 {
     /* compute cosine and sine of theta */
     double          root;
@@ -59,7 +59,7 @@ void ph_mldist::coeffs(double x,double y,double *c,double *s,double accuracy)
     }
 }                               /* coeffs */
 
-void ph_mldist::tridiag(ph_ml_matrix a,long n,double accuracy)
+void di_mldist::tridiag(di_ml_matrix a,long n,double accuracy)
 {
     /* Givens tridiagonalization */
     long            i, j;
@@ -75,7 +75,7 @@ void ph_mldist::tridiag(ph_ml_matrix a,long n,double accuracy)
     }
 }                               /* tridiag */
 
-void ph_mldist::shiftqr(ph_ml_matrix a, long n, double accuracy)
+void di_mldist::shiftqr(di_ml_matrix a, long n, double accuracy)
 {
     /* QR eigenvalue-finder */
     long            i, j;
@@ -106,7 +106,7 @@ void ph_mldist::shiftqr(ph_ml_matrix a, long n, double accuracy)
 }                               /* shiftqr */
 
 
-void ph_mldist::qreigen(ph_ml_matrix proba,long n)
+void di_mldist::qreigen(di_ml_matrix proba,long n)
 {
     /* QR eigenvector/eigenvalue method for symmetric matrix */
     double          accuracy;
@@ -132,14 +132,14 @@ void ph_mldist::qreigen(ph_ml_matrix proba,long n)
 
 /* pameigen */
 
-void ph_mldist::build_exptteig(double tt){
+void di_mldist::build_exptteig(double tt){
     int m;
     for (m = 0; m < n_states; m++) {
         exptteig[m] = exp(tt * eig[m]);
     }
 }
 
-void ph_mldist::predict(double /*tt*/, long nb1,long  nb2)
+void di_mldist::predict(double /*tt*/, long nb1,long  nb2)
 {
     /* make contribution to prediction of this aa pair */
     long            m;
@@ -154,13 +154,13 @@ void ph_mldist::predict(double /*tt*/, long nb1,long  nb2)
     }
 }                               /* predict */
 
-void            ph_mldist::build_predikt_table(int pos){
+void            di_mldist::build_predikt_table(int pos){
     int             b1, b2;
     double tt = pos_2_tt(pos);
     build_exptteig(tt);
-    akt_slopes = slopes[pos] = (ph_pml_matrix *) calloc(sizeof(ph_pml_matrix), 1);
-    akt_curves = curves[pos] = (ph_pml_matrix *) calloc(sizeof(ph_pml_matrix), 1);
-    akt_infs = infs[pos] = (ph_bool_matrix *) calloc(sizeof(ph_bool_matrix), 1);
+    akt_slopes = slopes[pos] = (di_pml_matrix *) calloc(sizeof(di_pml_matrix), 1);
+    akt_curves = curves[pos] = (di_pml_matrix *) calloc(sizeof(di_pml_matrix), 1);
+    akt_infs = infs[pos] = (di_bool_matrix *) calloc(sizeof(di_bool_matrix), 1);
 
     for (b1 = 0; b1 < this->n_states; b1++) {
         for (b2 = 0; b2 <= b1; b2++) {
@@ -185,21 +185,21 @@ void            ph_mldist::build_predikt_table(int pos){
     }
 }
 
-int ph_mldist::tt_2_pos(double tt) {
-    int pos = (int)(tt * fracchange * PH_ML_RESOLUTION);
-    if (pos >= PH_ML_RESOLUTION * PH_ML_MAX_DIST )
-        pos = PH_ML_RESOLUTION * PH_ML_MAX_DIST - 1;
+int di_mldist::tt_2_pos(double tt) {
+    int pos = (int)(tt * fracchange * DI_ML_RESOLUTION);
+    if (pos >= DI_ML_RESOLUTION * DI_ML_MAX_DIST )
+        pos = DI_ML_RESOLUTION * DI_ML_MAX_DIST - 1;
     if (pos < 0)
         pos = 0;
     return pos;
 }
 
-double ph_mldist::pos_2_tt(int pos) {
-    double tt =  pos / (fracchange * PH_ML_RESOLUTION);
+double di_mldist::pos_2_tt(int pos) {
+    double tt =  pos / (fracchange * DI_ML_RESOLUTION);
     return tt+epsilon;
 }
 
-void            ph_mldist::build_akt_predikt(double tt)
+void            di_mldist::build_akt_predikt(double tt)
 {
     /* take an aktual slope from the hash table, else calculate a new one */
     int             pos = tt_2_pos(tt);
@@ -213,7 +213,7 @@ void            ph_mldist::build_akt_predikt(double tt)
 
 }
 
-const char *ph_mldist::makedists()
+const char *di_mldist::makedists()
 {
     /* compute the distances */
     long            i, j, k, iterations;
@@ -296,10 +296,10 @@ const char *ph_mldist::makedists()
 }                               /* makedists */
 
 
-void ph_mldist::clean_slopes(){
+void di_mldist::clean_slopes(){
     int i;
     if (slopes) {
-        for (i=0;i<PH_ML_RESOLUTION*PH_ML_MAX_DIST;i++) {
+        for (i=0;i<DI_ML_RESOLUTION*DI_ML_MAX_DIST;i++) {
             delete slopes[i]; slopes[i] = 0;
             delete curves[i]; curves[i] = 0;
             delete infs[i]; infs[i] = 0;
@@ -310,12 +310,12 @@ void ph_mldist::clean_slopes(){
     akt_infs = 0;
 }
 
-ph_mldist::~ph_mldist(){
+di_mldist::~di_mldist(){
     clean_slopes();
 }
 
-ph_mldist::ph_mldist(long nentries, PHENTRY     **entriesi, long seq_len, AP_smatrix *matrixi){
-    memset((char *)this,0,sizeof(ph_mldist));
+di_mldist::di_mldist(long nentries, DI_ENTRY     **entriesi, long seq_len, AP_smatrix *matrixi){
+    memset((char *)this,0,sizeof(di_mldist));
     entries = entriesi;
     matrix = matrixi;
 

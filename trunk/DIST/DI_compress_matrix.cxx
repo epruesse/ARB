@@ -18,10 +18,10 @@
 #include <di_view_matrix.hxx>
 
 /*  returns 1 only if groupname != null and there are species for that group */
-int PHMATRIX::search_group(GBT_TREE *node,GB_HASH *hash, long *groupcnt,char *groupname, PHENTRY **groups){
+int DI_MATRIX::search_group(GBT_TREE *node,GB_HASH *hash, long *groupcnt,char *groupname, DI_ENTRY **groups){
     if (node->is_leaf) {
         if (!node->name) return 0;
-        PHENTRY *phentry = (PHENTRY *)GBS_read_hash(hash,node->name);
+        DI_ENTRY *phentry = (DI_ENTRY *)GBS_read_hash(hash,node->name);
         if (!phentry) {     // Species is not a member of tree
             return 0;
         }
@@ -50,7 +50,7 @@ int PHMATRIX::search_group(GBT_TREE *node,GB_HASH *hash, long *groupcnt,char *gr
     if (!groupname){        // we are not a sub group
         if (myname){        // but we are a group
             if (erg>0) {            // it is used
-                groups[*groupcnt] = new PHENTRY(myname,this);
+                groups[*groupcnt] = new DI_ENTRY(myname,this);
                 (*groupcnt)++;
             }
         }
@@ -61,7 +61,7 @@ int PHMATRIX::search_group(GBT_TREE *node,GB_HASH *hash, long *groupcnt,char *gr
     }
 }
 
-char *PHMATRIX::compress(GBT_TREE *tree){
+char *DI_MATRIX::compress(GBT_TREE *tree){
     GB_HASH *hash = GBS_create_hash(nentries*2, GB_IGNORE_CASE);
     int i,j;            // create a hash table of species
     char *error = 0;
@@ -73,20 +73,20 @@ char *PHMATRIX::compress(GBT_TREE *tree){
     }
 
     long groupcnt = 0;
-    PHENTRY **groups = new PHENTRY *[nentries];
+    DI_ENTRY **groups = new DI_ENTRY *[nentries];
     search_group(tree,hash,&groupcnt,0,groups); // search a group for all species and create groups
 
-    PHENTRY **found_groups = 0;
+    DI_ENTRY **found_groups = 0;
 
     if (groupcnt) { // if we found groups => make copy of group array
-        found_groups = new PHENTRY *[groupcnt];
+        found_groups = new DI_ENTRY *[groupcnt];
         memcpy(found_groups, groups, groupcnt*sizeof(*groups));
     }
 
     int nongroupcnt = 0; // count # of species NOT in groups and copy then to 'groups'
     for (i=0;i<nentries;i++) {
         if (entries[i]->name && entries[i]->group_nr == -1) { // species not in groups
-            groups[nongroupcnt] = new PHENTRY(entries[i]->name,this);
+            groups[nongroupcnt] = new DI_ENTRY(entries[i]->name,this);
             entries[i]->group_nr = nongroupcnt++;
         }
         else { // species is in group => add nentries to group_nr
@@ -112,7 +112,7 @@ char *PHMATRIX::compress(GBT_TREE *tree){
     AP_smatrix count(groupcnt);
     AP_smatrix *sum = new AP_smatrix(groupcnt);
 
-    // Now we have create a new PHENTRY table, let's do the matrix
+    // Now we have create a new DI_ENTRY table, let's do the matrix
     for (i=0;i<nentries;i++){
         for (j=0;j<=i;j++) {
             int x = entries[i]->group_nr;   if (x<0) continue;
@@ -143,7 +143,7 @@ char *PHMATRIX::compress(GBT_TREE *tree){
     entries = groups;
     nentries = groupcnt;
     entries_mem_size = groupcnt;
-    matrix_type = PH_MATRIX_COMPRESSED;
+    matrix_type = DI_MATRIX_COMPRESSED;
 
     GBS_free_hash(hash);
     return error;
