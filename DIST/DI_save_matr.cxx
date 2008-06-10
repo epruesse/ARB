@@ -17,7 +17,7 @@
 #include "di_matr.hxx"
 
 
-const char *PHMATRIX::save(char *filename,enum PH_SAVE_TYPE type)
+const char *DI_MATRIX::save(char *filename,enum DI_SAVE_TYPE type)
 {
     FILE     *out;
     GB_ERROR  error = 0;
@@ -27,7 +27,7 @@ const char *PHMATRIX::save(char *filename,enum PH_SAVE_TYPE type)
 
     size_t row,col;
     switch (type){
-        case PH_SAVE_PHYLIP_COMP:
+        case DI_SAVE_PHYLIP_COMP:
             {
                 fprintf(out,"    %li\n",nentries);
                 for (row = 0; row<size_t(nentries);row++){
@@ -39,13 +39,13 @@ const char *PHMATRIX::save(char *filename,enum PH_SAVE_TYPE type)
                 }
             }
             break;
-        case PH_SAVE_READABLE:
-        case PH_SAVE_TABBED:
+        case DI_SAVE_READABLE:
+        case DI_SAVE_TABBED:
             {
                 GB_transaction  dummy(gb_main);
                 size_t          app_size = 200; // maximum width for NDS output (and max. height for vertical one)
                 size_t          maxnds   = 0;
-                bool            tabbed   = (type == PH_SAVE_TABBED);
+                bool            tabbed   = (type == DI_SAVE_TABBED);
                 double          min      = matrix->get(1,0) * 100.0;
                 double          max      = min;
                 double          sum      = 0.0;

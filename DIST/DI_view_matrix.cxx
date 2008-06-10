@@ -21,61 +21,61 @@
 #define AWAR_DIST_SHOW_MIN_DIST AWAR_DIST_SHOW_PREFIX "min_dist"
 #define AWAR_DIST_SHOW_MAX_DIST AWAR_DIST_SHOW_PREFIX "max_dist"
 
-void vertical_change_cb(AW_window *aww,PH_dmatrix *dis)
+void vertical_change_cb(AW_window *aww,DI_dmatrix *dis)
 {
     dis->monitor_vertical_scroll_cb(aww);
 }
 
-void horizontal_change_cb(AW_window *aww,PH_dmatrix *dis)
+void horizontal_change_cb(AW_window *aww,DI_dmatrix *dis)
 {
     dis->monitor_horizontal_scroll_cb(aww);
 }
 
-void redisplay_needed(AW_window *,PH_dmatrix *dis)
+void redisplay_needed(AW_window *,DI_dmatrix *dis)
 {
     dis->display();
 }
 
-void resize_needed(AW_window *,PH_dmatrix *dis)
+void resize_needed(AW_window *,DI_dmatrix *dis)
 {
     dis->init();
     dis->resized();
     dis->display();
 }
 
-PH_dmatrix::PH_dmatrix()
+DI_dmatrix::DI_dmatrix()
 {
-    memset((char *) this,0,sizeof(PH_dmatrix));
+    memset((char *) this,0,sizeof(DI_dmatrix));
 }
 
 
-void PH_dmatrix::init (PHMATRIX *matrix)
+void DI_dmatrix::init (DI_MATRIX *matrix)
 {
-    ph_matrix = matrix;
-    PHMATRIX *m = get_matrix();
+    di_matrix = matrix;
+    DI_MATRIX *m = get_matrix();
 
     // calculate cell width and height
     {
         int max_cell_width = 0;
         int max_cell_height = 0;
 
-        PH_gc gc;
-        for (gc=PH_G_STANDARD; gc<=PH_G_LAST; gc = PH_gc(int(gc)+1)) {
+        DI_gc gc;
+        for (gc=DI_G_STANDARD; gc<=DI_G_LAST; gc = DI_gc(int(gc)+1)) {
             int height = 0;
             int width = 0;
 
             switch (gc) {
-                case PH_G_STANDARD:
-                case PH_G_BELOW_DIST:
-                case PH_G_ABOVE_DIST: {
-                    const AW_font_information *aw_fi = device->get_font_information(PH_G_STANDARD, 0);
+                case DI_G_STANDARD:
+                case DI_G_BELOW_DIST:
+                case DI_G_ABOVE_DIST: {
+                    const AW_font_information *aw_fi = device->get_font_information(DI_G_STANDARD, 0);
 
                     width  = aw_fi->max_letter.width*6; // normal cell contain 6 characters (e.g.: '0.0162')
                     height = aw_fi->max_letter.height*2;
                     break;
                 }
-                case PH_G_NAMES: {
-                    const AW_font_information *aw_fi = device->get_font_information(PH_G_STANDARD, 0);
+                case DI_G_NAMES: {
+                    const AW_font_information *aw_fi = device->get_font_information(DI_G_STANDARD, 0);
 
                     width  = aw_fi->max_letter.width*SPECIES_NAME_LEN; // normal cell contain 6 characters (e.g.: '0.0162')
                     height = aw_fi->max_letter.height*2;
@@ -110,18 +110,18 @@ void PH_dmatrix::init (PHMATRIX *matrix)
     resized();  // initalize window_size dependend parameters
 }
 
-PHMATRIX *PH_dmatrix::get_matrix(){
-    if (ph_matrix) return ph_matrix;
-    return PHMATRIX::ROOT;
+DI_MATRIX *DI_dmatrix::get_matrix(){
+    if (di_matrix) return di_matrix;
+    return DI_MATRIX::ROOT;
 }
 
-void PH_dmatrix::resized(void)
+void DI_dmatrix::resized(void)
 {
     AW_rectangle               squ;
     AW_rectangle               rect;
     long                       horiz_paint_size,vert_paint_size;
-    const AW_font_information *aw_fi = device->get_font_information(PH_G_STANDARD,0);
-    PHMATRIX                  *m     = get_matrix();
+    const AW_font_information *aw_fi = device->get_font_information(DI_G_STANDARD,0);
+    DI_MATRIX                  *m     = get_matrix();
     long                       n     = 0;
 
     if (m) n = m->nentries;
@@ -161,14 +161,14 @@ void PH_dmatrix::resized(void)
 }
 
 
-void PH_dmatrix::display(void)   // draw area
+void DI_dmatrix::display(void)   // draw area
 {
 #define BUFLEN 200
     char            buf[BUFLEN];
     long            x, y, xpos, ypos;
     GB_transaction  dummy(GLOBAL_gb_main);
     if (!device)    return;
-    PHMATRIX       *m = get_matrix();
+    DI_MATRIX       *m = get_matrix();
     if (!m) {
         if (awm) awm->hide();
         return;
@@ -177,7 +177,7 @@ void PH_dmatrix::display(void)   // draw area
     xpos = 0;
 
     int name_display_width; {
-        const AW_font_information *aw_fi = device->get_font_information(PH_G_NAMES,0);
+        const AW_font_information *aw_fi = device->get_font_information(DI_G_NAMES,0);
         name_display_width = cell_width/aw_fi->max_letter.width;
     }
     gb_assert(name_display_width<BUFLEN);
@@ -200,23 +200,23 @@ void PH_dmatrix::display(void)   // draw area
                 int x2 = xpos * cell_width;
                 double len = ((val2-min_view_dist)/(max_view_dist-min_view_dist)) * maxw;
                 if (len >= 0) {
-                    device->box(PH_G_RULER_DISPLAY, AW_TRUE, x2, y2,len, h*.8,-1,0,0);
+                    device->box(DI_G_RULER_DISPLAY, AW_TRUE, x2, y2,len, h*.8,-1,0,0);
                 }else{
-                    device->text(PH_G_STANDARD, "????", xpos * cell_width, ypos * cell_height - cell_offset, 0.0, -1, 0, 0);
+                    device->text(DI_G_STANDARD, "????", xpos * cell_width, ypos * cell_height - cell_offset, 0.0, -1, 0, 0);
                 }
                 double v;
                 for (v = x2; v < x2 + maxw; v += maxw * .1999) {
-                    device->line (PH_G_RULER, v, y2+h*.5, v, y2 + h, -1,0,0);
+                    device->line (DI_G_RULER, v, y2+h*.5, v, y2 + h, -1,0,0);
                 }
                 // device->line ( 0,x2, y2, x2+maxw-1, y2, -1,0,0);
-                device->line (PH_G_RULER, x2, y2+h, x2+maxw-1, y2+h, -1,0,0);
+                device->line (DI_G_RULER, x2, y2+h, x2+maxw-1, y2+h, -1,0,0);
             }
             else {
-                PH_gc gc = val2<min_view_dist ? PH_G_BELOW_DIST : (val2>max_view_dist ? PH_G_ABOVE_DIST : PH_G_STANDARD);
+                DI_gc gc = val2<min_view_dist ? DI_G_BELOW_DIST : (val2>max_view_dist ? DI_G_ABOVE_DIST : DI_G_STANDARD);
 
                 if (val2 == 0.0 || val2 == 1.0) {
                     sprintf(buf, "%3.1f", val2);
-                    gc = PH_G_STANDARD;
+                    gc = DI_G_STANDARD;
                 }
                 else {
                     sprintf(buf, "%3.4f", val2);
@@ -230,7 +230,7 @@ void PH_dmatrix::display(void)   // draw area
 
         strcpy(buf, m->entries[x]->name);
         buf[name_display_width] = 0; // cut group-names if too long
-        device->text(PH_G_NAMES, buf, xpos * cell_width, cell_height - off_dy - cell_offset, 0.0, -1, 0, 0);
+        device->text(DI_G_NAMES, buf, xpos * cell_width, cell_height - off_dy - cell_offset, 0.0, -1, 0, 0);
         xpos++;
     }
     device->shift(AW::Vector(-off_dx, 0));
@@ -239,14 +239,14 @@ void PH_dmatrix::display(void)   // draw area
     for (y = vert_page_start; y < vert_page_start + vert_page_size; y++) {
         strcpy(buf, m->entries[y]->name);
         buf[name_display_width] = 0; // cut group-names if too long
-        device->text(PH_G_NAMES, buf, 0, ypos * cell_height - cell_offset, 0.0, -1, 0, 0);
+        device->text(DI_G_NAMES, buf, 0, ypos * cell_height - cell_offset, 0.0, -1, 0, 0);
         ypos++;
     }
     device->shift(AW::Vector(0, -off_dy));
 #undef BUFLEN
 }
 
-void PH_dmatrix::set_scrollbar_steps(long width_h,long width_v,long page_h,long page_v)
+void DI_dmatrix::set_scrollbar_steps(long width_h,long width_v,long page_h,long page_v)
 { char buffer[200];
 
  sprintf(buffer,"window/%s/scroll_width_horizontal",awm->window_defaults_name);
@@ -260,7 +260,7 @@ void PH_dmatrix::set_scrollbar_steps(long width_h,long width_v,long page_h,long 
 }
 
 
-void PH_dmatrix::monitor_vertical_scroll_cb(AW_window *aww)    // draw area
+void DI_dmatrix::monitor_vertical_scroll_cb(AW_window *aww)    // draw area
 { long diff;
 
  if(!device) return;
@@ -290,7 +290,7 @@ void PH_dmatrix::monitor_vertical_scroll_cb(AW_window *aww)    // draw area
  if((diff==1) || (diff==-1))  device->pop_clip_scale();
 }
 
-void PH_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
+void DI_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
 { long diff;
 
  if(!device) return;
@@ -325,9 +325,9 @@ void PH_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
 
 static int update_display_on_dist_change = 1;
 
-void ph_view_set_max_d(AW_window *aww, AW_CL cl_max_d, AW_CL /*clmatr*/){
+void di_view_set_max_d(AW_window *aww, AW_CL cl_max_d, AW_CL /*clmatr*/){
     AWUSE(aww);
-    //PH_dmatrix *dmatrix = (PH_dmatrix *)clmatr;
+    //DI_dmatrix *dmatrix = (DI_dmatrix *)clmatr;
     double max_d = cl_max_d*0.01;
 
     AW_root *aw_root = aww->get_root();
@@ -338,8 +338,8 @@ void ph_view_set_max_d(AW_window *aww, AW_CL cl_max_d, AW_CL /*clmatr*/){
     aw_root->awar(AWAR_DIST_SHOW_MAX_DIST)->write_float(max_d);
 }
 
-void ph_view_set_distances(AW_root *awr, AW_CL cl_setmax, AW_CL cl_dmatrix) {
-    PH_dmatrix *dmatrix = (PH_dmatrix *)cl_dmatrix;
+void di_view_set_distances(AW_root *awr, AW_CL cl_setmax, AW_CL cl_dmatrix) {
+    DI_dmatrix *dmatrix = (DI_dmatrix *)cl_dmatrix;
     double max_dist = awr->awar(AWAR_DIST_SHOW_MAX_DIST)->read_float();
     double min_dist = awr->awar(AWAR_DIST_SHOW_MIN_DIST)->read_float();
     int old = update_display_on_dist_change;
@@ -360,7 +360,7 @@ void ph_view_set_distances(AW_root *awr, AW_CL cl_setmax, AW_CL cl_dmatrix) {
     }
 }
 
-void ph_change_dist(AW_window *aww, AW_CL cl_mode) {
+void di_change_dist(AW_window *aww, AW_CL cl_mode) {
     AW_root *awr = aww->get_root();
     const char *awar_name;
 
@@ -381,13 +381,13 @@ void ph_change_dist(AW_window *aww, AW_CL cl_mode) {
     if (!(dist<0)) awr->awar(awar_name)->write_float(dist);
 }
 
-void ph_view_create_awars(AW_root *aw_root, PH_dmatrix *dmatrix) {
-    aw_root->awar_float( AWAR_DIST_SHOW_MIN_DIST, 0.0)->add_callback(ph_view_set_distances, (AW_CL)0, (AW_CL)dmatrix);
-    aw_root->awar_float( AWAR_DIST_SHOW_MAX_DIST, 0.0)->add_callback(ph_view_set_distances, (AW_CL)1, (AW_CL)dmatrix);
+void di_view_create_awars(AW_root *aw_root, DI_dmatrix *dmatrix) {
+    aw_root->awar_float( AWAR_DIST_SHOW_MIN_DIST, 0.0)->add_callback(di_view_set_distances, (AW_CL)0, (AW_CL)dmatrix);
+    aw_root->awar_float( AWAR_DIST_SHOW_MAX_DIST, 0.0)->add_callback(di_view_set_distances, (AW_CL)1, (AW_CL)dmatrix);
 }
 
-AW_window *PH_create_view_matrix_window(AW_root *awr, PH_dmatrix *dmatrix){
-    ph_view_create_awars(awr, dmatrix);
+AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix){
+    di_view_create_awars(awr, dmatrix);
     AW_window_menu *awm = new AW_window_menu();
     awm->init(awr,"SHOW_MATRIX", "ARB_SHOW_MATRIX", 800,600);
 
@@ -400,7 +400,7 @@ AW_window *PH_create_view_matrix_window(AW_root *awr, PH_dmatrix *dmatrix){
     awm->set_expose_callback(AW_MIDDLE_AREA,(AW_CB2)redisplay_needed,(AW_CL)dmatrix,0);
 
     AW_gc_manager preset_window =
-        AW_manage_GC (awm,dmatrix->device, PH_G_STANDARD, PH_G_LAST, AW_GCM_DATA_AREA,
+        AW_manage_GC (awm,dmatrix->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
                       (AW_CB)resize_needed,(AW_CL)dmatrix,0,
                       false,
                       "#D0D0D0",
@@ -417,11 +417,11 @@ AW_window *PH_create_view_matrix_window(AW_root *awr, PH_dmatrix *dmatrix){
 
     awm->create_menu(0,"Props","P");
     awm->insert_menu_topic("props_matrix",      "Matrix: Colors and Fonts ...", "C","neprops_data.hlp"  ,   AWM_ALL,    AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)preset_window );
-    awm->insert_menu_topic("show_dist_as_ascii",    "Show Dist in Ascii",           "A",0       ,   AWM_ALL,    ph_view_set_max_d, 0, (AW_CL)dmatrix );
-    awm->insert_menu_topic("show_dist_010",     "Show Dist [0,0.1]",            "1",0       ,   AWM_ALL,    ph_view_set_max_d, 10, (AW_CL)dmatrix );
-    awm->insert_menu_topic("show_dist_025",     "Show Dist [0,0.25]",           "3",0       ,   AWM_ALL,    ph_view_set_max_d, 25, (AW_CL)dmatrix );
-    awm->insert_menu_topic("show_dist_050",     "Show Dist [0,0.5]",            "5",0       ,   AWM_ALL,    ph_view_set_max_d, 50, (AW_CL)dmatrix );
-    awm->insert_menu_topic("show_dist_100",     "Show Dist [0,1.0]",            "0",0       ,   AWM_ALL,    ph_view_set_max_d, 100, (AW_CL)dmatrix );
+    awm->insert_menu_topic("show_dist_as_ascii",    "Show Dist in Ascii",           "A",0       ,   AWM_ALL,    di_view_set_max_d, 0, (AW_CL)dmatrix );
+    awm->insert_menu_topic("show_dist_010",     "Show Dist [0,0.1]",            "1",0       ,   AWM_ALL,    di_view_set_max_d, 10, (AW_CL)dmatrix );
+    awm->insert_menu_topic("show_dist_025",     "Show Dist [0,0.25]",           "3",0       ,   AWM_ALL,    di_view_set_max_d, 25, (AW_CL)dmatrix );
+    awm->insert_menu_topic("show_dist_050",     "Show Dist [0,0.5]",            "5",0       ,   AWM_ALL,    di_view_set_max_d, 50, (AW_CL)dmatrix );
+    awm->insert_menu_topic("show_dist_100",     "Show Dist [0,1.0]",            "0",0       ,   AWM_ALL,    di_view_set_max_d, 100, (AW_CL)dmatrix );
 
     int x, y;
     awm->get_at_position(&x, &y);
@@ -435,12 +435,12 @@ AW_window *PH_create_view_matrix_window(AW_root *awr, PH_dmatrix *dmatrix){
     x += FIELD_XSIZE;
 
     awm->at_x(x);
-    awm->callback(ph_change_dist, 0);
+    awm->callback(di_change_dist, 0);
     awm->create_button("PLUS_MIN", "+");
     x += BUTTON_XSIZE;
 
     awm->at_x(x);
-    awm->callback(ph_change_dist, 1);
+    awm->callback(di_change_dist, 1);
     awm->create_button("MINUS_MIN", "-");
     x += BUTTON_XSIZE;
 
@@ -450,18 +450,18 @@ AW_window *PH_create_view_matrix_window(AW_root *awr, PH_dmatrix *dmatrix){
     x += FIELD_XSIZE;
 
     awm->at_x(x);
-    awm->callback(ph_change_dist, 2);
+    awm->callback(di_change_dist, 2);
     awm->create_button("PLUS_MAX", "+");
     x += BUTTON_XSIZE;
 
     awm->at_x(x);
-    awm->callback(ph_change_dist, 3);
+    awm->callback(di_change_dist, 3);
     awm->create_button("MINUS_MAX", "-");
     x += BUTTON_XSIZE;
 
     awm->set_info_area_height(40);
 
-    dmatrix->init(dmatrix->ph_matrix);
+    dmatrix->init(dmatrix->di_matrix);
 
     return (AW_window *)awm;
 }
