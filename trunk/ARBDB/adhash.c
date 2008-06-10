@@ -847,36 +847,31 @@ long gbs_hashi_index(long key, long size)
 }
 
 
-long GBS_create_hashi(long size)
-{
-    struct gbs_hashi_struct *hs;
-    hs = (struct gbs_hashi_struct *)GB_calloc(sizeof(struct gbs_hashi_struct),1);
-    hs->size = size;
+GB_HASHI *GBS_create_hashi(long size) {
+    struct gbs_hashi_struct *hs = (struct gbs_hashi_struct *)GB_calloc(sizeof(struct gbs_hashi_struct),1);
+
+    hs->size    = size;
     hs->entries = (struct gbs_hashi_entry **)GB_calloc(sizeof(struct gbs_hashi_entry *),(size_t)size);
-    return (long)hs;
+
+    return hs;
 }
 
 
-long GBS_read_hashi(long hashi,long key)
-{
-    struct gbs_hashi_struct *hs = (struct gbs_hashi_struct *)hashi;
+long GBS_read_hashi(GB_HASHI *hs,long key) {
     struct gbs_hashi_entry *e;
-    long i;
-    i = gbs_hashi_index(key,hs->size);
-    for(e=hs->entries[i];e;e=e->next)
-    {
+    long                    i = gbs_hashi_index(key,hs->size);
+
+    for(e = hs->entries[i]; e; e = e->next) {
         if (e->key==key) return e->val;
     }
     return 0;
 }
 
-long GBS_write_hashi(long hashi,long key,long val)
-{
-    struct gbs_hashi_struct *hs = (struct gbs_hashi_struct *)hashi;
+long GBS_write_hashi(GB_HASHI *hs,long key,long val) {
     struct gbs_hashi_entry *e;
-    long i2;
-    long i;
-    i = gbs_hashi_index(key,hs->size);
+    long                    i2;
+    long                    i = gbs_hashi_index(key,hs->size);
+
     if (!val) {
         struct gbs_hashi_entry *oe;
         oe = 0;
@@ -911,22 +906,20 @@ long GBS_write_hashi(long hashi,long key,long val)
     return 0;
 }
 
-long GBS_free_hashi(long hash)
-{
-    struct gbs_hashi_struct *hs = (struct gbs_hashi_struct *)hash;
-    long i;
-    long e2;
+void GBS_free_hashi(GB_HASHI *hs) {
+    long                    i;
     struct gbs_hashi_entry *e,*ee;
-    e2 = hs->size;
+    long                    e2 = hs->size;
+
     for (i=0;i<e2;i++) {
         for (e=hs->entries[i];e;e=ee) {
             ee = e->next;
             gbm_free_mem((char *)e,sizeof(struct gbs_hashi_entry),GBM_HASH_INDEX);
         }
     }
+
     free ((char *)hs->entries);
     free ((char *)hs);
-    return 0;
 }
 
 
