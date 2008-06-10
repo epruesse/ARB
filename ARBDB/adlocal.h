@@ -65,27 +65,29 @@ void ad_use(int dummy, ...);
 /********** RELATIVE ADRESSING *************/
 
 #if (MEMORY_TEST==1)
-typedef void                            *GB_REL_ADD;
-typedef char                            *GB_REL_STRING;
-typedef struct gb_data_base_type        *GB_REL_GBDATA;
-typedef struct gb_data_base_type2       *GB_REL_CONTAINER;
-typedef struct gb_header_list_struct    *GB_REL_HLS;
-typedef struct gb_if_entries            *GB_REL_IFES;
-typedef struct gb_index_files_struct    *GB_REL_IFS;
-typedef struct gb_if_entries            **GB_REL_PIFES;
+typedef void                          *GB_REL_ADD;
+typedef char                          *GB_REL_STRING;
+typedef struct gb_data_base_type      *GB_REL_GBDATA;
+typedef struct gb_data_base_type2     *GB_REL_CONTAINER;
+typedef struct gb_header_list_struct  *GB_REL_HLS;
+typedef struct gb_if_entries          *GB_REL_IFES;
+typedef struct gb_index_files_struct  *GB_REL_IFS;
+typedef struct gb_if_entries         **GB_REL_PIFES;
 #else
-typedef long    GB_REL_ADD;     /* relative adress */
-typedef long    GB_REL_STRING;      /* relative adress */
-typedef long    GB_REL_GBDATA;      /* relative adress */
-typedef long    GB_REL_CONTAINER;       /* relative adress */
-typedef long    GB_REL_HLS;     /* relative adress */
-typedef long    GB_REL_IFES;        /* relative adress */
-typedef long    GB_REL_IFS;     /* relative adress */
-typedef long    GB_REL_PIFES;       /* relative adress */
+typedef long                           GB_REL_ADD;       /* relative adress */
+typedef long                           GB_REL_STRING;    /* relative adress */
+typedef long                           GB_REL_GBDATA;    /* relative adress */
+typedef long                           GB_REL_CONTAINER; /* relative adress */
+typedef long                           GB_REL_HLS;       /* relative adress */
+typedef long                           GB_REL_IFES;      /* relative adress */
+typedef long                           GB_REL_IFS;       /* relative adress */
+typedef long                           GB_REL_PIFES;     /* relative adress */
 #endif
 
-typedef short   GB_MAIN_IDX;        /* random-index */
-typedef struct gbs_hash_struct GB_HASH;
+typedef short GB_MAIN_IDX;      /* random-index */
+
+typedef struct gbs_hash_struct  GB_HASH;
+typedef struct gbs_hashi_struct GB_HASHI;
 
 #define GB_MAIN_ARRAY_SIZE 4096
 
@@ -319,7 +321,7 @@ typedef struct gb_main_type {
     int           old_security_level;
     int           pushed_security_level;
     long          clock;
-    long          remote_hash;
+    GB_HASHI     *remote_hash;
 
     GB_HASH *command_hash;
     GB_HASH *resolve_link_hash;

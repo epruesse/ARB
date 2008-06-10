@@ -67,14 +67,16 @@ typedef struct gb_data_base_type2   *GB_REL_CONTAINER;
 
 #else
 
-typedef long    GB_REL_STRING;      /* relative adress */
-typedef long    GB_REL_GBDATA;      /* relative adress */
-typedef long    GB_REL_CONTAINER;       /* relative adress */
+typedef long GB_REL_STRING;       /* relative adress */
+typedef long GB_REL_GBDATA;       /* relative adress */
+typedef long GB_REL_CONTAINER;    /* relative adress */
 
 #endif /*MEMORY_TEST==1*/
 
 typedef void GB_MAIN_TYPE;
-typedef struct gbs_hash_struct GB_HASH;
+
+typedef struct gbs_hash_struct  GB_HASH;
+typedef struct gbs_hashi_struct GB_HASHI;
 
 struct gb_flag_types {      /* public flags */
     unsigned int        type:4;
