@@ -68,8 +68,8 @@ static awXKeymap awxkeymap[] = {
     { 0, 0, (char*)1, AW_KEYMODE_NONE, AW_KEY_NONE, 0}
 };
 
-static GB_HASH *awxkeymap_string_2_key_hash;
-static long     awxkeymap_xkey_2_key_hash;
+static GB_HASH  *awxkeymap_string_2_key_hash;
+static GB_HASHI *awxkeymap_xkey_2_key_hash;
 
 const int KEYMAX = 100; // size for hashes
 
