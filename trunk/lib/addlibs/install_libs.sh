@@ -26,7 +26,11 @@ install_lib() {
     fi
 }
 
-cd $ADDLIBDIR
-install_lib libGLEW.so.1.3.5 libGLEW.so.1
-install_lib libGLEW.so.1.3.5 libGLEW.so.1.3
+if [ "$ARBHOME" = "" ]; then
+    echo "Error: Variable \$ARBHOME is empty. install_libs.sh failed!"
+else
+    cd $ADDLIBDIR
+    install_lib libGLEW.so.1.3.5 libGLEW.so.1
+    install_lib libGLEW.so.1.3.5 libGLEW.so.1.3
+fi
 
