@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # error message function
 err() {
@@ -70,7 +70,7 @@ echo '                  - To install ARB in your home directory: Enter "arb"'
 echo '                  - Otherwise become root and rerun script.'
 echo '                  - On Linux computers this script should be run under root'
 echo ''
-echo '  Example: If there is enough space (40 MB) at your /usr partition and'
+echo '  Example: If there is enough space (~50 MB) at your /usr partition and'
 echo '  you want to install arb at /usr/arb, enter "/usr/arb"'
 
 if [ "$ARBHOME" != "" ]; then
@@ -79,9 +79,8 @@ if [ "$ARBHOME" != "" ]; then
     fi
 fi
 
-echo "PATH ? [${ARBHOME:-/usr/arb}]"
+echo "Enter full installation path: [${ARBHOME:-/usr/arb}]"
 read ARBHOMEI
-echo
 echo
 echo
 
@@ -98,7 +97,9 @@ if test -d $ARBHOME; then
 
     if test -w $ARBHOME; then
         seperator
-        echo 'The destination directory already exists'
+        echo 'The destination directory'
+        echo "    $ARBHOME"
+        echo 'already exists!'
         echo '  You can delete the old directory before installing ARB'
         echo '  or only update/change options of the old version.'
         echo 'Delete old directory (y/n)[n]?'
@@ -333,7 +334,7 @@ esac
 
 # install missing libraries
 seperator
-( $ARBHOME/lib/addlibs/install_libs.sh )
+( export ARBHOME ; $ARBHOME/lib/addlibs/install_libs.sh )
 
 seperator
 echo ">>> Installation Complete"
@@ -341,18 +342,18 @@ echo ">>> Installation Complete"
 seperator
 SHELL_ANS=0
 
-while [ "$SHELL_ANS" == "0" ]; do
+while [ "$SHELL_ANS" = "0" ]; do
 
     echo "Finally, you have to tell your system where to find arb."
     echo "First find out which shell you are using, by opening a shell and typing"
-    echo "        echo $$shell"
+    echo '        echo $shell'
     echo ""
     echo "Depending on what is your shell there are three choices:"
     echo ""
-    echo "    1. Change your local .profile or .bashrc (if you are using ksh/bash,"
-    echo "       which is the default shell for Linux)"
-    echo "    2. Change your local .cshrc file (if you are using csh/tcsh)"
-    echo "    3. Create an alias:   alias arb=$ARBHOME/bin/arb"
+    echo "    1. Change your local .profile or .bashrc (if you are using ksh/bash, which"
+    echo "                                              is the default shell for Linux)"
+    echo "    2. Change your local .cshrc file         (if you are using csh/tcsh)"
+    echo "    3. Create an alias for arb               (any shell)"
     echo ""
 
     echo "Enter (1,2 or 3) to achieve further installation instructions:"
@@ -397,10 +398,10 @@ while [ "$SHELL_ANS" == "0" ]; do
         echo '**************************************************';
         echo "add one of the following lines to your init file";
         echo '**************************************************';
-        echo "     alias arb=$ARBHOME/bin/arb";
-        echo "     alias arb '$ARBHOME/bin/arb'";
-        echo "and reread the file or"
-        echo "type one of these lines at the command prompt."
+        echo "# bash users add to ~/.bashrc:";
+        echo "  alias arb=$ARBHOME/bin/arb";
+        echo "# tcsh users add to ~/.cshrc:";
+        echo "  alias arb '$ARBHOME/bin/arb'";
         SHELL_ANS=1 ;;
         *)
         echo 'Wrong answer';;
@@ -408,11 +409,17 @@ while [ "$SHELL_ANS" == "0" ]; do
 done
 
 echo ""
-echo "Note for sysadmins: You might want to edit the global init files"
-echo "                    in /etc to provide arb for all users."
+echo "Note for sysadmins:"
+echo "     In order to provide arb for all users,"
+echo "     edit the global shell init file(s) in /etc"
+echo "     (/etc/bash.bashrc, /etc/csh.cshrc or similar)"
+echo "     in the same manner as described above for the"
+echo "     local shell init files."
 echo ""
-echo "When you performed these changes, you can start arb "
-echo "from a new shell by typing 'arb'"
+echo "When you performed these changes, open a new terminal window"
+echo "and start arb by typing"
+echo ""
+echo "     arb"
 echo ""
 echo "Have much fun using ARB"
 echo "ARB Team <arb@arb-home.de>"
