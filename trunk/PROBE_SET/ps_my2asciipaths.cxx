@@ -36,7 +36,7 @@ void PS_print_paths( const PS_NodePtr _ps_node ) {
         }
     } else {
         // print path in leaf nodes
-        printf( "[%4i] ",__PATH->size() );
+        printf( "[%4zu] ",__PATH->size() );
         for (vector<p>::const_iterator i=__PATH->begin(); i != __PATH->end(); ++i ) {
             printf( "%4i%c ",i->second,i->first ? '+' : ' ' );
         }

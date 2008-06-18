@@ -327,7 +327,7 @@ public:
                 for (unsigned long i = 0; i < _depth; ++i) {
                     printf( "|  " );
                 }
-                printf( "[%p] depth (%lu)  node (%p)  matches (%i)       %u   %u\n",
+                printf( "[%p] depth (%lu)  node (%p)  matches (%zu)       %u   %u\n",
                         this,
                         _depth,
                         &(*node),
@@ -354,7 +354,7 @@ public:
         for (unsigned long i = 0; i < _depth; ++i) {
             printf( "|  " );
         }
-        printf( "[%p] passes left (%u)  filling level (%.5f)  distance (%6.2f)  gain (%6lu)  depth (%3lu)  path length (%4i)  ",
+        printf( "[%p] passes left (%u)  filling level (%.5f)  distance (%6.2f)  gain (%6lu)  depth (%3lu)  path length (%4zu)  ",
                 this,
                 passes_left,
                 filling_level,
@@ -363,9 +363,9 @@ public:
                 depth,
                 path.size() );
         if (node.Null()) {
-            printf( "node (undefined)  children (%2i)  ", children.size() );
+            printf( "node (undefined)  children (%2zu)  ", children.size() );
         } else {
-            printf( "node (%p)  children (%2i)  ", &(*node), children.size() );
+            printf( "node (%p)  children (%2zu)  ", &(*node), children.size() );
         }
 //             unsigned long count = 0;
 //             for ( ID2IndexSetSetCIter i = false_IDs->begin();
@@ -373,7 +373,7 @@ public:
 //                   ++i ) {
 //                 count += i->second.size();
 //             }
-        printf( "(%4lu %4i)/%lu", one_false_IDs_matches, (one_false_IDs) ? one_false_IDs->size() : 0, false_IDs );
+        printf( "(%4lu %4zu)/%lu", one_false_IDs_matches, (one_false_IDs) ? one_false_IDs->size() : 0, false_IDs );
         if (_print_one_false_IDs) {
             printf( "\n" );
             for (unsigned long i = 0; i < _depth; ++i) {

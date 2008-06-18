@@ -49,7 +49,7 @@ void PS_print_paths( GBDATA *_pb_node ) {
         }
     } else {
         // print path in leaf nodes
-        printf( "[%6i] ",__PATH->size() );
+        printf( "[%6zu] ",__PATH->size() );
         for (IDVectorCIter i=__PATH->begin(); i != __PATH->end(); ++i ) {
             printf( "%6i ",*i );
         }

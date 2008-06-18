@@ -26,22 +26,22 @@ int main( void ) {
     x->print( true,20 );
     PS_BitSet::IndexSet indices;
     x->getTrueIndices( indices );
-    printf( " true  indices (%2i) : ",indices.size() );
+    printf( " true  indices (%2zu) : ",indices.size() );
     for (PS_BitSet::IndexSet::iterator i=indices.begin(); i != indices.end(); ++i) {
         printf( " %4li", *i );
     }
     x->getTrueIndices( indices,15 );
-    printf( "\n true  indices (%2i) : ",indices.size() );
+    printf( "\n true  indices (%2zu) : ",indices.size() );
     for (PS_BitSet::IndexSet::iterator i=indices.begin(); i != indices.end(); ++i) {
         printf( " %4li", *i );
     }
     x->getFalseIndices( indices );
-    printf( "\n false indices (%2i) : ",indices.size() );
+    printf( "\n false indices (%2zu) : ",indices.size() );
     for (PS_BitSet::IndexSet::iterator i=indices.begin(); i != indices.end(); ++i) {
         printf( " %4li", *i );
     }
     x->getFalseIndices( indices,15 );
-    printf( "\n false indices (%2i) : ",indices.size() );
+    printf( "\n false indices (%2zu) : ",indices.size() );
     for (PS_BitSet::IndexSet::iterator i=indices.begin(); i != indices.end(); ++i) {
         printf( " %4li", *i );
     }
