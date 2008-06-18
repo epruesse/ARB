@@ -31,7 +31,7 @@ SpeciesID          __ONEMATCH_MAX_ID;
 //      void PS_print_path()
 //  ----------------------------------------------------
 void PS_print_path() {
-    printf( "__PATH %3i :",__PATH->size() );
+    printf( "__PATH %3zu :",__PATH->size() );
     int c = 1;
     for (IDVectorCIter i = __PATH->begin(); i != __PATH->end(); ++i,++c) {
         if (c % 20 == 0) printf( "\n" );
@@ -45,7 +45,7 @@ void PS_print_path() {
 //      void PS_inverse_print_path()
 //  ----------------------------------------------------
 void PS_print_inverse_path() {
-    printf( "__INVERSE_PATH %3i :",__INVERSE_PATH->size() );
+    printf( "__INVERSE_PATH %3zu :",__INVERSE_PATH->size() );
     int c = 1;
     for (IDVectorCIter i = __INVERSE_PATH->begin(); i != __INVERSE_PATH->end(); ++i,++c) {
         if (c % 20 == 0) printf( "\n" );
@@ -215,7 +215,7 @@ void PS_detect_weak_differences( const PS_NodePtr _root_node ) {
         }
         if ((c < 50) || (c % 100 == 0)) {
             times( &before_first_level_node );
-            printf( "PS_detect_weak_differences_stepdown( %i ) : %i. of %i  ", i->first, c+1, _root_node->countChildren() ); fflush( stdout );
+            printf( "PS_detect_weak_differences_stepdown( %i ) : %i. of %zu  ", i->first, c+1, _root_node->countChildren() ); fflush( stdout );
         }
         PS_detect_weak_differences_stepdown( i->second, -1, 1 );
         if ((c < 50) || (c % 100 == 0)) {
@@ -335,7 +335,7 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
             printf( "%6i %6i\n", i->first, i->second );
         }
     }
-    printf( "%u no matches\n(enter to continue)\n", noMatch.size() );
+    printf( "%zu no matches\n(enter to continue)\n", noMatch.size() );
 //    getchar();
 
     printf( "\n\n----------------- one match ---------------\n\n" );
@@ -344,7 +344,7 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
             printf( "%6i %6i\n", i->first, i->second );
         }
     }
-    printf( "%u one matches\n(enter to continue)\n", oneMatch.size() );
+    printf( "%zu one matches\n(enter to continue)\n", oneMatch.size() );
 //    getchar();
     //
     // find paths for pairs
@@ -355,7 +355,7 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
     for (PS_NodeMapConstIterator i = _root_node->getChildrenBegin();
          (i != _root_node->getChildrenEnd()) && (!oneMatch.empty());
          ++i,++c ) {
-        if ((c < 50) || (c % 100 == 0)) printf( "PS_find_probes_for_pairs( %i ) : %i of %i\n", i->first, c+1, _root_node->countChildren() );
+        if ((c < 50) || (c % 100 == 0)) printf( "PS_find_probes_for_pairs( %i ) : %i of %zu\n", i->first, c+1, _root_node->countChildren() );
         PS_find_probes_for_pairs( i->second, oneMatch );
     }
     //
@@ -364,7 +364,7 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
     for (IDID2IDSetMapCIter i = __PAIR2PATH->begin();
          i != __PAIR2PATH->end();
          ++i) {
-        printf( "\nPair (%i,%i) Setsize (%d)", i->first.first, i->first.second, i->second.size() );
+        printf( "\nPair (%i,%i) Setsize (%zu)", i->first.first, i->first.second, i->second.size() );
         PS_NodePtr current_node = _root_node;
         long c2 = 0;
         for (IDSetCIter path_id=i->second.begin();
@@ -378,7 +378,7 @@ void PS_print_and_evaluate_map( const PS_NodePtr _root_node, const char *_result
         current_node->printOnlyMe();
         printf( "\n" );
     }
-    printf( "\n%u paths\n", __PAIR2PATH->size() );
+    printf( "\n%zu paths\n", __PAIR2PATH->size() );
     //
     // oups
     //

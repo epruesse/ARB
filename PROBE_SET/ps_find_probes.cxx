@@ -16,7 +16,7 @@ using namespace std;
 template<class T>
 void PS_print_set_ranges( const char *_set_name, const set<T> &_set, const bool _cr_at_end = true ) {
     fflush( stdout );
-    printf( "%s size (%3i) : ", _set_name, _set.size() );
+    printf( "%s size (%3zu) : ", _set_name, _set.size() );
     if (_set.size() == 0) {
         printf( "(empty)" );
     } else {
@@ -605,7 +605,7 @@ void PS_GNUPlot( const char     *_out_prefix,
     char *data_name = strdup( buffer );
     PS_FileBuffer *file = new PS_FileBuffer( data_name, PS_FileBuffer::WRITEONLY );
     // output data
-    long size = sprintf( buffer, "# CANDIDATE #%li path (%i)\n", _iteration, _path.size() );
+    long size = sprintf( buffer, "# CANDIDATE #%li path (%zu)\n", _iteration, _path.size() );
     file->put( buffer, size );
     for ( IDSetCIter i = _path.begin();
           i != _path.end();
@@ -613,7 +613,7 @@ void PS_GNUPlot( const char     *_out_prefix,
         size = sprintf( buffer, "# %i\n", *i );
         file->put( buffer, size );
     }
-    size = sprintf( buffer, "#noMatches (%i)\n", _noMatches.size() );
+    size = sprintf( buffer, "#noMatches (%zu)\n", _noMatches.size() );
     file->put( buffer, size );
     for ( ID2IDSetCIter p = _noMatches.begin();
           p != _noMatches.end();
@@ -1082,7 +1082,7 @@ void PS_get_next_candidates( const PS_NodePtr  _root_node,
     struct tms before;
     times( &before );
     // first calc source/target/false_IDs sets
-    printf( "PS_get_next_candidates() : initializing %i candidates..\n", _leaf_candidates.size() ); fflush( stdout );
+    printf( "PS_get_next_candidates() : initializing %zu candidates..\n", _leaf_candidates.size() ); fflush( stdout );
     __PROBES_COUNTER      = 0;
     __PROBES_REMOVED      = 0;
     __CANDIDATES_COUNTER  = 0;
@@ -1284,7 +1284,7 @@ int main( int   argc,
     printf( "\nsearching leaf candidates.. " );
     PS_CandidateSet leaf_candidates;
     PS_get_leaf_candidates( __CANDIDATES_ROOT, leaf_candidates );
-    printf( "%i\n", leaf_candidates.size() );
+    printf( "%zu\n", leaf_candidates.size() );
 
     //
     // scan tree for next candidates (below the ones in leaf_candidates)
@@ -1305,7 +1305,7 @@ int main( int   argc,
 
     printf( "\nFINAL CANDIDATES:\n" );
     __CANDIDATES_ROOT->print( 0,true );
-    printf( "\nfinal leaf candidates.. (%i)\n", leaf_candidates.size() );
+    printf( "\nfinal leaf candidates.. (%zu)\n", leaf_candidates.size() );
     PS_get_leaf_candidates( __CANDIDATES_ROOT, leaf_candidates, true );
     for ( PS_CandidateSetIter c = leaf_candidates.begin();
           c != leaf_candidates.end();

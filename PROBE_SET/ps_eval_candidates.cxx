@@ -430,7 +430,7 @@ int main( int   argc,
     printf( "\nsearching leaf candidates.. " );
     PS_CandidateSet leaf_candidates;
     PS_get_leaf_candidates( candidates_root, leaf_candidates );
-    printf( "%i\n", leaf_candidates.size() );
+    printf( "%zu\n", leaf_candidates.size() );
 
     //
     // scan leaf-candidates for non-permutated node-paths
@@ -438,11 +438,11 @@ int main( int   argc,
     printf( "\ngetting node paths for leaf candidates.." );
     PS_Candidate2NodeSetPairByLengthMap node_paths;
     PS_get_node_paths( leaf_candidates, node_paths );
-    printf( "%i\n", node_paths.size() );
+    printf( "%zu\n", node_paths.size() );
     for ( PS_Candidate2NodeSetPairByLengthMap::const_iterator stored_path = node_paths.begin();
           stored_path != node_paths.end();
           ++stored_path ) {
-        printf( "length (%3lu)  candidate [%p]  nodes (%3u) ",
+        printf( "length (%3lu)  candidate [%p]  nodes (%3zu) ",
                 stored_path->first,
                 stored_path->second.first,
                 stored_path->second.second.size() );

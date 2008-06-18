@@ -238,7 +238,7 @@ public:
                 printf(" ");
             }
         }
-        printf( "] C[ %i ]", children.size() );
+        printf( "] C[ %zu ]", children.size() );
     }
 
     //
