@@ -33,11 +33,6 @@ double GB_log_fak(int n){
 /*      random number generation      */
 /* ---------------------------------- */
 
-#if defined(DEVEL_RALF)
-#warning TODO: replace all occurrances of rand / srand in ARB code by calls to GB_random/GB_frandom
-#endif /* DEVEL_RALF */
-
-
 static int randomSeeded = 0;
 
 double GB_frandom() {
@@ -55,6 +50,12 @@ int GB_random(int range) {
         srand(time(0));
         randomSeeded = 1;
     }
+
+#if defined(DEBUG)
+    if (range>RAND_MAX) {
+        printf("Warning: range to big for random granularity (%i > %i)\n", range, RAND_MAX);
+    }
+#endif /* DEBUG */
 
     return (int)(rand()*((double)range) / (RAND_MAX+1.0));
 }
