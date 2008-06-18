@@ -2368,29 +2368,25 @@ static GB_ERROR gbl_change_gc(GBL_command_arguments *args)
         if (exclude) {
             for (j = 0; j <flen && (c= *(source++));j++){
                 if (!strchr(exclude, filter[j])){
-                    if ( isalpha(c) && (rand() * (100.0 / (double)0xffff)) < change){
-                        c = change_to[ (rand()>>6)% ctl];
-                    }
+                    if (isalpha(c) && GB_random(100)<change) c = change_to[GB_random(ctl)];
                 }
                 *(dest++) = c;
             }
         }else{
             for (j = 0; j <flen && (c= *(source++));j++){
                 if (strchr(include, filter[j])){
-                    if ( isalpha(c) && (rand() * (100.0 / (double)0xffff)) < change){
-                        c = change_to[ (rand()>>6)% ctl];
-                    }
+                    if (isalpha(c) && GB_random(100)<change) c = change_to[GB_random(ctl)];
                 }
                 *(dest++) = c;
             }
         }
 
-        if (c) while ( (c= *(source++)) ) {
-            if ( isalpha(c) && (rand() * (100.0 / (double)0xffff)) < change){
-                c = change_to[ (rand()>>6)% ctl];
+        if (c) {
+            while ( (c= *(source++)) ) {
+                if (isalpha(c) && GB_random(100)<change) c = change_to[GB_random(ctl)];
+                *(dest++) = c;
             }
-            *(dest++) = c;
-        };
+        }
         *(dest) = 0;
         (*args->voutput)[(*args->coutput)++].str = org;
     }
