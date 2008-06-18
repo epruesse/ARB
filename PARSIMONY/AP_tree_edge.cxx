@@ -1028,11 +1028,8 @@ void AP_tree_edge::mixTree(int cnt)
     {
         AP_tree_edge *follow = this;
 
-        while (follow)
-        {
-            if (rand()%2)   follow->sonNode()->swap_assymetric(AP_LEFT);
-            else        follow->sonNode()->swap_assymetric(AP_RIGHT);
-
+        while (follow) {
+            follow->sonNode()->swap_assymetric(GB_random(2) ? AP_LEFT : AP_RIGHT);
             follow = follow->next;
         }
     }

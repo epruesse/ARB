@@ -139,18 +139,16 @@ void AP_filter::calc_filter_2_seq(){
     }
 }
 
-void AP_filter::enable_bootstrap(int random_seed){
+void AP_filter::enable_bootstrap(){
     delete [] bootstrap;
     bootstrap = new int[real_len];
-    int i;
-    if (random_seed) srand(random_seed);
 
     awt_assert(filter_len < RAND_MAX);
 
-    for (i=0;i<this->real_len;i++){
-        int r = rand();
+    for (int i = 0; i<this->real_len; i++){
+        int r = GB_random(filter_len);
         awt_assert(r >= 0);     // otherwise overflow in random number generator
-        bootstrap[i] = r % filter_len;
+        bootstrap[i] = r;
     }
 }
 
@@ -1711,19 +1709,15 @@ AP_tree ** AP_tree::getRandomNodes(int anzahl) {
     i = 0;
     count = sumnodes;
     for  (i=0; i< anzahl; i++) {
-        // choose two random numbers
-#if defined(SUN4)
-        num = (int)random();        // random node
-#else
-        num = (int)rand();      // random node
-#endif
-        if (num<0) num *=-1;
-        num = num%count;        // exclude already selected nodes
-        retlist[i] = list[num];     // export node
-        count--;            // exclude node
-        list[num] = list[count];
+        num = GB_random(count);
+        
+        retlist[i] = list[num]; // export node
+        count--;                // exclude node
+
+        list[num]   = list[count];
         list[count] = retlist[i];
-        if (count == 0) count = sumnodes;   //restart it
+
+        if (count == 0) count = sumnodes; // restart it
     }
     delete list;
     return retlist;

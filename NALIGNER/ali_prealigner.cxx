@@ -779,7 +779,7 @@ mapper_random(ALI_TSTACK < unsigned char >*stack,
     while (next_x <= pos_x && next_y <= pos_y) {
         stack_counter++;
 
-        random = (unsigned long) (rand() >> 4) % 6;
+        random = GB_random(6);
 
         value = path_map->get_value(next_x, next_y);
         if (value == 0)
@@ -1133,10 +1133,7 @@ make_map(void)
     ALI_TSTACK < unsigned char >*stack;
 
     stack = new ALI_TSTACK < unsigned char >(end_x - start_x + end_y - start_y + 3);
-    if (stack == 0)
-        ali_fatal_error("Out of memory");
-
-    srand((unsigned int) (GB_time_of_day() % 1000));
+    if (stack == 0) ali_fatal_error("Out of memory");
 
     number_of_sol = number_of_solutions();
     printf("%lu solutions generated\n", number_of_sol);
