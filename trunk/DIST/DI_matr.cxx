@@ -889,7 +889,7 @@ static GB_ERROR di_calculate_matrix_cb(AW_window *aww, AW_CL bootstrap_flag, AW_
 
     AP_filter *ap_filter = awt_get_filter(aw_root,dist_filter_cl);
     if (bootstrap_flag){
-        ap_filter->enable_bootstrap(0);
+        ap_filter->enable_bootstrap();
     }
 
     AP_weights *ap_weights = new AP_weights;

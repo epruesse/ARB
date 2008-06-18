@@ -39,16 +39,12 @@ long k_aus_n(int k, int n)
     return a/b;
 }
 
-int get_random(int min,int max)
-{
-    int ret;
+int get_random(int min,int max) {
     mp_assert(min <= max);
-    ret = rand();
-    return ((ret % ((max-min)+1)) + min);
+    return GB_random(max-min+1)+min;
 }
 
-void    MP_new_sequence(AW_window *aww)
-{
+void MP_new_sequence(AW_window *aww) {
     AWUSE(aww);
     mp_main->get_aw_root()->awar_string(MP_AWAR_SEQUENZEINGABE)->write_string("");
 
@@ -353,9 +349,6 @@ void MP_compute(AW_window *aww)
         aw_message("Not enough probes selected for computation !!!");
         return;
     }
-
-
-    srand(time(NULL));
 
     if (mp_main->get_stc())
     {

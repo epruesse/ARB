@@ -97,7 +97,7 @@ public:
     GB_ERROR init(const char *filter,const char *zerobases, long size);
     GB_ERROR init(long size);
     void    calc_filter_2_seq();
-    void    enable_bootstrap(int random_seed);
+    void    enable_bootstrap();
     void    enable_simplify(AWT_FILTER_SIMPLIFY type);
     char    *to_string();   // convert to 0/1 string
     AP_filter(void);

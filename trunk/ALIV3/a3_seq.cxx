@@ -7,6 +7,8 @@
 #include <cstdlib>
 #include <ctime>
 
+#include <arbdb.h>
+
 #include "a3_basen.h"
 #include "a3_seq.hxx"
 
@@ -21,21 +23,13 @@ using std::cout;
 {
     str seq = new char [len + 1];
 
-    if (seq)
-    {
-        static short init = 0;
-        uint         pos  = 0;
-        
-        if (!init)  // Zufallszahlengenerator nur einmal initialisieren
-        {
-            srand((int)time(NULL)); // Moeglichst zufaellige Initialiserung
-//          srand(1);           // Immer die selbe Sequenz
-            init = 1;
+    if (seq) {
+        uint pos = 0;
+
+        while (pos < len) {
+            // Sequenz mit zufaellig ausgewaehlten Basen besetzen
+            seq[pos++] = BCharacter[GB_random(BASEN)];
         }
-        
-        while (pos < len)
-            seq[pos++] = BCharacter[rand() % BASEN];    // Sequenz mit zufaellig aus-
-                                                        // gewaehlten Basen besetzen
         seq[pos] = 0;
     }
     

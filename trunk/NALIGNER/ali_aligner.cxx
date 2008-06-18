@@ -515,7 +515,7 @@ if (pos_y < end_y - start_y)
     stack->push(ALI_ALIGNER_DEL,end_y - start_y - pos_y);
 
 if (random_mapping_flag == 1) {
-    random = (rand()>>4) % 6;
+    random = GB_random(6);
     switch(random) {
         case 0: 
             if (operation & ALI_UP) {
@@ -682,7 +682,7 @@ void ALI_ALIGNER::mapper_random(ALI_TSTACK<unsigned char> *stack, int plane,
                 ali_fatal_error("LUP only in plane 0 allowed",
                                 "ALI_ALIGNER::mapper_random()");
 
-            random = (unsigned long) (rand()>>4) % 2;
+            random = GB_random(2);
 
             /*
              * Go the LUP way
@@ -691,7 +691,7 @@ void ALI_ALIGNER::mapper_random(ALI_TSTACK<unsigned char> *stack, int plane,
                 /*
                  * Take a pointer by random
                  */
-                random = (unsigned long) (rand()>>4) % up_pointer->size();
+                random = GB_random(up_pointer->size());
                 up = up_pointer->get(random);
 
                 if (next_y < up.start)
@@ -714,7 +714,7 @@ void ALI_ALIGNER::mapper_random(ALI_TSTACK<unsigned char> *stack, int plane,
         /*
          * Take the next plane by random
          */
-        random = (unsigned long) (rand()>>4) % 6;
+        random = GB_random(6);
         switch(random) {
             case 0:
                 if (value & ALI_UP) {
@@ -936,7 +936,7 @@ void ALI_ALIGNER::mapper_pre_random_up(ALI_TSTACK<unsigned char> *stack,
     unsigned long number;
     ali_pathmap_up_pointer p;
 
-    number = (rand()>>4) % list->cardinality();
+    number = GB_random(list->cardinality());
 
     if (list->is_empty())
         ali_fatal_error("Empty list",
@@ -963,7 +963,7 @@ void ALI_ALIGNER::mapper_pre_random_left(
     unsigned long number;
     ali_pathmap_up_pointer p;
 
-    number = (rand()>>4) % list->cardinality();
+    number = GB_random(list->cardinality());
 
     if (list->is_empty())
         ali_fatal_error("Empty list",
@@ -990,8 +990,7 @@ void ALI_ALIGNER::make_map_random(ALI_TSTACK<unsigned char> *stack)
     float min;
  
     min = minimum3(last_cell->d1,last_cell->d2,last_cell->d3);
-    random = (unsigned long) (rand()>>4) % 6;
-
+    random = GB_random(6);
 
     switch(random) {
         case 0:
@@ -1135,8 +1134,6 @@ void ALI_ALIGNER::make_map_systematic(ALI_TSTACK<unsigned char> *stack)
 void ALI_ALIGNER::make_map(void)
 {
     ALI_TSTACK<unsigned char> *stack;
-
-    srand((unsigned int) (GB_time_of_day() % 1000));
 
     stack = new ALI_TSTACK<unsigned char>(end_x - start_x + end_y - start_y + 5);
 

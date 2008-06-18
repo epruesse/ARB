@@ -555,7 +555,7 @@ static inline int startOf(int len, int partNum)
 {
     awtc_assert(len>0);
     awtc_assert(partNum>0);
-    int s = (len/PARTS)*partNum - rand()%OVERLAPPING_BASES;
+    int s = (len/PARTS)*partNum - GB_random(OVERLAPPING_BASES);
     return s>0 ? (s<len ? s : len-1) : 0;
 }
 
@@ -563,7 +563,7 @@ static inline int lengthOf(int start, int len)
 {
     awtc_assert(len>0);
     awtc_assert(start>=0);
-    int s = len/PARTS + rand()%(2*OVERLAPPING_BASES);
+    int s = len/PARTS + GB_random(2*OVERLAPPING_BASES);
     return s>0 ? ((start+s)<=len ? s : len-start) : 1;
 }
 
@@ -590,22 +590,17 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
 
     printf("AWTC_testConstructSequence: len(=no of bases) = %5i\n", basesInSeq);
 
-    long randSeed = time(NULL);
-    //    randSeed = 22061965;
-    //    randSeed = 860485236;
-    printf("randSeed=%li\n", randSeed);
-    srand(randSeed);
-
     int last_end = -1;
 
     for (p=0; p<parts; p++)
     {
-        int start = p==0 ? 0 : last_end - (25+(rand()*75)/RAND_MAX);
-        if (start<0)            start = 0;
-        else if (start>=basesInSeq)     start = basesInSeq-1;
+        int start = p==0 ? 0 : last_end - (25+GB_random(75));
 
-        int llen = p<PARTS-1 ? (rand()*(basesInSeq/parts+200))/RAND_MAX : basesInSeq-start;
-        if (start+llen > basesInSeq)    llen = basesInSeq-start;
+        if (start<0)                start = 0;
+        else if (start>=basesInSeq) start = basesInSeq-1;
+
+        int llen = p<PARTS-1 ? GB_random(basesInSeq/parts+200) : basesInSeq-start;
+        if (start+llen > basesInSeq) llen = basesInSeq-start;
 
         int end = start+llen-1;
         awtc_assert(end<basesInSeq);
@@ -625,8 +620,7 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
         last_end = end;
         awtc_assert(start+llen<=basesInSeq);
         part[p] = strndup(compressed+start, llen);
-        if (rand()%2)
-        {
+        if (GB_random(2)) {
             char     T_or_U;
             GB_ERROR error = GBT_determine_T_or_U(GB_AT_RNA, &T_or_U, "reverse-complement");
             if (error) aw_message(error);
@@ -672,13 +666,10 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
         int   changes = 0;
         char *s       = part[p];
 
-        while (*s)
-        {
-            if (strchr("-.", *s)==NULL)
-            {
-                if ((double(rand())/double(RAND_MAX)) < 0.05 )      // error-probability
-                {
-                    *s = "ACGT"[rand()%4];
+        while (*s) {
+            if (strchr("-.", *s)==NULL) {
+                if (GB_frandom() < 0.05 ) { // error-probability
+                    *s = "ACGT"[GB_random(4)];
                     changes++;
                 }
             }

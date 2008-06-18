@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Fri May/30/2008 12:28 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jun/18/2008 11:35 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -816,10 +816,8 @@ namespace {
 // -------------
 //      main
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     printf("arb_probe_group_worker v1.0 -- (C) 2003 by Ralf Westram\n");
-    srand(time(0));
 
     GB_ERROR error = scanArguments(argc, argv);
 
