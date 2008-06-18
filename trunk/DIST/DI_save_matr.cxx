@@ -113,7 +113,7 @@ const char *DI_MATRIX::save(char *filename,enum DI_SAVE_TYPE type)
                         char *nds   = nds_results[row];
                         char  c     = nds[maxnds];
                         nds[maxnds] = 0;
-                        fprintf(out,"%-*s ", maxnds, nds);
+                        fprintf(out,"%-*s ", int(maxnds), nds);
                         nds[maxnds] = c;
                     }
 
