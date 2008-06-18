@@ -157,7 +157,7 @@ struct gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data,long
         }
         t->leave = 1;
         if (short_flag) {
-            t->son[0] = (struct gb_compress_tree *)((p[2]<<8)+p[3]);
+            t->son[0] = (struct gb_compress_tree *)(long)((p[2]<<8)+p[3]);
         }else{
             t->son[0] = (struct gb_compress_tree *)(long)(p[2]);
         }
