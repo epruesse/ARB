@@ -453,7 +453,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
             sprintf(awar, PFOLD_AWAR_SYMBOL_TEMPLATE, pfold_match_type_awars[i].name);
             root->awar_string(awar, pfold_pair_chars[pt])->add_target_var(&pfold_pair_chars[pt]);
         }
-        root->awar_string(PFOLD_AWAR_SYMBOL_TEMPLATE_2, pfold_pair_chars_2);
+        root->awar_string(PFOLD_AWAR_SYMBOL_TEMPLATE_2, PFOLD_PAIR_CHARS_2);
         root->awar_string(PFOLD_AWAR_SAI_FILTER, "pfold");
     }
 }
