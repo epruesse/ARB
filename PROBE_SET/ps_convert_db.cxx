@@ -294,7 +294,7 @@ int main(  int  _argc,
     // create output database
     //
     string output_DB_name(DB_name);
-    unsigned int suffix_pos = output_DB_name.rfind( ".arb" );
+    size_t suffix_pos = output_DB_name.rfind( ".arb" );
     if (suffix_pos != string::npos) {
         output_DB_name.erase( suffix_pos );
     }
