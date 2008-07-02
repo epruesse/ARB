@@ -247,80 +247,83 @@ void DI_dmatrix::display(void)   // draw area
 }
 
 void DI_dmatrix::set_scrollbar_steps(long width_h,long width_v,long page_h,long page_v)
-{ char buffer[200];
+{
+    char buffer[200];
 
- sprintf(buffer,"window/%s/scroll_width_horizontal",awm->window_defaults_name);
- awm->get_root()->awar(buffer)->write_int(width_h);
- sprintf(buffer,"window/%s/scroll_width_vertical",awm->window_defaults_name);
- awm->get_root()->awar(buffer)->write_int(width_v);
- sprintf( buffer,"window/%s/horizontal_page_increment",awm->window_defaults_name);
- awm->get_root()->awar(buffer)->write_int(page_h);
- sprintf(buffer,"window/%s/vertical_page_increment",awm->window_defaults_name);
- awm->get_root()->awar(buffer)->write_int(page_v);
+    sprintf(buffer,"window/%s/scroll_width_horizontal",awm->window_defaults_name);
+    awm->get_root()->awar(buffer)->write_int(width_h);
+    sprintf(buffer,"window/%s/scroll_width_vertical",awm->window_defaults_name);
+    awm->get_root()->awar(buffer)->write_int(width_v);
+    sprintf( buffer,"window/%s/horizontal_page_increment",awm->window_defaults_name);
+    awm->get_root()->awar(buffer)->write_int(page_h);
+    sprintf(buffer,"window/%s/vertical_page_increment",awm->window_defaults_name);
+    awm->get_root()->awar(buffer)->write_int(page_v);
 }
 
 
 void DI_dmatrix::monitor_vertical_scroll_cb(AW_window *aww)    // draw area
-{ long diff;
+{
+    long diff;
 
- if(!device) return;
- if(vert_last_view_start==aww->slider_pos_vertical) return;
- diff=(aww->slider_pos_vertical-vert_last_view_start)/cell_height;
- // fast scroll: be careful: no transformation in move_region
- if(diff==1){ // scroll one position up (== \/ arrow pressed)
+    if(!device) return;
+    if(vert_last_view_start==aww->slider_pos_vertical) return;
+    diff=(aww->slider_pos_vertical-vert_last_view_start)/cell_height;
+    // fast scroll: be careful: no transformation in move_region
+    if(diff==1){ // scroll one position up (== \/ arrow pressed)
 
-     device->move_region(0,off_dy,
-                         screen_width,vert_page_size*cell_height,0,off_dy-cell_height);
-     device->clear_part(0,off_dy-cell_height+(vert_page_size-1)*cell_height+1,
-                        screen_width,cell_height, -1);
+        device->move_region(0,off_dy,
+                            screen_width,vert_page_size*cell_height,0,off_dy-cell_height);
+        device->clear_part(0,off_dy-cell_height+(vert_page_size-1)*cell_height+1,
+                           screen_width,cell_height, -1);
 
-     device->push_clip_scale();
-     device->set_top_clip_border((int)(off_dy+(vert_page_size-2)*cell_height));
- }else if(diff==-1){ // scroll one position down (== /\ arrow pressed)
-     device->move_region(0,off_dy-cell_height,screen_width,
-                         (vert_page_size-1)*cell_height+1,0,off_dy);
-     device->clear_part(0,off_dy-cell_height,screen_width,cell_height, -1);
-     device->push_clip_scale();
-     device->set_bottom_clip_border((int)off_dy);
- }else  device->clear(-1);
+        device->push_clip_scale();
+        device->set_top_clip_border((int)(off_dy+(vert_page_size-2)*cell_height));
+    }else if(diff==-1){ // scroll one position down (== /\ arrow pressed)
+        device->move_region(0,off_dy-cell_height,screen_width,
+                            (vert_page_size-1)*cell_height+1,0,off_dy);
+        device->clear_part(0,off_dy-cell_height,screen_width,cell_height, -1);
+        device->push_clip_scale();
+        device->set_bottom_clip_border((int)off_dy);
+    }else  device->clear(-1);
 
- vert_last_view_start=aww->slider_pos_vertical;
- vert_page_start=aww->slider_pos_vertical/cell_height;
- display();
- if((diff==1) || (diff==-1))  device->pop_clip_scale();
+    vert_last_view_start=aww->slider_pos_vertical;
+    vert_page_start=aww->slider_pos_vertical/cell_height;
+    display();
+    if((diff==1) || (diff==-1))  device->pop_clip_scale();
 }
 
 void DI_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
-{ long diff;
+{
+    long diff;
 
- if(!device) return;
- if( horiz_last_view_start==aww->slider_pos_horizontal) return;
- diff=(aww->slider_pos_horizontal- horiz_last_view_start)/cell_width;
- // fast scroll
- if(diff==1)   // scroll one position left ( > arrow pressed)
- { device->move_region(off_dx+cell_width,0,
-                       horiz_page_size*cell_width,screen_height,
-                       off_dx,0);
+    if(!device) return;
+    if( horiz_last_view_start==aww->slider_pos_horizontal) return;
+    diff=(aww->slider_pos_horizontal- horiz_last_view_start)/cell_width;
+    // fast scroll
+    if(diff==1)   // scroll one position left ( > arrow pressed)
+    { device->move_region(off_dx+cell_width,0,
+                          horiz_page_size*cell_width,screen_height,
+                          off_dx,0);
 
-     device->clear_part(off_dx+(horiz_page_size-1)*cell_width,0,cell_width,screen_height, -1);
+        device->clear_part(off_dx+(horiz_page_size-1)*cell_width,0,cell_width,screen_height, -1);
 
 
- device->push_clip_scale();
- device->set_left_clip_border((int)((horiz_page_size-1)*cell_width));
- }
- else if(diff==-1) // scroll one position right ( < arrow pressed)
- { device->move_region(off_dx,0,(horiz_page_size-1)*cell_width,screen_height,off_dx+cell_width,
-                       0);
-     device->clear_part(off_dx,0,cell_width,screen_height, -1);
- device->push_clip_scale();
- device->set_right_clip_border((int)(off_dx+cell_width));
- }
- else device->clear(-1);
+        device->push_clip_scale();
+        device->set_left_clip_border((int)((horiz_page_size-1)*cell_width));
+    }
+    else if(diff==-1) // scroll one position right ( < arrow pressed)
+    { device->move_region(off_dx,0,(horiz_page_size-1)*cell_width,screen_height,off_dx+cell_width,
+                          0);
+        device->clear_part(off_dx,0,cell_width,screen_height, -1);
+        device->push_clip_scale();
+        device->set_right_clip_border((int)(off_dx+cell_width));
+    }
+    else device->clear(-1);
 
- horiz_last_view_start=aww->slider_pos_horizontal;
- horiz_page_start=aww->slider_pos_horizontal/cell_width;
- display();
- if((diff==1) || (diff==-1))  device->pop_clip_scale();
+    horiz_last_view_start=aww->slider_pos_horizontal;
+    horiz_page_start=aww->slider_pos_horizontal/cell_width;
+    display();
+    if((diff==1) || (diff==-1))  device->pop_clip_scale();
 }
 
 static int update_display_on_dist_change = 1;
