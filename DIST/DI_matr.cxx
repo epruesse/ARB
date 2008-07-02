@@ -101,7 +101,7 @@ static AW_window *create_dna_matrix_window(AW_root *aw_root){
     return aws;
 }
 
-void create_matrix_variables(AW_root *aw_root, AW_default def)
+void DI_create_matrix_variables(AW_root *aw_root, AW_default def)
 {
     GB_transaction dummy(GLOBAL_gb_main);
     DI_dna_matrix.set_description("","");
@@ -978,7 +978,7 @@ static void di_save_matrix_cb(AW_window *aww)
     }
 }
 
-AW_window *create_save_matrix_window(AW_root *aw_root, char *base_name)
+AW_window *DI_create_save_matrix_window(AW_root *aw_root, char *base_name)
 {
     static AW_window_simple *aws = 0;
     if (aws) return aws;
@@ -1392,7 +1392,7 @@ static void di_define_save_tree_name_cb(AW_window *aww) {
     free(tree_name);
 }
 
-AW_window *create_matrix_window(AW_root *aw_root) {
+AW_window *DI_create_matrix_window(AW_root *aw_root) {
     AW_window_simple_menu *aws = new AW_window_simple_menu;
     aws->init( aw_root, "NEIGHBOR JOINING", "NEIGHBOR JOINING");
     aws->load_xfig("di_ge_ma.fig");
@@ -1494,7 +1494,7 @@ AW_window *create_matrix_window(AW_root *aw_root) {
     aws->button_length(13);
 
     aws->at("save_matrix");
-    aws->callback(AW_POPUP, (AW_CL)create_save_matrix_window,(AW_CL)AWAR_DIST_SAVE_MATRIX_BASE);
+    aws->callback(AW_POPUP, (AW_CL)DI_create_save_matrix_window,(AW_CL)AWAR_DIST_SAVE_MATRIX_BASE);
     aws->create_button("SAVE_MATRIX", "Save matrix","M");
 
     aws->at("view_matrix");

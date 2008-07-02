@@ -17,7 +17,7 @@ extern void ph_view_matrix_cb(AW_window *);
 extern void ph_view_species_cb(AW_window *,AW_CL,AW_CL);
 extern void ph_view_filter_cb(AW_window *,AW_CL,AW_CL);
 extern void ph_calculate_matrix_cb(AW_window *,AW_CL,AW_CL);
-extern void create_save_matrix_window(AW_root *,char *);
+extern void PH_create_save_matrix_window(AW_root *,char *);
 extern void display_status(AW_window *,AW_CL,AW_CL);
 
 AW_HEADER_MAIN
@@ -451,7 +451,7 @@ AW_window *create_phyl_main_window(AW_root *aw_root,AP_root *ap_root,AWT_graphic
 
     // Config menu
     awm->create_menu(0,"Config","o");
-    awm->insert_menu_topic("config_column_filter","Column Filter",  "F","no help",  AWM_ALL,    AW_POPUP,(AW_CL)create_filter_window,0);
+    awm->insert_menu_topic("config_column_filter","Column Filter",  "F","no help",  AWM_ALL,    AW_POPUP,(AW_CL)PH_create_filter_window,0);
 
     // Properties menu
     awm->create_menu("","Properties","P");
@@ -549,8 +549,8 @@ main(int argc, char **argv)
     }
 
     // create arb_phylo awars :
-    create_filter_variables(aw_root, aw_default);
-    create_matrix_variables(aw_root, aw_default);
+    PH_create_filter_variables(aw_root, aw_default);
+    PH_create_matrix_variables(aw_root, aw_default);
     ARB_init_global_awars(aw_root, aw_default, GLOBAL_gb_main);
     AWT_create_db_browser_awars(aw_root, aw_default);
 
