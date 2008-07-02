@@ -108,4 +108,4 @@ public:
 };
 
 
-AW_window *create_save_matrix_window(AW_root *aw_root, char *base_name);
+AW_window *DI_create_save_matrix_window(AW_root *aw_root, char *base_name);

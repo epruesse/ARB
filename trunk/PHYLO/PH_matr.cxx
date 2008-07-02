@@ -21,7 +21,7 @@ void set_globel_r_m_value(AW_root *aw_root, long i, long j) {
     global_ratematrix->set(i,j,aw_root->awar(buffer)->read_float());
 }
 
-void create_matrix_variables(AW_root *aw_root, AW_default def)
+void PH_create_matrix_variables(AW_root *aw_root, AW_default def)
 {
     aw_root->awar_string( "tmp/dummy_string","0",def);
 
@@ -125,7 +125,7 @@ void ph_save_matrix_cb(AW_window *aww)
     aww->hide();
 }
 
-AW_window *create_save_matrix_window(AW_root *aw_root, char *base_name)
+AW_window *PH_create_save_matrix_window(AW_root *aw_root, char *base_name)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init( aw_root, "SAVE_MATRIX", "SAVE MATRIX TO FILE");
@@ -163,7 +163,7 @@ AW_window *awt_create_select_cancel_window(AW_root *aw_root)
 }
 
 
-AW_window *create_matrix_window(AW_root *aw_root)
+AW_window *PH_create_matrix_window(AW_root *aw_root)
 { AW_window_simple *aws = new AW_window_simple;
  aws->init( aw_root, "DISTANCE_TABLE", "DistanceTable");
  aws->load_xfig("phylo/matrix.fig");

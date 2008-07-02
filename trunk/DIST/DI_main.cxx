@@ -17,11 +17,11 @@
 
 AW_HEADER_MAIN
 
-AW_window *create_matrix_window(AW_root *aw_root);
-void create_matrix_variables(AW_root *aw_root, AW_default aw_def);
+AW_window *DI_create_matrix_window(AW_root *aw_root);
+void       DI_create_matrix_variables(AW_root *aw_root, AW_default aw_def);
 #ifdef FINDCORR
-    AW_window *bc_create_main_window( AW_root *awr);
-    void bc_create_bc_variables(AW_root *awr, AW_default awd);
+AW_window *bc_create_main_window( AW_root *awr);
+void       bc_create_bc_variables(AW_root *awr, AW_default awd);
 #endif
 
 GBDATA *GLOBAL_gb_main; // global gb_main for arb_dist
@@ -65,14 +65,14 @@ int main(int argc, char **argv)
         exit(-1);
     }
 
-    create_matrix_variables(aw_root,aw_default);
+    DI_create_matrix_variables(aw_root,aw_default);
 #ifdef FINDCORR
     bc_create_bc_variables(aw_root,aw_default);
 #endif
     ARB_init_global_awars(aw_root, aw_default, GLOBAL_gb_main);
 
     awd = (AWT_graphic *)0;
-    aww = create_matrix_window(aw_root);
+    aww = DI_create_matrix_window(aw_root);
 
 
     aww->show();

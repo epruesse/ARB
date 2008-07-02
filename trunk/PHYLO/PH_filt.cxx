@@ -394,7 +394,7 @@ float *PH_filter::calculate_column_homology(void){
 
 
 
-void create_filter_variables(AW_root *aw_root,AW_default default_file)
+void PH_create_filter_variables(AW_root *aw_root,AW_default default_file)
 {
     // filter awars
     aw_root->awar_int("phyl/filter/startcol",0,default_file);
@@ -435,7 +435,7 @@ void create_filter_variables(AW_root *aw_root,AW_default default_file)
 
 }
 
-AW_window *create_filter_window(AW_root *aw_root)
+AW_window *PH_create_filter_window(AW_root *aw_root)
 {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root,"PHYL_FILTER", "PHYL FILTER");
