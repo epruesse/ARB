@@ -70,48 +70,43 @@ void PH_create_matrix_variables(AW_root *aw_root, AW_default def)
 
 
 
-void ph_calculate_matrix_cb(AW_window *aww,AW_CL cb1,AW_CL cb2)  
-{ AWUSE(cb1); AWUSE(cb2);
- char *cancel,*transformation;
+void ph_calculate_matrix_cb(AW_window *aww,AW_CL cb1,AW_CL cb2) {
+    AWUSE(cb1);
+    AWUSE(cb2);
+    char *cancel,*transformation;
 
- if(!PHDATA::ROOT)
- { aw_message("data_base not opened !!");
- return;
- }
- AW_root *aw_root = aww->get_root();
+    if(!PHDATA::ROOT) {
+        aw_message("data_base not opened !!");
+        return;
+    }
+    AW_root *aw_root = aww->get_root();
 
- PH_TRANSFORMATION trans = PH_TRANSFORMATION_NONE;
- // transformation = aw_root->awar("phyl/correction/transformation")->read_string();
- transformation=strdup(PH_TRANSFORMATION_JUKES_CANTOR_STRING);
+    PH_TRANSFORMATION trans = PH_TRANSFORMATION_NONE;
+    // transformation = aw_root->awar("phyl/correction/transformation")->read_string();
+    transformation=strdup(PH_TRANSFORMATION_JUKES_CANTOR_STRING);
 
- //  double alpha = aw_root->awar("phyl/alpha")->read_float();
- double alpha = 1.0;
- cancel = aw_root->awar("phyl/cancel/chars")->read_string();
- printf("\ntransformation: %s",transformation);
- printf("\ncancel: %s\n",cancel);
- if (!strcmp(transformation,PH_TRANSFORMATION_JUKES_CANTOR_STRING))
-     trans = PH_TRANSFORMATION_JUKES_CANTOR;
- else if (!strcmp(transformation,PH_TRANSFORMATION_KIMURA_STRING))
-     trans = PH_TRANSFORMATION_KIMURA;
- else if (!strcmp(transformation,PH_TRANSFORMATION_TAJIMA_NEI_STRING))
-     trans = PH_TRANSFORMATION_TAJIMA_NEI;
- else if (!strcmp(transformation,PH_TRANSFORMATION_TAJIMA_NEI_PAIRWISE_STRING))
-     trans = PH_TRANSFORMATION_TAJIMA_NEI_PAIRWISE;
- else if (!strcmp(transformation,PH_TRANSFORMATION_BANDELT_STRING))
-     trans = PH_TRANSFORMATION_BANDELT;
- else if (!strcmp(transformation,PH_TRANSFORMATION_BANDELT_JC_STRING))
-     trans = PH_TRANSFORMATION_BANDELT_JC;
- else if (!strcmp(transformation,PH_TRANSFORMATION_BANDELT2_STRING))
-     trans = PH_TRANSFORMATION_BANDELT2;
- else if (!strcmp(transformation,PH_TRANSFORMATION_BANDELT2_JC_STRING))
-     trans = PH_TRANSFORMATION_BANDELT2_JC;
+    //  double alpha = aw_root->awar("phyl/alpha")->read_float();
+    double alpha = 1.0;
+    cancel = aw_root->awar("phyl/cancel/chars")->read_string();
+    
+    printf("\ntransformation: %s",transformation);
+    printf("\ncancel: %s\n",cancel);
+    
+    if      (!strcmp(transformation, PH_TRANSFORMATION_JUKES_CANTOR_STRING)       ) trans = PH_TRANSFORMATION_JUKES_CANTOR;
+    else if (!strcmp(transformation, PH_TRANSFORMATION_KIMURA_STRING)             ) trans = PH_TRANSFORMATION_KIMURA;
+    else if (!strcmp(transformation, PH_TRANSFORMATION_TAJIMA_NEI_STRING)         ) trans = PH_TRANSFORMATION_TAJIMA_NEI;
+    else if (!strcmp(transformation, PH_TRANSFORMATION_TAJIMA_NEI_PAIRWISE_STRING)) trans = PH_TRANSFORMATION_TAJIMA_NEI_PAIRWISE;
+    else if (!strcmp(transformation, PH_TRANSFORMATION_BANDELT_STRING)            ) trans = PH_TRANSFORMATION_BANDELT;
+    else if (!strcmp(transformation, PH_TRANSFORMATION_BANDELT_JC_STRING)         ) trans = PH_TRANSFORMATION_BANDELT_JC;
+    else if (!strcmp(transformation, PH_TRANSFORMATION_BANDELT2_STRING)           ) trans = PH_TRANSFORMATION_BANDELT2;
+    else if (!strcmp(transformation, PH_TRANSFORMATION_BANDELT2_JC_STRING)        ) trans = PH_TRANSFORMATION_BANDELT2_JC;
 
- GB_ERROR error = PHDATA::ROOT->calculate_matrix(".-",alpha,trans);
+    GB_ERROR error = PHDATA::ROOT->calculate_matrix(".-",alpha,trans);
 
- if (error) aw_message(error);
- delete transformation;
- delete cancel;
- if(!error) ph_view_matrix_cb(aww);  // call callback directly to see what you did
+    if (error) aw_message(error);
+    delete transformation;
+    delete cancel;
+    if(!error) ph_view_matrix_cb(aww);  // call callback directly to see what you did
 }
 
 void ph_save_matrix_cb(AW_window *aww)
@@ -164,37 +159,38 @@ AW_window *awt_create_select_cancel_window(AW_root *aw_root)
 
 
 AW_window *PH_create_matrix_window(AW_root *aw_root)
-{ AW_window_simple *aws = new AW_window_simple;
- aws->init( aw_root, "DISTANCE_TABLE", "DistanceTable");
- aws->load_xfig("phylo/matrix.fig");
- aws->button_length( 10 );
+{
+    AW_window_simple *aws = new AW_window_simple;
+    aws->init( aw_root, "DISTANCE_TABLE", "DistanceTable");
+    aws->load_xfig("phylo/matrix.fig");
+    aws->button_length( 10 );
 
- aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
- aws->create_button("CLOSE","CLOSE","C");
+    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
 
- aws->at("point_opts");
- aws->create_option_menu("phyl/matrix/point","'.'","0");
- aws->insert_option("forget pair for distancematrix","0",0);
- aws->insert_option("use distancetable","0",1);
- aws->update_option_menu();
+    aws->at("point_opts");
+    aws->create_option_menu("phyl/matrix/point","'.'","0");
+    aws->insert_option("forget pair for distancematrix","0",0);
+    aws->insert_option("use distancetable","0",1);
+    aws->update_option_menu();
 
- aws->at("minus_opts");
- aws->create_option_menu("phyl/matrix/minus","'-'","0");
- aws->insert_option("forget pair for distancematrix","0",0);
- aws->insert_option("use distancetable","0",1);
- aws->update_option_menu();
+    aws->at("minus_opts");
+    aws->create_option_menu("phyl/matrix/minus","'-'","0");
+    aws->insert_option("forget pair for distancematrix","0",0);
+    aws->insert_option("use distancetable","0",1);
+    aws->update_option_menu();
 
- aws->at("rest_opts");
- aws->create_option_menu("phyl/matrix/rest", "ambiguity codes","0");
- aws->insert_option("forget pair for distancematrix","0",0);
- aws->insert_option("use distancetable","0",1);
- aws->update_option_menu();
+    aws->at("rest_opts");
+    aws->create_option_menu("phyl/matrix/rest", "ambiguity codes","0");
+    aws->insert_option("forget pair for distancematrix","0",0);
+    aws->insert_option("use distancetable","0",1);
+    aws->update_option_menu();
 
- aws->at("lower_opts");
- aws->create_option_menu("phyl/matrix/lower","lowercase chars","0");
- aws->insert_option("forget pair for distancematrix","0",0);
- aws->insert_option("use distancetable","0",1);
- aws->update_option_menu();
+    aws->at("lower_opts");
+    aws->create_option_menu("phyl/matrix/lower","lowercase chars","0");
+    aws->insert_option("forget pair for distancematrix","0",0);
+    aws->insert_option("use distancetable","0",1);
+    aws->update_option_menu();
 
- return (AW_window *)aws;
+    return (AW_window *)aws;
 }
