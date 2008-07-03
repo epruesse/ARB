@@ -1166,7 +1166,10 @@ void gene_extract_cb(AW_window *aww, AW_CL cl_pmode){
     free(ali);
 }
 
+#if 0 // currently unused
 GBDATA *GEN_find_pseudo(GBDATA *gb_organism, GBDATA *gb_gene) {
+    // Warning : This functions is very SLOW!
+
     GBDATA *gb_species_data = GB_get_father(gb_organism);
     GBDATA *gb_name         = GB_entry(gb_organism, "name");
     char   *organism_name   = GB_read_string(gb_name);
@@ -1192,6 +1195,7 @@ GBDATA *GEN_find_pseudo(GBDATA *gb_organism, GBDATA *gb_gene) {
 
     return gb_pseudo;
 }
+#endif
 
 static void mark_organisms(AW_window */*aww*/, AW_CL cl_mark, AW_CL cl_canvas) {
     // cl_mark == 0 -> unmark
@@ -1251,26 +1255,29 @@ static void mark_gene_species(AW_window */*aww*/, AW_CL cl_mark, AW_CL cl_canvas
     AWT_canvas *canvas = (AWT_canvas*)cl_canvas;
     if (canvas) canvas->refresh();
 }
+
 static void mark_gene_species_of_marked_genes(AW_window */*aww*/, AW_CL cl_canvas, AW_CL) {
     GB_transaction dummy(GLOBAL_gb_main);
 
-    for (GBDATA *gb_species = GBT_first_species(GLOBAL_gb_main);
-         gb_species;
-         gb_species = GBT_next_species(gb_species))
+    GB_HASH *organism_hash = GBT_create_organism_hash(GLOBAL_gb_main);
+    
+    for (GBDATA *gb_pseudo = GEN_first_pseudo_species(GLOBAL_gb_main);
+         gb_pseudo;
+         gb_pseudo = GEN_next_pseudo_species(gb_pseudo))
     {
-        for (GBDATA *gb_gene = GEN_first_gene(gb_species);
-             gb_gene;
-             gb_gene = GEN_next_gene(gb_gene))
-        {
-            if (GB_read_flag(gb_gene)) {
-                GBDATA *gb_pseudo = GEN_find_pseudo(gb_species, gb_gene);
-                if (gb_pseudo) GB_write_flag(gb_pseudo, 1);
-            }
+        GBDATA *gb_gene = GEN_find_origin_gene(gb_pseudo, organism_hash);
+        if (GB_read_flag(gb_gene)) {
+            GB_write_flag(gb_pseudo, 1); // mark pseudo
         }
     }
+    
+    GBS_free_hash(organism_hash);
     AWT_canvas *canvas = (AWT_canvas*)cl_canvas;
     if (canvas) canvas->refresh();
 }
+
+
+
 static void mark_organisms_with_marked_genes(AW_window */*aww*/, AW_CL /*cl_canvas*/, AW_CL) {
     GB_transaction dummy(GLOBAL_gb_main);
 
