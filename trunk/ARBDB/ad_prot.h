@@ -328,7 +328,7 @@ long GBS_hash_count_value P_((GB_HASH *hs, long val));
 void GBS_hash_next_element P_((GB_HASH *hs, const char **key, long *val));
 void GBS_hash_first_element P_((GB_HASH *hs, const char **key, long *val));
 void GBS_hash_do_sorted_loop P_((GB_HASH *hs, gb_hash_loop_type func, gbs_hash_sort_func_type sorter));
-GB_HASHI *GBS_create_hashi P_((long size));
+GB_HASHI *GBS_create_hashi P_((long user_size));
 long GBS_read_hashi P_((GB_HASHI *hs, long key));
 long GBS_write_hashi P_((GB_HASHI *hs, long key, long val));
 void GBS_free_hashi P_((GB_HASHI *hs));

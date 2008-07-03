@@ -847,7 +847,8 @@ long gbs_hashi_index(long key, long size)
 }
 
 
-GB_HASHI *GBS_create_hashi(long size) {
+GB_HASHI *GBS_create_hashi(long user_size) {
+    long size = GBS_get_a_prime(user_size);                     // use next prime number for hash size
     struct gbs_hashi_struct *hs = (struct gbs_hashi_struct *)GB_calloc(sizeof(struct gbs_hashi_struct),1);
 
     hs->size    = size;
