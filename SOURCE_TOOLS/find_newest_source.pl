@@ -21,7 +21,9 @@ my @boring_files = (
                     'TAGS',
                    );
 
-my @boring_dirs = ();
+my @boring_dirs = (
+                   'bin',
+                  );
 
 my @boring_namematches = (
                           qr/^\#.*\#$/, # emacs autosaves
