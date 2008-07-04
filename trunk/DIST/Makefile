@@ -74,6 +74,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_matr.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_global.hxx
@@ -169,6 +170,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
