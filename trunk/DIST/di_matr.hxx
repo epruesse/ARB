@@ -3,6 +3,11 @@
 #define AWAR_DIST_CORR_TRANS       AWAR_DIST_PREFIX "correction/trans"
 #define AWAR_DIST_SAVE_MATRIX_BASE "tmp/" AWAR_DIST_PREFIX "save_matrix"
 
+#define AWAR_DIST_DIST_PREFIX AWAR_DIST_PREFIX "dist/"
+#define AWAR_DIST_MIN_DIST    AWAR_DIST_DIST_PREFIX "lower"
+#define AWAR_DIST_MAX_DIST    AWAR_DIST_DIST_PREFIX "upper"
+
+
 typedef enum {
     DI_TRANSFORMATION_NONE,
     DI_TRANSFORMATION_SIMILARITY,
@@ -29,17 +34,13 @@ enum DI_MATRIX_TYPE {
 class DI_MATRIX;
 class AW_root;
 
-class di_dummy {
-    DI_MATRIX *dummy;
-};
-
 class DI_ENTRY {
 public:
     DI_ENTRY(GBDATA *gbd,class DI_MATRIX *phmatri);
     DI_ENTRY(char *namei,class DI_MATRIX *phmatri);
     ~DI_ENTRY();
 
-    DI_MATRIX                   *phmatrix;
+    DI_MATRIX                  *phmatrix;
     AP_sequence                *sequence;
     AP_sequence_parsimony      *sequence_parsimony; // if exist ok
     AP_sequence_simple_protein *sequence_protein;
@@ -47,8 +48,7 @@ public:
     char                       *name;
     char                       *full_name;
     AP_FLOAT                    gc_bias;
-    int                         group_nr; // @@ OLIVER species belongs
-    // to group number xxxx
+    int                         group_nr;           // species belongs to group number xxxx
 };
 
 typedef long DI_MUT_MATR[AP_MAX][AP_MAX];
@@ -61,32 +61,33 @@ enum DI_SAVE_TYPE {
 
 class BI_helix;
 
+enum LoadWhat { DI_LOAD_ALL, DI_LOAD_MARKED, DI_LOAD_LIST };
+
 class DI_MATRIX {
 private:
     friend class DI_ENTRY;
-    GBDATA *gb_main;
-    GBDATA *gb_species_data;
-    char    *use;
-    long    seq_len;
-    char    cancel_columns[256];
+
+    GBDATA       *gb_main;
+    GBDATA       *gb_species_data;
+    char         *use;
+    long          seq_len;
+    char          cancel_columns[256];
     AP_tree_root *tree_root;
-
-    AW_root *aw_root;       // only link
-
-    long    entries_mem_size;
+    AW_root      *aw_root;             // only link
+    long          entries_mem_size;
 
 public:
-    GB_BOOL is_AA;
-    DI_ENTRY **entries;
-    long    nentries;
-    static DI_MATRIX *ROOT;
-    AP_smatrix *matrix;
-    enum DI_MATRIX_TYPE matrix_type;
+    GB_BOOL            is_AA;
+    DI_ENTRY         **entries;
+    long               nentries;
+    static DI_MATRIX  *ROOT;
+    AP_smatrix        *matrix;
+    DI_MATRIX_TYPE     matrix_type;
 
     DI_MATRIX(GBDATA *gb_main,AW_root *awr);
     ~DI_MATRIX(void);
 
-    char *load(char *use,AP_filter *filter,AP_weights *weights,AP_smatrix *ratematrix, int all, GB_CSTR sort_tree_name, bool show_warnings);
+    char *load(char *use, AP_filter *filter, AP_weights *weights, LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings, GBDATA **species_list);
     char *unload(void);
     const char *save(char *filename,enum DI_SAVE_TYPE type);
 
