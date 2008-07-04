@@ -8,6 +8,8 @@
 #include <awt_seq_simple_pro.hxx>
 #endif
 
+#define di_assert(cond) arb_assert(cond)
+
 extern GBDATA *GLOBAL_gb_main;
 GBT_TREE *neighbourjoining(char **names, AP_FLOAT **m, long size, size_t structure_size);
 
