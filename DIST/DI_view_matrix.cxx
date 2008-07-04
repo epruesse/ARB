@@ -10,47 +10,32 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_preset.hxx>
+#include <aw_awars.hxx>
 
 #include <awt_tree.hxx>
+#include <awt_canvas.hxx>
 #include "dist.hxx"
 
 #include <di_matr.hxx>
 #include <di_view_matrix.hxx>
 
-#define AWAR_DIST_SHOW_PREFIX   AWAR_DIST_PREFIX "show/"
-#define AWAR_DIST_SHOW_MIN_DIST AWAR_DIST_SHOW_PREFIX "min_dist"
-#define AWAR_DIST_SHOW_MAX_DIST AWAR_DIST_SHOW_PREFIX "max_dist"
+void vertical_change_cb  (AW_window *aww,DI_dmatrix *dis) { dis->monitor_vertical_scroll_cb(aww); }
+void horizontal_change_cb(AW_window *aww,DI_dmatrix *dis) { dis->monitor_horizontal_scroll_cb(aww); }
 
-void vertical_change_cb(AW_window *aww,DI_dmatrix *dis)
-{
-    dis->monitor_vertical_scroll_cb(aww);
+void redisplay_needed(AW_window *,DI_dmatrix *dis) {
+    dis->display(true);
 }
-
-void horizontal_change_cb(AW_window *aww,DI_dmatrix *dis)
-{
-    dis->monitor_horizontal_scroll_cb(aww);
-}
-
-void redisplay_needed(AW_window *,DI_dmatrix *dis)
-{
-    dis->display();
-}
-
-void resize_needed(AW_window *,DI_dmatrix *dis)
-{
+void resize_needed(AW_window *,DI_dmatrix *dis) {
     dis->init();
     dis->resized();
-    dis->display();
+    dis->display(false);
 }
 
-DI_dmatrix::DI_dmatrix()
-{
+DI_dmatrix::DI_dmatrix() {
     memset((char *) this,0,sizeof(DI_dmatrix));
 }
 
-
-void DI_dmatrix::init (DI_MATRIX *matrix)
-{
+void DI_dmatrix::init (DI_MATRIX *matrix) {
     di_matrix = matrix;
     DI_MATRIX *m = get_matrix();
 
@@ -160,27 +145,154 @@ void DI_dmatrix::resized(void)
     }
 }
 
+enum ClickAction {
+    CLICK_SELECT_SPECIES = 1,
+    CLICK_SET_MINMAX,
+};
 
-void DI_dmatrix::display(void)   // draw area
+#define MINMAX_GRANULARITY 10000L
+#define ROUNDUP            0.00005 // in order to round to 4 digits
+
+void DI_dmatrix::handle_move(AW_event& event) {
+    static int clickx, clicky; // original click pos
+    static int startx, starty; // original slider position
+
+    if (event.type == AW_Mouse_Press) {
+        clickx = event.x;
+        clicky = event.y;
+
+        startx = awm->slider_pos_horizontal;
+        starty = awm->slider_pos_vertical;
+    }
+    else if (event.type == AW_Mouse_Drag || event.type == AW_Mouse_Release) {
+        int x_screen_diff = clickx - event.x;
+        int y_screen_diff = clicky - event.y;
+
+        int sxpos = startx + x_screen_diff;
+        int sypos = starty + y_screen_diff;
+
+        AW_pos maxx = awm->get_scrolled_picture_width() - screen_width;
+        AW_pos maxy = awm->get_scrolled_picture_height() - screen_height;
+
+        if (sxpos>maxx) sxpos = maxx;
+        if (sypos>maxy) sypos = maxy;
+        if (sxpos<0) sxpos    = 0;
+        if (sypos<0) sypos    = 0;
+
+        awm->set_horizontal_scrollbar_position(sxpos);
+        awm->set_vertical_scrollbar_position(sypos);
+
+        monitor_vertical_scroll_cb(awm);
+        monitor_horizontal_scroll_cb(awm);
+    }
+}
+
+static void motion_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
+    AW_event event;
+    aww->get_event( &event );
+
+    DI_dmatrix *dmatrix = reinterpret_cast<DI_dmatrix*>(cl_dmatrix);
+    if (event.button == AWT_M_MIDDLE) {
+        dmatrix->handle_move(event);
+    }
+}
+
+static void input_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
+    AW_event event;
+    aww->get_event( &event );
+
+    DI_dmatrix *dmatrix = reinterpret_cast<DI_dmatrix*>(cl_dmatrix);
+    if (event.button == AWT_M_MIDDLE) {
+        dmatrix->handle_move(event);
+    }
+    else {
+        AW_device *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, 20, 20, 0);
+
+        click_device->set_filter(AW_CLICK);
+        click_device->reset();
+
+        {
+            AW_device *oldMatrixDevice = dmatrix->device;
+
+            dmatrix->device = click_device;
+            dmatrix->display(false); // detect clicked element
+            dmatrix->device = oldMatrixDevice;
+        }
+
+        if (event.type == AW_Mouse_Press) {
+            AW_clicked_text clicked_text;
+            AW_clicked_line clicked_line;
+            click_device->get_clicked_text(&clicked_text);
+            click_device->get_clicked_line(&clicked_line);
+
+            AW_CL        cd1, cd2;
+            AW::Position clickPos(event.x, event.y);
+
+            if (AW_getBestClick(clickPos, &clicked_line, &clicked_text, &cd1, &cd2)) {
+                ClickAction action = static_cast<ClickAction>(cd1);
+
+                if (action == CLICK_SELECT_SPECIES) {
+                    long       idx    = long(cd2);
+                    DI_MATRIX *matrix = dmatrix->get_matrix();
+                    if (idx >= matrix->nentries) {
+                        aw_message(GBS_global_string("Illegal idx %li [allowed: 0-%li]", idx, matrix->nentries));
+                    }
+                    else {
+                        DI_ENTRY   *entry        = matrix->entries[idx];
+                        const char *species_name = entry->name;
+
+                        aww->get_root()->awar(AWAR_SPECIES_NAME)->write_string(species_name);
+                    }
+                }
+                else if (action == CLICK_SET_MINMAX) {
+                    AW_root *aw_root    = aww->get_root();
+                    AW_awar *awar_bound = 0;
+
+                    switch (event.button) {
+                        case AWT_M_LEFT:  awar_bound = aw_root->awar(AWAR_DIST_MIN_DIST); break;
+                        case AWT_M_RIGHT: awar_bound = aw_root->awar(AWAR_DIST_MAX_DIST); break;
+                        default: break;
+                    }
+
+                    if (awar_bound) {
+                        double val = double(cd2)/MINMAX_GRANULARITY;
+                        awar_bound->write_float(val);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void DI_dmatrix::display(bool clear)   // draw area
 {
 #define BUFLEN 200
-    char            buf[BUFLEN];
-    long            x, y, xpos, ypos;
-    GB_transaction  dummy(GLOBAL_gb_main);
-    if (!device)    return;
-    DI_MATRIX       *m = get_matrix();
+    char           buf[BUFLEN];
+    long           x, y, xpos, ypos;
+    GB_transaction dummy(GLOBAL_gb_main);
+    
+    if (!device) return;
+
+    DI_MATRIX *m = get_matrix();
     if (!m) {
         if (awm) awm->hide();
         return;
     }
-    device->shift(AW::Vector(off_dx, off_dy));
+
+    if (clear) device->clear(-1);
+    device->set_offset(AW::Vector(off_dx, off_dy));
     xpos = 0;
+
+    char *selSpecies = 0;
+    if (awm) selSpecies = awm->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
 
     int name_display_width; {
         const AW_font_information *aw_fi = device->get_font_information(DI_G_NAMES,0);
         name_display_width = cell_width/aw_fi->max_letter.width;
     }
     gb_assert(name_display_width<BUFLEN);
+
+    int sel_x_pos = -1;
 
     for (x = horiz_page_start;
          x < (horiz_page_start + horiz_page_size) && (x < total_cells_horiz);
@@ -191,7 +303,8 @@ void DI_dmatrix::display(void)   // draw area
              y < (vert_page_start + vert_page_size) && (y < total_cells_vert);
              y++)
         {
-            double val2 = m->matrix->get(x, y);
+            double val2   = m->matrix->get(x, y);
+            AW_CL  cd_val = AW_CL(val2*MINMAX_GRANULARITY+1);
 
             if (val2>=min_view_dist && val2<=max_view_dist && val2>0.0) { // display ruler
                 int maxw = (int)(cell_width * .75);
@@ -200,16 +313,15 @@ void DI_dmatrix::display(void)   // draw area
                 int x2 = xpos * cell_width;
                 double len = ((val2-min_view_dist)/(max_view_dist-min_view_dist)) * maxw;
                 if (len >= 0) {
-                    device->box(DI_G_RULER_DISPLAY, AW_TRUE, x2, y2,len, h*.8,-1,0,0);
+                    device->box(DI_G_RULER_DISPLAY, AW_TRUE, x2, y2,len, h*.8,-1,AW_CL(CLICK_SET_MINMAX), cd_val);
                 }else{
-                    device->text(DI_G_STANDARD, "????", xpos * cell_width, ypos * cell_height - cell_offset, 0.0, -1, 0, 0);
+                    device->text(DI_G_STANDARD, "????", xpos * cell_width, ypos * cell_height - cell_offset, 0.0, -1, AW_CL(CLICK_SET_MINMAX), cd_val);
                 }
                 double v;
                 for (v = x2; v < x2 + maxw; v += maxw * .1999) {
-                    device->line (DI_G_RULER, v, y2+h*.5, v, y2 + h, -1,0,0);
+                    device->line (DI_G_RULER, v, y2+h*.5, v, y2 + h, -1,AW_CL(CLICK_SET_MINMAX), cd_val);
                 }
-                // device->line ( 0,x2, y2, x2+maxw-1, y2, -1,0,0);
-                device->line (DI_G_RULER, x2, y2+h, x2+maxw-1, y2+h, -1,0,0);
+                device->line(DI_G_RULER, x2, y2+h, x2+maxw-1, y2+h, -1, AW_CL(CLICK_SET_MINMAX), cd_val);
             }
             else {
                 DI_gc gc = val2<min_view_dist ? DI_G_BELOW_DIST : (val2>max_view_dist ? DI_G_ABOVE_DIST : DI_G_STANDARD);
@@ -219,9 +331,9 @@ void DI_dmatrix::display(void)   // draw area
                     gc = DI_G_STANDARD;
                 }
                 else {
-                    sprintf(buf, "%3.4f", val2);
+                    sprintf(buf, "%6.4f", val2);
                 }
-                device->text(gc, buf, xpos * cell_width, ypos * cell_height - cell_offset, 0.0, -1, 0, 0);
+                device->text(gc, buf, xpos * cell_width, ypos * cell_height - cell_offset, 0.0, -1, AW_CL(CLICK_SET_MINMAX), cd_val);
             }
 
             ypos++;
@@ -229,20 +341,48 @@ void DI_dmatrix::display(void)   // draw area
         //display horizontal speciesnames:
 
         strcpy(buf, m->entries[x]->name);
+        if (selSpecies && strcmp(buf, selSpecies) == 0) sel_x_pos = xpos; // remember x-position for selected species
         buf[name_display_width] = 0; // cut group-names if too long
-        device->text(DI_G_NAMES, buf, xpos * cell_width, cell_height - off_dy - cell_offset, 0.0, -1, 0, 0);
+        device->text(DI_G_NAMES, buf, xpos * cell_width, cell_height - off_dy - cell_offset, 0.0, -1, AW_CL(CLICK_SELECT_SPECIES), AW_CL(x));
         xpos++;
     }
-    device->shift(AW::Vector(-off_dx, 0));
-    //display vertical speciesnames
-    ypos = 0;
+
+    device->set_offset(AW::Vector(off_dx, 0));
+
+    AW::Rectangle area = device->get_area_size();
+
+    // highlight selected species (vertically)
+    if (sel_x_pos != -1) {
+        AW_pos linex1 = sel_x_pos*cell_width - cell_offset;
+        AW_pos linex2 = linex1+cell_width;
+        AW_pos height = area.height();
+        device->line(DI_G_STANDARD, linex1, 0, linex1, height, -1, 0, 0);
+        device->line(DI_G_STANDARD, linex2, 0, linex2, height, -1, 0, 0);
+    }
+
+    device->set_offset(AW::Vector(0, off_dy));
+
+    // display vertical speciesnames
+    ypos          = 0;
+    int sel_y_pos = -1;
     for (y = vert_page_start; y < vert_page_start + vert_page_size; y++) {
         strcpy(buf, m->entries[y]->name);
+        if (selSpecies && strcmp(buf, selSpecies) == 0) sel_y_pos = ypos; // remember x-position for selected species
         buf[name_display_width] = 0; // cut group-names if too long
-        device->text(DI_G_NAMES, buf, 0, ypos * cell_height - cell_offset, 0.0, -1, 0, 0);
+        device->text(DI_G_NAMES, buf, 0, ypos * cell_height - cell_offset, 0.0, -1, AW_CL(CLICK_SELECT_SPECIES), AW_CL(y));
         ypos++;
     }
-    device->shift(AW::Vector(0, -off_dy));
+
+    // highlight selected species
+    if (sel_y_pos != -1) {
+        AW_pos liney1 = (sel_y_pos-1)*cell_height;
+        AW_pos liney2 = liney1+cell_height;
+        AW_pos width = area.width();
+        device->line(DI_G_STANDARD, 0, liney1, width, liney1, -1, 0, 0);
+        device->line(DI_G_STANDARD, 0, liney2, width, liney2, -1, 0, 0);
+    }
+
+    device->set_offset(AW::Vector(0, 0));
 #undef BUFLEN
 }
 
@@ -261,106 +401,126 @@ void DI_dmatrix::set_scrollbar_steps(long width_h,long width_v,long page_h,long 
 }
 
 
-void DI_dmatrix::monitor_vertical_scroll_cb(AW_window *aww)    // draw area
-{
-    long diff;
+void DI_dmatrix::monitor_vertical_scroll_cb(AW_window *aww) { // draw area
+    if (!device) return;
 
-    if(!device) return;
-    if(vert_last_view_start==aww->slider_pos_vertical) return;
-    diff=(aww->slider_pos_vertical-vert_last_view_start)/cell_height;
-    // fast scroll: be careful: no transformation in move_region
-    if(diff==1){ // scroll one position up (== \/ arrow pressed)
+    long old_vert_page_start = vert_page_start;
 
-        device->move_region(0,off_dy,
-                            screen_width,vert_page_size*cell_height,0,off_dy-cell_height);
-        device->clear_part(0,off_dy-cell_height+(vert_page_size-1)*cell_height+1,
-                           screen_width,cell_height, -1);
+    vert_last_view_start = aww->slider_pos_vertical;
+    vert_page_start      = aww->slider_pos_vertical/cell_height;
 
-        device->push_clip_scale();
-        device->set_top_clip_border((int)(off_dy+(vert_page_size-2)*cell_height));
-    }else if(diff==-1){ // scroll one position down (== /\ arrow pressed)
-        device->move_region(0,off_dy-cell_height,screen_width,
-                            (vert_page_size-1)*cell_height+1,0,off_dy);
-        device->clear_part(0,off_dy-cell_height,screen_width,cell_height, -1);
-        device->push_clip_scale();
-        device->set_bottom_clip_border((int)off_dy);
-    }else  device->clear(-1);
+    long diff = vert_page_start-old_vert_page_start;
+    if (diff) {
+        int  top_y = off_dy-cell_height;
+        bool clear = false;
 
-    vert_last_view_start=aww->slider_pos_vertical;
-    vert_page_start=aww->slider_pos_vertical/cell_height;
-    display();
-    if((diff==1) || (diff==-1))  device->pop_clip_scale();
+        if (diff>0 && diff<vert_page_size) { // scroll some positions up
+            int keep_cells = vert_page_size-diff;
+            
+            device->move_region(0, top_y+diff*cell_height, screen_width, keep_cells*cell_height, 0, top_y);
+            device->clear_part(0, top_y+keep_cells*cell_height, screen_width, diff*cell_height, -1);
+            device->push_clip_scale();
+            device->set_top_clip_border((int)(top_y+keep_cells*cell_height));
+        }
+        else if (diff>-vert_page_size && diff<0) { // scroll some positions down
+            int keep_cells = vert_page_size+diff;
+            
+            device->move_region(0, top_y, screen_width, keep_cells*cell_height, 0, top_y+(-diff*cell_height));
+            device->clear_part(0, top_y, screen_width, cell_height*-diff, -1);
+            device->push_clip_scale();
+            device->set_bottom_clip_border((int)(top_y+(-diff*cell_height)));
+        }
+        else {
+            device->push_clip_scale();
+            clear = true;
+        }
+
+        display(clear);
+        device->pop_clip_scale();
+    }
 }
 
-void DI_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
-{
-    long diff;
+void DI_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww) { // draw area 
+    if (!device) return;
 
-    if(!device) return;
-    if( horiz_last_view_start==aww->slider_pos_horizontal) return;
-    diff=(aww->slider_pos_horizontal- horiz_last_view_start)/cell_width;
-    // fast scroll
-    if(diff==1)   // scroll one position left ( > arrow pressed)
-    { device->move_region(off_dx+cell_width,0,
-                          horiz_page_size*cell_width,screen_height,
-                          off_dx,0);
+    long old_horiz_page_start = horiz_page_start;
+    
+    horiz_last_view_start = aww->slider_pos_horizontal;
+    horiz_page_start      = aww->slider_pos_horizontal/cell_width;
 
-        device->clear_part(off_dx+(horiz_page_size-1)*cell_width,0,cell_width,screen_height, -1);
+    long diff = horiz_page_start-old_horiz_page_start;
 
+    if (diff) {
+        bool clear = false;
+        
+        if (diff>0 && diff<horiz_page_size) {      // scroll some positions left
+            int keep_cells = horiz_page_size-diff;
 
-        device->push_clip_scale();
-        device->set_left_clip_border((int)((horiz_page_size-1)*cell_width));
+            device->move_region(off_dx+diff*cell_width, 0, keep_cells*cell_width, screen_height, off_dx, 0);
+            device->clear_part(off_dx+keep_cells*cell_width, 0, diff*cell_width, screen_height, -1);
+            device->push_clip_scale();
+            device->set_left_clip_border((int)(keep_cells*cell_width));
+        }
+        else if (diff>-horiz_page_size && diff<0) { // scroll some positions right
+            int keep_cells = horiz_page_size+diff;
+            
+            device->move_region(off_dx, 0, keep_cells*cell_width, screen_height, off_dx+cell_width*-diff, 0);
+            device->clear_part(off_dx, 0, cell_width*-diff, screen_height, -1);
+            device->push_clip_scale();
+            device->set_right_clip_border((int)(off_dx+cell_width*-diff));
+        }
+        else {
+            device->push_clip_scale();
+            clear = true;
+        }
+
+        display(clear);
+        device->pop_clip_scale();
     }
-    else if(diff==-1) // scroll one position right ( < arrow pressed)
-    { device->move_region(off_dx,0,(horiz_page_size-1)*cell_width,screen_height,off_dx+cell_width,
-                          0);
-        device->clear_part(off_dx,0,cell_width,screen_height, -1);
-        device->push_clip_scale();
-        device->set_right_clip_border((int)(off_dx+cell_width));
-    }
-    else device->clear(-1);
-
-    horiz_last_view_start=aww->slider_pos_horizontal;
-    horiz_page_start=aww->slider_pos_horizontal/cell_width;
-    display();
-    if((diff==1) || (diff==-1))  device->pop_clip_scale();
 }
 
 static int update_display_on_dist_change = 1;
 
 void di_view_set_max_d(AW_window *aww, AW_CL cl_max_d, AW_CL /*clmatr*/){
     AWUSE(aww);
-    //DI_dmatrix *dmatrix = (DI_dmatrix *)clmatr;
-    double max_d = cl_max_d*0.01;
-
+    double   max_d   = cl_max_d*0.01;
     AW_root *aw_root = aww->get_root();
 
     update_display_on_dist_change = 0;
-    aw_root->awar(AWAR_DIST_SHOW_MIN_DIST)->write_float(0.0);
+    aw_root->awar(AWAR_DIST_MIN_DIST)->write_float(0.0);
     update_display_on_dist_change = 1;
-    aw_root->awar(AWAR_DIST_SHOW_MAX_DIST)->write_float(max_d);
+    aw_root->awar(AWAR_DIST_MAX_DIST)->write_float(max_d);
 }
 
 void di_view_set_distances(AW_root *awr, AW_CL cl_setmax, AW_CL cl_dmatrix) {
-    DI_dmatrix *dmatrix = (DI_dmatrix *)cl_dmatrix;
-    double max_dist = awr->awar(AWAR_DIST_SHOW_MAX_DIST)->read_float();
-    double min_dist = awr->awar(AWAR_DIST_SHOW_MIN_DIST)->read_float();
-    int old = update_display_on_dist_change;
+    // cl_dmatrix: 0 -> set min and fix max, 1 -> set max and fix min, 2 -> set both
+    DI_dmatrix *dmatrix  = (DI_dmatrix *)cl_dmatrix;
+    double      max_dist = awr->awar(AWAR_DIST_MAX_DIST)->read_float();
+    double      min_dist = awr->awar(AWAR_DIST_MIN_DIST)->read_float();
+    int         old      = update_display_on_dist_change;
 
     update_display_on_dist_change = 0;
-    if (cl_setmax) { // !=0 -> set max and fix min
-        dmatrix->set_slider_max(max_dist);
-        if (min_dist>max_dist) awr->awar(AWAR_DIST_SHOW_MIN_DIST)->write_float(max_dist);
+
+    switch (cl_setmax) {
+        case 2:                 // both
+            dmatrix->set_slider_max(max_dist);
+            // fall-through
+        case 0:                 // set min and fix max
+            dmatrix->set_slider_min(min_dist);
+            if (min_dist>max_dist) awr->awar(AWAR_DIST_MAX_DIST)->write_float(min_dist);
+            break;
+        case 1:                 // set max and fix min
+            dmatrix->set_slider_max(max_dist);
+            if (min_dist>max_dist) awr->awar(AWAR_DIST_MIN_DIST)->write_float(max_dist);
+            break;
+
+        default:
+            di_assert(0);
+            break;
     }
-    else { // ==0 -> set min and fix max
-        dmatrix->set_slider_min(min_dist);
-        if (min_dist>max_dist) awr->awar(AWAR_DIST_SHOW_MAX_DIST)->write_float(min_dist);
-    }
+
     update_display_on_dist_change = old;
-    if (update_display_on_dist_change) {
-        dmatrix->resized();
-        dmatrix->display();
-    }
+    if (update_display_on_dist_change) dmatrix->display(true);
 }
 
 void di_change_dist(AW_window *aww, AW_CL cl_mode) {
@@ -370,10 +530,10 @@ void di_change_dist(AW_window *aww, AW_CL cl_mode) {
     gb_assert(cl_mode>=0 && cl_mode<=3);
 
     if (cl_mode<2) { // change min
-        awar_name = AWAR_DIST_SHOW_MIN_DIST;
+        awar_name = AWAR_DIST_MIN_DIST;
     }
     else { // change max
-        awar_name = AWAR_DIST_SHOW_MAX_DIST;
+        awar_name = AWAR_DIST_MAX_DIST;
     }
 
     double dist = awr->awar(awar_name)->read_float();
@@ -384,23 +544,27 @@ void di_change_dist(AW_window *aww, AW_CL cl_mode) {
     if (!(dist<0)) awr->awar(awar_name)->write_float(dist);
 }
 
-void di_view_create_awars(AW_root *aw_root, DI_dmatrix *dmatrix) {
-    aw_root->awar_float( AWAR_DIST_SHOW_MIN_DIST, 0.0)->add_callback(di_view_set_distances, (AW_CL)0, (AW_CL)dmatrix);
-    aw_root->awar_float( AWAR_DIST_SHOW_MAX_DIST, 0.0)->add_callback(di_view_set_distances, (AW_CL)1, (AW_CL)dmatrix);
+static void di_bind_dist_awars(AW_root *aw_root, DI_dmatrix *dmatrix) {
+    aw_root->awar_float(AWAR_DIST_MIN_DIST)->add_callback(di_view_set_distances, 0, (AW_CL)dmatrix);
+    aw_root->awar_float(AWAR_DIST_MAX_DIST)->add_callback(di_view_set_distances, 1, (AW_CL)dmatrix);
 }
 
 AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix){
-    di_view_create_awars(awr, dmatrix);
+    di_bind_dist_awars(awr, dmatrix);
     AW_window_menu *awm = new AW_window_menu();
     awm->init(awr,"SHOW_MATRIX", "ARB_SHOW_MATRIX", 800,600);
 
     dmatrix->device = awm->get_device(AW_MIDDLE_AREA);
-    dmatrix->awm = awm;
-    //    dmatrix->display();
-    awm->set_vertical_change_callback((AW_CB2)vertical_change_cb,(AW_CL)dmatrix,0);
-    awm->set_horizontal_change_callback((AW_CB2)horizontal_change_cb,(AW_CL)dmatrix,0);
-    awm->set_resize_callback(AW_MIDDLE_AREA,(AW_CB2)resize_needed,(AW_CL)dmatrix,0);
-    awm->set_expose_callback(AW_MIDDLE_AREA,(AW_CB2)redisplay_needed,(AW_CL)dmatrix,0);
+    dmatrix->awm    = awm;
+
+    awm->set_vertical_change_callback  ((AW_CB2)vertical_change_cb,   (AW_CL)dmatrix, 0);
+    awm->set_horizontal_change_callback((AW_CB2)horizontal_change_cb, (AW_CL)dmatrix, 0);
+    awm->set_focus_callback            ((AW_CB) redisplay_needed,     (AW_CL)dmatrix, 0);
+    
+    awm->set_resize_callback(AW_MIDDLE_AREA, (AW_CB2)resize_needed,    (AW_CL)dmatrix, 0);
+    awm->set_expose_callback(AW_MIDDLE_AREA, (AW_CB2)redisplay_needed, (AW_CL)dmatrix, 0);
+    awm->set_input_callback (AW_MIDDLE_AREA, (AW_CB) input_cb,         (AW_CL)dmatrix, 0);
+    awm->set_motion_callback(AW_MIDDLE_AREA, (AW_CB) motion_cb,        (AW_CL)dmatrix, 0);
 
     AW_gc_manager preset_window =
         AW_manage_GC (awm,dmatrix->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
@@ -434,7 +598,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix){
 #define BUTTON_XSIZE 25
 
     awm->label("Dist min:");
-    awm->create_input_field(AWAR_DIST_SHOW_MIN_DIST, 7);
+    awm->create_input_field(AWAR_DIST_MIN_DIST, 7);
     x += FIELD_XSIZE;
 
     awm->at_x(x);
@@ -449,7 +613,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix){
 
     awm->at_x(x);
     awm->label("Dist max:");
-    awm->create_input_field(AWAR_DIST_SHOW_MAX_DIST, 7);
+    awm->create_input_field(AWAR_DIST_MAX_DIST, 7);
     x += FIELD_XSIZE;
 
     awm->at_x(x);
@@ -465,6 +629,8 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix){
     awm->set_info_area_height(40);
 
     dmatrix->init(dmatrix->di_matrix);
+
+    di_view_set_distances(awm->get_root(), 2, AW_CL(dmatrix));
 
     return (AW_window *)awm;
 }
