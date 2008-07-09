@@ -940,6 +940,7 @@ static Word *getparamlist(FILE *f){
                 dummy_name[DUMMY_COUNTER_POS] = (dummy_counter/10)+'0';
                 dummy_name[DUMMY_COUNTER_POS] = (dummy_counter%10)+'0';
                 addword(tlist, dummy_name);
+                dummy_counter++;
             }
 #endif
 
