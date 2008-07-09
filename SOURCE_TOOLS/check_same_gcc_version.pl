@@ -37,7 +37,8 @@ else {
         my $command = "cat $lastVersion";
         system("$command") ==0 || die "can't execute '$command' (Reason: $!)";
         print "- Your current gcc version is '$version'.\n";
-        print "Use 'make rebuild' to recompile with a different gcc version\n";
+        print "Use 'make rebuild' to recompile with a different gcc version or\n";
+        print "use 'make clean' to cleanup build and then compile again.\n";
         $result = 1;
     }
 }
