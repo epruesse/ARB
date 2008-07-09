@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_preserves.cxx                                       //
 //    Purpose   : find candidates for alignment preservation             //
-//    Time-stamp: <Thu May/22/2008 15:51 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jul/09/2008 12:31 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -162,7 +162,7 @@ public:
 
                     long src_bases  = count_bases(gb_src_data);
                     long dst_bases  = count_bases(gb_dst_data);
-                    base_count_diff = abs(src_bases-dst_bases);
+                    base_count_diff = labs(src_bases-dst_bases);
 
                     if (GB_get_error()) valid = false;
 
