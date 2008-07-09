@@ -43,7 +43,20 @@ ARB copyright and license information
         right to incorporate these changes into ARB and to redistribute
         them with future versions of ARB.
 
-    Disclaimer
+    DEBIAN DISTRIBUTION
+
+        Hereby anybody is granted the right to build debian-pakets
+        of the ARB software package (http:://www.arb-home.de/) and
+        publish them on debian mirrors (or any other way of
+        debian-distribution). 
+
+        This includes any debian derivates like ubuntu. 
+
+        The ARB developers may (but most likely wont ever) revoke
+        this granting. If really done so, it'll only affect ARB
+        versions released after such a revocation.
+
+    DISCLAIMER
 
         THE TU MUENCHEN AND THE VARIOUS AUTHORS OF ARB GIVE NO
         WARRANTIES, EXPRESSED OR IMPLIED FOR THE SOFTWARE AND
