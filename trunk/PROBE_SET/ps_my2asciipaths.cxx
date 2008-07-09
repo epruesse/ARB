@@ -13,18 +13,13 @@
 #include "ps_filebuffer.hxx"
 #endif
 
-//  **************************************************
 //  GLOBALS
-//  **************************************************
+
 typedef pair<bool,SpeciesID> p;
 vector<p> *__PATH = new vector<p>;
 
-//  ----------------------------------------------------
-//      void PS_print_paths( const PS_NodePtr _ps_node )
-//  ----------------------------------------------------
-//  recursively print the paths to the leaves
-//
 void PS_print_paths( const PS_NodePtr _ps_node ) {
+    //  recursively print the paths to the leaves
 
     // path
     __PATH->push_back( p(_ps_node->hasInverseProbes(),_ps_node->hasProbes() ? _ps_node->getNum() : -(_ps_node->getNum())) );

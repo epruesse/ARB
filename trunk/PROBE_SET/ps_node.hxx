@@ -13,10 +13,7 @@
 
 using namespace std;
 
-//***********************************************
-  //* PS_Probe
-    //***********************************************
-  typedef struct {
+typedef struct {
       short int quality;                      // negative quality <=> matches inverse path
       unsigned short int length;
       unsigned short int GC_content;
@@ -50,10 +47,7 @@ struct lt_probe
 };
 
 
-//***********************************************
-  //* PS_ProbeSet
-    //***********************************************
-  typedef set<PS_ProbePtr,lt_probe>   PS_ProbeSet;
+typedef set<PS_ProbePtr,lt_probe>   PS_ProbeSet;
 typedef PS_ProbeSet*                PS_ProbeSetPtr;
 typedef PS_ProbeSet::iterator       PS_ProbeSetIter;
 typedef PS_ProbeSet::const_iterator PS_ProbeSetCIter;

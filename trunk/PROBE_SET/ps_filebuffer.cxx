@@ -3,9 +3,6 @@
 
 using namespace std;
 
-// ************************************************************
-// * put( _data,_length )
-// ************************************************************
 void PS_FileBuffer::put( const void *_data, int _length ) {
     if (is_readonly) {
         fprintf( stderr, "sorry, i can't write to files opened readonly\n" );
@@ -27,9 +24,6 @@ void PS_FileBuffer::put( const void *_data, int _length ) {
 }
 
 
-// ************************************************************
-// * get( _data,_length )
-// ************************************************************
 void PS_FileBuffer::get( void *_data, int _length ) {
     if (_length > BUFFER_SIZE) {
         fprintf( stderr, "sorry, i can't read %i bytes at once, only %i\n",_length,BUFFER_SIZE );
@@ -47,9 +41,6 @@ void PS_FileBuffer::get( void *_data, int _length ) {
 }
 
 
-// ************************************************************
-// * put_ulong( _ul )
-// ************************************************************
 void PS_FileBuffer::put_ulong( unsigned long int _ul ) {
     if (_ul <= 0x7F) {                  // bit7 == 0 -> 1 byte integer
         put_char( _ul ); 
@@ -80,9 +71,6 @@ void PS_FileBuffer::put_ulong( unsigned long int _ul ) {
 }
 
 
-// ************************************************************
-// * get_ulong( _ul )
-// ************************************************************
 void PS_FileBuffer::get_ulong( unsigned long int &_ul ) {
     unsigned char c;
     get_char(c);
@@ -114,9 +102,6 @@ void PS_FileBuffer::get_ulong( unsigned long int &_ul ) {
 }
 
 
-// ************************************************************
-// * peek( _data,_length )
-// ************************************************************
 void PS_FileBuffer::peek( void *_data, int _length ) {
     if (_length > BUFFER_SIZE) {
         fprintf( stderr, "sorry, i can't read %i bytes at once, only %i\n",_length,BUFFER_SIZE );
@@ -131,9 +116,6 @@ void PS_FileBuffer::peek( void *_data, int _length ) {
 }
 
 
-// ************************************************************
-// * flush()
-// ************************************************************
 void PS_FileBuffer::flush() {
     ssize_t written = write( file_handle, buffer, size );
     if (written != size) {
@@ -146,9 +128,6 @@ void PS_FileBuffer::flush() {
 }
 
 
-// ************************************************************
-// * refill()
-// ************************************************************
 void PS_FileBuffer::refill() {
     // move unread data to start of buffer
     int unread = size-position;
@@ -164,9 +143,6 @@ void PS_FileBuffer::refill() {
     position    = 0;
 }
 
-// ************************************************************
-// * reinit( _name,_readonly )
-// ************************************************************
 void PS_FileBuffer::reinit( const char *_name, bool _readonly ) {
     // finish old file
     if (!is_readonly) flush();
@@ -201,9 +177,6 @@ void PS_FileBuffer::reinit( const char *_name, bool _readonly ) {
     total_write = 0;
 }
 
-// ************************************************************
-// * PS_FileBuffer( _name,_readonly )
-// ************************************************************
 PS_FileBuffer::PS_FileBuffer( const char *_name, bool _readonly ) {
     // init. file
     file_name   = strdup(_name);

@@ -10,13 +10,7 @@
 #include "ps_candidate.hxx"
 
 
-//  ----------------------------------------------------
-//      void PS_get_leaf_candidates( PS_CandidatePtr  _candidate_parent,
-//                                   PS_CandidateSet &_leaf_candidates )
-//  ----------------------------------------------------
-//
-void PS_get_leaf_candidates( PS_CandidatePtr  _candidate_parent,
-                             PS_CandidateSet &_leaf_candidates ) {
+void PS_get_leaf_candidates( PS_CandidatePtr  _candidate_parent, PS_CandidateSet &_leaf_candidates ) {
 
     for ( PS_CandidateByGainMapRIter next_candidate = _candidate_parent->children.rbegin();
           next_candidate != _candidate_parent->children.rend();
@@ -30,15 +24,11 @@ void PS_get_leaf_candidates( PS_CandidatePtr  _candidate_parent,
 }
 
 
-//  ----------------------------------------------------
-//      void PS_get_node_paths( PS_CandidateSet                     &_leaf_candidates,
-//                              PS_Candidate2NodeSetPairByLengthMap &_paths )
-//  ----------------------------------------------------
-typedef set<PS_Node *>                                   PS_NodeSet;
-typedef pair<PS_CandidatePtr,PS_NodeSet>                 PS_Candidate2NodeSetPair;
-typedef multimap<unsigned long,PS_Candidate2NodeSetPair> PS_Candidate2NodeSetPairByLengthMap;
-void PS_get_node_paths( PS_CandidateSet                     &_leaf_candidates,
-                        PS_Candidate2NodeSetPairByLengthMap &_paths ) {
+typedef set<PS_Node *>                   PS_NodeSet;
+typedef pair<PS_CandidatePtr,PS_NodeSet> PS_Candidate2NodeSetPair;
+typedef multimap<unsigned                long,PS_Candidate2NodeSetPair> PS_Candidate2NodeSetPairByLengthMap;
+
+void PS_get_node_paths( PS_CandidateSet &_leaf_candidates, PS_Candidate2NodeSetPairByLengthMap &_paths ) {
     PS_NodeSet nodepath;
     for ( PS_CandidateSetCIter candidate_iter = _leaf_candidates.begin();
           candidate_iter != _leaf_candidates.end();
@@ -72,18 +62,16 @@ void PS_get_node_paths( PS_CandidateSet                     &_leaf_candidates,
 }
 
 
-//  ----------------------------------------------------
-//      void PS_eval_node_paths( PS_Candidate2NodeSetPairByLengthMap &_paths )
-//  ----------------------------------------------------
 typedef set<unsigned long>  ULSet;
 typedef set<unsigned short> USSet;
 typedef map<float,float>    FFMap;
 typedef set<float>          FSet;
+
 inline unsigned long PS_calc_temp( const PS_ProbePtr &_probe ) {
     return ( 4*(_probe->length - _probe->GC_content) + 2*_probe->GC_content );
 }
-void PS_calc_sums_for_nodepath( PS_NodeSet &_nodepath,
-                                ULSet      &_sums ) {
+
+void PS_calc_sums_for_nodepath( PS_NodeSet &_nodepath, ULSet &_sums ) {
     // iterate over nodes in path
     ULSet sums_for_node;
     ULSet temperatures;
@@ -297,12 +285,6 @@ void PS_eval_node_paths( PS_Candidate2NodeSetPairByLengthMap &_paths,
     }
 }
 
-
-//  ----------------------------------------------------
-//      void PS_remove_bad_probes( PS_NodeSet        &_nodes,
-//                                 float              _average,
-//                                 set<unsigned int> &_probe_lengths )
-//  ----------------------------------------------------
 void PS_remove_bad_probes( PS_NodeSet        &_nodes,
                            float              _average,
                            set<unsigned int> &_probe_lengths ) {
