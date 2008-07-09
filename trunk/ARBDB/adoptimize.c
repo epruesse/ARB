@@ -890,7 +890,8 @@ static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSu
 /******************** Build dictionary *******************/
 
 #ifdef DEBUG
-#define TEST            /* test trees? */
+#define TEST                    /* test trees? */
+/* #define DUMP_TREE */               /* dump trees? */
 
 /* #define DUMP_EXPAND */
 /*
@@ -914,6 +915,7 @@ static char *strnstr(char *s1, int len, char *s2) {
 }
 # endif
 
+#ifdef DUMP_TREE
 static void dump_dtree(int deep, GB_DICT_TREE tree)
 {
     static unsigned_char buffer[1024];
@@ -945,9 +947,12 @@ static void dump_dtree(int deep, GB_DICT_TREE tree)
         }
     }
 }
+#endif
 
 #else
+#ifdef DUMP_TREE
 # define dump_dtree(deep,tree)
+#endif
 #endif
 
 #ifdef TEST
@@ -1864,7 +1869,7 @@ static GB_DICT_TREE build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, 
             tree  = cut_dtree(tree, cutoff, &memcount, &leafs);
         }
     }
-#if 0
+#ifdef DUMP_TREE
     printf("----------------------- tree with short branches:\n");
     dump_dtree(0,tree);
     printf("---------------------------\n");
@@ -1908,7 +1913,7 @@ static GB_DICT_TREE build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, 
         tree = cut_useless_words(tree,0,&dummy);
     }
 
-#if 0
+#ifdef DUMP_TREE
     printf("----------------------- tree with expanded branches:\n");
     dump_dtree(0,tree);
     printf("-----------------------\n");
