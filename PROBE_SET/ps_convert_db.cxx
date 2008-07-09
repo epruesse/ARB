@@ -7,21 +7,15 @@
 #include "ps_database.hxx"
 #include "ps_pg_tree_functions.cxx"
 
-//  **************************************************
 //  GLOBALS
-//  **************************************************
 
 PS_NodePtr __ROOT;
 int        __PROBE_LENGTH;
 SpeciesID  __MIN_ID;
 SpeciesID  __MAX_ID;
 
-//  ----------------------------------------------------
-//      void PS_detect_probe_length( GBDATA *_ARB_node )
-//  ----------------------------------------------------
-//  recursively walk through database to first probe and get its length
-//
 void PS_detect_probe_length( GBDATA *_ARB_node ) {
+    //  recursively walk through database to first probe and get its length
     __PROBE_LENGTH = -1;
 
     // search for a probe
@@ -40,17 +34,8 @@ void PS_detect_probe_length( GBDATA *_ARB_node ) {
     }
 }
 
-
-//  ----------------------------------------------------
-//      PS_NodePtr PS_assert_inverse_path( const int  _max_depth,
-//                                         const int  _caller_ID,
-//                                         IDVector  *_path )
-//  ----------------------------------------------------
-//  walk down the 'inverse path' creating empty nodes as necessary
-//
-PS_NodePtr PS_assert_inverse_path( const int  _max_depth,
-                                   const int  _caller_ID,
-                                   IDVector  *_path ) {
+PS_NodePtr PS_assert_inverse_path( const int  _max_depth, const int  _caller_ID, IDVector  *_path ) {
+    //  walk down the 'inverse path' creating empty nodes as necessary
 
     PS_NodePtr current_node = __ROOT;
     SpeciesID  current_ID;
@@ -80,15 +65,8 @@ PS_NodePtr PS_assert_inverse_path( const int  _max_depth,
     return current_node;
 }
 
-
-//  ----------------------------------------------------
-//      PS_NodePtr PS_assert_path( const int  _caller_ID,
-//                                  IDVector *_path )
-//  ----------------------------------------------------
-//  walk down the 'path' creating empty nodes as necessary
-//
-PS_NodePtr PS_assert_path( const int  _caller_ID,
-                            IDVector *_path ) {
+PS_NodePtr PS_assert_path( const int  _caller_ID, IDVector *_path ) {
+    //  walk down the 'path' creating empty nodes as necessary
 
     PS_NodePtr current_node = __ROOT;
     SpeciesID  next_path_ID;
@@ -113,34 +91,26 @@ PS_NodePtr PS_assert_path( const int  _caller_ID,
     return current_node;
 }
 
-
-//  ----------------------------------------------------
-//      unsigned long int PS_extract_probe_data( GBDATA  *_ARB_node,
-//                                                   int  _max_depth,
-//                                                   int  _depth,
-//                                             const int  _parent_ID,
-//                                              IDVector *_inverse_path )
-//  ----------------------------------------------------
-//  recursively walk through ARB-database and extract probe-data to own tree format
-//
-//  * Insertion of nodes takes place after a branch is completed (that is
-//    when ive reached a leaf in the ARB-database and im going 'back up'
-//    out of the recursion).
-//
-//  * Branches below _max_depth/2 will be moved up top by inserting nodes with
-//    'inverse' probes in the  'inverse' branch, therefore the _inverse_path
-//    list is maintained with the SpeciesIDs of the 'inverse path'.
-//    - SpeciesIDs between _parent_ID and current ID are 'missing' in the path
-//      and are appended to the _inverse_path list
-//    - SpeciesIDs greater than the current ID are implicit in the
-//      'inverse path' list and therefore not stored
-//
 void PS_extract_probe_data( GBDATA *_ARB_node,               // position in ARB database
                                int  _max_depth,              // count of species in ARB database
                                int  _depth,                  // current depth in tree
                          const int  _parent_ID,              // SpeciesID of parent node
                           IDVector *_inverse_path ) {        // list with IDs of the 'inverse path'
 
+    //  recursively walk through ARB-database and extract probe-data to own tree format
+    //
+    //  * Insertion of nodes takes place after a branch is completed (that is
+    //    when ive reached a leaf in the ARB-database and im going 'back up'
+    //    out of the recursion).
+    //
+    //  * Branches below _max_depth/2 will be moved up top by inserting nodes with
+    //    'inverse' probes in the  'inverse' branch, therefore the _inverse_path
+    //    list is maintained with the SpeciesIDs of the 'inverse path'.
+    //    - SpeciesIDs between _parent_ID and current ID are 'missing' in the path
+    //      and are appended to the _inverse_path list
+    //    - SpeciesIDs greater than the current ID are implicit in the
+    //      'inverse path' list and therefore not stored
+    
     //
     // get SpeciesID
     //
@@ -223,8 +193,6 @@ void PS_extract_probe_data( GBDATA *_ARB_node,               // position in ARB 
 }
 
 
-//  ====================================================
-//  ====================================================
 int main(  int  _argc,
           char *_argv[] ) {
 

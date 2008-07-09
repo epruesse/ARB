@@ -10,9 +10,6 @@
 
 using namespace std;
 
-//***********************************************
-//* PS_FileBuffer
-//***********************************************
 class PS_FileBuffer {
 private:
     // filehandling

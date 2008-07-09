@@ -11,9 +11,7 @@
 #include "ps_filebuffer.hxx"
 #endif
 
-//  **************************************************
 //  GLOBALS
-//  **************************************************
 
 char     *__ARB_DB_NAME    = 0;
 GBDATA   *__ARB_DB         = 0;
@@ -21,16 +19,7 @@ GBDATA   *__ARB_GROUP_TREE = 0;
 GB_ERROR  __ARB_ERROR      = 0;
 
 
-//  ----------------------------------------------------
-//      bool PS_get_probe_for_path( IDSet        &_path,
-//                                  unsigned int  _GC_content,
-//                                  unsigned int  _probe_length,
-//                                  char         *_probe_data )
-//  ----------------------------------------------------
-bool PS_get_probe_for_path( IDSet        &_path,
-                            unsigned int  _GC_content,
-                            unsigned int  _probe_length,
-                            char         *_probe_data ) {
+bool PS_get_probe_for_path( IDSet& _path, unsigned int _GC_content, unsigned int  _probe_length, char *_probe_data ) {
     GB_transaction  dummy( __ARB_DB );
     SpeciesID       num;
     GBDATA         *data;

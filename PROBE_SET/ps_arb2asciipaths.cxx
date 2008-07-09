@@ -14,17 +14,10 @@
 #include "ps_pg_tree_functions.cxx"
 #endif
 
-//  **************************************************
-//  GLOBALS
-//  **************************************************
 IDVector *__PATH = new IDVector;
 
-//  ----------------------------------------------------
-//      void PS_print_paths( GBDATA *_pb_node )
-//  ----------------------------------------------------
-//  recursively print the paths to the leaves
-//
 void PS_print_paths( GBDATA *_pb_node ) {
+    //  recursively print the paths to the leaves
 
     // number and species name
     GBDATA     *data   = GB_entry( _pb_node, "num");
