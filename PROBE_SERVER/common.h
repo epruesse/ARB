@@ -3,7 +3,7 @@
 //    File      : common.h                                               //
 //    Purpose   : Common code for all tools                              //
 //    Note      : include only once in each executable!!!                //
-//    Time-stamp: <Fri May/30/2008 12:29 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jul/09/2008 12:53 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -16,6 +16,14 @@
 
 #ifndef COMMON_H
 #define COMMON_H
+
+#ifndef _CPP_CSTRING
+#include <cstring>
+#endif
+#ifndef _CPP_CSTDLIB
+#include <cstdlib>
+#endif
+
 
 #ifdef NEED_setDatabaseState
 static GB_ERROR setDatabaseState(GBDATA *gb_main, const char *type, const char *state) {

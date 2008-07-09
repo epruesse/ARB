@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Thu Sep/27/2007 15:24 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Jul/08/2008 12:49 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -13,12 +13,12 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include <cctype>
-#include <cstdio>
-
 #include <arbdb.h>
 #include <awt.hxx>
 #include <awt_www.hxx>
+
+#include "awt_input_mask.hxx"
+#include "awt_changekey.hxx"
 
 #ifndef __MAP__
 #include <map>
@@ -31,8 +31,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "awt_input_mask.hxx"
-#include "awt_changekey.hxx"
+#include <cctype>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <climits>
 
 using namespace std;
 

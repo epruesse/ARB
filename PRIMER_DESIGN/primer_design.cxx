@@ -1,7 +1,3 @@
-#include <cstdio>
-#include <cmath>
-#include <string>
-
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>
@@ -15,6 +11,12 @@
 #include "primer_design.hxx"
 #include "PRD_Design.hxx"
 #include "PRD_SequenceIterator.hxx"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
+#include <string>
 
 extern GBDATA *GLOBAL_gb_main;
 

@@ -4,13 +4,6 @@
  *  http://www.mikro.biologie.tu-muenchen.de/                                    *
  *********************************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-
-#include <string>
-
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>
@@ -25,6 +18,15 @@
 #include "GEN_local.hxx"
 #include "GEN_gene.hxx"
 #include "GEN_graphic.hxx"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
+#include <climits>
+
+#include <string>
+
 
 using namespace std;
 

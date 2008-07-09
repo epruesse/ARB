@@ -1,17 +1,13 @@
-#include <ctype.h>
-
-#ifndef __MAP__
-#include <map>
-#endif
-
-#ifndef __PG_DB_HXX__
-#include <pg_db.hxx>
-#endif
-#ifndef __PG_DEF_HXX__
-#include <pg_def.hxx>
-#endif
+#include "pg_db.hxx"
+#include "pg_def.hxx"
 
 #include <arbdbt.h>
+
+#include <map>
+
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
 
 
 using namespace std;

@@ -2,15 +2,17 @@
 //                                                                  //
 //   File      : FileBuffer.cxx                                     //
 //   Purpose   :                                                    //
-//   Time-stamp: <Mon Mar/03/2008 11:45 MET Coder@ReallySoft.de>    //
+//   Time-stamp: <Tue Jul/08/2008 12:42 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Coded by Ralf Westram (coder@reallysoft.de) in December 2006   //
 //   Institute of Microbiology (Technical University Munich)        //
 //   http://www.arb-home.de/                                        //
 //                                                                  //
 // ================================================================ //
-#include "FileBuffer.h"
 
+#include "FileBuffer.h"
+#include <cstdlib>
+#include <cstring>
 
 using namespace std;
 

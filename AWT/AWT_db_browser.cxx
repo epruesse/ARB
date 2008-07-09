@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : AWT_db_browser.cxx                                     // 
 //    Purpose   : Simple database viewer                                 // 
-//    Time-stamp: <Fri May/16/2008 16:09 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Tue Jul/08/2008 13:13 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2004              // 
@@ -13,13 +13,14 @@
 //  ==================================================================== // 
 
 #include "awt.hxx"
+#include <inline.h>
 
 #include <string>
 #include <vector>
 #include <map>
 #include <algorithm>
-#include <inline.h>
-// #include <ctype.h>
+
+#include <cstring>
 
 using namespace std;
 

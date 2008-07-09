@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_main.cxx                                           //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu Feb/28/2008 16:22 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jul/09/2008 12:27 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -25,6 +25,8 @@ class AWT_canvas;
 #include "EXP.hxx"
 #include "EXP_local.hxx"
 #include "EXP_interface.hxx"
+
+#include <cstdlib>
 
 using namespace std;
 

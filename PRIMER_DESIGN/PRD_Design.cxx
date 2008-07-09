@@ -6,8 +6,10 @@
 #include "PRD_SequenceIterator.hxx"
 #include "PRD_SearchFIFO.hxx"
 
-#include <cstdio>
 #include <iostream>
+
+#include <cstdio>
+#include <cstdlib>
 #include <cmath>
 
 // using namespace std; (does not work well with Solaris CC)

@@ -1,15 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/times.h>
-
-#ifndef PS_DATABASE_HXX
 #include "ps_database.hxx"
-#endif
-#ifndef PS_BITMAP_HXX
 #include "ps_bitmap.hxx"
-#endif
 #include "ps_tools.hxx"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <climits>
+
+#include <sys/times.h>
 
 // common globals
 SpeciesID          __MAX_ID;
@@ -27,9 +25,6 @@ IDID2IDSetMap     *__PAIR2PATH;
 SpeciesID          __ONEMATCH_MIN_ID;
 SpeciesID          __ONEMATCH_MAX_ID;
 
-//  ----------------------------------------------------
-//      void PS_print_path()
-//  ----------------------------------------------------
 void PS_print_path() {
     printf( "__PATH %3zu :",__PATH->size() );
     int c = 1;
@@ -40,10 +35,6 @@ void PS_print_path() {
     printf( "\n" );
 }
 
-
-//  ----------------------------------------------------
-//      void PS_inverse_print_path()
-//  ----------------------------------------------------
 void PS_print_inverse_path() {
     printf( "__INVERSE_PATH %3zu :",__INVERSE_PATH->size() );
     int c = 1;
@@ -55,19 +46,15 @@ void PS_print_inverse_path() {
 }
 
 
-//  ----------------------------------------------------
-//      void PS_detect_weak_differences( const PS_NodePtr _root_node )
-//  ----------------------------------------------------
-//  Recursively walk through tree and make a bool-matrix of SpeciesID's
-//  where true means that the 2 species can be distinguished by a probe.
-//
-//  The first occurence of a pair of distinguishable IDs is stored as (smaller_ID,bigger_ID).
-//  The following ocurences of this pair are stored as (bigger_ID,smaller_ID).
-//  (this allows us to find pairs of SpeciesIDs that can be distinguished by exactly one probe)
-//
 void PS_detect_weak_differences_stepdown( const PS_NodePtr _ps_node,
                                           const SpeciesID  _parent_ID,
                                           const long       _depth ) {
+    //  Recursively walk through tree and make a bool-matrix of SpeciesID's
+    //  where true means that the 2 species can be distinguished by a probe.
+    //
+    //  The first occurence of a pair of distinguishable IDs is stored as (smaller_ID,bigger_ID).
+    //  The following ocurences of this pair are stored as (bigger_ID,smaller_ID).
+    //  (this allows us to find pairs of SpeciesIDs that can be distinguished by exactly one probe)
 
     SpeciesID id = _ps_node->getNum();
     if (_depth < 60) {
@@ -229,14 +216,11 @@ void PS_detect_weak_differences( const PS_NodePtr _root_node ) {
     delete __INVERSE_PATH;
 }
 
-//  ----------------------------------------------------
-//      void PS_print_and_evaluate_map( const PS_NodePtr _root_node )
-//  ----------------------------------------------------
 typedef map<ID2IDPair,PS_NodePtr>    IDID2NodeMap;
 typedef IDID2NodeMap::iterator       IDID2NodeMapIter;
 typedef IDID2NodeMap::const_iterator IDID2NodeMapCIter;
-void PS_find_probes_for_pairs( const PS_NodePtr  _ps_node, 
-                                       ID2IDSet &_pairs ) {
+
+void PS_find_probes_for_pairs( const PS_NodePtr _ps_node, ID2IDSet &_pairs ) {
     SpeciesID id         = _ps_node->getNum();
     bool      has_probes = _ps_node->hasProbes();
 

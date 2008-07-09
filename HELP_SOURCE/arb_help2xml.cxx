@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
-//    Time-stamp: <Wed Feb/27/2008 18:25 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jul/09/2008 12:38 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
@@ -20,13 +20,18 @@
 #endif
 #define h2x_assert(bed) arb_assert(bed)
 
-#include <stdio.h>
-#include <stdarg.h>
 #include <list>
 #include <set>
 #include <string>
 #include <iostream>
 #include <fstream>
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstdarg>
+#include <cstring>
+#include <climits>
+
 #include <sys/stat.h>
 
 #include <xml.hxx>
