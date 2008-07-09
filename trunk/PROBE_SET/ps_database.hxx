@@ -13,10 +13,7 @@
 
 using namespace std;
 
-//***********************************************
-  //* PS_Database
-    //***********************************************
-  class PS_Database : PS_Callback {
+class PS_Database : PS_Callback {
   private:
       string FILE_ID;
 
@@ -137,7 +134,7 @@ using namespace std;
       SpeciesID getMinID() {
           return db_id2name_map.begin()->first;
       }
-      const long getSpeciesCount() {
+      long getSpeciesCount() {
           return db_id2name_map.size();
       }
 
