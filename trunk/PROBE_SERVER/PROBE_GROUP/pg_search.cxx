@@ -4,14 +4,7 @@
  *  http://www.mikro.biologie.tu-muenchen.de/                                    *
  *********************************************************************************/
 
-#include <string>
-#include <deque>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <arbdb.h>
+#include "pg_search.hxx"
 
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
@@ -19,9 +12,14 @@
 #include <client.h>
 #include <servercntrl.h>
 
-#ifndef PG_SEARCH_HXX
-#include "pg_search.hxx"
-#endif
+#include <string>
+#include <deque>
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <climits>
+
 
 #define MAX_SPECIES 999999 // max species returned by pt-server (probe match)
 

@@ -1,25 +1,28 @@
 //  ==================================================================== //
 //                                                                       //
-//    File      : mapping.cxx                                            //
+//    File      : mapping.h                                              //
 //    Purpose   : simple species mapping                                 //
-//    Time-stamp: <Fri May/16/2008 11:03 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jul/09/2008 12:52 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
-//                                                                       //
-//                                                                       //
 //  ==================================================================== //
 
-#ifndef __MAP__
+// This is not really a header - it's included only once per executable!
+
+#ifndef _CPP_MAP
 #include <map>
 #endif
-
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef _CPP_CSTDLIB
+#include <cstdlib>
+#endif
+
 #define pm_assert(cond) arb_assert(cond)
 
 using namespace std;

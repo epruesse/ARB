@@ -1,7 +1,3 @@
-#include <stdio.h>
-// #include <malloc.h>
-#include <memory.h>
-#include <string.h>
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>
@@ -11,6 +7,9 @@
 
 #include <awt_tree_cmp.hxx>
 
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
 #include <string>
 
 using namespace std;

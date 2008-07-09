@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : NT_dbrepair.cxx                                   //
 //   Purpose   : repair database bugs                              //
-//   Time-stamp: <Fri May/30/2008 09:42 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Jul/09/2008 12:32 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in May 2008       //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -12,11 +12,6 @@
 
 #include "NT_dbrepair.hxx"
 
-#include <map>
-#include <set>
-#include <string>
-#include <vector>
-
 #include <arbdbt.h>
 #include <adGene.h>
 #include <aw_root.hxx>
@@ -24,6 +19,14 @@
 #include <smartptr.h>
 #include <arbtools.h>
 #include <inline.h>
+
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
+
+#include <cstdlib>
+#include <cstring>
 
 #define nt_assert(bed) arb_assert(bed)
 

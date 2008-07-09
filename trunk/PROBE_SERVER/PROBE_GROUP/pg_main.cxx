@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : pg_main.cxx                                            //
-//    Time-stamp: <Thu May/22/2008 13:30 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Jul/09/2008 12:48 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Tina Lai & Ralf Westram (coder@reallysoft.de) 2001-2004     //
@@ -15,20 +15,20 @@
 // #define DUMP_SMART_PTRS
 // #define DUMP_COVERAGE_SEARCH
 
-#ifndef PG_SEARCH_HXX
 #include "pg_search.hxx"
-#endif
-
-#include <set>
-#include <map>
-#include <deque>
-#include <algorithm>
-#include <cmath>
 
 #include <smartptr.h>
 #include <output.h>
 
 #include <arbdbt.h>
+
+#include <set>
+#include <map>
+#include <deque>
+#include <algorithm>
+
+#include <cmath>
+#include <climits>
 
 #define NEED_encodeTreeNode
 #define NEED_saveProbeContainerToString

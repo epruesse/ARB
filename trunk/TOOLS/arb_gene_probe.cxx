@@ -1,14 +1,17 @@
-#include <cstdio>
-#include <unistd.h>
-#include <sys/types.h>
-#include <string.h>
+#include <arbdb.h>
+#include <arbdbt.h>
+#include <adGene.h>
+
 #include <map>
 #include <list>
 #include <set>
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <adGene.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+#include <unistd.h>
+#include <sys/types.h>
 
 #define gp_assert(cond) arb_assert(cond)
 

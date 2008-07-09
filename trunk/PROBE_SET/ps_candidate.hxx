@@ -11,6 +11,10 @@
 #include "ps_filebuffer.hxx"
 #endif
 
+#ifndef _CPP_CLIMITS
+#include <climits>
+#endif
+
 using namespace std;
 
 class PS_Candidate;

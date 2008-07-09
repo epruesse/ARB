@@ -1,7 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-// #include <malloc.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <climits>
 
 #include <PT_server.h>
 #include <PT_server_prototypes.h>
