@@ -88,14 +88,14 @@ void NT_fix_database(AW_window *);
 void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl);
 void NT_test_input_mask(AW_root *root);
 void NT_update_marked_counter(AW_window *aww, long count);
-void NT_popup_species_window(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_1x);
+void NT_popup_species_window(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
 void NT_rename_test(AW_window *, AW_CL cl_gb_main, AW_CL dummy_1x);
 void NT_test_AWT(AW_window *aww);
-void NT_dump_gcs(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_1x);
+void NT_dump_gcs(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
 void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main);
 
 /* NT_import.cxx */
-void NT_import_sequences(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_1x);
+void NT_import_sequences(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
 
 /* NT_main.cxx */
 GB_ERROR NT_format_all_alignments(GBDATA *gb_main);
@@ -117,9 +117,9 @@ void NT_createValidNamesAwars(AW_root *aw_root, AW_default aw_def);
 AW_window *NT_searchManuallyNames(AW_root *aw_root);
 
 /* NT_validNames.cxx */
-void NT_deleteValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_1x);
-void NT_importValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_1x);
-void NT_suggestValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_1x);
+void NT_deleteValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
+void NT_importValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
+void NT_suggestValidNames(AW_window *, AW_CL dummy_1x, AW_CL dummy_2x);
 
 /* ad_ali.cxx */
 void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def);
