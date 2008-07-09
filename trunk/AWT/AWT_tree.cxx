@@ -1324,30 +1324,23 @@ int AP_tree::calc_color_probes(GB_HASH *hashptr) {
     int res;
 
     if (is_leaf) {
-        if (gb_node){
-            res = GBS_read_hash( hashptr, name );
-            //          printf("Ausgabe aus Alex' Hashtabelle : %d\n",res);
-            if (GB_read_flag(gb_node))          //Bakt. ist markiert
-                if (!res)
-                    res = AWT_GC_BLACK;
-                else
-                    if (!res)
-                        res =  AWT_GC_BLACK;
-        }else{
-            res =   AWT_GC_SOME_MISMATCHES;
+        if (gb_node) {
+            res = GBS_read_hash(hashptr, name);
+            if (!res && GB_read_flag(gb_node)) { // marked but not in hash -> black
+                res = AWT_GC_BLACK;
+            }
+        }
+        else {
+            res = AWT_GC_SOME_MISMATCHES;
         }
     }else{
         l = leftson->calc_color_probes(hashptr);
         r = rightson->calc_color_probes(hashptr);
-        if ( l == r) {
-            res = l;
-        }else if ( l == AWT_GC_SOME_MISMATCHES) {
-            res = r;
-        }else if ( r == AWT_GC_SOME_MISMATCHES) {
-            res = l;
-        }else{
-            res = AWT_GC_UNDIFF;
-        }
+        
+        if      (l == r)                      res = l;
+        else if (l == AWT_GC_SOME_MISMATCHES) res = r;
+        else if (r == AWT_GC_SOME_MISMATCHES) res = l;
+        else                                  res = AWT_GC_UNDIFF;
     }
     gr.gc = res;
     return res;
