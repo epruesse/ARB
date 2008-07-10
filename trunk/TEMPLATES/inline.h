@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : inline.h                                               //
 //    Purpose   : general purpose inlined funcions                       //
-//    Time-stamp: <Wed May/28/2008 18:08 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Jul/10/2008 11:57 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in June 2002             //
@@ -51,6 +51,8 @@ inline int ARB_strscmp(const char *s1, const char *s2) {
 
 inline void ARB_strupper(char *s) { for (int i = 0; s[i]; ++i) s[i] = toupper(s[i]); } // strupr
 inline void ARB_strlower(char *s) { for (int i = 0; s[i]; ++i) s[i] = tolower(s[i]); } // strlwr
+
+inline unsigned char safeCharIndex(char c) { return static_cast<unsigned char>(c); }
 
 #else
 #error inline.h included twice
