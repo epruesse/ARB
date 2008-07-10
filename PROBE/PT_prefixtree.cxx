@@ -4,6 +4,8 @@
 #include <sys/mman.h>
 // #include <malloc.h>
 #include <memory.h>
+#include <limits.h>
+
 #include <PT_server.h>
 #include "probe.h"
 #include "probe_tree.hxx"
@@ -731,7 +733,9 @@ void PTD_read_leafs_from_disk(char *fname,PTM2 *ptmain, POS_TREE **pnode)
 
     main = &(buffer[size-4]);
     PT_READ_INT(main, i);
-    arb_assert((i >= 0) && (i == (unsigned int)i));
+
+    arb_assert((i >= 0) && (i <= INT_MAX));
+
     *pnode = (POS_TREE *)(i+buffer);
     ptmain->mode = 0;
     ptmain->base = buffer;
