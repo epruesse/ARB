@@ -208,7 +208,7 @@ int aisc_calc_special_commands(void)
             buf1 = co->str+8;
             co->command = FUNCTION;
             READ_SPACES(buf1);
-            for (s=buf1;!gl->b_tab[(int)(*s)];s++);
+            for (s=buf1;!gl->b_tab[(int)(*s)];s++) ;
             if (*s) {
                 *s = 0;
                 s++;

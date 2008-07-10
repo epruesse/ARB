@@ -154,8 +154,7 @@ int aisc_add_message_queue(aisc_com *link, long size)
     if (link->message_queue == 0) {
         link->message_queue = (int *)msg;
     }else{
-        for (mp = (struct aisc_client_message_queue *)
-                 link->message_queue;mp->next;mp=mp->next);
+        for (mp = (struct aisc_client_message_queue *) link->message_queue; mp->next; mp=mp->next) ;
         mp->next = msg;
     }
     return 0;

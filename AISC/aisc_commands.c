@@ -151,7 +151,7 @@ char *calc_rest_line(/*const*/ char *str, int size, int presize)
         fi = strdup(error_buf);
     } else if (*p == '#') {
         if (!strncmp(p, "#FILE", 5)) {
-            for (path = p + 5; gl->s2_tab[(unsigned)(path[0])]; path++);
+            for (path = p + 5; gl->s2_tab[(unsigned)(path[0])]; path++) ;
             fi = read_aisc_file(path);
             if (!fi) return 0;
 
@@ -761,7 +761,7 @@ int do_com_gosub(char *str)
     CL *fun;
     int err;
     if (do_com_push("")) return 1;
-    for (s = str; !gl->b_tab[(int)(*s)]; s++);
+    for (s = str; !gl->b_tab[(int)(*s)]; s++) ;
     if (*s) {
         *s = 0;
         s++;
@@ -787,10 +787,10 @@ int do_com_gosub(char *str)
             print_error(error_buf);
             return 1;
         }
-        for (s = para; !gl->c_tab[(int)(*s)]; s++);
+        for (s = para; !gl->c_tab[(int)(*s)]; s++) ;
         if (*s) {npara = s+1;READ_SPACES(npara);} else npara = s;
         *s = 0;
-        for (s = fpara; !gl->c_tab[(int)(*s)]; s++);
+        for (s = fpara; !gl->c_tab[(int)(*s)]; s++) ;
         if (*s) {nfpara = s+1;READ_SPACES(nfpara);} else nfpara = s;
         *s = 0;
         s = read_hash( gl->st->hs,para);
