@@ -154,7 +154,7 @@ public:
             (current_elem->info) = new_elem;
     }
     /* For navigation through the list */
-    const int cardinality() {
+    int cardinality() {
         return cardinal;
     }
     int is_empty() { 
