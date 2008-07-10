@@ -106,6 +106,7 @@ AW_device.o: aw_root.hxx
 AW_device.o: aw_window.hxx
 AW_device.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_device.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_device.o: $(ARBHOME)/INCLUDE/inline.h
 
 AW_font_group.o: aw_device.hxx
 AW_font_group.o: aw_font_group.hxx
@@ -240,6 +241,7 @@ AW_xfigfont.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_xfigfont.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_xfigfont.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_xfigfont.o: $(ARBHOME)/INCLUDE/awt.hxx
+AW_xfigfont.o: $(ARBHOME)/INCLUDE/inline.h
 
 AW_xfont.o: aw_commn.hxx
 AW_xfont.o: aw_def.hxx

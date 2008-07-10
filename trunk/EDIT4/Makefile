@@ -340,6 +340,7 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/inline.h
 
 ED4_ProteinViewer.o: ed4_class.hxx
 ED4_ProteinViewer.o: ed4_defs.hxx

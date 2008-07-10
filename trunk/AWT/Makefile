@@ -388,6 +388,7 @@ AWT_pro_a_nucs.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_pro_a_nucs.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_pro_a_nucs.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_pro_a_nucs.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_pro_a_nucs.o: $(ARBHOME)/INCLUDE/inline.h
 
 AWT_query_and_functions.o: awt.hxx
 AWT_query_and_functions.o: awt_changekey.hxx
@@ -469,6 +470,7 @@ AWT_seq_protein.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_seq_protein.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_seq_protein.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_seq_protein.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AWT_seq_protein.o: $(ARBHOME)/INCLUDE/inline.h
 
 AWT_seq_simple_pro.o: awt_pro_a_nucs.hxx
 AWT_seq_simple_pro.o: awt_seq_simple_pro.hxx

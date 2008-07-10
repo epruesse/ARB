@@ -93,6 +93,7 @@ PT_io.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_io.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PT_io.o: $(ARBHOME)/INCLUDE/attributes.h
 PT_io.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+PT_io.o: $(ARBHOME)/INCLUDE/inline.h
 PT_io.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_io.o: $(ARBHOME)/INCLUDE/PT_server.h
 
