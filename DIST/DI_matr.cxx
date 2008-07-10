@@ -565,7 +565,7 @@ GB_ERROR DI_MATRIX::haeschoe(const char *path)
     double distdebug[MAXDISTDEBUG];
     for (pos = 0;pos<MAXDISTDEBUG;pos++) distdebug[pos] = 0.0;
     for (row = 0; row<nentries;row++){
-        if ( nentries > 100 || (row&0xf == 0)){
+        if ( nentries > 100 || ((row&0xf) == 0)){
             double gauge = (double)row/(double)nentries;
             if (aw_status(gauge*gauge)) {
                 aw_closestatus();
@@ -717,7 +717,7 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /*alpha*/, DI_T
     };
 
     for (row = 0; row<nentries;row++){
-        if ( nentries > 100 || (row&0xf == 0)){
+        if ( nentries > 100 || ((row&0xf) == 0)){
             double gauge = (double)row/(double)nentries;
             if (aw_status(gauge*gauge)) {
                 aw_closestatus();

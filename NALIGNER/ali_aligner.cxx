@@ -1190,7 +1190,7 @@ unsigned long ALI_ALIGNER::number_of_solutions(void)
     if (column1 == 0 || column2 == 0)
         ali_fatal_error("Out of memory");
 
-    if (end_x - start_x & 0x01) {
+    if (end_x - (start_x & 0x01)) {
         elem_akt_col = column1 + col_length - 1;
         elem_left_col = column2 + col_length - 1;
     }
