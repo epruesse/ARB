@@ -178,6 +178,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_seq_dna.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_seq_simple_pro.hxx
