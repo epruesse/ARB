@@ -464,9 +464,11 @@ void Ascii2NA(char *buffer,int len,int matrix[16])
      *   encode the buffer.
      */
     int i;
-    if(matrix != NULL)
-        for(i=0;i<len;i++)
-            buffer[i] = matrix[buffer[i]];
+    if(matrix != NULL) {
+        for(i=0;i<len;i++) {
+            buffer[i] = matrix[(unsigned char)buffer[i]];
+        }
+    }
     return;
 }
 
@@ -505,12 +507,12 @@ int WriteNA_Flat(NA_Alignment *aln,char *filename,int method,int maskable)
 
     for(j=0;j<aln->numelements;j++)
     {
-        if(method != SELECT_REGION)
+        if (method != SELECT_REGION) {
             offset = seqs[j].offset;
-        else
-            for(offset=seqs[j].offset;
-                aln->selection_mask[offset] == '0';
-                offset++);
+        }
+        else {
+            for(offset=seqs[j].offset; aln->selection_mask[offset] == '0'; offset++) ;
+        }
 
         if(offset+aln->rel_offset != 0)
             sprintf(offset_str,"(%d)",offset+aln->rel_offset);
@@ -1031,17 +1033,19 @@ int WriteCMask(NA_Alignment *aln,char *filename,int method,int maskable)
 
     for(j=0;j<aln->numelements;j++)
     {
-        if(method != SELECT_REGION)
+        if(method != SELECT_REGION) {
             offset = seqs[j].offset;
-        else
-            for(offset=seqs[j].offset;
-                aln->selection_mask[offset] == '0';
-                offset++);
+        }
+        else {
+            for(offset=seqs[j].offset; aln->selection_mask[offset] == '0'; offset++) ;
+        }
 
-        if(offset+aln->rel_offset != 0)
+        if(offset+aln->rel_offset != 0) {
             sprintf(offset_str,"(%d)",offset+aln->rel_offset);
-        else
+        }
+        else {
             offset_str[0] = '\0';
+        }
 
         if((((int)j!=mask) && (seqs[j].selected) && method != SELECT_REGION)
            || (method == SELECT_REGION && seqs[j].subselected)

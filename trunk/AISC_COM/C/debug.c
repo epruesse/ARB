@@ -48,7 +48,7 @@ const char *aisc_debug_local(aisc_com *link, int key, long object, char *str, ..
         }
     }
     while ( (code=va_arg(parg,long)) ) {
-        for (sp=sc; ((*sp)!=0) && ((*sp)!=','); sp++);
+        for (sp=sc; ((*sp)!=0) && ((*sp)!=','); sp++) ;
         *sp = 0;
         sprintf(bptr,"%30s,",sc);
         bptr += strlen(bptr);

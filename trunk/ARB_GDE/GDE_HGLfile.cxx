@@ -88,18 +88,18 @@ static void RemoveQuotes(char *string)
     int i, j, len;
 
     len = strlen(string);
-    for(j=0;j<len;j++)
-        if(string[j] == '"')
-            string[j] = ' ';
+    for(j=0;j<len;j++) {
+        if(string[j] == '"') string[j] = ' ';
+    }
 
-    for(j=0;string[j]==' ' && j<(int)strlen(string);j++);
+    for(j=0;string[j]==' ' && j<(int)strlen(string);j++) ;
 
     len = strlen(string);
-    for(i=0;i<len - j;i++)
-        string[i] = string[i+j];
+    for(i=0;i<len - j;i++) string[i] = string[i+j];
 
-    for(j=strlen(string)-1;j>=0 && (string[j]=='\n'||string[j]==' '); j--)
+    for(j=strlen(string)-1; j>=0 && (string[j]=='\n'||string[j]==' '); j--) {
         string[j] = '\0';
+    }
 
     //return;
 }
@@ -210,7 +210,7 @@ void ReadGDE(char *filename,NA_Alignment *dataset,int type)
 
     for(;fgets(in_line,GBUFSIZ,file) != 0;)
     {
-        for(line = in_line;line[0]==' ' || line[0] == '\t';line++);
+        for(line = in_line;line[0]==' ' || line[0] == '\t';line++) ;
 
         if(Find2(line,"{")==0)
         {
@@ -479,9 +479,11 @@ void ReadGDE(char *filename,NA_Alignment *dataset,int type)
                     line = in_line;
                 }
             }
-            if(this_elem->rmatrix)
-                for(j=0;j<len;j++)
-                    buffer[j]=this_elem->rmatrix[buffer[j]];
+            if(this_elem->rmatrix) {
+                for(j=0;j<len;j++) {
+                    buffer[j]=this_elem->rmatrix[(unsigned char)buffer[j]];
+                }
+            }
             this_elem->sequence =(NA_Base*)buffer;
             this_elem->seqlen = len;
             this_elem->seqmaxlen = buflen;
@@ -643,8 +645,7 @@ int WriteGDE(NA_Alignment *aln,char *filename,int method,int maskable)
                  *       If selecting a region, the offset should be moved to the first
                  *       non-'0' space in the mask.
                  */
-                for(k=this_elem->offset;k<aln->selection_mask_len &&
-                        aln->selection_mask[k] == '0';k++);
+                for(k=this_elem->offset;k<aln->selection_mask_len && aln->selection_mask[k] == '0';k++) ;
                 fprintf(file,"offset        %d\n", aln->rel_offset+k);
             }
             if(this_elem->t_stamp.origin.mm != 0)
@@ -796,22 +797,25 @@ void SeqNorm(NA_Sequence *seq)
 
     if(len == 0) return;
 
-    if(seq->tmatrix)
-        for(shift_width=0; (shift_width<len) &&
-                ((sequence[shift_width]&15) == '\0'); shift_width++);
-    else
-        for(shift_width=0; (shift_width<len) &&
-                (sequence[shift_width] == '-'); shift_width++);
+    if(seq->tmatrix) {
+        for(shift_width=0; (shift_width<len) && ((sequence[shift_width]&15) == '\0'); shift_width++) ;
+    }
+    else {
+        for(shift_width=0; (shift_width<len) && (sequence[shift_width] == '-'); shift_width++) ;
+    }
 
-    for(j=0;j<len-shift_width;j++)
+    for(j=0;j<len-shift_width;j++) {
         sequence[j] = sequence[j+shift_width];
+    }
 
     seq->seqlen -= shift_width;
     seq->offset += shift_width;
-    for(trailer=seq->seqlen-1;(sequence[trailer] =='-' ||
-                               sequence[trailer] == '\0') && trailer>=0;
-        trailer--)
+    for (trailer=seq->seqlen-1;
+         (sequence[trailer] =='-' || sequence[trailer] == '\0') && trailer>=0;
+         trailer--)
+    {
         sequence[trailer] = '\0';
+    }
     seq->seqlen = trailer+1;
     return;
 }

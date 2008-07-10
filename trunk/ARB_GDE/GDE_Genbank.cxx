@@ -207,21 +207,15 @@ void ReadGen(char *filename,NA_Alignment *dataset,int type)
                      */
                     if(start_col == -1)
                     {
-                        for(start_col=0; in_line[start_col] == ' ' ||
-                                in_line[start_col] == '\t';start_col++);
-
-                        for(start_col++;strchr("1234567890",
-                                               in_line[start_col]) != NULL;start_col++);
-
-                        for(start_col++; in_line[start_col] == ' ' ||
-                                in_line[start_col] == '\t';start_col++);
-
+                        for(start_col=0; in_line[start_col] == ' ' || in_line[start_col] == '\t';start_col++) ;
+                        for(start_col++;strchr("1234567890", in_line[start_col]) != NULL;start_col++) ;
+                        for(start_col++; in_line[start_col] == ' ' || in_line[start_col] == '\t';start_col++) ;
                     }
                     for(j=start_col;(c = in_line[j]) != '\0';j++)
                     {
-                        if((c != '\n') &&
-                           ((j-start_col + 1) % 11 !=0))
+                        if ((c != '\n') && ((j-start_col + 1) % 11 !=0)) {
                             buffer[len++] = c;
+                        }
                     }
                 }
                 else
