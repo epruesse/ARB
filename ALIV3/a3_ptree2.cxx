@@ -9,6 +9,8 @@
 #include "a3_basen.h"
 #include "a3_ptree.hxx"
 
+#include <inline.h>
+
 using std::cout;
 
 // -----------------------------------------------------------------------------
@@ -215,7 +217,7 @@ static int int_compare ( const void *a,
         
         while (!result && *seq)
         {
-            int base = BIndex[*seq++];
+            int base = BIndex[safeCharIndex(*seq++)];
             
             if ((base < ADENIN) ||
                 (base > URACIL)) result = INVALID;

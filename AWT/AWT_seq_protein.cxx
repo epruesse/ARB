@@ -10,6 +10,8 @@
 #include "awt_seq_protein.hxx"
 #include "awt_parsimony_defaults.hxx"
 
+#include <inline.h>
+
 #define awt_assert(bed) arb_assert(bed)
 
 extern long global_combineCount;
@@ -165,7 +167,7 @@ void AP_sequence_protein::set(const char *isequence)
 
     for (int idx = 0; idx<filter_len && left_bases; ++idx) {
         if (filt[idx]) {
-            char        c = toupper(simplify[isequence[idx]]);
+            char        c = toupper(simplify[safeCharIndex(isequence[idx])]);
             AP_PROTEINS p = APP_ILLEGAL;
 
 #if defined(SHOW_SEQ)

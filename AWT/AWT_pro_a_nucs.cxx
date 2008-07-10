@@ -9,6 +9,8 @@
 #include <awt_pro_a_nucs.hxx>
 #include <awt_codon_table.hxx>
 
+#include <inline.h>
+
 struct arb_r2a_struct *awt_pro_a_nucs = 0;
 
 char *AP_create_dna_to_ap_bases(void){
@@ -132,14 +134,15 @@ static void awt_pro_a_nucs_build_table(unsigned char pbase, const char *tri_pro,
     // fast hash table
     GBS_write_hash(awt_pro_a_nucs->t2i_hash, nuc, pbase);
 
-    int n0 = awt_pro_a_nucs->nuc_2_bitset[nuc[0]];
-    int n1 = awt_pro_a_nucs->nuc_2_bitset[nuc[1]];
-    int n2 = awt_pro_a_nucs->nuc_2_bitset[nuc[2]];
+    int n0 = awt_pro_a_nucs->nuc_2_bitset[safeCharIndex(nuc[0])];
+    int n1 = awt_pro_a_nucs->nuc_2_bitset[safeCharIndex(nuc[1])];
+    int n2 = awt_pro_a_nucs->nuc_2_bitset[safeCharIndex(nuc[2])];
 
     for (nucs = str->nucs; nucs; nucs = nucs->next) {
-        if (    (!(nucs->nucbits[0] & ~n0)) &&      // search superset
-                (!(nucs->nucbits[1] & ~n1)) &&
-                (!(nucs->nucbits[2] & ~n2)) ) break;
+        if ((!(nucs->nucbits[0] & ~n0)) &&      // search superset
+            (!(nucs->nucbits[1] & ~n1)) &&
+            (!(nucs->nucbits[2] & ~n2)) ) break;
+        
         int c = 0;
         if ( nucs->nucbits[0] != n0 ) c++;
         if ( nucs->nucbits[1] != n1 ) c++;

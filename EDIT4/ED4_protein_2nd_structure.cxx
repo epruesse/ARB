@@ -14,6 +14,8 @@
 #include "ed4_awars.hxx"
 #include "ed4_protein_2nd_structure.hxx"
 
+#include <inline.h>
+
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
@@ -301,7 +303,7 @@ static void ED4_pfold_init_statics() {
  *  limit a nucleation site is formed, i.e. the region is assumed to be the 
  *  corresponding secondary structure. The result is stored in \a structure. 
  */
-static void ED4_pfold_find_nucleation_sites(const char *sequence, char *structure, int length, const PFOLD_STRUCTURE s) {
+static void ED4_pfold_find_nucleation_sites(const unsigned char *sequence, char *structure, int length, const PFOLD_STRUCTURE s) {
 #ifdef SHOW_PROGRESS
     cout << endl << "Searching for nucleation sites:" << endl;
 #endif
@@ -363,7 +365,7 @@ static void ED4_pfold_find_nucleation_sites(const char *sequence, char *structur
  *  indifferent amino acid (as defined by #structure_breaker and #structure_indifferent)
  *  break the structure. The result is stored in \a structure.
  */
-static void ED4_pfold_extend_nucleation_sites(const char *sequence, char *structure, int length, const PFOLD_STRUCTURE s) {
+static void ED4_pfold_extend_nucleation_sites(const unsigned char *sequence, char *structure, int length, const PFOLD_STRUCTURE s) {
 #ifdef SHOW_PROGRESS
     cout << endl << "Extending nucleation sites:" << endl;
 #endif
@@ -379,14 +381,14 @@ static void ED4_pfold_extend_nucleation_sites(const char *sequence, char *struct
     for (int indStruct = 0; indStruct < length; indStruct++) {
 
         // search start and end of nucleated region
-        while ( indStruct < length && 
-                (structure[indStruct] == ' ') || strchr(gap_chars, sequence[indStruct])) {
-            indStruct++;
-        }
+        while (indStruct < length &&
+               ((structure[indStruct] == ' ') || strchr(gap_chars, sequence[indStruct]))
+               ) indStruct++;
+        
         if (indStruct >= length) break;
         // get next amino acid that is not included in nucleation site
         start = indStruct - 1;
-        while ( indStruct < length && 
+        while ( indStruct < length &&
                 (structure[indStruct] != ' ' || strchr(gap_chars, sequence[indStruct])) ) {
             indStruct++;
         }
@@ -480,7 +482,7 @@ static void ED4_pfold_extend_nucleation_sites(const char *sequence, char *struct
  *  exceed a certain limit the region is assumed to be a beta-turn. The result
  *  is stored in \a structure.
  */
-static void ED4_pfold_find_turns(const char *sequence, char *structure, int length) {
+static void ED4_pfold_find_turns(const unsigned char *sequence, char *structure, int length) {
 #ifdef SHOW_PROGRESS
     cout << endl << "Searching for beta-turns: " << endl;
 #endif
@@ -550,7 +552,7 @@ static void ED4_pfold_find_turns(const char *sequence, char *structure, int leng
  *  \attention I couldn't find a standard procedure for resolving overlaps and 
  *             there might be other (possibly better) ways to do that.
  */
-static void ED4_pfold_resolve_overlaps(const char *sequence, char *structures[4], int length) {
+static void ED4_pfold_resolve_overlaps(const unsigned char *sequence, char *structures[4], int length) {
 #ifdef SHOW_PROGRESS
     cout << endl << "Resolving overlaps: " << endl;
 #endif
@@ -642,12 +644,12 @@ static void ED4_pfold_resolve_overlaps(const char *sequence, char *structures[4]
  *  The results are written to \a structures[i] and can be accessed via the enums
  *  #ALPHA_HELIX, #BETA_SHEET, #BETA_TURN and #STRUCTURE_SUMMARY.   
  */
-static GB_ERROR ED4_pfold_predict_structure(const char *sequence, char *structures[4], int length) {
+static GB_ERROR ED4_pfold_predict_structure(const unsigned char *sequence, char *structures[4], int length) {
 #ifdef SHOW_PROGRESS
     cout << endl << "Predicting secondary structure for sequence:" << endl << sequence << endl;
 #endif
     GB_ERROR error = 0;
-    e4_assert((int) strlen(sequence) == length);
+    e4_assert((int)strlen((const char *)sequence) == length);
     
     // init memory
     ED4_pfold_init_statics();
@@ -717,7 +719,7 @@ static GB_ERROR ED4_pfold_predict_structure(const char *sequence, char *structur
 
 
 
-GB_ERROR ED4_pfold_calculate_secstruct_match(const char *structure_sai, const char *structure_cmp, int start, int end, char *result_buffer, PFOLD_MATCH_METHOD match_method /*= SECSTRUCT_SEQUENCE*/) {
+GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai, const unsigned char *structure_cmp, int start, int end, char *result_buffer, PFOLD_MATCH_METHOD match_method /*= SECSTRUCT_SEQUENCE*/) {
     GB_ERROR error = 0;
     e4_assert(structure_sai);
     e4_assert(structure_cmp);
@@ -726,9 +728,10 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const char *structure_sai, const ch
     e4_assert(match_method >= 0 && match_method < PFOLD_MATCH_METHOD_COUNT);
     ED4_pfold_init_statics();
     e4_assert(char2AA);
-    int length = (int) strlen(structure_sai);
-    int match_end = min( min(end - start, length), (int) strlen(structure_cmp) );
-    
+
+    size_t length    = strlen((const char *)structure_sai);
+    int    match_end = min( min(end - start, length), (int) strlen((const char *)structure_cmp) );
+
     enum {BEND = 3, NOSTRUCT = 4};
     char *struct_chars[] = {
         strdup("HGI"),  // helical structures (enum ALPHA_HELIX)
@@ -909,7 +912,7 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const char *structure_sai, const ch
                     error = GB_export_error("Out of memory.");
                     return error;
                 }
-                for (int j = 0; j < length; j++) {
+                for (size_t j = 0; j < length; j++) {
                     structures[i][j] = ' ';
                 }
                 structures[i][length] = '\0';

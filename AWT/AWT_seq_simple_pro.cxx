@@ -25,9 +25,9 @@ AP_sequence *AP_sequence_simple_protein::dup(void) {
 
 
 void AP_sequence_simple_protein::set(const char *isequence) {
-    const char *s;
-    char        c;
-    ap_pro     *d;
+    const char    *s;
+    unsigned char  c;
+    ap_pro        *d;
     if (!awt_pro_a_nucs) {
         awt_pro_a_nucs_gen_dist (this->root->gb_main);
     }
@@ -44,31 +44,31 @@ void AP_sequence_simple_protein::set(const char *isequence) {
         int iseqlen = strlen(isequence);
         int i;
         for (i=root->filter->real_len-1;i>=0;i--){
-        int pos = root->filter->bootstrap[i];
-        if (pos >= iseqlen) continue;
-        c = s[pos];
-        if (! (s2str[c] ) ) {   // unknown character
-            continue;
-        }
-        int ind = s2str[simplify[c]]->index;
-        if (ind >= sindex) ind --;
-        d[i] = ind;
+            int pos = root->filter->bootstrap[i];
+            if (pos >= iseqlen) continue;
+            c = s[pos];
+            if (! (s2str[c] ) ) {   // unknown character
+                continue;
+            }
+            int ind = s2str[simplify[c]]->index;
+            if (ind >= sindex) ind --;
+            d[i] = ind;
         }
     }else{
         char *f = root->filter->filter_mask;
         int i = root->filter->filter_len;
         while ( (c = (*s++)) ) {
-        if (!i) break;
-        i--;
-        if (*(f++)) {
-            if (! (s2str[c] ) ) {   // unknown character
-            d++;
-            continue;
+            if (!i) break;
+            i--;
+            if (*(f++)) {
+                if (! (s2str[c] ) ) {   // unknown character
+                    d++;
+                    continue;
+                }
+                int ind = s2str[simplify[c]]->index;
+                if (ind >= sindex) ind --;
+                *(d++) = ind;
             }
-            int ind = s2str[simplify[c]]->index;
-            if (ind >= sindex) ind --;
-            *(d++) = ind;
-        }
         }
     }
     is_set_flag = AP_TRUE;

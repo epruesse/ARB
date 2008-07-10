@@ -12,6 +12,8 @@
 #include "a3_basen.h"
 #include "a3_seq.hxx"
 
+#include <inline.h>
+
 using std::ifstream;
 using std::cout;
 
@@ -56,7 +58,7 @@ using std::cout;
             
             while (*sequence)   // Zeichenweises Lesen der Sequenz
             {
-                switch (BIndex[*sequence])  // Bearbeitung ist abhaengig vom
+                switch (BIndex[safeCharIndex(*sequence)])  // Bearbeitung ist abhaengig vom
                 {                           // Typ des jeweiligen Zeichens
                     case ADENIN:
                     case CYTOSIN:
@@ -72,10 +74,10 @@ using std::cout;
 
                         if ((ptr == tmp) ||     // Nur ein ANY-Zeichen
                             ((ptr > tmp) &&
-                             (BIndex[*(ptr - 1)] != ANY))) *ptr++ = *sequence;
+                             (BIndex[safeCharIndex(*(ptr - 1))] != ANY))) *ptr++ = *sequence;
 
                         while(*sequence &&      // Ueberspringen
-                              BIndex[*sequence] == ANY) sequence++;
+                              BIndex[safeCharIndex(*sequence)] == ANY) sequence++;
 
                         sequence--;
                         break;

@@ -81,7 +81,7 @@ void AP_sequence_parsimony::set(const char *isequence)
             awt_assert(pos<iseqlen);
             if (pos >= iseqlen) continue;
 
-            char c = isequence[pos];   // @@@ muss ueber mapping tabelle aufgefaltet werden 10/99
+            unsigned char c = (unsigned char)isequence[pos];   // @@@ muss ueber mapping tabelle aufgefaltet werden 10/99
 
 #if defined(SHOW_SEQ)
             fputc(simplify[c], stdout);
@@ -108,7 +108,7 @@ void AP_sequence_parsimony::set(const char *isequence)
 
         for (int idx = 0; idx<filter_len && left_bases; ++idx) {
             if (filt[idx]) {
-                char c           = isequence[idx];
+                unsigned char c = (unsigned char)isequence[idx];
                 sequence[oidx++] = table[simplify[c]];
                 --left_bases;
 #if defined(SHOW_SEQ)
