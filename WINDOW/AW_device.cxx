@@ -600,7 +600,7 @@ bool AW_device::ready_to_draw(int gc) {
 
 // PJ: ::zoomtext is defined in AW_xfigfont.cxx
 
-int AW_device::box(int gc, AW_BOOL /*filled*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
+int AW_device::generic_box(int gc, AW_BOOL /*filled*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
 {
     int erg = 0;
     if (filteri & filter) {
@@ -616,7 +616,7 @@ int AW_device::box(int gc, AW_BOOL /*filled*/, AW_pos x0,AW_pos y0,AW_pos width,
 #warning draw in 45-degree-steps (8-cornered-polygones instead of circles)
 #endif // DEVEL_RALF
 
-int AW_device::circle(int gc, AW_BOOL /*filled has no effect here*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
+int AW_device::generic_circle(int gc, AW_BOOL /*filled has no effect here*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
 {
     int erg = 0;
     if (filteri & filter) {
@@ -628,7 +628,7 @@ int AW_device::circle(int gc, AW_BOOL /*filled has no effect here*/, AW_pos x0,A
     return erg;
 }
 
-int AW_device::arc(int gc, AW_BOOL /*filled has no effect here*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, int /*start_degrees*/, int /*arc_degrees*/, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
+int AW_device::generic_arc(int gc, AW_BOOL /*filled has no effect here*/, AW_pos x0,AW_pos y0,AW_pos width,AW_pos height, int /*start_degrees*/, int /*arc_degrees*/, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
 {
     int erg = 0;
     if (filteri & filter) {
@@ -639,7 +639,7 @@ int AW_device::arc(int gc, AW_BOOL /*filled has no effect here*/, AW_pos x0,AW_p
     }
     return erg;
 }
-int AW_device::filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2){
+int AW_device::generic_filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2){
     int erg = 0;
     if (filteri & filter) {
         npoints--;
