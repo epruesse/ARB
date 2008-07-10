@@ -8,6 +8,8 @@
 #include "a3_basen.h"
 #include "a3_ptree.hxx"
 
+#include <inline.h>
+
 using std::cout;
 using std::hex;
 using std::dec;
@@ -63,7 +65,7 @@ static void CountAppearances ( str  seq,
 
         while ((count < num) && (next < anz))
         {
-            if (BIndex[seq[count]] == base) list[next++] = count;
+            if (BIndex[safeCharIndex(seq[count])] == base) list[next++] = count;
                 
             count++;
         }
@@ -77,7 +79,7 @@ static void CountAppearances ( str  seq,
             }
             else
             {
-                if (BIndex[seq[pos[count]+ off]] == base) list[next++] = pos[count];
+                if (BIndex[safeCharIndex(seq[pos[count]+ off])] == base) list[next++] = pos[count];
             }
 
             count++;
@@ -107,30 +109,30 @@ static void CountAppearances ( str  seq,
         
         CountAppearances(seq,pos,num,rec,anz);
 
-        if (anz[ADENIN] > 0)
+        if (anz[ADENIN] > 0) {
             if (anz[ADENIN] > 1)    mask = (Mask)(mask | N_ADENIN);
             else                    mask = (Mask)(mask | P_ADENIN);
-
-        if (anz[CYTOSIN] > 0)
+        }
+        if (anz[CYTOSIN] > 0) {
             if (anz[CYTOSIN] > 1)   mask = (Mask)(mask | N_CYTOSIN);
             else                    mask = (Mask)(mask | P_CYTOSIN);
-
-        if (anz[GUANIN] > 0)
+        }
+        if (anz[GUANIN] > 0) {
             if (anz[GUANIN] > 1)    mask = (Mask)(mask | N_GUANIN);
             else                    mask = (Mask)(mask | P_GUANIN);
-
-        if (anz[URACIL] > 0)
+        }
+        if (anz[URACIL] > 0) {
             if (anz[URACIL] > 1)    mask = (Mask)(mask | N_URACIL);
             else                    mask = (Mask)(mask | P_URACIL);
-
-        if (anz[ONE] > 0)
+        }
+        if (anz[ONE] > 0) {
             if (anz[ONE] > 1)       mask = (Mask)(mask | N_ONE);
             else                    mask = (Mask)(mask | P_ONE);
-
-        if (anz[ANY] > 0)
+        }
+        if (anz[ANY] > 0) {
             if (anz[ANY] > 1)       mask = (Mask)(mask | N_ANY);
             else                    mask = (Mask)(mask | P_ANY);
-
+        }
         if (anz[BASEN])             mask = (Mask)(mask | P_FINISH);
         
         {
