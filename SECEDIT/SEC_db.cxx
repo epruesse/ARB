@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_db.cxx                                        //
 //   Purpose   : db interface                                      //
-//   Time-stamp: <Wed Mar/05/2008 18:28 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Thu Jul/10/2008 12:39 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -29,7 +29,7 @@ using namespace std;
 
 typedef void (SEC_db_interface::*interface_cb)(const SEC_dbcb *);
 
-typedef struct SEC_dbcb {
+struct SEC_dbcb {
     SEC_db_interface *instance;
     interface_cb      member_fun;
     

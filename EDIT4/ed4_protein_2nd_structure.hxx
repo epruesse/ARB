@@ -63,7 +63,7 @@ enum PFOLD_STRUCTURE {
 };
 
 /// Defines a name-value pair (e.g. for awars, menu entries, etc.).
-typedef struct name_value_pair {
+struct name_value_pair {
     const char *name; ///< Name or description
     int        value; ///< Value attached to \a name
 };
@@ -176,7 +176,7 @@ typedef enum {
  *  "Protein Match Settings" dialog. The result of the match computation (i.e. the
  *  match symbols) is written to the result buffer.
  */
-GB_ERROR ED4_pfold_calculate_secstruct_match(const char *structure_sai, const char *structure_cmp, int start, int end, char *result_buffer, PFOLD_MATCH_METHOD match_method = SECSTRUCT_SEQUENCE);
+GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai, const unsigned char *structure_cmp, int start, int end, char *result_buffer, PFOLD_MATCH_METHOD match_method = SECSTRUCT_SEQUENCE);
 
 /** \brief Sets the reference protein secondary structure SAI.
  *
