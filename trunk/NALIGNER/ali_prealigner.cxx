@@ -1334,7 +1334,7 @@ number_of_solutions(void)
 
     ali_message("Start: Checking number of solutions");
 
-    if (end_x - start_x & 0x01) {
+    if (end_x - (start_x & 0x01)) {
         elem_akt_col = column1 + col_length - 1;
         elem_left_col = column2 + col_length - 1;
     } else {
