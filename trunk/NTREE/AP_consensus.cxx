@@ -312,10 +312,11 @@ long CON_makestatistic(int **statistic,int *convtable,char *align,int onlymarked
     {
         if( (alidata=GBT_read_sequence(gb_species,align)) )
         {
-            char c;
-            const char *data=GB_read_char_pntr(alidata);
-            aw_status( (double)count++/(double)nrofspecies);
-            i=0;
+            unsigned char        c;
+            const unsigned char *data = (const unsigned char *)GB_read_char_pntr(alidata);
+
+            aw_status((double)count++/(double)nrofspecies);
+            i = 0;
             while( (c=data[i]) ){
                 if( (c=='-') || ((c>='a')&&(c<='z')) || ((c>='A')&&(c<='Z'))
                     || (c=='*') ){

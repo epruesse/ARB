@@ -55,6 +55,8 @@
 #include <arbdb.h>              // hash functions
 #include "awt.hxx"
 
+#include <inline.h>
+
 /* -----------------------------------------------------------------
  * Function:                     aw_read_xfigfont
  *
@@ -255,8 +257,9 @@ AW_xfig_vectorfont *aw_read_xfigfont(char *filename) {
     for(i=0;i<maxx;i++)
         for(j=0;j<maxy;j++)
             /*if (chars[i][j]<XFIG_FONT_ELEMS)*/ /* this is always TRUE */
-            if ((chars[i][j]!='\0') && (0<=chars[i][j]) && lines[i][j])
-                aw_vectorchar[chars[i][j]]=lines[i][j];
+            if ((chars[i][j]!='\0') && (0<=chars[i][j]) && lines[i][j]) {
+                aw_vectorchar[safeCharIndex(chars[i][j])]=lines[i][j];
+            }
     if (aw_vectorchar[' ']==default_symbol)
         aw_vectorchar[' ']=NULL;
 
@@ -585,9 +588,9 @@ int    AW_device::zoomtext1(int gc, const char *string, AW_pos x,AW_pos y, AW_po
     // now print the string
     while(*pstring) {
         if (/*(*pstring < XFIG_FONT_ELEMS) && */ /* this is always TRUE */
-            aw_root->vectorfont_lines->lines[*pstring]){
+            aw_root->vectorfont_lines->lines[safeCharIndex(*pstring)]){
             // process lines of the active character
-            pline=aw_root->vectorfont_lines->lines[*pstring];
+            pline=aw_root->vectorfont_lines->lines[safeCharIndex(*pstring)];
             while(pline) {
                 if (swap) {
                     x0=pline->x0+tmp_offset;

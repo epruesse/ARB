@@ -9,7 +9,7 @@
 #include "aw_window.hxx"
 #include "aw_commn.hxx"
 
-
+#include <inline.h>
 
 void AW_clip::set_cliprect(AW_rectangle *rect, AW_BOOL allow_oversize) {
     clip_rect = *rect;  // coordintes : (0,0) = top-left-corner
@@ -828,7 +828,7 @@ int AW_device::text_overlay( int gc, const char *opt_str, long opt_len, // eithe
     else {                                                                      // non-monospaced font
         l = (int)clip_rect.r - xi;
         for (h = start; l >= 0 && textlen > 0 ; h++, textlen--) { // was textlen >= 0
-            l -= size_per_char[opt_str[h]];
+            l -= size_per_char[safeCharIndex(opt_str[h])];
         }
         textlen = h - start;
         if (l <= 0 && inside_clipping_right && textlen  > 0 ) {

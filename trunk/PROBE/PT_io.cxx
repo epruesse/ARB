@@ -9,6 +9,9 @@
 #include "probe.h"
 #include <arbdbt.h>
 #include <BI_helix.hxx>
+
+#include <inline.h>
+
 extern "C" { char *gbs_malloc_copy(char *,long); }
 
 
@@ -115,7 +118,7 @@ int probe_compress_sequence(char *seq)
         while ( *(uint32_t*)seq == 0x2D2D2D2D ) seq += 4;
         while ( *seq == '-') seq++;
 
-        uchar c = tab[*seq++];
+        uchar c = tab[safeCharIndex(*seq++)];
         *dest++ = c;
         if ( c == PT_QU ) { // TODO: *seq='.' ???
             while ( *(uint32_t*)seq == 0x2D2D2D2D || *(uint32_t*)seq == 0x2E2E2E2E ) seq+= 4;

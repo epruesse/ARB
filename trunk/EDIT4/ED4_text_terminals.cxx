@@ -128,9 +128,10 @@ ED4_returncode ED4_consensus_sequence_terminal::draw( int /*only_text*/ )
     return ( ED4_R_OK );
 }
 
-int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t opt_string_size, size_t start, size_t size,
-                             AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
-                             AW_CL cduser, AW_CL real_sequence_length, AW_CL cd2){
+static int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t opt_string_size, size_t start, size_t size,
+                                    AW_pos x,AW_pos y, AW_pos opt_ascent,AW_pos opt_descent,
+                                    AW_CL cduser, AW_CL real_sequence_length, AW_CL cd2)
+{
     AWUSE(opt_ascent);AWUSE(opt_descent);AWUSE(opt_string_size);
     AW_helix        *helix  = (AW_helix *)cduser;
     const ED4_remap *rm     = ED4_ROOT->root_group_man->remap();
@@ -160,9 +161,9 @@ int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, 
  *  \param[in] protstruct        The protein structure (primary or secondary) that should be compared to \a global_protstruct
  *  \param[in] global_protstruct The reference protein secondary structure SAI
  */
-int ED4_show_protein_match_on_device(AW_device *device, int gc, const char *protstruct, size_t /*protstruct_len*/, size_t start, size_t size,
-                                     AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,
-                                     AW_CL global_protstruct, AW_CL /*real_sequence_length*/, AW_CL cd2)
+static int ED4_show_protein_match_on_device(AW_device *device, int gc, const char *protstruct, size_t /*protstruct_len*/, size_t start, size_t size,
+                                            AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,
+                                            AW_CL cl_protstruct, AW_CL /*real_sequence_length*/, AW_CL cd2)
 {
     GB_ERROR error = 0;
     //TODO: proper use of ED4_remap?
@@ -170,10 +171,14 @@ int ED4_show_protein_match_on_device(AW_device *device, int gc, const char *prot
     char *buffer = GB_give_buffer(size+1);
     if (!buffer) {
         error = GB_export_error("Out of memory.");
-    } else {
-        error = ED4_pfold_calculate_secstruct_match((const char *)global_protstruct, protstruct, 
-                rm->screen_to_sequence(start), rm->screen_to_sequence(start + size), buffer,
-                (PFOLD_MATCH_METHOD) ED4_ROOT->aw_root->awar(PFOLD_AWAR_MATCH_METHOD)->read_int());
+    }
+    else {
+        error = ED4_pfold_calculate_secstruct_match((const unsigned char *)cl_protstruct,
+                                                    (const unsigned char *)protstruct, 
+                                                    rm->screen_to_sequence(start),
+                                                    rm->screen_to_sequence(start + size),
+                                                    buffer,
+                                                    (PFOLD_MATCH_METHOD)ED4_ROOT->aw_root->awar(PFOLD_AWAR_MATCH_METHOD)->read_int());
     }
     if (error) aw_message(error);
     buffer[size] = 0;
@@ -557,10 +562,10 @@ ED4_returncode ED4_sequence_terminal::draw( int /*only_text*/ )
             char *protstruct = resolve_pointer_to_string_copy();
             if (protstruct) {
                 device->text_overlay( ED4_G_HELIX,
-                        protstruct, screen_length,
-                        text_x , text_y + ED4_ROOT->helix_spacing , 0.0 , -1,
-                        (AW_CL)ED4_ROOT->protstruct, (AW_CL)max_seq_len, 0,
-                        1.0,1.0, ED4_show_protein_match_on_device);
+                                      protstruct, screen_length,
+                                      text_x , text_y + ED4_ROOT->helix_spacing , 0.0 , -1,
+                                      (AW_CL)ED4_ROOT->protstruct, (AW_CL)max_seq_len, 0,
+                                      1.0,1.0, ED4_show_protein_match_on_device);
                 free(protstruct);
             }
         }

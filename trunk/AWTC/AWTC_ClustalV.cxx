@@ -67,7 +67,7 @@ static int **naa1;              // naa1[basetype][position]     counts bases for
 static int **naa2;              // naa2[basetype][position]     same for group2
 static int **naas;              //
 static int seqlen_array[MAXN+1];// length of all sequences
-static char *seq_array[MAXN+1]; // the sequences
+static unsigned char *seq_array[MAXN+1]; // the sequences
 static int group[MAXN+1];       // group of sequence
 static int alist[MAXN+1];       // indices of sequences to be aligned
 static int fst_list[MAXN+1];
@@ -200,7 +200,7 @@ static const char *nucleic_maybe[6]   = { NULL, nucleic_maybe_A, nucleic_maybe_C
  */
 
 #define cheap_if(cond)  ((cond) ? 1 : 2)
-static int baseCmp(char c1, char c2)    // c1,c2 == 1=A,2=C (==index of character in nucleic_acid_order[])
+static int baseCmp(unsigned char c1, unsigned char c2)    // c1,c2 == 1=A,2=C (==index of character in nucleic_acid_order[])
 // returns  0 for equal
 //          1 for probably mutations
 //          2 for improbably mutations
@@ -1068,7 +1068,7 @@ static int res_index(const char *t,char c)
     return 0;
 }
 
-static GB_ERROR p_encode(const char *seq, char *naseq, int l) /* code seq as ints .. use -2 for gap */
+static GB_ERROR p_encode(const unsigned char *seq, unsigned char *naseq, int l) /* code seq as ints .. use -2 for gap */
 {
     int i;
     int warned = 0;
@@ -1098,7 +1098,7 @@ static GB_ERROR p_encode(const char *seq, char *naseq, int l) /* code seq as int
     return 0;
 }
 
-static GB_ERROR n_encode(const char *seq,char *naseq,int l)
+static GB_ERROR n_encode(const unsigned char *seq,unsigned char *naseq,int l)
 {                                       /* code seq as ints .. use -2 for gap */
     int i;
     /*  static char *nucs="ACGTU";      */
@@ -1149,7 +1149,7 @@ GB_ERROR AWTC_ClustalV_align(int is_dna, int weighted,
 
         for (int i=1; i<=2; i++)
         {
-            seq_array[i] = (char*)ckalloc((max_seq_length+2)*sizeof(char));
+            seq_array[i] = (unsigned char*)ckalloc((max_seq_length+2)*sizeof(char));
             result[i] = (char*)ckalloc((max_seq_length+2)*sizeof(char));
             group[i] = i;
         }
@@ -1180,13 +1180,13 @@ GB_ERROR AWTC_ClustalV_align(int is_dna, int weighted,
 #endif
 
     {
-        GB_ERROR (*encode)(const char*,char*,int) = dnaflag ? n_encode : p_encode;
+        GB_ERROR (*encode)(const unsigned char*,unsigned char*,int) = dnaflag ? n_encode : p_encode;
 
-        error = encode(seq1-1, seq_array[1], length1);
+        error = encode((const unsigned char*)(seq1-1), seq_array[1], length1);
         if (error) goto ende;
         seqlen_array[1] = length1;
 
-        error = encode(seq2-1, seq_array[2], length2);
+        error = encode((const unsigned char*)(seq2-1), seq_array[2], length2);
         if (error) goto ende;
         seqlen_array[2] = length2;
 

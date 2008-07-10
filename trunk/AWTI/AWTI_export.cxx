@@ -144,7 +144,7 @@ public:
     GBDATA *first_species() const { return find_first(gb_main); }
     GBDATA *next_species(GBDATA *gb_prev) const { return find_next(gb_prev); }
 
-    const char *get_seq_data(GBDATA *gb_species, size_t& slen, GB_ERROR& error) const ;
+    const unsigned char *get_seq_data(GBDATA *gb_species, size_t& slen, GB_ERROR& error) const ;
     static bool isGap(char c) { return c == '-' || c == '.'; }
 
     size_t count_species() {
@@ -161,7 +161,7 @@ public:
     const char *get_export_sequence(GBDATA *gb_species, size_t& seq_len, GB_ERROR& error);
 };
 
-const char *export_sequence_data::get_seq_data(GBDATA *gb_species, size_t& slen, GB_ERROR& err) const {
+const unsigned char *export_sequence_data::get_seq_data(GBDATA *gb_species, size_t& slen, GB_ERROR& err) const {
     const char *data   = 0;
     GBDATA     *gb_seq = GBT_read_sequence(gb_species, ali);
     if (!gb_seq) {
@@ -175,7 +175,7 @@ const char *export_sequence_data::get_seq_data(GBDATA *gb_species, size_t& slen,
         slen = GB_read_count(gb_seq);
         err  = 0;
     }
-    return data;
+    return (const unsigned char *)data;
 }
 
 
@@ -204,8 +204,8 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
              gb_species && !err;
              gb_species = next_species(gb_species))
         {
-            size_t      slen;
-            const char *sdata = get_seq_data(gb_species, slen, err);
+            size_t               slen;
+            const unsigned char *sdata = get_seq_data(gb_species, slen, err);
 
             if (!err) {
                 int j = 0;
@@ -279,8 +279,8 @@ const char *export_sequence_data::get_export_sequence(GBDATA *gb_species, size_t
         }
 
         // read + filter a new species
-        GB_ERROR    curr_error;
-        const char *data = get_seq_data(gb_species, len, curr_error);
+        GB_ERROR             curr_error;
+        const unsigned char *data = get_seq_data(gb_species, len, curr_error);
 
         if (curr_error) {
             error = strdup(curr_error);
@@ -290,7 +290,7 @@ const char *export_sequence_data::get_export_sequence(GBDATA *gb_species, size_t
             const uchar *simplify = filter->simplify;
 
             if (cut_stop_codon) {
-                char *stop_codon = (char*)memchr(data, '*', len);
+                const unsigned char *stop_codon = (const unsigned char *)memchr(data, '*', len);
                 if (stop_codon) {
                     len = stop_codon-data;
                 }
@@ -301,7 +301,7 @@ const char *export_sequence_data::get_export_sequence(GBDATA *gb_species, size_t
                 for (i = 0; i<columns; ++i) {
                     size_t seq_pos = export_column[i];
                     if (seq_pos<len) {
-                        char c = data[seq_pos];
+                        unsigned char c = data[seq_pos];
                         if (!isGap(c)) {
                             seq[j++] = simplify[c];
                         }
