@@ -135,26 +135,26 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
             }
             int topy = irs_gl.y+irs_gl.step_y - 2;
             int boty = irs_gl.y+irs_gl.step_y+ vsize + 2;
-            int rx = x_offset + vsize + vsize;
-            int gc = AWT_GC_GROUPS;
-            irs_gl.device->line(gc,x_offset, topy, rx, topy, -1,(AW_CL)node,0);
+            int rx   = x_offset + vsize + vsize;
+            int gc   = AWT_GC_GROUPS;
 
-            irs_gl.device->box(node->gr.gc, AW_TRUE, x_offset - (tipBoxSize>>1), topy - (tipBoxSize>>1),
-                               tipBoxSize, tipBoxSize, -1, (AW_CL)node,0);
+            // draw group box (unclosed on right hand): 
+            irs_gl.device->line(gc, x_offset, topy, rx,       topy, -1, (AW_CL)node, 0);
+            irs_gl.device->line(gc, x_offset, topy, x_offset, boty, -1, (AW_CL)node, 0);
+            irs_gl.device->line(gc, x_offset, boty, rx,       boty, -1, (AW_CL)node, 0);
 
-            irs_gl.device->line(gc,x_offset, topy, x_offset, boty, -1, (AW_CL)node,0);
-            irs_gl.device->line(gc,x_offset, boty, rx,       boty, -1, (AW_CL)node,0);
-
-            irs_gl.device->box(node->gr.gc, AW_TRUE, x_offset+2,irs_gl.y+irs_gl.step_y,vsize,vsize, -1,(AW_CL)node,0);
+            irs_gl.device->box(node->gr.gc, AW_TRUE, x_offset - (tipBoxSize>>1), topy - (tipBoxSize>>1), tipBoxSize, tipBoxSize, mark_filter, (AW_CL)node, 0);
+            irs_gl.device->box(node->gr.gc, AW_TRUE, x_offset+2,                 irs_gl.y+irs_gl.step_y, vsize,      vsize,      -1, (AW_CL)node, 0); 
 
             irs_gl.y += vsize + 2*irs_gl.step_y ;
             if (node_string) {
-                const char *s = GBS_global_string("%s (%i:%i)",node_string,node->gr.leave_sum,0);
+                const char *s = GBS_global_string("%s (%i)",node_string,node->gr.leave_sum);
                 irs_gl.device->text(node->gr.gc,s,x_offset + vsize + 10 + nodeBoxWidth,
                                     y_center + (irs_gl.step_y>>1),0.0, //  A node name should be displayed
                                     -1, (AW_CL)node, 0);
             }
-        }else{
+        }
+        else{
             irs_gl.y+= vsize;
             y_center = irs_gl.min_y;
             if ( irs_gl.y > irs_gl.min_y) {
@@ -163,6 +163,8 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
         }
         return y_center;
     }
+
+    // ungrouped groups go here
 
     if ( irs_gl.pruneLevel != IRS_NOPRUNE ){
         node_string = 0;
@@ -185,12 +187,9 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
         int gc = AWT_GC_GROUPS;
         irs_gl.device->line(gc,x_offset,last_y,  x_offset+400, last_y, -1, (AW_CL)node,0);
 
-        irs_gl.device->box(node->gr.gc, AW_TRUE, x_offset- (tipBoxSize>>1), last_y- (tipBoxSize>>1),
-                           tipBoxSize,tipBoxSize,
-                           -1, (AW_CL)node,0);
-        const char *s = GBS_global_string("%s (%i:%i)",node_string,node->gr.leave_sum,0);
-        irs_gl.device->text(node->gr.gc,s, x_offset + 10 + nodeBoxWidth, last_y + irs_gl.step_y + 1,0.0,
-                            -1, (AW_CL)node,0);
+        irs_gl.device->box(node->gr.gc, AW_TRUE, x_offset- (tipBoxSize>>1), last_y- (tipBoxSize>>1), tipBoxSize,tipBoxSize, mark_filter, (AW_CL)node,0);
+        const char *s = GBS_global_string("%s (%i)",node_string,node->gr.leave_sum);
+        irs_gl.device->text(node->gr.gc,s, x_offset + 10 + nodeBoxWidth, last_y + irs_gl.step_y + 1,0.0, -1, (AW_CL)node,0);
     }
 
     /* *********************** connect two nodes == draw branches ************************ */
