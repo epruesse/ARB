@@ -11,7 +11,7 @@
 #include "PRD_Range.hxx"
 #endif
 
-typedef struct SearchParameter {
+struct SearchParameter {
     Node             *node;         // where am i currently in the tree
     SearchParameter  *next;
     SearchParameter  *previous;
