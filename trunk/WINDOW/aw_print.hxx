@@ -26,6 +26,9 @@ public:
     int find_color_idx(unsigned long color);
     void set_color_mode(bool mode);
 
+    int arc(int gc, AW_BOOL filled, AW_pos x0,AW_pos y0,AW_pos width,AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+        return generic_arc(gc, filled, x0, y0, width, heigth, start_degrees, arc_degrees, filteri, cd1, cd2);
+    }
 };
 
 #else
