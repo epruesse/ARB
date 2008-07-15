@@ -221,7 +221,7 @@ int AW_device_print::filled_area(int gc, int npoints, AW_pos *points, AW_bitset 
     int erg = 0;
     int i;
     if (        !(filteri & this->filter) ) return 0;
-    erg |= AW_device::filled_area(gc,npoints,points,filteri,cd1,cd2);
+    erg |= generic_filled_area(gc,npoints,points,filteri,cd1,cd2);
     if (!erg) return 0;                         // no line visible -> no area fill
 
     AW_GC_Xm *gcm = AW_MAP_GC(gc);
