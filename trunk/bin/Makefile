@@ -8,7 +8,6 @@ help:
 
 all: cleanlinks
 	/bin/ln -s -f `find ../SH ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
-	/bin/ln -s -f `find ../SH ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
 
 develall: all
 	/bin/ln -s -f `find ../SOURCE_TOOLS -name "arb_*" -perm -100 ! -type d -print` .
