@@ -1,7 +1,0 @@
-#!/bin/sh
-rm -f arbsrc_*.tgz
-rcp strunk@soul.mikro.biologie.tu-muenchen.de:/ultra1/ARB/sol2_debug/arbsrc.tgz .
-rcp strunk@soul.mikro.biologie.tu-muenchen.de:/ultra1/ARB/sol2_debug/load .
-sh ./load || echo ignoring errors
-cp util/config.`uname` config.makefile
-gmake export

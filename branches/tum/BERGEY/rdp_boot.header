@@ -1,6 +1,0 @@
-Tree shows RDP tree:
-	- short sequences removed
-	- names from W.Ludwig's tree: maybe badly placed
-	- terminal groups as boxes
-	- bootstrap values ESTIMATED by parsimony algorithm:
-		if (parsimony !+ ml -> zero bootstrap values)

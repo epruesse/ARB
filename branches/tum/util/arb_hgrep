@@ -1,5 +1,0 @@
-#!/bin/sh
-for i in ARBDB WINDOW NTREE AWT; do
-	grep -n $1 $ARBHOME/$i/*.[h] $ARBHOME/$i/*.[h]xx
-done
-exit 0
