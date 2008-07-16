@@ -1962,7 +1962,7 @@ AW_BOOL AWT_show_remark_branch(AW_device *device, const char *remark_branch, AW_
 }
 
 
-double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double x_son)
+double AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_father, double x_son)
 {
     double ny0, ny1, nx0, nx1, ry, l_min, l_max, xoffset, yoffset;
     AWUSE(x_father);
@@ -2106,9 +2106,9 @@ double AWT_graphic_tree::show_list_tree_rek(AP_tree *at, double x_father, double
     }
     nx0 = (x_son +  at->leftlen) ;
     nx1 = (x_son +  at->rightlen) ;
-    ny0 = show_list_tree_rek(at->leftson,x_son, nx0);
+    ny0 = show_dendrogram(at->leftson,x_son, nx0);
     ry  = (double) y_pos - .5*scaled_branch_distance;
-    ny1 = (double) show_list_tree_rek(at->rightson,x_son, nx1);
+    ny1 = (double) show_dendrogram(at->rightson,x_son, nx1);
 
     if (at->name) {
         NT_rotbox(at->gr.gc,x_son, ry, NT_BOX_WIDTH*2);
@@ -2173,9 +2173,9 @@ void AWT_graphic_tree::scale_text_koordinaten(AW_device *device, int gc,double& 
 
 
 //  ********* shell and radial tree
-void AWT_graphic_tree::show_tree_rek(AP_tree * at, double x_center,
-                                     double y_center, double tree_spread,double tree_orientation,
-                                     double x_root, double y_root, int linewidth)
+void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
+                                        double y_center, double tree_spread,double tree_orientation,
+                                        double x_root, double y_root, int linewidth)
 {
     double l,r,w,z,l_min,l_max;
 
@@ -2259,46 +2259,46 @@ void AWT_graphic_tree::show_tree_rek(AP_tree * at, double x_center,
         /*** left branch ***/
         w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
         z = at->leftlen;
-        show_tree_rek(at->leftson,
-                      x_center+ z * cos(w),
-                      y_center+ z * sin(w),
-                      (at->leftson->is_leaf) ? 1.0 :
-                      tree_spread * l * at->leftson->gr.spread,
-                      w,
-                      x_center, y_center, at->gr.left_linewidth );
+        show_radial_tree(at->leftson,
+                         x_center+ z * cos(w),
+                         y_center+ z * sin(w),
+                         (at->leftson->is_leaf) ? 1.0 :
+                         tree_spread * l * at->leftson->gr.spread,
+                         w,
+                         x_center, y_center, at->gr.left_linewidth );
 
         /*** right branch ***/
         w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
         z = at->rightlen;
-        show_tree_rek(at->rightson,
-                      x_center+ z * cos(w),
-                      y_center+ z * sin(w),
-                      (at->rightson->is_leaf) ? 1.0 :
-                      tree_spread * r * at->rightson->gr.spread,
-                      w,
-                      x_center, y_center, at->gr.right_linewidth);
+        show_radial_tree(at->rightson,
+                         x_center+ z * cos(w),
+                         y_center+ z * sin(w),
+                         (at->rightson->is_leaf) ? 1.0 :
+                         tree_spread * r * at->rightson->gr.spread,
+                         w,
+                         x_center, y_center, at->gr.right_linewidth);
     }else{
         /*** right branch ***/
         w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
         z = at->rightlen;
-        show_tree_rek(at->rightson,
-                      x_center+ z * cos(w),
-                      y_center+ z * sin(w),
-                      (at->rightson->is_leaf) ? 1.0 :
-                      tree_spread * r * at->rightson->gr.spread,
-                      w,
-                      x_center, y_center, at->gr.right_linewidth);
+        show_radial_tree(at->rightson,
+                         x_center+ z * cos(w),
+                         y_center+ z * sin(w),
+                         (at->rightson->is_leaf) ? 1.0 :
+                         tree_spread * r * at->rightson->gr.spread,
+                         w,
+                         x_center, y_center, at->gr.right_linewidth);
 
         /*** left branch ***/
         w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
         z = at->leftlen;
-        show_tree_rek(at->leftson,
-                      x_center+ z * cos(w),
-                      y_center+ z * sin(w),
-                      (at->leftson->is_leaf) ? 1.0 :
-                      tree_spread * l * at->leftson->gr.spread,
-                      w,
-                      x_center, y_center, at->gr.left_linewidth );
+        show_radial_tree(at->leftson,
+                         x_center+ z * cos(w),
+                         y_center+ z * sin(w),
+                         (at->leftson->is_leaf) ? 1.0 :
+                         tree_spread * l * at->leftson->gr.spread,
+                         w,
+                         x_center, y_center, at->gr.left_linewidth );
     }
     if (show_circle){
         /*** left branch ***/
@@ -2527,18 +2527,18 @@ void AWT_graphic_tree::show(AW_device *device)  {
         case AP_TREE_NORMAL:
             if (!tree_root_display) return;
             y_pos = 0.05;
-            show_list_tree_rek(tree_root_display, 0, 0);
+            show_dendrogram(tree_root_display, 0, 0);
             list_tree_ruler_y = y_pos + 2.0 * scaled_branch_distance;
             break;
 
         case AP_TREE_RADIAL:
             if (!tree_root_display)   return;
             NT_emptybox(tree_root_display->gr.gc, 0, 0, NT_ROOT_WIDTH);
-            show_tree_rek(tree_root_display, 0,0,2*M_PI, 0.0,0, 0, tree_root_display->gr.left_linewidth);
+            show_radial_tree(tree_root_display, 0,0,2*M_PI, 0.0,0, 0, tree_root_display->gr.left_linewidth);
             break;
 
         case AP_TREE_IRS:
-            show_irs(tree_root_display,disp_device,fontinfo->max_letter.height);
+            show_irs_tree(tree_root_display,disp_device,fontinfo->max_letter.height);
             list_tree_ruler_y = y_pos;
             break;
 
