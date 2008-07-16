@@ -1,0 +1,40 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP  rna3d_general.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		General Dislpay Options
+
+OCCURRENCE	In Primary Structure Editor (ARB_EDIT4) -> RNA3D Program
+
+DESCRIPTION 
+        
+    The following display options can be set to the three-dimensional structure of small subunit rRNA - 
+
+    Display Molecule Skeleton
+    Enabling this will display the entire molecule skeleton in a user-defined color. By setting a grey or light color you can achieve transparent contours of the molecule displayed avoiding its interference with the mapping information. 
+
+    SIZE : The size or thickness of the skeleton can be set by specifying the desired thickness in the “size” box. By default it is set to decimal 5. 
+
+    COLORIZE MOLECULE SKELETON : Based on the residues participating in secondary structural motifs (loops, helices, bulges) the molecule skeleton can be colored. Color settings with respect to secondary structural motifs can be changed using the “Color Palate” of the RNA3D interface.
+
+    DISPLAY BASE POSITION : Base positions corresponding to the reference sequence (Escherichia coli) can be displayed by checking this check box. The interval of positions to be displayed can be changed by specifying the desired “interval size” at the included box. Displaying the base positions helps i) to locate probe binding sites within the molecule, ii) to refine the sequence alignments according to the molecule structure, and also iii) to identify the exact position in the primary sequence, where insertions, deletions and base substitutions occur with respect to the template sequence when a different rRNA sequence is mapped onto the master structure.
+
+    ROTATE MOLECULE : Enabling this check box rotates the molecule automatically. The direction and speed of the rotation can be changed by using left mouse button and mouse movement, respectively. Alternatively, molecule can also be rotated by pressing “space bar” on the keyboard.
+
+    DISPLAY CURSOR POSITION : Checking this box will enable the cursor position to be displayed in the molecule. Cursor position is directly connected to primary structure editor (ARB_EDIT4) and any movement of cursor in ARB_EDIT4 is instantly updated in the RNA3D window. 
+           
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

@@ -1,0 +1,43 @@
+ARB-Input-Mask
+# This is a simple user-mask example.
+
+# What to edit
+@ITEMTYPE=Experiment
+
+# Title of the user-mask-window
+@TITLE=Experiment: Example mask
+
+# Spacing in window
+@X_SPACING=5
+@Y_SPACING=3
+
+# Show edit/reload button
+@EDIT=1
+
+
+# ---------------------------
+# The definition of the mask:
+
+@MASK_BEGIN
+
+    NEW_SECTION()
+    TEXT("You are editing '") SELF() TEXT("'")
+
+    NEW_SECTION()
+
+    TEXT("Growth conditions:")
+    TEXTFIELD("Medium   ","medium/medium",30)
+    TEXTFIELD("Reference","medium/reference",30)
+    TEXTFIELD("Protocol ","medium/protocol",30) \
+        WWW("Open protocol","readdb(medium/protocol);\"/\";readdb(medium/medium)")
+
+    NEW_SECTION()
+
+    RADIO("Substrate   ","substrate/substrate",3,H,"Glucose","Glucose","Lactose","Lactose","Other","") \
+        TEXTFIELD("","substrate/substrate",30)
+    RADIO("Concentration     ","substrate/concentration_mM",3,H,"10 mM","10","20 mM","20","Other","") \
+        TEXTFIELD("","substrate/concentration_mM",30)
+
+    NEW_SECTION()
+
+@MASK_END

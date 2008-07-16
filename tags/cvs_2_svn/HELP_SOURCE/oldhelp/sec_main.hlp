@@ -1,0 +1,31 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+SUB	arb_secedit.hlp
+SUB	sec_mode.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		ARB_SECEDIT main window
+
+OCCURRENCE	ARB_SECEDIT
+
+DESCRIPTION     Several function are available via buttons in the top region of the window:
+
+                Button    Description
+
+                Toggle    Toggles between multiple versions of the secondary structure.
+                Center    Centers the cursor in the viewport 
+                Fit       Fit structure into viewport
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

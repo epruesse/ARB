@@ -1,0 +1,38 @@
+# --------------------------------------------------------------------------------
+# If this file is named config.makefile.template then copy it to config.makefile
+# DO NOT EDIT config.makefile.template
+# --------------------------------------------------------------------------------
+
+# Enter your name (upper case, no spaces) here, to enable '#ifdef DEVEL_YOURNAME #endif' sections
+# (Release version uses 'RELEASE')
+DEVELOPER=ANY
+
+DEBUG=0# build with debug information
+DEBUG_GRAPHICS=0# force instant graphic update
+
+#SEER=1
+OPENGL=1
+
+ARB_64=0# compile 64bit ARB version (still very buggy!)
+#BUILDHOST_64=1# whether build host is 64bit (value defaults to ARB_64). Uncomment for Cross-Compile
+
+# --------------------------------------------------------------------------------
+# target machine section
+# [Note: Uncomment one section, depending on your machine type and compiler options]
+
+# ------------
+# Section: Linux
+
+MACH  = LINUX# Linux g++  and gcc
+LINUX = 1
+
+# DEBIAN = 1 # uncomment for DEBIAN systems
+# REDHAT = 1 # uncomment for REDHAT systems
+
+# ------------
+# Section: Max OSX
+
+# MACH   = DARWIN#
+# DARWIN = 1
+
+# ------------

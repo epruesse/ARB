@@ -1,0 +1,30 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Mark long branches
+
+OCCURRENCE	ARB_NT
+
+DESCRIPTION	Badly aligned sequences often result in long branches in the
+		tree. Being able to identify those branches quickly helps to
+		find those sequences.
+		The programs allows to mark all species having an extra
+		long branch compared to it's nearest neighbour.
+		
+
+NOTES		Play around and try different numbers.
+		
+
+BUGS		The program does not show all extra long branches because
+		then the output won't be user readable. So after fixing
+		the alignment of sequences and recalculating the branch
+		lengths, there might be new sequences with extra long 
+		branches.	
+

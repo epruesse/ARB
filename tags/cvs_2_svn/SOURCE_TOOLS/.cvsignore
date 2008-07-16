@@ -1,0 +1,3 @@
+ChangeLog
+*.stamp
+valgrind2grep.lst
