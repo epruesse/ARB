@@ -268,7 +268,6 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_irstree.o: awt_canvas.hxx
 AWT_irstree.o: awt_dtree.hxx
-AWT_irstree.o: awt_irstree.hxx
 AWT_irstree.o: awt_nds.hxx
 AWT_irstree.o: awt_pro_a_nucs.hxx
 AWT_irstree.o: awt_tree.hxx
