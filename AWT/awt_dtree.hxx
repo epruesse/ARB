@@ -53,57 +53,6 @@ struct AWT_scaled_font_limits {
 
 
 class AWT_graphic_tree : public AWT_graphic {
-protected:
-
-    // variables - tree compatibility
-
-    AP_tree * tree_proto;
-    double y_pos;
-    double list_tree_ruler_y;
-    double irs_tree_ruler_scale_factor;
-
-    AWT_scaled_font_limits scaled_font;
-    double                 scaled_branch_distance; // vertical distance between branches (may be extra-scaled in options)
-
-    AW_pos  grey_level;
-    // internal command exec. var.
-    double rot_orientation;
-    double rot_spread;
-    AW_clicked_line rot_cl;
-    AW_clicked_text rot_ct;
-    AW_clicked_line old_rot_cl;
-    AP_tree *rot_at;
-
-    AW_device *disp_device; // device for  rekursiv Funktions
-    void scale_text_koordinaten(AW_device *device, int gc, double& x,double& y,double orientation,int flag );
-
-    AW_bitset line_filter,vert_line_filter, text_filter,mark_filter;
-    AW_bitset ruler_filter, root_filter;
-    int       treemodus;
-    bool      nds_show_all;
-
-    // functions to compute displayinformation
-    double show_list_tree_rek(AP_tree * at, double x_father,
-                              double x_son);
-    void show_tree_rek(AP_tree *at, double x_center,
-                       double y_center,double tree_sprad,
-                       double tree_orientation,
-                       double x_root, double y_root, int linewidth);
-    void show_nds_list(GBDATA * gb_main, bool use_nds);
-
-    void NT_scalebox(int gc, double x, double y, double width);
-    void NT_emptybox(int gc, double x, double y, double width);
-    void NT_rotbox(int gc, double x, double y, double width);
-    const char *show_ruler(AW_device *device, int gc);
-    void rot_show_triangle( AW_device *device);
-    void rot_show_line( AW_device *device );
-
-    void show_irs(AP_tree *at,AW_device *device, int height);
-    int draw_slot(int x_offset, GB_BOOL draw_at_tips); // return max_x
-    int paint_sub_tree(AP_tree *node, int x_offset, int type); // returns y pos
-
-    void unload();
-    
     char  *species_name;
     int    baselinewidth;
     int    show_circle;
@@ -114,6 +63,66 @@ protected:
     int zombies; // # of zombies during last load()
     int duplicates; // # of duplicates during last load()
 
+    int draw_slot(int x_offset, GB_BOOL draw_at_tips); // return max_x
+    int paint_irs_sub_tree(AP_tree *node, int x_offset, int type); // returns y pos
+
+    void unload();
+
+    // variables - tree compatibility
+
+    AP_tree * tree_proto;
+    double    y_pos;
+    double    list_tree_ruler_y;
+    double    irs_tree_ruler_scale_factor;
+
+    AWT_scaled_font_limits scaled_font;
+    double                 scaled_branch_distance; // vertical distance between branches (may be extra-scaled in options)
+
+    AW_pos          grey_level;
+    double          rot_orientation;
+    double          rot_spread;
+    AW_clicked_text rot_ct;
+
+    AW_device *disp_device; // device for  rekursiv Funktions
+
+    AW_bitset line_filter,vert_line_filter, text_filter,mark_filter;
+    AW_bitset ruler_filter, root_filter;
+    int       treemodus;
+    bool      nds_show_all;
+
+    void scale_text_koordinaten(AW_device *device, int gc, double& x,double& y,double orientation,int flag );
+
+    // functions to compute displayinformation
+
+    double show_dendrogram(AP_tree *at, double x_father, double x_son);
+
+    void show_radial_tree(AP_tree *at,
+                          double   x_center,
+                          double   y_center,
+                          double   tree_sprad,
+                          double   tree_orientation,
+                          double   x_root,
+                          double   y_root,
+                          int      linewidth);
+
+    void show_nds_list(GBDATA * gb_main, bool use_nds);
+    void show_irs_tree(AP_tree *at,AW_device *device, int height);
+
+    void NT_scalebox(int gc, double x, double y, double width);
+    void NT_emptybox(int gc, double x, double y, double width);
+    void NT_rotbox(int gc, double x, double y, double width);
+    
+    const char *show_ruler(AW_device *device, int gc);
+    void        rot_show_triangle( AW_device *device);
+
+protected:
+
+    AW_clicked_line  old_rot_cl;
+    AW_clicked_line  rot_cl;
+    AP_tree         *rot_at;
+
+    void rot_show_line( AW_device *device );
+    
 public:
 
     // *********** read only variables !!!
