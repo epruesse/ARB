@@ -12,13 +12,20 @@
 #include <awt_nds.hxx>
 #include "awt_tree.hxx"
 #include "awt_dtree.hxx"
-#include "awt_irstree.hxx"
 #include <aw_awars.hxx>
 
+enum AWT_IRS_TREE_TYPES {
+    AWT_IRS_HIDDEN_TREE,
+    AWT_IRS_NORMAL_TREE
+};
+
+
+enum IRS_PRUNE_LEVEL {
+    IRS_NOPRUNE
+};
 
 /* *********************** paint sub tree ************************ */
-/* *********************** paint sub tree ************************ */
-/* *********************** paint sub tree ************************ */
+
 #define IS_HIDDEN(node) (type == AWT_IRS_HIDDEN_TREE && node->gr.gc>0)
 
 const int MAXSHOWNNODES = 5000;       // Something like max screen height/minimum font size
@@ -59,7 +66,7 @@ void draw_top_seperator(){
     }
 }
 
-int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
+int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type){
 
     int left_y;
     int left_x;
@@ -196,10 +203,10 @@ int AWT_graphic_tree::paint_sub_tree(AP_tree *node, int x_offset, int type){
     int y_center;
 
     left_x = (int)(x_offset + 0.9 + irs_gl.x_scale * node->leftlen);
-    left_y = paint_sub_tree(node->leftson, left_x, type);
+    left_y = paint_irs_sub_tree(node->leftson, left_x, type);
 
     right_x = int(x_offset + 0.9 + irs_gl.x_scale * node->rightlen);
-    right_y = paint_sub_tree(node->rightson, right_x, type);
+    right_y = paint_irs_sub_tree(node->rightson, right_x, type);
 
 
     /* *********************** draw structure ************************ */
@@ -270,7 +277,7 @@ int AWT_graphic_tree::draw_slot(int x_offset, GB_BOOL draw_at_tips){
 }
 
 
-void AWT_graphic_tree::show_irs(AP_tree *at,AW_device *device, int height){
+void AWT_graphic_tree::show_irs_tree(AP_tree *at,AW_device *device, int height){
     device->push_clip_scale();
     int x;
     int y;
@@ -300,7 +307,7 @@ void AWT_graphic_tree::show_irs(AP_tree *at,AW_device *device, int height){
         irs_gl.is_size_device = 1;
     }
 
-    this->paint_sub_tree(at,0,AWT_IRS_NORMAL_TREE );
+    paint_irs_sub_tree(at,0,AWT_IRS_NORMAL_TREE );
 
     // provide some information for ruler :
     y_pos                       = irs_gl.ruler_y;
