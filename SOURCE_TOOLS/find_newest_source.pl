@@ -21,8 +21,15 @@ my @boring_files = (
                     'TAGS',
                    );
 
-my @boring_dirs = (
+# skip directories with the following full names:
+my @boring_dirs = ( 
                    'bin',
+                  );
+
+# skip sub-directories with the following names:
+my @boring_subdirs = (
+                   'CVS',
+                   '.svn',
                   );
 
 my @boring_namematches = (
@@ -72,6 +79,7 @@ my @files = ();
 
 my %boring_extensions = map { $_ => 1; } @boring_extensions;
 my %boring_files = map { $_ => 1;      } @boring_files;
+my %boring_subdirs = map { $_ => 1;    } @boring_subdirs;
 my %boring_dirs = map { $_ => 1;       } @boring_dirs;
 
 sub scan_tree_recursive($);
@@ -85,11 +93,11 @@ sub scan_tree_recursive($) {
       my $fullname = $dir.'/'.$_;
       if (not -l $fullname) { # ignore links
         if (-d $fullname) {
-          if (not ( /^CVS$/ )) {
-            if (not exists $boring_dirs{$fullname}) {
+          if (not exists $boring_subdirs{$_} and 
+              not exists $boring_dirs{$fullname})
+            {
               push @subdirs, $fullname;
             }
-          }
         }
         else {
           my $skip = 0;

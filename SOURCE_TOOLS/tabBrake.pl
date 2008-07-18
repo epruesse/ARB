@@ -114,6 +114,7 @@ sub recurse_dirs($$) {
       }
       elsif (-d $full) {
         if ($_ ne 'CVS' and
+            $_ ne '.svn' and
             $_ ne 'ARB_SOURCE_DOC' and
             $_ ne 'old_help' and
             $_ ne 'PERL2ARB' and

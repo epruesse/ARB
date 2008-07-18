@@ -10,7 +10,9 @@
             find GDEHELP/DATA_FILES ! -type d; \
             find Xlib ! -type d; \
             find lib ! -type d | grep -v "/pts/") \
+        | grep -v "^.svn/" \
         | grep -v "^CVS/" \
+        | grep -v "/.svn/" \
         | grep -v "/CVS/" \
         | grep -v "ChangeLog$" \
         | grep -v 'lib\/nas\/names.dat$' \

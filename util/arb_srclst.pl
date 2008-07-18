@@ -22,6 +22,8 @@ my @skipped_directories = (
                            qr/^\.\/lib\/help$/o,
                            qr/^\.\/lib\/help_html$/o,
                            qr/^\.\/ARB_SOURCE_DOC/o,
+                           qr/^\.\/MAKEBIN$/o,
+                           qr/^\.\/LIBLINK$/o,
                            qr/\/ignore\./o,
                           );
 
@@ -191,6 +193,7 @@ foreach (keys %used_files) {
 sub useDir($) {
   my ($dir) = @_;
 
+  if ($dir =~ /.svn$/o) { return 0; }
   if ($dir =~ /CVS$/o) { return 0; }
   foreach (@skipped_directories) {
     if ($dir =~ $_) { return 0; }
@@ -286,6 +289,46 @@ sub useFile($$) {
 
 # ------------------------------------------------------------
 
+sub getSVNEntries($\%) {
+  my ($dir,$SVN_r) = @_;
+
+  my $svnentries = $dir.'/.svn/entries';
+  if (-f $svnentries) {
+    open(SVN,'<'.$svnentries) || die "can't read '$svnentries' (Reason: $!)";
+    # print "reading $svnentries\n";
+
+    my $line;
+  LINE: while (defined($line=<SVN>)) {
+      if (length($line)==2 and ord($line)==12) { # entrymarker (^L)
+        my $name=<SVN>;
+        my $type=<SVN>;
+
+        defined $name or last LINE;
+        defined $type or die "Expected two or no lines after ^L";
+
+        chomp($name);
+        chomp($type);
+
+        if ($type eq 'file') {
+          $$SVN_r{$name} = 1;
+        }
+        elsif ($type eq 'dir') {
+          $$SVN_r{$name} = 2;
+        }
+        else {
+          die "Unknown type '$type' for '$name' in $svnentries";
+        }
+        # print "name='$name' type='$type'\n";
+      }
+    }
+
+    close(SVN);
+    return 1;
+  }
+  print "No such file: '$svnentries'\n";
+  return 0;
+}
+
 sub getCVSEntries($\%) {
   my ($dir,$CVS_r) = @_;
 
@@ -311,17 +354,46 @@ sub getCVSEntries($\%) {
     };
     if ($@) { die "$@ while reading $cvsentries"; }
     close(CVS);
+    return 1;
+  }
+  return 0;
+}
+
+my $VC = '<no VC>';
+
+sub getVCEntries($\%) {
+  my ($dir,$VC_r) = @_;
+
+  my $res = 1;
+  if (getSVNEntries($dir,%$VC_r)==0) {
+    if (getCVSEntries($dir,%$VC_r)==0) {
+      $VC = '<no VC>';
+      $res = 0;
+    }
+    else {
+      $VC = 'CVS';
+    }
+  }
+  else {
+    $VC = 'SVN';
   }
 
-  # foreach (sort keys %$CVS_r) { print "CVS-entry: '$_'\n"; }
+  if (0) {
+    print "$VC entries for $dir:\n";
+    foreach (sort keys %$VC_r) {
+      print " ".$$VC_r{$_}.": $_\n";
+    }
+  }
+
+  return $res;
 }
 
 # ------------------------------------------------------------
 
-sub expectCVSmember($$\%) {
-  my ($full,$item,$CVS_r) = @_;
-  if (not exists $$CVS_r{$item} and $ignore_unknown==0) {
-    die "'$full' ($_) included, but not in CVS (seems to be generated)";
+sub expectVCmember($$\%) {
+  my ($full,$item,$VC_r) = @_;
+  if (not exists $$VC_r{$item} and $ignore_unknown==0) {
+    die "'$full' ($_) included, but not in $VC (seems to be generated)";
   }
 }
 
@@ -330,11 +402,11 @@ my %unpackedCVSmember = map { $_ => 1; } (
                                           'ChangeLog',
                                          );
 
-sub unexpectCVSmember($$\%) {
-  my ($full,$item,$CVS_r) = @_;
-  if (exists $$CVS_r{$item}) {
+sub unexpectVCmember($$\%) {
+  my ($full,$item,$VC_r) = @_;
+  if (exists $$VC_r{$item}) {
     if (not exists $unpackedCVSmember{$item} and $ignore_unknown==0) {
-      die "'$full' excluded, but in CVS";
+      die "'$full' excluded, but in $VC";
     }
   }
 }
@@ -347,7 +419,7 @@ sub dumpFiles($) {
   my @files;
 
   my %CVS;
-  getCVSEntries($dir,%CVS);
+  getVCEntries($dir,%CVS);
 
   opendir(DIR,$dir) || die "can't read directory '$dir' (Reason: $!)";
   foreach (readdir(DIR)) {
@@ -356,17 +428,17 @@ sub dumpFiles($) {
       if (not -l $full) {
         if (-d $full) {
           if (useDir($full)==1) {
-            expectCVSmember($full,$_,%CVS);
+            expectVCmember($full,$_,%CVS);
             push @subdirs, $full;
           }
-          else { unexpectCVSmember($full,$_,%CVS); }
+          else { unexpectVCmember($full,$_,%CVS); }
         }
         elsif (-f $full) {
           if (useFile($dir,$_)==1) {
-            expectCVSmember($full,$_,%CVS);
+            expectVCmember($full,$_,%CVS);
             push @files, $full;
           }
-          else { unexpectCVSmember($full,$_,%CVS); }
+          else { unexpectVCmember($full,$_,%CVS); }
         }
         else { die "Unknown: '$full'"; }
       }

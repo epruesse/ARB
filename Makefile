@@ -1,7 +1,7 @@
 # =============================================================== #
 #                                                                 #
 #   File      : Makefile                                          #
-#   Time-stamp: <Tue Jul/08/2008 12:39 MET Coder@ReallySoft.de>   #
+#   Time-stamp: <Fri Jul/18/2008 09:14 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Institute of Microbiology (Technical University Munich)       #
 #   http://www.arb-home.de/                                       #
@@ -1204,7 +1204,7 @@ rmbak:
 bclean:
 	@echo Cleaning bin directory
 	find bin -type l -exec rm {} \;
-	find bin -type f \! \( -name ".cvsignore" -o -name "Makefile" -o -path "bin/CVS*" \) -exec rm {} \;
+	find bin -type f \! \( -name ".cvsignore" -o -name "Makefile" -o -path "bin/CVS*" -o -path "bin/.svn" \) -exec rm {} \;
 	cd bin;make all
 
 libclean:
