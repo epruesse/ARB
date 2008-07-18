@@ -3,7 +3,7 @@
 #                                                                          #
 #   File      : grepx.pl                                                   #
 #   Purpose   : Replacement for grep (used from emacs)                     #
-#   Time-stamp: <Thu Apr/19/2007 10:42 MET Coder@ReallySoft.de>            #
+#   Time-stamp: <Fri Jul/18/2008 10:17 MET Coder@ReallySoft.de>            #
 #                                                                          #
 #   (C) November 2005 by Ralf Westram                                      #
 #                                                                          #
@@ -24,7 +24,7 @@
 # * prints line column information
 # * knows about groups of files belonging together (e.g. *.cxx *.hxx)
 # * knows about special file locations (e.g. emacs lisp code, /usr/include, ...)
-# * able to search complete CVS trees
+# * able to search complete CVS/SVN trees
 # * some ARB specific specials
 #
 # --------------------------------------------------------------------------------
@@ -63,7 +63,12 @@ my @groups = (
               [
                [ '.hxx', '.hpp', '.hh', '.h' ], # header files
                [ '.cxx', '.cpp', '.cc', '.c' ], # code files
-               [ '/usr/include' ],              # additional header directories (used with -g)
+               [
+                '/usr/include',
+                '/usr/include/X11',
+                '/usr/include/g++',
+                '/usr/include/sys',
+               ], # additional header directories (used with -g)
                [ '.aisc', '.pa' ],
               ],
               # ARB code generation
@@ -152,6 +157,7 @@ my $verbose          = 0;
 my $matchFiles       = 1;
 my $arbSpecials      = 0;
 my $maxhits          = undef; # undef means unlimited
+my $searchNonCVS     = 0;
 
 my $extension       = undef;
 my $use_as_wildcard = 0;
@@ -163,7 +169,7 @@ my $startdir = undef;
 # --------------------------------------------------------------------------------
 
 my $GSM_NONE   = 0;
-my $GSM_CVS    = 1; # scan a CVS tree
+my $GSM_CVS    = 1; # scan a CVS/SVN tree
 my $GSM_PARENT = 2; # do a simple parent scan
 
 my $global_scan_mode = $GSM_NONE;
@@ -179,6 +185,37 @@ sub shall_skip_file($) {
   }
   elsif ($file =~ /lib\/help\//o) {
     return 1;
+  }
+  return 0;
+}
+
+# --------------------------------------------------------------------------------
+
+my @ignores = (); # directory local excludes (reg.expressions)
+my $ignoreCount = 0; # overall ignore count
+
+sub forget_grepxignore() { @ignores = (); }
+
+sub load_grepxignore($) {
+  my ($grepxignore) = @_;
+
+  @ignores = ();
+  open(IGNORE,'<'.$grepxignore) || die "can't open '$grepxignore' (Reason: $!)";
+  foreach (<IGNORE>) {
+    chomp;
+    push @ignores, qr/^$_$/;
+  }
+  close(IGNORE);
+}
+
+sub is_ignored($) {
+  my ($name) = @_;
+  foreach (@ignores) {
+    if ($name =~ $_) {
+      $verbose==0 || print "Ignoring '$name' (by $_)\n";
+      $ignoreCount++;
+      return 1;
+    }
   }
   return 0;
 }
@@ -209,20 +246,40 @@ sub shall_search_file($$) {
     my $ext = '';
     if ($file =~ $reg_extension) { $ext = $1; }
 
-    if ($ext eq '' and $indir =~ $reg_is_cpp_std_dir) {
-      # print "hack: considering $file in $indir\n";
-      $ext = '.h'; # special hack for new style C++ header (they suck an extension)
+    if ($ext eq '') {
+      if ($indir =~ $reg_is_cpp_std_dir) {
+        # print "hack: considering $file in $indir\n";
+        $ext = '.h'; # special hack for new style C++ header (they suck an extension)
+      }
+      else {
+        if (not $haveFile) { return 0; }
+        my $full = $indir.'/'.$file;
+        my $type = `file $full`; # detect filetype
+        chomp $type;
+        if ($type =~ /^[^:]+: (.*)/o) {
+          $type = $1;
+          if ($type =~ /shell.*script/o) { $ext = '.sh'; }
+          elsif ($type =~ /perl.*script/o) { $ext = '.pl'; }
+          elsif ($type =~ /ASCII.*text/o) { $ext = '.txt'; }
+          elsif ($type =~ /ISO.*text/o) { $ext = '.txt'; }
+          elsif ($type =~ /executable/o) { ; }
+          elsif ($type =~ /symbolic.link.to/o) { ; }
+          else {
+            print "Unhandled file='$full'\n        type='$type'\n";
+          }
+        }
+      }
     }
 
     $ext = lc($ext);
-    if (exists $wanted_extensions{$ext}) { return $wanted_extensions{$ext}; }
+    if (exists $wanted_extensions{$ext}) { return NotIgnored($file,$wanted_extensions{$ext}); }
 
     $file = lc($file);
-    if (exists $wanted_files{$file}) { return $IS_OTHER; }
+    if (exists $wanted_files{$file}) { return NotIgnored($file,$IS_OTHER); }
   }
   else {
     if ($file =~ /$extension/ig) {
-      return $IS_NORMAL;
+      return NotIgnored($file,$IS_NORMAL);
     }
   }
 
@@ -340,6 +397,7 @@ sub print_usage() {
     " -n -> don't match filenames\n".
     " -A -> do ARB specials if \$ARBHOME is defined\n".
     " -m xxx -> report max. xxx hits\n".
+    " -c     -> search in non-CVS/SVN files as well (default is to search CVS/SVN controlled files only)".
     "\n".
     " 'ext'     extension of file where grepx is called from\n".
     " 'regexpr' perl regular expression\n\n";
@@ -368,6 +426,7 @@ sub parse_args() {
         else { print "grepx: Ignoring -A (ARBHOME not set)"; }
       }
       elsif ($option eq 'm') { $maxhits = int($ARGV[++$ap]); }
+      elsif ($option eq 'c') { $searchNonCVS = 1; }
       else { die "Unknown option '-$option'\n"; }
     }
     else {
@@ -404,8 +463,8 @@ sub pos_correction($$) {
 my $lines_examined = 0;
 my $reg_startdir = undef;
 
-sub grepfile($) {
-  my ($file) = @_;
+sub grepfile($$\$) {
+  my ($file,$entering,$entering_shown_r) = @_;
 
   my $matches  = 0;
   my $reported = 0;
@@ -418,8 +477,10 @@ sub grepfile($) {
     if ($line =~ $regexpr) {
       if ((not defined $maxhits) or ($maxhits>0)) {
         my $rest   = $';
-        my $hitlen = $-[0] - $+[0];
+        my $hitlen = $+[0] - $-[0];
         my $pos;
+
+        $hitlen>0 || die "Non-positive hitlen (=$hitlen) [1]";
 
         if ($#+ > 0) { # regexpr has subgroups -> point to start of first subgroup
           $pos = $-[$#+] + 1; # start of first subgroup
@@ -436,22 +497,28 @@ sub grepfile($) {
         }
 
         my $correct = pos_correction($line,$pos);
+        $line =~ s/\r//o;
+        $line =~ s/\n//o;
         chomp($line);
-        $line =~ s/
-//o;
         $pos += $correct;
         $line =~ s/^([\s\t]+)//o;
         my $hits = 1;
 
         if ($one_hit_per_line==0) {
+          if ($$entering_shown_r==0) { $$entering_shown_r=1; print $entering; }
           print "$show:$.:$pos:        $line\n";
+          $rest =~ s/\r//o;
+          $rest =~ s/\n//o;
           chomp($rest);
-          $rest =~ s/
-//;
 
           while ($rest =~ $regexpr) {
             my $start_pos = $pos+$hitlen-1;
-            $hitlen = $-[0] - $+[0];
+
+            $start_pos >= 0 || die "Negative start_pos(=$start_pos, pos=$pos, hitlen=$hitlen)";
+
+            $hitlen = $+[0] - $-[0];
+            $hitlen>0 || die "Non-positive hitlen (=$hitlen) [2]";
+
             if ($#+ > 0) {
               $pos = $-[$#+] + 1;
             }
@@ -460,12 +527,17 @@ sub grepfile($) {
             }
             $correct = pos_correction($rest,$pos);
             $pos += $start_pos+$correct;
+
+            $pos >= 0 || die "Negative pos";
+
+            if ($$entering_shown_r==0) { $$entering_shown_r=1; print $entering; }
             print "$show:$.:$pos: [same] $line\n";
             $hits++;
             $rest = $';
           }
         }
         else {
+          if ($$entering_shown_r==0) { $$entering_shown_r=1; print $entering; }
           print "$show:$.:$pos: $line\n";
         }
 
@@ -482,11 +554,25 @@ sub grepfile($) {
 
 # --------------------------------------------------------------------------------
 
+my $versionControl = '<unknown version control>';
+
 sub CVS_controlled($) {
-  my ($dir)          = @_;
-  my $CVS_Repository = $dir.'/CVS/Repository';
-  if (-f $CVS_Repository) { return 1; }
-  return 0;
+  my ($dir)       = @_;
+  my $SVN_entries = $dir.'/.svn/entries';
+  if (-f $SVN_entries) {
+    $versionControl = 'subversion';
+    1;
+  }
+  else {
+    my $CVS_Repository = $dir.'/CVS/Repository';
+    if (-f $CVS_Repository) {
+      $versionControl = 'CVS';
+      1;
+    }
+    else {
+      0;
+    }
+  }
 }
 
 sub parent_directory($) {
@@ -499,9 +585,9 @@ sub parent_directory($) {
 
 # --------------------------------------------------------------------------------
 
-sub collect_files($\%$);
-sub collect_files($\%$) {
-  my ($dir,$files_r,$is_additional_directory) = @_;
+sub collect_files($\%$$);
+sub collect_files($\%$$) {
+  my ($dir,$files_r,$is_additional_directory,$follow_file_links) = @_;
 
   my @files   = ();
   my @subdirs = ();
@@ -510,7 +596,7 @@ sub collect_files($\%$) {
   foreach (readdir(DIR)) {
     if ($_ ne '.' and $_ ne '..') {
       my $full = $dir.'/'.$_;
-      if (-l $full) { $verbose==0 || print "Skipping $full (symbolic link)\b"; }
+      if (-l $full and ($follow_file_links==0 or -d $full)) { $verbose==0 || print "Skipping $full (symbolic link)\b"; }
       elsif (-f $full) { push @files, $full; }
       elsif (-d $full) { push @subdirs, $full; }
       else { $verbose==0 || print "Skipping $full (not a file or directory)\n"; }
@@ -518,7 +604,10 @@ sub collect_files($\%$) {
   }
   closedir(DIR);
 
-  # @files = sort @files;
+  my $grepxignore = $dir.'/.grepxignore';
+  if (-f $grepxignore) { load_grepxignore($grepxignore); }
+  else { forget_grepxignore(); }
+
   foreach (@files) {
     my $shall = shall_search_file($_,$dir);
     if ($shall) {
@@ -533,31 +622,44 @@ sub collect_files($\%$) {
   }
 
   if ($recurse_subdirs==1) {
-    # @subdirs = sort @subdirs;
+    my @descent_into = ();
+
     foreach (@subdirs) {
       my $descent = 1;
       my $reason = 'not specified';
       if ($global_scan_mode==$GSM_CVS and not $is_additional_directory and not CVS_controlled($_)) {
         if ($arbSpecials==1 and $_ =~ /\/GEN[CH]$/) {
-          $verbose==0 || print "Descending non-CVS dir '$_' (caused by ARB mode)\n";
+          $verbose==0 || print "Descending non-$versionControl dir '$_' (caused by ARB mode)\n";
         }
         else {
           $descent = 0;
-          $reason = 'not CVS controlled';
+          $reason = 'not version-controlled';
         }
       }
+
       if ($descent==1) {
-        collect_files($_, %$files_r, $is_additional_directory);
+        $descent = NotIgnored($_,1);
+        if ($descent==0) { $reason = 'Excluded by .grepxignore'; }
+      }
+
+      if ($descent==1) {
+        push @descent_into, $_;
       }
       else {
         $verbose==0 || print "Skipping subdirectory '$_' ($reason)\n";
       }
     }
+
+    foreach (@descent_into) {
+      collect_files($_, %$files_r, $is_additional_directory,$follow_file_links);
+    }
   }
 }
 
-sub grep_collected_files(\%) {
-  my ($files_r) = @_;
+sub grep_collected_files(\%$) {
+  my ($files_r,$entering) = @_;
+
+  my $entering_shown = 0;
 
   my %depth = map {
     my $d = $_;
@@ -596,15 +698,16 @@ sub grep_collected_files(\%) {
       foreach (@matching_files) {
         my $show = $_;
         if ($_ =~ $reg_startdir) { $show = $'; }
+        if ($entering_shown==0) { $entering_shown=1; print $entering; }
         print "$show:0: <filename matched>\n";
       }
     }
   }
 
-  print "grepx: Searching $searched files..\n";
+  # print "grepx: Searching $searched files..\n";
   foreach (@files) {
     $verbose==0 || print "searching '$_' (depth=$depth{$_}, importance=$$files_r{$_})\n";
-    my ($m,$r) = grepfile($_);
+    my ($m,$r) = grepfile($_,$entering,$entering_shown);
     $matches += $m;
     $reported += $r;
   }
@@ -613,10 +716,10 @@ sub grep_collected_files(\%) {
   return ($searched,$matches,$reported);
 }
 
-sub perform_grep($$) {
-  my ($startdir, $is_additional_directory) = @_;
+sub perform_grep($$$) {
+  my ($startdir, $is_additional_directory, $follow_file_links) = @_;
   my %files = (); # key=file, value=file-importance
-  collect_files($startdir,%files,$is_additional_directory);
+  collect_files($startdir,%files,$is_additional_directory,$follow_file_links);
 
   my $max_importance = -1;
   foreach (values %files) {
@@ -630,9 +733,9 @@ sub perform_grep($$) {
 
   my ($searched,$matches,$reported) = (0,0,0);
   if (scalar(%files)) {
-    print "grepx: Entering directory `$startdir'\n";
-    ($searched,$matches,$reported) = grep_collected_files(%files);
-    print "grepx: Leaving directory `$startdir'\n";
+    my $entering                   = "grepx: Entering directory `$startdir'\n";
+    ($searched,$matches,$reported) = grep_collected_files(%files,$entering);
+    if ($reported>0) { print "grepx: Leaving directory `$startdir'\n"; }
   }
   return ($searched,$matches,$reported);
 }
@@ -640,7 +743,7 @@ sub perform_grep($$) {
 sub grep_add_directories() {
   my ($searched,$matches,$reported) = (0,0,0);
   foreach (@add_header_dirs) {
-    my ($s,$m,$r) = perform_grep($_,1);
+    my ($s,$m,$r) = perform_grep($_,1,0);
     ($searched,$matches,$reported) = ($searched+$s,$matches+$m,$reported+$r);
   }
   return ($searched,$matches,$reported);
@@ -660,7 +763,7 @@ sub detect_wanted_startdir($) {
         $calldir = $updir;
         $updir   = parent_directory($updir);
       }
-      print "grepx: Starting global search from root of CVS controlled directory-tree\n";
+      print "grepx: Starting global search from root of $versionControl controlled directory-tree\n";
       $global_scan_mode  = $GSM_CVS;
       $know_whats_global = 1;
     }
@@ -699,7 +802,11 @@ eval {
 
   init_wanted();
 
-  my ($searched,$matches,$reported) = perform_grep($startdir,0);
+  my ($searched,$matches,$reported) = perform_grep($startdir,0,0);
+  if ($matches==0) {
+    print "grepx: No results - retry with links..\n";
+    ($searched,$matches,$reported) = perform_grep($startdir,0,1); # retry following links
+  }
 
   if ($global==1 and scalar(@add_header_dirs)>0) {
     if ($reported==$matches) {
@@ -717,21 +824,28 @@ eval {
     print "grepx: Retrying using '$extension' as wildcard.\n";
 
     $use_as_wildcard     = 1;
-    ($searched,$matches,$reported) = perform_grep($startdir,0);
+    ($searched,$matches,$reported) = perform_grep($startdir,0,0);
+    if ($matches==0) {
+      print "grepx: No results - retry with links..\n";
+      ($searched,$matches,$reported) = perform_grep($startdir,0,1);  # retry following links
+    }
     if ($searched == 0) { print "grepx: No files matched.\n"; }
   }
 
   if ($searched>0) {
-    print "grepx: Searched $searched files (".megagiga($lines_examined)."LOC)\n";
+    my $info = "Searched $searched files (".megagiga($lines_examined)."LOC). ";
     if ($matches>0) {
-      print "grepx: ";
-      if ($reported == $matches) { print "Found $matches"; }
-      else { print "Reported $reported (of $matches found)"; }
-      print " matches in ".(time-$start_time)." seconds.\n";
+      if ($reported == $matches) { $info .= "Found $matches"; }
+      else { $info .= "Reported $reported (of $matches found)"; }
+      $info .= " matches in ".(time-$start_time)." seconds.";
     }
-    else { print "grepx: No matches were found.\n"; }
+    else { $info .= "No matches were found."; }
+    print "grepx: $info\n";
   }
-  # print "\n";
+
+  if ($ignoreCount>0) {
+    print "grepx: excluded by .grepxignore: $ignoreCount files/directories\n";
+  }
 };
 if ($@) {
   print_usage();

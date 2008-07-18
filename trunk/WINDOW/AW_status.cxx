@@ -42,7 +42,7 @@
 
 #if defined(DEBUG)
 
-// ARB_LOGGING should always be undefined in CVS version!
+// ARB_LOGGING should always be undefined in SVN version!
 // #define ARB_LOGGING
 // #define TRACE_STATUS // // // enable debug output for status window (which runs forked!)
 // #define TRACE_STATUS_MORE // // enable more debug output

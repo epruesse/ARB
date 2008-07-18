@@ -9,7 +9,7 @@
 #    c. sort lines
 #
 # Goal of this script is to unify the result of 'make depends'
-# to avoid CVS changes caused by formatting.
+# to avoid CVS/SVN changes caused by formatting.
 
 my $arbhome = qr/$ENV{ARBHOME}/;
 my $makedependlineseen = 0;
