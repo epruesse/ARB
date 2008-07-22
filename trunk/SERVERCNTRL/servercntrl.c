@@ -326,7 +326,8 @@ struct arb_params *arb_trace_argv(int *argc, char **argv)
                 case 'P': erg->pt_server     = strdup(argv[s]+2);break;
                 case 'T': {
                     char *ipport = argv[s]+2;
-                    if (ipport[0] == ':') { /* port only -> assume localhost */
+                    if (ipport[0] == ':' &&
+                        ipport[1] >= '0' && ipport[1] <= '9') { /* port only -> assume localhost */
                         erg->tcp = GBS_global_string_copy("localhost%s", ipport);
                     }
                     else {
