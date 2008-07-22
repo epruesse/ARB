@@ -212,7 +212,7 @@ inline void complement_sequence(char *seq, int len) {
 extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
     int probe_len   = locs->ff_pr_len;
     int mismatch_nr = locs->ff_mis_nr;
-    int complement  = locs->ff_compl; // 0 -> fwd, 1 -> fwd+rev.compl, 2 -> all 4 (fwd, rev, rev.compl, compl) 
+    int complement  = locs->ff_compl; // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement 
 
     char *sequence     = species->data;
     int   sequence_len = probe_compress_sequence(sequence);
@@ -222,24 +222,20 @@ extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
     // if ff_find_type > 0 -> search only probes starting with 'A' (quick but less accurate)
     char last_first_c = locs->ff_find_type ? PT_A : PT_T;
 
-    for (int cmode = 0; cmode<4; cmode++) { // complement mode (0 = fwd, 1 = rev, 2 = revcompl, 3 = compl)
-        bool use = false;
+    for (int cmode = 1; cmode <= 8; cmode *= 2) { 
         switch (cmode) {
-            case 0:             // fwd
-                use = true;
+            case 1:             // forward
                 break;
-            case 1:             // rev
-            case 3:             // compl
+            case 2:             // rev
+            case 8:             // compl
                 revert_sequence(sequence, sequence_len); // build reverse sequence
-                use = complement == 2;
                 break;
-            case 2:             // revcompl
+            case 4:             // revcompl
                 complement_sequence(sequence, sequence_len); // build complement sequence
-                use = complement != 0;
                 break;
         }
 
-        if (use) {
+        if ((complement&cmode) != 0) {
             for (char first_c = PT_A; first_c <= last_first_c; ++first_c) {
                 for (char second_c = PT_A; second_c <= PT_T; ++second_c) {
                     char *last_probe = sequence+sequence_len-probe_len;
