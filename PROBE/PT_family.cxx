@@ -10,7 +10,6 @@
 #include "pt_prototypes.h"
 #include <arbdbt.h>
 
-
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_family_list *family)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(family)); }
 
@@ -19,24 +18,25 @@ inline void aisc_link(dll_public *dll, PT_family_list *family)   { aisc_link(rei
 /*****************************************************************************/
 /* Increment match_count for a matched chain */
 
-int mark_all_matches_chain_handle(int name, int /*pos*/, int /*rpos*/, long /*clientdata*/)
+static int mark_all_matches_chain_handle(int name, int /*pos*/, int /*rpos*/, long /*clientdata*/)
 {
     psg.data[name].stat.match_count++;
     return 0;
 }
 /* Increment match_count for every match */
-int mark_all_matches( PT_local  *locs,
-                      POS_TREE  *pt,
-                      char      *probe,
-                      int       length,
-                      int       mismatches,
-                      int       height,
-                      int       max_mismatches)
+static int mark_all_matches( PT_local  *locs,
+                             POS_TREE  *pt,
+                             char      *probe,
+                             int       length,
+                             int       mismatches,
+                             int       height,
+                             int       max_mismatches)
 {
-    int             ref_pos, ref2_pos, ref_name;
-    int        base;
-    int             type_of_node;
-    POS_TREE        *pt_son;
+    int       ref_pos, ref2_pos, ref_name;
+    int       base;
+    int       type_of_node;
+    POS_TREE *pt_son;
+    
     if (pt == NULL || mismatches > max_mismatches) {
         return 0;
     }
@@ -94,7 +94,7 @@ int mark_all_matches( PT_local  *locs,
 }
 
 /* Clear all informations in psg.data[i].stat */
-void clear_statistic(){
+static void clear_statistic(){
     int i;
     for (i = 0; i < psg.data_count; i++)
         memset((char *) &psg.data[i].stat,0,sizeof(struct probe_statistic));
@@ -102,7 +102,7 @@ void clear_statistic(){
 
 
 /* Calculate the statistic informations for the family */
-void make_match_statistic(int probe_len){
+static void make_match_statistic(int probe_len){
     int i;
     /*
      * compute statistic for all species in family
@@ -124,7 +124,7 @@ extern "C" {
 #endif
 
     /* Compare function for GB_mergesort() */
-    static long compare_probe_input_data0(void *pid_ptr1, void *pid_ptr2, char*) {
+    static long compare_probe_input_data_abs(void *pid_ptr1, void *pid_ptr2, char*) {
         struct probe_input_data *d1 = (struct probe_input_data*)pid_ptr1;
         struct probe_input_data *d2 = (struct probe_input_data*)pid_ptr2;
 
@@ -133,7 +133,7 @@ extern "C" {
         return -1;
     }
 
-    static long compare_probe_input_data1(void *pid_ptr1, void *pid_ptr2, char*) {
+    static long compare_probe_input_data_rel(void *pid_ptr1, void *pid_ptr2, char*) {
         struct probe_input_data *d1 = (struct probe_input_data*)pid_ptr1;
         struct probe_input_data *d2 = (struct probe_input_data*)pid_ptr2;
 
@@ -146,43 +146,41 @@ extern "C" {
 }
 #endif
 
-/*  Make sortet list of family members */
-int make_PT_family_list(PT_local *locs)
-{
-    struct probe_input_data **my_list;
-    PT_family_list *fl;
+/*  Make sorted list of family members */
+static int make_PT_family_list(PT_local *locs) {
+    // Sort the data
+    struct probe_input_data **my_list = (struct probe_input_data**) calloc(sizeof(void *),psg.data_count);
     int i;
-    /*
-     * Sort the data
-     */
-    my_list = (struct probe_input_data**) calloc(sizeof(void *),psg.data_count);
-    for (i = 0; i < psg.data_count; i++)        my_list[i] = &psg.data[i];
-    if (locs->sort_type == 0){
-        GB_mergesort((void **) my_list,0,psg.data_count, compare_probe_input_data0,0);
-    }else{
-        GB_mergesort((void **) my_list,0,psg.data_count, compare_probe_input_data1,0);
-    }
-    /*
-     * destroy old list
-     */
-    while(locs->fl)     destroy_PT_family_list(locs->fl);
-    /*
-     * build new list
-     */
+    for (i = 0; i < psg.data_count; i++) my_list[i] = &psg.data[i];
+
+    GB_mergesort((void **)my_list, 0, psg.data_count,
+                 locs->ff_sort_type == 0 ? compare_probe_input_data_abs : compare_probe_input_data_rel,
+                 0);
+    
+    // destroy old list
+    while(locs->ff_fl) destroy_PT_family_list(locs->ff_fl);
+    
+    // build new list
     for (i = 0; i < psg.data_count; i++) {
-        if (my_list[i]->stat.match_count == 0) continue;
-        fl = create_PT_family_list();
-        fl->name = strdup(my_list[i]->name);
-        fl->matches = my_list[i]->stat.match_count;
-        fl->rel_matches = my_list[i]->stat.rel_match_count;
-        aisc_link(&locs->pfl, fl);
+        if (my_list[i]->stat.match_count != 0) {
+            PT_family_list *fl = create_PT_family_list();
+            
+            fl->name        = strdup(my_list[i]->name);
+            fl->matches     = my_list[i]->stat.match_count;
+            fl->rel_matches = my_list[i]->stat.rel_match_count;
+
+            aisc_link(&locs->pff_fl, fl);
+        }
     }
     free((char *)my_list);
+
+    locs->ff_list_size = psg.data_count;
+
     return 0;
 }
 
 /* Check the probe for inconsitencies */
-int probe_is_ok(char *probe, int probe_len, char first_c, char second_c)
+static int probe_is_ok(char *probe, int probe_len, char first_c, char second_c)
 {
     int i;
     if (probe_len < 2 || probe[0] != first_c || probe[1] != second_c)
@@ -192,43 +190,72 @@ int probe_is_ok(char *probe, int probe_len, char first_c, char second_c)
             return 0;
     return 1;
 }
+
+inline void revert_sequence(char *seq, int len) {
+    int i = 0;
+    int j = len-1;
+
+    while (i<j) std::swap(seq[i++], seq[j--]);
+}
+
+inline void complement_sequence(char *seq, int len) {
+    PT_BASES complement[PT_B_MAX];
+    for (PT_BASES b = PT_QU; b<PT_B_MAX; b = PT_BASES(b+1)) { complement[b] = b; }
+
+    std::swap(complement[PT_A], complement[PT_T]);
+    std::swap(complement[PT_C], complement[PT_G]);
+
+    for (int i = 0; i<len; i++) seq[i] = complement[int(seq[i])];
+}
+
 /* make sorted list of family members of species */
-extern "C" int find_family(PT_local *locs, bytestring *species)
-{
-    char first_c, second_c;
-    char *sequence, *probe;
-    int sequence_len;
-    int probe_len = locs->pr_len;
-    int mismatch_nr = locs->mis_nr;
+extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
+    int probe_len   = locs->ff_pr_len;
+    int mismatch_nr = locs->ff_mis_nr;
+    int complement  = locs->ff_compl; // 0 -> fwd, 1 -> fwd+rev.compl, 2 -> all 4 (fwd, rev, rev.compl, compl) 
+
+    char *sequence     = species->data;
+    int   sequence_len = probe_compress_sequence(sequence);
+
     clear_statistic();
-    sequence = species->data;
-    sequence_len = probe_compress_sequence(sequence);
-    /*
-     * search for sorted probes
-     */
-    /*
-     * find all "*"
-     */
-    if (locs->find_type == 0) {
-        for (first_c = PT_A; first_c <= PT_T; first_c++)
-            for (second_c = PT_A; second_c <= PT_T; second_c++)
-                for (probe=sequence;probe<sequence+sequence_len-probe_len;probe++)
-                    if (probe_is_ok(probe,probe_len,first_c,second_c))
-                        mark_all_matches(locs,psg.pt,probe,probe_len,0,0,mismatch_nr);
-    }
-    /*
-     * find only "a*"
-     */
-    else {
-        first_c = PT_A;
-        for (second_c = PT_A; second_c <= PT_T; second_c++)
-            for (probe=sequence;probe<sequence+sequence_len-probe_len;probe++)
-                if (probe_is_ok(probe,probe_len,first_c,second_c))
-                    mark_all_matches(locs,psg.pt,probe,probe_len,0,0,mismatch_nr);
+
+    // if ff_find_type > 0 -> search only probes starting with 'A' (quick but less accurate)
+    char last_first_c = locs->ff_find_type ? PT_A : PT_T;
+
+    for (int cmode = 0; cmode<4; cmode++) { // complement mode (0 = fwd, 1 = rev, 2 = revcompl, 3 = compl)
+        bool use = false;
+        switch (cmode) {
+            case 0:             // fwd
+                use = true;
+                break;
+            case 1:             // rev
+            case 3:             // compl
+                revert_sequence(sequence, sequence_len); // build reverse sequence
+                use = complement == 2;
+                break;
+            case 2:             // revcompl
+                complement_sequence(sequence, sequence_len); // build complement sequence
+                use = complement != 0;
+                break;
+        }
+
+        if (use) {
+            for (char first_c = PT_A; first_c <= last_first_c; ++first_c) {
+                for (char second_c = PT_A; second_c <= PT_T; ++second_c) {
+                    char *last_probe = sequence+sequence_len-probe_len;
+                    for (char *probe = sequence; probe < last_probe; ++probe) {
+                        if (probe_is_ok(probe, probe_len, first_c, second_c)) {
+                            mark_all_matches(locs,psg.pt,probe,probe_len,0,0,mismatch_nr);
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    make_match_statistic(locs->pr_len);
+    make_match_statistic(locs->ff_pr_len);
     make_PT_family_list(locs);
+    
     free(species->data);
     return 0;
 }

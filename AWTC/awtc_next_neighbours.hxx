@@ -2,11 +2,15 @@
 #define awtc_next_neighbours_hxx_included
 
 class AWTC_FIND_FAMILY_MEMBER {
+    // list is sorted either by 'matches' or 'rel_matches' (descending)
+    // depending on 'rel_matches' paramater to findFamily() 
 public:
     AWTC_FIND_FAMILY_MEMBER *next;
-    char                    *name;
-    long                     matches;
-    
+
+    char   *name;
+    long    matches;
+    double  rel_matches;
+
     AWTC_FIND_FAMILY_MEMBER();
     ~AWTC_FIND_FAMILY_MEMBER();
 };
@@ -22,16 +26,25 @@ class AWTC_FIND_FAMILY {
     void     delete_family_list();
     GB_ERROR init_communication(void);
     GB_ERROR open(char *servername);
-    GB_ERROR find_family(char *sequence, int find_type, int max_hits);
+    GB_ERROR retrieve_family(char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, int compl_mode, int max_results);
     void     close();
 
-public:
+    // valid after calling retrieve_family():
     AWTC_FIND_FAMILY_MEMBER *family_list;
+
+    bool hits_truncated;
+    int  real_hits;
+
+public:
 
     AWTC_FIND_FAMILY(GBDATA *gb_maini);
     ~AWTC_FIND_FAMILY();
 
-    GB_ERROR go(int server_id,char *sequence, bool fast_flag, int max_hits);
+    GB_ERROR findFamily(int server_id,char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, int compl_mode, int max_results);
+
+    const AWTC_FIND_FAMILY_MEMBER *getFamilyList() const { return family_list; }
+    bool hits_were_truncated() const { return hits_truncated; }
+    int getRealHits() const { return real_hits; }
 
     void print();
 };

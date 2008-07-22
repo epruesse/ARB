@@ -30,6 +30,16 @@
 extern GBDATA *GLOBAL_gb_main;
 #define AD_F_ALL (AW_active)(-1)
 
+#define AWAR_NN_BASE        "next_neighbours/"
+#define AWAR_NN_OLIGO_LEN   AWAR_NN_BASE "oligo_len"
+#define AWAR_NN_MISMATCHES  AWAR_NN_BASE "mismatches"
+#define AWAR_NN_FAST_MODE   AWAR_NN_BASE "fast_mode"
+#define AWAR_NN_REL_MATCHES AWAR_NN_BASE "rel_matches"
+#define AWAR_NN_COMPLEMENT  AWAR_NN_BASE "compl_mode"
+#define AWAR_NN_MAX_HITS    AWAR_NN_BASE "max_hits"
+#define AWAR_NN_DEST_FIELD  AWAR_NN_BASE "dest_field"
+#define AWAR_NN_HIT_COUNT   "tmp/" AWAR_NN_BASE "hit_count"
+
 void create_species_var(AW_root *aw_root, AW_default aw_def)
 {
     aw_root->awar_string( AWAR_SPECIES_DEST, "" ,   aw_def);
@@ -765,7 +775,7 @@ static void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs) {
     nt_assert(cbs->selector->type == AWT_QUERY_ITEM_SPECIES);
     GB_begin_transaction(GLOBAL_gb_main);
     int                  pts        = aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
-    char                *dest_field = aww->get_root()->awar("next_neighbours/dest_field")->read_string();
+    char                *dest_field = aww->get_root()->awar(AWAR_NN_DEST_FIELD)->read_string();
     char                *ali_name   = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
     GB_ERROR             error      = 0;
     GB_TYPES             dest_type  = awt_get_type_of_changekey(GLOBAL_gb_main,dest_field, CHANGE_KEY_PATH);
@@ -806,10 +816,10 @@ static void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs) {
         {
             char *sequence = GB_read_string(gb_data);
             AWTC_FIND_FAMILY ff(GLOBAL_gb_main);
-            error = ff.go(pts,sequence,GB_TRUE,1);
+            error = ff.findFamily(pts, sequence, 12, 0, false, false, 0, 1);
             if (error) break;
             {
-                AWTC_FIND_FAMILY_MEMBER *fm = ff.family_list;
+                const AWTC_FIND_FAMILY_MEMBER *fm = ff.getFamilyList();
                 const char *value;
                 if (fm){
                     value = GBS_global_string("%li '%s'",fm->matches,fm->name);
@@ -833,130 +843,231 @@ static void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs) {
     delete ali_name;
 }
 
-static void awtc_nn_search(AW_window *aww,AW_CL id) { 
-    GB_transaction dummy(GLOBAL_gb_main);
-    int pts = aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
-    int max_hits = aww->get_root()->awar("next_neighbours/max_hits")->read_int();
-    char *sequence = 0;
+static void awtc_nn_search(AW_window *aww, AW_CL id) {
+    AW_root  *aw_root  = aww->get_root();
+    GB_ERROR  error    = 0;
+    char     *sequence = 0;
     {
-        char *sel_species =     aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
-        GBDATA *gb_species =    GBT_find_species(GLOBAL_gb_main,sel_species);
+        GB_transaction ta(GLOBAL_gb_main);
+
+        char   *sel_species = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
+        GBDATA *gb_species  = GBT_find_species(GLOBAL_gb_main,sel_species);
 
         if (!gb_species){
-            delete sel_species;
-            aw_message("Select a species first");
-            return;
+            error = "Select a species first";
         }
-        char *ali_name = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
-        GBDATA *gb_data = GBT_read_sequence(gb_species,ali_name);
-        if (!gb_data){
-            aw_message(GBS_global_string("Species '%s' has no sequence '%s'",sel_species,ali_name));
+        else {
+            char   *ali_name = aw_root->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
+            GBDATA *gb_data  = GBT_read_sequence(gb_species,ali_name);
+
+            if (gb_data) {
+                sequence = GB_read_string(gb_data);
+            }
+            else {
+                error = GBS_global_string("Species '%s' has no sequence '%s'",sel_species,ali_name);
+            }
+            free(ali_name);
         }
         free(sel_species);
-        free(ali_name);
-        if (!gb_data) return;
-        sequence = GB_read_string(gb_data);
     }
 
     AWTC_FIND_FAMILY ff(GLOBAL_gb_main);
-    GB_ERROR error = ff.go(pts,sequence,GB_TRUE,max_hits);
-    free(sequence);
-    AW_selection_list* sel = (AW_selection_list *)id;
-    aww->clear_selection_list(sel);
-    if (error) {
-        aw_message(error);
-        aww->insert_default_selection(sel,"No hits found","");
-    }else{
-        AWTC_FIND_FAMILY_MEMBER *fm;
-        for (fm = ff.family_list; fm; fm = fm->next){
-            const char *dis = GBS_global_string("%-20s Score:%4li",fm->name,fm->matches);
-            aww->insert_selection(sel,(char *)dis,fm->name);
-        }
+    bool             rel_matches = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
 
-        aww->insert_default_selection(sel,"No more hits","");
+    if (!error) {
+        int  pts        = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
+        int  oligo_len  = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
+        int  mismatches = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
+        bool fast_mode  = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
+        bool compl_mode = aw_root->awar(AWAR_NN_COMPLEMENT)->read_int();
+        int  max_hits   = aw_root->awar(AWAR_NN_MAX_HITS)->read_int();
+
+        error = ff.findFamily(pts, sequence, oligo_len, mismatches, fast_mode, rel_matches, compl_mode, max_hits);
     }
-    aww->update_selection_list(sel);
+
+    // update result list
+    {
+        AW_selection_list* sel = (AW_selection_list *)id;
+        aww->clear_selection_list(sel);
+    
+        int hits = 0;
+        if (error) {
+            aw_message(error);
+            aww->insert_default_selection(sel,"<Error>","");
+        }
+        else {
+            int count = 1;
+            for (const AWTC_FIND_FAMILY_MEMBER *fm = ff.getFamilyList(); fm; fm = fm->next) {
+                const char *dis;
+                if (rel_matches) {
+                    dis = GBS_global_string("#%-5i %-12s Rel.hits: %5.1f%%", count, fm->name, fm->rel_matches*100);
+                }
+                else {
+                    dis = GBS_global_string("#%-5i %-12s Hits: %4li", count, fm->name, fm->matches);
+                }
+
+                aww->insert_selection(sel, dis, fm->name);
+                count++;
+            }
+
+            aww->insert_default_selection(sel, ff.hits_were_truncated() ? "<List truncated>" : "<No more hits>","");
+            hits = ff.getRealHits();
+        }
+        aw_root->awar(AWAR_NN_HIT_COUNT)->write_int(hits);
+        aww->update_selection_list(sel);
+    }
+    
+    free(sequence);
 }
 
 static void awtc_move_hits(AW_window *,AW_CL id, AW_CL cbs){
     awt_copy_selection_list_2_queried_species((struct adaqbsstruct *)cbs,(AW_selection_list *)id);
 }
 
+static void create_next_neighbours_vars(AW_root *aw_root) {
+    static bool created = false;
+
+    if (!created) {
+        aw_root->awar_int(AWAR_PROBE_ADMIN_PT_SERVER);
+        aw_root->awar_int(AWAR_NN_OLIGO_LEN,   12);
+        aw_root->awar_int(AWAR_NN_MISMATCHES,  0);
+        aw_root->awar_int(AWAR_NN_FAST_MODE,   0);
+        aw_root->awar_int(AWAR_NN_REL_MATCHES, 1);
+        aw_root->awar_int(AWAR_NN_COMPLEMENT,  0);
+        aw_root->awar_int(AWAR_NN_MAX_HITS,    50);
+        aw_root->awar_int(AWAR_NN_HIT_COUNT,   0);
+        aw_root->awar_string(AWAR_NN_DEST_FIELD, "tmp");
+        
+        created = true;
+    }
+}
+
 static AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root,AW_CL cbs){
     static AW_window_simple *aws = 0;
-    if (aws){
-        return (AW_window *)aws;
-    }
-    aw_root->awar_int(AWAR_PROBE_ADMIN_PT_SERVER);
-    aw_root->awar_string("next_neighbours/dest_field","tmp");
+    if (!aws) {
+        create_next_neighbours_vars(aw_root);
 
-    aws = new AW_window_simple;
-    aws->init( aw_root, "SEARCH_NEXT_RELATIVES_OF_LISTED", "Search Next Neighbours of Listed");
-    aws->load_xfig("ad_spec_nnm.fig");
+        aws = new AW_window_simple;
+        aws->init( aw_root, "SEARCH_NEXT_RELATIVES_OF_LISTED", "Search Next Neighbours of Listed");
+        aws->load_xfig("ad_spec_nnm.fig");
 
-    aws->at("close");
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
+        aws->at("close");
+        aws->callback( (AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE","CLOSE","C");
 
-    aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"next_neighbours_marked.hlp");
-    aws->create_button("HELP","HELP","H");
+        aws->at("help");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"next_neighbours_marked.hlp");
+        aws->create_button("HELP","HELP","H");
 
-    aws->at("pt_server");
-    awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, AW_TRUE);
+        aws->at("pt_server");
+        awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, AW_TRUE);
 
-    aws->at("field");
-    awt_create_selection_list_on_scandb(GLOBAL_gb_main,aws,"next_neighbours/dest_field",
-                                        (1<<GB_INT) | (1<<GB_STRING), "field",0, &AWT_species_selector, 20, 10);
+        aws->at("oligo_len");
+        aws->create_input_field(AWAR_NN_OLIGO_LEN, 3);
 
+        aws->at("mismatches");
+        aws->create_input_field(AWAR_NN_MISMATCHES, 3);
 
-    aws->at("go");
-    aws->callback(awtc_nn_search_all_listed,cbs);
-    aws->create_button("SEARCH","SEARCH");
+        aws->at("mode");
+        aws->create_option_menu(AWAR_NN_FAST_MODE, 0, 0);
+        aws->insert_default_option("Complete", "", 0);
+        aws->insert_option("Quick", "", 1);
+        aws->update_option_menu();
 
-    return (AW_window *)aws;
+        aws->at("score");
+        aws->create_option_menu(AWAR_NN_REL_MATCHES, 0, 0);
+        aws->insert_option("absolute", "", 0);
+        aws->insert_default_option("relative", "", 1);
+        aws->update_option_menu();
+
+        aws->at("compl");
+        aws->create_option_menu(AWAR_NN_COMPLEMENT, 0, 0);
+        aws->insert_default_option("fwd", "", 0);
+        aws->insert_option("fwd+revCompl", "", 1);
+        aws->insert_option("fwd+rev+compl+revCompl", "", 2);
+        aws->update_option_menu();
+
+        aws->at("results");
+        aws->create_input_field(AWAR_NN_MAX_HITS, 3);
+
+        aws->at("field");
+        awt_create_selection_list_on_scandb(GLOBAL_gb_main,aws,AWAR_NN_DEST_FIELD,
+                                            (1<<GB_INT) | (1<<GB_STRING), "field",0,
+                                            &AWT_species_selector, 20, 10);
+
+        aws->at("go");
+        aws->callback(awtc_nn_search_all_listed,cbs);
+        aws->create_button("SEARCH","SEARCH");
+    }    
+    return aws;
 }
 
 static AW_window *ad_spec_next_neighbours_create(AW_root *aw_root,AW_CL cbs){
     static AW_window_simple *aws = 0;
-    if (aws){
-        return (AW_window *)aws;
+    if (!aws) {
+        create_next_neighbours_vars(aw_root);
+
+        aws = new AW_window_simple;
+        aws->init( aw_root, "SEARCH_NEXT_RELATIVE_OF_SELECTED", "Search Next Neighbours");
+        aws->load_xfig("ad_spec_nn.fig");
+
+        aws->at("close");
+        aws->callback( (AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE","CLOSE","C");
+
+        aws->at("help");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"next_neighbours.hlp");
+        aws->create_button("HELP","HELP","H");
+
+        aws->at("pt_server");
+        awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, AW_TRUE);
+
+        aws->at("oligo_len");
+        aws->create_input_field(AWAR_NN_OLIGO_LEN, 3);
+
+        aws->at("mismatches");
+        aws->create_input_field(AWAR_NN_MISMATCHES, 3);
+
+        aws->at("mode");
+        aws->create_option_menu(AWAR_NN_FAST_MODE, 0, 0);
+        aws->insert_default_option("Complete", "", 0);
+        aws->insert_option("Quick", "", 1);
+        aws->update_option_menu();
+
+        aws->at("score");
+        aws->create_option_menu(AWAR_NN_REL_MATCHES, 0, 0);
+        aws->insert_option("absolute", "", 0);
+        aws->insert_default_option("relative", "", 1);
+        aws->update_option_menu();
+
+        aws->at("compl");
+        aws->create_option_menu(AWAR_NN_COMPLEMENT, 0, 0);
+        aws->insert_default_option("fwd", "", 0);
+        aws->insert_option("fwd+revCompl", "", 1);
+        aws->insert_option("fwd+rev+compl+revCompl", "", 2);
+        aws->update_option_menu();
+
+        aws->at("results");
+        aws->create_input_field(AWAR_NN_MAX_HITS, 3);
+
+        aws->at("hit_count");
+        aws->create_button(0, AWAR_NN_HIT_COUNT, 0, "+");
+
+        aws->at("hits");
+        AW_selection_list *id = aws->create_selection_list(AWAR_SPECIES_NAME);
+        aws->insert_default_selection(id,"No hits found","");
+        aws->update_selection_list(id);
+
+        aws->at("go");
+        aws->callback(awtc_nn_search,(AW_CL)id);
+        aws->create_button("SEARCH","SEARCH");
+
+        aws->at("move");
+        aws->callback(awtc_move_hits,(AW_CL)id,cbs);
+        aws->create_button("MOVE_TO_HITLIST","MOVE TO HITLIST");
+
     }
-    aw_root->awar_int(AWAR_PROBE_ADMIN_PT_SERVER);
-    aw_root->awar_int("next_neighbours/max_hits",20);
-
-    aws = new AW_window_simple;
-    aws->init( aw_root, "SEARCH_NEXT_RELATIVE_OF_SELECTED", "Search Next Neighbours");
-    aws->load_xfig("ad_spec_nn.fig");
-
-    aws->at("close");
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE","CLOSE","C");
-
-    aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"next_neighbours.hlp");
-    aws->create_button("HELP","HELP","H");
-
-    aws->at("pt_server");
-    awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, AW_TRUE);
-
-    aws->at("max_hit");
-    aws->create_input_field("next_neighbours/max_hits",5);
-
-    aws->at("hits");
-    AW_selection_list *id = aws->create_selection_list(AWAR_SPECIES_NAME);
-    aws->insert_default_selection(id,"No hits found","");
-    aws->update_selection_list(id);
-
-    aws->at("go");
-    aws->callback(awtc_nn_search,(AW_CL)id);
-    aws->create_button("SEARCH","SEARCH");
-
-    aws->at("move");
-    aws->callback(awtc_move_hits,(AW_CL)id,cbs);
-    aws->create_button("MOVE_TO_HITLIST","MOVE TO HITLIST");
-
-    return (AW_window *)aws;
+    return aws;
 }
 
 // -----------------------------------------------------------------------------------------------------------------

@@ -211,9 +211,11 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
          *
          */
 
-        if (aisc_put(link, PT_LOCS, locs, 
-                     LOCS_FIND_TYPE, find_type,
-                     LOCS_FIND_FAMILY, &bs, NULL)){
+        if (aisc_put(link, PT_LOCS, locs,
+                     LOCS_FF_FIND_TYPE,   find_type,
+                     LOCS_FF_FIND_FAMILY, &bs,
+                     NULL))
+        {
             ali_message ("Communication Error (2)");
             return -1;
         }
@@ -221,7 +223,7 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
         /*
          * Read family list
          */
-        aisc_get(link,PT_LOCS, locs,LOCS_FAMILY_LIST, &f_list, NULL);
+        aisc_get(link, PT_LOCS, locs, LOCS_FF_FAMILY_LIST, &f_list, NULL);
         if (f_list == 0)
             ali_error("Family not found in PT Server");
 
