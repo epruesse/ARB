@@ -1545,7 +1545,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             awm->insert_sub_menu(0, "Build tree from sequence data",    "B");
             {
                 awm->insert_sub_menu(0, "Distance matrix methods", "D");
-                AWMIMT( "arb_dist",     "ARB Neighbor Joining",     "J", "dist.hlp",    AWM_TREE,   (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0 );
+                AWMIMT( "arb_dist",     "ARB Neighbour Joining",     "J", "dist.hlp",    AWM_TREE,   (AW_CB)NT_system_cb,    (AW_CL)"arb_dist &",    0 );
                 GDE_load_menu(awm,"Phylogeny_DistMatrix");
                 awm->close_sub_menu();
 

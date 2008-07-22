@@ -372,10 +372,11 @@ static void ED4_pfold_extend_nucleation_sites(const unsigned char *sequence, cha
     e4_assert(s == ALPHA_HELIX || s == BETA_SHEET); // incorrect value for s
     e4_assert(char2AA); // char2AA not initialized; ED4_pfold_init_statics() failed or hasn't been called yet
 
-    bool  break_structure = false;   // break the current structure
-    int   start           = 0, end = 0; // start and end of nucleation site
-    int   neighbor        = 0;  // neighbor of start or end
-    char *gap_chars       = ED4_ROOT->aw_root->awar(ED4_AWAR_GAP_CHARS)->read_string(); // gap characters
+    bool break_structure = false;       // break the current structure
+    int  start           = 0, end = 0;  // start and end of nucleation site
+    int  neighbour       = 0;           // neighbour of start or end
+    
+    char *gap_chars = ED4_ROOT->aw_root->awar(ED4_AWAR_GAP_CHARS)->read_string();       // gap characters
 
     // find nucleation sites and extend them in both directions (for whole sequence)
     for (int indStruct = 0; indStruct < length; indStruct++) {
@@ -409,22 +410,22 @@ static void ED4_pfold_extend_nucleation_sites(const unsigned char *sequence, cha
             if (break_structure) break;
             // check for breaker at current position
             break_structure = (strchr(structure_breaker[s], sequence[start]) != 0);
-            neighbor = start - 1; // get neighbor
-            while (neighbor > 0 && strchr(gap_chars, sequence[neighbor])) {
-                neighbor--; // skip gaps
+            neighbour = start - 1; // get neighbour
+            while (neighbour > 0 && strchr(gap_chars, sequence[neighbour])) {
+                neighbour--; // skip gaps
             }
             // break if out of bounds or no amino acid is found
-            if (neighbor <= 0 || char2AA[sequence[neighbor]] == -1) {
+            if (neighbour <= 0 || char2AA[sequence[neighbour]] == -1) {
                 break;
             }
             // break if another breaker or indifferent amino acid is found
             break_structure &=
-                (strchr(structure_breaker[s], sequence[neighbor]) != 0) ||
-                (strchr(structure_indifferent[s], sequence[neighbor]) != 0);
+                (strchr(structure_breaker[s], sequence[neighbour]) != 0) ||
+                (strchr(structure_indifferent[s], sequence[neighbour]) != 0);
             if (!break_structure) {
                 structure[start] = structure_chars[s];
             }
-            start = neighbor;  // continue with neigbor
+            start = neighbour;  // continue with neighbour
         }
 
         // right side:
@@ -440,23 +441,23 @@ static void ED4_pfold_extend_nucleation_sites(const unsigned char *sequence, cha
             if (break_structure) break;
             // check for breaker at current position
             break_structure = (strchr(structure_breaker[s], sequence[end]) != 0);
-            neighbor = end + 1; // get neighbor
-            while (neighbor < (length - 2) && strchr(gap_chars, sequence[neighbor])) {
-                neighbor++; // skip gaps
+            neighbour = end + 1; // get neighbour
+            while (neighbour < (length - 2) && strchr(gap_chars, sequence[neighbour])) {
+                neighbour++; // skip gaps
             }
             // break if out of bounds or no amino acid is found
-            if (neighbor >= (length - 1) || char2AA[sequence[neighbor]] == -1) {
-                end = neighbor;
+            if (neighbour >= (length - 1) || char2AA[sequence[neighbour]] == -1) {
+                end = neighbour;
                 break;
             }
             // break if another breaker or indifferent amino acid is found
             break_structure &=
-                (strchr(structure_breaker[s], sequence[neighbor]) != 0) ||
-                (strchr(structure_indifferent[s], sequence[neighbor]) != 0);
+                (strchr(structure_breaker[s], sequence[neighbour]) != 0) ||
+                (strchr(structure_indifferent[s], sequence[neighbour]) != 0);
             if (!break_structure) {
                 structure[end] = structure_chars[s];
             }
-            end = neighbor; // continue with neigbor
+            end = neighbour; // continue with neighbour
         }
         indStruct = end; // continue with end
     }

@@ -1562,7 +1562,7 @@ static void di_define_save_tree_name_cb(AW_window *aww) {
 
 AW_window *DI_create_matrix_window(AW_root *aw_root) {
     AW_window_simple_menu *aws = new AW_window_simple_menu;
-    aws->init( aw_root, "NEIGHBOR JOINING", "NEIGHBOR JOINING");
+    aws->init( aw_root, "NEIGHBOUR JOINING", "NEIGHBOUR JOINING");
     aws->load_xfig("di_ge_ma.fig");
     aws->button_length( 10 );
 
@@ -1581,7 +1581,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     //  aws->create_button("CLOSE","C");
 
     aws->create_menu(0, "FILE", "F", "HELP for Window", AWM_ALL);
-    aws->insert_menu_topic("macros", "Macros  ...", "M", "macro.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)awt_open_macro_window,(AW_CL)"NEIGHBOR_JOINING");
+    aws->insert_menu_topic("macros", "Macros  ...", "M", "macro.hlp", AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)awt_open_macro_window,(AW_CL)"NEIGHBOUR_JOINING");
     aws->insert_menu_topic("quit",   "Quit",        "Q", "quit.hlp",  AWM_ALL, (AW_CB)ap_exit,  0,  0                                                 );
 
     aws->create_menu(0, "Properties", "P", "properties.hlp", AWM_ALL);

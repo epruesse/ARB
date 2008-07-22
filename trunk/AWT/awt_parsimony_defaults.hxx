@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : awt_parsimony_defaults.hxx                             //
 //    Purpose   : control behavior of parsimony                          //
-//    Time-stamp: <Wed Jul/02/2003 10:16 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Tue Jul/22/2008 16:25 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -30,7 +30,7 @@
 
 
 // When PROPAGATE_GAPS_UPWARDS is defined, gaps are propagates upwards
-// and they may match against gaps in neighbor sequences.
+// and they may match against gaps in neighbour sequences.
 //
 // Recommended setting is 'defined'.
 
