@@ -88,7 +88,7 @@ AWTC_FIND_FAMILY::~AWTC_FIND_FAMILY(void)
     close();
 }
 
-GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, int compl_mode, int max_results) {
+GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results) {
     T_PT_FAMILYLIST f_list;
     char *compressed_sequence = GB_command_interpreter(gb_main, sequence, "|keep(acgtunACGTUN)", 0, 0);
 
@@ -110,7 +110,7 @@ GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, int oligo_len, int mi
                  LOCS_FF_MISMATCH_NUMBER,       mismatches,       // number of mismatches (0 hardcoded till July 2008)
                  LOCS_FF_FIND_TYPE,             int(fast_flag),   // 0: complete search, 1: quick search (only search oligos starting with 'A')
                  LOCS_FF_SORT_TYPE,             int(rel_matches), // 0: matches, 1: relative matches (0 hardcoded till July 2008)
-                 LOCS_FF_COMPLEMENT,            compl_mode,       // 0: fwd, 1: fwd+rev.compl, 2: fwd+rev+rev.compl+compl (0 hardcoded in PT-Server till July 2008)
+                 LOCS_FF_COMPLEMENT,            compl_mode,       // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement (1 hardcoded in PT-Server till July 2008)
                  LOCS_FF_FIND_FAMILY,           &bs,
                  NULL))
     {
@@ -161,7 +161,7 @@ void AWTC_FIND_FAMILY::print(){
     }
 }
 
-GB_ERROR AWTC_FIND_FAMILY::findFamily(int server_id, char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, int compl_mode, int max_results) {
+GB_ERROR AWTC_FIND_FAMILY::findFamily(int server_id, char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results) {
     // searches the PT-server for related species.
     // 
     // relation-score is calculated by fragmenting the sequence into oligos of length 'oligo_len' and
@@ -170,7 +170,6 @@ GB_ERROR AWTC_FIND_FAMILY::findFamily(int server_id, char *sequence, int oligo_l
     // 'mismatches'  = the number of allowed mismatches
     // 'fast_flag'   = 0 -> do complete search, 1 -> search only oligos starting with 'A'
     // 'rel_matches' = 0 -> score is number of oligo-hits, 1 -> score is relative to longer sequence (target or source) * 10
-    // 'compl_mode'  = 0 -> forward, 1 -> forward + rev.compl, 2 -> forward, reverse, compl. + rev.compl
     //
     // 'max_results' limits the length of the generated result list (low scores deleted first)
     //               if < 1 -> don't limit

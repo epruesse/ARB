@@ -30,15 +30,24 @@
 extern GBDATA *GLOBAL_gb_main;
 #define AD_F_ALL (AW_active)(-1)
 
-#define AWAR_NN_BASE        "next_neighbours/"
+#define AWAR_NN_BASE "next_neighbours/"
+
+// next neighbours of listed and selected: 
 #define AWAR_NN_OLIGO_LEN   AWAR_NN_BASE "oligo_len"
 #define AWAR_NN_MISMATCHES  AWAR_NN_BASE "mismatches"
 #define AWAR_NN_FAST_MODE   AWAR_NN_BASE "fast_mode"
 #define AWAR_NN_REL_MATCHES AWAR_NN_BASE "rel_matches"
-#define AWAR_NN_COMPLEMENT  AWAR_NN_BASE "compl_mode"
-#define AWAR_NN_MAX_HITS    AWAR_NN_BASE "max_hits"
-#define AWAR_NN_DEST_FIELD  AWAR_NN_BASE "dest_field"
-#define AWAR_NN_HIT_COUNT   "tmp/" AWAR_NN_BASE "hit_count"
+#define AWAR_NN_COMPLEMENT  AWAR_NN_BASE "complement"
+
+// next neighbours of selected only:
+#define AWAR_NN_MAX_HITS  AWAR_NN_BASE "max_hits"
+#define AWAR_NN_HIT_COUNT "tmp/" AWAR_NN_BASE "hit_count"
+
+// next neighbours of listed only:
+#define AWAR_NN_DEST_FIELD     AWAR_NN_BASE "dest_field"
+#define AWAR_NN_WANTED_ENTRIES AWAR_NN_BASE "wanted_entries"
+#define AWAR_NN_SCORED_ENTRIES AWAR_NN_BASE "scored_entries"
+#define AWAR_NN_MIN_SCORE      AWAR_NN_BASE "min_score"
 
 void create_species_var(AW_root *aw_root, AW_default aw_def)
 {
@@ -771,14 +780,17 @@ void ad_spec_create_field_items(AW_window *aws) {
 #include <probe_design.hxx>
 
 static void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs) {
-    struct adaqbsstruct *cbs        = (struct adaqbsstruct *)_cbs;
+    struct adaqbsstruct *cbs = (struct adaqbsstruct *)_cbs;
+
     nt_assert(cbs->selector->type == AWT_QUERY_ITEM_SPECIES);
+
     GB_begin_transaction(GLOBAL_gb_main);
-    int                  pts        = aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
-    char                *dest_field = aww->get_root()->awar(AWAR_NN_DEST_FIELD)->read_string();
-    char                *ali_name   = aww->get_root()->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
-    GB_ERROR             error      = 0;
-    GB_TYPES             dest_type  = awt_get_type_of_changekey(GLOBAL_gb_main,dest_field, CHANGE_KEY_PATH);
+
+    AW_root *aw_root    = aww->get_root();
+    char    *dest_field = aw_root->awar(AWAR_NN_DEST_FIELD)->read_string();
+    
+    GB_ERROR error     = 0;
+    GB_TYPES dest_type = awt_get_type_of_changekey(GLOBAL_gb_main, dest_field, CHANGE_KEY_PATH);
     if (!dest_type){
         error = GB_export_error("Please select a valid field");
     }
@@ -793,54 +805,101 @@ static void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs) {
         }
     }
 
-    aw_openstatus("Finding next neighbours");
-    long count = 0;
-    GBDATA *gb_species;
-    for (gb_species = GBT_first_species(GLOBAL_gb_main);
+    aw_openstatus("Searching next neighbours");
+
+    long           count          = 0;
+    int            pts            = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
+    char          *ali_name       = aw_root->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
+    int            oligo_len      = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
+    int            mismatches     = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
+    bool           fast_mode      = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
+    FF_complement  compl_mode     = static_cast<FF_complement>(aw_root->awar(AWAR_NN_COMPLEMENT)->read_int());
+    bool           rel_matches    = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
+    int            wanted_entries = aw_root->awar(AWAR_NN_WANTED_ENTRIES)->read_int();
+    bool           scored_entries = aw_root->awar(AWAR_NN_SCORED_ENTRIES)->read_int();
+    int            min_score      = aw_root->awar(AWAR_NN_MIN_SCORE)->read_int();
+
+    for (GBDATA *gb_species = GBT_first_species(GLOBAL_gb_main);
          !error && gb_species;
-         gb_species = GBT_next_species(gb_species)){
+         gb_species = GBT_next_species(gb_species))
+    {
         if (!IS_QUERIED(gb_species,cbs)) continue;
-        count ++;
-        GBDATA *gb_data = GBT_read_sequence(gb_species,ali_name);
-        if (!gb_data)   continue;
-        if (count %10 == 0){
+        
+        count++;
+        if ((count%10) == 0){
             GBDATA *gb_name = GB_search(gb_species,"name",GB_STRING);
-            aw_status(GBS_global_string("Species '%s' (%li:%li)",
-                                        GB_read_char_pntr(gb_name),
-                                        count, max));
+            aw_status(GBS_global_string("Species '%s' (%li:%li)", GB_read_char_pntr(gb_name), count, max));
         }
+        
+        GBDATA *gb_data = GBT_read_sequence(gb_species,ali_name);
+        if (!gb_data) continue;
+
         if (aw_status(count/(double)max)){
             error = "operation aborted";
-            break;
         }
-        {
-            char *sequence = GB_read_string(gb_data);
-            AWTC_FIND_FAMILY ff(GLOBAL_gb_main);
-            error = ff.findFamily(pts, sequence, 12, 0, false, false, 0, 1);
-            if (error) break;
-            {
+        else {
+            char             *sequence = GB_read_string(gb_data);
+            AWTC_FIND_FAMILY  ff(GLOBAL_gb_main);
+
+            error = ff.findFamily(pts, sequence, oligo_len, mismatches, fast_mode, rel_matches, compl_mode, wanted_entries);
+            if (!error) {
                 const AWTC_FIND_FAMILY_MEMBER *fm = ff.getFamilyList();
-                const char *value;
-                if (fm){
-                    value = GBS_global_string("%li '%s'",fm->matches,fm->name);
-                }else{
-                    value = "0";
+
+                GBS_strstruct *value = NULL;
+                while (fm) {
+                    const char *thisValue = 0;
+                    if (rel_matches) {
+                        if ((fm->rel_matches*100) > min_score) {
+                            thisValue = scored_entries
+                                ? GBS_global_string("%.1f%%:%s", fm->rel_matches*100, fm->name)
+                                : fm->name;
+                        }
+                    }
+                    else {
+                        if (fm->matches > min_score) {
+                            thisValue = scored_entries
+                                ? GBS_global_string("%li:%s", fm->matches, fm->name)
+                                : fm->name;
+                        }
+                    }
+
+                    if (thisValue) {
+                        if (value == NULL) { // first entry
+                            value = GBS_stropen(1000);
+                        }
+                        else {
+                            GBS_chrcat(value, ';');
+                        }
+                        GBS_strcat(value, thisValue);
+                    }
+
+                    fm = fm->next;
                 }
-                GBDATA *gb_dest = GB_search(gb_species,dest_field,dest_type);
-                error = GB_write_as_string(gb_dest,value);
+
+                if (value) {
+                    GBDATA *gb_dest = GB_search(gb_species, dest_field, dest_type);
+                    
+                    error = GB_write_as_string(gb_dest, GBS_mempntr(value));
+                    GBS_strforget(value);
+                }
+                else {
+                    GBDATA *gb_dest = GB_search(gb_species, dest_field, GB_FIND);
+                    if (gb_dest) error = GB_delete(gb_dest);
+                }
             }
-            delete sequence;
+            free(sequence);
         }
     }
     aw_closestatus();
     if (error){
         GB_abort_transaction(GLOBAL_gb_main);
         aw_message(error);
-    }else{
+    }
+    else {
         GB_commit_transaction(GLOBAL_gb_main);
     }
-    delete dest_field;
-    delete ali_name;
+    free(dest_field);
+    free(ali_name);
 }
 
 static void awtc_nn_search(AW_window *aww, AW_CL id) {
@@ -875,12 +934,12 @@ static void awtc_nn_search(AW_window *aww, AW_CL id) {
     bool             rel_matches = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
 
     if (!error) {
-        int  pts        = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
-        int  oligo_len  = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
-        int  mismatches = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
-        bool fast_mode  = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
-        bool compl_mode = aw_root->awar(AWAR_NN_COMPLEMENT)->read_int();
-        int  max_hits   = aw_root->awar(AWAR_NN_MAX_HITS)->read_int();
+        int           pts        = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
+        int           oligo_len  = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
+        int           mismatches = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
+        bool          fast_mode  = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
+        FF_complement compl_mode = static_cast<FF_complement>(aw_root->awar(AWAR_NN_COMPLEMENT)->read_int());
+        int           max_hits   = aw_root->awar(AWAR_NN_MAX_HITS)->read_int();
 
         error = ff.findFamily(pts, sequence, oligo_len, mismatches, fast_mode, rel_matches, compl_mode, max_hits);
     }
@@ -933,13 +992,52 @@ static void create_next_neighbours_vars(AW_root *aw_root) {
         aw_root->awar_int(AWAR_NN_MISMATCHES,  0);
         aw_root->awar_int(AWAR_NN_FAST_MODE,   0);
         aw_root->awar_int(AWAR_NN_REL_MATCHES, 1);
-        aw_root->awar_int(AWAR_NN_COMPLEMENT,  0);
-        aw_root->awar_int(AWAR_NN_MAX_HITS,    50);
-        aw_root->awar_int(AWAR_NN_HIT_COUNT,   0);
-        aw_root->awar_string(AWAR_NN_DEST_FIELD, "tmp");
+        aw_root->awar_int(AWAR_NN_COMPLEMENT,  FF_FORWARD);
         
+        aw_root->awar_int(AWAR_NN_MAX_HITS,  50);
+        aw_root->awar_int(AWAR_NN_HIT_COUNT, 0);
+
+        aw_root->awar_string(AWAR_NN_DEST_FIELD, "tmp");
+        aw_root->awar_int(AWAR_NN_WANTED_ENTRIES, 5);
+        aw_root->awar_int(AWAR_NN_SCORED_ENTRIES, 1);
+        aw_root->awar_int(AWAR_NN_MIN_SCORE,      80);
+
         created = true;
     }
+}
+
+static void create_common_next_neighbour_fields(AW_window *aws) {
+    aws->at("pt_server");
+    awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, AW_TRUE);
+
+    aws->at("oligo_len");
+    aws->create_input_field(AWAR_NN_OLIGO_LEN, 3);
+    
+    aws->at("mismatches");
+    aws->create_input_field(AWAR_NN_MISMATCHES, 3);
+
+    aws->at("mode");
+    aws->create_option_menu(AWAR_NN_FAST_MODE, 0, 0);
+    aws->insert_default_option("Complete", "", 0);
+    aws->insert_option("Quick", "", 1);
+    aws->update_option_menu();
+
+    aws->at("score");
+    aws->create_option_menu(AWAR_NN_REL_MATCHES, 0, 0);
+    aws->insert_option("absolute", "", 0);
+    aws->insert_default_option("relative", "", 1);
+    aws->update_option_menu();
+
+    aws->at("compl");
+    aws->create_option_menu(AWAR_NN_COMPLEMENT, 0, 0);
+    aws->insert_default_option("forward",            "", FF_FORWARD);
+    aws->insert_option        ("reverse",            "", FF_REVERSE);
+    aws->insert_option        ("complement",         "", FF_COMPLEMENT);
+    aws->insert_option        ("reverse-complement", "", FF_REVERSE_COMPLEMENT);
+    aws->insert_option        ("fwd + rev-compl",    "", FF_FORWARD|FF_REVERSE_COMPLEMENT);
+    aws->insert_option        ("rev + compl",        "", FF_REVERSE|FF_COMPLEMENT);
+    aws->insert_option        ("any",                "", FF_FORWARD|FF_REVERSE|FF_COMPLEMENT|FF_REVERSE_COMPLEMENT);
+    aws->update_option_menu();
 }
 
 static AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root,AW_CL cbs){
@@ -956,39 +1054,19 @@ static AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root,AW_CL c
         aws->create_button("CLOSE","CLOSE","C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"next_neighbours_marked.hlp");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"next_neighbours_listed.hlp");
         aws->create_button("HELP","HELP","H");
 
-        aws->at("pt_server");
-        awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, AW_TRUE);
+        create_common_next_neighbour_fields(aws);
 
-        aws->at("oligo_len");
-        aws->create_input_field(AWAR_NN_OLIGO_LEN, 3);
+        aws->at("entries");
+        aws->create_input_field(AWAR_NN_WANTED_ENTRIES, 3);
 
-        aws->at("mismatches");
-        aws->create_input_field(AWAR_NN_MISMATCHES, 3);
-
-        aws->at("mode");
-        aws->create_option_menu(AWAR_NN_FAST_MODE, 0, 0);
-        aws->insert_default_option("Complete", "", 0);
-        aws->insert_option("Quick", "", 1);
-        aws->update_option_menu();
-
-        aws->at("score");
-        aws->create_option_menu(AWAR_NN_REL_MATCHES, 0, 0);
-        aws->insert_option("absolute", "", 0);
-        aws->insert_default_option("relative", "", 1);
-        aws->update_option_menu();
-
-        aws->at("compl");
-        aws->create_option_menu(AWAR_NN_COMPLEMENT, 0, 0);
-        aws->insert_default_option("fwd", "", 0);
-        aws->insert_option("fwd+revCompl", "", 1);
-        aws->insert_option("fwd+rev+compl+revCompl", "", 2);
-        aws->update_option_menu();
-
-        aws->at("results");
-        aws->create_input_field(AWAR_NN_MAX_HITS, 3);
+        aws->at("add_score");
+        aws->create_toggle(AWAR_NN_SCORED_ENTRIES);
+        
+        aws->at("min_score");
+        aws->create_input_field(AWAR_NN_MIN_SCORE, 5);
 
         aws->at("field");
         awt_create_selection_list_on_scandb(GLOBAL_gb_main,aws,AWAR_NN_DEST_FIELD,
@@ -997,7 +1075,7 @@ static AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root,AW_CL c
 
         aws->at("go");
         aws->callback(awtc_nn_search_all_listed,cbs);
-        aws->create_button("SEARCH","SEARCH");
+        aws->create_button("WRITE_FIELDS","Write to field");
     }    
     return aws;
 }
@@ -1019,33 +1097,7 @@ static AW_window *ad_spec_next_neighbours_create(AW_root *aw_root,AW_CL cbs){
         aws->callback(AW_POPUP_HELP, (AW_CL)"next_neighbours.hlp");
         aws->create_button("HELP","HELP","H");
 
-        aws->at("pt_server");
-        awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, AW_TRUE);
-
-        aws->at("oligo_len");
-        aws->create_input_field(AWAR_NN_OLIGO_LEN, 3);
-
-        aws->at("mismatches");
-        aws->create_input_field(AWAR_NN_MISMATCHES, 3);
-
-        aws->at("mode");
-        aws->create_option_menu(AWAR_NN_FAST_MODE, 0, 0);
-        aws->insert_default_option("Complete", "", 0);
-        aws->insert_option("Quick", "", 1);
-        aws->update_option_menu();
-
-        aws->at("score");
-        aws->create_option_menu(AWAR_NN_REL_MATCHES, 0, 0);
-        aws->insert_option("absolute", "", 0);
-        aws->insert_default_option("relative", "", 1);
-        aws->update_option_menu();
-
-        aws->at("compl");
-        aws->create_option_menu(AWAR_NN_COMPLEMENT, 0, 0);
-        aws->insert_default_option("fwd", "", 0);
-        aws->insert_option("fwd+revCompl", "", 1);
-        aws->insert_option("fwd+rev+compl+revCompl", "", 2);
-        aws->update_option_menu();
+        create_common_next_neighbour_fields(aws);
 
         aws->at("results");
         aws->create_input_field(AWAR_NN_MAX_HITS, 3);

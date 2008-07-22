@@ -220,7 +220,7 @@ PT_local, LOCS,         6,      (~local communication buffer~), {
     int,           ff_find_type,         t,    rw,     ,       FF_FIND_TYPE,         53,     0,                    (~ Type of find 0 = search all, 1 = a* ~);
     int,           ff_sort_type,         t,    rw,     ,       FF_SORT_TYPE,         54,     0,                    (~ Type of sorting 0 = MATCHES, 1 = REL_MATCHES ~);
     PT_family_list,ff_fl,                d,    r,      ,       FF_FAMILY_LIST,       55,     ,                     (~ Sorted List of family ~);
-    int,           ff_compl,             t,    rw,     ,       FF_COMPLEMENT,        57,     1,                    (~ Search for complement? 0 -> fwd, 1 -> fwd+rev.compl, 2 -> all 4 (fwd, rev, rev.compl, compl) ~);
+    int,           ff_compl,             t,    rw,     ,       FF_COMPLEMENT,        57,     1,                    (~ Search for complement? (combination of: fwd=1, rev=2, rev.compl=4, compl=8) ~);
     int,           ff_list_size,         t,    r,      ,       FF_FAMILY_LIST_SIZE,  58,     ,                     (~ size of result list ~);
 
     aisc_string,   user,                 t,    rw,     ,       USER,                 60,     "unknown",            (~the username~);

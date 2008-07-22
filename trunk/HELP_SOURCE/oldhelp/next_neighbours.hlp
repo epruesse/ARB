@@ -9,23 +9,32 @@ UP	pt_server.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile @@@ ********
-TITLE		Search the nearest relatives
+TITLE		Nearest relatives of SELECTED 
 
-OCCURRENCE	ARB_NT
+OCCURRENCE	ARB_NT/Search/More search/Search Next Relatives of SELECTED Species in PT Server
 
-DESCRIPTION	Scans a selected PT_SERVER database for the nearest relatives
-		of the sequence of the selected species.
+DESCRIPTION	Scans PT_SERVER database for the nearest relatives
+		of the currently selected species.
 
-SECTION         ALGORITHM
+SECTION         DESCRIPTION
 
-                Splits the sequence into oligos of size 10. Those oligos are
-		'Probe Matched' in the PT_SERVER database. The more hits within
-		one foreign sequence, the more equal the forein sequence is.
+                See LINK{next_neighbours_common.hlp} for a description of the used algorithm
+                and common parameters.
+
+                When you press the SEARCH button, the next relatives of the selected species are listed
+                in the Hits-box.
+
+                Then number of species listed there is limited by the number given in
+                the 'Results' field. Enter 0 to get unlimited output.
+
+                When you press the 'MOVE TO HITLIST' button, the species list is transferred to
+                the species search result list, where you're able to apply further actions to the
+                found relatives (like mark or modify them).
 
 NOTES		None
 
 EXAMPLES	None
 
-WARNINGS	Names may be different in private and PT_SERVER database.
+WARNINGS	None
 
-BUGS		No Bogs known yet
+BUGS		No bugs known yet

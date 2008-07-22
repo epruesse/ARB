@@ -1609,7 +1609,7 @@ static GB_ERROR alignToNextRelative(int      pt_server_id,
             long             bestScore = -1;
 
             aw_status("Starting PT_SERVER");
-            error = family.findFamily(pt_server_id, toAlignExpSequence, 12, 0, false, true, 0, relativesToTest+1);
+            error = family.findFamily(pt_server_id, toAlignExpSequence, 12, 0, false, true, FF_FORWARD, relativesToTest+1);
             if (!error) {
                 for (const AWTC_FIND_FAMILY_MEMBER *fl = family.getFamilyList(); fl; fl=fl->next) {
                     if (strcmp(toAlignSequence->name(), fl->name)!=0) {
@@ -1637,7 +1637,7 @@ static GB_ERROR alignToNextRelative(int      pt_server_id,
                 error = GBT_determine_T_or_U(global_alignmentType, &T_or_U, "reverse-complement");
                 GBT_reverseComplementNucSequence(mirroredSequence, length, T_or_U);
 
-                error = family.findFamily(pt_server_id, mirroredSequence, 12, 0, false, true, 0, relativesToTest+1);
+                error = family.findFamily(pt_server_id, mirroredSequence, 12, 0, false, true, FF_FORWARD, relativesToTest+1);
                 if (!error) {
                     for (const AWTC_FIND_FAMILY_MEMBER *fl=family.getFamilyList(); fl; fl=fl->next) {
                         if (fl->matches>=bestMirroredScore && strcmp(toAlignSequence->name(), fl->name)!=0) {
