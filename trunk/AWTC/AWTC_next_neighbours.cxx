@@ -1,17 +1,16 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <memory.h>
-
 #include <arbdb.h>
 #include <arbdbt.h>
-
 
 #include <servercntrl.h>
 #include <PT_com.h>
 #include <client.h>
 
 #include <awtc_next_neighbours.hxx>
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <climits>
 
 
 AWTC_FIND_FAMILY_MEMBER::AWTC_FIND_FAMILY_MEMBER(){
@@ -89,8 +88,7 @@ AWTC_FIND_FAMILY::~AWTC_FIND_FAMILY(void)
     close();
 }
 
-GB_ERROR AWTC_FIND_FAMILY::find_family(char *sequence, int find_type, int max_hits)
-{
+GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, int compl_mode, int max_results) {
     T_PT_FAMILYLIST f_list;
     char *compressed_sequence = GB_command_interpreter(gb_main, sequence, "|keep(acgtunACGTUN)", 0, 0);
 
@@ -108,31 +106,51 @@ GB_ERROR AWTC_FIND_FAMILY::find_family(char *sequence, int find_type, int max_hi
      */
 
     if (aisc_put(link, PT_LOCS, locs,
-                 LOCS_FIND_TYPE, find_type,
-                 LOCS_FIND_FAMILY, &bs,NULL)){
+                 LOCS_FF_PROBE_LEN,             oligo_len,        // oligo length (12 hardcoded till July 2008)
+                 LOCS_FF_MISMATCH_NUMBER,       mismatches,       // number of mismatches (0 hardcoded till July 2008)
+                 LOCS_FF_FIND_TYPE,             int(fast_flag),   // 0: complete search, 1: quick search (only search oligos starting with 'A')
+                 LOCS_FF_SORT_TYPE,             int(rel_matches), // 0: matches, 1: relative matches (0 hardcoded till July 2008)
+                 LOCS_FF_COMPLEMENT,            compl_mode,       // 0: fwd, 1: fwd+rev.compl, 2: fwd+rev+rev.compl+compl (0 hardcoded in PT-Server till July 2008)
+                 LOCS_FF_FIND_FAMILY,           &bs,
+                 NULL))
+    {
         return GB_export_error  ("Communication Error (2)");
     }
 
     /*
      * Read family list
      */
-    aisc_get(link,PT_LOCS, locs,LOCS_FAMILY_LIST, &f_list, NULL);
+    aisc_get(link, PT_LOCS, locs,
+             LOCS_FF_FAMILY_LIST, &f_list,
+             LOCS_FF_FAMILY_LIST_SIZE, &real_hits,
+             NULL);
 
+    hits_truncated = false;
+    if (max_results<1) max_results = INT_MAX; 
+
+    AWTC_FIND_FAMILY_MEMBER *tail = NULL;
     while (f_list){
-        if (max_hits== 0) break;
-        max_hits--;
+        if (max_results == 0) {
+            hits_truncated = true;
+            break;
+        }
+        max_results--;
+
         AWTC_FIND_FAMILY_MEMBER *fl = new AWTC_FIND_FAMILY_MEMBER();
-        fl->next = family_list;
-        family_list = fl;
+
+        (tail ? tail->next : family_list) = fl;
+        tail                              = fl;
+        fl->next                          = NULL;
 
         aisc_get(link, PT_FAMILYLIST, f_list,
-                 FAMILYLIST_NAME,&fl->name,
-                 FAMILYLIST_MATCHES,&fl->matches,
-                 FAMILYLIST_NEXT, &f_list,NULL);
+                 FAMILYLIST_NAME,        &fl->name,
+                 FAMILYLIST_MATCHES,     &fl->matches,
+                 FAMILYLIST_REL_MATCHES, &fl->rel_matches,
+                 FAMILYLIST_NEXT,        &f_list,
+                 NULL);
     }
 
     free(compressed_sequence);
-
     return 0;
 }
 
@@ -143,19 +161,29 @@ void AWTC_FIND_FAMILY::print(){
     }
 }
 
-GB_ERROR AWTC_FIND_FAMILY::go(int server_id,char *sequence,bool fast,int max_hits){
-    char buffer[256];
-    sprintf(buffer,"ARB_PT_SERVER%i",server_id);
-    GB_ERROR error;
-    error = this->open(buffer);
-    if (error) return error;
-    error = this->init_communication();
-    if (error) return error;
-    error = find_family(sequence,fast,max_hits);
-    if (error){
-        close();
-        return error;
+GB_ERROR AWTC_FIND_FAMILY::findFamily(int server_id, char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, int compl_mode, int max_results) {
+    // searches the PT-server for related species.
+    // 
+    // relation-score is calculated by fragmenting the sequence into oligos of length 'oligo_len' and
+    // then summarizing the number of hits.
+    // 
+    // 'mismatches'  = the number of allowed mismatches
+    // 'fast_flag'   = 0 -> do complete search, 1 -> search only oligos starting with 'A'
+    // 'rel_matches' = 0 -> score is number of oligo-hits, 1 -> score is relative to longer sequence (target or source) * 10
+    // 'compl_mode'  = 0 -> forward, 1 -> forward + rev.compl, 2 -> forward, reverse, compl. + rev.compl
+    //
+    // 'max_results' limits the length of the generated result list (low scores deleted first)
+    //               if < 1 -> don't limit
+
+    char     *buffer = GBS_global_string_copy("ARB_PT_SERVER%i", server_id);
+    GB_ERROR  error  = open(buffer);
+
+    if (!error) {
+        error = init_communication();
+        if (!error) {
+            error = retrieve_family(sequence, oligo_len, mismatches, fast_flag, rel_matches, compl_mode, max_results);
+        }
     }
     close();
-    return 0;
+    return error;
 }

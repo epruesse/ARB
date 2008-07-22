@@ -26,13 +26,7 @@ extern "C" int PT_start_design P_((PT_pdc *pdc, int dummy_1x));
 void ptnd_new_match P_((PT_local *locs, char *probestring));
 
 /* PT_family.cxx */
-int mark_all_matches_chain_handle P_((int name, int dummy_1x, int dummy_2x, long dummy_3x));
-int mark_all_matches P_((PT_local *locs, POS_TREE *pt, char *probe, int length, int mismatches, int height, int max_mismatches));
-void clear_statistic P_((void));
-void make_match_statistic P_((int probe_len));
-int make_PT_family_list P_((PT_local *locs));
-int probe_is_ok P_((char *probe, int probe_len, char first_c, char second_c));
-extern "C" int find_family P_((PT_local *locs, bytestring *species));
+extern "C" int ff_find_family P_((PT_local *locs, bytestring *species));
 
 /* PT_prefixtree.cxx */
 void PT_init_count_bits P_((void));

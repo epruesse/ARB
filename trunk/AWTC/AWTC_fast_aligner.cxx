@@ -1603,15 +1603,15 @@ static GB_ERROR alignToNextRelative(int      pt_server_id,
             nearestRelative[next_relatives] = 0;
         }
 
-        {                       // find relatives
-            AWTC_FIND_FAMILY         family(GLOBAL_gb_main);
-            AWTC_FIND_FAMILY_MEMBER *fl;
-            long                     bestScore = -1;
+        {
+            // find relatives
+            AWTC_FIND_FAMILY family(GLOBAL_gb_main);
+            long             bestScore = -1;
 
             aw_status("Starting PT_SERVER");
-            error = family.go(pt_server_id,toAlignExpSequence,0,relativesToTest+1);
+            error = family.findFamily(pt_server_id, toAlignExpSequence, 12, 0, false, true, 0, relativesToTest+1);
             if (!error) {
-                for (fl = family.family_list; fl; fl=fl->next) {
+                for (const AWTC_FIND_FAMILY_MEMBER *fl = family.getFamilyList(); fl; fl=fl->next) {
                     if (strcmp(toAlignSequence->name(), fl->name)!=0) {
                         if (GBT_find_species(GLOBAL_gb_main,fl->name)) {
                             if (fl->matches>=bestScore) {
@@ -1637,9 +1637,9 @@ static GB_ERROR alignToNextRelative(int      pt_server_id,
                 error = GBT_determine_T_or_U(global_alignmentType, &T_or_U, "reverse-complement");
                 GBT_reverseComplementNucSequence(mirroredSequence, length, T_or_U);
 
-                error = family.go(pt_server_id, mirroredSequence,0,relativesToTest+1);
+                error = family.findFamily(pt_server_id, mirroredSequence, 12, 0, false, true, 0, relativesToTest+1);
                 if (!error) {
-                    for (fl=family.family_list; fl; fl=fl->next) {
+                    for (const AWTC_FIND_FAMILY_MEMBER *fl=family.getFamilyList(); fl; fl=fl->next) {
                         if (fl->matches>=bestMirroredScore && strcmp(toAlignSequence->name(), fl->name)!=0) {
                             if (GBT_find_species(GLOBAL_gb_main, fl->name)) {
                                 bestMirroredScore = fl->matches;
