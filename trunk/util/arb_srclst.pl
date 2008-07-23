@@ -82,6 +82,7 @@ my %skipped_extensions = map { $_ => 1; } (
                                            'list',
                                            'log',
                                            'swp',
+                                           'bak',
                                           );
 
 
@@ -177,6 +178,11 @@ my @forced_when_matchesFull = (
                                qr/\/PROBE_WEB\/SERVER\/.*\.jar$/o,
                                qr/\/lib\/addlibs\/(lib.*|.*\.sh)$/o,
                               );
+
+# files that are even packed when generated and not in VC
+my @pack_fullGenerated = (
+                          qr/\/TEMPLATES\/svn_revision\.h$/o,
+                         );
 
 # ------------------------------------------------------------
 # sanity checks
@@ -393,7 +399,9 @@ sub getVCEntries($\%) {
 sub expectVCmember($$\%) {
   my ($full,$item,$VC_r) = @_;
   if (not exists $$VC_r{$item} and $ignore_unknown==0) {
-    die "'$full' ($_) included, but not in $VC (seems to be generated)";
+    if (not matchingExpr($full,@pack_fullGenerated)) {
+      die "'$full' ($_) included, but not in $VC (seems to be generated)";
+    }
   }
 }
 

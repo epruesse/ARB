@@ -556,7 +556,7 @@ void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
         fprintf(mail,"------------------------------\n");
         fprintf(mail,"VERSION       :" ARB_VERSION "\n");
 #if defined(SHOW_WHERE_BUILD)
-        fprintf(mail,"BUILD_BY      :" BUILD_USER "@" BUILD_HOST "\n");        
+        fprintf(mail,"BUILD_BY      :" ARB_BUILD_USER "@" ARB_BUILD_HOST "\n");        
 #endif // SHOW_WHERE_BUILD
         fprintf(mail,"SYSTEMINFO    :\n");
         fclose(mail);
