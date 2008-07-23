@@ -1,7 +1,7 @@
 # =============================================================== #
 #                                                                 #
 #   File      : Makefile                                          #
-#   Time-stamp: <Fri Jul/18/2008 09:14 MET Coder@ReallySoft.de>   #
+#   Time-stamp: <Wed Jul/23/2008 14:46 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Institute of Microbiology (Technical University Munich)       #
 #   http://www.arb-home.de/                                       #
@@ -279,7 +279,8 @@ first_target:
 		@echo ''
 		@echo 'Internal maintainance:'
 		@echo ''
-		@echo ' release     - make tarfile + make save ("release_quick" to skip rebuild)'
+		@echo ' release     - build a release (increases minor version number)'
+		@echo ' stable      - like "release", but increase major version number'
 		@echo ' tarfile     - make rebuild and create arb version tarfile ("tarfile_quick" to skip rebuild)'
 #		@echo ' tarale      - compress emacs and ale lisp files int arb_ale.tar.gz'
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE'
@@ -1249,9 +1250,17 @@ sourcetarfile: rmbak
 	util/arb_save
 
 save2: rmbak
-		util/arb_save ignore
+	util/arb_save ignore
 
-release: 
+release:
+	touch SOURCE_TOOLS/inc_minor.stamp
+	$(MAKE) do_release
+
+stable:
+	touch SOURCE_TOOLS/inc_major.stamp
+	$(MAKE) do_release
+
+do_release: 
 	@echo Making release
 	@echo PATH=$(PATH)
 	@echo ARBHOME=$(ARBHOME)
