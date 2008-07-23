@@ -96,6 +96,23 @@ file2hash($dot_build_info,%build_info,0);
 my $arb_build_h    = $TEMPLATES.'/arb_build.h';
 my $svn_revision_h = $TEMPLATES.'/svn_revision.h';
 
+my $in_SVN = 0;
+if (-d $ARBHOME.'/.svn') {
+  # in SVN checkout -> update revision info
+  $in_SVN = 1;
+  my $revision = `svnversion -n $ARBHOME`;
+  my @svn_revision = (
+                      '#define ARB_SVN_REVISION "'.$revision.'"',
+                     );
+  update($svn_revision_h,@svn_revision);
+}
+else {
+  if (not -f $svn_revision_h) {
+    die "Missing file '$svn_revision_h'";
+  }
+  # use revision info as in source tarball
+}
+
 my $date = `date '+%d.%b.%Y'`;
 chomp($date);
 my $year = undef;
@@ -106,44 +123,48 @@ else {
   die "error parsing year from '$date'";
 }
 
-# upgrade version?
+# read version info
 my $version_info = $SOURCE_TOOLS.'/version_info';
 my %version_info = ();
 file2hash($version_info,%version_info,1);
 
+# upgrade version?
 my $inc_major = $SOURCE_TOOLS.'/inc_major.stamp';
 my $inc_minor = $SOURCE_TOOLS.'/inc_minor.stamp';
 
-if (-f $inc_major or -f $inc_minor) { # version upgrade requested
-  my $last_version_upgrade = $version_info{last_upgrade};
-  if (not defined $last_version_upgrade) { $last_version_upgrade = 0; }
+if ($in_SVN==1 and $build_info{allowVersionUpgrade}==1) {
+  if (-f $inc_major or -f $inc_minor) { # version upgrade requested
+    my $last_version_upgrade = $version_info{last_upgrade};
+    if (not defined $last_version_upgrade) { $last_version_upgrade = 0; }
 
-  my $earliestNextUpgrade = $last_version_upgrade + (60*60);
-  if (time>=$earliestNextUpgrade) { # do not upgrade version more than once per hour
-    if ($build_info{allowVersionUpgrade}==1) { # allowed to commit version upgrade to SVN?
-      my $oldVersion = $version_info{MAJOR}.'.'.$version_info{MINOR};
-      if (-f $inc_major) {
-        $version_info{MAJOR}++;
-        $version_info{MINOR} = 0;
-      }
-      else {
-        $version_info{MINOR}++;
-      }
-      my $newVersion = $version_info{MAJOR}.'.'.$version_info{MINOR};
-      print "Version upgraded from $oldVersion to $newVersion\n";
-      $version_info{last_upgrade}=time; # upgrade timestamp
+    my $earliestNextUpgrade = $last_version_upgrade + (60*60);
+    if (time>=$earliestNextUpgrade) { # do not upgrade version more than once per hour
+        my $oldVersion = $version_info{MAJOR}.'.'.$version_info{MINOR};
+        if (-f $inc_major) {
+          $version_info{MAJOR}++;
+          $version_info{MINOR} = 0;
+        }
+        else {
+          $version_info{MINOR}++;
+        }
+        my $newVersion = $version_info{MAJOR}.'.'.$version_info{MINOR};
+        print "Version upgraded from $oldVersion to $newVersion\n";
+        $version_info{last_upgrade}=time; # upgrade timestamp
 
-      hash2file(%version_info,$version_info);
+        hash2file(%version_info,$version_info);
+        my $command = "cd '$ARBHOME/SOURCE_TOOLS'; ".
+          "svn commit version_info --non-interactive ".
+            "--message 'Auto version upgrade by ".$build_info{user}.'@'.$build_info{host}."'";
+        `( $command )`;
+    }
+    else {
+      print "Skipping version upgrade (last upgrade was ".(time-$last_version_upgrade)." seconds ago)\n";
     }
   }
-  else {
-    print "Skipping version upgrade (last upgrade was ".(time-$last_version_upgrade)." seconds ago)\n";
-  }
-
-  # remove requests
-  -f $inc_minor && unlink($inc_minor);
-  -f $inc_major && unlink($inc_major);
 }
+# remove requests
+-f $inc_minor && unlink($inc_minor);
+-f $inc_major && unlink($inc_major);
 
 my @arb_build = (
                  '#define ARB_VERSION_MAJOR "'.$version_info{MAJOR}.'"',
@@ -161,17 +182,3 @@ if ($build_info{showWhereBuild}!=0) {
 
 update($arb_build_h,@arb_build);
 
-if (-d $ARBHOME.'/.svn') {
-  # in SVN checkout -> update revision info
-  my $revision = `svnversion -n $ARBHOME`;
-  my @svn_revision = (
-                      '#define ARB_SVN_REVISION "'.$revision.'"',
-                     );
-  update($svn_revision_h,@svn_revision);
-}
-else {
-  if (not -f $svn_revision_h) {
-    die "Missing file '$svn_revision_h'";
-  }
-  # use revision info as in source tarball
-}
