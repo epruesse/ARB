@@ -159,22 +159,25 @@ static int make_PT_family_list(PT_local *locs) {
     
     // destroy old list
     while(locs->ff_fl) destroy_PT_family_list(locs->ff_fl);
-    
+
     // build new list
+    int real_hits = 0;
+
     for (i = 0; i < psg.data_count; i++) {
         if (my_list[i]->stat.match_count != 0) {
             PT_family_list *fl = create_PT_family_list();
-            
+
             fl->name        = strdup(my_list[i]->name);
             fl->matches     = my_list[i]->stat.match_count;
             fl->rel_matches = my_list[i]->stat.rel_match_count;
 
             aisc_link(&locs->pff_fl, fl);
+            real_hits++;
         }
     }
     free((char *)my_list);
 
-    locs->ff_list_size = psg.data_count;
+    locs->ff_list_size = real_hits;
 
     return 0;
 }
