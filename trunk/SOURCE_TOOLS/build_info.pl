@@ -96,23 +96,7 @@ file2hash($dot_build_info,%build_info,0);
 my $arb_build_h    = $TEMPLATES.'/arb_build.h';
 my $svn_revision_h = $TEMPLATES.'/svn_revision.h';
 
-my $in_SVN = 0;
-if (-d $ARBHOME.'/.svn') {
-  # in SVN checkout -> update revision info
-  $in_SVN = 1;
-  my $revision = `svnversion -n $ARBHOME`;
-  my @svn_revision = (
-                      '#define ARB_SVN_REVISION "'.$revision.'"',
-                     );
-  update($svn_revision_h,@svn_revision);
-}
-else {
-  if (not -f $svn_revision_h) {
-    die "Missing file '$svn_revision_h'";
-  }
-  # use revision info as in source tarball
-}
-
+my $in_SVN = (-d $ARBHOME.'/.svn');
 my $date = `date '+%d.%b.%Y'`;
 chomp($date);
 my $year = undef;
@@ -181,4 +165,20 @@ if ($build_info{showWhereBuild}!=0) {
 }
 
 update($arb_build_h,@arb_build);
+
+# update revision info?
+if ($in_SVN) {
+  # in SVN checkout -> update revision info
+  my $revision = `svnversion -n $ARBHOME`;
+  my @svn_revision = (
+                      '#define ARB_SVN_REVISION "'.$revision.'"',
+                     );
+  update($svn_revision_h,@svn_revision);
+}
+else {
+  if (not -f $svn_revision_h) {
+    die "Missing file '$svn_revision_h'";
+  }
+  # use revision info as in source tarball
+}
 
