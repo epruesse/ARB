@@ -1410,11 +1410,14 @@ char *aw_string_selection(const char *title, const char *prompt, const char *awa
 /*****************      AW_FILESELECTION     *******************/
 /***********************************************************************/
 
-#define AW_FILE_SELECT_DIR_AWAR "tmp/file_select/directory"
-#define AW_FILE_SELECT_FILE_AWAR "tmp/file_select/file_name"
+#define AW_FILE_SELECT_DIR_AWAR    "tmp/file_select/directory"
+#define AW_FILE_SELECT_FILE_AWAR   "tmp/file_select/file_name"
 #define AW_FILE_SELECT_FILTER_AWAR "tmp/file_select/filter"
-#define AW_FILE_SELECT_TITLE_AWAR "tmp/file_select/title"
+#define AW_FILE_SELECT_TITLE_AWAR  "tmp/file_select/title"
 
+#if defined(DEVEL_RALF)
+#warning aw_file_selection is unused. it is thought to work as 'Browse' button at places where currently a plain input field is used to enter filenames
+#endif // DEVEL_RALF
 
 char *aw_file_selection( const char *title, const char *dir, const char *def_name, const char *suffix )
 

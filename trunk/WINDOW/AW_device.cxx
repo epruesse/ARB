@@ -513,7 +513,7 @@ void AW_device::push_clip_scale(void)
 }
 void AW_device::pop_clip_scale(void){
     if (!clip_scale_stack) {
-        AW_ERROR("To many pop_clip_scale on that device");
+        AW_ERROR("Too many pop_clip_scale on that device");
         return;
     }
 

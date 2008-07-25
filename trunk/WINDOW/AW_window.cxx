@@ -741,14 +741,24 @@ void AW_cb_struct::run_callback(void) {
         return;
 
     if (root->disable_callbacks) {
-        //  the following callbacks are allowed even if disable_callbacks is true
-        if ( (f != (AW_CB)message_cb) && (f != (AW_CB)macro_message_cb) && (f
-                != (AW_CB)modify_input_cb) && (f != (AW_CB)input_cb) && (f
-                != (AW_CB)AW_POPUP_HELP) && (f != (AW_CB)AW_POPDOWN) &&
+        // some functions (namely aw_message, aw_input, aw_string_selection and aw_file_selection)
+        // have to disable most callbacks, because they are often called from inside these callbacks
+        // (e.g. because some exceptional condition occurred which needs user interaction) and if
+        // callbacks weren't disabled, a recursive deadlock occurs.
 
-        !aw->is_expose_callback(AW_MIDDLE_AREA, f) && !aw->is_resize_callback(
-                AW_MIDDLE_AREA, f) && !aw->is_expose_callback(AW_INFO_AREA, f)
-                && !aw->is_resize_callback(AW_INFO_AREA, f) ) {
+        // the following callbacks are allowed even if disable_callbacks is true
+        if ((f != (AW_CB)message_cb)       &&
+            (f != (AW_CB)macro_message_cb) &&
+            (f != (AW_CB)modify_input_cb)  &&
+            (f != (AW_CB)input_cb)         &&
+            (f != (AW_CB)AW_POPUP_HELP)    &&
+            (f != (AW_CB)AW_POPDOWN)       &&
+            // disabled AW_MIDDLE_AREA-callbacks, cause they seem to be unneccessary and leaded to recursion and crash.
+            // !aw->is_expose_callback(AW_MIDDLE_AREA, f) &&
+            // !aw->is_resize_callback(AW_MIDDLE_AREA, f) &&
+            !aw->is_expose_callback(AW_INFO_AREA, f)      &&
+            !aw->is_resize_callback(AW_INFO_AREA, f) )
+        {
             aw_message("That has been ignored. Answer the prompt first!");
             return;
         }
