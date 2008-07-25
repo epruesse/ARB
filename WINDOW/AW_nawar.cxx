@@ -672,8 +672,7 @@ void aw_create_selection_box_awars(AW_root *awr, const char *awar_base,
 
     char *dir = awar_dir->read_string();
     if (dir[0] && !GB_is_directory(dir)) {
-        int answer = aw_message(GBS_global_string("Directory '%s' does not exist", dir), "Create,Ignore");
-        if (answer == 0) {
+        if (aw_ask_sure(GBS_global_string("Directory '%s' does not exist. Create?", dir))) {
             GB_ERROR error = GB_create_directory(dir);
             if (error) aw_message(GBS_global_string("Failed to create directory '%s' (Reason: %s)", dir, error));
         }

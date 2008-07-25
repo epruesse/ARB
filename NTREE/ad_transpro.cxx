@@ -49,8 +49,8 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
     gb_dest = GBT_get_alignment(gbmain,ali_dest);
     if (!gb_dest) {
         const char *msg = GBS_global_string("You have not selected a destination alignment\n"
-                                            "May I create one ('%s_pro') for you?",ali_source);
-        if (aw_message(msg,"CREATE,CANCEL")){
+                                            "Shall I create one ('%s_pro') for you?", ali_source);
+        if (!aw_ask_sure(msg)) {
             return "Cancelled";
         }
 
@@ -740,14 +740,14 @@ void transdna_event(AW_window *aww)
     error = arb_transdna(GLOBAL_gb_main,ali_source,ali_dest, &neededLength);
     if (error) {
         GB_abort_transaction(GLOBAL_gb_main);
-        aw_message(error,"OK");
+        aw_popup_ok(error);
     }else{
         // GBT_check_data(GLOBAL_gb_main,ali_dest); // done by arb_transdna()
         GB_commit_transaction(GLOBAL_gb_main);
     }
 
     if (!retrying && neededLength) {
-        if (aw_message(GBS_global_string("Increase length of '%s' to %li?", ali_dest, neededLength), "Yes,No") == 0) {
+        if (aw_ask_sure(GBS_global_string("Increase length of '%s' to %li?", ali_dest, neededLength))) {
             GB_transaction dummy(GLOBAL_gb_main);
             GBT_set_alignment_len(GLOBAL_gb_main, ali_dest, neededLength); // @@@ has no effect ? ? why ?
             aw_message(GBS_global_string("Alignment length of '%s' set to %li\nrunning re-aligner again!", ali_dest, neededLength));

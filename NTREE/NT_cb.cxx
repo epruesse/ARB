@@ -22,26 +22,28 @@
 
 #define AWT_TREE(ntw) ((AWT_graphic_tree *)ntw->tree_disp)
 
-void
-NT_delete_mark_all_cb(void *dummy, AWT_canvas *ntw) {
-    AWUSE(dummy);
-    GB_ERROR error = 0;
-    if (aw_message("Are you sure to delete species ??\n"
-                   "This will destroy primary data !!!","YES,NO")) return;
-    GB_begin_transaction(ntw->gb_main);
-    GBDATA *gb_species,*gb_next;
-    for (gb_species = GBT_first_marked_species(ntw->gb_main); gb_species; gb_species = gb_next ) {
-        gb_next = GBT_next_marked_species(gb_species);
-        if (!error) error = GB_delete(gb_species);
-        else    break;
+void NT_delete_mark_all_cb(void *, AWT_canvas *ntw) {
+    if (aw_ask_sure("Are you sure to delete species ??\n"
+                    "This will destroy primary data !!!"))
+    {
+        {
+            GB_ERROR       error = 0;
+            GB_transaction ta(ntw->gb_main);
+
+            GBDATA *gb_species,*gb_next;
+            for (gb_species = GBT_first_marked_species(ntw->gb_main); gb_species; gb_species = gb_next ) {
+                gb_next = GBT_next_marked_species(gb_species);
+                if (!error) error = GB_delete(gb_species);
+                else    break;
+            }
+        
+            if (error) {
+                aw_message(error);
+                ta.abort();
+            }
+        }
+        ntw->refresh();
     }
-    if (error) {
-        aw_message(error);
-        GB_abort_transaction(ntw->gb_main);
-    }else{
-        GB_commit_transaction(ntw->gb_main);
-    }
-    ntw->refresh();
 }
 
 

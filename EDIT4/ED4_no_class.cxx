@@ -2231,7 +2231,7 @@ static void create_new_species(AW_window */*aww*/, AW_CL cl_creation_mode)
         free(new_species_name);
     }
 
-    if (error) aw_message(error, "OK");
+    if (error) aw_popup_ok(error);
 }
 
 AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode)

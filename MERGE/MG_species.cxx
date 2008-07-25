@@ -1104,8 +1104,8 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
                     GBS_strcat(str,"ABORT");
 
                     b = GBS_strclose(str);
-                    aliid = aw_message("There are more than one possible alignment targets\n"
-                                       "Choose one destination alignment or ABORT",b);
+                    aliid = aw_question("There are more than one possible alignment targets\n"
+                                        "Choose one destination alignment or ABORT",b);
                     free(b);
                     if (aliid >= d) {
                         error = "Operation Aborted";
@@ -1192,16 +1192,15 @@ GB_ERROR MG_simple_merge(AW_root *awr) {
                 m_name = newname;
             }
             else {
-                switch (aw_message(GBS_global_string(
-                                                     "Warning:  There is a name conflict for species '%s'\n"
-                                                     "  You may:\n"
-                                                     "  - Overwrite existing species\n"
-                                                     "  - Overwrite all species with name conflicts\n"
-                                                     "  - Not import species\n"
-                                                     "  - Rename imported species\n"
-                                                     "  - Automatically rename species (append .NUM)\n"
-                                                     "  - Abort everything", m_name),
-                                   "overwrite, overwrite all, don't import, rename, auto-rename, abort")){
+                switch (aw_question(GBS_global_string("Warning:  There is a name conflict for species '%s'\n"
+                                                      "  You may:\n"
+                                                      "  - Overwrite existing species\n"
+                                                      "  - Overwrite all species with name conflicts\n"
+                                                      "  - Not import species\n"
+                                                      "  - Rename imported species\n"
+                                                      "  - Automatically rename species (append .NUM)\n"
+                                                      "  - Abort everything", m_name),
+                                    "overwrite, overwrite all, don't import, rename, auto-rename, abort")){
                     case 1:
                         overwriteall = 1;
                     case 0:

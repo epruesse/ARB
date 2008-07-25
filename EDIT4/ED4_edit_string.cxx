@@ -1123,7 +1123,7 @@ void ED4_Edit_String::edit(ED4_work_info *info)
             e4_assert(info->mode==AD_NOWRITE);
 
             if (is_remapped_sequence) {
-                int check = aw_message("Please check 'Preferences/Options/OSC/Show all gaps' in order to edit remarks", "Ok,Check it for me");
+                int check = aw_question("Please check 'Preferences/Options/OSC/Show all gaps' in order to edit remarks", "Ok,Check it for me");
                 if (check) {
                     ED4_ROOT->aw_root->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->write_int(ED4_RM_NONE);
                 }

@@ -86,9 +86,6 @@ static GBDATA *gen_find_gene_by_id(GBDATA *gb_main, const char *id) {
 
 static char *old_species_marks = 0; // configuration storing marked species
 
-//  --------------------------------------------------------------------------------------------------------------
-//      extern "C" GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data)
-//  --------------------------------------------------------------------------------------------------------------
 extern "C" GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data) {
     AWUSE(client_data);
     GB_ERROR error = 0;
@@ -109,9 +106,6 @@ extern "C" GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_speci
     return error;
 }
 
-//  ---------------------------------------------------------------------------------------------------------
-//      static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range)
-//  ---------------------------------------------------------------------------------------------------------
 static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range) {
     GBDATA   *gb_organism = 0;
     GB_ERROR  error      = 0;
@@ -151,9 +145,7 @@ static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QU
     if (error) GB_export_error(error);
     return gb_organism ? GEN_expect_gene_data(gb_organism) : 0;
 }
-//  -------------------------------------------------------------------------------------------
-//      static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE range)
-//  -------------------------------------------------------------------------------------------
+
 static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE range) {
     GBDATA *gb_organism = 0;
     switch (range) {
@@ -207,9 +199,6 @@ struct ad_item_selector GEN_item_selector         = {
     &AWT_organism_selector
 };
 
-//  -------------------------------------------------------
-//      void GEN_species_name_changed_cb(AW_root *awr)
-//  -------------------------------------------------------
 void GEN_species_name_changed_cb(AW_root *awr) {
     char   *species_name = awr->awar(AWAR_SPECIES_NAME)->read_string();
     GBDATA *gb_species   = GBT_find_species(GLOBAL_gb_main, species_name);
@@ -226,9 +215,6 @@ void GEN_species_name_changed_cb(AW_root *awr) {
     free(species_name);
 }
 
-//  ----------------------------------------------------------------------------------------------------------------------------
-//      static void GB_auto_select_pseudo_species_cb(AW_root *awr, GBDATA *gb_main, const char *organism, const char *gene)
-//  ----------------------------------------------------------------------------------------------------------------------------
 static void auto_select_pseudo_species(AW_root *awr, GBDATA *gb_main, const char *organism, const char *gene) {
     GB_transaction  dummy(gb_main);
     GBDATA         *gb_pseudo = GEN_find_pseudo_species(gb_main, organism, gene, 0); // search for pseudo species..
@@ -245,9 +231,6 @@ static void auto_select_pseudo_species(AW_root *awr, GBDATA *gb_main, const char
     }
 }
 
-//  --------------------------------------------------------------------
-//      void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr)
-//  --------------------------------------------------------------------
 void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
     GB_transaction  dummy(gb_main);
     GBDATA         *gb_gene = GEN_get_current_gene(gb_main, awr);
@@ -301,9 +284,6 @@ void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
     }
 }
 
-//  --------------------------------------------------
-//      void GEN_update_combined_cb(AW_root *awr)
-//  --------------------------------------------------
 void GEN_update_combined_cb(AW_root *awr) {
     char       *organism     = awr->awar(AWAR_ORGANISM_NAME)->read_string();
     char       *gene         = awr->awar(AWAR_GENE_NAME)->read_string();
@@ -321,9 +301,6 @@ void GEN_update_combined_cb(AW_root *awr) {
     free(organism);
 }
 
-//  -------------------------------------------------------------------
-//      void GEN_create_awars(AW_root *aw_root, AW_default aw_def)
-//  -------------------------------------------------------------------
 void GEN_create_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_COMBINED_GENE_NAME,"",GLOBAL_gb_main);
     aw_root->awar_string(AWAR_GENE_CONTENT,"",GLOBAL_gb_main);
@@ -341,10 +318,6 @@ void GEN_create_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_GENE_EXTRACT_ALI, "ali_gene_" ,   aw_def);
 }
 
-
-//  ---------------------------------------------------------------------------
-//      GBDATA *GEN_get_current_organism(GBDATA *gb_main, AW_root *aw_root)
-//  ---------------------------------------------------------------------------
 GBDATA *GEN_get_current_organism(GBDATA *gb_main, AW_root *aw_root) {
     char   *species_name = aw_root->awar(AWAR_ORGANISM_NAME)->read_string();
     GBDATA *gb_species   = GBT_find_species(gb_main,species_name);
@@ -352,9 +325,6 @@ GBDATA *GEN_get_current_organism(GBDATA *gb_main, AW_root *aw_root) {
     return gb_species;
 }
 
-//  -----------------------------------------------------------------------------
-//      GBDATA* GEN_get_current_gene_data(GBDATA *gb_main, AW_root *aw_root)
-//  -----------------------------------------------------------------------------
 GBDATA* GEN_get_current_gene_data(GBDATA *gb_main, AW_root *aw_root) {
     GBDATA *gb_species      = GEN_get_current_organism(gb_main, aw_root);
     GBDATA *gb_gene_data    = 0;
@@ -364,9 +334,6 @@ GBDATA* GEN_get_current_gene_data(GBDATA *gb_main, AW_root *aw_root) {
     return gb_gene_data;
 }
 
-//  ---------------------------------------------------------------------
-//      GBDATA *GEN_get_current_gene(GBDATA *gb_main, AW_root *root)
-//  ---------------------------------------------------------------------
 GBDATA *GEN_get_current_gene(GBDATA *gb_main, AW_root *aw_root) {
     GBDATA *gb_species = GEN_get_current_organism(gb_main, aw_root);
     GBDATA *gb_gene    = 0;
@@ -385,9 +352,6 @@ static AW_CL    ad_global_scannerid   = 0;
 static AW_root *ad_global_scannerroot = 0;
 AW_CL           gene_query_global_cbs = 0;
 
-//  -------------------------------------------
-//      void gene_rename_cb(AW_window *aww)
-//  -------------------------------------------
 void gene_rename_cb(AW_window *aww){
 
     GB_ERROR  error   = 0;
@@ -427,10 +391,6 @@ void gene_rename_cb(AW_window *aww){
     delete dest;
 }
 
-
-//  -----------------------------------------------------------
-//      AW_window *create_gene_rename_window(AW_root *root)
-//  -----------------------------------------------------------
 AW_window *create_gene_rename_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
@@ -453,9 +413,6 @@ AW_window *create_gene_rename_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-//  -----------------------------------------
-//      void gene_copy_cb(AW_window *aww)
-//  -----------------------------------------
 void gene_copy_cb(AW_window *aww){
     GB_begin_transaction(GLOBAL_gb_main);
 
@@ -497,9 +454,6 @@ void gene_copy_cb(AW_window *aww){
     delete dest;
 }
 
-//  ---------------------------------------------------------
-//      AW_window *create_gene_copy_window(AW_root *root)
-//  ---------------------------------------------------------
 AW_window *create_gene_copy_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
@@ -523,9 +477,6 @@ AW_window *create_gene_copy_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-//  -------------------------------------------
-//      void gene_create_cb(AW_window *aww)
-//  -------------------------------------------
 void gene_create_cb(AW_window *aww){
     GB_begin_transaction(GLOBAL_gb_main);
 
@@ -592,9 +543,6 @@ void gene_create_cb(AW_window *aww){
     delete dest;
 }
 
-//  -----------------------------------------------------------
-//      AW_window *create_gene_create_window(AW_root *root)
-//  -----------------------------------------------------------
 AW_window *create_gene_create_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
@@ -625,33 +573,20 @@ AW_window *create_gene_create_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-
-
-//  -------------------------------------------
-//      void gene_delete_cb(AW_window *aww)
-//  -------------------------------------------
 void gene_delete_cb(AW_window *aww){
-    if (aw_message("Are you sure to delete the gene","OK,CANCEL")) return;
+    if (aw_ask_sure("Are you sure to delete the gene?")) {
+        GB_transaction  ta(GLOBAL_gb_main);
+        GB_ERROR        error   = 0;
+        GBDATA         *gb_gene = GEN_get_current_gene(GLOBAL_gb_main, aww->get_root());
 
-    GB_begin_transaction(GLOBAL_gb_main);
-
-    GB_ERROR error    = 0;
-    GBDATA   *gb_gene = GEN_get_current_gene(GLOBAL_gb_main, aww->get_root()); // aw_root);
-
-    if (gb_gene) error = GB_delete(gb_gene);
-    else error         = "Please select a gene first";
-
-    if (!error) GB_commit_transaction(GLOBAL_gb_main);
-    else GB_abort_transaction(GLOBAL_gb_main);
-
-    if (error) aw_message(error);
+        error = gb_gene ? GB_delete(gb_gene) : "Please select a gene first";
+        if (error) {
+            ta.abort();
+            aw_message(error);
+        }
+    }
 }
 
-
-
-//  ------------------------------------------------------------
-//      void GEN_map_gene(AW_root *aw_root, AW_CL scannerid)
-//  ------------------------------------------------------------
 void GEN_map_gene(AW_root *aw_root, AW_CL scannerid)
 {
     GB_transaction  dummy(GLOBAL_gb_main);
@@ -660,9 +595,6 @@ void GEN_map_gene(AW_root *aw_root, AW_CL scannerid)
     if (gb_gene) awt_map_arbdb_scanner(scannerid, gb_gene, 0, CHANGE_KEY_PATH_GENES);
 }
 
-//  ----------------------------------------------------
-//      void GEN_create_field_items(AW_window *aws)
-//  ----------------------------------------------------
 void GEN_create_field_items(AW_window *aws) {
     aws->insert_menu_topic("reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&GEN_item_selector); 
     aws->insert_menu_topic("delete_field",   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&GEN_item_selector); 
@@ -675,10 +607,6 @@ void GEN_create_field_items(AW_window *aws) {
     aws->insert_menu_topic("refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_update_cb,        (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
 }
 
-
-//  ------------------------------------------------------------
-//      AW_window *GEN_create_gene_window(AW_root *aw_root)
-//  ------------------------------------------------------------
 AW_window *GEN_create_gene_window(AW_root *aw_root) {
     static AW_window_simple_menu *aws = 0;
     if (aws) return (AW_window *)aws;
@@ -741,9 +669,6 @@ void GEN_popup_gene_window(AW_window *aww, AW_CL, AW_CL) { // w/o this DETACH do
     aws->show();
 }
 
-//  ------------------------------------------------------------------
-//      AW_window *GEN_create_gene_query_window(AW_root *aw_root)
-//  ------------------------------------------------------------------
 AW_window *GEN_create_gene_query_window(AW_root *aw_root) {
 
     static AW_window_simple_menu *aws = 0;

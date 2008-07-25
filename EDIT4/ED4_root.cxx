@@ -452,10 +452,12 @@ ED4_returncode ED4_root::init_alignment() {
 
     alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
     alignment_type = GBT_get_alignment_type(GLOBAL_gb_main,alignment_name);
-    if (alignment_type==GB_AT_UNKNOWN) aw_message("You have to select a valid alignment before you can start ARB_EDIT4", "EXIT");
+    if (alignment_type==GB_AT_UNKNOWN) {
+        aw_popup_exit("You have to select a valid alignment before you can start ARB_EDIT4");
+    }
 
     GBDATA *gb_alignment = GBT_get_alignment(GLOBAL_gb_main, alignment_name);
-    if (!gb_alignment) aw_message("You can't edit without an existing alignment", "EXIT");
+    if (!gb_alignment) aw_popup_exit("You can't edit without an existing alignment");
 
     GBDATA *gb_alignment_len = GB_search(gb_alignment,"alignment_len",GB_FIND);
     int alignment_length = GB_read_int(gb_alignment_len);
@@ -1442,7 +1444,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
 
     if (ED4_window::no_of_windows == MAXWINDOWS)                            // no more then 5 windows allowed
     {
-        aw_message(GBS_global_string("Restricted to %i windows", MAXWINDOWS), 0);
+        aw_message(GBS_global_string("Restricted to %i windows", MAXWINDOWS));
         return ED4_R_BREAK;
     }
 

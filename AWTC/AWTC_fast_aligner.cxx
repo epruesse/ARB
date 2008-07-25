@@ -1656,7 +1656,7 @@ static GB_ERROR alignToNextRelative(int      pt_server_id,
                         sprintf(message, "'%s' seems to be the other way round (matches=%li, matches if turned=%li)",
                                 toAlignSequence->name(), bestScore, bestMirroredScore);
 
-                        turnIt = aw_message(message, "Turn sequence,Leave sequence alone")==0;
+                        turnIt = aw_question(message, "Turn sequence,Leave sequence alone")==0;
                     }
                     else {
                         turnIt = 1;
@@ -2297,7 +2297,7 @@ static GB_ERROR AWTC_aligner(GB_CSTR                         reference, // name 
 
     if (wasNotAllowedToAlign>0) {
         const char *mess = GB_export_error("%i species were not aligned (because of protection level)", wasNotAllowedToAlign);
-        aw_message(mess, "OK");
+        aw_popup_ok(mess);
     }
 
     if (err_count) {

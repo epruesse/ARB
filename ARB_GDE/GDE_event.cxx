@@ -374,12 +374,12 @@ static void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
                                                     "Note: After aligning it's recommended to choose 'reimport all'.",
                                                     savename);
                 if (!load_all) {
-                    select_mode = aw_message(msg,
-                                             "delete existing," // 0
-                                             "skip," // 1
-                                             "reimport sequence," // 2
-                                             "reimport all" // 3
-                                             );
+                    select_mode = aw_question(msg,
+                                              "delete existing,"   // 0
+                                              "skip,"              // 1
+                                              "reimport sequence," // 2
+                                              "reimport all"       // 3
+                                              );
 
                     if (select_mode == 3) { // load all sequences
                         load_all = 1;

@@ -75,22 +75,18 @@ void NT_create_alignment_vars(AW_root *aw_root,AW_default aw_def)
     GB_pop_transaction(GLOBAL_gb_main);
 }
 
-void ad_al_delete_cb(AW_window *aww)
-{
-    if (aw_message("Are you sure to delete all data belonging to this alignment","OK,CANCEL"))return;
+void ad_al_delete_cb(AW_window *aww) {
+    if (aw_ask_sure("Are you sure to delete all data belonging to this alignment")) {
+        char           *source = aww->get_root()->awar("presets/use")->read_string();
+        GB_transaction  ta(GLOBAL_gb_main);
+        GB_ERROR        error  = GBT_rename_alignment(GLOBAL_gb_main,source,0,0,1);
 
-    GB_ERROR error = 0;
-    char *source = aww->get_root()->awar("presets/use")->read_string();
-
-    GB_begin_transaction(GLOBAL_gb_main);
-
-    error = GBT_rename_alignment(GLOBAL_gb_main,source,0,0,1);
-
-    if (!error) GB_commit_transaction(GLOBAL_gb_main);
-    else    GB_abort_transaction(GLOBAL_gb_main);
-
-    if (error) aw_message(error);
-    free(source);
+        if (error) {
+            ta.abort();
+            aw_message(error);
+        }
+        free(source);
+    }
 }
 
 

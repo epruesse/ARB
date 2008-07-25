@@ -622,7 +622,7 @@ static void CPRO_calculate_cb(AW_window *aw,AW_CL which_statistic)
 
     if( (faultmessage=GB_push_transaction(GLOBAL_gb_main)) )
     {
-        aw_message(faultmessage,"OK,EXIT");
+        aw_question(faultmessage,"OK,EXIT");
         delete   align;
         return;
     }
@@ -668,7 +668,7 @@ static void CPRO_calculate_cb(AW_window *aw,AW_CL which_statistic)
     free(align);
     if( (faultmessage=GB_pop_transaction(GLOBAL_gb_main)) )
     {
-        aw_message(faultmessage,"OK,EXIT");
+        aw_question(faultmessage,"OK,EXIT");
         return;
     }
 
@@ -716,7 +716,7 @@ static void CPRO_memrequirement_cb(AW_root *aw_root)
     }
 
     if( (faultmessage=GB_push_transaction(GLOBAL_gb_main)) ) {
-        aw_message(faultmessage,"OK,EXIT");
+        aw_question(faultmessage,"OK,EXIT");
         free(align);
         return;
     }
@@ -766,7 +766,7 @@ static void CPRO_memrequirement_cb(AW_root *aw_root)
     free(align);
     if( (faultmessage=GB_pop_transaction(GLOBAL_gb_main)) )
     {
-        aw_message(faultmessage,"OK,EXIT");
+        aw_question(faultmessage,"OK,EXIT");
         return;
     }
 }

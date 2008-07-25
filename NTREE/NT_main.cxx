@@ -218,7 +218,7 @@ int main_load_and_startup_main_window(AW_root *aw_root) // returns 0 when succes
     GLOBAL_gb_main = GBT_open(db_server,"rw","$(ARBHOME)/lib/pts/*");
 
     if (!GLOBAL_gb_main) {
-        aw_message(GB_get_error(),"OK");
+        aw_popup_ok(GB_get_error());
         return -1;
     }
 
@@ -248,19 +248,21 @@ int main_load_and_startup_main_window(AW_root *aw_root) // returns 0 when succes
 void nt_delete_database(AW_window *aww){
     char *db_server = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
     if (strlen(db_server)){
-        if (aw_message(GBS_global_string("Are you sure to delete database %s\nNote: there is no way to undelete it afterwards",db_server),"Delete Database,Cancel") == 0){
+        if (aw_ask_sure(GBS_global_string("Are you sure to delete database %s\nNote: there is no way to undelete it afterwards", db_server))) {
             GB_ERROR error = 0;
             error = GB_delete_database(db_server);
-            if (error){
+            if (error) {
                 aw_message(error);
-            }else{
+            }
+            else {
                 aww->get_root()->awar(AWAR_DB"filter")->touch();
             }
         }
-    }else{
+    }
+    else {
         aw_message("No database selected");
     }
-    delete db_server;
+    free(db_server);
 }
 
 // after import !!!!!
@@ -471,7 +473,7 @@ int main(int argc, char **argv)
             MG_create_all_awars(aw_root,aw_default,":","noname.arb");
             GLOBAL_gb_merge = GBT_open(":","rw",0);
             if (!GLOBAL_gb_merge) {
-                aw_message(GB_get_error(),"OK");
+                aw_popup_ok(GB_get_error());
                 exit(0);
             }
             AWT_announce_db_to_browser(GLOBAL_gb_merge, "Current database (:)");
@@ -505,7 +507,7 @@ int main(int argc, char **argv)
                 if (!AWT_is_file(full_path)) {
                     const char *msg = GBS_global_string("'%s' is neither a known option nor a legal file- or directory-name.\n(Error: %s)",
                                                         full_path, load_file_err);
-                    answer          = aw_message(msg, "Browser,Exit");
+                    answer          = aw_question(msg, "Browser,Exit");
 
                     switch (answer) { // map answer to codes used by aw_message below
                         case 0: answer = 2; break; // Browse
@@ -515,7 +517,7 @@ int main(int argc, char **argv)
                 }
                 else {
                     const char *msg = GBS_global_string("Your file is not an original arb file\n(%s)", load_file_err);
-                    answer          = aw_message(msg, "Continue (dangerous),Start Converter,Browser,Exit");
+                    answer          = aw_question(msg, "Continue (dangerous),Start Converter,Browser,Exit");
                 }
             }
 

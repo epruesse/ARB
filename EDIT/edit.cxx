@@ -300,8 +300,7 @@ int AED_window::load_data(void) {
     alignment->init(root->ad_main);
     alignment->ddefault();
     if (alignment->eof()) {
-        aw_message("Error: Cannot start the EDITOR: Please select a valid alignment","OK");
-        exit(-1);
+        aw_popup_exit("Error: Cannot start the EDITOR: Please select a valid alignment");
     }
 
     for (ex.first(); !ex.eof() ;ex.next()) {
@@ -359,7 +358,7 @@ int AED_window::load_data(void) {
         if (i== AED_MAX_SPECIES) {
             char buffer[256];
             sprintf(buffer, " You try to load more than %li Sequences:", AED_MAX_SPECIES);
-            if(aw_message(buffer,"LOAD ALL,LOAD 100,EXIT"))
+            if(aw_question(buffer,"LOAD ALL,LOAD 100,EXIT"))
                 break;
         }
     }

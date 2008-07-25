@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : AWT_input_mask.cxx                                     //
 //    Purpose   : General input masks                                    //
-//    Time-stamp: <Tue Jul/08/2008 12:49 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Jul/25/2008 12:35 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //
@@ -2248,7 +2248,7 @@ static void create_new_mask_cb(AW_window *aww) {
     struct stat  st;
 
     if (stat(maskfullname.c_str(), &st) == 0) { // file exists
-        int answer = aw_message("File does already exist", "Open mask,Cancel");
+        int answer = aw_question("File does already exist", "Open mask,Cancel");
         switch (answer) {
             case 0:
                 openMask   = true;

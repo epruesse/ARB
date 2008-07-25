@@ -330,8 +330,10 @@ void concatenateAlignments(AW_window *aws) {
         char   *seq_type            = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
 
         if (gb_alignment_exists) {    // check wheather new alignment exists or not, if yes prompt user to overwrite the existing alignment; if no create an empty alignment
-            int ans = aw_message(GBS_global_string("Existing data in alignment \"%s\" may be overwritten. Do you want to continue?", new_ali_name), "YES,NO", false);
-            if (ans) error = "Alignment exists! Quitting function...!!!";
+            bool overwrite = aw_ask_sure(GBS_global_string("Existing data in alignment \"%s\" may be overwritten. Do you want to continue?", new_ali_name));
+            if (!overwrite) {
+                error = "Alignment exists! Quitting function...";
+            }
             else {
                 gb_new_alignment = GBT_get_alignment(GLOBAL_gb_main,new_ali_name);
                 if (!gb_new_alignment) error = GB_get_error();
@@ -700,7 +702,7 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
     if (error) {
         GB_abort_transaction(GLOBAL_gb_main);
         gb_new_species = 0;
-        aw_message(error, "OK");
+        aw_popup_ok(error);
     }
     else {
         GB_pop_transaction(GLOBAL_gb_main);
@@ -720,8 +722,8 @@ GB_ERROR checkAndCreateNewField(GBDATA *gb_main, char *new_field_name){
     else {
         error = awt_add_new_changekey(gb_main,new_field_name,GB_STRING);
         if (error) {
-            int answer = aw_message(GBS_global_string("\"%s\" field found! Do you want to overwrite to the existing field?",new_field_name),"YES,NO",false);
-            if (answer)  return error;
+            bool overwrite = aw_ask_sure(GBS_global_string("\"%s\" field exists! Do you want to overwrite the existing field?",new_field_name));
+            if (!overwrite) return error;
         }
     }
     return 0;

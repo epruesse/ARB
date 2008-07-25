@@ -2059,10 +2059,10 @@ GB_ERROR AW_window::load_selection_list( AW_selection_list *selection_list, cons
             if (ko) {
                 if (selection_list->value_equal_display) { // here no komma should occur
                     if (correct_old_format == -1) {
-                        correct_old_format = 1-aw_message(GBS_global_string("'%s' seems to be in old selection-list-format. Try to correct?", *fname), "Yes,No");
+                        correct_old_format = aw_ask_sure(GBS_global_string("'%s' seems to be in old selection-list-format. Try to correct?", *fname));
                     }
 
-                    if (correct_old_format) {
+                    if (correct_old_format == 1) {
                         *ko = '#'; // restore (was converted by old-version save)
                         ko  = 0; // ignore komma
                     }

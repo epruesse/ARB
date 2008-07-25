@@ -58,8 +58,7 @@ void NT_tree_init(AWT_graphic_tree *agt) {
 
     long ali_len = GBT_get_alignment_len(GLOBAL_gb_main,use);
     if (ali_len <=1) {
-        aw_message("No valid alignment selected ! Try again","OK");
-        exit(0);
+        aw_popup_exit("No valid alignment selected! Try again");
     }
 
 

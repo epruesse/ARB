@@ -213,7 +213,7 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, bool save_enabled, bool dest_
         int dest_genome = 0;
         if (dest_is_new) {
             if (merge_is_genome) {
-                dest_genome = aw_message("Enter destination DB-type", "Normal,Genome");
+                dest_genome = aw_question("Enter destination DB-type", "Normal,Genome");
             }
             else {
                 dest_genome = 0; // from non-genome -> to non-genome
