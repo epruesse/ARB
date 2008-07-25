@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : NT_dbrepair.cxx                                   //
 //   Purpose   : repair database bugs                              //
-//   Time-stamp: <Wed Jul/09/2008 12:32 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Fri Jul/25/2008 12:45 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in May 2008       //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -618,7 +618,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                     
                             const char *buttons = "Abort";
                             for (int p = 1; p <= possible; ++p) buttons = GBS_global_string("%s,%i", buttons, p);
-                            selected = aw_message(question, buttons, false, NULL);
+                            selected = aw_question(question, buttons, false, NULL);
                             free(question);
                         }
                         else {

@@ -94,7 +94,7 @@ public:
             if (IS_AMINO()) {
                 complement = 0;
                 root->awar(awarList->complement)->write_int(0);
-                aw_message(GBS_global_string("Search for complement is not supported for this alignment type"), "Disable");
+                aw_question(GBS_global_string("Search for complement is not supported for this alignment type"), "Disable");
             }
         }
     }
@@ -612,7 +612,7 @@ void SearchTree::findMatches(const char *seq, int len, reportMatch report)
             free(uni2real);
         }
         else {
-            aw_message("Out of swapspace?", 0);
+            aw_message("Out of swapspace?");
             if (uni2real) free(uni2real);
         }
     }
@@ -993,7 +993,7 @@ void ED4_SearchResults::addSearchPosition(ED4_SearchPosition *pos) {
 
     ++result_counter;
     if (result_counter >= max_allowed_results) {
-        if (aw_message(GBS_global_string("More than %i results found!", result_counter), "Allow more,That's enough") == 0) {
+        if (aw_question(GBS_global_string("More than %i results found!", result_counter), "Allow more,That's enough") == 0) {
             max_allowed_results = max_allowed_results*2;
         }
         else {
@@ -1545,7 +1545,7 @@ static void save_search_paras_to_file(AW_window *aw, AW_CL cl_type) {
     if (in) {
         fclose(in);
         GB_CSTR error = GBS_global_string("'%s' already exists", filename);
-        int answer = aw_message(error, "Overwrite,Cancel");
+        int answer = aw_question(error, "Overwrite,Cancel");
         if (answer!=0) {
             return;
         }
@@ -1555,7 +1555,7 @@ static void save_search_paras_to_file(AW_window *aw, AW_CL cl_type) {
 
     if (!out) {
         GB_CSTR error = GBS_global_string("Can't write file '%s' (%s)", filename, strerror(errno));
-        aw_message(error, "OK");
+        aw_popup_ok(error);
     }
     else {
         SearchSettings *s = settings[type];
@@ -1602,7 +1602,7 @@ static void load_search_paras_from_file(AW_window *aw, AW_CL cl_type) {
 
     if (!in) {
         GB_CSTR error = GBS_global_string("File '%s' not found", filename);
-        aw_message(error, "Oops.. sorry!");
+        aw_popup_ok(error);
         return;
     }
 

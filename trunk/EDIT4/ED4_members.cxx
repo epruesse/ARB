@@ -265,7 +265,7 @@ ED4_returncode  ED4_members::shift_list( ED4_index start_index, int length )    
             tmp_ptr = (ED4_base **) realloc((char *) memberList, (new_alloc_size * sizeof(ED4_base *))); // try to realloc memory
 
             if (! tmp_ptr) { // realloc() failed => try malloc() and copy member_list
-                aw_message("ED4_members::shift_list: realloc problem !", 0);
+                aw_message("ED4_members::shift_list: realloc problem!");
                 tmp_ptr = (ED4_base **) malloc( (new_alloc_size * sizeof(ED4_base *)) );
 
                 if (! tmp_ptr)                                                                  // malloc has failed, too
@@ -292,7 +292,7 @@ ED4_returncode  ED4_members::shift_list( ED4_index start_index, int length )    
     {
         if ( (start_index + length) < 0 )
         {
-            aw_message("ED4_members::shift_list: shift is too far to the left !", 0);
+            aw_message("ED4_members::shift_list: shift is too far to the left!");
             return ( ED4_R_WARNING );
         }
 
@@ -387,7 +387,7 @@ ED4_members::ED4_members(ED4_manager *the_owner)
     memberList = (ED4_base **) calloc(1, sizeof(ED4_base*));
 
     if ( memberList == NULL ) {
-        aw_message( "ED4_member::ED4_member: memory problem !", "EXIT" );
+        aw_popup_exit("ED4_member::ED4_member: memory problem!");
     }
 
     memberList[0] = NULL;

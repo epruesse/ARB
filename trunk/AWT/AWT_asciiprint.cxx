@@ -143,7 +143,7 @@ void AWT_write_file(const char *filename,const char *file){
     FILE *f = fopen(filename,"r");
     if (f){
         fclose(f);
-        if (aw_message(GBS_global_string("File '%s' already exist",filename),"Overwrt,Cancel")){
+        if (aw_question(GBS_global_string("File '%s' already exist",filename),"Overwrt,Cancel")){
             return;
         }
     }

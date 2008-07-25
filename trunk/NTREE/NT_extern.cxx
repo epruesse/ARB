@@ -244,11 +244,11 @@ void nt_exit(AW_window * /*aw_window*/) {
                     secs = GB_time_of_day() - secs;
                     if (secs>10){
                         sprintf(AW_ERROR_BUFFER,"You last saved your data %li:%li minutes ago\nSure to quit ?",secs/60,secs%60);
-                        if (aw_message(AW_ERROR_BUFFER, "QUIT ARB,DO NOT QUIT")) return;
+                        if (aw_question(AW_ERROR_BUFFER, "QUIT ARB,DO NOT QUIT")) return;
                     }
                 }
                 else {
-                    if (aw_message("You never saved any data\nSure to quit ???", "QUIT ARB,DO NOT QUIT")) return;
+                    if (aw_question("You never saved any data\nSure to quit ???", "QUIT ARB,DO NOT QUIT")) return;
                 }
             }
         }

@@ -509,13 +509,13 @@ void probe_design_event(AW_window *aww)
                                          "You'll have to re-build the PT server.", unames));
             abort = true;
         }
-        else if (aw_message(GBS_global_string(
-                                              "Your PT server is not up to date or wrongly chosen\n"
-                                              "  The following names are new to it:\n"
-                                              "  %s\n"
-                                              "  This version allows you to quickly add the unknown sequences\n"
-                                              "  to the pt_server\n"
-                                              ,unames),"Add and Continue,Abort"))
+        else if (aw_question(GBS_global_string("Your PT server is not up to date or wrongly chosen\n"
+                                               "  The following names are new to it:\n"
+                                               "  %s\n"
+                                               "  This version allows you to quickly add the unknown sequences\n"
+                                               "  to the pt_server\n",
+                                               unames),
+                             "Add and Continue,Abort"))
         {
             abort = true;
         }
@@ -1483,7 +1483,7 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
             int cont = 1;
             if (resolutions>5000) {
                 const char *warning = GBS_global_string("Resolution of this string will result in %i single strings", resolutions);
-                cont = aw_message(warning, "Abort,Continue");
+                cont = aw_question(warning, "Abort,Continue");
             }
 
             if (cont) { // continue with resolution?
@@ -1747,9 +1747,8 @@ void pd_start_pt_server(AW_window *aww)
 
 void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
 {
-    if (!aw_message(GBS_global_string("Are you sure to stop %s",
-                                      kill_all ? "all servers" : "that server"),
-                    "YES,CANCEL"))
+    if (aw_ask_sure(GBS_global_string("Are you sure to stop %s",
+                                      kill_all ? "all servers" : "that server")))
     {
         long min = 0;
         long max = 0;
@@ -1846,12 +1845,13 @@ static void pd_export_pt_server(AW_window *aww)
     sprintf(pt_server,"ARB_PT_SERVER%li", serverid);
 
     if (!error &&
-        aw_message("This function will send your currently loaded data as the new data to the pt_server !!!\n"
-                   "The server will need a long time (up to several hours) to analyse the data.\n"
-                   "Until the new server has analyzed all data, no server functions are available.\n\n"
-                   "Note 1: You must have the write permissions to do that ($ARBHOME/lib/pts/xxx))\n"
-                   "Note 2: The server will do the job in background,\n"
-                   "        quitting this program won't affect the server","Cancel,Do it"))
+        aw_question("This function will send your currently loaded data as the new data to the pt_server !!!\n"
+                    "The server will need a long time (up to several hours) to analyse the data.\n"
+                    "Until the new server has analyzed all data, no server functions are available.\n\n"
+                    "Note 1: You must have the write permissions to do that ($ARBHOME/lib/pts/xxx))\n"
+                    "Note 2: The server will do the job in background,\n"
+                    "        quitting this program won't affect the server",
+                    "Cancel,Do it"))
     {
         aw_openstatus("Updating PT-server");
         aw_status("Stopping PT-server");

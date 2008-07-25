@@ -1418,10 +1418,9 @@ static void pars_start_cb(AW_window *aww)
     {
         GB_ERROR error = pars_check_size(awr);
         if (error){
-            if (aw_message("This program will need a lot of computer memory\n"
-                           "Do you want to continue ?\n"
-                           "    (Hint: the use of a filter often helps)",
-                           "Continue,Abort")){
+            if (!aw_ask_sure("This program will need a lot of computer memory\n"
+                             "    (Hint: the use of a filter often helps)\n"
+                             "Do you want to continue?")) {
                 GB_commit_transaction(GLOBAL_gb_main);
                 return;
             }
@@ -1446,11 +1445,9 @@ static void pars_start_cb(AW_window *aww)
     {
         aw_openstatus("load tree");
         NT_reload_tree_event(awr,ntw,GB_TRUE);          // load first tree and set delete callbacks
-        if (!nt->tree->tree_root)
-        {
-            aw_message("I cannot load your selected tree","OK");
+        if (!nt->tree->tree_root) {
             aw_closestatus();
-            exit(1);
+            aw_popup_exit("I cannot load the selected tree");
         }
 
         AP_tree_edge::initialize((AP_tree_nlen*)*ap_main->tree_root);   // builds edges
@@ -1461,7 +1458,7 @@ static void pars_start_cb(AW_window *aww)
             error = nt->tree->tree_root->remove_leafs(ntw->gb_main, AWT_REMOVE_DELETED | AWT_REMOVE_NO_SEQUENCE);
         }
         if (error) {
-            aw_message(error, "EXIT", true);
+            aw_popup_exit(error, true);
         }
 
         GB_commit_transaction(ntw->gb_main);
@@ -1914,8 +1911,7 @@ int main(int argc, char **argv)
 
     GLOBAL_gb_main = GBT_open(db_server,"rw",0);
     if (!GLOBAL_gb_main) {
-        aw_message(GB_get_error(),"OK");
-        exit(EXIT_FAILURE);
+        aw_popup_exit(GB_get_error());
     }
     AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
 

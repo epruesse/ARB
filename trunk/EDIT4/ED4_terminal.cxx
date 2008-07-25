@@ -237,7 +237,7 @@ ED4_ERROR *ED4_terminal::write_sequence(const char *seq, int seq_len)
         long new_checksum = GBS_checksum(seq, 1, "-.");
 
         if (old_checksum != new_checksum) {
-            if (aw_message("Checksum changed!", "Allow, Reject") == 1) {
+            if (aw_question("Checksum changed!", "Allow, Reject") == 1) {
                 allow_write_data = false;
                 // GB_write_string(info->gb_data, old_seq);
             }
@@ -1421,7 +1421,7 @@ ED4_returncode ED4_columnStat_terminal::draw(int /*only_text*/)
 {
 #warning test drawing of ED4_columnStat_terminal
     if (!update_likelihood()) {
-        aw_message("Can't calculate likelihood.", "OK");
+        aw_popup_ok("Can't calculate likelihood.");
         return ED4_R_IMPOSSIBLE;
     }
 

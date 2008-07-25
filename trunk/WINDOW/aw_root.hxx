@@ -85,13 +85,18 @@ typedef struct {
 
 typedef char *AW_error;
 
-int         aw_message( const char *msg, const char *buttons, bool fixedSizeButtons = true, const char *helpfile = 0);
-void        aw_set_local_message(); // no message window, AWAR_ERROR_MESSAGES instead
-// interactive message: buttons = "OK,CANCEL,...."
-void        aw_message(const char *msg);
+int  aw_question  (const char *msg, const char *buttons, bool fixedSizeButtons = true, const char *helpfile = 0);
+bool aw_ask_sure  (const char *msg, bool fixedSizeButtons = true, const char *helpfile = 0);
+void aw_popup_ok  (const char *msg, bool fixedSizeButtons = true, const char *helpfile = 0);
+void aw_popup_exit(const char *msg, bool fixedSizeButtons = true, const char *helpfile = 0) __ATTR__NORETURN;
+
+// asynchronous messages:
 extern char AW_ERROR_BUFFER[1024];
-void        aw_message();       // prints AW_ERROR_BUFFER;
-void        aw_macro_message(const char *temp, ...) __ATTR__FORMAT(1); // gives control to the user
+
+void aw_set_local_message();                                           // no message window, AWAR_ERROR_MESSAGES instead
+void aw_message(const char *msg);
+void aw_message();                                                     // prints AW_ERROR_BUFFER;
+void aw_macro_message(const char *temp, ...) __ATTR__FORMAT(1);        // gives control to the user
 
 // Read a string from the user :
 char *aw_input( const char *title, const char *prompt, const char *awar_value, const char *default_input);

@@ -437,8 +437,7 @@ void awt_create_selection_list_on_configurations_cb(GBDATA *dummy, struct adawcb
                                                      "Do you like do delete the unnamed configuration?", err);
                 free(err);
 
-                int del_config = 0==aw_message(question, "Yes,No");
-                if (del_config) {
+                if (aw_ask_sure(question)) {
                     GB_delete(gb_config);
                     goto restart;
                 }
@@ -501,8 +500,7 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
                                                      "Do you like do delete the unnamed configuration?", err);
                 free(err);
 
-                int del_config = 0==aw_message(question, "Yes,No");
-                if (del_config) {
+                if (aw_ask_sure(question)) {
                     GB_delete(gb_config);
                     goto restart;
                 }

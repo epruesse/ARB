@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_graphic.cxx                                   //
 //   Purpose   : GUI for structure window                          //
-//   Time-stamp: <Fri May/16/2008 11:16 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Fri Jul/25/2008 13:38 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -117,11 +117,11 @@ static GB_ERROR change_constraints(SEC_base *elem) {
             }
 
             sec_assert(error);
-
-            aw_message(error, "Ok");
+            aw_popup_ok(error);
+            
             char *retry = aw_input(question, 0, answer);
             free(answer);
-        
+
             answer = retry;
         }
 

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri May/16/2008 11:03 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Jul/25/2008 14:44 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -41,9 +41,6 @@ extern GBDATA *GLOBAL_gb_main;
 
 #define AD_F_ALL (AW_active)(-1)
 
-//  -----------------------------------------------------------------------------------
-//      GBDATA* EXP_get_current_experiment_data(GBDATA *gb_main, AW_root *aw_root)
-//  -----------------------------------------------------------------------------------
 GBDATA* EXP_get_current_experiment_data(GBDATA *gb_main, AW_root *aw_root) {
     GBDATA *gb_species         = GEN_get_current_organism(gb_main, aw_root);
     GBDATA *gb_experiment_data = 0;
@@ -52,9 +49,7 @@ GBDATA* EXP_get_current_experiment_data(GBDATA *gb_main, AW_root *aw_root) {
 
     return gb_experiment_data;
 }
-//  --------------------------------------------------------------------------------------------------------
-//      static void EXP_select_experiment(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name)
-//  --------------------------------------------------------------------------------------------------------
+
 static void EXP_select_experiment(GBDATA* /*gb_main*/, AW_root *aw_root, const char *item_name) {
     char *name  = GB_strdup(item_name);
     char *slash = strchr(name, '/');
@@ -113,9 +108,6 @@ static char *old_species_marks = 0; // configuration storing marked species
 //     GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata);
 // }
 
-//  ---------------------------------------------------------------------------------------------------------------
-//      static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range)
-//  ---------------------------------------------------------------------------------------------------------------
 static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range) {
     GBDATA   *gb_species = 0;
     GB_ERROR  error      = 0;
@@ -159,9 +151,6 @@ static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, 
     return gb_species ? EXP_get_experiment_data(gb_species) : 0;
 }
 
-//  -------------------------------------------------------------------------------------------------------
-//      static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, AWT_QUERY_RANGE range)
-//  -------------------------------------------------------------------------------------------------------
 static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, AWT_QUERY_RANGE range) {
     GBDATA *gb_species = 0;
     switch (range) {
@@ -194,10 +183,6 @@ static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, AWT_QUER
     return gb_species ? EXP_get_experiment_data(gb_species) : 0;
 }
 
-
-//  ------------------------------------------------------------
-//      struct ad_item_selector EXP_item_selector =
-//  ------------------------------------------------------------
 struct ad_item_selector EXP_item_selector =
     {
         AWT_QUERY_ITEM_EXPERIMENTS,
@@ -218,9 +203,6 @@ struct ad_item_selector EXP_item_selector =
     };
 
 
-//  ------------------------------------------------------------------------------
-//      GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root)
-//  ------------------------------------------------------------------------------
 GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root) {
     GBDATA *gb_species    = GEN_get_current_organism(gb_main, aw_root);
     GBDATA *gb_experiment = 0;
@@ -238,9 +220,6 @@ static AW_CL    ad_global_scannerid   = 0;
 static AW_root *ad_global_scannerroot = 0;
 AW_CL           experiment_query_global_cbs = 0;
 
-//  ------------------------------------------------------------------------
-//      AW_window *EXP_create_experiment_query_window(AW_root *aw_root)
-//  ------------------------------------------------------------------------
 AW_window *EXP_create_experiment_query_window(AW_root *aw_root) {
 
     static AW_window_simple_menu *aws = 0;
@@ -301,29 +280,20 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root) {
 
 }
 
-//  -------------------------------------------------
-//      void experiment_delete_cb(AW_window *aww)
-//  -------------------------------------------------
 void experiment_delete_cb(AW_window *aww){
-    if (aw_message("Are you sure to delete the experiment","OK,CANCEL")) return;
+    if (aw_ask_sure("Are you sure to delete the experiment")) {
+        GB_transaction  ta(GLOBAL_gb_main);
+        GB_ERROR        error         = 0;
+        GBDATA         *gb_experiment = EXP_get_current_experiment(GLOBAL_gb_main, aww->get_root());
 
-    GB_begin_transaction(GLOBAL_gb_main);
-
-    GB_ERROR error          = 0;
-    GBDATA   *gb_experiment = EXP_get_current_experiment(GLOBAL_gb_main, aww->get_root()); // aw_root);
-
-    if (gb_experiment) error = GB_delete(gb_experiment);
-    else error               = "Please select a experiment first";
-
-    if (!error) GB_commit_transaction(GLOBAL_gb_main);
-    else GB_abort_transaction(GLOBAL_gb_main);
-
-    if (error) aw_message(error);
+        error = gb_experiment ? GB_delete(gb_experiment) : "Please select a experiment first";
+        if (error) {
+            ta.abort();
+            aw_message(error);
+        }
+    }
 }
 
-//  -------------------------------------------------
-//      void experiment_create_cb(AW_window *aww)
-//  -------------------------------------------------
 void experiment_create_cb(AW_window *aww){
     GB_begin_transaction(GLOBAL_gb_main);
 
@@ -346,9 +316,6 @@ void experiment_create_cb(AW_window *aww){
     delete dest;
 }
 
-//  -------------------------------------------------
-//      void experiment_rename_cb(AW_window *aww)
-//  -------------------------------------------------
 void experiment_rename_cb(AW_window *aww){
 
     GB_ERROR  error   = 0;
@@ -388,9 +355,6 @@ void experiment_rename_cb(AW_window *aww){
     delete dest;
 }
 
-//  -----------------------------------------------
-//      void experiment_copy_cb(AW_window *aww)
-//  -----------------------------------------------
 void experiment_copy_cb(AW_window *aww){
     GB_begin_transaction(GLOBAL_gb_main);
 
@@ -432,11 +396,6 @@ void experiment_copy_cb(AW_window *aww){
     delete dest;
 }
 
-
-
-//  -----------------------------------------------------------------
-//      AW_window *create_experiment_rename_window(AW_root *root)
-//  -----------------------------------------------------------------
 AW_window *create_experiment_rename_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
@@ -458,9 +417,7 @@ AW_window *create_experiment_rename_window(AW_root *root)
 
     return (AW_window *)aws;
 }
-//  ---------------------------------------------------------------
-//      AW_window *create_experiment_copy_window(AW_root *root)
-//  ---------------------------------------------------------------
+
 AW_window *create_experiment_copy_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
@@ -483,9 +440,7 @@ AW_window *create_experiment_copy_window(AW_root *root)
 
     return (AW_window *)aws;
 }
-//  -----------------------------------------------------------------
-//      AW_window *create_experiment_create_window(AW_root *root)
-//  -----------------------------------------------------------------
+
 AW_window *create_experiment_create_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
@@ -506,9 +461,6 @@ AW_window *create_experiment_create_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-//  ------------------------------------------------------------------
-//      void EXP_map_experiment(AW_root *aw_root, AW_CL scannerid)
-//  ------------------------------------------------------------------
 void EXP_map_experiment(AW_root *aw_root, AW_CL scannerid)
 {
     GB_transaction  dummy(GLOBAL_gb_main);
@@ -517,10 +469,6 @@ void EXP_map_experiment(AW_root *aw_root, AW_CL scannerid)
     if (gb_experiment) awt_map_arbdb_scanner(scannerid, gb_experiment, 0, CHANGE_KEY_PATH_EXPERIMENTS);
 }
 
-
-//  ----------------------------------------------------
-//      void EXP_create_field_items(AW_window *aws)
-//  ----------------------------------------------------
 void EXP_create_field_items(AW_window *aws) {
     aws->insert_menu_topic("reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&EXP_item_selector); 
     aws->insert_menu_topic("delete_field",   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&EXP_item_selector); 
@@ -533,9 +481,6 @@ void EXP_create_field_items(AW_window *aws) {
     aws->insert_menu_topic("refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_update_cb,        (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER); 
 }
 
-//  ------------------------------------------------------------
-//      void EXP_create_experiment_window(AW_root *aw_root)
-//  ------------------------------------------------------------
 AW_window *EXP_create_experiment_window(AW_root *aw_root) {
     static AW_window_simple_menu *aws = 0;
     if (aws) return (AW_window *)aws;

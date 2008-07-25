@@ -127,26 +127,23 @@ int MG_check_alignment(AW_window *aww,int fast)
 
 void MG_ad_al_delete_cb(AW_window *aww,AW_CL db_nr)
 {
-    if (aw_message("Are you sure to delete all data belonging to this alignment","OK,CANCEL"))return;
+    if (aw_ask_sure("Are you sure to delete all data belonging to this alignment?")) {
+        char     buffer[256];
+        sprintf(buffer,"tmp/merge%li/alignment_name",db_nr);
 
-    GB_ERROR error = 0;
-    char     buffer[256];
-    sprintf(buffer,"tmp/merge%li/alignment_name",db_nr);
+        GBDATA *gbd    = (db_nr == 1) ? GLOBAL_gb_merge : GLOBAL_gb_dest;
+        char   *source = aww->get_root()->awar(buffer)->read_string();
+        {
+            GB_transaction ta(gbd);
+            GB_ERROR       error = GBT_rename_alignment(gbd,source,0,0,1);
 
-    GBDATA *gbd    = (db_nr == 1) ? GLOBAL_gb_merge : GLOBAL_gb_dest;
-    char   *source = aww->get_root()->awar(buffer)->read_string();
-
-    GB_begin_transaction(gbd);
-
-    error = GBT_rename_alignment(gbd,source,0,0,1);
-
-    if (!error){
-        GB_commit_transaction(gbd);
-    }else{
-        GB_abort_transaction(gbd);
+            if (error) {
+                ta.abort();
+                aw_message(error);
+            }
+        }
+        free(source);
     }
-    if (error) aw_message(error);
-    delete source;
 }
 
 

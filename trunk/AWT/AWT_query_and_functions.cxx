@@ -186,7 +186,7 @@ void awt_delete_species_in_list(void *dummy, struct adaqbsstruct *cbs)
         }
 
     sprintf(AW_ERROR_BUFFER,"Are you sure to delete %li %s",cnt, cbs->selector->items_name);
-    if (aw_message(AW_ERROR_BUFFER,"OK,CANCEL")){
+    if (aw_question(AW_ERROR_BUFFER,"OK,CANCEL")){
         GB_abort_transaction(cbs->gb_main);
         return;
     }
@@ -684,27 +684,27 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
     if (!strcmp(key,"name")){
         switch (cbs->selector->type)  {
             case AWT_QUERY_ITEM_SPECIES: {
-                if (aw_message("WARNING WARNING WARNING!!! You now try to rename the species\n"
-                               "    The name is used to link database entries and trees\n"
-                               "    ->  ALL TREES WILL BE LOST\n"
-                               "    ->  The new name MUST be UNIQUE"
-                               "        if not you will corrupt the database!" ,
-                               "Let's Go,Cancel")) return;
+                if (aw_question("WARNING WARNING WARNING!!! You now try to rename the species\n"
+                                "    The name is used to link database entries and trees\n"
+                                "    ->  ALL TREES WILL BE LOST\n"
+                                "    ->  The new name MUST be UNIQUE"
+                                "        if not you will corrupt the database!" ,
+                                "Let's Go,Cancel")) return;
                 break;
             }
             case AWT_QUERY_ITEM_GENES: {
-                if (aw_message("WARNING! You now try to rename the gene\n"
-                               "    ->  Pseudo-species will loose their link to the gene"
-                               "    ->  The new name MUST be UNIQUE"
-                               "        if not you will corrupt the database!" ,
-                               "Let's Go,Cancel")) return;
+                if (aw_question("WARNING! You now try to rename the gene\n"
+                                "    ->  Pseudo-species will loose their link to the gene"
+                                "    ->  The new name MUST be UNIQUE"
+                                "        if not you will corrupt the database!" ,
+                                "Let's Go,Cancel")) return;
                 break;
             }
             case AWT_QUERY_ITEM_EXPERIMENTS: {
-                if (aw_message("WARNING! You now try to rename the experiment\n"
-                               "    ->  The new name MUST be UNIQUE"
-                               "        if not you will corrupt the database!" ,
-                               "Let's Go,Cancel")) return;
+                if (aw_question("WARNING! You now try to rename the experiment\n"
+                                "    ->  The new name MUST be UNIQUE"
+                                "        if not you will corrupt the database!" ,
+                                "Let's Go,Cancel")) return;
                 break;
             }
             default: {
@@ -735,7 +735,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
 
     while (!(gb_key_name  = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_IGNORE_CASE,down_2_level))) {
         sprintf(AW_ERROR_BUFFER,"The destination field '%s' does not exists",key);
-        if (aw_message(AW_ERROR_BUFFER,"Create Field (Type STRING),Cancel")){
+        if (aw_question(AW_ERROR_BUFFER,"Create Field (Type STRING),Cancel")){
             GB_abort_transaction(cbs->gb_main);
             free(command);
             free(key);
@@ -755,7 +755,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
     bool aborted = false;
     {
         if (GB_read_int(gb_key_type)!=GB_STRING) {
-            if (aw_message("Writing to a non-STRING database field may lead to conversion problems.", "Abort,Continue")==0) {
+            if (aw_question("Writing to a non-STRING database field may lead to conversion problems.", "Abort,Continue")==0) {
                 aborted = true;
             }
         }

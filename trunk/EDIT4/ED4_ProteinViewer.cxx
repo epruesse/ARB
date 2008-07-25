@@ -560,11 +560,15 @@ void PV_SaveData(AW_window *aww){
                 }
             }
         if (giNewAlignments>0) {
-            int ans = aw_message(GBS_global_string("Protein data saved to NEW alignments. %d new alignments are created and are named as ali_prot_ProtView_XXXX", giNewAlignments), "OK", false);
-            AWUSE(ans);
-            aw_message(GBS_global_string("Protein data saved to NEW alignments. %d new alignments are created  and are named as ali_prot_ProtView_XXXX", giNewAlignments)); 
+            char *msg = GBS_global_string_copy("Protein data saved to NEW alignments.\n%d new alignments were created and named ali_prot_ProtView_XXXX", giNewAlignments);
+
+            aw_popup_ok(msg, false);
+            aw_message(msg);
+
+            free(msg);
+
             giNewAlignments = 0;
-         }
+        }
     }
     gbWritingData = false;
     AWUSE(aww);

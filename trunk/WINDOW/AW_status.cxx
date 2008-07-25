@@ -386,11 +386,11 @@ static void aw_status_timer_event(AW_root *awr, AW_CL, AW_CL)
     fprintf(stderr, "in aw_status_timer_event\n"); fflush(stdout);
 #endif // TRACE_STATUS_MORE
     if (aw_stg.mode == AW_STATUS_ABORT) {
-        int action = aw_message("Couldn't quit properly in time.\n"
-                                "Either wait again for the abortion,\n"
-                                "kill the calculating process or\n"
-                                "continue the calculation.", 
-                                "Wait again,Kill,Continue");
+        int action = aw_question("Couldn't quit properly in time.\n"
+                                 "Either wait again for the abortion,\n"
+                                 "kill the calculating process or\n"
+                                 "continue the calculation.", 
+                                 "Wait again,Kill,Continue");
 
         switch (action) {
             case 0:
@@ -431,8 +431,8 @@ static void aw_status_kill(AW_window *aws)
         }
     }
     else {
-        if (aw_message("Are you sure to abort running calculation?","Yes,No")==1) {
-            return; 
+        if (!aw_ask_sure("Are you sure to abort running calculation?")) {
+            return; // don't abort
         }
         aw_stg.mode = AW_STATUS_ABORT;
     }
@@ -917,9 +917,19 @@ void aw_set_local_message(){
     aw_stg.local_message = 1;
 }
 
-int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons, const char *helpfile) {
-    // if 'buttons' == 0 -> asynchronous message in message log window
-    //
+bool aw_ask_sure(const char *msg, bool fixedSizeButtons, const char *helpfile) {
+    return aw_question(msg, "Yes,No", fixedSizeButtons, helpfile) == 0;
+}
+void aw_popup_ok(const char *msg, bool fixedSizeButtons, const char *helpfile) {
+    aw_question(msg, "Ok", fixedSizeButtons, helpfile);
+}
+void aw_popup_exit(const char *msg, bool fixedSizeButtons, const char *helpfile) {
+    aw_question(msg, "EXIT", fixedSizeButtons, helpfile);
+    aw_assert(0); // should not be reached
+    exit(EXIT_FAILURE);
+}
+
+int aw_question(const char *msg, const char *buttons, bool fixedSizeButtons, const char *helpfile) {
     // return 0 for first button, 1 for second button, 2 for third button, ...
     //
     // the single buttons are seperated by kommas (e.g. "YES,NO")
@@ -933,23 +943,7 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons, cons
     //
     // If 'helpfile' is non-zero a HELP button is added.
 
-    if (!buttons){              /* asynchronous message */
-#if defined(DEBUG)
-        printf("aw_message: '%s'\n", msg);
-#endif // DEBUG
-        if (aw_stg.local_message){
-            aw_insert_message_in_tmp_message(AW_root::THIS,msg);
-        }else{
-            if ( !aw_stg.status_initialized) {
-                aw_stg.status_initialized = AW_TRUE;
-                aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_INIT);
-            }
-            aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_MESSAGE);
-            int len = strlen(msg)+1;
-            safe_write(aw_stg.fd_to[1], msg, len);
-        }
-        return 0;
-    }
+    aw_assert(buttons);
 
     AW_root *root = AW_root::THIS;
 
@@ -1023,10 +1017,11 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons, cons
                 aw_msg->at_newline();
                 ++ret;
             }
-            if ( strcmp( ret, "EXIT" ) == 0 ) {
-                aw_msg->callback     ( message_cb, -1 );
-            }else {
-                aw_msg->callback     ( message_cb, (AW_CL)counter++ );
+            if (strcmp(ret, "EXIT") == 0) {
+                aw_msg->callback(message_cb, -1);
+            }
+            else {
+                aw_msg->callback(message_cb, (AW_CL)counter++);
             }
 
             if (fixedSizeButtons) {
@@ -1075,19 +1070,32 @@ int aw_message(const char *msg, const char *buttons, bool fixedSizeButtons, cons
     return aw_message_cb_result;
 }
 
-void aw_message(const char *msg)
-{
-    aw_message(msg,0);
+void aw_message(const char *msg) {
+#if defined(DEBUG)
+    printf("aw_message: '%s'\n", msg);
+#endif // DEBUG
+    if (aw_stg.local_message) {
+        aw_insert_message_in_tmp_message(AW_root::THIS,msg);
+    }
+    else {
+        if (!aw_stg.status_initialized) {
+            aw_stg.status_initialized = AW_TRUE;
+            aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_INIT);
+        }
+        aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_MESSAGE);
+        int len = strlen(msg)+1;
+        safe_write(aw_stg.fd_to[1], msg, len);
+    }
 }
 
 char AW_ERROR_BUFFER[1024];
 
-void aw_message(void){ aw_message(AW_ERROR_BUFFER,0); }
+void aw_message() { aw_message(AW_ERROR_BUFFER); }
 
 void aw_error(const char *text,const char *text2){
     char    buffer[1024];
     sprintf(buffer,"An internal error occur:\n\n%s %s\n\nYou may:",text,text2);
-    aw_message(buffer,"CONTINUE,EXIT");
+    aw_question(buffer,"Continue,EXIT");
 }
 
 /***********************************************************************/

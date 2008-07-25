@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : aw_question.cpp                                        //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu Mar/11/2004 13:39 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Jul/25/2008 12:30 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //
@@ -90,7 +90,7 @@ int AW_repeated_question::get_answer(const char *question, const char *buttons, 
             free(all);
         }
 
-        int user_answer = aw_message(question, new_buttons, true, helpfile);
+        int user_answer = aw_question(question, new_buttons, true, helpfile);
 
         if (dont_ask_again) {   // ask question as normal when called first (dont_ask_again later)
             answer = user_answer;

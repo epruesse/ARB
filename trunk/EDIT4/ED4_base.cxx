@@ -307,7 +307,7 @@ void ED4_species_container_changed_cb(GBDATA *gb_species_data, int */*cl*/, GB_C
         if (nsons>ED4_elements_in_species_container) { // new species was created
 #if defined(DEBUG) && 1
             printf("# of species in species-container changed from %i to %i\n", ED4_elements_in_species_container, nsons);
-            aw_message("Species container changed!", "OK");
+            aw_popup_ok("Species container changed!");
 #endif
             GBDATA *gb_lastSon = GB_search_last_son(gb_species_data);
 

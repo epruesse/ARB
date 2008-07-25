@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_main.cxx                                      //
 //   Purpose   : main part of SECEDIT                              //
-//   Time-stamp: <Wed Mar/05/2008 18:28 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Fri Jul/25/2008 14:59 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -307,9 +307,7 @@ static void export_structure_to_file(AW_window *, AW_CL cl_db)
         error = GB_export_error("Can't write secondary structure to '%s'", filename);
     }
 
-    if (error) {
-        aw_message(error, "Not ok");
-    }
+    if (error) aw_popup_ok(error);
 }
 
 inline GB_ERROR expectedError(const char *expected) {
@@ -428,7 +426,7 @@ static void import_structure_from_file(AW_window *, AW_CL cl_db) {
         }
         free(filename);
     }
-    if (error) aw_message(error, "Not ok");
+    if (error) aw_popup_ok(error);
 }
 
 #undef ASS
@@ -496,7 +494,7 @@ static void SEC_new_structure(AW_window *, AW_CL cl_db, AW_CL) {
     GB_ERROR error = 0;
     bool     done  = false;
 
-    switch (aw_message("Create new structure?", "Default bone,Copy current,Abort")) {
+    switch (aw_question("Create new structure?", "Default bone,Copy current,Abort")) {
         case 0:                 // default bone
             error = structure->copyTo("Default");
             if (!error) {
@@ -527,9 +525,7 @@ static void SEC_delete_structure(AW_window *, AW_CL cl_db, AW_CL) {
     SEC_structure_toggler *structure = db->structure();
 
     if (structure->getCount()>1) {
-        if (aw_message(GBS_global_string("Confirm to delete structure '%s'", structure->name()),
-                       "OK,Cancel") == 0)
-        {
+        if (aw_ask_sure(GBS_global_string("Are you sure to delete structure '%s'?", structure->name()))) {
             GB_ERROR error = structure->remove();
             if (error) aw_message(error);
             db->canvas()->refresh();
