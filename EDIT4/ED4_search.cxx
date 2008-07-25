@@ -22,7 +22,6 @@
 #include "ed4_tools.hxx"
 
 static int result_counter      = 0;
-static int max_allowed_results = 10000;
 static int ignore_more_results = false;
 
 const char *ED4_SearchPositionTypeId[SEARCH_PATTERNS+1] =
@@ -983,8 +982,9 @@ static void reportSearchPosition(int start, int end, GB_CSTR comment, int mismat
 
 // --------------------------------------------------------------------------------
 
-void ED4_SearchResults::addSearchPosition(ED4_SearchPosition *pos)
-{
+void ED4_SearchResults::addSearchPosition(ED4_SearchPosition *pos) {
+    static int max_allowed_results = 100000;
+
     if (ignore_more_results) return;
 
     if (is_array()) {
