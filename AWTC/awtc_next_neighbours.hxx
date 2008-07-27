@@ -1,5 +1,21 @@
-#ifndef awtc_next_neighbours_hxx_included
-#define awtc_next_neighbours_hxx_included
+// =============================================================== //
+//                                                                 //
+//   File      : awtc_next_neighbours.hxx                          //
+//   Purpose   : Search relatives via PT server                    //
+//   Time-stamp: <Sun Jul/27/2008 12:37 MET Coder@ReallySoft.de>   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#ifndef AWTC_NEXT_NEIGHBOURS_HXX
+#define AWTC_NEXT_NEIGHBOURS_HXX
+
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
+
 
 class AWTC_FIND_FAMILY_MEMBER {
     // list is sorted either by 'matches' or 'rel_matches' (descending)
@@ -72,4 +88,6 @@ class AW_window;
 void AWTC_create_common_next_neighbour_vars(AW_root *aw_root);
 void AWTC_create_common_next_neighbour_fields(AW_window *aws);
 
-#endif
+#else
+#error awtc_next_neighbours.hxx included twice
+#endif // AWTC_NEXT_NEIGHBOURS_HXX
