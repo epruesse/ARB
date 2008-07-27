@@ -4,6 +4,8 @@
 #include <servercntrl.h>
 #include <PT_com.h>
 #include <client.h>
+#include <aw_root.hxx>
+#include <aw_window.hxx>
 
 #include <awtc_next_neighbours.hxx>
 
@@ -186,3 +188,40 @@ GB_ERROR AWTC_FIND_FAMILY::findFamily(int server_id, char *sequence, int oligo_l
     close();
     return error;
 }
+
+
+void AWTC_create_common_next_neighbour_vars(AW_root *aw_root) {
+    static bool created = false;
+    if (!created) {
+        aw_root->awar_int(AWAR_NN_OLIGO_LEN,   12);
+        aw_root->awar_int(AWAR_NN_MISMATCHES,  0);
+        aw_root->awar_int(AWAR_NN_FAST_MODE,   0);
+        aw_root->awar_int(AWAR_NN_REL_MATCHES, 1);
+
+        created = true;
+    }
+}
+
+void AWTC_create_common_next_neighbour_fields(AW_window *aws) {
+    // used in several figs: ad_spec_nn.fig ad_spec_nnm.fig awtc/family_settings.fig 
+    
+    aws->at("oligo_len");
+    aws->create_input_field(AWAR_NN_OLIGO_LEN, 3);
+    
+    aws->at("mismatches");
+    aws->create_input_field(AWAR_NN_MISMATCHES, 3);
+
+    aws->at("mode");
+    aws->create_option_menu(AWAR_NN_FAST_MODE, 0, 0);
+    aws->insert_default_option("Complete", "", 0);
+    aws->insert_option("Quick", "", 1);
+    aws->update_option_menu();
+
+    aws->at("score");
+    aws->create_option_menu(AWAR_NN_REL_MATCHES, 0, 0);
+    aws->insert_option("absolute", "", 0);
+    aws->insert_default_option("relative", "", 1);
+    aws->update_option_menu();
+
+}
+

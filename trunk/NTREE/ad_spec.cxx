@@ -30,13 +30,7 @@
 extern GBDATA *GLOBAL_gb_main;
 #define AD_F_ALL (AW_active)(-1)
 
-#define AWAR_NN_BASE "next_neighbours/"
-
-// next neighbours of listed and selected: 
-#define AWAR_NN_OLIGO_LEN   AWAR_NN_BASE "oligo_len"
-#define AWAR_NN_MISMATCHES  AWAR_NN_BASE "mismatches"
-#define AWAR_NN_FAST_MODE   AWAR_NN_BASE "fast_mode"
-#define AWAR_NN_REL_MATCHES AWAR_NN_BASE "rel_matches"
+// next neighbours of listed and selected:
 #define AWAR_NN_COMPLEMENT  AWAR_NN_BASE "complement"
 
 // next neighbours of selected only:
@@ -988,10 +982,6 @@ static void create_next_neighbours_vars(AW_root *aw_root) {
 
     if (!created) {
         aw_root->awar_int(AWAR_PROBE_ADMIN_PT_SERVER);
-        aw_root->awar_int(AWAR_NN_OLIGO_LEN,   12);
-        aw_root->awar_int(AWAR_NN_MISMATCHES,  0);
-        aw_root->awar_int(AWAR_NN_FAST_MODE,   0);
-        aw_root->awar_int(AWAR_NN_REL_MATCHES, 1);
         aw_root->awar_int(AWAR_NN_COMPLEMENT,  FF_FORWARD);
         
         aw_root->awar_int(AWAR_NN_MAX_HITS,  50);
@@ -1002,6 +992,8 @@ static void create_next_neighbours_vars(AW_root *aw_root) {
         aw_root->awar_int(AWAR_NN_SCORED_ENTRIES, 1);
         aw_root->awar_int(AWAR_NN_MIN_SCORE,      80);
 
+        AWTC_create_common_next_neighbour_vars(aw_root);
+
         created = true;
     }
 }
@@ -1010,23 +1002,7 @@ static void create_common_next_neighbour_fields(AW_window *aws) {
     aws->at("pt_server");
     awt_create_selection_list_on_pt_servers(aws, AWAR_PROBE_ADMIN_PT_SERVER, AW_TRUE);
 
-    aws->at("oligo_len");
-    aws->create_input_field(AWAR_NN_OLIGO_LEN, 3);
-    
-    aws->at("mismatches");
-    aws->create_input_field(AWAR_NN_MISMATCHES, 3);
-
-    aws->at("mode");
-    aws->create_option_menu(AWAR_NN_FAST_MODE, 0, 0);
-    aws->insert_default_option("Complete", "", 0);
-    aws->insert_option("Quick", "", 1);
-    aws->update_option_menu();
-
-    aws->at("score");
-    aws->create_option_menu(AWAR_NN_REL_MATCHES, 0, 0);
-    aws->insert_option("absolute", "", 0);
-    aws->insert_default_option("relative", "", 1);
-    aws->update_option_menu();
+    AWTC_create_common_next_neighbour_fields(aws);
 
     aws->at("compl");
     aws->create_option_menu(AWAR_NN_COMPLEMENT, 0, 0);
