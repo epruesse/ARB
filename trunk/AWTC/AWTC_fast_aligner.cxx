@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : AWTC_fast_aligner.cxx                             //
 //   Purpose   : A fast aligner (not a multiple aligner!)          //
-//   Time-stamp: <Sun Jul/27/2008 13:17 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Sun Jul/27/2008 13:54 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in 1998           //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -1570,7 +1570,7 @@ static GB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
         {
             // find relatives
             AWTC_FIND_FAMILY family(GLOBAL_gb_main);
-            double           bestScore = -1;
+            double           bestScore = 0;
 
             aw_status("Searching relatives");
             error = family.findFamily(relSearch.pt_server_id,
@@ -1592,7 +1592,7 @@ static GB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
                             double thisScore = relSearch.fam_rel_matches ? fl->rel_matches : fl->matches;
 #if defined(DEBUG)
                             // check whether family list is sorted correctly
-                            awtc_assert(lastScore == -1 || lastScore >= thisScore);
+                            awtc_assert(lastScore < 0 || lastScore >= thisScore);
                             lastScore = thisScore;
 #endif // DEBUG
                             if (thisScore>=bestScore) bestScore = thisScore;
@@ -1608,7 +1608,7 @@ static GB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
             if (!error && turnAllowed != FA_TURN_NEVER) {               // test if mirrored sequence has better relatives
                 char   *mirroredSequence  = strdup(toAlignExpSequence);
                 long    length            = strlen(mirroredSequence);
-                double  bestMirroredScore = -1;
+                double  bestMirroredScore = 0;
 
                 char T_or_U;
                 error = GBT_determine_T_or_U(global_alignmentType, &T_or_U, "reverse-complement");
@@ -1630,12 +1630,12 @@ static GB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
                         double thisScore = relSearch.fam_rel_matches ? fl->rel_matches : fl->matches;
 #if defined(DEBUG)
                         // check whether family list is sorted correctly
-                        awtc_assert(lastScore == -1 || lastScore >= thisScore);
+                        awtc_assert(lastScore < 0 || lastScore >= thisScore);
                         lastScore = thisScore;
 #endif // DEBUG
                         if (thisScore >= bestMirroredScore) {
                             if (strcmp(toAlignSequence->name(), fl->name)!=0) {
-                                if (GBT_find_species(GLOBAL_gb_main, fl->name)) bestMirroredScore = fl->matches;
+                                if (GBT_find_species(GLOBAL_gb_main, fl->name)) bestMirroredScore = thisScore;
                             }
                         }
                     }
@@ -1646,11 +1646,11 @@ static GB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
                     if (turnAllowed==FA_TURN_INTERACTIVE) {
                         const char *message;
                         if (relSearch.fam_rel_matches) {
-                            message = GBS_global_string("'%s' seems to be the other way round (score=%5.1f, score if turned=%5.1f)",
+                            message = GBS_global_string("'%s' seems to be the other way round (score: %.1f%%, score if turned: %.1f%%)",
                                                         toAlignSequence->name(), bestScore*100, bestMirroredScore*100);
                         }
                         else {
-                            message = GBS_global_string("'%s' seems to be the other way round (score=%li, score if turned=%li)",
+                            message = GBS_global_string("'%s' seems to be the other way round (score: %li, score if turned: %li)",
                                                         toAlignSequence->name(), long(bestScore+.5), long(bestMirroredScore+.5));
                         }
                         turnIt = aw_question(message, "Turn sequence,Leave sequence alone")==0;
