@@ -6,6 +6,7 @@ UP	pt_server.hlp
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB	next_neighbours.hlp
 SUB	next_neighbours_listed.hlp
+SUB	faligner.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -14,6 +15,7 @@ TITLE		Nearest relative search
 
 OCCURRENCE      ARB_NT/Search/More search/Search Next Relatives of SELECTED Species in PT Server
                 ARB_NT/Search/More search/Search Next Relatives of LISTED Species in PT Server
+                ARB_NT/ARB_EDIT/EDIT/Integrated Aligners
 
 SECTION         ALGORITHM
 
@@ -91,6 +93,8 @@ SECTION         PARAMETERS
                        and all combinations of these.
 
                        The combinations may affect the score as well!
+
+                       Note: Not available for EDIT4 aligner.
 
 NOTES		None
 

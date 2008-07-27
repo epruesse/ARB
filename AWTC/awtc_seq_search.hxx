@@ -41,7 +41,7 @@ class AWTC_CompactedSequence    // compacts a string (gaps removed, all chars up
 // (private class - use AWTC_CompactedSubSequence)
 {
     char *myText;
-    int   myLength;
+    int   myLength;             // number of base positions
     int   myStartOffset;        // expanded offsets of first and last position in 'text' (which is given to the c-tor)
     int   myEndOffset;
     int  *expdPositionTab;      // this table contains all 'real' (=not compacted) positions of the bases (len = myLength+1)
@@ -106,11 +106,10 @@ public:
 class AWTC_CompactedSubSequence // smart pointer and substring class for AWTC_CompactedSequence
 {
     AWTC_CompactedSequence *mySequence;
-    int myPos;                  // offset into mySequence->myText
-    //    long myExpdPos;
-    int myLength;
-    const char *myText;         // only for speed-up
-    const AWTC_Points *points;  // just a reference
+    int                     myPos;      // offset into mySequence->myText
+    int                     myLength;   // number of base positions
+    const char             *myText;     // only for speed-up
+    const AWTC_Points      *points;     // just a reference
 
 public:
 
@@ -540,10 +539,9 @@ inline AWTC_CompactedSubSequence& AWTC_CompactedSubSequence::operator=(const AWT
     mySequence = other.mySequence;
     mySequence->referred++;
 
-    myPos = other.myPos;
-    //    myExpdPos = other.myExpdPos;
+    myPos    = other.myPos;
     myLength = other.myLength;
-    myText = mySequence->text()+myPos;
+    myText   = mySequence->text()+myPos;
 
     return *this;
 }

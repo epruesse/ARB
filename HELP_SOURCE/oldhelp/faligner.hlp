@@ -46,10 +46,16 @@ SECTION         ADJUSTMENTS
 
 				If you choose 'Auto search by pt_server', the
 				aligner will use the next relative to align.
-				If the next relative has gaps where the sequence
-				to align has bases, a mix of the nearest
-				relatives will be used. You can define the
-				maximum number of relatives.
+				If the nearest relative has gaps where the sequence
+				to align has bases, the aligner will use the 2nd nearest
+				relative or if that one has gaps too, the 3rd nearest, etc.
+                                You can define the maximum number of relatives.
+
+                                All used relatives and the number of base positions used from each relative,
+                                will be written into the field 'used_rels'.
+
+                                Press 'Settings' to define how relative search works
+                                in detail. See LINK{next_neighbours_common.hlp}
 
 		Range
 

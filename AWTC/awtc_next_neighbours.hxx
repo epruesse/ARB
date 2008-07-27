@@ -57,4 +57,19 @@ public:
     void print();
 };
 
+// --------------------------------------------------------------------------------
+
+#define AWAR_NN_BASE "next_neighbours/"
+
+#define AWAR_NN_OLIGO_LEN   AWAR_NN_BASE "oligo_len"
+#define AWAR_NN_MISMATCHES  AWAR_NN_BASE "mismatches"
+#define AWAR_NN_FAST_MODE   AWAR_NN_BASE "fast_mode"
+#define AWAR_NN_REL_MATCHES AWAR_NN_BASE "rel_matches"
+
+class AW_root;
+class AW_window;
+
+void AWTC_create_common_next_neighbour_vars(AW_root *aw_root);
+void AWTC_create_common_next_neighbour_fields(AW_window *aws);
+
 #endif
