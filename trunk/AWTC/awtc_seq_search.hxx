@@ -1,6 +1,28 @@
-#ifndef awtc_seq_search_hxx_included
-#define awtc_seq_search_hxx_included
+// =============================================================== //
+//                                                                 //
+//   File      : awtc_seq_search.hxx                               //
+//   Purpose   : Fast sequence search for fast aligner             //
+//   Time-stamp: <Sun Jul/27/2008 13:17 MET Coder@ReallySoft.de>   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in July 1998      //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
+#ifndef AWTC_SEQ_SEARCH_HXX
+#define AWTC_SEQ_SEARCH_HXX
+
+#ifndef _CPP_CSTRING
+#include <cstring>
+#endif
+#ifndef _CPP_CSTDLIB
+#include <cstdlib>
+#endif
+
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
@@ -371,20 +393,20 @@ class AWTC_fast_align_report    // alignment report
     long  mismatchedBases;      // in aligned part
     long  unalignedBases;
     char *my_master_name;
-    int   showGapsMessages;
+    bool  showGapsMessages;     // display messages about missing gaps in master
 
     AWTC_fast_align_insertion *first; // list of insertions (order is important)
     AWTC_fast_align_insertion *last;
 
 public:
 
-    AWTC_fast_align_report(const char *master_name, int show_Gaps_Messages) {
-        alignedBases = 0;
-        mismatchedBases = 0;
-        unalignedBases = 0;
-        first = 0;
-        last = 0;
-        my_master_name = strdup(master_name);
+    AWTC_fast_align_report(const char *master_name, bool show_Gaps_Messages) {
+        alignedBases     = 0;
+        mismatchedBases  = 0;
+        unalignedBases   = 0;
+        first            = 0;
+        last             = 0;
+        my_master_name   = strdup(master_name);
         showGapsMessages = show_Gaps_Messages;
     }
     ~AWTC_fast_align_report() {
@@ -397,9 +419,7 @@ public:
             last = last->append(offset,gaps);
         }
         else {
-            if (showGapsMessages) {
-                aw_message("---- gaps needed.");
-            }
+            if (showGapsMessages) aw_message("---- gaps needed.");
             first = last = new AWTC_fast_align_insertion(offset, gaps);
         }
 
@@ -546,6 +566,6 @@ inline AWTC_CompactedSubSequence& AWTC_CompactedSubSequence::operator=(const AWT
     return *this;
 }
 
-
-
-#endif
+#else
+#error awtc_seq_search.hxx included twice
+#endif // AWTC_SEQ_SEARCH_HXX
