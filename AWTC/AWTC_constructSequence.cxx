@@ -59,8 +59,7 @@ static inline char *strndup(const char *seq, int length)
 static char *lstr_ss = 0;
 static inline const char *lstr(const char *s, int len)
 {
-
-    if (lstr_ss) delete [] lstr_ss;
+    if (lstr_ss) free(lstr_ss);
     lstr_ss = strndup(s,len);
     return lstr_ss;
 }

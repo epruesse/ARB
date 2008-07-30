@@ -2177,8 +2177,9 @@ AW_option_menu_struct *AW_window::create_option_menu( const char *var_name, AW_l
                                                    RES_CONVERT( XmNlabelString, help_label ),
                                                    NULL );
         }
-        delete [] help_label;
-    }else {
+        free(help_label);
+    }
+    else {
         optionMenu1 = XtVaCreateManagedWidget( "optionMenu1",
                                                xmRowColumnWidgetClass,
                                                (_at->attach_any)?INFO_FORM:INFO_WIDGET,
