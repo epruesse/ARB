@@ -2,7 +2,7 @@
 //                                                                       // 
 //    File      : probe_match_parser.hxx                                 // 
 //    Purpose   : parse the results of a probe match                     // 
-//    Time-stamp: <Thu Jun/10/2004 13:58 MET Coder@ReallySoft.de>        // 
+//    Time-stamp: <Wed Jul/30/2008 10:41 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in June 2004             // 
@@ -24,7 +24,7 @@
 
 class ProbeMatch_impl;
 
-class ProbeMatchParser : public Noncopyable {
+class ProbeMatchParser : Noncopyable {
     ProbeMatch_impl *pimpl;
     char            *init_error;
 
@@ -42,7 +42,7 @@ public:
     friend class ParsedProbeMatch;
 };
 
-class ParsedProbeMatch : public Noncopyable {
+class ParsedProbeMatch : Noncopyable {
     const ProbeMatchParser&  parser;
     char                    *match;
     mutable const char      *error;
