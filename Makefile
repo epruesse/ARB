@@ -154,6 +154,7 @@ endif
 dflags += -D$(MACH) # define machine
 dflags += -DHAVE_BOOL # all have bool [@@@ TODO: remove dependent code from ARB source]
 dflags += -DNO_REGEXPR # for machines w/o regular expression library
+dflags +=  $(shell getconf LFS_CFLAGS)
 
 ifdef DARWIN
 	cflags += -no-cpp-precomp 
