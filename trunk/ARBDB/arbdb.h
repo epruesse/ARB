@@ -284,6 +284,10 @@ extern "C" {
 
 #ifdef __cplusplus
 
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+
 // --------------------------------------------------------------------------------
 // some const wrappers:
 
@@ -294,7 +298,7 @@ inline char *GBS_find_string(char *str, GB_CSTR key, int match_mode) {
 // --------------------------------------------------------------------------------
 
 struct gb_data_base_type2;
-class GB_transaction {
+class GB_transaction : Noncopyable {
     GBDATA *ta_main;
     bool    aborted;
 public:

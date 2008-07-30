@@ -561,8 +561,8 @@ int aisc_get(aisc_com *link, int o_type, long objekt, ...)
                     break;
                 case AISC_ATTR_DOUBLE:
                     AISC_DUMP(aisc_get, double, *(double*)&(aisc_mes_buffer[mes_cnt]));
-                    arg_pntr[i][0] = aisc_mes_buffer[mes_cnt++];
-                    arg_pntr[i][1] = aisc_mes_buffer[mes_cnt++];
+                    ((int*)arg_pntr[i])[0] = (int)aisc_mes_buffer[mes_cnt++];
+                    ((int*)arg_pntr[i])[1] = (int)aisc_mes_buffer[mes_cnt++];
                     break;
                 case AISC_ATTR_STRING: {
                     char *str = strdup((char *)(&(aisc_mes_buffer[mes_cnt+1])));

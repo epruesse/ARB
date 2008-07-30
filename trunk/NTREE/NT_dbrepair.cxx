@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : NT_dbrepair.cxx                                   //
 //   Purpose   : repair database bugs                              //
-//   Time-stamp: <Fri Jul/25/2008 12:45 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Jul/30/2008 10:28 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in May 2008       //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -17,7 +17,6 @@
 #include <aw_root.hxx>
 
 #include <smartptr.h>
-#include <arbtools.h>
 #include <inline.h>
 
 #include <map>
