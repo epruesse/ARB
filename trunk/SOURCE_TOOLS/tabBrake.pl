@@ -250,10 +250,12 @@ else {
     $files_newer_than = time;
   }
 }
+
+if ($exitcode==0) {
+  `touch $time_stamp`;          # mark time of last try
+  # i.e. user inserts TAB to file -> fail once
+}
 recurse_dirs($ARBHOME,$ARBHOME);
 if ($tab_count>0) { $exitcode = 1; }
 
-if ($exitcode==0) {
-  `touch $time_stamp`;          # mark time of last success
-}
 exit($exitcode);
