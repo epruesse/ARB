@@ -48,53 +48,61 @@
 #define FALSE   0
 
 static GB_ERROR error;
-static int module_initialized = 0;
+static int      module_initialized = 0;
 
 typedef int Boolean;
 
 static Boolean dnaflag;
 static Boolean is_weight;
 
+#define MAX_BASETYPES 21
+
 static int xover;
 static int little_pam;
 static int big_pam;
-static int pamo[210];
-static int pam[21][21];
+static int pamo[(MAX_BASETYPES-1)*MAX_BASETYPES/2]; 
+static int pam[MAX_BASETYPES][MAX_BASETYPES];
 
-static int pos1;
-static int pos2;
-static int **naa1;              // naa1[basetype][position]     counts bases for each position of all sequences in group1
-static int **naa2;              // naa2[basetype][position]     same for group2
-static int **naas;              //
-static int seqlen_array[MAXN+1];// length of all sequences
-static unsigned char *seq_array[MAXN+1]; // the sequences
-static int group[MAXN+1];       // group of sequence
-static int alist[MAXN+1];       // indices of sequences to be aligned
-static int fst_list[MAXN+1];
-static int snd_list[MAXN+1];
+static int             pos1;
+static int             pos2;
+static int           **naa1;                 // naa1[basetype][position]     counts bases for each position of all sequences in group1
+static int           **naa2;                 // naa2[basetype][position]     same for group2
+static int           **naas;                 // 
+static int             seqlen_array[MAXN+1]; // length of all sequences
+static unsigned char  *seq_array[MAXN+1];    // the sequences
+static int             group[MAXN+1];        // group of sequence
+static int             alist[MAXN+1];        // indices of sequences to be aligned
+static int             fst_list[MAXN+1];
+static int             snd_list[MAXN+1];
+
 static int nseqs;               // # of sequences
-static int weights[21][21];     // weights[b1][b2] : penalty for mutation from base 'b1' to base 'b2'
-static int *displ;              // displ==0 -> base in both , displ<0 -> displ gaps in slave, displ>0 -> displ gaps in master
-static int *zza,                // column (left->right) of align matrix (minimum of all paths to this matrix element)
-    *zzb,                       // -------------- " ------------------- (minimum of all paths, where gap inserted into slave)
-    *zzc,                       // column (left<-right) of align matrix (minimum of all paths to this matrix element)
-    *zzd;                       // -------------- " ------------------- (minimum of all paths, where gap inserted into slave)
-/*static int gap_open;
-  static int gap_extend;*/
-static int print_ptr;
-static int last_print;
+static int weights[MAX_BASETYPES][MAX_BASETYPES];     // weights[b1][b2] : penalty for mutation from base 'b1' to base 'b2'
+
+static int *displ;              // displ == 0 -> base in both , displ<0 -> displ gaps in slave, displ>0 -> displ gaps in master
+static int *zza;                // column (left->right) of align matrix (minimum of all paths to this matrix element)
+static int *zzb;                // -------------- " ------------------- (minimum of all paths, where gap inserted into slave)
+static int *zzc;                // column (left<-right) of align matrix (minimum of all paths to this matrix element)
+static int *zzd;                // -------------- " ------------------- (minimum of all paths, where gap inserted into slave)
+static int  print_ptr;
+static int  last_print;
+
 static const int *gapsBeforePosition;
+
+/* static int gap_open;
+   static int gap_extend;*/
 
 //#define MATRIX_DUMP
 
 #ifdef MATRIX_DUMP
-# define IF_MATRIX_DUMP(xxx)    xxx
-# define DISPLAY_MATRIX_SIZE    500
+# define IF_MATRIX_DUMP(xxx) xxx
+# define DISPLAY_MATRIX_SIZE 500
+
 static int vertical             [DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
 static int verticalOpen         [DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
 static int diagonal             [DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
 static int horizontal           [DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
 static int horizontalOpen       [DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
+
 #else
 # define IF_MATRIX_DUMP(xxx)
 #endif
@@ -408,23 +416,18 @@ static inline void *ckalloc(size_t bytes)
     return ret;
 }
 
-static void init_myers(long max_seq_length)
-{
-    int i;
-
-    if (error) return;
-
-    naa1 = (int **)ckalloc(21 * sizeof (int *) );
-    for(i=0;i<21;i++) naa1[i]=(int *)ckalloc( (max_seq_length+1)*sizeof (int));
-    if (error) return;
-
-    naa2 = (int **)ckalloc(21 * sizeof (int *) );
-    for(i=0;i<21;i++) naa2[i]=(int *)ckalloc( (max_seq_length+1)*sizeof (int));
-    if (error) return;
-
-    naas = (int **)ckalloc(21 * sizeof (int *) );
-    for(i=0;i<21;i++) naas[i]=(int *)ckalloc( (max_seq_length+1)*sizeof (int));
-    if (error) return;
+static void init_myers(long max_seq_length) {
+    if (!error) {
+        naa1 = (int **)ckalloc(MAX_BASETYPES * sizeof (int *) );
+        naa2 = (int **)ckalloc(MAX_BASETYPES * sizeof (int *) );
+        naas = (int **)ckalloc(MAX_BASETYPES * sizeof (int *) );
+    
+        for(int i=0;i<MAX_BASETYPES && !error; i++) {
+            naa1[i] = (int *)ckalloc((max_seq_length+1)*sizeof(int));
+            naa2[i] = (int *)ckalloc((max_seq_length+1)*sizeof(int));
+            naas[i] = (int *)ckalloc((max_seq_length+1)*sizeof(int));
+        }
+    }
 }
 
 static void make_pamo(int nv)
@@ -471,25 +474,26 @@ static void fill_pam()
                 weights[i][j] = getPenalty(i,j);
     }
     else {
-        for(i=1;i<21;++i)
-            for(j=1;j<21;++j) {
+        for(i=1;i<MAX_BASETYPES;++i) {
+            for(j=1;j<MAX_BASETYPES;++j) {
                 weights[i][j] = big_pam - pam[i-1][j-1];
             }
-        for(i=0;i<21;++i) {
+        }
+        for(i=0;i<MAX_BASETYPES;++i) {
             weights[0][i] = xover;
             weights[i][0] = xover;
         }
     }
 }
 
-static void exit_myers(void)
-{
-    int i;
-    for (i=0; i<21; i++) free(naas[i]);
+static void exit_myers(void) {
+    for (int i=0; i<MAX_BASETYPES; i++) {
+        free(naas[i]);
+        free(naa2[i]);
+        free(naa1[i]);
+    }
     free(naas);
-    for (i=0; i<21; i++) free(naa2[i]);
     free(naa2);
-    for (i=0; i<21; i++) free(naa1[i]);
     free(naa1);
 }
 
@@ -909,16 +913,17 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
 static void do_align( /*int v1,*/ int *score, long act_seq_length)
 {
     int i,j,k,l1,l2,n;
-    int t_arr[21];
+    int t_arr[MAX_BASETYPES];
 
     l1=l2=pos1=pos2=0;
 
     // clear statistics
 
-    for(i=1;i<=act_seq_length;++i)
-    {
-        for(j=0;j<21;++j) naa1[j][i]=naa2[j][i]=0;
-        for(j=1;j<21;++j) naas[j][i]=0;
+    for(i=1;i<=act_seq_length;++i) {
+        for(j=0;j<MAX_BASETYPES;++j) {
+            naa1[j][i] = naa2[j][i]=0;
+            naas[j][i]=0;
+        }
     }
 
     // create position statistics for each group
@@ -930,9 +935,10 @@ static void do_align( /*int v1,*/ int *score, long act_seq_length)
         {
             fst_list[++pos1]=i;
             for(j=1;j<=seqlen_array[i];++j)
-                if(seq_array[i][j]>0)
-                {
-                    ++naa1[seq_array[i][j]][j];
+                if(seq_array[i][j]>0) {
+                    unsigned char b = seq_array[i][j];
+                    awtc_assert(b <= MAX_BASETYPES);
+                    ++naa1[b][j];
                     ++naa1[0][j];
                 }
             if(seqlen_array[i]>l1) l1=seqlen_array[i];
@@ -941,29 +947,34 @@ static void do_align( /*int v1,*/ int *score, long act_seq_length)
         {
             snd_list[++pos2]=i;
             for(j=1;j<=seqlen_array[i];++j)
-                if(seq_array[i][j]>0)
-                {
-                    ++naa2[seq_array[i][j]][j];
+                if(seq_array[i][j]>0) {
+                    unsigned char b = seq_array[i][j];
+                    awtc_assert(b <= MAX_BASETYPES);
+                    ++naa2[b][j];
                     ++naa2[0][j];
                 }
             if(seqlen_array[i]>l2) l2=seqlen_array[i];
         }
     }
 
-    if(pos1>=pos2)
-    {
+    if(pos1>=pos2) {
         for(i=1;i<=pos2;++i) alist[i]=snd_list[i];
         for(n=1;n<=l1;++n)
         {
-            for(i=1;i<21;++i) t_arr[i]=0;
-            for(i=1;i<21;++i)
-                if(naa1[i][n]>0)
-                    for(j=1;j<21;++j)
+            for(i=1;i<MAX_BASETYPES;++i) t_arr[i]=0;
+            for(i=1;i<MAX_BASETYPES;++i) {
+                if(naa1[i][n]>0) {
+                    for(j=1;j<MAX_BASETYPES;++j) {
                         t_arr[j] += (weights[i][j]*naa1[i][n]);
+                    }
+                }
+            }
             k = naa1[0][n];
-            if(k>0)
-                for(i=1;i<21;++i)
+            if(k>0) {
+                for(i=1;i<MAX_BASETYPES;++i) {
                     naas[i][n]=t_arr[i]/k;
+                }
+            }
         }
     }
     else
@@ -973,14 +984,14 @@ static void do_align( /*int v1,*/ int *score, long act_seq_length)
         for(i=1;i<=pos1;++i) alist[i]=fst_list[i];
         for(n=1;n<=l2;++n)
         {
-            for(i=1;i<21;++i) t_arr[i]=0;
-            for(i=1;i<21;++i)
+            for(i=1;i<MAX_BASETYPES;++i) t_arr[i]=0;
+            for(i=1;i<MAX_BASETYPES;++i)
                 if(naa2[i][n]>0)
-                    for(j=1;j<21;++j)
+                    for(j=1;j<MAX_BASETYPES;++j)
                         t_arr[j] += (weights[i][j]*naa2[i][n]);
             k = naa2[0][n];
             if(k>0)
-                for(i=1;i<21;++i)
+                for(i=1;i<MAX_BASETYPES;++i)
                     naas[i][n]=t_arr[i]/k;
         }
 #endif
