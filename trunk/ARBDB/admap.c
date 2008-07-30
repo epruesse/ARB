@@ -144,7 +144,7 @@ static struct gbdata_offset *find_gbdata_offset(int quark, GBDATA *gbd){
         }
     }
 
-    printf("not found: gbd=%lx\n",(long)gbd);
+    printf("not found(1): gbd=%lx\n",(long)gbd);
     ad_assert(0);   /* should never occur */
     return 0;
 }
@@ -184,7 +184,7 @@ static long getrel_GBDATA(long rel_to, GBDATA *gbd)
             }
         }
 
-        printf("not found: gbd=%lx\n",(long)gbd);
+        printf("not found(2): gbd=%lx\n",(long)gbd);
         ad_assert(0);   /* should never occur */
     }
 
