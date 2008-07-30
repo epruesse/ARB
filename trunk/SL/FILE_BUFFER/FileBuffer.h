@@ -2,7 +2,7 @@
 //
 // Copyright (C) 2000
 // Ralf Westram
-// Time-stamp: <Thu Dec/14/2006 18:31 MET Coder@ReallySoft.de>
+// Time-stamp: <Wed Jul/30/2008 10:41 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,
@@ -62,7 +62,7 @@ using std::string;
 
 const size_t BUFFERSIZE = 64*1024;
 
-class FileBuffer : public Noncopyable {
+class FileBuffer : Noncopyable {
 private:
     char buf[BUFFERSIZE];
     size_t read; // chars in buf
