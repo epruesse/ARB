@@ -753,13 +753,15 @@ void AW_cb_struct::run_callback(void) {
             (f != (AW_CB)input_cb)         &&
             (f != (AW_CB)AW_POPUP_HELP)    &&
             (f != (AW_CB)AW_POPDOWN)       &&
-            // disabled AW_MIDDLE_AREA-callbacks, cause they seem to be unneccessary and leaded to recursion and crash.
-            // !aw->is_expose_callback(AW_MIDDLE_AREA, f) &&
-            // !aw->is_resize_callback(AW_MIDDLE_AREA, f) &&
             !aw->is_expose_callback(AW_INFO_AREA, f)      &&
             !aw->is_resize_callback(AW_INFO_AREA, f) )
         {
-            aw_message("That has been ignored. Answer the prompt first!");
+            // don't warn about the following callback, just silently ignore them : 
+            if (!aw->is_expose_callback(AW_MIDDLE_AREA, f) &&
+                !aw->is_resize_callback(AW_MIDDLE_AREA, f) )
+            {
+                aw_message("That has been ignored. Answer the prompt first!");
+            }
             return;
         }
     }
