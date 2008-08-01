@@ -445,12 +445,19 @@ private:
     void insert_option_internal( AW_label choice_label, const char *mnemonic,const char *var_value,  const char *name_of_color, bool default_option);
     void insert_option_internal( AW_label choice_label, const char *mnemonic,int var_value,          const char *name_of_color, bool default_option);
     void insert_option_internal( AW_label choice_label, const char *mnemonic,float var_value,        const char *name_of_color, bool default_option);
+    
+    void insert_toggle_internal( AW_label toggle_label, const char *mnemonic, const char *var_value, bool default_toggle);
+    void insert_toggle_internal( AW_label toggle_label, const char *mnemonic, int var_value,         bool default_toggle);
+    void insert_toggle_internal( AW_label toggle_label, const char *mnemonic, float var_value,       bool default_toggle);
 public:
 
+    // for string
     void insert_option         ( AW_label choice_label, const char *mnemonic, const char *var_value, const char *name_of_color = 0); // for string
     void insert_default_option ( AW_label choice_label, const char *mnemonic, const char *var_value, const char *name_of_color = 0 );
+    // for int
     void insert_option         ( AW_label choice_label, const char *mnemonic, int var_value,         const char *name_of_color = 0 ); // for int
     void insert_default_option ( AW_label choice_label, const char *mnemonic, int var_value,         const char *name_of_color = 0 );
+    // for float
     void insert_option         ( AW_label choice_label, const char *mnemonic, float var_value,       const char *name_of_color = 0 ); // for float
     void insert_default_option ( AW_label choice_label, const char *mnemonic, float var_value,       const char *name_of_color = 0 );
 
