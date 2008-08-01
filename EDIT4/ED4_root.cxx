@@ -1393,19 +1393,19 @@ void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data) {
     long size2        = GBT_get_alignment_len(GLOBAL_gb_main,alignment_name);
     if (size2<=0) err = (char *)GB_get_error();
 
+    free(faligner_data->helix_string);
+    faligner_data->helix_string = 0;
+    
     if (!err) {
         GBDATA *gb_helix_con = GBT_find_SAI_rel_exdata(gb_extended_data, helix_name);
-        GBDATA *gb_helix = 0;
-
-        if (gb_helix_con) gb_helix = GBT_read_sequence(gb_helix_con,alignment_name);
-
-        if (!gb_helix) err = "Cannot find the helix";
-        if (!err) {
-            if (faligner_data->helix_string) delete faligner_data->helix_string;
-            faligner_data->helix_string = GB_read_string(gb_helix);
+        if (gb_helix_con) {
+            GBDATA *gb_helix = GBT_read_sequence(gb_helix_con,alignment_name);
+            if (gb_helix) {
+                faligner_data->helix_string = GB_read_string(gb_helix);
+                if (!faligner_data->helix_string) err = GB_get_error();
+            }
         }
     }
-
     if (err) aw_message(err);
 
     free(helix_name);
