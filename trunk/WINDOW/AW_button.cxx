@@ -131,38 +131,29 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
             }
             XtFree( tmp );
             break;
+
         case AW_WIDGET_TOGGLE:
-            {
-                root->changer_of_variable = 0;
-                error = vus->awar->toggle_toggle();
-                break;
-            }
+            root->changer_of_variable = 0;
+            error = vus->awar->toggle_toggle();
+            break;
 
         case AW_WIDGET_TOGGLE_FIELD:
             int state;
             state = XmToggleButtonGetState(vus->widget);
             if (state != True) break;
+            // fall-through
 
         case AW_WIDGET_CHOICE_MENU:
-
             switch ( vus->awar->variable_type ) {
-                case AW_STRING:
-                    error = vus->awar->write_string( vus->variable_value );
-                    break;
-                case AW_INT:
-                    error = vus->awar->write_int(vus->variable_int_value );
-                    break;
-                case AW_FLOAT:
-                    error = vus->awar->write_float( vus->variable_float_value );
-                    break;
-                default: GB_warning("Unknown AWAR type");
-
+                case AW_STRING: error = vus->awar->write_string( vus->variable_value );      break;
+                case AW_INT:    error = vus->awar->write_int(vus->variable_int_value );      break;
+                case AW_FLOAT:  error = vus->awar->write_float( vus->variable_float_value ); break;
+                default: GB_warning("Unknown AWAR type"); break;
             }
             break;
 
 
         case AW_WIDGET_SELECTION_LIST: {
-
             char *ptr;
             AW_selection_list *selection_list;
             AW_select_table_struct *list_table;
@@ -218,7 +209,7 @@ void AW_variable_update_callback( Widget wgt, XtPointer variable_update_struct, 
         aw_message(error);
     }
     else {
-        if (root->prvt->recording_macro_file){
+        if (root->prvt->recording_macro_file) {
             fprintf(root->prvt->recording_macro_file,"BIO::remote_awar($gb_main,\"%s\",",root->prvt->application_name_for_macros);
             GBS_fwrite_string(vus->awar->awar_name,root->prvt->recording_macro_file);
             fprintf(root->prvt->recording_macro_file,",");
@@ -2260,9 +2251,11 @@ void AW_window::clear_option_menu(AW_option_menu_struct *oms) {
         delete os;
     }
 
-    remove_option_from_option_menu(root, oms->default_choice);
+    if (oms->default_choice) {
+        remove_option_from_option_menu(root, oms->default_choice);
+        oms->default_choice = 0;
+    }
 
-    oms->default_choice = 0;
     oms->first_choice   = 0;
     oms->last_choice    = 0;
 }
@@ -2379,105 +2372,61 @@ void AW_window::update_option_menu( void ) {
 }
 
 void AW_window::update_option_menu(AW_option_menu_struct *oms) {
-    AW_option_struct *menu_choice_list;
-    AW_BOOL           cont;
-    char             *global_var_value       = NULL;
-    long              global_var_int_value   = 0;
-    float             global_var_float_value = 0;
-    int               width_of_last_widget;
-    int               height_of_last_widget;
-    char             *var_name               = oms->variable_name;
+    if ( get_root()->changer_of_variable != (long)oms->label_widget ) {
+        AW_option_struct *active_choice = oms->first_choice;
+        {
+            char  *global_var_value       = NULL;
+            long   global_var_int_value   = 0;
+            float  global_var_float_value = 0;
+            char  *var_name               = oms->variable_name;
 
-    if ( get_root()->changer_of_variable == (long)oms->label_widget ) {
-        return;
-    }
-
-    cont = AW_TRUE;
-
-    switch ( oms->variable_type ) {
-        case AW_STRING: global_var_value       = root->awar( var_name )->read_string(); break;
-        case AW_INT:    global_var_int_value   = root->awar( var_name )->read_int(); break;
-        case AW_FLOAT:  global_var_float_value = root->awar( var_name )->read_float(); break;
-        default: break;
-    }
-
-    menu_choice_list = oms->first_choice;
-    while ( menu_choice_list && cont ) {
-        switch ( oms->variable_type ) {
-            case AW_STRING: if ( (strcmp( global_var_value, menu_choice_list->variable_value ) == 0) ) {
-                cont = AW_FALSE;
-            }
-            break;
-            case AW_INT:        if ( global_var_int_value == menu_choice_list->variable_int_value ) {
-                cont = AW_FALSE;
-            }
-            break;
-            case AW_FLOAT:      if ( global_var_float_value == menu_choice_list->variable_float_value ) {
-                cont = AW_FALSE;
-            }
-            break;
-            default:
-                GB_warning("Unknown AWAR type");
-        }
-        if ( cont ) {
-            menu_choice_list = menu_choice_list->next;
-        }
-    }
-
-
-
-    if (  menu_choice_list ) {
-        XtVaSetValues( oms->label_widget, XmNmenuHistory, menu_choice_list->choice_widget, NULL );
-    }else {
-        if ( oms->default_choice ) {
-            XtVaSetValues( oms->label_widget, XmNmenuHistory, oms->default_choice->choice_widget, NULL );
-#if 0
-        }else {
-            char *error = 0;
-            menu_choice_list = oms->first_choice;
             switch ( oms->variable_type ) {
-                case AW_STRING:
-                    error = root->awar(var_name)->write_string(menu_choice_list->variable_value);
-                    error = root->awar(oms->variable_name)->write_string(menu_choice_list->variable_float_value);
-                    break;
-                case AW_INT:
-                    error = root->awar(var_name)->write_int(menu_choice_list->variable_int_value);
-
-                    break;
-                case AW_FLOAT:
-                    error = root->awar(var_name)->write_float(menu_choice_list->variable_float_value);
-                    break;
+                case AW_STRING: global_var_value       = root->awar( var_name )->read_string(); break;
+                case AW_INT:    global_var_int_value   = root->awar( var_name )->read_int(); break;
+                case AW_FLOAT:  global_var_float_value = root->awar( var_name )->read_float(); break;
                 default: break;
             }
-            fprintf(stderr,"Warning Option Menu dont allow value for awar '%s'\n",var_name);
-#endif
+
+            bool found_choice = false;
+            while (active_choice) {
+                switch ( oms->variable_type ) {
+                    case AW_STRING: found_choice = ((strcmp( global_var_value, active_choice->variable_value ) == 0) ); break;
+                    case AW_INT:    found_choice = (global_var_int_value   == active_choice->variable_int_value );      break;
+                    case AW_FLOAT:  found_choice = (global_var_float_value == active_choice->variable_float_value );    break;
+                    default: GB_warning("Unknown AWAR type"); break;
+                }
+                if (found_choice) break;
+                active_choice = active_choice->next;
+            }
+            free(global_var_value);
+        }
+
+        if (!active_choice) active_choice = oms->default_choice;
+        if (active_choice) XtVaSetValues( oms->label_widget, XmNmenuHistory, active_choice->choice_widget, NULL);
+
+        {
+            short length;
+            short height;
+            XtVaGetValues( oms->label_widget ,XmNwidth ,&length ,XmNheight, &height, NULL );
+            int   width_of_last_widget  = length;
+            int   height_of_last_widget = height;
+
+            if ( oms->correct_for_at_center_intern ) {
+                if ( oms->correct_for_at_center_intern == 1 ) { // middle centered
+                    XtVaSetValues( oms->label_widget, XmNx,(short)((short)_at->saved_x - (short)(length/2)), NULL );
+                    width_of_last_widget = width_of_last_widget / 2;
+                }
+                if ( oms->correct_for_at_center_intern == 2 ) { // right centered
+                    XtVaSetValues( oms->label_widget, XmNx,(short)((short)_at->saved_x - length) + 7, NULL );
+                    width_of_last_widget = 0;
+                }
+            }
+            width_of_last_widget -= 4;
+            
+            this->unset_at_commands();
+            this->increment_at_commands( width_of_last_widget, height_of_last_widget );
         }
     }
-
-
-    free(global_var_value);
-
-    short length;
-    short height;
-    XtVaGetValues( oms->label_widget ,XmNwidth ,&length ,XmNheight, &height, NULL );
-    width_of_last_widget              = length;
-    height_of_last_widget             = height;
-
-    if ( oms->correct_for_at_center_intern ) {
-        if ( oms->correct_for_at_center_intern == 1 ) { // middle centered
-            XtVaSetValues( oms->label_widget, XmNx,(short)((short)_at->saved_x - (short)(length/2)), NULL );
-            width_of_last_widget = width_of_last_widget / 2;
-        }
-        if ( oms->correct_for_at_center_intern == 2 ) { // right centered
-            XtVaSetValues( oms->label_widget, XmNx,(short)((short)_at->saved_x - length) + 7, NULL );
-            width_of_last_widget = 0;
-        }
-//         _at->correct_for_at_center_intern = 0;
-    }
-    width_of_last_widget -= 4;
-
-    this->unset_at_commands();
-    this->increment_at_commands( width_of_last_widget, height_of_last_widget );
 }
 
 
@@ -2630,101 +2579,46 @@ static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
 }
 
 
-// for string
-void AW_window::insert_toggle( AW_label toggle_label, const char *mnemonic, const char *var_value ) {
-
+void AW_window::insert_toggle_internal(AW_label toggle_label, const char *mnemonic, const char *var_value, bool default_toggle) {
     if ( p_w->toggle_field_var_type != AW_STRING ) {
         toggle_type_mismatch("string");
-        return;
     }
-
-    _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
-                            new AW_variable_update_struct( NULL,
-                                                           AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name),
-                                                           var_value, 0, 0, _callback ),
-                            new AW_toggle_struct( var_value, 0 ),
-                            AW_FALSE );
-}
-
-
-// for string
-void AW_window::insert_default_toggle( AW_label toggle_label, const char *mnemonic, const char *var_value ) {
-    if ( p_w->toggle_field_var_type != AW_STRING ) {
-        toggle_type_mismatch("string");
-        return;
+    else {
+        _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
+                                new AW_variable_update_struct( NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), var_value, 0, 0, _callback ),
+                                new AW_toggle_struct( var_value, 0 ),
+                                default_toggle ? AW_TRUE : AW_FALSE);
     }
-    _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
-                            new AW_variable_update_struct( NULL,
-                                                           AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name),
-                                                           var_value, 0, 0, _callback ),
-                            new AW_toggle_struct( var_value, 0 ),
-                            AW_TRUE );
 }
-
-
-
-// for int
-void AW_window::insert_toggle( AW_label toggle_label, const char *mnemonic, int var_value ) {
-
+void AW_window::insert_toggle_internal( AW_label toggle_label, const char *mnemonic, int var_value, bool default_toggle) {
     if ( p_w->toggle_field_var_type != AW_INT ) {
         toggle_type_mismatch("int");
-        return;
     }
-    _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
-                            new AW_variable_update_struct( NULL,
-                                                           AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name),
-                                                           0, var_value, 0, _callback ),
-                            new AW_toggle_struct( var_value, 0 ),
-                            AW_FALSE );
-}
-
-
-// for int
-void AW_window::insert_default_toggle( AW_label toggle_label, const char *mnemonic, int var_value ) {
-    if ( p_w->toggle_field_var_type != AW_INT ) {
-        toggle_type_mismatch("int");
-        return;
+    else {
+        _aw_create_toggle_entry(this, p_w->toggle_field, toggle_label,mnemonic,
+                                new AW_variable_update_struct( NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), 0, var_value, 0, _callback ),
+                                new AW_toggle_struct( var_value, 0 ),
+                                default_toggle ? AW_TRUE : AW_FALSE);
     }
-    _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
-                            new AW_variable_update_struct( NULL,
-                                                           AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name),
-                                                           0, var_value, 0, _callback ),
-                            new AW_toggle_struct( var_value, 0 ),
-                            AW_TRUE );
 }
-
-
-// for float
-void AW_window::insert_toggle( AW_label toggle_label, const char *mnemonic, float var_value ) {
+void AW_window::insert_toggle_internal( AW_label toggle_label, const char *mnemonic, float var_value, bool default_toggle) {
     if ( p_w->toggle_field_var_type != AW_FLOAT ) {
         toggle_type_mismatch("float");
-        return;
     }
-    _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
-                            new AW_variable_update_struct( NULL,
-                                                           AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name),
-                                                           0, 0, var_value, _callback ),
-                            new AW_toggle_struct( var_value, 0 ),
-                            AW_FALSE );
-
+    else {
+        _aw_create_toggle_entry(this, p_w->toggle_field,toggle_label, mnemonic,
+                                new AW_variable_update_struct( NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), 0, 0, var_value, _callback ),
+                                new AW_toggle_struct( var_value, 0 ),
+                                default_toggle ? AW_TRUE : AW_FALSE);
+    }
 }
 
-
-// for float
-void AW_window::insert_default_toggle( AW_label toggle_label, const char *mnemonic, float var_value ) {
-    if ( p_w->toggle_field_var_type != AW_FLOAT ) {
-        toggle_type_mismatch("float");
-        return;
-    }
-    _aw_create_toggle_entry(this,p_w->toggle_field,toggle_label,mnemonic,
-                            new AW_variable_update_struct( NULL,
-                                                           AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name),
-                                                           0, 0, var_value, _callback ),
-                            new AW_toggle_struct( var_value, 0 ),
-                            AW_TRUE );
-
-}
-
+void AW_window::insert_toggle        ( AW_label toggle_label, const char *mnemonic, const char *var_value ) { insert_toggle_internal(toggle_label, mnemonic, var_value, false); }
+void AW_window::insert_default_toggle( AW_label toggle_label, const char *mnemonic, const char *var_value ) { insert_toggle_internal(toggle_label, mnemonic, var_value, true);  }
+void AW_window::insert_toggle        ( AW_label toggle_label, const char *mnemonic, int var_value )         { insert_toggle_internal(toggle_label, mnemonic, var_value, false); }
+void AW_window::insert_default_toggle( AW_label toggle_label, const char *mnemonic, int var_value )         { insert_toggle_internal(toggle_label, mnemonic, var_value, true);  }
+void AW_window::insert_toggle        ( AW_label toggle_label, const char *mnemonic, float var_value )       { insert_toggle_internal(toggle_label, mnemonic, var_value, false); }
+void AW_window::insert_default_toggle( AW_label toggle_label, const char *mnemonic, float var_value )       { insert_toggle_internal(toggle_label, mnemonic, var_value, true);  }
 
 void AW_window::update_toggle_field( void ) {
     this->update_toggle_field( get_root()->number_of_toggle_fields );
@@ -2732,135 +2626,95 @@ void AW_window::update_toggle_field( void ) {
 
 
 void AW_window::update_toggle_field( int toggle_field_number ) {
-    AW_toggle_field_struct      *toggle_field_list = p_global->toggle_field_list;
-    AW_toggle_struct        *toggle_list;
-    Widget              help_toggle = 0;
-    AW_BOOL             cont                    = AW_TRUE;
-    AW_BOOL             found                   = AW_FALSE;
-    char                *global_var_value = NULL;
-    long                global_var_int_value = 0;
-    float               global_var_float_value = 0;
-    int width_of_last_widget;
-    int height_of_last_widget;
+#if defined(DEBUG)
+    static int inside_here = 0;
+    aw_assert(!inside_here);
+    inside_here++;
+#endif // DEBUG
 
-    if ( 1 ) {
-
-        while ( toggle_field_list  && cont ) {
-            if ( toggle_field_number == toggle_field_list->toggle_field_number ) {
-                cont = AW_FALSE;
-                found = AW_TRUE;
+    AW_toggle_field_struct *toggle_field_list = p_global->toggle_field_list;
+    {
+        while (toggle_field_list) {
+            if (toggle_field_number == toggle_field_list->toggle_field_number) {
+                break;
             }
-            else {
-                toggle_field_list = toggle_field_list->next;
-            }
+            toggle_field_list = toggle_field_list->next;
         }
+    }
 
-
-        if ( found ) {
-            cont = AW_TRUE;
-            found = AW_FALSE;
+    if (toggle_field_list) {
+        AW_toggle_struct *active_toggle = toggle_field_list->first_toggle;
+        {
+            char  *global_var_value       = NULL;
+            long   global_var_int_value   = 0;
+            float  global_var_float_value = 0;
 
             switch ( toggle_field_list->variable_type ) {
-                case AW_STRING: global_var_value = root->awar( toggle_field_list->variable_name )->read_string();
-                    break;
-                case AW_INT:    global_var_int_value = root->awar( toggle_field_list->variable_name )->read_int();
-                    break;
-                case AW_FLOAT:  global_var_float_value = root->awar( toggle_field_list->variable_name )->read_float();
-                    break;
-                default:
-                    GB_warning("Unknown AWAR type");
+                case AW_STRING: global_var_value       = root->awar( toggle_field_list->variable_name )->read_string(); break;
+                case AW_INT:    global_var_int_value   = root->awar( toggle_field_list->variable_name )->read_int();    break;
+                case AW_FLOAT:  global_var_float_value = root->awar( toggle_field_list->variable_name )->read_float();  break;
+                default: GB_warning("Unknown AWAR type"); break;
             }
 
-            toggle_list = toggle_field_list->first_toggle;
-            while ( toggle_list && cont ) {
-
-                switch ( toggle_field_list->variable_type ) {
-                    case AW_STRING: if ( (strcmp( global_var_value, toggle_list->variable_value ) == 0) ) {
-                        cont = AW_FALSE;
-                        found = AW_TRUE;
-                    }
-                    break;
-                    case AW_INT:        if ( global_var_int_value == toggle_list->variable_int_value ) {
-                        cont = AW_FALSE;
-                        found = AW_TRUE;
-                    }
-                    break;
-                    case AW_FLOAT:      if ( global_var_float_value == toggle_list->variable_float_value ) {
-                        cont = AW_FALSE;
-                        found = AW_TRUE;
-                    }
-                    break;
-                    default:
-                        GB_warning("Unknown AWAR type");
+            bool found_toggle = false;
+            while (active_toggle) {
+                switch (toggle_field_list->variable_type) {
+                    case AW_STRING: found_toggle = (strcmp( global_var_value, active_toggle->variable_value ) == 0);  break;
+                    case AW_INT:    found_toggle = (global_var_int_value == active_toggle->variable_int_value);       break;
+                    case AW_FLOAT:  found_toggle = (global_var_float_value == active_toggle->variable_float_value);   break;
+                    default: GB_warning("Unknown AWAR type"); break;
                 }
-                if ( cont ) {
-                    toggle_list = toggle_list->next;
+                if (found_toggle) break;
+                active_toggle = active_toggle->next;
+            }
+            if (!found_toggle) active_toggle = toggle_field_list->default_toggle;
+            free(global_var_value);
+        }
+
+        // iterate over all toggles including default_toggle and set their state
+        for (AW_toggle_struct *toggle = toggle_field_list->first_toggle; toggle; ) {
+            XmToggleButtonSetState(toggle->toggle_widget, toggle == active_toggle, False);
+
+            if (toggle->next)                                     toggle = toggle->next;
+            else if (toggle != toggle_field_list->default_toggle) toggle = toggle_field_list->default_toggle;
+            else                                                  toggle = 0;
+        }
+
+        {
+            short length;
+            short height;
+            XtVaGetValues( p_w->toggle_field ,XmNwidth ,&length ,XmNheight, &height, NULL );
+            length                += (short)_at->saved_x_correction_for_label;
+
+            int width_of_last_widget  = length;
+            int height_of_last_widget = height;
+
+            if ( toggle_field_list->correct_for_at_center_intern ) {
+                if ( toggle_field_list->correct_for_at_center_intern == 1 ) { // middle centered
+                    XtVaSetValues( p_w->toggle_field, XmNx,(short)((short)_at->saved_x - (short)(length/2) + (short)_at->saved_x_correction_for_label ), NULL );
+                    if ( p_w->toggle_label ) {
+                        XtVaSetValues( p_w->toggle_label, XmNx,(short)((short)_at->saved_x - (short)(length/2) ), NULL );
+                    }
+                    width_of_last_widget = width_of_last_widget / 2;
+                }
+                if ( toggle_field_list->correct_for_at_center_intern == 2 ) { // right centered
+                    XtVaSetValues( p_w->toggle_field, XmNx,(short)((short)_at->saved_x - length + (short)_at->saved_x_correction_for_label ), NULL );
+                    if ( p_w->toggle_label ) {
+                        XtVaSetValues( p_w->toggle_label, XmNx,(short)( (short)_at->saved_x - length ) , NULL );
+                    }
+                    width_of_last_widget = 0;
                 }
             }
-        }else {
-            AW_ERROR("update_toggle_field: toggle field %i does not exist",
-                     toggle_field_number );
-            return;
-        }
-        if (found) {
-            help_toggle = toggle_list->toggle_widget;
-        }
 
-
-        toggle_list = toggle_field_list->first_toggle;
-        while ( toggle_list ) {
-            XmToggleButtonSetState( toggle_list->toggle_widget, False, False );
-            toggle_list = toggle_list->next;
+            this->unset_at_commands();
+            this->increment_at_commands( width_of_last_widget, height_of_last_widget );
         }
-        if ( toggle_field_list->default_toggle ) {
-            XmToggleButtonSetState( toggle_field_list->default_toggle->toggle_widget, False, False );
-        }
-
-
-        if ( found ) {
-            XmToggleButtonSetState( help_toggle, True, False );
-        }else {
-            if ( toggle_field_list->default_toggle ) {
-                // printf("update auf default \n");
-                XmToggleButtonSetState( toggle_field_list->default_toggle->toggle_widget, True, False );
-            }else {
-                GB_export_error("toggle field %i does not have value (s:%s) or (i:%li) or (f:%f)\n",
-                                toggle_field_number,
-                                global_var_value, global_var_int_value, global_var_float_value );
-                GB_print_error();
-            }
-        }
-
-        free(global_var_value);
+    }
+    else {
+        AW_ERROR("update_toggle_field: toggle field %i does not exist", toggle_field_number );
     }
 
-    short length;
-    short height;
-    XtVaGetValues( p_w->toggle_field ,XmNwidth ,&length ,XmNheight, &height, NULL );
-    length                += (short)_at->saved_x_correction_for_label;
-    width_of_last_widget   = length;
-    height_of_last_widget  = height;
-
-    if ( toggle_field_list->correct_for_at_center_intern ) {
-        if ( toggle_field_list->correct_for_at_center_intern == 1 ) { // middle centered
-            XtVaSetValues( p_w->toggle_field, XmNx,(short)((short)_at->saved_x - (short)(length/2) + (short)_at->saved_x_correction_for_label ), NULL );
-            if ( p_w->toggle_label ) {
-                XtVaSetValues( p_w->toggle_label, XmNx,(short)((short)_at->saved_x - (short)(length/2) ), NULL );
-            }
-            width_of_last_widget = width_of_last_widget / 2;
-        }
-        if ( toggle_field_list->correct_for_at_center_intern == 2 ) { // right centered
-            XtVaSetValues( p_w->toggle_field, XmNx,(short)((short)_at->saved_x - length + (short)_at->saved_x_correction_for_label ), NULL );
-            if ( p_w->toggle_label ) {
-                XtVaSetValues( p_w->toggle_label, XmNx,(short)( (short)_at->saved_x - length ) , NULL );
-            }
-            width_of_last_widget = 0;
-        }
-//         _at->correct_for_at_center_intern = 0;
-    }
-
-    this->unset_at_commands();
-    this->increment_at_commands( width_of_last_widget, height_of_last_widget );
-
-
+#if defined(DEBUG)
+    inside_here--;
+#endif // DEBUG
 }
