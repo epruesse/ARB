@@ -48,7 +48,7 @@
 #define FALSE   0
 
 static GB_ERROR error;
-static int      module_initialized = 0;
+static bool     module_initialized = false;
 
 typedef int Boolean;
 
@@ -91,11 +91,14 @@ static const int *gapsBeforePosition;
 /* static int gap_open;
    static int gap_extend;*/
 
-//#define MATRIX_DUMP
+#if defined(DEBUG)
+// #define MATRIX_DUMP
+// #define DISPLAY_DIFF 
+#endif // DEBUG
 
 #ifdef MATRIX_DUMP
 # define IF_MATRIX_DUMP(xxx) xxx
-# define DISPLAY_MATRIX_SIZE 500
+# define DISPLAY_MATRIX_SIZE 3000
 
 static int vertical             [DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
 static int verticalOpen         [DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
@@ -375,9 +378,8 @@ static char pam250mt[]={
 
 static char *matptr = pam250mt;
 
-#if defined(DEBUG) && 0
-static GB_ERROR p_decode(const char *naseq, char *seq, int l)
-{
+#if (defined(DISPLAY_DIFF) || defined(MATRIX_DUMP))
+static GB_ERROR p_decode(const unsigned char *naseq, unsigned char *seq, int l) {
     int len = strlen(amino_acid_order);
 
     for (int i=1; i<=l && naseq[i]; i++)
@@ -389,8 +391,7 @@ static GB_ERROR p_decode(const char *naseq, char *seq, int l)
     return 0;
 }
 
-static GB_ERROR n_decode(const char *naseq, char *seq, int l)
-{
+static GB_ERROR n_decode(const unsigned char *naseq, unsigned char *seq, int l) {
     int len = strlen(nucleic_acid_order);
 
     for (int i=1; i<=l && naseq[i]; i++)
@@ -532,10 +533,10 @@ static MAXN_2(inline) int calc_weight(int iat,int jat,int v1,int v2)
 {
 #if (MAXN==2)
     awtc_assert(pos1==1 && pos2==1);
-    int j = seq_array[alist[1]][v2+jat-1];
-    return j>0 ? naas[j][v1+iat-1] : 0;
+    unsigned char j = seq_array[alist[1]][v2+jat-1];
+    return j<128 ? naas[j][v1+iat-1] : 0;
 #else
-    int sum,i,j,lookn,ret;
+    int sum,i,lookn,ret;
     int ipos,jpos;
 
     ipos = v1 + iat -1;
@@ -548,9 +549,8 @@ static MAXN_2(inline) int calc_weight(int iat,int jat,int v1,int v2)
     {
         for(i=1;i<=pos2;++i)
         {
-            j=seq_array[alist[i]][jpos];
-            if(j>0)
-            {
+            unsigned char j=seq_array[alist[i]][jpos];
+            if (j<128) {
                 sum += naas[j][ipos];
                 ++lookn;
             }
@@ -560,9 +560,8 @@ static MAXN_2(inline) int calc_weight(int iat,int jat,int v1,int v2)
     {
         for(i=1;i<=pos1;++i)
         {
-            j=seq_array[alist[i]][ipos];
-            if(j>0)
-            {
+            unsigned char j = seq_array[alist[i]][ipos];
+            if (j<128) {
                 sum += naas[j][jpos];
                 ++lookn;
             }
@@ -574,10 +573,19 @@ static MAXN_2(inline) int calc_weight(int iat,int jat,int v1,int v2)
 }
 
 #ifdef MATRIX_DUMP
-static inline char *nstr(char *cp, int length)
+
+static unsigned char *lstr_ss = 0;
+static inline const unsigned char *lstr(const unsigned char *s, int len)
 {
-    char *s = lstr(cp,length);
-    n_decode(s-1, s-1, length);
+    if (lstr_ss) free(lstr_ss);
+    lstr_ss = (unsigned char*)strndup((const char*)s,len);
+    return lstr_ss;
+}
+
+static inline const unsigned char *nstr(unsigned char *cp, int length)
+{
+    const unsigned char *s = lstr(cp,length);
+    (dnaflag ? n_decode : p_decode)(s-1, const_cast<unsigned char *>(s-1), length);
     return s;
 }
 
@@ -658,12 +666,14 @@ static int diff(int v1,int v2,int v3,int v4, int st,int en)
         char *d;
 
         d = lstr(seq_array[1]+v1,v3);
-        n_decode(d-1,d-1,v3);
+        
+        (dnaflag ? n_decode : p_decode)(d-1,d-1,v3);
 
         for (int cnt=0; cnt<deep; cnt++) putchar(' ');
         printf("master = '%s' (penalties left=%i right=%i)\n", d, st, en);
+
         d = lstr(seq_array[2]+v2,v4);
-        n_decode(d-1,d-1,v4);
+        (dnaflag ? n_decode : p_decode)(d-1,d-1,v4);
 
         for (cnt=0; cnt<deep; cnt++) putchar(' ');
         printf("slave  = '%s'\n", d);
@@ -929,31 +939,29 @@ static void do_align( /*int v1,*/ int *score, long act_seq_length)
     // create position statistics for each group
     // [here every group contains only one seq]
 
-    for(i=1;i<=nseqs;++i)
-    {
-        if(group[i]==1)
-        {
+    for (i=1;i<=nseqs;++i) {
+        if (group[i]==1) {
             fst_list[++pos1]=i;
-            for(j=1;j<=seqlen_array[i];++j)
-                if(seq_array[i][j]>0) {
-                    unsigned char b = seq_array[i][j];
-                    awtc_assert(b <= MAX_BASETYPES);
+            for (j=1;j<=seqlen_array[i];++j) {
+                unsigned char b = seq_array[i][j];
+                if (b<128) {
                     ++naa1[b][j];
                     ++naa1[0][j];
                 }
-            if(seqlen_array[i]>l1) l1=seqlen_array[i];
+            }
+            if (seqlen_array[i]>l1) l1=seqlen_array[i];
         }
-        else if(group[i]==2)
+        else if (group[i]==2)
         {
             snd_list[++pos2]=i;
-            for(j=1;j<=seqlen_array[i];++j)
-                if(seq_array[i][j]>0) {
-                    unsigned char b = seq_array[i][j];
-                    awtc_assert(b <= MAX_BASETYPES);
+            for (j=1;j<=seqlen_array[i];++j) {
+                unsigned char b = seq_array[i][j];
+                if (b<128) {
                     ++naa2[b][j];
                     ++naa2[0][j];
                 }
-            if(seqlen_array[i]>l2) l2=seqlen_array[i];
+            }
+            if (seqlen_array[i]>l2) l2=seqlen_array[i];
         }
     }
 
@@ -970,28 +978,26 @@ static void do_align( /*int v1,*/ int *score, long act_seq_length)
                 }
             }
             k = naa1[0][n];
-            if(k>0) {
-                for(i=1;i<MAX_BASETYPES;++i) {
+            if (k>0) {
+                for (i=1;i<MAX_BASETYPES;++i) {
                     naas[i][n]=t_arr[i]/k;
                 }
             }
         }
     }
-    else
-    {
+    else {
         MAXN_2_assert(0);       // should never occur if MAXN==2
 #if (MAXN!=2)
-        for(i=1;i<=pos1;++i) alist[i]=fst_list[i];
-        for(n=1;n<=l2;++n)
-        {
-            for(i=1;i<MAX_BASETYPES;++i) t_arr[i]=0;
-            for(i=1;i<MAX_BASETYPES;++i)
-                if(naa2[i][n]>0)
-                    for(j=1;j<MAX_BASETYPES;++j)
+        for (i=1;i<=pos1;++i) alist[i]=fst_list[i];
+        for (n=1;n<=l2;++n) {
+            for (i=1;i<MAX_BASETYPES;++i) t_arr[i]=0;
+            for (i=1;i<MAX_BASETYPES;++i)
+                if (naa2[i][n]>0)
+                    for (j=1;j<MAX_BASETYPES;++j)
                         t_arr[j] += (weights[i][j]*naa2[i][n]);
             k = naa2[0][n];
-            if(k>0)
-                for(i=1;i<MAX_BASETYPES;++i)
+            if (k>0)
+                for (i=1;i<MAX_BASETYPES;++i)
                     naas[i][n]=t_arr[i]/k;
         }
 #endif
@@ -1079,12 +1085,10 @@ static int res_index(const char *t,char c)
     return 0;
 }
 
-static GB_ERROR p_encode(const unsigned char *seq, unsigned char *naseq, int l) /* code seq as ints .. use -2 for gap */
-{
-    int i;
-    int warned = 0;
+static GB_ERROR p_encode(const unsigned char *seq, unsigned char *naseq, int l) /* code seq as ints .. use -2 for gap */ {
+    bool warned = false;
 
-    for(i=1; i<=l; i++) {
+    for(int i=1; i<=l; i++) {
         int c = res_index(amino_acid_order,seq[i]);
 
         if (!c) {
@@ -1096,7 +1100,7 @@ static GB_ERROR p_encode(const unsigned char *seq, unsigned char *naseq, int l) 
                     char buf[100];
                     sprintf(buf, "Illegal character '%c' in sequence data", seq[i]);
                     aw_message(buf);
-                    warned = 1;
+                    warned = true;
                 }
                 c = res_index(amino_acid_order, 'X');
             }
@@ -1148,8 +1152,7 @@ GB_ERROR AWTC_ClustalV_align(int is_dna, int weighted,
     error = 0;
     gapsBeforePosition = gapsBefore1;
 
-    if (!module_initialized)            // initialize only once
-    {
+    if (!module_initialized) { // initialize only once
         dnaflag = is_dna;
         is_weight = weighted;
 
@@ -1165,64 +1168,58 @@ GB_ERROR AWTC_ClustalV_align(int is_dna, int weighted,
             group[i] = i;
         }
 
-        if (error) goto ende;
-
-        module_initialized = 1;
+        if (!error) module_initialized = true;
     }
-    else
-    {
-        if (dnaflag!=is_dna || is_weight!=weighted)
-        {
-            return "Please call AWTC_ClustalV_align_exit() between calls that differ in\n"
+    else {
+        if (dnaflag!=is_dna || is_weight!=weighted) {
+            error = "Please call AWTC_ClustalV_align_exit() between calls that differ in\n"
                 "one of the following parameters:\n"
                 "       is_dna, weighted";
         }
     }
 
-    nseqs = 2;
-    print_ptr = 0;
+    if (!error) {
+        nseqs = 2;
+        print_ptr = 0;
 
 #if defined(DEBUG) && 1
-    memset(&seq_array[1][1], 0, max_seq_length*sizeof(seq_array[1][1]));
-    memset(&seq_array[2][1], 0, max_seq_length*sizeof(seq_array[2][1]));
-    memset(&displ[1], 0xff, max_seq_length*sizeof(displ[1]));
-    seq_array[1][0] = '_';
-    seq_array[2][0] = '_';
+        memset(&seq_array[1][1], 0, max_seq_length*sizeof(seq_array[1][1]));
+        memset(&seq_array[2][1], 0, max_seq_length*sizeof(seq_array[2][1]));
+        memset(&displ[1], 0xff, max_seq_length*sizeof(displ[1]));
+        seq_array[1][0] = '_';
+        seq_array[2][0] = '_';
 #endif
 
-    {
-        GB_ERROR (*encode)(const unsigned char*,unsigned char*,int) = dnaflag ? n_encode : p_encode;
+        {
+            GB_ERROR (*encode)(const unsigned char*,unsigned char*,int) = dnaflag ? n_encode : p_encode;
 
-        error = encode((const unsigned char*)(seq1-1), seq_array[1], length1);
-        if (error) goto ende;
-        seqlen_array[1] = length1;
+            error = encode((const unsigned char*)(seq1-1), seq_array[1], length1);
+            if (!error) {
+                seqlen_array[1] = length1;
+                error = encode((const unsigned char*)(seq2-1), seq_array[2], length2);
+                if (!error) {
+                    seqlen_array[2] = length2;
 
-        error = encode((const unsigned char*)(seq2-1), seq_array[2], length2);
-        if (error) goto ende;
-        seqlen_array[2] = length2;
+                    do_align(/* gap_open,*/ score, max(length1,length2));
+                    int alignedLength = add_ggaps(max_seq_length);
 
-        do_align(/*gap_open,*/ score,max(length1,length2));
-
-        int alignedLength = add_ggaps(max_seq_length);
-
-        *resultPtr1 = result[1]+1;
-        *resultPtr2 = result[2]+1;
-        *resLengthPtr = alignedLength;
+                    *resultPtr1   = result[1]+1;
+                    *resultPtr2   = result[2]+1;
+                    *resLengthPtr = alignedLength;
+                }
+            }
+        }
     }
-
- ende:
 
     return error;
 }
 
 void AWTC_ClustalV_align_exit(void)
 {
-    if (module_initialized)
-    {
-        module_initialized = 0;
+    if (module_initialized) {
+        module_initialized = false;
 
-        for (int i=1; i<=2; i++)
-        {
+        for (int i=1; i<=2; i++) {
             free(result[i]);
             free(seq_array[i]);
         }

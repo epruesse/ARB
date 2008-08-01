@@ -981,27 +981,29 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
 
 
 GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *alignment_name, long *protstruct_len /*= 0*/) {
-    GB_ERROR error = 0;
-    GB_transaction dummy(gb_main);
-    char *SAI_name = ED4_ROOT->aw_root->awar(PFOLD_AWAR_SELECTED_SAI)->read_string();
-    GBDATA *gb_protstruct = GBT_find_SAI(gb_main, SAI_name);
-    
+    GB_ERROR        error         = 0;
+    GB_transaction  ta(gb_main);
+    AW_root        *aw_root       = ED4_ROOT->aw_root;
+    char           *SAI_name      = aw_root->awar(PFOLD_AWAR_SELECTED_SAI)->read_string();
+    GBDATA         *gb_protstruct = GBT_find_SAI(gb_main, SAI_name);
+
     free(*protstruct);
     *protstruct = 0;
-    
+
     if (gb_protstruct) {
         GBDATA *gb_data = GBT_read_sequence(gb_protstruct, alignment_name);
-        if (gb_data) {
-            *protstruct = GB_read_string(gb_data);
-        }
+        if (gb_data) *protstruct = GB_read_string(gb_data);
     }
     
     if (*protstruct) {
         if (protstruct_len) *protstruct_len = (long)strlen(*protstruct);
-    } else {
+    }
+    else {
         if (protstruct_len) protstruct_len = 0;
-        error = GB_export_error( "No SAI \"%s\" found. Protein structure information will not be displayed. "
-                                 "Check \"Properties -> Protein Match Settings\".", SAI_name );
+        if (aw_root->awar(PFOLD_AWAR_ENABLE)->read_int()) {
+            error = GB_export_error( "SAI \"%s\" does not exist.\nDisabled protein structure display!", SAI_name );
+            aw_root->awar(PFOLD_AWAR_ENABLE)->write_int(0);
+        }
     }
     
     free(SAI_name);

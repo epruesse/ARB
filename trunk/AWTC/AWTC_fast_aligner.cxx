@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : AWTC_fast_aligner.cxx                             //
 //   Purpose   : A fast aligner (not a multiple aligner!)          //
-//   Time-stamp: <Sun Jul/27/2008 13:54 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Thu Jul/31/2008 11:30 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in 1998           //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -2296,15 +2296,16 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2)
     int                             get_consensus = 0;
     int                             pt_server_id  = -1;
 
-    //  awtc_assert(cd->helix_string != 0);
-
     AWTC_get_first_selected_species get_first_selected_species = 0;
     AWTC_get_next_selected_species  get_next_selected_species  = 0;
 
     awtc_assert(island_hopper == 0);
     if (root->awar(FA_AWAR_USE_ISLAND_HOPPING)->read_int()) {
         island_hopper = new IslandHopping();
-        if (root->awar(FA_AWAR_USE_SECONDARY)->read_int()) island_hopper->set_helix(cd->helix_string);
+        if (root->awar(FA_AWAR_USE_SECONDARY)->read_int()) {
+            island_hopper->set_helix(cd->helix_string);
+            if (cd->helix_string) aw_message("Warning: No HELIX found. Can't use to align..");
+        }
 
         island_hopper->set_parameters(root->awar(FA_AWAR_ESTIMATE_BASE_FREQ)->read_int(),
                                       root->awar(FA_AWAR_BASE_FREQ_T)->read_float(),

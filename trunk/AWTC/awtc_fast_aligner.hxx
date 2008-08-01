@@ -24,7 +24,7 @@ struct AWTC_faligner_cd
     AWTC_get_first_selected_species get_first_selected_species;
     AWTC_get_next_selected_species  get_next_selected_species;
 
-    char *helix_string;
+    char *helix_string; // currently only used for island hopping
 };
 
 // --------------------------------------------------------------------------------
