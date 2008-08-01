@@ -1743,7 +1743,7 @@ static void aw_window_destroy_cb(Widget w, AW_window *aww,
     AW_root *root = aww->get_root();
     if ( (p_global->main_aww == aww) || !p_global->main_aww->get_show()) {
 #ifdef NDEBUG
-        if (aw_message("Are you sure to quit ??","YES,NO") ) return;
+        if (aw_question("Are you sure to quit ??","YES,NO") ) return;
 #endif
         exit(0);
     }
