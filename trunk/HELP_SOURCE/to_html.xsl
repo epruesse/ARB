@@ -370,9 +370,10 @@
                 </A>
                 <INPUT TYPE="hidden" name="q"/>
                 <INPUT TYPE="hidden" name="hl" value="en"/>
-                <INPUT TYPE="hidden" name="as_sitesearch" value="arb-home.de"/>
+                <INPUT TYPE="hidden" name="as_sitesearch" value="help.arb-home.de"/>
                 <INPUT TYPE="text" name="q2" size="31" maxlength="255"/>
-                <INPUT type="submit" name="btnG" VALUE="Search ARB site" onClick="google.q.value='arb '+google.q2.value;return true;"/>
+                <INPUT type="submit" name="btnG" VALUE="Search help" onClick="google.q.value=google.q2.value;return true;"/>
+                <INPUT type="submit" name="btnG" VALUE="Search site" onClick="google.as_sitesearch.value='arb-home.de';google.q.value=google.q2.value;return true;"/>
               </FORM>
               <!-- Search Google -->
             </TD>
