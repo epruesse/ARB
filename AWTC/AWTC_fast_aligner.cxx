@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : AWTC_fast_aligner.cxx                             //
 //   Purpose   : A fast aligner (not a multiple aligner!)          //
-//   Time-stamp: <Thu Jul/31/2008 11:30 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Thu Aug/21/2008 09:57 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in 1998           //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -2437,23 +2437,27 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2)
             lastColumn,
         };
 
-        aw_openstatus("FastAligner");
-        error = AWTC_aligner(
-                             alignWhat,
-                             editor_alignment,
-                             toalign,
-                             get_first_selected_species,
-                             get_next_selected_species,
+        {
+            GB_transaction ta(GLOBAL_gb_main);
+            aw_openstatus("FastAligner");
+            error = AWTC_aligner(
+                                 alignWhat,
+                                 editor_alignment,
+                                 toalign,
+                                 get_first_selected_species,
+                                 get_next_selected_species,
                              
-                             reference,
-                             get_consensus ? cd->get_group_consensus : NULL,
-                             relSearch, 
+                                 reference,
+                                 get_consensus ? cd->get_group_consensus : NULL,
+                                 relSearch, 
                              
-                             static_cast<FA_turn>(root->awar(FA_AWAR_MIRROR)->read_int()),
-                             ali_params, 
-                             root->awar(FA_AWAR_PROTECTION)->read_int() 
-                             );
-        aw_closestatus();
+                                 static_cast<FA_turn>(root->awar(FA_AWAR_MIRROR)->read_int()),
+                                 ali_params, 
+                                 root->awar(FA_AWAR_PROTECTION)->read_int()
+                                 );
+            aw_closestatus();
+            if (error) ta.abort();
+        }
 
         free(pt_server_alignment);
         free(editor_alignment);
