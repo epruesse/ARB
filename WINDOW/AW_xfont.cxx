@@ -28,7 +28,7 @@
 
 // --------------------------------------------------------------------------------
 
-#define FONT_EXAMINE_MAX   500
+#define FONT_EXAMINE_MAX   5000
 #define KNOWN_ISO_VERSIONS 3
 
 #if defined(DEVEL_RALF)
@@ -301,6 +301,10 @@ void aw_root_init_font(Display *tool_d)
 
                 fontlist[iso] = XListFonts(tool_d, font_template, FONT_EXAMINE_MAX, &count);
                 if (fontlist[iso]) {
+                    if ((found_fonts+count) >= FONT_EXAMINE_MAX) {
+                        printf("Warning: Too many fonts found for '%s..%s' - ARB can't examine all fonts\n", x_fontinfo[f].templat, known_iso_versions[iso]);
+                        count = FONT_EXAMINE_MAX-found_fonts;
+                    }
                     for (int c = 0; c<count; ++c) {
                         const char *fontname  = fontlist[iso][c];
                         int         size      = parsesize(fontname);
