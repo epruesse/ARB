@@ -54,6 +54,7 @@
 #include "nt_concatenate.hxx"
 #include "seq_quality.h"
 #include "NT_trackAliChanges.h"
+#include "NT_dbrepair.hxx"
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -1606,7 +1607,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         awm->close_sub_menu();
         AWMIMT("mark_long_branches", "Mark long branches", "k", "mark_long_branches.hlp", AWM_EXP, (AW_CB)NT_mark_long_branches, (AW_CL)ntw, 0);
         AWMIMT("mark_deep_branches", "Mark deep branches", "d", "mark_deep_branches.hlp", AWM_EXP, (AW_CB)NT_mark_deep_branches, (AW_CL)ntw, 0);
-        AWMIMT("mark_degen_branches", "Mark degenerated branches", "d", "mark_degen_branches.hlp", AWM_EXP, (AW_CB)NT_mark_degenerated_branches, (AW_CL)ntw, 0);
+        AWMIMT("mark_degen_branches", "Mark degenerated branches", "g", "mark_degen_branches.hlp", AWM_EXP, (AW_CB)NT_mark_degenerated_branches, (AW_CL)ntw, 0);
         AWMIMT("mark_duplicates", "Mark duplicates", "u", "mark_duplicates.hlp", AWM_EXP, (AW_CB)NT_mark_duplicates, (AW_CL)ntw, 0);
 
         SEP________________________SEP();
@@ -1617,7 +1618,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         SEP________________________SEP();
 
         if (!clone){
-            AWMIMT("tree_admin", "Tree admin",                "d", "treeadm.hlp",   AWM_TREE, AW_POPUP, (AW_CL)create_trees_window, 0             );
+            AWMIMT("tree_admin", "Tree admin",                "i", "treeadm.hlp",   AWM_TREE, AW_POPUP, (AW_CL)create_trees_window, 0             );
             AWMIMT("nds",        "Select visible info (NDS)", "N", "props_nds.hlp", AWM_ALL,  AW_POPUP, (AW_CL)AWT_open_nds_window, (AW_CL)GLOBAL_gb_main);
         }
         SEP________________________SEP();
@@ -1647,6 +1648,11 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         awm->create_menu(0,"Tools","o","nt_etc.hlp", AWM_ALL);
         {
             AWMIMT("names_admin",      "Name server admin",    "s","namesadmin.hlp",   AWM_EXP, AW_POPUP, (AW_CL)AW_create_namesadmin_window, (AW_CL)GLOBAL_gb_main );
+            awm->insert_sub_menu( 0,   "DB admin", "D");
+            {
+                AWMIMT("db_admin", "Re-repair DB", "R", "rerepair.hlp", AWM_EXP, NT_rerepair_DB, (AW_CL)GLOBAL_gb_main, 0);
+            }
+            awm->close_sub_menu();
             awm->insert_sub_menu( 0,   "Network", "N");
             {
                 AWMIMT("ors",   "ORS (disabled) ...",      "O","ors.hlp",          AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"netscape http://pop.mikro.biologie.tu-muenchen.de/ORS/ &", 0);

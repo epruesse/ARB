@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : NT_dbrepair.cxx                                   //
 //   Purpose   : repair database bugs                              //
-//   Time-stamp: <Wed Jul/30/2008 10:28 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Sep/03/2008 15:25 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in May 2008       //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -14,7 +14,6 @@
 
 #include <arbdbt.h>
 #include <adGene.h>
-#include <aw_root.hxx>
 
 #include <smartptr.h>
 #include <inline.h>
@@ -92,6 +91,24 @@ public:
             aw_status(1.0);
             if (!error) register_as_performed(check_name);
         }
+    }
+
+    GB_ERROR forgetDoneChecks() {
+        GB_ERROR       error = 0;
+        GB_transaction ta(gb_main);
+
+        GBDATA *gb_checks = GB_search(gb_main, "checks", GB_CREATE_CONTAINER);
+        for (GBDATA *gb_check = GB_entry(gb_checks, "check"); gb_check && !error; gb_check = GB_nextEntry(gb_check)) {
+            char *check_name = GB_read_string(gb_check);
+
+#if defined(DEBUG)
+            printf("Deleting check '%s'\n", check_name);
+#endif // DEBUG
+            error = GB_delete(gb_check);
+            consistencies.erase(check_name);
+            free(check_name);
+        }
+        return error;
     }
 };
 
@@ -352,7 +369,7 @@ typedef map<string, DictPtr>    DictMap;
 typedef vector<DictPtr>         Dicts;
 typedef set<string>             StringSet;
 
-#define STATUS_PREFIX "Dictionary-bug: "
+#define STATUS_PREFIX "Dictionary: "
 
 template<typename CONT, typename KEY>
 bool contains(const CONT& container, const KEY& key) {
@@ -664,7 +681,6 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                            "Please save your database with a new name.");
             }
         }
-
     }
 
     Dict::gb_main = NULL;
@@ -682,10 +698,27 @@ GB_ERROR NT_repair_DB(GBDATA *gb_main) {
     GB_ERROR             err = 0;
 
     check.perform_check("fix gene_data",     NT_fix_gene_data,     err);
-    check.perform_check("fix_dict_compress", NT_fix_dict_compress, err); // do this before REF (cause 'REF' is affected)
+    check.perform_check("fix_dict_compress", NT_fix_dict_compress, err); // do this before NT_del_mark_move_REF (cause 'REF' is affected)
     check.perform_check("del_mark_move_REF", NT_del_mark_move_REF, err);
 
     return err;
+}
+
+void NT_rerepair_DB(AW_window*, AW_CL cl_gbmain, AW_CL) {
+    // re-perform all DB checks
+    GBDATA   *gb_main = reinterpret_cast<GBDATA*>(cl_gbmain);
+    GB_ERROR  err     = 0;
+    {
+        CheckedConsistencies check(gb_main);
+        err = check.forgetDoneChecks();
+    }
+    if (!err) {
+        aw_openstatus("DB-Repair");
+        err = NT_repair_DB(gb_main);
+        aw_closestatus();
+    }
+
+    if (err) aw_message(err);
 }
 
 
