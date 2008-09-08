@@ -26,7 +26,7 @@
 #include <cctype>
 #endif
 
-#define MAXNODEPATH 1024
+#define MAXNODEPATH 1024*8
 
     // Note: When changing encoding please adjust
     //       encodePath() in ./PROBE_WEB/CLIENT/TreeNode.java
