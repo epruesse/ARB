@@ -383,7 +383,7 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
         if (!( (1<<base) & node->flags)) return NULL;  /* bit not set */
         base = (PT_BASES)PT_count_bits[base][node->flags];
         PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+ptmain->mode,i);
-        return (POS_TREE *)(i+ptmain->base);
+        return (POS_TREE *)(i+ptmain->base);            // ptmain->base == 0x00 in stage 1
     }
 }
 
@@ -393,7 +393,7 @@ GB_INLINE POS_TREE *PT_read_son_stage_1(PTM2 *ptmain, POS_TREE *node, PT_BASES b
     if (!( (1<<base) & node->flags)) return NULL;  /* bit not set */
     base = (PT_BASES)PT_count_bits[base][node->flags];
     PT_READ_PNTR((&node->data)+sizeof(PT_PNTR)*base+ptmain->mode,i);
-    return (POS_TREE *)(i+ptmain->base);
+    return (POS_TREE *)(i+ptmain->base);                // ptmain->base == 0x00 in stage 1
 }
 
 GB_INLINE PT_NODE_TYPE PT_read_type(POS_TREE *node)
