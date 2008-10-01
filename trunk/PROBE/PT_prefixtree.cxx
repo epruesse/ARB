@@ -624,22 +624,22 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
             if (r_poss[i]){
                 /*u*/ long  diff = pos - r_poss[i];
                 arb_assert(diff >= 0);
-                if (max_diff) {
-                    if (diff>level) {
+                if (max_diff) {                     // int/short (bit[7] in flags2 set)
+                    if (diff>level) {               // int
                         PTD_put_int(out,diff);
                         size += 4;
                         psg.stat.longs++;
-                    }else{
+                    }else{                          // short
                         PTD_put_short(out,diff);
                         size += 2;
                         psg.stat.shorts++;
                     }
-                }else{
-                    if (diff>level) {
+                }else{                              // short/char  (bit[7] in flags2 not set)
+                    if (diff>level) {               // short
                         PTD_put_short(out,diff);
                         size += 2;
                         psg.stat.shorts2++;
-                    }else{
+                    }else{                          // char
                         putc((int)diff,out);
                         size += 1;
                         psg.stat.chars++;
@@ -662,7 +662,7 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
 
     POS_TREE     *sons;
     long          r_pos,r_poss[PT_B_MAX],son_size[PT_B_MAX],o_pos;
-    int           block[10];
+    int           block[10];            // TODO: check why we allocate 10 ints when only block[0] is used
     int           i;
     PT_NODE_TYPE  type = PT_read_type(node);
 
