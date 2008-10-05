@@ -221,11 +221,11 @@ void PT_change_father(POS_TREE *father, POS_TREE *source, POS_TREE *dest){  /* s
 }
 
 POS_TREE *PT_add_to_chain(PTM2 *ptmain, POS_TREE *node, int name, int apos, int rpos)   /*stage1*/
-{
+{                                           // insert at the beginning of list
     static char buffer[100];
     unsigned long old_first;
     char *data;
-    int mainapos;
+    int mainapos;                           // TODO: mainapos isn't used
     data = (&node->data) + ptmain->mode;
     if (node->flags&1){
         PT_READ_INT(data,mainapos);
@@ -276,9 +276,9 @@ POS_TREE *PT_leaf_to_chain(PTM2 *ptmain, POS_TREE *node)        /* stage 1*/
     if (PT_GET_TYPE(node) != PT_NT_LEAF) PT_CORE;
     PT_READ_PNTR((&node->data),i);
     father=(POS_TREE *)i;
-    name = PT_read_name(ptmain,node);
-    apos = PT_read_apos(ptmain,node);
-    rpos = PT_read_rpos(ptmain,node);
+    name = PT_read_name(ptmain,node);                           // backup name, 
+    apos = PT_read_apos(ptmain,node);                           //        apos,
+    rpos = PT_read_rpos(ptmain,node);                           //        rpos
     chain_size = PT_EMPTY_CHAIN_SIZE;
     if (apos>PT_SHORT_SIZE) chain_size+=2;
 
@@ -286,16 +286,16 @@ POS_TREE *PT_leaf_to_chain(PTM2 *ptmain, POS_TREE *node)        /* stage 1*/
     PT_change_father(father,node,new_elem);
     PTM_free_mem((char *)node,PT_LEAF_SIZE(node));
     PT_SET_TYPE(new_elem,PT_NT_CHAIN,0);
-    PT_WRITE_PNTR((&new_elem->data),(long)father);
+    PT_WRITE_PNTR((&new_elem->data),(long)father);              // father
     data = (&new_elem->data)+sizeof(PT_PNTR);
-    if (apos>PT_SHORT_SIZE){
-        PT_WRITE_INT(data,apos);
-        data+=4; new_elem->flags|=1;
-    }else{
-        PT_WRITE_SHORT(data,apos);
-        data+=2;
+    if (apos>PT_SHORT_SIZE){                                    // mainapos
+        PT_WRITE_INT(data,apos);                                // .
+        data+=4; new_elem->flags|=1;                            // .
+    }else{                                                      // .
+        PT_WRITE_SHORT(data,apos);                              // .
+        data+=2;                                                // .
     }
-    PT_WRITE_PNTR(data,NULL);      // first element
+    PT_WRITE_PNTR(data,NULL);                                   // first element
     PT_add_to_chain(ptmain, new_elem,name,apos,rpos);
     return new_elem;
 }
@@ -444,10 +444,14 @@ long PTD_write_tip_to_disk(FILE * out, PTM2 */*ptmain*/,POS_TREE * node,long pos
     // write 4 bytes when not in stage 2 save mode
 
     cnt = size-sizeof(PT_PNTR)-1;               /* no father; type already saved */
+#ifdef DEVEL_JB
+    fwrite(&node->data + sizeof(PT_PNTR), 0x01, cnt, out);   // write name rpos apos
+#else
     for (data = (&node->data)+sizeof(PT_PNTR);cnt;cnt--) { /* write apos rpos name */
         i = (int)(*(data++));
         putc(i,out);
     }
+#endif
     PTD_set_object_to_saved_status(node,pos,size);
     pos += size-sizeof(PT_PNTR);                /* no father */
     arb_assert(pos >= 0);
@@ -554,7 +558,7 @@ void PTD_debug_nodes(void)
     printf ("       Shorts:     %6i\n",psg.stat.shorts2);
     printf ("   Long   Nodes:   %6i\n",psg.stat.long_node);
     printf ("       Shorts:     %6i\n",psg.stat.shorts);
-    printf ("       Longs:      %6i\n",psg.stat.longs);
+    printf ("       Longs:      %6i\n",psg.stat.longs);         // "longs" are actually 32 bit ints
 }
 
 long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_poss,long pos){
@@ -602,12 +606,24 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
         putc(node->flags,out);
         int flags2 = 0;
         int level;
+#ifdef DEVEL_JB
+        if (max_diff > 0xffffffff){
+            printf("max_diff > 0xffffffff is not supported.\n"); 
+            arb_assert(false);
+            flags2 |= 0x40;
+            level = 0xffffffff;
+        }else if (max_diff > 0xffff){
+#else
         if (max_diff > 0xffff){
+#endif
             flags2 |= 0x80;
             level = 0xffff;
             psg.stat.long_node++;
         }else{
+#ifdef DEVEL_JB
+#else
             max_diff = 0;
+#endif
             level = 0xff;
             psg.stat.short_node++;
         }
@@ -624,7 +640,23 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
             if (r_poss[i]){
                 /*u*/ long  diff = pos - r_poss[i];
                 arb_assert(diff >= 0);
+#ifdef DEVEL_JB
+                if (max_diff > 0xffffffff){         // long long / int
+                    printf("max_diff > 0xffffffff is not supported.\n"); 
+                    arb_assert(false);
+                    if (diff>level) {               // long long (64 bit)
+//                        PTD_put_longlong(out,diff);
+                        size += 8;
+                        psg.stat.longs++;
+                    }else{                          // int
+                        PTD_put_int(out,diff);
+                        size += 4;
+                        psg.stat.longs++;
+                    }
+                }else if (max_diff > 0xffff){       // int/short (bit[7] in flags2 set)
+#else
                 if (max_diff) {                     // int/short (bit[7] in flags2 set)
+#endif
                     if (diff>level) {               // int
                         PTD_put_int(out,diff);
                         size += 4;
