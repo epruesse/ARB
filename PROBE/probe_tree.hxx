@@ -52,28 +52,28 @@ extern char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
                     bit[4] free
                     bit[0-3] size of former entry -4
                     if ==0 then size follows
-    int     rel start of the real object
+    PT_PNTR     rel start of the real object       // actually it's a pointer to the objects father
     [int        size]       if bit[0-3] == 0;
 
-/ ********************* tip (7-13   +4) *********************** /
+/ ********************* tip / leaf (7-13   +4)  *********************** /
     byte    <32         bit[7] = bit[6] = bit[5] = 0
-                    bit[3-4] free
+                        bit[3-4] free
     [PT_PNTR    father]     if main->mode
     short/int   name        int if bit[0]
     short/int   rel pos     int if bit[1]
     short/int   abs pos     int if bit[2]
 
 / ********************* inner node (1 + 4*[1-6] +4) (stage 1 + 2) *********************** /
-    byte    >128            bit[7] =  1
-                    bit[6] = 0
+    byte    >128        bit[7] = 1  bit[6] = 0
     [PT_PNTR father]        if main->mode
     [PT_PNTR son0]          if bit[0]
 ...
     [PT_PNTR son5]          if bit[5]
 
 / ********************* inner node (3-22    +4) (stage 3 only) *********************** /
-    byte                bit[7] = 1 bit[6] = 0
+    byte                bit[7] = 1  bit[6] = 0
     byte2               if bit2[7]  then int/short else short/char
+                  TODO: use bit2[6] for long
     [char/short/int son0]       if bit[0] short/int if bit2[0] else char/short
     [char/short/int son1]       if bit[1]
     [char/short/int son5]       if bit[5]
@@ -104,7 +104,7 @@ extern char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
 / ********************* chain (8-n +4) stage 2/3 *********************** /
 
     byte =64/65         bit[7] = 0, bit[6] = 1  bit[5] = 0
-    [int        father]     if main->mode
+    [PT_PNTR    father]     if main->mode
     short/int   ref abs pos int if bit[0]
 [   char/short/int      rel name [ to last name eg. rel names 10 30 20 50 -> abs names = 10 40 60 110
                 if bit[7] than short
