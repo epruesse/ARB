@@ -139,6 +139,20 @@ struct probe_input_data {    /* every taxas own data */
 };
 
 struct probe_statistic_struct {
+#ifdef DEVEL_JB
+    int cut_offs;       /* statistic of chains */
+    int single_node;
+    int short_node;
+    int int_node;
+    int long_node;
+    int longs;
+    int ints;
+    int ints2;
+    int shorts;
+    int shorts2;
+    int chars;
+    long maxdiff;
+#else
     int cut_offs;       /* statistic of chains */
     int single_node;
     int short_node;
@@ -147,6 +161,7 @@ struct probe_statistic_struct {
     int shorts;
     int shorts2;
     int chars;
+#endif
 
 };
 
