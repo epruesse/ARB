@@ -72,11 +72,24 @@ extern char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
 
 / ********************* inner node (3-22    +4) (stage 3 only) *********************** /
     byte                bit[7] = 1  bit[6] = 0
-    byte2               if bit2[7]  then int/short else short/char
-                  TODO: use bit2[6] for long
-    [char/short/int son0]       if bit[0] short/int if bit2[0] else char/short
-    [char/short/int son1]       if bit[1]
-    [char/short/int son5]       if bit[5]
+    byte2               bit2[7] = 0  bit2[6] = 0  -->  short/char
+                        bit2[7] = 1  bit2[6] = 0  -->  int/short
+                        bit2[7] = 0  bit2[6] = 1  -->  long/int         // atm only if DEVEL_JB is set
+                        bit2[7] = 1  bit2[6] = 1  -->  undefined        // atm only if DEVEL_JB is set
+    [char/short/int/long son0]  if bit[0]   left (bigger) type if bit2[0] else right (smaller) type
+    [char/short/int/long son1]  if bit[1]   left (bigger) type if bit2[1] else right (smaller) type
+    ...
+    [char/short/int/long son5]  if bit[5]   left (bigger) type if bit2[5] else right (smaller) type
+
+    example1:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
+                byte2 = 0x05    --> son0 and son2 are shorts; son3 is a char
+
+    example2:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
+                byte2 = 0x81    --> son0 is a int; son2 and son3 are shorts
+
+// example3 atm only if DEVEL_JB is set
+    example3:   byte  = 0x8d    --> inner node; son0, son2 and son3 are available
+                byte2 = 0x44    --> son2 is a long; son0 and son3 are ints
 
 / ********************* inner nodesingle (1)    (stage3 only) *********************** /
     byte                bit[7] = 1  bit[6] = 1
@@ -127,8 +140,12 @@ only few functions can be used, when the tree is reloaded (stage 3):
 #endif
 
 #define IS_SINGLE_BRANCH_NODE 0x40
-#define LONG_SONS             0x80
-
+#ifdef DEVEL_JB
+ #define INT_SONS              0x80
+ #define LONG_SONS             0x40
+#else
+ #define LONG_SONS             0x80
+#endif
 /********************* Get the size of entries (stage 1) only***********************/
 
 #define PT_EMPTY_LEAF_SIZE       (1+sizeof(PT_PNTR)+6) /* tag father name rel apos */
@@ -361,6 +378,43 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
         sec = (uchar)node->data;    // read second byte for charshort/shortlong info
         i = PT_count_bits[base][node->flags];
         i+= PT_count_bits[base][sec];
+#ifdef DEVEL_JB
+        if (sec & LONG_SONS) {
+            if (sec & INT_SONS) {                                   // undefined -> error
+                printf("Your pt-server search tree is corrupt! You can not use it anymore.\n");
+                printf("Error: ((sec & LONG_SON) && (sec & INT_SONS)) == true\n");
+                printf("       this combination of both flags is not implemented\n");
+                GB_CORE;
+            } else {                                                // long/int
+                printf("Warning: A search tree of this size is not tested.\n"); 
+                printf("         (sec & LONG_SON) == true\n"); 
+                offset = 4 * i;
+                if ( (1<<base) & sec) {                             // long
+                    arb_assert(sizeof(PT_PNTR) == 8);               // 64-bit necessary
+                    PT_READ_PNTR((&node->data+1)+offset,i);
+                }else{                                              // int
+                    PT_READ_INT((&node->data+1)+offset,i);
+                }
+            }
+
+        } else {
+            if (sec & INT_SONS) {                                   // int/short
+                offset = i+i;
+                if ( (1<<base) & sec) {                             // int
+                    PT_READ_INT((&node->data+1)+offset,i);
+                }else{                                              // short
+                    PT_READ_SHORT((&node->data+1)+offset,i);
+                }
+            }else{                                                  // short/char
+                offset = i;
+                if ( (1<<base) & sec) {                             // short
+                    PT_READ_SHORT((&node->data+1)+offset,i);
+                }else{                                              // char
+                    PT_READ_CHAR((&node->data+1)+offset,i);
+                }
+            }
+        }
+#else
         if (sec & LONG_SONS) {
             offset = i+i;
             if ( (1<<base) & sec) {
@@ -376,6 +430,7 @@ GB_INLINE POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
                 PT_READ_CHAR((&node->data+1)+offset,i);
             }
         }
+#endif
         arb_assert(i >= 0);
         return (POS_TREE *)(((char*)node)-i);
 

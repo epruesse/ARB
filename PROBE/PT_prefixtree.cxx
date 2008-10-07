@@ -403,13 +403,31 @@ void PTD_clear_fathers(PTM2 *ptmain, POS_TREE * node)       /* stage 1*/
     }
 }
 
+#ifdef DEVEL_JB
+void PTD_put_longlong(FILE * out, ulong i)
+{
+    arb_assert(i == (unsigned long) i);
+    arb_assert(sizeof(PT_PNTR) == 8);       // this function only work and only get called at 64-bit
+    int io;
+    static unsigned char buf[8];
+    PT_WRITE_PNTR(buf,i);
+    io = buf[0]; putc(io,out);              // TODO: replace with fwrite
+    io = buf[1]; putc(io,out);
+    io = buf[2]; putc(io,out);
+    io = buf[3]; putc(io,out);
+    io = buf[4]; putc(io,out);
+    io = buf[5]; putc(io,out);
+    io = buf[6]; putc(io,out);
+    io = buf[7]; putc(io,out);
+}
+#endif
 void PTD_put_int(FILE * out, ulong i)
 {
     arb_assert(i == (unsigned int) i);
     int io;
     static unsigned char buf[4];
     PT_WRITE_INT(buf,i);
-    io = buf[0]; putc(io,out);
+    io = buf[0]; putc(io,out);              // TODO: replace with fwrite
     io = buf[1]; putc(io,out);
     io = buf[2]; putc(io,out);
     io = buf[3]; putc(io,out);
@@ -421,7 +439,7 @@ void PTD_put_short(FILE * out, ulong i)
     int io;
     static unsigned char buf[2];
     PT_WRITE_SHORT(buf,i);
-    io = buf[0]; putc(io,out);
+    io = buf[0]; putc(io,out);              // TODO: replace with fwrite
     io = buf[1]; putc(io,out);
 }
 
@@ -551,6 +569,20 @@ long PTD_write_chain_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node,long pos) 
 
 void PTD_debug_nodes(void)
 {
+#ifdef DEVEL_JB
+    printf ("Inner Node Statistic:\n");
+    printf ("   Single Nodes:   %6i\n",psg.stat.single_node);
+    printf ("   Short  Nodes:   %6i\n",psg.stat.short_node);
+    printf ("       Chars:      %6i\n",psg.stat.chars);
+    printf ("       Shorts:     %6i\n",psg.stat.shorts2);
+    printf ("   Int    Nodes:   %6i\n",psg.stat.int_node);
+    printf ("       Shorts:     %6i\n",psg.stat.shorts);
+    printf ("       Ints:       %6i\n",psg.stat.ints2);
+    printf ("   Long   Nodes:   %6i\n",psg.stat.long_node);
+    printf ("       Ints:       %6i\n",psg.stat.ints);
+    printf ("       Longs:      %6i\n",psg.stat.longs);    
+    printf ("   maxdiff:        %6li\n",psg.stat.maxdiff);
+#else
     printf ("Inner Node Statistic:\n");
     printf ("   Single Nodes:   %6i\n",psg.stat.single_node);
     printf ("   Short  Nodes:   %6i\n",psg.stat.short_node);
@@ -559,6 +591,7 @@ void PTD_debug_nodes(void)
     printf ("   Long   Nodes:   %6i\n",psg.stat.long_node);
     printf ("       Shorts:     %6i\n",psg.stat.shorts);
     printf ("       Longs:      %6i\n",psg.stat.longs);         // "longs" are actually 32 bit ints
+#endif
 }
 
 long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_poss,long pos){
@@ -582,6 +615,11 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
             if (diff>max_diff) {
                 max_diff = diff;
                 lasti = i;
+#ifdef DEVEL_JB
+                if (max_diff > psg.stat.maxdiff) {
+                    psg.stat.maxdiff = max_diff;
+                }
+#endif
             }
             mysize+= sizeof(PT_PNTR);
             if (PT_GET_TYPE(sons) != PT_NT_SAVED) {
@@ -607,21 +645,22 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
         int flags2 = 0;
         int level;
 #ifdef DEVEL_JB
-        if (max_diff > 0xffffffff){
-            printf("max_diff > 0xffffffff is not supported.\n"); 
-            arb_assert(false);
+        if (max_diff > 0xffffffff){         // long node
+            printf("Warning: max_diff > 0xffffffff is not tested.\n"); 
             flags2 |= 0x40;
             level = 0xffffffff;
-        }else if (max_diff > 0xffff){
+            psg.stat.long_node++;
+        }else if (max_diff > 0xffff){       // int node
+            flags2 |= 0x80;
+            level = 0xffff;
+            psg.stat.int_node++;
+        }else{                              // short node
 #else
         if (max_diff > 0xffff){
-#endif
             flags2 |= 0x80;
             level = 0xffff;
             psg.stat.long_node++;
         }else{
-#ifdef DEVEL_JB
-#else
             max_diff = 0;
 #endif
             level = 0xff;
@@ -641,22 +680,40 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
                 /*u*/ long  diff = pos - r_poss[i];
                 arb_assert(diff >= 0);
 #ifdef DEVEL_JB
-                if (max_diff > 0xffffffff){         // long long / int
-                    printf("max_diff > 0xffffffff is not supported.\n"); 
-                    arb_assert(false);
+                if (max_diff > 0xffffffff){         // long long / int  (bit[6] in flags2 is set; bit[7] is unset)
+                    printf("Warning: max_diff > 0xffffffff is not tested.\n"); 
                     if (diff>level) {               // long long (64 bit)
-//                        PTD_put_longlong(out,diff);
+                        PTD_put_longlong(out,diff);
                         size += 8;
                         psg.stat.longs++;
                     }else{                          // int
                         PTD_put_int(out,diff);
                         size += 4;
-                        psg.stat.longs++;
+                        psg.stat.ints++;
                     }
                 }else if (max_diff > 0xffff){       // int/short (bit[7] in flags2 set)
+                    if (diff>level) {               // int
+                        PTD_put_int(out,diff);
+                        size += 4;
+                        psg.stat.ints2++;
+                    }else{                          // short
+                        PTD_put_short(out,diff);
+                        size += 2;
+                        psg.stat.shorts++;
+                    }
+                }else{                              // short/char  (bit[7] in flags2 not set)
+                    if (diff>level) {               // short
+                        PTD_put_short(out,diff);
+                        size += 2;
+                        psg.stat.shorts2++;
+                    }else{                          // char
+                        putc((int)diff,out);
+                        size += 1;
+                        psg.stat.chars++;
+                    }
+                }
 #else
                 if (max_diff) {                     // int/short (bit[7] in flags2 set)
-#endif
                     if (diff>level) {               // int
                         PTD_put_int(out,diff);
                         size += 4;
@@ -677,6 +734,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
                         psg.stat.chars++;
                     }
                 }
+#endif
             }
         }
     }
