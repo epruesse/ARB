@@ -1,4 +1,9 @@
 
+Update: Support for gcc < 3.2 has been dropped.
+The instructions below work with all version when adapted appropriately.
+
+*********************
+
 ARB will compile with several versions of gcc. Compilation was tested
 with gcc 2.95.3 and gcc versions higher or equal to gcc 3.3.3 (for
 most up-to-date details see the main Makefile).
