@@ -312,9 +312,10 @@ static GB_ERROR create_splitted_gene(GBDATA *gb_species_data2, PositionPairList&
     int gene_size = 0;
     for (PositionPairList::iterator part = part_list.begin(); part != list_end; ++part) {
         int part_size  = part->end-part->begin+1;
+        gp_assert(part_size > 0);
         gene_size     += part_size;
     }
-
+    gp_assert(gene_size > 0);
     char *gene_sequence = new char[gene_size+1];
     int   gene_off      = 0;
 
