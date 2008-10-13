@@ -41,7 +41,7 @@ GBDATA *gbt_table_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *li
     sep = strchr(link,':');
     if (!sep){
         GB_export_error("Link '%s' is missing second ':' tag", link);
-        return 0;
+        return NULL;
     }
     save = *sep;
     *sep = 0;
@@ -50,7 +50,7 @@ GBDATA *gbt_table_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *li
 
     if (!gb_table){
         GB_export_error("Table '%s' does not exist",link);
-        return 0;
+        return NULL;
     }
     return GBT_find_table_entry(gb_table,sep+1);
 }
@@ -95,7 +95,7 @@ GBDATA *GBT_open_table(GBDATA *gb_table_root,const char *table_name, GB_BOOL rea
 
     gb_table_name = GB_find_string(gb_table_data,"name",table_name,GB_IGNORE_CASE,down_2_level);
     if (gb_table_name) return GB_get_father(gb_table_name);
-    if (read_only) return 0;
+    if (read_only) return NULL;
 
                 /* now lets create the table */
     gb_table = GB_create_container(gb_table_data,"table");      GB_add_callback(gb_table,GB_CB_DELETE,g_bt_table_deleted,0);
@@ -148,7 +148,7 @@ GBDATA *GBT_next_marked_table_entry(GBDATA *gb_table_entry){
 GBDATA *GBT_find_table_entry(GBDATA *gb_table,const char *id){
     GBDATA *gb_entries = GB_entry(gb_table,"entries");
     GBDATA *gb_entry_name = GB_find_string(gb_entries,"name",id,GB_IGNORE_CASE,down_2_level);
-    if (!gb_entry_name) return 0;
+    if (!gb_entry_name) return NULL;
     return GB_get_father(gb_entry_name);
 }
 
@@ -184,7 +184,7 @@ GBDATA *GBT_next_marked_table_field(GBDATA *gb_table_field){
 GBDATA *GBT_find_table_field(GBDATA *gb_table,const char *id){
     GBDATA *gb_fields = GB_entry(gb_table,"fields");
     GBDATA *gb_field_name = GB_find_string(gb_fields,"name",id,GB_IGNORE_CASE,down_2_level);
-    if (!gb_field_name) return 0;
+    if (!gb_field_name) return NULL;
     return GB_get_father(gb_field_name);
 }
 

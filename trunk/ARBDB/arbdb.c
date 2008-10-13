@@ -409,7 +409,7 @@ char *GB_read_string(GBDATA *gbd)
     const char *d;
     GB_TEST_READ(gbd,GB_STRING,"GB_read_string");
     d = GB_read_pntr(gbd);
-    if (!d) return 0;
+    if (!d) return NULL;
     return gbs_malloc_copy(d,GB_GETSIZE(gbd)+1);
 }
 
@@ -430,7 +430,7 @@ char *GB_read_link(GBDATA *gbd)
     const char *d;
     GB_TEST_READ(gbd,GB_LINK,"GB_read_link_pntr");
     d = GB_read_pntr(gbd);
-    if (!d) return 0;
+    if (!d) return NULL;
     return gbs_malloc_copy(d,GB_GETSIZE(gbd)+1);
 }
 
@@ -503,7 +503,7 @@ GB_CUINT4 *GB_read_ints_pntr(GBDATA *gbd)
     }else{
         res = (GB_UINT4 *)GB_GETDATA(gbd);
     }
-    if (!res) return 0;
+    if (!res) return NULL;
 
     if ( 0x01020304 == htonl((u_long)0x01020304) ) {
         return res;
@@ -530,7 +530,7 @@ long GB_read_ints_count(GBDATA *gbd)
 GB_UINT4 *GB_read_ints(GBDATA *gbd)
 {
     GB_CUINT4 *i = GB_read_ints_pntr(gbd);
-    if (!i) return 0;
+    if (!i) return NULL;
     return  (GB_UINT4 *)gbs_malloc_copy((char *)i,GB_GETSIZE(gbd)*sizeof(GB_UINT4));
 }
 
@@ -545,7 +545,7 @@ GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd)
     }else{
         res = (char *)GB_GETDATA(gbd);
     }
-    if (!res) return 0;
+    if (!res) return NULL;
     {
         XDR    xdrs;
         float *d;
@@ -575,7 +575,7 @@ float *GB_read_floats(GBDATA *gbd)
 {
     GB_CFLOAT *f;
     f = GB_read_floats_pntr(gbd);
-    if (!f) return 0;
+    if (!f) return NULL;
     return  (float *)gbs_malloc_copy((char *)f,GB_GETSIZE(gbd)*sizeof(float));
 }
 
@@ -591,7 +591,7 @@ char *GB_read_as_string(GBDATA *gbd)
             /* Be careful : When adding new types here, you have to make sure that
              * GB_write_as_string is able to write them back and that this makes sense.
              */
-        default:    return 0;
+        default:    return NULL;
     }
 }
 
@@ -1152,7 +1152,7 @@ GBDATA *GB_create(GBDATA *father,const char *key, GB_TYPES type)
 
     if (GB_check_key(key)) {
         GB_print_error();
-        return 0;
+        return NULL;
     }
 
     if (type == GB_DB) {
@@ -1191,7 +1191,7 @@ GBDATA *GB_create_container(GBDATA *father,const char *key)
     GBCONTAINER *gbd;
     if (GB_check_key(key)) {
         GB_print_error();
-        return 0;
+        return NULL;
     }
 
     if ( (*key == '\0')) {
@@ -1824,14 +1824,14 @@ NOT4PERL const void *GB_read_old_value(){
 
     if (!g_b_old_callback_list) {
         GB_export_error("You cannot call GB_read_old_value outside a ARBDB callback");
-        return 0;
+        return NULL;
     }
     if (!g_b_old_callback_list->old) {
         GB_export_error("No old value available in GB_read_old_value");
-        return 0;
+        return NULL;
     }
     data = GB_GETDATA_TS(g_b_old_callback_list->old);
-    if (!data) return 0;
+    if (!data) return NULL;
 
     return gb_read_pntr_ts(g_b_old_callback_list->gbd, g_b_old_callback_list->old);
 }
