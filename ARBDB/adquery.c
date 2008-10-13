@@ -28,7 +28,7 @@ static void build_GBDATA_path(GBDATA *gbd, char **buffer) {
 #define BUFFERSIZE 1024
 
 const char *GB_get_GBDATA_path(GBDATA *gbd) {
-    static char *orgbuffer = 0;
+    static char *orgbuffer = NULL;
     char        *buffer;
 
     if (!orgbuffer) orgbuffer = (char*)malloc(BUFFERSIZE);
@@ -91,7 +91,7 @@ static GBDATA *find_sub_by_quark(GBDATA *father, int key_quark, GB_TYPES type, c
     /* search an entry with a key 'key_quark' below a container 'father'
        after position 'after'
 
-       if (val != 0) search for entry with value 'val':
+       if (val != NULL) search for entry with value 'val':
        
        GB_STRING/GB_LINK: compares string (case_sensitive or not)
        GB_INT: compares values
@@ -164,11 +164,11 @@ static GBDATA *find_sub_by_quark(GBDATA *father, int key_quark, GB_TYPES type, c
             }
         }
     }
-    return 0;
+    return NULL;
 }
 
 GBDATA *GB_find_sub_by_quark(GBDATA *father, int key_quark, GBDATA *after) {
-    return find_sub_by_quark(father, key_quark, GB_NONE, 0, GB_MIND_CASE, after);
+    return find_sub_by_quark(father, key_quark, GB_NONE, NULL, GB_MIND_CASE, after);
 }
 
 NOT4PERL GBDATA *GB_find_subcontent_by_quark(GBDATA *father, int key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) {
@@ -181,7 +181,7 @@ static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_ke
     GBCONTAINER *gbf = (GBCONTAINER*)father;
     GBDATA *gb;
     GBDATA *res;
-    struct gb_index_files_struct *ifs=0;
+    struct gb_index_files_struct *ifs=NULL;
     GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gbf);
 
     end  = gbf->d.nheader;
@@ -237,16 +237,16 @@ static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, int sub_ke
         }
         gb = gbn;
         if (GB_TYPE(gb) != GB_DB) continue;
-        res = GB_find_subcontent_by_quark(gb, sub_key_quark, type, val, case_sens, 0);
+        res = GB_find_subcontent_by_quark(gb, sub_key_quark, type, val, case_sens, NULL);
         if (res) return res;
     }
-    return 0;
+    return NULL;
 }
 
 
 static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, const char *val, GB_CASE case_sens, long /*enum gb_search_types*/ gbs)
 /* searches from 'gdb' for the first entry 'key'
- * if 'val' != 0 then we search for the first entry 'key' that is equal to 'val'
+ * if 'val' != NULL then we search for the first entry 'key' that is equal to 'val'
  * Test depends on 'type' :
  * GB_STRING -> string compare (as well works for GB_LINK). case handling depends on 'case_sens'
  * GB_INT -> compare integers
@@ -254,7 +254,7 @@ static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, con
 {
     GBCONTAINER *gbc;
     GBQUARK      key_quark;
-    GBDATA      *after = 0;
+    GBDATA      *after = NULL;
 
     if ( gbd == NULL ) return NULL;
 
@@ -275,7 +275,7 @@ static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, con
             gbc = GB_FATHER(gbd);
             gbs = down_2_level;
         }else{
-            if (GB_TYPE(gbd) != GB_DB) return 0;
+            if (GB_TYPE(gbd) != GB_DB) return NULL;
             gbc = (GBCONTAINER *)gbd;
         }
     }
@@ -285,7 +285,7 @@ static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, con
     switch (gbs) {
         case down_level:    return GB_find_subcontent_by_quark((GBDATA*)gbc, key_quark, type, val, case_sens, after);
         case down_2_level:  return find_sub_sub_by_quark((GBDATA*)gbc, key, key_quark, type, val, case_sens, after);
-        default:            GB_internal_error("Unknown seach type %li",gbs); return 0;
+        default:            GB_internal_error("Unknown seach type %li",gbs); return NULL;
     }
 }
 
@@ -293,7 +293,7 @@ GBDATA *GB_find(GBDATA *gbd, const char *key, long /*enum gb_search_types*/ gbs)
     // normally you should not need to use GB_find!
     // better use one of the replacement functions
     // (GB_find_string, GB_find_int, GB_child, GB_nextChild, GB_entry, GB_nextEntry, GB_brother)
-    return gb_find_internal(gbd, key, GB_NONE, 0, GB_CASE_UNDEFINED, gbs);
+    return gb_find_internal(gbd, key, GB_NONE, NULL, GB_CASE_UNDEFINED, gbs);
 }
 
 GBDATA *GB_find_string(GBDATA *gbd, const char *key, const char *str, GB_CASE case_sens, long /*enum gb_search_types*/ gbs) {
@@ -319,11 +319,11 @@ NOT4PERL GBDATA *GB_find_int(GBDATA *gbd, const char *key, long val, long gbs) {
 
 GBDATA *GB_child(GBDATA *father) {
     // return first child (or NULL if no childs)
-    return GB_find(father, 0, down_level);
+    return GB_find(father, NULL, down_level);
 }
 GBDATA *GB_nextChild(GBDATA *child) {
     // return next child after 'child' (or NULL if no more childs)
-    return GB_find(child, 0, this_level|search_next);
+    return GB_find(child, NULL, this_level|search_next);
 }
 
 /* ------------------------------------------------------------------------------ */
@@ -357,16 +357,16 @@ GBDATA *gb_find_by_nr(GBDATA *father, int index){
     GBDATA *gb;
     if (GB_TYPE(father) != GB_DB) {
         GB_internal_error("type is not GB_DB");
-        return 0;
+        return NULL;
     }
     header = GB_DATA_LIST_HEADER(gbf->d);
     if (index >= gbf->d.nheader || index <0){
         GB_internal_error("Index '%i' out of range [%i:%i[",index,0,gbf->d.nheader);
-        return 0;
+        return NULL;
     }
     if ( (int)header[index].flags.changed >= gb_deleted || !header[index].flags.key_quark){
         GB_internal_error("Entry already deleted");
-        return 0;
+        return NULL;
     }
     if (!(gb=GB_HEADER_LIST_GBD(header[index])))
     {
@@ -375,7 +375,7 @@ GBDATA *gb_find_by_nr(GBDATA *father, int index){
         gb = GB_HEADER_LIST_GBD(header[index]);
         if (!gb) {
             GB_internal_error("Could not unfold data");
-            return 0;
+            return NULL;
         }
     }
     return gb;
@@ -407,7 +407,7 @@ static GB_INLINE char *gb_first_non_key_character(const char *str){
         }
         s++;
     }
-    return 0;
+    return NULL;
 }
 
 char *GB_first_non_key_char(const char *str){
@@ -467,7 +467,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
         len = strlen(str)+1;
         if (len > GB_PATH_MAX) {
             GB_internal_error("Path Length '%i' exceeded by '%s'",GB_PATH_MAX,str);
-            return 0;
+            return NULL;
         }
         GB_MEMCPY(buffer,str,len);
     }
@@ -483,7 +483,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
                 if ((*s2)  != '>'){
                     GB_export_error("Invalid key for gb_search '%s'",str);
                     GB_print_error();
-                    return 0;
+                    return NULL;
                 }
                 s2++;
             }
@@ -499,11 +499,11 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
                         GB_export_error("Cannot create links on the fly in GB_search");
                         GB_print_error();
                     }
-                    return 0;
+                    return NULL;
                 }
                 gbsp = GB_follow_link(gbsp);
                 seperator = 0;
-                if (!gbsp) return 0; /* cannot resolve link  */
+                if (!gbsp) return NULL; /* cannot resolve link  */
             }
             while (gbsp && create) {
                 if (s2){ /* non terminal */
@@ -518,10 +518,10 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
             }
         }
         if (!gbsp) {
-            if(!create) return 0; /* read only mode */
+            if(!create) return NULL; /* read only mode */
             if (seperator == '-'){
                 GB_export_error("Cannot create linked objects");
-                return 0; /* do not create linked objects */
+                return NULL; /* do not create linked objects */
             }
             if(internflag){
                 if ( s2 || (create ==GB_CREATE_CONTAINER) ) {   /* not last key */
@@ -541,7 +541,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
                 }
             }
 
-            if (!gbsp) return 0;
+            if (!gbsp) return NULL;
         }
         gbp = gbsp;
     }
@@ -579,7 +579,7 @@ GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex)
         }
         return gb;
     }
-    return 0;
+    return NULL;
 }
 
 GBDATA *GB_search_last_son(GBDATA *gbd){
@@ -598,7 +598,7 @@ GBDATA *GB_search_last_son(GBDATA *gbd){
         }
         return gb;
     }
-    return 0;
+    return NULL;
 }
 
 long GB_number_of_marked_subentries(GBDATA *gbd){
@@ -671,12 +671,12 @@ char *gbs_search_second_x(const char *str)
     for (;(c=*str);str++) {
         if (c=='\\') {      /* escaped characters */
             str++;
-            if (!(c=*str)) return 0;
+            if (!(c=*str)) return NULL;
             continue;
         }
         if (c=='"') return (char *)str;
     }
-    return 0;
+    return NULL;
 }
 
 char *gbs_search_second_bracket(const char *source)
@@ -695,10 +695,10 @@ char *gbs_search_second_bracket(const char *source)
         if (!deep) return (char *)source;
         if (c=='"') {       /* search the second " */
             source = gbs_search_second_x(source);
-            if (!source) return 0;
+            if (!source) return NULL;
         }
     }
-    if (!c) return 0;
+    if (!c) return NULL;
     return (char *)source;
 }
 
@@ -739,7 +739,7 @@ char *gbs_search_next_seperator(const char *source,const char *seps){
         }
     }
     for (p = seps; (c=*p);p++) tab[c] = 0;  /* clear tab */
-    return 0;
+    return NULL;
 }
 
 static void dumpStreams(const char *name, int count, const GBL *args) {
@@ -753,7 +753,7 @@ static void dumpStreams(const char *name, int count, const GBL *args) {
 }
 
 char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name) {
-    /* simple command interpreter returns 0 on error (+ GB_export_error) */
+    /* simple command interpreter returns NULL on error (+ GB_export_error) */
     /* if first character is == ':' run string parser
        if first character is == '/' run regexpr
        else command interpreter
@@ -847,7 +847,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                     const char *hp = gbs_search_second_x(s1+1);
                     if (!hp){
                         GB_export_error("unbalanced '\"' in '%s'",commands);
-                        return 0;
+                        return NULL;
                     }
                     while (s1 <= hp) *(s2++) = *(s1++);
                     s1--;
@@ -1064,6 +1064,6 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     }
 
     GB_export_error("in '%s': %s", commands, error);
-    return 0;
+    return NULL;
 }
 

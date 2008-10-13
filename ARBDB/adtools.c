@@ -91,32 +91,32 @@ GBDATA *GBT_create_alignment(GBDATA *gbd,
     GB_ERROR error;
     c[1] = 0;
     gb_presets = GB_search(gbd,"presets",GB_CREATE_CONTAINER);
-    if (!gb_presets) return 0;
+    if (!gb_presets) return NULL;
 
     error = GBT_check_alignment_name(name);
     if (error) {
         GB_export_error(error);
-        return 0;
+        return NULL;
     }
 
     if ( aligned<0 ) aligned = 0;
     if ( aligned>1 ) aligned = 1;
     if ( security<0) {
         error = GB_export_error("Negative securities not allowed");
-        return 0;
+        return NULL;
     }
     if ( security>6) {
         error = GB_export_error("Securities above 6 are not allowed");
-        return 0;
+        return NULL;
     }
     if (!strstr("dna:rna:ami:usr",type)) {
         error = GB_export_error("Unknown alignment type '%s'",type);
-        return 0;
+        return NULL;
     }
     gbn = GB_find_string(gb_presets,"alignment_name",name,GB_IGNORE_CASE,down_2_level);
     if (gbn) {
         error = GB_export_error("Alignment '%s' already exists",name);
-        return 0;
+        return NULL;
     }
 
     gbd = GB_create_container(gb_presets,"alignment");
@@ -612,7 +612,7 @@ char *gbt_insert_delete(const char *source, long len, long destlen, long *newsiz
 
     if (pos>len){       /* no place to insert / delete */
         GB_MEMCPY(newval,source,(size_t)len);
-        return 0;
+        return NULL;
     }
 
     if (nchar < 0) {
@@ -1152,7 +1152,7 @@ GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, 
     static char *membase;
 
     gb_assert(error);
-    if (*error) return 0;
+    if (*error) return NULL;
 
     if (structure_size>0){
         node = (GBT_TREE *)GB_calloc(1,(size_t)structure_size);
@@ -1196,12 +1196,12 @@ GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, 
         node->leftson = gbt_read_tree_rek(data,startid,gb_tree_nodes,structure_size,size_of_tree, error);
         if (!node->leftson) {
             if (!node->tree_is_one_piece_of_memory) free((char *)node);
-            return 0;
+            return NULL;
         }
         node->rightson = gbt_read_tree_rek(data,startid,gb_tree_nodes,structure_size,size_of_tree, error);
         if (!node->rightson) {
             if (!node->tree_is_one_piece_of_memory) free((char *)node);
-            return 0;
+            return NULL;
         }
         node->leftson->father = node;
         node->rightson->father = node;
@@ -1225,7 +1225,7 @@ GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, 
             *error = GBS_global_string("Can't interpret tree definition (expected 'N' or 'L' - not '%c')", c);
         }
         /* GB_internal_error("Error reading tree 362436"); */
-        return 0;
+        return NULL;
     }
     return node;
 }
@@ -1258,7 +1258,7 @@ static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
             GBDATA *gbd = GB_entry(gb_node,"id");
             if (!gbd) continue;
 
-            /*{ GB_export_error("ERROR while reading tree '%s' 4634",tree_name);return 0;}*/
+            /*{ GB_export_error("ERROR while reading tree '%s' 4634",tree_name);return NULL;}*/
             i = GB_read_int(gbd);
             if ( i<0 || i>= size ) {
                 *error = "An inner node of the tree is corrupt";
@@ -1333,7 +1333,7 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main,const char *tree_name, long str
 
     gb_assert(error);
     GB_export_error("Couldn't read tree '%s' (Reason: %s)", tree_name, error);
-    return 0;
+    return NULL;
 }
 
 GBT_TREE *GBT_read_tree(GBDATA *gb_main,const char *tree_name, long structure_size) {
@@ -1539,7 +1539,7 @@ char *gbt_read_quoted_string(FILE *input){
             if ((s-buffer) > 1000) {
                 *s = 0;
                 GB_export_error("Error while reading tree: Name '%s' longer than 1000 bytes",buffer);
-                return 0;
+                return NULL;
             }
             GBT_GET_CHAR(input,c);
         }
@@ -1557,7 +1557,7 @@ char *gbt_read_quoted_string(FILE *input){
             if ((s-buffer) > 1000) {
                 *s = 0;
                 GB_export_error("Error while reading tree: Name '%s' longer than 1000 bytes",buffer);
-                return 0;
+                return NULL;
             }
             GBT_READ_CHAR(input,c);
         }
@@ -1612,7 +1612,7 @@ static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tr
         nod = (GBT_TREE *)GB_calloc(structuresize,1);
         GBT_READ_CHAR(input,c);
         left = gbt_load_tree_rek(input,structuresize, tree_file_name);
-        if (!left ) return 0;
+        if (!left ) return NULL;
         nod->leftson = left;
         left->father = nod;
         if (    gbt_last_character != ':' &&
@@ -1621,7 +1621,7 @@ static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tr
                 gbt_last_character != ')'
                 ) {
             char *str = gbt_read_quoted_string(input);
-            if (!str) return 0;
+            if (!str) return NULL;
 
             setBranchName(left, str);
             /* left->name = str; */
@@ -1668,7 +1668,7 @@ static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tr
                     gbt_last_character != ')'
                     ) {
                 char *str = gbt_read_quoted_string(input);
-                if (!str) return 0;
+                if (!str) return NULL;
                 setBranchName(right, str);
                 /* right->name = str; */
             }
@@ -1692,7 +1692,7 @@ static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tr
 
     }else{
         char *str = gbt_read_quoted_string(input);
-        if (!str) return 0;
+        if (!str) return NULL;
         nod = (GBT_TREE *)GB_calloc(structuresize,1);
         nod->is_leaf = GB_TRUE;
         nod->name = str;
@@ -1742,7 +1742,7 @@ GBT_TREE *GBT_load_tree(const char *path, int structuresize, char **commentPtr, 
     int     c;
     if ((input = fopen(path, "r")) == NULL) {
         GB_export_error("Import tree: file '%s' not found", path);
-        return 0;
+        return NULL;
     }
 
     clear_tree_comment();
@@ -1848,7 +1848,7 @@ char *GBT_find_latest_tree(GBDATA *gb_main){
     char **names = GBT_get_tree_names(gb_main);
     char *name = 0;
     char **pname;
-    if (!names) return 0;
+    if (!names) return NULL;
     for (pname = names;*pname;pname++) name = *pname;
     if (name) name = strdup(name);
     GBT_free_names(names);
@@ -1962,7 +1962,7 @@ char *GBT_get_next_tree_name(GBDATA *gb_main, const char *tree){
         gb_tree = GB_child(gb_treedata);
     }
     if (gb_tree) return GB_read_key(gb_tree);
-    return 0;
+    return NULL;
 }
 
 GB_ERROR GBT_free_names(char **names)
@@ -2009,11 +2009,11 @@ char *GBT_existing_tree(GBDATA *Main, const char *tree) {
     GBDATA *gb_treedata;
     GBDATA *gb_tree;
     gb_treedata = GB_entry(Main,"tree_data");
-    if (!gb_treedata) return 0;
+    if (!gb_treedata) return NULL;
     gb_tree = GB_entry(gb_treedata,tree);
     if (gb_tree) return GB_STRDUP(tree);
     gb_tree = GB_child(gb_treedata);
-    if (!gb_tree) return 0;
+    if (!gb_tree) return NULL;
     return GB_read_key(gb_tree);
 }
 
@@ -2091,7 +2091,7 @@ GBDATA *GBT_create_species(GBDATA *gb_main,const char *name)
     if (species) return GB_get_father(species);
     if ((int)strlen(name) <2) {
         GB_export_error("create species failed: too short name '%s'",name);
-        return 0;
+        return NULL;
     }
     species = GB_create_container(gb_species_data,"species");
     gb_name = GB_create(species,"name",GB_STRING);
@@ -2108,7 +2108,7 @@ GBDATA *GBT_create_species_rel_species_data(GBDATA *gb_species_data,const char *
     if (species) return GB_get_father(species);
     if ((int)strlen(name) <2) {
         GB_export_error("create species failed: too short name '%s'",name);
-        return 0;
+        return NULL;
     }
     species = GB_create_container(gb_species_data,"species");
     gb_name = GB_create(species,"name",GB_STRING);
@@ -2127,7 +2127,7 @@ GBDATA *GBT_create_SAI(GBDATA *gb_main,const char *name)
     if (extended) return GB_get_father(extended);
     if ((int)strlen(name) <2) {
         GB_export_error("create SAI failed: too short name '%s'",name);
-        return 0;
+        return NULL;
     }
     extended = GB_create_container(gb_extended_data,"extended");
     gb_name = GB_create(extended,"name",GB_STRING);
@@ -2142,10 +2142,10 @@ GBDATA *GBT_add_data(GBDATA *species,const char *ali_name, const char *key, GB_T
     GBDATA *gb_gb;
     GBDATA *gb_data;
     if (GB_check_key(ali_name)) {
-        return 0;
+        return NULL;
     }
     if (GB_check_hkey(key)) {
-        return 0;
+        return NULL;
     }
     gb_gb = GB_entry(species,ali_name);
     if (!gb_gb) gb_gb = GB_create_container(species,ali_name);
@@ -2205,7 +2205,7 @@ GBDATA *GBT_gen_accession_number(GBDATA *gb_species,const char *ali_name){
     if (gb_acc) return gb_acc;
     /* Search a valid alignment */
     gb_data = GBT_read_sequence(gb_species,ali_name);
-    if (!gb_data) return 0;
+    if (!gb_data) return NULL;
     sequence = GB_read_char_pntr(gb_data);
     id = GBS_checksum(sequence,1,".-");
     sprintf(buf,"ARB_%lX",id);
@@ -2327,7 +2327,7 @@ GBDATA *GBT_first_marked_extended(GBDATA *gb_extended_data)
     {
         if (GB_read_flag(gb_extended)) return gb_extended;
     }
-    return 0;
+    return NULL;
 }
 
 GBDATA *GBT_next_marked_extended(GBDATA *gb_extended)
@@ -2335,7 +2335,7 @@ GBDATA *GBT_next_marked_extended(GBDATA *gb_extended)
     while ((gb_extended = GB_nextEntry(gb_extended))) {
         if (GB_read_flag(gb_extended)) return gb_extended;
     }
-    return 0;
+    return NULL;
 }
 /* Search SAIs */
 GBDATA *GBT_first_SAI(GBDATA *gb_main) {
@@ -2540,7 +2540,7 @@ GBDATA *GBT_read_sequence(GBDATA *gb_species, const char *aliname)
 char *GBT_read_name(GBDATA *gb_species)
 {
     GBDATA *gb_name = GB_entry(gb_species,"name");
-    if (!gb_name) return 0;
+    if (!gb_name) return NULL;
     return GB_read_string(gb_name);
 }
 
@@ -2552,7 +2552,7 @@ char *GBT_get_default_alignment(GBDATA *gb_main)
 {
     GBDATA *gb_use;
     gb_use = GB_search(gb_main,"presets/use",GB_FIND);
-    if (!gb_use) return 0;
+    if (!gb_use) return NULL;
     return GB_read_string(gb_use);
 }
 
@@ -2589,7 +2589,7 @@ GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname) {
     
     if (!gb_alignment_name) {
         GB_export_error("alignment '%s' not found", aliname);
-        return 0;
+        return NULL;
     }
     return GB_get_father(gb_alignment_name);
 }
@@ -2639,7 +2639,7 @@ char *GBT_get_alignment_type_string(GBDATA *gb_main, const char *aliname) {
         gb_assert(gb_alignment_type);
         return GB_read_string(gb_alignment_type);
     }
-    return 0;
+    return NULL;
 }
 
 GB_alignment_type GBT_get_alignment_type(GBDATA *gb_main, const char *aliname) {
