@@ -226,7 +226,12 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
         printf("Overall bases: %li\n", total_size);
 
         while (1) {
+#ifdef DEVEL_JB
+            ulong estimated_kb = (total_size/1024)*55;  // value by try and error (for gene server)
+                                                        // TODO: estimated_kb depends on 32/64 bit...
+#else
             ulong estimated_kb = (total_size/1024)*35; /* value by try and error; 35 bytes per base*/
+#endif            
             printf("Estimated memory usage for %i passes: %lu k\n", passes, estimated_kb);
 
             if (estimated_kb <= physical_memory) break;
@@ -280,7 +285,17 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
         PTD_debug_nodes();
 #endif
     }
+#ifdef DEVEL_JB
+    if (last_obj >= 0xffffffff) {           // last_obj is bigger than int
+        PTD_put_longlong(out, last_obj);    // write last_obj as long long (64 bit)
+        PTD_put_int(out, 0xffffffff);       // write 0xffffffff at the end to signalize that
+                                            // last_obj ist stored in the 8 bytes before
+    } else {                                
+        PTD_put_int(out,last_obj);          // lost_obj fits into an int -> store it as usual
+    }
+#else
     PTD_put_int(out,last_obj);
+#endif    
 
     GB_commit_transaction(psg.gb_main);
     fclose(out);
