@@ -290,6 +290,8 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
         PTD_put_longlong(out, last_obj);    // write last_obj as long long (64 bit)
         PTD_put_int(out, 0xffffffff);       // write 0xffffffff at the end to signalize that
                                             // last_obj ist stored in the 8 bytes before
+                                            // 0xffffffff is used as a signal to be compatible 
+                                            // with older pt-servers
     } else {                                
         PTD_put_int(out,last_obj);          // lost_obj fits into an int -> store it as usual
     }
