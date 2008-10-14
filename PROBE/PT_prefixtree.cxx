@@ -411,6 +411,8 @@ void PTD_put_longlong(FILE * out, ulong i)
     int io;
     static unsigned char buf[8];
     PT_WRITE_PNTR(buf,i);
+
+//    fwrite(buf, 0x01, 0x08, out);
     io = buf[0]; putc(io,out);              // TODO: replace with fwrite
     io = buf[1]; putc(io,out);
     io = buf[2]; putc(io,out);
@@ -655,6 +657,9 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
             level = 0xffff;
             psg.stat.int_node++;
         }else{                              // short node
+            level = 0xff;
+            psg.stat.short_node++;
+        }
 #else
         if (max_diff > 0xffff){
             flags2 |= 0x80;
@@ -662,10 +667,10 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
             psg.stat.long_node++;
         }else{
             max_diff = 0;
-#endif
             level = 0xff;
             psg.stat.short_node++;
         }
+#endif
         for (i = PT_QU; i < PT_B_MAX; i++) {    /* set the flag2 */
             if (r_poss[i]){
                 /*u*/ long  diff = pos - r_poss[i];
@@ -682,31 +687,31 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain,POS_TREE * node, long *r_po
 #ifdef DEVEL_JB
                 if (max_diff > 0xffffffff){         // long long / int  (bit[6] in flags2 is set; bit[7] is unset)
                     printf("Warning: max_diff > 0xffffffff is not tested.\n"); 
-                    if (diff>level) {               // long long (64 bit)
+                    if (diff>level) {               // long long (64 bit)  (bit[i] in flags2 is set)
                         PTD_put_longlong(out,diff);
                         size += 8;
                         psg.stat.longs++;
-                    }else{                          // int
+                    }else{                          // int              (bit[i] in flags2 is unset)
                         PTD_put_int(out,diff);
                         size += 4;
                         psg.stat.ints++;
                     }
-                }else if (max_diff > 0xffff){       // int/short (bit[7] in flags2 set)
-                    if (diff>level) {               // int
+                }else if (max_diff > 0xffff){       // int/short        (bit[6] in flags2 is unset; bit[7] is set)
+                    if (diff>level) {               // int              (bit[i] in flags2 is set)
                         PTD_put_int(out,diff);
                         size += 4;
                         psg.stat.ints2++;
-                    }else{                          // short
+                    }else{                          // short            (bit[i] in flags2 is unset)
                         PTD_put_short(out,diff);
                         size += 2;
                         psg.stat.shorts++;
                     }
-                }else{                              // short/char  (bit[7] in flags2 not set)
-                    if (diff>level) {               // short
+                }else{                              // short/char       (bit[6] in flags2 is unset; bit[7] is unset)
+                    if (diff>level) {               // short            (bit[i] in flags2 is set)
                         PTD_put_short(out,diff);
                         size += 2;
                         psg.stat.shorts2++;
-                    }else{                          // char
+                    }else{                          // char             (bit[i] in flags2 is unset)
                         putc((int)diff,out);
                         size += 1;
                         psg.stat.chars++;
@@ -823,10 +828,25 @@ void PTD_read_leafs_from_disk(char *fname,PTM2 *ptmain, POS_TREE **pnode)
 
     main = &(buffer[size-4]);
     PT_READ_INT(main, i);
-
+#ifdef DEVEL_JB
+    if (i == 0xffffffff)                        // 0xffffffff signalizes that "last_obj" is stored
+    {                                           // in the previous 8 byte (in a long long)
+        main -= 8;                              // 0xffffffff is used as a signal to be compatible with older pt-servers
+        arb_assert(sizeof(PT_PNTR) == 8);       // this search tree can only be loaded at 64 Bit 
+        PT_READ_PNTR(main, i);
+    }
+    arb_assert(i >= 0);
+#else
     arb_assert((i >= 0) && (i <= INT_MAX));
-
+#endif
     *pnode = (POS_TREE *)(i+buffer);
     ptmain->mode = 0;
     ptmain->base = buffer;
 }
+
+
+
+
+
+
+
