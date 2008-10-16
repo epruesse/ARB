@@ -116,6 +116,7 @@ enum ExportTreeType {
     AD_TREE_EXPORT_FORMAT_NEWICK,
     AD_TREE_EXPORT_FORMAT_ORS,
     AD_TREE_EXPORT_FORMAT_XML,
+    AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY,
 };
 
 enum ExportNodeType {
@@ -130,6 +131,7 @@ void update_filter_cb(AW_root *root){
         case AD_TREE_EXPORT_FORMAT_XML: filter_type = "xml"; break;
         case AD_TREE_EXPORT_FORMAT_ORS: filter_type = "otb"; break;
         case AD_TREE_EXPORT_FORMAT_NEWICK:
+        case AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY:
             switch (ExportNodeType(root->awar(AWAR_TREE_EXPORT_NDS)->read_int())) {
                 case AD_TREE_EXPORT_NODE_SPECIES_NAME:  filter_type = "ntree"; break;
                 case AD_TREE_EXPORT_NODE_NDS:           filter_type = "tree"; break;
@@ -255,28 +257,29 @@ void tree_save_cb(AW_window *aww){
     bool      use_NDS   = ExportNodeType(aw_root->awar(AWAR_TREE_EXPORT_NDS)->read_int()) == AD_TREE_EXPORT_NODE_NDS;
 
     if (!tree_name || !strlen(tree_name)) error = GB_export_error("Please select a tree first");
-    if (!error){
-        switch(ExportTreeType(aw_root->awar(AWAR_TREE_EXPORT_FORMAT)->read_int())) {
-            case AD_TREE_EXPORT_FORMAT_ORS: {
+    if (!error) {
+        ExportTreeType exportType = static_cast<ExportTreeType>(aw_root->awar(AWAR_TREE_EXPORT_FORMAT)->read_int());
+        switch (exportType) {
+            case AD_TREE_EXPORT_FORMAT_ORS:
                 error = create_and_save_CAT_tree(GLOBAL_gb_main,tree_name,fname);
                 break;
-            }
-            case AD_TREE_EXPORT_FORMAT_XML: {
+
+            case AD_TREE_EXPORT_FORMAT_XML:
                 error = AWT_export_XML_tree(GLOBAL_gb_main, db_name, tree_name,
                                             use_NDS,
                                             aw_root->awar(AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS)->read_int(),
                                             fname);
                 break;
-            }
-            case AD_TREE_EXPORT_FORMAT_NEWICK: {
-                error = AWT_export_tree(GLOBAL_gb_main, tree_name, use_NDS,
-                                        aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS)->read_int(),
-                                        aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS)->read_int(),
-                                        aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES)->read_int(),
-                                        fname);
+
+            case AD_TREE_EXPORT_FORMAT_NEWICK:
+            case AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY:
+                error = AWT_export_Newick_tree(GLOBAL_gb_main, tree_name, use_NDS,
+                                               aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS)->read_int(),
+                                               aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS)->read_int(),
+                                               aw_root->awar(AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES)->read_int(),
+                                               exportType == AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY,
+                                               fname);
                 break;
-            }
-            default: nt_assert(0); break;
         }
     }
 
@@ -306,10 +309,10 @@ AW_window *create_tree_export_window(AW_root *root)
 
     aws->at("user");
     aws->create_option_menu(AWAR_TREE_EXPORT_FORMAT,0,0);
-    aws->insert_option("NEWICK TREE FORMAT","P",AD_TREE_EXPORT_FORMAT_NEWICK);
-    //  aws->insert_option("USE NDS (CANNOT BE RELOADED)","N",AD_TREE_EXPORT_NDS);
-    aws->insert_option("ARB_XML TREE FORMAT","X",AD_TREE_EXPORT_FORMAT_XML);
-    aws->insert_option("ORS TRANSFER BINARY FORMAT","O",AD_TREE_EXPORT_FORMAT_ORS);
+    aws->insert_option("NEWICK TREE FORMAT",                   "N", AD_TREE_EXPORT_FORMAT_NEWICK);
+    aws->insert_option("NEWICK TREE FORMAT (pretty, but big)", "P", AD_TREE_EXPORT_FORMAT_NEWICK_PRETTY);
+    aws->insert_option("ARB_XML TREE FORMAT",                  "X", AD_TREE_EXPORT_FORMAT_XML);
+    aws->insert_option("ORS TRANSFER BINARY FORMAT",           "O", AD_TREE_EXPORT_FORMAT_ORS);
     aws->update_option_menu();
 
     awt_create_selection_box((AW_window *)aws,AWAR_TREE_EXPORT "");
