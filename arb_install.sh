@@ -66,7 +66,7 @@ echo '  some X11 stuff. Please enter the path of the directory where you want'
 echo '  to install ARB.'
 echo '  Notes:  This script optionally creates the destination directory.'
 echo '          You should have write permission at the destination location.'
-echo '                  - To install ARB in your home directory: Enter "arb"'
+echo '                  - To install ARB in your home directory: Enter "'$HOME'/arb"'
 echo '                  - Otherwise become root and rerun script.'
 echo '                  - On Linux computers this script should be run under root'
 echo ''
@@ -91,6 +91,15 @@ else
 fi
 
 cwd=`pwd`
+
+if test ! -f arb.tgz; then
+    if test -f arb_noOPENGL.tgz; then
+        ln -s arb_noOPENGL.tgz arb.tgz
+    else
+        err "Neither arb.tgz nor arb_noOPENGL.tgz found"
+    fi
+fi
+
 if test -d $ARBHOME; then
     echo 'Creating backup copy of arb_tcp.dat ..'
     cp $ARBHOME/lib/arb_tcp.dat arb_tcp_`date +%Y%m%d`.dat
@@ -345,8 +354,8 @@ SHELL_ANS=0
 while [ "$SHELL_ANS" = "0" ]; do
 
     echo "Finally, you have to tell your system where to find arb."
-    echo "First find out which shell you are using, by opening a shell and typing"
-    echo '        echo $shell'
+    echo "First find out which shell you are using, by opening a new terminal window and typing"
+    echo '        echo $SHELL'
     echo ""
     echo "Depending on what is your shell there are three choices:"
     echo ""

@@ -12,7 +12,11 @@ To install a precompiled ARB
 3. run arb_install.sh and follow the instructions
 4. Install the following packages:
 
+[ Note for Ubuntu users: a detailed list of packets 
+  to install for ARB can be found in arb_UBUNTU.txt ]
+
 Software that is needed to run ARB:
+-----------------------------------
 
 - xview
 - (open)motif
@@ -33,7 +37,7 @@ Software that is useful together with ARB:
 Non-OPENGL version of ARB:
 --------------------------
 
-Instead of downloading arb.tgz, download arb_noOPENGL.tgz, rename it into arb.tgz.
+Instead of downloading arb.tgz, download arb_noOPENGL.tgz.
 
 
 Libraries needed to run 32-bit ARB on 64-bit machine:
