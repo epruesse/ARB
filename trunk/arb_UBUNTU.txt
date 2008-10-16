@@ -1,0 +1,34 @@
+
+ARB requirements on Ubuntu 8.04
+-------------------------------
+
+1) Package dependencies for running precompiled ARB
+   
+ 1a) Non OPENGL version
+
+     - libmotif3
+     - gnuplot
+     - gv
+     - xfig
+
+ 1b) OPENGL version 
+
+     - packets mentioned under 1a)
+     - libpng3
+
+2) Package dependencies for compiling ARB
+
+   - g++
+   - libx11-dev
+   - libmotif-dev
+   - libxt-dev
+   - x11proto-print-dev
+   - lynx
+   - libxpm-dev
+   - libxp-dev
+   - libxext-dev
+   - libtiff4-dev
+   - rxp
+   - sablotron
+   - libxaw7-dev
+
