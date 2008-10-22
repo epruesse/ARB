@@ -2,19 +2,29 @@
 #include "aisc_global.h"
 #endif
 
-typedef struct struct_aisc_com {
-    int         socket;
-    int         message_type;
-    char       *message;
-    int        *message_queue;
-    long        magic;
-    const char *error;
-} aisc_com;
-
-#define AISC_MAX_ATTR 4095
-#define MAX_AISC_SET_GET 16
-#define AISC_MAX_STRING_LEN 1024
+#define AISC_MAX_ATTR           4095
+#define MAX_AISC_SET_GET        16
+#define AISC_MAX_STRING_LEN     1024
 #define AISC_MESSAGE_BUFFER_LEN ((AISC_MAX_STRING_LEN/4+3)*(16+2))
+
+struct aisc_bytes_list {
+    char *data;
+    int   size;
+
+    struct aisc_bytes_list *next;
+};
+
+typedef struct struct_aisc_com {
+    int                     socket;
+    int                     message_type;
+    char                   *message;
+    int                    *message_queue;
+    long                    magic;
+    const char             *error;
+    long                    aisc_mes_buffer[AISC_MESSAGE_BUFFER_LEN];
+    struct aisc_bytes_list *aisc_client_bytes_first;
+    struct aisc_bytes_list *aisc_client_bytes_last;
+} aisc_com;
 
 typedef struct struct_bytestring {
     char *data;
