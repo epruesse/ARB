@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <algorithm>
 // #include <malloc.h>
 #include <PT_server.h>
 #include <struct_man.h>
@@ -119,34 +120,19 @@ static void make_match_statistic(int probe_len){
     }
 }
 
-
-
-#ifdef __cplusplus
 extern "C" {
-#endif
+    struct cmp_probe_abs {
+        bool operator()(const struct probe_input_data* a, const struct probe_input_data* b) {
+            return b->stat.match_count < a->stat.match_count;
+        }
+    };
 
-    /* Compare function for GB_mergesort() */
-    static long compare_probe_input_data_abs(void *pid_ptr1, void *pid_ptr2, char*) {
-        struct probe_input_data *d1 = (struct probe_input_data*)pid_ptr1;
-        struct probe_input_data *d2 = (struct probe_input_data*)pid_ptr2;
-
-        if (d1->stat.match_count < d2->stat.match_count) return 1;
-        if (d1->stat.match_count == d2->stat.match_count) return 0;
-        return -1;
-    }
-
-    static long compare_probe_input_data_rel(void *pid_ptr1, void *pid_ptr2, char*) {
-        struct probe_input_data *d1 = (struct probe_input_data*)pid_ptr1;
-        struct probe_input_data *d2 = (struct probe_input_data*)pid_ptr2;
-
-        if (d1->stat.rel_match_count < d2->stat.rel_match_count) return 1;
-        if (d1->stat.rel_match_count == d2->stat.rel_match_count) return 0;
-        return -1;
-    }
-
-#ifdef __cplusplus
+    struct cmp_probe_rel {
+        bool operator()(const struct probe_input_data* a, const struct probe_input_data* b) {
+            return b->stat.rel_match_count < a->stat.rel_match_count;
+        }
+    };
 }
-#endif
 
 /*  Make sorted list of family members */
 static int make_PT_family_list(PT_local *locs) {
@@ -155,9 +141,12 @@ static int make_PT_family_list(PT_local *locs) {
     int i;
     for (i = 0; i < psg.data_count; i++) my_list[i] = &psg.data[i];
 
-    GB_mergesort((void **)my_list, 0, psg.data_count,
-                 locs->ff_sort_type == 0 ? compare_probe_input_data_abs : compare_probe_input_data_rel,
-                 0);
+    if (locs->ff_sort_type == 0) {
+        std::sort(my_list, my_list + psg.data_count, cmp_probe_abs());
+    }
+    else {
+        std::sort(my_list, my_list + psg.data_count, cmp_probe_rel());
+    }
     
     // destroy old list
     while(locs->ff_fl) destroy_PT_family_list(locs->ff_fl);
@@ -185,7 +174,7 @@ static int make_PT_family_list(PT_local *locs) {
 }
 
 /* Check the probe for inconsitencies */
-static int probe_is_ok(char *probe, int probe_len, char first_c, char second_c)
+inline int probe_is_ok(char *probe, int probe_len, char first_c, char second_c)
 {
     int i;
     if (probe_len < 2 || probe[0] != first_c || probe[1] != second_c)
