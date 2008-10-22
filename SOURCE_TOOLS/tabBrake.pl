@@ -62,6 +62,7 @@ my %ignored_subdirs = map { $_ => 1; } (
                                         'GDE/MOLPHY',
                                         'GDE/SUPPORT',
                                         'GDE/PHYLIP',
+                                        'patches',
                                        );
 
 my $tab_count        = 0;
