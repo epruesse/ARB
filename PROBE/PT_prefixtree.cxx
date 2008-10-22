@@ -166,13 +166,6 @@ PTM2 *PT_init(int base_count)
 
 /******************************** Debug Functions all stages *********************************/
 
-int PTD_chain_print(int name, int apos, int rpos, long clientdata)
-{
-    printf("          name %6i apos %6i  rpos %i\n",name,apos,rpos);
-    clientdata = clientdata;
-    return 0;
-}
-
 int PTD(POS_TREE * node)
 {
     long             i;
@@ -192,7 +185,7 @@ int PTD(POS_TREE * node)
             break;
         case PT_NT_CHAIN:
             printf("chain:\n");
-            PT_read_chain(ptmain,node,PTD_chain_print,0);
+            PT_read_chain(ptmain,node,PTD_chain_print());
             break;
         case PT_NT_SAVED:
             printf("saved:\n");
