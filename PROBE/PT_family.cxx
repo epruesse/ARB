@@ -105,13 +105,13 @@ static void clear_statistic(){
 
 
 /* Calculate the statistic informations for the family */
-static void make_match_statistic(int probe_len){
+static void make_match_statistic(int probe_len, int sequence_length) {
     int i;
     /*
      * compute statistic for all species in family
      */
     for (i = 0; i < psg.data_count; i++) {
-        int all_len = psg.data[i].size - probe_len + 1;
+        int all_len = min(psg.data[i].size,sequence_length) - probe_len + 1;
         if (all_len <= 0){
             psg.data[i].stat.rel_match_count = 0;
         }else{
@@ -251,7 +251,7 @@ extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
         }
     }
 
-    make_match_statistic(locs->ff_pr_len);
+    make_match_statistic(locs->ff_pr_len, sequence_len);
     make_PT_family_list(locs);
     
     free(species->data);
