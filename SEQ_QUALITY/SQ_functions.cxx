@@ -210,7 +210,7 @@ int SQ_get_value_no_tree(GBDATA * gb_main, const char *option) {
     return result;
 }
 
-GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights) {
+GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights, bool marked_only) {
     char *alignment_name;
 
     GBDATA *gb_species;
@@ -224,11 +224,13 @@ GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights) {
     gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
     alignment_name = GBT_get_default_alignment(gb_main);seq_assert(alignment_name);
 
-    //getFirst = GBT_first_marked_species;
-    //getNext = GBT_next_marked_species;
-
-    getFirst = GBT_first_species;
-    getNext = GBT_next_species;
+    if (marked_only) {
+        getFirst = GBT_first_marked_species;
+        getNext = GBT_next_marked_species;
+    } else {
+        getFirst = GBT_first_species;
+        getNext = GBT_next_species;
+    }
 
     for (gb_species = getFirst(gb_main); gb_species && !error; gb_species
             = getNext(gb_species)) {
