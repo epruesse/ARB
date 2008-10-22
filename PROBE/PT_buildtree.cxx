@@ -152,6 +152,7 @@ long PTD_save_partial_tree(FILE *out,PTM2 *ptmain,POS_TREE * node,char *partstri
         while (blocked) {
             blocked = 0;
             printf("*************** pass %li *************\n",pos);
+	    fflush(stdout);
             r_pos = PTD_write_leafs_to_disk(out,ptmain,node,pos,ppos,&blocked);
             if (r_pos > pos) pos = r_pos;
         }
@@ -258,7 +259,10 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
         for (i = 0; i < psg.data_count; i++) {
             align_abs = probe_read_alignment(i, &psize);
 
-            if ((i % 1000) == 0) printf("%i(%i)\t cutoffs:%i\n", i, psg.data_count, psg.stat.cut_offs);
+            if ((i % 1000) == 0) {
+		    printf("%i(%i)\t cutoffs:%i\n", i, psg.data_count, psg.stat.cut_offs);
+		    fflush(stdout);
+	    }
             abs_align_pos = psize-1;
             for (j = psg.data[i].size - 1; j >= 0; j--, abs_align_pos--) {
                 get_abs_align_pos(align_abs, abs_align_pos); // may result in neg. abs_align_pos (seems to happen if sequences are short < 214bp )
