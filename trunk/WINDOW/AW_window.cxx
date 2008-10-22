@@ -1355,10 +1355,13 @@ void AW_root::init(const char *programmname, AW_BOOL no_exit) {
     GB_install_status2((gb_status_func2_type)aw_status_dummy2);
 
     // @@@ FIXME: the next line hangs if program runs inside debugger
-    p_r->toplevel_widget = XtAppInitialize(&(p_r->context), programmname, NULL, 0,
+    p_r->toplevel_widget = XtOpenApplication(&(p_r->context), programmname, 
+            NULL, 0, // XrmOptionDescRec+numOpts
             &a, /*&argc*/
             NULL, /*argv*/
-            fallback_resources, NULL, 0);
+            fallback_resources, 
+            applicationShellWidgetClass, // widget class
+            NULL, 0);
 
     for (i=0; i<1000 && fallback_resources[i]; i++) {
         free(fallback_resources[i]);
@@ -1788,8 +1791,8 @@ void aw_update_awar_window_geometry(AW_root *awr) {
             (gb_hash_loop_type)aw_loop_get_window_geometry);
 }
 
-static Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize,
-        AW_BOOL allow_close, int width, int height, int posx, int posy) {
+static Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize, AW_BOOL allow_close,
+                              int width, int height, int posx, int posy) {
     AW_root *root = aww->get_root();
     Widget shell;
 
@@ -1863,10 +1866,8 @@ static Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize,
             aww->recalc_size_at_show = 1;
     }
 
-    Widget father= p_global->toplevel_widget;
-
+    Widget father = p_global->toplevel_widget;
     if (!p_global->main_widget || !p_global->main_aww->get_show()) {
-
         shell = XtVaCreatePopupShell("editor", applicationShellWidgetClass,
                 father, 
                 XmNwidth, width, 
@@ -1875,7 +1876,7 @@ static Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize,
                 XmNy, posy, 
                 XmNtitle, aww->window_name, 
                 XmNiconName, aww->window_name, 
-                XmNkeyboardFocusPolicy, XmPOINTER, 
+                XmNkeyboardFocusPolicy, XmEXPLICIT,
                 XmNdeleteResponse, XmDO_NOTHING, 
                 NULL);
     } else {
@@ -1887,7 +1888,7 @@ static Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize,
                 XmNy, posy, 
                 XmNtitle, aww->window_name, 
                 XmNiconName, aww->window_name, 
-                XmNkeyboardFocusPolicy, XmPOINTER, 
+                XmNkeyboardFocusPolicy, XmEXPLICIT, 
                 XmNdeleteResponse, XmDO_NOTHING, 
                 NULL);
     }
