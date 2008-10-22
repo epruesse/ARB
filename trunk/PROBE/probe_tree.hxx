@@ -141,10 +141,10 @@ only few functions can be used, when the tree is reloaded (stage 3):
 
 #define IS_SINGLE_BRANCH_NODE 0x40
 #ifdef DEVEL_JB
- #define INT_SONS              0x80
- #define LONG_SONS             0x40
+# define INT_SONS              0x80
+# define LONG_SONS             0x40
 #else
- #define LONG_SONS             0x80
+# define LONG_SONS             0x80
 #endif
 /********************* Get the size of entries (stage 1) only***********************/
 
