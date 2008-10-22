@@ -152,7 +152,7 @@ long PTD_save_partial_tree(FILE *out,PTM2 *ptmain,POS_TREE * node,char *partstri
         while (blocked) {
             blocked = 0;
             printf("*************** pass %li *************\n",pos);
-	    fflush(stdout);
+            fflush(stdout);
             r_pos = PTD_write_leafs_to_disk(out,ptmain,node,pos,ppos,&blocked);
             if (r_pos > pos) pos = r_pos;
         }
