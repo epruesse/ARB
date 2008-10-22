@@ -1,3 +1,5 @@
+#include <bits/wordsize.h>
+#include <byteswap.h>
 
 #define PTM_magic             0xf4
 #define PTM_TABLE_SIZE        (1024*256)
@@ -163,32 +165,20 @@ only few functions can be used, when the tree is reloaded (stage 3):
 /********************* Read and write to memory ***********************/
 
 #define PT_READ_INT(ptr,my_int_i) do {                                      \
-    unsigned char *mycharp=(unsigned char *)ptr;                            \
-    my_int_i= (long)mycharp[0]<<24 | (long)mycharp[1]<<16 \
-            | (long)mycharp[2]<<8 | (long)mycharp[3];     \
+    (my_int_i)=(unsigned int)bswap_32(*(unsigned int*)(ptr));  \
 } while(0)
 
 #define PT_WRITE_INT(ptr,my_int_i) do {                 \
-    unsigned char *mycharp=(unsigned char *)(ptr);      \
-    unsigned long myinti = (unsigned long)(my_int_i);   \
-    mycharp[0]= (unsigned char)(myinti>>24);            \
-    mycharp[1]= (unsigned char)(myinti>>16);            \
-    mycharp[2]= (unsigned char)(myinti>>8);             \
-    mycharp[3]= (unsigned char)myinti;                  \
+    *(unsigned int*)(ptr) = bswap_32((unsigned int)(my_int_i)); \
 } while(0)
 
 #define PT_READ_SHORT(ptr,my_int_i)                 \
 do {                                                \
-    unsigned char *mycharp=(unsigned char *)ptr;    \
-    my_int_i= (long)mycharp[0]<<8          \
-            | (long)mycharp[1];            \
+    (my_int_i) = bswap_16(*(unsigned short*)(ptr)); \
 } while(0)
 
 #define PT_WRITE_SHORT(ptr,my_int_i) do {           \
-    unsigned char *mycharp=(unsigned char *)ptr;    \
-    unsigned long myinti = (unsigned long)my_int_i; \
-    mycharp[0]= (unsigned char)(myinti>>8);         \
-    mycharp[1]= (unsigned char)(myinti);            \
+    *(unsigned short*)(ptr) = bswap_16((unsigned short)(my_int_i)); \
 } while(0)
 
 #define PT_WRITE_CHAR(ptr,my_int_i) do { *(unsigned char *)(ptr) = my_int_i; } while(0)
@@ -202,22 +192,12 @@ do {                                                \
 # define PT_READ_PNTR(ptr,my_int_i)                                                 \
 do {                                                                                \
     if (sizeof(my_int_i)==4) GB_CORE;                                               \
-    unsigned char *mycharp=(unsigned char *)ptr;                                    \
-    my_int_i= (long)mycharp[0]<<56 | (long)mycharp[1]<<48 | (long)mycharp[2]<<40 | (long)mycharp[3] << 32 | \
-        (long)mycharp[4]<<24 | (long)mycharp[5]<<16 | (long)mycharp[6]<<8 | (long)mycharp[7];               \
+    (my_int_i) = (unsigned long)bswap_64(*(unsigned long*)(ptr));                   \
 } while(0)
 
-# define PT_WRITE_PNTR(ptr,my_int_i)                                                                \
-do {                                                                                                \
-    unsigned char *mycharp=(unsigned char *)(ptr);unsigned long myinti = (unsigned long)(my_int_i); \
-    mycharp[0]= (unsigned char)(myinti>>56);                                                        \
-    mycharp[1]= (unsigned char)(myinti>>48);                                                        \
-    mycharp[2]= (unsigned char)(myinti>>40);                                                        \
-    mycharp[3]= (unsigned char)(myinti>>32);                                                        \
-    mycharp[4]= (unsigned char)(myinti>>24);                                                        \
-    mycharp[5]= (unsigned char)(myinti>>16);                                                        \
-    mycharp[6]= (unsigned char)(myinti>>8);                                                         \
-    mycharp[7]= (unsigned char)myinti;                                                              \
+# define PT_WRITE_PNTR(ptr,my_int_i)                              \
+do {                                                              \
+    *(unsigned long*)(ptr)=bswap_64((unsigned long)(my_int_i));  \
 } while(0)
 
 
