@@ -275,6 +275,7 @@ void GB_textprint P_((const char *path));
 GB_CSTR GB_getcwd P_((void));
 void GB_xterm P_((void));
 void GB_xcmd P_((const char *cmd, GB_BOOL background, GB_BOOL wait_only_if_error));
+char *GB_executable P_((GB_CSTR exe_name));
 char *GB_find_executable P_((GB_CSTR description_of_executable, ...)) __ATTR__SENTINEL;
 GB_CSTR GB_getenvUSER P_((void));
 GB_CSTR GB_getenvHOME P_((void));
