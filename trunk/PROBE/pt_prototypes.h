@@ -43,6 +43,7 @@ POS_TREE *PT_change_leaf_to_node P_((PTM2 *, POS_TREE *node));
 POS_TREE *PT_leaf_to_chain P_((PTM2 *ptmain, POS_TREE *node));
 POS_TREE *PT_create_leaf P_((PTM2 *ptmain, POS_TREE **pfather, PT_BASES base, int rpos, int apos, int name));
 void PTD_clear_fathers P_((PTM2 *ptmain, POS_TREE *node));
+void PTD_put_longlong P_((FILE *out, ulong i));
 void PTD_put_int P_((FILE *out, ulong i));
 void PTD_put_short P_((FILE *out, ulong i));
 void PTD_set_object_to_saved_status P_((POS_TREE *node, long pos, int size));

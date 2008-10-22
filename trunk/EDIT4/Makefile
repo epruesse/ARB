@@ -190,6 +190,7 @@ ED4_main.o: ed4_ProteinViewer.hxx
 ED4_main.o: ed4_search.hxx
 ED4_main.o: ed4_visualizeSAI.hxx
 ED4_main.o: edit_naligner.hxx
+ED4_main.o: graph_aligner_gui.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/ad_config.h
 ED4_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -397,6 +398,7 @@ ED4_root.o: ed4_secedit.hxx
 ED4_root.o: ed4_tools.hxx
 ED4_root.o: ed4_visualizeSAI.hxx
 ED4_root.o: edit_naligner.hxx
+ED4_root.o: graph_aligner_gui.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_root.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -423,6 +425,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/awtc_fast_aligner.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/gde.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/st_window.hxx
+ED4_root.o: $(ARBHOME)/INCLUDE/svn_revision.h
 
 ED4_search.o: ed4_awars.hxx
 ED4_search.o: ed4_class.hxx
@@ -617,3 +620,24 @@ edit_naligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/awt.hxx
 edit_naligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+
+graph_aligner_gui.o: ed4_defs.hxx
+graph_aligner_gui.o: graph_aligner_gui.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/ad_prot.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_assert.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arbdb.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arbdbt.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/attributes.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/awtc_fast_aligner.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/client.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/PT_com.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/servercntrl.h
