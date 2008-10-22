@@ -35,7 +35,6 @@ int PTM_destroy_mem P_((void));
 void PTM_free_mem P_((char *data, int size));
 void PTM_debug_mem P_((void));
 PTM2 *PT_init P_((int base_count));
-int PTD_chain_print P_((int name, int apos, int rpos, long clientdata));
 int PTD P_((POS_TREE *node));
 void PT_change_father P_((POS_TREE *father, POS_TREE *source, POS_TREE *dest));
 POS_TREE *PT_add_to_chain P_((PTM2 *ptmain, POS_TREE *node, int name, int apos, int rpos));
@@ -94,12 +93,10 @@ POS_TREE *build_pos_tree P_((POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr
 long PTD_save_partial_tree P_((FILE *out, PTM2 *ptmain, POS_TREE *node, char *partstring, int partsize, long pos, long *ppos));
 void enter_stage_1_build_tree P_((PT_main *main, char *tname));
 void enter_stage_3_load_tree P_((PT_main *main, char *tname));
-int PT_chain_debug P_((int name, int apos, int rpos, long height));
 void PT_analyse_tree P_((POS_TREE *pt, int height));
 void PT_debug_tree P_((void));
 
 /* PT_match.cxx */
-int PT_chain_print P_((int name, int apos, int rpos, long ilocs));
 int read_names_and_pos P_((PT_local *locs, POS_TREE *pt));
 int get_info_about_probe P_((PT_local *locs, char *probe, POS_TREE *pt, int mismatches, double wmismatches, int N_mismatches, int height));
 void pt_sort_match_list P_((PT_local *locs));
@@ -126,6 +123,6 @@ GB_INLINE PT_NODE_TYPE PT_read_type P_((POS_TREE *node));
 GB_INLINE int PT_read_name P_((PTM2 *ptmain, POS_TREE *node));
 GB_INLINE int PT_read_rpos P_((PTM2 *ptmain, POS_TREE *node));
 GB_INLINE int PT_read_apos P_((PTM2 *ptmain, POS_TREE *node));
-GB_INLINE int PT_read_chain P_((PTM2 *ptmain, POS_TREE *node, int func (int name, int apos, int rpos, long clientdata ), long clientdata));
+template <typename T >int PT_read_chain P_((PTM2 *ptmain, POS_TREE *node, T func));
 
 #undef P_

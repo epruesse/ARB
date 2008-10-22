@@ -190,23 +190,23 @@ double ptnd_check_split(PT_pdc *pdc, char *probe, int pos, char ref) {
 ***********************************************************************/
 /* count all mishits for a probe */
 
-static int ptnd_chain_count_mishits(int name, int apos, int rpos, long dummy)
-{
-    char *probe = psg.probe;
-    if (apos>psg.apos) psg.apos = apos;
-    if (psg.data[name].is_group) return 0;              /* dont count group or neverminds */
-    if (probe) {
-        rpos+=psg.height;
-        while (*probe && psg.data[name].data[rpos]) {
-            if (psg.data[name].data[rpos] != *(probe))
-                return 0;
-            probe++; rpos++;
+struct ptnd_chain_count_mishits {
+    int operator()(int name, int apos, int rpos) {
+        char *probe = psg.probe;
+        if (apos>psg.apos) psg.apos = apos;
+        if (psg.data[name].is_group) return 0;              /* dont count group or neverminds */
+        if (probe) {
+            rpos+=psg.height;
+            while (*probe && psg.data[name].data[rpos]) {
+                if (psg.data[name].data[rpos] != *(probe))
+                    return 0;
+                probe++; rpos++;
+            }
         }
+        ptnd.mishits++;
+        return 0;
     }
-    ptnd.mishits++;
-    dummy = dummy;
-    return 0;
-}
+};
 
 /* go down the tree to chains and leafs; count the species that are in the non member group */
 static int ptnd_count_mishits2(POS_TREE *pt)
@@ -226,7 +226,7 @@ static int ptnd_count_mishits2(POS_TREE *pt)
     }else if (PT_read_type(pt) == PT_NT_CHAIN) {
         psg.probe = 0;
         ptnd.mishits = 0;
-        PT_read_chain(psg.ptmain,pt, ptnd_chain_count_mishits, 0);
+        PT_read_chain(psg.ptmain,pt, ptnd_chain_count_mishits());
         return ptnd.mishits;
     }else{
         for (base = PT_QU; base< PT_B_MAX; base++) {
@@ -387,7 +387,7 @@ static int ptnd_count_mishits(char *probe, POS_TREE *pt,int height)
             psg.probe = probe;
             psg.height = height;
             ptnd.mishits = 0;
-            PT_read_chain(psg.ptmain,pt, ptnd_chain_count_mishits, 0);
+            PT_read_chain(psg.ptmain,pt, ptnd_chain_count_mishits());
             return ptnd.mishits;
         }
     }
@@ -649,7 +649,10 @@ static int ptnd_check_inc_mode(PT_pdc *pdc ,PT_probeparts *parts,double dt,doubl
     return 0;
 }
 
-static int ptnd_chain_check_part(int name, int apos, int rpos, long split)
+struct ptnd_chain_check_part {
+  ptnd_chain_check_part(int s) : split(s) {}
+  int split;
+  int operator() (int name, int apos, int rpos)
 {
     char   *probe  = psg.probe;
     int     height = psg.height;
@@ -677,6 +680,7 @@ static int ptnd_chain_check_part(int name, int apos, int rpos, long split)
     ptnd_check_part_inc_dt(ptnd.pdc,ptnd.parts,name,apos,rpos,dt,sbond);
     return 0;
 }
+};
 
 /* go down the tree to chains and leafs; check all  */
 static void ptnd_check_part_all(POS_TREE *pt, double dt, double sum_bonds)
@@ -697,7 +701,7 @@ static void ptnd_check_part_all(POS_TREE *pt, double dt, double sum_bonds)
         psg.probe = 0;
         ptnd.dt = dt;
         ptnd.sum_bonds = sum_bonds;
-        PT_read_chain(psg.ptmain,pt, ptnd_chain_check_part, 0);
+        PT_read_chain(psg.ptmain,pt, ptnd_chain_check_part(0));
     }else{
         for (base = PT_QU; base< PT_B_MAX; base++) {
             ptnd_check_part_all(PT_read_son(psg.ptmain,pt,(PT_BASES)base),dt,sum_bonds);
@@ -777,7 +781,7 @@ static void ptnd_check_part(char *probe, POS_TREE *pt,int  height, double dt, do
             psg.height = height;
             ptnd.dt = dt;
             ptnd.sum_bonds = sum_bonds;
-            PT_read_chain(psg.ptmain,pt, ptnd_chain_check_part, split);
+            PT_read_chain(psg.ptmain,pt, ptnd_chain_check_part(split));
             return;
         }
     }

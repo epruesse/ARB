@@ -477,7 +477,8 @@ GB_INLINE int PT_read_apos(PTM2 *ptmain,POS_TREE *node)
     return i;
 }
 
-GB_INLINE int PT_read_chain(PTM2 *ptmain,POS_TREE *node, int func(int name,int apos,int rpos, long clientdata), long clientdata)
+template<typename T>
+int PT_read_chain(PTM2 *ptmain,POS_TREE *node, T func)
 {
     int pos, apos, rpos;
     int cname;
@@ -497,10 +498,17 @@ GB_INLINE int PT_read_chain(PTM2 *ptmain,POS_TREE *node, int func(int name,int a
     while (cname>=0){
         data = PT_READ_CHAIN_ENTRY(data,pos,&cname,&apos,&rpos);
         if (cname>=0){
-            error = func(cname,apos,rpos,clientdata);
+            error = func(cname,apos,rpos);
             if (error) return error;
         }
     }
     return error;
 }
 
+struct PTD_chain_print {
+    int operator()(int name, int apos, int rpos)
+    {
+        printf("          name %6i apos %6i  rpos %i\n",name,apos,rpos);
+        return 0;
+    }
+};

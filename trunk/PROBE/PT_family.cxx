@@ -18,15 +18,17 @@ inline void aisc_link(dll_public *dll, PT_family_list *family)   { aisc_link(rei
 /*****************************************************************************/
 /* Increment match_count for a matched chain */
 
-static int mark_all_matches_chain_handle(int name, int /*pos*/, int /*rpos*/, long /*clientdata*/)
-{
-    psg.data[name].stat.match_count++;
-    return 0;
-}
+struct mark_all_matches_chain_handle {
+    int operator()(int name, int /*pos*/, int /*rpos*/) {
+        psg.data[name].stat.match_count++;
+        return 0;
+    }
+};
+
 /* Increment match_count for every match */
-static int mark_all_matches( PT_local  *locs,
-                             POS_TREE  *pt,
-                             char      *probe,
+static int mark_all_matches( PT_local *locs,
+                             POS_TREE *pt,
+                             char     *probe,
                              int       length,
                              int       mismatches,
                              int       height,
@@ -70,7 +72,7 @@ static int mark_all_matches( PT_local  *locs,
             psg.height = height;
             psg.length = length;
             psg.probe = probe;
-            PT_read_chain(psg.ptmain,pt,mark_all_matches_chain_handle, (long) locs);
+            PT_read_chain(psg.ptmain,pt,mark_all_matches_chain_handle());
             return 0;
         }
     }

@@ -30,7 +30,10 @@ static double ptnd_get_wmismatch(PT_pdc *pdc, char *probe, int pos, char ref)
     return (max_bind - new_bind);
 }
 
-int PT_chain_print(int name, int apos, int rpos, long ilocs)
+struct PT_chain_print {
+  PT_chain_print(PT_local* locs) : ilocs(locs) {}
+  PT_local* ilocs;
+  int operator()(int name, int apos, int rpos)
 {
     PT_probematch *ml;
     char          *probe        = psg.probe;
@@ -86,6 +89,7 @@ int PT_chain_print(int name, int apos, int rpos, long ilocs)
 
     return 0;
 }
+};
 
 /* go down the tree to chains and leafs; copy names, positions and mismatches in locs structure */
 int read_names_and_pos(PT_local *locs, POS_TREE *pt)
@@ -124,7 +128,7 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt)
     }else
         if (PT_read_type(pt) == PT_NT_CHAIN) {
             psg.probe = 0;
-            if (PT_read_chain(psg.ptmain,pt, PT_chain_print, (long)locs)) {
+            if (PT_read_chain(psg.ptmain,pt, PT_chain_print(locs))) {
                 error = 1;
                 return 1;
             }
@@ -213,7 +217,7 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
         } else {                /* chain */
             psg.probe = probe;
             psg.height = height;
-            PT_read_chain(psg.ptmain,pt, PT_chain_print, (long)locs);
+            PT_read_chain(psg.ptmain,pt, PT_chain_print(locs));
             return 0;
         }
         if (locs->sort_by != PT_MATCH_TYPE_INTEGER) {
