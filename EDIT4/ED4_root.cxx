@@ -37,6 +37,7 @@
 #include "edit_naligner.hxx"
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
+#include "graph_aligner_gui.hxx"
 
 #if defined(ARB_OPENGL)
 #include "ed4_RNA3D.hxx"
@@ -1579,6 +1580,7 @@ ED4_returncode ED4_root::generate_window( AW_device **device,   ED4_window **new
     awmm->insert_menu_topic("fast_aligner",INTEGRATED_ALIGNERS_TITLE " [Ctrl-A]","I","faligner.hlp",AWM_ALL,AW_POPUP,(AW_CL)ED4_create_faligner_window,(AW_CL)&faligner_client_data);
     awmm->insert_menu_topic("fast_align_set_ref", "Set Aligner Reference [Ctrl-R]","","faligner.hlp",AWM_ALL, (AW_CB)AWTC_set_reference_species_name, (AW_CL)aw_root, 0);
     awmm->insert_menu_topic("align_sequence","Old Aligner From ARB_EDIT", "O","ne_align_seq.hlp", AWM_ALL,AW_POPUP, (AW_CL)create_naligner_window, 0 );
+    awmm->insert_menu_topic("graph_aligner","SILVA Aligner (SINA)", "", "galign_main.hlp", galign_mask(), show_galigner_window, (AW_CL)&faligner_client_data, 0);
     awmm->insert_menu_topic("del_ali_tmp", "Remove All Aligner Entries", "R", 0, AWM_ALL, ED4_remove_faligner_entries, 1, 0);
     SEP________________________SEP;
     awmm->insert_menu_topic("sec_edit", "Edit Secondary Structure", "", 0, AWM_ALL, ED4_SECEDIT_start, (AW_CL)GLOBAL_gb_main, 0);

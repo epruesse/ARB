@@ -32,6 +32,7 @@
 #include "ed4_protein_2nd_structure.hxx"
 
 #include "edit_naligner.hxx"
+#include "graph_aligner_gui.hxx"
 
 AW_HEADER_MAIN
 
@@ -374,6 +375,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     AWT_create_db_browser_awars(root, AW_ROOT_DEFAULT);
 
     create_naligner_variables(root, AW_ROOT_DEFAULT);
+    create_galigner_variables(root, AW_ROOT_DEFAULT);
 
     awar_edit_modus = AD_ALIGN;
 
