@@ -808,7 +808,7 @@ void GB_xcmd(const char *cmd, GB_BOOL background, GB_BOOL wait_only_if_error) {
 /* -------------------------------------------------------------------------------- */
 /* Functions to find an executable */
 
-static char *search_executable(GB_CSTR exe_name) {
+char *GB_executable(GB_CSTR exe_name) {
     GB_CSTR     path   = GB_getenvPATH();
     char       *buffer = GB_give_buffer(strlen(path)+1+strlen(exe_name)+1);
     const char *start  = path;
@@ -841,7 +841,7 @@ char *GB_find_executable(GB_CSTR description_of_executable, ...) {
     va_list  args;
 
     va_start(args, description_of_executable);
-    while (!found && (name = va_arg(args, GB_CSTR)) != 0) found = search_executable(name);
+    while (!found && (name = va_arg(args, GB_CSTR)) != 0) found = GB_executable(name);
     va_end(args);
 
     if (!found) { /* none of the executables has been found */
@@ -891,7 +891,7 @@ static char *getenv_executable(GB_CSTR envvar) {
     const char *exe_name = getenv_ignore_empty(envvar);
 
     if (exe_name) {
-        result = search_executable(exe_name);
+        result = GB_executable(exe_name);
         if (!result) {
             GB_warning("Environment variable '%s' contains '%s' (which is not an executable)", envvar, exe_name);
         }
