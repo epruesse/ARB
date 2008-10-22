@@ -260,9 +260,9 @@ enter_stage_1_build_tree(PT_main * main,char *tname)
             align_abs = probe_read_alignment(i, &psize);
 
             if ((i % 1000) == 0) {
-		    printf("%i(%i)\t cutoffs:%i\n", i, psg.data_count, psg.stat.cut_offs);
-		    fflush(stdout);
-	    }
+                printf("%i(%i)\t cutoffs:%i\n", i, psg.data_count, psg.stat.cut_offs);
+                fflush(stdout);
+            }
             abs_align_pos = psize-1;
             for (j = psg.data[i].size - 1; j >= 0; j--, abs_align_pos--) {
                 get_abs_align_pos(align_abs, abs_align_pos); // may result in neg. abs_align_pos (seems to happen if sequences are short < 214bp )
