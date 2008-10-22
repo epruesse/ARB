@@ -28,6 +28,7 @@ CPP_OBJECTS = \
 	ED4_block.o \
 	ED4_visualizeSAI.o \
 	edit_naligner.o \
+       graph_aligner_gui.o \
 
 
 $(MAIN): $(CPP_OBJECTS)
