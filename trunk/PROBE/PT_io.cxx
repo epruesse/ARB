@@ -251,11 +251,11 @@ void probe_read_alignments()
         if (count%10 == 0) {
             if (count%500) {
                 printf(".");
-                fflush(stdout);
             }
             else {
                 printf(".%6i (%5.1f%%)\n", count, ((double)count/species_count)*100);
             }
+            fflush(stdout);
         }
     }
     printf("\n");
@@ -267,6 +267,7 @@ void probe_read_alignments()
     else {
         printf("All species contain data in alignment '%s'.\n", psg.alignment_name);
     }
+    fflush(stdout);
 }
 
 void PT_build_species_hash(void){
