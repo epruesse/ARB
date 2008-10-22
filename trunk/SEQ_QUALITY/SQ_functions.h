@@ -83,7 +83,7 @@ struct SQ_weights {
     int gc;
 };
 
-GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights);
+GB_ERROR SQ_evaluate(GBDATA * gb_main, const SQ_weights & weights, bool marked_only);
 /*
  The "weight_..."  -values are passed to the function "SQ_evaluate()".
  SQ_evaluate() generates the final estimation for the quality of an alignment.

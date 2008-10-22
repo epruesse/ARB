@@ -107,6 +107,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
             if (marked_only) {
                 error = ap_tree_root->tree->remove_leafs(GLOBAL_gb_main,
                         AWT_REMOVE_NOT_MARKED | AWT_REMOVE_DELETED);
+                aw_message("Only previously marked entries are used for evaluation.");
             }
             if (error || !ap_tree_root->tree || ((GBT_TREE *) ap_tree_root->tree)->is_leaf) {
                 aw_message("No tree selected -- group specific calculations skipped.");
@@ -169,7 +170,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
                 aw_closestatus();
                 aw_openstatus("Calculating pass 2 of 2 ...");
                 SQ_pass2_no_tree(globalData, GLOBAL_gb_main, filter);
-                SQ_evaluate(GLOBAL_gb_main, weights);
+                SQ_evaluate(GLOBAL_gb_main, weights, marked_only);
                 aw_closestatus();
                 if (mark_flag) {
                     aw_openstatus("Marking Sequences...");
@@ -212,7 +213,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww,
                 SQ_reset_counters(tree);
                 aw_openstatus("Calculating pass 2 of 2...");
                 SQ_calc_and_apply_group_data2(tree, GLOBAL_gb_main, globalData, filter);
-                SQ_evaluate(GLOBAL_gb_main, weights);
+                SQ_evaluate(GLOBAL_gb_main, weights, marked_only);
                 aw_closestatus();
                 SQ_reset_counters(tree);
                 if (mark_flag) {
