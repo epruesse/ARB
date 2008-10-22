@@ -222,7 +222,7 @@ PT_local, LOCS,         6,      (~local communication buffer~), {
     PT_family_list,ff_fl,                d,    r,      ,       FF_FAMILY_LIST,       55,     ,                     (~ Sorted List of family ~);
     int,           ff_compl,             t,    rw,     ,       FF_COMPLEMENT,        57,     1,                    (~ Search for complement? (combination of: fwd=1, rev=2, rev.compl=4, compl=8) ~);
     int,           ff_list_size,         t,    r,      ,       FF_FAMILY_LIST_SIZE,  58,     ,                     (~ size of result list ~);
-
+    int,           ff_sort_max,          t,    rw,     ,       FF_SORT_MAX,          59,     0,                    (~ Sort only best FF_SORT_MAX sequences ~);
     aisc_string,   user,                 t,    rw,     ,       USER,                 60,     "unknown",            (~the username~);
     aisc_string,   address,              t,    rw,     ,       ADDRESS,              61,     "unknown",            (~the useraddress~);
     aisc_string,   login,                t,    rw,     ,       LOGINTIME,            62,     "notime",             (~the date the user logged in~);

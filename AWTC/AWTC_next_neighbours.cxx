@@ -112,6 +112,7 @@ GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, int oligo_len, int mi
                  LOCS_FF_MISMATCH_NUMBER,       mismatches,       // number of mismatches (0 hardcoded till July 2008)
                  LOCS_FF_FIND_TYPE,             int(fast_flag),   // 0: complete search, 1: quick search (only search oligos starting with 'A')
                  LOCS_FF_SORT_TYPE,             int(rel_matches), // 0: matches, 1: relative matches (0 hardcoded till July 2008)
+                 LOCS_FF_SORT_MAX,              max_results,      // speed up family sorting (only sort retrieved results) 
                  LOCS_FF_COMPLEMENT,            compl_mode,       // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement (1 hardcoded in PT-Server till July 2008)
                  LOCS_FF_FIND_FAMILY,           &bs,
                  NULL))
