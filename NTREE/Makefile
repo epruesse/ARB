@@ -327,9 +327,12 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/adGene.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbdbt.h
-NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/attributes.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/inline.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -364,6 +367,7 @@ NT_extern.o: ap_pos_var_pars.hxx
 NT_extern.o: etc_check_gcg.hxx
 NT_extern.o: nt_cb.hxx
 NT_extern.o: nt_concatenate.hxx
+NT_extern.o: NT_dbrepair.hxx
 NT_extern.o: nt_edconf.hxx
 NT_extern.o: nt_import.hxx
 NT_extern.o: nt_internal.h
@@ -415,6 +419,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/seq_quality.h
 NT_extern.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_extern.o: $(ARBHOME)/INCLUDE/st_window.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/svn_revision.h
 
 NT_import.o: ad_spec.hxx
 NT_import.o: nt_import.hxx
@@ -498,6 +503,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/seer.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
+NT_main.o: $(ARBHOME)/INCLUDE/svn_revision.h
 
 NT_MAUS.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_MAUS.o: $(ARBHOME)/INCLUDE/arb_assert.h

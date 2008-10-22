@@ -37,7 +37,7 @@ void NT_create_MAUS_awars(AW_root *aw_root, AW_default aw_def, AW_default gb_def
 AW_window *NT_create_MAUS_window(AW_root *aw_root, AW_CL dummy_1x);
 
 /* NT_cb.cxx */
-void NT_delete_mark_all_cb(void *dummy, AWT_canvas *ntw);
+void NT_delete_mark_all_cb(void *, AWT_canvas *ntw);
 AW_window *NT_open_select_tree_window(AW_root *awr, char *awar_tree);
 void NT_select_last_tree(AW_window *aww, char *awar_tree);
 AW_window *NT_open_select_alignment_window(AW_root *awr);
@@ -52,6 +52,7 @@ AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_root, AW
 
 /* NT_dbrepair.cxx */
 GB_ERROR NT_repair_DB(GBDATA *gb_main);
+void NT_rerepair_DB(AW_window *, AW_CL cl_gbmain, AW_CL dummy_1x);
 
 /* NT_edconf.cxx */
 AW_window *NT_start_editor_on_old_configuration(AW_root *awr);
