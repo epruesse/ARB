@@ -141,13 +141,21 @@ static int make_PT_family_list(PT_local *locs) {
     int i;
     for (i = 0; i < psg.data_count; i++) my_list[i] = &psg.data[i];
 
+    bool sort_all = locs->ff_sort_max == 0 || locs->ff_sort_max >= psg.data_count;
     if (locs->ff_sort_type == 0) {
-        std::sort(my_list, my_list + psg.data_count, cmp_probe_abs());
+        if (sort_all) {
+            std::sort(my_list, my_list + psg.data_count, cmp_probe_abs());
+        } else {
+            std::partial_sort(my_list, my_list + locs->ff_sort_max, my_list + psg.data_count, cmp_probe_abs());
+        }
+    } else {
+        if (sort_all) {
+            std::sort(my_list, my_list + psg.data_count, cmp_probe_rel());
+        } else {
+            std::partial_sort(my_list, my_list + locs->ff_sort_max, my_list + psg.data_count, cmp_probe_rel());
+        }
     }
-    else {
-        std::sort(my_list, my_list + psg.data_count, cmp_probe_rel());
-    }
-    
+
     // destroy old list
     while(locs->ff_fl) destroy_PT_family_list(locs->ff_fl);
 
