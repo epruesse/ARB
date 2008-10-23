@@ -138,8 +138,8 @@ if ($in_SVN==1 and $build_info{allowVersionUpgrade}==1) {
         hash2file(%version_info,$version_info);
         my $command = "cd '$ARBHOME/SOURCE_TOOLS'; ".
           "svn commit version_info --non-interactive ".
-            "--message 'Auto version upgrade by ".$build_info{user}.'@'.$build_info{host}."';".
-              "svn update";
+            "--message 'Auto version upgrade to $newVersion by ".$build_info{user}.'@'.$build_info{host}."';".
+              "( cd '$ARBHOME' ; svn update )"; # update revision of checkout in $ARBHOME
         `( $command )`;
     }
     else {
