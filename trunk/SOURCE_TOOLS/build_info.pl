@@ -121,7 +121,8 @@ if ($in_SVN==1 and $build_info{allowVersionUpgrade}==1) {
     my $last_version_upgrade = $version_info{last_upgrade};
     if (not defined $last_version_upgrade) { $last_version_upgrade = 0; }
 
-    my $earliestNextUpgrade = $last_version_upgrade + (60*60);
+    # my $earliestNextUpgrade = $last_version_upgrade + (60*60);
+    my $earliestNextUpgrade = $last_version_upgrade + (15*60);
     if (time>=$earliestNextUpgrade) { # do not upgrade version more than once per hour
         my $oldVersion = $version_info{MAJOR}.'.'.$version_info{MINOR};
         if (-f $inc_major) {
