@@ -1,7 +1,7 @@
 # =============================================================== #
 #                                                                 #
 #   File      : Makefile                                          #
-#   Time-stamp: <Wed Jul/23/2008 14:46 MET Coder@ReallySoft.de>   #
+#   Time-stamp: <Thu Oct/23/2008 13:09 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Institute of Microbiology (Technical University Munich)       #
 #   http://www.arb-home.de/                                       #
@@ -1267,6 +1267,7 @@ do_release:
 	@echo ARBHOME=$(ARBHOME)
 	-rm arb.tgz arbsrc.tgz
 	$(MAKE) testsave
+	$(MAKE) templ# auto upgrades version early
 	$(MAKE) tarfile sourcetarfile
 
 release_quick:
