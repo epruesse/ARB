@@ -1,7 +1,7 @@
 # =============================================================== #
 #                                                                 #
 #   File      : Makefile                                          #
-#   Time-stamp: <Thu Oct/23/2008 13:14 MET Coder@ReallySoft.de>   #
+#   Time-stamp: <Fri Oct/24/2008 14:18 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Institute of Microbiology (Technical University Munich)       #
 #   http://www.arb-home.de/                                       #
@@ -55,7 +55,12 @@ endif
 # supported compiler versions:
 
 ALLOWED_GCC_3xx_VERSIONS=3.2 3.3.1 3.3.3 3.3.4 3.3.5 3.3.6 3.4.0 3.4.2 3.4.3
-ALLOWED_GCC_4xx_VERSIONS=4.0.0 4.0.2 4.0.3 4.1.1 4.1.2 4.1.3 4.2.0 4.2.1 4.2.3 4.3.1
+ALLOWED_GCC_4xx_VERSIONS=\
+	4.0.0 4.0.2 4.0.3 \
+	4.1.1 4.1.2 4.1.3 \
+	4.2.0 4.2.1 4.2.3 4.2.4 \
+	4.3.1 \
+
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_3xx_VERSIONS) $(ALLOWED_GCC_4xx_VERSIONS)
 
 GCC_VERSION_FOUND=$(shell $(GCC) -dumpversion)
@@ -987,8 +992,7 @@ show:
 		@echo ''
 		@echo ' optional targets (not build by make all)'
 		@echo ''
-		@echo '  ps		ARB probe server'
-		@echo '  pc		ARB probe client (you need java)'
+		@echo '  ps     ARB probe server'
 		@echo ''
 		@echo ' foreign targets:'
 		@echo ''
@@ -1047,7 +1051,6 @@ sl:	NAMES_COM/NAMES_COM.dummy
 ds:	$(DBSERVER)
 pt:	$(PROBE)
 ps:	PROBE_SERVER/PROBE_SERVER.dummy
-pc:	PROBE_WEB/PROBE_WEB.dummy
 pst: 	PROBE_SET/PROBE_SET.dummy
 pd:	PROBE_DESIGN/PROBE_DESIGN.dummy
 na:	$(NAMES)
@@ -1289,7 +1292,7 @@ arbshared: dball aw dp awt
 arbapplications: nt pa ed e4 we pt na al nal di ph ds trs pgt
 
 # optionally things (no real harm for ARB if any of them fails):
-arbxtras: tg ps pc pst a3
+arbxtras: tg ps pst a3
 
 tryxtras:
 	@echo $(SEP)
