@@ -15,7 +15,7 @@ ARB requirements on Ubuntu 8.04
  1b) OPENGL version 
 
      - packets mentioned under 1a)
-     - libpng3
+     - libpng12-0
 
 
 2) Package dependencies for compiling ARB
