@@ -1091,7 +1091,7 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
             nrefs = gb_read_number(in);
         }
         p = buffer;
-        for (k=0;k<GB_KEY_LEN_MAX;k++) {
+        for (k=0;;k++) {
             c = getc(in);
             if (!c) break;
             if (c==EOF) {
@@ -1100,20 +1100,31 @@ long gb_read_bin(FILE *in,GBCONTAINER *gbd, int diff_file_allowed)
             }
             *(p++) = c;
         }
-        *p=0;
+        *p = 0;
+
+        if (k > GB_KEY_LEN_MAX) {
+            printf("Warning: Key '%s' exceeds maximum keylength (%i)\n"
+                   "         Please do NOT create such long keys!\n", 
+                   buffer, GB_KEY_LEN_MAX);
+        }
         if (p == buffer) break;
-        if (*buffer == 1) {         /* empty key */
+
+        if (*buffer == 1) {                                                   /* empty key */
             long index = gb_create_key(Main,0,GB_FALSE);
-            Main->keys[index].key = 0;
-            Main->keys[index].nref = 0;
+
+            Main->keys[index].key           = 0;
+            Main->keys[index].nref          = 0;
             Main->keys[index].next_free_key = first_free_key;
+            
             first_free_key = index;
-        }else{
+        }
+        else {
             long index = gb_create_key(Main,buffer,GB_FALSE);
+            
             Main->keys[index].nref = nrefs;
         }
-
     }
+
     Main->first_free_key = first_free_key;
 
     i = gb_read_in_long(in,0);
