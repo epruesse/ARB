@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : NT_dbrepair.cxx                                   //
 //   Purpose   : repair database bugs                              //
-//   Time-stamp: <Wed Sep/03/2008 15:25 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Oct/29/2008 12:43 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in May 2008       //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -676,8 +676,10 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
             }
 
             if (dataLost||reassigned) {
-                if (dataLost) aw_message("We apologize for the data-loss.");
-                aw_message("Dictionary bugs fixed.\n"
+                aw_message(dataLost
+                           ? "We apologize for the data-loss."
+                           : "No conflicts detected in compressed data.");
+                aw_message("Dictionaries fixed.\n"
                            "Please save your database with a new name.");
             }
         }
