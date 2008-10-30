@@ -317,6 +317,12 @@ int main(int argc, char **argv)
     psg.com_so = so;
     /**** init server main struct ****/
     printf("Init internal structs...\n");
+    void *reserved_for_mmap = malloc(GB_size_of_file(tname));
+    if (!reserved_for_mmap) {
+        printf("Can't reserve enough memory to map pt file!\n");
+        exit(EXIT_FAILURE);
+    }
+
     /****** all ok: main'loop' ********/
     if (stat(aname,&s_source)) {
         printf("PT_SERVER error while stat source %s\n",aname);
@@ -346,6 +352,7 @@ int main(int argc, char **argv)
         printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
         aisc_server_shutdown_and_exit(so, EXIT_FAILURE); // never returns
     }
+    free(reserved_for_mmap);
     enter_stage_3_load_tree(aisc_main,tname);
 
     PT_init_map();
