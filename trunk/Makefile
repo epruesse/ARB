@@ -453,6 +453,66 @@ endif
 
 #			ALEIO/ALEIO.a \
 
+ifeq ($(PTPAN),1) 
+ARCHS = \
+			AISC/dummy.a \
+			AISC_MKPTPS/dummy.a \
+			ALIV3/ALIV3.a \
+			ARBDB/libARBDB.a \
+			ARBDB2/libARBDB.a \
+			ARBDBPP/libARBDBPP.a \
+			ARBDBS/libARBDB.a \
+			ARBDB_COMPRESS/ARBDB_COMPRESS.a \
+			ARB_GDE/ARB_GDE.a \
+			AWDEMO/AWDEMO.a \
+			AWT/libAWT.a \
+			AWTC/AWTC.a \
+			AWTI/AWTI.a \
+			CAT/CAT.a \
+			CONSENSUS_TREE/CONSENSUS_TREE.a \
+			CONVERTALN/CONVERTALN.a \
+			DBSERVER/DBSERVER.a \
+			DIST/DIST.a \
+			EDIT/EDIT.a \
+			EDIT4/EDIT4.a \
+			EISPACK/EISPACK.a \
+			GDE/GDE.a \
+			GENOM/GENOM.a \
+			GENOM_IMPORT/GENOM_IMPORT.a \
+			GL/GL.a \
+			ISLAND_HOPPING/ISLAND_HOPPING.a \
+			MERGE/MERGE.a \
+			MULTI_PROBE/MULTI_PROBE.a \
+			NALIGNER/NALIGNER.a \
+			NAMES/NAMES.a \
+			NAMES_COM/server.a \
+			NTREE/NTREE.a \
+			PARSIMONY/PARSIMONY.a \
+			PGT/PGT.a \
+			PHYLO/PHYLO.a \
+			PRIMER_DESIGN/PRIMER_DESIGN.a \
+			ptpan/PROBE.a \
+			PROBE_COM/server.a \
+			PROBE_DESIGN/PROBE_DESIGN.a \
+			PROBE_SERVER/PROBE_SERVER.a \
+			PROBE_SET/PROBE_SET.a \
+			READSEQ/READSEQ.a \
+			RNA3D/RNA3D.a \
+			SECEDIT/SECEDIT.a \
+			SEER/SEER.a \
+			SEQ_QUALITY/SEQ_QUALITY.a \
+			SERVERCNTRL/SERVERCNTRL.a \
+			SL/SL.a \
+			STAT/STAT.a \
+			TEST/TEST.a \
+			TOOLS/TOOLS.a \
+			TREEGEN/TREEGEN.a \
+			TRS/TRS.a \
+			WETC/WETC.a \
+			WINDOW/libAW.a \
+			XML/XML.a \
+
+else
 ARCHS = \
 			AISC/dummy.a \
 			AISC_MKPTPS/dummy.a \
@@ -510,6 +570,8 @@ ARCHS = \
 			WETC/WETC.a \
 			WINDOW/libAW.a \
 			XML/XML.a \
+
+endif            
 
 #ARCHS_CLIENTACC = PROBE_COM/client.a
 #ARCHS_CLIENTCPP = NAMES_COM/client.a
@@ -756,12 +818,21 @@ $(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) shared_libs
 
 #***********************************	arb_pt_server **************************************
 PROBE = bin/arb_pt_server
+ifeq ($(PTPAN),1) 
+ARCHS_PROBE = \
+		PROBE_COM/server.a \
+		ptpan/PROBE.a \
+		SERVERCNTRL/SERVERCNTRL.a \
+		SL/HELIX/HELIX.a \
+
+else
 ARCHS_PROBE = \
 		PROBE_COM/server.a \
 		PROBE/PROBE.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/HELIX/HELIX.a \
 
+endif
 $(PROBE): $(ARCHS_PROBE:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) || ( \
 		echo Link $@ ; \
@@ -1090,6 +1161,7 @@ proto: proto_tools TOOLS/TOOLS.dummy
 				CONVERTALN/CONVERTALN.proto \
 				NTREE/NTREE.proto \
 				PROBE/PROBE.proto \
+				ptpan/PROBE.proto \
 				SERVERCNTRL/SERVERCNTRL.proto \
 				TRS/TRS.proto \
 				AISC_COM/AISC_COM.proto \
