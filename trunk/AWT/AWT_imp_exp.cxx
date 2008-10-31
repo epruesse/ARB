@@ -312,18 +312,27 @@ GB_ERROR AWT_export_Newick_tree(GBDATA *gb_main, char *tree_name, AW_BOOL use_ND
 
             if (!error) {
                 char   *remark      = 0;
-                int     i;
                 GBDATA *tree_cont   = GBT_get_tree(gb_main,tree_name);
                 GBDATA *tree_remark = GB_entry(tree_cont, "remark");
 
                 if (tree_remark) remark = GB_read_string(tree_remark);
                 else remark             = GB_strdup(GBS_global_string("ARB-tree '%s'", tree_name));
 
-                for (i = 0; remark[i]; ++i) if (remark[i] == ']') remark[i] = '_'; // replace ']' by '_'
+                {
+                    char *escaped_remark = GBT_newick_comment(remark, GB_TRUE);
 
-                fprintf(output, "[%s]\n", remark);
+                    if (escaped_remark) {
+                        fprintf(output, "[%s]\n", escaped_remark);
+                        free(escaped_remark);
+                    }
+                    else {
+                        error = GB_get_error();
+                    }
+                }
                 free(remark);
-                error = awt_export_tree_node_print(gb_main, output, tree, tree_name, pretty, 0, use_NDS,  save_branchlengths,  save_bootstraps,  save_groupnames);
+                if (!error) {
+                    error = awt_export_tree_node_print(gb_main, output, tree, tree_name, pretty, 0, use_NDS,  save_branchlengths,  save_bootstraps,  save_groupnames);
+                }
             }
 
             GBT_delete_tree(tree);

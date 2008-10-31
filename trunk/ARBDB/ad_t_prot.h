@@ -42,6 +42,7 @@ GB_ERROR GBT_link_tree_using_species_hash P_((GBT_TREE *tree, GB_BOOL show_statu
 GB_ERROR GBT_link_tree P_((GBT_TREE *tree, GBDATA *gb_main, GB_BOOL show_status, int *zombies, int *duplicates));
 void GBT_unlink_tree P_((GBT_TREE *tree));
 void GBT_scale_tree P_((GBT_TREE *tree, double length_scale, double bootstrap_scale));
+char *GBT_newick_comment P_((const char *comment, GB_BOOL escape));
 GBT_TREE *GBT_load_tree P_((const char *path, int structuresize, char **commentPtr, int allow_length_scaling, char **warningPtr));
 GBDATA *GBT_get_tree P_((GBDATA *gb_main, const char *tree_name));
 long GBT_size_of_tree P_((GBDATA *gb_main, const char *tree_name));

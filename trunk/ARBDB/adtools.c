@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-/* #include <malloc.h> */
 #include <memory.h>
 #include <math.h>
 #include <assert.h>
@@ -11,7 +10,6 @@
 #include "arbdbt.h"
 #include "adGene.h"
 #include "ad_config.h"
-#include "aw_awars.hxx"
 
 #define GBT_GET_SIZE 0
 #define GBT_PUT_DATA 1
@@ -1456,126 +1454,178 @@ void GBT_unlink_tree(GBT_TREE *tree)
 }
 
 
-
 /********************************************************************************************
                     load a tree from file system
 ********************************************************************************************/
 
-#define MAX_COMMENT_SIZE 1024
 
-#define GBT_READ_CHAR(io,c)                                                     \
-for (c=' '; (c==' ') || (c=='\n') || (c=='\t')|| (c=='[') ;){                   \
-    c=getc(io);                                                                 \
-    if (c == '\n' ) gbt_line_cnt++;                                             \
-    if (c == '[') {                                                             \
-        if (gbt_tree_comment_size && gbt_tree_comment_size<MAX_COMMENT_SIZE){   \
-            gbt_tree_comment[gbt_tree_comment_size++] = '\n';                   \
-        }                                                                       \
-        c = getc(io);                                                           \
-        for (; (c!=']') && (c!=EOF); c = getc(io)) {                            \
-            if (gbt_tree_comment_size<MAX_COMMENT_SIZE) {                       \
-                gbt_tree_comment[gbt_tree_comment_size++] = c;                  \
-            }                                                                   \
-        }                                                                       \
-        c                                     = ' ';                            \
-    }                                                                           \
-}                                                                               \
-gbt_last_character = c;
+/* -------------------- */
+/*      TreeReader      */
+/* -------------------- */
 
-#define GBT_GET_CHAR(io,c)                      \
-c = getc(io);                                   \
-if (c == '\n' ) gbt_line_cnt++;                 \
-gbt_last_character = c;
+typedef struct {
+    char                 *tree_file_name;
+    FILE                 *in;
+    int                   last_character;      // may be EOF
+    int                   line_cnt;
+    struct GBS_strstruct *tree_comment;
+    double                max_found_branchlen;
+    double                max_found_bootstrap;
+    GB_ERROR              error;
+} TreeReader;
 
-static int  gbt_last_character    = 0;
-static int  gbt_line_cnt          = 0;
-static char gbt_tree_comment[MAX_COMMENT_SIZE+1]; // all comments from a tree file are collected here
-static int  gbt_tree_comment_size = 0; // all comments from a tree file are collected here
+static char gbt_read_char(TreeReader *reader) {
+    GB_BOOL done = GB_FALSE;
+    int     c    = ' ';
 
-/* ----------------------------------------------- */
-/*      static void clear_tree_comment(void)       */
-/* ----------------------------------------------- */
-static void clear_tree_comment(void) {
-    gbt_tree_comment_size = 0;
+    while (!done) {
+        c = getc(reader->in);
+        if (c == '\n') reader->line_cnt++;
+        else if (c == ' ' || c == '\t') ; // skip
+        else if (c == '[') {    // collect tree comment(s)
+            if (reader->tree_comment != 0) {
+                // not first comment -> do new line
+                GBS_chrcat(reader->tree_comment, '\n');
+            }
+            c = getc(reader->in);
+            while (c != ']' && c != EOF) {
+                GBS_chrcat(reader->tree_comment, c);
+                c = getc(reader->in);
+            }
+        }
+        else done = GB_TRUE;
+    }
+
+    reader->last_character = c;
+    return c;
 }
 
-/* ---------------------------------------------- */
-/*      double gbt_read_number(FILE * input)      */
-/* ---------------------------------------------- */
-double gbt_read_number(FILE * input)
-{
-    char            strng[256];
-    char           *s;
-    int             c;
-    double          fl;
-    s = &(strng[0]);
-    c = gbt_last_character;
-    while (((c <= '9') && (c >= '0')) || (c == '.') || (c == '-') || (c=='e') || (c=='E') ) {
-        *(s++) = c;
-        c = getc(input);
+static char gbt_get_char(TreeReader *reader) {
+    int c = getc(reader->in);
+
+    if (c == '\n') reader->line_cnt++;
+    reader->last_character = c;
+    return c;
+}
+
+static TreeReader *newTreeReader(FILE *input, const char *file_name) {
+    TreeReader *reader = GB_calloc(1, sizeof(*reader));
+
+    reader->tree_file_name      = GB_strdup(file_name);
+    reader->in                  = input;
+    reader->tree_comment        = GBS_stropen(2048);
+    reader->max_found_branchlen = -1;
+    reader->max_found_bootstrap = -1;
+    reader->line_cnt            = 1;
+    
+    gbt_read_char(reader);
+
+    return reader;
+}
+
+static void freeTreeReader(TreeReader *reader) {
+    free(reader->tree_file_name);
+    if (reader->tree_comment) GBS_strforget(reader->tree_comment);
+    free(reader);
+}
+
+static void setReaderError(TreeReader *reader, const char *message) {
+    
+    reader->error = GBS_global_string("Error reading %s:%i: %s",
+                                      reader->tree_file_name,
+                                      reader->line_cnt,
+                                      message);
+}
+
+static char *getTreeComment(TreeReader *reader) {
+    /* can only be called once. Deletes the comment from TreeReader! */
+    char *comment = 0;
+    if (reader->tree_comment) {
+        comment = GBS_strclose(reader->tree_comment);
+        reader->tree_comment = 0;
     }
+    return comment;
+}
+
+
+/* ------------------------------------------------------------
+ * The following functions assume that the "current" character
+ * has already been read into 'TreeReader->last_character'
+ */
+
+static void gbt_eat_white(TreeReader *reader) {
+    int c = reader->last_character;
     while ((c == ' ') || (c == '\n') || (c == '\t')){
-        if (c == '\n' ) gbt_line_cnt++;
-        c = getc(input);
+        c = gbt_get_char(reader);
     }
-    gbt_last_character = c;
+}
+
+static double gbt_read_number(TreeReader *reader) {
+    char    strng[256];
+    char   *s = strng;
+    int     c = reader->last_character;
+    double  fl;
+
+    while (((c<='9') && (c>='0')) || (c=='.') || (c=='-') || (c=='e') || (c=='E')) {
+        *(s++) = c;
+        c = gbt_get_char(reader);
+    }
     *s = 0;
     fl = GB_atof(strng);
+
+    gbt_eat_white(reader);
+
     return fl;
 }
 
-/** Read in a quoted or unquoted string. in quoted strings double quotes ('') are replaced by (') */
-char *gbt_read_quoted_string(FILE *input){
-    char buffer[1024];
-    int c;
-    char *s;
-    s = buffer;
-    c = gbt_last_character;
-    if ( c == '\'' ) {
-        GBT_GET_CHAR(input,c);
+static char *gbt_read_quoted_string(TreeReader *reader){
+    /* Read in a quoted or unquoted string.
+     * in quoted strings double quotes ('') are replaced by (')
+     */
+
+    char  buffer[1024];
+    char *s = buffer;
+    int   c = reader->last_character;
+
+    if (c == '\'') {
+        c = gbt_get_char(reader);
         while ( (c!= EOF) && (c!='\'') ) {
         gbt_lt_double_quot:
             *(s++) = c;
             if ((s-buffer) > 1000) {
                 *s = 0;
-                GB_export_error("Error while reading tree: Name '%s' longer than 1000 bytes",buffer);
+                setReaderError(reader, GBS_global_string("Name '%s' longer than 1000 bytes", buffer));
                 return NULL;
             }
-            GBT_GET_CHAR(input,c);
+            c = gbt_get_char(reader);
         }
         if (c == '\'') {
-            GBT_READ_CHAR(input,c);
+            c = gbt_read_char(reader);
             if (c == '\'') goto gbt_lt_double_quot;
         }
     }else{
-        while ( c== '_') GBT_READ_CHAR(input,c);
-        while ( c== ' ') GBT_READ_CHAR(input,c);
+        while ( c== '_') c = gbt_read_char(reader);
+        while ( c== ' ') c = gbt_read_char(reader);
         while ( (c != ':') && (c!= EOF) && (c!=',') &&
                 (c!=';') && (c!= ')') )
         {
             *(s++) = c;
             if ((s-buffer) > 1000) {
                 *s = 0;
-                GB_export_error("Error while reading tree: Name '%s' longer than 1000 bytes",buffer);
+                setReaderError(reader, GBS_global_string("Name '%s' longer than 1000 bytes", buffer));
                 return NULL;
             }
-            GBT_READ_CHAR(input,c);
+            c = gbt_read_char(reader);
         }
     }
     *s = 0;
     return GB_STRDUP(buffer);
 }
 
-/* ---------------------------------------------------------------- */
-/*      static void setBranchName(GBT_TREE *node, char *name)       */
-/* ---------------------------------------------------------------- */
-/* detect bootstrap values */
-/* name has to be stored in node or must be free'ed */
-
-static double max_found_bootstrap = -1;
-static double max_found_branchlen = -1;
-
-static void setBranchName(GBT_TREE *node, char *name) {
+static void setBranchName(TreeReader *reader, GBT_TREE *node, char *name) {
+    /* detect bootstrap values */
+    /* name has to be stored in node or must be free'ed */
+    
     char   *end       = 0;
     double  bootstrap = strtod(name, &end);
 
@@ -1586,8 +1636,8 @@ static void setBranchName(GBT_TREE *node, char *name) {
         bootstrap = bootstrap*100.0 + 0.5; // needed if bootstrap values are between 0.0 and 1.0 */
         // downscaling in done later!
 
-        if (bootstrap>max_found_bootstrap) {
-            max_found_bootstrap = bootstrap;
+        if (bootstrap>reader->max_found_bootstrap) {
+            reader->max_found_bootstrap = bootstrap;
         }
 
         assert(node->remark_branch == 0);
@@ -1601,105 +1651,142 @@ static void setBranchName(GBT_TREE *node, char *name) {
     }
 }
 
-static GBT_TREE *gbt_load_tree_rek(FILE *input,int structuresize, const char *tree_file_name)
-{
-    int             c;
-    GB_BOOL     loop_flag;
-    GBT_TREE *nod,*left,*right;
+static GB_BOOL gbt_readNameAndLength(TreeReader *reader, GBT_TREE *node, GBT_LEN *len) {
+    /* reads the branch-length and -name
+       '*len' should normally be initialized with DEFAULT_LENGTH_MARKER 
+     * returns the branch-length in 'len' and sets the branch-name of 'node'
+     * returns GB_TRUE if successful, otherwise reader->error gets set
+     */
 
-    if ( gbt_last_character == '(' ) {  /* make node */
-
-        nod = (GBT_TREE *)GB_calloc(structuresize,1);
-        GBT_READ_CHAR(input,c);
-        left = gbt_load_tree_rek(input,structuresize, tree_file_name);
-        if (!left ) return NULL;
-        nod->leftson = left;
-        left->father = nod;
-        if (    gbt_last_character != ':' &&
-                gbt_last_character != ',' &&
-                gbt_last_character != ';' &&
-                gbt_last_character != ')'
-                ) {
-            char *str = gbt_read_quoted_string(input);
-            if (!str) return NULL;
-
-            setBranchName(left, str);
-            /* left->name = str; */
-        }
-        if (gbt_last_character !=  ':') {
-            nod->leftlen = DEFAULT_LENGTH_MARKER;
-        }else{
-            GBT_READ_CHAR(input,c);
-            nod->leftlen = gbt_read_number(input);
-            if (nod->leftlen>max_found_branchlen) {
-                max_found_branchlen = nod->leftlen;
+    GB_BOOL done = GB_FALSE;
+    while (!done && !reader->error) {
+        switch (reader->last_character) {
+            case ';':
+            case ',':
+            case ')':
+                done = GB_TRUE;
+                break;
+            case ':':
+                gbt_read_char(reader);      /* drop ':' */
+                *len = gbt_read_number(reader);
+                if (*len>reader->max_found_branchlen) {
+                    reader->max_found_branchlen = *len;
+                }
+                break;
+            default: {
+                char *branchName = gbt_read_quoted_string(reader);
+                if (branchName) {
+                    setBranchName(reader, node, branchName);
+                }
+                else {
+                    setReaderError(reader, "Expected branch-name or one of ':;,)'");
+                }
+                break;
             }
         }
-        if ( gbt_last_character == ')' ) {  /* only a single node !!!!, skip this node */
-            GB_FREE(nod);           /* delete superflous father node */
-            left->father = NULL;
-            return left;
-        }
-        if ( gbt_last_character != ',' ) {
-            GB_export_error ( "error in '%s':  ',' expected '%c' found; line %i",
-                              tree_file_name,
-                              gbt_last_character,
-                              gbt_line_cnt);
-            return NULL;
-        }
-        loop_flag = GB_FALSE;
-        while (gbt_last_character == ',') {
-            if (loop_flag==GB_TRUE) {       /* multi branch tree */
-                left = nod;
-                nod = (GBT_TREE *)GB_calloc(structuresize,1);
-                nod->leftson = left;
-                nod->leftson->father = nod;
-            }else{
-                loop_flag = GB_TRUE;
-            }
-            GBT_READ_CHAR(input, c);
-            right = gbt_load_tree_rek(input,structuresize, tree_file_name);
-            if (right == NULL) return NULL;
-            nod->rightson = right;
-            right->father = nod;
-            if (    gbt_last_character != ':' &&
-                    gbt_last_character != ',' &&
-                    gbt_last_character != ';' &&
-                    gbt_last_character != ')'
-                    ) {
-                char *str = gbt_read_quoted_string(input);
-                if (!str) return NULL;
-                setBranchName(right, str);
-                /* right->name = str; */
-            }
-            if (gbt_last_character != ':') {
-                nod->rightlen = DEFAULT_LENGTH_MARKER;
-            }else{
-                GBT_READ_CHAR(input, c);
-                nod->rightlen = gbt_read_number(input);
-                if (nod->rightlen>max_found_branchlen) {
-                    max_found_branchlen = nod->rightlen;
+    }
+
+    return !reader->error;
+}
+
+static GBT_TREE *gbt_linkedTreeNode(GBT_TREE *left, GBT_LEN leftlen, GBT_TREE *right, GBT_LEN rightlen, int structuresize) {
+    GBT_TREE *node = (GBT_TREE*)GB_calloc(1, structuresize);
+                                
+    node->leftson  = left;
+    node->leftlen  = leftlen;
+    node->rightson = right;
+    node->rightlen = rightlen;
+
+    left->father  = node;
+    right->father = node;
+
+    return node;
+}
+
+static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LEN *nodeLen) {
+    GBT_TREE *node = 0;
+
+    if (reader->last_character == '(') {
+        gbt_read_char(reader);  // drop the '('
+
+        GBT_LEN   leftLen = DEFAULT_LENGTH_MARKER;
+        GBT_TREE *left    = gbt_load_tree_rek(reader, structuresize, &leftLen);
+
+        ad_assert(left || reader->error);
+
+        if (left) {
+            if (gbt_readNameAndLength(reader, left, &leftLen)) {
+                switch (reader->last_character) {
+                    case ')':               /* single node */
+                        *nodeLen = leftLen;
+                        node     = left;
+                        left     = 0;
+                        break;
+
+                    case ',': {
+                        GBT_LEN   rightLen = DEFAULT_LENGTH_MARKER;
+                        GBT_TREE *right    = 0;
+
+                        while (reader->last_character == ',' && !reader->error) {
+                            if (right) { /* multi-branch */
+                                GBT_TREE *pair = gbt_linkedTreeNode(left, leftLen, right, rightLen, structuresize);
+                                
+                                left  = pair; leftLen = 0;
+                                right = 0; rightLen = DEFAULT_LENGTH_MARKER;
+                            }
+
+                            gbt_get_char(reader); /* drop ',' */
+                            right = gbt_load_tree_rek(reader, structuresize, &rightLen);
+                            if (right) gbt_readNameAndLength(reader, right, &rightLen);
+                        }
+
+                        if (reader->last_character == ')') {
+                            node     = gbt_linkedTreeNode(left, leftLen, right, rightLen, structuresize);
+                            *nodeLen = DEFAULT_LENGTH_MARKER;
+
+                            left = 0;
+                            right  = 0;
+
+                            gbt_read_char(reader); /* drop ')' */
+                        }
+                        else {
+                            setReaderError(reader, "Expected one of ',)'");
+                        }
+                        
+                        if (right) GB_FREE(right);
+
+                        break;
+                    }
+
+                    default:
+                        setReaderError(reader, "Expected one of ',)'");
+                        break;
                 }
             }
-        }
-        if ( gbt_last_character != ')' ) {
-            GB_export_error ( "error in '%s':  ')' expected '%c' found: line %i ",
-                              tree_file_name,
-                              gbt_last_character,gbt_line_cnt);
-            return NULL;
-        }
-        GBT_READ_CHAR(input,c);     /* remove the ')' */
+            else {
+                ad_assert(reader->error);
+            }
 
-    }else{
-        char *str = gbt_read_quoted_string(input);
-        if (!str) return NULL;
-        nod = (GBT_TREE *)GB_calloc(structuresize,1);
-        nod->is_leaf = GB_TRUE;
-        nod->name = str;
-        return nod;
+            if (left) GB_FREE(left);
+        }
     }
-    return nod;
+    else { /* single node */
+        char *name = gbt_read_quoted_string(reader);
+        if (name) {
+            node          = (GBT_TREE*)GB_calloc(1, structuresize);
+            node->is_leaf = GB_TRUE;
+            node->name    = name;
+        }
+        else {
+            setReaderError(reader, "Expected quoted string");
+        }
+    }
+
+    ad_assert(node || reader->error);
+    return node;
 }
+
+
 
 void GBT_scale_tree(GBT_TREE *tree, double length_scale, double bootstrap_scale) {
     if (tree->leftson) {
@@ -1730,51 +1817,62 @@ void GBT_scale_tree(GBT_TREE *tree, double length_scale, double bootstrap_scale)
     }
 }
 
-/* Load a newick compatible tree from file 'path',
-   structure size should be >0, see GBT_read_tree for more information
-   if commentPtr != NULL -> set it to a malloc copy of all concatenated comments found in tree file
-   if warningPtr != NULL -> set it to a malloc copy auto-scale-warning (if autoscaling happens) 
-*/
-GBT_TREE *GBT_load_tree(const char *path, int structuresize, char **commentPtr, int allow_length_scaling, char **warningPtr)
-{
-    FILE        *input;
-    GBT_TREE    *tree;
-    int     c;
-    if ((input = fopen(path, "r")) == NULL) {
-        GB_export_error("Import tree: file '%s' not found", path);
-        return NULL;
+char *GBT_newick_comment(const char *comment, GB_BOOL escape) {
+    /* escape or unescape a newick tree comment
+     * (']' is not allowed there)
+     */
+
+    char *result = 0;
+    if (escape) {
+        result = GBS_string_eval(comment, "\\\\=\\\\\\\\:[=\\\\{:]=\\\\}", NULL); // \\\\ has to be first!
     }
+    else {
+        result = GBS_string_eval(comment, "\\\\}=]:\\\\{=[:\\\\\\\\=\\\\", NULL); // \\\\ has to be last!
+    }
+    return result;
+}
 
-    clear_tree_comment();
+GBT_TREE *GBT_load_tree(const char *path, int structuresize, char **commentPtr, int allow_length_scaling, char **warningPtr) {
+    /* Load a newick compatible tree from file 'path',
+       structure size should be >0, see GBT_read_tree for more information
+       if commentPtr != NULL -> set it to a malloc copy of all concatenated comments found in tree file
+       if warningPtr != NULL -> set it to a malloc copy auto-scale-warning (if autoscaling happens)
+    */
 
-    GBT_READ_CHAR(input,c);
-    gbt_line_cnt = 1;
-    {
+    GBT_TREE *tree  = 0;
+    FILE     *input = fopen(path, "rt");
+    GB_ERROR  error = 0;
+
+    if (!input) {
+        error = GBS_global_string("No such file: %s", path);
+    }
+    else {
         const char *name_only = strrchr(path, '/');
         if (name_only) ++name_only;
-        else name_only = path;
+        else        name_only = path;
 
-        max_found_bootstrap = -1;
-        max_found_branchlen = -1;
-        tree                = gbt_load_tree_rek(input,structuresize, name_only);
+        TreeReader *reader      = newTreeReader(input, name_only);
+        GBT_LEN     rootNodeLen = DEFAULT_LENGTH_MARKER; /* root node has no length. only used as input to gbt_load_tree_rek*/
+        tree                    = gbt_load_tree_rek(reader, structuresize, &rootNodeLen);
+        fclose(input);
 
-        {
+        if (tree) {
             double bootstrap_scale = 1.0;
             double branchlen_scale = 1.0;
 
-            if (max_found_bootstrap >= 101.0) { // bootstrap values were given in percent
+            if (reader->max_found_bootstrap >= 101.0) { // bootstrap values were given in percent
                 bootstrap_scale = 0.01;
                 if (warningPtr) {
                     *warningPtr = GBS_global_string_copy("Auto-scaling bootstrap values by factor %.2f (max. found bootstrap was %5.2f)",
-                                                         bootstrap_scale, max_found_bootstrap);
+                                                         bootstrap_scale, reader->max_found_bootstrap);
                 }
             }
-            if (max_found_branchlen >= 1.01) { // assume branchlengths have range [0;100]
+            if (reader->max_found_branchlen >= 1.01) { // assume branchlengths have range [0;100]
                 if (allow_length_scaling) {
                     branchlen_scale = 0.01;
                     if (warningPtr) {
                         char *w = GBS_global_string_copy("Auto-scaling branchlengths by factor %.2f (max. found branchlength = %5.2f)",
-                                                         branchlen_scale, max_found_branchlen);
+                                                         branchlen_scale, reader->max_found_branchlen);
                         if (*warningPtr) {
                             char *w2 = GBS_global_string_copy("%s\n%s", *warningPtr, w);
 
@@ -1790,17 +1888,31 @@ GBT_TREE *GBT_load_tree(const char *path, int structuresize, char **commentPtr, 
             }
 
             GBT_scale_tree(tree, branchlen_scale, bootstrap_scale); // scale bootstraps and branchlengths
-        }
-    }
-    fclose(input);
 
-    if (commentPtr) {
-        assert(*commentPtr == 0);
-        if (gbt_tree_comment_size) *commentPtr = GB_STRDUP(gbt_tree_comment);
+            if (commentPtr) {
+                char *comment = getTreeComment(reader);
+
+                assert(*commentPtr == 0);
+                if (comment && comment[0]) {
+                    char *unescaped = GBT_newick_comment(comment, GB_FALSE);
+                    *commentPtr     = unescaped;
+                }
+                free(comment);
+            }
+        }
+
+        freeTreeReader(reader);
+    }
+
+    ad_assert(tree||error);
+    if (error) {
+        GB_export_error("Import tree: %s", error);
+        ad_assert(!tree);
     }
 
     return tree;
 }
+
 
 GBDATA *GBT_get_tree(GBDATA *gb_main, const char *tree_name) {
     /* returns the datapntr to the database structure, which is the container for the tree */
