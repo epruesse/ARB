@@ -315,7 +315,6 @@ adtools.o: arbdb.h
 adtools.o: arbdbt.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adtools.o: $(ARBHOME)/INCLUDE/attributes.h
-adtools.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 
 adtune.o: adtune.h
 
