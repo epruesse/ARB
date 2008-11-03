@@ -675,8 +675,19 @@ ULONG CalcPackedLeafSize(struct PTPanPartition *pp, ULONG pos)
       {
         if((val < -(1L << 20)) || (val > ((1L << 20) - 1)))
         {
+#ifdef DEVEL_JB        
+          if((val < -(1L << 27)) || (val > ((1L << 27) - 1)))
+          {
+            /* five bytes */
+            sdleafsize += 5;
+          } else {
+            /* four bytes */
+            sdleafsize += 4;
+          }
+#else
           /* four bytes */
           sdleafsize += 4;
+#endif          
         } else {
           /* three bytes */
           sdleafsize += 3;
@@ -737,8 +748,19 @@ ULONG CalcPackedLeafSize(struct PTPanPartition *pp, ULONG pos)
       {
         if((val < -(1L << 20)) || (val > ((1L << 20) - 1)))
         {
+#ifdef DEVEL_JB        
+          if((val < -(1L << 27)) || (val > ((1L << 27) - 1)))
+          {
+            /* five bytes */
+            leafsize += 5;
+          } else {
+            /* four bytes */
+            leafsize += 4;
+          }
+#else
           /* four bytes */
           leafsize += 4;
+#endif          
         } else {
           /* three bytes */
           leafsize += 3;
@@ -1614,8 +1636,19 @@ ULONG WritePackedLeaf(struct PTPanPartition *pp, ULONG pos, UBYTE *buf)
       {
         if((val < -(1L << 20)) || (val > ((1L << 20) - 1)))
         {
+#ifdef DEVEL_JB        
+          if((val < -(1L << 27)) || (val > ((1L << 27) - 1)))
+          {
+            /* five bytes */
+            sdleafsize += 5;
+          } else {
+            /* four bytes */
+            sdleafsize += 4;
+          }
+#else
           /* four bytes */
           sdleafsize += 4;
+#endif          
         } else {
           /* three bytes */
           sdleafsize += 3;
@@ -1693,7 +1726,7 @@ ULONG WritePackedLeaf(struct PTPanPartition *pp, ULONG pos, UBYTE *buf)
             *buf++ = (val >> 16);
             *buf++ = (val >> 8);
             *buf++ = val;
-            leafsize += 4;
+            leafsize += 5;
 
           } else {
             /* four bytes */
@@ -1758,12 +1791,32 @@ ULONG WritePackedLeaf(struct PTPanPartition *pp, ULONG pos, UBYTE *buf)
         {
           if((val < -(1L << 20)) || (val > ((1L << 20) - 1)))
           {
-            /* four bytes */
-            val += 1L << 28;
-            *buf++ = (val >> 24) & 0x1f;
+#ifdef DEVEL_JB        
+          if((val < -(1L << 27)) || (val > ((1L << 27) - 1)))
+          {
+            /* five bytes */
+            val += 1L << 35;
+            *buf++ = (val >> 32) & 0x0f;
+            *buf++ = (val >> 24);
             *buf++ = (val >> 16);
             *buf++ = (val >> 8);
             *buf++ = val;
+          } else {
+            /* four bytes */
+            val += 1L << 27;
+            *buf++ = ((val >> 24) & 0x0f) | 0x10;
+            *buf++ = (val >> 16);
+            *buf++ = (val >> 8);
+            *buf++ = val;
+          }
+#else
+          /* four bytes */
+          val += 1L << 28;
+          *buf++ = (val >> 24) & 0x1f;
+          *buf++ = (val >> 16);
+          *buf++ = (val >> 8);
+          *buf++ = val;
+#endif          
             } else {
             /* three bytes */
             val += 1L << 20;
