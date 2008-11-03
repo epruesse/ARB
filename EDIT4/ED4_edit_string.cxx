@@ -26,8 +26,8 @@ int ED4_Edit_String::nrepeat = 0;           // # of times command should be repe
 int ED4_Edit_String::nrepeat_zero_requested = 0;    // nrepeat should be set to zero
 int ED4_Edit_String::nrepeat_is_already_set = 0;    // nrepeat was zero (and was set to 1)
 
+unsigned char ED4_is_align_character[256];
 
-unsigned char ED4_is_align_character[255];
 void ED4_init_is_align_character(GB_CSTR gap_chars)
 {
     memset(ED4_is_align_character, 0, 256);
