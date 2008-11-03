@@ -492,7 +492,7 @@ void NT_group_not_color_cb(AW_window *, AW_CL cl_ntw, AW_CL cl_colornum) {
 // ----------------------------------------------------------------------------------------------------
 void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntree_canvas) {
 #define MAXLABEL 30
-#define MAXENTRY (AW_COLOR_GROUP_NAME_LEN+9)
+#define MAXENTRY (AW_COLOR_GROUP_NAME_LEN+10)
 
     awt_assert(ntree_canvas != 0);
 
