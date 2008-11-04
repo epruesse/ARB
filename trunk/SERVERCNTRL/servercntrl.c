@@ -121,7 +121,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
             int   delay   = 5;
 
             if (*tcp_id == ':') { /* local mode */
-                command = GBS_global_string_copy("%s %s -T%s &",server, serverparams, tcp_id);
+                command = GBS_global_string_copy("%s -build %s -T%s &",server, serverparams, tcp_id);
             }
             else {
                 const char *port = strchr(tcp_id, ':');
@@ -130,7 +130,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
                     error = GB_export_error("Error: Missing ':' in line '%s' file $(ARBHOME)/lib/arb_tcp.dat", arb_tcp_env);
                 }
                 else {
-                    char *remoteCommand = GBS_global_string_copy("$ARBHOME/bin/%s %s -T%s", server, serverparams, port);
+                    char *remoteCommand = GBS_global_string_copy("$ARBHOME/bin/%s -build %s -T%s", server, serverparams, port);
 
                     command = prefixSSH(tcp_id, remoteCommand, 1);
                     free(remoteCommand);
