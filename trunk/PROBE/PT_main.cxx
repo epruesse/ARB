@@ -317,13 +317,15 @@ int main(int argc, char **argv)
     psg.com_so = so;
     /**** init server main struct ****/
     printf("Init internal structs...\n");
-#if defined(DEVEL_RALF)
-    void *reserved_for_mmap = malloc(GB_size_of_file(tname));
-    if (!reserved_for_mmap) {
-        printf("Can't reserve enough memory to map pt file!\n");
-        exit(EXIT_FAILURE);
+    void *reserved_for_mmap = NULL;
+    long size_of_file = GB_size_of_file(tname);
+    if(size_of_file > 0) {
+        reserved_for_mmap = malloc(size_of_file);
+        if (!reserved_for_mmap) {
+            printf("Can't reserve enough memory to map pt file!\n");
+            exit(EXIT_FAILURE);
+        }
     }
-#endif
     /****** all ok: main'loop' ********/
     if (stat(aname,&s_source)) {
         printf("PT_SERVER error while stat source %s\n",aname);
@@ -353,9 +355,7 @@ int main(int argc, char **argv)
         printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
         aisc_server_shutdown_and_exit(so, EXIT_FAILURE); // never returns
     }
-#if defined(DEVEL_RALF)
-    free(reserved_for_mmap);
-#endif
+    if(reserved_for_mmap) free(reserved_for_mmap);
     enter_stage_3_load_tree(aisc_main,tname);
 
     PT_init_map();
