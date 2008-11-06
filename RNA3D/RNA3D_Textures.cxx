@@ -5,6 +5,7 @@
 
 #include <string>
 #include <iostream>
+#include <stdlib.h>
 
 #include <arbdb.h>
 
