@@ -317,15 +317,7 @@ int main(int argc, char **argv)
     psg.com_so = so;
     /**** init server main struct ****/
     printf("Init internal structs...\n");
-    void *reserved_for_mmap = NULL;
-    long size_of_file = GB_size_of_file(tname);
-    if(size_of_file > 0) {
-        reserved_for_mmap = malloc(size_of_file);
-        if (!reserved_for_mmap) {
-            printf("Can't reserve enough memory to map pt file!\n");
-            exit(EXIT_FAILURE);
-        }
-    }
+
     /****** all ok: main'loop' ********/
     if (stat(aname,&s_source)) {
         printf("PT_SERVER error while stat source %s\n",aname);
@@ -334,7 +326,8 @@ int main(int argc, char **argv)
     build_flag = 0;
     if (stat(tname,&s_dest)) {
         build_flag = 1;
-    }else{
+    }
+    else {
         if ( (s_source.st_mtime>s_dest.st_mtime) || (s_dest.st_size == 0)) {
             printf("PT_SERVER: Source %s has been modified more recently than %s\n",aname,tname);
             build_flag = 1;
@@ -350,12 +343,24 @@ int main(int argc, char **argv)
         }
     }
 
-    if (( error = pt_init_main_struct(aisc_main, params->db_server) ))
     {
-        printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
-        aisc_server_shutdown_and_exit(so, EXIT_FAILURE); // never returns
+        void *reserved_for_mmap = NULL;
+        long  size_of_file      = GB_size_of_file(tname);
+        if(size_of_file > 0) {
+            reserved_for_mmap = malloc(size_of_file);
+            if (!reserved_for_mmap) {
+                printf("Can't reserve enough memory to map pt file!\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+    
+        if (( error = pt_init_main_struct(aisc_main, params->db_server) ))
+        {
+            printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
+            aisc_server_shutdown_and_exit(so, EXIT_FAILURE); // never returns
+        }
+        if(reserved_for_mmap) free(reserved_for_mmap);
     }
-    if(reserved_for_mmap) free(reserved_for_mmap);
     enter_stage_3_load_tree(aisc_main,tname);
 
     PT_init_map();
