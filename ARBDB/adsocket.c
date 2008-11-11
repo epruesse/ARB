@@ -1069,19 +1069,41 @@ int GB_host_is_local(const char *hostname){
 
 /* Returns the physical memory size in k available for one process */
 GB_ULONG GB_get_physical_memory(void){
-#if defined(SUN5) || defined(LINUX)
-    long  pagesize     = sysconf(_SC_PAGESIZE);
-    long  pages        = sysconf(_SC_PHYS_PAGES);
-    ulong memsize      = (pagesize/1024) * pages;
-    ulong nettomemsize = memsize - 10240; /* reduce by 10Mb (for kernel etc.) */
+    ulong memsize; /* real existing memory in kb */
+    
+#if defined(SUN5) || defined(LINUX) 
+    {
+        long pagesize = sysconf(_SC_PAGESIZE); 
+        long pages    = sysconf(_SC_PHYS_PAGES);
 
+        memsize = (pagesize/1024) * pages;
+    }
+#else
+# if defined(DARWIN)
+
+#error memsize detection needs to be written for Darwin
+
+    // Matt suggested to use sysctl() on the arb mailing list, 
+    // but AFAIK that system call is meant to get extincted.
+    // see http://lwn.net/Articles/204935/
+
+# else
+    memsize = 512*1024; // assume 512 Mb
+    printf("\n"
+           "Warning: ARB is not prepared to detect the memory size on your system!\n"
+           "         (it assumes you have %ul Mb,  but does not use more)\n\n", memsize/1024);
+# endif
+#endif
+
+    ulong nettomemsize = memsize - 10240;         /* reduce by 10Mb (for kernel etc.) */
+
+    // detect max allocateable memory by ... allocating
     ulong max_malloc_try = nettomemsize*1024;
     ulong max_malloc     = 0;
     {
         ulong step_size  = 4096;
         void *head = 0;
 
-        // detect max allocateable memory by ... allocating
         do {
             void **tmp;
             while((tmp=malloc(step_size))) {
@@ -1102,8 +1124,8 @@ GB_ULONG GB_get_physical_memory(void){
 
         max_malloc /= 1024;
     }
-    
-    ulong usedmemsize  = (MIN(nettomemsize,max_malloc)*95)/100; /* arb uses max. 95 % of available memory (was 70% in the past) */
+
+    ulong usedmemsize = (MIN(nettomemsize,max_malloc)*95)/100;  /* arb uses max. 95 % of available memory (was 70% in the past) */
 
 #if defined(DEBUG)
     printf("- memsize(real)        = %20lu k\n", memsize);
@@ -1111,10 +1133,8 @@ GB_ULONG GB_get_physical_memory(void){
     printf("- memsize(max_malloc)  = %20lu k\n", max_malloc);
 #endif /* DEBUG */
     printf("- memsize(used by ARB) = %20lu k\n", usedmemsize);
-    
+
     arb_assert(usedmemsize != 0);
+
     return usedmemsize;
-#else
-    return 128*1024;            /* 128 Mb default memory */
-#endif
 }
