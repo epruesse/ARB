@@ -618,7 +618,6 @@ int aisc_talking_get_index(int u,int o)
 
 long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object, int object_type)
 {
-    long *ptr;
     int   blen,bsize;
     long  in_pos,out_pos;
     long  code,attribute,type;
@@ -688,9 +687,10 @@ long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object, int ob
             case        AISC_ATTR_DOUBLE:
                 {
                     double dummy;
-                    ptr = (long*)&dummy;
-                    *ptr++ = (long)in_buf[in_pos++];
-                    *ptr++ = (long)in_buf[in_pos++];
+                    int *ptr;
+                    ptr = (int*)&dummy;
+                    *ptr++ = (int)in_buf[in_pos++];
+                    *ptr++ = (int)in_buf[in_pos++];
 
                     AISC_DUMP(aisc_talking_sets, double, dummy);
 
@@ -713,6 +713,7 @@ long aisc_talking_sets(long *in_buf,int size, long *out_buf,long *object, int ob
                 AISC_DUMP(aisc_talking_sets, int, bsize);
 
                 if (bsize){
+                    long *ptr;
                     ptr = (long*)calloc(sizeof(char),bsize);
                     blen = aisc_s_read(aisc_server_con,(char *)ptr,bsize);
                     if (bsize!=blen) {
