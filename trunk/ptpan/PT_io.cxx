@@ -994,16 +994,16 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
     numspec++;
 
     /* visual feedback */
-    /*if((numspec % 10) == 0)
+    if((numspec % 20) == 0)
     {
-      if(numspec % 500)
+      if(numspec % 1000)
       {
     printf(".");
     fflush(stdout);
       } else {
     printf(".%6ld (%6ld KB)\n", numspec, (ps->ps_AbsOffset>>10));
       }
-    }*/
+    }
     gb_species = GBT_next_species(gb_species);
   }
 
