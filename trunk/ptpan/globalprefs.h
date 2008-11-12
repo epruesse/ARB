@@ -33,8 +33,8 @@
 #define SHORTEDGEMAX 6
 
 /* double delta leaf compression */
-#define DOUBLEDELTALEAVES
-#define DOUBLEDELTAOPTIONAL
+//#define DOUBLEDELTALEAVES
+//#define DOUBLEDELTAOPTIONAL
 
 /* size of hash table for duplicates detection during query */
 #define QUERYHITSHASHSIZE 200000
