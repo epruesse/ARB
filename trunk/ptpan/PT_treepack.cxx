@@ -1461,6 +1461,7 @@ struct TreeNode * ReadPackedLeaf(struct PTPanPartition *pp, ULONG pos)
   for(cnt = 1; cnt < leaves; cnt++)
   {
     tn->tn_Leaves[cnt] += tn->tn_Leaves[cnt-1];
+    arb_assert(tn->tn_Leaves[cnt] < pp->pp_PTPanGlobal->pg_TotalRawSize);
   }
   return(tn);
 }
@@ -1618,8 +1619,10 @@ ULONG WritePackedLeaf(struct PTPanPartition *pp, ULONG pos, UBYTE *buf)
   }
   /* do delta compression */
   oldval = pp->pp_LeafBuffer[0];
+  arb_assert(pp->pp_LeafBuffer[0] < pp->pp_PTPanGlobal->pg_TotalRawSize);
   for(cnt = 1; cnt < leafcnt; cnt++)
   {
+    arb_assert(pp->pp_LeafBuffer[cnt] < pp->pp_PTPanGlobal->pg_TotalRawSize);
     pp->pp_LeafBuffer[cnt] -= oldval;
     oldval += pp->pp_LeafBuffer[cnt];
     //printf("%ld\n", pp->pp_LeafBuffer[cnt]);
@@ -2022,6 +2025,8 @@ void PostFilterQueryHits(struct SearchQuery *sq)
 /* /// "AddQueryHit()" */
 BOOL AddQueryHit(struct SearchQuery *sq, ULONG hitpos)
 {
+  arb_assert(hitpos < sq->sq_PTPanGlobal->pg_TotalRawSize);
+
   struct QueryHit *qh;
   struct HashEntry *hash;
 
