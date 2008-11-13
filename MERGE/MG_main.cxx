@@ -330,32 +330,42 @@ void MG_start_cb2(AW_window *aww,AW_root *aw_root, bool save_enabled, bool dest_
 
 void MG_start_cb(AW_window *aww)
 {
-    AW_root *awr = aww->get_root();
-    GB_ERROR error = 0;
+    AW_root  *awr   = aww->get_root();
+    GB_ERROR  error = 0;
     {
         char *merge = awr->awar(AWAR_MERGE_DB"/file_name")->read_string();
         if (!strlen(merge) || (strcmp(merge,":") && GB_size_of_file(merge)<=0)) {
-            error = "Cannot find database I file";
+            error = GBS_global_string("Cannot find DB I '%s'", merge);
         }
         else {
-            char *main = awr->awar(AWAR_MAIN_DB"/file_name")->read_string();
-            if (!strlen(main) || (strcmp(main,":") && GB_size_of_file(main)<=0 )) {
-                error = "Cannot find main file -> creating empty database";
+            aw_openstatus("Loading databases");
+                
+            aw_status("DATABASE I");
+            GLOBAL_gb_merge = GBT_open(merge, "rw", "$(ARBHOME)/lib/pts/*");
+            if (!GLOBAL_gb_merge) {
+                error = GB_get_error();
             }
             else {
-                aw_openstatus("Loading databases");
-                
-                aw_status("DATABASE I");
-                GLOBAL_gb_merge = GBT_open(merge,"rw","$(ARBHOME)/lib/pts/*");
-                if (!GLOBAL_gb_merge) {
-                    error = GB_get_error();
+                AWT_announce_db_to_browser(GLOBAL_gb_merge, GBS_global_string("Database I (source; %s)", merge));
+
+                aw_status("DATABASE II");
+
+                char       *main      = awr->awar(AWAR_MAIN_DB"/file_name")->read_string();
+                const char *open_mode = 0;
+
+                if (main[0] == 0) {
+                    error = "You have to specify a name for DB II";
+                }
+                else if (strcmp(main,":") != 0 && GB_size_of_file(main) <= 0 ) {
+                    aw_message(GBS_global_string("Cannot find DB II '%s' -> creating empty database", main));
+                    open_mode = "wc";
                 }
                 else {
-                    AWT_announce_db_to_browser(GLOBAL_gb_merge, GBS_global_string("Database I (source; %s)", merge));
+                    open_mode = "rwc";
+                }
 
-                    aw_status("DATABASE II");
-                    GLOBAL_gb_dest = GBT_open(main,"rwc","$(ARBHOME)/lib/pts/*");
-
+                if (!error) {
+                    GLOBAL_gb_dest = GBT_open(main, open_mode, "$(ARBHOME)/lib/pts/*");
                     if (!GLOBAL_gb_dest) {
                         error = GB_get_error();
                     }
@@ -363,9 +373,9 @@ void MG_start_cb(AW_window *aww)
                         AWT_announce_db_to_browser(GLOBAL_gb_dest, GBS_global_string("Database II (destination; %s)", main));
                     }
                 }
-                aw_closestatus();
+                free(main);
             }
-            free(main);
+            aw_closestatus();
         }
         free(merge);
     }
