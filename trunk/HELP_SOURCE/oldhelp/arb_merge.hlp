@@ -35,6 +35,8 @@ NOTES		'ARB' databases stored in any directory with read and write
 		selecting the corresponding directories from the 'Directories
 		and Files' subwindows.
 
+                If you enter a non-existing name for database II, a new database will be created.
+
 WARNINGS	The data will always be transferred from 'Database I' to
 		'Database II'.
 
