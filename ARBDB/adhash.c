@@ -372,7 +372,7 @@ char *GBS_string_2_hashtab(GB_HASH *hash, char *data){  /* destroys data */
     return error;
 }
 
-static struct gbs_hash_entry *find_hash_entry(GB_HASH *hs, const char *key, unsigned long *index) {
+static struct gbs_hash_entry *find_hash_entry(const GB_HASH *hs, const char *key, unsigned long *index) {
     struct gbs_hash_entry *e;
     if (hs->case_sens == GB_IGNORE_CASE) {
         GB_CALC_HASH_INDEX_CASE_IGNORED(key,*index,hs->size);
@@ -389,7 +389,7 @@ static struct gbs_hash_entry *find_hash_entry(GB_HASH *hs, const char *key, unsi
     return 0;
 }
 
-long GBS_read_hash(GB_HASH *hs,const char *key) {
+long GBS_read_hash(const GB_HASH *hs,const char *key) {
     unsigned long          i;
     struct gbs_hash_entry *e = find_hash_entry(hs, key, &i);
 

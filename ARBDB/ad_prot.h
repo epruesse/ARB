@@ -310,7 +310,7 @@ GB_HASH *GBS_create_hash P_((long user_size, GB_CASE case_sens));
 void GBS_optimize_hash P_((GB_HASH *hs));
 char *GBS_hashtab_2_string P_((GB_HASH *hash));
 char *GBS_string_2_hashtab P_((GB_HASH *hash, char *data));
-long GBS_read_hash P_((GB_HASH *hs, const char *key));
+long GBS_read_hash P_((const GB_HASH *hs, const char *key));
 long GBS_write_hash P_((GB_HASH *hs, const char *key, long val));
 long GBS_write_hash_no_strdup P_((GB_HASH *hs, char *key, long val));
 long GBS_incr_hash P_((GB_HASH *hs, const char *key));
