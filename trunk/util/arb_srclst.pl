@@ -104,6 +104,7 @@ my @skipped_when_matches = (
                             qr/\#.*\#$/o,
                             qr/\.\#.*$/o,
                             qr/.*\.last_gcc$/o,
+                            qr/.*~$/o, # backups
                            );
 
 my @used_when_matchesFull = (
