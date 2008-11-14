@@ -1619,7 +1619,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
         if (!clone){
             AWMIMT("tree_admin", "Tree admin",                "i", "treeadm.hlp",   AWM_TREE, AW_POPUP, (AW_CL)create_trees_window, 0             );
-            AWMIMT("nds",        "Select visible info (NDS)", "N", "props_nds.hlp", AWM_ALL,  AW_POPUP, (AW_CL)AWT_open_nds_window, (AW_CL)GLOBAL_gb_main);
+            AWMIMT("nds",        "NDS (Node display setup)",  "N", "props_nds.hlp", AWM_ALL,  AW_POPUP, (AW_CL)AWT_create_nds_window, (AW_CL)GLOBAL_gb_main);
         }
         SEP________________________SEP();
 
