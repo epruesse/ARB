@@ -40,9 +40,6 @@ struct make_node_text_struct {
     bool  at_group[NDS_COUNT];  // whether string shall appear at group NDS entries
     bool  at_leaf[NDS_COUNT];   // whether string shall appear at leaf NDS entries
 
-    // long  inherit[NDS_COUNT];
-    // char  zbuf[NDS_COUNT];
-
     void init_buffer() {
         bp         = buf;
         space_left = NDS_STRING_SIZE-1;
@@ -214,10 +211,6 @@ void create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main) {
     aw_root->awar_string("tmp/viewkeys/key_text_select","",awdef);
     GB_pop_transaction(gb_main);
 }
-
-// void awt_pop_down_select_nds(AW_root *,AW_window *aww){
-    // aww->hide();
-// }
 
 void awt_pre_to_view(AW_root *aw_root){
     char *str = aw_root->awar(AWAR_SELECT_ACISRT_PRE)->read_string();
@@ -409,17 +402,12 @@ AW_window *AWT_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
 
     aws->at_newline();
 
-
-    // int showx,fieldselectx,fieldx, inheritx,columnx,srtx,srtux;
     int leafx, groupx, fieldselectx, fieldx, columnx, srtx, srtux;
 
     aws->auto_space(10,0);
 
     int i;
     for (   i=0;i<NDS_COUNT; i++) {
-        // aws->get_at_position( &showx,&dummy );
-        // aws->create_toggle(viewkeyAwarName(i, "flag1"));
-
         aws->get_at_position( &leafx,&dummy );
         aws->create_toggle(viewkeyAwarName(i, "leaf"));
 
@@ -438,9 +426,6 @@ AW_window *AWT_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
             aws->get_at_position( &fieldselectx,&dummy );
             aws->create_button("SELECT_NDS","S");
         }
-
-        // aws->get_at_position( &inheritx,&dummy );
-        // aws->create_toggle(viewkeyAwarName(i, "inherit"));
 
         aws->get_at_position( &columnx,&dummy );
         aws->create_input_field(viewkeyAwarName(i, "len1"),4);
@@ -469,17 +454,11 @@ AW_window *AWT_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
     aws->at_x(groupx);
     aws->create_button(0,"GRP.");
 
-    // aws->at_x(showx);
-    // aws->create_button(0,"SHOW");
-
     aws->at_x(fieldx);
     aws->create_button(0,"FIELD");
 
     aws->at_x(fieldselectx);
     aws->create_button(0,"SEL");
-
-    // aws->at_x(inheritx);
-    // aws->create_button(0,"INH.");
 
     aws->at_x(columnx);
     aws->create_button(0,"WIDTH");
@@ -539,114 +518,6 @@ enum { MNTN_COMPRESSED = 0, MNTN_SPACED = 1, MNTN_TABBED = 2 };
 // #define QUOTE_NDS_STRING
 #endif // DEBUG
 
-    // GBT_TREE *father;
-//         if (!gbe && awt_nds_ms->inherit[i] && species ) {
-//             for (   father = species->father; father && !gbe; father = father->father) {
-//                 if (father->gb_node){
-//                     gbe = GB_entry(father->gb_node, awt_nds_ms->dkeys[i]);
-//                 }
-//             }
-//         }
-    // char *p;
-    // long  j;
-
-//         if (gbe) {
-//             field_was_printed = true;
-
-//             switch (GB_read_type(gbe)) {
-//                 case GB_INT:
-//                     if (mode == MNTN_SPACED) {
-//                         sprintf(bp, "%-*li", int(awt_nds_ms->lengths[i]), GB_read_int(gbe));
-//                     }
-//                     else {
-//                         sprintf(bp, "%li", GB_read_int(gbe));
-//                     }
-//                     bp += strlen(bp);
-//                     break;
-//                 case GB_BYTE:
-//                     if (mode == MNTN_SPACED) {
-//                         sprintf(bp, "%-*i", int(awt_nds_ms->lengths[i]), GB_read_byte(gbe));
-//                     }
-//                     else {
-//                         sprintf(bp, "%i", GB_read_byte(gbe));
-//                     }
-//                     bp += strlen(bp);
-//                     break;
-//                 case GB_STRING:
-//                     {
-//                         long  post;
-//                         long  dlen;
-//                         char *pars = 0;
-
-//                         if (awt_nds_ms->parsing[i]) {
-//                             p = GB_read_string(gbe);
-//                             pars = GB_command_interpreter(gb_main,p, awt_nds_ms->parsing[i],gbd, tree_name);
-//                             free(p);
-//                             if (!pars){
-//                                 pars = strdup("<error>");
-//                                 if (!awt_nds_ms->errorclip++) {
-//                                     aw_message(GB_get_error());
-//                                 }
-//                             }
-//                             p = pars;
-//                         }else{
-//                             p = GB_read_char_pntr(gbe);
-//                         }
-
-//                         dlen = awt_nds_ms->lengths[i];
-//                         if (dlen + (bp - awt_nds_ms->buf) +256 > NDS_STRING_SIZE) {
-//                             dlen = NDS_STRING_SIZE - 256 - (bp - awt_nds_ms->buf);
-//                         }
-
-//                         if (dlen> 0){
-//                             int len = strlen(p);
-//                             j = len;
-//                             if (j > dlen)   j = dlen;
-//                             for (; j; j--) *bp++ = *p++;
-//                             if (mode == MNTN_SPACED) {
-//                                 post = dlen - len;
-//                                 while (post-- > 0) *(bp++) = ' ';
-//                             }
-//                         }
-//                         if (pars) free(pars);
-//                     }
-//                     break;
-//                 case GB_FLOAT:
-//                     if (mode == MNTN_SPACED) {
-//                         char buf[20];
-//                         sprintf(buf, "%4.4f", GB_read_float(gbe));
-//                         sprintf(bp, "%-*s", int(awt_nds_ms->lengths[i]), buf);
-//                     }
-//                     else {
-//                         sprintf(bp, "%4.4f", GB_read_float(gbe));
-//                         if (mode == MNTN_TABBED) { // '.' -> ','
-//                             char *dot     = strchr(bp, '.');
-//                             if (dot) *dot = ',';
-//                         }
-//                     }
-//                     bp += strlen(bp);
-//                     break;
-//                 default:
-//                     break;
-//             }
-//         }
-//         else if (mode == MNTN_SPACED) { // fill with spaces till start of next column
-//             j = awt_nds_ms->lengths[i];
-//             if (j + (bp - awt_nds_ms->buf) + 256 > NDS_STRING_SIZE) {
-//                 j = NDS_STRING_SIZE - 256 - (bp - awt_nds_ms->buf);
-//             }
-//             for (; j > 0; j--)  *(bp++) = ' ';
-//         }
-//     }
-
-//     *bp = 0;
-
-//     //     if (mode == MNTN_COMPRESSED) { // remove leading and trailing commas in compressed mode
-//     //
-//     //     }
-
-//     return awt_nds_ms->buf;
-
 const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *species, const char *tree_name)
 {
     // mode == MNTN_COMPRESSED      compress info (no tabbing, seperate single fields by komma)
@@ -664,7 +535,6 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE
 
 #if defined(QUOTE_NDS_STRING)
     awt_nds_ms->append('\'');
-    // *bp++ = '\'';
 #endif // QUOTE_NDS_STRING
 
     bool    field_was_printed = false;
@@ -755,16 +625,15 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE
                 case MNTN_COMPRESSED:
                     if (!field_was_printed) break; // no komma no space if nothing printed yet
                     awt_nds_ms->append(','); // seperate single fields by komma in compressed mode
-                    // *bp++ = ','; // seperate single fields by komma in compressed mode
-                    // no break here!!!
+                    // fall-through
                 case MNTN_SPACED:
                     awt_nds_ms->append(' '); // print at least one space if not using tabs
-                    // *bp++ = ' '; // print at least one space if not using tabs
                     break;
+                    
                 case MNTN_TABBED:
                     if (i != 0) awt_nds_ms->append('\t'); // tabbed output for star-calc/excel/...
-                    // if (i != 0) *bp++ = '\t'; // tabbed output for star-calc/excel/...
                     break;
+                    
                 default :
                     awt_assert(0);
                     break;
@@ -799,7 +668,6 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE
 
 #if defined(QUOTE_NDS_STRING)
     awt_nds_ms->append('\'');
-    // *bp++ = '\'';
 #endif // QUOTE_NDS_STRING
 
     return awt_nds_ms->get_buffer();
