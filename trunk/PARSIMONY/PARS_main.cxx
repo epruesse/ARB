@@ -1512,7 +1512,7 @@ static void pars_start_cb(AW_window *aww)
     awm->create_menu( 0,   "Tree", "T", "nt_tree.hlp",  AWM_ALL );
     {
 
-        awm->insert_menu_topic( "nds",      "NDS ( Select Node Information ) ...",      "N","props_nds.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AWT_open_nds_window, (AW_CL)ntw->gb_main );
+        awm->insert_menu_topic( "nds",      "NDS (Node Display Setup) ...",      "N","props_nds.hlp",    AWM_ALL, AW_POPUP, (AW_CL)AWT_create_nds_window, (AW_CL)ntw->gb_main );
 
         awm->insert_separator();
         awm->insert_menu_topic("tree_2_xfig", "Edit Tree View using XFIG ...",  "E", "tree2file.hlp", AWM_ALL, AWT_popup_tree_export_window, (AW_CL)ntw, 0);

@@ -17,7 +17,12 @@
 #include "awt_changekey.hxx"
 #include "awt_sel_boxes.hxx"
 
-#define NDS_COUNT 10
+#define NDS_PER_PAGE 10         // number of NDS definitions on each config-page
+#define NDS_PAGES     6         // how many config-pages (each has NDS_PER_PAGE definitions)
+
+#define NDS_COUNT (NDS_PER_PAGE*NDS_PAGES)    // overall number of NDS definitions
+
+#define AWAR_NDS_PAGE "tmp/viewkeys/page"
 
 #if defined(DEBUG)
 #define NDS_STRING_SIZE 200
@@ -98,6 +103,7 @@ struct make_node_text_struct {
 } *awt_nds_ms = 0;
 
 inline const char *viewkeyAwarName(int i, const char *name) {
+    awt_assert(i >= 0 && i < NDS_PER_PAGE);
     return GBS_global_string("tmp/viewkeys/viewkey_%i/%s", i, name);
 }
 
@@ -109,7 +115,68 @@ inline AW_awar *viewkeyAwar(AW_root *aw_root,AW_default awdef,int i, const char 
     return awar;
 }
 
-void create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main) {
+static void map_viewkey(AW_root *aw_root, AW_default awdef, int i, GBDATA *gb_viewkey)  {
+    // maps one NDS key data to one line of the config window
+
+    GBDATA *gb_key_text = GB_entry(gb_viewkey, "key_text");
+    GBDATA *gb_pars     = GB_entry(gb_viewkey, "pars");
+    GBDATA *gb_len1     = GB_entry(gb_viewkey, "len1");
+    GBDATA *gb_group    = GB_entry(gb_viewkey, "group");
+    GBDATA *gb_leaf     = GB_entry(gb_viewkey, "leaf");
+
+    awt_assert(gb_key_text);
+    awt_assert(gb_pars);
+    awt_assert(gb_len1);
+    awt_assert(gb_group);
+    awt_assert(gb_leaf);
+
+    AW_awar *Awar;
+    Awar = viewkeyAwar(aw_root, awdef, i, "key_text", true ); Awar->map((void*)gb_key_text);
+    Awar = viewkeyAwar(aw_root, awdef, i, "pars",     true ); Awar->map((void*)gb_pars    );
+    Awar = viewkeyAwar(aw_root, awdef, i, "len1",     false); Awar->map((void*)gb_len1    );
+    Awar = viewkeyAwar(aw_root, awdef, i, "group",    false); Awar->map((void*)gb_group   );
+    Awar = viewkeyAwar(aw_root, awdef, i, "leaf",     false); Awar->map((void*)gb_leaf    );
+}
+
+static void map_viewkeys(AW_root *aw_root, AW_CL cl_awdef, AW_CL cl_gb_main) {
+    // map visible viewkeys to internal db entries
+    static bool  initialized        = false;
+    AW_default   awdef              = (AW_default)cl_awdef;
+    GBDATA      *gb_main            = (GBDATA*)cl_gb_main;
+    AW_awar     *awar_selected_page = 0;
+
+    if (!initialized) {
+        awar_selected_page = aw_root->awar_int(AWAR_NDS_PAGE, 0);
+        awar_selected_page->add_callback(map_viewkeys, cl_awdef, cl_gb_main); // bind to self
+        initialized        = true;
+    }
+    else {
+        awar_selected_page = aw_root->awar(AWAR_NDS_PAGE);
+    }
+
+    int page = awar_selected_page->read_int();
+#if defined(DEBUG)
+    printf("map_viewkeys to page %i\n", page);
+#endif // DEBUG
+    if (page<NDS_PAGES) {
+        GB_transaction ta(gb_main);
+
+        GBDATA *gb_arb_presets = GB_search(gb_main,"arb_presets",GB_CREATE_CONTAINER);
+        GBDATA *gb_viewkey     = 0;
+        
+        int i1 = page*NDS_PER_PAGE;
+        int i2 = i1+NDS_PER_PAGE-1;
+
+        for (int i = 0; i <= i2; i++) {
+            gb_viewkey = !gb_viewkey ? GB_entry(gb_arb_presets,"viewkey") : GB_nextEntry(gb_viewkey);
+            awt_assert(i<NDS_COUNT);
+            awt_assert(gb_viewkey);
+            if (i >= i1) map_viewkey(aw_root, awdef, i-i1, gb_viewkey);
+        }
+    }
+}
+
+void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main) {
     GB_push_transaction(gb_main);
 
     GBDATA *gb_viewkey     = 0;
@@ -189,27 +256,13 @@ void create_nds_vars(AW_root *aw_root,AW_default awdef,GBDATA *gb_main) {
             GBDATA *gb_leaf  = GB_entry(gb_viewkey, "leaf");
             if (!gb_group) { gb_group = GB_create(gb_viewkey, "group", GB_INT); GB_write_int(gb_group, group ); }
             if (!gb_leaf)  { gb_leaf = GB_create(gb_viewkey, "leaf",  GB_INT); GB_write_int(gb_leaf,  leaf ); }
-
-            // create awars mapped to above db-entries:
-
-            AW_awar *Awar;
-            Awar = viewkeyAwar(aw_root, awdef, i, "key_text", true ); Awar->map((void*)gb_key_text);
-            Awar = viewkeyAwar(aw_root, awdef, i, "pars",     true ); Awar->map((void*)gb_pars    );
-            Awar = viewkeyAwar(aw_root, awdef, i, "len1",     false); Awar->map((void*)gb_len1    );
-            Awar = viewkeyAwar(aw_root, awdef, i, "group",    false); Awar->map((void*)gb_group   );
-            Awar = viewkeyAwar(aw_root, awdef, i, "leaf",     false); Awar->map((void*)gb_leaf    );
         }
     }
 
-    // delete any additional viewkeys (should not occur)
-    GBDATA *gb_next;
-    awt_assert(GB_has_key(gb_viewkey, "viewkey"));
-    while ((gb_next = GB_nextEntry(gb_viewkey))) {
-        GB_ERROR error = GB_delete(gb_next);
-        if (error) { aw_message(error); break; }
-    }
     aw_root->awar_string("tmp/viewkeys/key_text_select","",awdef);
     GB_pop_transaction(gb_main);
+
+    map_viewkeys(aw_root, (AW_CL)awdef, (AW_CL)gb_main); // call once
 }
 
 void awt_pre_to_view(AW_root *aw_root){
@@ -227,12 +280,13 @@ void AWT_create_select_srtaci_window(AW_window *aww,AW_CL awar_acisrt,AW_CL awar
 {
     AWUSE(awar_short);
     static AW_window *win = 0;
-    AW_root *aw_root = aww->get_root();
-    aw_root->awar_string(AWAR_SELECT_ACISRT);
-    aw_root->awar(AWAR_SELECT_ACISRT)->map((char *)awar_acisrt);
 
     if (!win) {
+        AW_root *aw_root = aww->get_root();
+        aw_root->awar_string(AWAR_SELECT_ACISRT);
         aw_root->awar_string(AWAR_SELECT_ACISRT_PRE);
+        aw_root->awar(AWAR_SELECT_ACISRT)->map((char *)awar_acisrt);
+        
         AW_window_simple *aws = new AW_window_simple;
         aws->init( aw_root, "SRT_ACI_SELECT", "SRT_ACI_SELECT");
         aws->load_xfig("awt/srt_select.fig");
@@ -376,101 +430,113 @@ static void nds_restore_config(AW_window *aww, const char *stored, AW_CL, AW_CL)
     }
 }
 
-AW_window *AWT_open_nds_window(AW_root *aw_root,AW_CL cgb_main)
-{
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init( aw_root, "NDS_PROPS", "NDS");
-    aws->load_xfig("awt/nds.fig");
-    aws->auto_space(10,5);
+AW_window *AWT_create_nds_window(AW_root *aw_root,AW_CL cgb_main) {
+    static AW_window_simple *aws = 0;
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init( aw_root, "NDS_PROPS", "NDS");
+        aws->load_xfig("awt/nds.fig");
+        aws->auto_space(10,5);
 
-    aws->callback( AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE","C");
+        aws->callback( AW_POPDOWN);
+        aws->at("close");
+        aws->create_button("CLOSE", "CLOSE","C");
 
-    aws->at("help");
-    aws->callback(AW_POPUP_HELP,(AW_CL)"props_nds.hlp");
-    aws->create_button("HELP", "HELP","H");
+        aws->at("help");
+        aws->callback(AW_POPUP_HELP,(AW_CL)"props_nds.hlp");
+        aws->create_button("HELP", "HELP","H");
 
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "nds", nds_store_config, nds_restore_config, 0, 0);
-
-    aws->button_length(13);
-    int dummy,closey;
-    aws->at_newline();
-    aws->get_at_position( &dummy,&closey );
-
-    aws->create_button(0,"K");
-
-    aws->at_newline();
-
-    int leafx, groupx, fieldselectx, fieldx, columnx, srtx, srtux;
-
-    aws->auto_space(10,0);
-
-    int i;
-    for (   i=0;i<NDS_COUNT; i++) {
-        aws->get_at_position( &leafx,&dummy );
-        aws->create_toggle(viewkeyAwarName(i, "leaf"));
-
-        aws->get_at_position( &groupx,&dummy );
-        aws->create_toggle(viewkeyAwarName(i, "group"));
-
-        {
-            const char *awar_name = viewkeyAwarName(i, "key_text");
-
-            aws->button_length(20);
-            aws->get_at_position( &fieldx,&dummy );
-            aws->create_input_field(awar_name,15);
-
-            aws->button_length(0);
-            aws->callback(AWT_popup_select_species_field_window, (AW_CL)strdup(awar_name), cgb_main);
-            aws->get_at_position( &fieldselectx,&dummy );
-            aws->create_button("SELECT_NDS","S");
+        aws->at("page");
+        aws->create_option_menu(AWAR_NDS_PAGE, "", "");
+        for (int p = 0; p < NDS_PAGES; p++) {
+            const char *text = GBS_global_string("Entries %i - %i", p*NDS_PER_PAGE+1, (p+1)*NDS_PER_PAGE);
+            aws->insert_option(text, "", p);
         }
+        aws->update_option_menu();
 
-        aws->get_at_position( &columnx,&dummy );
-        aws->create_input_field(viewkeyAwarName(i, "len1"),4);
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "nds", nds_store_config, nds_restore_config, 0, 0);
 
-        {
-            const char *awar_name = viewkeyAwarName(i, "pars");
+        // --------------------
 
-            aws->get_at_position( &srtx,&dummy );
-            aws->button_length(0);
-            aws->callback(AWT_create_select_srtaci_window,(AW_CL)strdup(awar_name),0);
-            aws->create_button("SELECT_SRTACI", "S","S");
-
-            aws->get_at_position( &srtux,&dummy );
-            aws->at_set_to(AW_TRUE, AW_FALSE, -7, 30);
-            aws->create_input_field(awar_name,40);
-        }
-
-        aws->at_unset_to();
+        aws->button_length(13);
+        int dummy,closey;
         aws->at_newline();
+        aws->get_at_position( &dummy,&closey );
+
+        aws->create_button(0,"K");
+
+        aws->at_newline();
+
+        int leafx, groupx, fieldselectx, fieldx, columnx, srtx, srtux;
+
+        aws->auto_space(10,0);
+
+        int i;
+        // for (i=0;i<NDS_COUNT; i++) {
+        for (i=0;i<NDS_PER_PAGE; i++) {
+            aws->get_at_position( &leafx,&dummy );
+            aws->create_toggle(viewkeyAwarName(i, "leaf"));
+
+            aws->get_at_position( &groupx,&dummy );
+            aws->create_toggle(viewkeyAwarName(i, "group"));
+
+            {
+                const char *awar_name = viewkeyAwarName(i, "key_text");
+
+                aws->button_length(20);
+                aws->get_at_position( &fieldx,&dummy );
+                aws->create_input_field(awar_name,15);
+
+                aws->button_length(0);
+                aws->callback(AWT_popup_select_species_field_window, (AW_CL)strdup(awar_name), cgb_main);
+                aws->get_at_position( &fieldselectx,&dummy );
+                aws->create_button("SELECT_NDS","S");
+            }
+
+            aws->get_at_position( &columnx,&dummy );
+            aws->create_input_field(viewkeyAwarName(i, "len1"),4);
+
+            {
+                const char *awar_name = viewkeyAwarName(i, "pars");
+
+                aws->get_at_position( &srtx,&dummy );
+                aws->button_length(0);
+                aws->callback(AWT_create_select_srtaci_window,(AW_CL)strdup(awar_name),0);
+                aws->create_button("SELECT_SRTACI", "S","S");
+
+                aws->get_at_position( &srtux,&dummy );
+                aws->at_set_to(AW_TRUE, AW_FALSE, -7, 30);
+                aws->create_input_field(awar_name,40);
+            }
+
+            aws->at_unset_to();
+            aws->at_newline();
+        }
+
+        aws->at(leafx,closey);
+
+        aws->at_x(leafx);
+        aws->create_button(0,"LEAF");
+        aws->at_x(groupx);
+        aws->create_button(0,"GRP.");
+
+        aws->at_x(fieldx);
+        aws->create_button(0,"FIELD");
+
+        aws->at_x(fieldselectx);
+        aws->create_button(0,"SEL");
+
+        aws->at_x(columnx);
+        aws->create_button(0,"WIDTH");
+
+        aws->at_x(srtx);
+        aws->create_button(0,"SRT");
+
+        aws->at_x(srtux);
+        aws->create_button(0,"ACI/SRT PROGRAM");
     }
 
-    aws->at(leafx,closey);
-
-    aws->at_x(leafx);
-    aws->create_button(0,"LEAF");
-    aws->at_x(groupx);
-    aws->create_button(0,"GRP.");
-
-    aws->at_x(fieldx);
-    aws->create_button(0,"FIELD");
-
-    aws->at_x(fieldselectx);
-    aws->create_button(0,"SEL");
-
-    aws->at_x(columnx);
-    aws->create_button(0,"WIDTH");
-
-    aws->at_x(srtx);
-    aws->create_button(0,"SRT");
-
-    aws->at_x(srtux);
-    aws->create_button(0,"ACI/SRT PROGRAM");
-
-
-    return (AW_window *)aws;
+    return aws;
 }
 
 

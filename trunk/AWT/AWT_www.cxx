@@ -153,7 +153,7 @@ AW_window *AWT_open_www_window(AW_root *aw_root,AW_CL cgb_main){
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init( aw_root, "WWW_PROPS", "WWW");
-    aws->load_xfig("awt/nds.fig");
+    aws->load_xfig("awt/www.fig");
     aws->auto_space(10,5);
 
     aws->at("close");
