@@ -69,6 +69,7 @@ my %used_extensions = map { $_ => 1; } (
                                         'head', 'header',
                                         'footer',
                                         'dtd', 'xsl',
+                                        'makefile',
                                        );
 
 my %skipped_extensions = map { $_ => 1; } (
@@ -83,6 +84,8 @@ my %skipped_extensions = map { $_ => 1; } (
                                            'log',
                                            'swp',
                                            'bak',
+                                           'old',
+                                           'last_gcc',
                                           );
 
 
@@ -103,7 +106,6 @@ my @skipped_when_matches = (
                             qr/^arbsrc.*\.tgz$/o,
                             qr/\#.*\#$/o,
                             qr/\.\#.*$/o,
-                            qr/.*\.last_gcc$/o,
                             qr/.*~$/o, # backups
                            );
 
