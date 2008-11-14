@@ -147,15 +147,15 @@ GB_ERROR AP_pos_var::retrieve( GBT_TREE *tree){
         delete [] char_2_bitstring;
     }
     else {
-        long base;
-        awt_pro_a_nucs_convert_init(gb_main);
-        long *char_2_bitstring = awt_pro_a_nucs->pro_2_bitset;
+        long            base;
+        AWT_translator *translator       = AWT_get_user_translator(gb_main);
+        const long     *char_2_bitstring = translator->Pro2Bitset();
+ 
         for (i=0;i<256;i++){
             char_2_transversion[i] = 0;
             base = char_2_transition[i] = char_2_bitstring[i];
             if (base) char_2_freq[i] = toupper(i);
         }
-        delete [] char_2_bitstring;
     }
     this->treesize = this->getsize(tree);
     this->timer = 0;

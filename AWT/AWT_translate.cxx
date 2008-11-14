@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : AWT_translate.cxx                                 //
 //   Purpose   :                                                   //
-//   Time-stamp: <Fri May/16/2008 11:03 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Thu Nov/13/2008 04:08 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in June 2006      //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -21,7 +21,7 @@
 #include "awt_translate.hxx"
 
 GB_ERROR AWT_findTranslationTable(GBDATA *gb_species, int& arb_transl_table) {
-    // looks for a sub-entry 'transl_table' of 'gb_species'
+    // looks for a sub-entry 'transl_table' of 'gb_species' (works for genes as well)
     // if found -> test for validity and translate from EMBL to ARB table number
     // returns: an error in case of problems
     // 'arb_transl_table' is set to -1 if not found, otherwise it contains the arb table number
@@ -45,12 +45,13 @@ GB_ERROR AWT_findTranslationTable(GBDATA *gb_species, int& arb_transl_table) {
     return error;
 }
 
-int AWT_pro_a_nucs_convert(char *data, long size, int pos, bool translate_all)
-{
+int AWT_pro_a_nucs_convert(int code_nr, char *data, long size, int pos, bool translate_all) {
     // if translate_all == true -> 'pos' > 1 produces a leading 'X' in protein data
     //                             (otherwise nucleotides in front of the starting pos are simply ignored)
+    // 
     // returns the translated protein sequence in 'data'
-    
+    // return value = number of stop-codons in translated sequence
+
     gb_assert(pos >= 0 && pos <= 2);
 
     for (char *p = data; *p ; p++) {
@@ -77,12 +78,14 @@ int AWT_pro_a_nucs_convert(char *data, long size, int pos, bool translate_all)
 
     int  stops = 0;
     long i     = pos;
-    
+
+    const GB_HASH *t2i_hash = AWT_get_translator(code_nr)->T2iHash();
+
     for (char *p = data+pos; i+2<size; p+=3,i+=3) {
         buffer[0] = p[0];
         buffer[1] = p[1];
         buffer[2] = p[2];
-        int spro  = (int)GBS_read_hash(awt_pro_a_nucs->t2i_hash,buffer);
+        int spro  = (int)GBS_read_hash(t2i_hash,buffer);
         int C;
         if (!spro) {
             C = 'X';

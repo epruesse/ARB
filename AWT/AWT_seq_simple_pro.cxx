@@ -28,11 +28,10 @@ void AP_sequence_simple_protein::set(const char *isequence) {
     const char    *s;
     unsigned char  c;
     ap_pro        *d;
-    if (!awt_pro_a_nucs) {
-        awt_pro_a_nucs_gen_dist (this->root->gb_main);
-    }
 
-    struct arb_r2a_pro_2_nuc **s2str = &awt_pro_a_nucs->s2str[0];
+    AWT_translator *translator = AWT_get_user_translator(this->root->gb_main);
+
+    const struct arb_r2a_pro_2_nuc * const *s2str = translator->S2strArray();
     sequence_len = root->filter->real_len;
     sequence = new ap_pro[sequence_len+1];
     memset(sequence,s2str['.']->index,(size_t)(sizeof(ap_pro) * sequence_len));

@@ -90,39 +90,22 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
             error = AWT_findTranslationTable(gb_species, arb_table);
 
             if (!error) {
-                if (arb_table == -1) arb_table = 0; // no transl_table entry -> default to standard code
+                if (arb_table == -1) arb_table = selected_ttable; // no transl_table entry -> default to selected standard code
                 table_used[arb_table] = true;
             }
-
-//             GBDATA *gb_transl_table = GB_entry(gb_species, "transl_table");
-//             int     arb_table       = 0; // use 'Standard Code' if no 'transl_table' entry was found
-
-//             if (gb_transl_table) {
-//                 int embl_table = atoi(GB_read_char_pntr(gb_transl_table));
-//                 arb_table  = AWT_embl_transl_table_2_arb_code_nr(embl_table);
-
-//                 if (arb_table == -1) {
-//                     GBDATA *gb_name = GB_entry(gb_species, "name");
-//                     return GB_export_error("Illegal (or unsupported) value for 'transl_table' in '%s'", GB_read_char_pntr(gb_name));
-//                 }
-//             }
-
-//             table_used[arb_table] = true;
         }
     }
     else {
         table_used[selected_ttable] = true; // and mark it used
     }
 
+    int no_data = 0; // count species w/o data
     for (int table = 0; table<AWT_CODON_TABLES && !error; ++table) {
         if (!table_used[table]) continue;
 
-        GBT_write_int(GLOBAL_gb_main, AWAR_PROTEIN_TYPE, table); // set wanted protein table
-        awt_pro_a_nucs_convert_init(GLOBAL_gb_main); // (re-)initialize codon tables for current translation table
-
-        for (   gb_species = GBT_first_marked_species(gbmain);
-                gb_species && !error;
-                gb_species = GBT_next_marked_species(gb_species) )
+        for (gb_species = GBT_first_marked_species(gbmain);
+             gb_species && !error;
+             gb_species = GBT_next_marked_species(gb_species))
         {
             bool found_table_entry = false;
             bool found_start_entry = false;
@@ -142,10 +125,6 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
 
                 if (sp_arb_table != table) continue; // species has not current transl_table
 
-                if (!gb_transl_table) {
-                    ++spec_no_transl_table; // count species w/o transl_table entry
-                }
-
                 GBDATA *gb_codon_start = GB_entry(gb_species, "codon_start");
                 int     sp_codon_start = selected_startpos+1; // default codon startpos (if 'codon_start' field is missing)
 
@@ -159,9 +138,6 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
                     }
                     found_start_entry = true;
                 }
-                else {
-                    ++spec_no_codon_start;
-                }
                 startpos = sp_codon_start-1; // internal value is 0..2
             }
 
@@ -169,17 +145,20 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
                 error = "Aborted";
                 break;
             }
-            gb_source = GB_entry(gb_species,ali_source);
-            if (!gb_source) continue;
-            gb_source_data = GB_entry(gb_source,"data");
-            if (!gb_source_data) continue;
+
+            gb_source      = GB_entry(gb_species,ali_source); if (!gb_source)      { ++no_data; continue; }
+            gb_source_data = GB_entry(gb_source,"data");      if (!gb_source_data) { ++no_data; continue; }
             data = GB_read_string(gb_source_data);
             if (!data) {
                 GB_print_error(); // cannot read data (ignore species)
+                ++no_data;
                 continue;
             }
 
-            stops += AWT_pro_a_nucs_convert(data, GB_read_string_count(gb_source_data), startpos, translate_all); // do the translation
+            if (!found_table_entry) ++spec_no_transl_table;
+            if (!found_start_entry) ++spec_no_codon_start;
+
+            stops += AWT_pro_a_nucs_convert(table, data, GB_read_string_count(gb_source_data), startpos, translate_all); // do the translation
 
             count ++;
             gb_dest_data = GBT_add_data(gb_species,ali_dest,"data", GB_STRING);
@@ -210,27 +189,28 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
         }
     }
 
-    GBT_write_int(GLOBAL_gb_main, AWAR_PROTEIN_TYPE, selected_ttable); // restore old value
-
     aw_closestatus();
     if (!error) {
         if (use_entries) { // use 'transl_table' and 'codon_start' fields ?
             if (spec_no_transl_table) {
                 aw_message(GBS_global_string("%i taxa had no 'transl_table' field (defaulted to %i)",
-                                             spec_no_transl_table, selected_ttable));
+                                             spec_no_transl_table, selected_ttable+1));
             }
             if (spec_no_codon_start) {
                 aw_message(GBS_global_string("%i taxa had no 'codon_start' field (defaulted to %i)",
-                                             spec_no_codon_start, selected_startpos));
+                                             spec_no_codon_start, selected_startpos+1));
             }
             if ((spec_no_codon_start+spec_no_transl_table) == 0) { // all entries were present
-                aw_message("codon_start and transl_table entries found for all taxa");
+                aw_message("codon_start and transl_table entries were found for all taxa");
             }
             else if (save_entries) {
                 aw_message("The defaults have been written into 'transl_table' and 'codon_start' fields.");
             }
         }
 
+        if (no_data>0) {
+            aw_message(GBS_global_string("%i taxa had no data in '%s'", no_data, ali_source));
+        }
         aw_message(GBS_global_string("%i taxa converted\n  %f stops per sequence found",
                                      count, (double)stops/(double)count));
     }
@@ -253,8 +233,6 @@ void transpro_event(AW_window *aww){
 #if defined(DEBUG) && 0
     test_AWT_get_codons();
 #endif
-    awt_pro_a_nucs_convert_init(GLOBAL_gb_main);
-
     char *ali_source    = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
     char *ali_dest      = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
     char *mode          = aw_root->awar(AWAR_TRANSPRO_MODE)->read_string();
