@@ -58,7 +58,6 @@ static bool gTerminalsCreated       = false;
 static int  PV_AA_Terminals4Species = 0;
 static int  gMissingTransTable      = 0;
 static int  gMissingCodonStart      = 0;
-static int  giLastTranlsationTable  = -1;
 static bool gbWritingData           = false;
 static int  giNewAlignments         = 0;
 
@@ -424,7 +423,7 @@ PV_ERROR PV_ComplementarySequence(char *sequence)
     return PV_SUCCESS;
 }
 
-void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *spName/*, AW_repeated_question ASKtoOverWriteData*/){
+static void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *spName) {
     GB_begin_transaction(GLOBAL_gb_main);  //open database for transaction
 
     GB_ERROR error = 0;
@@ -464,8 +463,7 @@ void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *s
                 sprintf(newAlignmentName, "ali_pro_ProtView_database_field_start_pos_%ld", (long int) aaStartPos); break;
             }
 
-            int stops = AWT_pro_a_nucs_convert(str_SeqData, len, aaStartPos-1, "false");
-            AWUSE(stops);
+            AWT_pro_a_nucs_convert(AWT_default_protein_type(), str_SeqData, len, aaStartPos-1, "false");
 
             // Create alignment data to store the translated sequence
             GBDATA *gb_presets          = GB_search(GLOBAL_gb_main, "presets", GB_CREATE_CONTAINER);
@@ -527,12 +525,6 @@ void PV_SaveData(AW_window *aww){
     //6. write to the database
     gbWritingData = true;
     if(gTerminalsCreated) {
-        {        // set wanted tranlation code table and initialize
-            int translationTable = GBT_read_int(GLOBAL_gb_main,AWAR_PROTEIN_TYPE);
-            GBT_write_int(GLOBAL_gb_main, AWAR_PROTEIN_TYPE, translationTable);// set wanted protein table
-            awt_pro_a_nucs_convert_init(GLOBAL_gb_main); // (re-)initialize codon tables for current translation table
-        }
-        
         ASKtoOverWriteData = new AW_repeated_question();
 
         ED4_terminal *terminal = 0;
@@ -575,7 +567,7 @@ void PV_SaveData(AW_window *aww){
 }
 
 // This function translates gene sequence to aminoacid sequence and stores into the respective AA_Sequence_terminal
-void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_terminal *seqTerm, char *speciesName, int startPos4Translation, int translationMode){
+static void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_terminal *seqTerm, char *speciesName, int startPos4Translation, int translationMode){
     GBDATA *gb_species       = GBT_find_species(GLOBAL_gb_main, speciesName);
     char   *defaultAlignment = GBT_get_default_alignment(GLOBAL_gb_main);
     GBDATA *gb_SeqData       = GBT_read_sequence(gb_species, defaultAlignment);
@@ -591,16 +583,13 @@ void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_termina
 
     GB_ERROR error = 0;
     PV_ERROR pvError;
-    int selectedTable = GBT_read_int(GLOBAL_gb_main,AWAR_PROTEIN_TYPE);
-    int translationTable = 0;
+    
+    int translationTable = AWT_default_protein_type(GLOBAL_gb_main);
 
-    switch(translationMode) 
-        {
+    switch(translationMode) {
         case FORWARD_STRAND:
-            translationTable  = GBT_read_int(GLOBAL_gb_main,AWAR_PROTEIN_TYPE);
             break;
         case COMPLEMENTARY_STRAND:
-            translationTable  = GBT_read_int(GLOBAL_gb_main,AWAR_PROTEIN_TYPE);
             // for complementary strand - get the complementary sequence and then perform translation
             pvError =  PV_ComplementarySequence(str_SeqData);
             if (pvError == PV_FAILED) {
@@ -609,15 +598,14 @@ void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_termina
             }
             break;
         case DB_FIELD_STRAND:
-            // for use database field options - fetch codon start and translation table from the respective species data     
+            // for use database field options - fetch codon start and translation table from the respective species data
             GBDATA *gb_translTable = GB_entry(gb_species, "transl_table");
             if (gb_translTable) {
                 int sp_embl_table = atoi(GB_read_char_pntr(gb_translTable));
-                translationTable      = AWT_embl_transl_table_2_arb_code_nr(sp_embl_table);
+                translationTable  = AWT_embl_transl_table_2_arb_code_nr(sp_embl_table);
             }
             else {   // use selected translation table as default (if 'transl_table' field is missing)
                 gMissingTransTable++;
-                translationTable  = GBT_read_int(GLOBAL_gb_main,AWAR_PROTEIN_TYPE);
             }
             GBDATA *gb_codonStart = GB_entry(gb_species, "codon_start");
             if (gb_codonStart) {
@@ -633,17 +621,10 @@ void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_termina
                 startPos4Translation = 0;
             }
             break;
-        }
-    // set wanted tranlation code table and initialize
-    // if the current table is different from the last table then set new table and initilize the same 
-    if (translationTable != giLastTranlsationTable) {
-        GBT_write_int(GLOBAL_gb_main, AWAR_PROTEIN_TYPE, translationTable);// set wanted protein table
-        awt_pro_a_nucs_convert_init(GLOBAL_gb_main); // (re-)initialize codon tables for current translation table
-        giLastTranlsationTable = translationTable;  // store the current table 
     }
-    //AWT_pro_a_nucs_convert(char *seqdata, long seqlen, int startpos, bool translate_all)
-    int stops = AWT_pro_a_nucs_convert(str_SeqData, len, startPos4Translation, "false"); 
-    AWUSE(stops);
+
+    // do the translation: 
+    AWT_pro_a_nucs_convert(translationTable, str_SeqData, len, startPos4Translation, "false");
 
     char *s = new char[len+1];
     int i,j;
@@ -693,8 +674,6 @@ void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_termina
     
     delete s;
     free(str_SeqData);
-
-    GBT_write_int(GLOBAL_gb_main, AWAR_PROTEIN_TYPE, selectedTable);// restore the selected table
 
     if (error) {
         cout<<"error during writing translated data.....!!!"<<endl;
@@ -954,8 +933,8 @@ void PV_CreateAllTerminals(AW_root *root) {
 
 void PV_CallBackFunction(AW_root *root) {
     // Create New Terminals If Aminoacid Sequence Terminals Are Not Created 
-    if(!gTerminalsCreated){
-        // AWAR_PROTEIN_TYPE is not initilized if called from ED4_main before creating proteinViewer window
+    if (!gTerminalsCreated) {
+        // AWAR_PROTEIN_TYPE is not initialized (if called from ED4_main before creating proteinViewer window)
         // so, initilize it here
         root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, GLOBAL_gb_main);
         PV_CreateAllTerminals(root);

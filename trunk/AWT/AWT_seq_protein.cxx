@@ -66,7 +66,7 @@ static AP_PROTEINS prot2AP_PROTEIN[26] = {
 
 #define PROTEINS_TO_TEST 22
 
-static AP_PROTEINS prot2test[PROTEINS_TO_TEST] = {
+static AP_PROTEINS prot2test[PROTEINS_TO_TEST] = { // uses same indexing as prot_idx
     APP_STAR,
     APP_A,
     APP_C,
@@ -91,7 +91,8 @@ static AP_PROTEINS prot2test[PROTEINS_TO_TEST] = {
     APP_GAP
 };
 
-static int prot_idx[PROTEINS_TO_TEST] = { // needs same indexing as prot2test; contains indexes for 'awt_pro_a_nucs->dist'
+static int prot_idx[PROTEINS_TO_TEST] = { // uses same indexing as prot2test
+    // contains indexes for 'AWT_distance_meter->dist'
     0,                          // *
     1,                          // A
     3,                          // C
@@ -117,28 +118,28 @@ static int prot_idx[PROTEINS_TO_TEST] = { // needs same indexing as prot2test; c
 };
 
 static char prot_mindist[PROTEINS_TO_TEST][PROTEINS_TO_TEST];
-static int  min_mutations_initialized_time_stamp = 0;
+static int  min_mutations_initialized_for_codenr = -1;
 
-static void update_min_mutations() {
-    for (int d = 0; d<PROTEINS_TO_TEST; ++d) {
-        int D     = prot_idx[d];
-        int D_bit = 1<<D;
+static void update_min_mutations(int code_nr, const AWT_distance_meter *distance_meter) {
+    if (min_mutations_initialized_for_codenr != code_nr) {
+        for (int d = 0; d<PROTEINS_TO_TEST; ++d) {
+            int D     = prot_idx[d];
+            int D_bit = 1<<D;
 
-        for (int s = 0; s<PROTEINS_TO_TEST; ++s) {
-            int S = prot_idx[s];
-            int i;
+            for (int s = 0; s<PROTEINS_TO_TEST; ++s) {
+                const AWT_PDP *dist = distance_meter->getDistance(prot_idx[s]);
 
-            for (i = 0; i<3; ++i) {
-                if (awt_pro_a_nucs->dist[S]->patd[i] & D_bit) {
-                    break;
+                int i;
+                for (i = 0; i<3; ++i) {
+                    if (dist->patd[i] & D_bit) break;
                 }
+
+                prot_mindist[s][d] = char(i);
             }
-
-            prot_mindist[s][d] = char(i);
         }
-    }
 
-    min_mutations_initialized_time_stamp = awt_pro_a_nucs->time_stamp;
+        min_mutations_initialized_for_codenr = code_nr;
+    }
 }
 
 
@@ -148,8 +149,8 @@ static void update_min_mutations() {
 
 void AP_sequence_protein::set(const char *isequence)
 {
-    if (!awt_pro_a_nucs) awt_pro_a_nucs_gen_dist(this->root->gb_main);
-    if (awt_pro_a_nucs->time_stamp != min_mutations_initialized_time_stamp) update_min_mutations();
+    AWT_translator *translator = AWT_get_user_translator(this->root->gb_main);
+    update_min_mutations(translator->CodeNr(), translator->getDistanceMeter());
 
     sequence_len = root->filter->real_len;
     sequence     = new AP_PROTEINS[sequence_len+1];
@@ -250,7 +251,8 @@ AP_FLOAT AP_sequence_protein::combine(  const AP_sequence * lefts, const    AP_s
     }
 
     long result = 0;
-    awt_assert(min_mutations_initialized_time_stamp == awt_pro_a_nucs->time_stamp); // check if initialized for correct instance of awt_pro_a_nucs
+    // check if initialized for correct instance of translator: 
+    awt_assert(min_mutations_initialized_for_codenr == AWT_get_user_translator()->CodeNr()); 
 
     for (long idx = 0; idx<sequence_len; ++idx) {
         AP_PROTEINS c1 = p1[idx];
