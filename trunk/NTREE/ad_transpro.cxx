@@ -27,7 +27,8 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
                         bool    translate_all, const char *ali_source, const char *ali_dest)
 {
     // if use_entries   == true -> use fields 'codon_start' and 'transl_table' for translation
-    //                           (selected_startpos and AWAR_PROTEIN_TYPE are only used if one or both fields are missing)
+    //                           (selected_startpos and AWAR_PROTEIN_TYPE are only used both fields are missing,
+    //                            if only one is missing, now an error occurs)
     // if use_entries   == false -> always use selected_startpos and AWAR_PROTEIN_TYPE
     // if translate_all == true -> a selected_startpos > 1 produces a leading 'X' in protein data
     //                             (otherwise nucleotides in front of the starting pos are simply ignored)
@@ -149,7 +150,7 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
             if (!found_table_entry) ++spec_no_transl_table;
             if (!found_start_entry) ++spec_no_codon_start;
 
-            stops += AWT_pro_a_nucs_convert(table, data, GB_read_string_count(gb_source_data), startpos, translate_all); // do the translation
+            stops += AWT_pro_a_nucs_convert(table, data, GB_read_string_count(gb_source_data), startpos, translate_all, false, false); // do the translation
 
             count ++;
             gb_dest_data = GBT_add_data(gb_species,ali_dest,"data", GB_STRING);
