@@ -6,7 +6,6 @@
 #include <stdarg.h>
 #include <sys/time.h>
 #include <errno.h>
-/* #include <malloc.h> */
 #include <string.h>
 #include <memory.h>
 
@@ -19,7 +18,6 @@
 #include <time.h>
 
 #include "adlocal.h"
-/*#include "arbdb.h"*/
 
 #if defined(__cplusplus)
 extern "C" {
@@ -36,6 +34,10 @@ extern "C" {
 #else
 # define SIG_PF void (*)(int )
 #endif
+
+#if defined(DARWIN)
+# include <sys/sysctl.h>
+#endif /* DARWIN */
 
 
 /************************************ signal handling ****************************************/
@@ -1067,9 +1069,9 @@ int GB_host_is_local(const char *hostname){
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
-/* Returns the physical memory size in k available for one process */
-GB_ULONG GB_get_physical_memory(void){
-    ulong memsize; /* real existing memory in kb */
+GB_ULONG GB_get_physical_memory(void) {
+    /* Returns the physical available memory size in k available for one process */
+    ulong memsize; /* real existing memory in k */
     
 #if defined(SUN5) || defined(LINUX) 
     {
@@ -1078,21 +1080,25 @@ GB_ULONG GB_get_physical_memory(void){
 
         memsize = (pagesize/1024) * pages;
     }
+#elif defined(DARWIN)
+#warning memsize detection needs to be tested for Darwin
+    {
+        int      mib[2];
+        uint64_t bytes;
+        size_t   len;
+
+        mib[0] = CTL_HW;
+        mib[1] = HW_MEMSIZE; /*uint64_t: physical ram size */
+        len = sizeof(bytes);
+        sysctl(mib, 2, &bytes, &len, NULL, 0);
+
+        memsize = bytes/1024;
+    }
 #else
-# if defined(DARWIN)
-
-#error memsize detection needs to be written for Darwin
-
-    // Matt suggested to use sysctl() on the arb mailing list, 
-    // but AFAIK that system call is meant to get extincted.
-    // see http://lwn.net/Articles/204935/
-
-# else
     memsize = 512*1024; // assume 512 Mb
     printf("\n"
            "Warning: ARB is not prepared to detect the memory size on your system!\n"
            "         (it assumes you have %ul Mb,  but does not use more)\n\n", memsize/1024);
-# endif
 #endif
 
     ulong nettomemsize = memsize - 10240;         /* reduce by 10Mb (for kernel etc.) */
