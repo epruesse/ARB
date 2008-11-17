@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : AWT_translate.cxx                                 //
 //   Purpose   :                                                   //
-//   Time-stamp: <Thu Nov/13/2008 04:08 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Mon Nov/17/2008 11:54 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in June 2006      //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -20,13 +20,18 @@
 
 #include "awt_translate.hxx"
 
-GB_ERROR AWT_findTranslationTable(GBDATA *gb_species, int& arb_transl_table) {
-    // looks for a sub-entry 'transl_table' of 'gb_species' (works for genes as well)
-    // if found -> test for validity and translate from EMBL to ARB table number
+GB_ERROR AWT_getTranslationInfo(GBDATA *gb_species, int& arb_transl_table, int& codon_start) {
+    // looks for sub-entries 'transl_table' and 'codon_start' of species (works for genes as well)
+    // if found -> test for validity and translate 'transl_table' from EMBL to ARB table number
+    // 
     // returns: an error in case of problems
+    // 
     // 'arb_transl_table' is set to -1 if not found, otherwise it contains the arb table number
+    // 'codon_start'      is set to -1 if not found, otherwise it contains the codon_start (0..2)
 
-    arb_transl_table          = -1; // not found yet
+    arb_transl_table = -1;          // not found yet
+    codon_start      = -1;          // not found yet
+    
     GB_ERROR  error           = 0;
     GBDATA   *gb_transl_table = GB_entry(gb_species, "transl_table");
 
@@ -34,12 +39,35 @@ GB_ERROR AWT_findTranslationTable(GBDATA *gb_species, int& arb_transl_table) {
         int embl_table   = atoi(GB_read_char_pntr(gb_transl_table));
         arb_transl_table = AWT_embl_transl_table_2_arb_code_nr(embl_table);
         if (arb_transl_table == -1) { // ill. table
-            const char *name    = "<unnamed>";
-            GBDATA     *gb_name = GB_entry(gb_species, "name");
-            if (gb_name) name = GB_read_char_pntr(gb_name);
-
-            error = GBS_global_string("Illegal (or unsupported) value (%i) in 'transl_table' (species=%s)", embl_table, name);
+            error = GBS_global_string("Illegal (or unsupported) value (%i) in 'transl_table'", embl_table);
         }
+    }
+
+    if (!error) {
+        GBDATA *gb_codon_start = GB_entry(gb_species, "codon_start");
+        if (gb_codon_start) {
+            int codon_start_value = atoi(GB_read_char_pntr(gb_codon_start));
+
+            if (codon_start_value<1 || codon_start_value>3) {
+                error = GBS_global_string("Illegal value (%i) in 'codon_start' (allowed: 1..3)", codon_start_value);
+            }
+            else {
+                codon_start = codon_start_value-1; // internal value is 0..2
+            }
+        }
+    }
+
+    if (arb_transl_table != codon_start) {
+        if (arb_transl_table == -1) error = "Found 'codon_start', but 'transl_table' is missing";
+        else if (codon_start == -1) error = "Found 'transl_table', but 'codon_start' is missing";
+    }
+
+    if (error) { // append species name to error message
+        const char *name    = "<unknown>";
+        GBDATA     *gb_name = GB_entry(gb_species, "name");
+
+        if (gb_name) name = GB_read_char_pntr(gb_name);
+        error             = GBS_global_string("%s (species='%s')", error, name);
     }
 
     return error;
