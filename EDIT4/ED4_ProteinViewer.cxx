@@ -463,7 +463,7 @@ static void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, 
                 sprintf(newAlignmentName, "ali_pro_ProtView_database_field_start_pos_%ld", (long int) aaStartPos); break;
             }
 
-            AWT_pro_a_nucs_convert(AWT_default_protein_type(), str_SeqData, len, aaStartPos-1, "false");
+            AWT_pro_a_nucs_convert(AWT_default_protein_type(), str_SeqData, len, aaStartPos-1, false, true, false);
 
             // Create alignment data to store the translated sequence
             GBDATA *gb_presets          = GB_search(GLOBAL_gb_main, "presets", GB_CREATE_CONTAINER);
@@ -624,7 +624,7 @@ static void TranslateGeneToAminoAcidSequence(AW_root */*root*/, ED4_AA_sequence_
     }
 
     // do the translation: 
-    AWT_pro_a_nucs_convert(translationTable, str_SeqData, len, startPos4Translation, "false");
+    AWT_pro_a_nucs_convert(translationTable, str_SeqData, len, startPos4Translation, false, true, false);
 
     char *s = new char[len+1];
     int i,j;
