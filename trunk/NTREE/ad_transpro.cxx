@@ -86,8 +86,8 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
              gb_species && !error;
              gb_species = GBT_next_marked_species(gb_species) )
         {
-            int arb_table;
-            error = AWT_findTranslationTable(gb_species, arb_table);
+            int arb_table, codon_start;
+            error = AWT_getTranslationInfo(gb_species, arb_table, codon_start);
 
             if (!error) {
                 if (arb_table == -1) arb_table = selected_ttable; // no transl_table entry -> default to selected standard code
@@ -99,7 +99,7 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
         table_used[selected_ttable] = true; // and mark it used
     }
 
-    int no_data = 0; // count species w/o data
+    int no_data = 0;            // count species w/o data
     for (int table = 0; table<AWT_CODON_TABLES && !error; ++table) {
         if (!table_used[table]) continue;
 
@@ -112,33 +112,24 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
             int  startpos          = selected_startpos;
 
             if (use_entries) {  // if entries are used, test if field 'transl_table' matches current table
-                GBDATA *gb_transl_table = GB_entry(gb_species, "transl_table");
-                int     sp_arb_table    = selected_ttable; // use selected translation table as default (if 'transl_table' field is missing)
+                int sp_arb_table, sp_codon_start;
 
-                if (gb_transl_table) {
-                    int sp_embl_table = atoi(GB_read_char_pntr(gb_transl_table));
-                    sp_arb_table      = AWT_embl_transl_table_2_arb_code_nr(sp_embl_table);
-                    found_table_entry = true;
+                error = AWT_getTranslationInfo(gb_species, sp_arb_table, sp_codon_start);
 
-                    nt_assert(sp_arb_table != -1); // sp_arb_table must be a valid code (or error should occur above)
+                nt_assert(!error); // should already have been handled after first call to AWT_getTranslationInfo above
+
+                if (sp_arb_table == -1) { // no table in DB
+                    nt_assert(sp_codon_start == -1);    // either both should be defined or none
+                    sp_arb_table   = selected_ttable;   // use selected translation table as default (if 'transl_table' field is missing)
+                    sp_codon_start = selected_startpos; // use selected codon startpos (if 'codon_start' field is missing)
+                }
+                else {
+                    nt_assert(sp_codon_start != -1); // either both should be defined or none
                 }
 
                 if (sp_arb_table != table) continue; // species has not current transl_table
 
-                GBDATA *gb_codon_start = GB_entry(gb_species, "codon_start");
-                int     sp_codon_start = selected_startpos+1; // default codon startpos (if 'codon_start' field is missing)
-
-                if (gb_codon_start) {
-                    sp_codon_start = atoi(GB_read_char_pntr(gb_codon_start));
-                    if (sp_codon_start<1 || sp_codon_start>3) {
-                        GBDATA *gb_name = GB_entry(gb_species, "name");
-                        error = GB_export_error("'%s' has invalid codon_start entry %i (allowed: 1..3)",
-                                                GB_read_char_pntr(gb_name), sp_codon_start);
-                        break;
-                    }
-                    found_start_entry = true;
-                }
-                startpos = sp_codon_start-1; // internal value is 0..2
+                startpos = sp_codon_start;
             }
 
             if (aw_status(double(spec_i++)/double(spec_count))) {
@@ -362,36 +353,32 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest, long *ne
 {
     AWT_initialize_codon_tables();
 
-    GBDATA *gb_source = GBT_get_alignment(gbmain,ali_source);           if (!gb_source) return "Please select a valid source alignment";
-    GBDATA *gb_dest = GBT_get_alignment(gbmain,ali_dest);           if (!gb_dest) return "Please select a valid destination alignment";
+    GBDATA *gb_source = GBT_get_alignment(gbmain,ali_source); if (!gb_source) return "Please select a valid source alignment";
+    GBDATA *gb_dest   = GBT_get_alignment(gbmain,ali_dest);   if (!gb_dest)   return "Please select a valid destination alignment";
 
     long     ali_len            = GBT_get_alignment_len(gbmain,ali_dest);
     long     max_wanted_ali_len = 0;
     GB_ERROR error              = 0;
 
     aw_openstatus("Re-aligner");
-    int no_of_marked_species = GBT_count_marked_species(gbmain);
+    
+    int no_of_marked_species    = GBT_count_marked_species(gbmain);
     int no_of_realigned_species = 0;
-    int ignore_fail_pos = 0;
+    int ignore_fail_pos         = 0;
 
     for (GBDATA *gb_species = GBT_first_marked_species(gbmain);
          !error && gb_species;
-         gb_species = GBT_next_marked_species(gb_species) ) {
+         gb_species = GBT_next_marked_species(gb_species))
+    {
+        aw_status(GBS_global_string("Re-aligning #%i of %i ...", no_of_realigned_species+1, no_of_marked_species));
 
-        {
-            char stat[200];
+        gb_source              = GB_entry(gb_species, ali_source); if (!gb_source)      continue;
+        GBDATA *gb_source_data = GB_entry(gb_source,  "data")    ; if (!gb_source_data) continue;
+        gb_dest                = GB_entry(gb_species, ali_dest)  ; if (!gb_dest)        continue;
+        GBDATA *gb_dest_data   = GB_entry(gb_dest,    "data")    ; if (!gb_dest_data)   continue;
 
-            sprintf(stat, "Re-aligning #%i of %i ...", no_of_realigned_species+1, no_of_marked_species);
-            aw_status(stat);
-        }
-
-        gb_source=              GB_entry(gb_species, ali_source); if(!gb_source)     continue;
-        GBDATA *gb_source_data= GB_entry(gb_source,  "data")    ; if(!gb_source_data)continue;
-        gb_dest=                GB_entry(gb_species, ali_dest)  ; if(!gb_dest)       continue;
-        GBDATA *gb_dest_data=   GB_entry(gb_dest,    "data")    ; if(!gb_dest_data)  continue;
-
-        char *source = GB_read_string(gb_source_data);          if (!source) { GB_print_error(); continue; }
-        char *dest = GB_read_string(gb_dest_data);          if (!dest) { GB_print_error(); continue; }
+        char *source = GB_read_string(gb_source_data); if (!source) { GB_print_error(); continue; }
+        char *dest   = GB_read_string(gb_dest_data);   if (!dest)   { GB_print_error(); continue; }
 
         long source_len = GB_read_string_count(gb_source_data);
         long dest_len = GB_read_string_count(gb_dest_data);
@@ -426,8 +413,8 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest, long *ne
         AWT_allowedCode allowed_code; // default = all allowed
 
         if (!failed) {
-            int arb_transl_table;
-            GB_ERROR local_error = AWT_findTranslationTable(gb_species, arb_transl_table);
+            int arb_transl_table, codon_start;
+            GB_ERROR local_error = AWT_getTranslationInfo(gb_species, arb_transl_table, codon_start);
             if (local_error) {
                 failed          = 1;
                 fail_reason     = GBS_global_string("Error while reading 'transl_table' (%s)", local_error);
@@ -669,9 +656,12 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest, long *ne
             // re-alignment sucessfull
             error = GB_write_string(gb_dest_data,buffer);
             if (!error) {
-                GBDATA *gb_codon_start = GB_entry(gb_species, "codon_start");
-                if (gb_codon_start) {
-                    // overwrite existing 'codon_start' entries
+                GBDATA *gb_codon_start = GB_search(gb_species, "codon_start", GB_STRING); // find or create
+                if (!gb_codon_start) {
+                    error = GB_get_error();
+                }
+                else {
+                    // write 'codon_start'
                     error = GB_write_string(gb_codon_start, "1"); // after re-alignment codon_start is always 1
                 }
             }
