@@ -38,11 +38,6 @@ struct AWT_Codon_Code_Definition AWT_codon_def[AWT_CODON_TABLES+1] =
             3
         },
         {
-            //   0000000001111111111222222222233333333334444444444555555555566666
-            //   1234567890123456789012345678901234567890123456789012345678901234
-            //  "TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",  base1
-            //  "TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",  base2
-            //  "TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"   base3
             " (4) Mold/Protozoan/Coelenterate Mitochondrial Code",
             "FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
             "--MM---------------M------------MMMM---------------M------------",
@@ -72,12 +67,13 @@ struct AWT_Codon_Code_Definition AWT_codon_def[AWT_CODON_TABLES+1] =
             "-----------------------------------M----------------------------",
             10
         },
+        //   0000000001111111111222222222233333333334444444444555555555566666
+        //   1234567890123456789012345678901234567890123456789012345678901234
+        
+        //  "TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",  base1
+        //  "TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",  base2
+        //  "TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"   base3
         {
-            //   0000000001111111111222222222233333333334444444444555555555566666
-            //   1234567890123456789012345678901234567890123456789012345678901234
-            //  "TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG",  base1
-            //  "TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG",  base2
-            //  "TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG"   base3
             "(11) Bacterial and Plant Plastid Code",
             "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG",
             "---M---------------M------------MMMM---------------M------------",
@@ -366,11 +362,32 @@ void AWT_dump_codons() {
 }
 #endif
 
-// return TRUE if 'dna' contains a codon of 'protein' ('dna' must not contain any gaps)
-// allowed_code contains 1 for each allowed code and 0 otherwise
-// allowed_code_left contains a copy of allowed_codes with all impossible codes set to zero
+char AWT_is_start_codon(const char *dna, int code_nr) {
+    // if dna[0]..dna[2] is defined as start codon for 'code_nr'
+    //                  return 'M' (or whatever is defined in tables)
+    // return 0 otherwise
+
+    char is_start_codon = 0;
+    int  codon_nr       = calc_codon_nr(dna);
+
+    awt_assert(code_nr >= 0 && code_nr<AWT_CODON_TABLES);
+
+    if (codon_nr != AWT_MAX_CODONS) { // dna is a clean codon (it contains no iupac-codes)
+        const char *starts = AWT_codon_def[code_nr].starts;
+
+        is_start_codon = starts[codon_nr];
+        if (is_start_codon == '-') is_start_codon = 0;
+    }
+
+    return is_start_codon;
+}
+
 
 bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_code, AWT_allowedCode& allowed_code_left, const char **fail_reason_ptr) {
+    // return TRUE if 'dna' contains a codon of 'protein' ('dna' must not contain any gaps)
+    // allowed_code contains 1 for each allowed code and 0 otherwise
+    // allowed_code_left contains a copy of allowed_codes with all impossible codes set to zero
+    
     awt_assert(codon_tables_initialized);
 
     const char *fail_reason = 0;
@@ -751,9 +768,6 @@ static bool protein_index_initialized = 0;
 // #define PROTEIN_TABLE_SIZE (26-3+3) // all chars - "JOU" + ".-*"
 #define PROTEIN_TABLE_SIZE sizeof(protein_index_def)
 
-// ------------------------------------------------
-//      static void initialize_protein_index()
-// ------------------------------------------------
 static void initialize_protein_index() {
     memset(protein_index, char(-1), sizeof(protein_index));
 
@@ -766,9 +780,6 @@ static void initialize_protein_index() {
 static int  protein_2_iupac_tables_initialized_4_code = -1;
 static char protein_2_iupac_table[3*PROTEIN_TABLE_SIZE];
 
-// --------------------------------------------------------------------
-//      static void initialize_protein_2_iupac_tables(int code_nr)
-// --------------------------------------------------------------------
 static void initialize_protein_2_iupac_tables(int code_nr) {
     if (!protein_index_initialized) initialize_protein_index();
     if (!codon_tables_initialized) AWT_initialize_codon_tables();
