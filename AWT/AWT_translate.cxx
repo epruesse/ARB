@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : AWT_translate.cxx                                 //
 //   Purpose   :                                                   //
-//   Time-stamp: <Wed Nov/19/2008 10:02 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Nov/19/2008 11:42 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in June 2006      //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -94,7 +94,7 @@ GB_ERROR AWT_getTranslationInfo(GBDATA *gb_species, int& arb_transl_table, int& 
     return error;
 }
 
-int AWT_pro_a_nucs_convert(int code_nr, char *data, long size, int pos, bool translate_all, bool create_start_codon, bool append_stop_codon) {
+int AWT_pro_a_nucs_convert(int arb_code_nr, char *data, int size, int pos, bool translate_all, bool create_start_codon, bool append_stop_codon, int *translatedSize) {
     // if translate_all == true -> 'pos' > 1 produces a leading 'X' in protein data
     //                             (otherwise nucleotides in front of the starting pos are simply ignored)
     // 
@@ -103,8 +103,10 @@ int AWT_pro_a_nucs_convert(int code_nr, char *data, long size, int pos, bool tra
     // if 'append_stop_codon' is true, the stop codon is appended as '*'. This is only done, if the last
     //                                 character not already is a stop codon. (Note: provide data with correct size)
     // 
-    // returns the translated protein sequence in 'data'
-    // return value = number of stop-codons in translated sequence
+    // returns:
+    // - the translated protein sequence in 'data'
+    // - the length of the translated protein sequence in 'translatedSize' (if != 0)
+    // - number of stop-codons in translated sequence as result
 
     gb_assert(pos >= 0 && pos <= 2);
 
@@ -133,7 +135,7 @@ int AWT_pro_a_nucs_convert(int code_nr, char *data, long size, int pos, bool tra
     int  stops = 0;
     long i     = pos;
 
-    const GB_HASH *t2i_hash = AWT_get_translator(code_nr)->T2iHash();
+    const GB_HASH *t2i_hash = AWT_get_translator(arb_code_nr)->T2iHash();
 
     for (char *p = data+pos; i+2<size; p+=3,i+=3) {
         buffer[0] = p[0];
@@ -152,22 +154,27 @@ int AWT_pro_a_nucs_convert(int code_nr, char *data, long size, int pos, bool tra
         *(dest++) = (char)C;
     }
 
-    if (dest>data) {            // at least 1 amino written
+    int tsize = dest-data;
+
+    if (tsize>0) {            // at least 1 amino written
         if (create_start_codon) {
             buffer[0] = data[pos];
             buffer[1] = data[pos+1];
             buffer[2] = data[pos+2];
 
-            char start_codon = AWT_is_start_codon(buffer, code_nr);
+            char start_codon = AWT_is_start_codon(buffer, arb_code_nr);
             if (start_codon) data[0] = start_codon;
         }
 
         if (append_stop_codon && dest[-1] != '*') {
             *dest++ = '*';
+            tsize++;
         }
     }
     dest[0] = 0;
 
+    if (translatedSize) *translatedSize = tsize;
+    
     return stops;
 }
 
