@@ -158,7 +158,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
 
                     if (!found_transl_info) ++spec_no_transl_info; // count species with missing info
 
-                    stops += AWT_pro_a_nucs_convert(table, data, GB_read_string_count(gb_source_data), startpos, translate_all, false, false); // do the translation
+                    stops += AWT_pro_a_nucs_convert(table, data, GB_read_string_count(gb_source_data), startpos, translate_all, false, false, 0); // do the translation
                     ++count;
                     
                     GBDATA *gb_dest_data = GBT_add_data(gb_species,ali_dest,"data", GB_STRING);
