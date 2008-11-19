@@ -32,8 +32,8 @@ SECTION AUTOMATIC SELECTION OF TRANSLATION PARAMETERS
                 These 2 fields are extracted from genes to gene-species automatically
                 (see LINK{gene_extract.hlp}).
 
-                If one or both fields are missing, the selected values for 'Start position'
-                and 'Codon table' are used.
+                If both fields are missing, the selected values for 'Start position'
+                and 'Codon table' are used. If one field is missing an error is raised.
 
 
 SECTION MANUAL SELECTION OF TRANSLATION PARAMETERS

@@ -91,7 +91,7 @@ SECTION         STANDARD FIELDS
                                 first codon starts (valid: 1,2,3)
                                 if this entry is missing 1 is assumed
                 transl_table    the number of the translation table to be used
-                                (1 = Standard, ...)
+                                (1 = Standard, ...). Same table numbers as used by EMBL.
 
 NOTES           For gene-species 'codon_start' and 'transl_table' have the same
                 meaning as described above

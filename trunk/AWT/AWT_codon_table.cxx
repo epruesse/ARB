@@ -133,11 +133,11 @@ struct AWT_Codon_Code_Definition AWT_codon_def[AWT_CODON_TABLES+1] =
 
 #define MAX_EMBL_TRANSL_TABLE_VALUE 23 // maximum known EMBL transl_table value
 
-int AWT_embl_transl_table_2_arb_code_nr(int embl_index) {
-    // returns -1 if embl_index is not known by ARB
+int AWT_embl_transl_table_2_arb_code_nr(int embl_code_nr) {
+    // returns -1 if embl_code_nr is not known by ARB
 
     static bool initialized = false;
-    static int  arb_code_nr_table[MAX_EMBL_TRANSL_TABLE_VALUE+1];
+    static int  arb_code_nr_table[MAX_EMBL_TRANSL_TABLE_VALUE+1];                 // key: embl_code_nr, value: arb_code_nr or -1 
 
     if (!initialized) {
         for (int embl = 0; embl <= MAX_EMBL_TRANSL_TABLE_VALUE; ++embl) {
@@ -146,27 +146,28 @@ int AWT_embl_transl_table_2_arb_code_nr(int embl_index) {
         for (int arb_code_nr = 0; arb_code_nr < AWT_CODON_TABLES; ++arb_code_nr) {
             arb_code_nr_table[AWT_codon_def[arb_code_nr].embl_feature_transl_table] = arb_code_nr;
         }
+        // should be index of 'Bacterial and Plant Plastid Code'
+        // (otherwise maybe AWAR_PROTEIN_TYPE_bacterial_code_index  is wrong)
+        awt_assert(arb_code_nr_table[EMBL_BACTERIAL_TABLE_INDEX] == AWAR_PROTEIN_TYPE_bacterial_code_index);
+        awt_assert(arb_code_nr_table[1] == 0); // Standard Code has to be on index zero!
+
         initialized = true;
     }
 
-    // should be index of 'Bacterial and Plant Plastid Code'
-    // (otherwise maybe AWAR_PROTEIN_TYPE_bacterial_code_index  is wrong)
-    awt_assert(arb_code_nr_table[EMBL_BACTERIAL_TABLE_INDEX] == AWAR_PROTEIN_TYPE_bacterial_code_index);
-    awt_assert(arb_code_nr_table[1] == 0); // Standard Code has to be on index zero!
+    if (embl_code_nr<0 || embl_code_nr>MAX_EMBL_TRANSL_TABLE_VALUE) return -1;
 
-    if (embl_index<0 || embl_index>MAX_EMBL_TRANSL_TABLE_VALUE) return -1;
-
-    int arb_code_nr = arb_code_nr_table[embl_index];
+    int arb_code_nr = arb_code_nr_table[embl_code_nr];
 #ifdef DEBUG
     if (arb_code_nr != -1) {
         awt_assert(arb_code_nr >= 0 && arb_code_nr < AWT_CODON_TABLES);
-        awt_assert(AWT_arb_code_nr_2_embl_transl_table(arb_code_nr) == embl_index);
+        awt_assert(AWT_arb_code_nr_2_embl_transl_table(arb_code_nr) == embl_code_nr);
     }
 #endif
     return arb_code_nr;
 }
 
 int AWT_arb_code_nr_2_embl_transl_table(int arb_code_nr) {
+    awt_assert(arb_code_nr >= 0 && arb_code_nr<AWT_CODON_TABLES);
     return AWT_codon_def[arb_code_nr].embl_feature_transl_table;
 }
 
@@ -362,18 +363,18 @@ void AWT_dump_codons() {
 }
 #endif
 
-char AWT_is_start_codon(const char *dna, int code_nr) {
-    // if dna[0]..dna[2] is defined as start codon for 'code_nr'
+char AWT_is_start_codon(const char *dna, int arb_code_nr) {
+    // if dna[0]..dna[2] is defined as start codon for 'arb_code_nr'
     //                  return 'M' (or whatever is defined in tables)
     // return 0 otherwise
 
     char is_start_codon = 0;
     int  codon_nr       = calc_codon_nr(dna);
 
-    awt_assert(code_nr >= 0 && code_nr<AWT_CODON_TABLES);
+    awt_assert(arb_code_nr >= 0 && arb_code_nr<AWT_CODON_TABLES);
 
     if (codon_nr != AWT_MAX_CODONS) { // dna is a clean codon (it contains no iupac-codes)
-        const char *starts = AWT_codon_def[code_nr].starts;
+        const char *starts = AWT_codon_def[arb_code_nr].starts;
 
         is_start_codon = starts[codon_nr];
         if (is_start_codon == '-') is_start_codon = 0;
