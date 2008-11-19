@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : AWT_translate.cxx                                 //
 //   Purpose   :                                                   //
-//   Time-stamp: <Mon Nov/17/2008 15:50 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Nov/19/2008 10:02 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in June 2006      //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -19,6 +19,27 @@
 #include <awt_codon_table.hxx>
 
 #include "awt_translate.hxx"
+
+GB_ERROR AWT_saveTranslationInfo(GBDATA *gb_species, int arb_transl_table, int codon_start) {
+    GB_ERROR  error;
+    int embl_transl_table = AWT_arb_code_nr_2_embl_transl_table(arb_transl_table);
+
+    awt_assert(codon_start >= 0 && codon_start<3); // codon_start has to be 0..2
+    awt_assert(embl_transl_table >= 0);
+
+
+    GBDATA   *gb_transl_table   = GB_search(gb_species, "transl_table", GB_STRING);
+    if (!gb_transl_table) error = GB_get_error();
+    else      error             = GB_write_string(gb_transl_table, GBS_global_string("%i", embl_transl_table));
+
+    if (!error) {
+        GBDATA *gb_start_pos     = GB_search(gb_species, "codon_start", GB_STRING);
+        if (!gb_start_pos) error = GB_get_error();
+        else    error            = GB_write_string(gb_start_pos, GBS_global_string("%i", codon_start+1));
+    }
+
+    return error;
+}
 
 GB_ERROR AWT_getTranslationInfo(GBDATA *gb_species, int& arb_transl_table, int& codon_start) {
     // looks for sub-entries 'transl_table' and 'codon_start' of species (works for genes as well)

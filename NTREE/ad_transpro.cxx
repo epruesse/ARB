@@ -23,7 +23,7 @@
 
 extern GBDATA *GLOBAL_gb_main;
 
-static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int selected_startpos,
+static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, int selected_startpos,
                         bool    translate_all, const char *ali_source, const char *ali_dest)
 {
     // if use_entries   == true -> use fields 'codon_start' and 'transl_table' for translation
@@ -35,168 +35,163 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
 
     nt_assert(selected_startpos >= 0 && selected_startpos < 3);
 
-    GBDATA   *gb_source;
-    GBDATA   *gb_dest;
-    GBDATA   *gb_species;
-    GBDATA   *gb_source_data;
-    GBDATA   *gb_dest_data;
-    GB_ERROR  error = 0;
-    char     *data;
-    int       count = 0;
-    int       stops = 0;
+    GB_ERROR  error   = 0;
+    char     *to_free = 0;
 
-    gb_source = GBT_get_alignment(gbmain,ali_source);
-    if (!gb_source) return "Please select a valid source alignment";
-    gb_dest = GBT_get_alignment(gbmain,ali_dest);
-    if (!gb_dest) {
-        const char *msg = GBS_global_string("You have not selected a destination alignment\n"
-                                            "Shall I create one ('%s_pro') for you?", ali_source);
-        if (!aw_ask_sure(msg)) {
-            return "Cancelled";
+    // check/create alignments
+    {
+        GBDATA *gb_source = GBT_get_alignment(gb_main,ali_source);
+        if (!gb_source) {
+            error = "Please select a valid source alignment";
         }
-
-        long slen = GBT_get_alignment_len(gbmain,ali_source);
-        ali_dest  = GBS_global_string_copy("%s_pro",ali_source);
-        gb_dest   = GBT_create_alignment(gbmain,ali_dest,slen/3+1,0,1,"ami");
-
-        {
-            char *fname = GBS_global_string_copy("%s/data",ali_dest);
-            awt_add_new_changekey(gbmain,fname,GB_STRING);
-            free(fname);
-        }
-
-        if (!gb_dest){
-            aw_closestatus();
-            return GB_get_error();
-        }
-    }
-
-    aw_openstatus("Translating");
-
-    int spec_count           = GBT_get_species_count(gbmain);
-    int spec_i               = 0;
-    int spec_no_transl_table = 0;
-    int spec_no_codon_start  = 0;
-
-    bool table_used[AWT_CODON_TABLES];
-    memset(table_used, 0, sizeof(table_used));
-    int  selected_ttable = GBT_read_int(GLOBAL_gb_main,AWAR_PROTEIN_TYPE); // read selected table
-
-    if (use_entries) {
-        for (gb_species = GBT_first_marked_species(gbmain);
-             gb_species && !error;
-             gb_species = GBT_next_marked_species(gb_species) )
-        {
-            int arb_table, codon_start;
-            error = AWT_getTranslationInfo(gb_species, arb_table, codon_start);
-
-            if (!error) {
-                if (arb_table == -1) arb_table = selected_ttable; // no transl_table entry -> default to selected standard code
-                table_used[arb_table] = true;
-            }
-        }
-    }
-    else {
-        table_used[selected_ttable] = true; // and mark it used
-    }
-
-    int no_data = 0;            // count species w/o data
-    for (int table = 0; table<AWT_CODON_TABLES && !error; ++table) {
-        if (!table_used[table]) continue;
-
-        for (gb_species = GBT_first_marked_species(gbmain);
-             gb_species && !error;
-             gb_species = GBT_next_marked_species(gb_species))
-        {
-            bool found_table_entry = false;
-            bool found_start_entry = false;
-            int  startpos          = selected_startpos;
-
-            if (use_entries) {  // if entries are used, test if field 'transl_table' matches current table
-                int sp_arb_table, sp_codon_start;
-
-                error = AWT_getTranslationInfo(gb_species, sp_arb_table, sp_codon_start);
-
-                nt_assert(!error); // should already have been handled after first call to AWT_getTranslationInfo above
-
-                if (sp_arb_table == -1) { // no table in DB
-                    nt_assert(sp_codon_start == -1);    // either both should be defined or none
-                    sp_arb_table   = selected_ttable;   // use selected translation table as default (if 'transl_table' field is missing)
-                    sp_codon_start = selected_startpos; // use selected codon startpos (if 'codon_start' field is missing)
+        else {
+            GBDATA *gb_dest = GBT_get_alignment(gb_main,ali_dest);
+            if (!gb_dest) {
+                const char *msg = GBS_global_string("You have not selected a destination alignment\n"
+                                                    "Shall I create one ('%s_pro') for you?", ali_source);
+                if (!aw_ask_sure(msg)) {
+                    error = "Cancelled by user";
                 }
                 else {
-                    nt_assert(sp_codon_start != -1); // either both should be defined or none
-                }
+                    long slen = GBT_get_alignment_len(gb_main,ali_source);
+                    to_free   = GBS_global_string_copy("%s_pro",ali_source);
+                    ali_dest  = to_free;
+                    gb_dest   = GBT_create_alignment(gb_main,ali_dest,slen/3+1,0,1,"ami");
 
-                if (sp_arb_table != table) continue; // species has not current transl_table
+                    {
+                        char *fname = GBS_global_string_copy("%s/data",ali_dest);
+                        awt_add_new_changekey(gb_main,fname,GB_STRING);
+                        free(fname);
+                    }
 
-                startpos = sp_codon_start;
-            }
-
-            if (aw_status(double(spec_i++)/double(spec_count))) {
-                error = "Aborted";
-                break;
-            }
-
-            gb_source      = GB_entry(gb_species,ali_source); if (!gb_source)      { ++no_data; continue; }
-            gb_source_data = GB_entry(gb_source,"data");      if (!gb_source_data) { ++no_data; continue; }
-            data = GB_read_string(gb_source_data);
-            if (!data) {
-                GB_print_error(); // cannot read data (ignore species)
-                ++no_data;
-                continue;
-            }
-
-            if (!found_table_entry) ++spec_no_transl_table;
-            if (!found_start_entry) ++spec_no_codon_start;
-
-            stops += AWT_pro_a_nucs_convert(table, data, GB_read_string_count(gb_source_data), startpos, translate_all, false, false); // do the translation
-
-            count ++;
-            gb_dest_data = GBT_add_data(gb_species,ali_dest,"data", GB_STRING);
-            if (!gb_dest_data) return GB_get_error();
-            error        = GB_write_string(gb_dest_data,data);
-            free(data);
-
-            if (!error && save_entries) {
-                if (!found_table_entry || !use_entries) {
-                    GBDATA *gb_transl_table = GB_search(gb_species, "transl_table", GB_STRING);
-                    if (!gb_transl_table) {
+                    if (!gb_dest){
                         error = GB_get_error();
-                    }
-                    else {
-                        GB_write_string(gb_transl_table, GBS_global_string("%i", AWT_arb_code_nr_2_embl_transl_table(selected_ttable)));
-                    }
-                }
-                if (!error && (!found_start_entry || !use_entries)) {
-                    GBDATA *gb_start_pos = GB_search(gb_species, "codon_start", GB_STRING);
-                    if (!gb_start_pos) {
-                        error = GB_get_error();
-                    }
-                    else {
-                        GB_write_string(gb_start_pos, GBS_global_string("%i", startpos+1));
+                        nt_assert(error);
                     }
                 }
             }
         }
     }
 
-    aw_closestatus();
+    int no_data             = 0;  // count species w/o data
+    int spec_no_transl_info = 0;  // counts species w/o or with illegal transl_table and/or codon_start
+    int count               = 0;  // count translated species
+    int stops               = 0;  // count overall stop codons
+    int selected_ttable     = -1;
+
+    if (!error) {
+        aw_openstatus("Translating");
+
+        int spec_count = GBT_get_species_count(gb_main);
+        int spec_i     = 0;
+
+        bool table_used[AWT_CODON_TABLES];
+        memset(table_used, 0, sizeof(table_used));
+        selected_ttable = GBT_read_int(gb_main, AWAR_PROTEIN_TYPE); // read selected table
+
+        if (use_entries) {
+            for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
+                 gb_species && !error;
+                 gb_species = GBT_next_marked_species(gb_species) )
+            {
+                int arb_table, codon_start;
+                error = AWT_getTranslationInfo(gb_species, arb_table, codon_start);
+
+                if (!error) {
+                    if (arb_table == -1) arb_table = selected_ttable; // no transl_table entry -> default to selected standard code
+                    table_used[arb_table] = true;
+                }
+            }
+        }
+        else {
+            table_used[selected_ttable] = true; // and mark it used
+        }
+
+        for (int table = 0; table<AWT_CODON_TABLES && !error; ++table) {
+            if (!table_used[table]) continue;
+
+            for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
+                 gb_species && !error;
+                 gb_species = GBT_next_marked_species(gb_species))
+            {
+                bool found_transl_info = false;
+                int  startpos          = selected_startpos;
+
+                if (use_entries) {  // if entries are used, test if field 'transl_table' matches current table
+                    int sp_arb_table, sp_codon_start;
+
+                    error = AWT_getTranslationInfo(gb_species, sp_arb_table, sp_codon_start);
+
+                    nt_assert(!error); // should already have been handled after first call to AWT_getTranslationInfo above
+
+                    if (sp_arb_table == -1) { // no table in DB
+                        nt_assert(sp_codon_start == -1);    // either both should be defined or none
+                        sp_arb_table   = selected_ttable;   // use selected translation table as default (if 'transl_table' field is missing)
+                        sp_codon_start = selected_startpos; // use selected codon startpos (if 'codon_start' field is missing)
+                    }
+                    else {
+                        nt_assert(sp_codon_start != -1); // either both should be defined or none
+                        found_transl_info = true;
+                    }
+
+                    if (sp_arb_table != table) continue; // species has not current transl_table
+
+                    startpos = sp_codon_start;
+                }
+
+                if (aw_status(double(spec_i++)/double(spec_count))) {
+                    error = "Aborted by user";
+                }
+                else {
+                    GBDATA *gb_source = GB_entry(gb_species,ali_source);
+                    if (!gb_source) { ++no_data; continue; }
+
+                    GBDATA *gb_source_data = GB_entry(gb_source,"data");
+                    if (!gb_source_data) { ++no_data; continue; }
+                    
+                    char *data = GB_read_string(gb_source_data);
+                    if (!data) {
+                        GB_print_error(); // cannot read data (ignore species)
+                        ++no_data;
+                        continue;
+                    }
+
+                    if (!found_transl_info) ++spec_no_transl_info; // count species with missing info
+
+                    stops += AWT_pro_a_nucs_convert(table, data, GB_read_string_count(gb_source_data), startpos, translate_all, false, false); // do the translation
+                    ++count;
+                    
+                    GBDATA *gb_dest_data = GBT_add_data(gb_species,ali_dest,"data", GB_STRING);
+                    if (!gb_dest_data) {
+                        error = GB_get_error();
+                    }
+                    else {
+                        error = GB_write_string(gb_dest_data,data);
+                    }
+                    free(data);
+                }
+
+                if (!error && save_entries && !found_transl_info) {
+                    error = AWT_saveTranslationInfo(gb_species, selected_ttable, startpos);
+                }
+            }
+        }
+
+        aw_closestatus();
+    }
+    
     if (!error) {
         if (use_entries) { // use 'transl_table' and 'codon_start' fields ?
-            if (spec_no_transl_table) {
-                aw_message(GBS_global_string("%i taxa had no 'transl_table' field (defaulted to %i)",
-                                             spec_no_transl_table, selected_ttable+1));
+            if (spec_no_transl_info) {
+                int embl_transl_table = AWT_arb_code_nr_2_embl_transl_table(selected_ttable);
+                aw_message(GBS_global_string("%i taxa had no valid translation info (fields 'transl_table' and 'codon_start')\n"
+                                             "Defaults (%i and %i) have been used%s.",
+                                             spec_no_transl_info,
+                                             embl_transl_table, selected_startpos+1,
+                                             save_entries ? " and written to DB entries" : ""));
             }
-            if (spec_no_codon_start) {
-                aw_message(GBS_global_string("%i taxa had no 'codon_start' field (defaulted to %i)",
-                                             spec_no_codon_start, selected_startpos+1));
-            }
-            if ((spec_no_codon_start+spec_no_transl_table) == 0) { // all entries were present
-                aw_message("codon_start and transl_table entries were found for all taxa");
-            }
-            else if (save_entries) {
-                aw_message("The defaults have been written into 'transl_table' and 'codon_start' fields.");
+            else { // all entries were present
+                aw_message("codon_start and transl_table entries were found for all translated taxa");
             }
         }
 
@@ -206,6 +201,9 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
         aw_message(GBS_global_string("%i taxa converted\n  %f stops per sequence found",
                                      count, (double)stops/(double)count));
     }
+
+    free(to_free);
+
     return error;
 }
 
@@ -217,7 +215,7 @@ static GB_ERROR arb_r2a(GBDATA *gbmain, bool use_entries, bool save_entries, int
 #define AWAR_TRANSPRO_XSTART AWAR_TRANSPRO_PREFIX "xstart"
 #define AWAR_TRANSPRO_WRITE  AWAR_TRANSPRO_PREFIX "write"
 
-void transpro_event(AW_window *aww){
+void transpro_event(AW_window *aww) {
     AW_root *aw_root = aww->get_root();
     GB_ERROR error;
     GB_begin_transaction(GLOBAL_gb_main);
@@ -350,24 +348,24 @@ static int synchronizeCodons(const char *proteins, const char *dna, int minCatch
 // SYNC_LENGTH is the # of codons which will be syncronized (ahead!)
 // before deciding "X was realigned correctly"
 
-GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest, long *neededLength)
+GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *neededLength)
 {
     AWT_initialize_codon_tables();
 
-    GBDATA *gb_source = GBT_get_alignment(gbmain,ali_source); if (!gb_source) return "Please select a valid source alignment";
-    GBDATA *gb_dest   = GBT_get_alignment(gbmain,ali_dest);   if (!gb_dest)   return "Please select a valid destination alignment";
+    GBDATA *gb_source = GBT_get_alignment(gb_main,ali_source); if (!gb_source) return "Please select a valid source alignment";
+    GBDATA *gb_dest   = GBT_get_alignment(gb_main,ali_dest);   if (!gb_dest)   return "Please select a valid destination alignment";
 
-    long     ali_len            = GBT_get_alignment_len(gbmain,ali_dest);
+    long     ali_len            = GBT_get_alignment_len(gb_main,ali_dest);
     long     max_wanted_ali_len = 0;
     GB_ERROR error              = 0;
 
     aw_openstatus("Re-aligner");
     
-    int no_of_marked_species    = GBT_count_marked_species(gbmain);
+    int no_of_marked_species    = GBT_count_marked_species(gb_main);
     int no_of_realigned_species = 0;
     int ignore_fail_pos         = 0;
 
-    for (GBDATA *gb_species = GBT_first_marked_species(gbmain);
+    for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
          !error && gb_species;
          gb_species = GBT_next_marked_species(gb_species))
     {
@@ -686,7 +684,7 @@ GB_ERROR arb_transdna(GBDATA *gbmain, char *ali_source, char *ali_dest, long *ne
         return error;
     }
 
-    error = GBT_check_data(gbmain,ali_dest);
+    error = GBT_check_data(gb_main,ali_dest);
 
     return error;
 }
