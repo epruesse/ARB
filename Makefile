@@ -1,7 +1,7 @@
 # =============================================================== #
 #                                                                 #
 #   File      : Makefile                                          #
-#   Time-stamp: <Fri Oct/24/2008 14:18 MET Coder@ReallySoft.de>   #
+#   Time-stamp: <Thu Nov/20/2008 15:10 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Institute of Microbiology (Technical University Munich)       #
 #   http://www.arb-home.de/                                       #
@@ -1003,7 +1003,8 @@ NAMES_COM/server.dummy : comtools
 NAMES_COM/client.dummy : comtools
 
 com_probe: PROBE_COM/PROBE_COM.dummy 
-com_names: NAMES_COM/NAMES_COM.dummy 
+com_names: NAMES_COM/NAMES_COM.dummy
+com_all: com_probe com_names
 
 TOOLS/TOOLS.dummy : shared_libs SERVERCNTRL/SERVERCNTRL.dummy CAT/CAT.dummy com_probe
 
@@ -1148,8 +1149,9 @@ up: depends proto tags valgrind_update
 
 #********************************************************************************
 
-depends: $(ARCHS:.a=.depends) \
-		HELP_SOURCE/HELP_SOURCE.depends \
+depends: com_all
+	$(MAKE) $(ARCHS:.a=.depends) \
+			HELP_SOURCE/HELP_SOURCE.depends \
 
 proto_tools: AISC_MKPTPS/AISC_MKPTPS.dummy
 
