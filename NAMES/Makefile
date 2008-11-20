@@ -35,6 +35,9 @@ names.o: $(ARBHOME)/INCLUDE/arb_assert.h
 names.o: $(ARBHOME)/INCLUDE/arbdb.h
 names.o: $(ARBHOME)/INCLUDE/attributes.h
 names.o: $(ARBHOME)/INCLUDE/client.h
+names.o: $(ARBHOME)/INCLUDE/names_client.h
+names.o: $(ARBHOME)/INCLUDE/names_prototypes.h
+names.o: $(ARBHOME)/INCLUDE/names_server.h
 names.o: $(ARBHOME)/INCLUDE/server.h
 names.o: $(ARBHOME)/INCLUDE/servercntrl.h
 names.o: $(ARBHOME)/INCLUDE/struct_man.h
