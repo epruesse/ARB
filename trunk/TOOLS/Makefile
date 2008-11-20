@@ -154,7 +154,6 @@ arb_probe.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_probe.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_probe.o: $(ARBHOME)/INCLUDE/client.h
-arb_probe.o: $(ARBHOME)/INCLUDE/PT_com.h
 arb_probe.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/ad_prot.h

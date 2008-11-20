@@ -90,7 +90,6 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client.h
-AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/PT_com.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
 AWTC_seq_search.o: awtc_seq_search.hxx
