@@ -39,7 +39,7 @@ BOOL BuildStdSuffixTree(struct PTPanGlobal *pg)
   }
 
   // allocate memory for a temporary filename
-  newtreename = (STRPTR) malloc(strlen(pg->pg_IndexName) + 1);
+  newtreename = (STRPTR) malloc(strlen(pg->pg_IndexName) + 2);
   strcpy(newtreename, pg->pg_IndexName);
   strcat(newtreename, "~");
 
