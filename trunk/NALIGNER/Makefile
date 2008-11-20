@@ -64,6 +64,7 @@ ali_aligner.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/client.h
+ali_aligner.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/server.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
@@ -78,6 +79,7 @@ ali_arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
+ali_arbdb.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/server.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
@@ -102,6 +104,7 @@ ali_global.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_global.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ali_global.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_global.o: $(ARBHOME)/INCLUDE/client.h
+ali_global.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_global.o: $(ARBHOME)/INCLUDE/server.h
 ali_global.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
@@ -127,6 +130,7 @@ ali_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ali_main.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_main.o: $(ARBHOME)/INCLUDE/client.h
+ali_main.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_main.o: $(ARBHOME)/INCLUDE/server.h
 ali_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
@@ -157,6 +161,7 @@ ali_prealigner.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/client.h
+ali_prealigner.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/server.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
@@ -177,6 +182,7 @@ ali_profile.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ali_profile.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_profile.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ali_profile.o: $(ARBHOME)/INCLUDE/client.h
+ali_profile.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_profile.o: $(ARBHOME)/INCLUDE/server.h
 ali_profile.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
@@ -193,6 +199,7 @@ ali_pt.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ali_pt.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_pt.o: $(ARBHOME)/INCLUDE/client.h
+ali_pt.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_pt.o: $(ARBHOME)/INCLUDE/server.h
 ali_pt.o: $(ARBHOME)/INCLUDE/servercntrl.h
 
@@ -216,5 +223,6 @@ ali_solution.o: $(ARBHOME)/INCLUDE/arbdb.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ali_solution.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_solution.o: $(ARBHOME)/INCLUDE/client.h
+ali_solution.o: $(ARBHOME)/INCLUDE/PT_com.h
 ali_solution.o: $(ARBHOME)/INCLUDE/server.h
 ali_solution.o: $(ARBHOME)/INCLUDE/servercntrl.h
