@@ -702,7 +702,7 @@ extern "C" bytestring * match_string(PT_local *locs)
   BOOL revstate = TRUE;
   STRPTR outptr;
   STRPTR srcptr;
-  LONG buflen = 500000;
+  LONG buflen = 100000000;                 // TODO: calculate buflen instead of using hard coded value
 
   printf("EXTERN: match_string\n");
   /* free old memory */
@@ -725,7 +725,8 @@ extern "C" bytestring * match_string(PT_local *locs)
       while((--buflen > 0) && (*outptr++ = *srcptr++));
       if(buflen <= 0)
       {
-    break;
+        printf("ERROR: buffer too small - see function match_string(...) in file PT_match.cxx\n");
+        break;
       }
       outptr[-1] = 1;
       if(!first)
@@ -740,6 +741,7 @@ extern "C" bytestring * match_string(PT_local *locs)
     while((--buflen > 0) && (*outptr++ = *srcptr++));
     if(buflen <= 0)
     {
+      printf("ERROR: buffer too small - see function match_string(...) in file PT_match.cxx\n");
       break;
     }
     outptr[-1] = 1;
@@ -749,6 +751,7 @@ extern "C" bytestring * match_string(PT_local *locs)
     while((--buflen > 0) && (*outptr++ = *srcptr++));
     if(buflen <= 0)
     {
+      printf("ERROR: buffer too small - see function match_string(...) in file PT_match.cxx\n");
       break;
     }
     outptr[-1] = 1;
@@ -774,7 +777,7 @@ extern "C" bytestring * MP_match_string(PT_local *locs)
   PT_probematch *ml;
   STRPTR outptr;
   STRPTR srcptr;
-  LONG buflen = 500000;
+  LONG buflen = 100000000;                 // TODO: calculate buflen instead of using hard coded value
 
   printf("EXTERN: MP_match_string\n");
   /* free old memory */
@@ -793,6 +796,7 @@ extern "C" bytestring * MP_match_string(PT_local *locs)
     while((--buflen > 0) && (*outptr++ = *srcptr++));
     if(buflen <= 0)
     {
+      printf("ERROR: buffer too small - see function MP_match_string(...) in file PT_match.cxx\n");
       break;
     }
     outptr[-1] = 1;
@@ -803,6 +807,7 @@ extern "C" bytestring * MP_match_string(PT_local *locs)
     while((--buflen > 0) && (*outptr++ = *srcptr++));
     if(buflen <= 0)
     {
+      printf("ERROR: buffer too small - see function MP_match_string(...) in file PT_match.cxx\n");
       break;
     }
     outptr[-1] = 1;
@@ -829,7 +834,8 @@ extern "C" bytestring * MP_all_species_string(PT_local *)
   struct PTPanSpecies *ps;
   STRPTR outptr;
   STRPTR srcptr;
-  LONG buflen = 500000; /* enough for about 50000 species */
+//  LONG buflen = 500000; /* enough for about 50000 species */
+  LONG buflen = 100000000;                 // TODO: calculate buflen instead of using hard coded value
 
   printf("EXTERN: MP_all_species_string\n");
   /* free old memory */
@@ -849,6 +855,7 @@ extern "C" bytestring * MP_all_species_string(PT_local *)
     while((--buflen > 0) && (*outptr++ = *srcptr++));
     if(buflen <= 0)
     {
+      printf("ERROR: buffer too small - see function MP_all_species_string(...) in file PT_match.cxx\n");
       break;
     }
     outptr[-1] = 1;
