@@ -676,10 +676,10 @@ static int      aisc_collect_sets(aisc_com *link,
                 AISC_DUMP(aisc_collect_sets, int, link->aisc_mes_buffer[mes_cnt-1]);
                 break;
             case AISC_ATTR_DOUBLE: {
-                long  *ptr;
+                int *ptr;
                 dummy    = va_arg(parg, double);
                 AISC_DUMP(aisc_collect_sets, double, dummy);
-                ptr = (long*)&dummy;
+                ptr = (int*)&dummy;
                 link->aisc_mes_buffer[mes_cnt++] = *ptr++;
                 link->aisc_mes_buffer[mes_cnt++] = *ptr;
                 break;
