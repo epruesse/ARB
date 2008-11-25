@@ -1,7 +1,7 @@
 # =============================================================== #
 #                                                                 #
 #   File      : Makefile                                          #
-#   Time-stamp: <Thu Nov/20/2008 15:10 MET Coder@ReallySoft.de>   #
+#   Time-stamp: <Tue Nov/25/2008 13:55 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Institute of Microbiology (Technical University Munich)       #
 #   http://www.arb-home.de/                                       #
@@ -42,7 +42,7 @@ FORCEMASK = umask 002
 # ---------------------- [unconditionally used options]
 
 GCC:=gcc
-GPP:=g++ -fmessage-length=0
+GPP:=g++ -fmessage-length=0 -funit-at-a-time
 CPPreal:=cpp
 
 ifdef DARWIN
