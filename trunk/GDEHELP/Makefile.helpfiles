@@ -79,15 +79,15 @@ LYNX_PARA=-dump -nolist -display_charset=iso-8859-1
 
 $(GENDOCDEST)/%.doc: $(HELP_PHYLIP)/%.html Makefile.helpfiles
 	lynx $(LYNX_PARA) $< | sed -e 's/©/(C)/' > $@
-	test -s $@ || (echo $@ not generated or empty && false)
+	test -s $@ || (echo $@ not generated or empty && rm $@ && false)
 
 $(GENDOCDEST)/treepuzzle.doc: $(HELP_TREEPUZZLE)/manual.html Makefile.helpfiles
 	lynx $(LYNX_PARA) $< | sed -e 's/©/(C)/' > $@
-	test -s $@ || (echo $@ not generated or empty && false)
+	test -s $@ || (echo $@ not generated or empty && rm $@ && false)
 
 $(GENDOCDEST)/phyml.doc: $(HELP_PHYML)/usersguide_phyliplike.html Makefile.helpfiles
 	lynx $(LYNX_PARA) $< | sed -e 's/©/(C)/' > $@
-	test -s $@ || (echo $@ not generated or empty && false)
+	test -s $@ || (echo $@ not generated or empty && rm $@ && false)
 
 FORCED_DOCS=$(addsuffix .doc,$(addprefix $(GENDOCDEST)/,$(FORCED_DOC_NAMES)))
 forcedoc: $(FORCED_DOCS)
