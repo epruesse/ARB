@@ -53,4 +53,6 @@ ARB requirements on Ubuntu 8.04
      - libglw-mesa-arb
 
 
-         
+[Note:]
+You may use the provided install skript, e.g.
+    sudo SH/arb_installubuntu4arb.sh

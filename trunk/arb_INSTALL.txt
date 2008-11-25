@@ -10,41 +10,60 @@ To install a precompiled ARB
 
 2. get root
 3. run arb_install.sh and follow the instructions
-4. Install the following packages:
+4. Install packages needed by ARB:
 
-[ Note for Ubuntu users: a detailed list of packets 
-  to install for ARB can be found in arb_UBUNTU.txt ]
+--------------------------------------------------------------------------------
+4a. If you're using Ubuntu please refer to:
 
-Software that is needed to run ARB:
------------------------------------
+  * the detailed list of packets to install for ARB:    arb_UBUNTU.txt
+  * the package-install-skript for ubuntu:              SH/arb_installubuntu4arb.sh
+
+--------------------------------------------------------------------------------
+4b. Otherwise use your package manager to install the
+    software that is needed to run ARB:
 
 - xview
 - (open)motif
 - bash
-- OPENGL
-- libGLEW -- Open GL extensions library (see subdirectory lib/addlibs)
 - libpng
 
+
+Only needed for Open GL version:
+
+- OPENGL
+- libGLEW -- Open GL extensions library (see subdirectory lib/addlibs)
+
+
 Software that is useful together with ARB:
-------------------------------------------
 
 - gnuplot
 - ghostview (gv)
 - xfig (+ fig2dev to print from xfig)
 - perl5
 
-
-Non-OPENGL version of ARB:
---------------------------
+--------------------------------------------------------------------------------
+If you don't want to use the 3D features in ARB, you may as well install  
+the Non-OPENGL version of ARB:
 
 Instead of downloading arb.tgz, download arb_noOPENGL.tgz.
 
-
+--------------------------------------------------------------------------------
 Libraries needed to run 32-bit ARB on 64-bit machine:
------------------------------------------------------
 (checked on OpenSuSE 10.2)
 
-- openmotif-libs-32bit + create link: cd /usr/lib; ln -s libXm.so.4 libXm.so.3  
+- openmotif-libs-32bit
+
+--------------------------------------------------------------------------------
+If you get errors about missing libraries when calling arb, have a look if there
+are different versions of the missing libraries in /usr/lib and create a link
+there.
+
+Most likely you'll be missing libXm.so.4, so the following example describes
+how to solve the problem for that library:
+
+    # as superuser:
+    cd /usr/lib
+    ln -s libXm.so.4 libXm.so.3
 
 
 ================================================================================
