@@ -707,8 +707,10 @@ static AP_tree *find_least_deep_leaf(AP_tree *at, int depth, int *min_depth) {
 
 static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
     GB_begin_transaction(GLOBAL_gb_main);
-    GB_ERROR error                 = 0;
-    int      full_marked_sequences = 0;
+    GB_ERROR error                    = 0;
+    int      full_marked_sequences    = 0;
+    int      partial_marked_sequences = 0;
+    int      no_data                  = 0; // no data in alignment
 
     aw_openstatus("Adding partial sequences");
 
@@ -724,28 +726,36 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
             {
                 ++marked_found;
 
-                const char *name    = "<unknown>";
-                GBDATA     *gb_name = GB_entry(gb_marked, "name");
-                if (gb_name) name   = GB_read_char_pntr(gb_name);
+                if (GBT_read_sequence(gb_marked,ap_main->use)) { // species has sequence in alignment
+                    const char *name    = "<unknown>";
+                    GBDATA     *gb_name = GB_entry(gb_marked, "name");
+                    if (gb_name) name   = GB_read_char_pntr(gb_name);
 
-                switch (GBT_is_partial(gb_marked, 1, true)) { // marks undef as 'partial sequence'
-                    case 0: { // full sequences
-                        aw_message(GBS_global_string("'%s' is a full sequence (cannot add partial)", name));
-                        ++full_marked_sequences;
-                        break;
+                    switch (GBT_is_partial(gb_marked, 1, true)) { // marks undef as 'partial sequence'
+                        case 0: { // full sequences
+                            aw_message(GBS_global_string("'%s' is a full sequence (cannot add partial)", name));
+                            ++full_marked_sequences;
+                            break;
+                        }
+                        case 1:     // partial sequences
+                            ++partial_marked_sequences;
+                            GBS_write_hash(partial_hash, name, (long)gb_marked);
+                            break;
+                        case -1:    // error
+                            error = GB_get_error();
+                            break;
+                        default :
+                            ap_assert(0);
+                            break;
                     }
-                    case 1:     // partial sequences
-                        GBS_write_hash(partial_hash, name, (long)gb_marked);
-                        break;
-                    case -1:    // error
-                        error = GB_get_error();
-                        break;
-                    default :
-                        ap_assert(0);
-                        break;
+                }
+                else {
+                    no_data++;
                 }
             }
 
+            if (!error && !marked_found) error = "There are no marked species";
+            
             if (!error) {
                 // skip all species which are in tree
                 NT_remove_species_in_tree_from_hash(*ap_main->tree_root,partial_hash);
@@ -758,24 +768,14 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
                 {
                     partial.push_back(PartialSequence((GBDATA*)val));
                 }
-                if (partial.empty()) {
-                    if (marked_found == 0) {
-                        error = "There are no marked species";
-                    }
-                    else {
-                        int already_in_tree = marked_found-full_marked_sequences;
-                        if (already_in_tree == 0) {
-                            error = "All marked species have full sequences";
-                        }
-                        else if (already_in_tree == marked_found) {
-                            error = "All marked species already are in tree";
-                        }
-                        else {
-                            error = GB_export_error("Nothing to do (%i already in tree, %i have full sequences)",
-                                                    already_in_tree, full_marked_sequences);
-                        }
-                    }
-                }
+
+                int partials_already_in_tree = partial_marked_sequences - partial.size();
+                
+                if (no_data>0) aw_message(GBS_global_string("%i marked species have no data in '%s'", no_data, ap_main->use));
+                if (full_marked_sequences>0) aw_message(GBS_global_string("%i marked species are declared full sequences", full_marked_sequences));
+                if (partials_already_in_tree>0) aw_message(GBS_global_string("%i marked species are already in tree", partials_already_in_tree));
+
+                if (partial.empty()) error = "No species left to add";
             }
         }
 
