@@ -1,11 +1,2 @@
 #!/bin/sh
-
-echo '***********************************************'
-echo 'Auf welchem Rechner moechten Sie ARB starten'
-echo ''
-echo 'Geben Sie bitte den Rechner-Namen ein:'
-read a
-pwd=`pwd`
-
-#xon $a "xterm -sb -sl 2000 -e sh -c \"cd $pwd;pwd; arb;echo press ctrl-c to close log window;sleep 300000\""
-ssh -f -X $a "xterm -sb -sl 2000 -e sh -c \"cd $pwd;pwd; arb;echo press ctrl-c to close log window;sleep 300000\""
+arb_remote 

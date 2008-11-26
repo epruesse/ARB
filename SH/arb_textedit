@@ -1,31 +1,36 @@
 #!/bin/sh
 
 if [ -z "$ARB_TEXTEDIT" ]; then
-	echo '$ARB_TEXTEDIT not set! Searching for an editor..'
-	echo ''
+        echo '$ARB_TEXTEDIT not set! Searching for an editor..'
+        echo ''
 
-    # try to find an editor (order = basic to convinient for mean user):
+        # try to find an editor (order = basic to convinient; last found is used):
 
-	if [ -x "`which edit`" ] ; then ARB_TEXTEDIT=edit ; fi
-	if [ -x "`which vi`" ] ; then ARB_TEXTEDIT=vi ; fi
-	if [ -x "`which emacs`" ] ; then ARB_TEXTEDIT=emacs ; fi
-	if [ -x "`which xemacs`" ] ; then ARB_TEXTEDIT=xemacs ; fi
-	if [ -x "`which textedit`" ] ; then ARB_TEXTEDIT=textedit ; fi
-	if [ -x "`which xedit`" ] ; then ARB_TEXTEDIT=xedit ; fi
-	if [ -x "`which gedit`" ] ; then ARB_TEXTEDIT=gedit ; fi
-	if [ -x "`which kwrite`" ] ; then ARB_TEXTEDIT=kwrite ; fi
+        if [ -x "`which edit`" ] ; then ARB_TEXTEDIT=edit ; fi
+        if [ -x "`which vi`" ] ; then ARB_TEXTEDIT=vi ; fi
+        if [ -x "`which emacs`" ] ; then ARB_TEXTEDIT=emacs ; fi
+        if [ -x "`which xemacs`" ] ; then ARB_TEXTEDIT=xemacs ; fi
+        if [ -x "`which textedit`" ] ; then ARB_TEXTEDIT=textedit ; fi
+        if [ -x "`which xedit`" ] ; then ARB_TEXTEDIT=xedit ; fi
+        if [ -x "`which gedit`" ] ; then ARB_TEXTEDIT=gedit ; fi
+        if [ -x "`which kwrite`" ] ; then ARB_TEXTEDIT=kwrite ; fi
 
-	if [ -z "$ARB_TEXTEDIT" ]; then
-		echo "Can't guess an editor. Even 'vi' seems to be absent."
-		echo "Please set the environment variable \$ARB_TEXTEDIT to the"
-		echo "name of your preferred text editor."
-		echo ""
-		echo "Press ENTER to continue.."
-        read x
-		exit 1;
-	fi
-	echo ''
-	echo "Using '$ARB_TEXTEDIT' as text editor."
+        if [ -z "$ARB_TEXTEDIT" ]; then
+                echo "Can't guess an editor. Even 'vi' seems to be absent."
+                echo "Please set the environment variable \$ARB_TEXTEDIT to the"
+                echo "name of your preferred text editor."
+                echo ""
+                echo "Press ENTER to continue.."
+                read x
+                exit 1;
+        fi
+        echo ''
+        echo "Using '$ARB_TEXTEDIT' as text editor."
 fi
 
-$ARB_TEXTEDIT $1
+if [ -z "$1" ]; then
+    echo "Usage: arb_textedit filename"
+    echo "Edits a file with using $ARB_TEXTEDIT"
+else
+    $ARB_TEXTEDIT $1
+fi
