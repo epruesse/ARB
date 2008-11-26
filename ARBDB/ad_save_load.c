@@ -776,13 +776,6 @@ long gb_write_bin_rek(FILE *out,GBDATA *gbd,long version, long diff_save, long i
 
             return i <= 0 ? -1 : 0;
         }
-#if defined(DEVEL_RALF)
-        else {
-            fprintf(stderr, "GB_STRING_SHRT problem (len=%zu, size=%li), please check!", len, size);
-            gb_assert(0);       // just a test, whether size includes 0-byte (shall be removed again)
-        }
-#endif /* DEVEL_RALF */
-
         // string contains zero-byte inside data or misses trailing zero-byte
         type = GB_STRING; // fallback to safer type
     }
