@@ -18,7 +18,7 @@ echo "********* P A N I C *********"
 echo '*****************************'
 echo ""
 echo "	This Module tries to save a running database"
-echo "	There may be more than database server (ARB_NT):"
+echo "	There may be more than one database server (ARB_NT):"
 echo "		--------------------------------"
 
 for i in $chooser ; do
