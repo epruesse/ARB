@@ -557,12 +557,13 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
 
 class PartialSequence {
     GBDATA          *gb_species;
-    mutable AP_tree *self;      // self converted to leaf (ready for insertion)
+    mutable AP_tree *self;            // self converted to leaf (ready for insertion)
     const AP_tree   *best_full_match; // full sequence position which matched best
-    long             overlap;   // size of overlapping region
-    long             penalty;   // weighted mismatches
+    long             overlap;         // size of overlapping region
+    long             penalty;         // weighted mismatches
     bool             released;
     bool             multi_match;
+    string           multi_list;      // list of equal-rated insertion-points (not containing self)
 
     AP_tree *get_self() const {
         if (!self) {
@@ -595,6 +596,11 @@ public:
         return name;
     }
 
+    string get_multilist() const {
+        ap_assert(is_multi_match());
+        return string(best_full_match->name)+multi_list;
+    }
+
     AP_tree *release() {
         AP_tree *s = self;
         self       = 0;
@@ -616,29 +622,36 @@ void PartialSequence::test_match(const AP_tree *leaf_full) {
 
     leaf_full->sequence->partial_match(get_self()->sequence, &curr_overlap, &curr_penalty);
 
+    bool better = false;
+
     if (curr_overlap > overlap) {
-        overlap         = curr_overlap;
-        penalty         = curr_penalty;
-        best_full_match = leaf_full;
-        multi_match     = false;
+        better = true;
     }
     else if (curr_overlap == overlap) {
         if (curr_penalty<penalty) {
-            penalty         = curr_penalty;
-            best_full_match = leaf_full;
-            multi_match     = false;
+            better = true;
         }
         else if (curr_penalty == penalty) {
+            // found two equal-rated insertion points -> store data for warning
 #if defined(DEBUG)
             if (!multi_match) dump();
             printf("Another equal match is against '%s' (overlap=%li penalty=%li)\n", leaf_full->name, curr_overlap, curr_penalty);
 #endif // DEBUG
-//             aw_message("Several full sequences match equal against one partial sequence");
-//             aw_message("Please save a copy of the current database and inform Ralf!!!!");
+            //             aw_message("Several full sequences match equal against one partial sequence");
+            //             aw_message("Please save a copy of the current database and inform Ralf!!!!");
 
-            // @@@ FIXME: need an example
-            multi_match = true;
+            multi_match  = true;
+            multi_list.append(1, '/');
+            multi_list.append(leaf_full->name);
         }
+    }
+
+    if (better) {
+        overlap         = curr_overlap;
+        penalty         = curr_penalty;
+        best_full_match = leaf_full;
+        multi_match     = false;
+        multi_list      = "";
     }
 }
 
@@ -785,22 +798,20 @@ static void nt_add_partial(AW_window */*aww*/, AWT_canvas *ntw) {
 
             list<PartialSequence>::iterator i = partial.begin();
             list<PartialSequence>::iterator e = partial.end();
+            
 #if defined(DEBUG)
             // show results :
-            for (; i != e; ++i) {
-                i->dump();
-            }
+            for (; i != e; ++i) i->dump();
             i = partial.begin();
 #endif // DEBUG
 
             for (; i != e && !error; ++i) {
-                const char *name      = i->get_name();
+                const char *name = i->get_name();
+                
                 if (i->is_multi_match()) {
-                    error = GB_export_error("Insertion of '%s' not possible", name);
-                    for (; i != e; ++i) {
-                        delete i->release();
-                    }
-                    break;
+                    aw_message(GBS_global_string("Insertion of '%s' is ambiguous.\n"
+                                                 "(took first of equal scored insertion points: %s)",
+                                                 name, i->get_multilist().c_str()));
                 }
 
                 AP_tree *part_leaf  = i->release();
