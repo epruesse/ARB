@@ -133,7 +133,7 @@ struct PTPanGlobal * AllocPTPanGlobal(void)
   }
   pg->pg_SpeciesCache->ch_UserData = pg;
   /* reserve about 10% of the memory for the species cache */
-  pg->pg_SpeciesCache->ch_MaxCapacity = (pg->pg_FreeMem>>5);
+  pg->pg_SpeciesCache->ch_MaxCapacity = (pg->pg_FreeMem / 10) * 1;
   pg->pg_SpeciesCache->ch_LoadFunc = (BOOL (*)(struct CacheHandler *, APTR)) CacheSpeciesLoad;
   pg->pg_SpeciesCache->ch_UnloadFunc = (BOOL (*)(struct CacheHandler *, APTR)) CacheSpeciesUnload;
   pg->pg_SpeciesCache->ch_SizeFunc = (ULONG (*)(struct CacheHandler *, APTR)) CacheSpeciesSize;
@@ -148,7 +148,7 @@ struct PTPanGlobal * AllocPTPanGlobal(void)
     return(FALSE);
   }
   pg->pg_PartitionCache->ch_UserData = pg;
-  /* reserve about 90% of the memory for the species cache */
+  /* reserve about 90% of the memory for the partition cache */
   pg->pg_PartitionCache->ch_MaxCapacity = (pg->pg_FreeMem / 10) * 9;
   pg->pg_PartitionCache->ch_LoadFunc = (BOOL (*)(struct CacheHandler *, APTR)) CachePartitionLoad;
   pg->pg_PartitionCache->ch_UnloadFunc = (BOOL (*)(struct CacheHandler *, APTR)) CachePartitionUnload;
