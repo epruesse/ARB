@@ -103,6 +103,25 @@ void QueryTests(struct PTPanGlobal *pg)
 /* \\\ */
 #endif
 
+
+void convertBondMatrix(PT_pdc *pdc, PTPanGlobal *pg)
+{
+    for (int query = SEQCODE_A; query <= SEQCODE_T; ++query) {
+        for (int species = SEQCODE_A; species <= SEQCODE_T; ++species) {
+            int rowIdx     = (pg->pg_ComplementTable[query] - SEQCODE_A)*4;
+            int maxIdx     = rowIdx + query - SEQCODE_A;
+            int newIdx     = rowIdx + species - SEQCODE_A;
+            
+            double max_bind = pdc->bond[maxIdx].val;
+            double new_bind = pdc->bond[newIdx].val;
+            
+            pg->pg_MismatchWeights.mw_Replace[query * ALPHASIZE + species] = max_bind - new_bind;
+        }
+    }
+}
+
+
+
 /* /// "probe_match()" */
 extern "C" int probe_match(PT_local *locs, aisc_string probestring)
 {
@@ -113,6 +132,25 @@ extern "C" int probe_match(PT_local *locs, aisc_string probestring)
   PT_probematch *ml;
 
   pg->pg_SearchPrefs = locs;
+
+  convertBondMatrix(locs->pdc, pg);
+#if defined(DEBUG)
+    PT_pdc *pdc = locs->pdc;
+    printf("Current bond values:\n");
+    for (int y = 0; y<4; y++) {
+        for (int x = 0; x<4; x++) {
+            printf("%5.2f", pdc->bond[y*4+x].val);
+        }
+        printf("\n");
+    }
+    printf("Current Replace Matrix:\n");
+    for (int query = SEQCODE_A; query <= SEQCODE_T; ++query) {
+        for (int species = SEQCODE_A; species <= SEQCODE_T; ++species) {
+            printf("%5.2f", pg->pg_MismatchWeights.mw_Replace[query * ALPHASIZE + species]);
+        }
+        printf("\n");
+    }
+#endif // DEBUG
 
   /* find out where a given probe matches */
   if (PTPanGlobalPtr->pg_verbose >0) {
@@ -371,7 +409,7 @@ void CreateHitsGUIList(struct SearchQuery *sq)
   ULONG tarlen;
 
   if (PTPanGlobalPtr->pg_verbose >0) printf(">> CreateHitsGUIList\n");
-
+    
   /* calculate maximum size of string that we have to examine */
   minweight = sq->sq_MismatchWeights->mw_Delete[0];
   for(cnt = 1; cnt < pg->pg_AlphaSize; cnt++)
