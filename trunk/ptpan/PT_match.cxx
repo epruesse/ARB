@@ -758,6 +758,52 @@ extern "C" STRPTR c_get_match_hinfo(PT_probematch *)
 /* Create a big output string:  header\001name\001info\001name\001info....\000 */
 extern "C" bytestring * match_string(PT_local *locs)
 {
+#ifdef DEVEL_JB
+    struct PTPanGlobal *pg = PTPanGlobalPtr;
+    struct GBS_strstruct *outstr;
+    PT_probematch *ml;
+    STRPTR srcptr;
+    LONG entryCount = 0;
+  
+    printf("EXTERN: match_string\n");
+    free(pg->pg_ResultString.data);             // free old memory
+    for(ml = locs->pm; ml; ml = ml->next)       // count number of entries
+        ++entryCount;
+    
+    outstr = GBS_stropen(entryCount * 150);     // 150 bytes per entry seemes to be a good estimation
+
+    if(locs->pm)                                // add header
+    {
+        srcptr = GetMatchListHeader(locs->pm->reversed ? locs->pm_csequence : locs->pm_sequence);
+        GBS_strcat(outstr, srcptr);
+        GBS_chrcat(outstr, 1);
+    }
+        
+    for(ml = locs->pm; ml; ml = ml->next)       // add each entry to the list
+    {
+        srcptr = virt_name(ml);                 // add the name
+        GBS_strcat(outstr, srcptr);
+        GBS_chrcat(outstr, 1);
+
+        srcptr = get_match_info(ml);            // and the info
+        GBS_strcat(outstr, srcptr);
+        GBS_chrcat(outstr, 1);
+    }
+
+    pg->pg_ResultString.data = GBS_strclose(outstr);  
+    pg->pg_ResultString.size = strlen(pg->pg_ResultString.data) + 1;
+
+    if (PTPanGlobalPtr->pg_verbose >0) printf("== match_string: %s\n", pg->pg_ResultString.data);
+
+#ifdef DEBUG
+    printf("%li entries used %li bytes (%li MB) of buffer: %5.2f byte per entry\n", 
+           entryCount, pg->pg_ResultString.size, pg->pg_ResultString.size >> 20, 
+           (double)pg->pg_ResultString.size/(double)entryCount);
+#endif
+  return(&pg->pg_ResultString);
+
+#else
+  
   struct PTPanGlobal *pg = PTPanGlobalPtr;
   PT_probematch *ml;
   BOOL first = TRUE;
@@ -830,10 +876,12 @@ extern "C" bytestring * match_string(PT_local *locs)
 
   if (PTPanGlobalPtr->pg_verbose >0) printf("== match_string: %s\n", pg->pg_ResultString.data);
 
-printf("%li entries used %li bytes (%li MB) of buffer: %5.2f byte per entry\n", 
-        entryCount, (100000000-buflen), (100000000-buflen) >> 20, (double)(100000000-buflen)/(double)entryCount);
-
+#if defined(DEBUG)
+  printf("%li entries used %li bytes (%li MB) of buffer: %5.2f byte per entry\n", 
+         entryCount, (100000000-buflen), (100000000-buflen) >> 20, (double)(100000000-buflen)/(double)entryCount);
+#endif         
   return(&pg->pg_ResultString);
+#endif
 }
 /* \\\ */
 
