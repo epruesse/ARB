@@ -121,6 +121,28 @@ void convertBondMatrix(PT_pdc *pdc, PTPanGlobal *pg)
 }
 
 
+double calc_position_wmis(int pos, int seq_len, double y1, double y2)
+{                                                           // TODO: check if (seq_len -1) is necessary
+    return (double)(((double)(pos * (seq_len - 1 - pos)) / (double)((seq_len - 1) * (seq_len - 1)))* (double)(y2*4.0) + y1);
+}
+
+
+void buildPosWeight(SearchQuery *sq)
+{
+    if (sq->sq_PosWeight) delete[] sq->sq_PosWeight;
+    printf("buildPosWeight: ...new double[%i];\n", sq->sq_QueryLen+1);
+    sq->sq_PosWeight = new double[sq->sq_QueryLen+1];       // TODO: check if +1 is necessary
+
+    for (int pos=0; pos < sq->sq_QueryLen; ++pos) {
+        if (sq->sq_SortMode == SORT_HITS_WEIGHTED) {
+            sq->sq_PosWeight[pos] = calc_position_wmis(pos, sq->sq_QueryLen, 0.3, 1.0);
+        }else{
+            sq->sq_PosWeight[pos] = 1.0;
+        }
+    }
+    sq->sq_PosWeight[sq->sq_QueryLen] = 0.0;                // TODO: check if last pos is necessary
+}
+
 
 /* /// "probe_match()" */
 extern "C" int probe_match(PT_local *locs, aisc_string probestring)
@@ -211,6 +233,7 @@ extern "C" int probe_match(PT_local *locs, aisc_string probestring)
 
   /* prefs */
   sq->sq_Query = (STRPTR) pg->pg_SearchPrefs->pm_sequence;
+  sq->sq_QueryLen = strlen(sq->sq_Query);
   sq->sq_MaxErrors = (float) pg->pg_SearchPrefs->pm_max;
   sq->sq_Reversed = FALSE;
   sq->sq_AllowReplace = TRUE;
@@ -222,6 +245,7 @@ extern "C" int probe_match(PT_local *locs, aisc_string probestring)
 
   /* init */
   sq->sq_PTPanPartition = NULL;
+  buildPosWeight(sq);
   if(pg->pg_SearchPrefs->sort_by)
   {
     /* user requested weighted searching */
@@ -419,7 +443,7 @@ void CreateHitsGUIList(struct SearchQuery *sq)
       minweight = sq->sq_MismatchWeights->mw_Delete[cnt];
     }
   }
-  sq->sq_QueryLen = strlen(sq->sq_Query);
+  sq->sq_QueryLen = strlen(sq->sq_Query);   // TODO: delete
   maxlen = sq->sq_QueryLen + (ULONG) ((sq->sq_MaxErrors + minweight) / minweight);
   sq->sq_SourceSeq = (STRPTR) malloc(maxlen + 1);
 
@@ -751,9 +775,12 @@ extern "C" bytestring * match_string(PT_local *locs)
 
   buflen--; /* space for termination byte */
 
+  LONG entryCount = 0;
   /* add each entry to the list */
   for(ml = locs->pm; ml; ml = ml->next)
   {
+    ++entryCount;
+
     /* do we need to add a header? */
     if(first)// || (ml->reversed != revstate))
     {
@@ -803,6 +830,9 @@ extern "C" bytestring * match_string(PT_local *locs)
 
   if (PTPanGlobalPtr->pg_verbose >0) printf("== match_string: %s\n", pg->pg_ResultString.data);
 
+printf("%li entries used %li bytes (%li MB) of buffer: %5.2f byte per entry\n", 
+        entryCount, (100000000-buflen), (100000000-buflen) >> 20, (double)(100000000-buflen)/(double)entryCount);
+
   return(&pg->pg_ResultString);
 }
 /* \\\ */
@@ -826,9 +856,11 @@ extern "C" bytestring * MP_match_string(PT_local *locs)
 
   buflen--; /* space for termination byte */
 
+  LONG entryCount = 0;
   /* add each entry to the list */
   for(ml = locs->pm; ml; ml = ml->next)
   {
+    ++entryCount;
     /* add the name */
     srcptr = virt_name(ml);
     while((--buflen > 0) && (*outptr++ = *srcptr++));
@@ -860,6 +892,8 @@ extern "C" bytestring * MP_match_string(PT_local *locs)
 
   if (PTPanGlobalPtr->pg_verbose >0) printf("== MP_match_string: %s\n", pg->pg_ResultString.data);
 
+printf("%li entries used %li bytes (%li MB) of buffer: %5.2f byte per entry\n", 
+        entryCount, (100000000-buflen), (100000000-buflen) >> 20, (double)(100000000-buflen)/(double)entryCount);
   return(&pg->pg_ResultMString);
 }
 /* \\\ */
@@ -884,10 +918,12 @@ extern "C" bytestring * MP_all_species_string(PT_local *)
 
   buflen--; /* space for termination byte */
 
+  LONG entryCount = 0;
   /* add each entry to the list */
   ps = (struct PTPanSpecies *) pg->pg_Species.lh_Head;
   while(ps->ps_Node.ln_Succ)
   {
+    ++entryCount;
     /* add the name */
     srcptr = ps->ps_Name;
     while((--buflen > 0) && (*outptr++ = *srcptr++));
@@ -906,6 +942,8 @@ extern "C" bytestring * MP_all_species_string(PT_local *)
   /* free unused memory */
   pg->pg_SpeciesString.data = (STRPTR) realloc(pg->pg_SpeciesString.data,
                         pg->pg_SpeciesString.size);
+printf("%li entries used %li bytes (%li MB) of buffer: %5.2f byte per entry\n", 
+        entryCount, (100000000-buflen), (100000000-buflen) >> 20, (double)(100000000-buflen)/(double)entryCount);
   return(&pg->pg_SpeciesString);
 }
 /* \\\ */

@@ -404,6 +404,7 @@ struct SearchQuery
   float       sq_MinorMisThres; /* threshold for small letter mismatch output */
   struct MismatchWeights *sq_MismatchWeights; /* pointer to matrix for mismatches */
   float       sq_MaxErrors;   /* maximum allowed errors */
+  double*     sq_PosWeight;   // mismatch multiplier (Gaussian like distribution over search string)
 
   /* results */
   struct HashArray *sq_HitsHash; /* hash array to avoid double entries */

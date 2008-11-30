@@ -1861,6 +1861,8 @@ struct SearchQuery * CloneSearchQuery(struct SearchQuery *oldsq)
   /* fix not cloneable stuff */
   NewList(&sq->sq_Hits);
   sq->sq_HitsHash = NULL;
+  sq->sq_PosWeight = new double[sq->sq_QueryLen + 1];
+  memcpy(sq->sq_PosWeight, oldsq->sq_PosWeight, (sq->sq_QueryLen + 1) * sizeof(double));
   return(sq);
 }
 /* \\\ */
@@ -1888,7 +1890,8 @@ struct SearchQuery * AllocSearchQuery(struct PTPanGlobal *pg)
   sq->sq_MinorMisThres = 0.5;
   sq->sq_SortMode = SORT_HITS_NOWEIGHT;
   sq->sq_HitsHashSize = QUERYHITSHASHSIZE;
-  sq->sq_HitsHash = NULL;
+  sq->sq_HitsHash  = NULL;
+  sq->sq_PosWeight = NULL;
   return(sq);
 }
 /* \\\ */
@@ -1907,6 +1910,13 @@ void FreeSearchQuery(struct SearchQuery *sq)
   }
   /* free hash table */
   FreeHashArray(sq->sq_HitsHash);
+  
+  if (sq->sq_PosWeight) 
+  {
+    delete[] sq->sq_PosWeight;
+    sq->sq_PosWeight = NULL;
+  }
+  
   /* free structure itself */
   free(sq);
 }
@@ -2353,7 +2363,8 @@ void SearchTreeRec(struct SearchQuery *sq)
         {
         /* increase error level by replace operation */
         sq->sq_State.sqs_ReplaceCount++;
-        sq->sq_State.sqs_ErrorCount += sq->sq_MismatchWeights->mw_Replace[(seqcode2 * ALPHASIZE) + seqcode];
+        sq->sq_State.sqs_ErrorCount += sq->sq_MismatchWeights->mw_Replace[(seqcode2 * ALPHASIZE) + seqcode] 
+                                       * sq->sq_PosWeight[sq->sq_State.sqs_QueryPos];
         if(!seqcode)
         {
             if(++sq->sq_State.sqs_NCount > sq->sq_KillNSeqsAt)
@@ -2416,7 +2427,8 @@ ignore = TRUE;
         if(seqcode2 != seqcodetree)
         {
             sq->sq_State.sqs_ReplaceCount++;
-            sq->sq_State.sqs_ErrorCount += sq->sq_MismatchWeights->mw_Replace[seqcode2 * ALPHASIZE + seqcodetree];
+            sq->sq_State.sqs_ErrorCount += sq->sq_MismatchWeights->mw_Replace[seqcode2 * ALPHASIZE + seqcodetree]
+                                           * sq->sq_PosWeight[sq->sq_State.sqs_QueryPos];
             /* check, if more errors are tolerable. */
             if(sq->sq_State.sqs_ErrorCount > sq->sq_MaxErrors)
             {
@@ -2521,7 +2533,8 @@ ignore = TRUE;
     if(seqcode2 != seqcodetree)
     {
         sq->sq_State.sqs_ReplaceCount++;
-        sq->sq_State.sqs_ErrorCount += sq->sq_MismatchWeights->mw_Replace[seqcode2 * ALPHASIZE + seqcodetree];
+        sq->sq_State.sqs_ErrorCount += sq->sq_MismatchWeights->mw_Replace[seqcode2 * ALPHASIZE + seqcodetree]
+                                       * sq->sq_PosWeight[sq->sq_State.sqs_QueryPos];
         /* check, if more errors are tolerable. */
         if(sq->sq_State.sqs_ErrorCount > sq->sq_MaxErrors)
         {
@@ -2582,7 +2595,8 @@ ignore = TRUE;
     if(seqcode2 != seqcode)
     {
         sq->sq_State.sqs_ReplaceCount++;
-        sq->sq_State.sqs_ErrorCount += sq->sq_MismatchWeights->mw_Replace[(seqcode2 * ALPHASIZE) + seqcode];
+        sq->sq_State.sqs_ErrorCount += sq->sq_MismatchWeights->mw_Replace[(seqcode2 * ALPHASIZE) + seqcode]
+                                       * sq->sq_PosWeight[sq->sq_State.sqs_QueryPos];
         /* check, if more errors are tolerable. */
         if(sq->sq_State.sqs_ErrorCount > sq->sq_MaxErrors)
         {
@@ -2633,7 +2647,8 @@ ignore = TRUE;
         if(seqcode2 != seqcodetree)
         {
             sq->sq_State.sqs_ReplaceCount++;
-            sq->sq_State.sqs_ErrorCount += sq->sq_MismatchWeights->mw_Replace[seqcode2 * ALPHASIZE + seqcodetree];
+            sq->sq_State.sqs_ErrorCount += sq->sq_MismatchWeights->mw_Replace[seqcode2 * ALPHASIZE + seqcodetree]
+                                           * sq->sq_PosWeight[sq->sq_State.sqs_QueryPos];
             /* check, if more errors are tolerable. */
             if(sq->sq_State.sqs_ErrorCount > sq->sq_MaxErrors)
             {
@@ -2829,7 +2844,8 @@ BOOL MatchSequenceRec(struct SearchQuery *sq)
     if(sq->sq_AllowReplace)
     {
       sq->sq_State.sqs_ReplaceCount++;
-      sq->sq_State.sqs_ErrorCount += sq->sq_MismatchWeights->mw_Replace[(seqcode2 * ALPHASIZE) + seqcode];
+      sq->sq_State.sqs_ErrorCount += sq->sq_MismatchWeights->mw_Replace[(seqcode2 * ALPHASIZE) + seqcode]
+                                     * sq->sq_PosWeight[sq->sq_State.sqs_QueryPos];
     } else {
       ignore = TRUE;
     }
@@ -2977,14 +2993,15 @@ BOOL FindSequenceMatchRec(struct SearchQuery *sq, struct QueryHit *qh, STRPTR ta
     if(sq->sq_AllowReplace && (sq->sq_State.sqs_ReplaceCount < qh->qh_ReplaceCount))
     {
       sq->sq_State.sqs_ReplaceCount++;
-      misweight = sq->sq_MismatchWeights->mw_Replace[(seqcode2 * ALPHASIZE) + seqcode];
+      misweight = sq->sq_MismatchWeights->mw_Replace[(seqcode2 * ALPHASIZE) + seqcode]
+                  * sq->sq_PosWeight[sq->sq_State.sqs_QueryPos];
       sq->sq_State.sqs_ErrorCount += misweight;
       if(tarptr) /* write mismatching char */
       {
     if(seqcode) /* only for A, C, G, T codes, not for N */
     {
-    maxweight = sq->sq_MismatchWeights->mw_Replace[(seqcode2 * ALPHASIZE) +
-        pg->pg_ComplementTable[seqcode2]];
+    maxweight = sq->sq_MismatchWeights->mw_Replace[(seqcode2 * ALPHASIZE) + pg->pg_ComplementTable[seqcode2]]
+                * sq->sq_PosWeight[sq->sq_State.sqs_QueryPos];
     /* is it a great mismatch? */
     if(misweight > sq->sq_MinorMisThres)
     {
