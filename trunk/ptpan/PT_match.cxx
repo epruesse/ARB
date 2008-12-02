@@ -715,7 +715,7 @@ extern "C" STRPTR get_match_info(PT_probematch *ml)
     }
   }
   ps = pg->pg_SpeciesMap[ml->name];
-  sprintf(pg->pg_TempBuffer, "%10s %-30.30s %2d  %2d    %1.1f %5d %4ld  %1d  %s",
+  sprintf(pg->pg_TempBuffer, "%10s %-30.30s %2d  %2d    %1.1f %7d %4ld  %1d  %s",
     ps->ps_Name, ps->ps_FullName,
     ml->mismatches, ml->N_mismatches, ml->wmismatches,
     ml->b_pos, ecolipos,
@@ -735,10 +735,10 @@ STRPTR GetMatchListHeader(STRPTR seq)
   if(seq)
   {
     res = (STRPTR) GBS_global_string("   name      fullname                       "
-                    "mis N_mis wmis  pos ecoli rev         '%s'", seq);
+                    "mis N_mis wmis    pos ecoli rev         '%s'", seq);
   } else {
     res = (STRPTR) "   name      fullname                       "
-      "mis N_mis wmis  pos ecoli rev";
+      "mis N_mis wmis    pos ecoli rev";
   }
 
   if (PTPanGlobalPtr->pg_verbose >0) printf("== GetMatchListHeader: %s\n", res);
