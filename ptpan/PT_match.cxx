@@ -8,6 +8,7 @@
 #include "probe.h"
 #include "pt_prototypes.h"
 #include <arbdbt.h>
+#include <math.h>
 
 /* /// "SearchPartition()" */
 void SearchPartition(struct PTPanPartition *pp, struct SearchQuery *sq)
@@ -130,7 +131,7 @@ double calc_position_wmis(int pos, int seq_len, double y1, double y2)
 void buildPosWeight(SearchQuery *sq)
 {
     if (sq->sq_PosWeight) delete[] sq->sq_PosWeight;
-    printf("buildPosWeight: ...new double[%i];\n", sq->sq_QueryLen+1);
+    //printf("buildPosWeight: ...new double[%i];\n", sq->sq_QueryLen+1);
     sq->sq_PosWeight = new double[sq->sq_QueryLen+1];       // TODO: check if +1 is necessary
 
     for (int pos=0; pos < sq->sq_QueryLen; ++pos) {
@@ -350,11 +351,15 @@ void SortHitsList(struct SearchQuery *sq)
     //printf("Sort no weight...\n");
     while(qh->qh_Node.ln_Succ)
     {
+      arb_assert(((LLONG) (qh->qh_ReplaceCount + qh->qh_InsertCount + qh->qh_DeleteCount)) <= 0x1f);  // 5 bit
+      arb_assert(((LLONG) round(qh->qh_ErrorCount * 10.0)) <= 0xff);                        //  8 bit
+      arb_assert(((LLONG) qh->qh_Species->ps_Num) <= 0xfffff);                              // 20 bit
+      arb_assert(((LLONG) (qh->qh_AbsPos - qh->qh_Species->ps_AbsOffset)) <= 0xfffffff);    // 28 bit
       qh->qh_Node.ln_Pri = (LLONG)
     ((qh->qh_Flags & QHF_REVERSED) ? (1LL << 62) : 0LL) +
         ((qh->qh_InsertCount | qh->qh_DeleteCount) ? (1LL << 61) : 0LL) +
     (((LLONG) (qh->qh_ReplaceCount + qh->qh_InsertCount + qh->qh_DeleteCount)) << 56) +
-    (((LLONG) (qh->qh_ErrorCount * 10.0)) << 48) +
+    (((LLONG) round(qh->qh_ErrorCount * 10.0)) << 48) +
     (((LLONG) qh->qh_Species->ps_Num) << 28) +
     ((LLONG) (qh->qh_AbsPos - qh->qh_Species->ps_AbsOffset));
       qh = (struct QueryHit *) qh->qh_Node.ln_Succ;
@@ -363,10 +368,14 @@ void SortHitsList(struct SearchQuery *sq)
     //printf("Sort with weight...\n");
     while(qh->qh_Node.ln_Succ)
     {
+      arb_assert(((LLONG) (qh->qh_ReplaceCount + qh->qh_InsertCount + qh->qh_DeleteCount)) <= 0x1f);  // 5 bit
+      arb_assert(((LLONG) round(qh->qh_ErrorCount * 10.0)) <= 0xff);                        //  8 bit
+      arb_assert(((LLONG) qh->qh_Species->ps_Num) <= 0xfffff);                              // 20 bit
+      arb_assert(((LLONG) (qh->qh_AbsPos - qh->qh_Species->ps_AbsOffset)) <= 0xfffffff);    // 28 bit
       qh->qh_Node.ln_Pri = (LLONG)
     ((LLONG) (qh->qh_Flags & QHF_REVERSED) ? (1LL << 62) : 0LL) +
         ((LLONG) (qh->qh_InsertCount | qh->qh_DeleteCount) ? (1LL << 61) : 0LL) +
-    (((LLONG) (qh->qh_ErrorCount * 10.0)) << 53) +
+    (((LLONG) round(qh->qh_ErrorCount * 10.0)) << 53) +
     (((LLONG) (qh->qh_ReplaceCount + qh->qh_InsertCount + qh->qh_DeleteCount)) << 48) +
     ((LLONG) qh->qh_Species->ps_Num << 28) +
     ((LLONG) (qh->qh_AbsPos - qh->qh_Species->ps_AbsOffset));
@@ -443,7 +452,6 @@ void CreateHitsGUIList(struct SearchQuery *sq)
       minweight = sq->sq_MismatchWeights->mw_Delete[cnt];
     }
   }
-  sq->sq_QueryLen = strlen(sq->sq_Query);   // TODO: delete
   maxlen = sq->sq_QueryLen + (ULONG) ((sq->sq_MaxErrors + minweight) / minweight);
   sq->sq_SourceSeq = (STRPTR) malloc(maxlen + 1);
 
