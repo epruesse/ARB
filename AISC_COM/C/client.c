@@ -85,7 +85,7 @@ int aisc_c_write(int socket,char *ptr,int size)
 }
 /******************************************* bytestring handling *******************************************/
 
-void aisc_c_add_to_bytes_queue(aisc_com *link, char *data, int size)
+static void aisc_c_add_to_bytes_queue(aisc_com *link, char *data, int size)
 {
     struct aisc_bytes_list *bl;
     bl = (struct aisc_bytes_list *)calloc(sizeof(*bl),1);
