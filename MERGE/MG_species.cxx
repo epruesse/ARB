@@ -891,92 +891,65 @@ AW_window *create_mg_move_fields(AW_root *aw_root)
     return (AW_window*)aws;
 }
 
-void MG_merge_tagged_field_cb(AW_window *aww){
-    AW_root *awr      = aww->get_root();
-    char    *f1       = awr->awar(AWAR_FIELD1)->read_string();
-    char    *f2       = awr->awar(AWAR_FIELD2)->read_string();
-    char    *tag1     = awr->awar(AWAR_TAG1)->read_string();
-    char    *tag2     = awr->awar(AWAR_TAG2)->read_string();
-    char    *tag_del1 = awr->awar(AWAR_TAG_DEL1)->read_string();
-
-    GB_transaction dummy(GLOBAL_gb_merge);
+void MG_merge_tagged_field_cb(AW_window *aww) {
+    GB_transaction ta_merge(GLOBAL_gb_merge);
     GB_ERROR       error = GB_begin_transaction(GLOBAL_gb_dest);
 
     if (!error) {
-        GBDATA *gb_dest_species_data = GB_search(GLOBAL_gb_dest,"species_data",GB_CREATE_CONTAINER);
+        AW_root *awr      = aww->get_root();
+        char    *f1       = awr->awar(AWAR_FIELD1)->read_string();
+        char    *f2       = awr->awar(AWAR_FIELD2)->read_string();
+        char    *tag1     = awr->awar(AWAR_TAG1)->read_string();
+        char    *tag2     = awr->awar(AWAR_TAG2)->read_string();
+        char    *tag_del1 = awr->awar(AWAR_TAG_DEL1)->read_string();
         
-        for (GBDATA *gb_species1 = GBT_first_species(GLOBAL_gb_merge);
-             gb_species1 && !error;
-             gb_species1 = GBT_next_species(gb_species1))
-        {
-            if (IS_QUERIED(gb_species1)) {
-                GBDATA *gb_name1 = GB_entry(gb_species1,"name");
-                if (gb_name1) {
-                    char   *name        = GB_read_string(gb_name1);
-                    GBDATA *gb_species2 = name ? GBT_create_species_rel_species_data(gb_dest_species_data, name) : 0;
+        GBDATA *gb_dest_species_data = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
 
-                    if (!gb_species2) {
-                        error = GB_get_error();
-                    }
+        if (!gb_dest_species_data) error = GB_get_error();
+        else {
+            for (GBDATA * gb_species1 = GBT_first_species(GLOBAL_gb_merge);
+                 gb_species1 && !error;
+                 gb_species1 = GBT_next_species(gb_species1))
+            {
+                if (IS_QUERIED(gb_species1)) {
+                    char *name = GBT_read_string(gb_species1, "name");
+
+                    if (!name) error = GB_get_error();
                     else {
-                        GBDATA *gb_field1 = GB_search(gb_species1,f1,GB_FIND);
-                        char   *s1;
+                        GBDATA *gb_species2 = GBT_create_species_rel_species_data(gb_dest_species_data, name);
 
-                        if (gb_field1) {
-                            int type1 = GB_read_type(gb_field1);
-                            if (type1 != GB_STRING) {
-                                error = GB_export_error("Field '%s' in species '%s' in DB1 is not of type STRING",f1,name);
-                            }
-                            else {
-                                s1             = GB_read_string(gb_field1);
-                                if (!s1) error = GB_get_error();
-                            }
-                        }
+                        if (!gb_species2) error = GB_get_error();
                         else {
-                            s1 = strdup("");
-                        }
+                            char *s1 = GBT_readOrCreate_string(gb_species1, f1, "");
+                            char *s2 = GBT_readOrCreate_string(gb_species2, f2, "");
 
-                        if (!error) {
-                            GBDATA *gb_field2 = GBT_search_string(gb_species2,f2,"");
-                            char   *s2        = 0;
+                            if (s1 && s2) {
+                                char *sum = GBS_merge_tagged_strings(s1, tag1, tag_del1,
+                                                                     s2, tag2, tag_del1);
 
-                            if (gb_field2) {
-                                int type2 = GB_read_type(gb_field2);
-                                if (type2 != GB_STRING) {
-                                    error = GB_export_error("Field '%s' in species '%s' in DB2 is not of type STRING",f2,name);
-                                }
-                                else {
-                                    s2 = GB_read_string(gb_field2);
-                                }
-                            }
-
-                            if (!s2 && !error) error = GB_get_error();
-
-                            if (!error) {
-                                char *sum       = GBS_merge_tagged_strings(s1,tag1,tag_del1,s2,tag2,tag_del1);
                                 if (!sum) error = GB_get_error();
-                                else  error     = GB_write_string(gb_field2,sum);
+                                else error      = GBT_write_string(gb_species2, f2, sum);
+
                                 free(sum);
                             }
-                            free(s2);
-                        }
+                            else error = GB_get_error();
 
-                        if (!error) error = GB_write_flag(gb_species2,1);
-                        free(s1);
+                            free(s2);
+                            free(s1);
+                        }
                     }
                     free(name);
                 }
             }
         }
-    }
 
+        free(tag_del1);
+        free(tag2);
+        free(tag1);
+        free(f2);
+        free(f1);
+    }
     GB_end_transaction_show_error(GLOBAL_gb_dest, error, aw_message);
-    
-    free(tag_del1);
-    free(tag2);
-    free(tag1);
-    free(f2);
-    free(f1);
 }
 
 AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)

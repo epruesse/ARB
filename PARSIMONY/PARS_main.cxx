@@ -474,7 +474,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, int what, AP_BOOL quick, int te
 
     if (what)
     {
-        char *name = GBT_read_string2(GLOBAL_gb_main,AWAR_SPECIES_NAME,"");
+        char *name = GBT_readOrCreate_string(GLOBAL_gb_main,AWAR_SPECIES_NAME,"");
         if (strlen(name))
         {
             GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,name);

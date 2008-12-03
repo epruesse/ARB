@@ -215,7 +215,7 @@ void ad_ad_group(AW_window *aww){
     char *source = awr->awar(AWAR_SAI_NAME)->read_string();
     GBDATA *gb_sai = GBT_find_SAI(GLOBAL_gb_main,source);
     if (gb_sai){
-        free(GBT_read_string2(gb_sai,"sai_group","default_group"));
+        GBT_readOrCreate_char_pntr(gb_sai,"sai_group","default_group"); // set default if missing
         GBDATA *gb_gn = GB_search(gb_sai,"sai_group",GB_STRING);
         awr->awar_string("/tmp/ntree/sai/add_group")->map(gb_gn);
         char *res = aw_input("Assign Group to  SAI","/tmp/ntree/sai/add_group");

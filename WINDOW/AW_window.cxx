@@ -3545,21 +3545,20 @@ GB_ERROR AW_root::enable_execute_macro(FILE *mfile,const char *mname) {
 #define DUMP_REMOTE_ACTIONS
 #endif // DEVEL_RALF
 #endif // DEBUG
-GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,
-        const char *rm_base) {
+GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind, const char *rm_base) {
     GBDATA *gb_main = (GBDATA *)gb_maind;
-    char awar_action[1024];
-    sprintf(awar_action, "%s/action", rm_base);
-    char awar_value[1024];
-    sprintf(awar_value, "%s/value", rm_base);
-    char awar_awar[1024];
-    sprintf(awar_awar, "%s/awar", rm_base);
-    char awar_result[1024];
-    sprintf(awar_result, "%s/result", rm_base);
+
+    char *awar_action = GBS_global_string_copy("%s/action", rm_base);
+    char *awar_value  = GBS_global_string_copy("%s/value", rm_base);
+    char *awar_awar   = GBS_global_string_copy("%s/awar", rm_base);
+    char *awar_result = GBS_global_string_copy("%s/result", rm_base);
+
     GB_push_transaction(gb_main);
-    char *action = GBT_read_string2(gb_main, awar_action, "");
-    char *value = GBT_read_string2(gb_main, awar_value, "");
-    char *tmp_awar = GBT_read_string2(gb_main, awar_awar, "");
+
+    char *action   = GBT_readOrCreate_string(gb_main, awar_action, "");
+    char *value    = GBT_readOrCreate_string(gb_main, awar_value, "");
+    char *tmp_awar = GBT_readOrCreate_string(gb_main, awar_awar, "");
+    
     if (tmp_awar[0]) {
         GB_ERROR error = 0;
         if (strcmp(action, "AWAR_REMOTE_READ") == 0) {
@@ -3572,7 +3571,8 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,
             // clear action (AWAR_REMOTE_READ is just a pseudo-action) :
             action[0] = 0;
             GBT_write_string(gb_main, awar_action, "");
-        } else if (strcmp(action, "AWAR_REMOTE_TOUCH") == 0) {
+        }
+        else if (strcmp(action, "AWAR_REMOTE_TOUCH") == 0) {
             this->awar(tmp_awar)->touch();
 #if defined(DUMP_REMOTE_ACTIONS)
             printf("remote command 'AWAR_REMOTE_TOUCH' awar='%s'\n", tmp_awar);
@@ -3580,7 +3580,8 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,
             // clear action (AWAR_REMOTE_TOUCH is just a pseudo-action) :
             action[0] = 0;
             GBT_write_string(gb_main, awar_action, "");
-        } else {
+        }
+        else {
 #if defined(DUMP_REMOTE_ACTIONS)
             printf("remote command (write awar) awar='%s' value='%s'\n", tmp_awar, value);
 #endif // DUMP_REMOTE_ACTIONS
@@ -3592,8 +3593,7 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,
     GB_pop_transaction(gb_main);
 
     if (action[0]) {
-        AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(prvt->action_hash,
-                action);
+        AW_cb_struct *cbs = (AW_cb_struct *)GBS_read_hash(prvt->action_hash, action);
 
 #if defined(DUMP_REMOTE_ACTIONS)
         printf("remote command (%s) exists=%i\n", action, int(cbs != 0));
@@ -3607,9 +3607,16 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind,
         }
         GBT_write_string(gb_main, awar_action, ""); // this works as READY-signal for perl-client (remote_action)
     }
+    
     free(tmp_awar);
     free(value);
     free(action);
+
+    free(awar_result);
+    free(awar_awar);
+    free(awar_value);
+    free(awar_action);
+    
     return 0;
 }
 

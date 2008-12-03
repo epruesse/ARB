@@ -155,18 +155,13 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
    Afterwards it contains value == 2 for each species where an alignment has been found.
 */
 {
-    GBDATA   *gb_species_data  = GBT_find_or_create(gb_main,"species_data",7);
-    GBDATA   *gb_extended_data = GBT_find_or_create(gb_main,"extended_data",7);
-    GB_ERROR  error         = 0;
-    char     *ali_name      = 0;
-    {
-        GBDATA *gb_ali_name = GB_entry(preset_alignment,"alignment_name");
-        if (!gb_ali_name) {
-            error = "alignment without 'alignment_name' -- database corrupted";
-        }
-        else {
-            ali_name = GB_read_string(gb_ali_name);
-        }
+    GBDATA *gb_species_data  = GBT_find_or_create(gb_main,"species_data",7);
+    GBDATA *gb_extended_data = GBT_find_or_create(gb_main,"extended_data",7);
+
+    GB_ERROR  error    = 0;
+    char     *ali_name = GBT_read_string(preset_alignment, "alignment_name");
+    if (!ali_name) {
+        error = GBS_global_string("Alignment w/o 'alignment_name' (%s)", GB_get_error());
     }
 
     if (!error) {
@@ -227,12 +222,9 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
 
                 gb_ali = GB_entry(gb_species, ali_name);
                 if (gb_ali) {
-                    /* GB_write_security_delete(ali,security_write); */
                     GBDATA *gb_data = GB_entry(gb_ali, "data");
                     if (!gb_data) {
-                        gb_data = GB_create(gb_ali,"data",GB_STRING);
-                        GB_write_string(gb_data, "Error: entry 'data' was missing and therefore was filled with this text.");
-
+                        error = GBT_write_string(gb_ali, "data", "Error: entry 'data' was missing and therefore was filled with this text.");
                         GB_warning("No '%s/data' entry for species '%s' (has been filled with dummy data)", ali_name, name);
                     }
                     else {
@@ -247,8 +239,6 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
                                 if (found_ali_len>0)        aligned       = 0;
                                 if (found_ali_len<data_len) found_ali_len = data_len;
                             }
-                            /* error = GB_write_security_write(data,security_write);
-                               if (error) return error;*/
                             GB_write_security_delete(gb_data,7);
 
                             if (!alignment_seen && species_name_hash) { // mark as seen
@@ -299,25 +289,18 @@ NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment,
             }
         }
 
-        if (stored_ali_len != found_ali_len) {
-            error = GB_write_int(gb_ali_len, found_ali_len);
-            if (error) return error;
-        }
-        {
-            GBDATA *gb_aligned = GB_search(preset_alignment, "aligned", GB_INT);
-            if (GB_read_int(gb_aligned) != aligned) {
-                error = GB_write_int(gb_aligned, aligned);
-                if (error) return error;
-            }
-        }
+        if (!error && stored_ali_len != found_ali_len) error = GB_write_int(gb_ali_len, found_ali_len);
+        if (!error) error = GBT_write_int(preset_alignment, "aligned", aligned);
 
         if (error) {
-            error = GBS_global_string("alignment '%s' %s\nDatabase corrupted - try to fix if possible, save with different name and restart application.",
+            error = GBS_global_string("alignment '%s': %s\n"
+                                      "Database corrupted - try to fix if possible, save with different name and restart application.",
                                       ali_name, error);
         }
-
-        free(ali_name);
     }
+
+    free(ali_name);
+
     return error;
 }
 
@@ -401,10 +384,7 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
                     if (!error) {
                         GBDATA *gb_new_alignment = GB_create_container(gb_presets,"alignment");
                         error                    = GB_copy(gb_new_alignment, gb_old_alignment);
-                        if (!error) {
-                            GBDATA *gb_alignment_name = GB_search(gb_new_alignment,"alignment_name",GB_FIND);
-                            error                     = GB_write_string(gb_alignment_name,dest);
-                        }
+                        if (!error) error        = GBT_write_string(gb_new_alignment, "alignment_name", dest);
                     }
                 }
             }
@@ -416,11 +396,8 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
     }
 
     /* change default alignment */
-    if (!error) {
-        GBDATA *gb_using = GB_search(gb_presets,"use",GB_STRING);
-        if (dele && copy){
-            error = GB_write_string(gb_using, dest);
-        }
+    if (!error && dele && copy) {
+        error = GBT_write_string(gb_presets, "use", dest);
     }
 
     /* copy and/or delete alignment entries in species */
@@ -505,15 +482,10 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
         if (!gb_use) {
             // if we have no default alignment -> look for any alignment
             GBDATA *gb_ali_name = GB_find_string(gb_presets,"alignment_name",alignment_name,GB_IGNORE_CASE,down_2_level);
-
-            if (gb_ali_name) {
-                // use first alignment found
-                GBDATA *gb_ali = GB_get_father(gb_ali_name);
-                gb_ali_name    = GB_entry(gb_ali,"alignment_name");
-
-                gb_use = GB_create(gb_presets,"use",GB_STRING);
-                GB_write_string(gb_use, GB_read_char_pntr(gb_ali_name));
-            }
+            
+            error = gb_ali_name ?
+                GBT_write_string(gb_presets, "use", GB_read_char_pntr(gb_ali_name)) :
+                "No alignment defined";
         }
     }
 
@@ -1000,7 +972,7 @@ long gbt_write_tree_nodes(GBDATA *gb_tree,GBT_TREE *node,long startid)
     return startid;
 }
 
-char *gbt_write_tree_rek_new(GBDATA *gb_tree, GBT_TREE *node, char *dest, long mode) {
+static char *gbt_write_tree_rek_new(GBT_TREE *node, char *dest, long mode) {
     char buffer[40];        /* just real numbers */
     char    *c1;
 
@@ -1039,14 +1011,13 @@ char *gbt_write_tree_rek_new(GBDATA *gb_tree, GBT_TREE *node, char *dest, long m
         }else{
             dest += strlen(buffer)+1;
         }
-        dest = gbt_write_tree_rek_new(gb_tree,node->leftson,dest,mode);
-        dest = gbt_write_tree_rek_new(gb_tree,node->rightson,dest,mode);
+        dest = gbt_write_tree_rek_new(node->leftson,  dest, mode);
+        dest = gbt_write_tree_rek_new(node->rightson, dest, mode);
         return dest;
     }
 }
 
-GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree, int plain_only)
-{
+static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree, int plain_only) {
     /* writes a tree to the database.
 
     If tree is loaded by function GBT_read_tree(..) then 'tree_name' should be zero !!!!!!
@@ -1058,70 +1029,79 @@ GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name,
     if 'plain_only' == 1 only the plain tree string is written
 
     */
-    GBDATA   *gb_node,    *gb_tree_data;
-    GBDATA   *gb_node_next;
-    GBDATA   *gb_nnodes, *gbd;
-    GB_ERROR  error;
-    char     *ctree,*t_size;
-    GBDATA   *gb_ctree;
+    GB_ERROR error = 0;
 
     gb_assert(!plain_only || (tree_name == 0)); // if plain_only == 1 -> set tree_name to 0
 
-    if (!tree) return 0;
-    if (gb_tree && tree_name) return GB_export_error("you cannot change tree name to %s",tree_name);
-    if ((!gb_tree) && (!tree_name)) return GB_export_error("please specify a tree name");
+    if (tree) {
+        if (tree_name) {
+            if (gb_tree) error = GBS_global_string("can't change name of existing tree (to '%s')", tree_name);
+            else {
+                error = GBT_check_tree_name(tree_name);
+                if (!error) {
+                    GBDATA *gb_tree_data = GB_search(gb_main, "tree_data", GB_CREATE_CONTAINER);
+                    gb_tree              = GB_search(gb_tree_data, tree_name, GB_CREATE_CONTAINER);
 
-    if (tree_name) {
-        error = GBT_check_tree_name(tree_name);
-        if (error) return error;
-        gb_tree_data = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
-        gb_tree = GB_search(gb_tree_data,tree_name,GB_CREATE_CONTAINER);
-    }
-
-    if (!plain_only) {
-        /* now delete all old style tree data */
-        for (gb_node = GB_entry(gb_tree,"node"); gb_node; gb_node = GB_nextEntry(gb_node)) {
-            GB_write_usr_private(gb_node,1);
-        }
-    }
-
-    gb_ctree  = GB_search(gb_tree,"tree",GB_STRING);
-    t_size    = gbt_write_tree_rek_new(gb_tree, tree, 0, GBT_GET_SIZE);
-    ctree     = (char *)GB_calloc(sizeof(char),(size_t)(t_size+1));
-    t_size    = gbt_write_tree_rek_new(gb_tree, tree, ctree, GBT_PUT_DATA);
-    *(t_size) = 0;
-    error     = GB_set_compression(gb_main,0); /* no more compressions */
-    error     = GB_write_string(gb_ctree,ctree);
-    error     = GB_set_compression(gb_main,-1); /* allow all types of compression */
-
-    free(ctree);
-    if (!plain_only && !error) {
-        long size = gbt_write_tree_nodes(gb_tree,tree,0);
-            
-        if (size<0) {
-            error = GB_get_error();
+                    if (!gb_tree) error = GB_get_error();
+                }
+            }
         }
         else {
-            for (gb_node = GB_entry(gb_tree,"node"); /* delete all ghost nodes */
-                 gb_node && !error;
-                 gb_node = gb_node_next)
-            {
-                gb_node_next = GB_nextEntry(gb_node);
-                gbd = GB_entry(gb_node,"id");
-                if (!gbd || GB_read_usr_private(gb_node)) {
-                    error = GB_delete(gb_node);
+            if (!gb_tree) error = "No tree name given";
+        }
+
+        ad_assert(gb_tree || error);
+
+        if (!error) {
+            if (!plain_only) {
+                // mark all old style tree data for deletion
+                GBDATA *gb_node;
+                for (gb_node = GB_entry(gb_tree,"node"); gb_node; gb_node = GB_nextEntry(gb_node)) {
+                    GB_write_usr_private(gb_node,1);
                 }
             }
 
-            if (!error) {
-                gb_nnodes = GB_search(gb_tree,"nnodes",GB_INT);
-                error = GB_write_int(gb_nnodes,size);
+            // build tree-string and save to DB
+            {
+                char *t_size = gbt_write_tree_rek_new(tree, 0, GBT_GET_SIZE); // calc size of tree-string
+                char *ctree  = (char *)GB_calloc(sizeof(char),(size_t)(t_size+1)); // allocate buffer for tree-string
+
+                t_size = gbt_write_tree_rek_new(tree, ctree, GBT_PUT_DATA); // write into buffer
+                *(t_size) = 0;
+
+                error = GB_set_compression(gb_main,0); // no more compressions 
+                if (!error) {
+                    error        = GBT_write_string(gb_tree, "tree", ctree);
+                    GB_ERROR err = GB_set_compression(gb_main,-1); // again allow all types of compression 
+                    if (!error) error = err;
+                }
+                free(ctree);
+            }
+        }
+
+        if (!plain_only && !error) {
+            // save nodes to DB
+            long size = gbt_write_tree_nodes(gb_tree,tree,0);
+            
+            if (size<0) error = GB_get_error();
+            else {
+                GBDATA *gb_node, *gb_node_next;
+
+                error = GBT_write_int(gb_tree, "nnodes", size);
+                
+                for (gb_node = GB_entry(gb_tree,"node"); // delete all ghost nodes
+                     gb_node && !error;
+                     gb_node = gb_node_next)
+                {
+                    GBDATA *gbd = GB_entry(gb_node,"id");
+                    gb_node_next = GB_nextEntry(gb_node);
+                    if (!gbd || GB_read_usr_private(gb_node)) error = GB_delete(gb_node);
+                }
             }
         }
     }
 
-    if (error) return error;
-    return 0;
+    return error;
 }
 
 GB_ERROR GBT_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree) {
@@ -1131,12 +1111,10 @@ GB_ERROR GBT_write_plain_tree(GBDATA *gb_main, GBDATA *gb_tree, char *tree_name,
     return gbt_write_tree(gb_main, gb_tree, tree_name, tree, 1);
 }
 
-
 GB_ERROR GBT_write_tree_rem(GBDATA *gb_main,const char *tree_name, const char *remark) {
-    GBDATA *ali_cont = GBT_get_tree(gb_main,tree_name);
-    GBDATA *tree_rem =  GB_search(ali_cont,"remark",    GB_STRING);
-    return GB_write_string(tree_rem,remark);
+    return GBT_write_string(GBT_get_tree(gb_main, tree_name), "remark", remark);
 }
+
 /********************************************************************************************
                     some tree read functions
 ********************************************************************************************/
@@ -1933,24 +1911,20 @@ long GBT_size_of_tree(GBDATA *gb_main, const char *tree_name) {
 }
 
 char *GBT_find_largest_tree(GBDATA *gb_main){
-    GBDATA *gb_treedata;
+    char   *largest     = 0;
+    long    maxnodes    = 0;
+    GBDATA *gb_treedata = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
     GBDATA *gb_tree;
-    GBDATA *gb_nnodes;
-    long nnodes;
-    char *largest = 0;
-    long maxnodes = 0;
-    gb_treedata = GB_search(gb_main,"tree_data",GB_CREATE_CONTAINER);
+
     for (gb_tree = GB_child(gb_treedata);
          gb_tree;
          gb_tree = GB_nextChild(gb_tree))
     {
-        gb_nnodes = GB_entry(gb_tree,"nnodes");
-        if (!gb_nnodes) continue;
-        nnodes = GB_read_int(gb_nnodes);
-        if (nnodes> maxnodes) {
-            if (largest) free(largest);
+        long *nnodes = GBT_read_int(gb_tree, "nnodes");
+        if (nnodes && *nnodes>maxnodes) {
+            free(largest);
             largest = GB_read_key(gb_tree);
-            maxnodes = nnodes;
+            maxnodes = *nnodes;
         }
     }
     return largest;
@@ -2193,60 +2167,69 @@ GB_ERROR GBT_export_tree(GBDATA *gb_main,FILE *out,GBT_TREE *tree, GB_BOOL tripl
 ********************************************************************************************/
 
 
-GBDATA *GBT_create_species(GBDATA *gb_main,const char *name)
+GBDATA *GBT_create_item(GBDATA *gb_item_data, const char *itemname, const char *name)
 {
-    /* Search for a species, when species do not exist create it */
-    GBDATA *species;
-    GBDATA *gb_name;
-    GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
-    species = GB_find_string(gb_species_data,"name",name,GB_IGNORE_CASE,down_2_level);
-    if (species) return GB_get_father(species);
-    if ((int)strlen(name) <2) {
-        GB_export_error("create species failed: too short name '%s'",name);
-        return NULL;
+    /* Search for a item with field 'name' set to given name. (name compare is case-insensitive)
+     * If item does not exist, create it. Newly created items are automatically marked.
+     * items may be: species, genes, SAIs, ...
+     */
+
+    GBDATA   *gb_item = 0;
+    GB_ERROR  error   = 0;
+
+    if (gb_item_data) {
+        GBDATA *gb_name = GB_find_string(gb_item_data,"name",name,GB_IGNORE_CASE,down_2_level);
+
+        if (gb_name) { // item already exists
+            gb_item = GB_get_father(gb_name); // use it
+        }
+        else { // create a new item
+            if (strlen(name) < 2) {
+                error = GBS_global_string("name '%s' is too short", name);
+            }
+            else {
+                gb_item = GB_create_container(gb_item_data, itemname);
+                if (gb_item) {
+                    error             = GBT_write_string(gb_item, "name", name);
+                    if (!error) error = GB_write_flag(gb_item, 1);      // mark the generated item
+                }
+            }
+        }
     }
-    species = GB_create_container(gb_species_data,"species");
-    gb_name = GB_create(species,"name",GB_STRING);
-    GB_write_string(gb_name,name);
-    GB_write_flag(species,1);
-    return species;
-}
-GBDATA *GBT_create_species_rel_species_data(GBDATA *gb_species_data,const char *name)
-{
-    /* Search for a species, when species do not exist create it */
-    GBDATA *species;
-    GBDATA *gb_name;
-    species = GB_find_string(gb_species_data,"name",name,GB_IGNORE_CASE,down_2_level);
-    if (species) return GB_get_father(species);
-    if ((int)strlen(name) <2) {
-        GB_export_error("create species failed: too short name '%s'",name);
-        return NULL;
+
+    if (!gb_item && !error) {
+        error = GB_get_error();
+        gb_assert(error);
     }
-    species = GB_create_container(gb_species_data,"species");
-    gb_name = GB_create(species,"name",GB_STRING);
-    GB_write_string(gb_name,name);
-    GB_write_flag(species,1);
-    return species;
+
+    if (error) {
+        gb_item = 0;
+        GB_export_error("Can't create %s '%s': %s", itemname, name, error);
+    }
+
+    return gb_item;
 }
 
-GBDATA *GBT_create_SAI(GBDATA *gb_main,const char *name)
-{
-    /* Search for an extended, when extended do not exist create it */
-    GBDATA *extended;
-    GBDATA *gb_name;
-    GBDATA *gb_extended_data = GB_search(gb_main, "extended_data", GB_CREATE_CONTAINER);
-    extended = GB_find_string(gb_extended_data,"name",name,GB_IGNORE_CASE,down_2_level);
-    if (extended) return GB_get_father(extended);
-    if ((int)strlen(name) <2) {
-        GB_export_error("create SAI failed: too short name '%s'",name);
-        return NULL;
-    }
-    extended = GB_create_container(gb_extended_data,"extended");
-    gb_name = GB_create(extended,"name",GB_STRING);
-    GB_write_string(gb_name,name);
-    GB_write_flag(extended,1);
-    return extended;
+GBDATA *GBT_create_species_rel_species_data(GBDATA *gb_species_data, const char *name) {
+    return GBT_create_item(gb_species_data, "species", name);
 }
+
+GBDATA *GBT_create_species(GBDATA *gb_main, const char *name) {
+    GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+    return GBT_create_species_rel_species_data(gb_species_data, name);
+}
+
+
+GBDATA *GBT_create_SAI(GBDATA *gb_main,const char *name) {
+    /* Search for an SAI, when SAI does not exist, create it */
+    GBDATA *gb_extended_data = GB_search(gb_main, "extended_data", GB_CREATE_CONTAINER);
+    return GBT_create_item(gb_extended_data, "extended", name);
+}
+
+#if defined(DEVEL_RALF)
+#warning GBT_add_data is weird: name sucks and why do anything special for GB_STRING? \
+    // better replace by GBT_ali_container(gb_spec, ali_name) and then use normal functions (GB_search or whatever) 
+#endif /* DEVEL_RALF */
 
 GBDATA *GBT_add_data(GBDATA *species,const char *ali_name, const char *key, GB_TYPES type)
 {
@@ -2268,7 +2251,8 @@ GBDATA *GBT_add_data(GBDATA *species,const char *ali_name, const char *key, GB_T
             gb_data = GB_search(gb_gb, key, GB_STRING);
             GB_write_string(gb_data,"...");
         }
-    }else{
+    }
+    else{
         gb_data = GB_search(gb_gb, key, type);
     }
     return gb_data;
@@ -2306,23 +2290,19 @@ GB_ERROR GBT_write_sequence(GBDATA *gb_data, const char *ali_name, long ali_len,
 }
 
 
-GBDATA *GBT_gen_accession_number(GBDATA *gb_species,const char *ali_name){
-    GBDATA *gb_acc;
-    GBDATA *gb_data;
-    GB_CSTR sequence;
-    char buf[100];
-    long id;
+GBDATA *GBT_gen_accession_number(GBDATA *gb_species,const char *ali_name) {
+    GBDATA *gb_acc = GB_entry(gb_species,"acc");
+    if (!gb_acc) {
+        GBDATA *gb_data = GBT_read_sequence(gb_species,ali_name);
+        if (gb_data) {                                     /* found a valid alignment */
+            GB_CSTR     sequence = GB_read_char_pntr(gb_data);
+            long        id       = GBS_checksum(sequence,1,".-");
+            const char *acc      = GBS_global_string("ARB_%lX", id);
+            GB_ERROR    error    = GBT_write_string(gb_species, "acc", acc);
 
-    gb_acc = GB_entry(gb_species,"acc");
-    if (gb_acc) return gb_acc;
-    /* Search a valid alignment */
-    gb_data = GBT_read_sequence(gb_species,ali_name);
-    if (!gb_data) return NULL;
-    sequence = GB_read_char_pntr(gb_data);
-    id = GBS_checksum(sequence,1,".-");
-    sprintf(buf,"ARB_%lX",id);
-    gb_acc = GB_search(gb_species,"acc",GB_STRING);
-    GB_write_string(gb_acc,buf);
+            if (error) GB_export_error(error);
+        }
+    }
     return gb_acc;
 }
 
@@ -2660,37 +2640,34 @@ char *GBT_read_name(GBDATA *gb_species)
                     alignment procedures
 ********************************************************************************************/
 
-char *GBT_get_default_alignment(GBDATA *gb_main)
-{
-    GBDATA *gb_use;
-    gb_use = GB_search(gb_main,"presets/use",GB_FIND);
-    if (!gb_use) return NULL;
-    return GB_read_string(gb_use);
+char *GBT_get_default_alignment(GBDATA *gb_main) {
+    return GBT_read_string(gb_main, "presets/use");
 }
 
-GB_ERROR GBT_set_default_alignment(GBDATA *gb_main,const char *alignment_name)
-{
-    GBDATA *gb_use;
-    gb_use = GB_search(gb_main,"presets/use",GB_STRING);
-    if (!gb_use) return 0;
-    return GB_write_string(gb_use,alignment_name);
+GB_ERROR GBT_set_default_alignment(GBDATA *gb_main,const char *alignment_name) {
+    return GBT_write_string(gb_main, "presets/use", alignment_name);
 }
 
-char *GBT_get_default_helix(GBDATA *gb_main)
-{
-    gb_main = gb_main;
+/* the following function were meant to use user defined values.
+ *
+ * Especially for 'ECOLI' there is already a possibility to
+ * specify a different reference in edit4, but there's no
+ * data model in the DB for it. Consider whether it makes sense,
+ * if secedit uses it as well.
+ */
+
+char *GBT_get_default_helix(GBDATA *gb_main) {
+    GBUSE(gb_main);
     return GB_STRDUP("HELIX");
 }
 
-char *GBT_get_default_helix_nr(GBDATA *gb_main)
-{
-    gb_main = gb_main;
+char *GBT_get_default_helix_nr(GBDATA *gb_main) {
+    GBUSE(gb_main);
     return GB_STRDUP("HELIX_NR");
 }
 
-char *GBT_get_default_ref(GBDATA *gb_main)
-{
-    gb_main = gb_main;
+char *GBT_get_default_ref(GBDATA *gb_main) {
+    GBUSE(gb_main);
     return GB_STRDUP("ECOLI");
 }
 
@@ -2706,14 +2683,12 @@ GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname) {
     return GB_get_father(gb_alignment_name);
 }
 
+#if defined(DEVEL_RALF)
+#warning recode and change result type to long* ? 
+#endif /* DEVEL_RALF */
 long GBT_get_alignment_len(GBDATA *gb_main, const char *aliname) {
     GBDATA *gb_alignment = GBT_get_alignment(gb_main, aliname);
-    if (gb_alignment) {
-        GBDATA *gb_alignment_len = GB_search(gb_alignment, "alignment_len", GB_FIND);
-        gb_assert(gb_alignment_len);
-        return GB_read_int(gb_alignment_len);
-    }
-    return -1;
+    return gb_alignment ? *GBT_read_int(gb_alignment, "alignment_len") : -1;
 }
 
 GB_ERROR GBT_set_alignment_len(GBDATA *gb_main, const char *aliname, long new_len) {
@@ -2736,22 +2711,17 @@ GB_ERROR GBT_set_alignment_len(GBDATA *gb_main, const char *aliname, long new_le
 
 int GBT_get_alignment_aligned(GBDATA *gb_main, const char *aliname) {
     GBDATA *gb_alignment = GBT_get_alignment(gb_main, aliname);
-    if (gb_alignment) {
-        GBDATA *gb_alignment_aligned = GB_search(gb_alignment, "aligned", GB_FIND);
-        gb_assert(gb_alignment_aligned);
-        return GB_read_int(gb_alignment_aligned);
-    }
-    return -1;
+    return gb_alignment ? *GBT_read_int(gb_alignment, "aligned") : -1;
 }
 
 char *GBT_get_alignment_type_string(GBDATA *gb_main, const char *aliname) {
+    char   *result       = NULL;
     GBDATA *gb_alignment = GBT_get_alignment(gb_main, aliname);
     if (gb_alignment) {
-        GBDATA *gb_alignment_type = GB_search(gb_alignment,"alignment_type",GB_FIND);
-        gb_assert(gb_alignment_type);
-        return GB_read_string(gb_alignment_type);
+        result = GBT_read_string(gb_alignment, "alignment_type");
+        gb_assert(result);
     }
-    return NULL;
+    return result;
 }
 
 GB_alignment_type GBT_get_alignment_type(GBDATA *gb_main, const char *aliname) {
@@ -3264,171 +3234,177 @@ GBDATA **GBT_gen_species_array(GBDATA *gb_main, long *pspeccnt)
     return result;
 }
 
+/* ---------------------------------------- */
+/* read value from database field
+ * returns 0 in case of error (use GB_get_error())
+ * or when field does not exist
+ *
+ * otherwise GBT_read_string returns a heap copy
+ * other functions return a pointer to a temporary variable (invalidated by next call)
+ */
 
-char *GBT_read_string(GBDATA *gb_main, const char *awar_name){
-    /* Search and read an database field */
+char *GBT_read_string(GBDATA *gb_container, const char *fieldpath){
     GBDATA *gbd;
-    char *result;
-    GB_push_transaction(gb_main);
-    gbd = GB_search(gb_main,awar_name,GB_FIND);
-    if (!gbd) {
-        fprintf(stderr,"GBT_read_string error: Cannot find %s\n",awar_name);
-        GB_pop_transaction(gb_main);
-        return GB_STRDUP("");
-    }
-    result = GB_read_string(gbd);
-    GB_pop_transaction(gb_main);
+    char   *result = NULL;
+    
+    GB_push_transaction(gb_container);
+    gbd = GB_search(gb_container,fieldpath,GB_FIND);
+    if (gbd) result = GB_read_string(gbd);
+    GB_pop_transaction(gb_container);
     return result;
 }
 
-long GBT_read_int(GBDATA *gb_main, const char *awar_name)
-{
+char *GBT_read_as_string(GBDATA *gb_container, const char *fieldpath){
     GBDATA *gbd;
-    long result;
-    GB_push_transaction(gb_main);
-    gbd = GB_search(gb_main,awar_name,GB_FIND);
-    if (!gbd) {
-        fprintf(stderr,"GBT_read_int error: Cannot find %s\n",awar_name);
-        GB_pop_transaction(gb_main);
-        return 0;
-    }
-    result = GB_read_int(gbd);
-    GB_pop_transaction(gb_main);
+    char   *result = NULL;
+    
+    GB_push_transaction(gb_container);
+    gbd = GB_search(gb_container,fieldpath,GB_FIND);
+    if (gbd) result = GB_read_as_string(gbd);
+    GB_pop_transaction(gb_container);
     return result;
 }
 
-double GBT_read_float(GBDATA *gb_main, const char *awar_name)
-{
-    GBDATA *gbd;
-    float result;
-    GB_push_transaction(gb_main);
-    gbd = GB_search(gb_main,awar_name,GB_FIND);
-    if (!gbd) {
-        fprintf(stderr,"GBT_read_float error: Cannot find %s\n",awar_name);
-        GB_pop_transaction(gb_main);
-        return 0.0;
-    }
-    result = GB_read_float(gbd);
-    GB_pop_transaction(gb_main);
+const char *GBT_read_char_pntr(GBDATA *gb_container, const char *fieldpath){
+    GBDATA     *gbd;
+    const char *result = NULL;
+
+    GB_push_transaction(gb_container);
+    gbd = GB_search(gb_container,fieldpath,GB_FIND);
+    if (gbd) result = GB_read_char_pntr(gbd);
+    GB_pop_transaction(gb_container);
     return result;
 }
 
-GBDATA *GBT_search_string(GBDATA *gb_main, const char *awar_name, const char *def){
+NOT4PERL long *GBT_read_int(GBDATA *gb_container, const char *fieldpath) {
     GBDATA *gbd;
-    GB_push_transaction(gb_main);
-    gbd = GB_search(gb_main,awar_name,GB_FIND);
-    if (!gbd) {
-        gbd = GB_search(gb_main,awar_name,GB_STRING);
-        GB_write_string(gbd,def);
+    long   *result = NULL;
+    
+    GB_push_transaction(gb_container);
+    gbd = GB_search(gb_container,fieldpath,GB_FIND);
+    if (gbd) {
+        static long result_var;
+        result_var = GB_read_int(gbd);
+        result     = &result_var;
     }
-    GB_pop_transaction(gb_main);
-    return gbd;
-}
-
-GBDATA *GBT_search_int(GBDATA *gb_main, const char *awar_name, int def){
-    GBDATA *gbd;
-    GB_push_transaction(gb_main);
-    gbd = GB_search(gb_main,awar_name,GB_FIND);
-    if (!gbd) {
-        gbd = GB_search(gb_main,awar_name,GB_INT);
-        GB_write_int(gbd,def);
-    }
-    GB_pop_transaction(gb_main);
-    return gbd;
-}
-
-GBDATA *GBT_search_float(GBDATA *gb_main, const char *awar_name, double def){
-    GBDATA *gbd;
-    GB_push_transaction(gb_main);
-    gbd = GB_search(gb_main,awar_name,GB_FIND);
-    if (!gbd) {
-        gbd = GB_search(gb_main,awar_name,GB_FLOAT);
-        GB_write_float(gbd,def);
-    }
-    GB_pop_transaction(gb_main);
-    return gbd;
-}
-
-#if defined(DEVEL_RALF)
-#warning give the following functions meaningful names!
-/* e.g. GBT_readOrCreate_string() etc. */
-#endif /* DEVEL_RALF */
-
-char *GBT_read_string2(GBDATA *gb_main, const char *awar_name, const char *def)
-{
-    GBDATA *gbd;
-    char *result;
-    GB_push_transaction(gb_main);
-    gbd = GB_search(gb_main,awar_name,GB_FIND);
-    if (!gbd) {
-        gbd = GB_search(gb_main,awar_name,GB_STRING);
-        GB_write_string(gbd,def);
-    }
-    result = GB_read_string(gbd);
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(gb_container);
     return result;
 }
 
-long GBT_read_int2(GBDATA *gb_main, const char *awar_name, long def)
-{
+NOT4PERL double *GBT_read_float(GBDATA *gb_container, const char *fieldpath) {
     GBDATA *gbd;
-    long result;
-    GB_push_transaction(gb_main);
-    gbd = GB_search(gb_main,awar_name,GB_FIND);
-    if (!gbd) {
-        gbd = GB_search(gb_main,awar_name,GB_INT);
-        GB_write_int(gbd,def);
+    double *result = NULL;
+    
+    GB_push_transaction(gb_container);
+    gbd = GB_search(gb_container,fieldpath,GB_FIND);
+    if (gbd) {
+        static double result_var;
+        result_var = GB_read_float(gbd);
+        result     = &result_var;
     }
-    result = GB_read_int(gbd);
-    GB_pop_transaction(gb_main);
+    GB_pop_transaction(gb_container);
     return result;
 }
 
-double GBT_read_float2(GBDATA *gb_main, const char *awar_name, double def)
-{
-    GBDATA *gbd;
-    double result;
-    GB_push_transaction(gb_main);
-    gbd = GB_search(gb_main,awar_name,GB_FIND);
-    if (!gbd) {
-        gbd = GB_search(gb_main,awar_name,GB_FLOAT);
-        GB_write_float(gbd,def);
-    }
-    result = GB_read_float(gbd);
-    GB_pop_transaction(gb_main);
+/* -------------------------------------------------------------------------------------- */
+/* read value from database field or create field with default_value if missing
+ * (same usage as GBT_read_XXX above)
+ */
+
+char *GBT_readOrCreate_string(GBDATA *gb_container, const char *fieldpath, const char *default_value) {
+    GBDATA *gb_string;
+    char   *result = NULL;
+
+    GB_push_transaction(gb_container);
+    gb_string             = GB_searchOrCreate_string(gb_container, fieldpath, default_value);
+    if (gb_string) result = GB_read_string(gb_string);
+    GB_pop_transaction(gb_container);
     return result;
 }
 
-GB_ERROR GBT_write_string(GBDATA *gb_main, const char *awar_name, const char *def)
-{
-    GBDATA *gbd;
-    GB_ERROR error;
-    GB_push_transaction(gb_main);
-    gbd = GB_search(gb_main,awar_name,GB_STRING);
-    error = GB_write_string(gbd,def);
-    GB_pop_transaction(gb_main);
+const char *GBT_readOrCreate_char_pntr(GBDATA *gb_container, const char *fieldpath, const char *default_value) {
+    GBDATA     *gb_string;
+    const char *result = NULL;
+
+    GB_push_transaction(gb_container);
+    gb_string             = GB_searchOrCreate_string(gb_container, fieldpath, default_value);
+    if (gb_string) result = GB_read_char_pntr(gb_string);
+    GB_pop_transaction(gb_container);
+    return result;
+}
+
+NOT4PERL long *GBT_readOrCreate_int(GBDATA *gb_container, const char *fieldpath, long default_value) {
+    GBDATA *gb_int;
+    long   *result = NULL;
+
+    GB_push_transaction(gb_container);
+    gb_int = GB_searchOrCreate_int(gb_container, fieldpath, default_value);
+    if (gb_int) {
+        static long result_var;
+        result_var = GB_read_int(gb_int);
+        result     = &result_var;
+    }
+    GB_pop_transaction(gb_container);
+    return result;
+}
+
+NOT4PERL double *GBT_readOrCreate_float(GBDATA *gb_container, const char *fieldpath, double default_value) {
+    GBDATA *gb_float;
+    double *result = NULL;
+
+    GB_push_transaction(gb_container);
+    gb_float = GB_searchOrCreate_float(gb_container, fieldpath, default_value);
+    if (gb_float) {
+        static double result_var;
+        result_var = GB_read_float(gb_float);
+        result     = &result_var;
+    }
+    GB_pop_transaction(gb_container);
+    return result;
+}
+
+/* --------------------------------------------------------- */
+/*      overwrite existing or create new database field      */
+
+GB_ERROR GBT_write_string(GBDATA *gb_container, const char *fieldpath, const char *content) {
+    GBDATA   *gbd;
+    GB_ERROR  error;
+    GB_push_transaction(gb_container);
+    gbd = GB_search(gb_container,fieldpath,GB_STRING);
+    if (!gbd) error = GB_get_error();
+    else {
+        error = GB_write_string(gbd, content);
+        gb_assert(GB_nextEntry(gbd) == 0); // only one entry should exist (sure you want to use this function?)
+    }
+    GB_pop_transaction(gb_container);
     return error;
 }
 
-GB_ERROR GBT_write_int(GBDATA *gb_main, const char *awar_name, long def)
-{
-    GBDATA *gbd;
-    GB_ERROR error;
-    GB_push_transaction(gb_main);
-    gbd = GB_search(gb_main,awar_name,GB_INT);
-    error = GB_write_int(gbd,def);
-    GB_pop_transaction(gb_main);
+GB_ERROR GBT_write_int(GBDATA *gb_container, const char *fieldpath, long content) {
+    GBDATA   *gbd;
+    GB_ERROR  error;
+    GB_push_transaction(gb_container);
+    gbd             = GB_search(gb_container,fieldpath,GB_INT);
+    if (!gbd) error = GB_get_error();
+    else {
+        error = GB_write_int(gbd, content);
+        gb_assert(GB_nextEntry(gbd) == 0); // only one entry should exist (sure you want to use this function?)
+    }
+    GB_pop_transaction(gb_container);
     return error;
 }
 
-GB_ERROR GBT_write_float(GBDATA *gb_main, const char *awar_name, double def)
-{
-    GBDATA *gbd;
-    GB_ERROR error;
-    GB_push_transaction(gb_main);
-    gbd = GB_search(gb_main,awar_name,GB_FLOAT);
-    error = GB_write_float(gbd,def);
-    GB_pop_transaction(gb_main);
+GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, double content) {
+    GBDATA   *gbd;
+    GB_ERROR  error;
+    GB_push_transaction(gb_container);
+    gbd = GB_search(gb_container,fieldpath,GB_FLOAT);
+    if (!gbd) error = GB_get_error();
+    else {
+        error = GB_write_float(gbd,content);
+        gb_assert(GB_nextEntry(gbd) == 0); // only one entry should exist (sure you want to use this function?)
+    }
+    GB_pop_transaction(gb_container);
     return error;
 }
 

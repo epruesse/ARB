@@ -2,7 +2,7 @@
 /*                                                                      */
 /*   File      : ad_config.c                                            */
 /*   Purpose   : handle editor configurations                           */
-/*   Time-stamp: <Mon Dec/01/2008 13:46 MET Coder@ReallySoft.de>        */
+/*   Time-stamp: <Wed Dec/03/2008 17:07 MET Coder@ReallySoft.de>        */
 /*                                                                      */
 /*                                                                      */
 /* Coded by Ralf Westram (coder@reallysoft.de) in May 2005              */
@@ -76,21 +76,21 @@ char **GBT_get_configuration_names(GBDATA *gb_main) {
 
 GBDATA *GBT_find_configuration(GBDATA *gb_main,const char *name){
     GBDATA *gb_configuration_data = GB_search(gb_main,AWAR_CONFIG_DATA,GB_DB);
-    GBDATA *gb_configuration_name;
-    gb_configuration_name = GB_find_string(gb_configuration_data,"name",name,GB_IGNORE_CASE,down_2_level);
-    if (!gb_configuration_name) return 0;
-    return GB_get_father(gb_configuration_name);
+    GBDATA *gb_configuration_name = GB_find_string(gb_configuration_data,"name",name,GB_IGNORE_CASE,down_2_level);
+    return gb_configuration_name ? GB_get_father(gb_configuration_name) : 0;
 }
 
 GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name){
-    GBDATA *gb_configuration_data;
-    GBDATA *gb_configuration;
-    GBDATA *gb_name;
-    gb_configuration = GBT_find_configuration(gb_main,name);
-    if (gb_configuration) return gb_configuration;
-    gb_configuration_data = GB_search(gb_main,AWAR_CONFIG_DATA,GB_DB);
-    gb_configuration = GB_create_container(gb_configuration_data,AWAR_CONFIG);
-    gb_name = GBT_search_string(gb_configuration,"name",name);
+    GBDATA *gb_configuration = GBT_find_configuration(gb_main,name);
+    if (!gb_configuration) {
+        GBDATA *gb_configuration_data = GB_search(gb_main,AWAR_CONFIG_DATA,GB_DB);
+
+        gb_configuration = GB_create_container(gb_configuration_data,AWAR_CONFIG); // create new container
+        if (gb_configuration) {
+            GB_ERROR error = GBT_write_string(gb_configuration, "name", name);
+            if (error) GB_export_error(error);
+        }
+    }
     return gb_configuration;
 }
 
@@ -108,34 +108,21 @@ GBT_config *GBT_load_configuration_data(GBDATA *gb_main, const char *name, GB_ER
         *error = GBS_global_string("No such configuration '%s'", name);
     }
     else {
-        GBDATA *gb_top    = GB_search(gb_configuration, "top_area", GB_FIND);
-        GBDATA *gb_middle = GB_search(gb_configuration, "middle_area", GB_FIND);
+        config              = GB_calloc(1, sizeof(*config));
+        config->top_area    = GBT_read_string(gb_configuration, "top_area");
+        config->middle_area = GBT_read_string(gb_configuration, "middle_area");
 
-        if (gb_top && gb_middle) {
-            config              = GB_calloc(1, sizeof(*config));
-            config->top_area    = GB_read_string(gb_top);
-            config->middle_area = GB_read_string(gb_middle);
-
-            if (!(config->top_area && config->middle_area)) {
-                GBT_free_configuration_data(config);
-                config = 0;
-            }
+        if (!config->top_area || !config->middle_area) {
+            GBT_free_configuration_data(config);
+            config = 0;
+            GB_ERROR dberr = GB_get_error();
+            *error = GBS_global_string("Configuration '%s' is corrupted (%s)",
+                                       name, dberr ? dberr : "unknown reason");
         }
-        if (!config) *error = GBS_global_string("Configuration '%s' is corrupted", name);
     }
 
     *error = GB_end_transaction(gb_main, *error);
     return config;
-}
-
-static GB_ERROR gbt_save_entry(GBDATA *gb_configuration, const char *subentry, const char *content) {
-    GB_ERROR  error       = 0;
-    GBDATA   *gb_subentry = GB_search(gb_configuration, subentry, GB_STRING);
-
-    if (gb_subentry) error = GB_write_string(gb_subentry, content);
-    else error             = GBS_global_string("Can't create field '%s'", subentry);
-    
-    return error;
 }
 
 GB_ERROR GBT_save_configuration_data(GBT_config *config, GBDATA *gb_main, const char *name) {
@@ -149,9 +136,10 @@ GB_ERROR GBT_save_configuration_data(GBT_config *config, GBDATA *gb_main, const 
         error = GBS_global_string("Can't create configuration '%s' (Reason: %s)", name, GB_get_error());
     }
     else {
-        error             = gbt_save_entry(gb_configuration, "top_area", config->top_area);
-        if (!error) error = gbt_save_entry(gb_configuration, "middle_area", config->middle_area);
-        if (error) error  = GBS_global_string("%s (in configuration '%s')", error, name);
+        error             = GBT_write_string(gb_configuration, "top_area", config->top_area);
+        if (!error) error = GBT_write_string(gb_configuration, "middle_area", config->middle_area);
+        
+        if (error) error = GBS_global_string("%s (in configuration '%s')", error, name);
     }
 
     return GB_end_transaction(gb_main, error);

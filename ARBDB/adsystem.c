@@ -143,7 +143,7 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
             ks->dictionary = 0;
         }
 
-        ks->compression_mask = (int)GBT_read_int2(gb_key,"compression_mask",-1);
+        ks->compression_mask = *GBT_readOrCreate_int(gb_key,"compression_mask",-1);
         gb_dict              = GB_entry(gb_key,"@dictionary");
         ks->dictionary       = gb_dict ? gb_create_dict(gb_dict) : 0;
         ks->gb_key           = gb_key;

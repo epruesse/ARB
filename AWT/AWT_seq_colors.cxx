@@ -177,7 +177,7 @@ void AWT_seq_colors::reload(){
 
     for (int selector = 0; selector<2; selector++) {
         long def_set = selector == 0 ? default_NUC_set : default_AMI_set;
-        long set     = GBT_read_int2(gb_def, selector_awar[selector], def_set);
+        long set     = *GBT_readOrCreate_int(gb_def, selector_awar[selector], def_set);
 
         if (set < 0 || set >= AWT_SEQ_COLORS_MAX_SET) {
             set = def_set;
@@ -185,13 +185,13 @@ void AWT_seq_colors::reload(){
 
         for (int elem = 0; elem < AWT_SEQ_COLORS_MAX_ELEMS; elem++){
             sprintf(buf,AWAR_SEQ_NAME_STRINGS_TEMPLATE,elem);
-            unsigned char *sc = (unsigned char *)GBT_read_string2(gb_def,buf,default_characters(elem));
+            unsigned char *sc = (unsigned char *)GBT_readOrCreate_string(gb_def, buf, default_characters(elem));
             if (!cbexists) {
                 GBDATA *gb_ne = GB_search(gb_def,buf,GB_STRING);
                 GB_add_callback(gb_ne,GB_CB_CHANGED,awt_awar_changed_cb,(int *)this);
                 for (int s2=0; s2<AWT_SEQ_COLORS_MAX_SET; s2++){
                     sprintf(buf,AWAR_SEQ_NAME_TEMPLATE,s2,elem);
-                    GBT_read_string2(gb_def,buf,default_color(s2, elem));
+                    GBT_readOrCreate_char_pntr(gb_def, buf, default_color(s2, elem)); // add default if missing
                     gb_ne = GB_search(gb_def,buf,GB_STRING);
                     GB_add_callback(gb_ne,GB_CB_CHANGED,awt_awar_changed_cb,(int *)this);
                 }

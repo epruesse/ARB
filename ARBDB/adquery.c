@@ -417,12 +417,12 @@ char *GB_first_non_key_char(const char *str){
 GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag)
 {
     /* finds a hierarchical key,
-       if create != 0 than create the keys
-       force types if ! intern
+       if create != GB_FIND(==0), then create the key
+       force types if ! internflag
     */
 
-    char            *s1, *s2;
-    GBDATA          *gbp, *gbsp;
+    char   *s1, *s2;
+    GBDATA *gbp, *gbsp;
     int     len;
     int     seperator = 0;
     char    buffer[GB_PATH_MAX];
@@ -440,10 +440,12 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
 
     if (!gb_first_non_key_character(str)) {
         gbsp = GB_entry(gbd,str);
-        if (gbsp && create && create != GB_TYPE(gbsp)){ /* force type */
-            GB_delete(gbsp);
-            GB_internal_error("Inconsistent Type1 '%s', repairing database",str);
-            gbsp = GB_entry(gbd,str);
+        if (gbsp && create) {
+            GB_TYPES oldType = GB_TYPE(gbsp);
+            if (create != oldType) { /* type mismatch */
+                GB_export_error("Inconsistent type for field '%s' (existing=%i, expected=%i)", str, oldType, create);
+                return NULL;
+            }
         }
         if (!gbsp && create) {
             if (internflag){
@@ -549,9 +551,75 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
 }
 
 
-GBDATA *GB_search(GBDATA * gbd, const char *str, long /*enum gb_search_enum*/ create){
-    return gb_search(gbd,str,create,0);
+GBDATA *GB_search(GBDATA * gbd, const char *fieldpath, long /*enum gb_search_enum*/ create){
+    return gb_search(gbd, fieldpath, create, 0);
 }
+
+static GBDATA *gb_expect_type(GBDATA *gbd, long expected_type, const char *fieldname) {
+    gb_assert(expected_type != GB_FIND); // impossible
+
+    long type = GB_TYPE(gbd);
+    if (type != expected_type) {
+        GB_export_error("Field '%s' has wrong type (found=%li, expected=%li)", fieldname, type, expected_type);
+        gbd = 0;
+    }
+    return gbd;
+}
+
+GBDATA *GB_searchOrCreate_string(GBDATA *gb_container, const char *fieldpath, const char *default_value) {
+    GBDATA *gb_str = GB_search(gb_container, fieldpath, GB_FIND);
+    if (!gb_str) {
+        gb_str = GB_search(gb_container, fieldpath, GB_STRING);
+        if (gb_str) {
+            GB_ERROR error = GB_write_string(gb_str, default_value);
+            if (error) {
+                gb_str = 0;
+                GB_export_error(error);
+            }
+        }
+    }
+    else {
+        gb_str = gb_expect_type(gb_str, GB_STRING, fieldpath);
+    }
+    return gb_str;
+}
+
+GBDATA *GB_searchOrCreate_int(GBDATA *gb_container, const char *fieldpath, long default_value) {
+    GBDATA *gb_int = GB_search(gb_container, fieldpath, GB_FIND);
+    if (!gb_int) {
+        gb_int = GB_search(gb_container, fieldpath, GB_INT);
+        if (gb_int) {
+            GB_ERROR error = GB_write_int(gb_int, default_value);
+            if (error) {
+                gb_int = 0;
+                GB_export_error(error);
+            }
+        }
+    }
+    else {
+        gb_int = gb_expect_type(gb_int, GB_INT, fieldpath);
+    }
+    return gb_int;
+}
+
+GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, double default_value) {
+    GBDATA *gb_float = GB_search(gb_container, fieldpath, GB_FIND);
+    if (!gb_float) {
+        gb_float = GB_search(gb_container, fieldpath, GB_FLOAT);
+        if (gb_float) {
+            GB_ERROR error = GB_write_float(gb_float, default_value);
+            if (error) {
+                gb_float = 0;
+                GB_export_error(error);
+            }
+        }
+    }
+    else {
+        gb_float = gb_expect_type(gb_float, GB_FLOAT, fieldpath);
+    }
+    return gb_float;
+}
+
 
 
 /********************************************************************************************
