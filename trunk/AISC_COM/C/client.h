@@ -27,7 +27,6 @@ extern "C" {
 /* client.c */
 int aisc_c_read P_((int socket, char *ptr, long size));
 int aisc_c_write P_((int socket, char *ptr, int size));
-void aisc_c_add_to_bytes_queue P_((char *data, int size));
 int aisc_c_send_bytes_queue P_((aisc_com *link));
 int aisc_add_message_queue P_((aisc_com *link, long size));
 int aisc_check_error P_((aisc_com *link));

@@ -105,7 +105,7 @@ void QueryTests(struct PTPanGlobal *pg)
 #endif
 
 
-void convertBondMatrix(PT_pdc *pdc, PTPanGlobal *pg)
+static void convertBondMatrix(PT_pdc *pdc, PTPanGlobal *pg)
 {
     for (int query = SEQCODE_A; query <= SEQCODE_T; ++query) {
         for (int species = SEQCODE_A; species <= SEQCODE_T; ++species) {
@@ -122,13 +122,13 @@ void convertBondMatrix(PT_pdc *pdc, PTPanGlobal *pg)
 }
 
 
-double calc_position_wmis(int pos, int seq_len, double y1, double y2)
+static double calc_position_wmis(int pos, int seq_len, double y1, double y2)
 {                                                           // TODO: check if (seq_len -1) is necessary
     return (double)(((double)(pos * (seq_len - 1 - pos)) / (double)((seq_len - 1) * (seq_len - 1)))* (double)(y2*4.0) + y1);
 }
 
 
-void buildPosWeight(SearchQuery *sq)
+static void buildPosWeight(SearchQuery *sq)
 {
     if (sq->sq_PosWeight) delete[] sq->sq_PosWeight;
     //printf("buildPosWeight: ...new double[%i];\n", sq->sq_QueryLen+1);
