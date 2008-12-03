@@ -103,7 +103,6 @@ void pt_sort_match_list P_((PT_local *locs));
 char *reverse_probe P_((char *probe, int probe_length));
 int PT_complement P_((int base));
 void complement_probe P_((char *probe, int probe_length));
-double calc_position_wmis P_((int pos, int seq_len, double y1, double y2));
 void pt_build_pos_to_weight P_((PT_MATCH_TYPE type, const char *sequence));
 extern "C" int probe_match P_((PT_local *locs, aisc_string probestring));
 extern "C" bytestring *match_string P_((PT_local *locs));
