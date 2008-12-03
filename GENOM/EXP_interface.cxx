@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri Jul/25/2008 14:44 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Dec/03/2008 10:49 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -294,106 +294,112 @@ void experiment_delete_cb(AW_window *aww){
     }
 }
 
-void experiment_create_cb(AW_window *aww){
-    GB_begin_transaction(GLOBAL_gb_main);
+void experiment_create_cb(AW_window *aww) {
+    AW_root  *aw_root = aww->get_root();
+    char     *dest    = aw_root->awar(AWAR_EXPERIMENT_DEST)->read_string();
+    GB_ERROR  error   = GB_begin_transaction(GLOBAL_gb_main);
 
-    GB_ERROR  error              = 0;
-    AW_root  *aw_root            = aww->get_root();
-    char     *dest               = aw_root->awar(AWAR_EXPERIMENT_DEST)->read_string();
-    GBDATA   *gb_experiment_data = EXP_get_current_experiment_data(GLOBAL_gb_main, aw_root);
-    GBDATA   *gb_dest            = EXP_find_experiment_rel_experiment_data(gb_experiment_data, dest);
+    if (!error) {
+        GBDATA *gb_experiment_data = EXP_get_current_experiment_data(GLOBAL_gb_main, aw_root);
 
-    if (!gb_experiment_data) error = "Please select a species first";
-    else if (gb_dest) error  = GB_export_error("Sorry: experiment '%s' already exists", dest);
-    else {
-        gb_dest = EXT_create_experiment_rel_experiment_data(gb_experiment_data, dest);
-        if (gb_dest) aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->write_string(dest);
-        else error = GB_get_error();
+        if (!gb_experiment_data) {
+            error = "Please select a species";
+        }
+        else {
+            GBDATA *gb_dest = EXP_find_experiment_rel_experiment_data(gb_experiment_data, dest);
+
+            if (gb_dest) {
+                error  = GB_export_error("Experiment '%s' already exists", dest);
+            }
+            else {
+                gb_dest = EXT_create_experiment_rel_experiment_data(gb_experiment_data, dest);
+                if (gb_dest) aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->write_string(dest);
+                else error = GB_get_error();
+            }
+        }
     }
-    if (!error) GB_commit_transaction(GLOBAL_gb_main);
-    else    GB_abort_transaction(GLOBAL_gb_main);
-    if (error) aw_message(error);
-    delete dest;
+    
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+    free(dest);
 }
 
 void experiment_rename_cb(AW_window *aww){
-
-    GB_ERROR  error   = 0;
-    AW_root  *aw_root = aww->get_root();
-    char     *source  = aw_root->awar(AWAR_EXPERIMENT_NAME)->read_string();
-    char     *dest    = aw_root->awar(AWAR_EXPERIMENT_DEST)->read_string();
+    AW_root *aw_root = aww->get_root();
+    char    *source  = aw_root->awar(AWAR_EXPERIMENT_NAME)->read_string();
+    char    *dest    = aw_root->awar(AWAR_EXPERIMENT_DEST)->read_string();
 
     if (strcmp(source, dest) != 0) {
-        GB_begin_transaction(GLOBAL_gb_main);
+        GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
 
+        if (!error) {
+            GBDATA *gb_experiment_data = EXP_get_current_experiment_data(GLOBAL_gb_main, aww->get_root());
+
+            if (!gb_experiment_data) error = "Please select a species first";
+            else {
+                GBDATA *gb_source = EXP_find_experiment_rel_experiment_data(gb_experiment_data, source);
+                GBDATA *gb_dest   = EXP_find_experiment_rel_experiment_data(gb_experiment_data, dest);
+
+                if (!gb_source) error   = "Please select an experiment";
+                else if (gb_dest) error = GB_export_error("Experiment '%s' already exists", dest);
+                else {
+                    GBDATA *gb_name = GB_search(gb_source, "name", GB_STRING);
+
+                    if (!gb_name) error = GB_get_error();
+                    else {
+                        error = GB_write_string(gb_name, dest);
+                        if (!error) aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->write_string(dest);
+                    }
+                }
+            }
+        }
+        error = GB_end_transaction(GLOBAL_gb_main, error);
+        aww->hide_or_notify(error);
+    }
+
+    free(source);
+    free(dest);
+}
+
+void experiment_copy_cb(AW_window *aww) {
+    char     *source = aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->read_string();
+    char     *dest   = aww->get_root()->awar(AWAR_EXPERIMENT_DEST)->read_string();
+    GB_ERROR  error  = GB_begin_transaction(GLOBAL_gb_main);
+
+    if (!error) {
         GBDATA *gb_experiment_data = EXP_get_current_experiment_data(GLOBAL_gb_main, aww->get_root());
 
-        if (!gb_experiment_data) error = "Please select a species first";
+        if (!gb_experiment_data) {
+            error = "Please select a species first.";
+        }
         else {
             GBDATA *gb_source = EXP_find_experiment_rel_experiment_data(gb_experiment_data, source);
             GBDATA *gb_dest   = EXP_find_experiment_rel_experiment_data(gb_experiment_data, dest);
 
-            if (!gb_source) error   = "Please select a experiment first";
-            else if (gb_dest) error = GB_export_error("Sorry: experiment '%s' already exists", dest);
+            if (!gb_source) error   = "Please select a experiment";
+            else if (gb_dest) error = GB_export_error("Experiment '%s' already exists", dest);
             else {
-                GBDATA *gb_name = GB_search(gb_source, "name", GB_STRING);
-                error           = GB_write_string(gb_name, dest);
-                if (!error) aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->write_string(dest);
-            }
-        }
+                gb_dest             = GB_create_container(gb_experiment_data,"experiment");
+                if (!gb_dest) error = GB_get_error();
+                else error          = GB_copy(gb_dest, gb_source);
 
-        if (!error){
-            aww->hide();
-            GB_commit_transaction(GLOBAL_gb_main);
-        }else{
-            GB_abort_transaction(GLOBAL_gb_main);
-        }
-    }
+                if (!error) {
+                    GBDATA *gb_name = GB_search(gb_dest,"name",GB_STRING);
 
-    if (error) aw_message(error);
-    delete source;
-    delete dest;
-}
-
-void experiment_copy_cb(AW_window *aww){
-    GB_begin_transaction(GLOBAL_gb_main);
-
-    GB_ERROR  error        = 0;
-    char     *source       = aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->read_string();
-    char     *dest         = aww->get_root()->awar(AWAR_EXPERIMENT_DEST)->read_string();
-    GBDATA   *gb_experiment_data = EXP_get_current_experiment_data(GLOBAL_gb_main, aww->get_root());
-
-    if (!gb_experiment_data) {
-        error = "Please select a species first.";
-    }
-    else {
-        GBDATA *gb_source = EXP_find_experiment_rel_experiment_data(gb_experiment_data, source);
-        GBDATA *gb_dest   = EXP_find_experiment_rel_experiment_data(gb_experiment_data, dest);
-
-        if (!gb_source) error   = "Please select a experiment first";
-        else if (gb_dest) error = GB_export_error("Sorry: experiment '%s' already exists", dest);
-        else {
-            gb_dest = GB_create_container(gb_experiment_data,"experiment");
-            error = GB_copy(gb_dest, gb_source);
-            if (!error) {
-                GBDATA *gb_name = GB_search(gb_dest,"name",GB_STRING);
-                error = GB_write_string(gb_name,dest);
-            }
-            if (!error) {
-                aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->write_string(dest);
+                    if (!gb_name) error = GB_get_error();
+                    else {
+                        error = GB_write_string(gb_name,dest);
+                        if (!error) aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->write_string(dest);
+                    }
+                }
             }
         }
     }
 
-    if (!error){
-        aww->hide();
-        GB_commit_transaction(GLOBAL_gb_main);
-    }else{
-        GB_abort_transaction(GLOBAL_gb_main);
-    }
-    if (error) aw_message(error);
-    delete source;
-    delete dest;
+    error = GB_end_transaction(GLOBAL_gb_main, error);
+    aww->hide_or_notify(error);
+    
+    free(source);
+    free(dest);
 }
 
 AW_window *create_experiment_rename_window(AW_root *root)

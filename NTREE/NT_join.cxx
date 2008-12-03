@@ -106,62 +106,49 @@ GB_ERROR nt_species_join(GBDATA *dest, GBDATA *source, int deep, char *sep, char
 }
 
 void species_rename_join(AW_window *aww){
-    GB_ERROR  error = 0;
     char     *field = aww->get_root()->awar(AWAR_SPECIES_JOIN_FIELD)->read_string();
     char     *sep   = aww->get_root()->awar(AWAR_SPECIES_JOIN_SEP)->read_string();
     char     *sep2  = aww->get_root()->awar(AWAR_SPECIES_JOIN_SEP2)->read_string();
-    GB_begin_transaction(GLOBAL_gb_main);
+    GB_ERROR  error = GB_begin_transaction(GLOBAL_gb_main);
 
-    GBDATA  *gb_species, *gb_next;
-    GBDATA  *gb_field;
-    GB_HASH *hash = GBS_create_hash(1000, GB_MIND_CASE);
-    aw_openstatus("Joining species");
+    if (!error) {
+        GB_HASH *hash = GBS_create_hash(1000, GB_MIND_CASE);
+        aw_openstatus("Joining species");
 
-    long maxs = GBT_count_marked_species(GLOBAL_gb_main);
-    long cnt  = 0;
+        long maxs = GBT_count_marked_species(GLOBAL_gb_main);
+        long cnt  = 0;
 
-    for (gb_species = GBT_first_marked_species(GLOBAL_gb_main);
-         gb_species;
-         gb_species = gb_next)
-    {
-        gb_next = GBT_next_marked_species(gb_species);
-        cnt ++;
-        aw_status(cnt/(double)maxs);
-        gb_field = GB_entry(gb_species,field);
-        if (!gb_field) continue;
-        const char *fv = GB_read_char_pntr(gb_field);
-        GBDATA *gb_old = (GBDATA *)GBS_read_hash(hash, fv);
-        if (!gb_old) {
-            GBS_write_hash(hash,fv,(long)gb_species);
-            continue;
+        GBDATA *gb_next = 0;
+        for (GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main);
+             gb_species && !error;
+             gb_species = gb_next)
+        {
+            gb_next = GBT_next_marked_species(gb_species);
+
+            aw_status(++cnt/(double)maxs);
+
+            GBDATA *gb_field = GB_entry(gb_species,field);
+            if (gb_field) {
+                const char *fv     = GB_read_char_pntr(gb_field);
+                GBDATA     *gb_old = (GBDATA *)GBS_read_hash(hash, fv);
+
+                if (!gb_old) {
+                    GBS_write_hash(hash,fv,(long)gb_species);
+                }
+                else {
+                    error = nt_species_join(gb_old,gb_species,0,sep,sep2);
+                    if (!error) error = GB_delete(gb_species);
+                }
+            }
         }
-#if defined(DEBUG)
-        GB_commit_transaction(GLOBAL_gb_main);
-        GB_begin_transaction(GLOBAL_gb_main);
-#endif // DEBUG
 
-        error = nt_species_join(gb_old,gb_species,0,sep,sep2);
-        if (error) break;
-
-#if defined(DEBUG)
-        GB_commit_transaction(GLOBAL_gb_main);
-        GB_begin_transaction(GLOBAL_gb_main);
-#endif // DEBUG
-
-        error = GB_delete(gb_species);
-        if (error) break;
+        aw_closestatus();
+        GBS_free_hash(hash);
     }
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 
-    aw_closestatus();
-
-    if (!error) GB_commit_transaction(GLOBAL_gb_main);
-    else GB_abort_transaction(GLOBAL_gb_main);
-
-    if (error) aw_message(error);
-
-    GBS_free_hash(hash);
-    free(sep);
     free(sep2);
+    free(sep);
     free(field);
 }
 

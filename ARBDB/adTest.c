@@ -417,15 +417,9 @@ static GB_ERROR gb_fix_recursive(GBDATA *gbd) {
 }
 
 GB_ERROR GB_fix_database(GBDATA *gb_main) {
-    GB_ERROR err = 0;
-    GB_begin_transaction(gb_main);
-
-    err = gb_fix_recursive(gb_main);
-
-    if (err) GB_abort_transaction(gb_main);
-    else GB_commit_transaction(gb_main);
-
-    return err;
+    GB_ERROR err  = GB_begin_transaction(gb_main);
+    if (!err) err = gb_fix_recursive(gb_main);
+    return GB_end_transaction(gb_main, err);
 }
 
 

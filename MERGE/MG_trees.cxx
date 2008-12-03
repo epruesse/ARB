@@ -14,11 +14,6 @@
 #define AWAR_TREE_NAME2 "tmp/merge2/tree_name"
 #define AWAR_TREE_DEST2 "tmp/merge2/tree_dest"
 
-// const char *AWAR_TREE_NAME1 = "tmp/merge1/tree_name";
-// const char *AWAR_TREE_DEST1 = "tmp/merge1/tree_dest";
-// const char *AWAR_TREE_NAME2 = "tmp/merge2/tree_name";
-// const char *AWAR_TREE_DEST2 = "tmp/merge2/tree_dest";
-
 void MG_create_trees_awar(AW_root *aw_root, AW_default aw_def)
 {
     aw_root->awar_string( AWAR_TREE_NAME1, "" , aw_def);
@@ -28,36 +23,40 @@ void MG_create_trees_awar(AW_root *aw_root, AW_default aw_def)
 }
 
 void MG_tree_rename_cb(AW_window *aww,GBDATA *gbd, int tree_nr){
-
-    GB_ERROR    error   = 0;
     const char *tsource = tree_nr == 1 ? AWAR_TREE_NAME1 : AWAR_TREE_NAME2;
     const char *tdest   = tree_nr == 1 ? AWAR_TREE_DEST1 : AWAR_TREE_DEST2;
+    char       *source  = aww->get_root()->awar(tsource)->read_string();
+    char       *dest    = aww->get_root()->awar(tdest)->read_string();
 
-    char *source = aww->get_root()->awar(tsource)->read_string();
-    char *dest   = aww->get_root()->awar(tdest)->read_string();
-    error        = GBT_check_tree_name(dest);
+    GB_ERROR error = GBT_check_tree_name(dest);
     if (!error) {
-        GB_begin_transaction(gbd);
-        GBDATA *gb_tree_data = GB_search(gbd,"tree_data",GB_CREATE_CONTAINER);
-        GBDATA *gb_tree_name = GB_entry(gb_tree_data,source);
-        GBDATA *gb_dest_tree = GB_entry(gb_tree_data,dest);
+        error = GB_begin_transaction(gbd);
 
-        if (gb_dest_tree) {
-            error = "Sorry: Tree already exists";
+        if (!error) {
+            GBDATA *gb_tree_data = GB_search(gbd, "tree_data", GB_CREATE_CONTAINER);
+
+            if (!gb_tree_data) error = GB_get_error();
+            else {
+                GBDATA *gb_tree_name = GB_entry(gb_tree_data, source);
+                GBDATA *gb_dest_tree = GB_entry(gb_tree_data, dest);
+
+                if (gb_dest_tree) {
+                    error = GBS_global_string("Tree '%s' already exists", dest);
+                }
+                else if (gb_tree_name) {
+                    GBDATA *gb_new_tree = GB_create_container(gb_tree_data,dest);
+                    error               = GB_copy(gb_new_tree, gb_tree_name);
+                    if (!error) error   = GB_delete(gb_tree_name);
+                }
+                else {
+                    error = "Please select a tree first";
+                }
+            }
         }
-        else if (gb_tree_name) {
-            GBDATA *gb_new_tree = GB_create_container(gb_tree_data,dest);
-            GB_copy(gb_new_tree, gb_tree_name);
-            error = GB_delete(gb_tree_name);
-        }
-        else {
-            error = "Please select a tree first";
-        }
-        if (!error) GB_commit_transaction(gbd);
-        else        GB_abort_transaction(gbd);
+        error = GB_end_transaction(gbd, error);
     }
-    if (error) aw_message(error);
-    else aww->hide();
+    
+    aww->hide_or_notify(error);
 
     free(source);
     free(dest);
@@ -109,56 +108,52 @@ AW_window *MG_create_tree_rename_window2(AW_root *root)
     return (AW_window *)aws;
 }
 void MG_tr_delete_cb(AW_window *aww,GBDATA *gbd, long tree_nr){
-    GB_ERROR    error   = 0;
     const char *tsource = tree_nr == 1 ? AWAR_TREE_NAME1 : AWAR_TREE_NAME2;
     char       *source  = aww->get_root()->awar(tsource)->read_string();
+    GB_ERROR    error   = GB_begin_transaction(gbd);
 
-    GB_begin_transaction(gbd);
-    GBDATA *gb_tree_data = GB_search(gbd,"tree_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_tree_name = GB_entry(gb_tree_data,source);
-
-    if (gb_tree_name) {
-        error = GB_delete(gb_tree_name);
-    }else{
-        error = "Please select a tree first";
+    if (!error) {
+        GBDATA *gb_tree_data     = GB_search(gbd,"tree_data",GB_CREATE_CONTAINER);
+        if (!gb_tree_data) error = GB_get_error();
+        else {
+            GBDATA *gb_tree_name    = GB_entry(gb_tree_data,source);
+            if (gb_tree_name) error = GB_delete(gb_tree_name);
+            else    error           = "Please select a tree";
+        }
     }
-
-    if (!error) GB_commit_transaction(gbd);
-    else        GB_abort_transaction(gbd);
-
-    if (error) aw_message(error);
+    GB_end_transaction_show_error(gbd, error, aw_message);
     free(source);
 }
 void MG_transfer_tree(AW_window *aww){
-    AW_root *awr = aww->get_root();
-    char *source = awr->awar(AWAR_TREE_NAME1)->read_string();
-    char *dest = awr->awar(AWAR_TREE_NAME1)->read_string();
-    GB_ERROR error = 0;
-    GB_begin_transaction(GLOBAL_gb_dest);
-    GB_begin_transaction(GLOBAL_gb_merge);
+    AW_root *awr    = aww->get_root();
+    char    *source = awr->awar(AWAR_TREE_NAME1)->read_string();
+    char    *dest   = awr->awar(AWAR_TREE_NAME1)->read_string();
 
-    GBDATA *gb_tree_data1 = GB_search(GLOBAL_gb_merge,"tree_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_tree_data2 = GB_search(GLOBAL_gb_dest,"tree_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_source     = GB_entry(gb_tree_data1, source);
-    GBDATA *gb_dest_tree  = GB_entry(gb_tree_data2, dest);
-
-    if (!gb_source) error = "Please select a tree you want to transfer !!!";
-    else if (gb_dest_tree) {
-        error = "Sorry, You cannot destroy an old tree, delete it first";
-    } else {
-        gb_dest_tree = GB_create_container(gb_tree_data2,dest);
-        error = GB_copy(gb_dest_tree,gb_source);
-    }
+    GB_ERROR error    = GB_begin_transaction(GLOBAL_gb_dest);
+    if (!error) error = GB_begin_transaction(GLOBAL_gb_merge);
 
     if (!error) {
-        GB_commit_transaction(GLOBAL_gb_dest);
-        GB_commit_transaction(GLOBAL_gb_merge);
+        GBDATA *gb_tree_data1 = GB_search(GLOBAL_gb_merge,"tree_data",GB_CREATE_CONTAINER);
+        GBDATA *gb_tree_data2 = GB_search(GLOBAL_gb_dest,"tree_data",GB_CREATE_CONTAINER);
+
+        if (!gb_tree_data1 || !gb_tree_data2) error = GB_get_error();
+        else {
+            GBDATA *gb_source     = GB_entry(gb_tree_data1, source);
+            GBDATA *gb_dest_tree  = GB_entry(gb_tree_data2, dest);
+
+            if (!gb_source) error = "Please select the tree you want to transfer";
+            else if (gb_dest_tree) error = GBS_global_string("Tree '%s' already exists, delete it first", dest);
+            else {
+                gb_dest_tree             = GB_create_container(gb_tree_data2,dest);
+                if (!gb_dest_tree) error = GB_get_error();
+                else error               = GB_copy(gb_dest_tree,gb_source);
+            }
+        }
     }
-    else {
-        GB_abort_transaction(GLOBAL_gb_dest);
-        GB_abort_transaction(GLOBAL_gb_merge);
-    }
-    if (error) aw_message(error);
+    
+    error = GB_end_transaction(GLOBAL_gb_dest, error);
+    GB_end_transaction_show_error(GLOBAL_gb_merge, error, aw_message);
+
     free(source);
     free(dest);
 }

@@ -423,12 +423,7 @@ GB_ERROR g_b_undo(GB_MAIN_TYPE *Main, GBDATA *gb_main, struct g_b_undo_header_st
     uh->stack = u->next;
     delete_g_b_undo_struct(u);
 
-    if (error){
-        GB_abort_transaction(gb_main);
-    }else{
-        GB_commit_transaction(gb_main);
-    }
-    return error;
+    return GB_end_transaction(gb_main, error);
 }
 
 GB_CSTR g_b_read_undo_key_pntr(GB_MAIN_TYPE *Main, struct g_b_undo_entry_struct *ue){

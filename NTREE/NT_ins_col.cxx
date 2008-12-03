@@ -19,37 +19,28 @@ void create_insertchar_variables(AW_root *root,AW_default db1)
 
 void awt_inserchar_event(AW_window *aws,AW_CL awcl_mode)
 {
-    AW_root *root = aws->get_root();
-    char *alignment;
-    long    pos;
-    long    nchar;
-    char    *deletes;
-    int mode = (int)awcl_mode;
+    int      mode    = (int)awcl_mode;
+    AW_root *root    = aws->get_root();
+    long     pos     = root->awar(AWAR_CURSOR_POSITION)->read_int()-1;
+    long     nchar   = root->awar("insertchar/nchar")->read_int() * mode;
+    char    *deletes = root->awar("insertchar/characters")->read_string();
 
-    pos = root->awar(AWAR_CURSOR_POSITION)->read_int()-1;
-    nchar = root->awar("insertchar/nchar")->read_int() * mode;
-    deletes = root->awar("insertchar/characters")->read_string();
+    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
+    if (!error) {
+        char *alignment = GBT_get_default_alignment(GLOBAL_gb_main);
 
-    GB_begin_transaction(GLOBAL_gb_main);
-    alignment = GBT_get_default_alignment(GLOBAL_gb_main);
-
-    if (alignment) {
-        GB_ERROR error = GBT_insert_character(GLOBAL_gb_main,alignment,pos,nchar,deletes);
-
-        if (error) {
-            GB_abort_transaction(GLOBAL_gb_main);
-            aw_message(error);
-        }else{
-            GBT_check_data(GLOBAL_gb_main,0);
-            GB_commit_transaction(GLOBAL_gb_main);
+        if (alignment) {
+            error             = GBT_insert_character(GLOBAL_gb_main,alignment,pos,nchar,deletes);
+            if (!error) error = GBT_check_data(GLOBAL_gb_main,0);
         }
-    }else{
-        printf("ERROR no alignment found\n");
-        GB_abort_transaction(GLOBAL_gb_main);
+        else {
+            error = "no alignment found";
+        }
+        free(alignment);
     }
-
+    
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
     free(deletes);
-    free(alignment);
 }
 
 AW_window *create_insertchar_window(AW_root *root, AW_default def)

@@ -645,20 +645,20 @@ int main(int argc, char* argv[]) {
             // set default alignment for pt_server
             error = GBT_set_default_alignment(gb_main, "ali_ptgene");
 
-            GBDATA *gb_use     = GB_search(gb_main,"presets/alignment/alignment_name",GB_STRING);
-            if (!gb_use) error = GB_get_error();
-            else {
-                error             = GB_push_my_security(gb_main);
-                if (!error) error = GB_write_string(gb_use,"ali_ptgene");
-                if (!error) error = GB_pop_my_security(gb_main);
+            if (!error) {
+                GBDATA *gb_use     = GB_search(gb_main,"presets/alignment/alignment_name",GB_STRING);
+                if (!gb_use) error = GB_get_error();
+                else {
+                    GB_push_my_security(gb_main);
+                    error = GB_write_string(gb_use,"ali_ptgene");
+                    GB_pop_my_security(gb_main);
+                }
             }
         }
 
-        if (error) {
-            GB_abort_transaction(gb_main);
-        }
-        else {
-            GB_commit_transaction(gb_main);
+        error = GB_end_transaction(gb_main, error);
+
+        if (!error) {
             printf("Saving '%s' ..\n", outputname);
             error = GB_save_as(gb_main, outputname, "bfm");
             if (error) unlink(outputname);

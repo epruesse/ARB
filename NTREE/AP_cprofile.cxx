@@ -1125,164 +1125,154 @@ void CPRO_columnplus_cb(AW_window *aws, AW_CL /*which_statistic*/, AW_CL)
 
 void CPRO_savestatistic_cb(AW_window *aw,AW_CL which_statistic)
 {
-    AW_root *awr=aw->get_root();
-    char *filename=awr->awar("cpro/save/file_name")->read_string();
-    if(!filename) { aw_message("no filename"); return; }
-    GB_ERROR error;
+    AW_root  *awr      = aw->get_root();
+    char     *filename = awr->awar("cpro/save/file_name")->read_string();
+    GB_ERROR  error    = 0;
 
-    if(!(CPRO.result[which_statistic].statisticexists))
-    {
-        aw_message("calculate first !");
-        return;
+    if (!filename) {
+        error = "no filename";
     }
-
-    GBDATA *newbase=GB_open(filename,"wc");
-
-    if( (error=GB_begin_transaction(newbase)) )
-    {
-        aw_message(error);
-        delete filename;
-        return;
-    }
-
-    GBDATA *gb_param=GB_create(newbase,"cpro_resolution",GB_INT);
-    GB_write_int(gb_param,CPRO.result[which_statistic].resolution);
-    gb_param=GB_create(newbase,"cpro_maxalignlen",GB_INT);
-    GB_write_int(gb_param,CPRO.result[which_statistic].maxalignlen);
-    gb_param=GB_create(newbase,"cpro_maxaccu",GB_INT);
-    GB_write_int(gb_param,CPRO.result[which_statistic].maxaccu);
-    gb_param=GB_create(newbase,"cpro_memneeded",GB_INT);
-    GB_write_int(gb_param,CPRO.result[which_statistic].memneeded);
-    gb_param=GB_create(newbase,"cpro_alignname",GB_STRING);
-    GB_write_string(gb_param,CPRO.result[which_statistic].alignname);
-    gb_param=GB_create(newbase,"cpro_which_species",GB_STRING);
-    GB_write_string(gb_param,CPRO.result[which_statistic].which_species);
-    gb_param=GB_create(newbase,"cpro_ratio",GB_FLOAT);
-    GB_write_float(gb_param,CPRO.result[which_statistic].ratio);
-    gb_param=GB_create(newbase,"cpro_gaps",GB_INT);
-    GB_write_int(gb_param,CPRO.result[which_statistic].countgaps);
-
-
-    long maxalignlen=CPRO.result[which_statistic].maxalignlen;
-
-    GBDATA *gb_colrescontainer;
-    GBDATA *gb_colentry;
-    GB_UINT4 *pointer;
-    for(long column=0;column<CPRO.result[which_statistic].resolution;column++)
-    {
-        gb_colrescontainer=GB_create_container(newbase,"column");
-        if( (pointer=CPRO.result[which_statistic].statistic[column*3+0]) )
-        {
-            gb_colentry=GB_create(gb_colrescontainer,"equal",GB_INTS);
-            GB_write_ints(gb_colentry,pointer,maxalignlen);
+    else {
+        if (!(CPRO.result[which_statistic].statisticexists)) {
+            error = "calculate first!";
         }
-        if( (pointer=CPRO.result[which_statistic].statistic[column*3+1]))
-        {
-            gb_colentry=GB_create(gb_colrescontainer,"group",GB_INTS);
-            GB_write_ints(gb_colentry,pointer,maxalignlen);
-        }
-        if( (pointer=CPRO.result[which_statistic].statistic[column*3+2]))
-        {
-            gb_colentry=GB_create(gb_colrescontainer,"different",GB_INTS);
-            GB_write_ints(gb_colentry,pointer,maxalignlen);
-        }
-    }
+        else {
+            GBDATA *newbase = GB_open(filename,"wc");
 
-    if( (error=GB_commit_transaction(newbase)) )
-    {
-        aw_message(error);
-        delete filename;
-        GB_close(newbase);
-        return;
+            if (!newbase) {
+                error = GB_get_error();
+            }
+            else {
+                error = GB_begin_transaction(newbase);
+                if (!error) {
+                    // @@@ FIXME: fix error handling for single writes 
+                    GBDATA *gb_param = GB_create(newbase,"cpro_resolution",GB_INT);
+                    GB_write_int(gb_param,CPRO.result[which_statistic].resolution);
+
+                    gb_param = GB_create(newbase,"cpro_maxalignlen",GB_INT);
+                    GB_write_int(gb_param,CPRO.result[which_statistic].maxalignlen);
+
+                    gb_param = GB_create(newbase,"cpro_maxaccu",GB_INT);
+                    GB_write_int(gb_param,CPRO.result[which_statistic].maxaccu);
+
+                    gb_param = GB_create(newbase,"cpro_memneeded",GB_INT);
+                    GB_write_int(gb_param,CPRO.result[which_statistic].memneeded);
+
+                    gb_param = GB_create(newbase,"cpro_alignname",GB_STRING);
+                    GB_write_string(gb_param,CPRO.result[which_statistic].alignname);
+
+                    gb_param = GB_create(newbase,"cpro_which_species",GB_STRING);
+                    GB_write_string(gb_param,CPRO.result[which_statistic].which_species);
+
+                    gb_param = GB_create(newbase,"cpro_ratio",GB_FLOAT);
+                    GB_write_float(gb_param,CPRO.result[which_statistic].ratio);
+                    
+                    gb_param = GB_create(newbase,"cpro_gaps",GB_INT);
+                    GB_write_int(gb_param,CPRO.result[which_statistic].countgaps);
+
+                    long maxalignlen = CPRO.result[which_statistic].maxalignlen;
+
+                    GBDATA   *gb_colrescontainer;
+                    GBDATA   *gb_colentry;
+                    GB_UINT4 *pointer;
+                    for (long column = 0;column<CPRO.result[which_statistic].resolution;column++)
+                    {
+                        gb_colrescontainer=GB_create_container(newbase,"column");
+                        if( (pointer=CPRO.result[which_statistic].statistic[column*3+0]) )
+                        {
+                            gb_colentry=GB_create(gb_colrescontainer,"equal",GB_INTS);
+                            GB_write_ints(gb_colentry,pointer,maxalignlen);
+                        }
+                        if( (pointer=CPRO.result[which_statistic].statistic[column*3+1]))
+                        {
+                            gb_colentry=GB_create(gb_colrescontainer,"group",GB_INTS);
+                            GB_write_ints(gb_colentry,pointer,maxalignlen);
+                        }
+                        if( (pointer=CPRO.result[which_statistic].statistic[column*3+2]))
+                        {
+                            gb_colentry=GB_create(gb_colrescontainer,"different",GB_INTS);
+                            GB_write_ints(gb_colentry,pointer,maxalignlen);
+                        }
+                    }
+                }
+                error = GB_end_transaction(newbase, error);
+                if (!error) error = GB_save(newbase,(char*)0,"b");
+            }
+            GB_close(newbase);
+        }
     }
-    if( (error=GB_save(newbase,(char*)0,"b")) )
-    {
-        aw_message(error);
-        delete filename;
-        GB_close(newbase);
-        return;
-    }
-    GB_close(newbase);
-    delete filename;
-    aw->hide();
+    
+    free(filename);
+    aw->hide_or_notify(error);
 }
 
 void CPRO_loadstatistic_cb(AW_window *aw,AW_CL which_statistic)
 {
-    AW_root *awr=aw->get_root();
-    char *filename=awr->awar("cpro/load/file_name")->read_string();
-    if(!filename) { aw_message("no filename"); return; }
-    GB_ERROR error;
+    AW_root  *awr      = aw->get_root();
+    char     *filename = awr->awar("cpro/load/file_name")->read_string();
+    GB_ERROR  error    = 0;
 
-    GBDATA *oldbase=GB_open(filename,"r");
-    delete filename;
-    if(!oldbase)
-    {
-        aw_message("wrong filename");
-        return;
+    if (!filename) {
+        error = "missing filename";
     }
+    else {
+        GBDATA *oldbase = GB_open(filename,"r");
 
-    if( (error=GB_begin_transaction(oldbase)) )
-    {
-        aw_message(error);
-        GB_close(oldbase);
-        return;
-    }
-
-
-    if(CPRO.result[which_statistic].statisticexists)
-    {
-        CPRO_freestatistic((char)which_statistic);
-    }
-
-    GBDATA *gb_param=GB_search(oldbase,"cpro_resolution",GB_FIND);
-    if(!(gb_param))
-    {
-        aw_message("not a valid statistic");
-        GB_close(oldbase);
-        GB_abort_transaction(oldbase);
-        return;
-    }
-    CPRO.result[which_statistic].resolution=GB_read_int(gb_param);
-
-    gb_param=GB_search(oldbase,"cpro_maxalignlen",GB_FIND);
-    CPRO.result[which_statistic].maxalignlen=GB_read_int(gb_param);
-
-    gb_param=GB_search(oldbase,"cpro_maxaccu",GB_FIND);
-    CPRO.result[which_statistic].maxaccu=GB_read_int(gb_param);
-
-    gb_param=GB_search(oldbase,"cpro_memneeded",GB_FIND);
-    CPRO.result[which_statistic].memneeded=GB_read_int(gb_param);
-
-    gb_param=GB_search(oldbase,"cpro_alignname",GB_FIND);
-    strcpy(CPRO.result[which_statistic].alignname,GB_read_char_pntr(gb_param));
-
-    gb_param=GB_search(oldbase,"cpro_which_species",GB_FIND);
-    if(gb_param) strcpy(CPRO.result[which_statistic].which_species, GB_read_char_pntr(gb_param));
-
-    CPRO.result[which_statistic].statistic=(STATTYPE **)calloc((size_t)CPRO.result[which_statistic].resolution*3+3, sizeof(STATTYPE *));
-
-    GBDATA *gb_colrescontainer = GB_entry(oldbase, "column");
-    for (long column=0; column<CPRO.result[which_statistic].resolution; column++) {
-        const char *field[] = { "equal", "group", "different" };
-        for (int i = 0; i<3; i++) {
-            GBDATA *gb_colentry = GB_entry(gb_colrescontainer, field[i]);
-            if (gb_colentry) {
-                CPRO.result[which_statistic].statistic[column*3+i] = (STATTYPE*)GB_read_ints(gb_colentry);
-            }
+        if (!oldbase) {
+            error = GBS_global_string("can't read DB '%s'", filename);
         }
-        gb_colrescontainer = GB_nextEntry(gb_colrescontainer);
+        else {
+            error = GB_begin_transaction(oldbase);
+            if (!error) {
+                if (CPRO.result[which_statistic].statisticexists) {
+                    CPRO_freestatistic((char)which_statistic);
+                }
+
+                GBDATA *gb_param     = GB_search(oldbase,"cpro_resolution",GB_FIND);
+                if (!gb_param) error = "not a valid statistic";
+                else {
+                    CPRO.result[which_statistic].resolution = GB_read_int(gb_param);
+
+                    gb_param             = GB_search(oldbase,"cpro_maxalignlen",GB_FIND);
+                    CPRO.result[which_statistic].maxalignlen = GB_read_int(gb_param);
+
+                    gb_param=GB_search(oldbase,"cpro_maxaccu",GB_FIND);
+                    CPRO.result[which_statistic].maxaccu=GB_read_int(gb_param);
+
+                    gb_param=GB_search(oldbase,"cpro_memneeded",GB_FIND);
+                    CPRO.result[which_statistic].memneeded=GB_read_int(gb_param);
+
+                    gb_param=GB_search(oldbase,"cpro_alignname",GB_FIND);
+                    strcpy(CPRO.result[which_statistic].alignname,GB_read_char_pntr(gb_param));
+
+                    gb_param=GB_search(oldbase,"cpro_which_species",GB_FIND);
+                    if(gb_param) strcpy(CPRO.result[which_statistic].which_species, GB_read_char_pntr(gb_param));
+
+                    CPRO.result[which_statistic].statistic=(STATTYPE **)calloc((size_t)CPRO.result[which_statistic].resolution*3+3, sizeof(STATTYPE *));
+
+                    GBDATA *gb_colrescontainer = GB_entry(oldbase, "column");
+                    for (long column=0; column<CPRO.result[which_statistic].resolution; column++) {
+                        const char *field[] = { "equal", "group", "different" };
+                        for (int i = 0; i<3; i++) {
+                            GBDATA *gb_colentry = GB_entry(gb_colrescontainer, field[i]);
+                            if (gb_colentry) {
+                                CPRO.result[which_statistic].statistic[column*3+i] = (STATTYPE*)GB_read_ints(gb_colentry);
+                            }
+                        }
+                        gb_colrescontainer = GB_nextEntry(gb_colrescontainer);
+                    }
+                    
+                    CPRO.result[which_statistic].statisticexists = 1;
+                    CPRO_memrequirement_cb(awr);
+                }
+            }
+            error = GB_end_transaction(oldbase, error);
+        }
+        GB_close(oldbase);
     }
 
-    if ((error=GB_commit_transaction(oldbase))) {
-        aw_message(error);
-        GB_close(oldbase);
-        return;
-    }
-    GB_close(oldbase);
-    CPRO.result[which_statistic].statisticexists=1;
-    CPRO_memrequirement_cb(awr);
-    aw->hide();
+    aw->hide_or_notify(error);
+    free(filename);
 }
 
 AW_window *CPRO_savestatisticwindow_cb(AW_root *aw_root,AW_CL which_statistic)
@@ -1451,12 +1441,7 @@ void CPRO_condense_cb( AW_window *aw,AW_CL which_statistic )
 
     error = GB_write_string(gb_data,result);
     aw_closestatus();
-    if (error){
-        GB_abort_transaction(GLOBAL_gb_main);
-        aw_message(error);
-    }else{
-        GB_commit_transaction(GLOBAL_gb_main);
-    }
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 
     free(result);
     free(savename);

@@ -439,7 +439,7 @@ static void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, 
     }
     else error = "error in reading sequence from database!";
 
-    if(!error) {
+    if (!error) {
         GBDATA *gb_ProSeqData = 0;
         char newAlignmentName[100];
         int aaStrandType = int(aaSeqTerm->GET_aaStrandType()); 
@@ -471,48 +471,43 @@ static void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, 
             GBDATA *gb_new_alignment    = 0;
 
             if (gb_alignment_exists) {
-                int skip_sp = 0;
-                char *question;
+                int     skip_sp     = 0;
+                char   *question;
                 GBDATA *gb_seq_data = GBT_read_sequence(gb_species, newAlignmentName);
                 if (gb_seq_data) {
                     e4_assert(ASKtoOverWriteData);
                     question = GBS_global_string_copy("\"%s\" contain data in the alignment \"%s\"!", spName, newAlignmentName);
                     skip_sp        = ASKtoOverWriteData->get_answer(question, "Overwrite, Skip Species", "all", false);
                 }
-                if(skip_sp) {
+                if (skip_sp) {
                     error = GBS_global_string_copy("%s You chose to skip this Species!", question);
                 }
                 else {
                     gb_new_alignment = GBT_get_alignment(GLOBAL_gb_main,newAlignmentName);
                     if (!gb_new_alignment) error = GB_get_error();
                 }
-            } else {
-                long aliLen = GBT_get_alignment_len(GLOBAL_gb_main,defaultAlignment);
-                gb_new_alignment = GBT_create_alignment(GLOBAL_gb_main,newAlignmentName,aliLen/3+1,0,1,"ami");
-                if (!gb_new_alignment) error = GB_get_error();
-                else                          giNewAlignments++;
+                free(question);
             }
-            
-            if(!error){
-                gb_ProSeqData = GBT_add_data(gb_species,newAlignmentName,"data", GB_STRING);
-                if (gb_ProSeqData) {
-                    error  = GB_write_string(gb_ProSeqData,str_SeqData);
-                }
-                else {
-                    error = GB_get_error();
-                }
+            else {
+                long aliLen      = GBT_get_alignment_len(GLOBAL_gb_main,defaultAlignment);
+                gb_new_alignment = GBT_create_alignment(GLOBAL_gb_main,newAlignmentName,aliLen/3+1,0,1,"ami");
+
+                if (!gb_new_alignment) error = GB_get_error();
+                else giNewAlignments++;
+            }
+
+            if (!error) {
+                gb_ProSeqData            = GBT_add_data(gb_species,newAlignmentName,"data", GB_STRING);
+                if (gb_ProSeqData) error = GB_write_string(gb_ProSeqData,str_SeqData);
+                else error               = GB_get_error();
             }
         }
         free(str_SeqData);
     }
-    if (!error) {
-        GBT_check_data(GLOBAL_gb_main,0);
-        GB_commit_transaction(GLOBAL_gb_main);
-    }
-    else {
-        GB_abort_transaction(GLOBAL_gb_main);
-        aw_message(error);
-    }
+
+    if (!error) error = GBT_check_data(GLOBAL_gb_main,0);
+
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
 void PV_SaveData(AW_window *aww){

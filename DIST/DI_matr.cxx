@@ -1128,23 +1128,18 @@ static void di_view_matrix_cb(AW_window *aww){
 }
 
 static void di_save_matrix_cb(AW_window *aww)
-{           // save the matrix
+{
+    // save the matrix
     GB_ERROR error = di_calculate_matrix_cb(aww,0, true);
-    if (error) return;
+    if (!error) {
+        char              *filename = aww->get_root()->awar(AWAR_DIST_SAVE_MATRIX_FILENAME)->read_string();
+        enum DI_SAVE_TYPE  type     = (enum DI_SAVE_TYPE)aww->get_root()->awar(AWAR_DIST_SAVE_MATRIX_TYPE)->read_int();
 
-    char              *filename = aww->get_root()->awar(AWAR_DIST_SAVE_MATRIX_FILENAME)->read_string();
-    enum DI_SAVE_TYPE  type     = (enum DI_SAVE_TYPE)aww->get_root()->awar(AWAR_DIST_SAVE_MATRIX_TYPE)->read_int();
-
-    DI_MATRIX::ROOT->save(filename,type);
-    free(filename);
-
-    if (error) {
-        aw_message(error);
+        DI_MATRIX::ROOT->save(filename,type);
+        free(filename);
     }
-    else {
-        awt_refresh_selection_box(aww->get_root(), AWAR_DIST_SAVE_MATRIX_BASE);
-        aww->hide();
-    }
+    awt_refresh_selection_box(aww->get_root(), AWAR_DIST_SAVE_MATRIX_BASE);
+    aww->hide_or_notify(error);
 }
 
 AW_window *DI_create_save_matrix_window(AW_root *aw_root, char *base_name)
@@ -1352,27 +1347,24 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL bootstrap_flag)
         char *tree_name = aw_root->awar(AWAR_DIST_TREE_STD_NAME)->read_string();
         GB_begin_transaction(GLOBAL_gb_main);
         error = GBT_write_tree(GLOBAL_gb_main,0,tree_name,tree);
-        if (error) {
-            GB_abort_transaction(GLOBAL_gb_main);
-            aw_message(error);
-        }
-        else {
-            //char *filter_name     = aw_root->awar(AWAR_DIST_FILTER_NAME)->read_string();
+
+        if (!error) {
             char       *filter_name = AWT_get_combined_filter_name(aw_root, "dist");
             int         transr      = aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
             const char *comment     = GBS_global_string("PRG=dnadist CORR=%s FILTER=%s PKG=ARB", enum_trans_to_string[transr], filter_name);
 
+            error = GBT_write_tree_rem(GLOBAL_gb_main,tree_name,comment);
             free(filter_name);
-            GBT_write_tree_rem(GLOBAL_gb_main,tree_name,comment);
-            GB_commit_transaction(GLOBAL_gb_main);
         }
+
+        error = GB_end_transaction(GLOBAL_gb_main, error);
         free(tree_name);
     }
 
-    if (tree) GBT_delete_tree(tree);
+    if (!error && tree) error = GBT_delete_tree(tree);
 
     if (close_stat) aw_closestatus();
-    aw_status(); // remove 'abort' flag
+    aw_status();                      // remove 'abort' flag
 
     if (bootstrap_flag) {
         if (all_names) GBT_free_names(all_names);

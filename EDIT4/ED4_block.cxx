@@ -220,19 +220,11 @@ void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
         }
     }
 
-    if (error) {
-        char buffer[500];
-        sprintf(buffer, "Error in blockoperation: %s", error);
-        aw_message(buffer);
+    if (error) error = GBS_global_string("[In block operation] %s", error);
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 
-        GB_abort_transaction(GLOBAL_gb_main);
-    }
-    else {
-        GB_commit_transaction(GLOBAL_gb_main);
-
-        if (base_pos != -1) {
-            cursor->jump_base_pos(ED4_ROOT->get_aww(), base_pos, ED4_JUMP_KEEP_VISIBLE); // restore cursor at same base
-        }
+    if (!error && base_pos != -1) {
+        cursor->jump_base_pos(ED4_ROOT->get_aww(), base_pos, ED4_JUMP_KEEP_VISIBLE); // restore cursor at same base
     }
 }
 

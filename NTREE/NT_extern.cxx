@@ -277,15 +277,13 @@ void NT_save_quick_cb(AW_window *aww) {
 }
 
 void NT_save_quick_as_cb(AW_window *aww) {
-    char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
-    GB_ERROR error = GB_save_quick_as(GLOBAL_gb_main, filename);
+    char     *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
+    GB_ERROR  error    = GB_save_quick_as(GLOBAL_gb_main, filename);
+
+    awt_refresh_selection_box(aww->get_root(), "tmp/nt/arbdb");
+    aww->hide_or_notify(error);
+    
     free(filename);
-    if (error) {
-        aw_message(error);
-    }else{
-        awt_refresh_selection_box(aww->get_root(), "tmp/nt/arbdb");
-        aww->hide();
-    }
 }
 
 
@@ -316,25 +314,33 @@ AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name)
     return (AW_window *)aws;
 }
 
-void NT_database_optimization(AW_window *aww){
+void NT_database_optimization(AW_window *aww) {
     GB_ERROR error = 0;
     GB_push_my_security(GLOBAL_gb_main);
+    
+    {
+        aw_openstatus("Optimizing sequence data");
 
-    aw_openstatus("Optimizing sequence data");
-    char *tree_name = aww->get_root()->awar("tmp/nt/arbdb/optimize_tree_name")->read_string();
-    GB_begin_transaction(GLOBAL_gb_main);
-    char **ali_names = GBT_get_alignment_names(GLOBAL_gb_main);
-    aw_status("Checking Sequence Lengths");
-    GBT_check_data(GLOBAL_gb_main,0);
-    GB_commit_transaction(GLOBAL_gb_main);
+        error = GB_begin_transaction(GLOBAL_gb_main);
+        if (!error) {
+            char **ali_names = GBT_get_alignment_names(GLOBAL_gb_main);
 
-    for (char **ali_name = ali_names; !error && *ali_name; ali_name++) {
-        aw_status(*ali_name);
-        error = GBT_compress_sequence_tree2(GLOBAL_gb_main,tree_name,*ali_name);
+            aw_status("Checking Sequence Lengths");
+            error = GBT_check_data(GLOBAL_gb_main,0);
+            error = GB_end_transaction(GLOBAL_gb_main, error);
+
+            if (!error) {
+                char *tree_name = aww->get_root()->awar("tmp/nt/arbdb/optimize_tree_name")->read_string();
+                for (char **ali_name = ali_names; !error && *ali_name; ali_name++) {
+                    aw_status(*ali_name);
+                    error = GBT_compress_sequence_tree2(GLOBAL_gb_main,tree_name,*ali_name);
+                }
+                free(tree_name);
+            }
+            GBT_free_names(ali_names);
+        }
+        aw_closestatus();
     }
-    GBT_free_names(ali_names);
-    free(tree_name);
-    aw_closestatus();
 
     if (!error) {
         aw_openstatus("Optimizing non-sequence data");
@@ -343,13 +349,7 @@ void NT_database_optimization(AW_window *aww){
     }
 
     GB_pop_my_security(GLOBAL_gb_main);
-
-    if (error) {
-        aw_message(error);
-    }
-    else {
-        aww->hide();
-    }
+    aww->hide_or_notify(error);
 }
 
 AW_window *NT_create_database_optimization_window(AW_root *aw_root){
@@ -381,23 +381,17 @@ AW_window *NT_create_database_optimization_window(AW_root *aw_root){
     return aws;
 }
 
-void
-NT_save_as_cb(AW_window *aww)
-{
+void NT_save_as_cb(AW_window *aww) {
     char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
     char *filetype = aww->get_root()->awar(AWAR_DB"type")->read_string();
 
     GB_ERROR error = GB_save(GLOBAL_gb_main, filename, filetype);
+    awt_refresh_selection_box(aww->get_root(), "tmp/nt/arbdb");
 
-    free(filename);
+    aww->hide_or_notify(error);
+
     free(filetype);
-
-    if (error) {
-        aw_message(error);
-    }else{
-        aww->hide();
-        awt_refresh_selection_box(aww->get_root(), "tmp/nt/arbdb");
-    }
+    free(filename);
 }
 
 
@@ -540,41 +534,47 @@ AW_window *NT_create_tree_setting(AW_root *aw_root)
 }
 
 void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base) {
-    char *awar_base = (char*)cl_awar_base;
-    char *address   = aww->get_root()->awar(GBS_global_string("%s/address", awar_base))->read_string();
-    char *text      = aww->get_root()->awar(GBS_global_string("%s/text", awar_base))->read_string();
-    char *plainaddress = GBS_string_eval(address,"\"=:'=\\=",0); // Remove all dangerous symbols
+    char     *mail_file = GBS_global_string_copy("/tmp/arb_bugreport_%s", GB_getenvUSER());
+    FILE     *mail      = fopen(mail_file, "w");
+    GB_ERROR  error     = 0;
 
-    char buffer[256];
-    sprintf(buffer,"/tmp/arb_bugreport_%s",GB_getenvUSER());
-
-    FILE *mail = fopen(buffer,"w");
-    if (!mail){
-        aw_message(GB_export_error("Cannot write file %s",buffer));
+    if (!mail) {
+        error = GBS_global_string("Cannot write file '%s'", mail_file);
     }
-    else{
-        fprintf(mail,"%s\n",text);
-        fprintf(mail,"------------------------------\n");
-        fprintf(mail,"VERSION       :" ARB_VERSION "\n");
+    else {
+        char *awar_base    = (char *)cl_awar_base;
+        char *address      = aww->get_root()->awar(GBS_global_string("%s/address", awar_base))->read_string();
+        char *text         = aww->get_root()->awar(GBS_global_string("%s/text", awar_base))->read_string();
+        char *plainaddress = GBS_string_eval(address, "\"=:'=\\=", 0);                                    // Remove all dangerous symbols
+
+        fprintf(mail, "%s\n", text);
+        fprintf(mail, "------------------------------\n");
+        fprintf(mail, "VERSION       :" ARB_VERSION "\n");
 #if defined(SHOW_WHERE_BUILD)
-        fprintf(mail,"BUILD_BY      :" ARB_BUILD_USER "@" ARB_BUILD_HOST "\n");        
+        fprintf(mail, "BUILD_BY      :" ARB_BUILD_USER "@" ARB_BUILD_HOST "\n");
 #endif // SHOW_WHERE_BUILD
-        fprintf(mail,"SYSTEMINFO    :\n");
+        fprintf(mail, "SYSTEMINFO    :\n");
         fclose(mail);
 
-        system(GBS_global_string("uname -a >>%s",buffer));
-        system(GBS_global_string("date  >>%s",buffer));
-        const char *command = GBS_global_string("mail '%s' <%s",plainaddress,buffer);
-        printf("%s\n",command);
+        system(GBS_global_string("uname -a >>%s", mail_file));
+        system(GBS_global_string("date  >>%s", mail_file));
+        const char *command = GBS_global_string("mail '%s' <%s", plainaddress, mail_file);
+
+        printf("%s\n", command);
         system(command);
-        // GB_unlink(buffer);
-        aww->hide();
+        
+        GB_unlink(mail_file);
+
+        free(plainaddress);
+        free(text);
+        free(address);
     }
 
-    free(plainaddress);
-    free(text);
-    free(address);
+    aww->hide_or_notify(error);
+
+    free(mail_file);
 }
+
 
 AW_window *NT_submit_bug(AW_root *aw_root, int bug_report){
     static AW_window_simple *awss[2] = { 0, 0 };
@@ -784,9 +784,6 @@ void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl){
 // #########################################
 // #########################################
 
-//  ----------------------------------------------------------------------------
-//      class nt_item_type_species_selector : public awt_item_type_selector
-//  ----------------------------------------------------------------------------
 class nt_item_type_species_selector : public awt_item_type_selector {
 public:
     nt_item_type_species_selector() : awt_item_type_selector(AWT_IT_SPECIES) {}
@@ -823,9 +820,6 @@ public:
 
 static nt_item_type_species_selector item_type_species;
 
-//  ----------------------------------------------------------------------------
-//      static void NT_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL)
-//  ----------------------------------------------------------------------------
 static void NT_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
     int                              id         = int(cl_id);
     const awt_input_mask_descriptor *descriptor = AWT_look_input_mask(id);
@@ -833,36 +827,18 @@ static void NT_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
     if (descriptor) AWT_initialize_input_mask(aww->get_root(), GLOBAL_gb_main, &item_type_species, descriptor->get_internal_maskname(), descriptor->is_local_mask());
 }
 
-//  ----------------------------------------------------------------------
-//      static void NT_create_mask_submenu(AW_window_menu_modes *awm)
-//  ----------------------------------------------------------------------
 static void NT_create_mask_submenu(AW_window_menu_modes *awm) {
     AWT_create_mask_submenu(awm, AWT_IT_SPECIES, NT_open_mask_window);
 }
-//  -----------------------------------------------
-//      void NT_test_input_mask(AW_root *root)
-//  -----------------------------------------------
-void NT_test_input_mask(AW_root *root) {
-    AWT_initialize_input_mask(root, GLOBAL_gb_main, &item_type_species, "test.mask", true);
-}
-// -------------------------------------------------------------------------------
-//      static AW_window *NT_create_species_colorize_window(AW_root *aw_root)
-// -------------------------------------------------------------------------------
 static AW_window *NT_create_species_colorize_window(AW_root *aw_root) {
     return awt_create_item_colorizer(aw_root, GLOBAL_gb_main, &AWT_species_selector);
 }
 
-// -------------------------------------------------------------------
-//      void NT_update_marked_counter(AW_window *aww, long count)
-// -------------------------------------------------------------------
 void NT_update_marked_counter(AW_window *aww, long count) {
     const char *buffer = count ? GBS_global_string("%li marked", count) : "";
     aww->get_root()->awar(AWAR_MARKED_SPECIES_COUNTER)->write_string(buffer);
 }
 
-// -----------------------------------------------------
-//      static void nt_count_marked(AW_window *aww)
-// -----------------------------------------------------
 static void nt_count_marked(AW_window *aww) {
 #if defined(DEBUG)
 //     printf("Counting marked species\n");
@@ -871,174 +847,20 @@ static void nt_count_marked(AW_window *aww) {
     NT_update_marked_counter(aww, count);
 }
 
-// -------------------------------------------------------------------------------------
-//      static void nt_auto_count_marked_species(GBDATA*, int* cl_aww, GB_CB_TYPE )
-// -------------------------------------------------------------------------------------
 static void nt_auto_count_marked_species(GBDATA*, int* cl_aww, GB_CB_TYPE ) {
     nt_count_marked((AW_window*)cl_aww);
 }
 
-// used to avoid that the species info window is stored in a menu (or with a button)
 void NT_popup_species_window(AW_window *aww, AW_CL, AW_CL) {
+    // used to avoid that the species info window is stored in a menu (or with a button)
     AW_window *aws = NT_create_species_window(aww->get_root());
     aws->show();
 }
 
-//--------------------------------------- to increase the area of display --------------------
-static int windowHeight = 0;
-
-// static void title_mode_changed(AW_root *aw_root, AW_window *aww)
-// {
-//     int title_mode = aw_root->awar(AWAR_NTREE_TITLE_MODE)->read_int();
-
-//     if (title_mode==0) {
-//         aww->set_info_area_height(25);
-//     }
-//     else {
-//         aww->set_info_area_height(windowHeight);
-//     }
-// }
-
 //--------------------------------------------------------------------------------------------------
 #if defined(DEBUG)
-void NT_rename_test(AW_window *, AW_CL cl_gb_main, AW_CL) {
-    GBDATA   *gb_main = (GBDATA*)cl_gb_main;
-    GB_begin_transaction(gb_main);
-    GBDATA   *gbd     = GBT_find_species(gb_main, "MssVanni");
-    GB_ERROR  error   = 0;
 
-    if (gbd) {
-        GBDATA *gb_remark = GB_entry(gbd, "ali_16s");
-        if (gb_remark) {
-            if (GB_rename(gb_remark, "ali_16s_new") != 0) {
-                error = GB_get_error();
-            }
-        }
-        else {
-            error = "MssVanni has no entry 'ali_16s'";
-        }
-    }
-    else {
-        error = "MssVanni not found";
-    }
-
-    if (error) {
-        GB_abort_transaction(gb_main);
-        aw_message(error);
-    }
-    else {
-        GB_commit_transaction(gb_main);
-    }
-
-
-}
-
-#if defined(DEVEL_RALF)
-
-void NT_test_AWT(AW_window *aww) {
-    AW_root          *root = aww->get_root();
-    AW_window_simple *aws  = new AW_window_simple;
-
-    aws->init( root, "AWT_TEST", "AWT test");
-
-    aws->load_xfig("awt_test.fig");
-
-    aws->callback( (AW_CB0)AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE","CLOSE","C");
-
-    aws->auto_space(0, 0);
-
-    aws->at("buttons");
-
-#if 0
-    aws->label("Test label");
-    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
-    aws->create_button("B1","Button 1","1");
-
-    aws->callback( AW_POPUP_HELP, (AW_CL)"button2.hlp");
-    aws->create_button("B2","Button 2","2");
-
-    aws->at_newline(); // ------------------------------
-
-    aws->label("Longer test label");
-    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
-    aws->create_button("B1","Button 1","1");
-
-    aws->callback( AW_POPUP_HELP, (AW_CL)"button2.hlp");
-    aws->create_button("B2","Button 2","2");
-
-    aws->at_newline();          // ------------------------------
-#endif
-
-    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
-    aws->create_button("B1","Button 1","1");
-
-    aws->label("Label with 2nd button");
-    aws->highlight();
-    aws->callback( AW_POPUP_HELP, (AW_CL)"button2.hlp");
-    aws->create_button("B2","Button 2","2");
-
-    aws->callback( AW_POPUP_HELP, (AW_CL)"button3.hlp");
-    aws->create_button("B3","Button 3","3");
-
-    aws->at_newline();          // ------------------------------
-
-#if 0
-
-    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
-    aws->create_button("B1","Button 1","1");
-
-    aws->callback( AW_POPUP_HELP, (AW_CL)"button2.hlp");
-    aws->create_button("B2","Button 2","2");
-
-#endif
-
-    aws->at("buttons2");
-
-    aws->label("Test label");
-    aws->highlight();
-    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
-    aws->create_button("B1","buttons2","1");
-
-    aws->at("buttons3");
-
-    aws->label("Test label");
-    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
-    aws->create_button("B1","buttons3","1");
-
-    aws->at("buttons4");
-
-    aws->label("Test label");
-    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
-    aws->create_button("B1","buttons4","1");
-
-    aws->at("buttons5");
-
-    aws->label("Test label");
-    aws->highlight();
-    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
-    aws->create_button("B1","buttons5","1");
-
-    aws->at("buttons6");
-
-    aws->label("Test label");
-    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
-    aws->create_button("B1","buttons6","1");
-
-    aws->at("buttons7");
-
-    aws->label("Test label");
-    aws->highlight();
-    aws->callback( AW_POPUP_HELP, (AW_CL)"button1.hlp");
-    aws->create_button("B1","buttons7","1");
-
-    aws->show();
-}
-#endif // DEVEL_RALF
-
-
-void NT_dump_gcs(AW_window *aww, AW_CL, AW_CL) {
+static void NT_dump_gcs(AW_window *aww, AW_CL, AW_CL) {
     for (int gc = int(AWT_GC_CURSOR); gc <= AWT_GC_MAX;  ++gc) {
         int   r, g, b;
         const char *err = aww->GC_to_RGB(aww->get_device(AW_MIDDLE_AREA), gc, r, g, b);
@@ -1216,9 +1038,6 @@ void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
 #define AWMIMT awm->insert_menu_topic
 #define SEP________________________SEP() awm->insert_separator()
 
-//  --------------------------------------------------------------------
-//      AW_window * create_nt_main_window(AW_root *awr, AW_CL clone)
-//  --------------------------------------------------------------------
 AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     GB_push_transaction(GLOBAL_gb_main);
     AW_gc_manager  aw_gc_manager;
@@ -1284,9 +1103,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     bool is_genome_db = GEN_is_genome_db(GLOBAL_gb_main, 0); //  is this a genome database ? (default = 0 = not a genom db)
 
-    // --------------------------------------------------------------------------------
-    //     File
-    // --------------------------------------------------------------------------------
+    // -------------
+    //      File
+    // -------------
     if (clone){
         awm->create_menu(       0,   "File",     "F", "nt_file.hlp",  AWM_ALL );
 #if defined(DEBUG)
@@ -1357,9 +1176,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             }
 
         }
-        // --------------------------------------------------------------------------------
-        //     Species
-        // --------------------------------------------------------------------------------
+        // ----------------
+        //      Species
+        // ----------------
         awm->create_menu(0,"Species","c","species.hlp", AWM_ALL);
         {
             AWMIMT( "species_search", "Search and query",    "q",    "sp_search.hlp",    AWM_ALL,AW_POPUP,   (AW_CL)ad_create_query_window,  0 );
@@ -1420,9 +1239,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
         if (is_genome_db) GEN_create_genes_submenu(awm, true/*, ntw*/);
 
-        // --------------------------------------------------------------------------------
-        //     Sequence
-        // --------------------------------------------------------------------------------
+        // -----------------
+        //      Sequence
+        // -----------------
         awm->create_menu(0,"Sequence","S","sequence.hlp",   AWM_ALL);
         {
             AWMIMT("seq_admin",   "Sequence/Alignment Admin", "A", "ad_align.hlp",   AWM_EXP,  AW_POPUP, (AW_CL)NT_create_alignment_window, 0);
@@ -1466,9 +1285,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
             GDE_load_menu(awm,"pretty_print");
         }
-        // --------------------------------------------------------------------------------
-        //     SAI
-        // --------------------------------------------------------------------------------
+        // ------------
+        //      SAI
+        // ------------
         awm->create_menu(0,"SAI","A","extended.hlp",    AWM_ALL);
         {
             AWMIMT("sai_admin", "Manage SAIs",                "S","ad_extended.hlp",  AWM_EXP,    AW_POPUP, (AW_CL)NT_create_extendeds_window,   0 );
@@ -1496,9 +1315,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             }
         }
 
-        // --------------------------------------------------------------------------------
+        // ---------------
         //      Probes
-        // --------------------------------------------------------------------------------
+        // ---------------
         awm->create_menu(0,"Probes","P","probe_menu.hlp", AWM_ALL);
         {
             AWMIMT("probe_design",      "Design Probes",             "D", "probedesign.hlp", AWM_PRB, AW_POPUP, (AW_CL)create_probe_design_window, (AW_CL)is_genome_db );
@@ -1513,9 +1332,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
 
     } // clone
 
-    // --------------------------------------------------------------------------------
-    //     Tree
-    // --------------------------------------------------------------------------------
+    // -------------
+    //      Tree
+    // -------------
     awm->create_menu( 0,   "Tree", "T", "nt_tree.hlp",  AWM_ALL );
     {
         if (!clone) {
@@ -1641,10 +1460,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     }
 
     if(!clone){
-
-        // --------------------------------------------------------------------------------
-        //     Tools
-        // --------------------------------------------------------------------------------
+        // --------------
+        //      Tools
+        // --------------
         awm->create_menu(0,"Tools","o","nt_etc.hlp", AWM_ALL);
         {
             AWMIMT("names_admin",      "Name server admin",    "s","namesadmin.hlp",   AWM_EXP, AW_POPUP, (AW_CL)AW_create_namesadmin_window, (AW_CL)GLOBAL_gb_main );
@@ -1689,15 +1507,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
             AWMIMT("fix_db",      "Fix database",            "F", "fixdb.hlp", AWM_EXP, (AW_CB)NT_fix_database,            0,                     0);
             AWMIMT("debug_arbdb", "Print debug information", "d", 0,           AWM_ALL, (AW_CB)GB_print_debug_information, (AW_CL)GLOBAL_gb_main, 0);
             AWMIMT("test_compr",  "Test compression",        "c", 0,           AWM_ALL, (AW_CB)GBT_compression_test,       (AW_CL)GLOBAL_gb_main, 0);
-            AWMIMT("test_rename", "Test rename",             "",  0,           AWM_ALL, NT_rename_test,                    (AW_CL)GLOBAL_gb_main, 0);
             SEP________________________SEP();
             AWMIMT("table_admin",       "Table Admin (unfinished/unknown purpose)",  "T","tableadm.hlp",     AWM_ALL, AW_POPUP,(AW_CL)AWT_create_tables_admin_window, (AW_CL)GLOBAL_gb_main);
         }
 #endif // DEBUG
 
-        // --------------------------------------------------------------------------------
-        //     Properties
-        // --------------------------------------------------------------------------------
+        // -------------------
+        //      Properties
+        // -------------------
         awm->create_menu(0,"Properties","r","properties.hlp", AWM_ALL);
         {
             AWMIMT("props_menu",    "Frame settings", "F","props_frame.hlp",      AWM_ALL, AW_POPUP, (AW_CL)AWT_preset_window, 0 );
@@ -1840,9 +1657,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     awm->help_text("nt_tree_select.hlp");
     awm->create_button("SELECT_A_TREE", awar_tree);
 
-    // --------------------------------------------------
+    // --------------------------------------------------------------
     //      protection, alignment + editor (and maybe Genome Map)
-    // --------------------------------------------------
+    // --------------------------------------------------------------
 
     int db_alignx = awm->get_at_xposition();
 
@@ -1939,9 +1756,8 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
         nt_count_marked(awm);
     }
 
-    
     // set height of top area:
-    awm->set_info_area_height(bottomy+2); windowHeight = bottomy+2;
+    awm->set_info_area_height(bottomy+2); 
     awm->set_bottom_area_height( 0 );
     awr->set_focus_callback((AW_RCB)NT_focus_cb,(AW_CL)GLOBAL_gb_main,0);
 
@@ -1950,18 +1766,11 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone){
     //  -----------------------------------
 
 #if defined(DEVEL_RALF)
-    // Automatically start:
-    // --------------------
-
-    // NT_test_AWT(awm);
-    // NT_test_input_mask(awm->get_root());
     // if (is_genome_db) GEN_map_first(awr)->show();
-
 #endif // DEVEL_RALF
 
     GB_pop_transaction(GLOBAL_gb_main);
 
-    return (AW_window *)awm;
-
+    return awm;
 }
 

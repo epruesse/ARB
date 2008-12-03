@@ -876,6 +876,7 @@ GB_ERROR GB_write_as_string(GBDATA *gbd,const char *val)
     }
 }
 
+
 /********************************************************************************************
                     Key Information
 ********************************************************************************************/
@@ -970,28 +971,22 @@ GB_ERROR GB_change_my_security(GBDATA *gbd,int level,const char *passwd)
 }
 
 /* For internal use only */
-GB_ERROR GB_push_my_security(GBDATA *gbd)
+void GB_push_my_security(GBDATA *gbd)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     Main->pushed_security_level++;
-    if (Main->pushed_security_level>1){
-        return 0;
+    if (Main->pushed_security_level <= 1) {
+        Main->old_security_level = Main->security_level;
+        Main->security_level = 7;
     }
-
-    Main->old_security_level = Main->security_level;
-    Main->security_level = 7;
-    return 0;
 }
 
-GB_ERROR GB_pop_my_security(GBDATA *gbd)
-{
+void GB_pop_my_security(GBDATA *gbd) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     Main->pushed_security_level--;
-    if (Main->pushed_security_level>0){
-        return 0;
+    if (Main->pushed_security_level <= 0) {
+        Main->security_level = Main->old_security_level;
     }
-    Main->security_level = Main->old_security_level;
-    return 0;
 }
 
 GB_TYPES GB_read_type(GBDATA *gbd)
@@ -1496,8 +1491,7 @@ GB_ERROR GB_clear_temporary(GBDATA *gbd)
     return 0;
 }
 
-long    GB_read_temporary(GBDATA *gbd)
-{
+long GB_read_temporary(GBDATA *gbd) {
     GB_TEST_TRANSACTION(gbd);
     return (long)gbd->flags.temporary;
 }
@@ -1506,9 +1500,11 @@ long    GB_read_temporary(GBDATA *gbd)
                     TRANSACTIONS
 ********************************************************************************************/
 
-GB_ERROR GB_push_local_transaction(GBDATA *gbd){ /* Starts a read only transaction !!;
-                                                    be shure that all data is cached
-                                                    be extremely carefull !!!!! */
+GB_ERROR GB_push_local_transaction(GBDATA *gbd) {
+    /* Starts a read only transaction !!;
+       be shure that all data is cached
+       be extremely carefull !!!!! */
+    
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (Main->transaction>0) {
         return GB_push_transaction(gbd);
@@ -1517,8 +1513,8 @@ GB_ERROR GB_push_local_transaction(GBDATA *gbd){ /* Starts a read only transacti
     return 0;
 }
 
-GB_ERROR GB_pop_local_transaction(GBDATA *gbd){ /* Stops a read only transaction !!;
-                                                   be shure that all data is cached !!!!! */
+GB_ERROR GB_pop_local_transaction(GBDATA *gbd) {
+    /* Stops a read only transaction !!; be sure that all data is cached !!!!! */
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (Main->transaction>0){
         return GB_pop_transaction(gbd);
@@ -1527,21 +1523,41 @@ GB_ERROR GB_pop_local_transaction(GBDATA *gbd){ /* Stops a read only transaction
     return 0;
 }
 
+/*
+ * recommended transaction usage:
+ * ------------------------------
+ * 
+ * GB_ERROR myFunc() {
+ *     GB_ERROR error = GB_push_transaction(gbd);
+ *     if (!error) {
+ *         error = ...;
+ *     }
+ *     return GB_end_transaction(gbd, error);
+ * }
+ *       
+ * void myFunc() {
+ *     GB_ERROR error = GB_push_transaction(gbd);
+ *     if (!error) {
+ *         error = ...;
+ *     }
+ *     GB_end_transaction_show_error(gbd, error, aw_message);
+ * }
+ */
 
 GB_ERROR GB_push_transaction(GBDATA *gbd){
     /* start a transaction if no transaction is running */
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    if (Main->transaction<0) return 0;  /* no transaction mode */
-    if (Main->transaction){
-        Main->transaction++;
-    }else{
-        return GB_begin_transaction(gbd);
-    }
-    return 0;
+
+    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
+    GB_ERROR      error = 0;
+
+    if (Main->transaction == 0) error = GB_begin_transaction(gbd);
+    else if (Main->transaction>0) Main->transaction++;
+    // Main->transaction<0 is "no transaction mode"
+
+    return error;
 }
 
-GB_ERROR GB_pop_transaction(GBDATA *gbd)
-{
+GB_ERROR GB_pop_transaction(GBDATA *gbd) {
     GB_ERROR error;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (Main->transaction==0) {
@@ -1558,11 +1574,12 @@ GB_ERROR GB_pop_transaction(GBDATA *gbd)
     return 0;
 }
 
-GB_ERROR GB_begin_transaction(GBDATA *gbd)
-{
-    GB_ERROR error;
+GB_ERROR GB_begin_transaction(GBDATA *gbd) {
+    // better use GB_push_transaction()
+    
+    GB_ERROR      error;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    gbd = (GBDATA *)Main->data;
+    gbd                = (GBDATA *)Main->data;
     if (Main->transaction>0) {
         error = GB_export_error("GB_begin_transaction called %i !!!",
                                 Main->transaction);
@@ -1638,7 +1655,6 @@ GB_ERROR GB_abort_transaction(GBDATA *gbd)
     return 0;
 }
 
-
 GB_ERROR GB_commit_transaction(GBDATA *gbd)
 {
     GB_ERROR error =0;
@@ -1695,6 +1711,18 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd)
     if (error) return error;
     return 0;
 }
+
+GB_ERROR GB_end_transaction(GBDATA *gbd, GB_ERROR error) {
+    if (error) GB_abort_transaction(gbd);
+    else error = GB_pop_transaction(gbd);
+    return error;
+}
+
+void GB_end_transaction_show_error(GBDATA *gbd, GB_ERROR error, void (*error_handler)(GB_ERROR)) {
+    error = GB_end_transaction(gbd, error);
+    if (error) error_handler(error);
+}
+
 /********************************************************************************************
             Send updated data to server (for GB_release)
 ********************************************************************************************/

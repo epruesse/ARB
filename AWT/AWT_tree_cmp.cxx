@@ -269,7 +269,7 @@ GB_ERROR AWT_species_set_root::copy_node_infos(FILE *log, AW_BOOL delete_old_nod
     return error;
 }
 
-GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree_dest,const char *log_file, AW_BOOL compare_node_info, AW_BOOL delete_old_nodes, AW_BOOL nodes_with_marked_only) {
+void AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree_dest,const char *log_file, AW_BOOL compare_node_info, AW_BOOL delete_old_nodes, AW_BOOL nodes_with_marked_only) {
     GB_ERROR error = 0;
     GB_begin_transaction(gb_main);
     FILE *log = 0;
@@ -346,11 +346,5 @@ GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree
     delete rsource;
     delete rdest;
 
-    if(error){
-        aw_message(error);
-        GB_abort_transaction(gb_main);
-    }else{
-        GB_commit_transaction(gb_main);
-    }
-    return error;
+    GB_end_transaction_show_error(gb_main, error, aw_message);
 }

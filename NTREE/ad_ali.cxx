@@ -124,28 +124,23 @@ void ed_al_align_cb(AW_window *aww)
     ed_al_check_len_cb(aww);
 }
 
-void aa_copy_delete_rename(AW_window *aww,AW_CL copy, AW_CL dele)
-{
-    GB_ERROR error = 0;
+void aa_copy_delete_rename(AW_window *aww,AW_CL copy, AW_CL dele) {
     char *source = aww->get_root()->awar("presets/use")->read_string();
-    char *dest = aww->get_root()->awar("presets/alignment_dest")->read_string();
+    char *dest   = aww->get_root()->awar("presets/alignment_dest")->read_string();
 
-    GB_begin_transaction(GLOBAL_gb_main);
-
-    error = GBT_rename_alignment(GLOBAL_gb_main,source,dest,(int)copy,(int)dele);
-
-    if (!error){
+    GB_ERROR error    = GB_begin_transaction(GLOBAL_gb_main);
+    if (!error) error = GBT_rename_alignment(GLOBAL_gb_main,source,dest,(int)copy,(int)dele);
+    if (!error) {
         char *nfield = GBS_global_string_copy("%s/data",dest);
-        awt_add_new_changekey( GLOBAL_gb_main,nfield,GB_STRING);
+        error        = awt_add_new_changekey( GLOBAL_gb_main,nfield,GB_STRING);
         free(nfield);
-        GB_commit_transaction(GLOBAL_gb_main);
-    }else{
-        GB_abort_transaction(GLOBAL_gb_main);
     }
-    if (error) aw_message(error);
+
+    error = GB_end_transaction(GLOBAL_gb_main, error);
+    aww->hide_or_notify(error);
+
     free(source);
     free(dest);
-    aww->hide();
 }
 
 AW_window *create_alignment_copy_window(AW_root *root)
@@ -193,26 +188,20 @@ AW_window *create_alignment_rename_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-void aa_create_alignment(AW_window *aww)
-{
-    GB_ERROR error = 0;
-    GBDATA *gb_alignment;
-    char *name = aww->get_root()->awar("presets/alignment_dest")->read_string();
-    GB_begin_transaction(GLOBAL_gb_main);
-
-    gb_alignment = GBT_create_alignment(GLOBAL_gb_main,name,0,0,0,"dna");
-    if (!gb_alignment) error = GB_get_error();
-
-    if (!error){
-        char *nfield = strdup(GBS_global_string("%s/data",name));
-        awt_add_new_changekey( GLOBAL_gb_main,nfield,GB_STRING);
-        free(nfield);
-        GB_commit_transaction(GLOBAL_gb_main);
-    }else{
-        GB_abort_transaction(GLOBAL_gb_main);
+void aa_create_alignment(AW_window *aww) {
+    GB_ERROR  error = GB_begin_transaction(GLOBAL_gb_main);
+    if (!error) {
+        char   *name             = aww->get_root()->awar("presets/alignment_dest")->read_string();
+        GBDATA *gb_alignment     = GBT_create_alignment(GLOBAL_gb_main,name,0,0,0,"dna");
+        if (!gb_alignment) error = GB_get_error();
+        else {
+            char *nfield = GBS_global_string_copy("%s/data",name);
+            error        = awt_add_new_changekey( GLOBAL_gb_main,nfield,GB_STRING);
+            free(nfield);
+        }
+        free(name);
     }
-    if (error) aw_message(error);
-    free(name);
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
 AW_window *create_alignment_create_window(AW_root *root)

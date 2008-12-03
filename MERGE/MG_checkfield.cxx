@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>
@@ -10,16 +12,15 @@
 #include <awt.hxx>
 #include <awt_changekey.hxx>
 #include <awt_sel_boxes.hxx>
+
 #include "merge.hxx"
 
-
-
 #define AWAR_SOURCE_FIELD "/tmp/merge1/chk/source"
-#define AWAR_DEST_FIELD "/tmp/merge1/chk/dest"
-#define AWAR_TOUPPER "/tmp/merge1/chk/ToUpper"
-#define AWAR_EXCLUDE "/tmp/merge1/chk/exclude"
-#define AWAR_CORRECT "/tmp/merge1/chk/correct"
-#define AWAR_ETAG "/tmp/merge1/chk/tag"
+#define AWAR_DEST_FIELD   "/tmp/merge1/chk/dest"
+#define AWAR_TOUPPER      "/tmp/merge1/chk/ToUpper"
+#define AWAR_EXCLUDE      "/tmp/merge1/chk/exclude"
+#define AWAR_CORRECT      "/tmp/merge1/chk/correct"
+#define AWAR_ETAG         "/tmp/merge1/chk/tag"
 
 
 int gbs_cmp_strings(char *str1,char *str2, int *tab){   /* returns 0 if strings are equal */
@@ -162,140 +163,133 @@ char *GBS_diff_strings(char *str1,char * &str2, char *exclude , long ToUpper, lo
 #define IS_QUERIED(gb_species) (1 & GB_read_usr_private(gb_species))
 
 void mg_check_field_cb(AW_window *aww){
-    AW_root *root = aww->get_root();
-    GB_ERROR error = 0;
-    char *source = root->awar(AWAR_SOURCE_FIELD)->read_string();
-    char *dest = root->awar(AWAR_DEST_FIELD)->read_string();
-    char *exclude = root->awar(AWAR_EXCLUDE)->read_string();
-    long ToUpper = root->awar(AWAR_TOUPPER)->read_int();
-    long correct = root->awar(AWAR_CORRECT)->read_int();
-    char *tag = root->awar(AWAR_ETAG)->read_string();
+    AW_root  *root    = aww->get_root();
+    GB_ERROR  error   = 0;
+    char     *source  = root->awar(AWAR_SOURCE_FIELD)->read_string();
+    char     *dest    = root->awar(AWAR_DEST_FIELD)->read_string();
+    char     *exclude = root->awar(AWAR_EXCLUDE)->read_string();
+    long      ToUpper = root->awar(AWAR_TOUPPER)->read_int();
+    long      correct = root->awar(AWAR_CORRECT)->read_int();
+    char     *tag     = root->awar(AWAR_ETAG)->read_string();
 
-    if (!strlen(source)) {
-        delete source;
-        delete dest;
-        delete exclude;
-        delete tag;
-        aw_message("Please select a source field");
-        return;
+    if (source[0] == 0) {
+        error = "Please select a source field";
     }
-    if (!strlen(dest)) {
-        delete source;
-        delete tag;
-        delete dest;
-        delete exclude;
-        aw_message("Please select a dest field");
-        return;
+    else if (dest[0] == 0) {
+        error = "Please select a dest field";
     }
-    aw_openstatus("Checking fields");
-    GB_begin_transaction(GLOBAL_gb_merge);
-    GB_begin_transaction(GLOBAL_gb_dest);
+    else {
+        aw_openstatus("Checking fields");
+        error = GB_begin_transaction(GLOBAL_gb_merge);
+        
+        if (!error) {
+            error = GB_begin_transaction(GLOBAL_gb_dest);
 
-    GBDATA *gb_species_data1 = GB_search(GLOBAL_gb_merge,"species_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_species_data2 = GB_search(GLOBAL_gb_dest,"species_data",GB_CREATE_CONTAINER);
+            GBDATA *gb_species_data1 = GB_search(GLOBAL_gb_merge, "species_data", GB_CREATE_CONTAINER);
+            GBDATA *gb_species_data2 = GB_search(GLOBAL_gb_dest,  "species_data", GB_CREATE_CONTAINER);
 
-    GBDATA *gb_species1;
-    GBDATA *gb_species2;
-    GBDATA *gb_name1;
-    GBDATA *gb_field1;
-    GBDATA *gb_field2;
-    GBDATA *gbd;
-    int     sum_species = 0;
-    int species_count = 0;
-    // First step: count selected species
-    for (gb_species1 = GBT_first_species_rel_species_data(gb_species_data1);
-         gb_species1;
-         gb_species1 = GBT_next_species(gb_species1)){
-        gbd = GB_search(gb_species1,dest,GB_FIND);
-        if (gbd) GB_delete(gbd);
-        if (!IS_QUERIED(gb_species1)) continue;
-        sum_species ++;
-    }
-    // Delete all 'dest' fields in gb_database 2
-    for (       gb_species2 = GBT_first_species_rel_species_data(gb_species_data2);
-                gb_species2;
-                gb_species2 = GBT_next_species(gb_species2)){
-        gbd = GB_search(gb_species2,dest,GB_FIND);
-        if (gbd) GB_delete(gbd);
-    }
+            GBDATA *gb_species1;
+            GBDATA *gb_species2;
+            
+            int     sum_species   = 0;
+            int     species_count = 0;
+            
+            // First step: count selected species
+            for (gb_species1 = GBT_first_species_rel_species_data(gb_species_data1);
+                 gb_species1 && !error;
+                 gb_species1 = GBT_next_species(gb_species1))
+            {
+                // GBDATA *gbd    = GB_search(gb_species1,dest,GB_FIND);
+                // if (gbd) error = GB_delete(gbd);
+                if (IS_QUERIED(gb_species1)) sum_species++;
+            }
 
-    for (       gb_species1 = GBT_first_species_rel_species_data(gb_species_data1);
-                gb_species1;
-                gb_species1 = GBT_next_species(gb_species1)){
-        gbd = GB_search(gb_species1,dest,GB_FIND);
-        if (gbd) GB_delete(gbd);
+            // Delete all 'dest' fields in gb_database 2
+            for (gb_species2 = GBT_first_species_rel_species_data(gb_species_data2);
+                 gb_species2 && !error;
+                 gb_species2 = GBT_next_species(gb_species2))
+            {
+                GBDATA *gbd    = GB_search(gb_species2,dest,GB_FIND);
+                if (gbd) error = GB_delete(gbd);
+            }
 
-        gb_name1 = GB_entry(gb_species1,"name");
-        if (!gb_name1) continue;    // no name what happend ???
+            for (gb_species1 = GBT_first_species_rel_species_data(gb_species_data1);
+                 gb_species1 && !error;
+                 gb_species1 = GBT_next_species(gb_species1))
+            {
+                GBDATA *gbd    = GB_search(gb_species1,dest,GB_FIND);
+                if (gbd) error = GB_delete(gbd);
 
-        if (!IS_QUERIED(gb_species1)) continue;
-        species_count++;
-        if ( (species_count & 0xf) == 0 ){
-            aw_status(species_count/ (double)sum_species);
-        }
-        gb_species2 = GB_find_string(gb_species_data2, "name", GB_read_char_pntr(gb_name1), GB_IGNORE_CASE, down_2_level);
+                if (!error) {
+                    GBDATA *gb_name1 = GB_entry(gb_species1,"name");
+                    if (gb_name1 && IS_QUERIED(gb_species1)) {
+                        species_count++;
+                        if ((species_count & 0xf) == 0) aw_status(species_count/ (double)sum_species);
+                        
+                        gb_species2 = GB_find_string(gb_species_data2, "name", GB_read_char_pntr(gb_name1), GB_IGNORE_CASE, down_2_level);
+                        if (!gb_species2) {
+                            aw_message(GBS_global_string("WARNING: Species %s not found in DB II", GB_read_char_pntr(gb_name1)));
+                        }
+                        else {
+                            gb_species2 = GB_get_father(gb_species2);
 
-        if (!gb_species2) {
-            sprintf(AW_ERROR_BUFFER,"WARNING: Species %s not found in DB II",
-                    GB_read_char_pntr(gb_name1));
-            aw_message();
-            continue;
-        }else{
-            gb_species2 = GB_get_father(gb_species2);
-        }
-        char *s1 = 0;
-        char *s2 = 0;
-        gb_field1 = GB_search(gb_species1,source,GB_FIND);
-        gb_field2 = GB_search(gb_species2,source,GB_FIND);
+                            GBDATA *gb_field1 = GB_search(gb_species1,source,GB_FIND);
+                            GBDATA *gb_field2 = GB_search(gb_species2,source,GB_FIND);
+                            char   *s1        = gb_field1 ? GB_read_as_tagged_string(gb_field1, tag) : 0;
+                            char   *s2        = gb_field2 ? GB_read_as_tagged_string(gb_field2, tag) : 0;
 
-        if ( (!gb_field1) &&  (!gb_field2) ) continue;
-        if (gb_field1 ) s1 = GB_read_as_tagged_string(gb_field1,tag);
-        if (gb_field2 ) s2 = GB_read_as_tagged_string(gb_field2,tag);
-        if (!s1 && !s2) continue;
+                            if (s1 || s2) {
+                                char *positions1 = 0;
+                                char *positions2 = 0;
+                                
+                                if (s1 && s2) {
+                                    long corrected = 0;
+                                    GBS_diff_strings(s1,s2,exclude,ToUpper,correct,&positions1,&positions2,&corrected);
+                                    if (corrected) {
+                                        error             = GB_write_as_string(gb_field2,s2);
+                                        if (!error) error = GB_write_flag(gb_species2,1);
+                                    }
+                                }
+                                else {
+                                    positions1 = GBS_global_string_copy("field missing in %s DB", s1 ? "other" : "this");
+                                    positions2 = GBS_global_string_copy("field missing in %s DB", s2 ? "other" : "this");
+                                }
 
-        {
-            char *positions1;
-            char *positions2;
-            if (s1 && s2){
-                long corrected= 0;
-                GBS_diff_strings(s1,s2,exclude,ToUpper,correct,&positions1,&positions2,&corrected);
-                if (corrected) {
-                    error = GB_write_as_string(gb_field2,s2);
-                    GB_write_flag(gb_species2,1);
+                                if (positions1 && !error) {
+                                    gbd = GB_search(gb_species2,dest,GB_STRING);
+                                    if (!gbd) error = GB_get_error();
+                                    else {
+                                        error = GB_write_string(gbd,positions2);
+                                        if (!error) {
+                                            gbd             = GB_search(gb_species1,dest,GB_STRING);
+                                            if (!gbd) error = GB_get_error();
+                                            else error      = GB_write_string(gbd,positions1);
+                                        }
+                                    }
+                                }
+                                
+                                free(positions2);
+                                free(positions1);
+                            }
+
+                            free(s2);
+                            free(s1);
+                        }
+                    }
                 }
-            }else{
-                if (s1) positions1 = strdup("missing field in other db");
-                else    positions1 = strdup("missing field in this db");
-                if (s2) positions2 = strdup("missing field in other db");
-                else    positions2 = strdup("missing field in this db");
             }
-            if (positions1){
-                gbd = GB_search(gb_species2,dest,GB_STRING);
-                GB_write_string(gbd,positions2);
-                delete positions2;
-                gbd = GB_search(gb_species1,dest,GB_STRING);
-                GB_write_string(gbd,positions1);
-                delete positions1;
-            }
-        }
 
-        delete s1;
-        delete s2;
+            aw_closestatus();
+            error = GB_end_transaction(GLOBAL_gb_merge, error);
+            error = GB_end_transaction(GLOBAL_gb_dest, error);
+        }
     }
-    aw_closestatus();
-    if (error){
-        GB_abort_transaction(GLOBAL_gb_merge);
-        GB_abort_transaction(GLOBAL_gb_dest);
-        aw_message(error);
-        error = 0;
-    }else{
-        GB_commit_transaction(GLOBAL_gb_merge);
-        GB_commit_transaction(GLOBAL_gb_dest);
-    }
-    delete tag;
-    delete source;
-    delete dest;
-    delete exclude;
+    if (error) aw_message(error);
+
+    free(tag);
+    free(exclude);
+    free(dest);
+    free(source);
 }
 
 

@@ -1092,12 +1092,9 @@ static void  GEN_perform_command(AW_window *aww, GEN_PERFORM_MODE pmode,
         }
     }
 
-    if (!error) GB_commit_transaction(GLOBAL_gb_main);
-    else GB_abort_transaction(GLOBAL_gb_main);
-
-    if (error) aw_message(error);
-
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
+
 static void GEN_hide_command(AW_window *aww, AW_CL cl_pmode, AW_CL cl_hmode) {
     GEN_perform_command(aww, (GEN_PERFORM_MODE)cl_pmode, do_hide_command_for_one_species, cl_hmode, 0);
 }

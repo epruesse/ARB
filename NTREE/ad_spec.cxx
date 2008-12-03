@@ -56,32 +56,34 @@ void create_species_var(AW_root *aw_root, AW_default aw_def)
 
 }
 
-static void move_species_to_extended(AW_window *aww){
-    GB_ERROR error = 0;
-    char *source = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
-    GB_begin_transaction(GLOBAL_gb_main);
+static void move_species_to_extended(AW_window *aww) {
+    char     *source = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
+    GB_ERROR  error  = GB_begin_transaction(GLOBAL_gb_main);
 
-    GBDATA *gb_extended_data = GB_search(GLOBAL_gb_main,"extended_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,source);
-    GBDATA *gb_dest = GBT_find_SAI_rel_exdata(gb_extended_data,source);
-    if (gb_dest) {
-        error = "Sorry: SAI already exists";
-    }else   if (gb_species) {
-        gb_dest = GB_create_container(gb_extended_data,"extended");
-        error = GB_copy(gb_dest,gb_species);
-        if (!error) {
-            error = GB_delete(gb_species);
-            if (!error) {
-                aww->get_root()->awar(AWAR_SPECIES_NAME)->write_string("");
+    if (!error) {
+        GBDATA *gb_extended_data = GB_search(GLOBAL_gb_main, "extended_data", GB_CREATE_CONTAINER);
+
+        if (!gb_extended_data) error = GB_get_error();
+        else {
+            GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, source);
+            GBDATA *gb_dest    = GBT_find_SAI_rel_exdata(gb_extended_data, source);
+
+            if (gb_dest) error = GBS_global_string("SAI '%s' already exists", source);
+            else if (gb_species) {
+                gb_dest = GB_create_container(gb_extended_data, "extended");
+                if (!gb_dest) error = GB_get_error();
+                else {
+                    error = GB_copy(gb_dest, gb_species);
+                    if (!error) {
+                        error = GB_delete(gb_species);
+                        if (!error) aww->get_root()->awar(AWAR_SPECIES_NAME)->write_string("");
+                    }
+                }
             }
+            else error = "Please select a species";
         }
-    }else{
-        error = "Please select a species first";
     }
-
-    if (!error) GB_commit_transaction(GLOBAL_gb_main);
-    else    GB_abort_transaction(GLOBAL_gb_main);
-    if (error) aw_message(error);
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
     free(source);
 }
 
@@ -118,7 +120,7 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
     // get the selected species
     char *species_name = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
     GBDATA *gb_species = 0;
-    if ( !strcmp(species_name, "") || !(gb_species = GBT_find_species(GLOBAL_gb_main, species_name)) ) {
+    if ( !strcmp(species_name, "") || !(gb_species = GBT_find_species(GLOBAL_gb_main, species_name)) ) { 
         error = "Please select a species first.";
     } else {
         // search for the field "sec_struct"
@@ -183,15 +185,15 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
         }
     }
 
-    if (!error && !canceled) {
-        GB_commit_transaction(GLOBAL_gb_main);
+    if (canceled) error = "Aborted by user";
+
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+
+    if (!error) {
         AW_window *sai_info = NT_create_extendeds_window(aww->get_root());
         //TODO: why doesn't info box show anything on first startup? proper refresh needed?
         sai_info->show();
-        ((AWT_canvas *)ntw)->refresh(); // refresh doesn't work, I guess... 
-    } else {
-        GB_abort_transaction(GLOBAL_gb_main);
-        if (error) aw_message(error);
+        ((AWT_canvas *)ntw)->refresh(); // refresh doesn't work, I guess...
     }
 
     free(species_name);
@@ -199,24 +201,26 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
     free(sec_struct);
 }
 
-static void species_create_cb(AW_window *aww){
-    GB_ERROR error = 0;
-    char *dest = aww->get_root()->awar(AWAR_SPECIES_DEST)->read_string();
-    GB_begin_transaction(GLOBAL_gb_main);
-    GBDATA *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_dest = GBT_find_species_rel_species_data(gb_species_data,dest);
-    if (gb_dest) {
-        error = "Sorry: species already exists";
-    }else{
-        gb_dest = GBT_create_species_rel_species_data(gb_species_data,dest);
-        if (!gb_dest) error = GB_get_error();
-        if (!error) {
-            aww->get_root()->awar(AWAR_SPECIES_NAME)->write_string(dest);
+static void species_create_cb(AW_window * aww) {
+    char     *dest  = aww->get_root()->awar(AWAR_SPECIES_DEST)->read_string();
+    GB_ERROR  error = GB_begin_transaction(GLOBAL_gb_main);
+
+    if (!error) {
+        GBDATA *gb_species_data = GB_search(GLOBAL_gb_main, "species_data", GB_CREATE_CONTAINER);
+
+        if (!gb_species_data) error = GB_get_error();
+        else {
+            GBDATA *gb_dest = GBT_find_species_rel_species_data(gb_species_data, dest);
+
+            if (gb_dest) error = GBS_global_string("Species '%s' already exists", dest);
+            else {
+                gb_dest = GBT_create_species_rel_species_data(gb_species_data, dest);
+                if (!gb_dest) error = GB_get_error();
+                else aww->get_root()->awar(AWAR_SPECIES_NAME)->write_string(dest);
+            }
         }
     }
-    if (!error) GB_commit_transaction(GLOBAL_gb_main);
-    else    GB_abort_transaction(GLOBAL_gb_main);
-    if (error) aw_message(error);
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
     free(dest);
 }
 
@@ -576,80 +580,71 @@ AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector)
     return (AW_window *)aws;
 }
 
-static void ad_hide_field(AW_window *aws, AW_CL cl_cbs, AW_CL cl_hide)
-{
-    AWUSE(aws);
-    GB_begin_transaction(GLOBAL_gb_main);
+static void ad_hide_field(AW_window *aws, AW_CL cl_cbs, AW_CL cl_hide) {
+    const adawcbstruct *cbs   = (const adawcbstruct *)cl_cbs;
+    GB_ERROR            error = GB_begin_transaction(GLOBAL_gb_main);
 
-    char                   *source    = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
-    GB_ERROR                error     = 0;
-    const adawcbstruct     *cbs       = (const adawcbstruct*)cl_cbs;
-    const ad_item_selector *selector  = cbs->selector;
-    GBDATA                 *gb_source = awt_get_key(GLOBAL_gb_main,source, selector->change_key_path);
+    if (!error) {
+        char                   *source    = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
+        const ad_item_selector *selector  = cbs->selector;
+        GBDATA                 *gb_source = awt_get_key(GLOBAL_gb_main, source, selector->change_key_path);
 
-    if (!gb_source) {
-        aw_message("Please select the field you want to (un)hide");
-    }
-    else {
-        GBDATA *gb_hidden = GB_search(gb_source, CHANGEKEY_HIDDEN, GB_INT);
-        GB_write_int(gb_hidden, (int)cl_hide);
-    }
-
-    free(source);
-
-    if (error) {
-        GB_abort_transaction(GLOBAL_gb_main);
-        if (error) aw_message(error);
-    }else{
-        GB_commit_transaction(GLOBAL_gb_main);
-        aws->move_selection(cbs->id, AWAR_FIELD_DELETE, 1);
-    }
-}
-
-static void ad_field_delete(AW_window *aws, AW_CL cl_cbs)
-{
-    AWUSE(aws);
-
-    GB_begin_transaction(GLOBAL_gb_main);
-
-    char                   *source    = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
-    GB_ERROR                error     = 0;
-    const adawcbstruct     *cbs       = (const adawcbstruct*)cl_cbs;
-    const ad_item_selector *selector  = cbs->selector;
-    GBDATA                 *gb_source = awt_get_key(GLOBAL_gb_main,source, selector->change_key_path);
-
-    int curr_index = aws->get_index_of_current_element(cbs->id, AWAR_FIELD_DELETE);
-
-    if (!gb_source) {
-        aw_message("Please select the field you want to delete");
-    }else{
-        error = GB_delete(gb_source);
-    }
-
-    for (GBDATA *gb_item_container = selector->get_first_item_container(GLOBAL_gb_main, aws->get_root(), AWT_QUERY_ALL_SPECIES);
-         !error && gb_item_container;
-         gb_item_container = selector->get_next_item_container(gb_item_container, AWT_QUERY_ALL_SPECIES))
-    {
-        for (GBDATA *gb_item = selector->get_first_item(gb_item_container);
-             !error && gb_item;
-             gb_item = selector->get_next_item(gb_item))
-        {
-            GBDATA *gbd = GB_search(gb_item,source,GB_FIND);
-            if (gbd) error = GB_delete(gbd);
+        if (!gb_source) {
+            error = "Please select the field you want to (un)hide";
         }
+        else {
+            GBDATA *gb_hidden     = GB_search(gb_source, CHANGEKEY_HIDDEN, GB_INT);
+            if (!gb_hidden) error = GB_get_error();
+            else    error         = GB_write_int(gb_hidden, (int)cl_hide);
+        }
+        free(source);
     }
-
-    free(source);
-
-    if (error) {
-        GB_abort_transaction(GLOBAL_gb_main);
-        if (error) aw_message(error);
-    }else{
-        GB_commit_transaction(GLOBAL_gb_main);
-    }
-
-    aws->select_index(cbs->id, AWAR_FIELD_DELETE, curr_index); // current(deleted) item has disappeared, so this selects the next one
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+    if (!error) aws->move_selection(cbs->id, AWAR_FIELD_DELETE, 1);
 }
+
+
+
+
+static void ad_field_delete(AW_window *aws, AW_CL cl_cbs) {
+    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
+
+    if (!error) {
+        char                   *source     = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
+        const adawcbstruct     *cbs        = (const adawcbstruct *)cl_cbs;
+        const ad_item_selector *selector   = cbs->selector;
+        int                     curr_index = aws->get_index_of_current_element(cbs->id, AWAR_FIELD_DELETE);
+        GBDATA                 *gb_source  = awt_get_key(GLOBAL_gb_main, source, selector->change_key_path);
+
+        if (!gb_source) error = "Please select the field you want to delete";
+        else error            = GB_delete(gb_source);
+
+        for (GBDATA *gb_item_container = selector->get_first_item_container(GLOBAL_gb_main, aws->get_root(), AWT_QUERY_ALL_SPECIES);
+             !error && gb_item_container;
+             gb_item_container = selector->get_next_item_container(gb_item_container, AWT_QUERY_ALL_SPECIES))
+        {
+            for (GBDATA * gb_item = selector->get_first_item(gb_item_container);
+                 !error && gb_item;
+                 gb_item = selector->get_next_item(gb_item))
+            {
+                GBDATA *gbd = GB_search(gb_item, source, GB_FIND);
+
+                if (gbd) {
+                    error = GB_delete(gbd);
+                    if (!error) {
+                        // item has disappeared, this selects the next one: 
+                        aws->select_index(cbs->id, AWAR_FIELD_DELETE, curr_index);
+                    }
+                }
+            }
+        }
+
+        free(source);
+    }
+
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+}
+
 
 AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector)
 {
@@ -712,12 +707,8 @@ static void ad_field_create_cb(AW_window *aws, AW_CL cl_item_selector)
     int type = (int)aws->get_root()->awar(AWAR_FIELD_CREATE_TYPE)->read_int();
 
     const ad_item_selector *selector = (const ad_item_selector*)cl_item_selector;
-    if(!error) error = awt_add_new_changekey_to_keypath(GLOBAL_gb_main, name, type, selector->change_key_path);
-    if (error) {
-        aw_message(error);
-    }else{
-        aws->hide();
-    }
+    if (!error) error = awt_add_new_changekey_to_keypath(GLOBAL_gb_main, name, type, selector->change_key_path);
+    aws->hide_or_notify(error);
     free(name);
     GB_pop_transaction(GLOBAL_gb_main);
 }
@@ -885,13 +876,7 @@ static void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs) {
         }
     }
     aw_closestatus();
-    if (error){
-        GB_abort_transaction(GLOBAL_gb_main);
-        aw_message(error);
-    }
-    else {
-        GB_commit_transaction(GLOBAL_gb_main);
-    }
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
     free(dest_field);
     free(ali_name);
 }

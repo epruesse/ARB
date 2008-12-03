@@ -2,7 +2,9 @@
 #include <aw_global.hxx>
 #include <aw_window.hxx>
 #include <awt.hxx>
+
 #include <cstring>
+#include <cstdlib>
 
 #warning module completely unused
 
@@ -110,14 +112,15 @@ void ph_calculate_matrix_cb(AW_window *aww,AW_CL cb1,AW_CL cb2) {
 }
 
 void ph_save_matrix_cb(AW_window *aww)
-{           // save the matrix
-    if (!PHDATA::ROOT) return;
-    PHDATA::ROOT->print();
-    char *filename = aww->get_root()->awar("tmp/phyl/save_matrix/file_name")->read_string();
-    GB_ERROR error = PHDATA::ROOT->save(filename);
-    delete filename;
-    if (error) aw_message(error);
-    aww->hide();
+{
+    // save the matrix
+    if (PHDATA::ROOT) {
+        PHDATA::ROOT->print();
+        char *filename = aww->get_root()->awar("tmp/phyl/save_matrix/file_name")->read_string();
+        GB_ERROR error = PHDATA::ROOT->save(filename);
+        free(filename);
+        aww->hide_or_notify(error);
+    }
 }
 
 AW_window *PH_create_save_matrix_window(AW_root *aw_root, char *base_name)

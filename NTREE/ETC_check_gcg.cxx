@@ -131,27 +131,23 @@ GB_ERROR arb_arcg()
 
 }
 
-void etc_check_gcg_list_cb(AW_window *aww,char *filesuffix)
-{
-    AWUSE(aww);
-    GB_ERROR error;
+void etc_check_gcg_list_cb(AW_window *aww,char *filesuffix) {
+    free(arcg.outfile);         arcg.outfile      = GBS_string_eval(arcg.infile,"*=*.out",0);
+    free(arcg.fetchfile);       arcg.fetchfile    = GBS_string_eval(arcg.infile,"*=*.fetch",0);
+    free(arcg.fetchcommand);    arcg.fetchcommand = GBS_string_eval(arcg.fetch,"*=\\*\\=* \\*",0);
 
-    delete arcg.outfile; arcg.outfile = GBS_string_eval(arcg.infile,"*=*.out",0);
-    delete arcg.fetchfile; arcg.fetchfile = GBS_string_eval(arcg.infile,"*=*.fetch",0);
-    delete arcg.fetchcommand; arcg.fetchcommand = GBS_string_eval(arcg.fetch,"*=\\*\\=* \\*",0);
+    GB_ERROR error    = GB_begin_transaction(GLOBAL_gb_main);
+    if (!error) error = arb_arcg();
+    error             = GB_end_transaction(GLOBAL_gb_main, error);
 
-    GB_begin_transaction(GLOBAL_gb_main);
-    error = arb_arcg();
-    if (error) {
+    if (!error) {
+        char       *textedit = aww->get_root()->awar("etc_check_gcg/textedit")->read_string();
+        const char *cmd      = GBS_global_string("%s %s.%s &", textedit, arcg.infile, filesuffix);
+        system(cmd);
+        free(textedit);
+    }
+    else {
         aw_message(error);
-        GB_abort_transaction(GLOBAL_gb_main);
-    }else{
-        GB_commit_transaction(GLOBAL_gb_main);
-        char buffer[256];
-        char *textedit = aww->get_root()->awar("etc_check_gcg/textedit")->read_string();
-        sprintf(buffer,"%s %s.%s &",textedit,arcg.infile,filesuffix);
-        system(buffer);
-        delete textedit;
     }
 }
 

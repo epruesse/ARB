@@ -14,29 +14,24 @@
 #include "st_ml.hxx"
 #include "st_quality.hxx"
 
-void st_ok_cb(AW_window * aww, ST_ML * st_ml) {
-    AW_root *root = aww->get_root();
-    GB_transaction dummy(st_ml->gb_main);
-    char *alignment_name = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-",
-            st_ml->gb_main)->read_string();
-    char *tree_name = root->awar_string(AWAR_TREE, "tree_stat",
-            st_ml->gb_main)->read_string();
-    int marked_only = root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
-    GB_ERROR error = st_ml->init(tree_name, alignment_name, (char *) 0,
-            marked_only, (char *) 0, st_ml->awt_csp);
+void st_ok_cb(AW_window *aww, ST_ML *st_ml) {
+    AW_root        *root           = aww->get_root();
+    char           *alignment_name = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->gb_main)->read_string();
+    char           *tree_name      = root->awar_string(AWAR_TREE, "tree_stat", st_ml->gb_main)->read_string();
+    int             marked_only    = root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
 
-    if (error) {
-        aw_message(error);
-    } else if (st_ml->refresh_func) {
-        st_ml->refresh_func(st_ml->aw_window);
-    }
-    delete tree_name;
-    delete alignment_name;
-    aww->hide();
+    GB_ERROR error    = GB_push_transaction(st_ml->gb_main);
+    if (!error) error = st_ml->init(tree_name, alignment_name, (char *) 0, marked_only, (char *) 0, st_ml->awt_csp);
+    if (!error && st_ml->refresh_func) st_ml->refresh_func(st_ml->aw_window);
+
+    error = GB_end_transaction(st_ml->gb_main, error);
+    aww->hide_or_notify(error);
+
+    free(tree_name);
+    free(alignment_name);
 }
 
-AW_window *st_create_main_window(AW_root * root, ST_ML * st_ml,
-        AW_CB0 refresh_func, AW_window * win) {
+AW_window *st_create_main_window(AW_root * root, ST_ML * st_ml, AW_CB0 refresh_func, AW_window * win) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "ENABLE_ONLINE_STATISTIC", "ACTIVATE ONLINE STATISTIC");
 

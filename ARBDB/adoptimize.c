@@ -2574,8 +2574,7 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
                 }
             }
 
-            if (error) GB_abort_transaction(gb_main);
-            else GB_commit_transaction(gb_main);
+            error = GB_end_transaction(gb_main, error);
         }
 
 #ifdef TEST_DICT

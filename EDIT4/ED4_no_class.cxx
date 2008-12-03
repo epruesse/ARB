@@ -373,8 +373,9 @@ static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
     edit_string->finish_edit();
 
     if (work_info->error || (error && *error == 1)) {
+        // hier evtl. nochmal route_down_hierarchy aufrufen ?!!
         aw_message(work_info->error);
-        GB_abort_transaction(GLOBAL_gb_main); // hier evtl. nochmal route_down_hierarchy aufrufen ?!!
+        GB_abort_transaction(GLOBAL_gb_main); 
         ED4_ROOT->refresh_all_windows(0);
     }
     else {
@@ -1245,13 +1246,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
         }
     }
 
-    if (error) {
-        aw_message(error);
-        GB_abort_transaction(GLOBAL_gb_main);
-    }
-    else {
-        GB_commit_transaction(GLOBAL_gb_main);
-    }
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
 static void group_species2_cb(AW_window*, AW_CL cl_use_as_main_window, AW_CL cl_window_to_hide) {

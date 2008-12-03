@@ -20,21 +20,19 @@ SEER_GLOBAL seer_global;
 
 void SEER_query_seer_cb(AW_window *aww){
     aw_openstatus("Query Database");
-    char *alignment_name     = aww->get_root()->awar(AWAR_SEER_ALIGNMENT_NAME)->read_string();
-    char *attribute_name     = aww->get_root()->awar(AWAR_SEER_QUERY_ATTRIBUTE)->read_string();
-    char *query_string       = aww->get_root()->awar(AWAR_SEER_QUERY_STRING)->read_string();
-    int   load_sequence_flag = aww->get_root()->awar(AWAR_SEER_LOAD_SEQUENCES)->read_int();
+    AW_root *aw_root            = aww->get_root();
+    char    *alignment_name     = aw_root->awar(AWAR_SEER_ALIGNMENT_NAME)->read_string();
+    char    *attribute_name     = aw_root->awar(AWAR_SEER_QUERY_ATTRIBUTE)->read_string();
+    char    *query_string       = aw_root->awar(AWAR_SEER_QUERY_STRING)->read_string();
+    int      load_sequence_flag = aw_root->awar(AWAR_SEER_LOAD_SEQUENCES)->read_int();
 
     GB_ERROR error = SEER_query(alignment_name,attribute_name,query_string,load_sequence_flag);
-    delete alignment_name;
-    delete attribute_name;
-    delete query_string;
     aw_closestatus();
-    if (error){
-        aw_message(error);
-    }else{
-        seer_global.query_seer_window->hide();
-    }
+    seer_global.query_seer_window->hide_or_notify(error);
+    
+    free(query_string);
+    free(attribute_name);
+    free(alignment_name);
 }
 
 void SEER_load_marked(AW_window *aww){

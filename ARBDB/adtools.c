@@ -3089,12 +3089,9 @@ static void gbt_free_rename_session_data(void) {
     }
 }
 
-GB_ERROR GBT_abort_rename_session(void)
-{
-    GB_ERROR error;
+GB_ERROR GBT_abort_rename_session(void) {
     gbt_free_rename_session_data();
-    error = GB_abort_transaction(gbtrst.gb_main);
-    return error;
+    return GB_abort_transaction(gbtrst.gb_main);
 }
 
 static const char *currentTreeName = 0;

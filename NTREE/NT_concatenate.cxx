@@ -406,14 +406,11 @@ void concatenateAlignments(AW_window *aws) {
     }
 
     if (!error) {
-        char *nfield = GB_strdup(GBS_global_string("%s/data",new_ali_name));
-        awt_add_new_changekey( GLOBAL_gb_main,nfield,GB_STRING);
+        char *nfield = GBS_global_string_copy("%s/data",new_ali_name);
+        error        = awt_add_new_changekey(GLOBAL_gb_main, nfield, GB_STRING);
         free(nfield);
-        GB_pop_transaction(GLOBAL_gb_main);
-    } else {
-        GB_abort_transaction(GLOBAL_gb_main);
-        aw_message(error);
     }
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
     free(new_ali_name);
 }
 
@@ -699,13 +696,10 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
         free(new_species_name);
     }
 
+    error = GB_end_transaction(GLOBAL_gb_main, error);
     if (error) {
-        GB_abort_transaction(GLOBAL_gb_main);
         gb_new_species = 0;
         aw_popup_ok(error);
-    }
-    else {
-        GB_pop_transaction(GLOBAL_gb_main);
     }
 
     free(addid);
@@ -820,11 +814,7 @@ void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignme
     free(merge_field_name);
     free(new_field_name);
 
-    if (!error)  GB_commit_transaction(GLOBAL_gb_main);
-    else {
-        GB_abort_transaction(GLOBAL_gb_main);
-        aw_message(error);
-    }
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 
     // refresh the screen display
     AWT_canvas     *ntw = (AWT_canvas *)cl_ntw;

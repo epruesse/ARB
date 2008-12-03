@@ -2,7 +2,7 @@
 /*                                                                      */
 /*   File      : ad_config.c                                            */
 /*   Purpose   : handle editor configurations                           */
-/*   Time-stamp: <Thu May/22/2008 15:49 MET Coder@ReallySoft.de>        */
+/*   Time-stamp: <Mon Dec/01/2008 13:46 MET Coder@ReallySoft.de>        */
 /*                                                                      */
 /*                                                                      */
 /* Coded by Ralf Westram (coder@reallysoft.de) in May 2005              */
@@ -124,9 +124,7 @@ GBT_config *GBT_load_configuration_data(GBDATA *gb_main, const char *name, GB_ER
         if (!config) *error = GBS_global_string("Configuration '%s' is corrupted", name);
     }
 
-    if (*error) GB_abort_transaction(gb_main);
-    else GB_pop_transaction(gb_main);
-
+    *error = GB_end_transaction(gb_main, *error);
     return config;
 }
 
@@ -156,10 +154,7 @@ GB_ERROR GBT_save_configuration_data(GBT_config *config, GBDATA *gb_main, const 
         if (error) error  = GBS_global_string("%s (in configuration '%s')", error, name);
     }
 
-    if (error) GB_abort_transaction(gb_main);
-    else GB_pop_transaction(gb_main);
-
-    return error;
+    return GB_end_transaction(gb_main, error);
 }
 
 void GBT_free_configuration_data(GBT_config *data) {

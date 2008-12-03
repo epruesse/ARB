@@ -565,10 +565,8 @@ MP_Window::MP_Window(AW_root *aw_root)
 
 MP_Window::~MP_Window()
 {
-    if (result_window)
-        result_window->hide();
-
-    if (aws)    aws->hide();
+    if (result_window)  result_window->hide();
+    if (aws)            aws->hide();
 
     delete result_window;
     delete aws;

@@ -18,91 +18,102 @@
 
 extern GBDATA *GLOBAL_gb_main;
 
-void NT_create_extendeds_var(AW_root *aw_root, AW_default aw_def)
-{
-    aw_root->awar_string( AWAR_SAI_NAME, "" ,    aw_def);
-    aw_root->awar_string( AWAR_SAI_DEST, "" ,    aw_def);
+void NT_create_extendeds_var(AW_root *aw_root, AW_default aw_def) {
+    aw_root->awar_string(AWAR_SAI_NAME, "", aw_def);
+    aw_root->awar_string(AWAR_SAI_DEST, "", aw_def);
 }
 
 void extended_rename_cb(AW_window *aww){
-    GB_ERROR error = 0;
-    char *source = aww->get_root()->awar(AWAR_SAI_NAME)->read_string();
-    char *dest = aww->get_root()->awar(AWAR_SAI_DEST)->read_string();
-    GB_begin_transaction(GLOBAL_gb_main);
-    GBDATA *gb_extended_data =  GB_search(GLOBAL_gb_main,"extended_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_extended =       GBT_find_SAI_rel_exdata(gb_extended_data,source);
-    GBDATA *gb_dest =       GBT_find_SAI_rel_exdata(gb_extended_data,dest);
-    if (gb_dest) {
-        error = "Sorry: SAI already exists";
-    }else   if (gb_extended) {
-        GBDATA *gb_name =
-            GB_search(gb_extended,"name",GB_STRING);
-        error = GB_write_string(gb_name,dest);
-    }else{
-        error = "Please select a SAI first";
-    }
-    if (!error) GB_commit_transaction(GLOBAL_gb_main);
-    else    GB_abort_transaction(GLOBAL_gb_main);
-    if (error) aw_message(error);
-    free(source);
-    free(dest);
-}
-
-void extended_copy_cb(AW_window *aww){
-    GB_ERROR error = 0;
-    char *source = aww->get_root()->awar(AWAR_SAI_NAME)->read_string();
-    char *dest = aww->get_root()->awar(AWAR_SAI_DEST)->read_string();
-    GB_begin_transaction(GLOBAL_gb_main);
-    GBDATA *gb_extended_data =  GB_search(GLOBAL_gb_main,"extended_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_extended =       GBT_find_SAI_rel_exdata(gb_extended_data,source);
-    GBDATA *gb_dest =       GBT_find_SAI_rel_exdata(gb_extended_data,dest);
-    if (gb_dest) {
-        error = "Sorry: SAI already exists";
-    }else   if (gb_extended) {
-        gb_dest = GB_create_container(gb_extended_data,"extended");
-        error = GB_copy(gb_dest,gb_extended);
-        if (!error) {
-            GBDATA *gb_name = GB_search(gb_dest,"name",GB_STRING);
-            error = GB_write_string(gb_name,dest);
-        }
-
-    }else{
-        error = "Please select a SAI first";
-    }
-    if (!error) GB_commit_transaction(GLOBAL_gb_main);
-    else    GB_abort_transaction(GLOBAL_gb_main);
-    if (error) aw_message(error);
-    free(source);
-    free(dest);
-}
-void move_to_sepcies(AW_window *aww)
-{
-    GB_ERROR error = 0;
-    char *source = aww->get_root()->awar(AWAR_SAI_NAME)->read_string();
-    GB_begin_transaction(GLOBAL_gb_main);
-
-    GBDATA *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_dest         = GBT_find_species_rel_species_data(gb_species_data,source);
-    GBDATA *gb_extended     = GBT_find_SAI(GLOBAL_gb_main,source);
-
-    if (gb_dest) {
-        error = "Sorry: species already exists";
-    }
-    else if (gb_extended) {
-        gb_dest = GB_create_container(gb_species_data,"species");
-        error = GB_copy(gb_dest,gb_extended);
-    }
-    else {
-        error = "Please select a SAI first";
-    }
+    char     *source = aww->get_root()->awar(AWAR_SAI_NAME)->read_string();
+    char     *dest   = aww->get_root()->awar(AWAR_SAI_DEST)->read_string();
+    GB_ERROR  error  = GB_begin_transaction(GLOBAL_gb_main);
 
     if (!error) {
-        GB_commit_transaction(GLOBAL_gb_main);
+        GBDATA *gb_extended_data = GB_search(GLOBAL_gb_main,"extended_data",GB_CREATE_CONTAINER);
+
+        if (!gb_extended_data) error = GB_get_error();
+        else {
+            GBDATA *gb_extended = GBT_find_SAI_rel_exdata(gb_extended_data,source);
+            GBDATA *gb_dest     = GBT_find_SAI_rel_exdata(gb_extended_data,dest);
+            if (gb_dest) {
+                error = GBS_global_string("SAI '%s' already exists", dest);
+            }
+            else if (gb_extended) {
+                GBDATA *gb_name     = GB_search(gb_extended,"name",GB_STRING);
+                if (!gb_name) error = GB_get_error();
+                else    error       = GB_write_string(gb_name,dest);
+            }
+            else {
+                error = "Please select a SAI";
+            }
+        }
     }
-    else {
-        GB_abort_transaction(GLOBAL_gb_main);
-        aw_message(error);
+
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+    free(dest);
+    free(source);
+}
+
+void extended_copy_cb(AW_window *aww) {
+    char     *source = aww->get_root()->awar(AWAR_SAI_NAME)->read_string();
+    char     *dest   = aww->get_root()->awar(AWAR_SAI_DEST)->read_string();
+    GB_ERROR  error  = GB_begin_transaction(GLOBAL_gb_main);
+    
+    if (!error) {
+        GBDATA *gb_extended_data = GB_search(GLOBAL_gb_main,"extended_data",GB_CREATE_CONTAINER);
+
+        if (!gb_extended_data) error = GB_get_error();
+        else {
+            GBDATA *gb_extended = GBT_find_SAI_rel_exdata(gb_extended_data, source);
+            GBDATA *gb_dest     = GBT_find_SAI_rel_exdata(gb_extended_data, dest);
+            
+            if (gb_dest) error = GBS_global_string("SAI '%s' already exists", dest);
+            else if (gb_extended) {
+                gb_dest             = GB_create_container(gb_extended_data,"extended");
+                if (!gb_dest) error = GB_get_error();
+                else {
+                    error = GB_copy(gb_dest,gb_extended);
+                    if (!error) {
+                        GBDATA *gb_name = GB_search(gb_dest,"name",GB_STRING);
+                        
+                        if (!gb_name) error = GB_get_error();
+                        else error          = GB_write_string(gb_name,dest);
+                    }
+                }
+            }
+            else error = "Please select a SAI";
+        }
     }
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+    free(dest);
+    free(source);
+}
+
+void move_to_sepcies(AW_window *aww) {
+    char     *source = aww->get_root()->awar(AWAR_SAI_NAME)->read_string();
+    GB_ERROR  error  = GB_begin_transaction(GLOBAL_gb_main);
+
+    if (!error) {
+        GBDATA *gb_species_data     = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
+        if (!gb_species_data) error = GB_get_error();
+        else {
+            GBDATA *gb_dest     = GBT_find_species_rel_species_data(gb_species_data,source);
+            GBDATA *gb_extended = GBT_find_SAI(GLOBAL_gb_main,source);
+
+            if (gb_dest) {
+                error = GBS_global_string("Species '%s' already exists", source);
+            }
+            else if (gb_extended) {
+                gb_dest             = GB_create_container(gb_species_data,"species");
+                if (!gb_dest) error = GB_get_error();
+                else error          = GB_copy(gb_dest,gb_extended);
+            }
+            else {
+                error = "Please select a SAI";
+            }
+        }
+    }
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
     free(source);
 }
 
@@ -152,27 +163,16 @@ AW_window *create_extended_copy_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-void ad_extended_delete_cb(AW_window *aww){
-    GB_ERROR  error       = 0;
+void ad_extended_delete_cb(AW_window *aww) {
     char     *source      = aww->get_root()->awar(AWAR_SAI_NAME)->read_string();
-    GB_begin_transaction(GLOBAL_gb_main);
-    GBDATA   *gb_extended = GBT_find_SAI(GLOBAL_gb_main,source);
-
-    if (gb_extended) {
-        error = GB_delete(gb_extended);
-    }
-    else {
-        error = "Please select a SAI first";
-    }
+    GB_ERROR  error       = GB_begin_transaction(GLOBAL_gb_main);
 
     if (!error) {
-        GB_commit_transaction(GLOBAL_gb_main);
+        GBDATA *gb_extended    = GBT_find_SAI(GLOBAL_gb_main,source);
+        if (gb_extended) error = GB_delete(gb_extended);
+        else    error          = "Please select a SAI";
     }
-    else {
-        GB_abort_transaction(GLOBAL_gb_main);
-        aw_message(error);
-    }
-
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
     free(source);
 }
 
