@@ -321,7 +321,7 @@ void complement_probe(char *probe, int probe_length)
     }
 }
 
-double calc_position_wmis(int pos, int seq_len, double y1, double y2)
+static double calc_position_wmis(int pos, int seq_len, double y1, double y2)
 {
     return (double)(((double)(pos * (seq_len - 1 - pos)) / (double)((seq_len - 1) * (seq_len - 1)))* (double)(y2*4.0) + y1);
 }
