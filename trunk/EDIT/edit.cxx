@@ -1379,7 +1379,7 @@ void AED_dlist::create_hash(GBDATA *gb_maini,const char *awar_suffix){
     this->gb_main = gb_maini;
     sprintf(awar_buffer,"arb_edit/%s",awar_suffix);
     this->hash_awar = strdup(awar_buffer);
-    char *data  = GBT_read_string2(gb_main, hash_awar, "");
+    char *data  = GBT_readOrCreate_string(gb_main, hash_awar, "");
     hash = GBS_create_hash(100, GB_MIND_CASE);
     GBS_string_2_hashtab(hash,data);
     hash_level = 0;

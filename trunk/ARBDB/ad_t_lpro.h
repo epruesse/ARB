@@ -24,8 +24,6 @@ GB_ERROR gbt_insert_character_gbd P_((GBDATA *gb_data, long len, long pos, long 
 GB_ERROR gbt_insert_character_species P_((GBDATA *gb_species, const char *ali_name, long len, long pos, long nchar, const char *delete_chars));
 GB_ERROR gbt_insert_character P_((GBDATA *gb_species_data, const char *species, const char *name, long len, long pos, long nchar, const char *delete_chars));
 long gbt_write_tree_nodes P_((GBDATA *gb_tree, GBT_TREE *node, long startid));
-char *gbt_write_tree_rek_new P_((GBDATA *gb_tree, GBT_TREE *node, char *dest, long mode));
-GB_ERROR gbt_write_tree P_((GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree, int plain_only));
 GBT_TREE *gbt_read_tree_rek P_((char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree, GB_ERROR *error));
 int gbt_sum_leafs P_((GBT_TREE *tree));
 GB_CSTR *gbt_fill_species_names P_((GB_CSTR *des, GBT_TREE *tree));

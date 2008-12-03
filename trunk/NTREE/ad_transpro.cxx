@@ -87,7 +87,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
 
         bool table_used[AWT_CODON_TABLES];
         memset(table_used, 0, sizeof(table_used));
-        selected_ttable = GBT_read_int(gb_main, AWAR_PROTEIN_TYPE); // read selected table
+        selected_ttable = *GBT_read_int(gb_main, AWAR_PROTEIN_TYPE); // read selected table
 
         if (use_entries) {
             for (GBDATA *gb_species = GBT_first_marked_species(gb_main);

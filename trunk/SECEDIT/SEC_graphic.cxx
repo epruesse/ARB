@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_graphic.cxx                                   //
 //   Purpose   : GUI for structure window                          //
-//   Time-stamp: <Fri Jul/25/2008 13:38 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Dec/03/2008 14:13 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -602,7 +602,7 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
     long    ali_len = -1;
     GBDATA *gb_ali  = 0;
     {
-        char *name = GBT_read_string2(gb_main, AWAR_HELIX_NAME, GBT_get_default_helix(gb_main));
+        char *name = GBT_readOrCreate_string(gb_main, AWAR_HELIX_NAME, GBT_get_default_helix(gb_main));
 
         GBDATA *gb_species = GBT_find_SAI(gb_main, name);
         if (!gb_species) {

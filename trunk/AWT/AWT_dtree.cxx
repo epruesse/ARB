@@ -1032,10 +1032,10 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         tree_awar    = show_ruler(device, drag_gc);
                         sprintf(awar,"ruler/%s/text_x", tree_awar);
 
-                        h = (x - start.xpos())/scale + GBT_read_float2(tree_static->gb_tree, awar, 0.0);
+                        h = (x - start.xpos())/scale + *GBT_readOrCreate_float(tree_static->gb_tree, awar, 0.0);
                         GBT_write_float(this->tree_static->gb_tree, awar, h);
                         sprintf(awar,"ruler/%s/text_y", tree_awar);
-                        h = (y - start.ypos())/scale + GBT_read_float2(tree_static->gb_tree, awar, 0.0);
+                        h = (y - start.ypos())/scale + *GBT_readOrCreate_float(tree_static->gb_tree, awar, 0.0);
                         GBT_write_float(tree_static->gb_tree, awar, h);
                         rot_ct.textArea.moveTo(Position(x, y));
                         show_ruler(device, drag_gc);
@@ -1076,10 +1076,10 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                     case AW_Mouse_Drag:
                         tree_awar = show_ruler(device, this->drag_gc);
                         sprintf(awar,"ruler/%s/ruler_x",tree_awar);
-                        h = (x - rot_cl.x0)/device->get_scale() + GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                        h = (x - rot_cl.x0)/device->get_scale() + *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, 0.0);
                         GBT_write_float(this->tree_static->gb_tree, awar, h);
                         sprintf(awar,"ruler/%s/ruler_y",tree_awar);
-                        h = (y - rot_cl.y0)/device->get_scale() + GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                        h = (y - rot_cl.y0)/device->get_scale() + *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, 0.0);
                         GBT_write_float(this->tree_static->gb_tree, awar, h);
 
                         rot_cl.x0 = x;
@@ -1104,14 +1104,14 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
                             sprintf(awar,"ruler/size");
                             tree_awar = show_ruler(device, this->drag_gc);
-                            double rulerSize = GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                            double rulerSize = *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, 0.0);
                             GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(rulerSize, 0.1));
                             tree_awar = show_ruler(device, this->drag_gc);
                         }
                         break;
                     case AW_Mouse_Drag: {
                         sprintf(awar,"ruler/size");
-                        h = GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                        h = *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, 0.0);
                         if (button == AWT_M_RIGHT) {
                             GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(h, 0.1));
                         }
@@ -1146,7 +1146,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         this->exports.refresh = 1;
                         if (button==AWT_M_RIGHT) { // if right mouse button is used -> adjust to 1 digit behind comma
                             sprintf(awar,"ruler/size");
-                            double rulerSize = GBT_read_float2(this->tree_static->gb_tree, awar, 0.0);
+                            double rulerSize = *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, 0.0);
                             GBT_write_float(this->tree_static->gb_tree, awar, discrete_ruler_lenght(rulerSize, 0.1));
                         }
                         break;
@@ -1158,7 +1158,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                 if (type == AW_Mouse_Press) {
                     long i;
                     sprintf(awar,"ruler/ruler_width");
-                    i = GBT_read_int2(this->tree_static->gb_tree, awar , 0);
+                    i = *GBT_readOrCreate_int(this->tree_static->gb_tree, awar , 0);
                     switch(button){
                         case AWT_M_LEFT:
                             i --;
@@ -2324,7 +2324,7 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
     GB_transaction dummy(this->tree_static->gb_tree);
 
     sprintf(awar,"ruler/size");
-    float ruler_size = GBT_read_float2( this->tree_static->gb_tree, awar, 0.1);
+    float ruler_size = *GBT_readOrCreate_float( this->tree_static->gb_tree, awar, 0.1);
     float ruler_x = 0.0;
     float ruler_y = 0.0;
     float ruler_text_x = 0.0;
@@ -2380,21 +2380,21 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
         }
 
 
-        ruler_y = ruler_add_y + GBT_read_float2(this->tree_static->gb_tree, awar, ruler_y);
+        ruler_y = ruler_add_y + *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, ruler_y);
 
         sprintf(awar,"ruler/%s/ruler_x",tree_awar);
-        ruler_x = ruler_add_x + GBT_read_float2(this->tree_static->gb_tree, awar, ruler_x);
+        ruler_x = ruler_add_x + *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, ruler_x);
 
         sprintf(awar,"ruler/%s/text_x", tree_awar);
-        // ruler_text_x = GBT_read_float2(this->tree_static->gb_tree, awar, ruler_text_x) * ruler_scale;
-        ruler_text_x = GBT_read_float2(this->tree_static->gb_tree, awar, ruler_text_x);
+        // ruler_text_x = *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, ruler_text_x) * ruler_scale;
+        ruler_text_x = *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, ruler_text_x);
 
         sprintf(awar,"ruler/%s/text_y", tree_awar);
-        // ruler_text_y = GBT_read_float2(this->tree_static->gb_tree, awar, ruler_text_y) * ruler_scale;
-        ruler_text_y = GBT_read_float2(this->tree_static->gb_tree, awar, ruler_text_y);
+        // ruler_text_y = *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, ruler_text_y) * ruler_scale;
+        ruler_text_y = *GBT_readOrCreate_float(this->tree_static->gb_tree, awar, ruler_text_y);
 
         sprintf(awar,"ruler/ruler_width");
-        double ruler_width = (double)GBT_read_int2(this->tree_static->gb_tree, awar, 0);
+        double ruler_width = (double)*GBT_readOrCreate_int(this->tree_static->gb_tree, awar, 0);
 
         device->set_line_attributes(gc, ruler_width+baselinewidth, AW_SOLID);
 

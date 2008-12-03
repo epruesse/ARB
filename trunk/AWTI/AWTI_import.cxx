@@ -575,7 +575,7 @@ GB_ERROR awtc_read_data(char *ali_name)
 
         gb_species = GB_create_container(gb_species_data,"species");
         sprintf(text,"spec%i",counter);
-        free(GBT_read_string2(gb_species,"name",text));
+        GBT_readOrCreate_char_pntr(gb_species,"name",text); // set default if missing
         if ( awtcig.filenames[1] ) {    // multiple files !!!
             char *f= strrchr(awtcig.current_file[-1],'/');
             if (!f) f= awtcig.current_file[-1];
