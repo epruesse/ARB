@@ -147,32 +147,31 @@ char *NT_resort_data_base_by_tree(GBT_TREE *tree,GBDATA *gb_species_data)
     }
 }
 
-GB_ERROR
-NT_resort_data_base(GBT_TREE *tree, char *key1, char *key2, char *key3)
-{
-    GB_begin_transaction(GLOBAL_gb_main);
-    GBDATA *gb_sd = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
-    custom_s_struct.key1=key1;
-    custom_s_struct.key2=key2;
-    custom_s_struct.key3=key3;
-    GB_ERROR error = 0;
-    if (tree){
-        gb_resort_data_count = 0;
-        gb_resort_data_list = (GBDATA **)calloc( sizeof(GBDATA *), GB_nsons(gb_sd) + 256);
-        error = NT_resort_data_base_by_tree(tree,gb_sd);
-    }else{
-        gb_resort_data_list = GBT_gen_species_array(GLOBAL_gb_main,&gb_resort_data_count);
-        GB_mergesort((void **)gb_resort_data_list,0,gb_resort_data_count,(gb_compare_two_items_type)resort_data_by_customsub,0);
-    }
-    error = GB_resort_data_base(GLOBAL_gb_main,gb_resort_data_list,gb_resort_data_count);
-    free(gb_resort_data_list);
+GB_ERROR NT_resort_data_base(GBT_TREE *tree, char *key1, char *key2, char *key3) {
+    custom_s_struct.key1 = key1;
+    custom_s_struct.key2 = key2;
+    custom_s_struct.key3 = key3;
 
-    if (error){
-        GB_abort_transaction(GLOBAL_gb_main);
-    }else{
-        GB_commit_transaction(GLOBAL_gb_main);
+    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
+    if (!error) {
+        GBDATA *gb_sd = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
+
+        if (!gb_sd) error = GB_get_error();
+        else {
+            if (tree) {
+                gb_resort_data_count = 0;
+                gb_resort_data_list = (GBDATA **)calloc( sizeof(GBDATA *), GB_nsons(gb_sd) + 256);
+                error = NT_resort_data_base_by_tree(tree,gb_sd);
+            }
+            else {
+                gb_resort_data_list = GBT_gen_species_array(GLOBAL_gb_main,&gb_resort_data_count);
+                GB_mergesort((void **)gb_resort_data_list,0,gb_resort_data_count,(gb_compare_two_items_type)resort_data_by_customsub,0);
+            }
+            if (!error) error = GB_resort_data_base(GLOBAL_gb_main,gb_resort_data_list,gb_resort_data_count);
+            free(gb_resort_data_list);
+        }
     }
-    return error;
+    return GB_end_transaction(GLOBAL_gb_main, error);
 }
 
 void NT_resort_data_by_phylogeny(AW_window *dummy, GBT_TREE **ptree){

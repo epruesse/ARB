@@ -699,14 +699,7 @@ void CON_calculate_cb(AW_window *aw )
     }
 
     free(align);
-
-    if (error){
-        GB_abort_transaction(GLOBAL_gb_main);
-        aw_message(error);
-    }
-    else{
-        GB_commit_transaction(GLOBAL_gb_main);
-    }
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
 void create_consensus_var(AW_root *aw_root, AW_default aw_def)

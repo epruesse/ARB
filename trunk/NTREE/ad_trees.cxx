@@ -176,89 +176,113 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def)
     tree_vars_callback(aw_root);
 }
 
-void tree_rename_cb(AW_window *aww){
-    GB_ERROR error = 0;
-    char *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
-    char *dest = aww->get_root()->awar(AWAR_TREE_DEST)->read_string();
-    error = GBT_check_tree_name(dest);
-    if (!error) {
-        GB_begin_transaction(GLOBAL_gb_main);
-        GBDATA *gb_tree_data = GB_search(GLOBAL_gb_main,"tree_data",GB_CREATE_CONTAINER);
-        GBDATA *gb_tree_name = GB_entry(gb_tree_data,source);
-        GBDATA *gb_dest      = GB_entry(gb_tree_data,dest);
-        if (gb_dest) {
-            error = "Sorry: Tree already exists";
-        }
-        else if (gb_tree_name) {
-            GBDATA *gb_new_tree = GB_create_container(gb_tree_data,dest);
-            GB_copy(gb_new_tree, gb_tree_name);
-            error = GB_delete(gb_tree_name);
-        }
-        else{
-            error = "Please select a tree first";
-        }
-        if (!error) GB_commit_transaction(GLOBAL_gb_main);
-        else    GB_abort_transaction(GLOBAL_gb_main);
-    }
-    if (error) aw_message(error);
-    else aww->hide();
-    free(source);
-    free(dest);
-}
-
-void tree_append_remark(GBDATA *gb_tree, const char *add_to_remark) {
-    GBDATA *gb_remark = GB_search(gb_tree, "remark", GB_STRING);
-    nt_assert(gb_remark);
-
-    char    *old_remark = GB_read_string(gb_remark);
-    GB_CSTR  new_remark = GBS_global_string("%s\n%s", old_remark, add_to_remark);
-
-    GB_write_string(gb_remark, new_remark);
-    free(old_remark);
-}
-
-void tree_copy_cb(AW_window *aww){
-    GB_ERROR  error  = 0;
+void tree_rename_cb(AW_window *aww) {
     char     *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
     char     *dest   = aww->get_root()->awar(AWAR_TREE_DEST)->read_string();
+    GB_ERROR  error  = GBT_check_tree_name(dest);
 
-    error = GBT_check_tree_name(dest);
     if (!error) {
-        GB_begin_transaction(GLOBAL_gb_main);
-        GBDATA *gb_tree_data = GB_search(GLOBAL_gb_main,"tree_data",GB_CREATE_CONTAINER);
-        GBDATA *gb_tree_name = GB_entry(gb_tree_data,source);
-        GBDATA *gb_dest      = GB_entry(gb_tree_data,dest);
-        if (gb_dest) {
-            error = "Sorry: Tree already exists";
+        error = GB_begin_transaction(GLOBAL_gb_main);
+        if (!error) {
+            GBDATA *gb_tree_data = GB_search(GLOBAL_gb_main, "tree_data", GB_CREATE_CONTAINER);
+
+            if (!gb_tree_data) error = GB_get_error();
+            else {
+                GBDATA *gb_tree_name = GB_entry(gb_tree_data, source);
+                GBDATA *gb_dest      = GB_entry(gb_tree_data, dest);
+
+                if (gb_dest) error = GBS_global_string("Tree '%s' already exists", dest);
+                else if (!gb_tree_name) error = "Please select a tree";
+                else {
+                    GBDATA *gb_new_tree = GB_create_container(gb_tree_data, dest);
+
+                    if (!gb_new_tree) error = GB_get_error();
+                    else {
+                        error = GB_copy(gb_new_tree, gb_tree_name);
+                        if (!error) error = GB_delete(gb_tree_name);
+                    }
+                }
+            }
         }
-        else if (gb_tree_name) {
-            gb_dest = GB_create_container(gb_tree_data,dest);
-            error   = GB_copy(gb_dest,gb_tree_name);
-            tree_append_remark(gb_dest, GBS_global_string("[created as copy of '%s']", source));
-        }
-        else {
-            error = "Please select a tree first";
-        }
-        if (!error) GB_commit_transaction(GLOBAL_gb_main);
-        else    GB_abort_transaction(GLOBAL_gb_main);
+        error = GB_end_transaction(GLOBAL_gb_main, error);
     }
-    if (error) aw_message(error);
-    else aww->hide();
-    free(source);
+
+    aww->hide_or_notify(error);
+    
     free(dest);
+    free(source);
+}
+
+static GB_ERROR tree_append_remark(GBDATA *gb_tree, const char *add_to_remark) {
+    GB_ERROR  error     = 0;
+    GBDATA   *gb_remark = GB_search(gb_tree, "remark", GB_STRING);
+
+    if (!gb_remark) error = GB_get_error();
+    else {
+        char *old_remark = GB_read_string(gb_remark);
+
+        if (!old_remark) error = GB_get_error();
+        else {
+            GB_CSTR new_remark = GBS_global_string("%s\n%s", old_remark, add_to_remark);
+            error              = GB_write_string(gb_remark, new_remark);
+        }
+        free(old_remark);
+    }
+    return error;
+}
+
+void tree_copy_cb(AW_window *aww) {
+    char     *source = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
+    char     *dest   = aww->get_root()->awar(AWAR_TREE_DEST)->read_string();
+    GB_ERROR  error  = GBT_check_tree_name(dest);
+
+    if (!error) {
+        error = GB_begin_transaction(GLOBAL_gb_main);
+        if (!error) {
+            GBDATA *gb_tree_data = GB_search(GLOBAL_gb_main, "tree_data", GB_CREATE_CONTAINER);
+
+            if (!gb_tree_data) error = GB_get_error();
+            else {
+                GBDATA *gb_tree_name = GB_entry(gb_tree_data, source);
+                GBDATA *gb_dest      = GB_entry(gb_tree_data, dest);
+
+                if (gb_dest) error = GBS_global_string("Tree '%s' already exists", dest);
+                else if (!gb_tree_name) error = "Please select a tree";
+                else {
+                    gb_dest             = GB_create_container(gb_tree_data, dest);
+                    if (!gb_dest) error = GB_get_error();
+                    else {
+                        error = GB_copy(gb_dest, gb_tree_name);
+                        if (!error) error = tree_append_remark(gb_dest, GBS_global_string("[created as copy of '%s']", source));
+                    }
+                }
+            }
+        }
+        error = GB_end_transaction(GLOBAL_gb_main, error);
+    }
+
+    aww->hide_or_notify(error);
+
+    free(dest);
+    free(source);
 }
 
 void tree_save_cb(AW_window *aww){
     AW_root  *aw_root   = aww->get_root();
-    GB_ERROR  error     = 0;
-    char     *fname     = aw_root->awar(AWAR_TREE_EXPORT "/file_name")->read_string();
     char     *tree_name = aw_root->awar(AWAR_TREE_NAME)->read_string();
-    char     *db_name   = aw_root->awar(AWAR_DB_NAME)->read_string();
-    bool      use_NDS   = ExportNodeType(aw_root->awar(AWAR_TREE_EXPORT_NDS)->read_int()) == AD_TREE_EXPORT_NODE_NDS;
-
-    if (!tree_name || !strlen(tree_name)) error = GB_export_error("Please select a tree first");
-    if (!error) {
+    
+    GB_ERROR error = 0;
+    
+    if (!tree_name || !strlen(tree_name)) {
+        error = "Please select a tree first";
+    }
+    else {
+        char *fname   = aw_root->awar(AWAR_TREE_EXPORT "/file_name")->read_string();
+        char *db_name = aw_root->awar(AWAR_DB_NAME)->read_string();
+        
+        bool           use_NDS    = ExportNodeType(aw_root->awar(AWAR_TREE_EXPORT_NDS)->read_int()) == AD_TREE_EXPORT_NODE_NDS;
         ExportTreeType exportType = static_cast<ExportTreeType>(aw_root->awar(AWAR_TREE_EXPORT_FORMAT)->read_int());
+
         switch (exportType) {
             case AD_TREE_EXPORT_FORMAT_ORS:
                 error = create_and_save_CAT_tree(GLOBAL_gb_main,tree_name,fname);
@@ -281,16 +305,15 @@ void tree_save_cb(AW_window *aww){
                                                fname);
                 break;
         }
+
+        awt_refresh_selection_box(aw_root, AWAR_TREE_EXPORT);
+        
+        free(db_name);
+        free(fname);
     }
 
-    if (error) aw_message(error);
-    else{
-        awt_refresh_selection_box(aw_root, AWAR_TREE_EXPORT);
-        aww->hide();
-    }
-    delete db_name;
-    delete tree_name;
-    delete fname;
+    aww->hide_or_notify(error);
+    free(tree_name);
 }
 
 AW_window *create_tree_export_window(AW_root *root)
@@ -412,25 +435,22 @@ void tree_load_cb(AW_window *aww){
         if (!tree) error = GB_get_error();
         else {
             if (scaleWarning) GBT_message(GLOBAL_gb_main, scaleWarning);
-        
+
             GB_transaction ta(GLOBAL_gb_main);
             if (!error)                 error = GBT_write_tree(GLOBAL_gb_main,0,tree_name,tree);
             if (!error && tree_comment) error = GBT_write_tree_rem(GLOBAL_gb_main, tree_name, GBS_global_string("Loaded from '%s'\n%s", fname, tree_comment));
             GBT_delete_tree(tree);
+            
+            aw_root->awar(AWAR_TREE)->write_string(tree_name); // show new tree
         }
-        
+
         free(scaleWarning);
         free(tree_comment);
         free(fname);
         free(pcTreeFormat);
     }
 
-    if (error) aw_message(error);
-    else{
-        aww->hide();
-        aw_root->awar(AWAR_TREE)->write_string(tree_name);  // show new tree
-    }
-
+    aww->hide_or_notify(error);
     free(tree_name);
 }
 

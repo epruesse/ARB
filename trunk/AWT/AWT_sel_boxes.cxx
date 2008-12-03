@@ -634,13 +634,8 @@ void create_save_box_for_selection_lists_save(AW_window *aws,AW_CL selidcd,AW_CL
 
     GB_ERROR error = aws->save_selection_list(selid,filename,lineanz);
 
-    if (error) {
-        aw_message(error);
-    }
-    else {
-        awt_refresh_selection_box(aw_root, awar_prefix);
-        aws->hide();
-    }
+    if (!error) awt_refresh_selection_box(aw_root, awar_prefix);
+    aws->hide_or_notify(error);
     free(filename);
 }
 

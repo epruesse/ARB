@@ -89,65 +89,54 @@ AW_window *create_ad_table_field_reorder_window(AW_root *root,awt_table *awtt)
     return (AW_window *)aws;
 }
 
-void awt_table_field_hide_cb(AW_window *aws,awt_table *awtt){
-    AWUSE(aws);
-
+void awt_table_field_hide_cb(AW_window *aws, awt_table *awtt) {
     GB_begin_transaction(awtt->gb_main);
-    GB_ERROR error = 0;
-    GBDATA *gb_table = GBT_open_table(awtt->gb_main, awtt->table_name,GB_TRUE);
+    GB_ERROR  error    = 0;
+    GBDATA   *gb_table = GBT_open_table(awtt->gb_main, awtt->table_name,GB_TRUE);
+
     if (!gb_table){
-        aw_message(GBS_global_string("Table '%s' does not exist",awtt->table_name));
-        return;
+        error = GBS_global_string("Table '%s' does not exist",awtt->table_name);
     }
-    char *source = aws->get_root()->awar(awtt->awar_selected_field)->read_string();
-    GBDATA *gb_source = GBT_find_table_field(gb_table,source);
-    if (!gb_source) {
-        aw_message("Please select an item you want to delete");
-    }else{
-        error = GB_delete(gb_source);
+    else {
+        char   *source    = aws->get_root()->awar(awtt->awar_selected_field)->read_string();
+        GBDATA *gb_source = GBT_find_table_field(gb_table,source);
+
+        if (!gb_source) error = "Please select an item you want to delete";
+        else error            = GB_delete(gb_source);
+
+        free(source);
     }
-    delete source;
-    if (error) {
-        GB_abort_transaction(awtt->gb_main);
-        if (error) aw_message(error);
-    }else{
-        GB_commit_transaction(awtt->gb_main);
-    }
+    GB_end_transaction_show_error(awtt->gb_main, error, aw_message);
 }
 
-void awt_table_field_delete_cb(AW_window *aws,awt_table *awtt){
-    AWUSE(aws);
-
+void awt_table_field_delete_cb(AW_window *aws, awt_table *awtt) {
     GB_begin_transaction(awtt->gb_main);
-    GB_ERROR error = 0;
-    GBDATA *gb_table = GBT_open_table(awtt->gb_main, awtt->table_name,GB_TRUE);
+    
+    GB_ERROR  error    = 0;
+    GBDATA   *gb_table = GBT_open_table(awtt->gb_main, awtt->table_name,GB_TRUE);
     if (!gb_table){
-        aw_message(GBS_global_string("Table '%s' does not exist",awtt->table_name));
-        return;
+        error = GBS_global_string("Table '%s' does not exist",awtt->table_name);
     }
-    char *source = aws->get_root()->awar(awtt->awar_selected_field)->read_string();
-    GBDATA *gb_source = GBT_find_table_field(gb_table,source);
-    if (!gb_source) {
-        aw_message("Please select an item you want to delete");
-    }else{
-        error = GB_delete(gb_source);
-    }
-    GBDATA *gb_table_entry;
-    for (gb_table_entry = GBT_first_table_entry(gb_table);
-         gb_table_entry && !error;
-         gb_table_entry = GBT_next_table_entry(gb_table_entry)){
-        GBDATA *gb_table_entry_field;
-        while (!error && (gb_table_entry_field = GB_search(gb_table_entry,source,GB_FIND))){
-            error = GB_delete(gb_table_entry_field);
+    else {
+        char   *source    = aws->get_root()->awar(awtt->awar_selected_field)->read_string();
+        GBDATA *gb_source = GBT_find_table_field(gb_table,source);
+
+        if (!gb_source) error = "Please select an item you want to delete";
+        else error            = GB_delete(gb_source);
+
+        for (GBDATA *gb_table_entry = GBT_first_table_entry(gb_table);
+             gb_table_entry && !error;
+             gb_table_entry = GBT_next_table_entry(gb_table_entry))
+        {
+            GBDATA *gb_table_entry_field;
+            while (!error && (gb_table_entry_field = GB_search(gb_table_entry,source,GB_FIND))) {
+                error = GB_delete(gb_table_entry_field);
+            }
         }
+        free(source);
     }
-    delete source;
-    if (error) {
-        GB_abort_transaction(awtt->gb_main);
-        if (error) aw_message(error);
-    }else{
-        GB_commit_transaction(awtt->gb_main);
-    }
+
+    GB_end_transaction_show_error(awtt->gb_main, error, aw_message);
 }
 
 
@@ -164,22 +153,17 @@ void ad_table_field_create_cb(AW_window *aws,awt_table *awtt)   {
     GBDATA *gb_table = GBT_open_table(awtt->gb_main,awtt->table_name,GB_TRUE);
     if (gb_table){
         GB_TYPES type = (GB_TYPES)aws->get_root()->awar(awtt->awar_field_new_type)->read_int();
-        if(!error){
+        if(!error) {
             GBDATA *gb_table_field = GBT_open_table_field(gb_table, name, type);
-            if (!gb_table_field){
-                error = GB_get_error();
-            }
-            if (error) {
-                aw_message(error);
-            }else{
-                aws->hide();
-            }
+            if (!gb_table_field) error = GB_get_error();
         }
-    }else{
-        aw_message(GBS_global_string("Table '%s' does not exist",awtt->table_name));
     }
+    else {
+        error = GBS_global_string("Table '%s' does not exist",awtt->table_name);
+    }
+    aws->hide_or_notify(error);
 
-    delete name;
+    free(name);
     GB_pop_transaction(awtt->gb_main);
 }
 
@@ -371,40 +355,41 @@ void table_vars_callback(AW_root *aw_root,GBDATA *gb_main)      // Map table var
 
 
 void table_rename_cb(AW_window *aww,GBDATA *gb_main){
-    GB_ERROR error = 0;
-    char *source = aww->get_root()->awar(AWAR_TABLE_NAME)->read_string();
-    char *dest = aww->get_root()->awar(AWAR_TABLE_DEST)->read_string();
+    GB_ERROR  error  = 0;
+    char     *source = aww->get_root()->awar(AWAR_TABLE_NAME)->read_string();
+    char     *dest   = aww->get_root()->awar(AWAR_TABLE_DEST)->read_string();
+    
     GB_begin_transaction(gb_main);
     GBDATA *gb_table_dest = GBT_open_table(gb_main,dest,GB_TRUE);
     if (gb_table_dest) {
-        error = "Sorry: Table already exists";
-    }else{
+        error = "Table already exists";
+    }
+    else {
         GBDATA *gb_table = GBT_open_table(gb_main,source,GB_TRUE);
         if (gb_table){
             GBDATA *gb_name = GB_search(gb_table,"name",GB_STRING);
-            error = GB_write_string(gb_name,dest);
+            
+            if (!gb_name) error = GB_get_error();
+            else error          = GB_write_string(gb_name,dest);
         }
     }
-    if (error){
-        GB_abort_transaction(gb_main);
-        aw_message(error);
-    }else{
-        aww->hide();
-        GB_commit_transaction(gb_main);
-    }
-    delete source;
-    delete dest;
+    GB_end_transaction_show_error(gb_main, error, aw_message);
+
+    free(source);
+    free(dest);
 }
 
 void table_copy_cb(AW_window *aww,GBDATA *gb_main){
-    GB_ERROR error = 0;
-    char *source = aww->get_root()->awar(AWAR_TABLE_NAME)->read_string();
-    char *dest = aww->get_root()->awar(AWAR_TABLE_DEST)->read_string();
+    GB_ERROR  error  = 0;
+    char     *source = aww->get_root()->awar(AWAR_TABLE_NAME)->read_string();
+    char     *dest   = aww->get_root()->awar(AWAR_TABLE_DEST)->read_string();
+    
     GB_begin_transaction(gb_main);
     GBDATA *gb_table_dest = GBT_open_table(gb_main,dest,GB_TRUE);
     if (gb_table_dest) {
-        error = "Sorry: Table already exists";
-    }else{
+        error = "Table already exists";
+    }
+    else {
         GBDATA *gb_table = GBT_open_table(gb_main,source,GB_TRUE);
         if (gb_table){
             GBDATA *gb_table_data = GB_entry(gb_main,"table_data");
@@ -416,37 +401,24 @@ void table_copy_cb(AW_window *aww,GBDATA *gb_main){
             }
         }
     }
-    if (error){
-        GB_abort_transaction(gb_main);
-        aw_message(error);
-    }else{
-        aww->hide();
-        GB_commit_transaction(gb_main);
-    }
+    GB_end_transaction_show_error(gb_main, error, aw_message);
 
-    delete source;
-    delete dest;
+    free(source);
+    free(dest);
 }
 void table_create_cb(AW_window *aww,GBDATA *gb_main){
-    GB_ERROR error = 0;
-    char *dest = aww->get_root()->awar(AWAR_TABLE_DEST)->read_string();
-    GB_begin_transaction(gb_main);
-    error = GB_check_key(dest);
-    if (!error){
-        GBDATA *gb_table = GBT_open_table(gb_main,dest,GB_FALSE);
-        if (!gb_table){
-            error = GB_get_error();
+    char     *dest  = aww->get_root()->awar(AWAR_TABLE_DEST)->read_string();
+    GB_ERROR  error = GB_begin_transaction(gb_main);
+    if (!error) {
+        error = GB_check_key(dest);
+        if (!error){
+            GBDATA *gb_table = GBT_open_table(gb_main,dest,GB_FALSE);
+            if (!gb_table) error = GB_get_error();
         }
     }
-    if (error){
-        GB_abort_transaction(gb_main);
-        aw_message(error);
-    }else{
-        aww->hide();
-        GB_commit_transaction(gb_main);
-    }
-
-    delete dest;
+    error = GB_end_transaction(gb_main, error);
+    aww->hide_or_notify(error);
+    free(dest);
 }
 
 AW_window *create_table_rename_window(AW_root *root,GBDATA *gb_main)
@@ -517,22 +489,20 @@ AW_window *create_table_create_window(AW_root *root,GBDATA *gb_main)
     return (AW_window *)aws;
 }
 void awt_table_delete_cb(AW_window *aww,GBDATA *gb_main){
-    GB_ERROR error = 0;
-    GB_begin_transaction(gb_main);
-    char *source = aww->get_root()->awar(AWAR_TABLE_NAME)->read_string();
-    GBDATA *gb_table =  GBT_open_table(gb_main,source,GB_TRUE);
+    GB_ERROR  error  = 0;
+    char     *source = aww->get_root()->awar(AWAR_TABLE_NAME)->read_string();
 
+    GB_begin_transaction(gb_main);
+    GBDATA *gb_table = GBT_open_table(gb_main, source, GB_TRUE);
     if (gb_table) {
         error = GB_delete(gb_table);
-    }else{
+    }
+    else {
         error = "Please select a table first";
     }
+    GB_end_transaction_show_error(gb_main, error, aw_message);
 
-    if (!error) GB_commit_transaction(gb_main);
-    else    GB_abort_transaction(gb_main);
-
-    if (error) aw_message(error);
-    delete source;
+    free(source);
 }
 
 void create_tables_var(GBDATA *gb_main, AW_root *aw_root){

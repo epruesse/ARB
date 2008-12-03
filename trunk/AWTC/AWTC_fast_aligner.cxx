@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : AWTC_fast_aligner.cxx                             //
 //   Purpose   : A fast aligner (not a multiple aligner!)          //
-//   Time-stamp: <Thu Aug/21/2008 09:57 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Mon Dec/01/2008 18:30 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in 1998           //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -223,13 +223,7 @@ void AWTC_build_reverse_complement(AW_window *aw, AW_CL cd2)  {
         }
     }
 
-    if (error) {
-        aw_message(error);
-        GB_abort_transaction(GLOBAL_gb_main);
-    }
-    else {
-        GB_commit_transaction(GLOBAL_gb_main);
-    }
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
 // --------------------------------------------------------------------------------
@@ -1278,8 +1272,8 @@ static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence     *toAlignSequence,
     }
     else
     {
-        error = GB_push_my_security(gb_toAlign);
-        if (!error) {
+        GB_push_my_security(gb_toAlign);
+        {
             GBDATA *gbd = GBT_add_data(gb_toAlign, alignment, "data", GB_STRING);
 
             if (!gbd) {
@@ -1317,7 +1311,9 @@ static GB_ERROR alignCompactedTo(AWTC_CompactedSubSequence     *toAlignSequence,
                 }
             }
         }
-        err = GB_pop_my_security(gb_toAlign);
+
+        GB_pop_my_security(gb_toAlign);
+        
         if (!error) error = err;
         if (error) goto ende;
 
@@ -1663,8 +1659,8 @@ static GB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
 
                 if (turnIt) { // write mirrored sequence
                     GBDATA *gbd = GBT_read_sequence(gb_toAlign, alignment);
-                    error = GB_push_my_security(gbd);
-                    if (!error) error = GB_write_string(gbd, mirroredSequence);
+                    GB_push_my_security(gbd);
+                    error = GB_write_string(gbd, mirroredSequence);
                     GB_pop_my_security(gbd);
                     if (!error) {
                         delete toAlignSequence;
@@ -2260,12 +2256,7 @@ static GB_ERROR AWTC_aligner(
     AWTC_ClustalV_align_exit();
     unaligned_bases.clear();
 
-    if (error) {
-        GB_abort_transaction(GLOBAL_gb_main);
-    }
-    else {
-        GB_pop_transaction(GLOBAL_gb_main);
-    }
+    error = GB_end_transaction(GLOBAL_gb_main, error);
 
     if (wasNotAllowedToAlign>0) {
         const char *mess = GB_export_error("%i species were not aligned (because of protection level)", wasNotAllowedToAlign);
@@ -2273,9 +2264,7 @@ static GB_ERROR AWTC_aligner(
     }
 
     if (err_count) {
-        if (error) {
-            aw_message(error);
-        }
+        if (error) aw_message(error);
         error = GB_export_error("Aligner produced %i error%c", err_count, err_count==1 ? '\0' : 's');
     }
 

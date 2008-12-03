@@ -216,32 +216,27 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
 #define AWAR_TRANSPRO_WRITE  AWAR_TRANSPRO_PREFIX "write"
 
 void transpro_event(AW_window *aww) {
-    AW_root *aw_root = aww->get_root();
-    GB_ERROR error;
-    GB_begin_transaction(GLOBAL_gb_main);
-
+    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
+    if (!error) {
 #if defined(DEBUG) && 0
-    test_AWT_get_codons();
+        test_AWT_get_codons();
 #endif
-    char *ali_source    = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
-    char *ali_dest      = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
-    char *mode          = aw_root->awar(AWAR_TRANSPRO_MODE)->read_string();
-    int   startpos      = aw_root->awar(AWAR_TRANSPRO_POS)->read_int();
-    bool  save2fields   = aw_root->awar(AWAR_TRANSPRO_WRITE)->read_int();
-    bool  translate_all = aw_root->awar(AWAR_TRANSPRO_XSTART)->read_int();
+        AW_root *aw_root       = aww->get_root();
+        char    *ali_source    = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
+        char    *ali_dest      = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
+        char    *mode          = aw_root->awar(AWAR_TRANSPRO_MODE)->read_string();
+        int      startpos      = aw_root->awar(AWAR_TRANSPRO_POS)->read_int();
+        bool     save2fields   = aw_root->awar(AWAR_TRANSPRO_WRITE)->read_int();
+        bool     translate_all = aw_root->awar(AWAR_TRANSPRO_XSTART)->read_int();
 
-    error = arb_r2a(GLOBAL_gb_main, strcmp(mode, "fields") == 0, save2fields, startpos, translate_all, ali_source, ali_dest);
-    if (error) {
-        GB_abort_transaction(GLOBAL_gb_main);
-        aw_message(error);
-    }else{
-        GBT_check_data(GLOBAL_gb_main,0);
-        GB_commit_transaction(GLOBAL_gb_main);
+        error             = arb_r2a(GLOBAL_gb_main, strcmp(mode, "fields") == 0, save2fields, startpos, translate_all, ali_source, ali_dest);
+        if (!error) error = GBT_check_data(GLOBAL_gb_main,0);
+        
+        free(mode);
+        free(ali_dest);
+        free(ali_source);
     }
-
-    free(mode);
-    free(ali_dest);
-    free(ali_source);
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
 void nt_trans_cursorpos_changed(AW_root *awr) {
@@ -692,40 +687,41 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
 #undef SYNC_LENGTH
 
 
-void transdna_event(AW_window *aww)
-{
+void transdna_event(AW_window *aww) {
     AW_root  *aw_root      = aww->get_root();
-    GB_ERROR  error;
     char     *ali_source   = aw_root->awar(AWAR_TRANSPRO_DEST)->read_string();
     char     *ali_dest     = aw_root->awar(AWAR_TRANSPRO_SOURCE)->read_string();
-    long      neededLength = 0;
+    long      neededLength = -1;
     bool      retrying     = false;
+    GB_ERROR  error        = 0;
 
-    retry :
-    GB_begin_transaction(GLOBAL_gb_main);
+    while (!error && neededLength) {
+        error = GB_begin_transaction(GLOBAL_gb_main);
+        if (!error) error = arb_transdna(GLOBAL_gb_main,ali_source,ali_dest, &neededLength);
+        error = GB_end_transaction(GLOBAL_gb_main, error);
 
-    error = arb_transdna(GLOBAL_gb_main,ali_source,ali_dest, &neededLength);
-    if (error) {
-        GB_abort_transaction(GLOBAL_gb_main);
-        aw_popup_ok(error);
-    }else{
-        // GBT_check_data(GLOBAL_gb_main,ali_dest); // done by arb_transdna()
-        GB_commit_transaction(GLOBAL_gb_main);
-    }
+        if (neededLength) {
+            if (retrying || !aw_ask_sure(GBS_global_string("Increase length of '%s' to %li?", ali_dest, neededLength))) {
+                error = GBS_global_string("Missing %i columns in alignment '%s'", neededLength, ali_dest);
+            }
+            else {
+                error             = GB_begin_transaction(GLOBAL_gb_main);
+                if (!error) error = GBT_set_alignment_len(GLOBAL_gb_main, ali_dest, neededLength); // @@@ has no effect ? ? why ?
+                error             = GB_end_transaction(GLOBAL_gb_main, error);
 
-    if (!retrying && neededLength) {
-        if (aw_ask_sure(GBS_global_string("Increase length of '%s' to %li?", ali_dest, neededLength))) {
-            GB_transaction dummy(GLOBAL_gb_main);
-            GBT_set_alignment_len(GLOBAL_gb_main, ali_dest, neededLength); // @@@ has no effect ? ? why ?
-            aw_message(GBS_global_string("Alignment length of '%s' set to %li\nrunning re-aligner again!", ali_dest, neededLength));
-            retrying = true;
-            goto retry;
+                if (!error) {
+                    aw_message(GBS_global_string("Alignment length of '%s' has been set to %li\n"
+                                                 "running re-aligner again!",
+                                                 ali_dest, neededLength));
+                    retrying = true;
+                }
+            }
         }
     }
 
-    free(ali_source);
+    if (error) aw_message(error);
     free(ali_dest);
-
+    free(ali_source);
 }
 
 AW_window *NT_create_realign_dna_window(AW_root *root) {

@@ -24,35 +24,35 @@ void MG_create_extendeds_awars(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_string( AWAR_EX_DEST2, "" ,   aw_def);
 }
 
-void MG_extended_rename_cb(AW_window *aww,GBDATA *gbmain, int ex_nr){
-    GB_ERROR error = 0;
-    char tsource[256];
-    char tdest[256];
-    sprintf(tsource,"tmp/merge%i/extended_name",ex_nr);
-    sprintf(tdest,"tmp/merge%i/extended_dest",ex_nr);
+void MG_extended_rename_cb(AW_window *aww,GBDATA *gbmain, int ex_nr) {
+    char *source = aww->get_root()->awar(GBS_global_string("tmp/merge%i/extended_name", ex_nr))->read_string();
+    char *dest   = aww->get_root()->awar(GBS_global_string("tmp/merge%i/extended_dest", ex_nr))->read_string();
 
-    char *source = aww->get_root()->awar(tsource)->read_string();
-    char *dest = aww->get_root()->awar(tdest)->read_string();
-    GB_begin_transaction(gbmain);
-    GBDATA *gb_extended_data =GB_search(gbmain,"extended_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_extended =GBT_find_SAI_rel_exdata(gb_extended_data,source);
-    GBDATA *gb_dest_sai =GBT_find_SAI_rel_exdata(gb_extended_data,dest);
-    if (gb_dest_sai) {
-        error = "Sorry: SAI already exists";
-    }else   if (gb_extended) {
-        GBDATA *gb_name =
-            GB_search(gb_extended,"name",GB_STRING);
-        error = GB_write_string(gb_name,dest);
-    }else{
-        error = "Please select a SAI first";
+    GB_ERROR error = GB_begin_transaction(gbmain);
+    if (!error) {
+        GBDATA *gb_extended_data = GB_search(gbmain, "extended_data", GB_CREATE_CONTAINER);
+
+        if (!gb_extended_data) error = GB_get_error();
+        else {
+            GBDATA *gb_extended = GBT_find_SAI_rel_exdata(gb_extended_data, source);
+            GBDATA *gb_dest_sai = GBT_find_SAI_rel_exdata(gb_extended_data, dest);
+
+            if (gb_dest_sai) error = GBS_global_string("SAI '%s' already exists", dest);
+            else if (!gb_extended) error = "Please select a SAI";
+            else {
+                GBDATA *gb_name     = GB_search(gb_extended, "name", GB_STRING);
+                if (!gb_name) error = GB_get_error();
+                else    error       = GB_write_string(gb_name, dest);
+            }
+        }
     }
-    if (!error) GB_commit_transaction(gbmain);
-    else    GB_abort_transaction(gbmain);
-    if (error) aw_message(error);
-    else aww->hide();
-    delete source;
-    delete dest;
+    error = GB_end_transaction(gbmain, error);
+    aww->hide_or_notify(error);
+
+    free(dest);
+    free(source);
 }
+
 
 
 AW_window *MG_create_extended_rename_window1(AW_root *root)
@@ -101,62 +101,58 @@ AW_window *MG_create_extended_rename_window2(AW_root *root)
     return (AW_window *)aws;
 }
 
-void MG_extended_delete_cb(AW_window *aww, GBDATA *gbmain, int ex_nr){
-    GB_ERROR error = 0;
-    char tsource[256];
-    sprintf(tsource,"tmp/merge%i/extended_name",ex_nr);
-    char *source = aww->get_root()->awar(tsource)->read_string();
-    GB_begin_transaction(gbmain);
-    GBDATA *gb_extended = GBT_find_SAI(gbmain,source);
+void MG_extended_delete_cb(AW_window *aww, GBDATA *gbmain, int ex_nr) {
+    GB_ERROR error = GB_begin_transaction(gbmain);
 
-    if (gb_extended) {
-        error = GB_delete(gb_extended);
-    }else{
-        error = "Please select a SAI first";
+    if (!error) {
+        const char *tsource = GBS_global_string("tmp/merge%i/extended_name", ex_nr);
+        char       *source  = aww->get_root()->awar(tsource)->read_string();
+
+        GBDATA *gb_extended    = GBT_find_SAI(gbmain, source);
+        if (gb_extended) error = GB_delete(gb_extended);
+        else    error          = "Please select a SAI first";
+        
+        free(source);
     }
-
-    if (!error) GB_commit_transaction(gbmain);
-    else    GB_abort_transaction(gbmain);
-
-    if (error) aw_message(error);
-    delete source;
+    GB_end_transaction_show_error(gbmain, error, aw_message);
 }
 
 void MG_transfer_extended(AW_window *aww, AW_CL force){
-    AW_root *awr = aww->get_root();
-    char *source = awr->awar(AWAR_EX_NAME1)->read_string();
-    char *dest = awr->awar(AWAR_EX_NAME1)->read_string();
-    GB_ERROR error = 0;
-    GB_begin_transaction(GLOBAL_gb_dest);
-    GB_begin_transaction(GLOBAL_gb_merge);
+    AW_root *awr    = aww->get_root();
+    char    *source = awr->awar(AWAR_EX_NAME1)->read_string();
+    char    *dest   = awr->awar(AWAR_EX_NAME1)->read_string();
 
-    GBDATA *gb_source = GBT_find_SAI(GLOBAL_gb_merge,dest);
-    GBDATA *gb_extended_data2 = GB_search(GLOBAL_gb_dest,"extended_data",GB_CREATE_CONTAINER);
-    GBDATA *gb_dest_sai = GBT_find_SAI_rel_exdata(gb_extended_data2,dest);
+    GB_ERROR error    = GB_begin_transaction(GLOBAL_gb_dest);
+    if (!error) error = GB_begin_transaction(GLOBAL_gb_merge);
 
-    if (!gb_source) error = "Please select an SAI you want to transfer !!!";
-    else if(gb_dest_sai) {
-        if (force) {
-            error = GB_delete(gb_dest_sai);
-        }else{
-            error = "Sorry, You cannot destroy an old SAI, delete it first";
+    if (!error) {
+        GBDATA *gb_source = GBT_find_SAI(GLOBAL_gb_merge,dest);
+
+        if (!gb_source) error = "Please select the SAI you want to transfer";
+        else {
+            GBDATA *gb_extended_data2     = GB_search(GLOBAL_gb_dest,"extended_data",GB_CREATE_CONTAINER);
+            if (!gb_extended_data2) error = GB_get_error();
+            else {
+                GBDATA *gb_dest_sai = GBT_find_SAI_rel_exdata(gb_extended_data2,dest);
+                if(gb_dest_sai) {
+                    if (force) error = GB_delete(gb_dest_sai);
+                    else error       = GBS_global_string("SAI '%s' exists, delete it first", dest);
+                }
+                if (!error) {
+                    gb_dest_sai             = GB_create_container(gb_extended_data2, "extended");
+                    if (!gb_dest_sai) error = GB_get_error();
+                    else error              = GB_copy(gb_dest_sai,gb_source);
+                }
+            }
         }
     }
-    if (!error) {
-        gb_dest_sai = GB_create_container(gb_extended_data2,"extended");
-        error = GB_copy(gb_dest_sai,gb_source);
-    }
 
-    if (!error) {
-        GB_commit_transaction(GLOBAL_gb_dest);
-        GB_commit_transaction(GLOBAL_gb_merge);
-    }else{
-        GB_abort_transaction(GLOBAL_gb_dest);
-        GB_abort_transaction(GLOBAL_gb_merge);
-    }
+    error = GB_end_transaction(GLOBAL_gb_dest, error);
+    error = GB_end_transaction(GLOBAL_gb_merge, error);
     if (error) aw_message(error);
-    delete source;
-    delete dest;
+
+    free(source);
+    free(dest);
 }
 
 void MG_map_extended1(AW_root *aw_root, AW_CL scannerid)

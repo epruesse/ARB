@@ -46,7 +46,7 @@ public:
 };
 
 
-GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree_dest,const char *log_file, AW_BOOL compare_node_info, AW_BOOL overwrite_old_nodes, AW_BOOL nodes_with_marked_only);
+void AWT_move_info(GBDATA *gb_main, const char *tree_source,const char *tree_dest,const char *log_file, AW_BOOL compare_node_info, AW_BOOL overwrite_old_nodes, AW_BOOL nodes_with_marked_only);
 
 
 #endif

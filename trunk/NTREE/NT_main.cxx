@@ -134,10 +134,7 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
 
     GB_pop_my_security(gb_main);
 
-    if (err) GB_abort_transaction(gb_main);
-    else GB_commit_transaction(gb_main);
-
-    return err;
+    return GB_end_transaction(gb_main, err);
 }
 
 

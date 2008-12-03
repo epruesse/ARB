@@ -163,30 +163,21 @@ void MG_ed_al_check_len_cb(AW_window *aww,AW_CL db_nr)
     delete use;
 }
 
-void MG_copy_delete_rename(AW_window *aww,AW_CL db_nr, AW_CL dele)
+void MG_copy_delete_rename(AW_window * aww, AW_CL db_nr, AW_CL dele)
 {
-    GB_ERROR  error = 0;
-    char      buffer[256];
-    GBDATA   *gbd   = (db_nr == 1) ? GLOBAL_gb_merge : GLOBAL_gb_dest;
+    GBDATA   *gbd    = (db_nr == 1) ? GLOBAL_gb_merge : GLOBAL_gb_dest;
+    char     *source = aww->get_root()->awar(GBS_global_string("tmp/merge%li/alignment_name", db_nr))->read_string();
+    char     *dest   = aww->get_root()->awar(GBS_global_string("tmp/merge%li/alignment_dest", db_nr))->read_string();
+    GB_ERROR  error  = GB_begin_transaction(gbd);
 
-    sprintf(buffer,"tmp/merge%li/alignment_name",db_nr);
-    char *source = aww->get_root()->awar(buffer)->read_string();
-    sprintf(buffer,"tmp/merge%li/alignment_dest",db_nr);
-    char *dest = aww->get_root()->awar(buffer)->read_string();
+    if (!error) error = GBT_rename_alignment(gbd, source, dest, (int)1, (int)dele);
+    if (!error) error = awt_add_new_changekey(gbd, GBS_global_string("%s/data", dest), GB_STRING);
+    
+    error = GB_end_transaction(gbd, error);
+    aww->hide_or_notify(error);
 
-    GB_begin_transaction(gbd);
-
-    error = GBT_rename_alignment(gbd,source,dest,(int)1,(int)dele);
-
-    if (!error){
-        awt_add_new_changekey( gbd, GBS_global_string("%s/data",dest),GB_STRING);
-        GB_commit_transaction(gbd);
-    }else   GB_abort_transaction(gbd);
-
-    if (error) aw_message(error);
-    else aww->hide();
-    delete source;
-    delete dest;
+    free(source);
+    free(dest);
 }
 
 
@@ -245,22 +236,15 @@ AW_window *MG_create_alignment_rename_window(AW_root *root,AW_CL db_nr)
 
 void MG_aa_create_alignment(AW_window *aww,AW_CL db_nr)
 {
-    GB_ERROR  error = 0;
-    char      buffer[256];
-    GBDATA   *gbd   = (db_nr == 1) ? GLOBAL_gb_merge : GLOBAL_gb_dest;
-
-    sprintf(buffer,"tmp/merge%li/alignment_dest",db_nr);
-    char *name = aww->get_root()->awar(buffer)->read_string();
-    GBDATA *gb_alignment;
-    GB_begin_transaction(gbd);
-
-    gb_alignment = GBT_create_alignment(gbd,name,0,0,0,"dna");
+    GBDATA     *gbd          = (db_nr == 1) ? GLOBAL_gb_merge : GLOBAL_gb_dest;
+    const char *name_field   = GBS_global_string("tmp/merge%li/alignment_dest", db_nr);
+    char       *name         = aww->get_root()->awar(name_field)->read_string();
+    GB_ERROR    error        = GB_begin_transaction(gbd);
+    GBDATA     *gb_alignment = GBT_create_alignment(gbd,name,0,0,0,"dna");
+    
     if (!gb_alignment) error = GB_get_error();
-
-    if (!error) GB_commit_transaction(gbd);
-    else    GB_abort_transaction(gbd);
-    if (error) aw_message(error);
-    delete name;
+    GB_end_transaction_show_error(gbd, error, aw_message);
+    free(name);
 }
 
 AW_window *MG_create_alignment_create_window(AW_root *root,AW_CL db_nr)

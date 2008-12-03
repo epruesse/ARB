@@ -989,63 +989,43 @@ static GB_ERROR ED4_delete_temp_entries(GBDATA *species, void **alignment_char_p
     return error;
 }
 
-void ED4_remove_faligner_entries(AW_window *, AW_CL, AW_CL)
-{
+void ED4_remove_faligner_entries(AW_window *, AW_CL, AW_CL) {
     GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
-
-    if (!error) {
-        error = ED4_with_all_loaded_species(ED4_delete_temp_entries, (void**)ED4_ROOT->alignment_name);
-    }
-
-    if (error) {
-        aw_message(error);
-        GB_abort_transaction(GLOBAL_gb_main);
-    }
-    else {
-        GB_commit_transaction(GLOBAL_gb_main);
-    }
+    if (!error) error = ED4_with_all_loaded_species(ED4_delete_temp_entries, (void**)ED4_ROOT->alignment_name);
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
-void ED4_turnSpecies(AW_window *aw, AW_CL, AW_CL)
-{
-    AW_root *root = aw->get_root();
-    char *name;
-    GBDATA *species;
-    GBDATA *gbd;
-    char *data;
+void ED4_turnSpecies(AW_window *aw, AW_CL, AW_CL) {
     GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
-    char *ali = ED4_ROOT->alignment_name;
 
     if (!error) {
-        name = root->awar(AWAR_SPECIES_NAME)->read_string();
-        species = GBT_find_species(GLOBAL_gb_main, name);
-
-        gbd = species ? GBT_read_sequence(species, ali) : (GBDATA*)NULL;
-        data = gbd ? GB_read_string(gbd) : (char*)NULL;
+        AW_root *root       = aw->get_root();
+        char    *name       = root->awar(AWAR_SPECIES_NAME)->read_string();
+        char    *ali        = ED4_ROOT->alignment_name;
+        GBDATA  *gb_species = GBT_find_species(GLOBAL_gb_main, name);
+        GBDATA  *gbd        = gb_species ? GBT_read_sequence(gb_species, ali) : (GBDATA*)NULL;
+        char   *data        = gbd ? GB_read_string(gbd) : (char*)NULL;
 
         if (data) {
             long length = GB_read_string_count(gbd);
 
             char T_or_U;
             error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "reverse-complement");
-            GBT_reverseComplementNucSequence(data, length, T_or_U);
-            error = GB_write_string(gbd,data);
+            if (!error) {
+                GBT_reverseComplementNucSequence(data, length, T_or_U);
+                error = GB_write_string(gbd,data);
+            }
         }
         else {
             error = GB_get_error();
             if (!error) error = GB_export_error("Can't read data of '%s'", name);
         }
 
-        delete name;
+        free(data);
+        free(name);
     }
 
-    if (error) {
-        aw_message(error);
-        GB_abort_transaction(GLOBAL_gb_main);
-    }
-    else {
-        GB_commit_transaction(GLOBAL_gb_main);
-    }
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
 
@@ -1091,13 +1071,7 @@ void ED4_testSplitNMerge(AW_window *aw, AW_CL, AW_CL)
         delete data;
     }
 
-    if (error)
-    {
-        aw_message(error);
-        GB_abort_transaction(gb_main);
-    }
-    else
-        GB_commit_transaction(gb_main);
+    GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
 #endif
@@ -1240,32 +1214,29 @@ static void insert_search_fields(AW_window_menu_modes *awmm,
     awmm->create_toggle(show_awar_name);
 }
 
-void ED4_set_protection(AW_window */*aww*/, AW_CL cd1, AW_CL /*cd2*/)
-{
+void ED4_set_protection(AW_window */*aww*/, AW_CL cd1, AW_CL /*cd2*/) {
     ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+    GB_ERROR    error  = 0;
 
     if (cursor->owner_of_cursor) {
-        int wanted_protection = int(cd1);
-        ED4_sequence_terminal *seq_term = cursor->owner_of_cursor->to_sequence_terminal();
-        ED4_sequence_info_terminal *seq_info_term = seq_term->parent->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
-        GBDATA *gbd = seq_info_term->data();
+        int                         wanted_protection = int(cd1);
+        ED4_sequence_terminal      *seq_term          = cursor->owner_of_cursor->to_sequence_terminal();
+        ED4_sequence_info_terminal *seq_info_term     = seq_term->parent->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
+        GBDATA                     *gbd               = seq_info_term->data();
 
         GB_push_transaction(gbd);
+
         GB_push_my_security(gbd);
-        GB_ERROR err = GB_write_security_write(gbd, wanted_protection);
+        error = GB_write_security_write(gbd, wanted_protection);
         GB_pop_my_security(gbd);
 
-        if (err) {
-            GB_abort_transaction(gbd);
-            aw_message(err);
-        }
-        else {
-            GB_pop_transaction(gbd);
-        }
+        error = GB_end_transaction(gbd, error);
     }
     else {
-        aw_message("No species selected");
+        error = "No species selected";
     }
+
+    if (error) aw_message(error);
 }
 
 typedef enum {

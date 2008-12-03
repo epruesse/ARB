@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_configs.cxx                                         //
 //    Purpose   : Merge editor configurations                            //
-//    Time-stamp: <Thu May/22/2008 15:51 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Dec/03/2008 10:49 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -39,36 +39,31 @@ void MG_create_config_awar(AW_root *aw_root, AW_default aw_def)
 }
 
 void MG_config_rename_cb(AW_window *aww, GBDATA *gbd, int config_nr) {
-    GB_ERROR    error   = 0;
     const char *tsource = config_nr == 1 ? AWAR_CONFIG_NAME1 : AWAR_CONFIG_NAME2;
     const char *tdest   = config_nr == 1 ? AWAR_CONFIG_DEST1 : AWAR_CONFIG_DEST2;
+    char       *source  = aww->get_root()->awar(tsource)->read_string();
+    char       *dest    = aww->get_root()->awar(tdest)->read_string();
 
-    char *source = aww->get_root()->awar(tsource)->read_string();
-    char *dest   = aww->get_root()->awar(tdest)->read_string();
-
-    error = GB_check_key(dest);
+    GB_ERROR error = GB_check_key(dest);
     if (!error) {
-        GB_begin_transaction(gbd);
-        GBDATA *gb_config_data = GB_search(gbd, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
-        GBDATA *gb_source_name = GB_find_string(gb_config_data, "name", source, GB_IGNORE_CASE, down_2_level);
-        GBDATA *gb_dest_name   = GB_find_string(gb_config_data, "name", dest,   GB_IGNORE_CASE, down_2_level);
-
-        if (gb_dest_name) {
-            error = "Sorry: Configuration already exists";
+        error = GB_begin_transaction(gbd);
+        if (!error) {
+            GBDATA *gb_config_data     = GB_search(gbd, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
+            if (!gb_config_data) error = GB_get_error();
+            else {
+                GBDATA *gb_dest_name = GB_find_string(gb_config_data, "name", dest, GB_IGNORE_CASE, down_2_level);
+                if (gb_dest_name) error = GBS_global_string("Configuration '%s' already exists", dest);
+                else {
+                    GBDATA *gb_source_name    = GB_find_string(gb_config_data, "name", source, GB_IGNORE_CASE, down_2_level);
+                    if (gb_source_name) error = GB_write_string(gb_source_name, dest);
+                    else    error             = "Please select a configuration";
+                }
+            }
         }
-        else if (gb_source_name) {
-            error = GB_write_string(gb_source_name, dest);
-        }
-        else {
-            error = "Please select a configuration first";
-        }
-
-        if (!error) GB_commit_transaction(gbd);
-        else        GB_abort_transaction(gbd);
+        error = GB_end_transaction(gbd, error);
     }
 
-    if (error) aw_message(error);
-    else aww->hide();
+    aww->hide_or_notify(error);
 
     free(source);
     free(dest);
@@ -119,63 +114,62 @@ AW_window *MG_create_config_rename_window2(AW_root *root) {
 }
 
 void MG_config_delete_cb(AW_window *aww,GBDATA *gbd, long config_nr) {
-    GB_ERROR    error            = 0;
+    
     const char *config_name_awar = config_nr == 1 ? AWAR_CONFIG_NAME1 : AWAR_CONFIG_NAME2;
     char       *config_name      = aww->get_root()->awar(config_name_awar)->read_string();
 
-    GB_begin_transaction(gbd);
+    GB_ERROR    error = GB_begin_transaction(gbd);
 
-    GBDATA *gb_config_data = GB_search(gbd, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
-    GBDATA *gb_config_name = GB_find_string(gb_config_data, "name", config_name, GB_IGNORE_CASE, down_2_level);
+    if (!error) {
+        GBDATA *gb_config_data = GB_search(gbd, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
+        GBDATA *gb_config_name = GB_find_string(gb_config_data, "name", config_name, GB_IGNORE_CASE, down_2_level);
 
-    if (gb_config_name) {
-        GBDATA *gb_config = GB_get_father(gb_config_name);
-        error             = GB_delete(gb_config);
+        if (gb_config_name) {
+            GBDATA *gb_config = GB_get_father(gb_config_name);
+            error             = GB_delete(gb_config);
+        }
+        else {
+            error = "Select a config to delete";
+        }
     }
-    else {
-        error = "Select a config to delete";
-    }
 
-    if (!error) GB_commit_transaction(gbd);
-    else        GB_abort_transaction(gbd);
-
-    if (error) aw_message(error);
+    GB_end_transaction_show_error(gbd, error, aw_message);
+    
     free(config_name);
 }
 
 void MG_transfer_config(AW_window *aww) {
-    AW_root  *awr    = aww->get_root();
-    char     *source = awr->awar(AWAR_CONFIG_NAME1)->read_string();
-    char     *dest   = awr->awar(AWAR_CONFIG_NAME1)->read_string();
-    GB_ERROR  error  = 0;
-    GB_begin_transaction(GLOBAL_gb_dest);
-    GB_begin_transaction(GLOBAL_gb_merge);
+    AW_root *awr    = aww->get_root();
+    char    *source = awr->awar(AWAR_CONFIG_NAME1)->read_string();
+    char    *dest   = awr->awar(AWAR_CONFIG_NAME1)->read_string();
 
-    GBDATA *gb_config_data1 = GB_search(GLOBAL_gb_merge, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
-    GBDATA *gb_config_data2 = GB_search(GLOBAL_gb_dest,  AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
-    GBDATA *gb_cfgname_1    = GB_find_string(gb_config_data1, "name", source, GB_IGNORE_CASE, down_2_level);
-    GBDATA *gb_cfgname_2    = GB_find_string(gb_config_data2, "name", dest,   GB_IGNORE_CASE, down_2_level);
-
-    if (!gb_cfgname_1) {
-        error = "Please select the configuration you want to transfer";
-    }
-    else if (gb_cfgname_2) {
-        error = "To overwrite a configuration, delete it first!";
-    }
-    else {
-        GBDATA *gb_cfg_1 = GB_get_father(gb_cfgname_1);
-        GBDATA *gb_cfg_2 = GB_create_container(gb_config_data2, "configuration");
-        error            = GB_copy(gb_cfg_2, gb_cfg_1);
-    }
-
+    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_dest);
     if (!error) {
-        GB_commit_transaction(GLOBAL_gb_dest);
-        GB_commit_transaction(GLOBAL_gb_merge);
-    }else{
-        GB_abort_transaction(GLOBAL_gb_dest);
-        GB_abort_transaction(GLOBAL_gb_merge);
+        error = GB_begin_transaction(GLOBAL_gb_merge);
+        if (!error) {
+            GBDATA *gb_config_data1 = GB_search(GLOBAL_gb_merge, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
+            GBDATA *gb_config_data2 = GB_search(GLOBAL_gb_dest,  AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
+            GBDATA *gb_cfgname_1    = GB_find_string(gb_config_data1, "name", source, GB_IGNORE_CASE, down_2_level);
+            GBDATA *gb_cfgname_2    = GB_find_string(gb_config_data2, "name", dest,   GB_IGNORE_CASE, down_2_level);
+
+            if (!gb_cfgname_1) {
+                error = "Please select the configuration you want to transfer";
+            }
+            else if (gb_cfgname_2) {
+                error = "To overwrite a configuration, delete it first!";
+            }
+            else {
+                GBDATA *gb_cfg_1 = GB_get_father(gb_cfgname_1);
+                GBDATA *gb_cfg_2 = GB_create_container(gb_config_data2, "configuration");
+                error            = GB_copy(gb_cfg_2, gb_cfg_1);
+            }
+        }
     }
+    error = GB_end_transaction(GLOBAL_gb_merge, error);        
+    error = GB_end_transaction(GLOBAL_gb_dest, error);
+
     if (error) aw_message(error);
+
     free(source);
     free(dest);
 }

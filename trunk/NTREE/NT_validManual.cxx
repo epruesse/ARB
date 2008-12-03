@@ -81,23 +81,18 @@ void fillSelNamList(struct selectValidNameStruct* svnp) {
                 svnp->aws->insert_selection(svnp->validNamesList,validName, validName);
             }
 
-            free (validName);
+            free(validName);
         }
-        free (typeString);
+        free(typeString);
     }
 
-    if (err) {
-        GB_abort_transaction(GLOBAL_gb_main);
-        aw_message(err);
-    }
+    err = GB_end_transaction(GLOBAL_gb_main, err);
+    if (err) aw_message(err);
     else {
-        GB_commit_transaction(GLOBAL_gb_main);
-
         svnp->aws->insert_default_selection(svnp->validNamesList , "????", "????" );
         svnp->aws->sort_selection_list(svnp->validNamesList, 0, 1);
         svnp->aws->update_selection_list(svnp->validNamesList);
     }
-
 }
 
 void updateValNameList(AW_root *awr, AW_CL cl_svnp) {
@@ -137,61 +132,43 @@ void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
     char *selectedValName     = selManWindowRoot->get_root()->awar(AWAR_SELECTED_VALNAME)->read_string();
     char *selectedSpeciesName = selManWindowRoot->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
 
-    if (strcmp(selectedSpeciesName,"")==0) {
-        aw_message("No species selected!");
-    }
+    GB_ERROR err = 0;
+    if (selectedSpeciesName[0] == 0) err = "No species selected";
     else {
-#ifdef DEBUG
-        aw_message(GBS_global_string("current marked species is %s", selectedSpeciesName));
-#endif
-
-        GB_begin_transaction(GLOBAL_gb_main);
-        GB_ERROR err = 0;
-
-        // begin own code
-        GBDATA* GB_selectedSpecies = GBT_find_species(GLOBAL_gb_main, selectedSpeciesName);
-
-#if 0
-        const char * test = GB_read_string(GB_entry(GB_selectedSpecies,"full_name"));
-        aw_message(GBS_global_string("species %s in database found", test ));
-        aw_message("----test----");
-#endif
-
-        if(! GB_selectedSpecies) {
-            err = "species not found in database";
-        }
-        else {
-            GBDATA* GB_nameCont = GB_search(GB_selectedSpecies,"Valid_Name",GB_CREATE_CONTAINER);
-
-            if (! GB_nameCont) {
-                err = "could not create Valid Name container in database";
+        err = GB_begin_transaction(GLOBAL_gb_main);
+        if (!err) {
+            GBDATA *gb_selected_species = GBT_find_species(GLOBAL_gb_main, selectedSpeciesName);
+            if (!gb_selected_species) {
+                err = GBS_global_string("species '%s' not found in database", selectedSpeciesName);
             }
             else {
-                GBDATA* GB_valName = GB_entry(GB_nameCont,"NameString");
-                if(! GB_valName){GB_valName = GB_create(GB_nameCont, "NameString", GB_STRING);}
+                GBDATA *gb_name_cont = GB_search(gb_selected_species,"Valid_Name",GB_CREATE_CONTAINER);
 
-                GBDATA* GB_valType = GB_entry(GB_nameCont,"DescType");
-                if(! GB_valType){GB_valType = GB_create(GB_nameCont, "DescType", GB_STRING);}
+                if (!gb_name_cont) err = "could not create Valid Name container in database";
+                else {
+                    GBDATA *gb_val_name = GB_entry(gb_name_cont,"NameString");
+                    if (!gb_val_name) {
+                        gb_val_name           = GB_create(gb_name_cont, "NameString", GB_STRING);
+                        if (!gb_val_name) err = GB_get_error();
+                    }
 
-                GB_write_string(GB_valName, selectedValName);
-                GB_write_string(GB_valType, "MAN");
+                    if (!err) {
+                        GBDATA *gb_val_type = GB_entry(gb_name_cont,"DescType");
+                        if (!gb_val_type) {
+                            gb_val_type           = GB_create(gb_name_cont, "DescType", GB_STRING);
+                            if (!gb_val_type) err = GB_get_error();
+                        }
+
+                        if (!err) err = GB_write_string(gb_val_name, selectedValName);
+                        if (!err) err = GB_write_string(gb_val_type, "MAN");
+                    }
+                }
             }
         }
-        // end own code
-        if (err) {
-            GB_abort_transaction(GLOBAL_gb_main);
-            aw_message(err);
-        }
-        else {
-            GB_commit_transaction(GLOBAL_gb_main);
-
-        }
-#ifdef DEBUG
-        aw_message(GBS_global_string("Selection confirmed: %s", selectedValName));
-        printf("Selection confirmed: %s\n", selectedValName);
-
-#endif
+        err = GB_end_transaction(GLOBAL_gb_main, err);
     }
+
+    if (err) aw_message(err);
 
     free(selectedSpeciesName);
     free(selectedValName);

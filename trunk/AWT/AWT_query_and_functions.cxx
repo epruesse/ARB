@@ -721,211 +721,135 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
     if (!error && !strlen(command)) {
         error = "Please enter your command";
     }
-
-    if (error) {
-        if (strlen(error)) aw_message(error);
-        free(command);
-        free(key);
-        return;
-    }
-
-    GB_begin_transaction(cbs->gb_main);
-    GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
-    GBDATA *gb_key_name;
-
-    while (!(gb_key_name  = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_IGNORE_CASE,down_2_level))) {
-        sprintf(AW_ERROR_BUFFER,"The destination field '%s' does not exists",key);
-        if (aw_question(AW_ERROR_BUFFER,"Create Field (Type STRING),Cancel")){
-            GB_abort_transaction(cbs->gb_main);
-            free(command);
-            free(key);
-            return;
-        }
-        GB_ERROR error2 = awt_add_new_changekey_to_keypath(cbs->gb_main,key,GB_STRING, cbs->selector->change_key_path);
-        if (error2){
-            aw_message(error2);
-            GB_abort_transaction(cbs->gb_main);
-            delete command;
-            delete key;
-            return;
-        }
-    }
-
-    GBDATA *gb_key_type = GB_brother(gb_key_name,CHANGEKEY_TYPE);
-    bool aborted = false;
-    {
-        if (GB_read_int(gb_key_type)!=GB_STRING) {
-            if (aw_question("Writing to a non-STRING database field may lead to conversion problems.", "Abort,Continue")==0) {
-                aborted = true;
-            }
-        }
-    }
-
-    if (!aborted) {
-        long  count  = 0;
-        long  ncount = cbs->aws->get_root()->awar(cbs->awar_count)->read_int();
-        char *deftag = cbs->aws->get_root()->awar(cbs->awar_deftag)->read_string();
-        char *tag    = cbs->aws->get_root()->awar(cbs->awar_tag)->read_string();
-
+    if (!error) {
+        GB_begin_transaction(cbs->gb_main);
+        
+        GBDATA *gb_key_name;
         {
-            long use_tag = cbs->aws->get_root()->awar(cbs->awar_use_tag)->read_int();
-            if (!use_tag || !strlen(tag)) {
-                free(tag);
-                tag = 0;
+            GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
+            while (!error && !(gb_key_name = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_IGNORE_CASE,down_2_level))) {
+                const char *question = GBS_global_string("The destination field '%s' does not exists", key);
+                if (aw_question(question, "Create Field (Type STRING),Cancel")) {
+                    error = "Aborted by user";
+                }
+                else {
+                    error = awt_add_new_changekey_to_keypath(cbs->gb_main,key,GB_STRING, cbs->selector->change_key_path);
+                }
             }
         }
-        int double_pars = cbs->aws->get_root()->awar(cbs->awar_double_pars)->read_int();
 
-        aw_openstatus("Pars Fields");
+        GBDATA *gb_key_type;
+        if (!error) {
+            gb_key_type = GB_brother(gb_key_name,CHANGEKEY_TYPE);
+            
+            if (!gb_key_type) error = GB_get_error();
+            else {
+                if (GB_read_int(gb_key_type)!=GB_STRING &&
+                    aw_question("Writing to a non-STRING database field may lead to conversion problems.", "Abort,Continue")==0)
+                {
+                    error = "Aborted by user";
+                }
+            }
+        }
 
-        AW_root         *aw_root = cbs->aws->get_root();
-        AWT_QUERY_RANGE  range   = (AWT_QUERY_RANGE)aw_root->awar(cbs->awar_where)->read_int();
+        if (!error) {
+            long  count  = 0;
+            long  ncount = cbs->aws->get_root()->awar(cbs->awar_count)->read_int();
+            char *deftag = cbs->aws->get_root()->awar(cbs->awar_deftag)->read_string();
+            char *tag    = cbs->aws->get_root()->awar(cbs->awar_tag)->read_string();
 
-        for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);
-             !error && gb_item_container;
-             gb_item_container = cbs->selector->get_next_item_container(gb_item_container, range))
+            {
+                long use_tag = cbs->aws->get_root()->awar(cbs->awar_use_tag)->read_int();
+                if (!use_tag || !strlen(tag)) {
+                    free(tag);
+                    tag = 0;
+                }
+            }
+            int double_pars = cbs->aws->get_root()->awar(cbs->awar_double_pars)->read_int();
+
+            aw_openstatus("Pars Fields");
+
+            AW_root         *aw_root = cbs->aws->get_root();
+            AWT_QUERY_RANGE  range   = (AWT_QUERY_RANGE)aw_root->awar(cbs->awar_where)->read_int();
+
+            for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);
+                 !error && gb_item_container;
+                 gb_item_container = cbs->selector->get_next_item_container(gb_item_container, range))
             {
                 for (GBDATA *gb_item = cbs->selector->get_first_item(gb_item_container);
                      !error && gb_item;
-                     gb_item       = cbs->selector->get_next_item(gb_item))
-                    {
-                        if (IS_QUERIED(gb_item,cbs)) {
-                            if (aw_status((count++)/(double)ncount)) {
-                                error = "Operation aborted";
-                                break;
-                            }
-                            GBDATA *gb_new = GB_search(gb_item, key,GB_FIND);
-                            char *str = 0;
-                            if (gb_new) {
-                                str = GB_read_as_string(gb_new);
-                            }else{
-                                str = strdup("");
-                            }
-                            char *parsed = 0;
-                            if (double_pars){
-                                char *com2 = 0;
-                                parsed = 0;
-                                com2 = GB_command_interpreter(cbs->gb_main, str,command,gb_item, cbs->tree_name);
-                                if (com2){
-                                    if (tag){
-                                        parsed = GBS_string_eval_tagged_string(cbs->gb_main, "",deftag,tag,0,com2,gb_item);
-                                    }else{
-                                        parsed = GB_command_interpreter(cbs->gb_main, "",com2,gb_item, cbs->tree_name);
-                                    }
+                     gb_item = cbs->selector->get_next_item(gb_item))
+                {
+                    if (IS_QUERIED(gb_item,cbs)) {
+                        if (aw_status((count++)/(double)ncount)) {
+                            error = "Aborted by user";
+                            break;
+                        }
+                        GBDATA *gb_new = GB_search(gb_item, key,GB_FIND);
+                        char   *str;
+                        
+                        if (gb_new) {
+                            str = GB_read_as_string(gb_new);
+                        }
+                        else {
+                            str = strdup("");
+                        }
+                        char *parsed = 0;
+                        if (double_pars) {
+                            char *com2 = GB_command_interpreter(cbs->gb_main, str,command,gb_item, cbs->tree_name);
+                            if (com2) {
+                                if (tag) {
+                                    parsed = GBS_string_eval_tagged_string(cbs->gb_main, "",deftag,tag,0,com2,gb_item);
                                 }
-                                delete com2;
-                            }else{
-                                if (tag){
-                                    parsed = GBS_string_eval_tagged_string(cbs->gb_main, str,deftag,tag,0,command,gb_item);
-                                }else{
-                                    parsed = GB_command_interpreter(cbs->gb_main, str,command,gb_item, cbs->tree_name);
+                                else {
+                                    parsed = GB_command_interpreter(cbs->gb_main, "",com2,gb_item, cbs->tree_name);
                                 }
                             }
-                            if (!parsed) {
-                                error = GB_get_error();
-                                free(str);
-                                break;
+                            free(com2);
+                        }
+                        else {
+                            if (tag) {
+                                parsed = GBS_string_eval_tagged_string(cbs->gb_main, str,deftag,tag,0,command,gb_item);
                             }
-                            if (!strcmp(parsed,str)){   // nothing changed
-                                free(str);
-                                free(parsed);
-                                continue;
+                            else {
+                                parsed = GB_command_interpreter(cbs->gb_main, str,command,gb_item, cbs->tree_name);
                             }
+                        }
 
-                            if (gb_new && !strlen(parsed) ) {
-                                error = GB_delete(gb_new);
-                            }else {
-                                if (!gb_new) {
-                                    gb_new = GB_search(gb_item, key, GB_read_int(gb_key_type));
-                                    if (!gb_new) error = GB_get_error();
+                        if (!parsed) {
+                            error = GB_get_error();
+                        }
+                        else {
+                            if (strcmp(parsed, str) != 0) { // any change?
+                                if (gb_new && parsed[0] == 0) { // empty result -> delete field
+                                    error = GB_delete(gb_new);
                                 }
-                                if (!error) {
-                                    error = GB_write_as_string(gb_new,parsed);
+                                else {
+                                    if (!gb_new) {
+                                        gb_new = GB_search(gb_item, key, GB_read_int(gb_key_type));
+                                        if (!gb_new) error = GB_get_error();
+                                    }
+                                    if (!error) error = GB_write_as_string(gb_new, parsed);
                                 }
                             }
-                            free(str);
                             free(parsed);
                         }
+                        free(str);
                     }
+                }
             }
 
 
-        //         GBDATA *gb_species;
-        //         for (gb_species = GBT_first_species(cbs->gb_main);
-        //              gb_species;
-        //              gb_species = GBT_next_species(gb_species)){
+            aw_closestatus();
+            delete tag;
+            free(deftag);
+        }
 
-        //             if (IS_QUERIED(gb_species,cbs)) {
-        //                 if (aw_status((count++)/(double)ncount)) {
-        //                     error = "Operation aborted";
-        //                     break;
-        //                 }
-        //                 GBDATA *gb_new = GB_search(gb_species, key,GB_FIND);
-        //                 char *str = 0;
-        //                 if (gb_new) {
-        //                     str = GB_read_as_string(gb_new);
-        //                 }else{
-        //                     str = strdup("");
-        //                 }
-        //                 char *parsed = 0;
-        //                 if (double_pars){
-        //                     char *com2 = 0;
-        //                     parsed = 0;
-        //                     com2 = GB_command_interpreter(cbs->gb_main, str,command,gb_species);
-        //                     if (com2){
-        //                         if (tag){
-        //                             parsed = GBS_string_eval_tagged_string(cbs->gb_main, "",deftag,tag,0,com2,gb_species);
-        //                         }else{
-        //                             parsed = GB_command_interpreter(cbs->gb_main, "",com2,gb_species);
-        //                         }
-        //                     }
-        //                     delete com2;
-        //                 }else{
-        //                     if (tag){
-        //                         parsed = GBS_string_eval_tagged_string(cbs->gb_main, str,deftag,tag,0,command,gb_species);
-        //                     }else{
-        //                         parsed = GB_command_interpreter(cbs->gb_main, str,command,gb_species);
-        //                     }
-        //                 }
-        //                 if (!parsed) {
-        //                     error = GB_get_error();
-        //                     delete str;
-        //                     break;
-        //                 }
-        //                 if (!strcmp(parsed,str)){    // nothing changed
-        //                     delete str;
-        //                     delete parsed;
-        //                     continue;
-        //                 }
-
-        //                 if (gb_new && !strlen(parsed) ) {
-        //                     error = GB_delete(gb_new);
-        //                 }else {
-        //                     if (!gb_new) {
-        //                         gb_new = GB_search(gb_species, key, GB_read_int(gb_key_type));
-        //                         if (!gb_new) error = GB_get_error();
-        //                     }
-        //                     if (!error) {
-        //                         error = GB_write_as_string(gb_new,parsed);
-        //                     }
-        //                 }
-        //                 delete str;
-        //                 delete parsed;
-        //             }
-        //             if (error) break;
-        //         }
-
-        aw_closestatus();
-        delete tag;
-        free(deftag);
+        error = GB_end_transaction(cbs->gb_main, error);
     }
+    
+    if (error) aw_message(error);
 
-    if (error) {
-        GB_abort_transaction(cbs->gb_main);
-        aw_message(error);
-    }else{
-        GB_commit_transaction(cbs->gb_main);
-    }
     free(key);
     free(command);
 }
@@ -1585,131 +1509,87 @@ AW_window *create_awt_open_parser(AW_root *aw_root, struct adaqbsstruct *cbs)
 
 /***************** Multi set fields *************************/
 
-void awt_do_set_list(void *dummy, struct adaqbsstruct *cbs, long append)
-{
-    AWUSE(dummy);
-
-    GB_ERROR error = 0;
-
-    char *key = cbs->aws->get_root()->awar(cbs->awar_setkey)->read_string();
-    if (!strcmp(key,"name")) error = "You cannot set the name field";
+void awt_do_set_list(void *, struct adaqbsstruct *cbs, long append) {
+    GB_ERROR  error = 0;
+    char     *key   = cbs->aws->get_root()->awar(cbs->awar_setkey)->read_string();
+    if (strcmp(key,"name") == 0) {
+        error = "You cannot set the name field";
+    }
 
     char *value = cbs->aws->get_root()->awar(cbs->awar_setvalue)->read_string();
-    if (!strlen(value)) {
+    if (value[0] == 0) {
         free(value);
         value = 0;
     }
 
-
     GB_begin_transaction(cbs->gb_main);
-    GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
-    GBDATA *gb_key_name = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_IGNORE_CASE,down_2_level);
-    if (!gb_key_name) {
-        sprintf(AW_ERROR_BUFFER,"The destination field '%s' does not exists",key);
-        aw_message();
-        delete value;
-        free(key);
-        GB_commit_transaction(cbs->gb_main);
-        return;
+
+    GBDATA *gb_key_type;
+    {
+        GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
+        if (!gb_key_data) {
+            error = GB_get_error();
+        }
+        else {
+            GBDATA *gb_key_name = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_IGNORE_CASE,down_2_level);
+            if (!gb_key_name) {
+                error = GBS_global_string("The destination field '%s' does not exists", key);
+            }
+            else {
+                gb_key_type = GB_brother(gb_key_name,CHANGEKEY_TYPE);
+                if (!gb_key_type) error = GB_get_error();
+            }
+        }
     }
-
-    GBDATA *gb_key_type = GB_brother(gb_key_name,CHANGEKEY_TYPE);
-
 
     for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, cbs->aws->get_root(), AWT_QUERY_ALL_SPECIES);
          !error && gb_item_container;
          gb_item_container = cbs->selector->get_next_item_container(gb_item_container, AWT_QUERY_ALL_SPECIES))
+    {
+        for (GBDATA *gb_item = cbs->selector->get_first_item(gb_item_container);
+             !error && gb_item;
+             gb_item = cbs->selector->get_next_item(gb_item))
         {
-            for (GBDATA *gb_item = cbs->selector->get_first_item(gb_item_container);
-                 !error && gb_item;
-                 gb_item = cbs->selector->get_next_item(gb_item))
-                {
-                    if (IS_QUERIED(gb_item,cbs)) {
-                        GBDATA *gb_new = GB_search(gb_item, key,GB_FIND);
-                        if (gb_new) {
-                            if (value){
-                                if (append){
-                                    char *old = GB_read_as_string(gb_new);
-                                    if (old){
-                                        GBS_strstruct *strstr = GBS_stropen(strlen(old)+strlen(value)+2);
-                                        GBS_strcat(strstr,old);
-                                        GBS_strcat(strstr,value);
-                                        char *v = GBS_strclose(strstr);
-                                        error = GB_write_as_string(gb_new,v);
-                                        free(v);
-                                    }else{
-                                        char *name = GBT_read_string(gb_item,"name");
-                                        error = GB_export_error("Field '%s' of %s '%s' has incombatible type", key, cbs->selector->item_name, name);
-                                        free(name);
-                                    }
-                                }else{
-                                    error = GB_write_as_string(gb_new,value);
-                                }
-                            }else{
-                                if (!append){
-                                    error = GB_delete(gb_new);
-                                }
+            if (IS_QUERIED(gb_item,cbs)) {
+                GBDATA *gb_new = GB_search(gb_item, key,GB_FIND);
+                if (gb_new) {
+                    if (value){
+                        if (append){
+                            char *old = GB_read_as_string(gb_new);
+                            if (old) {
+                                GBS_strstruct *strstr = GBS_stropen(strlen(old)+strlen(value)+2);
+                                GBS_strcat(strstr,old);
+                                GBS_strcat(strstr,value);
+                                char *v = GBS_strclose(strstr);
+                                error = GB_write_as_string(gb_new,v);
+                                free(v);
                             }
-                        }else {
-                            gb_new = GB_search(gb_item, key, GB_read_int(gb_key_type));
-                            if (!gb_new) error = GB_get_error();
-                            if (!error) error = GB_write_as_string(gb_new,value);
+                            else {
+                                char *name = GBT_read_string(gb_item,"name");
+                                error = GB_export_error("Field '%s' of %s '%s' has incombatible type", key, cbs->selector->item_name, name);
+                                free(name);
+                            }
+                        }
+                        else { 
+                            error = GB_write_as_string(gb_new,value);
                         }
                     }
+                    else {
+                        if (!append) error = GB_delete(gb_new);
+                    }
                 }
+                else {
+                    gb_new = GB_search(gb_item, key, GB_read_int(gb_key_type));
+
+                    if (!gb_new) error = GB_get_error();
+                    else error         = GB_write_as_string(gb_new,value);
+                }
+            }
         }
-
-    //     GBDATA         *gb_species;
-    //     for (gb_species = GBT_first_species(cbs->gb_main);
-    //          !error &&  gb_species;
-    //          gb_species = GBT_next_species(gb_species)){
-
-    //         if (IS_QUERIED(gb_species,cbs)) {
-    //             GBDATA *gb_new = GB_search(gb_species, key,GB_FIND);
-    //             if (gb_new) {
-    //                 if (value){
-    //                     if (append){
-    //                         char *old = GB_read_as_string(gb_new);
-    //                         if (old){
-    //                             void *strstr = GBS_stropen(1024);
-    //                             GBS_strcat(strstr,old);
-    //                             GBS_strcat(strstr,value);
-    //                             char *v = GBS_strclose(strstr);
-    //                             error = GB_write_as_string(gb_new,v);
-    //                             delete v;
-    //                         }else{
-    //                             char *name = GBT_read_string(gb_species,"name");
-    //                             error = GB_export_error("Field '%s' of species '%s' has incombatible type",key,name);
-    //                             delete name;
-    //                         }
-    //                     }else{
-
-    //                         error = GB_write_as_string(gb_new,value);
-    //                     }
-    //                 }else{
-    //                     if (!append){
-    //                         error = GB_delete(gb_new);
-    //                     }
-    //                 }
-    //             }else {
-    //                 gb_new = GB_search(gb_species, key, GB_read_int(gb_key_type));
-    //                 if (!gb_new){
-    //                     error = GB_get_error();
-    //                 }
-
-    //                 if (!error) {
-    //                     error = GB_write_as_string(gb_new,value);
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    if (error) {
-        GB_abort_transaction(cbs->gb_main);
-        aw_message(error);
-    }else{
-        GB_commit_transaction(cbs->gb_main);
     }
+
+    GB_end_transaction_show_error(cbs->gb_main, error, aw_message);
+    
     free(key);
     free(value);
 }
@@ -1745,66 +1625,40 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, struct adaqbsstruct *cbs)
 
 /***************** Multi set fields *************************/
 
-void awt_do_set_protection(void *dummy, struct adaqbsstruct *cbs)
-{
-    AWUSE(dummy);
-
-    char *key = cbs->aws->get_root()->awar(cbs->awar_setkey)->read_string();
+void awt_do_set_protection(void *, struct adaqbsstruct *cbs) {
+    GB_ERROR  error = 0;
+    char     *key   = cbs->aws->get_root()->awar(cbs->awar_setkey)->read_string();
 
     GB_begin_transaction(cbs->gb_main);
     GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
     GBDATA *gb_key_name = GB_find_string(gb_key_data,CHANGEKEY_NAME,key,GB_IGNORE_CASE,down_2_level);
     if (!gb_key_name) {
-        sprintf(AW_ERROR_BUFFER,"The destination field '%s' does not exists",key);
-        aw_message();
-        delete key;
-        GB_commit_transaction(cbs->gb_main);
-        return;
+        error = GBS_global_string("The destination field '%s' does not exists", key);
     }
-    int              level   = cbs->aws->get_root()->awar(cbs->awar_setprotection)->read_int();
-    GB_ERROR         error   = 0;
-    AW_root         *aw_root = cbs->aws->get_root();
-    AWT_QUERY_RANGE  range   = (AWT_QUERY_RANGE)aw_root->awar(cbs->awar_where)->read_int();
+    else {
+        int              level   = cbs->aws->get_root()->awar(cbs->awar_setprotection)->read_int();
+        AW_root         *aw_root = cbs->aws->get_root();
+        AWT_QUERY_RANGE  range   = (AWT_QUERY_RANGE)aw_root->awar(cbs->awar_where)->read_int();
 
-    for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);
-         !error && gb_item_container;
-         gb_item_container = cbs->selector->get_next_item_container(gb_item_container, range))
+        for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);
+             !error && gb_item_container;
+             gb_item_container = cbs->selector->get_next_item_container(gb_item_container, range))
         {
             for (GBDATA *gb_item = cbs->selector->get_first_item(gb_item_container);
                  !error && gb_item;
-                 gb_item       = cbs->selector->get_next_item(gb_item))
-                {
-                    if (IS_QUERIED(gb_item,cbs)) {
-                        GBDATA *gb_new = GB_search(gb_item, key,GB_FIND);
-                        if (!gb_new) continue;
-                        error = GB_write_security_delete(gb_new,level);
-                        error = GB_write_security_write(gb_new,level);
-                    }
+                 gb_item = cbs->selector->get_next_item(gb_item))
+            {
+                if (IS_QUERIED(gb_item,cbs)) {
+                    GBDATA *gb_new = GB_search(gb_item, key,GB_FIND);
+                    if (!gb_new) continue;
+                    error = GB_write_security_delete(gb_new,level);
+                    error = GB_write_security_write(gb_new,level);
                 }
+            }
         }
-
-
-    //  GBDATA *gb_species;
-
-    //  for (gb_species = GBT_first_species(cbs->gb_main);
-    //       gb_species;
-    //       gb_species = GBT_next_species(gb_species)){
-
-    //      if (IS_QUERIED(gb_species,cbs)) {
-    //          GBDATA *gb_new = GB_search(gb_species, key,GB_FIND);
-    //          if (!gb_new) continue;
-    //          error = GB_write_security_delete(gb_new,level);
-    //          error = GB_write_security_write(gb_new,level);
-    //      }
-    //      if (error) break;
-    //  }
-
-    if (error) {
-        GB_abort_transaction(cbs->gb_main);
-        aw_message(error);
-    }else{
-        GB_commit_transaction(cbs->gb_main);
     }
+    GB_end_transaction_show_error(cbs->gb_main, error, aw_message);
+    
     free(key);
 }
 

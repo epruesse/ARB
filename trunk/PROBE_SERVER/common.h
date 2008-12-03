@@ -3,7 +3,7 @@
 //    File      : common.h                                               //
 //    Purpose   : Common code for all tools                              //
 //    Note      : include only once in each executable!!!                //
-//    Time-stamp: <Wed Jul/09/2008 12:53 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Mon Dec/01/2008 17:20 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -52,10 +52,7 @@ static GB_ERROR setDatabaseState(GBDATA *gb_main, const char *type, const char *
         else error          = GB_get_error();
     }
 
-    if (error) GB_abort_transaction(gb_main);
-    else GB_pop_transaction(gb_main);
-
-    return error;
+    return GB_end_transaction(gb_main, error);
 }
 #endif
 

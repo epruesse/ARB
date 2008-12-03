@@ -479,12 +479,9 @@ static void GDE_export(NA_Alignment *dataset,char *align,long oldnumelements)
 
         delete dummy;
     }
-    if (error) {
-        GB_abort_transaction(GLOBAL_gb_main);
-        aw_message(error);
-    }else{
-        GB_commit_transaction(GLOBAL_gb_main);
-    }
+
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+
     if(isdefaultalign) delete align;
 }
 

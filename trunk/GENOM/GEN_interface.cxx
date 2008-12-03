@@ -352,43 +352,42 @@ static AW_CL    ad_global_scannerid   = 0;
 static AW_root *ad_global_scannerroot = 0;
 AW_CL           gene_query_global_cbs = 0;
 
-void gene_rename_cb(AW_window *aww){
-
-    GB_ERROR  error   = 0;
-    AW_root  *aw_root = aww->get_root();
-    char     *source  = aw_root->awar(AWAR_GENE_NAME)->read_string();
-    char     *dest    = aw_root->awar(AWAR_GENE_DEST)->read_string();
+void gene_rename_cb(AW_window *aww) {
+    AW_root *aw_root = aww->get_root();
+    char    *source  = aw_root->awar(AWAR_GENE_NAME)->read_string();
+    char    *dest    = aw_root->awar(AWAR_GENE_DEST)->read_string();
 
     if (strcmp(source, dest) != 0) {
-        GB_begin_transaction(GLOBAL_gb_main);
+        GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
 
-        GBDATA *gb_gene_data = GEN_get_current_gene_data(GLOBAL_gb_main, aww->get_root());
+        if (!error) {
+            GBDATA *gb_gene_data = GEN_get_current_gene_data(GLOBAL_gb_main, aww->get_root());
 
-        if (!gb_gene_data) error = "Please select a species first";
-        else {
-            GBDATA *gb_source = GEN_find_gene_rel_gene_data(gb_gene_data, source);
-            GBDATA *gb_dest   = GEN_find_gene_rel_gene_data(gb_gene_data, dest);
-
-            if (!gb_source) error   = "Please select a gene first";
-            else if (gb_dest) error = GB_export_error("Sorry: gene '%s' already exists", dest);
+            if (!gb_gene_data) error = "Please select a species";
             else {
-                GBDATA *gb_name = GB_search(gb_source, "name", GB_STRING);
-                error           = GB_write_string(gb_name, dest);
-                if (!error) aww->get_root()->awar(AWAR_GENE_NAME)->write_string(dest);
+                GBDATA *gb_source = GEN_find_gene_rel_gene_data(gb_gene_data, source);
+                GBDATA *gb_dest   = GEN_find_gene_rel_gene_data(gb_gene_data, dest);
+
+                if (!gb_source) error   = "Please select a gene first";
+                else if (gb_dest) error = GB_export_error("Gene '%s' already exists", dest);
+                else {
+                    GBDATA *gb_name = GB_search(gb_source, "name", GB_STRING);
+
+                    if (!gb_name) error = GB_get_error();
+                    else {
+                        error = GB_write_string(gb_name, dest);
+                        if (!error) aww->get_root()->awar(AWAR_GENE_NAME)->write_string(dest);
+                    }
+                }
             }
         }
 
-        if (!error){
-            aww->hide();
-            GB_commit_transaction(GLOBAL_gb_main);
-        }else{
-            GB_abort_transaction(GLOBAL_gb_main);
-        }
+        error = GB_end_transaction(GLOBAL_gb_main, error);
+        aww->hide_or_notify(error);
     }
 
-    if (error) aw_message(error);
-    delete source;
-    delete dest;
+    free(source);
+    free(dest);
 }
 
 AW_window *create_gene_rename_window(AW_root *root)
@@ -414,44 +413,41 @@ AW_window *create_gene_rename_window(AW_root *root)
 }
 
 void gene_copy_cb(AW_window *aww){
-    GB_begin_transaction(GLOBAL_gb_main);
+    char     *source = aww->get_root()->awar(AWAR_GENE_NAME)->read_string();
+    char     *dest   = aww->get_root()->awar(AWAR_GENE_DEST)->read_string();
+    GB_ERROR  error  = GB_begin_transaction(GLOBAL_gb_main);
+    if (!error) {
+        GBDATA *gb_gene_data = GEN_get_current_gene_data(GLOBAL_gb_main, aww->get_root());
 
-    GB_ERROR  error        = 0;
-    char     *source       = aww->get_root()->awar(AWAR_GENE_NAME)->read_string();
-    char     *dest         = aww->get_root()->awar(AWAR_GENE_DEST)->read_string();
-    GBDATA   *gb_gene_data = GEN_get_current_gene_data(GLOBAL_gb_main, aww->get_root());
-
-    if (!gb_gene_data) {
-        error = "Please select a species first.";
-    }
-    else {
-        GBDATA *gb_source = GEN_find_gene_rel_gene_data(gb_gene_data, source);
-        GBDATA *gb_dest   = GEN_find_gene_rel_gene_data(gb_gene_data, dest);
-
-        if (!gb_source) error   = "Please select a gene first";
-        else if (gb_dest) error = GB_export_error("Sorry: gene '%s' already exists", dest);
+        if (!gb_gene_data) {
+            error = "Please select a species first.";
+        }
         else {
-            gb_dest = GB_create_container(gb_gene_data,"gene");
-            error = GB_copy(gb_dest, gb_source);
-            if (!error) {
-                GBDATA *gb_name = GB_search(gb_dest,"name",GB_STRING);
-                error = GB_write_string(gb_name,dest);
-            }
-            if (!error) {
-                aww->get_root()->awar(AWAR_GENE_NAME)->write_string(dest);
+            GBDATA *gb_source = GEN_find_gene_rel_gene_data(gb_gene_data, source);
+            GBDATA *gb_dest   = GEN_find_gene_rel_gene_data(gb_gene_data, dest);
+
+            if (!gb_source) error   = "Please select a gene";
+            else if (gb_dest) error = GB_export_error("Gene '%s' already exists", dest);
+            else {
+                gb_dest             = GB_create_container(gb_gene_data,"gene");
+                if (!gb_dest) error = GB_get_error();
+                else error          = GB_copy(gb_dest, gb_source);
+
+                if (!error) {
+                    GBDATA *gb_name     = GB_search(gb_dest,"name",GB_STRING);
+                    if (!gb_name) error = GB_get_error();
+                    else    error       = GB_write_string(gb_name,dest);
+                }
+                if (!error) aww->get_root()->awar(AWAR_GENE_NAME)->write_string(dest);
             }
         }
     }
 
-    if (!error){
-        aww->hide();
-        GB_commit_transaction(GLOBAL_gb_main);
-    }else{
-        GB_abort_transaction(GLOBAL_gb_main);
-    }
-    if (error) aw_message(error);
-    delete source;
-    delete dest;
+    error = GB_end_transaction(GLOBAL_gb_main, error);
+    aww->hide_or_notify(error);
+
+    free(source);
+    free(dest);
 }
 
 AW_window *create_gene_copy_window(AW_root *root)
@@ -537,10 +533,8 @@ void gene_create_cb(AW_window *aww){
             if (!error) aww->get_root()->awar(AWAR_GENE_NAME)->write_string(dest);
         }
     }
-    if (!error) GB_commit_transaction(GLOBAL_gb_main);
-    else    GB_abort_transaction(GLOBAL_gb_main);
-    if (error) aw_message(error);
-    delete dest;
+    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+    free(dest);
 }
 
 AW_window *create_gene_create_window(AW_root *root)
