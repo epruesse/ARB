@@ -383,56 +383,51 @@ AW_CL awt_create_arbdb_scanner(GBDATA                 *gb_main, AW_window *aws,
 
 static void awt_scanner_scan_rek(GBDATA *gbd,struct adawcbstruct *cbs,int deep, AW_selection_list *id)
 {
-    char buffer[256];
-    int rest = 255;
-    char *p = &buffer[0];
-    GB_TYPES type = GB_read_type(gbd);
-    GBDATA *gb2;
-    char *key = GB_read_key(gbd);
-    char *data;
-    int ssize;
-    for (int i=0; i<deep; i++){
-        *(p++) = ':';
-        *(p++) = ' ';
-        rest -=2;
-    }
-    sprintf(p,"%-12s",key);
-    rest -= strlen(p); p+= strlen(p);
+    GB_TYPES  type = GB_read_type(gbd);
+    char     *key  = GB_read_key(gbd);
+    
+    GBS_strstruct *out = GBS_stropen(1000);
+    for (int i = 0; i < deep; i++) GBS_strcat(out, ": ");
+    GBS_strnprintf(out, 30, "%-12s", key);
 
     switch (type) {
-        case GB_DB:
-            sprintf(p,"<CONTAINER>:");
-            cbs->aws->insert_selection( cbs->id, buffer, (long)gbd );
-            for (gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {
-                awt_scanner_scan_rek(gb2,cbs, deep+1,id);
+        case GB_DB: {
+            GBS_strcat(out, "<CONTAINER>:");
+            cbs->aws->insert_selection(cbs->id, GBS_mempntr(out), (long)gbd);
+            GBS_strforget(out);
+            
+            for (GBDATA *gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {
+                awt_scanner_scan_rek(gb2, cbs, deep + 1, id);
             }
             break;
-        case GB_LINK:{
-            sprintf(p,GBS_global_string("LINK TO '%s'",GB_read_link_pntr(gbd)));
-            cbs->aws->insert_selection( cbs->id, buffer, (long)gbd );
+        }
+        case GB_LINK: {
+            GBS_strnprintf(out, 100, "LINK TO '%s'", GB_read_link_pntr(gbd));
+            cbs->aws->insert_selection(cbs->id, GBS_mempntr(out), (long)gbd);
+            GBS_strforget(out);
+            
             GBDATA *gb_al = GB_follow_link(gbd);
-            if (gb_al){
-                for (gb2 = GB_child(gbd); gb2; gb2 = GB_nextChild(gb2)) {
-                    awt_scanner_scan_rek(gb2,cbs, deep+1,id);
+            if (gb_al) {
+                for (GBDATA *gb2 = GB_child(gb_al); gb2; gb2 = GB_nextChild(gb2)) {
+                    awt_scanner_scan_rek(gb2, cbs, deep + 1, id);
                 }
             }
             break;
         }
-        default:
-            data = GB_read_as_string(gbd);
+        default: {
+            char *data = GB_read_as_string(gbd);
+
             if (data) {
-                ssize = strlen(data);
-                if (ssize > rest) ssize = rest;
-                memcpy(p,data,ssize);
-                p[ssize] = 0;
+                GBS_strcat(out, data);
                 free(data);
-            }else{
-                strcpy(p,"<unprintable>");
             }
+            else {
+                GBS_strcat(out, "<unprintable>");
+            }
+            cbs->aws->insert_selection(cbs->id, GBS_mempntr(out), (long)gbd);
+            GBS_strforget(out);
             break;
-    }
-    if (type != GB_DB) {
-        cbs->aws->insert_selection( cbs->id, buffer, (long)gbd );
+        }
     }
     free(key);
 }
