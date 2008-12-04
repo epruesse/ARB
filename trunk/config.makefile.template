@@ -13,7 +13,10 @@ DEBUG_GRAPHICS=0# force instant graphic update
 #SEER=1
 OPENGL=1
 
-PTPAN=0# use the new PTPan implementation as pt-server (Not tested very well, do NOT use!)
+# 0 = use old PTSERVER
+# 1 = use the new PTPan implementation as pt-server (Not tested very well, do NOT use!)
+# 2 = compile both, use old (recommended for development only)
+PTPAN=0
 
 ARB_64=0# compile 64bit ARB version (still very buggy!)
 #BUILDHOST_64=1# whether build host is 64bit (value defaults to ARB_64). Uncomment for Cross-Compile
