@@ -408,9 +408,6 @@ char *GBS_global_string_copy(const char *templat, ...) {
     return GB_STRDUP(result);
 }
 
-
-
-
 char *GBS_string_2_key_with_exclusions(const char *str, const char *additional)
      /* converts any string to a valid key (all chars in 'additional' are additionally allowed) */
 {

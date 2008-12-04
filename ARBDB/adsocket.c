@@ -343,7 +343,7 @@ gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, c
             return "CANNOT CREATE SOCKET";
         }
         so_ad.sun_family = AF_UNIX;
-        sprintf(so_ad.sun_path,mach_name[0]);
+        strcpy(so_ad.sun_path, mach_name[0]);
 
         if (do_connect){
             if (connect((int)(*psocket), (struct sockaddr*)(&so_ad), strlen(so_ad.sun_path)+2)) {

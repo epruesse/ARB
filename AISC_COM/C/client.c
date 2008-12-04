@@ -24,21 +24,6 @@
 
 #include "trace.h"
 
-#if 0
-/* #if defined(SUN5_ECGS) */
-/* #else */
-/* # if defined(SUN4) || defined(SUN5) */
-/* #  ifndef __cplusplus */
-/* #   define SIG_PF void (*)() */
-/* #  else */
-/* #   include <sysent.h>       / * c++ only for sun (used for shutdown) * / */
-/* #  endif */
-/* # else */
-/* #  define SIG_PF void (*)(int ) */
-/* # endif */
-/* #endif */
-#endif
-
 #define AISC_MAGIC_NUMBER_FILTER 0xffffff00
 
 static const char *err_connection_problems = "CONNECTION PROBLEMS";
@@ -335,7 +320,7 @@ const char *aisc_client_open_socket(const char *path, int delay, int do_connect,
             return "CANNOT CREATE SOCKET";
         }
         so_ad.sun_family = AF_UNIX;
-        sprintf(so_ad.sun_path,mach_name);
+        strcpy(so_ad.sun_path,mach_name);
         if (do_connect){
             if (connect(*psocket, (struct sockaddr*)&so_ad, strlen(mach_name)+2)) {
                 return "";

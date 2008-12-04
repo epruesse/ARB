@@ -100,7 +100,7 @@ delete_expensive(ALI_PREALIGNER_CONTEXT * context,
              */
             if (error_counter > 0 &&
                 profile->is_in_helix(map->position(i - 1), &start_hel, &end_hel)) {
-                for (j = i - 1; map->position(j) >= long(start_hel); j--);
+                for (j = i - 1; map->position(j) >= long(start_hel); j--) ;
                 for (; map->position(j) <= long(end_hel); j++)
                     map->undefine(j);
             }
@@ -181,14 +181,16 @@ delete_expensive(ALI_PREALIGNER_CONTEXT * context,
          * search next defined segment
          */
         if (!map->is_undefined(map_pos)) {
-            /*
+            /* 
              * find start and end of segment
              */
-            start_seq = map_pos;
-            start_mapped = map->position(map_pos);
-            for (map_pos++; map_pos <= map->last_base() &&
-                     (!map->is_undefined(map_pos)); map_pos++);
-            end_seq = map_pos - 1;
+            start_seq     = map_pos;
+            start_mapped  = map->position(map_pos);
+            for (map_pos++;
+                 map_pos <= map->last_base() && (!map->is_undefined(map_pos));
+                 map_pos++) ;
+            
+            end_seq    = map_pos - 1;
             end_mapped = map->position(end_seq);
 
             /*
@@ -618,14 +620,18 @@ generate_solution(ALI_MAP * map)
 
     map_len = map->last_base() - map->first_base() + 1;
     for (map_pos = map->first_base(); map_pos <= map->last_base(); map_pos++) {
-        /*
+        /* 
          * search for segment
          */
-        for (start_seg = map_pos; start_seg <= map->last_base() &&
-                 map->is_undefined(start_seg); start_seg++);
+        for (start_seg  = map_pos;
+             start_seg <= map->last_base() && map->is_undefined(start_seg);
+             start_seg++) ;
+
         if (start_seg <= map->last_base()) {
-            for (end_seg = start_seg; end_seg <= map->last_base() &&
-                     (!map->is_undefined(end_seg)); end_seg++);
+            for (end_seg  = start_seg;
+                 end_seg <= map->last_base() && (!map->is_undefined(end_seg));
+                 end_seg++) ;
+            
             end_seg--;
 
             seg_map = new ALI_MAP(start_seg,

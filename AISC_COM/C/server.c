@@ -360,7 +360,7 @@ const char *aisc_open_socket(const char *path, int delay, int do_connect, int *p
             return "CANNOT CREATE SOCKET";
         }
         so_ad.sun_family = AF_UNIX;
-        sprintf(so_ad.sun_path,mach_name);
+        strcpy(so_ad.sun_path,mach_name);
         if (do_connect){
             if (connect(*psocket, (struct sockaddr*)&so_ad, strlen(mach_name)+2)) {
                 return "";

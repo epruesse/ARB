@@ -30,13 +30,13 @@ unsigned char **hamming_tab   = NULL;
 BOOL            new_pt_server = TRUE;
 struct Params   P;
 
-long k_aus_n(int k, int n)
-{
-    int a=n, b=1, i;
-    if(k>(n/2)) k=n-k;
-    if(k<=0) return (k==0);
-    for(i=2; i<=k; n--, a*=n, b*=i, i++);
-    return a/b;
+long k_aus_n(int k, int n) {
+    int a = n, b = 1, i;
+
+    if (k > (n / 2)) k = n - k;
+    if (k <= 0) return (k == 0);
+    for (i = 2; i <= k; n--, a *= n, b *= i, i++) ;
+    return a / b;
 }
 
 int get_random(int min,int max) {

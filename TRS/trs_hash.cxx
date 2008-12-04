@@ -140,7 +140,7 @@ long TRS_write_hash(long hash,const char *key,long val)
                     hs->entries[i] = e->next;
                 }else{
                     struct trs_hash_entry *ee;
-                    for (ee = hs->entries[i]; ee->next != e; ee= ee->next);
+                    for (ee = hs->entries[i]; ee->next != e; ee= ee->next) ;
                     if (ee->next ==e) {
                         ee->next = e->next;
                     } else{
