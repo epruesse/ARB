@@ -397,14 +397,13 @@ int ALI_PROFILE::find_next_helix(char h[], unsigned long h_len,
 {
     unsigned long i;
 
-    for (i = pos; i < h_len && !isdigit(h[i]); i++);
-    if (i >= h_len)
-        return -1;
+    for (i = pos; i < h_len && !isdigit(h[i]); i++) ;
+    if (i >= h_len) return -1;
 
     *start = i;
     sscanf(&h[i],"%ld",helix_nr);
-    for (; i < h_len && isdigit(h[i]); i++);
-    for (; i < h_len && !isdigit(h[i]); i++);
+    for (; i < h_len && isdigit(h[i]); i++) ;
+    for (; i < h_len && !isdigit(h[i]); i++) ;
     *end = i - 1;
 
     return 0;
@@ -421,15 +420,14 @@ int ALI_PROFILE::find_comp_helix(char h[], unsigned long h_len,
 
     i = pos;
     do {
-        for (; i < h_len && !isdigit(h[i]); i++);
-        if (i >= h_len)
-            return -1;
+        for (; i < h_len && !isdigit(h[i]); i++) ;
+        if (i >= h_len) return -1;
         *start = i;
         sscanf(&h[i],"%ld",&nr);
-        for (; i < h_len && isdigit(h[i]); i++);
+        for (; i < h_len && isdigit(h[i]); i++) ;
     } while (helix_nr != nr);
 
-    for (; i < h_len && !isdigit(h[i]); i++);
+    for (; i < h_len && !isdigit(h[i]); i++) ;
     *end = i - 1;
 
     return 0;

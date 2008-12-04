@@ -702,7 +702,7 @@ void transdna_event(AW_window *aww) {
 
         if (neededLength) {
             if (retrying || !aw_ask_sure(GBS_global_string("Increase length of '%s' to %li?", ali_dest, neededLength))) {
-                error = GBS_global_string("Missing %i columns in alignment '%s'", neededLength, ali_dest);
+                error = GBS_global_string("Missing %li columns in alignment '%s'", neededLength, ali_dest);
             }
             else {
                 error             = GB_begin_transaction(GLOBAL_gb_main);

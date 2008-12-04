@@ -88,13 +88,13 @@ GB_ERROR arb_arcg()
         if (bp == EOF) break;
         arcg.buffer[0] = (char)bp;
         fgets(&arcg.buffer[1],250,in);
-        for (ac = &arcg.buffer[0]; *ac&&(*ac!=' ')&&(*ac!='\t'); ac++);
+        for (ac = &arcg.buffer[0]; *ac&&(*ac!=' ')&&(*ac!='\t'); ac++) ;
         *ac = 0;
         delete fetchbuffer;
         fetchbuffer = GBS_string_eval(arcg.buffer, arcg.fetchcommand,0);
         *ac = ' ';
-        for (;  *ac==' ' || *ac =='\t'; ac++);
-        for (p = ac;*p&&*p!=' ';p++);
+        for (;  *ac==' ' || *ac =='\t'; ac++) ;
+        for (p = ac;*p&&*p!=' ';p++) ;
         c = *p; *p = 0;
         if (GBS_read_hash(hash,ac)) continue;   /* Accession number already in hash */
         *p = c;

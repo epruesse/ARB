@@ -575,7 +575,7 @@ main(int argc, char **argv)
     GB_push_transaction(GLOBAL_gb_main);
     alignment_names = GBT_get_alignment_names(GLOBAL_gb_main);
 
-    for (num_alignments = 0; alignment_names[num_alignments] != 0; num_alignments++);
+    for (num_alignments = 0; alignment_names[num_alignments] != 0; num_alignments++) ;
     if (num_alignments > 1) {
         AW_window *sel_ali_aww = create_select_alignment_window(aw_root, (AW_CL)puw->phylo_main_window);
         sel_ali_aww->show();

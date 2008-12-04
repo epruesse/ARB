@@ -158,7 +158,7 @@ void primer_design_event_go(AW_window *aww) {
         // This seems to generate an internal compiler error with gcc 2.95 on OSX
 #else
         catch (string& s) {
-            error = GBS_global_string(s.c_str());
+            error = GBS_global_string("%s", s.c_str());
         }
 #endif
         catch (...) {
