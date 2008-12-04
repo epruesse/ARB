@@ -84,7 +84,7 @@ else
         $0 compile_OpenGL
         apt-get -y install \
             valgrind \
-            indent \
+            ctags \
 
     else
         echo "Error: Unknown parameter '$1'"
