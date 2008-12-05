@@ -8,6 +8,10 @@
 #ifndef _STDINT_H
 #include <stdint.h>
 #endif
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
+
 
 /* ================ Test memory @@@===================== */
 #if defined(DEBUG)

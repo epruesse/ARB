@@ -32,8 +32,8 @@ int regerrno;
                     directory handling
 ********************************************************************************************/
 
-/* look for quick saves (basename = yyy/xxx no arb ending !!!!) */
-GB_ERROR gb_scan_directory(char *basename, struct gb_scandir *sd){
+GB_ERROR gb_scan_directory(char *basename, struct gb_scandir *sd) { /* goes to header: __ATTR__USERESULT */
+    /* look for quick saves (basename = yyy/xxx no arb ending !!!!) */
     char *path = GB_STRDUP(basename);
     const char *fulldir = ".";
     char *file = strrchr(path,'/');
@@ -474,9 +474,8 @@ char *gbs_malloc_copy(const char *source, long len)
     return dest;
 }
 
-GB_ERROR GB_check_key(const char *key)
-     /* test whether all characters are letters, numbers or _ */
-{
+GB_ERROR GB_check_key(const char *key) { /* goes to header: __ATTR__USERESULT */
+    /* test whether all characters are letters, numbers or _ */
     int  i;
     long len;
 
@@ -496,9 +495,8 @@ GB_ERROR GB_check_key(const char *key)
 
     return 0;
 }
-GB_ERROR GB_check_link_name(const char *key)
-     /* test whether all characters are letters, numbers or _ */
-{
+GB_ERROR GB_check_link_name(const char *key) { /* goes to header: __ATTR__USERESULT */
+    /* test whether all characters are letters, numbers or _ */
     int  i;
     long len;
 
@@ -518,10 +516,9 @@ GB_ERROR GB_check_link_name(const char *key)
 
     return 0;
 }
-GB_ERROR GB_check_hkey(const char *key)
-     /* test whether all characters are letters, numbers or _ */
-     /* additionally allow '/' and '->' for hierarchical keys */
-{
+GB_ERROR GB_check_hkey(const char *key) { /* goes to header: __ATTR__USERESULT */
+    /* test whether all characters are letters, numbers or _ */
+    /* additionally allow '/' and '->' for hierarchical keys */
     GB_ERROR err = 0;
 
     if (!key || key[0] == 0) {
@@ -1096,9 +1093,10 @@ void GBS_floatcat(struct GBS_strstruct *strstr,double val) {
 ********************************************************************************************/
 int GBS_reference_not_found;
 
-GB_ERROR gbs_build_replace_string(void *strstruct,
-                                  char *bar,char *wildcards, long max_wildcard,
-                                  char **mwildcards, long max_mwildcard, GBDATA *gb_container)
+ATTRIBUTED(__ATTR__USERESULT,
+           static GB_ERROR gbs_build_replace_string(void *strstruct,
+                                                    char *bar,char *wildcards, long max_wildcard,
+                                                    char **mwildcards, long max_mwildcard, GBDATA *gb_container))
 {
     char *p,c,d;
     int   wildcardcnt  = 0;
@@ -1146,8 +1144,7 @@ GB_ERROR gbs_build_replace_string(void *strstruct,
                             char *h;
                             switch(seperator) {
                                 case ':':
-                                    h = GBS_string_eval(
-                                                        entry,psym+1,gb_container);
+                                    h = GBS_string_eval(entry,psym+1,gb_container);
                                     if (h){
                                         GBS_strcat(strstruct,h);
                                         free(h);
@@ -1565,9 +1562,8 @@ char **GBS_read_dir(const char *dir, const char *filter)
     return result;
 }
 
-GB_ERROR GBS_free_names(char **names)
-{
-    return GBT_free_names(names);
+void GBS_free_names(char **names) {
+    GBT_free_names(names);
 }
 
 long GBS_gcgchecksum( const char *seq )
@@ -2415,7 +2411,7 @@ void GB_delete_set(GBDATA_SET *set){
  * always keep in mind, that many users have databases/macros written with older
  * versions of this function. They MUST load proper!!!
  */
-GB_ERROR GBS_fwrite_string(const char *strngi,FILE *out){
+void GBS_fwrite_string(const char *strngi,FILE *out){
     unsigned char *strng = (unsigned char *)strngi;
     int            c;
     
@@ -2444,7 +2440,6 @@ GB_ERROR GBS_fwrite_string(const char *strngi,FILE *out){
         }
     }
     putc('"',out);
-    return 0;
 }
 
 /*  Read a string from a file written by GBS_fwrite_string,

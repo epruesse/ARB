@@ -53,7 +53,7 @@ GB_ERROR GBT_check_tree_name P_((const char *tree_name));
 char **GBT_get_tree_names_and_count P_((GBDATA *Main, int *countPtr));
 char **GBT_get_tree_names P_((GBDATA *Main));
 char *GBT_get_next_tree_name P_((GBDATA *gb_main, const char *tree));
-GB_ERROR GBT_free_names P_((char **names));
+void GBT_free_names P_((char **names));
 GB_CSTR *GBT_get_species_names_of_tree P_((GBT_TREE *tree));
 char *GBT_existing_tree P_((GBDATA *Main, const char *tree));
 GB_ERROR GBT_export_tree P_((GBDATA *gb_main, FILE *out, GBT_TREE *tree, GB_BOOL triple_root));

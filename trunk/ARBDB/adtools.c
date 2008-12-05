@@ -2051,12 +2051,10 @@ char *GBT_get_next_tree_name(GBDATA *gb_main, const char *tree){
     return NULL;
 }
 
-GB_ERROR GBT_free_names(char **names)
-{
+void GBT_free_names(char **names) {
     char **pn;
     for (pn = names; *pn;pn++) free(*pn);
     free((char *)names);
-    return 0;
 }
 
 int gbt_sum_leafs(GBT_TREE *tree){

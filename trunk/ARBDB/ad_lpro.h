@@ -22,13 +22,12 @@ extern "C" {
 void gbl_install_standard_commands P_((GBDATA *gb_main));
 
 /* adstring.c */
-GB_ERROR gb_scan_directory P_((char *basename, struct gb_scandir *sd));
+GB_ERROR gb_scan_directory P_((char *basename, struct gb_scandir *sd)) __ATTR__USERESULT;
 void gbs_uppercase P_((char *str));
 void gbs_memcopy P_((char *dest, const char *source, long len));
 char *gbs_malloc_copy P_((const char *source, long len));
 char *gbs_add_path P_((char *path, char *name));
 char *gbs_compress_command P_((const char *com));
-GB_ERROR gbs_build_replace_string P_((void *strstruct, char *bar, char *wildcards, long max_wildcard, char **mwildcards, long max_mwildcard, GBDATA *gb_container));
 void gbs_regerror P_((int en));
 
 /* arbdb.c */
@@ -236,7 +235,6 @@ char *gb_full_path P_((const char *path));
 GB_ERROR gb_check_saveable P_((GBDATA *gbd, const char *path, const char *flags));
 
 /* adcompr.c */
-GB_ERROR gb_check_huffmann_tree P_((struct gb_compress_tree *t));
 struct gb_compress_tree *gb_build_uncompress_tree P_((const unsigned char *data, long short_flag, char **end));
 void gb_free_compress_tree P_((struct gb_compress_tree *tree));
 struct gb_compress_list *gb_build_compress_list P_((const unsigned char *data, long short_flag, long *size));

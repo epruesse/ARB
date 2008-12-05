@@ -1198,6 +1198,7 @@ void CPRO_savestatistic_cb(AW_window *aw,AW_CL which_statistic)
                 error = GB_end_transaction(newbase, error);
                 if (!error) error = GB_save(newbase,(char*)0,"b");
             }
+            
             GB_close(newbase);
         }
     }
