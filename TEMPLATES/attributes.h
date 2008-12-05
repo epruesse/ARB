@@ -2,7 +2,7 @@
 //                                                                      //
 //   File      : attributes.h                                           //
 //   Purpose   : declare attribute macros                               //
-//   Time-stamp: <Mon Mar/03/2008 11:44 MET Coder@ReallySoft.de>        //
+//   Time-stamp: <Fri Dec/05/2008 16:57 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in June 2005             //
@@ -24,6 +24,7 @@
 // __ATTR__DEPRECATED  used for deprecated functions (useful for redesign)
 // __ATTR__PURE        used for functions w/o side-effects, where result only depends on parameters + global data
 // __ATTR__CONST       same as __ATTR__PURE, but w/o global-data-access
+// __ATTR__USERESULT   warn if result of function is unused
 // 
 // __ATTR__FORMAT_MEMBER(p)     same as __ATTR__FORMAT for member functions
 // __ATTR__VFORMAT_MEMBER(p)    same as __ATTR__VFORMAT for member functions
@@ -31,21 +32,24 @@
 // ------------------------------------------------------------
 
 #ifndef __GNUC__
-#error You have to use the gnu compiler!
+# error You have to use the gnu compiler!
 #endif
 #if (__GNUC__ < 3)
-#error You have to use gcc 3.xx or above
+# error You have to use gcc 3.xx or above
 #endif
 
 #if (__GNUC__ >= 4) // gcc 4.x and above
-#define __ATTR__SENTINEL __attribute__((sentinel))
-#define HAS_FUNCTION_TYPE_ATTRIBUTES
+# define __ATTR__SENTINEL __attribute__((sentinel))
+# define HAS_FUNCTION_TYPE_ATTRIBUTES
+# if (__GNUC_MINOR__ >= 2) 
+#  define __ATTR__USERESULT __attribute__((warn_unused_result))
+# endif
 #endif
 
 #if (__GNUC__ == 3) // gcc 3.x
-#if (__GNUC_MINOR__ >= 4) 
-#define HAS_FUNCTION_TYPE_ATTRIBUTES
-#endif
+# if (__GNUC_MINOR__ >= 4) 
+#  define HAS_FUNCTION_TYPE_ATTRIBUTES
+# endif
 #endif
 
 // ------------------------------------------------------------
@@ -58,10 +62,18 @@
 #endif
 
 // ------------------------------------------------------------
+// helper macro to declare attributed function prototype and
+// start function definition in one line
+#define ATTRIBUTED(attribute, proto) proto attribute; proto 
+
+// ------------------------------------------------------------
 // now define undefined attributes empty :
 
 #ifndef __ATTR__SENTINEL
-#define __ATTR__SENTINEL
+# define __ATTR__SENTINEL
+#endif
+#ifndef __ATTR__USERESULT
+# define __ATTR__USERESULT
 #endif
 
 // ------------------------------------------------------------
@@ -78,6 +90,8 @@
 #define __ATTR__VFORMAT_MEMBER(pos) __attribute__((format(__printf__, (pos)+1, 0)))
 // when used for member functions, start with pos+1 (pos = 1 seems to be the this-pointer!?)
 // ------------------------------------------------------------
+//
+// 
 
 #else
 #error attributes.h included twice

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : psw_main.cxx                                           //
 //    Purpose   : Worker process (handles requests from cgi scripts)     //
-//    Time-stamp: <Wed Jun/18/2008 11:35 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Fri Dec/05/2008 16:38 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //
@@ -847,10 +847,7 @@ int main(int argc, char *argv[]) {
             }
 
             // exit
-            if (gb_main) {
-                GB_ERROR err2     = GB_close(gb_main);
-                if (!error) error = err2;
-            }
+            if (gb_main) GB_close(gb_main);
         }
     }
 

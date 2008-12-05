@@ -306,31 +306,25 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos)
 /********************************************************************************************
                     CLOSE DATABASE
 ********************************************************************************************/
-GB_ERROR GB_close(GBDATA *gbd)
-{
+void GB_close(GBDATA *gbd) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (!Main->local_mode){
         gbcmc_close(Main->c_link);
     }
 
 #if defined(DEVEL_RALF)
-#warning fix that error!    
-#endif /* DEVEL_RALF */
-    return 0;                   /* @@@ there's an error below (return to avoid crash) */
-
+#warning code below was in ARB long time ago. Needs to be debugged, crashes ARB IIRC
     gb_delete_entry(gbd);
     gb_do_callback_list(gbd);   /* do all callbacks */
     gb_destroy_main(Main);
-    return 0;
+#endif /* DEVEL_RALF */
 }
 
-GB_ERROR GB_exit(GBDATA *gbd)
-{
+void GB_exit(GBDATA *gbd) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (!Main->local_mode){
         gbcmc_close(Main->c_link);
     }
-    return 0;
 }
 
 
