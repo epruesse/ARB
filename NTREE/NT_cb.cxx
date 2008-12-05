@@ -31,15 +31,17 @@ void NT_delete_mark_all_cb(void *, AWT_canvas *ntw) {
             GB_transaction ta(ntw->gb_main);
 
             GBDATA *gb_species,*gb_next;
-            for (gb_species = GBT_first_marked_species(ntw->gb_main); gb_species; gb_species = gb_next ) {
+            for (gb_species = GBT_first_marked_species(ntw->gb_main);
+                 gb_species && !error;
+                 gb_species = gb_next )
+            {
                 gb_next = GBT_next_marked_species(gb_species);
-                if (!error) error = GB_delete(gb_species);
-                else    break;
+                error   = GB_delete(gb_species);
             }
         
             if (error) {
+                error = ta.close(error);
                 aw_message(error);
-                ta.abort();
             }
         }
         ntw->refresh();

@@ -575,7 +575,7 @@ void gene_delete_cb(AW_window *aww){
 
         error = gb_gene ? GB_delete(gb_gene) : "Please select a gene first";
         if (error) {
-            ta.abort();
+            error = ta.close(error);
             aw_message(error);
         }
     }

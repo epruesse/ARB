@@ -1087,7 +1087,7 @@ static GB_ERROR clear_all_colors(const color_save_data *csd) {
              !error && gb_item;
              gb_item = sel->get_next_item(gb_item))
         {
-            AW_set_color_group(gb_item, 0); // clear colors
+            error = AW_set_color_group(gb_item, 0); // clear colors
         }
     }
 
@@ -1100,7 +1100,7 @@ static void awt_clear_all_colors(AW_window *, AW_CL cl_csd) {
     GB_ERROR               error = clear_all_colors(csd);
 
     if (error) {
-        ta.abort();
+        error = ta.close(error);
         aw_message(error);
     }
 }
@@ -1211,7 +1211,7 @@ static void awt_loadsave_colorset(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
             }
         }
 
-        if (error) ta.abort();
+        error = ta.close(error);
     }
     free(name);
 

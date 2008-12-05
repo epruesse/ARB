@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Wed Dec/03/2008 10:49 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Dec/04/2008 15:30 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -288,7 +288,7 @@ void experiment_delete_cb(AW_window *aww){
 
         error = gb_experiment ? GB_delete(gb_experiment) : "Please select a experiment first";
         if (error) {
-            ta.abort();
+            error = ta.close(error);
             aw_message(error);
         }
     }

@@ -1079,7 +1079,7 @@ static void di_mark_by_distance(AW_window *aww) {
         }
 
         free(selected);
-        if (error) ta.abort();
+        error = ta.close(error);
     }
 
     if (error) {

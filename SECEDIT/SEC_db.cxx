@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_db.cxx                                        //
 //   Purpose   : db interface                                      //
-//   Time-stamp: <Thu Jul/10/2008 12:39 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Thu Dec/04/2008 15:48 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -230,8 +230,8 @@ void SEC_db_interface::reload_ecoli(const SEC_dbcb *cb) {
 
         GB_ERROR error = Ecoli->init(ecoli_seq->sequence(), ecoli_seq->length());
         if (error) {
+            error = ta.close(error);
             aw_message(error);
-            ta.abort();
         }
     }
     else {
@@ -263,8 +263,8 @@ void SEC_db_interface::reload_helix(const SEC_dbcb *cb) {
 
             GB_ERROR error = Helix->initFromData(helix_nr->sequence(), helix_pos->sequence(), helix_pos->length());
             if (error) {
+                error = ta.close(error);
                 aw_message(error);
-                ta.abort();
             }
         }
 

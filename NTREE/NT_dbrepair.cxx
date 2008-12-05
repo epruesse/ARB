@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : NT_dbrepair.cxx                                   //
 //   Purpose   : repair database bugs                              //
-//   Time-stamp: <Wed Oct/29/2008 12:43 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Thu Dec/04/2008 15:37 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in May 2008       //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -153,10 +153,7 @@ static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /
         aw_status(double(++count)/species_count);
     }
 
-    if (error) {
-        ta.abort();
-    }
-    else {
+    if (!error) {
         if (deleted_gene_datas) {
             aw_message(GBS_global_string("Deleted %zu useless empty 'gene_data' entries.", deleted_gene_datas));
         }
@@ -164,7 +161,7 @@ static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /
             aw_message(GBS_global_string("Re-created %zu missing 'gene_data' entries.\nThese organisms have no genes yet!", generated_gene_datas));
         }
     }
-    return error;
+    return ta.close(error);
 }
 
 // --------------------------------------------------------------------------------
@@ -241,16 +238,13 @@ static GB_ERROR NT_del_mark_move_REF(GBDATA *gb_main, size_t species_count, size
 
     GBT_free_names(ali_names);
 
-    if (error) {
-        ta.abort();
-    }
-    else {
+    if (!error) {
         if (removed) {
             aw_message(GBS_global_string("Deleted %zu useless 'mark' entries.", removed));
         }
     }
 
-    return error;
+    return ta.close(error);
 }
 
 // --------------------------------------------------------------------------------
@@ -686,9 +680,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
     }
 
     Dict::gb_main = NULL;
-    
-    if (error) ta.abort();
-    return error;
+    return ta.close(error);
 }
 
 // --------------------------------------------------------------------------------

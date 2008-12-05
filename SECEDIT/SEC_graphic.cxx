@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : SEC_graphic.cxx                                   //
 //   Purpose   : GUI for structure window                          //
-//   Time-stamp: <Wed Dec/03/2008 14:13 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Thu Dec/04/2008 15:49 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
@@ -603,6 +603,7 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
     GBDATA *gb_ali  = 0;
     {
         char *name = GBT_readOrCreate_string(gb_main, AWAR_HELIX_NAME, GBT_get_default_helix(gb_main));
+        sec_assert(name);
 
         GBDATA *gb_species = GBT_find_SAI(gb_main, name);
         if (!gb_species) {
@@ -723,8 +724,8 @@ GB_ERROR SEC_graphic::save(GBDATA *, const char *,AW_CL,AW_CL)
     }
     this->last_saved = GB_read_clock(gb_struct);
     if (error) {
+        error = ta.close(error);
         aw_message(error);
-        ta.abort();
     }
     return NULL;
 }
@@ -752,8 +753,7 @@ GB_ERROR SEC_graphic::write_data_to_db(const char *data, const char *x_string) c
         error = GB_write_string(gb_struct_ref, x_string);
     }
     last_saved = 0;             // force reload of data
-    if (error) ta.abort();
-    return error;
+    return ta.close(error);
 }
 
 int SEC_graphic::check_update(GBDATA *) {
@@ -765,8 +765,8 @@ int SEC_graphic::check_update(GBDATA *) {
         if (update_requested & SEC_UPDATE_RELOAD) {
             GB_ERROR error   = load(0, 0, 0, 0); // sets change_flag
             if (error) {
+                error = ta.close(error);
                 aw_message(error);
-                ta.abort();
             }
 
             update_requested = static_cast<SEC_update_request>((update_requested^SEC_UPDATE_RELOAD)|SEC_UPDATE_RECOUNT); // clear reload flag

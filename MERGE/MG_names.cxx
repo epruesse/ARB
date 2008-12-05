@@ -87,13 +87,14 @@ void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_merge, GBD
         }
         
         if (error) {
+            error = t1.close(error);
+            error = t2.close(error);
             aw_message(error);
-            t1.abort();
-            t2.abort();
         }
-
+        else {
         created = true;
     }
+}
 }
 
 // --------------------------------------------------------------------------------
