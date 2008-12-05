@@ -1470,8 +1470,8 @@ void ED4_mark_matching_species(AW_window */*aww*/, AW_CL cl_pattern) {
     }
 
     if (error) {
+        error = ta.close(error);
         aw_message(error);
-        ta.abort();
     }
 }
 

@@ -138,7 +138,7 @@ void MG_ad_al_delete_cb(AW_window *aww,AW_CL db_nr)
             GB_ERROR       error = GBT_rename_alignment(gbd,source,0,0,1);
 
             if (error) {
-                ta.abort();
+                error = ta.close(error);
                 aw_message(error);
             }
         }

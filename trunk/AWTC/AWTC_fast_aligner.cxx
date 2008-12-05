@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : AWTC_fast_aligner.cxx                             //
 //   Purpose   : A fast aligner (not a multiple aligner!)          //
-//   Time-stamp: <Mon Dec/01/2008 18:30 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Thu Dec/04/2008 15:29 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in 1998           //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -2445,7 +2445,7 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2)
                                  root->awar(FA_AWAR_PROTECTION)->read_int()
                                  );
             aw_closestatus();
-            if (error) ta.abort();
+            error = ta.close(error);
         }
 
         free(pt_server_alignment);

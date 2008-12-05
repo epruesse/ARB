@@ -5,7 +5,7 @@
 //               If you need to test sth, you may completely       // 
 //               overwrite and checkin this.                       //
 //                                                                 //
-//   Time-stamp: <Mon May/19/2008 12:34 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Fri Dec/05/2008 19:47 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in May 2008       //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -129,14 +129,15 @@ static GB_ERROR create_db(const char *filename) {
         error             = create_n_write(gb_main, "case", "lower case");
         if (!error) error = create_n_write(gb_main, "CASE", "upper case");
 
-        if (error) ta.abort();
+        error = ta.close(error);
     }
 
     // search for fields
     if (!error) error = dump_fields(gb_main);
     if (!error) error = dump_key_data(gb_main);
     if (!error) error = GB_save(gb_main, filename, "b");
-    if (!error) error = GB_close(gb_main);
+    
+    GB_close(gb_main);
 
     return error;
 }
@@ -148,7 +149,8 @@ static GB_ERROR test_db(const char *filename) {
     if (!gb_main) error = GB_expect_error();
     if (!error) error   = dump_fields(gb_main);
     if (!error) error   = dump_key_data(gb_main);
-    if (!error) error   = GB_close(gb_main);
+    
+    GB_close(gb_main);
 
     return error;
 }

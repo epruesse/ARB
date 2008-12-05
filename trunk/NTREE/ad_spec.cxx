@@ -289,7 +289,7 @@ static void ad_species_copy_cb(AW_window *aww, AW_CL, AW_CL) {
         }
 
         if (error) {
-            ta.abort();
+            error = ta.close(error);
             aw_message(error);
         }
         free(copy_name);
@@ -326,7 +326,7 @@ static void ad_species_rename_cb(AW_window *aww, AW_CL, AW_CL) {
             }
 
             if (error) {
-                ta.abort();
+                error = ta.close(error);
                 aw_message(error);
             }
         }
@@ -345,8 +345,8 @@ static void ad_species_delete_cb(AW_window *aww, AW_CL, AW_CL) {
     else if (aw_ask_sure(GBS_global_string("Are you sure to delete the species '%s'?", name))) {
         GB_transaction ta(GLOBAL_gb_main);
         error = GB_delete(gb_species);
-        if (error) ta.abort();
-        else aw_root->awar(AWAR_SPECIES_NAME)->write_string("");
+        error = ta.close(error);
+        if (!error) aw_root->awar(AWAR_SPECIES_NAME)->write_string("");
     }
 
     if (error) aw_message(error);

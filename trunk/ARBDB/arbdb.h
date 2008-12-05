@@ -300,12 +300,15 @@ inline char *GBS_find_string(char *str, GB_CSTR key, int match_mode) {
 struct gb_data_base_type2;
 class GB_transaction : Noncopyable {
     GBDATA *ta_main;
-    bool    aborted;
+    bool      ta_open;          // is transaction open ?
+    GB_ERROR  ta_err;
+
 public:
     GB_transaction(GBDATA *gb_main);
     ~GB_transaction();
 
-    void abort() { aborted = true; }
+    bool ok() const { return ta_open && !ta_err; } // ready to work on DB? 
+    GB_ERROR close(GB_ERROR error); // abort transaction if error (e.g.: 'return ta.close(error);')
 };
 
 int GB_info(struct gb_data_base_type2 *gbd);

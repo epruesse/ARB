@@ -2,7 +2,7 @@
 //                                                                   //
 //   File      : SEC_toggle.cxx                                      //
 //   Purpose   :                                                     //
-//   Time-stamp: <Fri May/16/2008 11:16 MET Coder@ReallySoft.de>     //
+//   Time-stamp: <Fri Dec/05/2008 18:01 MET Coder@ReallySoft.de>     //
 //                                                                   //
 //   Coded by Ralf Westram (coder@reallysoft.de) in September 2007   //
 //   Institute of Microbiology (Technical University Munich)         //
@@ -173,31 +173,29 @@ GB_ERROR SEC_structure_toggler::next() {
             }
         }
     }
-    if (error) ta.abort();
-    return error;
+    return ta.close(error);
 }
 
 GB_ERROR SEC_structure_toggler::copyTo(const char *structure_name) {
-    GB_ERROR err = 0;
+    GB_ERROR error = 0;
     GB_transaction ta(gb_structures);
 
     sec_assert(find(current()) == gb_current);
     
-    err = store(gb_current);
+    error = store(gb_current);
 
-    if (!err) {
+    if (!error) {
         GBDATA *gb_new = create(structure_name);
         if (!gb_new) {
             sec_assert(st_error);
-            err = st_error;
+            error = st_error;
         }
         else {
             gb_current = gb_new;
         }
     }
-    sec_assert(err || (find(current()) == gb_current));
-    if (err) ta.abort();
-    return err;
+    sec_assert(error || (find(current()) == gb_current));
+    return ta.close(error);
 }
 
 GB_ERROR SEC_structure_toggler::remove() {
@@ -220,8 +218,7 @@ GB_ERROR SEC_structure_toggler::remove() {
             if (curr >= del) set_current(curr-1);
         }
     }
-    if (error) ta.abort();
-    return error;
+    return ta.close(error);
 }
 
 const char *SEC_structure_toggler::name() {
@@ -232,7 +229,7 @@ const char *SEC_structure_toggler::name() {
     if (gb_name) structure_name   = GB_read_char_pntr(gb_name);
     if (!structure_name) st_error = GB_get_error();
 
-    if (st_error) ta.abort();
+    st_error = ta.close(st_error);
     return structure_name;
 }
 
@@ -249,7 +246,6 @@ GB_ERROR SEC_structure_toggler::setName(GBDATA *gb_struct, const char *new_name)
 GB_ERROR SEC_structure_toggler::setName(const char *new_name) {
     GB_transaction ta(gb_structures);
     GB_ERROR       error = setName(gb_current, new_name);
-    if (error) ta.abort();
-    return error;
+    return ta.close(error);
 }
 

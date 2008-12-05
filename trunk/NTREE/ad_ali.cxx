@@ -82,7 +82,7 @@ void ad_al_delete_cb(AW_window *aww) {
         GB_ERROR        error  = GBT_rename_alignment(GLOBAL_gb_main,source,0,0,1);
 
         if (error) {
-            ta.abort();
+            error = ta.close(error);
             aw_message(error);
         }
         free(source);
