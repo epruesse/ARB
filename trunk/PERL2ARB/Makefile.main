@@ -54,7 +54,9 @@ Makefile.PL : $(MACH).PL
 	cp -p $< $@
 
 ARB.xs : $(ARB_PROTO_2_XSUB) proto.h ARB.xs.default
+	@test -f $@ && chmod a+w $@
 	LD_LIBRARY_PATH=$(LIB):$(LD_LIBRARY_PATH) $(ARB_PROTO_2_XSUB) proto.h ARB.xs.default > $@
+	@test -f $@ && chmod a-w $@
 
 proto.h : $(HEADERS) $(THIS) depends.stamp
 	cat $(HEADERS) > $@

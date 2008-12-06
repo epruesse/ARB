@@ -134,8 +134,8 @@ P2AT_read_float(gb_container,fieldpath)
  char *fieldpath
 
     CODE:
-   float *fp = GBT_read_float(gb_container,fieldpath);
-   RETVAL = fp ? *fp : 0;
+   double *dp = GBT_read_float(gb_container,fieldpath);
+   RETVAL = dp ? *dp : 0;
    OUTPUT:
    RETVAL
 
@@ -147,5 +147,4 @@ P2AT_read_float(gb_container,fieldpath)
 #    ../ARBDB/ad_t_prot.h
 #    ../ARBDB/adGene.h
 # --------------------------------------------------------------------------------
-
 
