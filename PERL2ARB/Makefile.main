@@ -1,6 +1,12 @@
 # -*-Mode: Makefile;-*-
+#
+# To rebuild PERL2ARB from $ARBHOME call
+# make perl_clean perl
 
 THIS=Makefile.main
+MAKETHIS=$(MAKE) -f $(THIS)
+#MAKETHIS=$(MAKE) -d -f $(THIS)
+
 LIB=$(ARBHOME)/lib
 ARBDB=$(ARBHOME)/ARBDB
 ARB_PROTO_2_XSUB=$(ARBHOME)/bin/arb_proto_2_xsub
@@ -36,8 +42,8 @@ $(ARB_SO) : $(XS_DEPENDS) depends.stamp
 	@echo "-------- calling MakeMaker-Makefile"
 	$(MAKE) "dflags=${dflags}" $@
 	@echo "-------- post-recreating .depends"
-	$(MAKE) -f $(THIS) "DEPENDS=0" .depends
-	$(MAKE) -f $(THIS) $@ # recurse
+	$(MAKETHIS) "DEPENDS=0" .depends
+	$(MAKETHIS) $@ # recurse
 
 ARB.c : $(XS_DEPENDS) 
 	@echo "-------- calling MakeMaker-Makefile (to get depends)"
@@ -54,7 +60,7 @@ Makefile.PL : $(MACH).PL
 	cp -p $< $@
 
 ARB.xs : $(ARB_PROTO_2_XSUB) proto.h ARB.xs.default
-	@test -f $@ && chmod a+w $@
+	-@test -f $@ && chmod a+w $@
 	LD_LIBRARY_PATH=$(LIB):$(LD_LIBRARY_PATH) $(ARB_PROTO_2_XSUB) proto.h ARB.xs.default > $@
 	@test -f $@ && chmod a-w $@
 
@@ -71,11 +77,11 @@ else
 endif
 
 clean:
-	(test -f Makefile && $(MAKE) clean) || true
+	-test -f Makefile && $(MAKE) clean
 	rm -f Makefile.old proto.h debug.h ARB.c ARB.xs .depends depends.stamp Makefile.PL $(TARGETS)
 
 .depends: depends.stamp Makefile.main
-	test -f ARB.c || $(MAKE) -f $(THIS) "AUTODEPENDS=0" ARB.c 
+	test -f ARB.c || $(MAKETHIS) "AUTODEPENDS=0" ARB.c 
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) ARB.c 2>/dev/null | \
 		perl -ne 's/ARB.o:/depends.stamp:/g; print $$_;' | \
 		../SOURCE_TOOLS/fix_depends.pl > $@
