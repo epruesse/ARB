@@ -427,6 +427,7 @@ ULONG GetSpeciesRelPos(struct PTPanGlobal *pg, struct PTPanSpecies *ps, ULONG ab
 }
 /* \\\ */
 
+
 /* /// "CreateHitsGUIList()" */
 void CreateHitsGUIList(struct SearchQuery *sq)
 {
@@ -475,6 +476,153 @@ void CreateHitsGUIList(struct SearchQuery *sq)
 
     good = TRUE;
     ps = qh->qh_Species;
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+    char prefix[10], postfix[10];
+    for (int i = 0; i < 9; ++i)
+    {
+        prefix[i] = '>';
+        postfix[i] = '<';
+    }
+    prefix[9] = postfix[9] = 0x00;
+
+    relpos    = 0;
+    nmismatch = 0;
+    ULONG abspos = qh->qh_AbsPos - ps->ps_AbsOffset;
+    ULONG bitpos = 0;
+    ULONG count;
+    /* given an absolute sequence position, search for the relative one,
+       e.g. abspos 2 on "-----UU-C-C" will yield 8 */
+    while (bitpos < ps->ps_SeqDataCompressedSize)           // get relpos and store prefix
+    {
+        code = GetNextCharacter(pg, ps->ps_SeqDataCompressed, bitpos, count);
+/*        
+    if (strcmp(ps->ps_Name, "RcnComm4") == 0)
+        printf("prefix: %9s  postfix: %9s  abspos: %i  relpos: %i  code: %c  count: %i\n", 
+               prefix, postfix, abspos, relpos, code, count);        
+*/
+        if (pg->pg_SeqCodeValidTable[code])
+        {           // it's a validchar
+            if (!(abspos--)) break;                         // position found
+            if (abspos <= 8) prefix[8-abspos] = code;       // store prefix
+            ++relpos;
+        } else
+        {
+            arb_assert((code == '.') || (code == '-'));
+            relpos += count;
+            if ((code == '.') && (abspos <= 9))             // fill prefix with '.'
+            {   
+                for (int i = 0; i < (9 - abspos); ++i)
+                {
+                    prefix[i] = '.';
+                }
+            }
+        }
+    }
+    arb_assert(bitpos <= ps->ps_SeqDataCompressedSize);
+    bitpos -= 3;      // bitpos now points to the first character of found seq
+    
+    tarlen = sq->sq_QueryLen - qh->qh_DeleteCount + qh->qh_InsertCount;
+    for (cnt = 0; cnt < tarlen;)
+    {
+        if (bitpos >= ps->ps_SeqDataCompressedSize)
+        {
+            arb_assert(false);
+            good = FALSE;
+            break;
+        }
+
+        code = GetNextCharacter(pg, ps->ps_SeqDataCompressed, bitpos, count);
+        if (pg->pg_SeqCodeValidTable[code])                 // valid character
+        {
+            sq->sq_SourceSeq[cnt++] = code;
+            if(code == 'N') nmismatch++;
+        } else
+        {
+            if (code == '.')                                // if we got a dot in sequence
+            {                                               // the hit is bogus
+                pg->pg_Bench.ts_DotsKilled++;
+                good = FALSE;
+                break;
+            }
+        }
+    }
+    sq->sq_SourceSeq[tarlen] = 0;
+    if(nmismatch == tarlen) good = FALSE;
+
+    if(good)
+    {
+        /* we need to verify the hit? */
+        if(qh->qh_Flags & QHF_UNSAFE)
+        {
+            pg->pg_Bench.ts_UnsafeHits++;
+
+            good = MatchSequence(sq);
+            if(!good)
+            {
+                pg->pg_Bench.ts_UnsafeKilled++;
+                //printf("Verify failed on %s != %s\n", sq->sq_SourceSeq, sq->sq_Query);
+                qh->qh_Flags &= ~QHF_ISVALID;
+            } else {
+                /* fill in correct match */
+                qh->qh_ErrorCount   = sq->sq_State.sqs_ErrorCount;
+                qh->qh_ReplaceCount = sq->sq_State.sqs_ReplaceCount;
+                qh->qh_InsertCount  = sq->sq_State.sqs_InsertCount;
+                qh->qh_DeleteCount  = sq->sq_State.sqs_DeleteCount;
+            }
+            //qh->qh_Flags &= ~QHF_UNSAFE;
+        }
+    } //else printf("'.'-Sequence!\n");
+
+    if(good)
+    {
+        seqout = (STRPTR) calloc(9 + 1 + sq->sq_QueryLen + 1 + 9 + 1, 0x01);
+        strncpy(seqout, prefix, 0x09);                          // copy prefix
+        seqout[9] = '-';                                        // 1st delimiter
+        good = FindSequenceMatch(sq, qh, &seqout[10]);          // generate mismatch sequence */
+        seqout[10 + sq->sq_QueryLen] = '-';                     // 2nd delimiter
+        if (!good) free(seqout);
+    }
+
+    if (good)
+    {
+        for (cnt = 0; cnt < 9;)                                 // generate postfix
+        {
+            code = GetNextCharacter(pg, ps->ps_SeqDataCompressed, bitpos, count);
+            if (code == 0xff) break;
+            if (pg->pg_SeqCodeValidTable[code])                 // valid character
+            {  
+                postfix[cnt++] = code;
+            } else if (code == '.')                             // '.' found
+            {
+                for (; cnt < 9; ++cnt)                          // fill postfix with '.'
+                {
+                    postfix[cnt] = '.';
+                }
+            }
+        }
+
+        strncpy(&seqout[11 + sq->sq_QueryLen], postfix, 0x09);  // copy postfix
+
+        ml = create_PT_probematch();
+        ml->name = qh->qh_Species->ps_Num;
+        ml->b_pos = relpos;
+        ml->rpos = qh->qh_AbsPos - ps->ps_AbsOffset;
+        ml->wmismatches = (double) qh->qh_ErrorCount;
+        ml->mismatches = qh->qh_ReplaceCount + qh->qh_InsertCount + qh->qh_DeleteCount;
+        ml->N_mismatches = nmismatch;
+        ml->sequence = seqout; /* warning! potentional memory leak -- FIX destroy_PT_probematch(ml) */
+        ml->reversed = (qh->qh_Flags & QHF_REVERSED) ? 1 : 0;
+
+        aisc_link((struct_dllpublic_ext *) &(pg->pg_SearchPrefs->ppm), (struct_dllheader_ext *) ml);
+        numhits++;
+
+        if (PTPanGlobalPtr->pg_verbose >0) printf("SeqOut: '%s'\n", seqout);
+    }
+
+    RemQueryHit(qh);
+    qh = (struct QueryHit *) sq->sq_Hits.lh_Head;
+
+#else
     /* load alignment */
     ps->ps_CacheNode = CacheLoadData(pg->pg_SpeciesCache, ps->ps_CacheNode, ps);
     /* get relative position in unfiltered alignment */
@@ -685,7 +833,8 @@ void CreateHitsGUIList(struct SearchQuery *sq)
 
     RemQueryHit(qh);
     qh = (struct QueryHit *) sq->sq_Hits.lh_Head;
-  }
+#endif  
+  } // while(qh->qh_Node.ln_Succ)
   GB_commit_transaction(pg->pg_MainDB);
   free(sq->sq_SourceSeq);
 
