@@ -48,4 +48,10 @@
 /* error decrease for mismatches in probe design */
 #define PROBE_MISM_DEC 0.2
 
+// save compressed alignment of species into *.pan file to reduce arbdb access 
+// and speed searches up at cost of some memory (very effective)
+//#define COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+
+
+
 #endif /* GLOBALPREFS_H */
