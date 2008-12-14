@@ -541,7 +541,7 @@ BOOL BuildPTPanIndex(struct PTPanGlobal *pg)
   }
 
   // allocate memory for a temporary filename
-  newtreename = (STRPTR) malloc(strlen(pg->pg_IndexName) + 1);
+  newtreename = (STRPTR) malloc(strlen(pg->pg_IndexName) + 2);
   strcpy(newtreename, pg->pg_IndexName);
   strcat(newtreename, "~");
 
@@ -679,6 +679,10 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
         abspos, ps->ps_AbsOffset, ps->ps_Name);
     }
 
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+    CompressSequenceWithDotsAndHyphens(pg, ps);
+#endif
+
     /* allocate checkpoint buffer */
     ps->ps_NumCheckPoints = ps->ps_RawDataSize / ps->ps_ChkPntIVal;
     ps->ps_CheckPoints = (ULONG *) calloc(ps->ps_NumCheckPoints, sizeof(ULONG));
@@ -783,6 +787,11 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
      hashes */
   pg->pg_AllHashSum = rand();
   pg->pg_Bench.ts_MergeDB = BenchTimePassed(pg);
+
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+  printf("Compressed sequence data (with dots and hyphens): %llu byte (%llu kb, %llu mb)\n",
+    pg->pg_TotalSeqCompressedSize, pg->pg_TotalSeqCompressedSize >> 10, pg->pg_TotalSeqCompressedSize >> 20);
+#endif
 
   printf("Merged compressed database size: %ld KB\n", len >> 10);
   return(TRUE);
@@ -3096,13 +3105,8 @@ BOOL WriteTreeToDisk(struct PTPanPartition *pp)
   pp->pp_DiskTreeSize = 0;
   pp->pp_TraverseTreeRoot = ~0UL & RELOFFSETMASK;
   
-#ifdef DEVEL_JB
-  ULONG tempDiskTreeSize = FixRelativePointersRec(pp, 0, 0, 0); // tempDiskTreeSize is needed, because
-  pp->pp_DiskTreeSize += tempDiskTreeSize;                      // pp->pp_DiskTreeSize += FixRelativePointersRec(pp, 0, 0, 0);
-                                                                // compiles a wrong binary (maybe a bug in gcc?)
-#else
-  pp->pp_DiskTreeSize += FixRelativePointersRec(pp, 0, 0, 0);
-#endif
+  ULONG tempDiskTreeSize = FixRelativePointersRec(pp, 0, 0, 0);
+  pp->pp_DiskTreeSize += tempDiskTreeSize;                      
   //printf("Total size on disk: %ld KB\n", pp->pp_DiskTreeSize >> 10);
 
   pg->pg_Bench.ts_Reloc += BenchTimePassed(pg);
