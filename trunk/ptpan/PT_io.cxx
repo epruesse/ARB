@@ -440,6 +440,163 @@ LONG DecompressSequencePartTo(struct PTPanGlobal *pg,
 }
 /* \\\ */
 
+
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+/* /// "GetNextCharacter()" */
+UBYTE GetNextCharacter(struct PTPanGlobal *pg, UBYTE* buffer, ULONG &bitpos, ULONG &count)
+{
+    UBYTE character;                                                        // return the next character of 
+    UBYTE code;                                                             // sequence or 0xff if end flag found
+                                                                            // increase bitpos by consumed bits
+    code = ReadBits(buffer, bitpos, 3);                                     // set count to the number of
+    bitpos += 3;                                                            // found characters
+
+    if (code == 0x07)                                                       // end flag
+    {
+        return 0xff;
+    } else if (code <= SEQCODE_T)                                           // valid character
+    {
+        character = pg->pg_DecompressTable[code];
+        count     = 1;
+    } else if ((code == SEQCODE_DOT) || (code == SEQCODE_HYPHEN))           // '.' or '-'
+    {                                                                       // skip ... chars
+        if (code == SEQCODE_DOT)    character = '.';
+        if (code == SEQCODE_HYPHEN) character = '-';
+        
+        code = ReadBits(buffer, bitpos, 4);
+        if ((code >> 3) == 0x01)            // 1xxx     skip one
+        {
+            count = 1;
+            ++bitpos;
+        } else if ((code >> 2) == 0x01)     // 01xx     skip two
+        {
+            count = 2;
+            bitpos += 2;
+        } else if ((code >> 1) == 0x01)     // 001x     skip up to 63
+        {
+            bitpos += 3;
+            count   = ReadBits(buffer, bitpos, 6);    
+            bitpos += 6;
+        } else if ((code) == 0x01)          // 0001     skip up to 1023        
+        {
+            bitpos += 4;
+            count   = ReadBits(buffer, bitpos, 10);   
+            bitpos += 10;
+        } else if ((code) == 0x00)          // 0000     skip up to 8191
+        {
+            bitpos += 4;
+            count   = ReadBits(buffer, bitpos, 13);   
+            bitpos += 13;
+        } else                              //
+        {
+            arb_assert(false);
+        }
+    } else                                  // neither end-flag nor valid char 
+    {                                       // nor '.' nor '-' => something went wrong
+        arb_assert(false);
+    }
+    return character;
+}
+/* \\\ */
+
+
+ULONG WriteManyChars(UBYTE* buffer, ULONG bitpos, BYTE c, ULONG i)
+{
+    arb_assert((c == SEQCODE_DOT) || (c == SEQCODE_HYPHEN));        // only '.' and '-' are allowed
+    while (i > 0)
+    {
+        bitpos = WriteBits(buffer, bitpos, c, 3);                   // code for character
+        if (i == 1)
+        {
+            bitpos = WriteBits(buffer, bitpos, 0x01, 1);            // 1
+            return bitpos; 
+        }
+        if (i == 2)
+        {
+            bitpos = WriteBits(buffer, bitpos, 0x01, 2);            // 01
+            return bitpos;
+        }
+        if (i <= 63)
+        {
+            bitpos = WriteBits(buffer, bitpos, 0x01, 3);            // 001
+            bitpos = WriteBits(buffer, bitpos, (i & 0x3f), 6);      // 6 bit payload (up to 63)
+            return bitpos;
+        }
+        if (i <= 1023)
+        {
+            bitpos = WriteBits(buffer, bitpos, 0x01, 4);            // 0001
+            bitpos = WriteBits(buffer, bitpos, (i & 0x3ff), 10);    // 10 bit payload (up to 1023)
+            return bitpos;
+        }
+        if (i <= 8191)
+        {
+            bitpos = WriteBits(buffer, bitpos, 0x00, 4);            // 0000
+            bitpos = WriteBits(buffer, bitpos, (i & 0x1fff), 13);   // 13 bit payload (up to 8191)
+            return bitpos;
+        }
+        bitpos = WriteBits(buffer, bitpos, 0x00, 4);                // 0000
+        bitpos = WriteBits(buffer, bitpos, 8191, 13);               // 13 bit payload (exactly 8191)
+        i -= 8191;
+    }
+    return bitpos;
+}
+
+
+/* /// "CompressSequenceWithDotsAndHyphens()" */
+BOOL CompressSequenceWithDotsAndHyphens(struct PTPanGlobal *pg, struct PTPanSpecies *ps)
+{
+    static ULONG wholesize = 0;
+    ULONG bitpos = 0;
+    STRPTR ptr    = ps->ps_SeqData;
+    UBYTE* buffer = (UBYTE*) malloc(ps->ps_SeqDataSize * 3 / 8 + 1);
+    if (buffer == NULL)
+    {
+        printf("Error: Could not get enough memory to compress sequences with dots and hyphens\n");
+        return FALSE;
+    }
+    while (*ptr)
+    {
+        arb_assert(((bitpos >> 3) + 1 < ps->ps_SeqDataSize));
+        if (*ptr == '.')
+        {
+            ULONG i;
+            for (i = 0; *ptr == '.'; ++i, ++ptr) { }                    // count all '.'
+if (strcmp(ps->ps_Name, "RcnComm4") == 0) printf(".(%li) ", i);
+            bitpos = WriteManyChars(buffer, bitpos, SEQCODE_DOT, i);    // write all '.'
+        } else if (*ptr == '-')
+        {
+            ULONG i;
+            for (i = 0; *ptr == '-'; ++i, ++ptr) { }                    // count all '-'
+if (strcmp(ps->ps_Name, "RcnComm4") == 0) printf("-(%li) ", i);
+            bitpos = WriteManyChars(buffer, bitpos, SEQCODE_HYPHEN, i); // write all '-'
+        } else
+        {
+            UBYTE seqcode = pg->pg_CompressTable[*ptr];
+            arb_assert(seqcode <= SEQCODE_T);
+if (strcmp(ps->ps_Name, "RcnComm4") == 0) printf("%c ", *ptr);
+            bitpos = WriteBits(buffer, bitpos, seqcode, 3);     // write valid char
+            ++ptr;
+        }
+    }
+    bitpos = WriteBits(buffer, bitpos, 0x07, 3);                // write end flag (111)
+    
+    ps->ps_SeqDataCompressedSize = bitpos;
+    ps->ps_SeqDataCompressed     = (UBYTE*) realloc(buffer, (bitpos >> 3) + 1);
+    if (ps->ps_SeqDataCompressed == NULL)
+    {
+        printf("Error: Could not get enough memory to compress sequences with dots and hyphens\n");
+        return FALSE;
+    }
+    if (ReadBits(buffer, bitpos - 3, 3) != 0x07)
+    {
+        printf("Error Compressing SeqData (with '.' and '-')\tSpecies: %s\n", ps->ps_Name);
+        return(FALSE);
+    }
+    wholesize += ((bitpos >> 3) + 1);
+}
+#endif
+
+
 /* /// "ComplementSequence()" */
 void ComplementSequence(struct PTPanGlobal *pg, STRPTR seqstr)
 {
@@ -581,6 +738,9 @@ void FreeAllSpecies(struct PTPanGlobal *pg)
   pg->pg_SpeciesBinTree = NULL;
   pg->pg_NumSpecies = 0;
   pg->pg_TotalSeqSize = 0;
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+  pg->pg_TotalSeqCompressedSize = 0;
+#endif
   pg->pg_TotalRawSize = 0;
   pg->pg_TotalRawBits = 0;
 }
@@ -668,6 +828,9 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
   /* add the species to the list */
   pg->pg_MaxBaseLength = 0;
   pg->pg_TotalSeqSize = 0;
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+  pg->pg_TotalSeqCompressedSize = 0;
+#endif
   pg->pg_TotalRawSize = 0;
   pg->pg_NumSpecies = 0;
   ignorecount = 0;
@@ -755,6 +918,9 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
     ps->ps_AbsOffset = pg->pg_TotalRawSize;
     ps->ps_Node.ln_Pri = ps->ps_AbsOffset;
     pg->pg_TotalSeqSize += ps->ps_SeqDataSize;
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+    pg->pg_TotalSeqCompressedSize += ((ps->ps_SeqDataCompressedSize >> 3) + 1); // convert from bit to byte
+#endif
     pg->pg_TotalRawSize += ps->ps_RawDataSize;
     if(ps->ps_RawDataSize > pg->pg_MaxBaseLength)
     {
@@ -797,6 +963,10 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
   printf("Database contains %ld valid species (%ld ignored).\n"
     "%ld bytes alignment data (%ld bases).\n",
     pg->pg_NumSpecies, ignorecount, pg->pg_TotalSeqSize, pg->pg_TotalRawSize);
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+  printf("Compressed sequence data (with dots and hyphens): %llu byte (%llu kb, %llu mb)\n",
+    pg->pg_TotalSeqCompressedSize, pg->pg_TotalSeqCompressedSize >> 10, pg->pg_TotalSeqCompressedSize >> 20);
+#endif
 
   pg->pg_Bench.ts_CollectDB = BenchTimePassed(pg);
 
@@ -863,6 +1033,9 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
   fread(&pg->pg_UseStdSfxTree, sizeof(pg->pg_UseStdSfxTree), 1, fh);
   fread(&pg->pg_AlphaSize    , sizeof(pg->pg_AlphaSize)    , 1, fh);
   fread(&pg->pg_TotalSeqSize , sizeof(pg->pg_TotalSeqSize) , 1, fh);
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+  fread(&pg->pg_TotalSeqCompressedSize, sizeof(pg->pg_TotalSeqCompressedSize) , 1, fh);
+#endif
   fread(&pg->pg_TotalRawSize , sizeof(pg->pg_TotalRawSize) , 1, fh);
   fread(&pg->pg_TotalRawBits , sizeof(pg->pg_TotalRawBits) , 1, fh);
   fread(&pg->pg_AllHashSum   , sizeof(pg->pg_AllHashSum)   , 1, fh);
@@ -972,7 +1145,7 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
     ps->ps_Obsolete = obsolete;
     ps->ps_Name = filespname;
     ps->ps_FullName = fullname;
-
+    
     /* load in the alignment information */
     fread(&ps->ps_SeqDataSize, sizeof(ps->ps_SeqDataSize), 1, fh);
     fread(&ps->ps_RawDataSize, sizeof(ps->ps_RawDataSize), 1, fh);
@@ -986,6 +1159,15 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
       printf("Out of memory allocating checkpoint buffer!\n");
     }
     fread(ps->ps_CheckPoints, sizeof(ULONG), ps->ps_NumCheckPoints, fh);
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+    fread(&ps->ps_SeqDataCompressedSize, sizeof(ps->ps_SeqDataCompressedSize), 1, fh);
+    ps->ps_SeqDataCompressed = (UBYTE*) malloc((ps->ps_SeqDataCompressedSize >> 3) + 1);
+    if(!ps->ps_SeqDataCompressed)
+    {
+      printf("Out of memory allocating buffer for compressed SeqData (with '.' and '-')!\n");
+    }
+    fread(ps->ps_SeqDataCompressed, 1, ((ps->ps_SeqDataCompressedSize >> 3) + 1), fh);
+#endif
     ps->ps_Node.ln_Pri = ps->ps_AbsOffset;
 
     /* Init complete, now add it to the list */
@@ -1031,6 +1213,10 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
   printf("\n\nDatabase contains %ld valid species (%ld ignored).\n"
     "%ld bytes alignment data (%ld bases).\n",
     pg->pg_NumSpecies, ignorecount, pg->pg_TotalSeqSize, pg->pg_TotalRawSize);
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+  printf("Compressed sequence data (with dots and hyphens): %llu byte (%llu kb, %llu mb)\n",
+    pg->pg_TotalSeqCompressedSize, pg->pg_TotalSeqCompressedSize >> 10, pg->pg_TotalSeqCompressedSize >> 20);
+#endif
 
   printf("Number of partitions: %d\n", pg->pg_NumPartitions);
 
