@@ -545,7 +545,6 @@ ULONG WriteManyChars(UBYTE* buffer, ULONG bitpos, BYTE c, ULONG i)
 /* /// "CompressSequenceWithDotsAndHyphens()" */
 BOOL CompressSequenceWithDotsAndHyphens(struct PTPanGlobal *pg, struct PTPanSpecies *ps)
 {
-    static ULONG wholesize = 0;
     ULONG bitpos = 0;
     STRPTR ptr    = ps->ps_SeqData;
     UBYTE* buffer = (UBYTE*) malloc(ps->ps_SeqDataSize * 3 / 8 + 1);
@@ -561,19 +560,16 @@ BOOL CompressSequenceWithDotsAndHyphens(struct PTPanGlobal *pg, struct PTPanSpec
         {
             ULONG i;
             for (i = 0; *ptr == '.'; ++i, ++ptr) { }                    // count all '.'
-if (strcmp(ps->ps_Name, "RcnComm4") == 0) printf(".(%li) ", i);
             bitpos = WriteManyChars(buffer, bitpos, SEQCODE_DOT, i);    // write all '.'
         } else if (*ptr == '-')
         {
             ULONG i;
             for (i = 0; *ptr == '-'; ++i, ++ptr) { }                    // count all '-'
-if (strcmp(ps->ps_Name, "RcnComm4") == 0) printf("-(%li) ", i);
             bitpos = WriteManyChars(buffer, bitpos, SEQCODE_HYPHEN, i); // write all '-'
         } else
         {
             UBYTE seqcode = pg->pg_CompressTable[*ptr];
             arb_assert(seqcode <= SEQCODE_T);
-if (strcmp(ps->ps_Name, "RcnComm4") == 0) printf("%c ", *ptr);
             bitpos = WriteBits(buffer, bitpos, seqcode, 3);     // write valid char
             ++ptr;
         }
@@ -592,7 +588,8 @@ if (strcmp(ps->ps_Name, "RcnComm4") == 0) printf("%c ", *ptr);
         printf("Error Compressing SeqData (with '.' and '-')\tSpecies: %s\n", ps->ps_Name);
         return(FALSE);
     }
-    wholesize += ((bitpos >> 3) + 1);
+    
+    pg->pg_TotalSeqCompressedSize += ((ps->ps_SeqDataCompressedSize >> 3) + 1); // convert from bit to byte
 }
 #endif
 
@@ -918,9 +915,6 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
     ps->ps_AbsOffset = pg->pg_TotalRawSize;
     ps->ps_Node.ln_Pri = ps->ps_AbsOffset;
     pg->pg_TotalSeqSize += ps->ps_SeqDataSize;
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-    pg->pg_TotalSeqCompressedSize += ((ps->ps_SeqDataCompressedSize >> 3) + 1); // convert from bit to byte
-#endif
     pg->pg_TotalRawSize += ps->ps_RawDataSize;
     if(ps->ps_RawDataSize > pg->pg_MaxBaseLength)
     {
@@ -963,10 +957,6 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
   printf("Database contains %ld valid species (%ld ignored).\n"
     "%ld bytes alignment data (%ld bases).\n",
     pg->pg_NumSpecies, ignorecount, pg->pg_TotalSeqSize, pg->pg_TotalRawSize);
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-  printf("Compressed sequence data (with dots and hyphens): %llu byte (%llu kb, %llu mb)\n",
-    pg->pg_TotalSeqCompressedSize, pg->pg_TotalSeqCompressedSize >> 10, pg->pg_TotalSeqCompressedSize >> 20);
-#endif
 
   pg->pg_Bench.ts_CollectDB = BenchTimePassed(pg);
 
