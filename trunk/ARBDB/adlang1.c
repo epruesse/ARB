@@ -1255,7 +1255,7 @@ static GB_ERROR gbl_extract_sequence(GBL_command_arguments *args)
 {
     int      i;
     float    len;
-    GB_ERROR syntax_err = "extract_sequence needs two parameters:\nextract_words(\"Characters\",min_rel_characters [0.0-1.0])";
+    GB_ERROR syntax_err = "extract_sequence needs two parameters:\nextract_sequence(\"Characters\",min_rel_characters [0.0-1.0])";
 
     if (args->cparam != 2) return syntax_err;
     len = atof(args->vparam[1].str);
