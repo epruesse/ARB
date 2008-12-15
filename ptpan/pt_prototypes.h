@@ -50,6 +50,9 @@ ULONG DecompressSequenceTo P_((struct PTPanGlobal *pg, ULONG *seqptr, STRPTR tar
 ULONG DecompressCompressedLongTo P_((struct PTPanGlobal *pg, ULONG pval, STRPTR tarseq));
 STRPTR DecompressSequence P_((struct PTPanGlobal *pg, ULONG *seqptr));
 LONG DecompressSequencePartTo P_((struct PTPanGlobal *pg, ULONG *seqptr, ULONG seqpos, ULONG length, STRPTR tarseq));
+UBYTE GetNextCharacter P_((struct PTPanGlobal *pg, UBYTE *buffer, ULONG &bitpos, ULONG &count));
+ULONG WriteManyChars P_((UBYTE *buffer, ULONG bitpos, BYTE c, ULONG i));
+BOOL CompressSequenceWithDotsAndHyphens P_((struct PTPanGlobal *pg, struct PTPanSpecies *ps));
 void ComplementSequence P_((struct PTPanGlobal *pg, STRPTR seqstr));
 void ReverseSequence P_((struct PTPanGlobal *, STRPTR seqstr));
 BOOL OpenDataBase P_((struct PTPanGlobal *pg));
