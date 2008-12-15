@@ -311,15 +311,14 @@ extern "C" {
         return val;
     }
 
-    static long sort_sequences_by_length(const char*,long leaf0_ptr,const char*,long leaf1_ptr){
+    static int sort_sequences_by_length(const char*, long leaf0_ptr, const char*, long leaf1_ptr) {
         AP_tree *leaf0 = (AP_tree*)leaf0_ptr;
         AP_tree *leaf1 = (AP_tree*)leaf1_ptr;
 
         AP_FLOAT len0 = leaf0->sequence->real_len();
         AP_FLOAT len1 = leaf1->sequence->real_len();
-        if (len0<len1) return 1;
-        if (len0>len1) return -1;
-        return 0;
+
+        return len0<len1 ? 1 : (len0>len1 ? -1 : 0); // longest sequence first
     }
 
     static long transform_gbd_to_leaf(const char *key,long val){

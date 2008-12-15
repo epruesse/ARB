@@ -16,8 +16,6 @@
 
 
 /* PT_new_design.cxx */
-extern "C" long ptnd_compare_quality P_((void *PT_tprobes_ptr1, void *PT_tprobes_ptr2, char *));
-extern "C" long ptnd_compare_sequence P_((void *PT_tprobes_ptr1, void *PT_tprobes_ptr2, char *));
 int ptnd_check_pure P_((char *probe));
 double ptnd_check_split P_((PT_pdc *pdc, char *probe, int pos, char ref));
 extern "C" char *get_design_info P_((PT_tprobes *tprobe));

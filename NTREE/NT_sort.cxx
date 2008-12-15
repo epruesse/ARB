@@ -16,141 +16,92 @@
 // test
 
 struct customsort_struct {
-    char *key1;
-    char *key2;
-    char *key3;
-} custom_s_struct;
+    const char *key1;
+    const char *key2;
+    const char *key3;
+};
 
-int
-resort_data_by_customsub(GBDATA *first, GBDATA *second)
-{
-    GBDATA  *gb_0,*gb_1;
-    char    *s0,*s1;
-    double  f0,f1;
-    long    i0,i1;
+static int cmpByKey(GBDATA *gbd1, GBDATA *gbd2, const char *field) {
+    GBDATA *gb_field1 = GB_entry(gbd1, field);
+    GBDATA *gb_field2 = GB_entry(gbd2, field);
+
     int cmp;
+    if (gb_field1) {
+        if (gb_field2) {
+            switch (GB_read_type(gb_field1)) {
+                case GB_STRING: {
+                    const char *s1 = GB_read_char_pntr(gb_field1);
+                    const char *s2 = GB_read_char_pntr(gb_field2);
 
-    /* first key */
-    gb_0 = GB_entry(first,custom_s_struct.key1);
-    gb_1 = GB_entry(second,custom_s_struct.key1);
-    if (gb_0 && !gb_1) return -1;
-    if (!gb_0 && gb_1) return 1;
-    if (gb_0 && gb_1) {
-        switch (GB_read_type(gb_0)) {
-            case GB_STRING:
-                s0 = GB_read_string(gb_0);
-                s1 = GB_read_string(gb_1);
-                cmp = strcmp(s0,s1);
-                free(s0);
-                free(s1);
-                if (cmp) return cmp;
-                break;
-            case GB_FLOAT:
-                f0 = GB_read_float(gb_0);
-                f1 = GB_read_float(gb_1);
-                if (f0<f1) return -1;
-                if (f1<f0) return 1;
-                break;
-            case GB_INT:
-                i0 = GB_read_int(gb_0);
-                i1 = GB_read_int(gb_1);
-                if (i0<i1) return -1;
-                if (i1<i0) return 1;
-                break;
-            default:
-                break;
+                    cmp = strcmp(s1, s2);
+                    break;
+                }
+                case GB_FLOAT: {
+                    double d1 = GB_read_float(gb_field1);
+                    double d2 = GB_read_float(gb_field2);
+
+                    cmp = d1<d2 ? -1 : (d1>d2 ? 1 : 0);
+                    break;
+                }
+                case GB_INT: {
+                    int i1 = GB_read_int(gb_field1);
+                    int i2 = GB_read_int(gb_field2);
+
+                    cmp = i1-i2;
+                    break;
+                }
+                default:
+                    cmp = 0; // other field type -> no idea how to compare
+                    break;
+            }
         }
-
+        else cmp = -1;           // existing < missing!
     }
-    /* second key */
-    gb_0 = GB_entry(first,custom_s_struct.key2);
-    gb_1 = GB_entry(second,custom_s_struct.key2);
-    if (gb_0 && !gb_1) return -1;
-    if (!gb_0 && gb_1) return 1;
-    if (gb_0 && gb_1) {
-        switch (GB_read_type(gb_0)) {
-            case GB_STRING:
-                s0 = GB_read_string(gb_0);
-                s1 = GB_read_string(gb_1);
-                cmp = strcmp(s0,s1);
-                free(s0);
-                free(s1);
-                if (cmp) return cmp;
-                break;
-            case GB_FLOAT:
-                f0 = GB_read_float(gb_0);
-                f1 = GB_read_float(gb_1);
-                if (f0<f1) return -1;
-                if (f1<f0) return 1;
-                break;
-            case GB_INT:
-                i0 = GB_read_int(gb_0);
-                i1 = GB_read_int(gb_1);
-                if (i0<i1) return -1;
-                if (i1<i0) return 1;
-                break;
-            default:
-                break;
-        }
+    else cmp = gb_field2 ? 1 : 0;
 
-    }
-    /* third key */
-    gb_0 = GB_entry(first,custom_s_struct.key3);
-    gb_1 = GB_entry(second,custom_s_struct.key3);
-    if (gb_0 && !gb_1) return -1;
-    if (!gb_0 && gb_1) return 1;
-    if (gb_0 && gb_1) {
-        switch (GB_read_type(gb_0)) {
-            case GB_STRING:
-                s0 = GB_read_string(gb_0);
-                s1 = GB_read_string(gb_1);
-                cmp = strcmp(s0,s1);
-                free(s0);
-                free(s1);
-                if (cmp) return cmp;
-                break;
-            case GB_FLOAT:
-                f0 = GB_read_float(gb_0);
-                f1 = GB_read_float(gb_1);
-                if (f0<f1) return -1;
-                if (f1<f0) return 1;
-                break;
-            case GB_INT:
-                i0 = GB_read_int(gb_0);
-                i1 = GB_read_int(gb_1);
-                if (i0<i1) return -1;
-                if (i1<i0) return 1;
-                break;
-            default:
-                break;
-        }
-
-    }
-    return 0;
+    return cmp;
 }
 
-GBDATA **gb_resort_data_list;
-long    gb_resort_data_count;
+static int resort_data_by_customsub(const void *v1, const void *v2, void *cd_sortBy) {
+    GBDATA            *gbd1   = (GBDATA*)v1;
+    GBDATA            *gbd2   = (GBDATA*)v2;
+    customsort_struct *sortBy = (customsort_struct*)cd_sortBy;
 
-char *NT_resort_data_base_by_tree(GBT_TREE *tree,GBDATA *gb_species_data)
-{
-    if (!tree) return 0;
-    if ( tree->is_leaf ) {
-        if (!tree->gb_node) return 0;
-        gb_resort_data_list[gb_resort_data_count++] = tree->gb_node;
-        return 0;
-    }else{
-        char *error =0;
-        if (!error) error = NT_resort_data_base_by_tree(tree->leftson,gb_species_data);
-        if (!error) error = NT_resort_data_base_by_tree(tree->rightson,gb_species_data);
-        return error;
+    int cmp = cmpByKey(gbd1, gbd2, sortBy->key1);
+    if (!cmp) {
+        cmp = cmpByKey(gbd1, gbd2, sortBy->key2);
+        if (!cmp) {
+            cmp = cmpByKey(gbd1, gbd2, sortBy->key3);
+        }
+    }
+    return cmp;
+}
+
+
+static GBDATA **gb_resort_data_list;
+static long    gb_resort_data_count;
+
+static void NT_resort_data_base_by_tree(GBT_TREE *tree, GBDATA *gb_species_data) {
+    if (tree) {
+        if (tree->is_leaf) {
+            if (tree->gb_node) {
+                gb_resort_data_list[gb_resort_data_count++] = tree->gb_node;
+            }
+        }
+        else {
+            NT_resort_data_base_by_tree(tree->leftson, gb_species_data);
+            NT_resort_data_base_by_tree(tree->rightson, gb_species_data);
+        }
     }
 }
 
-GB_ERROR NT_resort_data_base(GBT_TREE *tree, char *key1, char *key2, char *key3) {
-    custom_s_struct.key1 = key1;
-    custom_s_struct.key2 = key2;
-    custom_s_struct.key3 = key3;
+
+GB_ERROR NT_resort_data_base(GBT_TREE *tree, const char *key1, const char *key2, const char *key3) {
+    customsort_struct sortBy;
+
+    sortBy.key1 = key1;
+    sortBy.key2 = key2;
+    sortBy.key3 = key3;
 
     GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
     if (!error) {
@@ -161,13 +112,14 @@ GB_ERROR NT_resort_data_base(GBT_TREE *tree, char *key1, char *key2, char *key3)
             if (tree) {
                 gb_resort_data_count = 0;
                 gb_resort_data_list = (GBDATA **)calloc( sizeof(GBDATA *), GB_nsons(gb_sd) + 256);
-                error = NT_resort_data_base_by_tree(tree,gb_sd);
+                NT_resort_data_base_by_tree(tree,gb_sd);
             }
             else {
                 gb_resort_data_list = GBT_gen_species_array(GLOBAL_gb_main,&gb_resort_data_count);
-                GB_mergesort((void **)gb_resort_data_list,0,gb_resort_data_count,(gb_compare_two_items_type)resort_data_by_customsub,0);
+                GB_sort((void **)gb_resort_data_list, 0, gb_resort_data_count, resort_data_by_customsub, &sortBy);
+
             }
-            if (!error) error = GB_resort_data_base(GLOBAL_gb_main,gb_resort_data_list,gb_resort_data_count);
+            error = GB_resort_data_base(GLOBAL_gb_main,gb_resort_data_list,gb_resort_data_count);
             free(gb_resort_data_list);
         }
     }
@@ -186,7 +138,7 @@ void NT_resort_data_by_phylogeny(AW_window *dummy, GBT_TREE **ptree){
 
 }
 
-void NT_resort_data_by_costum(AW_window *aw){
+void NT_resort_data_by_user_criteria(AW_window *aw){
     aw_openstatus("resorting data");
     GB_ERROR error = 0;
     char *s1 = aw->get_root()->awar("ad_tree/sort_1")->read_string();
@@ -217,7 +169,7 @@ AW_window *NT_build_resort_window(AW_root *awr) {
     aws->create_button("HELP","HELP","H");
 
     aws->at("go");
-    aws->callback((AW_CB0)NT_resort_data_by_costum);
+    aws->callback((AW_CB0)NT_resort_data_by_user_criteria);
     aws->create_button("GO","GO","G");
 
     awt_create_selection_list_on_scandb(GLOBAL_gb_main,

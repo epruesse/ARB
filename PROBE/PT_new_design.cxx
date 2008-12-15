@@ -55,16 +55,19 @@ struct ptnd_loop_com {
 } ptnd;
 
 
-extern "C" long ptnd_compare_quality(void *PT_tprobes_ptr1, void *PT_tprobes_ptr2, char*) {
-    PT_tprobes *tprobe1 = (PT_tprobes*)PT_tprobes_ptr1;
-    PT_tprobes *tprobe2 = (PT_tprobes*)PT_tprobes_ptr2;
+static int ptnd_compare_quality(const void *PT_tprobes_ptr1, const void *PT_tprobes_ptr2, void *) {
+    const PT_tprobes *tprobe1 = (const PT_tprobes*)PT_tprobes_ptr1;
+    const PT_tprobes *tprobe2 = (const PT_tprobes*)PT_tprobes_ptr2;
 
+    // sort best quality first
     if (tprobe1->quality < tprobe2->quality) return 1;
-    return -1;
+    if (tprobe1->quality > tprobe2->quality) return -1;
+    return 0;
 }
-extern "C" long ptnd_compare_sequence(void *PT_tprobes_ptr1, void *PT_tprobes_ptr2, char*) {
-    PT_tprobes *tprobe1 = (PT_tprobes*)PT_tprobes_ptr1;
-    PT_tprobes *tprobe2 = (PT_tprobes*)PT_tprobes_ptr2;
+
+static int ptnd_compare_sequence(const void *PT_tprobes_ptr1, const void *PT_tprobes_ptr2, void*) {
+    const PT_tprobes *tprobe1 = (const PT_tprobes*)PT_tprobes_ptr1;
+    const PT_tprobes *tprobe2 = (const PT_tprobes*)PT_tprobes_ptr2;
 
     return strcmp(tprobe1->sequence,tprobe2->sequence);
 }
@@ -86,12 +89,12 @@ static void ptnd_sort_probes_by(PT_pdc *pdc, int mode)  /* mode 0 quality, mode 
     {
         my_list[i] = tprobe;
     }
-    switch(mode){
+    switch (mode) {
         case 0:
-            GB_mergesort((void **)my_list,0,list_len,ptnd_compare_quality,0);
+            GB_sort((void **)my_list, 0, list_len, ptnd_compare_quality, 0);
             break;
         case 1:
-            GB_mergesort((void **)my_list,0,list_len,ptnd_compare_sequence,0);
+            GB_sort((void **)my_list, 0, list_len, ptnd_compare_sequence, 0);
             break;
     }
 
@@ -526,13 +529,11 @@ static void ptnd_duplikate_probepart(PT_pdc *pdc)
                 sort the parts and check for duplikated parts
 ***********************************************************************/
 
-extern "C" { // is passed to C-library (GB_mergesort)
-    static long ptnd_compare_parts(void *PT_probeparts_ptr1, void *PT_probeparts_ptr2, char*) {
-        PT_probeparts *tprobe1 = (PT_probeparts*)PT_probeparts_ptr1;
-        PT_probeparts *tprobe2 = (PT_probeparts*)PT_probeparts_ptr2;
+static int ptnd_compare_parts(const void *PT_probeparts_ptr1, const void *PT_probeparts_ptr2, void*) {
+    const PT_probeparts *tprobe1 = (const PT_probeparts*)PT_probeparts_ptr1;
+    const PT_probeparts *tprobe2 = (const PT_probeparts*)PT_probeparts_ptr2;
 
-        return strcmp(tprobe1->sequence,tprobe2->sequence);
-    }
+    return strcmp(tprobe1->sequence,tprobe2->sequence);
 }
 
 static void ptnd_sort_parts(PT_pdc *pdc)
@@ -551,7 +552,7 @@ static void ptnd_sort_parts(PT_pdc *pdc)
                 i++,tprobe=tprobe->next     ) {
         my_list[i] = tprobe;
     }
-    GB_mergesort((void **)my_list,0,list_len,ptnd_compare_parts,0);
+    GB_sort((void **)my_list, 0, list_len, ptnd_compare_parts, 0);
 
     for (i=0;i<list_len;i++) {
         aisc_unlink((struct_dllheader_ext*)my_list[i]);

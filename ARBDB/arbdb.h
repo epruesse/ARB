@@ -250,8 +250,8 @@ extern "C" {
 #endif
 
     typedef GBDATA* (*GB_Link_Follower)(GBDATA *GB_root,GBDATA *GB_elem,const char *link);
-    typedef long (*gbs_hash_sort_func_type)(const char *key0,long val0,const char *key1,long val1);
-    typedef long (*gb_compare_two_items_type)(void *p0,void *p1,char *cd);
+    typedef int (*gbs_hash_compare_function) (const char *key0, long val0, const char *key1, long val1);
+    typedef int (*gb_compare_function)(const void *p0, const void *p1, void *client_data);
     typedef long (*gb_hash_loop_type)(const char *key, long val);
     typedef long (*gb_hash_loop_type2)(const char *key, long val, void *parameter);
     typedef void (*gb_warning_func_type)(const char *msg);

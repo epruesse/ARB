@@ -98,10 +98,9 @@ void NT_import_sequences(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
 GB_ERROR NT_format_all_alignments(GBDATA *gb_main);
 
 /* NT_sort.cxx */
-char *NT_resort_data_base_by_tree(GBT_TREE *tree, GBDATA *gb_species_data);
-GB_ERROR NT_resort_data_base(GBT_TREE *tree, char *key1, char *key2, char *key3);
+GB_ERROR NT_resort_data_base(GBT_TREE *tree, const char *key1, const char *key2, const char *key3);
 void NT_resort_data_by_phylogeny(AW_window *dummy, GBT_TREE **ptree);
-void NT_resort_data_by_costum(AW_window *aw);
+void NT_resort_data_by_user_criteria(AW_window *aw);
 void NT_build_resort_awars(AW_root *awr, AW_default aw_def);
 AW_window *NT_build_resort_window(AW_root *awr);
 

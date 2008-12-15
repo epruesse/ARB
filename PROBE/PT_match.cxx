@@ -230,38 +230,35 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
 }
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+static int pt_sort_compare_match(const void *PT_probematch_ptr1, const void *PT_probematch_ptr2, void *) {
+    const PT_probematch *mach1 = (const PT_probematch*)PT_probematch_ptr1;
+    const PT_probematch *mach2 = (const PT_probematch*)PT_probematch_ptr2;
 
-    static long pt_sort_compare_match(void *PT_probematch_ptr1, void *PT_probematch_ptr2, char*) {
-        PT_probematch *mach1 = (PT_probematch*)PT_probematch_ptr1;
-        PT_probematch *mach2 = (PT_probematch*)PT_probematch_ptr2;
-
-        if (psg.deep<0) {
-            if (mach1->dt > mach2->dt) return 1;
-            if (mach1->dt < mach2->dt) return -1;
-        }
-        if (psg.sort_by != PT_MATCH_TYPE_INTEGER){
-            if (mach1->wmismatches > mach2->wmismatches) return 1;
-            if (mach1->wmismatches < mach2->wmismatches) return -1;
-        }
-        if (mach1->mismatches > mach2->mismatches) return 1;
-        if (mach1->mismatches < mach2->mismatches) return -1;
-        if (mach1->N_mismatches > mach2->N_mismatches) return 1;
-        if (mach1->N_mismatches < mach2->N_mismatches) return -1;
+    if (psg.deep<0) {
+        if (mach1->dt > mach2->dt) return 1;
+        if (mach1->dt < mach2->dt) return -1;
+    }
+    if (psg.sort_by != PT_MATCH_TYPE_INTEGER){
         if (mach1->wmismatches > mach2->wmismatches) return 1;
         if (mach1->wmismatches < mach2->wmismatches) return -1;
-        if (mach1->b_pos > mach2->b_pos) return 1;
-        if (mach1->b_pos < mach2->b_pos) return -1;
-        if (mach1->name > mach2->name) return 1;
-        if (mach1->name < mach2->name) return -1;
-        return 0;
     }
 
-#ifdef __cplusplus
+    int cmp = mach1->mismatches - mach2->mismatches;
+    if (!cmp) {
+        cmp = mach1->N_mismatches - mach2->N_mismatches;
+        if (!cmp) {
+            cmp = mach1->wmismatches - mach2->wmismatches;
+            if (!cmp) {
+                cmp = mach1->b_pos - mach2->b_pos;
+                if (!cmp) {
+                    cmp = mach1->name - mach2->name;
+                }
+            }
+        }
+    }
+
+    return cmp;
 }
-#endif
 
 void pt_sort_match_list(PT_local * locs)
 {
@@ -281,7 +278,7 @@ void pt_sort_match_list(PT_local * locs)
     {
         my_list[i] = match;
     }
-    GB_mergesort((void **)my_list,0,list_len,pt_sort_compare_match,0 );
+    GB_sort((void **)my_list, 0, list_len, pt_sort_compare_match, 0);
     for (i=0;i<list_len;i++) {
         aisc_unlink((struct_dllheader_ext*)my_list[i]);
         aisc_link(&locs->ppm, my_list[i]);

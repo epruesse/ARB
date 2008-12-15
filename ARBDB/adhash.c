@@ -796,25 +796,22 @@ void GBS_hash_first_element(GB_HASH *hs,const char **key, long *val){
     return;
 }
 
-gbs_hash_sort_func_type gbh_sort_func;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-    long g_bs_compare_two_items(void *v0, void *v1, char *unused) {
-        struct gbs_hash_entry *e0 = (struct gbs_hash_entry*)v0;
-        struct gbs_hash_entry *e1 = (struct gbs_hash_entry*)v1;
-        GBUSE(unused);
+    int wrap_hashCompare4gb_sort(const void *v0, const void *v1, void *sorter) {
+        const struct gbs_hash_entry *e0 = (const struct gbs_hash_entry*)v0;
+        const struct gbs_hash_entry *e1 = (const struct gbs_hash_entry*)v1;
 
-        return gbh_sort_func(e0->key, e0->val, e1->key, e1->val);
+        return ((gbs_hash_compare_function)sorter)(e0->key, e0->val, e1->key, e1->val);
     }
 
 #ifdef __cplusplus
 }
 #endif
 
-void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_sort_func_type sorter) {
+void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compare_function sorter) {
     long   i, j, e2;
     struct gbs_hash_entry *e, **mtab;
     e2 = hs->size;
@@ -826,12 +823,17 @@ void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_sort_
             }
         }
     }
-    gbh_sort_func = sorter;
-    GB_mergesort((void **) mtab, 0, j, g_bs_compare_two_items,0);
+    GB_sort((void **) mtab, 0, j, wrap_hashCompare4gb_sort, (void*)sorter);
     for (i = 0; i < j; i++) {
         func(mtab[i]->key, mtab[i]->val);
     }
     free((char *)mtab);
+}
+
+int GBS_HCF_sortedByKey(const char *k0, long v0, const char *k1, long v1) {
+    GBUSE(v0);
+    GBUSE(v1);
+    return strcmp(k0, k1);
 }
 
 /********************************************************************************************
