@@ -237,9 +237,7 @@ adsocket.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adsocket.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adsort.o: ad_prot.h
-adsort.o: ad_t_prot.h
 adsort.o: arbdb.h
-adsort.o: arbdbt.h
 adsort.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adsort.o: $(ARBHOME)/INCLUDE/attributes.h
 

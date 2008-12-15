@@ -2842,8 +2842,9 @@ long gbs_scan_db_insert(const char *key,long val, void *v_datapath)
     return val;
 }
 
-long gbs_scan_db_compare(const char *left,const char *right){
-    return strcmp(&left[1],&right[1]);
+static int gbs_scan_db_compare(const void *left, const void *right, void *unused){
+    GBUSE(unused);
+    return strcmp((GB_CSTR)left+1, (GB_CSTR)right+1);
 }
 
 
@@ -2873,7 +2874,7 @@ char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
 
     GBS_free_hash(gbs_scan_db_data.hash_table);
 
-    GB_mergesort((void **)gbs_scan_db_data.result,0,gbs_scan_db_data.count, (gb_compare_two_items_type)gbs_scan_db_compare,0);
+    GB_sort((void **)gbs_scan_db_data.result, 0, gbs_scan_db_data.count, gbs_scan_db_compare, 0);
 
     free(gbs_scan_db_data.buffer);
     return gbs_scan_db_data.result;

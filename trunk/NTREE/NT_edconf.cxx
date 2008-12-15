@@ -244,11 +244,6 @@ int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfi
 static GBS_strstruct *nt_build_sai_middle_file;
 static const char    *nt_build_sai_last_group_name;
 
-long nt_build_sai_sort_strings(const char *k0,long v0,const char *k1,long v1){
-    AWUSE(v0); AWUSE(v1);
-    return strcmp(k0,k1);
-}
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -318,7 +313,7 @@ void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile){
 
     nt_build_sai_last_group_name = 0;
     nt_build_sai_middle_file = middlefile;
-    GBS_hash_do_sorted_loop(hash,nt_build_sai_string_by_hash,(gbs_hash_sort_func_type)nt_build_sai_sort_strings);
+    GBS_hash_do_sorted_loop(hash, nt_build_sai_string_by_hash, GBS_HCF_sortedByKey);
     if (nt_build_sai_last_group_name) {
         GBS_chrcat(middlefile,1);               // Seperated by 1
         GBS_chrcat(middlefile,'E');             // End of old group

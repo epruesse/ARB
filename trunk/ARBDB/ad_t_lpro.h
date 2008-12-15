@@ -32,7 +32,6 @@ void gbt_export_tree_rek P_((GBT_TREE *tree, FILE *out));
 void gbt_scan_db_rek P_((GBDATA *gbd, char *prefix, int deep));
 long gbs_scan_db_count P_((const char *key, long val));
 long gbs_scan_db_insert P_((const char *key, long val, void *v_datapath));
-long gbs_scan_db_compare P_((const char *left, const char *right));
 GB_ERROR gbt_rename_tree_rek P_((GBT_TREE *tree, int tree_index));
 
 /* adseqcompr.c */

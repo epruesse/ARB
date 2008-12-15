@@ -1685,15 +1685,6 @@ uint32_t GBS_checksum(const char *seq, int ignore_case, const char *exclude)
     2. minlen > 1.0  contain more than minlen characters that also exists in chars
 */
 
-#ifdef __cplusplus
-extern "C"
-#endif
-
-long GB_merge_sort_strcmp(void *v0, void *v1, char *not_used) {
-    GBUSE(not_used);
-    return strcmp((const char *)v0, (const char *)v1);
-}
-
 char *GBS_extract_words( const char *source,const char *chars, float minlen, GB_BOOL sort_output ) {
     char  *s         = GB_STRDUP(source);
     char **ps        = (char **)GB_calloc(sizeof(char *), (strlen(source)>>1) + 1);
@@ -1725,7 +1716,7 @@ char *GBS_extract_words( const char *source,const char *chars, float minlen, GB_
         count ++;
     }
     if (sort_output) {
-        GB_mergesort((void **)ps,0,count,GB_merge_sort_strcmp,0);
+        GB_sort((void **)ps, 0, count, GB_string_comparator, 0);
     }
     for (cnt = 0;cnt<count;cnt++) {
         if (cnt) {
@@ -1757,23 +1748,19 @@ int GBS_do_core(void)
     return result;
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+/* ----------------------- */
+/*      Error handler      */
 
-    void gb_error_to_stderr(const char *msg) {
-        fprintf(stderr, "%s\n", msg);
-    }
-
-#ifdef __cplusplus
+static void gb_error_to_stderr(const char *msg) {
+    fprintf(stderr, "%s\n", msg);
 }
-#endif
 
-gb_error_handler_type gb_error_handler = gb_error_to_stderr;
+static gb_error_handler_type gb_error_handler = gb_error_to_stderr;
 
 NOT4PERL void GB_install_error_handler(gb_error_handler_type aw_message_handler){
     gb_error_handler = aw_message_handler;
 }
+
 
 void GB_internal_error(const char *templat, ...) {
     /* goes to header: __ATTR__FORMAT(1)  */
@@ -2229,22 +2216,17 @@ GB_HASH *g_bs_collect_tags_hash;
 extern "C" {
 #endif
 
-    static long g_bs_merge_tags(const char *tag, long val){
-        GBS_strcat(   g_bs_merge_sub_result, tag    );
-        GBS_strcat(   g_bs_merge_sub_result, ","    );
+    static long g_bs_merge_tags(const char *tag, long val) {
+        GBS_strcat(g_bs_merge_sub_result, tag);
+        GBS_strcat(g_bs_merge_sub_result, ",");
         return val;
-    }
-
-    static long g_bs_sort_fields_of_hash(const char *key0,long val0,const char *key1,long val1){
-        GBUSE(val0);GBUSE(val1);
-        return strcmp(key0,key1);
     }
 
     static long g_bs_read_tagged_hash(const char *value, long subhash){
         char *str;
         static int counter = 0;
         g_bs_merge_sub_result = GBS_stropen(100);
-        GBS_hash_do_sorted_loop((GB_HASH *)subhash,g_bs_merge_tags,g_bs_sort_fields_of_hash);
+        GBS_hash_do_sorted_loop((GB_HASH *)subhash, g_bs_merge_tags, GBS_HCF_sortedByKey);
         GBS_free_hash((GB_HASH *)subhash); /* array of tags */
         GBS_intcat(g_bs_merge_sub_result,counter++); /* create a unique number */
 
@@ -2276,8 +2258,8 @@ static char *g_bs_get_string_of_tag_hash(GB_HASH *tag_hash){
     g_bs_merge_result = GBS_stropen(256);
     g_bs_collect_tags_hash = GBS_create_hash(1024, GB_IGNORE_CASE);
 
-    GBS_hash_do_sorted_loop(tag_hash,g_bs_read_tagged_hash,g_bs_sort_fields_of_hash); /* move everything into g_bs_collect_tags_hash */
-    GBS_hash_do_sorted_loop(g_bs_collect_tags_hash,g_bs_read_final_hash,g_bs_sort_fields_of_hash);
+    GBS_hash_do_sorted_loop(tag_hash, g_bs_read_tagged_hash, GBS_HCF_sortedByKey);     /* move everything into g_bs_collect_tags_hash */
+    GBS_hash_do_sorted_loop(g_bs_collect_tags_hash, g_bs_read_final_hash, GBS_HCF_sortedByKey);
 
     GBS_free_hash_free_pointer(g_bs_collect_tags_hash);
     return GBS_strclose(g_bs_merge_result);

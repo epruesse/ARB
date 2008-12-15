@@ -1,87 +1,36 @@
-#include <stdio.h>
 #include <stdlib.h>
-/* #include <malloc.h> */
-#include <memory.h>
+#include <string.h>
 
 #include "arbdb.h"
-#include "arbdbt.h"
 
-/* sort an array
-   compare is a compare function:
+struct comparator {
+    gb_compare_function  compare;
+    char                *client_data;
+};
 
-   compare(2,3) should be  <0;
-   compare(x,x)            = 0;
-   compare(4,3)            >0;
+static struct comparator Compare; // current compare function + client data
 
-*/
-
-char *GBT_quicksort(void **array,long start, long end, gb_compare_two_items_type compare, char *client_data)
-{
-    long        i,j;
-    long        mid;
-    void        *swap;
-    char        *error;
-    if (end-1 <= start) return 0;
-    i = start;
-    j = end-1;
-    mid = (i+j)/2;
-    while (i<j) {
-        for (; i<j; i++) {
-            if (compare(array[i],array[mid],client_data) >= 0) break;
-        }
-        for (;  i<j; j--) {
-            if (compare(array[j],array[mid],client_data) < 0) break;
-        }
-        swap = array[i];
-        array[i] = array[j];
-        array[j] = swap;
-        if (i== mid) mid = j;
-        else if (j== mid) mid = i;
-    }
-    swap = array[i];
-    array[i] = array[mid];
-    array[mid] = swap;
-    error = GBT_quicksort(array,start,i,compare,client_data);
-    if (!error) error = GBT_quicksort(array,i+1,end,compare,client_data);
-    return error;
+static int qsort_compare(const void *v1, const void *v2) {
+    return Compare.compare(*(void**)v1, *(void**)v2, Compare.client_data);
 }
 
-char *GB_mergesort(void **array,long start, long end, gb_compare_two_items_type compare, char *client_data)
-{
-    long size;
-    long mid;
-    long i, j;
-    long        dest;
-    void **buffer;
-    void *ibuf[256];
-    char *error;
+void GB_sort(void **array, size_t first, size_t behind_last, gb_compare_function compare, void *client_data) {
+    /* sort 'array' of pointers from 'first' to last element
+     * (specified by following element 'behind_last')
+     * 'compare' is a compare function, with a strcmp-like result value
+     */
 
-    size = end - start;
-    if (size <= 1) {
-        return 0;
-    }
-    mid = (start+end) / 2;
-    error = GB_mergesort(array,start,mid,compare,client_data);
-    error = GB_mergesort(array,mid,end,compare,client_data);
-    if (size <256) {
-        buffer = ibuf;
-    }else {
-        buffer = (void **)malloc((size_t)(size * sizeof(void *)));
-    }
+    Compare.compare     = compare;
+    Compare.client_data = client_data;
 
-    for ( dest = 0, i = start, j = mid ; i< mid && j < end;) {
-        if (compare(array[i],array[j],client_data) < 0) {
-            buffer[dest++] = array[i++];
-        }else{
-            buffer[dest++] = array[j++];
-        }
-    }
-    while(i<mid) buffer[dest++] = array[i++];
-    while(j<end) buffer[dest++] = array[j++];
-
-    memcpy( (char *)(array+start),(char *)buffer,(int)size * sizeof(void *));
-
-    if (size>=256) free((char *)buffer);
-
-    return error;
+    qsort(array, behind_last-first, sizeof(*array), qsort_compare);
 }
+
+/* -------------------------- */
+/*      some comparators      */
+
+int GB_string_comparator(const void *v0, const void *v1, void *unused) {
+    GBUSE(unused);
+    return strcmp((const char *)v0, (const char *)v1);
+}
+

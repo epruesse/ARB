@@ -1912,16 +1912,24 @@ GBDATA_SET *AW_window::selection_list_to_species_set(GBDATA *gb_main,AW_selectio
     return set;
 }
 
-#ifdef __cplusplus
 extern "C" {
-#endif
-int AW_sort_AW_select_table_struct(AW_select_table_struct *t1,AW_select_table_struct *t2) { return strcmp(t1->displayed, t2->displayed); }
-int AW_isort_AW_select_table_struct(AW_select_table_struct *t1,AW_select_table_struct *t2) { return ARB_stricmp(t1->displayed, t2->displayed); }
-int AW_sort_AW_select_table_struct_backward(AW_select_table_struct *t1,AW_select_table_struct *t2) { return strcmp(t2->displayed, t1->displayed); }
-int AW_isort_AW_select_table_struct_backward(AW_select_table_struct *t1,AW_select_table_struct *t2) { return ARB_stricmp(t2->displayed, t1->displayed); }
-#ifdef __cplusplus
+    int AW_sort_AW_select_table_struct(const void *t1, const void *t2, void *) {
+        return strcmp(static_cast<const AW_select_table_struct*>(t1)->displayed,
+                      static_cast<const AW_select_table_struct*>(t2)->displayed);
+    }
+    int AW_sort_AW_select_table_struct_backward(const void *t1, const void *t2, void *) {
+        return strcmp(static_cast<const AW_select_table_struct*>(t2)->displayed,
+                      static_cast<const AW_select_table_struct*>(t1)->displayed);
+    }
+    int AW_isort_AW_select_table_struct(const void *t1, const void *t2, void *) {
+        return ARB_stricmp(static_cast<const AW_select_table_struct*>(t1)->displayed,
+                           static_cast<const AW_select_table_struct*>(t2)->displayed);
+    }
+    int AW_isort_AW_select_table_struct_backward(const void *t1, const void *t2, void *) {
+        return ARB_stricmp(static_cast<const AW_select_table_struct*>(t2)->displayed,
+                           static_cast<const AW_select_table_struct*>(t1)->displayed);
+    }
 }
-#endif
 
 
 AW_selection_list* AW_window::copySelectionList(AW_selection_list *sourceList, AW_selection_list *destinationList){
@@ -1963,17 +1971,17 @@ void AW_window::sort_selection_list( AW_selection_list * selection_list, int bac
         count ++;
     }
 
-    gb_compare_two_items_type comparator;
+    gb_compare_function comparator;
     if (backward) {
-        if (case_sensitive) comparator = (gb_compare_two_items_type)AW_sort_AW_select_table_struct_backward;
-        else comparator                = (gb_compare_two_items_type)AW_isort_AW_select_table_struct_backward;
+        if (case_sensitive) comparator = AW_sort_AW_select_table_struct_backward;
+        else comparator                = AW_isort_AW_select_table_struct_backward;
     }
     else {
-        if (case_sensitive) comparator = (gb_compare_two_items_type)AW_sort_AW_select_table_struct;
-        else comparator                = (gb_compare_two_items_type)AW_isort_AW_select_table_struct;
+        if (case_sensitive) comparator = AW_sort_AW_select_table_struct;
+        else comparator                = AW_isort_AW_select_table_struct;
     }
 
-    GB_mergesort((void**)tables, 0, count, comparator, 0);
+    GB_sort((void**)tables, 0, count, comparator, 0);
 
     long i;
     for (i=0;i<count-1;i++) {

@@ -19,8 +19,8 @@ extern "C" {
 
 
 /* adsort.c */
-char *GBT_quicksort P_((void **array, long start, long end, gb_compare_two_items_type compare, char *client_data));
-char *GB_mergesort P_((void **array, long start, long end, gb_compare_two_items_type compare, char *client_data));
+void GB_sort P_((void **array, size_t first, size_t behind_last, gb_compare_function compare, void *client_data));
+int GB_string_comparator P_((const void *v0, const void *v1, void *unused));
 
 /* adlang1.c */
 NOT4PERL void GB_set_export_sequence_hook P_((gb_export_sequence_cb escb));
@@ -71,7 +71,6 @@ void GBS_free_names P_((char **names));
 long GBS_gcgchecksum P_((const char *seq));
 uint32_t GB_checksum P_((const char *seq, long length, int ignore_case, const char *exclude));
 uint32_t GBS_checksum P_((const char *seq, int ignore_case, const char *exclude));
-long GB_merge_sort_strcmp P_((void *v0, void *v1, char *not_used));
 char *GBS_extract_words P_((const char *source, const char *chars, float minlen, GB_BOOL sort_output));
 int GBS_do_core P_((void));
 NOT4PERL void GB_install_error_handler P_((gb_error_handler_type aw_message_handler));
@@ -330,7 +329,8 @@ long GBS_hash_count_elems P_((GB_HASH *hs));
 long GBS_hash_count_value P_((GB_HASH *hs, long val));
 void GBS_hash_next_element P_((GB_HASH *hs, const char **key, long *val));
 void GBS_hash_first_element P_((GB_HASH *hs, const char **key, long *val));
-void GBS_hash_do_sorted_loop P_((GB_HASH *hs, gb_hash_loop_type func, gbs_hash_sort_func_type sorter));
+void GBS_hash_do_sorted_loop P_((GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compare_function sorter));
+int GBS_HCF_sortedByKey P_((const char *k0, long v0, const char *k1, long v1));
 GB_HASHI *GBS_create_hashi P_((long user_size));
 long GBS_read_hashi P_((GB_HASHI *hs, long key));
 long GBS_write_hashi P_((GB_HASHI *hs, long key, long val));
