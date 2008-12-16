@@ -121,7 +121,7 @@ void AP_probe_design_event() {
                 PDC_MAXTEMP,    (double)P.MAXTEMP,
                 PDC_MINGC,  P.MINGC/100.0,
                 PDC_MAXGC,  P.MAXGC/100.0,
-                PDC_MAXBOND,    P.MAXBOND,
+                PDC_MAXBOND,    (double)P.MAXBOND,
                 NULL);
     aisc_put(pd_gl.link,PT_PDC, pdc,
              PDC_MINPOS,    P.MINPOS,
