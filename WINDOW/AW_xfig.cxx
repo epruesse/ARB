@@ -199,27 +199,17 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
 
     calc_scaling(font_width, font_height);
 
-    if (filename[0]=='/') {
-        // absolute file ?
+    if (filename[0]=='/') { // absolute file ?
         strcpy(buffer,filename);
         file = fopen(buffer,"r");
     }
     else {
-        const char *arbhome = GB_getenvARBHOME();
+        const char *fileInLib = GB_path_in_ARBLIB("pictures", filename);
 
-        // in $ARBHOME/lib/pictures ?
-        sprintf(buffer,"%s/lib/pictures/%s",arbhome,filename);
-        file = fopen(buffer,"r");
-        if (!file) {
-            // in $ARBHOME ?
-            sprintf(buffer,"%s/%s",arbhome,filename);
-            file = fopen(buffer,"r");
-            if (!file) {
-                // relative to $CWD?
-                sprintf(buffer,"%s",filename);
-                file = fopen(buffer,"r");
-            }
-        }
+        strcpy(buffer, fileInLib);
+        file = fopen(fileInLib, "r");
+        
+        // Note: before 12/2008 file was also searched in $ARBHOME and current dir
     }
     
     if (!file) {

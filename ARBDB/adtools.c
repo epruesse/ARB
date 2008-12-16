@@ -3127,7 +3127,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
                 }
                 if (show_status) show_status((double)(count+1)/tree_count);
             }
-            GBS_free_names(tree_names);
+            GBT_free_names(tree_names);
         }
     }
     // rename configurations
@@ -3183,7 +3183,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
                 }
                 if (show_status) show_status((double)(count+1)/config_count);
             }
-            GBS_free_names(config_names);
+            GBT_free_names(config_names);
         }
     }
 

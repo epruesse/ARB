@@ -27,9 +27,6 @@ int   AWT_is_file(const char *path);
 int   AWT_is_link(const char *path);
 char *AWT_extract_directory(const char *path);
 
-GB_CSTR AWT_concat_full_path(const char *anypath_left, const char *anypath_right);
-GB_CSTR AWT_path_in_ARBHOME(const char *relative_path);
-
 GB_CSTR AWT_get_suffix(const char *fullpath);
 GB_CSTR AWT_append_suffix(const char *name, const char *suffix);
 

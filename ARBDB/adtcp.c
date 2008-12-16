@@ -2,7 +2,7 @@
 /*                                                                 */
 /*   File      : adtcp.c                                           */
 /*   Purpose   : arb_tcp.dat handling                              */
-/*   Time-stamp: <Mon May/26/2008 12:43 MET Coder@ReallySoft.de>   */
+/*   Time-stamp: <Fri Dec/12/2008 10:56 MET Coder@ReallySoft.de>   */
 /*                                                                 */
 /*   Coded by Ralf Westram (coder@reallysoft.de) in April 2007     */
 /*   Institute of Microbiology (Technical University Munich)       */
@@ -398,7 +398,10 @@ const char * const *GBS_get_arb_tcp_entries(const char *matching) {
 
 const char *GBS_ptserver_logname() {
     static char *serverlog = 0;
-    if (!serverlog) serverlog = GBS_eval_env("$(ARBHOME)/lib/pts/ptserver.log");
+    if (!serverlog) {
+        serverlog = GB_strdup(GB_path_in_ARBLIB("pts/ptserver.log", NULL));
+        gb_assert(serverlog);
+    }
     return serverlog;
 }
 

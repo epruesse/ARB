@@ -1019,7 +1019,7 @@ void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
         }
         aw_status(1.0);
 
-        GBS_free_names(tree_names);
+        GBT_free_names(tree_names);
         GBS_free_hash(species_hash);
         aw_closestatus();
     }

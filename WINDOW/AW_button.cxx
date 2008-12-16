@@ -325,7 +325,7 @@ void     aw_attach_widget(Widget scrolledWindowText,AW_at *_at,int default_width
 /****************************************************************************************************************************/
 
 static char *pixmapPath(const char *pixmapName) {
-    return GBS_global_string_copy("%s/lib/pixmaps/%s", GB_getenvARBHOME(), pixmapName);
+    return GB_strdup(GB_path_in_ARBLIB("pixmaps", pixmapName));
 }
 
 
@@ -2040,7 +2040,7 @@ GB_ERROR AW_window::load_selection_list( AW_selection_list *selection_list, cons
     char *pl;
 
     this->clear_selection_list(selection_list);
-    char **fnames = GBS_read_dir(filename,0);
+    char **fnames = GBS_read_dir(filename, NULL);
     char **fname;
 
     for (fname = fnames; *fname; fname++){
@@ -2080,7 +2080,7 @@ GB_ERROR AW_window::load_selection_list( AW_selection_list *selection_list, cons
         }
         free(data);
     }
-    GBS_free_names(fnames);
+    GBT_free_names(fnames);
 
     this->insert_default_selection(selection_list,"","");
     this->update_selection_list(selection_list);

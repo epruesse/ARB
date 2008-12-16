@@ -65,7 +65,7 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
     StrL                   fileContent;
 
     // Load LoVPBN (List of Validly Published Bacterial Names)
-    char *fileName = GBS_global_string_copy("%s/lib/LoVPBN.txt", GB_getenvARBHOME());
+    const char *fileName = GB_path_in_ARBLIB("LoVPBN.txt", NULL);
 
     DescList myDescs;
 
@@ -167,8 +167,6 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
     }
     catch (string& err) { aw_message(err.c_str()); }
     catch (...) { aw_message("Unknown exception"); }
-
-    free(fileName);
 }
 
 

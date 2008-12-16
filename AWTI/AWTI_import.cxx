@@ -96,104 +96,86 @@ AW_BOOL  awtc_read_string_pair(FILE *in, char *&s1,char *&s2)
 }
 
 
-GB_ERROR awtc_read_import_format(char *file)
-{
-    FILE *in = 0;
-    {
-        char *fullfile = AWT_unfold_path(file,"ARBHOME");
+GB_ERROR awtc_read_import_format(char *file) {
+    GB_ERROR  error    = 0;
+    char     *fullfile = AWT_unfold_path(file,"ARBHOME");
+    FILE     *in       = fopen(fullfile,"r");
+    
+    if (!in) error = GBS_global_string("Form not readable ('%s')", fullfile);
+    else {
+        struct input_format_struct   *ifo;
+        struct input_format_per_line *pl = 0;
+        char                         *s1 = 0,*s2=0;
 
-        in = fopen(fullfile,"r");
-        free(fullfile);
-    }
+        if (awtcig.ifo) { delete awtcig.ifo; awtcig.ifo = 0; }
+        ifo = awtcig.ifo = new input_format_struct;
 
-    if (!in) return "Form not readable (select a form or check permissions)";
-    struct input_format_struct   *ifo;
-    struct input_format_per_line *pl = 0;
-    char                         *s1 = 0,*s2=0;
+        int lineNumber = 0;
 
-    if (awtcig.ifo) { delete awtcig.ifo; awtcig.ifo = 0; }
-    ifo = awtcig.ifo = new input_format_struct;
+        while (!error && !awtc_read_string_pair(in,s1,s2)) {
+            lineNumber++;
+            if (!s1) continue;
+            else if (!strcmp(s1,"AUTODETECT"))               { ifo->autodetect     = s2; s2 = 0; }
+            else if (!strcmp(s1,"SYSTEM"))                   { ifo->system         = s2; s2 = 0; }
+            else if (!strcmp(s1,"NEW_FORMAT"))               { ifo->new_format     = s2; s2 = 0; }
+            else if (!strcmp(s1,"KEYWIDTH"))                 { ifo->tab            = atoi(s2); }
+            else if (!strcmp(s1,"BEGIN"))                    { ifo->begin          = s2; s2 = 0; }
+            else if (!strcmp(s1,"SEQUENCESTART"))            { ifo->sequencestart  = s2; s2 = 0; ifo->read_this_sequence_line_too = 1; }
+            else if (!strcmp(s1,"SEQUENCEAFTER"))            { ifo->sequencestart  = s2; s2 = 0; ifo->read_this_sequence_line_too = 0; }
+            else if (!strcmp(s1,"FILETAG"))                  { ifo->filetag        = s2; s2 = 0; }
+            else if (!strcmp(s1,"SEQUENCESRT"))              { ifo->sequencesrt    = s2; s2 = 0; }
+            else if (!strcmp(s1,"SEQUENCEACI"))              { ifo->sequenceaci    = s2; s2 = 0; }
+            else if (!strcmp(s1,"SEQUENCECOLUMN"))           { ifo->sequencecolumn = atoi(s2); }
+            else if (!strcmp(s1,"SEQUENCEEND"))              { ifo->sequenceend    = s2; s2 = 0; }
+            else if (!strcmp(s1,"END"))                      { ifo->end            = s2; s2 = 0; }
+            else if (!strcmp(s1,"CREATE_ACC_FROM_SEQUENCE")) { ifo->autocreateacc = 1; }
+            else if (!strcmp(s1,"DONT_GEN_NAMES")) { ifo->noautonames = 1; }
+            else if (!strcmp(s1,"MATCH")) {
+                pl = (struct input_format_per_line *)GB_calloc(1, sizeof(struct input_format_per_line));
 
-    int lineNumber = 0;
-
-    while (!awtc_read_string_pair(in,s1,s2)){
-        lineNumber++;
-        if (!s1) {
-            continue;
-        }else if (!strcmp(s1,"AUTODETECT")) {
-            ifo->autodetect = s2; s2 = 0;
-        }else if (!strcmp(s1,"SYSTEM")) {
-            ifo->system = s2; s2 = 0;
-        }else if (!strcmp(s1,"NEW_FORMAT")) {
-            ifo->new_format = s2; s2 = 0;
-        }else if (!strcmp(s1,"KEYWIDTH")) {
-            ifo->tab = atoi(s2);
-        }else if (!strcmp(s1,"BEGIN")) {
-            ifo->begin = s2; s2 = 0;
-        }else if (!strcmp(s1,"SEQUENCESTART")) {
-            ifo->sequencestart = s2; s2 = 0;
-            ifo->read_this_sequence_line_too = 1;
-        }else if (!strcmp(s1,"SEQUENCEAFTER")) {
-            ifo->sequencestart = s2; s2 = 0;
-            ifo->read_this_sequence_line_too = 0;
-        }else if (!strcmp(s1,"FILETAG")) {
-            ifo->filetag = s2; s2 = 0;
-        }else if (!strcmp(s1,"SEQUENCESRT")) {
-            ifo->sequencesrt = s2; s2 = 0;
-        }else if (!strcmp(s1,"SEQUENCEACI")) {
-            ifo->sequenceaci = s2; s2 = 0;
-        }else if (!strcmp(s1,"SEQUENCECOLUMN")) {
-            ifo->sequencecolumn = atoi(s2);
-        }else if (!strcmp(s1,"SEQUENCEEND")) {
-            ifo->sequenceend = s2; s2 = 0;
-        }else if (!strcmp(s1,"END")) {
-            ifo->end = s2; s2 = 0;
-        }else if (!strcmp(s1,"CREATE_ACC_FROM_SEQUENCE")) {
-            ifo->autocreateacc = 1;
-        }else if (!strcmp(s1,"DONT_GEN_NAMES")) {
-            ifo->noautonames = 1;
-        }else if (!strcmp(s1,"MATCH")) {
-            pl             = (struct input_format_per_line *)GB_calloc(1, sizeof(struct input_format_per_line));
-            pl->start_line = lineNumber;
-            pl->next       = ifo->pl; // this concatenates the filters to the front -> that is corrected below
-            ifo->pl        = pl;
-            pl->match      = GBS_remove_escape(s2); free(s2); s2 = 0;
-        }else if (pl && !strcmp(s1,"SRT")) {
-            pl->srt = s2;s2= 0;
-        }else if (pl && !strcmp(s1,"ACI")) {
-            pl->aci = s2;s2= 0;
-        }else if (pl && !strcmp(s1,"WRITE")) {
-            pl->write = s2;s2= 0;
-        }else if (pl && !strcmp(s1,"APPEND")) {
-            pl->append = s2;s2= 0;
-        }else if (pl && !strcmp(s1,"SETVAR")) {
-            pl->setvar      = s2;
-            if (strlen(s2) != 1 || s2[0]<'a' || s2[0]>'z') aw_message("Allowed variable names are a-z");
-            s2= 0;
-        }else if (pl && !strcmp(s1,"TAG")) {
-            pl->tag = GB_strdup(s2);
-            //          pl->tag = GBS_string_2_key_with_exclusions(s2, "$"); // allow $ to occur in string
-            if (!strlen(pl->tag)){
-                delete pl->tag;
-                pl->tag = 0;
+                pl->start_line = lineNumber;
+                pl->next       = ifo->pl;               // this concatenates the filters to the front -> that is corrected below
+                ifo->pl        = pl;
+                pl->match      = GBS_remove_escape(s2);
             }
-        }else{
-            char *fullfile = AWT_unfold_path(file,"ARBHOME");
-
-            aw_message(GBS_global_string("Unknown%s command in import format file '%s'  command '%s'\n",
-                                         (pl ? "" : " (or wrong placed)"), fullfile, s1));
-            free(fullfile);
+            else if (pl && !strcmp(s1,"SRT"))    { pl->srt    = s2; s2 = 0; }
+            else if (pl && !strcmp(s1,"ACI"))    { pl->aci    = s2; s2 = 0; }
+            else if (pl && !strcmp(s1,"WRITE"))  { pl->write  = s2; s2 = 0; }
+            else if (pl && !strcmp(s1,"APPEND")) { pl->append = s2; s2 = 0; }
+            else if (pl && !strcmp(s1,"SETVAR")) {
+                if (strlen(s2) != 1 || s2[0]<'a' || s2[0]>'z') {
+                    error = "Allowed variable names are a-z";
+                }
+                else {
+                    pl->setvar = s2;
+                    s2         = 0;
+                }
+            }
+            else if (pl && !strcmp(s1,"TAG")) {
+                if (strlen(s2)>0) {
+                    pl->tag = s2;
+                    s2      = 0;
+                }
+            }
+            else {
+                error = GBS_global_string("Unknown%s command '%s'\n", (pl ? "" : " (or wrong placed)"), s1);
+            }
         }
+
+        free(s2);
+        free(s1);
+
+        // reverse order of match list (was appended backwards during creation)
+        if (ifo->pl) ifo->pl = ifo->pl->reverse(0);
+
+        if (error) error = GBS_global_string("%s\n(in import format file '%s')", error, fullfile);
+
+        fclose(in);
     }
 
-    free(s2);
-    free(s1);
-
-    // reverse order of match list (was appended backwards during creation)
-    if (ifo->pl) ifo->pl = ifo->pl->reverse(0);
-
-    fclose(in);
-    return 0;
+    free(fullfile);
+    
+    return error;
 }
 
 input_format_struct::input_format_struct(void){
@@ -232,54 +214,103 @@ input_format_struct::~input_format_struct(void)
 
 void awtc_check_input_format(AW_window *aww)
 {
-    AW_root *root = aww->get_root();
-    char **files = GBS_read_dir(0,"import/*.ift");
-    char **file;
-    char    buffer[AWTC_IMPORT_CHECK_BUFFER_SIZE+10];
-    for (file = files; *file; file++) {
-        root->awar(AWAR_FORM"/file_name")->write_string(*file);
+    AW_root   *root  = aww->get_root();
+    char     **files = GBS_read_dir(GB_path_in_ARBLIB("import", NULL), "*.ift");
+    char       buffer[AWTC_IMPORT_CHECK_BUFFER_SIZE+10];
+    GB_ERROR   error = 0;
 
-        GB_ERROR error     = awtc_read_import_format(*file);
-        if (error) {
-            aw_message(error);
+    int matched       = -1;
+    int first         = -1;
+    int matched_count = 0;
+
+    AW_awar *awar_filter   = root->awar(AWAR_FORM"/file_name");
+    char    *prev_selected = awar_filter->read_string();
+
+    for (int idx = 0; files[idx] && !error; ++idx) {
+        char *filtername = files[idx];
+        awar_filter->write_string(filtername);
+
+        GB_ERROR form_err = awtc_read_import_format(filtername);
+        if (form_err) {
+            aw_message(form_err);
         }
-        if (!awtcig.ifo->autodetect) continue;      // not detectable
-        char *autodetect = GBS_remove_escape(awtcig.ifo->autodetect);
-        delete awtcig.ifo; awtcig.ifo = 0;
+        else {
+            if (awtcig.ifo->autodetect) {      // detectable
+                char *autodetect = GBS_remove_escape(awtcig.ifo->autodetect);
+                delete awtcig.ifo; awtcig.ifo = 0;
 
-        FILE *in = 0;
-        {
-            char com[1024];
-            char *f = root->awar(AWAR_FILE)->read_string();
+                FILE *in = 0;
+                {
+                    char *f = root->awar(AWAR_FILE)->read_string();
 
-            if (f[0]) {
-                sprintf(com,"cat %s 2>/dev/null",f);
-                in = popen(com,"r");
-            }
-            free(f);
-            if (!in) {
-                aw_message( "Cannot open any input file");
-                *file = 0;
-                break;
-            }
-        }
-        if (in) {
-            int size = fread(buffer,1,AWTC_IMPORT_CHECK_BUFFER_SIZE,in);
-            pclose(in);
-            if (size>=0){
-                buffer[size] = 0;
-                if (GBS_string_matches(buffer,autodetect,GB_MIND_CASE)){  // format found
-                    free(autodetect);
-                    break;
+                    if (f[0]) {
+                        const char *com = GBS_global_string("cat %s 2>/dev/null", f);
+                        in              = popen(com,"r");
+                    }
+                    free(f);
+                    if (!in) error = "Cannot open any input file";
                 }
+                if (in) {
+                    int size = fread(buffer,1,AWTC_IMPORT_CHECK_BUFFER_SIZE,in);
+                    pclose(in);
+                    if (size>=0){
+                        buffer[size] = 0;
+                        if (GBS_string_matches(buffer,autodetect,GB_MIND_CASE)) {
+                            // format found!
+                            matched_count++;
+                            if (matched == -1) matched = idx; // remember first/next found format
+                            if (first == -1) first     = idx; // remember first found format
+
+                            if (strcmp(filtername, prev_selected) == 0) { // previously selected filter
+                                matched = -1; // select next (or first.. see below)
+                            }
+                        }
+                    }
+                }
+                free(autodetect);
             }
         }
-        free(autodetect);
-    }
-    if (!*file) {       // nothing found
-        root->awar(AWAR_FORM"/file_name")->write_string("unknown.ift");
     }
 
+    const char *select = 0;
+    switch (matched_count) {
+        case 0:
+            AWT_advice("Not all formats can be auto-detected.\n"
+                       "Some need to be selected manually.",
+                       AWT_ADVICE_TOGGLE,
+                       "No format auto-detected",
+                       "arb_import.hlp");
+
+            select = "unknown.ift";
+            break;
+
+        default:
+            AWT_advice("Several import filters matched during auto-detection.\n"
+                       "Click 'AUTO DETECT' again to select next matching import-filter.",
+                       AWT_ADVICE_TOGGLE,
+                       "Several formats detected",
+                       "arb_import.hlp");
+
+            // fall-through
+        case 1:
+            if (matched == -1) {
+                // wrap around to top (while searching next matching filter)
+                // or re-select the one matching filter (if it was previously selected)
+                awti_assert(first != -1);
+                matched = first;
+            }
+            awti_assert(matched != -1);
+            select = files[matched];  // select 1st matching filter
+            break;
+    }
+
+    if (error) {
+        select = "unknown.ift";
+        aw_message(error);
+    }
+
+    free(prev_selected);
+    awar_filter->write_string(select);
     GBT_free_names(files);
 }
 
@@ -832,7 +863,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
             // import genome flatfile into ARB-genome database :
 
             char  *mask   = awr->awar(AWAR_FILE)->read_string();
-            char **fnames = GBS_read_dir(mask, 0);
+            char **fnames = GBS_read_dir(mask, NULL);
 
             if (fnames[0] == 0) {
                 error = GB_export_error("Cannot find selected file");
@@ -894,39 +925,44 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
             // import to non-genome ARB-db :
 
             char *f          = awr->awar(AWAR_FILE)->read_string();
-            awtcig.filenames = GBS_read_dir(f,0);
-            free(f);
+            awtcig.filenames = GBS_read_dir(f, NULL);
 
-            if (awtcig.filenames[0] == 0){
-                error = GB_export_error("Cannot find selected file");
-            }
-
-            aw_openstatus("Reading input files");
-            if (!error) {
-                error = awtc_read_data(ali_name);
-                if (error) {
-                    sprintf(buffer,"Error: %s reading file %s",error,awtcig.current_file[-1]);
-                    error = buffer;
-                }
-            }
-
-            if (awtcig.ifo->noautonames || (awtcig.ifo2 && awtcig.ifo2->noautonames)) {
-                ask_generate_names = false;
+            if (awtcig.filenames == 0) {
+                error = GB_get_error();
             }
             else {
-                ask_generate_names = true;
+                if (awtcig.filenames[0] == 0){
+                    error = GB_export_error("Cannot find file '%s'", f);
+                }
+                else {
+                    aw_openstatus("Reading input files");
+                    
+                    error = awtc_read_data(ali_name);
+                    if (error) {
+                        error = GBS_global_string("While reading file '%s':\n%s", awtcig.current_file[-1], error);
+                    }
+                    else {
+                        if (awtcig.ifo->noautonames || (awtcig.ifo2 && awtcig.ifo2->noautonames)) {
+                            ask_generate_names = false;
+                        }
+                        else {
+                            ask_generate_names = true;
+                        }
+
+                        delete awtcig.ifo; awtcig.ifo   = 0;
+                        delete awtcig.ifo2; awtcig.ifo2 = 0;
+
+                        if (awtcig.in)  fclose(awtcig.in);
+                        awtcig.in = 0;
+                    }
+                    aw_closestatus();
+                }
+                GBT_free_names(awtcig.filenames);
             }
-
-            delete awtcig.ifo; awtcig.ifo = 0;
-            delete awtcig.ifo2; awtcig.ifo2 = 0;
-
-            if (awtcig.in)  fclose(awtcig.in);
-            awtcig.in = 0;
-            GBT_free_names(awtcig.filenames);
-            awtcig.filenames = 0;
+            awtcig.filenames    = 0;
             awtcig.current_file = 0;
 
-            aw_closestatus();
+            free(f);
         }
     }
     free(ali_name);
@@ -1057,7 +1093,7 @@ GBDATA *open_AWTC_import_window(AW_root *awr,const char *defname, bool do_exit, 
     awtcig.doExit = do_exit; // change/set behavior of CLOSE button
 
     aw_create_selection_box_awars(awr, AWAR_FILE_BASE, ".", "", defname);
-    aw_create_selection_box_awars(awr, AWAR_FORM, AWT_path_in_ARBHOME("lib/import"), ".ift", "*");
+    aw_create_selection_box_awars(awr, AWAR_FORM, GB_path_in_ARBLIB("import", NULL), ".ift", "*");
 
     awr->awar_string(AWAR_ALI,"dummy"); // these defaults are never used
     awr->awar_string(AWAR_ALI_TYPE,"dummy"); // they are overwritten by AWTC_import_set_ali_and_type

@@ -270,7 +270,7 @@ AW_window *AWTC_create_submission_window(AW_root *root)
     aws->create_input_field( AWAR_SPECIES_NAME, 12 );
 
     aws->at( "submission" );
-    char **submits = GBS_read_dir(0,"submit/*");
+    char **submits = GBS_read_dir(GB_path_in_ARBLIB("submit", NULL), NULL);
     if (submits) {
         aws->create_option_menu( "submission/source", "Select a Form", "s" );
         for (char **submit = submits; *submit; submit++){
@@ -279,7 +279,7 @@ AW_window *AWTC_create_submission_window(AW_root *root)
         aws->insert_default_option("default","d","default");
         aws->update_option_menu();
 
-        GBS_free_names(submits);
+        GBT_free_names(submits);
     }
 
     aws->at("gen");
