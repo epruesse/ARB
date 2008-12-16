@@ -611,18 +611,6 @@ AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main)
     aws->callback((AW_CB1)awt_rename_cb,gb_main);
     aws->create_button("GO", "GO","G");
 
-    //  aws->at("advice");
-    //  aws->create_option_menu(AWT_RENAME_USE_ADVICE,0,0);
-    //  aws->insert_option("Create totally new names","n",0);
-    //  aws->insert_default_option("Use Advice","U",1);
-    //  aws->update_option_menu();
-
-    //  aws->at("save");
-    //  aws->create_option_menu(AWT_RENAME_SAVE_DATA,0,0);
-    //  aws->insert_option("dont update","f",0);
-    //  aws->insert_default_option("update $ARBHOME/lib/nas/names.dat","s",1);
-    //  aws->update_option_menu();
-
     return (AW_window *)aws;
 }
 
