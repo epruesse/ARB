@@ -1,7 +1,7 @@
 # =============================================================== #
 #                                                                 #
 #   File      : Makefile                                          #
-#   Time-stamp: <Thu Dec/04/2008 13:34 MET Coder@ReallySoft.de>   #
+#   Time-stamp: <Thu Dec/11/2008 17:56 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Institute of Microbiology (Technical University Munich)       #
 #   http://www.arb-home.de/                                       #
@@ -438,7 +438,7 @@ DEST_BIN = bin
 
 AINCLUDES = 	-I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
 CPPINCLUDES =	-I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
-MAKEDEPENDFLAGS = -- $(cflags) -DARB_OPENGL -I. -Y$(ARBHOME)/INCLUDE --
+MAKEDEPENDFLAGS = -- $(cflags) -- -DARB_OPENGL -I. -Y$(ARBHOME)/INCLUDE
 
 ifeq ($(VTABLE_INFRONTOF_CLASS),1)
 # Some code in ARB depends on the location of the vtable pointer
@@ -1347,4 +1347,3 @@ all: checks
 	@echo "made 'all' with success."
 	@echo "to start arb enter 'arb'"
 
-# DO NOT DELETE
