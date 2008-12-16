@@ -105,7 +105,7 @@ void QueryTests(struct PTPanGlobal *pg)
 #endif
 
 
-static void PT_convertBondMatrix(PT_pdc *pdc, PTPanGlobal *pg)
+static void PP_convertBondMatrix(PT_pdc *pdc, PTPanGlobal *pg)
 {
     for (int query = SEQCODE_A; query <= SEQCODE_T; ++query) {
         for (int species = SEQCODE_A; species <= SEQCODE_T; ++species) {
@@ -122,13 +122,13 @@ static void PT_convertBondMatrix(PT_pdc *pdc, PTPanGlobal *pg)
 }
 
 
-static double PT_calc_position_wmis(int pos, int seq_len, double y1, double y2)
+static double PP_calc_position_wmis(int pos, int seq_len, double y1, double y2)
 {
     return (double)(((double)(pos * (seq_len - 1 - pos)) / (double)((seq_len - 1) * (seq_len - 1)))* (double)(y2*4.0) + y1);
 }
 
 
-static void PT_buildPosWeight(SearchQuery *sq)
+static void PP_buildPosWeight(SearchQuery *sq)
 {
     if (sq->sq_PosWeight) delete[] sq->sq_PosWeight;
     //printf("buildPosWeight: ...new double[%i];\n", sq->sq_QueryLen+1);
@@ -136,7 +136,7 @@ static void PT_buildPosWeight(SearchQuery *sq)
 
     for (int pos=0; pos < sq->sq_QueryLen; ++pos) {
         if (sq->sq_SortMode == SORT_HITS_WEIGHTED) {
-            sq->sq_PosWeight[pos] = PT_calc_position_wmis(pos, sq->sq_QueryLen, 0.3, 1.0);
+            sq->sq_PosWeight[pos] = PP_calc_position_wmis(pos, sq->sq_QueryLen, 0.3, 1.0);
         }else{
             sq->sq_PosWeight[pos] = 1.0;
         }
@@ -156,7 +156,7 @@ extern "C" int probe_match(PT_local *locs, aisc_string probestring)
 
   pg->pg_SearchPrefs = locs;
 
-  PT_convertBondMatrix(locs->pdc, pg);
+  PP_convertBondMatrix(locs->pdc, pg);
 #if defined(DEBUG)
     PT_pdc *pdc = locs->pdc;
     printf("Current bond values:\n");
@@ -246,7 +246,7 @@ extern "C" int probe_match(PT_local *locs, aisc_string probestring)
 
   /* init */
   sq->sq_PTPanPartition = NULL;
-  PT_buildPosWeight(sq);
+  PP_buildPosWeight(sq);
   if(pg->pg_SearchPrefs->sort_by)
   {
     /* user requested weighted searching */
