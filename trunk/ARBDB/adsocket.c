@@ -539,40 +539,48 @@ long GB_mode_of_link(const char *path)
     return gb_global_stt.st_mode;
 }
 
-int GB_is_regularfile(const char *path){
+GB_BOOL GB_is_regularfile(const char *path){
     struct stat stt;
-    if (stat(path, &stt)) return 0;
-    if (S_ISREG(stt.st_mode)) return 1;
-    return 0;
+    return stat(path, &stt) == 0 && S_ISREG(stt.st_mode);
 }
 
-int GB_is_executablefile(const char *path) {
-    struct stat stt;    
-    if (stat(path, &stt)) return 0;
-
-    {
+GB_BOOL GB_is_executablefile(const char *path) {
+    struct stat stt;
+    GB_BOOL     executable = GB_FALSE;
+    
+    if (stat(path, &stt) == 0) {
         uid_t my_userid = geteuid(); // effective user id
         if (stt.st_uid == my_userid) { // I am the owner of the file
-            return !!(stt.st_mode&S_IXUSR); // owner execution permission
+            executable = !!(stt.st_mode&S_IXUSR); // owner execution permission
         }
-    }
-    {
-        gid_t my_groupid = getegid(); // effective group id
-        if (stt.st_gid == my_groupid) { // I am member of the file's group
-            return !!(stt.st_mode&S_IXGRP); // group execution permission
+        else {
+            gid_t my_groupid = getegid(); // effective group id
+            if (stt.st_gid == my_groupid) { // I am member of the file's group
+                executable = !!(stt.st_mode&S_IXGRP); // group execution permission
+            }
+            else {
+                executable = !!(stt.st_mode&S_IXOTH); // others execution permission
+            }
         }
     }
 
-    return !!(stt.st_mode&S_IXOTH); // others execution permission
+    return executable;
 }
 
-int GB_is_directory(const char *path){
+GB_BOOL GB_is_readablefile(const char *filename) {
+    FILE *in = fopen(filename, "r");
+
+    if (in) {
+        fclose(in);
+        return GB_TRUE;
+    }
+    return GB_FALSE;
+}
+
+GB_BOOL GB_is_directory(const char *path) {
     struct stat stt;
-    if (stat(path, &stt)) return 0;
-    if (S_ISDIR(stt.st_mode)) return 1;
-    return 0;
+    return stat(path, &stt) == 0 && S_ISDIR(stt.st_mode);
 }
-
 
 long GB_getuid(){
     return getuid();
@@ -756,8 +764,11 @@ void GB_textprint(const char *path){
     free(fpath);
 }
 
-GB_CSTR GB_getcwd(void){
-    static char *lastcwd = 0;
+GB_CSTR GB_getcwd(void) {
+    // get the current working directory
+    // (directory from which application has been started)
+
+    static char *lastcwd  = 0;
     if (!lastcwd) lastcwd = (char *)getcwd(0,GB_PATH_MAX);
     return lastcwd;
 }
@@ -972,7 +983,7 @@ GB_CSTR GB_getenvARBMACRO(void) {
     static const char *am = 0;
     if (!am) {
         am          = getenv_existing_directory("ARBMACRO"); // doc in arb_envar.hlp
-        if (!am) am = GBS_eval_env("$(ARBHOME)/lib/macros");
+        if (!am) am = strdup(GB_path_in_ARBLIB("macros", NULL));
     }
     return am;
 }
@@ -991,8 +1002,15 @@ GB_CSTR GB_getenvPATH() {
     if (!path) {
         path = getenv_ignore_empty("PATH");
         if (!path) {
-            path = GBS_eval_env("/bin:/usr/bin:/$(ARBHOME)/bin");
+            path = GBS_eval_env("/bin:/usr/bin:$(ARBHOME)/bin");
             GB_information("Your PATH variable is empty - using '%s' as search path.", path);
+        }
+        else {
+            char *arbbin = GBS_eval_env("$(ARBHOME)/bin");
+            if (strstr(path, arbbin) == 0) {
+                GB_warning("Your PATH variable does not contain '%s'. Things may not work as expected.", arbbin);
+            }
+            free(arbbin);
         }
     }
     return path;
@@ -1021,7 +1039,7 @@ GB_CSTR GB_getenvDOCPATH(void) {
     if (!dp) {
         char *res = getenv_existing_directory("ARB_DOC"); // doc in arb_envar.hlp
         if (res) dp = res;
-        else     dp = GBS_eval_env("$(ARBHOME)/lib/help");
+        else     dp = strdup(GB_path_in_ARBLIB("help", NULL));
     }
     return dp;
 }
@@ -1031,7 +1049,7 @@ GB_CSTR GB_getenvHTMLDOCPATH(void) {
     if (!dp) {
         char *res = getenv_existing_directory("ARB_HTMLDOC"); // doc in arb_envar.hlp
         if (res) dp = res;
-        else     dp = GBS_eval_env("$(ARBHOME)/lib/help_html");
+        else     dp = strdup(GB_path_in_ARBLIB("help_html", NULL));
     }
     return dp;
 
@@ -1144,3 +1162,84 @@ GB_ULONG GB_get_physical_memory(void) {
 
     return usedmemsize;
 }
+
+/* path completion (former located in AWT) */
+
+GB_CSTR GB_get_full_path(const char *anypath) {
+    // expands '~' '..' etc in 'anypath'
+
+    GB_CSTR result = NULL;
+    if (!anypath) {
+        GB_export_error("NULL path (internal error)");
+    }
+    else if (strlen(anypath) >= PATH_MAX) {
+        GB_export_error("Path too long (> %i chars)", PATH_MAX-1);
+    }
+    else {
+        static int  toggle = 0;
+        static char buf[2][PATH_MAX];
+
+        toggle = 1-toggle; // use 2 buffers in turn
+        result = buf[toggle];
+
+        if (strncmp(anypath, "~/", 2) == 0) {
+            GB_CSTR home    = GB_getenvHOME();
+            GB_CSTR newpath = GBS_global_string("%s%s", home, anypath+1);
+            realpath(newpath, buf[toggle]);
+        }
+        else {
+            realpath(anypath, buf[toggle]);
+        }
+    }
+    return result;
+}
+
+GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right) {
+    // concats left and right part of a path.
+    // '/' is inserted inbetween
+    //
+    // if one of the arguments is NULL = > returns the other argument
+
+    GB_CSTR result = NULL;
+
+    if (anypath_left) {
+        if (anypath_right) {
+            result = GBS_global_string("%s/%s", anypath_left, anypath_right);
+        }
+        else {
+            result = anypath_left;
+        }
+    }
+    else {
+        result = anypath_right;
+    }
+
+    return result;
+}
+
+GB_CSTR GB_concat_full_path(const char *anypath_left, const char *anypath_right) {
+    // like GB_concat_path(), but returns the full path
+
+    const char *result = GB_concat_path(anypath_left, anypath_right);
+    if (result) result = GB_get_full_path(result);
+    return result;
+}
+
+GB_CSTR GB_path_in_ARBHOME(const char *relative_path_left, const char *anypath_right) {
+    if (anypath_right) {
+        return GB_concat_full_path(GB_concat_path(GB_getenvARBHOME(), relative_path_left), anypath_right);
+    }
+    else {
+        return GB_concat_full_path(GB_getenvARBHOME(), relative_path_left);
+    }
+}
+
+GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_right) {
+    if (anypath_right) {
+        return GB_path_in_ARBHOME(GB_concat_path("lib", relative_path_left), anypath_right);
+    }
+    else {
+        return GB_path_in_ARBHOME("lib", relative_path_left);
+    }
+}
+

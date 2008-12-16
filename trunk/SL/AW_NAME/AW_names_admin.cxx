@@ -9,15 +9,9 @@
 #include "AW_rename.hxx"
 
 static char *namesFilename(AW_CL cl_gb_main) {
-    GBDATA     *gb_main = (GBDATA*)cl_gb_main;
-    char       *path    = GBS_eval_env("$(ARBHOME)/lib/nas");
-    char       *fullname;
-    const char *field   = AW_get_nameserver_addid(gb_main);
-
-    if (field[0]) fullname = GBS_global_string_copy("%s/names_%s.dat", path, field);
-    else fullname          = GBS_global_string_copy("%s/names.dat", path);
-
-    free(path);
+    const char *field    = AW_get_nameserver_addid((GBDATA*)cl_gb_main);
+    const char *filename = field[0] ? GBS_global_string("names_%s.dat", field) : "names_dat";
+    char       *fullname = GB_strdup(GB_path_in_ARBLIB("nas", filename));
 
     return fullname;
 }

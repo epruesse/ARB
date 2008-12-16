@@ -303,7 +303,7 @@ XmString MDialog::CreateDlgString(const char *c_str)
 ****************************************************************************/
 static char *pixmapPath(const char *pixmapName)
 {
-    return GBS_global_string_copy("%s/lib/pixmaps/pgt/%s", GB_getenvARBHOME(), pixmapName);
+    return GB_strdup(GB_path_in_ARBLIB("pixmaps/pgt", pixmapName));
 }
 
 

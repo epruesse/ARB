@@ -1247,15 +1247,14 @@ void AW_root::init_variables(AW_default database) {
     vectorfont_lines =NULL; // font data not yet loaded
 
     awar_float("vectorfont/userscale", 1.0, application_database); // ratio font point size to pixels
-    awar_string("vectorfont/name", "lib/pictures/fontgfx.vfont",
-            application_database); // name for default font in lib/pictures
+    awar_string("vectorfont/name", "lib/pictures/fontgfx.vfont", application_database); // name for default font in lib/pictures
     // from the filerequester
     awar_int("vectorfont/active", 1, application_database); // zoomtext-calls: call text or use vectorfont (1)
 
     // this MIGHT lead to inconsistencies, as the validated data is in /name ---> worst case: reset
-    aw_create_selection_box_awars(this, "vectorfont", GBS_global_string(
-            "%s/lib/pictures", GB_getenvARBHOME()), ".vfont", vectorfont_name,
-            application_database, true);
+    aw_create_selection_box_awars(this, "vectorfont",
+                                  GB_path_in_ARBLIB("pictures", NULL), 
+                                  ".vfont", vectorfont_name, application_database, true);
     awar("vectorfont/file_name")->add_callback( (AW_RCB0) aw_xfig_font_changefont_cb);
 }
 
@@ -1673,47 +1672,33 @@ static void create_help_entry(AW_window *aww) {
 /****************************************************************************************************************************/
 
 const char *aw_str_2_label(const char *str, AW_window *aww) {
-    static char buffer[256];
-    static char *var_value = 0;
-    static char *last_value = 0;
-    static const char *last_pointer = 0;
+    const char *label;
 
-    if (str == last_pointer && strcmp(str, last_value) == 0) { // same as last
-        str = 0; // return last result
-    } else {
-        free(last_value);
-        last_value = strdup(str);
-        last_pointer = str;
+    aw_assert(str);
+    if (str[0] == '#') {
+        label = GB_path_in_ARBLIB("pixmaps", str+1);
     }
+    else {
+        AW_awar *vs;
 
-    if (str) {
-        free(var_value);
-        var_value = 0;
+        if (strchr(str, '/') && (vs = aww->get_root()->awar_no_error(str))) {
+            // for labels displaying awar values, insert dummy text here
 
-        if (str[0] == '#') {
-            const char *arbhome = GB_getenvARBHOME();
-            sprintf(buffer, "%s/lib/pixmaps/%s", arbhome, str+1);
-        } else {
-            AW_awar *vs;
-            if (strchr(str, '/') && (vs=aww->get_root()->awar_no_error(str))) {
-                int wanted_len = aww->_at->length_of_buttons-2;
-                if (wanted_len<1)
-                    wanted_len = 1;
+            int wanted_len                 = aww->_at->length_of_buttons - 2;
+            if (wanted_len < 1) wanted_len = 1;
+            
+            char *labelbuf       = GB_give_buffer(wanted_len+1);
+            memset(labelbuf, 'y', wanted_len);
+            labelbuf[wanted_len] = 0;
 
-                var_value = (char*)malloc(wanted_len+1);
-                memset(var_value, 'y', wanted_len);
-
-                var_value[wanted_len] = 0;
-            } else {
-                if (strlen(str)<256)
-                    sprintf(buffer, "%s", str);
-                else
-                    var_value = strdup(str);
-            }
+            label = labelbuf;
+        }
+        else {
+            label = str;
         }
     }
 
-    return var_value ? var_value : buffer;
+    return label;
 }
 
 void AW_label_in_awar_list(AW_window *aww, Widget widget, const char *str) {
@@ -1917,63 +1902,66 @@ static Widget aw_create_shell(AW_window *aww, AW_BOOL allow_resize, AW_BOOL allo
 }
 
 void AW_window::set_icon(const char *icon, const char *default_icon) {
-    int xpos, ypos;
-    unsigned int xsize, ysize, borderwidth, depth;
-    Window window, wroot;
+    if (!icon) icon                 = "default";
+    if (!default_icon) default_icon = "default";
+    
     Widget w = p_w->shell;
-    Display *dpy = XtDisplay(w);
-    if (!icon)
-        icon = "default";
-    if (!default_icon)
-        default_icon = "default";
     while (w) {
-        if (XtIsWMShell(w))
-            break;
+        if (XtIsWMShell(w)) break;
         w = XtParent(w);
     }
-    if (w == NULL)
-        return;
-    char path[2048], path2[2048];
 
-    const char *arbhome = GB_getenvARBHOME();
-    sprintf( &path[0], "%s/lib/pixmaps/icons/%s.bitmap", arbhome, icon);
-    sprintf( &path2[0], "%s/lib/pixmaps/icons/%s.bitmap", arbhome, default_icon);
-    XtVaGetValues(w, XmNforeground, &p_global->foreground, NULL);
+    if (w) {
+        const char *iconpath = GB_path_in_ARBLIB("pixmaps/icons", NULL);
+        char       *path     = GBS_global_string_copy("%s/%s.bitmap", iconpath, icon);
+        char       *def_path = GBS_global_string_copy("%s/%s.bitmap", iconpath, default_icon);
 
-    Pixmap pixmap = XmGetPixmap(XtScreen(w), path, p_global->foreground,
-            p_global->background);
-    if (pixmap == XmUNSPECIFIED_PIXMAP) {
-        XmDestroyPixmap(XtScreen(w), pixmap);
-        pixmap = XmGetPixmap(XtScreen(w), path2, p_global->foreground,
-                p_global->background);
-    }
-
-    if (pixmap == XmUNSPECIFIED_PIXMAP) {
-        AW_ERROR("Cannot find pixmap '%s' or '%s'", path, path2);
-        return;
-    }
-
-    XSetWindowAttributes attr;
-    XtVaGetValues(w, XmNiconWindow, &window, NULL);
-
-    if ( !window) {
-        attr.background_pixmap = pixmap;
-        if ( !XGetGeometry(dpy, pixmap, &wroot, &xpos, &ypos, &xsize, &ysize,
-                &borderwidth, &depth) || (window = XCreateWindow(dpy, wroot, 0,
-                0, xsize, ysize, 0, depth, CopyFromParent, CopyFromParent,
-                CWBackPixmap, &attr)) == 0) {
-            XtVaSetValues(w, XmNiconPixmap, pixmap, NULL);
+        XtVaGetValues(w, XmNforeground, &p_global->foreground, NULL);
+        Pixmap pixmap = XmGetPixmap(XtScreen(w), path, p_global->foreground, p_global->background);
+        
+        if (pixmap == XmUNSPECIFIED_PIXMAP) {
             XmDestroyPixmap(XtScreen(w), pixmap);
-            return;
+            pixmap = XmGetPixmap(XtScreen(w), def_path, p_global->foreground, p_global->background);
         }
-        XtVaSetValues(w, XmNiconWindow, window, NULL);
-    }
-    XSetWindowBackgroundPixmap(dpy, window, pixmap);
-    XClearWindow(dpy, window);
-    XmDestroyPixmap(XtScreen(w), pixmap);
 
-    return;
+        if (pixmap == XmUNSPECIFIED_PIXMAP) {
+            AW_ERROR("Cannot find pixmap (neither '%s' nor '%s')", path, def_path);
+        }
+        else {
+            Window window;
+            XtVaGetValues(w, XmNiconWindow, &window, NULL);
+
+            Display *dpy = XtDisplay(w);
+
+            if (!window) {
+                XSetWindowAttributes attr;
+                attr.background_pixmap = pixmap;
+
+                int          xpos, ypos;
+                unsigned int xsize, ysize, borderwidth, depth;
+                Window       wroot;
+
+                if (XGetGeometry(dpy, pixmap, &wroot, &xpos, &ypos, &xsize, &ysize, &borderwidth, &depth)) {
+                    window = XCreateWindow(dpy, wroot, 0, 0, xsize, ysize, 0, depth, CopyFromParent, CopyFromParent, CWBackPixmap, &attr);
+                }
+            }
+
+            if (!window) {
+                XtVaSetValues(w, XmNiconPixmap, pixmap, NULL);
+            }
+            else {
+                XtVaSetValues(w, XmNiconWindow, window, NULL);
+                XSetWindowBackgroundPixmap(dpy, window, pixmap);
+                XClearWindow(dpy, window);
+            }
+        }
+        XmDestroyPixmap(XtScreen(w), pixmap);
+
+        free(def_path);
+        free(path);
+    }
 }
+
 
 static void aw_realize_widget(AW_window *aww) {
     if ( p_aww(aww)->areas[AW_INFO_AREA] && p_aww(aww)->areas[AW_INFO_AREA]->form) {
@@ -2651,24 +2639,21 @@ inline int yoffset_for_mode_button(int button_number) {
     return button_number*MODE_BUTTON_OFFSET + (button_number/4)*8 + 2;
 }
 
-int AW_window::create_mode(const char *mode_id, const char *pixmap,
-        const char *helpText, AW_active Mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+int AW_window::create_mode(const char *mode_id, const char *pixmap, const char *helpText, AW_active Mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     Widget button;
 
     TuneBackground(p_w->mode_area, TUNE_BUTTON); // set background color for mode-buttons
 
-    char path[256];
-    memset(path, 0, 256);
-    sprintf(path, "%s/lib/pixmaps/%s", GB_getenvARBHOME(), pixmap);
+    const char *path = GB_path_in_ARBLIB("pixmaps", pixmap);
+
     int y = yoffset_for_mode_button(p_w->number_of_modes);
-    button = XtVaCreateManagedWidget("", xmPushButtonWidgetClass,
-            p_w->mode_area, 
-            XmNx, 0, 
-            XmNy, y, 
-            XmNlabelType, XmPIXMAP, 
-            XmNshadowThickness, 1, 
-            XmNbackground, _at->background_color, 
-            NULL);
+    button = XtVaCreateManagedWidget("", xmPushButtonWidgetClass, p_w->mode_area,
+                                     XmNx,               0,
+                                     XmNy,               y,
+                                     XmNlabelType,       XmPIXMAP,
+                                     XmNshadowThickness, 1,
+                                     XmNbackground,      _at->background_color,
+                                     NULL);
     XtVaSetValues(button, RES_CONVERT( XmNlabelPixmap, path ),NULL );
     XtVaGetValues(button,XmNforeground, &p_global->foreground, NULL);
 
@@ -3431,8 +3416,7 @@ GB_ERROR AW_root::start_macro_recording(const char *file,
     }
     char *macro_header = GB_read_file("$(ARBHOME)/lib/macro.head");
     if (!macro_header) {
-        return GB_export_error("Cannot open file '%s'",
-                "$(ARBHOME)/lib/macro.head");
+        return GB_export_error("Cannot open file '%s'", "$(ARBHOME)/lib/macro.head");
     }
 
     prvt->recording_macro_file = fopen(path, "w");

@@ -688,12 +688,14 @@ GB_BOOL GBS_string_matches_regexp(const char *str,const char *search,GB_CASE cas
 }
 
 GB_BOOL GBS_string_matches(const char *str, const char *search, GB_CASE case_sens)
-/* *   Wildcard in search string */
-/* ?   any Charakter   */
-/* if 'ignore_case' == GB_TRUE change all letters to uppercase */
-/* returns 0 if strings are equal
-   -int/+int if left string is less/greater than right string */
-
+/* Wildcards in 'search' string:
+ *      ?   one character
+ *      *   serveral characters
+ *
+ * if 'case_sens' == GB_IGNORE_CASE -> change all letters to uppercase
+ * 
+ * returns GB_TRUE if strings are equal, GB_FALSE otherwise
+ */
 {
     const char *p1,*p2;
     char        a,b,*d;
@@ -1450,120 +1452,130 @@ char *GBS_eval_env(GB_CSTR p){
     return GBS_strclose(out);
 }
 
-char* GBS_find_lib_file(const char *filename,const char *libprefix, int warn_when_not_found)
-{
-    /* Searches files in $CURRENTDIR, $HOME, $ARBHOME/lib */
+char *GBS_find_lib_file(const char *filename, const char *libprefix, int warn_when_not_found) {
+    /* Searches files in current dir, $HOME, $ARBHOME/lib/libprefix */
 
-    char        buffer[256];
-    const char *arbhome;
-    const char *home;
-    FILE       *in;
+    char *result = 0;
 
-    arbhome = GB_getenvARBHOME();
-    home = GB_getenvHOME();
-
-    in = fopen(filename, "r");
-    if (in){
-        fclose(in);
-        return GB_STRDUP(filename);
+    if (GB_is_readablefile(filename)) {
+        result = strdup(filename);
     }
-    if (filename[0] != '.') {
-        if (strrchr(filename,'/')) filename = strrchr(filename,'/')+1;
-    }
+    else {
+        const char *slash = strrchr(filename, '/'); // look for last slash
 
-    sprintf(buffer, "%s/%s", home, filename);
-    in = fopen(buffer, "r");
-    if (in){
-        fclose(in);
-        return GB_STRDUP(buffer);
-    }
+        if (slash && filename[0] != '.') { // have absolute path
+            filename = slash+1; // only use filename part
+            slash    = 0;
+        }
 
-    if (strrchr(filename,'/')) filename = strrchr(filename,'/')+1;
-    if (filename[0] == '.') filename++;     /* no '.' in lib */
+        const char *fileInHome = GB_concat_full_path(GB_getenvHOME(), filename);
 
-    sprintf(buffer, "%s/lib/%s%s", arbhome, libprefix, filename);
-    in = fopen(buffer, "r");
-    if (in){
-        fclose(in);
-        return GB_STRDUP(buffer);
-    }
+        if (fileInHome && GB_is_readablefile(fileInHome)) {
+            result = strdup(fileInHome);
+        }
+        else {
+            if (slash) filename = slash+1; // now use filename only, even if path starts with '.'
 
-    if (warn_when_not_found) {
-        fprintf(stderr, "WARNING dont know where to find %s\n", filename);
-        fprintf(stderr, "   searched in .\n");
-        fprintf(stderr, "   searched in $(HOME)     (==%s)\n", home);
-        fprintf(stderr, "   searched in $(ARBHOME)/lib/%s   (==%s)\n", libprefix, arbhome);
-    }
-    return 0;
-}
+            const char *fileInLib = GB_path_in_ARBLIB(libprefix, filename);
 
-
-
-/********************************************************************************************
-                    some simple find procedures
-********************************************************************************************/
-
-char **GBS_read_dir(const char *dir, const char *filter)
-     /* read the content of the directory,
-        if dir        == NULL then set dir to $ARBHOME/lib
-    */
-{
-    char    dirbuffer[1024];
-    char    command[1024];
-    char    sin[256];
-    char    **result=0;
-    long    resultsize=50;
-    long    resultptr=0;
-    FILE    *ls;
-
-#if defined(DEVEL_RALF)
-#warning rewrite me
-#endif /* DEVEL_RALF */
-
-#ifdef DEBUG
-    printf("dir='%s' filter='%s'\n",dir, filter);
-#endif
-
-    if (!dir) {
-        dir = dirbuffer;
-        sprintf(dirbuffer,"%s/lib",GB_getenvARBHOME());
-    }
-    if (filter) {
-        sprintf(command,"ls %s/%s",dir,filter);
-    }else{
-        sprintf(command,"ls %s",dir);
-    }
-    ls = popen(command,"r");
-    if (ls) {
-        result = (char **)malloc((size_t)(sizeof(char *)*resultsize));
-        while (
-               sin[0] = 0,
-               fscanf(ls,"%s\n",sin),
-               sin[0]
-               )
-        {
-            int len = strlen(sin);
-            if (len>0) {
-                if (sin[len-1] == ':') { // stop at first subdirectory
-                    break;
-                }
-                else {
-                    if (resultptr>=resultsize-1){
-                        resultsize*=2;
-                        result = (char **)realloc((MALLOC_T)result,(size_t)(sizeof(char *)*resultsize));
-                    }
-                    result[resultptr++] = GB_STRDUP(sin);
+            if (fileInLib && GB_is_readablefile(fileInLib)) {
+                result = strdup(fileInLib);
+            }
+            else {
+                if (warn_when_not_found) {
+                    GB_warning("Don't know where to find '%s'\n"
+                               "  searched in '.'\n"
+                               "  searched in $(HOME) (for '%s')\n"
+                               "  searched in $(ARBHOME)/lib/%s (for '%s')\n", 
+                               filename, fileInHome, libprefix, fileInLib);
                 }
             }
         }
-        result[resultptr] = 0;
-        fclose(ls);
     }
+
     return result;
 }
 
-void GBS_free_names(char **names) {
-    GBT_free_names(names);
+
+
+/* *******************************************************************************************
+   some simple find procedures
+********************************************************************************************/
+
+char **GBS_read_dir(const char *dir, const char *mask) {
+    /* Return names of files in directory 'dir'.
+     * Filter through 'mask' (mask == NULL -> return all files).
+     *
+     * Result is a NULL terminated array of char* (sorted alphanumerically) 
+     * Use GBT_free_names() to free the result.
+     * 
+     * In case of error, result is NULL and error is exported
+     *
+     * Special case: If 'dir' is the name of a file, return an array with file as only element
+     */
+
+    gb_assert(dir);             // dir == NULL was allowed before 12/2008, forbidden now!
+
+    const char  *fulldir   = GB_get_full_path(dir);
+    DIR         *dirstream = opendir(fulldir);
+    char       **names     = NULL;
+
+    if (!dirstream) {
+        if (GB_is_readablefile(fulldir)) {
+            names    = malloc(2*sizeof(*names));
+            names[0] = strdup(fulldir);
+            names[1] = NULL;
+        }
+        else {
+            char *lslash = strrchr(fulldir, '/');
+
+            if (lslash) {
+                char *name;
+                lslash[0] = 0;
+                name      = lslash+1;
+                if (GB_is_directory(fulldir)) {
+                    names = GBS_read_dir(fulldir, name);
+                }
+                lslash[0] = '/';
+            }
+
+            if (!names) GB_export_error("can't read directory '%s'", fulldir);
+        }
+    }
+    else {
+        if (mask == NULL) mask = "*";
+
+        int   allocated = 100;
+        int   entries   = 0;
+        names           = malloc(100*sizeof(*names));
+
+        struct dirent *entry;
+        while ((entry = readdir(dirstream)) != 0) {
+            const char *name = entry->d_name;
+
+            if (name[0] == '.' && (name[1] == 0 || (name[1] == '.' && name[2] == 0))) {
+                ; // skip '.' and '..'
+            }
+            else {
+                if (GBS_string_matches_regexp(name, mask, GB_MIND_CASE)) {
+                    if (entries == allocated) {
+                        allocated += allocated>>1; // * 1.5
+                        names  = realloc(names, allocated*sizeof(*names));
+                    }
+                    names[entries++] = strdup(GB_concat_path(fulldir, name));
+                }
+            }
+        }
+
+        names          = realloc(names, (entries+1)*sizeof(*names));
+        names[entries] = NULL;
+
+        GB_sort((void**)names, 0, entries, GB_string_comparator, 0);
+
+        closedir(dirstream);
+    }
+
+    return names;  
 }
 
 long GBS_gcgchecksum( const char *seq )

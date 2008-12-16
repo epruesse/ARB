@@ -1499,7 +1499,7 @@ struct aw_help_global_struct {
 static char *get_full_qualified_help_file_name(const char *helpfile, bool path_for_edit = false) {
     GB_CSTR   result             = 0;
     char     *user_doc_path      = strdup(GB_getenvDOCPATH());
-    char     *devel_doc_path     = GBS_global_string_copy("%s/HELP_SOURCE/oldhelp", GB_getenvARBHOME());
+    char     *devel_doc_path     = GB_strdup(GB_path_in_ARBHOME("HELP_SOURCE/oldhelp", NULL));
     size_t    user_doc_path_len  = strlen(user_doc_path);
     size_t    devel_doc_path_len = strlen(devel_doc_path);
 
@@ -1520,7 +1520,7 @@ static char *get_full_qualified_help_file_name(const char *helpfile, bool path_f
 
         if (path_for_edit) {
 #if defined(DEBUG)
-            char *gen_doc_path = GBS_global_string_copy("%s/HELP_SOURCE/genhelp", GB_getenvARBHOME());
+            char *gen_doc_path = GB_strdup(GB_path_in_ARBHOME("HELP_SOURCE/genhelp", NULL));
 
             char *devel_source = GBS_global_string_copy("%s/%s", devel_doc_path, rel_path);
             char *gen_source   = GBS_global_string_copy("%s/%s", gen_doc_path, rel_path);
@@ -1600,17 +1600,18 @@ static char *get_local_help_url(AW_root *awr) {
 }
 
 static void aw_help_edit_help(AW_window *aww) {
-    char buffer[1024];
     char *helpfile = get_full_qualified_help_file_name(aww->get_root(), true);
 
     if (GB_size_of_file(helpfile)<=0){
 #if defined(DEBUG)
-        sprintf(buffer,"cp %s/HELP_SOURCE/oldhelp/FORM.hlp %s", GB_getenvARBHOME(), helpfile);
-#else        
-        sprintf(buffer,"cp %s/lib/help/FORM.hlp %s", GB_getenvARBHOME(), helpfile);
+        const char *base = GB_path_in_ARBHOME("HELP_SOURCE/oldhelp", NULL);
+#else
+        const char *base = GB_path_in_ARBLIB("help", NULL);
 #endif // DEBUG
-        printf("%s\n",buffer);
-        system(buffer);
+
+        const char *copy_cmd = GBS_global_string("cp %s/FORM.hlp %s", base, helpfile);
+        printf("[Executing '%s']\n", copy_cmd);
+        system(copy_cmd);
     }
 
     AWT_edit(helpfile);

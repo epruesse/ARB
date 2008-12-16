@@ -36,47 +36,17 @@ static GB_CSTR awt_get_base_directory(const char *pwd_envar) {
         res = GB_getcwd();
     }
     else if (strcmp(pwd_envar, "PT_SERVER_HOME") == 0) {
-        static char *pt_server_home = GBS_global_string_copy("%s/lib/pts", GB_getenvARBHOME());
-        res                         = pt_server_home;
+        res = GB_path_in_ARBLIB("pts", NULL);
     }
     else {
         res = GB_getenv(pwd_envar);
-        if (!res) {
-            res = GB_getcwd();
-        }
+        if (!res) res = GB_getcwd(); // fallback to current working dir
     }
 
     return res;
 }
 
-GB_CSTR AWT_get_full_path(const char *anypath) {
-    static char buf[PATH_MAX+1];
-    if (strlen(anypath) > PATH_MAX) GB_CORE;
-    if (strncmp(anypath, "~/", 2) == 0) {
-        GB_CSTR home    = GB_getenvHOME();
-        GB_CSTR newpath = GBS_global_string("%s%s", home, anypath+1);
-        realpath(newpath, buf);
-    }
-    else {
-        realpath(anypath, buf);
-    }
-    return buf;
-}
 
-GB_CSTR AWT_concat_full_path(const char *anypath_left, const char *anypath_right) {
-    static char buf[FILENAME_MAX+1];
-
-    int len_left  = strlen(anypath_left);
-    int len_right = strlen(anypath_right);
-    if ((len_left+1+len_right) > FILENAME_MAX) GB_CORE;
-
-    sprintf(buf, "%s/%s", anypath_left, anypath_right);
-    return AWT_get_full_path(buf);
-}
-
-GB_CSTR AWT_path_in_ARBHOME(const char *relative_path) {
-    return AWT_concat_full_path(GB_getenvARBHOME(), relative_path);
-}
 
 GB_CSTR AWT_get_suffix(const char *fullpath) { // returns pointer behind '.' of suffix (or NULL if no suffix found)
     GB_CSTR dot = strrchr(fullpath, '.');
@@ -135,8 +105,8 @@ char *AWT_fold_path(char *path, const char *pwd_envar) {
 /* create a full path */
 
 char *AWT_unfold_path(const char *path, const char *pwd_envar) {
-    if (path[0] == '/' || path[0] == '~') return strdup(AWT_get_full_path(path));
-    return strdup(AWT_concat_full_path(awt_get_base_directory(pwd_envar), path));
+    if (path[0] == '/' || path[0] == '~') return strdup(GB_get_full_path(path));
+    return strdup(GB_concat_full_path(awt_get_base_directory(pwd_envar), path));
 }
 
 const char *AWT_valid_path(const char *path) {
@@ -214,8 +184,8 @@ static void awt_fill_selection_box_recursive(const char *fulldir, int skipleft, 
         char       *nontruepath = GBS_global_string_copy("%s/%s", fulldir, entry);
         char       *fullname;
 
-        if (strlen(fulldir)) fullname = strdup(AWT_concat_full_path(fulldir, entry));
-        else fullname                 = strdup(AWT_get_full_path(entry));
+        if (strlen(fulldir)) fullname = strdup(GB_concat_full_path(fulldir, entry));
+        else fullname                 = strdup(GB_get_full_path(entry));
 
         if (AWT_is_dir(fullname)) {
             if (!(entry[0] == '.' && (!DIR_show_hidden || entry[1] == 0 || (entry[1] == '.' && entry[2] == 0)))) { // skip "." and ".." and dotdirs if requested
@@ -457,25 +427,25 @@ static void awt_selection_box_changed_filename(void *, struct adawcbstruct *cbs)
         char *dir     = aw_root->awar(cbs->def_dir)->read_string();
 
         if (fname[0] == '/' || fname[0] == '~') {
-            newName = strdup(AWT_get_full_path(fname));
+            newName = strdup(GB_get_full_path(fname));
         }
         else {
             if (dir[0]) {
                 if (dir[0] == '/') {
-                    newName = strdup(AWT_concat_full_path(dir, fname));
+                    newName = strdup(GB_concat_full_path(dir, fname));
                 }
                 else {
                     char *fulldir = 0;
 
                     if (dir[0] == '.') fulldir = AWT_unfold_path(dir, cbs->pwd);
-                    else fulldir               = strdup(AWT_get_full_path(dir));
+                    else fulldir               = strdup(GB_get_full_path(dir));
 
-                    newName = strdup(AWT_concat_full_path(fulldir, fname));
+                    newName = strdup(GB_concat_full_path(fulldir, fname));
                     free(fulldir);
                 }
             }
             else {
-                newName = strdup(AWT_get_full_path(fname));
+                newName = strdup(GB_get_full_path(fname));
             }
         }
 
@@ -486,7 +456,7 @@ static void awt_selection_box_changed_filename(void *, struct adawcbstruct *cbs)
                 if (cbs->previous_filename) {
                     const char *slash              = strrchr(cbs->previous_filename, '/');
                     const char *name               = slash ? slash+1 : cbs->previous_filename;
-                    const char *with_previous_name = AWT_concat_full_path(newName, name);
+                    const char *with_previous_name = GB_concat_full_path(newName, name);
 
                     if (!AWT_is_dir(with_previous_name)) { // write as new name if not a directory
                         aw_root->awar(cbs->def_name)->write_string(with_previous_name);
@@ -627,7 +597,7 @@ char *awt_get_selected_fullname(AW_root *awr, const char *awar_prefix) {
     free(awar_name);
 
     char *dir  = awr->awar(GBS_global_string("%s/directory", awar_prefix))->read_string();
-    char *full = strdup(AWT_concat_full_path(dir, file));
+    char *full = strdup(GB_concat_full_path(dir, file));
 
     free(dir);
     free(file);
