@@ -27,6 +27,7 @@ depends: $(DEPENDS)
 $(DEPENDS): depend.init
 depend.init:
 	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+	-@rm Makefile.bak # get rid of bak (generated for some dubious reason only in this directory)
 .c.depend:
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 .cxx.depend:
