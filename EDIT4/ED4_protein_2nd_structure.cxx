@@ -1040,14 +1040,16 @@ static void ED4_pfold_select_SAI_and_update_option_menu(AW_window *aww, AW_CL om
     aww->clear_option_menu(_oms);
     aww->insert_default_option(selected_sai, "", selected_sai);
     GB_transaction dummy(GLOBAL_gb_main);
-    GBDATA *sai = GBT_first_SAI(GLOBAL_gb_main);
-    while (sai) {
-        char *sai_name = GBT_read_name(sai);
-        if (strcmp(sai_name, selected_sai) && strstr(sai_name, sai_filter)) {
+    
+    for (GBDATA *sai = GBT_first_SAI(GLOBAL_gb_main);
+         sai;
+         sai = GBT_next_SAI(sai))
+    {
+        const char *sai_name = GBT_read_name(sai);
+        if (strcmp(sai_name, selected_sai) != 0 && strstr(sai_name, sai_filter) != 0) {
             aww->callback(ED4_pfold_select_SAI_and_update_option_menu, (AW_CL)_oms, true);
             aww->insert_option(sai_name, "", sai_name);
         }
-        sai = GBT_next_SAI(sai);
     }
     
     free(selected_sai);

@@ -983,23 +983,21 @@ void GB_pop_my_security(GBDATA *gbd) {
     }
 }
 
-GB_TYPES GB_read_type(GBDATA *gbd)
-{
+GB_TYPES GB_read_type(GBDATA *gbd) {
     GB_TEST_TRANSACTION(gbd);
     return (GB_TYPES)GB_TYPE(gbd);
 }
 
-char *GB_read_key(GBDATA *gbd){
-    char *k;
-    GB_TEST_TRANSACTION(gbd);
-    k = GB_KEY(gbd);
-    if (!k) return GB_STRDUP("_null_");
-    return GB_STRDUP(k);
+char *GB_read_key(GBDATA *gbd) {
+    return strdup(GB_read_key_pntr(gbd));
 }
 
-GB_CSTR GB_read_key_pntr(GBDATA *gbd){
+GB_CSTR GB_read_key_pntr(GBDATA *gbd) {
+    GB_CSTR k;
     GB_TEST_TRANSACTION(gbd);
-    return GB_KEY(gbd);
+    k         = GB_KEY(gbd);
+    if (!k) k = GBS_global_string("<invalid key (quark=%i)>", GB_KEY_QUARK(gbd));
+    return k;
 }
 
 GB_CSTR gb_read_key_pntr(GBDATA *gbd){

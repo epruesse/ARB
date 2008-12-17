@@ -157,9 +157,7 @@ positiontype MO_Liste::fill_marked_bakts()
           gb_species;
           gb_species = GBT_next_marked_species(gb_species))
     {
-        char *name = GBT_read_name(gb_species);
-        put_entry(name);
-        free(name);
+        put_entry(GBT_read_name(gb_species));
     }
 
     GB_pop_transaction(GLOBAL_gb_main);

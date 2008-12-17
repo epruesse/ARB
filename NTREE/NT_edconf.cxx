@@ -419,11 +419,7 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType){
                     for (GBDATA *gbd = GBT_first_marked_species(GLOBAL_gb_main); gbd; gbd = GBT_next_marked_species(gbd)) {
                         int marked = GB_read_flag(gbd);
                         if (marked) {
-                            char *name = GBT_read_name(gbd);
-                            if (name) {
-                                GBS_write_hash(was_marked, name, 1);
-                                free(name);
-                            }
+                            GBS_write_hash(was_marked, GBT_read_name(gbd), 1);
                             GB_write_flag(gbd, 0);
                         }
                     }

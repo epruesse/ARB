@@ -26,12 +26,11 @@ void aed_start_naligning(AW_window *aw) {
         GB_transaction dummy(GLOBAL_gb_main);
         for (GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main);
              gb_species;
-             gb_species = GBT_next_marked_species(gb_species)){
-            char *name = GBT_read_name(gb_species);
-            GBS_strcat(strstruct,"\"");
-            GBS_strcat(strstruct,name);
-            GBS_strcat(strstruct,"\" ");
-            delete name;
+             gb_species = GBT_next_marked_species(gb_species))
+        {
+            GBS_chrcat(strstruct, '\"');
+            GBS_strcat(strstruct, GBT_read_name(gb_species));
+            GBS_strcat(strstruct, "\" ");
         }
     }else{
         char *species_name = root->awar( AWAR_SPECIES_NAME )->read_string();

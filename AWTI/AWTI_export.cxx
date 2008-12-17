@@ -556,12 +556,9 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, GBDATA *gb_main,
                  gb_species = esd->next_species(gb_species))
             {
                 if (multiple) {
-                    char *name = GBT_read_name(gb_species);
+                    curr_outname = GBS_global_string_copy("%s_%s.%s",outname_nosuffix, GBT_read_name(gb_species), efo->suffix);
+                    out          = fopen(curr_outname, "wt");
 
-                    curr_outname = GBS_global_string_copy("%s_%s.%s",outname_nosuffix, name, efo->suffix);
-                    free(name);
-
-                    out = fopen(curr_outname, "wt");
                     if (!out) error = GBS_global_string("Can't write to file '%s'", curr_outname);
                 }
 
