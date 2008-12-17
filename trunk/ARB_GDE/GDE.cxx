@@ -120,10 +120,7 @@ static char *gde_filter_weights(GBDATA *gb_sai,AW_CL ){
             const char *type = GB_read_char_pntr(gb_type);
 
             if (GBS_string_matches( type,"PV?:*",GB_MIND_CASE)) {
-                char *name = GBT_read_name(gb_sai);
-                
-                result = GBS_global_string_copy("%s: %s",name,type);
-                free(name);
+                result = GBS_global_string_copy("%s: %s", GBT_read_name(gb_sai), type);
             }
 
         }

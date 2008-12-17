@@ -2621,17 +2621,14 @@ GB_ERROR GBT_restore_marked_species(GBDATA *gb_main, const char *stored_marked) 
                     read species information
 ********************************************************************************************/
 
-GBDATA *GBT_read_sequence(GBDATA *gb_species, const char *aliname)
-{
+GBDATA *GBT_read_sequence(GBDATA *gb_species, const char *aliname) {
     GBDATA *gb_ali = GB_entry(gb_species, aliname);
     return gb_ali ? GB_entry(gb_ali, "data") : 0;
 }
 
-char *GBT_read_name(GBDATA *gb_species)
-{
-    GBDATA *gb_name = GB_entry(gb_species,"name");
-    if (!gb_name) return NULL;
-    return GB_read_string(gb_name);
+GB_CSTR GBT_read_name(GBDATA *gb_item) {
+    GBDATA *gb_name = GB_entry(gb_item,"name");
+    return gb_name ? GB_read_char_pntr(gb_name) : GBS_global_string("<unnamed %s>", GB_read_key_pntr(gb_item));
 }
 
 /********************************************************************************************

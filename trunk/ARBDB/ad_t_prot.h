@@ -92,7 +92,7 @@ char *GBT_store_marked_species P_((GBDATA *gb_main, int unmark_all));
 NOT4PERL GB_ERROR GBT_with_stored_species P_((GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata));
 GB_ERROR GBT_restore_marked_species P_((GBDATA *gb_main, const char *stored_marked));
 GBDATA *GBT_read_sequence P_((GBDATA *gb_species, const char *aliname));
-char *GBT_read_name P_((GBDATA *gb_species));
+GB_CSTR GBT_read_name P_((GBDATA *gb_item));
 char *GBT_get_default_alignment P_((GBDATA *gb_main));
 GB_ERROR GBT_set_default_alignment P_((GBDATA *gb_main, const char *alignment_name));
 char *GBT_get_default_helix P_((GBDATA *gb_main));

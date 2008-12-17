@@ -318,12 +318,11 @@ void PV_ManageTerminals(AW_root *root){
             int marked = GBT_count_marked_species(GLOBAL_gb_main);
             if (marked) {
                 GBDATA *gbSpecies;
-                for(gbSpecies = GBT_first_marked_species(GLOBAL_gb_main);
-                    gbSpecies;
-                    gbSpecies = GBT_next_marked_species(gbSpecies))
-                    {
-                        char *spName = GBT_read_name(gbSpecies);
-                        ED4_species_name_terminal *spNameTerm = ED4_find_species_name_terminal(spName);
+                for (gbSpecies = GBT_first_marked_species(GLOBAL_gb_main);
+                     gbSpecies;
+                     gbSpecies = GBT_next_marked_species(gbSpecies))
+                {
+                        ED4_species_name_terminal *spNameTerm = ED4_find_species_name_terminal(GBT_read_name(gbSpecies));
                         if (spNameTerm && spNameTerm->is_species_name_terminal()) 
                             {
                                 ED4_terminal *terminal = spNameTerm->corresponding_sequence_terminal();
@@ -859,7 +858,8 @@ void PV_AddAAseqTerminalsToLoadedSpecies() {
                     gbSpecies;
                     gbSpecies = GBT_next_marked_species(gbSpecies))
                     {
-                        char *spName = GBT_read_name(gbSpecies); cout<<marked--<<". "<<spName<<endl;
+                        const char *spName = GBT_read_name(gbSpecies);
+                        cout<<marked--<<". "<<spName<<endl;
                         ED4_species_name_terminal *spNameTerm = ED4_find_species_name_terminal(spName);
                         if (spNameTerm && spNameTerm->is_species_name_terminal()) 
                             {

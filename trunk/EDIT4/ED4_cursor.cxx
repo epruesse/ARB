@@ -708,7 +708,7 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
             count++;
             GB_status(double(count)/double(marked));
 
-            char *name = GBT_read_name(gb_species);
+            const char *name = GBT_read_name(gb_species);
             ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(name);
 
             if (!name_term) { // species not found -> insert

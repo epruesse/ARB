@@ -626,11 +626,8 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
             }
 
             {
-                char *name = GBT_read_name(gb_species);
-                if (!name) name = strdup("(unknown species)");
-
                 char *dup_fail_reason = strdup(fail_reason); // otherwise it may be destroyed by GBS_global_string
-                aw_message(GBS_global_string("Automatic re-align failed for '%s'", name));
+                aw_message(GBS_global_string("Automatic re-align failed for '%s'", GBT_read_name(gb_species)));
 
                 if (ignore_fail_pos) {
                     aw_message(GBS_global_string("Reason: %s", dup_fail_reason));
@@ -640,7 +637,6 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
                 }
 
                 free(dup_fail_reason);
-                free(name);
             }
 
         }
