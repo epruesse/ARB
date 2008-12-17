@@ -84,7 +84,10 @@ GB_ERROR awt_add_new_changekey_to_keypath(GBDATA *gb_main,const char *name, int 
         if ( elem_type != type && (type != GB_DB || elem_type != GB_LINK)){
             return ("Fatal Error: Key exists and type is incompatible");
         }
-        return ("Warning: Key '%s' exists");
+#if defined(DEBUG)
+        printf("Warning: Key '%s' exists\n", name);
+#endif
+        return 0;
     }
     return 0;
 }
