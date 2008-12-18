@@ -232,6 +232,7 @@ symlink ../../GL/glpng/glpng.h INCLUDE/GL/glpng.h &&
 # arbdb dirs
 
 arbdb_symlink AD_MOBJECTS.h &&
+arbdb_symlink adExperiment.c &&
 arbdb_symlink adGene.c &&
 arbdb_symlink adGene.h &&
 arbdb_symlink adReference.c &&

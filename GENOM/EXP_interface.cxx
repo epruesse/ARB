@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu Dec/04/2008 15:30 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Dec/18/2008 16:33 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -312,7 +312,7 @@ void experiment_create_cb(AW_window *aww) {
                 error  = GB_export_error("Experiment '%s' already exists", dest);
             }
             else {
-                gb_dest = EXT_create_experiment_rel_experiment_data(gb_experiment_data, dest);
+                gb_dest = EXP_create_experiment_rel_experiment_data(gb_experiment_data, dest);
                 if (gb_dest) aww->get_root()->awar(AWAR_EXPERIMENT_NAME)->write_string(dest);
                 else error = GB_get_error();
             }

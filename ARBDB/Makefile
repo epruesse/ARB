@@ -25,11 +25,11 @@ tlpro: $(GB_T:.o=.c)
 	../SOURCE_TOOLS/mv_if_diff ad_t_lpro.h.tmp ad_t_lpro.h
 
 pro: $(GB_O:.o=.c)
-	../MAKEBIN/aisc_mkpt -G -z -C -F GB,GEN $(GB_O:.o=.c) >ad_prot.h.tmp
+	../MAKEBIN/aisc_mkpt -G -z -C -F GB,GEN,EXP $(GB_O:.o=.c) >ad_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_prot.h.tmp ad_prot.h
 
 tpro: $(GB_T:.o=.c)
-	../MAKEBIN/aisc_mkpt -G -z -C -F GB,GEN $(GB_T:.o=.c) >ad_t_prot.h.tmp
+	../MAKEBIN/aisc_mkpt -G -z -C -F GB,GEN,EXP $(GB_T:.o=.c) >ad_t_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_t_prot.h.tmp ad_t_prot.h
 
 wc:
@@ -121,6 +121,11 @@ adcompr.o: arb_assert.h
 adcompr.o: arbdb.h
 adcompr.o: arbdbt.h
 adcompr.o: $(ARBHOME)/INCLUDE/attributes.h
+
+adExperiment.o: ad_prot.h
+adExperiment.o: arb_assert.h
+adExperiment.o: arbdb.h
+adExperiment.o: $(ARBHOME)/INCLUDE/attributes.h
 
 adGene.o: ad_prot.h
 adGene.o: ad_t_prot.h
