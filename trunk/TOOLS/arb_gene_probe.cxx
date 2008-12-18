@@ -423,14 +423,7 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
     // into new 'species_data' (gb_species_data2)
 
     GB_ERROR    error            = 0;
-    GBDATA     *gb_organism_name = GB_entry(gb_organism,"name"); // Name der Spezies
-    const char *organism_name    = 0;
-
-    if (!gb_organism_name) error = GBS_global_string("Organism w/o name entry");
-    else {
-        organism_name             = GB_read_char_pntr(gb_organism_name);
-        if (!organism_name) error = GB_get_error();
-    }
+    const char *organism_name = GBT_read_name(gb_organism);
 
     GenePositionMap geneRanges;
 
@@ -438,29 +431,23 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
     int splitted_gene_counter_old = splitted_gene_counter;
     int intergene_counter_old     = intergene_counter;
 
-    GBDATA     *gb_ali_genom    = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
-    gp_assert(gb_ali_genom);    // existance has to be checked by caller!
+    GBDATA *gb_ali_genom = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
+    gp_assert(gb_ali_genom);                                                       // existance has to be checked by caller!
+    
     const char *ali_genom       = GB_read_char_pntr(gb_ali_genom);
     if (!ali_genom) error       = GB_get_error();
-    PositionPair::genome_length = GB_read_count(gb_ali_genom); // this affects checks in PositionPair
+    PositionPair::genome_length = GB_read_count(gb_ali_genom);     // this affects checks in PositionPair
 
     for (GBDATA *gb_gene = GEN_first_gene(gb_organism);
          gb_gene && !error;
          gb_gene = GEN_next_gene(gb_gene))
     {
-        GBDATA     *gb_gene_name = GB_entry(gb_gene,"name");
-        const char *gene_name     = 0;
-
-        if (!gb_gene_name) error = "Gene w/o name entry";
-        else {
-            gene_name             = GB_read_char_pntr(gb_gene_name);
-            if (!gene_name) error = GB_get_error();
-        }
-
+        const char *gene_name = GBT_read_name(gb_gene);
+        
         PositionPairList part_list;
-        if (!error) error                = scan_gene_positions(gb_gene, part_list);
-        else if (part_list.empty()) error = "empty position list";
+        error = scan_gene_positions(gb_gene, part_list);
 
+        if (!error && part_list.empty()) error = "empty position list";
         if (!error) {
             int          split_count = part_list.size();
             PositionPair first_part  = *part_list.begin();

@@ -144,29 +144,22 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
                 const struct ad_item_selector *selector = cbs->selector;
 
                 if (selector->type == AWT_QUERY_ITEM_SPECIES) { // species
-                    GBDATA *gb_name = GB_entry(cbs->gb_user, "name");
-                    if (gb_name) {
-                        char *name = GB_read_string(gb_name);
-                        aw_openstatus("Renaming species");
+                    const char *name = GBT_read_name(cbs->gb_user);
+                    aw_openstatus("Renaming species");
 
-                        if (strlen(value)) {
-                            GBT_begin_rename_session(cbs->gb_main,0);
+                    if (strlen(value)) {
+                        GBT_begin_rename_session(cbs->gb_main,0);
 
-                            error = GBT_rename_species(name, value, GB_FALSE);
+                        error = GBT_rename_species(name, value, GB_FALSE);
 
-                            if (error) GBT_abort_rename_session();
-                            else GBT_commit_rename_session(aw_status, aw_status);
-                        }
-                        else {
-                            error = AWTC_recreate_name(cbs->gb_user, true);
-                        }
-
-                        aw_closestatus();
-                        free(name);
+                        if (error) GBT_abort_rename_session();
+                        else GBT_commit_rename_session(aw_status, aw_status);
                     }
                     else {
-                        error = GB_export_error("harmless internal error: Please try again");
+                        error = AWTC_recreate_name(cbs->gb_user, true);
                     }
+
+                    aw_closestatus();
                 }
                 else { // non-species (gene, experiment, etc.)
                     if (strlen(value)) {
@@ -177,11 +170,7 @@ static void awt_arbdb_scanner_value_change(void *, struct adawcbstruct *cbs)
                              gb_exists;
                              gb_exists = selector->get_next_item(gb_exists))
                         {
-                            GBDATA *gb_name = GB_entry(gb_exists, "name");
-                            if (gb_name) {
-                                const char *name = GB_read_char_pntr(gb_name);
-                                if (ARB_stricmp(name, value) == 0) break;
-                            }
+                            if (ARB_stricmp(GBT_read_name(gb_exists), value) == 0) break;
                         }
 
                         if (gb_exists) error = GBS_global_string("There is already a %s named '%s'", selector->item_name, value);

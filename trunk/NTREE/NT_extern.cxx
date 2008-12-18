@@ -749,10 +749,11 @@ static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_
     if (ref_gb_node) {
         if (GEN_is_pseudo_gene_species(ref_gb_node)) {
             GBDATA *gb_organism = GEN_find_origin_organism(ref_gb_node, organism_hash);
+            
             if (gb_organism) {
-                GBDATA *gb_name = GB_entry(gb_organism, "name");
-                if (gb_name) {
-                    char *name  = GB_read_string(gb_name);
+                char *name = GBT_read_string(gb_organism, "name");
+
+                if (name) {
                     free(ref_name);
                     ref_name    = name;
                     ref_gb_node = gb_organism;

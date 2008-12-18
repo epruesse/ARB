@@ -43,6 +43,35 @@
 
 using namespace std;
 
+#define AWAR_CON_SEQUENCE_TYPE       "tmp/concat/sequence_type"
+#define AWAR_CON_NEW_ALIGNMENT_NAME  "tmp/concat/new_alignment_name"
+#define AWAR_CON_ALIGNMENT_SEPARATOR "tmp/concat/alignment_separator"
+#define AWAR_CON_DB_ALIGNS           "tmp/concat/database_alignments"
+#define AWAR_CON_CONCAT_ALIGNS       "tmp/concat/concatenating_alignments"
+#define AWAR_CON_DUMMY               "tmp/concat/dummy"
+#define AWAR_CON_MERGE_FIELD         "tmp/concat/merge_field"
+#define AWAR_CON_STORE_SIM_SP_NO     "tmp/concat/store_sim_sp_no"
+
+#define MERGE_SIMILAR_CONCATENATE_ALIGNMENTS 1
+#define MOVE_DOWN  0
+#define MOVE_UP    1
+
+struct conAlignStruct{
+    GBDATA            *gb_main;
+    AW_window         *aws;
+    AW_root           *awr;
+    AW_selection_list *db_id;
+    AW_selection_list *con_id;
+    char              *seqType;
+};
+
+struct SPECIES_ConcatenateList {
+    GBDATA *species;
+    char   *species_name;
+    struct SPECIES_ConcatenateList *next;
+};
+typedef struct SPECIES_ConcatenateList *speciesConcatenateList;
+
 extern GBDATA               *GLOBAL_gb_main;
 static AW_selection_list    *con_alignment_list;
 static AW_selection_list    *db_alignment_list;
@@ -414,18 +443,17 @@ void concatenateAlignments(AW_window *aws) {
     free(new_ali_name);
 }
 
-static void addSpeciesToConcatenateList(void **speciesConcatenateListPtr,GB_CSTR species_name){
+static void addSpeciesToConcatenateList(speciesConcatenateList *sclp, GB_CSTR species_name) {
 
     GBDATA *gb_species_data = GB_search(GLOBAL_gb_main, "species_data",  GB_CREATE_CONTAINER);
     GBDATA *gb_species      = GBT_find_species_rel_species_data(gb_species_data, species_name);
 
     if (gb_species) {
-        speciesConcatenateList *sclp = (speciesConcatenateList*)speciesConcatenateListPtr;
-        speciesConcatenateList scl   = new SPECIES_ConcatenateList;
-        scl->species                 = gb_species;
-        scl->species_name            = strdup(species_name);
-        scl->next                    = *sclp;
-        *sclp                        = scl;
+        speciesConcatenateList scl = new SPECIES_ConcatenateList;
+        scl->species               = gb_species;
+        scl->species_name          = strdup(species_name);
+        scl->next                  = *sclp;
+        *sclp                      = scl;
     }
 }
 
@@ -723,87 +751,81 @@ GB_ERROR checkAndCreateNewField(GBDATA *gb_main, char *new_field_name){
     return 0;
 }
 
-// void excludeSpecies(GBDATA *species){
-//     GBDATA *gb_species_name = GB_entry(species, "name");
-//     char   *species_name    = GB_read_string(gb_species_name);
-
-//     aw_message("\"%s\" species doesn`t contain any data in the selected ENTRY! and is EXCLUDED from merging similar species!!");
-//     GB_write_flag(species, 0);
-//     free(species_name);
-// }
-
 void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignments, AW_CL cl_ntw) {
+    AW_root *aw_root          = aws->get_root();
+    char    *merge_field_name = aw_root->awar(AWAR_CON_MERGE_FIELD)->read_string();
+    char    *new_field_name   = aw_root->awar(AWAR_CON_STORE_SIM_SP_NO)->read_string();
 
-    AW_root *aw_root            = aws->get_root();
-    char    *merge_field_name   = aw_root->awar(AWAR_CON_MERGE_FIELD)->read_string();
-    char    *new_field_name     = aw_root->awar(AWAR_CON_STORE_SIM_SP_NO)->read_string();
-    bool    similarSpeciesFound = false;
+    speciesConcatenateList scl            = 0; // to build list of similar species
+    speciesConcatenateList newSpeciesList = 0;  // new SPECIES_ConcatenateList;
 
-    speciesConcatenateList scl            = 0; //to build list of similar species
-    speciesConcatenateList newSpeciesList = 0;//new SPECIES_ConcatenateList;
+    GB_begin_transaction(GLOBAL_gb_main);       //open database for transaction
 
-    GB_begin_transaction(GLOBAL_gb_main);  //open database for transaction
+    GB_ERROR error = checkAndCreateNewField(GLOBAL_gb_main, new_field_name);
 
-    GB_ERROR error = checkAndCreateNewField(GLOBAL_gb_main,new_field_name);
+    for (GBDATA * gb_species = GBT_first_marked_species(GLOBAL_gb_main);
+         gb_species && !error;
+         gb_species = GBT_next_marked_species(gb_species))
+    {
+        GBDATA     *gb_species_field = GB_entry(gb_species, merge_field_name);
+        const char *name             = GBT_read_name(gb_species);
 
-    for (GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main); gb_species && !error; gb_species = GBT_next_marked_species(gb_species)) {
-        GBDATA  *gb_species_field = GB_entry(gb_species, merge_field_name);
-        if (gb_species_field) {
+        if (!gb_species_field) {
+            // exit if species doesnt have any data in the selected field
+            error = GBS_global_string("Species '%s' does not contain data in selected field '%s'", name, merge_field_name);
+        }
+        else {
             char *gb_species_field_content = GB_read_string(gb_species_field);
             int   similar_species          = 0;
 
-            for (GBDATA *gb_species_next =  GBT_next_marked_species(gb_species);
+            for (GBDATA * gb_species_next = GBT_next_marked_species(gb_species);
                  gb_species_next && !error;
                  gb_species_next = GBT_next_marked_species(gb_species_next))
-                {
-                    GBDATA *gb_next_species_field = GB_entry(gb_species_next, merge_field_name);
-                    if (gb_next_species_field) {
-                        char *gb_next_species_field_content = GB_read_string(gb_next_species_field);
+            {
+                GBDATA     *gb_next_species_field = GB_entry(gb_species_next, merge_field_name);
+                const char *next_name             = GBT_read_name(gb_species_next);
 
-                        if (strcmp(gb_species_field_content,gb_next_species_field_content) == 0) {
-                            GBDATA *gb_species_name = GB_entry(gb_species_next, "name");
-                            char   *species_name    = GB_read_string(gb_species_name);
-                            addSpeciesToConcatenateList((void**)&scl,species_name);
-                            GB_write_flag(gb_species_next, 0);
-                            ++similar_species;
-                            similarSpeciesFound = true;
-                            free(species_name);
-                        }
-                        free(gb_next_species_field_content);
-                    }
-                    else error = "Selected Field Name doesn`t contain any data! Quitting Merge Similar Species function";// exit if species doesnt have any data in the selected field
+                if (!gb_next_species_field) {
+                    // exit if species doesnt have any data in the selected field
+                    error = GBS_global_string("Species '%s' does not contain data in selected field '%s'", next_name, merge_field_name);
                 }
+                else {
+                    char *gb_next_species_field_content = GB_read_string(gb_next_species_field);
 
-            if (similarSpeciesFound && !error) {
-                GBDATA *gb_species_name = GB_entry(gb_species, "name");
-                char   *species_name    = GB_read_string(gb_species_name);
+                    if (strcmp(gb_species_field_content, gb_next_species_field_content) == 0) {
+                        addSpeciesToConcatenateList(&scl, next_name);
+                        GB_write_flag(gb_species_next, 0);
+                        ++similar_species;
+                    }
+                    free(gb_next_species_field_content);
+                }
+            }
 
-                addSpeciesToConcatenateList((void**)&scl, species_name);
+            if (similar_species > 0 && !error) {
+                addSpeciesToConcatenateList(&scl, name);
                 GB_write_flag(gb_species, 0);
-                GBDATA *new_species_created = concatenateFieldsCreateNewSpecies(aws,gb_species,scl);
+
+                GBDATA *new_species_created = concatenateFieldsCreateNewSpecies(aws, gb_species, scl);
+
                 gb_assert(new_species_created);
-                if(new_species_created) {  // create a list of newly created species
-                    char *new_species_name = GB_read_string(GB_entry(new_species_created, "name"));
-                    addSpeciesToConcatenateList((void**)&newSpeciesList, new_species_name);
-                    free(new_species_name);
+                if (new_species_created) {      // create a list of newly created species
+                    addSpeciesToConcatenateList(&newSpeciesList, GBT_read_name(new_species_created));
                 }
 
                 GBDATA *merged_species_field    = GB_search(new_species_created, new_field_name, GB_INT);
                 if (merged_species_field) error = GB_write_int(merged_species_field, ++similar_species);
-                similarSpeciesFound = false;
-                freeSpeciesConcatenateList(scl); scl = 0;
-                free(species_name);
             }
-            similar_species = 0;
+            
+            freeSpeciesConcatenateList(scl); scl = 0;
             free(gb_species_field_content);
         }
-        else error = "Selected Field Name doesn`t contain any data! Quitting Merge Similar Species function"; // exit if species doesnt have any data in the selected field
     }
 
-    if(!error){
-        GBT_mark_all(GLOBAL_gb_main,0); //unmark all species in the database
+    if (!error) {
+        GBT_mark_all(GLOBAL_gb_main, 0);        //unmark all species in the database
         int newSpeciesCount = 0;
-        for (; newSpeciesList; newSpeciesList = newSpeciesList->next) {    //mark only newly created species
+
+        for (; newSpeciesList; newSpeciesList = newSpeciesList->next) { //mark only newly created species
             GB_write_flag(newSpeciesList->species, 1);
             newSpeciesCount++;
         }
@@ -817,12 +839,14 @@ void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignme
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 
     // refresh the screen display
-    AWT_canvas     *ntw = (AWT_canvas *)cl_ntw;
+    AWT_canvas *ntw = (AWT_canvas *) cl_ntw;
+
     ntw->refresh();
 
     // Concatenate alignments of the merged species if cl_mergeSimilarConcatenateAlignments = MERGE_SIMILAR_CONCATENATE_ALIGNMENTS
-    if (int(cl_mergeSimilarConcatenateAlignments) && !error) concatenateAlignments(aws);
+    if (int (cl_mergeSimilarConcatenateAlignments) && !error) concatenateAlignments(aws);
 }
+
 
 /*----------------------------Creating concatenation window-----------------------------------------*/
 AW_window *NT_createConcatenationWindow(AW_root *aw_root, AW_CL cl_ntw){

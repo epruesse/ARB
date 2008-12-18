@@ -230,26 +230,13 @@ static const char *PD_probe_pt_look_for_server(AW_root *root)
 }
 
 static GB_ERROR species_requires(GBDATA *gb_species, const char *whats_required) {
-    GBDATA     *gb_species_name = GB_entry(gb_species, "name");
-    const char *name            = "unnamed (which is a dangerous error)";
-    if (gb_species_name) name   = GB_read_char_pntr(gb_species_name);
-
-    return GBS_global_string("Species '%s' needs %s", name, whats_required);
+    return GBS_global_string("Species '%s' needs %s", GBT_read_name(gb_species), whats_required);
 }
 
 static GB_ERROR gene_requires(GBDATA *gb_gene, const char *whats_required) {
-    GBDATA     *gb_gene_name    = GB_entry(gb_gene, "name");
-    const char *gene_name       = "unnamed (which is a dangerous error)";
-    if (gb_gene_name) gene_name = GB_read_char_pntr(gb_gene_name);
-
     GBDATA *gb_species = GB_get_father(GB_get_father(gb_gene));
     pd_assert(gb_species);
-
-    GBDATA     *gb_species_name       = GB_entry(gb_species, "name");
-    const char *species_name          = "unnamed (which is a dangerous error)";
-    if (gb_species_name) species_name = GB_read_char_pntr(gb_species_name);
-
-    return GBS_global_string("Gene '%s' of organism '%s' needs %s", gene_name, species_name, whats_required);
+    return GBS_global_string("Gene '%s' of organism '%s' needs %s", GBT_read_name(gb_gene), GBT_read_name(gb_species), whats_required);
 }
 
 GB_ERROR pd_get_the_names(bytestring &bs, bytestring &checksum) {

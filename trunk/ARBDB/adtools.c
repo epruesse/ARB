@@ -338,12 +338,7 @@ static GB_ERROR gbt_rename_alignment_of_item(GBDATA *gb_item_container, const ch
     }
 
     if (error && gb_item) {
-        char   *name      = GBS_global_string_copy("<unknown%s>", item_name);
-        GBDATA *gb_name   = GB_entry(gb_item, "name");
-        if (gb_name) name = GB_read_string(gb_name);
-
-        error = GBS_global_string("%s\n(while renaming alignment for %s '%s')", error, item_name, name);
-        free(name);
+        error = GBS_global_string("%s\n(while renaming alignment for %s '%s')", error, item_name, GBT_read_name(gb_item));
     }
 
     return error;
@@ -495,17 +490,15 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name)
         long    duplicates = 0;
         species_name_hash  = GBS_create_hash(GBT_get_species_hash_size(Main), GB_IGNORE_CASE);
 
-        for (gb_species = GBT_first_species_rel_species_data(gb_sd);
-             gb_species && !error;
-             gb_species = GBT_next_species(gb_species))
-        {
-            GBDATA *gb_name = GB_entry(gb_species, "name");
-            if (gb_name) {
-                const char *name  = GB_read_char_pntr(gb_name);
-                long        occur = GBS_read_hash(species_name_hash, name) + 1;
+        if (!error) {
+            for (gb_species = GBT_first_species_rel_species_data(gb_sd);
+                 gb_species;
+                 gb_species = GBT_next_species(gb_species))
+            {
+                const char *name = GBT_read_name(gb_species);
 
-                if (occur>1) duplicates++;
-                GBS_write_hash(species_name_hash, name, occur);
+                if (GBS_read_hash(species_name_hash, name)) duplicates++;
+                GBS_incr_hash(species_name_hash, name);
             }
         }
 
@@ -706,20 +699,17 @@ GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, long len, long pos, long ncha
 }
 
 
-GB_ERROR gbt_insert_character_species(GBDATA *gb_species,const char *ali_name, long len, long pos, long nchar, const char   *delete_chars)
-{
-    GBDATA *gb_name;
-    GBDATA *gb_ali;
-    char    *species_name = 0;
-    GB_ERROR error = 0;
+GB_ERROR gbt_insert_character_species(GBDATA *gb_species, const char *ali_name, long len, long pos, long nchar, const char *delete_chars) {
+    GB_ERROR  error  = 0;
+    GBDATA   *gb_ali = GB_entry(gb_species,ali_name);
+    
+    if (gb_ali) {
+        const char *species_name = GBT_read_name(gb_species);
 
-    gb_ali = GB_entry(gb_species,ali_name);
-    if (!gb_ali) return 0;
-    gb_name = GB_entry(gb_species,"name");
-    if (gb_name) species_name = GB_read_string(gb_name);
-    error = gbt_insert_character_gbd(gb_ali,len,pos,nchar,delete_chars, species_name);
-    if (error) error = GB_export_error("Species/SAI '%s': %s",species_name,error);
-    free(species_name);
+        error = gbt_insert_character_gbd(gb_ali, len, pos, nchar, delete_chars, species_name);
+        if (error) error = GBS_global_string("Species/SAI '%s': %s", species_name, error);
+    }
+    
     return error;
 }
 
@@ -2547,27 +2537,19 @@ char *GBT_store_marked_species(GBDATA *gb_main, int unmark_all)
        if (unmark_all != 0) then unmark them too
     */
 
-    void   *out   = GBS_stropen(10000);
+    void   *out = GBS_stropen(10000);
     GBDATA *gb_species;
-    int     first = 1;
 
     for (gb_species = GBT_first_marked_species(gb_main);
          gb_species;
          gb_species = GBT_next_marked_species(gb_species))
     {
-        GBDATA  *gb_name = GB_entry(gb_species, "name");
-        GB_CSTR  name    = GB_read_char_pntr(gb_name);
-
-        if (first) {
-            first = 0;
-        }
-        else {
-            GBS_chrcat(out, ';');
-        }
-        GBS_strcat(out, name);
+        GBS_strcat(out, GBT_read_name(gb_species));
+        GBS_chrcat(out, ';');
         if (unmark_all) GB_write_flag(gb_species, 0);
     }
 
+    GBS_str_cut_tail(out, 1); // remove trailing ';'
     return GBS_strclose(out);
 }
 
@@ -2627,8 +2609,9 @@ GBDATA *GBT_read_sequence(GBDATA *gb_species, const char *aliname) {
 }
 
 GB_CSTR GBT_read_name(GBDATA *gb_item) {
-    GBDATA *gb_name = GB_entry(gb_item,"name");
-    return gb_name ? GB_read_char_pntr(gb_name) : GBS_global_string("<unnamed %s>", GB_read_key_pntr(gb_item));
+    GB_CSTR result      = GBT_read_char_pntr(gb_item, "name");
+    if (!result) result = GBS_global_string("<unnamed %s>", GB_read_key_pntr(gb_item));
+    return result;
 }
 
 /********************************************************************************************
@@ -3715,14 +3698,7 @@ char *GBT_read_gene_sequence(GBDATA *gb_gene, GB_BOOL use_revComplement) {
     }
 
     if (error) {
-        GBDATA *gb_name   = GB_entry(gb_gene, "name");
-        char   *gene_name = GB_strdup(gb_name ? GB_read_char_pntr(gb_name) : "<unnamed gene>");
-        char   *species_name;
-
-        gb_name      = GB_entry(gb_species, "name");
-        species_name = GB_strdup(gb_name ? GB_read_char_pntr(gb_name) : "<unnamed species>");
-
-        error = GB_export_error("%s (in %s/%s)", error, species_name, gene_name);
+        error = GB_export_error("%s (in %s/%s)", error, GBT_read_name(gb_species), GBT_read_name(gb_gene));
     }
 
     return result;

@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : EXP_interface.cxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu Dec/18/2008 16:33 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Thu Dec/18/2008 16:52 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //
@@ -63,25 +63,8 @@ static void EXP_select_experiment(GBDATA* /*gb_main*/, AW_root *aw_root, const c
 }
 
 static char *EXP_get_experiment_id(GBDATA */*gb_main*/, GBDATA *gb_experiment) {
-    GBDATA *gb_name = GB_entry(gb_experiment, "name");
-    if (!gb_name) return 0;     // experiment  w/o name -> skip
-
     GBDATA *gb_species = GB_get_father(GB_get_father(gb_experiment));
-    GBDATA *gb_sp_name = GB_entry(gb_species, "name");
-    if (!gb_sp_name) return 0;  // species w/o name -> skip
-
-    char *species_name = GB_read_as_string(gb_sp_name);
-    char *experiment_name = GB_read_as_string(gb_name);
-
-    char *result = (char*)malloc(strlen(species_name)+1+strlen(experiment_name)+1);
-    strcpy(result, species_name);
-    strcat(result, "/");
-    strcat(result, experiment_name);
-
-    free(experiment_name);
-    free(species_name);
-
-    return result;
+    return GBS_global_string_copy("%s/%s", GBT_read_name(gb_species), GBT_read_name(gb_experiment));
 }
 
 static GBDATA *EXP_find_experiment_by_id(GBDATA *gb_main, const char *id) {

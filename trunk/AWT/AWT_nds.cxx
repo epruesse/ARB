@@ -756,7 +756,7 @@ char *make_node_text_list(GBDATA * gbd, FILE *fp)
         return awt_nds_ms->buf;
     }
 
-    fprintf(fp,"\n------------------- %s\n",GB_read_char_pntr(GB_entry(gbd, "name")));
+    fprintf(fp, "\n------------------- %s\n", GBT_read_name(gbd));
 
     for (i = 0; i < awt_nds_ms->count; i++) {
         if (awt_nds_ms->rek[i]) {       /* hierarchical key */

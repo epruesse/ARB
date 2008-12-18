@@ -262,24 +262,27 @@ void AWT_csp::print(void) {
 }
 
 char *awt_csp_sai_filter(GBDATA *gb_extended, AW_CL csp_cd) {
-    AWT_csp *csp     = (AWT_csp *)csp_cd;
+    AWT_csp *csp     = (AWT_csp*)csp_cd;
     GBDATA  *gb_type = GB_search(gb_extended, csp->type_path, GB_FIND);
+    char    *result  = 0;
 
     if (gb_type) {
-        if (GBS_string_matches( GB_read_char_pntr(gb_type),"PV?:*",GB_MIND_CASE)) {
-            GBDATA        *gb_name   = GB_entry(gb_extended,"name");
-            GBS_strstruct *strstruct = GBS_stropen(1024);
+        const char *type = GB_read_char_pntr(gb_type);
 
-            GBS_strcat(strstruct,GB_read_char_pntr(gb_name));
-            GBS_strcat(strstruct,":      <");
-            GBS_strcat(strstruct,GB_read_char_pntr(gb_type));
-            GBS_strcat(strstruct,">");
-            
-            return GBS_strclose(strstruct);
+        if (GBS_string_matches(type, "PV?:*", GB_MIND_CASE)) {
+            GBS_strstruct *strstruct = GBS_stropen(100);
+
+            GBS_strcat(strstruct, GBT_read_name(gb_extended));
+            GBS_strcat(strstruct, ":      <");
+            GBS_strcat(strstruct, type);
+            GBS_strcat(strstruct, ">");
+
+            result = GBS_strclose(strstruct);
         }
     }
-    return 0;
+    return result;
 }
+
 
 void create_selection_list_on_csp(AW_window *aws, AWT_csp *csp){
     GB_transaction dummy(csp->gb_main);

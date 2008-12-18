@@ -119,42 +119,37 @@ void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct 
     GB_pop_transaction(cbs->gb_main);
 }
 
-static void awt_add_sequences_to_list(struct adfiltercbstruct *cbs, const char *use, GBDATA *gb_extended,const char *pre,char tpre){
-    GBDATA *gb_name;
-    GBDATA *gb_ali;
-    GBDATA *gb_data;
-    int count;
+static void awt_add_sequences_to_list(struct adfiltercbstruct *cbs, const char *use, GBDATA *gb_extended, const char *pre, char tpre) {
+    GBDATA *gb_ali = GB_entry(gb_extended, use);
+    
+    if (gb_ali) {
+        int         count   = 0;
+        GBDATA     *gb_type = GB_entry(gb_ali, "_TYPE");
+        const char *TYPE    = gb_type ? GB_read_char_pntr(gb_type) : "";
+        const char *name    = GBT_read_name(gb_extended);
+        GBDATA     *gb_data;
 
-    gb_ali = GB_entry(gb_extended,use);
-    if (!gb_ali) return;
-    count = 0;
-    GBDATA *gb_type = GB_entry(gb_ali,"_TYPE");
-    char *TYPE = strdup("");
-    if (gb_type) TYPE = GB_read_string(gb_type);
+        for (gb_data = GB_child(gb_ali); gb_data; gb_data = GB_nextChild(gb_data)) {
+            if (GB_read_key_pntr(gb_data)[0] != '_') {
+                long type = GB_read_type(gb_data);
 
-    gb_name = GB_entry(gb_extended,"name");
-    if (!gb_name) return;
-    char *name = GB_read_string(gb_name);
+                if (type == GB_BITS || type == GB_STRING) {
+                    char *str;
 
-    for (gb_data = GB_child(gb_ali); gb_data; gb_data = GB_nextChild(gb_data)) {
-        if (GB_read_key_pntr(gb_data)[0] == '_') continue;
-        long type = GB_read_type(gb_data);
-        if (type == GB_BITS || type == GB_STRING) {
-            char *str;
-            if (count){
-                str  = GBS_global_string_copy("%s%-20s SEQ_%i   %s",    pre,name,count+1,TYPE);
-            }else{
-                str = GBS_global_string_copy("%s%-20s     %s",  pre,name,TYPE);
+                    if (count) str = GBS_global_string_copy("%s%-20s SEQ_%i   %s", pre, name, count + 1, TYPE);
+                    else str       = GBS_global_string_copy("%s%-20s     %s", pre, name, TYPE);
+
+                    const char *target = GBS_global_string("%c%s%c%s", tpre, GB_read_key_pntr(gb_data), 1, name);
+
+                    cbs->aws->insert_selection(cbs->id, str, target);
+                    free(str);
+                    count++;
+                }
             }
-            char *target = (char *)GBS_global_string("%c%s%c%s",tpre,GB_read_key_pntr(gb_data),1,name);
-            cbs->aws->insert_selection( cbs->id,(char *)str, target );
-            free(str);
-            count++;
         }
     }
-    free(TYPE);
-    free(name);
 }
+
 
 void awt_create_select_filter_window_gb_cb(void *dummy,struct adfiltercbstruct *cbs){           // update list widget and variables
     AWUSE(dummy);

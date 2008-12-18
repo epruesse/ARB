@@ -2,7 +2,7 @@
 /*                                                                      */
 /*   File      : ad_config.c                                            */
 /*   Purpose   : handle editor configurations                           */
-/*   Time-stamp: <Wed Dec/03/2008 17:07 MET Coder@ReallySoft.de>        */
+/*   Time-stamp: <Wed Dec/17/2008 13:14 MET Coder@ReallySoft.de>        */
 /*                                                                      */
 /*                                                                      */
 /* Coded by Ralf Westram (coder@reallysoft.de) in May 2005              */
@@ -37,7 +37,7 @@ char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
         GBDATA *gb_config;
 
 #if defined(DEVEL_RALF)
-#warning auto-rename unnamed configurations here
+#warning auto-rename unnamed configurations here (see AWT_sel_boxes.cxx : awt_create_selection_list_on_configurations_cb)
 #endif /* DEVEL_RALF */
 
         for (gb_config = GB_entry(gb_configuration_data, AWAR_CONFIG);

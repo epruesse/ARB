@@ -40,10 +40,7 @@ GB_ERROR PG_initSpeciesMaps(GBDATA* gb_main, GBDATA *pb_main) {
              gb_species;
              gb_species         = GBT_next_species(gb_species))
         {
-            GBDATA *gb_name = GB_entry(gb_species, "name");
-            if (!gb_name) return GB_export_error("species w/o name");
-
-            string name = GB_read_char_pntr(gb_name);
+            string name = GBT_read_name(gb_species);
             species_count++;
 
             species2num_map[name]          = species_count;

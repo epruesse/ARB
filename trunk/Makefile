@@ -1075,6 +1075,7 @@ ps:	PROBE_SERVER/PROBE_SERVER.dummy
 pst: 	PROBE_SET/PROBE_SET.dummy
 pd:	PROBE_DESIGN/PROBE_DESIGN.dummy
 na:	$(NAMES)
+sq:	SEQ_QUALITY/SEQ_QUALITY.dummy
 
 ac:	$(ARBDB_COMPRESS) # unused? does not compile
 

@@ -1011,11 +1011,8 @@ static void update_colorset_selection_list(const color_save_data *csd) {
          gb_colorset;
          gb_colorset = GB_nextEntry(gb_colorset))
     {
-        GBDATA *gb_name = GB_entry(gb_colorset, "name");
-        if (gb_name) {
-            const char *name = GB_read_char_pntr(gb_name);
-            aww->insert_selection(csd->sel_id, name, name);
-        }
+        const char *name = GBT_read_name(gb_colorset);
+        aww->insert_selection(csd->sel_id, name, name);
     }
     aww->insert_default_selection(csd->sel_id, "<new colorset>", "");
 

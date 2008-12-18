@@ -317,10 +317,7 @@ static void ad_species_rename_cb(AW_window *aww, AW_CL, AW_CL) {
                     aw_status("");
                     aw_status(0.0);
                     error = AWTC_recreate_name(gb_species, true);
-                    if (!error) {
-                        GBDATA *gb_name = GB_entry(gb_species, "name");
-                        if (gb_name) aw_root->awar(AWAR_SPECIES_NAME)->write_string(GB_read_char_pntr(gb_name)); // set focus
-                    }
+                    if (!error) aw_root->awar(AWAR_SPECIES_NAME)->write_string(GBT_read_name(gb_species)); // set focus
                     aw_closestatus();
                 }
             }
@@ -372,53 +369,35 @@ static void AD_map_species(AW_root *aw_root, AW_CL scannerid, AW_CL mapOrganism)
     GB_pop_transaction(GLOBAL_gb_main);
     free(source);
 }
-void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type)
-{
-    GB_push_transaction(GLOBAL_gb_main);
+void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type) {
+    GB_ERROR error = GB_push_transaction(GLOBAL_gb_main);
 
-    char *species_name = strdup("");
-    {
-        GBDATA *gb_species_data        = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
+    if (!error) {
+        const char *species_name    = "";
+        GBDATA     *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
+
         if (gbd && GB_get_father(gbd) == gb_species_data) {
-            // I got a species !!!!!!
-            GBDATA *gb_name            = GB_entry(gbd,"name");
-            if (gb_name) {
-                free(species_name);
-                species_name = GB_read_string(gb_name);
-            }
+            species_name = GBT_read_name(gbd);
         }
-    }
 
-    // if we have an active info-scanner, then update his awar
-
-    if (ad_global_scannerroot) {
-        ad_global_scannerroot->awar(AWAR_SPECIES_NAME)->write_string(species_name);
-        // if (type != ADMVT_SELECT) {
-        //             awt_map_arbdb_scanner(ad_global_scannerid,gbd,0, CHANGE_KEY_PATH);
-        // }
-    }
-    else {                      // no active scanner -> write global awar
-        if (ad_global_default_awroot) {
+        if (ad_global_scannerroot) { // if we have an active info-scanner, then update its awar
+            ad_global_scannerroot->awar(AWAR_SPECIES_NAME)->write_string(species_name);
+        }
+        else if (ad_global_default_awroot) { // no active scanner -> write global awar
             ad_global_default_awroot->awar(AWAR_SPECIES_NAME)->write_string(species_name);
         }
     }
 
-    free(species_name);
-
-
-    while (gbd && type == ADMVT_WWW){
-        char *name = strdup("noname");
-        GBDATA *gb_name = GB_entry(gbd,"name");
+    if (!error && gbd && type == ADMVT_WWW) {
+        GBDATA *gb_name       = GB_entry(gbd,"name");
         if (!gb_name) gb_name = GB_entry(gbd,"group_name"); // bad hack, should work
-        if (gb_name){
-            delete name;
-            name = GB_read_string(gb_name);
-        }
-        GB_ERROR error = awt_openURL_by_gbd(nt.awr,GLOBAL_gb_main,gbd, name);
-        if (error) aw_message(error);
-        break;
+
+        const char *name = gb_name ? GB_read_char_pntr(gb_name) : "noname";
+        error = awt_openURL_by_gbd(nt.awr, GLOBAL_gb_main, gbd, name);
     }
-    GB_pop_transaction(GLOBAL_gb_main);
+
+    error = GB_end_transaction(GLOBAL_gb_main, error);
+    if (error) aw_message(error);
 }
 
 static int count_key_data_elements(GBDATA *gb_key_data) {

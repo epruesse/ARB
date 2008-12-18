@@ -463,9 +463,7 @@ static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
 
     GB_ERROR error = 0;
     if (gb_species1) {
-        GBDATA *gb_name1 = GB_entry(gb_species1,"name");
-        gb_assert(gb_name1);
-        name1             = GB_read_char_pntr(gb_name1);
+        name1 = GBT_read_name(gb_species1);
     }
     else {
         mg_assert(name1);
@@ -660,78 +658,74 @@ void MG_transfer_fields_cb(AW_window *aww){
              gb_species1 = GBT_next_species(gb_species1))
         {
             if (IS_QUERIED(gb_species1)) {
-                GBDATA *gb_name1 = GB_entry(gb_species1,"name");
-                if (gb_name1) {
-                    GBDATA *gb_species2 = GB_find_string(gb_dest_species_data,"name", GB_read_char_pntr(gb_name1), GB_IGNORE_CASE, down_2_level);
+                const char *name1       = GBT_read_name(gb_species1);
+                GBDATA     *gb_species2 = GB_find_string(gb_dest_species_data,"name", name1, GB_IGNORE_CASE, down_2_level);
+                
+                if (!gb_species2) {
+                    gb_species2 = GB_create_container(gb_dest_species_data,"species");
                     if (!gb_species2) {
-                        gb_species2 = GB_create_container(gb_dest_species_data,"species");
-                        if (!gb_species2) {
+                        error = GB_get_error();
+                    }
+                    else {
+                        GBDATA *gb_name2 = GB_search(gb_species2,"name",GB_STRING);
+                        if (!gb_name2) {
                             error = GB_get_error();
                         }
                         else {
-                            GBDATA *gb_name2 = GB_search(gb_species2,"name",GB_STRING);
-                            if (!gb_name2) {
-                                error = GB_get_error();
-                            }
-                            else {
-                                char *name       = GB_read_string(gb_name1);
-                                if (!name) error = GB_get_error();
-                                else  error      = GB_write_string(gb_name2,name);
-                                free(name);
-                            }
+                            error = GB_write_string(gb_name2, name1);
                         }
                     }
-                    else {
-                        gb_species2 = GB_get_father(gb_species2);
+                }
+                else {
+                    gb_species2 = GB_get_father(gb_species2);
+                }
+
+                if (!error) {
+                    GBDATA *gb_field1 = GB_search(gb_species1,field,GB_FIND);
+                    GBDATA *gb_field2 = GB_search(gb_species2,field,GB_FIND);
+                    int     type1;
+                    int     type2;
+                    bool    use_copy   = true;
+
+                    if (gb_field2 && gb_field1){
+                        type1 = GB_read_type(gb_field1);
+                        type2 = GB_read_type(gb_field2);
+                        if ((type1==type2) && (GB_DB != type1)) {
+                            if (append && type1 == GB_STRING) {
+                                char *s1 = GB_read_string(gb_field1);
+                                char *s2 = GB_read_string(gb_field2);
+
+                                if (!s1 || !s2) error = GB_get_error();
+                                else {
+                                    if (!GBS_find_string(s2,s1,0)) {
+                                        error             = GB_write_string(gb_field2, GBS_global_string("%s %s", s2, s1));
+                                        if (!error) error = GB_write_flag(gb_species2,1);
+                                    }
+                                }
+
+                                free(s1);
+                                free(s2);
+                            }
+                            else { // not GB_STRING
+                                error             = GB_copy(gb_field2,gb_field1);
+                                if (!error) error = GB_write_flag(gb_species2, 1);
+                                if (transfer_of_alignment && !error){
+                                    error = MG_transfer_sequence(&rm,gb_species1,gb_species2);
+                                }
+                            }
+                            use_copy = false;
+                        }
                     }
 
-                    if (!error) {
-                        GBDATA *gb_field1 = GB_search(gb_species1,field,GB_FIND);
-                        GBDATA *gb_field2 = GB_search(gb_species2,field,GB_FIND);
-                        int     type1;
-                        int     type2;
-                        bool    use_copy   = true;
-
-                        if (gb_field2 && gb_field1){
-                            type1 = GB_read_type(gb_field1);
-                            type2 = GB_read_type(gb_field2);
-                            if ((type1==type2) && (GB_DB != type1)) {
-                                if (append && type1 == GB_STRING) {
-                                    char *s1 = GB_read_string(gb_field1);
-                                    char *s2 = GB_read_string(gb_field2);
-
-                                    if (!s1 || !s2) error = GB_get_error();
-                                    else {
-                                        if (!GBS_find_string(s2,s1,0)) {
-                                            error             = GB_write_string(gb_field2, GBS_global_string("%s %s", s2, s1));
-                                            if (!error) error = GB_write_flag(gb_species2,1);
-                                        }
-                                    }
-
-                                    free(s1);
-                                    free(s2);
-                                }
-                                else { // not GB_STRING
-                                    error             = GB_copy(gb_field2,gb_field1);
-                                    if (!error) error = GB_write_flag(gb_species2, 1);
-                                    if (transfer_of_alignment && !error){
-                                        error = MG_transfer_sequence(&rm,gb_species1,gb_species2);
-                                    }
-                                }
-                                use_copy = false;
-                            }
+                    if (use_copy) {
+                        if (gb_field2) {
+                            if (gb_field1 && !append) error = GB_delete(gb_field2);
                         }
-
-                        if (use_copy) {
-                            if (gb_field2) {
-                                if (gb_field1 && !append) error = GB_delete(gb_field2);
-                            }
-                            if (gb_field1 && !error) {
-                                type1                 = GB_read_type(gb_field1);
-                                gb_field2             = GB_search(gb_species2,field,type1);
-                                if (!gb_field2) error = GB_get_error();
-                                else error            = GB_copy(gb_field2,gb_field1);
-                            }
+                        if (gb_field1 && !error) {
+                            type1                 = GB_read_type(gb_field1);
+                            gb_field2             = GB_search(gb_species2,field,type1);
+                            if (!gb_field2) error = GB_get_error();
+                            else error            = GB_copy(gb_field2,gb_field1);
                         }
                     }
                 }

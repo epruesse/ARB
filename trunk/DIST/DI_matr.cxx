@@ -176,30 +176,28 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def)
 
 }
 
-DI_ENTRY::DI_ENTRY(GBDATA *gbd,class DI_MATRIX *phmatri)
-{
+DI_ENTRY::DI_ENTRY(GBDATA *gbd,class DI_MATRIX *phmatri) {
     memset((char *)this,0,sizeof(DI_ENTRY));
     phmatrix = phmatri;
 
     GBDATA *gb_ali = GB_entry(gbd,phmatrix->use);
-    if (!gb_ali) return;
-    GBDATA *gb_data = GB_entry(gb_ali,"data");
-    if (!gb_data) return;
+    if (gb_ali) {
+        GBDATA *gb_data = GB_entry(gb_ali,"data");
+        if (gb_data) {
+            const char *seq = GB_read_char_pntr(gb_data);
+            
+            if (phmatrix->is_AA) {
+                sequence = sequence_protein = new AP_sequence_simple_protein(phmatrix->tree_root);
+            }
+            else {
+                sequence = sequence_parsimony = new AP_sequence_parsimony(phmatrix->tree_root);
+            }
+            sequence->set(seq);
 
-    const char *seq = GB_read_char_pntr(gb_data);
-    if (phmatrix->is_AA) {
-        sequence = (AP_sequence *)(sequence_protein = new AP_sequence_simple_protein(phmatrix->tree_root));
-    }else{
-        sequence = (AP_sequence *)(sequence_parsimony = new AP_sequence_parsimony(phmatrix->tree_root));
+            name      = GBT_read_string(gbd, "name");
+            full_name = GBT_read_string(gbd, "full_name");
+        }
     }
-    sequence->set(seq);
-
-    GBDATA *gb_name = GB_entry(gbd,"name");
-    name = GB_read_string(gb_name);
-
-    GBDATA *gb_full_name = GB_entry(gbd,"full_name");
-    if (gb_full_name) full_name = GB_read_string(gb_full_name);
-
 }
 
 DI_ENTRY::DI_ENTRY(char *namei,class DI_MATRIX *phmatri)
@@ -378,17 +376,9 @@ char *DI_MATRIX::load(char *usei, AP_filter *filter, AP_weights *weights, LoadWh
             int load_species = 0;
 
             if (in_tree_species) { // test if species already loaded
-                char *species_name = 0;
-                GBDATA *gb_name = GB_entry(gb_species, "name");
-                if (gb_name) {
-                    species_name = GB_read_string(gb_name);
-                    if (bsearch(&species_name, species_in_sort_tree, tree_size, sizeof(*species_in_sort_tree), qsort_strcmp)==0) {
-                        load_species = 1;
-#if defined(DEBUG) && 0
-                        printf("Not in tree: %s\n", species_name);
-#endif
-                    }
-                    free(species_name);
+                const char *species_name = GBT_read_name(gb_species);
+                if (bsearch(&species_name, species_in_sort_tree, tree_size, sizeof(*species_in_sort_tree), qsort_strcmp)==0) {
+                    load_species = 1;
                 }
             }
             else {
