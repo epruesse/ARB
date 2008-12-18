@@ -1,7 +1,7 @@
 # =============================================================== #
 #                                                                 #
 #   File      : Makefile                                          #
-#   Time-stamp: <Thu Dec/11/2008 17:56 MET Coder@ReallySoft.de>   #
+#   Time-stamp: <Thu Dec/18/2008 11:35 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Institute of Microbiology (Technical University Munich)       #
 #   http://www.arb-home.de/                                       #
@@ -208,12 +208,6 @@ XLIBS += $(GL_LIB)
 SYSLIBS := -lm
 ifdef DARWIN
 SYSLIBS += -lstdc++
-endif
-
-ifdef SEER
-    SEERLIB = SEER/SEER.a # @@@ not compiled for very long time. Dunno what SEER is.. 
-else
-    SEERLIB =
 endif
 
 # ------------------------------------------------------------------------- 
@@ -522,7 +516,6 @@ ARCHS = \
 			READSEQ/READSEQ.a \
 			RNA3D/RNA3D.a \
 			SECEDIT/SECEDIT.a \
-			SEER/SEER.a \
 			SEQ_QUALITY/SEQ_QUALITY.a \
 			SERVERCNTRL/SERVERCNTRL.a \
 			SL/SL.a \
@@ -553,7 +546,6 @@ $(ARCHS_COMMUNICATION:.a=.dummy) : $(ARCHS_MAKEBIN:.a=.dummy)
 NTREE = bin/arb_ntree
 ARCHS_NTREE = \
 		$(ARCHS_CLIENT_PROBE) \
-		$(SEERLIB) \
 		ARB_GDE/ARB_GDE.a \
 		AWTC/AWTC.a \
 		AWTI/AWTI.a \

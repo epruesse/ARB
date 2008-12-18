@@ -10,7 +10,7 @@ DEVELOPER=ANY
 DEBUG=0# build with debug information
 DEBUG_GRAPHICS=0# force instant graphic update
 
-#SEER=1
+# Include features using OPENGL? 
 OPENGL=1
 
 # 0 = use old PTSERVER
