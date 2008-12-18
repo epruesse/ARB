@@ -2435,15 +2435,11 @@ void AWT_graphic_tree::show_nds_list(GBDATA * dummy, bool use_nds)
     {
         y_position += scaled_branch_distance;
 
-        GBDATA     *gb_name = GB_entry(gb_species, "name");
-        const char *name    = 0;
+        const char *name = GBT_read_name(gb_species);
 
-        if (gb_name) {
-            name = GB_read_char_pntr(gb_name);
-            if (strcmp(name, this->species_name) == 0) {
-                x_cursor = 0;
-                y_cursor = y_position;
-            }
+        if (strcmp(name, this->species_name) == 0) {
+            x_cursor = 0;
+            y_cursor = y_position;
         }
 
         bool is_marked = GB_read_flag(gb_species);
@@ -2464,8 +2460,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA * dummy, bool use_nds)
                 data = make_node_text_nds(gb_main, gb_species, 1, 0, tree_name);
             }
             else {
-                data            = name;
-                if (!data) data = "<error: species w/o name>";
+                data = name;
             }
 
             long slen = strlen(data);

@@ -1483,16 +1483,7 @@ static void build_taxonomy_rek(GBT_TREE *node, GB_HASH *tax_hash, const char *pa
     if (node->is_leaf) {
         GBDATA *gb_species = node->gb_node;
         if (gb_species) { /* not zombie */
-            GBDATA *gb_name = GB_entry(gb_species, "name");
-            if (gb_name) {
-                const char *name       = GB_read_char_pntr(gb_name);
-                const char *hash_entry = GBS_global_string("!%s", name);
-
-                GBS_write_hash(tax_hash, hash_entry, (long)strdup(parent_group));
-            }
-            else {
-                printf("species w/o name entry\n");
-            }
+            GBS_write_hash(tax_hash, GBS_global_string("!%s", GBT_read_name(gb_species)), (long)strdup(parent_group));
         }
     }
     else {
@@ -1760,8 +1751,8 @@ static const char *get_taxonomy(GBDATA *gb_species_or_group, const char *tree_na
         if (gb_name && !gb_group_name) { /* it's a species */
             char *name = GB_read_string(gb_name);
             if (name) {
-                GB_HASH    *tax_hash = tax->taxonomy;
-                long        found    = GBS_read_hash(tax_hash, GBS_global_string("!%s", name));
+                GB_HASH *tax_hash = tax->taxonomy;
+                long     found    = GBS_read_hash(tax_hash, GBS_global_string("!%s", name));
 
                 if (found) {
                     const char *parent_group = (const char *)found;

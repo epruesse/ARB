@@ -338,8 +338,8 @@ void awt_create_selection_list_on_tables_cb(GBDATA *dummy, struct awt_sel_list_f
         char *description = GB_read_string(gb_description);
         const char *info_text = GBS_global_string("%s: %s",table_name,description);
         cbs->aws->insert_selection(cbs->id,info_text,table_name);
-        delete table_name;
-        delete description;
+        free(table_name);
+        free(description);
     }
     cbs->aws->insert_default_selection( cbs->id, "", "" );
     cbs->aws->update_selection_list( cbs->id );
@@ -383,8 +383,8 @@ void awt_create_selection_list_on_table_fields_cb(GBDATA *dummy, struct awt_sel_
         char *description = GB_read_string(gb_description);
         const char *info_text = GBS_global_string("%s: %s",table_name,description);
         cbs->aws->insert_selection(cbs->id,info_text,table_name);
-        delete table_name;
-        delete description;
+        free(table_name);
+        free(description);
     }
     cbs->aws->insert_default_selection( cbs->id, "", "" );
     cbs->aws->update_selection_list( cbs->id );
@@ -526,9 +526,11 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
 
 void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
 {
+#if defined(DEVEL_RALF)
     printf("start awt_create_selection_list_on_extendeds_update\n"); // @@@
+#endif // DEVEL_RALF
 
-    struct awt_sel_list_for_sai *cbs              = (struct awt_sel_list_for_sai *)cbsid;
+    struct awt_sel_list_for_sai *cbs = (struct awt_sel_list_for_sai *)cbsid;
 
     AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
@@ -537,22 +539,21 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
          gb_extended;
          gb_extended = GBT_next_SAI(gb_extended))
     {
-        GBDATA *gb_name = GB_entry(gb_extended,"name");
-        if (!gb_name) continue;
         if (cbs->filter_poc) {
             char *res = cbs->filter_poc(gb_extended,cbs->filter_cd);
             if (res) {
-                const char *name = GB_read_char_pntr(gb_name);
-                cbs->aws->insert_selection( cbs->id, res, name );
+                cbs->aws->insert_selection( cbs->id, res, GBT_read_name(gb_extended));
                 free(res);
             }
         }
         else {
-            const char *name     = GB_read_char_pntr(gb_name);
+            const char *name     = GBT_read_name(gb_extended);
             GBDATA     *gb_group = GB_entry(gb_extended, "sai_group");
+
             if (gb_group) {
                 const char *group          = GB_read_char_pntr(gb_group);
                 char       *group_and_name = GBS_global_string_copy("[%s] %s", group, name);
+                
                 cbs->aws->insert_selection(cbs->id, group_and_name, name);
                 free(group_and_name);
             }
@@ -578,7 +579,10 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid)
     }
     cbs->aws->insert_default_selection( cbs->id, "- none -", "none" );
     cbs->aws->update_selection_list( cbs->id );
+    
+#if defined(DEVEL_RALF)
     printf("done  awt_create_selection_list_on_extendeds_update\n"); // @@@
+#endif // DEVEL_RALF
 }
 
 void *awt_create_selection_list_on_extendeds(GBDATA *gb_main,AW_window *aws, const char *varname,

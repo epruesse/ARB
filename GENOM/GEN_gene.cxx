@@ -47,13 +47,10 @@ using namespace std;
 void GEN_gene::init(GBDATA *gb_gene_, GEN_root *root_) {
     gb_gene = gb_gene_;
     root    = root_;
+    name    = GBT_read_name(gb_gene);
 
-    GBDATA *gbd = GB_entry(gb_gene, "name");
-    name        = string(gbd ? GB_read_char_pntr(gbd) : "<noGeneName>");
-
-    gbd        = GB_entry(gb_gene, "complement");
-    complement = gbd ? GB_read_byte(gbd) == 1 : false;
-
+    GBDATA *gbd = GB_entry(gb_gene, "complement");
+    complement  = gbd ? GB_read_byte(gbd) == 1 : false;
 }
 
 GB_ERROR GEN_gene::load_positions(int part) {
@@ -167,11 +164,7 @@ GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *g
                             if (!warning) gene_set.insert(gene);
                         }
 
-                        if (warning) {
-                            GBDATA     *gb_name = GB_entry(gb_gene, "name");
-                            const char *name    = gb_name ? GB_read_char_pntr(gb_name) : "<unnamed>";
-                            aw_message(GBS_global_string("%s in gene '%s'", warning, name));
-                        }
+                        if (warning) aw_message(GBS_global_string("%s in gene '%s'", warning, GBT_read_name(gb_gene)));
                     }
                     gb_gene = GEN_next_gene(gb_gene);
                 }

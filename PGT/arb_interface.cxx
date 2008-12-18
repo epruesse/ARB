@@ -15,6 +15,7 @@
 #include <string.h>
 #include "arb_interface.hxx"
 #include "xm_defs.hxx"
+#include <EXP.hxx>
 
 #define ai_assert(cond) arb_assert(cond)
 
@@ -241,42 +242,17 @@ GBDATA *get_gbData() { return global_gbData; }
 /****************************************************************************
 *  FIND ARB SPECIES ENTRY BY SPECIES NAME (CHAR *)
 ****************************************************************************/
-GBDATA *find_species(char *name)
-{
-    bool found= false;
-    GBDATA *gb_sp= NULL;
-    GBDATA *gb_sp_name;
-    char *sp_name;
 
-    if(!name) return NULL;
+GBDATA *find_species(char *name) {
+    GBDATA *gb_species = 0;
 
-    ARB_begin_transaction();
-
-    gb_sp= GB_entry(GBT_get_species_data(global_gbData), "species");
-    while(gb_sp && !found)
-    {
-        gb_sp_name= GB_entry(gb_sp, "name");
-
-        if(gb_sp_name)
-        {
-            sp_name= GB_read_string(gb_sp_name);
-            if(!strcmp(sp_name, name))
-            {
-                found= true;
-            }
-            else
-            {
-                ai_assert(GB_has_key(gb_sp, "species"));
-                gb_sp= GB_nextEntry(gb_sp);
-            }
-        }
+    if (name) {
+        ARB_begin_transaction();
+        gb_species = GBT_find_species(global_gbData, name);
+        ARB_commit_transaction();
     }
-
-    ARB_commit_transaction();
-
-    return gb_sp;
+    return gb_species;
 }
-
 
 /****************************************************************************
 *  FIND GENOME ENTRY BY SPECIES NAME AND EXPERIMENT NAME
@@ -326,50 +302,17 @@ GBDATA *find_experiment(char *sp_name, char *name)
 /****************************************************************************
 *  FIND ARB EXPERIMENT ENTRY BY ARB SPECIES ENTRY AND EXPERIMENT NAME
 ****************************************************************************/
-GBDATA *find_experiment(GBDATA *gb_sp_entry, char *name)
-{
-    bool found= false;
-    GBDATA *gb_exp= NULL;
-    GBDATA *gb_exp_data= NULL;
-    GBDATA *gb_exp_name;
-    char *exp_name;
 
-    if(!name) return NULL;
+GBDATA *find_experiment(GBDATA *gb_sp_entry, char *name) {
+    GBDATA *gb_exp = 0;
 
-    ARB_begin_transaction();
-
-    gb_exp_data= GB_entry(gb_sp_entry, "experiment_data");
-    if(gb_exp_data)
-    {
-        gb_exp= GB_entry(gb_exp_data, "experiment");
-        while(gb_exp && !found)
-        {
-            gb_exp_name= GB_entry(gb_exp, "name");
-
-            if(gb_exp_name)
-            {
-                exp_name= GB_read_string(gb_exp_name);
-
-                if(!strcmp(exp_name, name))
-                {
-                    found= true;
-                }
-                else
-                {
-                    ai_assert(GB_has_key(gb_exp, "experiment"));
-                    gb_exp= GB_nextEntry(gb_exp);
-                }
-
-                free(exp_name);
-            }
-        }
+    if (name) {
+        ARB_begin_transaction();
+        gb_exp = EXP_find_experiment(gb_sp_entry, name);
+        ARB_commit_transaction();
     }
-
-    ARB_commit_transaction();
-
     return gb_exp;
 }
-
 
 /****************************************************************************
 *  FIND ARB PROTEOME ENTRY BY SPECIES, EXPERIMENT AND PROTEOME NAME
@@ -386,47 +329,22 @@ GBDATA *find_proteome(char *sp_name, char *exp_name, char *prot_name)
 /****************************************************************************
 *  FIND ARB PROTEOME ENTRY BY ARB EXPERIMENT ENTRY AND PROTEOME NAME
 ****************************************************************************/
-GBDATA *find_proteome(GBDATA *gb_exp_entry, char *name)
-{
-    bool found= false;
-    GBDATA *gb_prot= NULL;
-    GBDATA *gb_prot_data= NULL;
-    GBDATA *gb_prot_name;
-    char *prot_name;
 
-    if(!name) return NULL;
 
-    ARB_begin_transaction();
+GBDATA *find_proteome(GBDATA *gb_exp_entry, char *name) {
+    GBDATA *gb_proteome = 0;
 
-    gb_prot_data= GB_entry(gb_exp_entry, "proteome_data");
-    if(gb_prot_data)
-    {
-        gb_prot= GB_entry(gb_prot_data, "proteome");
-        while(gb_prot && !found)
-        {
-            gb_prot_name= GB_entry(gb_prot, "name");
-
-            if(gb_prot_name)
-            {
-                prot_name= GB_read_string(gb_prot_name);
-                if(!strcmp(prot_name, name))
-                {
-                    found= true;
-                }
-                else
-                {
-                    ai_assert(GB_has_key(gb_prot, "proteome"));
-                    gb_prot= GB_nextEntry(gb_prot);
-                }
-            }
+    if (name) {
+        ARB_begin_transaction();
+        GBDATA *gb_proteome_data = GB_entry(gb_exp_entry, "proteome_data");
+        if (gb_proteome_data) {
+            GBDATA *gb_name = GB_find_string(gb_proteome_data, "name", name, GB_IGNORE_CASE, down_2_level);
+            if (gb_name) gb_proteome = GB_get_father(gb_name);
         }
+        ARB_commit_transaction();
     }
-
-    ARB_commit_transaction();
-
-    return gb_prot;
+    return gb_proteome;
 }
-
 
 /****************************************************************************
 *  FIND ARB PROTEINE_DATA ENTRY BY SPECIES, EXPERIMENT AND PROTEOME NAME

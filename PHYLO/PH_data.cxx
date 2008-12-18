@@ -31,55 +31,57 @@ PHDATA::~PHDATA(void) {
 
 
 char *PHDATA::load(char *usei) {
-    GBDATA *gb_species,*gb_ali,*gb_name,*gb_full_name;
-    struct PHENTRY *phentry,*hentry;
-
-    this->use = strdup(usei);
-    this->gb_main = GLOBAL_gb_main;
-    last_key_number=0;
-
     GB_push_transaction(gb_main);
-    seq_len = GBT_get_alignment_len(gb_main,use);
-    entries=NULL;
-    phentry=NULL;
+
+    use             = strdup(usei);
+    gb_main         = GLOBAL_gb_main;
+    last_key_number = 0;
+
+    seq_len  = GBT_get_alignment_len(gb_main, use);
+    entries  = NULL;
     nentries = 0;
-    for (gb_species = GBT_first_marked_species(gb_main);
+
+    PHENTRY *tail = NULL;
+    for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
          gb_species;
          gb_species = GBT_next_marked_species(gb_species))
     {
-        gb_ali = GB_entry(gb_species, use);
-        if (!gb_ali)    continue;
-        //no existing alignmnet for this species
-        hentry = new PHENTRY;
-        hentry->next = NULL;
-        hentry->gb_species_data_ptr = GB_entry(gb_ali, "data");
-        hentry->key = last_key_number++;
-        if (hentry->gb_species_data_ptr) {
-            gb_name = GB_entry(gb_species, "name");
-            hentry->name = GB_read_string(gb_name);
-            gb_full_name = GB_entry(gb_species, "full_name");
-            if (gb_full_name)   hentry->full_name = GB_read_string(gb_full_name);
-            else                        hentry->full_name = NULL;
-            if (!entries) {
-                entries = hentry;
-                entries->prev = NULL;
-                phentry = entries;
-            } else {
-                phentry->next = hentry;
-                hentry->prev = phentry;
-                phentry = hentry;
+        GBDATA *gb_ali = GB_entry(gb_species, use);
+
+        if (gb_ali) {                                     // existing alignment for this species
+            GBDATA *gb_data = GB_entry(gb_ali, "data");
+
+            if (gb_data) {
+                PHENTRY *new_entry = new PHENTRY;
+
+                new_entry->gb_species_data_ptr = gb_data;
+                
+                new_entry->key       = last_key_number++;
+                new_entry->name      = strdup(GBT_read_name(gb_species));
+                new_entry->full_name = GBT_read_string(gb_species, "full_name");
+
+                new_entry->prev = tail;
+                new_entry->next = NULL;
+
+                if (!entries) {
+                    tail = entries = new_entry;
+                }
+                else {
+                    tail->next = new_entry;
+                    tail       = new_entry;
+                }
+                nentries++;
             }
-            nentries++;
-        } else {
-            delete          hentry;
         }
     }
+
     GB_pop_transaction(gb_main);
-    hash_elements=(struct PHENTRY **) calloc(nentries,sizeof(struct PHENTRY *));
-    phentry=entries;
+
+    hash_elements = (struct PHENTRY **)calloc(nentries, sizeof(struct PHENTRY *));
+
     {
-        unsigned int i;
-        for (i = 0; i < nentries; i++) {
+        PHENTRY *phentry = entries;
+        for (unsigned int i = 0; i < nentries; i++) {
             hash_elements[i] = phentry;
             phentry = phentry->next;
         }
@@ -87,6 +89,7 @@ char *PHDATA::load(char *usei) {
 
     return 0;
 }
+
 
 GB_ERROR PHDATA::save(char *filename) {
     FILE *out;

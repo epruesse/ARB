@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : NT_dbrepair.cxx                                   //
 //   Purpose   : repair database bugs                              //
-//   Time-stamp: <Thu Dec/04/2008 15:37 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Dec/17/2008 17:52 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in May 2008       //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -139,14 +139,11 @@ static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /
                 if (!error) deleted_gene_datas++;
             }
             else {
-                const char *name    = "<unknown species>";
-                GBDATA     *gb_name = GB_entry(gb_species, "name");
-                if (gb_name) name = GB_read_char_pntr(gb_name);
-
                 error = GBS_global_string("Non-empty 'gene_data' found for species '%s',\n"
                                           "which has no alignment '" GENOM_ALIGNMENT "',\n"
                                           "i.e. which is not regarded as full-genome organism.\n"
-                                          "This causes problems - please fix!", name);
+                                          "This causes problems - please fix!",
+                                          GBT_read_name(gb_species));
             }
         }
         

@@ -571,7 +571,7 @@ void MP_mark_probes_in_tree(AW_window *aww)
     char        *mism, *mism_temp;
     char        *a_probe, *another_probe, *the_probe, *mism_temp2;
     int          i, how_many_probes = 0;
-    GBDATA      *gb_species, *gb_name;
+    GBDATA      *gb_species;
 
     AWUSE(aww);
 
@@ -661,14 +661,7 @@ void MP_mark_probes_in_tree(AW_window *aww)
         GB_push_transaction(ntw->gb_main);
         GB_HASH *col_hash = mp_main->get_stc()->sondentopf->get_color_hash();
         for (gb_species = GBT_first_species(ntw->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
-            gb_name = GB_entry(gb_species, "name");
-            const char *name = GB_read_char_pntr(gb_name);
-            if (GBS_read_hash( col_hash, name)> AWT_GC_BLACK)
-            {
-                GB_write_flag(gb_species,1);
-            }else{
-                GB_write_flag(gb_species,0);
-            }
+            GB_write_flag(gb_species, GBS_read_hash(col_hash, GBT_read_name(gb_species)) > AWT_GC_BLACK);
         }
     }
     GB_pop_transaction(ntw->gb_main);

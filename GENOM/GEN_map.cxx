@@ -730,29 +730,15 @@ static const char* readACC(GBDATA *gb_species_data, const char *name) {
 }
 
 static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene, EG2PS_data *eg2ps) {
-    GBDATA *gb_sp_name         = GB_entry(gb_species,"name");
-    GBDATA *gb_sp_fullname     = GB_entry(gb_species,"full_name");
-    char   *species_name       = gb_sp_name ? GB_read_string(gb_sp_name) : 0;
-    char   *full_species_name  = gb_sp_fullname ? GB_read_string(gb_sp_fullname) : species_name;
-    // GBDATA *gb_species_data = GB_search(gb_main, "species_data",  GB_CREATE_CONTAINER);
+    const char *gene_name         = GBT_read_name(gb_gene);
+    const char *species_name      = GBT_read_name(gb_species);
+    const char *full_species_name = GBT_read_char_pntr(gb_species, "full_name");
 
-    if (!species_name) {
-        aw_message("Skipped species w/o name");
-        return;
-    }
-
-    GBDATA *gb_ge_name = GB_entry(gb_gene,"name");
-    char   *gene_name  = gb_sp_name ? GB_read_string(gb_ge_name) : 0;
-
-    if (!gene_name) {
-        aw_message("Skipped gene w/o name");
-        free(species_name);
-        return;
-    }
+    if (!full_species_name) full_species_name = species_name;
 
     char *full_name = GB_strdup(GBS_global_string("%s [%s]", full_species_name, gene_name));
-
-    char *sequence = GBT_read_gene_sequence(gb_gene, GB_TRUE);
+    char *sequence  = GBT_read_gene_sequence(gb_gene, GB_TRUE);
+    
     if (!sequence) {
         aw_message(GB_get_error());
     }
@@ -771,8 +757,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
         GB_ERROR  error                   = 0;
 
         if (gb_exist_geneSpec) {
-            GBDATA *gb_name       = GB_entry(gb_exist_geneSpec, "name");
-            char   *existing_name = GB_read_string(gb_name);
+            const char *existing_name = GBT_read_name(gb_exist_geneSpec);
 
             gen_assert(ask_about_existing_gene_species);
             gen_assert(ask_to_overwrite_alignment);
@@ -818,7 +803,6 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
                 default : gen_assert(0);
             }
             free(question);
-            free(existing_name);
         }
 
         if (!error) {
@@ -895,19 +879,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
                 else {
                     error = GB_get_error();
                 }
-
-                //                 GBDATA *gb_ali = GB_search(gb_exist_geneSpec, ali, GB_DB);
-                //                 if (gb_ali) {
-                //                     GBDATA *gb_data = GB_search(gb_ali, "data", GB_STRING);
-                //                     error           = GB_write_string(gb_data, sequence);
-                //                     GBT_write_sequence(...);
-                //                 }
-                //                 else {
-                //                     error = GB_export_error("Can't create alignment '%s' for '%s'", ali, short_name);
-                //                 }
             }
-
-
 
             // write other entries:
             if (!error) error = GEN_species_add_entry(gb_exist_geneSpec, "full_name", full_name);
@@ -938,9 +910,6 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
     }
 
     free(full_name);
-    free(gene_name);
-    free(full_species_name);
-    free(species_name);
 }
 
 static long gen_count_marked_genes = 0; // used to count marked genes
@@ -1167,12 +1136,10 @@ void gene_extract_cb(AW_window *aww, AW_CL cl_pmode){
 GBDATA *GEN_find_pseudo(GBDATA *gb_organism, GBDATA *gb_gene) {
     // Warning : This functions is very SLOW!
 
-    GBDATA *gb_species_data = GB_get_father(gb_organism);
-    GBDATA *gb_name         = GB_entry(gb_organism, "name");
-    char   *organism_name   = GB_read_string(gb_name);
-    gb_name                 = GB_entry(gb_gene, "name");
-    char   *gene_name       = GB_read_string(gb_name);
-    GBDATA *gb_pseudo       = 0;
+    GBDATA     *gb_species_data = GB_get_father(gb_organism);
+    const char *organism_name   = GBT_read_name(gb_organism);
+    const char *gene_name       = GBT_read_name(gb_gene);
+    GBDATA     *gb_pseudo       = 0;
 
     for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data);
          gb_species;

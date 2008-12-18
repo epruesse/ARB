@@ -2,7 +2,7 @@
 /*                                                                        */
 /*    File      : adGene.c                                                */
 /*    Purpose   : Basic gene access functions                             */
-/*    Time-stamp: <Mon May/26/2008 12:05 MET Coder@ReallySoft.de>         */
+/*    Time-stamp: <Wed Dec/17/2008 11:00 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
@@ -139,18 +139,15 @@ GB_BOOL GEN_is_pseudo_gene_species(GBDATA *gb_species) {
 //  ------------------------------------------------
 
 GB_ERROR GEN_organism_not_found(GBDATA *gb_pseudo) {
-    GBDATA   *gb_name = 0;
-    GB_ERROR  error   = 0;
+    GB_ERROR error = 0;
 
     gb_assert(GEN_is_pseudo_gene_species(gb_pseudo));
     gb_assert(GEN_find_origin_organism(gb_pseudo, 0) == 0);
 
-    gb_name = GB_entry(gb_pseudo, "name");
-
     error = GB_export_error("The gene-species '%s' refers to an unknown organism (%s)\n"
                             "This occurs if you rename or delete the organism or change the entry\n"
                             "'ARB_origin_species' and will most likely cause serious problems.",
-                            GB_read_char_pntr(gb_name),
+                            GBT_read_name(gb_pseudo),
                             GEN_origin_organism(gb_pseudo));
 
     return error;

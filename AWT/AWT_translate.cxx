@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : AWT_translate.cxx                                 //
 //   Purpose   :                                                   //
-//   Time-stamp: <Wed Nov/19/2008 11:42 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Dec/17/2008 13:19 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in June 2006      //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -84,11 +84,7 @@ GB_ERROR AWT_getTranslationInfo(GBDATA *gb_species, int& arb_transl_table, int& 
     }
 
     if (error) { // append species name to error message
-        const char *name    = "<unknown>";
-        GBDATA     *gb_name = GB_entry(gb_species, "name");
-
-        if (gb_name) name = GB_read_char_pntr(gb_name);
-        error             = GBS_global_string("%s (species='%s')", error, name);
+        error = GBS_global_string("%s (species='%s')", error, GBT_read_name(gb_species));
     }
 
     return error;

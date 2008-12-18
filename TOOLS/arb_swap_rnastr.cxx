@@ -66,52 +66,55 @@ void arb_asrs_swap()
     fclose(out);
 }
 
-int main(int argc, char **/*argv*/)
-{
-    //  char *error;
-    const char *path;
-    GBDATA *gb_species;
-    GBDATA *gb_name;
-    GBDATA *gb_use;
-    GBDATA *gb_ali;
-    GBDATA *gb_data;
-    char    *use;
+int main(int argc, char **/*argv*/) {
+    GB_ERROR error = 0;
     if (argc != 1) {
-        fprintf(stderr,"no parameters\n");
-        exit(-1);
+        error = "no parameters";
     }
-    path = ":";
-    asrs.gb_main = GB_open(path,"rwt");
-    if (!asrs.gb_main){
-        fprintf(stderr,"ERROR cannot find server\n");
-        exit(-1);
-    }
-    GB_begin_transaction(asrs.gb_main);
-    gb_species = GBT_first_marked_species(asrs.gb_main);
-    if (!gb_species) {
-        printf("please mark exactly one sequence\n");
-        exit(0);
-    }
-    if (GBT_next_marked_species(gb_species)) {
-        printf("more than one sequence marked\n");
-        printf("please mark exactly one sequence\n");
-        exit(0);
-    }
-    gb_name = GB_entry(gb_species,"name");
-    asrs.sp_name = GB_read_string(gb_name);
-    gb_use = GB_search(asrs.gb_main,"presets/use",GB_FIND);
-    use = GB_read_string(gb_use);
-    gb_ali = GB_entry(gb_species,use);
-    if (!gb_ali) {
-        printf("the selected species dont have the selected sequence\n");
-        exit(0);
-    }
-    gb_data = GB_entry(gb_ali,"data");
-    asrs.sequence = GB_read_string(gb_data);
-    GB_commit_transaction(asrs.gb_main);
-    GB_close(asrs.gb_main);
+    else {
+        asrs.gb_main = GB_open(":","rwt");
+        if (!asrs.gb_main){
+            error = "cannot find ARB server";
+        }
+        else {
+            GB_begin_transaction(asrs.gb_main);
+            GBDATA *gb_species = GBT_first_marked_species(asrs.gb_main);
+            if (!gb_species) {
+                error = "please mark exactly one species";
+            }
+            else if (GBT_next_marked_species(gb_species)) {
+                error = "more than one species marked";
+            }
+            else {
+                asrs.sp_name   = strdup(GBT_read_name(gb_species));
+                GBDATA *gb_use = GB_search(asrs.gb_main,"presets/use",GB_FIND);
+                char   *use    = GB_read_string(gb_use);
+                GBDATA *gb_ali = GB_entry(gb_species,use);
+                
+                if (!gb_ali) {
+                    error = GBS_global_string("Species '%s' has no data in alignment '%s'", asrs.sp_name, use);
+                }
+                else {
+                    GBDATA *gb_data = GB_entry(gb_ali,"data");
+                    
+                    asrs.sequence = GB_read_string(gb_data);
+                }
+            }
 
-    arb_asrs_menu();
-    arb_asrs_swap();
-    return 0;
+            error = GB_end_transaction(asrs.gb_main, error);
+            GB_close(asrs.gb_main);
+
+            if (!error) {
+                arb_asrs_menu();
+                arb_asrs_swap();
+            }
+        }
+    }
+
+    int result = EXIT_SUCCESS;
+    if (error) {
+        fprintf(stderr, "Error in arb_swap_rnastr: %s\n", error);
+        result = EXIT_FAILURE;
+    }
+    return result;
 }

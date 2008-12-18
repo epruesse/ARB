@@ -2,7 +2,7 @@
 //                                                                 //
 //   File      : AWTC_fast_aligner.cxx                             //
 //   Purpose   : A fast aligner (not a multiple aligner!)          //
-//   Time-stamp: <Wed Dec/17/2008 10:13 MET Coder@ReallySoft.de>   //
+//   Time-stamp: <Wed Dec/17/2008 13:19 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in 1998           //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -1140,26 +1140,18 @@ static AWTC_CompactedSubSequence *readCompactedSequence(GBDATA      *gb_species,
     return seq;
 }
 
-static GB_ERROR writeStringToAlignment(GBDATA *gb_species, GB_CSTR alignment, GB_CSTR data_name, GB_CSTR string, bool temporary)
-{
-    GBDATA *gb_ali = GB_search(gb_species, alignment, GB_DB);
-    GB_ERROR error = NULL;
-    GBDATA *gb_name = GB_search(gb_ali, data_name, GB_STRING);
+static GB_ERROR writeStringToAlignment(GBDATA *gb_species, GB_CSTR alignment, GB_CSTR data_name, GB_CSTR str, bool temporary) {
+    GBDATA   *gb_ali  = GB_search(gb_species, alignment, GB_DB);
+    GB_ERROR  error   = NULL;
+    GBDATA   *gb_name = GB_search(gb_ali, data_name, GB_STRING);
 
-    if (gb_name)
-    {
+    if (gb_name) {
         awtc_assert(GB_check_father(gb_name, gb_ali));
-        error = GB_write_string(gb_name, string);
-        if (temporary && !error)
-            error = GB_set_temporary(gb_name);
+        error = GB_write_string(gb_name, str);
+        if (temporary && !error) error = GB_set_temporary(gb_name);
     }
-    else
-    {
-        GBDATA *gb_species_name = GB_entry(gb_species, "name");
-
-        error = GB_export_error("Cannot create entry '%s' for '%s'",
-                                data_name,
-                                gb_species_name ? GB_read_char_pntr(gb_species_name) : "(noname)");
+    else {
+        error = GB_export_error("Cannot create entry '%s' for '%s'", data_name, GBT_read_name(gb_species));
     }
 
     return error;

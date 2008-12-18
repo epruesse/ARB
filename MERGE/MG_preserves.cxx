@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_preserves.cxx                                       //
 //    Purpose   : find candidates for alignment preservation             //
-//    Time-stamp: <Wed Jul/09/2008 12:31 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Dec/17/2008 15:52 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //
@@ -223,18 +223,17 @@ static void find_species_candidates(Candidates& candidates, const char **ali_nam
          gb_dst_species && !aborted;
          gb_dst_species = GBT_next_species(gb_dst_species))
     {
-        GBDATA     *gb_name = GB_entry(gb_dst_species, "name");
-        const char *name    = GB_read_char_pntr(gb_name);
+        const char *dst_name = GBT_read_name(gb_dst_species);
 
-        if (GBDATA *gb_src_species = (GBDATA*)GBS_read_hash(src_species, name)) {
-            Candidate *cand = new Candidate(true, name, gb_src_species, gb_dst_species, ali_names);
+        if (GBDATA *gb_src_species = (GBDATA*)GBS_read_hash(src_species, dst_name)) {
+            Candidate *cand = new Candidate(true, dst_name, gb_src_species, gb_dst_species, ali_names);
 
             if (cand->has_alignments() && cand->get_score()>0.0) {
                 candidates.insert(cand);
             }
             else {
                 if (GB_ERROR err = GB_get_error()) {
-                    aw_message(GBS_global_string("Invalid adaption candidate '%s' (%s)", name, err));
+                    aw_message(GBS_global_string("Invalid adaption candidate '%s' (%s)", dst_name, err));
                     GB_clear_error();
                 }
                 delete cand;
@@ -264,18 +263,17 @@ static void find_SAI_candidates(Candidates& candidates, const char **ali_names) 
          gb_dst_SAI;
          gb_dst_SAI = GBT_next_SAI(gb_dst_SAI))
     {
-        GBDATA     *gb_name = GB_entry(gb_dst_SAI, "name");
-        const char *name    = GB_read_char_pntr(gb_name);
+        const char *dst_name = GBT_read_name(gb_dst_SAI);
 
-        if (GBDATA *gb_src_SAI = (GBDATA*)GBS_read_hash(src_SAIs, name)) {
-            Candidate *cand = new Candidate(false, name, gb_src_SAI, gb_dst_SAI, ali_names);
+        if (GBDATA *gb_src_SAI = (GBDATA*)GBS_read_hash(src_SAIs, dst_name)) {
+            Candidate *cand = new Candidate(false, dst_name, gb_src_SAI, gb_dst_SAI, ali_names);
 
             if (cand->has_alignments() && cand->get_score()>0.0) {
                 candidates.insert(cand);
             }
             else {
                 if (GB_ERROR err = GB_get_error()) {
-                    aw_message(GBS_global_string("Invalid adaption candidate 'SAI:%s' (%s)", name, err));
+                    aw_message(GBS_global_string("Invalid adaption candidate 'SAI:%s' (%s)", dst_name, err));
                     GB_clear_error();
                 }
                 delete cand;

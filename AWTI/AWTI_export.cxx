@@ -164,11 +164,10 @@ public:
 const unsigned char *export_sequence_data::get_seq_data(GBDATA *gb_species, size_t& slen, GB_ERROR& err) const {
     const char *data   = 0;
     GBDATA     *gb_seq = GBT_read_sequence(gb_species, ali);
+
     if (!gb_seq) {
-        GBDATA     *gb_name = GB_entry(gb_species, "name");
-        const char *name    = gb_name ? GB_read_char_pntr(gb_name) : "<unknown species>";
-        err                 = GBS_global_string_copy("No data in alignment '%s' of species '%s'", ali, name);
-        slen                = 0;
+        err  = GBS_global_string_copy("No data in alignment '%s' of species '%s'", ali, GBT_read_name(gb_species));
+        slen = 0;
     }
     else {
         data = GB_read_char_pntr(gb_seq);
@@ -388,11 +387,7 @@ static GB_ERROR AWTI_XML_recursive(GBDATA *gbd) {
     }
     else {
         tag = new XML_Tag(key_name);
-
-        GBDATA *gb_name = GB_entry(gbd, "name");
-        if (gb_name) {
-            tag->add_attribute("name", GB_read_char_pntr(gb_name));
-        }
+        tag->add_attribute("name", GBT_read_name(gbd));
     }
 
     if (descend) {

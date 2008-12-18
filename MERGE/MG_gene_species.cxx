@@ -3,7 +3,7 @@
 //    File      : MG_gene_species.cxx                                    //
 //    Purpose   : Transfer fields from organism and gene when            //
 //                tranferring gene species                               //
-//    Time-stamp: <Fri May/16/2008 11:03 MET Coder@ReallySoft.de>        //
+//    Time-stamp: <Wed Dec/17/2008 15:47 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2002             //
@@ -246,10 +246,7 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
                         }
                     }
                     else {
-                        GBDATA     *gb_name = GB_entry(gb_source, "name");
-                        const char *name    = gb_name ? GB_read_char_pntr(gb_name) : "<unknown species>";
-
-                        aw_message(GBS_global_string("'%s' when exporting %s (continuing)", error, name));
+                        aw_message(GBS_global_string("'%s' when exporting %s (continuing)", error, GBT_read_name(gb_source)));
                     }
                     if (error_suppressor) GBS_incr_hash(error_suppressor, error);
                     error = 0;

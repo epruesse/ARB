@@ -171,39 +171,32 @@ probe_read_alignment(int j, int *psize)
     buffer = probe_read_string_append_point(gb_data,psize);
     return buffer;
 }
-void probe_read_alignments()
-    /* liest die Alignments in psg.data */
-{
-    GBDATA     *gb_species;
-    GBDATA     *gb_name;
-    GBDATA     *gb_ali;
-    GBDATA     *gb_data;
-    char       *data;
-    int         count;
-    static int  size,hsize;
 
-    count = 0;
+void probe_read_alignments() {
+    // reads sequence data into psg.data
+
     GB_begin_transaction(psg.gb_main);
 
-    /* count all data */
-    char *def_ref = GBT_get_default_ref(psg.gb_main);
-    gb_species    = GBT_find_SAI_rel_exdata(psg.gb_extended_data, def_ref);
-    free(def_ref);
-    psg.ecoli     = 0;
-    if (gb_species) {
-        gb_data = GBT_read_sequence(gb_species,psg.alignment_name);
-        if (gb_data) {
-            psg.ecoli = GB_read_string(gb_data);
-        }
-    }
-    for (gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
-         gb_species;
-         gb_species = GBT_next_species(gb_species) )
+    // read ref SAI (e.g. ecoli)
     {
-        count ++;
+        char   *def_ref = GBT_get_default_ref(psg.gb_main);
+        GBDATA *gb_ref  = GBT_find_SAI_rel_exdata(psg.gb_extended_data, def_ref);
+
+        psg.ecoli = 0;
+        if (gb_ref) {
+            GBDATA *gb_data = GBT_read_sequence(gb_ref, psg.alignment_name);
+            if (gb_data) {
+                psg.ecoli = GB_read_string(gb_data);
+            }
+        }
+        free(def_ref);
     }
-    psg.data       = (struct probe_input_data *) calloc(sizeof(struct probe_input_data),count);
+
+    int count = GB_number_of_subentries(psg.gb_species_data);
+
+    psg.data       = (probe_input_data *)calloc(sizeof(probe_input_data), count);
     psg.data_count = 0;
+    
     printf("Database contains %i species.\nPreparing sequence data:\n", count);
 
     int data_missing  = 0;
@@ -211,61 +204,58 @@ void probe_read_alignments()
 
     count = 0;
 
-    for (gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
+    for (GBDATA *gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
          gb_species;
          gb_species = GBT_next_species(gb_species) )
     {
-        gb_name = GB_entry(gb_species,"name");
-        if (!gb_name) continue;
+        probe_input_data& pid = psg.data[count];
 
-        psg.data[count].name = GB_read_string(gb_name);
+        pid.name     = strdup(GBT_read_name(gb_species));
+        pid.fullname = GBT_read_string(gb_species, "full_name");
 
-        gb_name = GB_entry(gb_species,"full_name");
-        if (gb_name) {
-            psg.data[count].fullname = GB_read_string(gb_name);
-        }
-        else {
-            static char empty[] = "";
-            psg.data[count].fullname = empty;
-        }
-        psg.data[count].is_group = 1;
-        psg.data[count].gbd = gb_species;
-        /* get alignments */
-        gb_ali = GB_entry(gb_species, psg.alignment_name);
-        if (!gb_ali) continue;
-        /* this alignment doesnt exist */
-        gb_data = GB_entry(gb_ali,"data");
-        if (!gb_data) {
-            fprintf(stderr,"Species '%s' has no data in '%s'\n", psg.data[count].name, psg.alignment_name);
-            data_missing++;
-            continue;
-        }
-        psg.data[count].checksum = GBS_checksum(GB_read_char_pntr(gb_data),1,".-");
-        data                     = probe_read_string_append_point(gb_data,&hsize);
-        size                     = probe_compress_sequence(data);
-        psg.data[count].data     = (char *)gbs_malloc_copy(data,size);
-        psg.data[count].size     = size;
-        free(data);
-        count ++;
+        if (!pid.fullname) pid.fullname = strdup("");
 
-        if (count%10 == 0) {
-            if (count%500) {
-                printf(".");
+        pid.is_group = 1;
+        pid.gbd      = gb_species;
+        
+        GBDATA *gb_ali = GB_entry(gb_species, psg.alignment_name);
+        if (gb_ali) {
+            GBDATA *gb_data = GB_entry(gb_ali,"data");
+            if (!gb_data) {
+                fprintf(stderr,"Species '%s' has no data in '%s'\n", pid.name, psg.alignment_name);
+                data_missing++;
             }
             else {
-                printf(".%6i (%5.1f%%)\n", count, ((double)count/species_count)*100);
+                pid.checksum = GBS_checksum(GB_read_char_pntr(gb_data),1,".-");
+                {
+                    int   hsize;
+                    char *data = probe_read_string_append_point(gb_data, &hsize);
+                    int   size = probe_compress_sequence(data);
+
+                    pid.data = (char *)gbs_malloc_copy(data, size);
+                    pid.size = size;
+                    
+                    free(data);
+                }
+
+                count ++;
+                if (count%10 == 0) {
+                    if (count%500) fputc('.', stdout);
+                    else printf(".%6i (%5.1f%%)\n", count, ((double)count/species_count)*100);
+                    fflush(stdout);
+                }
             }
-            fflush(stdout);
         }
     }
-    printf("\n");
+
     psg.data_count = count;
     GB_commit_transaction(psg.gb_main);
+    
     if (data_missing) {
-        printf("%i species were ignored because of missing data.\n", data_missing);
+        printf("\n%i species were ignored because of missing data.\n", data_missing);
     }
     else {
-        printf("All species contain data in alignment '%s'.\n", psg.alignment_name);
+        printf("\nAll species contain data in alignment '%s'.\n", psg.alignment_name);
     }
     fflush(stdout);
 }
