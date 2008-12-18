@@ -204,7 +204,6 @@ symlink ../NTREE/ntree.hxx INCLUDE/ntree.hxx &&
 symlink ../PRIMER_DESIGN/primer_design.hxx INCLUDE/primer_design.hxx &&
 symlink ../PROBE_DESIGN/probe_design.hxx INCLUDE/probe_design.hxx &&
 symlink ../SECEDIT/secedit_extern.hxx INCLUDE/secedit_extern.hxx &&
-symlink ../SEER/seer.hxx INCLUDE/seer.hxx &&
 symlink ../SERVERCNTRL/servercntrl.h INCLUDE/servercntrl.h &&
 symlink ../SEQ_QUALITY/seq_quality.h INCLUDE/seq_quality.h &&
 symlink ../SL/AW_HELIX/AW_helix.hxx INCLUDE/AW_helix.hxx &&

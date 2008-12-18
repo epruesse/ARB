@@ -21,7 +21,6 @@
 #include <awti_import.hxx>
 
 #include <mg_merge.hxx>
-#include <seer.hxx>
 
 #include "nt_concatenate.hxx"
 #include "ntree.hxx"

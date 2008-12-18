@@ -501,7 +501,6 @@ NT_main.o: $(ARBHOME)/INCLUDE/awt_pro_a_nucs.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt_tree.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
-NT_main.o: $(ARBHOME)/INCLUDE/seer.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 NT_main.o: $(ARBHOME)/INCLUDE/svn_revision.h
 
