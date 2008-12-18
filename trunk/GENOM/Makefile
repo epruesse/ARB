@@ -13,7 +13,6 @@ CPP_OBJECTS =   \
     \
 	EXP_interface.o \
 	EXP_main.o \
-	EXP_db.o \
 
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
@@ -44,15 +43,6 @@ depend.init:
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
-
-EXP_db.o: EXP.hxx
-EXP_db.o: $(ARBHOME)/INCLUDE/ad_prot.h
-EXP_db.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-EXP_db.o: $(ARBHOME)/INCLUDE/arb_assert.h
-EXP_db.o: $(ARBHOME)/INCLUDE/arbdb.h
-EXP_db.o: $(ARBHOME)/INCLUDE/arbdbt.h
-EXP_db.o: $(ARBHOME)/INCLUDE/attributes.h
-EXP_db.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 
 EXP_interface.o: ../NTREE/ad_spec.hxx
 EXP_interface.o: ../NTREE/nt_internal.h
