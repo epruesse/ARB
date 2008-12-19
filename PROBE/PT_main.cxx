@@ -209,7 +209,6 @@ int main(int argc, char **argv)
     const char        *name;
     char              *error;
     char              *aname,*tname;
-    const char        *suffix;
     struct stat        s_source,s_dest;
     int                build_flag;
     struct arb_params *params;
@@ -248,10 +247,10 @@ int main(int argc, char **argv)
     }
 
     aisc_main = create_PT_main();
+    
     aname = params->db_server;
-    suffix = ".pt";
-    tname = (char *)calloc(sizeof(char),strlen(aname)+strlen(suffix)+1);
-    sprintf(tname,"%s%s",aname,suffix);
+    tname = GBS_global_string_copy("%s.pt", aname);
+
     if (!strcmp(command_flag, "-build")) {  /* build command */
         if (( error = pt_init_main_struct(aisc_main, params->db_server) ))
         {

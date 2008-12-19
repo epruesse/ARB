@@ -27,9 +27,6 @@ int   AWT_is_file(const char *path);
 int   AWT_is_link(const char *path);
 char *AWT_extract_directory(const char *path);
 
-GB_CSTR AWT_get_suffix(const char *fullpath);
-GB_CSTR AWT_append_suffix(const char *name, const char *suffix);
-
 // ------------------------------------------------------------
 
 // holds all stuff needed to make ad_.. functions work with species _and_ genes (and more..)

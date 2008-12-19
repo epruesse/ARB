@@ -1163,7 +1163,8 @@ GB_ULONG GB_get_physical_memory(void) {
     return usedmemsize;
 }
 
-/* path completion (former located in AWT) */
+/* --------------------------------------------- */
+/* path completion (parts former located in AWT) */
 
 GB_CSTR GB_get_full_path(const char *anypath) {
     // expands '~' '..' etc in 'anypath'
@@ -1243,3 +1244,32 @@ GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_ri
     }
 }
 
+void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullname, char **res_name_only, char **res_suffix) {
+    // Takes a file (or directory) name and splits it into "path/name.suffix".
+    // If result pointers (res_*) are non-NULL, they are assigned heap-copies of the splitted parts.
+    // If parts are not valid (e.g. cause 'fullpath' doesn't have a .suffix) the corresponding result pointer
+    // is set to NULL.
+    // 
+    // The '/' and '.' characters are not included in the results (except the '.' in 'res_fullname')
+
+    if (fullpath && fullpath[0]) {
+        const char *lslash     = strrchr(fullpath, '/');
+        const char *name_start = lslash ? lslash+1 : fullpath;
+        const char *ldot       = strrchr(lslash ? lslash : fullpath, '.');
+        const char *terminal   = strchr(name_start, 0);
+
+        gb_assert(terminal);
+        gb_assert(name_start);
+
+        if (res_dir)       *res_dir       = lslash ? GB_strpartdup(fullpath, lslash) : NULL;
+        if (res_fullname)  *res_fullname  = GB_strpartdup(name_start, terminal);
+        if (res_name_only) *res_name_only = GB_strpartdup(name_start, ldot ? ldot : terminal);
+        if (res_suffix)    *res_suffix    = ldot ? GB_strpartdup(ldot, terminal) : strdup(name_start);
+    }
+    else {
+        if (res_dir)       *res_dir       = NULL;
+        if (res_fullname)  *res_fullname  = NULL;
+        if (res_name_only) *res_name_only = NULL;
+        if (res_suffix)    *res_suffix    = NULL;
+    }
+}
