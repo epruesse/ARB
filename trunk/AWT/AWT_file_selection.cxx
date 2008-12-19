@@ -48,7 +48,7 @@ static GB_CSTR awt_get_base_directory(const char *pwd_envar) {
 
 
 
-GB_CSTR AWT_get_suffix(const char *fullpath) { // returns pointer behind '.' of suffix (or NULL if no suffix found)
+static GB_CSTR get_suffix(GB_CSTR fullpath) { // returns pointer behind '.' of suffix (or NULL if no suffix found)
     GB_CSTR dot = strrchr(fullpath, '.');
     if (!dot) return 0;
 
@@ -57,31 +57,39 @@ GB_CSTR AWT_get_suffix(const char *fullpath) { // returns pointer behind '.' of 
     return dot+1;
 }
 
-GB_CSTR AWT_append_suffix(const char *name, const char *suffix) {
-    // returns "name.suffix" (checks for multiple dots)
-    static char  buf[FILENAME_MAX+1];
-    strcpy(buf, name ? name : "noname"); // force a name!
-    char *end = strchr(buf, 0);
-    char *ep;
 
-    for (ep = end-1; ep >= buf && ep[0] == '.'; --ep) ; // point before dot
-    awt_assert(ep >= buf);      // name consist of dots only
-    ++ep;
+static char *set_suffix(const char *name, const char *suffix) {
+    // returns "name.suffix" (name may contain path information)
+    // - eliminates multiple dots
+    // - sets name to 'noname' if no name part is given
 
-    if (suffix) {
-        while (suffix[0] == '.') ++suffix; // search for real suffix start
-        if (!suffix[0]) suffix = 0;
+    char *path, *fullname;
+    GB_split_full_path(name, &path, &fullname, NULL, NULL);
+
+    // remove dots and spaces from suffix:
+    while (suffix[0] == '.' || suffix[0] == ' ') ++suffix;
+    if (!suffix[0]) suffix = 0;
+
+    GBS_strstruct *out = GBS_stropen(FILENAME_MAX+1);
+    if (path) {
+        GBS_strcat(out, path);
+        GBS_chrcat(out, '/');
+    }
+
+    if (fullname) GBS_strcat(out, fullname);
+
+    if (GB_is_directory(GBS_mempntr(out))) {
+        // if 'out' contains a directory now, 'name' was lacking a filename
+        // (it was only a directory then)
+        GBS_strcat(out, "/noname"); // invent a name
     }
 
     if (suffix) {
-        *ep++ = '.';
-        strcpy(ep, suffix);
-    }
-    else {
-        ep[0] = 0; // no suffix
+        GBS_chrcat(out, '.');
+        GBS_strcat(out, suffix);
     }
 
-    return buf;
+    return GBS_strclose(out);
 }
 
 
@@ -491,16 +499,17 @@ static void awt_selection_box_changed_filename(void *, struct adawcbstruct *cbs)
                 {
                     char *filter = aw_root->awar(cbs->def_filter)->read_string();
                     if (filter[0]) {
-                        char    *pfilter = strrchr(filter,'.');
-                        pfilter          = pfilter ? pfilter+1 : filter;
-                        GB_CSTR  suffix  = AWT_get_suffix(newName);
+                        char *pfilter = strrchr(filter,'.');
+                        pfilter       = pfilter ? pfilter+1 : filter;
+
+                        char *suffix = (char*)get_suffix(newName); // cast ok, since get_suffix points into newName
 
                         if (!suffix || strcmp(suffix, pfilter) != 0) {
                             if (suffix && filter_has_changed) {
-                                *(char*)suffix = 0; // suffix points into new name - so changing is ok here
+                                *suffix = 0; // suffix points into new name - so changing is ok here
                             }
 
-                            char *n = strdup(AWT_append_suffix(newName, pfilter));
+                            char *n = set_suffix(newName, pfilter);
                             free(newName);
                             newName = n;
                         }

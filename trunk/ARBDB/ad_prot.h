@@ -296,6 +296,7 @@ GB_CSTR GB_concat_path P_((GB_CSTR anypath_left, GB_CSTR anypath_right));
 GB_CSTR GB_concat_full_path P_((const char *anypath_left, const char *anypath_right));
 GB_CSTR GB_path_in_ARBHOME P_((const char *relative_path_left, const char *anypath_right));
 GB_CSTR GB_path_in_ARBLIB P_((const char *relative_path_left, const char *anypath_right));
+void GB_split_full_path P_((const char *fullpath, char **res_dir, char **res_fullname, char **res_name_only, char **res_suffix));
 
 /* adcomm.c */
 GB_ERROR GBCMS_open P_((const char *path, long timeout, GBDATA *gb_main));

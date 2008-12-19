@@ -372,12 +372,8 @@ int main(int argc, char *argv[])
   }
 
   /* generate tree filename */
-  {
-    STRPTR suffix = (STRPTR) ".pan";
-    pg->pg_DBName = pg->pg_ArbParams->db_server;
-    pg->pg_IndexName = (STRPTR) malloc(strlen(pg->pg_DBName) + strlen(suffix) + 1);
-    sprintf(pg->pg_IndexName, "%s%s", pg->pg_DBName, suffix);
-  }
+  pg->pg_DBName    = pg->pg_ArbParams->db_server;
+  pg->pg_IndexName = GBS_global_string_copy("%s.pan", pg->pg_DBName);
 
   /* check for other active servers */
   {
