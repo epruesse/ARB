@@ -89,6 +89,9 @@ static char *set_suffix(const char *name, const char *suffix) {
         GBS_strcat(out, suffix);
     }
 
+    free(path);
+    free(fullname);
+
     return GBS_strclose(out);
 }
 
@@ -506,7 +509,7 @@ static void awt_selection_box_changed_filename(void *, struct adawcbstruct *cbs)
 
                         if (!suffix || strcmp(suffix, pfilter) != 0) {
                             if (suffix && filter_has_changed) {
-                                *suffix = 0; // suffix points into new name - so changing is ok here
+                                *suffix = 0; 
                             }
 
                             char *n = set_suffix(newName, pfilter);
