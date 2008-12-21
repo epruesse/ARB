@@ -160,25 +160,6 @@ else
     untar arb.tgz;
 fi
 
-if test -f $cwd/arb_ale.tgz; then
-    if test -f DEPOT2/emacs; then
-        seperator
-        echo "Old ARB_ALE package found"
-        echo "ARB_ALE is a sophisticated alignment editor written by RDP"
-        echo "  Do you want to update the old package: (y/n)[y]"
-        read var;
-        case "$var" in
-            n)
-            echo "Old ARB_ALE version unchanged";;
-            *)
-            echo "updating ARB_ALE"
-            untar arb_ale.tgz;;
-        esac
-    else
-        untar arb_ale.tgz;
-    fi
-fi
-
 seperator
 echo 'Specify PT_SERVER files location'
 echo '  ARB needs a writeable directory to store the pt_server files. '

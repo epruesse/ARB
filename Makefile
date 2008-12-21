@@ -1,7 +1,7 @@
 # =============================================================== #
 #                                                                 #
 #   File      : Makefile                                          #
-#   Time-stamp: <Sun Dec/21/2008 14:02 MET Coder@ReallySoft.de>   #
+#   Time-stamp: <Sun Dec/21/2008 14:15 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Institute of Microbiology (Technical University Munich)       #
 #   http://www.arb-home.de/                                       #
@@ -282,9 +282,7 @@ first_target:
 		@echo ' release     - build a release (increases minor version number)'
 		@echo ' stable      - like "release", but increase major version number'
 		@echo ' tarfile     - make rebuild and create arb version tarfile ("tarfile_quick" to skip rebuild)'
-#		@echo ' tarale      - compress emacs and ale lisp files int arb_ale.tar.gz'
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE'
-#		@echo ' savedepot   - save all extended ARB source (DEPOT2 subdir) into arbdepot_DATE.cpio.gz'
 		@echo ' rtc_patch   - create LIBLINK/libRTC8M.so (SOLARIS ONLY)'
 		@echo ' source_doc  - create doxygen documentation'
 		@echo ' relocation  - rebuild partly (use when you have relocated ARBHOME)'
@@ -1264,9 +1262,6 @@ rebuild: clean
 
 relink: bclean libclean
 	$(MAKE) all
-
-savedepot: rmbak
-	util/arb_save_depot
 
 tarfile: rebuild
 	util/arb_compress
