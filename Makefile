@@ -1,7 +1,7 @@
 # =============================================================== #
 #                                                                 #
 #   File      : Makefile                                          #
-#   Time-stamp: <Thu Dec/18/2008 11:35 MET Coder@ReallySoft.de>   #
+#   Time-stamp: <Sun Dec/21/2008 14:02 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Institute of Microbiology (Technical University Munich)       #
 #   http://www.arb-home.de/                                       #
@@ -287,6 +287,7 @@ first_target:
 #		@echo ' savedepot   - save all extended ARB source (DEPOT2 subdir) into arbdepot_DATE.cpio.gz'
 		@echo ' rtc_patch   - create LIBLINK/libRTC8M.so (SOLARIS ONLY)'
 		@echo ' source_doc  - create doxygen documentation'
+		@echo ' relocation  - rebuild partly (use when you have relocated ARBHOME)'
 		@echo ''
 		@echo $(SEP)
 		@echo ''
@@ -1249,6 +1250,12 @@ clean2: $(ARCHS:.a=.clean) \
 # links are needed for cleanup
 clean: links
 	$(MAKE) clean2
+
+relocated: links
+	@echo "---------------------------------------- Relocation cleanup"
+	$(MAKE) perl_clean GDEHELP/GDEHELP.clean HELP_SOURCE/genhelp/genhelp.clean
+	@echo "---------------------------------------- and rebuild"
+	$(MAKE) all
 
 # -----------------------------------
 
