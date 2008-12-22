@@ -283,6 +283,21 @@ void GB_clear_error() {         /* clears the error buffer */
     GB_error_buffer = 0;
 }
 
+#if defined(DEVEL_RALF)
+#warning search for 'GBS_global_string.*error' and replace with GB_failedTo_error
+#endif /* DEVEL_RALF */
+GB_ERROR GB_failedTo_error(const char *do_something, const char *special, GB_ERROR error) {
+    if (error) {
+        if (special) {
+            error = GBS_global_string("Failed to %s '%s'.\n(Reason: %s)", do_something, special, error);
+        }
+        else {
+            error = GBS_global_string("Failed to %s.\n(Reason: %s)", do_something, error);
+        }
+    }
+    return error;
+}
+
 /* -------------------------------------------------------------------------------- */
 
 #if defined(DEBUG)

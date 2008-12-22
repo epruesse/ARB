@@ -720,14 +720,20 @@ int gbcms_talking_close(int socket,long *hsin,void *sin,GBDATA *gbd)
 ***************************************************************************************/
 int gbcms_talking_system(int socket,long *hsin,void *sin,GBDATA *gbd)
 {
-    char    *comm = gbcm_read_string(socket);
+    char *comm = gbcm_read_string(socket);
+
     gbcm_read_flush(socket);
-    gbd = gbd;
+    gbd    = gbd;
     socket = socket;
-    hsin = hsin;
-    sin = sin;
-    printf("Action: '%s'\n",comm);
-    system(comm);
+    hsin   = hsin;
+    sin    = sin;
+
+    GB_ERROR error = GB_system(comm);
+    if (error) {
+        GB_warning(error);
+        return GBCM_SERVER_FAULT;
+    }
+
     if (gbcm_write_two(socket,GBCM_COMMAND_SYSTEM_RETURN,0)){
         return GBCM_SERVER_FAULT;
     }
@@ -1886,15 +1892,10 @@ int GBCMC_system(GBDATA *gbd,const char *ss) {
     long    gb_result[2];
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
     if (Main->local_mode){
-        printf("Action: '%s'\n",ss);
-        if (system(ss)){
-            if (strlen(ss) < 1000){
-                GB_export_error("Cannot run '%s'",ss);
-            }
-            return 1;
-        }
-        return 0;
-    };
+        GB_ERROR error = GB_system(ss);
+        if (error) GB_export_error(error);
+        return error != 0;
+    }
     socket = Main->c_link->socket;
 
     if (gbcm_write_two(socket,GBCM_COMMAND_SYSTEM,gbd->server_id)){

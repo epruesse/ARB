@@ -919,9 +919,6 @@ GB_ERROR GB_save_in_home(GBDATA *gb,const char *path,const char *savetype)
     sprintf(buffer,"%s/%s",env,path);
     slash             = strrchr(buffer,'/');
     *slash            = 0;
-    /*     buf2 = GB_give_buffer(1024); */
-    /*     sprintf(buf2,"mkdir -p %s",buffer); */
-    /*     if (system(buf2)) error = GB_export_error("Cannot create directory %s",buffer); */
     error             = GB_create_directory(buffer);
     *slash            = '/';
     if (!error) error = GB_save_as(gb,buffer,savetype);
