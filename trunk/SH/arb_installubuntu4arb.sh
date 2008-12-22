@@ -31,7 +31,8 @@ else
             gv \
             libmotif3 \
             xfig \
-            
+            transfig \
+
     elif [ "$1" == "arb_OpenGL" ]; then
         $0 arb_noOpenGL
         apt-get -y install \
