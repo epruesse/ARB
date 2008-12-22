@@ -885,25 +885,23 @@ GB_ERROR GB_save(GBDATA *gb,const char *path,const char *savetype)
 
 GB_ERROR GB_create_directory(const char *path) {
     GB_ERROR error = 0;
-    {
+    if (!GB_is_directory(path)) {
         char *parent;
         GB_split_full_path(path, &parent, NULL, NULL, NULL);
         if (parent) {
-            if (!GB_is_directory(parent)) {
-                error = GB_create_directory(parent);
-            }
+            if (!GB_is_directory(parent)) error = GB_create_directory(parent);
             free(parent);
         }
-    }
 
-    if (!error && !GB_is_directory(path)) {
-        int res = mkdir(path, ACCESSPERMS);
-        if (res) error = GB_export_IO_error("mkdir", path);
-    }
+        if (!error && !GB_is_directory(path)) {
+            int res = mkdir(path, ACCESSPERMS);
+            if (res) error = GB_export_IO_error("mkdir", path);
+        }
 
-    gb_assert(error || GB_is_directory(path));
-    
-    if (error) error = GBS_global_string("GB_create_directory('%s') failed:\nReason: %s", path, error);
+        gb_assert(error || GB_is_directory(path));
+
+        error = GB_failedTo_error("GB_create_directory", path, error);
+    }
     return error;
 }
 
