@@ -93,10 +93,6 @@ int main(int argc, char **argv)
     }
     GB_set_next_main_idx(nidx);
 
-    if (test){
-        GB_ralfs_test(gb_main);
-    }
-
     printf("Saving database...\n");
     error = GB_save(gb_main,out,wtype);
     if (error){
