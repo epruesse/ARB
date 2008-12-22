@@ -247,8 +247,9 @@ static int pt_sort_compare_match(const void *PT_probematch_ptr1, const void *PT_
     if (!cmp) {
         cmp = mach1->N_mismatches - mach2->N_mismatches;
         if (!cmp) {
-            cmp = mach1->wmismatches - mach2->wmismatches;
-            if (!cmp) {
+            if      (mach1->wmismatches < mach2->wmismatches) cmp = -1;
+            else if (mach1->wmismatches > mach2->wmismatches) cmp = 1;
+            else {
                 cmp = mach1->b_pos - mach2->b_pos;
                 if (!cmp) {
                     cmp = mach1->name - mach2->name;
