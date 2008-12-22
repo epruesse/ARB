@@ -883,15 +883,27 @@ GB_ERROR GB_save(GBDATA *gb,const char *path,const char *savetype)
     return GB_save_as(gb,path,savetype);
 }
 
-/*  -------------------------------------------------------  */
-/*      GB_ERROR GB_create_directory(const char *path)       */
-/*  -------------------------------------------------------  */
 GB_ERROR GB_create_directory(const char *path) {
-    char     *mkdir          = GB_give_buffer(1024);
-    GB_ERROR  error          = 0;
-    sprintf(mkdir, "mkdir -p %s", path);
-    if (system(mkdir)) error = GB_export_error("Cannot create directory %s",path);
-    /* @@@ FIXME: use POSIX command instead of system call!  */
+    GB_ERROR error = 0;
+    {
+        char *parent;
+        GB_split_full_path(path, &parent, NULL, NULL, NULL);
+        if (parent) {
+            if (!GB_is_directory(parent)) {
+                error = GB_create_directory(parent);
+            }
+            free(parent);
+        }
+    }
+
+    if (!error && !GB_is_directory(path)) {
+        int res = mkdir(path, ACCESSPERMS);
+        if (res) error = GB_export_IO_error("mkdir", path);
+    }
+
+    gb_assert(error || GB_is_directory(path));
+    
+    if (error) error = GBS_global_string("GB_create_directory('%s') failed:\nReason: %s", path, error);
     return error;
 }
 

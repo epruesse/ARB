@@ -1278,10 +1278,12 @@ void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullnam
         gb_assert(terminal);
         gb_assert(name_start);
 
-        if (res_dir)       *res_dir       = lslash ? GB_strpartdup(fullpath, lslash) : NULL;
-        if (res_fullname)  *res_fullname  = GB_strpartdup(name_start, terminal);
-        if (res_name_only) *res_name_only = GB_strpartdup(name_start, ldot ? ldot : terminal);
-        if (res_suffix)    *res_suffix    = ldot ? GB_strpartdup(ldot, terminal) : strdup(name_start);
+        gb_assert(terminal > fullpath); // ensure (terminal-1) is a valid character position in path
+
+        if (res_dir)       *res_dir       = lslash ? GB_strpartdup(fullpath, lslash-1) : NULL;
+        if (res_fullname)  *res_fullname  = GB_strpartdup(name_start, terminal-1);
+        if (res_name_only) *res_name_only = GB_strpartdup(name_start, ldot ? ldot-1 : terminal-1);
+        if (res_suffix)    *res_suffix    = ldot ? GB_strpartdup(ldot+1, terminal-1) : strdup(name_start);
     }
     else {
         if (res_dir)       *res_dir       = NULL;
