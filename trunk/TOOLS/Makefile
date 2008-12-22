@@ -20,10 +20,9 @@ TOOLS := \
 	arb_swap_rnastr \
 
 ifeq ($(DEBUG),1)
-TOOLS += \
-	arb_perf_test \
-	arb_test \
-
+# add all arb*test*.c[xx] files
+TOOLS += $(subst .c,,$(wildcard arb*test*.c))
+TOOLS += $(subst .cxx,,$(wildcard arb*test*.cxx))
 endif
 
 LIB_ARBDB = $(LIBPATH) -lARBDB
