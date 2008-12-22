@@ -755,13 +755,13 @@ GB_ULONG GB_last_saved_time(GBDATA *gb_main){
     return GB_MAIN(gb_main)->last_saved_time;
 }
 
-void GB_textprint(const char *path){
-    char buffer[1024];
-    char *fpath = GBS_eval_env(path);
-    sprintf(buffer, "%s %s &","arb_textprint",fpath);
-    GB_information("Executing '%s'", buffer);
-    system(buffer);
+GB_ERROR GB_textprint(const char *path){
+    /* goes to header: __ATTR__USERESULT */
+    char       *fpath   = GBS_eval_env(path);
+    const char *command = GBS_global_string("arb_textprint '%s' &", fpath);
+    GB_ERROR    error   = GB_system(command);
     free(fpath);
+    return GB_failedTo_error("print textfile", fpath, error);
 }
 
 GB_CSTR GB_getcwd(void) {
@@ -773,22 +773,38 @@ GB_CSTR GB_getcwd(void) {
     return lastcwd;
 }
 
-void GB_xterm(void){
-    char buffer[1024];
-    const char *xt = GB_getenv("ARB_XTERM"); // doc in arb_envar.hlp
-    if (!xt) xt = "xterm -sl 1000 -sb -geometry 120x40";
-    sprintf(buffer, "%s &",xt);
-    system(buffer);
+#if defined(DEVEL_RALF)
+#warning search for '\b(system)\b\s*\(' and use GB_system instead
+#endif /* DEVEL_RALF */
+GB_ERROR GB_system(const char *system_command) {
+    /* goes to header: __ATTR__USERESULT */
+    fprintf(stderr, "[Action: '%s']\n", system_command);
+    int      res   = system(system_command);
+    GB_ERROR error = NULL;
+    if (res) {
+        error = GBS_global_string("System call '%s' failed (result=%i)", system_command, res);
+    }
+    return error;
 }
 
-void GB_xcmd(const char *cmd, GB_BOOL background, GB_BOOL wait_only_if_error) {
+GB_ERROR GB_xterm(void) {
+    /* goes to header: __ATTR__USERESULT */
+    const char *xt = GB_getenv("ARB_XTERM"); // doc in arb_envar.hlp
+    if (!xt) xt = "xterm -sl 1000 -sb -geometry 120x40";
+
+    const char *command = GBS_global_string("%s &", xt);
+    return GB_system(command);
+}
+
+GB_ERROR GB_xcmd(const char *cmd, GB_BOOL background, GB_BOOL wait_only_if_error) {
+    /* goes to header: __ATTR__USERESULT */
+    
     // runs a command in an xterm
     // if 'background' is true -> run asyncronous
     // if 'wait_only_if_error' is true -> asyncronous does wait for keypress only if cmd fails
 
     void       *strstruct = GBS_stropen(1024);
     const char *xt        = GB_getenv("ARB_XCMD"); // doc in arb_envar.hlp
-    char       *sys;
     if (!xt) xt           = "xterm -sl 1000 -sb -geometry 140x30 -e";
     GBS_strcat(strstruct, "(");
     GBS_strcat(strstruct, xt);
@@ -812,10 +828,11 @@ void GB_xcmd(const char *cmd, GB_BOOL background, GB_BOOL wait_only_if_error) {
             GBS_strcat(strstruct, " )' ) ");
         }
     }
-    sys = GBS_strclose(strstruct);
-    GB_information("Executing '%s'", sys);
-    system(sys);
-    free(sys);
+
+    GB_ERROR error = GB_system(GBS_mempntr(strstruct));
+    GBS_strforget(strstruct);
+
+    return error;
 }
 
 /* -------------------------------------------------------------------------------- */

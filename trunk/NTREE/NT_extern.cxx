@@ -112,7 +112,10 @@ void export_nds_cb(AW_window *aww,AW_CL print_flag) {
     }
     awt_refresh_selection_box(aw_root, AWAR_EXPORT_NDS);
     fclose(out);
-    if (print_flag) GB_textprint(name);
+    if (print_flag) {
+        GB_ERROR error = GB_textprint(name);
+        if (error) aw_message(error);
+    }
     free(tree_name);
     free(name);
 }
