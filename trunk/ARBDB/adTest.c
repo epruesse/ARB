@@ -356,25 +356,6 @@ void GB_dump_no_limit(GBDATA *gbd) {
     GB_dump_internal(gbd, 0);
 }
 
-char *GB_ralfs_test(GBDATA *gb_main)
-{
-    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    GB_push_transaction(gb_main);
-    GB_push_my_security(gb_main);
-    system("date");
-    gb_create_dictionaries(Main,10000000);
-    system("date");
-    GB_pop_my_security(gb_main);
-    GB_pop_transaction(gb_main);
-
-    return NULL;
-}
-
-char *GB_ralfs_menupoint(GBDATA *main_data)
-{
-    return GB_ralfs_test(main_data);
-}
-
 /* -------------------------------------------------------------------------------- */
 /* Fix database                                                                     */
 /* -------------------------------------------------------------------------------- */
