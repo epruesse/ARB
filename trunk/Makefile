@@ -1,7 +1,7 @@
 # =============================================================== #
 #                                                                 #
 #   File      : Makefile                                          #
-#   Time-stamp: <Sun Dec/21/2008 14:15 MET Coder@ReallySoft.de>   #
+#   Time-stamp: <Tue Dec/23/2008 06:27 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Institute of Microbiology (Technical University Munich)       #
 #   http://www.arb-home.de/                                       #
@@ -285,7 +285,7 @@ first_target:
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE'
 		@echo ' rtc_patch   - create LIBLINK/libRTC8M.so (SOLARIS ONLY)'
 		@echo ' source_doc  - create doxygen documentation'
-		@echo ' relocation  - rebuild partly (use when you have relocated ARBHOME)'
+		@echo ' relocated   - rebuild partly (use when you have relocated ARBHOME)'
 		@echo ''
 		@echo $(SEP)
 		@echo ''
@@ -1228,14 +1228,17 @@ rmbak:
 		-o -name 'gde*_?' -o -name '*~' \) \
 	-print -exec rm {} \;
 
-bclean:
+binclean:
 	@echo Cleaning bin directory
 	find bin -type l -exec rm {} \;
-	find bin -type f \! \( -name ".cvsignore" -o -name "Makefile" -o -path "bin/CVS*" -o -path "bin/.svn" \) -exec rm {} \;
+	find bin -type f \! \( -name ".cvsignore" -o -name "Makefile" -o -path "bin/CVS/*" -o -path "bin/.svn/*" \) -exec rm {} \;
 	cd bin;make all
 
 libclean:
-	rm -f `find . -type f \( -name '*.a' ! -type l \) -print`
+	find $(ARBHOME) -type f \( -name '*.a' ! -type l \) -exec rm -f {} \;
+
+objclean:
+	find $(ARBHOME) -type f \( -name '*.o' ! -type l \) -exec rm -f {} \;
 
 clean2: $(ARCHS:.a=.clean) \
 		GDEHELP/GDEHELP.clean \
@@ -1249,10 +1252,17 @@ clean2: $(ARCHS:.a=.clean) \
 clean: links
 	$(MAKE) clean2
 
+# 'relocated' is about 50% faster than 'rebuild'
 relocated: links
 	@echo "---------------------------------------- Relocation cleanup"
-	$(MAKE) perl_clean GDEHELP/GDEHELP.clean HELP_SOURCE/genhelp/genhelp.clean
-	@echo "---------------------------------------- and rebuild"
+	$(MAKE) \
+		perl_clean \
+		GDEHELP/GDEHELP.clean \
+		HELP_SOURCE/genhelp/genhelp.clean \
+		binclean \
+		libclean \
+		objclean
+	@echo "---------------------------------------- and remake"
 	$(MAKE) all
 
 # -----------------------------------
@@ -1260,7 +1270,7 @@ relocated: links
 rebuild: clean
 	$(MAKE) all
 
-relink: bclean libclean
+relink: binclean libclean
 	$(MAKE) all
 
 tarfile: rebuild
