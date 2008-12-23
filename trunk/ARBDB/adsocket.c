@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <string.h>
 #include <memory.h>
+#include <limits.h>
 
 #include <sys/socket.h>
 #include <sys/un.h>
