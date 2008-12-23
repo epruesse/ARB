@@ -41,6 +41,8 @@ GB_ERROR GB_failedTo_error P_((const char *do_something, const char *special, GB
 void GBS_reuse_buffer P_((GB_CSTR global_buffer));
 GB_CSTR GBS_global_string P_((const char *templat, ...)) __ATTR__FORMAT(1);
 char *GBS_global_string_copy P_((const char *templat, ...)) __ATTR__FORMAT(1);
+const char *GBS_global_string_to_buffer P_((char *buffer, size_t bufsize, const char *templat, ...)) __ATTR__FORMAT(3);
+size_t GBS_last_global_string_size P_((void));
 char *GBS_string_2_key_with_exclusions P_((const char *str, const char *additional));
 char *GBS_string_2_key P_((const char *str));
 GB_ERROR GB_check_key P_((const char *key)) __ATTR__USERESULT;
