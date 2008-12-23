@@ -318,7 +318,7 @@ void AWT_create_select_srtaci_window(AW_window *aww,AW_CL awar_acisrt,AW_CL awar
 }
 
 static void nds_init_config(AWT_config_definition& cdef) {
-    for (int i = 0; i<NDS_COUNT; ++i) {
+    for (int i = 0; i<NDS_PER_PAGE; ++i) {
         cdef.add(viewkeyAwarName(i, "leaf"), "leaf", i);
         cdef.add(viewkeyAwarName(i, "group"), "group", i);
         cdef.add(viewkeyAwarName(i, "key_text"), "key_text", i);

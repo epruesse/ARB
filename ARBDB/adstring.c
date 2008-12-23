@@ -300,14 +300,35 @@ GB_ERROR GB_failedTo_error(const char *do_something, const char *special, GB_ERR
 
 /* -------------------------------------------------------------------------------- */
 
+#ifdef LINUX
+# define HAVE_VSNPRINTF
+#endif
+
+#ifdef HAVE_VSNPRINTF
+# define PRINT2BUFFER(buffer, bufsize, templat, parg) vsnprintf(buffer, bufsize, templat, parg);
+#else
+# define PRINT2BUFFER(buffer, bufsize, templat, parg) vsprintf(buffer, templat, parg);
+#endif
+
+#define PRINT2BUFFER_CHECKED(printed, buffer, bufsize, templat, parg)   \
+    (printed) = PRINT2BUFFER(buffer, bufsize, templat, parg);           \
+    if ((printed) < 0 || (size_t)(printed) >= (bufsize)) {              \
+        fprintf(stderr, "Internal buffer overflow (buffersize=%zu, printed=%zi)\n", (bufsize), (printed)); \
+        gb_assert(0);                                                   \
+        GB_CORE;                                                        \
+    }
+    
+/* -------------------------------------------------------------------------------- */
+
 #if defined(DEBUG)
 #if defined(DEVEL_RALF)
 /* #define TRACE_BUFFER_USAGE */
 #endif /* DEBUG */
 #endif /* DEVEL_RALF */
 
-
 #define GLOBAL_STRING_BUFFERS 4
+
+static size_t last_global_string_size = 0;
 
 static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_reuse)
 {
@@ -362,21 +383,13 @@ static GB_CSTR gbs_vglobal_string(const char *templat, va_list parg, int allow_r
         }
     }
 
-#ifdef LINUX
-    psize = vsnprintf(buffer[my_idx],GBS_GLOBAL_STRING_SIZE,templat,parg);
-#else
-    psize = vsprintf(buffer[my_idx],templat,parg);
-#endif
+    PRINT2BUFFER_CHECKED(psize, buffer[my_idx], GBS_GLOBAL_STRING_SIZE, templat, parg);
 
 #if defined(TRACE_BUFFER_USAGE)
     printf("Printed into global buffer #%i ('%s')\n", my_idx, buffer[my_idx]);
 #endif /* TRACE_BUFFER_USAGE */
 
-    if (psize == -1 || psize >= GBS_GLOBAL_STRING_SIZE) {
-        fprintf(stderr, "Internal buffer overflow (psize=%i)\n", psize);
-        ad_assert(0);           // buffer overflow (you better use your own buffer)
-        GB_CORE;
-    }
+    last_global_string_size = psize;
 
     if (!allow_reuse) {
         idx           = my_idx;
@@ -420,11 +433,33 @@ char *GBS_global_string_copy(const char *templat, ...) {
     result = gbs_vglobal_string(templat, parg, 1);
     va_end(parg);
 
-    return GB_STRDUP(result);
+    return GB_strduplen(result, last_global_string_size);
+}
+
+#if defined(DEVEL_RALF)
+#warning search for '\b(sprintf)\b\s*\(' and replace by GBS_global_string_to_buffer
+#endif /* DEVEL_RALF */
+
+const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char *templat, ...) {
+    /* goes to header: __ATTR__FORMAT(3)  */
+
+    va_list parg;
+    int     psize;
+
+    gb_assert(buffer);
+    va_start(parg,templat);
+    PRINT2BUFFER_CHECKED(psize, buffer, bufsize, templat, parg);
+    va_end(parg);
+
+    return buffer;
+}
+
+size_t GBS_last_global_string_size() {
+    return last_global_string_size;
 }
 
 char *GBS_string_2_key_with_exclusions(const char *str, const char *additional)
-     /* converts any string to a valid key (all chars in 'additional' are additionally allowed) */
+/* converts any string to a valid key (all chars in 'additional' are additionally allowed) */
 {
     char buf[GB_KEY_LEN_MAX+1];
     int i;

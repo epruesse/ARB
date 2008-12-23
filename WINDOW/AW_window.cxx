@@ -1672,32 +1672,46 @@ static void create_help_entry(AW_window *aww) {
 /****************************************************************************************************************************/
 
 const char *aw_str_2_label(const char *str, AW_window *aww) {
-    const char *label;
-
     aw_assert(str);
-    if (str[0] == '#') {
-        label = GB_path_in_ARBLIB("pixmaps", str+1);
+    
+    static const char *last_label = 0;
+    static const char *last_str   = 0;
+    static AW_window  *last_aww   = 0;
+
+    const char *label;
+    if (str == last_str && aww == last_aww) { // reuse result ? 
+        label = last_label;
     }
     else {
-        AW_awar *vs;
-
-        if (strchr(str, '/') && (vs = aww->get_root()->awar_no_error(str))) {
-            // for labels displaying awar values, insert dummy text here
-
-            int wanted_len                 = aww->_at->length_of_buttons - 2;
-            if (wanted_len < 1) wanted_len = 1;
-            
-            char *labelbuf       = GB_give_buffer(wanted_len+1);
-            memset(labelbuf, 'y', wanted_len);
-            labelbuf[wanted_len] = 0;
-
-            label = labelbuf;
+        if (str[0] == '#') {
+            label = GB_path_in_ARBLIB("pixmaps", str+1);
         }
         else {
-            label = str;
-        }
-    }
+            AW_awar *vs;
 
+            if (strchr(str, '/') && (vs = aww->get_root()->awar_no_error(str))) {
+                // for labels displaying awar values, insert dummy text here
+
+                int wanted_len                 = aww->_at->length_of_buttons - 2;
+                if (wanted_len < 1) wanted_len = 1;
+            
+                char *labelbuf       = GB_give_buffer(wanted_len+1);
+                memset(labelbuf, 'y', wanted_len);
+                labelbuf[wanted_len] = 0;
+
+                label = labelbuf;
+            }
+            else {
+                label = str;
+            }
+        }
+
+        // store results locally, cause aw_str_2_label is often called twice with same arguments
+        // (see RES_LABEL_CONVERT)
+        last_label = label;
+        last_str   = str;
+        last_aww   = aww;
+    }
     return label;
 }
 

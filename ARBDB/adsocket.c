@@ -1183,6 +1183,9 @@ GB_ULONG GB_get_physical_memory(void) {
 /* --------------------------------------------- */
 /* path completion (parts former located in AWT) */
 
+static int  path_toggle = 0;
+static char path_buf[2][PATH_MAX];
+
 GB_CSTR GB_get_full_path(const char *anypath) {
     // expands '~' '..' etc in 'anypath'
 
@@ -1194,19 +1197,17 @@ GB_CSTR GB_get_full_path(const char *anypath) {
         GB_export_error("Path too long (> %i chars)", PATH_MAX-1);
     }
     else {
-        static int  toggle = 0;
-        static char buf[2][PATH_MAX];
-
-        toggle = 1-toggle; // use 2 buffers in turn
-        result = buf[toggle];
+        path_toggle = 1-path_toggle; // use 2 buffers in turn
+        result = path_buf[path_toggle];
 
         if (strncmp(anypath, "~/", 2) == 0) {
             GB_CSTR home    = GB_getenvHOME();
             GB_CSTR newpath = GBS_global_string("%s%s", home, anypath+1);
-            realpath(newpath, buf[toggle]);
+            realpath(newpath, path_buf[path_toggle]);
+            GBS_reuse_buffer(newpath);
         }
         else {
-            realpath(anypath, buf[toggle]);
+            realpath(anypath, path_buf[path_toggle]);
         }
     }
     return result;
@@ -1222,7 +1223,8 @@ GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right) {
 
     if (anypath_left) {
         if (anypath_right) {
-            result = GBS_global_string("%s/%s", anypath_left, anypath_right);
+            path_toggle = 1-path_toggle;
+            result = GBS_global_string_to_buffer(path_buf[path_toggle], sizeof(path_buf[path_toggle]), "%s/%s", anypath_left, anypath_right);
         }
         else {
             result = anypath_left;
@@ -1237,8 +1239,11 @@ GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right) {
 
 GB_CSTR GB_concat_full_path(const char *anypath_left, const char *anypath_right) {
     // like GB_concat_path(), but returns the full path
+    GB_CSTR result = GB_concat_path(anypath_left, anypath_right);
 
-    const char *result = GB_concat_path(anypath_left, anypath_right);
+    gb_assert(result != anypath_left);
+    gb_assert(result != anypath_right);
+
     if (result) result = GB_get_full_path(result);
     return result;
 }
