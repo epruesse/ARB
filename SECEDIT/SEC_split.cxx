@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : SEC_split.cxx                                     //
 //   Purpose   : split/unsplit loops (aka fold/unfold helices)     //
-//   Time-stamp: <Fri Sep/07/2007 09:03 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
 //   Institute of Microbiology (Technical University Munich)       //

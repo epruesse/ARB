@@ -2,7 +2,6 @@
 //                                                                      //
 //   File      : aw_def.hxx                                             //
 //   Purpose   : WINDOW library global defines                          //
-//   Time-stamp: <Thu Jan/20/2005 14:43 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in January 2005          //

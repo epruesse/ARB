@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : AWT_translate.h                                   //
 //   Purpose   :                                                   //
-//   Time-stamp: <Wed Nov/19/2008 11:44 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in June 2006      //
 //   Institute of Microbiology (Technical University Munich)       //

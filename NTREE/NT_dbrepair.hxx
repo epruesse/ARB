@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : NT_dbrepair.hxx                                   //
 //   Purpose   : repair database bugs                              //
-//   Time-stamp: <Wed Sep/03/2008 15:24 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in May 2008       //
 //   Institute of Microbiology (Technical University Munich)       //

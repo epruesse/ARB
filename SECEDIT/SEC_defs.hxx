@@ -2,7 +2,6 @@
 //                                                                   //
 //   File      : sec_defs.hxx                                        //
 //   Purpose   :                                                     //
-//   Time-stamp: <Thu Sep/06/2007 10:59 MET Coder@ReallySoft.de>     //
 //                                                                   //
 //   Coded by Ralf Westram (coder@reallysoft.de) in September 2007   //
 //   Institute of Microbiology (Technical University Munich)         //

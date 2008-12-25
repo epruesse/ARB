@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : awtc_seq_search.hxx                               //
 //   Purpose   : Fast sequence search for fast aligner             //
-//   Time-stamp: <Sun Jul/27/2008 13:17 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in July 1998      //
 //   Institute of Microbiology (Technical University Munich)       //

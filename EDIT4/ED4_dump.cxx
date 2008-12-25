@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : ED4_dump.cxx                                           //
 //    Purpose   : Contains dump() methods of ED4-classes                 //
-//    Time-stamp: <Thu Mar/11/2004 13:47 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2002              //

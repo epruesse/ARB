@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : ed4_extern.hxx                                    //
 //   Purpose   : external interface (e.g. for secedit)             //
-//   Time-stamp: <Wed Sep/05/2007 18:21 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
 //   Institute of Microbiology (Technical University Munich)       //

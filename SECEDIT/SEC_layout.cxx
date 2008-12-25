@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : SEC_layout.cxx                                    //
 //   Purpose   : layout size and positions of structure            //
-//   Time-stamp: <Mon Mar/03/2008 08:28 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
 //   Institute of Microbiology (Technical University Munich)       //

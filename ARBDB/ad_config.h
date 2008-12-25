@@ -2,7 +2,6 @@
 //                                                                      //
 //   File      : ad_config.h                                            //
 //   Purpose   : Read/write editor configurations                       //
-//   Time-stamp: <Mon May/23/2005 09:25 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in May 2005              //

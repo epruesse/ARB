@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : perf_timer.h                                           //
 //    Purpose   : Simple performance timer using clock()                 //
-//    Time-stamp: <Thu Nov/18/2004 13:55 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in November 2004         //

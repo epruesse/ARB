@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : bugex.h                                                //
 //    Purpose   : Debugging code                                         //
-//    Time-stamp: <Wed Jun/04/2008 13:19 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in April 2003            //

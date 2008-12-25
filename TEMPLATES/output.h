@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : output.h                                               //
 //    Purpose   : class for indented output to FILE                      //
-//    Time-stamp: <Wed Feb/27/2008 19:38 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //

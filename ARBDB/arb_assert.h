@@ -2,7 +2,6 @@
 
     File      : arb_assert.h
     Purpose   : Global assert macro
-    Time-stamp: <Wed Apr/30/2008 19:27 MET Coder@ReallySoft.de>
 
 
   Coded by Ralf Westram (coder@reallysoft.de) in August 2002

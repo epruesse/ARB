@@ -2,7 +2,6 @@
 //                                                                  //
 //   File      : gde.hxx                                            //
 //   Purpose   : external interface of GDE functionality            //
-//   Time-stamp: <Fri Feb/15/2008 18:21 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Institute of Microbiology (Technical University Munich)        //
 //   http://www.arb-home.de/                                        //

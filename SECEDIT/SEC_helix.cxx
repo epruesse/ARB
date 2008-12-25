@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : SEC_helix.cxx                                     //
 //   Purpose   : helix related things                              //
-//   Time-stamp: <Fri May/23/2008 20:06 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
 //   Institute of Microbiology (Technical University Munich)       //

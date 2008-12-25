@@ -2,7 +2,6 @@
 //                                                                  //
 //    File      : NT_MAUS.cxx                                       //
 //    Purpose   :                                                   //
-//    Time-stamp: <Thu Feb/28/2008 16:04 MET Coder@ReallySoft.de>   //
 //                                                                  //
 //    Coded by Ralf Westram (coder@reallysoft.de) in July 2004      //
 //    Institute of Microbiology (Technical University Munich)       //

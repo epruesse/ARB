@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : mg_merge.hxx                                      //
 //   Purpose   : Merge tool external interface                     //
-//   Time-stamp: <Sat Mar/01/2008 12:34 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in March 2008     //
 //   Institute of Microbiology (Technical University Munich)       //

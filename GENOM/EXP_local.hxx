@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : EXP_local.hxx                                          //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu Aug/14/2003 23:09 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //

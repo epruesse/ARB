@@ -2,7 +2,6 @@
 //                                                                      //
 //   File      : db_scanner.hxx                                         //
 //   Purpose   : ARB database scanner                                   //
-//   Time-stamp: <Tue May/24/2005 13:22 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in May 2005              //

@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : EXP_interface.hxx                                      //
 //    Purpose   :                                                        //
-//    Time-stamp: <Thu Sep/06/2001 20:13 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2001        //

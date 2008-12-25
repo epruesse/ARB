@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : read_config.h                                          //
 //    Purpose   : reads and provides probe_parameters.conf               //
-//    Time-stamp: <Fri May/30/2008 12:29 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2003          //

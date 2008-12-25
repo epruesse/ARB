@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : SEC_read.cxx                                      //
 //   Purpose   : read structure from declaration string            //
-//   Time-stamp: <Fri Feb/29/2008 13:55 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //

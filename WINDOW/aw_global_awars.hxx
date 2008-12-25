@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : aw_global_awars.hxx                                    //
 //    Purpose   : define awars available in ALL arb applications         //
-//    Time-stamp: <Fri Jan/24/2003 17:41 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2003          //

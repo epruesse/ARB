@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : NT_trackAliChanges.cxx                            //
 //   Purpose   : Track alignment and sequences changes             // 
-//   Time-stamp: <Fri May/16/2008 11:03 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in June 2007      //
 //   Institute of Microbiology (Technical University Munich)       //

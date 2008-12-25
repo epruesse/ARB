@@ -2,7 +2,6 @@
 //                                                                      //
 //   File      : AWT_item_sel_list.cxx                                  //
 //   Purpose   : selection lists for items (ad_item_selector)           //
-//   Time-stamp: <Wed May/21/2008 15:54 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in May 2005              //

@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : ed4_secedit.hxx                                   //
 //   Purpose   : start secondary editor                            //
-//   Time-stamp: <Wed Sep/12/2007 09:41 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
 //   Institute of Microbiology (Technical University Munich)       //

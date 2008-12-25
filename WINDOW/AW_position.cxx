@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : AW_position.cxx                                   //
 //   Purpose   : Positions, Vectors and Angles                     //
-//   Time-stamp: <Fri Sep/07/2007 11:45 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in July 2007      //
 //   Institute of Microbiology (Technical University Munich)       //

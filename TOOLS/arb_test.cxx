@@ -5,7 +5,6 @@
 //               If you need to test sth, you may completely       // 
 //               overwrite and checkin this.                       //
 //                                                                 //
-//   Time-stamp: <Fri Dec/05/2008 19:47 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in May 2008       //
 //   Institute of Microbiology (Technical University Munich)       //

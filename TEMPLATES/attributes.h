@@ -2,7 +2,6 @@
 //                                                                      //
 //   File      : attributes.h                                           //
 //   Purpose   : declare attribute macros                               //
-//   Time-stamp: <Fri Dec/05/2008 16:57 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in June 2005             //

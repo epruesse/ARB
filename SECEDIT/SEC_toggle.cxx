@@ -2,7 +2,6 @@
 //                                                                   //
 //   File      : SEC_toggle.cxx                                      //
 //   Purpose   :                                                     //
-//   Time-stamp: <Fri Dec/05/2008 18:01 MET Coder@ReallySoft.de>     //
 //                                                                   //
 //   Coded by Ralf Westram (coder@reallysoft.de) in September 2007   //
 //   Institute of Microbiology (Technical University Munich)         //

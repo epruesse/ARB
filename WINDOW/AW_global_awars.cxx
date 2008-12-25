@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : AW_global_awars.cxx                                    //
 //    Purpose   : Make some awars accessible from ALL arb applications   //
-//    Time-stamp: <Thu Mar/11/2004 13:39 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2003          //
 //  Copyright Department of Microbiology (Technical University Munich)   //

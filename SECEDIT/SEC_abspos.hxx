@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : sec_abspos.hxx                                    //
 //   Purpose   : Encapsulates helix position access                //
-//   Time-stamp: <Fri Sep/07/2007 08:56 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in July 2007      //
 //   Institute of Microbiology (Technical University Munich)       //

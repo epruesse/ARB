@@ -2,7 +2,6 @@
 //                                                                      //
 //   File      : AWT_changekey.hxx                                      //
 //   Purpose   : changekey management                                   //
-//   Time-stamp: <Mon May/23/2005 19:57 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in May 2005              //

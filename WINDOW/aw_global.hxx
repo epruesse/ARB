@@ -2,7 +2,6 @@
 //                                                                       // 
 //    File      : aw_global.hxx                                          // 
 //    Purpose   : global functions from WINDOWS lib                      // 
-//    Time-stamp: <Sat Aug/18/2007 21:47 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in June 2004             // 

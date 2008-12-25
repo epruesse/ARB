@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : awt_advice.hxx                                         //
 //    Purpose   : general user advices                                   //
-//    Time-stamp: <Tue Dec/21/2004 16:56 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2002              //

@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : aisc_global.h                                     //
 //   Purpose   :                                                   //
-//   Time-stamp: <Tue May/22/2007 19:30 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in May 2007       //
 //   Institute of Microbiology (Technical University Munich)       //

@@ -1,7 +1,6 @@
 // ================================================================ //
 //                                                                  //
 //   File      : GDE_extglob.h                                      //
-//   Time-stamp: <Thu Feb/28/2008 15:44 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Institute of Microbiology (Technical University Munich)        //
 //   http://www.arb-home.de/                                        //

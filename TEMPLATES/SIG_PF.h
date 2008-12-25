@@ -1,6 +1,5 @@
 /*   File      : SIG_PF.h
  *   Purpose   : wrapper to include or define stuff needed for SIG_PF
- *   Time-stamp: <Fri Jan/16/2004 17:21 MET Coder@ReallySoft.de>
  */
 
 #if defined(SUN5_ECGS)

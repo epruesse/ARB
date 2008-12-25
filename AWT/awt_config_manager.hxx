@@ -3,7 +3,6 @@
 //    File      : awt_config_manager.hxx                                 //
 //    Purpose   : general interface to store/restore                     //
 //                a set of related awars                                 //
-//    Time-stamp: <Tue Aug/17/2004 12:07 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //

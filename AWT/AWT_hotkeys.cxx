@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : AWT_hotkeys.cxx                                        //
 //    Purpose   :                                                        //
-//    Time-stamp: <Sat Aug/18/2001 13:21 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2001           //

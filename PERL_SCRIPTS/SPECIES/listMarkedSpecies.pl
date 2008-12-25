@@ -4,7 +4,6 @@
 #                                                                 #
 #   File      : markedSpecies.pl                                  #
 #   Purpose   : list names of species marked in running ARB       #
-#   Time-stamp: <Fri Oct/13/2006 17:36 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Coded by Ralf Westram (coder@reallysoft.de) in October 2006   #
 #   Institute of Microbiology (Technical University Munich)       #

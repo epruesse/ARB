@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : SQ_functions.h                                         //
 //    Purpose   : Functions used for calculation of alignment quality    //
-//    Time-stamp: <Fri Oct/01/2004 17:48 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //

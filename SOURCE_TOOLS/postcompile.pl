@@ -3,7 +3,6 @@
 #                                                                   #
 #   File      : postcompile.pl                                      #
 #   Purpose   : filter gcc shadow spam                              #
-#   Time-stamp: <Thu Sep/27/2007 13:40 MET Coder@ReallySoft.de>     #
 #                                                                   #
 #   Coded by Ralf Westram (coder@reallysoft.de) in September 2007   #
 #   Institute of Microbiology (Technical University Munich)         #

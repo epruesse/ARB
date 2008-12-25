@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : SQ_ambiguities.h                                       //
 //    Purpose   : Class used for evaluation of iupac ambiguities         //
-//    Time-stamp: <Wed Feb/04/2004 14:34 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //

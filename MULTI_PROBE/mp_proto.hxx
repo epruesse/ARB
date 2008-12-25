@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : mp_proto.hxx                                           //
 //    Purpose   : Provide some prototypes                                //
-//    Time-stamp: <Wed Jun/04/2008 13:28 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2003              //

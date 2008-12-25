@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : SEC_root.hxx                                      //
 //   Purpose   : secondary structure representation                //
-//   Time-stamp: <Fri May/30/2008 12:26 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //

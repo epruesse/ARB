@@ -2,7 +2,6 @@
 //                                                                  //
 //   File      : GDE_global.h                                       //
 //   Purpose   : Global data for GDE interface                      //
-//   Time-stamp: <Fri Feb/15/2008 12:25 MET Coder@ReallySoft.de>    //
 //                                                                  //
 //   Institute of Microbiology (Technical University Munich)        //
 //   http://www.arb-home.de/                                        //

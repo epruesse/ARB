@@ -2,7 +2,6 @@
 #                                                                 #
 #   File      : SAI.pm                                            #
 #   Purpose   : Basic SAI access                                  #
-#   Time-stamp: <Fri Jun/23/2006 11:55 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Coded by Ralf Westram (coder@reallysoft.de) in June 2006      #
 #   Institute of Microbiology (Technical University Munich)       #

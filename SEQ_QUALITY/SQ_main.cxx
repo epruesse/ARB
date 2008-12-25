@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : SQ_main.cxx                                            //
 //    Purpose   : Entrypoint to Seq. Quality analysis; calls funktions   //
-//    Time-stamp: <Thu Feb/28/2008 16:53 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //

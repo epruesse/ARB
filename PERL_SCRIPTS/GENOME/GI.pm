@@ -2,7 +2,6 @@
 #                                                                       #
 #    File      : GI.pm                                                  #
 #    Purpose   : Genome import library                                  #
-#    Time-stamp: <Thu Aug/05/2004 15:16 MET Coder@ReallySoft.de>        #
 #                                                                       #
 #                                                                       #
 #  Coded by Ralf Westram (coder@reallysoft.de) in December 2003         #

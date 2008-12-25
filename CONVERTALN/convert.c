@@ -2,7 +2,6 @@
 /*                                                                  */
 /*   File      : convert.c                                          */
 /*   Purpose   : some helpers for global data handling              */
-/*   Time-stamp: <Thu Jan/25/2007 12:53 MET Coder@ReallySoft.de>    */
 /*                                                                  */
 /*   Coded by Ralf Westram (coder@reallysoft.de) in December 2006   */
 /*   Institute of Microbiology (Technical University Munich)        */

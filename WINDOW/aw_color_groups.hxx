@@ -2,7 +2,6 @@
 //                                                                  //
 //    File      : aw_color_groups.cxx                               //
 //    Purpose   :                                                   //
-//    Time-stamp: <Tue Dec/21/2004 16:56 MET Coder@ReallySoft.de>   //
 //                                                                  //
 //    Coded by Ralf Westram (coder@reallysoft.de) in June 2001      //
 //    Institute of Microbiology (Technical University Munich)       //

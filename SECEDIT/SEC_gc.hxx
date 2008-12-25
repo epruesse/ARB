@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : sec_gc.hxx                                        //
 //   Purpose   : GC definitions                                    //
-//   Time-stamp: <Thu Jun/05/2008 14:07 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in July 2007      //
 //   Institute of Microbiology (Technical University Munich)       //
