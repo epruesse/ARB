@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : mapping.h                                              //
 //    Purpose   : simple species mapping                                 //
-//    Time-stamp: <Wed Jul/09/2008 12:52 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //

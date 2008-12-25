@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : arb_debug.h                                       //
 //   Purpose   : some debugging tools                              //
-//   Time-stamp: <Fri May/18/2007 16:12 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in May 2007       //
 //   Institute of Microbiology (Technical University Munich)       //

@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : SQ_GroupData.h                                         //
 //    Purpose   : Classes to store global information about sequences    //
-//    Time-stamp: <Wed Mar/21/2007 00:16 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //

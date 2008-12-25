@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : sec_db.hxx                                        //
 //   Purpose   : DB interface                                      //
-//   Time-stamp: <Wed Mar/05/2008 18:30 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
 //   Institute of Microbiology (Technical University Munich)       //

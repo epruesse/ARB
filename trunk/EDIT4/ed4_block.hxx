@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : ed4_block.hxx                                     //
 //   Purpose   : Block operations                                  //
-//   Time-stamp: <Thu Jun/05/2008 11:12 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de)                   //
 //   Institute of Microbiology (Technical University Munich)       //

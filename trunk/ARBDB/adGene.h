@@ -2,7 +2,6 @@
 /*                                                                        */
 /*    File      : adGene.h                                                */
 /*    Purpose   : Specific defines for ARB genome                         */
-/*    Time-stamp: <Mon Jul/09/2007 14:00 MET Coder@ReallySoft.de>         */
 /*                                                                        */
 /*                                                                        */
 /*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */

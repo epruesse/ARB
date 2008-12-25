@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : ps_tools.cxx                                           //
 //    Purpose   : remove duplicated code                                 //
-//    Time-stamp: <Mon Oct/04/2004 17:50 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2004          //

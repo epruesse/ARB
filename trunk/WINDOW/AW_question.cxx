@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : aw_question.cpp                                        //
 //    Purpose   :                                                        //
-//    Time-stamp: <Fri Jul/25/2008 12:30 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //

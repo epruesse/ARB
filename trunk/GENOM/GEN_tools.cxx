@@ -2,7 +2,6 @@
 //                                                                       // 
 //    File      : GEN_tools.cxx                                          // 
 //    Purpose   : Some helper functions                                  // 
-//    Time-stamp: <Thu Jul/01/2004 09:08 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2004             // 

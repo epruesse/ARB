@@ -5,7 +5,6 @@
 #   Purpose   : Import XX best of YY calculated raxml trees into  #
 #               ARB and generate comment containing likelyhood    #
 #               and content of info file                          #
-#   Time-stamp: <Fri Mar/14/2008 13:09 MET Coder@ReallySoft.de>   #
 #                                                                 #
 #   Coded by Ralf Westram (coder@reallysoft.de) in March 2008     #
 #   Institute of Microbiology (Technical University Munich)       #

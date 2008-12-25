@@ -4,7 +4,6 @@
 //    Purpose   : global definitions for PROBE_GROUP and                 //
 //                PROBE_GROUP_DESIGN                                     //
 //    Note      : include only once in each executable!!!                //
-//    Time-stamp: <Fri Feb/27/2004 17:01 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //

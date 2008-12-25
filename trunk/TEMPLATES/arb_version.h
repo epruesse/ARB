@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : arb_version.h                                     //
 //   Purpose   :                                                   //
-//   Time-stamp: <Wed Jul/23/2008 14:38 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in March 2007     //
 //   Institute of Microbiology (Technical University Munich)       //

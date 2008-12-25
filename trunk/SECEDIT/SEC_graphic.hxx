@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : sec_graphic.hxx                                   //
 //   Purpose   : interface to structure GUI                        //
-//   Time-stamp: <Wed Oct/31/2007 12:16 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //

@@ -2,7 +2,6 @@
 //                                                                   //
 //   File      : SEC_toggle.hxx                                      //
 //   Purpose   : Support for multiple structure                      //
-//   Time-stamp: <Thu Dec/04/2008 15:44 MET Coder@ReallySoft.de>     //
 //                                                                   //
 //   Coded by Ralf Westram (coder@reallysoft.de) in September 2007   //
 //   Institute of Microbiology (Technical University Munich)         //

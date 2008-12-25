@@ -2,7 +2,6 @@
 //                                                                   //
 //   File      : ed4_awars.hxx                                       //
 //   Purpose   : edit4 awars                                         //
-//   Time-stamp: <Wed Sep/26/2007 09:10 MET Coder@ReallySoft.de>     //
 //                                                                   //
 //   Institute of Microbiology (Technical University Munich)         //
 //   http://www.arb-home.de/                                         //

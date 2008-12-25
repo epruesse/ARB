@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : awtc_next_neighbours.hxx                          //
 //   Purpose   : Search relatives via PT server                    //
-//   Time-stamp: <Sun Jul/27/2008 12:37 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //

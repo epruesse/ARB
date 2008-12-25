@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : SEC_structure.cxx                                 //
 //   Purpose   : general implementation of classes in SEC_root.hxx //
-//   Time-stamp: <Mon Sep/17/2007 11:07 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
 //   Institute of Microbiology (Technical University Munich)       //

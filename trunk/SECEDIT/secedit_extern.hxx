@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : secedit_extern.hxx                                //
 //   Purpose   : external interface                                //
-//   Time-stamp: <Wed Sep/12/2007 09:38 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in July 2007      //
 //   Institute of Microbiology (Technical University Munich)       //

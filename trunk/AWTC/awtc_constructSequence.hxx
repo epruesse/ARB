@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : awtc_constructSequence.hxx                        //
 //   Purpose   : simple sequence assembler (unfinished)            //
-//   Time-stamp: <Wed Jun/04/2008 10:14 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in 1998           //
 //   Institute of Microbiology (Technical University Munich)       //

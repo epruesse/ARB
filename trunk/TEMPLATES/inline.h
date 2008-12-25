@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : inline.h                                               //
 //    Purpose   : general purpose inlined funcions                       //
-//    Time-stamp: <Thu Jul/10/2008 11:57 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in June 2002             //

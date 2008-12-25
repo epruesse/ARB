@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : tree_merge.cxx                                         //
 //    Purpose   : merges multiple trees saved by arb_probe_group_design  //
-//    Time-stamp: <Thu Feb/12/2004 15:23 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in September 2003        //

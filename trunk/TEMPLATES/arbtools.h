@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : arbtools.h                                             //
 //    Purpose   : small general purpose helper classes                   //
-//    Time-stamp: <Fri Aug/08/2003 07:36 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in August 2003           //

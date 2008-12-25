@@ -3,7 +3,6 @@
 #                                                                          #
 #   File      : grepx.pl                                                   #
 #   Purpose   : Replacement for grep (used from emacs)                     #
-#   Time-stamp: <Fri Jul/18/2008 10:17 MET Coder@ReallySoft.de>            #
 #                                                                          #
 #   (C) November 2005 by Ralf Westram                                      #
 #                                                                          #

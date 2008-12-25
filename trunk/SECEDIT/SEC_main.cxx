@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : SEC_main.cxx                                      //
 //   Purpose   : main part of SECEDIT                              //
-//   Time-stamp: <Fri Jul/25/2008 14:59 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //

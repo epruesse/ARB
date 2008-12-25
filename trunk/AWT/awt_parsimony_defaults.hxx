@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : awt_parsimony_defaults.hxx                             //
 //    Purpose   : control behavior of parsimony                          //
-//    Time-stamp: <Tue Jul/22/2008 16:25 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //

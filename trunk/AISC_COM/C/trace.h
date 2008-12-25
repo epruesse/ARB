@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : trace.h                                           //
 //   Purpose   :                                                   //
-//   Time-stamp: <Tue May/22/2007 21:06 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in May 2007       //
 //   Institute of Microbiology (Technical University Munich)       //

@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : aw_question.hxx                                        //
 //    Purpose   : Functions to ask questions to user                     //
-//    Time-stamp: <Tue Dec/21/2004 16:56 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in January 2002          //

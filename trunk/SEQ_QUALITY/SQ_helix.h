@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : SQ_helix.h                                             //
 //    Purpose   : Class used for calculation of helix layout             //
-//    Time-stamp: <Mon Sep/17/2007 12:28 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //

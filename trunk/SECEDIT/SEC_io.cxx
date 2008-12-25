@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : SEC_io.cxx                                        //
 //   Purpose   : io-related things                                 //
-//   Time-stamp: <Fri Sep/07/2007 09:02 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //

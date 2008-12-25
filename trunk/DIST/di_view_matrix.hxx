@@ -1,7 +1,6 @@
 // =============================================================== //
 //                                                                 //
 //   File      : di_view_matrix.hxx                                //
-//   Time-stamp: <Thu Jul/03/2008 16:21 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //

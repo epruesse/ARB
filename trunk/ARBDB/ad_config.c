@@ -2,7 +2,6 @@
 /*                                                                      */
 /*   File      : ad_config.c                                            */
 /*   Purpose   : handle editor configurations                           */
-/*   Time-stamp: <Wed Dec/17/2008 13:14 MET Coder@ReallySoft.de>        */
 /*                                                                      */
 /*                                                                      */
 /* Coded by Ralf Westram (coder@reallysoft.de) in May 2005              */

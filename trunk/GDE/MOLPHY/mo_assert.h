@@ -2,7 +2,6 @@
 //                                                                       // 
 //    File      : mo_assert.h                                            // 
 //    Purpose   : defines assert macro                                   // 
-//    Time-stamp: <Thu May/06/2004 12:18 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2004              // 

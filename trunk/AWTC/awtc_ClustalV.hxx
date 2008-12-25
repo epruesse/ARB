@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : awtc_ClustalV.hxx                                 //
 //   Purpose   : Clustal V                                         //
-//   Time-stamp: <Wed Jun/04/2008 09:46 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in June 2008      //
 //   Institute of Microbiology (Technical University Munich)       //

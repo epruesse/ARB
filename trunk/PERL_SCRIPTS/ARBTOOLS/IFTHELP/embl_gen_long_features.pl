@@ -4,7 +4,6 @@
 #    File      : embl_gen_long_features.pl                         #
 #    Purpose   : modifies embl feature table for easy scanning     #
 #                with ARBs ift                                     #
-#    Time-stamp: <Fri Mar/18/2005 15:27 MET Coder@ReallySoft.de>   #
 #                                                                  #
 #    Coded by Ralf Westram (coder@reallysoft.de) in March 2005     #
 #    Institute of Microbiology (Technical University Munich)       #

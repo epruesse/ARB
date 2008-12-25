@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : MG_preserves.cxx                                       //
 //    Purpose   : find candidates for alignment preservation             //
-//    Time-stamp: <Wed Dec/17/2008 15:52 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2003             //

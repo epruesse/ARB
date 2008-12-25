@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : SQ_physical_layout.h                                   //
 //    Purpose   : Class used for calculation of the phys. layout of seq. //
-//    Time-stamp: <Tue Feb/03/2004 14:48 MET  Coder@ReallySoft.de>       //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //

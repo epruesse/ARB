@@ -2,7 +2,6 @@
 //                                                                      //
 //   File      : aw_font_group.hxx                                      //
 //   Purpose   : Bundles a group of fonts and provides overall maximas  //
-//   Time-stamp: <Sat Sep/01/2007 17:21 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in December 2004         //

@@ -2,7 +2,6 @@
 //                                                                       // 
 //    File      : AWT_db_browser.cxx                                     // 
 //    Purpose   : Simple database viewer                                 // 
-//    Time-stamp: <Tue Jul/08/2008 13:13 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in May 2004              // 

@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : RNA3D_StructureData.hxx                           //
 //   Purpose   :                                                   //
-//   Time-stamp: <Sat Aug/25/2007 17:33 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //

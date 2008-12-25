@@ -2,7 +2,6 @@
 /*                                                                                       */
 /*    File      : nt_concatenate.hxx                                                     */
 /*    Purpose   : Header file for NT_concatenate.cxx                                     */
-/*    Time-stamp: <Wed Dec/17/2008 17:33 MET Coder@ReallySoft.de>                        */
 /*    Author    : Yadhu Kumar (yadhu@mikro.biologie.tu-muenchen.de)                      */
 /*    web site  : http://www.arb-home.de/                                                */
 /*                                                                                       */

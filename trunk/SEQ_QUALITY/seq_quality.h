@@ -1,7 +1,6 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : SQ_quality.h                                           //
-//    Time-stamp: <Thu Feb/05/2004 11:40 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Juergen Huber in July 2003 - February 2004                  //

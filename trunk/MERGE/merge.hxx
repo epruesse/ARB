@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : merge.hxx                                              //
 //    Purpose   : Local header for usage inside directory MERGE          //
-//    Time-stamp: <Thu Jun/05/2008 11:26 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Copyright Department of Microbiology (Technical University Munich)   //

@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : ed4_search.hxx                                    //
 //   Purpose   :                                                   //
-//   Time-stamp: <Sat Sep/01/2007 10:00 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de)                   //
 //   Institute of Microbiology (Technical University Munich)       //

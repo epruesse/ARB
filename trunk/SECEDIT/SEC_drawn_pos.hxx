@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : SEC_drawn_pos.hxx                                 //
 //   Purpose   : store all drawn positions                         //
-//   Time-stamp: <Thu Aug/23/2007 08:45 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
 //   Institute of Microbiology (Technical University Munich)       //

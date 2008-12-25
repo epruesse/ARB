@@ -2,7 +2,6 @@
 //                                                                   //
 //   File      : SEC_bonddef.cxx                                     //
 //   Purpose   :                                                     //
-//   Time-stamp: <Mon Sep/10/2007 10:55 MET Coder@ReallySoft.de>     //
 //                                                                   //
 //   Coded by Ralf Westram (coder@reallysoft.de) in September 2007   //
 //   Institute of Microbiology (Technical University Munich)         //

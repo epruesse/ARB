@@ -2,7 +2,6 @@
 /*                                                                  */
 /*   File      : adExperiment.c                                     */
 /*   Purpose   : DB-access on experiments                           */
-/*   Time-stamp: <Wed Dec/17/2008 23:50 MET Coder@ReallySoft.de>    */
 /*                                                                  */
 /*   Coded by Ralf Westram (coder@reallysoft.de) in December 2008   */
 /*   Institute of Microbiology (Technical University Munich)        */

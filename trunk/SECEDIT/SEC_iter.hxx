@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : SEC_iter.hxx                                      //
 //   Purpose   : secondary structure iterators                     //
-//   Time-stamp: <Fri Sep/07/2007 09:01 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in August 2007    //
 //   Institute of Microbiology (Technical University Munich)       //

@@ -2,7 +2,6 @@
 //                                                                      //
 //   File      : awt_sel_boxes.hxx                                      //
 //   Purpose   :                                                        //
-//   Time-stamp: <Fri Apr/20/2007 17:57 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in May 2005              //

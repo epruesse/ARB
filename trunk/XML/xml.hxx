@@ -2,7 +2,6 @@
 //
 // Copyright (C) 2001
 // Ralf Westram
-// Time-stamp: <Wed Feb/27/2008 16:43 MET Coder@ReallySoft.de>
 //
 // Permission to use, copy, modify, distribute and sell this software
 // and its documentation for any purpose is hereby granted without fee,

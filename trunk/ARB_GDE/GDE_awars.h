@@ -2,7 +2,6 @@
 //                                                                 //
 //   File      : GDE_awars.h                                       //
 //   Purpose   : Declare AWARS used by ARB-GDE-interface           //
-//   Time-stamp: <Fri Feb/15/2008 12:01 MET Coder@ReallySoft.de>   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in January 2008   //
 //   Institute of Microbiology (Technical University Munich)       //

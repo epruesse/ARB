@@ -2,7 +2,6 @@
 //                                                                      //
 //   File      : AW_helix.cxx                                           //
 //   Purpose   : Wrapper for BI_helix + AW-specific functions           //
-//   Time-stamp: <Sat Aug/25/2007 21:26 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in December 2004         //

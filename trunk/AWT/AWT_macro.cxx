@@ -2,7 +2,6 @@
 //                                                                      //
 //   File      : AWT_macro.cxx                                          //
 //   Purpose   :                                                        //
-//   Time-stamp: <Fri Apr/27/2007 12:26 MET Coder@ReallySoft.de>        //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in May 2005              //

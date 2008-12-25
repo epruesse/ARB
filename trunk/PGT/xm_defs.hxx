@@ -2,7 +2,6 @@
 //                                                                   //
 //    File      : xm_defs.hxx                                        //
 //    Purpose   :                                                    //
-//    Time-stamp: <Thu Nov/03/2005 17:24 MET Coder@ReallySoft.de>    //
 //                                                                   //
 //    Coded by Ralf Westram (coder@reallysoft.de) in November 2005   //
 //    Institute of Microbiology (Technical University Munich)        //

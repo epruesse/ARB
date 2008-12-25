@@ -2,7 +2,6 @@
 //                                                                       //
 //    File      : awt_attributes.hxx                                     //
 //    Purpose   : get attribute colors for species/genes                 //
-//    Time-stamp: <Sun Jul/18/2004 18:43 MET Coder@ReallySoft.de>        //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2004             //

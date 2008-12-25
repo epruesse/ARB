@@ -2,7 +2,6 @@
 //                                                                       // 
 //    File      : probe_match_parser.hxx                                 // 
 //    Purpose   : parse the results of a probe match                     // 
-//    Time-stamp: <Wed Jul/30/2008 10:41 MET Coder@ReallySoft.de>        // 
 //                                                                       // 
 //                                                                       // 
 //  Coded by Ralf Westram (coder@reallysoft.de) in June 2004             // 

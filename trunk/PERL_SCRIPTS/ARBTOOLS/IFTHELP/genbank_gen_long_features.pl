@@ -1,11 +1,9 @@
-
 #!/usr/bin/perl
 # ================================================================ #
 #                                                                  #
 #   File      : genbank_gen_long_features.pl                       #
 #   Purpose   : modifies genbank feature table for easy scanning   #
 #               with ARBs ift                                      #
-#   Time-stamp: <Fri Dec/07/2007 13:28 MET Coder@ReallySoft.de>    #
 #                                                                  #
 #   Coded by Ralf Westram (coder@reallysoft.de) in November 2007   #
 #   Institute of Microbiology (Technical University Munich)        #
