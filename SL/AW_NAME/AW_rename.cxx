@@ -89,7 +89,7 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
                 }
                 else { // let the user select which nameserver to use
                     int         len     = serverCount; // commas+0term
-                    const char *nofield = "None";
+                    const char *nofield = "None (only 'acc')";
 
                     for (int c = 0; c<serverCount; c++) {
                         if (fieldNames[c]) len += strlen(fieldNames[c]);

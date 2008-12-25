@@ -1566,9 +1566,9 @@ char **GBS_read_dir(const char *dir, const char *mask) {
 
     gb_assert(dir);             // dir == NULL was allowed before 12/2008, forbidden now!
 
-    const char  *fulldir   = GB_get_full_path(dir);
-    DIR         *dirstream = opendir(fulldir);
-    char       **names     = NULL;
+    char  *fulldir   = GB_strdup(GB_get_full_path(dir));
+    DIR   *dirstream = opendir(fulldir);
+    char **names     = NULL;
 
     if (!dirstream) {
         if (GB_is_readablefile(fulldir)) {
@@ -1624,6 +1624,8 @@ char **GBS_read_dir(const char *dir, const char *mask) {
 
         closedir(dirstream);
     }
+
+    free(fulldir);
 
     return names;  
 }
