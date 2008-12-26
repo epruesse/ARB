@@ -547,8 +547,8 @@ BOOL CompressSequenceWithDotsAndHyphens(struct PTPanGlobal *pg, struct PTPanSpec
 {
     ULONG bitpos = 0;
     STRPTR ptr    = ps->ps_SeqData;
-    UBYTE* buffer = (UBYTE*) malloc(ps->ps_SeqDataSize * 3 / 8 + 1);
-    if (buffer == NULL)
+    UBYTE* buffer = (UBYTE*) malloc(ps->ps_SeqDataSize + 1);    // TODO: look over it and find a good
+    if (buffer == NULL)                                         //       estimation of needed size
     {
         printf("Error: Could not get enough memory to compress sequences with dots and hyphens\n");
         return FALSE;
@@ -929,6 +929,10 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
     AddTail(&pg->pg_Species, &ps->ps_Node);
     pg->pg_NumSpecies++;
 
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+    CompressSequenceWithDotsAndHyphens(pg, ps);
+#endif
+
     /* visual feedback */
     if((pg->pg_NumSpecies % 10) == 0)
     {
@@ -957,6 +961,12 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
   printf("Database contains %ld valid species (%ld ignored).\n"
     "%ld bytes alignment data (%ld bases).\n",
     pg->pg_NumSpecies, ignorecount, pg->pg_TotalSeqSize, pg->pg_TotalRawSize);
+
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+  printf("Compressed sequence data (with dots and hyphens): %llu byte (%llu kb, %llu mb)\n",
+    pg->pg_TotalSeqCompressedSize, pg->pg_TotalSeqCompressedSize >> 10, pg->pg_TotalSeqCompressedSize >> 20);
+#endif
+
 
   pg->pg_Bench.ts_CollectDB = BenchTimePassed(pg);
 
