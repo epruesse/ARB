@@ -510,8 +510,8 @@ void CreateHitsGUIList(struct SearchQuery *sq)
             arb_assert((code == '.') || (code == '-'));
             relpos += count;
             if ((code == '.') && (abspos <= 9))             // fill prefix with '.'
-            {   
-                for (int i = 0; i < (9 - abspos); ++i)
+            {                                               // TODO: decide if we really want to fill the
+                for (int i = 0; i < (9 - abspos); ++i)      //       whole prefix or just 'count' dots
                 {
                     prefix[i] = '.';
                 }
@@ -595,8 +595,8 @@ void CreateHitsGUIList(struct SearchQuery *sq)
             } else if (code == '.')                             // '.' found
             {
                 for (; cnt < 9; ++cnt)                          // fill postfix with '.'
-                {
-                    postfix[cnt] = '.';
+                {                                               // TODO: decide if we really want to fill the
+                    postfix[cnt] = '.';                         //       whole postfix or just 'count' dots
                 }
             }
         }
@@ -915,7 +915,6 @@ extern "C" STRPTR c_get_match_hinfo(PT_probematch *)
 /* Create a big output string:  header\001name\001info\001name\001info....\000 */
 extern "C" bytestring * match_string(PT_local *locs)
 {
-#ifdef DEVEL_JB
     struct PTPanGlobal *pg = PTPanGlobalPtr;
     struct GBS_strstruct *outstr;
     PT_probematch *ml;
@@ -958,87 +957,6 @@ extern "C" bytestring * match_string(PT_local *locs)
            (double)pg->pg_ResultString.size/(double)entryCount);
 #endif
   return(&pg->pg_ResultString);
-
-#else
-  
-  struct PTPanGlobal *pg = PTPanGlobalPtr;
-  PT_probematch *ml;
-  BOOL first = TRUE;
-  BOOL revstate = TRUE;
-  STRPTR outptr;
-  STRPTR srcptr;
-  LONG buflen = 100000000;                 // TODO: calculate buflen instead of using hard coded value
-
-  printf("EXTERN: match_string\n");
-  /* free old memory */
-  free(pg->pg_ResultString.data);
-
-  outptr = (STRPTR) malloc(buflen);
-  pg->pg_ResultString.data = outptr;
-
-  buflen--; /* space for termination byte */
-
-  LONG entryCount = 0;
-  /* add each entry to the list */
-  for(ml = locs->pm; ml; ml = ml->next)
-  {
-    ++entryCount;
-
-    /* do we need to add a header? */
-    if(first)// || (ml->reversed != revstate))
-    {
-      revstate = ml->reversed;
-      /* copy the header */
-      srcptr = GetMatchListHeader(revstate ? locs->pm_csequence : locs->pm_sequence);
-      while((--buflen > 0) && (*outptr++ = *srcptr++));
-      if(buflen <= 0)
-      {
-        printf("ERROR: buffer too small - see function match_string(...) in file PT_match.cxx\n");
-        break;
-      }
-      outptr[-1] = 1;
-      if(!first)
-      {
-    *outptr++ = 1;
-    *outptr++ = 1;
-      }
-      first = FALSE;
-    }
-    /* add the name */
-    srcptr = virt_name(ml);
-    while((--buflen > 0) && (*outptr++ = *srcptr++));
-    if(buflen <= 0)
-    {
-      printf("ERROR: buffer too small - see function match_string(...) in file PT_match.cxx\n");
-      break;
-    }
-    outptr[-1] = 1;
-
-    /* and the info */
-    srcptr = get_match_info(ml);
-    while((--buflen > 0) && (*outptr++ = *srcptr++));
-    if(buflen <= 0)
-    {
-      printf("ERROR: buffer too small - see function match_string(...) in file PT_match.cxx\n");
-      break;
-    }
-    outptr[-1] = 1;
-  }
-  /* terminate string */
-  *outptr++ = 0;
-  pg->pg_ResultString.size = (ULONG) outptr - (ULONG) pg->pg_ResultString.data;
-  /* free unused memory */
-  pg->pg_ResultString.data = (STRPTR) realloc(pg->pg_ResultString.data,
-                                  pg->pg_ResultString.size);
-
-  if (PTPanGlobalPtr->pg_verbose >0) printf("== match_string: %s\n", pg->pg_ResultString.data);
-
-#if defined(DEBUG)
-  printf("%li entries used %li bytes (%li MB) of buffer: %5.2f byte per entry\n", 
-         entryCount, (100000000-buflen), (100000000-buflen) >> 20, (double)(100000000-buflen)/(double)entryCount);
-#endif         
-  return(&pg->pg_ResultString);
-#endif
 }
 /* \\\ */
 
