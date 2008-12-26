@@ -694,20 +694,20 @@ BOOL LoadEcoliSequence(struct PTPanGlobal *pg)
       pg->pg_EcoliBaseTable = (ULONG *) calloc(pg->pg_EcoliSeqSize + 1, sizeof(ULONG));
       if(pg->pg_EcoliBaseTable)
       {
-    srcseq = pg->pg_EcoliSeq;
-    posptr = pg->pg_EcoliBaseTable;
-    while(*srcseq)
-    {
-    *posptr++ = abspos;
-    if(pg->pg_SeqCodeValidTable[*srcseq++])
-    {
-        abspos++;
-    }
-    }
-    *posptr = abspos;
-    return(TRUE);
+        srcseq = pg->pg_EcoliSeq;
+        posptr = pg->pg_EcoliBaseTable;
+        while(*srcseq)
+        {
+          *posptr++ = abspos;
+          if(pg->pg_SeqCodeValidTable[*srcseq++])
+          {
+            abspos++;
+          }
+        }
+        *posptr = abspos;
+        return(TRUE);
       } else {
-    printf("Out of memory for ecoli position table!\n");
+        printf("Out of memory for ecoli position table!\n");
       }
     }
   }
