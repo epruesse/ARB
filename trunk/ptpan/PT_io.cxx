@@ -1062,21 +1062,24 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
   }
 
   fread(&pg->pg_EcoliSeqSize, sizeof(pg->pg_EcoliSeqSize), 1, fh);
-  pg->pg_EcoliSeq = (char*) malloc(pg->pg_EcoliSeqSize + 1);
-  if(!pg->pg_EcoliSeq)
-  {
-    printf("Out of memory allocating buffer for pg->pg_EcoliSeq!\n");
-    return(FALSE);
-  }
-  fread(pg->pg_EcoliSeq, 1, pg->pg_EcoliSeqSize + 1, fh);
+  if (pg->pg_EcoliSeqSize > 0)
+  {                                                                                 // only read EcoliSeq and
+      pg->pg_EcoliSeq = (char*) malloc(pg->pg_EcoliSeqSize + 1);                    // EcoliBaseTable if we
+      if(!pg->pg_EcoliSeq)                                                          // fonud them earlier in 
+      {                                                                             // the build process...
+        printf("Out of memory allocating buffer for pg->pg_EcoliSeq!\n");           // aka if pg_EcoliSeqSize
+        return(FALSE);                                                              // is greater than zero
+      }
+      fread(pg->pg_EcoliSeq, 1, pg->pg_EcoliSeqSize + 1, fh);
 
-  pg->pg_EcoliBaseTable = (ULONG *) calloc(pg->pg_EcoliSeqSize + 1, sizeof(ULONG));
-  if(!pg->pg_EcoliBaseTable)
-  {
-    printf("Out of memory allocating buffer for pg->pg_EcoliBaseTable!\n");
-    return(FALSE);
+      pg->pg_EcoliBaseTable = (ULONG *) calloc(pg->pg_EcoliSeqSize + 1, sizeof(ULONG));
+      if(!pg->pg_EcoliBaseTable)
+      {
+        printf("Out of memory allocating buffer for pg->pg_EcoliBaseTable!\n");
+        return(FALSE);
+      }
+      fread(pg->pg_EcoliBaseTable, sizeof(ULONG), pg->pg_EcoliSeqSize + 1, fh);
   }
-  fread(pg->pg_EcoliBaseTable, sizeof(ULONG), pg->pg_EcoliSeqSize + 1, fh);
 #endif
 
   /* fix partition loading routine for standard suffix tree */
