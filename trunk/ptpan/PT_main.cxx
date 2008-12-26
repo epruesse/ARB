@@ -384,12 +384,10 @@ int main(int argc, char *argv[])
     {
       if(!strcasecmp(commandflag, "-look"))
       {
-    exit(0); /* already another serther */
+        exit(0); /* already another serther */
       }
       printf("There is another active server. I'll try to terminate it violently...\n");
-      aisc_nput(ptlink, PT_MAIN, ptmain,
-        MAIN_SHUTDOWN, "47@#34543df43%&3667gh",
-        NULL);
+      aisc_nput(ptlink, PT_MAIN, ptmain, MAIN_SHUTDOWN, "47@#34543df43%&3667gh", NULL);
       aisc_close(ptlink);
     }
   }
@@ -412,11 +410,11 @@ int main(int argc, char *argv[])
     {
       if(val > 100000) /* read out threshold */
       {
-    pg->pg_MaxPartitionSize = atoi(&commandflag[6]);
-    printf("Forcing MaxPartitionSize = %ld.\n", pg->pg_MaxPartitionSize);
+        pg->pg_MaxPartitionSize = atoi(&commandflag[6]);
+        printf("Forcing MaxPartitionSize = %ld.\n", pg->pg_MaxPartitionSize);
       } else {
-    pg->pg_PruneLength = atoi(&commandflag[6]);
-    printf("Forcing PruneLength = %d.\n", pg->pg_PruneLength);
+        pg->pg_PruneLength = atoi(&commandflag[6]);
+        printf("Forcing PruneLength = %d.\n", pg->pg_PruneLength);
       }
     }
     LoadSpecies(pg);
@@ -425,26 +423,22 @@ int main(int argc, char *argv[])
       pg->pg_UseStdSfxTree = TRUE;
       if(BuildStdSuffixTree(pg))
       {
-    printf("Suffix Tree index for database '%s' has been created.\n",
-        pg->pg_DBName);
-    BenchOutput(pg);
-    exit(0);
+        printf("Suffix Tree index for database '%s' has been created.\n", pg->pg_DBName);
+        BenchOutput(pg);
+        exit(0);
       } else {
-    printf("Unable to create Suffix Tree index for database '%s'!\n",
-        pg->pg_DBName);
-    exit(1);
+        printf("Unable to create Suffix Tree index for database '%s'!\n", pg->pg_DBName);
+        exit(1);
       }
     } else {
       if(BuildPTPanIndex(pg))
       {
-    printf("PT_PAN index for database '%s' has been created.\n",
-        pg->pg_DBName);
-    BenchOutput(pg);
-    exit(0);
+        printf("PT_PAN index for database '%s' has been created.\n", pg->pg_DBName);
+        BenchOutput(pg);
+        exit(0);
       } else {
-    printf("Unable to create PT_PAN index for database '%s'!\n",
-        pg->pg_DBName);
-    exit(1);
+        printf("Unable to create PT_PAN index for database '%s'!\n", pg->pg_DBName);
+        exit(1);
       }
     }
   }
@@ -471,16 +465,16 @@ int main(int argc, char *argv[])
     } else {
       if((dbstat.st_mtime > idxstat.st_mtime) || (idxstat.st_size == 0))
       {
-    /* so the index file was older or of zero size */
-    printf("PT_PAN: Database %s has been modified\n"
-        "more recently than index %s.\n"
-        "Forcing rebuilding of index...\n",
-        pg->pg_DBName, pg->pg_IndexName);
-    forcebuild = TRUE;
+        /* so the index file was older or of zero size */
+        printf("PT_PAN: Database %s has been modified\n"
+            "more recently than index %s.\n"
+            "Forcing rebuilding of index...\n",
+            pg->pg_DBName, pg->pg_IndexName);
+        forcebuild = TRUE;
       }
       if(!LoadIndexHeader(pg))
       {
-    forcebuild = TRUE; /* an error occured while loading the index header */
+        forcebuild = TRUE; /* an error occured while loading the index header */
       }
     }
     if(forcebuild)
@@ -488,17 +482,15 @@ int main(int argc, char *argv[])
       LoadSpecies(pg);
       if(BuildPTPanIndex(pg))
       {
-    printf("PT_PAN index for database '%s' has been created.\n",
-        pg->pg_DBName);
+        printf("PT_PAN index for database '%s' has been created.\n", pg->pg_DBName);
       } else {
-    printf("Unable to create PT_PAN index for database '%s'!\n",
-        pg->pg_DBName);
-    exit(1);
+        printf("Unable to create PT_PAN index for database '%s'!\n", pg->pg_DBName);
+        exit(1);
       }
       if(!LoadIndexHeader(pg))
       {
-    printf("Fatal error, couldn't load index even after creation attempt!\n");
-    exit(1);
+        printf("Fatal error, couldn't load index even after creation attempt!\n");
+        exit(1);
       }
     }
   }
@@ -536,9 +528,9 @@ int main(int argc, char *argv[])
     {
       if((pg->pg_ComSocket = open_aisc_server(pg->pg_ServerName, TIME_OUT, 0)))
       {
-    break;
+        break;
       } else {
-    sleep(10);
+        sleep(10);
       }
     }
     if(!pg->pg_ComSocket)
@@ -556,3 +548,5 @@ int main(int argc, char *argv[])
 
   return(0);
 }
+
+
