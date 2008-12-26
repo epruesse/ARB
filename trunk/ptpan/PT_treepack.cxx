@@ -57,9 +57,11 @@ BOOL WriteIndexHeader(struct PTPanGlobal *pg)
     fwrite(&ps->ps_RawDataSize, sizeof(ps->ps_RawDataSize), 1, fh);
     fwrite(&ps->ps_AbsOffset, sizeof(ps->ps_AbsOffset), 1, fh);
     fwrite(&ps->ps_SeqHash, sizeof(ps->ps_SeqHash), 1, fh);
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     fwrite(&ps->ps_ChkPntIVal, sizeof(ps->ps_ChkPntIVal), 1, fh);
     fwrite(&ps->ps_NumCheckPoints, sizeof(ps->ps_NumCheckPoints), 1, fh);
     fwrite(ps->ps_CheckPoints, sizeof(ULONG), ps->ps_NumCheckPoints, fh);
+#endif    
 #ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     fwrite(&ps->ps_SeqDataCompressedSize, sizeof(ps->ps_SeqDataCompressedSize), 1, fh);     // save compressed Seq Data
     fwrite(ps->ps_SeqDataCompressed, 1, ((ps->ps_SeqDataCompressedSize >> 3) + 1), fh);     // .

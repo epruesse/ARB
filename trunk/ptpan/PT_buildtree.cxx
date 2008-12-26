@@ -605,7 +605,9 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
   ULONG len;
   BOOL dbopen = FALSE;
   ULONG verlen;
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   ULONG relpos;
+#endif  
   ULONG abspos;
   ULONG specabspos;
   ULONG hash;
@@ -638,6 +640,7 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
   /* doing a linear scan -- caching is useless */
   DisableCache(pg->pg_SpeciesCache);
 
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   /* traverse species to find good ChkPntIVal */
   ps = (struct PTPanSpecies *) pg->pg_Species.lh_Head;
   while(ps->ps_Node.ln_Succ)
@@ -651,6 +654,7 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
     }
     ps = (struct PTPanSpecies *) ps->ps_Node.ln_Succ;
   }
+#endif
 
   /* traverse all species */
   ps = (struct PTPanSpecies *) pg->pg_Species.lh_Head;
@@ -682,6 +686,7 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
     }
 
 
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     /* allocate checkpoint buffer */                // TODO: remove Checkpoints for COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     ps->ps_NumCheckPoints = ps->ps_RawDataSize / ps->ps_ChkPntIVal;
     ps->ps_CheckPoints = (ULONG *) calloc(ps->ps_NumCheckPoints, sizeof(ULONG));
@@ -690,18 +695,17 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
       printf("Out of memory for checkpoint interval table!\n");
     }
     /* now actually compress the sequence */
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     srcstr = ps->ps_SeqData;
 #endif
     verlen = 0;
     hash = 0;
     specabspos = 0;
-    relpos = 0;
 #ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     ULONG bitpos = 0;
     ULONG count;
     while((code = GetNextCharacter(pg, ps->ps_SeqDataCompressed, bitpos, count)) != 0xff)
 #else
+    relpos = 0;
     while((code = *srcstr++))
 #endif
     {
@@ -710,12 +714,14 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
         /* add sequence code */
         if(verlen++ < ps->ps_RawDataSize)
         {
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
           /* write checkpoint location */
           if(!(specabspos % ps->ps_ChkPntIVal) && specabspos)
           {
             //printf("%ld, ", relpos);
             ps->ps_CheckPoints[(specabspos / ps->ps_ChkPntIVal)-1] = relpos;
           }
+#endif          
           abspos++;
           specabspos++;
           seqcode = pg->pg_CompressTable[code];
@@ -737,7 +743,9 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
           }
         }
       }
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
       relpos++;
+#endif      
     }
     if(verlen != ps->ps_RawDataSize)
     {
