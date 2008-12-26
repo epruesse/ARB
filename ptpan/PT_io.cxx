@@ -982,7 +982,9 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
 BOOL LoadIndexHeader(struct PTPanGlobal *pg)
 {
   FILE *fh;
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   GBDATA *gb_species;
+#endif  
   struct PTPanSpecies *ps;
   struct PTPanPartition *pp;
   ULONG numspec;
@@ -1045,6 +1047,38 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
   fread(&pg->pg_NumPartitions, sizeof(pg->pg_NumPartitions), 1, fh);
   fread(&pg->pg_MaxPrefixLen , sizeof(pg->pg_MaxPrefixLen) , 1, fh);
 
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+  // read Ecoli Sequence
+  /* free memory if previously allocated */
+  if(pg->pg_EcoliSeq)
+  {
+    free(pg->pg_EcoliSeq);
+    pg->pg_EcoliSeq = NULL;
+  }
+  if(pg->pg_EcoliBaseTable)
+  {
+    free(pg->pg_EcoliBaseTable);
+    pg->pg_EcoliBaseTable = NULL;
+  }
+
+  fread(&pg->pg_EcoliSeqSize, sizeof(pg->pg_EcoliSeqSize), 1, fh);
+  pg->pg_EcoliSeq = (char*) malloc(pg->pg_EcoliSeqSize + 1);
+  if(!pg->pg_EcoliSeq)
+  {
+    printf("Out of memory allocating buffer for pg->pg_EcoliSeq!\n");
+    return(FALSE);
+  }
+  fread(pg->pg_EcoliSeq, 1, pg->pg_EcoliSeqSize + 1, fh);
+
+  pg->pg_EcoliBaseTable = (ULONG *) calloc(pg->pg_EcoliSeqSize + 1, sizeof(ULONG));
+  if(!pg->pg_EcoliBaseTable)
+  {
+    printf("Out of memory allocating buffer for pg->pg_EcoliBaseTable!\n");
+    return(FALSE);
+  }
+  fread(pg->pg_EcoliBaseTable, sizeof(ULONG), pg->pg_EcoliSeqSize + 1, fh);
+#endif
+
   /* fix partition loading routine for standard suffix tree */
   if(pg->pg_UseStdSfxTree)
   {
@@ -1052,22 +1086,28 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
     pg->pg_PartitionCache->ch_UnloadFunc = (BOOL (*)(struct CacheHandler *, APTR)) CacheStdSuffixPartitionUnload;
   }
 
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   GB_begin_transaction(pg->pg_MainDB);
 
   /* get the ecoli reference sequence */
   LoadEcoliSequence(pg);
+#endif
 
   /* add the species to the list */
   pg->pg_SpeciesMap = (struct PTPanSpecies **) calloc(sizeof(struct PTPanSpecies *),
                         pg->pg_NumSpecies);
   ignorecount = 0;
   numspec = 0;
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   gb_species = GBT_first_species_rel_species_data(pg->pg_SpeciesData);
+#endif  
   while(numspec < pg->pg_NumSpecies)
   {
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     GBDATA *gb_name;
     GBDATA *gb_ali;
     GBDATA *gb_data;
+#endif  
     STRPTR spname;
     STRPTR filespname;
     STRPTR fullname;
@@ -1081,7 +1121,14 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
     fread(&len, sizeof(len), 1, fh);
     filespname = (STRPTR) calloc(len+1, 1);
     fread(filespname, len, 1, fh);
+    
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+    fread(&len, sizeof(len), 1, fh);
+    fullname = (STRPTR) calloc(len+1, 1);
+    fread(fullname, len, 1, fh);
+#endif
 
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     /* try to find species by name, if NULL */
     if(!gb_species)
     {
@@ -1135,14 +1182,20 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
     fullname = strdup(filespname);
       }
     }
+#endif
     /* okay, cannot fail now anymore, allocate a PTPanSpecies structure */
     ps = (struct PTPanSpecies *) calloc(1, sizeof(struct PTPanSpecies));
     pg->pg_SpeciesMap[numspec] = ps;
     ps->ps_Num = numspec + ignorecount;
 
     /* write name and long name into the structure */
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+    ps->ps_SpeciesDB = NULL;
+    ps->ps_SeqDataDB = NULL;
+#else    
     ps->ps_SpeciesDB = gb_species;
     ps->ps_SeqDataDB = gb_data;
+#endif    
     ps->ps_IsGroup = FALSE;
     ps->ps_Obsolete = obsolete;
     ps->ps_Name = filespname;
@@ -1169,6 +1222,7 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
     if(!ps->ps_SeqDataCompressed)
     {
       printf("Out of memory allocating buffer for compressed SeqData (with '.' and '-')!\n");
+      return(FALSE);
     }
     fread(ps->ps_SeqDataCompressed, 1, ((ps->ps_SeqDataCompressedSize >> 3) + 1), fh);
 #endif
@@ -1190,14 +1244,18 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
     printf(".%6ld (%6ld KB)\n", numspec, (ps->ps_AbsOffset>>10));
       }
     }
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     gb_species = GBT_next_species(gb_species);
+#endif    
   }
 
   if(numspec != pg->pg_NumSpecies)
   {
     printf("ERROR: Number of species has changed!\n");
     fclose(fh);
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     GB_commit_transaction(pg->pg_MainDB);
+#endif    
     return(FALSE);
   }
 
@@ -1232,7 +1290,9 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
     if(!pp)
     {
       fclose(fh);
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
       GB_commit_transaction(pg->pg_MainDB);
+#endif      
       return(FALSE); /* out of memory */
     }
     pp->pp_PTPanGlobal = pg;
@@ -1270,7 +1330,9 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
   fclose(fh);
 
   /* done! */
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   GB_commit_transaction(pg->pg_MainDB);
+#endif  
   return(TRUE);
 }
 /* \\\ */
