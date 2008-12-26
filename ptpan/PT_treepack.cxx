@@ -41,8 +41,11 @@ BOOL WriteIndexHeader(struct PTPanGlobal *pg)
 #ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   // write Ecoli Sequence
   fwrite(&pg->pg_EcoliSeqSize  , sizeof(pg->pg_EcoliSeqSize) , 1        , fh);
-  fwrite(pg->pg_EcoliSeq       , 1            , pg->pg_EcoliSeqSize + 1 , fh);
-  fwrite(pg->pg_EcoliBaseTable , sizeof(ULONG), pg->pg_EcoliSeqSize + 1 , fh);
+  if (pg->pg_EcoliSeqSize > 0)
+  {                                                                                 // only write EcoliSeq and
+    fwrite(pg->pg_EcoliSeq       , 1            , pg->pg_EcoliSeqSize + 1 , fh);    // EcoliBaseTable if we
+    fwrite(pg->pg_EcoliBaseTable , sizeof(ULONG), pg->pg_EcoliSeqSize + 1 , fh);    // found them earlier...
+  } 
 #endif
 
   /* write species info */
