@@ -38,6 +38,13 @@ BOOL WriteIndexHeader(struct PTPanGlobal *pg)
   fwrite(&pg->pg_NumPartitions, sizeof(pg->pg_NumPartitions), 1, fh);
   fwrite(&pg->pg_MaxPrefixLen , sizeof(pg->pg_MaxPrefixLen) , 1, fh);
 
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+  // write Ecoli Sequence
+  fwrite(&pg->pg_EcoliSeqSize  , sizeof(pg->pg_EcoliSeqSize) , 1        , fh);
+  fwrite(pg->pg_EcoliSeq       , 1            , pg->pg_EcoliSeqSize + 1 , fh);
+  fwrite(pg->pg_EcoliBaseTable , sizeof(ULONG), pg->pg_EcoliSeqSize + 1 , fh);
+#endif
+
   /* write species info */
   ps = (struct PTPanSpecies *) pg->pg_Species.lh_Head;
   while(ps->ps_Node.ln_Succ)
@@ -48,9 +55,9 @@ BOOL WriteIndexHeader(struct PTPanGlobal *pg)
     fwrite(&len, sizeof(len), 1, fh);
     fputs(ps->ps_Name, fh);
 
-    /*len = strlen(ps->ps_FullName);
+    len = strlen(ps->ps_FullName);
     fwrite(&len, sizeof(len), 1, fh);
-    fputs(ps->ps_FullName, fh);*/
+    fputs(ps->ps_FullName, fh);
 
     /* write some more relevant data */
     fwrite(&ps->ps_SeqDataSize, sizeof(ps->ps_SeqDataSize), 1, fh);

@@ -457,7 +457,9 @@ void CreateHitsGUIList(struct SearchQuery *sq)
   maxlen = sq->sq_QueryLen + (ULONG) ((sq->sq_MaxErrors + minweight) / minweight);
   sq->sq_SourceSeq = (STRPTR) malloc(maxlen + 1);
 
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   GB_begin_transaction(pg->pg_MainDB);
+#endif  
   numhits = 0;
   pg->pg_SpeciesCache->ch_SwapCount = 0;
 
@@ -836,7 +838,9 @@ void CreateHitsGUIList(struct SearchQuery *sq)
     qh = (struct QueryHit *) sq->sq_Hits.lh_Head;
 #endif  
   } // while(qh->qh_Node.ln_Succ)
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   GB_commit_transaction(pg->pg_MainDB);
+#endif  
   free(sq->sq_SourceSeq);
 
   if (PTPanGlobalPtr->pg_verbose >0) {
