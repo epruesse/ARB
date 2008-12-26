@@ -50,6 +50,10 @@
 
 // save compressed alignment of species into *.pan file to reduce arbdb access 
 // and speed searches up at cost of some memory (very effective)
+// it also causes ptpan to save full names of species and the Ecoli alignment 
+// into *.pan file. Arbdb access is reduced to zero when not building tree.
+// Don't use it yet because file layout is still changeing. This will be default,
+// soon... after some more testing
 //#define COMPRESSSEQUENCEWITHDOTSANDHYPHENS
 
 
