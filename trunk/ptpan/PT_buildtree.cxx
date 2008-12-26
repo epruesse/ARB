@@ -660,6 +660,7 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
     STRPTR srcstr;
     UBYTE code;
 
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     if(!ps->ps_SeqData)
     {
       /* seems like the sequence is not in memory due to low-memory mode */
@@ -671,6 +672,7 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
       /* load alignment data */
       ps->ps_CacheNode = CacheLoadData(pg->pg_SpeciesCache, ps->ps_CacheNode, ps);
     }
+#endif
 
     if(abspos != ps->ps_AbsOffset)
     {
@@ -679,11 +681,8 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
         abspos, ps->ps_AbsOffset, ps->ps_Name);
     }
 
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-    CompressSequenceWithDotsAndHyphens(pg, ps);
-#endif
 
-    /* allocate checkpoint buffer */
+    /* allocate checkpoint buffer */                // TODO: remove Checkpoints for COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     ps->ps_NumCheckPoints = ps->ps_RawDataSize / ps->ps_ChkPntIVal;
     ps->ps_CheckPoints = (ULONG *) calloc(ps->ps_NumCheckPoints, sizeof(ULONG));
     if(!ps->ps_CheckPoints)
@@ -691,12 +690,20 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
       printf("Out of memory for checkpoint interval table!\n");
     }
     /* now actually compress the sequence */
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     srcstr = ps->ps_SeqData;
+#endif
     verlen = 0;
     hash = 0;
     specabspos = 0;
     relpos = 0;
+#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+    ULONG bitpos = 0;
+    ULONG count;
+    while((code = GetNextCharacter(pg, ps->ps_SeqDataCompressed, bitpos, count)) != 0xff)
+#else
     while((code = *srcstr++))
+#endif
     {
       if(pg->pg_SeqCodeValidTable[code])
       {
@@ -787,11 +794,6 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
      hashes */
   pg->pg_AllHashSum = rand();
   pg->pg_Bench.ts_MergeDB = BenchTimePassed(pg);
-
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-  printf("Compressed sequence data (with dots and hyphens): %llu byte (%llu kb, %llu mb)\n",
-    pg->pg_TotalSeqCompressedSize, pg->pg_TotalSeqCompressedSize >> 10, pg->pg_TotalSeqCompressedSize >> 20);
-#endif
 
   printf("Merged compressed database size: %ld KB\n", len >> 10);
   return(TRUE);
