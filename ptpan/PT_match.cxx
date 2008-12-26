@@ -396,6 +396,7 @@ void SortHitsList(struct SearchQuery *sq)
 }
 /* \\\ */
 
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
 /* /// "GetSpeciesRelPos()" */
 ULONG GetSpeciesRelPos(struct PTPanGlobal *pg, struct PTPanSpecies *ps, ULONG abspos)
 {
@@ -426,7 +427,7 @@ ULONG GetSpeciesRelPos(struct PTPanGlobal *pg, struct PTPanSpecies *ps, ULONG ab
   return(relpos);
 }
 /* \\\ */
-
+#endif
 
 /* /// "CreateHitsGUIList()" */
 void CreateHitsGUIList(struct SearchQuery *sq)

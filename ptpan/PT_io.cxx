@@ -727,7 +727,9 @@ void FreeAllSpecies(struct PTPanGlobal *pg)
     Remove(&ps->ps_Node);
     free(ps->ps_Name);
     free(ps->ps_FullName);
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     free(ps->ps_CheckPoints);
+#endif    
     free(ps);
     ps = (struct PTPanSpecies *) pg->pg_Species.lh_Head;
   }
@@ -1151,6 +1153,7 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
     fread(&ps->ps_RawDataSize, sizeof(ps->ps_RawDataSize), 1, fh);
     fread(&ps->ps_AbsOffset, sizeof(ps->ps_AbsOffset), 1, fh);
     fread(&ps->ps_SeqHash, sizeof(ps->ps_SeqHash), 1, fh);
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     fread(&ps->ps_ChkPntIVal, sizeof(ps->ps_ChkPntIVal), 1, fh);
     fread(&ps->ps_NumCheckPoints, sizeof(ps->ps_NumCheckPoints), 1, fh);
     ps->ps_CheckPoints = (ULONG *) calloc(ps->ps_NumCheckPoints, sizeof(ULONG));
@@ -1159,6 +1162,7 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
       printf("Out of memory allocating checkpoint buffer!\n");
     }
     fread(ps->ps_CheckPoints, sizeof(ULONG), ps->ps_NumCheckPoints, fh);
+#endif    
 #ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     fread(&ps->ps_SeqDataCompressedSize, sizeof(ps->ps_SeqDataCompressedSize), 1, fh);
     ps->ps_SeqDataCompressed = (UBYTE*) malloc((ps->ps_SeqDataCompressedSize >> 3) + 1);
