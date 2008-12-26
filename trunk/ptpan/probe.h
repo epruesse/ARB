@@ -186,9 +186,11 @@ struct PTPanSpecies
   BOOL        ps_Obsolete;       /* this sequence has been removed from the DB, ignore */
   ULLONG      ps_AbsOffset;      /* absolute offset in the resulting raw image */
   ULONG       ps_SerialTouch;    /* last time touched (for duplicate elimation) */
+#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   ULONG       ps_ChkPntIVal;     /* check pointing interval for species relpos */
   UWORD       ps_NumCheckPoints; /* number of checkpoints saved (see below) */
   ULONG      *ps_CheckPoints;    /* AbsPos->RelPos checkpoint table */
+#endif  
   struct CacheNode *ps_CacheNode; /* caching information node */
 #ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   STRPTR ps_test;
