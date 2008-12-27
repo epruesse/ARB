@@ -31,11 +31,11 @@ PHDATA::~PHDATA(void) {
 
 
 char *PHDATA::load(char *usei) {
-    GB_push_transaction(gb_main);
-
     use             = strdup(usei);
     gb_main         = GLOBAL_gb_main;
     last_key_number = 0;
+
+    GB_push_transaction(gb_main);
 
     seq_len  = GBT_get_alignment_len(gb_main, use);
     entries  = NULL;
