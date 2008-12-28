@@ -396,13 +396,6 @@ int main(int argc, char *argv[])
     exit(0);
   }
 
-  /* open data base */
-  if(!(OpenDataBase(pg)))
-  {
-    printf("Failed to open database %s!\n", pg->pg_DBName);
-    exit(1);
-  }
-
   if(!strncasecmp(commandflag, "-build", 6)) /* build command */
   {
     ULONG val = atoi(&commandflag[6]);
