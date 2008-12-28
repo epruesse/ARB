@@ -531,10 +531,13 @@ void GBS_free_hash_entries(GB_HASH *hs)
 #endif /* DUMP_HASH_ENTRIES */
 
 #if defined(DEBUG)
-    {
+    if (e2 >= 30) { // ignore small hashes
         double mean_access = GBS_hash_mean_access_costs(hs);
         if (mean_access > 1.5) { // every 2nd access is a collision - increase hash size?
             dump_access("hash-size-warning", hs, mean_access);
+#if defined(DEVEL_RALF)
+            gb_assert(mean_access<2.0); // hash with 50% speed or less
+#endif /* DEVEL_RALF */
         }
     }
 #endif /* DEBUG */
