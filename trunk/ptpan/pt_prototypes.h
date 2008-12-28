@@ -169,7 +169,6 @@ void SearchPartition P_((struct PTPanPartition *pp, struct SearchQuery *sq));
 void QueryTests P_((struct PTPanGlobal *pg));
 extern "C" int probe_match P_((PT_local *locs, aisc_string probestring));
 void SortHitsList P_((struct SearchQuery *sq));
-ULONG GetSpeciesRelPos P_((struct PTPanGlobal *pg, struct PTPanSpecies *ps, ULONG abspos));
 void CreateHitsGUIList P_((struct SearchQuery *sq));
 extern "C" STRPTR get_match_info P_((PT_probematch *ml));
 STRPTR GetMatchListHeader P_((STRPTR seq));
