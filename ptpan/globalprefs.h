@@ -48,13 +48,6 @@
 /* error decrease for mismatches in probe design */
 #define PROBE_MISM_DEC 0.2
 
-// save compressed alignment of species into *.pan file to reduce arbdb access 
-// and speed searches up at cost of some memory (very effective)
-// it also causes ptpan to save full names of species and the Ecoli alignment 
-// into *.pan file. Arbdb access is reduced to zero when not building tree.
-// Don't use it yet because file layout is still changeing. This will be default,
-// soon... after some more testing
-//#define COMPRESSSEQUENCEWITHDOTSANDHYPHENS
 
 // TODO: comment
 //#define ALLOWDOTSINMATCH
@@ -64,11 +57,7 @@
 #define MAXDOTSINMATCH 5
 
 
-#ifdef ALLOWDOTSINMATCH
-    #ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-        #error You need to define COMPRESSSEQUENCEWITHDOTSANDHYPHENS to use ALLOWDOTSINMATCH
-    #endif
-#endif    
+
 
 
 #endif /* GLOBALPREFS_H */
