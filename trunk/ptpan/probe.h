@@ -7,11 +7,7 @@
 #include <arbdb.h>
 #include "pt_manualprotos.h"
 
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
- #define FILESTRUCTVERSION 0x0105 /* version<<8 and revision */
-#else
- #define FILESTRUCTVERSION 0x0104 /* version<<8 and revision */
-#endif
+#define FILESTRUCTVERSION 0x0105 /* version<<8 and revision */
 
 #define BENCHMARK
 
@@ -21,10 +17,8 @@
 #define SEQCODE_C      2
 #define SEQCODE_G      3
 #define SEQCODE_T      4
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
 #define SEQCODE_DOT    5
 #define SEQCODE_HYPHEN 6
-#endif
 #define SEQCODE_IGNORE 255
 
 /* 5261276th prime, small enough for pg->pg_AlphaSize < 47 */
@@ -92,9 +86,7 @@ struct PTPanGlobal
 
   GBDATA     *pg_SpeciesData;    /* DB pointer to species data */
   ULLONG      pg_TotalSeqSize;   /* total size of sequences */
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   ULLONG      pg_TotalSeqCompressedSize;     // total size of compressed Seq. Data (with '.' and '-') in byte
-#endif
   ULLONG      pg_TotalRawSize;   /* total size of data tuples in species */
   UWORD       pg_TotalRawBits;   /* number of bits required to store a position pointer */
   ULONG       pg_MaxBaseLength;  /* maximum base length over all species */
@@ -186,17 +178,11 @@ struct PTPanSpecies
   BOOL        ps_Obsolete;       /* this sequence has been removed from the DB, ignore */
   ULLONG      ps_AbsOffset;      /* absolute offset in the resulting raw image */
   ULONG       ps_SerialTouch;    /* last time touched (for duplicate elimation) */
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-  ULONG       ps_ChkPntIVal;     /* check pointing interval for species relpos */
-  UWORD       ps_NumCheckPoints; /* number of checkpoints saved (see below) */
-  ULONG      *ps_CheckPoints;    /* AbsPos->RelPos checkpoint table */
-#endif  
   struct CacheNode *ps_CacheNode; /* caching information node */
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+  
   STRPTR ps_test;
   UBYTE      *ps_SeqDataCompressed;     // compressed Seq. Data (with '.' and '-')
   ULONG       ps_SeqDataCompressedSize; // size in bits (includes end flag 111)
-#endif
 };
 
 /* index partition structure (memory) */
