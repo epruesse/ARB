@@ -942,12 +942,12 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
         continue;
     }
 #else
+    ps->ps_RawDataSize = CalcLengthForFilteredSequence(pg, ps->ps_SeqData);
  #ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     CompressSequenceWithDotsAndHyphens(pg, ps);
     free(ps->ps_SeqData);
     ps->ps_SeqData = NULL;
  #endif
-    ps->ps_RawDataSize = CalcLengthForFilteredSequence(pg, ps->ps_SeqData);
 #endif
 
     /* enter global absolute offset in index */
