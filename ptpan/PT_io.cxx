@@ -441,7 +441,6 @@ LONG DecompressSequencePartTo(struct PTPanGlobal *pg,
 /* \\\ */
 
 
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
 /* /// "GetNextCharacter()" */
 UBYTE GetNextCharacter(struct PTPanGlobal *pg, UBYTE* buffer, ULONG &bitpos, ULONG &count)
 {
@@ -573,7 +572,9 @@ ULONG CompressSequenceWithDotsAndHyphens(struct PTPanGlobal *pg, struct PTPanSpe
             ULONG count;
             for (count = 0; *ptr == '.'; ++count, ++ptr) { }                    // count all '.'
             bitpos = WriteManyChars(buffer, bitpos, SEQCODE_DOT, count);        // write all '.'
+#ifdef ALLOWDOTSINMATCH
             if (count <= MAXDOTSINMATCH) len += count;
+#endif            
         } else if (*ptr == '-')
         {                                                       // found a '-'
             ULONG count;
@@ -606,7 +607,6 @@ ULONG CompressSequenceWithDotsAndHyphens(struct PTPanGlobal *pg, struct PTPanSpe
     pg->pg_TotalSeqCompressedSize += ((ps->ps_SeqDataCompressedSize >> 3) + 1); // convert from bit to byte
     return len;
 }
-#endif
 
 
 /* /// "ComplementSequence()" */
@@ -742,9 +742,6 @@ void FreeAllSpecies(struct PTPanGlobal *pg)
     Remove(&ps->ps_Node);
     free(ps->ps_Name);
     free(ps->ps_FullName);
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-    free(ps->ps_CheckPoints);
-#endif    
     free(ps);
     ps = (struct PTPanSpecies *) pg->pg_Species.lh_Head;
   }
@@ -752,9 +749,7 @@ void FreeAllSpecies(struct PTPanGlobal *pg)
   pg->pg_SpeciesBinTree = NULL;
   pg->pg_NumSpecies = 0;
   pg->pg_TotalSeqSize = 0;
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   pg->pg_TotalSeqCompressedSize = 0;
-#endif
   pg->pg_TotalRawSize = 0;
   pg->pg_TotalRawBits = 0;
 }
@@ -842,9 +837,7 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
   /* add the species to the list */
   pg->pg_MaxBaseLength = 0;
   pg->pg_TotalSeqSize = 0;
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   pg->pg_TotalSeqCompressedSize = 0;
-#endif
   pg->pg_TotalRawSize = 0;
   pg->pg_NumSpecies = 0;
   ignorecount = 0;
@@ -902,11 +895,7 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
 
     /* (temporarily) load in the alignment and compress it */
     ps->ps_SeqDataSize = GB_read_string_count(ps->ps_SeqDataDB);
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     ps->ps_SeqData = GB_read_string(ps->ps_SeqDataDB);
-#else    
-    ps->ps_CacheNode = CacheLoadData(pg->pg_SpeciesCache, ps->ps_CacheNode, ps);
-#endif    
 
     if(strlen(ps->ps_SeqData) != ps->ps_SeqDataSize)
     {
@@ -927,7 +916,6 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
     }
 #endif
 
-#ifdef ALLOWDOTSINMATCH
     ps->ps_RawDataSize = CompressSequenceWithDotsAndHyphens(pg, ps);
     free(ps->ps_SeqData);
     ps->ps_SeqData = NULL;
@@ -941,14 +929,6 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
         free(ps);
         continue;
     }
-#else
-    ps->ps_RawDataSize = CalcLengthForFilteredSequence(pg, ps->ps_SeqData);
- #ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-    CompressSequenceWithDotsAndHyphens(pg, ps);
-    free(ps->ps_SeqData);
-    ps->ps_SeqData = NULL;
- #endif
-#endif
 
     /* enter global absolute offset in index */
     ps->ps_AbsOffset = pg->pg_TotalRawSize;
@@ -997,10 +977,8 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
     "%ld bytes alignment data (%ld bases).\n",
     pg->pg_NumSpecies, ignorecount, pg->pg_TotalSeqSize, pg->pg_TotalRawSize);
 
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   printf("Compressed sequence data (with dots and hyphens): %llu byte (%llu kb, %llu mb)\n",
     pg->pg_TotalSeqCompressedSize, pg->pg_TotalSeqCompressedSize >> 10, pg->pg_TotalSeqCompressedSize >> 20);
-#endif
 
 
   pg->pg_Bench.ts_CollectDB = BenchTimePassed(pg);
@@ -1015,9 +993,6 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
 BOOL LoadIndexHeader(struct PTPanGlobal *pg)
 {
   FILE *fh;
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-  GBDATA *gb_species;
-#endif  
   struct PTPanSpecies *ps;
   struct PTPanPartition *pp;
   ULONG numspec;
@@ -1070,9 +1045,7 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
   fread(&pg->pg_UseStdSfxTree, sizeof(pg->pg_UseStdSfxTree), 1, fh);
   fread(&pg->pg_AlphaSize    , sizeof(pg->pg_AlphaSize)    , 1, fh);
   fread(&pg->pg_TotalSeqSize , sizeof(pg->pg_TotalSeqSize) , 1, fh);
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   fread(&pg->pg_TotalSeqCompressedSize, sizeof(pg->pg_TotalSeqCompressedSize) , 1, fh);
-#endif
   fread(&pg->pg_TotalRawSize , sizeof(pg->pg_TotalRawSize) , 1, fh);
   fread(&pg->pg_TotalRawBits , sizeof(pg->pg_TotalRawBits) , 1, fh);
   fread(&pg->pg_AllHashSum   , sizeof(pg->pg_AllHashSum)   , 1, fh);
@@ -1080,7 +1053,6 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
   fread(&pg->pg_NumPartitions, sizeof(pg->pg_NumPartitions), 1, fh);
   fread(&pg->pg_MaxPrefixLen , sizeof(pg->pg_MaxPrefixLen) , 1, fh);
 
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   // read Ecoli Sequence
   /* free memory if previously allocated */
   if(pg->pg_EcoliSeq)
@@ -1113,7 +1085,6 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
       }
       fread(pg->pg_EcoliBaseTable, sizeof(ULONG), pg->pg_EcoliSeqSize + 1, fh);
   }
-#endif
 
   /* fix partition loading routine for standard suffix tree */
   if(pg->pg_UseStdSfxTree)
@@ -1122,28 +1093,13 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
     pg->pg_PartitionCache->ch_UnloadFunc = (BOOL (*)(struct CacheHandler *, APTR)) CacheStdSuffixPartitionUnload;
   }
 
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-  GB_begin_transaction(pg->pg_MainDB);
-
-  /* get the ecoli reference sequence */
-  LoadEcoliSequence(pg);
-#endif
-
   /* add the species to the list */
   pg->pg_SpeciesMap = (struct PTPanSpecies **) calloc(sizeof(struct PTPanSpecies *),
                         pg->pg_NumSpecies);
   ignorecount = 0;
   numspec = 0;
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-  gb_species = GBT_first_species_rel_species_data(pg->pg_SpeciesData);
-#endif  
   while(numspec < pg->pg_NumSpecies)
   {
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-    GBDATA *gb_name;
-    GBDATA *gb_ali;
-    GBDATA *gb_data;
-#endif  
     STRPTR spname;
     STRPTR filespname;
     STRPTR fullname;
@@ -1158,80 +1114,18 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
     filespname = (STRPTR) calloc(len+1, 1);
     fread(filespname, len, 1, fh);
     
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     fread(&len, sizeof(len), 1, fh);
     fullname = (STRPTR) calloc(len+1, 1);
     fread(fullname, len, 1, fh);
-#endif
 
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-    /* try to find species by name, if NULL */
-    if(!gb_species)
-    {
-      gb_species = GBT_find_species_rel_species_data(pg->pg_SpeciesData, filespname);
-      if(!gb_species)
-      {
-    printf("Couldn't find indexed species %s in DB!\n", filespname);
-    obsolete = TRUE;
-      }
-    }
-    if(gb_species)
-    {
-      /* get name */
-      gb_name = GB_find(gb_species, "name", down_level);
-      if(!gb_name)
-      {
-    spname = NULL;
-      } else {
-    spname = GB_read_string(gb_name);
-      }
-      /* check, if name matches */
-      if((!spname) || strcmp(spname, filespname))
-      {
-    /* oh, some mess in the species, try to find it manually */
-    gb_species = GBT_find_species_rel_species_data(pg->pg_SpeciesData, filespname);
-    if(!gb_species)
-    {
-    printf("Couldn't find indexed species %s in DB!\n", filespname);
-    obsolete = TRUE;
-    }
-      }
-      free(spname);
-    } else {
-      obsolete = TRUE;
-    }
-    gb_data = NULL;
-
-    if(!obsolete)
-    {
-      /* get alignments */
-      gb_ali = GB_find(gb_species, pg->pg_AlignmentName, down_level);
-      if(gb_ali)
-      {
-    gb_data = GB_find(gb_ali, "data", down_level);
-      }
-      gb_name = GB_find(gb_species, "full_name", down_level);
-      if(gb_name)
-      {
-    fullname = GB_read_string(gb_name);
-      } else {
-    fullname = strdup(filespname);
-      }
-    }
-#endif
     /* okay, cannot fail now anymore, allocate a PTPanSpecies structure */
     ps = (struct PTPanSpecies *) calloc(1, sizeof(struct PTPanSpecies));
     pg->pg_SpeciesMap[numspec] = ps;
     ps->ps_Num = numspec + ignorecount;
 
     /* write name and long name into the structure */
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     ps->ps_SpeciesDB = NULL;
     ps->ps_SeqDataDB = NULL;
-#else    
-    ps->ps_SpeciesDB = gb_species;
-    ps->ps_SeqDataDB = gb_data;
-#endif    
     ps->ps_IsGroup = FALSE;
     ps->ps_Obsolete = obsolete;
     ps->ps_Name = filespname;
@@ -1242,17 +1136,6 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
     fread(&ps->ps_RawDataSize, sizeof(ps->ps_RawDataSize), 1, fh);
     fread(&ps->ps_AbsOffset, sizeof(ps->ps_AbsOffset), 1, fh);
     fread(&ps->ps_SeqHash, sizeof(ps->ps_SeqHash), 1, fh);
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-    fread(&ps->ps_ChkPntIVal, sizeof(ps->ps_ChkPntIVal), 1, fh);
-    fread(&ps->ps_NumCheckPoints, sizeof(ps->ps_NumCheckPoints), 1, fh);
-    ps->ps_CheckPoints = (ULONG *) calloc(ps->ps_NumCheckPoints, sizeof(ULONG));
-    if(!ps->ps_CheckPoints)
-    {
-      printf("Out of memory allocating checkpoint buffer!\n");
-    }
-    fread(ps->ps_CheckPoints, sizeof(ULONG), ps->ps_NumCheckPoints, fh);
-#endif    
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     fread(&ps->ps_SeqDataCompressedSize, sizeof(ps->ps_SeqDataCompressedSize), 1, fh);
     ps->ps_SeqDataCompressed = (UBYTE*) malloc((ps->ps_SeqDataCompressedSize >> 3) + 1);
     if(!ps->ps_SeqDataCompressed)
@@ -1261,7 +1144,6 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
       return(FALSE);
     }
     fread(ps->ps_SeqDataCompressed, 1, ((ps->ps_SeqDataCompressedSize >> 3) + 1), fh);
-#endif
     ps->ps_Node.ln_Pri = ps->ps_AbsOffset;
 
     /* Init complete, now add it to the list */
@@ -1280,18 +1162,12 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
     printf(".%6ld (%6ld KB)\n", numspec, (ps->ps_AbsOffset>>10));
       }
     }
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-    gb_species = GBT_next_species(gb_species);
-#endif    
   }
 
   if(numspec != pg->pg_NumSpecies)
   {
     printf("ERROR: Number of species has changed!\n");
     fclose(fh);
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-    GB_commit_transaction(pg->pg_MainDB);
-#endif    
     return(FALSE);
   }
 
@@ -1311,10 +1187,8 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
   printf("\n\nDatabase contains %ld valid species (%ld ignored).\n"
     "%ld bytes alignment data (%ld bases).\n",
     pg->pg_NumSpecies, ignorecount, pg->pg_TotalSeqSize, pg->pg_TotalRawSize);
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   printf("Compressed sequence data (with dots and hyphens): %llu byte (%llu kb, %llu mb)\n",
     pg->pg_TotalSeqCompressedSize, pg->pg_TotalSeqCompressedSize >> 10, pg->pg_TotalSeqCompressedSize >> 20);
-#endif
 
   printf("Number of partitions: %d\n", pg->pg_NumPartitions);
 
@@ -1326,9 +1200,6 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
     if(!pp)
     {
       fclose(fh);
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-      GB_commit_transaction(pg->pg_MainDB);
-#endif      
       return(FALSE); /* out of memory */
     }
     pp->pp_PTPanGlobal = pg;
@@ -1366,9 +1237,6 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
   fclose(fh);
 
   /* done! */
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-  GB_commit_transaction(pg->pg_MainDB);
-#endif  
   return(TRUE);
 }
 /* \\\ */
