@@ -618,7 +618,7 @@ int GB_unlink(const char *path)
     */
     if (unlink(path)) {
         if (errno == ENOENT) return 1;
-        GB_export_IO_error("remove", path);
+        GB_export_IO_error("removing", path);
         return -1;
     }
     return 0;
@@ -1335,11 +1335,11 @@ FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_full
     if (fp) {
         // make file private
         if (fchmod(fileno(fp), S_IRUSR|S_IWUSR) != 0) { 
-            error = GB_export_IO_error("changing permissions", file);
+            error = GB_export_IO_error("changing permissions of", file);
         }
     }
     else {
-        error = GB_export_IO_error(GBS_global_string("open(%s) tempfile", write ? "write" : "read"), file);
+        error = GB_export_IO_error(GBS_global_string("opening(%s) tempfile", write ? "write" : "read"), file);
     }
 
     if (res_fullname) {
@@ -1383,7 +1383,7 @@ static GB_HASH *files_to_remove_on_exit = 0;
 static long exit_remove_file(const char *key, long val) {
     GBUSE(val);
     if (unlink(key) != 0) {
-        fprintf(stderr, "Warning: %s\n", GB_export_IO_error("remove", key));
+        fprintf(stderr, "Warning: %s\n", GB_export_IO_error("removing", key));
     }
     return 0;
 }

@@ -1822,7 +1822,7 @@ static void aw_help_search(AW_window *aww) {
                 // write temporary helpfile containing links to matches as subtopics
 
                 FILE *helpfp       = fopen(helpfilename, "wt");
-                if (!helpfp) error = GB_export_IO_error("write helpfile", helpfilename);
+                if (!helpfp) error = GB_export_IO_error("writing helpfile", helpfilename);
                 else {
                     fprintf(helpfp, "\nUP arb.hlp\n");
                     if (last_help) fprintf(helpfp, "UP %s\n", last_help);

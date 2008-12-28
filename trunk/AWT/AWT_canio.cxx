@@ -377,7 +377,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
         case PDEST_POSTSCRIPT: {
             dest = awt_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
             FILE *out = fopen(dest, "w");
-            if (!out) error = GB_export_IO_error("write", dest);
+            if (!out) error = GB_export_IO_error("writing", dest);
             else fclose(out);
             break;
         }
