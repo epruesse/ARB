@@ -807,6 +807,13 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
      data that's built up here in a secondary file. That way we would
      get rid of the loading and scanning of the sequence data in low
      memory mode */
+  
+  /* open data base */
+  if(!(OpenDataBase(pg)))
+  {
+    printf("Failed to open database %s!\n", pg->pg_DBName);
+    exit(1);
+  }
 
   GB_begin_transaction(pg->pg_MainDB);
 
