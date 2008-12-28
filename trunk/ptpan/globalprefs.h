@@ -56,6 +56,19 @@
 // soon... after some more testing
 //#define COMPRESSSEQUENCEWITHDOTSANDHYPHENS
 
+// TODO: comment
+//#define ALLOWDOTSINMATCH
+
+
+// TODO: comment
+#define MAXDOTSINMATCH 5
+
+
+#ifdef ALLOWDOTSINMATCH
+    #ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
+        #error You need to define COMPRESSSEQUENCEWITHDOTSANDHYPHENS to use ALLOWDOTSINMATCH
+    #endif
+#endif    
 
 
 #endif /* GLOBALPREFS_H */

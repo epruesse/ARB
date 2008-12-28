@@ -709,6 +709,30 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
     while((code = *srcstr++))
 #endif
     {
+#ifdef ALLOWDOTSINMATCH
+      if (code == '.')
+      {
+        if (count <= MAXDOTSINMATCH)
+        {
+#if 1       // debug        
+            ULONG tmpbitpos = bitpos;
+            ULONG tmpcount;
+            printf("Species: %s, abspos: %li, AbsOffset: %li >> %li*%c, ", 
+                   ps->ps_Name, abspos, ps->ps_AbsOffset, tmpcount, code);
+            for (int i = 0; i < 10; ++i)
+            {
+                code = GetNextCharacter(pg, ps->ps_SeqDataCompressed, tmpbitpos, tmpcount);
+                if (code == 0xff) break;
+                printf("%li*%c, ", tmpcount, code);
+            }
+            printf("\n");
+#endif            
+            code = 'N';
+        } else count = 0;   // to many '.', so don't insert them...
+      }
+      while (count-- > 0)   // insert code count times
+      {
+#endif
       if(pg->pg_SeqCodeValidTable[code])
       {
         /* add sequence code */
@@ -743,6 +767,9 @@ BOOL BuildMergedDatabase(struct PTPanGlobal *pg)
           }
         }
       }
+#ifdef ALLOWDOTSINMATCH
+      } // while (count-- > 0)
+#endif
 #ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
       relpos++;
 #endif      

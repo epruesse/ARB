@@ -3010,6 +3010,19 @@ BOOL FindSequenceMatchRec(struct SearchQuery *sq, struct QueryHit *qh, STRPTR ta
   /* check, if first seqcode of edge matches (N (seqcode 0) matches always) */
   if(seqcode2 != seqcode)
   {
+#ifdef ALLOWDOTSINMATCH
+    if (sq->sq_SourceSeq[sq->sq_State.sqs_SourcePos] == '.')
+    {
+        sq->sq_State.sqs_ReplaceCount++;
+        misweight = 0.1;                            // TODO: add * sq->sq_PosWeight[sq->sq_State.sqs_QueryPos]
+        sq->sq_State.sqs_ErrorCount += misweight;   //       and 0.1 should not be hard coded
+        if(tarptr)
+        {
+          *tarptr++ = '.';
+          *tarptr = 0;
+        }
+    } else 
+#endif
     if(sq->sq_AllowReplace && (sq->sq_State.sqs_ReplaceCount < qh->qh_ReplaceCount))
     {
       sq->sq_State.sqs_ReplaceCount++;
