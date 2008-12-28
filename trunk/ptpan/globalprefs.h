@@ -37,7 +37,7 @@
 //#define DOUBLEDELTAOPTIONAL
 
 /* size of hash table for duplicates detection during query */
-#define QUERYHITSHASHSIZE 200000
+#define QUERYHITSHASHSIZE 12800009
 
 /* size of the hash table for species lookup by name */
 #define SPECIESNAMEHASHSIZE 10000
