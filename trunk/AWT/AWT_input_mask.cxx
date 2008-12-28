@@ -2107,15 +2107,21 @@ static void add_new_input_mask(const string& maskname, const string& fullname, b
     }
 }
 static void scan_existing_input_masks() {
-
     awt_assert(!scanned_existing_input_masks);
 
     for (int scope = 0; scope <= 1; ++scope) {
         const char *dirname = inputMaskDir(scope == AWT_SCOPE_LOCAL);
-        DIR        *dirp    = opendir(dirname);
 
+        if (!GB_is_directory(dirname)) {
+            if (scope == AWT_SCOPE_LOCAL) {         // in local scope
+                GB_ERROR warning = GB_create_directory(dirname); // try to create directory
+                if (warning) fprintf(stderr, "Warning: %s\n", warning);
+            }
+        }
+
+        DIR *dirp = opendir(dirname);
         if (!dirp) {
-            fprintf(stderr, "The path '%s' is invalid.\n", dirname);
+            fprintf(stderr, "Warning: No such directory '%s'\n", dirname);
         }
         else {
             struct dirent *dp;
