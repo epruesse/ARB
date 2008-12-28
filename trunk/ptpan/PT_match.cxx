@@ -396,38 +396,6 @@ void SortHitsList(struct SearchQuery *sq)
 }
 /* \\\ */
 
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-/* /// "GetSpeciesRelPos()" */
-ULONG GetSpeciesRelPos(struct PTPanGlobal *pg, struct PTPanSpecies *ps, ULONG abspos)
-{
-  ULONG relpos = 0;
-  STRPTR srcseq = ps->ps_SeqData;
-
-  /* use checkpointing to skip over large regions */
-  if(abspos >= ps->ps_ChkPntIVal)
-  {
-    relpos = ps->ps_CheckPoints[(abspos / ps->ps_ChkPntIVal) - 1];
-    srcseq += relpos;
-    abspos %= ps->ps_ChkPntIVal;
-  }
-
-  /* given an absolute sequence position, search for the relative one,
-     e.g. abspos 2 on "-----UU-C-C" will yield 8 */
-  while(*srcseq)
-  {
-    if(pg->pg_SeqCodeValidTable[*srcseq++])
-    {
-      if(!(abspos--))
-      {
-    break; /* position found */
-      }
-    }
-    relpos++;
-  }
-  return(relpos);
-}
-/* \\\ */
-#endif
 
 /* /// "CreateHitsGUIList()" */
 void CreateHitsGUIList(struct SearchQuery *sq)
@@ -457,9 +425,6 @@ void CreateHitsGUIList(struct SearchQuery *sq)
   maxlen = sq->sq_QueryLen + (ULONG) ((sq->sq_MaxErrors + minweight) / minweight);
   sq->sq_SourceSeq = (STRPTR) malloc(maxlen + 1);
 
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-  GB_begin_transaction(pg->pg_MainDB);
-#endif  
   numhits = 0;
   pg->pg_SpeciesCache->ch_SwapCount = 0;
 
@@ -479,7 +444,6 @@ void CreateHitsGUIList(struct SearchQuery *sq)
 
     good = TRUE;
     ps = qh->qh_Species;
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     char prefix[10], postfix[10];
     for (int i = 0; i < 9; ++i)
     {
@@ -636,222 +600,7 @@ void CreateHitsGUIList(struct SearchQuery *sq)
     RemQueryHit(qh);
     qh = (struct QueryHit *) sq->sq_Hits.lh_Head;
 
-#else
-    /* load alignment */
-    ps->ps_CacheNode = CacheLoadData(pg->pg_SpeciesCache, ps->ps_CacheNode, ps);
-    /* get relative position in unfiltered alignment */
-    //relpos = GetSequenceRelPos(pg, ps->ps_SeqData, qh->qh_AbsPos - ps->ps_AbsOffset);
-
-    /* new faster version with checkpoint lookup */
-    relpos = GetSpeciesRelPos(pg, ps, qh->qh_AbsPos - ps->ps_AbsOffset);
-
-    if (PTPanGlobalPtr->pg_verbose >1) {
-      int i;
-
-      printf("Pos: %ld (%s) %s [%ld/%ld] (%f error) [%d/%d/%d]\n",
-        qh->qh_AbsPos,
-        (qh->qh_Flags & QHF_UNSAFE) ? "unsafe" : "safe",
-        ps->ps_Name, qh->qh_AbsPos - ps->ps_AbsOffset, ps->ps_RawDataSize,
-        qh->qh_ErrorCount,
-        qh->qh_ReplaceCount, qh->qh_InsertCount, qh->qh_DeleteCount);
-      printf("SrcPos: '");
-      for(i=0;i<50;i++)
-    printf("%c", ps->ps_SeqData[relpos+i]);
-      printf("'\n");
-    }
-
-    /* and filter sequence starting from that position */
-    nmismatch = 0;
-    srcptr = &ps->ps_SeqData[relpos];
-    tarptr = sq->sq_SourceSeq;
-    tarlen = sq->sq_QueryLen - qh->qh_DeleteCount + qh->qh_InsertCount;
-    cnt = tarlen;
-    while((code = *srcptr++))
-    {
-      /* if we go into a . sequence, the hit is bogus */
-      if(code == '.')
-      {
-    pg->pg_Bench.ts_DotsKilled++;
-    good = FALSE;
-    break;
-      }
-      if(pg->pg_SeqCodeValidTable[code])
-      {
-    /* add sequence code */
-    seqcode = pg->pg_CompressTable[code];
-    *tarptr++ = pg->pg_DecompressTable[seqcode];
-
-    /* check if it was an N */
-    if(!seqcode)
-    {
-    nmismatch++;
-    }
-    if(!(--cnt))
-    {
-    break;
-    }
-      }
-    }
-    *tarptr++ = 0;
-    /* filter all complete N strings */
-    if(nmismatch == tarlen)
-    {
-      good = FALSE;
-    }
-
-    /* still okay? */
-    if(good)
-    {
-      /* we need to verify the hit? */
-      if(qh->qh_Flags & QHF_UNSAFE)
-      {
-    pg->pg_Bench.ts_UnsafeHits++;
-
-    good = MatchSequence(sq);
-    if(!good)
-    {
-    pg->pg_Bench.ts_UnsafeKilled++;
-    //printf("Verify failed on %s != %s\n", sq->sq_SourceSeq, sq->sq_Query);
-    qh->qh_Flags &= ~QHF_ISVALID;
-    } else {
-    /* fill in correct match */
-    qh->qh_ErrorCount = sq->sq_State.sqs_ErrorCount;
-    qh->qh_ReplaceCount = sq->sq_State.sqs_ReplaceCount;
-    qh->qh_InsertCount = sq->sq_State.sqs_InsertCount;
-    qh->qh_DeleteCount = sq->sq_State.sqs_DeleteCount;
-    }
-    //qh->qh_Flags &= ~QHF_UNSAFE;
-      }
-    } else {
-      //printf("'.'-Sequence!\n");
-    }
-
-    /* this is a valid one */
-    if(good)
-    {
-      /* allocate memory for the result string
-    nine chars in front of the sequence (pre-seq), one delimiter,
-    the sequence string, a delimiter, mine more chars (post-seq),
-    and the termination byte */
-      seqout = (STRPTR) malloc(9 + 1 + sq->sq_QueryLen + 1 + 9 + 1);
-
-      /* generate pre-seq */
-      relposcnt = relpos;
-      seqptr = &seqout[9];
-      for(cnt = 0; cnt < 9; cnt++)
-      {
-    /* loop while we're not at the start of the sequence */
-    while(--relposcnt >= 0)
-    {
-    code = ps->ps_SeqData[relposcnt];
-    if(code == '.') /* we encountered a ., fill rest with dots */
-    {
-        while(cnt++ < 9)
-        {
-        *--seqptr = code;
-        }
-        break;
-    }
-    /* if it's a valid char, we add it */
-    if(pg->pg_SeqCodeValidTable[code])
-    {
-        *--seqptr = pg->pg_DecompressTable[pg->pg_CompressTable[code]];
-        break;
-    }
-    }
-    if(relposcnt < 0)
-    {
-    /* we reached the start of the sequence, fill with > chars */
-    while(cnt++ < 9)
-    {
-        *--seqptr = '>';
-    }
-    }
-      }
-      seqout[9] = '-'; /* delimiter */
-      seqptr = &seqout[7 + sq->sq_QueryLen];
-
-      /* generate mismatch sequence */
-      good = FindSequenceMatch(sq, qh, &seqout[10]);
-    }
-
-    if(good)
-    {
-      seqptr = &seqout[10 + sq->sq_QueryLen];
-      *seqptr++ = '-'; /* delimiter */
-
-      /* skip over the query itself */
-      relposcnt = relpos;
-      cnt = tarlen;
-      while((code = ps->ps_SeqData[relposcnt++]))
-      {
-    /* if it's a valid char, decrease count */
-    if(pg->pg_SeqCodeValidTable[code])
-    {
-    if(!--cnt)
-    {
-        break;
-    }
-    }
-      }
-
-      /* generate post-seq */
-      for(cnt = 0; cnt < 9; cnt++)
-      {
-        /* loop while we're not at the end of the sequence */
-       while(relposcnt < (LONG) ps->ps_SeqDataSize)
-    {
-    code = ps->ps_SeqData[relposcnt++];
-    if(code == '.') /* we encountered a ., fill rest with dots */
-    {
-        while(cnt++ < 9)
-        {
-        *seqptr++ = code;
-        }
-        break;
-    }
-    /* if it's a valid char, we add it */
-    if(pg->pg_SeqCodeValidTable[code])
-    {
-        *seqptr++ = pg->pg_DecompressTable[pg->pg_CompressTable[code]];
-        break;
-    }
-    }
-    if(relposcnt >= (LONG) ps->ps_SeqDataSize)
-    {
-    /* we reached the start of the sequence, fill with > chars */
-    while(cnt++ < 9)
-    {
-        *seqptr++ = '<';
-    }
-    }
-      }
-      *seqptr = 0;
-
-      ml = create_PT_probematch();
-      ml->name = qh->qh_Species->ps_Num;
-      ml->b_pos = relpos;
-      ml->rpos = qh->qh_AbsPos - ps->ps_AbsOffset;
-      ml->wmismatches = (double) qh->qh_ErrorCount;
-      ml->mismatches = qh->qh_ReplaceCount + qh->qh_InsertCount + qh->qh_DeleteCount;
-      ml->N_mismatches = nmismatch;
-      ml->sequence = seqout; /* warning! potentional memory leak -- FIX destroy_PT_probematch(ml) */
-      ml->reversed = (qh->qh_Flags & QHF_REVERSED) ? 1 : 0;
-
-      aisc_link((struct_dllpublic_ext *) &(pg->pg_SearchPrefs->ppm), (struct_dllheader_ext *) ml);
-      numhits++;
-
-      if (PTPanGlobalPtr->pg_verbose >0)
-    printf("SeqOut: '%s'\n", seqout);
-    }
-
-    RemQueryHit(qh);
-    qh = (struct QueryHit *) sq->sq_Hits.lh_Head;
-#endif  
   } // while(qh->qh_Node.ln_Succ)
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-  GB_commit_transaction(pg->pg_MainDB);
-#endif  
   free(sq->sq_SourceSeq);
 
   if (PTPanGlobalPtr->pg_verbose >0) {

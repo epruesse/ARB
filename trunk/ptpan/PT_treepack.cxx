@@ -28,9 +28,7 @@ BOOL WriteIndexHeader(struct PTPanGlobal *pg)
   fwrite(&pg->pg_UseStdSfxTree, sizeof(pg->pg_UseStdSfxTree), 1, fh);
   fwrite(&pg->pg_AlphaSize    , sizeof(pg->pg_AlphaSize)    , 1, fh);
   fwrite(&pg->pg_TotalSeqSize , sizeof(pg->pg_TotalSeqSize) , 1, fh);
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   fwrite(&pg->pg_TotalSeqCompressedSize, sizeof(pg->pg_TotalSeqCompressedSize) , 1, fh);
-#endif  
   fwrite(&pg->pg_TotalRawSize , sizeof(pg->pg_TotalRawSize) , 1, fh);
   fwrite(&pg->pg_TotalRawBits , sizeof(pg->pg_TotalRawBits) , 1, fh);
   fwrite(&pg->pg_AllHashSum   , sizeof(pg->pg_AllHashSum)   , 1, fh);
@@ -38,7 +36,6 @@ BOOL WriteIndexHeader(struct PTPanGlobal *pg)
   fwrite(&pg->pg_NumPartitions, sizeof(pg->pg_NumPartitions), 1, fh);
   fwrite(&pg->pg_MaxPrefixLen , sizeof(pg->pg_MaxPrefixLen) , 1, fh);
 
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
   // write Ecoli Sequence
   fwrite(&pg->pg_EcoliSeqSize  , sizeof(pg->pg_EcoliSeqSize) , 1        , fh);
   if (pg->pg_EcoliSeqSize > 0)
@@ -46,7 +43,6 @@ BOOL WriteIndexHeader(struct PTPanGlobal *pg)
     fwrite(pg->pg_EcoliSeq       , 1            , pg->pg_EcoliSeqSize + 1 , fh);    // EcoliBaseTable if we
     fwrite(pg->pg_EcoliBaseTable , sizeof(ULONG), pg->pg_EcoliSeqSize + 1 , fh);    // found them earlier...
   } 
-#endif
 
   /* write species info */
   ps = (struct PTPanSpecies *) pg->pg_Species.lh_Head;
@@ -67,16 +63,9 @@ BOOL WriteIndexHeader(struct PTPanGlobal *pg)
     fwrite(&ps->ps_RawDataSize, sizeof(ps->ps_RawDataSize), 1, fh);
     fwrite(&ps->ps_AbsOffset, sizeof(ps->ps_AbsOffset), 1, fh);
     fwrite(&ps->ps_SeqHash, sizeof(ps->ps_SeqHash), 1, fh);
-#ifndef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
-    fwrite(&ps->ps_ChkPntIVal, sizeof(ps->ps_ChkPntIVal), 1, fh);
-    fwrite(&ps->ps_NumCheckPoints, sizeof(ps->ps_NumCheckPoints), 1, fh);
-    fwrite(ps->ps_CheckPoints, sizeof(ULONG), ps->ps_NumCheckPoints, fh);
-#endif    
-#ifdef COMPRESSSEQUENCEWITHDOTSANDHYPHENS
     fwrite(&ps->ps_SeqDataCompressedSize, sizeof(ps->ps_SeqDataCompressedSize), 1, fh);     // save compressed Seq Data
     fwrite(ps->ps_SeqDataCompressed, 1, ((ps->ps_SeqDataCompressedSize >> 3) + 1), fh);     // .
     free(ps->ps_SeqDataCompressed);                                                         // and free the memory
-#endif
     ps = (struct PTPanSpecies *) ps->ps_Node.ln_Succ;
   }
 
