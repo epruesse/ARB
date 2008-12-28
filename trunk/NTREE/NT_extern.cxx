@@ -166,11 +166,10 @@ static void AWAR_INFO_BUTTON_TEXT_change_cb(AW_root *awr) {
     free(value);
 }
 
-void create_all_awars(AW_root *awr, AW_default def)
-{
-    GB_transaction dummy(GLOBAL_gb_main);
-    awr->awar_string( AWAR_FOOTER, "", def);
+void nt_create_all_awars(AW_root *awr, AW_default def) {
+    // creates awars for all modules reachable from ARB_NT main window
 
+    awr->awar_string( AWAR_FOOTER, "", def);
     if (GB_read_clients(GLOBAL_gb_main)>=0){
         awr->awar_string( AWAR_TREE, "tree_main", GLOBAL_gb_main);
     }else{
