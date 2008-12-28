@@ -14,8 +14,8 @@ $(MAIN): $(OBJECTS) $(AOBJECTS)
 .cxx.o:
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) -I./../probe_bank/COM
 proto:
-	rm -f pt_prototypes.h
-	../MAKEBIN/aisc_mkpt -E $(OBJECTS:.o=.cxx) >pt_prototypes.h
+	../MAKEBIN/aisc_mkpt -E $(OBJECTS:.o=.cxx) >pt_prototypes.h.tmp
+	../SOURCE_TOOLS/mv_if_diff pt_prototypes.h.tmp pt_prototypes.h
 
 clean:
 	rm -f $(OBJECTS) *.a
