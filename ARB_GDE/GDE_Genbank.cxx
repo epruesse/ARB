@@ -273,7 +273,7 @@ void ReadGen(char *filename,NA_Alignment *dataset,int type)
         {
             if (gencomments == NULL)
             {
-                gencomments = String(in_line);
+                gencomments = strdup(in_line);
                 genclen = strlen(gencomments)+1;
             }
             else

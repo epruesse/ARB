@@ -537,35 +537,46 @@ AW_window *create_tree_copy_window(AW_root *root)
 }
 
 void ad_move_tree_info(AW_window *aww,AW_CL mode){
-    /*
-      mode == 0 -> move info (=overwrite info from source tree)
-      mode == 1 -> compare info
-      mode == 2 -> add info
-    */
-    char *t1 = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
-    char *t2 = aww->get_root()->awar(AWAR_TREE_DEST)->read_string();
-    char *log_file = GBS_global_string_copy("/tmp/arb_log_%s_%li",GB_getenvUSER(),GB_getuid());
+    /* 
+     * mode == 0 -> move info (=overwrite info from source tree)
+     * mode == 1 -> compare info
+     * mode == 2 -> add info
+     */
 
-    AW_BOOL compare_node_info = mode==1;
-    AW_BOOL delete_old_nodes = mode==0;
+    AW_BOOL compare_node_info      = mode==1;
+    AW_BOOL delete_old_nodes       = mode==0;
     AW_BOOL nodes_with_marked_only = (mode==0 || mode==2) && aww->get_root()->awar(AWAR_NODE_INFO_ONLY_MARKED)->read_int();
 
-    // move or add node-info writes a log file (containing errors)
-    // compare_node_info only sets remark branches
+    char     *log_file = 0;
+    GB_ERROR  error    = 0;
 
-    if ( compare_node_info ) {
-        free(log_file); // no log if compare_node_info
-        log_file = 0;
+    if (!compare_node_info) {
+        // move or add node-info writes a log file (containing errors)
+        // compare_node_info only sets remark branches        
+        char *log_name       = GB_unique_filename("arb_node", "log");
+        log_file             = GB_create_tempfile(log_name);
+        if (!log_file) error = GB_get_error();
+        free(log_name);
     }
 
-    AWT_move_info(GLOBAL_gb_main, t1, t2, log_file, compare_node_info, delete_old_nodes, nodes_with_marked_only);
+    if (!error) {
+        char *t1 = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
+        char *t2 = aww->get_root()->awar(AWAR_TREE_DEST)->read_string();
 
-    if (log_file) AWT_edit(log_file);
+        AWT_move_info(GLOBAL_gb_main, t1, t2, log_file, compare_node_info, delete_old_nodes, nodes_with_marked_only);
+        if (log_file) {
+            AWT_edit(log_file);
+            GB_remove_on_exit(log_file);
+        }
+
+        free(t2);
+        free(t1);
+    }
+     
+    if (error) aw_message(error);
+    else aww->hide();
 
     free(log_file);
-    free(t2);
-    free(t1);
-    aww->hide();
 }
 
 AW_window *create_tree_diff_window(AW_root *root){

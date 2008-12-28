@@ -24,7 +24,7 @@
 #include <set>
 
 #if defined(DEBUG)
- #define TRACE_FILEBOX
+// #define TRACE_FILEBOX
 #endif // DEBUG
 
 using namespace std;
@@ -509,7 +509,7 @@ static void awt_selection_box_changed_filename(void *, struct adawcbstruct *cbs)
 
                         if (!suffix || strcmp(suffix, pfilter) != 0) {
                             if (suffix && filter_has_changed) {
-                                *suffix = 0; 
+                                if (suffix[-1] == '.') suffix[-1] = 0;
                             }
 
                             char *n = set_suffix(newName, pfilter);
@@ -538,6 +538,52 @@ static void awt_selection_box_changed_filename(void *, struct adawcbstruct *cbs)
     filter_has_changed = false;
 
     free(fname);
+}
+
+#define SELBOX_AUTOREFRESH_FREQUENCY 1000 // refresh once a second
+
+struct selbox_autorefresh_info {
+    unsigned long            modtime;
+    adawcbstruct            *acbs;
+    selbox_autorefresh_info *next;
+};
+static selbox_autorefresh_info *autorefresh_info = 0;
+
+static GB_ULONG get_dir_modtime(adawcbstruct *acbs) {
+    char     *dir   = acbs->awr->awar(acbs->def_dir)->read_string();
+    GB_ULONG  mtime = GB_time_of_file(dir);
+    free(dir);
+    return mtime;
+}
+
+static void autorefresh_selboxes(AW_root *) {
+    selbox_autorefresh_info *check = autorefresh_info;
+
+    while (check) {
+        GB_ULONG mtime = get_dir_modtime(check->acbs);
+        if (mtime != check->modtime) {
+            check->modtime = mtime;
+            check->acbs->awr->awar(check->acbs->def_dir)->touch(); // refresh
+        }
+        check = check->next;
+    }
+
+    // refresh again and again and again..
+    autorefresh_info->acbs->awr->add_timed_callback(SELBOX_AUTOREFRESH_FREQUENCY, autorefresh_selboxes);
+}
+
+static void awt_selbox_install_autorefresh(adawcbstruct *acbs) {
+    if (!autorefresh_info) {    // when installing first selbox
+        acbs->awr->add_timed_callback(SELBOX_AUTOREFRESH_FREQUENCY, autorefresh_selboxes);
+    }
+
+    selbox_autorefresh_info *install = new selbox_autorefresh_info;
+
+    install->acbs    = acbs;
+    install->modtime = get_dir_modtime(acbs);
+    
+    install->next    = autorefresh_info;
+    autorefresh_info = install;
 }
 
 void awt_create_selection_box(AW_window *aws, const char *awar_prefix,const char *at_prefix,const  char *pwd, AW_BOOL show_dir, AW_BOOL allow_wildcards)
@@ -591,30 +637,46 @@ void awt_create_selection_box(AW_window *aws, const char *awar_prefix,const char
     sprintf(buffer,"%sbox",at_prefix);
     aws->at(buffer);
     acbs->id = aws->create_selection_list(acbs->def_name,0,"",2,2);
+    
     awt_create_selection_box_cb(0,acbs);
-    awt_selection_box_changed_filename(0, acbs); // this fixes the path name
+    awt_selection_box_changed_filename(0, acbs);    // this fixes the path name
+
+    awt_selbox_install_autorefresh(acbs);
 }
 
 char *awt_get_selected_fullname(AW_root *awr, const char *awar_prefix) {
     char *file = awr->awar(GBS_global_string("%s/file_name", awar_prefix))->read_string();
-    if (file[0] == '/') return file; // it's a full path name -> use it
+    if (file[0] != '/') {
+        // if name w/o directory was entered by hand (or by default) then append the directory :
 
-    // if name w/o directory was entered by hand (or by default) then append the directory :
+        char    *awar_dir_name = GBS_global_string_copy("%s/directory", awar_prefix);
+        AW_awar *awar_dir      = awr->awar_no_error(awar_dir_name);
 
-    char    *awar_name = GBS_global_string_copy("%s/directory", awar_prefix);
-    AW_awar *awar_dir  = awr->awar_no_error(awar_name);
-    if (!awar_dir) { // file selection box was not active (happens e.g. for print tree)
-        awar_dir = awr->awar_string(awar_name, GB_getcwd());
+        if (!awar_dir) {
+            // file selection box was not active (happens e.g. for print tree)
+            awar_dir = awr->awar_string(awar_dir_name, GB_getcwd());
+        }
+
+        awt_assert(awar_dir);
+
+        char *dir = awar_dir->read_string();
+        if (!dir[0]) {          // empty -> fillin current dir
+            awar_dir->write_string(GB_getcwd());
+            free(dir);
+            dir = awar_dir->read_string();
+        }
+
+        char *full = strdup(GB_concat_full_path(dir, file));
+
+        free(dir);
+        free(file);
+        
+        file = full;
+
+        free(awar_dir_name);
     }
-    free(awar_name);
-
-    char *dir  = awr->awar(GBS_global_string("%s/directory", awar_prefix))->read_string();
-    char *full = strdup(GB_concat_full_path(dir, file));
-
-    free(dir);
-    free(file);
-
-    return full;
+    
+    return file;
 }
 
 void awt_refresh_selection_box(AW_root *awr, const char *awar_prefix) {

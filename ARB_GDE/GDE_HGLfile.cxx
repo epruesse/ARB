@@ -533,7 +533,7 @@ void ReadGDE(char *filename,NA_Alignment *dataset,int type)
         {
             if (this_elem->baggage == NULL)
             {
-                this_elem->baggage = String(line);
+                this_elem->baggage = strdup(line);
                 this_elem->baggage_maxlen =
                     this_elem->baggage_len =
                     strlen(this_elem->baggage)+1;

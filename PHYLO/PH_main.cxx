@@ -165,70 +165,89 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
     }
 
     if (!error) {
-        AW_window *main_win = PH_used_windows::windowList->phylo_main_window;
-        long       minhom   = main_win->get_root()->awar("phyl/filter/minhom")->read_int();
-        long       maxhom   = main_win->get_root()->awar("phyl/filter/maxhom")->read_int();
-        long       startcol = main_win->get_root()->awar("phyl/filter/startcol")->read_int();
-        long       stopcol  = main_win->get_root()->awar("phyl/filter/stopcol")->read_int();
+        char *full_save_name = 0;
+        FILE *saveResults    = 0;
+        if (nr == 2) {
+            char *save_name = GB_unique_filename("conservationProfile", "gnu");
+            saveResults     = GB_fopen_tempfile(save_name, "w+", &full_save_name);
+            GB_remove_on_exit(full_save_name);
+            free(save_name);
 
-        long   len        = PHDATA::ROOT->get_seq_len();
-        char  *data       = (char *)calloc(sizeof(char),(int)len+1);
-        int    x;
-        float *markerline = PHDATA::ROOT->markerline;
-        int    cnt        = 0;
-        
-        FILE *saveResults = fopen("/tmp/conservationProfile.gnu","w+");
-        if(!saveResults) cout<<"Cant write to file"<<endl; //YK
-
-        for (x=0;x<len;x++) {
-            char c;
-
-            if (x<startcol || x>stopcol) {
-                c = '.';
-            }
-            else  {
-                float ml = markerline[x];  if(nr==2 && ml>0.0) {fprintf(saveResults,"%i\t%.2f\n",cnt,ml); cnt++;}
-
-                if (ml>=0.0 && ml>=minhom && ml<=maxhom) {
-                    int digit = -1;
-                    switch (nr) {
-                        case 0: // hundred
-                            if (ml>=100.0) digit = 1;
-                            break;
-                        case 1: // ten
-                            if (ml>=10.0) digit = int(ml/10);
-                            break;
-                        case 2: // one
-                            digit = int(ml);
-                            break;
-                        default:
-                            gb_assert(0);
-                            break;
-                    }
-                    if (digit<0)    c = '-';
-                    else        c = '0'+digit%10;
-                }
-                else {
-                    c = '-';
-                }
-            }
-
-            data[x] = c;
+            if (!saveResults) error = GB_get_error();
         }
-        data[len] = 0; fclose(saveResults); //YK
 
-        GB_write_string(gb_data, data);
+        if (!error) {
+            AW_window *main_win   = PH_used_windows::windowList->phylo_main_window;
+            long       minhom     = main_win->get_root()->awar("phyl/filter/minhom")->read_int();
+            long       maxhom     = main_win->get_root()->awar("phyl/filter/maxhom")->read_int();
+            long       startcol   = main_win->get_root()->awar("phyl/filter/startcol")->read_int();
+            long       stopcol    = main_win->get_root()->awar("phyl/filter/stopcol")->read_int();
+            float     *markerline = PHDATA::ROOT->markerline;
+            long       len        = PHDATA::ROOT->get_seq_len();
 
-        char buffer[1024];
-        sprintf(buffer,"FMX: Filter by Maximum Frequency: "
-                "Start %li; Stop %li; Minhom %li%%; Maxhom %li%%",
-                startcol, stopcol, minhom, maxhom);
+            char *data = (char *)calloc(sizeof(char),(int)len+1);
+            int   cnt  = 0;
 
-        GB_write_string(gb_TYPE,buffer);
 
-        delete data;
+            for (int x=0;x<len;x++) {
+                char c;
+
+                if (x<startcol || x>stopcol) {
+                    c = '.';
+                }
+                else  {
+                    float ml = markerline[x];
+                    if (nr==2 && ml>0.0) {
+                        ph_assert(saveResults);
+                        fprintf(saveResults, "%i\t%.2f\n", cnt, ml);
+                        cnt++;
+                    }
+
+                    if (ml>=0.0 && ml>=minhom && ml<=maxhom) {
+                        int digit = -1;
+                        switch (nr) {
+                            case 0: // hundred
+                                if (ml>=100.0) digit = 1;
+                                break;
+                            case 1: // ten
+                                if (ml>=10.0) digit = int(ml/10);
+                                break;
+                            case 2: // one
+                                digit = int(ml);
+                                break;
+                            default:
+                                gb_assert(0);
+                                break;
+                        }
+                        
+                        if (digit<0) c = '-';
+                        else         c = '0' + digit%10;
+                    }
+                    else {
+                        c = '-';
+                    }
+                }
+
+                data[x] = c;
+            }
+            data[len] = 0;
+
+            if (saveResults) {
+                fclose(saveResults);
+                fprintf(stderr, "Note: Frequencies as well saved to '%s'\n", full_save_name);
+            }
+
+            error = GB_write_string(gb_data, data);
+            if (!error) {
+                const char *buffer = GBS_global_string("FMX: Filter by Maximum Frequency: "
+                                                       "Start %li; Stop %li; Minhom %li%%; Maxhom %li%%",
+                                                       startcol, stopcol, minhom, maxhom);
+                error = GB_write_string(gb_TYPE, buffer);
+            }
+            free(data);
+        }
+        free(full_save_name);
     }
-
 
     if (!error) *gb_sai_ptr = gb_sai;
     return error;

@@ -13,6 +13,14 @@
 
 // --------------------------------------------------------------------------------
 
+enum PrintDest {
+    PDEST_PRINTER    = 0,
+    PDEST_POSTSCRIPT = 1,
+    PDEST_PREVIEW    = 2, 
+};
+
+// --------------------------------------------------------------------------------
+
 static void awt_print_tree_check_size(void *, AW_CL cl_ntw) {
     AWT_canvas     *ntw  = (AWT_canvas*)cl_ntw;
     GB_transaction  dummy2(ntw->gb_main);
@@ -357,137 +365,146 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) 
 }
 /*------------------------------------------------------------------------------------------------------------------------------------------*/
 
-void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw)
-{
-    AWT_canvas *    ntw = (AWT_canvas*)cl_ntw;
-    GB_transaction  dummy(ntw->gb_main);
-    AW_root        *awr = aww->get_root();
+void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
+    AWT_canvas     *ntw       = (AWT_canvas*)cl_ntw;
+    GB_transaction  ta(ntw->gb_main);
+    AW_root        *awr       = aww->get_root();
+    GB_ERROR        error     = 0;
+    char           *dest      = 0;
+    PrintDest       printdest = (PrintDest)awr->awar(AWAR_PRINT_TREE_DEST)->read_int();
 
-    long print2file = awr->awar(AWAR_PRINT_TREE_DEST)->read_int();
-    char *dest;
-    GB_ERROR error = 0;
-
-
-    bool   landscape     = awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->read_int();
-    bool   useOverlap    = awr->awar(AWAR_PRINT_TREE_OVERLAP)->read_int();
-    double magnification = awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->read_int() * 0.01;
-    long   what          = awr->awar(AWAR_PRINT_TREE_CLIP)->read_int();
-    long   handles       = awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int();
-    int    use_color     = awr->awar(AWAR_PRINT_TREE_COLOR)->read_int();
-
-    char sys[2400];
-    char *xfig = GBS_eval_env("/tmp/arb_print_$(USER)_$(ARB_PID).xfig");
-
-    switch(print2file) {
-        case 1:
-            // dest = awr->awar(AWAR_PRINT_TREE_FILE_NAME)->read_string();
+    switch (printdest) {
+        case PDEST_POSTSCRIPT: {
             dest = awt_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
+            FILE *out = fopen(dest, "w");
+            if (!out) error = GB_export_IO_error("write", dest);
+            else fclose(out);
             break;
-        default:
-            dest = GBS_eval_env("/tmp/arb_print_$(USER)_$(ARB_PID).ps");
-            break;
-    }
-    {
-        FILE *out;
-        out = fopen(dest, "w");
-        if (!out) {
-            error = (char *)GB_export_error("Cannot open file '%s'", dest);
         }
-        else {
-            fclose(out);
-            sprintf(sys,
-                    "fig2dev -L ps -M %s -m %f %s %s %s",
-                    (useOverlap ? "-O" : ""), 
-                    magnification,
-                    (landscape ? "-l 0" : "-p 0"),
-                    xfig,
-                    dest);
+        default: {
+            char *name = GB_unique_filename("arb_print", "ps");
+            dest       = GB_create_tempfile(name);
+            free(name);
 
+            if (!dest) error = GB_get_error();
+            break;
         }
     }
-
-    AW_device *device= ntw->aww->get_print_device(AW_MIDDLE_AREA);
-
-    aw_openstatus("Printing");
-
-    device->reset();
-    ntw->init_device(device);   // draw screen
-
-    aw_status("Get Picture Size");
-    device->reset();
-    device->set_color_mode((use_color==1));
-    error = device->open(xfig);
-    device->line(0, 0, 0, 1, -1); // dummy point upper left corner
-    if (what) {             // draw all
-        AW_world size;
-        AW_device *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
-        size_device->reset();
-        size_device->zoom(ntw->trans_to_fit);
-        size_device->set_filter(AW_SCREEN);
-        ntw->tree_disp->show(size_device);
-        size_device->get_size_information(&size);
-        size.l -= 50;
-        size.t -= 40;       // expand pic
-        size.r += 20;
-        size.b += 20;
-        device->set_offset(AW::Vector(size.l, size.t) / -ntw->trans_to_fit);
-        device->set_bottom_clip_border((int)(size.b-size.t), AW_TRUE);
-        device->set_right_clip_border((int)(size.r-size.l), AW_TRUE);
-        device->zoom(ntw->trans_to_fit);
-    }else{
-        ntw->init_device(device);   // draw screen
-    }
-
-    aw_status("Exporting Data");
 
     if (!error) {
-        if (handles) {
-            device->set_filter(AW_PRINTER | AW_PRINTER_EXT);
-        }else{
-            device->set_filter(AW_PRINTER);
-        }
-        ntw->tree_disp->show(device);
-        device->close();
-        aw_status("Converting to Postscript");
-#if defined(DEBUG)
-        printf("convert command: '%s'\n", sys);
-#endif // DEBUG
-        if (system(sys)){
-            error = GB_export_error("System error occured while running '%s'", sys);
-        }
-        if (GB_unlink(xfig)) {
-            error = GB_get_error();
-        }
-    }
+        AW_device *device= ntw->aww->get_print_device(AW_MIDDLE_AREA);
 
-    aw_status("Printing");
-    if (error) aw_message(error);
-    else switch(print2file) {
-        case 2:{
-            GB_CSTR gs           = GB_getenvARB_GS();
-            GB_CSTR command      = GBS_global_string("(%s %s;rm -f %s) &", gs, dest, dest);
-            GB_information("executing '%s'", command);
-            if (system(command) != 0) {
-                GB_warning("error running '%s'", command);
-            }
-            break;
+        char *xfig;
+        {
+            char *name = GB_unique_filename("arb_print", "xfig");
+            xfig       = GB_create_tempfile(name);
+            free(name);
         }
-        case 1:
-            break;
-        case 0:
+
+        aw_openstatus("Printing");
+
+        if (!xfig) error = GB_get_error();
+        else {
+            device->reset();
+            ntw->init_device(device);  // draw screen
+
+            aw_status("Get Picture Size");
+            device->reset();
+
+            device->set_color_mode(awr->awar(AWAR_PRINT_TREE_COLOR)->read_int() == 1);
+            error = device->open(xfig);
+        }
+
+        if (!error) {
+            device->line(0, 0, 0, 1, -1); // dummy point upper left corner
+
+            if (awr->awar(AWAR_PRINT_TREE_CLIP)->read_int()) { // draw all
+                AW_world size;
+                AW_device *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
+                size_device->reset();
+                size_device->zoom(ntw->trans_to_fit);
+                size_device->set_filter(AW_SCREEN);
+                ntw->tree_disp->show(size_device);
+                size_device->get_size_information(&size);
+                size.l -= 50;
+                size.t -= 40;       // expand pic
+                size.r += 20;
+                size.b += 20;
+                device->set_offset(AW::Vector(size.l, size.t) / -ntw->trans_to_fit);
+                device->set_bottom_clip_border((int)(size.b-size.t), AW_TRUE);
+                device->set_right_clip_border((int)(size.r-size.l), AW_TRUE);
+                device->zoom(ntw->trans_to_fit);
+            }
+            else {
+                ntw->init_device(device);   // draw screen
+            }
+
+            // ----------------------------------------
+            aw_status("Exporting Data");
+
+            device->set_filter(awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int()
+                               ? AW_PRINTER | AW_PRINTER_EXT
+                               : AW_PRINTER);
+
+            ntw->tree_disp->show(device);
+            device->close();
+
+            gb_assert(GB_is_privatefile(xfig, GB_TRUE));
+
+            // ----------------------------------------
+            aw_status("Converting to Postscript");
+
             {
-                char *prt = awr->awar(AWAR_PRINT_TREE_PRINTER)->read_string();
-                system(GBS_global_string("%s %s", prt, dest));
-                delete prt;
-                GB_unlink(dest);
+                bool   landscape     = awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->read_int();
+                bool   useOverlap    = awr->awar(AWAR_PRINT_TREE_OVERLAP)->read_int();
+                double magnification = awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->read_int() * 0.01;
+        
+                char *cmd_fig2ps = GBS_global_string_copy("fig2dev -L ps -M %s -m %f %s %s %s",
+                                                          (useOverlap ? "-O" : ""),
+                                                          magnification,
+                                                          (landscape ? "-l 0" : "-p 0"),
+                                                          xfig,
+                                                          dest);
+
+                error = GB_system(cmd_fig2ps);
+                free(cmd_fig2ps);
             }
-            break;
+
+            // if user saves to .ps -> no special file permissions are required 
+            gb_assert(printdest == PDEST_POSTSCRIPT || GB_is_privatefile(dest, GB_FALSE));
+
+            if (!error) {
+                aw_status("Printing");
+
+                switch(printdest) {
+                    case PDEST_PREVIEW: {
+                        GB_CSTR gs      = GB_getenvARB_GS();
+                        GB_CSTR command = GBS_global_string("(%s %s;rm -f %s) &", gs, dest, dest);
+                        error           = GB_system(command);
+                        break;
+                    }
+                    case PDEST_POSTSCRIPT:
+                        break;
+
+                    case PDEST_PRINTER: {
+                        char *prt = awr->awar(AWAR_PRINT_TREE_PRINTER)->read_string();
+                        error     = GB_system(GBS_global_string("%s %s", prt, dest));
+                        free(prt);
+
+                        if (GB_unlink(dest)<0 && !error) error = GB_get_error();
+                        break;
+                    }
+                }
+            }
+        }
+        aw_closestatus();
+
+        if (GB_unlink(xfig)<0 && !error) error = GB_get_error();
+        free(xfig);
     }
 
-    free(xfig);
     free(dest);
-    aw_closestatus();
-
+    
     if (error) aw_message(error);
 }
 
@@ -695,9 +712,9 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
         aws->label_length(12);
         aws->label("Destination");
         aws->create_toggle_field(AWAR_PRINT_TREE_DEST);
-        aws->insert_toggle("Printer", "P", 0);
-        aws->insert_toggle("File (Postscript)", "F", 1);
-        aws->insert_toggle("Preview", "V", 2);
+        aws->insert_toggle("Printer",           "P", PDEST_PRINTER);
+        aws->insert_toggle("File (Postscript)", "F", PDEST_POSTSCRIPT);
+        aws->insert_toggle("Preview",           "V", PDEST_PREVIEW);
         aws->update_toggle_field();
 
         aws->at("printer");

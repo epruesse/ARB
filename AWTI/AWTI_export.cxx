@@ -24,48 +24,133 @@
 
 using std::string;
 
-export_format_struct::export_format_struct(void){
-    memset((char *)this,0,sizeof(export_format_struct));
-}
+// ---------------------------------
+//      internal export commands
 
-export_format_struct::~export_format_struct(void)
-{
-    struct export_format_struct *efo= this;
-    free(efo->system);
-    free(efo->new_format);
-    free(efo->suffix);
-}
+enum AWTI_EXPORT_CMD {
+    // real formats
+    AWTI_EXPORT_XML,
+    
+    AWTI_EXPORT_INVALID,
+    AWTI_EXPORT_USING_FORM,        // default mode (has to be last entry in enum)
+};
 
+static const char *internal_export_commands[] = {
+    "xml_write",
+    NULL
+};
 
-char *awtc_read_export_format(export_format_struct * efo, const char *file){
-    char *fullfile = AWT_unfold_path(file,"ARBHOME");
-
-    FILE *in = fopen(fullfile,"r");
-    free(fullfile);
-    sprintf(AW_ERROR_BUFFER,"Form %s not readable (select a form or check permissions)", file);
-    if (!in) return AW_ERROR_BUFFER;
-    char *s1=0,*s2=0;
-
-    while (!awtc_read_string_pair(in,s1,s2)){
-        if (!s1) {
-            continue;
-        }else if (!strcmp(s1,"SYSTEM")) {
-            efo->system = s2; s2 = 0;
-        }else if (!strcmp(s1,"INTERNAL")) {
-            efo->internal_command = s2; s2 = 0;
-        }else if (!strcmp(s1,"PRE_FORMAT")) {
-            efo->new_format = s2; s2 = 0;
-        }else if (!strcmp(s1,"SUFFIX")) {
-            efo->suffix = s2; s2 = 0;
-        }else if (!strcmp(s1,"BEGIN")) {
-            break;
-        }else{
-            fprintf(stderr,"Unknown command in import format file: %s\n",s1);
+AWTI_EXPORT_CMD check_internal(const char *command)  {
+    AWTI_EXPORT_CMD cmd = AWTI_EXPORT_INVALID;
+    for (int i = 0; internal_export_commands[i]; ++i) {
+        if (strcmp(command, internal_export_commands[i]) == 0) {
+            cmd = static_cast<AWTI_EXPORT_CMD>(i);
         }
     }
+    return cmd;
+}
 
-    fclose(in);
-    return 0;
+// ----------------------
+//      export_format
+
+struct export_format {
+    char *system;
+    // char *internal_command;
+    char *new_format;
+    char *suffix;
+    char *form; // transformed export expression (part behind 'BEGIN')
+
+    enum AWTI_EXPORT_CMD export_mode;
+
+    export_format();
+    ~export_format();
+};
+
+export_format::export_format(void){
+    memset((char *)this,0,sizeof(export_format));
+}
+
+export_format::~export_format(void) {
+    free(system);
+    free(new_format);
+    free(suffix);
+    free(form);
+}
+
+static GB_ERROR awtc_read_export_format(export_format *efo, const char *file, bool load_complete_form){
+    GB_ERROR error = 0;
+
+    if (!file || !file[0]) {
+        error = "No export format selected";
+    }
+    else {
+        char *fullfile = AWT_unfold_path(file,"ARBHOME");
+        FILE *in       = fopen(fullfile,"r");
+
+        if (!in) error = GB_export_IO_error("reading export form", fullfile);
+        else {
+            char   *s1, *s2;
+            size_t  linenumber = 0;
+
+            efo->export_mode = AWTI_EXPORT_USING_FORM; // default mode
+
+            while (!error && awtc_read_string_pair(in, s1, s2, linenumber)) {
+                if      (!strcmp(s1, "SYSTEM"))     { efo->system = s2;           s2 = 0; }
+                else if (!strcmp(s1, "PRE_FORMAT")) { efo->new_format = s2;       s2 = 0; }
+                else if (!strcmp(s1, "SUFFIX"))     { efo->suffix = s2;           s2 = 0; }
+                else if (!strcmp(s1, "INTERNAL"))   {
+                    efo->export_mode = check_internal(s2);
+                    if (efo->export_mode == AWTI_EXPORT_INVALID) {
+                        error = GBS_global_string("Unknown INTERNAL command '%s'", s2);
+                    }
+                }
+                else if (!strcmp(s1, "BEGIN")) {
+                    if (efo->export_mode != AWTI_EXPORT_USING_FORM) {
+                        error = "'BEGIN' not allowed when 'INTERNAL' is used";
+                    }
+                    else {
+                        break;
+                    }
+                }
+                else {
+                    error = GBS_global_string("Unknown command '%s'", s1);
+                }
+
+                // add error location
+                if (error) error = GBS_global_string("%s in line #%zu", error, linenumber);
+
+                free(s2);
+                free(s1);
+            }
+
+            if (!error && load_complete_form && efo->export_mode == AWTI_EXPORT_USING_FORM) {
+                // now 'in' points to line behind 'BEGIN'
+                char *form = GB_read_fp(in); // read rest of file
+
+                // Join lines that end with \ with next line.
+                // Replace ' = ' and ':' by '\=' and '\:'
+                efo->form  = GBS_string_eval(form, "\\\\\n=:\\==\\\\\\=:*=\\*\\=*1:\\:=\\\\\\:", 0);
+                if (!efo->form) error = GB_failedTo_error("evaluate part below 'BEGIN'", NULL, GB_expect_error());
+                free(form);
+            }
+
+            // some checks for incompatible commands
+            if (!error) {
+                if      (efo->system && !efo->new_format) error = "Missing 'PRE_FORMAT' (needed by 'SYSTEM')";
+                else if (efo->new_format && !efo->system) error = "Missing 'SYSTEM' (needed by 'PRE_FORMAT')";
+                else if (efo->export_mode != AWTI_EXPORT_USING_FORM) {
+                    if (efo->system)     error = "'SYSTEM' is not allowed together with 'INTERNAL'";
+                    if (efo->new_format) error = "'PRE_FORMAT' is not allowed together with 'INTERNAL'";
+                }
+            }
+
+            error = GB_failedTo_error("read export format", fullfile, error);
+        }
+        fclose(in);
+        free(fullfile);
+    }
+
+    return error;
 }
 
 // ----------------------------------------
@@ -91,6 +176,8 @@ class export_sequence_data {
     int    *export_column;      // list of exported seq data positions
     int     columns;            // how many columns get exported
 
+    GBDATA *single_species;     // if != NULL -> first/next only return that species (used to export to multiple files) 
+
 public:
 
     export_sequence_data(GBDATA *Gb_Main, bool only_marked, AP_filter* Filter, bool CutStopCodon, int Compress)
@@ -103,6 +190,7 @@ public:
         , compress(Compress)
         , export_column(0)
         , columns(0)
+        , single_species(0)
     {
         ali         = GBT_get_default_alignment(gb_main);
         max_ali_len = GBT_get_alignment_len(gb_main, ali);
@@ -141,13 +229,17 @@ public:
 
     const char *getAlignment() const { return ali; }
 
-    GBDATA *first_species() const { return find_first(gb_main); }
-    GBDATA *next_species(GBDATA *gb_prev) const { return find_next(gb_prev); }
+    void set_single_mode(GBDATA *gb_species) { single_species = gb_species; }
+    bool in_single_mode() const { return single_species; }
 
-    const unsigned char *get_seq_data(GBDATA *gb_species, size_t& slen, GB_ERROR& error) const ;
+    GBDATA *first_species() const { return single_species ? single_species : find_first(gb_main); }
+    GBDATA *next_species(GBDATA *gb_prev) const { return single_species ? NULL : find_next(gb_prev); }
+
+    const unsigned char *get_seq_data(GBDATA *gb_species, size_t& slen, GB_ERROR& error) const;
     static bool isGap(char c) { return c == '-' || c == '.'; }
 
     size_t count_species() {
+        awti_assert(!in_single_mode());
         if (species_count == size_t(-1)) {
             species_count = 0;
             for (GBDATA *gb_species = find_first(gb_main); gb_species; gb_species = find_next(gb_species)) {
@@ -180,6 +272,8 @@ const unsigned char *export_sequence_data::get_seq_data(GBDATA *gb_species, size
 
 GB_ERROR export_sequence_data::detectVerticalGaps() {
     GB_ERROR err = 0;
+
+    awti_assert(!in_single_mode());
 
     filter->calc_filter_2_seq();
     if (compress == 1) {        // compress vertical gaps!
@@ -346,20 +440,6 @@ extern "C" const char *exported_sequence(GBDATA *gb_species, size_t *seq_len, GB
     return esd->get_export_sequence(gb_species, *seq_len, *error);
 }
 
-//  -----------------------------
-//      enum AWTI_EXPORT_CMD
-//  -----------------------------
-enum AWTI_EXPORT_CMD {
-    AWTI_EXPORT_XML,
-
-    AWTI_EXPORT_COMMANDS,       // counter
-    AWTI_EXPORT_BY_FORM
-};
-
-static const char *internal_export_commands[AWTI_EXPORT_COMMANDS] = {
-    "xml_write"
-};
-
 static GB_ERROR AWTI_XML_recursive(GBDATA *gbd) {
     GB_ERROR    error    = 0;
     const char *key_name = GB_read_key_pntr(gbd);
@@ -387,7 +467,9 @@ static GB_ERROR AWTI_XML_recursive(GBDATA *gbd) {
     }
     else {
         tag = new XML_Tag(key_name);
-        tag->add_attribute("name", GBT_read_name(gbd));
+        
+        const char *name = GBT_read_char_pntr(gbd, "name");
+        if (name) tag->add_attribute("name", name);
     }
 
     if (descend) {
@@ -418,235 +500,197 @@ static GB_ERROR AWTI_XML_recursive(GBDATA *gbd) {
     return error;
 }
 
-static GB_ERROR AWTI_export_format(AW_root *aw_root, GBDATA *gb_main,
-                                   const char *formname, const char *outname,
-                                   bool multiple, char **resulting_outname)
-    // if resulting_outname != NULL -> set *resulting_outname to filename with suffix appended
-    // (not done when saving to multiple files!)
-{
-    char            *fullformname = AWT_unfold_path(formname,"ARBHOME");
-    GB_ERROR         error        = 0;
-    char            *form         = GB_read_file(fullformname);
-    AWTI_EXPORT_CMD  cmd          = AWTI_EXPORT_BY_FORM;
+static GB_ERROR export_species_using_form(FILE *out, GBDATA *gb_species, const char *form) {
+    GB_ERROR  error = NULL;
+    char     *pars  = GBS_string_eval(" ", form, gb_species);
 
-    if (!form || form[0] == 0) {
-        if (!formname || formname[0] == 0) error = GB_export_error("Please select a form");
-        else error                               = GB_export_IO_error("loading export form", fullformname);
+    if (!pars) {
+        error = GB_get_error();
     }
     else {
-        // skip header till line starting with 'BEGIN'.
-        // join lines that end with \ with next line
-        // replace '=' and ':' by '\=' and '\:'
-        //
-        char *form2  = GBS_string_eval(form,"*\nBEGIN*\n*=*3:\\\\\n=:\\==\\\\\\=:*=\\*\\=*1:\\:=\\\\\\:",0);
-
-        if (!form2) error = (char *)GB_get_error();
-        free(form);
-        form              = form2;
-    }
-
-    export_format_struct *efo = 0;
-    if (!error) {
-        efo   = new export_format_struct;;
-        error = awtc_read_export_format(efo,formname);
-    }
-
-    if (!error) {
-        if (efo->system && !efo->new_format) {
-            error = "Format File Error: You can only use the command SYSTEM "
-                "when you use the command PRE_FORMAT";
+        char *p;
+        char *o = pars;
+        while ( (p = GBS_find_string(o,"$$DELETE_LINE$$",0)) ) {
+            char *l,*r;
+            for (l = p; l>o; l--) if (*l=='\n') break;
+            r = strchr(p,'\n'); if (!r) r = p +strlen(p);
+            fwrite(o,1,l-o,out);
+            o = r;
         }
-        else if (efo->internal_command) {
-            if (efo->system) {
-                error = "Format File Error: You can't use SYSTEM together with INTERNAL";
-            }
-            else if (efo->new_format) {
-                error = "Format File Error: You can't use PRE_FORMAT together with INTERNAL";
-            }
-            else {
-                for (int c = 0; c<AWTI_EXPORT_COMMANDS; ++c) {
-                    if (strcmp(internal_export_commands[c], efo->internal_command) == 0) {
-                        cmd = (AWTI_EXPORT_CMD)c;
-                        break;
-                    }
-                }
-
-                if (cmd == AWTI_EXPORT_COMMANDS) {
-                    error = GB_export_error("Format File Error: Unknown INTERNAL command '%s'", efo->internal_command);
-                }
-            }
-        }
-        else if (efo->new_format) {
-            if (efo->system) {
-                char intermediate[1024];
-                char srt[1024];
-
-                {
-                    const char *out_nameonly        = strrchr(outname, '/');
-                    if (!out_nameonly) out_nameonly = outname;
-                    sprintf(intermediate,"/tmp/%s_%i",out_nameonly,getpid());
-                }
-
-                char *intermediate_resulting = 0;
-                error = AWTI_export_format(aw_root, gb_main, efo->new_format, intermediate, false, &intermediate_resulting);
-
-                if (!error) {
-                    sprintf(srt,"$<=%s:$>=%s",intermediate_resulting, outname);
-                    char *sys = GBS_string_eval(efo->system,srt,0);
-                    sprintf(AW_ERROR_BUFFER,"exec '%s'",efo->system);
-                    aw_status(AW_ERROR_BUFFER);
-                    if (system(sys)) {
-                        sprintf(AW_ERROR_BUFFER,"Error in '%s'",sys);
-                        error = AW_ERROR_BUFFER;
-                    }
-                    free(sys);
-                }
-                free(intermediate_resulting);
-            }else{
-                error = AWTI_export_format(aw_root, gb_main, efo->new_format, outname, multiple, NULL);
-            }
-            goto end_of_AWTI_export_format;
-        }
+        fputs(o, out);
+        free(pars);
     }
+    return error;
+}
+
+static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const char *outname, char **resulting_outname) {
+    // Exports sequences specified by 'esd' (module global variable)
+    // to format specified by 'formname'.
+    //
+    // if 'outname' == NULL -> export species to temporary file, otherwise to 'outname'.
+    // Full path of generated file is returned in 'resulting_outname'
+
+    static int export_depth     = 0;
+    static int export_depth_max = 0;
+    export_depth++;
+
+    *resulting_outname = 0;
+
+    export_format efo;
+    GB_ERROR      error = awtc_read_export_format(&efo, formname, true);
 
     if (!error) {
-        char       *outname_nosuffix = 0;
-        const char *existing_suffix  = strrchr(outname, '.');
+        if (!outname) { // if no 'outname' is given -> export to temporary file
+            *resulting_outname = GB_create_tempfile(GB_unique_filename("exported", efo.suffix));
+            if (!*resulting_outname) error = GB_expect_error();
+        }
+        else *resulting_outname = strdup(outname);
+    }
+    if (!error) {
+        if (efo.new_format) {
+            // Export data using format 'new_format'.
+            // Afterwards convert to wanted format using 'system'.
 
-        if (existing_suffix && ARB_stricmp(existing_suffix+1, efo->suffix) == 0) {
-            size_t nosuf_len            = existing_suffix-outname;
-            outname_nosuffix            = (char*)malloc(nosuf_len+1);
-            memcpy(outname_nosuffix, outname, nosuf_len);
-            outname_nosuffix[nosuf_len] = 0;
+            awti_assert(efo.system);
+            
+            char *intermediate_export;
+            error = AWTI_export_format(aw_root, efo.new_format, NULL, &intermediate_export);
+            if (!error) {
+                awti_assert(GB_is_privatefile(intermediate_export, GB_FALSE));
+
+                aw_status(GBS_global_string("Converting to %s", efo.suffix));
+
+                char *srt = GBS_global_string_copy("$<=%s:$>=%s", intermediate_export, *resulting_outname);
+                char *sys = GBS_string_eval(efo.system, srt, 0);
+
+                aw_status(GBS_global_string("exec '%s'", efo.system));
+                error = GB_system(sys);
+
+                if (GB_unlink(intermediate_export)<0 && !error) error = GB_get_error();
+
+                aw_status(1 - double(export_depth-1)/export_depth_max);
+
+                free(sys);
+                free(srt);
+            }
+            free(intermediate_export);
         }
         else {
-            outname_nosuffix = strdup(outname);
-        }
+            FILE *out       = fopen(*resulting_outname, "wt");
+            if (!out) error = GB_export_IO_error("writing", *resulting_outname);
+            else {
+                XML_Document *xml = 0;
 
-        try {
-            FILE         *out          = 0;
-            char         *curr_outname = 0;
-            XML_Document *xml          = 0;
+                aw_status("Saving data");
+                export_depth_max = export_depth;
 
-            if (!error && !multiple) {
-                curr_outname = GBS_global_string_copy("%s.%s", outname_nosuffix, efo->suffix);
-                if (resulting_outname != 0) *resulting_outname = strdup(curr_outname);
-
-                out = fopen(curr_outname, "wt");
-                if (!out) error = GBS_global_string("Can't write to file '%s'", curr_outname);
-            }
-
-            size_t species_count        = esd->count_species();
-            int    stat_mod             = species_count/400;
-            if (stat_mod == 0) stat_mod = 1;
-
-            int count     = 0;
-            int next_stat = count+stat_mod;
-
-            aw_status("Save data");
-            aw_status(0.0);
-
-            for (GBDATA *gb_species = esd->first_species();
-                 !error && gb_species;
-                 gb_species = esd->next_species(gb_species))
-            {
-                if (multiple) {
-                    curr_outname = GBS_global_string_copy("%s_%s.%s",outname_nosuffix, GBT_read_name(gb_species), efo->suffix);
-                    out          = fopen(curr_outname, "wt");
-
-                    if (!out) error = GBS_global_string("Can't write to file '%s'", curr_outname);
-                }
-
-                if (!error) {
-                    switch (cmd) {
-                        case AWTI_EXPORT_BY_FORM: {
-                            char *pars = GBS_string_eval(" ", form, gb_species);
-                            if (!pars) {
-                                error = GB_get_error();
-                                break;
-                            }
-                            char *p;
-                            char *o = pars;
-                            while ( (p = GBS_find_string(o,"$$DELETE_LINE$$",0)) ) {
-                                char *l,*r;
-                                for (l = p; l>o; l--) if (*l=='\n') break;
-                                r = strchr(p,'\n'); if (!r) r = p +strlen(p);
-                                fwrite(o,1,l-o,out);
-                                o = r;
-                            }
-                            fprintf(out,"%s",o);
-                            free(pars);
-
-                            break;
-                        }
-                        case AWTI_EXPORT_XML: {
-                            if (!xml) {
-                                xml = new XML_Document("ARB_SEQ_EXPORT", "arb_seq_export.dtd", out);
-
-                                {
-                                    char *db_name = aw_root->awar(AWAR_DB_NAME)->read_string();
-                                    xml->add_attribute("database", db_name);
-                                    free(db_name);
-                                }
-                                xml->add_attribute("export_date", AWT_date_string());
-
-                                char *fulldtd = AWT_unfold_path("lib/dtd", "ARBHOME");
-                                XML_Comment rem(GBS_global_string("There's a basic version of ARB_seq_export.dtd in %s\n"
-                                                                  "but you might need to expand it by yourself,\n"
-                                                                  "because the ARB-database may contain any kind of fields.",
-                                                                  fulldtd));
-                                free(fulldtd);
-                            }
-
-                            error = AWTI_XML_recursive(gb_species);
-
-                            if (multiple) {
-                                delete xml;
-                                xml = 0;
-                            }
-                            break;
-                        }
-                        default: {
-                            awte_assert(0);
-                            break;
-                        }
+                if (efo.export_mode == AWTI_EXPORT_XML) {
+                    xml = new XML_Document("ARB_SEQ_EXPORT", "arb_seq_export.dtd", out);
+                    {
+                        char *db_name = aw_root->awar(AWAR_DB_NAME)->read_string();
+                        xml->add_attribute("database", db_name);
+                        free(db_name);
+                    }
+                    xml->add_attribute("export_date", AWT_date_string());
+                    {
+                        char *fulldtd = AWT_unfold_path("lib/dtd", "ARBHOME");
+                        XML_Comment rem(GBS_global_string("There's a basic version of ARB_seq_export.dtd in %s\n"
+                                                          "but you might need to expand it by yourself,\n"
+                                                          "because the ARB-database may contain any kind of fields.",
+                                                          fulldtd));
+                        free(fulldtd);
                     }
                 }
 
-                if (multiple) {
-                    if (out) fclose(out);
-                    out = 0;
+                for (GBDATA *gb_species = esd->first_species();
+                     gb_species && !error;
+                     gb_species = esd->next_species(gb_species))
+                {
+                    switch (efo.export_mode) {
+                        case AWTI_EXPORT_USING_FORM:
+                            error = export_species_using_form(out, gb_species, efo.form);
+                            break;
 
-                    if (error) unlink(curr_outname);
+                        case AWTI_EXPORT_XML: 
+                            error = AWTI_XML_recursive(gb_species);
+                            break;
 
-                    free(curr_outname);
-                    curr_outname = 0;
+                        case AWTI_EXPORT_INVALID:
+                            gb_assert(0);
+                            break;
+                    }
                 }
 
-                count++;
-                if (!error && count >= next_stat) {
-                    if (aw_status(count/double(species_count))) error = "User abort";
-
-                    next_stat = count+stat_mod;
-                }
+                delete xml;
+                fclose(out);
             }
-
-            delete xml;
-            if (out) fclose(out);
-            free(curr_outname);
         }
-        catch (string& err) {
-            error = GB_export_error("Error: %s (programmers error)", err.c_str());
-        }
-
-        free(outname_nosuffix);
     }
 
- end_of_AWTI_export_format:
+    if (error) {
+        if (*resulting_outname) {
+            if (GB_unlink(*resulting_outname)<0) {
+                aw_message(GB_export_IO_error("deleting", *resulting_outname));
+            }
+            free(*resulting_outname);
+        }
+        *resulting_outname = 0;
+    }
 
-    free(fullformname);
-    free(form);
-    delete efo;
+    export_depth--;
+
+    return error;
+}
+
+static GB_ERROR AWTI_export_format_multiple(AW_root *aw_root, const char *formname, const char *outname, bool multiple, char **resulting_outname) {
+    GB_ERROR error = 0;
+
+    aw_status(0.);
+    
+    if (multiple) {
+        char *path, *name, *suffix;
+        GB_split_full_path(outname, &path, NULL, &name, &suffix);
+
+        *resulting_outname = NULL;
+
+        size_t species_count = esd->count_species();
+        size_t count         = 0;
+
+        for (GBDATA *gb_species = esd->first_species();
+             gb_species && !error;
+             gb_species = esd->next_species(gb_species))
+        {
+            const char *species_name = GBT_read_char_pntr(gb_species, "name");
+            if (!species_name) error = "Can't export unnamed species";
+            else {
+                const char *fname = GB_append_suffix(GBS_global_string("%s_%s", name, species_name), suffix);
+                aw_status(fname);
+
+                char *oname = GB_strdup(GB_concat_path(path, fname));
+                char *res_oname;
+
+                esd->set_single_mode(gb_species); // means: only export 'gb_species'
+                error = AWTI_export_format(aw_root, formname, oname, &res_oname);
+                esd->set_single_mode(NULL);
+
+                aw_status(++count/double(species_count));
+
+                if (!*resulting_outname || // not set yet
+                    (res_oname && strcmp(*resulting_outname, res_oname)>0)) // or smaller than set one
+                {
+                    free(*resulting_outname);
+                    *resulting_outname = res_oname;
+                    res_oname          = NULL;
+                }
+
+                free(res_oname);
+                free(oname);
+            }
+        }
+    }
+    else {
+        error = AWTI_export_format(aw_root, formname, outname, resulting_outname);
+    }
 
     return error;
 }
@@ -657,7 +701,7 @@ void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_crea
     GBDATA         *gb_main = (GBDATA*)cl_gb_main;
     GB_transaction  dummy(gb_main);
 
-    aw_openstatus("Exporting Data");
+    aw_openstatus("Exporting data");
 
     AW_root  *awr            = aww->get_root();
     char     *formname       = awr->awar(AWAR_EXPORT_FORM"/file_name")->read_string();
@@ -668,7 +712,7 @@ void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_crea
     GB_ERROR  error          = 0;
 
     char *outname      = awr->awar(AWAR_EXPORT_FILE"/file_name")->read_string();
-    char *real_outname = 0;     // with suffix
+    char *real_outname = 0;     // with suffix (name of first file if multiple)
 
     AP_filter *filter = awt_get_filter(awr, res_from_awt_create_select_filter);
     esd               = new export_sequence_data(gb_main, marked_only, filter, cut_stop_codon, compress);
@@ -676,7 +720,7 @@ void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_crea
 
     error = esd->detectVerticalGaps();
     if (!error) {
-        error = AWTI_export_format(awr, gb_main, formname, outname, multiple, &real_outname);
+        error = AWTI_export_format_multiple(awr, formname, outname, multiple, &real_outname);
     }
     GB_set_export_sequence_hook(0);
     delete esd;
@@ -712,6 +756,90 @@ void AWTC_create_export_awars(AW_root *awr, AW_default def) {
     awr->awar_int(AWAR_EXPORT_CUTSTOP, 0, def); // dont cut stop-codon
 }
 
+static char *get_format_default_suffix(const char *formname) {
+    export_format efs;
+    GB_ERROR      error = awtc_read_export_format(&efs, formname, false);
+    if (error) {
+        GB_export_error(error);
+        return NULL;
+    }
+    return efs.suffix ? strdup(efs.suffix) : NULL;
+}
+
+static void export_form_changed_cb(AW_root *aw_root) {
+    // called when selected export format changes
+    // -> automatically correct filename suffix
+    // -> restrict view to suffix
+
+    static char *previous_suffix = 0;
+
+    GB_ERROR  error          = 0;
+    AW_awar  *awar_form      = aw_root->awar(AWAR_EXPORT_FORM"/file_name");
+    char     *current_format = awar_form->read_string();
+
+    if (current_format) {
+        if (GB_is_regularfile(current_format)) {
+            char *current_suffix = get_format_default_suffix(current_format);
+
+            if (!current_suffix) {
+                error = GB_get_error(); // if no suffix defined in format -> no error
+            }
+
+            if (!error) {
+                // modify export filename and view
+
+                AW_awar *awar_filter = aw_root->awar(AWAR_EXPORT_FILE"/filter");
+                AW_awar *awar_export = aw_root->awar(AWAR_EXPORT_FILE"/file_name");
+
+                awar_filter->write_string("");
+                
+                char *exportname = awar_export->read_string();
+
+                {
+                    char *path, *nameOnly, *suffix;
+                    GB_split_full_path(exportname, &path, NULL, &nameOnly, &suffix);
+
+                    if (suffix) {
+                        if (previous_suffix && ARB_stricmp(suffix, previous_suffix) == 0) { // remove old suffix
+                            free(suffix);
+                            suffix = GB_strdup(current_suffix);
+                        }
+                        else {  // don't know existing suffix -> append
+                            char *new_suffix = GB_strdup(GB_append_suffix(suffix, current_suffix));
+                            free(suffix);
+                            suffix = new_suffix;
+                        }
+                    }
+                    else {
+                        suffix = GB_strdup(current_suffix);
+                    }
+
+                    const char *new_exportname = GB_concat_path(path, GB_append_suffix(nameOnly, suffix));
+                    if (new_exportname) awar_export->write_string(new_exportname);
+
+                    free(suffix);
+                    free(nameOnly);
+                    free(path);
+                }
+
+                free(exportname);
+
+                awar_filter->write_string(current_suffix);
+                
+                // remember last applied suffix
+                free(previous_suffix);
+                previous_suffix = current_suffix;
+                current_suffix  = 0;
+            }
+
+            free(current_suffix);
+        }
+        free(current_format);
+    }
+
+    if (error) aw_message(error);
+}
+
 AW_window *open_AWTC_export_window(AW_root *awr,GBDATA *gb_main)
 {
     static AW_window_simple *aws = 0;
@@ -735,6 +863,8 @@ AW_window *open_AWTC_export_window(AW_root *awr,GBDATA *gb_main)
     awt_create_selection_box(aws,AWAR_EXPORT_FILE,"f" );
 
     awt_create_selection_box(aws,AWAR_EXPORT_FORM,"","ARBHOME", AW_FALSE );
+
+    aws->get_root()->awar(AWAR_EXPORT_FORM"/file_name")->add_callback(export_form_changed_cb);
 
     aws->at("allmarked");
     aws->create_option_menu(AWAR_EXPORT_MARKED);

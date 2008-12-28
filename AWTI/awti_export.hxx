@@ -1,7 +1,7 @@
 // =============================================================== //
 //                                                                 //
 //   File      : awti_export.hxx                                   //
-//   Purpose   :                                                   //
+//   Purpose   : Interface to export window                        //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in June 2008      //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -11,6 +11,12 @@
 
 #ifndef AWTI_EXPORT_HXX
 #define AWTI_EXPORT_HXX
+
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+
+#define awti_assert(cond) arb_assert(cond)
 
 AW_window *open_AWTC_export_window(AW_root *awr,GBDATA *gb_main);
 

@@ -22,48 +22,22 @@
 extern GBDATA *GLOBAL_gb_main;
 
 void AP_conservProfile2Gnuplot_callback(AW_window *aww) {
+    GB_ERROR  error   = 0;
+    char     *command_file;
+    char     *cmdName = GB_unique_filename("arb", "gnuplot");
+    FILE     *cmdFile = GB_fopen_tempfile(cmdName, "wt", &command_file);
 
-    GB_ERROR error = 0;
-    char    *fname = aww->get_root()->awar(AP_AWAR_CONSPRO_FILENAME)->read_string();
+    if (!cmdFile) error = GB_get_error();
+    else {
+        char *fname   = aww->get_root()->awar(AP_AWAR_CONSPRO_FILENAME)->read_string();
+        char *smooth  = aww->get_root()->awar(AP_AWAR_CONSPRO_SMOOTH_GNUPLOT)->read_string();
+        char *legend  = aww->get_root()->awar(AP_AWAR_CONSPRO_GNUPLOT_LEGEND)->read_string();
+        int   dispPos = aww->get_root()->awar(AP_AWAR_CONSPRO_GNUPLOT_DISP_POS)->read_int();
+        int   minX    = aww->get_root()->awar(AP_AWAR_CONSPRO_GNUPLOT_MIN_X)->read_int();
+        int   maxX    = aww->get_root()->awar(AP_AWAR_CONSPRO_GNUPLOT_MAX_X)->read_int();
+        int   minY    = aww->get_root()->awar(AP_AWAR_CONSPRO_GNUPLOT_MIN_Y)->read_int();
+        int   maxY    = aww->get_root()->awar(AP_AWAR_CONSPRO_GNUPLOT_MAX_Y)->read_int();
 
-//     if (!strchr(fname, '/')) {
-//         char *neu = GB_strdup(GBS_global_string("./%s", fname));
-//         free(fname);
-//         fname     = neu;
-//     }
-
-//     if (strlen(fname) < 1) {
-//         error = "Please enter file name";
-//     }
-
-//     FILE *out = 0;
-//     if (!error) {
-//         out = fopen(fname,"w");
-//         if (!out) error = GB_export_error("Cannot write to file '%s'",fname);
-//     }
-
-//     nt_assert(out || error);
-
-//     fclose(out);
-//     aww->get_root()->awar(AP_AWAR_CONSPRO_DIRECTORY)->touch(); // reload file selection box
-
-    char *smooth  = aww->get_root()->awar(AP_AWAR_CONSPRO_SMOOTH_GNUPLOT)->read_string();
-    char *legend  = aww->get_root()->awar(AP_AWAR_CONSPRO_GNUPLOT_LEGEND)->read_string();
-    int   dispPos = aww->get_root()->awar(AP_AWAR_CONSPRO_GNUPLOT_DISP_POS)->read_int();
-    int   minX    = aww->get_root()->awar(AP_AWAR_CONSPRO_GNUPLOT_MIN_X)->read_int();
-    int   maxX    = aww->get_root()->awar(AP_AWAR_CONSPRO_GNUPLOT_MAX_X)->read_int();
-    int   minY    = aww->get_root()->awar(AP_AWAR_CONSPRO_GNUPLOT_MIN_Y)->read_int();
-    int   maxY    = aww->get_root()->awar(AP_AWAR_CONSPRO_GNUPLOT_MAX_Y)->read_int();
-
-    char command_file[100];
-    sprintf(command_file,"/tmp/arb_consProf_gnuplot_commands_%s_%i",GB_getenv("USER"), getpid());
-
-    FILE *cmdFile = fopen(command_file, "w");
-    if (!cmdFile){
-        error = GB_export_error("Can't create GNUPLOT COMMAND FILE '%s'", command_file);
-    }
-
-    if(!error){
         if (minX>0 || maxX>0)   fprintf(cmdFile, "set xrange [%i:%i]\n",minX,maxX);
         if (minY>0 || maxY>0)   fprintf(cmdFile, "set yrange [%i:%i]\n",minY,maxY);
 
@@ -72,18 +46,22 @@ void AP_conservProfile2Gnuplot_callback(AW_window *aww) {
         if(dispPos)  fprintf(cmdFile, "replot \"%s\" title \"Base Positions\"\n", fname);
 
         fprintf(cmdFile, "pause -1 \"Press RETURN to close gnuplot\"\n");
+
+        free(legend);
+        free(smooth);
+        free(fname);
     }
     fclose(cmdFile);
 
-    printf("command_file='%s'\n", command_file);
-    char *script = GB_strdup(GBS_global_string("gnuplot %s && rm -f %s", command_file, command_file));
-    GB_xcmd(script, GB_TRUE, GB_TRUE);          // execute GNUPLOT using command_file
+    if (!error) {
+        char *script = GBS_global_string_copy("gnuplot %s && rm -f %s", command_file, command_file);
+        GB_xcmd(script, GB_TRUE, GB_TRUE);          // execute GNUPLOT using command_file
+        free(script);
+    }
+    free(command_file);
+    free(cmdName);
 
-    free(script);
-    free(smooth);
-    free(fname);
-
-    if (error)   aw_message(error);
+    if (error) aw_message(error);
 }
 
 

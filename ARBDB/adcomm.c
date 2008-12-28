@@ -111,48 +111,67 @@ struct gbcms_create_struct {
 };
 
 
-/**************************************************************************************
-********************************    Panic save *************************
-***************************************************************************************/
+/* -------------------- */
+/*      Panic save      */
+ 
 GBCONTAINER *gbcms_gb_main;
-void *gbcms_sighup(void){
-    char          buffer[1024];
-    char         *fname;
-    GB_ERROR      error;
-    int           translevel;
-    GB_MAIN_TYPE *Main;
 
+void *gbcms_sighup(void){
+    char *panic_file = 0;                      // hang-up trigger file
+    char *db_panic   = 0;                      // file to save DB to
     {
         const char *ap = GB_getenv("ARB_PID");
-        if (!ap ) ap = "";
-        sprintf(buffer,"/tmp/arb_panic_%s_%s",GB_getenvUSER(),ap);
-    }
-    fprintf(stderr,"**** ARB DATABASE SERVER GOT a HANGUP SIGNAL ****\n");
-    fprintf(stderr,"- Looking for file '%s'\n",buffer);
-    fname = GB_read_file(buffer);
-    if (!fname) {
-        fprintf(stderr,"- File '%s' not found - exiting!\n",buffer);
-        exit(EXIT_FAILURE);
-    }
-    if (fname[strlen(fname)-1] == '\n') fname[strlen(fname)-1] = 0;
-    if (strcmp(fname,"core") == 0) { GB_CORE; }
+        if (!ap) ap    = "";
 
-    fprintf(stderr,"- Trying to save DATABASE in ASCII Mode into file '%s'\n", fname);
-    Main              = GBCONTAINER_MAIN(gbcms_gb_main);
-    translevel        = Main->transaction;
-    Main->transaction = 0;
-    error             = GB_save_as((GBDATA*)gbcms_gb_main, fname, "a");
-    
-    if (error) fprintf(stderr,"Error while  saving '%s': %s\n", fname, error);
-    else fprintf(stderr,"- DATABASE saved into '%s'\n", fname);
+        FILE *in = GB_fopen_tempfile(GBS_global_string("arb_panic_%s_%s", GB_getenvUSER(), ap), "rt", &panic_file);
 
-    unlink(buffer);
-    Main->transaction = translevel;
-    
-    free(fname);
+        fprintf(stderr,
+                "**** ARB DATABASE SERVER received a HANGUP SIGNAL ****\n"
+                "- Looking for file '%s'\n",
+                panic_file);
+
+        db_panic = GB_read_fp(in);
+        fclose(in);
+    }
+
+    if (!db_panic) {
+        fprintf(stderr,
+                "- Could not read '%s' (Reason: %s)\n"
+                "[maybe retry]\n",
+                panic_file, GB_expect_error());
+    }
+    else {
+        char *newline           = strchr(db_panic, '\n');
+        if (newline) newline[0] = 0;
+
+        if (strcmp(db_panic, "core") == 0) {
+            fprintf(stderr,
+                    "- core dump requested"
+                    "[crashing]\n");
+            fflush(stderr);
+            GB_CORE;
+        }
+
+        GB_MAIN_TYPE *Main       = GBCONTAINER_MAIN(gbcms_gb_main);
+        int           translevel = Main->transaction;
+
+        fprintf(stderr, "- Trying to save DATABASE in ASCII mode into file '%s'\n", db_panic);
+
+        Main->transaction = 0;
+        GB_ERROR error    = GB_save_as((GBDATA *) gbcms_gb_main, db_panic, "a");
+        
+        if (error) fprintf(stderr, "Error while saving '%s': %s\n", db_panic, error);
+        else fprintf(stderr, "- DATABASE saved into '%s' (ASCII)\n", db_panic);
+
+        unlink(panic_file);
+        Main->transaction = translevel;
+
+        free(db_panic);
+    }
 
     return 0;
 }
+
 
 
 /**************************************************************************************
@@ -2065,27 +2084,54 @@ GB_CSTR GBC_get_hostname(void){
     return hn;
 }
 
-GB_ERROR GB_install_pid(int mode)   /* tell the arb_clean software what
-                                       programs are running !!!
-                                       mode == 1 install
-                                       mode == 0 never install */
-{
-    static long lastpid = 0;
-    long pid = getpid();
-    FILE *pidfile;
-    char filename[1000];
-    const char *user = GB_getenvUSER();
-    const char *arb_pid = GB_getenv("ARB_PID");
-    if (!user) user = "UNKNOWN";
-    if (!arb_pid) arb_pid = "";
-    if (mode ==0) lastpid = -25;
-    if (lastpid == pid) return 0;
-    if (lastpid == -25) return 0;   /* never install */
-    lastpid = pid;
-    sprintf(filename,"/tmp/arb_pids_%s_%s",user,arb_pid);
-    pidfile = fopen(filename,"a");
-    if (!pidfile) return GB_export_error("Cannot open pid file '%s'",filename);
-    fprintf(pidfile,"%li ",pid);
-    fclose(pidfile);
-    return 0;
+GB_ERROR GB_install_pid(int mode) {
+    /* tell the arb_clean script what programs are running.
+     * mode == 1 -> install
+     * mode == 0 -> never install
+     */
+
+    static long lastpid = -1;
+    GB_ERROR    error   = 0;
+
+    if (mode == 0) {
+        gb_assert(lastpid == -1); // you have to call GB_install_pid(0) before opening any database!
+        lastpid = -25;            // mark as "never install"
+    }
+
+    if (lastpid != -25) {
+        long pid = getpid();
+
+        if (pid != lastpid) {   // dont install pid multiple times
+            char *pidfile_name;
+            {
+                const char *user    = GB_getenvUSER();
+                const char *arb_pid = GB_getenv("ARB_PID"); // normally the pid of the 'arb' shell script
+
+                gb_assert(user);
+                if (!arb_pid) arb_pid = "";
+
+                pidfile_name = GBS_global_string_copy("arb_pids_%s_%s", user, arb_pid);
+            }
+            
+            char *pid_fullname;
+            FILE *pidfile = GB_fopen_tempfile(pidfile_name, "at", &pid_fullname);
+
+            if (!pidfile) {
+                error = GBS_global_string("GB_install_pid: %s", GB_get_error());
+            }
+            else {
+                fprintf(pidfile,"%li ", pid);
+                lastpid = pid; // remember installed pid
+                fclose(pidfile);
+            }
+
+            // ensure pid file is private, otherwise someone could inject PIDs which will be killed later 
+            gb_assert(GB_is_privatefile(pid_fullname, GB_FALSE));
+            
+            free(pid_fullname);
+            free(pidfile_name);
+        }
+    }
+
+    return error;
 }

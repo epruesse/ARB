@@ -2390,59 +2390,75 @@ static GB_ERROR gbl_change_gc(GBL_command_arguments *args)
 
 static GB_ERROR gbl_exec(GBL_command_arguments *args)
 {
-    int       i;
-    char      fname[1024];
-    char     *sys;
-    char     *result = 0;
-    GB_ERROR  error  = 0;
+    GB_ERROR error = 0;
 
-    if (args->cparam==0) return "exec needs parameters:\nexec(command,...)";
+    if (args->cparam==0) {
+        error = "exec needs parameters:\nexec(command,...)";
+    }
+    else {
+        // write inputstreams to temp file:
+        char *inputname;
+        int i;
+        {
+            char *filename = GB_unique_filename("arb_exec_input", "tmp");
+            FILE *out      = GB_fopen_tempfile(filename, "wt", &inputname);
 
-    /* save inputstreams into file, which then gets piped into shell command */
-    sprintf(fname,"/tmp/arb_tmp_%s_%i",GB_getenv("USER"),getpid());
-    {
-        FILE *out = fopen(fname,"w");
-        if (!out) return GB_export_error("Cannot open temporary file '%s'",fname);
-        for (i=0;i<args->cinput;i++) {         /* go through all in streams    */
-            fprintf(out,"%s\n",args->vinput[i].str);
+            if (!out) error = GB_get_error();
+            else {
+                for (i=0; i<args->cinput; i++) {               // go through all in streams
+                    fprintf(out,"%s\n",args->vinput[i].str);
+                }
+                fclose(out);
+            }
+            free(filename);
         }
-        fclose(out);
+
+        if (!error) {
+            // build shell command to execute
+            char *sys;
+            {
+                struct GBS_strstruct *str = GBS_stropen(1000);
+                
+                GBS_strcat(str, args->vparam[0].str);
+                for (i=1; i<args->cparam; i++) {   // go through all in params
+                    GBS_strcat(str," \'");
+                    GBS_strcat(str, args->vparam[i].str);
+                    GBS_chrcat(str,'\'');
+                }
+                GBS_strcat(str, " <");
+                GBS_strcat(str, inputname);
+                
+                sys = GBS_strclose(str);
+            }
+
+            char *result = 0;
+            {
+                FILE *in = popen(sys,"r");
+                if (in) {
+                    void *str = GBS_stropen(4096);
+
+                    while ( (i=getc(in)) != EOF ) { GBS_chrcat(str,i); }
+                    result = GBS_strclose(str);
+                    pclose(in);
+                }
+                else {
+                    error = GBS_global_string("Cannot execute shell command '%s'", sys);
+                }
+            }
+
+            if (!error) {
+                gb_assert(result);
+                (*args->voutput)[(*args->coutput)++].str = result;
+            }
+            
+            free(sys);
+        }
+
+        gb_assert(GB_is_privatefile(inputname, GB_FALSE));
+        if (GB_unlink(inputname)<0 && !error) error = GB_get_error();
+        free(inputname);
     }
 
-    /* build shell command to execute */
-    {
-        void *str = GBS_stropen(1000);
-        for (i=0;i<args->cparam;i++) { /* go through all in params     */
-            if (i) GBS_chrcat(str,'\'');
-            GBS_strcat(str, args->vparam[i].str);
-            if (i) GBS_chrcat(str,'\'');
-            GBS_chrcat(str, ' ');
-        }
-        GBS_strcat(str, "<");
-        GBS_strcat(str, fname);
-        sys = GBS_strclose(str);
-    }
-
-    {
-        FILE *in = popen(sys,"r");
-        if (in) {
-            void *str = GBS_stropen(1000);
-            while ( (i=getc(in)) != EOF ) { GBS_chrcat(str,i); }
-            pclose(in);
-            result = GBS_strclose(str);
-        }
-        else {
-            error = GB_export_error("Cannot execute shell command '%s'", sys);
-        }
-    }
-
-    free(sys);
-    unlink(fname);
-
-    if (!error) {
-        gb_assert(result);
-        (*args->voutput)[(*args->coutput)++].str = result;
-    }
     return error;
 }
 
